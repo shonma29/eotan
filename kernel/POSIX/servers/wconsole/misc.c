@@ -117,11 +117,6 @@ goto_cursor (W x, W y, W winid)
   if (video_mode == GRAPHIC_MODE && winid == focus) {
     if (x >= w[winid].column || y >= w[winid].line) return;
 #ifdef notdef
-    draw_istring(w[winid].font_w*x + w[winid].x + 1,
-		 w[winid].font_h*y + w[winid].y + 1,
-		 " ", 0, 8, 0);
-#else
-#if 0
     fillbox_vga(w[winid].font_w*x + w[winid].x + 1,
 		w[winid].font_h*y + w[winid].y + 1,
 		w[winid].font_w, w[winid].font_h, VGA16_DGRAY, VGA_XOR);
@@ -131,7 +126,6 @@ goto_cursor (W x, W y, W winid)
 	     w[winid].font_w*x + w[winid].x + 1 + w[winid].font_w,
 	     w[winid].font_h*y + w[winid].y + w[winid].font_h + 1,
 	     VGA16_LGRAY, VGA_OVERWRITE);
-#endif
 #endif
     return;
   }
@@ -149,11 +143,6 @@ void erase_cursor(W winid)
 {
   if (video_mode == GRAPHIC_MODE) {
 #ifdef notdef
-    draw_istring(w[winid].font_w*w[winid].curpos.x + w[winid].x + 1,
-		 w[winid].font_h*w[winid].curpos.y + w[winid].y + 1,
-		 " ", VGA16_BLACK, VGA16_WHITE, 0);
-#else
-#if 0
     fillbox_vga(w[winid].font_w*w[winid].curpos.x + w[winid].x + 1,
 		w[winid].font_h*w[winid].curpos.y + w[winid].y + 1,
 		w[winid].font_w, w[winid].font_h, VGA16_DGRAY, VGA_XOR);
@@ -166,7 +155,6 @@ void erase_cursor(W winid)
 	     w[winid].font_h*w[winid].curpos.y + w[winid].y
 	     + w[winid].font_h + 1,
 	     VGA16_WHITE, VGA_OVERWRITE);
-#endif
 #endif
   }
 }

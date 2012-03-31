@@ -637,6 +637,9 @@ ER
     W counter;
 #endif
 
+#ifdef DEBUG
+    printk("vdel_reg %d %d\n", id, rid);
+#endif
     taskp = get_tskp(id);
     if (taskp == NULL) {
 	/*
@@ -836,6 +839,9 @@ ER vdup_reg(ID src, ID dst, ID rid)
     T_TCB *taskp, *dstp;
     UW counter;
 
+#ifdef DEBUG
+    printk("vdup_reg %d %d %d\n", src, dst, rid);
+#endif
     taskp = (T_TCB *) get_tskp(src);
     if (taskp->tskstat == TTS_NON) {
 	return (E_PAR);

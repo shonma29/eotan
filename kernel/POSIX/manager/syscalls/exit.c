@@ -7,7 +7,7 @@ Version 2, June 1991
 
 (C) B-Free Project.
 
-(C) 2001, Tomohide Naniwa
+(C) 2001-2003, Tomohide Naniwa
 
 */
 /*
@@ -86,11 +86,11 @@ psc_exit_f (struct posix_request *req)
 
   /* region の開放, 実際には必要無いだろう */
   tskid = req->caller,
-  vdel_reg(tskid, 1); /* text */
-  vdel_reg(tskid, 2); /* data+bss */
-  vdel_reg(tskid, 3); /* heap */
+  vdel_reg(tskid, TEXT_REGION); /* text */
+  vdel_reg(tskid, DATA_REGION); /* data+bss */
+  vdel_reg(tskid, HEAP_REGION); /* heap */
 #ifdef notdef
-  vdel_reg(tskid, 4); /* stack */
+  vdel_reg(tskid, STACK_REGION); /* stack */
 #endif
 
   put_response (req, EP_OK, 0, 0, 0);

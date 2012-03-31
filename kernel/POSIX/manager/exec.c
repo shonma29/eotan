@@ -7,7 +7,7 @@ Version 2, June 1991
 
 (C) B-Free Project.
 
-(C) 2001-2002, Tomohide Naniwa
+(C) 2001-2003, Tomohide Naniwa
 
 */
 
@@ -82,8 +82,6 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     ID signal_task;
 #endif
     struct proc *procp;
-    ID rid;
-
 
 #ifdef notdef
     printk("[PM] exec_program: path = \"%s\"\n", pathname);	/* */
@@ -199,13 +197,27 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     }
 
     /* 残りの region の作成 */
-    vnew_reg(req->caller, (VP) VADDR_HEAP, 0, STD_HEAP_SIZE,
-	     VM_READ | VM_WRITE | VM_USER, NULL, &rid);	/* heap */
+    errno = vcre_reg(req->caller, HEAP_REGION,
+		     (VP) VADDR_HEAP, 0, STD_HEAP_SIZE,
+	     VM_READ | VM_WRITE | VM_USER, NULL);	/* heap */
+#ifdef DEBUG
+    if (errno) {
+      dbg_printf("[EXEC]: vcre_reg return %d\n", errno);
+    }
+    {
+      T_REGION reg;
+
+      errno = vsts_reg(req->caller, HEAP_REGION, (VP) & reg);
+      dbg_printf("[EXEC] err = %d sa %x, min %x, max %x\n",
+		 errno, reg.start_addr, reg.min_size, reg.max_size);
+    }
+#endif
+
 #if 0
     /* stack の region は fork から呼ばれる vcpy_stk で実行される */
-    vnew_reg(req->caller,
+    vcre_reg(req->caller, STACK_REGION,
 	     (VP) VADDR_STACK_HEAD, STD_STACK_SIZE, STD_STACK_SIZE,
-	     VM_READ | VM_WRITE | VM_USER, NULL, &rid);	/* stack */
+	     VM_READ | VM_WRITE | VM_USER, NULL);	/* stack */
 #endif
 
 #if 0
@@ -374,8 +386,6 @@ load_text(W procid, struct inode *ip, struct ELF_Pheader *text, ID task)
     W vaddr;
     static B buf[PAGE_SIZE];
     UW start, size;
-    ID rid;
-
 
     start = CUTDOWN(text->p_vaddr, PAGE_SIZE);
     size =
@@ -383,8 +393,8 @@ load_text(W procid, struct inode *ip, struct ELF_Pheader *text, ID task)
 		(text->p_vaddr - CUTDOWN(text->p_vaddr, PAGE_SIZE)),
 		PAGE_SIZE);
     /* text region の設定 */
-    vnew_reg(task, (VP) start, size, size,
-	     VM_READ | VM_EXEC | VM_USER, NULL, &rid);
+    vcre_reg(task, TEXT_REGION, (VP) start, size, size,
+	     VM_READ | VM_EXEC | VM_USER, NULL);
 
     errno = alloc_memory(procid, start, size, VM_READ | VM_EXEC);
     if (errno) {
@@ -438,7 +448,6 @@ load_data(W procid, struct inode *ip, struct ELF_Pheader *data, ID task)
     W vaddr;
     static B buf[PAGE_SIZE];
     UW start, size;
-    ID rid;
 
     start = CUTDOWN(data->p_vaddr, PAGE_SIZE);
     size =
@@ -446,8 +455,8 @@ load_data(W procid, struct inode *ip, struct ELF_Pheader *data, ID task)
 		(data->p_vaddr - CUTDOWN(data->p_vaddr, PAGE_SIZE)),
 		PAGE_SIZE);
     /* data+bss region の設定 */
-    vnew_reg(task, (VP) start, size, size,
-	     VM_READ | VM_WRITE | VM_USER, NULL, &rid);	/* data+bss */
+    vcre_reg(task, DATA_REGION, (VP) start, size, size,
+	     VM_READ | VM_WRITE | VM_USER, NULL);	/* data+bss */
     errno = alloc_memory(procid, start, size, VM_READ | VM_WRITE);
     if (errno) {
 #ifdef EXEC_DEBUG

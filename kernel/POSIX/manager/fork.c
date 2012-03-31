@@ -7,7 +7,7 @@ Version 2, June 1991
 
 (C) B-Free Project.
 
-(C) 2001-2002, Tomohide Naniwa
+(C) 2001-2003, Tomohide Naniwa
 
 */
 
@@ -160,11 +160,15 @@ W proc_duplicate(struct proc * source, struct proc * destination)
 #endif
 
     /* region のコピー */
-    vdup_reg(source->proc_maintask, 1, destination->proc_maintask);	/* text */
-    vdup_reg(source->proc_maintask, 2, destination->proc_maintask);	/* data+bss */
-    vdup_reg(source->proc_maintask, 3, destination->proc_maintask);	/* heap */
+    /* text */
+    vdup_reg(source->proc_maintask, destination->proc_maintask, TEXT_REGION);
+    /* data+bss */
+    vdup_reg(source->proc_maintask, destination->proc_maintask, DATA_REGION);
+    /* heap */
+    vdup_reg(source->proc_maintask, destination->proc_maintask, HEAP_REGION);
 #ifdef notdef
-    vdup_reg(source->proc_maintask, 4, destination->proc_maintask);	/* stack */
+    /* stack */
+    vdup_reg(source->proc_maintask, destination->proc_maintask, STACK_REGION);
 #endif
 
     /* 仮想空間の生成 */

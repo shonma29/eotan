@@ -7,6 +7,8 @@ Version 2, June 1991
 
 (C) B-Free Project.
 
+(C) 2003, Tomohide Naniwa
+
 */
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/BTRON/device/console/console.h,v 1.16 2000/02/27 15:25:16 naniwa Exp $ */
 
@@ -116,7 +118,7 @@ Version 2, June 1991
 #define __CONSOLE_H__	1
 
 
-#include "../../../ITRON/kernlib/device.h"
+#include <kernlib/device.h>
 
 /*  定数の設定
  */
@@ -153,12 +155,12 @@ Version 2, June 1991
 #define GR_FILLELLIPSE	0x0000800A
 #define GR_SCROLL       0x0000800B
 
-#define NORM_ATTR	0x1e		/* 通常文字 			*/
+#define NORM_ATTR	0x1e		/* 通常文字 */
 
 #define SCROLL_UP       0
 #define SCROLL_DOWN     1
 
-#define TEXT_VRAM_ADDR	0x800B8000	/* TEXT VRAM のアドレス		*/
+#define TEXT_VRAM_ADDR	0x800B8000	/* TEXT VRAM のアドレス */
 #define TEXT_VRAM_SIZE	2000
 
 #define GDC_ADDR	0x03d4
@@ -168,9 +170,9 @@ Version 2, June 1991
 #define GDC_COMMAND	0x03d5
 
 #define	VGA_OVERWRITE			0x00
-#define	VGA_AND				0x10
-#define	VGA_OR				0x20
-#define	VGA_XOR				0x30
+#define	VGA_AND				0x08
+#define	VGA_OR				0x10
+#define	VGA_XOR				0x18
 
 struct gr_point_t
 {

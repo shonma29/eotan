@@ -210,9 +210,15 @@ W proc_set_info(struct posix_request * req)
     procp->proc_ppid = procinfo->proc_ppid;
 
     /* region ¤ÎÀ¸À® */
-    vnew_reg(tskid, 0, 0x7fffffff, 0x7fffffff, procinfo->proc_access, NULL, &rid);	/* text */
-    vnew_reg(tskid, 0, 0x7fffffff, 0x7fffffff, procinfo->proc_access, NULL, &rid);	/* data+bss */
-    vnew_reg(tskid, 0, 0, 0x7fffffff, procinfo->proc_access, NULL, &rid);	/* heap */
+    /* text */
+    vcre_reg(tskid, TEXT_REGION,
+	     0, 0x7fffffff, 0x7fffffff, procinfo->proc_access, NULL);
+    /* data+bss */
+    vcre_reg(tskid, DATA_REGION,
+	     0, 0x7fffffff, 0x7fffffff, procinfo->proc_access, NULL);
+    /* heap */
+    vcre_reg(tskid, HEAP_REGION,
+	     0, 0, 0x7fffffff, procinfo->proc_access, NULL);
 #if 0
     vnew_reg(tskid, 0, PAGE_SIZE, 0x7fffffff, procinfo->proc_access, NULL, &rid);	/* stack */
 #endif

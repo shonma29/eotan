@@ -7,7 +7,7 @@ Version 2, June 1991
 
 (C) B-Free Project.
 
-(C) 2001, Tomohide Naniwa
+(C) 2001-2003, Tomohide Naniwa
 
 */
 /*
@@ -30,12 +30,17 @@ W psc_brk_f(struct posix_request *req)
     if (err)
 	return err;
 
-    err = vsts_reg(req->caller, 3, (VP) & reg);
+    err = vsts_reg(req->caller, HEAP_REGION, (VP) & reg);
 #ifdef DEBUG
-    printk("[PM] err = %d sa %x, min %x, max %x, ea %x\n",
+    dbg_printf("[PM] err = %d id %d, sa %x, min %x, max %x, ea %x\n",
+	       req->caller,
 	   err, reg.start_addr, reg.min_size, reg.max_size,
 	   req->param.par_brk.end_adr);
 #endif
+    if (err) {
+	put_response(req, err, -1, 0, 0);
+	return (FAIL);
+    }
 
     err = EP_OK;
     start = reg.start_addr + reg.min_size;
@@ -63,10 +68,10 @@ W psc_brk_f(struct posix_request *req)
 	return (FAIL);
     }
 
-    /* for debug */
 #ifdef DEBUG
-    vsts_reg(req->caller, 3, (VP) & reg);
-    printk("[PM] after brk sa %x, min %x, max %x\n",
+    /* for debug */
+    vsts_reg(req->caller, HEAP_REGION, (VP) & reg);
+    dbg_printf("[PM] after brk sa %x, min %x, max %x\n",
 	   reg.start_addr, reg.min_size, reg.max_size);
 #endif
 
