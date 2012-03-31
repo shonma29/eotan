@@ -1,0 +1,312 @@
+#ifndef __BTRON_PACKET_H__
+#define __BTRON_PACKET_H__
+/*
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
+GNU GENERAL PUBLIC LICENSE\nVersion 2, June 1991\n\n(C) B-Free Project.
+*/
+
+struct btron_response
+{
+  ID	receive_port;		/* 要求受信用のポート	*/
+  W	msg_length;		/* メッセージの長さ	*/
+  W	operation;		/* 要求番号(システムコールに対応)	*/
+  W	errno;			/* エラー番号 */
+  W	status;			/* ステータス(リターン値) */
+
+  W	ret1;			/* サブに使用するリターン値 */
+  W	ret2;			/* サブに使用するリターン値 */
+};
+
+/* BTRON マネージャへの要求メッセージの構造体 */
+struct btron_request
+{
+  ID	receive_port;		/* 要求受信用のポート	*/
+  ID	caller;			/* 呼び出し元のタスク ID */
+  ID	procid;			/* 呼び出し元のプロセス ID */
+  W	msg_length;		/* メッセージの長さ	*/
+  W	operation;		/* 要求番号(システムコールに対応)	*/
+
+  union {
+    struct bsc_gdsp_ptr		par_gdsp_ptr;
+    struct bsc_gget_ptr		par_gget_ptr;
+    struct bsc_gini_ptr		par_gini_ptr;
+    struct bsc_gmot_ptr		par_gmot_ptr;
+    struct bsc_gmov_ptr		par_gmov_ptr;
+    struct bsc_gset_ptr		par_gset_ptr;
+    struct bsc_gcls_env		par_gcls_env;
+    struct bsc_gcnv_abs		par_gcnv_abs;
+    struct bsc_gcnv_col		par_gcnv_col;
+    struct bsc_gcom_bmp		par_gcom_bmp;
+    struct bsc_gcop_bmp		par_gcop_bmp;
+    struct bsc_gcre_pat		par_gcre_pat;
+    struct bsc_gdra_arc		par_gdra_arc;
+    struct bsc_gdra_lin		par_gdra_lin;
+    struct bsc_gdra_pln		par_gdra_pln;
+    struct bsc_gdra_pnt		par_gdra_pnt;
+    struct bsc_gdra_spl		par_gdra_spl;
+    struct bsc_gfil_cho		par_gfil_cho;
+    struct bsc_gfil_ovl		par_gfil_ovl;
+    struct bsc_gfil_pnt		par_gfil_pnt;
+    struct bsc_gfil_pol		par_gfil_pol;
+    struct bsc_gfil_rec		par_gfil_rec;
+    struct bsc_gfil_rgn		par_gfil_rgn;
+    struct bsc_gfil_rrc		par_gfil_rrc;
+    struct bsc_gfil_scn		par_gfil_scn;
+    struct bsc_gfil_sec		par_gfil_sec;
+    struct bsc_gfra_cho		par_gfra_cho;
+    struct bsc_gfra_ovl		par_gfra_ovl;
+    struct bsc_gfra_pol		par_gfra_pol;
+    struct bsc_gfra_rec		par_gfra_rec;
+    struct bsc_gfra_rrc		par_gfra_rrc;
+    struct bsc_gfra_sec		par_gfra_sec;
+    struct bsc_gget_bmp		par_gget_bmp;
+    struct bsc_gget_bnd		par_gget_bnd;
+    struct bsc_gget_col		par_gget_col;
+    struct bsc_gget_dev		par_gget_dev;
+    struct bsc_gget_for		par_gget_for;
+    struct bsc_gget_fra		par_gget_fra;
+    struct bsc_gget_msk		par_gget_msk;
+    struct bsc_gget_spc		par_gget_spc;
+    struct bsc_gget_vis		par_gget_vis;
+    struct bsc_gini_env		par_gini_env;
+    struct bsc_gloc_env		par_gloc_env;
+    struct bsc_gmov_bnd		par_gmov_bnd;
+    struct bsc_gmov_cor		par_gmov_cor;
+    struct bsc_gnew_env		par_gnew_env;
+    struct bsc_gopn_dev		par_gopn_dev;
+    struct bsc_gopn_mem		par_gopn_mem;
+    struct bsc_gpic_arc		par_gpic_arc;
+    struct bsc_gpic_cho		par_gpic_cho;
+    struct bsc_gpic_lin		par_gpic_lin;
+    struct bsc_gpic_ovl		par_gpic_ovl;
+    struct bsc_gpic_pln		par_gpic_pln;
+    struct bsc_gpic_pol		par_gpic_pol;
+    struct bsc_gpic_rec		par_gpic_rec;
+    struct bsc_gpic_rrc		par_gpic_rrc;
+    struct bsc_gpic_scn		par_gpic_scn;
+    struct bsc_gpic_sec		par_gpic_sec;
+    struct bsc_gpic_spl		par_gpic_spl;
+    struct bsc_grot_bmp		par_grot_bmp;
+    struct bsc_grst_bmp		par_grst_bmp;
+    struct bsc_gsav_bmp		par_gsav_bmp;
+    struct bsc_gscr_rec		par_gscr_rec;
+    struct bsc_gset_col		par_gset_col;
+    struct bsc_gset_for		par_gset_for;
+    struct bsc_gset_fra		par_gset_fra;
+    struct bsc_gset_lmk		par_gset_lmk;
+    struct bsc_gset_msk		par_gset_msk;
+    struct bsc_gset_vis		par_gset_vis;
+    struct bsc_gsiz_cbm		par_gsiz_cbm;
+    struct bsc_gsiz_pat		par_gsiz_pat;
+    struct bsc_gtst_pnt		par_gtst_pnt;
+    struct bsc_gunc_bmp		par_gunc_bmp;
+    struct bsc_gcop_chr		par_gcop_chr;
+    struct bsc_gdra_chp		par_gdra_chp;
+    struct bsc_gdra_chr		par_gdra_chr;
+    struct bsc_gdra_stp		par_gdra_stp;
+    struct bsc_gdra_str		par_gdra_str;
+    struct bsc_gget_chc		par_gget_chc;
+    struct bsc_gget_chh		par_gget_chh;
+    struct bsc_gget_chp		par_gget_chp;
+    struct bsc_gget_chw		par_gget_chw;
+    struct bsc_gget_fnt		par_gget_fnt;
+    struct bsc_gget_sth		par_gget_sth;
+    struct bsc_gget_stw		par_gget_stw;
+    struct bsc_gset_chc		par_gset_chc;
+    struct bsc_gset_chp		par_gset_chp;
+    struct bsc_gset_fnt		par_gset_fnt;
+    struct bsc_chg_dmd		par_chg_dmd;
+    struct bsc_cls_dev		par_cls_dev;
+    struct bsc_ctl_dev		par_ctl_dev;
+    struct bsc_dev_sts		par_dev_sts;
+    struct bsc_get_dev		par_get_dev;
+    struct bsc_lst_dev		par_lst_dev;
+    struct bsc_opn_dev		par_opn_dev;
+    struct bsc_rea_dev		par_rea_dev;
+    struct bsc_wri_dev		par_wri_dev;
+    struct bsc_chg_emk		par_chg_emk;
+    struct bsc_chg_pda		par_chg_pda;
+    struct bsc_clr_evt		par_clr_evt;
+    struct bsc_get_etm		par_get_etm;
+    struct bsc_get_evt		par_get_evt;
+    struct bsc_get_kid		par_get_kid;
+    struct bsc_get_kmp		par_get_kmp;
+    struct bsc_get_krm		par_get_krm;
+    struct bsc_get_krp		par_get_krp;
+    struct bsc_get_ktb		par_get_ktb;
+    struct bsc_get_pdp		par_get_pdp;
+    struct bsc_put_evt		par_put_evt;
+    struct bsc_set_krm		par_set_krm;
+    struct bsc_set_krp		par_set_krp;
+    struct bsc_set_ktb		par_set_ktb;
+    struct bsc_set_pdp		par_set_pdp;
+    struct bsc_sig_buz		par_sig_buz;
+    struct bsc_apd_rec		par_apd_rec;
+    struct bsc_att_fls		par_att_fls;
+    struct bsc_chg_fat		par_chg_fat;
+    struct bsc_chg_fls		par_chg_fls;
+    struct bsc_chg_fmd		par_chg_fmd;
+    struct bsc_chg_fnm		par_chg_fnm;
+    struct bsc_chg_ftm		par_chg_ftm;
+    struct bsc_chg_wrk		par_chg_wrk;
+    struct bsc_chk_fil		par_chk_fil;
+    struct bsc_cls_fil		par_cls_fil;
+    struct bsc_cre_fil		par_cre_fil;
+    struct bsc_cre_lnk		par_cre_lnk;
+    struct bsc_del_fil		par_del_fil;
+    struct bsc_del_fls		par_del_fls;
+    struct bsc_del_rec		par_del_rec;
+    struct bsc_fil_sts		par_fil_sts;
+    struct bsc_fls_sts		par_fls_sts;
+    struct bsc_fnd_lnk		par_fnd_lnk;
+    struct bsc_fnd_rec		par_fnd_rec;
+    struct bsc_gen_fil		par_gen_fil;
+    struct bsc_get_dfm		par_get_dfm;
+    struct bsc_get_lnk		par_get_lnk;
+    struct bsc_get_nlk		par_get_nlk;
+    struct bsc_ins_rec		par_ins_rec;
+    struct bsc_lnk_sts		par_lnk_sts;
+    struct bsc_loc_rec		par_loc_rec;
+    struct bsc_lst_fls		par_lst_fls;
+    struct bsc_ofl_sts		par_ofl_sts;
+    struct bsc_opn_fil		par_opn_fil;
+    struct bsc_rea_rec		par_rea_rec;
+    struct bsc_see_rec		par_see_rec;
+    struct bsc_set_dfm		par_set_dfm;
+    struct bsc_syn_fls		par_syn_fls;
+    struct bsc_syn_lnk		par_syn_lnk;
+    struct bsc_trc_rec		par_trc_rec;
+    struct bsc_wri_rec		par_wri_rec;
+    struct bsc_xch_fil		par_xch_fil;
+    struct bsc_apd_mem		par_apd_mem;
+    struct bsc_cre_mpl		par_cre_mpl;
+    struct bsc_del_mpl		par_del_mpl;
+    struct bsc_get_lmb		par_get_lmb;
+    struct bsc_get_ptr		par_get_ptr;
+    struct bsc_get_sma		par_get_sma;
+    struct bsc_get_smb		par_get_smb;
+    struct bsc_get_smi		par_get_smi;
+    struct bsc_lmb_siz		par_lmb_siz;
+    struct bsc_lmb_sts		par_lmb_sts;
+    struct bsc_map_mem		par_map_mem;
+    struct bsc_mpl_sts		par_mpl_sts;
+    struct bsc_rea_smb		par_rea_smb;
+    struct bsc_rel_lmb		par_rel_lmb;
+    struct bsc_rel_ptr		par_rel_ptr;
+    struct bsc_rel_smb		par_rel_smb;
+    struct bsc_rgt_smb		par_rgt_smb;
+    struct bsc_rsz_lmb		par_rsz_lmb;
+    struct bsc_set_sma		par_set_sma;
+    struct bsc_set_smi		par_set_smi;
+    struct bsc_smb_adr		par_smb_adr;
+    struct bsc_smb_key		par_smb_key;
+    struct bsc_smb_sts		par_smb_sts;
+    struct bsc_ump_mem		par_ump_mem;
+    struct bsc_wri_smb		par_wri_smb;
+    struct bsc_can_tmg		par_can_tmg;
+    struct bsc_chg_pri		par_chg_pri;
+    struct bsc_chg_usr		par_chg_usr;
+    struct bsc_clr_msg		par_clr_msg;
+    struct bsc_cre_nam		par_cre_nam;
+    struct bsc_cre_prc		par_cre_prc;
+    struct bsc_cre_sem		par_cre_sem;
+    struct bsc_def_msg		par_def_msg;
+    struct bsc_del_nam		par_del_nam;
+    struct bsc_del_sem		par_del_sem;
+    struct bsc_ext_prc		par_ext_prc;
+    struct bsc_get_inf		par_get_inf;
+    struct bsc_get_nam		par_get_nam;
+    struct bsc_get_usr		par_get_usr;
+    struct bsc_ini_sem		par_ini_sem;
+    struct bsc_loc_prc		par_loc_prc;
+    struct bsc_prc_sts		par_prc_sts;
+    struct bsc_rcr_prc		par_rcr_prc;
+    struct bsc_rcv_msg		par_rcv_msg;
+    struct bsc_req_tmg		par_req_tmg;
+    struct bsc_ret_msg		par_ret_msg;
+    struct bsc_sig_sem		par_sig_sem;
+    struct bsc_snd_msg		par_snd_msg;
+    struct bsc_snr_msg		par_snr_msg;
+    struct bsc_ter_prc		par_ter_prc;
+    struct bsc_wai_prc		par_wai_prc;
+    struct bsc_wai_sem		par_wai_sem;
+    struct bsc_cre_dbg		par_cre_dbg;
+    struct bsc_def_cup		par_def_cup;
+    struct bsc_def_exc		par_def_exc;
+    struct bsc_def_svc		par_def_svc;
+    struct bsc_get_err		par_get_err;
+    struct bsc_get_ver		par_get_ver;
+    struct bsc_lod_spg		par_lod_spg;
+    struct bsc_prc_trc		par_prc_trc;
+    struct bsc_ret_exc		par_ret_exc;
+    struct bsc_unl_spg		par_unl_spg;
+    struct bsc_get_tim		par_get_tim;
+    struct bsc_get_tod		par_get_tod;
+    struct bsc_get_tod		par_get_tod;
+    struct bsc_set_tim		par_set_tim;
+    struct bsc_mchg_atr		par_mchg_atr;
+    struct bsc_mchg_dsp		par_mchg_dsp;
+    struct bsc_mchg_dtm		par_mchg_dtm;
+    struct bsc_mchg_gat		par_mchg_gat;
+    struct bsc_mcre_gmn		par_mcre_gmn;
+    struct bsc_mcre_men		par_mcre_men;
+    struct bsc_mdel_gmn		par_mdel_gmn;
+    struct bsc_mdel_men		par_mdel_men;
+    struct bsc_mfnd_key		par_mfnd_key;
+    struct bsc_mget_itm		par_mget_itm;
+    struct bsc_mopn_gmn		par_mopn_gmn;
+    struct bsc_mopn_men		par_mopn_men;
+    struct bsc_msel_gmn		par_msel_gmn;
+    struct bsc_msel_men		par_msel_men;
+    struct bsc_mset_itm		par_mset_itm;
+    struct bsc_wchg_dck		par_wchg_dck;
+    struct bsc_wchg_dsp		par_wchg_dsp;
+    struct bsc_wchg_ful		par_wchg_ful;
+    struct bsc_wchg_wnd		par_wchg_wnd;
+    struct bsc_wchk_dck		par_wchk_dck;
+    struct bsc_wchk_dsp		par_wchk_dsp;
+    struct bsc_wcls_wnd		par_wcls_wnd;
+    struct bsc_wdef_fep		par_wdef_fep;
+    struct bsc_wend_drg		par_wend_drg;
+    struct bsc_wend_dsp		par_wend_dsp;
+    struct bsc_wera_wnd		par_wera_wnd;
+    struct bsc_wexe_dmn		par_wexe_dmn;
+    struct bsc_wfnd_wnd		par_wfnd_wnd;
+    struct bsc_wget_act		par_wget_act;
+    struct bsc_wget_bar		par_wget_bar;
+    struct bsc_wget_bgp		par_wget_bgp;
+    struct bsc_wget_dat		par_wget_dat;
+    struct bsc_wget_dmn		par_wget_dmn;
+    struct bsc_wget_drg		par_wget_drg;
+    struct bsc_wget_evt		par_wget_evt;
+    struct bsc_wget_gid		par_wget_gid;
+    struct bsc_wget_org		par_wget_org;
+    struct bsc_wget_sts		par_wget_sts;
+    struct bsc_wget_tit		par_wget_tit;
+    struct bsc_wget_wrk		par_wget_wrk;
+    struct bsc_wlst_wnd		par_wlst_wnd;
+    struct bsc_wmov_drg		par_wmov_drg;
+    struct bsc_wmov_wnd		par_wmov_wnd;
+    struct bsc_wopn_iwd		par_wopn_iwd;
+    struct bsc_wopn_pwd		par_wopn_pwd;
+    struct bsc_wpas_evt		par_wpas_evt;
+    struct bsc_wreq_dsp		par_wreq_dsp;
+    struct bsc_wrsp_evt		par_wrsp_evt;
+    struct bsc_wrsz_drg		par_wrsz_drg;
+    struct bsc_wrsz_wnd		par_wrsz_wnd;
+    struct bsc_wscr_wnd		par_wscr_wnd;
+    struct bsc_wset_bgp		par_wset_bgp;
+    struct bsc_wset_dat		par_wset_dat;
+    struct bsc_wset_org		par_wset_org;
+    struct bsc_wset_tit		par_wset_tit;
+    struct bsc_wset_wrk		par_wset_wrk;
+    struct bsc_wsnd_evt		par_wsnd_evt;
+    struct bsc_wsta_drg		par_wsta_drg;
+    struct bsc_wsta_dsp		par_wsta_dsp;
+    struct bsc_wswi_wnd		par_wswi_wnd;
+    struct bsc_wugt_evt		par_wugt_evt;
+    struct bsc_wwai_rsp		par_wwai_rsp;
+  } param;
+};
+
+#endif /*__BTRON_PACKET_H__*/

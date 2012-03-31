@@ -1,0 +1,58 @@
+List of authors
+
+
+このファイルの内容：
+
+このファイルには、B-Free OS 時代から EOTA に至るソースの作者の一覧が書
+いてあります。
+(Linux でいう /usr/src/linux/MAINTAINERS と同様の内容です)
+
+一覧の項目の意味は次のとおり：
+
+	Name: プログラマの名前
+	Mail: Contact 先のメイルアドレス
+	Web:  ソース内容についての Web page の URL
+
+
+
+B-Free OS 時代
+
+Script language interpreter, and other kernel modules.
+Name: 邑中 雅樹
+Mail: monaka@asahi-net.email.ne.jp
+
+Script language interpreter, and other kernel modules.
+Name: 浪花 智英 (Tomohide Naniwa)
+Mail: naniwa@rbt.his.fukui-u.ac.jp
+
+SCSI and other driver
+Name: きしだまさみ (Masami Kishida)
+Mail: kishida0@osk.3web.ne.jp
+
+Sfsboot
+Name: 村田 直哉 (Naoya Murata)
+Mail: imbellis@mbc.nifty.com
+Web: http://homepage1.nifty.com/micro/bfree/bfree.html
+
+Rest
+Name: 内藤 隆一
+Mail: night@tron-net.gr.jp
+
+
+EOTA
+
+Psaux and various debug
+Name: 村田 直哉 (Naoya Murata)
+Mail: imbellis@mbc.nifty.com
+Web: http://homepage1.nifty.com/micro/index.html
+
+Rest
+Name: 浪花 智英 (Tomohide Naniwa)
+Mail: naniwa@rbt.his.fukui-u.ac.jp
+Web: http://rbt.his.fukui-u.ac.jp/~naniwa/comp/OS/
+
+
+SPECIAL THANKS TO:
+Name: 中西 慎 (NAKANISHI Shin)
+Mail: s-nakani@interlink.or.jp
+Web: http://home.interlink.or.jp/~s-nakani/doc/

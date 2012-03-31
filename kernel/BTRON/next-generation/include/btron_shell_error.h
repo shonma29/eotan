@@ -1,0 +1,38 @@
+#ifndef __BTRON_SHELL_ERROR__
+#define __BTRON_SHELL_ERROR__
+
+#define EX_ADR          (-257)
+#define EX_AKEY         (-256)
+#define EX_DATA         (-259)
+#define EX_CKEY         (-260)
+#define EX_DFMT         (-261)
+#define EX_DNUM         (-262)
+#define EX_DRAG         (-263)
+#define EX_EXS          (-264)
+#define EX_FD           (-265)
+#define EX_FONT         (-266)
+#define EX_FTD          (-267)
+#define EX_FTFMT        (-268)
+#define EX_FTID         (-269)
+#define EX_KEY          (-272)
+#define EX_LIMIT        (-273)
+#define EX_MID          (-274)
+#define EX_NAK          (-276)
+#define EX_NOSPC        (-277)
+#define EX_NOEXS        (-278)
+#define EX_PAR          (-279)
+#define EX_PID          (-280)
+#define EX_PNID         (-281)
+#define EX_SAVE         (-282)
+#define EX_SDATA        (-283)
+#define EX_TID          (-284)
+#define EX_NOSPT        (-285)
+#define EX_TRAY         (-286)
+#define EX_WID          (-287)
+#define EX_WND          (-288)
+#define EX_WPRC         (-289)
+#define EX_VID          (-290)
+#define EX_VOBJ         (-291)
+
+#endif /* __BTRON_SHELL_ERROR__ */
+

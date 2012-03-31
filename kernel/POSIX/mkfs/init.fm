@@ -1,0 +1,8 @@
+# init.fm
+(/system/wconsole) daemon
+(/system/ramdisk) daemon
+
+# k106jp
+# (/wbmaker.fm) wd-load
+# (/wd-sut.fm) wd-load
+# kf-load

@@ -1,0 +1,99 @@
+sfsboot
+  	
+初めに
+
+   sfsbootは、sfsのFD１枚、またはIDEーHD１パーティションから,B-FreeOSの
+ 起動を可能にする目的で、B-Freeプロジェクトのboot/以下のコードを元に作成しました。
+
+前準備
+
+   予め、B-FreeはMakeしておき、kernel/POSIX/mkfs/にpathを通しておいてください。
+  sfsbootのmakeには、nasm-0.98が必要です。nasmは、
+
+	http://www.web-sites.co.uk/nasm/ 
+
+  から入手出来ます。
+
+  1. sfsboot.tgzをBーFreeソースのbtron-pc/で展開してください。
+    sfsboot/のディレクトリーができます。
+
+	tar xvzf sfsboot.tgz
+    
+  2. sfsboot/に移動し、makeを実行します。
+
+	cd sfsboot
+	make
+    
+FDからブートする場合
+
+   以下の説明では、FDは/dev/fd0としています。
+
+  1. posix-fsをFDに作成します。
+	
+	mksfs /dev/fd0 2880 512 12
+
+  2. posix-fsに、/system/を作り、2ndbootを書き込みます。
+    
+        statfs /dev/fd0 mkdir /system
+	statfs /dev/fd0 write /system/2ndboot ./2nd/2ndboot
+       
+  4. posix-fsに、kernel/BTRON/make/にあるbtronを書き込みます。
+
+	statfs /dev/fd0 write /system/btron386 ../kernel/BTRON/make/btron
+
+  5. 1stbootを修正します。
+ 
+	./mkmap /dev/fd0 /system/2ndboot | ./mkboot ./1st/1stboot
+
+  6. FDに1stbootを書き込みます。
+
+	dd if=./1st/1stboot of=/dev/fd0 bs=512 count=1
+
+	
+
+IDE-HDからブートする場合
+
+   以下の説明では、/dev/hda2に、B-Freeがインストールされているものとします。
+  BーFreeのハードディスクへのインストールは、nakanishiさんが書かれた、 
+   
+	http://home.interlink.or.jp/~s-nakani/doc/hd_inst.txt
+ 
+  が参考になります。
+
+  1./systemに2ndbootを書き込みます。
+
+	statfs /dev/hda2 write /system/2ndboot ./2nd/2ndboot
+	
+  2.1stbootを修正します。
+	
+	./mkmap /dev/hda2 /system/2ndboot | ./mkhdboot ./1st/1stboot /dev/hda2
+
+  3.ブートレコードに1stbootを書き込みます。
+
+	dd if=./1st/1stboot of=/dev/hda2 bs=512 count=1
+
+  4.lilo等を設定して、B-Freeのインストールされたパーティションからブート出来るようにします。
+
+
+
+B-FreeOSの起動の仕方
+
+   FDからブートする場合は、2ndboot起動後に,
+ 
+     boot fd ドライブ番号(0-1)
+   
+   IDE-HDからブートする場合または、FDから2ndbootを起動して、IDE-HDからブートする場合は、   
+     
+     boot hd ドライブ番号(0-3) パーティション番号(1-4)
+     
+
+注意
+
+     2ndbootは、posix-fs上で、連続したセクターに配置されるとは限りません。そのため、
+    1stbootは、2ndbootの８個までの断片化に対応できるようになっており、mkmapで、
+    sfs上での2ndbootの配置を調べ、mkboot,mkhdbootで、その情報を1stbootに書き込みます。
+    よって、2ndbootが９個以上に断片化してしまっている場合は対応できません。
+
+
+    	
+	
