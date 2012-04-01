@@ -1,6 +1,6 @@
 /*
 
-B-Free Project $B$N@8@.J*$O(B GNU Generic PUBLIC LICENSE $B$K=>$$$^$9!#(B
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -20,7 +20,7 @@ Version 2, June 1991
 
 #include "posix.h"
 
-/* psc_rmeove_f - $B%U%!%$%k$N:o=|(B
+/* psc_rmeove_f - ファイルの削除
  */
 W
 psc_remove_f (struct posix_request *req)
@@ -39,7 +39,7 @@ psc_remove_f (struct posix_request *req)
   pathname = alloca (req->param.par_remove.pathlen);
   if (pathname == NULL)
     {
-      /* $B%a%b%j<hF@%(%i!<(B */
+      /* メモリ取得エラー */
       put_response (req, EP_NOMEM, 0, 0, 0);
       return (FAIL);
     }
@@ -48,7 +48,7 @@ psc_remove_f (struct posix_request *req)
   errno = vget_reg (req->caller, req->param.par_open.path, req->param.par_open.pathlen, pathname);
   if (errno)
     {
-      /* $B%Q%9L>$N%3%T!<%(%i!<(B */
+      /* パス名のコピーエラー */
       if (errno == E_PAR)
 	put_response (req, EP_INVAL, 0, 0, 0);
       else
@@ -90,7 +90,7 @@ psc_remove_f (struct posix_request *req)
 			  &acc);
   if (errno)
     {
-      /* $B%U%!%$%k$,%*!<%W%s$G$-$J$$(B */
+      /* ファイルがオープンできない */
       put_response (req, errno, 0, 0, 0);
       return (FAIL);
     }

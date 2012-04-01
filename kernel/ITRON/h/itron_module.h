@@ -14,13 +14,13 @@ enum module_type
 };
 
 
-/* $BJ#?t$N%b%8%e!<%k$rFI$_9~$`$?$a$N%X%C%@(B
+/* 複数のモジュールを読み込むためのヘッダ
  *
- *	$B%X%C%@$O0J2<$NMWAG$+$i$G$-$F$$$k(B
+ *	ヘッダは以下の要素からできている
  *
- *	1) cookie:	$B%^%8%C%/HV9f(B($B%X%C%@<1JLMQ(B)
- *	2) count:	$B%b%8%e!<%k?t(B
- *	3) module_info:	$B3F%b%8%e!<%k$N>pJs(B
+ *	1) cookie:	マジック番号(ヘッダ識別用)
+ *	2) count:	モジュール数
+ *	3) module_info:	各モジュールの情報
  *	   length
  *	   vaddr
  *	   entry
@@ -28,11 +28,11 @@ enum module_type
  */
 struct module_info
 {
-  int		length;		/* $B%G%#%9%/>e$G$NBg$-$5(B */
-  int		mem_length;	/* $B%a%b%jCf$G$NBg$-$5(B; 
-				   $B%X%C%@$r4^$^$:!"(BBSS $BNN0h$r4^$`(B */
-  unsigned int		vaddr;	/* $B2>A[%"%I%l%9(B	*/
-  unsigned int		paddr;	/* $B<B%"%I%l%9(B	*/
+  int		length;		/* ディスク上での大きさ */
+  int		mem_length;	/* メモリ中での大きさ; 
+				   ヘッダを含まず、BSS 領域を含む */
+  unsigned int		vaddr;	/* 仮想アドレス	*/
+  unsigned int		paddr;	/* 実アドレス	*/
   unsigned int		entry;
   enum module_type	type;
   char		name[MAX_MODULE_NAME];
@@ -49,7 +49,7 @@ struct machine_info
 
 struct boot_header
 {
-  unsigned char		cookie;		/* 0001 $B$K8GDj(B */
+  unsigned char		cookie;		/* 0001 に固定 */
   int			count;
   struct machine_info	machine;
   struct module_info	modules[0];

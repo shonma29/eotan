@@ -4,7 +4,7 @@
 #define FDC_CMD		0x3F0
 #define FDC_STAT	0x3f4
 #define FDC_DATA	0x3f5
-#define FDC_EXTERNAL	0xBE	/* $B30It%l%8%9%?$X$N%"%I%l%9(B */
+#define FDC_EXTERNAL	0xBE	/* 外部レジスタへのアドレス */
 #define FDC_WCNTL	0x3f2
 
 
@@ -47,7 +47,7 @@
 #define HD_SECTOR	18
 #define HD_LENGTH	512             
 #define HD_LENCODE	2               /* 512bytes/sector */
-#define HD_GAP		0x1B		/* HD $B$N>l9g$N(B GAP3 $B$NCM(B */
+#define HD_GAP		0x1B		/* HD の場合の GAP3 の値 */
 #define HD_DTL		0xff
 
 #define DD_TYPE		1

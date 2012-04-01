@@ -204,7 +204,7 @@ posix_mount (W ac, B **av)
 
 /* pdump
  *
- * POSIX $B%^%M!<%8%c$KBP$7$F!"%W%m%;%9$N>pJs$r=PNO$5$;$k!#(B
+ * POSIX マネージャに対して、プロセスの情報を出力させる。
  *
  */
 ER
@@ -258,7 +258,7 @@ posix_dump (W ac, B **av)
 
 /* pvmdump
  *
- * POSIX $B%^%M!<%8%c$KBP$7$F!"%W%m%;%9$N2>A[%a%b%j>pJs$r=PNO$5$;$k!#(B
+ * POSIX マネージャに対して、プロセスの仮想メモリ情報を出力させる。
  *
  */
 ER
@@ -316,7 +316,7 @@ posix_vm_dump (W ac, B **av)
 }
 
 
-/* exec system call $B$N%F%9%H(B 
+/* exec system call のテスト 
  */
 W
 posix_exec_child (B *path)
@@ -349,7 +349,7 @@ posix_exec_test (W ac, B **av)
 }
 
 
-/* fork system call $B$N%F%9%H(B
+/* fork system call のテスト
  *
  */
 W

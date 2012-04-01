@@ -1,6 +1,6 @@
 /*
 
-B-Free Project $B$N@8@.J*$O(B GNU Generic PUBLIC LICENSE $B$K=>$$$^$9!#(B
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -17,7 +17,7 @@ Version 2, June 1991
 
 #include "posix.h"
 
-/* psc_umask_f - umask $B$N@_Dj(B
+/* psc_umask_f - umask の設定
  */
 W
 psc_umask_f (struct posix_request *req)
@@ -26,8 +26,8 @@ psc_umask_f (struct posix_request *req)
   W	old_umask;
 
 
-  /* $B8E$$(B umask $B$NCM$r<h$j=P$9!#(B
-   * ($B%7%9%F%`%3!<%k$NJV$jCM$H$7$F;HMQ$9$k(B)
+  /* 古い umask の値を取り出す。
+   * (システムコールの返り値として使用する)
    */
   errno = proc_get_umask (req->procid, &old_umask);
   if (errno)
@@ -36,7 +36,7 @@ psc_umask_f (struct posix_request *req)
       return (FAIL);
     }
   
-  /* $B?7$7$$(B umask $B$NCM$r@_Dj$9$k(B
+  /* 新しい umask の値を設定する
    */
   errno = proc_set_umask (req->procid, req->param.par_umask.umask);
   if (errno)

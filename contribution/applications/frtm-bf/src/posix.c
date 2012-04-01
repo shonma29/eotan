@@ -79,7 +79,7 @@ void f_dir (void)
 #ifdef notdef
 #define SFS_MAXNAMELEN			14
   struct sfs_dir {
-    unsigned int sfs_d_index;		/* inode $BHV9f(B */
+    unsigned int sfs_d_index;		/* inode 番号 */
     char sfs_d_name[SFS_MAXNAMELEN];
     char pad[2];			/* padding */
   } *sfsp, *buf;

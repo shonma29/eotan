@@ -19,7 +19,7 @@ init_memory (void)
   int *p;
 
 #ifdef USE_BIOS_CALL
-  p = (int*)0x8ff8;          /* init$B$G=q$-9~$^$l$F$$$k(B */
+  p = (int*)0x8ff8;          /* initで書き込まれている */
 
   boot_printf ("Extended Memory = %d k bytes\n",*p / 1024);
 
@@ -29,7 +29,7 @@ init_memory (void)
     {
       *p = 0;
       *p = 0xAA;
-      asm("WBINVD"); /* $B:dK\!w0&CN8)$5$s$K$h$k(B cpu_flush $B%k!<%A%s$+$i(B */
+      asm("WBINVD"); /* 坂本＠愛知県さんによる cpu_flush ルーチンから */
       if (*p != 0xAA)
 	break;
     }

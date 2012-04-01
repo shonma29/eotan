@@ -1,6 +1,6 @@
 /*
 
-B-Free Project $B$N@8@.J*$O(B GNU Generic PUBLIC LICENSE $B$K=>$$$^$9!#(B
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -17,7 +17,7 @@ Version 2, June 1991
 
 #include "posix.h"
 
-/* psc_setgid_f - $B%W%m%;%9$N%0%k!<%W(B ID $B$r@_Dj$9$k(B
+/* psc_setgid_f - プロセスのグループ ID を設定する
  */
 W
 psc_setgid_f (struct posix_request *req)

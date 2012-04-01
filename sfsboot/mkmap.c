@@ -1,14 +1,14 @@
 /*********************************************************************
  * mkmap.c
- *  $B$3$N%W%m%0%i%`$O!"(Bstatfs.c $B$r85$K:n@.$5$l$F$*$j!"(B
- *  sfs$B>e$G$N%U%!%$%k$N%^%C%W$rI8=`=PNO$K=PNO$7$^$9!#(B
+ *  このプログラムは、statfs.c を元に作成されており、
+ *  sfs上でのファイルのマップを標準出力に出力します。
  * 
- * $B=q<0(B :
+ * 書式 :
  *       mkmap device filename 
  *
- * $B=PNO(B :  
- *       $B%V%m%C%/%5%$%:(B
- *       $BO"B3%V%m%C%/?t(B $B3+;O%V%m%C%/(B 
+ * 出力 :  
+ *       ブロックサイズ
+ *       連続ブロック数 開始ブロック 
  *               :         
  *               :
  */
@@ -79,9 +79,9 @@ main(int argc, char** argv)
       exit(1);
   }
   
-  printf("%d\n", sb.sfs_blocksize);                 /* blocksize $B8=:_$O(B512byte */                  
+  printf("%d\n", sb.sfs_blocksize);                 /* blocksize 現在は512byte */                  
   
-  startblock = get_block_num(fd, &sb, &ip, 0);      /* $BO"B3$9$k%V%m%C%/$r%+%&%s%H$9$k(B */
+  startblock = get_block_num(fd, &sb, &ip, 0);      /* 連続するブロックをカウントする */
   count = 0;
   for(block = 0; block < ip.sfs_i_size_blk; block++) {
     blocknum = get_block_num(fd, &sb, &ip, block);
@@ -102,7 +102,7 @@ main(int argc, char** argv)
 }
 
 /*********************************************************************
- * $B%U%!%$%k%7%9%F%`$K4X78$9$k=hM}(B
+ * ファイルシステムに関係する処理
  *
  *
  */ 
@@ -143,7 +143,7 @@ mount_fs (char *path, struct sfs_superblock *sb, struct sfs_inode *root, int mod
 
 
 /*********************************************************************
- * i-node $B$K4X78$7$F$$$k=hM}(B
+ * i-node に関係している処理
  *
  *
  */
@@ -174,7 +174,7 @@ read_inode (int fd, struct sfs_superblock *sb, int ino, struct sfs_inode *ip)
 }
 
 /*********************************************************************
- * directry $B$K4X78$9$k=hM}(B
+ * directry に関係する処理
  *
  *
  */
@@ -196,13 +196,13 @@ read_dir (int fd,
           nentry * sizeof (struct sfs_dir) :
 	  ip->sfs_i_size;
 
-  read_file (fd, sb, ip, 0, size, (B *)dirp);	/* $B%(%i!<%A%'%C%/$,I,MW(B! */
+  read_file (fd, sb, ip, 0, size, (B *)dirp);	/* エラーチェックが必要! */
   return (0);
 }
 
 
 /*********************************************************************
- * file $B$K4X78$7$F$$$k=hM}(B
+ * file に関係している処理
  *
  *
  */
@@ -347,7 +347,7 @@ locallookup_file (int fd,
 }
 
 /*********************************************************************
- * block $B$K4X78$7$F$$$k=hM}(B
+ * block に関係している処理
  *
  *
  */
@@ -376,14 +376,14 @@ get_block_num (int fd,
 {
   if (blockno < SFS_DIRECT_BLOCK_ENTRY)
     {
-      /* $BD>@\%V%m%C%/$NHO0OFb(B
+      /* 直接ブロックの範囲内
        */
       return (ip->sfs_i_direct[blockno]);
     }
   else if (blockno < (SFS_DIRECT_BLOCK_ENTRY 
   		      + (SFS_INDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK)))
     {
-      /* $B0l=E4V@\%V%m%C%/$NHO0OFb(B
+      /* 一重間接ブロックの範囲内
        */
       return (get_indirect_block_num (fd, sb, ip, blockno));
     }
@@ -391,7 +391,7 @@ get_block_num (int fd,
   		      + (SFS_INDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK)
 		      + (SFS_DINDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK * SFS_INDIRECT_BLOCK)))
     {
-      /* $BFs=E4V@\%V%m%C%/$NHO0OFb(B
+      /* 二重間接ブロックの範囲内
        */
       return (get_dindirect_block_num (fd, sb, ip, blockno));
     }

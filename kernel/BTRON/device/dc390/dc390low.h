@@ -1,6 +1,6 @@
 /*
 
-B-Free Project $B$N@8@.J*$O(B GNU Generic PUBLIC LICENSE $B$K=>$$$^$9!#(B
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -22,7 +22,7 @@ kernel/BTRON/device/dc390/dc390low.c,v 1.1 1999/04/26 18:33:32 kishida0 Exp $";
 #define __DC390_H__
 
 
-// $B%l%8%9%?0lMw(B
+// レジスタ一覧
 
 #define CTCREG0  SCSI-REG-BASE +0x00
 #define STCREG0  SCSI-REG-BASE +0x00
@@ -51,7 +51,7 @@ kernel/BTRON/device/dc390/dc390low.c,v 1.1 1999/04/26 18:33:32 kishida0 Exp $";
 
 
 
-// $B$H$j$"$($:%G%P%C%0MQ$K:n$C$F$_$k(B
+// とりあえずデバッグ用に作ってみる
 
 
 

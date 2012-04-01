@@ -1,6 +1,6 @@
 /*
 
-B-Free Project $B$N@8@.J*$O(B GNU Generic PUBLIC LICENSE $B$K=>$$$^$9!#(B
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -21,7 +21,7 @@ Version 2, June 1991
 
 extern int strlen(char *);
 
-/* psc_getcwd_f - $B%W%m%;%9$N%+%l%s%H%G%#%l%/%H%j$N<h$j=P$7(B
+/* psc_getcwd_f - プロセスのカレントディレクトリの取り出し
  */
 W psc_getcwd_f(struct posix_request *req)
 {
@@ -34,12 +34,12 @@ W psc_getcwd_f(struct posix_request *req)
     W errno;
 
 
-    /* $B%W%m%;%9$N8=:_$N%+%l%s%H%G%#%l%/%H%j$r(B
-     * $B<h$j=P$9!#(B
-     * $B%Q%9L>$N7A$G%W%m%0%i%`$KJV$9$,!"(B
-     * POSIX $B%^%M!<%8%cFb$K$O%Q%9L>$N7A$G$O!"(B
-     * $B5-21$7$F$$$J$$(B(inode $B$X$N%]%$%s%?$G5-21$7$F$$$k(B)$B!#(B
-     * $B$=$N$?$a!"(Binode $B$+$i%Q%9L>$r<h$j=P$9$h$&$K$9$k!#(B
+    /* プロセスの現在のカレントディレクトリを
+     * 取り出す。
+     * パス名の形でプログラムに返すが、
+     * POSIX マネージャ内にはパス名の形では、
+     * 記憶していない(inode へのポインタで記憶している)。
+     * そのため、inode からパス名を取り出すようにする。
      */
     errno = proc_get_cwd(req->procid, &cwd);
     if (errno) {
@@ -54,7 +54,7 @@ W psc_getcwd_f(struct posix_request *req)
     }
 #endif
 
-    /* inode $B$+$i%Q%9L>(B($BJ8;zNs(B)$B$X$HJQ49$9$k(B
+    /* inode からパス名(文字列)へと変換する
      */
     errno =
 	fs_convert_path(cwd, tmppath, req->param.par_getcwd.dirnamelen);

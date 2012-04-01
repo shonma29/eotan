@@ -1,6 +1,6 @@
 /*
 
-B-Free Project $B$N@8@.J*$O(B GNU Generic PUBLIC LICENSE $B$K=>$$$^$9!#(B
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -17,8 +17,8 @@ Version 2, June 1991
 
 #include "posix.h"
 
-/* psc_rewinddir_f - $B%G%#%l%/%H%j$NFI$_<h$j$N$?$a$N%+%l%s%H%]%$%s%?$r(B
- *		     $B:G=i$KLa$9!#(B
+/* psc_rewinddir_f - ディレクトリの読み取りのためのカレントポインタを
+ *		     最初に戻す。
  */
 W
 psc_rewinddir_f (struct posix_request *req)
@@ -43,16 +43,16 @@ psc_rewinddir_f (struct posix_request *req)
       return (FAIL);
     }
 
-  /* $BBP>]%U%!%$%k$,%Q%$%W$@$C$?!"%(%i!<$K$9$k(B
+  /* 対象ファイルがパイプだった、エラーにする
    */     
   if (fp->f_flag & F_PIPE)
     {
-      /* $B%Q%$%W$NFI$_=q$-(B */
+      /* パイプの読み書き */
       put_response (req, EP_INVAL, -1, 0, 0);
       return (FAIL);
     }
 
-  /* $BBP>]%U%!%$%k$,%G%#%l%/%H%j$G$O$J$+$C$?$N$G%(%i!<$K$9$k(B
+  /* 対象ファイルがディレクトリではなかったのでエラーにする
    */
   if ((fp->f_inode->i_mode & FS_FMT_DIR) == 0)
     {

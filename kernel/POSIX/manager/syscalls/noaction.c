@@ -1,6 +1,6 @@
 /*
 
-B-Free Project $B$N@8@.J*$O(B GNU Generic PUBLIC LICENSE $B$K=>$$$^$9!#(B
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -22,7 +22,7 @@ Version 2, June 1991
 
 /*
 
-B-Free Project $B$N@8@.J*$O(B GNU Generic PUBLIC LICENSE $B$K=>$$$^$9!#(B
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -54,7 +54,7 @@ psc_noaction_f (struct posix_request *req)
       printk ("0x%x ", p[i]);
     }
 
-  /* $B$H$j$"$($:!"%5%]!<%H$7$F$$$J$$$H$$$&%(%i!<$GJV$9(B
+  /* とりあえず、サポートしていないというエラーで返す
    */
   put_response (req, EP_NOSUP, 0, 0, 0);
 

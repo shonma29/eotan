@@ -1,6 +1,6 @@
 /*
 
-B-Free Project $B$N@8@.J*$O(B GNU Generic PUBLIC LICENSE $B$K=>$$$^$9!#(B
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -21,9 +21,9 @@ W
 psc_pipe_f (struct posix_request *req)
 {
 
-  /* $B$3$3$K<B:]$N=hM}$,F~$k(B */
+  /* ここに実際の処理が入る */
 
-  /* $B$H$j$"$($:!"%5%]!<%H$7$F$$$J$$$H$$$&%(%i!<$GJV$9(B
+  /* とりあえず、サポートしていないというエラーで返す
    */
   put_response (req, EP_NOSUP, 0, 0, 0);
 

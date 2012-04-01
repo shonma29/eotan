@@ -1,10 +1,10 @@
 /*********************************************************************
  * mkboot.c
- *  $B$3$N%W%m%0%i%`$O!"(B1stboot$B$K!"(B $B%G%#%9%/%Q%i%a!<%?!"%^%C%W>pJs$r=q$-9~$_$^$9!#(B
- *  $B8=:_(B,primary$B$N(Bmaster HD$B$+$i$N%V!<%H$K$7$+BP1~$7$F$$$^$;$s!#(B
- *  $B%^%C%W>pJs$OI8=`F~NO$h$jF~NO$7$^$9!#(B
+ *  このプログラムは、1stbootに、 ディスクパラメータ、マップ情報を書き込みます。
+ *  現在,primaryのmaster HDからのブートにしか対応していません。
+ *  マップ情報は標準入力より入力します。
  *
- *  $B=q<0(B : 
+ *  書式 : 
  *         mkboot filename device 
  *     
  */
@@ -45,7 +45,7 @@ main(int argc, char** argv)
     exit(1);
   }
 
-  /* $B%V!<%H%G%#%9%/$N%Q%i%a!<%?(B */
+  /* ブートディスクのパラメータ */
   bootfd = open(argv[2], 0);
   if(ioctl(bootfd, HDIO_GETGEO, &geo) < 0) {
     perror("ioctl");
@@ -58,13 +58,13 @@ main(int argc, char** argv)
   dp.n_sector = geo.sectors;
   dp.start = geo.start;
 
-  /* $B%V%m%C%/%5%$%:(B */
+  /* ブロックサイズ */
   if(scanf("%d", &blocksize) != 1) {
     fprintf(stderr, "cannot read block size.\n");
     exit(1);
   }
 
-  /* $B%^%C%W(B */
+  /* マップ */
   printf("    C   H   S    n\n");
   printf("------------------\n");
 
@@ -74,7 +74,7 @@ main(int argc, char** argv)
     
     start_block = start_block + dp.start;
 
-    /* $B%V%m%C%/%J%s%P!<$+$i!"(BCHS$B$KJQ49$9$k(B */
+    /* ブロックナンバーから、CHSに変換する */
     frg[nfrg].count = count;
     frg[nfrg].cylinder = start_block / (dp.n_sector * dp.n_head);
     frg[nfrg].head = (start_block % (dp.n_sector * dp.n_head)) / dp.n_sector;
@@ -106,16 +106,16 @@ main(int argc, char** argv)
     exit(1);
   }
 
-  /* $B%V!<%H%G%P%$%9(B $B%Q%i%a!<%?(B */
+  /* ブートデバイス パラメータ */
   buff[ADDR_DEV_PARAM] = dp.bootdev;
   buff[ADDR_DEV_PARAM + 1] = dp.n_cylinder & 0x0ff;
   buff[ADDR_DEV_PARAM + 2] = dp.n_cylinder >> 8;
   buff[ADDR_DEV_PARAM + 3] = dp.n_head;
   buff[ADDR_DEV_PARAM + 4] = dp.n_sector;
 
-  /* $B%^%C%W(B */
+  /* マップ */
 
-  for(i = 0; i < MAX_FRAGMENT * 6; i++)     /* $B%^%C%W$N%/%j%"(B  */
+  for(i = 0; i < MAX_FRAGMENT * 6; i++)     /* マップのクリア  */
     buff[ADDR_MAP + i] = 0x00;
 
   for(i =  0; i < nfrg; i++) {
