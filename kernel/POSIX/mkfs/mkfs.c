@@ -1,6 +1,6 @@
 /*
 
-   B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+   B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
    GNU GENERAL PUBLIC LICENSE
    Version 2, June 1991
@@ -32,24 +32,24 @@
  * MAJOR FIXcvs commit -m 'MAJOR FIX!!! There are so many changes, modifys, fixes. Sorry but I can't remember all of those. For example, all the manager and driver programmer have got power to access all ITRON systemcall. (My works is just making access route to ITRON. I don't know what happens in the nuclus.'! There are so many changes, modifys, fixes. Sorry but I can't remember all of those. For example, all the manager and driver programmer have got power to access all ITRON systemcall. (My works is just making access route to ITRON. I don't know what happens in the nuclus.
  *
  * Revision 1.6  1997/09/09 13:51:20  night
- * MAX_MODULE_NAME ¥Ş¥¯¥í¤ÎÄêµÁ¤òÄÉ²Ã¡£
+ * MAX_MODULE_NAME ãƒã‚¯ãƒ­ã®å®šç¾©ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.5  1996/11/14 13:19:07  night
- * root ¤ª¤è¤Ó lost+found ¥Ç¥£¥ì¥¯¥È¥ê¤ÎÊ¬¤Î¥Ö¥í¥Ã¥¯¿ô¤ò¥Õ¥ê¡¼¥Ö¥í¥Ã¥¯¿ô
- * ¤«¤é¸º¤é¤·¤Æ¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥à¤òºîÀ®¤¹¤ë¤è¤¦¤ËÊÑ¹¹¡£
+ * root ãŠã‚ˆã³ lost+found ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®åˆ†ã®ãƒ–ãƒ­ãƒƒã‚¯æ•°ã‚’ãƒ•ãƒªãƒ¼ãƒ–ãƒ­ãƒƒã‚¯æ•°
+ * ã‹ã‚‰æ¸›ã‚‰ã—ã¦ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ ã‚’ä½œæˆã™ã‚‹ã‚ˆã†ã«å¤‰æ›´ã€‚
  *
  * Revision 1.4  1996/11/13  12:54:19  night
- * ºîÀ®¤¹¤ë¥Ç¥£¥ì¥¯¥È¥ê¤Î¥Ñ¡¼¥ß¥Ã¥·¥ç¥ó¤ÎÊÑ¹¹¡£
+ * ä½œæˆã™ã‚‹ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®ãƒ‘ãƒ¼ãƒŸãƒƒã‚·ãƒ§ãƒ³ã®å¤‰æ›´ã€‚
  *
  * Revision 1.3  1996/11/11  13:38:18  night
- * ¥ë¡¼¥É¥Ç¥£¥ì¥¯¥È¥ê¤ÎÆâÍÆ¤ò°ìÉôÊÑ¹¹¡£
- * ('lost+found' ¥Ç¥£¥ì¥¯¥È¥ê¤òÄÉ²Ã)
+ * ãƒ«ãƒ¼ãƒ‰ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®å†…å®¹ã‚’ä¸€éƒ¨å¤‰æ›´ã€‚
+ * ('lost+found' ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’è¿½åŠ )
  *
  * Revision 1.2  1996/11/10  11:56:48  night
- * mkfs ¤¹¤ë¤È¤­¤Ë¥Ö¡¼¥È¥Ö¥í¥Ã¥¯¤ÎÊ¬¤ò¹ÍÎ¸¤¹¤ë¤è¤¦¤Ë¤·¤¿¡£
+ * mkfs ã™ã‚‹ã¨ãã«ãƒ–ãƒ¼ãƒˆãƒ–ãƒ­ãƒƒã‚¯ã®åˆ†ã‚’è€ƒæ…®ã™ã‚‹ã‚ˆã†ã«ã—ãŸã€‚
  *
  * Revision 1.1  1996/11/08  11:07:09  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  */
@@ -204,7 +204,7 @@ void write_superblock(int formatfd)
 		  2);
     superblock.sfs_bitmapsize = bitmap_block;
     superblock.sfs_ninode = inodecount;
-    superblock.sfs_freeinode = inodecount - 2;	/* root ¥Ç¥£¥ì¥¯¥È¥ê¤ÎÊ¬ */
+    superblock.sfs_freeinode = inodecount - 2;	/* root ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®åˆ† */
     superblock.sfs_datablock =
 	(boot_block + super_block + bitmap_block + inode_block);
     superblock.sfs_isearch = 2;

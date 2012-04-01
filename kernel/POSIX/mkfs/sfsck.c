@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -225,7 +225,7 @@ int main(int argc, char *argv[])
 	}
     }
 
-    /* File System ¤¬ÉÔÀ°¹ç¤À¤Ã¤¿¾ì¹ç¡¤¥ê¥«¥Ğ¥ê¡¼½èÍı¤ò¤É¤¦¤¹¤ë¤«¡© */
+    /* File System ãŒä¸æ•´åˆã ã£ãŸå ´åˆï¼Œãƒªã‚«ãƒãƒªãƒ¼å‡¦ç†ã‚’ã©ã†ã™ã‚‹ã‹ï¼Ÿ */
 
     printf("\nFile system seems to be consistent.\n");
     free(inode);
@@ -343,7 +343,7 @@ void scan_block(int fd, struct sfs_superblock *sb, struct sfs_inode *ip)
 	}
 	bitmap_used[index]++;
     }
-    /* 1 ½Å´ÖÀÜ¥Ö¥í¥Ã¥¯¤Î½èÍı */
+    /* 1 é‡é–“æ¥ãƒ–ãƒ­ãƒƒã‚¯ã®å‡¦ç† */
     for (i = 0; i < SFS_INDIRECT_BLOCK_ENTRY; ++i) {
 	if (ip->sfs_i_indirect[i] > 0) {
 	    if (ip->sfs_i_indirect[i] < sb->sfs_datablock) {
@@ -353,7 +353,7 @@ void scan_block(int fd, struct sfs_superblock *sb, struct sfs_inode *ip)
 	    bitmap_used[ip->sfs_i_indirect[i]]++;
 	}
     }
-    /* 2 ½Å´ÖÀÜ¥Ö¥í¥Ã¥¯¤Î½èÍı */
+    /* 2 é‡é–“æ¥ãƒ–ãƒ­ãƒƒã‚¯ã®å‡¦ç† */
     for (i = 0; i < SFS_DINDIRECT_BLOCK_ENTRY; ++i) {
 	if (ip->sfs_i_dindirect[i] > 0) {
 	    read_block(fd, ip->sfs_i_dindirect[i],
@@ -443,7 +443,7 @@ read_dir(int fd,
     size = (nentry * sizeof(struct sfs_dir) <= ip->sfs_i_size) ?
 	nentry * sizeof(struct sfs_dir) : ip->sfs_i_size;
 
-    read_file(fd, sb, ip, 0, size, (B *) dirp);	/* ¥¨¥é¡¼¥Á¥§¥Ã¥¯¤¬É¬Í×! */
+    read_file(fd, sb, ip, 0, size, (B *) dirp);	/* ã‚¨ãƒ©ãƒ¼ãƒã‚§ãƒƒã‚¯ãŒå¿…è¦! */
     return (0);
 }
 
@@ -501,7 +501,7 @@ get_block_num(int fd,
 	      struct sfs_superblock *sb, struct sfs_inode *ip, int blockno)
 {
     if (blockno < SFS_DIRECT_BLOCK_ENTRY) {
-	/* Ä¾ÀÜ¥Ö¥í¥Ã¥¯¤ÎÈÏ°ÏÆâ
+	/* ç›´æ¥ãƒ–ãƒ­ãƒƒã‚¯ã®ç¯„å›²å†…
 	 */
 	return (ip->sfs_i_direct[blockno]);
     }
@@ -509,7 +509,7 @@ get_block_num(int fd,
 			    +
 			    (SFS_INDIRECT_BLOCK_ENTRY *
 			     SFS_INDIRECT_BLOCK))) {
-	/* °ì½Å´ÖÀÜ¥Ö¥í¥Ã¥¯¤ÎÈÏ°ÏÆâ
+	/* ä¸€é‡é–“æ¥ãƒ–ãƒ­ãƒƒã‚¯ã®ç¯„å›²å†…
 	 */
 	return (get_indirect_block_num(fd, sb, ip, blockno));
     }
@@ -519,7 +519,7 @@ get_block_num(int fd,
 			     SFS_INDIRECT_BLOCK) +
 			    (SFS_DINDIRECT_BLOCK_ENTRY *
 			     SFS_INDIRECT_BLOCK * SFS_INDIRECT_BLOCK))) {
-	/* Æó½Å´ÖÀÜ¥Ö¥í¥Ã¥¯¤ÎÈÏ°ÏÆâ
+	/* äºŒé‡é–“æ¥ãƒ–ãƒ­ãƒƒã‚¯ã®ç¯„å›²å†…
 	 */
 	return (get_dindirect_block_num(fd, sb, ip, blockno));
     }
