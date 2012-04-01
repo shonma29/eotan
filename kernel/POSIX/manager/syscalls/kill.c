@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -30,7 +30,7 @@ W psc_kill_f(struct posix_request *req)
     ER errno;
     struct lowlib_data lowlib_data;
 
-    /* req->caller �� task 1 �ξ��ϡ��ֻ��Υ�å�����������ʤ� */
+    /* req->caller が task 1 の場合は，返事のメッセージを送らない */
 
     mypid = req->param.par_kill.pid;
     errno = proc_get_procp(mypid, &myprocp);
@@ -40,7 +40,7 @@ W psc_kill_f(struct posix_request *req)
 	    put_response(req, EP_SRCH, 0, 0, 0);
 	}
     }
-    myprocp->proc_exst = (-1);	/* ������λ���Υ��ơ������� (-1) ���ɤ���? */
+    myprocp->proc_exst = (-1);	/* 強制終了時のステータスは (-1) で良いか? */
 
     errno = proc_get_procp(myprocp->proc_ppid, &procp);
     if (errno) {
@@ -52,41 +52,41 @@ W psc_kill_f(struct posix_request *req)
     wpid = procp->proc_wpid;
     if (procp->proc_status == PS_WAIT &&
 	(wpid == -1 || wpid == mypid || -wpid == myprocp->proc_pgid)) {
-	/* �ƥץ���������ʬ�� WAIT ���Ƥ���Х�å��������� */
+	/* 親プロセスが自分を WAIT していればメッセージ送信 */
 	procp->proc_status = PS_RUN;
 	preq.receive_port = procp->proc_rvpt;
 	preq.operation = PSC_WAITPID;
 	exst = (myprocp->proc_exst << 8);
 	put_response(&preq, EP_OK, mypid, exst, 0);
 
-	/* ����ȥ꡼�γ��� */
+	/* エントリーの開放 */
 	proc_exit(mypid);
     } else {
-	/* �����Ǥʤ���С�ZOMBIE ���֤� */
+	/* そうでなければ，ZOMBIE 状態に */
 	myprocp->proc_status = PS_ZOMBIE;
     }
 
-    /* �ҥץ������οƤ� INIT ���ѹ� */
+    /* 子プロセスの親を INIT に変更 */
     for (i = 1; i < MAX_PROCESS; ++i) {
 	proc_get_procp(i, &procp);
 	if (procp->proc_status == PS_DORMANT)
 	    continue;
 	if (procp->proc_ppid != mypid)
 	    continue;
-	procp->proc_ppid = 0;	/* INIT �ץ������� pid �� 0 */
+	procp->proc_ppid = 0;	/* INIT プロセスの pid は 0 */
 
-	/* �ҥץ������� ZOMBIE �� INIT �� wait ���Ƥ���� ���ꥢ����? */
+	/* 子プロセスが ZOMBIE で INIT が wait していれば クリアする? */
     }
 
-    /* POSIX �� vmtree �Τߤ��������ۥ��꡼�� del_tsk �ǳ��� */
+    /* POSIX の vmtree のみを開放．仮想メモリーは del_tsk で開放 */
     destroy_proc_memory(myprocp, 0);
 
-    /* �ᥤ�󥿥����� mbf �γ��� */
+    /* メインタスクの mbf の開放 */
     errno = vget_reg(myprocp->proc_maintask, LOWLIB_DATA,
 		     sizeof(struct lowlib_data), &lowlib_data);
     del_mbf(lowlib_data.recv_port);
 
-    /* �ᥤ�󥿥����ζ�����λ */
+    /* メインタスクの強制終了 */
     ter_tsk(myprocp->proc_maintask);
     del_tsk(myprocp->proc_maintask);
 

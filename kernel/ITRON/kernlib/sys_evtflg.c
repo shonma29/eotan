@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -20,22 +20,22 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
  * Port-manager and libkernel.a is moved to ITRON. I guess it is reasonable. At least they should not be in BTRON/.
  *
  * Revision 1.2  1996/07/23 17:17:07  night
- * IBM PC мя╓н make ╢д╤╜╓к merge
+ * IBM PC Г■╗Ц│╝ make Г▓╟Е╒┐Ц│╚ merge
  *
  * Revision 1.1  1996/07/22  23:52:06  night
- * ╨г╫И╓непо©
+ * Ф°─Е┬²Ц│╝Г≥╩И▄╡
  *
  * Revision 1.2  1995/09/21  15:51:43  night
- * ╔╫║╪╔╧╔у╔║╔╓╔К╓нюХф╛╓к Copyright notice ╬ПйС╓Рди╡ц║ё
+ * Ц┌╫Ц┐╪Ц┌╧Ц┐∙Ц┌║Ц┌╓Ц┐╚Ц│╝Е┘┬И═╜Ц│╚ Copyright notice Ф┐┘Е═╠Ц┌▓Х©╫Е┼═Ц─┌
  *
  * Revision 1.1  1995/09/19  18:07:38  night
- * ╨г╫И╓непо©
+ * Ф°─Е┬²Ц│╝Г≥╩И▄╡
  *
  *
  */
 
 /*
- * ╔╓╔ы╔С╔х╔у╔И╔╟╢ь╥╦╓н╔╥╔╧╔ф╔Ю╔Ё║╪╔К╔╓╔С╔©╔у╔╖║╪╔╧╢ь©Т
+ * Ц┌╓Ц┐≥Ц┐ЁЦ┐┬Ц┐∙Ц┐╘Ц┌╟И√╒Д©┌Ц│╝Ц┌╥Ц┌╧Ц┐├Ц┐═Ц┌ЁЦ┐╪Ц┐╚Ц┌╓Ц┐ЁЦ┌©Ц┐∙Ц┌╖Ц┐╪Ц┌╧И√╒Ф∙╟
  */
 
 #include "../ITRON/h/types.h"

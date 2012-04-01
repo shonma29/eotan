@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -31,19 +31,19 @@ Version 2, June 1991
  * *** empty log message ***
  *
  * Revision 1.4  1996/07/08 14:51:21  night
- * FD ¤Î¥Ö¥í¥Ã¥¯¥µ¥¤¥º¤ò 512 ¥Ğ¥¤¥È¤«¤é 1024 ¥Ğ¥¤¥È¤ËÊÑ¹¹
+ * FD ã®ãƒ–ãƒ­ãƒƒã‚¯ã‚µã‚¤ã‚ºã‚’ 512 ãƒã‚¤ãƒˆã‹ã‚‰ 1024 ãƒã‚¤ãƒˆã«å¤‰æ›´
  *
  * Revision 1.3  1996/07/06  13:09:14  night
- * Floppy disk ´ØÏ¢¤ÎÄêµÁ¤ò PC ¸ß´¹µ¡ÍÑ¤ËÊÑ¹¹
+ * Floppy disk é–¢é€£ã®å®šç¾©ã‚’ PC äº’æ›æ©Ÿç”¨ã«å¤‰æ›´
  *
  * Revision 1.2  1996/06/11  16:41:15  night
- * FD ¤Î¥Ï¡¼¥É¥¦¥§¥¢¤Ë´Ø·¸¤·¤¿Äê¿ô¤ò IBM-PC ¤Ë¹ç¤ï¤»ÊÑ¹¹¤·¤¿¡£
+ * FD ã®ãƒãƒ¼ãƒ‰ã‚¦ã‚§ã‚¢ã«é–¢ä¿‚ã—ãŸå®šæ•°ã‚’ IBM-PC ã«åˆã‚ã›å¤‰æ›´ã—ãŸã€‚
  *
  * Revision 1.1  1996/05/11  10:45:02  night
- * 2nd boot (IBM-PC ÈÇ B-FREE OS) ¤Î¥½¡¼¥¹¡£
+ * 2nd boot (IBM-PC ç‰ˆ B-FREE OS) ã®ã‚½ãƒ¼ã‚¹ã€‚
  *
  * Revision 1.3  1995/09/21 15:50:38  night
- * ¥½¡¼¥¹¥Õ¥¡¥¤¥ë¤ÎÀèÆ¬¤Ë Copyright notice ¾ğÊó¤òÄÉ²Ã¡£
+ * ã‚½ãƒ¼ã‚¹ãƒ•ã‚¡ã‚¤ãƒ«ã®å…ˆé ­ã« Copyright notice æƒ…å ±ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.2  1994/07/05  17:19:23  night
  * Change FD format; 512bytes/block.
@@ -60,7 +60,7 @@ Version 2, June 1991
 #define FDC_CMD		0x3F0
 #define FDC_STAT	0x3f4
 #define FDC_DATA	0x3f5
-#define FDC_EXTERNAL	0xBE	/* ³°Éô¥ì¥¸¥¹¥¿¤Ø¤Î¥¢¥É¥ì¥¹ */
+#define FDC_EXTERNAL	0xBE	/* å¤–éƒ¨ãƒ¬ã‚¸ã‚¹ã‚¿ã¸ã®ã‚¢ãƒ‰ãƒ¬ã‚¹ */
 #define FDC_WCNTL	0x3f2
 
 
@@ -104,9 +104,9 @@ Version 2, June 1991
 #define HD_LENGTH	1024
 #define HD_LENCODE	2
 #ifdef notdef
-#define HD_GAP		0x2A		/* HD ¤Î¾ì¹ç¤Î GAP3 ¤ÎÃÍ */
+#define HD_GAP		0x2A		/* HD ã®å ´åˆã® GAP3 ã®å€¤ */
 #else
-#define HD_GAP		0x1B		/* HD ¤Î¾ì¹ç¤Î GAP3 ¤ÎÃÍ */
+#define HD_GAP		0x1B		/* HD ã®å ´åˆã® GAP3 ã®å€¤ */
 #endif
 #define HD_DTL		0xff
 
@@ -119,7 +119,7 @@ Version 2, June 1991
 #define HD_SECTOR	8
 #define HD_LENGTH	1024
 #define HD_LENCODE	3
-#define HD_GAP		0x35		/* HD ¤Î¾ì¹ç¤Î GAP3 ¤ÎÃÍ */
+#define HD_GAP		0x35		/* HD ã®å ´åˆã® GAP3 ã®å€¤ */
 #define HD_DTL		0xff
 
 #else	/* 2HC */
@@ -130,7 +130,7 @@ Version 2, June 1991
 #define HD_SECTOR	15
 #define HD_LENGTH	512
 #define HD_LENCODE	2
-#define HD_GAP		0x1B		/* HC ¤Î¾ì¹ç¤Î GAP3 ¤ÎÃÍ */
+#define HD_GAP		0x1B		/* HC ã®å ´åˆã® GAP3 ã®å€¤ */
 #define HD_DTL		0xff
 
 #endif

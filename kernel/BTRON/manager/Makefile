@@ -7,16 +7,16 @@
 # $B%3%s%Q%$%i%*%W%7%g%s$,$*$+$7$$$N$rD>$7$?(B
 #
 # Revision 1.2  1996/10/29 16:19:56  night
-# е╣е┐б╝е╚еве├е╫еыб╝е┴еє═╤д╬е╒ебедеыдЄ─╔▓├ (crt0.s)
+# уВ╣уВ┐уГ╝уГИуВвуГГуГЧуГлуГ╝уГБуГ│чФиуБоуГХуВбуВдуГлуВТш┐╜хКа (crt0.s)
 #
 # Revision 1.1  1996/10/29  15:48:08  night
-# ║╟╜щд╬┼╨╧┐
+# цЬАхИЭуБочЩ╗щМ▓
 #
 #
 #
 
 #
-# make е▐епеэд╬─ъ╡┴
+# make уГЮуВпуГнуБохоЪч╛й
 #
 CPP=/lib/cpp
 #CFLAGS= -b i486-linuxaout -I. -I../../ITRON -I../../kernlib -fno-builtin $(IDENT)
@@ -36,7 +36,7 @@ LIBS=../kernlib/libkernel.a FM/libfm.a PM/libpm.a MM/libmm.a
 LD=/usr/local/bin/ld
 
 #
-# е│еєе╤едеыеыб╝еыд╬─ъ╡┴
+# уВ│уГ│уГСуВдуГлуГлуГ╝уГлуБохоЪч╛й
 #
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -45,7 +45,7 @@ LD=/usr/local/bin/ld
 	$(CPP) $(ASFLAGS) $*.s | $(AS) -o $*.o
 
 #
-# └╕└о╩к
+# чФЯцИРчЙй
 # 
 DIR=FM PM MM
 LIBS=FM/libfm.a PM/libpm.a MM/libmm.a ../kernlib/libkernel.a
@@ -59,7 +59,7 @@ manager: $(START) $(OBJS) $(LIBS)
 	$(LD) -z -o itron.image -e ${ENTRY} -Ttext $(STARTADDR) $(START) $(OBJS) $(LIBS) 
 
 #
-# │╞е▐е═б╝е╕еуд╬║ю└о
+# хРДуГЮуГНуГ╝уВ╕уГгуБоф╜ЬцИР
 #
 FM/libfm.a:
 	(cd FM; make libfm.a)
@@ -72,7 +72,7 @@ MM/libmm.a:
 
 
 #
-# еседеєе╞е╩еєе╣═╤д╬╞░║юд╬─ъ╡┴
+# уГбуВдуГ│уГЖуГКуГ│уВ╣чФиуБохЛХф╜ЬуБохоЪч╛й
 #
 clean:
 	rm -f $(OBJS) $(START)

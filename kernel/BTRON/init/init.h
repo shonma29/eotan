@@ -1,6 +1,6 @@
 /*
 
-B-Free Project д╬└╕└о╩кд╧ GNU Generic PUBLIC LICENSE д╦╜╛ддд▐д╣бг
+B-Free Project уБочФЯцИРчЙйуБп GNU Generic PUBLIC LICENSE уБлх╛УуБДуБ╛уБЩуАВ
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -45,7 +45,7 @@ Version 2, June 1991
 
 
 /*
- * SCSI е╟е╨еде╣д╬ ID 2бве╤б╝е╞еге╖ечеє 1 дЄ root д╦д╣ды
+ * SCSI уГЗуГРуВдуВ╣уБо ID 2уАБуГСуГ╝уГЖуВгуВ╖уГзуГ│ 1 уВТ root уБлуБЩуВЛ
  */
 #define ROOT_DEV	"driver.scsi"
 #define ROOT_PART	((0x2 << 7) | 1)
@@ -77,7 +77,7 @@ extern FILE	__file_table__[];
 
 
 extern ID	console;
-extern ID	dev_recv;	/* е╟е╨еде╣е╔ещеде╨длдщд╬╩╓┼·═╤ */
+extern ID	dev_recv;	/* уГЗуГРуВдуВ╣уГЙуГйуВдуГРуБЛуВЙуБош┐ФчнФчФи */
 
 extern void init_device(void);
 extern ER open_device(B * dev_name, ID * id, W * dev_desc);

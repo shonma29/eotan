@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -17,19 +17,19 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
  * minor fix
  *
  * Revision 1.2  1999/12/18 15:55:02  kishida0
- * ¥Ş¥¤¥Ê¡¼¤Ê½¤Àµ
+ * ãƒã‚¤ãƒŠãƒ¼ãªä¿®æ­£
  *
  * Revision 1.1  1999/04/18 17:48:33  monaka
  * Port-manager and libkernel.a is moved to ITRON. I guess it is reasonable. At least they should not be in BTRON/.
  *
  * Revision 1.1  1996/07/22 23:52:05  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  * Revision 1.2  1995/09/21  15:51:41  night
- * ¥½¡¼¥¹¥Õ¥¡¥¤¥ë¤ÎÀèÆ¬¤Ë Copyright notice ¾ğÊó¤òÄÉ²Ã¡£
+ * ã‚½ãƒ¼ã‚¹ãƒ•ã‚¡ã‚¤ãƒ«ã®å…ˆé ­ã« Copyright notice æƒ…å ±ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.1  1995/09/19  18:07:38  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  */
@@ -42,7 +42,7 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 
 
 /*
- * Å¬Åö¤Ê ID ¤ò¤â¤Ä¥á¥Ã¥»¡¼¥¸¥Ğ¥Ã¥Õ¥¡¤òºîÀ®¤¹¤ë¡£
+ * é©å½“ãª ID ã‚’ã‚‚ã¤ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒãƒƒãƒ•ã‚¡ã‚’ä½œæˆã™ã‚‹ã€‚
  */
 ID
 get_flag (ATR atr, UINT pattern)

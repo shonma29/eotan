@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -23,7 +23,7 @@ static char rcs[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/
 UW	initilized = 0;
 
 
-/* PCMCIA ¥¢¥À¥×¥¿¤¬Â¸ºß¤·¤Æ¤¤¤ë¤«¤É¤¦¤«¤ò¥Á¥§¥Ã¥¯¤¹¤ë
+/* PCMCIA ã‚¢ãƒ€ãƒ—ã‚¿ãŒå­˜åœ¨ã—ã¦ã„ã‚‹ã‹ã©ã†ã‹ã‚’ãƒã‚§ãƒƒã‚¯ã™ã‚‹
  */
 ER
 probe (struct device *dev)
@@ -52,7 +52,7 @@ UB   rreg(UW ind, UB data)
  * for debug
  *
  * Revision 1.2  1999/05/13 16:24:01  kishida0
- * ¥Ç¥Ğ¥Ã¥°ÍÑ¤Ë¥³¡¼¥ÉÄÉ²Ã¡¢ÆÃ¤ËÂç¤­¤ÊÊÑ¹¹¤Ç¤Ï¤Ê¤¤
+ * ãƒ‡ãƒãƒƒã‚°ç”¨ã«ã‚³ãƒ¼ãƒ‰è¿½åŠ ã€ç‰¹ã«å¤§ããªå¤‰æ›´ã§ã¯ãªã„
  *
  * Revision 1.1  1999/04/21 17:56:28  kishida0
  * for debug

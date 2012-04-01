@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -37,32 +37,32 @@ static char rcs[] =
  * Port-manager and libkernel.a is moved to ITRON. I guess it is reasonable. At least they should not be in BTRON/.
  *
  * Revision 1.5  1998/02/25 12:33:20  night
- * vmap_reg () ¤Î°ú¿ô¤Î¿ô¤¬¤Ò¤È¤ÄÁı¤¨¤¿¤³¤È¤Ë¤è¤ëÊÑ¹¹¡£
+ * vmap_reg () ã®å¼•æ•°ã®æ•°ãŒã²ã¨ã¤å¢—ãˆãŸã“ã¨ã«ã‚ˆã‚‹å¤‰æ›´ã€‚
  *
  * Revision 1.4  1997/10/24 14:03:53  night
- * init_malloc ¤Ë°ú¿ôÄÉ²Ã¡£
+ * init_malloc ã«å¼•æ•°è¿½åŠ ã€‚
  *
  * Revision 1.3  1997/09/02 14:40:54  night
- * printf ¤ò¸Æ¤Ó½Ğ¤µ¤Ê¤¤¤è¤¦¤Ë¤·¤¿¡£
- * (¥×¥í¥°¥é¥à¤Ë¤è¤Ã¤Æ¤Ï¡¢printf ¤ò¥µ¥İ¡¼¥È¤·¤Ê¤¤¤¿¤á)
+ * printf ã‚’å‘¼ã³å‡ºã•ãªã„ã‚ˆã†ã«ã—ãŸã€‚
+ * (ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã«ã‚ˆã£ã¦ã¯ã€printf ã‚’ã‚µãƒãƒ¼ãƒˆã—ãªã„ãŸã‚)
  *
  * Revision 1.2  1997/08/31 14:09:42  night
- * malloc ´Ø·¸¤Î½èÍı¤òÀµ¾ï¤ËÆ°¤¯¤è¤¦¤Ë¤·¤¿¡£
+ * malloc é–¢ä¿‚ã®å‡¦ç†ã‚’æ­£å¸¸ã«å‹•ãã‚ˆã†ã«ã—ãŸã€‚
  *
  * Revision 1.1  1997/07/06 13:09:43  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  * Revision 1.5  1997/07/02 13:10:32  night
- * malloc ¤Î½¤Àµ¡£
+ * malloc ã®ä¿®æ­£ã€‚
  *
  * Revision 1.4  1997/06/29 15:44:32  night
- * ¥³¥á¥ó¥È¤ÎÊÑ¹¹
+ * ã‚³ãƒ¡ãƒ³ãƒˆã®å¤‰æ›´
  *
- * ¡¦´Á»ú¥³¡¼¥É¤ò SJIS ¤«¤é EUC ¤ËÊÑ¹¹¤·¤¿¡£
- * ¡¦RCS ¤Î Log ¥Ş¥¯¥íÆş¤ê¤Î¥³¥á¥ó¥È¤òÄÉ²Ã¤·¤¿(¤Ş¤ÀÆş¤ì¤Æ¤¤¤Ê¤«¤Ã¤¿¥Õ¥¡¥¤¥ë¤Î¤ß)¡£
+ * ãƒ»æ¼¢å­—ã‚³ãƒ¼ãƒ‰ã‚’ SJIS ã‹ã‚‰ EUC ã«å¤‰æ›´ã—ãŸã€‚
+ * ãƒ»RCS ã® Log ãƒã‚¯ãƒ­å…¥ã‚Šã®ã‚³ãƒ¡ãƒ³ãƒˆã‚’è¿½åŠ ã—ãŸ(ã¾ã å…¥ã‚Œã¦ã„ãªã‹ã£ãŸãƒ•ã‚¡ã‚¤ãƒ«ã®ã¿)ã€‚
  *
  * Revision 1.3  1997/06/29 15:33:56  night
- * ¥³¥á¥ó¥È¤Î½¤Àµ (rcs ¤Î Log ¥Ş¥¯¥í¤ÎÄÉ²Ã)
+ * ã‚³ãƒ¡ãƒ³ãƒˆã®ä¿®æ­£ (rcs ã® Log ãƒã‚¯ãƒ­ã®è¿½åŠ )
  *
  *
  */
@@ -84,7 +84,7 @@ UW last_page, start_page;
 struct alloc_entry_t {
     struct alloc_entry_t *next;
     struct alloc_entry_t *before;
-    UW size;			/* alloc_data ¤Î¥µ¥¤¥º¤¬Æş¤ë */
+    UW size;			/* alloc_data ã®ã‚µã‚¤ã‚ºãŒå…¥ã‚‹ */
     B alloc_data[0];
 };
 
@@ -96,7 +96,7 @@ static struct alloc_entry_t *pivot;
 static VP get_system_memory(UW size);
 
 
-/* malloc µ¡¹½¤Î½é´ü²½
+/* malloc æ©Ÿæ§‹ã®åˆæœŸåŒ–
  *
  */
 ER init_malloc(UW free_memory_erea)
@@ -204,7 +204,7 @@ VP malloc(UW size)
 	p = p->next;
     } while (p != pivot);
 
-    /* Í×µá¤òËş¤¿¤¹¶õ¤­¥¨¥ê¥¢¤¬Ìµ¤«¤Ã¤¿¤Î¤Ç¡¤¿·¤¿¤Ë¥á¥â¥ê¤ò³ä¤êÅö¤Æ¤ë */
+    /* è¦æ±‚ã‚’æº€ãŸã™ç©ºãã‚¨ãƒªã‚¢ãŒç„¡ã‹ã£ãŸã®ã§ï¼Œæ–°ãŸã«ãƒ¡ãƒ¢ãƒªã‚’å‰²ã‚Šå½“ã¦ã‚‹ */
     alloc_size = ROUNDUP(size + sizeof(struct alloc_entry_t), PAGE_SIZE);
     alloc_size = (MEMORY_CLICK < alloc_size) ? alloc_size : MEMORY_CLICK;
 
@@ -244,14 +244,14 @@ void free(VP addr)
 				  sizeof(struct alloc_entry_t));
     if ((newentry > (struct alloc_entry_t *) last_page)
 	|| (newentry < (struct alloc_entry_t *) start_page)) {
-	/* free ¤¹¤ë¥¨¥ó¥È¥ê¤Î¥¢¥É¥ì¥¹¤¬¤ª¤«¤·¤¤ */
+	/* free ã™ã‚‹ã‚¨ãƒ³ãƒˆãƒªã®ã‚¢ãƒ‰ãƒ¬ã‚¹ãŒãŠã‹ã—ã„ */
 	dbg_printf("[MALLOC] illegal free pointer %x(%x)\n", addr,
 		   newentry);
 	return;
     }
 
     if (&alloc_list == alloc_list.next) {
-	/* ¥ê¥¹¥È¤Ë¥¨¥ó¥È¥ê¤¬Ìµ¤¤¾ì¹ç: Ã±¤ËÄÉ²Ã¤¹¤ì¤ĞÎÉ¤¤ */
+	/* ãƒªã‚¹ãƒˆã«ã‚¨ãƒ³ãƒˆãƒªãŒç„¡ã„å ´åˆ: å˜ã«è¿½åŠ ã™ã‚Œã°è‰¯ã„ */
 	alloc_list.next = newentry;
 	alloc_list.before = newentry;
 	newentry->next = newentry->before = &alloc_list;
@@ -270,9 +270,9 @@ void free(VP addr)
 	     (UW) p + p->size + sizeof(struct alloc_entry_t), p->next);
 #endif
 
-	/* ¥Õ¥ê¡¼¥ê¥¹¥È¤òÀèÆ¬¤«¤éÃ©¤ê¡¢¥ê¥¹¥È¤ËÁŞÆş¤¹¤ë¥İ¥¤¥ó¥È¤ò·è¤á¤ë */
-	/* ¥Õ¥ê¡¼¥ê¥¹¥È¤Ï¥¢¥É¥ì¥¹½ç¤Ë¤Ê¤Ã¤Æ¤ª¤ê¡¢p ¤Î¥¢¥É¥ì¥¹¤¬ÄÉ²Ã¤¹¤ë */
-	/* ÎÎ°è¤ÎºÇ¸å¤è¤ê¤âÂç¤­¤¯¤Ê¤Ã¤¿¤é¡¢¤½¤ÎÁ°¤ËÁŞÆş¤¹¤ë¡£ */
+	/* ãƒ•ãƒªãƒ¼ãƒªã‚¹ãƒˆã‚’å…ˆé ­ã‹ã‚‰è¾¿ã‚Šã€ãƒªã‚¹ãƒˆã«æŒ¿å…¥ã™ã‚‹ãƒã‚¤ãƒ³ãƒˆã‚’æ±ºã‚ã‚‹ */
+	/* ãƒ•ãƒªãƒ¼ãƒªã‚¹ãƒˆã¯ã‚¢ãƒ‰ãƒ¬ã‚¹é †ã«ãªã£ã¦ãŠã‚Šã€p ã®ã‚¢ãƒ‰ãƒ¬ã‚¹ãŒè¿½åŠ ã™ã‚‹ */
+	/* é ˜åŸŸã®æœ€å¾Œã‚ˆã‚Šã‚‚å¤§ãããªã£ãŸã‚‰ã€ãã®å‰ã«æŒ¿å…¥ã™ã‚‹ã€‚ */
 	nextentry = ((UW) p) + p->size + sizeof(struct alloc_entry_t);
 	if ((nextentry <= (UW) newentry) &&
 	    ((p->next < p) ||
@@ -280,7 +280,7 @@ void free(VP addr)
 	       sizeof(struct alloc_entry_t)) <= (UW) p->next))) {
 
 	    if (nextentry == (UW) newentry) {
-		/* ¸½ºß¤Î¥¨¥ó¥È¥ê¤ÈÎÙ¤ê¹ç¤Ã¤Æ¤¤¤ë */
+		/* ç¾åœ¨ã®ã‚¨ãƒ³ãƒˆãƒªã¨éš£ã‚Šåˆã£ã¦ã„ã‚‹ */
 #ifdef notdef
 		dbg_printf
 		    ("p->size = %d, newentry->size = %d, p->size + newentry->size + sizeof (...) = %d(0x%x)\n",
@@ -294,7 +294,7 @@ void free(VP addr)
 		p->size += (newentry->size + sizeof(struct alloc_entry_t));
 		if (((UW) p + p->size + sizeof(struct alloc_entry_t)) ==
 		    (UW) p->next) {
-		    /* newentry ¤òÄÉ²Ã¤·¤¿·ë²Ì¼¡¤È¤Î´Ö¤¬Ëä¤Ş¤Ã¤¿ */
+		    /* newentry ã‚’è¿½åŠ ã—ãŸçµæœæ¬¡ã¨ã®é–“ãŒåŸ‹ã¾ã£ãŸ */
 		    p->size +=
 			(p->next->size + sizeof(struct alloc_entry_t));
 		    p->next->next->before = p;
@@ -305,7 +305,7 @@ void free(VP addr)
 		return;
 	    } else if ((((UW) newentry) + newentry->size +
 			sizeof(struct alloc_entry_t)) == (UW) (p->next)) {
-		/* ¼¡¤Î¥¨¥ó¥È¥ê¤ÈÎÙ¤ê¹ç¤Ã¤Æ¤¤¤ë */
+		/* æ¬¡ã®ã‚¨ãƒ³ãƒˆãƒªã¨éš£ã‚Šåˆã£ã¦ã„ã‚‹ */
 		newentry->size +=
 		    (p->next->size + sizeof(struct alloc_entry_t));
 		newentry->before = p;
@@ -316,8 +316,8 @@ void free(VP addr)
 		newentry->next->before = newentry;
 		return;
 	    } else {
-		/* Á°¸å¤Î¥¨¥ó¥È¥ê¤È¤Ï¤É¤Á¤é¤È¤âÎÙ¤ê¹ç¤Ã¤Æ¤¤¤Ê¤¤ -
-		 * Ã±¤Ë¥ê¥¹¥È¤Ë¤Ä¤Ê¤²¤ë
+		/* å‰å¾Œã®ã‚¨ãƒ³ãƒˆãƒªã¨ã¯ã©ã¡ã‚‰ã¨ã‚‚éš£ã‚Šåˆã£ã¦ã„ãªã„ -
+		 * å˜ã«ãƒªã‚¹ãƒˆã«ã¤ãªã’ã‚‹
 		 */
 		newentry->before = p;
 		newentry->next = p->next;
@@ -331,7 +331,7 @@ void free(VP addr)
     }				/* for */
 
 #if 1
-    /* ³ºÅö¤¹¤ëÉôÊ¬¤¬¤Ê¤«¤Ã¤¿ */
+    /* è©²å½“ã™ã‚‹éƒ¨åˆ†ãŒãªã‹ã£ãŸ */
     dbg_printf("[MALLOC] cannot found insert entry in free list.\n");
 #endif
 }

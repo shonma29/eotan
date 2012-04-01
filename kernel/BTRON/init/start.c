@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -20,10 +20,10 @@ static char rcsid[] = "$Id: start.c,v 1.2 2000/02/07 18:09:21 kishida0 Exp $";
  * add proto type define
  *
  * Revision 1.1  1996/07/25 16:02:00  night
- * IBM PC хгмя╓ь╓н╨г╫И╓непо©
+ * IBM PC Г┴┬Г■╗Ц│╦Ц│╝Ф°─Е┬²Ц│╝Г≥╩И▄╡
  *
  * Revision 1.1  1996/03/04  19:52:21  night
- * ╨г╫И╓непо©
+ * Ф°─Е┬²Ц│╝Г≥╩И▄╡
  *
  *
  */

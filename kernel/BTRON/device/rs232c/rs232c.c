@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -15,16 +15,16 @@ Version 2, June 1991
 /* 
  * $Log: rs232c.c,v $
  * Revision 1.3  1998/12/07 14:19:14  night
- * probe_rs232c ()¡¢setup_rs232c ()¡¢write_byte_rs232c ()¡¢
- * read_byte_rs232c () ¤Î´Ø¿ô¤ÎÄÉ²Ã¡£
- * Ãæ¿È¤Ï¤Ş¤Àºî¤Ã¤Æ¤¤¤Ê¤¤¡£
+ * probe_rs232c ()ã€setup_rs232c ()ã€write_byte_rs232c ()ã€
+ * read_byte_rs232c () ã®é–¢æ•°ã®è¿½åŠ ã€‚
+ * ä¸­èº«ã¯ã¾ã ä½œã£ã¦ã„ãªã„ã€‚
  *
  * Revision 1.2  1998/02/23 14:40:19  night
- * get_req ¤Î°ú¿ô¤¬´Ö°ã¤Ã¤Æ¤¤¤¿¤¿¤á½¤Àµ¡£
- * º£¤Ş¤Ç¤Î¥³¡¼¥É¤À¤È¡¢²¾ÁÛ¶õ´Ö¤ÎÀèÆ¬ÉôÊ¬¤òÇË²õ¤·¤Æ¤¤¤¿¡£
+ * get_req ã®å¼•æ•°ãŒé–“é•ã£ã¦ã„ãŸãŸã‚ä¿®æ­£ã€‚
+ * ä»Šã¾ã§ã®ã‚³ãƒ¼ãƒ‰ã ã¨ã€ä»®æƒ³ç©ºé–“ã®å…ˆé ­éƒ¨åˆ†ã‚’ç ´å£Šã—ã¦ã„ãŸã€‚
  *
  * Revision 1.1  1997/05/17 10:47:03  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  */
@@ -38,11 +38,11 @@ Version 2, June 1991
 
 
 /*
- *	 ¶É½êÊÑ¿ô·²¤ÎÀë¸À
+ *	 å±€æ‰€å¤‰æ•°ç¾¤ã®å®£è¨€
  *
  */
-static W mydevid;		/* ¼«Ê¬¼«¿È¤Îid */
-static ID recvport;		/* Í×µá¼õ¤±¤Ä¤±ÍÑ¥İ¡¼¥È */
+static W mydevid;		/* è‡ªåˆ†è‡ªèº«ã®id */
+static ID recvport;		/* è¦æ±‚å—ã‘ã¤ã‘ç”¨ãƒãƒ¼ãƒˆ */
 static W initialized;
 
 static void main_loop(void);
@@ -64,10 +64,10 @@ void start(void)
 
 
 /*
- * ½é´ü²½
+ * åˆæœŸåŒ–
  *
- * o ¥Õ¥¡¥¤¥ë¥Æ¡¼¥Ö¥ë (file_table) ¤Î½é´ü²½
- * o Í×µá¼õ¤±¤Ä¤±ÍÑ¤Î¥á¥Ã¥»¡¼¥¸¥Ğ¥Ã¥Õ¥¡ ID ¤ò¥İ¡¼¥È¥Ş¥Í¡¼¥¸¥ã¤ËÅĞÏ¿
+ * o ãƒ•ã‚¡ã‚¤ãƒ«ãƒ†ãƒ¼ãƒ–ãƒ« (file_table) ã®åˆæœŸåŒ–
+ * o è¦æ±‚å—ã‘ã¤ã‘ç”¨ã®ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒãƒƒãƒ•ã‚¡ ID ã‚’ãƒãƒ¼ãƒˆãƒãƒãƒ¼ã‚¸ãƒ£ã«ç™»éŒ²
  */
 static void init_driver(void)
 {
@@ -77,7 +77,7 @@ static void init_driver(void)
     init_log();
 
     /*
-     * Í×µá¼õ¤±¤Ä¤±ÍÑ¤Î¥İ¡¼¥È¤ò½é´ü²½¤¹¤ë¡£
+     * è¦æ±‚å—ã‘ã¤ã‘ç”¨ã®ãƒãƒ¼ãƒˆã‚’åˆæœŸåŒ–ã™ã‚‹ã€‚
      */
 #ifdef notdef
     recvport = get_port(sizeof(DDEV_RES), sizeof(DDEV_RES));
@@ -87,7 +87,7 @@ static void init_driver(void)
     if (recvport <= 0) {
 	dbg_printf("rs232c: cannot make receive porrt.\n");
 	slp_tsk();
-	/* ¥á¥Ã¥»¡¼¥¸¥Ğ¥Ã¥Õ¥¡À¸À®¤Ë¼ºÇÔ */
+	/* ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒãƒƒãƒ•ã‚¡ç”Ÿæˆã«å¤±æ•— */
     }
 
     error = regist_port(RS232C_DRIVER, recvport);
@@ -109,14 +109,14 @@ static void main_loop(void)
     UW rsize;
 
     /*
-     * Í×µá¼õ¿® - ½èÍı¤Î¥ë¡¼¥×
+     * è¦æ±‚å—ä¿¡ - å‡¦ç†ã®ãƒ«ãƒ¼ãƒ—
      */
     for (;;) {
-	/* Í×µá¤Î¼õ¿® */
+	/* è¦æ±‚ã®å—ä¿¡ */
 	get_req(recvport, &req, &rsize);
 	switch (sys_errno) {
 	case E_OK:
-	    /* Àµ¾ï¥±¡¼¥¹ */
+	    /* æ­£å¸¸ã‚±ãƒ¼ã‚¹ */
 	    process_request(&req);
 	    break;
 
@@ -127,7 +127,7 @@ static void main_loop(void)
 	}
     }
 
-    /* ¤³¤³¤Î¹Ô¤Ë¤Ï¡¢Íè¤Ê¤¤ */
+    /* ã“ã“ã®è¡Œã«ã¯ã€æ¥ãªã„ */
 }
 
 
@@ -138,12 +138,12 @@ ER process_request(DDEV_REQ * req)
 {
     switch (req->header.msgtyp) {
     case DEV_OPN:
-	/* ¥Ç¥Ğ¥¤¥¹¤Î¥ª¡¼¥×¥ó */
+	/* ãƒ‡ãƒã‚¤ã‚¹ã®ã‚ªãƒ¼ãƒ—ãƒ³ */
 	open_rs232c(req->header.mbfid, &(req->body.opn_req));
 	break;
 
     case DEV_CLS:
-	/* ¥Ç¥Ğ¥¤¥¹¤Î¥¯¥í¡¼¥º */
+	/* ãƒ‡ãƒã‚¤ã‚¹ã®ã‚¯ãƒ­ãƒ¼ã‚º */
 	close_rs232c(req->header.mbfid, &(req->body.cls_req));
 	break;
 
@@ -199,7 +199,7 @@ ER control_rs232c(ID caller, DDEV_CTL_REQ * packet)
 
 /*******************************************************************************
  *
- *	°Ê²¼¤Î´Ø¿ô·²¤Ç¤Ï¡¢ RS232C ¤Î¥Ï¡¼¥É¥¦¥§¥¢¤ÎÁàºî¤ò¹Ô¤¦
+ *	ä»¥ä¸‹ã®é–¢æ•°ç¾¤ã§ã¯ã€ RS232C ã®ãƒãƒ¼ãƒ‰ã‚¦ã‚§ã‚¢ã®æ“ä½œã‚’è¡Œã†
  *
  *	probe_rs232c
  *	reset_rs232c

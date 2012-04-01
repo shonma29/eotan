@@ -10,10 +10,10 @@ DEBUG=-DKEYBOARD_DEBUG
 IDENT=-DTIMER_TEST -DI386 -DIBMPC -DAUTO_START -DPORTMANAGER -DKERNLIB -DITRON $(DEBUG)
 
 CPP=/lib/cpp
-#LD=/usr/local/bin/ld		# ZMAGIC е┐еде╫д╬╝┬╣╘е╒ебедеыдЄ║юдыд│д╚дмд╟днды
-#                                # ╕┼дд ld дЄ╗╚джд│д╚
-#LD=/usr/bin/ld			# е╖е╣е╞ерд╦╕┼дд╝┬╣╘е╒ебедеыдЄ║юдыд│д╚дмд╟днды 
-				# ld дмдвды╛ь╣чд╦д╧д│д┴дщдЄ╗╚джбг
+#LD=/usr/local/bin/ld		# ZMAGIC уВ┐уВдуГЧуБохоЯшбМуГХуВбуВдуГлуВТф╜ЬуВЛуБУуБиуБМуБзуБНуВЛ
+#                                # хПдуБД ld уВТф╜┐уБЖуБУуБи
+#LD=/usr/bin/ld			# уВ╖уВ╣уГЖуГауБлхПдуБДхоЯшбМуГХуВбуВдуГлуВТф╜ЬуВЛуБУуБиуБМуБзуБНуВЛ 
+				# ld уБМуБВуВЛха┤хРИуБлуБпуБУуБбуВЙуВТф╜┐уБЖуАВ
 #AS=/usr/local/bin/as-new
 LD=ld
 AS=as

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -10,10 +10,10 @@ Version 2, June 1991
 (C) 2002, Tomohide Naniwa
 
 */
-/* assert.h - Assert ´Ø·¸¤ÎÄêµÁ¤ò¹Ô¤¦¡£
+/* assert.h - Assert é–¢ä¿‚ã®å®šç¾©ã‚’è¡Œã†ã€‚
  *
- * ¤³¤³¤ÇÄêµÁ¤¹¤ë ASSERT ¤Ï¡¢POSIX ¤ËÄêµÁ¤·¤Æ¤¢¤ë assert ¥Þ¥¯¥í¤È
- * »÷¤¿¤è¤¦¤Êµ¡Ç½¤ò¤â¤Ä¤¬¡¢¤¤¤¯¤Ä¤«À©¸Â¤¬¤¢¤ë¡£
+ * ã“ã“ã§å®šç¾©ã™ã‚‹ ASSERT ã¯ã€POSIX ã«å®šç¾©ã—ã¦ã‚ã‚‹ assert ãƒžã‚¯ãƒ­ã¨
+ * ä¼¼ãŸã‚ˆã†ãªæ©Ÿèƒ½ã‚’ã‚‚ã¤ãŒã€ã„ãã¤ã‹åˆ¶é™ãŒã‚ã‚‹ã€‚
  */
 
 #ifndef __ASSERT_H__

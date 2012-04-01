@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -13,7 +13,7 @@ Version 2, June 1991
 /* pc98.h
  *
  * Discription
- *	IBMPC ¤Ë°ÍÂ¸¤¹¤ëÉôÊ¬¤ÎÄêµÁ
+ *	IBMPC ã«ä¾å­˜ã™ã‚‹éƒ¨åˆ†ã®å®šç¾©
  */
 
 #ifndef __ITRON_IBMPC_H__

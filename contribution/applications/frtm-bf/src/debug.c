@@ -30,7 +30,7 @@ void f_pmemstat(void)
 
 void f_prtflist(void)
 {
-  /* malloc ╓н╤У╓╜╔Й╔╧╔х╓ни╫╪╗ */
+  /* malloc Ц│╝Г╘╨Ц│█Ц┐╙Ц┌╧Ц┐┬Ц│╝Х║╗Г╓╨ */
   misc (4, 0, NULL);
 }
 

@@ -1,7 +1,7 @@
 /*
    pager.c ver 1.0
 
-   Contributed by Mr. ºäËÜ¡÷°¦ÃÎ¸©
+   Contributed by Mr. å‚æœ¬ï¼ æ„›çŸ¥çœŒ
    Modified by Tomohide Naniwa.
             by NAKANISHI Shin.
 

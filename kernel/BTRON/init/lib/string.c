@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -15,7 +15,7 @@ static char rcsid[] = "$Id: string.c,v 1.1 1996/07/25 16:03:44 night Exp $";
 /*
  * $Log: string.c,v $
  * Revision 1.1  1996/07/25 16:03:44  night
- * IBM PC хг╓ь╓н╨г╫И╓непо©
+ * IBM PC Г┴┬Ц│╦Ц│╝Ф°─Е┬²Ц│╝Г≥╩И▄╡
  *
  *
  */

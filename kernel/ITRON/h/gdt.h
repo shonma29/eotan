@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -8,7 +8,7 @@ Version 2, June 1991
 (C) B-Free Project.
 
 */
-/* gdt.h --- GDT ¤Î·Á¼°¤òÄêµÁ¤¹¤ë¡£
+/* gdt.h --- GDT ã®å½¢å¼ã‚’å®šç¾©ã™ã‚‹ã€‚
 **
 */
 

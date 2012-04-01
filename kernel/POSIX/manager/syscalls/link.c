@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -28,7 +28,7 @@ W psc_link_f(struct posix_request *req)
     errno = vget_reg(req->caller, req->param.par_link.src,
 		     req->param.par_link.srclen + 1, src);
     if (errno) {
-	/* ¥Ñ¥¹Ì¾¤Î¥³¥Ô¡¼¥¨¥é¡¼ */
+	/* ãƒ‘ã‚¹åã®ã‚³ãƒ”ãƒ¼ã‚¨ãƒ©ãƒ¼ */
 	if (errno == E_PAR)
 	    put_response(req, EP_INVAL, -1, 0, 0);
 	else
@@ -39,7 +39,7 @@ W psc_link_f(struct posix_request *req)
     errno = vget_reg(req->caller, req->param.par_link.dst,
 		     req->param.par_link.dstlen + 1, dst);
     if (errno) {
-	/* ¥Ñ¥¹Ì¾¤Î¥³¥Ô¡¼¥¨¥é¡¼ */
+	/* ãƒ‘ã‚¹åã®ã‚³ãƒ”ãƒ¼ã‚¨ãƒ©ãƒ¼ */
 	if (errno == E_PAR)
 	    put_response(req, EP_INVAL, -1, 0, 0);
 	else
@@ -48,10 +48,10 @@ W psc_link_f(struct posix_request *req)
 	return (FAIL);
     }
 
-    /* ¥×¥í¥»¥¹¤Î¥æ¡¼¥¶ ID ¤È¥°¥ë¡¼¥× ID ¤Î
-     * ¼è¤ê½Ð¤·¡£
-     * ¤³¤Î¾ðÊó¤Ë´ð¤Å¤¤¤Æ¡¢¥Õ¥¡¥¤¥ë¤òºï½ü¤Ç¤­¤ë¤«¤É¤¦¤«¤ò
-     * ·èÄê¤¹¤ë¡£
+    /* ãƒ—ãƒ­ã‚»ã‚¹ã®ãƒ¦ãƒ¼ã‚¶ ID ã¨ã‚°ãƒ«ãƒ¼ãƒ— ID ã®
+     * å–ã‚Šå‡ºã—ã€‚
+     * ã“ã®æƒ…å ±ã«åŸºã¥ã„ã¦ã€ãƒ•ã‚¡ã‚¤ãƒ«ã‚’å‰Šé™¤ã§ãã‚‹ã‹ã©ã†ã‹ã‚’
+     * æ±ºå®šã™ã‚‹ã€‚
      */
     errno = proc_get_euid(req->procid, &(acc.uid));
     if (errno) {

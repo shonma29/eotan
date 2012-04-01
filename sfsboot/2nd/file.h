@@ -10,45 +10,45 @@
 #define MAX_DEV_NAME	40
 #define MAX_FNAME	20
 #define MAX_KEYWORD	12
-#define BOOT_BLOCK	2		/* boot block ¤Î¥µ¥¤¥º */
+#define BOOT_BLOCK	2		/* boot block ã®ã‚µã‚¤ã‚º */
 #define SSYS		1
 #define NBMP		128
 #define SFIDT		1024
 #define SFMNT		1024
 #define FRAG_ENT	32
 #define RECORD_ENT	40
-#define ROOT_FILE_ADDR	8		/* root file ¤Î¥¢¥É¥ì¥¹ */
+#define ROOT_FILE_ADDR	8		/* root file ã®ã‚¢ãƒ‰ãƒ¬ã‚¹ */
 #define ROOT_FILE_ID	0
 
 /**************************************************************************
  *
- *	¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥à¥Ø¥Ã¥À;
+ *	ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ ãƒ˜ãƒƒãƒ€;
  *
- *	¤³¤Î¹½Â¤ÂÎ¤Ç¼¨¤µ¤ì¤ë¥Ç¡¼¥¿¤Ï¡¢³Æ¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥à¤ÎÀèÆ¬¥Ö¥í¥Ã¥¯¤Ë
- *	Æş¤ì¤é¤ì¤ë¡£³ÆÍ×ÁÇ¤Ï¡¢¥ê¥È¥ë¥¤¥ó¥Ç¥£¥¢¥ó¤È¤Ê¤Ã¤Æ¤¤¤ë¡£
+ *	ã“ã®æ§‹é€ ä½“ã§ç¤ºã•ã‚Œã‚‹ãƒ‡ãƒ¼ã‚¿ã¯ã€å„ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ ã®å…ˆé ­ãƒ–ãƒ­ãƒƒã‚¯ã«
+ *	å…¥ã‚Œã‚‰ã‚Œã‚‹ã€‚å„è¦ç´ ã¯ã€ãƒªãƒˆãƒ«ã‚¤ãƒ³ãƒ‡ã‚£ã‚¢ãƒ³ã¨ãªã£ã¦ã„ã‚‹ã€‚
  *
  *
  */
 struct file_system_header
 {
-  unsigned short	os_disk_id;	/* £Ï£Ó¥Ç¥£¥¹¥¯£É£Ä		*/
-  unsigned short	disk_id;	/* ¥Ç¥£¥¹¥¯·Á¼°£É£Ä		*/
-  unsigned short	sysblock_size;	/* ¥·¥¹¥Æ¥à¥Ö¥í¥Ã¥¯¤Î¥µ¥¤¥º(=1)	*/
-  unsigned short	file_id_table_size; /* file ID ¥Æ¡¼¥Ö¥ë¤Î¥µ¥¤¥º(=1) */
-  unsigned short	shortname_table_size;	/* ¥Õ¥¡¥¤¥ëÃ»½ÌÌ¾¥Æ¡¼¥Ö¥ë¥µ¥¤¥º	*/
+  unsigned short	os_disk_id;	/* ï¼¯ï¼³ãƒ‡ã‚£ã‚¹ã‚¯ï¼©ï¼¤		*/
+  unsigned short	disk_id;	/* ãƒ‡ã‚£ã‚¹ã‚¯å½¢å¼ï¼©ï¼¤		*/
+  unsigned short	sysblock_size;	/* ã‚·ã‚¹ãƒ†ãƒ ãƒ–ãƒ­ãƒƒã‚¯ã®ã‚µã‚¤ã‚º(=1)	*/
+  unsigned short	file_id_table_size; /* file ID ãƒ†ãƒ¼ãƒ–ãƒ«ã®ã‚µã‚¤ã‚º(=1) */
+  unsigned short	shortname_table_size;	/* ãƒ•ã‚¡ã‚¤ãƒ«çŸ­ç¸®åãƒ†ãƒ¼ãƒ–ãƒ«ã‚µã‚¤ã‚º	*/
   					/* (=1)				*/
-  unsigned short	bitmap_size;	/*¥Ó¥Ã¥È¥Ş¥Ã¥×¥Æ¡¼¥Ö¥ë¥µ¥¤¥º(=1)*/ 
-  unsigned char		reserved[12];	/* »ÈÍÑ¤·¤Ê¤¤			*/
-  unsigned short	block_size;	/* ÏÀÍı¥Ö¥í¥Ã¥¯¤Î¥Ğ¥¤¥È¿ô	*/
-  unsigned short	max_file;	/* ºÇÂç¥Õ¥¡¥¤¥ë¿ô		*/
-  unsigned short	language;	/* »ÈÍÑ¸À¸ì			*/
-  unsigned short	access_level;	/* ¥¢¥¯¥»¥¹¥ì¥Ù¥ë		*/
-  unsigned long	max_block;		/* ºÇÂç¥Ö¥í¥Ã¥¯¿ô		*/
-  unsigned long	free_block;		/* Ì¤»ÈÍÑÏÀÍı¥Ö¥í¥Ã¥¯¿ô		*/
-  unsigned long	last_modify_time;	/* ºÇ¿·¤Î¥·¥¹¥Æ¥à¥Ö¥í¥Ã¥¯¤Î¹¹¿·ÆüÉÕ */
-  unsigned long	create_time;		/* ºÇ¿·¤Î¥·¥¹¥Æ¥à¥Ö¥í¥Ã¥¯¤Î¹¹¿·ÆüÉÕ */
-  unsigned char	file_system_name[MAX_FSNAME];	/* ¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥àÌ¾	*/
-  unsigned char	device_name[MAX_DEV_NAME];	/* ¥Ç¥Ğ¥¤¥¹Ì¾	*/
+  unsigned short	bitmap_size;	/*ãƒ“ãƒƒãƒˆãƒãƒƒãƒ—ãƒ†ãƒ¼ãƒ–ãƒ«ã‚µã‚¤ã‚º(=1)*/ 
+  unsigned char		reserved[12];	/* ä½¿ç”¨ã—ãªã„			*/
+  unsigned short	block_size;	/* è«–ç†ãƒ–ãƒ­ãƒƒã‚¯ã®ãƒã‚¤ãƒˆæ•°	*/
+  unsigned short	max_file;	/* æœ€å¤§ãƒ•ã‚¡ã‚¤ãƒ«æ•°		*/
+  unsigned short	language;	/* ä½¿ç”¨è¨€èª			*/
+  unsigned short	access_level;	/* ã‚¢ã‚¯ã‚»ã‚¹ãƒ¬ãƒ™ãƒ«		*/
+  unsigned long	max_block;		/* æœ€å¤§ãƒ–ãƒ­ãƒƒã‚¯æ•°		*/
+  unsigned long	free_block;		/* æœªä½¿ç”¨è«–ç†ãƒ–ãƒ­ãƒƒã‚¯æ•°		*/
+  unsigned long	last_modify_time;	/* æœ€æ–°ã®ã‚·ã‚¹ãƒ†ãƒ ãƒ–ãƒ­ãƒƒã‚¯ã®æ›´æ–°æ—¥ä»˜ */
+  unsigned long	create_time;		/* æœ€æ–°ã®ã‚·ã‚¹ãƒ†ãƒ ãƒ–ãƒ­ãƒƒã‚¯ã®æ›´æ–°æ—¥ä»˜ */
+  unsigned char	file_system_name[MAX_FSNAME];	/* ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ å	*/
+  unsigned char	device_name[MAX_DEV_NAME];	/* ãƒ‡ãƒã‚¤ã‚¹å	*/
 };
 
 struct file_id
@@ -72,14 +72,14 @@ struct file_system
   unsigned int			fs_short[SFMNT];
 };
 
-/* F_TIME --- ¥Õ¥¡¥¤¥ëÆü»ş¹½Â¤ÂÎ
+/* F_TIME --- ãƒ•ã‚¡ã‚¤ãƒ«æ—¥æ™‚æ§‹é€ ä½“
  *
  */
 typedef struct f_time
 {
-  long	f_ltime;		/* ¥Õ¥¡¥¤¥ë¤ÎÊİÂ¸´ü¸Â¡ÊÆü»ş¡Ë	*/
-  long	f_atime;		/* ºÇ¿·¤Î¥¢¥¯¥»¥¹Æü»ş		*/
-  long	f_mtime;		/* ºÇ¿·¤Î¹¹¿·Æü»ş		*/
+  long	f_ltime;		/* ãƒ•ã‚¡ã‚¤ãƒ«ã®ä¿å­˜æœŸé™ï¼ˆæ—¥æ™‚ï¼‰	*/
+  long	f_atime;		/* æœ€æ–°ã®ã‚¢ã‚¯ã‚»ã‚¹æ—¥æ™‚		*/
+  long	f_mtime;		/* æœ€æ–°ã®æ›´æ–°æ—¥æ™‚		*/
 } F_TIME;
 
 struct frag_entry
@@ -148,28 +148,28 @@ union record_entry
  */
 struct file
 {
-  unsigned long  f_start;	/* ¥Õ¥¡¥¤¥ë¥Ø¥Ã¥À³«»Ï ID = 0x54726f6e	*/
-  unsigned short f_type;	/* ¥Õ¥¡¥¤¥ë¥¿¥¤¥×¡¿½êÍ­¼Ô		*/
-  unsigned short f_atype;	/* ¥¢¥×¥ê¥±¡¼¥·¥ç¥ó¥¿¥¤¥×		*/
-  unsigned short f_owner[14];	/* ¥Õ¥¡¥¤¥ë½êÍ­¼Ô¡Ê£±£²Ê¸»ú¡Ë¡Ü£°	*/
-  unsigned short f_group[14];	/* ½êÍ­¥°¥ë¡¼¥×Ì¾¡Ê£±£²Ê¸»ú¡Ë¡Ü£°	*/
-  short		f_grpacc;	/* ¥°¥ë¡¼¥×¥¢¥¯¥»¥¹¥ì¥Ù¥ë		*/
-  short		f_pubacc;	/* °ìÈÌ¥¢¥¯¥»¥¹¥ì¥Ù¥ë			*/
-  short		f_nlink;	/* ´Ş¤ó¤Ç¤¤¤ë¥ê¥ó¥¯¿ô			*/
-  short		f_index;	/* ¥¤¥ó¥Ç¥Ã¥¯¥¹¥ì¥Ù¥ë			*/
-  long		f_size;		/* ¥Õ¥¡¥¤¥ë¤ÎÁí¥Ğ¥¤¥È¿ô			*/
-  long		f_nblk;		/* Áí»ÈÍÑÏÀÍı¥Ö¥í¥Ã¥¯¿ô			*/
-  long		f_nrec;		/* Áí¥ì¥³¡¼¥É¿ô				*/
-  char		reserved0[8];	/* Í½Ìó 8 ¥Ğ¥¤¥È			*/
-  long		f_ltime;	/* ¥Õ¥¡¥¤¥ë¤ÎÊİÂ¸´ü¸Â¡ÊÆü»ş¡Ë		*/
-  long		f_atime;	/* ºÇ¿·¤Î¥¢¥¯¥»¥¹Æü»ş			*/
-  long		f_mtime;	/* ºÇ¿·¤Î¹¹¿·Æü»ş			*/
-  long		f_ctime;	/* ¥Õ¥¡¥¤¥ë¤ÎºîÀ®Æü»ş			*/
+  unsigned long  f_start;	/* ãƒ•ã‚¡ã‚¤ãƒ«ãƒ˜ãƒƒãƒ€é–‹å§‹ ID = 0x54726f6e	*/
+  unsigned short f_type;	/* ãƒ•ã‚¡ã‚¤ãƒ«ã‚¿ã‚¤ãƒ—ï¼æ‰€æœ‰è€…		*/
+  unsigned short f_atype;	/* ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ã‚¿ã‚¤ãƒ—		*/
+  unsigned short f_owner[14];	/* ãƒ•ã‚¡ã‚¤ãƒ«æ‰€æœ‰è€…ï¼ˆï¼‘ï¼’æ–‡å­—ï¼‰ï¼‹ï¼	*/
+  unsigned short f_group[14];	/* æ‰€æœ‰ã‚°ãƒ«ãƒ¼ãƒ—åï¼ˆï¼‘ï¼’æ–‡å­—ï¼‰ï¼‹ï¼	*/
+  short		f_grpacc;	/* ã‚°ãƒ«ãƒ¼ãƒ—ã‚¢ã‚¯ã‚»ã‚¹ãƒ¬ãƒ™ãƒ«		*/
+  short		f_pubacc;	/* ä¸€èˆ¬ã‚¢ã‚¯ã‚»ã‚¹ãƒ¬ãƒ™ãƒ«			*/
+  short		f_nlink;	/* å«ã‚“ã§ã„ã‚‹ãƒªãƒ³ã‚¯æ•°			*/
+  short		f_index;	/* ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãƒ¬ãƒ™ãƒ«			*/
+  long		f_size;		/* ãƒ•ã‚¡ã‚¤ãƒ«ã®ç·ãƒã‚¤ãƒˆæ•°			*/
+  long		f_nblk;		/* ç·ä½¿ç”¨è«–ç†ãƒ–ãƒ­ãƒƒã‚¯æ•°			*/
+  long		f_nrec;		/* ç·ãƒ¬ã‚³ãƒ¼ãƒ‰æ•°				*/
+  char		reserved0[8];	/* äºˆç´„ 8 ãƒã‚¤ãƒˆ			*/
+  long		f_ltime;	/* ãƒ•ã‚¡ã‚¤ãƒ«ã®ä¿å­˜æœŸé™ï¼ˆæ—¥æ™‚ï¼‰		*/
+  long		f_atime;	/* æœ€æ–°ã®ã‚¢ã‚¯ã‚»ã‚¹æ—¥æ™‚			*/
+  long		f_mtime;	/* æœ€æ–°ã®æ›´æ–°æ—¥æ™‚			*/
+  long		f_ctime;	/* ãƒ•ã‚¡ã‚¤ãƒ«ã®ä½œæˆæ—¥æ™‚			*/
   unsigned short fname[MAX_FNAME];
   unsigned short keyword[MAX_KEYWORD];
   char		reserved1[12];
   unsigned short	f_id;
-  unsigned long		f_end;	/* ¥Õ¥¡¥¤¥ë¥Ø¥Ã¥À½ªÎ» ID = 0x82dde96b */
+  unsigned long		f_end;	/* ãƒ•ã‚¡ã‚¤ãƒ«ãƒ˜ãƒƒãƒ€çµ‚äº† ID = 0x82dde96b */
   struct frag_entry	frag_table[FRAG_ENT];
   union record_entry	record_table[RECORD_ENT];    
 };

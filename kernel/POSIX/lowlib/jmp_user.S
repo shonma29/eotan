@@ -1,14 +1,14 @@
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/jmp_user.S,v 1.2 1997/08/31 13:13:43 night Exp $ */
 
 /*
- * POSIX ´Ä¶­ on B-Free 
+ * POSIX ç’°å¢ƒ on B-Free 
  */
 
 
 .globl jmp_user_entry
 
 /*
- * ¥æ¡¼¥¶¥â¡¼¥É¤ËÁ«°Ü¤·¤Ä¤Ä¡¢»ØÄê¤·¤¿¥¨¥ó¥È¥ê¥¢¥É¥ì¥¹¤Ø¥¸¥ã¥ó¥×¤¹¤ë
+ * ãƒ¦ãƒ¼ã‚¶ãƒ¢ãƒ¼ãƒ‰ã«é·ç§»ã—ã¤ã¤ã€æŒ‡å®šã—ãŸã‚¨ãƒ³ãƒˆãƒªã‚¢ãƒ‰ãƒ¬ã‚¹ã¸ã‚¸ãƒ£ãƒ³ãƒ—ã™ã‚‹
  */
 jmp_user_entry:
 	

@@ -10,7 +10,7 @@ $filename[0] = "${name}.c";
 $contents[0] =<<'__END_NAME_C__';
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -42,11 +42,11 @@ static char rcs[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/
 
 
 /*
- *	 ╤и╫Ййя©Т╥╡╓нюК╦ю
+ *	 Е╠─Ф┴─Е╓┴Ф∙╟Г╬╓Ц│╝Е╝ёХ╗─
  *
  */
-static W	mydevid;	/* ╪╚й╛╪╚©х╓нid */
-static ID	recvport;	/* мв╣А╪У╓╠╓д╓╠мя╔щ║╪╔х */
+static W	mydevid;	/* Х┤╙Е┬├Х┤╙Х╨╚Ц│╝id */
+static ID	recvport;	/* Х╕│Ф╠┌Е▐≈Ц│▒Ц│╓Ц│▒Г■╗Ц┐²Ц┐╪Ц┐┬ */
 static W	initialized;
 
 struct device	dev_table[MAX_%%NAME%%];
@@ -56,12 +56,12 @@ static void	main_loop (void);
 static void	init_driver (void);
 
 
-/* start --- %%name%% ╔и╔И╔╓╔п╓н╔А╔╓╔С╢ь©Т
+/* start --- %%name%% Ц┐┴Ц┐╘Ц┌╓Ц┐░Ц│╝Ц┐║Ц┌╓Ц┐ЁИ√╒Ф∙╟
  */
 void
 start ()
 {
-  probe (&dev_table[0]); /* ╔г╔п╔╓╔╧╓╛б╦╨ъ╓╥╓ф╓╓╓К╓╚╓Р╔а╔╖╔ц╔╞╓╧╓К */
+  probe (&dev_table[0]); /* Ц┐┤Ц┐░Ц┌╓Ц┌╧Ц│▄Е╜≤Е°╗Ц│≈Ц│╕Ц│└Ц┌▀Ц│▀Ц┌▓Ц┐│Ц┌╖Ц┐┐Ц┌╞Ц│≥Ц┌▀ */
   init_driver ();
 
   printf ("registed %%name%% driver.\n");
@@ -70,10 +70,10 @@ start ()
 
 
 /*
- * ╫И╢Э╡╫
+ * Е┬²Ф°÷Е▄√
  *
- * o ╔у╔║╔╓╔К╔ф║╪╔ж╔К (file_table) ╓н╫И╢Э╡╫
- * o мв╣А╪У╓╠╓д╓╠мя╓н╔А╔ц╔╩║╪╔╦╔п╔ц╔у╔║ ID ╓Р╔щ║╪╔х╔ч╔м║╪╔╦╔Ц╓кепо©
+ * o Ц┐∙Ц┌║Ц┌╓Ц┐╚Ц┐├Ц┐╪Ц┐√Ц┐╚ (file_table) Ц│╝Е┬²Ф°÷Е▄√
+ * o Х╕│Ф╠┌Е▐≈Ц│▒Ц│╓Ц│▒Г■╗Ц│╝Ц┐║Ц┐┐Ц┌╩Ц┐╪Ц┌╦Ц┐░Ц┐┐Ц┐∙Ц┌║ ID Ц┌▓Ц┐²Ц┐╪Ц┐┬Ц┐·Ц┐█Ц┐╪Ц┌╦Ц┐ёЦ│╚Г≥╩И▄╡
  */
 static void
 init_driver (void)
@@ -84,14 +84,14 @@ init_driver (void)
   init_log ();
 
   /*
-   * мв╣А╪У╓╠╓д╓╠мя╓н╔щ║╪╔х╓Р╫И╢Э╡╫╓╧╓К║ё
+   * Х╕│Ф╠┌Е▐≈Ц│▒Ц│╓Ц│▒Г■╗Ц│╝Ц┐²Ц┐╪Ц┐┬Ц┌▓Е┬²Ф°÷Е▄√Ц│≥Ц┌▀Ц─┌
    */
   recvport = get_port (sizeof (DDEV_RES), sizeof (DDEV_RES));
   if (recvport <= 0)
     {
       dbg_printf ("%%name%%: cannot make receive porrt.\n");
       slp_tsk ();
-      /* ╔А╔ц╔╩║╪╔╦╔п╔ц╔у╔║ю╦ю╝╓к╪╨гт */
+      /* Ц┐║Ц┐┐Ц┌╩Ц┐╪Ц┌╦Ц┐░Ц┐┐Ц┐∙Ц┌║Г■÷Ф┬░Ц│╚Е╓╠Ф∙≈ */
     }
 
   error = regist_port (%%NAME%%_DRIVER, recvport);
@@ -115,16 +115,16 @@ main_loop (void)
   UW		rsize;
 
   /*
-   * мв╣А╪У©╝ - ╫ХмЩ╓н╔К║╪╔в
+   * Х╕│Ф╠┌Е▐≈Д©║ - Е┤╕Г░├Ц│╝Ц┐╚Ц┐╪Ц┐≈
    */
   for (;;)
     {
-      /* мв╣А╓н╪У©╝ */
+      /* Х╕│Ф╠┌Ц│╝Е▐≈Д©║ */
       get_req (recvport, &req, &rsize);
       switch (sys_errno)
 	{
 	case E_OK:
-	  /* ю╣╬О╔╠║╪╔╧ */
+	  /* Ф╜ёЕ╦╦Ц┌╠Ц┐╪Ц┌╧ */
 	  process_request (&req);
 	  break;
 
@@ -135,7 +135,7 @@ main_loop (void)
 	}
     }
 
-  /* ╓Ё╓Ё╓н╧т╓к╓о║╒мХ╓й╓╓ */
+  /* Ц│⌠Ц│⌠Ц│╝Х║▄Ц│╚Ц│╞Ц─│Ф²╔Ц│╙Ц│└ */
 }
 
 
@@ -148,12 +148,12 @@ process_request (DDEV_REQ *req)
   switch (req->header.msgtyp)
     {
     case DEV_OPN:
-      /* ╔г╔п╔╓╔╧╓н╔╙║╪╔в╔С */
+      /* Ц┐┤Ц┐░Ц┌╓Ц┌╧Ц│╝Ц┌╙Ц┐╪Ц┐≈Ц┐Ё */
       open_%%name%% (req->header.mbfid, &(req->body.opn_req));
       break;
 
     case DEV_CLS:
-      /* ╔г╔п╔╓╔╧╓н╔╞╔М║╪╔╨ */
+      /* Ц┐┤Ц┐░Ц┌╓Ц┌╧Ц│╝Ц┌╞Ц┐╜Ц┐╪Ц┌╨ */
       close_%%name%% (req->header.mbfid, &(req->body.cls_req));
       break;
 
@@ -172,23 +172,23 @@ process_request (DDEV_REQ *req)
 }
 
 /*
- * ╔г╔п╔╓╔╧╓н╔╙║╪╔в╔С
+ * Ц┐┤Ц┐░Ц┌╓Ц┌╧Ц│╝Ц┌╙Ц┐╪Ц┐≈Ц┐Ё
  */
 ER
 open_%%name%% (ID caller, DDEV_OPN_REQ *packet)
 {
-  /*** ╓Ё╓Ё╓к╔Ё║╪╔и╓Р╓д╓╓╓╚╓╥╓ф╓╞╓ю╓╣╓╓ ***/
+  /*** Ц│⌠Ц│⌠Ц│╚Ц┌ЁЦ┐╪Ц┐┴Ц┌▓Ц│╓Ц│└Ц│▀Ц│≈Ц│╕Ц│▐Ц│═Ц│∙Ц│└ ***/
 
   return (E_NOSPT);
 }
 
 /*
- * ╔г╔п╔╓╔╧╓н╔╞╔М║╪╔╨
+ * Ц┐┤Ц┐░Ц┌╓Ц┌╧Ц│╝Ц┌╞Ц┐╜Ц┐╪Ц┌╨
  */
 ER
 close_%%name%% (ID caller, DDEV_CLS_REQ *packet)
 {
-  /*** ╓Ё╓Ё╓к╔Ё║╪╔и╓Р╓д╓╓╓╚╓╥╓ф╓╞╓ю╓╣╓╓ ***/
+  /*** Ц│⌠Ц│⌠Ц│╚Ц┌ЁЦ┐╪Ц┐┴Ц┌▓Ц│╓Ц│└Ц│▀Ц│≈Ц│╕Ц│▐Ц│═Ц│∙Ц│└ ***/
 
   return (E_NOSPT);
 }
@@ -199,7 +199,7 @@ close_%%name%% (ID caller, DDEV_CLS_REQ *packet)
 ER
 read_%%name%% (ID caller, DDEV_REA_REQ *packet)
 {
-  /*** ╓Ё╓Ё╓к╔Ё║╪╔и╓Р╓д╓╓╓╚╓╥╓ф╓╞╓ю╓╣╓╓ ***/
+  /*** Ц│⌠Ц│⌠Ц│╚Ц┌ЁЦ┐╪Ц┐┴Ц┌▓Ц│╓Ц│└Ц│▀Ц│≈Ц│╕Ц│▐Ц│═Ц│∙Ц│└ ***/
 
   return (E_NOSPT);
 }
@@ -210,7 +210,7 @@ read_%%name%% (ID caller, DDEV_REA_REQ *packet)
 ER
 write_%%name%% (ID caller, DDEV_WRI_REQ *packet)
 {
-  /*** ╓Ё╓Ё╓к╔Ё║╪╔и╓Р╓д╓╓╓╚╓╥╓ф╓╞╓ю╓╣╓╓ ***/
+  /*** Ц│⌠Ц│⌠Ц│╚Ц┌ЁЦ┐╪Ц┐┴Ц┌▓Ц│╓Ц│└Ц│▀Ц│≈Ц│╕Ц│▐Ц│═Ц│∙Ц│└ ***/
 
   return (E_NOSPT);
 }
@@ -221,7 +221,7 @@ write_%%name%% (ID caller, DDEV_WRI_REQ *packet)
 ER
 control_%%name%% (ID caller, DDEV_CTL_REQ *packet)
 {
-  /*** ╓Ё╓Ё╓к╔Ё║╪╔и╓Р╓д╓╓╓╚╓╥╓ф╓╞╓ю╓╣╓╓ ***/
+  /*** Ц│⌠Ц│⌠Ц│╚Ц┌ЁЦ┐╪Ц┐┴Ц┌▓Ц│╓Ц│└Ц│▀Ц│≈Ц│╕Ц│▐Ц│═Ц│∙Ц│└ ***/
 
   return (E_NOSPT);
 }
@@ -231,7 +231,7 @@ $filename[1] = "${name}.h";
 $contents[1] =<<'__END_NAME_H__';
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -270,7 +270,7 @@ $filename[2] = "${name}_internal.h";
 $contents[2] =<<'__END_NAME_INTERNAL_H__';
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -301,15 +301,15 @@ Version 2, June 1991
 #include "../../BTRON/servers/port-manager.h"
 
 
-/*** ╓Ё╓Ё╓к╔г╔п╔╓╔╧╓ндЙ╣а╓Р╓╚╓╓╓ф╓╞╓ю╓╣╓╓ ***/
+/*** Ц│⌠Ц│⌠Ц│╚Ц┐┤Ц┐░Ц┌╓Ц┌╧Ц│╝Е╝ Г╬╘Ц┌▓Ц│▀Ц│└Ц│╕Ц│▐Ц│═Ц│∙Ц│└ ***/
 
 
-/* ╔г╔п╔╓╔╧╧╫б╓бн 
- * %%NAME%% ╔г╔п╔╓╔╧╓о║╒Ёф║╧╓Ё╓н╧╫б╓бн╓г╢имЩ╓╥╓ф╓╓╓К
+/* Ц┐┤Ц┐░Ц┌╓Ц┌╧Ф╖▀И─═Д╫⌠ 
+ * %%NAME%% Ц┐┤Ц┐░Ц┌╓Ц┌╧Ц│╞Ц─│Е░└Ц─┘Ц│⌠Ц│╝Ф╖▀И─═Д╫⌠Ц│╖Г╝║Г░├Ц│≈Ц│╕Ц│└Ц┌▀
  */
 struct device
 {
-  /*** ╓Ё╓Ё╓к ***/
+  /*** Ц│⌠Ц│⌠Ц│╚ ***/
 };
 
 
@@ -325,7 +325,7 @@ $filename[3] = "${name}low.c";
 $contents[3] = <<'__END_NAMELOW_C__';
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -348,12 +348,12 @@ static char rcs[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/
 UW	initilized = 0;
 
 
-/* %%NAME%% ╔╒╔ю╔в╔©╓╛б╦╨ъ╓╥╓ф╓╓╓К╓╚╓и╓╕╓╚╓Р╔а╔╖╔ц╔╞╓╧╓К
+/* %%NAME%% Ц┌╒Ц┐─Ц┐≈Ц┌©Ц│▄Е╜≤Е°╗Ц│≈Ц│╕Ц│└Ц┌▀Ц│▀Ц│╘Ц│├Ц│▀Ц┌▓Ц┐│Ц┌╖Ц┐┐Ц┌╞Ц│≥Ц┌▀
  */
 ER
 probe (struct device *dev)
 {
-  /*** ╓Ё╓Ё╓к ***/
+  /*** Ц│⌠Ц│⌠Ц│╚ ***/
 
   return (E_OK);
 }
@@ -421,7 +421,7 @@ $filename[5] = 'funcs.h';
 $contents[5] = <<'__END_FUNCS_H__';
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -458,7 +458,7 @@ extern ER	control_%%name%% (ID caller, DDEV_CTL_REQ *packet);
 
 /* %%name%%low.c */
 extern ER	probe (struct device *dev);
-/*** ╓Ё╓Ё╓к **/
+/*** Ц│⌠Ц│⌠Ц│╚ **/
 
 /* misc.c */
 extern void	init_log (void);
@@ -476,7 +476,7 @@ $filename[6] = 'global.h';
 $contents[6] = <<'__END_GLOBAL_H__';
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -515,7 +515,7 @@ $filename[7] = 'misc.c';
 $contents[7] =<<'__END_MISC_C__';
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -555,7 +555,7 @@ static ER	vprintf (B *fmt, VP arg0);
 
 
 
-/* init_log - ╔М╔╟╫пно╣║╧╫╓Р╫И╢Э╡╫╓╧╓К
+/* init_log - Ц┐╜Ц┌╟Е┤╨Е┼⌡Ф╘÷Ф╖▀Ц┌▓Е┬²Ф°÷Е▄√Ц│≥Ц┌▀
  *
  *
  */
@@ -674,8 +674,8 @@ put_string (B *line, ID port)
 W 
 putc (int ch, ID port)
 {
-  DDEV_REQ		req;		/* мв╣А╔я╔╠╔ц╔х */
-  DDEV_RES		res;		/* йжеЗ╔я╔╠╔ц╔х */
+  DDEV_REQ		req;		/* Х╕│Ф╠┌Ц┐▒Ц┌╠Ц┐┐Ц┐┬ */
+  DDEV_RES		res;		/* Х©■Г╜■Ц┐▒Ц┌╠Ц┐┐Ц┐┬ */
   W			rsize;
   ER			error;
   W			i;
@@ -704,9 +704,9 @@ putc (int ch, ID port)
 
 
 
-/* _assert - ASSERT ╔ч╔╞╔М╓к╓Х╓ц╓ф╦ф╓с╫п╓╣╓Л╓К╢ь©Т
+/* _assert - ASSERT Ц┐·Ц┌╞Ц┐╜Ц│╚Ц┌┬Ц│ёЦ│╕Е▒╪Ц│ЁЕ┤╨Ц│∙Ц┌▄Ц┌▀И√╒Ф∙╟
  *
- * ╔А╔ц╔╩║╪╔╦╓Р╫пно╓╥║╒╔в╔М╔╟╔И╔Ю╓Р╫╙н╩╓╧╓К║ё
+ * Ц┐║Ц┐┐Ц┌╩Ц┐╪Ц┌╦Ц┌▓Е┤╨Е┼⌡Ц│≈Ц─│Ц┐≈Ц┐╜Ц┌╟Ц┐╘Ц┐═Ц┌▓Г╣┌Д╨├Ц│≥Ц┌▀Ц─┌
  *
  */ 
 void

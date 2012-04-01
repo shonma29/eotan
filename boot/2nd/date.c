@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -22,10 +22,10 @@ Version 2, June 1991
  * *** empty log message ***
  *
  * Revision 1.1  1996/05/11 10:45:00  night
- * 2nd boot (IBM-PC ÈÇ B-FREE OS) ¤Î¥½¡¼¥¹¡£
+ * 2nd boot (IBM-PC ç‰ˆ B-FREE OS) ã®ã‚½ãƒ¼ã‚¹ã€‚
  *
  * Revision 1.2  1995/09/21  15:50:36  night
- * ¥½¡¼¥¹¥Õ¥¡¥¤¥ë¤ÎÀèÆ¬¤Ë Copyright notice ¾ðÊó¤òÄÉ²Ã¡£
+ * ã‚½ãƒ¼ã‚¹ãƒ•ã‚¡ã‚¤ãƒ«ã®å…ˆé ­ã« Copyright notice æƒ…å ±ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.1  1993/10/11  21:28:43  btron
  * btron/386

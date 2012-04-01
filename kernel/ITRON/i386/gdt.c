@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -9,7 +9,7 @@ Version 2, June 1991
 
 */
 /*
-** gdt.c --- GDT ���������롼����
+** gdt.c --- GDT アクセスルーチン集
 **
 */
 
@@ -23,17 +23,17 @@ Version 2, June 1991
 
 
 
-/* set_gdt --- ���ꤷ�� GDT �Υ���ȥ���ͤ򥻥åȤ��롣
+/* set_gdt --- 指定した GDT のエントリに値をセットする。
  *
- * ������
- *	int	index	�������ͤ򥻥åȤ���GDT�Υ���ȥ��ؤ�����ȥ�
- *	VP	desc	�ǥ�������ץ��ؤΥݥ���
- *			(�ǥ�������ץ����Τϡ�8�Х��Ȥ��礭������)
+ * 引数：
+ *	int	index	新しく値をセットするGDTのエントリを指すエントリ
+ *	VP	desc	ディスクリプタへのポインタ
+ *			(ディスクリプタ自体は、8バイトの大きさをもつ)
  *
- * �֤��͡�
- *	���顼�ֹ�
- *		E_OK	�����	
- *		E_PAR	index���ͤ���������(GDT���ϰϤ򥪡��С����Ƥ���)
+ * 返り値：
+ *	エラー番号
+ *		E_OK	正常時	
+ *		E_PAR	indexの値がおかしい(GDTの範囲をオーバーしている)
  *
  */
 ER
@@ -43,7 +43,7 @@ set_gdt (int index, GEN_DESC *desc)
 
   if ((index <= 0) || (index > MAX_GDT))
     {
-      return (E_PAR);	/* �ѥ�᡼������������ */
+      return (E_PAR);	/* パラメータがおかしい */
     }
   p = (GEN_DESC *)GDT_ADDR;
   bcopy (desc, &p[index], sizeof (GEN_DESC));
@@ -51,13 +51,13 @@ set_gdt (int index, GEN_DESC *desc)
 }
 
 
-/* get_gdt --- ���ꤷ�� GDT �Υ���ȥ�Υǥ�������ץ�����Ф���
+/* get_gdt --- 指定した GDT のエントリのディスクリプタを取り出す。
  *
- * ������
- *	int	index	�ͤ���Ф���GDT�Υ���ȥ��ؤ�����ȥ�
+ * 引数：
+ *	int	index	値を取り出するGDTのエントリを指すエントリ
  *
- * �֤��͡�
- *	�����ǻ��ꤵ�줿GDT�Υ���ȥ�ؤΥݥ��󥿡�
+ * 返り値：
+ *	引数で指定されたGDTのエントリへのポインタ。
  *
  */
 GEN_DESC *
@@ -70,7 +70,7 @@ get_gdt (int index)
 #endif
   if ((index <= 0) || (index > MAX_GDT))
     {
-      return (NULL);	/* �ѥ�᡼������������ */
+      return (NULL);	/* パラメータがおかしい */
     }
 
   p = (GEN_DESC *)GDT_ADDR;

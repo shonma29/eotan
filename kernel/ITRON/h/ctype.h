@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -16,11 +16,11 @@ Version 2, June 1991
 #ifndef __H_CTYPE_H__
 #define __H_CTYPE_H__	1
 
-/* ISCONTROL --- °ú¿ô¤¬¥³¥ó¥È¥í¡¼¥ëÊ¸»ú¤«¤É¤¦¤«¤òÄ´¤Ù¤ë
+/* ISCONTROL --- å¼•æ•°ãŒã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«æ–‡å­—ã‹ã©ã†ã‹ã‚’èª¿ã¹ã‚‹
  */
 #define ISCONTROL(ch)	(!((ch) & 0xe0))
 
-/* CONTROL ---  °ú¿ô¤ÇÅÏ¤µ¤ì¤¿Ê¸»ú¤ò¥³¥ó¥È¥í¡¼¥ëÊ¸»ú¤ËÊÑ´¹¤¹¤ë¡£
+/* CONTROL ---  å¼•æ•°ã§æ¸¡ã•ã‚ŒãŸæ–‡å­—ã‚’ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«æ–‡å­—ã«å¤‰æ›ã™ã‚‹ã€‚
  */
 #define CONTROL(ch)	((ch) & 0x1f)
 

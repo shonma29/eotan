@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -22,29 +22,29 @@ Version 2, June 1991
  * *** empty log message ***
  *
  * Revision 1.4  1996/08/12 19:34:42  night
- * ʪ�����ꥵ����������å�����Ȥ��κ��祵������ 16MB ���� 256 MB ���ѹ�������
+ * 物理メモリサイズをチェックするときの最大サイズを 16MB から 256 MB に変更した。
  *
  * Revision 1.3  1996/07/24  14:02:13  night
- * ;ʬ�� print ʸ������
+ * 余分な print 文を削除。
  *
  * Revision 1.2  1996/07/22  13:35:08  night
- * A20 �򥤥͡��֥�ˤ���������ɲá�
+ * A20 をイネーブルにする処理を追加。
  *
  * Revision 1.1  1996/05/11  10:45:05  night
- * 2nd boot (IBM-PC �� B-FREE OS) �Υ�������
+ * 2nd boot (IBM-PC 版 B-FREE OS) のソース。
  *
  * Revision 1.5  1995/09/21  15:50:41  night
- * �������ե��������Ƭ�� Copyright notice ������ɲá�
+ * ソースファイルの先頭に Copyright notice 情報を追加。
  *
  * Revision 1.4  1995/09/20  15:32:20  night
- * malloc �ѤΥ���� 640K - 100K ʬ���ѹ���
+ * malloc 用のメモリを 640K - 100K 分に変更。
  *
  * Revision 1.3  1995/06/28  14:11:07  night
- * ���ꥢ�������Ȥδ����ΰ�� (640K - 100K) �� 640K ���� (2M - 100K) ��
- * 2M ���ѹ�������
+ * メモリアロケートの管理領域を (640K - 100K) 〜 640K から (2M - 100K) 〜
+ * 2M に変更した。
  *
  * Revision 1.2  1995/06/26  15:06:12  night
- * malloc �ؿ����ɲá�
+ * malloc 関数の追加。
  *
  * Revision 1.1  1993/10/11  21:29:33  btron
  * btron/386
@@ -115,9 +115,9 @@ init_memory (void)
 
   last_addr = (void *)&end;
 #ifdef	PC9801
-  outb (0x00f2, 0);	/* 1M �ʾ���ΰ����ѤǤ���褦�ˤ��롣*/
+  outb (0x00f2, 0);	/* 1M 以上の領域を使用できるようにする。*/
 #elif IBMPC
-  /* IBMPC (�ߴ���) �� A20 �򥤥͡��֥�ˤ��롣
+  /* IBMPC (互換機) で A20 をイネーブルにする。
    * 0xD1 -> out (0x64)
    * 0xDF -> out (0x60)
    */
@@ -141,21 +141,21 @@ init_memory (void)
   real_mem = ext_mem + BASE_MEM;
 
 #ifdef nodef
-  /* malloc �����ν���� */
+  /* malloc 機構の初期化 */
   init_malloc ((void *)(2 * 1024 * 1024), MALLOC_SIZE);
 #endif
 #ifdef notdef
-  /* 640K �Х��Ȥ��鲼�� 100 K �Х��Ȥ��ΰ�� malloc �Ѥ˻��Ѥ��� */
+  /* 640K バイトから下位 100 K バイトの領域を malloc 用に使用する */
   init_malloc ((void *)(640 * 1024), MALLOC_SIZE);
 #endif
 }
 
 #ifdef notdef
 /*
- * boot �ǥ������Ѥ��뵡���ν������
+ * boot でメモリを使用する機構の初期化。
  *
- * �裱�����ǻ��ꤷ������κǸ夫�顢�裲�����ǻ��ꤷ��ʬ������ 
- * malloc �ǻ��Ѥ��롣
+ * 第１引数で指定したメモリの最後から、第２引数で指定した分だけを 
+ * malloc で使用する。
  *
  */
 static void
@@ -173,22 +173,22 @@ init_malloc (void *last, int size)
 }
 
 /*
- * malloc --- ���ꤷ���������Υ�����������
+ * malloc --- 指定したサイズのメモリを取得する
  *
- * alloc_reg �ˤϡ����������ȤǤ���ե꡼����Υ���ȥ꤬�Ĥʤ��ä�
- * ���롣�������椫��ǽ�˥��������ȤǤ��륵�������ä���Τ���
- * ������
+ * alloc_reg には、アロケートできるフリーメモリのエントリがつながって
+ * いる。これらの中から最初にアロケートできるサイズをもったものを取り
+ * だす。
  */
 void *
 malloc (int size)
 {
-  int			true_size;	/* �������ΰ��ޤ��"����"���������� */
-					/* ������ */
+  int			true_size;	/* 管理用領域も含んだ"真の"アロケート */
+					/* サイズ */
   struct alloc_entry	*p, *prev;
   struct alloc_entry	*alloced;
 
 
-  if (alloc_reg == NULL)	/* �������٤��ե꡼���꤬�ʤ� */
+  if (alloc_reg == NULL)	/* 取得すべきフリーメモリがない */
     {
       return (NULL);
     }
@@ -202,29 +202,29 @@ malloc (int size)
        p->size < true_size;
        prev = p, p = p->next)
     {
-      if (p == alloc_reg)	/* �����Ǥ��륨��ȥ꤬�ʤ��ä� */
+      if (p == alloc_reg)	/* 取得できるエントリがなかった */
 	{
 	  return (NULL);
 	}
     }
 
-  if (p->size == true_size)	/* ���٤Υ��������ä� */
+  if (p->size == true_size)	/* 丁度のサイズだった */
     {
-      if (p->next == p)	/* �Ĥʤ��äƤ��륨��ȥ�ϤҤȤĤ������ä� */
+      if (p->next == p)	/* つながっているエントリはひとつだけだった */
 	{
 	  alloc_reg = NULL;
 	  p->next = NULL;
 	}
       else
 	{
-	  /* �ե꡼�ꥹ�Ȥ��� p �ǻ��ꤵ��Ƥ��륨��ȥ�򳰤� */
+	  /* フリーリストから p で指定されているエントリを外す */
 	  prev->next = p->next;
 	}
       
-      return ((void *)(p->body));	/* ������������ؤΥݥ��� */
-					/* ���֤������������ΰ�ϡ� */
-					/* alloc_reg ��¤�Τ� body �� */
-					/* �ǤǤ��뤳�Ȥ����� */
+      return ((void *)(p->body));	/* 取得したメモリへのポインタ */
+					/* を返す。取得した領域は、 */
+					/* alloc_reg 構造体の body 要 */
+					/* 素であることに注意 */
     }
 
   (char *)alloced = ((char *)p) + (p->size - true_size);
@@ -234,8 +234,8 @@ malloc (int size)
 }
 
 /*
- * �������Ϥ��줿�ݥ��󥿤��ؤ��ΰ��ե꡼�ꥹ�Ȥ�����롣
- * �⤷���ΰ褬�����ե꡼�ꥹ�Ȥˤʤ���Τ��ä��顢�ʤˤ⤷�ʤ���
+ * 引数に渡されたポインタが指す領域をフリーリストに入れる。
+ * もし、領域が以前フリーリストにないものだったら、なにもしない。
  */
 void
 free (void *ptr)
@@ -245,7 +245,7 @@ free (void *ptr)
 
   new_entry = (struct alloc_entry *)((char *)ptr - sizeof (struct alloc_entry));
 
-  /* ��������ꤵ�줿�ΰ�� malloc �Ǵ������Ƥ����ΰ�ǤϤʤ�. */
+  /* 挿入を指定された領域は malloc で管理している領域ではない. */
   if (((char *)new_entry < (char *)(void *)ext_mem 
                             + (1024 * 1024) - MALLOC_SIZE) 
       || ((char *)new_entry > (char *)(void *)ext_mem + (1024 * 1024)))
@@ -253,7 +253,7 @@ free (void *ptr)
       return;
     }
 
-  /* �ե꡼�ꥹ�Ȥ˥���ȥ�ϤҤȤĤ����ʤ� */
+  /* フリーリストにエントリはひとつしかない */
   if (alloc_reg == alloc_reg->next)
     {
       if (((char *)new_entry + new_entry->size) == (char *)alloc_reg)
@@ -274,14 +274,14 @@ free (void *ptr)
       return;
     }
 
-  /* �ե꡼�ꥹ�Ȥ���Ƭ����é�ꡢ�ꥹ�Ȥ���������ݥ���Ȥ���� */
-  /* �ե꡼�ꥹ�Ȥϥ��ɥ쥹��ˤʤäƤ��ꡢcurrent �Υ��ɥ쥹���ɲä� */
-  /* ���ΰ�κǸ�����礭���ʤä��顢���������������롣*/
+  /* フリーリストを先頭から辿り、リストに挿入するポイントを決める */
+  /* フリーリストはアドレス順になっており、current のアドレスが追加す */
+  /* る領域の最後よりも大きくなったら、その前に挿入する。*/
   for (prev = alloc_reg, current = alloc_reg->next;
        current != alloc_reg;
        prev = current, current = current->next)
     {
-      /* current �����ܤ��Ƥ��롣current ���ΰ��Ĥʤ��� */
+      /* current に隣接している。current と領域をつなげる */
       if ((char *)current == ((char *)new_entry + new_entry->size))
 	{
 	  new_entry->size += current->size;
@@ -291,14 +291,14 @@ free (void *ptr)
 	}
       else
 	{
-	  /* current �ˤ����ܤ��Ƥ��ʤ����ꥹ�Ȥ��������� */
+	  /* current には隣接していない。リストに挿入する */
 	  new_entry->next = current;
 	  prev->next = new_entry;
 	}
       
-      /* prev �����ܤ��Ƥ����硣prev �Υ����������䤹��*/
-      /* ���ΤȤ���current ��ʻ�礷�Ƥ��褦����ñ���������Ƥ��褦���� */
-      /* �ɤ���ˤ��Ƥ� prev->next �ϡ�new_entry��ؤ��Ƥ��뤳�Ȥ����� */
+      /* prev に隣接している場合。prev のサイズを増やす。*/
+      /* このとき、current と併合していようが、単に挿入していようが、 */
+      /* どちらにしても prev->next は、new_entryを指していることに注意 */
       if ((char *)new_entry == ((char *)prev + prev->size))
 	{
 	  prev->size += new_entry->size;

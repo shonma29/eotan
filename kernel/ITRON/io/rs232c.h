@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -17,14 +17,14 @@ Version 2, June 1991
 #define __IO_RS232C_H__	1
 
 
-/* RS232C мя╓нI/O╔╒╔и╔Л╔╧╓ндЙ╣а
+/* RS232C Г■╗Ц│╝I/OЦ┌╒Ц┐┴Ц┐╛Ц┌╧Ц│╝Е╝ Г╬╘
  */
 
 #define RS232C_COM_PORT		32
 #define RS232C_STATUS_PORT	32
 #define RS232C_DATA_PORT	30
 
-#define RS232C_INTR		0x0C	/* RS232C ЁД╓Й╧Ч╓ъ╔ы╔╞╔© */
+#define RS232C_INTR		0x0C	/* RS232C Е┴╡Ц┌┼Х╬╪Ц│©Ц┐≥Ц┌╞Ц┌© */
 
 
 

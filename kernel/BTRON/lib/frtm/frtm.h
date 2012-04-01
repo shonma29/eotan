@@ -23,7 +23,7 @@
 typedef enum {RUN, SKIP, DIC1, DIC2, FGT, DEF, VAR,
 		IF, DO, FOR, ON, OFF} MODE;
 
-/* ¥¨¥é¡¼¥³¡¼¥É */
+/* ã‚¨ãƒ©ãƒ¼ã‚³ãƒ¼ãƒ‰ */
 #define E_QUT (-1)
 #define E_OK  0
 #define E_VSO 1

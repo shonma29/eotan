@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -20,7 +20,7 @@ static char rcsid[] = "@(#) $Header: /usr/local/src/master/B-Free/Program/btron-
  * Port-manager and libkernel.a is moved to ITRON. I guess it is reasonable. At least they should not be in BTRON/.
  *
  * Revision 1.1  1996/07/22 23:52:05  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  */
@@ -35,12 +35,12 @@ static char rcsid[] = "@(#) $Header: /usr/local/src/master/B-Free/Program/btron-
 #define CONSOLE_DRIVER	"driver.console"
 
 
-/* ¥³¥ó¥½¡¼¥ë¥Ç¥Ğ¥¤¥¹¥É¥é¥¤¥Ğ¤ËÂĞ¤·¤Æ¥á¥Ã¥»¡¼¥¸¤ò½ĞÎÏ¤¹¤ë¤¿¤á¤Î´Ø¿ô·² 
+/* ã‚³ãƒ³ã‚½ãƒ¼ãƒ«ãƒ‡ãƒã‚¤ã‚¹ãƒ‰ãƒ©ã‚¤ãƒã«å¯¾ã—ã¦ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’å‡ºåŠ›ã™ã‚‹ãŸã‚ã®é–¢æ•°ç¾¤ 
  *
  */
 
 /* ----------------------------------------------------------- */
-/*                  ¥Õ¥¡¥¤¥ëÆâ static ÊÑ¿ô                     */
+/*                  ãƒ•ã‚¡ã‚¤ãƒ«å†… static å¤‰æ•°                     */
 /* ----------------------------------------------------------- */
  
 static ID	console;
@@ -49,11 +49,11 @@ static ID	recv;
 
 /* open_console
  *
- * ¥³¥ó¥½¡¼¥ë¥Ç¥Ğ¥¤¥¹¥É¥é¥¤¥Ğ¤ò¥ª¡¼¥×¥ó¤¹¤ë¡£
+ * ã‚³ãƒ³ã‚½ãƒ¼ãƒ«ãƒ‡ãƒã‚¤ã‚¹ãƒ‰ãƒ©ã‚¤ãƒã‚’ã‚ªãƒ¼ãƒ—ãƒ³ã™ã‚‹ã€‚
  *
- * °ú¿ô		¤Ê¤·
+ * å¼•æ•°		ãªã—
  *
- * ÊÖ¤êÃÍ	¥¨¥é¡¼ÈÖ¹æ
+ * è¿”ã‚Šå€¤	ã‚¨ãƒ©ãƒ¼ç•ªå·
  *
  */
 ER
@@ -76,15 +76,15 @@ open_console (void)
 
 /* write_console
  *
- * ¥³¥ó¥½¡¼¥ë¤Ø¤ÎÊ¸»ú½ĞÎÏ
+ * ã‚³ãƒ³ã‚½ãƒ¼ãƒ«ã¸ã®æ–‡å­—å‡ºåŠ›
  *
  *
  */
 ER
 write_console (B *buf, W length)
 {
-  DDEV_REQ		req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-  DDEV_RES		res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+  DDEV_REQ		req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+  DDEV_RES		res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
   W			rsize;
   ER			error;
   W			i;

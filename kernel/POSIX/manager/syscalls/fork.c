@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -23,7 +23,7 @@ Version 2, June 1991
 
 #include "posix.h"
 
-/* psc_fork_f - ¿·¤·¤¤¥×¥í¥»¥¹¤òºîÀ®¤¹¤ë
+/* psc_fork_f - æ–°ã—ã„ãƒ—ãƒ­ã‚»ã‚¹ã‚’ä½œæˆã™ã‚‹
  */
 W
 psc_fork_f (struct posix_request *req)
@@ -32,7 +32,7 @@ psc_fork_f (struct posix_request *req)
   W	       errno;
   W	       childid;
 
-  errno = proc_get_procp (req->procid, &procp);		/* ¿Æ¥×¥í¥»¥¹¤Î¾ğÊó¤Î¼è¤ê¤À¤· */
+  errno = proc_get_procp (req->procid, &procp);		/* è¦ªãƒ—ãƒ­ã‚»ã‚¹ã®æƒ…å ±ã®å–ã‚Šã ã— */
   if (errno)
     {
       printk ("posix: invalid process id (%d)\n", req->procid);
@@ -51,6 +51,6 @@ psc_fork_f (struct posix_request *req)
       return (FAIL);
     }
 
-  put_response (req, EP_OK, childid, 0, 0);	/* ¿Æ¥×¥í¥»¥¹¤ËÂĞ¤·¤Æ±şÅú */
+  put_response (req, EP_OK, childid, 0, 0);	/* è¦ªãƒ—ãƒ­ã‚»ã‚¹ã«å¯¾ã—ã¦å¿œç­” */
   return (SUCCESS);
 }  

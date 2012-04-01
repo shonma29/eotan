@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -13,30 +13,30 @@ Version 2, June 1991
  *
  * $Log: ide.h,v $
  * Revision 1.8  1999/02/28 22:11:33  night
- * ´Ø¿ô get_ide_parameter() ¤Î extern Àë¸À¤ÎÄÉ²Ã¡£
+ * é–¢æ•° get_ide_parameter() ã® extern å®£è¨€ã®è¿½åŠ ã€‚
  *
  * Revision 1.7  1998/11/20 08:02:29  monaka
  * *** empty log message ***
  *
  * Revision 1.6  1998/06/10 13:42:03  night
- * ¥³¥á¥ó¥È¤ÎÄÉ²Ã¡£
+ * ã‚³ãƒ¡ãƒ³ãƒˆã®è¿½åŠ ã€‚
  *
  * Revision 1.5  1998/06/09 14:06:16  night
- * ¹½Â¤ÂÎ ide_partition ¤ÎÊÑ¹¹¡£
- * HD ¤Ëµ­Ï¿¤·¤Æ¤¢¤ë¥Ñ¡¼¥Æ¥£¥·¥ç¥ó¾ğÊó¤½¤Î¤Ş¤Ş¤Î·Á¼°¤ËÊÑ¹¹¤·¤¿¡£
- * (¤³¤ì¤Ş¤Ç¤Ï¡¢HD ¤Ëµ­Ï¿¤·¤Æ¤¢¤ë·Á¼°¤È¤ÏÊÑ¤¨¤Æ¤¢¤Ã¤¿)
+ * æ§‹é€ ä½“ ide_partition ã®å¤‰æ›´ã€‚
+ * HD ã«è¨˜éŒ²ã—ã¦ã‚ã‚‹ãƒ‘ãƒ¼ãƒ†ã‚£ã‚·ãƒ§ãƒ³æƒ…å ±ãã®ã¾ã¾ã®å½¢å¼ã«å¤‰æ›´ã—ãŸã€‚
+ * (ã“ã‚Œã¾ã§ã¯ã€HD ã«è¨˜éŒ²ã—ã¦ã‚ã‚‹å½¢å¼ã¨ã¯å¤‰ãˆã¦ã‚ã£ãŸ)
  *
  * Revision 1.4  1998/03/01 05:18:21  night
- * ide_id ¹½Â¤ÂÎ¤ÎÃæ¤Ë ecc_bytes ¤È¤¤¤¦Í×ÁÇ¤òÄÉ²Ã¡£
+ * ide_id æ§‹é€ ä½“ã®ä¸­ã« ecc_bytes ã¨ã„ã†è¦ç´ ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.3  1998/02/25 13:07:12  night
- * ide_read_dump ´Ø¿ô¤Î¥×¥í¥È¥¿¥¤¥×Àë¸À¤ÎÄÉ²Ã¡£
+ * ide_read_dump é–¢æ•°ã®ãƒ—ãƒ­ãƒˆã‚¿ã‚¤ãƒ—å®£è¨€ã®è¿½åŠ ã€‚
  *
  * Revision 1.2  1997/08/31 14:24:49  night
- * ide ¥Ç¥£¥¹¥¯¤Î ID ¾ğÊó¤ÎÆÉ¤ß¼è¤ê¤ò¹Ô¤¦½èÍı¤Î¤¿¤á¤ÎÄêµÁ¤òÄÉ²Ã¡£
+ * ide ãƒ‡ã‚£ã‚¹ã‚¯ã® ID æƒ…å ±ã®èª­ã¿å–ã‚Šã‚’è¡Œã†å‡¦ç†ã®ãŸã‚ã®å®šç¾©ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.1  1996/08/11  15:12:08  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  */
@@ -51,7 +51,7 @@ Version 2, June 1991
 #define IDE_COMMAND_REG		0x1f7
 #define IDE_ALT_STAT_REG	0x3f6
 #define IDE_CONTROL_REG		0x3f6
-#define IDE_ADDR_REG		0x3f7	/* ¥Ç¥£¥¸¥¿¥ë¥¤¥ó¥×¥Ã¥È¥ì¥¸¥¹¥¿ */
+#define IDE_ADDR_REG		0x3f7	/* ãƒ‡ã‚£ã‚¸ã‚¿ãƒ«ã‚¤ãƒ³ãƒ—ãƒƒãƒˆãƒ¬ã‚¸ã‚¹ã‚¿ */
 #define IDE_ERROR_REG		0x1f1
 #define IDE_DATA_REG		0x1f0
 #define IDE_FEATURE_REG		0x1f1
@@ -59,7 +59,7 @@ Version 2, June 1991
 #define IDE_SNUMBER_REG		0x1f3
 #define IDE_CYL_LOW_REG		0x1f4
 #define IDE_CYL_HIGH_REG	0x1f5
-#define IDE_DRIVE_REG		0x1f6	/* ¥É¥é¥¤¥Ö/¥Ø¥Ã¥É¥ì¥¸¥¹¥¿ */
+#define IDE_DRIVE_REG		0x1f6	/* ãƒ‰ãƒ©ã‚¤ãƒ–/ãƒ˜ãƒƒãƒ‰ãƒ¬ã‚¸ã‚¹ã‚¿ */
 
 #define	IDE_CMD_READ_INFO	0xec
 #define IDE_CMD_READ		0x20
@@ -115,15 +115,15 @@ struct ide_partition
 {
   unsigned char		boot_flag;
   unsigned char		begin[3];	/* header, sector, cylinder
-					 * ¤Î½ç¤Ë¤Ê¤é¤ó¤Ç¤¤¤ë¡£
-					 * ¤¿¤À¤·¡¢sector ¤Î¾å°Ì 2 ¥Ó¥Ã¥È¤Ï¡¢
-					 * ¥·¥ê¥ó¥À¤Î¾å°Ì 2 ¥Ó¥Ã¥È¤òÊä´°¤¹¤ë¡£
+					 * ã®é †ã«ãªã‚‰ã‚“ã§ã„ã‚‹ã€‚
+					 * ãŸã ã—ã€sector ã®ä¸Šä½ 2 ãƒ“ãƒƒãƒˆã¯ã€
+					 * ã‚·ãƒªãƒ³ãƒ€ã®ä¸Šä½ 2 ãƒ“ãƒƒãƒˆã‚’è£œå®Œã™ã‚‹ã€‚
 					 */
   unsigned char		type;
   unsigned char		end[3];		/* header, sector, cylinder
-					 * ¤Î½ç¤Ë¤Ê¤é¤ó¤Ç¤¤¤ë¡£
-					 * ¤¿¤À¤·¡¢sector ¤Î¾å°Ì 2 ¥Ó¥Ã¥È¤Ï¡¢
-					 * ¥·¥ê¥ó¥À¤Î¾å°Ì 2 ¥Ó¥Ã¥È¤òÊä´°¤¹¤ë¡£
+					 * ã®é †ã«ãªã‚‰ã‚“ã§ã„ã‚‹ã€‚
+					 * ãŸã ã—ã€sector ã®ä¸Šä½ 2 ãƒ“ãƒƒãƒˆã¯ã€
+					 * ã‚·ãƒªãƒ³ãƒ€ã®ä¸Šä½ 2 ãƒ“ãƒƒãƒˆã‚’è£œå®Œã™ã‚‹ã€‚
 					 */
   unsigned long		start;
   unsigned long		length;

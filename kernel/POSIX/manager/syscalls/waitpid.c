@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -37,7 +37,7 @@ psc_waitpid_f (struct posix_request *req)
   mypid = req->procid;
   if (pid == 0) pid = (-proc_table[mypid].proc_pgid);
 
-  /* ¥×¥í¥»¥¹¥Æ¡¼¥Ö¥ë¤òÁöºº¤·¤Æ»Ò¥×¥í¥»¥¹¤òÄ´ºº */
+  /* ãƒ—ãƒ­ã‚»ã‚¹ãƒ†ãƒ¼ãƒ–ãƒ«ã‚’èµ°æŸ»ã—ã¦å­ãƒ—ãƒ­ã‚»ã‚¹ã‚’èª¿æŸ» */
   children = 0;
   for(i = 1; i < MAX_PROCESS; ++i) {
     proc_get_procp(i, &procp);
@@ -47,15 +47,15 @@ psc_waitpid_f (struct posix_request *req)
       if (pid < -1 && pid != -procp->proc_pgid) continue;
       children++;
       if (procp->proc_status == PS_ZOMBIE) {
-	/* »Ò¥×¥í¥»¥¹¤Î¾ğÊó¤ò¥¯¥ê¥¢¤·¡¤¿Æ¥×¥í¥»¥¹¤ËÊÖ»ö¤òÁ÷¤ë */
+	/* å­ãƒ—ãƒ­ã‚»ã‚¹ã®æƒ…å ±ã‚’ã‚¯ãƒªã‚¢ã—ï¼Œè¦ªãƒ—ãƒ­ã‚»ã‚¹ã«è¿”äº‹ã‚’é€ã‚‹ */
 	exst = (procp->proc_exst << 8);
 	put_response (req, EP_OK, i, exst, 0);
 	
-	/* ¿Æ¥×¥í¥»¥¹¤Î¾õÂÖÊÑ¹¹ */
+	/* è¦ªãƒ—ãƒ­ã‚»ã‚¹ã®çŠ¶æ…‹å¤‰æ›´ */
 	proc_get_procp(mypid, &procp);
 	procp->proc_status = PS_RUN;
 
-	/* »Ò¥×¥í¥»¥¹¤Î¥¨¥ó¥È¥ê¡¼¤Î³«Êü */
+	/* å­ãƒ—ãƒ­ã‚»ã‚¹ã®ã‚¨ãƒ³ãƒˆãƒªãƒ¼ã®é–‹æ”¾ */
 	proc_exit(i);
 	
 	return(SUCCESS);
@@ -63,13 +63,13 @@ psc_waitpid_f (struct posix_request *req)
     }
   }
   if (children > 0) {
-    /* ÂĞ±ş¤¹¤ë»Ò¥×¥í¥»¥¹¤Ï¤¢¤Ã¤¿¤¬¡¤¤Ş¤À½ªÎ»¤·¤Æ¤¤¤Ê¤«¤Ã¤¿ */
+    /* å¯¾å¿œã™ã‚‹å­ãƒ—ãƒ­ã‚»ã‚¹ã¯ã‚ã£ãŸãŒï¼Œã¾ã çµ‚äº†ã—ã¦ã„ãªã‹ã£ãŸ */
     if (req->param.par_waitpid.opts & WNOHANG) {
-      /* ¿Æ¤ËÊÖ»ö¤òÁ÷¤ëÉ¬Í×¤¬¤¢¤ë */
+      /* è¦ªã«è¿”äº‹ã‚’é€ã‚‹å¿…è¦ãŒã‚ã‚‹ */
       put_response (req, EP_OK, 0, 0, 0);
       return (SUCCESS);
     }
-    /* ¿Æ¥×¥í¥»¥¹¤Î¾õÂÖ¤òÊÑ¹¹¤·¡¤ÊÖ»ö¤òÁ÷¤é¤º¤Ë¥·¥¹¥Æ¥à¥³¡¼¥ë¤ò½ªÎ» */
+    /* è¦ªãƒ—ãƒ­ã‚»ã‚¹ã®çŠ¶æ…‹ã‚’å¤‰æ›´ã—ï¼Œè¿”äº‹ã‚’é€ã‚‰ãšã«ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«ã‚’çµ‚äº† */
     proc_get_procp(mypid, &procp);
     procp->proc_status = PS_WAIT;
     procp->proc_wpid = pid;
@@ -77,7 +77,7 @@ psc_waitpid_f (struct posix_request *req)
     return (SUCCESS);
   }
   else {
-    /* ¥¨¥é¡¼¤òÊÖ¤¹ */
+    /* ã‚¨ãƒ©ãƒ¼ã‚’è¿”ã™ */
     put_response (req, EP_CHILD, 0, 0, 0);
     return (FAIL);
   }

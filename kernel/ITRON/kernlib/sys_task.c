@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -8,7 +8,7 @@ Version 2, June 1991
 (C) B-Free Project.
 
 */
-/* sys_task.c -- ¥¿¥¹¥¯´Ø·¸¤Î¥·¥¹¥Æ¥à¥³¡¼¥ë
+/* sys_task.c -- ã‚¿ã‚¹ã‚¯é–¢ä¿‚ã®ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«
  *
  * $Id: sys_task.c,v 1.4 2000/04/03 14:37:35 naniwa Exp $
  */
@@ -19,11 +19,11 @@ Version 2, June 1991
 #include "../../ITRON/h/errno.h"
 
 
-/* cre_tsk  --- ¥¿¥¹¥¯¤ÎÀ¸À®
+/* cre_tsk  --- ã‚¿ã‚¹ã‚¯ã®ç”Ÿæˆ
  *
- * °ú¿ô¡§
+ * å¼•æ•°ï¼š
  *
- * ÊÖ¤êÃÍ¡§
+ * è¿”ã‚Šå€¤ï¼š
  *
  */
 ER
@@ -52,7 +52,7 @@ vcre_tsk (T_CTSK *pk_ctsk, ID *rid)
 }
 
 
-/* ext_tsk  --- ¼«¥¿¥¹¥¯½ªÎ»
+/* ext_tsk  --- è‡ªã‚¿ã‚¹ã‚¯çµ‚äº†
 */
 void
 ext_tsk (void)
@@ -60,7 +60,7 @@ ext_tsk (void)
   call_syscall (SYS_EXT_TSK);
 }
 
-/* exd_tsk  --- ¼«¥¿¥¹¥¯½ªÎ»¤Èºï½ü
+/* exd_tsk  --- è‡ªã‚¿ã‚¹ã‚¯çµ‚äº†ã¨å‰Šé™¤
 */
 void
 exd_tsk (void)
@@ -68,7 +68,7 @@ exd_tsk (void)
   call_syscall (SYS_EXD_TSK);
 }
 
-/* can_wup  --- ¥¿¥¹¥¯¤Îµ¯¾²Í×µá¤òÌµ¸ú²½
+/* can_wup  --- ã‚¿ã‚¹ã‚¯ã®èµ·åºŠè¦æ±‚ã‚’ç„¡åŠ¹åŒ–
 */
 ER
 can_wup (INT *p_wupcnt, ID taskid)
@@ -76,7 +76,7 @@ can_wup (INT *p_wupcnt, ID taskid)
   return call_syscall (SYS_CAN_WUP, p_wupcnt, taskid);
 }
 
-/* chg_pri  --- ¥×¥é¥¤¥ª¥ê¥Æ¥£¤ÎÊÑ¹¹
+/* chg_pri  --- ãƒ—ãƒ©ã‚¤ã‚ªãƒªãƒ†ã‚£ã®å¤‰æ›´
 */
 ER
 chg_pri (ID tskid, PRI tskpri)
@@ -84,7 +84,7 @@ chg_pri (ID tskid, PRI tskpri)
   return call_syscall (SYS_CHG_PRI, tskid, tskpri);
 }
 
-/* dis_dsp  --- ¥Ç¥£¥¹¥Ñ¥Ã¥Á¶Ø»ß
+/* dis_dsp  --- ãƒ‡ã‚£ã‚¹ãƒ‘ãƒƒãƒç¦æ­¢
 */
 ER
 dis_dsp (void)
@@ -92,7 +92,7 @@ dis_dsp (void)
   return call_syscall (SYS_DIS_DSP);
 }
 
-/* ena_dsp  --- ¥Ç¥£¥¹¥Ñ¥Ã¥Áµö²Ä
+/* ena_dsp  --- ãƒ‡ã‚£ã‚¹ãƒ‘ãƒƒãƒè¨±å¯
 */
 ER
 ena_dsp (void)
@@ -100,7 +100,7 @@ ena_dsp (void)
   return call_syscall (SYS_ENA_DSP);
 }
 
-/* frsm_tsk --- ¶¯À©ÂÔ¤Á¾õÂÖ¤Î¥¿¥¹¥¯¤«¤éÂÔ¤Á¾õÂÖ¤ò²ò½ü(Â¿½Å¤ÎÂÔ¤Á¾õÂÖÍÑ)
+/* frsm_tsk --- å¼·åˆ¶å¾…ã¡çŠ¶æ…‹ã®ã‚¿ã‚¹ã‚¯ã‹ã‚‰å¾…ã¡çŠ¶æ…‹ã‚’è§£é™¤(å¤šé‡ã®å¾…ã¡çŠ¶æ…‹ç”¨)
 */
 ER
 frsm_tsk (ID taskid)
@@ -108,14 +108,14 @@ frsm_tsk (ID taskid)
   return call_syscall (SYS_FRSM_TSK, taskid);
 }
 
-/* rel_wai --- ÂÔ¤Á¾õÂÖ¤Î²ò½ü
+/* rel_wai --- å¾…ã¡çŠ¶æ…‹ã®è§£é™¤
  */
 rel_wai (ID taskid)
 {
   return call_syscall (SYS_REL_WAI, taskid);
 }
 
-/* get_tid  --- ¼«¥¿¥¹¥¯¤Î¥¿¥¹¥¯ ID »²¾È
+/* get_tid  --- è‡ªã‚¿ã‚¹ã‚¯ã®ã‚¿ã‚¹ã‚¯ ID å‚ç…§
 */
 ER
 get_tid (ID *rid)
@@ -123,7 +123,7 @@ get_tid (ID *rid)
   return call_syscall (SYS_GET_TID, rid);
 }
 
-/* ref_tsk  --- ¥¿¥¹¥¯¾õÂÖ¤Î»²¾È
+/* ref_tsk  --- ã‚¿ã‚¹ã‚¯çŠ¶æ…‹ã®å‚ç…§
 */
 ER
 ref_tsk (T_RTSK *stat, ID taskid)
@@ -131,7 +131,7 @@ ref_tsk (T_RTSK *stat, ID taskid)
   return call_syscall (SYS_REF_TSK, stat, taskid);
 }
 
-/* rot_rdq  --- Æ±°ì¥×¥é¥¤¥ª¥ê¥Æ¥£¤Ç¤Î¥¿¥¹¥¯¤Î½ç½ø¤òÊÑ¹¹¤¹¤ë
+/* rot_rdq  --- åŒä¸€ãƒ—ãƒ©ã‚¤ã‚ªãƒªãƒ†ã‚£ã§ã®ã‚¿ã‚¹ã‚¯ã®é †åºã‚’å¤‰æ›´ã™ã‚‹
 */
 ER
 rot_rdq (PRI tskpri)
@@ -139,7 +139,7 @@ rot_rdq (PRI tskpri)
   return call_syscall (SYS_ROT_RDQ, tskpri);
 }
 
-/* rsm_tsk  --- ¶¯À©ÂÔ¤Á¾õÂÖ¤Î¥¿¥¹¥¯¤«¤éÂÔ¤Á¾õÂÖ¤ò²ò½ü
+/* rsm_tsk  --- å¼·åˆ¶å¾…ã¡çŠ¶æ…‹ã®ã‚¿ã‚¹ã‚¯ã‹ã‚‰å¾…ã¡çŠ¶æ…‹ã‚’è§£é™¤
 */
 ER
 rsm_tsk (ID taskid)
@@ -147,7 +147,7 @@ rsm_tsk (ID taskid)
   return call_syscall (SYS_RSM_TSK, taskid);
 }
 
-/* slp_tsk  --- ¼«¥¿¥¹¥¯¤òÂÔ¤Á¾õÂÖ¤Ë¤¹¤ë
+/* slp_tsk  --- è‡ªã‚¿ã‚¹ã‚¯ã‚’å¾…ã¡çŠ¶æ…‹ã«ã™ã‚‹
 */
 ER
 slp_tsk (void)
@@ -155,7 +155,7 @@ slp_tsk (void)
   return call_syscall (SYS_SLP_TSK);
 }
 
-/* sta_tsk  --- ¥¿¥¹¥¯¤Îµ¯Æ°
+/* sta_tsk  --- ã‚¿ã‚¹ã‚¯ã®èµ·å‹•
 */
 ER
 sta_tsk (ID taskid, INT stacd)
@@ -163,7 +163,7 @@ sta_tsk (ID taskid, INT stacd)
   return call_syscall (SYS_STA_TSK, taskid, stacd);
 }
 
-/* sus_tsk  --- »ØÄê¤·¤¿¥¿¥¹¥¯¤ò¶¯À©ÂÔ¤Á¾õÂÖ¤Ë°Ü¹Ô
+/* sus_tsk  --- æŒ‡å®šã—ãŸã‚¿ã‚¹ã‚¯ã‚’å¼·åˆ¶å¾…ã¡çŠ¶æ…‹ã«ç§»è¡Œ
 */
 ER
 sus_tsk (ID taskid)
@@ -171,7 +171,7 @@ sus_tsk (ID taskid)
   return call_syscall (SYS_SUS_TSK, taskid);
 }
 
-/* ter_tsk  --- Â¾¥¿¥¹¥¯¶¯À©½ªÎ»
+/* ter_tsk  --- ä»–ã‚¿ã‚¹ã‚¯å¼·åˆ¶çµ‚äº†
 */
 ER
 ter_tsk (ID tskid)
@@ -179,7 +179,7 @@ ter_tsk (ID tskid)
   return call_syscall (SYS_TER_TSK, tskid);
 }
 
-/* wup_tsk  --- »ØÄê¤µ¤ì¤¿¥¿¥¹¥¯¤òµ¯¾²¤¹¤ë¡£
+/* wup_tsk  --- æŒ‡å®šã•ã‚ŒãŸã‚¿ã‚¹ã‚¯ã‚’èµ·åºŠã™ã‚‹ã€‚
 */
 ER
 wup_tsk (ID taskid)
@@ -187,7 +187,7 @@ wup_tsk (ID taskid)
   return call_syscall (SYS_WUP_TSK, taskid);
 }
 
-/* del_tsk --- Â¾¥¿¥¹¥¯ºï½ü
+/* del_tsk --- ä»–ã‚¿ã‚¹ã‚¯å‰Šé™¤
  */
 ER
 del_tsk (ID tskid)

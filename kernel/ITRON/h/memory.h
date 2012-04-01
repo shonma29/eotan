@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -28,10 +28,10 @@ Version 2, June 1991
 #define  MEM_USE	(0x01)
 #define  MEM_MAP	(0x02)
 
-extern unsigned int	physmem_max;	/* ÊªÍı¥á¥â¥ê¤ÎºÇÂçÎÌ (base_mem + ext_mem) */
-extern unsigned int	base_mem;	/* ²¼°Ì¤Ë¤¢¤ë¥á¥â¥ê¤Î¥µ¥¤¥º  */
-					/* (PC9801 ¤Î¾ì¹ç 640K) */
-extern unsigned int	ext_mem;	/* ³ÈÄ¥¥á¥â¥ê¤Î¥µ¥¤¥º */
+extern unsigned int	physmem_max;	/* ç‰©ç†ãƒ¡ãƒ¢ãƒªã®æœ€å¤§é‡ (base_mem + ext_mem) */
+extern unsigned int	base_mem;	/* ä¸‹ä½ã«ã‚ã‚‹ãƒ¡ãƒ¢ãƒªã®ã‚µã‚¤ã‚º  */
+					/* (PC9801 ã®å ´åˆ 640K) */
+extern unsigned int	ext_mem;	/* æ‹¡å¼µãƒ¡ãƒ¢ãƒªã®ã‚µã‚¤ã‚º */
 
 
 #endif /* __H_MEMORY_H__ */

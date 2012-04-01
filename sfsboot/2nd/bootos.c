@@ -72,7 +72,7 @@ multi_boot (struct sfs_inode *ip, int rootfs)
   }
  
   boot_printf ("Module %d\n", info->count);
-  offset = BLOCK_SIZE;	                      /* ºÇ½é¤Î¥â¥¸¥å¡¼¥ë¤¬Æþ¤Ã¤Æ¤¤¤ë¥ª¥Õ¥»¥Ã¥È(¥Ð¥¤¥È) */
+  offset = BLOCK_SIZE;	                      /* æœ€åˆã®ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«ãŒå…¥ã£ã¦ã„ã‚‹ã‚ªãƒ•ã‚»ãƒƒãƒˆ(ãƒã‚¤ãƒˆ) */
   entry = (void (*)())(info->modules[0].entry);
 
   for (i = 0; i < info->count; i++) {

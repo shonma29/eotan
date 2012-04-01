@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -287,7 +287,7 @@ cat_buf (char *buf, int length)
 #endif
 
 
-/* ¥Ç¥£¥ì¥¯¥È¥ê¤Ë´Ø·¸¤¹¤ë½èÍı
+/* ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«é–¢ä¿‚ã™ã‚‹å‡¦ç†
  *
  * sfs_read_rootdir()
  * sfs_read_dir()
@@ -311,12 +311,12 @@ sfs_read_dir (int fd,
           nentry * sizeof (struct sfs_dir) :
 	  ip->sfs_i_size;
 
-  sfs_read_file (fd, sb, ip, 0, size, dirp);	/* ¥¨¥é¡¼¥Á¥§¥Ã¥¯¤¬É¬Í×! */
+  sfs_read_file (fd, sb, ip, 0, size, dirp);	/* ã‚¨ãƒ©ãƒ¼ãƒã‚§ãƒƒã‚¯ãŒå¿…è¦! */
   return (0);
 }
 
 
-/* inode ¤Ë´Ø·¸¤·¤Æ¤¤¤ë½èÍı
+/* inode ã«é–¢ä¿‚ã—ã¦ã„ã‚‹å‡¦ç†
  *
  * sfs_get_inode_offset()
  * sfs_read_inode()
@@ -351,7 +351,7 @@ sfs_read_inode (int fd, struct sfs_superblock *sb, int ino, struct sfs_inode *ip
 
 
 
-/* ¥Õ¥¡¥¤¥ë¤Ë´Ø·¸¤·¤Æ¤¤¤ë½èÍı
+/* ãƒ•ã‚¡ã‚¤ãƒ«ã«é–¢ä¿‚ã—ã¦ã„ã‚‹å‡¦ç†
  *
  * read_file()
  * create_file()
@@ -511,7 +511,7 @@ sfs_locallookup_file (int fd,
 }
 
 
-/* ¥Ö¥í¥Ã¥¯¤Ë´Ø·¸¤·¤Æ¤¤¤ë½èÍı
+/* ãƒ–ãƒ­ãƒƒã‚¯ã«é–¢ä¿‚ã—ã¦ã„ã‚‹å‡¦ç†
  *
  * sfs_read_block()
  * sfs_alloc_block()
@@ -562,7 +562,7 @@ get_block_num (int fd,
 {
   if (blockno < SFS_DIRECT_BLOCK_ENTRY)
     {
-      /* Ä¾ÀÜ¥Ö¥í¥Ã¥¯¤ÎÈÏ°ÏÆâ
+      /* ç›´æ¥ãƒ–ãƒ­ãƒƒã‚¯ã®ç¯„å›²å†…
        */
       return (ip->sfs_i_direct[blockno]);
     }
@@ -570,7 +570,7 @@ get_block_num (int fd,
   		      + (SFS_INDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK)))
     {
       int result;
-      /* °ì½Å´ÖÀÜ¥Ö¥í¥Ã¥¯¤ÎÈÏ°ÏÆâ
+      /* ä¸€é‡é–“æ¥ãƒ–ãƒ­ãƒƒã‚¯ã®ç¯„å›²å†…
        */
       result = get_indirect_block_num (fd, sb, ip, blockno);
       return result;
@@ -580,7 +580,7 @@ get_block_num (int fd,
 		      + (SFS_DINDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK * SFS_INDIRECT_BLOCK)))
     {
       int result;
-      /* Æó½Å´ÖÀÜ¥Ö¥í¥Ã¥¯¤ÎÈÏ°ÏÆâ
+      /* äºŒé‡é–“æ¥ãƒ–ãƒ­ãƒƒã‚¯ã®ç¯„å›²å†…
        */
       result =  get_dindirect_block_num (fd, sb, ip, blockno);
       return result;

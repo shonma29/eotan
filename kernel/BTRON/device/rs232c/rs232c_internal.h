@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -13,11 +13,11 @@ Version 2, June 1991
 /* 
  * $Log: rs232c_internal.h,v $
  * Revision 1.2  1998/12/07 14:29:00  night
- * ³Æ¥·¥ê¥¢¥ë¥İ¡¼¥È¤Î ¥Ù¡¼¥¹ I/O ¥¢¥É¥ì¥¹¤ò»ØÄê¤¹¤ë COMx_BASE ¥Ş¥¯¥í¤ò
- * ÄÉ²Ã¡£
- * Ê¬¼ş¥ì¥¸¥¹¥¿¤ò»ØÄê¤¹¤ë¤È¤­¤Ë»ÈÍÑ¤¹¤ë UART_FRE ¥Ş¥¯¥í¤òÄÉ²Ã¡£
- * ¥Ş¥¯¥í UART_IER ¤Î¥³¥á¥ó¥ÈÊÑ¹¹(³ä¤ê¹ş¤ß¥¤¥Í¡¼¥Ö¥ë¥ì¥¸¥¹¥¿ -> ³ä¤ê¹ş¤ß
- * µö²Ä¥ì¥¸¥¹¥¿)¡£
+ * å„ã‚·ãƒªã‚¢ãƒ«ãƒãƒ¼ãƒˆã® ãƒ™ãƒ¼ã‚¹ I/O ã‚¢ãƒ‰ãƒ¬ã‚¹ã‚’æŒ‡å®šã™ã‚‹ COMx_BASE ãƒã‚¯ãƒ­ã‚’
+ * è¿½åŠ ã€‚
+ * åˆ†å‘¨ãƒ¬ã‚¸ã‚¹ã‚¿ã‚’æŒ‡å®šã™ã‚‹ã¨ãã«ä½¿ç”¨ã™ã‚‹ UART_FRE ãƒã‚¯ãƒ­ã‚’è¿½åŠ ã€‚
+ * ãƒã‚¯ãƒ­ UART_IER ã®ã‚³ãƒ¡ãƒ³ãƒˆå¤‰æ›´(å‰²ã‚Šè¾¼ã¿ã‚¤ãƒãƒ¼ãƒ–ãƒ«ãƒ¬ã‚¸ã‚¹ã‚¿ -> å‰²ã‚Šè¾¼ã¿
+ * è¨±å¯ãƒ¬ã‚¸ã‚¹ã‚¿)ã€‚
  *
  * Revision 1.1  1998/12/04 17:05:07  night
  * first version.
@@ -26,7 +26,7 @@ Version 2, June 1991
  *
  */
 
-/* RS232C ¥É¥é¥¤¥Ğ¤Ç»ÈÍÑ¤¹¤ëÄê¿ôÅù¤ÎÄêµÁ¡£
+/* RS232C ãƒ‰ãƒ©ã‚¤ãƒã§ä½¿ç”¨ã™ã‚‹å®šæ•°ç­‰ã®å®šç¾©ã€‚
  *
  */
 
@@ -41,22 +41,22 @@ Version 2, June 1991
 #define RS232C_IRQ	
 
 
-/* RS232C (8250) ¤Î¥ì¥¸¥¹¥¿
+/* RS232C (8250) ã®ãƒ¬ã‚¸ã‚¹ã‚¿
  */
-#define UART_RX		0	/* In:  ¼õ¿®¥Ğ¥Ã¥Õ¥¡ */
-#define UART_TX		0	/* Out: Á÷¿®¥Ğ¥Ã¥Õ¥¡ */
-#define UART_FRE	0	/* Ê¬¼ş¥ì¥¸¥¹¥¿ */
+#define UART_RX		0	/* In:  å—ä¿¡ãƒãƒƒãƒ•ã‚¡ */
+#define UART_TX		0	/* Out: é€ä¿¡ãƒãƒƒãƒ•ã‚¡ */
+#define UART_FRE	0	/* åˆ†å‘¨ãƒ¬ã‚¸ã‚¹ã‚¿ */
 #define UART_DLL	0	/* Out: Divisor Latch Low (DLAB=1) */
 #define UART_DLM	1	/* Out: Divisor Latch High (DLAB=1) */
-#define UART_IER	1	/* Out: ³ä¤ê¹ş¤ßµö²Ä¥ì¥¸¥¹¥¿ */
-#define UART_IIR	2	/* In:  ³ä¤ê¹ş¤ßÇ§¼±¥ì¥¸¥¹¥¿ */
-#define UART_FCR	2	/* Out: FIFO À©¸æ¥ì¥¸¥¹¥¿ */
+#define UART_IER	1	/* Out: å‰²ã‚Šè¾¼ã¿è¨±å¯ãƒ¬ã‚¸ã‚¹ã‚¿ */
+#define UART_IIR	2	/* In:  å‰²ã‚Šè¾¼ã¿èªè­˜ãƒ¬ã‚¸ã‚¹ã‚¿ */
+#define UART_FCR	2	/* Out: FIFO åˆ¶å¾¡ãƒ¬ã‚¸ã‚¹ã‚¿ */
 #define UART_EFR	2	/* I/O: Extended Features Register */
 				/* (DLAB=1, 16C660 only) */
-#define UART_LCR	3	/* Out: ²óÀşÀ©¸æ¥ì¥¸¥¹¥¿ */
-#define UART_MCR	4	/* Out: ¥â¥Ç¥àÀ©¸æ¥ì¥¸¥¹¥¿ */
-#define UART_LSR	5	/* In:  ²óÏ©¥¹¥Æ¡¼¥¿¥¹¥ì¥¸¥¹¥¿ */
-#define UART_MSR	6	/* In:  ¥â¥Ç¥à¥¹¥Æ¡¼¥¿¥¹¥ì¥¸¥¹¥¿ */
+#define UART_LCR	3	/* Out: å›ç·šåˆ¶å¾¡ãƒ¬ã‚¸ã‚¹ã‚¿ */
+#define UART_MCR	4	/* Out: ãƒ¢ãƒ‡ãƒ åˆ¶å¾¡ãƒ¬ã‚¸ã‚¹ã‚¿ */
+#define UART_LSR	5	/* In:  å›è·¯ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ãƒ¬ã‚¸ã‚¹ã‚¿ */
+#define UART_MSR	6	/* In:  ãƒ¢ãƒ‡ãƒ ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ãƒ¬ã‚¸ã‚¹ã‚¿ */
 #define UART_SCR	7	/* I/O: Scratch Register */
 
 

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -21,7 +21,7 @@ static unsigned char rcsid[] = "$Id: sys_lowlib.c,v 1.1 1999/04/18 17:48:34 mona
 #include "../../ITRON/h/lowlib.h"
 
 
-/* lowlib ¤òÆÃÄê¤Î¥¿¥¹¥¯¤Ë attach ¤¹¤ë
+/* lowlib ã‚’ç‰¹å®šã®ã‚¿ã‚¹ã‚¯ã« attach ã™ã‚‹
  */
 ER
 lod_low (ID task, B *name)
@@ -42,7 +42,7 @@ lod_low (ID task, B *name)
 }
 
 
-/* lowlib ¤Î¾ğÊó¤ò¼èÆÀ
+/* lowlib ã®æƒ…å ±ã‚’å–å¾—
  */
 ER
 sts_low (B *name, struct lowlib_info *infop, W *nlowlib)
@@ -52,8 +52,8 @@ sts_low (B *name, struct lowlib_info *infop, W *nlowlib)
     {
       B				*name;
       struct lowlib_info	*infop;
-      W				*nlowlib; /* lowlib ¤ÎÅĞÏ¿¿ô (name == */
-					  /* NULL ¤Î¤È¤­) 	    */
+      W				*nlowlib; /* lowlib ã®ç™»éŒ²æ•° (name == */
+					  /* NULL ã®ã¨ã) 	    */
     } args;
 
   args.name = name;

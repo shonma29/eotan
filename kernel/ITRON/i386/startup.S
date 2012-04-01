@@ -11,9 +11,9 @@
 
 startup:
 		cli
-		/* idtr �򥻥å� */
+		/* idtr をセット */
 		lidt	idt_ptr
-		/* gdtr �򥻥å� */
+		/* gdtr をセット */
 		lgdt	gdt_ptr
 
 		movl	$0x10, %eax

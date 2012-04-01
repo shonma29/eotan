@@ -1,5 +1,5 @@
 /*
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
 
@@ -11,7 +11,7 @@ Version 2, June 1991
 
 /*
 ** Function: put_evt
-** Description: ╔╓╔ы╔С╔х╓нх╞ю╦
+** Description: Ц┌╓Ц┐≥Ц┐ЁЦ┐┬Ц│╝Г≥╨Г■÷
 */
 
 ER

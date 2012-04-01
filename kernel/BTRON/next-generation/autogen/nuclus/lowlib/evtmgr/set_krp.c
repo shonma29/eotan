@@ -1,5 +1,5 @@
 /*
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
 
@@ -11,7 +11,7 @@ Version 2, June 1991
 
 /*
 ** Function: set_krp
-** Description: ¥­¡¼¥ê¥Ô¡¼¥È´Ö³Ö¤ÎÀßÄê
+** Description: ã‚­ãƒ¼ãƒªãƒ”ãƒ¼ãƒˆé–“éš”ã®è¨­å®š
 */
 
 ER

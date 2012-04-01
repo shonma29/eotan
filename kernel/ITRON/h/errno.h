@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -16,18 +16,18 @@ Version 2, June 1991
 #define __ITRON_ERRNO_H__	1
 
 
-#define E_OK		(0)		/* Àµ¾ï½ªÎ»		*/
+#define E_OK		(0)		/* æ­£å¸¸çµ‚äº†		*/
 
-#define E_SYS		(-5)		/* ¥·¥¹¥Æ¥à¥¨¥é¡¼	*/
+#define E_SYS		(-5)		/* ã‚·ã‚¹ãƒ†ãƒ ã‚¨ãƒ©ãƒ¼	*/
 
-#define E_NOMEM		(-10)		/* ¥á¥â¥êÉÔÂ­		*/
+#define E_NOMEM		(-10)		/* ãƒ¡ãƒ¢ãƒªä¸è¶³		*/
 
-#define E_NOSPT		(-17)		/* Ì¤¥µ¥İ¡¼¥Èµ¡Ç½	*/
-#define E_INOSPT	(-18)		/* ITRON/FILE ¤Ç¤ÎÌ¤¥µ¥İ¡¼¥Èµ¡Ç½ */
+#define E_NOSPT		(-17)		/* æœªã‚µãƒãƒ¼ãƒˆæ©Ÿèƒ½	*/
+#define E_INOSPT	(-18)		/* ITRON/FILE ã§ã®æœªã‚µãƒãƒ¼ãƒˆæ©Ÿèƒ½ */
 #define E_RSFN		(-20)
 #define E_RSATR		(-24)
 
-#define E_PAR		(-33)		/* °ú¿ô¤¬ÊÑ */
+#define E_PAR		(-33)		/* å¼•æ•°ãŒå¤‰ */
 #define E_ID		(-35)
 
 #define E_NOEXS		(-52)
@@ -45,7 +45,7 @@ Version 2, June 1991
 #define E_TMOUT		(-85)
 #define E_RLWAI		(-86)
 
-/*************** ³ÈÄ¥ÉôÊ¬ **************/
+/*************** æ‹¡å¼µéƒ¨åˆ† **************/
 
 #define E_DEV		(-101)
 

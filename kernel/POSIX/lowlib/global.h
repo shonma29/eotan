@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -16,40 +16,40 @@ Version 2, June 1991
  * not to depend on sys/types.h
  *
  * Revision 1.3  1998/02/25 12:48:46  night
- * �ץ�������θ�ͭ�ǡ�������򡢤��줾������ѿ��Ǹ���Ū�ˤ�ĤΤǤϤʤ���
- * lowlib_data �Ȥ����ݥ��󥿤Ǵ�������褦�ˤ�����
- * �����ȼ��������ޤǤ��ä��ץ�������ͭ�Υǡ����򼨤�����ѿ�����������
+ * プロセス毎の固有データ情報を、それぞれ大域変数で固定的にもつのではなく、
+ * lowlib_data というポインタで管理するようにした。
+ * それに伴い、これまであったプロセス固有のデータを示す大域変数を削除した。
  *
- * lowlib_data ���ͤϡ��ޥ��� LOWLIB_DATA �ǻ��ꤷ�����ɥ쥹 (0x7fff0000)
- * �����ꤵ��롣���Υ��ɥ쥹�ϡ��ץ�������˰�ä�ʪ���ڡ����˥ޥåԥ�
- * ����롣���ۥ��ɥ쥹�ϸ���������ºݤ��ΰ�ϥץ�������˰�ä�����¸
- * �ߤ��Ƥ��롣LOWLIB ����������ץ�������ξ���Ϥ����ΰ�������褦��
- * ���롣
+ * lowlib_data の値は、マクロ LOWLIB_DATA で指定したアドレス (0x7fff0000)
+ * に設定される。このアドレスは、プロセス毎に違った物理ページにマッピング
+ * される。仮想アドレスは固定だが、実際の領域はプロセス毎に違った場所に存
+ * 在している。LOWLIB が管理するプロセス毎の情報はこの領域に入れるように
+ * する。
  *
  * Revision 1.2  1997/08/31 13:13:43  night
- * �Ȥꤢ������OS �ե�����������Ȥ����ޤǤǤ�����
+ * とりあえず、OS ファイルに入れるところまでできた。
  *
  * Revision 1.1  1996/11/11  13:36:06  night
- * IBM PC �Ǥؤκǽ����Ͽ
+ * IBM PC 版への最初の登録
  *
  * ----------------
  *
  * Revision 1.3  1995/09/21  15:52:57  night
- * �������ե��������Ƭ�� Copyright notice ������ɲá�
+ * ソースファイルの先頭に Copyright notice 情報を追加。
  *
  * Revision 1.2  1995/03/18  14:26:24  night
- * ��������ѿ���������ɲá�
+ * 次の大域変数の定義を追加。
  *
- * errno		���顼�ֹ��Ѥ��ѿ�
- * main_task	�桼���ץ������Υ����ɤ�¹Ԥ��륿����
- * signal_task	�����ʥ�μ���������Ԥ�������
- * fifo_task	�ѥ��פ�Ȥ��Ȥ��˻��Ѥ��륿����
- * alarm_task	alarm �����ƥॳ�����ѤΥ�����
- * efile		�¹ԥե������ؤ��Ƥ����å������ݡ���
- * 		���������Υڡ�������ΤȤ��˻��Ѥ���
+ * errno		エラー番号用の変数
+ * main_task	ユーザプログラムのコードを実行するタスク
+ * signal_task	シグナルの受信処理を行うタスク
+ * fifo_task	パイプを使うときに使用するタスク
+ * alarm_task	alarm システムコール用のタスク
+ * efile		実行ファイルを指しているメッセージポート
+ * 		コード部のページインのときに使用する
  *
  * Revision 1.1  1995/02/21  15:10:46  night
- * �Ϥ���Ƥ���Ͽ
+ * はじめての登録
  *
  *
  */

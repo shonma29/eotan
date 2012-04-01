@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -14,7 +14,7 @@ Version 2, June 1991
 static char rcsid[] =
     "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/common/syscall-if.c,v 1.23 2000/04/03 14:34:45 naniwa Exp $";
 
-/* syscall-if.c --- �����ƥॳ����Υ��󥿥ե������ؿ�
+/* syscall-if.c --- システムコールのインタフェース関数
  *
  * $Revision: 1.23 $
  * $Log: syscall-if.c,v $
@@ -55,83 +55,83 @@ static char rcsid[] =
  * Modifies for source cleaning. Most of these are for avoid gcc's -Wall message.
  *
  * Revision 1.11  1998/02/25 12:40:31  night
- * vmap_reg () �ΰ����ο����ҤȤ����������Ȥˤ���ѹ���
+ * vmap_reg () の引数の数がひとつ増えたことによる変更。
  *
  * Revision 1.10  1998/02/16 14:15:19  night
- * sys_vget_phs() �ؿ����ɲá�
- * ���δؿ��ϡ������ǻ��ꤷ�����ۥ��ɥ쥹�˥ޥåԥ󥰤���Ƥ���
- * ʪ���ڡ����Υ��ɥ쥹���֤���
+ * sys_vget_phs() 関数の追加。
+ * この関数は、引数で指定した仮想アドレスにマッピングされている
+ * 物理ページのアドレスを返す。
  *
  * Revision 1.9  1997/08/31 14:11:46  night
- * lowlib �ط��ν������ɲ�
+ * lowlib 関係の処理の追加
  *
  * Revision 1.8  1997/07/02 13:24:47  night
- * vput_reg �����Τ���Ͽ
+ * vput_reg の本体を登録
  *
  * Revision 1.7  1997/05/12 14:36:02  night
- * vget_reg �����ƥॳ���뤬�ƤФ줿���� vget_reg() �μ��Τ�Ƥ֤褦����
- * ����
- * ���ޤǤϡ�E_NOSPT �Υ��顼���֤��Ƥ�����
+ * vget_reg システムコールが呼ばれた時に vget_reg() の実体を呼ぶように変
+ * 更。
+ * 今までは、E_NOSPT のエラーで返していた。
  *
  * Revision 1.6  1997/03/25 13:30:47  night
- * �ؿ��Υץ��ȥ�����������ɲä���Ӱ�����������ν���
+ * 関数のプロトタイプ宣言の追加および引数の不整合の修正
  *
  * Revision 1.5  1996/11/07  15:42:38  night
- * vset_cns �ΰ����λ�����ˡ���ְ�äƤ����Τǽ���������
+ * vset_cns の引数の指定方法が間違っていたので修正した。
  *
  * Revision 1.4  1996/11/07  12:41:28  night
- * �ؿ� sys_vsys_msc () ���ɲá�
- * ���δؿ��ϥ����ƥॳ���� vsys_msc �˻��Ѥ��롣
+ * 関数 sys_vsys_msc () の追加。
+ * この関数はシステムコール vsys_msc に使用する。
  *
  * Revision 1.3  1996/11/06  12:41:00  night
- * sys_vset_cns() ���ɲá�
+ * sys_vset_cns() の追加。
  *
  * Revision 1.2  1996/09/11  18:27:12  night
- * sys_vget_csl() ���ɲá�
- * ���δؿ��ϡ����ߤΥ���������֤�ƤӽФ������֤������ƥॳ���롣
+ * sys_vget_csl() の追加。
+ * この関数は、現在のカーソル位置を呼び出し元に返すシステムコール。
  *
  * Revision 1.1  1996/07/22  13:39:17  night
- * IBM PC �� ITRON �κǽ����Ͽ
+ * IBM PC 版 ITRON の最初の登録
  *
  * Revision 1.11  1995/12/13 16:02:03  night
- * vcre_reg, vmap_reg �Υ����ƥॳ������б�����ؿ���ƤӽФ��褦��
- * ����������
+ * vcre_reg, vmap_reg のシステムコールに対応する関数を呼び出すように
+ * 修正した。
  *
  * Revision 1.10  1995/12/13 15:24:10  night
- * get_tid �����ƥॳ����μ¹Ի��˽��Ϥ��Ƥ����ǥХå��Ѥ� print ʸ���
- * ��������
+ * get_tid システムコールの実行時に出力していたデバッグ用の print 文を削
+ * 除した。
  *
  * Revision 1.9  1995/10/01  12:57:18  night
- * def_int �����ƥॳ����¹Ի��Υ�����å��������ɲá�
+ * def_int システムコール実行時のログメッセージを追加。
  *
  * Revision 1.8  1995/09/21  15:51:11  night
- * �������ե��������Ƭ�� Copyright notice ������ɲá�
+ * ソースファイルの先頭に Copyright notice 情報を追加。
  *
  * Revision 1.7  1995/09/19  18:03:35  night
- * �����ߥϥ�ɥ����Ͽ���륷���ƥॳ���� sys_def_int() ���ѹ���
- * ��Ͽ�Τ���δؿ��ƤӽФ��� set_idt() ���� set_interrupt_entry() ���ѹ�
- * ������
+ * 割り込みハンドラを登録するシステムコール sys_def_int() の変更。
+ * 登録のための関数呼び出しを set_idt() から set_interrupt_entry() に変更
+ * した。
  *
  * Revision 1.6  1995/03/18  13:59:40  night
- * def_int �����ƥॳ����Τ����������ɲá�
+ * def_int システムコールのための定義の追加。
  *
  * Revision 1.5  1995/02/26  13:56:43  night
- * ���ۥ�������ط��Υ����ƥॳ���륤�󥿥ե������ؿ����ɲá�
- * �ʲ��δؿ����ɲä�����
+ * 仮想メモリ管理関係のシステムコールインタフェース関数を追加。
+ * 以下の関数を追加した。
  *
  * 	sys_vcre_reg, sys_vdel_reg, sys_vmap_reg, sys_vunm_reg,
  * 	sys_vdup_reg, sys_vprt_reg, sys_vshr_reg, sys_vput_reg,
  * 	sys_vget_reg, sys_vsts_reg
  *
  * Revision 1.4  1995/01/18  15:12:49  night
- * �ʲ��δؿ����ɲá�
+ * 以下の関数を追加。
  *
  *   sys_dis_int (), sys_ena_int (), sys_cre_mpl (), sys_del_mpl (),
  *   sys_get_blk (), sys_pget_blk (), sys_rel_blk (), sys_ref_mpl (),
  *   sys_tget_blk (), sys_get_ver ()
  *
  * Revision 1.3  1995/01/10  13:50:50  night
- * �ʲ��Υ����ƥॳ���륤�󥿥ե������ؿ����ɲá�
+ * 以下のシステムコールインタフェース関数の追加。
  *
  * sys_cre_flg, sys_del_flg, sys_set_flg, sys_clr_flg,
  * sys_wai_flg, sys_pol_flg, sys_twai_flg, sys_ref_flg,
@@ -139,16 +139,16 @@ static char rcsid[] =
  * sys_tsnd_mbf, sys_rcv_mbf, sys_prcv_mbf, sys_trcv_mbf
  *
  * Revision 1.2  1994/11/19  14:45:17  night
- * �ʲ��Υ����ƥॳ���륤�󥿥ե������Ѵؿ����ɲá�
+ * 以下のシステムコールインタフェース用関数を追加。
  *
  *   sys_sus_tsk,sys_rsm_tsk,sys_frsm_tsk,sys_slp_tsk,
  *   sys_wup_tsk,sys_can_wup,sys_cre_sem,sys_del_sem,
  *   sys_sig_sem,sys_wai_sem,sys_preq_sem,sys_twai_sem,
  *   sys_ref_sem
  *
- * �����δؿ��ϳ����ߥ����å����饷���ƥॳ����ΰ�������Ф���
- * �ºݤ˽����򤹤�ؿ� ('sys_' ��������ؿ�) ��ƤӽФ���
- * ����Ū�ˤϲ��Τ褦�ʷ����δؿ��Ȥʤ롣
+ * これらの関数は割り込みスタックからシステムコールの引数を取り出し、
+ * 実際に処理をする関数 ('sys_' を除いだ関数) を呼び出す。
+ * 具体的には下のような形式の関数となる。
  *
  *  ER
  *  sys_foo (VOID *stackp)
@@ -163,16 +163,16 @@ static char rcsid[] =
  *  }
  *
  * Revision 1.1  1994/09/20  16:46:19  night
- * �����������ؿ��������
+ * タスク管理関数の宣言。
  *
  *
- * ������
- * �ܥե�����˴ޤޤ�Ƥ���ؿ��ϡ��桼����٥뤫�饷���ƥॳ���뤬
- * ȯ�Ԥ��줿���˥����ƥॳ����ؿ��Ȥ��ƸƤФ�롣
- * �����δؿ��ϡ������Υ����å���Ԥ����ºݤν����򤹤�ؿ���ƤӽФ���
+ * 説明：
+ * 本ファイルに含まれている関数は、ユーザレベルからシステムコールが
+ * 発行された時にシステムコール関数として呼ばれる。
+ * これらの関数は、引数のチェックを行い、実際の処理をする関数を呼び出す。
  *
- * �����ƥॳ���륤�󥿥ե������ؿ��ϡ������Ȥ��ƥ桼�������å�����Ƭ���Ϥ�
- * ��餦��
+ * システムコールインタフェース関数は、引数としてユーザスタックの先頭番地を
+ * もらう。
  *
  */
 
@@ -184,18 +184,18 @@ static char rcsid[] =
 #include "../kernlib/device.h"
 
 /* ----------------------------------------------------------------------- *
- * �������ط������ƥॳ����                                                *
+ * タスク関係システムコール                                                *
  * ----------------------------------------------------------------------- */
 
-/* sys_cre_tsk --- ������������
+/* sys_cre_tsk --- タスクの生成
  *
- * ����: tskid 		�������륿������ID
- *	 pk_ctsk	�������륿������°������
- *			tskatr		������°��
- *			startaddr	��������ư���ɥ쥹
- *			itskpri		��������ư��ͥ����
- *			stksz		�����å�������
- *			addrmap		���ɥ쥹�ޥå�
+ * 引数: tskid 		生成するタスクのID
+ *	 pk_ctsk	生成するタスクの属性情報
+ *			tskatr		タスク属性
+ *			startaddr	タスク起動アドレス
+ *			itskpri		タスク起動時優先度
+ *			stksz		スタックサイズ
+ *			addrmap		アドレスマップ
  *	
  */
 ER sys_cre_tsk(VP argp)
@@ -208,9 +208,9 @@ ER sys_cre_tsk(VP argp)
     return (cre_tsk(args->tskid, args->tskpkt));
 }
 
-/* sys_del_tsk --- ���ꤷ������������
+/* sys_del_tsk --- 指定したタスクを削除
  *
- * ������tskid	������륿������ ID
+ * 引数：tskid	削除するタスクの ID
  *
  */
 ER sys_del_tsk(VP argp)
@@ -223,10 +223,10 @@ ER sys_del_tsk(VP argp)
 }
 
 
-/* sys_sta_tsk --- �������ξ��֤���Ф�
+/* sys_sta_tsk --- タスクの状態を取り出す
  *
- * ������tskid	���֤���Ф������� ID
- *	 stacd  ���֤���Ф��ΰ�
+ * 引数：tskid	状態を取り出すタスの ID
+ *	 stacd  状態を取り出す領域
  *
  */
 ER sys_sta_tsk(VP argp)
@@ -239,27 +239,27 @@ ER sys_sta_tsk(VP argp)
     return (sta_tsk(args->tskid, args->stacd));
 }
 
-/* sys_ext_tsk --- ����������λ����
+/* sys_ext_tsk --- 自タスクを終了する
  *
  */
 ER sys_ext_tsk(VP argp)
 {
     ext_tsk();
-    return (E_OK);		/* �����ϡ��֤��ͤϤʤ���... */
+    return (E_OK);		/* 本当は、返り値はないが... */
 }
 
-/* sys_exd_tsk --- ����������λ���ơ��񸻤�������롣
+/* sys_exd_tsk --- 自タスクを終了して、資源を解放する。
  *
  */
 ER sys_exd_tsk(VP argp)
 {
     exd_tsk();
-    return (E_OK);		/* �����ϡ��֤��ͤϤʤ���... */
+    return (E_OK);		/* 本当は、返り値はないが... */
 }
 
-/* sys_ter_tsk --- ���ꤷ����������λ����
+/* sys_ter_tsk --- 指定したタスクを終了する
  *
- * ������tskid	��λ���륿������ ID
+ * 引数：tskid	終了するタスクの ID
  *
  */
 ER sys_ter_tsk(VP argp)
@@ -399,7 +399,7 @@ ER sys_can_wup(VP argp)
 
 
 /* ----------------------------------------------------------------------- *
- * ���������̿������ƥॳ����                                              *
+ * タスク間通信システムコール                                              *
  * ----------------------------------------------------------------------- */
 ER sys_cre_sem(VP argp)
 {
@@ -752,10 +752,10 @@ ER sys_get_ver(VP argp)
 
 
 /*
- * �����ߥϥ�ɥ��������롣
+ * 割り込みハンドラを定義する。
  *
- * ���δؿ��Ǥϡ����ΤȤ��� CPU ��٥� 0/�ȥ�å� �����γ����ߤȤ���
- * �ϥ�ɥ�����ꤷ�Ƥ��롣
+ * この関数では、今のところ CPU レベル 0/トラップ 形式の割り込みとして
+ * ハンドラを設定している。
  *
  */
 ER sys_def_int(VP argp)
@@ -780,7 +780,7 @@ ER sys_def_int(VP argp)
 }
 
 /*
- * ���ۥ�������δؿ��� 
+ * 仮想メモリ管理の関数群 
  */
 
 /*
@@ -977,7 +977,7 @@ ER sys_vget_phs(VP argp)
 
 
 /*
- * ���ִ����δؿ��� 
+ * 時間管理の関数群 
  */
 
 ER sys_set_tim(VP argp)
@@ -1059,7 +1059,7 @@ ER sys_ref_alm(VP argp)
 
 
 /*
- * ����¾�δؿ��� 
+ * その他の関数群 
  */
 /*
  *

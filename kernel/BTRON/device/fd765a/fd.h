@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -42,8 +42,8 @@ Version 2, June 1991
 
 #define BLOCK_SIZE	512
 
-#define MOTOR_WAIT	(TICKS/4)	/* 1/4 ÉÃ: 250ms */
-#define MOTOR_TIMEOUT	(3*TICKS)	/* 3 ÉÃ */
+#define MOTOR_WAIT	(TICKS/4)	/* 1/4 ç§’: 250ms */
+#define MOTOR_TIMEOUT	(3*TICKS)	/* 3 ç§’ */
 
 #define FD_INT_VECTOR	38
 #define FD_MASK_LEVEL	0
@@ -51,9 +51,9 @@ Version 2, June 1991
 #define FD_CAPACITY	(1440*1024)	/* 1.44 MB */
 
 
-/* £Æ£Ä·Á¼°:
- *	BTRON_FD	BTRON ·Á¼°¤Î FD(¥Ö¥í¥Ã¥¯ÈÖ¹æ¤¬ + 1 ¤µ¤ì¤ë)¡£
- *	OTHER_FD	BTRON ·Á¼°¤Î°Ê³°¤Î FD
+/* ï¼¦ï¼¤å½¢å¼:
+ *	BTRON_FD	BTRON å½¢å¼ã® FD(ãƒ–ãƒ­ãƒƒã‚¯ç•ªå·ãŒ + 1 ã•ã‚Œã‚‹)ã€‚
+ *	OTHER_FD	BTRON å½¢å¼ã®ä»¥å¤–ã® FD
  */
 #define BTRON_FD	       	0
 #define M2HD			0
@@ -63,21 +63,21 @@ Version 2, June 1991
 /* device control
  */
 #define NOWORK			0
-#define CHANGE_MODE		1	/* FD ·Á¼°¤ÎÀÚ¤êÂØ¤¨ */
+#define CHANGE_MODE		1	/* FD å½¢å¼ã®åˆ‡ã‚Šæ›¿ãˆ */
 
 /*********************************************************************
  *
- *	FDC À©¸æÍÑÄê¿ô¤ÎÄêµÁ
+ *	FDC åˆ¶å¾¡ç”¨å®šæ•°ã®å®šç¾©
  *
  */
 /*
- * ¥İ¡¼¥È¥¢¥É¥ì¥¹
+ * ãƒãƒ¼ãƒˆã‚¢ãƒ‰ãƒ¬ã‚¹
  */
-#define FDC_CMD		0x3F0	/* ¥³¥Ş¥ó¥É¥ì¥¸¥¹¥¿¡¦¥İ¡¼¥È	*/
-#define FDC_STAT	0x3f4	/* ¥¹¥Æ¡¼¥¿¥¹¥ì¥¸¥¹¥¿¡¦¥İ¡¼¥È	*/
-#define FDC_DATA	0x3f5	/* ¥Ç¡¼¥¿ÆÉ¤ß¼è¤ê¥İ¡¼¥È		*/
+#define FDC_CMD		0x3F0	/* ã‚³ãƒãƒ³ãƒ‰ãƒ¬ã‚¸ã‚¹ã‚¿ãƒ»ãƒãƒ¼ãƒˆ	*/
+#define FDC_STAT	0x3f4	/* ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ãƒ¬ã‚¸ã‚¹ã‚¿ãƒ»ãƒãƒ¼ãƒˆ	*/
+#define FDC_DATA	0x3f5	/* ãƒ‡ãƒ¼ã‚¿èª­ã¿å–ã‚Šãƒãƒ¼ãƒˆ		*/
 #define FDC_DCR		0x3f7	/* Diskette Control Register (write)*/
-#define FDC_EXTERNAL	0xBE	/* ³°Éô¥ì¥¸¥¹¥¿¤Ø¤Î¥¢¥É¥ì¥¹ */
+#define FDC_EXTERNAL	0xBE	/* å¤–éƒ¨ãƒ¬ã‚¸ã‚¹ã‚¿ã¸ã®ã‚¢ãƒ‰ãƒ¬ã‚¹ */
 #define FDC_WCNTL	0x3f2
 
 /*	status register 
@@ -87,53 +87,53 @@ Version 2, June 1991
  *	+---+---+---+---+---+---+---+---+
  *
  *	RQM...	Request of Master 
- *		DIO ¤¬ 0 ¤Î¤È¤­ 
- *		  1 ... ¥³¥Ş¥ó¥É½ñ¤­¹ş¤ßÍ×µá
- *		DIO ¤¬ 1 ¤Î¤È¤­ 
- *		  1 ... ¥Ç¡¼¥¿ÆÉ¤ß¼è¤êÍ×µá
+ *		DIO ãŒ 0 ã®ã¨ã 
+ *		  1 ... ã‚³ãƒãƒ³ãƒ‰æ›¸ãè¾¼ã¿è¦æ±‚
+ *		DIO ãŒ 1 ã®ã¨ã 
+ *		  1 ... ãƒ‡ãƒ¼ã‚¿èª­ã¿å–ã‚Šè¦æ±‚
  *	DIO...	Data In/Out.	
- *		0 ... ¥Ç¡¼¥¿¤òÁ÷¤ì¤ë
- *		1 ... FDC ¤ËÆÉ¤ß¼è¤é¤ì¤ë¤Ù¤­¥Ç¡¼¥¿¤¬¤¢¤ë
+ *		0 ... ãƒ‡ãƒ¼ã‚¿ã‚’é€ã‚Œã‚‹
+ *		1 ... FDC ã«èª­ã¿å–ã‚‰ã‚Œã‚‹ã¹ããƒ‡ãƒ¼ã‚¿ãŒã‚ã‚‹
  *	NDM...	Non DMA Mode.
- *		0 ... DMA ¤ò¤Ä¤«¤Ã¤Æ¥Ç¡¼¥¿Å¾Á÷¤ò¤·¤Æ¤¤¤ë¡£
- *		1 ... DMA ¤ò¤Ä¤«¤ï¤Ê¤¤¤Ç¥Ç¡¼¥¿Å¾Á÷¤ò¤·¤Æ¤¤¤ë¡£
+ *		0 ... DMA ã‚’ã¤ã‹ã£ã¦ãƒ‡ãƒ¼ã‚¿è»¢é€ã‚’ã—ã¦ã„ã‚‹ã€‚
+ *		1 ... DMA ã‚’ã¤ã‹ã‚ãªã„ã§ãƒ‡ãƒ¼ã‚¿è»¢é€ã‚’ã—ã¦ã„ã‚‹ã€‚
  *	CB....	FDC Busy.
- *		0 ... FDC ¤Ï¡¢¥³¥Ş¥ó¥É¤ò¼õ¤±ÉÕ¤±¤ë¡£
- *		1 ... FDC ¤Ï¡¢¥³¥Ş¥ó¥É¼Â¹ÔÃæ¤¢¤ë¤¤¤Ï¡¢¥ê¥¶¥ë¥È¥â¡¼¥É¤Ë¤¢¤ë¡£
+ *		0 ... FDC ã¯ã€ã‚³ãƒãƒ³ãƒ‰ã‚’å—ã‘ä»˜ã‘ã‚‹ã€‚
+ *		1 ... FDC ã¯ã€ã‚³ãƒãƒ³ãƒ‰å®Ÿè¡Œä¸­ã‚ã‚‹ã„ã¯ã€ãƒªã‚¶ãƒ«ãƒˆãƒ¢ãƒ¼ãƒ‰ã«ã‚ã‚‹ã€‚
  *	D3B...	FD3 Busy.
- *		1 ... £Æ£Ä¥æ¥Ë¥Ã¥È 3 ¤Ï¡¢seek Ãæ¤¢¤ë¤¤¤Ï seek ³ä¤ê¹ş¤ßÊİÎ±Ãæ.
- *		0 ... £Æ£Ä¥æ¥Ë¥Ã¥È 3 ¤Ï¡¢seek Ãæ¤¢¤ë¤¤¤Ï seek ³ä¤ê¹ş¤ß
- *		      ÊİÎ±Ãæ¤Ç¤Ê¤¤¡£
+ *		1 ... ï¼¦ï¼¤ãƒ¦ãƒ‹ãƒƒãƒˆ 3 ã¯ã€seek ä¸­ã‚ã‚‹ã„ã¯ seek å‰²ã‚Šè¾¼ã¿ä¿ç•™ä¸­.
+ *		0 ... ï¼¦ï¼¤ãƒ¦ãƒ‹ãƒƒãƒˆ 3 ã¯ã€seek ä¸­ã‚ã‚‹ã„ã¯ seek å‰²ã‚Šè¾¼ã¿
+ *		      ä¿ç•™ä¸­ã§ãªã„ã€‚
  *	D2B...	FD2 Busy.
- *		1 ... £Æ£Ä¥æ¥Ë¥Ã¥È 2 ¤Ï¡¢seek Ãæ¤¢¤ë¤¤¤Ï seek ³ä¤ê¹ş¤ßÊİÎ±Ãæ.
- *		0 ... £Æ£Ä¥æ¥Ë¥Ã¥È 2 ¤Ï¡¢seek Ãæ¤¢¤ë¤¤¤Ï seek ³ä¤ê¹ş¤ß
- *		      ÊİÎ±Ãæ¤Ç¤Ê¤¤¡£
+ *		1 ... ï¼¦ï¼¤ãƒ¦ãƒ‹ãƒƒãƒˆ 2 ã¯ã€seek ä¸­ã‚ã‚‹ã„ã¯ seek å‰²ã‚Šè¾¼ã¿ä¿ç•™ä¸­.
+ *		0 ... ï¼¦ï¼¤ãƒ¦ãƒ‹ãƒƒãƒˆ 2 ã¯ã€seek ä¸­ã‚ã‚‹ã„ã¯ seek å‰²ã‚Šè¾¼ã¿
+ *		      ä¿ç•™ä¸­ã§ãªã„ã€‚
  *	D1B...	FD1 Busy.
- *		1 ... £Æ£Ä¥æ¥Ë¥Ã¥È 1 ¤Ï¡¢seek Ãæ¤¢¤ë¤¤¤Ï seek ³ä¤ê¹ş¤ßÊİÎ±Ãæ.
- *		0 ... £Æ£Ä¥æ¥Ë¥Ã¥È 1 ¤Ï¡¢seek Ãæ¤¢¤ë¤¤¤Ï seek ³ä¤ê¹ş¤ß
- *		      ÊİÎ±Ãæ¤Ç¤Ê¤¤¡£
+ *		1 ... ï¼¦ï¼¤ãƒ¦ãƒ‹ãƒƒãƒˆ 1 ã¯ã€seek ä¸­ã‚ã‚‹ã„ã¯ seek å‰²ã‚Šè¾¼ã¿ä¿ç•™ä¸­.
+ *		0 ... ï¼¦ï¼¤ãƒ¦ãƒ‹ãƒƒãƒˆ 1 ã¯ã€seek ä¸­ã‚ã‚‹ã„ã¯ seek å‰²ã‚Šè¾¼ã¿
+ *		      ä¿ç•™ä¸­ã§ãªã„ã€‚
  *	D0B...	FD0 Busy.
- *		1 ... £Æ£Ä¥æ¥Ë¥Ã¥È 0 ¤Ï¡¢seek Ãæ¤¢¤ë¤¤¤Ï seek ³ä¤ê¹ş¤ßÊİÎ±Ãæ.
- *		0 ... £Æ£Ä¥æ¥Ë¥Ã¥È 0 ¤Ï¡¢seek Ãæ¤¢¤ë¤¤¤Ï seek ³ä¤ê¹ş¤ß
- *		      ÊİÎ±Ãæ¤Ç¤Ê¤¤¡£
+ *		1 ... ï¼¦ï¼¤ãƒ¦ãƒ‹ãƒƒãƒˆ 0 ã¯ã€seek ä¸­ã‚ã‚‹ã„ã¯ seek å‰²ã‚Šè¾¼ã¿ä¿ç•™ä¸­.
+ *		0 ... ï¼¦ï¼¤ãƒ¦ãƒ‹ãƒƒãƒˆ 0 ã¯ã€seek ä¸­ã‚ã‚‹ã„ã¯ seek å‰²ã‚Šè¾¼ã¿
+ *		      ä¿ç•™ä¸­ã§ãªã„ã€‚
  *
  */
-#define FD0_BUSY	0x01	/* FD0 ¤Ï¡¢seek Ãæ			*/
-#define FD1_BUSY	0x02	/* FD1 ¤Ï¡¢seek Ãæ			*/
-#define FD2_BUSY	0x04	/* FD2 ¤Ï¡¢seek Ãæ			*/
-#define FD3_BUSY	0x08	/* FD3 ¤Ï¡¢seek Ãæ			*/
-#define FDC_BUSY	0x10	/* FDC ¤Ï¡¢¥³¥Ş¥ó¥É¼Â¹ÔÃæ		*/
-#define FDC_NDM		0x20	/* non-DMA ¥â¡¼¥É¤Ç¥Ç¡¼¥¿Å¾Á÷Ãæ		*/
-#define FDC_DIN		0x40	/* FDC ¤ËÆÉ¤ß¼è¤ë¤Ù¤­¥Ç¡¼¥¿¤¬¤¢¤ë	*/
-#define FDC_DOUT	0x00	/* FDC ¤Ë¥Ç¡¼¥¿¤¬½ñ¤­¹ş¤ß²ÄÇ½		*/
-#define FDC_MASTER	0x80	/* ¥Ç¡¼¥¿¤ÎÆÉ¤ß¼è¤ê/½ñ¤­¹ş¤ßÍ×µá	*/
+#define FD0_BUSY	0x01	/* FD0 ã¯ã€seek ä¸­			*/
+#define FD1_BUSY	0x02	/* FD1 ã¯ã€seek ä¸­			*/
+#define FD2_BUSY	0x04	/* FD2 ã¯ã€seek ä¸­			*/
+#define FD3_BUSY	0x08	/* FD3 ã¯ã€seek ä¸­			*/
+#define FDC_BUSY	0x10	/* FDC ã¯ã€ã‚³ãƒãƒ³ãƒ‰å®Ÿè¡Œä¸­		*/
+#define FDC_NDM		0x20	/* non-DMA ãƒ¢ãƒ¼ãƒ‰ã§ãƒ‡ãƒ¼ã‚¿è»¢é€ä¸­		*/
+#define FDC_DIN		0x40	/* FDC ã«èª­ã¿å–ã‚‹ã¹ããƒ‡ãƒ¼ã‚¿ãŒã‚ã‚‹	*/
+#define FDC_DOUT	0x00	/* FDC ã«ãƒ‡ãƒ¼ã‚¿ãŒæ›¸ãè¾¼ã¿å¯èƒ½		*/
+#define FDC_MASTER	0x80	/* ãƒ‡ãƒ¼ã‚¿ã®èª­ã¿å–ã‚Š/æ›¸ãè¾¼ã¿è¦æ±‚	*/
 
 /* FDC COMMANDS */
-#define FDC_SPECIFY	0x03	/* Specify ¥³¥Ş¥ó¥É			*/
+#define FDC_SPECIFY	0x03	/* Specify ã‚³ãƒãƒ³ãƒ‰			*/
 #define FDC_READ	0xE6	/* <MT><MF><SK> 0 0 1 1 0		*/
 #define FDC_WRITE	0xC5	/* <MT><MF>  0  0 0 1 0 1		*/
-#define FDC_SEEK	0x0f	/* Seek ¥³¥Ş¥ó¥É			*/
-#define FDC_RECALIBRATE	0x07	/* Recalibrarete ¥³¥Ş¥ó¥É		*/
+#define FDC_SEEK	0x0f	/* Seek ã‚³ãƒãƒ³ãƒ‰			*/
+#define FDC_RECALIBRATE	0x07	/* Recalibrarete ã‚³ãƒãƒ³ãƒ‰		*/
 #define FDC_DEVSTAT	0x04
 #define FDC_SENSE	0x08
 #define FDC_CONFIGURE	0x13    /* configure FIFO operation */
@@ -144,7 +144,7 @@ Version 2, June 1991
 #define FDC_DMAE	0x10
 #define FDC_MTON	0x08
 
-/* ¥ê¥¶¥ë¥È¥¹¥Æ¡¼¥¿¥¹¥ì¥¸¥¹¥¿¤ÎÃÍ¤ÎÄêµÁ (¥Ş¥¹¥¯ÃÍ)
+/* ãƒªã‚¶ãƒ«ãƒˆã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ãƒ¬ã‚¸ã‚¹ã‚¿ã®å€¤ã®å®šç¾© (ãƒã‚¹ã‚¯å€¤)
  *
  * ST0	+---+---+---+---+---+---+---+---+
  *	|  IC   |SE |EC |NR |HD |US1|US0|
@@ -244,7 +244,7 @@ Version 2, June 1991
 #define HD_SECTOR	8
 #define HD_LENGTH	1024
 #define HD_LENCODE	3
-#define HD_GAP		0x35		/* HD ¤Î¾ì¹ç¤Î GAP3 ¤ÎÃÍ */
+#define HD_GAP		0x35		/* HD ã®å ´åˆã® GAP3 ã®å€¤ */
 #define HD_DTL		0xff
 
 #define HC_HEAD		2
@@ -252,15 +252,15 @@ Version 2, June 1991
 #define HC_SECTOR	15
 #define HC_LENGTH	512
 #define HC_LENCODE	3
-#define HC_GAP		0x35		/* HC ¤Î¾ì¹ç¤Î GAP3 ¤ÎÃÍ */
+#define HC_GAP		0x35		/* HC ã®å ´åˆã® GAP3 ã®å€¤ */
 #define HC_DTL		0xff
 
 
 #define DD_TYPE		1
 
 /*
- * ¥É¥é¥¤¥Ğ ¥¹¥Æ¡¼¥¿¥¹Äê¿ô
- *	¤³¤ì¤é¤ÎÄê¿ô¤Ï¡¢fd_data[] ¤Î status ¥á¥ó¥Ğ¤ËÆş¤ë¡£
+ * ãƒ‰ãƒ©ã‚¤ãƒ ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹å®šæ•°
+ *	ã“ã‚Œã‚‰ã®å®šæ•°ã¯ã€fd_data[] ã® status ãƒ¡ãƒ³ãƒã«å…¥ã‚‹ã€‚
  *
  */
 #define DRIVE_FREE		0x00
@@ -277,40 +277,40 @@ Version 2, June 1991
 
 struct spec
 {
-  B	*typename;	/* ¥¿¥¤¥×Ì¾; */
-  UW	head;		/* ¥Ø¥Ã¥É¤Î¿ô */
-/*  UW	cylinder;	/* ¥·¥ê¥ó¥À¿ô */
-  UW	sector;		/* ¥»¥¯¥¿¿ô / ¥È¥é¥Ã¥¯ */
-  UW	length;		/* ¥»¥¯¥¿Ä¹*/
-  UW	dtl;		/* ¥»¥¯¥¿Ä¹ (lencode = 0 ¤Î»ş¤Ë»ÈÍÑ)¡£»ÈÍÑ¤·¤Ê¤¤¾ì¹ç¤Ë¤Ï 0xFF */
-  UW	lencode;	/* ¥»¥¯¥¿Ä¹¤Î¥³¡¼¥É */
-  UW	gap3;		/* ¥»¥¯¥¿´Ö GAP */
-  UW	gapskip;	/* ¥»¥¯¥¿´Ö GAP ¤ÎÆÉ¤ßÈô¤Ğ¤·¥Ğ¥¤¥È¿ô */
+  B	*typename;	/* ã‚¿ã‚¤ãƒ—å; */
+  UW	head;		/* ãƒ˜ãƒƒãƒ‰ã®æ•° */
+/*  UW	cylinder;	/* ã‚·ãƒªãƒ³ãƒ€æ•° */
+  UW	sector;		/* ã‚»ã‚¯ã‚¿æ•° / ãƒˆãƒ©ãƒƒã‚¯ */
+  UW	length;		/* ã‚»ã‚¯ã‚¿é•·*/
+  UW	dtl;		/* ã‚»ã‚¯ã‚¿é•· (lencode = 0 ã®æ™‚ã«ä½¿ç”¨)ã€‚ä½¿ç”¨ã—ãªã„å ´åˆã«ã¯ 0xFF */
+  UW	lencode;	/* ã‚»ã‚¯ã‚¿é•·ã®ã‚³ãƒ¼ãƒ‰ */
+  UW	gap3;		/* ã‚»ã‚¯ã‚¿é–“ GAP */
+  UW	gapskip;	/* ã‚»ã‚¯ã‚¿é–“ GAP ã®èª­ã¿é£›ã°ã—ãƒã‚¤ãƒˆæ•° */
   UW	srt;		/* */
   UW	hut;		/* */
   UW	hlt;		/* */
   UW	nd;		/* */
-  UW	dmachan;	/* DMA ¥Á¥ã¥Í¥ë */
-  UW	retry;		/* ºÇÂç¥ê¥È¥é¥¤¿ô */	
+  UW	dmachan;	/* DMA ãƒãƒ£ãƒãƒ« */
+  UW	retry;		/* æœ€å¤§ãƒªãƒˆãƒ©ã‚¤æ•° */	
   UW	motor;		/* */
 };
 
 
 /* fd.c */
-extern W    	init_fd(void);	/* ½é´ü²½		*/
-extern W    	open_fd();	/* ¥ª¡¼¥×¥ó		*/
-extern W  	close_fd();	/* ¥¯¥í¡¼¥º		*/
-extern W    	read_fd();	/* ÆÉ¤ß¹ş¤ß		*/
-extern W    	write_fd();	/* ½ñ¤­¹ş¤ß		*/
-extern W    	control_fd();	/* ¥³¥ó¥È¥í¡¼¥ë		*/
-extern W    	change_fd();	/* ¥¢¥¯¥»¥¹¥â¡¼¥ÉÀÚ¤êÂØ¤¨ */
-extern W    	status_fd();	/* ¥¹¥Æ¡¼¥¿¥¹		*/
+extern W    	init_fd(void);	/* åˆæœŸåŒ–		*/
+extern W    	open_fd();	/* ã‚ªãƒ¼ãƒ—ãƒ³		*/
+extern W  	close_fd();	/* ã‚¯ãƒ­ãƒ¼ã‚º		*/
+extern W    	read_fd();	/* èª­ã¿è¾¼ã¿		*/
+extern W    	write_fd();	/* æ›¸ãè¾¼ã¿		*/
+extern W    	control_fd();	/* ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«		*/
+extern W    	change_fd();	/* ã‚¢ã‚¯ã‚»ã‚¹ãƒ¢ãƒ¼ãƒ‰åˆ‡ã‚Šæ›¿ãˆ */
+extern W    	status_fd();	/* ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹		*/
 extern W	intr_flag;
 extern struct spec	*fd_data[];
 extern ID	waitflag;
 
 /* fdc.c */
-extern void    	intr_fd();	/* ³ä¤ê¹ş¤ß¥Ï¥ó¥É¥é	*/
+extern void    	intr_fd();	/* å‰²ã‚Šè¾¼ã¿ãƒãƒ³ãƒ‰ãƒ©	*/
 extern void	reset_intr_mask ();
 extern W	wait_int (W *flag);
 extern W	write_fdc (UW value);

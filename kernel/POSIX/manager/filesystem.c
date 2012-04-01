@@ -1,6 +1,6 @@
 /*
 
-B-Free Project д╬└╕└о╩кд╧ GNU Generic PUBLIC LICENSE д╦╜╛ддд▐д╣бг
+B-Free Project уБочФЯцИРчЙйуБп GNU Generic PUBLIC LICENSE уБлх╛УуБДуБ╛уБЩуАВ
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -10,7 +10,7 @@ Version 2, June 1991
 (C) 2001-2002, Tomohide Naniwa
 
 */
-/* filesystem.c - POSIX ┤─╢не▐е═б╝е╕еуд╬е╒ебедеые╖е╣е╞ер╜ш═¤╔Ї╩м
+/* filesystem.c - POSIX чТ░хвГуГЮуГНуГ╝уВ╕уГгуБоуГХуВбуВдуГлуВ╖уВ╣уГЖуГахЗжчРЖщГихИЖ
  *
  *
  *
@@ -73,80 +73,80 @@ Version 2, June 1991
  * Minor fix. Comment was changed.
  *
  * Revision 1.24  1998/06/11 15:29:58  night
- * alloca дЄ╗╚═╤д╖д╩дддшдж╩╤╣╣бг
+ * alloca уВТф╜┐чФиуБЧуБкуБДуВИуБЖхдЙцЫ┤уАВ
  *
  * Revision 1.23  1998/01/06 16:40:04  night
- * е╟е╨е├е░═╤д╬ print ╩╕д╬─╔▓├бг
+ * уГЗуГРуГГуВ░чФиуБо print цЦЗуБош┐╜хКауАВ
  *
  * Revision 1.22  1997/10/24 14:01:13  night
- * ╩╤┐Їд╬░·┐Ї╣чдяд╗дЄ╕╖╠йд╦д╖д┐бг
- * ╗╚═╤д╖д╞ддд╩дд┤╪┐Ї foo() дЄ║я╜№д╖д┐бг
+ * хдЙцХ░уБох╝ХцХ░хРИуВПуБЫуВТхО│хпЖуБлуБЧуБЯуАВ
+ * ф╜┐чФиуБЧуБжуБДуБкуБДщЦвцХ░ foo() уВТхЙКщЩдуБЧуБЯуАВ
  *
  * Revision 1.21  1997/10/23 14:32:32  night
- * exec е╖е╣е╞ере│б╝еы┤╪╖╕д╬╜ш═¤д╬╣╣┐╖
+ * exec уВ╖уВ╣уГЖуГауВ│уГ╝уГлщЦвф┐ВуБохЗжчРЖуБоцЫ┤цЦ░
  *
  * Revision 1.20  1997/10/11 16:25:19  night
- * е╒ебедеыд╬ write ╜ш═¤д╬╜д└╡бг
+ * уГХуВбуВдуГлуБо write хЗжчРЖуБоф┐оцнгуАВ
  *
  * Revision 1.19  1997/09/09 13:50:32  night
- * POSIX д╬е╒ебедеыд╪д╬╜ёдн╣■д▀╜ш═¤(е╖е╣е╞ере│б╝еыд╧бвwrite) дЄ─╔▓├бг
- * д│дьд▐д╟д╧бвEP_NOSUP дЄ╩╓д╖д╞ддд┐бг
+ * POSIX уБоуГХуВбуВдуГлуБ╕уБоцЫ╕уБНш╛╝уБ┐хЗжчРЖ(уВ╖уВ╣уГЖуГауВ│уГ╝уГлуБпуАБwrite) уВТш┐╜хКауАВ
+ * уБУуВМуБ╛уБзуБпуАБEP_NOSUP уВТш┐ФуБЧуБжуБДуБЯуАВ
  *
  * Revision 1.18  1997/08/31 13:29:32  night
- * д│д▐длдд╜ш═¤д╬е╟е╨е├е░дЄ╣╘д├д┐бг
+ * уБУуБ╛уБЛуБДхЗжчРЖуБоуГЗуГРуГГуВ░уВТшбМуБгуБЯуАВ
  *
  * Revision 1.17  1997/07/06 11:57:11  night
- * е╟е╨е├е░╩╕д╬╗╪─ъдЄ╩╤╣╣бг
+ * уГЗуГРуГГуВ░цЦЗуБоцМЗхоЪуВТхдЙцЫ┤уАВ
  *
  * Revision 1.16  1997/07/04 15:07:39  night
- * бже╣е┌е╖еуеые╒ебедеы - е╟е╨еде╣е╔ещеде╨е▌б╝е╚д╬┬╨▒■╔╜д╬┤╪╧в╜ш═¤д╬─╔▓├бг
- * бже╒ебедеыд╬╞╔д▀╣■д▀╜ш═¤д╬▓■─√бг
+ * уГ╗уВ╣уГЪуВ╖уГгуГлуГХуВбуВдуГл - уГЗуГРуВдуВ╣уГЙуГйуВдуГРуГЭуГ╝уГИуБохп╛х┐ЬшбиуБощЦвщАгхЗжчРЖуБош┐╜хКауАВ
+ * уГ╗уГХуВбуВдуГлуБошкнуБ┐ш╛╝уБ┐хЗжчРЖуБоцФ╣шиВуАВ
  *
  * Revision 1.15  1997/07/03 14:24:30  night
- * mountroot/open ╜ш═¤д╬е╨е░дЄ╜д└╡бг
+ * mountroot/open хЗжчРЖуБоуГРуВ░уВТф┐оцнгуАВ
  *
  * Revision 1.14  1997/07/02 13:25:43  night
- * statfs е╖е╣е╞ере│б╝еыд╬├ц┐╚дЄ║ю└о
+ * statfs уВ╖уВ╣уГЖуГауВ│уГ╝уГлуБоф╕нш║луВТф╜ЬцИР
  *
  * Revision 1.13  1997/05/14 14:09:53  night
- * е╟е╨е├е░╩╕д╬╜д└╡бг
+ * уГЗуГРуГГуВ░цЦЗуБоф┐оцнгуАВ
  *
  * Revision 1.12  1997/05/06 12:47:11  night
- * еэе░д╬╜╨╬╧д╦ dbg_printf д╦┬хдяд├д╞ printf дЄ╗╚═╤д╣дыдшджд╦╩╤╣╣д╖д┐бг
+ * уГнуВ░уБохЗ║хКЫуБл dbg_printf уБлф╗гуВПуБгуБж printf уВТф╜┐чФиуБЩуВЛуВИуБЖуБлхдЙцЫ┤уБЧуБЯуАВ
  *
  * Revision 1.11  1997/04/28 15:27:16  night
- * е╟е╨е├е░═╤д╬╩╕дЄ─╔▓├бг
+ * уГЗуГРуГГуВ░чФиуБоцЦЗуВТш┐╜хКауАВ
  *
  * Revision 1.10  1997/04/24 15:40:30  night
- * mountroot е╖е╣е╞ере│б╝еыд╬╝┬┴їдЄ╣╘д├д┐бг
+ * mountroot уВ╖уВ╣уГЖуГауВ│уГ╝уГлуБохоЯшгЕуВТшбМуБгуБЯуАВ
  *
  * Revision 1.9  1997/04/06 12:55:03  night
- * inode_bufбвfs_buf д╬║╟╕хд╬═╫┴╟дЄ NULL д╦╜щ┤№▓╜д╣ды╜ш═¤дЄ
- * ─╔▓├бг
+ * inode_bufуАБfs_buf уБоцЬАх╛МуБошжБч┤ауВТ NULL уБлхИЭцЬЯхМЦуБЩуВЛхЗжчРЖуВТ
+ * ш┐╜хКауАВ
  *
  * Revision 1.8  1997/03/25 13:34:53  night
- * ELF ╖┴╝░д╬╝┬╣╘е╒ебедеыд╪д╬┬╨▒■
+ * ELF х╜вх╝ПуБохоЯшбМуГХуВбуВдуГлуБ╕уБохп╛х┐Ь
  *
  * Revision 1.7  1996/11/20  12:09:47  night
- * fs_remove_file(), fs_remove_dir() д╬─╔▓├бг
+ * fs_remove_file(), fs_remove_dir() уБош┐╜хКауАВ
  *
  * Revision 1.6  1996/11/18  13:42:39  night
- * fs_check_inode()бвfs_register_inode() дЄ─╔▓├бг
+ * fs_check_inode()уАБfs_register_inode() уВТш┐╜хКауАВ
  *
  * Revision 1.5  1996/11/14  13:16:32  night
- * open дкдшд╙ lookup ╜ш═¤дЄ─╔▓├бг
+ * open уБКуВИуБ│ lookup хЗжчРЖуВТш┐╜хКауАВ
  *
  * Revision 1.4  1996/11/10  11:53:51  night
- * е╟е╨е├е░╩╕д╬─╔▓├бг
+ * уГЗуГРуГГуВ░цЦЗуБош┐╜хКауАВ
  *
  * Revision 1.3  1996/11/08  11:03:16  night
- * е╟е╨е├е░╩╕д╬─╔▓├бг
+ * уГЗуГРуГГуВ░цЦЗуБош┐╜хКауАВ
  *
  * Revision 1.2  1996/11/07  12:44:19  night
- * е╒ебедеые╖е╣е╞ер╜ш═¤д╬├ц┐╚дЄ║ю└од╖д┐бг
+ * уГХуВбуВдуГлуВ╖уВ╣уГЖуГахЗжчРЖуБоф╕нш║луВТф╜ЬцИРуБЧуБЯуАВ
  *
  * Revision 1.1  1996/11/05  15:13:46  night
- * ║╟╜щд╬┼╨╧┐
+ * цЬАхИЭуБочЩ╗щМ▓
  *
  */
 
@@ -172,32 +172,32 @@ static int use_count = 0;
 #endif
 
 
-/* е╣е┌е╖еуеые╒ебедеыд╚е╟е╨еде╣е╔ещеде╨д╚д╬┬╨▒■дЄ╝шдыд┐дсд╬е╞б╝е╓еы
+/* уВ╣уГЪуВ╖уГгуГлуГХуВбуВдуГлуБиуГЗуГРуВдуВ╣уГЙуГйуВдуГРуБиуБохп╛х┐ЬуВТхПЦуВЛуБЯуВБуБоуГЖуГ╝уГЦуГл
  *
- * POSIX ┤─╢нд╟д╧бве╣е┌е╖еуеые╒ебедеыд╧есе╕еуб╝╚╓╣цд╚е▐еде╩б╝╚╓╣цд╟╝▒╩╠д╖д╞дддыбг
- * B-Free OS д╟д╧бве╟е╨еде╣е╔ещеде╨д╧╝▒╩╠╠╛д╚е▌б╝е╚╚╓╣цбвд╜д╖д╞ dd д╟╢ш╩╠д╖д╞дддыд╬д╟бв
- * д│д╬дшджд╩┬╨▒■╔╜дм╔м═╫д╦д╩дыбг
+ * POSIX чТ░хвГуБзуБпуАБуВ╣уГЪуВ╖уГгуГлуГХуВбуВдуГлуБпуГбуВ╕уГгуГ╝чХкхП╖уБиуГЮуВдуГКуГ╝чХкхП╖уБзшнШхИеуБЧуБжуБДуВЛуАВ
+ * B-Free OS уБзуБпуАБуГЗуГРуВдуВ╣уГЙуГйуВдуГРуБпшнШхИехРНуБиуГЭуГ╝уГИчХкхП╖уАБуБЭуБЧуБж dd уБзхМ║хИеуБЧуБжуБДуВЛуБоуБзуАБ
+ * уБУуБоуВИуБЖуБкхп╛х┐ЬшбиуБМх┐ЕшжБуБлуБкуВЛуАВ
  */
 
 struct special_file special_file_table[] = {
-/* енеуещепе┐е╟е╨еде╣ */
+/* уВнуГгуГйуВпуВ┐уГЗуГРуВдуВ╣ */
 /* major/minor        name         port      dd         handler */
     {0x00000000, "manager.wconsole", 0, 0x00000000, 0},
     {0x00010000, "driver.keyboard", 0, 0x00000000, 0},
     {0x00020000, "driver.psaux", 0, 0x00000000, 0},	/* psaux driver */
 
-/* е╓еэе├еп╖┐е╟е╨еде╣ */
+/* уГЦуГнуГГуВпхЮЛуГЗуГРуВдуВ╣ */
     {0x80000000, "driver.fd", 0, 0x00000000, 0},
-    {0x80010000, "driver.ide", 0, 0x00000000, 0},	/* 0 ╚╓╠▄д╬ IDE е╟е╨еде╣д╬┴┤┬╬ */
-    {0x80010001, "driver.ide", 0, 0x00000001, 0},	/* 0 ╚╓╠▄д╬ IDE е╟е╨еде╣д╬е╤б╝е╞еге╖ечеє 1 */
-    {0x80010002, "driver.ide", 0, 0x00000002, 0},	/* 0 ╚╓╠▄д╬ IDE е╟е╨еде╣д╬е╤б╝е╞еге╖ечеє 2 */
-    {0x80010003, "driver.ide", 0, 0x00000003, 0},	/* 0 ╚╓╠▄д╬ IDE е╟е╨еде╣д╬е╤б╝е╞еге╖ечеє 3 */
-    {0x80010004, "driver.ide", 0, 0x00000004, 0},	/* 0 ╚╓╠▄д╬ IDE е╟е╨еде╣д╬е╤б╝е╞еге╖ечеє 4 */
-    {0x80010005, "driver.ide", 0, 0x00000005, 0},	/* 0 ╚╓╠▄д╬ IDE е╟е╨еде╣д╬е╤б╝е╞еге╖ечеє 5 (│╚─ее╤б╝е╞еге╖ечеє) */
-    {0x80010006, "driver.ide", 0, 0x00000006, 0},	/* 0 ╚╓╠▄д╬ IDE е╟е╨еде╣д╬е╤б╝е╞еге╖ечеє 6 (│╚─ее╤б╝е╞еге╖ечеє) */
-    {0x80010007, "driver.ide", 0, 0x00000007, 0},	/* 0 ╚╓╠▄д╬ IDE е╟е╨еде╣д╬е╤б╝е╞еге╖ечеє 7 (│╚─ее╤б╝е╞еге╖ечеє) */
-    {0x80010008, "driver.ide", 0, 0x00000008, 0},	/* 0 ╚╓╠▄д╬ IDE е╟е╨еде╣д╬е╤б╝е╞еге╖ечеє 8 (│╚─ее╤б╝е╞еге╖ечеє) */
-    {0x80010009, "driver.ide", 0, 0x00000009, 0},	/* 0 ╚╓╠▄д╬ IDE е╟е╨еде╣д╬е╤б╝е╞еге╖ечеє 9 (│╚─ее╤б╝е╞еге╖ечеє) */
+    {0x80010000, "driver.ide", 0, 0x00000000, 0},	/* 0 чХкчЫоуБо IDE уГЗуГРуВдуВ╣уБохЕиф╜У */
+    {0x80010001, "driver.ide", 0, 0x00000001, 0},	/* 0 чХкчЫоуБо IDE уГЗуГРуВдуВ╣уБоуГСуГ╝уГЖуВгуВ╖уГзуГ│ 1 */
+    {0x80010002, "driver.ide", 0, 0x00000002, 0},	/* 0 чХкчЫоуБо IDE уГЗуГРуВдуВ╣уБоуГСуГ╝уГЖуВгуВ╖уГзуГ│ 2 */
+    {0x80010003, "driver.ide", 0, 0x00000003, 0},	/* 0 чХкчЫоуБо IDE уГЗуГРуВдуВ╣уБоуГСуГ╝уГЖуВгуВ╖уГзуГ│ 3 */
+    {0x80010004, "driver.ide", 0, 0x00000004, 0},	/* 0 чХкчЫоуБо IDE уГЗуГРуВдуВ╣уБоуГСуГ╝уГЖуВгуВ╖уГзуГ│ 4 */
+    {0x80010005, "driver.ide", 0, 0x00000005, 0},	/* 0 чХкчЫоуБо IDE уГЗуГРуВдуВ╣уБоуГСуГ╝уГЖуВгуВ╖уГзуГ│ 5 (цЛбх╝╡уГСуГ╝уГЖуВгуВ╖уГзуГ│) */
+    {0x80010006, "driver.ide", 0, 0x00000006, 0},	/* 0 чХкчЫоуБо IDE уГЗуГРуВдуВ╣уБоуГСуГ╝уГЖуВгуВ╖уГзуГ│ 6 (цЛбх╝╡уГСуГ╝уГЖуВгуВ╖уГзуГ│) */
+    {0x80010007, "driver.ide", 0, 0x00000007, 0},	/* 0 чХкчЫоуБо IDE уГЗуГРуВдуВ╣уБоуГСуГ╝уГЖуВгуВ╖уГзуГ│ 7 (цЛбх╝╡уГСуГ╝уГЖуВгуВ╖уГзуГ│) */
+    {0x80010008, "driver.ide", 0, 0x00000008, 0},	/* 0 чХкчЫоуБо IDE уГЗуГРуВдуВ╣уБоуГСуГ╝уГЖуВгуВ╖уГзуГ│ 8 (цЛбх╝╡уГСуГ╝уГЖуВгуВ╖уГзуГ│) */
+    {0x80010009, "driver.ide", 0, 0x00000009, 0},	/* 0 чХкчЫоуБо IDE уГЗуГРуВдуВ╣уБоуГСуГ╝уГЖуВгуВ╖уГзуГ│ 9 (цЛбх╝╡уГСуГ╝уГЖуВгуВ╖уГзуГ│) */
     {0x80020000, "driver.ramdisk", 0, 0x00000000, 0}	/* RAMDISK */
 };
 
@@ -216,8 +216,8 @@ W init_fs(void)
     W i;
 
 
-    /* │╞е╟б╝е┐╣╜┬дд╬╜щ┤№▓╜дЄ╣╘дд
-     * еыб╝е╚е╒ебедеые╖е╣е╞ердЄе▐ежеєе╚д╣ды
+    /* хРДуГЗуГ╝уВ┐цзЛщАауБохИЭцЬЯхМЦуВТшбМуБД
+     * уГлуГ╝уГИуГХуВбуВдуГлуВ╖уВ╣уГЖуГауВТуГЮуВжуГ│уГИуБЩуВЛ
      */
     for (i = 0; i < MAX_INODE - 1; i++) {
 /*      dbg_printf ("Inode [%d] = 0x%x \n", i, &inode_buf[i]);
@@ -234,7 +234,7 @@ W init_fs(void)
     free_fs = &fs_buf[0];
 
 #ifdef notdef
-    /* ╔м═╫д╦д╩д├д┐д╚днд╦╕─╩╠д╦╞т═╞дЄ╣╣┐╖д╣дыд╬д╟бд╜щ┤№▓╜д╧╔╘═╫ */
+    /* х┐ЕшжБуБлуБкуБгуБЯуБиуБНуБлхАЛхИеуБлхЖЕхо╣уВТцЫ┤цЦ░уБЩуВЛуБоуБзя╝МхИЭцЬЯхМЦуБпф╕НшжБ */
     init_special_file();
 #endif
 #ifdef notdef
@@ -245,7 +245,7 @@ W init_fs(void)
 }
 
 
-/* special_file_table д╬еиеєе╚еъдЄ╦фдсды
+/* special_file_table уБоуВиуГ│уГИуГкуВТхЯЛуВБуВЛ
  */
 W init_special_file()
 {
@@ -285,7 +285,7 @@ W get_device_info(UW major_minor, ID * port, UW * dd)
 	if (special_file_table[i].major_minor == major_minor)
 #else
 	if ((special_file_table[i].major_minor & 0xFFFF0000) ==
-	    (major_minor & 0xFFFF0000))	/* major ╚╓╣цд╬д▀д╟╚ц│╙д╣ды */
+	    (major_minor & 0xFFFF0000))	/* major чХкхП╖уБоуБ┐уБзцпФш╝ГуБЩуВЛ */
 #endif
 	{
 
@@ -305,8 +305,8 @@ W get_device_info(UW major_minor, ID * port, UW * dd)
 #ifdef notdef
 	    *dd = special_file_table[i].dd;
 #else
-	    /* minor ╚╓╣цдм dd д╦┬╨▒■д╣дыбе */
-	    /* IDE driver д╟д╧е╤б╝е╞еге╖ечеєд╬╢ш╩╠д╦═°═╤д╣ды */
+	    /* minor чХкхП╖уБМ dd уБлхп╛х┐ЬуБЩуВЛя╝О */
+	    /* IDE driver уБзуБпуГСуГ╝уГЖуВгуВ╖уГзуГ│уБохМ║хИеуБлхИйчФиуБЩуВЛ */
 	    *dd = major_minor & 0x0000FFFF;
 #endif
 	    return (EP_OK);
@@ -315,13 +315,13 @@ W get_device_info(UW major_minor, ID * port, UW * dd)
     return (EP_NODEV);
 }
 
-/* file discriptor 0, 1, 2 д╬└▀─ъ
+/* file discriptor 0, 1, 2 уБошинхоЪ
  */
 W open_special_dev(struct proc * procp)
 {
     struct inode *ip;
 
-    /* ╔╕╜р╞■╬╧д╬└▀─ъ */
+    /* циЩц║ЦхЕехКЫуБошинхоЪ */
     procp->proc_open_file[0].f_inode = ip = alloc_inode();
     procp->proc_open_file[0].f_offset = 0;
     procp->proc_open_file[0].f_omode = O_RDWR;
@@ -336,7 +336,7 @@ W open_special_dev(struct proc * procp)
     ip->i_size_blk = 0;
     fs_register_inode(ip);
 
-    /* ╔╕╜р╜╨╬╧д╬└▀─ъ */
+    /* циЩц║ЦхЗ║хКЫуБошинхоЪ */
     procp->proc_open_file[1].f_inode = ip = alloc_inode();
     procp->proc_open_file[1].f_offset = 0;
     procp->proc_open_file[1].f_omode = O_RDWR;
@@ -351,7 +351,7 @@ W open_special_dev(struct proc * procp)
     ip->i_size_blk = 0;
     fs_register_inode(ip);
 
-    /* ╔╕╜реиещб╝╜╨╬╧д╬└▀─ъ */
+    /* циЩц║ЦуВиуГйуГ╝хЗ║хКЫуБошинхоЪ */
     procp->proc_open_file[2].f_inode = ip = alloc_inode();
     procp->proc_open_file[2].f_offset = 0;
     procp->proc_open_file[2].f_omode = O_RDWR;
@@ -402,7 +402,7 @@ void dealloc_fs(struct fs *fsp)
     free_fs = fsp;
 }
 
-/* mount_root - root е╒ебедеые╖е╣е╞ерд╬е▐ежеєе╚
+/* mount_root - root уГХуВбуВдуГлуВ╖уВ╣уГЖуГауБоуГЮуВжуГ│уГИ
  *
  */
 W mount_root(ID device, W fstype, W option)
@@ -441,7 +441,7 @@ W mount_root(ID device, W fstype, W option)
     rootfs->fs_device = device;
     rootfs->fs_ops = fsp;
 
-    /* FS List д╬└▀─ъ */
+    /* FS List уБошинхоЪ */
     rootfs->fs_next = rootfs;
     rootfs->fs_prev = rootfs;
 
@@ -491,7 +491,7 @@ mount_fs(struct inode * deviceip,
     if (fs_num > MAXFS) {
 	return (EP_INVAL);
     }
-    /* ┤√д╦ mount д╡дьд╞ддд╩дддлд╔дждлд╬е┴езе├еп */
+    /* цЧвуБл mount уБХуВМуБжуБДуБкуБДуБЛуБйуБЖуБЛуБоуГБуВзуГГуВп */
     device = deviceip->i_dev;
     newfs = rootfs;
     do {
@@ -511,13 +511,13 @@ mount_fs(struct inode * deviceip,
 	return (E_NOMEM);
     }
 
-    /* е╒ебедеые╖е╣е╞ер╛Ё╩єд╬╝шдъ╜╨д╖ */
+    /* уГХуВбуВдуГлуВ╖уВ╣уГЖуГацГЕха▒уБохПЦуВКхЗ║уБЧ */
     fsp = fs_table[fs_num].fsops;
     err = FS_MOUNT(fsp, device, newfs, newip);
     if (err) {
 	dealloc_fs(newfs);
 
-	/* dealloc_inode д╧╗╚дид╩ддд╬д╟╝ъ╞░д╟ free_inode list д╪║╞┼╨╧┐ */
+	/* dealloc_inode уБпф╜┐уБИуБкуБДуБоуБзцЙЛхЛХуБз free_inode list уБ╕хЖНчЩ╗щМ▓ */
 	newip->i_next = free_inode;
 	newip->i_prev = NULL;
 	free_inode = newip;
@@ -525,19 +525,19 @@ mount_fs(struct inode * deviceip,
 	return (err);
     }
 
-    /* е╒ебедеые╖е╣е╞ерд╬еъе╣е╚д╪┼╨╧┐ */
+    /* уГХуВбуВдуГлуВ╖уВ╣уГЖуГауБоуГкуВ╣уГИуБ╕чЩ╗щМ▓ */
     newfs->fs_ops = fsp;
     newfs->fs_next = rootfs;
     newfs->fs_prev = rootfs->fs_prev;
     rootfs->fs_prev->fs_next = newfs;
     rootfs->fs_prev = newfs;
 
-    /* mount д╡дьдые╒ебедеые╖е╣е╞ерд╬ root е╟егеьепе╚еъд╬┼╨╧┐ */
+    /* mount уБХуВМуВЛуГХуВбуВдуГлуВ╖уВ╣уГЖуГауБо root уГЗуВгуГмуВпуГИуГкуБочЩ╗щМ▓ */
     newip->i_fs = newfs;
     newfs->rootdir = newip;
     newfs->fs_device = device;
 
-    /* mount point д╦ coverfile дЄ└▀─ъ */
+    /* mount point уБл coverfile уВТшинхоЪ */
     mountpoint->coverfile = newip;
     newfs->mountpoint = mountpoint;
 
@@ -555,7 +555,7 @@ W umount_fs(UW device)
     struct fs *fsp;
     struct inode *ip;
 
-    /* device длдщ fsp дЄ╕б║ў */
+    /* device уБЛуВЙ fsp уВТцдЬч┤в */
     fsp = rootfs;
     do {
 	if (fsp->fs_device == device)
@@ -564,7 +564,7 @@ W umount_fs(UW device)
     }
     while (fsp != rootfs);
     if (fsp == rootfs) {
-	/* ╕л╔╒длдщд╩длд├д┐длбдroot file system д└д├д┐╛ь╣ч */
+	/* шжЛф╗ШуБЛуВЙуБкуБЛуБгуБЯуБЛя╝Мroot file system уБауБгуБЯха┤хРИ */
 	return (EP_INVAL);
     }
 
@@ -577,8 +577,8 @@ W umount_fs(UW device)
 
     ip = fsp->fs_ilist;
     if (ip != ip->i_next) {
-	/* е▐ежеєе╚е▌едеєе╚░╩▓╝д╬е╒ебедеы/е╟егеьепе╚еъдм╗╚дядьд╞ддды
-	 * BUSY д╬еиещб╝д╟╩╓д╣
+	/* уГЮуВжуГ│уГИуГЭуВдуГ│уГИф╗еф╕ЛуБоуГХуВбуВдуГл/уГЗуВгуГмуВпуГИуГкуБМф╜┐уВПуВМуБжуБДуВЛ
+	 * BUSY уБоуВиуГйуГ╝уБзш┐ФуБЩ
 	 */
 #ifdef notdef
       printk("[PM] file busy: inode %d(%d) %d(%d)\n",
@@ -588,20 +588,20 @@ W umount_fs(UW device)
 	return (EP_BUSY);
     }
 
-    /* е╒ебедеые╖е╣е╞ер╛Ё╩єдЄ▓Є╩№д╣ды */
+    /* уГХуВбуВдуГлуВ╖уВ╣уГЖуГацГЕха▒уВТшзгцФ╛уБЩуВЛ */
     FS_UMOUNT(fsp->fs_ops, fsp);
 
-    /* е▐ежеєе╚е▌едеєе╚дЄ▓Є╩№д╣ды */
+    /* уГЮуВжуГ│уГИуГЭуВдуГ│уГИуВТшзгцФ╛уБЩуВЛ */
     fsp->mountpoint->coverfile = NULL;
     dealloc_inode(fsp->mountpoint);
     dealloc_inode(fsp->rootdir);
 #if 1
-    /* ╛щ─╣ */
+    /* хЖЧщХ╖ */
     fsp->mountpoint = NULL;
     fsp->rootdir = NULL;
 #endif
 
-    /* FS list длдщ╜№│░ */
+    /* FS list уБЛуВЙщЩдхдЦ */
     fsp->fs_prev->fs_next = fsp->fs_next;
     fsp->fs_next->fs_prev = fsp->fs_prev;
     dealloc_fs(fsp);
@@ -637,15 +637,15 @@ fs_open_file(B * path,
 #ifdef FMDEBUG
 	    dbg_printf("fs_open_file: File already exists.\n");
 #endif
-	    dealloc_inode(*newip);	/* fs_close() д╟╣╘дж╜ш═¤д╧д│дьд└д▒ */
+	    dealloc_inode(*newip);	/* fs_close() уБзшбМуБЖхЗжчРЖуБпуБУуВМуБауБС */
 	    /*      return (EP_EXIST); */
-	    /* ╕хд╟ mode д╚ acc дЄ│╬длдсд╩дмдщ║╞┼┘ open д╣ды */
+	    /* х╛МуБз mode уБи acc уВТчв║уБЛуВБуБкуБМуВЙхЖНх║ж open уБЩуВЛ */
 	} else {
 	    return (errno);
 	}
     }
 #ifdef FMDEBUG
-    /* е╤е╣╠╛д╦╜╛д├д╞е╒ебедеыдЄекб╝е╫еєд╣ды
+    /* уГСуВ╣хРНуБлх╛УуБгуБжуГХуВбуВдуГлуВТуВкуГ╝уГЧуГ│уБЩуВЛ
      */
     dbg_printf
 	("fs_open_file: startip = 0x%x, path = %s, oflag = %d, mode = %d\n",
@@ -667,7 +667,7 @@ fs_open_file(B * path,
 }
 
 
-/* fs_create_file - е╒ебедеыдЄ║ю└од╣ды
+/* fs_create_file - уГХуВбуВдуГлуВТф╜ЬцИРуБЩуВЛ
  *
  */
 W
@@ -692,7 +692,7 @@ fs_create_file(struct inode * startip,
 	    if (parent_path == NULL) {
 		return (EP_NOMEM);
 	    }
-	    /* kernlib д╬ strncpy д╬╗┼══д╦двдяд╗дыд┐дс */
+	    /* kernlib уБо strncpy уБоф╗ХцзШуБлуБВуВПуБЫуВЛуБЯуВБ */
 	    strncpy(parent_path, path, parent_length + 1);
 #else
 	    strncpy(parent_path, path, MAX_NAMELEN);
@@ -742,7 +742,7 @@ W fs_close_file(struct inode * ip)
 {
     W errno;
 
-    /* ╔с─╠д╧ inode дЄ deallocate д╣дыд╚днд╦╜ёдн╜╨д╣д╬д╟д╧д╩дддл? */
+    /* цЩощАЪуБп inode уВТ deallocate уБЩуВЛуБиуБНуБлцЫ╕уБНхЗ║уБЩуБоуБзуБпуБкуБДуБЛ? */
     if (ip->i_dirty) {
 	errno = fs_sync_file(ip);
 	if (errno) {
@@ -762,8 +762,8 @@ W fs_close_file(struct inode * ip)
 
 /* fs_lookup
  *
- * ╡б╟╜
- *	е╒ебедеыдЄекб╝е╫еєд╣дыбг
+ * цйЯшГ╜
+ *	уГХуВбуВдуГлуВТуВкуГ╝уГЧуГ│уБЩуВЛуАВ
  *
  * 
  *
@@ -810,7 +810,7 @@ fs_lookup(struct inode * startip,
 	path++;
     }
 
-    /* е╤е╣╠╛д╬║╟╕хд╦ / дмдвдьд╨╜№╡юд╣ды */
+    /* уГСуВ╣хРНуБоцЬАх╛МуБл / уБМуБВуВМуБ░щЩдхО╗уБЩуВЛ */
     len = strlen(path) - 1;
     if ((len > 0) && (path[len] == '/')) {
       path[len] = 0;
@@ -820,7 +820,7 @@ fs_lookup(struct inode * startip,
     while (*path != '\0') {
 	int i;
 
-	/* е╟егеьепе╚еъд╬╝┬╣╘╡Ў▓─д╬е┴езе├еп */
+	/* уГЗуВгуГмуВпуГИуГкуБохоЯшбМши▒хПпуБоуГБуВзуГГуВп */
 	errno = permit(tmpip, acc, X_BIT);
 	if (errno) {
 	    dealloc_inode(tmpip);
@@ -842,7 +842,7 @@ fs_lookup(struct inode * startip,
 		    dealloc_inode(tmpip);
 		    return (errno);
 		}
-		/* е╒ебедеые╖е╣е╞ерд╬ root directory д╦ддды╛ь╣ч */
+		/* уГХуВбуВдуГлуВ╖уВ╣уГЖуГауБо root directory уБлуБДуВЛха┤хРИ */
 		if ((tmpip == *newip) && (!strcmp("..", part))) {
 		    fsp = rootfs;
 		    do {
@@ -862,10 +862,10 @@ fs_lookup(struct inode * startip,
 		}
 		dealloc_inode(tmpip);
 
-		/* е╤е╣╠╛д╬╝бд╬═╫┴╟д╪ 
+		/* уГСуВ╣хРНуБоцмбуБошжБч┤ауБ╕ 
 		 */
 		if (*path == '\0') {
-		    /* е╟егеьепе╚еъд╬╡Ў▓─д╬е┴езе├еп */
+		    /* уГЗуВгуГмуВпуГИуГкуБоши▒хПпуБоуГБуВзуГГуВп */
 		    errno = permit(*newip, acc, mode_map[oflag & 0x03]);
 		    if (errno)
 			dealloc_inode(*newip);
@@ -885,8 +885,8 @@ fs_lookup(struct inode * startip,
 
 /* fs_read_file -
  *
- * ╡б╟╜
- *	░·┐Їд╟╗╪─ъд╡дьд┐е╒ебедеыд╬╞т═╞дЄ╞╔д▀╣■др
+ * цйЯшГ╜
+ *	х╝ХцХ░уБзцМЗхоЪуБХуВМуБЯуГХуВбуВдуГлуБохЖЕхо╣уВТшкнуБ┐ш╛╝уВА
  *
  * 
  *	
@@ -907,8 +907,8 @@ W fs_read_file(struct inode * ip, W start, B * buf, W length, W * rlength)
 
 /* fs_write_file -
  *
- * ╡б╟╜
- *	░·┐Їд╟╗╪─ъд╡дьд┐е╒ебедеыд╦ buf д╬╞т═╞дЄ╜ёдн╣■др
+ * цйЯшГ╜
+ *	х╝ХцХ░уБзцМЗхоЪуБХуВМуБЯуГХуВбуВдуГлуБл buf уБохЖЕхо╣уВТцЫ╕уБНш╛╝уВА
  *
  * 
  *	
@@ -920,12 +920,12 @@ W fs_write_file(struct inode * ip, W start, B * buf, W length, W * rlength)
     extern W sfs_write_device(ID, B *, W, W, W *);
 
     if (ip->i_mode & FS_FMT_DEV) {
-	/* е╣е┌е╖еуеые╒ебедеыд└д├д┐ */
+	/* уВ╣уГЪуВ╖уГгуГлуГХуВбуВдуГлуБауБгуБЯ */
 	device = ip->i_dev;
 
 	/* Write to the device. */
 	if ((ip->i_dev & BLOCK_DEVICE_MASK) != 0) {
-	    /* е╓еэе├епбже╟е╨еде╣д└д├д┐ */
+	    /* уГЦуГнуГГуВпуГ╗уГЗуГРуВдуВ╣уБауБгуБЯ */
 	    if (ip->i_size <= start) {
 		return (EP_NOSPC);
 	    } else if (ip->i_size <= (start + length)) {
@@ -967,7 +967,7 @@ fs_remove_file(struct inode * startip, B * path, struct access_info * acc)
 	    if (parent_path == NULL) {
 		return (EP_NOMEM);
 	    }
-	    /* kernlib д╬ strncpy д╬╗┼══д╦двдяд╗дыд┐дс */
+	    /* kernlib уБо strncpy уБоф╗ХцзШуБлуБВуВПуБЫуВЛуБЯуВБ */
 	    strncpy(parent_path, path, parent_length + 1);
 #else
 	    strncpy(parent_path, path, MAX_NAMELEN);
@@ -1024,7 +1024,7 @@ W fs_remove_dir(struct inode * startip, B * path, struct access_info * acc)
 	    if (parent_path == NULL) {
 		return (EP_NOMEM);
 	    }
-	    /* kernlib д╬ strncpy д╬╗┼══д╦двдяд╗дыд┐дс */
+	    /* kernlib уБо strncpy уБоф╗ХцзШуБлуБВуВПуБЫуВЛуБЯуВБ */
 	    strncpy(parent_path, path, parent_length + 1);
 #else
 	    strncpy(parent_path, path, MAX_NAMELEN);
@@ -1125,7 +1125,7 @@ W fs_make_dir(struct inode * startip,
 
     errno = fs_lookup(startip, path, O_RDONLY, mode, acc, newip);
     if (errno == EP_OK) {
-	dealloc_inode(*newip);	/* fs_close() д╟╣╘дж╜ш═¤д╧д│дьд└д▒ */
+	dealloc_inode(*newip);	/* fs_close() уБзшбМуБЖхЗжчРЖуБпуБУуВМуБауБС */
 	return (EP_EXIST);
     } else if (errno != EP_NOENT) {
 	return (errno);
@@ -1138,7 +1138,7 @@ W fs_make_dir(struct inode * startip,
 	    if (parent_path == NULL) {
 		return (EP_NOMEM);
 	    }
-	    /* kernlib д╬ strncpy д╬╗┼══д╦двдяд╗дыд┐дс */
+	    /* kernlib уБо strncpy уБоф╗ХцзШуБлуБВуВПуБЫуВЛуБЯуВБ */
 	    strncpy(parent_path, path, parent_length + 1);
 #else
 	    strncpy(parent_path, path, MAX_NAMELEN);
@@ -1207,7 +1207,7 @@ fs_link_file(W procid, B * src, W srclen, B * dst, W dstlen,
     W parent_length;
     W errno;
 
-    /* еъеєеп╕╡д╬ i-node дЄ get ╠╡д▒дьд╨еиещб╝ */
+    /* уГкуГ│уВпхЕГуБо i-node уВТ get чДбуБСуВМуБ░уВиуГйуГ╝ */
     if (*src != '/') {
 	errno = proc_get_cwd(procid, &startip);
 	if (errno) {
@@ -1222,13 +1222,13 @@ fs_link_file(W procid, B * src, W srclen, B * dst, W dstlen,
 	return (errno);
     }
 
-    /* еъеєеп╕╡дме╟егеьепе╚еъд╩дщеиещб╝ */
+    /* уГкуГ│уВпхЕГуБМуГЗуВгуГмуВпуГИуГкуБкуВЙуВиуГйуГ╝ */
     if ((srcip->i_mode & FS_FMT_MSK) == FS_FMT_DIR) {
 	fs_close_file(srcip);
 	return (EP_ISDIR);
     }
 
-    /* еъеєеп└шд╬┐╞е╟егеьепе╚еъд╬ i-node дЄ get */
+    /* уГкуГ│уВпхЕИуБошжкуГЗуВгуГмуВпуГИуГкуБо i-node уВТ get */
     if (*dst != '/') {
 	errno = proc_get_cwd(procid, &startip);
 	if (errno) {
@@ -1263,14 +1263,14 @@ fs_link_file(W procid, B * src, W srclen, B * dst, W dstlen,
 	parent_length += 1;
     }
 
-    /* е╒ебедеые╖е╣е╞ердЄ╕┘д░еъеєепд╦д╩дщд╩ддд│д╚дЄе┴езе├епд╣ды */
+    /* уГХуВбуВдуГлуВ╖уВ╣уГЖуГауВТш╖иуБРуГкуГ│уВпуБлуБкуВЙуБкуБДуБУуБиуВТуГБуВзуГГуВпуБЩуВЛ */
     if (srcip->i_fs != parent_ip->i_fs) {
 	fs_close_file(parent_ip);
 	fs_close_file(srcip);
 	return (EP_XDEV);
     }
 
-    /* │╞е╒ебедеые╖е╣е╞ерд╬ link ┤╪┐ЇдЄ╕╞д╙╜╨д╣ */
+    /* хРДуГХуВбуВдуГлуВ╖уВ╣уГЖуГауБо link щЦвцХ░уВТхС╝уБ│хЗ║уБЩ */
     errno = FILE_LINK(parent_ip, &dst[parent_length], srcip, acc);
 
     fs_close_file(parent_ip);
@@ -1282,7 +1282,7 @@ fs_link_file(W procid, B * src, W srclen, B * dst, W dstlen,
 }
 
 
-/* --------=========== ║┘б╣д╚д╖д┐┤╪┐Ї╖▓ ================--------- */
+/* --------=========== ч┤░уАЕуБиуБЧуБЯщЦвцХ░ч╛д ================--------- */
 
 /* alloc_inode - 
  *
@@ -1317,7 +1317,7 @@ W dealloc_inode(struct inode * ip)
     ip->i_refcount--;
     if (ip->i_refcount <= 0) {
 	FILE_CLOSE(ip);
-	/* fs д╬ register_list длдщд╬╝шдъ╜№дн */
+	/* fs уБо register_list уБЛуВЙуБохПЦуВКщЩдуБН */
 	if (ip->i_next == ip) {
 #if 0
 	    dbg_printf("[PM] register_list become empty!!\n");
@@ -1330,7 +1330,7 @@ W dealloc_inode(struct inode * ip)
 	    ip->i_next->i_prev = ip->i_prev;
 	    ip->i_prev->i_next = ip->i_next;
 	}
-	/* free_inode list д╪┼╨╧┐ */
+	/* free_inode list уБ╕чЩ╗щМ▓ */
 	ip->i_next = free_inode;
 	ip->i_prev = NULL;
 	free_inode = ip;
@@ -1379,7 +1379,7 @@ W fs_register_inode(struct inode * ip)
 	ip->i_prev = ip;
 	ip->i_fs->fs_ilist = ip;
     } else {
-	/* Queue д╬║╟╕хд╦─╔▓├ */
+	/* Queue уБоцЬАх╛МуБлш┐╜хКа */
 	register_list = ip->i_fs->fs_ilist;
 	ip->i_prev = register_list->i_prev;
 	ip->i_next = register_list;

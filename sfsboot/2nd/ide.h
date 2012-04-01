@@ -5,13 +5,13 @@
 
 #define IDE_BLOCK_SIZE		512
 #define IDE_MAX_PARTITION	4
-#define IDE_MAX_EXT_PARTITION	5	/* ³ÈÄ¥¥Ñ¡¼¥Æ¥£¥·¥ç¥ó¤ÎºÇÂç¿ô */
+#define IDE_MAX_EXT_PARTITION	5	/* æ‹¡å¼µãƒ‘ãƒ¼ãƒ†ã‚£ã‚·ãƒ§ãƒ³ã®æœ€å¤§æ•° */
 
 #define IDE_STAT_REG		0x1f7
 #define IDE_COMMAND_REG		0x1f7
 #define IDE_ALT_STAT_REG	0x3f6
 #define IDE_CONTROL_REG		0x3f6
-#define IDE_ADDR_REG		0x3f7	/* ¥Ç¥£¥¸¥¿¥ë¥¤¥ó¥×¥Ã¥È¥ì¥¸¥¹¥¿ */
+#define IDE_ADDR_REG		0x3f7	/* ãƒ‡ã‚£ã‚¸ã‚¿ãƒ«ã‚¤ãƒ³ãƒ—ãƒƒãƒˆãƒ¬ã‚¸ã‚¹ã‚¿ */
 #define IDE_ERROR_REG		0x1f1
 #define IDE_DATA_REG		0x1f0
 #define IDE_FEATURE_REG		0x1f1
@@ -19,7 +19,7 @@
 #define IDE_SNUMBER_REG		0x1f3
 #define IDE_CYL_LOW_REG		0x1f4
 #define IDE_CYL_HIGH_REG	0x1f5
-#define IDE_DRIVE_REG		0x1f6	/* ¥É¥é¥¤¥Ö/¥Ø¥Ã¥É¥ì¥¸¥¹¥¿ */
+#define IDE_DRIVE_REG		0x1f6	/* ãƒ‰ãƒ©ã‚¤ãƒ–/ãƒ˜ãƒƒãƒ‰ãƒ¬ã‚¸ã‚¹ã‚¿ */
 
 #define	IDE_CMD_READ_INFO	0xec
 #define IDE_CMD_READ		0x20
@@ -79,15 +79,15 @@ struct ide_partition
 {
   unsigned char		boot_flag;
   unsigned char		begin[3];	/* header, sector, cylinder
-					 * ¤Î½ç¤Ë¤Ê¤é¤ó¤Ç¤¤¤ë¡£
-					 * ¤¿¤À¤·¡¢sector ¤Î¾å°Ì 2 ¥Ó¥Ã¥È¤Ï¡¢
-					 * ¥·¥ê¥ó¥À¤Î¾å°Ì 2 ¥Ó¥Ã¥È¤òÊä´°¤¹¤ë¡£
+					 * ã®é †ã«ãªã‚‰ã‚“ã§ã„ã‚‹ã€‚
+					 * ãŸã ã—ã€sector ã®ä¸Šä½ 2 ãƒ“ãƒƒãƒˆã¯ã€
+					 * ã‚·ãƒªãƒ³ãƒ€ã®ä¸Šä½ 2 ãƒ“ãƒƒãƒˆã‚’è£œå®Œã™ã‚‹ã€‚
 					 */
   unsigned char		type;
   unsigned char		end[3];		/* header, sector, cylinder
-					 * ¤Î½ç¤Ë¤Ê¤é¤ó¤Ç¤¤¤ë¡£
-					 * ¤¿¤À¤·¡¢sector ¤Î¾å°Ì 2 ¥Ó¥Ã¥È¤Ï¡¢
-					 * ¥·¥ê¥ó¥À¤Î¾å°Ì 2 ¥Ó¥Ã¥È¤òÊä´°¤¹¤ë¡£
+					 * ã®é †ã«ãªã‚‰ã‚“ã§ã„ã‚‹ã€‚
+					 * ãŸã ã—ã€sector ã®ä¸Šä½ 2 ãƒ“ãƒƒãƒˆã¯ã€
+					 * ã‚·ãƒªãƒ³ãƒ€ã®ä¸Šä½ 2 ãƒ“ãƒƒãƒˆã‚’è£œå®Œã™ã‚‹ã€‚
 					 */
   unsigned long		start;
   unsigned long		length;

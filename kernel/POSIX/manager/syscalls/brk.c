@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -45,7 +45,7 @@ W psc_brk_f(struct posix_request *req)
     err = EP_OK;
     start = reg.start_addr + reg.min_size;
     if (start > req->param.par_brk.end_adr) {
-	/* region ¤ò½Ì¾® */
+	/* region ã‚’ç¸®å° */
 	size = start - req->param.par_brk.end_adr;
 	for (i = 1; i <= (size >> PAGE_SHIFT); ++i) {
 	    err = shorten_vm(myprocp, (UW) start - (i << PAGE_SHIFT));
@@ -53,7 +53,7 @@ W psc_brk_f(struct posix_request *req)
 		break;
 	}
     } else if (start < req->param.par_brk.end_adr) {
-	/* region ¤ò³ÈÂç */
+	/* region ã‚’æ‹¡å¤§ */
 	size = req->param.par_brk.end_adr - start;
 	for (i = 0; i < PAGES(size); ++i) {
 	    err = grow_vm(myprocp, (UW) start + (i << PAGE_SHIFT),

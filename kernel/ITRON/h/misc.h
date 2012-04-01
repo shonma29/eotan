@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -23,7 +23,7 @@ Version 2, June 1991
 #define CUTDOWN(x,align)	(((unsigned long)x) / ((unsigned long)align) * ((unsigned long)align))
 #endif
 
-/* 2 ╓няя╬Х╓г╓╥╓╚╩х╓╗╓й╓╓╓╛║╓╦Зн╗╓они╓╓ */
+/* 2 Ц│╝Е├╙Д╧≈Ц│╖Ц│≈Ц│▀Д╫©Ц│┬Ц│╙Ц│└Ц│▄О╪▄Е┼╧Г▌┤Ц│╞Х┴╞Ц│└ */
 #define ROUNDUP(x,align)	((((int)x) + (align) - 1) & ~((align) - 1))
 #define CUTDOWN(x,align)	((((int)x) & ~((align) - 1)))
 
@@ -42,12 +42,12 @@ if (exp) \
 }
   
 
-/* rtov --- ╪б╔А╔Б╔Й╔╒╔и╔Л╔╧╓Р╡╬аш╔А╔Б╔Й╔╒╔и╔Л╔╧╓кйя╢╧╓╧╓К║ё
+/* rtov --- Е╝÷Ц┐║Ц┐╒Ц┐╙Ц┌╒Ц┐┴Ц┐╛Ц┌╧Ц┌▓Д╩╝Ф┐ЁЦ┐║Ц┐╒Ц┐╙Ц┌╒Ц┐┴Ц┐╛Ц┌╧Ц│╚Е╓┴Ф▐⌡Ц│≥Ц┌▀Ц─┌
  */
 #define RTOV(real)	((real)  | 0x80000000UL)
 #define VTOR(vaddr)	((vaddr) & 0x7FFFFFFFL)
 
-/* ptov --- ╪б╔А╔Б╔Й╓н╔з║╪╔╦хж╧Ф╓╚╓И╡╬аш╔А╔Б╔Й╔╒╔и╔Л╔╧╓РЁД╓Й╫п╓╧║ё
+/* ptov --- Е╝÷Ц┐║Ц┐╒Ц┐╙Ц│╝Ц┐ Ц┐╪Ц┌╦Г∙╙Е▐╥Ц│▀Ц┌┴Д╩╝Ф┐ЁЦ┐║Ц┐╒Ц┐╙Ц┌╒Ц┐┴Ц┐╛Ц┌╧Ц┌▓Е┴╡Ц┌┼Е┤╨Ц│≥Ц─┌
  */
 #define PTOV(page)	((page << PAGE_SHIFT) | 0x80000000UL)
 

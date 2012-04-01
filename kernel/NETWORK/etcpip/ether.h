@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -16,10 +16,10 @@ Version 2, June 1991
  * Some files has copied from NETWORK/tcpip and modified.
  *
  * Revision 1.2  1997/05/08 15:10:06  night
- * ¥Õ¥¡¥¤¥ëÆâ¤ÎÊ¸»ú¥³¡¼¥É¤ò SJIS ¤«¤é EUC ¤ËÊÑ¹¹¤·¤¿¡£
+ * ãƒ•ã‚¡ã‚¤ãƒ«å†…ã®æ–‡å­—ã‚³ãƒ¼ãƒ‰ã‚’ SJIS ã‹ã‚‰ EUC ã«å¤‰æ›´ã—ãŸã€‚
  *
  * Revision 1.1  1997/05/06 12:46:22  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  */
@@ -38,7 +38,7 @@ Version 2, June 1991
 #define ETH_FRAME_LEN	1514		/* Max. octets in frame sans FCS */
 
 
-/* ¥¤¡¼¥µ¥Í¥Ã¥È¥Ø¥Ã¥À¤ËÆş¤ë¾å°Ì¥×¥í¥È¥³¥ë¤ò¼¨¤¹ÃÍ
+/* ã‚¤ãƒ¼ã‚µãƒãƒƒãƒˆãƒ˜ãƒƒãƒ€ã«å…¥ã‚‹ä¸Šä½ãƒ—ãƒ­ãƒˆã‚³ãƒ«ã‚’ç¤ºã™å€¤
  */
 #define ETH_P_LOOP	0x0060		/* Ethernet Loopback packet	*/
 #define ETH_P_ECHO	0x0200		/* Ethernet Echo packet		*/
@@ -64,13 +64,13 @@ Version 2, June 1991
 
 
 
-/* ¥¤¡¼¥µ¥Í¥Ã¥È¥Ñ¥±¥Ã¥È¤Î¥Ø¥Ã¥ÀÉôÊ¬
+/* ã‚¤ãƒ¼ã‚µãƒãƒƒãƒˆãƒ‘ã‚±ãƒƒãƒˆã®ãƒ˜ãƒƒãƒ€éƒ¨åˆ†
  */
 struct ethhdr
 {
-  unsigned char		h_dest[ETH_ALEN];	/* Á÷¤êÀè MAC ¥¢¥É¥ì¥¹	*/
-  unsigned char		h_source[ETH_ALEN];	/* Á÷¤ê¸µ MAC ¥¢¥É¥ì¥¹	*/
-  unsigned short	h_proto;		/* ¾å°Ì¥×¥í¥È¥³¥ë¤Î¥¿¥¤¥× */
+  unsigned char		h_dest[ETH_ALEN];	/* é€ã‚Šå…ˆ MAC ã‚¢ãƒ‰ãƒ¬ã‚¹	*/
+  unsigned char		h_source[ETH_ALEN];	/* é€ã‚Šå…ƒ MAC ã‚¢ãƒ‰ãƒ¬ã‚¹	*/
+  unsigned short	h_proto;		/* ä¸Šä½ãƒ—ãƒ­ãƒˆã‚³ãƒ«ã®ã‚¿ã‚¤ãƒ— */
 };
 
 

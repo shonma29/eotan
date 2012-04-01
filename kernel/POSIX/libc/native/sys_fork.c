@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -19,7 +19,7 @@ static char rcsid[] = "@(#)$Id: sys_fork.c,v 1.3 1999/11/10 10:39:32 naniwa Exp 
 
 #include "../native.h"
 
-/* fork мя╔╗╔С╔х╔Й║╪╔К║╪╔а╔С */
+/* fork Г■╗Ц┌╗Ц┐ЁЦ┐┬Ц┐╙Ц┐╪Ц┐╚Ц┐╪Ц┐│Ц┐Ё */
 int fork_entry()
 {
     ena_int();

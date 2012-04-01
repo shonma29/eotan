@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -19,29 +19,29 @@ static char rcs[] = "@(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc
  * Port-manager and libkernel.a is moved to ITRON. I guess it is reasonable. At least they should not be in BTRON/.
  *
  * Revision 1.1  1996/07/23 00:03:04  night
- * IBM PC �Ѥκǽ����Ͽ
+ * IBM PC 用の最初の登録
  *
  * Revision 1.4  1995/12/05 15:16:28  night
- * ������������ݡ��ȥơ��֥�� 0 ���� 1 �ޤǤ���Ĵ�٤Ƥ��ʤ��ä���
- * ����� MAX_PORT_ENTRY(= 100)�ޤǸ�������褦�ˤ�����
+ * 検索する時、ポートテーブルを 0 から 1 までしか調べていなかった。
+ * これを MAX_PORT_ENTRY(= 100)まで検索するようにした。
  *
  * Revision 1.3  1995/09/21  15:51:48  night
- * �������ե��������Ƭ�� Copyright notice ������ɲá�
+ * ソースファイルの先頭に Copyright notice 情報を追加。
  *
  * Revision 1.2  1995/06/26  15:18:56  night
- * �����Ĥ��� printf �� DEBUG �ޥ����ǰϤ����
+ * いくつかの printf を DEBUG マクロで囲んだ。
  *
  * Revision 1.1  1995/03/18  14:12:47  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  *
  */
 
 /*
- * ��å������Хåե���ǡ����١����������뤿��Υ⥸�塼�롣
- * ̾���ȥ�å������Хåե� ID �Ȥ��ӤĤ��롣
+ * メッセージバッファをデータベース管理するためのモジュール。
+ * 名前とメッセージバッファ ID とを結びつける。
  *
- * ���Υ⥸�塼��ϡ��������Ф��Ƽ��δؿ���������롣
+ * このモジュールは、外部に対して次の関数を公開する。
  *
  *   init_regist_table (void)
  *   regist_database (PORT_NAME *name, ID port, ID task)
@@ -49,15 +49,15 @@ static char rcs[] = "@(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc
  *   find_database (PORT_NAME *name, ID *port)
  *
  *
- * �ǡ����δ�����ˡ�Ȥ��Ƥϡ�ñ��ʥơ��֥������Ǵ������롣
- * ���ʤ���������Ƥ���ǽ�Υ���ȥ����Ͽ����õ���Ȥ��ˤϡ�
- * �ǽ�Υ���ȥ꤫����֤�õ���Ƥ�����
+ * データの管理方法としては、単純なテーブル方式で管理する。
+ * すなわち、空いている最初のエントリに登録し、探すときには、
+ * 最初のエントリから順番に探していく。
  *
  */
 
 
 /*
- * ɬ�פʥ��󥯥롼�ɥե�������ɤ߹��ߡ�
+ * 必要なインクルードファイルの読み込み。
  */
 #include <itron.h>
 #include <errno.h>
@@ -66,42 +66,42 @@ static char rcs[] = "@(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc
 
 
 /*
- * �ǡ�������Ͽ���륨��ȥꡣ
- * ̾���ȥ�å������Хåե��� ID ��������Ͽ������������ ID �� 
- * 3 �Ĥξ������롣
- * ���ι�¤�Τϡ����Υե�������椷���Ȥ�ʤ���
+ * データを登録するエントリ。
+ * 名前とメッセージバッファの ID そして登録したタスクの ID の 
+ * 3 つの情報が入る。
+ * この構造体は、このファイルの中しか使わない。
  *
  */
 struct data_entry_t
 {
-  PORT_NAME	name;		/* ��å������Хåե��˷�ӤĤ���̾����   */
-				/* ��Ͽ����Ȥ��˻��ꤹ�롣               */
+  PORT_NAME	name;		/* メッセージバッファに結びついた名前。   */
+				/* 登録するときに指定する。               */
 
-  ID		port;		/* ��å������Хåե� ID                  */
-				/* �������Ǥ��ͤ� 0 �ΤȤ��ˤϡ����Υ�    */
-  				/* ��ȥ�ϡ��ȤäƤ��ʤ����Ȥ�ɽ����     */
+  ID		port;		/* メッセージバッファ ID                  */
+				/* この要素の値が 0 のときには、このエ    */
+  				/* ントリは、使っていないことを表す。     */
 
-  ID		task;		/* ��å������Хåե�����Ͽ���������� */
+  ID		task;		/* メッセージバッファを登録したタスク */
 };
 
 
 /*
- * ����ơ��֥�
+ * 情報テーブル
  */
 static struct data_entry_t	table[MAX_PORT_ENTRY];
 
 
 /*
- * �ơ��֥뤫��̾���ˤ�äƥ���ȥ�򸡺�����ؿ���
- * unregist_database() �� find_database() �ǻ��Ѥ��롣
+ * テーブルから名前によってエントリを検索する関数。
+ * unregist_database() と find_database() で使用する。
  */
 static W	find_entry (PORT_NAME name);
 
 
 /*
- * �ǡ����١����ν����
- * ����ơ��֥� table �ѿ������Ǥ������ꤹ�롣
- * (0 ������)
+ * データベースの初期化
+ * 情報テーブル table 変数の要素を初期設定する。
+ * (0 で埋める)
  */
 void
 init_regist_table (void)
@@ -111,42 +111,42 @@ init_regist_table (void)
 
 
 /*
- * �ǡ�������Ͽ����
- * table �ѿ��ζ����Ƥ��륨��ȥ�򸫤Ĥ�����å������Хåե���
- * ��Ͽ���롣
+ * データの登録処理
+ * table 変数の空いているエントリを見つけ、メッセージバッファを
+ * 登録する。
  *
  */
 PORT_MANAGER_ERROR
 regist_database (PORT_NAME name, ID port, ID task)
 {
-  W	counter;		/* �����Ƥ��륨��ȥ��ơ��֥뤫�� */
-				/* ���Ĥ���Ȥ��˻��Ѥ��륫����   */
+  W	counter;		/* 空いているエントリをテーブルから */
+				/* 見つけるときに使用するカウンタ   */
 
   /*
-   * �ơ��֥�Ʊ��̾���Υ���ȥ꤬�ʤ����򸡺����롣
-   * �⤷��Ʊ��̾�����ĥ���ȥ꤬���ä����ˤϡ�
-   * E_PORT_DUPLICATION �Υ��顼���֤���
+   * テーブル同じ名前のエントリがないかを検索する。
+   * もし、同じ名前をもつエントリがあった場合には、
+   * E_PORT_DUPLICATION のエラーを返す。
    */
   if (find_entry (name) >= 0)
     {
-      return (E_PORT_DUPLICATION);	/* Ʊ��̾�����ĥ���ȥ꤬�� */
-					/* �Ǥˤ��ä����顼���֤���   */
+      return (E_PORT_DUPLICATION);	/* 同じ名前をもつエントリがす */
+					/* でにあったエラーを返す。   */
     }
 
   /*
-   * �ơ��֥����Ƭ��������Ƥ��륨��ȥ��õ����
+   * テーブルの先頭から空いているエントリを探す。
    */
   for (counter = 0; counter < MAX_PORT_ENTRY; counter++)
     {
       /*
-       * �⤷������ȥ�� ID ���Ǥ� 0 �ʤ�С����Υ���ȥ��
-       * �Ȥ��Ƥ��ʤ���
+       * もし、エントリの ID 要素が 0 ならば、このエントリは
+       * 使われていない。
        */
       if (table[counter].port == 0)
 	{
 	  /*
-	   * �����Ƥ��륨��ȥ�򸫤Ĥ�����
-	   * ��å������Хåե�����Ͽ���롣
+	   * 空いているエントリを見つけた。
+	   * メッセージバッファを登録する。
 	   */
 	  strncpy (table[counter].name, name, (PORT_NAME_LEN + 1));
 	  table[counter].port = port;
@@ -159,45 +159,45 @@ regist_database (PORT_NAME name, ID port, ID task)
     }
 
   /*
-   * �����Ƥ��륨��ȥ꤬ȯ���Ǥ��ʤ��ä���
-   * E_PORT_FULL �Υ��顼���֤���
+   * 空いているエントリが発見できなかった。
+   * E_PORT_FULL のエラーを返す。
    */
   return (E_PORT_FULL);
 }
 
 
 /*
- * �ǡ����١���������ꤷ��̾�����ĥ���ȥ�������롣
- * �⤷���б����륨��ȥ꤬���Ĥ����ʤ��ä����ˤϡ�E_PORT_NOTFOUND 
- * �Υ��顼���֤���
+ * データベースから指定した名前をもつエントリを削除する。
+ * もし、対応するエントリが見つけられなかった場合には、E_PORT_NOTFOUND 
+ * のエラーを返す。
  *
- * ���� name �ǻ��ꤷ������ȥ�򸫤Ĥ�������ȥ�����Ƥ� 0 �����롣
+ * 引数 name で指定したエントリを見つけ、エントリの内容を 0 で埋める。
  * 
- * ���δؿ��ϡ���������å������Хåե��� ID ����� port ���֤���
+ * この関数は、削除するメッセージバッファの ID を引数 port に返す。
  *
  */
 PORT_MANAGER_ERROR
 unregist_database (PORT_NAME name, ID *port, ID task)
 {
-  W	index;		/* �ǡ����١������鸫�Ĥ�������ȥ� */
+  W	index;		/* データベースから見つけたエントリ */
 
   index = find_entry (name);
   if (index < 0)
     {
-      return (E_PORT_NOTFOUND);	/* ����ȥ��ֹ椬 -1 ���ä�;       */
-				/* ���� name �˳������륨��ȥ꤬  */
-				/* �ʤ��ä��Τǡ�E_PORT_NOTFOUND �� */
-      				/* ���顼���֤���                  */
+      return (E_PORT_NOTFOUND);	/* エントリ番号が -1 だった;       */
+				/* 引数 name に該当するエントリが  */
+				/* なかったので、E_PORT_NOTFOUND の */
+      				/* エラーを返す。                  */
     }
 
   /*
-   * ��å������Хåե� ID ����� port ���������롣
+   * メッセージバッファ ID を引数 port に代入する。
    */
   *port = table[index].port;
 
   /*
-   * ��å������Хåե�����Ͽ�����������������׵��Ԥä���������
-   * �ۤʤäƤ������ˤϡ�E_PORT_INVALID �Υ��顼�Ȥ��롣
+   * メッセージバッファを登録したタスクと抹消要求を行ったタスクが
+   * 異なっていた場合には、E_PORT_INVALID のエラーとする。
    */
   if (table[index].task	 != task)
     {
@@ -205,7 +205,7 @@ unregist_database (PORT_NAME name, ID *port, ID task)
     }
 
   /*
-   * find_entry() �ˤ�äơ�ȯ����������ȥ�� 0 �����롣
+   * find_entry() によって、発見したエントリを 0 で埋める。
    */
   bzero (&table[index], sizeof (struct data_entry_t));
 
@@ -214,57 +214,57 @@ unregist_database (PORT_NAME name, ID *port, ID task)
 
 
 /*
- * ���� name �ǻ��ꤷ��̾�����ĥ���ȥ�򸫤Ĥ��ƥ�å������Хåե� 
- * ID ���֤���
- * �⤷���ơ��֥����˳�������̾�����ĥ���ȥ꤬�ʤ��ä����ˤϡ�
- * E_PORT_NOTFOUND �Υ��顼���֤���
+ * 引数 name で指定した名前をもつエントリを見つけてメッセージバッファ 
+ * ID を返す。
+ * もし、テーブルの中に該当する名前をもつエントリがなかった場合には、
+ * E_PORT_NOTFOUND のエラーを返す。
  *
  */
 PORT_MANAGER_ERROR
 find_database (PORT_NAME name, ID *port)
 {
-  W	index;	/* �ǡ����١����ơ��֥뤫�鸫�Ĥ�������ȥ��ɽ��  */
-		/* table �ѿ��Υ���ǥå�����			   */
+  W	index;	/* データベーステーブルから見つけたエントリを表す  */
+		/* table 変数のインデックス。			   */
 
   /*
-   * �б����륨��ȥ꤬�ʤ�����õ����
-   * find_entry() ��ȤäƤ��롣
+   * 対応するエントリがないかを探す。
+   * find_entry() を使っている。
    */
   index = find_entry (name);
   if (index == -1)
     {
       /*
-       * find_entry() ���֤��ͤ� -1 ���ä���
-       * �б����륨��ȥ꤬�ʤ��Τǡ�E_PORT_NOTFOUND �Υ��顼���֤���
+       * find_entry() の返り値が -1 だった。
+       * 対応するエントリがないので、E_PORT_NOTFOUND のエラーを返す。
        */
       return (E_PORT_NOTFOUND);
     }
 
   /*
-   * ���� port ��õ���Ф�������ȥ�����äƤ����å������Хåե��� id 
-   * �����ꤹ�롣 
+   * 引数 port に探し出したエントリに入っているメッセージバッファの id 
+   * を設定する。 
    */
   *port = table[index].port;
 
-  return (E_PORT_OK);		/* ���ｪλ��E_PORT_OK ���֤��� */
+  return (E_PORT_OK);		/* 正常終了。E_PORT_OK を返す。 */
 }
 
 
 /*
- * ����ơ��֥뤫�饨��ȥ�򸫤Ĥ��뤿��β������ؿ���
- * �֤��ͤȤ��ƾ���ơ��֥�Υ���ǥå����ֹ���֤���
- * �ơ��֥뤫����� name ���б�����̾�����ĥ���ȥ꤬ȯ���Ǥ��ʤ���
- * �����ˤϡ�-1 ���֤���
+ * 情報テーブルからエントリを見つけるための下請け関数。
+ * 返り値として情報テーブルのインデックス番号を返す。
+ * テーブルから引数 name に対応する名前をもつエントリが発見できなかっ
+ * た場合には、-1 を返す。
  */
 static W
 find_entry (PORT_NAME name)
 {
-  W	index;			/* ����ơ��֥�򥵡�������Ȥ��ˡ��� */
-				/* �Ѥ��륫���󥿡�                   */
+  W	index;			/* 情報テーブルをサーチするときに、使 */
+				/* 用するカウンタ。                   */
 
   /*
-   * ��������̾�����ĥ���ȥ꤬�ʤ����ɤ��������ơ��֥� (table) ��
-   * ��Ƭ���鸡�����롣
+   * 該当する名前をもつエントリがないかどうかを情報テーブル (table) を
+   * 先頭から検索する。
    */
   for (index = 0; index < MAX_PORT_ENTRY; index++)
     {
@@ -276,16 +276,16 @@ find_entry (PORT_NAME name)
       if (strncmp (name, table[index].name, PORT_NAME_LEN) == 0)
 	{
 	  /*
-	   * ���� name ��Ʊ��̾�����ĥ���ȥ��ȯ��������
-	   * ����ơ��֥�� ����ǥå����ͤ��֤���
+	   * 引数 name と同じ名前をもつエントリを発見した。
+	   * 情報テーブルの インデックス値を返す。
 	   */
 	  return (index);
 	}
     }
 
   /*
-   * ����ơ��֥�ˤϡ��������륨��ȥ꤬�ʤ��ä���
-   * -1 ���֤���
+   * 情報テーブルには、該当するエントリがなかった。
+   * -1 を返す。
    */
   return (-1);
 }

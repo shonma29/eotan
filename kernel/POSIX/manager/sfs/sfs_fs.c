@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -10,7 +10,7 @@ Version 2, June 1991
 (C) 2002, Tomohide Naniwa
 
 */
-/* sfs_fs.c - SFS ¤Î¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥àÁ´ÂÎ¤Î½èÍı
+/* sfs_fs.c - SFS ã®ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ å…¨ä½“ã®å‡¦ç†
  *
  *
  * $Log: sfs_fs.c,v $
@@ -42,49 +42,49 @@ Version 2, June 1991
  * Source file cleaning for avoid warnings.
  *
  * Revision 1.14  1997/10/11 16:25:22  night
- * ¥Õ¥¡¥¤¥ë¤Î write ½èÍı¤Î½¤Àµ¡£
+ * ãƒ•ã‚¡ã‚¤ãƒ«ã® write å‡¦ç†ã®ä¿®æ­£ã€‚
  *
  * Revision 1.13  1997/08/31 13:37:05  night
- * root file system ¤ÎÀßÄê»ş¡¢Magic ID ¤¬°Û¤Ê¤Ã¤Æ¤¤¤¿»ş¤Ë¥¨¥é¡¼¤ò
- * ÊÖ¤¹¤è¤¦¤ËÊÑ¹¹¤·¤¿¡£
+ * root file system ã®è¨­å®šæ™‚ã€Magic ID ãŒç•°ãªã£ã¦ã„ãŸæ™‚ã«ã‚¨ãƒ©ãƒ¼ã‚’
+ * è¿”ã™ã‚ˆã†ã«å¤‰æ›´ã—ãŸã€‚
  *
  * Revision 1.12  1997/07/06 11:57:53  night
- * ¥Ç¥Ğ¥Ã¥°Ê¸¤Î½¤Àµ¡£
+ * ãƒ‡ãƒãƒƒã‚°æ–‡ã®ä¿®æ­£ã€‚
  *
  * Revision 1.11  1997/07/03 14:24:36  night
- * mountroot/open ½èÍı¤Î¥Ğ¥°¤ò½¤Àµ¡£
+ * mountroot/open å‡¦ç†ã®ãƒã‚°ã‚’ä¿®æ­£ã€‚
  *
  * Revision 1.10  1997/07/02 13:26:39  night
- * sfs_mountroot ¤Î°ú¿ô¤¬´Ö°ã¤Ã¤Æ¤¤¤¿¤Î¤Ç¡¢½¤Àµ¤·¤¿
+ * sfs_mountroot ã®å¼•æ•°ãŒé–“é•ã£ã¦ã„ãŸã®ã§ã€ä¿®æ­£ã—ãŸ
  *
  * Revision 1.9  1997/05/08 15:13:08  night
- * sfs_mountroot() ¼Â¹Ô»ş¤Ë¡¢rootfile->i_ops ¤ËÂĞ¤·¤Æ sfs_iops ¤ò
- * ÀßÄê¤¹¤ë½èÍı¤òÍ­¸ú¤Ë¤·¤¿¡£
+ * sfs_mountroot() å®Ÿè¡Œæ™‚ã«ã€rootfile->i_ops ã«å¯¾ã—ã¦ sfs_iops ã‚’
+ * è¨­å®šã™ã‚‹å‡¦ç†ã‚’æœ‰åŠ¹ã«ã—ãŸã€‚
  *
  * Revision 1.8  1997/04/28 15:29:53  night
- * ¥Ç¥Ğ¥Ã¥°ÍÑ¤ÎÊ¸¤òÄÉ²Ã¡£
+ * ãƒ‡ãƒãƒƒã‚°ç”¨ã®æ–‡ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.7  1997/04/25 13:02:36  night
- * mountroot ¼Â¹Ô»ş¤Ë¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥à¾ğÊó¤ÎÀßÄê½èÍı¤òÄÉ²Ã¤·¤¿¡£
+ * mountroot å®Ÿè¡Œæ™‚ã«ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ æƒ…å ±ã®è¨­å®šå‡¦ç†ã‚’è¿½åŠ ã—ãŸã€‚
  *
  * Revision 1.6  1997/04/24 15:43:34  night
- * sfs_mountroot ¤Î¼Â¹Ô»ş¤ËÀµ¾ï¤Ë½ªÎ»¤·¤¿¾ì¹ç¤Ë¤Ï EP_OK ¤Î¥¨¥é¡¼¥³¡¼¥É¤ò
- * ÊÖ¤¹¤è¤¦¤Ë½¤Àµ¡£
+ * sfs_mountroot ã®å®Ÿè¡Œæ™‚ã«æ­£å¸¸ã«çµ‚äº†ã—ãŸå ´åˆã«ã¯ EP_OK ã®ã‚¨ãƒ©ãƒ¼ã‚³ãƒ¼ãƒ‰ã‚’
+ * è¿”ã™ã‚ˆã†ã«ä¿®æ­£ã€‚
  *
  * Revision 1.5  1996/11/20  12:13:19  night
- * ºÙ¡¹¤È¤·¤¿½¤Àµ¡£
+ * ç´°ã€…ã¨ã—ãŸä¿®æ­£ã€‚
  *
  * Revision 1.4  1996/11/18  13:46:11  night
- * ¥Õ¥¡¥¤¥ë¤ÎÃæ¿È¤òºîÀ®¡£
+ * ãƒ•ã‚¡ã‚¤ãƒ«ã®ä¸­èº«ã‚’ä½œæˆã€‚
  *
  * Revision 1.3  1996/11/17  14:51:24  night
- * rcsid ¤ÎÄÉ²Ã¡£
+ * rcsid ã®è¿½åŠ ã€‚
  *
  * Revision 1.2  1996/11/07  21:12:11  night
- * Ê¸»ú¥³¡¼¥É¤ò EUC ¤ËÊÑ¹¹¤·¤¿¡£
+ * æ–‡å­—ã‚³ãƒ¼ãƒ‰ã‚’ EUC ã«å¤‰æ›´ã—ãŸã€‚
  *
  * Revision 1.1  1996/11/07  12:50:56  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  */
 
@@ -176,7 +176,7 @@ W sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
     rootfsp->fs_private.sfs_fs = sfs_sb;
 
 #ifdef FMDEBUG
-    /* ¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥à¾ğÊó¤Î½ĞÎÏ ; for FMDEBUG
+    /* ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ æƒ…å ±ã®å‡ºåŠ› ; for FMDEBUG
      */
     dbg_printf("sfs_sb: blocksize = %d\n", rootfsp->fs_blksize);
     dbg_printf("sfs_sb: allblock  = %d\n", rootfsp->fs_allblock);
@@ -188,7 +188,7 @@ W sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 
     rootfile->i_ops = (struct iops *) &sfs_iops;
     errno = sfs_read_inode(rootfsp, 1, rootfile);
-    /* root file ¤ÎÆÉ¤ß¹ş¤ß¡¢inode = 1 ¤¬ root file */
+    /* root file ã®èª­ã¿è¾¼ã¿ã€inode = 1 ãŒ root file */
 
     if (errno) {
 #ifdef FMDEBUG
@@ -227,7 +227,7 @@ W sfs_mountroot(ID device, struct fs * rootfsp, struct inode * rootfile)
  */
 W sfs_umount(struct fs * rootfsp)
 {
-    /* super block ¾ğÊó¤Î sync ¤È¥­¥ã¥Ã¥·¥å¡¦¥Ç¡¼¥¿¤ÎÌµ¸ú²½ */
+    /* super block æƒ…å ±ã® sync ã¨ã‚­ãƒ£ãƒƒã‚·ãƒ¥ãƒ»ãƒ‡ãƒ¼ã‚¿ã®ç„¡åŠ¹åŒ– */
     sfs_syncfs(rootfsp, 1);
     return (EP_OK);
 }
@@ -243,7 +243,7 @@ W sfs_statfs()
 
 
 /* sfs_syncfs -
- * °ú¿ô umflag ¤Ï umount ¤Î»ş 1¡¤¤½¤ì°Ê³°¤Î¾ì¹ç¤Ï 0 ¤Ë¤¹¤ë¡¥
+ * å¼•æ•° umflag ã¯ umount ã®æ™‚ 1ï¼Œãã‚Œä»¥å¤–ã®å ´åˆã¯ 0 ã«ã™ã‚‹ï¼
  */
 W sfs_syncfs(struct fs * fsp, W umflag)
 {

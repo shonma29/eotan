@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -33,13 +33,13 @@ static char	rcsid[] = "$Id: sys_misc.c,v 1.5 2000/07/09 16:37:59 kishida0 Exp $"
  * Minor changes. Fixed wrong comment.
  *
  * Revision 1.3  1997/08/31 14:10:50  night
- * vsys_inf() ╓нди╡ц║ё
+ * vsys_inf() Ц│╝Х©╫Е┼═Ц─┌
  *
  * Revision 1.2  1996/11/07  12:40:27  night
- * ╢ь©Т vsys_msc() ╓нди╡ц║ё
+ * И√╒Ф∙╟ vsys_msc() Ц│╝Х©╫Е┼═Ц─┌
  *
  * Revision 1.1  1996/11/06  12:38:26  night
- * ╨г╫И╓непо©
+ * Ф°─Е┬²Ц│╝Г≥╩И▄╡
  *
  *
  */

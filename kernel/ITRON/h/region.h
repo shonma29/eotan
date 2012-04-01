@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -22,13 +22,13 @@ Version 2, June 1991
  * Minor fix for comment to avoid warning.
  *
  * Revision 1.1  1996/07/22 13:39:18  night
- * IBM PC хг ITRON ╓н╨г╫И╓непо©
+ * IBM PC Г┴┬ ITRON Ц│╝Ф°─Е┬²Ц│╝Г≥╩И▄╡
  *
  * Revision 1.2  1995/09/21  15:51:22  night
- * ╔╫║╪╔╧╔у╔║╔╓╔К╓нюХф╛╓к Copyright notice ╬ПйС╓Рди╡ц║ё
+ * Ц┌╫Ц┐╪Ц┌╧Ц┐∙Ц┌║Ц┌╓Ц┐╚Ц│╝Е┘┬И═╜Ц│╚ Copyright notice Ф┐┘Е═╠Ц┌▓Х©╫Е┼═Ц─┌
  *
  * Revision 1.1  1995/03/18  14:49:08  night
- * ╨г╫И╓непо©
+ * Ф°─Е┬²Ц│╝Г≥╩И▄╡
  *
  *
  */

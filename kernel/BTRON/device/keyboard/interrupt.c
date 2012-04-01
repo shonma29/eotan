@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -41,25 +41,25 @@ static char rcsid[] =
  * default 106JP -> 101US
  *
  * Revision 1.7  2000/01/23 15:50:50  kishida0
- * 106JP��101US �����ܡ������ؤ��ѤΥ��ޥ�ɤ��ɲä�����
- * �ؿ��ˤ��Ƥ���Τ����ޤ����������Ȥꤢ�����ϻ��Ѳ�ǽ
- * note-pc�ѤˤϤ⤦���������Υơ��֥���ǧ����ɬ�פ�����
- * �ץ�ݡ���
+ * 106JP、101US キーボード切替え用のコマンドを追加した。
+ * 関数にしているのがいまいちだが、とりあえずは使用可能
+ * note-pc用にはもう少しキーのテーブルを確認する必要がある
+ * 要レポート
  *
  * Revision 1.6  1999/03/21 12:47:15  night
- * ϲ��(naniwa@mechgw.mech.yamaguchi-u.ac.jp) ����λ�Ŧ�ˤ���ѹ���
+ * 浪花(naniwa@mechgw.mech.yamaguchi-u.ac.jp) からの指摘による変更。
  * ------------------
- * > ���Ѥ�餺 b-free-pc.0.0.40 ��١����ˤ��Ƥ���ΤǤ�����'%' ������
- * > ����Ȥ��θ奷�եȥ������Ф���ȿ�������������ʤ�褦�Ǥ���101 ��
- * > 106 (¿ʬ) Keyboard �Ǥ��θ��ݤ��������ޤ�����
+ * > 相変わらず b-free-pc.0.0.40 をベースにしているのですが，'%' を入力
+ * > するとその後シフトキーに対する反応がおかしくなるようです．101 と
+ * > 106 (多分) Keyboard でこの現象に遭遇しました．
  * >
- * > SIFT ������ˤʤ�äѤʤ��ˤʤä��ꡤCPAS Lock ���ݤ��ä��ꡤ����
- * > ��ä��ꤷ�ޤ���
+ * > SIFT がオンになりっぱなしになったり，CPAS Lock が掛かったり，元に
+ * > 戻ったりします．
  *
- * ����Ǥ�����'%' �����Ϥ���Ȥ��˱��Υ��եȥ����򲡤��Ƥ����������
- * ���褦�Ǥ� (^^;)������ȡ�Cpas Lock ���ȥ���ư��Ƥ��륭���ܡ���
- * ��¿���Ȼפ��ޤ��Τǡ������ѤΥѥå����碌�ƺ�äƤߤޤ�����
- * # kernel/BTRON/device/keyboard �β��� patch -p1 �Ǥ��Ƥ��ΤǤ���
+ * これですが，'%' を入力するときに右のシフトキーを押していたためだっ
+ * たようです (^^;)．それと，Cpas Lock がトグル動作しているキーボード
+ * が多いと思いますので，それ用のパッチも合わせて作ってみました．
+ * # kernel/BTRON/device/keyboard の下で patch -p1 であてるものです．
  * -------------------
  *
  * Revision 1.5  1998/12/07 01:07:52  monaka
@@ -70,25 +70,25 @@ static char rcsid[] =
  * 106 keymap added.
  *
  * Revision 1.3  1996/07/27 14:25:07  night
- * �����ܡ��ɥޥåפΰ����ѹ���
- * SHIFT + '-' �����Ϥ��줿�Ȥ��� '_' ���֤��褦�ˤ�����
+ * キーボードマップの一部変更。
+ * SHIFT + '-' が入力されたときに '_' を返すようにした。
  *
  * Revision 1.2  1996/07/25  16:02:59  night
- * ������ȯ�����������ܡ��ɤ��Ф��� outb (0x16) ��¹Ԥ��Ƥ������ᡢ
- * ���ޤ�ʸ�������ɤ��ꤳ��ʤ��ä���
- * outb �ιԤ����ä���
+ * 割り込み発生時、キーボードに対して outb (0x16) を実行していたため、
+ * うまく文字コードを取りこめなかった。
+ * outb の行を取り去った。
  *
  * Revision 1.1  1996/07/24  16:28:44  night
- * IBM PC �� B-Free OS �ؤκǽ����Ͽ
+ * IBM PC 版 B-Free OS への最初の登録
  *
  * Revision 1.3  1995/09/21  15:50:59  night
- * �������ե��������Ƭ�� Copyright notice ������ɲá�
+ * ソースファイルの先頭に Copyright notice 情報を追加。
  *
  * Revision 1.2  1995/09/19  18:01:01  night
- * �����ܡ��ɤ������ϤǤ���Ȥ����ޤǤǤ�����
+ * キーボードから入力できるところまでできた。
  *
  * Revision 1.1  1995/09/18  11:42:03  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  *
  *
@@ -104,7 +104,7 @@ static char rcsid[] =
 #define ALT_CODE	3
 
 /*******************************************************************************
- *	���եȥ����ξ��֤�ɽ���ޥ������
+ *	シフトキーの状態を表すマクロ定数
  *
  */
 #define NORMAL		0x0000
@@ -127,7 +127,7 @@ static void keyboard_interrupt();
 
 
 /*
- * �����ܡ��ɳ����ߥϥ�ɥ����Ͽ
+ * キーボード割り込みハンドラの登録
  *
  */
 init_keyboard_interrupt()
@@ -153,7 +153,7 @@ static W get_keycode(int cont, int num)
     }
 }
 /*
- * �����ܡ��ɳ����ߤΥϥ�ɥ�
+ * キーボード割り込みのハンドラ
  *
  */
 static void keyboard_interrupt()
@@ -208,11 +208,11 @@ static void keyboard_interrupt()
 	return;
     }
 
-    /* �⤷��������Υ�����Ȥ����ʤ�С�̵�뤹�� */
+    /* もし、キーを離したところならば、無視する */
     if (ISBREAK(key_code))
 	return;
 
-    /* �ޥȥ�å����ơ��֥뤫�顢���������ɤ���Ф���
+    /* マトリックステーブルから、キーコードを取り出す。
      */
     if (shiftkey_code & CONTROL_DOWN)
 	ch = get_keycode(CONTROL_CODE, key_code);
@@ -247,14 +247,14 @@ static void keyboard_interrupt()
     if (ch == NULL)
 	return;
 
-    /* ���٥�Ȥ�Хåե���ί���
+    /* イベントをバッファに溜める
      */
     put_entry(ch);
     set_flg(waitflag, ONKEYS);
 
 #ifdef notdef
     /*
-     * �ǥХå���
+     * デバッグ用
      */
     dbg_printf("<%x>", key_code);
 #endif

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -14,25 +14,25 @@ static unsigned char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Progra
 
 
 /*
- * POSIX �Ķ��Τ���� startup �ؿ��������
+ * POSIX 環境のための startup 関数の定義。
  */
 
 #include <stdio.h>
 
 
 /*
- * �ץ������Υ���ȥ�ؿ���
+ * プログラムのエントリ関数。
  *
- * �ץ������� main() �ǤϤʤ������� __entry() �ؿ��ˤ�äƼ¹Ԥ򳫻Ϥ��롣
+ * プログラムは main() ではなく、この __entry() 関数によって実行を開始する。
  *
- * ���δؿ��Ǥϼ��ν�����Ԥ���
+ * この関数では次の処理を行う。
  *
- * 1) standard I/O �ؿ��Τ���ν����
- * 2) main() �ؿ��θƤӽФ�
- * 3) �ץ������ν�λ�Τ���θ����
+ * 1) standard I/O 関数のための初期化
+ * 2) main() 関数の呼び出し
+ * 3) プログラムの終了のための後始末
  *
  *
- * POSIX �ץ������μ¹Ԥ򳫻Ϥ���Ȥ��ˤϡ������å��ϼ��Τ褦�ˤʤäƤ��롣
+ * POSIX プロセスの実行を開始するときには、スタックは次のようになっている。
  *
  *  	+----------------------+ <-- return address.
  *	|    Argument Count    | 
@@ -42,29 +42,29 @@ static unsigned char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Progra
  *	|    Environment       |
  *	+----------------------+
  *	|                      |
- *      //   ������ʸ����     //
- *	|    �ơ��֥�          |
+ *      //   引数の文字列     //
+ *	|    テーブル          |
  *	+----------------------+
  *	|                      |
- *	//   �Ķ��ѿ�          //
- *	|      �μ�Ǽ�ΰ�      | <- user_stack_top (����)
+ *	//   環境変数          //
+ *	|      の収納領域      | <- user_stack_top (引数)
  *	+----------------------+
  *
- * entry �ؿ��ϡ�Argument Count, Argument Vector, Environment ��3�Ĥξ����
- * main �ؿ��ˤ��Τޤް����Ϥ��� 
+ * entry 関数は、Argument Count, Argument Vector, Environment の3つの情報を
+ * main 関数にそのまま引き渡す。 
  * 
  */
 __entry (int ac, char **av, char *ae)
 {
   int	errcode;
 
-  setup_standard_io ();		/* stdin, stdout, stderr �ν������ */
-				/* setup_standard_io �ϡ�libc.a �ˤ��� */
-				/* �ؿ���*/
+  setup_standard_io ();		/* stdin, stdout, stderr の初期化。 */
+				/* setup_standard_io は、libc.a にある */
+				/* 関数。*/
 
-  errcode = main (ac, av, ae);	/* �桼���ؿ� main �μ¹ԡ����ΤȤ��� */
-				/* �֤äƤ����ͤ�ץ������� exit �� */
-				/* ���롣 */
+  errcode = main (ac, av, ae);	/* ユーザ関数 main の実行。このとき、 */
+				/* 返ってきた値をプログラムの exit に */
+				/* する。 */
 
-  exit (errcode);		/* ���顼�����ɤ�ƤӽФ������֤� */
+  exit (errcode);		/* エラーコードを呼び出し元に返す */
 }

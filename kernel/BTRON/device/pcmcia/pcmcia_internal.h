@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -13,7 +13,7 @@ Version 2, June 1991
 /* 
  * $Log: pcmcia_internal.h,v $
  * Revision 1.2  1999/05/13 16:24:00  kishida0
- * �ǥХå��Ѥ˥������ɲá��ä��礭���ѹ��ǤϤʤ�
+ * デバッグ用にコード追加、特に大きな変更ではない
  *
  * Revision 1.1  1999/04/21 17:56:28  kishida0
  * for debug
@@ -34,11 +34,11 @@ Version 2, June 1991
 #include "servers/port-manager.h"
 
 
-/*** �����˥ǥХ���������򤫤��Ƥ������� ***/
+/*** ここにデバイスの定義をかいてください ***/
 
 
-/* �ǥХ�����¤�� 
- * PCMCIA �ǥХ����ϡ��ơ����ι�¤�ΤǴ������Ƥ���
+/* デバイス構造体 
+ * PCMCIA デバイスは、各々この構造体で管理している
  */
 struct device
 {

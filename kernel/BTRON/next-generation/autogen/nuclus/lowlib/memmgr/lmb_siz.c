@@ -1,5 +1,5 @@
 /*
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
 
@@ -11,7 +11,7 @@ Version 2, June 1991
 
 /*
 ** Function: lmb_siz
-** Description: ╔М║╪╔╚╔К╔А╔Б╔Й╔ж╔М╔ц╔╞║╕╔╣╔╓╔╨╓н╪Х╓Й╫п╓╥
+** Description: Ц┐╜Ц┐╪Ц┌╚Ц┐╚Ц┐║Ц┐╒Ц┐╙Ц┐√Ц┐╜Ц┐┐Ц┌╞Ц┐╩Ц┌╣Ц┌╓Ц┌╨Ц│╝Е▐√Ц┌┼Е┤╨Ц│≈
 */
 
 ER

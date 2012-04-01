@@ -14,11 +14,11 @@ do
 	echo "{" >> $f.c
 	echo "  struct a"  >> $f.c
 	echo "    {" >>  $f.c
-	echo "      /* ¤³¤³¤Ë°ú¿ô¤ÎÄêµÁ¤òÆþ¤ì¤ë */" >>  $f.c
+	echo "      /* ã“ã“ã«å¼•æ•°ã®å®šç¾©ã‚’å…¥ã‚Œã‚‹ */" >>  $f.c
 	echo "    } *args = (struct a *)argp;" >>  $f.c
 	echo >> $f.c
 	echo "  /*" >> $f.c
-	echo "   * ¤Þ¤À¥¤¥ó¥×¥ê¥á¥ó¥È¤·¤Æ¤¤¤Ê¤¤¡£ENOSYS ¤òÊÖ¤¹¡£" >> $f.c
+	echo "   * ã¾ã ã‚¤ãƒ³ãƒ—ãƒªãƒ¡ãƒ³ãƒˆã—ã¦ã„ãªã„ã€‚ENOSYS ã‚’è¿”ã™ã€‚" >> $f.c
 	echo "   */" >> $f.c
 	echo "  errno = ENOSYS;" >> $f.c
 	echo >> $f.c

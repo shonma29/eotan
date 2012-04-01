@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -35,7 +35,7 @@ Version 2, June 1991
 #define KEY_DATA	0x60
 #define KEY_STAT	0x64
 
-/* Ê¸»ú¤ò¥³¥ó¥È¥í¡¼¥ë¥­¡¼¤ËÊÑ´¹¤¹¤ë */
+/* æ–‡å­—ã‚’ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã‚­ãƒ¼ã«å¤‰æ›ã™ã‚‹ */
 #define C(x)		(x & 0x1f)
 
 #define INT_KEYBOARD	33
@@ -57,10 +57,10 @@ Version 2, June 1991
 #define ISBREAK(ch)     (ch & 0x80)
 
 #if 0				/* include btron-pc/include/keyboard.h */
-  /* ²¼µ­¤Îµ­½Ò¤Ï¤¤¤º¤ì¾Ãµî¤¹¤ëÍ½Äê */
+  /* ä¸‹è¨˜ã®è¨˜è¿°ã¯ã„ãšã‚Œæ¶ˆå»ã™ã‚‹äºˆå®š */
 
 /*******************************************************************************
- *	¥·¥Õ¥È¥­¡¼¤Î¾õÂÖ¤òÉ½¤¹¥Ş¥¯¥íÄê¿ô
+ *	ã‚·ãƒ•ãƒˆã‚­ãƒ¼ã®çŠ¶æ…‹ã‚’è¡¨ã™ãƒã‚¯ãƒ­å®šæ•°
  *
  */
 #define CTL	(0x0100)
@@ -75,7 +75,7 @@ Version 2, June 1991
 
 #define CAPS_DOWN	1
 
-/* ÆÃ¼ì¥­¡¼ */
+/* ç‰¹æ®Šã‚­ãƒ¼ */
 #define NOK	0
 #define ESC	0x1b
 #define BS	'\b'
@@ -151,10 +151,10 @@ struct key_entry {
 
 
 struct keyboard {
-    UW shiftkey;		/* ¥·¥Õ¥È¥­¡¼¤Î¾õÂÖ¤òÉ½¤¹               */
-    UW total;			/* ¸½ºß¥­¥å¡¼¥¤¥ó¥°¤·¤Æ¤¤¤ë¥¨¥ó¥È¥ê¿ô   */
-    struct key_entry *first;	/* ¥­¥å¡¼¥¤¥ó¥°¥ê¥¹¥È¤ÎÀèÆ¬¥¨¥ó¥È¥ê     */
-    struct key_entry *last;	/* ¥­¥å¡¼¥¤¥ó¥°¥ê¥¹¥È¤ÎºÇ½ª¥¨¥ó¥È¥ê     */
+    UW shiftkey;		/* ã‚·ãƒ•ãƒˆã‚­ãƒ¼ã®çŠ¶æ…‹ã‚’è¡¨ã™               */
+    UW total;			/* ç¾åœ¨ã‚­ãƒ¥ãƒ¼ã‚¤ãƒ³ã‚°ã—ã¦ã„ã‚‹ã‚¨ãƒ³ãƒˆãƒªæ•°   */
+    struct key_entry *first;	/* ã‚­ãƒ¥ãƒ¼ã‚¤ãƒ³ã‚°ãƒªã‚¹ãƒˆã®å…ˆé ­ã‚¨ãƒ³ãƒˆãƒª     */
+    struct key_entry *last;	/* ã‚­ãƒ¥ãƒ¼ã‚¤ãƒ³ã‚°ãƒªã‚¹ãƒˆã®æœ€çµ‚ã‚¨ãƒ³ãƒˆãƒª     */
 };
 
 
@@ -251,7 +251,7 @@ int get_mode(int ch)
     } else if (ch & ALT) {
 	return (ALT_MODE);
     } else if (ch & ENCAP) {
-	return (NORMAL_MODE);	/* ËÜÅö¤Ï°ã¤¦ÃÍ¤¬ÊÖ¤ë */
+	return (NORMAL_MODE);	/* æœ¬å½“ã¯é•ã†å€¤ãŒè¿”ã‚‹ */
     }
 
     return (NORMAL_MODE);
@@ -292,7 +292,7 @@ void keyboard_task(void)
     struct key_entry *p;
 
     for (;;) {
-	slp_tsk();		/* ³ä¤ê¹ş¤ß¤Ë¤è¤Ã¤ÆÌÜ³Ğ¤á¤ë¤Î¤òÂÔ¤Ä */
+	slp_tsk();		/* å‰²ã‚Šè¾¼ã¿ã«ã‚ˆã£ã¦ç›®è¦šã‚ã‚‹ã®ã‚’å¾…ã¤ */
 	if (input_buffer.first) {
 	    p = input_buffer.first;
 	    if (input_buffer.first == input_buffer.last) {
@@ -324,10 +324,10 @@ void intr_kbd_test(void)
 }
 
 /*
- * ¥­¡¼¥Ü¡¼¥É³ä¤ê¹ş¤ß¤Ë¤è¤Ã¤Æµ¯Æ°¤µ¤ì¤ë´Ø¿ô¡£
+ * ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰å‰²ã‚Šè¾¼ã¿ã«ã‚ˆã£ã¦èµ·å‹•ã•ã‚Œã‚‹é–¢æ•°ã€‚
  *
- * ¥­¡¼¥Ü¡¼¥É¥Ç¥Ğ¥¤¥¹¤«¤é¥­¡¼¥¤¥Ù¥ó¥È¤òÆÉ¤ß¼è¤ê¡¢ÆşÎÏ¥Ğ¥Ã¥Õ¥¡ (input_buffer) 
- * ¤ËÄÉ²Ã¤¹¤ë¡£
+ * ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ãƒ‡ãƒã‚¤ã‚¹ã‹ã‚‰ã‚­ãƒ¼ã‚¤ãƒ™ãƒ³ãƒˆã‚’èª­ã¿å–ã‚Šã€å…¥åŠ›ãƒãƒƒãƒ•ã‚¡ (input_buffer) 
+ * ã«è¿½åŠ ã™ã‚‹ã€‚
  */
 W intr_kbd(void)
 {
@@ -373,7 +373,7 @@ W intr_kbd(void)
     } else if (ISBREAK(ch)) {
 	ch = ch & 0x7f;
 
-	/* ¥·¥Õ¥È¥­¡¼Åù¤Î¾ì¹ç¡¢¾õÂÖ¤òÊÑ¹¹¤¹¤ë */
+	/* ã‚·ãƒ•ãƒˆã‚­ãƒ¼ç­‰ã®å ´åˆã€çŠ¶æ…‹ã‚’å¤‰æ›´ã™ã‚‹ */
 	if ((ch == 0x2a) || (ch == 0x36)) {
 	    mode &= ~SHIFT;
 	} else if (ch == 0x1d) {
@@ -386,7 +386,7 @@ W intr_kbd(void)
 
     dis_int();
     key = alloc_key(ch);
-    if (key == NULL) {		/* ¥­¡¼¤¬¤Ê¤¤ */
+    if (key == NULL) {		/* ã‚­ãƒ¼ãŒãªã„ */
 	ena_int();
 	return E_OK;
     }

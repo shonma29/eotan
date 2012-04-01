@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -20,10 +20,10 @@ static char rcs[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/
  * add for debug
  *
  * Revision 1.2  1997/05/08 15:10:06  night
- * ¥Õ¥¡¥¤¥ëÆâ¤ÎÊ¸»ú¥³¡¼¥É¤ò SJIS ¤«¤é EUC ¤ËÊÑ¹¹¤·¤¿¡£
+ * ãƒ•ã‚¡ã‚¤ãƒ«å†…ã®æ–‡å­—ã‚³ãƒ¼ãƒ‰ã‚’ SJIS ã‹ã‚‰ EUC ã«å¤‰æ›´ã—ãŸã€‚
  *
  * Revision 1.1  1997/05/06 12:46:23  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  */
@@ -33,19 +33,19 @@ static char rcs[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/
 #include "tcpip.h"
 
 
-/* TCP/IP ¥×¥í¥È¥³¥ë¥¹¥¿¥Ã¥¯¤Î main ¥ë¡¼¥Á¥ó 
+/* TCP/IP ãƒ—ãƒ­ãƒˆã‚³ãƒ«ã‚¹ã‚¿ãƒƒã‚¯ã® main ãƒ«ãƒ¼ãƒãƒ³ 
  */
 ER
 startup ()
 {
   if (init_tcpip () != E_OK)
     {
-      /* µ¯Æ°¤Ë¼ºÇÔ(¥á¥Ã¥»¡¼¥¸½ĞÎÏ) */
+      /* èµ·å‹•ã«å¤±æ•—(ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸å‡ºåŠ›) */
       dbg_printf ("TCP/IP: Can not start task(s).\n");
       slp_tsk ();
     }
 
-  /* ¸å¤Î½èÍı¤Ï¡¢»Ò¥¿¥¹¥¯¤¬¹Ô¤¦¡£
+  /* å¾Œã®å‡¦ç†ã¯ã€å­ã‚¿ã‚¹ã‚¯ãŒè¡Œã†ã€‚
    */
   for (;;)
     {
@@ -55,7 +55,7 @@ startup ()
 
 
 
-/* TCPIP ¥Ş¥Í¡¼¥¸¥ã¤Î½é´ü²½ 
+/* TCPIP ãƒãƒãƒ¼ã‚¸ãƒ£ã®åˆæœŸåŒ– 
  */
 ER
 init_tcpip ()

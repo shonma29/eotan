@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -19,19 +19,19 @@ Version 2, June 1991
  * *** empty log message ***
  *
  * Revision 1.4  1996/07/30 18:22:57  night
- * IDE HD ÍÑ¤ÎÄê¿ôÎà¤ÎÄêµÁ¤òÄÉ²Ã¡£
+ * IDE HD ç”¨ã®å®šæ•°é¡žã®å®šç¾©ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.3  1996/07/06  13:09:40  night
- * Floppy disk ´ØÏ¢¤Î³ä¤ê¹þ¤ßÈÖ¹æ¤ÎÄêµÁ¤ò PC ¸ß´¹µ¡ÍÑ¤ËÊÑ¹¹
+ * Floppy disk é–¢é€£ã®å‰²ã‚Šè¾¼ã¿ç•ªå·ã®å®šç¾©ã‚’ PC äº’æ›æ©Ÿç”¨ã«å¤‰æ›´
  *
  * Revision 1.2  1996/05/11  15:50:13  night
- * ³ä¤ê¹þ¤ß¥³¥ó¥È¥í¡¼¥é¤Î I/O ¥¢¥É¥ì¥¹¤òÊÑ¹¹¡£
+ * å‰²ã‚Šè¾¼ã¿ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ã® I/O ã‚¢ãƒ‰ãƒ¬ã‚¹ã‚’å¤‰æ›´ã€‚
  *
  * Revision 1.1  1996/05/11  10:45:03  night
- * 2nd boot (IBM-PC ÈÇ B-FREE OS) ¤Î¥½¡¼¥¹¡£
+ * 2nd boot (IBM-PC ç‰ˆ B-FREE OS) ã®ã‚½ãƒ¼ã‚¹ã€‚
  *
  * Revision 1.2  1995/09/21 15:50:39  night
- * ¥½¡¼¥¹¥Õ¥¡¥¤¥ë¤ÎÀèÆ¬¤Ë Copyright notice ¾ðÊó¤òÄÉ²Ã¡£
+ * ã‚½ãƒ¼ã‚¹ãƒ•ã‚¡ã‚¤ãƒ«ã®å…ˆé ­ã« Copyright notice æƒ…å ±ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.1  1993/10/11  21:29:14  btron
  * btron/386

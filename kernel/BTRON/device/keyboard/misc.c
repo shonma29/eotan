@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -23,20 +23,20 @@ static char rcsid[] =
  * to follow mirco-ITRON 3.0 specifications
  *
  * Revision 1.2  1998/02/23 14:39:54  night
- * wai_flg ¤Î°ú¿ô¤¬´Ö°ã¤Ã¤Æ¤¤¤¿¤¿¤á½¤Àµ¡£
- * º£¤Ş¤Ç¤Î¥³¡¼¥É¤À¤È¡¢²¾ÁÛ¶õ´Ö¤ÎÀèÆ¬ÉôÊ¬¤òÇË²õ¤·¤Æ¤¤¤¿¡£
+ * wai_flg ã®å¼•æ•°ãŒé–“é•ã£ã¦ã„ãŸãŸã‚ä¿®æ­£ã€‚
+ * ä»Šã¾ã§ã®ã‚³ãƒ¼ãƒ‰ã ã¨ã€ä»®æƒ³ç©ºé–“ã®å…ˆé ­éƒ¨åˆ†ã‚’ç ´å£Šã—ã¦ã„ãŸã€‚
  *
  * Revision 1.1  1996/07/24 16:28:44  night
- * IBM PC ÈÇ B-Free OS ¤Ø¤ÎºÇ½é¤ÎÅĞÏ¿
+ * IBM PC ç‰ˆ B-Free OS ã¸ã®æœ€åˆã®ç™»éŒ²
  *
  * Revision 1.3  1995/09/21  15:51:00  night
- * ¥½¡¼¥¹¥Õ¥¡¥¤¥ë¤ÎÀèÆ¬¤Ë Copyright notice ¾ğÊó¤òÄÉ²Ã¡£
+ * ã‚½ãƒ¼ã‚¹ãƒ•ã‚¡ã‚¤ãƒ«ã®å…ˆé ­ã« Copyright notice æƒ…å ±ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.2  1995/09/19  18:01:02  night
- * ¥­¡¼¥Ü¡¼¥É¤«¤éÆşÎÏ¤Ç¤­¤ë¤È¤³¤í¤Ş¤Ç¤Ç¤­¤¿¡£
+ * ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ã‹ã‚‰å…¥åŠ›ã§ãã‚‹ã¨ã“ã‚ã¾ã§ã§ããŸã€‚
  *
  * Revision 1.1  1995/09/18  11:42:03  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  */
@@ -76,7 +76,7 @@ init_keybuffer(void)
 
 
 /*
- * ¥Ğ¥Ã¥Õ¥¡¤ÎÆâÍÆ¤ò¥¯¥ê¥¢¤¹¤ë¡£
+ * ãƒãƒƒãƒ•ã‚¡ã®å†…å®¹ã‚’ã‚¯ãƒªã‚¢ã™ã‚‹ã€‚
  */
 clear_keybuffer()
 {
@@ -94,7 +94,7 @@ void put_entry(W keycode)
 #endif
 
     /*
-     * ¥­¡¼¥¨¥ó¥È¥ê¤òÆş¤ì¤ë¤È¤³¤í¤¬¤Ê¤¯¤Ê¤Ã¤¿¤é¡¢²¿¤â¤»¤º¤Ëµ¢¤ë
+     * ã‚­ãƒ¼ã‚¨ãƒ³ãƒˆãƒªã‚’å…¥ã‚Œã‚‹ã¨ã“ã‚ãŒãªããªã£ãŸã‚‰ã€ä½•ã‚‚ã›ãšã«å¸°ã‚‹
      */
     if (freelist == NULL) {
 	dbg_printf("keyboard: freelist is empty.\n");
@@ -115,8 +115,8 @@ void put_entry(W keycode)
 }
 
 /*
- * ¥­¡¼¥ê¥¹¥È¤«¤é°ìÊ¸»úÆÉ¤ß¼è¤êÃÍ¤òÊÖ¤¹¡£
- * ¤â¤·¡¢ÆÉ¤ß¹ş¤ó¤ÀÊ¸»ú¤¬¤Ê¤±¤ì¤Ğ¡¢Ãæ¿È¤¬Æş¤ë¤Ş¤ÇÂÔ¤Ä¡£
+ * ã‚­ãƒ¼ãƒªã‚¹ãƒˆã‹ã‚‰ä¸€æ–‡å­—èª­ã¿å–ã‚Šå€¤ã‚’è¿”ã™ã€‚
+ * ã‚‚ã—ã€èª­ã¿è¾¼ã‚“ã æ–‡å­—ãŒãªã‘ã‚Œã°ã€ä¸­èº«ãŒå…¥ã‚‹ã¾ã§å¾…ã¤ã€‚
  */
 W read_key(W mode)
 {
@@ -135,13 +135,13 @@ W read_key(W mode)
 	dbg_printf("keyboard: retval = %d\n", retval);	/* */
 #endif
 	p = current.first;
-	if (current.first == current.last) {	/* Î¯¤Ş¤Ã¤Æ¤¤¤ë¥­¡¼¤¬¤â¤Ï¤ä¤Ê¤¤ */
+	if (current.first == current.last) {	/* æºœã¾ã£ã¦ã„ã‚‹ã‚­ãƒ¼ãŒã‚‚ã¯ã‚„ãªã„ */
 	    current.first = current.last = NULL;
 #ifdef notdef
 	    dbg_printf("keyboard: read_key(): set_flg\n");	/* */
 #endif				/* notdef */
 #ifdef notdef
-	    set_flg(waitflag, 0);	/* ¥¤¥Ù¥ó¥È¥Õ¥é¥°¤ò¥¯¥ê¥¢¤¹¤ë */
+	    set_flg(waitflag, 0);	/* ã‚¤ãƒ™ãƒ³ãƒˆãƒ•ãƒ©ã‚°ã‚’ã‚¯ãƒªã‚¢ã™ã‚‹ */
 #else
 	    clr_flg(waitflag, 0);
 #endif
@@ -157,7 +157,7 @@ W read_key(W mode)
 	return (retval);
     }
 
-    /* ¥­¡¼ÆşÎÏÂÔ¤Á */
+    /* ã‚­ãƒ¼å…¥åŠ›å¾…ã¡ */
 #ifdef notdef
     dbg_printf("keyboard: waiting...\n");	/* */
 #endif

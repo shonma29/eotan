@@ -196,7 +196,7 @@ interp(str)
     }
   }
   if (eval_mode == DIC1) {
-    /* ¼­½ñÀßÄê */
+    /* è¾æ›¸è¨­å®š */
     add_dict_name(str); EC;
     keep_old_csp();
     eval_mode = DIC2;
@@ -225,7 +225,7 @@ interp(str)
 #endif
 	func = builtin_command[i].func;
 	if (func == f_dict_end) {
-	  /* ¼­½ñ¤ÎÅĞÏ¿½ªÎ» */
+	  /* è¾æ›¸ã®ç™»éŒ²çµ‚äº† */
 	  (f_dict_end)(); EC;
 	  return;
 	}
@@ -296,7 +296,7 @@ interp(str)
 	  return;
 	}
 	else if (eval_mode == DIC2) {
-	  /* ¼­½ñÅĞÏ¿ */
+	  /* è¾æ›¸ç™»éŒ² */
 	  cpush_func(func); EC;
 	  return;
 	}

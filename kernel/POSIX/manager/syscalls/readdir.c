@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -46,12 +46,12 @@ psc_readdir_f (struct posix_request *req)
       return (FAIL);
     }
 
-  /* ÂÐ¾Ý¥Õ¥¡¥¤¥ë¤¬¥Ñ¥¤¥×¤À¤Ã¤¿¤ê¡¢
-   * ¥Ç¥£¥ì¥¯¥È¥ê°Ê³°¤Î¾ì¹ç¤Ë¤Ï¡¢¥¨¥é¡¼¤Ë¤¹¤ë
+  /* å¯¾è±¡ãƒ•ã‚¡ã‚¤ãƒ«ãŒãƒ‘ã‚¤ãƒ—ã ã£ãŸã‚Šã€
+   * ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªä»¥å¤–ã®å ´åˆã«ã¯ã€ã‚¨ãƒ©ãƒ¼ã«ã™ã‚‹
    */     
   if (fp->f_flag & F_PIPE)
     {
-      /* ¥Ñ¥¤¥×¤ÎÆÉ¤ß½ñ¤­ */
+      /* ãƒ‘ã‚¤ãƒ—ã®èª­ã¿æ›¸ã */
       put_response (req, EP_INVAL, -1, 0, 0);
       return (FAIL);
     }
@@ -65,14 +65,14 @@ psc_readdir_f (struct posix_request *req)
   for (i = 0, rest_length = req->param.par_readdir.length;
        rest_length > 0;
        rest_length -= rlength, i += rlength) {
-    /* ¥Ú¡¼¥¸Ëè¤Ë¥Õ¥¡¥¤¥ë¤ËÆÉ¤ß¹þ¤ß */
+    /* ãƒšãƒ¼ã‚¸æ¯Žã«ãƒ•ã‚¡ã‚¤ãƒ«ã«èª­ã¿è¾¼ã¿ */
     len = rest_length > PAGE_SIZE ? PAGE_SIZE : rest_length;
     errno = fs_read_file (fp->f_inode,
 			  fp->f_offset + i,
 			  buf, len, &rlength);
       if (errno) break;
 
-      /* ¸Æ¤Ó½Ð¤·¤¿¥×¥í¥»¥¹¤Î¥Ð¥Ã¥Õ¥¡¤Ø¤Î½ñ¤­¹þ¤ß */
+      /* å‘¼ã³å‡ºã—ãŸãƒ—ãƒ­ã‚»ã‚¹ã®ãƒãƒƒãƒ•ã‚¡ã¸ã®æ›¸ãè¾¼ã¿ */
       errno = vput_reg (req->caller, req->param.par_readdir.buf + i,
 			rlength, buf);
       if (errno || (rlength < len)) {

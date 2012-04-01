@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -9,7 +9,7 @@ Version 2, June 1991
 
 */
 /*
- *   svga_cons ¤Ç»ÈÍÑ¤¹¤ë³Æ´Ø¿ô¤Î prototype ¤È extern ¤ÎÄêµÁ
+ *   svga_cons ã§ä½¿ç”¨ã™ã‚‹å„é–¢æ•°ã® prototype ã¨ extern ã®å®šç¾©
  *
  * $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/BTRON/device/svga_cons/svga_conslow.h,v 1.1 1999/05/04 14:27:38 kishida0 Exp $
  *

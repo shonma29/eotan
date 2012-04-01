@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -20,7 +20,7 @@ static char rcsid[] =
  * Major fix. Many system calls runs correctly (...perhaps ;-). But signal and process functions are not yet.
  *
  * Revision 1.1  1997/08/31 13:10:50  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  *
@@ -39,7 +39,7 @@ int psys_tzset(void *argp)
 #endif
 
     /*
-     * ¤Ş¤À¥¤¥ó¥×¥ê¥á¥ó¥È¤·¤Æ¤¤¤Ê¤¤¡£ENOSYS ¤òÊÖ¤¹¡£
+     * ã¾ã ã‚¤ãƒ³ãƒ—ãƒªãƒ¡ãƒ³ãƒˆã—ã¦ã„ãªã„ã€‚ENOSYS ã‚’è¿”ã™ã€‚
      */
     errno = ENOSYS;
 

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -18,18 +18,18 @@ Version 2, June 1991
 
 
 /***************************************************************************
- *	���٥�ȥե饰����
+ *	イベントフラグ情報
  *
  */
 typedef struct eventflag_t
 {
-  ID		id;			/* ���٥�ȥե饰 ID 			*/
-  ATR		flgatr;			/* ���٥�ȥե饰°��			*/
-  UINT		iflgptn;		/* ���٥�ȥե饰����			*/
-  T_TCB		*wait_task;		/* ���٥�ȥե饰���ԤäƤ��륿����	*/
-  T_TCB		*wait_tail;		/* ���������塼�κǸ�	*/
+  ID		id;			/* イベントフラグ ID 			*/
+  ATR		flgatr;			/* イベントフラグ属性			*/
+  UINT		iflgptn;		/* イベントフラグの値			*/
+  T_TCB		*wait_task;		/* イベントフラグを待っているタスク	*/
+  T_TCB		*wait_tail;		/* タスクキューの最後	*/
 
-  VP		exinf;			/* ��ĥ����				*/
+  VP		exinf;			/* 拡張情報				*/
 } T_EVENTFLAG;
 
 

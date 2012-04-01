@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -20,7 +20,7 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
  * Major fix. Many system calls runs correctly (...perhaps ;-). But signal and process functions are not yet.
  *
  * Revision 1.1  1997/08/31 13:10:43  night
- * ╨г╫И╓непо©
+ * Ф°─Е┬²Ц│╝Г≥╩И▄╡
  *
  *
  *
@@ -42,13 +42,13 @@ psys_exit (void *argp)
   req.param.par_exit.evalue = args->evalue;
   error = _make_connection(PSC_EXIT, &req, &res);
 
-  /* ╔А╔ц╔╩║╪╔╦╔щ║╪╔х╓РЁ╚йЭ */
+  /* Ц┐║Ц┐┐Ц┌╩Ц┐╪Ц┌╦Ц┐²Ц┐╪Ц┐┬Ц┌▓И√▀Ф■╬ */
   del_mbf(lowlib_data->recv_port);
 
-  /* ╪╚╔©╔╧╔╞╓Р╫╙н╩ */
+  /* Х┤╙Ц┌©Ц┌╧Ц┌╞Ц┌▓Г╣┌Д╨├ */
   exd_tsk ();
 
-  /* ╓Ё╓Л╟й╧ъ╓о╪б╧т╓╣╓Л╓й╓╓ */
+  /* Ц│⌠Ц┌▄Д╩╔И≥█Ц│╞Е╝÷Х║▄Ц│∙Ц┌▄Ц│╙Ц│└ */
   if (error != E_OK)
     {
       /* What should I do? */

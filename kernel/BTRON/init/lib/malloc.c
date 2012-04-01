@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -15,10 +15,10 @@ static char rcsid[] = "$Id: malloc.c,v 1.2 1997/09/10 13:10:08 night Exp $";
 /*
  * $Log: malloc.c,v $
  * Revision 1.2  1997/09/10 13:10:08  night
- * ROUNDUP ¥Ş¥¯¥í¤ÎÆó½ÅÄêµÁ¤òËÉ¤°¥³¡¼¥É¤òÄÉ²Ã¡£
+ * ROUNDUP ãƒã‚¯ãƒ­ã®äºŒé‡å®šç¾©ã‚’é˜²ãã‚³ãƒ¼ãƒ‰ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.1  1996/07/25  16:03:44  night
- * IBM PC ÈÇ¤Ø¤ÎºÇ½é¤ÎÅĞÏ¿
+ * IBM PC ç‰ˆã¸ã®æœ€åˆã®ç™»éŒ²
  *
  *
  */
@@ -33,8 +33,8 @@ static char rcsid[] = "$Id: malloc.c,v 1.2 1997/09/10 13:10:08 night Exp $";
 
 #define CLICK_SIZE	(PAGE_SIZE * 2)
 
-#define MIN_SIZE	(CLICK_SIZE * 10)	/* ¥Ò¡¼¥×ÎÎ°è¤Î½é´ü¥µ¥¤¥º */
-#define MAX_SIZE	(1 * 1024 * 1024)	/* ¥Ò¡¼¥×ÎÎ°è¤ÏºÇÂç 1M */
+#define MIN_SIZE	(CLICK_SIZE * 10)	/* ãƒ’ãƒ¼ãƒ—é ˜åŸŸã®åˆæœŸã‚µã‚¤ã‚º */
+#define MAX_SIZE	(1 * 1024 * 1024)	/* ãƒ’ãƒ¼ãƒ—é ˜åŸŸã¯æœ€å¤§ 1M */
 
 
 struct malloc_entry
@@ -50,7 +50,7 @@ static struct malloc_entry	*free_list, *current_entry;
 
 
 /*
- * ¥Õ¥ê¡¼¥á¥â¥ê´ÉÍı¤Î½é´ü²½
+ * ãƒ•ãƒªãƒ¼ãƒ¡ãƒ¢ãƒªç®¡ç†ã®åˆæœŸåŒ–
  *
  */
 init_malloc (void)
@@ -61,12 +61,12 @@ init_malloc (void)
   struct malloc_entry	*p;
 
   /*
-   * ¥Ò¡¼¥×ÎÎ°è¤òÀ¸À®¤¹¤ë
+   * ãƒ’ãƒ¼ãƒ—é ˜åŸŸã‚’ç”Ÿæˆã™ã‚‹
    */
   last_page = malloc_start = (void *)ROUNDUP (&end, PAGE_SIZE);
 
   /*
-   * ITRON ¤ËÂĞ¤·¤Æ¥ê¡¼¥¸¥ç¥ó¤òºîÀ®¤¹¤ë¤è¤¦Í×µá¤¹¤ë
+   * ITRON ã«å¯¾ã—ã¦ãƒªãƒ¼ã‚¸ãƒ§ãƒ³ã‚’ä½œæˆã™ã‚‹ã‚ˆã†è¦æ±‚ã™ã‚‹
    */
 #ifdef notdef
   printf ("vcre_reg(%d, %x, %d, %d, %d, %d)\n",
@@ -76,7 +76,7 @@ init_malloc (void)
   err = vcre_reg (mytask, last_page, MIN_SIZE, MAX_SIZE, 0, NULL);
   if (err != E_OK)
     {
-      /* ¼ºÇÔ */
+      /* å¤±æ•— */
 #ifdef notdef
       printf ("vcre_reg: fail. error = %d\n", err);	/* */
 #endif
@@ -88,12 +88,12 @@ init_malloc (void)
 #endif
 
   /*
-   * ÊªÍı¥á¥â¥ê¤ò¥Ş¥Ã¥Ô¥ó¥°¤¹¤ë
+   * ç‰©ç†ãƒ¡ãƒ¢ãƒªã‚’ãƒãƒƒãƒ”ãƒ³ã‚°ã™ã‚‹
    */
   err = vmap_reg (mytask, last_page, MIN_SIZE);
   if (err != E_OK)
     {
-      /* ¼ºÇÔ */
+      /* å¤±æ•— */
 #ifdef notdef
       printf ("vmap_reg: fail. error = %d\n", err);	/* */
 #endif
@@ -105,7 +105,7 @@ init_malloc (void)
 #endif
 
   /*
-   * ¥Õ¥ê¡¼¥ê¥¹¥È¤Ë¤Ä¤Ê¤²¤ë
+   * ãƒ•ãƒªãƒ¼ãƒªã‚¹ãƒˆã«ã¤ãªã’ã‚‹
    */
   p = last_page;
   p->size = MIN_SIZE;
@@ -119,7 +119,7 @@ init_malloc (void)
 }
 
 /*
- * ¥á¥â¥ê¤ò¥·¥¹¥Æ¥à¤«¤é¼èÆÀ¤¹¤ë
+ * ãƒ¡ãƒ¢ãƒªã‚’ã‚·ã‚¹ãƒ†ãƒ ã‹ã‚‰å–å¾—ã™ã‚‹
  *
  */
 static void *
@@ -135,13 +135,13 @@ more_core (W size)
     }
 
   /*
-   * ÊªÍı¥á¥â¥ê¤ò¥Ş¥Ã¥Ô¥ó¥°¤¹¤ë
+   * ç‰©ç†ãƒ¡ãƒ¢ãƒªã‚’ãƒãƒƒãƒ”ãƒ³ã‚°ã™ã‚‹
    */
   get_tid (&mytask);
   err = vmap_reg (mytask, last_page, MIN_SIZE);
   if (err != E_OK)
     {
-      /* ¼ºÇÔ */
+      /* å¤±æ•— */
       return (NULL);
     }
 
@@ -155,13 +155,13 @@ more_core (W size)
 void *
 malloc (W size)
 {
-  W		true_size;	/* ´ÉÍıÍÑÎÎ°è¤â´Ş¤ó¤À"¿¿¤Î"¥¢¥í¥±¡¼¥È */
-  				/* ¥µ¥¤¥º */
+  W		true_size;	/* ç®¡ç†ç”¨é ˜åŸŸã‚‚å«ã‚“ã "çœŸã®"ã‚¢ãƒ­ã‚±ãƒ¼ãƒˆ */
+  				/* ã‚µã‚¤ã‚º */
   struct malloc_entry	*p, *prev;
   struct malloc_entry	*alloced;
 
 
-  if (current_entry == NULL)	/* ¼èÆÀ¤¹¤Ù¤­¥Õ¥ê¡¼¥á¥â¥ê¤¬¤Ê¤¤ */
+  if (current_entry == NULL)	/* å–å¾—ã™ã¹ããƒ•ãƒªãƒ¼ãƒ¡ãƒ¢ãƒªãŒãªã„ */
     {
       return (NULL);
     }
@@ -179,32 +179,32 @@ malloc (W size)
        p->size < true_size;
        prev = p, p = p->next)
     {
-      if (p == current_entry)	/* ¼èÆÀ¤Ç¤­¤ë¥¨¥ó¥È¥ê¤¬¤Ê¤«¤Ã¤¿ */
+      if (p == current_entry)	/* å–å¾—ã§ãã‚‹ã‚¨ãƒ³ãƒˆãƒªãŒãªã‹ã£ãŸ */
 	{
-	  /* ¥Ò¡¼¥×ÎÎ°è¤ò³ÈÂç¤¹¤ë */
+	  /* ãƒ’ãƒ¼ãƒ—é ˜åŸŸã‚’æ‹¡å¤§ã™ã‚‹ */
 	  p = more_core (CLICK_SIZE);
 
-	  /* ¥Õ¥ê¡¼¥ê¥¹¥È¤ØÅĞÏ¿¤¹¤ë */
+	  /* ãƒ•ãƒªãƒ¼ãƒªã‚¹ãƒˆã¸ç™»éŒ²ã™ã‚‹ */
 	}
     }
 
-  if (p->size == true_size)	/* ÃúÅÙ¤Î¥µ¥¤¥º¤À¤Ã¤¿ */
+  if (p->size == true_size)	/* ä¸åº¦ã®ã‚µã‚¤ã‚ºã ã£ãŸ */
     {
-      if (p->next == p)	/* ¤Ä¤Ê¤¬¤Ã¤Æ¤¤¤ë¥¨¥ó¥È¥ê¤Ï¤Ò¤È¤Ä¤À¤±¤À¤Ã¤¿ */
+      if (p->next == p)	/* ã¤ãªãŒã£ã¦ã„ã‚‹ã‚¨ãƒ³ãƒˆãƒªã¯ã²ã¨ã¤ã ã‘ã ã£ãŸ */
 	{
 	  current_entry == NULL;
 	  p->next = NULL;
 	}
       else
 	{
-	  /* ¥Õ¥ê¡¼¥ê¥¹¥È¤«¤é p ¤Ç»ØÄê¤µ¤ì¤Æ¤¤¤ë¥¨¥ó¥È¥ê¤ò³°¤¹ */
+	  /* ãƒ•ãƒªãƒ¼ãƒªã‚¹ãƒˆã‹ã‚‰ p ã§æŒ‡å®šã•ã‚Œã¦ã„ã‚‹ã‚¨ãƒ³ãƒˆãƒªã‚’å¤–ã™ */
 	  prev->next = p->next;
 	}
       
-      return ((void *)(p->body));	/* ¼èÆÀ¤·¤¿¥á¥â¥ê¤Ø¤Î¥İ¥¤¥ó¥¿ */
-					/* ¤òÊÖ¤¹¡£¼èÆÀ¤·¤¿ÎÎ°è¤Ï¡¢ */
-					/* malloc_start ¹½Â¤ÂÎ¤Î body Í× */
-					/* ÁÇ¤Ç¤¢¤ë¤³¤È¤ËÃí°Õ */
+      return ((void *)(p->body));	/* å–å¾—ã—ãŸãƒ¡ãƒ¢ãƒªã¸ã®ãƒã‚¤ãƒ³ã‚¿ */
+					/* ã‚’è¿”ã™ã€‚å–å¾—ã—ãŸé ˜åŸŸã¯ã€ */
+					/* malloc_start æ§‹é€ ä½“ã® body è¦ */
+					/* ç´ ã§ã‚ã‚‹ã“ã¨ã«æ³¨æ„ */
     }
 
   (B *)alloced = ((B *)p) + (p->size - true_size);
@@ -228,14 +228,14 @@ free (void *ptr)
 
   new_entry = (struct malloc_entry *)((B *)ptr - sizeof (struct malloc_entry));
 
-  /* ÁŞÆş¤ò»ØÄê¤µ¤ì¤¿ÎÎ°è¤Ï malloc ¤Ç´ÉÍı¤·¤Æ¤¤¤ëÎÎ°è¤Ç¤Ï¤Ê¤¤. */
+  /* æŒ¿å…¥ã‚’æŒ‡å®šã•ã‚ŒãŸé ˜åŸŸã¯ malloc ã§ç®¡ç†ã—ã¦ã„ã‚‹é ˜åŸŸã§ã¯ãªã„. */
   if (((B *)new_entry < (B *)(void *)malloc_start)
       || ((B *)new_entry > (B *)(void *)malloc_start + (1024 * 1024)))
     {
       return;
     }
 
-  /* ¥Õ¥ê¡¼¥ê¥¹¥È¤Ë¥¨¥ó¥È¥ê¤Ï¤Ò¤È¤Ä¤·¤«¤Ê¤¤ */
+  /* ãƒ•ãƒªãƒ¼ãƒªã‚¹ãƒˆã«ã‚¨ãƒ³ãƒˆãƒªã¯ã²ã¨ã¤ã—ã‹ãªã„ */
   if (current_entry == current_entry->next)
     {
       if (((B *)new_entry + new_entry->size) == (B *)current_entry)
@@ -256,14 +256,14 @@ free (void *ptr)
       return;
     }
 
-  /* ¥Õ¥ê¡¼¥ê¥¹¥È¤òÀèÆ¬¤«¤éÃ©¤ê¡¢¥ê¥¹¥È¤ËÁŞÆş¤¹¤ë¥İ¥¤¥ó¥È¤ò·è¤á¤ë */
-  /* ¥Õ¥ê¡¼¥ê¥¹¥È¤Ï¥¢¥É¥ì¥¹½ç¤Ë¤Ê¤Ã¤Æ¤ª¤ê¡¢current ¤Î¥¢¥É¥ì¥¹¤¬ÄÉ²Ã¤¹ */
-  /* ¤ëÎÎ°è¤ÎºÇ¸å¤è¤ê¤âÂç¤­¤¯¤Ê¤Ã¤¿¤é¡¢¤½¤ÎÁ°¤ËÁŞÆş¤¹¤ë¡£*/
+  /* ãƒ•ãƒªãƒ¼ãƒªã‚¹ãƒˆã‚’å…ˆé ­ã‹ã‚‰è¾¿ã‚Šã€ãƒªã‚¹ãƒˆã«æŒ¿å…¥ã™ã‚‹ãƒã‚¤ãƒ³ãƒˆã‚’æ±ºã‚ã‚‹ */
+  /* ãƒ•ãƒªãƒ¼ãƒªã‚¹ãƒˆã¯ã‚¢ãƒ‰ãƒ¬ã‚¹é †ã«ãªã£ã¦ãŠã‚Šã€current ã®ã‚¢ãƒ‰ãƒ¬ã‚¹ãŒè¿½åŠ ã™ */
+  /* ã‚‹é ˜åŸŸã®æœ€å¾Œã‚ˆã‚Šã‚‚å¤§ãããªã£ãŸã‚‰ã€ãã®å‰ã«æŒ¿å…¥ã™ã‚‹ã€‚*/
   for (prev = current_entry, current = current_entry->next;
        current != current_entry;
        prev = current, current = current->next)
     {
-      /* current ¤ËÎÙÀÜ¤·¤Æ¤¤¤ë¡£current ¤ÈÎÎ°è¤ò¤Ä¤Ê¤²¤ë */
+      /* current ã«éš£æ¥ã—ã¦ã„ã‚‹ã€‚current ã¨é ˜åŸŸã‚’ã¤ãªã’ã‚‹ */
       if ((B *)current == ((B *)new_entry + new_entry->size))
 	{
 	  new_entry->size += current->size;
@@ -273,14 +273,14 @@ free (void *ptr)
 	}
       else
 	{
-	  /* current ¤Ë¤ÏÎÙÀÜ¤·¤Æ¤¤¤Ê¤¤¡£¥ê¥¹¥È¤ËÁŞÆş¤¹¤ë */
+	  /* current ã«ã¯éš£æ¥ã—ã¦ã„ãªã„ã€‚ãƒªã‚¹ãƒˆã«æŒ¿å…¥ã™ã‚‹ */
 	  new_entry->next = current;
 	  prev->next = new_entry;
 	}
       
-      /* prev ¤ËÎÙÀÜ¤·¤Æ¤¤¤ë¾ì¹ç¡£prev ¤Î¥µ¥¤¥º¤òÁı¤ä¤¹¡£*/
-      /* ¤³¤Î¤È¤­¡¢current ¤ÈÊ»¹ç¤·¤Æ¤¤¤è¤¦¤¬¡¢Ã±¤ËÁŞÆş¤·¤Æ¤¤¤è¤¦¤¬¡¢ */
-      /* ¤É¤Á¤é¤Ë¤·¤Æ¤â prev->next ¤Ï¡¢new_entry¤ò»Ø¤·¤Æ¤¤¤ë¤³¤È¤ËÃí°Õ */
+      /* prev ã«éš£æ¥ã—ã¦ã„ã‚‹å ´åˆã€‚prev ã®ã‚µã‚¤ã‚ºã‚’å¢—ã‚„ã™ã€‚*/
+      /* ã“ã®ã¨ãã€current ã¨ä½µåˆã—ã¦ã„ã‚ˆã†ãŒã€å˜ã«æŒ¿å…¥ã—ã¦ã„ã‚ˆã†ãŒã€ */
+      /* ã©ã¡ã‚‰ã«ã—ã¦ã‚‚ prev->next ã¯ã€new_entryã‚’æŒ‡ã—ã¦ã„ã‚‹ã“ã¨ã«æ³¨æ„ */
       if ((B *)new_entry == ((B *)prev + prev->size))
 	{
 	  prev->size += new_entry->size;

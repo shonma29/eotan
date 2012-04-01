@@ -1,17 +1,17 @@
 ;-----------------------------------------------------------
 ; start16.asm
-;  ���Υ����ɤϡ�0800h:0000h�˥����ɤ���롣
-;  GDT,IDT�����ꤷ��A20��ͭ���ˤ����塢�ץ��ƥ��ȥ⡼�ɤ˰ܹԤ���
-;  start32�˥����פ��롣
+;  このコードは、0800h:0000hにロードされる。
+;  GDT,IDTを設定し、A20を有効にした後、プロテクトモードに移行し、
+;  start32にジャンプする。
 
 GDT	equ	01000h
 IDT	equ	02000h
 
-START_ADDR	equ	8000h	; start�������ɤ���륢�ɥ쥹
-START32_ADDR	equ 	8f00h	; start32�������ɤ���륢�ɥ쥹���ѹ����ϡ�
-				;  start32.asm��org�Ԥ�Ʊ�����ѹ����뤳��
-MEM_SIZE	equ	0ff8h	; ���꡼��������񤭹��ॢ�ɥ쥹(offset)
-				;  2nd/memory.c���ɤޤ��
+START_ADDR	equ	8000h	; startがロードされるアドレス
+START32_ADDR	equ 	8f00h	; start32がロードされるアドレス。変更時は、
+				;  start32.asmのorg行も同時に変更すること
+MEM_SIZE	equ	0ff8h	; メモリーサイズを書き込むアドレス(offset)
+				;  2nd/memory.cで読まれる
 SECOND		equ	0ff1h
 MINUTE		equ	0ff2h
 HOUR		equ	0ff3h
@@ -33,12 +33,12 @@ second_boot:
 
 ;-----------------------------------------------------------
 meme801:
-	mov	ax, 0e801h	; ���ꥵ�����μ���
+	mov	ax, 0e801h	; メモリサイズの取得
 	int     15h
 	jc	mem88
-	and	eax, 0ffffh	; 1M-16M 1kbyteñ�� 
+	and	eax, 0ffffh	; 1M-16M 1kbyte単位 
 	shl	eax, 10
-	and	ebx, 0ffffh	; 16M�ʾ� 64kbyteñ��
+	and	ebx, 0ffffh	; 16M以上 64kbyte単位
 	shl	ebx, 16
 	add	eax, ebx
 	mov	[MEM_SIZE], eax
@@ -47,7 +47,7 @@ meme801:
 mem88:
 	mov	ah, 88h
 	int	15h
-	shl	eax, 10		; 1M-16M 1kbyteñ��
+	shl	eax, 10		; 1M-16M 1kbyte単位
 	mov	[MEM_SIZE],eax
 ;-----------------------------------------------------------
 get_time:
@@ -65,26 +65,26 @@ get_time:
 	mov	[SECOND],dh
 ;-----------------------------------------------------------
 set_gdt:
-	xor	ax, ax		; GDT(1024byte)��0�ǥ��ꥢ
+	xor	ax, ax		; GDT(1024byte)を0でクリア
 	mov	es, ax		
 	mov	di, GDT
 	mov	cx, 512
 	cld
 	rep
 	stosw
-	mov	di, GDT		; gdt_tbl��GDT�˥��ԡ�
+	mov	di, GDT		; gdt_tblをGDTにコピー
 	mov	si, gdt_tbl
 	mov	cx, 6*8
 	rep
 	movsb
 
 	cli
-	lgdt	[gdt_ptr]	; GDTR�򥻥å�
-	lidt	[idt_ptr]	; IDTR�򥻥å�
+	lgdt	[gdt_ptr]	; GDTRをセット
+	lidt	[idt_ptr]	; IDTRをセット
 
 ;-----------------------------------------------------------
-	call	empty_8042		; A20��ͭ���ˤ���
-	mov	al, 0d1h		; linux�򻲹ͤ��ѹ�
+	call	empty_8042		; A20を有効にする
+	mov	al, 0d1h		; linuxを参考に変更
 	out	64h, al
 
 	call	empty_8042	
@@ -93,7 +93,7 @@ set_gdt:
 
 	call	empty_8042
 
-	xor     ax, ax                  ;������A20��ͭ���ˤʤä���Ĵ�٤�
+	xor     ax, ax                  ;本当にA20が有効になったか調べる
         mov     fs, ax                  ;fs = 0000h 
         dec     ax
         mov     gs, ax                  ;gs = 0ffffh
@@ -106,11 +106,11 @@ a20_wait:
 ;-----------------------------------------------------------
 	cli
 
-	mov	eax, cr0	; �ץ��ƥ��ȥ⡼�ɤ˰ܹ�
+	mov	eax, cr0	; プロテクトモードに移行
 	or	eax, 0001h
 	mov	cr0, eax
 
-	jmp	dword 08h:START32_ADDR	; cs������,start32��
+	jmp	dword 08h:START32_ADDR	; csの設定,start32へ
 
 ;-----------------------------------------------------------
 empty_8042:
@@ -154,12 +154,12 @@ gdt_tbl:
 
 ;-----------------------------------------------------------
 	align	2
-	times	256 db 00	; �����å��ΰ�Ͼ��ʤ��Τ�,call,push��
-stack:				; �Ϲ����ܤ�
+	times	256 db 00	; スタック領域は少ないので,call,push等
+stack:				; は控え目に
 
 ;-----------------------------------------------------------
 
 	times	(START32_ADDR-START_ADDR)-($-$$) nop	
 
-	; start32�ޤǤ�nop�����Ƥ���
-	; ���θ��³��start32�Υ��ɥ쥹��Ĵ�����Ƥ���
+	; start32までをnopで埋めている
+	; この後に続くstart32のアドレスを調整している

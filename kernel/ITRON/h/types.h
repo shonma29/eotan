@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -20,7 +20,7 @@ Version 2, June 1991
 #ifndef _ITRON_TYPES_H_
 #define _ITRON_TYPES_H_	1
 
-typedef char		B;	/* Éä¹æÉÕ¤­8¥Ó¥Ã¥ÈÀ°¿ô */
+typedef char		B;	/* ç¬¦å·ä»˜ã8ãƒ“ãƒƒãƒˆæ•´æ•° */
 typedef short		H;
 typedef long		W;
 typedef unsigned char	UB;

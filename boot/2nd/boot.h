@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -9,7 +9,7 @@ Version 2, June 1991
 
 */
 /*
- *	BOOT �ǻ��Ѥ��빽¤�Τ����
+ *	BOOT で使用する構造体の定義
  *
  * $Header: /usr/local/src/master/B-Free/Program/btron-pc/boot/2nd/boot.h,v 1.3 1999/04/13 04:03:46 monaka Exp $
  *
@@ -19,28 +19,28 @@ Version 2, June 1991
  * Contents in 2nd/boot.h is moved to ITRON/h/itron_module.h.
  *
  * Revision 1.2  1997/08/31 14:26:07  night
- * root �ե����륷���ƥ�� OS �˶���������Τ����������ɲá�
+ * root ファイルシステムを OS に教える処理のための定義を追加。
  *
  * Revision 1.1  1996/05/11  10:44:59  night
- * 2nd boot (IBM-PC �� B-FREE OS) �Υ�������
+ * 2nd boot (IBM-PC 版 B-FREE OS) のソース。
  *
  * Revision 1.7  1995/09/21 15:50:34  night
- * �������ե��������Ƭ�� Copyright notice ������ɲá�
+ * ソースファイルの先頭に Copyright notice 情報を追加。
  *
  * Revision 1.6  1995/06/04  03:35:04  night
- * machine_info ��¤�Τ��ɲá�
+ * machine_info 構造体の追加。
  *
  * Revision 1.5  1995/01/13  13:54:52  night
- * ���� RCS �ޥ������ޤޤ�Ƥ����Τǡ�����Ͽ���뤿�Ӥ���᤬���������ʤ�
- * �Ƥ����������ѹ�������
+ * 註釈に RCS マクロが含まれていたので、再登録するたびに註釈がおかしくなっ
+ * ていた。註釈を変更した。
  *
  * Revision 1.4  1995/01/13  13:51:47  night
- * module_info ��¤�Τ� name ���Ǥ��ɲá�
- * module_type �� driver �� lowlib ���ɲá�
+ * module_info 構造体に name 要素を追加。
+ * module_type に driver と lowlib を追加。
  *
  * Revision 1.3  1995/01/09  14:10:11  night
- * Header: /usr/local/src/master/btron/src/boot/2nd/boot.h,v 1.4 1995/01/13 13:51:47 night Exp $ �ȡ� Log: boot.h,v $
- * ���ɲá�
+ * Header: /usr/local/src/master/btron/src/boot/2nd/boot.h,v 1.4 1995/01/13 13:51:47 night Exp $ と、 Log: boot.h,v $
+ * を追加。
  *
  */
 

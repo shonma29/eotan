@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -13,7 +13,7 @@ Version 2, June 1991
 
 
 /*
- * ¥Õ¥¡¥¤¥ë¤ÎÆÉ¤ß¼è¤ê (cat ¥³¥Ş¥ó¥É)
+ * ãƒ•ã‚¡ã‚¤ãƒ«ã®èª­ã¿å–ã‚Š (cat ã‚³ãƒãƒ³ãƒ‰)
  */
 void
 cat_file (struct dos_fsinfo *fs, char *path)
@@ -25,7 +25,7 @@ cat_file (struct dos_fsinfo *fs, char *path)
   int	count;
   
   printf ("list_dir: path = %s\n", path);
-  fix_path (path);	/* ¥Ñ¥¹Ì¾¤ò DOS ¤ÎÀ©¸Â¤Ë¹ç¤ï¤»¤ÆÀµµ¬²½¤¹¤ë */
+  fix_path (path);	/* ãƒ‘ã‚¹åã‚’ DOS ã®åˆ¶é™ã«åˆã‚ã›ã¦æ­£è¦åŒ–ã™ã‚‹ */
   if (strcmp (path, "/") == 0)
     {
       print_dir (DOS_ROOTDIR (fs), DOS_ROOTDIRENTRY (fs));
@@ -63,8 +63,8 @@ cat_file (struct dos_fsinfo *fs, char *path)
 
 
 /*
- * °ú¿ô¤Ç»ØÄê¤·¤¿¥Ç¥£¥ì¥¯¥È¥ê¤ÎÃæ¤Ë¤¢¤ë¤³¤ì¤Ş¤¿°ú¿ô¤Ç»ØÄê¤·¤¿
- * ¥Õ¥¡¥¤¥ë¤ÎÆâÍÆ¤òÉ½¼¨¤¹¤ë¡£
+ * å¼•æ•°ã§æŒ‡å®šã—ãŸãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®ä¸­ã«ã‚ã‚‹ã“ã‚Œã¾ãŸå¼•æ•°ã§æŒ‡å®šã—ãŸ
+ * ãƒ•ã‚¡ã‚¤ãƒ«ã®å†…å®¹ã‚’è¡¨ç¤ºã™ã‚‹ã€‚
  */
 print_file (struct dos_fsinfo *fs, struct dos_direntry *dir, char *fname)
 {
@@ -77,7 +77,7 @@ print_file (struct dos_fsinfo *fs, struct dos_direntry *dir, char *fname)
       unsigned char	dentry[14];
       unsigned char	*p;
 
-      /* ¥Õ¥¡¥¤¥ëÌ¾¤òÀµµ¬²½¤·¤ÆÈæ³Ó */
+      /* ãƒ•ã‚¡ã‚¤ãƒ«åã‚’æ­£è¦åŒ–ã—ã¦æ¯”è¼ƒ */
       p = strchr (dir[i].name, ' ');
       if (p)
 	*p = '\0';

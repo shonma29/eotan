@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -11,7 +11,7 @@ Version 2, June 1991
 
 */
 /* 
- * sys_time.c -- ���ִ����ط��Υ����ƥॳ����
+ * sys_time.c -- 時間管理関係のシステムコール
  */
 
 #include "types.h"
@@ -20,7 +20,7 @@ Version 2, June 1991
 #include "errno.h"
 
 /*
- * �����ƥ९���å�����
+ * システムクロック設定
  */
 ER set_tim(SYSTIME *pk_tim)
 {
@@ -28,7 +28,7 @@ ER set_tim(SYSTIME *pk_tim)
 }
 
 /*
- * �����ƥ९���å�����
+ * システムクロック参照
  */
 ER get_tim(SYSTIME *pk_tim)
 {
@@ -36,7 +36,7 @@ ER get_tim(SYSTIME *pk_tim)
 }
 
 /*
- * �������ٱ�
+ * タスク遅延
  */
 
 ER dly_tsk(DLYTIME dlytim)
@@ -45,7 +45,7 @@ ER dly_tsk(DLYTIME dlytim)
 }
 
 /*
- * ������ư�ϥ�ɥ����
+ * 周期起動ハンドラ定義
  */
 
 ER def_cyc(HNO cycno, T_DCYC *pk_dcyc)
@@ -54,7 +54,7 @@ ER def_cyc(HNO cycno, T_DCYC *pk_dcyc)
 }
 
 /*
- * ������ư�ϥ�ɥ��������
+ * 周期起動ハンドラ活性制御
  */
 
 ER act_cyc(HNO cycno, UINT cycact)
@@ -63,7 +63,7 @@ ER act_cyc(HNO cycno, UINT cycact)
 }
 
 /*
- * ������ư�ϥ�ɥ���ֻ���
+ * 周期起動ハンドラ状態参照
  */
 
 ER ref_cyc(T_RCYC *pk_rcyc, HNO cycno)
@@ -72,7 +72,7 @@ ER ref_cyc(T_RCYC *pk_rcyc, HNO cycno)
 }
 
 /*
- * ���顼��ϥ�ɥ����
+ * アラームハンドラ定義
  */
 
 ER def_alm(HNO almo, T_DALM *pk_dalm)
@@ -81,7 +81,7 @@ ER def_alm(HNO almo, T_DALM *pk_dalm)
 }
 
 /*
- * ���顼��ϥ�ɥ���ֻ���
+ * アラームハンドラ状態参照
  */
 
 ER ref_alm(T_RALM *pk_ralm, HNO almno)

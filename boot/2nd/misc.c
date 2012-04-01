@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -22,16 +22,16 @@ Version 2, June 1991
  * Minor fixes.
  *
  * Revision 1.1  1996/05/11 10:45:06  night
- * 2nd boot (IBM-PC ÈÇ B-FREE OS) ¤Î¥½¡¼¥¹¡£
+ * 2nd boot (IBM-PC ç‰ˆ B-FREE OS) ã®ã‚½ãƒ¼ã‚¹ã€‚
  *
  * 
  * ------------------------------------------------------------------------
  * 
  * Revision 1.3  1995/09/21  15:50:41  night
- * ¥½¡¼¥¹¥Õ¥¡¥¤¥ë¤ÎÀèÆ¬¤Ë Copyright notice ¾ðÊó¤òÄÉ²Ã¡£
+ * ã‚½ãƒ¼ã‚¹ãƒ•ã‚¡ã‚¤ãƒ«ã®å…ˆé ­ã« Copyright notice æƒ…å ±ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.2  1994/07/30  17:37:18  night
- * ¥Õ¥¡¥¤¥ëÃæ¤ÎÆüËÜ¸ìÊ¸»ú¤ò¤¹¤Ù¤Æ EUC ¥³¡¼¥É¤ËÊÑ¹¹¡£
+ * ãƒ•ã‚¡ã‚¤ãƒ«ä¸­ã®æ—¥æœ¬èªžæ–‡å­—ã‚’ã™ã¹ã¦ EUC ã‚³ãƒ¼ãƒ‰ã«å¤‰æ›´ã€‚
  *
  * Revision 1.1  1993/10/11  21:29:38  btron
  * btron/386
@@ -43,7 +43,7 @@ Version 2, June 1991
  * BTRON SYSTEM 1.0
  * 
  *
- * ¿§¡¹¤Ê´Ø¿ô¤Î½¸¹ç
+ * è‰²ã€…ãªé–¢æ•°ã®é›†åˆ
  */
 
 static char	rcsid[] = "$Header: /usr/local/src/master/B-Free/Program/btron-pc/boot/2nd/misc.c,v 1.3 2000/01/30 18:50:12 kishida0 Exp $";

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -22,7 +22,7 @@ Version 2, June 1991
 
 #include "posix.h"
 
-/* psc_exit_f - ¥×¥í¥»¥¹¤ò½ªÎ»¤µ¤»¤ë
+/* psc_exit_f - ãƒ—ãƒ­ã‚»ã‚¹ã‚’çµ‚äº†ã•ã›ã‚‹
  */
 W
 psc_exit_f (struct posix_request *req)
@@ -38,8 +38,8 @@ psc_exit_f (struct posix_request *req)
   errno = proc_get_procp(mypid, &myprocp);
   if (errno) {
     put_response (req, EP_SRCH, 0, 0, 0);
-    /* ¥á¥Ã¥»¡¼¥¸¤Î¸Æ¤Ó½Ğ¤·¸µ¤Ë¥¨¥é¡¼¤òÊÖ¤·¤Æ¤â½èÍı¤Ç¤­¤Ê¤¤¤¬¡¤
-       ¥¿¥¹¥¯¤Ï exd_tsk ¤Ç½ªÎ»¤¹¤ë */
+    /* ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®å‘¼ã³å‡ºã—å…ƒã«ã‚¨ãƒ©ãƒ¼ã‚’è¿”ã—ã¦ã‚‚å‡¦ç†ã§ããªã„ãŒï¼Œ
+       ã‚¿ã‚¹ã‚¯ã¯ exd_tsk ã§çµ‚äº†ã™ã‚‹ */
     return errno;
   }
 
@@ -48,43 +48,43 @@ psc_exit_f (struct posix_request *req)
   errno = proc_get_procp(myprocp->proc_ppid, &procp);
   if (errno) {
     put_response (req, EP_SRCH, 0, 0, 0);
-    /* ¥á¥Ã¥»¡¼¥¸¤Î¸Æ¤Ó½Ğ¤·¸µ¤Ë¥¨¥é¡¼¤òÊÖ¤·¤Æ¤â½èÍı¤Ç¤­¤Ê¤¤¤¬¡¤
-       ¥¿¥¹¥¯¤Ï exd_tsk ¤Ç½ªÎ»¤¹¤ë */
+    /* ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®å‘¼ã³å‡ºã—å…ƒã«ã‚¨ãƒ©ãƒ¼ã‚’è¿”ã—ã¦ã‚‚å‡¦ç†ã§ããªã„ãŒï¼Œ
+       ã‚¿ã‚¹ã‚¯ã¯ exd_tsk ã§çµ‚äº†ã™ã‚‹ */
     return errno;
   }
 
   wpid = procp->proc_wpid;
   if (procp->proc_status == PS_WAIT &&
       (wpid == -1 || wpid == mypid || -wpid == myprocp->proc_pgid)) {
-    /* ¿Æ¥×¥í¥»¥¹¤¬¼«Ê¬¤ò WAIT ¤·¤Æ¤¤¤ì¤Ğ¥á¥Ã¥»¡¼¥¸Á÷¿® */
+    /* è¦ªãƒ—ãƒ­ã‚»ã‚¹ãŒè‡ªåˆ†ã‚’ WAIT ã—ã¦ã„ã‚Œã°ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸é€ä¿¡ */
     procp->proc_status = PS_RUN;
     preq.receive_port = procp->proc_rvpt;
     preq.operation = PSC_WAITPID;
     exst = (myprocp->proc_exst << 8);
     put_response (&preq, EP_OK, mypid, exst, 0);
 
-    /* ¥¨¥ó¥È¥ê¡¼¤Î³«Êü */
+    /* ã‚¨ãƒ³ãƒˆãƒªãƒ¼ã®é–‹æ”¾ */
     proc_exit(mypid);
   }
   else {
-    /* ¤½¤¦¤Ç¤Ê¤±¤ì¤Ğ¡¤ZOMBIE ¾õÂÖ¤Ë */
+    /* ãã†ã§ãªã‘ã‚Œã°ï¼ŒZOMBIE çŠ¶æ…‹ã« */
     myprocp->proc_status = PS_ZOMBIE;
   }
 
-  /* »Ò¥×¥í¥»¥¹¤Î¿Æ¤ò INIT ¤ËÊÑ¹¹ */
+  /* å­ãƒ—ãƒ­ã‚»ã‚¹ã®è¦ªã‚’ INIT ã«å¤‰æ›´ */
   for(i = 1; i < MAX_PROCESS; ++i) {
     proc_get_procp(i, &procp);
     if (procp->proc_status == PS_DORMANT) continue;
     if (procp->proc_ppid != mypid) continue;
-    procp->proc_ppid = 0; /* INIT ¥×¥í¥»¥¹¤Î pid ¤Ï 0 */
+    procp->proc_ppid = 0; /* INIT ãƒ—ãƒ­ã‚»ã‚¹ã® pid ã¯ 0 */
     
-    /* »Ò¥×¥í¥»¥¹¤¬ ZOMBIE ¤Ç INIT ¤¬ wait ¤·¤Æ¤¤¤ì¤Ğ ¥¯¥ê¥¢¤¹¤ë? */
+    /* å­ãƒ—ãƒ­ã‚»ã‚¹ãŒ ZOMBIE ã§ INIT ãŒ wait ã—ã¦ã„ã‚Œã° ã‚¯ãƒªã‚¢ã™ã‚‹? */
   }
 
-  /* POSIX ¤Î vmtree ¤Î¤ß¤ò³«Êü¡¥²¾ÁÛ¥á¥â¥ê¡¼¤Ï exd_tsk ¤Ç³«Êü */
+  /* POSIX ã® vmtree ã®ã¿ã‚’é–‹æ”¾ï¼ä»®æƒ³ãƒ¡ãƒ¢ãƒªãƒ¼ã¯ exd_tsk ã§é–‹æ”¾ */
   destroy_proc_memory (myprocp, 0);
 
-  /* region ¤Î³«Êü, ¼Âºİ¤Ë¤ÏÉ¬Í×Ìµ¤¤¤À¤í¤¦ */
+  /* region ã®é–‹æ”¾, å®Ÿéš›ã«ã¯å¿…è¦ç„¡ã„ã ã‚ã† */
   tskid = req->caller,
   vdel_reg(tskid, TEXT_REGION); /* text */
   vdel_reg(tskid, DATA_REGION); /* data+bss */

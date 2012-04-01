@@ -1,11 +1,11 @@
 /*
- *  BTRON systemcall ¥ê¥¹¥È
+ *  BTRON systemcall ãƒªã‚¹ãƒˆ
  */
 
 
 #include "include/btypes.h"
 
-/* ¥×¥í¥»¥¹´ÉÍı¥·¥¹¥Æ¥à¥³¡¼¥ë
+/* ãƒ—ãƒ­ã‚»ã‚¹ç®¡ç†ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«
  */
 int	cre_prc (LINK *lnk, W pri, MESSAGE *msg);
 int	rcr_prc (LINK *lnk, MESSAGE *msg);

@@ -27,7 +27,7 @@
 # rule about sitsuspend deleted.
 #
 # Revision 1.1  1997/08/31 13:10:42  night
-# ╨г╫И╓непо©
+# Ф°─Е┬²Ц│╝Г≥╩И▄╡
 #
 #
 #

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -10,7 +10,7 @@ Version 2, June 1991
 (C) 2001-2002, Tomohide Naniwa
 
 */
-/* sfs_cache.c - SFS ¤Î diskblock ¤Î cache ¤ò¹Ô¤¦
+/* sfs_cache.c - SFS ã® diskblock ã® cache ã‚’è¡Œã†
  *
  * $Log: sfs_cache.c,v $
  * Revision 1.1  2000/07/02 04:13:18  naniwa
@@ -76,7 +76,7 @@ void sfs_init_cache(void)
 #ifdef USE_MALLOC
     CACHE_SIZE = ROUNDUP(CACHE_SIZE * sizeof(SFS_BLOCK_CACHE), PAGE_SIZE)
 	- 12;
-    /* 12 ¤Ï ITRON/kernlib/malloc.c ¤Î alloc_entry_t ¤«¤éÍè¤Æ¤¤¤ë */
+    /* 12 ã¯ ITRON/kernlib/malloc.c ã® alloc_entry_t ã‹ã‚‰æ¥ã¦ã„ã‚‹ */
     CACHE_SIZE /= sizeof(SFS_BLOCK_CACHE);
     cache_data =
 	(SFS_BLOCK_CACHE *) malloc(sizeof(SFS_BLOCK_CACHE) * (CACHE_SIZE));
@@ -131,7 +131,7 @@ void sfs_get_cache(W fd, W blockno, W * cn, B ** ptr)
 	}
 	/* remove from hash chain */
 	if (cp->blockno >= 0) {
-	    /* ´û¤Ë hash ¤ËÅĞÏ¿¤µ¤ì¤Æ¤¤¤ë¾ì¹ç */
+	    /* æ—¢ã« hash ã«ç™»éŒ²ã•ã‚Œã¦ã„ã‚‹å ´åˆ */
 	    int hn2;
 	    hn2 = (cp->blockno % HASH_SIZE) + 1;
 #ifdef notdef
@@ -243,7 +243,7 @@ void sfs_check_cache(W fd, W blockno, W * cn)
 }
 
 /*
- * °ú¿ô¤Î dirty ¤¬Éé¤Î¾ì¹ç¤Ï cache ¤Î dirty flag ¤ò¶¯À©Åª¤Ë 0 ¤Ë¤¹¤ë¡¥
+ * å¼•æ•°ã® dirty ãŒè² ã®å ´åˆã¯ cache ã® dirty flag ã‚’å¼·åˆ¶çš„ã« 0 ã«ã™ã‚‹ï¼
  */
 void sfs_put_cache(W cn, W dirty)
 {

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -10,7 +10,7 @@ Version 2, June 1991
 (C) 2001-2002, Tomohide Naniwa
 
 */
-/* process.c - POSIX ´Ä¶­¥Ş¥Í¡¼¥¸¥ã¤Î¥×¥í¥»¥¹´ÉÍı½èÍıÉôÊ¬
+/* process.c - POSIX ç’°å¢ƒãƒãƒãƒ¼ã‚¸ãƒ£ã®ãƒ—ãƒ­ã‚»ã‚¹ç®¡ç†å‡¦ç†éƒ¨åˆ†
  *
  *
  *
@@ -58,65 +58,65 @@ Version 2, June 1991
  * Function proc_get_ppid added.
  *
  * Revision 1.16  1998/02/24 14:20:07  night
- * ¥×¥í¥»¥¹¥Æ¡¼¥Ö¥ë¤ò½é´ü²½¤¹¤ë¤È¤­¤Ë¡¢¥×¥í¥»¥¹ 0 ¤À¤±¤Ï¡¢
- * »ÈÍÑÃæ¤È¤·¤Æ³ÎÊİ¤¹¤ë¤è¤¦¤ËÊÑ¹¹¤·¤¿¡£
- * (¥×¥í¥»¥¹ 0 ¤Ï¡¢init ¥×¥í¥°¥é¥à¤Ë¤Æ»ÈÍÑ¤¹¤ë)
+ * ãƒ—ãƒ­ã‚»ã‚¹ãƒ†ãƒ¼ãƒ–ãƒ«ã‚’åˆæœŸåŒ–ã™ã‚‹ã¨ãã«ã€ãƒ—ãƒ­ã‚»ã‚¹ 0 ã ã‘ã¯ã€
+ * ä½¿ç”¨ä¸­ã¨ã—ã¦ç¢ºä¿ã™ã‚‹ã‚ˆã†ã«å¤‰æ›´ã—ãŸã€‚
+ * (ãƒ—ãƒ­ã‚»ã‚¹ 0 ã¯ã€init ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã«ã¦ä½¿ç”¨ã™ã‚‹)
  *
  * Revision 1.15  1998/02/23 14:49:20  night
- * proc_vm_dump ´Ø¿ô¤ÎÄÉ²Ã¡£
+ * proc_vm_dump é–¢æ•°ã®è¿½åŠ ã€‚
  *
  * Revision 1.14  1998/02/16 14:26:49  night
- * proc_set_info() ¤ò¼Â¹Ô¤¹¤ë¤È¤­¤Ë¥×¥í¥»¥¹¤Î¾õÂÖ¤ò¥Á¥§¥Ã¥¯¤·¤Æ¤¤¤¿
- * ½èÍı¤òºï½ü¤·¤¿¡£
- * proc_set_info() ¤ÇÂĞ¾İ¤È¤Ê¤ë¥×¥í¥»¥¹¤Ï¡¢À¸À®¤·¤Æ¤¤¤Ê¤¤¾õÂÖ¤Î¾ì¹ç¤â
- * ¤¢¤ë¤Î¤Ç¡¢¥Á¥§¥Ã¥¯¤¹¤ëÉ¬Í×¤Ï¤Ê¤¤¡£
+ * proc_set_info() ã‚’å®Ÿè¡Œã™ã‚‹ã¨ãã«ãƒ—ãƒ­ã‚»ã‚¹ã®çŠ¶æ…‹ã‚’ãƒã‚§ãƒƒã‚¯ã—ã¦ã„ãŸ
+ * å‡¦ç†ã‚’å‰Šé™¤ã—ãŸã€‚
+ * proc_set_info() ã§å¯¾è±¡ã¨ãªã‚‹ãƒ—ãƒ­ã‚»ã‚¹ã¯ã€ç”Ÿæˆã—ã¦ã„ãªã„çŠ¶æ…‹ã®å ´åˆã‚‚
+ * ã‚ã‚‹ã®ã§ã€ãƒã‚§ãƒƒã‚¯ã™ã‚‹å¿…è¦ã¯ãªã„ã€‚
  *
  * Revision 1.13  1997/10/24 13:59:50  night
- * ÊÑ¿ô free_proc¡¢run_proc ¤ÎÄÉ²Ã¡£
+ * å¤‰æ•° free_procã€run_proc ã®è¿½åŠ ã€‚
  *
  * Revision 1.12  1997/10/23 14:32:33  night
- * exec ¥·¥¹¥Æ¥à¥³¡¼¥ë´Ø·¸¤Î½èÍı¤Î¹¹¿·
+ * exec ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«é–¢ä¿‚ã®å‡¦ç†ã®æ›´æ–°
  *
  * Revision 1.11  1997/10/22 14:56:07  night
- * proc_set_gid () ¤òºîÀ®¤·¤¿¡£
+ * proc_set_gid () ã‚’ä½œæˆã—ãŸã€‚
  *
  * Revision 1.10  1997/08/31 13:34:33  night
- * ¥×¥í¥»¥¹¾ğÊó¤ÎÀßÄê»ş¡¢work directory ¤ò¶¯À©Åª¤Ë rootfile ¤ÎÃÍ¤ËÀßÄê¤¹¤ë¤è¤¦¤Ë
- * ¤·¤¿(°ÊÁ°¤Ï¡¢NULL ¤ËÀßÄê¤·¤Æ¤¤¤¿)¡£
- * °Ê²¼¤Î´Ø¿ôÄÉ²Ã¡£
+ * ãƒ—ãƒ­ã‚»ã‚¹æƒ…å ±ã®è¨­å®šæ™‚ã€work directory ã‚’å¼·åˆ¶çš„ã« rootfile ã®å€¤ã«è¨­å®šã™ã‚‹ã‚ˆã†ã«
+ * ã—ãŸ(ä»¥å‰ã¯ã€NULL ã«è¨­å®šã—ã¦ã„ãŸ)ã€‚
+ * ä»¥ä¸‹ã®é–¢æ•°è¿½åŠ ã€‚
  *
  *  proc_set_euid (W procid, W uid)
  *  proc_set_egid (W procid, W gid)
  *
  * Revision 1.9  1997/07/07 12:17:41  night
- * proc_get_euid ¤È proc_get_egid ¤òÄÉ²Ã¡£
+ * proc_get_euid ã¨ proc_get_egid ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.8  1997/05/12 14:31:51  night
- * misc ¥·¥¹¥Æ¥à¥³¡¼¥ë¤Ë M_PROC_DUMP ¥³¥Ş¥ó¥É¤òÄÉ²Ã¡£
+ * misc ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«ã« M_PROC_DUMP ã‚³ãƒãƒ³ãƒ‰ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.7  1997/05/08 15:11:30  night
- * ¥×¥í¥»¥¹¤Î¾ğÊó¤òÀßÄê¤¹¤ëµ¡Ç½¤ÎÄÉ²Ã¡£
- * (syscall misc ¤Î proc_set_info ¥³¥Ş¥ó¥É)
+ * ãƒ—ãƒ­ã‚»ã‚¹ã®æƒ…å ±ã‚’è¨­å®šã™ã‚‹æ©Ÿèƒ½ã®è¿½åŠ ã€‚
+ * (syscall misc ã® proc_set_info ã‚³ãƒãƒ³ãƒ‰)
  *
  * Revision 1.6  1997/05/06 12:47:50  night
- * set_procinfo ¥·¥¹¥Æ¥à¥³¡¼¥ë¤ÎÄÉ²Ã¡£
+ * set_procinfo ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«ã®è¿½åŠ ã€‚
  *
  * Revision 1.5  1996/11/20  12:12:28  night
- * proc_set_file() ¤Ë¤ª¤¤¤Æ¡¢¥Õ¥¡¥¤¥ëµ­½Ò»Ò¤Ç»ØÄê¤µ¤ì¤¿¥Õ¥¡¥¤¥ë¥¤¥ó¥Ç¥Ã¥¯
- * ¥¹¤¬¤¹¤Ç¤Ë»È¤ï¤ì¤Æ¤¤¤ë¤«¤É¤¦¤«¤Î¥Á¥§¥Ã¥¯¤òÄÉ²Ã¡£
+ * proc_set_file() ã«ãŠã„ã¦ã€ãƒ•ã‚¡ã‚¤ãƒ«è¨˜è¿°å­ã§æŒ‡å®šã•ã‚ŒãŸãƒ•ã‚¡ã‚¤ãƒ«ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯
+ * ã‚¹ãŒã™ã§ã«ä½¿ã‚ã‚Œã¦ã„ã‚‹ã‹ã©ã†ã‹ã®ãƒã‚§ãƒƒã‚¯ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.4  1996/11/18  13:44:04  night
- * ´Ø¿ô proc_get_file() ¤òÄÉ²Ã¡£
+ * é–¢æ•° proc_get_file() ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.3  1996/11/17  16:48:30  night
- * init_process() ¤ÎÃæ¿È¤òºîÀ®¤·¤¿¡£
- * proc_get_umask(), proc_set_umask() ¤òºîÀ®¤·¤¿¡£
+ * init_process() ã®ä¸­èº«ã‚’ä½œæˆã—ãŸã€‚
+ * proc_get_umask(), proc_set_umask() ã‚’ä½œæˆã—ãŸã€‚
  *
  * Revision 1.2  1996/11/14  13:17:38  night
- * ¥×¥í¥»¥¹¹½Â¤ÂÎ¤Î¾ğÊó¤ò¼èÆÀ¤¹¤ë´Ø¿ô¤òÄÉ²Ã¡£
+ * ãƒ—ãƒ­ã‚»ã‚¹æ§‹é€ ä½“ã®æƒ…å ±ã‚’å–å¾—ã™ã‚‹é–¢æ•°ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.1  1996/11/05  15:13:46  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  */
 
@@ -150,14 +150,14 @@ W init_process(void)
     free_proc = &proc_table[1];
     tail_proc = &proc_table[i];
 
-    proc_table[0].proc_status = PS_SLEEP;	/* ¥×¥í¥»¥¹ 0 ¤Ë¤Ä¤¤¤Æ¤Ï¡¢ºÇ½é¤Ë³ÎÊİ¤·¤Æ¤ª¤¯ */
+    proc_table[0].proc_status = PS_SLEEP;	/* ãƒ—ãƒ­ã‚»ã‚¹ 0 ã«ã¤ã„ã¦ã¯ã€æœ€åˆã«ç¢ºä¿ã—ã¦ãŠã */
     proc_table[0].proc_next = NULL;
     return (E_OK);
 }
 
 
 
-/* ¥×¥í¥»¥¹¤Î¾ğÊó¤ò¶¯À©Åª¤ËÀßÄê¤¹¤ë
+/* ãƒ—ãƒ­ã‚»ã‚¹ã®æƒ…å ±ã‚’å¼·åˆ¶çš„ã«è¨­å®šã™ã‚‹
  *
  */
 W proc_set_info(struct posix_request * req)
@@ -177,9 +177,9 @@ W proc_set_info(struct posix_request * req)
 	return (EP_INVAL);
     }
 
-    /* ¥×¥í¥»¥¹¤Î¾ğÊó¤òÀßÄê¤¹¤ë
-     * º£¤Î¤È¤³¤íÀßÄê¤¹¤ë¾ğÊó¤ÎÆâÍÆ¤Ï¥Á¥§¥Ã¥¯¤·¤Æ¤¤¤Ê¤¤¤¬¡¢
-     * ËÜÍè¤Ï¡¢¥Á¥§¥Ã¥¯¤¹¤Ù¤­
+    /* ãƒ—ãƒ­ã‚»ã‚¹ã®æƒ…å ±ã‚’è¨­å®šã™ã‚‹
+     * ä»Šã®ã¨ã“ã‚è¨­å®šã™ã‚‹æƒ…å ±ã®å†…å®¹ã¯ãƒã‚§ãƒƒã‚¯ã—ã¦ã„ãªã„ãŒã€
+     * æœ¬æ¥ã¯ã€ãƒã‚§ãƒƒã‚¯ã™ã¹ã
      */
     error = proc_get_procp(procid, &procp);
     if (error) {
@@ -200,8 +200,8 @@ W proc_set_info(struct posix_request * req)
     procp->proc_umask = procinfo->proc_umask;
     procp->proc_status = PS_RUN;
 
-    /* ºî¶È¥Ç¥£¥ì¥¯¥È¥ê¤ò '/' ¥Ç¥£¥ì¥¯¥È¥ê¤ËÀßÄê¤¹¤ë¡£
-     * (ËÜ¥·¥¹¥Æ¥à¥³¡¼¥ë¼Â¹Ô¸å¤Ë chdir ¥·¥¹¥Æ¥à¥³¡¼¥ë¤ÇÇ¤°Õ¤Î¥Ç¥£¥ì¥¯¥È¥ê¤Ë°ÜÆ°¤Ç¤­¤ë)
+    /* ä½œæ¥­ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ '/' ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«è¨­å®šã™ã‚‹ã€‚
+     * (æœ¬ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«å®Ÿè¡Œå¾Œã« chdir ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«ã§ä»»æ„ã®ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«ç§»å‹•ã§ãã‚‹)
      */
     procp->proc_workdir = rootfile;	/* XXX */
     rootfile->i_refcount++;
@@ -209,7 +209,7 @@ W proc_set_info(struct posix_request * req)
     procp->proc_pid = procinfo->proc_pid;
     procp->proc_ppid = procinfo->proc_ppid;
 
-    /* region ¤ÎÀ¸À® */
+    /* region ã®ç”Ÿæˆ */
     /* text */
     vcre_reg(tskid, TEXT_REGION,
 	     0, 0x7fffffff, 0x7fffffff, procinfo->proc_access, NULL);
@@ -223,11 +223,11 @@ W proc_set_info(struct posix_request * req)
     vnew_reg(tskid, 0, PAGE_SIZE, 0x7fffffff, procinfo->proc_access, NULL, &rid);	/* stack */
 #endif
 
-    /* ²¾ÁÛ¥Æ¡¼¥Ö¥ë¤ÎÀ¸À® */
+    /* ä»®æƒ³ãƒ†ãƒ¼ãƒ–ãƒ«ã®ç”Ÿæˆ */
     setup_vmtree(&(proc_table[procid]), procinfo->proc_maintask,
 		 procinfo->proc_access, 0, 0, 0x3fffffff);
 
-    /* file discriptor 0, 1, 2 ¤ÎÀßÄê */
+    /* file discriptor 0, 1, 2 ã®è¨­å®š */
     error = open_special_dev(procp);
     if (error != EP_OK) {
 	dbg_printf("[PM] can't open special files\n");
@@ -247,7 +247,7 @@ W proc_set_info(struct posix_request * req)
     return (EP_OK);
 }
 
-/* proc_enter_posix - POSIX ¥×¥í¥»¥¹¤ËÅĞÏ¿¤¹¤ë
+/* proc_enter_posix - POSIX ãƒ—ãƒ­ã‚»ã‚¹ã«ç™»éŒ²ã™ã‚‹
  *
  */
 W proc_enter_posix(struct posix_request * req)
@@ -256,7 +256,7 @@ W proc_enter_posix(struct posix_request * req)
     W errno;
     struct lowlib_data lowlib_data;
 
-    /* ¿·¤·¤¯¥×¥í¥»¥¹¹½Â¤ÂÎ¤ò³ÎÊİ¤¹¤ë
+    /* æ–°ã—ããƒ—ãƒ­ã‚»ã‚¹æ§‹é€ ä½“ã‚’ç¢ºä¿ã™ã‚‹
      */
     errno = proc_alloc_proc(&newproc);
     if (errno)
@@ -288,7 +288,7 @@ W proc_enter_posix(struct posix_request * req)
     return (EP_OK);
 }
 
-/* proc_destroy_memory - ¥×¥í¥»¥¹¤Î¤â¤Ä¤¹¤Ù¤Æ¤Î¥á¥â¥ê»ñ¸»¤ò²òÊü¤¹¤ë
+/* proc_destroy_memory - ãƒ—ãƒ­ã‚»ã‚¹ã®ã‚‚ã¤ã™ã¹ã¦ã®ãƒ¡ãƒ¢ãƒªè³‡æºã‚’è§£æ”¾ã™ã‚‹
  *
  */
 W proc_destroy_memory(W procid)
@@ -303,7 +303,7 @@ W proc_destroy_memory(W procid)
 }
 
 
-/* ¥×¥í¥»¥¹¤ò½ªÎ»¤¹¤ë
+/* ãƒ—ãƒ­ã‚»ã‚¹ã‚’çµ‚äº†ã™ã‚‹
  */
 W proc_exit(W procid)
 {
@@ -315,27 +315,27 @@ W proc_exit(W procid)
 	return (EP_INVAL);
     }
 
-    /* ¥×¥í¥»¥¹¾ğÊó¤Î½é´ü²½ */
-    /* proc_pid == 0 ¤Ç¥×¥í¥»¥¹¤ÏÌ¤»ÈÍÑ¤È¤Ï¤Ê¤é¤Ê¤¤
+    /* ãƒ—ãƒ­ã‚»ã‚¹æƒ…å ±ã®åˆæœŸåŒ– */
+    /* proc_pid == 0 ã§ãƒ—ãƒ­ã‚»ã‚¹ã¯æœªä½¿ç”¨ã¨ã¯ãªã‚‰ãªã„
        proc_table[procid].proc_pid = 0;
      */
     proc_table[procid].proc_status = PS_DORMANT;
 
-    /* ¥×¥í¥»¥¹¤Î¾ğÊó¤Î²òÊü
+    /* ãƒ—ãƒ­ã‚»ã‚¹ã®æƒ…å ±ã®è§£æ”¾
      */
     procp = &proc_table[procid];
-    /* working directory ¤Î³«Êü */
+    /* working directory ã®é–‹æ”¾ */
     if (procp->proc_workdir != NULL) {
 	fs_close_file(procp->proc_workdir);
 	procp->proc_workdir = NULL;
     }
 
-    /* open ¤µ¤ì¤Æ¤¤¤ë¥Õ¥¡¥¤¥ë¤Î close */
+    /* open ã•ã‚Œã¦ã„ã‚‹ãƒ•ã‚¡ã‚¤ãƒ«ã® close */
     for (i = 0; i < MAX_OPEN; ++i) {
 	if (procp->proc_open_file[i].f_inode != NULL) {
 	    if (procp->proc_open_file[i].f_inode->i_mode & FS_FMT_DEV) {
-		/* ¥¹¥Ú¥·¥ã¥ë¥Õ¥¡¥¤¥ë¤À¤Ã¤¿ */
-		/* ¥Ç¥Ğ¥¤¥¹¤Ë DEV_CLS ¥á¥Ã¥»¡¼¥¸¤òÈ¯¿® */
+		/* ã‚¹ãƒšã‚·ãƒ£ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«ã ã£ãŸ */
+		/* ãƒ‡ãƒã‚¤ã‚¹ã« DEV_CLS ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’ç™ºä¿¡ */
 		sfs_close_device(procp->proc_open_file[i].f_inode->i_dev);
 	    }
 	    fs_close_file(procp->proc_open_file[i].f_inode);
@@ -343,7 +343,7 @@ W proc_exit(W procid)
 	}
     }
 
-    /* ¥Õ¥ê¡¼¡¦¥×¥í¥»¥¹¡¦¥ê¥¹¥È¤ÎºÇ¸å¤ËÅĞÏ¿ */
+    /* ãƒ•ãƒªãƒ¼ãƒ»ãƒ—ãƒ­ã‚»ã‚¹ãƒ»ãƒªã‚¹ãƒˆã®æœ€å¾Œã«ç™»éŒ² */
     tail_proc->proc_next = &proc_table[procid];
     tail_proc = &proc_table[procid];
 
@@ -645,7 +645,7 @@ struct vm_tree *proc_get_vmtree(W procid)
 
 
 
-/* proc_new_proc - ¿·¤·¤¤¥×¥í¥»¥¹¤òÀ¸À®¤¹¤ë
+/* proc_new_proc - æ–°ã—ã„ãƒ—ãƒ­ã‚»ã‚¹ã‚’ç”Ÿæˆã™ã‚‹
  *
  *
  */
@@ -663,10 +663,10 @@ W proc_alloc_proc(struct proc ** procp)
 }
 
 
-/* proc_renew_task - ¥×¥í¥»¥¹¤Ë½êÂ°¤¹¤ë¥¿¥¹¥¯¤ò¤Ò¤È¤ÄÀ¸À®¤¹¤ë¡£
+/* proc_renew_task - ãƒ—ãƒ­ã‚»ã‚¹ã«æ‰€å±ã™ã‚‹ã‚¿ã‚¹ã‚¯ã‚’ã²ã¨ã¤ç”Ÿæˆã™ã‚‹ã€‚
  *
- * µ¡Ç½¡§	´ûÂ¸¤Î¥×¥í¥»¥¹¤Ë½êÂ°¤·¤Æ¤¤¤ë¥¿¥¹¥¯¤ò½ªÎ»¤·¡¢
- *		¿·¤·¤¯À¸À®¤·¤¿¥¿¥¹¥¯¤ËÀÚ¤ê´¹¤¨¤ë¡£
+ * æ©Ÿèƒ½ï¼š	æ—¢å­˜ã®ãƒ—ãƒ­ã‚»ã‚¹ã«æ‰€å±ã—ã¦ã„ã‚‹ã‚¿ã‚¹ã‚¯ã‚’çµ‚äº†ã—ã€
+ *		æ–°ã—ãç”Ÿæˆã—ãŸã‚¿ã‚¹ã‚¯ã«åˆ‡ã‚Šæ›ãˆã‚‹ã€‚
  *
  *
  */
@@ -764,7 +764,7 @@ W proc_vm_dump(struct posix_request * req)
 	    printk("dir[%d], vmtree = 0x%x:\n", dir_index, treep);	/* */
 #endif
 	    for (page_index = 0; page_index < MAX_PAGE_ENTRY; page_index++) {
-		/* ÊªÍı¥á¥â¥ê¥¢¥É¥ì¥¹¤ò¼èÆÀ */
+		/* ç‰©ç†ãƒ¡ãƒ¢ãƒªã‚¢ãƒ‰ãƒ¬ã‚¹ã‚’å–å¾— */
 		error = vget_phs(taskid, (VP) addr, &paddr);
 
 		pagep = dirp->page_table[page_index];

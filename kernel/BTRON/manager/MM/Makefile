@@ -4,16 +4,16 @@
 #
 # $Log: Makefile,v $
 # Revision 1.4  1997/07/06 11:54:09  night
-# ╔╙╔ж╔╦╔╖╔╞╔х╔Й╔╧╔х╓╚╓И malloc.o ╓Р╨О╫Э║ё
+# Ц┌╙Ц┐√Ц┌╦Ц┌╖Ц┌╞Ц┐┬Ц┐╙Ц┌╧Ц┐┬Ц│▀Ц┌┴ malloc.o Ц┌▓Е┴┼И≥╓Ц─┌
 #
 # Revision 1.3  1997/07/02 13:10:31  night
-# malloc ╓н╫╓ю╣║ё
+# malloc Ц│╝Д©╝Ф╜ёЦ─┌
 #
 # Revision 1.2  1997/06/29 13:18:12  night
-# BTRON ╔А╔Б╔Й manager ╓н╨г╫И╓непо©║ё
+# BTRON Ц┐║Ц┐╒Ц┐╙ manager Ц│╝Ф°─Е┬²Ц│╝Г≥╩И▄╡Ц─┌
 #
 # Revision 1.1  1996/10/29  16:19:12  night
-# ╨г╫И╓непо©
+# Ф°─Е┬²Ц│╝Г≥╩И▄╡
 #
 #
 #
@@ -38,7 +38,7 @@ TARGET=MM
 	$(CPP) $(ASFLAGS) $*.s | $(AS) -o $*.o
 
 
-# ╔Й╔С╔╞╓╧╓К╔╙╔ж╔╦╔╖╔╞╔х╔у╔║╔╓╔К
+# Ц┐╙Ц┐ЁЦ┌╞Ц│≥Ц┌▀Ц┌╙Ц┐√Ц┌╦Ц┌╖Ц┌╞Ц┐┬Ц┐∙Ц┌║Ц┌╓Ц┐╚
 OBJS=memory_manager.o port.o global.o assert.o message.o fs_if.o page_management.o 
 SRCS=memory_manager.c port.c global.c assert.c message.c fs_if.c page_management.c 
 

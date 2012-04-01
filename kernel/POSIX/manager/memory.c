@@ -1,6 +1,6 @@
 /*
 
-B-Free Project д╬└╕└о╩кд╧ GNU Generic PUBLIC LICENSE д╦╜╛ддд▐д╣бг
+B-Free Project уБочФЯцИРчЙйуБп GNU Generic PUBLIC LICENSE уБлх╛УуБДуБ╛уБЩуАВ
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -10,7 +10,7 @@ Version 2, June 1991
 (C) 2002, Tomohide Naniwa
 
 */
-/* memory.c - POSIX ┤─╢не▐е═б╝е╕еуд╬есетеъ╜ш═¤╔Ї╩м
+/* memory.c - POSIX чТ░хвГуГЮуГНуГ╝уВ╕уГгуБоуГбуГвуГкхЗжчРЖщГихИЖ
  *
  *
  *
@@ -19,13 +19,13 @@ Version 2, June 1991
  * modified to implement exit
  *
  * Revision 1.3  1997/10/24 13:57:42  night
- * duplicate_memory() д╚ destroy_proc_memory () дЄ─╔▓├бг
+ * duplicate_memory() уБи destroy_proc_memory () уВТш┐╜хКауАВ
  *
  * Revision 1.2  1997/10/23 14:32:32  night
- * exec е╖е╣е╞ере│б╝еы┤╪╖╕д╬╜ш═¤д╬╣╣┐╖
+ * exec уВ╖уВ╣уГЖуГауВ│уГ╝уГлщЦвф┐ВуБохЗжчРЖуБоцЫ┤цЦ░
  *
  * Revision 1.1  1996/11/05 15:13:46  night
- * ║╟╜щд╬┼╨╧┐
+ * цЬАхИЭуБочЩ╗щМ▓
  *
  */
 
@@ -43,7 +43,7 @@ ER init_memory(void)
 
 
 
-/* setup_vm_proc - е╫еэе╗е╣д╬▓╛┴█есетеъ╛Ё╩єд╬╜щ┤№▓╜ 
+/* setup_vm_proc - уГЧуГнуВ╗уВ╣уБоф╗оцГ│уГбуГвуГкцГЕха▒уБохИЭцЬЯхМЦ 
  *
  *
  */
@@ -63,13 +63,13 @@ W setup_vm_proc(struct proc * procp)
 
 
 
-/* alloc_memory - е╫еэе╗е╣д╦┬╨д╖д╞╟д░╒д╬▓╛┴█есетеъдЄ│фдъ┼Ўд╞дыбг
+/* alloc_memory - уГЧуГнуВ╗уВ╣уБлхп╛уБЧуБжф╗╗цДПуБоф╗оцГ│уГбуГвуГкуВТхЙ▓уВКх╜УуБжуВЛуАВ
  *
- * ░·┐Їбз
- * 	procp	есетеъдЄ│фдъ┼Ўд╞дые╫еэе╗е╣(е╫еэе╗е╣┤╔═¤╣╜┬д┬╬д╪д╬е▌едеєе┐)
- *	start	│фдъ┼Ўд╞дыесетеъд╬еве╔еье╣ (4KB alignment)
- *	size	есетеъе╡еде║ (4KB alignment)
- *	access	есетеъд╬евепе╗е╣етб╝е╔
+ * х╝ХцХ░я╝Ъ
+ * 	procp	уГбуГвуГкуВТхЙ▓уВКх╜УуБжуВЛуГЧуГнуВ╗уВ╣(уГЧуГнуВ╗уВ╣чобчРЖцзЛщАаф╜УуБ╕уБоуГЭуВдуГ│уВ┐)
+ *	start	хЙ▓уВКх╜УуБжуВЛуГбуГвуГкуБоуВвуГЙуГмуВ╣ (4KB alignment)
+ *	size	уГбуГвуГкуВ╡уВдуВ║ (4KB alignment)
+ *	access	уГбуГвуГкуБоуВвуВпуВ╗уВ╣уГвуГ╝уГЙ
  *
  */
 W alloc_memory(W procid, UW start, UW size, UW access)
@@ -91,7 +91,7 @@ W alloc_memory(W procid, UW start, UW size, UW access)
 }
 
 
-/* free_memory - ▓╛┴█есетеъдЄ▓Є╩№д╣ды
+/* free_memory - ф╗оцГ│уГбуГвуГкуВТшзгцФ╛уБЩуВЛ
  *
  */
 W free_memory(W procid, UW start, UW size)
@@ -113,7 +113,7 @@ W free_memory(W procid, UW start, UW size)
 }
 
 
-/* duplicate_memory - ▓╛┴█╢ї┤╓д╬е╟б╝е┐дЄд╣д┘д╞е│е╘б╝д╣ды
+/* duplicate_memory - ф╗оцГ│чй║щЦУуБоуГЗуГ╝уВ┐уВТуБЩуБ╣уБжуВ│уГФуГ╝уБЩуВЛ
  *
  *
  */
@@ -127,7 +127,7 @@ W duplicate_memory(struct proc * source, struct proc * destination)
 
 
 
-/* destroy_proc_memory - е╫еэе╗е╣д╬дтд─д╣д┘д╞д╬есетеъдЄ▓Є╩№д╣ды
+/* destroy_proc_memory - уГЧуГнуВ╗уВ╣уБоуВВуБдуБЩуБ╣уБжуБоуГбуГвуГкуВТшзгцФ╛уБЩуВЛ
  *
  */
 W destroy_proc_memory(struct proc * procp, W unmap)

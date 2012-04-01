@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -10,7 +10,7 @@ Version 2, June 1991
 (C) 2001-2003, Tomohide Naniwa
 
 */
-/* func.h - Âç°è´Ø¿ô¤ÎÄêµÁ
+/* func.h - å¤§åŸŸé–¢æ•°ã®å®šç¾©
  *
  */
 
@@ -50,10 +50,10 @@ extern UW pmemfree(void);
 
 /* console.c */
 extern void simple_init_console(void);
-extern BOOL init_crt(W);	/* ½é´ü²½                       */
-extern W intr_crt(void);	/* ³ä¤ê¹ş¤ß¥Ï¥ó¥É¥é             */
+extern BOOL init_crt(W);	/* åˆæœŸåŒ–                       */
+extern W intr_crt(void);	/* å‰²ã‚Šè¾¼ã¿ãƒãƒ³ãƒ‰ãƒ©             */
 
-extern void putchar(TC ch);	/* £±Ê¸»ú½ĞÎÏ                   */
+extern void putchar(TC ch);	/* ï¼‘æ–‡å­—å‡ºåŠ›                   */
 extern void write_cr(void);
 extern void write_tab(void);
 extern void console_clear(void);
@@ -145,23 +145,23 @@ extern ER init_mpl(void);
 extern ID get_port(W minsize, W maxsize);
 
 /* --------------------------------------------------------- */
-/* ¥Æ¥¹¥ÈÍÑ¥¿¥¹¥¯                                            */
+/* ãƒ†ã‚¹ãƒˆç”¨ã‚¿ã‚¹ã‚¯                                            */
 /* --------------------------------------------------------- */
 extern void tsk2_func(void);
 extern void tsk3_func(void);
 
 /* --------------------------------------------------------- */
-/* ¥·¥¹¥Æ¥à´ÉÍıÍÑ¥¿¥¹¥¯                                      */
+/* ã‚·ã‚¹ãƒ†ãƒ ç®¡ç†ç”¨ã‚¿ã‚¹ã‚¯                                      */
 /* --------------------------------------------------------- */
 extern void sys_init_task(void);
 
 /* --------------------------------------------------------- */
-/* ¥Ç¥Ğ¥Ã¥°ÍÑ¥¿¥¹¥¯                                          */
+/* ãƒ‡ãƒãƒƒã‚°ç”¨ã‚¿ã‚¹ã‚¯                                          */
 /* --------------------------------------------------------- */
 extern void debugger(void);
 
 /* --------------------------------------------------------- */
-/* RS232C ¥Ç¥Ğ¥¤¥¹´ÉÍı¥¿¥¹¥¯				     */
+/* RS232C ãƒ‡ãƒã‚¤ã‚¹ç®¡ç†ã‚¿ã‚¹ã‚¯				     */
 /* --------------------------------------------------------- */
 extern void rs232c_task(void);
 extern void keyboard_task(void);

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -19,7 +19,7 @@ Version 2, June 1991
 
 #include "itron_module.h"
 
-/* LOWLIB ��Ϣ�Υ����ƥॳ����
+/* LOWLIB 関連のシステムコール
  */
 #define LOD_LOW		(3)
 #define ULD_LOW		(4)
@@ -34,32 +34,32 @@ struct lowlib_info
 
   ER			(*start)(VP stack_top);
   ER			(*quit)(void);
-  ER			(*intr_func)(W signo, VP arg);	/* �����߽����ؿ� */
+  ER			(*intr_func)(W signo, VP arg);	/* 割り込み処理関数 */
 };
 
 #define MAX_DPATH 255
 
 struct lowlib_data
 {
-  ID	recv_port;	/* POSIX �ޥ͡�����ؤ��׵�����������դ��ѥݡ��� */
+  ID	recv_port;	/* POSIX マネージャへの要求の返答受け付け用ポート */
 
-  ID	my_pid;		/* POSIX �ץ����� ID */
+  ID	my_pid;		/* POSIX プロセス ID */
 
-  ID	main_task;	/* �桼���ץ������Υ����ɤ�¹Ԥ��륿���� */
-  ID	signal_task;	/* �����ʥ�μ���������Ԥ������� */
-  ID	fifo_task;	/* �ѥ��פ�Ȥ��Ȥ��˻��Ѥ��륿���� */
-  ID	alarm_task;	/* alarm �����ƥॳ�����ѤΥ�����(POSIX �Ķ���) */
+  ID	main_task;	/* ユーザプログラムのコードを実行するタスク */
+  ID	signal_task;	/* シグナルの受信処理を行うタスク */
+  ID	fifo_task;	/* パイプを使うときに使用するタスク */
+  ID	alarm_task;	/* alarm システムコール用のタスク(POSIX 環境用) */
   
-  FP	start_func;	/* �ץ������Υ����������� */
+  FP	start_func;	/* プロセスのスタート番地 */
 
-  ID	efile;		/* �¹ԥե������ؤ��Ƥ����å������ݡ��� 
-			 * ���������Υڡ�������ΤȤ��˻��Ѥ��롣
+  ID	efile;		/* 実行ファイルを指しているメッセージポート 
+			 * コード部のページインのときに使用する。
 			 */
 
-  W	errno;		/* ���顼�ֹ浭Ͽ�� */
+  W	errno;		/* エラー番号記録用 */
 
-  B	dpath[MAX_DPATH+1]; /* �����ȥǥ��쥯�ȥ�̾ */
-  W	dpath_len;	/* �ǥ��쥯�ȥ�̾��Ĺ�� */
+  B	dpath[MAX_DPATH+1]; /* カレントディレクトリ名 */
+  W	dpath_len;	/* ディレクトリ名の長さ */
 
 };
 

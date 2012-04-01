@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -10,7 +10,7 @@ Version 2, June 1991
 (C) 2001-2002, Tomohide Naniwa
 
 */
-/* sfs_fs.h - SFS ¤Î¤¿¤á¤ÎÄêµÁ
+/* sfs_fs.h - SFS ã®ãŸã‚ã®å®šç¾©
  *
  *
  * $Log: sfs_fs.h,v $
@@ -18,36 +18,36 @@ Version 2, June 1991
  * sfs ver 1.1
  *
  * Revision 1.10  1997/07/03 14:24:36  night
- * mountroot/open ½èÍı¤Î¥Ğ¥°¤ò½¤Àµ¡£
+ * mountroot/open å‡¦ç†ã®ãƒã‚°ã‚’ä¿®æ­£ã€‚
  *
  * Revision 1.9  1996/11/18  13:46:11  night
- * ¥Õ¥¡¥¤¥ë¤ÎÃæ¿È¤òºîÀ®¡£
+ * ãƒ•ã‚¡ã‚¤ãƒ«ã®ä¸­èº«ã‚’ä½œæˆã€‚
  *
  * Revision 1.8  1996/11/16  12:54:47  night
- * SFS_FMT_REG¡¢SFS_FMT_DIR¡¢SFS_FMT_DEV ¥Ş¥¯¥í¤ÎÃÍ¤òÊÑ¹¹¤·¤¿¡£
+ * SFS_FMT_REGã€SFS_FMT_DIRã€SFS_FMT_DEV ãƒã‚¯ãƒ­ã®å€¤ã‚’å¤‰æ›´ã—ãŸã€‚
  *
  * Revision 1.7  1996/11/14  13:18:33  night
- * Æó½Å´ÖÀÜ¥Ö¥í¥Ã¥¯¤Î¤¿¤á¤ÎÄêµÁ¤òÄÉ²Ã¡£
+ * äºŒé‡é–“æ¥ãƒ–ãƒ­ãƒƒã‚¯ã®ãŸã‚ã®å®šç¾©ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.6  1996/11/13  12:54:00  night
- * sfs_inode ¹½Â¤ÂÎ¤Î·Á¼°¤ÎÊÑ¹¹¡£
+ * sfs_inode æ§‹é€ ä½“ã®å½¢å¼ã®å¤‰æ›´ã€‚
  *
  * Revision 1.5  1996/11/12  11:32:25  night
- * SFS_DIRECT_BLOCK_ENTRY ¥Ş¥¯¥í¤ÎÃÍ¤ò 100 ¤«¤é 53 ¤ËÊÑ¹¹¤·¤¿¡£
- * (sfs_inode ¹½Â¤ÂÎ¤ÎÂç¤­¤µ¤ò 256 ¥Ğ¥¤¥È¤Ë¹ç¤ï¤»¤ë¤¿¤á)
+ * SFS_DIRECT_BLOCK_ENTRY ãƒã‚¯ãƒ­ã®å€¤ã‚’ 100 ã‹ã‚‰ 53 ã«å¤‰æ›´ã—ãŸã€‚
+ * (sfs_inode æ§‹é€ ä½“ã®å¤§ãã•ã‚’ 256 ãƒã‚¤ãƒˆã«åˆã‚ã›ã‚‹ãŸã‚)
  *
  * Revision 1.4  1996/11/10  11:56:20  night
- * sfs_inode ¹½Â¤ÂÎ¤Ë¥Ö¥í¥Ã¥¯´ÉÍıÍÑ¤ÎÎÎ°è¤òÄÉ²Ã¡£
- * (sfs_i_direct Í×ÁÇ)
+ * sfs_inode æ§‹é€ ä½“ã«ãƒ–ãƒ­ãƒƒã‚¯ç®¡ç†ç”¨ã®é ˜åŸŸã‚’è¿½åŠ ã€‚
+ * (sfs_i_direct è¦ç´ )
  *
  * Revision 1.3  1996/11/08  11:06:18  night
- * SFS ¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥à¤Î³Æ¼ï¹½Â¤ÂÎ¤òÄêµÁ¤·¤¿¡£
+ * SFS ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ ã®å„ç¨®æ§‹é€ ä½“ã‚’å®šç¾©ã—ãŸã€‚
  *
  * Revision 1.2  1996/11/07  21:12:15  night
- * Ê¸»ú¥³¡¼¥É¤ò EUC ¤ËÊÑ¹¹¤·¤¿¡£
+ * æ–‡å­—ã‚³ãƒ¼ãƒ‰ã‚’ EUC ã«å¤‰æ›´ã—ãŸã€‚
  *
  * Revision 1.1  1996/11/07  12:50:56  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  */
 
@@ -83,7 +83,7 @@ struct sfs_superblock
   H	sfs_version_hi;
   H	sfs_version_lo;
   UW	sfs_mountcount;
-  H	sfs_blocksize;		/* ¥Ö¥í¥Ã¥¯¥µ¥¤¥º */
+  H	sfs_blocksize;		/* ãƒ–ãƒ­ãƒƒã‚¯ã‚µã‚¤ã‚º */
 
   UW	sfs_nblock;
   UW	sfs_freeblock;
@@ -93,20 +93,20 @@ struct sfs_superblock
   UW	sfs_ninode;
   UW	sfs_freeinode;
 
-  UW	sfs_isearch;		/* ¤³¤ÎÈÖ¹æ°Ê²¼¤Î inode ¤Ï»ÈÍÑÃæ */
-  UW	sfs_bsearch;		/* ¤³¤ÎÈÖ¹æ°Ê²¼¤Î block ¤Ï»ÈÍÑÃæ */
+  UW	sfs_isearch;		/* ã“ã®ç•ªå·ä»¥ä¸‹ã® inode ã¯ä½¿ç”¨ä¸­ */
+  UW	sfs_bsearch;		/* ã“ã®ç•ªå·ä»¥ä¸‹ã® block ã¯ä½¿ç”¨ä¸­ */
 
-  UW	sfs_datablock;		/* ¥Ç¡¼¥¿ÎÎ°è¤Î³«»Ï°ÌÃÖ¡£
-				 * inode ¤Ï¡¢¥¹¡¼¥Ñ¡¼¥Ö
-				 * ¥í¥Ã¥¯¤ÎÄ¾¸å¤Ë¤Ê¤ë¤Î¤Ç¡¢
-				 * ÆÃ¤Ëµ­Ï¿¤·¤Ê¤¤¡£*/
+  UW	sfs_datablock;		/* ãƒ‡ãƒ¼ã‚¿é ˜åŸŸã®é–‹å§‹ä½ç½®ã€‚
+				 * inode ã¯ã€ã‚¹ãƒ¼ãƒ‘ãƒ¼ãƒ–
+				 * ãƒ­ãƒƒã‚¯ã®ç›´å¾Œã«ãªã‚‹ã®ã§ã€
+				 * ç‰¹ã«è¨˜éŒ²ã—ãªã„ã€‚*/
 };
 
 
 
 struct sfs_inode
 {
-  UW	sfs_i_index;	/* SFS ¤Î¾ì¹ç¡¢inode ¤Ï 1 ¤«¤é¤Ï¤¸¤Ş¤ë */
+  UW	sfs_i_index;	/* SFS ã®å ´åˆã€inode ã¯ 1 ã‹ã‚‰ã¯ã˜ã¾ã‚‹ */
   UW	sfs_i_nlink;
   UW	sfs_i_size;
   UW	sfs_i_size_blk;
@@ -135,7 +135,7 @@ struct sfs_indirect
 
 struct sfs_dir
 {
-  UW	sfs_d_index;		/* inode ÈÖ¹æ */
+  UW	sfs_d_index;		/* inode ç•ªå· */
   B	sfs_d_name[SFS_MAXNAMELEN];
   B	pad[2];			/* padding */
 };

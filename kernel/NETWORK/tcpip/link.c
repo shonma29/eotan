@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -16,41 +16,41 @@ static char rcs[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/
 /* 
  * $Log: link.c,v $
  * Revision 1.2  1997/05/08 15:10:06  night
- * �ե��������ʸ�������ɤ� SJIS ���� EUC ���ѹ�������
+ * ファイル内の文字コードを SJIS から EUC に変更した。
  *
  * Revision 1.1  1997/05/06 12:46:22  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  *
  */
 
-/* �ͥåȥ���Υ����
+/* ネットワークのリンク層
  *
- * �ɥ饤�ФȤΥǡ����Τ��Ȥ��Ԥ���
- * �ޤ���arp/rarp �ѥ��åȤν�����Ԥ���
+ * ドライバとのデータのやりとりを行う。
+ * また、arp/rarp パケットの処理も行う。
  *
  */
 
 #include "tcpip.h"
 
 
-/* ����ؤν����
+/* リンク層の初期化
  */
 ER
 init_link ()
 {
-  /* ����ؤΤ�ĥ��塼����������
+  /* リンク層のもつキューを初期化する
    */
   
-  /* ����� task ������
+  /* リンク用 task の生成
    */
 
   return (E_OK);
 }
 
 
-/* driver_name �ǻ��ꤵ�줿�ͥåȥ���ɥ饤�Ф�
- * TCP/IP �ǻȤ���褦�ˤ��롣
+/* driver_name で指定されたネットワークドライバを
+ * TCP/IP で使えるようにする。
  */
 ER
 attach_driver (B *driver_name)

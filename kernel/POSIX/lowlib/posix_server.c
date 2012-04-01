@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -12,11 +12,11 @@ Version 2, June 1991
 static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/posix_server.c,v 1.1 1996/11/11 13:36:06 night Exp $";
 
 /*
- * POSIX ╔╣║╪╔п╓хдл©╝╓╧╓К╢ь©Т║ё
+ * POSIX Ц┌╣Ц┐╪Ц┐░Ц│╗И─ Д©║Ц│≥Ц┌▀И√╒Ф∙╟Ц─┌
  *
  * $Log: posix_server.c,v $
  * Revision 1.1  1996/11/11 13:36:06  night
- * IBM PC хг╓ь╓н╨г╫И╓непо©
+ * IBM PC Г┴┬Ц│╦Ц│╝Ф°─Е┬²Ц│╝Г≥╩И▄╡
  *
  * ----------------
  *

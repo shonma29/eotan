@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -15,16 +15,16 @@ static char rcs[] = "@(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc
 
 /* $Log: malloc.c,v $
 /* Revision 1.5  1997/07/02 13:10:32  night
-/* malloc ¤Î½¤Àµ¡£
+/* malloc ã®ä¿®æ­£ã€‚
 /*
  * Revision 1.4  1997/06/29 15:44:32  night
- * ¥³¥á¥ó¥È¤ÎÊÑ¹¹
+ * ã‚³ãƒ¡ãƒ³ãƒˆã®å¤‰æ›´
  *
- * ¡¦´Á»ú¥³¡¼¥É¤ò SJIS ¤«¤é EUC ¤ËÊÑ¹¹¤·¤¿¡£
- * ¡¦RCS ¤Î Log ¥Ş¥¯¥íÆş¤ê¤Î¥³¥á¥ó¥È¤òÄÉ²Ã¤·¤¿(¤Ş¤ÀÆş¤ì¤Æ¤¤¤Ê¤«¤Ã¤¿¥Õ¥¡¥¤¥ë¤Î¤ß)¡£
+ * ãƒ»æ¼¢å­—ã‚³ãƒ¼ãƒ‰ã‚’ SJIS ã‹ã‚‰ EUC ã«å¤‰æ›´ã—ãŸã€‚
+ * ãƒ»RCS ã® Log ãƒã‚¯ãƒ­å…¥ã‚Šã®ã‚³ãƒ¡ãƒ³ãƒˆã‚’è¿½åŠ ã—ãŸ(ã¾ã å…¥ã‚Œã¦ã„ãªã‹ã£ãŸãƒ•ã‚¡ã‚¤ãƒ«ã®ã¿)ã€‚
  *
  * Revision 1.3  1997/06/29 15:33:56  night
- * ¥³¥á¥ó¥È¤Î½¤Àµ (rcs ¤Î Log ¥Ş¥¯¥í¤ÎÄÉ²Ã)
+ * ã‚³ãƒ¡ãƒ³ãƒˆã®ä¿®æ­£ (rcs ã® Log ãƒã‚¯ãƒ­ã®è¿½åŠ )
  *
  *
  */
@@ -44,8 +44,8 @@ struct alloc_entry_t
 {
   struct alloc_entry_t		*next;
   struct alloc_entry_t		*before;
-  UW				size;		/* alloc_data ¤Î¥µ¥¤¥º */
-						/* ¤¬Æş¤ë */
+  UW				size;		/* alloc_data ã®ã‚µã‚¤ã‚º */
+						/* ãŒå…¥ã‚‹ */
   
   B				alloc_data[0];
 };
@@ -58,7 +58,7 @@ static struct alloc_entry_t		*pivot;
 static VP			get_system_memory (UW size);
 
 
-/* malloc µ¡¹½¤Î½é´ü²½
+/* malloc æ©Ÿæ§‹ã®åˆæœŸåŒ–
  *
  */
 ER
@@ -160,7 +160,7 @@ free (VP addr)
   newentry = (struct alloc_entry_t *)((B *)addr - sizeof (struct alloc_entry_t));
   if ((newentry > (struct alloc_entry_t *)last_page) || (newentry < &alloc_list))
     {
-      /* free ¤¹¤ë¥¨¥ó¥È¥ê¤Î¥¢¥É¥ì¥¹¤¬¤ª¤«¤·¤¤ */
+      /* free ã™ã‚‹ã‚¨ãƒ³ãƒˆãƒªã®ã‚¢ãƒ‰ãƒ¬ã‚¹ãŒãŠã‹ã—ã„ */
       return;
     }
 
@@ -176,15 +176,15 @@ free (VP addr)
 
   for (p = start_point; p != start_point->before; p = p->next)
     {
-      /* ¥Õ¥ê¡¼¥ê¥¹¥È¤òÀèÆ¬¤«¤éÃ©¤ê¡¢¥ê¥¹¥È¤ËÁŞÆş¤¹¤ë¥İ¥¤¥ó¥È¤ò·è¤á¤ë */
-      /* ¥Õ¥ê¡¼¥ê¥¹¥È¤Ï¥¢¥É¥ì¥¹½ç¤Ë¤Ê¤Ã¤Æ¤ª¤ê¡¢p ¤Î¥¢¥É¥ì¥¹¤¬ÄÉ²Ã¤¹ */
-      /* ¤ëÎÎ°è¤ÎºÇ¸å¤è¤ê¤âÂç¤­¤¯¤Ê¤Ã¤¿¤é¡¢¤½¤ÎÁ°¤ËÁŞÆş¤¹¤ë¡£*/
+      /* ãƒ•ãƒªãƒ¼ãƒªã‚¹ãƒˆã‚’å…ˆé ­ã‹ã‚‰è¾¿ã‚Šã€ãƒªã‚¹ãƒˆã«æŒ¿å…¥ã™ã‚‹ãƒã‚¤ãƒ³ãƒˆã‚’æ±ºã‚ã‚‹ */
+      /* ãƒ•ãƒªãƒ¼ãƒªã‚¹ãƒˆã¯ã‚¢ãƒ‰ãƒ¬ã‚¹é †ã«ãªã£ã¦ãŠã‚Šã€p ã®ã‚¢ãƒ‰ãƒ¬ã‚¹ãŒè¿½åŠ ã™ */
+      /* ã‚‹é ˜åŸŸã®æœ€å¾Œã‚ˆã‚Šã‚‚å¤§ãããªã£ãŸã‚‰ã€ãã®å‰ã«æŒ¿å…¥ã™ã‚‹ã€‚*/
       if (((p + p->size + sizeof (struct alloc_entry_t)) <= newentry) &&
 	  ((newentry + newentry->size + sizeof (struct alloc_entry_t)) <= p->next) )
 	{
 	  if (((UW)p + p->size + sizeof (struct alloc_entry_t)) == (UW)newentry)
 	    {
-	      /* ¸½ºß¤Î¥¨¥ó¥È¥ê¤ÈÎÙ¤ê¹ç¤Ã¤Æ¤¤¤ë
+	      /* ç¾åœ¨ã®ã‚¨ãƒ³ãƒˆãƒªã¨éš£ã‚Šåˆã£ã¦ã„ã‚‹
 	       */
 	      p->size += (newentry->size + sizeof (struct alloc_entry_t));
 	      if (((UW)p + p->size + sizeof (struct alloc_entry_t)) == (UW)p->next)
@@ -197,7 +197,7 @@ free (VP addr)
 	    }
 	  else if ((((UW)newentry) + newentry->size + sizeof (struct alloc_entry_t)) == (UW)(p->next))
 	    {
-	      /* ¼¡¤Î¥¨¥ó¥È¥ê¤ÈÎÙ¤ê¹ç¤Ã¤Æ¤¤¤ë
+	      /* æ¬¡ã®ã‚¨ãƒ³ãƒˆãƒªã¨éš£ã‚Šåˆã£ã¦ã„ã‚‹
 	       */
 	      newentry->size += (p->next->size + sizeof (struct alloc_entry_t));
 	      newentry->before = p;
@@ -207,8 +207,8 @@ free (VP addr)
 	    }
 	  else
 	    {
-	      /* Á°¸å¤Î¥¨¥ó¥È¥ê¤È¤Ï¤É¤Á¤é¤È¤âÎÙ¤ê¹ç¤Ã¤Æ¤¤¤Ê¤¤ -
-	       * Ã±¤Ë¥ê¥¹¥È¤Ë¤Ä¤Ê¤²¤ë
+	      /* å‰å¾Œã®ã‚¨ãƒ³ãƒˆãƒªã¨ã¯ã©ã¡ã‚‰ã¨ã‚‚éš£ã‚Šåˆã£ã¦ã„ãªã„ -
+	       * å˜ã«ãƒªã‚¹ãƒˆã«ã¤ãªã’ã‚‹
 	       */
 	      newentry->before = p;
 	      newentry->next = p->next;
@@ -220,8 +220,8 @@ free (VP addr)
       else if ((((UW)p + p->size + sizeof (struct alloc_entry_t)) <= (UW)newentry) &&
 	       (p > p->next))
 	{
-	  /* ¥ê¥¹¥È¤ÎºÇ¹â°Ì¤Î¥¢¥É¥ì¥¹¤Ş¤ÇÆÏ¤¤¤¿
-	   * ¥ê¥¹¥È¤ÎºÇ¸å¤ËÄÉ²Ã¤¹¤ë
+	  /* ãƒªã‚¹ãƒˆã®æœ€é«˜ä½ã®ã‚¢ãƒ‰ãƒ¬ã‚¹ã¾ã§å±Šã„ãŸ
+	   * ãƒªã‚¹ãƒˆã®æœ€å¾Œã«è¿½åŠ ã™ã‚‹
 	   */
 	  newentry->before = p;
 	  newentry->next = p->next;
@@ -230,7 +230,7 @@ free (VP addr)
 	  return;
 	}
     }
-  /* ³ºÅö¤¹¤ëÉôÊ¬¤¬¤Ê¤«¤Ã¤¿
+  /* è©²å½“ã™ã‚‹éƒ¨åˆ†ãŒãªã‹ã£ãŸ
    */
   
 }

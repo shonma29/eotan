@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -13,23 +13,23 @@ Version 2, June 1991
 /* 
  * $Log: global.h,v $
  * Revision 1.5  1999/03/07 12:43:24  night
- * ��������ѿ����ɲá�
+ * 次の大域変数を追加。
  * read_buffer[MAX_MTU_LENGTH];
  * read_buffer_length;
  *
  * Revision 1.4  1999/03/02 15:14:29  night
- * ����ѿ� max_adaptor �ˤĤ��Ƥ�������ɲá�
+ * 大域変数 max_adaptor についての定義を追加。
  *
  * extern int			max_adaptor;
  *
  * Revision 1.3  1997/10/28 12:44:17  night
- * dev_table ��������ɲá�
+ * dev_table の定義の追加。
  *
  * Revision 1.2  1997/05/17 10:41:15  night
- * �ե������ʸ�������ɤ� SJIS ���� EUC ���ѹ���
+ * ファイルの文字コードを SJIS から EUC に変更。
  *
  * Revision 1.1  1997/05/06 12:43:30  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  *
  */

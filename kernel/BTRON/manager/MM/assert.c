@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -16,10 +16,10 @@ static char rcs[] = "@(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc
 /*
  * $Log: assert.c,v $
  * Revision 1.2  1997/06/29 15:44:29  night
- * �����Ȥ��ѹ�
+ * コメントの変更
  *
- * �����������ɤ� SJIS ���� EUC ���ѹ�������
- * ��RCS �� Log �ޥ�������Υ����Ȥ��ɲä���(�ޤ�����Ƥ��ʤ��ä��ե�����Τ�)��
+ * ・漢字コードを SJIS から EUC に変更した。
+ * ・RCS の Log マクロ入りのコメントを追加した(まだ入れていなかったファイルのみ)。
  *
  *
  */
@@ -29,11 +29,11 @@ static char rcs[] = "@(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc
 
 
 
-/* ASSERT �ޥ������ƤӽФ��ؿ� */
+/* ASSERT マクロが呼び出す関数 */
 
-/* __assert__ - ASSERT �ޥ����ˤ�äƸƤӽФ����ؿ�
+/* __assert__ - ASSERT マクロによって呼び出される関数
  *
- * ��å���������Ϥ����ץ�������λ���롣
+ * メッセージを出力し、プログラムを終了する。
  *
  */ 
 void

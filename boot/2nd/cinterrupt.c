@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -28,25 +28,25 @@ Version 2, June 1991
  * *** empty log message ***
  *
  * Revision 1.5  1996/07/30 18:22:40  night
- * IDE HD �Ѥν������������ӳ����߽������ɲá�
+ * IDE HD 用の初期化処理および割り込み処理を追加。
  *
  * Revision 1.4  1996/07/23  17:04:54  night
- * ���󥿡��Х륿�����Ѥγ����߽������ɲá�
+ * インターバルタイマ用の割り込み処理を追加。
  *
  * Revision 1.3  1996/07/06  17:33:08  night
- * �ǥХå��Ѥ� printf ����
+ * デバッグ用の printf を削除
  *
  * Revision 1.2  1996/07/06  13:07:34  night
- * �����ߥ���ȥ�����Υ⡼�ɥӥå����� PC �ߴ����Ѥ��ѹ���
+ * 割り込みコントローラのモードビット等を PC 互換機用に変更。
  *
  * Revision 1.1  1996/05/11  10:44:59  night
- * 2nd boot (IBM-PC �� B-FREE OS) �Υ�������
+ * 2nd boot (IBM-PC 版 B-FREE OS) のソース。
  *
  * Revision 1.3  1995/09/21 15:50:35  night
- * �������ե��������Ƭ�� Copyright notice ������ɲá�
+ * ソースファイルの先頭に Copyright notice 情報を追加。
  *
  * Revision 1.2  1994/07/30  17:37:13  night
- * �ե�����������ܸ�ʸ���򤹤٤� EUC �����ɤ��ѹ���
+ * ファイル中の日本語文字をすべて EUC コードに変更。
  *
  * Revision 1.1  1993/10/11  21:28:38  btron
  * btron/386
@@ -110,7 +110,7 @@ reset_intr_mask (int intn)
 }    
 
 /***************************************************************************
- * interrupt --- ���������ߤν���
+ * interrupt --- 外部割り込みの処理
  */
 void
 interrupt (int intn)

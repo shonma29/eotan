@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -10,7 +10,7 @@ Version 2, June 1991
 (C) 2001-2002, Tomohide Naniwa
 
 */
-/* sfs_file.c - SFS ¤Î¥Õ¥¡¥¤¥ë¤Ë´Ø¤¹¤ë½èÍı¤ò¹Ô¤¦¡£
+/* sfs_file.c - SFS ã®ãƒ•ã‚¡ã‚¤ãƒ«ã«é–¢ã™ã‚‹å‡¦ç†ã‚’è¡Œã†ã€‚
  *
  * $Log: sfs_file.c,v $
  * Revision 1.30  2000/07/02 04:14:23  naniwa
@@ -56,11 +56,11 @@ Version 2, June 1991
  * sfs ver 1.1
  *
  * Revision 1.16  1999/05/12 17:19:08  night
- * sfs_i_create() ¤ÎÃæ¿È¤òºîÀ®¡£
+ * sfs_i_create() ã®ä¸­èº«ã‚’ä½œæˆã€‚
  *
  * Revision 1.15  1999/05/10 16:07:07  night
- * alloca ¤ò»È¤Ã¤Æ°ì»ş¥Ğ¥Ã¥Õ¥¡¤ÎÎÎ°è¤ò³ÎÊİ¤·¤Æ¤¤¤ë½èÍı¤ò¡¢alloca ¤ÎÂå¤ï¤ê
- * ¤ËÆ°Åª¤ÊÇÛÎó³ÎÊİ (GCC ¤Î³ÈÄ¥µ¡Ç½) ¤ò»È¤¦¤è¤¦¤ËÊÑ¹¹¡£
+ * alloca ã‚’ä½¿ã£ã¦ä¸€æ™‚ãƒãƒƒãƒ•ã‚¡ã®é ˜åŸŸã‚’ç¢ºä¿ã—ã¦ã„ã‚‹å‡¦ç†ã‚’ã€alloca ã®ä»£ã‚ã‚Š
+ * ã«å‹•çš„ãªé…åˆ—ç¢ºä¿ (GCC ã®æ‹¡å¼µæ©Ÿèƒ½) ã‚’ä½¿ã†ã‚ˆã†ã«å¤‰æ›´ã€‚
  *
  * Revision 1.14  1999/04/13 04:15:27  monaka
  * MAJOR FIXcvs commit -m 'MAJOR FIX!!! There are so many changes, modifys, fixes. Sorry but I can't remember all of those. For example, all the manager and driver programmer have got power to access all ITRON systemcall. (My works is just making access route to ITRON. I don't know what happens in the nuclus.'! There are so many changes, modifys, fixes. Sorry but I can't remember all of those. For example, all the manager and driver programmer have got power to access all ITRON systemcall. (My works is just making access route to ITRON. I don't know what happens in the nuclus.
@@ -69,44 +69,44 @@ Version 2, June 1991
  * Source file cleaning for avoid warnings.
  *
  * Revision 1.12  1997/10/11 16:25:21  night
- * ¥Õ¥¡¥¤¥ë¤Î write ½èÍı¤Î½¤Àµ¡£
+ * ãƒ•ã‚¡ã‚¤ãƒ«ã® write å‡¦ç†ã®ä¿®æ­£ã€‚
  *
  * Revision 1.11  1997/09/23 13:54:29  night
- * ¥Ç¥Ğ¥Ã¥°Ê¸¤ÎÄÉ²Ã¡£
+ * ãƒ‡ãƒãƒƒã‚°æ–‡ã®è¿½åŠ ã€‚
  *
  * Revision 1.10  1997/09/09 13:51:01  night
- * POSIX ¤Î¥Õ¥¡¥¤¥ë¤Ø¤Î½ñ¤­¹ş¤ß½èÍı(¥·¥¹¥Æ¥à¥³¡¼¥ë¤Ï¡¢write) ¤òÄÉ²Ã¡£
+ * POSIX ã®ãƒ•ã‚¡ã‚¤ãƒ«ã¸ã®æ›¸ãè¾¼ã¿å‡¦ç†(ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«ã¯ã€write) ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.9  1997/08/31 13:36:25  night
- * ¥Õ¥¡¥¤¥ë¤Î sync »ş¡¢¥Õ¥¡¥¤¥ë¤¬½ñ¤­´¹¤¨¤é¤ì¤Æ¤¤¤¿»ş¤Î¤ßÃæ¿È¤ò½ñ¤­½Ğ¤¹¤è¤¦¤Ë
- * ½èÍı¤òÊÑ¹¹¤·¤¿¡£
- * °ÊÁ°¤Ï¡¢¾ï¤Ë¥Õ¥¡¥¤¥ë¤ÎÃæ¿È¤ò½ñ¤­¹ş¤à¤è¤¦¤Ë¤·¤Æ¤¤¤¿¡£
+ * ãƒ•ã‚¡ã‚¤ãƒ«ã® sync æ™‚ã€ãƒ•ã‚¡ã‚¤ãƒ«ãŒæ›¸ãæ›ãˆã‚‰ã‚Œã¦ã„ãŸæ™‚ã®ã¿ä¸­èº«ã‚’æ›¸ãå‡ºã™ã‚ˆã†ã«
+ * å‡¦ç†ã‚’å¤‰æ›´ã—ãŸã€‚
+ * ä»¥å‰ã¯ã€å¸¸ã«ãƒ•ã‚¡ã‚¤ãƒ«ã®ä¸­èº«ã‚’æ›¸ãè¾¼ã‚€ã‚ˆã†ã«ã—ã¦ã„ãŸã€‚
  *
  * Revision 1.8  1997/07/07 14:42:31  night
- * sfs_i_close ¼Â¹Ô»ş¤Ë EP_OK ¤òÊÖ¤¹¤è¤¦¤Ë½¤Àµ¡£
- * (¤¿¤À¤·¡¢½èÍı¤È¤·¤Æ¤Ï²¿¤â¤·¤Æ¤¤¤Ê¤¤)
+ * sfs_i_close å®Ÿè¡Œæ™‚ã« EP_OK ã‚’è¿”ã™ã‚ˆã†ã«ä¿®æ­£ã€‚
+ * (ãŸã ã—ã€å‡¦ç†ã¨ã—ã¦ã¯ä½•ã‚‚ã—ã¦ã„ãªã„)
  *
  * Revision 1.7  1997/07/07 12:18:04  night
- * sfs_i_sync ´Ø¿ô¤ÎÃæ¿È¤òÄÉ²Ã¡£
+ * sfs_i_sync é–¢æ•°ã®ä¸­èº«ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.6  1997/07/04 15:07:41  night
- * ¡¦¥¹¥Ú¥·¥ã¥ë¥Õ¥¡¥¤¥ë - ¥Ç¥Ğ¥¤¥¹¥É¥é¥¤¥Ğ¥İ¡¼¥È¤ÎÂĞ±şÉ½¤Î´ØÏ¢½èÍı¤ÎÄÉ²Ã¡£
- * ¡¦¥Õ¥¡¥¤¥ë¤ÎÆÉ¤ß¹ş¤ß½èÍı¤Î²şÄû¡£
+ * ãƒ»ã‚¹ãƒšã‚·ãƒ£ãƒ«ãƒ•ã‚¡ã‚¤ãƒ« - ãƒ‡ãƒã‚¤ã‚¹ãƒ‰ãƒ©ã‚¤ãƒãƒãƒ¼ãƒˆã®å¯¾å¿œè¡¨ã®é–¢é€£å‡¦ç†ã®è¿½åŠ ã€‚
+ * ãƒ»ãƒ•ã‚¡ã‚¤ãƒ«ã®èª­ã¿è¾¼ã¿å‡¦ç†ã®æ”¹è¨‚ã€‚
  *
  * Revision 1.5  1997/07/03 14:24:35  night
- * mountroot/open ½èÍı¤Î¥Ğ¥°¤ò½¤Àµ¡£
+ * mountroot/open å‡¦ç†ã®ãƒã‚°ã‚’ä¿®æ­£ã€‚
  *
  * Revision 1.4  1996/11/27 15:42:53  night
- * Ãæ¿È¤¬¤Ş¤À¤Ê¤¤´Ø¿ô¤Ë¤Ä¤¤¤Æ EP_NOSUP ¤òÊÖ¤¹¤è¤¦¤Ë½¤Àµ¤·¤¿¡£
+ * ä¸­èº«ãŒã¾ã ãªã„é–¢æ•°ã«ã¤ã„ã¦ EP_NOSUP ã‚’è¿”ã™ã‚ˆã†ã«ä¿®æ­£ã—ãŸã€‚
  *
  * Revision 1.3  1996/11/20 12:13:19  night
- * ºÙ¡¹¤È¤·¤¿½¤Àµ¡£
+ * ç´°ã€…ã¨ã—ãŸä¿®æ­£ã€‚
  *
  * Revision 1.2  1996/11/18  13:46:11  night
- * ¥Õ¥¡¥¤¥ë¤ÎÃæ¿È¤òºîÀ®¡£
+ * ãƒ•ã‚¡ã‚¤ãƒ«ã®ä¸­èº«ã‚’ä½œæˆã€‚
  *
  * Revision 1.1  1996/11/17  14:52:57  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  */
@@ -128,10 +128,10 @@ extern W strcmp(B *, B *);
 
 
 
-/* sfs_i_lookup - ¥Õ¥¡¥¤¥ë¤ÎÃµº÷
+/* sfs_i_lookup - ãƒ•ã‚¡ã‚¤ãƒ«ã®æ¢ç´¢
  *
- * °ú¿ô parent (¿Æ¥Ç¥£¥ì¥¯¥È¥ê) ¤Î»Ø¤¹¥Ç¥£¥ì¥¯¥È¥ê¤«¤é¥Õ¥¡¥¤¥ë¤ò
- * Ãµº÷¤¹¤ë¡£
+ * å¼•æ•° parent (è¦ªãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª) ã®æŒ‡ã™ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‹ã‚‰ãƒ•ã‚¡ã‚¤ãƒ«ã‚’
+ * æ¢ç´¢ã™ã‚‹ã€‚
  *
  */
 W
@@ -171,13 +171,13 @@ sfs_i_lookup(struct inode *parent,
     {
 #ifdef notdef
 	struct sfs_dir dirp[sizeof(struct sfs_dir) * nentry];
-	/* GCC ¤Î³ÈÄ¥µ¡Ç½¤ò»È¤Ã¤Æ¤¤¤ë */
+	/* GCC ã®æ‹¡å¼µæ©Ÿèƒ½ã‚’ä½¿ã£ã¦ã„ã‚‹ */
 #else
 	struct sfs_dir dirp[nentry];
 #endif
 	errno = sfs_read_dir(parent, nentry, dirp);
 	for (i = 0; i < nentry; i++) {
-	    /* É½¼¨Ê¸»úÄ¹¤ò SFS_MAXNAMELEN ¤Ë¤¹¤ë¤¿¤á¡¥¸å¤Ë pad ¤¬¤¢¤ë¤Î¤ÇÂç¾æÉ× */
+	    /* è¡¨ç¤ºæ–‡å­—é•·ã‚’ SFS_MAXNAMELEN ã«ã™ã‚‹ãŸã‚ï¼å¾Œã« pad ãŒã‚ã‚‹ã®ã§å¤§ä¸ˆå¤« */
 	    if ((W) strncmp(fname, dirp[i].sfs_d_name, SFS_MAXNAMELEN + 1)
 		== 0) {
 		break;
@@ -194,7 +194,7 @@ sfs_i_lookup(struct inode *parent,
 
 	*retip = fs_check_inode(parent->i_fs, dirp[i].sfs_d_index);
 	if (*retip) {
-	    /* ¤¹¤Ç¤Ë¥ª¡¼¥×¥ó¤·¤Æ¤¤¤¿¥Õ¥¡¥¤¥ë¤À¤Ã¤¿
+	    /* ã™ã§ã«ã‚ªãƒ¼ãƒ—ãƒ³ã—ã¦ã„ãŸãƒ•ã‚¡ã‚¤ãƒ«ã ã£ãŸ
 	     */
 	    if ((*retip)->coverfile) {
 		*retip = (*retip)->coverfile;
@@ -227,10 +227,10 @@ W sfs_i_close()
 
 
 /*
- * ¥Õ¥¡¥¤¥ë¤òºîÀ®¤¹¤ë¡£
+ * ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ä½œæˆã™ã‚‹ã€‚
  *
- * 1) ¿·¤·¤¤ inode ¤ò¥¢¥í¥±¡¼¥È¡£
- * 2) ¿Æ¥Ç¥£¥ì¥¯¥È¥ê¤Ë¥¢¥í¥±¡¼¥È¤·¤¿¿·¤·¤¤ inode ¤Î¾ğÊó¤òÄÉ²Ã¡£
+ * 1) æ–°ã—ã„ inode ã‚’ã‚¢ãƒ­ã‚±ãƒ¼ãƒˆã€‚
+ * 2) è¦ªãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«ã‚¢ãƒ­ã‚±ãƒ¼ãƒˆã—ãŸæ–°ã—ã„ inode ã®æƒ…å ±ã‚’è¿½åŠ ã€‚
  *
  */
 W
@@ -246,20 +246,20 @@ sfs_i_create(struct inode * parent,
     W i_index;
     UW clock;
 
-    /* °ú¿ô¤Î¥Á¥§¥Ã¥¯ */
+    /* å¼•æ•°ã®ãƒã‚§ãƒƒã‚¯ */
     newip = alloc_inode();
     if (newip == NULL) {
 	return (EP_NOMEM);
     }
     *retip = newip;
 
-    /* ¿·¤·¤¤ sfs_inode ¤ò¥¢¥í¥±¡¼¥È */
+    /* æ–°ã—ã„ sfs_inode ã‚’ã‚¢ãƒ­ã‚±ãƒ¼ãƒˆ */
     i_index = sfs_alloc_inode(parent->i_device, parent->i_fs);
     if (i_index <= 0) {
 	return (EP_NOMEM);
     }
 
-    /* ÀßÄê */
+    /* è¨­å®š */
     clock = get_system_time(NULL);
     newip->i_fs = parent->i_fs;
     newip->i_device = parent->i_device;
@@ -280,20 +280,20 @@ sfs_i_create(struct inode * parent,
 
     fs_register_inode(newip);
 
-    /* ¥Ç¥£¥ì¥¯¥È¥ê¤Î¥¨¥ó¥È¥ê¤òºîÀ® */
+    /* ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®ã‚¨ãƒ³ãƒˆãƒªã‚’ä½œæˆ */
     dirent.sfs_d_index = newip->i_index;
-    /* É½¼¨Ê¸»úÄ¹¤ò SFS_MAXNAMELEN ¤Ë¤¹¤ë¤¿¤á¡¥¸å¤Ë pad ¤¬¤¢¤ë¤Î¤ÇÂç¾æÉ× */
+    /* è¡¨ç¤ºæ–‡å­—é•·ã‚’ SFS_MAXNAMELEN ã«ã™ã‚‹ãŸã‚ï¼å¾Œã« pad ãŒã‚ã‚‹ã®ã§å¤§ä¸ˆå¤« */
     strncpy(dirent.sfs_d_name, fname, SFS_MAXNAMELEN + 1);
 
-    /* ¥Ç¥£¥ì¥¯¥È¥ê¤Ë¥¨¥ó¥È¥ê¤òÄÉ²Ã */
+    /* ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«ã‚¨ãƒ³ãƒˆãƒªã‚’è¿½åŠ  */
     dirnentry = sfs_read_dir(parent, 0, NULL);
     errno = sfs_write_dir(parent, dirnentry, &dirent);
     if (errno != EP_OK) {
 	return (errno);
     }
 
-    /* inode ¾ğÊó¤Î¹¹¿· */
-    /* ËÜÍè¤Ï inode ¤Î deallocate ¤Î¤È¤³¤í¤Ç¹Ô¤¦½èÍı¤Î¤Ï¤º */
+    /* inode æƒ…å ±ã®æ›´æ–° */
+    /* æœ¬æ¥ã¯ inode ã® deallocate ã®ã¨ã“ã‚ã§è¡Œã†å‡¦ç†ã®ã¯ãš */
     errno = sfs_i_sync(newip);
     if (errno != EP_OK) {
 	return (errno);
@@ -309,7 +309,7 @@ sfs_i_create(struct inode * parent,
 W sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
 {
 #ifdef notdef
-    B blockbuf[ip->i_fs->fs_private.sfs_fs.sfs_blocksize];	/* GCC ¤Î³ÈÄ¥µ¡Ç½¤ò»È¤Ã¤Æ¤¤¤ë */
+    B blockbuf[ip->i_fs->fs_private.sfs_fs.sfs_blocksize];	/* GCC ã®æ‹¡å¼µæ©Ÿèƒ½ã‚’ä½¿ã£ã¦ã„ã‚‹ */
 #endif
     W copysize;
     W offset;
@@ -381,7 +381,7 @@ W sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
 W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 {
 #ifdef notdef
-    B blockbuf[ip->i_fs->fs_private.sfs_fs.sfs_blocksize];	/* GCC ¤Î³ÈÄ¥µ¡Ç½¤ò»È¤Ã¤Æ¤¤¤ë */
+    B blockbuf[ip->i_fs->fs_private.sfs_fs.sfs_blocksize];	/* GCC ã®æ‹¡å¼µæ©Ÿèƒ½ã‚’ä½¿ã£ã¦ã„ã‚‹ */
 #endif
     int copysize;
     int offset;
@@ -413,7 +413,7 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 
 	if ((bn = sfs_get_block_num(fd, fsp, &(ip->i_private.sfs_inode),
 				    start / fsp->fs_blksize)) <= 0) {
-	    /* ¥Õ¥¡¥¤¥ë¥µ¥¤¥º¤ò±Û¤¨¤Æ½ñ¤­¹ş¤à¾ì¹ç¤Ë¤Ï¡¢¿·¤·¤¯¥Ö¥í¥Ã¥¯¤ò¥¢¥í¥±¡¼¥È¤¹¤ë
+	    /* ãƒ•ã‚¡ã‚¤ãƒ«ã‚µã‚¤ã‚ºã‚’è¶Šãˆã¦æ›¸ãè¾¼ã‚€å ´åˆã«ã¯ã€æ–°ã—ããƒ–ãƒ­ãƒƒã‚¯ã‚’ã‚¢ãƒ­ã‚±ãƒ¼ãƒˆã™ã‚‹
 	     */
 	    bn = sfs_set_block_num(fd, fsp, &(ip->i_private.sfs_inode),
 				   start / fsp->fs_blksize,
@@ -437,7 +437,7 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 #endif
 	}
 
-	/* ÆÉ¤ß¹ş¤ó¤À¥Ö¥í¥Ã¥¯¤ÎÆâÍÆ¤ò¹¹¿·¤¹¤ë
+	/* èª­ã¿è¾¼ã‚“ã ãƒ–ãƒ­ãƒƒã‚¯ã®å†…å®¹ã‚’æ›´æ–°ã™ã‚‹
 	 */
 	offset = start % fsp->fs_blksize;
 	copysize = MIN(fsp->fs_blksize - offset, size);
@@ -469,7 +469,7 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 				 start / fsp->fs_blksize));	/* */
 #endif
 
-	/* ¹¹¿·¤·¤¿¥Ö¥í¥Ã¥¯¤ò½ñ¤­¹ş¤à
+	/* æ›´æ–°ã—ãŸãƒ–ãƒ­ãƒƒã‚¯ã‚’æ›¸ãè¾¼ã‚€
 	 */
 #ifdef notdef
 	bn = sfs_get_block_num(fd, fsp, &(ip->i_private.sfs_inode),
@@ -487,11 +487,11 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 	size -= copysize;
     }
 
-    /* cache ¤Î sync ¤ò¤³¤³¤Ç¹Ô¤¦É¬Í×¤Ï¤¢¤ë¤«? */
+    /* cache ã® sync ã‚’ã“ã“ã§è¡Œã†å¿…è¦ã¯ã‚ã‚‹ã‹? */
     sfs_sync_cache(fd, 0);
 
-    /* ¤â¤·¡¢½ñ¤­¹ş¤ß¤ò¤ª¤³¤Ê¤Ã¤¿¸å¤Ë¥Õ¥¡¥¤¥ë¤Î¥µ¥¤¥º¤¬Áı¤¨¤Æ¤¤¤ì¤Ğ¡¢
-     * ¥µ¥¤¥º¤ò¹¹¿·¤·¤Æ inode ¤ò½ñ¤­¹ş¤à¡£
+    /* ã‚‚ã—ã€æ›¸ãè¾¼ã¿ã‚’ãŠã“ãªã£ãŸå¾Œã«ãƒ•ã‚¡ã‚¤ãƒ«ã®ã‚µã‚¤ã‚ºãŒå¢—ãˆã¦ã„ã‚Œã°ã€
+     * ã‚µã‚¤ã‚ºã‚’æ›´æ–°ã—ã¦ inode ã‚’æ›¸ãè¾¼ã‚€ã€‚
      */
     if (filesize > ip->i_size) {
         UW clock = get_system_time(NULL);
@@ -501,12 +501,12 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 	ip->i_mtime = clock;
 	ip->i_ctime = clock;
 	ip->i_dirty = 1;
-	/* ¤³¤ì¤Ï deallocate ¤ÎÃæ¤Ç½èÍı¤¹¤ë¤Î¤¬ÉáÄÌ */
+	/* ã“ã‚Œã¯ deallocate ã®ä¸­ã§å‡¦ç†ã™ã‚‹ã®ãŒæ™®é€š */
 	sfs_i_sync(ip);
     }
 #ifdef notdef
     else if (filesize < ip->i_size) {
-	/* FILE ¤ÎÀÚ¤êµÍ¤á¤Ï O_TRUNC ¤È´ØÏ¢¤·¤Æ¼Â¹Ô¤µ¤ì¤ë¤Ù¤­ */
+	/* FILE ã®åˆ‡ã‚Šè©°ã‚ã¯ O_TRUNC ã¨é–¢é€£ã—ã¦å®Ÿè¡Œã•ã‚Œã‚‹ã¹ã */
 	sfs_i_truncate(ip, filesize);
     }
 #endif
@@ -541,10 +541,10 @@ W sfs_i_truncate(struct inode * ip, W newsize)
     sfs_ip = &(ip->i_private.sfs_inode);
     nblock = ROUNDUP(newsize, fsp->fs_blksize) / fsp->fs_blksize;
     if (nblock < sfs_ip->sfs_i_size_blk) {
-	/* Í¾Ê¬¤Ê¥Ö¥í¥Ã¥¯¤ò³«Êü */
+	/* ä½™åˆ†ãªãƒ–ãƒ­ãƒƒã‚¯ã‚’é–‹æ”¾ */
 	blockno = nblock;
 	if (blockno < SFS_DIRECT_BLOCK_ENTRY) {
-	    /* Ä¾ÀÜ¥Ö¥í¥Ã¥¯¤ÎÈÏ°ÏÆâ */
+	    /* ç›´æ¥ãƒ–ãƒ­ãƒƒã‚¯ã®ç¯„å›²å†… */
 	    for (i = blockno; i < SFS_DIRECT_BLOCK_ENTRY; ++i) {
 		if (sfs_ip->sfs_i_direct[i] > 0)
 		    sfs_free_block(fd, fsp, sfs_ip->sfs_i_direct[i]);
@@ -557,7 +557,7 @@ W sfs_i_truncate(struct inode * ip, W newsize)
 				+
 				(SFS_INDIRECT_BLOCK_ENTRY *
 				 SFS_INDIRECT_BLOCK))) {
-	    /* °ì½Å´ÖÀÜ¥Ö¥í¥Ã¥¯¤ÎÈÏ°ÏÆâ */
+	    /* ä¸€é‡é–“æ¥ãƒ–ãƒ­ãƒƒã‚¯ã®ç¯„å›²å†… */
 	    inblock = (blockno - SFS_DIRECT_BLOCK_ENTRY);
 	    offset = inblock % SFS_INDIRECT_BLOCK;
 	    inblock = inblock / SFS_INDIRECT_BLOCK;
@@ -571,7 +571,7 @@ W sfs_i_truncate(struct inode * ip, W newsize)
 				(SFS_DINDIRECT_BLOCK_ENTRY *
 				 SFS_INDIRECT_BLOCK *
 				 SFS_INDIRECT_BLOCK))) {
-	    /* Æó½Å´ÖÀÜ¥Ö¥í¥Ã¥¯¤ÎÈÏ°ÏÆâ */
+	    /* äºŒé‡é–“æ¥ãƒ–ãƒ­ãƒƒã‚¯ã®ç¯„å›²å†… */
 	    blockno = blockno -
 		(SFS_DIRECT_BLOCK_ENTRY +
 		 SFS_INDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK);
@@ -595,13 +595,13 @@ W sfs_i_truncate(struct inode * ip, W newsize)
     ip->i_ctime = clock;
     ip->i_dirty = 1;
 #ifdef notdef
-    /* ¤³¤ì¤Ï deallocate ¤ÎÃæ¤Ç½èÍı¤¹¤ë¤Î¤¬ÉáÄÌ */
+    /* ã“ã‚Œã¯ deallocate ã®ä¸­ã§å‡¦ç†ã™ã‚‹ã®ãŒæ™®é€š */
     errno = sfs_i_sync(ip);
     if (errno) {
 	return (errno);
     }
 #endif
-    /* ¤³¤³¤Ç fs ¤ò sync ¤¹¤ëÉ¬Í×¤¬¤¢¤ë¤«? */
+    /* ã“ã“ã§ fs ã‚’ sync ã™ã‚‹å¿…è¦ãŒã‚ã‚‹ã‹? */
     errno = sfs_syncfs(fsp, 0);
     if (errno) {
 	return (errno);
@@ -618,31 +618,31 @@ W sfs_i_link(struct inode * parent, char *fname, struct inode * srcip,
     W dirnentry;
     struct inode *ip;
 
-    /* ¥ê¥ó¥¯Àè¤Ë¥Õ¥¡¥¤¥ë¤¬Â¸ºß¤·¤Æ¤¤¤¿¤é¥¨¥é¡¼ */
+    /* ãƒªãƒ³ã‚¯å…ˆã«ãƒ•ã‚¡ã‚¤ãƒ«ãŒå­˜åœ¨ã—ã¦ã„ãŸã‚‰ã‚¨ãƒ©ãƒ¼ */
     errno = fs_lookup(parent, fname, O_RDONLY, 0, acc, &ip);
     if (errno == EP_OK) {
 	fs_close_file(ip);
 	return (EP_EXIST);
     }
 
-    /* ¥Ç¥£¥ì¥¯¥È¥ê¤Î¥¨¥ó¥È¥ê¤òºîÀ® */
+    /* ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®ã‚¨ãƒ³ãƒˆãƒªã‚’ä½œæˆ */
     dirent.sfs_d_index = srcip->i_index;
-    /* É½¼¨Ê¸»úÄ¹¤ò SFS_MAXNAMELEN ¤Ë¤¹¤ë¤¿¤á¡¥¸å¤Ë pad ¤¬¤¢¤ë¤Î¤ÇÂç¾æÉ× */
+    /* è¡¨ç¤ºæ–‡å­—é•·ã‚’ SFS_MAXNAMELEN ã«ã™ã‚‹ãŸã‚ï¼å¾Œã« pad ãŒã‚ã‚‹ã®ã§å¤§ä¸ˆå¤« */
     strncpy(dirent.sfs_d_name, fname, SFS_MAXNAMELEN + 1);
 
-    /* ¥Ç¥£¥ì¥¯¥È¥ê¤Ë¥¨¥ó¥È¥ê¤òÄÉ²Ã */
+    /* ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«ã‚¨ãƒ³ãƒˆãƒªã‚’è¿½åŠ  */
     dirnentry = sfs_read_dir(parent, 0, NULL);
     errno = sfs_write_dir(parent, dirnentry, &dirent);
     if (errno != EP_OK) {
 	return (errno);
     }
 
-    /* inode ¾ğÊó¤Î¹¹¿· */
+    /* inode æƒ…å ±ã®æ›´æ–° */
     srcip->i_link += 1;
     srcip->i_ctime = get_system_time(NULL);
     srcip->i_dirty = 1;
 
-    /* ËÜÍè¤Ï inode ¤Î deallocate ¤Î¤È¤³¤í¤Ç¹Ô¤¦½èÍı¤Î¤Ï¤º */
+    /* æœ¬æ¥ã¯ inode ã® deallocate ã®ã¨ã“ã‚ã§è¡Œã†å‡¦ç†ã®ã¯ãš */
     errno = sfs_i_sync(srcip);
     if (errno != EP_OK) {
 	return (errno);
@@ -672,7 +672,7 @@ sfs_i_unlink(struct inode * parent, char *fname, struct access_info * acc)
 	return (EP_ISDIR);
     }
 
-    /* ¥Õ¥¡¥¤¥ë¤ÎÌ¾Á°¤ÎºÇ¸å¤Î£±¤Ä¤Ç¡¤»ÈÍÑÃæ¤Ê¤éºï½ü¤·¤Ê¤¤ */
+    /* ãƒ•ã‚¡ã‚¤ãƒ«ã®åå‰ã®æœ€å¾Œã®ï¼‘ã¤ã§ï¼Œä½¿ç”¨ä¸­ãªã‚‰å‰Šé™¤ã—ãªã„ */
     if ((ip->i_link == 1) && (ip->i_refcount >= 2)) {
 	fs_close_file(ip);
 	return (EP_BUSY);
@@ -683,14 +683,14 @@ sfs_i_unlink(struct inode * parent, char *fname, struct access_info * acc)
 	fs_close_file(ip);
 	return (EP_NOENT);
     } {
-	struct sfs_dir buf[nentry];	/* GCC ¤Î³ÈÄ¥µ¡Ç½¤ò»È¤Ã¤Æ¤¤¤ë */
+	struct sfs_dir buf[nentry];	/* GCC ã®æ‹¡å¼µæ©Ÿèƒ½ã‚’ä½¿ã£ã¦ã„ã‚‹ */
 	if (sfs_read_dir(parent, nentry, buf) != 0) {
 	    fs_close_file(ip);
 	    return (EP_IO);
 	}
 
 	for (i = 0; i < nentry; i++) {
-	    /* É½¼¨Ê¸»úÄ¹¤ò SFS_MAXNAMELEN ¤Ë¤¹¤ë¤¿¤á¡¥¸å¤Ë pad ¤¬¤¢¤ë¤Î¤ÇÂç¾æÉ× */
+	    /* è¡¨ç¤ºæ–‡å­—é•·ã‚’ SFS_MAXNAMELEN ã«ã™ã‚‹ãŸã‚ï¼å¾Œã« pad ãŒã‚ã‚‹ã®ã§å¤§ä¸ˆå¤« */
 	    if (strncmp(fname, buf[i].sfs_d_name, SFS_MAXNAMELEN + 1) == 0) {
 		break;
 	    }
@@ -702,7 +702,7 @@ sfs_i_unlink(struct inode * parent, char *fname, struct access_info * acc)
 
 	while (i < nentry) {
 	    buf[i].sfs_d_index = buf[i + 1].sfs_d_index;
-	    /* É½¼¨Ê¸»úÄ¹¤ò SFS_MAXNAMELEN ¤Ë¤¹¤ë¤¿¤á¡¥¸å¤Ë pad ¤¬¤¢¤ë¤Î¤ÇÂç¾æÉ× */
+	    /* è¡¨ç¤ºæ–‡å­—é•·ã‚’ SFS_MAXNAMELEN ã«ã™ã‚‹ãŸã‚ï¼å¾Œã« pad ãŒã‚ã‚‹ã®ã§å¤§ä¸ˆå¤« */
 	    strncpy(buf[i].sfs_d_name, buf[i + 1].sfs_d_name,
 		    SFS_MAXNAMELEN + 1);
 	    i++;
@@ -795,10 +795,10 @@ W sfs_i_sync(struct inode * ip)
 }
 
 /*
- * ¥Ç¥£¥ì¥¯¥È¥ê¤òºîÀ®¤¹¤ë¡£
+ * ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ä½œæˆã™ã‚‹ã€‚
  *
- * 1) ¿·¤·¤¤ inode ¤ò¥¢¥í¥±¡¼¥È¡£
- * 2) ¿Æ¥Ç¥£¥ì¥¯¥È¥ê¤Ë¥¢¥í¥±¡¼¥È¤·¤¿¿·¤·¤¤ inode ¤Î¾ğÊó¤òÄÉ²Ã¡£
+ * 1) æ–°ã—ã„ inode ã‚’ã‚¢ãƒ­ã‚±ãƒ¼ãƒˆã€‚
+ * 2) è¦ªãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«ã‚¢ãƒ­ã‚±ãƒ¼ãƒˆã—ãŸæ–°ã—ã„ inode ã®æƒ…å ±ã‚’è¿½åŠ ã€‚
  *
  */
 W
@@ -818,20 +818,20 @@ sfs_i_mkdir(struct inode * parent,
     };
     UW clock;
 
-    /* °ú¿ô¤Î¥Á¥§¥Ã¥¯ */
+    /* å¼•æ•°ã®ãƒã‚§ãƒƒã‚¯ */
     newip = alloc_inode();
     if (newip == NULL) {
 	return (EP_NOMEM);
     }
     *retip = newip;
 
-    /* ¿·¤·¤¤ sfs_inode ¤ò¥¢¥í¥±¡¼¥È */
+    /* æ–°ã—ã„ sfs_inode ã‚’ã‚¢ãƒ­ã‚±ãƒ¼ãƒˆ */
     i_index = sfs_alloc_inode(parent->i_device, parent->i_fs);
     if (i_index <= 0) {
 	return (EP_NOMEM);
     }
 
-    /* ÀßÄê */
+    /* è¨­å®š */
     clock = get_system_time(NULL);
     newip->i_fs = parent->i_fs;
     newip->i_device = parent->i_device;
@@ -859,12 +859,12 @@ sfs_i_mkdir(struct inode * parent,
 	return (errno);
     }
 
-    /* ¥Ç¥£¥ì¥¯¥È¥ê¤Î¥¨¥ó¥È¥ê¤òºîÀ® */
+    /* ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®ã‚¨ãƒ³ãƒˆãƒªã‚’ä½œæˆ */
     dirent.sfs_d_index = newip->i_index;
-    /* É½¼¨Ê¸»úÄ¹¤ò SFS_MAXNAMELEN ¤Ë¤¹¤ë¤¿¤á¡¥¸å¤Ë pad ¤¬¤¢¤ë¤Î¤ÇÂç¾æÉ× */
+    /* è¡¨ç¤ºæ–‡å­—é•·ã‚’ SFS_MAXNAMELEN ã«ã™ã‚‹ãŸã‚ï¼å¾Œã« pad ãŒã‚ã‚‹ã®ã§å¤§ä¸ˆå¤« */
     strncpy(dirent.sfs_d_name, fname, SFS_MAXNAMELEN + 1);
 
-    /* ¥Ç¥£¥ì¥¯¥È¥ê¤Ë¥¨¥ó¥È¥ê¤òÄÉ²Ã */
+    /* ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«ã‚¨ãƒ³ãƒˆãƒªã‚’è¿½åŠ  */
     parent->i_link += 1;
     dirnentry = sfs_read_dir(parent, 0, NULL);
     errno = sfs_write_dir(parent, dirnentry, &dirent);
@@ -876,7 +876,7 @@ sfs_i_mkdir(struct inode * parent,
 }
 
 /*
- * ¥Ç¥£¥ì¥¯¥È¥ê¤òºï½ü¤¹¤ë¡£
+ * ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’å‰Šé™¤ã™ã‚‹ã€‚
  *
  */
 W sfs_i_rmdir(struct inode * parent, char *fname, struct access_info * acc)
@@ -914,14 +914,14 @@ W sfs_i_rmdir(struct inode * parent, char *fname, struct access_info * acc)
 	fs_close_file(ip);
 	return (EP_NOENT);
     } {
-	struct sfs_dir buf[nentry];	/* GCC ¤Î³ÈÄ¥µ¡Ç½¤ò»È¤Ã¤Æ¤¤¤ë */
+	struct sfs_dir buf[nentry];	/* GCC ã®æ‹¡å¼µæ©Ÿèƒ½ã‚’ä½¿ã£ã¦ã„ã‚‹ */
 	if (sfs_read_dir(parent, nentry, buf) != 0) {
 	    fs_close_file(ip);
 	    return (EP_IO);
 	}
 
 	for (i = 0; i < nentry; i++) {
-	    /* É½¼¨Ê¸»úÄ¹¤ò SFS_MAXNAMELEN ¤Ë¤¹¤ë¤¿¤á¡¥¸å¤Ë pad ¤¬¤¢¤ë¤Î¤ÇÂç¾æÉ× */
+	    /* è¡¨ç¤ºæ–‡å­—é•·ã‚’ SFS_MAXNAMELEN ã«ã™ã‚‹ãŸã‚ï¼å¾Œã« pad ãŒã‚ã‚‹ã®ã§å¤§ä¸ˆå¤« */
 	    if (strncmp(fname, buf[i].sfs_d_name, SFS_MAXNAMELEN + 1) == 0) {
 		break;
 	    }
@@ -933,7 +933,7 @@ W sfs_i_rmdir(struct inode * parent, char *fname, struct access_info * acc)
 
 	while (i < nentry) {
 	    buf[i].sfs_d_index = buf[i + 1].sfs_d_index;
-	    /* É½¼¨Ê¸»úÄ¹¤ò SFS_MAXNAMELEN ¤Ë¤¹¤ë¤¿¤á¡¥¸å¤Ë pad ¤¬¤¢¤ë¤Î¤ÇÂç¾æÉ× */
+	    /* è¡¨ç¤ºæ–‡å­—é•·ã‚’ SFS_MAXNAMELEN ã«ã™ã‚‹ãŸã‚ï¼å¾Œã« pad ãŒã‚ã‚‹ã®ã§å¤§ä¸ˆå¤« */
 	    strncpy(buf[i].sfs_d_name, buf[i + 1].sfs_d_name,
 		    SFS_MAXNAMELEN + 1);
 	    i++;

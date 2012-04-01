@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -23,12 +23,12 @@ static char rcs[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/
 UW	initilized = 0;
 
 
-/* SVGA_CONS ╔╒╔ю╔в╔©╓╛б╦╨ъ╓╥╓ф╓╓╓К╓╚╓и╓╕╓╚╓Р╔а╔╖╔ц╔╞╓╧╓К
+/* SVGA_CONS Ц┌╒Ц┐─Ц┐≈Ц┌©Ц│▄Е╜≤Е°╗Ц│≈Ц│╕Ц│└Ц┌▀Ц│▀Ц│╘Ц│├Ц│▀Ц┌▓Ц┐│Ц┌╖Ц┐┐Ц┌╞Ц│≥Ц┌▀
  */
 ER
 probe (struct device *dev)
 {
-  /*** ╓Ё╓Ё╓к ***/
+  /*** Ц│⌠Ц│⌠Ц│╚ ***/
 
   return (E_OK);
 }

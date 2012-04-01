@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -8,9 +8,9 @@ Version 2, June 1991
 (C) B-Free Project.
 
 */
-/* echo.c --- echo ¥Ç¥Ğ¥¤¥¹¥É¥é¥¤¥Ğ 
+/* echo.c --- echo ãƒ‡ãƒã‚¤ã‚¹ãƒ‰ãƒ©ã‚¤ãƒ 
  *
- * ¤³¤Î¥Ç¥Ğ¥¤¥¹¥É¥é¥¤¥Ğ¤Ï¡¢I/O ¥·¥¹¥Æ¥à¤Î¥Ç¥Ğ¥Ã¥°ÍÑ¤ËºîÀ®¤·¤¿¡£
+ * ã“ã®ãƒ‡ãƒã‚¤ã‚¹ãƒ‰ãƒ©ã‚¤ãƒã¯ã€I/O ã‚·ã‚¹ãƒ†ãƒ ã®ãƒ‡ãƒãƒƒã‚°ç”¨ã«ä½œæˆã—ãŸã€‚
  * 
  */
 
@@ -22,15 +22,15 @@ Version 2, June 1991
 #include "interrupt.h"
 #include "../io/io.h"
 
-static ID	deviceid;	/* ¥Ç¥Ğ¥¤¥¹ÈÖ¹æ(¥Ç¥Ğ¥¤¥¹¥Æ¡¼¥Ö¥ë¤Î¥¨¥ó¥È¥êÈÖ¹æ) */
-				/* ¼çÈÖ¹æ¤È¤·¤Æ»ÈÍÑ¤¹¤ë¡£*/
-static ID	taskid;		/* £Ò£Ó£²£³£²£Ã¥É¥é¥¤¥Ğ¤Î¥¿¥¹¥¯£É£Ä */
+static ID	deviceid;	/* ãƒ‡ãƒã‚¤ã‚¹ç•ªå·(ãƒ‡ãƒã‚¤ã‚¹ãƒ†ãƒ¼ãƒ–ãƒ«ã®ã‚¨ãƒ³ãƒˆãƒªç•ªå·) */
+				/* ä¸»ç•ªå·ã¨ã—ã¦ä½¿ç”¨ã™ã‚‹ã€‚*/
+static ID	taskid;		/* ï¼²ï¼³ï¼’ï¼“ï¼’ï¼£ãƒ‰ãƒ©ã‚¤ãƒã®ã‚¿ã‚¹ã‚¯ï¼©ï¼¤ */
 
 
 extern ER	init_echo (void);
 static void echo_server (void);
 
-/* ¥Ç¥Ğ¥Ã¥°ÍÑ¤Î printk 
+/* ãƒ‡ãƒãƒƒã‚°ç”¨ã® printk 
  */
 #define DPRINTK(x)	{ printk x; }
 
@@ -38,14 +38,14 @@ static void echo_server (void);
 /*****************************************************************************
  * init_echo 
  *
- * °ú¿ô¡§
- *	¤Ê¤·
+ * å¼•æ•°ï¼š
+ *	ãªã—
  *
- * ÊÖ¤êÃÍ¡§
- *	¥¨¥é¡¼ÈÖ¹æ
- *	E_OK	Àµ¾ï½ªÎ»
+ * è¿”ã‚Šå€¤ï¼š
+ *	ã‚¨ãƒ©ãƒ¼ç•ªå·
+ *	E_OK	æ­£å¸¸çµ‚äº†
  *
- * µ¡Ç½¡§
+ * æ©Ÿèƒ½ï¼š
  *
  *
  */
@@ -55,7 +55,7 @@ init_echo (void)
   ER		err;
   T_CTSK	pktsk;
 
-  err = def_dev (L"£Å£Ã£È£Ï", CHAR, ANY_DEVICE, &deviceid);
+  err = def_dev (L"ï¼¥ï¼£ï¼¨ï¼¯", CHAR, ANY_DEVICE, &deviceid);
   if (err != E_OK)
     {
       printk ("cannot initialize for echo device. err = %d\n", err);
@@ -93,10 +93,10 @@ echo_server (void)
       if (err == E_OK)
 	{
 	  printk ("ECHO: Receive request; command = %d\n", rcv_packet.command);
-	  /* ¥³¥Ş¥ó¥É²ò¼áÉô¤ò¼Â¹Ô¤¹¤ë */
+	  /* ã‚³ãƒãƒ³ãƒ‰è§£é‡ˆéƒ¨ã‚’å®Ÿè¡Œã™ã‚‹ */
 	  switch (rcv_packet.command)
 	    {
-	      /* IO_NULL, IO_OPEN, IO_CLOSE ¤Ë¤Ä¤¤¤Æ¤Ï²¿¤â¤·¤Ê¤¤ */
+	      /* IO_NULL, IO_OPEN, IO_CLOSE ã«ã¤ã„ã¦ã¯ä½•ã‚‚ã—ãªã„ */
 	    case IO_NULL:
 	    case IO_OPEN:
 	    case IO_CLOSE:

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -8,5 +8,5 @@ Version 2, June 1991
 (C) B-Free Project.
 
 */
-/* 2nd boot ╔в╔М╔╟╔И╔Ю╓н╔п║╪╔╦╔Г╔С */
+/* 2nd boot Ц┐≈Ц┐╜Ц┌╟Ц┐╘Ц┐═Ц│╝Ц┐░Ц┐╪Ц┌╦Ц┐╖Ц┐Ё */
 static char rcsid[] = "#(@)$Version$";

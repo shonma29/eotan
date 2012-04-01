@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -25,36 +25,36 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
  * Some casts for rcv_mbf added.
  *
  * Revision 1.3  1997/10/11 16:21:11  night
- * �ݡ���̾�Υ��ԡ�������
+ * ポート名のコピーを修正。
  *
  * Revision 1.2  1997/09/23 13:52:20  night
- * �ǥХå�ʸ���ɲá�
- * find_port() �������� (name) �η����ѹ���
+ * デバッグ文の追加。
+ * find_port() の第一引数 (name) の型を変更。
  *
  * Revision 1.1  1996/07/22  23:52:05  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  * Revision 1.4  1995/12/05 15:10:22  night
- * unregist_port () ���ɲá�
+ * unregist_port () の追加。
  *
  * Revision 1.3  1995/09/21  15:51:42  night
- * �������ե��������Ƭ�� Copyright notice ������ɲá�
+ * ソースファイルの先頭に Copyright notice 情報を追加。
  *
  * Revision 1.2  1995/06/28  14:14:25  night
- * print ʸ�� #ifdef DEBUG �� #endif �ǰϤä���
+ * print 文を #ifdef DEBUG 〜 #endif で囲った。
  *
  * Revision 1.1  1995/02/26  14:18:12  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  *
  */
 /*
- * �ݡ��ȥޥ͡�����Ȥ��̿����ñ�˹Ԥ�����Υ饤�֥��ؿ���
+ * ポートマネージャとの通信を簡単に行うためのライブラリ関数。
  *
- * regist_port (PORT_NAME name, ID port);   ��å������Хåե� ID ����Ͽ
- * unregist_port (PORT_NAME name);	    ��å������Хåե� ID ������
- * find_port (PORT_NAME name, ID &port);    ��å������Хåե� ID �θ���
- * alloc_port (void);                       �ݡ��Ȥ�����
+ * regist_port (PORT_NAME name, ID port);   メッセージバッファ ID の登録
+ * unregist_port (PORT_NAME name);	    メッセージバッファ ID の抹消
+ * find_port (PORT_NAME name, ID &port);    メッセージバッファ ID の検索
+ * alloc_port (void);                       ポートの生成
  */
 
 #include <itron.h>
@@ -64,8 +64,8 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 #include "libkernel.h"
 
 /*
- * �ݡ��ȥޥ͡�����˥�å������Хåե��������Ͽ���롣
- * ���δؿ�����ǰ��Ū�˼����ѤΥ�å������ݡ��Ȥ�������롣
+ * ポートマネージャにメッセージバッファ情報を登録する。
+ * この関数の中で一時的に受信用のメッセージポートを作成する。
  *
  */
 PORT_MANAGER_ERROR
@@ -78,7 +78,7 @@ regist_port (PORT_NAME *name, ID port)
 
 
   /*
-   * �ݡ��ȥޥ͡����㤫������������Ĥ��ѤΥ�å������Хåե�������
+   * ポートマネージャからの返答受けつけ用のメッセージバッファ作成。
    */
   recv_port = get_port (sizeof (recv_msg), sizeof (recv_msg));
   if (recv_port == 0)
@@ -90,7 +90,7 @@ regist_port (PORT_NAME *name, ID port)
     }
 
   /*
-   * �ݡ��ȥޥ͡�����������׵��å������������
+   * ポートマネージャへ送る要求メッセージを作成。
    */
   send_msg.hdr.type  = REGIST_PORT;
   send_msg.hdr.size  = sizeof (send_msg);
@@ -103,7 +103,7 @@ regist_port (PORT_NAME *name, ID port)
 #endif /* DEBUG */
 
   /*
-   * �ݡ��ȥޥ͡�������Ф�����Ͽ�׵��å��������������롣
+   * ポートマネージャに対して登録要求メッセージを送信する。
    */
   if (snd_mbf (PORT_MANAGER_PORT, sizeof (send_msg), &send_msg) != E_OK)
     {
@@ -116,7 +116,7 @@ regist_port (PORT_NAME *name, ID port)
 #endif /* DEBUG */
 
   /*
-   * �ݡ��ȥޥ͡����㤫���������å������μ����Ĥ�
+   * ポートマネージャからの返答メッセージの受けつけ
    */
   if (rcv_mbf (&recv_msg, (VP)&rsize, recv_port) != E_OK)
     {
@@ -130,7 +130,7 @@ regist_port (PORT_NAME *name, ID port)
 
 
   /*
-   * �Ȥ�����ä����������ѤΥ�å������Хåե��������롣
+   * 使いおわった返答受信用のメッセージバッファを削除する。
    */
   del_mbf (recv_port);
 
@@ -150,7 +150,7 @@ unregist_port (PORT_NAME *name)
 
 
   /*
-   * �ݡ��ȥޥ͡����㤫������������Ĥ��ѤΥ�å������Хåե�������
+   * ポートマネージャからの返答受けつけ用のメッセージバッファ作成。
    */
   recv_port = get_port (sizeof (recv_msg), sizeof (recv_msg));
   if (recv_port == 0)
@@ -162,7 +162,7 @@ unregist_port (PORT_NAME *name)
     }
 
   /*
-   * �ݡ��ȥޥ͡�����������׵��å������������
+   * ポートマネージャへ送る要求メッセージを作成。
    */
   send_msg.hdr.type  = UNREGIST_PORT;
   send_msg.hdr.size  = sizeof (send_msg);
@@ -174,7 +174,7 @@ unregist_port (PORT_NAME *name)
 #endif /* DEBUG */
 
   /*
-   * �ݡ��ȥޥ͡�������Ф�����Ͽ�׵��å��������������롣
+   * ポートマネージャに対して登録要求メッセージを送信する。
    */
   if (snd_mbf (PORT_MANAGER_PORT, sizeof (send_msg), &send_msg) != E_OK)
     {
@@ -187,7 +187,7 @@ unregist_port (PORT_NAME *name)
 #endif /* DEBUG */
 
   /*
-   * �ݡ��ȥޥ͡����㤫���������å������μ����Ĥ�
+   * ポートマネージャからの返答メッセージの受けつけ
    */
   if (rcv_mbf (&recv_msg, (VP)&rsize, recv_port) != E_OK)
     {
@@ -201,7 +201,7 @@ unregist_port (PORT_NAME *name)
 
 
   /*
-   * �Ȥ�����ä����������ѤΥ�å������Хåե��������롣
+   * 使いおわった返答受信用のメッセージバッファを削除する。
    */
   del_mbf (recv_port);
 
@@ -213,8 +213,8 @@ unregist_port (PORT_NAME *name)
 
 
 /*
- * �ݡ��ȥޥ͡����㤫���å������Хåե�����򸡺����롣
- * ���δؿ�����ǰ��Ū�˼����ѤΥ�å������ݡ��Ȥ�������롣
+ * ポートマネージャからメッセージバッファ情報を検索する。
+ * この関数の中で一時的に受信用のメッセージポートを作成する。
  *
  */
 PORT_MANAGER_ERROR
@@ -231,7 +231,7 @@ find_port (B *name, ID *rport)
 #endif
 
   /*
-   * �ݡ��ȥޥ͡����㤫������������Ĥ��ѤΥ�å������Хåե�������
+   * ポートマネージャからの返答受けつけ用のメッセージバッファ作成。
    */
   recv_port = get_port (sizeof (recv_msg), sizeof (recv_msg));
   if (recv_port == 0)
@@ -247,7 +247,7 @@ find_port (B *name, ID *rport)
 	      &(send_msg.body.find.name), name);
 #endif /* DEBUG */
   /*
-   * �ݡ��ȥޥ͡�����������׵��å������������
+   * ポートマネージャへ送る要求メッセージを作成。
    */
   send_msg.hdr.type  = FIND_PORT;
   send_msg.hdr.size  = sizeof (send_msg);
@@ -262,7 +262,7 @@ find_port (B *name, ID *rport)
   dbg_printf ("find_port: name = <%s>\n", &(send_msg.body.find.name));
 #endif /* DEBUG */
   /*
-   * �ݡ��ȥޥ͡�������Ф��Ƹ����׵��å��������������롣
+   * ポートマネージャに対して検索要求メッセージを送信する。
    */
   if (snd_mbf (PORT_MANAGER_PORT, sizeof (send_msg), &send_msg) != E_OK)
     {
@@ -275,7 +275,7 @@ find_port (B *name, ID *rport)
 #endif /* DEBUG */
 
   /*
-   * �ݡ��ȥޥ͡����㤫���������å������μ����Ĥ�
+   * ポートマネージャからの返答メッセージの受けつけ
    */
   if (rcv_mbf (&recv_msg, (INT *)&rsize, recv_port) != E_OK)
     {
@@ -291,12 +291,12 @@ find_port (B *name, ID *rport)
 #endif /* DEBUG */
 
   /*
-   * �ݡ��ȥޥ͡����㤬���������ݡ����ֹ���֤���
+   * ポートマネージャが検索したポート番号を返す。
    */
   *rport = recv_msg.port;
 
   /*
-   * �Ȥ�����ä����������ѤΥ�å������Хåե��������롣
+   * 使いおわった返答受信用のメッセージバッファを削除する。
    */
   del_mbf (recv_port);
 
@@ -307,8 +307,8 @@ find_port (B *name, ID *rport)
 }
 
 /*
- * ��å������Хåե����������롣
- * ��å������Хåե� ID �ϡ���ưŪ�˶����Ƥ����Τ���Ѥ��롣
+ * メッセージバッファを生成する。
+ * メッセージバッファ ID は、自動的に空いているものを使用する。
  *
  */
 ID
@@ -318,9 +318,9 @@ alloc_port (W size, W max_entry)
   T_CMBF	create_argument;
 
   /*
-   * �׵�����Ĥ��Τ���Υ�å������Хåե���������롣
-   * ��å������Хåե��� ID ���ä˷�ޤäƤ��ʤ��������Ƥ����å���
-   * ���Хåե���Ŭ�������֡�
+   * 要求受けつけのためのメッセージバッファを作成する。
+   * メッセージバッファの ID は特に決まっていない。空いているメッセー
+   * ジバッファを適当に選ぶ。
    */
   create_argument.bufsz  = size;
   create_argument.maxmsz = size * max_entry;
@@ -332,14 +332,14 @@ alloc_port (W size, W max_entry)
       if (cre_mbf (msg_port, &create_argument) == E_OK)
 	{
 	  /*
-	   * ��å������Хåե��μ���������������
+	   * メッセージバッファの取得に成功した。
 	   */
 	  return (msg_port);
 	}
     }
 
   /*
-   * ��å������Хåե��������Ǥ��ʤ��ä���
+   * メッセージバッファが取得できなかった。
    */
 #ifdef DEBUG
   dbg_printf ("posix.process server: cannot allocate messege buffer\n");

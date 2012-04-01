@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -27,80 +27,80 @@ static char revision[] = "$Revision: 1.10 $";
  * to work with POSIX fcntl
  *
  * Revision 1.7  1999/03/21 12:49:23  night
- * ϲ��(naniwa@mechgw.mech.yamaguchi-u.ac.jp) ����λ�Ŧ�ˤ���ѹ���
+ * 浪花(naniwa@mechgw.mech.yamaguchi-u.ac.jp) からの指摘による変更。
  * ------------------
- * ���������ס��������󥹤�������Ƥ�������˵����դ�����Ǥ�����
- * console �ϴ��˥Хå����ڡ����ˤ��б�����Ƥ�����Ǥ��� (^^;)��frtm
- * �����Ϥˤ� '\b' ���Ȥ���н�ʬ�ʤΤǡ����������ץ������󥹤���ɬ
- * �פ�̵���ʤäƤ��ޤä��ΤǤ������޳ѤʤΤǺǸ�ޤǼ������ޤ�����
+ * エスケープ・シーケンスを実装している途中に気が付いたんですが，
+ * console は既にバックスペースには対応されていたんですね (^^;)．frtm
+ * の入力には '\b' が使えれば十分なので，エスケープシーケンスを作る必
+ * 要は無くなってしまったのですが，折角なので最後まで実装しました．
  *
- * �����������������ס��������󥹤λ��ͤǤ������ mail �Υߥ���������
- * �ޤ�����
+ * 実装したエスケープ・シーケンスの仕様です．先の mail のミスを訂正し
+ * ました．
  *
- * ESC[Pl;PcH	��������� (Pc,Pl) �ذ�ư���ǥե���ȤϤ��줾�� 1��
- * ESC[PnA		��������� Pn �Ծ�ذ�ư���ǥե���Ȥ� 1��
- * 		���̾�ü����ؤΰ�ư��̵�롥
- * ESC[PnB		��������� Pn �Ծ�ذ�ư���ǥե���Ȥ� 1��
- * 		���̲�ü��겼�ؤΰ�ư��̵�롥
- * ESC[PnC		��������� Pn �屦�ذ�ư���ǥե���Ȥ� 1��
- * 		���̱�ü��걦�ؤΰ�ư��̵�롥
- * ESC[PnD		��������� Pn �庸�ذ�ư���ǥե���Ȥ� 1��
- * 		���̱�ü��꺸�ؤΰ�ư��̵�롥
- * ESC[2J		���̤�õ����������� (1,1) �ء�
- * ESC[J		ɽ���ν���ޤǤ�õ
- * ESC[K		����������֤���Ԥν���ޤǤ�õ
+ * ESC[Pl;PcH	カーソルを (Pc,Pl) へ移動．デフォルトはそれぞれ 1．
+ * ESC[PnA		カーソルを Pn 行上へ移動．デフォルトは 1．
+ * 		画面上端より上への移動は無視．
+ * ESC[PnB		カーソルを Pn 行上へ移動．デフォルトは 1．
+ * 		画面下端より下への移動は無視．
+ * ESC[PnC		カーソルを Pn 桁右へ移動．デフォルトは 1．
+ * 		画面右端より右への移動は無視．
+ * ESC[PnD		カーソルを Pn 桁左へ移動．デフォルトは 1．
+ * 		画面右端より左への移動は無視．
+ * ESC[2J		画面を消去し，カーソルを (1,1) へ．
+ * ESC[J		表示の終りまでを消去．
+ * ESC[K		カーソル位置から行の終りまでを消去．
  *
- * ��������κ�ɸ�Ϻ������ (1,1)�������� (MAX_COLUMN, MAX_LINE)��
+ * カーソルの座標は左上隅が (1,1)．右下が (MAX_COLUMN, MAX_LINE)．
  *
- * kernel/BTRON/device/console �β��� patch -p1 �Ǥ��Ƥ�褦�˥ѥå�
- * ����ޤ�����
+ * kernel/BTRON/device/console の下で patch -p1 であてるようにパッチ
+ * を作りました．
  * ------------------
  *
  * Revision 1.6  1998/11/30 13:25:59  night
- * malloc �򤳤ΥǥХ����ɥ饤�Фǻ��Ѥ���Ȥ� (�ޥ��� USE_MALLOC �����
- * �����Ȥ�)��init_malloc () �� malloc �ǻ��Ѥ����ΰ����Ƭ���Ϥ���ꤹ��
- * �������ɲá�
- * kernlib ���������Ƥ��� malloc() �ϡ����Ѥ�����ä� init_malloc() ��
- * �¹Ԥ���malloc �ǻ��Ѥ����ΰ����Ƭ���Ϥ���ꤷ�ʤ���Фʤ�ʤ���
+ * malloc をこのデバイスドライバで使用するとき (マクロ USE_MALLOC を定義
+ * したとき)、init_malloc () に malloc で使用する領域の先頭番地を指定する
+ * 引数を追加。
+ * kernlib 内で定義している malloc() は、使用に先だって init_malloc() を
+ * 実行し、malloc で使用する領域の先頭番地を指定しなければならない。
  *
  * Revision 1.5  1997/09/21 13:31:24  night
- * kernlib ����� malloc �饤�֥�����Ѥ��ʤ��褦�ˤ�����
- * (malloc �饤�֥���ȤäƤ��ޤ��ȡ�console �ɥ饤���Ѥ˳��ݤ��Ƥ����
- * ����ΰ�򥪡��С����Ƥ��ޤ�����)
+ * kernlib の中の malloc ライブラリを使用しないようにした。
+ * (malloc ライブラリを使ってしまうと、console ドライバ用に確保しているメ
+ * モリ領域をオーバーしてしまうため)
  *
  * Revision 1.4  1997/08/31 14:00:18  night
- * VGA �����ط��ν������ɲá�
+ * VGA 処理関係の処理を追加。
  *
  * Revision 1.3  1996/11/07  15:40:46  night
- * �����ͥ뤫��ν��Ϥ򥳥󥽡���ɥ饤�Фظ������������Ū��
- * ����᤿��
- * (�ϥ󥰥��åפ��Ƥ��ޤ�����)
+ * カーネルからの出力をコンソールドライバへ向ける処理を一時的に
+ * 取りやめた。
+ * (ハングアップしてしまうため)
  *
  * Revision 1.2  1996/11/06  13:54:17  night
- * �����ͥ뤫�鸽�ߤΥ���������֤��������������ɲá�
- * �����
- * �����ͥ�˥��󥽡���ɥ饤�Ф��׵�����դ��ݡ��Ȥ�
- * ��Ͽ����������ɲá�
+ * カーネルから現在のカーソル位置を取得する処理を追加。
+ * および
+ * カーネルにコンソールドライバの要求受け付けポートを
+ * 登録する処理を追加。
  *
  * Revision 1.1  1996/07/24  16:03:59  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  * Revision 1.5  1996/01/02 16:20:30  night
- * Ω���夲���˲��̤򥯥ꥢ����褦���ѹ�������
+ * 立ち上げ時に画面をクリアするように変更した。
  *
  * Revision 1.4  1995/09/21  15:50:55  night
- * �������ե��������Ƭ�� Copyright notice ������ɲá�
+ * ソースファイルの先頭に Copyright notice 情報を追加。
  *
  * Revision 1.3  1995/09/17  16:50:38  night
- * �������ѥ��åȤ������ src/kernel/kernlib/device.h �˹�碌����
- * open/close/read/write/control �ؿ������������
+ * 送受信パケットの定義を src/kernel/kernlib/device.h に合わせた。
+ * open/close/read/write/control 関数を実装した。
  *
  * Revision 1.2  1995/09/14  04:28:43  night
- * init_driver() �� init_console() ���ѹ���
- * ��å����������������ɲá�
+ * init_driver() を init_console() に変更。
+ * メッセージ受信処理の追加。
  *
  * Revision 1.1  1995/09/12  18:18:11  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  *
  *
@@ -114,7 +114,7 @@ static char revision[] = "$Revision: 1.10 $";
 #include "console_int.h"
 
 /*********************************************************************
- *	 �ɽ��ѿ��������
+ *	 局所変数群の宣言
  *
  */
 
@@ -125,7 +125,7 @@ static void writes(B * s);
 
 
 /*********************************************************************
- *	 ����ѿ��������
+ *	 大域変数群の宣言
  *
  */
 ID recvport;
@@ -135,21 +135,21 @@ TEXTATTR attr;
 
 
 /*
- * console �ǥХ����ɥ饤�Ф� main �ؿ�
+ * console デバイスドライバの main 関数
  *
- * ���δؿ��ϡ��ǥХ����ɥ饤��Ω���夲���˰������¹Ԥ��롣
+ * この関数は、デバイスドライバ立ち上げ時に一回だけ実行する。
  *
  */
 void start(void)
 {
     char *p;
     /* 
-     * �׵�����ѤΥݡ��Ȥκ���
+     * 要求受信用のポートの作成
      */
     init_console();
 
     /*
-     * Ω���夲��å�����
+     * 立ち上げメッセージ
      */
     writes("console driver start\n");
     p = rcsid;
@@ -159,19 +159,19 @@ void start(void)
 
 static void main_loop(void)
 {
-    DDEV_REQ req;		/* ���������׵�ѥ��å� */
+    DDEV_REQ req;		/* 受信する要求パケット */
 #ifdef notdef
     ER err;
 #endif
     extern ER sys_errno;
 
     /*
-     * �׵���� - �����Υ롼��
+     * 要求受信 - 処理のループ
      */
     for (;;) {
 	W rsize;
 
-	/* �׵�μ��� */
+	/* 要求の受信 */
 #ifdef DEBUG
 	dbg_printf("call get_req ()\n");
 #endif
@@ -179,7 +179,7 @@ static void main_loop(void)
 	get_req(recvport, &req, &rsize);
 	switch (sys_errno) {
 	case E_OK:
-	    /* ���辰���� */
+	    /* 正常ケース */
 #ifdef DEBUG
 	    dbg_printf("console: receive packet type = %d\n",
 		       req.header.msgtyp);
@@ -197,13 +197,13 @@ static void main_loop(void)
 	}
     }
 
-    /* �����ιԤˤϡ���ʤ� */
+    /* ここの行には、来ない */
 }
 
 /*
- * �����
+ * 初期化
  *
- * o �׵�����Ĥ��ѤΥ�å������Хåե� ID ��ݡ��ȥޥ͡��������Ͽ
+ * o 要求受けつけ用のメッセージバッファ ID をポートマネージャに登録
  */
 W init_console(void)
 {
@@ -213,7 +213,7 @@ W init_console(void)
 #endif
 
     /*
-     * �׵�����Ĥ��ѤΥݡ��Ȥ��������롣
+     * 要求受けつけ用のポートを初期化する。
      */
 #ifdef notdef
     recvport = get_port(sizeof(DDEV_REQ), sizeof(DDEV_REQ));
@@ -223,7 +223,7 @@ W init_console(void)
     if (recvport <= 0) {
 	dbg_printf("CONSOLE: cannot make receive port.\n");
 	slp_tsk();
-	/* ��å������Хåե������˼��� */
+	/* メッセージバッファ生成に失敗 */
     }
 
     error = regist_port(CONSOLE_DRIVER, recvport);
@@ -246,13 +246,13 @@ W init_console(void)
 #endif
 
 #ifdef USE_MALLOC
-    init_malloc(0xC0000000);	/* Ŭ������ */
+    init_malloc(0xC0000000);	/* 適当な値 */
 #endif
 
 #ifdef notdef
     if (vset_cns(recvport) != E_OK) {
-	/* �����ͥ�˥��󥽡����ѹ���¹Ԥ����뤳�Ȥ�
-	 * ���Ԥ�����
+	/* カーネルにコンソール変更を実行させることに
+	 * 失敗した。
 	 */
 	return E_SYS;
     }
@@ -268,7 +268,7 @@ static void doit(DDEV_REQ * packet)
 {
     switch (packet->header.msgtyp) {
     case DEV_OPN:
-	/* �ǥХ����Υ����ץ� */
+	/* デバイスのオープン */
 	if (!initialized) {
 	    init_console();
 	}
@@ -276,7 +276,7 @@ static void doit(DDEV_REQ * packet)
 	break;
 
     case DEV_CLS:
-	/* �ǥХ����Υ������� */
+	/* デバイスのクローズ */
 	close_console(packet->header.mbfid, &(packet->body.cls_req));
 	break;
 
@@ -295,14 +295,14 @@ static void doit(DDEV_REQ * packet)
 }
 
 /************************************************************************
- * open_console --- console �Υ����ץ�
+ * open_console --- console のオープン
  *
- * ������	caller	��å������������
- *		packet	�����ץ�ѥ��å�
+ * 引数：	caller	メッセージの送り手
+ *		packet	オープンパケット
  *
- * ���͡�	��� E_OK ���֤���
+ * 返値：	常に E_OK を返す。
  *
- * ������	E_OK ���å��������������֤���
+ * 処理：	E_OK をメッセージの送り手に返す。
  *
  */
 W open_console(ID caller, DDEV_OPN_REQ * packet)
@@ -318,15 +318,15 @@ W open_console(ID caller, DDEV_OPN_REQ * packet)
 }
 
 /************************************************************************
- * close_console --- �ɥ饤�ФΥ�������
+ * close_console --- ドライバのクローズ
  *
- * ������	dd	console �ɥ饤���ֹ�
- *		o_mode	�����ץ�⡼��
- *		error	���顼�ֹ�
+ * 引数：	dd	console ドライバ番号
+ *		o_mode	オープンモード
+ *		error	エラー番号
  *
- * ���͡�	��� E_OK ���֤���
+ * 返値：	常に E_OK を返す。
  *
- * ������	���󥽡���ϥ��������ν����ǤϤʤˤ⤷�ʤ���
+ * 処理：	コンソールはクローズの処理ではなにもしない。
  *
  */
 W close_console(ID caller, DDEV_CLS_REQ * packet)
@@ -343,14 +343,14 @@ W close_console(ID caller, DDEV_CLS_REQ * packet)
 /*************************************************************************
  * read_console --- 
  *
- * ������	caller
+ * 引数：	caller
  *		packet
  *
- * ���͡�	E_NOSPT ���֤���
+ * 返値：	E_NOSPT を返す。
  *
- * ������	��å������������� E_NOSPT ���֤���
- *		���󥽡���ɥ饤�Ф�ɽ����������ʤΤ����Ϥϥ��ݡ��Ȥ���
- *		���ʤ���
+ * 処理：	メッセージの送り手に E_NOSPT を返す。
+ *		コンソールドライバは表示するだけなので入力はサポートして
+ *		いない。
  *
  */
 W read_console(ID caller, DDEV_REA_REQ * packet)
@@ -367,13 +367,13 @@ W read_console(ID caller, DDEV_REA_REQ * packet)
 /************************************************************************
  * write_console
  *
- * ������	caller
+ * 引数：	caller
  *		packet
  *
- * ���͡�	
+ * 返値：	
  *
- * ������	�����ȥݥ��󥿤ΰ��֤�ʸ�����ɽ�����롣
- *		���ΤȤ������������ץ������󥹤ˤ�������Ԥ���		
+ * 処理：	カレントポインタの位置に文字列を表示する。
+ *		このとき、エスケープシーケンスによる処理も行う。		
  *
  */
 W write_console(ID caller, DDEV_WRI_REQ * packet)
@@ -479,12 +479,12 @@ W write_console(ID caller, DDEV_WRI_REQ * packet)
 /************************************************************************
  * control_console
  *
- * ������	caller
+ * 引数：	caller
  *		packet
  *
- * ���͡�	E_NOSPT ���֤���
+ * 返値：	E_NOSPT を返す。
  *
- * ������
+ * 処理：
  *
  */
 

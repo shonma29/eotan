@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -23,61 +23,61 @@ static char misc_rcsid[] =
  * minor fix
  *
  * Revision 1.5  1999/03/21 12:49:24  night
- * ϲ��(naniwa@mechgw.mech.yamaguchi-u.ac.jp) ����λ�Ŧ�ˤ���ѹ���
+ * 浪花(naniwa@mechgw.mech.yamaguchi-u.ac.jp) からの指摘による変更。
  * ------------------
- * ���������ס��������󥹤�������Ƥ�������˵����դ�����Ǥ�����
- * console �ϴ��˥Хå����ڡ����ˤ��б�����Ƥ�����Ǥ��� (^^;)��frtm
- * �����Ϥˤ� '\b' ���Ȥ���н�ʬ�ʤΤǡ����������ץ������󥹤���ɬ
- * �פ�̵���ʤäƤ��ޤä��ΤǤ������޳ѤʤΤǺǸ�ޤǼ������ޤ�����
+ * エスケープ・シーケンスを実装している途中に気が付いたんですが，
+ * console は既にバックスペースには対応されていたんですね (^^;)．frtm
+ * の入力には '\b' が使えれば十分なので，エスケープシーケンスを作る必
+ * 要は無くなってしまったのですが，折角なので最後まで実装しました．
  *
- * �����������������ס��������󥹤λ��ͤǤ������ mail �Υߥ���������
- * �ޤ�����
+ * 実装したエスケープ・シーケンスの仕様です．先の mail のミスを訂正し
+ * ました．
  *
- * ESC[Pl;PcH	��������� (Pc,Pl) �ذ�ư���ǥե���ȤϤ��줾�� 1��
- * ESC[PnA		��������� Pn �Ծ�ذ�ư���ǥե���Ȥ� 1��
- * 		���̾�ü����ؤΰ�ư��̵�롥
- * ESC[PnB		��������� Pn �Ծ�ذ�ư���ǥե���Ȥ� 1��
- * 		���̲�ü��겼�ؤΰ�ư��̵�롥
- * ESC[PnC		��������� Pn �屦�ذ�ư���ǥե���Ȥ� 1��
- * 		���̱�ü��걦�ؤΰ�ư��̵�롥
- * ESC[PnD		��������� Pn �庸�ذ�ư���ǥե���Ȥ� 1��
- * 		���̱�ü��꺸�ؤΰ�ư��̵�롥
- * ESC[2J		���̤�õ����������� (1,1) �ء�
- * ESC[J		ɽ���ν���ޤǤ�õ
- * ESC[K		����������֤���Ԥν���ޤǤ�õ
+ * ESC[Pl;PcH	カーソルを (Pc,Pl) へ移動．デフォルトはそれぞれ 1．
+ * ESC[PnA		カーソルを Pn 行上へ移動．デフォルトは 1．
+ * 		画面上端より上への移動は無視．
+ * ESC[PnB		カーソルを Pn 行上へ移動．デフォルトは 1．
+ * 		画面下端より下への移動は無視．
+ * ESC[PnC		カーソルを Pn 桁右へ移動．デフォルトは 1．
+ * 		画面右端より右への移動は無視．
+ * ESC[PnD		カーソルを Pn 桁左へ移動．デフォルトは 1．
+ * 		画面右端より左への移動は無視．
+ * ESC[2J		画面を消去し，カーソルを (1,1) へ．
+ * ESC[J		表示の終りまでを消去．
+ * ESC[K		カーソル位置から行の終りまでを消去．
  *
- * ��������κ�ɸ�Ϻ������ (1,1)�������� (MAX_COLUMN, MAX_LINE)��
+ * カーソルの座標は左上隅が (1,1)．右下が (MAX_COLUMN, MAX_LINE)．
  *
- * kernel/BTRON/device/console �β��� patch -p1 �Ǥ��Ƥ�褦�˥ѥå�
- * ����ޤ�����
+ * kernel/BTRON/device/console の下で patch -p1 であてるようにパッチ
+ * を作りました．
  * ------------------
  *
  * Revision 1.4  1997/08/31 14:00:36  night
- * console_internal.h �Υ��󥯥롼�ɤ��ɲá�
+ * console_internal.h のインクルードを追加。
  *
  * Revision 1.3  1996/07/24  16:43:23  night
- * �ޥ��� CURSOL_POS �� CURSOR_POS ��̾�����ѹ���
+ * マクロ CURSOL_POS を CURSOR_POS に名前を変更。
  *
  * Revision 1.2  1996/07/24  16:42:25  night
- * �ƥ����� VRAM �˽񤭹���Ȥ��ν����� PC9801 �Τ�Τ��� IBM PC �Ѥ��ѹ�
- * ������
+ * テキスト VRAM に書き込むときの処理を PC9801 のものから IBM PC 用に変更
+ * した。
  *
  * Revision 1.1  1996/07/24  16:03:59  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  * Revision 1.4  1995/12/05 14:17:30  night
- * ���̤򥹥������뤹����˺ǲ��Ԥ�õ������Ǻǲ��� + 1 ��õ�Ƥ�����
- * ���Τ��ᡢ�ǲ��ԤϾõ�Ǥ���ʸ�����ĤäƤ��ޤä���
- * �������ǲ��Ԥ�õ��褦���ѹ�������
+ * 画面をスクロールする時に最下行を消去する処理で最下行 + 1 を消去していた。
+ * そのため、最下行は消去できず文字が残ってしまった。
+ * 正しく最下行を消去するように変更した。
  *
  * Revision 1.3  1995/09/21  15:50:55  night
- * �������ե��������Ƭ�� Copyright notice ������ɲá�
+ * ソースファイルの先頭に Copyright notice 情報を追加。
  *
  * Revision 1.2  1995/09/17  16:51:06  night
- * ʸ��������Ѥδؿ������������
+ * 文字列出力用の関数を実装した。
  *
  * Revision 1.1  1995/09/14  04:29:20  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  *
  */
@@ -126,13 +126,13 @@ void move_curpos(W x, W y)
 }
 
 /*************************************************************************
- * goto_cursol --- ����������֤�����.
+ * goto_cursol --- カーソル位置の設定.
  *
- * ������	x, y	��ɸ
+ * 引数：	x, y	座標
  *
- * ���͡�	�ʤ�
+ * 返値：	なし
  *
- * ������	���ꤷ����ɸ�˥���������ư�����롣
+ * 処理：	指定した座標にカーソルを移動させる。
  *
  */
 void goto_cursol(W x, W y)
@@ -154,7 +154,7 @@ void goto_cursol(W x, W y)
  */
 ER write_char(UB ch)
 {
-    if (ch < 0x20) {		/* ����ȥ����륳���� */
+    if (ch < 0x20) {		/* コントロールコード */
 	switch (ch) {
 	case '\n':
 	    caridge_return();
@@ -230,18 +230,18 @@ static void backspace()
 }
 
 /*************************************************************************
- * write_vram_xy --- VRAM ��ʸ����񤭹���
+ * write_vram_xy --- VRAM に文字を書き込む
  *
- * ������	x, y	��ɸ
- *		ch	���Ϥ���ʸ��
- *		attr	ʸ��°��
+ * 引数：	x, y	座標
+ *		ch	出力する文字
+ *		attr	文字属性
  *
- * ���͡�	�ʤ�
+ * 返値：	なし
  *
- * ������	���� x, y �ǻ��ꤷ����ɸ��ʸ����񤭹���.
- *		���δؿ��ϡ�ASCII ʸ���ѤˤʤäƤ��롣
+ * 処理：	引数 x, y で指定した座標に文字を書き込む.
+ *		この関数は、ASCII 文字用になっている。
  *
- * ���ա�	���ߡ�attr ��̵�뤷�Ƥ��롣
+ * 注意：	現在、attr は無視している。
  *
  */
 static void write_vram_xy(W x, W y, W ch, TEXTATTR attr)
@@ -267,13 +267,13 @@ static void write_vram_xy(W x, W y, W ch, TEXTATTR attr)
 }
 
 /*************************************************************************
- * scroll_up --- �������Τ򥹥������륢�åפ���
+ * scroll_up --- 画面全体をスクロールアップする
  *
- * ������	�ʤ�
+ * 引数：	なし
  *
- * ���͡�	�ʤ�
+ * 返値：	なし
  *
- * ������	�������Τ��ԥ��������뤹�롣
+ * 処理：	画面全体を一行スクロールする。
  *
  */
 static void scroll_up(void)

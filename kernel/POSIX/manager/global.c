@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -11,18 +11,18 @@ Version 2, June 1991
 
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/manager/global.c,v 1.3 1997/10/24 13:56:32 night Exp $ */
 
-/* global.c - POSIX ´Ä¶­¥Ş¥Í¡¼¥¸¥ã¤Î¤¿¤á¤ÎÂç°èÊÑ¿ô
+/* global.c - POSIX ç’°å¢ƒãƒãƒãƒ¼ã‚¸ãƒ£ã®ãŸã‚ã®å¤§åŸŸå¤‰æ•°
  *
  *
  * $Log: global.c,v $
  * Revision 1.3  1997/10/24 13:56:32  night
- * rcsid[] ¤Îºï½ü¡£
+ * rcsid[] ã®å‰Šé™¤ã€‚
  *
  * Revision 1.2  1996/12/12 13:43:26  night
- * Ê¸»ú¥³¡¼¥É¤ò SJIS ¤«¤é EUC ¤ËÊÑ¹¹
+ * æ–‡å­—ã‚³ãƒ¼ãƒ‰ã‚’ SJIS ã‹ã‚‰ EUC ã«å¤‰æ›´
  *
  * Revision 1.1  1996/12/12 13:42:30  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  */

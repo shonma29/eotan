@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -13,16 +13,16 @@ Version 2, June 1991
 /*
  * $Log: memory_manager.h,v $
  * Revision 1.4  1997/09/10 13:12:35  night
- * #include �Ԥν�����
+ * #include 行の修正。
  *
  * Revision 1.3  1997/07/06 11:54:44  night
- * VERSION_ID �ޥ������ѹ���
+ * VERSION_ID マクロを変更。
  *
  * Revision 1.2  1997/06/29 15:44:32  night
- * �����Ȥ��ѹ�
+ * コメントの変更
  *
- * �����������ɤ� SJIS ���� EUC ���ѹ�������
- * ��RCS �� Log �ޥ�������Υ����Ȥ��ɲä���(�ޤ�����Ƥ��ʤ��ä��ե�����Τ�)��
+ * ・漢字コードを SJIS から EUC に変更した。
+ * ・RCS の Log マクロ入りのコメントを追加した(まだ入れていなかったファイルのみ)。
  *
  *
  */
@@ -72,11 +72,11 @@ struct mm_req_pagefault_t
 
 struct mm_request_t
 {
-  ID	receive_port;		/* �׵�����ѤΥݡ���	*/
-  ID	caller;			/* �ƤӽФ����Υ����� ID */
-  ID	procid;			/* �ƤӽФ����Υץ����� ID */
-  W	msg_length;		/* ��å�������Ĺ��	*/
-  W	operation;		/* �׵��ֹ�(�����ƥॳ������б�)	*/
+  ID	receive_port;		/* 要求受信用のポート	*/
+  ID	caller;			/* 呼び出し元のタスク ID */
+  ID	procid;			/* 呼び出し元のプロセス ID */
+  W	msg_length;		/* メッセージの長さ	*/
+  W	operation;		/* 要求番号(システムコールに対応)	*/
 
   union
     {
@@ -87,14 +87,14 @@ struct mm_request_t
 
 struct mm_response_t
 {
-  ID	receive_port;		/* �׵�����ѤΥݡ���	*/
-  W	msg_length;		/* ��å�������Ĺ��	*/
-  W	operation;		/* �׵��ֹ�(�����ƥॳ������б�)	*/
-  W	errno;			/* ���顼�ֹ� */
-  W	status;			/* ���ơ�����(�꥿������) */
+  ID	receive_port;		/* 要求受信用のポート	*/
+  W	msg_length;		/* メッセージの長さ	*/
+  W	operation;		/* 要求番号(システムコールに対応)	*/
+  W	errno;			/* エラー番号 */
+  W	status;			/* ステータス(リターン値) */
 
-  W	ret1;			/* ���֤˻��Ѥ���꥿������ */
-  W	ret2;			/* ���֤˻��Ѥ���꥿������ */
+  W	ret1;			/* サブに使用するリターン値 */
+  W	ret2;			/* サブに使用するリターン値 */
 };
 
 

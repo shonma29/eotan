@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -26,53 +26,53 @@ static char rcsid[] =
  * modified some debug messages.
  *
  * Revision 1.12  1998/06/10 15:46:24  night
- * ¥Ñ¡¼¥Æ¥£¥·¥ç¥ó¾ğÊó¤È¤·¤Æ¡¢CHS ¤Ç¤Ï¤Ê¤¯¥ê¥Ë¥¢¥Ö¥í¥Ã¥¯ÈÖ¹æ¤ò»È¤¦¤è¤¦¤Ë
- * ÊÑ¹¹¤·¤¿¡£
+ * ãƒ‘ãƒ¼ãƒ†ã‚£ã‚·ãƒ§ãƒ³æƒ…å ±ã¨ã—ã¦ã€CHS ã§ã¯ãªããƒªãƒ‹ã‚¢ãƒ–ãƒ­ãƒƒã‚¯ç•ªå·ã‚’ä½¿ã†ã‚ˆã†ã«
+ * å¤‰æ›´ã—ãŸã€‚
  *
  * Revision 1.11  1998/05/07 16:47:42  night
- * ¥Ñ¡¼¥Æ¥£¥·¥ç¥ó¤ÎºÇ½é¤Î¥Ö¥í¥Ã¥¯ÈÖ¹æ¤ò·×»»¤¹¤ë¤È¤­¤Ë¡¢
- * ³ÈÄ¥¥Ñ¡¼¥Æ¥£¥·¥ç¥ó¤Î¤³¤È¤ò¹ÍÎ¸¤¹¤ë¤è¤¦¤Ë¤·¤¿¡£
+ * ãƒ‘ãƒ¼ãƒ†ã‚£ã‚·ãƒ§ãƒ³ã®æœ€åˆã®ãƒ–ãƒ­ãƒƒã‚¯ç•ªå·ã‚’è¨ˆç®—ã™ã‚‹ã¨ãã«ã€
+ * æ‹¡å¼µãƒ‘ãƒ¼ãƒ†ã‚£ã‚·ãƒ§ãƒ³ã®ã“ã¨ã‚’è€ƒæ…®ã™ã‚‹ã‚ˆã†ã«ã—ãŸã€‚
  *
  * Revision 1.10  1998/02/23 14:39:38  night
- * get_req ¤Î°ú¿ô¤¬´Ö°ã¤Ã¤Æ¤¤¤¿¤¿¤á½¤Àµ¡£
- * º£¤Ş¤Ç¤Î¥³¡¼¥É¤À¤È¡¢²¾ÁÛ¶õ´Ö¤ÎÀèÆ¬ÉôÊ¬¤òÇË²õ¤·¤Æ¤¤¤¿¡£
+ * get_req ã®å¼•æ•°ãŒé–“é•ã£ã¦ã„ãŸãŸã‚ä¿®æ­£ã€‚
+ * ä»Šã¾ã§ã®ã‚³ãƒ¼ãƒ‰ã ã¨ã€ä»®æƒ³ç©ºé–“ã®å…ˆé ­éƒ¨åˆ†ã‚’ç ´å£Šã—ã¦ã„ãŸã€‚
  *
  * Revision 1.9  1997/10/11 16:18:51  night
- * IDE HD ¤Ø¤Î½ñ¤­¹ş¤ß½èÍı¤òÀµ¾ï¤ËÆ°¤¯¤è¤¦¤Ë¤¤¤í¤¤¤í½¤Àµ¡£
+ * IDE HD ã¸ã®æ›¸ãè¾¼ã¿å‡¦ç†ã‚’æ­£å¸¸ã«å‹•ãã‚ˆã†ã«ã„ã‚ã„ã‚ä¿®æ­£ã€‚
  *
  * Revision 1.8  1997/07/07 14:43:14  night
- * IDE ¥É¥é¥¤¥Ğ¤Î write ½èÍı¤â¥Ñ¡¼¥Æ¥£¥·¥ç¥ó¤ò°Õ¼±¤¹¤ë¤è¤¦¤ËÊÑ¹¹¤·¤¿¡£
+ * IDE ãƒ‰ãƒ©ã‚¤ãƒã® write å‡¦ç†ã‚‚ãƒ‘ãƒ¼ãƒ†ã‚£ã‚·ãƒ§ãƒ³ã‚’æ„è­˜ã™ã‚‹ã‚ˆã†ã«å¤‰æ›´ã—ãŸã€‚
  *
  * Revision 1.7  1997/07/06 11:46:24  night
- * ¥Ö¥í¥Ã¥¯¥ª¥Õ¥»¥Ã¥È¤Î·×»»ÊıË¡¤òÊÑ¹¹¡£
+ * ãƒ–ãƒ­ãƒƒã‚¯ã‚ªãƒ•ã‚»ãƒƒãƒˆã®è¨ˆç®—æ–¹æ³•ã‚’å¤‰æ›´ã€‚
  *
  * Revision 1.6  1997/07/04 15:03:58  night
- * ¥Ñ¡¼¥Æ¥£¥·¥ç¥ó¤Î»ØÄêÊıË¡¤òÊÑ¹¹¡£
- * dd ¤¬ 0 ¤Î¤È¤­¤Ë¤Ï¡¢¥Ç¥£¥¹¥¯Á´ÂÎ¤ò¼¨¤¹¤è¤¦¤Ë¤·¤¿¡£
- * (½¾Íè¤Ï¡¢dd ¤¬ 0 ¤Î¤È¤­¤Ë¤Ï¥Ñ¡¼¥Æ¥£¥·¥ç¥ó 0 ¤ò¼¨¤·¤Æ¤¤¤¿)
- * ¤³¤ÎÊÑ¹¹¤Ë¤è¤ê¡¢ºÇ½é¤Î¥Ñ¡¼¥Æ¥£¥·¥ç¥ó¤Ï¡¢dd ¤¬ 1 ¤Ç»ØÄê¤¹¤ë¤³¤È¤Ë¤Ê¤ë¡£
+ * ãƒ‘ãƒ¼ãƒ†ã‚£ã‚·ãƒ§ãƒ³ã®æŒ‡å®šæ–¹æ³•ã‚’å¤‰æ›´ã€‚
+ * dd ãŒ 0 ã®ã¨ãã«ã¯ã€ãƒ‡ã‚£ã‚¹ã‚¯å…¨ä½“ã‚’ç¤ºã™ã‚ˆã†ã«ã—ãŸã€‚
+ * (å¾“æ¥ã¯ã€dd ãŒ 0 ã®ã¨ãã«ã¯ãƒ‘ãƒ¼ãƒ†ã‚£ã‚·ãƒ§ãƒ³ 0 ã‚’ç¤ºã—ã¦ã„ãŸ)
+ * ã“ã®å¤‰æ›´ã«ã‚ˆã‚Šã€æœ€åˆã®ãƒ‘ãƒ¼ãƒ†ã‚£ã‚·ãƒ§ãƒ³ã¯ã€dd ãŒ 1 ã§æŒ‡å®šã™ã‚‹ã“ã¨ã«ãªã‚‹ã€‚
  *
  * Revision 1.5  1997/07/02 13:08:31  night
- * ³ä¤ê¹ş¤ß¤ò»È¤ï¤Ê¤¤¤è¤¦¤Ë½¤Àµ¡£
+ * å‰²ã‚Šè¾¼ã¿ã‚’ä½¿ã‚ãªã„ã‚ˆã†ã«ä¿®æ­£ã€‚
  *
  * Revision 1.4  1997/05/11 12:41:12  night
- * read/write »ş¤Ë¥Ñ¡¼¥Æ¥£¥·¥ç¥ó¾ğÊó¤ò¹ÍÎ¸¤¹¤ë¤è¤¦¤ËÊÑ¹¹¤·¤¿¡£
+ * read/write æ™‚ã«ãƒ‘ãƒ¼ãƒ†ã‚£ã‚·ãƒ§ãƒ³æƒ…å ±ã‚’è€ƒæ…®ã™ã‚‹ã‚ˆã†ã«å¤‰æ›´ã—ãŸã€‚
  *
  * Revision 1.3  1997/05/08 15:07:12  night
- * IDE ¥É¥é¥¤¥Ö¤Î¾ğÊó¤òµ­Ï¿¤¹¤ëÎÎ°è¤ò¿·¤·¤¯ÀßÄê¤·¤¿¡£
+ * IDE ãƒ‰ãƒ©ã‚¤ãƒ–ã®æƒ…å ±ã‚’è¨˜éŒ²ã™ã‚‹é ˜åŸŸã‚’æ–°ã—ãè¨­å®šã—ãŸã€‚
  *
  * Revision 1.2  1997/05/06 12:40:55  night
- * IDE_GET_STAT ÄÉ²Ã¡£
+ * IDE_GET_STAT è¿½åŠ ã€‚
  *
  * Revision 1.1  1996/11/05  18:42:35  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  *
  */
 
 /*
- * IDE HD ¥Ç¥Ğ¥¤¥¹¥É¥é¥¤¥Ğ
+ * IDE HD ãƒ‡ãƒã‚¤ã‚¹ãƒ‰ãƒ©ã‚¤ãƒ
  *
  *
  */
@@ -80,7 +80,7 @@ static char rcsid[] =
 
 
 /*********************************************************************
- *	 Âç°èÊÑ¿ô·²¤ÎÀë¸À
+ *	 å¤§åŸŸå¤‰æ•°ç¾¤ã®å®£è¨€
  *
  */
 W ide_intr_flag;
@@ -92,24 +92,24 @@ W ext_partition;
 
 
 /*********************************************************************
- *	 ¶É½êÊÑ¿ô·²¤ÎÀë¸À
+ *	 å±€æ‰€å¤‰æ•°ç¾¤ã®å®£è¨€
  *
  */
-static W mydevid;		/* ¼«Ê¬¼«¿È¤Îid */
-static ID recvport;		/* Í×µá¼õ¤±¤Ä¤±ÍÑ¥İ¡¼¥È */
+static W mydevid;		/* è‡ªåˆ†è‡ªèº«ã®id */
+static ID recvport;		/* è¦æ±‚å—ã‘ã¤ã‘ç”¨ãƒãƒ¼ãƒˆ */
 static W initialized;
 
 /*
- *	¶É½ê´Ø¿ô·²¤ÎÄêµÁ
+ *	å±€æ‰€é–¢æ•°ç¾¤ã®å®šç¾©
  */
 static void main_loop(void);
 static void init_ide_driver(void);
 static void doit(DDEV_REQ * packet);
 
 /*
- * FD ¥Ç¥Ğ¥¤¥¹¥É¥é¥¤¥Ğ¤Î main ´Ø¿ô
+ * FD ãƒ‡ãƒã‚¤ã‚¹ãƒ‰ãƒ©ã‚¤ãƒã® main é–¢æ•°
  *
- * ¤³¤Î´Ø¿ô¤Ï¡¢¥Ç¥Ğ¥¤¥¹¥É¥é¥¤¥ĞÎ©¤Á¾å¤²»ş¤Ë°ì²ó¤À¤±¼Â¹Ô¤¹¤ë¡£
+ * ã“ã®é–¢æ•°ã¯ã€ãƒ‡ãƒã‚¤ã‚¹ãƒ‰ãƒ©ã‚¤ãƒç«‹ã¡ä¸Šã’æ™‚ã«ä¸€å›ã ã‘å®Ÿè¡Œã™ã‚‹ã€‚
  *
  */
 start()
@@ -117,17 +117,17 @@ start()
     extern char version[];
 
     /* 
-     * Í×µá¼õ¿®ÍÑ¤Î¥İ¡¼¥È¤ÎºîÀ®
+     * è¦æ±‚å—ä¿¡ç”¨ã®ãƒãƒ¼ãƒˆã®ä½œæˆ
      */
     init_ide_driver();
 
     /*
-     * Î©¤Á¾å¤²¥á¥Ã¥»¡¼¥¸
+     * ç«‹ã¡ä¸Šã’ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸
      */
     dbg_printf("IDE disk driver started. receive port is %d\n", recvport);
 
     /*
-     * ¥É¥é¥¤¥Ğ¤ò½é´ü²½¤¹¤ë¡£
+     * ãƒ‰ãƒ©ã‚¤ãƒã‚’åˆæœŸåŒ–ã™ã‚‹ã€‚
      */
     main_loop();
 }
@@ -139,15 +139,15 @@ static void main_loop()
     UW rsize;
 
     /*
-     * Í×µá¼õ¿® - ½èÍı¤Î¥ë¡¼¥×
+     * è¦æ±‚å—ä¿¡ - å‡¦ç†ã®ãƒ«ãƒ¼ãƒ—
      */
     for (;;) {
-	/* Í×µá¤Î¼õ¿® */
+	/* è¦æ±‚ã®å—ä¿¡ */
 /*      printf ("ide: get_req\n");	/* */
 	get_req(recvport, &req, &rsize);
 	switch (sys_errno) {
 	case E_OK:
-	    /* Àµ¾ï¥±¡¼¥¹ */
+	    /* æ­£å¸¸ã‚±ãƒ¼ã‚¹ */
 #ifdef DEBUG
 	    printf("ide: receive packet type = %d\n", req.header.msgtyp);
 #endif
@@ -164,7 +164,7 @@ static void main_loop()
 	}
     }
 
-    /* ¤³¤³¤Î¹Ô¤Ë¤Ï¡¢Íè¤Ê¤¤ */
+    /* ã“ã“ã®è¡Œã«ã¯ã€æ¥ãªã„ */
 }
 
 /*
@@ -182,12 +182,12 @@ static void doit(DDEV_REQ * packet)
     }
     switch (packet->header.msgtyp) {
     case DEV_OPN:
-	/* ¥Ç¥Ğ¥¤¥¹¤Î¥ª¡¼¥×¥ó */
+	/* ãƒ‡ãƒã‚¤ã‚¹ã®ã‚ªãƒ¼ãƒ—ãƒ³ */
 	open_ide(packet->header.mbfid, &(packet->body.opn_req));
 	break;
 
     case DEV_CLS:
-	/* ¥Ç¥Ğ¥¤¥¹¤Î¥¯¥í¡¼¥º */
+	/* ãƒ‡ãƒã‚¤ã‚¹ã®ã‚¯ãƒ­ãƒ¼ã‚º */
 	close_ide(packet->header.mbfid, &(packet->body.cls_req));
 	break;
 
@@ -206,10 +206,10 @@ static void doit(DDEV_REQ * packet)
 }
 
 /*
- * ½é´ü²½
+ * åˆæœŸåŒ–
  *
- * o ¥Õ¥¡¥¤¥ë¥Æ¡¼¥Ö¥ë (file_table) ¤Î½é´ü²½
- * o Í×µá¼õ¤±¤Ä¤±ÍÑ¤Î¥á¥Ã¥»¡¼¥¸¥Ğ¥Ã¥Õ¥¡ ID ¤ò¥İ¡¼¥È¥Ş¥Í¡¼¥¸¥ã¤ËÅĞÏ¿
+ * o ãƒ•ã‚¡ã‚¤ãƒ«ãƒ†ãƒ¼ãƒ–ãƒ« (file_table) ã®åˆæœŸåŒ–
+ * o è¦æ±‚å—ã‘ã¤ã‘ç”¨ã®ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒãƒƒãƒ•ã‚¡ ID ã‚’ãƒãƒ¼ãƒˆãƒãƒãƒ¼ã‚¸ãƒ£ã«ç™»éŒ²
  */
 static void init_ide_driver(void)
 {
@@ -218,7 +218,7 @@ static void init_ide_driver(void)
     ER error;
 
     /*
-     * Í×µá¼õ¤±¤Ä¤±ÍÑ¤Î¥İ¡¼¥È¤ò½é´ü²½¤¹¤ë¡£
+     * è¦æ±‚å—ã‘ã¤ã‘ç”¨ã®ãƒãƒ¼ãƒˆã‚’åˆæœŸåŒ–ã™ã‚‹ã€‚
      */
 #ifdef notdef
     recvport = get_port(sizeof(DDEV_RES), sizeof(DDEV_RES));
@@ -228,7 +228,7 @@ static void init_ide_driver(void)
     if (recvport <= 0) {
 	dbg_printf("IDE: cannot make receive porrt.\n");
 	slp_tsk();
-	/* ¥á¥Ã¥»¡¼¥¸¥Ğ¥Ã¥Õ¥¡À¸À®¤Ë¼ºÇÔ */
+	/* ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒãƒƒãƒ•ã‚¡ç”Ÿæˆã«å¤±æ•— */
     }
 
     error = regist_port(IDE_DRIVER, recvport);
@@ -242,7 +242,7 @@ static void init_ide_driver(void)
 }
 
 /*
- * init_ide --- IDE ¥É¥é¥¤¥Ğ¤Î½é´ü²½
+ * init_ide --- IDE ãƒ‰ãƒ©ã‚¤ãƒã®åˆæœŸåŒ–
  *
  */
 W init_ide(void)
@@ -254,7 +254,7 @@ W init_ide(void)
 #endif
 
 #ifdef notdef
-    /* ³ä¹ş¤ß¤Ï»ÈÍÑ¤·¤Ê¤¤ */
+    /* å‰²è¾¼ã¿ã¯ä½¿ç”¨ã—ãªã„ */
     pkt.intatr = ATR_INTR;
     pkt.inthdr = (FP) intr_ide;
     err = def_int(INT_IDE0, &pkt);
@@ -265,34 +265,34 @@ W init_ide(void)
     reset_intr_mask(IDE0_INTR_MASK);
 #endif
 
-    outb(IDE_CONTROL_REG, IDE_SRST);	/* ¥½¥Õ¥È¥¦¥§¥¢¡¦¥ê¥»¥Ã¥È */
-    outb(IDE_CONTROL_REG, IDE_nIEN);	/* ³ä¹ş¤ß¶Ø»ß */
+    outb(IDE_CONTROL_REG, IDE_SRST);	/* ã‚½ãƒ•ãƒˆã‚¦ã‚§ã‚¢ãƒ»ãƒªã‚»ãƒƒãƒˆ */
+    outb(IDE_CONTROL_REG, IDE_nIEN);	/* å‰²è¾¼ã¿ç¦æ­¢ */
     status = ide_wait_while_busy();
     dbg_printf("IDE init status = 0x%x/0x%x\n",
 	       inb(IDE_ERROR_REG), status);
 
-    ide_recalibrate(0);		/* drive 0 ¤Î recalibrate */
+    ide_recalibrate(0);		/* drive 0 ã® recalibrate */
     read_partition(0);
 }
 
 /************************************************************************
- * open_ide --- IDE ¤Î¥ª¡¼¥×¥ó
+ * open_ide --- IDE ã®ã‚ªãƒ¼ãƒ—ãƒ³
  *
- * °ú¿ô¡§	dd	IDE ¥É¥é¥¤¥ĞÈÖ¹æ
- *		o_mode	¥ª¡¼¥×¥ó¥â¡¼¥É
- *		error	¥¨¥é¡¼ÈÖ¹æ
+ * å¼•æ•°ï¼š	dd	IDE ãƒ‰ãƒ©ã‚¤ãƒç•ªå·
+ *		o_mode	ã‚ªãƒ¼ãƒ—ãƒ³ãƒ¢ãƒ¼ãƒ‰
+ *		error	ã‚¨ãƒ©ãƒ¼ç•ªå·
  *
- * ÊÖÃÍ¡§	
+ * è¿”å€¤ï¼š	
  *
- * ½èÍı¡§	»ØÄê¤·¤¿ IDE ¤Î¥¹¥Æ¡¼¥¿¥¹¤òÄ´¤Ù¡¢¤â¤·»È¤ï¤ì¤Æ¤¤¤Ê¤±¤ì¤Ğ¡¢
- *		»ÈÍÑ¾õÂÖ (DRIVE_USING) ¤Ë¤¹¤ë¡£
+ * å‡¦ç†ï¼š	æŒ‡å®šã—ãŸ IDE ã®ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã‚’èª¿ã¹ã€ã‚‚ã—ä½¿ã‚ã‚Œã¦ã„ãªã‘ã‚Œã°ã€
+ *		ä½¿ç”¨çŠ¶æ…‹ (DRIVE_USING) ã«ã™ã‚‹ã€‚
  *
  */
 W open_ide(ID caller, DDEV_OPN_REQ * packet)
 {
     DDEV_RES res;
-    W drive;			/* ¥É¥é¥¤¥ÖÈÖ¹æ */
-    UW partition;		/* ¥Ñ¡¼¥Æ¥£¥·¥ç¥óÈÖ¹æ */
+    W drive;			/* ãƒ‰ãƒ©ã‚¤ãƒ–ç•ªå· */
+    UW partition;		/* ãƒ‘ãƒ¼ãƒ†ã‚£ã‚·ãƒ§ãƒ³ç•ªå· */
     int i;
 
 #ifdef notdef
@@ -332,16 +332,16 @@ W open_ide(ID caller, DDEV_OPN_REQ * packet)
 }
 
 /************************************************************************
- * ide_close --- ¥É¥é¥¤¥Ğ¤Î¥¯¥í¡¼¥º
+ * ide_close --- ãƒ‰ãƒ©ã‚¤ãƒã®ã‚¯ãƒ­ãƒ¼ã‚º
  *
- * °ú¿ô¡§	dd	IDE ¥É¥é¥¤¥ĞÈÖ¹æ
- *		o_mode	¥ª¡¼¥×¥ó¥â¡¼¥É
- *		error	¥¨¥é¡¼ÈÖ¹æ
+ * å¼•æ•°ï¼š	dd	IDE ãƒ‰ãƒ©ã‚¤ãƒç•ªå·
+ *		o_mode	ã‚ªãƒ¼ãƒ—ãƒ³ãƒ¢ãƒ¼ãƒ‰
+ *		error	ã‚¨ãƒ©ãƒ¼ç•ªå·
  *
- * ÊÖÃÍ¡§	
+ * è¿”å€¤ï¼š	
  *
- * ½èÍı¡§	»ØÄê¤·¤¿ IDE ¤Î¥¹¥Æ¡¼¥¿¥¹¤òÄ´¤Ù¡¢¤â¤·»È¤ï¤ì¤Æ¤¤¤ì¤Ğ
- *		»ÈÍÑ¾õÂÖ (DRIVE_USING) ¤Î¥Õ¥é¥°¤ò¾Ã¤¹¡£
+ * å‡¦ç†ï¼š	æŒ‡å®šã—ãŸ IDE ã®ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã‚’èª¿ã¹ã€ã‚‚ã—ä½¿ã‚ã‚Œã¦ã„ã‚Œã°
+ *		ä½¿ç”¨çŠ¶æ…‹ (DRIVE_USING) ã®ãƒ•ãƒ©ã‚°ã‚’æ¶ˆã™ã€‚
  *
  */
 W close_ide(ID caller, DDEV_CLS_REQ * packet)
@@ -358,31 +358,31 @@ W close_ide(ID caller, DDEV_CLS_REQ * packet)
 /*************************************************************************
  * read_ide --- 
  *
- * °ú¿ô¡§	caller	¸Æ¤Ó½Ğ¤·¸µ¤Ø¤ÎÊÖÅú¤òÊÖ¤¹¤¿¤á¤Î¥İ¡¼¥È
- *		packet	ÆÉ¤ß¹ş¤ß¥Ç¡¼¥¿¤Î¥Ñ¥é¥á¡¼¥¿
+ * å¼•æ•°ï¼š	caller	å‘¼ã³å‡ºã—å…ƒã¸ã®è¿”ç­”ã‚’è¿”ã™ãŸã‚ã®ãƒãƒ¼ãƒˆ
+ *		packet	èª­ã¿è¾¼ã¿ãƒ‡ãƒ¼ã‚¿ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
  *
- * ÊÖÃÍ¡§	¥¨¥é¡¼ÈÖ¹æ
+ * è¿”å€¤ï¼š	ã‚¨ãƒ©ãƒ¼ç•ªå·
  *
- * ½èÍı¡§	¤³¤Î´Ø¿ô¤Ï¡¢°Ê²¼¤Î½èÍı¤ò¹Ô¤¦¡£
+ * å‡¦ç†ï¼š	ã“ã®é–¢æ•°ã¯ã€ä»¥ä¸‹ã®å‡¦ç†ã‚’è¡Œã†ã€‚
  *
- *		1) ÏÀÍı¥Ö¥í¥Ã¥¯ÈÖ¹æ (1024 byte Ã±°Ì) ¤«¤éÊªÍı¥Ö¥í¥Ã¥¯ÈÖ¹æ¤ØÊÑ´¹
- *		2) ÊªÍı¥Ö¥í¥Ã¥¯ÈÖ¹æ¤«¤é¤µ¤é¤Ë Head/Cylinder/Sector ¤Î³Æ¡¹¤Î¿ô¤ØÊÑ´¹
- *		3) ÊÑ´¹¤·¤¿¿ô¤ò°ú¿ô¤Ë¤·¤Æ get_data() ¤ò¸Æ¤Ó½Ğ¤¹
+ *		1) è«–ç†ãƒ–ãƒ­ãƒƒã‚¯ç•ªå· (1024 byte å˜ä½) ã‹ã‚‰ç‰©ç†ãƒ–ãƒ­ãƒƒã‚¯ç•ªå·ã¸å¤‰æ›
+ *		2) ç‰©ç†ãƒ–ãƒ­ãƒƒã‚¯ç•ªå·ã‹ã‚‰ã•ã‚‰ã« Head/Cylinder/Sector ã®å„ã€…ã®æ•°ã¸å¤‰æ›
+ *		3) å¤‰æ›ã—ãŸæ•°ã‚’å¼•æ•°ã«ã—ã¦ get_data() ã‚’å‘¼ã³å‡ºã™
  *
  */
 W read_ide(ID caller, DDEV_REA_REQ * packet)
 {
     DDEV_RES res;
-    W blockno;			/* ÊªÍı¥Ö¥í¥Ã¥¯ÈÖ¹æ */
-    W bcount;			/* ÏÀÍı¥Ö¥í¥Ã¥¯¤¬ÊªÍı¥Ö¥í¥Ã¥¯¤è¤êÂç¤­¤¤¾ì¹ç¤Ë»ÈÍÑ¤¹¤ë¡£ */
-    /* ÊªÍı¥Ö¥í¥Ã¥¯¤òÆÉ¤ß¤È¤ë¤È¤­¤Î²ó¿ô¤È¤Ê¤ë              */
+    W blockno;			/* ç‰©ç†ãƒ–ãƒ­ãƒƒã‚¯ç•ªå· */
+    W bcount;			/* è«–ç†ãƒ–ãƒ­ãƒƒã‚¯ãŒç‰©ç†ãƒ–ãƒ­ãƒƒã‚¯ã‚ˆã‚Šå¤§ãã„å ´åˆã«ä½¿ç”¨ã™ã‚‹ã€‚ */
+    /* ç‰©ç†ãƒ–ãƒ­ãƒƒã‚¯ã‚’èª­ã¿ã¨ã‚‹ã¨ãã®å›æ•°ã¨ãªã‚‹              */
     W cylinder;
     W head;
     W sector;
-    W drive;			/* ¥É¥é¥¤¥ÖÈÖ¹æ */
-    UW partition;		/* ¥Ñ¡¼¥Æ¥£¥·¥ç¥óÈÖ¹æ */
+    W drive;			/* ãƒ‰ãƒ©ã‚¤ãƒ–ç•ªå· */
+    UW partition;		/* ãƒ‘ãƒ¼ãƒ†ã‚£ã‚·ãƒ§ãƒ³ç•ªå· */
     W i, try;
-    W done_length;		/* ËÜÅö¤ËÆÉ¤ß¹ş¤ó¤À¥Ğ¥¤¥È¿ô */
+    W done_length;		/* æœ¬å½“ã«èª­ã¿è¾¼ã‚“ã ãƒã‚¤ãƒˆæ•° */
     static B buff[BLOCK_SIZE * 2];
     UW bp;
     ER ret;
@@ -420,7 +420,7 @@ W read_ide(ID caller, DDEV_REA_REQ * packet)
 #ifdef DEBUG
 	dbg_printf("read_ide: bp = %d, length = %d\n", bp, BLOCK_SIZE);	/* */
 #endif
-	/* ¥Ğ¥¤¥È¥ª¥Õ¥»¥Ã¥È¤«¤éÊªÍı¥Ö¥í¥Ã¥¯ÈÖ¹æ¤Ø¤ÎÊÑ´¹ */
+	/* ãƒã‚¤ãƒˆã‚ªãƒ•ã‚»ãƒƒãƒˆã‹ã‚‰ç‰©ç†ãƒ–ãƒ­ãƒƒã‚¯ç•ªå·ã¸ã®å¤‰æ› */
 	blockno = ((UW) (bp + bufstart + parstart) / BLOCK_SIZE)
 	    * (BLOCK_SIZE / IDE_BLOCK_SIZE);
 	bcount = BLOCK_SIZE / IDE_BLOCK_SIZE;
@@ -524,16 +524,16 @@ W read_ide(ID caller, DDEV_REA_REQ * packet)
 W write_ide(ID caller, DDEV_WRI_REQ * packet)
 {
     DDEV_RES res;
-    W blockno;			/* ÊªÍı¥Ö¥í¥Ã¥¯ÈÖ¹æ */
-    W bcount;			/* ÏÀÍı¥Ö¥í¥Ã¥¯¤¬ÊªÍı¥Ö¥í¥Ã¥¯¤è¤êÂç¤­¤¤¾ì¹ç¤Ë»ÈÍÑ¤¹¤ë¡£ */
-    /* ÊªÍı¥Ö¥í¥Ã¥¯¤òÆÉ¤ß¤È¤ë¤È¤­¤Î²ó¿ô¤È¤Ê¤ë              */
+    W blockno;			/* ç‰©ç†ãƒ–ãƒ­ãƒƒã‚¯ç•ªå· */
+    W bcount;			/* è«–ç†ãƒ–ãƒ­ãƒƒã‚¯ãŒç‰©ç†ãƒ–ãƒ­ãƒƒã‚¯ã‚ˆã‚Šå¤§ãã„å ´åˆã«ä½¿ç”¨ã™ã‚‹ã€‚ */
+    /* ç‰©ç†ãƒ–ãƒ­ãƒƒã‚¯ã‚’èª­ã¿ã¨ã‚‹ã¨ãã®å›æ•°ã¨ãªã‚‹              */
     W cylinder;
     W head;
     W sector;
-    W drive;			/* ¥É¥é¥¤¥ÖÈÖ¹æ */
-    UW partition;		/* ¥Ñ¡¼¥Æ¥£¥·¥ç¥óÈÖ¹æ */
+    W drive;			/* ãƒ‰ãƒ©ã‚¤ãƒ–ç•ªå· */
+    UW partition;		/* ãƒ‘ãƒ¼ãƒ†ã‚£ã‚·ãƒ§ãƒ³ç•ªå· */
     W i, try;
-    W done_length;		/* ËÜÅö¤ËÆÉ¤ß¹ş¤ó¤À¥Ğ¥¤¥È¿ô */
+    W done_length;		/* æœ¬å½“ã«èª­ã¿è¾¼ã‚“ã ãƒã‚¤ãƒˆæ•° */
     static B buff[BLOCK_SIZE * 2];
     UW bp;
     ER ret;
@@ -563,7 +563,7 @@ W write_ide(ID caller, DDEV_WRI_REQ * packet)
 	       partition, parstart, bufstart, buflength - bufstart);	/* */
 #endif
 
-    /* ¤Ş¤º¡¢³ºÅö¤¹¤ë¥Ö¥í¥Ã¥¯¤ÎºÇ½é¤Ë¥Ç¥£¥¹¥¯¤ÎÃæ¿È¤òÆÉ¤ß¼è¤ë
+    /* ã¾ãšã€è©²å½“ã™ã‚‹ãƒ–ãƒ­ãƒƒã‚¯ã®æœ€åˆã«ãƒ‡ã‚£ã‚¹ã‚¯ã®ä¸­èº«ã‚’èª­ã¿å–ã‚‹
      */
     done_length = 0;
     error = E_OK;
@@ -573,7 +573,7 @@ W write_ide(ID caller, DDEV_WRI_REQ * packet)
 #ifdef DEBUG
 	dbg_printf("write_ide: bp = %d, length = %d\n", bp, BLOCK_SIZE);
 #endif
-	/* ¥Ğ¥¤¥È¥ª¥Õ¥»¥Ã¥È¤«¤éÊªÍı¥Ö¥í¥Ã¥¯ÈÖ¹æ¤Ø¤ÎÊÑ´¹ */
+	/* ãƒã‚¤ãƒˆã‚ªãƒ•ã‚»ãƒƒãƒˆã‹ã‚‰ç‰©ç†ãƒ–ãƒ­ãƒƒã‚¯ç•ªå·ã¸ã®å¤‰æ› */
 	blockno = ((UW) (bp + bufstart + parstart) / BLOCK_SIZE)
 	    * (BLOCK_SIZE / IDE_BLOCK_SIZE);
 	bcount = BLOCK_SIZE / IDE_BLOCK_SIZE;
@@ -624,7 +624,7 @@ W write_ide(ID caller, DDEV_WRI_REQ * packet)
 	}
     }
 
-    /* ÆÉ¤ß¼è¤Ã¤¿¥Ç¡¼¥¿¾å¤ÎÉ¬Í×¤ÊÉôÊ¬¤Ë¡¢½ñ¤­´¹¤¨¤¿¤¤¥Ç¡¼¥¿¤ò¾å½ñ¤­¤¹¤ë */
+    /* èª­ã¿å–ã£ãŸãƒ‡ãƒ¼ã‚¿ä¸Šã®å¿…è¦ãªéƒ¨åˆ†ã«ã€æ›¸ãæ›ãˆãŸã„ãƒ‡ãƒ¼ã‚¿ã‚’ä¸Šæ›¸ãã™ã‚‹ */
     done_length = sizeof(buff) - packet->start + bufstart;
     if (packet->size <= done_length)
 	done_length = packet->size;
@@ -644,17 +644,17 @@ W write_ide(ID caller, DDEV_WRI_REQ * packet)
     }
 #endif
 
-    /* ½ñ¤­´¹¤¨¤¿¥Ç¡¼¥¿¤òºÆÅÙ¥Ç¥£¥¹¥¯¾å¤Ë½ñ¤­¹ş¤à */
+    /* æ›¸ãæ›ãˆãŸãƒ‡ãƒ¼ã‚¿ã‚’å†åº¦ãƒ‡ã‚£ã‚¹ã‚¯ä¸Šã«æ›¸ãè¾¼ã‚€ */
     done_length = 0;
     error = E_OK;
     ret = E_OK;
 
     for (bp = 0; bp < (buflength - bufstart); bp += BLOCK_SIZE) {
-	/* ¥Ğ¥¤¥È¥ª¥Õ¥»¥Ã¥È¤«¤éÊªÍı¥Ö¥í¥Ã¥¯ÈÖ¹æ¤Ø¤ÎÊÑ´¹ */
+	/* ãƒã‚¤ãƒˆã‚ªãƒ•ã‚»ãƒƒãƒˆã‹ã‚‰ç‰©ç†ãƒ–ãƒ­ãƒƒã‚¯ç•ªå·ã¸ã®å¤‰æ› */
 	blockno = ((UW) (bp + bufstart + parstart) / BLOCK_SIZE)
 	    * (BLOCK_SIZE / IDE_BLOCK_SIZE);
 #if 0
-	/* ·×»»ºÑ */
+	/* è¨ˆç®—æ¸ˆ */
 	bcount = BLOCK_SIZE / IDE_BLOCK_SIZE;
 #endif
 #ifdef DEBUG
@@ -751,7 +751,7 @@ W control_ide(ID caller, DDEV_CTL_REQ * packet)
     drive = IDE_GET_DRIVE(packet->dd);
     switch (packet->cmd) {
     case IDE_GET_STAT:
-	/* IDE ¤Î¾ğÊó¤ò¼è¤ê½Ğ¤¹ */
+	/* IDE ã®æƒ…å ±ã‚’å–ã‚Šå‡ºã™ */
 	error = read_stat(drive, &ide_spec[drive]);
 	break;
 
@@ -801,7 +801,7 @@ ER read_partition(W drive)
     struct ide_partition *table;
 #endif
 
-    /* drive 0 ¤ËÂĞ¤·¤Æ¤Ï½é´ü²½¤Îºİ¤Ë¼Â¹Ô¤µ¤ì¤ë */
+    /* drive 0 ã«å¯¾ã—ã¦ã¯åˆæœŸåŒ–ã®éš›ã«å®Ÿè¡Œã•ã‚Œã‚‹ */
     error = read_stat(drive, &ide_spec[drive]);
     if (error) {
 	return (error);
@@ -832,7 +832,7 @@ ER read_partition(W drive)
 		   ide_partition[drive][i].start,
 		   ide_partition[drive][i].length);
 #endif
-	/* ³ÈÄ¥¥Ñ¡¼¥Æ¥£¥·¥ç¥ó¤ÎÈ½Äê */
+	/* æ‹¡å¼µãƒ‘ãƒ¼ãƒ†ã‚£ã‚·ãƒ§ãƒ³ã®åˆ¤å®š */
 	switch (ide_partition[drive][i].type) {
 	case 0x05:
 	case 0x0F:
@@ -884,7 +884,7 @@ ER read_partition(W drive)
 #endif
 
 #ifdef notdef
-    /* °Ê²¼¤Î¥ë¡¼¥Á¥ó¤Ï obsolute */
+    /* ä»¥ä¸‹ã®ãƒ«ãƒ¼ãƒãƒ³ã¯ obsolute */
     if (rlength > 0) {
 	table = ide_partition[drive];
 	for (i = 0; i < IDE_MAX_PARTITION; i++) {

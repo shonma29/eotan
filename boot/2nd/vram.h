@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -16,16 +16,16 @@ Version 2, June 1991
  *
  * $Log: vram.h,v $
  * Revision 1.2  1996/05/11 15:52:44  night
- * VRAM ¤Î¥¢¥É¥ì¥¹¤òÊÑ¹¹¡£
- * ¥Ó¥Ç¥ª¥³¥ó¥È¥í¡¼¥é¤Î¥¢¥É¥ì¥¹¤òÄêµÁ¡£
+ * VRAM ã®ã‚¢ãƒ‰ãƒ¬ã‚¹ã‚’å¤‰æ›´ã€‚
+ * ãƒ“ãƒ‡ã‚ªã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ã®ã‚¢ãƒ‰ãƒ¬ã‚¹ã‚’å®šç¾©ã€‚
  *
  * Revision 1.1  1996/05/11  10:45:08  night
- * 2nd boot (IBM-PC ÈÇ B-FREE OS) ¤Î¥½¡¼¥¹¡£
+ * 2nd boot (IBM-PC ç‰ˆ B-FREE OS) ã®ã‚½ãƒ¼ã‚¹ã€‚
  *
  * -------------------------------------------------------------------
  *
  * Revision 1.2  1995/09/21  15:50:44  night
- * ¥½¡¼¥¹¥Õ¥¡¥¤¥ë¤ÎÀèÆ¬¤Ë Copyright notice ¾ðÊó¤òÄÉ²Ã¡£
+ * ã‚½ãƒ¼ã‚¹ãƒ•ã‚¡ã‚¤ãƒ«ã®å…ˆé ­ã« Copyright notice æƒ…å ±ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.1  1993/10/11  21:30:04  btron
  * btron/386

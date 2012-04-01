@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -19,11 +19,11 @@ Version 2, June 1991
 /*************************************************************************
  * halfword_swap
  *
- * °ú¿ô¡§
+ * å¼•æ•°ï¼š
  *
- * ÊÖÃÍ¡§
+ * è¿”å€¤ï¼š
  *
- * ½èÍý¡§
+ * å‡¦ç†ï¼š
  *
  */
 UH halfword_swap(UH w)

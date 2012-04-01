@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -33,7 +33,7 @@ W psc_umount_f(struct posix_request *req)
 		     req->param.par_umount.dirnamelen + 1, dirname);
 
     if (errno) {
-	/* mount Àè/special file ¤Î¥Ñ¥¹Ì¾¤Î¥³¥Ô¡¼¥¨¥é¡¼ */
+	/* mount å…ˆ/special file ã®ãƒ‘ã‚¹åã®ã‚³ãƒ”ãƒ¼ã‚¨ãƒ©ãƒ¼ */
 	if (errno == E_PAR) {
 	    put_response(req, EP_INVAL, -1, 0, 0);
 	} else {
@@ -42,7 +42,7 @@ W psc_umount_f(struct posix_request *req)
 	return (FAIL);
     }
 
-    /* ¥¢¥ó¥Þ¥¦¥ó¥È¥Ý¥¤¥ó¥È¤Î¥ª¡¼¥×¥ó */
+    /* ã‚¢ãƒ³ãƒžã‚¦ãƒ³ãƒˆãƒã‚¤ãƒ³ãƒˆã®ã‚ªãƒ¼ãƒ—ãƒ³ */
     if (*dirname != '/') {
 	errno = proc_get_cwd(req->procid, &startip);
 	if (errno) {

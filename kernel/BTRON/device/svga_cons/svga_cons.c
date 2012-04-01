@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -15,11 +15,11 @@ static char rcs[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/
 /* 
  * $Log: svga_cons.c,v $
  * Revision 1.4  1999/05/04 14:27:37  kishida0
- * ¥Ç¥Ğ¥Ã¥°ÍÑ¤Î¥³¥ó¥½¡¼¥ë¤È¤·¤ÆºîÀ®Í½Äê
- * ¤Ê¤ó¤Á¤ã¤Ã¤ÆDP¤È¤Ï´ØÏ¢¤·¤Ê¤¤¤Î¤ÇÃí°Õ¤·¤Æ¤¯¤À¤µ¤¤
+ * ãƒ‡ãƒãƒƒã‚°ç”¨ã®ã‚³ãƒ³ã‚½ãƒ¼ãƒ«ã¨ã—ã¦ä½œæˆäºˆå®š
+ * ãªã‚“ã¡ã‚ƒã£ã¦DPã¨ã¯é–¢é€£ã—ãªã„ã®ã§æ³¨æ„ã—ã¦ãã ã•ã„
  *
  * Revision 1.3  1999/04/26 18:28:49  kishida0
- * console ¤«¤é API ¤ò»ı¤Ã¤ÆÍè¤¿
+ * console ã‹ã‚‰ API ã‚’æŒã£ã¦æ¥ãŸ
  *
  * Revision 1.2  1999/04/20 16:19:45  kishida0
  * *** empty log message ***
@@ -44,11 +44,11 @@ static char rcs[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/
 
 
 /*
- *	 ¶É½êÊÑ¿ô·²¤ÎÀë¸À
+ *	 å±€æ‰€å¤‰æ•°ç¾¤ã®å®£è¨€
  *
  */
-static W	mydevid;	/* ¼«Ê¬¼«¿È¤Îid */
-static ID	recvport;	/* Í×µá¼õ¤±¤Ä¤±ÍÑ¥İ¡¼¥È */
+static W	mydevid;	/* è‡ªåˆ†è‡ªèº«ã®id */
+static ID	recvport;	/* è¦æ±‚å—ã‘ã¤ã‘ç”¨ãƒãƒ¼ãƒˆ */
 static W	initialized;
 
 struct device	dev_table[MAX_SVGA_CONS];
@@ -58,12 +58,12 @@ static void	main_loop (void);
 static void	init_driver (void);
 
 
-/* start --- svga_cons ¥É¥é¥¤¥Ğ¤Î¥á¥¤¥ó´Ø¿ô
+/* start --- svga_cons ãƒ‰ãƒ©ã‚¤ãƒã®ãƒ¡ã‚¤ãƒ³é–¢æ•°
  */
 void
 start (void)
 {
-  probe (&dev_table[0]); /* ¥Ç¥Ğ¥¤¥¹¤¬Â¸ºß¤·¤Æ¤¤¤ë¤«¤ò¥Á¥§¥Ã¥¯¤¹¤ë */
+  probe (&dev_table[0]); /* ãƒ‡ãƒã‚¤ã‚¹ãŒå­˜åœ¨ã—ã¦ã„ã‚‹ã‹ã‚’ãƒã‚§ãƒƒã‚¯ã™ã‚‹ */
   init_driver ();
 
   printf ("registed svga_cons driver.\n");
@@ -72,10 +72,10 @@ start (void)
 
 
 /*
- * ½é´ü²½
+ * åˆæœŸåŒ–
  *
- * o ¥Õ¥¡¥¤¥ë¥Æ¡¼¥Ö¥ë (file_table) ¤Î½é´ü²½
- * o Í×µá¼õ¤±¤Ä¤±ÍÑ¤Î¥á¥Ã¥»¡¼¥¸¥Ğ¥Ã¥Õ¥¡ ID ¤ò¥İ¡¼¥È¥Ş¥Í¡¼¥¸¥ã¤ËÅĞÏ¿
+ * o ãƒ•ã‚¡ã‚¤ãƒ«ãƒ†ãƒ¼ãƒ–ãƒ« (file_table) ã®åˆæœŸåŒ–
+ * o è¦æ±‚å—ã‘ã¤ã‘ç”¨ã®ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒãƒƒãƒ•ã‚¡ ID ã‚’ãƒãƒ¼ãƒˆãƒãƒãƒ¼ã‚¸ãƒ£ã«ç™»éŒ²
  */
 static void
 init_driver (void)
@@ -86,14 +86,14 @@ init_driver (void)
   init_log ();
 
   /*
-   * Í×µá¼õ¤±¤Ä¤±ÍÑ¤Î¥İ¡¼¥È¤ò½é´ü²½¤¹¤ë¡£
+   * è¦æ±‚å—ã‘ã¤ã‘ç”¨ã®ãƒãƒ¼ãƒˆã‚’åˆæœŸåŒ–ã™ã‚‹ã€‚
    */
   recvport = get_port (sizeof (DDEV_RES), sizeof (DDEV_RES));
   if (recvport <= 0)
     {
       dbg_printf ("svga_cons: cannot make receive porrt.\n");
       slp_tsk ();
-      /* ¥á¥Ã¥»¡¼¥¸¥Ğ¥Ã¥Õ¥¡À¸À®¤Ë¼ºÇÔ */
+      /* ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒãƒƒãƒ•ã‚¡ç”Ÿæˆã«å¤±æ•— */
     }
 
   error = regist_port (SVGA_CONS_DRIVER, recvport);
@@ -117,16 +117,16 @@ main_loop (void)
   UW		rsize;
 
   /*
-   * Í×µá¼õ¿® - ½èÍı¤Î¥ë¡¼¥×
+   * è¦æ±‚å—ä¿¡ - å‡¦ç†ã®ãƒ«ãƒ¼ãƒ—
    */
   for (;;)
     {
-      /* Í×µá¤Î¼õ¿® */
+      /* è¦æ±‚ã®å—ä¿¡ */
       get_req (recvport, &req, &rsize);
       switch (sys_errno)
 	{
 	case E_OK:
-	  /* Àµ¾ï¥±¡¼¥¹ */
+	  /* æ­£å¸¸ã‚±ãƒ¼ã‚¹ */
 	  process_request (&req);
 	  break;
 
@@ -137,7 +137,7 @@ main_loop (void)
 	}
     }
 
-  /* ¤³¤³¤Î¹Ô¤Ë¤Ï¡¢Íè¤Ê¤¤ */
+  /* ã“ã“ã®è¡Œã«ã¯ã€æ¥ãªã„ */
 }
 
 
@@ -150,12 +150,12 @@ process_request (DDEV_REQ *req)
   switch (req->header.msgtyp)
     {
     case DEV_OPN:
-      /* ¥Ç¥Ğ¥¤¥¹¤Î¥ª¡¼¥×¥ó */
+      /* ãƒ‡ãƒã‚¤ã‚¹ã®ã‚ªãƒ¼ãƒ—ãƒ³ */
       open_svga_cons (req->header.mbfid, &(req->body.opn_req));
       break;
 
     case DEV_CLS:
-      /* ¥Ç¥Ğ¥¤¥¹¤Î¥¯¥í¡¼¥º */
+      /* ãƒ‡ãƒã‚¤ã‚¹ã®ã‚¯ãƒ­ãƒ¼ã‚º */
       close_svga_cons (req->header.mbfid, &(req->body.cls_req));
       break;
 
@@ -174,14 +174,14 @@ process_request (DDEV_REQ *req)
 }
 
 /*
- * ¥Ç¥Ğ¥¤¥¹¤Î¥ª¡¼¥×¥ó
+ * ãƒ‡ãƒã‚¤ã‚¹ã®ã‚ªãƒ¼ãƒ—ãƒ³
  *
- * °ú¿ô¡§       caller  ¥á¥Ã¥»¡¼¥¸¤ÎÁ÷¤ê¼ê
- *              packet  ¥ª¡¼¥×¥ó¥Ñ¥±¥Ã¥È
+ * å¼•æ•°ï¼š       caller  ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®é€ã‚Šæ‰‹
+ *              packet  ã‚ªãƒ¼ãƒ—ãƒ³ãƒ‘ã‚±ãƒƒãƒˆ
  *
- * ÊÖÃÍ¡§       ¾ï¤Ë E_OK ¤òÊÖ¤¹¡£
+ * è¿”å€¤ï¼š       å¸¸ã« E_OK ã‚’è¿”ã™ã€‚
  *
- * ½èÍı¡§       E_OK ¤ò¥á¥Ã¥»¡¼¥¸¤ÎÁ÷¤ê¼ê¤ËÊÖ¤¹¡£
+ * å‡¦ç†ï¼š       E_OK ã‚’ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®é€ã‚Šæ‰‹ã«è¿”ã™ã€‚
  *
  */
 ER
@@ -197,7 +197,7 @@ open_svga_cons (ID caller, DDEV_OPN_REQ *packet)
 }
 
 /*
- * ¥Ç¥Ğ¥¤¥¹¤Î¥¯¥í¡¼¥º
+ * ãƒ‡ãƒã‚¤ã‚¹ã®ã‚¯ãƒ­ãƒ¼ã‚º
  */
 ER
 close_svga_cons (ID caller, DDEV_CLS_REQ *packet)
@@ -332,7 +332,7 @@ write_svga_cons (ID caller, DDEV_WRI_REQ *packet)
 ER
 control_svga_cons (ID caller, DDEV_CTL_REQ *packet)
 {
-  /*** ¤³¤³¤Ë¥³¡¼¥É¤ò¤Ä¤¤¤«¤·¤Æ¤¯¤À¤µ¤¤ ***/
+  /*** ã“ã“ã«ã‚³ãƒ¼ãƒ‰ã‚’ã¤ã„ã‹ã—ã¦ãã ã•ã„ ***/
 
   return (E_NOSPT);
 }

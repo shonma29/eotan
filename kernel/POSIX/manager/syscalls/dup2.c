@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -26,7 +26,7 @@ Version 2, June 1991
 
 #include "posix.h"
 
-/* psc_dup2_f -¥Õ¥¡¥¤¥ëµ­½Ò»Ò¤ÎÊ£À½
+/* psc_dup2_f -ãƒ•ã‚¡ã‚¤ãƒ«è¨˜è¿°å­ã®è¤‡è£½
  */
 W
 psc_dup2_f (struct posix_request *req)
@@ -35,7 +35,7 @@ psc_dup2_f (struct posix_request *req)
   struct file	*fp, *fp2;
 
 
-  /* ¥×¥í¥»¥¹¤«¤é¥Õ¥¡¥¤¥ë¹½Â¤ÂÎ¤Ø¤Î¥Ý¥¤¥ó¥¿¤ò¼è¤ê½Ð¤¹
+  /* ãƒ—ãƒ­ã‚»ã‚¹ã‹ã‚‰ãƒ•ã‚¡ã‚¤ãƒ«æ§‹é€ ä½“ã¸ã®ãƒã‚¤ãƒ³ã‚¿ã‚’å–ã‚Šå‡ºã™
    */
   errno = proc_get_file (req->procid, req->param.par_dup2.fileid1, &fp);
   if (errno)
@@ -47,8 +47,8 @@ psc_dup2_f (struct posix_request *req)
 
   if (fp->f_inode == NULL)
     {
-      /* Ê£À½¤¹¤ë¥Õ¥¡¥¤¥ëµ­½Ò»Ò¤ÎÈÖ¹æ¤¬¤ª¤«¤·¤¤¡£
-       * (¥Õ¥¡¥¤¥ë¤ò¥ª¡¼¥×¥ó¤·¤Æ¤¤¤Ê¤¤)
+      /* è¤‡è£½ã™ã‚‹ãƒ•ã‚¡ã‚¤ãƒ«è¨˜è¿°å­ã®ç•ªå·ãŒãŠã‹ã—ã„ã€‚
+       * (ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ã‚ªãƒ¼ãƒ—ãƒ³ã—ã¦ã„ãªã„)
        */
       put_response (req, EP_BADF, -1, 0, 0);
       return (FAIL);
@@ -60,7 +60,7 @@ psc_dup2_f (struct posix_request *req)
     return (FAIL);
   }
   if (fp2->f_inode != NULL) {
-    /* ´û¤Ë open ¤µ¤ì¤Æ¤¤¤ë file id ¤À¤Ã¤¿ */
+    /* æ—¢ã« open ã•ã‚Œã¦ã„ã‚‹ file id ã ã£ãŸ */
     errno = fs_close_file (fp2->f_inode);
     if (errno) {
       put_response (req, errno, -1, 0, 0);

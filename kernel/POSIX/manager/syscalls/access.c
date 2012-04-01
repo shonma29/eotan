@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -44,7 +44,7 @@ W psc_access_f(struct posix_request *req)
 
     errno = proc_alloc_fileid(req->procid, &fileid);
     if (errno) {
-	/* ¥á¥â¥ê¼èÆÀ¥¨¥é¡¼ */
+	/* ãƒ¡ãƒ¢ãƒªå–å¾—ã‚¨ãƒ©ãƒ¼ */
 	put_response(req, EP_NOMEM, -1, 0, 0);
 	return (FAIL);
     }
@@ -52,20 +52,20 @@ W psc_access_f(struct posix_request *req)
     pathname = alloca(req->param.par_access.pathlen + 1);
 
     if (pathname == NULL) {
-	/* ¥á¥â¥ê¼èÆÀ¥¨¥é¡¼ */
+	/* ãƒ¡ãƒ¢ãƒªå–å¾—ã‚¨ãƒ©ãƒ¼ */
 	put_response(req, EP_NOMEM, -1, 0, 0);
 	return (FAIL);
     }
 #endif
     bzero(pathname, req->param.par_access.pathlen + 1);
 
-    /* ¥Ñ¥¹Ì¾¤ò¥æ¡¼¥¶¥×¥í¥»¥¹¤«¤é POSIX ¥µ¡¼¥Ð¤Ë¥³¥Ô¡¼¤¹¤ë¡£
+    /* ãƒ‘ã‚¹åã‚’ãƒ¦ãƒ¼ã‚¶ãƒ—ãƒ­ã‚»ã‚¹ã‹ã‚‰ POSIX ã‚µãƒ¼ãƒã«ã‚³ãƒ”ãƒ¼ã™ã‚‹ã€‚
      */
     errno =
 	vget_reg(req->caller, req->param.par_access.path,
 		 req->param.par_access.pathlen, pathname);
     if (errno) {
-	/* ¥Ñ¥¹Ì¾¤Î¥³¥Ô¡¼¥¨¥é¡¼ */
+	/* ãƒ‘ã‚¹åã®ã‚³ãƒ”ãƒ¼ã‚¨ãƒ©ãƒ¼ */
 	if (errno == E_PAR)
 	    put_response(req, EP_INVAL, -1, 0, 0);
 	else
@@ -109,7 +109,7 @@ W psc_access_f(struct posix_request *req)
 #ifdef notdef
 	printf("open systemcall: Not found entry.\n");
 #endif
-	/* ¥Õ¥¡¥¤¥ë¤¬¥ª¡¼¥×¥ó¤Ç¤­¤Ê¤¤ */
+	/* ãƒ•ã‚¡ã‚¤ãƒ«ãŒã‚ªãƒ¼ãƒ—ãƒ³ã§ããªã„ */
 	put_response(req, errno, -1, 0, 0);
 	return (FAIL);
     }
@@ -128,9 +128,9 @@ W psc_access_f(struct posix_request *req)
 	return (FAIL);
     }
 
-    /* ¥¢¥¯¥»¥¹¸¢¸Â¤Î¥Á¥§¥Ã¥¯ */
+    /* ã‚¢ã‚¯ã‚»ã‚¹æ¨©é™ã®ãƒã‚§ãƒƒã‚¯ */
     if ((acc.uid == 0) || (euid == 0)) {
-	/* root ¥æ¡¼¥¶¤Î¾ì¹ç¤Ë¤Ï¡¢Ìµ¾ò·ï¤ÇÀ®¸ù¤È¤¹¤ë */
+	/* root ãƒ¦ãƒ¼ã‚¶ã®å ´åˆã«ã¯ã€ç„¡æ¡ä»¶ã§æˆåŠŸã¨ã™ã‚‹ */
 	put_response(req, EP_OK, 0, 0, 0);
 	return (SUCCESS);
     } else if ((newip->i_mode & accmode) == 0) {

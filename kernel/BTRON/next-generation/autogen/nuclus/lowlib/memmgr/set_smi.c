@@ -1,5 +1,5 @@
 /*
-B-Free Project д╬└╕└о╩кд╧ GNU Generic PUBLIC LICENSE д╦╜╛ддд▐д╣бг
+B-Free Project уБочФЯцИРчЙйуБп GNU Generic PUBLIC LICENSE уБлх╛УуБДуБ╛уБЩуАВ
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
 
@@ -11,7 +11,7 @@ Version 2, June 1991
 
 /*
 ** Function: set_smi
-** Description: ╢ж═несетеъе╓еэе├епд╬ецб╝е╢╛Ё╩єд╬└▀─ъ
+** Description: хЕ▒цЬЙуГбуГвуГкуГЦуГнуГГуВпуБоуГжуГ╝уВ╢цГЕха▒уБошинхоЪ
 */
 
 ER

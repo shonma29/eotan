@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -29,13 +29,13 @@ static char rcsid[] =
  * Mitten from C.
  *
  * Revision 1.3  1997/07/06 11:50:02  night
- * ¥Ç¥Ğ¥Ã¥°Ê¸¤Î°ú¿ô»ØÄê¤¬¤Ş¤Á¤¬¤Ã¤Æ¤¤¤¿¤Î¤Ç¡¢½¤Àµ¤·¤¿¡£
+ * ãƒ‡ãƒãƒƒã‚°æ–‡ã®å¼•æ•°æŒ‡å®šãŒã¾ã¡ãŒã£ã¦ã„ãŸã®ã§ã€ä¿®æ­£ã—ãŸã€‚
  *
  * Revision 1.2  1997/04/24 15:38:06  night
- * printf() ´Ø¿ô¤Î½èÍı¤ò kernlib ¤Î dbg_printf() ¤ÈÆ±ÍÍ¤Î¤â¤Î¤Ë¤·¤¿¡£
+ * printf() é–¢æ•°ã®å‡¦ç†ã‚’ kernlib ã® dbg_printf() ã¨åŒæ§˜ã®ã‚‚ã®ã«ã—ãŸã€‚
  *
  * Revision 1.1  1996/07/25  16:03:44  night
- * IBM PC ÈÇ¤Ø¤ÎºÇ½é¤ÎÅĞÏ¿
+ * IBM PC ç‰ˆã¸ã®æœ€åˆã®ç™»éŒ²
  *
  *
  */
@@ -174,8 +174,8 @@ W fputs(B * line, FILE * port)
 
 W writechar(ID port, ID resport, UB * buf, W length)
 {
-    DDEV_REQ req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-    DDEV_RES res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+    DDEV_REQ req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+    DDEV_RES res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
     W rsize;
     ER error;
     W i;
@@ -240,8 +240,8 @@ W getc(FILE * port)
 
 W readchar(ID port, ID resport)
 {
-    DDEV_REQ req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-    DDEV_RES res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+    DDEV_REQ req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+    DDEV_RES res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
     W rsize;
     ER error;
     W i;

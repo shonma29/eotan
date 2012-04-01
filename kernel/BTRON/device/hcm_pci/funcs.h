@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -40,7 +40,7 @@ extern ER	control_hcm_pci (ID caller, DDEV_CTL_REQ *packet);
 
 /* hcm_pcilow.c */
 extern ER	probe (struct device *dev);
-/*** ╓Ё╓Ё╓к **/
+/*** Ц│⌠Ц│⌠Ц│╚ **/
 
 /* misc.c */
 extern void	init_log (void);

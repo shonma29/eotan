@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -16,10 +16,10 @@ static char rcs[] = "@(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc
 /*
  * $Log: fs_if.c,v $
  * Revision 1.2  1997/06/29 15:44:31  night
- * �����Ȥ��ѹ�
+ * コメントの変更
  *
- * �����������ɤ� SJIS ���� EUC ���ѹ�������
- * ��RCS �� Log �ޥ�������Υ����Ȥ��ɲä���(�ޤ�����Ƥ��ʤ��ä��ե�����Τ�)��
+ * ・漢字コードを SJIS から EUC に変更した。
+ * ・RCS の Log マクロ入りのコメントを追加した(まだ入れていなかったファイルのみ)。
  *
  *
  */
@@ -28,7 +28,7 @@ static char rcs[] = "@(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc
 #include "memory_manager.h"
 
 
-/* �ե����륷���ƥ�ȤΥ��󥿥ե��������갷���ؿ���
+/* ファイルシステムとのインタフェースを取り扱う関数群
  */
 
 

@@ -36,7 +36,7 @@ LDOPT32 = -n -Ttext=$(START_ADDR) -static -e _main
 
 ########################################################################
 #
-#	2ndboot ...... ∫«Ω™≈™§À∫Ó§È§Ï§Î Second BOOT •§•·°º•∏
+#	2ndboot ...... ÊúÄÁµÇÁöÑ„Å´‰Ωú„Çâ„Çå„Çã Second BOOT „Ç§„É°„Éº„Ç∏
 #
 2ndboot: $(TOOLS) init mode32
 	objcopy -O binary mode32 mode32.raw

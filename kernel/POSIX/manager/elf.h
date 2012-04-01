@@ -1,6 +1,6 @@
 /*
 
-B-Free Project д╬└╕└о╩кд╧ GNU Generic PUBLIC LICENSE д╦╜╛ддд▐д╣бг
+B-Free Project уБочФЯцИРчЙйуБп GNU Generic PUBLIC LICENSE уБлх╛УуБДуБ╛уБЩуАВ
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -12,15 +12,15 @@ Version 2, June 1991
 
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/manager/elf.h,v 1.2 1997/10/24 13:55:33 night Exp $ */
 
-/* elf.h --- ELF е╒ебедеые╒ейб╝е▐е├е╚┤╪╧вд╬─ъ╡┴
+/* elf.h --- ELF уГХуВбуВдуГлуГХуВйуГ╝уГЮуГГуГИщЦвщАгуБохоЪч╛й
  *
  *
  * $Log: elf.h,v $
  * Revision 1.2  1997/10/24 13:55:33  night
- * е╒ебедеы├цд╬╩╕╗·е│б╝е╔дЄ SJIS длдщ EUC д╦╩╤╣╣бг
+ * уГХуВбуВдуГлф╕нуБоцЦЗхнЧуВ│уГ╝уГЙуВТ SJIS уБЛуВЙ EUC уБлхдЙцЫ┤уАВ
  *
  * Revision 1.1  1997/10/23 14:32:32  night
- * exec е╖е╣е╞ере│б╝еы┤╪╖╕д╬╜ш═¤д╬╣╣┐╖
+ * exec уВ╖уВ╣уГЖуГауВ│уГ╝уГлщЦвф┐ВуБохЗжчРЖуБоцЫ┤цЦ░
  *
  *
  *
@@ -57,7 +57,7 @@ typedef unsigned long	ELF32_Word;
 #define PF_X		0x1
 
 
-/* ELF е╒ебедеыд╬е┐еде╫─ъ╡┴ 
+/* ELF уГХуВбуВдуГлуБоуВ┐уВдуГЧхоЪч╛й 
  */
 #define ET_NONE		0
 #define ET_REL		1
@@ -68,7 +68,7 @@ typedef unsigned long	ELF32_Word;
 #define ET_HIPROC	6
 
 
-/* ELF е╒ебедеыд╬е▐е╖еє─ъ╡┴
+/* ELF уГХуВбуВдуГлуБоуГЮуВ╖уГ│хоЪч╛й
  */
 #define EM_NONE		0
 #define EM_M32		1

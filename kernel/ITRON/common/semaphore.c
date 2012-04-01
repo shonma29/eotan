@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -10,7 +10,7 @@ Version 2, June 1991
 (C) 2001, Tomohide Naniwa
 
 */
-/* semaphore.c --- ���ޥե���Ϣ
+/* semaphore.c --- セマフォ関連
  *
  */
 
@@ -28,26 +28,26 @@ static void twaisem_timer(VP arg);
 static void del_sem_wait(ID sid, ID tid);
 
 /********************************************************************************
- * init_semaphore --- ���ޥե��ν����
+ * init_semaphore --- セマフォの初期化
  *
  */
 ER init_semaphore(void)
 {
-    /* ���ߤΤȤ������⤷�ʤ� */
+    /* 現在のところ何もしない */
     return (E_OK);
 }
 
 /********************************************************************************
- * cre_sem --- ���ޥե�����
+ * cre_sem --- セマフォ生成
  *
- * ������
+ * 引数：
  *	semid
  *	pkcsem
  *
- * �֤��͡�
+ * 返り値：
  *	ER
  *
- * ��ǽ��
+ * 機能：
  *
  */
 ER cre_sem(ID semid, T_CSEM * pkcsem)
@@ -76,16 +76,16 @@ ER cre_sem(ID semid, T_CSEM * pkcsem)
 }
 
 /********************************************************************************
- * del_sem --- ���ޥե����
+ * del_sem --- セマフォ削除
  *
- * ������
+ * 引数：
  *	semid
  *
- * �֤��͡�
- *	ER	���顼�ֹ�
+ * 返り値：
+ *	ER	エラー番号
  *
- * ��ǽ��
- *	�����ǻ��ꤷ�����ޥե��������롣
+ * 機能：
+ *	引数で指定したセマフォを削除する。
  */
 ER del_sem(ID semid)
 {
@@ -108,11 +108,11 @@ ER del_sem(ID semid)
 #endif
     p = semaphore_table[semid].waitlist;
     while (p != NULL) {
-	/* ���ޥե����ԤäƤ��륿������������� */
-	/* ���顼�ֹ� E_DLT ���֤롣            */
+	/* セマフォを待っているタスクを解放する */
+	/* エラー番号 E_DLT が返る。            */
 	p->slp_err = E_DLT;
-	/* ���������Ԥ����֤��顢ready ���֤ذ�ư����  */
-	/* ���������������ǥ����ѥå��Ϥ�����ʤ���    */
+	/* タスクを待ち状態から、ready 状態へ移動する  */
+	/* ただし、タスクディスパッチはおこらない。    */
 	p->tskwait.semaph_wait = 0;
 	wup_tsk(p->tskid);
 	p = p->sem_next;
@@ -129,16 +129,16 @@ ER del_sem(ID semid)
 }
 
 /********************************************************************************
- * sig_sem --- ���ޥե����ֵ�
+ * sig_sem --- セマフォ資源返却
  *
- * ������
+ * 引数：
  *	semid
  *
- * �֤��͡�
- *	ER	���顼�ֹ�
+ * 返り値：
+ *	ER	エラー番号
  *
- * ��ǽ��
- *	���δؿ��ϡ������륻�ޥե��� V ư���Ԥ���
+ * 機能：
+ *	この関数は、いわゆるセマフォの V 動作を行う。
  */
 ER sig_sem(ID semid)
 {
@@ -180,7 +180,7 @@ ER sig_sem(ID semid)
 	p->tskwait.semaph_wait = 0;
 	wup_tsk(p->tskid);
     } else {
-	/* ���ޥե����ԤäƤ��륿�������ʤ� */
+	/* セマフォを待っているタスクがない */
 	semaphore_table[semid].isemcnt++;
 #ifdef CALL_HANDLER_IN_TASK
 	ena_dsp();
@@ -192,16 +192,16 @@ ER sig_sem(ID semid)
 }
 
 /********************************************************************************
- * wai_sem --- ���ޥե��񸻳���
+ * wai_sem --- セマフォ資源獲得
  *
- * ������
- *	semid	�������륻�ޥե��� ID �ֹ�
+ * 引数：
+ *	semid	獲得するセマフォの ID 番号
  *
- * �֤��͡�
- *	ER	���顼�ֹ�
+ * 返り値：
+ *	ER	エラー番号
  *
- * ��ǽ��
- *	���δؿ��ϡ������륻�ޥե��� P ư���Ԥ���
+ * 機能：
+ *	この関数は、いわゆるセマフォの P 動作を行う。
  */
 ER wai_sem(ID semid)
 {
@@ -214,13 +214,13 @@ ER wai_sem(ID semid)
 	return (E_ID);
     }
 
-    /* ��������Ƥ��ʤ����ޥե����ä� */
+    /* 生成されていないセマフォだった */
     if (semaphore_table[semid].maxsem <= 0) {
 	return (E_OBJ);
     }
 
-    /* ���Ǥ˥��ޥե���������Ƥ��륿���������롣 */
-    /* �Ԥ�����˼�ʬ���Ȥ�Ĥʤ���CPU ��������� */
+    /* すでにセマフォを獲得しているタスクがある。 */
+    /* 待ち行列に自分自身をつなぎ、CPU を解放する */
 #ifdef CALL_HANDLER_IN_TASK
     dis_dsp();
 #else
@@ -252,7 +252,7 @@ ER wai_sem(ID semid)
 #else
 	ena_int();
 #endif
-	slp_tsk();		/* �Ԥ����֤ذ�ư */
+	slp_tsk();		/* 待ち状態へ移動 */
     } else if (semaphore_table[semid].isemcnt >= 1) {
 	semaphore_table[semid].isemcnt--;
 #ifdef CALL_HANDLER_IN_TASK
@@ -266,16 +266,16 @@ ER wai_sem(ID semid)
 }
 
 /********************************************************************************
- * preq_sem --- ���ޥե��񸻳��� (�ݡ����)
+ * preq_sem --- セマフォ資源獲得 (ポーリング)
  *
- * ������
- *	semid	�������륻�ޥե��� ID �ֹ�
+ * 引数：
+ *	semid	獲得するセマフォの ID 番号
  *
- * �֤��͡�
- *	ER	���顼�ֹ�
+ * 返り値：
+ *	ER	エラー番号
  *
- * ��ǽ��
- *	���δؿ��ϡ������륻�ޥե��� P ư���Ԥ���
+ * 機能：
+ *	この関数は、いわゆるセマフォの P 動作を行う。
  */
 ER preq_sem(ID semid)
 {
@@ -287,12 +287,12 @@ ER preq_sem(ID semid)
 	return (E_ID);
     }
 
-    /* ��������Ƥ��ʤ����ޥե����ä� */
+    /* 生成されていないセマフォだった */
     if (semaphore_table[semid].maxsem <= 0) {
 	return (E_OBJ);
     }
 
-    /* ���Ǥ˥��ޥե���������Ƥ��륿���������롣 */
+    /* すでにセマフォを獲得しているタスクがある。 */
     if (semaphore_table[semid].isemcnt >= 1) {
 #ifdef CALL_HANDLER_IN_TASK
 	dis_dsp();
@@ -312,17 +312,17 @@ ER preq_sem(ID semid)
 }
 
 /********************************************************************************
- * twai_sem --- ���ޥե��񸻳��� (�����ॢ����ͭ)
+ * twai_sem --- セマフォ資源獲得 (タイムアウト有)
  *
- * ������
- *	semid	�������륻�ޥե��� ID �ֹ�
- *	tmout	�����ॢ���Ȼ���
+ * 引数：
+ *	semid	獲得するセマフォの ID 番号
+ *	tmout	タイムアウト時間
  *
- * �֤��͡�
- *	ER	���顼�ֹ�
+ * 返り値：
+ *	ER	エラー番号
  *
- * ��ǽ��
- *	���δؿ��ϡ������륻�ޥե��� P ư���Ԥ���
+ * 機能：
+ *	この関数は、いわゆるセマフォの P 動作を行う。
  */
 ER twai_sem(ID semid, TMO tmout)
 {
@@ -335,20 +335,20 @@ ER twai_sem(ID semid, TMO tmout)
 	return (E_ID);
     }
 
-    /* ��������Ƥ��ʤ����ޥե����ä� */
+    /* 生成されていないセマフォだった */
     if (semaphore_table[semid].maxsem <= 0) {
 	return (E_OBJ);
     }
 
-    /* ���Ǥ˥��ޥե���������Ƥ��륿���������롣 */
-    /* �Ԥ�����˼�ʬ���Ȥ�Ĥʤ���CPU ��������� */
+    /* すでにセマフォを獲得しているタスクがある。 */
+    /* 待ち行列に自分自身をつなぎ、CPU を解放する */
 #ifdef CALL_HANDLER_IN_TASK
     dis_dsp();
 #else
     dis_int();
 #endif
     if (semaphore_table[semid].isemcnt == 0) {
-	set_timer(tmout, (void (*)(VP)) twaisem_timer, run_task);	/* �����ޡ��򥻥å� */
+	set_timer(tmout, (void (*)(VP)) twaisem_timer, run_task);	/* タイマーをセット */
 #ifdef notdef
 	semaphore_table[semid].waitlist =
 	    add_tcb_list(semaphore_table[semid].waitlist, run_task);
@@ -371,8 +371,8 @@ ER twai_sem(ID semid, TMO tmout)
 #else
 	ena_int();
 #endif
-	slp_tsk();		/* �Ԥ����֤ذ�ư */
-	unset_timer((void (*)(VP)) twaisem_timer, (VP) (run_task->tskid));	/* �����ޡ��򥢥󥻥å� */
+	slp_tsk();		/* 待ち状態へ移動 */
+	unset_timer((void (*)(VP)) twaisem_timer, (VP) (run_task->tskid));	/* タイマーをアンセット */
     } else if (semaphore_table[semid].isemcnt >= 1) {
 	semaphore_table[semid].isemcnt--;
 #ifdef CALL_HANDLER_IN_TASK
@@ -392,9 +392,9 @@ ER twai_sem(ID semid, TMO tmout)
 }
 
 /******************************************************************************
- * twaisem_timer -- twai_sem �ؿ��λ����ڤ�ΤȤ��˸ƤӤ������ؿ���
+ * twaisem_timer -- twai_sem 関数の時間切れのときに呼びだされる関数。
  *
- * ���δؿ��ϡ������ߤα�Ĺ���ư����
+ * この関数は、割り込みの延長上で動く。
  *
  */
 static void twaisem_timer(VP arg)
@@ -412,7 +412,7 @@ static void twaisem_timer(VP arg)
 	del_tcb_list(semaphore_table[p->sem_id].waitlist, p);
 #endif
 #if 0
-    /* ������ʬ�ν����ϲ������� */
+    /* この部分の処理は怪しい。 */
     semid = p->sem_id;
     p = semaphore_table[semid].waitlist;
     semaphore_table[semid].waitlist = p->sem_next;
@@ -427,7 +427,7 @@ static void twaisem_timer(VP arg)
 }
 
 /********************************************************************************
- * ref_sem --- ���ޥե����ֻ���
+ * ref_sem --- セマフォ状態参照
  *
  */
 ER ref_sem(T_RSEM * pk_rsem, ID semid)
@@ -436,7 +436,7 @@ ER ref_sem(T_RSEM * pk_rsem, ID semid)
 	return (E_ID);
     }
 
-    /* ��������Ƥ��ʤ����ޥե����ä� */
+    /* 生成されていないセマフォだった */
     if (semaphore_table[semid].maxsem <= 0) {
 	return (E_OBJ);
     }
@@ -449,7 +449,7 @@ ER ref_sem(T_RSEM * pk_rsem, ID semid)
 
 
 
-/* del_task_sem -- ���ޥե����饿��������
+/* del_task_sem -- セマフォからタスクを削除
  *
  *
  */

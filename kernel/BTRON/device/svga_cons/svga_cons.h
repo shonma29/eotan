@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -37,7 +37,7 @@ Version 2, June 1991
 
 #include "device.h"
 
-/*  Äê¿ô¤ÎÀßÄê
+/*  å®šæ•°ã®è¨­å®š
  */
 
 #define MAX_COLUMN      80
@@ -52,9 +52,9 @@ Version 2, June 1991
 #define CONSOLE_GRAPHIC 0x00000003
 #define CONSOLE_TEXT    0x00000004
 
-/* ¥°¥é¥Õ¥£¥Ã¥¯¥â¡¼¥É»ş¤Î¥³¥Ş¥ó¥É 
+/* ã‚°ãƒ©ãƒ•ã‚£ãƒƒã‚¯ãƒ¢ãƒ¼ãƒ‰æ™‚ã®ã‚³ãƒãƒ³ãƒ‰ 
  *
- * ÉÁ²è´Ø·¸ (Àş¤È¤«)
+ * æç”»é–¢ä¿‚ (ç·šã¨ã‹)
  */
 #define GR_NULL         0x00010000
 #define GR_POINT        0x00010001
@@ -67,9 +67,9 @@ Version 2, June 1991
 
 
 
-#define NORM_ATTR       0x1e            /* ÄÌ¾ïÊ¸»ú                     */
+#define NORM_ATTR       0x1e            /* é€šå¸¸æ–‡å­—                     */
 
-#define TEXT_VRAM_ADDR  0x800B8000      /* TEXT VRAM ¤Î¥¢¥É¥ì¥¹         */
+#define TEXT_VRAM_ADDR  0x800B8000      /* TEXT VRAM ã®ã‚¢ãƒ‰ãƒ¬ã‚¹         */
 #define TEXT_VRAM_SIZE  2000
 
 #define GDC_ADDR        0x03d4

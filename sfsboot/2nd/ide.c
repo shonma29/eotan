@@ -114,9 +114,9 @@ ide_init (void)
 {
   int	status;
 
-  outb (IDE_DRIVE_REG, 0xA0);			/* ¥É¥é¥¤¥Ö 0 ¤ò»ØÄê */
+  outb (IDE_DRIVE_REG, 0xA0);			/* ãƒ‰ãƒ©ã‚¤ãƒ– 0 ã‚’æŒ‡å®š */
 
-  outb (IDE_CONTROL_REG, 0x08);			/* ¥É¥é¥¤¥Ö¤Î¥ê¥»¥Ã¥È */
+  outb (IDE_CONTROL_REG, 0x08);			/* ãƒ‰ãƒ©ã‚¤ãƒ–ã®ãƒªã‚»ãƒƒãƒˆ */
   busywait (1000);
 
   outb (IDE_CONTROL_REG, 0x0a);
@@ -130,9 +130,9 @@ ide_init (void)
   read_partition_table (0, partition_table);
 }
 
-/* IDE HD ¤Î¥Æ¥¹¥È´Ø¿ô 
+/* IDE HD ã®ãƒ†ã‚¹ãƒˆé–¢æ•° 
  *
- * ¥Ç¥£¥¹¥¯¥Ñ¥é¥á¡¼¥¿¤ò½ĞÎÏ¤¹¤ë
+ * ãƒ‡ã‚£ã‚¹ã‚¯ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’å‡ºåŠ›ã™ã‚‹
  */
 int get_ide_parameter (struct ide_id *id)
 {
@@ -140,7 +140,7 @@ int get_ide_parameter (struct ide_id *id)
   UWORD16 *p;
 
   clear_int ();
-  outb (IDE_DRIVE_REG, 0xA0);			/* ¥É¥é¥¤¥Ö 0 ¤ò»ØÄê */
+  outb (IDE_DRIVE_REG, 0xA0);			/* ãƒ‰ãƒ©ã‚¤ãƒ– 0 ã‚’æŒ‡å®š */
   busywait (1000);
   ide_send_command (IDE_CMD_READ_INFO);
   p = (UWORD16 *)id;

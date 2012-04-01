@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -18,8 +18,8 @@ static W read_device2 (ID device, W offset, UW dd, W size, void *buf);
 
 
 /*
- * °ú¿ô¤Ç»ØÄê¤·¤¿ FAT ¥¨¥ó¥È¥ê¤Î¥ê¥¹¥È¤òÃ©¤Ã¤Æ¡¢
- * ¤¤¤¯¤Ä¤Î¥¨¥ó¥È¥ê¤ò»ÈÍÑ¤·¤Æ¤¤¤ë¤«¤ò¥«¥¦¥ó¥È¤¹¤ë¡£
+ * å¼•æ•°ã§æŒ‡å®šã—ãŸ FAT ã‚¨ãƒ³ãƒˆãƒªã®ãƒªã‚¹ãƒˆã‚’è¾¿ã£ã¦ã€
+ * ã„ãã¤ã®ã‚¨ãƒ³ãƒˆãƒªã‚’ä½¿ç”¨ã—ã¦ã„ã‚‹ã‹ã‚’ã‚«ã‚¦ãƒ³ãƒˆã™ã‚‹ã€‚
  */
 int
 fat_list_count (struct dos_fs_paramater *fs, int entry)
@@ -27,7 +27,7 @@ fat_list_count (struct dos_fs_paramater *fs, int entry)
   int	count;
 
   /*
-   * ¤³¤Î FAT ¤Ï»ÈÍÑ¤Ç¤­¤Ê¤¤¡£
+   * ã“ã® FAT ã¯ä½¿ç”¨ã§ããªã„ã€‚
    */
   if (next_fatid (fs, entry) == BAD_FATID)
     {
@@ -77,7 +77,7 @@ dos_cluster_to_byte (struct dos_fs_paramater *fs, W fat)
 
 
 /*
- * »ØÄê¤·¤¿¥Ç¥Ğ¥¤¥¹¤«¤é¥Ç¡¼¥¿¤òÆÉ¤ß¹ş¤à
+ * æŒ‡å®šã—ãŸãƒ‡ãƒã‚¤ã‚¹ã‹ã‚‰ãƒ‡ãƒ¼ã‚¿ã‚’èª­ã¿è¾¼ã‚€
  */
 W
 read_device (ID device, W offset, UW dd, W size, void *buf)
@@ -98,8 +98,8 @@ read_device (ID device, W offset, UW dd, W size, void *buf)
 static W
 read_device2 (ID device, W offset, UW dd, W size, void *buf)
 {
-  DDEV_REQ	req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-  DDEV_RES	res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+  DDEV_REQ	req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+  DDEV_RES	res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
   ER		error;	
   W		rsize;
 #ifdef notdef

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -16,21 +16,21 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 /* Port-manager and libkernel.a is moved to ITRON. I guess it is reasonable. At least they should not be in BTRON/.
 /*
 /* Revision 1.1  1996/07/22 23:52:06  night
-/* ºÇ½é¤ÎÅĞÏ¿
+/* æœ€åˆã®ç™»éŒ²
 /*
  * Revision 1.2  1995/09/21  15:51:42  night
- * ¥½¡¼¥¹¥Õ¥¡¥¤¥ë¤ÎÀèÆ¬¤Ë Copyright notice ¾ğÊó¤òÄÉ²Ã¡£
+ * ã‚½ãƒ¼ã‚¹ãƒ•ã‚¡ã‚¤ãƒ«ã®å…ˆé ­ã« Copyright notice æƒ…å ±ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.1  1995/09/17  17:07:03  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  */
 
 #include "types.h"
 
-/* ¥¨¥é¡¼ÈÖ¹æ¤òµ­²±¤¹¤ë¤¿¤á¤Î¥â¥¸¥å¡¼¥ë¡£
- * ¥¨¥é¡¼ÈÖ¹æ¤òÊÖ¤µ¤Ê¤¤´Ø¿ô¤¬»ÈÍÑ¤¹¤ë¡£
+/* ã‚¨ãƒ©ãƒ¼ç•ªå·ã‚’è¨˜æ†¶ã™ã‚‹ãŸã‚ã®ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«ã€‚
+ * ã‚¨ãƒ©ãƒ¼ç•ªå·ã‚’è¿”ã•ãªã„é–¢æ•°ãŒä½¿ç”¨ã™ã‚‹ã€‚
  */
 
 ER	sys_errno;

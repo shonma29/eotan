@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -18,11 +18,11 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 /*
  * $Log: manager.c,v $
  * Revision 1.2  1998/11/10 14:57:43  night
- * main �ؿ���̾���� startup ���ѹ���
- * �����ɲá�
+ * main 関数の名前を startup に変更。
+ * 註釈の追加。
  *
  * Revision 1.1  1998/10/23 17:18:40  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  *
  */
@@ -30,41 +30,41 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 
 
 
-/* ���Υե�����ϡ�BTRON single manager �Υᥤ������⥸�塼�뤬
- * ���äƤ��롣
+/* このファイルは、BTRON single manager のメイン処理モジュールが
+ * 入っている。
  */
 
 
 #include "manager.h"
 
-/* B-Free BTRON single manager �Υᥤ������ؿ�
+/* B-Free BTRON single manager のメイン処理関数
  *
  * 
  */
 void
 startup ()
 {
-  /* �ޥ͡�����λ񸻤ν����
+  /* マネージャの資源の初期化
    */
   
 
-  /* �ޥ͡����㤬�׵��������뤿��Υݡ��Ȥ����
+  /* マネージャが要求を受信するためのポートを作成
    */
 
 
-  /* �ݡ��Ȥ�ݡ��ȥޥ͡��������Ͽ����Ͽ̾�ϡ� "BTRON/manager"
+  /* ポートをポートマネージャに登録。登録名は、 "BTRON/manager"
    */
 
 
-  /* �ޥ͡�������γƥ⥸�塼��ν����
+  /* マネージャ内の各モジュールの初期化
    */
 
 
-  /* �����롼��: �ݡ��Ȥ˥ǡ��������ä����ɤ���������å���³����
+  /* 処理ループ: ポートにデータが入ったかどうかをチェックし続ける
    */
   for (;;)
     {
     }
 
-  /* �����ˤ���ʤ� */
+  /* ここには来ない */
 }

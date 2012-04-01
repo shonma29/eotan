@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -20,14 +20,14 @@ Version 2, June 1991
 #include "func.h"
 
 
-/* falldown --- ITRON �Ǥ� [panic] �ؿ���
+/* falldown --- ITRON での [panic] 関数。
  *
  * @desc
- *	falldown() �ϡ������ǻ��ꤵ�줿�ե����ޥåȤ˽�����(���󥽡���)���̤�
- *	��å�������ɽ�����롣
- *	�ե����ޥåȤΰ�̣�ϡ�printk () ��Ʊ����
+ *	falldown() は、引数で指定されたフォーマットに従い、(コンソール)画面に
+ *	メッセージを表示する。
+ *	フォーマットの意味は、printk () と同じ。
  *
- *	��å�������ɽ��������ϡ�̵�¥롼�פ����롣
+ *	メッセージを表示した後は、無限ループに入る。
  *
  */
 void falldown(B * fmt, ...)
@@ -35,7 +35,7 @@ void falldown(B * fmt, ...)
     VP arg0;
     vprintk(fmt, (VP) & arg0);
 
-/* �⤷��ITRON_DBG �ޥ������������Ƥ���С��ǥХå���ư���롣
+/* もし、ITRON_DBG マクロが定義されていれば、デバッガを起動する。
  */
 #ifdef ITRON_DBG
     itron_debugger();

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -26,29 +26,29 @@ static char rcsid[] =
  * Addition or fix for parameter structure.
  *
  * Revision 1.5  1998/02/25 12:51:51  night
- * �ץ�������θ�ͭ�ǡ�������򡢤��줾������ѿ��Ǹ���Ū�ˤ�ĤΤǤϤʤ���
- * lowlib_data �Ȥ����ݥ��󥿤Ǵ�������褦�ˤ�����
- * �����ѹ���ȼ�����ץ�������˰�ä����������/���Ȥ�������ϡ��ݥ���
- * lowlib_data ��𤷤ƹԤ��褦���ѹ�������
+ * プロセス毎の固有データ情報を、それぞれ大域変数で固定的にもつのではなく、
+ * lowlib_data というポインタで管理するようにした。
+ * この変更に伴い、プロセス毎に違った情報を設定/参照する処理は、ポインタ
+ * lowlib_data を介して行うように変更した。
  *
- * lowlib_data ���ͤϡ��ޥ��� LOWLIB_DATA �ǻ��ꤷ�����ɥ쥹 (0x7fff0000)
- * �����ꤵ��롣���Υ��ɥ쥹�ϡ��ץ�������˰�ä�ʪ���ڡ����˥ޥåԥ�
- * ����롣���ۥ��ɥ쥹�ϸ���������ºݤ��ΰ�ϥץ�������˰�ä�����¸
- * �ߤ��Ƥ��롣LOWLIB ����������ץ�������ξ���Ϥ����ΰ�������褦��
- * ���롣
+ * lowlib_data の値は、マクロ LOWLIB_DATA で指定したアドレス (0x7fff0000)
+ * に設定される。このアドレスは、プロセス毎に違った物理ページにマッピング
+ * される。仮想アドレスは固定だが、実際の領域はプロセス毎に違った場所に存
+ * 在している。LOWLIB が管理するプロセス毎の情報はこの領域に入れるように
+ * する。
  *
  * Revision 1.4  1997/10/11 16:24:55  night
- * ���ޤ��ޤ���������
+ * こまごました修正。
  *
  * Revision 1.3  1997/09/21 13:33:35  night
- * �ѥ�̾��Ĺ����¬�ꤹ��ؿ� strlen_with_length() �� static �ؿ��Ȥ�����
- * ��������
+ * パス名の長さを測定する関数 strlen_with_length() を static 関数として定
+ * 義した。
  *
  * Revision 1.2  1997/09/09 13:52:30  night
- * �ɽ����������ν��֤��ѹ���
+ * 局所引数の定義の順番を変更。
  *
  * Revision 1.1  1997/08/31 13:10:46  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  *
  *

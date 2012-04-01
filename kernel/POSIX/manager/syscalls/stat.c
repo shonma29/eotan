@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -19,7 +19,7 @@ Version 2, June 1991
 
 #include "posix.h"
 
-/* psc_stat_f - ¥Õ¥¡¥¤¥ë¤Î¾ğÊó¤òÊÖ¤¹
+/* psc_stat_f - ãƒ•ã‚¡ã‚¤ãƒ«ã®æƒ…å ±ã‚’è¿”ã™
  */
 W psc_stat_f(struct posix_request *req)
 {

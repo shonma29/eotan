@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -15,7 +15,7 @@ Version 2, June 1991
 /*
  * $Log: errno.h,v $
  * Revision 1.1  1996/11/11 13:32:53  night
- * ╨г╫И╓непо©
+ * Ф°─Е┬²Ц│╝Г≥╩И▄╡
  *
  *
  */
@@ -25,7 +25,7 @@ Version 2, June 1991
 
 
 /*
- * POSIX ╓гдЙ╣а╓╥╓ф╓╓╓К error хж╧Ф
+ * POSIX Ц│╖Е╝ Г╬╘Ц│≈Ц│╕Ц│└Ц┌▀ error Г∙╙Е▐╥
  */
 #define E2BIG		1	/* Arg list too long */
 #define EACCESS		2	/* Permission denied */

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -16,10 +16,10 @@ Version 2, June 1991
  * add for debug
  *
  * Revision 1.2  1997/05/08 15:10:06  night
- * ¥Õ¥¡¥¤¥ëÆâ¤ÎÊ¸»ú¥³¡¼¥É¤ò SJIS ¤«¤é EUC ¤ËÊÑ¹¹¤·¤¿¡£
+ * ãƒ•ã‚¡ã‚¤ãƒ«å†…ã®æ–‡å­—ã‚³ãƒ¼ãƒ‰ã‚’ SJIS ã‹ã‚‰ EUC ã«å¤‰æ›´ã—ãŸã€‚
  *
  * Revision 1.1  1997/05/06 12:46:22  night
- * ºÇ½é¤ÎÅÐÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  */

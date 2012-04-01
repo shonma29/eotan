@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -17,7 +17,7 @@ static char rcsid[] =
 /*
  * $Log: memory.c,v $
  * Revision 1.1  1997/08/31 13:10:46  night
- * ºÇ½é¤ÎÅÐÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  *
@@ -30,12 +30,12 @@ int psys_memory(void *argp)
 {
 #ifdef notdef
     struct a {
-	/* ¤³¤³¤Ë°ú¿ô¤ÎÄêµÁ¤òÆþ¤ì¤ë */
+	/* ã“ã“ã«å¼•æ•°ã®å®šç¾©ã‚’å…¥ã‚Œã‚‹ */
     } *args = (struct a *) argp;
 #endif
 
     /*
-     * ¤Þ¤À¥¤¥ó¥×¥ê¥á¥ó¥È¤·¤Æ¤¤¤Ê¤¤¡£ENOSYS ¤òÊÖ¤¹¡£
+     * ã¾ã ã‚¤ãƒ³ãƒ—ãƒªãƒ¡ãƒ³ãƒˆã—ã¦ã„ãªã„ã€‚ENOSYS ã‚’è¿”ã™ã€‚
      */
     errno = ENOSYS;
 

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -28,65 +28,65 @@ Version 2, June 1991
  * *** empty log message ***
  *
  * Revision 1.13  1998/06/11 15:06:45  night
- * IDE HD ������ɤ߹��ߤκݡ��������ֹ�ξ�� 2 �ӥåȤ�ͭ���ˤʤäƤ�
- * �ʤ��ä���
+ * IDE HD からの読み込みの際、シリンダ番号の上位 2 ビットが有効になってい
+ * なかった。
  *   outb (IDE_CYL_HIGH_REG, (cyl << 8) & 0xff);
- * �Ȥ��Ƥ������ᡢcyl �ξ�� 2 �ӥåȤϾ�� 0 �Ȥ��ƻ��ꤷ�Ƥ��ޤäƤ�����
- * �����
+ * としていたため、cyl の上位 2 ビットは常に 0 として指定してしまっていた。
+ * これを、
  *   outb (IDE_CYL_HIGH_REG, (cyl >> 8) & 0xff);
- * ��ľ�����Ȥˤ�äơ���� 2 �ӥåȤ��ͤ�ͭ���ˤ�����
+ * に直すことによって、上位 2 ビットの値を有効にした。
  *
  * Revision 1.12  1998/06/10 15:42:22  night
- * HD ������ɤ߼����ˡ��֥��å��ֹ�λ��꤬������������
- * �ѡ��ƥ������ơ��֥�����ɽ������褦���ѹ�������
+ * HD からの読み取り時に、ブロック番号の指定がおかしい時に
+ * パーティションテーブルも一緒に表示するように変更した。
  *
  * Revision 1.11  1998/06/10 13:41:18  night
- * �С��ƥ������������Ϥ���Ȥ��ˡ����ϥ�����/�إå�/��������
- * ��λ������/�إå�/����������Ϥ���褦�ˤ�����
+ * バーティション情報を出力するときに、開始シリンダ/ヘッド/セクタと
+ * 終了シリンダ/ヘッド/セクタも出力するようにした。
  *
  * Revision 1.10  1998/06/09 14:03:25  night
- * �ǥ������Υѡ��ƥ���������Ȥ��ơ�CHS ��ȤäƤ�����ʬ��
- * ���٤ƥ�˥��֥��å��ֹ����Ѥ���褦���ѹ�������
+ * ディスクのパーティション情報として、CHS を使っていた部分を
+ * すべてリニアブロック番号を使用するように変更した。
  *
  * Revision 1.9  1998/04/27 15:19:53  night
- * IDE HD �Υ�����ȥ꤬ BIOS �Ѵ�����Ƥ�����ν������ɲá�
+ * IDE HD のジオメトリが BIOS 変換されている時の処理を追加。
  *
- * 1) �ѡ��ƥ������ơ��֥�Υ��������������ȥ֥��å��ֹ��׻�����Ȥ��ˡ�
- *    BIOS ���Ѵ����Ƥ��른����ȥ�Ƿ׻�����褦���ѹ�������
+ * 1) パーティションテーブルのサイズ、スタートブロック番号を計算するときに、
+ *    BIOS が変換しているジオメトリで計算するように変更した。
  *
- * 2) BIOS ���Ѵ������Ǥ�����������ȥ���ͤ�ǥ������ѥ�᡼����
- *    now_cylinder��now_head��now_sector_track �������褦�ˤ�����
- *    (��������ν������ɲ�)
+ * 2) BIOS が変換したであろうジオメトリの値をディスクパラメータの
+ *    now_cylinder、now_head、now_sector_track に入れるようにした。
+ *    (初期化時の処理に追加)
  *
- * 3) ide_id() �ǡ�IDE �ǥ������Υ�ǥ�̾��¾�˥�����ȥ�������Ϥ����
- *    ���˽������ѹ�������512MB �ʾ�Υǥ������ˤĤ��Ƥϡ�BIOS �ǥ������
- *    ���Ѵ������������Ϥ���褦�ˤ�����
+ * 3) ide_id() で、IDE ディスクのモデル名の他にジオメトリ情報も出力するよ
+ *    うに処理を変更した。512MB 以上のディスクについては、BIOS でジオメト
+ *    リ変換した情報も出力するようにした。
  *
  * Revision 1.8  1998/04/17 11:48:01  night
- * calc_N ���֤��ͤ��ͤ��ְ�äƤ����Τǽ���������
+ * calc_N の返り値の値が間違っていたので修正した。
  *
  * Revision 1.7  1998/04/16 20:28:55  night
- * 1024 �ʾ�Υ������ֹ���äƤ���Ȥ��ˡ�BIOS �Υ�����ȥ��Ѵ���
- * ��θ���� HD �˥�����������褦�˽������ѹ�������
+ * 1024 以上のシリンダ番号をもっているときに、BIOS のジオメトリ変換を
+ * 考慮して HD にアクセスするように処理を変更した。
  *
  * Revision 1.6  1998/02/25 13:06:48  night
- * ide_read_dump ���ޥ�ɤ��ɲá�
+ * ide_read_dump コマンドの追加。
  *
  * Revision 1.5  1997/08/31 14:24:30  night
- * ide �ǥ������� ID ������ɤ߼���Ԥ��������ɲá�
+ * ide ディスクの ID 情報の読み取りを行う処理の追加。
  *
  * Revision 1.4  1997/06/29 13:13:45  night
- * HD �� SFS �ե����ޥåȤ��줿�ѡ��ƥ�����󤫤�� BTRON OS ������ɤǤ���
- * ��ǽ���ɲá�
+ * HD の SFS フォーマットされたパーティションからの BTRON OS をロードできる
+ * 機能を追加。
  *
  * Revision 1.3  1997/05/11 12:40:08  night
- * �ѡ��ƥ������������Ϥ���褦�ˤ�����
+ * パーティション情報を出力するようにした。
  *
  * Revision 1.2  1997/04/24 15:29:21  night
- * ��ư���� IDE �Υѡ��ƥ������������Ϥ��Ƥ����Τ����᤿��
+ * 起動時に IDE のパーティション情報を出力していたのを取りやめた。
  *
  * Revision 1.1  1996/08/11  15:11:56  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  *
  */
@@ -119,8 +119,8 @@ int ide_read_module (int drive, int partition, int bn, struct module_info *modul
 
 int			ide_intr_flag;
 struct ide_id		ide_parameter;
-struct ide_partition	partition_table[4];	/* ��ĥ�ѡ��ƥ������Ϲͤ��Ƥ��ʤ� */
-struct ide_partition	backup_partition_table[4];	/* ��ĥ�ѡ��ƥ������Ϲͤ��Ƥ��ʤ� */
+struct ide_partition	partition_table[4];	/* 拡張パーティションは考えていない */
+struct ide_partition	backup_partition_table[4];	/* 拡張パーティションは考えていない */
 
 
 void
@@ -277,9 +277,9 @@ ide_init (void)
   reset_intr_mask (15);							/* 2nd */
 #endif
 
-  outb (IDE_DRIVE_REG, 0xA0);			/* �ɥ饤�� 0 ����� */
+  outb (IDE_DRIVE_REG, 0xA0);			/* ドライブ 0 を指定 */
 
-  outb (IDE_CONTROL_REG, 0x08);			/* �ɥ饤�֤Υꥻ�å� */
+  outb (IDE_CONTROL_REG, 0x08);			/* ドライブのリセット */
   busywait (1000);
 
   outb (IDE_CONTROL_REG, 0x0a);
@@ -293,9 +293,9 @@ ide_init (void)
   read_partition_table (0, partition_table);
 }
 
-/* IDE HD �Υƥ��ȴؿ� 
+/* IDE HD のテスト関数 
  *
- * �ǥ������ѥ�᡼������Ϥ���
+ * ディスクパラメータを出力する
  */
 int get_ide_parameter (struct ide_id *id)
 {
@@ -303,7 +303,7 @@ int get_ide_parameter (struct ide_id *id)
   UWORD16 *p;
 
   lock ();
-  outb (IDE_DRIVE_REG, 0xA0);			/* �ɥ饤�� 0 ����� */
+  outb (IDE_DRIVE_REG, 0xA0);			/* ドライブ 0 を指定 */
   busywait (1000);
   ide_send_command (IDE_CMD_READ_INFO);
   p = (UWORD16 *)id;
@@ -565,17 +565,17 @@ ide_boot (char **arg)
 }
 
 /*
-   ʣ���Υ⥸�塼����ɤ߹��ࡣ
+   複数のモジュールを読み込む。
 
-   �ǽ�Υ⥸�塼��Τ� ITRON �����ͥ�Ȳ��ꤷ�Ƥ��롣
-   ���Τ��ᡢ�ɤ߹�����֤ϡ�0x00010000 �ȷ��Ƥ��롣
-   (ITRON �����ͥ�ϡ����ۥ��ɥ쥹 0x80010000 ���ɤ߹��ळ�Ȥˤ��Ƥ��롣
-   0x00010000 �Ȥ����Τϡ�0x80010000 ���б����Ƥ���ʪ�����ɥ쥹�Ǥ���)
+   最初のモジュールのみ ITRON カーネルと仮定している。
+   そのため、読み込む位置は、0x00010000 と決めている。
+   (ITRON カーネルは、仮想アドレス 0x80010000 に読み込むことにしている。
+   0x00010000 というのは、0x80010000 に対応している物理アドレスである)
 
-   2 ���ܰʹߤΥ⥸�塼��ϡ�ITRON �����ͥ�ˤθ��³�����ɤ߹��ळ�Ȥˤʤ롣
-   ���Τ��ᡢITRON �����ͥ���礭���ˤ�ä�ʪ�����ɥ쥹���Ѥ�뤳�Ȥˤʤ롣
-   2 ���ܰʹߤΥ⥸�塼��ˤĤ��Ƥϡ�boot �ϥ����ɤ�������ǡ����ۥ��ɥ쥹
-   �ؤΥޥåԥ󥰤ʤɤ� ITRON �����ͥ�ε�ư��˹Ԥ���
+   2 番目以降のモジュールは、ITRON カーネルにの後に続けて読み込むことになる。
+   そのため、ITRON カーネルの大きさによって物理アドレスは変わることになる。
+   2 番目以降のモジュールについては、boot はロードするだけで、仮想アドレス
+   へのマッピングなどは ITRON カーネルの起動後に行う。
 
 */ 
 int
@@ -591,7 +591,7 @@ ide_read_multi_module (int drive, int partition, int offset, struct boot_header 
   info->machine.real_mem = real_mem;
 
   boot_printf ("Module %d\n", info->count);
-  bn = offset + (BLOCK_SIZE / IDE_BLOCK_SIZE);	/* �ǽ�Υ⥸�塼�뤬���äƤ���֥��å��ֹ� */
+  bn = offset + (BLOCK_SIZE / IDE_BLOCK_SIZE);	/* 最初のモジュールが入っているブロック番号 */
   entry = (void (*)())(info->modules[0].entry);
   for (i = 0; i < info->count; i++)
     {
@@ -635,7 +635,7 @@ ide_read_module (int drive, int partition, int bn, struct module_info *moduleinf
   
   if ((N_MAGIC(*exec_info) == 0413) || (N_MAGIC(*exec_info) == NMAGIC))
     {
-      bn += (BLOCK_SIZE / IDE_BLOCK_SIZE);	/* a.out �Υإå����礭������������ȥ��åפ��� */
+      bn += (BLOCK_SIZE / IDE_BLOCK_SIZE);	/* a.out のヘッダの大きさだけカウントアップする */
 
       for (i = 0;
 	   i < (ROUNDUP (exec_info->a_text, PAGE_SIZE) 

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -20,8 +20,8 @@ char rcsid[] = "$Id: command.c,v 1.17 2000/01/28 10:28:07 monaka Exp $";
  * Now Init is more close to POSIX libs.
  *
  * Revision 1.16  2000/01/23 15:56:08  kishida0
- * ����Ʊ��
- * ����ե��å����̥����������ѥ��ޥ�ɤ�FIX��ä�ͽ��
+ * 下と同じ
+ * グラフィック画面スクロール用コマンドはFIX後消す予定
  *
  * Revision 1.15  1999/07/24 04:36:48  naniwa
  * add pmemstat
@@ -48,8 +48,8 @@ char rcsid[] = "$Id: command.c,v 1.17 2000/01/28 10:28:07 monaka Exp $";
  * Minor fix.
  *
  * Revision 1.7  1998/12/10 15:05:58  night
- * open_fd () �� vget_region () �ΰ���������ѹ���
- * commands.inc ��������Ƥ����Τ˹�碌����
+ * open_fd () と vget_region () の引数定義を変更。
+ * commands.inc で定義しているものに合わせた。
  *
  * Revision 1.6  1998/12/10 07:17:51  monaka
  * Separated from command.c to posix-file.c and posix-misc.c.
@@ -80,122 +80,122 @@ char rcsid[] = "$Id: command.c,v 1.17 2000/01/28 10:28:07 monaka Exp $";
  * This means it was modified how to add a new built-in command.
  *
  * Revision 1.29  1998/07/01 13:48:26  night
- * posix_exec_child() ���ɲá�
- * POSIX exec �ƥ��Ƚ������ѹ�(fork ���Ƥ��� exec)��
+ * posix_exec_child() の追加。
+ * POSIX exec テスト処理の変更(fork してから exec)。
  *
  * Revision 1.28  1998/06/10 15:55:59  night
- * �ѡ��ƥ������������Ϥ��� ide_geometric() �ν������ѹ���
- * �ƥѡ��ƥ������� CHS �������Ϥ��Ƥ�������IDE �ǥХ����ɥ饤�Фν�
- * �����ѹ�(��˥��֥��å��ֹ�ǽ�������褦�ˤ���)��ȼ�ʤä� CHS �ξ���
- * ����Ϥ��ʤ��褦�ˤ�����
+ * パーティション情報を出力する ide_geometric() の処理を変更。
+ * 各パーティションの CHS 情報も出力していたが、IDE デバイスドライバの処
+ * 理の変更(リニアブロック番号で処理するようにした)に伴なって CHS の情報
+ * を出力しないようにした。
  *
  * Revision 1.27  1998/02/25 12:32:28  night
- * lowlib_load() �ν�����
- * lowlib �Υץ�������ͭ�ǡ����ΰ� lowlib_data ��
- * ��Ȥ���������������ɲá�
+ * lowlib_load() の修正。
+ * lowlib のプロセス固有データ領域 lowlib_data の
+ * 中身を初期化する処理を追加。
  *
  * Revision 1.26  1998/02/24 14:03:56  night
- * pvmdump ���ޥ�� (posix_vm_dump()) �ν�����
- * �����ο�������å�����褦�ˤ�����
- * �����ǻ��ꤵ�줿�ץ������ξ���(���ۥڡ����ȼ¥ڡ�������)
- * ����Ϥ���褦�ˤ���(����ޤǤϡ��ץ����� 0 �ξ��󤷤�
- * ���Ϥ��Ƥ��ʤ��ä�)��
+ * pvmdump コマンド (posix_vm_dump()) の修正。
+ * 引数の数をチェックするようにした。
+ * 引数で指定されたプロセスの情報(仮想ページと実ページの対)
+ * を出力するようにした(これまでは、プロセス 0 の情報しか
+ * 出力していなかった)。
  *
  * Revision 1.25  1998/02/23 14:41:22  night
- * pvmdump ���ޥ�ɤ��ɲá�
- * �ؿ� posix_vm_dump ���ɲá�
+ * pvmdump コマンドの追加。
+ * 関数 posix_vm_dump の追加。
  *
  * Revision 1.24  1998/02/16 14:10:35  night
- * posix_fork_test �ؿ����ɲá�
- * (pfork ���ޥ�ɤ��ɲ�)
+ * posix_fork_test 関数の追加。
+ * (pfork コマンドの追加)
  *
  * Revision 1.23  1998/01/06 16:35:12  night
- * pexec ���ޥ�ɤ��ɲá�
- * posix_exec_test() �ؿ����ɲá�
+ * pexec コマンドの追加。
+ * posix_exec_test() 関数の追加。
  *
  * Revision 1.22  1997/10/28 14:45:24  night
- * "ether" ���ޥ�ɤ��ɲá�
+ * "ether" コマンドの追加。
  *
  * Revision 1.21  1997/10/18 12:40:13  night
- * print ʸ������ѹ���
+ * print 文を一部変更。
  *
  * Revision 1.20  1997/09/09 13:49:11  night
- * posix �ե�����ؤν񤭹��ߥ��ޥ�� (pwrite) ���ɲá�
+ * posix ファイルへの書き込みコマンド (pwrite) を追加。
  *
  * Revision 1.19  1997/09/02 14:38:26  night
- * �ޥ��� DOS ���ɲá�
- * ���Υޥ��������ꤹ��ȡ�DOS FS ���ɤॳ�ޥ�ɤ򥵥ݡ��Ȥ��롣
+ * マクロ DOS を追加。
+ * このマクロを設定すると、DOS FS を読むコマンドをサポートする。
  *
  * Revision 1.18  1997/08/31 14:03:12  night
- * POSIX/graphic �ط��Υ��ޥ�ɤ��ɲá�
+ * POSIX/graphic 関係のコマンドを追加。
  *
  * Revision 1.17  1997/07/07 14:43:52  night
- * POSIX ��Ϣ�ν�����ʷ�ˤ�����
+ * POSIX 関連の処理を簡潔にした。
  *
  * Revision 1.16  1997/07/07 13:05:00  night
- * writefd ���ɲá�
- * POSIX ��Ϣ�Υ��ޥ�ɤ�����(�ץ�ߥƥ��֤ʤ�Τϡ�posix_if.c �ذ�ư����)��
+ * writefd の追加。
+ * POSIX 関連のコマンドの整理(プリミティブなものは、posix_if.c へ移動した)。
  *
  * Revision 1.15  1997/07/06 11:49:33  night
- * pcat ���ޥ�ɤν����ǡ��ե��������ν��Ϥ��ѹ�������
+ * pcat コマンドの処理で、ファイル情報の出力を変更した。
  *
  * Revision 1.14  1997/07/04 15:05:20  night
- * pcat ���ޥ�ɤ��ɲá�
+ * pcat コマンドの追加。
  *
  * Revision 1.13  1997/07/03 14:23:15  night
- * popen �����ƥॳ����μ¹Ը�η�̤�ɽ���������Ƥ��ѹ���
+ * popen システムコールの実行後の結果を表示する内容を変更。
  *
  * Revision 1.12  1997/07/02 13:10:12  night
- * pstatfs ���ޥ�ɤ��ɲá�
+ * pstatfs コマンドの追加。
  *
  * Revision 1.11  1997/05/14 14:07:28  night
- * popen ���ޥ�ɤ��ɲ�
+ * popen コマンドの追加
  *
  * Revision 1.10  1997/05/12 14:34:08  night
- * vget_reg �����ƥॳ����Υƥ��Ƚ������ɲá�
- * (���ޥ��̾�� vget)
+ * vget_reg システムコールのテスト処理を追加。
+ * (コマンド名は vget)
  *
  * Revision 1.9  1997/05/08 15:08:48  night
- * pinit ���ޥ�ɤ��ɲá�
- * ���Υ��ޥ�ɤ� POSIX �Ķ��ν������Ԥ�����ν����������ͽ�ꡣ
+ * pinit コマンドの追加。
+ * このコマンドは POSIX 環境の初期化を行うための処理を入れる予定。
  *
  * Revision 1.8  1997/05/06 12:56:30  night
- * IDE �ط��Υ��ޥ�ɤ��ɲá�
+ * IDE 関係のコマンドを追加。
  *
  * Revision 1.7  1997/04/24 15:34:48  night
- * posix/pmountroot ���ޥ�ɤ��ɲá�
+ * posix/pmountroot コマンドの追加。
  *
  * Revision 1.6  1996/11/10  11:53:37  night
- * �ǥХå�ʸ���ɲá�
+ * デバッグ文の追加。
  *
  * Revision 1.5  1996/11/07  16:02:32  night
- * pmount ���ޥ�ɤ��ɲá�
+ * pmount コマンドの追加。
  *
  * Revision 1.4  1996/11/07  12:39:29  night
- * reset ����� falldown ���ޥ�ɤ��ɲá�
+ * reset および falldown コマンドの追加。
  *
  * Revision 1.3  1996/11/06  12:36:45  night
- * �����ͥ뤫��Υ��󥽡���ؤν��Ϥ�ľ�ܽ��Ϥ��饳�󥽡���ǥХ����ɥ饤
- * �Ф�𤷤ƹԤ��褦���ѹ�������
- * ���Τ���Υƥ��ȥ��ޥ�� "test" ���ɲä�����
+ * カーネルからのコンソールへの出力を直接出力からコンソールデバイスドライ
+ * バを介して行うように変更した。
+ * そのためのテストコマンド "test" を追加した。
  *
  * Revision 1.2  1996/07/28  19:55:35  night
- * openfd �� readfd �Υ��ޥ���ɲá�
+ * openfd と readfd のコマンド追加。
  *
  * Revision 1.1  1996/07/25  16:01:59  night
- * IBM PC ���Ѥؤκǽ����Ͽ
+ * IBM PC 版用への最初の登録
  *
  * Revision 1.3  1996/01/06 16:00:42  night
- * �إ�����Ƥΰ����ѹ���
+ * ヘルプ内容の一部変更。
  *
  * Revision 1.2  1995/12/05 14:32:19  night
- * help(), dos_attach() �δؿ����ɲá�
- * dos_ls(), dos_cat() ���ɲä���������ȤϤʤ���
+ * help(), dos_attach() の関数を追加。
+ * dos_ls(), dos_cat() も追加したが、中身はない。
  *
  * Revision 1.1  1995/10/10  16:21:47  night
- * �ǽ����Ͽ.
- * �����ƥ൯ư�塢�ץ���ץȤ���Ϥ��ƥ��ޥ������ - �¹Ԥ��Ǥ���Ȥ���
- * �ޤǽ��褿�������������ޥ�ɤ� echo ������
+ * 最初の登録.
+ * システム起動後、プロンプトを出力してコマンド入力 - 実行ができるところ
+ * まで出来た。ただし、コマンドは echo だけ。
  *
  *
  */
@@ -232,8 +232,8 @@ ER open_fd(W ac, B ** av)
 
 ER read_fd(W ac, B ** av)
 {
-    DDEV_REQ req;		/* �׵�ѥ��å� */
-    DDEV_RES res;		/* �����ѥ��å� */
+    DDEV_REQ req;		/* 要求パケット */
+    DDEV_RES res;		/* 返答パケット */
     ER error;
     W rsize;
     W i;
@@ -274,8 +274,8 @@ ER read_fd(W ac, B ** av)
 
 ER write_fd(W ac, B ** av)
 {
-    DDEV_REQ req;		/* �׵�ѥ��å� */
-    DDEV_RES res;		/* �����ѥ��å� */
+    DDEV_REQ req;		/* 要求パケット */
+    DDEV_RES res;		/* 返答パケット */
     ER error;
     W rsize;
     W i;
@@ -318,8 +318,8 @@ ER ide_stat(void)
 {
     ID port;
     ER error;
-    DDEV_REQ req;		/* �׵�ѥ��å� */
-    DDEV_RES res;		/* �����ѥ��å� */
+    DDEV_REQ req;		/* 要求パケット */
+    DDEV_RES res;		/* 返答パケット */
     ID rport;
     W rsize;
 
@@ -358,8 +358,8 @@ ER ide_geometric(void)
 {
     ID port;
     ER error;
-    DDEV_REQ req;		/* �׵�ѥ��å� */
-    DDEV_RES res;		/* �����ѥ��å� */
+    DDEV_REQ req;		/* 要求パケット */
+    DDEV_RES res;		/* 返答パケット */
     ID rport;
     W rsize;
     W i;
@@ -413,8 +413,8 @@ ER ide_geometric(void)
  */
 ER ide_read(W ac, B ** av)
 {
-    DDEV_REQ req;		/* �׵�ѥ��å� */
-    DDEV_RES res;		/* �����ѥ��å� */
+    DDEV_REQ req;		/* 要求パケット */
+    DDEV_RES res;		/* 返答パケット */
     ER error;
     W rsize;
     W i;
@@ -595,7 +595,7 @@ ER lowlib_load(B * name)
 	return E_SYS;
     }
 
-    /* lowlib �����Ѥ���ץ�������˾���򵭲������ΰ�˾��������
+    /* lowlib が使用するプロセス毎に情報を記憶する領域に情報を設定
      */
     errno =
 	vget_reg(my, LOWLIB_DATA, sizeof(struct lowlib_data),
@@ -677,8 +677,8 @@ ER pmemstat(void)
 
 ER k106jp(void)
 {
-    DDEV_REQ req;		/* �׵�ѥ��å� */
-    DDEV_RES res;		/* �����ѥ��å� */
+    DDEV_REQ req;		/* 要求パケット */
+    DDEV_RES res;		/* 返答パケット */
     ER error;
     W rsize;
     ID device;
@@ -714,8 +714,8 @@ ER k106jp(void)
 
 ER k101us(void)
 {
-    DDEV_REQ req;		/* �׵�ѥ��å� */
-    DDEV_RES res;		/* �����ѥ��å� */
+    DDEV_REQ req;		/* 要求パケット */
+    DDEV_RES res;		/* 返答パケット */
     ER error;
     W rsize;
     ID device;

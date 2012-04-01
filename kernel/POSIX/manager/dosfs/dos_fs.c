@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -13,8 +13,8 @@ Version 2, June 1991
 #include "dosfs.h"
 
 /*
- * DOS ¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥à¤È¾å°ÌÁØ¤È¤Î¥¤¥ó¥¿¥Õ¥§¡¼¥¹¤ò¤È¤ë´Ø¿ô·²¤òÄêµÁ
- * ¤·¤Æ¤¤¤ë¥Õ¥¡¥¤¥ë¡£
+ * DOS ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ ã¨ä¸Šä½å±¤ã¨ã®ã‚¤ãƒ³ã‚¿ãƒ•ã‚§ãƒ¼ã‚¹ã‚’ã¨ã‚‹é–¢æ•°ç¾¤ã‚’å®šç¾©
+ * ã—ã¦ã„ã‚‹ãƒ•ã‚¡ã‚¤ãƒ«ã€‚
  */
 
 /*
@@ -26,7 +26,7 @@ Version 2, June 1991
  * Minor fix.
  *
  * Revision 1.1  1996/07/25 16:03:30  night
- * IBM PC ÈÇ¤Ø¤ÎºÇ½é¤ÎÅÐÏ¿
+ * IBM PC ç‰ˆã¸ã®æœ€åˆã®ç™»éŒ²
  *
  */
 
@@ -55,17 +55,17 @@ struct file_ops dosfs_ops =
 
 
 /*
- * dos_init ...... DOS ¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥àÁ´ÂÎ¤Î½é´ü²½
+ * dos_init ...... DOS ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ å…¨ä½“ã®åˆæœŸåŒ–
  */
 ER
 dos_init ()
 {
-  /* ÆÃ¤Ë²¿¤â¤·¤Ê¤¤ */
+  /* ç‰¹ã«ä½•ã‚‚ã—ãªã„ */
   return (E_OK);
 }
 
 /*
- * dos_attach ..... DOS ¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥à¤Î¥Þ¥¦¥ó¥È
+ * dos_attach ..... DOS ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ ã®ãƒžã‚¦ãƒ³ãƒˆ
  */
 ER
 dos_attach (struct filesystem *fs, ID dev, UW dd)
@@ -120,7 +120,7 @@ dos_attach (struct filesystem *fs, ID dev, UW dd)
 }
 
 /*
- * dos_dettach ...  DOS ¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥à¤Î¥¢¥ó¥Þ¥¦¥ó¥È
+ * dos_dettach ...  DOS ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ ã®ã‚¢ãƒ³ãƒžã‚¦ãƒ³ãƒˆ
  */
 ER
 dos_dettach (struct filesystem *fs)
@@ -181,7 +181,7 @@ dos_lookup (struct filedata *dir, B *fname, struct filedata **ret_fp)
 	  printf ("found file. index = %d, name = %s\n",
 		  i, fname);
 
-	  /* ¥Õ¥¡¥¤¥ë¤¬¸«¤Ä¤«¤Ã¤¿ */
+	  /* ãƒ•ã‚¡ã‚¤ãƒ«ãŒè¦‹ã¤ã‹ã£ãŸ */
 
 	  (*ret_fp) = (struct filedata *)malloc (sizeof (struct filedata));
 	  bzero ((*ret_fp), sizeof (struct filedata));
@@ -193,7 +193,7 @@ dos_lookup (struct filedata *dir, B *fname, struct filedata **ret_fp)
 	  (struct dos_file *)(*ret_fp)->private = dosfile;
 	  dosfile->fatid = buf[i].fatent;
 
-	  /* ...ÆüÉÕ¾ðÊó¤ÎÀßÄêÅù¤ò¹Ô¤¦... */
+	  /* ...æ—¥ä»˜æƒ…å ±ã®è¨­å®šç­‰ã‚’è¡Œã†... */
 	  if (buf[i].attr & 0x20)
 	    {
 	      (*ret_fp)->type = regular;

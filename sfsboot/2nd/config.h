@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -23,23 +23,23 @@ Version 2, June 1991
 #define MAJOR_VER	0
 #define MINOR_VER	2
 
-#define MIN_MEMORY_SIZE		(16 * 1024 * 1024) /* ¥á¥â¥ê¤ÏºÇ¾® 16 M */
+#define MIN_MEMORY_SIZE		(16 * 1024 * 1024) /* ãƒ¡ãƒ¢ãƒªã¯æœ€å° 16 M */
 
-#define MAX_PAGEENT	(1024 * (2 + 16)) /* ºÇÂç 16 M Ê¬¤Î¥Ú¡¼¥¸¥¨¥ó¥È¥ê */
+#define MAX_PAGEENT	(1024 * (2 + 16)) /* æœ€å¤§ 16 M åˆ†ã®ãƒšãƒ¼ã‚¸ã‚¨ãƒ³ãƒˆãƒª */
 #define MAX_DIRENT	1024
 
 #define BASE_MEM	(1024 * 1024)	/* for IBM PC/AT */
 
-#define MALLOC_SIZE	(1024 * 100)	/* 100K ¥Ğ¥¤¥È¤ò malloc ÍÑ¤Ë»È */
-					/* ¤¦ */
+#define MALLOC_SIZE	(1024 * 100)	/* 100K ãƒã‚¤ãƒˆã‚’ malloc ç”¨ã«ä½¿ */
+					/* ã† */
 
 #define BOOT_PATH	"/system/btron386"
 
 #define TIMER0_WRITE	0x40
 #define TIMER0_READ	0x40
 #define TIMER_CONTROL	0x43
-#define CLOCK		50		/* clock ¼ş´ü 10 ms */
-#define TICKS		(1000/CLOCK)	/* 1 ÉÃ´Ö¤Î tick ¿ô */
+#define CLOCK		50		/* clock å‘¨æœŸ 10 ms */
+#define TICKS		(1000/CLOCK)	/* 1 ç§’é–“ã® tick æ•° */
 #define TIMER_FREQ	1193182L
 #define BTRON_OFFSET	473353200L
 

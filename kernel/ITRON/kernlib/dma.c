@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -34,24 +34,24 @@ Version 2, June 1991
  * Modified some casts
  *
  * Revision 1.3  1997/10/18 12:41:49  night
- * DMA �Υ⡼�ɤ����ꤹ��Ȥ��ˡ�����ͥ��ֹ����ꤷ�Ƥ��ʤ��ä���
- * �����ͥ��ֹ����ꤹ��褦�ѹ���
+ * DMA のモードを設定するときに、チャネル番号を指定していなかった。
+ * チェネル番号も指定するよう変更。
  *
  * Revision 1.2  1996/07/28  19:56:35  night
- * IBM PC �Υϡ��ɥ������˹�碌�ƽ������ѹ���
+ * IBM PC のハードウェアに合わせて処理を変更。
  *
  * Revision 1.1  1996/07/22  23:52:05  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  * Revision 1.3  1995/10/01  13:03:56  night
- * setup_dma () �δؿ����󥿥ե��������ѹ���
- * DMA ����ͥ��ֹ���������ǻ���Ǥ���褦�ˤ�����
+ * setup_dma () の関数インタフェースの変更。
+ * DMA チャネル番号を第一引数で指定できるようにした。
  *
  * Revision 1.2  1995/09/21  15:51:40  night
- * �������ե��������Ƭ�� Copyright notice ������ɲá�
+ * ソースファイルの先頭に Copyright notice 情報を追加。
  *
  * Revision 1.1  1995/09/14  04:38:09  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  * Revision 1.1  1993/10/11  21:28:47  btron
  * btron/386
@@ -79,7 +79,7 @@ init_dma (void)
 }
 
 /****************************************************************************
- * setup_dma --- �ģͣ��������Ԥ�
+ * setup_dma --- ＤＭＡの設定を行う
  *
  */
 int
@@ -115,10 +115,10 @@ setup_dma (UW chan, VP addr, int mode, int length, int mask)
 #endif
   if (chan == 2)
     {
-      /* fdc �� dis_int ���Ƥ���֤˸ƤӽФ���롣���Τ��ᤳ���Ǥ�
-	 dis_int/ena_int �ϹԤ�ʤ� */
-      outb (DMA_WRITE_SINGLE_MASK, 0x06);/* DMAC �Υꥻ�å� */
-      outb (DMA_CLEAR_BYTE, 0);		 /* flip flop �ؽ񤭹��� */
+      /* fdc で dis_int している間に呼び出される。そのためここでは
+	 dis_int/ena_int は行わない */
+      outb (DMA_WRITE_SINGLE_MASK, 0x06);/* DMAC のリセット */
+      outb (DMA_CLEAR_BYTE, 0);		 /* flip flop へ書き込み */
 #if 1
       outb (DMA_WRITE_MODE, mode | mask);
 #else

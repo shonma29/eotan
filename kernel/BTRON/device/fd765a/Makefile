@@ -2,7 +2,7 @@
 #
 #
 
-# -DFDDEBUG	... FDC �ΥǥХå��ѥޥ���
+# -DFDDEBUG	... FDC のデバッグ用マクロ
 #DEBUG= -DFDDEBUG
 IDENT=-DTIMER_TEST -DI386 -DIBMPC $(DEBUG)
 

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -8,7 +8,7 @@ Version 2, June 1991
 (C) B-Free Project.
 
 */
-/* sfs_bitmap.c - SFS ¤Î bitmap ¤Î cache ¤ò¹Ô¤¦
+/* sfs_bitmap.c - SFS ã® bitmap ã® cache ã‚’è¡Œã†
  *
  * $Log: sfs_bitmap.c,v $
  * Revision 1.2  2000/07/02 04:14:21  naniwa
@@ -26,7 +26,7 @@ static char rcsid[] = "$Header: /usr/local/src/master/B-Free/Program/btron-pc/ke
 #define BLOCK_SIZE      512
 #define CACHE_SIZE	10
 
-/* ÊÑ¿ô */
+/* å¤‰æ•° */
 static struct bitmap_cache {
   int dirty;
   W fd;
@@ -71,7 +71,7 @@ W sfs_alloc_bitmap(W fd, W blockno, B **ptr, int **dirty)
       start = (start+1)%CACHE_SIZE;
     }
     if (cache_data[i].dirty == 1) {
-      /* disk ¤Ë½ñ¤­Ìá¤· */
+      /* disk ã«æ›¸ãæˆ»ã— */
       startoffset = (1 + 1 + cache_data[i].blockno) * BLOCK_SIZE;
       errno = sfs_write_device (fd, cache_data[i].buf, startoffset,
 			       BLOCK_SIZE, &rsize);
@@ -82,7 +82,7 @@ W sfs_alloc_bitmap(W fd, W blockno, B **ptr, int **dirty)
     }
     cache_data[i].fd = fd;
     cache_data[i].blockno = blockno;
-    /* disk ¤«¤éÆÉ¤ß¹ş¤ß */
+    /* disk ã‹ã‚‰èª­ã¿è¾¼ã¿ */
     startoffset = (1 + 1 + blockno) * BLOCK_SIZE;
     errno = sfs_read_device (fd, cache_data[i].buf, startoffset,
 			     BLOCK_SIZE, &rsize);
@@ -104,7 +104,7 @@ W sfs_sync_bitmap(W fd)
 
   for(i = 0; i < count; ++i) {
     if (cache_data[i].fd == fd && cache_data[i].dirty == 1) {
-      /* disk ¤Ë½ñ¤­½Ğ¤· */
+      /* disk ã«æ›¸ãå‡ºã— */
       startoffset = (1 + 1 + cache_data[i].blockno) * BLOCK_SIZE;
       errno = sfs_write_device (fd, cache_data[i].buf, startoffset,
 			       BLOCK_SIZE, &rsize);

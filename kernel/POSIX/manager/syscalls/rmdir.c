@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -20,7 +20,7 @@ Version 2, June 1991
 
 #include "posix.h"
 
-/* psc_rmdir_f - ¥Ç¥£¥ì¥¯¥È¥ê¤òºï½ü¤¹¤ë
+/* psc_rmdir_f - ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’å‰Šé™¤ã™ã‚‹
  */
 W
 psc_rmdir_f (struct posix_request *req)
@@ -38,7 +38,7 @@ psc_rmdir_f (struct posix_request *req)
   pathname = alloca (req->param.par_rmdir.pathlen + 1);
   if (pathname == NULL)
     {
-      /* ¥á¥â¥ê¼èÆÀ¥¨¥é¡¼ */
+      /* ãƒ¡ãƒ¢ãƒªå–å¾—ã‚¨ãƒ©ãƒ¼ */
       put_response (req, EP_NOMEM, 0, 0, 0);
       return (FAIL);
     }
@@ -48,7 +48,7 @@ psc_rmdir_f (struct posix_request *req)
 		    req->param.par_rmdir.pathlen + 1, pathname);
   if (errno)
     {
-      /* ¥Ñ¥¹Ì¾¤Î¥³¥Ô¡¼¥¨¥é¡¼ */
+      /* ãƒ‘ã‚¹åã®ã‚³ãƒ”ãƒ¼ã‚¨ãƒ©ãƒ¼ */
       if (errno == E_PAR)
 	put_response (req, EP_INVAL, -1, 0, 0);
       else
@@ -90,7 +90,7 @@ psc_rmdir_f (struct posix_request *req)
 			 &acc);
   if (errno)
     {
-      /* ¥Õ¥¡¥¤¥ë¤¬¥ª¡¼¥×¥ó¤Ç¤­¤Ê¤¤ */
+      /* ãƒ•ã‚¡ã‚¤ãƒ«ãŒã‚ªãƒ¼ãƒ—ãƒ³ã§ããªã„ */
       put_response (req, errno, -1, 0, 0);
       return (FAIL);
     }

@@ -1,5 +1,5 @@
 #
-#	B-Free OS ºîÀ®ÍÑ makefile
+#	B-Free OS ä½œæˆç”¨ makefile
 #
 #$Id: Makefile,v 1.2 1999/04/13 04:15:14 monaka Exp $
 #

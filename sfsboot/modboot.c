@@ -66,7 +66,7 @@ main(argc, argv)
     fprintf(stderr, "%s is not rewritable.\n", argv[1], argv[0]);
     exit(1);
   }
-  /* ¥Ö¡¼¥È¥Ç¥Ð¥¤¥¹ ¥Ñ¥é¥á¡¼¥¿ */
+  /* ãƒ–ãƒ¼ãƒˆãƒ‡ãƒã‚¤ã‚¹ ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ */
   buff[ADDR_DEV_PARAM] = dp.bootdev;
   buff[ADDR_DEV_PARAM + 1] = dp.n_cylinder & 0x0ff;
   buff[ADDR_DEV_PARAM + 2] = dp.n_cylinder >> 8;

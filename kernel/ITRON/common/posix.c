@@ -16,7 +16,7 @@
 
 #ifdef notdef
 static ID posix_manager = 0;
-/* ÀÅÅªÊÑ¿ô¤Î½é´ü²½¤ËÌäÂê¤¬¤¢¤ë */
+/* é™çš„å¤‰æ•°ã®åˆæœŸåŒ–ã«å•é¡ŒãŒã‚ã‚‹ */
 #else
 ID posix_manager;
 #endif
@@ -27,11 +27,11 @@ ER posix_kill_proc(ID pid)
   ER errno;
 
   req.param.par_kill.pid = pid;
-  req.receive_port = 0; /* ÊÖ»ö¤Ï¼õ¤±¼è¤é¤Ê¤¤ */
+  req.receive_port = 0; /* è¿”äº‹ã¯å—ã‘å–ã‚‰ãªã„ */
   req.msg_length = sizeof (struct posix_request);
   req.operation = PSC_KILL;
   req.procid = pid;
-  req.caller = KERNEL_TASK; /* KERNEL_TASK ¤Ç¼Â¹Ô */
+  req.caller = KERNEL_TASK; /* KERNEL_TASK ã§å®Ÿè¡Œ */
 
   if (posix_manager == 0) {
     find_port (POSIX_MANAGER, &posix_manager);

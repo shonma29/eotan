@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -22,7 +22,7 @@ Version 2, June 1991
  * *** empty log message ***
  *
  * Revision 1.1  1997/08/31 14:22:45  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  * 
@@ -34,7 +34,7 @@ Version 2, June 1991
 
 
 /*
- * ³Æ¼ï¥ì¥¸¥¹¥¿¤Î¥¢¥É¥ì¥¹ÃÍ
+ * å„ç¨®ãƒ¬ã‚¸ã‚¹ã‚¿ã®ã‚¢ãƒ‰ãƒ¬ã‚¹å€¤
  */
 #define    ATTRREG    0x3C0
 #define    MISCREG    0x3C2
@@ -50,10 +50,10 @@ Version 2, June 1991
 #define VGA_VRAM_ADDRESS		0xA0000
 
 
-/* Sequencer register ¤Î¥Ñ¥é¥á¡¼¥¿ÀßÄê */
+/* Sequencer register ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿è¨­å®š */
 #define SR_MAP_MASK			0x02
 
-/* Graphics controller register ¤Î¥Ñ¥é¥á¡¼¥¿ÄêµÁ */
+/* Graphics controller register ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å®šç¾© */
 #define	VGA_SET_RESET			0x00
 #define	VGA_ENABLE_SET_RESET		0x01
 #define	VGA_COLOR_COMP			0x02
@@ -65,20 +65,20 @@ Version 2, June 1991
 #define	VGA_BIT_MASK			0x08
 
 /*
-	VGA_SET_RESET,	VGA_ENABLE_SET_RESET register ¤Î¥Ñ¥é¥á¡¼¥¿ÄêµÁ 
+	VGA_SET_RESET,	VGA_ENABLE_SET_RESET register ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å®šç¾© 
 */
 #define	VGA_PLANE1			0x01
 #define	VGA_PLANE2			0x02
 #define	VGA_PLANE3			0x04
 #define	VGA_PLANE4			0x08
 
-/* VGA_FUNCTION register ¤Î¥Ñ¥é¥á¡¼¥¿ */
+/* VGA_FUNCTION register ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ */
 #define	VGA_OVERWRITE			0x00
 #define	VGA_AND				0x10
 #define	VGA_OR				0x20
 #define	VGA_XOR				0x30
 
-/* VGA_MODE register ¤Î¥Ñ¥é¥á¡¼¥¿ */
+/* VGA_MODE register ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ */
 #define	VGA_WM0				0x00
 #define	VGA_WM1				0x01
 #define	VGA_WM2				0x02
@@ -86,11 +86,11 @@ Version 2, June 1991
 #define	VGA_RD0				0x00
 #define	VGA_RD1				0x08
 
-/* ¥Ó¥Ã¥È¥ª¥Ú¥ì¡¼¥·¥ç¥ó */
+/* ãƒ“ãƒƒãƒˆã‚ªãƒšãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ */
 #define	MakeMask(index)		(1 << (index))
 #define	BitTest(data,index)	((data) & MakeMask (index))
 
-/* ¥¢¥É¥ì¥¹·×»» */
+/* ã‚¢ãƒ‰ãƒ¬ã‚¹è¨ˆç®— */
 #define	P2G(x,y)	((y) * 80 + (x))
 
 extern int	vga_text (void);

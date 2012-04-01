@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -9,7 +9,7 @@ Version 2, June 1991
 
 */
 /*
- * »ş´Ö´ÉÍı
+ * æ™‚é–“ç®¡ç†
  */
 
 #ifndef __ITRON_TIME_H__
@@ -21,7 +21,7 @@ typedef T_DCYC T_CYCHANDLER;
 typedef T_DALM T_ALMHANDLER;
 
 /*
- * ¥¿¥¤¥Ş¥Ï¥ó¥É¥é¤«¤éÉüµ¢
+ * ã‚¿ã‚¤ãƒãƒãƒ³ãƒ‰ãƒ©ã‹ã‚‰å¾©å¸°
  */
 
 #define ret_tmr return

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project §Œ¿∏¿Æ ™§œ GNU Generic PUBLIC LICENSE §ÀΩæ§§§ﬁ§π°£
+B-Free Project „ÅÆÁîüÊàêÁâ©„ÅØ GNU Generic PUBLIC LICENSE „Å´Âæì„ÅÑ„Åæ„Åô„ÄÇ
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -9,7 +9,7 @@ Version 2, June 1991
 
 */
 /*
- *  ∏ª˙ŒÛ§Œœ¢∑Î¥ÿøÙ∑≤
+ * ÊñáÂ≠óÂàó„ÅÆÈÄ£ÁµêÈñ¢Êï∞Áæ§
  */
 
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/string/strcat.c,v 1.4 2000/02/17 14:29:01 naniwa Exp $ */
@@ -29,22 +29,22 @@ static char rcsid[] = "@(#)$Header";
  * minor fix
  *
  * Revision 1.1  1996/11/11 13:33:42  night
- * ∫«ΩÈ§Œ≈–œø
+ * ÊúÄÂàù„ÅÆÁôªÈå≤
  *
  * Revision 1.3  1995/09/21  15:52:52  night
- * •Ω°º•π•’•°•§•Î§Œ¿Ë∆¨§À Copyright notice æ Û§Úƒ…≤√°£
+ * „ÇΩ„Éº„Çπ„Éï„Ç°„Ç§„É´„ÅÆÂÖàÈ†≠„Å´ Copyright notice ÊÉÖÂ†±„ÇíËøΩÂä†„ÄÇ
  *
  * Revision 1.2  1995/07/06  15:05:20  night
- * strncat §Œ¥ÿøÙÃæ§¨ strcat §À§ §√§∆§§§ø§Œ§«°¢¿µ§∑§Øƒæ§∑§ø°£
+ * strncat „ÅÆÈñ¢Êï∞Âêç„Åå strcat „Å´„Å™„Å£„Å¶„ÅÑ„Åü„ÅÆ„Åß„ÄÅÊ≠£„Åó„ÅèÁõ¥„Åó„Åü„ÄÇ
  *
  * Revision 1.1  1995/03/18  14:21:12  night
- * ∫«ΩÈ§Œ≈–œø
+ * ÊúÄÂàù„ÅÆÁôªÈå≤
  *
  *
  */
 
 /*
- * 2 §ƒ§Œ ∏ª˙ŒÛ§Úœ¢∑Î§π§Î§ø§·§Œ¥ÿøÙ
+ * 2 „Å§„ÅÆÊñáÂ≠óÂàó„ÇíÈÄ£Áµê„Åô„Çã„Åü„ÇÅ„ÅÆÈñ¢Êï∞
  *
  */
 #if 0
@@ -52,12 +52,12 @@ char *
 strcat (char *s1, char *s2)
 {
   char *buf;
-  char *bufp;	/* •–•√•’•°§Œ¿Ë∆¨§Ú§™§‹§®§∆§™§Ø§ø§·§Œ•›•§•Û•ø */
+  char *bufp;	/* „Éê„ÉÉ„Éï„Ç°„ÅÆÂÖàÈ†≠„Çí„Åä„Åº„Åà„Å¶„Åä„Åè„Åü„ÇÅ„ÅÆ„Éù„Ç§„É≥„Çø */
 
   buf = malloc (strlne (s1) + strlen (s2) + 1);
   if (buf == NULL)
     {
-      return (NULL);	/* º∫«‘§∑§ø */
+      return (NULL);	/* Â§±Êïó„Åó„Åü */
     }
 
   bufp = buf;
@@ -87,7 +87,7 @@ char *strcat(char *dest, char *src)
 
 
 /*
- * 2 §ƒ§Œ ∏ª˙ŒÛ§Úœ¢∑Î§π§Î§ø§·§Œ¥ÿøÙ
+ * 2 „Å§„ÅÆÊñáÂ≠óÂàó„ÇíÈÄ£Áµê„Åô„Çã„Åü„ÇÅ„ÅÆÈñ¢Êï∞
  *
  *
  */
@@ -98,7 +98,7 @@ strncat (char *s1, char *s2, int n)
   int	i;
   int	length;
   char	*buf;
-  char	*bufp;	/* •–•√•’•°§Œ¿Ë∆¨§Ú§™§‹§®§∆§™§Ø§ø§·§Œ•›•§•Û•ø */
+  char	*bufp;	/* „Éê„ÉÉ„Éï„Ç°„ÅÆÂÖàÈ†≠„Çí„Åä„Åº„Åà„Å¶„Åä„Åè„Åü„ÇÅ„ÅÆ„Éù„Ç§„É≥„Çø */
 
   length = strlen (s1) + strlen (s2) + 1;
   if (length > n)
@@ -107,7 +107,7 @@ strncat (char *s1, char *s2, int n)
   buf = malloc (length);
   if (buf == NULL)
     {
-      return (NULL);	/* º∫«‘§∑§ø */
+      return (NULL);	/* Â§±Êïó„Åó„Åü */
     }
 
   bufp = buf;

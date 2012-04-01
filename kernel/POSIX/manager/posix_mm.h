@@ -1,6 +1,6 @@
 /*
 
-B-Free Project д╬└╕└о╩кд╧ GNU Generic PUBLIC LICENSE д╦╜╛ддд▐д╣бг
+B-Free Project уБочФЯцИРчЙйуБп GNU Generic PUBLIC LICENSE уБлх╛УуБДуБ╛уБЩуАВ
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -9,7 +9,7 @@ Version 2, June 1991
 
 */
 
-/* posix_mm.h - POSIX есетеъе╡е╓е╖е╣е╞ер
+/* posix_mm.h - POSIX уГбуГвуГкуВ╡уГЦуВ╖уВ╣уГЖуГа
  *
  *
  * $Log: posix_mm.h,v $
@@ -20,18 +20,18 @@ Version 2, June 1991
  * modified to implement exit
  *
  * Revision 1.4  1998/02/16 14:22:49  night
- * vm_tree ╣╜┬д┬╬д╬═╫┴╟ vm_handler д╬╖┐дЄ╩╤╣╣бг
- * W (*)() длдщ FP д╦╩╤╣╣д╖д┐бг
+ * vm_tree цзЛщАаф╜УуБошжБч┤а vm_handler уБохЮЛуВТхдЙцЫ┤уАВ
+ * W (*)() уБЛуВЙ FP уБлхдЙцЫ┤уБЧуБЯуАВ
  *
  * Revision 1.3  1997/10/24 13:59:11  night
- * VM_EXECбвVM_EXEC_MASK е▐епеэд╬─╔▓├бг
- * ┤╪┐Ї─ъ╡┴д╬─╔▓├бг
+ * VM_EXECуАБVM_EXEC_MASK уГЮуВпуГнуБош┐╜хКауАВ
+ * щЦвцХ░хоЪч╛йуБош┐╜хКауАВ
  *
  * Revision 1.2  1997/10/23 14:32:32  night
- * exec е╖е╣е╞ере│б╝еы┤╪╖╕д╬╜ш═¤д╬╣╣┐╖
+ * exec уВ╖уВ╣уГЖуГауВ│уГ╝уГлщЦвф┐ВуБохЗжчРЖуБоцЫ┤цЦ░
  *
  * Revision 1.1  1996/11/13 12:53:35  night
- * ║╟╜щд╬┼╨╧┐
+ * цЬАхИЭуБочЩ╗щМ▓
  *
  *
  */
@@ -67,9 +67,9 @@ Version 2, June 1991
 
 
 
-/* ▓╛┴█есетеъ - ╝┬есетеъд╬┬╨дЄ┤╔═¤д╣дые─еъб╝
+/* ф╗оцГ│уГбуГвуГк - хоЯуГбуГвуГкуБохп╛уВТчобчРЖуБЩуВЛуГДуГкуГ╝
  *
- * ▓╛┴█есетеъд╬е─еъб╝д╧бв╝бд╬дшджд╩╖┴д╚д╩ды:
+ * ф╗оцГ│уГбуГвуГкуБоуГДуГкуГ╝уБпуАБцмбуБоуВИуБЖуБкх╜вуБиуБкуВЛ:
  *
  *	vm_tree	 - vm_directory[0] - vm_page[0]
  *		   		     vm_page[1]
@@ -86,17 +86,17 @@ Version 2, June 1991
  */
 struct vm_tree
 {
-  UW				access;			/* евепе╗е╣╕вд╬╛Ё╩є */
+  UW				access;			/* уВвуВпуВ╗уВ╣цийуБоцГЕха▒ */
   UW				start;
   UW				size;
-  FP				vm_handler;	/* е┌б╝е╕е╒ейб╝еые╚╗■д╬е╧еєе╔ещ */
+  FP				vm_handler;	/* уГЪуГ╝уВ╕уГХуВйуГ╝уГлуГИцЩВуБоуГПуГ│уГЙуГй */
   struct vm_directory		*directory_table[MAX_DIR_ENTRY];
 };
 
 
 struct vm_directory
 {
-  UW				access;			/* евепе╗е╣╕вд╬╛Ё╩є */
+  UW				access;			/* уВвуВпуВ╗уВ╣цийуБоцГЕха▒ */
   struct vm_tree		*tree_top;
   UW				start;
   UW				size;
@@ -106,7 +106,7 @@ struct vm_directory
 
 struct vm_page
 {
-  UW				access;			/* евепе╗е╣╕вд╬╛Ё╩є */
+  UW				access;			/* уВвуВпуВ╗уВ╣цийуБоцГЕха▒ */
   struct vm_directory		*directory;
   UW				addr;
 

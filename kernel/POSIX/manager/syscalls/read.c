@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -45,7 +45,7 @@ extern W sfs_trans_device(ID device, ID port, ID tskid, B * buf, W start,
 extern W sfs_read_device(ID device, B * buf, W start, W length, W * rlength);
 
 
-/* psc_read_f - ¥Õ¥¡¥¤¥ë¤«¤é¤Î¥Ç¡¼¥¿¤ÎÆÉ¤ß¹þ¤ß
+/* psc_read_f - ãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰ã®ãƒ‡ãƒ¼ã‚¿ã®èª­ã¿è¾¼ã¿
  */
 W psc_read_f(struct posix_request *req)
 {
@@ -74,20 +74,20 @@ W psc_read_f(struct posix_request *req)
     }
 
     if (fp->f_flag & F_PIPE) {
-	/* ¥Ñ¥¤¥×¤ÎÆÉ¤ß½ñ¤­ */
+	/* ãƒ‘ã‚¤ãƒ—ã®èª­ã¿æ›¸ã */
 	put_response(req, EP_NOSUP, -1, 0, 0);
 	return (FAIL);
     }
 
     if (fp->f_inode->i_mode & FS_FMT_DEV) {
 	if ((fp->f_inode->i_dev & BLOCK_DEVICE_MASK) == 0) {
-	    /* ¥¹¥Ú¥·¥ã¥ë¥Õ¥¡¥¤¥ë¡Ê¥­¥ã¥é¥¯¥¿¥Ç¥Ð¥¤¥¹¡Ë¤À¤Ã¤¿ */
+	    /* ã‚¹ãƒšã‚·ãƒ£ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«ï¼ˆã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ‡ãƒã‚¤ã‚¹ï¼‰ã ã£ãŸ */
 	    if (req->param.par_read.length > 1) {
-		/* ¥Ç¡¼¥¿¤ÎÆÉ¤ß¹þ¤ß¤ò 1 byte ¤º¤Ä¤ËÊ¬³ä¤¹¤ë */
+		/* ãƒ‡ãƒ¼ã‚¿ã®èª­ã¿è¾¼ã¿ã‚’ 1 byte ãšã¤ã«åˆ†å‰²ã™ã‚‹ */
 		req->param.par_read.length = 1;
 	    }
 
-	    /* ¥Ç¥Ð¥¤¥¹¤Ë read ¥á¥Ã¥»¡¼¥¸¤òÅ¾Á÷ */
+	    /* ãƒ‡ãƒã‚¤ã‚¹ã« read ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’è»¢é€ */
 	    errno = sfs_trans_device(fp->f_inode->i_dev,
 				     req->receive_port,
 				     req->caller,
@@ -100,7 +100,7 @@ W psc_read_f(struct posix_request *req)
 	    }
 	    return (FAIL);
 	} else {
-	    /* ¥Ö¥í¥Ã¥¯¥Ç¥Ð¥¤¥¹¤À¤Ã¤¿ */
+	    /* ãƒ–ãƒ­ãƒƒã‚¯ãƒ‡ãƒã‚¤ã‚¹ã ã£ãŸ */
 	    rest_length = req->param.par_read.length;
 	    if (fp->f_offset >= fp->f_inode->i_size) {
 		errno = EP_OK;
@@ -108,7 +108,7 @@ W psc_read_f(struct posix_request *req)
 	    }
 	    for (i = 0; rest_length > 0;
 		 rest_length -= rlength, i += rlength) {
-		/* MAX_BODY_SIZE Ëè¤Ë¥Ð¥Ã¥Õ¥¡¤ËÆÉ¤ß¹þ¤ß */
+		/* MAX_BODY_SIZE æ¯Žã«ãƒãƒƒãƒ•ã‚¡ã«èª­ã¿è¾¼ã¿ */
 		len =
 		    rest_length >
 		    MAX_BODY_SIZE ? MAX_BODY_SIZE : rest_length;
@@ -118,7 +118,7 @@ W psc_read_f(struct posix_request *req)
 		if (errno)
 		    break;
 
-		/* ¸Æ¤Ó½Ð¤·¤¿¥×¥í¥»¥¹¤Î¥Ð¥Ã¥Õ¥¡¤Ø¤Î½ñ¤­¹þ¤ß */
+		/* å‘¼ã³å‡ºã—ãŸãƒ—ãƒ­ã‚»ã‚¹ã®ãƒãƒƒãƒ•ã‚¡ã¸ã®æ›¸ãè¾¼ã¿ */
 		errno = vput_reg(req->caller, req->param.par_read.buf + i,
 				 rlength, buf);
 		if (errno || (rlength < len)) {
@@ -150,7 +150,7 @@ W psc_read_f(struct posix_request *req)
     }
     for (i = 0, rest_length = req->param.par_read.length;
 	 rest_length > 0; rest_length -= rlength, i += rlength) {
-	/* MAX_BODY_SIZE Ëè¤Ë¥Õ¥¡¥¤¥ë¤ËÆÉ¤ß¹þ¤ß */
+	/* MAX_BODY_SIZE æ¯Žã«ãƒ•ã‚¡ã‚¤ãƒ«ã«èª­ã¿è¾¼ã¿ */
 	len = rest_length > MAX_BODY_SIZE ? MAX_BODY_SIZE : rest_length;
 	errno = fs_read_file(fp->f_inode,
 			     fp->f_offset + i, buf, len, &rlength);
@@ -158,7 +158,7 @@ W psc_read_f(struct posix_request *req)
 	    break;
 	}
 
-	/* ¸Æ¤Ó½Ð¤·¤¿¥×¥í¥»¥¹¤Î¥Ð¥Ã¥Õ¥¡¤Ø¤Î½ñ¤­¹þ¤ß */
+	/* å‘¼ã³å‡ºã—ãŸãƒ—ãƒ­ã‚»ã‚¹ã®ãƒãƒƒãƒ•ã‚¡ã¸ã®æ›¸ãè¾¼ã¿ */
 	errno = vput_reg(req->caller, req->param.par_read.buf + i,
 			 rlength, buf);
 	if (errno || (rlength < len)) {

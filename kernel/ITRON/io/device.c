@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -8,15 +8,15 @@ Version 2, June 1991
 (C) B-Free Project.
 
 */
-/* io.c --- �ǥХ��� IO �˴ؤ��륳��ȥ����륿�
+/* io.c --- デバイス IO に関するコントロールタワー
  *
- * �����ؿ���
- *	init_io 	�ɡ��ϥǥХ���������ǽ�ν����
- *	def_dev 	�ǥХ�������Ͽ
- *	get_ioport 	�ǥХ����ѤΥ�å������ݡ��Ȥγ���
- *	io_request 	�ǥХ������Ф����������׵������
- *	io_response 	��Ʊ���⡼�ɤΥǥХ��������ϤΤȤ��ˣɣϤΥ쥹
- *			�ݥ󥹤�����Ȥ�
+ * 外部関数：
+ *	init_io 	Ｉ／Ｏデバイス管理機能の初期化
+ *	def_dev 	デバイスの登録
+ *	get_ioport 	デバイス用のメッセージポートの獲得
+ *	io_request 	デバイスに対して入出力要求を送る
+ *	io_response 	非同期モードのデバイス入出力のときにＩＯのレス
+ *			ポンスを受けとる
  *
  *
  *
@@ -35,14 +35,14 @@ Version 2, June 1991
 
 
 /**********************************************************************
- * io_device ��¤��
+ * io_device 構造体
  *
  */
 struct io_device
 {
   ID			id;
-  ID			portid;		/* IO �ǥХ����إ�å��������� */
-					/* �뤿��Υ�å������ݡ��� ID */
+  ID			portid;		/* IO デバイスへメッセージを送 */
+					/* るためのメッセージポート ID */
   IO_TYPE		type;
   B			name[MAX_DEVICE_NAME];
 };
@@ -54,16 +54,16 @@ static ID	get_ioport (void);
 
 
 /*************************************************************************
- * init_io --- �ɡ��ϥǥХ���������ǽ�ν����
+ * init_io --- Ｉ／Ｏデバイス管理機能の初期化
  *
- * ������
- *	�ʤ�
+ * 引数：
+ *	なし
  *
- * �֤��͡�
- *	���顼�ֹ�
+ * 返り値：
+ *	エラー番号
  *
- * ��ǽ��
- *	�ǥХ����ơ��֥�ν����
+ * 機能：
+ *	デバイステーブルの初期化
  *
  */
 ER
@@ -79,18 +79,18 @@ init_io (void)
 }
 
 /************************************************************************
- * def_dev -- �ǥХ�������Ͽ
+ * def_dev -- デバイスの登録
  *
- * ������
- *	name	�ǥХ���̾
- *	type	�ǥХ���������
- *	id	�ǥХ��� ID 
- *	rid	�ǥХ��� ID (�֤���)
+ * 引数：
+ *	name	デバイス名
+ *	type	デバイスタイプ
+ *	id	デバイス ID 
+ *	rid	デバイス ID (返り値)
  *
- * �֤��͡�
- *	���顼�ֹ�
+ * 返り値：
+ *	エラー番号
  *
- * ��ǽ��
+ * 機能：
  *	
  *
  *
@@ -134,20 +134,20 @@ def_dev (B *name, IO_TYPE type, ID id, ID *rid)
 
 
 /************************************************************************
- * ref_dev -- �ǥХ����λ���
+ * ref_dev -- デバイスの参照
  *
- * ������
- *	name	�ǥХ���̾
- *	type	�ǥХ���������
- *	rid	�ǥХ��� ID (�֤���)
+ * 引数：
+ *	name	デバイス名
+ *	type	デバイスタイプ
+ *	rid	デバイス ID (返り値)
  *
- * �֤��͡�
- *	���顼�ֹ�
- *	E_PAR	�ǥХ��������פ�����
- *	E_OBJ	���ꤵ�줿�ǥХ�����¸�ߤ��ʤ�
+ * 返り値：
+ *	エラー番号
+ *	E_PAR	デバイスタイプの不正
+ *	E_OBJ	指定されたデバイスは存在しない
  *
- * ��ǽ��
- *	�ǥХ���̾�ȥǥХ��������פ���ǥХ��� ID ���֤���
+ * 機能：
+ *	デバイス名とデバイスタイプからデバイス ID を返す。
  *
  *
  */
@@ -179,20 +179,20 @@ ref_dev (B *name, IO_TYPE type, ID *rid)
 
 
 /***********************************************************************
- * get_ioport --- �ǥХ����ѤΥ�å������ݡ��Ȥγ���
+ * get_ioport --- デバイス用のメッセージポートの獲得
  *
- * ������
- *	�ʤ�
+ * 引数：
+ *	なし
  *
- * �֤��͡�
- *	�������	���������ǥХ����ѤΥ�å������ݡ��� ID
- *	�۾����	NULL (0)
+ * 返り値：
+ *	正常時：	取得したデバイス用のメッセージポート ID
+ *	異常時：	NULL (0)
  *
- * ��ǽ��
- *	�ǥХ����ѤΥ�å������Хåե��ݡ��Ȥ򥢥������Ȥ��롣
- *	ITRON �Υ�å������Хåե��ˤϥ�å������������λ��꤬ɬ�פ���
- *      ��å������������ϡ�T_IO_REQUESTQ �Ȥ�����
- *	�ʤ����Хåե��Ȥ��� ��å����� 10 ��ʬ����ݤ�����
+ * 機能：
+ *	デバイス用のメッセージバッファポートをアロケートする。
+ *	ITRON のメッセージバッファにはメッセージサイズの指定が必要だが
+ *      メッセージサイズは、T_IO_REQUESTQ とした。
+ *	なお、バッファとして メッセージ 10 個分を確保した。
  */
 static ID
 get_ioport (void)
@@ -207,12 +207,12 @@ get_ioport (void)
   for (id = MIN_USERMBFID; id <= MAX_USERMBFID; id++)
     {
       err = cre_mbf (id, &pk_cmbf);
-      if (err == E_OK)		/* ��å������ݡ��Ȥ����ݤǤ�����*/
+      if (err == E_OK)		/* メッセージポートが確保できた。*/
 	{
 	  break;
 	}
-      else if (err != E_OBJ)	/*  ID �����ʳ��Υ��顼�Ǽ���: ���顼 */
-	{			/*  �꥿����			      */
+      else if (err != E_OBJ)	/*  ID 不正以外のエラーで失敗: エラー */
+	{			/*  リターン			      */
 	  return (NULL);
 	}
     }
@@ -226,16 +226,16 @@ get_ioport (void)
 
 
 /*************************************************************************
- * get_req --- �ǥХ����ɥ饤��¦�ǤΥ�å����������դ�
+ * get_req --- デバイスドライバ側でのメッセージ受け付け
  *
- * ������
+ * 引数：
  *	device
  *	req
  *
- * �֤��͡�
- *	���顼�ֹ�
+ * 返り値：
+ *	エラー番号
  *
- * ��ǽ��
+ * 機能：
  *
  *
  */
@@ -282,25 +282,25 @@ put_res (ID device, T_IO_REQUEST *req, T_IO_RESPONSE *res)
 
 
 /*************************************************************************
- * io_request --- �ǥХ������Ф����������׵������
+ * io_request --- デバイスに対して入出力要求を送る
  *
- * ������
- *	device	�׵������ǥХ����Σɣ�
- *	req	�׵�ѥ��å�
- *	res	�����ѥ��å� (��Ʊ���⡼�ɤΤȤ��ˤϻ��Ѥ��ʤ�)
- *	mode	Ʊ��/��Ʊ���⡼�ɤλ���
- *		IO_SYNC		Ʊ���⡼��
- *		IO_ASYNC	��Ʊ���⡼��
+ * 引数：
+ *	device	要求を送るデバイスのＩＤ
+ *	req	要求パケット
+ *	res	応答パケット (非同期モードのときには使用しない)
+ *	mode	同期/非同期モードの指定
+ *		IO_SYNC		同期モード
+ *		IO_ASYNC	非同期モード
  *
- * �֤��͡�
- *	���顼�ֹ桧	���Υ��顼�ֹ�ϥǥХ������׵�����������Ǥ���
- *			���ɤ����������Τ餻���Τǡ��ɡ��Ͻ������Τ�
- *			���ޤ��Ǥ������ɤ����ϼ����ѥ��åȤ���򸫤뤷
- *			���ʤ���
- *	E_OK	���ｪλ
+ * 返り値：
+ *	エラー番号：	このエラー番号はデバイスに要求の送受信ができた
+ *			かどうかだけを知らせるもので、Ｉ／Ｏ処理自体が
+ *			うまくできたかどうかは受信パケットの中を見るし
+ *			かない。
+ *	E_OK	正常終了
  *
- * ��ǽ��
- *	�׵�ѥ��åȤ˻��ꤵ�줿�ǥХ������Ф��ơ��������׵�����롣
+ * 機能：
+ *	要求パケットに指定されたデバイスに対して、入出力要求を送る。
  *	
  *
  */
@@ -314,12 +314,12 @@ io_request (ID device, T_IO_REQUEST *req, T_IO_RESPONSE *res, W mode)
   res_port = req->resport;
   printk ("io_request: command = %d\n", req->command);
   err = snd_mbf (device_table[device].portid, sizeof (T_IO_REQUEST), req);
-  if (err != E_OK)		/* ��å����������˼��� */
+  if (err != E_OK)		/* メッセージ送信に失敗 */
     {
       return (err);
     }
 
-  if (mode == IO_SYNC)	/* Ʊ���⡼�ɤλ����쥹�ݥ󥹤��֤�Τ��Ԥ� */
+  if (mode == IO_SYNC)	/* 同期モードの時：レスポンスが返るのを待つ */
     {
       err = rcv_mbf (&req, &size, res_port);
       if (err != E_OK)
@@ -337,8 +337,8 @@ io_request (ID device, T_IO_REQUEST *req, T_IO_RESPONSE *res, W mode)
 
 
 /*************************************************************************
- * io_response ---	��Ʊ���⡼�ɤΥǥХ��������ϤΤȤ��ˣɣϤΥ쥹
- *			�ݥ󥹤�����Ȥ�
+ * io_response ---	非同期モードのデバイス入出力のときにＩＯのレス
+ *			ポンスを受けとる
  *
  */
 ER

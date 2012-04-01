@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -16,7 +16,7 @@ Version 2, June 1991
 
 
 /*
- * fat ¥Æ¡¼¥Ö¥ë¤Î½é´ü²½
+ * fat ãƒ†ãƒ¼ãƒ–ãƒ«ã®åˆæœŸåŒ–
  */
 void
 init_fattable (struct filesystem *fs)
@@ -39,7 +39,7 @@ init_fattable (struct filesystem *fs)
   fat = (unsigned short *)malloc (sizeof (unsigned short) * DOS_FATENTRY (private, type));
   if (fat == NULL)
     {
-      /* ¥á¥â¥êÉÔÂ­¤À¤Ã¤¿ */
+      /* ãƒ¡ãƒ¢ãƒªä¸è¶³ã ã£ãŸ */
       printf ("No more memory!\n");
       return;
     }
@@ -47,7 +47,7 @@ init_fattable (struct filesystem *fs)
   buf = (unsigned char *)malloc (DOS_FATSIZE (private));
   if (buf == NULL)
     {
-      /* ¥á¥â¥êÉÔÂ­¤À¤Ã¤¿ */
+      /* ãƒ¡ãƒ¢ãƒªä¸è¶³ã ã£ãŸ */
       printf ("No more memory!\n");
       return;
     }
@@ -72,8 +72,8 @@ init_fattable (struct filesystem *fs)
 }
 
 /* 
- * ¥Ç¥£¥¹¥¯¤ÎÀèÆ¬¤Ë¤¢¤ë fattable ¤ÎÆÉ¤ß¼è¤ê
- * ÆÉ¤ß¼è¤Ã¤¿ FAT ¾ğÊó¤Ï¡¢fattable ¤ËÆş¤ì¤ë¡£
+ * ãƒ‡ã‚£ã‚¹ã‚¯ã®å…ˆé ­ã«ã‚ã‚‹ fattable ã®èª­ã¿å–ã‚Š
+ * èª­ã¿å–ã£ãŸ FAT æƒ…å ±ã¯ã€fattable ã«å…¥ã‚Œã‚‹ã€‚
  *
  */
 void
@@ -99,8 +99,8 @@ make_fat16table (UB *fat, UH *fattable, W entry)
 }
 
 /* 
- * ¥Ç¥£¥¹¥¯¤ÎÀèÆ¬¤Ë¤¢¤ë fattable ¤ÎÆÉ¤ß¼è¤ê
- * ÆÉ¤ß¼è¤Ã¤¿ FAT ¾ğÊó¤Ï¡¢fattable ¤ËÆş¤ì¤ë¡£
+ * ãƒ‡ã‚£ã‚¹ã‚¯ã®å…ˆé ­ã«ã‚ã‚‹ fattable ã®èª­ã¿å–ã‚Š
+ * èª­ã¿å–ã£ãŸ FAT æƒ…å ±ã¯ã€fattable ã«å…¥ã‚Œã‚‹ã€‚
  *
  */
 void
@@ -155,10 +155,10 @@ print_fat (struct dos_fs_paramater *fs)
 #ifdef notdef
 
 
-/* ¶õ¤¤¤Æ¤¤¤ë FAT ¥¨¥ó¥È¥ê¤ò¼èÆÀ¤¹¤ë
- * ¤â¤·¡¢¶õ¤¤¤Æ¤¤¤ë FAT ¥¨¥ó¥È¥ê¤¬¤Ê¤«¤Ã¤¿¾ì¹ç¤Ë¤Ï 0 ¤òÊÖ¤¹¡£
- * DOS ¤Î¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥à¤Î¾ì¹ç¡¢FAT ¤Ï¤½¤Î¤Ş¤Ş¥Ö¥í¥Ã¥¯´ÉÍı¤ò·ó¤Í¤Æ¤¤¤ë¤Î¤Ç¡¢
- * ¶õ¤­¥Ö¥í¥Ã¥¯¤òÊÖ¤¹¤³¤È¤Ë¤Ê¤ë¡£
+/* ç©ºã„ã¦ã„ã‚‹ FAT ã‚¨ãƒ³ãƒˆãƒªã‚’å–å¾—ã™ã‚‹
+ * ã‚‚ã—ã€ç©ºã„ã¦ã„ã‚‹ FAT ã‚¨ãƒ³ãƒˆãƒªãŒãªã‹ã£ãŸå ´åˆã«ã¯ 0 ã‚’è¿”ã™ã€‚
+ * DOS ã®ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ ã®å ´åˆã€FAT ã¯ãã®ã¾ã¾ãƒ–ãƒ­ãƒƒã‚¯ç®¡ç†ã‚’å…¼ã­ã¦ã„ã‚‹ã®ã§ã€
+ * ç©ºããƒ–ãƒ­ãƒƒã‚¯ã‚’è¿”ã™ã“ã¨ã«ãªã‚‹ã€‚
  */
 int
 alloc_fat (struct dos_fsinfo *fs)
@@ -175,13 +175,13 @@ alloc_fat (struct dos_fsinfo *fs)
       return (0);	
     }
 
-  fs->fattable[i] = LAST_FATID;	/* ¤³¤Î FAT ¥¨¥ó¥È¥ê¤Ï»ÈÍÑÃæ¤Ç¤¢¤ë¤È¤¤¤¦°õ¤ò¤Ä¤±¤ë */
+  fs->fattable[i] = LAST_FATID;	/* ã“ã® FAT ã‚¨ãƒ³ãƒˆãƒªã¯ä½¿ç”¨ä¸­ã§ã‚ã‚‹ã¨ã„ã†å°ã‚’ã¤ã‘ã‚‹ */
   (void)sync_fat (fs);
   return (i);
 }
 
-/* FAT ¤Î¥¨¥ó¥È¥ê¤ò²òÊü¤¹¤ë¡£
- * FAT ¤Ï¥ê¥¹¥È¤È¤Ê¤Ã¤Æ¤¤¤ë¤Î¤Ç¡¢¤½¤Î¤¹¤Ù¤Æ¤Î¥¨¥ó¥È¥ê¤ò²òÊü¤¹¤ë¡£
+/* FAT ã®ã‚¨ãƒ³ãƒˆãƒªã‚’è§£æ”¾ã™ã‚‹ã€‚
+ * FAT ã¯ãƒªã‚¹ãƒˆã¨ãªã£ã¦ã„ã‚‹ã®ã§ã€ãã®ã™ã¹ã¦ã®ã‚¨ãƒ³ãƒˆãƒªã‚’è§£æ”¾ã™ã‚‹ã€‚
  */
 void
 free_fat (struct dos_fsinfo *fs, int startentry)
@@ -201,7 +201,7 @@ free_fat (struct dos_fsinfo *fs, int startentry)
 }
 
 /*
- * FAT ¾ğÊó¤ò¥Ç¥£¥¹¥¯¤Ë½ñ¤­¹ş¤à
+ * FAT æƒ…å ±ã‚’ãƒ‡ã‚£ã‚¹ã‚¯ã«æ›¸ãè¾¼ã‚€
  */
 int
 sync_fat (struct dos_fsinfo *fs)
@@ -226,7 +226,7 @@ sync_fat (struct dos_fsinfo *fs)
 
   lseek (fs->device, DOS_IPLSIZE (fs), SEEK_SET);
   write (fs->device, fatblock, DOS_FATSIZE (fs));
-  write (fs->device, fatblock, DOS_FATSIZE (fs));	/* Í½È÷¤Î FAT ¥Æ¡¼¥Ö¥ë¤â½ñ¤­¹ş¤à */
+  write (fs->device, fatblock, DOS_FATSIZE (fs));	/* äºˆå‚™ã® FAT ãƒ†ãƒ¼ãƒ–ãƒ«ã‚‚æ›¸ãè¾¼ã‚€ */
   free (fatblock);
   return (SUCCESS);
 }

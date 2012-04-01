@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -22,22 +22,22 @@ Version 2, June 1991
  * *** empty log message ***
  *
  * Revision 1.3  1997/04/24 15:28:53  night
- * ���󥽡���ν�������ˡ����̹Կ�ʬ�����������Ԥ��������ɲä�����
+ * コンソールの初期化時に、画面行数分スクロールを行う処理を追加した。
  *
- * ʸ��°���⥯�ꥢ���뤿�ᡣconsole_clear() �Ǥϡ�ʸ��°���ϥ��ꥢ���ʤ���
- * ����ˤ�äƤϡ���ư����ʸ��°�����ü�(���դ��ʤ�)�ξ�礬���롣
+ * 文字属性もクリアするため。console_clear() では、文字属性はクリアしない。
+ * 機種によっては、起動時に文字属性が特殊(色付きなど)の場合がある。
  *
  * Revision 1.2  1996/05/11  15:49:51  night
- * ���󥽡���ɽ�����˥��ȥ�ӥ塼�Ȥ򥻥åȤ��ʤ���
+ * コンソール表示時にアトリビュートをセットしない。
  *
  * Revision 1.1  1996/05/11  10:45:00  night
- * 2nd boot (IBM-PC �� B-FREE OS) �Υ�������
+ * 2nd boot (IBM-PC 版 B-FREE OS) のソース。
  *
  *
  * ------------------------------------------------------------------------
  *
  * Revision 1.2  1995/09/21 15:50:35  night
- * �������ե��������Ƭ�� Copyright notice ������ɲá�
+ * ソースファイルの先頭に Copyright notice 情報を追加。
  *
  * Revision 1.1  1993/10/11  21:28:41  btron
  * btron/386

@@ -1,14 +1,14 @@
-¥Õ¥¡¥¤¥ë°ìÍ÷
+ãƒ•ã‚¡ã‚¤ãƒ«ä¸€è¦§
 ============
 
 assert.c
 assert.h
 dummy.c
-fs_if.c			¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥à¤È¤Î¥¤¥ó¥¿¥Õ¥§¡¼¥¹¤òÃ´Åö¤¹¤ë´Ø¿ô·²
+fs_if.c			ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ ã¨ã®ã‚¤ãƒ³ã‚¿ãƒ•ã‚§ãƒ¼ã‚¹ã‚’æ‹…å½“ã™ã‚‹é–¢æ•°ç¾¤
 global.c
-malloc.c		malloc µ¡¹½
+malloc.c		malloc æ©Ÿæ§‹
 memory_manager.c
 memory_manager.h
 message.c
-page_management.c	Page ¥Ä¥ê¡¼¤Î´ÉÍı¤ò¹Ô¤¦´Ø¿ô·²
+page_management.c	Page ãƒ„ãƒªãƒ¼ã®ç®¡ç†ã‚’è¡Œã†é–¢æ•°ç¾¤
 port.c

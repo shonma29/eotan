@@ -1,5 +1,5 @@
 /*
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
 
@@ -11,7 +11,7 @@ Version 2, June 1991
 
 /*
 ** Function: get_ktb
-** Description: й╦╩З╔Ё║╪╔ийя╢╧и╫╓н╪Х╓Й╫п╓╥
+** Description: Ф√┤Е╜≈Ц┌ЁЦ┐╪Ц┐┴Е╓┴Ф▐⌡Х║╗Ц│╝Е▐√Ц┌┼Е┤╨Ц│≈
 */
 
 ER

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -10,7 +10,7 @@ Version 2, June 1991
 (C) 2001-2002, Tomohide Naniwa
 
 */
-/* sfs_inode.c - SFS ¤Î inode ¤Î´ÉÍı¤ò¹Ô¤¦
+/* sfs_inode.c - SFS ã® inode ã®ç®¡ç†ã‚’è¡Œã†
  *
  * $Log: sfs_inode.c,v $
  * Revision 1.15  2000/07/02 04:14:26  naniwa
@@ -35,31 +35,31 @@ Version 2, June 1991
  * sfs ver 1.1
  *
  * Revision 1.8  1999/05/10 15:55:02  night
- * inode ¤Î½ñ¤­¹ş¤ß»ş¤Ë¡¢inode ¤Î¥µ¥¤¥º¤¬ 1024 ¥Ğ¥¤¥È°Ê¾å¤Î¤È¤­¤Ë¤Ï¡¢1024
- * Ëè¤Ë½ñ¤­¹ş¤à¤è¤¦¤Ë½èÍı¤òÊÑ¹¹¡£¤¿¤À¤·¡¢2048 °Ê¾å¤Î¾ì¹ç¤Ï¥µ¥İ¡¼¥È¤·¤Æ¤¤
- * ¤Ê¤¤¡£
+ * inode ã®æ›¸ãè¾¼ã¿æ™‚ã«ã€inode ã®ã‚µã‚¤ã‚ºãŒ 1024 ãƒã‚¤ãƒˆä»¥ä¸Šã®ã¨ãã«ã¯ã€1024
+ * æ¯ã«æ›¸ãè¾¼ã‚€ã‚ˆã†ã«å‡¦ç†ã‚’å¤‰æ›´ã€‚ãŸã ã—ã€2048 ä»¥ä¸Šã®å ´åˆã¯ã‚µãƒãƒ¼ãƒˆã—ã¦ã„
+ * ãªã„ã€‚
  *
  * Revision 1.7  1997/10/24 14:00:48  night
- * ÊÑ¿ô¤Î°ú¿ô¹ç¤ï¤»¤ò¸·Ì©¤Ë¤·¤¿¡£
+ * å¤‰æ•°ã®å¼•æ•°åˆã‚ã›ã‚’å³å¯†ã«ã—ãŸã€‚
  *
  * Revision 1.6  1997/07/07 15:25:33  night
- * ROUNDUP ¥Ş¥¯¥í¤¬¤¹¤Ç¤ËÄêµÁ¤·¤Æ¤¤¤ë¤Ê¤é¤Ğ¡¢ºÆÄêµÁ¤·¤Ê¤¤¤è¤¦¤Ë½¤Àµ¤·¤¿¡£
+ * ROUNDUP ãƒã‚¯ãƒ­ãŒã™ã§ã«å®šç¾©ã—ã¦ã„ã‚‹ãªã‚‰ã°ã€å†å®šç¾©ã—ãªã„ã‚ˆã†ã«ä¿®æ­£ã—ãŸã€‚
  *
  * Revision 1.5  1997/07/04 15:07:41  night
- * ¡¦¥¹¥Ú¥·¥ã¥ë¥Õ¥¡¥¤¥ë - ¥Ç¥Ğ¥¤¥¹¥É¥é¥¤¥Ğ¥İ¡¼¥È¤ÎÂĞ±şÉ½¤Î´ØÏ¢½èÍı¤ÎÄÉ²Ã¡£
- * ¡¦¥Õ¥¡¥¤¥ë¤ÎÆÉ¤ß¹ş¤ß½èÍı¤Î²şÄû¡£
+ * ãƒ»ã‚¹ãƒšã‚·ãƒ£ãƒ«ãƒ•ã‚¡ã‚¤ãƒ« - ãƒ‡ãƒã‚¤ã‚¹ãƒ‰ãƒ©ã‚¤ãƒãƒãƒ¼ãƒˆã®å¯¾å¿œè¡¨ã®é–¢é€£å‡¦ç†ã®è¿½åŠ ã€‚
+ * ãƒ»ãƒ•ã‚¡ã‚¤ãƒ«ã®èª­ã¿è¾¼ã¿å‡¦ç†ã®æ”¹è¨‚ã€‚
  *
  * Revision 1.4  1997/07/03 14:24:37  night
- * mountroot/open ½èÍı¤Î¥Ğ¥°¤ò½¤Àµ¡£
+ * mountroot/open å‡¦ç†ã®ãƒã‚°ã‚’ä¿®æ­£ã€‚
  *
  * Revision 1.3  1996/11/20  12:13:19  night
- * ºÙ¡¹¤È¤·¤¿½¤Àµ¡£
+ * ç´°ã€…ã¨ã—ãŸä¿®æ­£ã€‚
  *
  * Revision 1.2  1996/11/18  13:46:11  night
- * ¥Õ¥¡¥¤¥ë¤ÎÃæ¿È¤òºîÀ®¡£
+ * ãƒ•ã‚¡ã‚¤ãƒ«ã®ä¸­èº«ã‚’ä½œæˆã€‚
  *
  * Revision 1.1  1996/11/17  14:52:57  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  */
@@ -76,7 +76,7 @@ static char rcsid[] =
 
 
 
-/* inode ¤Ë´Ø·¸¤·¤Æ¤¤¤ë½èÍı
+/* inode ã«é–¢ä¿‚ã—ã¦ã„ã‚‹å‡¦ç†
  *
  * sfs_get_inode_offset()
  * sfs_read_inode()
@@ -158,7 +158,7 @@ W sfs_read_inode(struct fs *fsp, W ino, struct inode *ip)
     ip->i_fs = fsp;
     ip->i_device = fsp->fs_device;
     if (ip->i_mode & FS_FMT_DEV) {
-	/* ¥¹¥Ú¥·¥ã¥ë¥Õ¥¡¥¤¥ë¤À¤Ã¤¿ */
+	/* ã‚¹ãƒšã‚·ãƒ£ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«ã ã£ãŸ */
 	ip->i_dev = ip->i_private.sfs_inode.sfs_i_direct[0];
     }
     else {
@@ -218,7 +218,7 @@ W sfs_alloc_inode(ID fd, struct fs * fsp)
 	    fsp->fs_usedinode++;
 	    fsp->fs_isearch = (i + 1);
 	    fsp->fs_dirty = 1;
-	    /* ¤³¤³¤Ç fs ¤Î sync ¤ò¹Ô¤¦É¬Í×¤¬¤¢¤ë¤«? */
+	    /* ã“ã“ã§ fs ã® sync ã‚’è¡Œã†å¿…è¦ãŒã‚ã‚‹ã‹? */
 	    sfs_syncfs(fsp, 0);
 	    return (i);
 	}
@@ -231,7 +231,7 @@ W sfs_alloc_inode(ID fd, struct fs * fsp)
 	    fsp->fs_usedinode++;
 	    fsp->fs_isearch = (i + 1);
 	    fsp->fs_dirty = 1;
-	    /* ¤³¤³¤Ç fs ¤Î sync ¤ò¹Ô¤¦É¬Í×¤¬¤¢¤ë¤«? */
+	    /* ã“ã“ã§ fs ã® sync ã‚’è¡Œã†å¿…è¦ãŒã‚ã‚‹ã‹? */
 	    sfs_syncfs(fsp, 0);
 	    return (i);
 	} else {
@@ -295,7 +295,7 @@ W sfs_write_inode(W fd, struct fs * fsp, struct sfs_inode * ip)
 		      SFS_BLOCK_SIZE, &cn, &buf);
 	bcopy((B *) ip, buf, sizeof(struct sfs_inode));
 	sfs_put_cache(cn, 1);
-	/* ¤³¤³¤Ç fs ¤Î sync ¤ò¹Ô¤¦É¬Í×¤¬¤¢¤ë¤«? */
+	/* ã“ã“ã§ fs ã® sync ã‚’è¡Œã†å¿…è¦ãŒã‚ã‚‹ã‹? */
 	sfs_syncfs(fsp, 0);
 #endif
     }
@@ -342,7 +342,7 @@ W sfs_free_inode(struct fs * fsp, struct inode *ip)
     fsp->fs_dirty = 1;
     if (fsp->fs_isearch >= inode_index)
 	fsp->fs_isearch = inode_index;
-    /* ¤³¤³¤Ç fs ¤Î sync ¤ò¹Ô¤¦É¬Í×¤¬¤¢¤ë¤«? */
+    /* ã“ã“ã§ fs ã® sync ã‚’è¡Œã†å¿…è¦ãŒã‚ã‚‹ã‹? */
     sfs_syncfs(fsp, 0);
     return (EP_OK);
 }

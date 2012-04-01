@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -15,7 +15,7 @@ static char rcsid[] =
     "@(#)$Id: posix.c,v 1.21 2000/04/03 14:32:33 naniwa Exp $";
 
 
-/* posix.c - POSIX �Ķ��ޥ͡�����
+/* posix.c - POSIX 環境マネージャ
  *
  *
  *
@@ -33,59 +33,59 @@ static char rcsid[] =
  * Some fixes for using dbg_printf().
  *
  * Revision 1.17  1997/10/24 13:58:14  night
- * �¹Գ��ϻ��� init_malloc () ��ƤӽФ��褦�ˤ�����
+ * 実行開始時に init_malloc () を呼び出すようにした。
  *
  * Revision 1.16  1997/09/21 13:34:11  night
- * �饤�֥��� malloc �ޥ�������Ѥ��ʤ��褦�ˤ�����
+ * ライブラリの malloc マクロを使用しないようにした。
  *
  * Revision 1.15  1997/08/31 13:30:57  night
- * �ǥХå��ѽ��Ϥΰ����� #ifdef DEBUG ... #endif �ǿ������Ϥ����
+ * デバッグ用出力の一部を #ifdef DEBUG ... #endif で新しく囲んだ。
  *
  * Revision 1.14  1997/07/06 11:56:41  night
- * malloc ��ǽ�ν����������ɲá�
+ * malloc 機能の初期化指定を追加。
  *
  * Revision 1.13  1997/07/04 15:07:39  night
- * �����ڥ����ե����� - �ǥХ����ɥ饤�Хݡ��Ȥ��б�ɽ�δ�Ϣ�������ɲá�
- * ���ե�������ɤ߹��߽����β�����
+ * ・スペシャルファイル - デバイスドライバポートの対応表の関連処理の追加。
+ * ・ファイルの読み込み処理の改訂。
  *
  * Revision 1.12  1997/07/03 14:24:30  night
- * mountroot/open �����ΥХ�������
+ * mountroot/open 処理のバグを修正。
  *
  * Revision 1.11  1997/05/08 15:11:29  night
- * �ץ������ξ�������ꤹ�뵡ǽ���ɲá�
- * (syscall misc �� proc_set_info ���ޥ��)
+ * プロセスの情報を設定する機能の追加。
+ * (syscall misc の proc_set_info コマンド)
  *
  * Revision 1.10  1997/04/28 15:28:18  night
- * �ǥХå��Ѥ�ʸ���ɲá�
+ * デバッグ用の文を追加。
  *
  * Revision 1.9  1997/04/24 15:40:30  night
- * mountroot �����ƥॳ����μ�����Ԥä���
+ * mountroot システムコールの実装を行った。
  *
  * Revision 1.8  1997/03/25 15:45:23  night
- * �ǥХå��Ѥ��ɲä���̵�¥롼��ʸ(�������λ������ߤ���褦�ˤ��Ƥ���)��
- * ���������
+ * デバッグ用に追加した無限ループ文(初期化終了時に停止するようにしていた)を
+ * 削除した。
  *
  * Revision 1.7  1997/03/25 13:34:53  night
- * ELF �����μ¹ԥե�����ؤ��б�
+ * ELF 形式の実行ファイルへの対応
  *
  * Revision 1.6  1996/11/20  12:09:54  night
- * rcsid ���ɲá�
+ * rcsid の追加。
  *
  * Revision 1.5  1996/11/11  13:37:06  night
- * �������ɲ�
+ * コメント追加
  *
  * Revision 1.4  1996/11/10  11:54:27  night
- * �����ƥॳ����ؿ��˥ꥯ�����Ⱦ�����Ϥ��Ȥ��ˡ��ݥ����Ϥ��Ǥʤ����
- * �����ʤ��Ȥ�������Τ��Ϥ��Ƥ�����
+ * システムコール関数にリクエスト情報を渡すときに、ポインタ渡しでなければ
+ * いけないところを実体を渡していた。
  *
  * Revision 1.3  1996/11/07  21:11:49  night
- * Version �ֹ����Ϥ���Ȥ��˺Ǹ�˲��Ԥ���Ϥ���褦���ѹ�������
+ * Version 番号を出力するときに最後に改行を出力するように変更した。
  *
  * Revision 1.2  1996/11/07  12:46:38  night
- * �����ƥॳ��������������������
+ * システムコール処理部を作成した。
  *
  * Revision 1.1  1996/11/05  15:13:45  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  */
 
@@ -93,20 +93,20 @@ static char rcsid[] =
 
 
 /*
- * POSIX �Ķ��ޥ͡�����Υᥤ��롼����
+ * POSIX 環境マネージャのメインルーチン
  *
- * ���ν�����Ԥ�
+ * 次の処理を行う
  *
- * �������
- *   �ݡ��ȥޥ͡�������׵�����դ��ѤΥݡ��Ȥ���Ͽ����
- *   �ե����륷���ƥ�/�ץ�����/����γƽ����ν������Ԥ�
+ * ・初期化
+ *   ポートマネージャに要求受け付け用のポートを登録する
+ *   ファイルシステム/プロセス/メモリの各処理の初期化を行う
  *
- * ���׵�μ����դ�
- *   �׵�μ����դ��ϡ��׵�����դ��ݡ��Ȥˤ�äƹԤ���
+ * ・要求の受け付け
+ *   要求の受け付けは、要求受け付けポートによって行う。
  *
- * ���׵�ν���
+ * ・要求の処理
  *
- *   �׵�μ����Ĥ���������������ޤǤ�¾���׵�ϼ����դ��ʤ���
+ *   要求の受けつけから処理がおわるまでは他の要求は受け付けない。
  */
 void posix_start(void)
 {
@@ -123,7 +123,7 @@ void posix_start(void)
     init_log();
     init_malloc(VADDR_HEAP);
 
-    /* �Ƶ�ǽñ�̤Ǥν����
+    /* 各機能単位での初期化
      */
     init_fs();
     init_process();
@@ -132,9 +132,9 @@ void posix_start(void)
     banner();
 
     for (;;) {
-	/* �����׵��å��������Ԥ� */
+	/* 次の要求メッセージを待つ */
 	if (get_request(&request) == FAIL) {
-	    /* �ꥯ�����ȼ����˼��Ԥ��� */
+	    /* リクエスト取得に失敗した */
 #ifdef DEBUG
 	    dbg_printf("Cannot get request.\n");
 #endif
@@ -144,10 +144,10 @@ void posix_start(void)
 	dbg_printf("OP = %d\n ", request.operation);
 #endif
 
-	/* ���������ꥯ�����Ȥ�������� */
+	/* 取得したリクエストを処理する */
 	if ((request.operation < 0)
 	    || (request.operation > NR_POSIX_SYSCALL)) {
-	    /* �ꥯ�������׵�ˤ��륪�ڥ졼�����ϡ����ݡ��Ȥ��Ƥ��ʤ� */
+	    /* リクエスト要求にあるオペレーションは、サポートしていない */
 	    error_response(&request, EP_NOSUP);
 	} else {
 #ifdef DEBUG
@@ -166,7 +166,7 @@ void posix_start(void)
 #endif
 	}
     }
-    /* �����ˤ���ʤ� */
+    /* ここには来ない */
 }
 
 

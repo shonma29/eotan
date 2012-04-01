@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -31,7 +31,7 @@ W psc_utime_f(struct posix_request *req)
     errno = vget_reg(req->caller, req->param.par_utime.path,
 		     req->param.par_utime.pathlen + 1, pathname);
     if (errno) {
-	/* ¥Ñ¥¹Ì¾¤Î¥³¥Ô¡¼¥¨¥é¡¼ */
+	/* ãƒ‘ã‚¹åã®ã‚³ãƒ”ãƒ¼ã‚¨ãƒ©ãƒ¼ */
 	if (errno == E_PAR)
 	    put_response(req, EP_INVAL, -1, 0, 0);
 	else
@@ -82,7 +82,7 @@ W psc_utime_f(struct posix_request *req)
     ipp->i_mtime = tb.modtime;
     ipp->i_dirty = 1;
 
-    /* fs_close_file ¤Ç¹Ô¤¦½èÍı */
+    /* fs_close_file ã§è¡Œã†å‡¦ç† */
     if (fs_sync_file(ipp)) {
 	put_response(req, EP_INVAL, -1, 0, 0);
 	dealloc_inode(ipp);

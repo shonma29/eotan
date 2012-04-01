@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -31,7 +31,7 @@ Version 2, June 1991
 
 #include "posix.h"
 
-/* psc_exec_f - ���ꤵ�줿�ץ������ե�������������ɤ߹���
+/* psc_exec_f - 指定されたプログラムファイルをメモリ中に読み込む
  */
 W psc_exec_f(struct posix_request *req)
 {
@@ -48,7 +48,7 @@ W psc_exec_f(struct posix_request *req)
 #ifdef USE_ALLOCA
     pathname = alloca(req->param.par_execve.pathlen + 1);
     if (pathname == NULL) {
-	/* ����������顼 */
+	/* メモリ取得エラー */
 	put_response(req, EP_NOMEM, -1, 0, 0);
 	return (FAIL);
     }
@@ -57,12 +57,12 @@ W psc_exec_f(struct posix_request *req)
     bzero(pathname, req->param.par_execve.pathlen + 1);
 #endif
 
-    /* �ѥ�̾��桼���ץ��������� POSIX �����ФΥ�����֤إ��ԡ����롣
+    /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。
      */
     errno = vget_reg(req->caller, req->param.par_execve.name,
 		     req->param.par_execve.pathlen + 1, pathname);
     if (errno) {
-	/* �ѥ�̾�Υ��ԡ����顼 */
+	/* パス名のコピーエラー */
 	if (errno == E_PAR)
 	    put_response(req, EP_INVAL, -1, 0, 0);
 	else
@@ -76,24 +76,24 @@ W psc_exec_f(struct posix_request *req)
     errno = exec_program(req, req->procid, pathname);
     if (errno) {
 	if (proc_get_vmtree(req->procid) != NULL) {
-	    /* �ƤӽФ���Ԥä��ץ��������ޤ������ĤäƤ������ */
-	    /*���顼��å��������֤� */
+	    /* 呼び出しを行ったプロセスがまだ生き残っていた場合 */
+	    /*エラーメッセージを返す */
 	    put_response(req, errno, -1, 0, 0);
 	} else {
-	    /* ���˥ץ������β��ۥ��꤬��������Ƥ����� */
-	    /* exit ���¹Ԥ���뤳�Ȥ�̵���Τǡ������ǳ������� */
+	    /* 既にプロセスの仮想メモリが開放されている場合 */
+	    /* exit が実行されることは無いので，ここで開放する */
 	    proc_exit(req->procid);
 	}
 	return (FAIL);
     }
 
-    /* �ץ�������°���륿�������ڤ괹���롣
-     * ���ʤ�����Ť���������λ�������������������������롣
+    /* プロセスに属するタスクを切り換える。
+     * すなわち、古いタスクを終了し、新しいタスクを生成する。
      */
 
 
-    /* exec �����ƥॳ����ϡ���������ȸ��Υץ������Ͼä���Τǡ�
-     * �쥹�ݥ󥹤��֤��ʤ�
+    /* exec システムコールは、成功すると元のプロセスは消えるので、
+     * レスポンスを返さない
      */
     return (SUCCESS);
 }

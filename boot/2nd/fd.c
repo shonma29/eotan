@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -40,40 +40,40 @@ Version 2, June 1991
  * *** empty log message ***
  *
  * Revision 1.8  1997/06/29 13:13:45  night
- * HD �� SFS �ե����ޥåȤ��줿�ѡ��ƥ�����󤫤�� BTRON OS ������ɤǤ���
- * ��ǽ���ɲá�
+ * HD の SFS フォーマットされたパーティションからの BTRON OS をロードできる
+ * 機能を追加。
  *
  * Revision 1.7  1997/05/14 15:27:43  night
- * specify ���ޥ�ɤΥѥ�᡼���ѹ���
- * (linux �� fd �ɥ饤�Ф��ͤ˹�碌��)
- * ®�ٸ���Τ���ν�����
+ * specify コマンドのパラメータ変更。
+ * (linux の fd ドライバの値に合わせた)
+ * 速度向上のための修正。
  *
  * Revision 1.6  1996/07/24  16:45:27  night
- * �ɤ߹��߻��Υ�ȥ饤����� 2 �󤫤� 10 ������䤷����
+ * 読み込み時のリトライ回数を 2 回から 10 回に増やした。
  *
  * Revision 1.5  1996/07/24  14:02:05  night
- * ;ʬ�� print ʸ������
+ * 余分な print 文を削除。
  *
  * Revision 1.4  1996/07/06  17:33:21  night
- * �ǥХå��Ѥ� boot_printf �� FDDEBUG �ǰϤ��
+ * デバッグ用の boot_printf を FDDEBUG で囲んだ
  *
  * Revision 1.3  1996/07/06  13:09:02  night
- * Floppy disk ��Ϣ�ν����� PC �ߴ����Ѥ��ѹ�
+ * Floppy disk 関連の処理を PC 互換機用に変更
  *
  * Revision 1.2  1996/06/11  16:40:32  night
- * ����ɬ�פȤ��ʤ� on_motor (FD �Υ⡼���������椹��ؿ�) �θƤӽФ���
- * �Ԥ�ʤ��褦�ˤ�����
+ * 当面必要としない on_motor (FD のモーターを制御する関数) の呼び出しを
+ * 行わないようにした。
  *
  * Revision 1.1  1996/05/11  10:45:02  night
- * 2nd boot (IBM-PC �� B-FREE OS) �Υ�������
+ * 2nd boot (IBM-PC 版 B-FREE OS) のソース。
  *
  * ------------------------------------------------------------------
  *
  * Revision 1.4  1995/09/21 15:50:37  night
- * �������ե��������Ƭ�� Copyright notice ������ɲá�
+ * ソースファイルの先頭に Copyright notice 情報を追加。
  *
  * Revision 1.3  1994/07/30  17:37:15  night
- * �ե�����������ܸ�ʸ���򤹤٤� EUC �����ɤ��ѹ���
+ * ファイル中の日本語文字をすべて EUC コードに変更。
  *
  * Revision 1.2  1994/07/05  17:19:17  night
  * Change FD format; 512bytes/block.
@@ -201,7 +201,7 @@ init_fd (void)
 /************************************************************************
  * intr_fd
  *
- *	�ե��åԥ��ǥ������γ����߽����ؿ�
+ *	フロッピィディスクの割り込み処理関数
  *
  */
 void
@@ -414,8 +414,8 @@ on_motor (BYTE drive)
 {
   int motor_bit, running;
 
-  motor_bit = 1 << drive;		/* ư�������� FD drive �ֹ��
-					   �ӥåȥޥåפ��Ѵ� */
+  motor_bit = 1 << drive;		/* 動かしたい FD drive 番号を
+					   ビットマップに変換 */
   running = motor_status & motor_bit;	/* nonzero if this motor is running */
   motor_goal = motor_status | motor_bit;/* want this drive running too */
 

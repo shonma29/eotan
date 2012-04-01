@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -13,31 +13,31 @@ Version 2, June 1991
 /* 
  * $Log: funcs.h,v $
  * Revision 1.6  1999/03/07 12:42:49  night
- * write_ne2000 () ¤Î¥×¥í¥È¥¿¥¤¥×Ê¸¤ÎÊÑ¹¹¡£
- * select_page1 () ¤ÎÄÉ²Ã¡£
- * set_interrupt_handler () ¤Î¥×¥í¥È¥¿¥¤¥×Ê¸¤ÎÊÑ¹¹¡£
+ * write_ne2000 () ã®ãƒ—ãƒ­ãƒˆã‚¿ã‚¤ãƒ—æ–‡ã®å¤‰æ›´ã€‚
+ * select_page1 () ã®è¿½åŠ ã€‚
+ * set_interrupt_handler () ã®ãƒ—ãƒ­ãƒˆã‚¿ã‚¤ãƒ—æ–‡ã®å¤‰æ›´ã€‚
  *
  * Revision 1.5  1999/03/02 15:13:33  night
- * interrupt.c ¤ËÆş¤Ã¤Æ¤¤¤ë´Ø¿ô¤Ë¤Ä¤¤¤Æ¤ÎÅĞÏ¿¤ò¹Ô¤Ã¤¿¡£
+ * interrupt.c ã«å…¥ã£ã¦ã„ã‚‹é–¢æ•°ã«ã¤ã„ã¦ã®ç™»éŒ²ã‚’è¡Œã£ãŸã€‚
  *
  * extern ER	set_interrupt_handler (W intno, FP handler);
  * extern void	ne2000_interrupt_handler (void);
  *
  * Revision 1.4  1997/10/28 14:43:38  night
- * °Ê²¼¤Î´Ø¿ô¤ÎÄêµÁÄÉ²Ã¡£
+ * ä»¥ä¸‹ã®é–¢æ•°ã®å®šç¾©è¿½åŠ ã€‚
  *
  * extern ER	probe_1 (struct device *dev);
  * extern ER	reset_adaptor (struct device *dev);
  * extern W	read_saprom (struct device *dev);
  *
  * Revision 1.3  1997/10/28 12:43:48  night
- * probe() ¤ÎÄêµÁ¤ÎÊÑ¹¹¡£
+ * probe() ã®å®šç¾©ã®å¤‰æ›´ã€‚
  *
  * Revision 1.2  1997/05/17 10:41:15  night
- * ¥Õ¥¡¥¤¥ë¤ÎÊ¸»ú¥³¡¼¥É¤ò SJIS ¤«¤é EUC ¤ËÊÑ¹¹¡£
+ * ãƒ•ã‚¡ã‚¤ãƒ«ã®æ–‡å­—ã‚³ãƒ¼ãƒ‰ã‚’ SJIS ã‹ã‚‰ EUC ã«å¤‰æ›´ã€‚
  *
  * Revision 1.1  1997/05/06 12:43:30  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  */

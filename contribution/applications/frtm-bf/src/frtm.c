@@ -54,7 +54,7 @@ main()
 
     eval(line);
 
-    /* ¥¨¥é¡¼¥ê¥«¥Ğ¥ê¡¼ */
+    /* ã‚¨ãƒ©ãƒ¼ãƒªã‚«ãƒãƒªãƒ¼ */
     if (error_no == E_QUT) {
       break;
     }
@@ -63,7 +63,7 @@ main()
       error_no = E_OK;
       reload_old_csp();
       if (eval_mode == DIC2) {
-	/* Ì¤´°¼­½ñ¤ÎÇË´ş */
+	/* æœªå®Œè¾æ›¸ã®ç ´æ£„ */
 	drop_dict();
       }
       eval_mode = RUN;
@@ -162,7 +162,7 @@ eval_word(str)
   else if (*str == '-') {sgn = -1; ++str;}
   if (isdigit(*str)) {
     if (*str == '0' && str[1] == 'x') {
-      /* 16 ¿Ê¿ô¤ÎÆÉ¤ß¹ş¤ß */
+      /* 16 é€²æ•°ã®èª­ã¿è¾¼ã¿ */
       for(i = 2; str[i]; ++i) {
 	if (! isxdigit(str[i])) break;
       }
@@ -188,14 +188,14 @@ eval_word(str)
 	  error_no = E_IVN;
 	  return;
 	case DIC2:
-	  /* ¼­½ñÅĞÏ¿ */
+	  /* è¾æ›¸ç™»éŒ² */
 	  cpush_int(val); EC;
 	  return;
 	}
       }
     }
     else if (*str == '0' && isdigit(str[1])) {
-      /* 8 ¿Ê¿ô¤ÎÆÉ¤ß¹ş¤ß */
+      /* 8 é€²æ•°ã®èª­ã¿è¾¼ã¿ */
       for(i = 1; str[i]; ++i) {
 	if (str[i] < '0' || str[i] > '7') break;
       }
@@ -221,14 +221,14 @@ eval_word(str)
 	  error_no = E_IVN;
 	  return;
 	case DIC2:
-	  /* ¼­½ñÅĞÏ¿ */
+	  /* è¾æ›¸ç™»éŒ² */
 	  cpush_int(val); EC;
 	  return;
 	}
       }
     }
     else {
-      /* 10 ¿Ê¿ô¤ÎÆÉ¤ß¹ş¤ß */
+      /* 10 é€²æ•°ã®èª­ã¿è¾¼ã¿ */
       for(i = 1; str[i]; ++i) {
 	if (! isdigit(str[i])) break;
       }
@@ -253,7 +253,7 @@ eval_word(str)
 	  error_no = E_IVN;
 	  return;
 	case DIC2:
-	  /* ¼­½ñÅĞÏ¿ */
+	  /* è¾æ›¸ç™»éŒ² */
 	  cpush_int(val); EC;
 	  return;
 	}

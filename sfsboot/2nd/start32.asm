@@ -1,8 +1,8 @@
 ;-----------------------------------------------------------
 ;start32
-; 8f00h�˥����ɤ���롣����������ϡ�32bit�ץ��ƥ��ȥ⡼�ɤˤʤäƤ��롣  
-; �ƥ��쥯�����ͤ����ꤷ��9000h�˥����ɤ���Ƥ���,mode32��
-; MODE32_ADDR�˥��ԡ������¹Ԥ�_main�˰ܤ���
+; 8f00hにロードされる。ここから先は、32bitプロテクトモードになっている。  
+; 各セレクター値を設定し、9000hにロードされている,mode32を
+; MODE32_ADDRにコピーし、実行を_mainに移す。
 
 MODE32_ADDR	equ 380000h
 MODE32_SIZE	equ 8ffch
@@ -10,17 +10,17 @@ MODE32_SIZE	equ 8ffch
 	section .text
 	bits 32
 
-	org  08f00h			; start16.asm�⻲�ȤΤ���	
+	org  08f00h			; start16.asmも参照のこと	
 
 start32:
-	mov	eax, 010h		; ���쥯���ͤ�����
+	mov	eax, 010h		; セレクタ値を設定
 	mov	ds, eax
 	mov	es, eax
 	mov	fs, eax
 	mov	gs, eax
-	lss	esp, [stack_ptr] 	; ss,sp������
+	lss	esp, [stack_ptr] 	; ss,spの設定
 
-	mov	esi, 9000h		; mode32��MODE32_ADDR�˰�ư
+	mov	esi, 9000h		; mode32をMODE32_ADDRに移動
 	mov	edi, MODE32_ADDR	;
 	mov	ecx, [MODE32_SIZE]	; 
 	rep				; 
@@ -36,7 +36,7 @@ start32:
 ;-----------------------------------------------------------
 	align	4
 
-stack_ptr:				; MODE32_ADDR���ѹ���������
+stack_ptr:				; MODE32_ADDRを変更時は注意
 	dd	0400000h
 	dw	10h
  

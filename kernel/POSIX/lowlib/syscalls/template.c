@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ┌л░╤░╛∙╗┌м GNU Generic PUBLIC LICENSE ┌и▐]┌╒┌э┌╥│B
+B-Free Project  GNU Generic PUBLIC LICENSE B
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -14,7 +14,7 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 /*
  * $Log: template.c,v $
  * Revision 1.1  1997/08/31 13:10:50  night
- * ╨г╫И╓непо©
+ * Ф°─Е┬²Ц│╝Г≥╩И▄╡
  *
  *
  *

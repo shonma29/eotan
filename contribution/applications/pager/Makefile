@@ -3,12 +3,12 @@
 #
 
 #
-# ����ѥ���ե饰����
+# コンパイルフラグ一覧
 #
 #
 
 # -D DOS
-# -D USE_LOWLIB		POSIX �ޥ͡������ƤӽФ��Ȥ���lowlib ����Ѥ��롣
+# -D USE_LOWLIB		POSIX マネージャを呼び出すとき、lowlib を使用する。
 #
 #IDENT=-DI386 -DUSE_LOWLIB
 #DEBUG=-DTSKSW_DEBUG

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -8,11 +8,11 @@ Version 2, June 1991
 (C) B-Free Project.
 
 */
-/* posix.h - POSIX ╢д╤╜╔ч╔м║╪╔╦╔Цмя╓н╔ь╔ц╔ю╔у╔║╔╓╔К
+/* posix.h - POSIX Г▓╟Е╒┐Ц┐·Ц┐█Ц┐╪Ц┌╦Ц┐ёГ■╗Ц│╝Ц┐≤Ц┐┐Ц┐─Ц┐∙Ц┌║Ц┌╓Ц┐╚
  *
  * $Log: utsname.h,v $
  * Revision 1.3  1996/12/12 13:44:29  night
- * RCS ╓н╔М╔╟╔ч╔╞╔М╓Рди╡ц║ё
+ * RCS Ц│╝Ц┐╜Ц┌╟Ц┐·Ц┌╞Ц┐╜Ц┌▓Х©╫Е┼═Ц─┌
  *
  *
  */

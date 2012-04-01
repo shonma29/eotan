@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -20,7 +20,7 @@ static char rcsid[] =
 
 #include "../native.h"
 
-/* gettimeofday -- POSIX ¥·¥¹¥Æ¥à¥³¡¼¥ë¤ÎÆ°ºî¤Ï¤³¤Á¤é¤ËÊÑ¹¹
+/* gettimeofday -- POSIX ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«ã®å‹•ä½œã¯ã“ã¡ã‚‰ã«å¤‰æ›´
  *
  */
 int gettimeofday(struct timeval *tv, struct timezone * tz)

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -29,10 +29,10 @@ static char rcsid[] =
  * added the parameter structure on.
  *
  * Revision 1.2  1998/02/25 12:51:13  night
- * ╔╥╔╧╔ф╔Ю╔Ё║╪╔К╟З©Т╓ндЙ╣аиТй╛╓Р╟ЛиТ╫╓ю╣║ё
+ * Ц┌╥Ц┌╧Ц┐├Ц┐═Ц┌ЁЦ┐╪Ц┐╚Е╪∙Ф∙╟Ц│╝Е╝ Г╬╘И┐╗Е┬├Ц┌▓Д╦─И┐╗Д©╝Ф╜ёЦ─┌
  *
  * Revision 1.1  1997/08/31 13:10:43  night
- * ╨г╫И╓непо©
+ * Ф°─Е┬²Ц│╝Г≥╩И▄╡
  *
  *
  *
@@ -43,7 +43,7 @@ static char rcsid[] =
 
 
 
-/* psys_exec --- exec ╔╥╔╧╔ф╔Ю╔Ё║╪╔К
+/* psys_exec --- exec Ц┌╥Ц┌╧Ц┐├Ц┐═Ц┌ЁЦ┐╪Ц┐╚
  *
  *
  */

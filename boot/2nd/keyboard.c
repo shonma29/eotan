@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -43,7 +43,7 @@ static int get_one_char (void);
 #define ISBREAK(ch)     (ch & 0x80)
 
 #if 1 /* include btron-pc/include/keyboard_def.h */
-/* ÆÃ¼ì¥­¡¼ */
+/* ç‰¹æ®Šã‚­ãƒ¼ */
 #define NOK	0
 #define ESC	0x1b
 #define BS	'\b'
@@ -119,7 +119,7 @@ get_mode (int ch)
     }
   else if (ch & ENCAP)
     {
-      return (NORMAL_MODE);	/* ËÜÅö¤Ï°ã¤¦ÃÍ¤¬ÊÖ¤ë */
+      return (NORMAL_MODE);	/* æœ¬å½“ã¯é•ã†å€¤ãŒè¿”ã‚‹ */
     }
 
   return (NORMAL_MODE);    
@@ -255,7 +255,7 @@ intr_keyboard ()
     {
       ch = ch & 0x7f;
 
-      /* ¥·¥Õ¥È¥­¡¼Åù¤Î¾ì¹ç¡¢¾õÂÖ¤òÊÑ¹¹¤¹¤ë */
+      /* ã‚·ãƒ•ãƒˆã‚­ãƒ¼ç­‰ã®å ´åˆã€çŠ¶æ…‹ã‚’å¤‰æ›´ã™ã‚‹ */
       if ((ch == 0x2a) || (ch == 0x36))
 	{
 	  mode &= ~SHIFT;

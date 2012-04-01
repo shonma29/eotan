@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -10,7 +10,7 @@ Version 2, June 1991
 (C) 2001, Tomohide Naniwa
 
 */
-/* sfs_device.c - SFS ¤È¥Ç¥Ğ¥¤¥¹¥É¥é¥¤¥Ğ¤Î¤ä¤ê¤È¤ê¤ò´ÉÍı¤¹¤ë¡£
+/* sfs_device.c - SFS ã¨ãƒ‡ãƒã‚¤ã‚¹ãƒ‰ãƒ©ã‚¤ãƒã®ã‚„ã‚Šã¨ã‚Šã‚’ç®¡ç†ã™ã‚‹ã€‚
  *
  *
  *
@@ -29,13 +29,13 @@ static char rcsid[] =
 
 
 
-/* sfs_write_device - ¥Ç¥Ğ¥¤¥¹¤Ë¥Ç¡¼¥¿¤òÁ÷¤ë(¤½¤·¤Æ¥¹¥È¥ì¡¼¥¸¤Ë½ñ¤­¹ş¤à)
+/* sfs_write_device - ãƒ‡ãƒã‚¤ã‚¹ã«ãƒ‡ãƒ¼ã‚¿ã‚’é€ã‚‹(ãã—ã¦ã‚¹ãƒˆãƒ¬ãƒ¼ã‚¸ã«æ›¸ãè¾¼ã‚€)
  *
  */
 W sfs_write_device(ID device, B * buf, W start, W length, W * rlength)
 {
-    DDEV_REQ req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-    DDEV_RES res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+    DDEV_REQ req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+    DDEV_RES res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
     ID res_port;
     W errno;
     ID send_port;
@@ -85,13 +85,13 @@ W sfs_write_device(ID device, B * buf, W start, W length, W * rlength)
 }
 
 
-/* sfs_read_device - ¥Ç¥Ğ¥¤¥¹¤«¤é¥Ç¡¼¥¿¤òÆÉ¤ß¹ş¤à
+/* sfs_read_device - ãƒ‡ãƒã‚¤ã‚¹ã‹ã‚‰ãƒ‡ãƒ¼ã‚¿ã‚’èª­ã¿è¾¼ã‚€
  *
  */
 W sfs_read_device(ID device, B * buf, W start, W length, W * rlength)
 {
-    DDEV_REQ req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-    DDEV_RES res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+    DDEV_REQ req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+    DDEV_RES res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
     ID res_port;
     W errno;
     W rest_length;
@@ -150,14 +150,14 @@ W sfs_read_device(ID device, B * buf, W start, W length, W * rlength)
     return (E_OK);
 }
 
-/* sfs_trans_device - ¥Ç¥Ğ¥¤¥¹¤Ë read ¥á¥Ã¥»¡¼¥¸¤òÅ¾Á÷¤¹¤ë
+/* sfs_trans_device - ãƒ‡ãƒã‚¤ã‚¹ã« read ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’è»¢é€ã™ã‚‹
  *
  */
 
 W sfs_trans_device(ID device, ID port, ID tskid, B * buf, W start,
 		   W length)
 {
-    DDEV_REQ req;		/* Í×µá¥Ñ¥±¥Ã¥È */
+    DDEV_REQ req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
     W errno;
     ID send_port;
     UW dd;
@@ -182,14 +182,14 @@ W sfs_trans_device(ID device, ID port, ID tskid, B * buf, W start,
     return (E_OK);
 }
 
-/* sfs_open_device - ¥Ç¥Ğ¥¤¥¹¤Ë open ¥á¥Ã¥»¡¼¥¸¤òÁ÷¤ë
+/* sfs_open_device - ãƒ‡ãƒã‚¤ã‚¹ã« open ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’é€ã‚‹
  *
  */
 
 W sfs_open_device(ID device, W * rsize)
 {
-    DDEV_REQ req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-    DDEV_RES res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+    DDEV_REQ req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+    DDEV_RES res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
     ID res_port;
     W errno;
     ID send_port;
@@ -232,14 +232,14 @@ W sfs_open_device(ID device, W * rsize)
     return (res.body.opn_res.errinfo);
 }
 
-/* sfs_close_device - ¥Ç¥Ğ¥¤¥¹¤Ë close ¥á¥Ã¥»¡¼¥¸¤òÁ÷¤ë
+/* sfs_close_device - ãƒ‡ãƒã‚¤ã‚¹ã« close ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’é€ã‚‹
  *
  */
 
 W sfs_close_device(ID device)
 {
-    DDEV_REQ req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-    DDEV_RES res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+    DDEV_REQ req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+    DDEV_RES res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
     ID res_port;
     W errno;
     ID send_port;

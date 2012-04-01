@@ -1,5 +1,5 @@
 /*
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
 
@@ -11,7 +11,7 @@ Version 2, June 1991
 
 /*
 ** Function: get_usr
-** Description: �ץ������Υ桼������μ��Ф�
+** Description: プロセスのユーザ情報の取り出し
 */
 
 ER

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -16,7 +16,7 @@ Version 2, June 1991
  * for debug
  *
  * Revision 1.2  1999/04/26 18:51:29  kishida0
- * �ְ�äƤ������������(���Ƥ��ä�̵��)
+ * 間違っていた所を修正した(内容は特に無い)
  *
  * Revision 1.1  1999/04/26 18:33:32  kishida0
  * add for debug
@@ -37,11 +37,11 @@ Version 2, June 1991
 #include "servers/port-manager.h"
 
 
-/*** �����˥ǥХ���������򤫤��Ƥ������� ***/
+/*** ここにデバイスの定義をかいてください ***/
 
 
-/* �ǥХ�����¤�� 
- * DC390 �ǥХ����ϡ��ơ����ι�¤�ΤǴ������Ƥ���
+/* デバイス構造体 
+ * DC390 デバイスは、各々この構造体で管理している
  *
  */
 struct device

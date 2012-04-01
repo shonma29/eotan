@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -18,20 +18,20 @@ Version 2, June 1991
 
 
 /* Graphics Command */
-#define Draw_Null	0x00000000		/* ╡©╓Б╓╥╓й╓╓╔Ё╔ч╔С╔и			*/
-#define Draw_Line	0x00000001		/* 2ею╢ж╓Р╥К╓жд╬юЧ╓Риа╡Х╓╧╓К╔Ё╔ч╔С╔и	*/
-#define Draw_Circle	0x00000002		/* ╠ъ╓Риа╓╞╔Ё╔ч╔С╔и			*/
-#define Draw_Box	0x00000003		/* х╒╓Риа╓╞╔Ё╔ч╔С╔и			*/
+#define Draw_Null	0x00000000		/* Д╫∙Ц┌┌Ц│≈Ц│╙Ц│└Ц┌ЁЦ┐·Ц┐ЁЦ┐┴			*/
+#define Draw_Line	0x00000001		/* 2Г┌╧И√⌠Ц┌▓Г╣░Ц│╤Г⌡╢Г╥ Ц┌▓Ф▐▐Г■╩Ц│≥Ц┌▀Ц┌ЁЦ┐·Ц┐ЁЦ┐┴	*/
+#define Draw_Circle	0x00000002		/* Е├├Ц┌▓Ф▐▐Ц│▐Ц┌ЁЦ┐·Ц┐ЁЦ┐┴			*/
+#define Draw_Box	0x00000003		/* Г╝╠Ц┌▓Ф▐▐Ц│▐Ц┌ЁЦ┐·Ц┐ЁЦ┐┴			*/
 
 
-#define Clear_Display	0x00010000		/* ╡Хлла╢бн╓Р╬ц╣Н╓╧╓К			*/
+#define Clear_Display	0x00010000		/* Г■╩И²╒Е┘╗Д╫⌠Ц┌▓Ф╤┬Е▌╩Ц│≥Ц┌▀			*/
 
-#define Reset_Graphics	0x00100000		/* ╔╟╔И╔у╔ё╔ц╔╞╔╣╔ж╔╥╔╧╔ф╔Ю╓н╔Й╔╩╔ц╔х	*/
+#define Reset_Graphics	0x00100000		/* Ц┌╟Ц┐╘Ц┐∙Ц┌ёЦ┐┐Ц┌╞Ц┌╣Ц┐√Ц┌╥Ц┌╧Ц┐├Ц┐═Ц│╝Ц┐╙Ц┌╩Ц┐┐Ц┐┬	*/
 
-#define Init_Graphics	0x10000000		/* ╔╟╔И╔у╔ё╔ц╔╞╔╣╔ж╔╥╔╧╔ф╔Ю╓н╫И╢Э╡╫	*/
+#define Init_Graphics	0x10000000		/* Ц┌╟Ц┐╘Ц┐∙Ц┌ёЦ┐┐Ц┌╞Ц┌╣Ц┐√Ц┌╥Ц┌╧Ц┐├Ц┐═Ц│╝Е┬²Ф°÷Е▄√	*/
 
 
-/* ╔╟╔И╔у╔ё╔ц╔╞╔г╔п╔╓╔╧╓ьиа╡Хмв╣А╓РаВ╓К╓х╓╜╓к╩хмя╓╧╓К╧╫б╓бн
+/* Ц┌╟Ц┐╘Ц┐∙Ц┌ёЦ┐┐Ц┌╞Ц┐┤Ц┐░Ц┌╓Ц┌╧Ц│╦Ф▐▐Г■╩Х╕│Ф╠┌Ц┌▓И─│Ц┌▀Ц│╗Ц│█Ц│╚Д╫©Г■╗Ц│≥Ц┌▀Ф╖▀И─═Д╫⌠
  */
 struct graphic_packet
 {

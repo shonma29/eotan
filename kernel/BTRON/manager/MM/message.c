@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -13,16 +13,16 @@ Version 2, June 1991
 /* 
  * $Log: message.c,v $
  * Revision 1.3  1997/07/06 11:55:08  night
- * putc() ¤Î½èÍý¤òÊÑ¹¹¡£
+ * putc() ã®å‡¦ç†ã‚’å¤‰æ›´ã€‚
  *
  * Revision 1.2  1997/06/29 15:44:32  night
- * ¥³¥á¥ó¥È¤ÎÊÑ¹¹
+ * ã‚³ãƒ¡ãƒ³ãƒˆã®å¤‰æ›´
  *
- * ¡¦´Á»ú¥³¡¼¥É¤ò SJIS ¤«¤é EUC ¤ËÊÑ¹¹¤·¤¿¡£
- * ¡¦RCS ¤Î Log ¥Þ¥¯¥íÆþ¤ê¤Î¥³¥á¥ó¥È¤òÄÉ²Ã¤·¤¿(¤Þ¤ÀÆþ¤ì¤Æ¤¤¤Ê¤«¤Ã¤¿¥Õ¥¡¥¤¥ë¤Î¤ß)¡£
+ * ãƒ»æ¼¢å­—ã‚³ãƒ¼ãƒ‰ã‚’ SJIS ã‹ã‚‰ EUC ã«å¤‰æ›´ã—ãŸã€‚
+ * ãƒ»RCS ã® Log ãƒžã‚¯ãƒ­å…¥ã‚Šã®ã‚³ãƒ¡ãƒ³ãƒˆã‚’è¿½åŠ ã—ãŸ(ã¾ã å…¥ã‚Œã¦ã„ãªã‹ã£ãŸãƒ•ã‚¡ã‚¤ãƒ«ã®ã¿)ã€‚
  *
  * Revision 1.1  1997/06/29 13:18:13  night
- * BTRON ¥á¥â¥ê manager ¤ÎºÇ½é¤ÎÅÐÏ¿¡£
+ * BTRON ãƒ¡ãƒ¢ãƒª manager ã®æœ€åˆã®ç™»éŒ²ã€‚
  *
  */
 
@@ -41,7 +41,7 @@ static ER	vprintf (B *fmt, VP arg0);
 
 
 
-/* init_log - ¥í¥°½ÐÎÏµ¡¹½¤ò½é´ü²½¤¹¤ë
+/* init_log - ãƒ­ã‚°å‡ºåŠ›æ©Ÿæ§‹ã‚’åˆæœŸåŒ–ã™ã‚‹
  *
  *
  */
@@ -163,8 +163,8 @@ put_string (B *line, ID port)
 W 
 putc (int ch, ID port)
 {
-  static DDEV_REQ	req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-  static DDEV_RES	res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+  static DDEV_REQ	req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+  static DDEV_RES	res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
   W			rsize;
   ER			error;
   W			i;

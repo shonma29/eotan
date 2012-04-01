@@ -1,5 +1,5 @@
 /*
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
 
@@ -11,7 +11,7 @@ Version 2, June 1991
 
 /*
 ** Function: lmb_sts
-** Description: ¥í¡¼¥«¥ë¥á¥â¥êÎÎ°è¤Î¾õÂÖ¼è¤ê½Ð¤·
+** Description: ãƒ­ãƒ¼ã‚«ãƒ«ãƒ¡ãƒ¢ãƒªé ˜åŸŸã®çŠ¶æ…‹å–ã‚Šå‡ºã—
 */
 
 ER

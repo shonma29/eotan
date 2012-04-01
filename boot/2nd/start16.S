@@ -29,12 +29,12 @@ second_boot:
 		call	sleep_1s
 
 		cli
-		/* IDTR �򥻥å� */
+		/* IDTR をセット */
 		lidt	[idt_ptr]
-		/* GDTR �򥻥å� */
+		/* GDTR をセット */
 		lgdt	[gdt_ptr]
 
-		/* IDTR �ơ��֥�򥻥å� */
+		/* IDTR テーブルをセット */
 
 /* that was painless, now we enable A20 */
 
@@ -46,7 +46,7 @@ second_boot:
 		out	#0x60,al
 		call	empty_8042
 	
-		/* 2ndboot 32 �ӥåȥ⡼�ɤ����� */
+		/* 2ndboot 32 ビットモードに遷移 */
 		mov	ax, #0001
 		lmsw	ax
 		jmp	start32
@@ -60,7 +60,7 @@ start32:
 	
 /*
  * speep_1s
- * 1 �ôֲ��⤻�����Ԥ�
+ * 1 秒間何もせずに待つ
  */
 sleep_1s:
 		push	ax
@@ -93,13 +93,13 @@ delay:
 		ret
 	
 /*
- * print --- ʸ����򥳥󥽡����ɽ�����롣
+ * print --- 文字列をコンソールに表示する。
  *
- * ������
- *	bx	ɽ������ʸ����Υ��ɥ쥹
- *		ʸ����ϡ�<Ĺ��>:1�Х���
- *			  <ʸ����>:����255�Х���
- *		�ȤʤäƤ��롣
+ * 引数：
+ *	bx	表示する文字列のアドレス
+ *		文字列は、<長さ>:1バイト
+ *			  <文字列>:最大255バイト
+ *		となっている。
  */
 print:
 		push	si

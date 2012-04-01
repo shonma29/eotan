@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -28,13 +28,13 @@ Version 2, June 1991
 
 #include "posix.h"
 
-/* ctl_device - ¥Ç¥Ğ¥¤¥¹¤Ë¥³¥ó¥È¥í¡¼¥ë¥á¥Ã¥»¡¼¥¸¤òÁ÷¤ë
+/* ctl_device - ãƒ‡ãƒã‚¤ã‚¹ã«ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’é€ã‚‹
  *
  */
 static W control_device(ID device, struct posix_request *preq)
 {
-    DDEV_REQ req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-    DDEV_RES res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+    DDEV_REQ req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+    DDEV_RES res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
     ID res_port;
     W errno;
     ID send_port;
@@ -62,7 +62,7 @@ static W control_device(ID device, struct posix_request *preq)
     req.body.ctl_req.len = preq->param.par_fcntl.cmd & 0x0FFFF;
 
     if (req.body.ctl_req.len == 0) {
-	/* W ¤Ë cast ¤·¤Æ¤¤¤ë¤¬¡¢UB ¤Î¤Ş¤ŞÂåÆş¤·¤¿¤Û¤¦¤¬ÎÉ¤¤¤«¤â */
+	/* W ã« cast ã—ã¦ã„ã‚‹ãŒã€UB ã®ã¾ã¾ä»£å…¥ã—ãŸã»ã†ãŒè‰¯ã„ã‹ã‚‚ */
 	((W *) req.body.ctl_req.param)[0] = (W) preq->param.par_fcntl.arg;
 	req.body.ctl_req.len = sizeof(W);
     } else {
@@ -94,7 +94,7 @@ static W control_device(ID device, struct posix_request *preq)
     return (res.body.ctl_res.errinfo);
 }
 
-/* psc_fcntl_f - ¥Õ¥¡¥¤¥ë¤ËÂĞ¤·¤ÆÆÃ¼ì¤ÊÁàºî¤ò¹Ô¤¦¡£
+/* psc_fcntl_f - ãƒ•ã‚¡ã‚¤ãƒ«ã«å¯¾ã—ã¦ç‰¹æ®Šãªæ“ä½œã‚’è¡Œã†ã€‚
  */
 W psc_fcntl_f(struct posix_request * req)
 {
@@ -115,7 +115,7 @@ W psc_fcntl_f(struct posix_request * req)
     }
 
     if (fp->f_inode->i_mode & FS_FMT_DEV) {
-	/* ¥¹¥Ú¥·¥ã¥ë¥Õ¥¡¥¤¥ë¤À¤Ã¤¿
+	/* ã‚¹ãƒšã‚·ãƒ£ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«ã ã£ãŸ
 	 */
 	device = fp->f_inode->i_dev;
 
@@ -130,7 +130,7 @@ W psc_fcntl_f(struct posix_request * req)
 	    return (SUCCESS);
 	}
     } else {
-	/* ¤È¤ê¤¢¤¨¤º¡¢¥µ¥İ¡¼¥È¤·¤Æ¤¤¤Ê¤¤¤È¤¤¤¦¥¨¥é¡¼¤ÇÊÖ¤¹
+	/* ã¨ã‚Šã‚ãˆãšã€ã‚µãƒãƒ¼ãƒˆã—ã¦ã„ãªã„ã¨ã„ã†ã‚¨ãƒ©ãƒ¼ã§è¿”ã™
 	 */
 	put_response(req, EP_NOSUP, 0, 0, 0);
     }

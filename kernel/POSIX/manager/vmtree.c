@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -15,7 +15,7 @@ Version 2, June 1991
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/manager/vmtree.c,v 1.16 2000/01/26 08:24:36 naniwa Exp $ */
 
 
-/* vmtree.c - ²¾ÁÛ¥á¥â¥ê¥Ä¥ê¡¼¤Î´ÉÍı
+/* vmtree.c - ä»®æƒ³ãƒ¡ãƒ¢ãƒªãƒ„ãƒªãƒ¼ã®ç®¡ç†
  *
  * $Log: vmtree.c,v $
  * Revision 1.16  2000/01/26 08:24:36  naniwa
@@ -43,42 +43,42 @@ Version 2, June 1991
  * printf() was renamed to printk().
  *
  * Revision 1.8  1999/03/02 15:30:58  night
- * ÅÄÈª@KMC (yusuke@kmc.kyoto-u.ac.jp) ¤Î¥¢¥É¥Ğ¥¤¥¹¤Ë¤è¤ë½¤Àµ¡£
+ * ç”°ç•‘@KMC (yusuke@kmc.kyoto-u.ac.jp) ã®ã‚¢ãƒ‰ãƒã‚¤ã‚¹ã«ã‚ˆã‚‹ä¿®æ­£ã€‚
  * --------------------
- * ¤½¤ì¤«¤éÊÌ¤Î¥Ğ¥°¤Ç¤¹¤¬¡¢
- * POSIX/manager/vmtree.c¤Î grow_vm() ¤ÎºÇ½é¤Ç pageent¤ò
- * µá¤á¤ë¤È¤­¤Ë
+ * ãã‚Œã‹ã‚‰åˆ¥ã®ãƒã‚°ã§ã™ãŒã€
+ * POSIX/manager/vmtree.cã® grow_vm() ã®æœ€åˆã§ pageentã‚’
+ * æ±‚ã‚ã‚‹ã¨ãã«
  * pageent = addr % (MAX_PAGE_ENTRY * PAGE_SIZE) ;
- * ¤È¤Ê¤Ã¤Æ¤¤¤Ş¤¹¤¬¡¢¤³¤³¤Ï
+ * ã¨ãªã£ã¦ã„ã¾ã™ãŒã€ã“ã“ã¯
  * pageent = (addr / PAGE_SIZE ) % MAX_PAGE_ENTRY ;
- * ¤È¤«½ñ¤¯¤Ù¤­¤À¤È»×¤¤¤Ş¤¹¡£
+ * ã¨ã‹æ›¸ãã¹ãã ã¨æ€ã„ã¾ã™ã€‚
  * --------------------
  *
  * Revision 1.7  1998/07/01 14:03:10  night
- * ¥Ç¥Ğ¥Ã¥°ÍÑ¤Î¥Ç¡¼¥¿½ĞÎÏ½èÍı¤ò #ifdef notdef ¡Á #endif ¤Ç°Ï¤ó¤À¡£
+ * ãƒ‡ãƒãƒƒã‚°ç”¨ã®ãƒ‡ãƒ¼ã‚¿å‡ºåŠ›å‡¦ç†ã‚’ #ifdef notdef ã€œ #endif ã§å›²ã‚“ã ã€‚
  *
  * Revision 1.6  1998/02/25 12:53:07  night
- * ¥·¥¹¥Æ¥à¥³¡¼¥ë vmap_reg ¤Î°ú¿ôÄÉ²Ã(¥¢¥¯¥»¥¹¸¢¸Â¤ò»ØÄê¤¹¤ë°ú¿ô¤òÄÉ²Ã)¤Ë
- * È¼¤Ã¤¿½¤Àµ¡£
- * ¥¢¥¯¥»¥¹¸¢¤È¤·¤Æ¤Ï¡¢ACC_USER (¥æ¡¼¥¶¤¬ÆÉ¤ß½ñ¤­¤Ç¤­¤ë) ¤ò»ØÄê¤·¤¿¡£
+ * ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ« vmap_reg ã®å¼•æ•°è¿½åŠ (ã‚¢ã‚¯ã‚»ã‚¹æ¨©é™ã‚’æŒ‡å®šã™ã‚‹å¼•æ•°ã‚’è¿½åŠ )ã«
+ * ä¼´ã£ãŸä¿®æ­£ã€‚
+ * ã‚¢ã‚¯ã‚»ã‚¹æ¨©ã¨ã—ã¦ã¯ã€ACC_USER (ãƒ¦ãƒ¼ã‚¶ãŒèª­ã¿æ›¸ãã§ãã‚‹) ã‚’æŒ‡å®šã—ãŸã€‚
  *
  * Revision 1.5  1998/02/24 14:21:42  night
- * ¥×¥í¥»¥¹¤Î´Ö¤Î²¾ÁÛ¥Ú¡¼¥¸¤Î¥Ç¡¼¥¿¤Î¥³¥Ô¡¼¤¹¤ë½èÍı¤ò
- * Àµ¤·¤¯Æ°¤¯¤è¤¦¤Ë½¤Àµ¡£
+ * ãƒ—ãƒ­ã‚»ã‚¹ã®é–“ã®ä»®æƒ³ãƒšãƒ¼ã‚¸ã®ãƒ‡ãƒ¼ã‚¿ã®ã‚³ãƒ”ãƒ¼ã™ã‚‹å‡¦ç†ã‚’
+ * æ­£ã—ãå‹•ãã‚ˆã†ã«ä¿®æ­£ã€‚
  *
  * Revision 1.4  1998/02/23 14:50:51  night
- * setup_vmtree ´Ø¿ô¤ò¤­¤Á¤ó¤ÈÆ°¤¯¤è¤¦¤Ë¤·¤¿¡£
+ * setup_vmtree é–¢æ•°ã‚’ãã¡ã‚“ã¨å‹•ãã‚ˆã†ã«ã—ãŸã€‚
  *
  * Revision 1.3  1998/02/16 14:28:31  night
- * setup_vmtree() ¤ÎÄÉ²Ã¡£
- * ¤³¤Î´Ø¿ô¤Ï¡¢°ú¿ô¤Ç»ØÄê¤·¤¿ ITRON ¥¿¥¹¥¯¤«¤é²¾ÁÛ¥á¥â¥ê¥Æ¡¼¥Ö¥ë
- * vmtree ¤òÀ¸À®¤¹¤ë¡£
+ * setup_vmtree() ã®è¿½åŠ ã€‚
+ * ã“ã®é–¢æ•°ã¯ã€å¼•æ•°ã§æŒ‡å®šã—ãŸ ITRON ã‚¿ã‚¹ã‚¯ã‹ã‚‰ä»®æƒ³ãƒ¡ãƒ¢ãƒªãƒ†ãƒ¼ãƒ–ãƒ«
+ * vmtree ã‚’ç”Ÿæˆã™ã‚‹ã€‚
  *
  * Revision 1.2  1997/10/24 13:56:16  night
- * ¥Õ¥¡¥¤¥ëÃæ¤ÎÊ¸»ú¥³¡¼¥É¤ò SJIS ¤«¤é EUC ¤ËÊÑ¹¹¡£
+ * ãƒ•ã‚¡ã‚¤ãƒ«ä¸­ã®æ–‡å­—ã‚³ãƒ¼ãƒ‰ã‚’ SJIS ã‹ã‚‰ EUC ã«å¤‰æ›´ã€‚
  *
  * Revision 1.1  1997/10/23 14:32:33  night
- * exec ¥·¥¹¥Æ¥à¥³¡¼¥ë´Ø·¸¤Î½èÍı¤Î¹¹¿·
+ * exec ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«é–¢ä¿‚ã®å‡¦ç†ã®æ›´æ–°
  *
  *
  */
@@ -88,7 +88,7 @@ Version 2, June 1991
 
 
 
-/* create_vm_tree - ¿·¤·¤¯¥×¥í¥»¥¹¤Î²¾ÁÛ¥á¥â¥ê¥Ä¥ê¡¼¤òºîÀ®¤¹¤ë
+/* create_vm_tree - æ–°ã—ããƒ—ãƒ­ã‚»ã‚¹ã®ä»®æƒ³ãƒ¡ãƒ¢ãƒªãƒ„ãƒªãƒ¼ã‚’ä½œæˆã™ã‚‹
  *
  */
 W create_vm_tree(struct proc *proc, UW access, UW start, UW size)
@@ -137,7 +137,7 @@ W create_vm_tree(struct proc *proc, UW access, UW start, UW size)
 
 
 
-/* grow_vm - ¿·¤·¤¯²¾ÁÛ¥Ú¡¼¥¸¤ËÊªÍı¥á¥â¥ê¤ò³ä¤êÅö¤Æ¤ë
+/* grow_vm - æ–°ã—ãä»®æƒ³ãƒšãƒ¼ã‚¸ã«ç‰©ç†ãƒ¡ãƒ¢ãƒªã‚’å‰²ã‚Šå½“ã¦ã‚‹
  *
  */
 W grow_vm(struct proc * procp, UW addr, UW access)
@@ -151,8 +151,8 @@ W grow_vm(struct proc * procp, UW addr, UW access)
 
 
     treep = procp->vm_tree;
-    dirent = addr / (MAX_PAGE_ENTRY * PAGE_SIZE);	/* directory table ¤Î¥¤¥ó¥Ç¥Ã¥¯¥¹ */
-    pageent = (addr >> PAGE_SHIFT) % MAX_PAGE_ENTRY;	/* page table ¤Î¥¤¥ó¥Ç¥Ã¥¯¥¹ */
+    dirent = addr / (MAX_PAGE_ENTRY * PAGE_SIZE);	/* directory table ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ */
+    pageent = (addr >> PAGE_SHIFT) % MAX_PAGE_ENTRY;	/* page table ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ */
 
     vmdir = treep->directory_table[dirent];
     if (vmdir == NULL) {
@@ -184,11 +184,11 @@ W grow_vm(struct proc * procp, UW addr, UW access)
     }
 #ifdef notdef
     if (VM_ALLOCED_MASK(vmpage->access)) {
-	/* ¤¹¤Ç¤ËÊªÍı¥á¥â¥ê¤¬³ä¤êÅö¤ÆºÑ¤ß */
+	/* ã™ã§ã«ç‰©ç†ãƒ¡ãƒ¢ãƒªãŒå‰²ã‚Šå½“ã¦æ¸ˆã¿ */
 	return (EP_INVAL);
     }
 #endif
-    /* ²¾ÁÛ¥á¥â¥êÎÎ°è¤ËÊªÍı¥á¥â¥ê¤ò³ä¤êÉÕ¤±¤ë
+    /* ä»®æƒ³ãƒ¡ãƒ¢ãƒªé ˜åŸŸã«ç‰©ç†ãƒ¡ãƒ¢ãƒªã‚’å‰²ã‚Šä»˜ã‘ã‚‹
      */
     errno = vmap_reg(procp->proc_maintask, (VP) addr, PAGE_SIZE, ACC_USER);
     if (errno) {
@@ -201,7 +201,7 @@ W grow_vm(struct proc * procp, UW addr, UW access)
 }
 
 
-/* shorten_vm - ²¾ÁÛ¥Ú¡¼¥¸¤ò²òÊü¤¹¤ë
+/* shorten_vm - ä»®æƒ³ãƒšãƒ¼ã‚¸ã‚’è§£æ”¾ã™ã‚‹
  *
  */
 W shorten_vm(struct proc * procp, UW addr)
@@ -215,7 +215,7 @@ W shorten_vm(struct proc * procp, UW addr)
 
     treep = procp->vm_tree;
     dirent = addr / (MAX_PAGE_ENTRY * PAGE_SIZE);
-    /* page table ¤Î¥¤¥ó¥Ç¥Ã¥¯¥¹ */
+    /* page table ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ */
     pageent = (addr >> PAGE_SHIFT) % MAX_PAGE_ENTRY;
 #if 0
     pageent = addr % (MAX_PAGE_ENTRY * PAGE_SIZE);
@@ -241,7 +241,7 @@ W shorten_vm(struct proc * procp, UW addr)
 #ifdef notdef
     vmpage->access = (vmpage->access & ~VM_ALLOCED);
 #endif
-    /* »È¤ï¤Ê¤¯¤Ê¤Ã¤¿ page table ¤Î¥¨¥ó¥È¥ê¡¼¤Ï free ¤¹¤ë */
+    /* ä½¿ã‚ãªããªã£ãŸ page table ã®ã‚¨ãƒ³ãƒˆãƒªãƒ¼ã¯ free ã™ã‚‹ */
     vmdir->page_table[pageent] = NULL;
     free(vmpage);
 
@@ -250,7 +250,7 @@ W shorten_vm(struct proc * procp, UW addr)
 
 
 
-/* duplicate_tree - vm_tree ¤Î¾ğÊó¤ò¥³¥Ô¡¼¤¹¤ë
+/* duplicate_tree - vm_tree ã®æƒ…å ±ã‚’ã‚³ãƒ”ãƒ¼ã™ã‚‹
  *
  *
  */
@@ -278,10 +278,10 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 #endif
 
 
-    /* ¥×¥í¥»¥¹¤Î¤â¤Ä¥Ú¡¼¥¸¥Ç¥£¥ì¥¯¥È¥ê¾ğÊó¤ò¤Ò¤È¤Ä¤Ò¤È¤ÄÄ´¤Ù¤Æ¤¤¤¯¡£
-     * ¤â¤·¡¢¥Ç¥£¥ì¥¯¥È¥ê¤Î¥¨¥ó¥È¥ê¤Î¤¦¤Á»È¤Ã¤Æ¤¤¤ë¤â¤Î¤¬¤¢¤ì¤Ğ¡¢
-     * ¤½¤ÎÆâÍÆ¤ò¥³¥Ô¡¼¤·¡¢¤½¤Î¥Ç¥£¥ì¥¯¥È¥êÃæ¤Î¥Ú¡¼¥¸(Ê£¿ô)¤ÎÆâÍÆ¤â
-     * ¥Á¥§¥Ã¥¯¤¹¤ë¡£
+    /* ãƒ—ãƒ­ã‚»ã‚¹ã®ã‚‚ã¤ãƒšãƒ¼ã‚¸ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªæƒ…å ±ã‚’ã²ã¨ã¤ã²ã¨ã¤èª¿ã¹ã¦ã„ãã€‚
+     * ã‚‚ã—ã€ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®ã‚¨ãƒ³ãƒˆãƒªã®ã†ã¡ä½¿ã£ã¦ã„ã‚‹ã‚‚ã®ãŒã‚ã‚Œã°ã€
+     * ãã®å†…å®¹ã‚’ã‚³ãƒ”ãƒ¼ã—ã€ãã®ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªä¸­ã®ãƒšãƒ¼ã‚¸(è¤‡æ•°)ã®å†…å®¹ã‚‚
+     * ãƒã‚§ãƒƒã‚¯ã™ã‚‹ã€‚
      */
     for (dir_index = 0; dir_index < (MAX_DIR_ENTRY / 2); dir_index++) {
 	dirp = source->directory_table[dir_index];
@@ -292,7 +292,7 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 #endif
 
 	if (dirp != NULL) {
-	    /* ¥³¥Ô¡¼¸µ¤Î¥Ú¡¼¥¸¥Ç¥£¥ì¥¯¥È¥êÆâ¤Ë¾ğÊó¤¬¤¢¤Ã¤¿¡£
+	    /* ã‚³ãƒ”ãƒ¼å…ƒã®ãƒšãƒ¼ã‚¸ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªå†…ã«æƒ…å ±ãŒã‚ã£ãŸã€‚
 	     */
 
 #ifdef notdef
@@ -316,11 +316,11 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 		}
 		destination->directory_table[dir_index] = dest_dirp;
 #ifdef notdef
-/* source ¤Î¾ğÊó¤ò¥³¥Ô¡¼¤¹¤ë *//* XXX BUG XXX */
+/* source ã®æƒ…å ±ã‚’ã‚³ãƒ”ãƒ¼ã™ã‚‹ *//* XXX BUG XXX */
 		*dest_dirp = *dirp;
 #endif
 	    } else {
-		/* ¤¹¤Ç¤Ë¼õ¤±¤¬¤ï¥Ú¡¼¥¸¥Ç¥£¥ì¥¯¥È¥ê¤¬»ÈÍÑ¤µ¤ì¤Æ¤¤¤ë
+		/* ã™ã§ã«å—ã‘ãŒã‚ãƒšãƒ¼ã‚¸ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªãŒä½¿ç”¨ã•ã‚Œã¦ã„ã‚‹
 		 */
 #ifdef VMDEBUG
 		printk("duplicate_tree: non null dest_dirp\n");
@@ -329,8 +329,8 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 	    }
 
 
-	    /* ¥Ç¥£¥ì¥¯¥È¥êÃæ¤Î³Æ¥Ú¡¼¥¸¥Á¥§¥Ã¥¯¤·¡¢¤â¤·¥³¥Ô¡¼¸µ¤Î¥Ú¡¼¥¸¤¬¼Â¥á¥â¥ê¤Ë
-	     * ¥Ş¥Ã¥Ô¥ó¥°¤µ¤ì¤Æ¤¤¤¿¾ì¹ç¤Ë¤Ï¡¢ÆâÍÆ¤ò¥³¥Ô¡¼Àè¤Ë¥³¥Ô¡¼¤¹¤ë
+	    /* ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªä¸­ã®å„ãƒšãƒ¼ã‚¸ãƒã‚§ãƒƒã‚¯ã—ã€ã‚‚ã—ã‚³ãƒ”ãƒ¼å…ƒã®ãƒšãƒ¼ã‚¸ãŒå®Ÿãƒ¡ãƒ¢ãƒªã«
+	     * ãƒãƒƒãƒ”ãƒ³ã‚°ã•ã‚Œã¦ã„ãŸå ´åˆã«ã¯ã€å†…å®¹ã‚’ã‚³ãƒ”ãƒ¼å…ˆã«ã‚³ãƒ”ãƒ¼ã™ã‚‹
 	     */
 	    for (page_index = 0; page_index < MAX_PAGE_ENTRY; page_index++) {
 		pagep = dirp->page_table[page_index];
@@ -343,7 +343,7 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 		if (pagep) {
 		    dest_pagep = dest_dirp->page_table[page_index];
 		    if (dest_pagep == NULL) {
-			/* ¿·¤·¤¤¥Ú¡¼¥¸¾ğÊó¤ò¥¢¥í¥±¡¼¥È */
+			/* æ–°ã—ã„ãƒšãƒ¼ã‚¸æƒ…å ±ã‚’ã‚¢ãƒ­ã‚±ãƒ¼ãƒˆ */
 			dest_pagep =
 			    (struct vm_page *) alloc_vm_page(destination,
 							     dest_dirp, 0,
@@ -361,7 +361,7 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 			dest_dirp->page_table[page_index] = dest_pagep;
 
 #ifdef VMDEBUG
-			/* ¥×¥í¥»¥¹¤Î²¾ÁÛ¥¢¥É¥ì¥¹¤Ë¼Â¥Ú¡¼¥¸¤ò¥Ş¥Ã¥×¤¹¤ë
+			/* ãƒ—ãƒ­ã‚»ã‚¹ã®ä»®æƒ³ã‚¢ãƒ‰ãƒ¬ã‚¹ã«å®Ÿãƒšãƒ¼ã‚¸ã‚’ãƒãƒƒãƒ—ã™ã‚‹
 			 */
 			printk("duplicate_tree: vmap_reg (0x%x, %d)\n",
 			       (VP) (dir_index * MAX_PAGE_ENTRY *
@@ -394,7 +394,7 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 			    return (errno);
 			}
 		    } else {
-			/* ¤¹¤Ç¤Ë¼õ¤±¤¬¤ï¥Ú¡¼¥¸¤¬»ÈÍÑ¤µ¤ì¤Æ¤¤¤ë
+			/* ã™ã§ã«å—ã‘ãŒã‚ãƒšãƒ¼ã‚¸ãŒä½¿ç”¨ã•ã‚Œã¦ã„ã‚‹
 			 */
 #ifdef VMDEBUG
 			printk("duplicate_tree: non empty page\n");
@@ -402,7 +402,7 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 			return (EP_INVAL);
 		    }
 
-		    /* Á÷¤êÂ¦¥×¥í¥»¥¹¤Î¥á¥â¥êÃæ¤Î¾ğÊó¤ò¼è¤ê½Ğ¤¹
+		    /* é€ã‚Šå´ãƒ—ãƒ­ã‚»ã‚¹ã®ãƒ¡ãƒ¢ãƒªä¸­ã®æƒ…å ±ã‚’å–ã‚Šå‡ºã™
 		     */
 		    errno = vget_reg(source_proc->proc_maintask,
 				     (VP) dest_pagep->addr,
@@ -443,7 +443,7 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 		    }
 #endif
 
-		    /* ¼õ¤±Â¦¥×¥í¥»¥¹¤Î¥á¥â¥ê¤Ë¼è¤ê½Ğ¤·¤¿¾ğÊó¤òÁ÷¤ë
+		    /* å—ã‘å´ãƒ—ãƒ­ã‚»ã‚¹ã®ãƒ¡ãƒ¢ãƒªã«å–ã‚Šå‡ºã—ãŸæƒ…å ±ã‚’é€ã‚‹
 		     */
 		    errno = vput_reg(dest_proc->proc_maintask,
 				     (VP) dest_pagep->addr,
@@ -455,9 +455,9 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 			return (errno);
 		    }
 		}
-	    }			/* ¥Ç¥£¥ì¥¯¥È¥ê¤Î³Æ¥Ú¡¼¥¸¤Î¥Á¥§¥Ã¥¯¤Î¥ë¡¼¥×¤ÎºÇ¸å */
+	    }			/* ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®å„ãƒšãƒ¼ã‚¸ã®ãƒã‚§ãƒƒã‚¯ã®ãƒ«ãƒ¼ãƒ—ã®æœ€å¾Œ */
 	}
-    }				/* ¥×¥í¥»¥¹¤Î³Æ¥Ú¡¼¥¸¥Ç¥£¥ì¥¯¥È¥ê¤Î¥Á¥§¥Ã¥¯¤Î¥ë¡¼¥×¤ÎºÇ¸å */
+    }				/* ãƒ—ãƒ­ã‚»ã‚¹ã®å„ãƒšãƒ¼ã‚¸ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®ãƒã‚§ãƒƒã‚¯ã®ãƒ«ãƒ¼ãƒ—ã®æœ€å¾Œ */
 
 
     return (EP_OK);
@@ -510,7 +510,7 @@ struct vm_directory *alloc_vm_directory(struct vm_tree *treep, UW addr)
 }
 
 
-/* destroy_vmtree - vm tree ¤Î¾ğÊó¤ò²òÊü¤¹¤ë
+/* destroy_vmtree - vm tree ã®æƒ…å ±ã‚’è§£æ”¾ã™ã‚‹
  *
  *
  */
@@ -528,9 +528,9 @@ W destroy_vmtree(struct proc * procp, struct vm_tree * treep, W unmap)
 	    for (page_index = 0; page_index < MAX_PAGE_ENTRY; page_index++) {
 		pagep = dirp->page_table[page_index];
 		if (pagep) {
-		    /* ¥Ú¡¼¥¸¤Î¾ğÊó¤ò¥Ñ¡¼¥¸¤¹¤ë */
+		    /* ãƒšãƒ¼ã‚¸ã®æƒ…å ±ã‚’ãƒ‘ãƒ¼ã‚¸ã™ã‚‹ */
 		    if (pagep->swap_file) {
-			/* swap ¾ğÊó¤ò²òÊü */
+			/* swap æƒ…å ±ã‚’è§£æ”¾ */
 		    }
 		    if (unmap) {
 			errno = vunm_reg(procp->proc_maintask,
@@ -539,17 +539,17 @@ W destroy_vmtree(struct proc * procp, struct vm_tree * treep, W unmap)
 			    return (errno);
 			}
 		    }
-		    /* ¥Ú¡¼¥¸¤ò³«Êü */
+		    /* ãƒšãƒ¼ã‚¸ã‚’é–‹æ”¾ */
 		    free(pagep);
 		}
 	    }
-	    /* ¥Ç¥£¥ì¥¯¥È¥ê¤Î³«Êü */
+	    /* ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®é–‹æ”¾ */
 	    free(dirp);
 	}
     }
 
 #if 0
-    /* ¥ê¡¼¥¸¥ç¥ó¾ğÊó¤ò²òÊü¤¹¤ë */
+    /* ãƒªãƒ¼ã‚¸ãƒ§ãƒ³æƒ…å ±ã‚’è§£æ”¾ã™ã‚‹ */
     if (unmap) {
 	errno = vdel_reg(procp->proc_maintask, LOW_USER_ADDR);
 	if (errno) {
@@ -557,14 +557,14 @@ W destroy_vmtree(struct proc * procp, struct vm_tree * treep, W unmap)
 	}
     }
 #endif
-    /*  vmtree ¤Î root ¤Î³«Êü */
+    /*  vmtree ã® root ã®é–‹æ”¾ */
     free(treep);
 
     return (EP_OK);
 }
 
 
-/* setup_vmtree - ¤¹¤Ç¤ËÆ°¤¤¤Æ¤¤¤ë ITRON ¥¿¥¹¥¯¤Î vmtree ¤òºîÀ®¤¹¤ë
+/* setup_vmtree - ã™ã§ã«å‹•ã„ã¦ã„ã‚‹ ITRON ã‚¿ã‚¹ã‚¯ã® vmtree ã‚’ä½œæˆã™ã‚‹
  *
  */
 W
@@ -601,13 +601,13 @@ setup_vmtree(struct proc * procp, ID taskid, UW access, FP handler,
     for (dir_index = 0; dir_index < (MAX_DIR_ENTRY / 2); dir_index++) {
 	dirp = treep->directory_table[dir_index];
 	for (page_index = 0; page_index < MAX_PAGE_ENTRY; page_index++) {
-	    /* ÊªÍı¥á¥â¥ê¥¢¥É¥ì¥¹¤ò¼èÆÀ */
+	    /* ç‰©ç†ãƒ¡ãƒ¢ãƒªã‚¢ãƒ‰ãƒ¬ã‚¹ã‚’å–å¾— */
 	    error = vget_phs(taskid, (VP) addr, &paddr);
 	    if (error == E_OK) {
-		/* ¥Ş¥Ã¥×¤µ¤ì¤Æ¤¤¤ë */
+		/* ãƒãƒƒãƒ—ã•ã‚Œã¦ã„ã‚‹ */
 
 		if (dirp == NULL) {
-		    /* ¥Ç¥£¥ì¥¯¥È¥ê¥¨¥ó¥È¥ê¤ò³ÎÊİ¤·¤Æ¤¤¤Ê¤¤¤Î¤Ç¡¢¥á¥â¥ê¤ò¥¢¥í¥±¡¼¥È¤¹¤ë */
+		    /* ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚¨ãƒ³ãƒˆãƒªã‚’ç¢ºä¿ã—ã¦ã„ãªã„ã®ã§ã€ãƒ¡ãƒ¢ãƒªã‚’ã‚¢ãƒ­ã‚±ãƒ¼ãƒˆã™ã‚‹ */
 		    dirp = malloc(sizeof(struct vm_directory));
 		    if (dirp == NULL) {
 			return (EP_NOMEM);
@@ -623,10 +623,10 @@ setup_vmtree(struct proc * procp, ID taskid, UW access, FP handler,
 		pagep = dirp->page_table[page_index];
 		if (pagep == NULL) {
 
-		    /* ¥Ú¡¼¥¸¥¨¥ó¥È¥ê¤ò³ÎÊİ¤·¤Æ¤¤¤Ê¤¤¤Î¤Ç¡¢¥á¥â¥ê¤ò¥¢¥í¥±¡¼¥È¤¹¤ë */
+		    /* ãƒšãƒ¼ã‚¸ã‚¨ãƒ³ãƒˆãƒªã‚’ç¢ºä¿ã—ã¦ã„ãªã„ã®ã§ã€ãƒ¡ãƒ¢ãƒªã‚’ã‚¢ãƒ­ã‚±ãƒ¼ãƒˆã™ã‚‹ */
 		    pagep = malloc(sizeof(struct vm_page));
 		    if (pagep == NULL) {
-			/* ¥á¥â¥êÉÔÂ­ */
+			/* ãƒ¡ãƒ¢ãƒªä¸è¶³ */
 			return (EP_NOMEM);
 		    }
 		    bzero((VP) pagep, sizeof(struct vm_page));

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project д╬└╕└о╩кд╧ GNU Generic PUBLIC LICENSE д╦╜╛ддд▐д╣бг
+B-Free Project уБочФЯцИРчЙйуБп GNU Generic PUBLIC LICENSE уБлх╛УуБДуБ╛уБЩуАВ
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -12,9 +12,9 @@ Version 2, June 1991
 */
 /* pmemory.c
  *
- *	╩к═¤есетеъ┤╔═¤ете╕ехб╝еы
+ *	чЙйчРЖуГбуГвуГкчобчРЖуГвуВ╕уГеуГ╝уГл
  *
- *	д│д╬е╒ебедеыд╟д╧есетеъдЄе┌б╝е╕├▒░╠д╟┤╔═¤д╖д╞дддыбг
+ *	уБУуБоуГХуВбуВдуГлуБзуБпуГбуГвуГкуВТуГЪуГ╝уВ╕хНШф╜НуБзчобчРЖуБЧуБжуБДуВЛуАВ
  *
  */
 
@@ -26,16 +26,16 @@ Version 2, June 1991
 #include "misc.h"
 #include "config_boot.h"
 
-/* memory_map: 0x80000000 длдщ║╟┬ч 128 M bytes ╩мд╬есетеъ╬╬░шдЄ┤╔═¤д╣ды
- *  д┐д└д╖║╟╜щд╬ 1M д╚╝■╩╒│╦дЄ╞╔д▀╣■дєд└╔Ї╩мд╦д─ддд╞д╧┤╔═¤д╖д╩ддбг
+/* memory_map: 0x80000000 уБЛуВЙцЬАхдз 128 M bytes хИЖуБоуГбуГвуГкщаШхЯЯуВТчобчРЖуБЩуВЛ
+ *  уБЯуБауБЧцЬАхИЭуБо 1M уБихСиш╛║ца╕уВТшкнуБ┐ш╛╝уВУуБащГихИЖуБлуБдуБДуБжуБпчобчРЖуБЧуБкуБДуАВ
  */
 
 #define BITS	8
 static UB memory_map[MAX_MEMORY_MAP_SIZE / BITS];
 
-unsigned int physmem_max;	/* ╩к═¤есетеъд╬║╟┬ч╬╠ (base_mem + ext_mem) */
-unsigned int base_mem;		/* ▓╝░╠д╦двдыесетеъд╬е╡еде║ (PC9801 д╬╛ь╣ч 640K) */
-unsigned int ext_mem;		/* │╚─еесетеъд╬е╡еде║ */
+unsigned int physmem_max;	/* чЙйчРЖуГбуГвуГкуБоцЬАхдзщЗП (base_mem + ext_mem) */
+unsigned int base_mem;		/* ф╕Лф╜НуБлуБВуВЛуГбуГвуГкуБоуВ╡уВдуВ║ (PC9801 уБоха┤хРИ 640K) */
+unsigned int ext_mem;		/* цЛбх╝╡уГбуГвуГкуБоуВ╡уВдуВ║ */
 static UW free_mem = 0;
 
 static UW memory_map_size;
@@ -122,7 +122,7 @@ void pmem_init(void)
 	memory_map[i] = MEM_FREE;
     }
 
-    /* ║╟╜щд╬ RESERVED_PAGES ╩м (1M) д╧бв┤╔═¤д╖д╩дд */
+    /* цЬАхИЭуБо RESERVED_PAGES хИЖ (1M) уБпуАБчобчРЖуБЧуБкуБД */
 #ifdef notdef
     for (i = 0; i < RESERVED_PAGES; i++) {
 	memory_map[i] = MEM_USE;
@@ -132,14 +132,14 @@ void pmem_init(void)
 #endif
 
 #ifdef notdef
-    /* д╜д╖д╞ VRAM д╬╬╬░шдт┤╔═¤д╖д╩дд */
+    /* уБЭуБЧуБж VRAM уБощаШхЯЯуВВчобчРЖуБЧуБкуБД */
     for (i = (VRAM_MEM_START / PAGE_SIZE); i <= (VRAM_MEM_END / PAGE_SIZE);
 	 i++) {
 	memory_map[i] = MEM_USE;
     }
 #endif				/* notdef */
 
-    /* boot дм╞╔д▀╣■дєд└ITRON д╚ ╝■╩╒│╦д╬╩мд╬╬╬░шдЄе╒еъб╝еъе╣е╚длдщ▓Є╜№д╣ды */
+    /* boot уБМшкнуБ┐ш╛╝уВУуБаITRON уБи хСиш╛║ца╕уБохИЖуБощаШхЯЯуВТуГХуГкуГ╝уГкуВ╣уГИуБЛуВЙшзгщЩдуБЩуВЛ */
 #if 0
     printk("release: ");
 #endif
@@ -198,9 +198,9 @@ void pmem_init(void)
 #endif
 }
 
-/* palloc --- ╩к═¤есетеъдЄ╧в┬│д╖д╞евеэе▒б╝е╚д╣дыбг
+/* palloc --- чЙйчРЖуГбуГвуГкуВТщАгч╢ЪуБЧуБжуВвуГнуВ▒уГ╝уГИуБЩуВЛуАВ
  *
- * ░·┐Їд╧евеэе▒б╝е╚д╣дые╡еде║дЄ╗╪─ъд╣дыбг├▒░╠д╧бве┌б╝е╕┐Їд╟двдыбг
+ * х╝ХцХ░уБпуВвуГнуВ▒уГ╝уГИуБЩуВЛуВ╡уВдуВ║уВТцМЗхоЪуБЩуВЛуАВхНШф╜НуБпуАБуГЪуГ╝уВ╕цХ░уБзуБВуВЛуАВ
  */
 VP palloc(W size)
 {
@@ -249,7 +249,7 @@ VP palloc(W size)
 	    return (NULL);
 	}
     } else {
-	/* BITS е┌б╝е╕├▒░╠д╟│фдъ╔╒д▒дыдщдьды░╠├╓дЄ├╡д╣ */
+	/* BITS уГЪуГ╝уВ╕хНШф╜НуБзхЙ▓уВКф╗ШуБСуВЛуВЙуВМуВЛф╜Нч╜оуВТцОвуБЩ */
 	found = 0;
 	bsize = ROUNDUP(size, BITS) / BITS;
 	for (i = byte_free; i < memory_map_size - bsize + 1; ++i) {

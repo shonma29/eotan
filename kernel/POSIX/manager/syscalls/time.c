@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -22,7 +22,7 @@ Version 2, June 1991
 #define MS 1000
 #define BTRON_OFFSET	473353200L
 
-/* gettimeofday ¤È¤·¤ÆÆ°ºî¤¹¤ë */
+/* gettimeofday ã¨ã—ã¦å‹•ä½œã™ã‚‹ */
 
 UW get_system_time(UW * usec)
 {

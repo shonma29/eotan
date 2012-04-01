@@ -1,5 +1,5 @@
 /*
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
 
@@ -11,7 +11,7 @@ Version 2, June 1991
 
 /*
 ** Function: get_tod
-** Description: ÆüÉÕ»ş¹ï¤ÎÀßÄê/ÊÑ´¹
+** Description: æ—¥ä»˜æ™‚åˆ»ã®è¨­å®š/å¤‰æ›
 */
 
 ER

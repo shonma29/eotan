@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -38,8 +38,8 @@ void check_wconsole()
 
 ER graphic_mode(void)
 {
-    DDEV_REQ req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-    DDEV_RES res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+    DDEV_REQ req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+    DDEV_RES res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
     W rsize;
     ER error;
     ID recv;
@@ -69,8 +69,8 @@ ER graphic_mode(void)
 
 ER text_mode(void)
 {
-    DDEV_REQ req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-    DDEV_RES res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+    DDEV_REQ req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+    DDEV_RES res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
     W rsize;
     ER error;
     ID recv;
@@ -104,8 +104,8 @@ ER text_mode(void)
 ER box_vga(int x, int y, int width, int height, int color, int mode)
 {
     struct gr_box_t *param;
-    DDEV_REQ req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-    DDEV_RES res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+    DDEV_REQ req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+    DDEV_RES res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
     W rsize;
     ER error;
     ID recv;
@@ -149,8 +149,8 @@ ER box_vga(int x, int y, int width, int height, int color, int mode)
 ER fillbox_vga(int x, int y, int width, int height, int color, int mode)
 {
     struct gr_fillbox_t *param;
-    DDEV_REQ req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-    DDEV_RES res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+    DDEV_REQ req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+    DDEV_RES res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
     W rsize;
     ER error;
     ID recv;
@@ -193,8 +193,8 @@ ER fillbox_vga(int x, int y, int width, int height, int color, int mode)
 ER circle_vga(int x, int y, int width, int height, int color, int mode)
 {
     struct gr_box_t *param;
-    DDEV_REQ req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-    DDEV_RES res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+    DDEV_REQ req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+    DDEV_RES res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
     W rsize;
     ER error;
     ID recv;
@@ -237,8 +237,8 @@ ER circle_vga(int x, int y, int width, int height, int color, int mode)
 ER point_vga(int x, int y, int color, int mode)
 {
     struct gr_point_t *param;
-    DDEV_REQ req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-    DDEV_RES res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+    DDEV_REQ req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+    DDEV_RES res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
     W rsize;
     ER error;
     ID recv;
@@ -279,8 +279,8 @@ ER point_vga(int x, int y, int color, int mode)
 ER line_vga(int x1, int y1, int x2, int y2, int color, int mode)
 {
     struct gr_line_t *param;
-    DDEV_REQ req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-    DDEV_RES res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+    DDEV_REQ req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+    DDEV_RES res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
     W rsize;
     ER error;
     ID recv;
@@ -322,8 +322,8 @@ ER line_vga(int x1, int y1, int x2, int y2, int color, int mode)
 ER ellipse_vga(int x, int y, int width, int height, int color, int mode)
 {
     struct gr_ellipse_t *param;
-    DDEV_REQ req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-    DDEV_RES res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+    DDEV_REQ req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+    DDEV_RES res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
     W rsize;
     ER error;
     ID recv;
@@ -366,8 +366,8 @@ ER
 fillellipse_vga(int x, int y, int width, int height, int color, int mode)
 {
     struct gr_ellipse_t *param;
-    DDEV_REQ req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-    DDEV_RES res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+    DDEV_REQ req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+    DDEV_RES res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
     W rsize;
     ER error;
     ID recv;
@@ -419,8 +419,8 @@ static unsigned char bit_bits[] = {
 ER set_background(int width, int height, unsigned char *bitmap)
 {
     struct gr_setbg_t *param;
-    DDEV_REQ req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-    DDEV_RES res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+    DDEV_REQ req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+    DDEV_RES res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
     W rsize;
     ER error;
     ID recv;
@@ -480,8 +480,8 @@ set_bitmap(int x, int y, int width, int height, int size,
 	   unsigned char *buf, int color, int bgcolor)
 {
     struct gr_setbitmap_t *param;
-    DDEV_REQ req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-    DDEV_RES res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+    DDEV_REQ req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+    DDEV_RES res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
     W rsize;
     ER error;
     ID recv;
@@ -536,8 +536,8 @@ spl_bitmap(int x, int y, int width, int height, int size,
 	   unsigned char *buf, int color)
 {
     struct gr_splbitmap_t *param;
-    DDEV_REQ req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-    DDEV_RES res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+    DDEV_REQ req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+    DDEV_RES res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
     W rsize;
     ER error;
     ID recv;
@@ -609,8 +609,8 @@ scroll_vga(int direc, int x, int y, int width, int height, int step,
 	   int color)
 {
     struct gr_scroll_t *param;
-    DDEV_REQ req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-    DDEV_RES res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+    DDEV_REQ req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+    DDEV_RES res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
     W rsize;
     ER error;
     ID recv;
@@ -648,8 +648,8 @@ scroll_vga(int direc, int x, int y, int width, int height, int step,
 
 ER kf_load(void)
 {
-    DDEV_REQ req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-    DDEV_RES res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+    DDEV_REQ req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+    DDEV_RES res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
     W rsize;
     ER error;
     ID recv;
@@ -678,8 +678,8 @@ ER kf_load(void)
 
 ER wd_load(char *file)
 {
-    DDEV_REQ req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-    DDEV_RES res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+    DDEV_REQ req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+    DDEV_RES res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
     W rsize;
     ER error;
     ID recv;
@@ -709,8 +709,8 @@ ER wd_load(char *file)
 
 ER wd_orig(void)
 {
-    DDEV_REQ req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-    DDEV_RES res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+    DDEV_REQ req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+    DDEV_RES res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
     W rsize;
     ER error;
     ID recv;

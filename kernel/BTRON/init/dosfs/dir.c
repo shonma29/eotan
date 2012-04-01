@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -14,7 +14,7 @@ Version 2, June 1991
 
 
 /*
- * root ¥Ç¥£¥ì¥¯¥È¥ê¤ÎÆÉ¤ß¼è¤ê
+ * root ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®èª­ã¿å–ã‚Š
  */
 ER
 init_rootdir (struct filesystem *fs)
@@ -57,7 +57,7 @@ init_rootdir (struct filesystem *fs)
 }
 
 /*
- * ¥Ç¥£¥ì¥¯¥È¥ê¾ğÊó¤ÎÆÃÄê¤Î¥¨¥ó¥È¥ê¤òÆÉ¤ß¼è¤ë
+ * ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªæƒ…å ±ã®ç‰¹å®šã®ã‚¨ãƒ³ãƒˆãƒªã‚’èª­ã¿å–ã‚‹
  */
 struct dos_direntry *
 get_direntry (struct dos_direntry *dir, W entry)
@@ -68,7 +68,7 @@ get_direntry (struct dos_direntry *dir, W entry)
 
 #ifdef notdef
 /*
- * ¥Ç¥£¥ì¥¯¥È¥ê¤Î¾ğÊó¤òÆÉ¤ß½Ğ¤¹¡£
+ * ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®æƒ…å ±ã‚’èª­ã¿å‡ºã™ã€‚
  *
  */
 struct dos_direntry *
@@ -87,7 +87,7 @@ read_dir (struct filesystem *fs, struct dos_direntry *dir, char *fname, W *count
       unsigned char	dentry[14];
       unsigned char	*p;
 
-      /* ¥Õ¥¡¥¤¥ëÌ¾¤òÀµµ¬²½¤·¤ÆÈæ³Ó */
+      /* ãƒ•ã‚¡ã‚¤ãƒ«åã‚’æ­£è¦åŒ–ã—ã¦æ¯”è¼ƒ */
       p = strnchr (dir[i].name, ' ', 8);
       if (p)
 	{
@@ -143,8 +143,8 @@ read_dir (struct filesystem *fs, struct dos_direntry *dir, char *fname, W *count
   printf ("dir->name = %s, dir->fatent = %d\n", dir->name, dir->fatent);
 #endif /* DEBUG */
 
-  /* FAT ¥¨¥ó¥È¥ê¤Î¥ê¥¹¥È¤òÃ©¤Ã¤Æ¡¢FAT ¥¨¥ó¥È¥ê¤Î¥«¥¦¥ó¥È¿ô¤òÊÖ¤¹¡£
-   * FAT ¥¨¥ó¥È¥ê¤Î¥ê¥¹¥È¤Ï 0x0fff ¤Ç½ªÎ»¤¹¤ë¤Î¤Ç¡¢¤½¤³¤Ş¤ÇÃ©¤ë¤³¤È¤Ë¤Ê¤ë¡£
+  /* FAT ã‚¨ãƒ³ãƒˆãƒªã®ãƒªã‚¹ãƒˆã‚’è¾¿ã£ã¦ã€FAT ã‚¨ãƒ³ãƒˆãƒªã®ã‚«ã‚¦ãƒ³ãƒˆæ•°ã‚’è¿”ã™ã€‚
+   * FAT ã‚¨ãƒ³ãƒˆãƒªã®ãƒªã‚¹ãƒˆã¯ 0x0fff ã§çµ‚äº†ã™ã‚‹ã®ã§ã€ãã“ã¾ã§è¾¿ã‚‹ã“ã¨ã«ãªã‚‹ã€‚
    */
   dirsize = DOS_CLUSTER_TO_BYTE (fs, fat_list_count (fs, dir->fatent));
   *count = dirsize / DOS_DIRENTRYSIZE;
@@ -162,7 +162,7 @@ read_dir (struct filesystem *fs, struct dos_direntry *dir, char *fname, W *count
 	  return (0);
 	}
       bzero (ret_dir, dirsize);
-      dos_read (fs, dir->fatent, dirsize, ret_dir);	/* ¥Ç¥£¥ì¥¯¥È¥ê¾ğÊó¤ÎÆÉ¤ß¼è¤ê */
+      dos_read (fs, dir->fatent, dirsize, ret_dir);	/* ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªæƒ…å ±ã®èª­ã¿å–ã‚Š */
 
       return (ret_dir);
     }

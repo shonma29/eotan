@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -52,7 +52,7 @@ int		device;
 
 
 /*
- * FAT ¥Ğ¥Ã¥Õ¥¡¤ÈFAT ¤Î¥¨¥ó¥È¥êÈÖ¹æ¤«¤é¤½¤ÎÆâÍÆ¤òÊÖ¤¹¡£
+ * FAT ãƒãƒƒãƒ•ã‚¡ã¨FAT ã®ã‚¨ãƒ³ãƒˆãƒªç•ªå·ã‹ã‚‰ãã®å†…å®¹ã‚’è¿”ã™ã€‚
  */
 int
 fat_to_entry (unsigned char *fatid, int entry)
@@ -61,19 +61,19 @@ fat_to_entry (unsigned char *fatid, int entry)
   unsigned int	*result;
 
   result = (int *)&(fatid[start]);
-  if ((entry % 2) == 0)		/* ¶ö¿ô¤Î¾ì¹ç */
+  if ((entry % 2) == 0)		/* å¶æ•°ã®å ´åˆ */
     {
       return (*result & 0xfff);
     }
-  else				/* ´ñ¿ô¤Î¾ì¹ç */
+  else				/* å¥‡æ•°ã®å ´åˆ */
     {
       return (*result >> 12) & 0xfff;
     }
 }	
 
 /* 
- * ¥Ç¥£¥¹¥¯¤ÎÀèÆ¬¤Ë¤¢¤ë fattable ¤ÎÆÉ¤ß¼è¤ê
- * ÆÉ¤ß¼è¤Ã¤¿ FAT ¾ğÊó¤Ï¡¢fattable ¤ËÆş¤ì¤ë¡£
+ * ãƒ‡ã‚£ã‚¹ã‚¯ã®å…ˆé ­ã«ã‚ã‚‹ fattable ã®èª­ã¿å–ã‚Š
+ * èª­ã¿å–ã£ãŸ FAT æƒ…å ±ã¯ã€fattable ã«å…¥ã‚Œã‚‹ã€‚
  *
  */
 make_fattable (unsigned char *fat)

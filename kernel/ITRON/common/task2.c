@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -57,7 +57,7 @@ tsk2_func (void)
   par_tsk2.addrmap = NULL;
   err = cre_tsk (2, &par_tsk2);
   printk ("call cre_tsk: error = %d\n", err);
-  err = sta_tsk (2, NULL);		/* ¥Æ¥¹¥ÈÍÑ¥¿¥¹¥¯¤Îµ¯Æ° */
+  err = sta_tsk (2, NULL);		/* ãƒ†ã‚¹ãƒˆç”¨ã‚¿ã‚¹ã‚¯ã®èµ·å‹• */
   printk ("call sta_tsk: error = %d\n", err);
   pk_flg.iflgptn = 1;
   pk_flg.flgatr = TA_WMUL;

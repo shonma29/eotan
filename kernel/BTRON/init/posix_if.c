@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -51,39 +51,39 @@ static char rcsid[] =
  * Modified for 'device descriptor'.
  *
  * Revision 1.10  1998/05/23 15:30:54  night
- * POSIX �����ФؤθƤӽФ����ޥ�ɤ� READ ���� READDIR ���ѹ���
+ * POSIX サーバへの呼び出しコマンドを READ から READDIR に変更。
  *
  * Revision 1.9  1998/02/24 14:05:52  night
- * posix_fork() �ν�����
- * �ǥХå��ѤΥץ���ʸ���ɲá�
- * �ҥץ������Υ������Υ����å��������� 10KB ���� 12 KB ��
- * �ѹ�(�ڡ��������˹�碌��)��
+ * posix_fork() の修正。
+ * デバッグ用のプリント文の追加。
+ * 子プロセスのタスクのスタックサイズを 10KB から 12 KB に
+ * 変更(ページ境界に合わせた)。
  *
  * Revision 1.8  1998/02/16 14:12:52  night
- * posix_fork () �ؿ����ɲá�
- * ���δؿ��ϡ�fork �����ƥॳ����ν����Υƥ��Ȥ�Ԥ������
- * �ؿ���
- * ���ޥ�� pfork ��¹Ԥ���Ȥ��˸ƤӽФ���롣
+ * posix_fork () 関数の追加。
+ * この関数は、fork システムコールの処理のテストを行うための
+ * 関数。
+ * コマンド pfork を実行するときに呼び出される。
  *
  * Revision 1.7  1998/01/06 16:39:18  night
- * �쥯�����ȥѥ��åȤ˥��ޥ�ɾ������äƤ��ʤ��ä��Τǡ��ɲä�����
+ * レクエストパケットにコマンド情報が入っていなかったので、追加した。
  *
  * Revision 1.5  1997/10/11 16:20:15  night
- * �ե�����ν񤭹��߽����� lowlib ��𤵤ʤ��褦���ѹ���
+ * ファイルの書き込み処理を lowlib を介さないように変更。
  *
  * Revision 1.4  1997/09/09 13:49:30  night
- * posix_write �ؿ����ɲá�
+ * posix_write 関数を追加。
  *
  * Revision 1.3  1997/08/31 14:05:06  night
- * BOOT �� HD ����Ԥ�줿���ˤϡ���ưŪ�� POSIX �� root file system ��
- * ���ꤹ��褦�˽������ѹ�������
+ * BOOT が HD から行われた時には、自動的に POSIX の root file system を
+ * 設定するように処理を変更した。
  *
  * Revision 1.2  1997/07/09 15:00:42  night
- * ʸ�������ɤ� EUC ���ѹ���
- * posix_access() �� posix_newprocess() ���ɲá�
+ * 文字コードを EUC に変更。
+ * posix_access() と posix_newprocess() の追加。
  *
  * Revision 1.1  1997/07/07 12:18:56  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  *
  */
@@ -177,14 +177,14 @@ W posix_init(W root_device)
 	   posix_port, recv_port);
 #endif
 
-    /* ROOT �ե����륷���ƥ������
+    /* ROOT ファイルシステムの設定
      */
     error = posix_mountroot(root_device);
     if (error) {
 	return (E_SYS);
     }
 
-    /* init �ץ������ξ��������
+    /* init プロセスの情報の設定
      */
     req.receive_port = recv_port;
     req.msg_length = sizeof(res);
@@ -364,7 +364,7 @@ W posix_stat(W fileid, struct stat * st)
 #endif
 
 
-/* posix �Ķ���ư�����������ץ��������������롣
+/* posix 環境で動く、新しいプロセスを生成する。
  *
  *
  */
@@ -382,12 +382,12 @@ W posix_newprocess(B * program)
 	return (-1);
     }
 
-    /* lowlib ����إ�����������
+    /* lowlib 情報へアクセスする
      */
     lowlib_info = (struct posix_lowlib_info *) LOWLIB_INFO_ADDR;
 
 
-    /* posix �ץ�������¹Ԥ��� itron ������������
+    /* posix プロセスを実行する itron タスクの生成
      */
     if (posix_create_task(&procinfo, lowlib_info) < 0) {
 	printf("cannot create new tasks.\n");
@@ -406,7 +406,7 @@ W posix_newprocess(B * program)
 	return (-1);
     }
 
-    /* posix �ץ������Τ���β��۶��֤ξ�������
+    /* posix プロセスのための仮想空間の情報設定
      */
     procinfo.text_start = 0;
     procinfo.text_size = exec_info.a_text;;
@@ -417,20 +417,20 @@ W posix_newprocess(B * program)
     procinfo.stack_size = 10 * 1024;;
     procinfo.entry = exec_info.a_entry;
 
-    /* ���۶��֤κ���
+    /* 仮想空間の作成
      */
     if (posix_make_vm(&procinfo)) {
-	/* �����������������˴� 
+	/* 生成したタスクの破棄 
 	 */
 	return (-1);
     }
 
-    /* �����������۶��֤إץ����������Ƥ�������
+    /* 作成した仮想空間へプログラムの内容を満たす
      */
     posix_load_program(fileid, &procinfo);
 
 
-    /* �������򥹥����Ȥ���
+    /* タスクをスタートする
      */
     err = sta_tsk(procinfo.maintask, 0);
     if (err) {
@@ -449,23 +449,23 @@ W posix_newprocess(B * program)
 }
 
 
-/* posix �ץ����������ͤ��벾�۶��֤�������롣
- * �����������۶��֤ϡ��������˷�ӤĤ��롣
+/* posix プロセスが仕様する仮想空間を作成する。
+ * 作成した仮想空間は、タスクに結びつける。
  */
 static W posix_make_vm(struct posix_process *procinfo)
 {
-    /* �ޤ���main task �β��۶��֤��������
+    /* まず、main task の仮想空間を作成する
      */
 
 
-    /* �����������۶��֤� signal task �β��۶��֤�
-     * ��ͭ�����롣
+    /* 作成した仮想空間を signal task の仮想空間と
+     * 共有させる。
      */
 }
 
 
-/* POSIX �Ķ���ư���ץ������μ¹ԥ��᡼����
- * ���۶��֤˥����ɤ��롣
+/* POSIX 環境で動作するプログラムの実行イメージを
+ * 仮想空間にロードする。
  *
  */
 static W posix_load_program(W fileid, struct posix_process *procinfo)
@@ -474,7 +474,7 @@ static W posix_load_program(W fileid, struct posix_process *procinfo)
 }
 
 
-/* POSIX �ץ������μ¹Լ��ΤǤ��� ITRON ����������������
+/* POSIX プロセスの実行主体である ITRON タスクを生成する
  *
  */
 static W
@@ -571,7 +571,7 @@ W posix_fork(void *main_func, void *signal_func)
     static B page_buf[PAGE_SIZE];
 
 
-    /* main/signal ������������ 
+    /* main/signal タスクの生成 
      */
     bzero(&task_info, sizeof(task_info));
     task_info.tskatr = TA_HLNG;
@@ -626,7 +626,7 @@ W posix_fork(void *main_func, void *signal_func)
 	return (error);
     }
 
-    /* POSIX �ޥ͡�������Ф��ơ�fork ��å����������롣
+    /* POSIX マネージャに対して、fork メッセージを送る。
      */
     req.receive_port = recv_port;
     req.msg_length = sizeof(req);
@@ -676,7 +676,7 @@ W posix_fork(void *main_func, void *signal_func)
 	   signal_task);
     error = sta_tsk(main_task, 0);
     if (error) {
-	/* main task ����ư�Ǥ��ʤ��ä� */
+	/* main task が起動できなかった */
 	printf("cannot start task.\n");
 	del_tsk(main_task);
 	del_tsk(signal_task);

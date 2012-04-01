@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -35,20 +35,20 @@ struct dos_direntry
 };
 
 /*
- * ╔у╔║╔╓╔К╔╥╔╧╔ф╔Ю╔я╔И╔А║╪╔©╓н╥©╩Ф
+ * Ц┐∙Ц┌║Ц┌╓Ц┐╚Ц┌╥Ц┌╧Ц┐├Ц┐═Ц┐▒Ц┐╘Ц┐║Ц┐╪Ц┌©Ц│╝Е·▀Г╢≥
  */
 struct dos_fs_paramater
 {
-  W			magicid;		/* ╔ч╔╦╔ц╔╞╔й╔С╔п */
-  W			iplsize;		/* IPL ╓н╔ж╔М╔ц╔╞©Т */
-  W			fatsize;		/* FAT ╓н╔ж╔М╔ц╔╞©Т */
-  W			fatcount;		/* FAT ╓н©Т */
-  W			rootdirsize;		/* root ╔г╔ё╔Л╔╞╔х╔Й╓н╔╣╔╓╔╨(╔п╔╓╔х) */
-  W			rootdirentry;		/* root ╔г╔ё╔Л╔╞╔х╔Й╓к╢ч╓ч╓Л╓К╔╗╔С╔х╔Й©Т */
-  W			secsize;		/* ╔╩╔╞╔©╔╣╔╓╔╨ */
-  W			blocksize;		/* ╔ж╔М╔ц╔╞╔╣╔╓╔╨ */
-  W			clustersize;		/* ╔╞╔И╔╧╔©╔╣╔╓╔╨ (╔п╔╓╔х) */
-  W			cluster_sec;		/* ╔╞╔И╔╧╔©╔╣╔╓╔╨ (╔╩╔╞╔©) */
+  W			magicid;		/* Ц┐·Ц┌╦Ц┐┐Ц┌╞Ц┐┼Ц┐ЁЦ┐░ */
+  W			iplsize;		/* IPL Ц│╝Ц┐√Ц┐╜Ц┐┐Ц┌╞Ф∙╟ */
+  W			fatsize;		/* FAT Ц│╝Ц┐√Ц┐╜Ц┐┐Ц┌╞Ф∙╟ */
+  W			fatcount;		/* FAT Ц│╝Ф∙╟ */
+  W			rootdirsize;		/* root Ц┐┤Ц┌ёЦ┐╛Ц┌╞Ц┐┬Ц┐╙Ц│╝Ц┌╣Ц┌╓Ц┌╨(Ц┐░Ц┌╓Ц┐┬) */
+  W			rootdirentry;		/* root Ц┐┤Ц┌ёЦ┐╛Ц┌╞Ц┐┬Ц┐╙Ц│╚Е░╚Ц│╬Ц┌▄Ц┌▀Ц┌╗Ц┐ЁЦ┐┬Ц┐╙Ф∙╟ */
+  W			secsize;		/* Ц┌╩Ц┌╞Ц┌©Ц┌╣Ц┌╓Ц┌╨ */
+  W			blocksize;		/* Ц┐√Ц┐╜Ц┐┐Ц┌╞Ц┌╣Ц┌╓Ц┌╨ */
+  W			clustersize;		/* Ц┌╞Ц┐╘Ц┌╧Ц┌©Ц┌╣Ц┌╓Ц┌╨ (Ц┐░Ц┌╓Ц┐┬) */
+  W			cluster_sec;		/* Ц┌╞Ц┐╘Ц┌╧Ц┌©Ц┌╣Ц┌╓Ц┌╨ (Ц┌╩Ц┌╞Ц┌©) */
   W			track_sec;
   W			head_disk;
   W			sec_disk;

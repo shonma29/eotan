@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -37,7 +37,7 @@ struct boot
 struct dosfs	dosfs_table[1];
 
 /*
- * ¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥à¾ðÊó¤Î½é´ü²½
+ * ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ æƒ…å ±ã®åˆæœŸåŒ–
  *
  */
 W

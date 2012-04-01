@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -21,14 +21,14 @@ Version 2, June 1991
  * Minor modify. Function printf was renamed to boot_printf. Some cast was added. and so on.
  *
  * Revision 1.3  1997/06/29 13:13:46  night
- * HD ¤Î SFS ¥Õ¥©¡¼¥Ş¥Ã¥È¤µ¤ì¤¿¥Ñ¡¼¥Æ¥£¥·¥ç¥ó¤«¤é¤Î BTRON OS ¤ò¥í¡¼¥É¤Ç¤­¤ë
- * µ¡Ç½¤òÄÉ²Ã¡£
+ * HD ã® SFS ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆã•ã‚ŒãŸãƒ‘ãƒ¼ãƒ†ã‚£ã‚·ãƒ§ãƒ³ã‹ã‚‰ã® BTRON OS ã‚’ãƒ­ãƒ¼ãƒ‰ã§ãã‚‹
+ * æ©Ÿèƒ½ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.2  1996/11/20  12:08:09  night
- * ´ÖÀÜ¥Ö¥í¥Ã¥¯¤ËÂĞ±ş¤·¤¿¡£
+ * é–“æ¥ãƒ–ãƒ­ãƒƒã‚¯ã«å¯¾å¿œã—ãŸã€‚
  *
  * Revision 1.1  1996/11/13  16:30:15  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  *
@@ -40,7 +40,7 @@ Version 2, June 1991
 
 
 /*
- * POSIX ¤ÇÄêµÁ¤·¤Æ¤¤¤ë error ÈÖ¹æ
+ * POSIX ã§å®šç¾©ã—ã¦ã„ã‚‹ error ç•ªå·
  */
 #define E2BIG		1	/* Arg list too long */
 #define EACCESS		2	/* Permission denied */
@@ -116,7 +116,7 @@ struct sfs_superblock
   short		sfs_version_hi;
   short		sfs_version_lo;
   unsigned long	sfs_mountcount;
-  short		sfs_blocksize;		/* ¥Ö¥í¥Ã¥¯¥µ¥¤¥º */
+  short		sfs_blocksize;		/* ãƒ–ãƒ­ãƒƒã‚¯ã‚µã‚¤ã‚º */
 
   unsigned long	sfs_nblock;
   unsigned long	sfs_freeblock;
@@ -126,20 +126,20 @@ struct sfs_superblock
   unsigned long	sfs_ninode;
   unsigned long	sfs_freeinode;
 
-  unsigned long	sfs_isearch;		/* ¤³¤ÎÈÖ¹æ°Ê²¼¤Î inode ¤Ï»ÈÍÑÃæ */
-  unsigned long	sfs_bsearch;		/* ¤³¤ÎÈÖ¹æ°Ê²¼¤Î block ¤Ï»ÈÍÑÃæ */
+  unsigned long	sfs_isearch;		/* ã“ã®ç•ªå·ä»¥ä¸‹ã® inode ã¯ä½¿ç”¨ä¸­ */
+  unsigned long	sfs_bsearch;		/* ã“ã®ç•ªå·ä»¥ä¸‹ã® block ã¯ä½¿ç”¨ä¸­ */
 
-  unsigned long	sfs_datablock;		/* ¥Ç¡¼¥¿ÎÎ°è¤Î³«»Ï°ÌÃÖ¡£
-				 * inode ¤Ï¡¢¥¹¡¼¥Ñ¡¼¥Ö
-				 * ¥í¥Ã¥¯¤ÎÄ¾¸å¤Ë¤Ê¤ë¤Î¤Ç¡¢
-				 * ÆÃ¤Ëµ­Ï¿¤·¤Ê¤¤¡£*/
+  unsigned long	sfs_datablock;		/* ãƒ‡ãƒ¼ã‚¿é ˜åŸŸã®é–‹å§‹ä½ç½®ã€‚
+				 * inode ã¯ã€ã‚¹ãƒ¼ãƒ‘ãƒ¼ãƒ–
+				 * ãƒ­ãƒƒã‚¯ã®ç›´å¾Œã«ãªã‚‹ã®ã§ã€
+				 * ç‰¹ã«è¨˜éŒ²ã—ãªã„ã€‚*/
 };
 
 
 
 struct sfs_inode
 {
-  unsigned long	sfs_i_index;	/* SFS ¤Î¾ì¹ç¡¢inode ¤Ï 1 ¤«¤é¤Ï¤¸¤Ş¤ë */
+  unsigned long	sfs_i_index;	/* SFS ã®å ´åˆã€inode ã¯ 1 ã‹ã‚‰ã¯ã˜ã¾ã‚‹ */
   unsigned long	sfs_i_nlink;
   unsigned long	sfs_i_size;
   unsigned long	sfs_i_size_blk;
@@ -168,7 +168,7 @@ struct sfs_indirect
 
 struct sfs_dir
 {
-  unsigned long	sfs_d_index;		/* inode ÈÖ¹æ */
+  unsigned long	sfs_d_index;		/* inode ç•ªå· */
   unsigned char	sfs_d_name[SFS_MAXNAMELEN];
   unsigned char	pad[2];			/* padding */
 };

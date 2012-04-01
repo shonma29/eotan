@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -36,7 +36,7 @@ Version 2, June 1991
 
 #define IDE_BLOCK_SIZE		512
 #define IDE_MAX_PARTITION	4
-#define IDE_MAX_EXT_PARTITION	5	/* ³ÈÄ¥¥Ñ¡¼¥Æ¥£¥·¥ç¥ó¤ÎºÇÂç¿ô */
+#define IDE_MAX_EXT_PARTITION	5	/* æ‹¡å¼µãƒ‘ãƒ¼ãƒ†ã‚£ã‚·ãƒ§ãƒ³ã®æœ€å¤§æ•° */
 #define IDE_WHOLE_DISK		0
 #define MAX_UINT		(0xFFFFFFFFUL)
 #define IDE_USABLE_SIZE		(MAX_UINT/IDE_BLOCK_SIZE)
@@ -73,14 +73,14 @@ Version 2, June 1991
 
 
 /*
- * ¥Ç¥Ğ¥¤¥¹ÈÖ¹æ»ØÄê
+ * ãƒ‡ãƒã‚¤ã‚¹ç•ªå·æŒ‡å®š
  *
- * IDE ¤Î¥Ç¥Ğ¥¤¥¹ÈÖ¹æ¤Ï¡¢¼¡¤Î·Á¼°¤Ç´ÉÍı¤µ¤ì¤ë¡£
+ * IDE ã®ãƒ‡ãƒã‚¤ã‚¹ç•ªå·ã¯ã€æ¬¡ã®å½¢å¼ã§ç®¡ç†ã•ã‚Œã‚‹ã€‚
  *
  *
- * MSB ¤«¤é 16 bit ...... Ì¤»ÈÍÑ
- *           8 bit ...... ¥É¥é¥¤¥ÖÈÖ¹æ
- *           8 bit ...... ¥Ñ¡¼¥Æ¥£¥·¥ç¥óÈÖ¹æ (0 ¤¬Á´ÂÎ¡£1 ¤¬¥Ñ¡¼¥Æ¥£¥·¥ç¥ó1¤ò»Ø¤¹
+ * MSB ã‹ã‚‰ 16 bit ...... æœªä½¿ç”¨
+ *           8 bit ...... ãƒ‰ãƒ©ã‚¤ãƒ–ç•ªå·
+ *           8 bit ...... ãƒ‘ãƒ¼ãƒ†ã‚£ã‚·ãƒ§ãƒ³ç•ªå· (0 ãŒå…¨ä½“ã€‚1 ãŒãƒ‘ãƒ¼ãƒ†ã‚£ã‚·ãƒ§ãƒ³1ã‚’æŒ‡ã™
  *
  */
 #define IDE_GET_DRIVE(dd)	((dd & 0xff00) >> 8)
@@ -93,16 +93,16 @@ Version 2, June 1991
 
 /*********************************************************************
  *
- *	IDEC À©¸æÍÑÄê¿ô¤ÎÄêµÁ
+ *	IDEC åˆ¶å¾¡ç”¨å®šæ•°ã®å®šç¾©
  *
  */
 /*
- * ¥İ¡¼¥È¥¢¥É¥ì¥¹
+ * ãƒãƒ¼ãƒˆã‚¢ãƒ‰ãƒ¬ã‚¹
  */
 
 /*
- * ¥É¥é¥¤¥Ğ ¥¹¥Æ¡¼¥¿¥¹Äê¿ô
- *	¤³¤ì¤é¤ÎÄê¿ô¤Ï¡¢fd_data[] ¤Î status ¥á¥ó¥Ğ¤ËÆş¤ë¡£
+ * ãƒ‰ãƒ©ã‚¤ãƒ ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹å®šæ•°
+ *	ã“ã‚Œã‚‰ã®å®šæ•°ã¯ã€fd_data[] ã® status ãƒ¡ãƒ³ãƒã«å…¥ã‚‹ã€‚
  *
  */
 #define DRIVE_FREE		0x00
@@ -124,7 +124,7 @@ Version 2, June 1991
 #define IDE_COMMAND_REG		0x1f7
 #define IDE_ALT_STAT_REG	0x3f6
 #define IDE_CONTROL_REG		0x3f6
-#define IDE_ADDR_REG		0x3f7	/* ¥Ç¥£¥¸¥¿¥ë¥¤¥ó¥×¥Ã¥È¥ì¥¸¥¹¥¿ */
+#define IDE_ADDR_REG		0x3f7	/* ãƒ‡ã‚£ã‚¸ã‚¿ãƒ«ã‚¤ãƒ³ãƒ—ãƒƒãƒˆãƒ¬ã‚¸ã‚¹ã‚¿ */
 #define IDE_ERROR_REG		0x1f1
 #define IDE_DATA_REG		0x1f0
 #define IDE_FEATURE_REG		0x1f1
@@ -132,11 +132,11 @@ Version 2, June 1991
 #define IDE_SNUMBER_REG		0x1f3
 #define IDE_CYL_LOW_REG		0x1f4
 #define IDE_CYL_HIGH_REG	0x1f5
-#define IDE_DRIVE_REG		0x1f6	/* ¥É¥é¥¤¥Ö/¥Ø¥Ã¥É¥ì¥¸¥¹¥¿ */
+#define IDE_DRIVE_REG		0x1f6	/* ãƒ‰ãƒ©ã‚¤ãƒ–/ãƒ˜ãƒƒãƒ‰ãƒ¬ã‚¸ã‚¹ã‚¿ */
 
 #define	IDE_CMD_READ_INFO	0xEC
-#define IDE_CMD_READ		0x20	/* ¥ê¥È¥é¥¤¤¢¤ê */
-#define IDE_CMD_WRITE		0x30	/* ¥ê¥È¥é¥¤¤¢¤ê */
+#define IDE_CMD_READ		0x20	/* ãƒªãƒˆãƒ©ã‚¤ã‚ã‚Š */
+#define IDE_CMD_WRITE		0x30	/* ãƒªãƒˆãƒ©ã‚¤ã‚ã‚Š */
 #define IDE_CMD_VERIFY		0x40
 #define IDE_CMD_FORMAT		0x50
 #define IDE_CMD_SEEK		0x70
@@ -147,15 +147,15 @@ Version 2, June 1991
 #define IDE_CMD_STANDBY		0xE2
 #define IDE_CMD_STANDBYI	0xE0
 
-/* ¥¹¥Æ¡¼¥¿¥¹¡¦¥ì¥¸¥¹¥¿¤Î¥Õ¥é¥° */
+/* ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ãƒ»ãƒ¬ã‚¸ã‚¹ã‚¿ã®ãƒ•ãƒ©ã‚° */
 #define IDE_DRQ			0x08
 #define IDE_DRDY		0x40
 #define IDE_BSY			0x80
 #define IDE_ERR			0x01
 
-/* ¥Ç¥Ğ¥¤¥¹¡¦¥³¥ó¥È¥í¡¼¥ë¡¦¥ì¥¸¥¹¥¿¤Ë½ñ¤­¹ş¤àÌ¿Îá */
-#define IDE_nIEN		0x02 /* ³ä¹ş¤ß¶Ø»ß */
-#define IDE_SRST		0x04 /* ¥½¥Õ¥È¥¦¥§¥¢¥ê¥»¥Ã¥È */
+/* ãƒ‡ãƒã‚¤ã‚¹ãƒ»ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ãƒ»ãƒ¬ã‚¸ã‚¹ã‚¿ã«æ›¸ãè¾¼ã‚€å‘½ä»¤ */
+#define IDE_nIEN		0x02 /* å‰²è¾¼ã¿ç¦æ­¢ */
+#define IDE_SRST		0x04 /* ã‚½ãƒ•ãƒˆã‚¦ã‚§ã‚¢ãƒªã‚»ãƒƒãƒˆ */
 
 /* Control command */
 #define IDE_GET_STAT		0x01
@@ -193,14 +193,14 @@ struct ide_id
 
 struct spec
 {
-  B	*typename;	/* ¥¿¥¤¥×Ì¾; */
-  UW	head;		/* ¥Ø¥Ã¥É¤Î¿ô */
-  UW	cylinder;	/* ¥·¥ê¥ó¥À¿ô */
-  UW	sector;		/* ¥»¥¯¥¿¿ô / ¥È¥é¥Ã¥¯ */
-  UW	length;		/* ¥»¥¯¥¿Ä¹*/
-  UW	dtl;		/* ¥»¥¯¥¿Ä¹ (lencode = 0 ¤Î»ş¤Ë»ÈÍÑ)¡£»ÈÍÑ¤·¤Ê¤¤¾ì¹ç¤Ë¤Ï 0xFF */
-  UW	retry;		/* ºÇÂç¥ê¥È¥é¥¤¿ô */	
-  UW	powersave;	/* ¥Ñ¥ï¡¼¥»¡¼¥Ö¥â¡¼¥É */
+  B	*typename;	/* ã‚¿ã‚¤ãƒ—å; */
+  UW	head;		/* ãƒ˜ãƒƒãƒ‰ã®æ•° */
+  UW	cylinder;	/* ã‚·ãƒªãƒ³ãƒ€æ•° */
+  UW	sector;		/* ã‚»ã‚¯ã‚¿æ•° / ãƒˆãƒ©ãƒƒã‚¯ */
+  UW	length;		/* ã‚»ã‚¯ã‚¿é•·*/
+  UW	dtl;		/* ã‚»ã‚¯ã‚¿é•· (lencode = 0 ã®æ™‚ã«ä½¿ç”¨)ã€‚ä½¿ç”¨ã—ãªã„å ´åˆã«ã¯ 0xFF */
+  UW	retry;		/* æœ€å¤§ãƒªãƒˆãƒ©ã‚¤æ•° */	
+  UW	powersave;	/* ãƒ‘ãƒ¯ãƒ¼ã‚»ãƒ¼ãƒ–ãƒ¢ãƒ¼ãƒ‰ */
 };
 
 
@@ -216,9 +216,9 @@ struct ide_partition
   int	type;
 #else
   unsigned char		boot_flag;
-  unsigned char		begin[3];	/* CHS: »È¤ï¤Ê¤¤ */
+  unsigned char		begin[3];	/* CHS: ä½¿ã‚ãªã„ */
   unsigned char		type;
-  unsigned char		end[3];		/* CHS: »È¤ï¤Ê¤¤ */
+  unsigned char		end[3];		/* CHS: ä½¿ã‚ãªã„ */
   unsigned long		start;
   unsigned long		length;
 #endif
@@ -226,13 +226,13 @@ struct ide_partition
 
 
 /* ide.c */
-extern W    	init_ide(void);	/* ½é´ü²½		*/
-extern W    	open_ide();	/* ¥ª¡¼¥×¥ó		*/
-extern W  	close_ide();	/* ¥¯¥í¡¼¥º		*/
-extern W    	read_ide();	/* ÆÉ¤ß¹ş¤ß		*/
-extern W    	write_ide();	/* ½ñ¤­¹ş¤ß		*/
-extern W    	control_ide();	/* ¥³¥ó¥È¥í¡¼¥ë		*/
-extern W    	status_ide();	/* ¥¹¥Æ¡¼¥¿¥¹		*/
+extern W    	init_ide(void);	/* åˆæœŸåŒ–		*/
+extern W    	open_ide();	/* ã‚ªãƒ¼ãƒ—ãƒ³		*/
+extern W  	close_ide();	/* ã‚¯ãƒ­ãƒ¼ã‚º		*/
+extern W    	read_ide();	/* èª­ã¿è¾¼ã¿		*/
+extern W    	write_ide();	/* æ›¸ãè¾¼ã¿		*/
+extern W    	control_ide();	/* ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«		*/
+extern W    	status_ide();	/* ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹		*/
 extern W	ide_intr_flag;
 extern ER	read_partition (W drive);
 

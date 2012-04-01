@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -11,7 +11,7 @@ Version 2, June 1991
 
 */
 
-/* posix_proc.h - POSIX �ץ���������
+/* posix_proc.h - POSIX プロセス管理
  *
  *
  * $Log: posix_proc.h,v $
@@ -31,51 +31,51 @@ Version 2, June 1991
  * Source file cleaning for avoid warnings.
  *
  * Revision 1.11  1998/05/23 15:32:43  night
- * enum ����κǸ�����ǤˤĤ��Ƥ��� ',' ����������
- * (ANSI ��ʸˡ�Ǥϡ��Ǹ�����Ǥ� �ϡ�',' �ϤĤ����ʤ�)
+ * enum 宣言の最後の要素についていた ',' を削除した。
+ * (ANSI の文法では、最後の要素に は、',' はつけられない)
  *
  * Revision 1.10  1998/01/06 16:37:11  night
- * proc ��¤�Τ˥ץ��������ȤäƤ�������ΰ�ξ����ѤΥ���ȥ���ɲä�
- * ����
+ * proc 構造体にプロセスが使っているメモリ領域の情報用のエントリを追加し
+ * た。
  *
- * �ƥ������ΰ�
+ * テキスト領域
  * UW			text_start_addr;
  * UW			text_length;
  *
- * �ǡ����ΰ�
+ * データ領域
  * UW			data_start_addr;
  * UW			data_length;
  *
- * BSS �ΰ�
+ * BSS 領域
  * UW			bss_start_addr;
  * UW			bss_length;
  *
  * Revision 1.9  1997/12/17 14:16:21  night
- * �ؿ� fork() �ΰ����ѹ���ȼ�����ؿ��ץ��ȥ����פ��ѹ���
+ * 関数 fork() の引数変更に伴う、関数プロトタイプの変更。
  *
  * Revision 1.8  1997/10/24 13:59:26  night
- * enum proc_status ���ɲá�
- * �ؿ�������ɲá�
+ * enum proc_status の追加。
+ * 関数定義の追加。
  *
  * Revision 1.7  1997/10/23 14:32:33  night
- * exec �����ƥॳ����ط��ν����ι���
+ * exec システムコール関係の処理の更新
  *
  * Revision 1.6  1997/05/08 15:11:30  night
- * �ץ������ξ�������ꤹ�뵡ǽ���ɲá�
- * (syscall misc �� proc_set_info ���ޥ��)
+ * プロセスの情報を設定する機能の追加。
+ * (syscall misc の proc_set_info コマンド)
  *
  * Revision 1.5  1997/03/25 13:34:53  night
- * ELF �����μ¹ԥե�����ؤ��б�
+ * ELF 形式の実行ファイルへの対応
  *
  * Revision 1.4  1996/11/18  13:43:47  night
- * �ե����빽¤�Τ˥ե�����μ���(�̾�ե����뤫�ѥ��פ�)�򼨤���
- * f_flag ���ɲá�
+ * ファイル構造体にファイルの種類(通常ファイルかパイプか)を示す、
+ * f_flag を追加。
  *
  * Revision 1.3  1996/11/17  16:55:28  night
- * ʸ�������ɤ� EUC �ˤ�����
+ * 文字コードを EUC にした。
  *
  * Revision 1.2  1996/11/17  16:47:49  night
- * �ʲ������Ǥ��ɲ�
+ * 以下の要素を追加
  *
  *    struct proc		*proc_next;
  *    W			proc_euid;
@@ -83,7 +83,7 @@ Version 2, June 1991
  *    W			proc_umask;
  *
  * Revision 1.1  1996/11/14  13:18:15  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  *
  */
@@ -109,21 +109,21 @@ struct file
 
 enum proc_status
 {
-  PS_DORMANT,		/* ̤�������� */
-  PS_SLEEP,		/* sleep ���� */
-  PS_WAIT,		/* wait ���� */
-  PS_RUN,		/* run ���� */
-  PS_ZOMBIE		/* zombie ���� */
+  PS_DORMANT,		/* 未生成状態 */
+  PS_SLEEP,		/* sleep 状態 */
+  PS_WAIT,		/* wait 状態 */
+  PS_RUN,		/* run 状態 */
+  PS_ZOMBIE		/* zombie 状態 */
 };
 
 struct proc
 {
   struct proc		*proc_next;
 
-  enum proc_status	proc_status;		/* �ץ������ξ��֤򼨤� */
+  enum proc_status	proc_status;		/* プロセスの状態を示す */
 
-  ID			proc_maintask;		/* �ᥤ�󥿥��� */
-  ID			proc_signal_handler;	/* �����ʥ�ϥ�ɥ饿���� */
+  ID			proc_maintask;		/* メインタスク */
+  ID			proc_signal_handler;	/* シグナルハンドラタスク */
 
   W			proc_uid;
   W			proc_gid;
@@ -136,8 +136,8 @@ struct proc
   struct file		proc_open_file[MAX_OPEN];
 
   UW			proc_pid;		/* my process ID 
-						 * �����ͤ� 0 �ΤȤ��ϡ����Υ���ȥ�ϡ�
-						 * �ȤäƤ��ʤ���
+						 * この値が 0 のときは、このエントリは、
+						 * 使っていない。
 						 */
   
   UW			proc_ppid;		/* parent process ID */
@@ -148,8 +148,8 @@ struct proc
   UW			proc_rvpt;		/* receive_port */
  
 
-  struct vm_tree	*vm_tree;		/* ���۶��֤ξ��� 
-						 * ���ۥڡ�����ʪ���ڡ���/����å׾�����������
+  struct vm_tree	*vm_tree;		/* 仮想空間の情報 
+						 * 仮想ページと物理ページ/スワップ情報を管理する
 						 */
 
   UW			text_start_addr;

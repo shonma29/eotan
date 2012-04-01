@@ -1,58 +1,58 @@
 List of authors
 
 
-¤³¤Î¥Õ¥¡¥¤¥ë¤ÎÆâÍÆ¡§
+ã“ã®ãƒ•ã‚¡ã‚¤ãƒ«ã®å†…å®¹ï¼š
 
-¤³¤Î¥Õ¥¡¥¤¥ë¤Ë¤Ï¡¢B-Free OS »şÂå¤«¤é EOTA ¤Ë»ê¤ë¥½¡¼¥¹¤Îºî¼Ô¤Î°ìÍ÷¤¬½ñ
-¤¤¤Æ¤¢¤ê¤Ş¤¹¡£
-(Linux ¤Ç¤¤¤¦ /usr/src/linux/MAINTAINERS ¤ÈÆ±ÍÍ¤ÎÆâÍÆ¤Ç¤¹)
+ã“ã®ãƒ•ã‚¡ã‚¤ãƒ«ã«ã¯ã€B-Free OS æ™‚ä»£ã‹ã‚‰ EOTA ã«è‡³ã‚‹ã‚½ãƒ¼ã‚¹ã®ä½œè€…ã®ä¸€è¦§ãŒæ›¸
+ã„ã¦ã‚ã‚Šã¾ã™ã€‚
+(Linux ã§ã„ã† /usr/src/linux/MAINTAINERS ã¨åŒæ§˜ã®å†…å®¹ã§ã™)
 
-°ìÍ÷¤Î¹àÌÜ¤Î°ÕÌ£¤Ï¼¡¤Î¤È¤ª¤ê¡§
+ä¸€è¦§ã®é …ç›®ã®æ„å‘³ã¯æ¬¡ã®ã¨ãŠã‚Šï¼š
 
-	Name: ¥×¥í¥°¥é¥Ş¤ÎÌ¾Á°
-	Mail: Contact Àè¤Î¥á¥¤¥ë¥¢¥É¥ì¥¹
-	Web:  ¥½¡¼¥¹ÆâÍÆ¤Ë¤Ä¤¤¤Æ¤Î Web page ¤Î URL
+	Name: ãƒ—ãƒ­ã‚°ãƒ©ãƒã®åå‰
+	Mail: Contact å…ˆã®ãƒ¡ã‚¤ãƒ«ã‚¢ãƒ‰ãƒ¬ã‚¹
+	Web:  ã‚½ãƒ¼ã‚¹å†…å®¹ã«ã¤ã„ã¦ã® Web page ã® URL
 
 
 
-B-Free OS »şÂå
+B-Free OS æ™‚ä»£
 
 Script language interpreter, and other kernel modules.
-Name: Í¸Ãæ ²í¼ù
+Name: é‚‘ä¸­ é›…æ¨¹
 Mail: monaka@asahi-net.email.ne.jp
 
 Script language interpreter, and other kernel modules.
-Name: Ï²²Ö ÃÒ±Ñ (Tomohide Naniwa)
+Name: æµªèŠ± æ™ºè‹± (Tomohide Naniwa)
 Mail: naniwa@rbt.his.fukui-u.ac.jp
 
 SCSI and other driver
-Name: ¤­¤·¤À¤Ş¤µ¤ß (Masami Kishida)
+Name: ãã—ã ã¾ã•ã¿ (Masami Kishida)
 Mail: kishida0@osk.3web.ne.jp
 
 Sfsboot
-Name: Â¼ÅÄ Ä¾ºÈ (Naoya Murata)
+Name: æ‘ç”° ç›´å“‰ (Naoya Murata)
 Mail: imbellis@mbc.nifty.com
 Web: http://homepage1.nifty.com/micro/bfree/bfree.html
 
 Rest
-Name: ÆâÆ£ Î´°ì
+Name: å†…è—¤ éš†ä¸€
 Mail: night@tron-net.gr.jp
 
 
 EOTA
 
 Psaux and various debug
-Name: Â¼ÅÄ Ä¾ºÈ (Naoya Murata)
+Name: æ‘ç”° ç›´å“‰ (Naoya Murata)
 Mail: imbellis@mbc.nifty.com
 Web: http://homepage1.nifty.com/micro/index.html
 
 Rest
-Name: Ï²²Ö ÃÒ±Ñ (Tomohide Naniwa)
+Name: æµªèŠ± æ™ºè‹± (Tomohide Naniwa)
 Mail: naniwa@rbt.his.fukui-u.ac.jp
 Web: http://rbt.his.fukui-u.ac.jp/~naniwa/comp/OS/
 
 
 SPECIAL THANKS TO:
-Name: ÃæÀ¾ ¿µ (NAKANISHI Shin)
+Name: ä¸­è¥¿ æ… (NAKANISHI Shin)
 Mail: s-nakani@interlink.or.jp
 Web: http://home.interlink.or.jp/~s-nakani/doc/

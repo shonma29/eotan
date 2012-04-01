@@ -51,8 +51,8 @@ on_motor (BYTE drive)
 {
   int motor_bit, running;
 
-  motor_bit = 1 << drive;		/* Æ°¤«¤·¤¿¤¤ FD drive ÈÖ¹æ¤ò
-					   ¥Ó¥Ã¥È¥Þ¥Ã¥×¤ËÊÑ´¹ */
+  motor_bit = 1 << drive;		/* å‹•ã‹ã—ãŸã„ FD drive ç•ªå·ã‚’
+					   ãƒ“ãƒƒãƒˆãƒžãƒƒãƒ—ã«å¤‰æ› */
   running = motor_status & motor_bit;	/* nonzero if this motor is running */
   motor_goal = motor_status | motor_bit;/* want this drive running too */
 
@@ -85,7 +85,7 @@ stop_motor (BYTE drive)
 
 /************************************************************************
  * intr_fd
- * ¥Õ¥í¥Ã¥Ô¥£¥Ç¥£¥¹¥¯¤Î³ä¤ê¹þ¤ß½èÍý´Ø¿ô
+ * ãƒ•ãƒ­ãƒƒãƒ”ã‚£ãƒ‡ã‚£ã‚¹ã‚¯ã®å‰²ã‚Šè¾¼ã¿å‡¦ç†é–¢æ•°
  */
 void
 intr_fd (void)
@@ -97,7 +97,7 @@ intr_fd (void)
 
 /************************************************************************
  * write_fdc, write_commands 
- * fdc¤Ë¥³¥Þ¥ó¥É¤Î½ñ¤­¹þ¤ß¤ò¹Ô¤¦
+ * fdcã«ã‚³ãƒžãƒ³ãƒ‰ã®æ›¸ãè¾¼ã¿ã‚’è¡Œã†
  */
 void
 write_fdc (int value)
@@ -122,16 +122,16 @@ write_commands(int n, BYTE* buff)
 
   for(count = 0; count < 1000; count ++) {
 
-    status = inb(FDC_STAT);                  /* FDC¤¬non-busy¤Ë¤Ê¤ë¤Î¤òÂÔ¤Ä */
+    status = inb(FDC_STAT);                  /* FDCãŒnon-busyã«ãªã‚‹ã®ã‚’å¾…ã¤ */
     if((status & FDC_BUSY) == FDC_BUSY)
       continue;
         
-    for(i = 0; i < n; i++) {                 /* FDC¤Ë¥³¥Þ¥ó¥É¤òÆþÎÏ¤¹¤ë */
+    for(i = 0; i < n; i++) {                 /* FDCã«ã‚³ãƒžãƒ³ãƒ‰ã‚’å…¥åŠ›ã™ã‚‹ */
       write_fdc(buff[i]);
     }
-    return TRUE;                             /* Àµ¾ï½ªÎ» */
+    return TRUE;                             /* æ­£å¸¸çµ‚äº† */
   }
-  return FALSE;                              /* »þ´ÖÀÚ¤ì */ 
+  return FALSE;                              /* æ™‚é–“åˆ‡ã‚Œ */ 
 }
 
 /************************************************************************
@@ -193,13 +193,13 @@ fd_recalibrate (BYTE drive)
 {
   BYTE cbuff[2];
   
-  cbuff[0] = FDC_RECALIBRATE;                   /* ¥ê¥­¥ã¥ê¥Ö¥ì¡¼¥È */ 
+  cbuff[0] = FDC_RECALIBRATE;                   /* ãƒªã‚­ãƒ£ãƒªãƒ–ãƒ¬ãƒ¼ãƒˆ */ 
   cbuff[1] = drive;
   write_commands(2, cbuff);
 
-  intr_flag = FALSE;	                        /* ³ä¤ê¹þ¤ßÂÔ¤Á */
+  intr_flag = FALSE;	                        /* å‰²ã‚Šè¾¼ã¿å¾…ã¡ */
   wait_int (&intr_flag);               
-  fdc_isense ();                                /* ¼Â¹Ô·ë²Ì¤Î¼õ¼è */
+  fdc_isense ();                                /* å®Ÿè¡Œçµæžœã®å—å– */
 
   return (fd_status.status_data[0]);
 }
@@ -216,19 +216,19 @@ fd_seek (BYTE drive, int head, int cylinder, int motor)
 
   on_motor (0);
 
-  if(recalibrate_flag == FALSE) {               /* ½é²ó¤Î°ìÅÙ¤À¤±¥ê¥­¥ã¥ê¥Ö¥ì¡¼¥È¤¹¤ë */
+  if(recalibrate_flag == FALSE) {               /* åˆå›žã®ä¸€åº¦ã ã‘ãƒªã‚­ãƒ£ãƒªãƒ–ãƒ¬ãƒ¼ãƒˆã™ã‚‹ */
     fd_recalibrate(drive);
     recalibrate_flag = TRUE;
   }
 
-  cbuff[0] = FDC_SEEK;                          /* ¥·¡¼¥¯ */
+  cbuff[0] = FDC_SEEK;                          /* ã‚·ãƒ¼ã‚¯ */
   cbuff[1] = (head << 2) | (drive & 0x03);
   cbuff[2] = cylinder;
   write_commands(3, cbuff);
   
-  intr_flag = FALSE;                            /* ³ä¤ê¹þ¤ßÂÔ¤Á */
+  intr_flag = FALSE;                            /* å‰²ã‚Šè¾¼ã¿å¾…ã¡ */
   wait_int (&intr_flag);
-  fdc_isense ();                                /* ¼Â¹Ô·ë²Ì¤Î¼õ¼è */
+  fdc_isense ();                                /* å®Ÿè¡Œçµæžœã®å—å– */
 
   result = TRUE;
   if ((fd_status.status_data[0] & 0xF8) != 0x20) 
@@ -303,7 +303,7 @@ fdc_sense (void)
 
 /************************************************************************
  * fd_read_sector
- * cylinder, head, sector ¤Ç¼¨¤µ¤ì¤ë°ÌÃÖ¤«¤é 1 ¥»¥¯¥¿¡¼ buff ¤ËÆÉ¤ß¹þ¤à
+ * cylinder, head, sector ã§ç¤ºã•ã‚Œã‚‹ä½ç½®ã‹ã‚‰ 1 ã‚»ã‚¯ã‚¿ãƒ¼ buff ã«èª­ã¿è¾¼ã‚€
  */
 int
 fd_read_sector(BYTE drive, int cylinder, int head, int sector, BYTE* buff)
@@ -313,12 +313,12 @@ fd_read_sector(BYTE drive, int cylinder, int head, int sector, BYTE* buff)
   int s;
 
   for(i = 0; i < MAX_RETRY; i++) {
-    if(fd_seek(drive, head, cylinder, 0) == FALSE)               /* ¥·¡¼¥¯ */
+    if(fd_seek(drive, head, cylinder, 0) == FALSE)               /* ã‚·ãƒ¼ã‚¯ */
 	continue;
     
-    setup_dma((void*)FD_DMA_BUFF, DMA_READ, HD_LENGTH, DMA_MASK);      /* DMAÀßÄê */
+    setup_dma((void*)FD_DMA_BUFF, DMA_READ, HD_LENGTH, DMA_MASK);      /* DMAè¨­å®š */
     
-    cbuff[0] = FDC_READ;                                        /* ¥ê¡¼¥É */ 
+    cbuff[0] = FDC_READ;                                        /* ãƒªãƒ¼ãƒ‰ */ 
     cbuff[1] = (head << 2) | drive;
     cbuff[2] = cylinder;
     cbuff[3] = head;
@@ -330,36 +330,36 @@ fd_read_sector(BYTE drive, int cylinder, int head, int sector, BYTE* buff)
     write_commands(9, cbuff);
     
     intr_flag = FALSE;
-    wait_int (&intr_flag);                                      /* ³ä¤ê¹þ¤ßÂÔ¤Á */
+    wait_int (&intr_flag);                                      /* å‰²ã‚Šè¾¼ã¿å¾…ã¡ */
 
-    if(fdc_sense () == FALSE)                                   /* ¥¨¥é¡¼¥Á¥§¥Ã¥¯ */
+    if(fdc_sense () == FALSE)                                   /* ã‚¨ãƒ©ãƒ¼ãƒã‚§ãƒƒã‚¯ */
       continue;
     if ((fd_status.status_data[0] & 0xF8) != 0x00) 
       continue;
     if ((fd_status.status_data[1] | fd_status.status_data[2]) != 0x00)
       continue;
 
-    s = fd_status.status_data[3] * HD_HEAD * HD_SECTOR                   /* ÆÉ¤ß¹þ¤ó¤À¥»¥¯¥¿¡¼¿ô¤ò·×»» */
+    s = fd_status.status_data[3] * HD_HEAD * HD_SECTOR                   /* èª­ã¿è¾¼ã‚“ã ã‚»ã‚¯ã‚¿ãƒ¼æ•°ã‚’è¨ˆç®— */
       + fd_status.status_data[4] * HD_SECTOR + fd_status.status_data[5]; 
     s = s - (cylinder * HD_HEAD * HD_SECTOR + head * HD_SECTOR + sector);     
     if (s  != 1) 
       continue;
     
     bcopy((void*)FD_DMA_BUFF, buff, HD_LENGTH);
-    return TRUE;                                                /* Àµ¾ï½ªÎ» */ 
+    return TRUE;                                                /* æ­£å¸¸çµ‚äº† */ 
   }
 
-  return FALSE;                                                 /* °Û¾ï½ªÎ» */
+  return FALSE;                                                 /* ç•°å¸¸çµ‚äº† */
 }
 
 /************************************************************************
  * fd_read
- * blockno ¤Ç¼¨¤µ¤ì¤ë°ÌÃÖ¤«¤é length ¥Ö¥í¥Ã¥¯ buff ¤ËÆÉ¤ß¹þ¤à 
+ * blockno ã§ç¤ºã•ã‚Œã‚‹ä½ç½®ã‹ã‚‰ length ãƒ–ãƒ­ãƒƒã‚¯ buff ã«èª­ã¿è¾¼ã‚€ 
  */
 int
 fd_read (int drive, int part, int blockno, BYTE *buff, int length)
 {
-  /* part ¤Ï¥À¥ß¡¼ */
+  /* part ã¯ãƒ€ãƒŸãƒ¼ */
 
 
   int	cylinder;

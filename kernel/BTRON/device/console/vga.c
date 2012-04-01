@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -36,7 +36,7 @@ Version 2, June 1991
  * JIS -> EUC kanji code convert
  *
  * Revision 1.12  2000/01/23 15:46:31  kishida0
- * ¥°¥é¥Õ¥£¥Ã¥¯²èÌÌ¤Î scroll µ¡Ç½¤òÄÉ²Ã¤·¤¿ (¤Ş¤À¥Ğ¥®¡¼¤Ê¤Î¤ÇÃí°Õ)
+ * ã‚°ãƒ©ãƒ•ã‚£ãƒƒã‚¯ç”»é¢ã® scroll æ©Ÿèƒ½ã‚’è¿½åŠ ã—ãŸ (ã¾ã ãƒã‚®ãƒ¼ãªã®ã§æ³¨æ„)
  *
  * Revision 1.11  1999/05/16 13:54:46  naniwa
  * modified ellipse_vga(), fillellipse_vga()
@@ -51,11 +51,11 @@ Version 2, June 1991
  * Speed up of fillbox_vga() and stick_bitmap(). Addition of stipple_bitmap().
  *
  * Revision 1.7  1999/03/08 14:05:37  night
- * ¥Ñ¥ì¥Ã¥È¥Æ¡¼¥Ö¥ë¤ÎÆâÍÆÊÑ¹¹¡£
- * Ï²²Ö(naniwa@mechgw.mech.yamaguchi-u.ac.jp) ¤«¤é¤Î»ØÅ¦¤Ë¤è¤ë½¤Àµ¡£
+ * ãƒ‘ãƒ¬ãƒƒãƒˆãƒ†ãƒ¼ãƒ–ãƒ«ã®å†…å®¹å¤‰æ›´ã€‚
+ * æµªèŠ±(naniwa@mechgw.mech.yamaguchi-u.ac.jp) ã‹ã‚‰ã®æŒ‡æ‘˜ã«ã‚ˆã‚‹ä¿®æ­£ã€‚
  * ---------------------------------------
- * frtm ¤Ë¥°¥é¥Õ¥£¥Ã¥¯¥¹ÍÑ¤Î¥ï¡¼¥É¤òÄÉ²Ã¤·¤Æ¤¤¤Æµ¤¤¬ÉÕ¤¤¤¿¤Î¤Ç¤¹¤¬¡¤
- * b-free-bc.0.0.40 ¤Ç¤Ï kernel/BTRON/device/console/vga.c ¤ÎÃæ¤Ç
+ * frtm ã«ã‚°ãƒ©ãƒ•ã‚£ãƒƒã‚¯ã‚¹ç”¨ã®ãƒ¯ãƒ¼ãƒ‰ã‚’è¿½åŠ ã—ã¦ã„ã¦æ°—ãŒä»˜ã„ãŸã®ã§ã™ãŒï¼Œ
+ * b-free-bc.0.0.40 ã§ã¯ kernel/BTRON/device/console/vga.c ã®ä¸­ã§
  *
  * struct palette text_palette, graph_palette =
  * {
@@ -63,9 +63,9 @@ Version 2, June 1991
  *   {0, 0,  42, 42,  0,  0, 21, 42, 21, 21, 63, 63, 21, 21, 63, 63},
  *   {0, 42, 0,  42,  0,  42, 0, 42, 21, 63, 21, 63, 21, 63, 21, 63}
  * };
- *                           ¢¬
- * ¤Ë¤è¤Ã¤Æ¿§¤ÎÄêµÁ¤ò¹Ô¤Ã¤Æ¤¤¤ë¤Î¤À¤È»×¤¤¤Ş¤¹¤¬¡¤Ìğ°õ¤ÎÉôÊ¬¤Î°Å¤¤²«¿§
- * ¤ÎÄêµÁ¤¬´Ö°ã¤Ã¤Æ¤¤¤ë¤ß¤¿¤¤¤Ç¤¹¡¥
+ *                           â†‘
+ * ã«ã‚ˆã£ã¦è‰²ã®å®šç¾©ã‚’è¡Œã£ã¦ã„ã‚‹ã®ã ã¨æ€ã„ã¾ã™ãŒï¼ŒçŸ¢å°ã®éƒ¨åˆ†ã®æš—ã„é»„è‰²
+ * ã®å®šç¾©ãŒé–“é•ã£ã¦ã„ã‚‹ã¿ãŸã„ã§ã™ï¼
  *
  * struct palette text_palette, graph_palette =
  * {
@@ -74,7 +74,7 @@ Version 2, June 1991
  *   {0, 42, 0,  42,  0,  42, 0, 42, 21, 63, 21, 63, 21, 63, 21, 63}
  * };
  *
- * ¤Ç¤Ï¤Ê¤¤¤Ç¤·¤ç¤¦¤«? ´û¤Ë½¤Àµ¤µ¤ì¤Æ¤¤¤¿¤é¿½¤·Ìõ¤¢¤ê¤Ş¤»¤ó¡¥
+ * ã§ã¯ãªã„ã§ã—ã‚‡ã†ã‹? æ—¢ã«ä¿®æ­£ã•ã‚Œã¦ã„ãŸã‚‰ç”³ã—è¨³ã‚ã‚Šã¾ã›ã‚“ï¼
  * ---------------------------------------
  *
  * Revision 1.6  1999/02/15 09:14:30  monaka
@@ -84,22 +84,22 @@ Version 2, June 1991
  * Commented out reference to 'hanko.xbm'
  *
  * Revision 1.4  1998/11/30 13:22:20  night
- * ¥Ğ¥Ã¥¯¥°¥é¥¦¥ó¥É¤ÎÉÁ²è¤ä¥Ó¥Ã¥È¥Ş¥Ã¥×¤ÎÉÁ²è»ş¤Ë alloca ¤ª¤è¤Ó malloc ¤ò
- * »È¤ï¤Ê¤¤¤è¤¦¤ËÊÑ¹¹¡£
- * ¤½¤ÎÂå¤ï¤ê¤Ë static ÊÑ¿ô copy_buffer ¤òÀë¸À¤·¡¢ÉÁ²è»ş¤Ë¤Ï¤³¤ÎÊÑ¿ô¤ò»È
- * ÍÑ¤¹¤ë¡£copy_buffer ¤Î¥µ¥¤¥º¤Ï¡¢¥Ş¥¯¥í MAX_PATTERN_SIZE ¤Ç»ØÄê¤·¤Æ¤¤¤ë¡£
- * (¥Ş¥¯¥í MAX_PATTERN_SIZE ¤Ï¡¢console_internal.h ¤ÇÄêµÁ¤·¤Æ¤¤¤ë)
+ * ãƒãƒƒã‚¯ã‚°ãƒ©ã‚¦ãƒ³ãƒ‰ã®æç”»ã‚„ãƒ“ãƒƒãƒˆãƒãƒƒãƒ—ã®æç”»æ™‚ã« alloca ãŠã‚ˆã³ malloc ã‚’
+ * ä½¿ã‚ãªã„ã‚ˆã†ã«å¤‰æ›´ã€‚
+ * ãã®ä»£ã‚ã‚Šã« static å¤‰æ•° copy_buffer ã‚’å®£è¨€ã—ã€æç”»æ™‚ã«ã¯ã“ã®å¤‰æ•°ã‚’ä½¿
+ * ç”¨ã™ã‚‹ã€‚copy_buffer ã®ã‚µã‚¤ã‚ºã¯ã€ãƒã‚¯ãƒ­ MAX_PATTERN_SIZE ã§æŒ‡å®šã—ã¦ã„ã‚‹ã€‚
+ * (ãƒã‚¯ãƒ­ MAX_PATTERN_SIZE ã¯ã€console_internal.h ã§å®šç¾©ã—ã¦ã„ã‚‹)
  *
  * Revision 1.3  1997/10/22 14:30:34  night
- * ¥Ó¥Ã¥È¥Ş¥Ã¥×ÉÁ²è»ş¡¢malloc ¤ò»È¤ï¤Ê¤¤¤è¤¦¤Ë¤·¤¿¡£
+ * ãƒ“ãƒƒãƒˆãƒãƒƒãƒ—æç”»æ™‚ã€malloc ã‚’ä½¿ã‚ãªã„ã‚ˆã†ã«ã—ãŸã€‚
  *
  * Revision 1.2  1997/09/21 13:31:25  night
- * kernlib ¤ÎÃæ¤Î malloc ¥é¥¤¥Ö¥é¥ê¤ò»ÈÍÑ¤·¤Ê¤¤¤è¤¦¤Ë¤·¤¿¡£
- * (malloc ¥é¥¤¥Ö¥é¥ê¤ò»È¤Ã¤Æ¤·¤Ş¤¦¤È¡¢console ¥É¥é¥¤¥ĞÍÑ¤Ë³ÎÊİ¤·¤Æ¤¤¤ë¥á
- * ¥â¥êÎÎ°è¤ò¥ª¡¼¥Ğ¡¼¤·¤Æ¤·¤Ş¤¦¤¿¤á)
+ * kernlib ã®ä¸­ã® malloc ãƒ©ã‚¤ãƒ–ãƒ©ãƒªã‚’ä½¿ç”¨ã—ãªã„ã‚ˆã†ã«ã—ãŸã€‚
+ * (malloc ãƒ©ã‚¤ãƒ–ãƒ©ãƒªã‚’ä½¿ã£ã¦ã—ã¾ã†ã¨ã€console ãƒ‰ãƒ©ã‚¤ãƒç”¨ã«ç¢ºä¿ã—ã¦ã„ã‚‹ãƒ¡
+ * ãƒ¢ãƒªé ˜åŸŸã‚’ã‚ªãƒ¼ãƒãƒ¼ã—ã¦ã—ã¾ã†ãŸã‚)
  *
  * Revision 1.1  1997/08/31 14:01:35  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  * 
@@ -114,10 +114,10 @@ static char rcsid[] =
 /*#include "hanko.xbm"*/
 
 
-static unsigned char copy_buffer[MAX_PATTERN_SIZE];	/* ¥Ğ¥Ã¥¯¥°¥é¥¦¥ó¥É¤ä¥Ñ¥¿¡¼¥ó¤Î¾ğÊó¤Î¥³¥Ô¡¼ÍÑ */
+static unsigned char copy_buffer[MAX_PATTERN_SIZE];	/* ãƒãƒƒã‚¯ã‚°ãƒ©ã‚¦ãƒ³ãƒ‰ã‚„ãƒ‘ã‚¿ãƒ¼ãƒ³ã®æƒ…å ±ã®ã‚³ãƒ”ãƒ¼ç”¨ */
 
 
-/* VGA system ¤ÎÀ©¸æ
+/* VGA system ã®åˆ¶å¾¡
  *
  */
 
@@ -138,7 +138,7 @@ struct palette {
 
 
 /****************************************
-  MODE 12H¤Î½é´ü¥Ç¡¼¥¿
+  MODE 12Hã®åˆæœŸãƒ‡ãƒ¼ã‚¿
 ****************************************/
 static struct vga_setup_info mode12 = {
     /* attr */
@@ -214,7 +214,7 @@ static unsigned char fontbuf2[8 * 1024];
 
 
 
-/* ¥°¥é¥Õ¥£¥Ã¥¯¥·¥¹¥Æ¥à¤ÎÁàºî´Ø¿ô(¥Æ¥¹¥ÈÍÑ)
+/* ã‚°ãƒ©ãƒ•ã‚£ãƒƒã‚¯ã‚·ã‚¹ãƒ†ãƒ ã®æ“ä½œé–¢æ•°(ãƒ†ã‚¹ãƒˆç”¨)
  *
  */
 void vga_graph(void)
@@ -233,7 +233,7 @@ void vga_graph(void)
 
     get_palette(&text_palette);
     set_palette(&graph_palette);
-    change_mode(&mode12);	/* VGA mode 12 ¤ËÊÑ¹¹ */
+    change_mode(&mode12);	/* VGA mode 12 ã«å¤‰æ›´ */
 
     outw(0x3CE, 0x0204);	/* VGAGRP_ADDR */
     q = (unsigned char *) 0x800A0000;
@@ -449,7 +449,7 @@ W graphic_command(ID caller, DDEV_CTL_REQ * packet)
 }
 
 
-/* VGA ¤Î¥ì¥¸¥¹¥¿¤Ø¾ğÊó¤ò½ñ¤­¹ş¤à 
+/* VGA ã®ãƒ¬ã‚¸ã‚¹ã‚¿ã¸æƒ…å ±ã‚’æ›¸ãè¾¼ã‚€ 
  */
 void write_vga_port(unsigned short *data, int length, unsigned int port)
 {
@@ -495,14 +495,14 @@ void save_register(struct vga_setup_info *info)
     inb(STATREG);
     outb(ATTRREG, 0x00);
 
-    /* Crt Controler¤ÎÀßÄê
+    /* Crt Controlerã®è¨­å®š
      */
     for (i = 0; i < 25; i++) {
 	outb(0x3D4, i);
 	info->crtc[i] = (inb(0x3D5) << 8) | i;
     }
 
-    /* Attribute Register¤ÎÀßÄê
+    /* Attribute Registerã®è¨­å®š
      */
     for (i = 0; i < 21; i++) {
 	inb(STATREG);
@@ -510,21 +510,21 @@ void save_register(struct vga_setup_info *info)
 	info->attr[i] = inb(0x3C1);
     }
 
-    /* Graphics register¤ÎÀßÄê
+    /* Graphics registerã®è¨­å®š
      */
     for (i = 0; i < 9; i++) {
 	outb(0x3CE, i);
 	info->gctrol[i] = (inb(0x3CF) << 8) | i;
     }
 
-    /* Sequence Register¤ÎÀßÄê
+    /* Sequence Registerã®è¨­å®š
      */
     for (i = 1; i < 5; i++) {
 	outb(0x3C4, i);
 	info->sequencer[i] = (inb(0x3C5) << 8) | i;
     }
 
-    /* Miscellaneus Register¤ÎÀßÄê
+    /* Miscellaneus Registerã®è¨­å®š
      */
     info->misc = inb(0x3CC);
 
@@ -533,7 +533,7 @@ void save_register(struct vga_setup_info *info)
     ena_int();
 }
 
-/* °ú¿ô¤Ç»ØÄê¤·¤¿²èÌÌ¥â¡¼¥É¤ØÊÑ¹¹
+/* å¼•æ•°ã§æŒ‡å®šã—ãŸç”»é¢ãƒ¢ãƒ¼ãƒ‰ã¸å¤‰æ›´
  */
 void change_mode(struct vga_setup_info *info)
 {
@@ -541,7 +541,7 @@ void change_mode(struct vga_setup_info *info)
 
     dis_int();
 
-    /* Attribute Register¤ÎÀßÄê
+    /* Attribute Registerã®è¨­å®š
      */
     inb(STATREG);
 
@@ -553,19 +553,19 @@ void change_mode(struct vga_setup_info *info)
     inb(STATREG);
     outb(ATTRREG, 0x20);
 
-    /* Miscellaneus Register¤ÎÀßÄê
+    /* Miscellaneus Registerã®è¨­å®š
      */
     outb(MISCREG, info->misc);
 
-    /* Sequence Register¤ÎÀßÄê
+    /* Sequence Registerã®è¨­å®š
      */
     write_vga_port(info->sequencer, 6, SEQUREG);
 
-    /* Graphics register¤ÎÀßÄê
+    /* Graphics registerã®è¨­å®š
      */
     write_vga_port(info->gctrol, 9, GRAPHREG);
 
-    /* Crt Controler¤ÎÀßÄê
+    /* Crt Controlerã®è¨­å®š
      */
     outw(CRTCREG, 0x0011);
     write_vga_port(info->crtc, 25, CRTCREG);
@@ -580,44 +580,44 @@ void change_mode(struct vga_setup_info *info)
 
 
 
-/* Á´²èÌÌ¤ÎÅÉ¤ê¤Ä¤Ö¤·¡Ê¾Ãµî¡Ë
+/* å…¨ç”»é¢ã®å¡—ã‚Šã¤ã¶ã—ï¼ˆæ¶ˆå»ï¼‰
  */
 void clear_vga(int color)
 {
     unsigned int i;
     unsigned char *gvram = (unsigned char *) VGA_VRAM_ADDRESS;
 
-    /* ½ñ¹ş¥â¡¼¥É¤ò£°¤Ë¤¹¤ë */
+    /* æ›¸è¾¼ãƒ¢ãƒ¼ãƒ‰ã‚’ï¼ã«ã™ã‚‹ */
     outw(VGA_GR_INDEX_PORT, VGA_MODE | VGA_WM0 << 8);
 
-    /* ÅÉ¤ê¤Ä¤Ö¤¹¿§¤òÀßÄê */
+    /* å¡—ã‚Šã¤ã¶ã™è‰²ã‚’è¨­å®š */
     outw(VGA_GR_INDEX_PORT, VGA_SET_RESET | (color & 0x0F) << 8);
 
-    /* Set/Reset ¥ì¥¸¥¹¥¿¤ÏÁ´¥×¥ì¡¼¥óÍ­¸ú */
+    /* Set/Reset ãƒ¬ã‚¸ã‚¹ã‚¿ã¯å…¨ãƒ—ãƒ¬ãƒ¼ãƒ³æœ‰åŠ¹ */
     outw(VGA_GR_INDEX_PORT,
 	 VGA_ENABLE_SET_RESET | (VGA_PLANE1 | VGA_PLANE2 | VGA_PLANE3 |
 				 VGA_PLANE4) << 8);
 
-    /* ¥Ó¥Ã¥È¥Ş¥¹¥¯¤ÏÌµ¤· */
+    /* ãƒ“ãƒƒãƒˆãƒã‚¹ã‚¯ã¯ç„¡ã— */
     outw(VGA_GR_INDEX_PORT, VGA_BIT_MASK | 0xFF << 8);
 
-    /* ÉÁ²è»ş¤Î±é»»¤Ï¾å½ñ¤­ */
+    /* æç”»æ™‚ã®æ¼”ç®—ã¯ä¸Šæ›¸ã */
     outw(VGA_GR_INDEX_PORT, VGA_FUNCTION | VGA_OVERWRITE << 8);
 
-    /* ÉÁ²è¤¹¤ë¥×¥ì¡¼¥ó¤òÁªÂò */
+    /* æç”»ã™ã‚‹ãƒ—ãƒ¬ãƒ¼ãƒ³ã‚’é¸æŠ */
     outw(VGA_SR_INDEX_PORT, SR_MAP_MASK | (ALL_PLANE << 8));
 
     for (i = 0; i < 80 * 480; i++) {
 	*gvram++ = 0;
-	/* ¤³¤³¤Ç½ñ¤­¹ş¤ó¤Ç¤¤¤ëÃÍ 0 ¤Ï¡¢VGA ¥³¥ó¥È¥í¡¼¥é¤Ï»²¾È¤·¤Ê¤¤¡£
-	 * Enable Set/Reset register ¤Ë¤è¤Ã¤Æ¡¢¤³¤ÎÃÍ¤ÏÌµ»ë¤¹¤ë¤è¤¦¤Ë
-	 * ¤Ê¤Ã¤Æ¤¤¤ë¡£
+	/* ã“ã“ã§æ›¸ãè¾¼ã‚“ã§ã„ã‚‹å€¤ 0 ã¯ã€VGA ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ã¯å‚ç…§ã—ãªã„ã€‚
+	 * Enable Set/Reset register ã«ã‚ˆã£ã¦ã€ã“ã®å€¤ã¯ç„¡è¦–ã™ã‚‹ã‚ˆã†ã«
+	 * ãªã£ã¦ã„ã‚‹ã€‚
 	 */
     }
 
 }
 
-/* stick_bitmap - ¥Ó¥Ã¥È¥Ş¥Ã¥×²èÁü¤ò²èÌÌ¤ËÄ¥¤ê¤Ä¤±¤ë
+/* stick_bitmap - ãƒ“ãƒƒãƒˆãƒãƒƒãƒ—ç”»åƒã‚’ç”»é¢ã«å¼µã‚Šã¤ã‘ã‚‹
  *
  */
 
@@ -659,7 +659,7 @@ stick_bitmap(int x, int y, int x_length, int y_length,
 
     if (x < 0 || y < 0) {
 	int xi, yi;
-	int width;		/* ËÜÅö¤Î x Éı */
+	int width;		/* æœ¬å½“ã® x å¹… */
 	int mask;
 
 	if (x + x_length < 0)
@@ -696,18 +696,18 @@ stick_bitmap(int x, int y, int x_length, int y_length,
     if (y + y_length >= 480)
 	y_length = 480 - y;
 
-    /* ½ñ¹ş¥â¡¼¥É¤ò£²¤Ë¤¹¤ë */
+    /* æ›¸è¾¼ãƒ¢ãƒ¼ãƒ‰ã‚’ï¼’ã«ã™ã‚‹ */
     outw(VGA_GR_INDEX_PORT, VGA_MODE | VGA_WM2 << 8);
-    /* ÉÁ²è»ş¤Î±é»»¤ÎÀßÄê */
+    /* æç”»æ™‚ã®æ¼”ç®—ã®è¨­å®š */
     outw(VGA_GR_INDEX_PORT, VGA_FUNCTION | VGA_OVERWRITE << 8);
-    /* ÉÁ²è¤¹¤ë¥×¥ì¡¼¥ó¤ÏÁ´¤ÆÍ­¸ú */
+    /* æç”»ã™ã‚‹ãƒ—ãƒ¬ãƒ¼ãƒ³ã¯å…¨ã¦æœ‰åŠ¹ */
     outw(VGA_SR_INDEX_PORT, SR_MAP_MASK | (ALL_PLANE << 8));
 
     pick_bitmap(bitmap, x_length, 0);
     for (i = y; i < (y + y_length); i++) {
 	w = xl;
 	gvram = (unsigned char *) (VGA_VRAM_ADDRESS + P2G(x / 8U, i));
-	/* ºÇ½é¤Î byte ¤Î½èÍı */
+	/* æœ€åˆã® byte ã®å‡¦ç† */
 	if ((j = x % 8) != 0) {
 	    mask = 0;
 	    mask2 = 0;
@@ -719,34 +719,34 @@ stick_bitmap(int x, int y, int x_length, int y_length,
 		mask2 <<= 1;
 		mask2 += 1;
 	    }
-	    /* ¥Ó¥Ã¥È¥Ş¥¹¥¯¤ÎÀßÄê */
+	    /* ãƒ“ãƒƒãƒˆãƒã‚¹ã‚¯ã®è¨­å®š */
 	    outw(VGA_GR_INDEX_PORT, VGA_BIT_MASK | mask << 8);
-	    /* ÉÁ²è */
+	    /* æç”» */
 	    vram_write(gvram, color);
-	    /* ¥Ó¥Ã¥È¥Ş¥¹¥¯¤ÎÀßÄê */
+	    /* ãƒ“ãƒƒãƒˆãƒã‚¹ã‚¯ã®è¨­å®š */
 	    outw(VGA_GR_INDEX_PORT, VGA_BIT_MASK | ((~mask) & mask2) << 8);
-	    /* ÉÁ²è */
+	    /* æç”» */
 	    vram_write(gvram++, bkcolor);
 	}
 
-	/* 8 bit Ã±°Ì¤Î½ñ¤­¹ş¤ß */
+	/* 8 bit å˜ä½ã®æ›¸ãè¾¼ã¿ */
 	while (w >= 8) {
 	    mask = 0;
 	    for (j = 0; j < 8; ++j) {
 		mask <<= 1;
 		mask += pick_bitmap(bitmap, xl, 1);
 	    }
-	    /* ¥Ó¥Ã¥È¥Ş¥¹¥¯¤ÎÀßÄê */
+	    /* ãƒ“ãƒƒãƒˆãƒã‚¹ã‚¯ã®è¨­å®š */
 	    outw(VGA_GR_INDEX_PORT, VGA_BIT_MASK | mask << 8);
 	    vram_write(gvram, color);
-	    /* ¥Ó¥Ã¥È¥Ş¥¹¥¯¤ÎÀßÄê */
+	    /* ãƒ“ãƒƒãƒˆãƒã‚¹ã‚¯ã®è¨­å®š */
 	    outw(VGA_GR_INDEX_PORT, VGA_BIT_MASK | (~mask) << 8);
-	    /* ÉÁ²è */
+	    /* æç”» */
 	    vram_write(gvram++, bkcolor);
 	    w -= 8;
 	}
 
-	/* »Ä¤ê¤Î½èÍı */
+	/* æ®‹ã‚Šã®å‡¦ç† */
 	if (w > 0) {
 	    mask = 0;
 	    mask2 = 0;
@@ -758,18 +758,18 @@ stick_bitmap(int x, int y, int x_length, int y_length,
 	    }
 	    mask <<= 8 - w;
 	    mask2 <<= 8 - w;
-	    /* ¥Ó¥Ã¥È¥Ş¥¹¥¯¤ÎÀßÄê */
+	    /* ãƒ“ãƒƒãƒˆãƒã‚¹ã‚¯ã®è¨­å®š */
 	    outw(VGA_GR_INDEX_PORT, VGA_BIT_MASK | mask << 8);
 	    vram_write(gvram, color);
-	    /* ¥Ó¥Ã¥È¥Ş¥¹¥¯¤ÎÀßÄê */
+	    /* ãƒ“ãƒƒãƒˆãƒã‚¹ã‚¯ã®è¨­å®š */
 	    outw(VGA_GR_INDEX_PORT, VGA_BIT_MASK | ((~mask) & mask2) << 8);
-	    /* ÉÁ²è */
+	    /* æç”» */
 	    vram_write(gvram, bkcolor);
 	}
     }
 }
 
-/* stipple_bitmap - ¥Ó¥Ã¥È¥Ş¥Ã¥×²èÁü¤ò²èÌÌ¤ËÄ¥¤ê¤Ä¤±¤ë¡¥ÇØ·Ê¤Ï¤½¤Î¤Ş¤Ş¡¥
+/* stipple_bitmap - ãƒ“ãƒƒãƒˆãƒãƒƒãƒ—ç”»åƒã‚’ç”»é¢ã«å¼µã‚Šã¤ã‘ã‚‹ï¼èƒŒæ™¯ã¯ãã®ã¾ã¾ï¼
  *
  */
 
@@ -784,7 +784,7 @@ stipple_bitmap(int x, int y, int x_length, int y_length,
 
     if (x < 0 || y < 0) {
 	int xi, yi;
-	int width;		/* ËÜÅö¤Î x Éı */
+	int width;		/* æœ¬å½“ã® x å¹… */
 	int mask;
 
 	if (x + x_length < 0)
@@ -818,18 +818,18 @@ stipple_bitmap(int x, int y, int x_length, int y_length,
     if (y + y_length >= 480)
 	y_length = 480 - y;
 
-    /* ½ñ¹ş¥â¡¼¥É¤ò£²¤Ë¤¹¤ë */
+    /* æ›¸è¾¼ãƒ¢ãƒ¼ãƒ‰ã‚’ï¼’ã«ã™ã‚‹ */
     outw(VGA_GR_INDEX_PORT, VGA_MODE | VGA_WM2 << 8);
-    /* ÉÁ²è»ş¤Î±é»»¤ÎÀßÄê */
+    /* æç”»æ™‚ã®æ¼”ç®—ã®è¨­å®š */
     outw(VGA_GR_INDEX_PORT, VGA_FUNCTION | VGA_OVERWRITE << 8);
-    /* ÉÁ²è¤¹¤ë¥×¥ì¡¼¥ó¤ÏÁ´¤ÆÍ­¸ú */
+    /* æç”»ã™ã‚‹ãƒ—ãƒ¬ãƒ¼ãƒ³ã¯å…¨ã¦æœ‰åŠ¹ */
     outw(VGA_SR_INDEX_PORT, SR_MAP_MASK | (ALL_PLANE << 8));
 
     pick_bitmap(bitmap, x_length, 0);
     for (i = y; i < (y + y_length); i++) {
 	w = xl;
 	gvram = (unsigned char *) (VGA_VRAM_ADDRESS + P2G(x / 8U, i));
-	/* ºÇ½é¤Î byte ¤Î½èÍı */
+	/* æœ€åˆã® byte ã®å‡¦ç† */
 	if ((j = x % 8) != 0) {
 	    mask = 0;
 	    for (k = 7 - j; k >= 0; --k) {
@@ -838,26 +838,26 @@ stipple_bitmap(int x, int y, int x_length, int y_length,
 		mask <<= 1;
 		mask += pick_bitmap(bitmap, xl, 1);
 	    }
-	    /* ¥Ó¥Ã¥È¥Ş¥¹¥¯¤ÎÀßÄê */
+	    /* ãƒ“ãƒƒãƒˆãƒã‚¹ã‚¯ã®è¨­å®š */
 	    outw(VGA_GR_INDEX_PORT, VGA_BIT_MASK | mask << 8);
-	    /* ÉÁ²è */
+	    /* æç”» */
 	    vram_write(gvram++, color);
 	}
 
-	/* 8 bit Ã±°Ì¤Î½ñ¤­¹ş¤ß */
+	/* 8 bit å˜ä½ã®æ›¸ãè¾¼ã¿ */
 	while (w >= 8) {
 	    mask = 0;
 	    for (j = 0; j < 8; ++j) {
 		mask <<= 1;
 		mask += pick_bitmap(bitmap, xl, 1);
 	    }
-	    /* ¥Ó¥Ã¥È¥Ş¥¹¥¯¤ÎÀßÄê */
+	    /* ãƒ“ãƒƒãƒˆãƒã‚¹ã‚¯ã®è¨­å®š */
 	    outw(VGA_GR_INDEX_PORT, VGA_BIT_MASK | mask << 8);
 	    vram_write(gvram++, color);
 	    w -= 8;
 	}
 
-	/* »Ä¤ê¤Î½èÍı */
+	/* æ®‹ã‚Šã®å‡¦ç† */
 	if (w > 0) {
 	    mask = 0;
 	    for (j = 0; j < w; ++j) {
@@ -865,7 +865,7 @@ stipple_bitmap(int x, int y, int x_length, int y_length,
 		mask += pick_bitmap(bitmap, xl, 1);
 	    }
 	    mask <<= 8 - w;
-	    /* ¥Ó¥Ã¥È¥Ş¥¹¥¯¤ÎÀßÄê */
+	    /* ãƒ“ãƒƒãƒˆãƒã‚¹ã‚¯ã®è¨­å®š */
 	    outw(VGA_GR_INDEX_PORT, VGA_BIT_MASK | mask << 8);
 	    vram_write(gvram, color);
 	}
@@ -874,16 +874,16 @@ stipple_bitmap(int x, int y, int x_length, int y_length,
 
 
 
-/* point_vga - Ç¤°Õ¤Î¥É¥Ã¥È¤ÎÉÁ²è
+/* point_vga - ä»»æ„ã®ãƒ‰ãƒƒãƒˆã®æç”»
  *
- * x = 		É½¼¨¤¹¤ë£ØºÂÉ¸¡Ê£°¡Á£¶£³£¹¡Ë
- * y =		É½¼¨¤¹¤ë£ÙºÂÉ¸¡Ê£°¡Á£´£·£¹¡Ë
- * color =  	¿§
- * mode  = 	±é»»¥Ñ¥é¥á¡¼¥¿
- * VGA_OVERWRITE ²èÌÌ¤Ë¾å½ñ¤­
- * VGA_AND       ²èÌÌ¤ÈÏÀÍıÀÑ±é»»¤¹¤ë
- * VGA_OR	 ²èÌÌ¤ÈÏÀÍıÏÂ±é»»¤¹¤ë
- * VGA_XOR	 ²èÌÌ¤ÈÇÓÂ¾ÅªÏÀÍıÏÂ±é»»¤¹¤ë
+ * x = 		è¡¨ç¤ºã™ã‚‹ï¼¸åº§æ¨™ï¼ˆï¼ã€œï¼–ï¼“ï¼™ï¼‰
+ * y =		è¡¨ç¤ºã™ã‚‹ï¼¹åº§æ¨™ï¼ˆï¼ã€œï¼”ï¼—ï¼™ï¼‰
+ * color =  	è‰²
+ * mode  = 	æ¼”ç®—ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
+ * VGA_OVERWRITE ç”»é¢ã«ä¸Šæ›¸ã
+ * VGA_AND       ç”»é¢ã¨è«–ç†ç©æ¼”ç®—ã™ã‚‹
+ * VGA_OR	 ç”»é¢ã¨è«–ç†å’Œæ¼”ç®—ã™ã‚‹
+ * VGA_XOR	 ç”»é¢ã¨æ’ä»–çš„è«–ç†å’Œæ¼”ç®—ã™ã‚‹
  */
 void point_vga(W x, W y, W color, W mode)
 {
@@ -892,24 +892,24 @@ void point_vga(W x, W y, W color, W mode)
     unsigned char mask = MakeMask(7 - (x % 8));
 
 
-    /* ½ñ¹ş¥â¡¼¥É¤ò£²¤Ë¤¹¤ë */
+    /* æ›¸è¾¼ãƒ¢ãƒ¼ãƒ‰ã‚’ï¼’ã«ã™ã‚‹ */
     outw(VGA_GR_INDEX_PORT, VGA_MODE | VGA_WM2 << 8);
 
-    /* ¥Ó¥Ã¥È¥Ş¥¹¥¯¤ÎÀßÄê */
+    /* ãƒ“ãƒƒãƒˆãƒã‚¹ã‚¯ã®è¨­å®š */
     outw(VGA_GR_INDEX_PORT, VGA_BIT_MASK | mask << 8);
 
-    /* ÉÁ²è»ş¤Î±é»»¤ÎÀßÄê */
+    /* æç”»æ™‚ã®æ¼”ç®—ã®è¨­å®š */
     outw(VGA_GR_INDEX_PORT, VGA_FUNCTION | mode << 8);
 
-    /* ÉÁ²è¤¹¤ë¥×¥ì¡¼¥ó¤ÏÁ´¤ÆÍ­¸ú */
+    /* æç”»ã™ã‚‹ãƒ—ãƒ¬ãƒ¼ãƒ³ã¯å…¨ã¦æœ‰åŠ¹ */
     outw(VGA_SR_INDEX_PORT, SR_MAP_MASK | (ALL_PLANE << 8));
 
-    /* ÉÁ²è */
+    /* æç”» */
     vram_write(gvram, color);
 }
 
 /*
- * ¥é¥¤¥ó¥ë¡¼¥Á¥ó
+ * ãƒ©ã‚¤ãƒ³ãƒ«ãƒ¼ãƒãƒ³
  *
  */
 void line_vga(W x1, W y1, W x2, W y2, W color, W mode)
@@ -1030,17 +1030,17 @@ void fillbox_vga(W x, W y, W width, W height, W color, W restop)
 	height = 480 - y;
     }
 
-    /* ½ñ¹ş¥â¡¼¥É¤ò£²¤Ë¤¹¤ë */
+    /* æ›¸è¾¼ãƒ¢ãƒ¼ãƒ‰ã‚’ï¼’ã«ã™ã‚‹ */
     outw(VGA_GR_INDEX_PORT, VGA_MODE | VGA_WM2 << 8);
-    /* ÉÁ²è»ş¤Î±é»»¤ÎÀßÄê */
+    /* æç”»æ™‚ã®æ¼”ç®—ã®è¨­å®š */
     outw(VGA_GR_INDEX_PORT, VGA_FUNCTION | restop << 8);
-    /* ÉÁ²è¤¹¤ë¥×¥ì¡¼¥ó¤ÏÁ´¤ÆÍ­¸ú */
+    /* æç”»ã™ã‚‹ãƒ—ãƒ¬ãƒ¼ãƒ³ã¯å…¨ã¦æœ‰åŠ¹ */
     outw(VGA_SR_INDEX_PORT, SR_MAP_MASK | (ALL_PLANE << 8));
 
     for (i = y; i < (y + height); i++) {
 	w = width;
 	gvram = (unsigned char *) (VGA_VRAM_ADDRESS + P2G(x / 8U, i));
-	/* ºÇ½é¤Î byte ¤Î½èÍı */
+	/* æœ€åˆã® byte ã®å‡¦ç† */
 	if ((j = x % 8) != 0) {
 	    mask = 0;
 	    for (k = 7 - j; k >= 0; --k) {
@@ -1048,28 +1048,28 @@ void fillbox_vga(W x, W y, W width, W height, W color, W restop)
 		    break;
 		mask |= MakeMask(k);
 	    }
-	    /* ¥Ó¥Ã¥È¥Ş¥¹¥¯¤ÎÀßÄê */
+	    /* ãƒ“ãƒƒãƒˆãƒã‚¹ã‚¯ã®è¨­å®š */
 	    outw(VGA_GR_INDEX_PORT, VGA_BIT_MASK | mask << 8);
-	    /* ÉÁ²è */
+	    /* æç”» */
 	    vram_write(gvram++, color);
 	}
 
-	/* 8 bit Ã±°Ì¤Î½ñ¤­¹ş¤ß */
+	/* 8 bit å˜ä½ã®æ›¸ãè¾¼ã¿ */
 	mask = 0xFF;
-	/* ¥Ó¥Ã¥È¥Ş¥¹¥¯¤ÎÀßÄê */
+	/* ãƒ“ãƒƒãƒˆãƒã‚¹ã‚¯ã®è¨­å®š */
 	outw(VGA_GR_INDEX_PORT, VGA_BIT_MASK | mask << 8);
 	while (w >= 8) {
 	    vram_write(gvram++, color);
 	    w -= 8;
 	}
 
-	/* »Ä¤ê¤Î½èÍı */
+	/* æ®‹ã‚Šã®å‡¦ç† */
 	if (w > 0) {
 	    mask = 0;
 	    for (; w > 0; --w) {
 		mask |= MakeMask(8 - w);
 	    }
-	    /* ¥Ó¥Ã¥È¥Ş¥¹¥¯¤ÎÀßÄê */
+	    /* ãƒ“ãƒƒãƒˆãƒã‚¹ã‚¯ã®è¨­å®š */
 	    outw(VGA_GR_INDEX_PORT, VGA_BIT_MASK | mask << 8);
 	    vram_write(gvram, color);
 	}

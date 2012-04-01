@@ -14,10 +14,10 @@ extern int ide_read_block_1k();
 
 /*********************************************************************
  * read_dev
- * ¥Ö¡¼¥È¥Ç¥Ğ¥¤¥¹¤«¤é¡¢¥Ö¥í¥Ã¥¯Ã±°Ì¤Ç¥Ç¡¼¥¿¤òÆÉ¤ß½Ğ¤¹
- *   start  : ³«»Ï¥Ö¥í¥Ã¥¯
- *   blockn : ¥Ö¥í¥Ã¥¯¿ô
- *   buff   : ÆÉ¤ß¤À¤·Àè
+ * ãƒ–ãƒ¼ãƒˆãƒ‡ãƒã‚¤ã‚¹ã‹ã‚‰ã€ãƒ–ãƒ­ãƒƒã‚¯å˜ä½ã§ãƒ‡ãƒ¼ã‚¿ã‚’èª­ã¿å‡ºã™
+ *   start  : é–‹å§‹ãƒ–ãƒ­ãƒƒã‚¯
+ *   blockn : ãƒ–ãƒ­ãƒƒã‚¯æ•°
+ *   buff   : èª­ã¿ã ã—å…ˆ
  */
 
 int
@@ -44,8 +44,8 @@ read_dev(int start, int blockn, char* buff)
 
 /*********************************************************************
  * mount_sfs
- * ¥Ö¡¼¥È¥Ç¥Ğ¥¤¥¹¤ò¥Ş¥¦¥ó¥È¤¹¤ë
- *   dev  :  ¥Ç¥Ğ¥¤¥¹ÈÖ¹æ
+ * ãƒ–ãƒ¼ãƒˆãƒ‡ãƒã‚¤ã‚¹ã‚’ãƒã‚¦ãƒ³ãƒˆã™ã‚‹
+ *   dev  :  ãƒ‡ãƒã‚¤ã‚¹ç•ªå·
  */
 
 int
@@ -58,19 +58,19 @@ mount_sfs(int dev)
 
   bcopy((char*)block_buff, (char*)&super_block, sizeof(struct sfs_superblock));
 
-  if(super_block.sfs_magic != SFS_MAGIC)           /* ¥Ş¥¸¥Ã¥¯¥Ê¥ó¥Ğ¡¼¤Î¥Á¥§¥Ã¥¯ */
+  if(super_block.sfs_magic != SFS_MAGIC)           /* ãƒã‚¸ãƒƒã‚¯ãƒŠãƒ³ãƒãƒ¼ã®ãƒã‚§ãƒƒã‚¯ */
     return -1;
 
-  indirect_block_buff.current = 0;                 /* ´ÖÀÜ¥Ö¥í¥Ã¥¯¥Ğ¥Ã¥Õ¥¡¤Î½é´ü²½ */
+  indirect_block_buff.current = 0;                 /* é–“æ¥ãƒ–ãƒ­ãƒƒã‚¯ãƒãƒƒãƒ•ã‚¡ã®åˆæœŸåŒ– */
 
   return 0;
 }
 
 /*********************************************************************
  * read_inode
- * i-node¤ò¼è¤ê½Ğ¤¹
- *   inodeno : i-nodeÈÖ¹æ
- *   inode   : ¥³¥Ô¡¼Àè
+ * i-nodeã‚’å–ã‚Šå‡ºã™
+ *   inodeno : i-nodeç•ªå·
+ *   inode   : ã‚³ãƒ”ãƒ¼å…ˆ
  */
 
 int
@@ -79,24 +79,24 @@ read_inode(int inodeno, struct sfs_inode* inode)
   int blockno;
   int offset;
  
-  offset = (inodeno -1) * sizeof(struct sfs_inode); /* i-node¥Ö¥í¥Ã¥¯¤ÎÀèÆ¬¤«¤é¤Î¥ª¥Õ¥»¥Ã¥È */
+  offset = (inodeno -1) * sizeof(struct sfs_inode); /* i-nodeãƒ–ãƒ­ãƒƒã‚¯ã®å…ˆé ­ã‹ã‚‰ã®ã‚ªãƒ•ã‚»ãƒƒãƒˆ */
   blockno = offset / SFS_BLOCK_SIZE + 2 
-    + super_block.sfs_bitmapsize;                   /* i-node¤¬´Ş¤Ş¤ì¤Æ¤¤¤ë¥Ö¥í¥Ã¥¯ÈÖ¹æ */
+    + super_block.sfs_bitmapsize;                   /* i-nodeãŒå«ã¾ã‚Œã¦ã„ã‚‹ãƒ–ãƒ­ãƒƒã‚¯ç•ªå· */
 
   if(read_dev(blockno, 1, block_buff) == -1)
     return -1;
 
-  offset = offset % SFS_BLOCK_SIZE;                 /* ¥Ö¥í¥Ã¥¯Æâ¤Ç¤Îi-node¤Î¥ª¥Õ¥»¥Ã¥È */ 
+  offset = offset % SFS_BLOCK_SIZE;                 /* ãƒ–ãƒ­ãƒƒã‚¯å†…ã§ã®i-nodeã®ã‚ªãƒ•ã‚»ãƒƒãƒˆ */ 
   bcopy(block_buff + offset, (char*)inode, sizeof(struct sfs_inode));
   return 0;
 }
 
 /*********************************************************************
  * read_file_block
- * ¥Ö¥í¥Ã¥¯Ã±°Ì¤Ç¥Õ¥¡¥¤¥ë¤òÆÉ¤ß½Ğ¤¹
- *   inode   : ¥Õ¥¡¥¤¥ë¤Îi-node
- *   blockno : ¥Ö¥í¥Ã¥¯ÈÖ¹æ
- *   buff    : ÆÉ¤ß¤À¤·Àè
+ * ãƒ–ãƒ­ãƒƒã‚¯å˜ä½ã§ãƒ•ã‚¡ã‚¤ãƒ«ã‚’èª­ã¿å‡ºã™
+ *   inode   : ãƒ•ã‚¡ã‚¤ãƒ«ã®i-node
+ *   blockno : ãƒ–ãƒ­ãƒƒã‚¯ç•ªå·
+ *   buff    : èª­ã¿ã ã—å…ˆ
  */
 
 int
@@ -108,12 +108,12 @@ read_file_block(struct sfs_inode* inode, int blockno, char* buff)
   if(inode->sfs_i_size_blk <= blockno)
     return -1;
 
-  if(blockno < SFS_DIRECT_BLOCK_ENTRY)                                       /* Ä¾ÀÜ¥Ö¥í¥Ã¥¯ */
+  if(blockno < SFS_DIRECT_BLOCK_ENTRY)                                       /* ç›´æ¥ãƒ–ãƒ­ãƒƒã‚¯ */
     return(read_dev(inode->sfs_i_direct[blockno], 1, buff));
   
   blockno = blockno - SFS_DIRECT_BLOCK_ENTRY;
 
-  if(blockno < SFS_INDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK) {              /* ´ÖÀÜ¥Ö¥í¥Ã¥¯ */
+  if(blockno < SFS_INDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK) {              /* é–“æ¥ãƒ–ãƒ­ãƒƒã‚¯ */
     indirect_block = inode->sfs_i_indirect[blockno / SFS_INDIRECT_BLOCK]; 
 
     if(indirect_block_buff.current != indirect_block) {
@@ -127,16 +127,16 @@ read_file_block(struct sfs_inode* inode, int blockno, char* buff)
     return size;
   }
 
-  return -1;                                                                  /* £²½Å´ÖÀÜ¥Ö¥í¥Ã¥¯ */
+  return -1;                                                                  /* ï¼’é‡é–“æ¥ãƒ–ãƒ­ãƒƒã‚¯ */
 }
 
 /*********************************************************************
  * read_file
- * ¥Ğ¥¤¥ÈÃ±°Ì¤Ç¥Õ¥¡¥¤¥ë¤òÆÉ¤ß½Ğ¤¹
- *   inode : ¥Õ¥¡¥¤¥ë¤Îi-node
- *   start : ÆÉ¤ß¤À¤·°ÌÃÖ
- *   size  : ¥µ¥¤¥º
- *   buff  : ÆÉ¤ß¤À¤·Àè    
+ * ãƒã‚¤ãƒˆå˜ä½ã§ãƒ•ã‚¡ã‚¤ãƒ«ã‚’èª­ã¿å‡ºã™
+ *   inode : ãƒ•ã‚¡ã‚¤ãƒ«ã®i-node
+ *   start : èª­ã¿ã ã—ä½ç½®
+ *   size  : ã‚µã‚¤ã‚º
+ *   buff  : èª­ã¿ã ã—å…ˆ    
  */
 
 int
@@ -168,10 +168,10 @@ read_file(struct sfs_inode* inode, int start , int size, char* buff)
 
 /*********************************************************************
  * lookup_file_local
- * lookup_file¤«¤é¸Æ¤Ğ¤ì¤ë¡£¥Ç¥£¥ì¥¯¥È¥ê¡¼Æâ¤Î¥Õ¥¡¥¤¥ë¤Îi-node¤òÊÖ¤¹
- *   filename     : ¥Õ¥¡¥¤¥ëÌ¾
- *   parent_inode : parent directry¤Îi-node 
- *   inode        : filename¤Îi-node¤Î¥³¥Ô¡¼Àè
+ * lookup_fileã‹ã‚‰å‘¼ã°ã‚Œã‚‹ã€‚ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªãƒ¼å†…ã®ãƒ•ã‚¡ã‚¤ãƒ«ã®i-nodeã‚’è¿”ã™
+ *   filename     : ãƒ•ã‚¡ã‚¤ãƒ«å
+ *   parent_inode : parent directryã®i-node 
+ *   inode        : filenameã®i-nodeã®ã‚³ãƒ”ãƒ¼å…ˆ
  */
 
 int
@@ -200,9 +200,9 @@ lookup_file_local(char* filename, struct sfs_inode* parent_inode, struct sfs_ino
 
 /*********************************************************************
  * lookup_file
- * ¥Õ¥¡¥¤¥ë¤Îi-node¤òÊÖ¤¹
- *   path  : ¥Õ¥¡¥¤¥ë¥Ñ¥¹
- *   inode : i-node¤Î¥³¥Ô¡¼Àè
+ * ãƒ•ã‚¡ã‚¤ãƒ«ã®i-nodeã‚’è¿”ã™
+ *   path  : ãƒ•ã‚¡ã‚¤ãƒ«ãƒ‘ã‚¹
+ *   inode : i-nodeã®ã‚³ãƒ”ãƒ¼å…ˆ
  */
 
 int
@@ -212,7 +212,7 @@ lookup_file(char* path, struct sfs_inode* inode)
   char name[SFS_MAXNAMELEN + 1];
   struct sfs_inode parent_inode;
 
-  if(read_inode(1, &parent_inode) == -1)                            /* '/'¤Îi-node¤òÆÀ¤ë */
+  if(read_inode(1, &parent_inode) == -1)                            /* '/'ã®i-nodeã‚’å¾—ã‚‹ */
     return -1;
 
 

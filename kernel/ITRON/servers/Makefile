@@ -6,8 +6,8 @@
 TARGET =	port-manager
 LOAD_POINT =	0x00010000
 ENTRY =		_main
-#LD = /usr/local/bin/ld		# ZIMAGE е┐еде╫д╬╝┬╣╘е╒ебедеыдЄ║ю└од╣ды
-				# д│д╚дмд╟днды LD дЄ╗╚джбг
+#LD = /usr/local/bin/ld		# ZIMAGE уВ┐уВдуГЧуБохоЯшбМуГХуВбуВдуГлуВТф╜ЬцИРуБЩуВЛ
+				# уБУуБиуБМуБзуБНуВЛ LD уВТф╜┐уБЖуАВ
 #LD=/usr/bin/ld
 LD=ld
 

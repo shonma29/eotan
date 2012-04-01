@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -15,7 +15,7 @@ Version 2, June 1991
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/manager/fork.c,v 1.15 2000/05/06 03:52:24 naniwa Exp $ */
 
 
-/* fork.c --- ¥×¥í¥»¥¹¤Î fork ¤ò¹Ô¤¦
+/* fork.c --- ãƒ—ãƒ­ã‚»ã‚¹ã® fork ã‚’è¡Œã†
  *
  *
  * $Log: fork.c,v $
@@ -50,20 +50,20 @@ Version 2, June 1991
  * printf() was renamed to printk().
  *
  * Revision 1.5  1998/02/24 14:12:48  night
- * ¥Ç¥Ğ¥Ã¥°ÍÑ¥×¥ê¥ó¥ÈÊ¸¤ÎÄÉ²Ã¡£
+ * ãƒ‡ãƒãƒƒã‚°ç”¨ãƒ—ãƒªãƒ³ãƒˆæ–‡ã®è¿½åŠ ã€‚
  *
  * Revision 1.4  1998/02/23 14:48:14  night
- * ¥Ç¥Ğ¥Ã¥°ÍÑ¥×¥ê¥ó¥ÈÊ¸¤ÎÄÉ²Ã¡£
+ * ãƒ‡ãƒãƒƒã‚°ç”¨ãƒ—ãƒªãƒ³ãƒˆæ–‡ã®è¿½åŠ ã€‚
  *
  * Revision 1.3  1998/02/16 14:21:31  night
- * ¥Ç¥Ğ¥Ã¥°ÍÑ¥×¥ê¥ó¥ÈÊ¸¤ÎÄÉ²Ã¡£
+ * ãƒ‡ãƒãƒƒã‚°ç”¨ãƒ—ãƒªãƒ³ãƒˆæ–‡ã®è¿½åŠ ã€‚
  *
  * Revision 1.2  1997/12/17 14:15:47  night
- * ´Ø¿ô fork() ¤ÎÃæ¿È¤òºî¤Ã¤¿¡£
- * ¤Ç¤â¤Ş¤À¡¢´°À®¤·¤Æ¤¤¤Ê¤¤¡£
+ * é–¢æ•° fork() ã®ä¸­èº«ã‚’ä½œã£ãŸã€‚
+ * ã§ã‚‚ã¾ã ã€å®Œæˆã—ã¦ã„ãªã„ã€‚
  *
  * Revision 1.1  1997/10/24 14:01:40  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  *
@@ -74,7 +74,7 @@ Version 2, June 1991
 
 
 
-/* fork - ¥×¥í¥»¥¹¤Î fork ¤ò¹Ô¤¦
+/* fork - ãƒ—ãƒ­ã‚»ã‚¹ã® fork ã‚’è¡Œã†
  *
  *
  */
@@ -92,7 +92,7 @@ W fork(struct proc *parent, W * childid, ID main_task, ID signal_task)
 	 __FILE__, __LINE__, parent, parent->vm_tree);	/* */
 #endif
 
-    /* ¿·¤·¤¯¥×¥í¥»¥¹¹½Â¤ÂÎ¤ò³ÎÊİ¤¹¤ë
+    /* æ–°ã—ããƒ—ãƒ­ã‚»ã‚¹æ§‹é€ ä½“ã‚’ç¢ºä¿ã™ã‚‹
      */
     errno = proc_alloc_proc(&newproc);
     if (errno) {
@@ -102,8 +102,8 @@ W fork(struct proc *parent, W * childid, ID main_task, ID signal_task)
     newproc->proc_maintask = main_task;
     newproc->proc_signal_handler = signal_task;
 
-    /* ¥×¥í¥»¥¹¾ğÊó¤Î¥³¥Ô¡¼ */
-    /* ´ÉÍı¾ğÊó (¥×¥í¥»¥¹¤ª¤è¤Ó¥Õ¥¡¥¤¥ë)¤Î¹¹¿· */
+    /* ãƒ—ãƒ­ã‚»ã‚¹æƒ…å ±ã®ã‚³ãƒ”ãƒ¼ */
+    /* ç®¡ç†æƒ…å ± (ãƒ—ãƒ­ã‚»ã‚¹ãŠã‚ˆã³ãƒ•ã‚¡ã‚¤ãƒ«)ã®æ›´æ–° */
 #ifdef FKDEBUG
     printk("fork(): parent = 0x%x, parent->vm_tree = 0x%x\n", parent, parent->vm_tree);	/* */
     printk("fork(): child = 0x%x, child->vm_tree = 0x%x\n", newproc, newproc->vm_tree);	/* */
@@ -138,10 +138,10 @@ W fork(struct proc *parent, W * childid, ID main_task, ID signal_task)
 
 
 
-/* proc_duplicate - ¥×¥í¥»¥¹¾ğÊó¤Î¥³¥Ô¡¼
+/* proc_duplicate - ãƒ—ãƒ­ã‚»ã‚¹æƒ…å ±ã®ã‚³ãƒ”ãƒ¼
  *
- *	Lowlib ¤Ë¤Ä¤¤¤Æ¤Î¾ğÊó¤Ï¡¢¸Æ¤Ó½Ğ¤·¤â¤È¤ÇÀßÄê¤·¤Æ¤¤¤ë¤Î¤ÇÉ¬Í×¤Ê¤¤¡£
- *	(¥¿¥¹¥¯¤Î¼Â¹Ô³«»Ï¥¢¥É¥ì¥¹¤Ï¡¢Lowlib Ãæ¤Î fork ÍÑ´Ø¿ô¤ËÀßÄê¤µ¤ì¤Æ¤¤¤ë)
+ *	Lowlib ã«ã¤ã„ã¦ã®æƒ…å ±ã¯ã€å‘¼ã³å‡ºã—ã‚‚ã¨ã§è¨­å®šã—ã¦ã„ã‚‹ã®ã§å¿…è¦ãªã„ã€‚
+ *	(ã‚¿ã‚¹ã‚¯ã®å®Ÿè¡Œé–‹å§‹ã‚¢ãƒ‰ãƒ¬ã‚¹ã¯ã€Lowlib ä¸­ã® fork ç”¨é–¢æ•°ã«è¨­å®šã•ã‚Œã¦ã„ã‚‹)
  *
  */
 W proc_duplicate(struct proc * source, struct proc * destination)
@@ -150,16 +150,16 @@ W proc_duplicate(struct proc * source, struct proc * destination)
     W index;
 
 
-    /* ¥×¥í¥»¥¹¤Î²¾ÁÛ¶õ´Ö¤Î¥³¥Ô¡¼
+    /* ãƒ—ãƒ­ã‚»ã‚¹ã®ä»®æƒ³ç©ºé–“ã®ã‚³ãƒ”ãƒ¼
 
-     *    ¿·¤·¤¯²¾ÁÛ¶õ´Ö¤òÀ¸À®¤·¡¢¥³¥Ô¡¼¸µ¤Î²¾ÁÛ¶õ´Ö¤«¤é¥Ç¡¼¥¿¤ò¥³¥Ô¡¼¤¹¤ë¡£
+     *    æ–°ã—ãä»®æƒ³ç©ºé–“ã‚’ç”Ÿæˆã—ã€ã‚³ãƒ”ãƒ¼å…ƒã®ä»®æƒ³ç©ºé–“ã‹ã‚‰ãƒ‡ãƒ¼ã‚¿ã‚’ã‚³ãƒ”ãƒ¼ã™ã‚‹ã€‚
      */
 
 #ifdef FKDEBUG
     printk("fork: proc_duplicate: (%s file, %d line)\n", __FILE__, __LINE__);	/* */
 #endif
 
-    /* region ¤Î¥³¥Ô¡¼ */
+    /* region ã®ã‚³ãƒ”ãƒ¼ */
     /* text */
     vdup_reg(source->proc_maintask, destination->proc_maintask, TEXT_REGION);
     /* data+bss */
@@ -171,10 +171,10 @@ W proc_duplicate(struct proc * source, struct proc * destination)
     vdup_reg(source->proc_maintask, destination->proc_maintask, STACK_REGION);
 #endif
 
-    /* ²¾ÁÛ¶õ´Ö¤ÎÀ¸À® */
+    /* ä»®æƒ³ç©ºé–“ã®ç”Ÿæˆ */
     errno = setup_vm_proc(destination);
     if (errno) {
-	/* ²¾ÁÛ¶õ´Ö¤ÎÀ¸À®¤Ë¼ºÇÔ¤·¤¿
+	/* ä»®æƒ³ç©ºé–“ã®ç”Ÿæˆã«å¤±æ•—ã—ãŸ
 	 */
 #ifdef FKDEBUG
 	printk("cannot create virtual memory space.\n");	/* */
@@ -186,10 +186,10 @@ W proc_duplicate(struct proc * source, struct proc * destination)
 	("fork: proc_duplicate: (parent = 0x%x, parent->vm_tree = 0x%x)\n",
 	 source, source->vm_tree);
 #endif
-    /* ¥×¥í¥»¥¹¤Î¤â¤Ä²¾ÁÛ¶õ´Ö¤Î¾ğÊó¤ò¥³¥Ô¡¼¤¹¤ë */
+    /* ãƒ—ãƒ­ã‚»ã‚¹ã®ã‚‚ã¤ä»®æƒ³ç©ºé–“ã®æƒ…å ±ã‚’ã‚³ãƒ”ãƒ¼ã™ã‚‹ */
     errno = duplicate_memory(source, destination);
     if (errno) {
-	/* ¥Ç¡¼¥¿¤Î¥³¥Ô¡¼¤Ë¼ºÇÔ¤·¤¿ */
+	/* ãƒ‡ãƒ¼ã‚¿ã®ã‚³ãƒ”ãƒ¼ã«å¤±æ•—ã—ãŸ */
 #ifdef FKDEBUG
 	printk("cannot duplicate memory\n");	/* */
 #endif
@@ -199,7 +199,7 @@ W proc_duplicate(struct proc * source, struct proc * destination)
     printk("fork: proc_duplicate: (%s file, %d line)\n", __FILE__, __LINE__);	/* */
 #endif
 
-    /* ¥ª¡¼¥×¥ó¥Õ¥¡¥¤¥ë¤Î¾ğÊó¤Î¥³¥Ô¡¼
+    /* ã‚ªãƒ¼ãƒ—ãƒ³ãƒ•ã‚¡ã‚¤ãƒ«ã®æƒ…å ±ã®ã‚³ãƒ”ãƒ¼
      */
     for (index = 0; index < MAX_OPEN; index++) {
 	if (source->proc_open_file[index].f_inode != NULL) {

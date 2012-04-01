@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -15,10 +15,10 @@ static char rcs[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/
 /* 
  * $Log: lowlib.c,v $
  * Revision 1.2  1997/05/08 15:10:06  night
- * �ե��������ʸ�������ɤ� SJIS ���� EUC ���ѹ�������
+ * ファイル内の文字コードを SJIS から EUC に変更した。
  *
  * Revision 1.1  1997/05/06 12:46:23  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  *
  */
@@ -27,11 +27,11 @@ static char rcs[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/
 
 
 
-/* TCP/IP �ޥ͡�����إ����������뤿��� LOWLIB ��
+/* TCP/IP マネージャへアクセスするための LOWLIB 層
  *
  */
 
-/* Lowlib ������Υ���������³���롣
+/* Lowlib を特定のタスクに接続する。
  */
 ER
 attach ()
@@ -39,7 +39,7 @@ attach ()
   
 }
 
-/* Lowlib �ؤ��׵�򥽥եȥ����������ߤˤƼ����Ȥ롣
+/* Lowlib への要求をソフトウェア割り込みにて受けとる。
  */
 ER
 entry ()

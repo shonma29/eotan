@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -15,7 +15,7 @@ Version 2, June 1991
 #ifndef __H_SEMAPHORE_H__
 #define __H_SEMAPHORE_H__	1
 
-/* ╔╩╔ч╔у╔╘╧╫б╓бн:
+/* Ц┌╩Ц┐·Ц┐∙Ц┌╘Ф╖▀И─═Д╫⌠:
  *
  */
 typedef struct semaphore_t

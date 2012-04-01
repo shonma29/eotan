@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -38,7 +38,7 @@ psc_mkdir_f (struct posix_request *req)
   errno = proc_alloc_fileid (req->procid, &fileid);
   if (errno)
     {
-      /* ¥á¥â¥ê¼èÆÀ¥¨¥é¡¼ */
+      /* ãƒ¡ãƒ¢ãƒªå–å¾—ã‚¨ãƒ©ãƒ¼ */
       put_response (req, EP_NOMEM, -1, 0, 0);
       return (FAIL);
     }
@@ -47,7 +47,7 @@ psc_mkdir_f (struct posix_request *req)
   pathname = alloca (req->param.par_creat.pathlen);
   if (pathname == NULL)
     {
-      /* ¥á¥â¥ê¼èÆÀ¥¨¥é¡¼ */
+      /* ãƒ¡ãƒ¢ãƒªå–å¾—ã‚¨ãƒ©ãƒ¼ */
       put_response (req, EP_NOMEM, -1, 0, 0);
       return (FAIL);
     }
@@ -57,7 +57,7 @@ psc_mkdir_f (struct posix_request *req)
 		    req->param.par_mkdir.pathlen + 1, pathname);
   if (errno)
     {
-      /* ¥Ñ¥¹Ì¾¤Î¥³¥Ô¡¼¥¨¥é¡¼ */
+      /* ãƒ‘ã‚¹åã®ã‚³ãƒ”ãƒ¼ã‚¨ãƒ©ãƒ¼ */
       if (errno == E_PAR)
 	put_response (req, EP_INVAL, -1, 0, 0);
       else
@@ -106,7 +106,7 @@ psc_mkdir_f (struct posix_request *req)
 		       &newip);
   if (errno)
     {
-      /* ¥Õ¥¡¥¤¥ë¤¬¥ª¡¼¥×¥ó¤Ç¤­¤Ê¤¤ */
+      /* ãƒ•ã‚¡ã‚¤ãƒ«ãŒã‚ªãƒ¼ãƒ—ãƒ³ã§ããªã„ */
       put_response (req, errno, -1, 0, 0);
       return (FAIL);
     }

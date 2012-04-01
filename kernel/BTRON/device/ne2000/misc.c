@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -16,16 +16,16 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 /*
  * $Log: misc.c,v $
  * Revision 1.4  1997/10/29 22:39:27  night
- * NE2000 ╔╒╔ю╔в╔©╓н SA_PROM ╓нфи╓ъ╪Х╓Й╫ХмЩ╓нди╡ц║ё
+ * NE2000 Ц┌╒Ц┐─Ц┐≈Ц┌©Ц│╝ SA_PROM Ц│╝Х╙╜Ц│©Е▐√Ц┌┼Е┤╕Г░├Ц│╝Х©╫Е┼═Ц─┌
  *
  * Revision 1.3  1997/10/28 12:44:42  night
- * ne2000_internal.h ╓н╔╓╔С╔╞╔К║╪╔ий╦╓нди╡ц║ё
+ * ne2000_internal.h Ц│╝Ц┌╓Ц┐ЁЦ┌╞Ц┐╚Ц┐╪Ц┐┴Ф√┤Ц│╝Х©╫Е┼═Ц─┌
  *
  * Revision 1.2  1997/05/17 10:41:15  night
- * ╔у╔║╔╓╔К╓нй╦╩З╔Ё║╪╔и╓Р SJIS ╓╚╓И EUC ╓кйя╧╧║ё
+ * Ц┐∙Ц┌║Ц┌╓Ц┐╚Ц│╝Ф√┤Е╜≈Ц┌ЁЦ┐╪Ц┐┴Ц┌▓ SJIS Ц│▀Ц┌┴ EUC Ц│╚Е╓┴Ф⌡╢Ц─┌
  *
  * Revision 1.1  1997/05/06 12:43:31  night
- * ╨г╫И╓непо©
+ * Ф°─Е┬²Ц│╝Г≥╩И▄╡
  *
  *
  */
@@ -47,7 +47,7 @@ static ER	vprintf (B *fmt, VP arg0);
 
 
 
-/* init_log - ╔М╔╟╫пно╣║╧╫╓Р╫И╢Э╡╫╓╧╓К
+/* init_log - Ц┐╜Ц┌╟Е┤╨Е┼⌡Ф╘÷Ф╖▀Ц┌▓Е┬²Ф°÷Е▄√Ц│≥Ц┌▀
  *
  *
  */
@@ -166,8 +166,8 @@ put_string (B *line, ID port)
 W 
 putc (int ch, ID port)
 {
-  DDEV_REQ		req;		/* мв╣А╔я╔╠╔ц╔х */
-  DDEV_RES		res;		/* йжеЗ╔я╔╠╔ц╔х */
+  DDEV_REQ		req;		/* Х╕│Ф╠┌Ц┐▒Ц┌╠Ц┐┐Ц┐┬ */
+  DDEV_RES		res;		/* Х©■Г╜■Ц┐▒Ц┌╠Ц┐┐Ц┐┬ */
   W			rsize;
   ER			error;
   W			i;
@@ -196,9 +196,9 @@ putc (int ch, ID port)
 
 
 
-/* _assert - ASSERT ╔ч╔╞╔М╓к╓Х╓ц╓ф╦ф╓с╫п╓╣╓Л╓К╢ь©Т
+/* _assert - ASSERT Ц┐·Ц┌╞Ц┐╜Ц│╚Ц┌┬Ц│ёЦ│╕Е▒╪Ц│ЁЕ┤╨Ц│∙Ц┌▄Ц┌▀И√╒Ф∙╟
  *
- * ╔А╔ц╔╩║╪╔╦╓Р╫пно╓╥║╒╔в╔М╔╟╔И╔Ю╓Р╫╙н╩╓╧╓К║ё
+ * Ц┐║Ц┐┐Ц┌╩Ц┐╪Ц┌╦Ц┌▓Е┤╨Е┼⌡Ц│≈Ц─│Ц┐≈Ц┐╜Ц┌╟Ц┐╘Ц┐═Ц┌▓Г╣┌Д╨├Ц│≥Ц┌▀Ц─┌
  *
  */ 
 void

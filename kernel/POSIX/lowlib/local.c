@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -17,7 +17,7 @@ static char rcsid[] = "$Id: local.c,v 1.2 1999/07/21 15:05:07 naniwa Exp $";
 #include "lowlib.h"
 
 
-/* ¥×¥í¥»¥¹¸ÇÍ­¤Î¾ğÊó¤ò´ÉÍı¤¹¤ë */
+/* ãƒ—ãƒ­ã‚»ã‚¹å›ºæœ‰ã®æƒ…å ±ã‚’ç®¡ç†ã™ã‚‹ */
 
 #ifdef notdef
 struct posix_process_info	*posix_info;

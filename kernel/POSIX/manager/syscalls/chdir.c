@@ -1,6 +1,6 @@
 /*
 
-B-Free Project д╬└╕└о╩кд╧ GNU Generic PUBLIC LICENSE д╦╜╛ддд▐д╣бг
+B-Free Project уБочФЯцИРчЙйуБп GNU Generic PUBLIC LICENSE уБлх╛УуБДуБ╛уБЩуАВ
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -62,7 +62,7 @@ W psc_chdir_f(struct posix_request *req)
     }
 
     if (*path == '/') {
-	/* └ф┬╨е╤е╣д╦дшды╗╪─ъ */
+	/* ч╡╢хп╛уГСуВ╣уБлуВИуВЛцМЗхоЪ */
 	startip = rootfile;
     } else {
 #ifdef notdef
@@ -93,8 +93,8 @@ W psc_chdir_f(struct posix_request *req)
     }
 
     if ((ipp->i_mode & FS_FMT_MSK) != FS_FMT_DIR) {
-	/* е╒ебедеыд╧бве╟егеьепе╚еъд╟д╧д╩длд├д┐бг
-	 * еиещб╝д╚д╣ды
+	/* уГХуВбуВдуГлуБпуАБуГЗуВгуГмуВпуГИуГкуБзуБпуБкуБЛуБгуБЯуАВ
+	 * уВиуГйуГ╝уБиуБЩуВЛ
 	 * 
 	 */
 	fs_close_file(ipp);

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -19,7 +19,7 @@ Version 2, June 1991
 T_VER	version = { 0, 0, MAJOR_VERSION, MINOR_VERSION, { 0, 0, 0, 0 }, CPU };
 
 /*******************************************************************************
- * get_ver --- ╔п║╪╔╦╔Г╔С╩╡╬х
+ * get_ver --- Ц┐░Ц┐╪Ц┌╦Ц┐╖Ц┐ЁЕ▐┌Г┘╖
  *
  */
 ER

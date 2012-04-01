@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -28,16 +28,16 @@ Version 2, June 1991
  * *** empty log message ***
  *
  * Revision 1.3  1996/07/06 13:08:16  night
- * DMA ¥³¥ó¥È¥í¡¼¥é¤Î½é´ü²½½èÍı¤ò PC ¸ß´¹µ¡ÍÑ¤ËÊÑ¹¹¡£
+ * DMA ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ã®åˆæœŸåŒ–å‡¦ç†ã‚’ PC äº’æ›æ©Ÿç”¨ã«å¤‰æ›´ã€‚
  *
  * Revision 1.2  1996/06/11  16:38:33  night
- * Ãğ¼á¤ÎÊÑ¹¹
+ * è¨»é‡ˆã®å¤‰æ›´
  *
  * Revision 1.1  1996/05/11  10:45:01  night
- * 2nd boot (IBM-PC ÈÇ B-FREE OS) ¤Î¥½¡¼¥¹¡£
+ * 2nd boot (IBM-PC ç‰ˆ B-FREE OS) ã®ã‚½ãƒ¼ã‚¹ã€‚
  * -------------------------------------------------------------------------------
  * Revision 1.2  1995/09/21 15:50:36  night
- * ¥½¡¼¥¹¥Õ¥¡¥¤¥ë¤ÎÀèÆ¬¤Ë Copyright notice ¾ğÊó¤òÄÉ²Ã¡£
+ * ã‚½ãƒ¼ã‚¹ãƒ•ã‚¡ã‚¤ãƒ«ã®å…ˆé ­ã« Copyright notice æƒ…å ±ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.1  1993/10/11  21:28:47  btron
  * btron/386
@@ -67,7 +67,7 @@ init_dma (void)
 }
 
 /****************************************************************************
- * setup_dma --- £Ä£Í£Á¤ÎÀßÄê¤ò¹Ô¤¦
+ * setup_dma --- ï¼¤ï¼­ï¼¡ã®è¨­å®šã‚’è¡Œã†
  *
  */
 int
@@ -84,7 +84,7 @@ setup_dma (void *addr, int mode, int length, int mask)
   lock();
   outb (DMA_WRITE_SINGLE_MASK, 0x06);
 
-  outb (DMA_CLEAR_BYTE, 0);		/* DMAC ¤Î¥ê¥»¥Ã¥È */
+  outb (DMA_CLEAR_BYTE, 0);		/* DMAC ã®ãƒªã‚»ãƒƒãƒˆ */
 #if 1
   outb (DMA_WRITE_MODE, mode|2);
 #else

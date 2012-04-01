@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -36,7 +36,7 @@ Version 2, June 1991
  * JIS -> EUC kanji code convert
  *
  * Revision 1.10  2000/01/23 15:46:29  kishida0
- * ����ե��å����̤� scroll ��ǽ���ɲä��� (�ޤ��Х����ʤΤ�����)
+ * グラフィック画面の scroll 機能を追加した (まだバギーなので注意)
  *
  * Revision 1.9  1999/05/15 05:01:18  naniwa
  * add ellipse_vga(), fillellipse_vga()
@@ -48,66 +48,66 @@ Version 2, June 1991
  * Fix for moving Port-manager and libkernel.a  to ITRON. I guess it is reasonable. At least they should not be in BTRON/.
  *
  * Revision 1.6  1999/03/21 12:49:22  night
- * ϲ��(naniwa@mechgw.mech.yamaguchi-u.ac.jp) ����λ�Ŧ�ˤ���ѹ���
+ * 浪花(naniwa@mechgw.mech.yamaguchi-u.ac.jp) からの指摘による変更。
  * ------------------
- * ���������ס��������󥹤�������Ƥ�������˵����դ�����Ǥ�����
- * console �ϴ��˥Хå����ڡ����ˤ��б�����Ƥ�����Ǥ��� (^^;)��frtm
- * �����Ϥˤ� '\b' ���Ȥ���н�ʬ�ʤΤǡ����������ץ������󥹤���ɬ
- * �פ�̵���ʤäƤ��ޤä��ΤǤ������޳ѤʤΤǺǸ�ޤǼ������ޤ�����
+ * エスケープ・シーケンスを実装している途中に気が付いたんですが，
+ * console は既にバックスペースには対応されていたんですね (^^;)．frtm
+ * の入力には '\b' が使えれば十分なので，エスケープシーケンスを作る必
+ * 要は無くなってしまったのですが，折角なので最後まで実装しました．
  *
- * �����������������ס��������󥹤λ��ͤǤ������ mail �Υߥ���������
- * �ޤ�����
+ * 実装したエスケープ・シーケンスの仕様です．先の mail のミスを訂正し
+ * ました．
  *
- * ESC[Pl;PcH	��������� (Pc,Pl) �ذ�ư���ǥե���ȤϤ��줾�� 1��
- * ESC[PnA		��������� Pn �Ծ�ذ�ư���ǥե���Ȥ� 1��
- * 		���̾�ü����ؤΰ�ư��̵�롥
- * ESC[PnB		��������� Pn �Ծ�ذ�ư���ǥե���Ȥ� 1��
- * 		���̲�ü��겼�ؤΰ�ư��̵�롥
- * ESC[PnC		��������� Pn �屦�ذ�ư���ǥե���Ȥ� 1��
- * 		���̱�ü��걦�ؤΰ�ư��̵�롥
- * ESC[PnD		��������� Pn �庸�ذ�ư���ǥե���Ȥ� 1��
- * 		���̱�ü��꺸�ؤΰ�ư��̵�롥
- * ESC[2J		���̤�õ����������� (1,1) �ء�
- * ESC[J		ɽ���ν���ޤǤ�õ
- * ESC[K		����������֤���Ԥν���ޤǤ�õ
+ * ESC[Pl;PcH	カーソルを (Pc,Pl) へ移動．デフォルトはそれぞれ 1．
+ * ESC[PnA		カーソルを Pn 行上へ移動．デフォルトは 1．
+ * 		画面上端より上への移動は無視．
+ * ESC[PnB		カーソルを Pn 行上へ移動．デフォルトは 1．
+ * 		画面下端より下への移動は無視．
+ * ESC[PnC		カーソルを Pn 桁右へ移動．デフォルトは 1．
+ * 		画面右端より右への移動は無視．
+ * ESC[PnD		カーソルを Pn 桁左へ移動．デフォルトは 1．
+ * 		画面右端より左への移動は無視．
+ * ESC[2J		画面を消去し，カーソルを (1,1) へ．
+ * ESC[J		表示の終りまでを消去．
+ * ESC[K		カーソル位置から行の終りまでを消去．
  *
- * ��������κ�ɸ�Ϻ������ (1,1)�������� (MAX_COLUMN, MAX_LINE)��
+ * カーソルの座標は左上隅が (1,1)．右下が (MAX_COLUMN, MAX_LINE)．
  *
- * kernel/BTRON/device/console �β��� patch -p1 �Ǥ��Ƥ�褦�˥ѥå�
- * ����ޤ�����
+ * kernel/BTRON/device/console の下で patch -p1 であてるようにパッチ
+ * を作りました．
  * ------------------
  *
  * Revision 1.5  1997/09/10 13:07:22  night
- * �ե�������ǻ��Ȥ��Ƥ���ޥ�����������Ƥ��� device.h �򥤥󥯥롼�ɤ�
- * ��褦�ˤ�����
+ * ファイル内で参照しているマクロを定義している device.h をインクルードす
+ * るようにした。
  *
  * Revision 1.4  1997/08/31 13:59:11  night
- * �ɥ饤�������ǻ��Ѥ�������� console_internal.h ��ʬΥ������
+ * ドライバ内部で使用する定義を console_internal.h に分離した。
  *
  * Revision 1.3  1997/03/25 13:34:38  night
- * ELF �����μ¹ԥե�����ؤ��б�
+ * ELF 形式の実行ファイルへの対応
  *
  * Revision 1.2  1996/11/11  13:27:52  night
- * ���󥯥롼�ɤ���إå��ե�����Υѥ�̾���ѹ�������
+ * インクルードするヘッダファイルのパス名を変更した。
  *
  * Revision 1.1  1996/07/24  16:03:59  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  * Revision 1.5  1995/12/05 14:16:13  night
- * device.h �� #include ʸ���ѹ�������
+ * device.h の #include 文を変更した。
  *
  * Revision 1.4  1995/09/21  15:50:55  night
- * �������ե��������Ƭ�� Copyright notice ������ɲá�
+ * ソースファイルの先頭に Copyright notice 情報を追加。
  *
  * Revision 1.3  1995/09/17  16:49:26  night
- * MAX_COLUMN �� MAX_LINE �������
- * ���󥽡��������ѤΥ��ޥ�� (CONSOLE_CLEAR��CONSOLE_MOVE) �������
- * �������δؿ��������
- * ��Ԥä���
+ * MAX_COLUMN と MAX_LINE の定義。
+ * コンソール制御用のコマンド (CONSOLE_CLEAR、CONSOLE_MOVE) の定義。
+ * もろもろの関数の定義。
+ * を行った。
  *
  * Revision 1.2  1995/09/14  04:27:47  night
- * init_console() �����ؿ����ѹ���
- * send_reply() ���ɲá�
+ * init_console() を大域関数に変更。
+ * send_reply() の追加。
  *
  * 
  *
@@ -120,7 +120,7 @@ Version 2, June 1991
 
 #include <kernlib/device.h>
 
-/*  ���������
+/*  定数の設定
  */
 
 #define CONSOLE_DRIVER	"driver.console"
@@ -138,9 +138,9 @@ Version 2, June 1991
 #define CONSOLE_GRAPHIC	0x00000003
 #define CONSOLE_TEXT	0x00000004
 
-/* ����ե��å��⡼�ɻ��Υ��ޥ�� 
+/* グラフィックモード時のコマンド 
  *
- * ����ط� (���Ȥ�)
+ * 描画関係 (線とか)
  */
 #define GR_NULL		0x00008000
 #define GR_POINT	0x00008001
@@ -155,12 +155,12 @@ Version 2, June 1991
 #define GR_FILLELLIPSE	0x0000800A
 #define GR_SCROLL       0x0000800B
 
-#define NORM_ATTR	0x1e		/* �̾�ʸ�� */
+#define NORM_ATTR	0x1e		/* 通常文字 */
 
 #define SCROLL_UP       0
 #define SCROLL_DOWN     1
 
-#define TEXT_VRAM_ADDR	0x800B8000	/* TEXT VRAM �Υ��ɥ쥹 */
+#define TEXT_VRAM_ADDR	0x800B8000	/* TEXT VRAM のアドレス */
 #define TEXT_VRAM_SIZE	2000
 
 #define GDC_ADDR	0x03d4

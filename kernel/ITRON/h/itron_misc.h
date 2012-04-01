@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -8,7 +8,7 @@ Version 2, June 1991
 (C) B-Free Project.
 
 */
-/* itron_func.h - ╢ь©Т╓ндЙ╣а
+/* itron_func.h - И√╒Ф∙╟Ц│╝Е╝ Г╬╘
  *
  */
 

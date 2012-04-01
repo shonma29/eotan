@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -60,38 +60,38 @@ static char rcsid[] =
  * traditional.
  *
  * Revision 1.5  1997/08/31 14:04:33  night
- * BOOT �� HD ����Ԥ�줿���ˤϡ���ưŪ�� POSIX �� root file system ��
- * ���ꤹ��褦�˽������ѹ�������
+ * BOOT が HD から行われた時には、自動的に POSIX の root file system を
+ * 設定するように処理を変更した。
  *
  * Revision 1.4  1997/05/06 12:44:26  night
- * ���ϹԤ򤽤Τޤ޽��Ϥ��� print ʸ����������
+ * 入力行をそのまま出力する print 文を削除した。
  *
  * Revision 1.3  1997/04/24 15:37:32  night
- * parse_line() ����ʸ����ΥХåե��κǸ������å������ͤȤ��ơ�
- * ���ϸ������(�ƥ��ޥ�ɤΰ����Ȥ��ƻ���)�Υ���������Ѥ��Ƥ�����
- * ���Τ��ᡢ����Υ�����(10) ����Ĺ���Ԥ����Ϥ���ȡ�ư���������
- * �ʤä���
+ * parse_line() が、文字列のバッファの最後をチェックする値として、
+ * 解析後の配列(各コマンドの引数として使用)のサイズを使用していた。
+ * そのため、配列のサイズ(10) よりも長い行を入力すると、動作がおかしく
+ * なった。
  *
  * Revision 1.2  1996/07/25  16:58:52  night
- * �ɤ߹���Ԥ򥪡��С��ե�������Ȥ��ν������ѹ���
- * �����ϡ��Хåե��Υ������򥪡��С��ե������������
- * �Х������ꡢ�����С��ե����������Ȥ�õ�ΤǤ��ʤ��ä���
+ * 読み込む行をオーバーフローするときの処理を変更。
+ * 以前は、バッファのサイズをオーバーフローする処理に
+ * バグがあり、オーバーフローしたことが探知できなかった。
  *
  * Revision 1.1  1996/07/25  16:02:00  night
- * IBM PC ���Ѥؤκǽ����Ͽ
+ * IBM PC 版用への最初の登録
  *
  * Revision 1.3  1996/01/06 12:16:35  night
- * ���Ϥ���ʸ�����������Ѵ�����������ѹ���
+ * 入力した文字列を配列に変換する処理の変更。
  * (parse_line ())
  *
  * Revision 1.2  1995/12/05 14:34:56  night
- * o �ǥХ����ν���������� init_device() �ؿ��˰�ư���롣
- * o (����)ɸ�������ϴؿ��ؤ��б���
+ * o デバイスの初期化処理を init_device() 関数に移動する。
+ * o (擬似)標準入出力関数への対応。
  *
  * Revision 1.1  1995/10/10  16:21:46  night
- * �ǽ����Ͽ.
- * �����ƥ൯ư�塢�ץ���ץȤ���Ϥ��ƥ��ޥ������ - �¹Ԥ��Ǥ���Ȥ���
- * �ޤǽ��褿�������������ޥ�ɤ� echo ������
+ * 最初の登録.
+ * システム起動後、プロンプトを出力してコマンド入力 - 実行ができるところ
+ * まで出来た。ただし、コマンドは echo だけ。
  *
  *
  */
@@ -104,10 +104,10 @@ static char rcsid[] =
 
 
 /*
- * �����Ϥ�Ԥ���
+ * 入出力を行う。
  */
 ID console;
-ID dev_recv;			/* �ǥХ����ɥ饤�Ф���������� */
+ID dev_recv;			/* デバイスドライバからの返答用 */
 
 extern void lowlib_load (B *name);
 extern int strcmp(char *, char *);

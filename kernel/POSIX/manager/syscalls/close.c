@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -43,8 +43,8 @@ W psc_close_f(struct posix_request *req)
     }
 
     if (fp->f_inode->i_mode & FS_FMT_DEV) {
-	/* ¥¹¥Ú¥·¥ã¥ë¥Õ¥¡¥¤¥ë¤À¤Ã¤¿ */
-	/* ¥Ç¥Ğ¥¤¥¹¤Ë DEV_CLS ¥á¥Ã¥»¡¼¥¸¤òÈ¯¿® */
+	/* ã‚¹ãƒšã‚·ãƒ£ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«ã ã£ãŸ */
+	/* ãƒ‡ãƒã‚¤ã‚¹ã« DEV_CLS ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’ç™ºä¿¡ */
 	err = sfs_close_device(fp->f_inode->i_dev);
     }
 

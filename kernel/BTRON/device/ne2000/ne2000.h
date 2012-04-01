@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -13,24 +13,24 @@ Version 2, June 1991
 /* 
  * $Log: ne2000.h,v $
  * Revision 1.6  1999/03/07 12:48:05  night
- * ╔ч╔╞╔М DEFAULT_INTR ╓Р NE2000_DEFAULT_INTR ╓кйя╧╧║ё
- * ЁД╓Й╧Ч╓ъхж╧Ф╓Р 3 ╓╚╓И 35 ╓кйя╧╧║ё
+ * Ц┐·Ц┌╞Ц┐╜ DEFAULT_INTR Ц┌▓ NE2000_DEFAULT_INTR Ц│╚Е╓┴Ф⌡╢Ц─┌
+ * Е┴╡Ц┌┼Х╬╪Ц│©Г∙╙Е▐╥Ц┌▓ 3 Ц│▀Ц┌┴ 35 Ц│╚Е╓┴Ф⌡╢Ц─┌
  *
  * Revision 1.5  1999/03/02 15:16:16  night
- * ╔ч╔╞╔М DEFAULT_INTR ╓нди╡ц║ё
+ * Ц┐·Ц┌╞Ц┐╜ DEFAULT_INTR Ц│╝Х©╫Е┼═Ц─┌
  *
  * Revision 1.4  1997/10/29 22:39:27  night
- * NE2000 ╔╒╔ю╔в╔©╓н SA_PROM ╓нфи╓ъ╪Х╓Й╫ХмЩ╓нди╡ц║ё
+ * NE2000 Ц┌╒Ц┐─Ц┐≈Ц┌©Ц│╝ SA_PROM Ц│╝Х╙╜Ц│©Е▐√Ц┌┼Е┤╕Г░├Ц│╝Х©╫Е┼═Ц─┌
  *
  * Revision 1.3  1997/10/28 14:44:42  night
- * NE2000_PROBE ╔ч╔╞╔М╓нди╡ц║ё
+ * NE2000_PROBE Ц┐·Ц┌╞Ц┐╜Ц│╝Х©╫Е┼═Ц─┌
  *
  * Revision 1.2  1997/10/28 12:46:54  night
- * NE2000_RESET ╓н╔ч╔╞╔МдЙ╣ади╡ц║ё
- * #include "global.h" ╓х #include "funcs.h" ╓н╔╓╔С╔╞╔К║╪╔ий╦╓н╨О╫Э║ё
+ * NE2000_RESET Ц│╝Ц┐·Ц┌╞Ц┐╜Е╝ Г╬╘Х©╫Е┼═Ц─┌
+ * #include "global.h" Ц│╗ #include "funcs.h" Ц│╝Ц┌╓Ц┐ЁЦ┌╞Ц┐╚Ц┐╪Ц┐┴Ф√┤Ц│╝Е┴┼И≥╓Ц─┌
  *
  * Revision 1.1  1997/05/06 12:43:31  night
- * ╨г╫И╓непо©
+ * Ф°─Е┬²Ц│╝Г≥╩И▄╡
  *
  *
  */

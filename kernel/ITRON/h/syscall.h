@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -19,7 +19,7 @@ Version 2, June 1991
 #define __H_SYSCALL_H__	1
 
 
-/* ¥·¥¹¥Æ¥à¥³¡¼¥ëÈÖ¹æ¤ÎÄêµÁ 
+/* ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«ç•ªå·ã®å®šç¾© 
  */
 #define SYS_CRE_TSK	(1)
 #define	SYS_DEL_TSK	(2)
@@ -109,7 +109,7 @@ Version 2, June 1991
 #define SYS_VSET_CTX	(124)
 #define SYS_VUSE_FPU	(125)
 
-/* ¥¿¥¹¥¯´ÉÍı¥·¥¹¥Æ¥à¥³¡¼¥ë
+/* ã‚¿ã‚¹ã‚¯ç®¡ç†ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«
  */
 extern ER	sys_cre_tsk (void *argp);		/*   1 */
 extern ER	sys_del_tsk (void *argp);		/*   2 */
@@ -173,7 +173,7 @@ extern ER	sys_def_int (void *argp);		/*  67 */
 extern ER	sys_vsys_inf (void *argp);	/* 99 */
 extern ER	sys_dbg_puts (void *args);	/* 100 */
 
-/* ²¾ÁÛ¥á¥â¥ê´ÉÍıÍÑ¥·¥¹¥Æ¥à¥³¡¼¥ë */
+/* ä»®æƒ³ãƒ¡ãƒ¢ãƒªç®¡ç†ç”¨ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ« */
 extern ER	sys_vcre_reg (void *argp);
 extern ER	sys_vdel_reg (void *argp);
 extern ER	sys_vmap_reg (void *argp);
@@ -186,7 +186,7 @@ extern ER	sys_vget_reg (void *argp);
 extern ER	sys_vsts_reg (void *argp);
 extern ER	sys_vget_phs (void *argp);
 
-/* »ş´Ö´ÉÍıÍÑ¥·¥¹¥Æ¥à¥³¡¼¥ë */
+/* æ™‚é–“ç®¡ç†ç”¨ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ« */
 extern ER	sys_set_tim (void *argp);
 extern ER	sys_get_tim (void *argp);
 extern ER	sys_dly_tsk (void *argp);
@@ -196,7 +196,7 @@ extern ER	sys_ref_cyc (void *argp);
 extern ER	sys_def_alm (void *argp);
 extern ER	sys_ref_alm (void *argp);
 
-/* ¤½¤ÎÂ¾¤Î¥·¥¹¥Æ¥à¥³¡¼¥ë */
+/* ãã®ä»–ã®ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ« */
 extern ER	sys_vget_csl (void *argp);
 extern ER	sys_vset_cns (void *argp);
 extern ER	sys_vsys_msc (void *argp);

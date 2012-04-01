@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -14,7 +14,7 @@ Version 2, June 1991
 
 
 /*
- * ¥Ç¥£¥ì¥¯¥È¥ê¤ÎÆÉ¤ß¼è¤ê (ls ¥³¥Ş¥ó¥É)
+ * ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®èª­ã¿å–ã‚Š (ls ã‚³ãƒãƒ³ãƒ‰)
  */
 void
 list_dir (struct dos_fsinfo *fs, char *path)
@@ -26,7 +26,7 @@ list_dir (struct dos_fsinfo *fs, char *path)
   int	count;
   
   printf ("list_dir: path = %s\n", path);
-  fix_path (path);	/* ¥Ñ¥¹Ì¾¤ò DOS ¤ÎÀ©¸Â¤Ë¹ç¤ï¤»¤ÆÀµµ¬²½¤¹¤ë */
+  fix_path (path);	/* ãƒ‘ã‚¹åã‚’ DOS ã®åˆ¶é™ã«åˆã‚ã›ã¦æ­£è¦åŒ–ã™ã‚‹ */
   if (strcmp (path, "/") == 0)
     {
       print_dir (DOS_ROOTDIR (fs), DOS_ROOTDIRENTRY (fs));

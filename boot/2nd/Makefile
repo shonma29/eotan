@@ -36,7 +36,7 @@ LDOPT32 = -n -Ttext=$(START_ADDR) -static -e start32
 
 ########################################################################
 #
-#	2ndboot ...... ºÇ½ªÅª¤Ëºî¤é¤ì¤ë Second BOOT ¥¤¥á¡¼¥¸
+#	2ndboot ...... æœ€çµ‚çš„ã«ä½œã‚‰ã‚Œã‚‹ Second BOOT ã‚¤ãƒ¡ãƒ¼ã‚¸
 #
 2ndboot: $(TOOLS) start16 mode32
 	./build_boot2_elf start16 mode32 > 2ndboot
@@ -46,7 +46,7 @@ LDOPT32 = -n -Ttext=$(START_ADDR) -static -e start32
 
 
 #
-#	start16 ... 16¥Ó¥Ã¥È¥â¡¼¥É¤ÇÆ°¤¯ÉôÊ¬
+#	start16 ... 16ãƒ“ãƒƒãƒˆãƒ¢ãƒ¼ãƒ‰ã§å‹•ãéƒ¨åˆ†
 #
 start16: start16.s
 	as86 -0 -a -o start16.o start16.s

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -8,20 +8,20 @@ Version 2, June 1991
 (C) B-Free Project.
 
 */
-/* <errno.h> --- ¥¨¥é¡¼ÈÖ¹æ¤ÎÄêµÁ
+/* <errno.h> --- ã‚¨ãƒ©ãƒ¼ç•ªå·ã®å®šç¾©
  *
  * $Date: 1996/05/11 10:45:01 $
  * $Revision: 1.1 $
  * $Author: night $
  * $Log: errno.h,v $
  * Revision 1.1  1996/05/11 10:45:01  night
- * 2nd boot (IBM-PC ÈÇ B-FREE OS) ¤Î¥½¡¼¥¹¡£
+ * 2nd boot (IBM-PC ç‰ˆ B-FREE OS) ã®ã‚½ãƒ¼ã‚¹ã€‚
  *
  * Revision 1.3  1995/09/21 15:50:37  night
- * ¥½¡¼¥¹¥Õ¥¡¥¤¥ë¤ÎÀèÆ¬¤Ë Copyright notice ¾ðÊó¤òÄÉ²Ã¡£
+ * ã‚½ãƒ¼ã‚¹ãƒ•ã‚¡ã‚¤ãƒ«ã®å…ˆé ­ã« Copyright notice æƒ…å ±ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.2  1994/07/30  17:37:14  night
- * ¥Õ¥¡¥¤¥ëÃæ¤ÎÆüËÜ¸ìÊ¸»ú¤ò¤¹¤Ù¤Æ EUC ¥³¡¼¥É¤ËÊÑ¹¹¡£
+ * ãƒ•ã‚¡ã‚¤ãƒ«ä¸­ã®æ—¥æœ¬èªžæ–‡å­—ã‚’ã™ã¹ã¦ EUC ã‚³ãƒ¼ãƒ‰ã«å¤‰æ›´ã€‚
  *
  * Revision 1.1  1993/10/11  21:28:53  btron
  * btron/386
@@ -42,7 +42,7 @@ Version 2, June 1991
 
 #include "types.h"
 
-#define E_OK		(0)	/* Àµ¾ï½ªÎ» */
+#define E_OK		(0)	/* æ­£å¸¸çµ‚äº† */
 
 #define E_ADR		(-1)
 #define E_PAR		(-2)

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -29,7 +29,7 @@ Version 2, June 1991
 #define KEY_DATA	0x41
 #define KEY_STAT	0x43
 
-/* Ê¸»ú¤ò¥³¥ó¥È¥í¡¼¥ë¥­¡¼¤ËÊÑ´¹¤¹¤ë */
+/* æ–‡å­—ã‚’ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã‚­ãƒ¼ã«å¤‰æ›ã™ã‚‹ */
 #define C(x)		(x & 0x1f)
 
 #define INT_KEYBOARD	33
@@ -40,7 +40,7 @@ Version 2, June 1991
 #define GRAPH_CODE	3
 
 /*******************************************************************************
- *	¥·¥Õ¥È¥­¡¼¤Î¾õÂÖ¤òÉ½¤¹¥Ş¥¯¥íÄê¿ô
+ *	ã‚·ãƒ•ãƒˆã‚­ãƒ¼ã®çŠ¶æ…‹ã‚’è¡¨ã™ãƒã‚¯ãƒ­å®šæ•°
  *
  */
 #define NORMAL		0x0000
@@ -139,10 +139,10 @@ struct key_entry
 
 struct keyboard
 {
-  UW			 shiftkey;	/* ¥·¥Õ¥È¥­¡¼¤Î¾õÂÖ¤òÉ½¤¹		*/
-  UW			 total;		/* ¸½ºß¥­¥å¡¼¥¤¥ó¥°¤·¤Æ¤¤¤ë¥¨¥ó¥È¥ê¿ô	*/
-  struct key_entry	*first;		/* ¥­¥å¡¼¥¤¥ó¥°¥ê¥¹¥È¤ÎÀèÆ¬¥¨¥ó¥È¥ê	*/
-  struct key_entry	*last;		/* ¥­¥å¡¼¥¤¥ó¥°¥ê¥¹¥È¤ÎºÇ½ª¥¨¥ó¥È¥ê	*/
+  UW			 shiftkey;	/* ã‚·ãƒ•ãƒˆã‚­ãƒ¼ã®çŠ¶æ…‹ã‚’è¡¨ã™		*/
+  UW			 total;		/* ç¾åœ¨ã‚­ãƒ¥ãƒ¼ã‚¤ãƒ³ã‚°ã—ã¦ã„ã‚‹ã‚¨ãƒ³ãƒˆãƒªæ•°	*/
+  struct key_entry	*first;		/* ã‚­ãƒ¥ãƒ¼ã‚¤ãƒ³ã‚°ãƒªã‚¹ãƒˆã®å…ˆé ­ã‚¨ãƒ³ãƒˆãƒª	*/
+  struct key_entry	*last;		/* ã‚­ãƒ¥ãƒ¼ã‚¤ãƒ³ã‚°ãƒªã‚¹ãƒˆã®æœ€çµ‚ã‚¨ãƒ³ãƒˆãƒª	*/
 };
 
 
@@ -191,7 +191,7 @@ init_keyboard ()
   keyentry[MAX_KEYENTRY - 1].next = NULL;
   freeentry = keyentry;
 
-  /* KBD ¤Î½é´ü²½ --- 8251A ¤Î½é´ü²½ */
+  /* KBD ã®åˆæœŸåŒ– --- 8251A ã®åˆæœŸåŒ– */
   set_idt (INT_KEYBOARD, 0x08, (int)int33_handler, INTERRUPT_DESC, 0);
   reset_intr_mask (1);
 
@@ -245,7 +245,7 @@ keyboard_task (void)
 
   for (;;)
     {
-      slp_tsk ();	/* ³ä¤ê¹ş¤ß¤Ë¤è¤Ã¤ÆÌÜ³Ğ¤á¤ë¤Î¤òÂÔ¤Ä */
+      slp_tsk ();	/* å‰²ã‚Šè¾¼ã¿ã«ã‚ˆã£ã¦ç›®è¦šã‚ã‚‹ã®ã‚’å¾…ã¤ */
       if (input_buffer.first)
 	{
 	  p = input_buffer.first;
@@ -265,10 +265,10 @@ keyboard_task (void)
 }
 
 /*
- * ¥­¡¼¥Ü¡¼¥É³ä¤ê¹ş¤ß¤Ë¤è¤Ã¤Æµ¯Æ°¤µ¤ì¤ë´Ø¿ô¡£
+ * ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰å‰²ã‚Šè¾¼ã¿ã«ã‚ˆã£ã¦èµ·å‹•ã•ã‚Œã‚‹é–¢æ•°ã€‚
  *
- * ¥­¡¼¥Ü¡¼¥É¥Ç¥Ğ¥¤¥¹¤«¤é¥­¡¼¥¤¥Ù¥ó¥È¤òÆÉ¤ß¼è¤ê¡¢ÆşÎÏ¥Ğ¥Ã¥Õ¥¡ (input_buffer) 
- * ¤ËÄÉ²Ã¤¹¤ë¡£
+ * ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ãƒ‡ãƒã‚¤ã‚¹ã‹ã‚‰ã‚­ãƒ¼ã‚¤ãƒ™ãƒ³ãƒˆã‚’èª­ã¿å–ã‚Šã€å…¥åŠ›ãƒãƒƒãƒ•ã‚¡ (input_buffer) 
+ * ã«è¿½åŠ ã™ã‚‹ã€‚
  */
 W
 intr_kbd ()
@@ -316,11 +316,11 @@ intr_kbd ()
       return;
     }
   
-  /* ¤â¤·¡¢¥­¡¼¤òÎ¥¤·¤¿¤È¤³¤í¤Ê¤é¤Ğ¡¢Ìµ»ë¤¹¤ë */
+  /* ã‚‚ã—ã€ã‚­ãƒ¼ã‚’é›¢ã—ãŸã¨ã“ã‚ãªã‚‰ã°ã€ç„¡è¦–ã™ã‚‹ */
   if (key_code & 0x80)
     return;
   
-  /* ¥Ş¥È¥ê¥Ã¥¯¥¹¥Æ¡¼¥Ö¥ë¤«¤é¡¢¥­¡¼¥³¡¼¥É¤ò¼è¤ê½Ğ¤¹¡£
+  /* ãƒãƒˆãƒªãƒƒã‚¯ã‚¹ãƒ†ãƒ¼ãƒ–ãƒ«ã‹ã‚‰ã€ã‚­ãƒ¼ã‚³ãƒ¼ãƒ‰ã‚’å–ã‚Šå‡ºã™ã€‚
    */
   if (shiftkey_code & CONTROL_DOWN)
     ch = key_table[CONTROL_CODE][key_code];
@@ -341,7 +341,7 @@ intr_kbd ()
   
   dis_int ();
   key = alloc_key (ch);
-  if (key == NULL)		/* ¥­¡¼¤¬¤Ê¤¤ */
+  if (key == NULL)		/* ã‚­ãƒ¼ãŒãªã„ */
     {
       ena_int ();
       return;

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project д╬└╕└о╩кд╧ GNU Generic PUBLIC LICENSE д╦╜╛ддд▐д╣бг
+B-Free Project уБочФЯцИРчЙйуБп GNU Generic PUBLIC LICENSE уБлх╛УуБДуБ╛уБЩуАВ
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -13,7 +13,7 @@ static char	rcsid[] = "$Header: /usr/local/src/master/B-Free/Program/btron-pc/ke
 
 
 /*
- *	есе├е╗б╝е╕┤╪╧ве╖е╣е╞ере│б╝еыдЄ╕╞д╓д┐дсд╬ещеде╓ещеъ
+ *	уГбуГГуВ╗уГ╝уВ╕щЦвщАгуВ╖уВ╣уГЖуГауВ│уГ╝уГлуВТхС╝уБ╢уБЯуВБуБоуГйуВдуГЦуГйуГк
  *
  */
 
@@ -24,7 +24,7 @@ static char	rcsid[] = "$Header: /usr/local/src/master/B-Free/Program/btron-pc/ke
 #include "../../ITRON/h/errno.h"
 
 /*
- * есе├е╗б╝е╕е╨е├е╒ебд╬║ю└о
+ * уГбуГГуВ╗уГ╝уВ╕уГРуГГуГХуВбуБоф╜ЬцИР
  */
 ER
 cre_mbf (ID id, T_CMBF *pk_cmbf)
@@ -34,7 +34,7 @@ cre_mbf (ID id, T_CMBF *pk_cmbf)
 
 
 /* 
- *  есе├е╗б╝е╕е╨е├е╒ебд╬║я╜№
+ *  уГбуГГуВ╗уГ╝уВ╕уГРуГГуГХуВбуБохЙКщЩд
  */
 ER
 del_mbf (ID id)
@@ -44,7 +44,7 @@ del_mbf (ID id)
 
 
 /*
- *  есе├е╗б╝е╕д╬┴ў┐о
+ *  уГбуГГуВ╗уГ╝уВ╕уБощАБф┐б
  */
 ER
 snd_mbf (ID id, INT size, VP msg)
@@ -54,7 +54,7 @@ snd_mbf (ID id, INT size, VP msg)
 
 
 /* 
- *  есе├е╗б╝е╕д╬┴ў┐о (е▌б╝еъеєе░╡б╟╜д─дн)
+ *  уГбуГГуВ╗уГ╝уВ╕уБощАБф┐б (уГЭуГ╝уГкуГ│уВ░цйЯшГ╜уБдуБН)
  */
 ER
 psnd_mbf (ID id, INT size, VP msg)
@@ -64,7 +64,7 @@ psnd_mbf (ID id, INT size, VP msg)
 
 
 /*
- *  есе├е╗б╝е╕д╬┴ў┐о (е┐едеревеже╚╡б╟╜д─дн)
+ *  уГбуГГуВ╗уГ╝уВ╕уБощАБф┐б (уВ┐уВдуГауВвуВжуГИцйЯшГ╜уБдуБН)
  */
 ER
 tsnd_mbf (ID id, INT size, VP msg, TMO tmout)
@@ -74,7 +74,7 @@ tsnd_mbf (ID id, INT size, VP msg, TMO tmout)
 
 
 /*
- *  есе├е╗б╝е╕д╬╝ї┐о
+ *  уГбуГГуВ╗уГ╝уВ╕уБохПЧф┐б
  */
 ER
 rcv_mbf (VP msg, INT *size, ID id)
@@ -84,7 +84,7 @@ rcv_mbf (VP msg, INT *size, ID id)
 
 
 /*
- *  есе├е╗б╝е╕д╬╝ї┐о (е▌б╝еъеєе░╡б╟╜д─дн)
+ *  уГбуГГуВ╗уГ╝уВ╕уБохПЧф┐б (уГЭуГ╝уГкуГ│уВ░цйЯшГ╜уБдуБН)
  */
 
 ER
@@ -95,7 +95,7 @@ prcv_mbf (VP msg, INT *size, ID id)
 
 
 /*
- * есе├е╗б╝е╕╝ї┐о (е┐едеревеже╚╡б╟╜д─дн)
+ * уГбуГГуВ╗уГ╝уВ╕хПЧф┐б (уВ┐уВдуГауВвуВжуГИцйЯшГ╜уБдуБН)
  */
 ER
 trcv_mbf (VP msg, INT *size, ID id, TMO tmout)

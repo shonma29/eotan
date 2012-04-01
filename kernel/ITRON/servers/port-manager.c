@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -21,68 +21,68 @@ static char rcs[] = "@(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc
  * MAJOR FIXcvs commit -m 'MAJOR FIX!!! There are so many changes, modifys, fixes. Sorry but I can't remember all of those. For example, all the manager and driver programmer have got power to access all ITRON systemcall. (My works is just making access route to ITRON. I don't know what happens in the nuclus.'! There are so many changes, modifys, fixes. Sorry but I can't remember all of those. For example, all the manager and driver programmer have got power to access all ITRON systemcall. (My works is just making access route to ITRON. I don't know what happens in the nuclus.
  *
  * Revision 1.2  1999/02/17 14:56:35  night
- * ��å������Хåե�°���ν�����������ɲ�
+ * メッセージバッファ属性の初期化処理を追加
  *
  * +  msg_pk.mbfatr = TA_TFIFO;
  *
  * Revision 1.1  1996/07/23 00:03:04  night
- * IBM PC �Ѥκǽ����Ͽ
+ * IBM PC 用の最初の登録
  *
  * Revision 1.3  1995/09/21  15:51:48  night
- * �������ե��������Ƭ�� Copyright notice ������ɲá�
+ * ソースファイルの先頭に Copyright notice 情報を追加。
  *
  * Revision 1.2  1995/06/26  15:19:15  night
- * �����Ĥ��� printf �� DEBUG �ޥ����ǰϤ����
+ * いくつかの printf を DEBUG マクロで囲んだ。
  *
  * Revision 1.1  1995/03/18  14:12:45  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  *
  */
 
 /*
- * �ݡ��ȥޥ͡�����
+ * ポートマネージャ
  *
- * <���Υ����Фϡ��ץ������Ķ� (BTRON or POSIX) �˴ط��ʤ�ư���>
+ * <このサーバは、プログラム環境 (BTRON or POSIX) に関係なく動作する>
  *
  *
- * ���ճˤ����ץꥱ���������̿����뤿��˻��Ѥ����å������Хåե�
- * �� ID ��������롣
- * ITRON (�濴��) �ϥ�å������Хåե��ˤ���̿����Ǥ��롣��������
- * ���ΤޤޤǤϡ����ճˤ��ɤΥ�å������Хåե���ȤäƤ��뤫�狼���
- * ����
- * �ݡ��ȥޥ͡�����ϡ��������Х��̾���ȥ�å������Хåե��� ID ����
- * ��������롣�������ϡ��ݡ��ȥޥ͡�������Ф�����Ͽ���뤳�Ȥˤ�äơ�
- * ¾�Υ����������å������Хåե��򥢥������Ǥ���褦�ˤ��롣
+ * 周辺核がアプリケーションと通信するために使用するメッセージバッファ
+ * の ID を管理する。
+ * ITRON (中心核) はメッセージバッファによる通信ができる。ただし、
+ * そのままでは、周辺核がどのメッセージバッファを使っているかわからな
+ * い。
+ * ポートマネージャは、グローバルな名前とメッセージバッファの ID の組
+ * を管理する。タスクは、ポートマネージャに対して登録することによって、
+ * 他のタスクからメッセージバッファをアクセスできるようにする。
  *
- * ���⤷�ʤ��Ƥ�ݡ��ȥޥ͡�������Ф��ƥ��������Ǥ���褦�ˡ��ݡ���
- * �ޥ͡����㼫�Ȥϡ�����Υ�å������Хåե� ID (11) ��Ȥ���
+ * 何もしなくてもポートマネージャに対してアクセスできるように、ポート
+ * マネージャ自身は、特定のメッセージバッファ ID (11) を使う。
  * 
- * �ݡ��ȥޥ͡�����ϡ�(���ճˤ�Ʊ�ͤ�) �����ФȤ���ư��� (�桼���⡼
- * ��(CPU �ø���٥� 3)��ư���)
+ * ポートマネージャは、(周辺核と同様に) サーバとして動作する (ユーザモー
+ * ド(CPU 特権レベル 3)で動作する)
  *
- * �ݡ��ȥޥ͡�����Υ�å������ϼ��η������Ѱդ���Ƥ��롣
+ * ポートマネージャのメッセージは次の形式が用意されている。
  *
  * regist_port_t	{ PORT_NAME name; ID port; ID task; }
  * unregist_port_t	{ PORT_NAME name; ID task; }
  * find_port_t		{ PORT_NAME name; }
  *
- * ����ˡ����˼����إå����ä�ä���å��������ݡ��ȥޥ͡����������
- * ��뤳�Ȥˤʤ롣
+ * さらに、次に示すヘッダが加わったメッセージがポートマネージャに送ら
+ * れることになる。
  *
  * msg_header { W msg_type; W size };
  *
  *
- * �ݡ��ȥޥ͡�������Ф����׵���ά�����뤿��ˡ��饤�֥�� 
- * (libport.a) ���Ѱդ��Ƥ��롣���Υ饤�֥��ϡ��ݡ��ȥޥ͡��������
- * �����å���������������Ԥ��ؿ���¾�˥�å������򰷤������������
- * �ؿ������äƤ��롣
- * �ǡ����Υ饤�֥��ˤĤ��Ƥϡ��ݡ��ȥޥ͡�����˴ؤ���ؿ��Ȥ��Ƥϡ�
- * ���Τ�Τ����롣
+ * ポートマネージャに対する要求を簡略化するために、ライブラリ 
+ * (libport.a) を用意している。このライブラリは、ポートマネージャに対
+ * するメッセージの送受信を行う関数の他にメッセージを扱うための便利な
+ * 関数が入っている。
+ * で、このライブラリについては、ポートマネージャに関する関数としては、
+ * 次のものがある。
  *
- * regist_port (PORT_NAME name, ID port);   ��å������Хåե� ID ����Ͽ
- * unregist_port (PORT_NAME name);	    ��å������Хåե� ID ������
- * find_port (PORT_NAME name, ID &port);    ��å������Хåե� ID �θ���
+ * regist_port (PORT_NAME name, ID port);   メッセージバッファ ID の登録
+ * unregist_port (PORT_NAME name);	    メッセージバッファ ID の抹消
+ * find_port (PORT_NAME name, ID &port);    メッセージバッファ ID の検索
  * 
  */
 
@@ -94,13 +94,13 @@ static char rcs[] = "@(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc
 
 
 /*
- * �������Х��ѿ������
+ * グローバル変数の宣言
  */
 ID	request_port;
 
 
 /*
- * �ݡ��ȥޥ͡�����ǻȤ��ؿ��Υץ��ȥ����������
+ * ポートマネージャで使う関数のプロトタイプ宣言。
  *
  */
 extern void	_main (void);
@@ -110,15 +110,15 @@ extern void	find_port (struct port_manager_msg_t *msgp);
 
 
 /*
- * ���Υե��������Ǥ������Ѥ��ʤ������ƥ��å��ؿ������
+ * このファイルの中でしか使用しないスタティック関数の定義
  */
 static void	recv_port_manager (ID rport, PORT_MANAGER_ERROR errno, ID port);
 
 
 /*
- *	�ݡ��ȥޥ͡������ main ����
- *	��å�������������������Ԥ������θ��å���������� - ��������
- *	�롼�פ����롣
+ *	ポートマネージャの main 処理
+ *	メッセージを受信する準備を行い、その後メッセージを受信 - 処理する
+ *	ループに入る。
  */
 void
 _main (void)
@@ -130,17 +130,17 @@ _main (void)
 
 
   /*
-   * �ץ������ν����
-   * ��å������Хåե����롣
-   * ��å������Хåե� ID �ϡ�PORT_MANAGER_PORT �ޥ����ǻ��ꤷ��
-   * ��Τ���Ѥ��롣
+   * プログラムの初期化
+   * メッセージバッファを作る。
+   * メッセージバッファ ID は、PORT_MANAGER_PORT マクロで指定した
+   * ものを使用する。
    *
    *
-   * <����γ�ĥ�ؤΥ����ǥ�>
+   * <将来の拡張へのアイデア>
    *
-   * ����ϡ���å������Хåե��������˥��������������Ǥ���褦�ˤ��롣
-   * ��������������ꤹ�뤳�Ȥˤ�äơ���å������Хåե���������������
-   * ���ʳ��ϡ���å��������ɤ߼��ʤ��ʤɤ�������ǽ�Ȥ��롣
+   * 将来は、メッセージバッファ作成時にアクセス権を指定できるようにする。
+   * アクセス権を指定することによって、メッセージバッファを生成したタス
+   * ク以外は、メッセージを読み取れないなどの設定を可能とする。
    *
    */
   msg_pk.bufsz = sizeof (struct port_manager_msg_t);
@@ -154,44 +154,44 @@ _main (void)
     }
 
   /* 
-   * ��Ͽ�ơ��֥�ν����
+   * 登録テーブルの初期化
    */
   init_regist_table ();
 
   dbg_puts ("port manager start.\n");
   /*
-   *	��å����������Ƚ���
-   *	�ݡ��ȥޥ͡�����ϡ����󥰥륿������ư��롣
-   *	���Τ��ᡢ��å������μ�����������ν�λ�ޤǤϡ�¾���׵�ϼ���
-   *	�Ĥ��ʤ���
+   *	メッセージ受信と処理
+   *	ポートマネージャは、シングルタスクで動作する。
+   *	そのため、メッセージの受信から処理の終了までは、他の要求は受け
+   *	つけない。
    */
   for (;;)
     {
       /* 
-       * ��å�������������롣
-       * ��������Ȥ��˻��Ѥ����å������Хåե��ϡ�PORT_MANAGER_PORT
-       * �ޥ����ǻ��ꤷ����Τ���Ѥ��롣
+       * メッセージを受信する。
+       * 受信するときに使用するメッセージバッファは、PORT_MANAGER_PORT
+       * マクロで指定したものを使用する。
        */
       error = rcv_mbf (&msg_buf, &size, PORT_MANAGER_PORT);
       if (error == E_OK)
 	{
 	  /*
-	   * ��å�����������������Ȥ�ɽ�����롣
-	   * ����ϡ��ǥХå��Τ�������줿��
+	   * メッセージを受信したことを表示する。
+	   * これは、デバッグのために入れた。
 	   */
 #ifdef DEBUG
 	  dbg_puts ("port-manager: message read.\n");
 #endif /* DEBUG */
 
 	  /*
-	   * ��å������ν���
-	   * ����������å������Υإå��μ��फ��Ŭ�ڤʽ�����Ԥ���
+	   * メッセージの処理
+	   * 受信したメッセージのヘッダの種類から適切な処理を行う。
 	   */
 	  switch (msg_buf.hdr.type)
 	    {
 	    case REGIST_PORT:	
 	      /*
-	       * ��å������Хåե� ID ����Ͽ
+	       * メッセージバッファ ID の登録
 	       */
 	      dbg_printf ("port-manager: (regist) <%s>\n", msg_buf.body.regist.name);
 	      regist_port (&msg_buf);
@@ -199,14 +199,14 @@ _main (void)
 
 	    case UNREGIST_PORT:
 	      /*
-	       * ��å������Хåե� ID ������
+	       * メッセージバッファ ID の抹消
 	       */
 	      unregist_port (&msg_buf);
 	      break;
 
 	    case FIND_PORT:
 	      /*
-	       * ��å������Хåե� ID �θ���
+	       * メッセージバッファ ID の検索
 	       */
 	      find_port (&msg_buf);
 	      break;
@@ -217,7 +217,7 @@ _main (void)
 }
 
 /*
- * ��å������Хåե� ID ����Ͽ������Ԥ���
+ * メッセージバッファ ID の登録処理を行う。
  *
  */
 void
@@ -226,7 +226,7 @@ regist_port (struct port_manager_msg_t *msgp)
   PORT_MANAGER_ERROR errno;
 
   /*
-   * �ǡ����١�������Ͽ����
+   * データベースに登録する
    */
   errno = regist_database (msgp->body.regist.name,
 			   msgp->body.regist.port,
@@ -237,14 +237,14 @@ regist_port (struct port_manager_msg_t *msgp)
 #endif /* DEBUG */
 
   /*
-   * �׵�����긵���Ф���������å����������롣
-   * ����������˽�λ�������Ȥ������å���������äƤ���Τǡ�
-   * ����������2�̤�¸�ߤ��롣
+   * 要求の送り元に対して返答メッセージを送る。
+   * 処理が正常に終了した場合とで送るメッセージが違ってくるので、
+   * 返答処理も2通り存在する。
    */
   if (errno == E_PORT_OK)
     {
       /*
-       * ����˽�������λ��������������å���������
+       * 正常に処理が終了した場合の返答メッセージ送信
        */
       recv_port_manager (msgp->hdr.rport,
 			 errno, 
@@ -253,9 +253,9 @@ regist_port (struct port_manager_msg_t *msgp)
   else
     {
       /*
-       * ����˽����������ʤ��ä�����������å�����������
-       * ������å������Τ�����å������Хåե� ID �ˤĤ��Ƥ�
-       * �����Ǥ��ʤ��ä��Τǡ�0 ���֤���
+       * 正常に処理が終わらなかった場合の返答メッセージ送信。
+       * 返答メッセージのうちメッセージバッファ ID については
+       * 取得できなかったので、0 を返す。
        */
       recv_port_manager (msgp->hdr.rport, errno, 0);
     }
@@ -264,7 +264,7 @@ regist_port (struct port_manager_msg_t *msgp)
 
 
 /*
- * ��å������Хåե� ID ����Ͽ���ý�����Ԥ���
+ * メッセージバッファ ID の登録抹消処理を行う。
  *
  */
 void
@@ -274,19 +274,19 @@ unregist_port (struct port_manager_msg_t *msgp)
   ID		     	port;
 
   /*
-   * �ǡ����١����������������롣
+   * データベースから情報を削除する。
    */
   errno = unregist_database (msgp->body.unregist.name,
 			     &port,
 			     msgp->body.unregist.task);
 
   /*
-   * ��Ͽ���ä��׵ᤷ����������������å��������֤���
+   * 登録抹消を要求したタスクへ返答メッセージを返す。
    */
   if (errno != E_PORT_OK)
     {
       /*
-       * ����˽�������λ��������������å���������
+       * 正常に処理が終了した場合の返答メッセージ送信
        */
       recv_port_manager (msgp->hdr.rport,
 			 errno, 
@@ -295,16 +295,16 @@ unregist_port (struct port_manager_msg_t *msgp)
   else
     {
       /*
-       * �ǡ����١������饨��ȥ�����Ǥ��ʤ��ä���
-       * ���顼��å��������������롣
-       * ���顼�ֹ�ʳ������ƤϤ��٤� 0 �������֤���
+       * データベースからエントリを削除できなかった。
+       * エラーメッセージを返答する。
+       * エラー番号以外の内容はすべて 0 を埋めて返す。
        */
       recv_port_manager (msgp->hdr.rport, errno, 0);
     }
 }
 
 /*
- * ��å������Хåե� ID �θ���
+ * メッセージバッファ ID の検索
  * 
  *
  */
@@ -315,26 +315,26 @@ find_port (struct port_manager_msg_t *msgp)
   ID		     	port;
 
   /*
-   * �ǡ����١����������򸡺����롣
+   * データベースから情報を検索する。
    */
   errno = find_database (msgp->body.find.name, &port);
 
   /*
-   * �ǥХå�ʸ���ǡ����١�������θ������
+   * デバッグ文：データベースからの検索結果
    */
 #ifdef DEBUG
   dbg_printf ("port-manager: find_port: errno = %d, port = %d\n", errno, port);
 #endif /* DEBUG */
 
   /*
-   * ��å������Хåե� ID ���׵ᤷ����������������å��������֤���
+   * メッセージバッファ ID を要求したタスクへ返答メッセージを返す。
    */
   if (errno == E_PORT_OK)
     {
       /*
-       * ����˽�������λ��������������å�����������
-       * �ݡ����ֹ�Ȥ��ơ�find_database() ��ȯ��������å������Хåե� 
-       * ID ���֤���
+       * 正常に処理が終了した場合の返答メッセージ送信。
+       * ポート番号として、find_database() で発見したメッセージバッファ 
+       * ID を返す。
        */
       recv_port_manager (msgp->hdr.rport,
 			 errno, 
@@ -343,9 +343,9 @@ find_port (struct port_manager_msg_t *msgp)
   else
     {
       /*
-       * �ǡ����١������饨��ȥ�����Ǥ��ʤ��ä���
-       * ���顼��å��������������롣
-       * ���顼�ֹ�ʳ������ƤϤ��٤� 0 �������֤���
+       * データベースからエントリを削除できなかった。
+       * エラーメッセージを返答する。
+       * エラー番号以外の内容はすべて 0 を埋めて返す。
        */
       recv_port_manager (msgp->hdr.rport, errno, 0);
     }
@@ -353,26 +353,26 @@ find_port (struct port_manager_msg_t *msgp)
 
 
 /*
- * �ݡ��ȥޥ͡�������Ф����׵�����ä����������Ф���������å��������֤���
+ * ポートマネージャに対して要求を送ったタスクに対して返答メッセージを返す。
  */
 static void
 recv_port_manager (ID rport, PORT_MANAGER_ERROR errno, ID port)
 {
   /*
-   * ������å����������Ƥ������ΰ衣
-   * ��¤�� port_recv_port_message_t �ˤ�äƹ�¤���ꤹ�롣
+   * 返答メッセージの内容が入る領域。
+   * 構造体 port_recv_port_message_t によって構造を規定する。
    */
   struct recv_port_message_t	recv_msg;
 
   /*
-   * ������å��������Ȥ�Ω��
+   * 返答メッセージの組み立て
    */
-  recv_msg.error = errno;	/* ���顼�ֹ������ */
-  recv_msg.port  = port;	/* ��å������Хåե� ID ������ */
+  recv_msg.error = errno;	/* エラー番号の設定 */
+  recv_msg.port  = port;	/* メッセージバッファ ID の設定 */
 
   /*
-   * ������å��������׵ḵ�����롣
-   * ���ΤȤ�����snd_mbf() �����ƥॳ����Υ��顼��̵�뤷�Ƥ��롣
+   * 返答メッセージを要求元に送る。
+   * 今のところ、snd_mbf() システムコールのエラーは無視している。
    */
   snd_mbf (rport, sizeof (recv_msg), &recv_msg);
 }

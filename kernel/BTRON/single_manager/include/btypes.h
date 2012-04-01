@@ -1,10 +1,10 @@
-/* ╤╕длдЙ╣а
+/* Е┘╠И─ Е╝ Г╬╘
  */
 
 #define	INTERRUPT_NUMBER 66
 
 
-/* BTRON ╔ч╔м║╪╔╦╔Ц╓г╩хмя╓╧╓К╥©╓ндЙ╣а╓Р╧т╓╕
+/* BTRON Ц┐·Ц┐█Ц┐╪Ц┌╦Ц┐ёЦ│╖Д╫©Г■╗Ц│≥Ц┌▀Е·▀Ц│╝Е╝ Г╬╘Ц┌▓Х║▄Ц│├
  */
 typedef int	W;
 typedef unsigned int	UW;

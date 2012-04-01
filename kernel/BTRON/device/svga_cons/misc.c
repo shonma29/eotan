@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -16,8 +16,8 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 /*
  * $Log: misc.c,v $
  * Revision 1.3  1999/05/04 14:27:36  kishida0
- * �ǥХå��ѤΥ��󥽡���Ȥ��ƺ���ͽ��
- * �ʤ����ä�DP�Ȥϴ�Ϣ���ʤ��Τ����դ��Ƥ�������
+ * デバッグ用のコンソールとして作成予定
+ * なんちゃってDPとは関連しないので注意してください
  *
  * Revision 1.2  1999/04/20 16:19:44  kishida0
  * *** empty log message ***
@@ -47,7 +47,7 @@ static ER	vprintf (B *fmt, VP arg0);
 
 
 
-/* init_log - �������ϵ�������������
+/* init_log - ログ出力機構を初期化する
  *
  *
  */
@@ -166,8 +166,8 @@ put_string (B *line, ID port)
 W 
 putc (int ch, ID port)
 {
-  DDEV_REQ		req;		/* �׵�ѥ��å� */
-  DDEV_RES		res;		/* �����ѥ��å� */
+  DDEV_REQ		req;		/* 要求パケット */
+  DDEV_RES		res;		/* 返答パケット */
   W			rsize;
   ER			error;
   W			i;
@@ -196,9 +196,9 @@ putc (int ch, ID port)
 
 
 
-/* _assert - ASSERT �ޥ����ˤ�äƸƤӽФ����ؿ�
+/* _assert - ASSERT マクロによって呼び出される関数
  *
- * ��å���������Ϥ����ץ�������λ���롣
+ * メッセージを出力し、プログラムを終了する。
  *
  */ 
 void

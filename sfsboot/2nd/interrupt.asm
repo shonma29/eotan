@@ -1,4 +1,4 @@
-%macro	int0_16_handler 1	; Îã³°½èÍıÍÑ
+%macro	int0_16_handler 1	; ä¾‹å¤–å‡¦ç†ç”¨
 	cli
 	pushad
 	push	byte %1			
@@ -8,7 +8,7 @@
 	iret		
 %endmacro	
 	
-%macro	int8259master_handler 1	; ¥Ï¡¼¥É¥¦¥§¥¢³ä¤ê¹ş¤ß 1-8ÍÑ 
+%macro	int8259master_handler 1	; ãƒãƒ¼ãƒ‰ã‚¦ã‚§ã‚¢å‰²ã‚Šè¾¼ã¿ 1-8ç”¨ 
 	cli
 	pushad
 	push	byte %1
@@ -22,7 +22,7 @@
 	iret
 %endmacro
 
-%macro	int8259slave_handler 1	; ¥Ï¡¼¥É¥¦¥§¥¢³ä¤ê¹ş¤ß 9-16ÍÑ
+%macro	int8259slave_handler 1	; ãƒãƒ¼ãƒ‰ã‚¦ã‚§ã‚¢å‰²ã‚Šè¾¼ã¿ 9-16ç”¨
 	cli
 	pushad
 	push	byte %1
@@ -163,10 +163,10 @@ int47_handler:
 	int8259slave_handler 47
 
 ;-----------------------------------------------------------
-clear_int:			; ³ä¤ê¹ş¤ß¶Ø»ß
+clear_int:			; å‰²ã‚Šè¾¼ã¿ç¦æ­¢
 	cli
 	ret
 
-set_int:			; ³ä¤ê¹ş¤ßµö²Ä
+set_int:			; å‰²ã‚Šè¾¼ã¿è¨±å¯
 	sti
 	ret

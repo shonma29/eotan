@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -27,8 +27,8 @@ UB	my_macaddr[6];
 W
 ether (W ac, B **av)
 {
-  DDEV_REQ		req;		/* �׵�ѥ��å� */
-  DDEV_RES		res;		/* �����ѥ��å� */
+  DDEV_REQ		req;		/* 要求パケット */
+  DDEV_RES		res;		/* 返答パケット */
   W			rsize;
   ER			error;
   ID			recv;

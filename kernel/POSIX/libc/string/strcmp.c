@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -9,8 +9,8 @@ Version 2, June 1991
 
 */
 /*
- * ʸ�������Ӵؿ���
- * (��ʸ����1�Х��ȤȲ��ꤷ�Ƥ�����)
+ * 文字列の比較関数群
+ * (各文字は1バイトと仮定している版)
  */
 
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/string/strcmp.c,v 1.4 2000/02/17 14:29:02 naniwa Exp $ */
@@ -30,27 +30,27 @@ static char rcsid[] = "@(#)$Header";
  * minor fix
  *
  * Revision 1.1  1996/11/11 13:33:42  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  * Revision 1.2  1995/09/21  15:52:52  night
- * �������ե��������Ƭ�� Copyright notice ������ɲá�
+ * ソースファイルの先頭に Copyright notice 情報を追加。
  *
  * Revision 1.1  1995/03/18  14:21:12  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  *
  */
 
 /*
- * ʸ�������� 
+ * 文字列の比較 
  *
- * ���� s1 �� s2 ����Ӥ��롣
- * �ɤ��餫��ʸ��������Ƥ��ۤʤ�ޤ���Ӥ��롣
+ * 引数 s1 と s2 を比較する。
+ * どちらかの文字列の内容が異なるまで比較する。
  *
- * �֤��͡�
- *	0	ʸ��������Ƥ�������
- *	>0	s1 ��ʸ����������礭��
- *	<0	s2 ��ʸ����������礭��
+ * 返り値：
+ *	0	文字列の内容が等しい
+ *	>0	s1 の文字列の方が大きい
+ *	<0	s2 の文字列の方が大きい
  *
  */
 int
@@ -66,17 +66,17 @@ strcmp (char *s1, char *s2)
 }
 
 /*
- * ʸ�������� 
+ * 文字列の比較 
  *
- * ���� s1 �� s2 ����Ӥ��롣
- * �ɤ��餫��ʸ��������Ƥ��ۤʤ뤢�뤤�ϰ��� n �ǻ��ꤷ��
- * Ĺ���ޤ�����������Ӥ��롣
+ * 引数 s1 と s2 を比較する。
+ * どちらかの文字列の内容が異なるあるいは引数 n で指定した
+ * 長さまで等しいか比較する。
  *
- * �֤��͡�
- *	0	ʸ��������Ƥ�������
- *		���뤤�ϡ����ꤷ��Ĺ���ޤ���Ӥ�����
- *	>0	s1 ��ʸ����������礭��
- *	<0	s2 ��ʸ����������礭��
+ * 返り値：
+ *	0	文字列の内容が等しい
+ *		あるいは、指定した長さまで比較した。
+ *	>0	s1 の文字列の方が大きい
+ *	<0	s2 の文字列の方が大きい
  *
  */
 int

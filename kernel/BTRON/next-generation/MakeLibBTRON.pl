@@ -15,7 +15,7 @@ sub MakeLibCode ($$$@)
     $file = "$dir/$func_name.c";
     open FD, ">$file";
 
-    print FD "/*\nB-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£\nGNU GENERAL PUBLIC LICENSE\nVersion 2, June 1991\n\n(C) B-Free Project.\n*/\n\n";
+    print FD "/*\nB-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚\nGNU GENERAL PUBLIC LICENSE\nVersion 2, June 1991\n\n(C) B-Free Project.\n*/\n\n";
     print FD "#include <sys/syscall_nr.h>\n";
     print FD "#include <types.h>\n\n";
     print FD "/*\n** Function: $func_name\n** Description: $description\n*/\n\n";
@@ -45,7 +45,7 @@ sub MakeLowlibCode ($$$@)
     $file = "$dir/$func_name.c";
     open FD, ">$file";
 
-    print FD "/*\nB-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£\nGNU GENERAL PUBLIC LICENSE\nVersion 2, June 1991\n\n(C) B-Free Project.\n*/\n\n";
+    print FD "/*\nB-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚\nGNU GENERAL PUBLIC LICENSE\nVersion 2, June 1991\n\n(C) B-Free Project.\n*/\n\n";
     print FD "#include <sys/syscall_nr.h>\n";
     print FD "#include <types.h>\n\n";
     print FD "/*\n** Function: $func_name\n** Description: $description\n*/\n\n";
@@ -87,7 +87,7 @@ print SYSNO_FD << '__SYSPKT_HDR__';
 #ifndef __BTRON_SYSCALL_NR_H__
 #define __BTRON_SYSCALL_NR_H__
 /*
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
 
@@ -101,7 +101,7 @@ print SYSPKT_FD << '__SYSPKT_HDR__';
 #ifndef __BTRON_SYSCALL_PACKETS_H__
 #define __BTRON_SYSCALL_PACKETS_H__
 /*
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
 
@@ -115,30 +115,30 @@ print BTRONPKT_FD <<'__BTRONPKT_HDR__';
 #ifndef __BTRON_PACKET_H__
 #define __BTRON_PACKET_H__
 /*
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 GNU GENERAL PUBLIC LICENSE\nVersion 2, June 1991\n\n(C) B-Free Project.
 */
 
 struct btron_response
 {
-  ID	receive_port;		/* Í×µá¼õ¿®ÍÑ¤Î¥İ¡¼¥È	*/
-  W	msg_length;		/* ¥á¥Ã¥»¡¼¥¸¤ÎÄ¹¤µ	*/
-  W	operation;		/* Í×µáÈÖ¹æ(¥·¥¹¥Æ¥à¥³¡¼¥ë¤ËÂĞ±ş)	*/
-  W	errno;			/* ¥¨¥é¡¼ÈÖ¹æ */
-  W	status;			/* ¥¹¥Æ¡¼¥¿¥¹(¥ê¥¿¡¼¥óÃÍ) */
+  ID	receive_port;		/* è¦æ±‚å—ä¿¡ç”¨ã®ãƒãƒ¼ãƒˆ	*/
+  W	msg_length;		/* ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®é•·ã•	*/
+  W	operation;		/* è¦æ±‚ç•ªå·(ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«ã«å¯¾å¿œ)	*/
+  W	errno;			/* ã‚¨ãƒ©ãƒ¼ç•ªå· */
+  W	status;			/* ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹(ãƒªã‚¿ãƒ¼ãƒ³å€¤) */
 
-  W	ret1;			/* ¥µ¥Ö¤Ë»ÈÍÑ¤¹¤ë¥ê¥¿¡¼¥óÃÍ */
-  W	ret2;			/* ¥µ¥Ö¤Ë»ÈÍÑ¤¹¤ë¥ê¥¿¡¼¥óÃÍ */
+  W	ret1;			/* ã‚µãƒ–ã«ä½¿ç”¨ã™ã‚‹ãƒªã‚¿ãƒ¼ãƒ³å€¤ */
+  W	ret2;			/* ã‚µãƒ–ã«ä½¿ç”¨ã™ã‚‹ãƒªã‚¿ãƒ¼ãƒ³å€¤ */
 };
 
-/* BTRON ¥Ş¥Í¡¼¥¸¥ã¤Ø¤ÎÍ×µá¥á¥Ã¥»¡¼¥¸¤Î¹½Â¤ÂÎ */
+/* BTRON ãƒãƒãƒ¼ã‚¸ãƒ£ã¸ã®è¦æ±‚ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®æ§‹é€ ä½“ */
 struct btron_request
 {
-  ID	receive_port;		/* Í×µá¼õ¿®ÍÑ¤Î¥İ¡¼¥È	*/
-  ID	caller;			/* ¸Æ¤Ó½Ğ¤·¸µ¤Î¥¿¥¹¥¯ ID */
-  ID	procid;			/* ¸Æ¤Ó½Ğ¤·¸µ¤Î¥×¥í¥»¥¹ ID */
-  W	msg_length;		/* ¥á¥Ã¥»¡¼¥¸¤ÎÄ¹¤µ	*/
-  W	operation;		/* Í×µáÈÖ¹æ(¥·¥¹¥Æ¥à¥³¡¼¥ë¤ËÂĞ±ş)	*/
+  ID	receive_port;		/* è¦æ±‚å—ä¿¡ç”¨ã®ãƒãƒ¼ãƒˆ	*/
+  ID	caller;			/* å‘¼ã³å‡ºã—å…ƒã®ã‚¿ã‚¹ã‚¯ ID */
+  ID	procid;			/* å‘¼ã³å‡ºã—å…ƒã®ãƒ—ãƒ­ã‚»ã‚¹ ID */
+  W	msg_length;		/* ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®é•·ã•	*/
+  W	operation;		/* è¦æ±‚ç•ªå·(ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«ã«å¯¾å¿œ)	*/
 
   union {
 __BTRONPKT_HDR__
@@ -148,7 +148,7 @@ print SYSFUNCS_FD << '__SYSFUNCS_HDR__';
 #ifndef __BTRON_SYSCALL_FUNCS_H__
 #define __BTRON_SYSCALL_FUNCS_H__
 /*
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
 

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -26,10 +26,10 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
  * Changed function name for sigsuspend.
  *
  * Revision 1.2  1997/08/31 13:13:42  night
- * ¤È¤ê¤¢¤¨¤º¡¢OS ¥Õ¥¡¥¤¥ë¤ËÆş¤ì¤ë¤È¤³¤í¤Ş¤Ç¤Ç¤­¤¿¡£
+ * ã¨ã‚Šã‚ãˆãšã€OS ãƒ•ã‚¡ã‚¤ãƒ«ã«å…¥ã‚Œã‚‹ã¨ã“ã‚ã¾ã§ã§ããŸã€‚
  *
  * Revision 1.1  1996/11/11  13:36:05  night
- * IBM PC ÈÇ¤Ø¤ÎºÇ½é¤ÎÅĞÏ¿
+ * IBM PC ç‰ˆã¸ã®æœ€åˆã®ç™»éŒ²
  *
  * ----------------
  *
@@ -47,7 +47,7 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 #define DEF_NOSYSCALL		{ nodef, "nosyscall" }
 
 /*
- * ²¿¤â¤·¤Ê¤¤¡¢¥·¥¹¥Æ¥à¥³¡¼¥ë¤ÎÄêµÁ (ENOSYS ¥¨¥é¡¼¤òÊÖ¤¹)¡£
+ * ä½•ã‚‚ã—ãªã„ã€ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«ã®å®šç¾© (ENOSYS ã‚¨ãƒ©ãƒ¼ã‚’è¿”ã™)ã€‚
  */
 static int
 nodef () 

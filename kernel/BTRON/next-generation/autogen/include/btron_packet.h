@@ -1,30 +1,30 @@
 #ifndef __BTRON_PACKET_H__
 #define __BTRON_PACKET_H__
 /*
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 GNU GENERAL PUBLIC LICENSE\nVersion 2, June 1991\n\n(C) B-Free Project.
 */
 
 struct btron_response
 {
-  ID	receive_port;		/* �׵�����ѤΥݡ���	*/
-  W	msg_length;		/* ��å�������Ĺ��	*/
-  W	operation;		/* �׵��ֹ�(�����ƥॳ������б�)	*/
-  W	errno;			/* ���顼�ֹ� */
-  W	status;			/* ���ơ�����(�꥿������) */
+  ID	receive_port;		/* 要求受信用のポート	*/
+  W	msg_length;		/* メッセージの長さ	*/
+  W	operation;		/* 要求番号(システムコールに対応)	*/
+  W	errno;			/* エラー番号 */
+  W	status;			/* ステータス(リターン値) */
 
-  W	ret1;			/* ���֤˻��Ѥ���꥿������ */
-  W	ret2;			/* ���֤˻��Ѥ���꥿������ */
+  W	ret1;			/* サブに使用するリターン値 */
+  W	ret2;			/* サブに使用するリターン値 */
 };
 
-/* BTRON �ޥ͡�����ؤ��׵��å������ι�¤�� */
+/* BTRON マネージャへの要求メッセージの構造体 */
 struct btron_request
 {
-  ID	receive_port;		/* �׵�����ѤΥݡ���	*/
-  ID	caller;			/* �ƤӽФ����Υ����� ID */
-  ID	procid;			/* �ƤӽФ����Υץ����� ID */
-  W	msg_length;		/* ��å�������Ĺ��	*/
-  W	operation;		/* �׵��ֹ�(�����ƥॳ������б�)	*/
+  ID	receive_port;		/* 要求受信用のポート	*/
+  ID	caller;			/* 呼び出し元のタスク ID */
+  ID	procid;			/* 呼び出し元のプロセス ID */
+  W	msg_length;		/* メッセージの長さ	*/
+  W	operation;		/* 要求番号(システムコールに対応)	*/
 
   union {
     struct bsc_gdsp_ptr		par_gdsp_ptr;

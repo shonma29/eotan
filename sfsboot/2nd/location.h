@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -13,23 +13,23 @@ Version 2, June 1991
 
   $Log: location.h,v $
   Revision 1.4  1996/07/08 14:52:36  night
-  ���󥰥�⥸�塼��֡��Ȥλ��Ρ������ͥ�Υ����ɥ��ɥ쥹��
-  0x80001000 ���� 0x80002000 ���ѹ���
+  シングルモジュールブートの時の、カーネルのロードアドレスを
+  0x80001000 から 0x80002000 に変更。
 
  * Revision 1.3  1996/05/15  13:57:03  night
- * �����ܡ��ɴط��� I/O �ݡ��Ȥ� IBM PC �˹礦�褦����������
+ * キーボード関係の I/O ポートを IBM PC に合うよう修正した。
  *
  * Revision 1.2  1996/05/11  15:51:13  night
- * VRAM �ط���������� (vram.h ��������Ƥ��뤿��)
+ * VRAM 関係の定義を削除 (vram.h で定義しているため)
  *
  * Revision 1.1  1996/05/11  10:45:04  night
- * 2nd boot (IBM-PC �� B-FREE OS) �Υ�������
+ * 2nd boot (IBM-PC 版 B-FREE OS) のソース。
  *
  * Revision 1.3  1995/09/21  15:50:40  night
- * �������ե��������Ƭ�� Copyright notice ������ɲá�
+ * ソースファイルの先頭に Copyright notice 情報を追加。
  *
  * Revision 1.2  1994/11/13  15:04:44  night
- * �����ͥ륢�ɥ쥹(ʪ��)�� 0x00010000 ���ѹ�
+ * カーネルアドレス(物理)を 0x00010000 に変更
  *
  * Revision 1.1  1993/10/11  21:29:28  btron
  * btron/386

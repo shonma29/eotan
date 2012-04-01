@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -39,11 +39,11 @@ W psc_getdents_f(struct posix_request *req)
 	return (FAIL);
     }
 
-    /* ÂĞ¾İ¥Õ¥¡¥¤¥ë¤¬¥Ñ¥¤¥×¤À¤Ã¤¿¤ê¡¢
-     * ¥Ç¥£¥ì¥¯¥È¥ê°Ê³°¤Î¾ì¹ç¤Ë¤Ï¡¢¥¨¥é¡¼¤Ë¤¹¤ë
+    /* å¯¾è±¡ãƒ•ã‚¡ã‚¤ãƒ«ãŒãƒ‘ã‚¤ãƒ—ã ã£ãŸã‚Šã€
+     * ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªä»¥å¤–ã®å ´åˆã«ã¯ã€ã‚¨ãƒ©ãƒ¼ã«ã™ã‚‹
      */
     if (fp->f_flag & F_PIPE) {
-	/* ¥Ñ¥¤¥×¤ÎÆÉ¤ß½ñ¤­ */
+	/* ãƒ‘ã‚¤ãƒ—ã®èª­ã¿æ›¸ã */
 	put_response(req, EP_INVAL, -1, 0, 0);
 	return (FAIL);
     }

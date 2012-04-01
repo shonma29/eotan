@@ -1,5 +1,5 @@
 #
-# B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+# B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 # 
 # GNU GENERAL PUBLIC LICENSE
 # Version 2, June 1991
@@ -8,12 +8,12 @@
 # (C) 2001, Tomohide Naniwa
 #
 
-# ╔г╔п╔ц╔╟мя Define
+# Ц┐┤Ц┐░Ц┐┐Ц┌╟Г■╗ Define
 #
-# VMDEBUG	╡╬аш╣╜╡╠╢ьо╒
-# MMDEBUG	╔А╔Б╔Й╢имЩ╢ьо╒
-# PMDEBUG	╔в╔М╔╩╔╧╢имЩ╢ьо╒
-# FMDEBUG	╔у╔║╔╓╔К╢имЩ╢ьо╒
+# VMDEBUG	Д╩╝Ф┐ЁХ╗≤Ф├╤И√╒И─ё
+# MMDEBUG	Ц┐║Ц┐╒Ц┐╙Г╝║Г░├И√╒И─ё
+# PMDEBUG	Ц┐≈Ц┐╜Ц┌╩Ц┌╧Г╝║Г░├И√╒И─ё
+# FMDEBUG	Ц┐∙Ц┌║Ц┌╓Ц┐╚Г╝║Г░├И√╒И─ё
 #
 #DEBUG=-DFMDEBUG -DEXEC_DEBUG -DDEBUG -DFKDEBUG
 DEBUG=#-DEXEC_DEBUG

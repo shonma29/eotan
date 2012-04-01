@@ -1,8 +1,8 @@
 /**************************************************************************
 * idt.c
-* ¤³¤Î¥³¡¼¥É¤Ï,B-Free Project ¤Î boot/2nd/idt.c ¤ò¤â¤È¤Ë¤·¤¿¤â¤Î¤Ç¤¹¡£ 
+* ã“ã®ã‚³ãƒ¼ãƒ‰ã¯,B-Free Project ã® boot/2nd/idt.c ã‚’ã‚‚ã¨ã«ã—ãŸã‚‚ã®ã§ã™ã€‚ 
 * 
-*                                                ºÇ½ªÊÑ¹¹ 2000/3/5  
+*                                                æœ€çµ‚å¤‰æ›´ 2000/3/5  
 */
 
 #include "types.h"
@@ -23,7 +23,7 @@ init_idt (void)
       set_idt (i, 0x08, (int)ignore_handler, TRAP_DESC, 0);
     }
 
-  set_idt (0x20, 0x08, (int)int32_handler, INTERRUPT_DESC, 0); /*¥Ï¡¼¥É¥¦¥§¥¢³ä¤ê¹ş¤ß */
+  set_idt (0x20, 0x08, (int)int32_handler, INTERRUPT_DESC, 0); /*ãƒãƒ¼ãƒ‰ã‚¦ã‚§ã‚¢å‰²ã‚Šè¾¼ã¿ */
   set_idt (0x21, 0x08, (int)int33_handler, INTERRUPT_DESC, 0);
   set_idt (0x23, 0x08, (int)int35_handler, INTERRUPT_DESC, 0);
   set_idt (0x24, 0x08, (int)int36_handler, INTERRUPT_DESC, 0);

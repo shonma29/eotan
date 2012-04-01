@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -8,7 +8,7 @@ Version 2, June 1991
 (C) B-Free Project.
 
 */
-/* message.h --- ¥á¥Ã¥»¡¼¥¸¥Ğ¥Ã¥Õ¥¡´ÉÍı
+/* message.h --- ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒãƒƒãƒ•ã‚¡ç®¡ç†
  *
  *
  */
@@ -17,29 +17,29 @@ Version 2, June 1991
 #define __H_MESSAGE_H__		1
 
 /*******************************************************************************
- * ¥á¥Ã¥»¡¼¥¸¥Ğ¥Ã¥Õ¥¡¤Î¥Ø¥Ã¥À
+ * ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒãƒƒãƒ•ã‚¡ã®ãƒ˜ãƒƒãƒ€
  *
  */
 typedef struct message_head_t
 {
   ATR			mbfatr;
-  int			total_size;	/* ¶õ¤­¥Ğ¥Ã¥Õ¥¡¤Î¥µ¥¤¥º */
+  int			total_size;	/* ç©ºããƒãƒƒãƒ•ã‚¡ã®ã‚µã‚¤ã‚º */
   struct message_t	*message_ptr;
   struct message_t	*last_message_ptr;
-  T_TCB			*wait_sendtask;	/* ¥á¥Ã¥»¡¼¥¸¤òÂÔ¤Ã¤Æ¤¤¤ë¥¿¥¹¥¯(Á÷¿®Â¦) */
+  T_TCB			*wait_sendtask;	/* ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’å¾…ã£ã¦ã„ã‚‹ã‚¿ã‚¹ã‚¯(é€ä¿¡å´) */
   T_TCB			*wait_sendtail;
-  T_TCB			*wait_recvtask;	/* ¥á¥Ã¥»¡¼¥¸¤òÂÔ¤Ã¤Æ¤¤¤ë¥¿¥¹¥¯(¼õ¿®Â¦) */
+  T_TCB			*wait_recvtask;	/* ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’å¾…ã£ã¦ã„ã‚‹ã‚¿ã‚¹ã‚¯(å—ä¿¡å´) */
   T_TCB			*wait_recvtail;
-  INT			bufsz;		/* ¥Ğ¥Ã¥Õ¥¡¤ÎºÇÂçÄ¹	*/
-  INT			msgsz;		/* ¥á¥Ã¥»¡¼¥¸¤ÎºÇÂçÄ¹	*/
+  INT			bufsz;		/* ãƒãƒƒãƒ•ã‚¡ã®æœ€å¤§é•·	*/
+  INT			msgsz;		/* ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®æœ€å¤§é•·	*/
 } T_MSGHEAD;
 
 
 
 /*******************************************************************************
- * ¥á¥Ã¥»¡¼¥¸¥¨¥ó¥È¥ê
+ * ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚¨ãƒ³ãƒˆãƒª
  *
- *	¥á¥Ã¥»¡¼¥¸¤Ï¤³¤Î¥Ñ¥±¥Ã¥È¤ËµÍ¤á¤é¤ì¤ë¡£
+ *	ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã¯ã“ã®ãƒ‘ã‚±ãƒƒãƒˆã«è©°ã‚ã‚‰ã‚Œã‚‹ã€‚
  *
  */
 typedef struct message_t

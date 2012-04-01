@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -12,12 +12,12 @@ Version 2, June 1991
 static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/virtual.c,v 1.1 1996/11/11 13:36:06 night Exp $";
 
 /*
- * ²¾ÁÛµ­²±´ØÏ¢¤Î½èÍı¤ò¹Ô¤¦¥Õ¥¡¥¤¥ë¡£
+ * ä»®æƒ³è¨˜æ†¶é–¢é€£ã®å‡¦ç†ã‚’è¡Œã†ãƒ•ã‚¡ã‚¤ãƒ«ã€‚
  *
  *
  * $Log: virtual.c,v $
  * Revision 1.1  1996/11/11 13:36:06  night
- * IBM PC ÈÇ¤Ø¤ÎºÇ½é¤ÎÅĞÏ¿
+ * IBM PC ç‰ˆã¸ã®æœ€åˆã®ç™»éŒ²
  *
  * ----------------
  *
@@ -26,7 +26,7 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 
 #include "lowlib.h"
 
-/* vm_create - ¥æ¡¼¥¶¥×¥í¥»¥¹¤Î²¾ÁÛ¶õ´Ö¤òºîÀ®¤¹¤ë¡£
+/* vm_create - ãƒ¦ãƒ¼ã‚¶ãƒ—ãƒ­ã‚»ã‚¹ã®ä»®æƒ³ç©ºé–“ã‚’ä½œæˆã™ã‚‹ã€‚
  *
  */
 int

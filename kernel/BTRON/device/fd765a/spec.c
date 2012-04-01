@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -29,7 +29,7 @@ struct spec	fd_spec[] =
 
 
 /*
- * FD �μ���̾�򥭡��ˤ��ơ�Specification (�����ä���¤�ΤؤΥݥ���)���֤���
+ * FD の種類名をキーにして、Specification (の入った構造体へのポインタ)を返す。
  */
 struct spec *
 get_fdspec (B *name)

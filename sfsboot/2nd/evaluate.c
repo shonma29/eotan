@@ -63,7 +63,7 @@ setargs (char *line, char **args)
 	    }
 	  line++;
 	}
-      while (*line == ' ')	/* ¶õÇò¤Î¼è¤ê½ü¤­ */
+      while (*line == ' ')	/* ç©ºç™½ã®å–ã‚Šé™¤ã */
 	{
 	  line++;
 	}
@@ -80,7 +80,7 @@ int
 evaluate (char *line)
 {
   int i;
-  char *args[10];		/* ¤¤¤¤²Ã¸º¤Ë·è¤á¤¿ÃÍ */
+  char *args[10];		/* ã„ã„åŠ æ¸›ã«æ±ºã‚ãŸå€¤ */
 
   bzero ((void *)args, sizeof (char *) * 10);
   setargs(line, args);

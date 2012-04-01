@@ -1,6 +1,6 @@
 /*
 
-B-Free Project д╬└╕└о╩кд╧ GNU Generic PUBLIC LICENSE д╦╜╛ддд▐д╣бг
+B-Free Project уБочФЯцИРчЙйуБп GNU Generic PUBLIC LICENSE уБлх╛УуБДуБ╛уБЩуАВ
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -26,7 +26,7 @@ Version 2, June 1991
 
 #include "posix.h"
 
-/* psc_opendir_f - е╟егеьепе╚еъд╬екб╝е╫еє
+/* psc_opendir_f - уГЗуВгуГмуВпуГИуГкуБоуВкуГ╝уГЧуГ│
  */
 W
 psc_opendir_f (struct posix_request *req)
@@ -46,7 +46,7 @@ psc_opendir_f (struct posix_request *req)
   errno = proc_alloc_fileid (req->procid, &fileid);
   if (errno)
     {
-      /* есетеъ╝ш╞└еиещб╝ */
+      /* уГбуГвуГкхПЦх╛ЧуВиуГйуГ╝ */
       put_response (req, EP_NOMEM, 0, 0, 0);
       return (FAIL);
     }
@@ -55,7 +55,7 @@ psc_opendir_f (struct posix_request *req)
   pathname = (B *)alloca (req->param.par_opendir.pathlen + 1);
   if (pathname == NULL)
     {
-      /* есетеъ╝ш╞└еиещб╝ */
+      /* уГбуГвуГкхПЦх╛ЧуВиуГйуГ╝ */
       put_response (req, EP_NOMEM, 0, 0, 0);
       return (FAIL);
     }
@@ -78,7 +78,7 @@ psc_opendir_f (struct posix_request *req)
 		    req->param.par_opendir.pathlen + 1, pathname);
   if (errno)
     {
-      /* е╤е╣╠╛д╬е│е╘б╝еиещб╝ */
+      /* уГСуВ╣хРНуБоуВ│уГФуГ╝уВиуГйуГ╝ */
       if (errno == E_PAR)
 	put_response (req, EP_INVAL, 0, 0, 0);
       else
@@ -121,25 +121,25 @@ psc_opendir_f (struct posix_request *req)
     }
 
   errno = fs_open_file (pathname,
-			O_RDWR,		/* е╟егеьепе╚еъдЄ╜ёдн┤╣диды▓─ */
-					/* ╟╜└ндмдвдыд╬д╟бвO_RDWR дЄ╗╪ */
-					/* ─ъд╣ды */
+			O_RDWR,		/* уГЗуВгуГмуВпуГИуГкуВТцЫ╕уБНцПЫуБИуВЛхПп */
+					/* шГ╜цАзуБМуБВуВЛуБоуБзуАБO_RDWR уВТцМЗ */
+					/* хоЪуБЩуВЛ */
 			0,
 			&acc,
 			startip, 
 			&newip);
   if (errno)
     {
-      /* е╒ебедеыдмекб╝е╫еєд╟днд╩дд */
+      /* уГХуВбуВдуГлуБМуВкуГ╝уГЧуГ│уБзуБНуБкуБД */
       put_response (req, errno, 0, 0, 0);
       return (FAIL);
     }
   
   if ((newip->i_mode & FS_FMT_DIR) == 0)
     {
-      /* е╒ебедеыд╧бве╟егеьепе╚еъд╟д╧д╩длд├д┐бг
-       * еиещб╝д╚д╣ды( root ецб╝е╢д╬╛ь╣чд╦д╧бв
-       * └о╕∙д╟дтдшддбй)
+      /* уГХуВбуВдуГлуБпуАБуГЗуВгуГмуВпуГИуГкуБзуБпуБкуБЛуБгуБЯуАВ
+       * уВиуГйуГ╝уБиуБЩуВЛ( root уГжуГ╝уВ╢уБоха┤хРИуБлуБпуАБ
+       * цИРхКЯуБзуВВуВИуБДя╝Я)
        */
       fs_close_file (newip);
       put_response (req, EP_NOTDIR, -1, 0, 0);

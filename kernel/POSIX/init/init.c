@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -16,17 +16,17 @@ static char rcsid[] = "@(#)$Id: init.c,v 1.2 1998/07/01 13:55:10 night Exp $";
 
 /* $Log: init.c,v $
 /* Revision 1.2  1998/07/01 13:55:10  night
-/* �ե��������ʸ�������ɤ� SJIS ���� EUC ���ѹ���
+/* ファイル中の文字コードを SJIS から EUC に変更。
 /*
 /* Revision 1.1  1998/01/07 15:31:36  night
-/* �ǽ����Ͽ
+/* 最初の登録
 /*
  *
  */
 
 
 /*
- * POSIX �Ķ��Ǻǽ��Ω���夬��ץ������ init��
+ * POSIX 環境で最初に立ち上がるプログラム init。
  * 
  */
 
@@ -40,16 +40,16 @@ main (int ac, char **av)
 
   if (ac <= 1)
     {
-      /* runlevel �ϥǥե���� */
+      /* runlevel はデフォルト */
       runlevel = DEFAULT_RUNLEVEL;		/* 0 */
     }
   else
     {
-      /* �����ǻ��ꤷ�� runlevel ��¹Ԥ��� */
+      /* 引数で指定した runlevel を実行する */
       runlevel = atoi (av[1]);
     }
 
-  go_runlevel (runlevel);	/* runlevel ���ѹ� */
+  go_runlevel (runlevel);	/* runlevel を変更 */
       
 }
 
@@ -61,16 +61,16 @@ go_runlevel (int runlevel)
   inittab = open (INITTAB, O_RDONLY);
   if (inittab < 0)
     {
-      /* inittab �ե����뤬�����ץ�Ǥ��ʤ��ä� - */
-      /* �����ƥ����ߤ��� */
+      /* inittab ファイルがオープンできなかった - */
+      /* システムを停止する */
     }
 
   while (read_line (inittab, line) > 0)
     {
       if (parse_runlevel (line) == runlevel)
 	{
-	  /* �ɤ߹�����Ԥ� runlevel �ϰ����ǻ��ꤵ�줿 runlevel ���� */
-	  /* ���� -> ���ιԤǻ��ꤷ�Ƥ��륳�ޥ�ɤ�¹� */
+	  /* 読み込んだ行の runlevel は引数で指定された runlevel と等 */
+	  /* しい -> その行で指定してあるコマンドを実行 */
 	  exec_command (line);
 	}
     }

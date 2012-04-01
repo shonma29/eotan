@@ -1,5 +1,5 @@
 /*
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
 
@@ -11,7 +11,7 @@ Version 2, June 1991
 
 /*
 ** Function: chg_usr
-** Description: ¥×¥í¥»¥¹¤Î¥æ¡¼¥¶¾ðÊó¤ÎÊÑ¹¹
+** Description: ãƒ—ãƒ­ã‚»ã‚¹ã®ãƒ¦ãƒ¼ã‚¶æƒ…å ±ã®å¤‰æ›´
 */
 
 ER

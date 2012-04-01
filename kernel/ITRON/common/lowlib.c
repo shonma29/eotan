@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -10,7 +10,7 @@ Version 2, June 1991
 (C) 2002, Tomohide Naniwa
 
 */
-/* lowlib.c --- lowlib ´ØÏ¢¤Î´Ø¿ô
+/* lowlib.c --- lowlib é–¢é€£ã®é–¢æ•°
  *
  *
  */
@@ -36,7 +36,7 @@ W nlowlib = 0;
 
 
 /*
- *	°ú¿ô¤Ç»ØÄê¤·¤¿ lowlib ¥â¥¸¥å¡¼¥ë¤Î½é´ü²½
+ *	å¼•æ•°ã§æŒ‡å®šã—ãŸ lowlib ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«ã®åˆæœŸåŒ–
  */
 ER init_lowlib(struct module_info *modp)
 {
@@ -67,7 +67,7 @@ ER init_lowlib(struct module_info *modp)
 
 
 /*
- *	»ØÄê¤·¤¿¥¿¥¹¥¯¤Ë LOWLIB ¤ò¤¯¤Ã¤Ä¤±¤ë
+ *	æŒ‡å®šã—ãŸã‚¿ã‚¹ã‚¯ã« LOWLIB ã‚’ãã£ã¤ã‘ã‚‹
  */
 ER load_lowlib(VP * argp)
 {
@@ -106,9 +106,9 @@ ER load_lowlib(VP * argp)
 	    printk("Found module %s == %s\n", args->name,
 		   lowlib_table[i].name);
 #endif
-	    /* ³ºÅö¤¹¤ë¥â¥¸¥å¡¼¥ë¤òÈ¯¸«¤·¤¿¡£ */
+	    /* è©²å½“ã™ã‚‹ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«ã‚’ç™ºè¦‹ã—ãŸã€‚ */
 
-	    /* ¥¿¥¹¥¯¤Ë³ä¤ê¹ş¤ß½èÍı´Ø¿ô¤òÅĞÏ¿¤¹¤ë */
+	    /* ã‚¿ã‚¹ã‚¯ã«å‰²ã‚Šè¾¼ã¿å‡¦ç†é–¢æ•°ã‚’ç™»éŒ²ã™ã‚‹ */
 	    if (lowlib_table[i].intr_func) {
 		if (tskp->n_interrupt >= MAX_MODULE) {
 		    return (E_SYS);
@@ -124,10 +124,10 @@ ER load_lowlib(VP * argp)
 	    printk("Registed interrupt functions to the task.\n");
 #endif
 
-	    /* lowlib ¤¬»ÈÍÑ¤¹¤ë¥¿¥¹¥¯Ëè¤Ë°Û¤Ê¤ë¾ğÊó(¥¿¥¹¥¯ ID ¤Ê¤É) ¤Î
-	     * ÎÎ°è¤òÀßÄê¤¹¤ë¡£
-	     * »ÈÍÑ¤¹¤ë²¾ÁÛ¥á¥â¥êÎÎ°è (LOWLIB_DATA) ¤òÊªÍı¥á¥â¥ê¤Ë¥Ş¥Ã¥×¤¹¤ë¡£
-	     * ¤¢¡¢¤½¤ÎÁ°¤Ë Region ¤ÎÀßÄê¤â¤¹¤ëÉ¬Í×¤¬¤¢¤ë¤«¤â¡£¡£
+	    /* lowlib ãŒä½¿ç”¨ã™ã‚‹ã‚¿ã‚¹ã‚¯æ¯ã«ç•°ãªã‚‹æƒ…å ±(ã‚¿ã‚¹ã‚¯ ID ãªã©) ã®
+	     * é ˜åŸŸã‚’è¨­å®šã™ã‚‹ã€‚
+	     * ä½¿ç”¨ã™ã‚‹ä»®æƒ³ãƒ¡ãƒ¢ãƒªé ˜åŸŸ (LOWLIB_DATA) ã‚’ç‰©ç†ãƒ¡ãƒ¢ãƒªã«ãƒãƒƒãƒ—ã™ã‚‹ã€‚
+	     * ã‚ã€ãã®å‰ã« Region ã®è¨­å®šã‚‚ã™ã‚‹å¿…è¦ãŒã‚ã‚‹ã‹ã‚‚ã€‚ã€‚
 	     */
 
 	    if (tskp->n_interrupt == 1) {
@@ -176,14 +176,14 @@ ER unload_lowlib(VP * argp)
 
 
 /*
- *	LOWLIB ¤Î¾ğÊó¤òÊÖ¤¹
+ *	LOWLIB ã®æƒ…å ±ã‚’è¿”ã™
  */
 ER stat_lowlib(VP * argp)
 {
     struct a {
 	B *name;
-	W *nlowlib;		/* lowlib ¤ÎÅĞÏ¿¿ô (name == */
-	/* NULL ¤Î¤È¤­)             */
+	W *nlowlib;		/* lowlib ã®ç™»éŒ²æ•° (name == */
+	/* NULL ã®ã¨ã)             */
 	struct lowlib_info *infop;
     } *args = (struct a *) argp;
     W i;
@@ -211,7 +211,7 @@ ER stat_lowlib(VP * argp)
     for (i = 0; i < nlowlib; i++) {
 	if (strncmp(args->name, lowlib_table[i].name, MAX_MODULE_NAME) ==
 	    0) {
-	    /* ³ºÅö¤¹¤ë¥â¥¸¥å¡¼¥ë¤òÈ¯¸«¤·¤¿¡£ */
+	    /* è©²å½“ã™ã‚‹ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«ã‚’ç™ºè¦‹ã—ãŸã€‚ */
 
 	    bcopy(&lowlib_table[i], args->infop,
 		  sizeof(struct lowlib_info));

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -19,8 +19,8 @@ static char rcs[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/
  * was on.
  *
  * Revision 1.2  1999/03/07 12:45:04  night
- * set_interrupt_handler () ¤ËÊÑ¹¹ dev ¤ÎÄÉ²Ã¡£
- * ne2000_interrupt_handler () ¤ÎÃæ¿È¤òÄÉ²Ã¡£
+ * set_interrupt_handler () ã«å¤‰æ›´ dev ã®è¿½åŠ ã€‚
+ * ne2000_interrupt_handler () ã®ä¸­èº«ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.1  1999/03/02 15:12:09  night
  * first version.
@@ -40,13 +40,13 @@ static char rcs[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/
 
 /* ===================================================================== *
  *                                                                       *
- *                ³ä¤ê¹ş¤ß¥Ï¥ó¥É¥é´Ø·¸¤Î½èÍı                             *
+ *                å‰²ã‚Šè¾¼ã¿ãƒãƒ³ãƒ‰ãƒ©é–¢ä¿‚ã®å‡¦ç†                             *
  *                                                                       *
  * ===================================================================== */
 
 static struct ne2000_device	*device;
 
-/* ³ä¤ê¹ş¤ß¥Ï¥ó¥É¥é¤ÎÀßÄê 
+/* å‰²ã‚Šè¾¼ã¿ãƒãƒ³ãƒ‰ãƒ©ã®è¨­å®š 
  */
 ER
 set_interrupt_handler (struct ne2000_device *dev, W intno, FP handler)
@@ -68,7 +68,7 @@ set_interrupt_handler (struct ne2000_device *dev, W intno, FP handler)
 
 
 
-/* ³ä¤ê¹ş¤ß¥Ï¥ó¥É¥é
+/* å‰²ã‚Šè¾¼ã¿ãƒãƒ³ãƒ‰ãƒ©
  */
 void
 ne2000_interrupt_handler (void)
@@ -97,12 +97,12 @@ ne2000_interrupt_handler (void)
 
       if (reason & EPISR_TX)
 	{
-	  /* Á÷¿®³ä¤ê¹ş¤ß */
+	  /* é€ä¿¡å‰²ã‚Šè¾¼ã¿ */
 	  device->tx_count++;
 	}
       else if (reason & EPISR_TX_ERR)
 	{
-	  /* Á÷¿®¥¨¥é¡¼³ä¤ê¹ş¤ß */
+	  /* é€ä¿¡ã‚¨ãƒ©ãƒ¼å‰²ã‚Šè¾¼ã¿ */
 	  device->tx_error++;
 	}
 
@@ -115,7 +115,7 @@ ne2000_interrupt_handler (void)
     {
       if (reason & EPISR_RX)
 	{
-	  /* ¼õ¿®½èÍı */
+	  /* å—ä¿¡å‡¦ç† */
 	}
       else if (reason & EPISR_RX_ERR)
 	{

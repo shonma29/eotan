@@ -12,8 +12,8 @@ Version 2, June 1991
 int errno;
 
 /* 
-   lowlib.h ¤Î ERRNO ¥Þ¥¯¥í¤ò½¤Àµ¤·¤¿¾ì¹ç¤Ë¤Ï¡¤²¼µ­¤Î¥³¡¼¥É¤ÇÀ¸À®¤µ¤ì¤ë
-   ¥¢¥»¥ó¥Ö¥é¥³¡¼¥É¤òÍÑ¤¤¤Æ call_posix.S ¤ò½¤Àµ¤¹¤ë¡¥
+   lowlib.h ã® ERRNO ãƒžã‚¯ãƒ­ã‚’ä¿®æ­£ã—ãŸå ´åˆã«ã¯ï¼Œä¸‹è¨˜ã®ã‚³ãƒ¼ãƒ‰ã§ç”Ÿæˆã•ã‚Œã‚‹
+   ã‚¢ã‚»ãƒ³ãƒ–ãƒ©ã‚³ãƒ¼ãƒ‰ã‚’ç”¨ã„ã¦ call_posix.S ã‚’ä¿®æ­£ã™ã‚‹ï¼Ž
  */
 #ifdef notdef
 static void set_errno()

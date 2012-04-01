@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -17,95 +17,95 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
  * MAJOR FIXcvs commit -m 'MAJOR FIX!!! There are so many changes, modifys, fixes. Sorry but I can't remember all of those. For example, all the manager and driver programmer have got power to access all ITRON systemcall. (My works is just making access route to ITRON. I don't know what happens in the nuclus.'! There are so many changes, modifys, fixes. Sorry but I can't remember all of those. For example, all the manager and driver programmer have got power to access all ITRON systemcall. (My works is just making access route to ITRON. I don't know what happens in the nuclus.
  *
  * Revision 1.2  1998/02/25 12:50:16  night
- * �ץ�������θ�ͭ�ǡ�������򡢤��줾������ѿ��Ǹ���Ū�ˤ�ĤΤǤϤʤ���
- * lowlib_data �Ȥ����ݥ��󥿤Ǵ�������褦�ˤ�����
- * �����ѹ���ȼ�����ץ�������˰�ä����������/���Ȥ�������ϡ��ݥ���
- * lowlib_data ��𤷤ƹԤ��褦���ѹ�������
+ * プロセス毎の固有データ情報を、それぞれ大域変数で固定的にもつのではなく、
+ * lowlib_data というポインタで管理するようにした。
+ * この変更に伴い、プロセス毎に違った情報を設定/参照する処理は、ポインタ
+ * lowlib_data を介して行うように変更した。
  *
- * lowlib_data ���ͤϡ��ޥ��� LOWLIB_DATA �ǻ��ꤷ�����ɥ쥹 (0x7fff0000)
- * �����ꤵ��롣���Υ��ɥ쥹�ϡ��ץ�������˰�ä�ʪ���ڡ����˥ޥåԥ�
- * ����롣���ۥ��ɥ쥹�ϸ���������ºݤ��ΰ�ϥץ�������˰�ä�����¸
- * �ߤ��Ƥ��롣LOWLIB ����������ץ�������ξ���Ϥ����ΰ�������褦��
- * ���롣
+ * lowlib_data の値は、マクロ LOWLIB_DATA で指定したアドレス (0x7fff0000)
+ * に設定される。このアドレスは、プロセス毎に違った物理ページにマッピング
+ * される。仮想アドレスは固定だが、実際の領域はプロセス毎に違った場所に存
+ * 在している。LOWLIB が管理するプロセス毎の情報はこの領域に入れるように
+ * する。
  *
  * Revision 1.1  1996/11/11 13:36:06  night
- * IBM PC �Ǥؤκǽ����Ͽ
+ * IBM PC 版への最初の登録
  *
  * ----------------
  *
  * Revision 1.7  1995/09/21  15:52:58  night
- * �������ե��������Ƭ�� Copyright notice ������ɲá�
+ * ソースファイルの先頭に Copyright notice 情報を追加。
  *
  * Revision 1.6  1995/09/02  09:34:54  night
- * �������ɲ�
+ * コメント追加
  *
  * Revision 1.5  1995/03/18  14:28:41  night
- * sig_stop() �ؿ������Ƥ򵭽ҡ�
+ * sig_stop() 関数の内容を記述。
  *
  * Revision 1.4  1995/02/21  15:23:17  night
- * �����ʥ�ϥ�ɥ�ơ��֥���ѿ��������ʬ����������
- * �ޤ���sig_user() �ǥ桼���Υ����ʥ�ϥ�ɥ��ɽ��ѿ��˵�Ͽ����Ȥ��ˡ�
- * ���㥹�Ȥ��������Ԥ��Ƥ��ʤ��ä��Τǽ���������
+ * シグナルハンドラテーブルの変数宣言の部分を修正した。
+ * また、sig_user() でユーザのシグナルハンドラを局所変数に記録するときに、
+ * キャストが正しく行われていなかったので修正した。
  *
  * Revision 1.3  1995/02/21  15:13:39  night
- * �����ʥ뵡���ν�����ؿ� (init_signal()) �ε��Ҥ��ɲäȥ����ʥ�ϥ��
- * ���ѤΥơ��֥� (signal_handler[]) �������Ԥʤä���
- * �ޤ��������ʥ�ϥ�ɥ�Ȥ��ưʲ��δؿ��Υ�����ȥ��񤤤���
- * (��Ȥ��ʤ���ñ�˴ؿ��������������)
+ * シグナル機構の初期化関数 (init_signal()) の記述の追加とシグナルハンド
+ * ラ用のテーブル (signal_handler[]) の宣言を行なった。
+ * また、シグナルハンドラとして以下の関数のスケルトンを書いた。
+ * (中身がなく、単に関数を宣言しただけ)
  *
- * 	sig_null	ñ�˥����ʥ��̵�� (IGNORE)���롣
- * 	sig_user	�桼����������������ʥ�ϥ�ɥ��¹Ԥ��롣
- * 			�桼���Υ����ʥ�ϥ�ɥ�ؤΥݥ��󥿤ϡ�
- * 			�����Ȥ��� sig_user() ���Ϥ���
- * 	sig_core	��������פ����Τ����ץ�������λ���롣
- * 			�⤷���ץ����������餫��ü���ǥХ����ȷ�ӤĤ�
- * 			�Ƥ�����ˤϡ�ü�����Ф��� ��������פ�����
- * 			�������Ȥ�ɽ�����롣
- * 	sig_kill	ñ�˥ץ�������λ����(��������פ⤷�ʤ�)��
- * 	sig_stop	�ץ���������Ū����ߤ����롣
- * 	sig_cont	sig_stop �ˤ�äư��Ū����ߤ����ץ������ν�
- * 			����Ƴ����롣
+ * 	sig_null	単にシグナルを無視 (IGNORE)する。
+ * 	sig_user	ユーザが定義したシグナルハンドラを実行する。
+ * 			ユーザのシグナルハンドラへのポインタは、
+ * 			引数として sig_user() へ渡す。
+ * 	sig_core	コアダンプしたのち、プロセスを終了する。
+ * 			もし、プロセスが何らかの端末デバイスと結びつい
+ * 			ている場合には、端末に対して コアダンプしたと
+ * 			いうことを表示する。
+ * 	sig_kill	単にプロセスを終了する(コアダンプもしない)。
+ * 	sig_stop	プロセスを一時的に停止させる。
+ * 	sig_cont	sig_stop によって一時的に停止したプロセスの処
+ * 			理を再開する。
  *
  * Revision 1.2  1995/02/20  15:26:34  night
- * �����ʥ�ϥ�ɥ��¹Բ�ǽ���֤ˤ���ؿ���init_signal_handler_table()
- * ����������������������ΤȤ������δؿ��ϲ��⤷�Ƥ��ʤ���
+ * シグナルハンドラを実行可能状態にする関数、init_signal_handler_table()
+ * を宣言した。ただし、今のところこの関数は何もしていない。
  *
  * Revision 1.1  1995/02/20  15:16:44  night
- * �Ϥ���Ƥ���Ͽ
+ * はじめての登録
  *
  *
  */
 
 /*
- * POSIX ���ͤ�������륷���ʥ��¸����뤿��δؿ��������äƤ���ե�
- * ���� 
+ * POSIX 仕様で定義するシグナルを実現するための関数群が入っているファ
+ * イル 
  *
- * ���Υե���������������Ƥ�������ѿ� signal_handler_table �ϡ�
- * �����ʥ� (���� 32 �Ĥޤ�����Ǥ���) �Τ��Τ��ΤΥϥ�ɥ��������
- * �Ƥ��롣
+ * このファイルの中で宣言している大域変数 signal_handler_table は、
+ * シグナル (最大 32 個まで定義できる) のおのおののハンドラ情報が入っ
+ * ている。
  *
- * �ϥ�ɥ�ؿ��ˤϡ����μ��ब���롧
+ * ハンドラ関数には、次の種類がある：
  *
- *	sig_null	ñ�˥����ʥ��̵�� (IGNORE)���롣
- *	sig_user	�桼����������������ʥ�ϥ�ɥ��¹Ԥ��롣
- *			�桼���Υ����ʥ�ϥ�ɥ�ؤΥݥ��󥿤ϡ�
- *			�����Ȥ��� sig_user() ���Ϥ���
- *	sig_core	��������פ����Τ����ץ�������λ���롣
- *			�⤷���ץ����������餫��ü���ǥХ����ȷ�ӤĤ�
- *			�Ƥ�����ˤϡ�ü�����Ф��� ��������פ�����
- *			�������Ȥ�ɽ�����롣
- *	sig_kill	ñ�˥ץ�������λ����(��������פ⤷�ʤ�)��
- *	sig_stop	�ץ���������Ū����ߤ����롣
- *	sig_cont	sig_stop �ˤ�äư��Ū����ߤ����ץ������ν�
- *			����Ƴ����롣
+ *	sig_null	単にシグナルを無視 (IGNORE)する。
+ *	sig_user	ユーザが定義したシグナルハンドラを実行する。
+ *			ユーザのシグナルハンドラへのポインタは、
+ *			引数として sig_user() へ渡す。
+ *	sig_core	コアダンプしたのち、プロセスを終了する。
+ *			もし、プロセスが何らかの端末デバイスと結びつい
+ *			ている場合には、端末に対して コアダンプしたと
+ *			いうことを表示する。
+ *	sig_kill	単にプロセスを終了する(コアダンプもしない)。
+ *	sig_stop	プロセスを一時的に停止させる。
+ *	sig_cont	sig_stop によって一時的に停止したプロセスの処
+ *			理を再開する。
  * 
- * �����Υϥ�ɥ�ϡ��桼���ץ�������¹Ԥ��Ƥ���祿�����Ȥ��̸�
- * �Υ����ʥ�����ѥ�������Ǽ¹Ԥ��뤳�Ȥ����դ��뤳�ȡ�
+ * これらのハンドラは、ユーザプログラムを実行している主タスクとは別個
+ * のシグナル処理用タスク上で実行することに注意すること。
  *
- * POSIX �ץ������ޥ͡�����ϡ��桼���ץ������˥����ʥ��������ˤϡ�
- * �����ʥ�����ѥ��������Ф��ƥ����ʥ��å����������롣
- * ���Τ���˻��Ѥ����å������ݡ��Ȥϡ�init_signal() �ؿ���������/��
- * �������롣
+ * POSIX プロセスマネージャは、ユーザプロセスにシグナルを送る場合には、
+ * シグナル処理用タスクに対してシグナルメッセージを送る。
+ * そのために使用するメッセージポートは、init_signal() 関数が、確保/初
+ * 期化する。
  * 
  */
 
@@ -113,36 +113,36 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 
 
 /*
- * �桼���������ʥ�ϥ�ɥ������Ǥ��뤫�ɤ����򼨤��������
+ * ユーザがシグナルハンドラを定義できるかどうかを示すための値
  */
 #define USER_OK		1
 #define USER_NOK	0
 
 
 /*
- * ���Υե��������ǤΤ߻��Ѥ��빽¤��
+ * このファイルの中でのみ使用する構造体
  */
 struct signal_handler
 {
-  int	(*handler)();	/* �����ʥ����������Ȥ��ƤӽФ��ϥ�ɥ�ؿ� */
-  void	*argp;		/* �ϥ�ɥ�ؿ����Ϥ����� (�ǥե���Ȥ� NULL) */
-  int	user_flag;	/* �桼���������ʥ�ϥ�ɥ������Ǥ��뤫�Υ� */
-			/* �饰 */
+  int	(*handler)();	/* シグナルを受信したとき呼び出すハンドラ関数 */
+  void	*argp;		/* ハンドラ関数に渡す引数 (デフォルトは NULL) */
+  int	user_flag;	/* ユーザがシグナルハンドラを定義できるかのフ */
+			/* ラグ */
 };
 
 
 /*
- * ���Υե��������ǤΤ߻��Ȳ�ǽ�ʴؿ� (static function)
+ * このファイルの中でのみ参照可能な関数 (static function)
  */
-static int	sig_null (void *arg);	/* ���⤷�ʤ� */
-static int	sig_user (void *arg);	/* �桼���ϥ�ɥ��¹� */
-static int	sig_core (void *arg);	/* ��������פ��� */
-static int	sig_kill (void *arg);	/* ��λ���� */
-static int	sig_stop (void *arg);	/* �ץ�����������ߤ��� */
-static int	sig_cont (void *arg);	/* �ץ������μ¹Ԥ�Ƴ����� */
+static int	sig_null (void *arg);	/* 何もしない */
+static int	sig_user (void *arg);	/* ユーザハンドラを実行 */
+static int	sig_core (void *arg);	/* コアダンプする */
+static int	sig_kill (void *arg);	/* 終了する */
+static int	sig_stop (void *arg);	/* プロセスを一時停止する */
+static int	sig_cont (void *arg);	/* プロセスの実行を再開する */
 
 /*
- * ����ѿ������ (�ºݤ˾�����ݤ���)
+ * 大域変数の宣言 (実際に場所を確保する)
  */
 
 struct signal_handler signal_handler_table[MAX_SIGNAL] =
@@ -171,14 +171,14 @@ struct signal_handler signal_handler_table[MAX_SIGNAL] =
 
 
 /*
- * �����ǥ����ʥ뵡������������
+ * ここでシグナル機構を初期化する
  * 
- * ������
- *	(1) �����ʥ�����ѤΥ�å������ݡ��Ȥν������
- *	    ITRON �ˤΥ����ƥॳ����ǥ�å������Хåե���������롣
- *	    ����������å������Хåե��ϡ��ץ������ޥ͡������ (�ץ���
- *	    ������Ȥ���) ��Ͽ���롣
- *	(2) �����ʥ�����ѤΥ�������ư���롣
+ * 処理：
+ *	(1) シグナル受信用のメッセージポートの初期化。
+ *	    ITRON 核のシステムコールでメッセージバッファを作成する。
+ *	    作成したメッセージバッファは、プロセスマネージャに (プロセ
+ *	    ス情報として) 登録する。
+ *	(2) シグナル処理用のタスクを起動する。
  */
 int
 init_signal (void)
@@ -186,20 +186,20 @@ init_signal (void)
   ID	sigport;
 
   /*
-   * �����ʥ�����ѤΥ�å������ݡ��Ȥ��������롣
+   * シグナル受信用のメッセージポートを初期化する。
    */
-  sigport = alloc_port ();		/* ��å������Хåե��μ��� */
+  sigport = alloc_port ();		/* メッセージバッファの取得 */
 
   /*
-   * �����ʥ���������ݡ��Ȥ�ץ������ޥ͡��������Ͽ���롣
-   * ���� proc_set_signal_port () �ϡ�POSIX �ץ������ޥ͡�������̿���
-   * ���뤿��δؿ���
+   * シグナルを受信するポートをプロセスマネージャに登録する。
+   * この proc_set_signal_port () は、POSIX プロセスマネージャと通信を
+   * するための関数。
    */
   proc_set_signal_port (lowlib_data->my_pid, sigport);
 
   /*
-   * �����ʥ��������뤿��Υ�������ư���롣
-   * ������󡢥����ʥ�Ϣ��δؿ�������/��Ͽ�����ݡ��Ȥ���Ѥ��롣
+   * シグナルを受信するためのタスクを起動する。
+   * もちろん、シグナルは↑の関数で生成/登録したポートを使用する。
    */
   
 }
@@ -218,25 +218,25 @@ proc_set_signal_port (int my_pid, ID sigport)
 
 
 /*
- * �����ʥ�������äƤ⡢���⤷�ʤ��ؿ�
+ * シグナルを受け取っても、何もしない関数
  */
 static int
 sig_null (void *arg)
 {
-  return (EP_OK);  /* ������ｪλ�������Ȥ������֤���*/
+  return (EP_OK);  /* 一応正常終了したことだけは返す。*/
 }
 
 /*
- * �桼���ϥ�ɥ�� (�祿�����Υ���ƥ����Ȥ�) �¹Ԥ��롣
+ * ユーザハンドラを (主タスクのコンテキストで) 実行する。
  *
- * �桼���ϥ�ɥ�ϡ������Ĥ�����ͳ����桼���ץ�������¹Ԥ��Ƥ���
- * �祿�������¹Ԥ���ɬ�פ����롣
- * ���Τ��� sig_user() �ϡ�
+ * ユーザハンドラは、いくつかの理由からユーザプログラムを実行している
+ * 主タスクが実行する必要がある。
+ * そのため sig_user() は、
  *
- *   (1) �祿����������ߤ��� (SUS_TSK)��
- *   (2) ���¹Ԥ��Ƥ��륢�ɥ쥹�����褦�����å���񤭴�����
- *   (3) �Ǹ�˥����ʥ�ϥ�ɥ��¹Ԥ���褦����ƥ����Ⱦ����
- *       �ѹ����롣
+ *   (1) 主タスクを一時停止させ (SUS_TSK)、
+ *   (2) 今実行しているアドレスへ戻るようスタックを書き換え、
+ *   (3) 最後にシグナルハンドラを実行するようコンテキスト情報を
+ *       変更する。
  *
  */
 static int
@@ -246,29 +246,29 @@ sig_user (void *arg)
 
   user_handler = (int (*)())arg;
 
-  sus_tsk (lowlib_data->main_task);	/* �祿����������� */
+  sus_tsk (lowlib_data->main_task);	/* 主タスクを強制停止 */
 
-  /* �����å��ν񤭴��� */
+  /* スタックの書き換え */
 
-  /* ����ƥ����Ⱦ���ν񤭴��� */
+  /* コンテキスト情報の書き換え */
 
   return (EP_OK);
 }
 
 
 /*
- * ��������פ��롣
+ * コアダンプする。
  */
 static int
 sig_core (void *arg)
 {
-  /* �桼���Υǡ����ΰ褪��ӥ����å��ΰ��core�ե�������Ǥ��Ф� */
+  /* ユーザのデータ領域およびスタック領域をcoreファイルに吐き出す */
 
 }
 
 
 /*
- * �ץ�������λ���롣
+ * プロセスを終了する。
  */
 static int
 sig_kill (void *arg)
@@ -279,16 +279,16 @@ sig_kill (void *arg)
 
 
 /*
- * �ץ���������Ū����ߤ��롣
+ * プロセスを一時的に停止する。
  *
- * �ᥤ�󥿥����򥷥��ʥ뤬���äƤ���ޤ���ߤ����롣
+ * メインタスクをシグナルが入ってくるまで停止させる。
  *
  */
 static int
 sig_stop (void *arg)
 {
   /*
-   * �ᥤ�󥿥������Ф��� slp_tsk () ��¹Ԥ��롣
+   * メインタスクに対して slp_tsk () を実行する。
    */
 #if 0
 /* I think this is a wrong argument.
@@ -298,8 +298,8 @@ sig_stop (void *arg)
 #endif
 
   /*
-   * �ץ������ޥ͡�������Ф��ƥץ������� stop ���֤ˤʤä����Ȥ��Τ�
-   * ���롣
+   * プロセスマネージャに対してプロセスが stop 状態になったことを知ら
+   * せる。
    */
   
   return (EP_OK);
@@ -307,7 +307,7 @@ sig_stop (void *arg)
 
 
 /*
- * �����ߤ����ץ�������Ƴ����롣
+ * 一時停止したプロセスを再開する。
  */
 static int
 sig_cont (void *arg)

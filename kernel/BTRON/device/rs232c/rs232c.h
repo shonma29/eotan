@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -16,10 +16,10 @@ Version 2, June 1991
  * Fix for moving Port-manager and libkernel.a  to ITRON. I guess it is reasonable. At least they should not be in BTRON/.
  *
  * Revision 1.2  1998/12/07 14:21:52  night
- * ╔э║╪╔Л║╪╔х╩ьдЙмя╔ч╔╞╔М (Bxxxx) ╓нди╡ц║ё
+ * Ц┐°Ц┐╪Ц┐╛Ц┐╪Ц┐┬Ф▄┤Е╝ Г■╗Ц┐·Ц┌╞Ц┐╜ (Bxxxx) Ц│╝Х©╫Е┼═Ц─┌
  *
  * Revision 1.1  1997/05/17 10:47:03  night
- * ╨г╫И╓непо©
+ * Ф°─Е┬²Ц│╝Г≥╩И▄╡
  *
  *
  */

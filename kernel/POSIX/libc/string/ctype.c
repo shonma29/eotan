@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -9,8 +9,8 @@ Version 2, June 1991
 
 */
 /*
- * �ɥ饤�С����Ǥ���Ѥ����硢�ƥ�ݥ���ѿ���Ȥä��ޥ����Ǻ��������
- * ����ˤʤ�Τǡ��ؿ��ˤ��������
+ * ドライバー等でも使用する場合、テンポラリ変数を使ったマクロで作成すると
+ * 問題になるので、関数にて定義した
  *
  */
 
@@ -22,7 +22,7 @@ Version 2, June 1991
  * minor fix on log comment
  *
  * Revision 1.1  2000/02/07 18:14:20  kishida0
- * �ޥ����Ǥ�����ˤʤꤽ���� tolower toupper �ʤɤ��������
+ * マクロでは問題になりそうな tolower toupper などを作成した
  *
  *
  *

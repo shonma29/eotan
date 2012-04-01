@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -10,7 +10,7 @@ Version 2, June 1991
 (C) 2002, Tomohide Naniwa
 
 */
-/* ╔г╔п╔ц╔╟мя╓н╔╥╔╧╔ф╔Ю╔Ё║╪╔К
+/* Ц┐┤Ц┐░Ц┐┐Ц┌╟Г■╗Ц│╝Ц┌╥Ц┌╧Ц┐├Ц┐═Ц┌ЁЦ┐╪Ц┐╚
  *
  */
 

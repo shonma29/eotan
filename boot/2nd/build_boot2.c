@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -29,10 +29,10 @@ Version 2, June 1991
 /****************************************************************************
  *	main ---
  *
- *	°ú¿ô	ac
- *		av[0] .... ¥³¥Ş¥ó¥ÉÌ¾
- *		av[1] .... 16 ¥Ó¥Ã¥ÈÆ°ºîÉô
- *		av[2] .... 32 ¥Ó¥Ã¥ÈÆ°ºîÉô
+ *	å¼•æ•°	ac
+ *		av[0] .... ã‚³ãƒãƒ³ãƒ‰å
+ *		av[1] .... 16 ãƒ“ãƒƒãƒˆå‹•ä½œéƒ¨
+ *		av[2] .... 32 ãƒ“ãƒƒãƒˆå‹•ä½œéƒ¨
  */
 int
 main (int ac, char **av)

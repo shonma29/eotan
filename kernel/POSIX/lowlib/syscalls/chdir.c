@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -26,7 +26,7 @@ static char rcsid[] =
  * added the parameter structure on.
  *
  * Revision 1.1  1997/08/31 13:10:42  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  *
@@ -59,7 +59,7 @@ int psys_chdir(void *argp)
 	return (-1);
     }
 
-    /* lowlib_data->dpath ¤Î¹¹¿· */
+    /* lowlib_data->dpath ã®æ›´æ–° */
     if (args->path[0] == '/') {
 	strncpy(lowlib_data->dpath, args->path, MAX_DPATH + 1);
 	lowlib_data->dpath_len = args->pathlen;

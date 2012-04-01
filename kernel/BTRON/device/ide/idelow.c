@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -60,7 +60,7 @@ void ide_send_command(int cmd)
 #endif
     outb(IDE_COMMAND_REG, cmd);
 #ifdef notdef
-    /* ¥³¥Ş¥ó¥É¤Î½ªÎ»¤Ï¤½¤ì¤¾¤ì¤Î¥ë¡¼¥Á¥ó¤ÇÂÔ¤Ä */
+    /* ã‚³ãƒãƒ³ãƒ‰ã®çµ‚äº†ã¯ãã‚Œãã‚Œã®ãƒ«ãƒ¼ãƒãƒ³ã§å¾…ã¤ */
     ide_wait_while_busy();
     return (inb(IDE_ERROR_REG));
 #endif
@@ -185,7 +185,7 @@ ER get_data(W drive, UW head, UW cyl, UW sec, B * buf, W length)
 	tmpbuf[i] = inw(IDE_DATA_REG);
     }
 
-    /* ÆÉ¤ß¹ş¤ß½ªÎ»¥Á¥§¥Ã¥¯ */
+    /* èª­ã¿è¾¼ã¿çµ‚äº†ãƒã‚§ãƒƒã‚¯ */
     stat = ide_wait_while_busy();
 
     if (stat & IDE_ERR) {
@@ -243,7 +243,7 @@ ER put_data(W drive, UW head, UW cyl, UW sec, B * buf, W length)
 	outw(IDE_DATA_REG, tmpbuf[i]);
     }
 
-    /* ½ñ¤­¹ş¤ß½ªÎ»¥Á¥§¥Ã¥¯ */
+    /* æ›¸ãè¾¼ã¿çµ‚äº†ãƒã‚§ãƒƒã‚¯ */
     stat = ide_wait_while_busy();
 
     if (stat & IDE_ERR) {

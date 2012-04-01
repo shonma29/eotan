@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -8,10 +8,10 @@ Version 2, June 1991
 (C) B-Free Project.
 
 */
-/* mktable --- GDT/PAGE TABLE ¤ÎºîÀ®
+/* mktable --- GDT/PAGE TABLE ã®ä½œæˆ
  *
  *
- *	º£¸½ºß¡¢page table ¤ÏºîÀ®¤·¤Æ¤¤¤Ê¤¤¡ª¡ª¡ª¡ª
+ *	ä»Šç¾åœ¨ã€page table ã¯ä½œæˆã—ã¦ã„ãªã„ï¼ï¼ï¼ï¼
  */
 
 #include <stdio.h>

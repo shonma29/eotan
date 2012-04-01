@@ -1,26 +1,26 @@
 Fri Mar  5 01:07:51 1999  Naitoh Ryuichi  <night@ibmpc0.bfree.rim.or.jp>
 
 	* ne2000low.c: 
-	  write_frame() ¤ÎÃæ¿È¤òºîÀ®(º£¤Ş¤Ç¤Î¤Ï¼Î¤Æ¤¿)¡£
-	  copy_to_ne2000() ¤ÎºîÀ®¡£copy_to_ne2000() ¤Ï¡¢ne2000 ÆâÉô¤Î¥Ğ¥Ã
-	  ¥Õ¥¡¤ØÁ÷¿®¤·¤¿¤¤¥Ç¡¼¥¿¤ò¥³¥Ô¡¼¤¹¤ë¤¿¤á¤Î´Ø¿ô¡£
+	  write_frame() ã®ä¸­èº«ã‚’ä½œæˆ(ä»Šã¾ã§ã®ã¯æ¨ã¦ãŸ)ã€‚
+	  copy_to_ne2000() ã®ä½œæˆã€‚copy_to_ne2000() ã¯ã€ne2000 å†…éƒ¨ã®ãƒãƒƒ
+	  ãƒ•ã‚¡ã¸é€ä¿¡ã—ãŸã„ãƒ‡ãƒ¼ã‚¿ã‚’ã‚³ãƒ”ãƒ¼ã™ã‚‹ãŸã‚ã®é–¢æ•°ã€‚
 
-	* ne2000_internal.h: ¥Ş¥¯¥íÄÉ²Ã¡£
+	* ne2000_internal.h: ãƒã‚¯ãƒ­è¿½åŠ ã€‚
 	#define MAX_MTU_LENGTH		1514
 	#define MIN_ETHER_LENGTH	64
 
 
 Wed Mar  3 00:28:54 1999  Naitoh Ryuichi  <night@ibmpc0.bfree.rim.or.jp>
 
-	* ChangeLog: ÊÑ¹¹Îò¥Õ¥¡¥¤¥ë¤ÎÄÉ²Ã¡£
+	* ChangeLog: å¤‰æ›´æ­´ãƒ•ã‚¡ã‚¤ãƒ«ã®è¿½åŠ ã€‚
 
-	* ne2000low.c: ½é´ü²½½èÍı¤ÎÊÑ¹¹¡£
+	* ne2000low.c: åˆæœŸåŒ–å‡¦ç†ã®å¤‰æ›´ã€‚
 
 	* ne2000_internal.h: 
-	¹½Â¤ÂÎ struct device ¤ÎÌ¾Á°¤ò struct ne2000_device ¤ËÊÑ¹¹¡£Ãæ¿È¤â
-	ÊÑ¹¹¤·¤¿¡£
+	æ§‹é€ ä½“ struct device ã®åå‰ã‚’ struct ne2000_device ã«å¤‰æ›´ã€‚ä¸­èº«ã‚‚
+	å¤‰æ›´ã—ãŸã€‚
 	
-	¼¡¤Î¥Ş¥¯¥í¤ò¿·¤¿¤ËÄêµÁ¤·¤¿¡£
+	æ¬¡ã®ãƒã‚¯ãƒ­ã‚’æ–°ãŸã«å®šç¾©ã—ãŸã€‚
 	#define LOC_MEM_START		0x4000
 	#define LOC_MEM_END		0x8000
 	#define LOC_MEM_SIZE		0x4000
@@ -32,13 +32,13 @@ Wed Mar  3 00:28:54 1999  Naitoh Ryuichi  <night@ibmpc0.bfree.rim.or.jp>
 	#define TX_BUF_SIZE		6
 	#define MAX_TX_BUF		2
 
-	* ne2000.h: ¥Ş¥¯¥í DEFAULT_INTR ¤ÎÄÉ²Ã¡£
+	* ne2000.h: ãƒã‚¯ãƒ­ DEFAULT_INTR ã®è¿½åŠ ã€‚
 
-	* ne2000.c: ½é´ü²½½èÍı¤ò¼ã´³ÊÑ¹¹¡£
+	* ne2000.c: åˆæœŸåŒ–å‡¦ç†ã‚’è‹¥å¹²å¤‰æ›´ã€‚
 
-	* global.h: Âç°èÊÑ¿ô max_adaptor ¤Ë¤Ä¤¤¤Æ¤ÎÄêµÁ¤òÄÉ²Ã¡£
+	* global.h: å¤§åŸŸå¤‰æ•° max_adaptor ã«ã¤ã„ã¦ã®å®šç¾©ã‚’è¿½åŠ ã€‚
 
-	* Makefile: interrupt.c ¤Ë¤Ä¤¤¤Æ¤ÎÅĞÏ¿
+	* Makefile: interrupt.c ã«ã¤ã„ã¦ã®ç™»éŒ²
 
-	* interrupt.c: ³ä¤ê¹ş¤ß´Ø·¸¤Î¥Õ¥¡¥¤¥ëºîÀ®
+	* interrupt.c: å‰²ã‚Šè¾¼ã¿é–¢ä¿‚ã®ãƒ•ã‚¡ã‚¤ãƒ«ä½œæˆ
 

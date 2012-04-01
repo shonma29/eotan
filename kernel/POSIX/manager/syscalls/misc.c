@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -34,7 +34,7 @@ W psc_misc_f(struct posix_request *req)
 #endif
 
     if (req->param.par_misc.cmd < 0) {
-	/* req->param.par_misc.cmd ¤¬Éé¤Î¾ì¹ç ITRON ¤Î vsys_msc ¤ò¸Æ¤Ó½Ğ¤¹ */
+	/* req->param.par_misc.cmd ãŒè² ã®å ´åˆ ITRON ã® vsys_msc ã‚’å‘¼ã³å‡ºã™ */
 	err = vsys_msc(-req->param.par_misc.cmd, NULL);
     } else {
 	switch (req->param.par_misc.cmd) {
@@ -51,7 +51,7 @@ W psc_misc_f(struct posix_request *req)
 	    break;
 
 	case M_PRINT_FLIST:
-	    /* malloc ¤Î¶õ¤­¥ê¥¹¥È¤ÎÉ½¼¨ */
+	    /* malloc ã®ç©ºããƒªã‚¹ãƒˆã®è¡¨ç¤º */
 	    print_freelist();
 	    break;
 

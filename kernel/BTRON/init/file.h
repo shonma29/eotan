@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -25,11 +25,11 @@ Version 2, June 1991
  * Minor fix for comment to avoid warning.
  *
  * Revision 1.2  1998/05/23 15:30:10  night
- * enum ¤ÎºÇ¸å¤ÎÍ×ÁÇ¤«¤é ',' ¤òºï½ü¤·¤¿¡£
- * (ANSI ¤ÎÊ¸Ë¡¤Ë½¾¤Ã¤¿)
+ * enum ã®æœ€å¾Œã®è¦ç´ ã‹ã‚‰ ',' ã‚’å‰Šé™¤ã—ãŸã€‚
+ * (ANSI ã®æ–‡æ³•ã«å¾“ã£ãŸ)
  *
  * Revision 1.1  1996/07/25 16:02:00  night
- * IBM PC ÈÇÍÑ¤Ø¤ÎºÇ½é¤ÎÅĞÏ¿
+ * IBM PC ç‰ˆç”¨ã¸ã®æœ€åˆã®ç™»éŒ²
  *
  */
 
@@ -53,15 +53,15 @@ struct filesystem_entry
 };
 
 
-/* ¥Ş¥¦¥ó¥È¥İ¥¤¥ó¥ÈËè¤Ë¤â¤Ä¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥à¤Î¾ğÊó
+/* ãƒã‚¦ãƒ³ãƒˆãƒã‚¤ãƒ³ãƒˆæ¯ã«ã‚‚ã¤ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ ã®æƒ…å ±
  */
 struct filesystem
 {
   struct filesystem_entry	*fs_type;
   struct filedata		*rootdir;
   struct filedata		*mount_file;
-  ID				device;		/* ¥Ç¥Ğ¥¤¥¹ ID */
-  UW				dd;		/* ¥Ç¥Ğ¥¤¥¹Æâ¤Î°ÌÃÖ¤ò¼¨¤¹¾ğÊó */
+  ID				device;		/* ãƒ‡ãƒã‚¤ã‚¹ ID */
+  UW				dd;		/* ãƒ‡ãƒã‚¤ã‚¹å†…ã®ä½ç½®ã‚’ç¤ºã™æƒ…å ± */
   void				*private;
   UW				ref_count;
   struct filedata		*opentable;
@@ -73,8 +73,8 @@ struct filedata
 {
   struct filedata	*next;
   struct filesystem	*fs;
-  struct filesystem	*child_fs;	/* ¤³¤Î¥Ç¥£¥ì¥¯¥È¥ê¤¬¥Ş¥¦¥ó¥È¥İ¥¤¥ó¥È¤Î»ş¡¢
-					 * ¥Ş¥¦¥ó¥È¤·¤¿¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥à¤ò¼¨¤¹.
+  struct filesystem	*child_fs;	/* ã“ã®ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªãŒãƒã‚¦ãƒ³ãƒˆãƒã‚¤ãƒ³ãƒˆã®æ™‚ã€
+					 * ãƒã‚¦ãƒ³ãƒˆã—ãŸãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ ã‚’ç¤ºã™.
 					 */
   enum file_type	type;
   UW			ref_count;
@@ -139,7 +139,7 @@ struct file_ops
 #define FOP_WRITE(fp,offset,size,buf)	(fp->fs->fs_type->fop->write)(fp,offset,size,buf)
 
 /*
- * ¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥à¤Î´ÉÍıÍÑ¥Ç¡¼¥¿
+ * ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ ã®ç®¡ç†ç”¨ãƒ‡ãƒ¼ã‚¿
  */
 extern struct filesystem	*root_fs;
 extern struct filedata		*rootdir;

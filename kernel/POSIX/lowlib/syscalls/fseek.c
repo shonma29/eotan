@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -17,7 +17,7 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
  * added the parameter structure on.
  *
  * Revision 1.1  1997/08/31 13:10:44  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  *
@@ -40,7 +40,7 @@ psys_fseek (void *argp)
     } *args = (struct a *)argp;
 
   /*
-   * ¤Ş¤À¥¤¥ó¥×¥ê¥á¥ó¥È¤·¤Æ¤¤¤Ê¤¤¡£ENOSYS ¤òÊÖ¤¹¡£
+   * ã¾ã ã‚¤ãƒ³ãƒ—ãƒªãƒ¡ãƒ³ãƒˆã—ã¦ã„ãªã„ã€‚ENOSYS ã‚’è¿”ã™ã€‚
    */
   errno = ENOSYS;
 

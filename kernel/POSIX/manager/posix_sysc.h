@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -10,8 +10,8 @@ Version 2, June 1991
 (C) 2001-2002, Tomohide Naniwa
 
 */
-/* posix_syscall.h - POSIX ´Ä¶­¥Ş¥Í¡¼¥¸¥ãÍÑ¤Î¥Ø¥Ã¥À¥Õ¥¡¥¤¥ë
- *		     (¥·¥¹¥Æ¥à¥³¡¼¥ë´ØÏ¢¤ÎÄêµÁ)
+/* posix_syscall.h - POSIX ç’°å¢ƒãƒãƒãƒ¼ã‚¸ãƒ£ç”¨ã®ãƒ˜ãƒƒãƒ€ãƒ•ã‚¡ã‚¤ãƒ«
+ *		     (ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«é–¢é€£ã®å®šç¾©)
  *
  * Note:
  *	PSC (and psc) = Posix System Call
@@ -24,7 +24,7 @@ Version 2, June 1991
 
 #define NR_POSIX_SYSCALL	80
 
-/* =================== POSIX ¥·¥¹¥Æ¥à¥³¡¼¥ëÈÖ¹æ¤ÎÄêµÁ =============== */
+/* =================== POSIX ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«ç•ªå·ã®å®šç¾© =============== */
 #define PSC_NOACTION     0
 #define PSC_ACCESS       1
 #define PSC_CHDIR        2
@@ -77,7 +77,7 @@ Version 2, June 1991
 #define PSC_SYNC	 48
 #define PSC_UMOUNT       49
 
-/* =================== SIGNAL ´Ø·¸ =============== */
+/* =================== SIGNAL é–¢ä¿‚ =============== */
 #define PSC_ALARM	 50
 #define PSC_KILL         51
 #define PSC_PAUSE        52
@@ -86,38 +86,38 @@ Version 2, June 1991
 #define PSC_SIGPROCMASK  55
 #define PSC_SIGPENDING   56
 #define PSC_SIGSUSPEND   57
-#define PSC_SIGADDSET    58	/* ÉÔÍ×? */
-#define PSC_SIGDELSET    59	/* ÉÔÍ×? */
-#define PSC_SIGEMPTYSET  60	/* ÉÔÍ×? */
-#define PSC_SIGFILLSET   61	/* ÉÔÍ×? */
-#define PSC_SIGISMEMBER  62	/* ÉÔÍ×? */
-#define PSC_SIGLONGJMP   63	/* ÉÔÍ×? */
-#define PSC_SIGSETJMP    64	/* ÉÔÍ×? */
+#define PSC_SIGADDSET    58	/* ä¸è¦? */
+#define PSC_SIGDELSET    59	/* ä¸è¦? */
+#define PSC_SIGEMPTYSET  60	/* ä¸è¦? */
+#define PSC_SIGFILLSET   61	/* ä¸è¦? */
+#define PSC_SIGISMEMBER  62	/* ä¸è¦? */
+#define PSC_SIGLONGJMP   63	/* ä¸è¦? */
+#define PSC_SIGSETJMP    64	/* ä¸è¦? */
 
 /* =================== miserous system calls  =============== */
 #define PSC_MISC         65
 
 #define PSC_MEMORY       66
 
-#define PSC_DUP2         67	/* ÉÔÍ×? */
-#define PSC_GETCWD       68	/* ÉÔÍ×? */
-#define PSC_GETENV       69	/* ÉÔÍ×? */
+#define PSC_DUP2         67	/* ä¸è¦? */
+#define PSC_GETCWD       68	/* ä¸è¦? */
+#define PSC_GETENV       69	/* ä¸è¦? */
 
-#define PSC_GETGRGID     70	/* ÉÔÍ×? */
-#define PSC_GETGRNAM     71	/* ÉÔÍ×? */
-#define PSC_GETGROUPS    72	/* ÉÔÍ×? */
-#define PSC_GETLOGIN     73	/* ÉÔÍ×? */
+#define PSC_GETGRGID     70	/* ä¸è¦? */
+#define PSC_GETGRNAM     71	/* ä¸è¦? */
+#define PSC_GETGROUPS    72	/* ä¸è¦? */
+#define PSC_GETLOGIN     73	/* ä¸è¦? */
 
-#define PSC_MKFIFO       74	/* ÉÔÍ×? */
+#define PSC_MKFIFO       74	/* ä¸è¦? */
 
-#define PSC_REMOVE       75	/* ÉÔÍ×? */
-#define PSC_REWIND       76	/* ÉÔÍ×? */
-#define PSC_SLEEP        77	/* ÉÔÍ×? */
+#define PSC_REMOVE       75	/* ä¸è¦? */
+#define PSC_REWIND       76	/* ä¸è¦? */
+#define PSC_SLEEP        77	/* ä¸è¦? */
 
-#define PSC_TTYNAME      78	/* ÉÔÍ×? */
-#define PSC_TZSET        79	/* ÉÔÍ×? */
+#define PSC_TTYNAME      78	/* ä¸è¦? */
+#define PSC_TZSET        79	/* ä¸è¦? */
 
-#define PSC_UNAME        80	/* ÉÔÍ×? */
+#define PSC_UNAME        80	/* ä¸è¦? */
 
 /* MISC 
  */
@@ -130,7 +130,7 @@ Version 2, June 1991
 #define M_DO_PS		7
 #define M_DO_DF		8
 
-/* =============== ³Æ¥·¥¹¥Æ¥à¥³¡¼¥ëÍÑ¤Î ¹½Â¤ÂÎÄêµÁ ================== */
+/* =============== å„ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«ç”¨ã® æ§‹é€ ä½“å®šç¾© ================== */
 
 /* psc_access -
  *
@@ -215,7 +215,7 @@ struct psc_dup2
 };
 
 
-/* psc_execve - »ØÄê¤·¤¿¥×¥í¥°¥é¥à¥Õ¥¡¥¤¥ë¤òÆÉ¤ß¹ş¤ß¡¢¼Â¹Ô¤¹¤ë
+/* psc_execve - æŒ‡å®šã—ãŸãƒ—ãƒ­ã‚°ãƒ©ãƒ ãƒ•ã‚¡ã‚¤ãƒ«ã‚’èª­ã¿è¾¼ã¿ã€å®Ÿè¡Œã™ã‚‹
  *
  */
 struct psc_execve
@@ -231,8 +231,8 @@ struct psc_execve
 #endif
 
 #if 0
-  FP		start_main;	/* ¥á¥¤¥ó¥¿¥¹¥¯ÍÑ¤Î¥¹¥¿¡¼¥È´Ø¿ô */
-  FP		start_signal;	/* ¥·¥°¥Ê¥ë¥¿¥¹¥¯ÍÑ¤Î¥¹¥¿¡¼¥È´Ø¿ô */
+  FP		start_main;	/* ãƒ¡ã‚¤ãƒ³ã‚¿ã‚¹ã‚¯ç”¨ã®ã‚¹ã‚¿ãƒ¼ãƒˆé–¢æ•° */
+  FP		start_signal;	/* ã‚·ã‚°ãƒŠãƒ«ã‚¿ã‚¹ã‚¯ç”¨ã®ã‚¹ã‚¿ãƒ¼ãƒˆé–¢æ•° */
 #endif
 };
 
@@ -664,7 +664,7 @@ struct psc_stat
 };
 
 
-/* psc_time - ¼ÂÂÖ¤Ï gettimeofday
+/* psc_time - å®Ÿæ…‹ã¯ gettimeofday
  *
  */
 struct psc_time
@@ -767,13 +767,13 @@ struct psc_write
  */
 struct psc_mount
 {
-  W	devnamelen;    		/* ¥Ş¥¦¥ó¥È¤¹¤ë¥Ç¥Ğ¥¤¥¹Ì¾¤ÎÄ¹¤µ */
-  B	*devname;		/* ¥Ş¥¦¥ó¥È¤¹¤ë¥Ç¥Ğ¥¤¥¹Ì¾¤ÎÄ¹¤µ */
-  W	dirnamelen;		/* ¥Ş¥¦¥ó¥È¤¹¤ë¥Ç¥£¥ì¥¯¥È¥êÌ¾¤ÎÄ¹¤µ */
-  B	*dirname;		/* ¥Ş¥¦¥ó¥È¤¹¤ë¥Ç¥£¥ì¥¯¥È¥êÌ¾ */
-  W	option;			/* ¥ª¥×¥·¥ç¥ó */
+  W	devnamelen;    		/* ãƒã‚¦ãƒ³ãƒˆã™ã‚‹ãƒ‡ãƒã‚¤ã‚¹åã®é•·ã• */
+  B	*devname;		/* ãƒã‚¦ãƒ³ãƒˆã™ã‚‹ãƒ‡ãƒã‚¤ã‚¹åã®é•·ã• */
+  W	dirnamelen;		/* ãƒã‚¦ãƒ³ãƒˆã™ã‚‹ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªåã®é•·ã• */
+  B	*dirname;		/* ãƒã‚¦ãƒ³ãƒˆã™ã‚‹ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªå */
+  W	option;			/* ã‚ªãƒ—ã‚·ãƒ§ãƒ³ */
   W	fstypelen;
-  B	*fstype;		/* ¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥à¤Î¥¿¥¤¥× */
+  B	*fstype;		/* ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ ã®ã‚¿ã‚¤ãƒ— */
 };
 
 
@@ -877,17 +877,17 @@ struct psc_misc
     } arg;
 };
 
-/* =========================== ¹½Â¤ÂÎÄêµÁ =========================== */
+/* =========================== æ§‹é€ ä½“å®šç¾© =========================== */
 
 
-/* POSIX ¥Ş¥Í¡¼¥¸¥ã¤Ø¤ÎÍ×µá¥á¥Ã¥»¡¼¥¸¤Î¹½Â¤ÂÎ */
+/* POSIX ãƒãƒãƒ¼ã‚¸ãƒ£ã¸ã®è¦æ±‚ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®æ§‹é€ ä½“ */
 struct posix_request
 {
-  ID	receive_port;		/* Í×µá¼õ¿®ÍÑ¤Î¥İ¡¼¥È	*/
-  ID	caller;			/* ¸Æ¤Ó½Ğ¤·¸µ¤Î¥¿¥¹¥¯ ID */
-  ID	procid;			/* ¸Æ¤Ó½Ğ¤·¸µ¤Î¥×¥í¥»¥¹ ID */
-  W	msg_length;		/* ¥á¥Ã¥»¡¼¥¸¤ÎÄ¹¤µ	*/
-  W	operation;		/* Í×µáÈÖ¹æ(¥·¥¹¥Æ¥à¥³¡¼¥ë¤ËÂĞ±ş)	*/
+  ID	receive_port;		/* è¦æ±‚å—ä¿¡ç”¨ã®ãƒãƒ¼ãƒˆ	*/
+  ID	caller;			/* å‘¼ã³å‡ºã—å…ƒã®ã‚¿ã‚¹ã‚¯ ID */
+  ID	procid;			/* å‘¼ã³å‡ºã—å…ƒã®ãƒ—ãƒ­ã‚»ã‚¹ ID */
+  W	msg_length;		/* ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®é•·ã•	*/
+  W	operation;		/* è¦æ±‚ç•ªå·(ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«ã«å¯¾å¿œ)	*/
 
   union {
     struct psc_access		par_access;
@@ -970,14 +970,14 @@ struct posix_request
 
 struct posix_response
 {
-  ID	receive_port;		/* Í×µá¼õ¿®ÍÑ¤Î¥İ¡¼¥È	*/
-  W	msg_length;		/* ¥á¥Ã¥»¡¼¥¸¤ÎÄ¹¤µ	*/
-  W	operation;		/* Í×µáÈÖ¹æ(¥·¥¹¥Æ¥à¥³¡¼¥ë¤ËÂĞ±ş)	*/
-  W	errno;			/* ¥¨¥é¡¼ÈÖ¹æ */
-  W	status;			/* ¥¹¥Æ¡¼¥¿¥¹(¥ê¥¿¡¼¥óÃÍ) */
+  ID	receive_port;		/* è¦æ±‚å—ä¿¡ç”¨ã®ãƒãƒ¼ãƒˆ	*/
+  W	msg_length;		/* ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®é•·ã•	*/
+  W	operation;		/* è¦æ±‚ç•ªå·(ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«ã«å¯¾å¿œ)	*/
+  W	errno;			/* ã‚¨ãƒ©ãƒ¼ç•ªå· */
+  W	status;			/* ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹(ãƒªã‚¿ãƒ¼ãƒ³å€¤) */
 
-  W	ret1;			/* ¥µ¥Ö¤Ë»ÈÍÑ¤¹¤ë¥ê¥¿¡¼¥óÃÍ */
-  W	ret2;			/* ¥µ¥Ö¤Ë»ÈÍÑ¤¹¤ë¥ê¥¿¡¼¥óÃÍ */
+  W	ret1;			/* ã‚µãƒ–ã«ä½¿ç”¨ã™ã‚‹ãƒªã‚¿ãƒ¼ãƒ³å€¤ */
+  W	ret2;			/* ã‚µãƒ–ã«ä½¿ç”¨ã™ã‚‹ãƒªã‚¿ãƒ¼ãƒ³å€¤ */
 };
 
 

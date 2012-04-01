@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -13,27 +13,27 @@ Version 2, June 1991
 /*
  * $Log: syscall.h,v $
  * Revision 1.2  1997/08/31 13:13:43  night
- * �Ȥꤢ������OS �ե�����������Ȥ����ޤǤǤ�����
+ * とりあえず、OS ファイルに入れるところまでできた。
  *
  * Revision 1.1  1996/11/11  13:36:06  night
- * IBM PC �Ǥؤκǽ����Ͽ
+ * IBM PC 版への最初の登録
  *
  * ----------------
  *
  * Revision 1.3  1995/09/21  15:52:58  night
- * �������ե��������Ƭ�� Copyright notice ������ɲá�
+ * ソースファイルの先頭に Copyright notice 情報を追加。
  *
  * Revision 1.2  1995/03/18  14:29:01  night
- * �����ѹ���
+ * 註釈の変更。
  *
  * Revision 1.1  1995/02/20  15:16:43  night
- * �Ϥ���Ƥ���Ͽ
+ * はじめての登録
  *
  *
  */
 
 /*
- * POSIX API (�����ƥॳ����) �˴ؤ�������ե�����
+ * POSIX API (システムコール) に関する定義ファイル
  *
  */
 
@@ -44,7 +44,7 @@ Version 2, June 1991
 
 
 /*
- * �����ƥॳ����ؿ�����Ͽ���뤿��ι�¤��
+ * システムコール関数を登録するための構造体
  *
  */
 struct syscall_entry
@@ -54,12 +54,12 @@ struct syscall_entry
 };
 
 /*
- * �����ƥॳ�����ֹ�ο���
+ * システムコール番号の数。
  */
 extern int	nsyscall;
 
 /*
- * �����ƥॳ����ؿ���������Ƥ���ơ��֥�
+ * システムコール関数を定義しているテーブル
  */
 extern struct syscall_entry	syscalls[];
 

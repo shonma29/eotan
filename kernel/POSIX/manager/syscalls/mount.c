@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -25,19 +25,19 @@ Version 2, June 1991
 
 #include "posix.h"
 
-/* psc_mount_f - ¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥à¤ò¥Ş¥¦¥ó¥È¤¹¤ë
+/* psc_mount_f - ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ ã‚’ãƒã‚¦ãƒ³ãƒˆã™ã‚‹
  *
- * °ú¿ô:
- *	devnamelen	¥Ş¥¦¥ó¥È¤¹¤ë¥Ç¥Ğ¥¤¥¹Ì¾¤ÎÄ¹¤µ
- *	devname		¥Ş¥¦¥ó¥È¤¹¤ë¥Ç¥Ğ¥¤¥¹Ì¾
- *	dirnamelen	¥Ş¥¦¥ó¥È¤¹¤ë¥Ç¥£¥ì¥¯¥È¥êÌ¾¤ÎÄ¹¤µ
- *	dirname		¥Ş¥¦¥ó¥È¤¹¤ë¥Ç¥£¥ì¥¯¥È¥êÌ¾
- *	fstypelen	¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥à¤Î¥¿¥¤¥×Ì¾¤ÎÄ¹¤µ
- *	fstype		¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥à¤Î¥¿¥¤¥×Ì¾
- *	option		¥ª¥×¥·¥ç¥ó
+ * å¼•æ•°:
+ *	devnamelen	ãƒã‚¦ãƒ³ãƒˆã™ã‚‹ãƒ‡ãƒã‚¤ã‚¹åã®é•·ã•
+ *	devname		ãƒã‚¦ãƒ³ãƒˆã™ã‚‹ãƒ‡ãƒã‚¤ã‚¹å
+ *	dirnamelen	ãƒã‚¦ãƒ³ãƒˆã™ã‚‹ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªåã®é•·ã•
+ *	dirname		ãƒã‚¦ãƒ³ãƒˆã™ã‚‹ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªå
+ *	fstypelen	ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ ã®ã‚¿ã‚¤ãƒ—åã®é•·ã•
+ *	fstype		ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ ã®ã‚¿ã‚¤ãƒ—å
+ *	option		ã‚ªãƒ—ã‚·ãƒ§ãƒ³
  *
  * Note:
- *	¤³¤Î¥·¥¹¥Æ¥à¥³¡¼¥ë¤Ï¡¢POSIX ¤Ç¤ÏÄêµÁ¤µ¤ì¤Æ¤¤¤Ê¤¤¡£
+ *	ã“ã®ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«ã¯ã€POSIX ã§ã¯å®šç¾©ã•ã‚Œã¦ã„ãªã„ã€‚
  *
  */
 W psc_mount_f(struct posix_request *req)
@@ -67,7 +67,7 @@ W psc_mount_f(struct posix_request *req)
 		     req->param.par_mount.devname,
 		     req->param.par_mount.devnamelen + 1, devname);
     if (errno) {
-	/* ¥Ç¥Ğ¥¤¥¹¥Õ¥¡¥¤¥ë¤Î¥Ñ¥¹Ì¾¤Î¥³¥Ô¡¼¥¨¥é¡¼ */
+	/* ãƒ‡ãƒã‚¤ã‚¹ãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ‘ã‚¹åã®ã‚³ãƒ”ãƒ¼ã‚¨ãƒ©ãƒ¼ */
 	if (errno == E_PAR)
 	    put_response(req, EP_INVAL, -1, 0, 0);
 	else
@@ -88,7 +88,7 @@ W psc_mount_f(struct posix_request *req)
 		     req->param.par_mount.dirnamelen + 1, dirname);
 
     if (errno) {
-	/* mount Àè¤Î¥Ñ¥¹Ì¾¤Î¥³¥Ô¡¼¥¨¥é¡¼ */
+	/* mount å…ˆã®ãƒ‘ã‚¹åã®ã‚³ãƒ”ãƒ¼ã‚¨ãƒ©ãƒ¼ */
 	if (errno == E_PAR) {
 	    put_response(req, EP_INVAL, -1, 0, 0);
 	} else {
@@ -101,7 +101,7 @@ W psc_mount_f(struct posix_request *req)
 		     req->param.par_mount.fstype,
 		     req->param.par_mount.fstypelen + 1, fstype);
     if (errno) {
-	/* ¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥à¥¿¥¤¥×¤Î¥³¥Ô¡¼¥¨¥é¡¼ */
+	/* ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ ã‚¿ã‚¤ãƒ—ã®ã‚³ãƒ”ãƒ¼ã‚¨ãƒ©ãƒ¼ */
 	if (errno == E_PAR)
 	    put_response(req, EP_INVAL, -1, 0, 0);
 	else
@@ -110,7 +110,7 @@ W psc_mount_f(struct posix_request *req)
 	return (FAIL);
     }
 
-    /* ¥Ç¥Ğ¥¤¥¹¤Î¥ª¡¼¥×¥ó */
+    /* ãƒ‡ãƒã‚¤ã‚¹ã®ã‚ªãƒ¼ãƒ—ãƒ³ */
     if (*devname != '/') {
 	errno = proc_get_cwd(req->procid, &startip);
 	if (errno) {
@@ -142,14 +142,14 @@ W psc_mount_f(struct posix_request *req)
 	return (FAIL);
     }
 
-    /* block device ¤«¤É¤¦¤«¤Î¥Á¥§¥Ã¥¯ */
+    /* block device ã‹ã©ã†ã‹ã®ãƒã‚§ãƒƒã‚¯ */
     if ((device->i_mode & FS_FMT_MSK) != FS_FMT_BDEV) {
 	fs_close_file(device);
 	put_response(req, EP_INVAL, -1, 0, 0);
 	return (FAIL);
     }
 
-    /* ¥Ş¥¦¥ó¥È¥İ¥¤¥ó¥È¤Î¥ª¡¼¥×¥ó */
+    /* ãƒã‚¦ãƒ³ãƒˆãƒã‚¤ãƒ³ãƒˆã®ã‚ªãƒ¼ãƒ—ãƒ³ */
     if (*dirname != '/') {
 	errno = proc_get_cwd(req->procid, &startip);
 	if (errno) {
@@ -189,7 +189,7 @@ W psc_mount_f(struct posix_request *req)
 	put_response(req, EP_OK, 0, 0, 0);
 	fs_close_file(device);
 #ifdef notdef
-	/* ¥Ş¥¦¥ó¥È¥İ¥¤¥ó¥È¤Ï¡¤umount ¤µ¤ì¤ë¤Ş¤Ç»ÈÍÑ¤µ¤ì¤ë */
+	/* ãƒã‚¦ãƒ³ãƒˆãƒã‚¤ãƒ³ãƒˆã¯ï¼Œumount ã•ã‚Œã‚‹ã¾ã§ä½¿ç”¨ã•ã‚Œã‚‹ */
 	fs_close_file(mountpoint);
 #endif
 	return (SUCCESS);

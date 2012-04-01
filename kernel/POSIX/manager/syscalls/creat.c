@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -29,7 +29,7 @@ Version 2, June 1991
 #include "posix.h"
 extern W sfs_open_device(ID device, W * rsize);
 
-/* psc_creat_f - ¥Õ¥¡¥¤¥ë¤òºîÀ®¤¹¤ë
+/* psc_creat_f - ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ä½œæˆã™ã‚‹
  */
 W psc_creat_f(struct posix_request *req)
 {
@@ -48,14 +48,14 @@ W psc_creat_f(struct posix_request *req)
 
     errno = proc_alloc_fileid(req->procid, &fileid);
     if (errno) {
-	/* ¥á¥â¥ê¼èÆÀ¥¨¥é¡¼ */
+	/* ãƒ¡ãƒ¢ãƒªå–å¾—ã‚¨ãƒ©ãƒ¼ */
 	put_response(req, EP_NOMEM, 0, 0, 0);
 	return (FAIL);
     }
 #ifdef USE_ALLOCA
     pathname = alloca(req->param.par_creat.pathlen);
     if (pathname == NULL) {
-	/* ¥á¥â¥ê¼èÆÀ¥¨¥é¡¼ */
+	/* ãƒ¡ãƒ¢ãƒªå–å¾—ã‚¨ãƒ©ãƒ¼ */
 	put_response(req, EP_NOMEM, 0, 0, 0);
 	return (FAIL);
     }
@@ -64,7 +64,7 @@ W psc_creat_f(struct posix_request *req)
     errno = vget_reg(req->caller, req->param.par_creat.path,
 		     req->param.par_creat.pathlen + 1, pathname);
     if (errno) {
-	/* ¥Ñ¥¹Ì¾¤Î¥³¥Ô¡¼¥¨¥é¡¼ */
+	/* ãƒ‘ã‚¹åã®ã‚³ãƒ”ãƒ¼ã‚¨ãƒ©ãƒ¼ */
 	if (errno == E_PAR)
 	    put_response(req, EP_INVAL, 0, 0, 0);
 	else
@@ -106,20 +106,20 @@ W psc_creat_f(struct posix_request *req)
 			 &acc, startip, &newip);
 
     if (errno) {
-	/* ¥Õ¥¡¥¤¥ë¤¬¥ª¡¼¥×¥ó¤Ç¤­¤Ê¤¤ */
+	/* ãƒ•ã‚¡ã‚¤ãƒ«ãŒã‚ªãƒ¼ãƒ—ãƒ³ã§ããªã„ */
 	put_response(req, errno, 0, 0, 0);
 	return (FAIL);
     }
 
     if ((newip->i_mode & FS_FMT_MSK) == FS_FMT_DIR) {
-	/* ¥Õ¥¡¥¤¥ë¤Ï¡¢¥Ç¥£¥ì¥¯¥È¥ê¤À¤Ã¤¿¥¨¥é¡¼¤È¤¹¤ë */
+	/* ãƒ•ã‚¡ã‚¤ãƒ«ã¯ã€ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã ã£ãŸã‚¨ãƒ©ãƒ¼ã¨ã™ã‚‹ */
 
 	fs_close_file(newip);
 	put_response(req, EP_ISDIR, -1, 0, 0);
 	return (FAIL);
     } else if (newip->i_mode & FS_FMT_DEV) {
-	/* ¥¹¥Ú¥·¥ã¥ë¥Õ¥¡¥¤¥ë¤À¤Ã¤¿ */
-	/* ¥Ç¥Ð¥¤¥¹¤Ë DEV_OPN ¥á¥Ã¥»¡¼¥¸¤òÈ¯¿® */
+	/* ã‚¹ãƒšã‚·ãƒ£ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«ã ã£ãŸ */
+	/* ãƒ‡ãƒã‚¤ã‚¹ã« DEV_OPN ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’ç™ºä¿¡ */
 	errno = sfs_open_device(newip->i_dev, &rsize);
 	if (rsize >= 0) {
 	    newip->i_size = rsize;

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -11,7 +11,7 @@ Version 2, June 1991
 
 */
 /*
- * Ê¸»úÎó¤ÎÄ¹¤µ¤òÊÖ¤¹´Ø¿ô·²
+ * æ–‡å­—åˆ—ã®é•·ã•ã‚’è¿”ã™é–¢æ•°ç¾¤
  */
 
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/string/strlen.c,v 1.2 2000/02/17 14:29:04 naniwa Exp $ */
@@ -29,7 +29,7 @@ static char rcsid[] =
  */
 
 /*
- * Ê¸»úÎó¤ÎÄ¹¤µ¤ò¥Ğ¥¤¥ÈÃ±°Ì¤ÇÊÖ¤¹´Ø¿ô¡£
+ * æ–‡å­—åˆ—ã®é•·ã•ã‚’ãƒã‚¤ãƒˆå˜ä½ã§è¿”ã™é–¢æ•°ã€‚
  *
  */
 int strlen(char *s)
@@ -40,7 +40,7 @@ int strlen(char *s)
     return (count);
 }
 /*
- * Ê¸»úÎó¤ÎÄ¹¤µ¤ò¥Ğ¥¤¥ÈÃ±°Ì¤ÇÊÖ¤¹´Ø¿ô(À©¸ÂÃÍÉÕ¤­)
+ * æ–‡å­—åˆ—ã®é•·ã•ã‚’ãƒã‚¤ãƒˆå˜ä½ã§è¿”ã™é–¢æ•°(åˆ¶é™å€¤ä»˜ã)
  *
  */
 int strnlen(char *s, int count)

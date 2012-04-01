@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -9,7 +9,7 @@ Version 2, June 1991
 
 */
 
-/* ³ä¤ê¹ş¤ß´Ø·¸¤Î´Ø¿ô
+/* å‰²ã‚Šè¾¼ã¿é–¢ä¿‚ã®é–¢æ•°
  */
 
 static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/kernlib/interrupt.c,v 1.2 2000/01/28 09:06:37 monaka Exp $";
@@ -22,11 +22,11 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 /*
  * reset_intr_mask 
  *
- * °ú¿ô¡§	intn	³ä¤ê¹ş¤ßÈÖ¹æ
+ * å¼•æ•°ï¼š	intn	å‰²ã‚Šè¾¼ã¿ç•ªå·
  *
- * ÊÖÃÍ¡§	¤Ê¤·
+ * è¿”å€¤ï¼š	ãªã—
  *
- * ½èÍı¡§	³ä¤ê¹ş¤ß¥Ş¥¹¥¯¤ò¥ê¥»¥Ã¥È¤¹¤ë¡£
+ * å‡¦ç†ï¼š	å‰²ã‚Šè¾¼ã¿ãƒã‚¹ã‚¯ã‚’ãƒªã‚»ãƒƒãƒˆã™ã‚‹ã€‚
  *
  */
 void

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -10,7 +10,7 @@ Version 2, June 1991
 (C) 2002, Tomohide Naniwa
 
 */
-/* sfs_dir.c - SFS ¤Î¥Ç¥£¥ì¥¯¥È¥ê¤Ë´Ø·¸¤¹¤ë½èÍı¤ò¹Ô¤¦¡£
+/* sfs_dir.c - SFS ã®ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«é–¢ä¿‚ã™ã‚‹å‡¦ç†ã‚’è¡Œã†ã€‚
  *
  * $Log: sfs_dir.c,v $
  * Revision 1.11  2000/06/01 08:47:24  naniwa
@@ -23,8 +23,8 @@ Version 2, June 1991
  * sfs ver 1.1
  *
  * Revision 1.8  1999/05/10 15:46:16  night
- * ¥Ç¥£¥ì¥¯¥È¥êÆâÍÆ¤Î½ñ¤­¹ş¤ß¤ò¤¹¤ë½èÍı¤Ç¡¢sfs_i_read () ¤ò¸Æ¤Ó¤À¤·¤Æ¤¤¤¿
- * ¤Î¤ò sfs_i_write () ¤ò¸Æ¤Ó½Ğ¤¹¤è¤¦¤ËÊÑ¹¹¡£
+ * ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªå†…å®¹ã®æ›¸ãè¾¼ã¿ã‚’ã™ã‚‹å‡¦ç†ã§ã€sfs_i_read () ã‚’å‘¼ã³ã ã—ã¦ã„ãŸ
+ * ã®ã‚’ sfs_i_write () ã‚’å‘¼ã³å‡ºã™ã‚ˆã†ã«å¤‰æ›´ã€‚
  *
  * Revision 1.7  1999/04/13 04:15:26  monaka
  * MAJOR FIXcvs commit -m 'MAJOR FIX!!! There are so many changes, modifys, fixes. Sorry but I can't remember all of those. For example, all the manager and driver programmer have got power to access all ITRON systemcall. (My works is just making access route to ITRON. I don't know what happens in the nuclus.'! There are so many changes, modifys, fixes. Sorry but I can't remember all of those. For example, all the manager and driver programmer have got power to access all ITRON systemcall. (My works is just making access route to ITRON. I don't know what happens in the nuclus.
@@ -33,20 +33,20 @@ Version 2, June 1991
  * Source file cleaning for avoid warnings.
  *
  * Revision 1.5  1997/07/04 15:07:41  night
- * ¡¦¥¹¥Ú¥·¥ã¥ë¥Õ¥¡¥¤¥ë - ¥Ç¥Ğ¥¤¥¹¥É¥é¥¤¥Ğ¥İ¡¼¥È¤ÎÂĞ±şÉ½¤Î´ØÏ¢½èÍı¤ÎÄÉ²Ã¡£
- * ¡¦¥Õ¥¡¥¤¥ë¤ÎÆÉ¤ß¹ş¤ß½èÍı¤Î²şÄû¡£
+ * ãƒ»ã‚¹ãƒšã‚·ãƒ£ãƒ«ãƒ•ã‚¡ã‚¤ãƒ« - ãƒ‡ãƒã‚¤ã‚¹ãƒ‰ãƒ©ã‚¤ãƒãƒãƒ¼ãƒˆã®å¯¾å¿œè¡¨ã®é–¢é€£å‡¦ç†ã®è¿½åŠ ã€‚
+ * ãƒ»ãƒ•ã‚¡ã‚¤ãƒ«ã®èª­ã¿è¾¼ã¿å‡¦ç†ã®æ”¹è¨‚ã€‚
  *
  * Revision 1.4  1997/07/03 14:24:35  night
- * mountroot/open ½èÍı¤Î¥Ğ¥°¤ò½¤Àµ¡£
+ * mountroot/open å‡¦ç†ã®ãƒã‚°ã‚’ä¿®æ­£ã€‚
  *
  * Revision 1.3  1996/11/27 15:42:08  night
- * sfs_write_dir() ¤òÄÉ²Ã
+ * sfs_write_dir() ã‚’è¿½åŠ 
  *
  * Revision 1.2  1996/11/18 13:46:10  night
- * ¥Õ¥¡¥¤¥ë¤ÎÃæ¿È¤òºîÀ®¡£
+ * ãƒ•ã‚¡ã‚¤ãƒ«ã®ä¸­èº«ã‚’ä½œæˆã€‚
  *
  * Revision 1.1  1996/11/17  14:52:57  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  */
@@ -60,7 +60,7 @@ static char rcsid[] = "$Id: sfs_dir.c,v 1.11 2000/06/01 08:47:24 naniwa Exp $";
 extern int strlen(B *);
 
 
-/* ¥Ç¥£¥ì¥¯¥È¥ê¤Ë´Ø·¸¤¹¤ë½èÍı
+/* ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«é–¢ä¿‚ã™ã‚‹å‡¦ç†
  *
  * sfs_read_dir()
  * sfs_write_dir()
@@ -102,7 +102,7 @@ sfs_read_dir (struct inode *parentp,
 }
 
 
-/* sfs_write_dir - ¥Ç¥£¥ì¥¯¥È¥ê¤Ë¿·¤·¤¤Í×ÁÇ¤òÄÉ²Ã
+/* sfs_write_dir - ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«æ–°ã—ã„è¦ç´ ã‚’è¿½åŠ 
  *
  */
 W
@@ -113,7 +113,7 @@ sfs_write_dir (struct inode *parentp,
   W	errno;
   W	rsize;
 
-  /* ¿Æ¥Ç¥£¥ì¥¯¥È¥ê¤Î netnry ÌÜ¤«¤é¸å¤Ë dirp ¤ÎÆâÍÆ¤òÄÉ²Ã */
+  /* è¦ªãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã® netnry ç›®ã‹ã‚‰å¾Œã« dirp ã®å†…å®¹ã‚’è¿½åŠ  */
   errno = sfs_i_write (parentp, nentry*sizeof(struct sfs_dir), (char *)dirp,
 		       sizeof(struct sfs_dir), &rsize);
   if (errno)
@@ -143,7 +143,7 @@ W sfs_getdents(struct inode *ip, ID caller, W offset,
   s = sizeof(struct sfs_dir);
   if (offset >= nentry*s) return(EP_OK);
   {
-    struct sfs_dir dirp[nentry]; /* GCC ¤Î³ÈÄ¥µ¡Ç½¤ò»È¤Ã¤Æ¤¤¤ë */
+    struct sfs_dir dirp[nentry]; /* GCC ã®æ‹¡å¼µæ©Ÿèƒ½ã‚’ä½¿ã£ã¦ã„ã‚‹ */
     errno = sfs_read_dir (ip, nentry, dirp);
     if (errno) return(errno);
     for (i = offset/s; i < nentry; i++) {

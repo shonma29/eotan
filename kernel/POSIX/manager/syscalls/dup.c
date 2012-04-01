@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -26,7 +26,7 @@ Version 2, June 1991
 
 #include "posix.h"
 
-/* psc_dup_f - �ե����뵭�һҤ�ʣ��
+/* psc_dup_f - ファイル記述子の複製
  */
 W
 psc_dup_f (struct posix_request *req)
@@ -36,7 +36,7 @@ psc_dup_f (struct posix_request *req)
   W		newfileid;
 
 
-  /* �ץ���������ե����빽¤�ΤؤΥݥ��󥿤���Ф�
+  /* プロセスからファイル構造体へのポインタを取り出す
    */
   errno = proc_get_file (req->procid, req->param.par_dup.fileid, &fp);
   if (errno)
@@ -48,7 +48,7 @@ psc_dup_f (struct posix_request *req)
 
   if (fp->f_inode == NULL)
     {
-      /* ʣ������ե����뵭�һҤ��ֹ椬���������ä�
+      /* 複製するファイル記述子の番号がおかしかった
        */
       put_response (req, EP_BADF, -1, 0, 0);
       return (FAIL);

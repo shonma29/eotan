@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -61,7 +61,7 @@ W psc_write_f(struct posix_request *req)
     }
 
     if (fp->f_flag & F_PIPE) {
-	/* ¥Ñ¥¤¥×¤ÎÆÉ¤ß½ñ¤­ */
+	/* ãƒ‘ã‚¤ãƒ—ã®èª­ã¿æ›¸ã */
 	put_response(req, EP_NOSUP, -1, 0, 0);
 	return (FAIL);
     }
@@ -73,8 +73,8 @@ W psc_write_f(struct posix_request *req)
 #endif
     if ((! (fp->f_inode->i_mode & FS_FMT_DEV)) &&
 	(fp->f_offset > fp->f_inode->i_size)) {
-      /* ÄÌ¾ï¥Õ¥¡¥¤¥ë¤Ç¡¤½ñ¤­¹þ¤à¾ì½ê¤¬¥Õ¥¡¥¤¥ë¤ÎÆâÍÆ¤¬Â¸ºß¤·¤Ê¤¤¾ì½ê */
-      /* ¤½¤³¤Þ¤Ç¤ò 0 ¤ÇËä¤á¤ë */
+      /* é€šå¸¸ãƒ•ã‚¡ã‚¤ãƒ«ã§ï¼Œæ›¸ãè¾¼ã‚€å ´æ‰€ãŒãƒ•ã‚¡ã‚¤ãƒ«ã®å†…å®¹ãŒå­˜åœ¨ã—ãªã„å ´æ‰€ */
+      /* ãã“ã¾ã§ã‚’ 0 ã§åŸ‹ã‚ã‚‹ */
       bzero(buf, sizeof(buf));
       for (rest_length = fp->f_offset - fp->f_inode->i_size;
 	   rest_length > 0; rest_length -= rlength) {

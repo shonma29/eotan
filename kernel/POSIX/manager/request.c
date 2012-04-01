@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -14,7 +14,7 @@ Version 2, June 1991
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/manager/request.c,v 1.7 2000/02/19 03:02:15 naniwa Exp $ */
 
 
-/* request.c - POSIX �ط��Υ�å�����������Ԥ�
+/* request.c - POSIX 関係のメッセージ処理を行う
  *
  *
  *
@@ -26,20 +26,20 @@ Version 2, June 1991
  * Modified include pathes (POSIX manager should be independ from ITRON.)
  *
  * Revision 1.5  1997/10/24 14:00:10  night
- * �ѿ��ΰ�����碌��̩�ˤ�����
+ * 変数の引数合わせを厳密にした。
  *
  * Revision 1.4  1997/04/28 15:29:10  night
- * �ǥХ����ɥ饤�Ф���Υ�å���������������ΰ�򥹥��å����
- * �ȤäƤ����Ȥ�����static �ΰ�����ꤷ����
+ * デバイスドライバからのメッセージを受信する領域をスタック上に
+ * とっていたところを、static 領域に設定した。
  *
  * Revision 1.3  1996/11/20  12:12:47  night
- * ���顼�����å����ɲá�
+ * エラーチェックの追加。
  *
  * Revision 1.2  1996/11/07  12:48:52  night
- * get_request() �� put_response() ���ɲá�
+ * get_request() と put_response() の追加。
  *
  * Revision 1.1  1996/11/05  15:13:46  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  */
 
@@ -47,60 +47,60 @@ Version 2, June 1991
 #include <port-manager.h>
 
 
-static ID request_port;		/* �׵�����դ��ѤΥݡ���       */
-				/* ITRON �Υ�å������ݡ���     */
+static ID request_port;		/* 要求受け付け用のポート       */
+				/* ITRON のメッセージポート     */
 
 
 
 
-/* init_port - �׵�����դ��ѤΥݡ��Ȥ���������
+/* init_port - 要求受け付け用のポートを初期化する
  *
- * ����
- *	�⤷�����Ǥ˥�å������ݡ��Ȥ����������Ƥ������ˤ�
- * 	���⤷�ʤ������ξ��ˤϡ�SUCCESS ���֤롣
+ * 処理
+ *	もし、すでにメッセージポートが初期化されていた場合には
+ * 	何もしない。その場合には、SUCCESS が返る。
  *
- * �֤���
- *	SUCCESS	����������
- *	FAIL	����������
+ * 返り値
+ *	SUCCESS	処理が成功
+ *	FAIL	処理が失敗
  *
  */
 W init_port(void)
 {
     ID port;
 
-    /* ���Ǥ˥ݡ��Ȥ����������Ƥ���
+    /* すでにポートが初期化されていた
      */
     if (request_port != 0) {
 	return (SUCCESS);
     }
 
-    /* �ݡ��Ȥ�������� */
+    /* ポートを作成する */
 #ifdef notdef
     if ((port = get_port(sizeof(struct posix_request),
 			 sizeof(struct posix_request))) <= 0) {
-	/* �ݡ��Ȥ������Ǥ��ʤ��ä� */
+	/* ポートが作成できなかった */
 	return (FAIL);
     }
 #else
     if ((port = get_port(0, sizeof(struct posix_request))) <= 0) {
-	/* �ݡ��Ȥ������Ǥ��ʤ��ä� */
+	/* ポートが作成できなかった */
 	return (FAIL);
     }
 #endif
 
     request_port = port;
 
-    /* �ݡ��ȥޥ͡��������Ͽ���� */
+    /* ポートマネージャに登録する */
     if (regist_port((PORT_NAME *) POSIX_MANAGER, port) != E_PORT_OK) {
-	/* �ݡ��Ȥ���������������������� */
+	/* ポートを削除する処理がここに入る */
 	return (FAIL);
     }
 
-    return (SUCCESS);		/* �ݡ��Ȥ������Ǥ��� */
+    return (SUCCESS);		/* ポートが作成できた */
 }
 
 
-/* get_request - �ꥯ�����Ȥ��������
+/* get_request - リクエストを受信する
  *
  */
 W get_request(struct posix_request * req)
@@ -141,17 +141,17 @@ put_response(struct posix_request * req, W errno, W status, W ret1, W ret2)
     res.ret1 = ret1;
     res.ret2 = ret2;
 
-    /* �׵ḵ���������� */
+    /* 要求元に送信する */
     syserr = snd_mbf(req->receive_port, sizeof(res), &res);
     return (EP_OK);
 }
 
 
-/* ���顼�ˤʤä����Ȥ�ꥯ�����Ȥ����긵���֤�
+/* エラーになったことをリクエストの送り元に返す
  *
  */
 W error_response(struct posix_request * req, W errno)
 {
-    /* �׵ḵ���������� */
+    /* 要求元に送信する */
     return (put_response(req, errno, 0, 0, 0));
 }

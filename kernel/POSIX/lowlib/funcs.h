@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -13,29 +13,29 @@ Version 2, June 1991
 /*
  * $Log: funcs.h,v $
  * Revision 1.2  1997/08/31 13:13:42  night
- * �Ȥꤢ������OS �ե�����������Ȥ����ޤǤǤ�����
+ * とりあえず、OS ファイルに入れるところまでできた。
  *
  * Revision 1.1  1996/11/11  13:36:06  night
- * IBM PC �Ǥؤκǽ����Ͽ
+ * IBM PC 版への最初の登録
  *
  * ----------------
  *
  * Revision 1.4  1995/09/21  15:52:56  night
- * �������ե��������Ƭ�� Copyright notice ������ɲá�
+ * ソースファイルの先頭に Copyright notice 情報を追加。
  *
  * Revision 1.3  1995/03/18  14:24:16  night
- * �����ƥॳ����ؿ��Υץ��ȥ�����������ѹ���
- * ���ϡ������򥷥��ƥॳ����ΰ����ΤȤ���˽񤤤Ƥ�����
- * ����򡢰����Ϥ��٤� void * ���ѹ�������
+ * システムコール関数のプロトタイプ宣言の変更。
+ * 元は、引数をシステムコールの引数のとおりに書いていた。
+ * それを、引数はすべて void * に変更した。
  *
  * Revision 1.2  1995/02/20  15:20:18  night
- * RCS �� Log �ޥ������������������ɲá�
+ * RCS の Log マクロを入れる註釈部を追加。
  *
  *
  */
 
 /*
- * �����ƥॳ��������ؿ��Υץ��ȥ��������
+ * システムコール処理関数のプロトタイプ宣言
  *
  */
 
@@ -56,12 +56,12 @@ Version 2, June 1991
 #endif
 
 /*
- * �����ƥॳ��������Ѵؿ��������
+ * システムコール処理用関数の定義。
  */
 #include "syscalls/funcs.h"
 
 /*
- * POSIX �Ǥϥ���ץ���Ȱ�¸�ȤʤäƤ��륷���ƥॳ����
+ * POSIX ではインプリメント依存となっているシステムコール
  */
 extern int	psys_mount ();
 extern int	psys_umount ();

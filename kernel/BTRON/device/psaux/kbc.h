@@ -15,18 +15,18 @@
 #define __KBC_H__	
 
 
-#define PSAUX_IRQ       12      /* psaux¤ÎIRQ */
+#define PSAUX_IRQ       12      /* psauxã®IRQ */
 
-#define KBC_COM		0x64    /* KBC¤Ø¤Î¥³¥Ş¥ó¥É */
-#define KBC_DATA	0x60    /* ¥³¥Ş¥ó¥É¤ËÂĞ¤¹¤ë¥Ñ¥é¥á¡¼¥¿ */
-#define KBC_STAT	0x64    /* KBC¤Î¥¹¥Æ¡¼¥¿¥¹ */
+#define KBC_COM		0x64    /* KBCã¸ã®ã‚³ãƒãƒ³ãƒ‰ */
+#define KBC_DATA	0x60    /* ã‚³ãƒãƒ³ãƒ‰ã«å¯¾ã™ã‚‹ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ */
+#define KBC_STAT	0x64    /* KBCã®ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ */
 
-#define KBC_OBF         0x01    /* 1:½ĞÎÏ¥Ğ¥Ã¥Õ¥¡¤Ë¥Ç¡¼¥¿Í­¤ê */
-#define KBC_IBF         0x02    /* 1:ÆşÎÏ¥Ğ¥Ã¥Õ¥¡¤Ë¥Ç¡¼¥¿Í­¤ê */ 
+#define KBC_OBF         0x01    /* 1:å‡ºåŠ›ãƒãƒƒãƒ•ã‚¡ã«ãƒ‡ãƒ¼ã‚¿æœ‰ã‚Š */
+#define KBC_IBF         0x02    /* 1:å…¥åŠ›ãƒãƒƒãƒ•ã‚¡ã«ãƒ‡ãƒ¼ã‚¿æœ‰ã‚Š */ 
 
-#define BUFF_SIZE       2048    /* ¥ê¥ó¥°¥Ğ¥Ã¥Õ¥¡¤Î¥µ¥¤¥º */
+#define BUFF_SIZE       2048    /* ãƒªãƒ³ã‚°ãƒãƒƒãƒ•ã‚¡ã®ã‚µã‚¤ã‚º */
 
-#define MAX_RETRY       100000  /* retry²ó¿ô */ 
+#define MAX_RETRY       100000  /* retryå›æ•° */ 
 
 #endif 
 

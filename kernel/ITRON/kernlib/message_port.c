@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -23,26 +23,26 @@ static char rcsid[] =
  * MAJOR FIXcvs commit -m 'MAJOR FIX!!! There are so many changes, modifys, fixes. Sorry but I can't remember all of those. For example, all the manager and driver programmer have got power to access all ITRON systemcall. (My works is just making access route to ITRON. I don't know what happens in the nuclus.'! There are so many changes, modifys, fixes. Sorry but I can't remember all of those. For example, all the manager and driver programmer have got power to access all ITRON systemcall. (My works is just making access route to ITRON. I don't know what happens in the nuclus.
  *
  * Revision 1.1  1996/07/22 23:52:05  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  * Revision 1.4  1995/09/21  15:51:41  night
- * �������ե��������Ƭ�� Copyright notice ������ɲá�
+ * ソースファイルの先頭に Copyright notice 情報を追加。
  *
  * Revision 1.3  1995/09/17  17:06:23  night
- * get_req() �ؿ������ rcv_mbf �����ƥॳ�����ƤӽФ������ΤȤ��Υ��顼
- * �� kernlib ������ѿ� sys_errno �˵�������褦���ѹ�������
- * �����ϡ����顼�Ϥ��ƤƤ�����
+ * get_req() 関数の中で rcv_mbf システムコールを呼び出す。このときのエラー
+ * を kernlib の大域変数 sys_errno に記憶するように変更した。
+ * 以前は、エラーはすてていた。
  *
  * Revision 1.2  1995/08/05  12:09:48  night
- * get_req() �ؿ����ɲá�
+ * get_req() 関数の追加。
  *
  * Revision 1.1  1995/02/26  14:17:51  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  *
  */
 /*
- * ��å������Хåե����ñ�˰�������δؿ�����
+ * メッセージバッファを簡単に扱うための関数群。
  *
  */
 #include <h/types.h>
@@ -53,7 +53,7 @@ static char rcsid[] =
 
 
 /*
- * Ŭ���� ID ���ĥ�å������Хåե���������롣
+ * 適当な ID をもつメッセージバッファを作成する。
  */
 ID get_port(W bufsz, W maxsize)
 {
@@ -62,9 +62,9 @@ ID get_port(W bufsz, W maxsize)
     W errno;
 
     /*
-     * �׵�����Ĥ��Τ���Υ�å������Хåե���������롣
-     * ��å������Хåե��� ID ���ä˷�ޤäƤ��ʤ��������Ƥ����å���
-     * ���Хåե���Ŭ�������֡�
+     * 要求受けつけのためのメッセージバッファを作成する。
+     * メッセージバッファの ID は特に決まっていない。空いているメッセー
+     * ジバッファを適当に選ぶ。
      */
     create_argument.bufsz = bufsz;
     create_argument.maxmsz = maxsize;
@@ -79,8 +79,8 @@ ID get_port(W bufsz, W maxsize)
 }
 
 /*
- * �����ǻ��ꤷ���ݡ��Ȥ����å�������������롣
- * �ޥ͡�����ǻ��Ѥ��뤿��δؿ���
+ * 引数で指定したポートからメッセージを受信する。
+ * マネージャで使用するための関数。
  */
 W get_req(ID port, VP request, W * size)
 {

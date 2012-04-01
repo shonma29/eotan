@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -16,16 +16,16 @@ static char rcs[] = "@(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc
 /*
  * $Log: memory_manager.c,v $
  * Revision 1.4  1997/07/06 11:54:25  night
- * banner() ¤Î½èÍý¤òÊÑ¹¹¡£
+ * banner() ã®å‡¦ç†ã‚’å¤‰æ›´ã€‚
  *
  * Revision 1.3  1997/07/02 13:10:32  night
- * malloc ¤Î½¤Àµ¡£
+ * malloc ã®ä¿®æ­£ã€‚
  *
  * Revision 1.2  1997/06/29 15:44:32  night
- * ¥³¥á¥ó¥È¤ÎÊÑ¹¹
+ * ã‚³ãƒ¡ãƒ³ãƒˆã®å¤‰æ›´
  *
- * ¡¦´Á»ú¥³¡¼¥É¤ò SJIS ¤«¤é EUC ¤ËÊÑ¹¹¤·¤¿¡£
- * ¡¦RCS ¤Î Log ¥Þ¥¯¥íÆþ¤ê¤Î¥³¥á¥ó¥È¤òÄÉ²Ã¤·¤¿(¤Þ¤ÀÆþ¤ì¤Æ¤¤¤Ê¤«¤Ã¤¿¥Õ¥¡¥¤¥ë¤Î¤ß)¡£
+ * ãƒ»æ¼¢å­—ã‚³ãƒ¼ãƒ‰ã‚’ SJIS ã‹ã‚‰ EUC ã«å¤‰æ›´ã—ãŸã€‚
+ * ãƒ»RCS ã® Log ãƒžã‚¯ãƒ­å…¥ã‚Šã®ã‚³ãƒ¡ãƒ³ãƒˆã‚’è¿½åŠ ã—ãŸ(ã¾ã å…¥ã‚Œã¦ã„ãªã‹ã£ãŸãƒ•ã‚¡ã‚¤ãƒ«ã®ã¿)ã€‚
  *
  *
  */
@@ -44,10 +44,10 @@ start ()
 
   for (;;)
     {
-      /* Í×µá¤Î¼õ¤±ÉÕ¤±¤È½èÍý */
+      /* è¦æ±‚ã®å—ã‘ä»˜ã‘ã¨å‡¦ç† */
       if (get_request (&request) == FAIL)
 	{
-	  /* ¥ê¥¯¥¨¥¹¥È¼èÆÀ¤Ë¼ºÇÔ¤·¤¿ */
+	  /* ãƒªã‚¯ã‚¨ã‚¹ãƒˆå–å¾—ã«å¤±æ•—ã—ãŸ */
 #ifdef DEBUG
 	  printf ("Cannot get request.\n");
 #endif
@@ -59,10 +59,10 @@ start ()
 #endif /* DEBUG */
 
 #ifdef notdef
-      /* ¼èÆÀ¤·¤¿¥ê¥¯¥¨¥¹¥È¤ò½èÍý¤¹¤ë */
+      /* å–å¾—ã—ãŸãƒªã‚¯ã‚¨ã‚¹ãƒˆã‚’å‡¦ç†ã™ã‚‹ */
       if ((request.operation < 0) || (request.operation > NR_POSIX_SYSCALL))
 	{
-	  /* ¥ê¥¯¥¨¥¹¥ÈÍ×µá¤Ë¤¢¤ë¥ª¥Ú¥ì¡¼¥·¥ç¥ó¤Ï¡¢¥µ¥Ý¡¼¥È¤·¤Æ¤¤¤Ê¤¤ */
+	  /* ãƒªã‚¯ã‚¨ã‚¹ãƒˆè¦æ±‚ã«ã‚ã‚‹ã‚ªãƒšãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ã¯ã€ã‚µãƒãƒ¼ãƒˆã—ã¦ã„ãªã„ */
 	  error_response (&request, EP_NOSUP);
 	}
       else
@@ -85,13 +85,13 @@ banner ()
 void
 init (void)
 {
-  /* port ¤Î½é´ü²½ / ÅÐÏ¿ */
+  /* port ã®åˆæœŸåŒ– / ç™»éŒ² */
   init_port ();
 
-  /* ¥á¥Ã¥»¡¼¥¸½ÐÎÏµ¡¹½¤Î½é´ü²½ */
+  /* ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸å‡ºåŠ›æ©Ÿæ§‹ã®åˆæœŸåŒ– */
   init_log ();
 
-  /* ÆâÉô¥á¥â¥ê´ÉÍý(malloc)¤Î½é´ü²½ */
+  /* å†…éƒ¨ãƒ¡ãƒ¢ãƒªç®¡ç†(malloc)ã®åˆæœŸåŒ– */
   if (init_malloc () != E_OK)
     {
       printf ("MM: cannot init memory allocate system(malloc).\n");

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -32,28 +32,28 @@ static char rcsid[] =
  * JIS -> EUC kanji code convert
  *
  * Revision 1.3  2000/01/23 15:50:49  kishida0
- * 106JP��101US �����ܡ������ؤ��ѤΥ��ޥ�ɤ��ɲä�����
- * �ؿ��ˤ��Ƥ���Τ����ޤ����������Ȥꤢ�����ϻ��Ѳ�ǽ
- * note-pc�ѤˤϤ⤦���������Υơ��֥���ǧ����ɬ�פ�����
- * �ץ�ݡ���
+ * 106JP、101US キーボード切替え用のコマンドを追加した。
+ * 関数にしているのがいまいちだが、とりあえずは使用可能
+ * note-pc用にはもう少しキーのテーブルを確認する必要がある
+ * 要レポート
  *
  * Revision 1.2  1999/03/15 05:58:27  monaka
  * modified some debug messages.
  *
  * Revision 1.1  1996/07/24 16:28:44  night
- * IBM PC �� B-Free OS �ؤκǽ����Ͽ
+ * IBM PC 版 B-Free OS への最初の登録
  *
  * Revision 1.4  1995/10/01  12:55:24  night
- * KEYBOARD_CHANGEMODE �ˤĤ��Ƥν������ɲá�
+ * KEYBOARD_CHANGEMODE についての処理を追加。
  *
  * Revision 1.3  1995/09/21  15:51:00  night
- * �������ե��������Ƭ�� Copyright notice ������ɲá�
+ * ソースファイルの先頭に Copyright notice 情報を追加。
  *
  * Revision 1.2  1995/09/19  18:01:02  night
- * �����ܡ��ɤ������ϤǤ���Ȥ����ޤǤǤ�����
+ * キーボードから入力できるところまでできた。
  *
  * Revision 1.1  1995/09/18  11:42:02  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  *
  *
@@ -69,7 +69,7 @@ static char rcsid[] =
 #include "POSIX/servers/wconsole/wconsole.h"
 
 /*********************************************************************
- *	 �ɽ��ѿ��������
+ *	 局所変数群の宣言
  *
  */
 static void main_loop();
@@ -77,13 +77,13 @@ static void doit(DDEV_REQ * packet);
 W send_dbg_msg();
 
 /*********************************************************************
- *	 ����ѿ��������
+ *	 大域変数群の宣言
  *
  */
 ID recvport;
 W initialized = 0;
-ID waitflag;			/* �����ܡ��ɤ��饭�����Ϥ��ԤĻ��� */
-				/* ���Ѥ��륤�٥�ȥե饰�� ID */
+ID waitflag;			/* キーボードからキー入力を待つ時に */
+				/* 使用するイベントフラグの ID */
 W driver_mode;
 ID wconsole = 0, local_recv = 0;
 W send_msg = 0;
@@ -91,9 +91,9 @@ ID my_tskid;
 
 
 /*
- * keyboard �ǥХ����ɥ饤�Ф� main �ؿ�
+ * keyboard デバイスドライバの main 関数
  *
- * ���δؿ��ϡ��ǥХ����ɥ饤��Ω���夲���˰������¹Ԥ��롣
+ * この関数は、デバイスドライバ立ち上げ時に一回だけ実行する。
  *
  */
 start()
@@ -101,12 +101,12 @@ start()
     extern char version[];
 
     /* 
-     * �׵�����ѤΥݡ��Ȥκ���
+     * 要求受信用のポートの作成
      */
     init_keyboard();
 
     /*
-     * Ω���夲��å�����
+     * 立ち上げメッセージ
      */
     dbg_printf("keyboard driver started. receive port is %d\n", recvport);
 
@@ -115,17 +115,17 @@ start()
 
 static void main_loop()
 {
-    DDEV_REQ req;		/* ���������׵�ѥ��å� */
+    DDEV_REQ req;		/* 受信する要求パケット */
     ER errno;
     INT rsize;
 
     /*
-     * �׵���� - �����Υ롼��
+     * 要求受信 - 処理のループ
      */
     rsize = sizeof(req);
     for (;;) {
 
-	/* �׵�μ��� */
+	/* 要求の受信 */
 #ifdef undef
 	errno = trcv_mbf(&req, &rsize, recvport, 51);
 #else
@@ -133,7 +133,7 @@ static void main_loop()
 #endif
 	switch (errno) {
 	case E_OK:
-	    /* ���辰���� */
+	    /* 正常ケース */
 	    doit(&req);
 	    break;
 
@@ -161,13 +161,13 @@ static void main_loop()
 	}
     }
 
-    /* �����ιԤˤϡ���ʤ� */
+    /* ここの行には、来ない */
 }
 
 /*
- * �����
+ * 初期化
  *
- * o �׵�����Ĥ��ѤΥ�å������Хåե� ID ��ݡ��ȥޥ͡��������Ͽ
+ * o 要求受けつけ用のメッセージバッファ ID をポートマネージャに登録
  */
 W init_keyboard(void)
 {
@@ -175,7 +175,7 @@ W init_keyboard(void)
     ER error;
 
     /*
-     * �׵�����Ĥ��ѤΥݡ��Ȥ��������롣
+     * 要求受けつけ用のポートを初期化する。
      */
 #ifdef notdef
     recvport = get_port(sizeof(DDEV_REQ), sizeof(DDEV_REQ));
@@ -185,7 +185,7 @@ W init_keyboard(void)
     if (recvport <= 0) {
 	dbg_printf("KEYBOARD: cannot make receive port.\n");
 	slp_tsk();
-	/* ��å������Хåե������˼��� */
+	/* メッセージバッファ生成に失敗 */
     }
 
     error = regist_port(KEYBOARD_DRIVER, recvport);
@@ -193,10 +193,10 @@ W init_keyboard(void)
 	dbg_printf("keyboard: cannot regist port (error = %d)\n", error);
     }
 
-    init_keyboard_interrupt();	/* �����ߥϥ�ɥ����Ͽ */
-    init_keybuffer();		/* �����ܡ��ɥХåե��ν���� */
+    init_keyboard_interrupt();	/* 割り込みハンドラの登録 */
+    init_keybuffer();		/* キーボードバッファの初期化 */
 
-    /* �������Ϥ��ԤĻ��˻��Ѥ��륤�٥�ȥե饰�ν���� */
+    /* キー入力を待つ時に使用するイベントフラグの初期化 */
     waitflag = get_flag(TA_WSGL, 0);
     dbg_printf("keyboard: eventflag = %d\n", waitflag);	/* */
 
@@ -215,7 +215,7 @@ static void doit(DDEV_REQ * packet)
 {
     switch (packet->header.msgtyp) {
     case DEV_OPN:
-	/* �ǥХ����Υ����ץ� */
+	/* デバイスのオープン */
 	if (!initialized) {
 	    init_keyboard();
 	}
@@ -223,7 +223,7 @@ static void doit(DDEV_REQ * packet)
 	break;
 
     case DEV_CLS:
-	/* �ǥХ����Υ������� */
+	/* デバイスのクローズ */
 	close_keyboard(packet->header.mbfid, &(packet->body.cls_req));
 	break;
 
@@ -252,14 +252,14 @@ static void doit(DDEV_REQ * packet)
 }
 
 /************************************************************************
- * open_keyboard --- keyboard �Υ����ץ�
+ * open_keyboard --- keyboard のオープン
  *
- * ������	caller	��å������������
- *		packet	�����ץ�ѥ��å�
+ * 引数：	caller	メッセージの送り手
+ *		packet	オープンパケット
  *
- * ���͡�	��� E_OK ���֤���
+ * 返値：	常に E_OK を返す。
  *
- * ������	E_OK ���å��������������֤���
+ * 処理：	E_OK をメッセージの送り手に返す。
  *
  */
 W open_keyboard(ID caller, DDEV_OPN_REQ * packet)
@@ -275,15 +275,15 @@ W open_keyboard(ID caller, DDEV_OPN_REQ * packet)
 }
 
 /************************************************************************
- * close_keyboard --- �ɥ饤�ФΥ�������
+ * close_keyboard --- ドライバのクローズ
  *
- * ������	dd	keyboard �ɥ饤���ֹ�
- *		o_mode	�����ץ�⡼��
- *		error	���顼�ֹ�
+ * 引数：	dd	keyboard ドライバ番号
+ *		o_mode	オープンモード
+ *		error	エラー番号
  *
- * ���͡�	��� E_OK ���֤���
+ * 返値：	常に E_OK を返す。
  *
- * ������	�����ܡ��ɤϥ��������ν����ǤϤʤˤ⤷�ʤ���
+ * 処理：	キーボードはクローズの処理ではなにもしない。
  *
  */
 W close_keyboard(ID caller, DDEV_CLS_REQ * packet)
@@ -300,12 +300,12 @@ W close_keyboard(ID caller, DDEV_CLS_REQ * packet)
 /*************************************************************************
  * read_keyboard --- 
  *
- * ������	caller
+ * 引数：	caller
  *		packet
  *
- * ���͡�	E_OK ���֤���
+ * 返値：	E_OK を返す。
  *
- * ������	��å��������������ɤ߹����ʸ������֤���
+ * 処理：	メッセージの送り手に読み込んだ文字列を返す。
  *
  */
 W read_keyboard(ID caller, DDEV_REA_REQ * packet)
@@ -336,12 +336,12 @@ W read_keyboard(ID caller, DDEV_REA_REQ * packet)
 /*************************************************************************
  * posix_read_keyboard --- 
  *
- * ������	caller
+ * 引数：	caller
  *		packet
  *
- * ���͡�	E_OK ���֤���
+ * 返値：	E_OK を返す。
  *
- * ������	��å������������(POSIX lowlib)��ʸ������֤���
+ * 処理：	メッセージの送り手(POSIX lowlib)に文字列を返す。
  *
  */
 W posix_read_keyboard(ID caller, ID tskid, DDEV_PRD_REQ * packet)
@@ -387,12 +387,12 @@ W posix_read_keyboard(ID caller, ID tskid, DDEV_PRD_REQ * packet)
 /************************************************************************
  * write_keyboard
  *
- * ������	caller
+ * 引数：	caller
  *		packet
  *
- * ���͡�	��� E_NOSPT ���֤���
+ * 返値：	常に E_NOSPT を返す。
  *
- * ������	write �ϡ������ܡ��ɤǤϹԤ�ʤ���
+ * 処理：	write は、キーボードでは行わない。
  *
  */
 W write_keyboard(ID caller, DDEV_WRI_REQ * packet)
@@ -409,12 +409,12 @@ W write_keyboard(ID caller, DDEV_WRI_REQ * packet)
 /************************************************************************
  * control_keyboard
  *
- * ������	caller
+ * 引数：	caller
  *		packet
  *
- * ���͡�	E_NOSPT ���֤���
+ * 返値：	E_NOSPT を返す。
  *
- * ������
+ * 処理：
  *
  */
 

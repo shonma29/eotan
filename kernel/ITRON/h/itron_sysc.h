@@ -2,9 +2,9 @@
 #ifndef __ITRON_SYSCALL_FUNC_H__
 #define __ITRON_SYSCALL_FUNC_H__
 
-/* •∑•π•∆•‡•≥°º•Î¥ÿøÙ§ŒƒÍµ¡ */
+/* „Ç∑„Çπ„ÉÜ„É†„Ç≥„Éº„É´Èñ¢Êï∞„ÅÆÂÆöÁæ© */
 /* --------------------------------------------------------- */
-/* •ø•π•Ø¥…Õ˝µ°«Ω                                            */
+/* „Çø„Çπ„ÇØÁÆ°ÁêÜÊ©üËÉΩ                                            */
 /* --------------------------------------------------------- */
 
 extern ER	cre_tsk (ID tskid, T_CTSK *pk_ctsk);
@@ -37,7 +37,7 @@ extern ER new_task (T_CTSK *pk_ctsk, ID *rid, BOOL run_flag);
 extern ER vcre_tsk (T_CTSK *pk_ctsk, ID *rid);
 
 /* --------------------------------------------------------- */
-/* •ª•ﬁ•’•©Õ—¥ÿøÙ                                            */
+/* „Çª„Éû„Éï„Ç©Áî®Èñ¢Êï∞                                            */
 /* --------------------------------------------------------- */
 extern ER	cre_sem (ID semid, T_CSEM *pk_csem);
 extern ER	del_sem (ID semid);
@@ -49,7 +49,7 @@ extern ER	ref_sem (T_RSEM *pk_rsem, ID semid);
 
 
 /* --------------------------------------------------------- */
-/* •§•Ÿ•Û•»•’•È•∞Õ—¥ÿøÙ                                      */
+/* „Ç§„Éô„É≥„Éà„Éï„É©„Ç∞Áî®Èñ¢Êï∞                                      */
 /* --------------------------------------------------------- */
 extern ER	cre_flg (ID flgid, T_CFLG *pk_cflg);
 extern ER	del_flg (ID flgid);
@@ -61,7 +61,7 @@ extern ER	twai_flg (UINT *p_flgptn, ID flgid, UINT waiptn, UINT wfmode, TMO tmou
 extern ER	ref_flg (T_RFLG *pk_rflg, ID flgid);
 
 /* --------------------------------------------------------- */
-/* •·•√•ª°º•∏•–•√•’•°Õ—¥ÿøÙ                                  */
+/* „É°„ÉÉ„Çª„Éº„Ç∏„Éê„ÉÉ„Éï„Ç°Áî®Èñ¢Êï∞                                  */
 /* --------------------------------------------------------- */
 extern ER	init_msgbuf (void);
 extern ER	cre_mbf (ID id, T_CMBF *pk_cmbf);
@@ -122,7 +122,7 @@ extern ER vput_reg (ID id, VP start, UW size, VP buf);
 extern ER vget_phs (ID id, VP addr, UW *paddr);
 
 /* --------------------------------------------------------- */
-/* ª˛¥÷¥…Õ˝                                                    */
+/* ÊôÇÈñìÁÆ°ÁêÜ                                                    */
 /* --------------------------------------------------------- */
 
 extern ER set_tim(SYSTIME *pk_tim);

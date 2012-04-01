@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -15,7 +15,7 @@ Version 2, June 1991
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/manager/exec.c,v 1.10 2000/05/06 03:52:22 naniwa Exp $ */
 
 
-/* exec.c --- exec ¥·¥¹¥Æ¥à¥³¡¼¥ë´ØÏ¢¤Î¥Õ¥¡¥¤¥ë
+/* exec.c --- exec ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«é–¢é€£ã®ãƒ•ã‚¡ã‚¤ãƒ«
  *
  *
  * $Log: exec.c,v $
@@ -32,23 +32,23 @@ Version 2, June 1991
  * printf() was renamed to printk().
  *
  * Revision 1.6  1998/07/01 13:57:27  night
- * ¥Æ¥¹¥È¤Î¤¿¤á¤Ë°ì»şÅª¤Ë exec ¤¹¤ë¼Â¹Ô¥Õ¥¡¥¤¥ë¤ÎÆÉ¤ß¹ş¤ß½èÍı¤ò¥¹¥­¥Ã¥×¤¹
- * ¤ë¤è¤¦¤ËÊÑ¹¹¡£
+ * ãƒ†ã‚¹ãƒˆã®ãŸã‚ã«ä¸€æ™‚çš„ã« exec ã™ã‚‹å®Ÿè¡Œãƒ•ã‚¡ã‚¤ãƒ«ã®èª­ã¿è¾¼ã¿å‡¦ç†ã‚’ã‚¹ã‚­ãƒƒãƒ—ã™
+ * ã‚‹ã‚ˆã†ã«å¤‰æ›´ã€‚
  *
  * Revision 1.5  1998/06/11 15:29:57  night
- * alloca ¤ò»ÈÍÑ¤·¤Ê¤¤¤è¤¦ÊÑ¹¹¡£
+ * alloca ã‚’ä½¿ç”¨ã—ãªã„ã‚ˆã†å¤‰æ›´ã€‚
  *
  * Revision 1.4  1998/02/16 14:20:28  night
- * ¥³¥á¥ó¥È¤ÎÊÑ¹¹¡£
+ * ã‚³ãƒ¡ãƒ³ãƒˆã®å¤‰æ›´ã€‚
  *
  * Revision 1.3  1998/01/06 16:39:54  night
- * ¥Ç¥Ğ¥Ã¥°ÍÑ¤Î print Ê¸¤ÎÄÉ²Ã¡£
+ * ãƒ‡ãƒãƒƒã‚°ç”¨ã® print æ–‡ã®è¿½åŠ ã€‚
  *
  * Revision 1.2  1997/10/24 13:55:41  night
- * ¥Õ¥¡¥¤¥ëÃæ¤ÎÊ¸»ú¥³¡¼¥É¤ò SJIS ¤«¤é EUC ¤ËÊÑ¹¹¡£
+ * ãƒ•ã‚¡ã‚¤ãƒ«ä¸­ã®æ–‡å­—ã‚³ãƒ¼ãƒ‰ã‚’ SJIS ã‹ã‚‰ EUC ã«å¤‰æ›´ã€‚
  *
  * Revision 1.1  1997/10/23 14:32:32  night
- * exec ¥·¥¹¥Æ¥à¥³¡¼¥ë´Ø·¸¤Î½èÍı¤Î¹¹¿·
+ * exec ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«é–¢ä¿‚ã®å‡¦ç†ã®æ›´æ–°
  *
  *
  *
@@ -87,13 +87,13 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     printk("[PM] exec_program: path = \"%s\"\n", pathname);	/* */
 #endif
 
-    /* ¥×¥í¥»¥¹¤Î¾ğÊó¤Î¼è¤ê¤À¤· */
+    /* ãƒ—ãƒ­ã‚»ã‚¹ã®æƒ…å ±ã®å–ã‚Šã ã— */
     errno = proc_get_procp(procid, &procp);
     if (errno) {
 	return (errno);
     }
 
-    /* ÂĞ¾İ¤È¤Ê¤ë¥×¥í¥°¥é¥à¥Õ¥¡¥¤¥ë¤ò¥ª¡¼¥×¥ó¤¹¤ë */
+    /* å¯¾è±¡ã¨ãªã‚‹ãƒ—ãƒ­ã‚°ãƒ©ãƒ ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ã‚ªãƒ¼ãƒ—ãƒ³ã™ã‚‹ */
     proc_get_euid(procid, &(acc.uid));
     proc_get_egid(procid, &(acc.gid));
     if (pathname[0] == '/') {
@@ -117,7 +117,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 	return (errno);
     }
 
-    /* ¼Â¹Ôµö²Ä¤Î¥Á¥§¥Ã¥¯ */
+    /* å®Ÿè¡Œè¨±å¯ã®ãƒã‚§ãƒƒã‚¯ */
     errno = permit(ip, &acc, X_BIT);
     if (errno) {
 #ifdef EXEC_DEBUG
@@ -136,7 +136,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 #ifdef notdef
     dbg_printf("[PM] destroy\n");	/* */
 #endif
-    /* ¸Æ¤Ó½Ğ¤·¸µ¥×¥í¥»¥¹¤Î¤¹¤Ù¤Æ¤Î(²¾ÁÛ)¥á¥â¥ê¤ò²òÊü¤¹¤ë
+    /* å‘¼ã³å‡ºã—å…ƒãƒ—ãƒ­ã‚»ã‚¹ã®ã™ã¹ã¦ã®(ä»®æƒ³)ãƒ¡ãƒ¢ãƒªã‚’è§£æ”¾ã™ã‚‹
      */
     errno = proc_destroy_memory(procid);
     if (errno) {
@@ -146,20 +146,20 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 #ifdef notdef
     dbg_printf("[PM] vdel_reg\n");	/* */
 #endif
-    /* region ¤Î²òÊü */
+    /* region ã®è§£æ”¾ */
     main_task = procp->proc_maintask;
     vdel_reg(main_task, TEXT_REGION);	/* text */
     vdel_reg(main_task, DATA_REGION);	/* data+bss */
     vdel_reg(main_task, HEAP_REGION);	/* heap */
 #ifdef notdef
-    /* stack ÎÎ°è¤Ï fork ¤ÇÀ¸À®¤·¤¿ region ¤ò»È¤¤Â³¤±¤ë */
+    /* stack é ˜åŸŸã¯ fork ã§ç”Ÿæˆã—ãŸ region ã‚’ä½¿ã„ç¶šã‘ã‚‹ */
     vdel_reg(main_task, STACK_REGION);	/* stack */
 #endif
 
 #if 0 /* never use */
-    /* ¿·¤·¤¤¥¿¥¹¥¯¤òÀ¸À®¤¹¤ë
+    /* æ–°ã—ã„ã‚¿ã‚¹ã‚¯ã‚’ç”Ÿæˆã™ã‚‹
      */
-    /* ´ûÂ¸¤Î¥¿¥¹¥¯¤Î¥¤¥á¡¼¥¸¤òÊÑ¹¹¤¹¤ë¤³¤È¤È¤·¡¢¥¿¥¹¥¯¤ÎÀ¸À®¤Ï»ß¤á¤ë */
+    /* æ—¢å­˜ã®ã‚¿ã‚¹ã‚¯ã®ã‚¤ãƒ¡ãƒ¼ã‚¸ã‚’å¤‰æ›´ã™ã‚‹ã“ã¨ã¨ã—ã€ã‚¿ã‚¹ã‚¯ã®ç”Ÿæˆã¯æ­¢ã‚ã‚‹ */
     errno = proc_renew_task(procid, req->param.par_execve.start_main,
 			    req->param.par_execve.start_signal,
 			    &main_task, &signal_task);
@@ -171,13 +171,13 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 #ifdef notdef
     dbg_printf("[PM] setup vm proc\n");
 #endif
-    /* ²¾ÁÛ¶õ´Ö¤ÎÀ¸À® */
+    /* ä»®æƒ³ç©ºé–“ã®ç”Ÿæˆ */
     errno = setup_vm_proc(procp);
 
 #ifdef notdef
     dbg_printf("[PM] load text\n");
 #endif
-    /* ¥Æ¥­¥¹¥ÈÎÎ°è¤ò¥á¥â¥ê¤ËÆş¤ì¤ë
+    /* ãƒ†ã‚­ã‚¹ãƒˆé ˜åŸŸã‚’ãƒ¡ãƒ¢ãƒªã«å…¥ã‚Œã‚‹
      */
     errno = load_text(procid, ip, &text, req->caller);
     if (errno) {
@@ -185,7 +185,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 	return (errno);
     }
 
-    /* ¥Ç¡¼¥¿ÎÎ°è¤ò¥á¥â¥ê¤ËÆş¤ì¤ë
+    /* ãƒ‡ãƒ¼ã‚¿é ˜åŸŸã‚’ãƒ¡ãƒ¢ãƒªã«å…¥ã‚Œã‚‹
      */
 #ifdef notdef
     dbg_printf("[PM] load data\n");
@@ -196,7 +196,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 	return (errno);
     }
 
-    /* »Ä¤ê¤Î region ¤ÎºîÀ® */
+    /* æ®‹ã‚Šã® region ã®ä½œæˆ */
     errno = vcre_reg(req->caller, HEAP_REGION,
 		     (VP) VADDR_HEAP, 0, STD_HEAP_SIZE,
 	     VM_READ | VM_WRITE | VM_USER, NULL);	/* heap */
@@ -214,7 +214,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 #endif
 
 #if 0
-    /* stack ¤Î region ¤Ï fork ¤«¤é¸Æ¤Ğ¤ì¤ë vcpy_stk ¤Ç¼Â¹Ô¤µ¤ì¤ë */
+    /* stack ã® region ã¯ fork ã‹ã‚‰å‘¼ã°ã‚Œã‚‹ vcpy_stk ã§å®Ÿè¡Œã•ã‚Œã‚‹ */
     vcre_reg(req->caller, STACK_REGION,
 	     (VP) VADDR_STACK_HEAD, STD_STACK_SIZE, STD_STACK_SIZE,
 	     VM_READ | VM_WRITE | VM_USER, NULL);	/* stack */
@@ -243,7 +243,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 	       req->param.par_execve.stackp,
 	       req->param.par_execve.stsize);
 #endif
-    /* ¥¿¥¹¥¯¤Î context.eip ¤ò elf_header.e_entry ¤ËÀßÄê¤¹¤ë */
+    /* ã‚¿ã‚¹ã‚¯ã® context.eip ã‚’ elf_header.e_entry ã«è¨­å®šã™ã‚‹ */
     errno = vset_ctx(req->caller, elf_header.e_entry,
 		     req->param.par_execve.stackp,
 		     req->param.par_execve.stsize);
@@ -266,7 +266,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 
 
 
-/* read_exec_header - ¼Â¹Ô¥Õ¥¡¥¤¥ë¤Î¥Ø¥Ã¥À¤òÆÉ¤ß¼è¤ë
+/* read_exec_header - å®Ÿè¡Œãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ˜ãƒƒãƒ€ã‚’èª­ã¿å–ã‚‹
  *
  *
  */
@@ -292,43 +292,43 @@ read_exec_header(struct inode *ip,
 	return (errno);
     }
 
-    /* ¥Ş¥¸¥Ã¥¯¥Ê¥ó¥Ğ¤Î¥Á¥§¥Ã¥¯
+    /* ãƒã‚¸ãƒƒã‚¯ãƒŠãƒ³ãƒã®ãƒã‚§ãƒƒã‚¯
      */
     if ((elfp->e_ident[0] != 0x7f) ||
 	(elfp->e_ident[1] != 'E') ||
 	(elfp->e_ident[2] != 'L') || (elfp->e_ident[3] != 'F')) {
-	/* ELF ¥Õ¥©¡¼¥Ş¥Ã¥È¤Î¥Õ¥¡¥¤¥ë¤Ç¤Ï¤Ê¤«¤Ã¤¿
+	/* ELF ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆã®ãƒ•ã‚¡ã‚¤ãƒ«ã§ã¯ãªã‹ã£ãŸ
 	 */
 	return (EP_NOEXEC);
     }
 
     if (elfp->e_type != ET_EXEC) {
-	/* ¼Â¹Ô¥Õ¥¡¥¤¥ë¤Ç¤Ï¤Ê¤«¤Ã¤¿
+	/* å®Ÿè¡Œãƒ•ã‚¡ã‚¤ãƒ«ã§ã¯ãªã‹ã£ãŸ
 	 */
 	return (EP_NOEXEC);
     }
 
     if (elfp->e_machine != EM_386) {
-	/* ELF ¥Õ¥¡¥¤¥ë¤ÎÂĞ±ş¥Ş¥·¥ó¼ïÎà¤¬°ã¤Ã¤¿
+	/* ELF ãƒ•ã‚¡ã‚¤ãƒ«ã®å¯¾å¿œãƒã‚·ãƒ³ç¨®é¡ãŒé•ã£ãŸ
 	 */
 	return (EP_NOEXEC);
     }
 
     if (elfp->e_version < 1) {
-	/* ELF ¥Õ¥¡¥¤¥ë¤Î¥Ğ¡¼¥¸¥ç¥ó¤¬ÉÔÀµ
+	/* ELF ãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒãƒ¼ã‚¸ãƒ§ãƒ³ãŒä¸æ­£
 	 */
 	return (EP_NOEXEC);
     }
 
     if (sizeof(struct ELF_Pheader) != elfp->e_phentsize) {
-	/* ¥×¥í¥°¥é¥à¥Ø¥Ã¥À¤Î¥µ¥¤¥º¤¬ÄêµÁ¤È°ã¤Ã¤Æ¤¤¤ë
+	/* ãƒ—ãƒ­ã‚°ãƒ©ãƒ ãƒ˜ãƒƒãƒ€ã®ã‚µã‚¤ã‚ºãŒå®šç¾©ã¨é•ã£ã¦ã„ã‚‹
 	 */
 	return (EP_NOEXEC);
     }
 #ifdef USE_ALLOCA
     ph_table = alloca(elfp->e_phentsize * elfp->e_phnum);
     if (ph_table == NULL) {
-	/* ¥á¥â¥ê¤¬¼èÆÀ¤Ç¤­¤Ê¤«¤Ã¤¿
+	/* ãƒ¡ãƒ¢ãƒªãŒå–å¾—ã§ããªã‹ã£ãŸ
 	 */
 	return (EP_NOMEM);
     }
@@ -346,8 +346,8 @@ read_exec_header(struct inode *ip,
     bzero((VP) text, sizeof(struct ELF_Pheader));
     bzero((VP) data, sizeof(struct ELF_Pheader));
     for (ph_index = 0; ph_index < elfp->e_phnum; ph_index++) {
-	/* ¥×¥í¥°¥é¥à¥Ø¥Ã¥À¥Æ¡¼¥Ö¥ë¤ò½ç¡¹¤Ë¸«¤Æ¤¤¤­¡¢³Æ¥»¥¯¥·¥ç¥ó¤Î¥¿¥¤¥×¤Ë¤è¤Ã¤Æ
-	 * ¥Æ¥­¥¹¥È¡¢¥Ç¡¼¥¿¡¢BSS ¤Î³Æ¾ğÊó¤Î½é´ü²½¤ò¹Ô¤¦¡£
+	/* ãƒ—ãƒ­ã‚°ãƒ©ãƒ ãƒ˜ãƒƒãƒ€ãƒ†ãƒ¼ãƒ–ãƒ«ã‚’é †ã€…ã«è¦‹ã¦ã„ãã€å„ã‚»ã‚¯ã‚·ãƒ§ãƒ³ã®ã‚¿ã‚¤ãƒ—ã«ã‚ˆã£ã¦
+	 * ãƒ†ã‚­ã‚¹ãƒˆã€ãƒ‡ãƒ¼ã‚¿ã€BSS ã®å„æƒ…å ±ã®åˆæœŸåŒ–ã‚’è¡Œã†ã€‚
 	 */
 	if (ph_table[ph_index].p_type == PT_LOAD) {
 	    if (ph_table[ph_index].p_flags == (PF_R + PF_X)) {
@@ -357,7 +357,7 @@ read_exec_header(struct inode *ip,
 		}
 	    }
 	    /* else if (ph_table[ph_index].p_flags == (PF_R + PF_W + PF_X)) */
-	    /* ¥Ç¡¼¥¿¥»¥¯¥·¥ç¥ó¤Î¥Õ¥é¥°¤Ï PF_X ¤ò´Ş¤Ş¤Ê¤¤¤è¤¦¤À */
+	    /* ãƒ‡ãƒ¼ã‚¿ã‚»ã‚¯ã‚·ãƒ§ãƒ³ã®ãƒ•ãƒ©ã‚°ã¯ PF_X ã‚’å«ã¾ãªã„ã‚ˆã†ã  */
 	    else if (ph_table[ph_index].p_flags == (PF_R + PF_W)) {
 		/* DATA */
 		if (data->p_type == 0) {
@@ -372,7 +372,7 @@ read_exec_header(struct inode *ip,
 
 
 
-/* ¥Æ¥­¥¹¥ÈÎÎ°è¤ò¥á¥â¥êÃæ¤Ë¥í¡¼¥É¤¹¤ë¡£
+/* ãƒ†ã‚­ã‚¹ãƒˆé ˜åŸŸã‚’ãƒ¡ãƒ¢ãƒªä¸­ã«ãƒ­ãƒ¼ãƒ‰ã™ã‚‹ã€‚
  *
  *
  */
@@ -392,7 +392,7 @@ load_text(W procid, struct inode *ip, struct ELF_Pheader *text, ID task)
 	ROUNDUP(text->p_memsz +
 		(text->p_vaddr - CUTDOWN(text->p_vaddr, PAGE_SIZE)),
 		PAGE_SIZE);
-    /* text region ¤ÎÀßÄê */
+    /* text region ã®è¨­å®š */
     vcre_reg(task, TEXT_REGION, (VP) start, size, size,
 	     VM_READ | VM_EXEC | VM_USER, NULL);
 
@@ -434,7 +434,7 @@ load_text(W procid, struct inode *ip, struct ELF_Pheader *text, ID task)
 
 
 
-/* ¥Ç¡¼¥¿ÎÎ°è¤ò¥á¥â¥êÃæ¤Ë¥í¡¼¥É¤¹¤ë¡£
+/* ãƒ‡ãƒ¼ã‚¿é ˜åŸŸã‚’ãƒ¡ãƒ¢ãƒªä¸­ã«ãƒ­ãƒ¼ãƒ‰ã™ã‚‹ã€‚
  *
  *
  */
@@ -454,7 +454,7 @@ load_data(W procid, struct inode *ip, struct ELF_Pheader *data, ID task)
 	ROUNDUP(data->p_memsz +
 		(data->p_vaddr - CUTDOWN(data->p_vaddr, PAGE_SIZE)),
 		PAGE_SIZE);
-    /* data+bss region ¤ÎÀßÄê */
+    /* data+bss region ã®è¨­å®š */
     vcre_reg(task, DATA_REGION, (VP) start, size, size,
 	     VM_READ | VM_WRITE | VM_USER, NULL);	/* data+bss */
     errno = alloc_memory(procid, start, size, VM_READ | VM_WRITE);

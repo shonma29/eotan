@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -24,14 +24,14 @@ Version 2, June 1991
  * Fix for moving Port-manager and libkernel.a  to ITRON. I guess it is reasonable. At least they should not be in BTRON/.
  *
  * Revision 1.2  1998/11/30 13:16:56  night
- * ╔ч╔╞╔М MAX_PATTERN_SIZE ╓ндЙ╣а║ё
- * ╓Ё╓н╔ч╔╞╔М╓о║╒╔Ё╔С╔╫║╪╔К╔г╔п╔╓╔╧╔и╔И╔╓╔п╓к╔п╔ц╔╞╔╟╔И╔╕╔С╔и╔я╔©║╪╔С╓ниа
- * ╡Х╓Д region ╓ниа╡Х╓й╓и╓Р╧т╓╕╓х╓╜╓н╟Л╩Ч╔п╔ц╔у╔║ (copy_buffer) ╓н╔╣╔╓╔╨
- * ╓Р╩ьдЙ╓╧╓К╓©╓А╓к╩хмя╓╧╓К║ё
- * ╓х╓Й╓╒╓╗╓╨║╒10KB (1024 * 10) ╩ьдЙ╓╥╓ф╓╓╓К║ё
+ * Ц┐·Ц┌╞Ц┐╜ MAX_PATTERN_SIZE Ц│╝Е╝ Г╬╘Ц─┌
+ * Ц│⌠Ц│╝Ц┐·Ц┌╞Ц┐╜Ц│╞Ц─│Ц┌ЁЦ┐ЁЦ┌╫Ц┐╪Ц┐╚Ц┐┤Ц┐░Ц┌╓Ц┌╧Ц┐┴Ц┐╘Ц┌╓Ц┐░Ц│╚Ц┐░Ц┐┐Ц┌╞Ц┌╟Ц┐╘Ц┌╕Ц┐ЁЦ┐┴Ц┐▒Ц┌©Ц┐╪Ц┐ЁЦ│╝Ф▐▐
+ * Г■╩Ц┌└ region Ц│╝Ф▐▐Г■╩Ц│╙Ц│╘Ц┌▓Х║▄Ц│├Ц│╗Ц│█Ц│╝Д╦─Ф≥┌Ц┐░Ц┐┐Ц┐∙Ц┌║ (copy_buffer) Ц│╝Ц┌╣Ц┌╓Ц┌╨
+ * Ц┌▓Ф▄┤Е╝ Ц│≥Ц┌▀Ц│÷Ц┌│Ц│╚Д╫©Г■╗Ц│≥Ц┌▀Ц─┌
+ * Ц│╗Ц┌┼Ц│┌Ц│┬Ц│ Ц─│10KB (1024 * 10) Ф▄┤Е╝ Ц│≈Ц│╕Ц│└Ц┌▀Ц─┌
  *
  * Revision 1.1  1997/08/31 13:59:23  night
- * ╨г╫И╓непо©
+ * Ф°─Е┬²Ц│╝Г≥╩И▄╡
  *
  *
  */
@@ -63,12 +63,12 @@ typedef enum { NORMAL = 1, REVERSE = 7} TEXTATTR;
 #define VGA_TEXT_ATTR(fg, bg) ((bg << 4) |  fg)
 
 /* main.c */
-extern W    	init_console(void);	/* ╫И╢Э╡╫		*/
-extern W    	open_console(ID caller, DDEV_OPN_REQ *packet);		/* ╔╙║╪╔в╔С		*/
-extern W  	close_console(ID caller, DDEV_CLS_REQ *packet);	/* ╔╞╔М║╪╔╨		*/
-extern W    	read_console(ID caller, DDEV_REA_REQ *packet);		/* фи╓ъ╧Ч╓ъ		*/
-extern W    	write_console(ID caller, DDEV_WRI_REQ *packet);	/* ╫Я╓╜╧Ч╓ъ		*/
-extern W    	control_console(ID caller, DDEV_CTL_REQ *packet);	/* ╔Ё╔С╔х╔М║╪╔К		*/
+extern W    	init_console(void);	/* Е┬²Ф°÷Е▄√		*/
+extern W    	open_console(ID caller, DDEV_OPN_REQ *packet);		/* Ц┌╙Ц┐╪Ц┐≈Ц┐Ё		*/
+extern W  	close_console(ID caller, DDEV_CLS_REQ *packet);	/* Ц┌╞Ц┐╜Ц┐╪Ц┌╨		*/
+extern W    	read_console(ID caller, DDEV_REA_REQ *packet);		/* Х╙╜Ц│©Х╬╪Ц│©		*/
+extern W    	write_console(ID caller, DDEV_WRI_REQ *packet);	/* Ф⌡╦Ц│█Х╬╪Ц│©		*/
+extern W    	control_console(ID caller, DDEV_CTL_REQ *packet);	/* Ц┌ЁЦ┐ЁЦ┐┬Ц┐╜Ц┐╪Ц┐╚		*/
 
 extern ER	write_char(UB c);
 extern void	goto_cursol (W x, W y);

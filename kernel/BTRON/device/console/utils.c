@@ -19,6 +19,6 @@ void vram_write(unsigned char *gvram, int color)
 {
   unsigned char dummy;
 
-  dummy = *gvram;	/* ¥é¥Ã¥Á¤Ë VRAM ¤ÎÆâÍÆ¤òÆÉ¤ß¹ş¤à */
+  dummy = *gvram;	/* ãƒ©ãƒƒãƒã« VRAM ã®å†…å®¹ã‚’èª­ã¿è¾¼ã‚€ */
   *gvram = color;
 }

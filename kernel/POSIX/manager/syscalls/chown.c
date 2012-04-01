@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -49,7 +49,7 @@ W psc_chown_f(struct posix_request *req)
     }
 
     if (*path == '/') {
-	/* ÀäÂĞ¥Ñ¥¹¤Ë¤è¤ë»ØÄê */
+	/* çµ¶å¯¾ãƒ‘ã‚¹ã«ã‚ˆã‚‹æŒ‡å®š */
 	startip = rootfile;
     } else {
 	if (proc_get_cwd(req->procid, &startip)) {
@@ -79,7 +79,7 @@ W psc_chown_f(struct posix_request *req)
     ipp->i_ctime = get_system_time(NULL);
     ipp->i_dirty = 1;
 
-    /* fs_close_file ¤Ç¹Ô¤¦½èÍı */
+    /* fs_close_file ã§è¡Œã†å‡¦ç† */
     if (fs_sync_file(ipp)) {
 	put_response(req, EP_INVAL, -1, 0, 0);
 	dealloc_inode(ipp);

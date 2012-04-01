@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -25,14 +25,14 @@ Version 2, June 1991
  * *** empty log message ***
  *
  * Revision 1.1  1996/05/11 10:45:06  night
- * 2nd boot (IBM-PC �� B-FREE OS) �Υ�������
+ * 2nd boot (IBM-PC 版 B-FREE OS) のソース。
  *
  * Revision 1.4  1995/09/21  15:50:42  night
- * �������ե��������Ƭ�� Copyright notice ������ɲá�
+ * ソースファイルの先頭に Copyright notice 情報を追加。
  *
  * Revision 1.3  1995/06/26  15:07:26  night
- * vir_to_phys() �ؿ����ɲá�
- * ���δؿ��ϡ����ۥ��ɥ쥹����ʪ�����ɥ쥹���ۥڡ����ơ��֥뤫����롣
+ * vir_to_phys() 関数の追加。
+ * この関数は、仮想アドレスから物理アドレスを仮想ページテーブルから求める。
  *
  * Revision 1.2  1994/07/05  17:19:42  night
  * Change FD format; 512bytes/block.

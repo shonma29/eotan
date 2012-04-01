@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -23,7 +23,7 @@ static char rcsid[] =
  * Addition or fix for parameter structure.
  *
  * Revision 1.1  1997/08/31 13:10:49  night
- * ╨г╫И╓непо©
+ * Ф°─Е┬²Ц│╝Г≥╩И▄╡
  *
  *
  *
@@ -42,7 +42,7 @@ int psys_sigemptyset(void *argp)
 #endif
 
     /*
-     * ╓ч╓ю╔╓╔С╔в╔Й╔А╔С╔х╓╥╓ф╓╓╓й╓╓║ёENOSYS ╓Рйж╓╧║ё
+     * Ц│╬Ц│═Ц┌╓Ц┐ЁЦ┐≈Ц┐╙Ц┐║Ц┐ЁЦ┐┬Ц│≈Ц│╕Ц│└Ц│╙Ц│└Ц─┌ENOSYS Ц┌▓Х©■Ц│≥Ц─┌
      */
     errno = ENOSYS;
 

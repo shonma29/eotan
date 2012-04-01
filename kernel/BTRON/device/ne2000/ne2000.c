@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -15,31 +15,31 @@ static char rcs[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/
 /* 
  * $Log: ne2000.c,v $
  * Revision 1.8  1999/03/07 12:45:58  night
- * write_ne2000() ¤È read_ne2000() ¤ÎÃæ¿È¤òÄÉ²Ã¡£
+ * write_ne2000() ã¨ read_ne2000() ã®ä¸­èº«ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.7  1999/03/02 15:15:15  night
- * ½é´ü²½½èÍı¤ò¼ã´³ÊÑ¹¹
+ * åˆæœŸåŒ–å‡¦ç†ã‚’è‹¥å¹²å¤‰æ›´
  *
  * Revision 1.6  1998/02/23 14:40:09  night
- * get_req ¤Î°ú¿ô¤¬´Ö°ã¤Ã¤Æ¤¤¤¿¤¿¤á½¤Àµ¡£
- * º£¤Ş¤Ç¤Î¥³¡¼¥É¤À¤È¡¢²¾ÁÛ¶õ´Ö¤ÎÀèÆ¬ÉôÊ¬¤òÇË²õ¤·¤Æ¤¤¤¿¡£
+ * get_req ã®å¼•æ•°ãŒé–“é•ã£ã¦ã„ãŸãŸã‚ä¿®æ­£ã€‚
+ * ä»Šã¾ã§ã®ã‚³ãƒ¼ãƒ‰ã ã¨ã€ä»®æƒ³ç©ºé–“ã®å…ˆé ­éƒ¨åˆ†ã‚’ç ´å£Šã—ã¦ã„ãŸã€‚
  *
  * Revision 1.5  1997/10/29 22:39:27  night
- * NE2000 ¥¢¥À¥×¥¿¤Î SA_PROM ¤ÎÆÉ¤ß¼è¤ê½èÍı¤ÎÄÉ²Ã¡£
+ * NE2000 ã‚¢ãƒ€ãƒ—ã‚¿ã® SA_PROM ã®èª­ã¿å–ã‚Šå‡¦ç†ã®è¿½åŠ ã€‚
  *
  * Revision 1.4  1997/10/28 14:44:25  night
- * control_ne2000 () ¤Ë NE2000_PROBE ¤Î½èÍı¤òÄÉ²Ã¡£
+ * control_ne2000 () ã« NE2000_PROBE ã®å‡¦ç†ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.3  1997/10/28 12:46:00  night
- * ne2000_internal.h ¤Î¥¤¥ó¥¯¥ë¡¼¥ÉÊ¸¤ÎÄÉ²Ã¡£
- * dev_table ¤ÎÀë¸À¤ÎÄÉ²Ã¡£
- * control_ne2000 () ¤Ë NE2000_RESET ¤Î½èÍı¤òÄÉ²Ã¡£
+ * ne2000_internal.h ã®ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰æ–‡ã®è¿½åŠ ã€‚
+ * dev_table ã®å®£è¨€ã®è¿½åŠ ã€‚
+ * control_ne2000 () ã« NE2000_RESET ã®å‡¦ç†ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.2  1997/05/17 10:41:15  night
- * ¥Õ¥¡¥¤¥ë¤ÎÊ¸»ú¥³¡¼¥É¤ò SJIS ¤«¤é EUC ¤ËÊÑ¹¹¡£
+ * ãƒ•ã‚¡ã‚¤ãƒ«ã®æ–‡å­—ã‚³ãƒ¼ãƒ‰ã‚’ SJIS ã‹ã‚‰ EUC ã«å¤‰æ›´ã€‚
  *
  * Revision 1.1  1997/05/06 12:43:31  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  */
@@ -62,11 +62,11 @@ W			read_buffer_length;
 
 
 /*
- *	 ¶É½êÊÑ¿ô·²¤ÎÀë¸À
+ *	 å±€æ‰€å¤‰æ•°ç¾¤ã®å®£è¨€
  *
  */
-static W	mydevid;	/* ¼«Ê¬¼«¿È¤Îid */
-static ID	recvport;	/* Í×µá¼õ¤±¤Ä¤±ÍÑ¥İ¡¼¥È */
+static W	mydevid;	/* è‡ªåˆ†è‡ªèº«ã®id */
+static ID	recvport;	/* è¦æ±‚å—ã‘ã¤ã‘ç”¨ãƒãƒ¼ãƒˆ */
 static W	initialized;
 
 
@@ -75,12 +75,12 @@ static void	main_loop (void);
 static void	init_driver (struct ne2000_device *);
 
 
-/* start --- ne2000 ¥É¥é¥¤¥Ğ¤Î¥á¥¤¥ó´Ø¿ô
+/* start --- ne2000 ãƒ‰ãƒ©ã‚¤ãƒã®ãƒ¡ã‚¤ãƒ³é–¢æ•°
  */
 void
 start ()
 {
-  /* NE2000 ¥¢¥À¥×¥¿¤¬Â¸ºß¤·¤Æ¤¤¤ë¤«¤ò¥Á¥§¥Ã¥¯¤¹¤ë */
+  /* NE2000 ã‚¢ãƒ€ãƒ—ã‚¿ãŒå­˜åœ¨ã—ã¦ã„ã‚‹ã‹ã‚’ãƒã‚§ãƒƒã‚¯ã™ã‚‹ */
   if (probe (&dev_table[0]) != E_OK)
     {
       dbg_printf ("Can not probe: ne2000\n");
@@ -88,7 +88,7 @@ start ()
     }
 
 
-  max_adaptor = MAX_NE2000;	/* ¾ï¤Ë 1 */
+  max_adaptor = MAX_NE2000;	/* å¸¸ã« 1 */
   
   init_driver (&dev_table[0]);
   printf ("registed ne2000 driver.\n");
@@ -98,10 +98,10 @@ start ()
 
 
 /*
- * ½é´ü²½
+ * åˆæœŸåŒ–
  *
- * o ¥Õ¥¡¥¤¥ë¥Æ¡¼¥Ö¥ë (file_table) ¤Î½é´ü²½
- * o Í×µá¼õ¤±¤Ä¤±ÍÑ¤Î¥á¥Ã¥»¡¼¥¸¥Ğ¥Ã¥Õ¥¡ ID ¤ò¥İ¡¼¥È¥Ş¥Í¡¼¥¸¥ã¤ËÅĞÏ¿
+ * o ãƒ•ã‚¡ã‚¤ãƒ«ãƒ†ãƒ¼ãƒ–ãƒ« (file_table) ã®åˆæœŸåŒ–
+ * o è¦æ±‚å—ã‘ã¤ã‘ç”¨ã®ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒãƒƒãƒ•ã‚¡ ID ã‚’ãƒãƒ¼ãƒˆãƒãƒãƒ¼ã‚¸ãƒ£ã«ç™»éŒ²
  */
 static void
 init_driver (struct ne2000_device *dev)
@@ -112,14 +112,14 @@ init_driver (struct ne2000_device *dev)
   init_log ();
 
   /*
-   * Í×µá¼õ¤±¤Ä¤±ÍÑ¤Î¥İ¡¼¥È¤ò½é´ü²½¤¹¤ë¡£
+   * è¦æ±‚å—ã‘ã¤ã‘ç”¨ã®ãƒãƒ¼ãƒˆã‚’åˆæœŸåŒ–ã™ã‚‹ã€‚
    */
   recvport = get_port (sizeof (DDEV_RES), sizeof (DDEV_RES));
   if (recvport <= 0)
     {
       dbg_printf ("ne2000: cannot make receive porrt.\n");
       slp_tsk ();
-      /* ¥á¥Ã¥»¡¼¥¸¥Ğ¥Ã¥Õ¥¡À¸À®¤Ë¼ºÇÔ */
+      /* ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒãƒƒãƒ•ã‚¡ç”Ÿæˆã«å¤±æ•— */
     }
 
   error = regist_port (NE2000_DRIVER, recvport);
@@ -127,7 +127,7 @@ init_driver (struct ne2000_device *dev)
     {
       dbg_printf ("ne2000: cannot make receive porrt.\n");
       slp_tsk ();
-      /* port manager ¤ËÅĞÏ¿¼ºÇÔ */
+      /* port manager ã«ç™»éŒ²å¤±æ•— */
     }
 
   for (i = 0; i < max_adaptor; i++)
@@ -162,16 +162,16 @@ main_loop (void)
   UW		rsize;
 
   /*
-   * Í×µá¼õ¿® - ½èÍı¤Î¥ë¡¼¥×
+   * è¦æ±‚å—ä¿¡ - å‡¦ç†ã®ãƒ«ãƒ¼ãƒ—
    */
   for (;;)
     {
-      /* Í×µá¤Î¼õ¿® */
+      /* è¦æ±‚ã®å—ä¿¡ */
       get_req (recvport, &req, &rsize);
       switch (sys_errno)
 	{
 	case E_OK:
-	  /* Àµ¾ï¥±¡¼¥¹ */
+	  /* æ­£å¸¸ã‚±ãƒ¼ã‚¹ */
 	  process_request (&req);
 	  break;
 
@@ -182,7 +182,7 @@ main_loop (void)
 	}
     }
 
-  /* ¤³¤³¤Î¹Ô¤Ë¤Ï¡¢Íè¤Ê¤¤ */
+  /* ã“ã“ã®è¡Œã«ã¯ã€æ¥ãªã„ */
 }
 
 
@@ -195,12 +195,12 @@ process_request (DDEV_REQ *req)
   switch (req->header.msgtyp)
     {
     case DEV_OPN:
-      /* ¥Ç¥Ğ¥¤¥¹¤Î¥ª¡¼¥×¥ó */
+      /* ãƒ‡ãƒã‚¤ã‚¹ã®ã‚ªãƒ¼ãƒ—ãƒ³ */
       open_ne2000 (req->header.mbfid, &(req->body.opn_req));
       break;
 
     case DEV_CLS:
-      /* ¥Ç¥Ğ¥¤¥¹¤Î¥¯¥í¡¼¥º */
+      /* ãƒ‡ãƒã‚¤ã‚¹ã®ã‚¯ãƒ­ãƒ¼ã‚º */
       close_ne2000 (req->header.mbfid, &(req->body.cls_req));
       break;
 

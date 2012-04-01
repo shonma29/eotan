@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -30,31 +30,31 @@ Version 2, June 1991
  * JIS -> EUC kanji code convert
  *
  * Revision 1.4  2000/01/23 15:50:51  kishida0
- * 106JP¡¢101US ¥­¡¼¥Ü¡¼¥ÉÀÚÂØ¤¨ÍÑ¤Î¥³¥Ş¥ó¥É¤òÄÉ²Ã¤·¤¿¡£
- * ´Ø¿ô¤Ë¤·¤Æ¤¤¤ë¤Î¤¬¤¤¤Ş¤¤¤Á¤À¤¬¡¢¤È¤ê¤¢¤¨¤º¤Ï»ÈÍÑ²ÄÇ½
- * note-pcÍÑ¤Ë¤Ï¤â¤¦¾¯¤·¥­¡¼¤Î¥Æ¡¼¥Ö¥ë¤ò³ÎÇ§¤¹¤ëÉ¬Í×¤¬¤¢¤ë
- * Í×¥ì¥İ¡¼¥È
+ * 106JPã€101US ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰åˆ‡æ›¿ãˆç”¨ã®ã‚³ãƒãƒ³ãƒ‰ã‚’è¿½åŠ ã—ãŸã€‚
+ * é–¢æ•°ã«ã—ã¦ã„ã‚‹ã®ãŒã„ã¾ã„ã¡ã ãŒã€ã¨ã‚Šã‚ãˆãšã¯ä½¿ç”¨å¯èƒ½
+ * note-pcç”¨ã«ã¯ã‚‚ã†å°‘ã—ã‚­ãƒ¼ã®ãƒ†ãƒ¼ãƒ–ãƒ«ã‚’ç¢ºèªã™ã‚‹å¿…è¦ãŒã‚ã‚‹
+ * è¦ãƒ¬ãƒãƒ¼ãƒˆ
  *
  * Revision 1.3  1999/04/18 18:43:31  monaka
  * Fix for moving Port-manager and libkernel.a  to ITRON. I guess it is reasonable. At least they should not be in BTRON/.
  *
  * Revision 1.2  1997/07/02 13:09:44  night
- * PC9801 °ÍÂ¸¤·¤¿¥¤¥ó¥¯¥ë¡¼¥É¥Õ¥¡¥¤¥ë¤ò IBMPC ÍÑ¤Î¤â¤Î¤ËÊÑ¹¹¤·¤¿¡£
+ * PC9801 ä¾å­˜ã—ãŸã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ IBMPC ç”¨ã®ã‚‚ã®ã«å¤‰æ›´ã—ãŸã€‚
  *
  * Revision 1.1  1996/07/24 16:28:44  night
- * IBM PC ÈÇ B-Free OS ¤Ø¤ÎºÇ½é¤ÎÅĞÏ¿
+ * IBM PC ç‰ˆ B-Free OS ã¸ã®æœ€åˆã®ç™»éŒ²
  *
  * Revision 1.4  1996/01/06 15:59:49  night
- * ¥Ø¥Ã¥À¤Î¥¤¥ó¥¯¥ë¡¼¥É¥Ñ¥¹¤Î°ìÉôÊÑ¹¹
+ * ãƒ˜ãƒƒãƒ€ã®ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ãƒ‘ã‚¹ã®ä¸€éƒ¨å¤‰æ›´
  *
  * Revision 1.3  1995/09/21  15:51:00  night
- * ¥½¡¼¥¹¥Õ¥¡¥¤¥ë¤ÎÀèÆ¬¤Ë Copyright notice ¾ğÊó¤òÄÉ²Ã¡£
+ * ã‚½ãƒ¼ã‚¹ãƒ•ã‚¡ã‚¤ãƒ«ã®å…ˆé ­ã« Copyright notice æƒ…å ±ã‚’è¿½åŠ ã€‚
  *
  * Revision 1.2  1995/09/19  18:01:01  night
- * ¥­¡¼¥Ü¡¼¥É¤«¤éÆşÎÏ¤Ç¤­¤ë¤È¤³¤í¤Ş¤Ç¤Ç¤­¤¿¡£
+ * ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ã‹ã‚‰å…¥åŠ›ã§ãã‚‹ã¨ã“ã‚ã¾ã§ã§ããŸã€‚
  *
  * Revision 1.1  1995/09/18  11:42:03  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  * 
  *
@@ -93,11 +93,11 @@ Version 2, June 1991
 #define KEY_DATA	0x60
 #define KEY_STAT	0x64
 
-/* Ê¸»ú¤ò¥³¥ó¥È¥í¡¼¥ë¥­¡¼¤ËÊÑ´¹¤¹¤ë */
+/* æ–‡å­—ã‚’ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã‚­ãƒ¼ã«å¤‰æ›ã™ã‚‹ */
 #define C(x)		(x & 0x1f)
 
 #define	NOKEYS	0
-#define ONKEYS	1		/* ¥­¡¼¤¬ÆşÎÏ¤·¤Æ¤¤¤ë */
+#define ONKEYS	1		/* ã‚­ãƒ¼ãŒå…¥åŠ›ã—ã¦ã„ã‚‹ */
 
 /* keydevice mode */
 #define WAITMODE	0x0001
@@ -108,20 +108,20 @@ extern W keyboard_select;
 
 extern ID	recvport;
 extern W	initialized;
-extern ID	waitflag;	/* ¥­¡¼¥Ü¡¼¥É¤«¤é¥­¡¼ÆşÎÏ¤òÂÔ¤Ä»ş¤Ë */
-				/* »ÈÍÑ¤¹¤ë¥¤¥Ù¥ó¥È¥Õ¥é¥°¤Î ID */
+extern ID	waitflag;	/* ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ã‹ã‚‰ã‚­ãƒ¼å…¥åŠ›ã‚’å¾…ã¤æ™‚ã« */
+				/* ä½¿ç”¨ã™ã‚‹ã‚¤ãƒ™ãƒ³ãƒˆãƒ•ãƒ©ã‚°ã® ID */
 extern W	driver_mode;
 extern W	send_msg;
 
 extern ID	my_tskid;
 
 /* main.c */
-extern W    	init_keyboard(void);	/* ½é´ü²½		*/
-extern W    	open_keyboard();	/* ¥ª¡¼¥×¥ó		*/
-extern W  	close_keyboard();	/* ¥¯¥í¡¼¥º		*/
-extern W    	read_keyboard();	/* ÆÉ¤ß¹ş¤ß		*/
-extern W    	write_keyboard();	/* ½ñ¤­¹ş¤ß		*/
-extern W    	control_keyboard();	/* ¥³¥ó¥È¥í¡¼¥ë		*/
+extern W    	init_keyboard(void);	/* åˆæœŸåŒ–		*/
+extern W    	open_keyboard();	/* ã‚ªãƒ¼ãƒ—ãƒ³		*/
+extern W  	close_keyboard();	/* ã‚¯ãƒ­ãƒ¼ã‚º		*/
+extern W    	read_keyboard();	/* èª­ã¿è¾¼ã¿		*/
+extern W    	write_keyboard();	/* æ›¸ãè¾¼ã¿		*/
+extern W    	control_keyboard();	/* ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«		*/
 extern W	posix_read_keyboard();
 extern W	send_switch_msg();
 extern W	relay_keyboard ();

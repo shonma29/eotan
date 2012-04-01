@@ -1,6 +1,6 @@
 /*
 
-B-Free Project д╬└╕└о╩кд╧ GNU Generic PUBLIC LICENSE д╦╜╛ддд▐д╣бг
+B-Free Project уБочФЯцИРчЙйуБп GNU Generic PUBLIC LICENSE уБлх╛УуБДуБ╛уБЩуАВ
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -19,19 +19,19 @@ Version 2, June 1991
  * Port-manager and libkernel.a is moved to ITRON. I guess it is reasonable. At least they should not be in BTRON/.
  *
  * Revision 1.3  1996/07/25 17:23:55  night
- * ITRON/h/types.h д╬едеєепеыб╝е╔е╤е╣дЄ╩╤╣╣бг
+ * ITRON/h/types.h уБоуВдуГ│уВпуГлуГ╝уГЙуГСуВ╣уВТхдЙцЫ┤уАВ
  *
  * Revision 1.2  1996/07/23  17:17:07  night
- * IBM PC ═╤д╬ make ┤─╢нд╦ merge
+ * IBM PC чФиуБо make чТ░хвГуБл merge
  *
  * Revision 1.1  1996/07/22  23:52:05  night
- * ║╟╜щд╬┼╨╧┐
+ * цЬАхИЭуБочЩ╗щМ▓
  *
  * Revision 1.2  1995/09/21  15:51:41  night
- * е╜б╝е╣е╒ебедеыд╬└ш╞мд╦ Copyright notice ╛Ё╩єдЄ─╔▓├бг
+ * уВ╜уГ╝уВ╣уГХуВбуВдуГлуБохЕИщануБл Copyright notice цГЕха▒уВТш┐╜хКауАВ
  *
  * Revision 1.1  1995/09/14  04:38:10  night
- * ║╟╜щд╬┼╨╧┐
+ * цЬАхИЭуБочЩ╗щМ▓
  *
  *
  */
@@ -39,14 +39,14 @@ Version 2, June 1991
 #include "../../ITRON/h/types.h"
 
 /*
- * есе├е╗б╝е╕
+ * уГбуГГуВ╗уГ╝уВ╕
  */
 typedef struct {
-  ID	mbfid;		/* ▒■┼·есе├е╗б╝е╕дЄ┴ў┐од╣дыесе├е╗б╝е╕е╨е├е╒еб	*/
-  W	msgtyp;		/* есе├е╗б╝е╕╝▒╩╠╚╓╣ц				*/
-  ID	tskid;		/* есе├е╗б╝е╕дЄ┴ў┐од╖д┐е┐е╣еп			*/
-  W	len;		/* ╞╚╝ле╤ещесе┐д╬е╡еде║б╩е╨еде╚б╦		*/
-  UW	arg[0];		/* ╞╚╝ле╤ещесе┐ 				*/
+  ID	mbfid;		/* х┐ЬчнФуГбуГГуВ╗уГ╝уВ╕уВТщАБф┐буБЩуВЛуГбуГГуВ╗уГ╝уВ╕уГРуГГуГХуВб	*/
+  W	msgtyp;		/* уГбуГГуВ╗уГ╝уВ╕шнШхИечХкхП╖				*/
+  ID	tskid;		/* уГбуГГуВ╗уГ╝уВ╕уВТщАБф┐буБЧуБЯуВ┐уВ╣уВп			*/
+  W	len;		/* чЛмшЗкуГСуГйуГбуВ┐уБоуВ╡уВдуВ║я╝ИуГРуВдуГИя╝Й		*/
+  UW	arg[0];		/* чЛмшЗкуГСуГйуГбуВ┐ 				*/
 } SVC_REQ;
 
 

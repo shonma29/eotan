@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -8,7 +8,7 @@ Version 2, June 1991
 (C) B-Free Project.
 
 */
-/* gdc7220.c --- ����ե��å��ǥ����ץ쥤����ȥ����� PD7220 �Υɥ饤��
+/* gdc7220.c --- グラフィックディスプレイコントローラ PD7220 のドライバ
  *
  *
  * 
@@ -31,76 +31,76 @@ Version 2, June 1991
 
 
 
-/* ���Υե�����ǻ��Ѥ���ޥ��� */
+/* このファイルで使用するマクロ */
 #define CHK_ERR		if (err) return (err);
 
 
 
-/* GDC �˴ط����Ƥ���IO�ݡ��Ȥ���� */
-#define GDC_COMMAND	0xa2		/* �饤�ȥ��ޥ��	*/
-#define GDC_OUT		0xa0		/* �饤�ȥѥ�᡼��	*/
-#define GDC_IN		0xa2		/* �꡼�ɥǡ���		*/
-#define GDC_STATUS	0xa0		/* �꡼�ɥ��ơ�����	*/
-#define GDC_DISLAY_SEL	0xa4		/* ɽ����������		*/
-#define GDC_DRAW_SEL	0xa6		/* �����������		*/
-#define GDC_PAL_D	0xa8		/* �饤�ȥѥ�åȥ쥸���� D */
-#define GDC_PAL_C	0xaa		/* �饤�ȥѥ�åȥ쥸���� C */
-#define GDC_PAL_B	0xac		/* �饤�ȥѥ�åȥ쥸���� B */
-#define GDC_PAL_A	0xae		/* �饤�ȥѥ�åȥ쥸���� A */
+/* GDC に関係しているIOポートの定義 */
+#define GDC_COMMAND	0xa2		/* ライトコマンド	*/
+#define GDC_OUT		0xa0		/* ライトパラメータ	*/
+#define GDC_IN		0xa2		/* リードデータ		*/
+#define GDC_STATUS	0xa0		/* リードステータス	*/
+#define GDC_DISLAY_SEL	0xa4		/* 表示画面選択		*/
+#define GDC_DRAW_SEL	0xa6		/* 描画画面選択		*/
+#define GDC_PAL_D	0xa8		/* ライトパレットレジスタ D */
+#define GDC_PAL_C	0xaa		/* ライトパレットレジスタ C */
+#define GDC_PAL_B	0xac		/* ライトパレットレジスタ B */
+#define GDC_PAL_A	0xae		/* ライトパレットレジスタ A */
 
-/* GDC ���ޥ�� */
-#define GDC_RESET	0x0000		/* �ꥻ�åȥ��ޥ��	    */
+/* GDC コマンド */
+#define GDC_RESET	0x0000		/* リセットコマンド	    */
 
-/* sync ���ޥ�� */
-#define MODE_DISP	0x0f		/* ɽ������		*/
-#define MODE_UNDISP	0x0e		/* ɽ�����		*/
+/* sync コマンド */
+#define MODE_DISP	0x0f		/* 表示開始		*/
+#define MODE_UNDISP	0x0e		/* 表示停止		*/
 
 
-/* ��������ؿ� */
-static ER	gdc_reset(void);			/* GDC�Υꥻ�åȤ�Ԥ�			*/
-static ER	gdc_display(void);			/* ɽ������				*/
-static ER	gdc_undisplay(void);			/* ɽ�����				*/
-static ER	gdc_line (W x1, W y1, W x2, W y2);	/* ���̾��ľ�������			*/
-static ER	gdc_circle (W x, W y, W r);		/* ���̾�˱ߤ�����			*/
-static ER	gdc_dot (W x, W y);			/* ���̾����������			*/
-static ER	gdc_write (W num, ...);			/* GDC�˥��ޥ�ɤ����Ф��� 		*/
-static ER	point2addr (W x, W y);			/* POINT2ADDR: x,y ��ɸ���� VRAM	*/ 
-							/* ��Υ��ɥ쥹��׻����� 		*/
+/* ローカル関数 */
+static ER	gdc_reset(void);			/* GDCのリセットを行う			*/
+static ER	gdc_display(void);			/* 表示開始				*/
+static ER	gdc_undisplay(void);			/* 表示停止				*/
+static ER	gdc_line (W x1, W y1, W x2, W y2);	/* 画面上に直線を引く			*/
+static ER	gdc_circle (W x, W y, W r);		/* 画面上に円を描く			*/
+static ER	gdc_dot (W x, W y);			/* 画面上に点を描く			*/
+static ER	gdc_write (W num, ...);			/* GDCにコマンドを送出する 		*/
+static ER	point2addr (W x, W y);			/* POINT2ADDR: x,y 座標から VRAM	*/ 
+							/* 上のアドレスを計算する 		*/
 
-/* SYNC ���ޥ�ɡ����̤γƼ����� */
+/* SYNC コマンド；画面の各種設定 */
 static ER	gdc_sync (B mode, UH column, UH vs, UH hs, UH hfp, UH hbp, UH vfp, UH line, UH vbp);
 
 static void	gdc_server (void);
 
-static ID	deviceid;	/* �ǥХ����ֹ�(�ǥХ����ơ��֥�Υ���ȥ��ֹ�) */
-				/* ���ֹ�Ȥ��ƻ��Ѥ��롣*/
-static ID	taskid;		/* �Уģã��������ɥ饤�ФΥ������ɣ� */
+static ID	deviceid;	/* デバイス番号(デバイステーブルのエントリ番号) */
+				/* 主番号として使用する。*/
+static ID	taskid;		/* ＰＤＣ７２２０ドライバのタスクＩＤ */
 
 
 
 /*****************************************************************************
- * init_gdc7220 --- PD7220 �ν����
+ * init_gdc7220 --- PD7220 の初期化
  *
- * ������
- *	�ʤ�
+ * 引数：
+ *	なし
  *
- * �֤��͡�
- *	���顼�ֹ�
- *	E_OK	���ｪλ
+ * 返り値：
+ *	エラー番号
+ *	E_OK	正常終了
  *
- * ��ǽ��
- *	����ե��å� GDC �ν������Ԥ���
- *	�������ꤹ�롧
- *	  ��������	640x400
- *	  ���顼����	16 Color
+ * 機能：
+ *	グラフィック GDC の初期化を行う。
+ *	画面設定する：
+ *	  サイズ：	640x400
+ *	  カラー数：	16 Color
  *
  *
- * �������ס�
- *	1. RESET���ޥ�ɤ�ȯ��
- *	2. ư��⡼�ɤ����� 
- *	3. ɽ���γ���
+ * 処理概要：
+ *	1. RESETコマンドの発行
+ *	2. 動作モードの選択 
+ *	3. 表示の開始
  *
- *	4. �ɥ饤����Ͽ�μ¹�
+ *	4. ドライバ登録の実行
  *
  */
 ER
@@ -116,7 +116,7 @@ init_pd7220 (void)
 */
   gdc_display ();
 
-  err = def_dev (L"�ģӣ�", CHAR, ANY_DEVICE, &deviceid);
+  err = def_dev (L"ＤＳＰ", CHAR, ANY_DEVICE, &deviceid);
   if (err != E_OK)
     {
       printk ("cannot initialize for PD7220 device. err = %d\n", err);
@@ -152,10 +152,10 @@ gdc_server (void)
       if (err == E_OK)
 	{
 	  printk ("GDC: Receive request %d\n", rcv_packet.command);
-	  /* ���ޥ�ɲ������¹Ԥ��� */
+	  /* コマンド解釈部を実行する */
 	  switch (rcv_packet.command)
 	    {
-	      /* IO_NULL, IO_OPEN, IO_CLOSE �ˤĤ��Ƥϲ��⤷�ʤ� */
+	      /* IO_NULL, IO_OPEN, IO_CLOSE については何もしない */
 	    case IO_NULL:
 	    case IO_OPEN:
 	    case IO_CLOSE:
@@ -212,7 +212,7 @@ gdc_control (struct io_control_packet *pack)
 /* ------------------------------------------------------------------------------ */
 
 
-/* GDC�Υꥻ�åȤ�Ԥ�	*/
+/* GDCのリセットを行う	*/
 static ER
 gdc_reset(void)
 {
@@ -220,7 +220,7 @@ gdc_reset(void)
 }
 
 
-/* ɽ������		*/
+/* 表示開始		*/
 static ER
 gdc_display(void)
 {
@@ -228,7 +228,7 @@ gdc_display(void)
 }
 
 
-/* ɽ�����		*/
+/* 表示停止		*/
 static ER	
 gdc_undisplay(void)
 {
@@ -236,7 +236,7 @@ gdc_undisplay(void)
 }
 
 
-/* ���̾��ľ�������	*/
+/* 画面上に直線を引く	*/
 static ER
 gdc_line (W x1, W y1, W x2, W y2)	
 {
@@ -244,7 +244,7 @@ gdc_line (W x1, W y1, W x2, W y2)
 }
 
 
-/* ���̾�˱ߤ�����	*/
+/* 画面上に円を描く	*/
 static ER
 gdc_circle (W x, W y, W r)
 {
@@ -252,36 +252,36 @@ gdc_circle (W x, W y, W r)
 }
 
 
-/* ���̾����������	*/
+/* 画面上に点を描く	*/
 static ER
 gdc_dot (W x, W y)
 {
   VB	*addr;
   B	buf; 
 
-/* �ץ졼�� 0 */
-  addr = (VB *)PLANE0;	/* VRAM ����Ƭ���ɥ쥹 */
+/* プレーン 0 */
+  addr = (VB *)PLANE0;	/* VRAM の先頭アドレス */
   addr += (y * (640 / 8)) + (x / 8);
   buf = *addr;
   buf |= 1 << (x % 8);
   *addr = buf;
 
-/* �ץ졼�� 1 */
-  addr = (VB *)PLANE1;	/* VRAM ����Ƭ���ɥ쥹 */
+/* プレーン 1 */
+  addr = (VB *)PLANE1;	/* VRAM の先頭アドレス */
   addr += (y * (640 / 8)) + (x / 8);
   buf = *addr;
   buf |= 1 << (x % 8);
   *addr = buf;
 
-/* �ץ졼�� 2 */
-  addr = (VB *)PLANE2;	/* VRAM ����Ƭ���ɥ쥹 */
+/* プレーン 2 */
+  addr = (VB *)PLANE2;	/* VRAM の先頭アドレス */
   addr += (y * (640 / 8)) + (x / 8);
   buf = *addr;
   buf |= 1 << (x % 8);
   *addr = buf;
 
-/* �ץ졼�� 3 */
-  addr = (VB *)PLANE3;	/* VRAM ����Ƭ���ɥ쥹 */
+/* プレーン 3 */
+  addr = (VB *)PLANE3;	/* VRAM の先頭アドレス */
   addr = (y * (640 / 8)) + (x / 8);
   buf = *addr;
   buf |= 1 << (x % 8);
@@ -289,7 +289,7 @@ gdc_dot (W x, W y)
 }
 
 
-/* SYNC ���ޥ�ɡ����̤γƼ����� */
+/* SYNC コマンド；画面の各種設定 */
 static ER
 gdc_sync (B mode, UH column, UH vs, UH hs, UH hfp, UH hbp, UH vfp, UH line, UH vbp)
 {
@@ -299,7 +299,7 @@ gdc_sync (B mode, UH column, UH vs, UH hs, UH hfp, UH hbp, UH vfp, UH line, UH v
 
 
 
-/* GDC�˥��ޥ�ɤ����Ф��� */
+/* GDCにコマンドを送出する */
 static ER
 gdc_write (W num, ...)
 {

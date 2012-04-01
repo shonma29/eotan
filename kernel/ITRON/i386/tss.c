@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -12,12 +12,12 @@ Version 2, June 1991
 */
 /* tss.c
 
- TSS (Task State Segment) �δ����򤹤롣
+ TSS (Task State Segment) の管理をする。
  
  
  Interface:
- 	creat_context:	����ƥ����Ⱦ���򿷤����������롣
-	delete_context:	����ƥ����Ⱦ���������롣
+ 	creat_context:	コンテキスト情報を新しく作成する。
+	delete_context:	コンテキスト情報を削除する。
 	
  */
 
@@ -28,7 +28,7 @@ Version 2, June 1991
 #include "misc.h"
 #include "func.h"
 
-/* creat_context ����ƥ����Ⱦ���򿷤����������롣
+/* creat_context コンテキスト情報を新しく作成する。
  *
  */
 void
@@ -40,15 +40,15 @@ create_context (T_TCB *task)
   init_task_state_segment (task->tskid, tss);
 }
 
-/* init_task_state_segment -- TSS ��ؤ��ǥ�������ץ��ν����
+/* init_task_state_segment -- TSS を指すディスクリプタの初期化
  *
- * ������	index	��������� task_state_seg �ơ��֥�Υ���ǥå���
+ * 引数：	index	初期化する task_state_seg テーブルのインデックス
  *
- * ���͡�	�ʤ�
+ * 返値：	なし
  *
- * ������	�����ǻ��ꤷ�Ƥ��륿������ TSS ��ؤ�����Υǥ�������ץ���
- *		��������롣
- *		TSS �ǥ����ץ꥿�η����򼡤˼�����
+ * 処理：	引数で指定しているタスクの TSS を指すためのディスクリプタを
+ *		初期化する。
+ *		TSS ディスプリタの形式を次に示す。
  *
  *	
  *

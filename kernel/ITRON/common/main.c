@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -10,7 +10,7 @@ Version 2, June 1991
 (C) 2001-2002, Tomohide Naniwa
 
 */
-/* main.c --- ITRON ¤Î¥á¥¤¥ó´Ø¿ô¤ÎÄêµÁ¡£
+/* main.c --- ITRON ã®ãƒ¡ã‚¤ãƒ³é–¢æ•°ã®å®šç¾©ã€‚
  *
  *
  */
@@ -42,14 +42,14 @@ Version 2, June 1991
  * Modifies for source cleaning. Most of these are for avoid gcc's -Wall message.
  *
  * Revision 1.10  1998/02/25 12:38:42  night
- * vmap() ´Ø¿ô¤Î»ÅÍÍÊÑ¹¹¤Ë¤è¤ë½¤Àµ¡£
- * (²¾ÁÛ¥Ú¡¼¥¸¤Î¥¢¥¯¥»¥¹¸¢¤ò»ØÄê¤¹¤ë°ú¿ô¤¬¤Ò¤È¤ÄÁı¤¨¤¿)
+ * vmap() é–¢æ•°ã®ä»•æ§˜å¤‰æ›´ã«ã‚ˆã‚‹ä¿®æ­£ã€‚
+ * (ä»®æƒ³ãƒšãƒ¼ã‚¸ã®ã‚¢ã‚¯ã‚»ã‚¹æ¨©ã‚’æŒ‡å®šã™ã‚‹å¼•æ•°ãŒã²ã¨ã¤å¢—ãˆãŸ)
  *
  * Revision 1.9  1997/10/11 16:21:40  night
- * ¤³¤Ş¤´¤Ş¤·¤¿½¤Àµ
+ * ã“ã¾ã”ã¾ã—ãŸä¿®æ­£
  *
  * Revision 1.8  1997/09/21 13:32:01  night
- * log ¥Ş¥¯¥í¤ÎÄÉ²Ã¡£
+ * log ãƒã‚¯ãƒ­ã®è¿½åŠ ã€‚
  *
  *
  */
@@ -75,13 +75,13 @@ static void memory_test(void);
 void run_init_program(void);
 void banner(void);
 
-/* ³°ÉôÊÑ¿ô¤ÎÀë¸À */
+/* å¤–éƒ¨å¤‰æ•°ã®å®£è¨€ */
 extern W do_timer;
 extern UW system_ticks;
 extern ID posix_manager;
 extern char doing;
 
-/* ¶¯À©½ªÎ»¤¹¤ë¥¿¥¹¥¯¤Î¥Æ¡¼¥Ö¥ë */
+/* å¼·åˆ¶çµ‚äº†ã™ã‚‹ã‚¿ã‚¹ã‚¯ã®ãƒ†ãƒ¼ãƒ–ãƒ« */
 #define TRMTBL_SIZE 10
 static int trmtbl_num = 0;
 static int trmtbl_top = 0;
@@ -127,7 +127,7 @@ ER rm_trmtbl()
 }
 
 /*******************************************************************
- * itron --- ¥á¥¤¥ó´Ø¿ô
+ * itron --- ãƒ¡ã‚¤ãƒ³é–¢æ•°
  *
  */
 ER itron(void)
@@ -147,11 +147,11 @@ ER itron(void)
 
     init_device();
 
-    /* TRMTBL ¤Î½é´ü²½ */
+    /* TRMTBL ã®åˆæœŸåŒ– */
     trmtbl_num = 0;
     trmtbl_top = 0;
 
-    /* POSIX manager port ID ¤Î½é´ü²½ */
+    /* POSIX manager port ID ã®åˆæœŸåŒ– */
     posix_manager = 0;
 
     do_timer = 0;
@@ -179,13 +179,13 @@ ER itron(void)
     run_init_program();
 #endif
 
-    for (;;) {			/* Idle ¥¿¥¹¥¯¤È¤Ê¤ë¡£ */
+    for (;;) {			/* Idle ã‚¿ã‚¹ã‚¯ã¨ãªã‚‹ã€‚ */
 #ifdef HALT_WHEN_IDLE
         do_halt = 1;
 #endif
 #ifdef CALL_HANDLER_IN_TASK
 	if (do_timer) {
-	    /* timer ¤ËÄêµÁ¤µ¤ì¤Æ¤¤¤ë´Ø¿ô¤Î¼Â¹Ô */
+	    /* timer ã«å®šç¾©ã•ã‚Œã¦ã„ã‚‹é–¢æ•°ã®å®Ÿè¡Œ */
 	    check_timer();
 	    do_timer = 0;
 #ifdef HALT_WHEN_IDLE
@@ -199,7 +199,7 @@ ER itron(void)
 	}
 #endif
 #endif
-	/* ¥¿¥¹¥¯¤Î¶¯À©½ªÎ»½èÍı */
+	/* ã‚¿ã‚¹ã‚¯ã®å¼·åˆ¶çµ‚äº†å‡¦ç† */
 	if (trmtbl_num != 0) {
 #ifdef HALT_WHEN_IDLE
 	  do_halt = 0;
@@ -219,7 +219,7 @@ ER itron(void)
 #endif
 	    rm_trmtbl();
 	    if (trmtbl_num == 0) {
-	      /* ¶¯À©½ªÎ»¤¹¤ë¥¿¥¹¥¯¤¬Ìµ¤¯¤Ê¤Ã¤¿¤Î¤Ç¡¤Í¥ÀèÅÙ¤òºÇÄã¤Ë */
+	      /* å¼·åˆ¶çµ‚äº†ã™ã‚‹ã‚¿ã‚¹ã‚¯ãŒç„¡ããªã£ãŸã®ã§ï¼Œå„ªå…ˆåº¦ã‚’æœ€ä½ã« */
 	      chg_pri(KERNEL_TASK, MAX_PRIORITY);
 	    }
 	  }
@@ -231,8 +231,8 @@ ER itron(void)
 
 	task_switch(TRUE);
 #ifdef notdef
-	ena_int();		/* Idle ¥¿¥¹¥¯¤ò¼Â¹Ô¤·¤Æ¤¤¤ë»ş¤Ï¡¢³ä¤ê¹ş¤ß¤Ï¥¤¥Í¡¼¥Ö¥ë
-				 * ¤·¤Æ¤¤¤Ê¤±¤ì¤Ğ¤¤¤±¤Ê¤¤ */
+	ena_int();		/* Idle ã‚¿ã‚¹ã‚¯ã‚’å®Ÿè¡Œã—ã¦ã„ã‚‹æ™‚ã¯ã€å‰²ã‚Šè¾¼ã¿ã¯ã‚¤ãƒãƒ¼ãƒ–ãƒ«
+				 * ã—ã¦ã„ãªã‘ã‚Œã°ã„ã‘ãªã„ */
 #endif				/* notdef */
     }
     falldown("falldown.");
@@ -272,8 +272,8 @@ void run(W entry)
 	return;
     }
 
-    /* À¸À®¤·¤¿¥¿¥¹¥¯¤Î²¾ÁÛ¥á¥â¥ê¤Ë¥â¥¸¥å¡¼¥ë¤ò¥Ş¥Ã¥Ô¥ó¥° */
-    /* ¤¿¤À¤·¥É¥é¥¤¥Ğ¤Î¾ì¹ç¤Ë¤Ï¡¢¥Ş¥Ã¥Ô¥ó¥°¤·¤Ê¤¤ */
+    /* ç”Ÿæˆã—ãŸã‚¿ã‚¹ã‚¯ã®ä»®æƒ³ãƒ¡ãƒ¢ãƒªã«ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«ã‚’ãƒãƒƒãƒ”ãƒ³ã‚° */
+    /* ãŸã ã—ãƒ‰ãƒ©ã‚¤ãƒã®å ´åˆã«ã¯ã€ãƒãƒƒãƒ”ãƒ³ã‚°ã—ãªã„ */
     if ((modulep[entry].type == driver) || (modulep[entry].type == lowlib)) {
 	printk("This module is driver or lowlib. not mapped\n");
     } else {
@@ -292,12 +292,12 @@ void run(W entry)
 	}
 #ifdef I386
 	if (modulep[entry].type == user){
-	  /* ¸ÇÍ­¤Î¥¹¥¿¥Ã¥¯¤òÍÑ°Õ */
+	  /* å›ºæœ‰ã®ã‚¹ã‚¿ãƒƒã‚¯ã‚’ç”¨æ„ */
 	  make_local_stack(new_taskp, KERNEL_STACK_SIZE, ACC_USER);
 	  new_taskp->context.esp = new_taskp->initial_stack;
 	  new_taskp->context.ebp = new_taskp->initial_stack;
 
-	  /* ¥»¥ì¥¯¥¿¤ÎÀßÄê */
+	  /* ã‚»ãƒ¬ã‚¯ã‚¿ã®è¨­å®š */
 	  new_taskp->context.cs = USER_CSEG | USER_DPL;
 	  new_taskp->context.ds = USER_DSEG;
 	  new_taskp->context.es = USER_DSEG;
@@ -340,7 +340,7 @@ void run_init_program(void)
 
 
 
-/* init_itron --- ITRON ¤Î½é´ü²½¤ò¹Ô¤¦¡£
+/* init_itron --- ITRON ã®åˆæœŸåŒ–ã‚’è¡Œã†ã€‚
  *
  */
 static ER init_itron(void)
@@ -348,35 +348,35 @@ static ER init_itron(void)
     struct boot_header *info; 
 
     init_interrupt();
-    simple_init_console();	/* ¥³¥ó¥½¡¼¥ë¤ËÊ¸»ú¤ò½ĞÎÏ¤Ç¤­¤ë¤è¤¦¤Ë¤¹¤ë */
+    simple_init_console();	/* ã‚³ãƒ³ã‚½ãƒ¼ãƒ«ã«æ–‡å­—ã‚’å‡ºåŠ›ã§ãã‚‹ã‚ˆã†ã«ã™ã‚‹ */
     printk("init_itron: start\n");
 
-    pmem_init();		/* ÊªÍı¥á¥â¥ê´ÉÍıµ¡Ç½¤Î½é´ü²½           */
+    pmem_init();		/* ç‰©ç†ãƒ¡ãƒ¢ãƒªç®¡ç†æ©Ÿèƒ½ã®åˆæœŸåŒ–           */
     adjust_vm(physmem_max);
-    banner();			/* Î©¤Á¾å¤²¥á¥Ã¥»¡¼¥¸½ĞÎÏ               */
+    banner();			/* ç«‹ã¡ä¸Šã’ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸å‡ºåŠ›               */
 
-    init_kalloc();		/* ¥Ğ¥¤¥ÈÃ±°Ì¤Î¥á¥â¥ê´ÉÍıµ¡Ç½¤Î½é´ü²½   */
-    init_semaphore();		/* ¥»¥Ş¥Õ¥©¤Î´ÉÍıµ¡Ç½¤Î½é´ü²½           */
-    init_msgbuf();		/* ¥á¥Ã¥»¡¼¥¸´ÉÍıµ¡Ç½¤Î½é´ü²½           */
-    init_eventflag();		/* ¥¤¥Ù¥ó¥È¥Õ¥é¥°´ÉÍıµ¡Ç½¤Î½é´ü²½       */
-    init_mpl();			/* ¥á¥â¥ê¥×¡¼¥ë´ÉÍıµ¡Ç½¤Î½é´ü²½         */
+    init_kalloc();		/* ãƒã‚¤ãƒˆå˜ä½ã®ãƒ¡ãƒ¢ãƒªç®¡ç†æ©Ÿèƒ½ã®åˆæœŸåŒ–   */
+    init_semaphore();		/* ã‚»ãƒãƒ•ã‚©ã®ç®¡ç†æ©Ÿèƒ½ã®åˆæœŸåŒ–           */
+    init_msgbuf();		/* ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ç®¡ç†æ©Ÿèƒ½ã®åˆæœŸåŒ–           */
+    init_eventflag();		/* ã‚¤ãƒ™ãƒ³ãƒˆãƒ•ãƒ©ã‚°ç®¡ç†æ©Ÿèƒ½ã®åˆæœŸåŒ–       */
+    init_mpl();			/* ãƒ¡ãƒ¢ãƒªãƒ—ãƒ¼ãƒ«ç®¡ç†æ©Ÿèƒ½ã®åˆæœŸåŒ–         */
 #ifdef nodef
-    simple_init_console();	/* ¥³¥ó¥½¡¼¥ë¤ËÊ¸»ú¤ò½ĞÎÏ¤Ç¤­¤ë¤è¤¦¤Ë¤¹¤ë */
+    simple_init_console();	/* ã‚³ãƒ³ã‚½ãƒ¼ãƒ«ã«æ–‡å­—ã‚’å‡ºåŠ›ã§ãã‚‹ã‚ˆã†ã«ã™ã‚‹ */
 #endif
-    init_task();		/* ¥¿¥¹¥¯´ÉÍıµ¡Ç½¤Î½é´ü²½ */
+    init_task();		/* ã‚¿ã‚¹ã‚¯ç®¡ç†æ©Ÿèƒ½ã®åˆæœŸåŒ– */
 
-    /* 1ÈÖÌÜ¤Î¥¿¥¹¥¯¤ò½é´ü²½¤¹¤ë¡£¤½¤·¤Æ¤½¤Î¥¿¥¹¥¯¤ò°Ê¸å¤Î½è
-     * Íı¤Ç»ÈÍÑ¤¹¤ë¡£
+    /* 1ç•ªç›®ã®ã‚¿ã‚¹ã‚¯ã‚’åˆæœŸåŒ–ã™ã‚‹ã€‚ãã—ã¦ãã®ã‚¿ã‚¹ã‚¯ã‚’ä»¥å¾Œã®å‡¦
+     * ç†ã§ä½¿ç”¨ã™ã‚‹ã€‚
      */
     init_task1();
 
 #ifdef notdef
     printk("call init_timer\n");
 #endif
-    init_timer();		/* ¥¤¥ó¥¿¡¼¥Ğ¥ë¥¿¥¤¥Şµ¡Ç½¤Î½é´ü²½ */
+    init_timer();		/* ã‚¤ãƒ³ã‚¿ãƒ¼ãƒãƒ«ã‚¿ã‚¤ãƒæ©Ÿèƒ½ã®åˆæœŸåŒ– */
     info = (struct boot_header *) MODULE_TABLE;
-    init_time(info->machine.clock);		/* »ş´Ö´ÉÍıµ¡Ç½¤Î½é´ü²½ */
-    start_interval();		/* ¥¤¥ó¥¿¡¼¥Ğ¥ë¥¿¥¤¥Ş¤Îµ¯Æ°       */
+    init_time(info->machine.clock);		/* æ™‚é–“ç®¡ç†æ©Ÿèƒ½ã®åˆæœŸåŒ– */
+    start_interval();		/* ã‚¤ãƒ³ã‚¿ãƒ¼ãƒãƒ«ã‚¿ã‚¤ãƒã®èµ·å‹•       */
 
 /*  init_io (); */
     return (E_OK);

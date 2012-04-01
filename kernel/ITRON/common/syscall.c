@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -12,7 +12,7 @@ Version 2, June 1991
 */
 /* syscall.c
  *
- * �����ƥॳ���������Ԥ���
+ * システムコール処理を行う。
  *
  * $Revision: 1.13 $
  *
@@ -33,18 +33,18 @@ static ER	nodef (VP argp);
 
 struct t_syscall
 {
-  B	*name;		/* �����ƥॳ����̾	*/
-  ER	(*func)(VP argp);	/* �ؿ��ؤΥݥ���	*/
-  W	argn;		/* �����ο�		*/
+  B	*name;		/* システムコール名	*/
+  ER	(*func)(VP argp);	/* 関数へのポインタ	*/
+  W	argn;		/* 引数の数		*/
 };
 
-/* �����ƥॳ����ơ��֥�
+/* システムコールテーブル
  */  
 struct t_syscall	syscall_table[] =
 {
   DEF_NOSYSCALL,		/*    0 */
 
-  /* ���������������ƥॳ���� */
+  /* タスク管理システムコール */
   DEF_SYSCALL (cre_tsk, 2),	/*    1 */
   DEF_SYSCALL (del_tsk, 1),	/*    2 */
   DEF_SYSCALL (sta_tsk, 2),	/*    3 */
@@ -59,7 +59,7 @@ struct t_syscall	syscall_table[] =
   DEF_SYSCALL (get_tid, 1),	/*   12 */
   DEF_SYSCALL (ref_tsk, 2),	/*   13 */
 
-  /* ��������°Ʊ����ǽ */
+  /* タスク附属同期機能 */
   DEF_SYSCALL (sus_tsk, 1),    	/*   14 */
   DEF_SYSCALL (rsm_tsk, 1),	/*   15 */
   DEF_SYSCALL (frsm_tsk, 1),	/*   16 */
@@ -68,8 +68,8 @@ struct t_syscall	syscall_table[] =
   DEF_SYSCALL (wup_tsk, 1),	/*   19 */
   DEF_SYSCALL (can_wup, 2),	/*   20 */
   
-  /* Ʊ�����̿����� */
-  /* ���ޥե� */
+  /* 同期・通信機構 */
+  /* セマフォ */
   DEF_SYSCALL (cre_sem, 2),	/*   21 */
   DEF_SYSCALL (del_sem, 1),	/*   22 */
   DEF_SYSCALL (sig_sem, 1),	/*   23 */
@@ -78,7 +78,7 @@ struct t_syscall	syscall_table[] =
   DEF_SYSCALL (twai_sem, 2),	/*   26 */
   DEF_SYSCALL (ref_sem, 2),	/*   27 */
 
-  /* ���٥�ȥե饰 */
+  /* イベントフラグ */
   DEF_SYSCALL (cre_flg, 2),	/*   28 */
   DEF_SYSCALL (del_flg, 1),	/*   29 */
   DEF_SYSCALL (set_flg, 2),	/*   30 */
@@ -88,7 +88,7 @@ struct t_syscall	syscall_table[] =
   DEF_SYSCALL (twai_flg, 5),	/*   34 */
   DEF_SYSCALL (ref_flg, 2),	/*   35 */
 
-  /* ��å������Хåե� */
+  /* メッセージバッファ */
   DEF_SYSCALL (cre_mbf, 2),	/*   36	*/
   DEF_SYSCALL (del_mbf, 1),	/*   37 */
   DEF_SYSCALL (snd_mbf, 3),	/*   38 */
@@ -98,11 +98,11 @@ struct t_syscall	syscall_table[] =
   DEF_SYSCALL (prcv_mbf, 3),	/*   42 */
   DEF_SYSCALL (trcv_mbf, 4),	/*   43 */
 
-  /* ��ꤳ�ߴ��� */
+  /* 割りこみ管理 */
   DEF_SYSCALL (dis_int, 0),	/*   44 */
   DEF_SYSCALL (ena_int, 0),	/*   45 */
 
-  /* ������� */
+  /* メモリ管理 */
   DEF_SYSCALL (cre_mpl, 2),	/*   46 */
   DEF_SYSCALL (del_mpl, 1),	/*   47 */
   DEF_SYSCALL (get_blk, 3),	/*   48 */
@@ -111,14 +111,14 @@ struct t_syscall	syscall_table[] =
   DEF_SYSCALL (ref_mpl, 3),	/*   51 */
   DEF_SYSCALL (tget_blk, 2),	/*   52 */
 
-  /* �����ƥ���� */
+  /* システム管理 */
   DEF_SYSCALL (get_ver, 1),	/*   53 */
   DEF_NOSYSCALL,		/*   54 ref_sys */
   DEF_NOSYSCALL,		/*   55 ref_cfg */
   DEF_NOSYSCALL,		/*   56 def_svc */
   DEF_NOSYSCALL,		/*   57 def_exc */
 
-  /* ���ִ�����ǽ */
+  /* 時間管理機能 */
   DEF_SYSCALL (set_tim, 1),	/*   58 set_tim */
   DEF_SYSCALL (get_tim, 1),	/*   59 get_tim */
   DEF_SYSCALL (dly_tsk, 1),	/*   60 dly_tsk */
@@ -165,7 +165,7 @@ struct t_syscall	syscall_table[] =
   DEF_SYSCALL (vsys_inf, 3),	/*   99 */
   DEF_SYSCALL (dbg_puts, 1),	/*  100 */
 
-  /* ���ۥ�����������ƥॳ���� */	
+  /* 仮想メモリ管理システムコール */	
   DEF_SYSCALL (vcre_reg, 7),	/*  101 */
   DEF_SYSCALL (vdel_reg, 2),	/*  102 */
   DEF_SYSCALL (vmap_reg, 3),	/*  103 */
@@ -186,7 +186,7 @@ struct t_syscall	syscall_table[] =
   DEF_NOSYSCALL,		/*  118 */
   DEF_NOSYSCALL,		/*  119 */
 
-  /* ����¾�Υ����ƥॳ���� */
+  /* その他のシステムコール */
   DEF_SYSCALL (vget_csl, 2),	/*  120 */
   DEF_SYSCALL (vset_cns, 1),	/*  121 */
   DEF_SYSCALL (vsys_msc, 2),	/*  122 */
@@ -224,16 +224,16 @@ W	nsyscall = sizeof (syscall_table) / sizeof (syscall_table[0]);
 
 
 /**************************************************************************
- *	syscall --- �����ƥॳ����ν�����ʬ
+ *	syscall --- システムコールの処理部分
  *
- *	�ƤӽФ��ؿ�: interrupt (machine/interrupt.s)
+ *	呼び出し関数: interrupt (machine/interrupt.s)
  *
- *	�����ƥॳ������׵��桼�������å������Ф���Ŭ���˽����򿶤�
- *	ʬ���롣
+ *	システムコールの要求をユーザスタックより取り出し、適当に処理を振り
+ *	分ける。
  *
- *	����:
- *		sysno		�����ƥॳ�����ֹ�
- *		arg_addr	�桼�������å��� top ������
+ *	引数:
+ *		sysno		システムコール番号
+ *		arg_addr	ユーザスタックの top の番地
  */
 W
 syscall (UW sysno, W *arg_addr)
@@ -244,7 +244,7 @@ syscall (UW sysno, W *arg_addr)
 #endif
   W	errno;
 
-/* �����ƥॳ�����ֹ�Υ����å� 
+/* システムコール番号のチェック 
  */
   if ((sysno <= 0) || (sysno > nsyscall))
     {
@@ -254,7 +254,7 @@ syscall (UW sysno, W *arg_addr)
   errno = (syscall_table[sysno].func)(arg_addr);
 
   /* 
-   * �����ƥॳ��������ѤΥǥХå�ʸ��
+   * システムコール処理用のデバッグ文。
    */
 #ifdef notdef  
   printk ("%s, %d, syscall: called. (errno = %d)\n", 

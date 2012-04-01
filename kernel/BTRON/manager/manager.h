@@ -8,7 +8,7 @@
  *
  * $Log: manager.h,v $
  * Revision 1.1  1996/10/29 15:48:08  night
- * �ǽ����Ͽ
+ * 最初の登録
  *
  *
  */
@@ -23,9 +23,9 @@
 
 #define MANAGER		"btron.manager"
 
-/* ��å�����������Ƶ�ǽ(PM �� MM �ʤ�)��
- * ��ͳ�˻Ȥ���ǡ����Υ�����
- * ��å������κǸ�������ΰ衣
+/* メッセージに入る各機能(PM や MM など)が
+ * 自由に使えるデータのサイズ
+ * メッセージの最後に入る領域。
  */
 #define MAX_PRIVATE_SIZE	1024
 
@@ -36,30 +36,30 @@
 
 
 /*
- * �ޥ͡����㤬�����Ȥ��å���������
+ * マネージャが受けとるメッセージ形式
  */
 struct manager_request
 {
-  UW	command;		/* ���ޥ�� */
+  UW	command;		/* コマンド */
   B	data[MAX_PRIVATE_SIZE];
 };
 
 
 /*
- * �ޥ͡����㤬�֤���å������η���
+ * マネージャが返すメッセージの形式
  */
 struct manager_response
 {
-  UW	result;			/* ��� */
+  UW	result;			/* 結果 */
   B	data[MAX_PRIVATE_SIZE];
 };
 
 
 struct manager_message
 {
-  ID	caller_port;	/* ��å������������ѤΥݡ��� */
-  ID	caller_task;	/* ��å������������� task ID */
-  W	length;		/* ��å������κ��祵���� */
+  ID	caller_port;	/* メッセージの返答用のポート */
+  ID	caller_task;	/* メッセージの送り手の task ID */
+  W	length;		/* メッセージの最大サイズ */
 
   union
     {

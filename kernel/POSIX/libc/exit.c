@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -17,13 +17,13 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 
 /* $Log: exit.c,v $
 /* Revision 1.1  1996/11/11 13:33:00  night
-/* ╨г╫И╓непо©
+/* Ф°─Е┬²Ц│╝Г≥╩И▄╡
 /*
  * Revision 1.2  1995/09/21  15:52:10  night
- * ╔╫║╪╔╧╔у╔║╔╓╔К╓нюХф╛╓к Copyright notice ╬ПйС╓Рди╡ц║ё
+ * Ц┌╫Ц┐╪Ц┌╧Ц┐∙Ц┌║Ц┌╓Ц┐╚Ц│╝Е┘┬И═╜Ц│╚ Copyright notice Ф┐┘Е═╠Ц┌▓Х©╫Е┼═Ц─┌
  *
  * Revision 1.1  1995/08/21  13:20:47  night
- * ╨г╫И╓непо©
+ * Ф°─Е┬²Ц│╝Г≥╩И▄╡
  *
  *
  */
@@ -33,12 +33,12 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 
 
 /*
- * ╔в╔М╔╟╔И╔Ю╓н╫ХмЩ╓Р╫╙н╩╓╧╓К║ё
+ * Ц┐≈Ц┐╜Ц┌╟Ц┐╘Ц┐═Ц│╝Е┤╕Г░├Ц┌▓Г╣┌Д╨├Ц│≥Ц┌▀Ц─┌
  */
 exit (int exitcode)
 {
-  shutdown_stdio ();	/* и╦╫ЮфЧ╫пно╔И╔╓╔ж╔И╔Й╓н╦Е╩окЖ */
-                        /* ╔п╔ц╔у╔║╓Р╔у╔И╔ц╔╥╔Е╓╧╓К */
+  shutdown_stdio ();	/* Ф╗≥Ф╨√Е┘╔Е┤╨Е┼⌡Ц┐╘Ц┌╓Ц┐√Ц┐╘Ц┐╙Ц│╝Е╬▄Е╖▀Ф°╚ */
+                        /* Ц┐░Ц┐┐Ц┐∙Ц┌║Ц┌▓Ц┐∙Ц┐╘Ц┐┐Ц┌╥Ц┐╔Ц│≥Ц┌▀ */
 
   _exit (exitcode);
 }

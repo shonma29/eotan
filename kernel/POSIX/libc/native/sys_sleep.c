@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -20,7 +20,7 @@ static char rcsid[] = "@(#)$Id: sys_sleep.c,v 1.1 1997/08/31 13:25:27 night Exp 
 #include "../native.h"
 
 
-/* usleep --- ¥·¥¹¥Æ¥à¥³¡¼¥ë¤ÎÆ°ºî¤Ï usleep ¤È¤¹¤ë¡¥
+/* usleep --- ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«ã®å‹•ä½œã¯ usleep ã¨ã™ã‚‹ï¼
  *
  */
 int

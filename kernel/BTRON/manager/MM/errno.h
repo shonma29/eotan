@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -13,10 +13,10 @@ Version 2, June 1991
 /*
  * $Log: errno.h,v $
  * Revision 1.2  1997/06/29 15:44:30  night
- * ¥³¥á¥ó¥È¤ÎÊÑ¹¹
+ * ã‚³ãƒ¡ãƒ³ãƒˆã®å¤‰æ›´
  *
- * ¡¦´Á»ú¥³¡¼¥É¤ò SJIS ¤«¤é EUC ¤ËÊÑ¹¹¤·¤¿¡£
- * ¡¦RCS ¤Î Log ¥Þ¥¯¥íÆþ¤ê¤Î¥³¥á¥ó¥È¤òÄÉ²Ã¤·¤¿(¤Þ¤ÀÆþ¤ì¤Æ¤¤¤Ê¤«¤Ã¤¿¥Õ¥¡¥¤¥ë¤Î¤ß)¡£
+ * ãƒ»æ¼¢å­—ã‚³ãƒ¼ãƒ‰ã‚’ SJIS ã‹ã‚‰ EUC ã«å¤‰æ›´ã—ãŸã€‚
+ * ãƒ»RCS ã® Log ãƒžã‚¯ãƒ­å…¥ã‚Šã®ã‚³ãƒ¡ãƒ³ãƒˆã‚’è¿½åŠ ã—ãŸ(ã¾ã å…¥ã‚Œã¦ã„ãªã‹ã£ãŸãƒ•ã‚¡ã‚¤ãƒ«ã®ã¿)ã€‚
  *
  *
  */

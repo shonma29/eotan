@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -33,10 +33,10 @@ struct t_task_wait {
 typedef struct t_task_wait T_TASK_WAIT;
 
 
-/* task_spec_interrupt - ��������ͭ�����߽����ؿ�
+/* task_spec_interrupt - タスク固有割り込み処理関数
  *
- *	���ι�¤�Τˤϡ���������ͭ�γ����߽����ؿ�����Ͽ���롣
- *	(LOWLIB �Υ��եȥ�������������Ͽ�˻��Ѥ���)
+ *	この構造体には、タスク固有の割り込み処理関数を登録する。
+ *	(LOWLIB のソフトウェア割り込み登録に使用する)
  */
 typedef struct task_spec_interrupt {
     W intr_no;
@@ -44,88 +44,88 @@ typedef struct task_spec_interrupt {
 } T_TSI;
 
 
-/* t_tcb --- ��������¤��
+/* t_tcb --- タスク構造体
  *
- *	���ι�¤�Τˤϡ��������θ�ͭ���󤬴ޤޤ�롣
- *	��������ITRON ��٥�ʤΤǡ��ե�����ξ���ʤɤϴޤޤ�Ƥ��ʤ���
+ *	この構造体には、タスクの固有情報が含まれる。
+ *	ただし、ITRON レベルなので、ファイルの情報などは含まれていない。
  *
  */
 typedef struct t_tcb {
-    struct t_tcb *next;		/* ����TCB��                    */
-    struct t_tcb *before;	/* ����TCB��                    */
+    struct t_tcb *next;		/* 次のTCBへ                    */
+    struct t_tcb *before;	/* 前のTCBへ                    */
 
-    W tskid;			/* ������ ID                    */
-    W tsklevel;			/* ��������ͥ����             */
-    W tsklevel0;		/* ��������ͥ����(�����������) */
-    /* ��λ���������������ٵ�ư����Ȥ��ˤϤ����ͤ��Ȥ��롣     */
-    ATR tskatr;			/* ������°��                   */
-    H tskstat;			/* �������ξ���                 */
+    W tskid;			/* タスク ID                    */
+    W tsklevel;			/* タスクの優先順位             */
+    W tsklevel0;		/* タスクの優先順位(初期化時の値) */
+    /* 終了したタスクが再度起動するときにはこの値が使われる。     */
+    ATR tskatr;			/* タスク属性                   */
+    H tskstat;			/* タスクの状態                 */
 
-    /* ���������Ԥ������Ѥ����� */
-    T_TASK_WAIT tskwait;	/* ���������Ԥ����֤򼨤��ե饰 */
-    W wakeup_count;		/* �������Ⱦ��֤Υ�����       */
-    W suspend_count;		/* �����ڥ�ɾ��֤Υ�����     */
+    /* タスクの待ち状態用の要素 */
+    T_TASK_WAIT tskwait;	/* タスクの待ち状態を示すフラグ */
+    W wakeup_count;		/* ウェイト状態のカウンタ       */
+    W suspend_count;		/* サスペンド状態のカウンタ     */
 
-    ER slp_err;			/* �Ԥ����֤˴ؤ��ƤΥ��顼     */
-    /* ���٤Ƥ�Ʊ�������Ƕ��̤˻��Ѥ���                         */
+    ER slp_err;			/* 待ち状態に関してのエラー     */
+    /* すべての同期機構で共通に使用する                         */
     UW slp_time;		/* for debug */
 
-/* ������Ʊ����ǽ */
-    /* ���ޥե� */
-    struct t_tcb *sem_next;	/* ���Υ��ޥե��Ԥ���������     */
-    ID sem_id;			/* ���������ԤäƤ��륻�ޥե��� ID */
+/* タスク同期機能 */
+    /* セマフォ */
+    struct t_tcb *sem_next;	/* 次のセマフォ待ちタスクへ     */
+    ID sem_id;			/* 今、現在待っているセマフォの ID */
 
-    /* ���٥�ȥե饰 */
-    struct t_tcb *event_next;	/* ���Υ��٥�ȥե饰�Ԥ���������       */
-    UINT flag_pattern;		/* ���٥�ȥե饰���Ԥ��ѥ����� */
-    UINT wfmode;		/* �Ԥ����λ���               */
-    ID event_id;		/* ���������ԤäƤ��륤�٥�ȥե饰�� ID */
-    UINT rflgptn;		/* �ؿ����ͤȤ����֤��ե饰�ѥ�����q */
+    /* イベントフラグ */
+    struct t_tcb *event_next;	/* 次のイベントフラグ待ちタスクへ       */
+    UINT flag_pattern;		/* イベントフラグの待ちパターン */
+    UINT wfmode;		/* 待ち条件の指定               */
+    ID event_id;		/* 今、現在待っているイベントフラグの ID */
+    UINT rflgptn;		/* 関数の値として返すフラグパターンq */
 
-    /* ��å����� */
-    struct t_tcb *msg_next;	/* ���Υ�å������Ԥ���������   */
+    /* メッセージ */
+    struct t_tcb *msg_next;	/* 次のメッセージ待ちタスクへ   */
 #ifdef notdef
-    ID msg_id;			/* ���������ԤäƤ����å������� ID */
+    ID msg_id;			/* 今、現在待っているメッセージの ID */
 #endif
-    INT msg_size;			/* ��å����������� */
-    VP msg_buf;			/* ��å����������� buffer �ؤΥݥ��� */
+    INT msg_size;			/* メッセージサイズ */
+    VP msg_buf;			/* メッセージ受信用 buffer へのポインタ */
 
 
-/* �����å����� */
-    W stksz;			/* �������λ��ĸ��ߤΥ����å��Υ����� */
-    B *stackptr;		/* ���ߤΥ����å��ΰ�ؤΥݥ��� */
+/* スタック情報 */
+    W stksz;			/* タスクの持つ現在のスタックのサイズ */
+    B *stackptr;		/* 現在のスタック領域へのポインタ */
 
-/* �����ͥ��ΰ�Υ����å�����                   */
-    W stksz0;			/* �������λ��ĥ����å��Υ����� */
-    B *stackptr0;		/* �����ͥ륹���å����ΰ�ؤΥݥ��� */
+/* カーネル領域のスタック情報                   */
+    W stksz0;			/* タスクの持つスタックのサイズ */
+    B *stackptr0;		/* カーネルスタックの領域へのポインタ */
 
-/* �����������׾��� */
-    W total;			/* ���¹Ի���                   */
-    H quantum;			/* �桼������������Ϣ³�¹Բ�ǽ���� �� 0 */
+/* タスクの統計情報 */
+    W total;			/* 総実行時間                   */
+    H quantum;			/* ユーザータスクの連続実行可能時間 ≧ 0 */
 
 #ifdef I386
-    T_I386_CONTEXT context;	/* ����ƥ����Ⱦ��� (CPU��¸)   */
-    UW tss_selector;		/* �������Υ��쥯�� (CPU��¸)   */
+    T_I386_CONTEXT context;	/* コンテキスト情報 (CPU依存)   */
+    UW tss_selector;		/* タスクのセレクタ (CPU依存)   */
     H use_fpu;
-    FPU_CONTEXT fpu_context;	/* FPU �Υ���ƥ����Ⱦ��� */
+    FPU_CONTEXT fpu_context;	/* FPU のコンテキスト情報 */
 #endif
 
-/* ���۵������� */
-    T_REGION regions[MAX_REGION];	/* �������˷�ӤĤ��� */
-    /* ���� REGION �Υơ��֥� */
+/* 仮想記憶情報 */
+    T_REGION regions[MAX_REGION];	/* タスクに結びついて */
+    /* いる REGION のテーブル */
 
 
-    T_TSI interrupt[MAX_MODULE];	/* ��������ͭ�γ��� */
-    /* �߽����ؿ��ơ��֥� */
+    T_TSI interrupt[MAX_MODULE];	/* タスク固有の割り込 */
+    /* み処理関数テーブル */
     W n_interrupt;
 
-     W(*page_fault_handler) (W, W);	/* �ڡ����ե���Ȼ��ν����Ѵؿ� */
+     W(*page_fault_handler) (W, W);	/* ページフォルト時の処理用関数 */
 
     UW initial_stack;
 } T_TCB;
 
 
-extern T_TCB *run_task;		/* ���ߡ�������Υ����� */
+extern T_TCB *run_task;		/* 現在、走行中のタスク */
 
 #define GET_TSKWAIT(tcb)	(tcb.tskwait)
 

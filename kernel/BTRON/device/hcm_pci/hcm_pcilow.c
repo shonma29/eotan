@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -40,7 +40,7 @@ UW get_config_data(int iBusNum, int iDevNum, int iFuncNum, int iRegAddr)
 }
 
 
-/* HCM_PCI ╔╒╔ю╔в╔©╓╛б╦╨ъ╓╥╓ф╓╓╓К╓╚╓и╓╕╓╚╓Р╔а╔╖╔ц╔╞╓╧╓К
+/* HCM_PCI Ц┌╒Ц┐─Ц┐≈Ц┌©Ц│▄Е╜≤Е°╗Ц│≈Ц│╕Ц│└Ц┌▀Ц│▀Ц│╘Ц│├Ц│▀Ц┌▓Ц┐│Ц┌╖Ц┐┐Ц┌╞Ц│≥Ц┌▀
  */
 ER
 probe (struct device *dev)

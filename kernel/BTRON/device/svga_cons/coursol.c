@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -32,7 +32,7 @@ struct position
   W     y;
 };
 
-/* ʣ��Window�򳫤�ͽ��������Ȥꤢ����console���롼�������ä���ƶ�̣ */
+/* 複数Windowを開く予定だが、とりあえずconsoleよりルーチンを持って来て吟味 */
 static struct position  svga_curpos[256];
 static struct position  curpos;
 
@@ -58,13 +58,13 @@ move_curpos (W x, W y)
 }
 
 /*************************************************************************
- * goto_cursol --- ����������֤�����.
+ * goto_cursol --- カーソル位置の設定.
  *
- * ������       x, y    ��ɸ
+ * 引数：       x, y    座標
  *
- * ���͡�       �ʤ�
+ * 返値：       なし
  *
- * ������       ���ꤷ����ɸ�˥���������ư�����롣
+ * 処理：       指定した座標にカーソルを移動させる。
  *
  */
 void
@@ -87,7 +87,7 @@ goto_cursol (W x, W y)
 
 write_char (UB  ch)
 {
-  if (ch < 0x20)        /* ����ȥ����륳���� */
+  if (ch < 0x20)        /* コントロールコード */
     {
       switch (ch)
         {
@@ -179,18 +179,18 @@ backspace ()
   goto_cursol (curpos.x, curpos.y);
 }
 /*************************************************************************
- * write_vram_xy --- VRAM ��ʸ����񤭹���
+ * write_vram_xy --- VRAM に文字を書き込む
  *
- * ������       x, y    ��ɸ
- *              ch      ���Ϥ���ʸ��
- *              attr    ʸ��°��
+ * 引数：       x, y    座標
+ *              ch      出力する文字
+ *              attr    文字属性
  *
- * ���͡�       �ʤ�
+ * 返値：       なし
  *
- * ������       ���� x, y �ǻ��ꤷ����ɸ��ʸ����񤭹���.
- *              ���δؿ��ϡ�ASCII ʸ���ѤˤʤäƤ��롣
+ * 処理：       引数 x, y で指定した座標に文字を書き込む.
+ *              この関数は、ASCII 文字用になっている。
  *
- * ���ա�       ���ߡ�attr ��̵�뤷�Ƥ��롣
+ * 注意：       現在、attr は無視している。
  *
  */
 static void
@@ -207,13 +207,13 @@ write_vram_xy (W x, W y, W ch, W attr)
 
 
 /*************************************************************************
- * scroll_up --- �������Τ򥹥������륢�åפ���
+ * scroll_up --- 画面全体をスクロールアップする
  *
- * ������       �ʤ�
+ * 引数：       なし
  *
- * ���͡�       �ʤ�
+ * 返値：       なし
  *
- * ������       �������Τ��ԥ��������뤹�롣
+ * 処理：       画面全体を一行スクロールする。
  *
  */
 static void

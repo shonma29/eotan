@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -16,7 +16,7 @@ Version 2, June 1991
  * *** empty log message ***
  *
  * Revision 1.6  1999/03/07 12:49:28  night
- * ¹½Â¤ÂÎ ne2000_device ¤ÎÍ×ÁÇ¤òÊÑ¹¹¡£
+ * æ§‹é€ ä½“ ne2000_device ã®è¦ç´ ã‚’å¤‰æ›´ã€‚
  *
  * +  UW		tx_error;
  * +  UW		collision;
@@ -24,15 +24,15 @@ Version 2, June 1991
  * +  UW		rx_error;
  *
  * Revision 1.5  1999/03/04 15:51:59  night
- * ¥Ş¥¯¥íÄÉ²Ã¡£
- * MAX_MTU_LENGTH		NE2000 ¥¢¥À¥×¥¿¤ËÅÏ¤¹¤³¤È¤¬¤Ç¤­¤ë¥Ç¡¼¥¿¤ÎºÇÂçÄ¹
- * MIN_ETHER_LENGTH	ETHERNET ¤Ë¤ª¤±¤ë¥Ç¡¼¥¿¤ÎºÇ¾®Ä¹
+ * ãƒã‚¯ãƒ­è¿½åŠ ã€‚
+ * MAX_MTU_LENGTH		NE2000 ã‚¢ãƒ€ãƒ—ã‚¿ã«æ¸¡ã™ã“ã¨ãŒã§ãã‚‹ãƒ‡ãƒ¼ã‚¿ã®æœ€å¤§é•·
+ * MIN_ETHER_LENGTH	ETHERNET ã«ãŠã‘ã‚‹ãƒ‡ãƒ¼ã‚¿ã®æœ€å°é•·
  *
  * Revision 1.4  1999/03/02 15:19:18  night
- * ¹½Â¤ÂÎ struct device ¤ÎÌ¾Á°¤ò struct ne2000_device ¤ËÊÑ¹¹¡£Ãæ¿È¤â
- * ÊÑ¹¹¤·¤¿¡£
+ * æ§‹é€ ä½“ struct device ã®åå‰ã‚’ struct ne2000_device ã«å¤‰æ›´ã€‚ä¸­èº«ã‚‚
+ * å¤‰æ›´ã—ãŸã€‚
  *
- * ¼¡¤Î¥Ş¥¯¥í¤ò¿·¤¿¤ËÄêµÁ¤·¤¿¡£
+ * æ¬¡ã®ãƒã‚¯ãƒ­ã‚’æ–°ãŸã«å®šç¾©ã—ãŸã€‚
  * #define LOC_MEM_START		0x4000
  * #define LOC_MEM_END		0x8000
  * #define LOC_MEM_SIZE		0x4000
@@ -45,13 +45,13 @@ Version 2, June 1991
  * #define MAX_TX_BUF		2
  *
  * Revision 1.3  1999/02/28 22:14:27  night
- * ¥³¥á¥ó¥È¤ÎÊÑ¹¹¡£
+ * ã‚³ãƒ¡ãƒ³ãƒˆã®å¤‰æ›´ã€‚
  *
  * Revision 1.2  1997/10/29 22:39:27  night
- * NE2000 ¥¢¥À¥×¥¿¤Î SA_PROM ¤ÎÆÉ¤ß¼è¤ê½èÍı¤ÎÄÉ²Ã¡£
+ * NE2000 ã‚¢ãƒ€ãƒ—ã‚¿ã® SA_PROM ã®èª­ã¿å–ã‚Šå‡¦ç†ã®è¿½åŠ ã€‚
  *
  * Revision 1.1  1997/10/28 12:47:23  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  *
@@ -69,7 +69,7 @@ Version 2, June 1991
 
 
 
-/* I/O ¥İ¡¼¥È¤ÎÄêµÁ */
+/* I/O ãƒãƒ¼ãƒˆã®å®šç¾© */
 #define IO_BASE(dev)		(dev->io_base)
 #define IO_CMD(dev)		(dev->io_base + 0x00)
 #define IO_DATA(dev)		(dev->io_base + 0x10)
@@ -77,23 +77,23 @@ Version 2, June 1991
 #define IO_EXTENT(dev)		(dev->io_base + 0x20)
 #define IO_ISR(dev)		(dev->io_base + 0x07)
 
-/* ¥Ç¡¼¥¿¥Ğ¥Ã¥Õ¥¡¤ÎÄêµÁ */
+/* ãƒ‡ãƒ¼ã‚¿ãƒãƒƒãƒ•ã‚¡ã®å®šç¾© */
 #define IOD_START_PAGE		0x20
 #define IOD_STOP_PAGE		0x40
 
 
 
-/* 8390 ¤Î¥³¥Ş¥ó¥É¥ê¥¹¥È */
-#define E8390_STOP		0x01		/* 8390 ¤Î¥¹¥È¥Ã¥× */
-#define E8390_START		0x02		/* ¥Á¥Ã¥×¤Î¼Â¹Ô³«»Ï */
-#define E8390_TRANS		0x04		/* ¥Ç¡¼¥¿¤ÎÅ¾Á÷ */
+/* 8390 ã®ã‚³ãƒãƒ³ãƒ‰ãƒªã‚¹ãƒˆ */
+#define E8390_STOP		0x01		/* 8390 ã®ã‚¹ãƒˆãƒƒãƒ— */
+#define E8390_START		0x02		/* ãƒãƒƒãƒ—ã®å®Ÿè¡Œé–‹å§‹ */
+#define E8390_TRANS		0x04		/* ãƒ‡ãƒ¼ã‚¿ã®è»¢é€ */
 #define E8390_RREAD		0x08
 #define E8390_RWRITE		0x10
 #define E8390_NODMA		0x20
 #define E8390_PAGE0		0x00
 #define E8390_PAGE1		0x40
 #define E8390_PAGE2		0x80
-#define E8390_CMD		0x00		/* ¥³¥Ş¥ó¥É¥ì¥¸¥¹¥¿ */
+#define E8390_CMD		0x00		/* ã‚³ãƒãƒ³ãƒ‰ãƒ¬ã‚¸ã‚¹ã‚¿ */
 
 #define E8390_TX_IRQ_MASK	0xa	/* For register EP0_ISR */
 #define E8390_RX_IRQ_MASK  	0x5
@@ -104,7 +104,7 @@ Version 2, June 1991
 
 
 
-/* 8390 ¤Î¥ì¥¸¥¹¥¿¥ê¥¹¥È */
+/* 8390 ã®ãƒ¬ã‚¸ã‚¹ã‚¿ãƒªã‚¹ãƒˆ */
 #define EP0_CLDALO	0x01	/* Low byte of current local dma addr  RD */
 #define EP0_STARTPG	0x01	/* Starting page of ring bfr WR */
 #define EP0_CLDAHI	0x02	/* High byte of current local dma addr  RD */
@@ -191,28 +191,28 @@ Version 2, June 1991
 #define MAC_ADDR_LENGTH		6
 
 
-/* ¥Ç¥Ğ¥¤¥¹¹½Â¤ÂÎ 
- * NE2000 ¥Ç¥Ğ¥¤¥¹¤Ï¡¢³Æ¡¹¤³¤Î¹½Â¤ÂÎ¤Ç´ÉÍı¤·¤Æ¤¤¤ë
+/* ãƒ‡ãƒã‚¤ã‚¹æ§‹é€ ä½“ 
+ * NE2000 ãƒ‡ãƒã‚¤ã‚¹ã¯ã€å„ã€…ã“ã®æ§‹é€ ä½“ã§ç®¡ç†ã—ã¦ã„ã‚‹
  */
 struct ne2000_device
 {
-  /* ¥Ü¡¼¥È¤ÎÄêµÁ¾ğÊó */
+  /* ãƒœãƒ¼ãƒˆã®å®šç¾©æƒ…å ± */
   UW		io_base;
 
-  /* ¥Ü¡¼¥È¤Î¾ğÊó */
-  UB		sa_prom[32];	/* SAPROM ¤ÎÆâÍÆ¤Î¥³¥Ô¡¼(¼Â¤Ï¡¢ºÇ½é¤Î 16 ¥Ğ¥¤¥È¤·¤«É¬Í×¤Ç¤Ê¤¤) */
+  /* ãƒœãƒ¼ãƒˆã®æƒ…å ± */
+  UB		sa_prom[32];	/* SAPROM ã®å†…å®¹ã®ã‚³ãƒ”ãƒ¼(å®Ÿã¯ã€æœ€åˆã® 16 ãƒã‚¤ãƒˆã—ã‹å¿…è¦ã§ãªã„) */
 
-  /* Á÷¿®¥Ğ¥Ã¥Õ¥¡¾ğÊó */
+  /* é€ä¿¡ãƒãƒƒãƒ•ã‚¡æƒ…å ± */
   B		tx_busy;
   B		tx_use;
   B		tx_new;
   B		tx_next;
   B		tx_len[MAX_TX_BUF];
   
-  /* ¼õ¿®¥Ğ¥Ã¥Õ¥¡¾ğÊó */
+  /* å—ä¿¡ãƒãƒƒãƒ•ã‚¡æƒ…å ± */
   B		rx_next;
 
-  B		word_access;	/* 16bit/8bit ¤Î¼±ÊÌ(8bit ¤Ï»È¤¨¤Ê¤¤¤È¤¤¤¦¤³¤È¤Ë¤·¤Æ¤¤¤ë) */
+  B		word_access;	/* 16bit/8bit ã®è­˜åˆ¥(8bit ã¯ä½¿ãˆãªã„ã¨ã„ã†ã“ã¨ã«ã—ã¦ã„ã‚‹) */
   
   /* statistics */
   UW		tx_count;
@@ -223,10 +223,10 @@ struct ne2000_device
   UW		rx_error;
 
 
-  /* ³ä¤ê¹ş¤ßÈÖ¹æ */
+  /* å‰²ã‚Šè¾¼ã¿ç•ªå· */
   UB		intr_number;
 
-  /* Á÷¼õ¿®³ä¤ê¹ş¤ß¥Ï¥ó¥É¥é */
+  /* é€å—ä¿¡å‰²ã‚Šè¾¼ã¿ãƒãƒ³ãƒ‰ãƒ© */
   FP		intr_handler;
 };
 

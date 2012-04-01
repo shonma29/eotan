@@ -1,4 +1,4 @@
-/*	ITRON ��ȥ�åפ򤫤��ƸƤӽФ�(�����ƥॳ����)
+/*	ITRON をトラップをかけて呼び出す(システムコール)
  *
  */
 
@@ -7,9 +7,9 @@
 		, call_posix
 #endif
 	
-/* call_syscall: ITRON �����ƥॳ����롼����
+/* call_syscall: ITRON システムコールルーチン
  *
- * . �����å�����:
+ * . スタック形式:
  *
  *		+--------------------+
  *		|    return addr     |	+4
@@ -38,9 +38,9 @@ call_syscall:
 
 
 #if 0
-/* call_posix: POSIX �����ƥॳ����롼����(obsolute)
+/* call_posix: POSIX システムコールルーチン(obsolute)
  *
- * . �����å�����:
+ * . スタック形式:
  *
  *		+--------------------+
  *		|    return addr     |	+4

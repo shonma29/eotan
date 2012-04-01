@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -22,7 +22,7 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
  * added the parameter structure on.
  *
  * Revision 1.1  1997/08/31 13:10:50  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  *
@@ -31,7 +31,7 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 
 #include "../lowlib.h"
 
-/* ¼Âºİ¤ÎÆ°ºî¤Ï usleep ¤È¤¹¤ë */
+/* å®Ÿéš›ã®å‹•ä½œã¯ usleep ã¨ã™ã‚‹ */
 int
 psys_sleep (void *argp)
 {
@@ -47,7 +47,7 @@ psys_sleep (void *argp)
     return E_OK;
   }
 
-  /* CLOCK ¤Ø¤Î ROUNDUP */
+  /* CLOCK ã¸ã® ROUNDUP */
   usecond = (usecond +  CLOCK - 1) / CLOCK;
 
   dly_tsk(usecond);

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -15,33 +15,33 @@ static char rcs[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/
 /* 
  * $Log: ne2000low.c,v $
  * Revision 1.10  1999/03/07 12:50:25  night
- * ne2000 ¥¢¥À¥×¥¿¤Ø¤Î½ñ¤­¹ş¤ß½èÍı¤ÎÊÑ¹¹¡£
+ * ne2000 ã‚¢ãƒ€ãƒ—ã‚¿ã¸ã®æ›¸ãè¾¼ã¿å‡¦ç†ã®å¤‰æ›´ã€‚
  *
  * Revision 1.9  1999/03/04 16:23:06  night
- * copy_to_ne2000() ¤ÎºîÀ®¡£copy_to_ne2000() ¤Ï¡¢ne2000 ÆâÉô¤Î¥Ğ¥Ã
- * ¥Õ¥¡¤ØÁ÷¿®¤·¤¿¤¤¥Ç¡¼¥¿¤ò¥³¥Ô¡¼¤¹¤ë¤¿¤á¤Î´Ø¿ô¡£
+ * copy_to_ne2000() ã®ä½œæˆã€‚copy_to_ne2000() ã¯ã€ne2000 å†…éƒ¨ã®ãƒãƒƒ
+ * ãƒ•ã‚¡ã¸é€ä¿¡ã—ãŸã„ãƒ‡ãƒ¼ã‚¿ã‚’ã‚³ãƒ”ãƒ¼ã™ã‚‹ãŸã‚ã®é–¢æ•°ã€‚
  *
  * Revision 1.8  1999/03/04 15:55:00  night
- * write_frame() ¤ÎÃæ¿È¤òºîÀ®(º£¤Ş¤Ç¤Î¤Ï¼Î¤Æ¤¿)¡£
+ * write_frame() ã®ä¸­èº«ã‚’ä½œæˆ(ä»Šã¾ã§ã®ã¯æ¨ã¦ãŸ)ã€‚
  *
  * Revision 1.7  1999/03/02 15:21:21  night
- * ½é´ü²½½èÍı¤ÎÊÑ¹¹¡£
+ * åˆæœŸåŒ–å‡¦ç†ã®å¤‰æ›´ã€‚
  *
  * Revision 1.6  1999/02/28 22:15:27  night
- * ´Ø¿ô reset_adaptor() ¤ÎÊÑ¹¹¡£
+ * é–¢æ•° reset_adaptor() ã®å¤‰æ›´ã€‚
  *
  * Revision 1.5  1997/11/10 14:44:58  night
- * 1 ¥Õ¥ì¡¼¥àÊ¬¤Î¥Ç¡¼¥¿¤Î½ñ¤­¹ş¤ß½èÍı¤ÎÄÉ²Ã¡£
+ * 1 ãƒ•ãƒ¬ãƒ¼ãƒ åˆ†ã®ãƒ‡ãƒ¼ã‚¿ã®æ›¸ãè¾¼ã¿å‡¦ç†ã®è¿½åŠ ã€‚
  *
  * Revision 1.3  1997/10/28 14:45:05  night
- * port_table[] ¤Î·¿¤ò UW ¤«¤é W ¤ËÊÑ¹¹¡£
+ * port_table[] ã®å‹ã‚’ UW ã‹ã‚‰ W ã«å¤‰æ›´ã€‚
  *
  * Revision 1.2  1997/10/28 12:48:00  night
- * Ê¸»ú¥³¡¼¥É¤ò SJIS ¤«¤é EUC ¤ËÊÑ¹¹¡£
- * probe ½èÍı¤ÎÄÉ²Ã¡£
+ * æ–‡å­—ã‚³ãƒ¼ãƒ‰ã‚’ SJIS ã‹ã‚‰ EUC ã«å¤‰æ›´ã€‚
+ * probe å‡¦ç†ã®è¿½åŠ ã€‚
  *
  * Revision 1.1  1997/05/06 12:43:31  night
- * ºÇ½é¤ÎÅĞÏ¿
+ * æœ€åˆã®ç™»éŒ²
  *
  *
  */
@@ -80,14 +80,14 @@ extern ER	copy_to_ne2000 (struct ne2000_device *dev, B *buf, UH tx_buf, W buflen
 
 
 
-/* NE2000 Ethernet ¥¢¥À¥×¥¿¤¬Â¸ºß¤·¤Æ¤¤¤ë¤«¤É¤¦¤«¤ò¥Á¥§¥Ã¥¯¤¹¤ë
+/* NE2000 Ethernet ã‚¢ãƒ€ãƒ—ã‚¿ãŒå­˜åœ¨ã—ã¦ã„ã‚‹ã‹ã©ã†ã‹ã‚’ãƒã‚§ãƒƒã‚¯ã™ã‚‹
  */
 ER
 probe (struct ne2000_device *dev)
 {
   W	counter;
 
-  /* PORT ¥¢¥É¥ì¥¹¤Î¸¡½Ğ */
+  /* PORT ã‚¢ãƒ‰ãƒ¬ã‚¹ã®æ¤œå‡º */
   for (counter = 0; port_table[counter] > 0; counter++)
     {
       if (port_table[counter] != 0)
@@ -103,7 +103,7 @@ probe (struct ne2000_device *dev)
       return (E_DEV);
     }
 
-  port_table[counter] = 0;	/* ¤³¤Î¥¢¥É¥ì¥¹¤Ï¡¢¤¹¤Ç¤ËÅĞÏ¿¤µ¤ì¤¿¤³¤È¤ò¥Ş¡¼¥¯ */
+  port_table[counter] = 0;	/* ã“ã®ã‚¢ãƒ‰ãƒ¬ã‚¹ã¯ã€ã™ã§ã«ç™»éŒ²ã•ã‚ŒãŸã“ã¨ã‚’ãƒãƒ¼ã‚¯ */
 
   return (E_OK);
 }
@@ -165,7 +165,7 @@ reset_adaptor (struct ne2000_device *dev)
 }
 
 
-/* NE2000 ¥¢¥À¥×¥¿¤Ë¤Ä¤¤¤Æ¤Î¾ğÊó¤Î½é´ü²½
+/* NE2000 ã‚¢ãƒ€ãƒ—ã‚¿ã«ã¤ã„ã¦ã®æƒ…å ±ã®åˆæœŸåŒ–
  */
 ER
 init_device (struct ne2000_device *dev)
@@ -178,16 +178,16 @@ init_device (struct ne2000_device *dev)
   dev->intr_number  = NE2000_DEFAULT_INTR;
   dev->intr_handler = ne2000_interrupt_handler;
 
-  /* ³ä¤ê¹ş¤ß¥Ï¥ó¥É¥é¤ÎÀßÄê
+  /* å‰²ã‚Šè¾¼ã¿ãƒãƒ³ãƒ‰ãƒ©ã®è¨­å®š
    */
   set_interrupt_handler (dev, dev->intr_number,dev->intr_handler); 
 
 
-  /* ³Æ¼ï¥ì¥¸¥¹¥¿¤ÎÀßÄê */
+  /* å„ç¨®ãƒ¬ã‚¸ã‚¹ã‚¿ã®è¨­å®š */
   select_page0 (dev);
   outb (IO_BASE (dev) + EP0_DCFG, 0x49);
 
-  outb (IO_BASE (dev) + EP0_RCNTLO, 0x00);	/* ¥ê¥â¡¼¥È¥«¥¦¥ó¥¿¥ê¥»¥Ã¥È */
+  outb (IO_BASE (dev) + EP0_RCNTLO, 0x00);	/* ãƒªãƒ¢ãƒ¼ãƒˆã‚«ã‚¦ãƒ³ã‚¿ãƒªã‚»ãƒƒãƒˆ */
   outb (IO_BASE (dev) + EP0_RCNTHI, 0x00);
   
   outb (IO_BASE (dev) + EP0_RXCR, E8390_RXOFF);
@@ -200,9 +200,9 @@ init_device (struct ne2000_device *dev)
   outb (IO_BASE (dev) + EP0_STOPPG, RX_PAGE_END);
   outb (IO_BASE (dev) + EP0_BOUNDARY, RX_PAGE_START);
 
-  outb (IO_BASE (dev) + EP0_ISR, 0xff); /* ³ä¤ê¹ş¤ß¥¹¥Æ¡¼¥¿¥¹¥ê¥»¥Ã¥È */
+  outb (IO_BASE (dev) + EP0_ISR, 0xff); /* å‰²ã‚Šè¾¼ã¿ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ãƒªã‚»ãƒƒãƒˆ */
 
-  /* ³ä¤ê¹ş¤ßµö²Ä */
+  /* å‰²ã‚Šè¾¼ã¿è¨±å¯ */
   outb (IO_BASE (dev) + EP0_IMR, EPISR_RX | EPISR_TX | EPISR_RX_ERR | EPISR_TX_ERR | EPISR_OVER );
 
   select_page1 (dev);
@@ -211,19 +211,19 @@ init_device (struct ne2000_device *dev)
 
   select_page0 (dev);
 
-  /* ¥Ñ¥±¥Ã¥È¼õ¿®µö²Ä ¡õ ¥Ö¥í¡¼¥É¥­¥ã¥¹¥È¥Ñ¥±¥Ã¥Èµö²Ä */
+  /* ãƒ‘ã‚±ãƒƒãƒˆå—ä¿¡è¨±å¯ ï¼† ãƒ–ãƒ­ãƒ¼ãƒ‰ã‚­ãƒ£ã‚¹ãƒˆãƒ‘ã‚±ãƒƒãƒˆè¨±å¯ */
   outb (IO_BASE (dev) + EP0_RXCR, 0x04);
 
 
-  outb (IO_BASE (dev) + EP0_TXCR, 0x00);					/* Á÷¿®µö²Ä */
-  outb (IO_BASE (dev) + E8390_CMD, E8390_NODMA + E8390_PAGE0 + E8390_START);	/* Æ°ºî³«»Ï */
+  outb (IO_BASE (dev) + EP0_TXCR, 0x00);					/* é€ä¿¡è¨±å¯ */
+  outb (IO_BASE (dev) + E8390_CMD, E8390_NODMA + E8390_PAGE0 + E8390_START);	/* å‹•ä½œé–‹å§‹ */
 
   return (E_OK);
 }
 
 
 
-/* init_ne2000 --- NE2000 ¥Ü¡¼¥É¤Î½é´ü²½
+/* init_ne2000 --- NE2000 ãƒœãƒ¼ãƒ‰ã®åˆæœŸåŒ–
  * 
  */
 W
@@ -238,20 +238,20 @@ init_adaptor (struct ne2000_device *dev)
 
   outb (IO_CMD (dev), E8390_PAGE0 + E8390_START + E8390_NODMA);	/* page0 */
 
-  /* ¥³¥Ş¥ó¥É¤òÀßÄê */
-  outb (IO_BASE (dev) + EP0_DCFG, 0x48);	/* Byte Ëè¤Î¥¢¥¯¥»¥¹¤ò */
-						/* »ØÄê */
-  outb (IO_BASE (dev) + EP0_RCNTLO, 0x00);	/* ¥«¥¦¥ó¥È¥ì¥¸¥¹¥¿¤ò */
-						/* ¥¯¥ê¥¢ */
+  /* ã‚³ãƒãƒ³ãƒ‰ã‚’è¨­å®š */
+  outb (IO_BASE (dev) + EP0_DCFG, 0x48);	/* Byte æ¯ã®ã‚¢ã‚¯ã‚»ã‚¹ã‚’ */
+						/* æŒ‡å®š */
+  outb (IO_BASE (dev) + EP0_RCNTLO, 0x00);	/* ã‚«ã‚¦ãƒ³ãƒˆãƒ¬ã‚¸ã‚¹ã‚¿ã‚’ */
+						/* ã‚¯ãƒªã‚¢ */
   outb (IO_BASE (dev) + EP0_RCNTHI, 0x00);
-  outb (IO_BASE (dev) + EP0_IMR, 0x00);		/* ³ä¤ê¹ş¤ß¤ò¥Ş¥¹¥¯ */
+  outb (IO_BASE (dev) + EP0_IMR, 0x00);		/* å‰²ã‚Šè¾¼ã¿ã‚’ãƒã‚¹ã‚¯ */
   outb (IO_BASE (dev) + EP0_ISR, 0xff);
-  outb (IO_BASE (dev) + EP0_RXCR, E8390_RXOFF);	/* ¼õ¿®¤ò off */
-  outb (IO_BASE (dev) + EP0_TXCR, E8390_TXOFF);	/* Á÷¿®¤ò off */
+  outb (IO_BASE (dev) + EP0_RXCR, E8390_RXOFF);	/* å—ä¿¡ã‚’ off */
+  outb (IO_BASE (dev) + EP0_TXCR, E8390_TXOFF);	/* é€ä¿¡ã‚’ off */
 
 
-  /* SAPROM ¤ÎÆâÍÆ¤òÆÉ¤ß¹ş¤à */
-  outb (IO_BASE (dev) + EP0_RCNTLO, 32);	/* Å¾Á÷¥Ğ¥¤¥È¿ô */
+  /* SAPROM ã®å†…å®¹ã‚’èª­ã¿è¾¼ã‚€ */
+  outb (IO_BASE (dev) + EP0_RCNTLO, 32);	/* è»¢é€ãƒã‚¤ãƒˆæ•° */
   outb (IO_BASE (dev) + EP0_RCNTHI, 0);
   outb (IO_BASE (dev) + EP0_RSARLO, 0);
   outb (IO_BASE (dev) + EP0_RSARHI, 0);
@@ -304,11 +304,11 @@ init_adaptor (struct ne2000_device *dev)
 
 
 
-/* read_frame - ¥Ç¡¼¥¿¤ò 1 ¥Õ¥ì¡¼¥àÊ¬ÆÉ¤ß¹ş¤à
+/* read_frame - ãƒ‡ãƒ¼ã‚¿ã‚’ 1 ãƒ•ãƒ¬ãƒ¼ãƒ åˆ†èª­ã¿è¾¼ã‚€
  *
- * dev - ¥Ç¡¼¥¿¤òÆÉ¤ß¹ş¤à¥¢¥À¥×¥¿
- * buf - ¥Ç¡¼¥¿¤òÆş¤ì¤Æ¤ª¤¯¥Ğ¥Ã¥Õ¥¡
- * buflen - ÆÉ¤ß¹ş¤ó¤À¥Ç¡¼¥¿¤ÎÄ¹¤µ
+ * dev - ãƒ‡ãƒ¼ã‚¿ã‚’èª­ã¿è¾¼ã‚€ã‚¢ãƒ€ãƒ—ã‚¿
+ * buf - ãƒ‡ãƒ¼ã‚¿ã‚’å…¥ã‚Œã¦ãŠããƒãƒƒãƒ•ã‚¡
+ * buflen - èª­ã¿è¾¼ã‚“ã ãƒ‡ãƒ¼ã‚¿ã®é•·ã•
  *
  */
 ER
@@ -318,7 +318,7 @@ read_frame (struct ne2000_device *dev, B *buf, W *buflen)
 }
 
 
-/* ne2000_transmit - NE2000 ¤ËÂĞ¤·¤ÆÁ÷¿®Í×µá¤ò½Ğ¤¹
+/* ne2000_transmit - NE2000 ã«å¯¾ã—ã¦é€ä¿¡è¦æ±‚ã‚’å‡ºã™
  *
  *
  *
@@ -329,70 +329,70 @@ ne2000_transmit (struct ne2000_device *dev)
 {
   UH	length;
 
-  length = dev->tx_len[ dev->tx_next ];	/* Á÷¿®¤¹¤ë¥Ç¡¼¥¿¤ÎÄ¹¤µ¤òÂåÆş */
+  length = dev->tx_len[ dev->tx_next ];	/* é€ä¿¡ã™ã‚‹ãƒ‡ãƒ¼ã‚¿ã®é•·ã•ã‚’ä»£å…¥ */
 
   printf ("ne2000_transmit: %d\n", __LINE__);
   /* select page 0 */
   select_page0 (dev);
 
-  /* Á÷¿®¥Ğ¥Ã¥Õ¥¡¥¹¥¿¡¼¥È¥Ú¡¼¥¸ÀßÄê */
+  /* é€ä¿¡ãƒãƒƒãƒ•ã‚¡ã‚¹ã‚¿ãƒ¼ãƒˆãƒšãƒ¼ã‚¸è¨­å®š */
   outb (IO_CMD (dev) + EP0_TPSR, TX_PAGE_START + dev->tx_next * NE2000_PAGE_SIZE);
 
-  /* Á÷¿®Ä¹ ÀßÄê */
+  /* é€ä¿¡é•· è¨­å®š */
   outb (IO_CMD (dev) + EP0_TCNTLO, length & 0xff);
   outb (IO_CMD (dev) + EP0_TCNTHI, length >> 8);
 
-  /* Á÷¿®Í×µáÈ¯¹Ô */
+  /* é€ä¿¡è¦æ±‚ç™ºè¡Œ */
   outb (IO_CMD (dev), E8390_NODMA | E8390_PAGE0 | E8390_TRANS | E8390_START);
 
   dev->tx_busy = 1;
 
   printf ("ne2000_transmit: %d\n", __LINE__);
-  /* Ì¤Á÷¿®¥Ğ¥Ã¥Õ¥¡¥Ö¥í¥Ã¥¯¤ò¤Ä¤®¤Î¥Ö¥í¥Ã¥¯¤Ø */
+  /* æœªé€ä¿¡ãƒãƒƒãƒ•ã‚¡ãƒ–ãƒ­ãƒƒã‚¯ã‚’ã¤ãã®ãƒ–ãƒ­ãƒƒã‚¯ã¸ */
   dev->tx_next++;
-  if (dev->tx_next == MAX_TX_BUF ) dev->tx_next = 0; /* Á÷¿®¥Ğ¥Ã¥Õ¥¡¤ò£°¤Ø */
+  if (dev->tx_next == MAX_TX_BUF ) dev->tx_next = 0; /* é€ä¿¡ãƒãƒƒãƒ•ã‚¡ã‚’ï¼ã¸ */
 }
 
 
 
-/* write_frame - ¥Ç¡¼¥¿¤ò 1 ¥Õ¥ì¡¼¥àÊ¬Á÷¿®¤¹¤ë¡£
+/* write_frame - ãƒ‡ãƒ¼ã‚¿ã‚’ 1 ãƒ•ãƒ¬ãƒ¼ãƒ åˆ†é€ä¿¡ã™ã‚‹ã€‚
  *
- *	Á÷¿®½èÍı¤Ï¡¢¼¡¤Î¤è¤¦¤Ë¹Ô¤¦¡£
- *	1) Á÷¿®Ãæ¤«¤É¤¦¤«¤Î¥Á¥§¥Ã¥¯(Á÷¿®Ãæ¤Ê¤é¤Ğ¡¢¥¨¥é¡¼¤ÇÈ´¤±¤ë)
- *	2) ¥¢¥À¥×¥¿¤ÎÁ÷¿®¥Ğ¥Ã¥Õ¥¡¤ËÌ¤Á÷¿®¤Î¥Ğ¥Ã¥Õ¥¡¤¬¤¢¤ë¤«¤É¤¦¤«¤ò¥Á¥§¥Ã¥¯
- *	   (¤¢¤ë¤Ê¤é¤Ğ¡¢¤½¤ÎÆâÍÆ¤òÁ÷¿®)
- *	3) ¥¢¥À¥×¥¿¤ÎÁ÷¿®ÍÑ¤Î¥Ğ¥Ã¥Õ¥¡¤Ë¶õ¤­¤¬¤¢¤ë¤«¤ò¥Á¥§¥Ã¥¯
- *	   (¶õ¤­¤¬¤Ê¤±¤ì¤Ğ¡¢¥¨¥é¡¼¤ÇÈ´¤±¤ë)
- *	4) Á÷¿®¤¹¤ë¡£
+ *	é€ä¿¡å‡¦ç†ã¯ã€æ¬¡ã®ã‚ˆã†ã«è¡Œã†ã€‚
+ *	1) é€ä¿¡ä¸­ã‹ã©ã†ã‹ã®ãƒã‚§ãƒƒã‚¯(é€ä¿¡ä¸­ãªã‚‰ã°ã€ã‚¨ãƒ©ãƒ¼ã§æŠœã‘ã‚‹)
+ *	2) ã‚¢ãƒ€ãƒ—ã‚¿ã®é€ä¿¡ãƒãƒƒãƒ•ã‚¡ã«æœªé€ä¿¡ã®ãƒãƒƒãƒ•ã‚¡ãŒã‚ã‚‹ã‹ã©ã†ã‹ã‚’ãƒã‚§ãƒƒã‚¯
+ *	   (ã‚ã‚‹ãªã‚‰ã°ã€ãã®å†…å®¹ã‚’é€ä¿¡)
+ *	3) ã‚¢ãƒ€ãƒ—ã‚¿ã®é€ä¿¡ç”¨ã®ãƒãƒƒãƒ•ã‚¡ã«ç©ºããŒã‚ã‚‹ã‹ã‚’ãƒã‚§ãƒƒã‚¯
+ *	   (ç©ºããŒãªã‘ã‚Œã°ã€ã‚¨ãƒ©ãƒ¼ã§æŠœã‘ã‚‹)
+ *	4) é€ä¿¡ã™ã‚‹ã€‚
  *
  */
 ER
 write_frame (struct ne2000_device *dev, B *buf, W buflen)
 {
-  UH	tx_buf;	/* ¥¢¥À¥×¥¿¤ÎÁ÷¿®¥Ğ¥Ã¥Õ¥¡¤Î¥¤¥ó¥Ç¥Ã¥¯¥¹ */
+  UH	tx_buf;	/* ã‚¢ãƒ€ãƒ—ã‚¿ã®é€ä¿¡ãƒãƒƒãƒ•ã‚¡ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ */
 
 
   if (buflen > MAX_MTU_LENGTH)
     {
-      /* ¥Ñ¥é¥á¡¼¥¿¤¬ÊÑ */
+      /* ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãŒå¤‰ */
       return (E_PAR);
     }
 
   if (dev->tx_use > 0)
     {
-      /* Ì¤Á÷¿®¥Ğ¥Ã¥Õ¥¡¤¬¤¢¤Ã¤¿¤Î¤Ç¡¢Á÷¿®¤¹¤ë */
+      /* æœªé€ä¿¡ãƒãƒƒãƒ•ã‚¡ãŒã‚ã£ãŸã®ã§ã€é€ä¿¡ã™ã‚‹ */
       ne2000_transmit (dev);
     }
 
   if (dev->tx_busy == 1)
     {
-      /* ¥¢¥À¥×¥¿¤Ï¡¢Á÷¿®Ãæ */
+      /* ã‚¢ãƒ€ãƒ—ã‚¿ã¯ã€é€ä¿¡ä¸­ */
       return (E_DEV);
     }
 
   if (dev->tx_use >= MAX_TX_BUF)
     {
-      /* ¶õ¤­¥Ğ¥Ã¥Õ¥¡¤¬¤Ê¤¤ */
+      /* ç©ºããƒãƒƒãƒ•ã‚¡ãŒãªã„ */
       return (E_DEV);
     }
 
@@ -428,7 +428,7 @@ printf ("%s: %d\n", __FILE__, __LINE__);
 
 
 
-/* copy_from_ne2000 --- NE2000 ¤Î¥Ğ¥Ã¥Õ¥¡¤«¤é¼õ¿®¤·¤¿¥Ç¡¼¥¿¤ò¥³¥Ô¡¼¤¹¤ë
+/* copy_from_ne2000 --- NE2000 ã®ãƒãƒƒãƒ•ã‚¡ã‹ã‚‰å—ä¿¡ã—ãŸãƒ‡ãƒ¼ã‚¿ã‚’ã‚³ãƒ”ãƒ¼ã™ã‚‹
  *
  *
  */
@@ -440,13 +440,13 @@ copy_from_ne2000 (struct ne2000_device *dev, B *buf, UH tx_buf, W buflen)
 
 
 
-/* copy_to_ne2000 --- NE2000 ¤Î¥Ğ¥Ã¥Õ¥¡¥ØÁ÷¿®¤·¤¿¤¤¥Ç¡¼¥¿¤ò¥³¥Ô¡¼¤¹¤ë
+/* copy_to_ne2000 --- NE2000 ã®ãƒãƒƒãƒ•ã‚¡ãƒ˜é€ä¿¡ã—ãŸã„ãƒ‡ãƒ¼ã‚¿ã‚’ã‚³ãƒ”ãƒ¼ã™ã‚‹
  *
  */
 ER
 copy_to_ne2000 (struct ne2000_device *dev, B *buf, UH tx_buf, W buflen)
 {
-  W 	maxwait = 100; /* about 120us¤é¤·¤¤ */
+  W 	maxwait = 100; /* about 120usã‚‰ã—ã„ */
   UB	savebyte[2];
 
   /* select page 0 */
@@ -455,18 +455,18 @@ copy_to_ne2000 (struct ne2000_device *dev, B *buf, UH tx_buf, W buflen)
   /* Reset remote DMA complete flag. */
   outb (IO_BASE (dev) + EP0_ISR, EPISR_RDC);
 
-  /* Å¾Á÷¥Ğ¥¤¥È¿ô¤òÀßÄê */
+  /* è»¢é€ãƒã‚¤ãƒˆæ•°ã‚’è¨­å®š */
   outb (IO_BASE (dev) + EP0_RCNTLO, buflen & 0xff);
   outb (IO_BASE (dev) + EP0_RCNTHI, buflen >> 8);
 
-  /* DP8390¤Î¥í¡¼¥«¥ë¥á¥â¥ê¶õ´Ö¤Î¥¢¥É¥ì¥¹¤òÀßÄê */
+  /* DP8390ã®ãƒ­ãƒ¼ã‚«ãƒ«ãƒ¡ãƒ¢ãƒªç©ºé–“ã®ã‚¢ãƒ‰ãƒ¬ã‚¹ã‚’è¨­å®š */
   outb (IO_BASE (dev) + EP0_RSARLO, tx_buf & 0xff);
   outb (IO_BASE (dev) + EP0_RSARHI, tx_buf >> 8);
 
-  /* DMA½ñ¤­¹ş¤ßÅ¾Á÷³«»Ï */
+  /* DMAæ›¸ãè¾¼ã¿è»¢é€é–‹å§‹ */
   outb (IO_CMD (dev), (E8390_RWRITE + E8390_PAGE0 + E8390_START));
 
-  /* ¥Ç¡¼¥¿Å¾Á÷ */
+  /* ãƒ‡ãƒ¼ã‚¿è»¢é€ */
   if (buflen > 1)
     {
       W	i;
@@ -483,14 +483,14 @@ copy_to_ne2000 (struct ne2000_device *dev, B *buf, UH tx_buf, W buflen)
       buflen &=1;
     }
       
-  /* »Ä¤ê1¥Ğ¥¤¥È¤Î¾ì¹ç¡¢0 ¤òÉÕ²Ã¤·¤Æ¥³¥Ô¡¼ */
+  /* æ®‹ã‚Š1ãƒã‚¤ãƒˆã®å ´åˆã€0 ã‚’ä»˜åŠ ã—ã¦ã‚³ãƒ”ãƒ¼ */
   if (buflen==1){
     savebyte[0] = *(buf - 1);
     savebyte[1] = 0;
     outw (IO_DATA (dev), *(UH *)savebyte);
   }
 
-  /* Å¾Á÷´°Î»¤òÂÔ¤Ä */
+  /* è»¢é€å®Œäº†ã‚’å¾…ã¤ */
   while ((inb (IO_BASE (dev) + EP0_ISR) & EPISR_RDC) && (--maxwait))
     {
       ;
@@ -509,7 +509,7 @@ copy_to_ne2000 (struct ne2000_device *dev, B *buf, UH tx_buf, W buflen)
 
 
 
-/* page 0 ¤ÎÁªÂò 
+/* page 0 ã®é¸æŠ 
  */
 void
 select_page0 (struct ne2000_device *dev)
@@ -518,7 +518,7 @@ select_page0 (struct ne2000_device *dev)
 }
 
 
-/* page 1 ¤ÎÁªÂò 
+/* page 1 ã®é¸æŠ 
  */
 void
 select_page1 (struct ne2000_device *dev)

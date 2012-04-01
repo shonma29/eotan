@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -14,18 +14,18 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 /*
  * $Log: entry.c,v $
  * Revision 1.1  1996/11/11 13:36:05  night
- * IBM PC �Ǥؤκǽ����Ͽ
+ * IBM PC 版への最初の登録
  *
  * ----------------
  *
  * Revision 1.3  1995/09/21  15:52:56  night
- * �������ե��������Ƭ�� Copyright notice ������ɲá�
+ * ソースファイルの先頭に Copyright notice 情報を追加。
  *
  * Revision 1.2  1995/03/18  14:51:57  night
- * �����ѹ�
+ * 註釈の変更
  *
  * Revision 1.1  1995/02/20  15:16:41  night
- * �Ϥ���Ƥ���Ͽ
+ * はじめての登録
  *
  *
  */
@@ -34,54 +34,54 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 
 
 /*
- * POSIX �����ƥॳ����Υ���ȥ�ݥ����
+ * POSIX システムコールのエントリポイント
  *
- * ������
- *	sysno	�����ƥॳ�����ֹ�
- *	uargp	�����ƥॳ����ΰ���(��)�򼨤��ݥ���
- *	errnop	errno ������뤿��Υݥ���
- *
- *
- * �֤��͡�
- *	�����ƥॳ����η��
- *
- * ��ǽ��
- *	���δؿ��ϡ�POSIX �����ƥॳ�����������Ȥʤ롣
- *	���� stack_top �ϥ桼���ץ������Υ����å���ؤ���
- *	stack_top ����ϡ����Τ褦�ʹ�¤���ġ�
+ * 引数：
+ *	sysno	システムコール番号
+ *	uargp	システムコールの引数(群)を示すポインタ
+ *	errnop	errno を入れるためのポインタ
  *
  *
- *	�桼���ץ�����ब�ȥ�åפ򤫤���Ȥ��ˤϡ�
- *	LOWLIB �˽�����ؼ����뤿��ˡ��ƥ쥸�����˼����ͤ�����Ƥ����� 
- *	ITRON �����ͥ� (���ʤ�����ȥ�åפ������ä��Ȥ��������˰��ֺ�
- *	��˽���������ʬ) �ϡ�AX, BX, CX, DX �γƥ쥸���������Ƥϴ���
- *	���Ƥ��ʤ��� ñ�� ITRON �����ƥॳ����ˤ�äƤ��餫������ꤵ
- *	��Ƥ����ȥ�åץϥ�ɥ�򥳡��뤹������Ǥ��롣
+ * 返り値：
+ *	システムコールの結果
  *
- *	AX	�����ƥॳ�����ֹ�
- *	BX	�����ƥॳ����ΰ�����ؤ��ݥ���
- *	CX	errno ���ͤ�����뤿����ΰ�򼨤��ݥ���
- *	DX	unused (̤����)
+ * 機能：
+ *	この関数は、POSIX システムコールの入り口となる。
+ *	引数 stack_top はユーザプログラムのスタックを指す。
+ *	stack_top の先は、次のような構造をもつ。
  *
- *	�����ƥॳ���뤬��λ�����Ȥ��ˤϡ������Υ쥸�����ˤ��̤��ͤ�
- *	���롣
  *
- *	AX	�����ƥॳ����μ¹Է��(�֤���) ...... errno ���ͤǤ�
- *		�ʤ���
- *	BX	����
- *	CX	����
- *	DX	����
+ *	ユーザプログラムがトラップをかけるときには、
+ *	LOWLIB に処理を指示するために、各レジスタに次の値を入れておく。 
+ *	ITRON カーネル (すなわち、トラップがかかったときに本当に一番最
+ *	初に処理する部分) は、AX, BX, CX, DX の各レジスタの内容は関知
+ *	していない。 単に ITRON システムコールによってあらかじめ指定さ
+ *	れていたトラップハンドラをコールするだけである。
  *
- *	�����ƥॳ����ν�������λ����ȡ�ITRON �����ͥ�Υȥ�åפ�����
- *	����롣���ΤȤ���AX �쥸����(�ȥ�åפν������)���ͤ����򥻥�
- *	�Ȥ��롣
+ *	AX	システムコール番号
+ *	BX	システムコールの引数を指すポインタ
+ *	CX	errno の値を入れるための領域を示すポインタ
+ *	DX	unused (未使用)
  *
- *	�ʤ����桼���ץ�����ब��POSIX �����ƥॳ�����Ƥ֤Ȥ�(�ȥ��
- *	�פ�¹Ԥ����Ȥ�)�ˤ� �������ϡ��ڤ꤫���ʤ������Τ��ᡢ����
- *	�˥ݥ��󥿤����ä���硢���Τޤޥ��������Ǥ��롣���̤ʽ�����ɬ
- *	�פ��ʤ�(������󡢥����ƥॳ����ν������̤β��۶��֤��ۤʤ�
- *	�Ƥ��륿�������Ԥ����ˤϡ��ºݤ�ʪ�����ɥ쥹���ۤʤäƤ��뤿�ᡢ
- *	���̤ʽ�����ɬ�פˤʤ롣
+ *	システムコールが終了したときには、これらのレジスタには別の値が
+ *	入る。
+ *
+ *	AX	システムコールの実行結果(返り値) ...... errno の値では
+ *		ない。
+ *	BX	不定
+ *	CX	不定
+ *	DX	不定
+ *
+ *	システムコールの処理が終了すると、ITRON カーネルのトラップの入口
+ *	に戻る。そのとき、AX レジスタ(トラップの処理結果)の値だけをセッ
+ *	トする。
+ *
+ *	なお、ユーザプログラムが、POSIX システムコールを呼ぶとき(トラッ
+ *	プを実行したとき)には タスクは、切りかわらない。そのため、引数
+ *	にポインタがあった場合、そのままアクセスできる。特別な処理は必
+ *	要がない(もちろん、システムコールの処理を別の仮想空間が異なっ
+ *	ているタスクが行う場合には、実際の物理アドレスが異なってくるため、
+ *	特別な処理が必要になる。
  *
  */
 int
@@ -90,8 +90,8 @@ posix_entry (int sysno, void *uargp, int *errnop)
   int	result;
 
   /*
-   * �����ƥॳ�����ֹ�Υ����å���
-   * �⤷�������ƥॳ�����ֹ椬
+   * システムコール番号のチェック。
+   * もし、システムコール番号が
    */
   if ((sysno < 0) || (sysno > nsyscall))
     {
@@ -100,18 +100,18 @@ posix_entry (int sysno, void *uargp, int *errnop)
     }
 
   /*
-   * POSIX API ��ô������ƴؿ���ƤӽФ���
+   * POSIX API を担当する各関数を呼び出す。
    */
   result = (int)(syscalls[sysno].func)(uargp);
   
   /*
-   * �����ƥॳ����ν�������λ������
+   * システムコールの処理が終了した。
    *
-   * ����ѿ� errno �ˤϥ����ƥॳ����η�� (���顼�ֹ�)�����äƤ���
-   * �����桼�����Ϥ�����ˡ��ݥ��� errnop �������ΰ���ͤ�����롣
-   * (LOWLIB �ϳƥץ������ˤҤȤĤҤȤ��̸Ĥ˥ǡ����ΰ���ġ����Τ�
-   * �ᡢerrno ���ͤ�ƥץ������ˤҤȤĤ���¸�ߤ��Ƥ��롣�����顢errno
-   * �ϡ��ץ��������Ȥ��̤��ͤ��Ĥ��Ȥ��Ǥ���)
+   * 大域変数 errno にはシステムコールの結果 (エラー番号)が入っている
+   * それをユーザに渡すために、ポインタ errnop が示す領域に値を入れる。
+   * (LOWLIB は各プロセスにひとつひとつ別個にデータ領域をもつ。そのた
+   * め、errno の値も各プロセスにひとつずつ存在している。だから、errno
+   * は、プロセスごとに別の値をもつことができる)
    */
   *errnop = errno;
   return (result);
