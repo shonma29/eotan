@@ -5,7 +5,7 @@ OFF_LOADPOINT	equ	0000h
 SEG_2NDBOOT	equ	0800h
 OFF_2NDBOOT	equ	0000h
 
-MAX_FRAGMENT 	equ	8			;����ե饰���ȿ�	
+MAX_FRAGMENT 	equ	8			;最大フラグメント数	
 
 
 		section .text
@@ -13,7 +13,7 @@ MAX_FRAGMENT 	equ	8			;����ե饰���ȿ�
 		org 0000
 
 first_boot:
-		mov	ax, SEG_BOOT		;SEG_1STBOOT:0000�˰�ư
+		mov	ax, SEG_BOOT		;SEG_1STBOOT:0000に移動
 		mov	ds, ax
 		mov	ax, SEG_1STBOOT
 		mov	es, ax
@@ -26,8 +26,8 @@ first_boot:
 		jmp	SEG_1STBOOT:restart
 
 restart:
-		mov	ax, SEG_1STBOOT		;�������ȥ쥸�����ȥ����å��ݥ���
-		mov	es, ax			;�ν����
+		mov	ax, SEG_1STBOOT		;セグメントレジスタとスタックポインタ
+		mov	es, ax			;の初期化
 		mov	ss, ax
 		mov	ds, ax
 		mov	sp, 2048
@@ -35,7 +35,7 @@ restart:
 		mov	bx, message
 		call	print
 
-		xor	ah, ah			;�֡��ȥǥХ�����ꥻ�å�
+		xor	ah, ah			;ブートデバイスをリセット
 		mov	dl, [bootdev]
 		int	13h
 
@@ -46,11 +46,11 @@ load_2ndboot:
 		mov 	word [off_addr], OFF_LOADPOINT
 
 load_fragment:
-		mov	cx, [bp]		;Ϣ³����������
+		mov	cx, [bp]		;連続セクター数
 		test	cx, cx
-		jz	l2nd_end		;��λ
+		jz	l2nd_end		;終了
 
-		mov	ax, [bp + 2]		;���ϥ�������
+		mov	ax, [bp + 2]		;開始セクター
 		mov	[cylinder], ax
 		mov	al, [bp + 4]
 		mov	[head], al
@@ -86,7 +86,7 @@ lf_loop1:
 		add	word [seg_addr], 0020h	;512byte/sector
 
 		loop	lf_loop
-		add	bp, 6			;���Υե饰���Ȥ�ؤ�
+		add	bp, 6			;次のフラグメントを指す
 lf_end:		
 		dec	byte [frg]
 		jnz	load_fragment
@@ -130,10 +130,10 @@ readdisk1:
 		mov	ax, [seg_addr]
 		mov	es, ax
 		mov	bx, [off_addr]
-		mov	ax, 201h		;1���������꡼��
+		mov	ax, 201h		;1セクターリード
 		int	0x13			
 		jnc	 readdisk2
-		xor	ah, ah			;�֡��ȥǥХ�����ꥻ�å�
+		xor	ah, ah			;ブートデバイスをリセット
 		mov	dl, [bootdev]
 		int	13h
 		jmp	readdisk1
@@ -206,25 +206,25 @@ frg:
 
 		times 1c0h-($-$$) db 0 	;org 180h
 
-bootdev:				;�֡��ȥǥХ���
+bootdev:				;ブートデバイス
 		db	00h		;00h=fd0, 80h=hda
-n_cylinder:				;�ǥ������ѥ�᡼����
-		dw	00h		; ����������	
+n_cylinder:				;ディスクパラメーター
+		dw	00h		; シリンダー数	
 n_head:
-		db	00h		; �إåɿ�
+		db	00h		; ヘッド数
 n_sector:	
-		db	00h		; ����������
+		db	00h		; セクター数
 
-		db	00h		; ���ߡ�
+		db	00h		; ダミー
 ;-----------------------------------------------------------
-; 2ndboot�Υޥå�
-; Ϣ³�����������ȳ��ϥ�����������Ǽ����롣
-; ���֥��å������Ҳ��ޤ��б����롣
+; 2ndbootのマップ
+; 連続セクター数と開始セクターが格納される。
+; ８ブロックの断片化まで対応する。
 ;
-;	word	Ϣ³���������� 
-;	word	��������
-;	byte	�إå�
-;	byte	��������
+;	word	連続セクター数 
+;	word	シリンダー
+;	byte	ヘッド
+;	byte	セクター
 
 map:
 		times MAX_FRAGMENT*6 db 0

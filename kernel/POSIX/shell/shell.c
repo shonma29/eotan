@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -15,10 +15,10 @@ static char rcsid[] = "@(#)$Id: shell.c,v 1.2 1996/11/25 14:04:13 night Exp $";
 /*
  * $Log: shell.c,v $
  * Revision 1.2  1996/11/25 14:04:13  night
- * main() ╢ь©Т╓н╧╧©╥║ё
+ * main() И√╒Ф∙╟Ц│╝Ф⌡╢Ф√╟Ц─┌
  *
  * Revision 1.1  1996/11/22  16:22:18  night
- * ╨г╫И╓непо©
+ * Ф°─Е┬²Ц│╝Г≥╩И▄╡
  *
  *
  */
@@ -33,7 +33,7 @@ main (int ac, char **av)
 
   if (ac < 2)
     {
-      /* ╔╓╔С╔©╔И╔╞╔ф╔ё╔ж╔Б║╪╔и╓гф╟╨Н╓╧╓К║ё
+      /* Ц┌╓Ц┐ЁЦ┌©Ц┐╘Ц┌╞Ц┐├Ц┌ёЦ┐√Ц┐╒Ц┐╪Ц┐┴Ц│╖Е▀∙Д╫°Ц│≥Ц┌▀Ц─┌
        */
       shell_interactive ();
       exit (0);
