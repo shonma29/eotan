@@ -87,135 +87,135 @@ dispri,string,gget_stw,W gid,TC *str,W len,CHGAP *gap,W *pos,-
 dispri,string,gset_chc,W gid,COLORVAL chfgc,COLORVAL chbgc,-
 dispri,string,gset_chp,W gid,W h,W v,W abs,-
 dispri,string,gset_fnt,W gid,FONTSPEC *fnt,-
-nuclus,devmgr,chg_dmd,TC *dev,UW mode,¥Ç¥Ğ¥¤¥¹¤Î¥¢¥¯¥»¥¹¥â¡¼¥ÉÊÑ¹¹
-nuclus,devmgr,cls_dev,W dd,W eject,W *error,¥Ç¥Ğ¥¤¥¹¤Î¥¯¥í¡¼¥º
-nuclus,devmgr,ctl_dev,W dd,UW cmd,B *param,W *error,¥Ç¥Ğ¥¤¥¹¤ÎÀ©¸æ
-nuclus,devmgr,dev_sts,TC *dev,DEV_STATE *buf,¥Ç¥Ğ¥¤¥¹¤Î´ÉÍı¾ğÊó¤Î¼è¤ê½Ğ¤·
-nuclus,devmgr,get_dev,TC *dev,W num,ÏÀÍı¥Ç¥Ğ¥¤¥¹Ì¾¤Î¼è¤ê½Ğ¤·
-nuclus,devmgr,lst_dev,DEV_INFO *dev,W ndev,ÅĞÏ¿ºÑ¤ß¥Ç¥Ğ¥¤¥¹¤Î¼è¤ê½Ğ¤·
-nuclus,devmgr,opn_dev,TC *dev,UW o_mode,W *error,¥Ç¥Ğ¥¤¥¹¤Î¥ª¡¼¥×¥ó
-nuclus,devmgr,rea_dev,W dd,LONG start,B *buf,LONG size,LPTR a_size,W *error,¥Ç¥Ğ¥¤¥¹¤«¤é¤Î¥Ç¡¼¥¿ÆÉ¤ß¹ş¤ß
-nuclus,devmgr,wri_dev,W dd,LONG start,B *buf,LONG size,LPTR a_size,W *error,¥Ç¥Ğ¥¤¥¹¤Ø¤Î¥Ç¡¼¥¿½ñ¤­¹ş¤ß
-nuclus,evtmgr,chg_emk,W mask,¥·¥¹¥Æ¥à¡¦¥¤¥Ù¥ó¥È¥Ş¥¹¥¯¤ÎÊÑ¹¹
-nuclus,evtmgr,chg_pda,W attr,¥İ¥¤¥ó¥Æ¥£¥ó¥°¥Ç¥Ğ¥¤¥¹Â°À­¤ÎÊÑ¹¹
-nuclus,evtmgr,clr_evt,W t_mask,W lask_mask,¥¤¥Ù¥ó¥È¤Îºï½ü
-nuclus,evtmgr,get_etm,ULPTR time,¥¤¥Ù¥ó¥È¥¿¥¤¥Ş¡¼¤Î¼è¤ê½Ğ¤·
-nuclus,evtmgr,get_evt,W t_mask,EVENT *evt,UW opt,¥¤¥Ù¥ó¥È¤Î¼è¤ê½Ğ¤·
-nuclus,evtmgr,get_kid,KBD_ID *id,¥­¡¼¥Ü¡¼¥ÉID¤Î¼è¤ê½Ğ¤·
-nuclus,evtmgr,get_kmp,KEYMAP keymap,¥­¡¼¾õÂÖ¤Î¼è¤ê½Ğ¤·
-nuclus,evtmgr,get_krm,KEPMAP keymap,¼«Æ°¥ê¥Ô¡¼¥ÈÂĞ¾İ¥­¡¼¤Î¼è¤ê½Ğ¤·
-nuclus,evtmgr,get_krp,W *offset,W *interval,¥­¡¼¥ê¥Ô¡¼¥È´Ö³Ö¤Î¼è¤ê½Ğ¤·
-nuclus,evtmgr,get_ktb,KEYTAB *keytab,Ê¸»ú¥³¡¼¥ÉÊÑ´¹É½¤Î¼è¤ê½Ğ¤·
-nuclus,evtmgr,get_pdp,PNT *pos,PD°ÌÃÖ¤Î¼è¤ê½Ğ¤·
-nuclus,evtmgr,put_evt,EVENT *evt,UW opt,¥¤¥Ù¥ó¥È¤ÎÈ¯À¸
-nuclus,evtmgr,set_krm,KEYMAP keymap,¼«Æ°¥ê¥Ô¡¼¥ÈÂĞ¾İ¥­¡¼¤ÎÀßÄê
-nuclus,evtmgr,set_krp,W offset,W interval,¥­¡¼¥ê¥Ô¡¼¥È´Ö³Ö¤ÎÀßÄê
-nuclus,evtmgr,set_ktb,KEYTAB *keytab,Ê¸»ú¥³¡¼¥ÉÊÑ´¹É½¤ÎÀßÄê
-nuclus,evtmgr,set_pdp,PNT pos,PD°ÌÃÖ¤ÎÀßÄê
-nuclus,evtmgr,sig_buz,UW type,¥Ö¥¶¡¼¤ÎÈ¯À¸
-nuclus,filmgr,apd_rec,W fd,B *buf,LONG size,W type,UW subtype,UW units,¥ì¥³¡¼¥É¤ÎÄÉ²Ã
-nuclus,filmgr,att_fls,TC *dev,TC *name,LINK *lnk,W r_only,¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥à¤ÎÀÜÂ³
-nuclus,filmgr,chg_fat,LINK *lnk,W attr,¥Õ¥¡¥¤¥ë¤Î¥¢¥¯¥»¥¹Â°À­ÊÑ¹¹
-nuclus,filmgr,chg_fls,TC *dev,TC *fs_name,TC *fs_locate,¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥à¾ğÊó¤ÎÊÑ¹¹
-nuclus,filmgr,chg_fmd,LINK *lnk,A_MODE *mode,¥Õ¥¡¥¤¥ë¤Î¥¢¥¯¥»¥¹¥â¡¼¥ÉÊÑ¹¹
-nuclus,filmgr,chg_fnm,LINK *lnk,TC *name,¥Õ¥¡¥¤¥ëÌ¾¤ÎÊÑ¹¹
-nuclus,filmgr,chg_ftm,LINK *lnk,F_TIME *times,¥Õ¥¡¥¤¥ëÆü»ş¤ÎÊÑ¹¹
-nuclus,filmgr,chg_wrk,LINK *lnk,ºî¶È¥Õ¥¡¥¤¥ë¤ÎÊÑ¹¹
-nuclus,filmgr,chk_fil,LINK *lnk,UW mode,TC *pwd,¥Õ¥¡¥¤¥ë¤Î¥¢¥¯¥»¥¹¸¢¥Á¥§¥Ã¥¯
-nuclus,filmgr,cls_fil,W fd,¥Õ¥¡¥¤¥ë¤Î¥¯¥í¡¼¥º
-nuclus,filmgr,cre_fil,LINK *lnk,TC *name,A_MODE *mode,UW atype,W opt,¥Õ¥¡¥¤¥ë¤ÎÀ¸À®
-nuclus,filmgr,cre_lnk,LINK *lnk,F_LINK *ref,W opt,¥ê¥ó¥¯¥Õ¥¡¥¤¥ë¤ÎÀ¸À®
-nuclus,filmgr,del_fil,LINK *org,LINK *lnk,W force,¥Õ¥¡¥¤¥ë¤Îºï½ü
-nuclus,filmgr,del_fls,TC *dev,W eject,¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥à¤ÎÀÚÃÇ
-nuclus,filmgr,del_rec,W fd,¥ì¥³¡¼¥É¤Îºï½ü
-nuclus,filmgr,fil_sts,LINK *lnk,TC *name,F_STATE *stat,F_LOCATE *locat,¥Õ¥¡¥¤¥ë¾ğÊó¤Î¼è¤ê½Ğ¤·
-nuclus,filmgr,fls_sts,TC *dev,FS_STATE *buff,¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥à¤Î´ÉÍı¾ğÊó¼è¤ê½Ğ¤·
-nuclus,filmgr,fnd_lnk,W fd,W mode,LINK *lnk,UW subtype,LPTR recnum,¥ê¥ó¥¯¥ì¥³¡¼¥É¤Î¸¡º÷
-nuclus,filmgr,fnd_rec,W fd,W mode,ULONG typemask,UW subtype,LPTR recnum,¥ì¥³¡¼¥É¤Î¸¡º÷
-nuclus,filmgr,gen_fil,LINK *lnk,F_LINK *ref,W opt,¥Õ¥¡¥¤¥ë¤ÎÄ¾ÀÜÀ¸À®
-nuclus,filmgr,get_dfm,DA_MODE *mode,¥Ç¥Õ¥©¥ë¥È¡¦¥¢¥¯¥»¥¹¥â¡¼¥É¤Î¼è¤ê½Ğ¤·
-nuclus,filmgr,get_lnk,TC *path,LINK *lnk,W mode,¥Õ¥¡¥¤¥ë¤Ø¤Î¥ê¥ó¥¯¤Î¼è¤ê½Ğ¤·
-nuclus,filmgr,get_nlk,LINK *lnk,¥ê¥ó¥¯¤Î½ç¼¡¼è¤ê½Ğ¤·
-nuclus,filmgr,ins_rec,W fd,B *buf,LONG size,W type,UW subtype,UW units,¥ì¥³¡¼¥É¤ÎÁŞÆş
-nuclus,filmgr,lnk_sts,LINK *lnk,F_LINK *stat,¥ê¥ó¥¯¥Õ¥¡¥¤¥ë¾ğÊó¤Î¼è¤ê½Ğ¤·
-nuclus,filmgr,loc_rec,W fd,W mode,¥ì¥³¡¼¥É¤Î¥í¥Ã¥¯
-nuclus,filmgr,lst_fls,F_ATTACH *buff,W cnt,¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥à¤Î¥ê¥¹¥È¥¢¥Ã¥×
-nuclus,filmgr,ofl_sts,W fd,TC *name,F_STATE *stat,F_LOCATE *locat,¥Õ¥¡¥¤¥ë¾ğÊó¤Î¼è¤ê½Ğ¤·
-nuclus,filmgr,opn_fil,LINK *lnk,UW o_mode,TC *pwd,¥Õ¥¡¥¤¥ë¤Î¥ª¡¼¥×¥ó
-nuclus,filmgr,rea_rec,W fd,W offset,B *buf,LONG size,LPTR r_size,UW *subtype,¥ì¥³¡¼¥É¤ÎÆÉ¤ß¹ş¤ß
-nuclus,filmgr,see_rec,W fd,LONG offset,W mode,LPTR recnum,¥ì¥³¡¼¥É°ÌÃÖ¤Î°ÜÆ°
-nuclus,filmgr,set_dfm,DA_MODE *mode,¥Ç¥Õ¥©¥ë¥È¡¦¥¢¥¯¥»¥¹¥â¡¼¥É¤ÎÀßÄê
-nuclus,filmgr,syn_fls,void,¥Õ¥¡¥¤¥ë¥·¥¹¥Æ¥à¤ÎÆ±´ü
-nuclus,filmgr,syn_lnk,LINK *lnk,W opt,¥ê¥ó¥¯¥Õ¥¡¥¤¥ë¤ÎÆ±´ü
-nuclus,filmgr,trc_rec,W fd,LONG size,¥ì¥³¡¼¥É¤Î¥µ¥¤¥º½Ì¾®
-nuclus,filmgr,wri_rec,W fd,LONG offset,B *buf,LONG size,LPTR r_size,UW *subtype,UW units,¥ì¥³¡¼¥É¤Î½ñ¤­¹ş¤ß
-nuclus,filmgr,xch_fil,W fd_1,W fd_2,¥Õ¥¡¥¤¥ë¤ÎÆâÍÆ¸ò´¹
-nuclus,memmgr,apd_mem,LONG phaddr,LONG size,¥á¥â¥êÎÎ°è¤ÎÄÉ²Ã
-nuclus,memmgr,cre_mpl,W mpl_id,LONG size,UW attr,¥á¥â¥ê¥×¡¼¥ë¤ÎÀ¸À®
-nuclus,memmgr,del_mpl,W mpl_id,¥á¥â¥ê¥×¡¼¥ë¤Îºï½ü
-nuclus,memmgr,get_lmb,B **mptr,LONG size,UW opt,¥í¡¼¥«¥ë¥á¥â¥ê¥Ö¥í¥Ã¥¯¤Î³ÍÆÀ
-nuclus,memmgr,get_ptr,B *sptr,LONG offset,B **mptr,LONG size,¥á¥â¥ê¥İ¥¤¥ó¥¿¤Î³ÍÆÀ
-nuclus,memmgr,get_sma,W akey,¶¦Í­¥á¥â¥ê¥Ö¥í¥Ã¥¯Â°À­¤Î¼è¤ê½Ğ¤·
-nuclus,memmgr,get_smb,W mpl_id,LONG size,UW opt,¶¦Í­¥á¥â¥ê¥Ö¥í¥Ã¥¯¤Î³ÍÆÀ
-nuclus,memmgr,get_smi,W akey,LPTR info,¶¦Í­¥á¥â¥ê¥Ö¥í¥Ã¥¯¤Î¥æ¡¼¥¶¾ğÊó¤Î¼è¤ê½Ğ¤·
-nuclus,memmgr,lmb_siz,B *mptr,LPTR size,¥í¡¼¥«¥ë¥á¥â¥ê¥Ö¥í¥Ã¥¯¡¦¥µ¥¤¥º¤Î¼è¤ê½Ğ¤·
-nuclus,memmgr,lmb_sts,LM_STATE *buff,¥í¡¼¥«¥ë¥á¥â¥êÎÎ°è¤Î¾õÂÖ¼è¤ê½Ğ¤·
-nuclus,memmgr,map_mem,LONG phaddr,B **logaddr,LONG size,UW opt,¥á¥â¥ê¶õ´Ö¤Î¥Ş¥Ã¥Ô¥ó¥°
-nuclus,memmgr,mpl_sts,W mpl_id,MP_STATE *buff,¶¦Í­¥á¥â¥ê¥×¡¼¥ë¾õÂÖ¤Î¼è¤ê½Ğ¤·
-nuclus,memmgr,rea_smb,W akey,B *buff,LONG offset,LONG size,LPTR a_size,¶¦Í­¥á¥â¥ê¥Ö¥í¥Ã¥¯¤ÎÆÉ¤ß¹ş¤ß
-nuclus,memmgr,rel_lmb,B *mptr,¥í¡¼¥«¥ë¥á¥â¥ê¥Ö¥í¥Ã¥¯¤Î³«Êü
-nuclus,memmgr,rel_ptr,B *mptr,¥á¥â¥ê¥İ¥¤¥ó¥¿¤Î³«Êü
-nuclus,memmgr,rel_smb,W akey,¶¦Í­¥á¥â¥ê¥Ö¥í¥Ã¥¯¤Îºï½ü
-nuclus,memmgr,rgt_smb,W akey,¶¦Í­¥á¥â¥ê¥Ö¥í¥Ã¥¯¤ÎºÆ³ÍÆÀ
-nuclus,memmgr,rsz_lmb,B **n_mptr,B *mptr,LONG size,UW opt,¥í¡¼¥«¥ë¥á¥â¥ê¥Ö¥í¥Ã¥¯¤Î¥µ¥¤¥ºÊÑ¹¹
-nuclus,memmgr,set_sma,W akey,UW attr,¶¦Í­¥á¥â¥ê¥Ö¥í¥Ã¥¯Â°À­¤ÎÀßÄê
-nuclus,memmgr,set_smi,W akey,UW attr,¶¦Í­¥á¥â¥ê¥Ö¥í¥Ã¥¯¤Î¥æ¡¼¥¶¾ğÊó¤ÎÀßÄê
-nuclus,memmgr,smb_adr,W akey,B **maddr,¶¦Í­¥á¥â¥ê¥Ö¥í¥Ã¥¯¡¦¥¢¥É¥ì¥¹¤Î¼è¤ê½Ğ¤·
-nuclus,memmgr,smb_key,B *maddr,¶¦Í­¥á¥â¥ê¥Ö¥í¥Ã¥¯¡¦¥¢¥¯¥»¥¹¥­¡¼¤Î¼è¤ê½Ğ¤·
-nuclus,memmgr,smb_sts,W akey,SM_STATE *buff,¶¦Í­¥á¥â¥ê¥Ö¥í¥Ã¥¯¾õÂÖ¤Î¼è¤ê½Ğ¤·
-nuclus,memmgr,ump_mem,B *logaddr,¥á¥â¥ê¶õ´Ö¤Î¥Ş¥Ã¥Ô¥ó¥°¤Îºï½ü
-nuclus,memmgr,wri_smb,W akey,B *buff,LONG offset,LONG size,LPTR a_size,¶¦Í­¥á¥â¥ê¥Ö¥í¥Ã¥¯¤Î½ñ¤­¹ş¤ß
-nuclus,prcmgr,can_tmg,void,¥¿¥¤¥à¥¢¥¦¥È¥á¥Ã¥»¡¼¥¸¤Î¼è¤ê¾Ã¤·
-nuclus,prcmgr,chg_pri,W pid,W new_pri,UW opt,¥×¥í¥»¥¹¤ÎÍ¥ÀèÅÙÊÑ¹¹
-nuclus,prcmgr,chg_usr,P_USER *buff,¥×¥í¥»¥¹¤Î¥æ¡¼¥¶¾ğÊó¤ÎÊÑ¹¹
-nuclus,prcmgr,clr_msg,LONG t_mask,LONG last_mask,¥á¥Ã¥»¡¼¥¸¤Î¥¯¥ê¥¢
-nuclus,prcmgr,cre_nam,TC *name,LONG data,UW opt,¥°¥í¡¼¥Ğ¥ëÌ¾¥Ç¡¼¥¿¤ÎÀ¸À®
-nuclus,prcmgr,cre_prc,LINK *lnk,W pri,MESSAGE *msg,¥×¥í¥»¥¹¤ÎÀ¸À®
-nuclus,prcmgr,cre_sem,W sem_id,W cnt,UW opt,¥»¥Ş¥Õ¥©¤ÎÀ¸À®
-nuclus,prcmgr,def_msg,LONG t_mask,FUNCP msg_hdr,¥á¥Ã¥»¡¼¥¸¥Ï¥ó¥É¥é¤ÎÄêµÁ
-nuclus,prcmgr,del_nam,TC *name,¥°¥í¡¼¥Ğ¥ëÌ¾¥Ç¡¼¥¿¤Îºï½ü
-nuclus,prcmgr,del_sem,W sem_id,¥»¥Ş¥Õ¥©¤Îºï½ü
-nuclus,prcmgr,ext_prc,W exit_code,¼«¥×¥í¥»¥¹¤Î½ªÎ»
-nuclus,prcmgr,get_inf,W pid,P_INFO *buff,¥×¥í¥»¥¹¤ÎÅı·×¾ğÊó¤Î¼è¤ê½Ğ¤·
-nuclus,prcmgr,get_nam,TC *name,LPTR data,¥°¥í¡¼¥Ğ¥ë¥Ç¡¼¥¿Ì¾¤Î¼è¤ê½Ğ¤·
-nuclus,prcmgr,get_usr,W pid,P_USER *buff,¥×¥í¥»¥¹¤Î¥æ¡¼¥¶¾ğÊó¤Î¼è¤ê½Ğ¤·
-nuclus,prcmgr,ini_sem,W sem_id,W cnt,¥»¥Ş¥Õ¥©¤ÎºÆ½é´ü²½
-nuclus,prcmgr,loc_prc,W onoff,¥×¥í¥»¥¹¤Î¥í¥Ã¥¯/¥¢¥ó¥í¥Ã¥¯
-nuclus,prcmgr,prc_sts,W pid,P_STATE *buff,TC *path,¥×¥í¥»¥¹¾õÂÖ¤Î¼è¤ê½Ğ¤·
-nuclus,prcmgr,rcr_prc,LINK *lnk,MESSAGE *msg,¥×¥í¥»¥¹¤ÎºÆÀ¸À®
-nuclus,prcmgr,rcv_msg,W t_mask,MESSAGE *msg,W msgsz,UW opt,¥á¥Ã¥»¡¼¥¸¤Î¼õ¿®
-nuclus,prcmgr,req_tmg,LONG time,W code,¥¿¥¤¥à¥¢¥¦¥È¥á¥Ã¥»¡¼¥¸¤ÎÍ×µá
-nuclus,prcmgr,ret_msg,W ret,¥á¥Ã¥»¡¼¥¸¥Ï¥ó¥É¥é¤Î½ªÎ»
-nuclus,prcmgr,sig_sem,W sem_id,W cnt,¥»¥Ş¥Õ¥©¤Î³«Êü
-nuclus,prcmgr,snd_msg,W pid,MESSAGE *msg,UW opt,¥á¥Ã¥»¡¼¥¸¤ÎÁ÷¿®
-nuclus,prcmgr,snr_msg,W pid,MESSAGE *s_msg,W t_mask,MESSAGE *r_msg,W msgsz,¥á¥Ã¥»¡¼¥¸¤ÎÁ÷¼õ¿®
-nuclus,prcmgr,ter_prc,W pid,W abort_code,UW opt,Â¾¥×¥í¥»¥¹¤Î¶¯À©½ªÎ»
-nuclus,prcmgr,wai_prc,LONG time,¥×¥í¥»¥¹¤Î»ş´ÖÂÔ¤Á
-nuclus,prcmgr,wai_sem,W sem_id,¥»¥Ş¥Õ¥©¤Î³ÍÆÀ
-nuclus,sysmgr,cre_dbg,LINK *lnk,W pri,MESSAGE arg,W dpid,¥Ç¥Ğ¥Ã¥°ÂĞ¾İ¥×¥í¥»¥¹¤ÎÀ¸À®
-nuclus,sysmgr,def_cup,FUNCP clup_hdr,¥¯¥ê¡¼¥ó¥¢¥Ã¥×¥Ï¥ó¥É¥é¤ÎÅĞÏ¿
-nuclus,sysmgr,def_exc,W exc_vec,FUNCP exc_hdr,Îã³°½èÍı¥Ï¥ó¥É¥é¤ÎÄêµÁ
-nuclus,sysmgr,def_svc,UW svc_code,FUNCP *svc_hdrs,W opt,¥·¥¹¥Æ¥à¥³¡¼¥ë¥Ï¥ó¥É¥é¤ÎÄêµÁ
-nuclus,sysmgr,get_err,void,ºÇ¿·¤Î¥¨¥é¡¼¥³¡¼¥É¤Î¼è¤ê½Ğ¤·
-nuclus,sysmgr,get_ver,T_VER *version,OS¥Ğ¡¼¥¸¥ç¥ó¾ğÊó¤Î¼è¤ê½Ğ¤·
-nuclus,sysmgr,lod_spg,LINK *lnk,TC *arg,UW attr,LPTR info,¥·¥¹¥Æ¥à¥×¥í¥°¥é¥à¤Î¥í¡¼¥É
-nuclus,sysmgr,prc_trc,TRACE trace,¥Ç¥Ğ¥Ã¥°ÂĞ¾İ¥×¥í¥»¥¹¤ÎÀ©¸æ
-nuclus,sysmgr,ret_exc,W ret,Îã³°½èÍı¥Ï¥ó¥É¥é¤Î½ªÎ»
-nuclus,sysmgr,unl_spg,W prog_id,¥·¥¹¥Æ¥à¥×¥í¥°¥é¥à¤Î¥¢¥ó¥í¡¼¥É
-nuclus,timmgr,get_tim,LPTR time,TIMEZONE *tz,¥·¥¹¥Æ¥à»ş´Ö¤Î¼è¤ê½Ğ¤·
-nuclus,timmgr,get_tod,DATE_TIM *date_tim,LPTR time,W local,ÆüÉÕ»ş¹ï¤Î¼è¤ê½Ğ¤·/ÊÑ´¹
-nuclus,timmgr,get_tod,DATE_TIM *date_tim,LONG time,W local,ÆüÉÕ»ş¹ï¤ÎÀßÄê/ÊÑ´¹
-nuclus,timmgr,set_tim,LONG time,TIMEZONE *tz,¥·¥¹¥Æ¥à»ş´Ö¤ÎÀßÄê
+nuclus,devmgr,chg_dmd,TC *dev,UW mode,ãƒ‡ãƒã‚¤ã‚¹ã®ã‚¢ã‚¯ã‚»ã‚¹ãƒ¢ãƒ¼ãƒ‰å¤‰æ›´
+nuclus,devmgr,cls_dev,W dd,W eject,W *error,ãƒ‡ãƒã‚¤ã‚¹ã®ã‚¯ãƒ­ãƒ¼ã‚º
+nuclus,devmgr,ctl_dev,W dd,UW cmd,B *param,W *error,ãƒ‡ãƒã‚¤ã‚¹ã®åˆ¶å¾¡
+nuclus,devmgr,dev_sts,TC *dev,DEV_STATE *buf,ãƒ‡ãƒã‚¤ã‚¹ã®ç®¡ç†æƒ…å ±ã®å–ã‚Šå‡ºã—
+nuclus,devmgr,get_dev,TC *dev,W num,è«–ç†ãƒ‡ãƒã‚¤ã‚¹åã®å–ã‚Šå‡ºã—
+nuclus,devmgr,lst_dev,DEV_INFO *dev,W ndev,ç™»éŒ²æ¸ˆã¿ãƒ‡ãƒã‚¤ã‚¹ã®å–ã‚Šå‡ºã—
+nuclus,devmgr,opn_dev,TC *dev,UW o_mode,W *error,ãƒ‡ãƒã‚¤ã‚¹ã®ã‚ªãƒ¼ãƒ—ãƒ³
+nuclus,devmgr,rea_dev,W dd,LONG start,B *buf,LONG size,LPTR a_size,W *error,ãƒ‡ãƒã‚¤ã‚¹ã‹ã‚‰ã®ãƒ‡ãƒ¼ã‚¿èª­ã¿è¾¼ã¿
+nuclus,devmgr,wri_dev,W dd,LONG start,B *buf,LONG size,LPTR a_size,W *error,ãƒ‡ãƒã‚¤ã‚¹ã¸ã®ãƒ‡ãƒ¼ã‚¿æ›¸ãè¾¼ã¿
+nuclus,evtmgr,chg_emk,W mask,ã‚·ã‚¹ãƒ†ãƒ ãƒ»ã‚¤ãƒ™ãƒ³ãƒˆãƒã‚¹ã‚¯ã®å¤‰æ›´
+nuclus,evtmgr,chg_pda,W attr,ãƒã‚¤ãƒ³ãƒ†ã‚£ãƒ³ã‚°ãƒ‡ãƒã‚¤ã‚¹å±æ€§ã®å¤‰æ›´
+nuclus,evtmgr,clr_evt,W t_mask,W lask_mask,ã‚¤ãƒ™ãƒ³ãƒˆã®å‰Šé™¤
+nuclus,evtmgr,get_etm,ULPTR time,ã‚¤ãƒ™ãƒ³ãƒˆã‚¿ã‚¤ãƒãƒ¼ã®å–ã‚Šå‡ºã—
+nuclus,evtmgr,get_evt,W t_mask,EVENT *evt,UW opt,ã‚¤ãƒ™ãƒ³ãƒˆã®å–ã‚Šå‡ºã—
+nuclus,evtmgr,get_kid,KBD_ID *id,ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰IDã®å–ã‚Šå‡ºã—
+nuclus,evtmgr,get_kmp,KEYMAP keymap,ã‚­ãƒ¼çŠ¶æ…‹ã®å–ã‚Šå‡ºã—
+nuclus,evtmgr,get_krm,KEPMAP keymap,è‡ªå‹•ãƒªãƒ”ãƒ¼ãƒˆå¯¾è±¡ã‚­ãƒ¼ã®å–ã‚Šå‡ºã—
+nuclus,evtmgr,get_krp,W *offset,W *interval,ã‚­ãƒ¼ãƒªãƒ”ãƒ¼ãƒˆé–“éš”ã®å–ã‚Šå‡ºã—
+nuclus,evtmgr,get_ktb,KEYTAB *keytab,æ–‡å­—ã‚³ãƒ¼ãƒ‰å¤‰æ›è¡¨ã®å–ã‚Šå‡ºã—
+nuclus,evtmgr,get_pdp,PNT *pos,PDä½ç½®ã®å–ã‚Šå‡ºã—
+nuclus,evtmgr,put_evt,EVENT *evt,UW opt,ã‚¤ãƒ™ãƒ³ãƒˆã®ç™ºç”Ÿ
+nuclus,evtmgr,set_krm,KEYMAP keymap,è‡ªå‹•ãƒªãƒ”ãƒ¼ãƒˆå¯¾è±¡ã‚­ãƒ¼ã®è¨­å®š
+nuclus,evtmgr,set_krp,W offset,W interval,ã‚­ãƒ¼ãƒªãƒ”ãƒ¼ãƒˆé–“éš”ã®è¨­å®š
+nuclus,evtmgr,set_ktb,KEYTAB *keytab,æ–‡å­—ã‚³ãƒ¼ãƒ‰å¤‰æ›è¡¨ã®è¨­å®š
+nuclus,evtmgr,set_pdp,PNT pos,PDä½ç½®ã®è¨­å®š
+nuclus,evtmgr,sig_buz,UW type,ãƒ–ã‚¶ãƒ¼ã®ç™ºç”Ÿ
+nuclus,filmgr,apd_rec,W fd,B *buf,LONG size,W type,UW subtype,UW units,ãƒ¬ã‚³ãƒ¼ãƒ‰ã®è¿½åŠ 
+nuclus,filmgr,att_fls,TC *dev,TC *name,LINK *lnk,W r_only,ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ ã®æ¥ç¶š
+nuclus,filmgr,chg_fat,LINK *lnk,W attr,ãƒ•ã‚¡ã‚¤ãƒ«ã®ã‚¢ã‚¯ã‚»ã‚¹å±æ€§å¤‰æ›´
+nuclus,filmgr,chg_fls,TC *dev,TC *fs_name,TC *fs_locate,ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ æƒ…å ±ã®å¤‰æ›´
+nuclus,filmgr,chg_fmd,LINK *lnk,A_MODE *mode,ãƒ•ã‚¡ã‚¤ãƒ«ã®ã‚¢ã‚¯ã‚»ã‚¹ãƒ¢ãƒ¼ãƒ‰å¤‰æ›´
+nuclus,filmgr,chg_fnm,LINK *lnk,TC *name,ãƒ•ã‚¡ã‚¤ãƒ«åã®å¤‰æ›´
+nuclus,filmgr,chg_ftm,LINK *lnk,F_TIME *times,ãƒ•ã‚¡ã‚¤ãƒ«æ—¥æ™‚ã®å¤‰æ›´
+nuclus,filmgr,chg_wrk,LINK *lnk,ä½œæ¥­ãƒ•ã‚¡ã‚¤ãƒ«ã®å¤‰æ›´
+nuclus,filmgr,chk_fil,LINK *lnk,UW mode,TC *pwd,ãƒ•ã‚¡ã‚¤ãƒ«ã®ã‚¢ã‚¯ã‚»ã‚¹æ¨©ãƒã‚§ãƒƒã‚¯
+nuclus,filmgr,cls_fil,W fd,ãƒ•ã‚¡ã‚¤ãƒ«ã®ã‚¯ãƒ­ãƒ¼ã‚º
+nuclus,filmgr,cre_fil,LINK *lnk,TC *name,A_MODE *mode,UW atype,W opt,ãƒ•ã‚¡ã‚¤ãƒ«ã®ç”Ÿæˆ
+nuclus,filmgr,cre_lnk,LINK *lnk,F_LINK *ref,W opt,ãƒªãƒ³ã‚¯ãƒ•ã‚¡ã‚¤ãƒ«ã®ç”Ÿæˆ
+nuclus,filmgr,del_fil,LINK *org,LINK *lnk,W force,ãƒ•ã‚¡ã‚¤ãƒ«ã®å‰Šé™¤
+nuclus,filmgr,del_fls,TC *dev,W eject,ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ ã®åˆ‡æ–­
+nuclus,filmgr,del_rec,W fd,ãƒ¬ã‚³ãƒ¼ãƒ‰ã®å‰Šé™¤
+nuclus,filmgr,fil_sts,LINK *lnk,TC *name,F_STATE *stat,F_LOCATE *locat,ãƒ•ã‚¡ã‚¤ãƒ«æƒ…å ±ã®å–ã‚Šå‡ºã—
+nuclus,filmgr,fls_sts,TC *dev,FS_STATE *buff,ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ ã®ç®¡ç†æƒ…å ±å–ã‚Šå‡ºã—
+nuclus,filmgr,fnd_lnk,W fd,W mode,LINK *lnk,UW subtype,LPTR recnum,ãƒªãƒ³ã‚¯ãƒ¬ã‚³ãƒ¼ãƒ‰ã®æ¤œç´¢
+nuclus,filmgr,fnd_rec,W fd,W mode,ULONG typemask,UW subtype,LPTR recnum,ãƒ¬ã‚³ãƒ¼ãƒ‰ã®æ¤œç´¢
+nuclus,filmgr,gen_fil,LINK *lnk,F_LINK *ref,W opt,ãƒ•ã‚¡ã‚¤ãƒ«ã®ç›´æ¥ç”Ÿæˆ
+nuclus,filmgr,get_dfm,DA_MODE *mode,ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆãƒ»ã‚¢ã‚¯ã‚»ã‚¹ãƒ¢ãƒ¼ãƒ‰ã®å–ã‚Šå‡ºã—
+nuclus,filmgr,get_lnk,TC *path,LINK *lnk,W mode,ãƒ•ã‚¡ã‚¤ãƒ«ã¸ã®ãƒªãƒ³ã‚¯ã®å–ã‚Šå‡ºã—
+nuclus,filmgr,get_nlk,LINK *lnk,ãƒªãƒ³ã‚¯ã®é †æ¬¡å–ã‚Šå‡ºã—
+nuclus,filmgr,ins_rec,W fd,B *buf,LONG size,W type,UW subtype,UW units,ãƒ¬ã‚³ãƒ¼ãƒ‰ã®æŒ¿å…¥
+nuclus,filmgr,lnk_sts,LINK *lnk,F_LINK *stat,ãƒªãƒ³ã‚¯ãƒ•ã‚¡ã‚¤ãƒ«æƒ…å ±ã®å–ã‚Šå‡ºã—
+nuclus,filmgr,loc_rec,W fd,W mode,ãƒ¬ã‚³ãƒ¼ãƒ‰ã®ãƒ­ãƒƒã‚¯
+nuclus,filmgr,lst_fls,F_ATTACH *buff,W cnt,ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ ã®ãƒªã‚¹ãƒˆã‚¢ãƒƒãƒ—
+nuclus,filmgr,ofl_sts,W fd,TC *name,F_STATE *stat,F_LOCATE *locat,ãƒ•ã‚¡ã‚¤ãƒ«æƒ…å ±ã®å–ã‚Šå‡ºã—
+nuclus,filmgr,opn_fil,LINK *lnk,UW o_mode,TC *pwd,ãƒ•ã‚¡ã‚¤ãƒ«ã®ã‚ªãƒ¼ãƒ—ãƒ³
+nuclus,filmgr,rea_rec,W fd,W offset,B *buf,LONG size,LPTR r_size,UW *subtype,ãƒ¬ã‚³ãƒ¼ãƒ‰ã®èª­ã¿è¾¼ã¿
+nuclus,filmgr,see_rec,W fd,LONG offset,W mode,LPTR recnum,ãƒ¬ã‚³ãƒ¼ãƒ‰ä½ç½®ã®ç§»å‹•
+nuclus,filmgr,set_dfm,DA_MODE *mode,ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆãƒ»ã‚¢ã‚¯ã‚»ã‚¹ãƒ¢ãƒ¼ãƒ‰ã®è¨­å®š
+nuclus,filmgr,syn_fls,void,ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ã‚¹ãƒ†ãƒ ã®åŒæœŸ
+nuclus,filmgr,syn_lnk,LINK *lnk,W opt,ãƒªãƒ³ã‚¯ãƒ•ã‚¡ã‚¤ãƒ«ã®åŒæœŸ
+nuclus,filmgr,trc_rec,W fd,LONG size,ãƒ¬ã‚³ãƒ¼ãƒ‰ã®ã‚µã‚¤ã‚ºç¸®å°
+nuclus,filmgr,wri_rec,W fd,LONG offset,B *buf,LONG size,LPTR r_size,UW *subtype,UW units,ãƒ¬ã‚³ãƒ¼ãƒ‰ã®æ›¸ãè¾¼ã¿
+nuclus,filmgr,xch_fil,W fd_1,W fd_2,ãƒ•ã‚¡ã‚¤ãƒ«ã®å†…å®¹äº¤æ›
+nuclus,memmgr,apd_mem,LONG phaddr,LONG size,ãƒ¡ãƒ¢ãƒªé ˜åŸŸã®è¿½åŠ 
+nuclus,memmgr,cre_mpl,W mpl_id,LONG size,UW attr,ãƒ¡ãƒ¢ãƒªãƒ—ãƒ¼ãƒ«ã®ç”Ÿæˆ
+nuclus,memmgr,del_mpl,W mpl_id,ãƒ¡ãƒ¢ãƒªãƒ—ãƒ¼ãƒ«ã®å‰Šé™¤
+nuclus,memmgr,get_lmb,B **mptr,LONG size,UW opt,ãƒ­ãƒ¼ã‚«ãƒ«ãƒ¡ãƒ¢ãƒªãƒ–ãƒ­ãƒƒã‚¯ã®ç²å¾—
+nuclus,memmgr,get_ptr,B *sptr,LONG offset,B **mptr,LONG size,ãƒ¡ãƒ¢ãƒªãƒã‚¤ãƒ³ã‚¿ã®ç²å¾—
+nuclus,memmgr,get_sma,W akey,å…±æœ‰ãƒ¡ãƒ¢ãƒªãƒ–ãƒ­ãƒƒã‚¯å±æ€§ã®å–ã‚Šå‡ºã—
+nuclus,memmgr,get_smb,W mpl_id,LONG size,UW opt,å…±æœ‰ãƒ¡ãƒ¢ãƒªãƒ–ãƒ­ãƒƒã‚¯ã®ç²å¾—
+nuclus,memmgr,get_smi,W akey,LPTR info,å…±æœ‰ãƒ¡ãƒ¢ãƒªãƒ–ãƒ­ãƒƒã‚¯ã®ãƒ¦ãƒ¼ã‚¶æƒ…å ±ã®å–ã‚Šå‡ºã—
+nuclus,memmgr,lmb_siz,B *mptr,LPTR size,ãƒ­ãƒ¼ã‚«ãƒ«ãƒ¡ãƒ¢ãƒªãƒ–ãƒ­ãƒƒã‚¯ãƒ»ã‚µã‚¤ã‚ºã®å–ã‚Šå‡ºã—
+nuclus,memmgr,lmb_sts,LM_STATE *buff,ãƒ­ãƒ¼ã‚«ãƒ«ãƒ¡ãƒ¢ãƒªé ˜åŸŸã®çŠ¶æ…‹å–ã‚Šå‡ºã—
+nuclus,memmgr,map_mem,LONG phaddr,B **logaddr,LONG size,UW opt,ãƒ¡ãƒ¢ãƒªç©ºé–“ã®ãƒãƒƒãƒ”ãƒ³ã‚°
+nuclus,memmgr,mpl_sts,W mpl_id,MP_STATE *buff,å…±æœ‰ãƒ¡ãƒ¢ãƒªãƒ—ãƒ¼ãƒ«çŠ¶æ…‹ã®å–ã‚Šå‡ºã—
+nuclus,memmgr,rea_smb,W akey,B *buff,LONG offset,LONG size,LPTR a_size,å…±æœ‰ãƒ¡ãƒ¢ãƒªãƒ–ãƒ­ãƒƒã‚¯ã®èª­ã¿è¾¼ã¿
+nuclus,memmgr,rel_lmb,B *mptr,ãƒ­ãƒ¼ã‚«ãƒ«ãƒ¡ãƒ¢ãƒªãƒ–ãƒ­ãƒƒã‚¯ã®é–‹æ”¾
+nuclus,memmgr,rel_ptr,B *mptr,ãƒ¡ãƒ¢ãƒªãƒã‚¤ãƒ³ã‚¿ã®é–‹æ”¾
+nuclus,memmgr,rel_smb,W akey,å…±æœ‰ãƒ¡ãƒ¢ãƒªãƒ–ãƒ­ãƒƒã‚¯ã®å‰Šé™¤
+nuclus,memmgr,rgt_smb,W akey,å…±æœ‰ãƒ¡ãƒ¢ãƒªãƒ–ãƒ­ãƒƒã‚¯ã®å†ç²å¾—
+nuclus,memmgr,rsz_lmb,B **n_mptr,B *mptr,LONG size,UW opt,ãƒ­ãƒ¼ã‚«ãƒ«ãƒ¡ãƒ¢ãƒªãƒ–ãƒ­ãƒƒã‚¯ã®ã‚µã‚¤ã‚ºå¤‰æ›´
+nuclus,memmgr,set_sma,W akey,UW attr,å…±æœ‰ãƒ¡ãƒ¢ãƒªãƒ–ãƒ­ãƒƒã‚¯å±æ€§ã®è¨­å®š
+nuclus,memmgr,set_smi,W akey,UW attr,å…±æœ‰ãƒ¡ãƒ¢ãƒªãƒ–ãƒ­ãƒƒã‚¯ã®ãƒ¦ãƒ¼ã‚¶æƒ…å ±ã®è¨­å®š
+nuclus,memmgr,smb_adr,W akey,B **maddr,å…±æœ‰ãƒ¡ãƒ¢ãƒªãƒ–ãƒ­ãƒƒã‚¯ãƒ»ã‚¢ãƒ‰ãƒ¬ã‚¹ã®å–ã‚Šå‡ºã—
+nuclus,memmgr,smb_key,B *maddr,å…±æœ‰ãƒ¡ãƒ¢ãƒªãƒ–ãƒ­ãƒƒã‚¯ãƒ»ã‚¢ã‚¯ã‚»ã‚¹ã‚­ãƒ¼ã®å–ã‚Šå‡ºã—
+nuclus,memmgr,smb_sts,W akey,SM_STATE *buff,å…±æœ‰ãƒ¡ãƒ¢ãƒªãƒ–ãƒ­ãƒƒã‚¯çŠ¶æ…‹ã®å–ã‚Šå‡ºã—
+nuclus,memmgr,ump_mem,B *logaddr,ãƒ¡ãƒ¢ãƒªç©ºé–“ã®ãƒãƒƒãƒ”ãƒ³ã‚°ã®å‰Šé™¤
+nuclus,memmgr,wri_smb,W akey,B *buff,LONG offset,LONG size,LPTR a_size,å…±æœ‰ãƒ¡ãƒ¢ãƒªãƒ–ãƒ­ãƒƒã‚¯ã®æ›¸ãè¾¼ã¿
+nuclus,prcmgr,can_tmg,void,ã‚¿ã‚¤ãƒ ã‚¢ã‚¦ãƒˆãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®å–ã‚Šæ¶ˆã—
+nuclus,prcmgr,chg_pri,W pid,W new_pri,UW opt,ãƒ—ãƒ­ã‚»ã‚¹ã®å„ªå…ˆåº¦å¤‰æ›´
+nuclus,prcmgr,chg_usr,P_USER *buff,ãƒ—ãƒ­ã‚»ã‚¹ã®ãƒ¦ãƒ¼ã‚¶æƒ…å ±ã®å¤‰æ›´
+nuclus,prcmgr,clr_msg,LONG t_mask,LONG last_mask,ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®ã‚¯ãƒªã‚¢
+nuclus,prcmgr,cre_nam,TC *name,LONG data,UW opt,ã‚°ãƒ­ãƒ¼ãƒãƒ«åãƒ‡ãƒ¼ã‚¿ã®ç”Ÿæˆ
+nuclus,prcmgr,cre_prc,LINK *lnk,W pri,MESSAGE *msg,ãƒ—ãƒ­ã‚»ã‚¹ã®ç”Ÿæˆ
+nuclus,prcmgr,cre_sem,W sem_id,W cnt,UW opt,ã‚»ãƒãƒ•ã‚©ã®ç”Ÿæˆ
+nuclus,prcmgr,def_msg,LONG t_mask,FUNCP msg_hdr,ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒãƒ³ãƒ‰ãƒ©ã®å®šç¾©
+nuclus,prcmgr,del_nam,TC *name,ã‚°ãƒ­ãƒ¼ãƒãƒ«åãƒ‡ãƒ¼ã‚¿ã®å‰Šé™¤
+nuclus,prcmgr,del_sem,W sem_id,ã‚»ãƒãƒ•ã‚©ã®å‰Šé™¤
+nuclus,prcmgr,ext_prc,W exit_code,è‡ªãƒ—ãƒ­ã‚»ã‚¹ã®çµ‚äº†
+nuclus,prcmgr,get_inf,W pid,P_INFO *buff,ãƒ—ãƒ­ã‚»ã‚¹ã®çµ±è¨ˆæƒ…å ±ã®å–ã‚Šå‡ºã—
+nuclus,prcmgr,get_nam,TC *name,LPTR data,ã‚°ãƒ­ãƒ¼ãƒãƒ«ãƒ‡ãƒ¼ã‚¿åã®å–ã‚Šå‡ºã—
+nuclus,prcmgr,get_usr,W pid,P_USER *buff,ãƒ—ãƒ­ã‚»ã‚¹ã®ãƒ¦ãƒ¼ã‚¶æƒ…å ±ã®å–ã‚Šå‡ºã—
+nuclus,prcmgr,ini_sem,W sem_id,W cnt,ã‚»ãƒãƒ•ã‚©ã®å†åˆæœŸåŒ–
+nuclus,prcmgr,loc_prc,W onoff,ãƒ—ãƒ­ã‚»ã‚¹ã®ãƒ­ãƒƒã‚¯/ã‚¢ãƒ³ãƒ­ãƒƒã‚¯
+nuclus,prcmgr,prc_sts,W pid,P_STATE *buff,TC *path,ãƒ—ãƒ­ã‚»ã‚¹çŠ¶æ…‹ã®å–ã‚Šå‡ºã—
+nuclus,prcmgr,rcr_prc,LINK *lnk,MESSAGE *msg,ãƒ—ãƒ­ã‚»ã‚¹ã®å†ç”Ÿæˆ
+nuclus,prcmgr,rcv_msg,W t_mask,MESSAGE *msg,W msgsz,UW opt,ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®å—ä¿¡
+nuclus,prcmgr,req_tmg,LONG time,W code,ã‚¿ã‚¤ãƒ ã‚¢ã‚¦ãƒˆãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®è¦æ±‚
+nuclus,prcmgr,ret_msg,W ret,ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒãƒ³ãƒ‰ãƒ©ã®çµ‚äº†
+nuclus,prcmgr,sig_sem,W sem_id,W cnt,ã‚»ãƒãƒ•ã‚©ã®é–‹æ”¾
+nuclus,prcmgr,snd_msg,W pid,MESSAGE *msg,UW opt,ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®é€ä¿¡
+nuclus,prcmgr,snr_msg,W pid,MESSAGE *s_msg,W t_mask,MESSAGE *r_msg,W msgsz,ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®é€å—ä¿¡
+nuclus,prcmgr,ter_prc,W pid,W abort_code,UW opt,ä»–ãƒ—ãƒ­ã‚»ã‚¹ã®å¼·åˆ¶çµ‚äº†
+nuclus,prcmgr,wai_prc,LONG time,ãƒ—ãƒ­ã‚»ã‚¹ã®æ™‚é–“å¾…ã¡
+nuclus,prcmgr,wai_sem,W sem_id,ã‚»ãƒãƒ•ã‚©ã®ç²å¾—
+nuclus,sysmgr,cre_dbg,LINK *lnk,W pri,MESSAGE arg,W dpid,ãƒ‡ãƒãƒƒã‚°å¯¾è±¡ãƒ—ãƒ­ã‚»ã‚¹ã®ç”Ÿæˆ
+nuclus,sysmgr,def_cup,FUNCP clup_hdr,ã‚¯ãƒªãƒ¼ãƒ³ã‚¢ãƒƒãƒ—ãƒãƒ³ãƒ‰ãƒ©ã®ç™»éŒ²
+nuclus,sysmgr,def_exc,W exc_vec,FUNCP exc_hdr,ä¾‹å¤–å‡¦ç†ãƒãƒ³ãƒ‰ãƒ©ã®å®šç¾©
+nuclus,sysmgr,def_svc,UW svc_code,FUNCP *svc_hdrs,W opt,ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«ãƒãƒ³ãƒ‰ãƒ©ã®å®šç¾©
+nuclus,sysmgr,get_err,void,æœ€æ–°ã®ã‚¨ãƒ©ãƒ¼ã‚³ãƒ¼ãƒ‰ã®å–ã‚Šå‡ºã—
+nuclus,sysmgr,get_ver,T_VER *version,OSãƒãƒ¼ã‚¸ãƒ§ãƒ³æƒ…å ±ã®å–ã‚Šå‡ºã—
+nuclus,sysmgr,lod_spg,LINK *lnk,TC *arg,UW attr,LPTR info,ã‚·ã‚¹ãƒ†ãƒ ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã®ãƒ­ãƒ¼ãƒ‰
+nuclus,sysmgr,prc_trc,TRACE trace,ãƒ‡ãƒãƒƒã‚°å¯¾è±¡ãƒ—ãƒ­ã‚»ã‚¹ã®åˆ¶å¾¡
+nuclus,sysmgr,ret_exc,W ret,ä¾‹å¤–å‡¦ç†ãƒãƒ³ãƒ‰ãƒ©ã®çµ‚äº†
+nuclus,sysmgr,unl_spg,W prog_id,ã‚·ã‚¹ãƒ†ãƒ ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã®ã‚¢ãƒ³ãƒ­ãƒ¼ãƒ‰
+nuclus,timmgr,get_tim,LPTR time,TIMEZONE *tz,ã‚·ã‚¹ãƒ†ãƒ æ™‚é–“ã®å–ã‚Šå‡ºã—
+nuclus,timmgr,get_tod,DATE_TIM *date_tim,LPTR time,W local,æ—¥ä»˜æ™‚åˆ»ã®å–ã‚Šå‡ºã—/å¤‰æ›
+nuclus,timmgr,get_tod,DATE_TIM *date_tim,LONG time,W local,æ—¥ä»˜æ™‚åˆ»ã®è¨­å®š/å¤‰æ›
+nuclus,timmgr,set_tim,LONG time,TIMEZONE *tz,ã‚·ã‚¹ãƒ†ãƒ æ™‚é–“ã®è¨­å®š
 shell,menmgr,mchg_atr,W mid,W selnum,UW mode,-
 shell,menmgr,mchg_dsp,MENUDISP *attr,W posattr,-
 shell,menmgr,mchg_dtm,W time,-
