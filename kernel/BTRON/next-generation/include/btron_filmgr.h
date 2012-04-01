@@ -3,18 +3,18 @@
 
 /* Special symbols for file path. */
 #define TC_FDLM (0xff21) /* Path separator */
-#define TC_FSEP (0xff22) /* oŒ»‡‚Ì‹æØ‚è */
+#define TC_FSEP (0xff22) /* å‡ºç¾é †ã®åŒºåˆ‡ã‚Š */
 #define TC_FOWN (0xff23) /* Myself */
 
 /* for get_lnk() */
 #define F_NORM          (0x0) /* normal */
-#define F_BASED         (0x1) /* ƒx[ƒXw’è */
-#define F_DIRECT        (0x2) /* ’¼Úæ‚èo‚µw’è */
+#define F_BASED         (0x1) /* ãƒ™ãƒ¼ã‚¹æŒ‡å®š */
+#define F_DIRECT        (0x2) /* ç›´æ¥å–ã‚Šå‡ºã—æŒ‡å®š */
 
 /* for opn_fil() */
-#define F_READ          (0x0004) /* “Ç‚İ‚İê—pƒI[ƒvƒ“ */
-#define F_WRITE         (0x0002) /* ‘‚«‚İê—pƒI[ƒvƒ“ */
-#define F_UPDATE        (F_READ|F_WRITE) /* XV—p(“Ç/‘)ƒI[ƒvƒ“ */
+#define F_READ          (0x0004) /* èª­ã¿è¾¼ã¿å°‚ç”¨ã‚ªãƒ¼ãƒ—ãƒ³ */
+#define F_WRITE         (0x0002) /* æ›¸ãè¾¼ã¿å°‚ç”¨ã‚ªãƒ¼ãƒ—ãƒ³ */
+#define F_UPDATE        (F_READ|F_WRITE) /* æ›´æ–°ç”¨(èª­è¾¼/æ›¸è¾¼)ã‚ªãƒ¼ãƒ—ãƒ³ */
 
 /* for cre_fil() and cre_lnk() */
 #define F_FLOAT         (0x0000) /* Don't treat as fixed link. */

@@ -6,9 +6,9 @@
 #define CLR   0x0000 /* Do zero clear. */
 
 /* define for memory attributes. */
-/* í’“ */
-#define MPL_LOCK 0x4000   /* í’“‚Æ‚·‚é */
-#define MPL_UNLOCK 0x0000 /* í’“‚Æ‚µ‚È‚¢ */
+/* å¸¸é§ */
+#define MPL_LOCK 0x4000   /* å¸¸é§ã¨ã™ã‚‹ */
+#define MPL_UNLOCK 0x0000 /* å¸¸é§ã¨ã—ãªã„ */
 
 /* for Memory protection */
 #define MPL_SELF   0x0000 /* The process have more than generation level if it write or read. */
@@ -17,19 +17,19 @@
 #define DELEXIT    0x8000 /* delete when the process exit.
 
 /* for attributes on shared memory block. */
-/* Ä”z’u‘®« */
-#define M_LOCK    0x0001 /* Ä”z’u‘®«(‹Ö~) */
-#define M_UNLOCK  0x0000 /* Ä”z’u‘®«(‹–‰Â) */
-#define M_RELOC   0x0002 /* Ä”z’uó‘Ô(1:Ä”z’uÏ‚İ) */
-#define M_NOPURGE 0x0000 /* ƒp[ƒW‘®«(‹Ö~) */
-#define M_PURGE   0x0004 /* ƒp[ƒW‘®«(‹–‰Â) */
-#define M_PURGED  0x0008 /* ƒp[ƒWó‘Ô(1:ƒp[ƒWÏ‚İ) */
+/* å†é…ç½®å±æ€§ */
+#define M_LOCK    0x0001 /* å†é…ç½®å±æ€§(ç¦æ­¢) */
+#define M_UNLOCK  0x0000 /* å†é…ç½®å±æ€§(è¨±å¯) */
+#define M_RELOC   0x0002 /* å†é…ç½®çŠ¶æ…‹(1:å†é…ç½®æ¸ˆã¿) */
+#define M_NOPURGE 0x0000 /* ãƒ‘ãƒ¼ã‚¸å±æ€§(ç¦æ­¢) */
+#define M_PURGE   0x0004 /* ãƒ‘ãƒ¼ã‚¸å±æ€§(è¨±å¯) */
+#define M_PURGED  0x0008 /* ãƒ‘ãƒ¼ã‚¸çŠ¶æ…‹(1:ãƒ‘ãƒ¼ã‚¸æ¸ˆã¿) */
 
 /* local memory status. */
 typedef struct {
         LONG lm_tsize; /* total size (byte) */
         LONG lm_fsize; /* unused size (byte) */
-        LONG lm_msize; /* æ“¾‰Â”\Å‘åƒTƒCƒY (byte) */
+        LONG lm_msize; /* å–å¾—å¯èƒ½æœ€å¤§ã‚µã‚¤ã‚º (byte) */
         W ln_nblk;  /* Memory block size process has. */
         W ln_misc[2]; /* No use always zero value.*/
 } LM_STATE;
@@ -49,7 +49,7 @@ typedef struct {
         UW mp_attr; /* memory pool attributes */
         LONG mp_tsize; /* memory pool size (byte) */
         LONG mp_fsize; /* unused memory pool size (byte) */
-        LONG mp_msize; /* æ“¾‰Â”\Å‘åƒTƒCƒY (byte) */
+        LONG mp_msize; /* å–å¾—å¯èƒ½æœ€å¤§ã‚µã‚¤ã‚º (byte) */
         LONG mp_nblk;  /* blocks already getting (block) */
         B *mp_ptr;   /* always -1. */
         W mp_misc[2]; /* always zero. */

@@ -6,16 +6,16 @@
 #include <errno.h>
 
 
-/* 1stboot �̃C���[�W���� HD �̃W�I���g����񂪓���ꏊ */
+/* 1stboot のイメージ中で HD のジオメトリ情報が入る場所 */
 #define HDGEO_OFFSET	506
 
-/* 1stboot �̃C���[�W���� HD �̃p�[�e�B�V������񂪓���ꏊ */
+/* 1stboot のイメージ中で HD のパーティション情報が入る場所 */
 #define HDPART_OFFSET	502
 
 #define PARTITION_INFO_OFFSET 0x1be
 
 
-/* 1st boot �v���O�������g�� HD �̃W�I���g�����̌`��
+/* 1st boot プログラムが使う HD のジオメトリ情報の形式
  */
 struct boot_geo
 {

@@ -5,8 +5,8 @@
 #define D_READ          (0x0001)                /* Open readonly */
 #define D_WRITE         (0x0002)                /* Open writeonly */
 #define D_UPDATE        (D_READ|D_WRITE)        /* Open read and write */
-#define D_EXCL          (0x0100)                /* ”r‘¼ƒ‚[ƒh */
-#define D_WEXCL         (0x0200)                /* ”r‘¼‘‚«‚İƒ‚[ƒh */
+#define D_EXCL          (0x0100)                /* æ’ä»–ãƒ¢ãƒ¼ãƒ‰ */
+#define D_WEXCL         (0x0200)                /* æ’ä»–æ›¸ãè¾¼ã¿ãƒ¢ãƒ¼ãƒ‰ */
 #define D_NOWAIT        (0x8000)                /* Nowait mode.*/
 
 /* special device descriptor (for ctl_dev) */

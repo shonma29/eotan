@@ -27,7 +27,7 @@ sub construct_func
  
  	printf (FP "/*\n");
  	printf (FP "\n");
- 	printf (FP "B-Free Project ‚Ì¶¬•¨‚Í GNU Generic PUBLIC LICENSE ‚É]‚¢‚Ü‚·B\n");
+ 	printf (FP "B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚\n");
  	printf (FP "\n");
  	printf (FP "GNU GENERAL PUBLIC LICENSE\n");
  	printf (FP "Version 2, June 1991\n");

@@ -18,12 +18,12 @@ struct hd_partition
 };
 
 
-/* HD �̃p�[�e�B�V��������ǂݍ��݁A�o�͂���B
- * �g��������
+/* HD のパーティション情報を読み込み、出力する。
+ * 使いかたは
  * 
- *	�R�}���h �f�o�C�X��
+ *	コマンド デバイス名
  *
- * �f�o�C�X���ɂ́A/dev/hda �� /dev/hdb �Ȃǂ��w�肷��B
+ * デバイス名には、/dev/hda や /dev/hdb などを指定する。
  *
  */
 main (int ac, char **av)

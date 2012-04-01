@@ -3,45 +3,45 @@
 
 /* process state */
 typedef struct {
-        UW state;    /* ƒvƒƒZƒX‚Ìó‘Ô */
-        UW priority; /* Œ»İ‚ÌƒvƒƒZƒX‚Ì—Dæ“x */
-        W parpid;    /* eƒvƒƒZƒX‚ÌƒvƒƒZƒXID */
+        UW state;    /* ãƒ—ãƒ­ã‚»ã‚¹ã®çŠ¶æ…‹ */
+        UW priority; /* ç¾åœ¨ã®ãƒ—ãƒ­ã‚»ã‚¹ã®å„ªå…ˆåº¦ */
+        W parpid;    /* è¦ªãƒ—ãƒ­ã‚»ã‚¹ã®ãƒ—ãƒ­ã‚»ã‚¹ID */
 } P_STATE;
 
 /* process user information */
 typedef struct {
-        TCODE usr_name[14];     /* ƒ†[ƒU–¼ (+ ‰B‚µ–¼2•¶š) */
-        TCODE grp_name1[14];    /* ƒOƒ‹[ƒv–¼1 (+ ‰B‚µ–¼2•¶š) */
-        TCODE grp_name2[14];    /* ƒOƒ‹[ƒv–¼2 (+ ‰B‚µ–¼2•¶š) */
-        TCODE grp_name3[14];    /* ƒOƒ‹[ƒv–¼3 (+ ‰B‚µ–¼2•¶š) */
-        TCODE grp_name4[14];    /* ƒOƒ‹[ƒv–¼4 (+ ‰B‚µ–¼2•¶š) */
-        W level;             /* ƒ†[ƒUƒŒƒxƒ‹ (0-15) */
-        W net_level;         /* ƒlƒbƒgƒ[ƒNEƒ†[ƒUƒŒƒxƒ‹ (1-15) */
+        TCODE usr_name[14];     /* ãƒ¦ãƒ¼ã‚¶å (+ éš ã—å2æ–‡å­—) */
+        TCODE grp_name1[14];    /* ã‚°ãƒ«ãƒ¼ãƒ—å1 (+ éš ã—å2æ–‡å­—) */
+        TCODE grp_name2[14];    /* ã‚°ãƒ«ãƒ¼ãƒ—å2 (+ éš ã—å2æ–‡å­—) */
+        TCODE grp_name3[14];    /* ã‚°ãƒ«ãƒ¼ãƒ—å3 (+ éš ã—å2æ–‡å­—) */
+        TCODE grp_name4[14];    /* ã‚°ãƒ«ãƒ¼ãƒ—å4 (+ éš ã—å2æ–‡å­—) */
+        W level;             /* ãƒ¦ãƒ¼ã‚¶ãƒ¬ãƒ™ãƒ« (0-15) */
+        W net_level;         /* ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯ãƒ»ãƒ¦ãƒ¼ã‚¶ãƒ¬ãƒ™ãƒ« (1-15) */
 } P_USER;
 
 /* process information */
 typedef struct {
-        ULONG etime;            /* ¶¬‚³‚ê‚Ä‚©‚ç‚Ì—İŒvŒo‰ßŠÔ (sec) */
-        ULONG utime;            /* ƒvƒƒZƒX‚Å”ï‚â‚µ‚½—İŒvCPUŠÔ (msec) */
-        ULONG stime;            /* ƒVƒXƒeƒ€‚Å‚»‚ÌƒvƒƒZƒX‚Ì‚½‚ß‚É”ï‚â‚µ‚½—İŒvCPUŠÔ (msec) */
-        ULONG tmem;             /* Às‚É•K—v‚Æ‚·‚éƒvƒƒZƒX‘S‘Ì‚Ìƒƒ‚ƒŠƒTƒCƒY (byte) */
-        ULONG wmem;             /* Œ»İƒvƒƒZƒX‚ÉŠ„‚è‚Â‚¯‚ç‚ê‚Ä‚¢‚éÀƒƒ‚ƒŠƒTƒCƒY (byte) */
-        LONG resv[11];          /* —\–ñ */
+        ULONG etime;            /* ç”Ÿæˆã•ã‚Œã¦ã‹ã‚‰ã®ç´¯è¨ˆçµŒéæ™‚é–“ (sec) */
+        ULONG utime;            /* ãƒ—ãƒ­ã‚»ã‚¹ã§è²»ã‚„ã—ãŸç´¯è¨ˆCPUæ™‚é–“ (msec) */
+        ULONG stime;            /* ã‚·ã‚¹ãƒ†ãƒ ã§ãã®ãƒ—ãƒ­ã‚»ã‚¹ã®ãŸã‚ã«è²»ã‚„ã—ãŸç´¯è¨ˆCPUæ™‚é–“ (msec) */
+        ULONG tmem;             /* å®Ÿè¡Œã«å¿…è¦ã¨ã™ã‚‹ãƒ—ãƒ­ã‚»ã‚¹å…¨ä½“ã®ãƒ¡ãƒ¢ãƒªã‚µã‚¤ã‚º (byte) */
+        ULONG wmem;             /* ç¾åœ¨ãƒ—ãƒ­ã‚»ã‚¹ã«å‰²ã‚Šã¤ã‘ã‚‰ã‚Œã¦ã„ã‚‹å®Ÿãƒ¡ãƒ¢ãƒªã‚µã‚¤ã‚º (byte) */
+        LONG resv[11];          /* äºˆç´„ */
 } P_INFO;
 
-/* ‹­§I—¹‚ÉŠÖ‚·‚é’è” */
-#define TERM_NRM 0x0000 /* w’è‚µ‚½ƒvƒƒZƒX‚Ì‚İ‹­§I—¹ */
-#define TERM_ALL 0x0001 /* qƒvƒƒZƒX‚Ü‚ÅŠÜ‚ß‚½‹­§I—¹ */
+/* å¼·åˆ¶çµ‚äº†ã«é–¢ã™ã‚‹å®šæ•° */
+#define TERM_NRM 0x0000 /* æŒ‡å®šã—ãŸãƒ—ãƒ­ã‚»ã‚¹ã®ã¿å¼·åˆ¶çµ‚äº† */
+#define TERM_ALL 0x0001 /* å­ãƒ—ãƒ­ã‚»ã‚¹ã¾ã§å«ã‚ãŸå¼·åˆ¶çµ‚äº† */
 
-/* —Dæ“x‚ÉŠÖ‚·‚é’è” */
-#define P_ABS    0x0000 /* —Dæ“x‚Ìâ‘Îw’è */
-#define P_REL    0x0001 /* —Dæ“x‚Ì‘Š‘Îw’è */
+/* å„ªå…ˆåº¦ã«é–¢ã™ã‚‹å®šæ•° */
+#define P_ABS    0x0000 /* å„ªå…ˆåº¦ã®çµ¶å¯¾æŒ‡å®š */
+#define P_REL    0x0001 /* å„ªå…ˆåº¦ã®ç›¸å¯¾æŒ‡å®š */
 
-/* Àsó‘Ô‚ÉŠÖ‚·‚é’è” */
-#define P_LOCK   0x0001 /* ƒƒbƒNó‘Ô */
-#define P_WAIT   0x2000 /* ‘Ò‚¿ó‘Ô */
-#define P_READY  0x4000 /* Às‰Â”\ó‘Ô */
-#define P_RUN    0x8000 /* Àsó‘Ô */
+/* å®Ÿè¡ŒçŠ¶æ…‹ã«é–¢ã™ã‚‹å®šæ•° */
+#define P_LOCK   0x0001 /* ãƒ­ãƒƒã‚¯çŠ¶æ…‹ */
+#define P_WAIT   0x2000 /* å¾…ã¡çŠ¶æ…‹ */
+#define P_READY  0x4000 /* å®Ÿè¡Œå¯èƒ½çŠ¶æ…‹ */
+#define P_RUN    0x8000 /* å®Ÿè¡ŒçŠ¶æ…‹ */
 
 
 /* message structure */
@@ -49,38 +49,38 @@ typedef union {
         struct {
                 W pid;
                 W code;
-        } ABORT; /* qƒvƒƒZƒX‚ÌˆÙíI—¹ */
+        } ABORT; /* å­ãƒ—ãƒ­ã‚»ã‚¹ã®ç•°å¸¸çµ‚äº† */
         struct {
                 W pid;
                 W code;
-        } EXIT; /* qƒvƒƒZƒX‚Ì³íI—¹ */
+        } EXIT; /* å­ãƒ—ãƒ­ã‚»ã‚¹ã®æ­£å¸¸çµ‚äº† */
         struct {
                 W pid;
                 W code;
-        } TERM; /* qƒvƒƒZƒX‚Ì‹­§I—¹ */
+        } TERM; /* å­ãƒ—ãƒ­ã‚»ã‚¹ã®å¼·åˆ¶çµ‚äº† */
         struct {
                 W code;
-        } TMOUT; /* ©ƒvƒƒZƒX‚Ìƒ^ƒCƒ€ƒAƒEƒg */
+        } TMOUT; /* è‡ªãƒ—ãƒ­ã‚»ã‚¹ã®ã‚¿ã‚¤ãƒ ã‚¢ã‚¦ãƒˆ */
         struct {
                 LONG iopac;
-        } IOREQ; /* ƒhƒ‰ƒCƒoƒvƒƒZƒX‚Ö‚Ì—v‹ */
+        } IOREQ; /* ãƒ‰ãƒ©ã‚¤ãƒãƒ—ãƒ­ã‚»ã‚¹ã¸ã®è¦æ±‚ */
         struct {
                 W code;
-        } DOWN; /* ƒVƒXƒeƒ€’â~—v‹ */
+        } DOWN; /* ã‚·ã‚¹ãƒ†ãƒ åœæ­¢è¦æ±‚ */
         struct {
                 B msg_str[32];
-        } ANYMSG; /* ”Ä—p */
+        } ANYMSG; /* æ±ç”¨ */
 } MSGBODY;
 
 typedef struct {
-        W msg_type;          /* ƒƒbƒZ[ƒWƒ^ƒCƒv */
-        W msg_size;          /* ƒƒbƒZ[ƒWƒTƒCƒY (ƒoƒCƒg”) */
-        B msg_body[0];       /* ƒƒbƒZ[ƒW–{‘Ì (msg_sizeƒoƒCƒg) */
+        W msg_type;          /* ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚¿ã‚¤ãƒ— */
+        W msg_size;          /* ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚µã‚¤ã‚º (ãƒã‚¤ãƒˆæ•°) */
+        B msg_body[0];       /* ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸æœ¬ä½“ (msg_sizeãƒã‚¤ãƒˆ) */
 } MESSAGE;
 
-/* ƒƒbƒZ[ƒW‘€ì‚Ì’è‹` */
-#define WAIT    0x0000 /* ƒLƒ…[‚É“ü‚é‚Ü‚Å‘Ò‚Â */
-#define NOWAIT  0x0001 /* ƒLƒ…[‚É“ü‚é‚Ü‚Å‘Ò‚½‚È‚¢ */
+/* ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸æ“ä½œã®å®šç¾© */
+#define WAIT    0x0000 /* ã‚­ãƒ¥ãƒ¼ã«å…¥ã‚‹ã¾ã§å¾…ã¤ */
+#define NOWAIT  0x0001 /* ã‚­ãƒ¥ãƒ¼ã«å…¥ã‚‹ã¾ã§å¾…ãŸãªã„ */
 #define CONFM   0x0002 /* Wait until the message is received. */
 #define CLR     0x0000 /* Remove from the queue. */
 #define NOCLR   0x0008 /* Leave it on the queue. */
@@ -92,75 +92,75 @@ typedef struct {
 #define MH_TERM  ((FUNCP)3)
 
 /* defines used for message ID */
-#define MS_ABORT (1) /* qƒvƒƒZƒX‚ÌˆÙíI—¹ */
-#define MS_EXIT  (2) /* qƒvƒƒZƒX‚Ì³íI—¹ */
-#define MS_TERM  (3) /* qƒvƒƒZƒX‚Ì‹­§I—¹ */
-#define MS_TMOUT (4) /* ƒ^ƒCƒ€ƒAƒEƒg */
-#define MS_IOREQ (5) /* ƒfƒoƒhƒ‰ƒvƒƒZƒX—v‹ */
+#define MS_ABORT (1) /* å­ãƒ—ãƒ­ã‚»ã‚¹ã®ç•°å¸¸çµ‚äº† */
+#define MS_EXIT  (2) /* å­ãƒ—ãƒ­ã‚»ã‚¹ã®æ­£å¸¸çµ‚äº† */
+#define MS_TERM  (3) /* å­ãƒ—ãƒ­ã‚»ã‚¹ã®å¼·åˆ¶çµ‚äº† */
+#define MS_TMOUT (4) /* ã‚¿ã‚¤ãƒ ã‚¢ã‚¦ãƒˆ */
+#define MS_IOREQ (5) /* ãƒ‡ãƒãƒ‰ãƒ©ãƒ—ãƒ­ã‚»ã‚¹è¦æ±‚ */
 #define MS_SYS   (6) /* reserved */
-#define MS_DOWN  (7) /* ƒVƒXƒeƒ€’â~—v‹ */
+#define MS_DOWN  (7) /* ã‚·ã‚¹ãƒ†ãƒ åœæ­¢è¦æ±‚ */
 #define MS_SRSV0 (8) /* reserved */
 #define MS_SRSV1 (9) /* reserved */
 #define MS_SRSV2 (10) /* reserved */
 #define MS_MNG0  (11) /* reserved */
-#define MS_MNG1  (12) /* ƒEƒCƒ“ƒhƒEƒ}ƒl[ƒWƒƒ—pƒŠƒU[ƒu */
-#define MS_MNG2  (13) /* ƒEƒCƒ“ƒhƒEƒ}ƒl[ƒWƒƒ—pƒŠƒU[ƒu */
-#define MS_MNG3  (14) /* Àg/‰¼gƒ}ƒl[ƒWƒƒ—pƒŠƒU[ƒu */
-#define MS_MNG4  (15) /* ƒXƒv[ƒ‰—p reserved */
-#define MS_MNG5  (16) /* ƒXƒv[ƒ‰—p reserved */
-#define MS_MNG6  (17) /* LAN—p reserved */
-#define MS_MNG7  (18) /* LAN—p reserved */
+#define MS_MNG1  (12) /* ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ãƒãƒãƒ¼ã‚¸ãƒ£ç”¨ãƒªã‚¶ãƒ¼ãƒ– */
+#define MS_MNG2  (13) /* ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ãƒãƒãƒ¼ã‚¸ãƒ£ç”¨ãƒªã‚¶ãƒ¼ãƒ– */
+#define MS_MNG3  (14) /* å®Ÿèº«/ä»®èº«ãƒãƒãƒ¼ã‚¸ãƒ£ç”¨ãƒªã‚¶ãƒ¼ãƒ– */
+#define MS_MNG4  (15) /* ã‚¹ãƒ—ãƒ¼ãƒ©ç”¨ reserved */
+#define MS_MNG5  (16) /* ã‚¹ãƒ—ãƒ¼ãƒ©ç”¨ reserved */
+#define MS_MNG6  (17) /* LANç”¨ reserved */
+#define MS_MNG7  (18) /* LANç”¨ reserved */
 #define MS_MNG8  (19) /* reserved */
 #define MS_MNG9  (20) /* reserved */
 #define MS_MNG10 (21) /* reserved */
 #define MS_MNG11 (22) /* reserved */
 #define MS_MNG12 (23) /* reserved */
-#define MS_TYPE0 (24) /* ƒAƒvƒŠƒP[ƒVƒ‡ƒ“ƒƒbƒZ[ƒW #0 */
-#define MS_TYPE1 (25) /* ƒAƒvƒŠƒP[ƒVƒ‡ƒ“ƒƒbƒZ[ƒW #1 */
-#define MS_TYPE2 (26) /* ƒAƒvƒŠƒP[ƒVƒ‡ƒ“ƒƒbƒZ[ƒW #2 */
-#define MS_TYPE3 (27) /* ƒAƒvƒŠƒP[ƒVƒ‡ƒ“ƒƒbƒZ[ƒW #3 */
-#define MS_TYPE4 (28) /* ƒAƒvƒŠƒP[ƒVƒ‡ƒ“ƒƒbƒZ[ƒW #4 */
-#define MS_TYPE5 (29) /* ƒAƒvƒŠƒP[ƒVƒ‡ƒ“ƒƒbƒZ[ƒW #5 */
-#define MS_TYPE6 (30) /* ƒAƒvƒŠƒP[ƒVƒ‡ƒ“ƒƒbƒZ[ƒW #6 */
-#define MS_TYPE7 (31) /* ƒAƒvƒŠƒP[ƒVƒ‡ƒ“ƒƒbƒZ[ƒW #7 */
+#define MS_TYPE0 (24) /* ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ #0 */
+#define MS_TYPE1 (25) /* ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ #1 */
+#define MS_TYPE2 (26) /* ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ #2 */
+#define MS_TYPE3 (27) /* ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ #3 */
+#define MS_TYPE4 (28) /* ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ #4 */
+#define MS_TYPE5 (29) /* ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ #5 */
+#define MS_TYPE6 (30) /* ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ #6 */
+#define MS_TYPE7 (31) /* ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ #7 */
 
-#define MM_ABORT (0x00000001) /* qƒvƒƒZƒX‚ÌˆÙíI—¹ */
-#define MM_EXIT  (0x00000002) /* qƒvƒƒZƒX‚Ì³íI—¹ */
-#define MM_TERM  (0x00000004) /* qƒvƒƒZƒX‚Ì‹­§I—¹ */
-#define MM_TMOUT (0x00000008) /* ƒ^ƒCƒ€ƒAƒEƒg */
-#define MM_IOREQ (0x00000010) /* ƒfƒoƒhƒ‰ƒvƒƒZƒX—v‹ */
+#define MM_ABORT (0x00000001) /* å­ãƒ—ãƒ­ã‚»ã‚¹ã®ç•°å¸¸çµ‚äº† */
+#define MM_EXIT  (0x00000002) /* å­ãƒ—ãƒ­ã‚»ã‚¹ã®æ­£å¸¸çµ‚äº† */
+#define MM_TERM  (0x00000004) /* å­ãƒ—ãƒ­ã‚»ã‚¹ã®å¼·åˆ¶çµ‚äº† */
+#define MM_TMOUT (0x00000008) /* ã‚¿ã‚¤ãƒ ã‚¢ã‚¦ãƒˆ */
+#define MM_IOREQ (0x00000010) /* ãƒ‡ãƒãƒ‰ãƒ©ãƒ—ãƒ­ã‚»ã‚¹è¦æ±‚ */
 #define MM_SYS   (0x00000020) /* reserved */
-#define MM_DOWN  (0x00000040) /* ƒVƒXƒeƒ€’â~—v‹ */
+#define MM_DOWN  (0x00000040) /* ã‚·ã‚¹ãƒ†ãƒ åœæ­¢è¦æ±‚ */
 #define MM_SRSV0 (0x00000080) /* reserved */
 #define MM_SRSV1 (0x00000100) /* reserved */
 #define MM_SRSV2 (0x00000200) /* reserved */
 #define MM_MNG0  (0x00000400) /* reserved */
-#define MM_MNG1  (0x00000800) /* ƒEƒCƒ“ƒhƒEƒ}ƒl[ƒWƒƒ—pƒŠƒU[ƒu */
-#define MM_MNG2  (0x00001000) /* ƒEƒCƒ“ƒhƒEƒ}ƒl[ƒWƒƒ—pƒŠƒU[ƒu */
-#define MM_MNG3  (0x00002000) /* Àg/‰¼gƒ}ƒl[ƒWƒƒ—pƒŠƒU[ƒu */
-#define MM_MNG4  (0x00004000) /* ƒXƒv[ƒ‰—p reserved */
-#define MM_MNG5  (0x00008000) /* ƒXƒv[ƒ‰—p reserved */
-#define MM_MNG6  (0x00010000) /* LAN—p reserved */
-#define MM_MNG7  (0x00020000) /* LAN—p reserved */
+#define MM_MNG1  (0x00000800) /* ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ãƒãƒãƒ¼ã‚¸ãƒ£ç”¨ãƒªã‚¶ãƒ¼ãƒ– */
+#define MM_MNG2  (0x00001000) /* ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ãƒãƒãƒ¼ã‚¸ãƒ£ç”¨ãƒªã‚¶ãƒ¼ãƒ– */
+#define MM_MNG3  (0x00002000) /* å®Ÿèº«/ä»®èº«ãƒãƒãƒ¼ã‚¸ãƒ£ç”¨ãƒªã‚¶ãƒ¼ãƒ– */
+#define MM_MNG4  (0x00004000) /* ã‚¹ãƒ—ãƒ¼ãƒ©ç”¨ reserved */
+#define MM_MNG5  (0x00008000) /* ã‚¹ãƒ—ãƒ¼ãƒ©ç”¨ reserved */
+#define MM_MNG6  (0x00010000) /* LANç”¨ reserved */
+#define MM_MNG7  (0x00020000) /* LANç”¨ reserved */
 #define MM_MNG8  (0x00040000) /* reserved */
 #define MM_MNG9  (0x00080000) /* reserved */
 #define MM_MNG10 (0x00100000) /* reserved */
 #define MM_MNG11 (0x00200000) /* reserved */
 #define MM_MNG12 (0x00400000) /* reserved */
-#define MM_TYPE0 (0x00800000) /* ƒAƒvƒŠƒP[ƒVƒ‡ƒ“ƒƒbƒZ[ƒW #0 */
-#define MM_TYPE1 (0x01000000) /* ƒAƒvƒŠƒP[ƒVƒ‡ƒ“ƒƒbƒZ[ƒW #1 */
-#define MM_TYPE2 (0x02000000) /* ƒAƒvƒŠƒP[ƒVƒ‡ƒ“ƒƒbƒZ[ƒW #2 */
-#define MM_TYPE3 (0x04000000) /* ƒAƒvƒŠƒP[ƒVƒ‡ƒ“ƒƒbƒZ[ƒW #3 */
-#define MM_TYPE4 (0x08000000) /* ƒAƒvƒŠƒP[ƒVƒ‡ƒ“ƒƒbƒZ[ƒW #4 */
-#define MM_TYPE5 (0x10000000) /* ƒAƒvƒŠƒP[ƒVƒ‡ƒ“ƒƒbƒZ[ƒW #5 */
-#define MM_TYPE6 (0x20000000) /* ƒAƒvƒŠƒP[ƒVƒ‡ƒ“ƒƒbƒZ[ƒW #6 */
-#define MM_TYPE7 (0x40000000) /* ƒAƒvƒŠƒP[ƒVƒ‡ƒ“ƒƒbƒZ[ƒW #7 */
-#define MM_ALL   (0x7FFFFFFF) /* ‘Sƒ^ƒCƒvw’è */
-#define MM_NULL  (0x00000000) /* ‘Sƒ^ƒCƒvw’èŠO */
+#define MM_TYPE0 (0x00800000) /* ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ #0 */
+#define MM_TYPE1 (0x01000000) /* ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ #1 */
+#define MM_TYPE2 (0x02000000) /* ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ #2 */
+#define MM_TYPE3 (0x04000000) /* ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ #3 */
+#define MM_TYPE4 (0x08000000) /* ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ #4 */
+#define MM_TYPE5 (0x10000000) /* ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ #5 */
+#define MM_TYPE6 (0x20000000) /* ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ #6 */
+#define MM_TYPE7 (0x40000000) /* ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ #7 */
+#define MM_ALL   (0x7FFFFFFF) /* å…¨ã‚¿ã‚¤ãƒ—æŒ‡å®š */
+#define MM_NULL  (0x00000000) /* å…¨ã‚¿ã‚¤ãƒ—æŒ‡å®šå¤– */
 
 /* for semaphoe. */
 #define SEM_SYNC (0x0000) /* Syncronize semaphoe */
-#define SEM_EXCL (0x4000) /* ”r‘¼§Œä—pƒZƒ}ƒtƒH */
+#define SEM_EXCL (0x4000) /* æ’ä»–åˆ¶å¾¡ç”¨ã‚»ãƒãƒ•ã‚© */
 
 #define DELEXIT  (0x8000) /* Delete when process is killed. */
 

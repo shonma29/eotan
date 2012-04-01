@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ‚Ì¶¬•¨‚Í GNU Generic PUBLIC LICENSE ‚É]‚¢‚Ü‚·B
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
