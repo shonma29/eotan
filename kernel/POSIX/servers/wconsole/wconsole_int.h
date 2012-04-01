@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -75,12 +75,12 @@ struct window {
 };
 
 /* main.c */
-extern W    	init_wconsole(void);	/* ╫И╢Э╡╫		*/
-extern W    	open_wconsole(ID caller, DDEV_OPN_REQ *packet);		/* ╔╙║╪╔в╔С		*/
-extern W  	close_wconsole(ID caller, DDEV_CLS_REQ *packet);	/* ╔╞╔М║╪╔╨		*/
-extern W    	read_wconsole(ID caller, DDEV_REA_REQ *packet);		/* фи╓ъ╧Ч╓ъ		*/
-extern W    	write_wconsole(ID caller, DDEV_WRI_REQ *packet);	/* ╫Я╓╜╧Ч╓ъ		*/
-extern W    	control_wconsole(ID caller, ID tskid, DDEV_CTL_REQ *packet);	/* ╔Ё╔С╔х╔М║╪╔К		*/
+extern W    	init_wconsole(void);	/* Е┬²Ф°÷Е▄√		*/
+extern W    	open_wconsole(ID caller, DDEV_OPN_REQ *packet);		/* Ц┌╙Ц┐╪Ц┐≈Ц┐Ё		*/
+extern W  	close_wconsole(ID caller, DDEV_CLS_REQ *packet);	/* Ц┌╞Ц┐╜Ц┐╪Ц┌╨		*/
+extern W    	read_wconsole(ID caller, DDEV_REA_REQ *packet);		/* Х╙╜Ц│©Х╬╪Ц│©		*/
+extern W    	write_wconsole(ID caller, DDEV_WRI_REQ *packet);	/* Ф⌡╦Ц│█Х╬╪Ц│©		*/
+extern W    	control_wconsole(ID caller, ID tskid, DDEV_CTL_REQ *packet);	/* Ц┌ЁЦ┐ЁЦ┐┬Ц┐╜Ц┐╪Ц┐╚		*/
 extern W 	posix_read_wconsole(ID caller, ID tskid, DDEV_REQ *packet);
 extern W 	relay_wconsole(ID caller, DDEV_RLY_REQ *packet);
 

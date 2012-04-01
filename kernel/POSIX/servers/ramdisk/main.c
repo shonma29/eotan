@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -16,21 +16,21 @@ Version 2, June 1991
 #define START_FROM_INIT
 
 /*********************************************************************
- *	 Âç°èÊÑ¿ô·²¤ÎÀë¸À
+ *	 å¤§åŸŸå¤‰æ•°ç¾¤ã®å®£è¨€
  *
  */
 
 /*********************************************************************
- *	 ¶É½êÊÑ¿ô·²¤ÎÀë¸À
+ *	 å±€æ‰€å¤‰æ•°ç¾¤ã®å®£è¨€
  *
  */
-static W mydevid;		/* ¼«Ê¬¼«¿È¤Îid */
-static ID recvport;		/* Í×µá¼õ¤±¤Ä¤±ÍÑ¥İ¡¼¥È */
+static W mydevid;		/* è‡ªåˆ†è‡ªèº«ã®id */
+static ID recvport;		/* è¦æ±‚å—ã‘ã¤ã‘ç”¨ãƒãƒ¼ãƒˆ */
 static char *ramdisk;
 static W rd_size;
 
 /*
- *	¶É½ê´Ø¿ô·²¤ÎÄêµÁ
+ *	å±€æ‰€é–¢æ•°ç¾¤ã®å®šç¾©
  */
 static void main_loop(void);
 static void init_rd_driver(W size);
@@ -38,16 +38,16 @@ static void init_rd(W size);
 static void doit(DDEV_REQ * packet);
 
 #ifdef START_FROM_INIT
-/* ¥À¥ß¡¼¤Î main ´Ø¿ô */
+/* ãƒ€ãƒŸãƒ¼ã® main é–¢æ•° */
 main()
 {
 }
 
 #endif
 /*
- * ¥Ç¥Ğ¥¤¥¹¥É¥é¥¤¥Ğ¤Î main ´Ø¿ô
+ * ãƒ‡ãƒã‚¤ã‚¹ãƒ‰ãƒ©ã‚¤ãƒã® main é–¢æ•°
  *
- * ¤³¤Î´Ø¿ô¤Ï¡¢¥Ç¥Ğ¥¤¥¹¥É¥é¥¤¥ĞÎ©¤Á¾å¤²»ş¤Ë°ì²ó¤À¤±¼Â¹Ô¤¹¤ë¡£
+ * ã“ã®é–¢æ•°ã¯ã€ãƒ‡ãƒã‚¤ã‚¹ãƒ‰ãƒ©ã‚¤ãƒç«‹ã¡ä¸Šã’æ™‚ã«ä¸€å›ã ã‘å®Ÿè¡Œã™ã‚‹ã€‚
  *
  */
 
@@ -66,18 +66,18 @@ start(int argc, char *argv[])
 	    size *= 1024;
     }
     /* 
-     * Í×µá¼õ¿®ÍÑ¤Î¥İ¡¼¥È¤ÎºîÀ®¤È¥é¥à¥Ç¥£¥¹¥¯¤Î½é´ü²½
+     * è¦æ±‚å—ä¿¡ç”¨ã®ãƒãƒ¼ãƒˆã®ä½œæˆã¨ãƒ©ãƒ ãƒ‡ã‚£ã‚¹ã‚¯ã®åˆæœŸåŒ–
      */
     init_rd_driver(size);
 
     /*
-     * Î©¤Á¾å¤²¥á¥Ã¥»¡¼¥¸
+     * ç«‹ã¡ä¸Šã’ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸
      */
     dbg_printf("ram disk driver start (size = %d KB)\n", size / 1024);
     dbg_printf("  receive port is %d\n", recvport);
 
     /*
-     * ¥É¥é¥¤¥Ğ¤ò½é´ü²½¤¹¤ë¡£
+     * ãƒ‰ãƒ©ã‚¤ãƒã‚’åˆæœŸåŒ–ã™ã‚‹ã€‚
      */
     main_loop();
 }
@@ -89,14 +89,14 @@ static void main_loop()
     UW rsize;
 
     /*
-     * Í×µá¼õ¿® - ½èÍı¤Î¥ë¡¼¥×
+     * è¦æ±‚å—ä¿¡ - å‡¦ç†ã®ãƒ«ãƒ¼ãƒ—
      */
     for (;;) {
-	/* Í×µá¤Î¼õ¿® */
+	/* è¦æ±‚ã®å—ä¿¡ */
 	get_req(recvport, &req, &rsize);
 	switch (sys_errno) {
 	case E_OK:
-	    /* Àµ¾ï¥±¡¼¥¹ */
+	    /* æ­£å¸¸ã‚±ãƒ¼ã‚¹ */
 	    doit(&req);
 	    break;
 
@@ -109,7 +109,7 @@ static void main_loop()
 	    break;
 	}
     }
-    /* ¤³¤³¤Î¹Ô¤Ë¤Ï¡¢Íè¤Ê¤¤ */
+    /* ã“ã“ã®è¡Œã«ã¯ã€æ¥ãªã„ */
 }
 
 /*
@@ -123,12 +123,12 @@ static void doit(DDEV_REQ * packet)
 {
     switch (packet->header.msgtyp) {
     case DEV_OPN:
-	/* ¥Ç¥Ğ¥¤¥¹¤Î¥ª¡¼¥×¥ó */
+	/* ãƒ‡ãƒã‚¤ã‚¹ã®ã‚ªãƒ¼ãƒ—ãƒ³ */
 	open_rd(packet->header.mbfid, &(packet->body.opn_req));
 	break;
 
     case DEV_CLS:
-	/* ¥Ç¥Ğ¥¤¥¹¤Î¥¯¥í¡¼¥º */
+	/* ãƒ‡ãƒã‚¤ã‚¹ã®ã‚¯ãƒ­ãƒ¼ã‚º */
 	close_rd(packet->header.mbfid, &(packet->body.cls_req));
 	break;
 
@@ -147,10 +147,10 @@ static void doit(DDEV_REQ * packet)
 }
 
 /*
- * ½é´ü²½
+ * åˆæœŸåŒ–
  *
- * o ¥Õ¥¡¥¤¥ë¥Æ¡¼¥Ö¥ë (file_table) ¤Î½é´ü²½
- * o Í×µá¼õ¤±¤Ä¤±ÍÑ¤Î¥á¥Ã¥»¡¼¥¸¥Ğ¥Ã¥Õ¥¡ ID ¤ò¥İ¡¼¥È¥Ş¥Í¡¼¥¸¥ã¤ËÅĞÏ¿
+ * o ãƒ•ã‚¡ã‚¤ãƒ«ãƒ†ãƒ¼ãƒ–ãƒ« (file_table) ã®åˆæœŸåŒ–
+ * o è¦æ±‚å—ã‘ã¤ã‘ç”¨ã®ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒãƒƒãƒ•ã‚¡ ID ã‚’ãƒãƒ¼ãƒˆãƒãƒãƒ¼ã‚¸ãƒ£ã«ç™»éŒ²
  */
 static void init_rd_driver(W size)
 {
@@ -159,7 +159,7 @@ static void init_rd_driver(W size)
     ER error;
 
     /*
-     * Í×µá¼õ¤±¤Ä¤±ÍÑ¤Î¥İ¡¼¥È¤ò½é´ü²½¤¹¤ë¡£
+     * è¦æ±‚å—ã‘ã¤ã‘ç”¨ã®ãƒãƒ¼ãƒˆã‚’åˆæœŸåŒ–ã™ã‚‹ã€‚
      */
 #ifdef notdef
     recvport = get_port(sizeof(DDEV_RES), sizeof(DDEV_RES));
@@ -169,7 +169,7 @@ static void init_rd_driver(W size)
     if (recvport <= 0) {
 	dbg_printf("RD: cannot make receive porrt.\n");
 	slp_tsk();
-	/* ¥á¥Ã¥»¡¼¥¸¥Ğ¥Ã¥Õ¥¡À¸À®¤Ë¼ºÇÔ */
+	/* ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒãƒƒãƒ•ã‚¡ç”Ÿæˆã«å¤±æ•— */
     }
 
     error = regist_port(RD_DRIVER, recvport);
@@ -181,7 +181,7 @@ static void init_rd_driver(W size)
 }
 
 /*
- * init_rd --- RAM DISK ¥É¥é¥¤¥Ğ¤Î½é´ü²½
+ * init_rd --- RAM DISK ãƒ‰ãƒ©ã‚¤ãƒã®åˆæœŸåŒ–
  *
  */
 void init_rd(W size)
@@ -194,7 +194,7 @@ void init_rd(W size)
 	ramdisk = (char *) VADDR_HEAP;
     }
 #else
-    init_malloc(VADDR_HEAP);	/* Å¬Åö¤ÊÃÍ */
+    init_malloc(VADDR_HEAP);	/* é©å½“ãªå€¤ */
     ramdisk = (char *) malloc(size);
     if (ramdisk == NULL) {
 	dbg_printf("RD: cannot allocate memory.\n");
@@ -205,13 +205,13 @@ void init_rd(W size)
 }
 
 /************************************************************************
- * open_rd --- RAM DISK ¤Î¥ª¡¼¥×¥ó
+ * open_rd --- RAM DISK ã®ã‚ªãƒ¼ãƒ—ãƒ³
  *
- * °ú¿ô¡§	dd	¥É¥é¥¤¥ĞÈÖ¹æ
- *		o_mode	¥ª¡¼¥×¥ó¥â¡¼¥É
- *		error	¥¨¥é¡¼ÈÖ¹æ
+ * å¼•æ•°ï¼š	dd	ãƒ‰ãƒ©ã‚¤ãƒç•ªå·
+ *		o_mode	ã‚ªãƒ¼ãƒ—ãƒ³ãƒ¢ãƒ¼ãƒ‰
+ *		error	ã‚¨ãƒ©ãƒ¼ç•ªå·
  *
- * ÊÖÃÍ¡§	
+ * è¿”å€¤ï¼š	
  *
  *
  */
@@ -228,13 +228,13 @@ W open_rd(ID caller, DDEV_OPN_REQ * packet)
 }
 
 /************************************************************************
- * close_rd --- ¥É¥é¥¤¥Ğ¤Î¥¯¥í¡¼¥º
+ * close_rd --- ãƒ‰ãƒ©ã‚¤ãƒã®ã‚¯ãƒ­ãƒ¼ã‚º
  *
- * °ú¿ô¡§	dd	¥É¥é¥¤¥ĞÈÖ¹æ
- *		o_mode	¥ª¡¼¥×¥ó¥â¡¼¥É
- *		error	¥¨¥é¡¼ÈÖ¹æ
+ * å¼•æ•°ï¼š	dd	ãƒ‰ãƒ©ã‚¤ãƒç•ªå·
+ *		o_mode	ã‚ªãƒ¼ãƒ—ãƒ³ãƒ¢ãƒ¼ãƒ‰
+ *		error	ã‚¨ãƒ©ãƒ¼ç•ªå·
  *
- * ÊÖÃÍ¡§	
+ * è¿”å€¤ï¼š	
  *
  */
 W close_rd(ID caller, DDEV_CLS_REQ * packet)
@@ -251,12 +251,12 @@ W close_rd(ID caller, DDEV_CLS_REQ * packet)
 /*************************************************************************
  * read_rd --- 
  *
- * °ú¿ô¡§	caller	¸Æ¤Ó½Ğ¤·¸µ¤Ø¤ÎÊÖÅú¤òÊÖ¤¹¤¿¤á¤Î¥İ¡¼¥È
- *		packet	ÆÉ¤ß¹ş¤ß¥Ç¡¼¥¿¤Î¥Ñ¥é¥á¡¼¥¿
+ * å¼•æ•°ï¼š	caller	å‘¼ã³å‡ºã—å…ƒã¸ã®è¿”ç­”ã‚’è¿”ã™ãŸã‚ã®ãƒãƒ¼ãƒˆ
+ *		packet	èª­ã¿è¾¼ã¿ãƒ‡ãƒ¼ã‚¿ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
  *
- * ÊÖÃÍ¡§	¥¨¥é¡¼ÈÖ¹æ
+ * è¿”å€¤ï¼š	ã‚¨ãƒ©ãƒ¼ç•ªå·
  *
- * ½èÍı¡§	¤³¤Î´Ø¿ô¤Ï¡¢°Ê²¼¤Î½èÍı¤ò¹Ô¤¦¡£
+ * å‡¦ç†ï¼š	ã“ã®é–¢æ•°ã¯ã€ä»¥ä¸‹ã®å‡¦ç†ã‚’è¡Œã†ã€‚
  *
  */
 W read_rd(ID caller, DDEV_REA_REQ * packet)

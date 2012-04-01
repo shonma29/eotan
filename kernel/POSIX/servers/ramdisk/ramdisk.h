@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -33,10 +33,10 @@ Version 2, June 1991
 #define DD_TYPE		1
 
 /* main.c */
-extern W    	open_rd();	/* ╔╙║╪╔в╔С		*/
-extern W  	close_rd();	/* ╔╞╔М║╪╔╨		*/
-extern W    	read_rd();	/* фи╓ъ╧Ч╓ъ		*/
-extern W    	write_rd();	/* ╫Я╓╜╧Ч╓ъ		*/
-extern W    	control_rd();	/* ╔Ё╔С╔х╔М║╪╔К		*/
+extern W    	open_rd();	/* Ц┌╙Ц┐╪Ц┐≈Ц┐Ё		*/
+extern W  	close_rd();	/* Ц┌╞Ц┐╜Ц┐╪Ц┌╨		*/
+extern W    	read_rd();	/* Х╙╜Ц│©Х╬╪Ц│©		*/
+extern W    	write_rd();	/* Ф⌡╦Ц│█Х╬╪Ц│©		*/
+extern W    	control_rd();	/* Ц┌ЁЦ┐ЁЦ┐┬Ц┐╜Ц┐╪Ц┐╚		*/
 
 #endif __RD_H__

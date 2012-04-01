@@ -1,6 +1,6 @@
 /*
 
-  B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+  B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
   
   GNU GENERAL PUBLIC LICENSE
   Version 2, June 1991
@@ -51,7 +51,7 @@ static char rcsid[] =
 extern void draw_window();
 
 /*********************************************************************
- *	 ¶É½êÊÑ¿ô·²¤ÎÀë¸À
+ *	 å±€æ‰€å¤‰æ•°ç¾¤ã®å®£è¨€
  *
  */
 static void main_loop();
@@ -64,7 +64,7 @@ static REQ_LIST req_list[MAX_REQ_LIST], *free_req_list = NULL, *cmsg =
 static int key_mode;
 
 /*********************************************************************
- *	 Âç°èÊÑ¿ô·²¤ÎÀë¸À
+ *	 å¤§åŸŸå¤‰æ•°ç¾¤ã®å®£è¨€
  *
  */
 ID recvport;
@@ -80,9 +80,9 @@ extern struct window w[];
 
 
 /*
- * wconsole ¥Ç¥Ğ¥¤¥¹¥É¥é¥¤¥Ğ¤Î main ´Ø¿ô
+ * wconsole ãƒ‡ãƒã‚¤ã‚¹ãƒ‰ãƒ©ã‚¤ãƒã® main é–¢æ•°
  *
- * ¤³¤Î´Ø¿ô¤Ï¡¢¥Ç¥Ğ¥¤¥¹¥É¥é¥¤¥ĞÎ©¤Á¾å¤²»ş¤Ë°ì²ó¤À¤±¼Â¹Ô¤¹¤ë¡£
+ * ã“ã®é–¢æ•°ã¯ã€ãƒ‡ãƒã‚¤ã‚¹ãƒ‰ãƒ©ã‚¤ãƒç«‹ã¡ä¸Šã’æ™‚ã«ä¸€å›ã ã‘å®Ÿè¡Œã™ã‚‹ã€‚
  *
  */
 start()
@@ -90,12 +90,12 @@ start()
     extern char version[];
 
     /* 
-     * Í×µá¼õ¿®ÍÑ¤Î¥İ¡¼¥È¤ÎºîÀ®
+     * è¦æ±‚å—ä¿¡ç”¨ã®ãƒãƒ¼ãƒˆã®ä½œæˆ
      */
     init_wconsole();
 
     /*
-     * Î©¤Á¾å¤²¥á¥Ã¥»¡¼¥¸
+     * ç«‹ã¡ä¸Šã’ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸
      */
     dbg_printf("wconsole manager start\n", 0);
 
@@ -104,14 +104,14 @@ start()
 
 static void main_loop()
 {
-    DDEV_REQ req;		/* ¼õ¿®¤¹¤ëÍ×µá¥Ñ¥±¥Ã¥È */
+    DDEV_REQ req;		/* å—ä¿¡ã™ã‚‹è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
     DDEV_RES res;
     ER err;
     ER errno;
     INT rsize;
 
     /*
-     * Í×µá¼õ¿® - ½èÍı¤Î¥ë¡¼¥×
+     * è¦æ±‚å—ä¿¡ - å‡¦ç†ã®ãƒ«ãƒ¼ãƒ—
      */
     for (;;) {
 	rsize = sizeof(req);
@@ -121,7 +121,7 @@ static void main_loop()
 	errno = rcv_mbf(&req, &rsize, recvport);
 	switch (errno) {
 	case E_OK:
-	    /* Àµ¾ï¥±¡¼¥¹ */
+	    /* æ­£å¸¸ã‚±ãƒ¼ã‚¹ */
 #ifdef notdef
 	    dbg_printf("WCONSOLE: receive packet type = %d\n",
 		       req.header.msgtyp);
@@ -140,7 +140,7 @@ static void main_loop()
 	}
 
 #if 0
-	/* keyboard ¤«¤é¤ÎÊÖ»ö¤Î½èÍı */
+	/* keyboard ã‹ã‚‰ã®è¿”äº‹ã®å‡¦ç† */
 	if (cmsg != NULL) {
 	    rsize = sizeof(res);
 	    errno = prcv_mbf(&res, &rsize, recv_k);
@@ -150,7 +150,7 @@ static void main_loop()
 #ifdef notdef
 		dbg_printf("\nWCONSOLE: recv from keyboard\n");
 #endif
-		/* POSIX ¥¢¥×¥ê¥±¡¼¥·¥ç¥ó ¤ËÊÖ»ö¤òÈ¯¹Ô */
+		/* POSIX ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ ã«è¿”äº‹ã‚’ç™ºè¡Œ */
 		vput_reg(cmsg->msg.header.tskid,
 			 cmsg->msg.body.prd_req.buf,
 			 cmsg->msg.body.prd_req.length,
@@ -169,7 +169,7 @@ static void main_loop()
 #endif
 		snd_mbf(cmsg->msg.header.mbfid, sizeof(pres), &pres);
 
-		/* cmsg ¤Î¾Ãµî */
+		/* cmsg ã®æ¶ˆå» */
 		cmsg->next = free_req_list;
 		free_req_list = cmsg;
 		cmsg = NULL;
@@ -181,7 +181,7 @@ static void main_loop()
 #ifdef notdef
 	    dbg_printf("\nWCONSOLE: pick up new msg\n");
 #endif
-	    /* ¼¡¤Î¥á¥Ã¥»¡¼¥¸¤Î³ÍÆÀ */
+	    /* æ¬¡ã®ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®ç²å¾— */
 	    cmsg = w[focus].list;
 	    w[focus].list = cmsg->next;
 	    if (w[focus].list == cmsg)
@@ -189,7 +189,7 @@ static void main_loop()
 	    cmsg->prev->next = cmsg->next;
 	    cmsg->next->prev = cmsg->prev;
 
-	    /* keyboard ¤Ø¤Î read ¤ÎÈ¯¹Ô */
+	    /* keyboard ã¸ã® read ã®ç™ºè¡Œ */
 	    req.header.mbfid = recvport;
 	    req.header.msgtyp = DEV_RLY;
 	    req.body.rea_req.dd = focus;
@@ -200,21 +200,21 @@ static void main_loop()
 #endif
 	    errno = snd_mbf(keyboard, sizeof(req), &req);
 
-	    /* Á÷¿®¤Ë¼ºÇÔ¤·¤¿¾ì¹ç */
+	    /* é€ä¿¡ã«å¤±æ•—ã—ãŸå ´åˆ */
 	    if (errno != E_OK) {
 		dbg_printf("WCONSOLE: cant send message to keyboard\n");
 	    }
 	}
     }
 
-    /* ¤³¤³¤Î¹Ô¤Ë¤Ï¡¢Íè¤Ê¤¤ */
+    /* ã“ã“ã®è¡Œã«ã¯ã€æ¥ãªã„ */
 }
 
 
 /*
- * ½é´ü²½
+ * åˆæœŸåŒ–
  *
- * o Í×µá¼õ¤±¤Ä¤±ÍÑ¤Î¥á¥Ã¥»¡¼¥¸¥Ğ¥Ã¥Õ¥¡ ID ¤ò¥İ¡¼¥È¥Ş¥Í¡¼¥¸¥ã¤ËÅĞÏ¿
+ * o è¦æ±‚å—ã‘ã¤ã‘ç”¨ã®ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒãƒƒãƒ•ã‚¡ ID ã‚’ãƒãƒ¼ãƒˆãƒãƒãƒ¼ã‚¸ãƒ£ã«ç™»éŒ²
  */
 
 static void init_req_list()
@@ -242,7 +242,7 @@ W init_wconsole(void)
 #endif
 
     /*
-     * Í×µá¼õ¤±¤Ä¤±ÍÑ¤Î¥İ¡¼¥È¤ò½é´ü²½¤¹¤ë¡£
+     * è¦æ±‚å—ã‘ã¤ã‘ç”¨ã®ãƒãƒ¼ãƒˆã‚’åˆæœŸåŒ–ã™ã‚‹ã€‚
      */
 #ifdef notdef
     recvport = get_port(sizeof(DDEV_REQ), sizeof(DDEV_REQ));
@@ -252,7 +252,7 @@ W init_wconsole(void)
     if (recvport <= 0) {
 	dbg_printf("WCONSOLE: cannot make receive port.\n");
 	slp_tsk();
-	/* ¥á¥Ã¥»¡¼¥¸¥Ğ¥Ã¥Õ¥¡À¸À®¤Ë¼ºÇÔ */
+	/* ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒãƒƒãƒ•ã‚¡ç”Ÿæˆã«å¤±æ•— */
     }
 
     error = regist_port(WCONSOLE_DRIVER, recvport);
@@ -318,7 +318,7 @@ W init_wconsole(void)
 	clear_wconsole(0);
     }
 
-    /* request list ¤Î½é´ü²½ */
+    /* request list ã®åˆæœŸåŒ– */
     init_req_list();
 #ifdef USE_MALLOC
     init_malloc(VADDR_HEAP);
@@ -326,20 +326,20 @@ W init_wconsole(void)
 
     key_mode = WAITMODE | ENAEOFMODE;
 
-    /* frtm ¤Î½é´ü²½ */
+    /* frtm ã®åˆæœŸåŒ– */
     init_hash();
     error_no = E_OK;
     init_w_des();
 }
 
-/* frtm ¤Î¥¨¥é¡¼½èÍı */
+/* frtm ã®ã‚¨ãƒ©ãƒ¼å‡¦ç† */
 handle_error()
 {
     if (error_no != E_OK) {
 	error_no = E_OK;
 	reload_old_csp();
 	if (eval_mode == DIC2) {
-	    /* Ì¤´°¼­½ñ¤ÎÇË´ş */
+	    /* æœªå®Œè¾æ›¸ã®ç ´æ£„ */
 	    drop_dict();
 	}
 	eval_mode = RUN;
@@ -358,7 +358,7 @@ static void doit(DDEV_REQ * packet)
 {
     switch (packet->header.msgtyp) {
     case DEV_OPN:
-	/* ¥Ç¥Ğ¥¤¥¹¤Î¥ª¡¼¥×¥ó */
+	/* ãƒ‡ãƒã‚¤ã‚¹ã®ã‚ªãƒ¼ãƒ—ãƒ³ */
 	if (!initialized) {
 	    init_wconsole();
 	}
@@ -366,7 +366,7 @@ static void doit(DDEV_REQ * packet)
 	break;
 
     case DEV_CLS:
-	/* ¥Ç¥Ğ¥¤¥¹¤Î¥¯¥í¡¼¥º */
+	/* ãƒ‡ãƒã‚¤ã‚¹ã®ã‚¯ãƒ­ãƒ¼ã‚º */
 	close_wconsole(packet->header.mbfid, &(packet->body.cls_req));
 	break;
 
@@ -395,14 +395,14 @@ static void doit(DDEV_REQ * packet)
 }
 
 /************************************************************************
- * open_wconsole --- wconsole ¤Î¥ª¡¼¥×¥ó
+ * open_wconsole --- wconsole ã®ã‚ªãƒ¼ãƒ—ãƒ³
  *
- * °ú¿ô¡§	caller	¥á¥Ã¥»¡¼¥¸¤ÎÁ÷¤ê¼ê
- *		packet	¥ª¡¼¥×¥ó¥Ñ¥±¥Ã¥È
+ * å¼•æ•°ï¼š	caller	ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®é€ã‚Šæ‰‹
+ *		packet	ã‚ªãƒ¼ãƒ—ãƒ³ãƒ‘ã‚±ãƒƒãƒˆ
  *
- * ÊÖÃÍ¡§	¾ï¤Ë E_OK ¤òÊÖ¤¹¡£
+ * è¿”å€¤ï¼š	å¸¸ã« E_OK ã‚’è¿”ã™ã€‚
  *
- * ½èÍı¡§	E_OK ¤ò¥á¥Ã¥»¡¼¥¸¤ÎÁ÷¤ê¼ê¤ËÊÖ¤¹¡£
+ * å‡¦ç†ï¼š	E_OK ã‚’ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®é€ã‚Šæ‰‹ã«è¿”ã™ã€‚
  *
  */
 W open_wconsole(ID caller, DDEV_OPN_REQ * packet)
@@ -418,15 +418,15 @@ W open_wconsole(ID caller, DDEV_OPN_REQ * packet)
 }
 
 /************************************************************************
- * close_wconsole --- ¥É¥é¥¤¥Ğ¤Î¥¯¥í¡¼¥º
+ * close_wconsole --- ãƒ‰ãƒ©ã‚¤ãƒã®ã‚¯ãƒ­ãƒ¼ã‚º
  *
- * °ú¿ô¡§	dd	wconsole ¥É¥é¥¤¥ĞÈÖ¹æ
- *		o_mode	¥ª¡¼¥×¥ó¥â¡¼¥É
- *		error	¥¨¥é¡¼ÈÖ¹æ
+ * å¼•æ•°ï¼š	dd	wconsole ãƒ‰ãƒ©ã‚¤ãƒç•ªå·
+ *		o_mode	ã‚ªãƒ¼ãƒ—ãƒ³ãƒ¢ãƒ¼ãƒ‰
+ *		error	ã‚¨ãƒ©ãƒ¼ç•ªå·
  *
- * ÊÖÃÍ¡§	¾ï¤Ë E_OK ¤òÊÖ¤¹¡£
+ * è¿”å€¤ï¼š	å¸¸ã« E_OK ã‚’è¿”ã™ã€‚
  *
- * ½èÍı¡§	¥³¥ó¥½¡¼¥ë¤Ï¥¯¥í¡¼¥º¤Î½èÍı¤Ç¤Ï¤Ê¤Ë¤â¤·¤Ê¤¤¡£
+ * å‡¦ç†ï¼š	ã‚³ãƒ³ã‚½ãƒ¼ãƒ«ã¯ã‚¯ãƒ­ãƒ¼ã‚ºã®å‡¦ç†ã§ã¯ãªã«ã‚‚ã—ãªã„ã€‚
  *
  */
 W close_wconsole(ID caller, DDEV_CLS_REQ * packet)
@@ -443,14 +443,14 @@ W close_wconsole(ID caller, DDEV_CLS_REQ * packet)
 /*************************************************************************
  * read_wconsole --- 
  *
- * °ú¿ô¡§	caller
+ * å¼•æ•°ï¼š	caller
  *		packet
  *
- * ÊÖÃÍ¡§	E_NOSPT ¤òÊÖ¤¹¡£
+ * è¿”å€¤ï¼š	E_NOSPT ã‚’è¿”ã™ã€‚
  *
- * ½èÍı¡§	¥á¥Ã¥»¡¼¥¸¤ÎÁ÷¤ê¼ê¤Ë E_NOSPT ¤òÊÖ¤¹¡£
- *		¥³¥ó¥½¡¼¥ë¥É¥é¥¤¥Ğ¤ÏÉ½¼¨¤¹¤ë¤À¤±¤Ê¤Î¤ÇÆşÎÏ¤Ï¥µ¥İ¡¼¥È¤·¤Æ
- *		¤¤¤Ê¤¤¡£
+ * å‡¦ç†ï¼š	ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®é€ã‚Šæ‰‹ã« E_NOSPT ã‚’è¿”ã™ã€‚
+ *		ã‚³ãƒ³ã‚½ãƒ¼ãƒ«ãƒ‰ãƒ©ã‚¤ãƒã¯è¡¨ç¤ºã™ã‚‹ã ã‘ãªã®ã§å…¥åŠ›ã¯ã‚µãƒãƒ¼ãƒˆã—ã¦
+ *		ã„ãªã„ã€‚
  *
  */
 W read_wconsole(ID caller, DDEV_REA_REQ * packet)
@@ -467,12 +467,12 @@ W read_wconsole(ID caller, DDEV_REA_REQ * packet)
 /*************************************************************************
  * posix_read_wconsole --- 
  *
- * °ú¿ô¡§	caller
+ * å¼•æ•°ï¼š	caller
  *	tskid,	packet
  *
- * ÊÖÃÍ¡§
+ * è¿”å€¤ï¼š
  *
- * ½èÍı¡§ keyboard ¤Ø¤ÎÆşÎÏ¤ò¼è¤ê¼¡¤°¡£
+ * å‡¦ç†ï¼š keyboard ã¸ã®å…¥åŠ›ã‚’å–ã‚Šæ¬¡ãã€‚
  *	
  *	
  *
@@ -503,7 +503,7 @@ W posix_read_wconsole(ID caller, ID tskid, DDEV_REQ * packet)
 	    snd_mbf(caller, sizeof(pres), &pres);
 	    return (E_OK);
 	}
-	/* packet ¤ò win ¤Î queue ¤ËÅĞÏ¿ */
+	/* packet ã‚’ win ã® queue ã«ç™»éŒ² */
 	list = w[win].list;
 	new = free_req_list;
 	if (new == NULL) {
@@ -527,7 +527,7 @@ W posix_read_wconsole(ID caller, ID tskid, DDEV_REQ * packet)
 #ifdef notdef
 	dbg_printf("\nWCONSOLE: call keyboard\n");
 #endif
-	/* cmsg ¤Ø packet ¤òÅĞÏ¿ */
+	/* cmsg ã¸ packet ã‚’ç™»éŒ² */
 	cmsg = free_req_list;
 	if (cmsg == NULL) {
 	    dbg_printf("WCONSOLE: emtpy request list\n");
@@ -537,7 +537,7 @@ W posix_read_wconsole(ID caller, ID tskid, DDEV_REQ * packet)
 	cmsg->next = NULL;
 	bcopy(packet, &(cmsg->msg), sizeof(DDEV_REQ));
 
-	/* keyboard ¤Ø read ¤òÈ¯¹Ô */
+	/* keyboard ã¸ read ã‚’ç™ºè¡Œ */
 	req.header.mbfid = recvport;
 	req.header.msgtyp = DEV_RLY;
 	req.body.rea_req.dd = focus;
@@ -545,7 +545,7 @@ W posix_read_wconsole(ID caller, ID tskid, DDEV_REQ * packet)
 	req.body.rea_req.size = packet->body.prd_req.length;
 	errno = snd_mbf(keyboard, sizeof(req), &req);
 
-	/* Á÷¿®¤Ë¼ºÇÔ¤·¤¿¾ì¹ç */
+	/* é€ä¿¡ã«å¤±æ•—ã—ãŸå ´åˆ */
 	if (errno != E_OK) {
 	    dbg_printf("WCONSOLE: cant send message to keyboard\n");
 	}
@@ -558,13 +558,13 @@ W posix_read_wconsole(ID caller, ID tskid, DDEV_REQ * packet)
 /************************************************************************
  * write_wconsole
  *
- * °ú¿ô¡§	caller
+ * å¼•æ•°ï¼š	caller
  *		packet
  *
- * ÊÖÃÍ¡§	
+ * è¿”å€¤ï¼š	
  *
- * ½èÍı¡§	¥«¥ì¥ó¥È¥İ¥¤¥ó¥¿¤Î°ÌÃÖ¤ËÊ¸»úÎó¤òÉ½¼¨¤¹¤ë¡£
- *		¤³¤Î¤È¤­¡¢¥¨¥¹¥±¡¼¥×¥·¡¼¥±¥ó¥¹¤Ë¤è¤ë½èÍı¤â¹Ô¤¦¡£		
+ * å‡¦ç†ï¼š	ã‚«ãƒ¬ãƒ³ãƒˆãƒã‚¤ãƒ³ã‚¿ã®ä½ç½®ã«æ–‡å­—åˆ—ã‚’è¡¨ç¤ºã™ã‚‹ã€‚
+ *		ã“ã®ã¨ãã€ã‚¨ã‚¹ã‚±ãƒ¼ãƒ—ã‚·ãƒ¼ã‚±ãƒ³ã‚¹ã«ã‚ˆã‚‹å‡¦ç†ã‚‚è¡Œã†ã€‚		
  *
  */
 W write_wconsole(ID caller, DDEV_WRI_REQ * packet)
@@ -575,7 +575,7 @@ W write_wconsole(ID caller, DDEV_WRI_REQ * packet)
     static int esc_flag = 0, cnum = 0;
     W cpos[2];
     UB ch;
-    DDEV_REQ req;		/* Í×µá¥Ñ¥±¥Ã¥È */
+    DDEV_REQ req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
     W rsize, winid;
 
     if (video_mode == TEXT_MODE) {
@@ -603,11 +603,11 @@ W write_wconsole(ID caller, DDEV_WRI_REQ * packet)
 	return (E_OK);
     }
 
-    winid = packet->dd;		/* minor device ÈÖ¹æ¤Ç window ¤ò»ØÄê */
+    winid = packet->dd;		/* minor device ç•ªå·ã§ window ã‚’æŒ‡å®š */
     if (winid >= max_win || winid < 0)
 	winid = 0;
     if (winid == 0)
-	winid = focus;		/* default console ¤Î°·¤¤¤Ï¤Á¤ç¤Ã¤ÈÆÃ¼ì */
+	winid = focus;		/* default console ã®æ‰±ã„ã¯ã¡ã‚‡ã£ã¨ç‰¹æ®Š */
     error = E_OK;
     if (w[winid].map) {
 	for (i = 0; i < (packet->size); i++) {
@@ -706,12 +706,12 @@ W write_wconsole(ID caller, DDEV_WRI_REQ * packet)
 /************************************************************************
  * control_wconsole
  *
- * °ú¿ô¡§	caller
+ * å¼•æ•°ï¼š	caller
  *		packet
  *
- * ÊÖÃÍ¡§	
+ * è¿”å€¤ï¼š	
  *
- * ½èÍı¡§²èÌÌ¤Î¥â¡¼¥É¤ÎÊÑ¹¹¡¢¥°¥é¥Õ¥£¥Ã¥¯¥¹¤ÎÉÁ²è¡¢¥¦¥£¥ó¥É¥¦¤ÎÁàºî¤Ê¤É
+ * å‡¦ç†ï¼šç”»é¢ã®ãƒ¢ãƒ¼ãƒ‰ã®å¤‰æ›´ã€ã‚°ãƒ©ãƒ•ã‚£ãƒƒã‚¯ã‚¹ã®æç”»ã€ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®æ“ä½œãªã©
  *
  */
 
@@ -727,7 +727,7 @@ static void respond_ctrl(ID caller, W dd, ER errno)
 
 W control_wconsole(ID caller, ID tskid, DDEV_CTL_REQ * packet)
 {
-    DDEV_REQ req;		/* Í×µá¥Ñ¥±¥Ã¥È */
+    DDEV_REQ req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
     DDEV_RES res;
     ER errno;
     W rsize;
@@ -845,7 +845,7 @@ W control_wconsole(ID caller, ID tskid, DDEV_CTL_REQ * packet)
 		} else {
 		    clear_wconsole(0);
 		}
-		/* window ¾õÂÖ¤Î½é´ü²½ */
+		/* window çŠ¶æ…‹ã®åˆæœŸåŒ– */
 		focus = 0;
 		w[0].map = 1;
 		w[1].map = 0;
@@ -941,7 +941,7 @@ W control_wconsole(ID caller, ID tskid, DDEV_CTL_REQ * packet)
 		} else {
 		    clear_wconsole(0);
 		}
-		/* window ¾õÂÖ¤Î½é´ü²½ */
+		/* window çŠ¶æ…‹ã®åˆæœŸåŒ– */
 		focus = 0;
 		w[0].map = 1;
 		w[1].map = 0;
@@ -991,7 +991,7 @@ W control_wconsole(ID caller, ID tskid, DDEV_CTL_REQ * packet)
 	case KEYBOARD_CHANGEMODE:
 	    key_mode = packet->param[0];
 
-	    /* keyboard driver ¤ËÅ¾Á÷ */
+	    /* keyboard driver ã«è»¢é€ */
 	    req.header.mbfid = recv;
 	    req.header.msgtyp = DEV_CTL;
 	    req.body.ctl_req.cmd = packet->cmd;
@@ -1041,9 +1041,9 @@ W relay_wconsole(ID caller, DDEV_RLY_REQ * packet)
     DDEV_REQ req;
     ER errno;
 
-    /* keyboard ¤«¤é¤ÎÊÖ»ö¤Î½èÍı */
+    /* keyboard ã‹ã‚‰ã®è¿”äº‹ã®å‡¦ç† */
     if (cmsg != NULL) {
-	/* POSIX ¥¢¥×¥ê¥±¡¼¥·¥ç¥ó ¤ËÊÖ»ö¤òÈ¯¹Ô */
+	/* POSIX ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ ã«è¿”äº‹ã‚’ç™ºè¡Œ */
 	vput_reg(cmsg->msg.header.tskid,
 		 cmsg->msg.body.prd_req.buf,
 		 cmsg->msg.body.prd_req.length, packet->dt);
@@ -1064,7 +1064,7 @@ W relay_wconsole(ID caller, DDEV_RLY_REQ * packet)
 #endif
 	snd_mbf(cmsg->msg.header.mbfid, sizeof(pres), &pres);
 
-	/* cmsg ¤Î¾Ãµî */
+	/* cmsg ã®æ¶ˆå» */
 	cmsg->next = free_req_list;
 	free_req_list = cmsg;
 	cmsg = NULL;

@@ -1,6 +1,6 @@
 /*
 
-  B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+  B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
   GNU GENERAL PUBLIC LICENSE
   Version 2, June 1991
@@ -31,7 +31,7 @@
 #include "BTRON/device/keyboard/keyboard.h"
 #include "ITRON/kernlib/device.h"
 
-/*  Äê¿ô¤ÎÀßÄê
+/*  å®šæ•°ã®è¨­å®š
  */
 
 #define WCONSOLE_DRIVER	"manager.wconsole"
