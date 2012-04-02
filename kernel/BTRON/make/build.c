@@ -559,6 +559,9 @@ output_module(struct config_entry *info, FILE * in, FILE * out)
 		 output_length,
 		 output_length + phead[1].p_filesz,
 		 phead[1].p_filesz, phead[1].p_filesz));
+	if (phead[1].p_filesz == 0) {
+		return;
+	}
 
 	if (fseek(in, phead[1].p_offset, SEEK_SET) < 0) {
 	    perror("fseek");
