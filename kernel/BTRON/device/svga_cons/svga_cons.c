@@ -337,5 +337,5 @@ control_svga_cons (ID caller, DDEV_CTL_REQ *packet)
   return (E_NOSPT);
 }
 
-#endif //__SVGA_CONS_C__
+#endif /* __SVGA_CONS_C__ */
 

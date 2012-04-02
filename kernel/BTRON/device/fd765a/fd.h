@@ -334,6 +334,6 @@ extern struct spec *get_fdspec (B *type);
 extern struct spec	fd_spec[];
 
 
-#endif __IO_FD_H__
+#endif /* __IO_FD_H__ */
 
 

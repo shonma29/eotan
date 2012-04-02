@@ -95,4 +95,4 @@ union gr_cmd_t
 };
 
 
-#endif __CONSOLE_STRUCT_H__
+#endif /* __CONSOLE_STRUCT_H__ */

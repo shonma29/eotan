@@ -202,5 +202,5 @@ static W        key_table_101[4][255] =
 };
 
 
-#endif __KEYBOARD_DEF_H__
+#endif /* __KEYBOARD_DEF_H__ */
 

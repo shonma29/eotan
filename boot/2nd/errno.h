@@ -94,7 +94,7 @@ Version 2, June 1991
 
 typedef	UWORD32		ERRNO;
 
-#endif __ERRNO_H__
+#endif /* __ERRNO_H__ */
 
 
 

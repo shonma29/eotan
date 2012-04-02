@@ -133,4 +133,4 @@ Version 2, June 1991
 
 #define NUM1 END
 
-#endif //__KEYCODE_H__
+#endif /* __KEYCODE_H__ */

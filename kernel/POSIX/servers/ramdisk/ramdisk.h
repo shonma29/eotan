@@ -39,4 +39,4 @@ extern W    	read_rd();	/* 読み込み		*/
 extern W    	write_rd();	/* 書き込み		*/
 extern W    	control_rd();	/* コントロール		*/
 
-#endif __RD_H__
+#endif /* __RD_H__ */

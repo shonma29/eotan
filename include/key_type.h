@@ -22,4 +22,4 @@ ef.h,v 1.1 2000/01/30 18:54:08 kishida0 Exp $ */
 #define K_101US  1
 #define K_106JP  2
 
-#endif  //__KEYBOARD_TYPE_H__
+#endif  /* __KEYBOARD_TYPE_H__ */

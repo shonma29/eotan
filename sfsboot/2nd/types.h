@@ -80,5 +80,5 @@ typedef int		(*FUNCP)();
 
 #define MAXINT		(0x7fffffff)
 
-#endif __TYPES_H__
+#endif /* __TYPES_H__ */
 

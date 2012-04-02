@@ -55,4 +55,4 @@ extern void init_clock (void);
 extern int  read_clock (struct date_t *date);
 extern void busywait(int x);
 
-#endif __DATE_H__
+#endif /* __DATE_H__ */

@@ -55,7 +55,7 @@ kernel/BTRON/device/dc390/dc390low.c,v 1.1 1999/04/26 18:33:32 kishida0 Exp $";
 
 
 
-#endif //__DC390_H__
+#endif /* __DC390_H__ */
 
 /* 
  * $Log: dc390low.h,v $

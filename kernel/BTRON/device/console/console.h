@@ -280,6 +280,6 @@ union gr_cmd_t
   struct gr_scroll_t    scroll;
 };
 
-#endif __CONSOLE_H__
+#endif /* __CONSOLE_H__ */
 
 

@@ -126,4 +126,4 @@ extern W	posix_read_keyboard();
 extern W	send_switch_msg();
 extern W	relay_keyboard ();
 
-#endif __KEYBOARD_H__
+#endif /* __KEYBOARD_H__ */

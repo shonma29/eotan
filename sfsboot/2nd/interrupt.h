@@ -54,6 +54,6 @@ extern int      wait_int (int *flag);
 
 void reset_intr_mask(int intn);
 
-#endif __INTERRUPT_H__
+#endif /* __INTERRUPT_H__ */
 
  

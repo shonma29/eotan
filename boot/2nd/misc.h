@@ -42,4 +42,4 @@ extern unsigned short	jis_to_shift (unsigned short shift);
 extern char		*string_shift_to_jis (char *s);
 
 
-#endif __MISC_H__
+#endif /* __MISC_H__ */

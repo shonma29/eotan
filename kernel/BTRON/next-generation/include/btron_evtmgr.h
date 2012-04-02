@@ -111,5 +111,5 @@ typedef struct {
 #define PD_SCMSK (0x00f0)       /* mask for scan speed */
 #define PD_SNMSK (0x000f)       /* mask for scan sensivity */
 
-#endif __BTRON_EVTMGR_H__
+#endif /* __BTRON_EVTMGR_H__ */
 

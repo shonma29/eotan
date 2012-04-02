@@ -23,4 +23,4 @@ ER write_char (UB ch);
 void clear_console (void);
 void clear_rest_line(void);
 void clear_rest_screen(void);
-#endif // __CONSOLE_MISC_H_
+#endif /* __CONSOLE_MISC_H_ */

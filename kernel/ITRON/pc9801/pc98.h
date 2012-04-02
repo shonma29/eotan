@@ -38,6 +38,6 @@ Version 2, June 1991
 #define VRAM_MEM_END		(0xFFFFF)
 
 
-#endif  __ITRON_PC98_H__
+#endif /* __ITRON_PC98_H__ */
 
 

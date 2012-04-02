@@ -41,37 +41,37 @@
 
 #ifdef CONFIG_CDU31A
 extern int cdu31a_init(void);
-#endif CONFIG_CDU31A
+#endif /* CONFIG_CDU31A */
 #ifdef CONFIG_MCD
 extern int mcd_init(void);
-#endif CONFIG_MCD
+#endif /* CONFIG_MCD */
 #ifdef CONFIG_MCDX
 extern int mcdx_init(void);
-#endif CONFIG_MCDX
+#endif /* CONFIG_MCDX */
 #ifdef CONFIG_SBPCD
 extern int sbpcd_init(void);
-#endif CONFIG_SBPCD
+#endif /* CONFIG_SBPCD */
 #ifdef CONFIG_AZTCD
 extern int aztcd_init(void);
-#endif CONFIG_AZTCD
+#endif /* CONFIG_AZTCD */
 #ifdef CONFIG_CDU535
 extern int sony535_init(void);
-#endif CONFIG_CDU535
+#endif /* CONFIG_CDU535 */
 #ifdef CONFIG_GSCD
 extern int gscd_init(void);
-#endif CONFIG_GSCD
+#endif /* CONFIG_GSCD */
 #ifdef CONFIG_CM206
 extern int cm206_init(void);
-#endif CONFIG_CM206
+#endif /* CONFIG_CM206 */
 #ifdef CONFIG_OPTCD
 extern int optcd_init(void);
-#endif CONFIG_OPTCD
+#endif /* CONFIG_OPTCD */
 #ifdef CONFIG_SJCD
 extern int sjcd_init(void);
-#endif CONFIG_SJCD
+#endif /* CONFIG_SJCD */
 #ifdef CONFIG_CDI_INIT
 extern int cdi_init(void);
-#endif CONFIG_CDI_INIT
+#endif /* CONFIG_CDI_INIT */
 #ifdef CONFIG_BLK_DEV_HD
 extern int hd_init(void);
 #endif
@@ -86,7 +86,7 @@ extern int loop_init(void);
 #endif
 #ifdef CONFIG_BLK_DEV_MD
 extern int md_init(void);
-#endif CONFIG_BLK_DEV_MD
+#endif /* CONFIG_BLK_DEV_MD */
 
 extern void set_device_ro(kdev_t dev,int flag);
 void add_blkdev_randomness(int major);

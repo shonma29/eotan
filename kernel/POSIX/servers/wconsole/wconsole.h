@@ -62,4 +62,4 @@ struct winsize {
   unsigned short int ws_xpixel;
   unsigned short int ws_ypixel;
 };
-#endif __WCONSOLE_H__
+#endif /* __WCONSOLE_H__ */

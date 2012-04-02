@@ -26,6 +26,6 @@ extern int read_keyboard (void);
 
 //extern void k101us(char *argv[]);
 //extern void k106jp(char *argv[]);
-#endif __KEYBOARD_H__
+#endif /* __KEYBOARD_H__ */
 
 

@@ -174,4 +174,4 @@ struct file
   union record_entry	record_table[RECORD_ENT];    
 };
 
-#endif __FILE_H__
+#endif /* __FILE_H__ */

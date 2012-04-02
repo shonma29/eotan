@@ -68,4 +68,4 @@ void	ignore (void);
 
 
 
-#endif __IDT_H__
+#endif /* __IDT_H__ */

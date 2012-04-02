@@ -31,6 +31,6 @@ extern int init_console (void);
 extern int putchar (int ch);
 
 
-#endif __CONSOLE_H__
+#endif /* __CONSOLE_H__ */
 
 

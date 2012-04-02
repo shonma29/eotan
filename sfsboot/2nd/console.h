@@ -13,6 +13,6 @@ extern char *gets (char *);
 extern void set_cursor(int sx, int sy);
 extern void get_cursor(int *gx,int *gy);
 
-#endif __CONSOLE_H__
+#endif /* __CONSOLE_H__ */
 
 

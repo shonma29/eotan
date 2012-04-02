@@ -53,4 +53,4 @@ Version 2, June 1991
 
 extern int	setup_dma (UW chan, VP addr, int mode, int length, int mask);
 
-#endif __DMA_H__
+#endif /* __DMA_H__ */

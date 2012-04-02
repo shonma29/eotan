@@ -78,6 +78,6 @@ extern void	ignore_handler (void);
 
 extern void	intr_ide ();
 
-#endif __INTERRUPT_H__
+#endif /* __INTERRUPT_H__ */
 
  

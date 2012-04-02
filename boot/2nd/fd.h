@@ -153,5 +153,5 @@ extern int	fd_specify (UWORD32,UWORD32,UWORD32,UWORD32);
 extern int	fd_reset (void);
 
 
-#endif __FD_H__
+#endif /* __FD_H__ */
 

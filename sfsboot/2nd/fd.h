@@ -25,5 +25,5 @@ extern int      fdc_isense(void);
 extern int      fdc_read_sector(BYTE drive, int cylinder, int head, int sector, BYTE* buff);
 extern int      fd_read (int drive, int part, int blockno, BYTE *buff, int length);
 
-#endif __FD_H__
+#endif /* __FD_H__ */
 
