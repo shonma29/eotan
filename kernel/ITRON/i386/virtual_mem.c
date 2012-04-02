@@ -176,7 +176,7 @@ ADDR_MAP dup_vmap_table(ADDR_MAP dest)
     int i;
     I386_PAGE_ENTRY *p;
 
-    (UW) dest = (UW) RTOV((UW) dest);
+    dest = (ADDR_MAP)((UW) RTOV((UW) dest));
     newp = (ADDR_MAP) (palloc(1));	/* ページディレクトリのアロケート */
     bzero((VP) newp, PAGE_SIZE);
 
@@ -246,7 +246,7 @@ extern ER release_vmap(ADDR_MAP dest)
 	if (dest[i].present) {
 	    p = (I386_PAGE_ENTRY *) (dest[i].frame_addr << PAGE_SHIFT);
 	    if ((UW) p <= KERNEL_SIZE) {
-		(UW) p = RTOV((UW) p);
+		p = (I386_PAGE_ENTRY*)(RTOV((UW) p));
 	    }
 	    if (i < ADDR_MAP_SIZE / 2) {
 		for (j = 0; j < PAGE_SIZE / sizeof(I386_PAGE_ENTRY); j++) {
@@ -256,7 +256,7 @@ extern ER release_vmap(ADDR_MAP dest)
 		    }
 		}
 	    }
-	    (UW) p = VTOR((UW) p);
+	    p = (I386_PAGE_ENTRY*)(VTOR((UW) p));
 	    pfree((VP) p, 1);
 	}
     }
@@ -293,7 +293,7 @@ BOOL vmap(T_TCB * task, UW vpage, UW ppage, W accmode)
 #endif				/* DEBUG */
 /*  task->context.cr3 &= 0x7fffffff; */
     dirent = (I386_DIRECTORY_ENTRY *) (task->context.cr3);
-    ((UW) dirent) = RTOV((UW) dirent);
+    dirent = (I386_DIRECTORY_ENTRY*)(RTOV((UW) dirent));
     dirindex = vpage & DIR_MASK;
     dirindex = dirindex >> DIR_SHIFT;
     pageindex = (vpage & PAGE_MASK) >> PAGE_SHIFT;
@@ -341,7 +341,7 @@ BOOL vmap(T_TCB * task, UW vpage, UW ppage, W accmode)
     }
 
     if ((UW) pageent <= KERNEL_SIZE) {
-	(UW) pageent = RTOV((UW) pageent);
+	pageent = (I386_PAGE_ENTRY*)(RTOV((UW) pageent));
     }
 
     if (pageent[pageindex].present == 1) {
@@ -382,7 +382,7 @@ extern ER vunmap(T_TCB * task, UW vpage)
     ER errno;
 
     dirent = (I386_DIRECTORY_ENTRY *) (task->context.cr3);
-    ((UW) dirent) = RTOV((UW) dirent);
+    dirent = (I386_DIRECTORY_ENTRY*)(RTOV((UW) dirent));
     dirindex = vpage & DIR_MASK;
     dirindex = dirindex >> DIR_SHIFT;
     pageindex = (vpage & PAGE_MASK) >> PAGE_SHIFT;
@@ -407,7 +407,7 @@ extern ER vunmap(T_TCB * task, UW vpage)
     }
 
     if ((UW) pageent <= KERNEL_SIZE) {
-	(UW) pageent = RTOV((UW) pageent);
+	pageent = (I386_PAGE_ENTRY*)(RTOV((UW) pageent));
     }
 
     ppage = VTOR(pageent[pageindex].frame_addr << PAGE_SHIFT);
@@ -478,7 +478,7 @@ UW vtor(ID tskid, UW addr)
     }
 
     dirent = (I386_DIRECTORY_ENTRY *) taskp->context.cr3;
-    ((UW) dirent) = RTOV((UW) dirent);
+    dirent = (I386_DIRECTORY_ENTRY*)(RTOV((UW) dirent));
     dirindex = (addr & DIR_MASK) >> DIR_SHIFT;
     pageindex = (addr & PAGE_MASK) >> PAGE_SHIFT;
     if (dirent[dirindex].present != 1) {
@@ -487,7 +487,7 @@ UW vtor(ID tskid, UW addr)
 
     pageent =
 	(I386_PAGE_ENTRY *) (dirent[dirindex].frame_addr << PAGE_SHIFT);
-    ((UW) pageent) = RTOV((UW) pageent);
+    pageent = (I386_PAGE_ENTRY*)(RTOV((UW) pageent));
     if (pageent[pageindex].present != 1) {
 	return (NULL);
     }
@@ -729,7 +729,7 @@ ER vmap_reg(ID id, VP start, UW size, W accmode)
     }
 
     size = PAGES(size);
-    (UW) start = CUTDOWN(start, PAGE_SIZE);
+    start = (VP)(CUTDOWN(start, PAGE_SIZE));
     if (pmemfree() < size)
 	return (E_NOMEM);
     res = E_OK;
@@ -801,7 +801,7 @@ ER vunm_reg(ID id, VP start, UW size)
     }
 
     size = ROUNDUP(size, PAGE_SIZE);
-    (UW) start = CUTDOWN(start, PAGE_SIZE);
+    start = (VP)(CUTDOWN(start, PAGE_SIZE));
     for (counter = 0; counter < (size >> PAGE_SHIFT); counter++) {
 	if (vunmap(taskp, ((UW) start + (counter << PAGE_SHIFT))) == FALSE) {
 	    return (E_SYS);

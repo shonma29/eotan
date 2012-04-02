@@ -27,7 +27,7 @@ START_ADDR = 0x380000
 
 COMMON = ../../include
 ITRON = ../../kernel/ITRON
-INCPATH = -I. -I$(COMMON) -I$(ITRON)
+INCPATH = -I. -I$(COMMON) -I$(ITRON)/h
 
 NOFLAGS=-c -m386 -msoft-float -fno-builtin -Wall -D__LINUX__ -DSUPPORT_144 $(DEBUG) -DIBMPC $(HDBOOT) $(INCPATH)
 CFLAGS=-O $(NOFLAGS)

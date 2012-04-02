@@ -25,7 +25,7 @@ init_memory (void)
 
   ext_mem = *p;
 #else
-  for (p = (int *)0x100000; (int)p < 0xf000000; (int)p += 0x100000)
+  for (p = (int *)0x100000; (int)p < 0xf000000; p = (int*)((int)p + 0x100000))
     {
       *p = 0;
       *p = 0xAA;

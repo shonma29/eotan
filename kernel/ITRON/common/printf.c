@@ -18,7 +18,7 @@ Version 2, June 1991
 #include "func.h"
 
 
-#define INC(p,x)	(((W)p) = (((W)p) + sizeof (x *)))
+#define INC(p,x)	(p = (VP)(((W)p) + sizeof (x *)))
 
 
 static void print_string(B *);
@@ -55,7 +55,9 @@ W vprintk(B * fmt, VP arg0)
 
 	    case 'd':
 		if ((W) * ap < 0) {
-		    ((W) * ap) = -((W) * ap);
+		    W *q = (W*)ap;
+
+		    *q = -((W) * ap);
 		    putchar('-');
 		}
 		print_digit((W) * ap, 10);

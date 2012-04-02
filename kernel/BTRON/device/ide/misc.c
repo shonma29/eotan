@@ -80,7 +80,7 @@ void print_digit(UW d, UW base)
     }
 }
 
-#define INC(p,x)	(((W)p) = (((W)p) + sizeof (x)))
+#define INC(p,x)	(p = (VP)(((W)p) + sizeof (x)))
 
 /*
  *
@@ -111,7 +111,9 @@ static ER vprintf(B * fmt, VP arg0)
 
 	    case 'd':
 		if ((W) * ap < 0) {
-		    ((W) * ap) = -((W) * ap);
+		    W *q = (W*)ap;
+
+		    *q = -((W) * ap);
 		    putc('-', log_port);
 		}
 		print_digit((W) * ap, 10);

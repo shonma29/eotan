@@ -129,7 +129,7 @@ retry:
 	{
 	  /* サイズが大きい場合; front の指すエントリから後半分を削る */
 	  front->size -= size + sizeof (struct kmem_entry);
-	  (UW )front = ((UW) front->body) + (front->size);
+	  front = (struct kmem_entry*)(((UW) front->body) + (front->size));
 	  front->size = size;
 	  break;
 	}

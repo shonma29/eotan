@@ -59,7 +59,7 @@ static void print_string(B * string)
 #define INC(p,x)	(((W)p) = (((W)p) + sizeof (x *)))
 #endif
 
-#define INC(p,x)	(((W)p) = (((W)p) + sizeof (x)))
+#define INC(p,x)	(p = (VP)(((W)p) + sizeof (x)))
 
 /*
  *
@@ -87,7 +87,9 @@ static ER dbg_vprintf(B * fmt, VP arg0)
 
 	    case 'd':
 		if ((W) * ap < 0) {
-		    ((W) * ap) = -((W) * ap);
+		    W *q = (W*)ap;
+
+		    *q = -((W) * ap);
 		    dbg_putchar('-');
 		}
 		print_digit((W) * ap, 10);

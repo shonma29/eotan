@@ -39,8 +39,7 @@ sys_vsys_inf (VP argp)
       
     case ROOTFS_INFO:
       rootfs = (W *)args->buf;
-      info = (struct boot_header *)MODULE_TABLE;
-      (UW)info |= 0x80000000;
+      info = (struct boot_header *)(MODULE_TABLE | 0x80000000);
       *rootfs = info->machine.rootfs;
       printk ("vsys_inf: rootfs_info: rootfs = 0x%x\n", info->machine.rootfs);	/* */
       return (E_OK);

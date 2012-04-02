@@ -368,7 +368,7 @@ extern W do_df();
 
 extern struct fs fs_buf[], *free_fs, *rootfs;
 extern struct inode inode_buf[], *free_inode, *rootfile;
-extern struct file file_buf[], *free_file;
+extern struct file *file_buf, *free_file;
 
 #endif
 

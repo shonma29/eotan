@@ -73,7 +73,7 @@ print_digit (FILE *port, UW d, UW base)
     }
 }
 
-#define INC(p,x)	(((W)p) = (((W)p) + sizeof (x *)))
+#define INC(p,x)	(p = (VP)(((W)p) + sizeof (x *)))
 
 /*
  *
@@ -123,7 +123,9 @@ vfprintf (FILE *port, B *fmt, VP arg0)
 	    case 'd':
 	      if ((W)*ap < 0)
 		{
-		  ((W)*ap) = 0 - ((W)*ap);
+		  W *q = (W*)ap;
+
+		  *q = 0 - ((W)*ap);
 		  putc ('-', port);
 		}
 	      print_digit (port, (W)*ap, 10);
