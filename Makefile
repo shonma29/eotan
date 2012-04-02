@@ -1,5 +1,6 @@
 
 #DEBUG=-DDEBUG
+export LINUX_INCLUDE=-I../../usr/include
 
 TARGET1=tool
 

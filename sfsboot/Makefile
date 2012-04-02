@@ -42,7 +42,7 @@ mkboot: mkboot.c
 	$(GCC) -o mkboot mkboot.c
 
 mkhdboot: mkhdboot.c
-	$(GCC) -o mkhdboot mkhdboot.c
+	$(GCC) -o mkhdboot mkhdboot.c $(LINUX_INCLUDE)
 
 modboot: modboot.c
 	$(GCC) -o modboot modboot.c
