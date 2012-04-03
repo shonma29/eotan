@@ -92,8 +92,8 @@ static int	keyboard_map_table[4][255] =
 
 int  keyboard_type;
 
-int	cbuf;
-int	input_flag;
+volatile int	cbuf;
+volatile int	input_flag;
 
 
 /*

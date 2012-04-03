@@ -97,7 +97,7 @@ fault(int intn)
  *
  */
 int
-wait_int (int *flag)
+wait_int (volatile int *flag)
 {
   set_int();
   while(*flag == FALSE);

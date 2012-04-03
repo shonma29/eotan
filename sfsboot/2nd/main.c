@@ -8,6 +8,7 @@
 #include "console.h"
 #include "keyboard.h"
 #include "date.h"
+#include "time.h"
 #include "macros.h"
 #include "dma.h"
 #include "fd.h"
@@ -25,6 +26,8 @@
 
 extern int evaluate(char* line);
 int read_single_module (int start_block, void *paddr, struct module_info *info);
+
+static void banner(void);
 
 struct file_system	root_fs;
 struct file		root;
@@ -69,7 +72,7 @@ _main ()
     {
       boot_printf ("boot> ");
       gets (line);
-      if (strlen (line) > 0)
+      if (strlen ((unsigned char*)line) > 0)
 	{
 	  evaluate (line);
 	}
@@ -79,7 +82,7 @@ _main ()
 /***************************************************************************
  *
  */
-void
+static void
 banner (void)
 {
   /* boot_printf ("BTRON/386 2nd BOOT Version %d.%d\n\n", MAJOR_VER, MINOR_VER);
@@ -87,33 +90,3 @@ banner (void)
   boot_printf ("START AS 32 BIT MODE.\n");
   boot_printf ("Welcome BTRON/386.\n");
 }
-
-/**************************************************************************
- * panic.
- */
-void
-panic (char *s)
-{
-  boot_printf ("panic: %s\n", s);
-  for (;;)
-    ;
-}
-
-int
-cat (char *buf, int size)
-{
-  int	i;
-
-  for (i = 0; i < size; i += 2)
-    {
-      boot_printf ("%c", &buf[i]);
-    }
-
-  return E_OK;
-}
-
-
-
-
-
-

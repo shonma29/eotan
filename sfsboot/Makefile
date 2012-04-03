@@ -20,11 +20,6 @@ NKERNLIBS=$(ROOT)/POSIX/libc/libnative.a
 %.no: %.c
 	$(CC) $(NCFLAGS) -c $< -o $@
 
-AS=/bin/as
-#LD=/bin/ld
-LD=ld
-GCC=gcc
-
 CFLAGS=-D__LINUX__
 
 all: 1stboot 2ndboot mkmap mkboot mkhdboot
@@ -36,22 +31,22 @@ all: 1stboot 2ndboot mkmap mkboot mkhdboot
 	cd 2nd ; ${MAKE} 2ndboot
 
 mkmap: mkmap.c
-	$(GCC) -o mkmap mkmap.c
+	$(CC) -o mkmap mkmap.c
 
 mkboot: mkboot.c
-	$(GCC) -o mkboot mkboot.c
+	$(CC) -o mkboot mkboot.c
 
 mkhdboot: mkhdboot.c
-	$(GCC) -o mkhdboot mkhdboot.c $(LINUX_INCLUDE)
+	$(CC) -o mkhdboot mkhdboot.c $(LINUX_INCLUDE)
 
 modboot: modboot.c
-	$(GCC) -o modboot modboot.c
+	$(CC) -o modboot modboot.c
 
 modboot-e: modboot.no $(NLIBS) $(NKERNLIBS)
 	$(LD) -Bstatic -o $@ -e ${NENTRY} -Ttext=$(STARTADDR) modboot.no $(NLIBS) $(NKERNLIBS) 
 	strip $@
 clean:
-	(cd 1st; ${MAKE} clean)
-	(cd 2nd; ${MAKE} clean)
+	(cd 1st && ${MAKE} clean)
+	(cd 2nd && ${MAKE} clean)
 	rm -f mkmap mkboot mkhdboot
 

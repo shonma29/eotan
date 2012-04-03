@@ -46,8 +46,4 @@ Version 2, June 1991
 extern struct file_system	root_fs;
 extern struct file		root;
 
-void	banner (void);
-void	panic (char*);
-void	print_binary (int);
-
 #endif /* __CONFIG_H__ */

@@ -32,7 +32,7 @@ struct status
 };
 
 struct status		fd_status;
-static int		intr_flag = FALSE;
+static volatile int		intr_flag = FALSE;
 
 static struct spec	fd_spec[] = 
 {
@@ -155,14 +155,11 @@ init_fd (void)
 int
 fd_reset (void)
 {
-  on_motor (0);
-
   fd_specify (fd_spec[HD_TYPE].srt,
 	      fd_spec[HD_TYPE].hut,
 	      fd_spec[HD_TYPE].hlt,
 	      fd_spec[HD_TYPE].nd);
 
-  stop_motor (0);
   return TRUE;
 }
 
@@ -193,11 +190,12 @@ fd_recalibrate (BYTE drive)
 {
   BYTE cbuff[2];
   
+  intr_flag = FALSE;	                        /* 割り込み待ち */
+
   cbuff[0] = FDC_RECALIBRATE;                   /* リキャリブレート */ 
   cbuff[1] = drive;
   write_commands(2, cbuff);
 
-  intr_flag = FALSE;	                        /* 割り込み待ち */
   wait_int (&intr_flag);               
   fdc_isense ();                                /* 実行結果の受取 */
 
@@ -214,19 +212,18 @@ fd_seek (BYTE drive, int head, int cylinder, int motor)
   int	result;
   BYTE cbuff[3];
 
-  on_motor (0);
-
   if(recalibrate_flag == FALSE) {               /* 初回の一度だけリキャリブレートする */
     fd_recalibrate(drive);
     recalibrate_flag = TRUE;
   }
+
+  intr_flag = FALSE;                            /* 割り込み待ち */
 
   cbuff[0] = FDC_SEEK;                          /* シーク */
   cbuff[1] = (head << 2) | (drive & 0x03);
   cbuff[2] = cylinder;
   write_commands(3, cbuff);
   
-  intr_flag = FALSE;                            /* 割り込み待ち */
   wait_int (&intr_flag);
   fdc_isense ();                                /* 実行結果の受取 */
 
@@ -318,6 +315,8 @@ fd_read_sector(BYTE drive, int cylinder, int head, int sector, BYTE* buff)
     
     setup_dma((void*)FD_DMA_BUFF, DMA_READ, HD_LENGTH, DMA_MASK);      /* DMA設定 */
     
+    intr_flag = FALSE;
+
     cbuff[0] = FDC_READ;                                        /* リード */ 
     cbuff[1] = (head << 2) | drive;
     cbuff[2] = cylinder;
@@ -329,7 +328,6 @@ fd_read_sector(BYTE drive, int cylinder, int head, int sector, BYTE* buff)
     cbuff[8] = HD_DTL;
     write_commands(9, cbuff);
     
-    intr_flag = FALSE;
     wait_int (&intr_flag);                                      /* 割り込み待ち */
 
     if(fdc_sense () == FALSE)                                   /* エラーチェック */
@@ -369,8 +367,6 @@ fd_read (int drive, int part, int blockno, BYTE *buff, int length)
   BOOL	ret;
   int	readcount;
 
-  on_motor (0);
-
   for (readcount = 0; readcount < length; readcount++) {
  
     head = (blockno % (HD_HEAD * HD_SECTOR)) / HD_SECTOR;   
@@ -388,7 +384,6 @@ fd_read (int drive, int part, int blockno, BYTE *buff, int length)
     }
     if(ret == FALSE) {
       boot_printf ("Read failed.\n");
-      stop_motor (0);
       return -1;
     }
 

@@ -19,8 +19,6 @@
 #define	INT_IDE			46		/* IDE HD */
 #define	INT_IDE2		47		/* IDE HD */
 
-extern int      wait_int (int *flag);
-
 extern void     int32_handler (void);
 extern void	int33_handler (void);   /* keyboard */ 
 extern void     int35_handler (void);
@@ -50,7 +48,7 @@ extern void	intr_keyboard (void);
 extern void     intr_fd();
 extern void	intr_ide ();
 
-extern int      wait_int (int *flag);
+extern int      wait_int (volatile int *flag);
 
 void reset_intr_mask(int intn);
 

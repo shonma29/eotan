@@ -1,4 +1,3 @@
-CC=gcc
 GSTRIP = /usr/bin/strip
 RM = /bin/rm
 

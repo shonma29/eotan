@@ -7,6 +7,11 @@
 #include "file.h"
 #include "page.h"
 #include "memory.h"
+#include "lib.h"
+
+static int read_multi_module();
+static int read_single_module(
+		int start_block, void *paddr, struct module_info *info);
 
 /*************************************************************************
  * boot_func --- とりあえずの boot
@@ -21,17 +26,14 @@
  */
 int boot_func(char *argv[])
 {
-    char tmp[BLOCK_SIZE];
-    extern int read_multi_module();
+    unsigned char tmp[BLOCK_SIZE];
 
     boot_printf("booting kernel...\n");
-    init_fd();
-    fd_reset();
     on_motor(0);
     fd_recalibrate(0);
     boot_printf("exec data read...\n");
     fd_read(0, 0, 0, tmp, 2);
-    boot_printf("magic number %d\n", tmp[0]);
+    boot_printf("magic number 0x%x\n", tmp[0]);
     if (tmp[0] == 0x0001) {
 	boot_printf("read multiple module.\n");
 	read_multi_module();
@@ -58,7 +60,7 @@ int boot_func(char *argv[])
    へのマッピングなどは ITRON カーネルの起動後に行う。
 
 */
-int read_multi_module()
+static int read_multi_module()
 {
     int i;
     int bn;
@@ -68,7 +70,7 @@ int read_multi_module()
 
     boot_printf("Multiple module boot.\n");
     info = (struct boot_header *) MODULE_TABLE;
-    fd_read(0, 0, 0, (char *) info, 2);
+    fd_read(0, 0, 0, (unsigned char *) info, 2);
     info->machine.base_mem = base_mem;
     info->machine.ext_mem = ext_mem;
     info->machine.real_mem = real_mem;
@@ -89,7 +91,6 @@ int read_multi_module()
     }
     boot_printf("load done.\n");
     boot_printf("exec_info->a_entry = 0x%x\n", entry);
-    stop_motor(0);
 
     info->machine.clock = clock + ticks/TICKS;
     (*entry) ();
@@ -97,11 +98,11 @@ int read_multi_module()
     return E_OK;
 }
 
-int
+static int
 read_single_module(int start_block, void *paddr, struct module_info *info)
 {
-    char buf[BLOCK_SIZE];
-    char tmp[BLOCK_SIZE];
+    unsigned char buf[BLOCK_SIZE];
+    unsigned char tmp[BLOCK_SIZE];
     int i, j;
     int bn;
     struct exec *exec_info;
@@ -129,7 +130,7 @@ read_single_module(int start_block, void *paddr, struct module_info *info)
 			 / BLOCK_SIZE); i++, bn++) {
 	    boot_printf(".");
 	    fd_read(0, 0, bn*2, buf, 2);
-	    bcopy(buf, (char *) (paddr + i * BLOCK_SIZE), BLOCK_SIZE);
+	    bcopy((char*)buf, (char *) (paddr + i * BLOCK_SIZE), BLOCK_SIZE);
 	}
 /*      boot_printf ("\nText region is readed.\n"); */
 	if (exec_info->a_data > 0) {
@@ -137,7 +138,7 @@ read_single_module(int start_block, void *paddr, struct module_info *info)
 			      / BLOCK_SIZE); j++, bn++) {
 		boot_printf(",");
 		fd_read(0, 0, bn*2, buf, 2);
-		bcopy(buf,
+		bcopy((char*)buf,
 		      (char *) (paddr
 				+ (ROUNDUP(exec_info->a_text, PAGE_SIZE))
 				+ j * BLOCK_SIZE), BLOCK_SIZE);
