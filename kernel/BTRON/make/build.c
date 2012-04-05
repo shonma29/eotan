@@ -559,35 +559,35 @@ output_module(struct config_entry *info, FILE * in, FILE * out)
 		 output_length,
 		 output_length + phead[1].p_filesz,
 		 phead[1].p_filesz, phead[1].p_filesz));
-	if (phead[1].p_filesz == 0) {
-		return;
+
+	if (phead[1].p_filesz > 0) {
+		if (fseek(in, phead[1].p_offset, SEEK_SET) < 0) {
+		    perror("fseek");
+		    exit(1);
+		}
+		buf = (char *) malloc(phead[1].p_filesz);
+		if (buf == NULL) {
+		    perror("malloc");
+		    fclose(in);
+		    fclose(out);
+		    exit(1);
+		}
+		if (fread(buf, phead[1].p_filesz, 1, in) < 1) {
+		    perror("fread: (2)");
+		    fclose(in);
+		    fclose(out);
+		    exit(1);
+		}
+		DPRINTF(("fwrite(DATA): %d\n", phead[1].p_filesz));
+		if (fwrite(buf, phead[1].p_filesz, 1, out) < 1) {
+		    perror("fwrite");
+		    fclose(in);
+		    fclose(out);
+		    exit(1);
+		}
+		free(buf);
 	}
 
-	if (fseek(in, phead[1].p_offset, SEEK_SET) < 0) {
-	    perror("fseek");
-	    exit(1);
-	}
-	buf = (char *) malloc(phead[1].p_filesz);
-	if (buf == NULL) {
-	    perror("malloc");
-	    fclose(in);
-	    fclose(out);
-	    exit(1);
-	}
-	if (fread(buf, phead[1].p_filesz, 1, in) < 1) {
-	    perror("fread: (2)");
-	    fclose(in);
-	    fclose(out);
-	    exit(1);
-	}
-	DPRINTF(("fwrite(DATA): %d\n", phead[1].p_filesz));
-	if (fwrite(buf, phead[1].p_filesz, 1, out) < 1) {
-	    perror("fwrite");
-	    fclose(in);
-	    fclose(out);
-	    exit(1);
-	}
-	free(buf);
 	output_length += phead[1].p_filesz;
 	output_padding(out,
 		       ALIGN(output_length, PAGESIZE) - output_length);
