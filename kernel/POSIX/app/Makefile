@@ -30,10 +30,10 @@ AS=as
 #	kp -input-code euc -input $< -output kptmp.c
 #	$(CC) $(CFLAGS) -c kptmp.c -o $@
 #	rm -f kptmp.c
-%.o: %.c
+.o.c:
 	$(CC) $(CFLAGS) -c $< -o $@
 
-%.o: %.s
+.o.s:
 	$(CPP) $(ASFLAGS) $*.s | $(AS) -o $*.o
 
 OBJS= test.o
