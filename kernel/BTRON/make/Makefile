@@ -37,11 +37,6 @@ clean:
 	cd ../../BTRON/device/keyboard; ${MAKE} clean
 	cd ../../BTRON/device/fd765a; ${MAKE} clean
 	cd ../../BTRON/device/ide; ${MAKE} clean
-	cd ../../BTRON/device/ne2000; ${MAKE} clean
-	cd ../../BTRON/device/rs232c; ${MAKE} clean
-	cd ../../BTRON/device/beep; ${MAKE} clean
-	cd ../../BTRON/device/hcm_pci; ${MAKE} clean
-	cd ../../BTRON/device/pcmcia; ${MAKE} clean
 	cd ../../ITRON/make; ${MAKE} clean
 	cd ../../BTRON/init; ${MAKE} clean
 	cd ../../POSIX/manager; ${MAKE} clean
