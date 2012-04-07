@@ -9,7 +9,7 @@ CXXFLAGS = $(CFLAGS)
 
 CC = gcc
 
-OBJS = command.o graphic.o #posix-misc.o posix-file.o 
+OBJS = command.o graphic.o
 
 all: libCmd.a
 
@@ -22,10 +22,6 @@ command.o: command.c
 graphic.o: graphic.c
 
 GraphicOp.o: GraphicOp.c
-
-posix-misc.o: posix-misc.c
-
-posix-file.o: posix-file.c
 
 clean:
 	rm -f libCmd.a

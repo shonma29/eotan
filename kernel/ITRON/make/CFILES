@@ -85,15 +85,6 @@ debug.o:	../common/debug.c
 device.o:	../io/device.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-rs232c.o:	../io/rs232c.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-echo.o:	../io/echo.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-gdc7220.o:	../pc9801/gdc7220.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
 syscall-if.o: ../common/syscall-if.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
@@ -105,4 +96,3 @@ lowlib.o: ../common/lowlib.c
 
 posix.o: ../common/posix.c
 	$(CC) $(CFLAGS) -I../../ITRON -c $< -o $@
-

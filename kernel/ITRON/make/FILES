@@ -87,15 +87,3 @@ fpu.o:	../i386/fpu.c
 	kp -input $< -output kptmp.c
 	$(CC) $(CFLAGS) -c kptmp.c -o $@
 	rm -f kptmp.c
-
-timer.o:	../pc9801/timer.c
-	kp -input $< -output kptmp.c
-	$(CC) $(CFLAGS) -c kptmp.c -o $@
-	rm -f kptmp.c
-
-gdc7220.o:	../pc9801/gdc7220.c
-	kp -input $< -output kptmp.c
-	$(CC) $(CFLAGS) -c kptmp.c -o $@
-	rm -f kptmp.c
-
-

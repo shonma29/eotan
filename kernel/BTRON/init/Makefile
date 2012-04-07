@@ -39,7 +39,7 @@ AS=as
 %.o: %.s
 	$(CPP) $(ASFLAGS) $*.s | $(AS) -o $*.o
 
-OBJS= start.o main.o device.o posix_if.o #ether.o
+OBJS= start.o main.o device.o posix_if.o
 
 all: init
 
@@ -71,9 +71,6 @@ libCmd/libCmd.a:
 ../lib/frtm/libfrtm.a:
 	cd ../lib/frtm; ${MAKE}
 
-dosfs/libdosfs.a:
-	cd dosfs; ${MAKE}
-
 tags:
 	etags ../*/*.[hcs]
 
@@ -85,7 +82,6 @@ clean:
 	rm -f $(OBJS)
 	rm -f $(ADDOBJS)
 	cd lib; ${MAKE} clean
-	cd dosfs; ${MAKE} clean
 	cd libCmd; ${MAKE} clean
 	cd ../lib/frtm; ${MAKE} clean
 
