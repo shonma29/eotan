@@ -1,6 +1,6 @@
 # make sfsboot fd image (hd_boot.bin)
 
-POSIXBIN = kernel/POSIX/mkfs
+POSIXBIN = app/mkfs
 
 TARGET = 1st_fd.img
 

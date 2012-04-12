@@ -114,8 +114,8 @@
 #endif
 #include <fcntl.h>
 #include <time.h>
-#include "../../ITRON/h/types.h"
-#include "../manager/sfs/sfs_fs.h"
+#include "../../kernel/ITRON/h/types.h"
+#include "../../kernel/POSIX/manager/sfs/sfs_fs.h"
 #ifdef EOTA
 struct stat {
     UW st_dev;

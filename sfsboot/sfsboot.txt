@@ -7,7 +7,7 @@ sfsboot
 
 前準備
 
-   予め、B-FreeはMakeしておき、kernel/POSIX/mkfs/にpathを通しておいてください。
+   予め、B-FreeはMakeしておき、app/mkfs/にpathを通しておいてください。
   sfsbootのmakeには、nasm-0.98が必要です。nasmは、
 
 	http://www.web-sites.co.uk/nasm/ 

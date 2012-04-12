@@ -1,4 +1,4 @@
-POSIXBIN = kernel/POSIX/mkfs
+POSIXBIN = app/mkfs
 
 TARGET = sfsboot.img
 
@@ -32,7 +32,7 @@ all: clean
 	${POSIXBIN}/statfs ${TARGET} mknod /dev/rd	0x80020000
 	echo dir /dev
 	${POSIXBIN}/statfs ${TARGET} dir /dev
-	${POSIXBIN}/statfs ${TARGET} write /init.fm kernel/POSIX/mkfs/init.fm
+	${POSIXBIN}/statfs ${TARGET} write /init.fm app/mkfs/init.fm
 #	${MAKE} -C app/posix
 #	kernel/POSIX/app/inst_app.sh ${TARGET} 
 	sfsboot/mkmap ${TARGET} /system/2ndboot | sfsboot/mkboot ${TARGET}

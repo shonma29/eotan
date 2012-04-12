@@ -1,4 +1,4 @@
-ROOT=../..
+ROOT=../../kernel
 ECFLAGS=-O -Wall -I. -I$(ROOT) -I$(ROOT)/ITRON -I$(ROOT)/ITRON/h -I$(ROOT)/ITRON/i386 -I$(ROOT)/POSIX/libc/others -DEOTA $(IDENT)
 STARTADDR=0x00001000
 ENTRY=_main

@@ -14,7 +14,7 @@ kern:
 	${MAKE} -C build
 
 tool:
-	${MAKE} -C kernel/POSIX/mkfs
+	${MAKE} -C app/mkfs
 
 boot:
 	${MAKE} -C sfsboot
@@ -37,7 +37,7 @@ sfsboot.img:
 clean:
 	${MAKE} -C sfsboot clean
 	${MAKE} -C build clean
-	${MAKE} -C kernel/POSIX/mkfs clean
+	${MAKE} -C app/mkfs clean
 	${MAKE} -C app/posix clean
 	${MAKE} -C app/contribution clean
 	rm -f 1st_fd.img 2nd_fd.img 3rd_fd.img

@@ -1,6 +1,6 @@
 #! /bin/bash
 
-mkfspath="../kernel/POSIX/mkfs"
+mkfspath="../app/mkfs"
 
 echo "write 2ndboot"
 $mkfspath/statfs /dev/fd0 write /system/2ndboot ./2nd/2ndboot

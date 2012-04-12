@@ -17,9 +17,9 @@ Version 2, June 1991
 #ifndef EOTA
 #include <fcntl.h>
 #endif
-#include "../../ITRON/h/types.h"
-#include "../manager/sfs/sfs_fs.h"
-/*#include "../manager/posix_fs.h"*/
+#include "../../kernel/ITRON/h/types.h"
+#include "../../kernel/POSIX/manager/sfs/sfs_fs.h"
+/*#include "../../kernel/POSIX/manager/posix_fs.h"*/
 
 
 #define ROUNDUP(x,align)	(((((int)x) + ((align) - 1))/(align))*(align))
