@@ -11,7 +11,7 @@ TARGET1 = tool
 all: kern tool boot ${TARGET}
 
 kern:
-	${MAKE} -C kernel/BTRON/make
+	${MAKE} -C build
 
 tool:
 	${MAKE} -C kernel/POSIX/mkfs
@@ -36,7 +36,7 @@ sfsboot.img:
 
 clean:
 	${MAKE} -C sfsboot clean
-	${MAKE} -C kernel/BTRON/make clean
+	${MAKE} -C build clean
 	${MAKE} -C kernel/POSIX/mkfs clean
 	${MAKE} -C app/posix clean
 	${MAKE} -C app/contribution clean

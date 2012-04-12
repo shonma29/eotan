@@ -12,7 +12,7 @@ naniwa@rbt.his.fukui-u.ac.jp
    contribution/applications/frtm-bf/src 以下にあります．
 1. 必要に応じて Makefile 中の ROOT の定義を書き換えてください．
 2. EOTA がコンパイルされていることを確認してください．OS をコンパ
-   イルするには kernel/BTRON/make の下で make を実行します．
+   イルするには build の下で make を実行します．
 3. frtm の make を実行します．frtm という実行ファイルが作成されます．
 4. 実行ファイルを POSIX filesystem に書き込みます．書き込みには
    kernel/POISX/mkfs/statfs を使用します．

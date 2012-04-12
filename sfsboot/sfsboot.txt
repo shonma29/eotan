@@ -37,9 +37,9 @@ FDからブートする場合
         statfs /dev/fd0 mkdir /system
 	statfs /dev/fd0 write /system/2ndboot ./2nd/2ndboot
        
-  4. posix-fsに、kernel/BTRON/make/にあるbtronを書き込みます。
+  4. posix-fsに、build/にあるbtronを書き込みます。
 
-	statfs /dev/fd0 write /system/btron386 ../kernel/BTRON/make/btron
+	statfs /dev/fd0 write /system/btron386 ../build/btron
 
   5. 1stbootを修正します。
  

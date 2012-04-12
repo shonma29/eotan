@@ -84,31 +84,22 @@
 #
 
 #  file name			virtual addr	physical addr	type    name
-../../ITRON/make/itron.image	0x80020000	0x020000	kernel  kernel
-../../ITRON/servers/port-manager 0x00010000	0x080000	kernel port-manager
+../kernel/ITRON/make/itron.image	0x80020000	0x020000	kernel  kernel
+../kernel/ITRON/servers/port-manager 0x00010000	0x080000	kernel port-manager
 
 #
 #  Driver(s)
 #
-../device/console/console	0x80100000	0x100000	driver	driver.console
-../device/keyboard/keyboard	0x80110000	0x110000	driver  driver.keyboard
-../device/fd765a/fd765a		0x80120000	0x120000	driver	driver.fd
-../device/ide/ide		0x80130000	0x130000	driver  driver.ide
-#../device/psaux/psaux           0x80140000      0x140000        driver  driver.psaux
-#../device/rs232c/rs232c		0x80140000	0x140000	driver  driver.rs232c
-#../device/ne2000/ne2000		0x80150000	0x150000	driver	driver.ne2000
-#../device/beep/beep		0x80160000	0x160000	driver	driver.beep
-#../device/hcm_pci/hcm_pci	0x80170000	0x170000	driver	driver.hcm_pci
-#../device/svga_cons/svga_cons	0x80180000	0x180000	driver	driver.svga_cons
-#../device/dc390/dc390          0x80190000      0x190000        driver  driver.dc390
-#../device/pcmcia/pcmcia         0x801E0000      0x1E0000        driver  driver.pcmcia
+../kernel/BTRON/device/console/console	0x80100000	0x100000	driver	driver.console
+../kernel/BTRON/device/keyboard/keyboard	0x80110000	0x110000	driver  driver.keyboard
+../kernel/BTRON/device/fd765a/fd765a		0x80120000	0x120000	driver	driver.fd
+../kernel/BTRON/device/ide/ide		0x80130000	0x130000	driver  driver.ide
+#../kernel/BTRON/device/psaux/psaux           0x80140000      0x140000        driver  driver.psaux
 
 #
 # LOWLIB
 #
-#../../BTRON/lowlib/lowlib	0x80280000	0x280000	lowlib  lowlib.btron
-../../POSIX/lowlib/lowlib	0x80290000	0x290000	lowlib  lowlib.posix
-#../../NETWORK/tcpip/lowlib	0x802A0000	0x2A0000	lowlib  lowlib.tcpip
+../kernel/POSIX/lowlib/lowlib	0x80290000	0x290000	lowlib  lowlib.posix
    
 
 #
@@ -116,27 +107,23 @@
 # Manager
 #
 # POSIX
-../../POSIX/manager/posix_manager	0x00001000	0x200000	user	manager.posix
+../kernel/POSIX/manager/posix_manager	0x00001000	0x200000	user	manager.posix
 #
 # BTRON
-#../manager/FM/FM		0x00001000	0x250000	user	manager.btron.fm
-#../manager/PM/PM		0x00001000	0x260000	user	manager.btron.pm
-#../manager/MM/MM		0x00001000	0x270000	user	manager.btron.mm
 #
 # wconsole --- now boot from init
 #
-# ../wconsole/wconsole	0x00001000	0x1A0000	user	manager.wconsole
+# ../kernel/BTRON/wconsole/wconsole	0x00001000	0x1A0000	user	manager.wconsole
 # RAMDISK  --- now boot from init
-# ../device/ramdisk/ramdisk	0x00001000	0x170000	user	driver.ramdisk
+# ../kernel/BTRON/device/ramdisk/ramdisk	0x00001000	0x170000	user	driver.ramdisk
 
 
 #
 # Network
 #
-#../../NETWORK/tcpip/tcpip	0x00001000	0x290000	user	network.tcpip
 
 #
 # System initialize program
 #
-../init/init			0x00001000	0x300000	user	init
+../kernel/BTRON/init/init			0x00001000	0x300000	user	init
 
