@@ -32,7 +32,7 @@ OBJS= main.o misc.o graphic.o missing.o
 SRCS= main.c misc.c graphic.c missing.c
 
 all: 
-	cd $(ROOT)/BTRON/lib/frtm; ${MAKE}
+	${MAKE} -C $(ROOT)/BTRON/lib/frtm
 	${MAKE} wconsole
 
 wconsole: $(OBJS) $(SRCS) Makefile $(LIBS)

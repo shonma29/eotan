@@ -34,7 +34,6 @@
 main()
 {
   static char line[LINE];
-  long int read_line_edit();
 
   printf("%s\n", GREETING);
   printf("%s\n", GREETING2);

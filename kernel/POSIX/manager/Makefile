@@ -36,8 +36,8 @@ KERNLIB=../../ITRON/kernlib/libkernel.a
 LIBS=sfs/libsfs.a syscalls/libsysc.a $(KERNLIB)
 
 all:
-	cd sfs; ${MAKE}
-	cd syscalls; ${MAKE}
+	${MAKE} -C sfs
+	${MAKE} -C syscalls
 	${MAKE} posix_manager
 
 posix_manager:	$(OBJS) $(LIBS)
@@ -46,8 +46,8 @@ posix_manager:	$(OBJS) $(LIBS)
 
 clean:
 	rm -f $(OBJS) posix_manager
-	cd sfs; ${MAKE} clean
-	cd syscalls; ${MAKE} clean
+	${MAKE} -C sfs clean
+	${MAKE} -C syscalls clean
 
 depend:
 	cc -M $(CFLAGS) $(SRCS) > .depend

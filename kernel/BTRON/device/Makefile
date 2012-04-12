@@ -6,38 +6,22 @@
 all: dev_console dev_fd765a dev_keyboard dev_ide ne2000 rs232c beep hcm_pci
 
 kernlib:
-	cd ../kernlib/; ${MAKE}
+	${MAKE} -C ../kernlib
 
 dev_console: kernlib
-	cd console; ${MAKE}
+	${MAKE} -C console
 
 dev_fd765a: kernlib
-	cd fd765a; ${MAKE}
+	${MAKE} -C fd765a
 
 dev_ide: kernlib
-	cd ide; ${MAKE}
+	${MAKE} -C ide
 
 dev_keyboard: kernlib
-	cd keyboard; ${MAKE}
-
-ne2000: kernlib
-	cd ne2000; ${MAKE}
-
-rs232c: kernlib
-	cd rs232c; ${MAKE}
-
-beep: kernlib
-	cd beep; ${MAKE}
-
-hcm_pci: kernlib
-	cd hcm_pci; ${MAKE}
+	${MAKE} -C keyboard
 
 clean:
-	cd console; ${MAKE} clean
-	cd fd765a; ${MAKE} clean
-	cd ide; ${MAKE} clean
-	cd keyboard; ${MAKE} clean
-	cd ne2000; ${MAKE} clean
-	cd rs232c; ${MAKE} clean
-	cd beep; ${MAKE} clean
-	cd hcm_pci; ${MAKE} clean
+	${MAKE} -C console clean
+	${MAKE} -C fd765a clean
+	${MAKE} -C ide clean
+	${MAKE} -C keyboard clean

@@ -44,9 +44,9 @@ OBJS= start.o main.o device.o posix_if.o
 all: init
 
 init: $(OBJS) $(LIBS) $(KERNLIBS)
-	cd ../lib/frtm; ${MAKE}
-	cd lib; ${MAKE}
-	cd libCmd; ${MAKE}
+	${MAKE} -C ../lib/frtm
+	${MAKE} -C lib
+	${MAKE} -C libCmd
 	$(LD) -static -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) $(LIBS) $(KERNLIBS)
 
 main.s: main.c
@@ -63,13 +63,13 @@ filesystem.o: init.h filesystem.c
 lib.o: init.h lib.c
 
 lib/libs.a:
-	cd lib; ${MAKE}
+	${MAKE} -C lib
 
 libCmd/libCmd.a:
-	cd libCmd; ${MAKE}
+	${MAKE} -C libCmd
 
 ../lib/frtm/libfrtm.a:
-	cd ../lib/frtm; ${MAKE}
+	${MAKE} -C ../lib/frtm
 
 tags:
 	etags ../*/*.[hcs]
@@ -81,7 +81,7 @@ clean:
 	rm -f init
 	rm -f $(OBJS)
 	rm -f $(ADDOBJS)
-	cd lib; ${MAKE} clean
-	cd libCmd; ${MAKE} clean
-	cd ../lib/frtm; ${MAKE} clean
+	${MAKE} -C lib clean
+	${MAKE} -C libCmd clean
+	${MAKE} -C ../lib/frtm clean
 

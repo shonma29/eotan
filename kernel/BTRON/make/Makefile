@@ -33,40 +33,40 @@ build: build.o $(BUILDSRC)
 
 clean:
 	rm -f build build.o btron
-	cd ../../BTRON/device/console; ${MAKE} clean
-	cd ../../BTRON/device/keyboard; ${MAKE} clean
-	cd ../../BTRON/device/fd765a; ${MAKE} clean
-	cd ../../BTRON/device/ide; ${MAKE} clean
-	cd ../../ITRON/make; ${MAKE} clean
-	cd ../../BTRON/init; ${MAKE} clean
-	cd ../../POSIX/manager; ${MAKE} clean
-	cd ../../POSIX/servers/wconsole; ${MAKE} clean
-	cd ../../POSIX/servers/ramdisk; ${MAKE} clean
-	cd ../../POSIX/lowlib; ${MAKE} clean
-	cd ../../POSIX/libc; ${MAKE} clean
-	cd ../../BTRON/device/psaux; ${MAKE} clean
+	${MAKE} -C ../../BTRON/device/console clean
+	${MAKE} -C ../../BTRON/device/keyboard clean
+	${MAKE} -C ../../BTRON/device/fd765a clean
+	${MAKE} -C ../../BTRON/device/ide clean
+	${MAKE} -C ../../ITRON/make clean
+	${MAKE} -C ../../BTRON/init clean
+	${MAKE} -C ../../POSIX/manager clean
+	${MAKE} -C ../../POSIX/servers/wconsole clean
+	${MAKE} -C ../../POSIX/servers/ramdisk clean
+	${MAKE} -C ../../POSIX/lowlib clean
+	${MAKE} -C ../../POSIX/libc clean
+	${MAKE} -C ../../BTRON/device/psaux clean
 
 dummy:
 	echo '*dummy*'
 
 $(DRIVERS):
-	cd ../device/$@; ${MAKE}
+	${MAKE} -C ../device/$@
 
 itron:
-	cd ../../ITRON/make; ${MAKE}
+	${MAKE} -C ../../ITRON/make
 
 posix_lowlib:
-	cd ../../POSIX/lowlib; ${MAKE}
+	${MAKE} -C ../../POSIX/lowlib
 
 $(SERVERS):
-	cd ../../POSIX/servers/$@; ${MAKE}
+	${MAKE} -C ../../POSIX/servers/$@
 
 posix_manager:
-	cd ../../POSIX/manager; ${MAKE}
+	${MAKE} -C ../../POSIX/manager
 
 posix_libc:
-	cd ../../POSIX/libc; ${MAKE}
+	${MAKE} -C ../../POSIX/libc
 
 init:
-	cd ../init; ${MAKE}
+	${MAKE} -C ../init
 

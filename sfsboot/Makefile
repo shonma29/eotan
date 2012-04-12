@@ -25,10 +25,10 @@ CFLAGS=-D__LINUX__
 all: 1stboot 2ndboot mkmap mkboot mkhdboot
 
 1stboot:
-	cd 1st ; ${MAKE} 1stboot
+	${MAKE} -C 1st 1stboot
 
 2ndboot:
-	cd 2nd ; ${MAKE} 2ndboot
+	${MAKE} -C 2nd 2ndboot
 
 mkmap: mkmap.c
 	$(CC) -o mkmap mkmap.c
@@ -46,7 +46,7 @@ modboot-e: modboot.no $(NLIBS) $(NKERNLIBS)
 	$(LD) -Bstatic -o $@ -e ${NENTRY} -Ttext=$(STARTADDR) modboot.no $(NLIBS) $(NKERNLIBS) 
 	strip $@
 clean:
-	(cd 1st && ${MAKE} clean)
-	(cd 2nd && ${MAKE} clean)
+	${MAKE} -C 1st clean
+	${MAKE} -C 2nd clean
 	rm -f mkmap mkboot mkhdboot
 

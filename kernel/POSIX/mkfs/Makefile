@@ -53,4 +53,3 @@ clean:
 	rm -f *.o *.eo *.no
 	rm -f mksfs-e statfs-e
 	rm -f *.img *.bin
-	(cd ../app; ${MAKE} clean)
