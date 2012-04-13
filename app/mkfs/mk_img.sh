@@ -5,9 +5,9 @@
 rm -f posix_fd.img
 ./mksfs posix_fd.img 2880 512 12
 ./statfs posix_fd.img mkdir /system
-./statfs posix_fd.img write /system/wconsole ../../POSIX/servers/wconsole/wconsole
+./statfs posix_fd.img write /system/wconsole ../../servers/wconsole/wconsole
 ./statfs posix_fd.img chmod 755 /system/wconsole
-./statfs posix_fd.img write /system/ramdisk ../../POSIX/servers/ramdisk/ramdisk
+./statfs posix_fd.img write /system/ramdisk ../../servers/ramdisk/ramdisk
 ./statfs posix_fd.img chmod 755 /system/ramdisk
 ./statfs posix_fd.img mkdir /dev
 ./statfs posix_fd.img mknod /dev/console	0x00000000
@@ -30,5 +30,5 @@ rm -f posix_fd.img
 echo dir /dev
 ./statfs posix_fd.img dir /dev
 ./statfs posix_fd.img write /init.fm init.fm
-(cd ../app;make)
+(cd ../app && make)
 ../app/inst_app.sh posix_fd.img

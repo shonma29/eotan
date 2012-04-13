@@ -55,7 +55,7 @@ static char rcsid[] =
  */
 
 #include "others/stdlib.h"
-#include "POSIX/servers/wconsole/wconsole.h"
+#include "../servers/wconsole/wconsole.h"
 
 void init_device();
 #ifdef notdef

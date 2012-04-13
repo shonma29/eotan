@@ -6,9 +6,7 @@ IDENT=-DTIMER_TEST -DI386 -DVGA
 DEBUG=-DTSKSW_DEBUG
 
 CPP=/lib/cpp
-ROOT=../../..
-#CFLAGS= -b i486-linuxaout -I. -I$(ROOT) -I../../kernlib -fno-builtin $(IDENT)
-#CFLAGS= -I. -I$(ROOT) -I$(ROOT)/kernlib -fno-builtin $(IDENT)
+ROOT=../../kernel
 CFLAGS=-O2 -I. -I$(ROOT)/ITRON -I$(ROOT)/ITRON/kernlib -I$(ROOT) $(IDENT)
 CC=gcc
 #AS=/usr/local/bin/as

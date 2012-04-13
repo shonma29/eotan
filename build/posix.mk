@@ -8,9 +8,9 @@ all: clean
 	rm -f ${TARGET}
 	${POSIXBIN}/mksfs ${TARGET} 2880 512 12
 	${POSIXBIN}/statfs ${TARGET} mkdir /system
-	${POSIXBIN}/statfs ${TARGET} write /system/wconsole kernel/POSIX/servers/wconsole/wconsole
+	${POSIXBIN}/statfs ${TARGET} write /system/wconsole servers/wconsole/wconsole
 	${POSIXBIN}/statfs ${TARGET} chmod 755 /system/wconsole
-	${POSIXBIN}/statfs ${TARGET} write /system/ramdisk kernel/POSIX/servers/ramdisk/ramdisk
+	${POSIXBIN}/statfs ${TARGET} write /system/ramdisk servers/ramdisk/ramdisk
 	${POSIXBIN}/statfs ${TARGET} chmod 755 /system/ramdisk
 	${POSIXBIN}/statfs ${TARGET} mkdir /dev
 	${POSIXBIN}/statfs ${TARGET} mknod /dev/console	0x00000000

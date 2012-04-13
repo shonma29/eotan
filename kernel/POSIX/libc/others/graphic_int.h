@@ -26,7 +26,7 @@ Version 2, June 1991
 #ifndef __GRAPHIC_INTERNAL_H__
 #define __GRAPHIC_INTERNAL_H__	1
 
-#include <../POSIX/servers/wconsole/wconsole.h>
+#include <../../servers/wconsole/wconsole.h>
 #include "graphic.h"
 
 /* definition for fcntl */

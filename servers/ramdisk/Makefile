@@ -5,8 +5,7 @@
 IDENT=-DI386 -DIBMPC $(DEBUG)
 
 CPP=/lib/cpp
-ROOT=../../..
-#CFLAGS=-b i486-linuxaout -I. -I$(ROOT) -I$(ROOT)/h -I$(ROOT)/i386 -I../../../ITRON/kernlib -fno-builtin $(IDENT)
+ROOT=../../kernel
 CFLAGS=-O2 -I. -I$(ROOT)/ITRON -I$(ROOT)/ITRON/h -I$(ROOT)/ITRON/i386 -I$(ROOT)/ITRON/kernlib -fno-builtin $(IDENT)
 CC=gcc
 #AS=/usr/local/bin/as

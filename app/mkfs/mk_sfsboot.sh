@@ -2,14 +2,14 @@
 # make sfsboot fd image
 # 
 
-cp -f ../../../sfsboot/1st/1stboot sfsboot.bin
+cp -f ../../sfsboot/1st/1stboot sfsboot.bin
 ./mksfs sfsboot.bin 2880 512 12
 ./statfs sfsboot.bin mkdir /system
-./statfs sfsboot.bin write /system/2ndboot ../../../sfsboot/2nd/2ndboot
-./statfs sfsboot.bin write /system/btron386 ../../../build/btron
-./statfs sfsboot.bin write /system/wconsole ../../POSIX/servers/wconsole/wconsole
+./statfs sfsboot.bin write /system/2ndboot ../../sfsboot/2nd/2ndboot
+./statfs sfsboot.bin write /system/btron386 ../../build/btron
+./statfs sfsboot.bin write /system/wconsole ../../servers/wconsole/wconsole
 ./statfs sfsboot.bin chmod 755 /system/wconsole
-./statfs sfsboot.bin write /system/ramdisk ../../POSIX/servers/ramdisk/ramdisk
+./statfs sfsboot.bin write /system/ramdisk ../../servers/ramdisk/ramdisk
 ./statfs sfsboot.bin chmod 755 /system/ramdisk
 ./statfs sfsboot.bin mkdir /dev
 ./statfs sfsboot.bin mknod /dev/console	0x00000000
@@ -32,6 +32,6 @@ cp -f ../../../sfsboot/1st/1stboot sfsboot.bin
 echo dir /dev
 ./statfs sfsboot.bin dir /dev
 ./statfs sfsboot.bin write /init.fm init.fm
-(cd ../app;make)
+(cd ../app && make)
 ../app/inst_app.sh sfsboot.bin 
-../../../sfsboot/mkmap sfsboot.bin /system/2ndboot | ../../../sfsboot/mkboot sfsboot.bin
+../../sfsboot/mkmap sfsboot.bin /system/2ndboot | ../../sfsboot/mkboot sfsboot.bin

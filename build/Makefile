@@ -40,8 +40,8 @@ clean:
 	${MAKE} -C ../kernel/ITRON/make clean
 	${MAKE} -C ../kernel/init clean
 	${MAKE} -C ../kernel/POSIX/manager clean
-	${MAKE} -C ../kernel/POSIX/servers/wconsole clean
-	${MAKE} -C ../kernel/POSIX/servers/ramdisk clean
+	${MAKE} -C ../servers/wconsole clean
+	${MAKE} -C ../servers/ramdisk clean
 	${MAKE} -C ../kernel/POSIX/lowlib clean
 	${MAKE} -C ../kernel/POSIX/libc clean
 	${MAKE} -C ../kernel/drivers/psaux clean
@@ -59,7 +59,7 @@ posix_lowlib:
 	${MAKE} -C ../kernel/POSIX/lowlib
 
 $(SERVERS):
-	${MAKE} -C ../kernel/POSIX/servers/$@
+	${MAKE} -C ../servers/$@
 
 posix_manager:
 	${MAKE} -C ../kernel/POSIX/manager

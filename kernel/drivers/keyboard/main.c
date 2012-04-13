@@ -66,7 +66,7 @@ static char rcsid[] =
 
 #include "keyboard.h"
 #include "key_type.h"
-#include "POSIX/servers/wconsole/wconsole.h"
+#include "../servers/wconsole/wconsole.h"
 
 /*********************************************************************
  *	 局所変数群の宣言

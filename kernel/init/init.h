@@ -19,7 +19,7 @@ Version 2, June 1991
 #include "../ITRON/kernlib/device.h"
 #include "../ITRON/servers/port-manager.h"
 /* #include "../ITRON/kernlib/libkernel.h" */
-#include "../POSIX/servers/wconsole/wconsole.h"
+#include "../../servers/wconsole/wconsole.h"
 #include "../drivers/keyboard/keyboard.h"
 #include "../drivers/ide/ide.h"
 #include "../POSIX/manager/posix_sysc.h"
