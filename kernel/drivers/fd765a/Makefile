@@ -8,9 +8,8 @@ IDENT=-DTIMER_TEST -DI386 -DIBMPC $(DEBUG)
 
 
 CPP=/lib/cpp
-ROOT=../../../ITRON
-#CFLAGS=-b i486-linuxaout -I. -I$(ROOT) -I$(ROOT)/h -I$(ROOT)/i386 -I../../../ITRON/kernlib -fno-builtin $(IDENT)
-CFLAGS=-O -I. -I$(ROOT) -I$(ROOT)/h -I$(ROOT)/i386 -I../../../ITRON/kernlib -fno-builtin $(IDENT)
+ROOT=../../ITRON
+CFLAGS=-O -I. -I$(ROOT) -I$(ROOT)/h -I$(ROOT)/i386 -I$(ROOT)/kernlib -fno-builtin $(IDENT)
 CC=gcc
 #AS=/usr/local/bin/as
 AS=/usr/bin/as
@@ -18,7 +17,7 @@ KP=kp -input-code euc
 MKDEPEND=$(CC) -M
 STARTADDR=0x80120000
 ENTRY=start
-LIBS=../../../ITRON/kernlib/libkernel.a
+LIBS=$(ROOT)/kernlib/libkernel.a
 #LD=/usr/local/bin/ld
 LD=ld
 

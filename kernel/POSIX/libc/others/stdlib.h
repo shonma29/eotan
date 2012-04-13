@@ -25,8 +25,8 @@ Version 2, June 1991
 #include "ITRON/servers/port-manager.h"
 /* #include "../kernlib/libkernel.h" */
 #include "BTRON/wconsole/wconsole.h"
-#include "BTRON/device/keyboard/keyboard.h"
-#include "BTRON/device/ide/ide.h"
+#include "drivers/keyboard/keyboard.h"
+#include "drivers/ide/ide.h"
 #endif
 #include "POSIX/lowlib/lowlib.h"
 #if 0

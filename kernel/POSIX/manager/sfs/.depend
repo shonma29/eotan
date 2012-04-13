@@ -9,8 +9,8 @@ sfs_fs.o: sfs_fs.c ../posix.h ../../../ITRON/h/itron.h \
  ../../../ITRON/h/misc.h ../../../ITRON/kernlib/device.h \
  ../../../ITRON/kernlib/message.h \
  ../../../ITRON/kernlib/../../ITRON/h/types.h \
- ../../../BTRON/device/console/console.h \
- ../../../BTRON/device/console/../../../ITRON/kernlib/device.h \
+ ../../../drivers/console/console.h \
+ ../../../ITRON/kernlib/device.h \
  ../../../ITRON/servers/port-manager.h ../posix_sysc.h ../assert.h \
  ../sfs/sfs_fs.h ../sfs/../../../ITRON/h/types.h ../posix_fs.h \
  ../posix_proc.h ../posix_mm.h ../utsname.h ../elf.h \
@@ -27,8 +27,8 @@ sfs_block.o: sfs_block.c ../posix.h ../../../ITRON/h/itron.h \
  ../../../ITRON/h/misc.h ../../../ITRON/kernlib/device.h \
  ../../../ITRON/kernlib/message.h \
  ../../../ITRON/kernlib/../../ITRON/h/types.h \
- ../../../BTRON/device/console/console.h \
- ../../../BTRON/device/console/../../../ITRON/kernlib/device.h \
+ ../../../drivers/console/console.h \
+ ../../../ITRON/kernlib/device.h \
  ../../../ITRON/servers/port-manager.h ../posix_sysc.h ../assert.h \
  ../sfs/sfs_fs.h ../sfs/../../../ITRON/h/types.h ../posix_fs.h \
  ../posix_proc.h ../posix_mm.h ../utsname.h ../elf.h \
@@ -45,8 +45,8 @@ sfs_file.o: sfs_file.c ../posix.h ../../../ITRON/h/itron.h \
  ../../../ITRON/h/misc.h ../../../ITRON/kernlib/device.h \
  ../../../ITRON/kernlib/message.h \
  ../../../ITRON/kernlib/../../ITRON/h/types.h \
- ../../../BTRON/device/console/console.h \
- ../../../BTRON/device/console/../../../ITRON/kernlib/device.h \
+ ../../../drivers/console/console.h \
+ ../../../ITRON/kernlib/device.h \
  ../../../ITRON/servers/port-manager.h ../posix_sysc.h ../assert.h \
  ../sfs/sfs_fs.h ../sfs/../../../ITRON/h/types.h ../posix_fs.h \
  ../posix_proc.h ../posix_mm.h ../utsname.h ../elf.h \
@@ -63,8 +63,8 @@ sfs_dir.o: sfs_dir.c ../posix.h ../../../ITRON/h/itron.h \
  ../../../ITRON/h/misc.h ../../../ITRON/kernlib/device.h \
  ../../../ITRON/kernlib/message.h \
  ../../../ITRON/kernlib/../../ITRON/h/types.h \
- ../../../BTRON/device/console/console.h \
- ../../../BTRON/device/console/../../../ITRON/kernlib/device.h \
+ ../../../drivers/console/console.h \
+ ../../../ITRON/kernlib/device.h \
  ../../../ITRON/servers/port-manager.h ../posix_sysc.h ../assert.h \
  ../sfs/sfs_fs.h ../sfs/../../../ITRON/h/types.h ../posix_fs.h \
  ../posix_proc.h ../posix_mm.h ../utsname.h ../elf.h \
@@ -81,8 +81,8 @@ sfs_inode.o: sfs_inode.c ../posix.h ../../../ITRON/h/itron.h \
  ../../../ITRON/h/misc.h ../../../ITRON/kernlib/device.h \
  ../../../ITRON/kernlib/message.h \
  ../../../ITRON/kernlib/../../ITRON/h/types.h \
- ../../../BTRON/device/console/console.h \
- ../../../BTRON/device/console/../../../ITRON/kernlib/device.h \
+ ../../../drivers/console/console.h \
+ ../../../ITRON/kernlib/device.h \
  ../../../ITRON/servers/port-manager.h ../posix_sysc.h ../assert.h \
  ../sfs/sfs_fs.h ../sfs/../../../ITRON/h/types.h ../posix_fs.h \
  ../posix_proc.h ../posix_mm.h ../utsname.h ../elf.h \
@@ -99,8 +99,8 @@ sfs_device.o: sfs_device.c ../posix.h ../../../ITRON/h/itron.h \
  ../../../ITRON/h/misc.h ../../../ITRON/kernlib/device.h \
  ../../../ITRON/kernlib/message.h \
  ../../../ITRON/kernlib/../../ITRON/h/types.h \
- ../../../BTRON/device/console/console.h \
- ../../../BTRON/device/console/../../../ITRON/kernlib/device.h \
+ ../../../drivers/console/console.h \
+ ../../../ITRON/kernlib/device.h \
  ../../../ITRON/servers/port-manager.h ../posix_sysc.h ../assert.h \
  ../sfs/sfs_fs.h ../sfs/../../../ITRON/h/types.h ../posix_fs.h \
  ../posix_proc.h ../posix_mm.h ../utsname.h ../elf.h \
@@ -117,8 +117,8 @@ sfs_cache.o: sfs_cache.c ../posix.h ../../../ITRON/h/itron.h \
  ../../../ITRON/h/misc.h ../../../ITRON/kernlib/device.h \
  ../../../ITRON/kernlib/message.h \
  ../../../ITRON/kernlib/../../ITRON/h/types.h \
- ../../../BTRON/device/console/console.h \
- ../../../BTRON/device/console/../../../ITRON/kernlib/device.h \
+ ../../../drivers/console/console.h \
+ ../../../ITRON/kernlib/device.h \
  ../../../ITRON/servers/port-manager.h ../posix_sysc.h ../assert.h \
  ../sfs/sfs_fs.h ../sfs/../../../ITRON/h/types.h ../posix_fs.h \
  ../posix_proc.h ../posix_mm.h ../utsname.h ../elf.h \

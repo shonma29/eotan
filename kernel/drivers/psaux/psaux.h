@@ -17,7 +17,7 @@
 #include "h/itron.h"
 #include "h/errno.h"
 #include "servers/port-manager.h"
-#include "../../../POSIX/manager/posix.h"
+#include "../../POSIX/manager/posix.h"
 #include "../console/console.h"
 
 #define PSAUX_DRIVER "driver.psaux"

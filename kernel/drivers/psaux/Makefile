@@ -2,7 +2,7 @@
 IDENT=-DI386 -DIBMPC $(DEBUG)
 
 CPP=/lib/cpp
-ROOT=../../../ITRON
+ROOT=../../ITRON
 
 CFLAGS=-O2 -I. -I$(ROOT) -I$(ROOT)/h -I$(ROOT)/i386 -I$(ROOT)/kernlib -fno-builtin $(IDENT) $(DEBUG)
 

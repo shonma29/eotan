@@ -24,7 +24,7 @@ Version 2, June 1991
 #include "h/errno.h"
 #include "h/misc.h"
 #include "kernlib/device.h"
-#include "../../BTRON/device/console/console.h"
+#include "../../drivers/console/console.h"
 #include "servers/port-manager.h"
 
 #ifdef notdef

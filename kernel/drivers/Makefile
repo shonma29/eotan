@@ -3,7 +3,7 @@
 #
 
 
-all: dev_console dev_fd765a dev_keyboard dev_ide ne2000 rs232c beep hcm_pci
+all: dev_console dev_fd765a dev_keyboard dev_ide
 
 kernlib:
 	${MAKE} -C ../kernlib

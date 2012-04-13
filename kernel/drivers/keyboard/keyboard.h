@@ -73,8 +73,8 @@ Version 2, June 1991
 #include <ibmpc/ibmpc.h>
 #endif
 #include <h/itron.h>
-#include "../../../ITRON/kernlib/device.h"
-#include "../../../POSIX/manager/posix.h"
+#include "../../ITRON/kernlib/device.h"
+#include "../../POSIX/manager/posix.h"
 
 #define KEYBOARD_DRIVER	"driver.keyboard"
 

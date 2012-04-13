@@ -33,10 +33,10 @@ build: build.o $(BUILDSRC)
 
 clean:
 	rm -f build build.o btron
-	${MAKE} -C ../kernel/BTRON/device/console clean
-	${MAKE} -C ../kernel/BTRON/device/keyboard clean
-	${MAKE} -C ../kernel/BTRON/device/fd765a clean
-	${MAKE} -C ../kernel/BTRON/device/ide clean
+	${MAKE} -C ../kernel/drivers/console clean
+	${MAKE} -C ../kernel/drivers/keyboard clean
+	${MAKE} -C ../kernel/drivers/fd765a clean
+	${MAKE} -C ../kernel/drivers/ide clean
 	${MAKE} -C ../kernel/ITRON/make clean
 	${MAKE} -C ../kernel/init clean
 	${MAKE} -C ../kernel/POSIX/manager clean
@@ -44,13 +44,13 @@ clean:
 	${MAKE} -C ../kernel/POSIX/servers/ramdisk clean
 	${MAKE} -C ../kernel/POSIX/lowlib clean
 	${MAKE} -C ../kernel/POSIX/libc clean
-	${MAKE} -C ../kernel/BTRON/device/psaux clean
+	${MAKE} -C ../kernel/drivers/psaux clean
 
 dummy:
 	echo '*dummy*'
 
 $(DRIVERS):
-	${MAKE} -C ../kernel/BTRON/device/$@
+	${MAKE} -C ../kernel/drivers/$@
 
 itron:
 	${MAKE} -C ../kernel/ITRON/make

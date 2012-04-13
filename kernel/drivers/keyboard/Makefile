@@ -6,10 +6,8 @@ IDENT=-DI386
 DEBUG=-DTSKSW_DEBUG
 
 CPP=/lib/cpp
-ROOT=../../..
-COMMON=../../../../include
-#CFLAGS=-I. -I$(ROOT) -I$(ROOT)/i386 -I$(ROOT)/h -b i486-linuxaout -I../../kernlib \
-#       -fno-builtin $(IDENT)
+ROOT=../..
+COMMON=../../../include
 CFLAGS=-O -I. -I$(ROOT) -I$(ROOT)/ITRON -I$(ROOT)/ITRON/i386 -I$(ROOT)/ITRON/h -I../../kernlib -I$(COMMON) \
        -fno-builtin $(IDENT)
 CC=gcc

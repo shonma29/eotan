@@ -7,8 +7,8 @@ posix.o: posix.c posix.h ../../ITRON/h/itron.h \
  ../../ITRON/h/errno.h ../../ITRON/h/misc.h \
  ../../ITRON/kernlib/device.h ../../ITRON/kernlib/message.h \
  ../../ITRON/kernlib/../../ITRON/h/types.h \
- ../../BTRON/device/console/console.h \
- ../../BTRON/device/console/../../../ITRON/kernlib/device.h \
+ ../../drivers/console/console.h \
+ ../../ITRON/kernlib/device.h \
  ../../ITRON/servers/port-manager.h posix_sysc.h assert.h sfs/sfs_fs.h \
  sfs/../../../ITRON/h/types.h posix_fs.h posix_proc.h posix_mm.h \
  utsname.h elf.h ../../ITRON/kernlib/libkernel.h \
@@ -23,8 +23,8 @@ request.o: request.c posix.h ../../ITRON/h/itron.h \
  ../../ITRON/h/errno.h ../../ITRON/h/misc.h \
  ../../ITRON/kernlib/device.h ../../ITRON/kernlib/message.h \
  ../../ITRON/kernlib/../../ITRON/h/types.h \
- ../../BTRON/device/console/console.h \
- ../../BTRON/device/console/../../../ITRON/kernlib/device.h \
+ ../../drivers/console/console.h \
+ ../../ITRON/kernlib/device.h \
  ../../ITRON/servers/port-manager.h posix_sysc.h assert.h sfs/sfs_fs.h \
  sfs/../../../ITRON/h/types.h posix_fs.h posix_proc.h posix_mm.h \
  utsname.h elf.h ../../ITRON/kernlib/libkernel.h \
@@ -38,8 +38,8 @@ filesystem.o: filesystem.c posix.h ../../ITRON/h/itron.h \
  ../../ITRON/h/errno.h ../../ITRON/h/misc.h \
  ../../ITRON/kernlib/device.h ../../ITRON/kernlib/message.h \
  ../../ITRON/kernlib/../../ITRON/h/types.h \
- ../../BTRON/device/console/console.h \
- ../../BTRON/device/console/../../../ITRON/kernlib/device.h \
+ ../../drivers/console/console.h \
+ ../../ITRON/kernlib/device.h \
  ../../ITRON/servers/port-manager.h posix_sysc.h assert.h sfs/sfs_fs.h \
  sfs/../../../ITRON/h/types.h posix_fs.h posix_proc.h posix_mm.h \
  utsname.h elf.h ../../ITRON/kernlib/libkernel.h \
@@ -53,8 +53,8 @@ memory.o: memory.c posix.h ../../ITRON/h/itron.h \
  ../../ITRON/h/errno.h ../../ITRON/h/misc.h \
  ../../ITRON/kernlib/device.h ../../ITRON/kernlib/message.h \
  ../../ITRON/kernlib/../../ITRON/h/types.h \
- ../../BTRON/device/console/console.h \
- ../../BTRON/device/console/../../../ITRON/kernlib/device.h \
+ ../../drivers/console/console.h \
+ ../../ITRON/kernlib/device.h \
  ../../ITRON/servers/port-manager.h posix_sysc.h assert.h sfs/sfs_fs.h \
  sfs/../../../ITRON/h/types.h posix_fs.h posix_proc.h posix_mm.h \
  utsname.h elf.h ../../ITRON/kernlib/libkernel.h \
@@ -68,8 +68,8 @@ process.o: process.c posix.h ../../ITRON/h/itron.h \
  ../../ITRON/h/errno.h ../../ITRON/h/misc.h \
  ../../ITRON/kernlib/device.h ../../ITRON/kernlib/message.h \
  ../../ITRON/kernlib/../../ITRON/h/types.h \
- ../../BTRON/device/console/console.h \
- ../../BTRON/device/console/../../../ITRON/kernlib/device.h \
+ ../../drivers/console/console.h \
+ ../../ITRON/kernlib/device.h \
  ../../ITRON/servers/port-manager.h posix_sysc.h assert.h sfs/sfs_fs.h \
  sfs/../../../ITRON/h/types.h posix_fs.h posix_proc.h posix_mm.h \
  utsname.h elf.h ../../ITRON/kernlib/libkernel.h \
@@ -83,16 +83,16 @@ log.o: log.c posix.h ../../ITRON/h/itron.h ../../ITRON/h/../h/types.h \
  ../../ITRON/h/errno.h ../../ITRON/h/misc.h \
  ../../ITRON/kernlib/device.h ../../ITRON/kernlib/message.h \
  ../../ITRON/kernlib/../../ITRON/h/types.h \
- ../../BTRON/device/console/console.h \
- ../../BTRON/device/console/../../../ITRON/kernlib/device.h \
+ ../../drivers/console/console.h \
+ ../../ITRON/kernlib/device.h \
  ../../ITRON/servers/port-manager.h posix_sysc.h assert.h sfs/sfs_fs.h \
  sfs/../../../ITRON/h/types.h posix_fs.h posix_proc.h posix_mm.h \
  utsname.h elf.h ../../ITRON/kernlib/libkernel.h \
  ../../ITRON/h/itron_sysc.h ../servers/wconsole/wconsole.h \
- ../../BTRON/device/keyboard/keyboard.h ../../ITRON/h/types.h \
+ ../../drivers/keyboard/keyboard.h ../../ITRON/h/types.h \
  ../../ITRON/ibmpc/ibmpc.h \
- ../../BTRON/device/keyboard/../../../ITRON/kernlib/device.h \
- ../../BTRON/device/keyboard/../../../POSIX/manager/posix.h
+ ../../ITRON/kernlib/device.h \
+ ../../POSIX/manager/posix.h
 syscall.o: syscall.c posix.h ../../ITRON/h/itron.h \
  ../../ITRON/h/../h/types.h ../../ITRON/h/../h/config.h \
  ../../ITRON/h/../h/../i386/i386.h \
@@ -102,8 +102,8 @@ syscall.o: syscall.c posix.h ../../ITRON/h/itron.h \
  ../../ITRON/h/errno.h ../../ITRON/h/misc.h \
  ../../ITRON/kernlib/device.h ../../ITRON/kernlib/message.h \
  ../../ITRON/kernlib/../../ITRON/h/types.h \
- ../../BTRON/device/console/console.h \
- ../../BTRON/device/console/../../../ITRON/kernlib/device.h \
+ ../../drivers/console/console.h \
+ ../../ITRON/kernlib/device.h \
  ../../ITRON/servers/port-manager.h posix_sysc.h assert.h sfs/sfs_fs.h \
  sfs/../../../ITRON/h/types.h posix_fs.h posix_proc.h posix_mm.h \
  utsname.h elf.h ../../ITRON/kernlib/libkernel.h \
@@ -117,8 +117,8 @@ global.o: global.c posix.h ../../ITRON/h/itron.h \
  ../../ITRON/h/errno.h ../../ITRON/h/misc.h \
  ../../ITRON/kernlib/device.h ../../ITRON/kernlib/message.h \
  ../../ITRON/kernlib/../../ITRON/h/types.h \
- ../../BTRON/device/console/console.h \
- ../../BTRON/device/console/../../../ITRON/kernlib/device.h \
+ ../../drivers/console/console.h \
+ ../../ITRON/kernlib/device.h \
  ../../ITRON/servers/port-manager.h posix_sysc.h assert.h sfs/sfs_fs.h \
  sfs/../../../ITRON/h/types.h posix_fs.h posix_proc.h posix_mm.h \
  utsname.h elf.h ../../ITRON/kernlib/libkernel.h \
@@ -132,8 +132,8 @@ vmtree.o: vmtree.c posix.h ../../ITRON/h/itron.h \
  ../../ITRON/h/errno.h ../../ITRON/h/misc.h \
  ../../ITRON/kernlib/device.h ../../ITRON/kernlib/message.h \
  ../../ITRON/kernlib/../../ITRON/h/types.h \
- ../../BTRON/device/console/console.h \
- ../../BTRON/device/console/../../../ITRON/kernlib/device.h \
+ ../../drivers/console/console.h \
+ ../../ITRON/kernlib/device.h \
  ../../ITRON/servers/port-manager.h posix_sysc.h assert.h sfs/sfs_fs.h \
  sfs/../../../ITRON/h/types.h posix_fs.h posix_proc.h posix_mm.h \
  utsname.h elf.h ../../ITRON/kernlib/libkernel.h \
@@ -147,8 +147,8 @@ exec.o: exec.c posix.h ../../ITRON/h/itron.h \
  ../../ITRON/h/errno.h ../../ITRON/h/misc.h \
  ../../ITRON/kernlib/device.h ../../ITRON/kernlib/message.h \
  ../../ITRON/kernlib/../../ITRON/h/types.h \
- ../../BTRON/device/console/console.h \
- ../../BTRON/device/console/../../../ITRON/kernlib/device.h \
+ ../../drivers/console/console.h \
+ ../../ITRON/kernlib/device.h \
  ../../ITRON/servers/port-manager.h posix_sysc.h assert.h sfs/sfs_fs.h \
  sfs/../../../ITRON/h/types.h posix_fs.h posix_proc.h posix_mm.h \
  utsname.h elf.h ../../ITRON/kernlib/libkernel.h \
@@ -162,8 +162,8 @@ fork.o: fork.c posix.h ../../ITRON/h/itron.h \
  ../../ITRON/h/errno.h ../../ITRON/h/misc.h \
  ../../ITRON/kernlib/device.h ../../ITRON/kernlib/message.h \
  ../../ITRON/kernlib/../../ITRON/h/types.h \
- ../../BTRON/device/console/console.h \
- ../../BTRON/device/console/../../../ITRON/kernlib/device.h \
+ ../../drivers/console/console.h \
+ ../../ITRON/kernlib/device.h \
  ../../ITRON/servers/port-manager.h posix_sysc.h assert.h sfs/sfs_fs.h \
  sfs/../../../ITRON/h/types.h posix_fs.h posix_proc.h posix_mm.h \
  utsname.h elf.h ../../ITRON/kernlib/libkernel.h \

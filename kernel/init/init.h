@@ -20,8 +20,8 @@ Version 2, June 1991
 #include "../ITRON/servers/port-manager.h"
 /* #include "../ITRON/kernlib/libkernel.h" */
 #include "../POSIX/servers/wconsole/wconsole.h"
-#include "../BTRON/device/keyboard/keyboard.h"
-#include "../BTRON/device/ide/ide.h"
+#include "../drivers/keyboard/keyboard.h"
+#include "../drivers/ide/ide.h"
 #include "../POSIX/manager/posix_sysc.h"
 #include "../POSIX/manager/sfs/sfs_fs.h"
 #include "../POSIX/manager/posix_fs.h"

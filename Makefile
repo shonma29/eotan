@@ -23,16 +23,16 @@ applications:
 	${MAKE} -C app/contribution
 
 1st_fd.img:
-	${MAKE} -f hdboot.mk
+	${MAKE} -f build/hdboot.mk
 
 2nd_fd.img:
 	cp make/btron ./2nd_fd.img
 
 3rd_fd.img:
-	${MAKE} -f posix.mk
+	${MAKE} -f build/posix.mk
 
 sfsboot.img:
-	${MAKE} -f sfsboot.mk
+	${MAKE} -f build/sfsboot.mk
 
 clean:
 	${MAKE} -C sfsboot clean

@@ -90,11 +90,11 @@
 #
 #  Driver(s)
 #
-../kernel/BTRON/device/console/console	0x80100000	0x100000	driver	driver.console
-../kernel/BTRON/device/keyboard/keyboard	0x80110000	0x110000	driver  driver.keyboard
-../kernel/BTRON/device/fd765a/fd765a		0x80120000	0x120000	driver	driver.fd
-../kernel/BTRON/device/ide/ide		0x80130000	0x130000	driver  driver.ide
-#../kernel/BTRON/device/psaux/psaux           0x80140000      0x140000        driver  driver.psaux
+../kernel/drivers/console/console	0x80100000	0x100000	driver	driver.console
+../kernel/drivers/keyboard/keyboard	0x80110000	0x110000	driver  driver.keyboard
+../kernel/drivers/fd765a/fd765a		0x80120000	0x120000	driver	driver.fd
+../kernel/drivers/ide/ide		0x80130000	0x130000	driver  driver.ide
+#../kernel/drivers/psaux/psaux           0x80140000      0x140000        driver  driver.psaux
 
 #
 # LOWLIB
@@ -115,7 +115,7 @@
 #
 # ../kernel/BTRON/wconsole/wconsole	0x00001000	0x1A0000	user	manager.wconsole
 # RAMDISK  --- now boot from init
-# ../kernel/BTRON/device/ramdisk/ramdisk	0x00001000	0x170000	user	driver.ramdisk
+# ../kernel/drivers/ramdisk/ramdisk	0x00001000	0x170000	user	driver.ramdisk
 
 
 #
