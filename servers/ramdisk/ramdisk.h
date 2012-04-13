@@ -15,11 +15,11 @@ Version 2, June 1991
 #define __RD_H__	1
 
 
-#include "h/itron.h"
+#include <h/itron.h>
 #include <h/types.h>
 #include <h/errno.h>
 #include <ibmpc/ibmpc.h>
-#include "device.h"
+#include <kernlib/device.h>
 
 #define ROUNDDOWN(x,b)	((x / b) * b)
 #define ROUNDUP(x,b)	((x + (b -1)) / b * b)

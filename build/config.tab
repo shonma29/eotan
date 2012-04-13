@@ -99,7 +99,7 @@
 #
 # LOWLIB
 #
-../kernel/POSIX/lowlib/lowlib	0x80290000	0x290000	lowlib  lowlib.posix
+../lib/lowlib/lowlib	0x80290000	0x290000	lowlib  lowlib.posix
    
 
 #

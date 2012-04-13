@@ -12,7 +12,7 @@ Version 2, June 1991
 /* $Id: atoi.c,v 1.1 1998/12/12 05:36:51 monaka Exp $ */
 static char rcsid[] = "$Id: atoi.c,v 1.1 1998/12/12 05:36:51 monaka Exp $";
 
-#include <types.h>
+#include "../../kernel/ITRON/h/types.h"
 #include <string.h>
 
 int

@@ -15,13 +15,13 @@ Version 2, June 1991
 #ifndef __POSIX_LOWLIB_H__
 #define __POSIX_LOWLIB_H__	1
 
-#include "POSIX/manager/posix.h"
-#include "POSIX/manager/posix_fs.h"
-#include "POSIX/manager/posix_mm.h"
-#include "POSIX/manager/posix_sysc.h"
-#include "POSIX/libc/errno.h"
-#include "ITRON/h/types.h"
-#include "ITRON/h/lowlib.h"
+#include "../../kernel/POSIX/manager/posix.h"
+#include "../../kernel/POSIX/manager/posix_fs.h"
+#include "../../kernel/POSIX/manager/posix_mm.h"
+#include "../../kernel/POSIX/manager/posix_sysc.h"
+#include "../libc/errno.h"
+#include "../../kernel/ITRON/h/types.h"
+#include "../../kernel/ITRON/h/lowlib.h"
 
 #include "syscall.h"
 #include "global.h"

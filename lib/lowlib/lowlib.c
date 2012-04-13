@@ -67,7 +67,7 @@ static char rcsid[] =
  */
 
 #include "lowlib.h"
-#include "servers/port-manager.h"
+#include "../../kernel/ITRON/servers/port-manager.h"
 
 
 

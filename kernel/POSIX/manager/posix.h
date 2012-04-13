@@ -20,12 +20,12 @@ Version 2, June 1991
 #define __POSIX_H__	1
 
 
-#include "h/itron.h"
-#include "h/errno.h"
-#include "h/misc.h"
-#include "kernlib/device.h"
+#include "../../ITRON/h/itron.h"
+#include "../../ITRON/h/errno.h"
+#include "../../ITRON/h/misc.h"
+#include "../../ITRON/kernlib/device.h"
 #include "../../drivers/console/console.h"
-#include "servers/port-manager.h"
+#include "../../ITRON/servers/port-manager.h"
 
 #ifdef notdef
 #define ROUNDUP(x,align)	((((int)x) + (align) - 1) & ~((align) - 1))

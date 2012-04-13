@@ -6,10 +6,8 @@ IDENT=-DTIMER_TEST -DI386
 DEBUG=-DTSKSW_DEBUG
 
 CPP=/lib/cpp
-#ROOT=../../ITRON
 ROOT=../..
-#CFLAGS=-b i486-linuxaout -I. -I$(ROOT) -I../kernlib -I../../ITRON/h -I../../ITRON/i386 -fno-builtin $(IDENT)
-CFLAGS=-O2 -fno-builtin -I. -I$(ROOT) -I$(ROOT)/ITRON -I$(ROOT)/ITRON/kernlib -I$(ROOT)/ITRON/h $(IDENT)
+CFLAGS=-O2 -fno-builtin -I. -I$(ROOT)/kernel/ITRON $(IDENT)
 CC=gcc
 KP=kp -input-code euc
 MKDEPEND=$(CC) -M

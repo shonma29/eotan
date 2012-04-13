@@ -118,7 +118,7 @@ Version 2, June 1991
 #define __CONSOLE_H__	1
 
 
-#include <kernlib/device.h>
+#include "../../ITRON/kernlib/device.h"
 
 /*  定数の設定
  */

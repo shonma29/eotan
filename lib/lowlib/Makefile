@@ -58,14 +58,12 @@ STARTADDR=0x80290000
 OBJS =	lowlib.o entry.o api.o global.o signal.o jmp_user.o posix_server.o virtual.o
 SRCS =	lowlib.c entry.c api.c global.c signal.c jmp_user.S posix_server.c virtual.c
 
-#ROOT=../../ITRON
 ROOT=../..
-#LIBS =	$(ROOT)/kernlib/libkernel.a syscalls/libsyscall.a
-LIBS =	syscalls/libsyscall.a $(ROOT)/ITRON/kernlib/libkernel.a
+LIBS =	syscalls/libsyscall.a $(ROOT)/kernel/ITRON/kernlib/libkernel.a
 
 # DEBUG  = -DDEBUG
 IDENT  = $(DEBUG)
-CFLAGS = -O2 -I../libc/include -I../libc/include/sys -I$(ROOT) -I$(ROOT)/ITRON -I$(ROOT)/ITRON/kernlib $(IDENT)
+CFLAGS = -O2 -I../libc/include -I../libc/include/sys -I$(ROOT)/kernel/ITRON $(IDENT)
 CC=gcc
 
 all: lowlib

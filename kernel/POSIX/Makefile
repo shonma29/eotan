@@ -16,8 +16,8 @@ posix: kernlib
 	${MAKE} -C manager
 
 libc: kernlib
-	${MAKE} -C libc
+	${MAKE} -C ../../lib/libc
 
 clean:
-	${MAKE} -C libc clean
+	${MAKE} -C ../../lib/libc clean
 	${MAKE} -C manager clean

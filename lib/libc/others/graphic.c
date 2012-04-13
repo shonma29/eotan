@@ -31,9 +31,9 @@ static char rcsid[] =
 #include "graphic_int.h"
 #include <h/types.h>
 #include <h/errno.h>
-#include <device.h>
-#include <lowlib.h>
-#include <POSIX/manager/posix_sysc.h>
+#include <kernlib/device.h>
+#include "../../lowlib/lowlib.h"
+#include "../../kernel/POSIX/manager/posix_sysc.h"
 
 
 int graphic_mode(int fd)

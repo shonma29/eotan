@@ -27,9 +27,9 @@
 #ifndef __WCONSOLE_H__
 #define __WCONSOLE_H__	1
 
-#include "drivers/console/console.h"
-#include "drivers/keyboard/keyboard.h"
-#include "ITRON/kernlib/device.h"
+#include "../../kernel/drivers/console/console.h"
+#include "../../kernel/drivers/keyboard/keyboard.h"
+#include "../../kernel/ITRON/kernlib/device.h"
 
 /*  定数の設定
  */

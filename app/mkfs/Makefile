@@ -1,14 +1,14 @@
-ROOT=../../kernel
-ECFLAGS=-O -Wall -I. -I$(ROOT) -I$(ROOT)/ITRON -I$(ROOT)/ITRON/h -I$(ROOT)/ITRON/i386 -I$(ROOT)/POSIX/libc/others -DEOTA $(IDENT)
+ROOT=../..
+ECFLAGS=-O -Wall -I. -I$(ROOT)/kernel -I$(ROOT)/kernel/ITRON -I$(ROOT)/kernel/ITRON/h -I$(ROOT)/kernel/ITRON/i386 -I$(ROOT)/lib/libc/others -DEOTA $(IDENT)
 STARTADDR=0x00001000
 ENTRY=_main
-KERNLIBS=$(ROOT)/POSIX/libc/libc.a #$(ROOT)/ITRON/kernlib/libitron.a 
+KERNLIBS=$(ROOT)/lib/libc/libc.a #$(ROOT)/kernel/ITRON/kernlib/libitron.a 
 
 NEWLIB=../../../../libc/newlib-1.8.1-eota/eota/newlib
 NCFLAGS=-O -Wall -I$(NEWLIB)/targ-include -I$(NEWLIB)/libc/include -DEOTA
 NENTRY=_start
 NLIBS=$(NEWLIB)/crt0.o $(NEWLIB)/libc.a
-NKERNLIBS=$(ROOT)/POSIX/libc/libnative.a
+NKERNLIBS=$(ROOT)/lib/libc/libnative.a
 
 %.eo: %.c
 	$(CC) $(ECFLAGS) -c $< -o $@

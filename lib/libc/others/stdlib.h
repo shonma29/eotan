@@ -19,23 +19,23 @@ Version 2, June 1991
 #ifdef notdef
 #include <ibmpc/ibmpc.h>
 #endif
-#include "ITRON/h/itron_module.h"
+#include <h/itron_module.h>
 #ifdef notdef
-#include "ITRON/kernlib/device.h"
-#include "ITRON/servers/port-manager.h"
-/* #include "../kernlib/libkernel.h" */
+#include <kernlib/device.h>
+#include <servers/port-manager.h>
+/* #include <kernlib/libkernel.h> */
 #include "BTRON/wconsole/wconsole.h"
 #include "drivers/keyboard/keyboard.h"
 #include "drivers/ide/ide.h"
 #endif
-#include "POSIX/lowlib/lowlib.h"
+#include "../../lowlib/lowlib.h"
 #if 0
 /* included by lowlib.h */
-#include "POSIX/manager/posix_fs.h"
-#include "POSIX/manager/posix_mm.h"
-#include "POSIX/manager/posix_sysc.h"
+#include "../../kernel/POSIX/manager/posix_fs.h"
+#include "../../kernel/POSIX/manager/posix_mm.h"
+#include "../../kernel/POSIX/manager/posix_sysc.h"
 #endif
-#include "POSIX/manager/sfs/sfs_fs.h"
+#include "../../kernel/POSIX/manager/sfs/sfs_fs.h"
 
 #define putchar(ch)	putc (ch, stdout)
 

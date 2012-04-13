@@ -42,8 +42,8 @@ clean:
 	${MAKE} -C ../kernel/POSIX/manager clean
 	${MAKE} -C ../servers/wconsole clean
 	${MAKE} -C ../servers/ramdisk clean
-	${MAKE} -C ../kernel/POSIX/lowlib clean
-	${MAKE} -C ../kernel/POSIX/libc clean
+	${MAKE} -C ../lib/lowlib clean
+	${MAKE} -C ../lib/libc clean
 	${MAKE} -C ../kernel/drivers/psaux clean
 
 dummy:
@@ -56,7 +56,7 @@ itron:
 	${MAKE} -C ../kernel/ITRON/make
 
 posix_lowlib:
-	${MAKE} -C ../kernel/POSIX/lowlib
+	${MAKE} -C ../lib/lowlib
 
 $(SERVERS):
 	${MAKE} -C ../servers/$@
@@ -65,7 +65,7 @@ posix_manager:
 	${MAKE} -C ../kernel/POSIX/manager
 
 posix_libc:
-	${MAKE} -C ../kernel/POSIX/libc
+	${MAKE} -C ../lib/libc
 
 init:
 	${MAKE} -C ../kernel/init
