@@ -38,7 +38,7 @@ clean:
 	${MAKE} -C ../kernel/BTRON/device/fd765a clean
 	${MAKE} -C ../kernel/BTRON/device/ide clean
 	${MAKE} -C ../kernel/ITRON/make clean
-	${MAKE} -C ../kernel/BTRON/init clean
+	${MAKE} -C ../kernel/init clean
 	${MAKE} -C ../kernel/POSIX/manager clean
 	${MAKE} -C ../kernel/POSIX/servers/wconsole clean
 	${MAKE} -C ../kernel/POSIX/servers/ramdisk clean
@@ -68,5 +68,5 @@ posix_libc:
 	${MAKE} -C ../kernel/POSIX/libc
 
 init:
-	${MAKE} -C ../kernel/BTRON/init
+	${MAKE} -C ../kernel/init
 

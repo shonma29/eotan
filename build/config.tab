@@ -125,5 +125,5 @@
 #
 # System initialize program
 #
-../kernel/BTRON/init/init			0x00001000	0x300000	user	init
+../kernel/init/init			0x00001000	0x300000	user	init
 

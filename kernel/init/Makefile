@@ -15,15 +15,15 @@ DEBUG=-DTSKSW_DEBUG
 
 #PATH=.:/bin:/usr/bin:../../tool/kp
 CPP=/lib/cpp
-ROOT=../..
-CFLAGS=-O2 -fno-builtin -Wall -I. -I$(ROOT) -I$(ROOT)/ITRON -I../ITRON/kernlib -I$(ROOT)/ITRON/h -I$(ROOT)/ITRON/i386 $(IDENT)
+ROOT=..
+CFLAGS=-O2 -fno-builtin -Wall -I. -I$(ROOT) -I$(ROOT)/ITRON -I$(ROOT)/ITRON/kernlib -I$(ROOT)/ITRON/h -I$(ROOT)/ITRON/i386 $(IDENT)
 CC=gcc
 KP=kp -input-code euc
 MKDEPEND=$(CC) -M
 STARTADDR=0x00001000
 ENTRY=start
 KERNLIBS=$(ROOT)/ITRON/kernlib/libkernel.a $(ROOT)/POSIX/libc/libnative.a
-LIBS=../lib/frtm/libfrtm.a lib/libs.a libCmd/libCmd.a
+LIBS=../BTRON/lib/frtm/libfrtm.a lib/libs.a libCmd/libCmd.a
 #LD=/usr/local/bin/ld
 #AS=/usr/local/bin/as
 LD=ld
@@ -44,7 +44,7 @@ OBJS= start.o main.o device.o posix_if.o
 all: init
 
 init: $(OBJS) $(LIBS) $(KERNLIBS)
-	${MAKE} -C ../lib/frtm
+	${MAKE} -C ../BTRON/lib/frtm
 	${MAKE} -C lib
 	${MAKE} -C libCmd
 	$(LD) -static -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) $(LIBS) $(KERNLIBS)
@@ -68,8 +68,8 @@ lib/libs.a:
 libCmd/libCmd.a:
 	${MAKE} -C libCmd
 
-../lib/frtm/libfrtm.a:
-	${MAKE} -C ../lib/frtm
+../BTRON/lib/frtm/libfrtm.a:
+	${MAKE} -C ../BTRON/lib/frtm
 
 tags:
 	etags ../*/*.[hcs]
@@ -83,5 +83,5 @@ clean:
 	rm -f $(ADDOBJS)
 	${MAKE} -C lib clean
 	${MAKE} -C libCmd clean
-	${MAKE} -C ../lib/frtm clean
+	${MAKE} -C ../BTRON/lib/frtm clean
 
