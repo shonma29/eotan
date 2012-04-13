@@ -23,7 +23,7 @@ MKDEPEND=$(CC) -M
 STARTADDR=0x00001000
 ENTRY=start
 KERNLIBS=$(ROOT)/ITRON/kernlib/libkernel.a $(ROOT)/POSIX/libc/libnative.a
-LIBS=../BTRON/lib/frtm/libfrtm.a lib/libs.a libCmd/libCmd.a
+LIBS=../lib/frtm/libfrtm.a lib/libs.a libCmd/libCmd.a
 #LD=/usr/local/bin/ld
 #AS=/usr/local/bin/as
 LD=ld
@@ -44,7 +44,7 @@ OBJS= start.o main.o device.o posix_if.o
 all: init
 
 init: $(OBJS) $(LIBS) $(KERNLIBS)
-	${MAKE} -C ../BTRON/lib/frtm
+	${MAKE} -C ../lib/frtm
 	${MAKE} -C lib
 	${MAKE} -C libCmd
 	$(LD) -static -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) $(LIBS) $(KERNLIBS)
@@ -68,8 +68,8 @@ lib/libs.a:
 libCmd/libCmd.a:
 	${MAKE} -C libCmd
 
-../BTRON/lib/frtm/libfrtm.a:
-	${MAKE} -C ../BTRON/lib/frtm
+../lib/frtm/libfrtm.a:
+	${MAKE} -C ../lib/frtm
 
 tags:
 	etags ../*/*.[hcs]
@@ -83,5 +83,5 @@ clean:
 	rm -f $(ADDOBJS)
 	${MAKE} -C lib clean
 	${MAKE} -C libCmd clean
-	${MAKE} -C ../BTRON/lib/frtm clean
+	${MAKE} -C ../lib/frtm clean
 

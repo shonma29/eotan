@@ -34,7 +34,7 @@ static char rcsid[] = "$Header: /usr/local/src/master/B-Free/Program/btron-pc/ke
 
 #include "wconsole_int.h"
 #include "POSIX/manager/posix_fs.h"
-#include "BTRON/lib/frtm/frtm.h"
+#include "lib/frtm/frtm.h"
 
 extern ID		recv, console;
 extern struct window w[];

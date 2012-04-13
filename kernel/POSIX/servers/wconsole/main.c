@@ -43,7 +43,7 @@ static char rcsid[] =
 
 #include "wconsole_int.h"
 #include "../servers/port-manager.h"
-#include "BTRON/lib/frtm/frtm.h"
+#include "lib/frtm/frtm.h"
 
 #define USE_MALLOC
 #define START_FROM_INIT

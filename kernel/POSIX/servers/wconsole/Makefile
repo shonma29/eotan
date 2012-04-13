@@ -18,7 +18,7 @@ MKDEPEND=$(CC) -M
 #STARTADDR=0x801A0000
 STARTADDR=0x00001000
 ENTRY=start
-LIBS=$(ROOT)/BTRON/lib/frtm/libfrtm-w.a $(ROOT)/POSIX/libc/libc.a $(ROOT)/ITRON/kernlib/libitron.a
+LIBS=$(ROOT)/lib/frtm/libfrtm-w.a $(ROOT)/POSIX/libc/libc.a $(ROOT)/ITRON/kernlib/libitron.a
 #LD=/usr/local/bin/ld
 LD=ld
 
@@ -32,7 +32,7 @@ OBJS= main.o misc.o graphic.o missing.o
 SRCS= main.c misc.c graphic.c missing.c
 
 all: 
-	${MAKE} -C $(ROOT)/BTRON/lib/frtm
+	${MAKE} -C $(ROOT)/lib/frtm
 	${MAKE} wconsole
 
 wconsole: $(OBJS) $(SRCS) Makefile $(LIBS)
