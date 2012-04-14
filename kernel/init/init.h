@@ -22,10 +22,10 @@ Version 2, June 1991
 #include "../../servers/wconsole/wconsole.h"
 #include "../drivers/keyboard/keyboard.h"
 #include "../drivers/ide/ide.h"
-#include "../POSIX/manager/posix_sysc.h"
-#include "../POSIX/manager/sfs/sfs_fs.h"
-#include "../POSIX/manager/posix_fs.h"
-#include "../POSIX/manager/posix_mm.h"
+#include "../../servers/fs/posix_sysc.h"
+#include "../../servers/fs/sfs/sfs_fs.h"
+#include "../../servers/fs/posix_fs.h"
+#include "../../servers/fs/posix_mm.h"
 
 #define putchar(ch)	putc (ch, stdout)
 

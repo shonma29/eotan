@@ -70,7 +70,7 @@ Version 2, June 1991
  */
 
 #include "posix.h"
-#include "h/lowlib.h"
+#include <lowlib.h>
 
 
 

@@ -33,7 +33,7 @@ static char rcsid[] = "$Header: /usr/local/src/master/B-Free/Program/btron-pc/ke
  */
 
 #include "wconsole_int.h"
-#include "../../kernel/POSIX/manager/posix_fs.h"
+#include "../fs/posix_fs.h"
 #include "../../kernel/lib/frtm/frtm.h"
 
 extern ID		recv, console;

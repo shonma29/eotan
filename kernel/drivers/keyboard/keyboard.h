@@ -65,16 +65,12 @@ Version 2, June 1991
 #define __KEYBOARD_H__	1
 
 
-#include <h/types.h>
-#include <h/errno.h>
-#ifdef PC98
-#include <pc9801/pc98.h>
-#else
-#include <ibmpc/ibmpc.h>
-#endif
-#include <h/itron.h>
+#include <types.h>
+#include <errno.h>
+#include "../../ITRON/ibmpc/ibmpc.h"
+#include <itron.h>
 #include "../../ITRON/kernlib/device.h"
-#include "../../POSIX/manager/posix.h"
+#include "../../../servers/fs/posix.h"
 
 #define KEYBOARD_DRIVER	"driver.keyboard"
 

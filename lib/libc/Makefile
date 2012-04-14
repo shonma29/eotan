@@ -7,12 +7,10 @@ DEBUG=-DTSKSW_DEBUG
 
 CPP=/lib/cpp
 ROOT=../..
-CFLAGS=-O2 -fno-builtin -I. -I$(ROOT)/kernel/ITRON $(IDENT)
+CFLAGS=-O2 -fno-builtin -I. -I$(ROOT)/kernel/ITRON/h $(IDENT)
 CC=gcc
 KP=kp -input-code euc
 MKDEPEND=$(CC) -M
-#LD=/usr/bin/ld
-#AS=/usr/bin/as
 LD=ld
 AS=as
 

@@ -32,12 +32,12 @@ Version 2, June 1991
 #ifndef __WCONSOLE_INTERNAL_H__
 #define __WCONSOLE_INTERNAL_H__	1
 
-#include "h/itron.h"
-#include "h/types.h"
-#include "h/errno.h"
-#include "h/misc.h"
-#include "ibmpc/ibmpc.h"
-#include "kernlib/device.h"
+#include <itron.h>
+#include <types.h>
+#include <errno.h>
+#include <misc.h>
+#include "../../kernel/ITRON/ibmpc/ibmpc.h"
+#include "../../kernel/ITRON/kernlib/device.h"
 
 #include "wconsole.h"
 

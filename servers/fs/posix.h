@@ -20,12 +20,12 @@ Version 2, June 1991
 #define __POSIX_H__	1
 
 
-#include "../../ITRON/h/itron.h"
-#include "../../ITRON/h/errno.h"
-#include "../../ITRON/h/misc.h"
-#include "../../ITRON/kernlib/device.h"
-#include "../../drivers/console/console.h"
-#include "../../ITRON/servers/port-manager.h"
+#include "../../kernel/ITRON/h/itron.h"
+#include "../../kernel/ITRON/h/errno.h"
+#include "../../kernel/ITRON/h/misc.h"
+#include "../../kernel/ITRON/kernlib/device.h"
+#include "../../kernel/drivers/console/console.h"
+#include "../../kernel/ITRON/servers/port-manager.h"
 
 #ifdef notdef
 #define ROUNDUP(x,align)	((((int)x) + (align) - 1) & ~((align) - 1))
@@ -146,7 +146,7 @@ struct utimbuf {
 #include "elf.h"
 
 
-#include "kernlib/libkernel.h"
+#include "../../kernel/ITRON/kernlib/libkernel.h"
 
 
 

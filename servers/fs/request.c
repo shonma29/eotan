@@ -44,7 +44,7 @@ Version 2, June 1991
  */
 
 #include "posix.h"
-#include <port-manager.h>
+#include "../../kernel/ITRON/servers/port-manager.h"
 
 
 static ID request_port;		/* 要求受け付け用のポート       */

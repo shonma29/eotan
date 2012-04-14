@@ -29,11 +29,11 @@ static char rcsid[] =
     "$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/others/graphic.c,v 1.3 2000/02/19 03:03:41 naniwa Exp $";
 
 #include "graphic_int.h"
-#include <h/types.h>
-#include <h/errno.h>
-#include <kernlib/device.h>
+#include <types.h>
+#include <errno.h>
+#include "../../../kernel/ITRON/kernlib/device.h"
 #include "../../lowlib/lowlib.h"
-#include "../../kernel/POSIX/manager/posix_sysc.h"
+#include "../../../servers/fs/posix_sysc.h"
 
 
 int graphic_mode(int fd)

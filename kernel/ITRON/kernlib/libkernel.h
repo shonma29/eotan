@@ -97,7 +97,7 @@ extern ER	vput_reg (ID id, VP start, UW size, VP buf);
 
 extern ER	vget_phs (ID id, VP addr, UW *paddr);
 #else
-#include "itron_sysc.h"
+#include <itron_sysc.h>
 #endif
 
 

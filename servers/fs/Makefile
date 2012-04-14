@@ -19,7 +19,7 @@
 DEBUG=#-DEXEC_DEBUG
 IDENT=$(DEBUG) -DKERNEL
 ROOT=../..
-INC=-I$(ROOT) -I$(ROOT)/ITRON -I$(ROOT)/ITRON/servers -I$(ROOT)/ITRON/h
+INC=-I$(ROOT)/kernel/ITRON/h
 CFLAGS=-O2 -fno-builtin -Wall $(INC) $(IDENT)
 CC=gcc
 
@@ -32,7 +32,7 @@ OBJS=s0.o posix.o version.o request.o filesystem.o memory.o process.o \
 SRCS=posix.c version.c request.c filesystem.c memory.c process.c \
 	log.c syscall.c global.c vmtree.c exec.c fork.c
 
-KERNLIB=../../ITRON/kernlib/libkernel.a
+KERNLIB=../../kernel/ITRON/kernlib/libkernel.a
 LIBS=sfs/libsfs.a syscalls/libsysc.a $(KERNLIB)
 
 all:

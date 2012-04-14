@@ -107,7 +107,7 @@
 # Manager
 #
 # POSIX
-../kernel/POSIX/manager/posix_manager	0x00001000	0x200000	user	manager.posix
+../servers/fs/posix_manager	0x00001000	0x200000	user	manager.posix
 #
 # BTRON
 #

@@ -121,7 +121,7 @@ Version 2, June 1991
  */
 
 #include "posix.h"
-#include "h/lowlib.h"
+#include <lowlib.h>
 
 struct proc proc_table[MAX_PROCESS];
 struct proc *free_proc, *tail_proc;

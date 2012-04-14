@@ -15,7 +15,7 @@ Version 2, June 1991
 
 #ifndef __NATIVE_H__
 
-#include "../../kernel/POSIX/manager/posix.h"
+#include "../../servers/fs/posix.h"
 
 #define NAME_MAX	14
 

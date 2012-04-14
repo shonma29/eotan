@@ -39,7 +39,7 @@ clean:
 	${MAKE} -C ../kernel/drivers/ide clean
 	${MAKE} -C ../kernel/ITRON/make clean
 	${MAKE} -C ../kernel/init clean
-	${MAKE} -C ../kernel/POSIX/manager clean
+	${MAKE} -C ../servers/fs clean
 	${MAKE} -C ../servers/wconsole clean
 	${MAKE} -C ../servers/ramdisk clean
 	${MAKE} -C ../lib/lowlib clean
@@ -62,7 +62,7 @@ $(SERVERS):
 	${MAKE} -C ../servers/$@
 
 posix_manager:
-	${MAKE} -C ../kernel/POSIX/manager
+	${MAKE} -C ../servers/fs
 
 posix_libc:
 	${MAKE} -C ../lib/libc

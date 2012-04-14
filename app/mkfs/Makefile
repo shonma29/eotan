@@ -1,5 +1,5 @@
 ROOT=../..
-ECFLAGS=-O -Wall -I. -I$(ROOT)/kernel -I$(ROOT)/kernel/ITRON -I$(ROOT)/kernel/ITRON/h -I$(ROOT)/kernel/ITRON/i386 -I$(ROOT)/lib/libc/others -DEOTA $(IDENT)
+ECFLAGS=-O -Wall -I. -I$(ROOT)/kernel/ITRON/h -DEOTA $(IDENT)
 STARTADDR=0x00001000
 ENTRY=_main
 KERNLIBS=$(ROOT)/lib/libc/libc.a #$(ROOT)/kernel/ITRON/kernlib/libitron.a 
@@ -10,11 +10,11 @@ NENTRY=_start
 NLIBS=$(NEWLIB)/crt0.o $(NEWLIB)/libc.a
 NKERNLIBS=$(ROOT)/lib/libc/libnative.a
 
-%.eo: %.c
-	$(CC) $(ECFLAGS) -c $< -o $@
+#%.eo: %.c
+#	$(CC) $(ECFLAGS) -c $< -o $@
 
-%.no: %.c
-	$(CC) $(NCFLAGS) -c $< -o $@
+#%.no: %.c
+#	$(CC) $(NCFLAGS) -c $< -o $@
 
 CFLAGS=-Wall
 

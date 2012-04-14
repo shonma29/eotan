@@ -18,8 +18,7 @@ Version 2, June 1991
 #include <fcntl.h>
 #endif
 #include "../../kernel/ITRON/h/types.h"
-#include "../../kernel/POSIX/manager/sfs/sfs_fs.h"
-/*#include "../../kernel/POSIX/manager/posix_fs.h"*/
+#include "../../servers/fs/sfs/sfs_fs.h"
 
 
 #define ROUNDUP(x,align)	(((((int)x) + ((align) - 1))/(align))*(align))

@@ -55,7 +55,7 @@ Version 2, June 1991
 #ifndef __SFS_FS_H__
 #define __SFS_FS_H__	1
 
-#include "../../../ITRON/h/types.h"
+#include "../../../kernel/ITRON/h/types.h"
 
 
 #define SFS_MAGIC			0x12345678

@@ -7,8 +7,8 @@
 # (C) 2001, Tomohide Naniwa
 #
 
-ROOT=../../../ITRON
-INC=-I$(ROOT) -I$(ROOT)/kernlib -I$(ROOT)/h
+ROOT=../../..
+INC=-I$(ROOT)/kernel/ITRON/kernlib -I$(ROOT)/kernel/ITRON/h
 IDENT=-DKERNEL # -DDEBUG
 CFLAGS=-O2 -fno-builtin -Wall $(INC) $(IDENT)
 CC=gcc

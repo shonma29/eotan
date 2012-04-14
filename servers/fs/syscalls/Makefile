@@ -34,7 +34,7 @@
 
 #DEBUG=-DEXEC_DEBUG -DDEBUG
 IDENT=$(DEBUG) -DKERNEL
-INC=-I.. -I../../../ITRON -I../../../ITRON/h
+INC=-I.. -I../../../kernel/ITRON -I../../../kernel/ITRON/h
 CFLAGS = -O2 -fno-builtin -Wall $(INC) $(IDENT)
 CC=gcc
 

@@ -14,15 +14,15 @@ Version 2, June 1991
 #ifndef __STDLIB_H__
 #define __STDLIB_H__	1
 
-#include <h/types.h>
-#include <h/errno.h>
+#include <types.h>
+#include <errno.h>
 #ifdef notdef
-#include <ibmpc/ibmpc.h>
+#include "../../../kernel/ITRON/ibmpc/ibmpc.h"
 #endif
-#include <h/itron_module.h>
+#include <itron_module.h>
 #ifdef notdef
-#include <kernlib/device.h>
-#include <servers/port-manager.h>
+#include "../../../kernel/ITRON/kernlib/device.h"
+#include "../../../kernel/servers/port-manager.h"
 /* #include <kernlib/libkernel.h> */
 #include "BTRON/wconsole/wconsole.h"
 #include "drivers/keyboard/keyboard.h"
@@ -31,11 +31,11 @@ Version 2, June 1991
 #include "../../lowlib/lowlib.h"
 #if 0
 /* included by lowlib.h */
-#include "../../kernel/POSIX/manager/posix_fs.h"
-#include "../../kernel/POSIX/manager/posix_mm.h"
-#include "../../kernel/POSIX/manager/posix_sysc.h"
+#include "../../../servers/fs/posix_fs.h"
+#include "../../../servers/fs/posix_mm.h"
+#include "../../../servers/fs/posix_sysc.h"
 #endif
-#include "../../kernel/POSIX/manager/sfs/sfs_fs.h"
+#include "../../../servers/fs/sfs/sfs_fs.h"
 
 #define putchar(ch)	putc (ch, stdout)
 

@@ -53,7 +53,7 @@ Version 2, June 1991
 #include <fcntl.h>
 #include <time.h>
 #include "../../kernel/ITRON/h/types.h"
-#include "../../kernel/POSIX/manager/sfs/sfs_fs.h"
+#include "../../servers/fs/sfs/sfs_fs.h"
 
 static char rcsid[] =
     "$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/mkfs/sfsck.c,v 1.8 2000/03/28 15:16:47 naniwa Exp $";

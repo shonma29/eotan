@@ -24,7 +24,7 @@
 #include <time.h>
 
 #include "../kernel/ITRON/h/types.h"
-#include "../kernel/POSIX/manager/sfs/sfs_fs.h"
+#include "../servers/fs/sfs/sfs_fs.h"
 
 #define BLOCKSIZE 512
 #define RDONLY			1

@@ -12,7 +12,7 @@
 #include "lowlib.h"
 #include "task.h"
 #include "func.h"
-#include "../../POSIX/manager/posix.h"
+#include "../../servers/fs/posix.h"
 
 #ifdef notdef
 static ID posix_manager = 0;

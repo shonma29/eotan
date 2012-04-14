@@ -49,7 +49,7 @@ static char rcsid[] =
  * ヘッダファイルの読み込み
  * ヘッダファイルのパスは、Makefile に指定してある。
  */
-#include <h/types.h>
+#include <types.h>
 
 
 /*

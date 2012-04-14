@@ -7,17 +7,14 @@ DEBUG=-DTSKSW_DEBUG
 
 CPP=/lib/cpp
 ROOT=../..
-CFLAGS=-O2 -I. -I$(ROOT)/kernel/ITRON $(IDENT)
+CFLAGS=-O2 -I. -I$(ROOT)/kernel/ITRON/h $(IDENT)
 CC=gcc
-#AS=/usr/local/bin/as
 AS=/usr/bin/as
 KP=kp -input-code euc
 MKDEPEND=$(CC) -M
-#STARTADDR=0x801A0000
 STARTADDR=0x00001000
 ENTRY=start
 LIBS=$(ROOT)/kernel/lib/frtm/libfrtm-w.a $(ROOT)/lib/libc/libc.a $(ROOT)/kernel/ITRON/kernlib/libitron.a
-#LD=/usr/local/bin/ld
 LD=ld
 
 %.o: %.c wconsole.h wconsole_int.h
