@@ -31,7 +31,7 @@ static char rcsid[] =
 #include "graphic_int.h"
 #include <types.h>
 #include <errno.h>
-#include "../../../kernel/ITRON/kernlib/device.h"
+#include "../../../kernel/lib/libkernel/device.h"
 #include "../../lowlib/lowlib.h"
 #include "../../../servers/fs/posix_sysc.h"
 

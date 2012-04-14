@@ -23,10 +23,10 @@ Version 2, June 1991
 #define __FD_H__	1
 
 
-#include "h/itron.h"
-#include <h/types.h>
-#include <h/errno.h>
-#include <ibmpc/ibmpc.h>
+#include <itron.h>
+#include <types.h>
+#include <errno.h>
+#include "../../ITRON/ibmpc/ibmpc.h"
 #include "dma.h"
 #include "device.h"
 

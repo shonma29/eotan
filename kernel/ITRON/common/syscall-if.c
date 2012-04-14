@@ -181,7 +181,7 @@ static char rcsid[] =
 #include "func.h"
 #include "syscall.h"
 #include "interrupt.h"
-#include "../kernlib/device.h"
+#include "../../lib/libkernel/device.h"
 
 /* ----------------------------------------------------------------------- *
  * タスク関係システムコール                                                *

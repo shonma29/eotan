@@ -67,11 +67,11 @@ static char rcs[] =
  *
  */
 
-#include <h/types.h>
-#include <h/itron.h>
-#include <h/config.h>
-#include <h/errno.h>
-#include <h/misc.h>
+#include <types.h>
+#include <itron.h>
+#include <config.h>
+#include <errno.h>
+#include <misc.h>
 
 
 #define MEMORY_CLICK		(PAGE_SIZE * 10)

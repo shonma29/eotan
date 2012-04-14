@@ -8,14 +8,12 @@ CPP=/lib/cpp
 ROOT=../..
 CFLAGS=-O2 -I. -I$(ROOT)/kernel/ITRON -fno-builtin $(IDENT)
 CC=gcc
-#AS=/usr/local/bin/as
 AS=/usr/bin/as
 KP=kp -input-code euc
 MKDEPEND=$(CC) -M
 STARTADDR=0x00001000
 ENTRY=start
-LIBS=$(ROOT)/kernel/ITRON/kernlib/libkernel.a ../../lib/libc/libc.a
-#LD=/usr/local/bin/ld
+LIBS=$(ROOT)/kernel/lib/libkernel/libkernel.a ../../lib/libc/libc.a
 LD=ld
 
 %.o: %.c

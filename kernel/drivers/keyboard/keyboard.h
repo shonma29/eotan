@@ -69,7 +69,7 @@ Version 2, June 1991
 #include <errno.h>
 #include "../../ITRON/ibmpc/ibmpc.h"
 #include <itron.h>
-#include "../../ITRON/kernlib/device.h"
+#include "../../lib/libkernel/device.h"
 #include "../../../servers/fs/posix.h"
 
 #define KEYBOARD_DRIVER	"driver.keyboard"

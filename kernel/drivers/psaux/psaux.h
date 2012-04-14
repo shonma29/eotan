@@ -14,8 +14,8 @@
 #ifndef __DUMMY_H__
 #define __DUMMY_H__
 
-#include "h/itron.h"
-#include "h/errno.h"
+#include <itron.h>
+#include <errno.h>
 #include "../../servers/port-manager.h"
 #include "../../../servers/fs/posix.h"
 #include "../console/console.h"

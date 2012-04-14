@@ -20,7 +20,7 @@ all: $(TARGET)
 
 
 $(TARGET): $(OBJS)
-	$(LD) -static -o $(TARGET) -e $(ENTRY) -Ttext=$(LOAD_POINT)  $(OBJS) ../ITRON/kernlib/libkernel.a	
+	$(LD) -static -o $(TARGET) -e $(ENTRY) -Ttext=$(LOAD_POINT)  $(OBJS) ../lib/libkernel/libkernel.a
 
 
 clean:

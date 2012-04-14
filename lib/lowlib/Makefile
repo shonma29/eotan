@@ -59,7 +59,7 @@ OBJS =	lowlib.o entry.o api.o global.o signal.o jmp_user.o posix_server.o virtua
 SRCS =	lowlib.c entry.c api.c global.c signal.c jmp_user.S posix_server.c virtual.c
 
 ROOT=../..
-LIBS =	syscalls/libsyscall.a $(ROOT)/kernel/ITRON/kernlib/libkernel.a
+LIBS =	syscalls/libsyscall.a $(ROOT)/kernel/lib/libkernel/libkernel.a
 
 # DEBUG  = -DDEBUG
 IDENT  = $(DEBUG)

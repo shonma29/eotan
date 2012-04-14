@@ -7,7 +7,7 @@ all: clean
 	${POSIXBIN}/mksfs ${TARGET} 2880 512 12
 	${POSIXBIN}/statfs ${TARGET} mkdir /system
 	${POSIXBIN}/statfs ${TARGET} write /system/2ndboot sfsboot/2nd/2ndboot
-	${POSIXBIN}/statfs ${TARGET} write /system/btron386 build/btron
+	${POSIXBIN}/statfs ${TARGET} write /system/kern build/kern.bin
 	${POSIXBIN}/statfs ${TARGET} write /system/wconsole servers/wconsole/wconsole
 	${POSIXBIN}/statfs ${TARGET} chmod 755 /system/wconsole
 	${POSIXBIN}/statfs ${TARGET} write /system/ramdisk servers/ramdisk/ramdisk

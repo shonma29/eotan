@@ -23,12 +23,12 @@ Version 2, June 1991
 #define __IDE_H__	1
 
 
-#include "h/itron.h"
-#include <h/types.h>
-#include <h/errno.h>
-#include <ibmpc/ibmpc.h>
-#include "kernlib/dma.h"
-#include "kernlib/device.h"
+#include <itron.h>
+#include <types.h>
+#include <errno.h>
+#include "../../ITRON/ibmpc/ibmpc.h"
+#include "../../lib/libkernel/dma.h"
+#include "../../lib/libkernel/device.h"
 #include "../console/console.h"
 #include "../../servers/port-manager.h"
 

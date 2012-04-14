@@ -33,7 +33,7 @@ Version 2, June 1991
 #define MALLOC_SIZE	(1024 * 100)	/* 100K バイトを malloc 用に使 */
 					/* う */
 
-#define BOOT_PATH	"/system/btron386"
+#define BOOT_PATH	"/system/kern"
 
 #define TIMER0_WRITE	0x40
 #define TIMER0_READ	0x40

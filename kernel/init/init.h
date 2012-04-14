@@ -16,9 +16,8 @@ Version 2, June 1991
 #include <h/types.h>
 #include <h/errno.h>
 #include <ibmpc/ibmpc.h>
-#include "../ITRON/kernlib/device.h"
+#include "../lib/libkernel/device.h"
 #include "../servers/port-manager.h"
-/* #include "../ITRON/kernlib/libkernel.h" */
 #include "../../servers/wconsole/wconsole.h"
 #include "../drivers/keyboard/keyboard.h"
 #include "../drivers/ide/ide.h"

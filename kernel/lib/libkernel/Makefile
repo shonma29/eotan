@@ -4,7 +4,7 @@
 
 # -DDEBUG
 COPT=-O2 -fno-builtin
-CFLAGS=$(COPT) -I../h -I../i386 -I.. -I../servers
+CFLAGS=$(COPT) -I../../ITRON/h -I../../ITRON/i386 -I../../servers
 CC=gcc
 
 OBJS=	call_kernel.o sys_task.o sys_message.o sys_debug.o \

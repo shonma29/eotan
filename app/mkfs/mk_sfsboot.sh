@@ -6,7 +6,7 @@ cp -f ../../sfsboot/1st/1stboot sfsboot.bin
 ./mksfs sfsboot.bin 2880 512 12
 ./statfs sfsboot.bin mkdir /system
 ./statfs sfsboot.bin write /system/2ndboot ../../sfsboot/2nd/2ndboot
-./statfs sfsboot.bin write /system/btron386 ../../build/btron
+./statfs sfsboot.bin write /system/kern ../../build/kern.bin
 ./statfs sfsboot.bin write /system/wconsole ../../servers/wconsole/wconsole
 ./statfs sfsboot.bin chmod 755 /system/wconsole
 ./statfs sfsboot.bin write /system/ramdisk ../../servers/ramdisk/ramdisk

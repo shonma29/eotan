@@ -23,7 +23,7 @@ Version 2, June 1991
 #include "../../kernel/ITRON/h/itron.h"
 #include "../../kernel/ITRON/h/errno.h"
 #include "../../kernel/ITRON/h/misc.h"
-#include "../../kernel/ITRON/kernlib/device.h"
+#include "../../kernel/lib/libkernel/device.h"
 #include "../../kernel/drivers/console/console.h"
 #include "../../kernel/servers/port-manager.h"
 
@@ -146,7 +146,7 @@ struct utimbuf {
 #include "elf.h"
 
 
-#include "../../kernel/ITRON/kernlib/libkernel.h"
+#include "../../kernel/lib/libkernel/libkernel.h"
 
 
 

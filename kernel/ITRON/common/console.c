@@ -30,7 +30,7 @@ Version 2, June 1991
 #endif
 #include "func.h"
 #ifdef KERNLIB
-#include "../kernlib/device.h"
+#include "../../lib/libkernel/device.h"
 #endif
 
 /*	アトリビュートの設定

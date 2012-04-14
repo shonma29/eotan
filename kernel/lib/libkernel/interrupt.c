@@ -14,9 +14,9 @@ Version 2, June 1991
 
 static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/kernlib/interrupt.c,v 1.2 2000/01/28 09:06:37 monaka Exp $";
 
-#include <h/types.h>
-#include <h/errno.h>
-#include <ibmpc/ibmpc.h>
+#include <types.h>
+#include <errno.h>
+#include "../../kernel/ITRON/ibmpc/ibmpc.h"
 /* #include "dma.h" */
 
 /*

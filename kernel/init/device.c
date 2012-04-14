@@ -40,7 +40,7 @@ static char rcsid[] =
  */
 
 #include "init.h"
-#include "kernlib/libkernel.h"
+#include "../lib/libkernel/libkernel.h"
 #include "../drivers/console/console.h"
 
 static void InitFileTable(void);

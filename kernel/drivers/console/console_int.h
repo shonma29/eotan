@@ -49,7 +49,7 @@ Version 2, June 1991
 #include "h/itron_sysc.h"
 #include "h/itron_misc.h"
 #include "ibmpc/ibmpc.h"
-#include "kernlib/device.h"
+#include "../../lib/libkernel/device.h"
 
 #include "console.h"
 #include "misc.h"

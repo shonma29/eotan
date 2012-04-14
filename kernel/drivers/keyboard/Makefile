@@ -8,7 +8,7 @@ DEBUG=-DTSKSW_DEBUG
 CPP=/lib/cpp
 ROOT=../..
 COMMON=../../../include
-CFLAGS=-O -I. -I$(ROOT) -I$(ROOT)/ITRON -I$(ROOT)/ITRON/i386 -I$(ROOT)/ITRON/h -I../../kernlib -I$(COMMON) \
+CFLAGS=-O -I. -I$(ROOT)/ITRON/h -I$(ROOT)/lib/libkernel -I$(COMMON) \
        -fno-builtin $(IDENT)
 CC=gcc
 #AS=/usr/local/bin/as
@@ -17,7 +17,7 @@ KP=kp -input-code euc
 MKDEPEND=$(CC) -M
 STARTADDR=0x80110000
 ENTRY=start
-LIBS=$(ROOT)/ITRON/kernlib/libkernel.a
+LIBS=$(ROOT)/lib/libkernel/libkernel.a
 #LD=/usr/local/bin/ld
 LD=ld
 

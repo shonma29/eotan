@@ -21,16 +21,16 @@ USERAP=init
 
 PROGRAMS=$(MKERNEL) $(DRIVERS) $(LOWLIB) $(USERLIBS) $(MANAGERS) $(USERAP)
 
-all: $(PROGRAMS) btron 
+all: $(PROGRAMS) kern.bin 
 
-btron: build config.tab dummy
-	./build config.tab btron
+kern.bin: build config.tab dummy
+	./build config.tab $@
 
 build: build.o $(BUILDSRC)
 	$(CC) $(CFLAGS) -o build build.o
 
 clean:
-	rm -f build build.o btron
+	rm -f build build.o kern.bin
 	${MAKE} -C ../kernel/drivers/console clean
 	${MAKE} -C ../kernel/drivers/keyboard clean
 	${MAKE} -C ../kernel/drivers/fd765a clean

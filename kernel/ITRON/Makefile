@@ -61,8 +61,8 @@ OBJS= \
 	lowlib.o \
 	posix.o
 
-OTHEROBJ=kernlib/port_manager.o kernlib/message_port.o \
-           kernlib/sys_errno.o
+OTHEROBJ=../lib/libkernel/port_manager.o ../lib/libkernel/message_port.o \
+           ../lib/libkernel/sys_errno.o
 
 SRCS=main.c memory.c task.c time.c version.c error.c dummy.c printf.c \
      console.c fault.c syscall.c misc.c timer.c \
@@ -75,7 +75,7 @@ core.bin: $(OBJS) libkernel.a port_manager
 	$(LD) -static -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) $(OTHEROBJ)
 
 libkernel.a:
-	${MAKE} -C kernlib
+	${MAKE} -C ../lib/libkernel
 
 port_manager:
 	${MAKE} -C ../servers
@@ -89,7 +89,7 @@ depend:
 clean:
 	rm -f $(OBJS)
 	rm -f core.bin
-	${MAKE} -C kernlib clean
+	${MAKE} -C ../lib/libkernel clean
 	${MAKE} -C ../servers clean
 
 include CFILES

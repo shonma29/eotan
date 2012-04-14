@@ -2,13 +2,12 @@
 IDENT=-DI386 -DIBMPC $(DEBUG)
 
 CPP=/lib/cpp
-ROOT=../../ITRON
+ROOT=../..
 
-CFLAGS=-O2 -I. -I$(ROOT) -I$(ROOT)/h -I$(ROOT)/i386 -I$(ROOT)/kernlib -fno-builtin $(IDENT) $(DEBUG)
+CFLAGS=-O2 -I. -I$(ROOT)/ITRON/h -I$(ROOT)/lib/libkernel -fno-builtin $(IDENT) $(DEBUG)
 
 CC=gcc
-LIBS=$(ROOT)/kernlib/libkernel.a
-#LD=/usr/bin/ld
+LIBS=$(ROOT)/lib/libkernel/libkernel.a
 LD=ld
 
 STARTADDR=0x80140000

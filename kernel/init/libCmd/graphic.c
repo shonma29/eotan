@@ -17,7 +17,7 @@ static char rcsid[] =
     "$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/BTRON/init/libMittenCmd/graphic.c,v 1.15 2000/02/17 14:21:44 naniwa Exp $";
 
 #include "../init.h"
-#include "kernlib/device.h"
+#include "../../lib/libkernel/device.h"
 
 extern int strlen(B *);
 extern void bcopy (UB *, UB *, W);

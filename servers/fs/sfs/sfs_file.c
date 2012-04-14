@@ -116,7 +116,7 @@ static char rcsid[] =
 
 #include "../posix.h"
 #include "../posix_fs.h"
-#include "../../../kernel/ITRON/kernlib/libkernel.h"
+#include "../../../kernel/lib/libkernel/libkernel.h"
 #include "sfs_func.h"
 
 #ifndef MIN

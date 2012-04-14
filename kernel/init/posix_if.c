@@ -93,7 +93,7 @@ static char rcsid[] =
 #include "/usr/include/linux/a.out.h"
 #endif
 #include "init.h"
-#include "kernlib/libkernel.h"
+#include "../lib/libkernel/libkernel.h"
 
 
 #define LOWLIB_INFO_ADDR	0x88030000

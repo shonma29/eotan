@@ -29,7 +29,7 @@
 
 #include "../../kernel/drivers/console/console.h"
 #include "../../kernel/drivers/keyboard/keyboard.h"
-#include "../../kernel/ITRON/kernlib/device.h"
+#include "../../kernel/lib/libkernel/device.h"
 
 /*  定数の設定
  */

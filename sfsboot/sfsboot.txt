@@ -39,7 +39,7 @@ FDからブートする場合
        
   4. posix-fsに、build/にあるbtronを書き込みます。
 
-	statfs /dev/fd0 write /system/btron386 ../build/btron
+	statfs /dev/fd0 write /system/kern ../build/kern.bin
 
   5. 1stbootを修正します。
  

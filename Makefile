@@ -26,7 +26,7 @@ applications:
 	${MAKE} -f build/hdboot.mk
 
 2nd_fd.img:
-	cp make/btron ./2nd_fd.img
+	cp -p build/kern.bin ./2nd_fd.img
 
 3rd_fd.img:
 	${MAKE} -f build/posix.mk

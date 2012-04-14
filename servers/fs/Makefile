@@ -32,7 +32,7 @@ OBJS=s0.o posix.o version.o request.o filesystem.o memory.o process.o \
 SRCS=posix.c version.c request.c filesystem.c memory.c process.c \
 	log.c syscall.c global.c vmtree.c exec.c fork.c
 
-KERNLIB=../../kernel/ITRON/kernlib/libkernel.a
+KERNLIB=../../kernel/lib/libkernel/libkernel.a
 LIBS=sfs/libsfs.a syscalls/libsysc.a $(KERNLIB)
 
 all:

@@ -19,7 +19,7 @@ Version 2, June 1991
 #include <h/types.h>
 #include <h/errno.h>
 #include <ibmpc/ibmpc.h>
-#include <kernlib/device.h>
+#include "../../kernel/lib/libkernel/device.h"
 
 #define ROUNDDOWN(x,b)	((x / b) * b)
 #define ROUNDUP(x,b)	((x + (b -1)) / b * b)

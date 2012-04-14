@@ -8,17 +8,15 @@ IDENT=-DTIMER_TEST -DI386 -DIBMPC $(DEBUG)
 
 
 CPP=/lib/cpp
-ROOT=../../ITRON
-CFLAGS=-O -I. -I$(ROOT) -I$(ROOT)/h -I$(ROOT)/i386 -I$(ROOT)/kernlib -fno-builtin $(IDENT)
+ROOT=../..
+CFLAGS=-O -I. -I$(ROOT)/ITRON/h -I$(ROOT)/lib/libkernel -fno-builtin $(IDENT)
 CC=gcc
-#AS=/usr/local/bin/as
 AS=/usr/bin/as
 KP=kp -input-code euc
 MKDEPEND=$(CC) -M
 STARTADDR=0x80120000
 ENTRY=start
-LIBS=$(ROOT)/kernlib/libkernel.a
-#LD=/usr/local/bin/ld
+LIBS=$(ROOT)/lib/libkernel/libkernel.a
 LD=ld
 
 %.o: %.c
