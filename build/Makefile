@@ -5,14 +5,12 @@
 
 INC=../kernel/ITRON/h
 BUILDSRC=build.c $(INC)/itron_module.h
-#CFLAGS=$(DEBUG) -I$(INC)
 CFLAGS=$(DEBUG)
 CC=gcc
 
 KERNLIB=kernlib
 MKERNEL=itron
 SERVER=port-manager
-# DRIVERS=console keyboard fd765a ide ne2000 rs232c beep hcm_pci pcmcia psaux
 DRIVERS=console keyboard fd765a ide psaux 
 LOWLIB=posix_lowlib
 USERLIBS=posix_libc

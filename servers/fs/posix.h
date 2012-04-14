@@ -25,7 +25,7 @@ Version 2, June 1991
 #include "../../kernel/ITRON/h/misc.h"
 #include "../../kernel/ITRON/kernlib/device.h"
 #include "../../kernel/drivers/console/console.h"
-#include "../../kernel/ITRON/servers/port-manager.h"
+#include "../../kernel/servers/port-manager.h"
 
 #ifdef notdef
 #define ROUNDUP(x,align)	((((int)x) + (align) - 1) & ~((align) - 1))

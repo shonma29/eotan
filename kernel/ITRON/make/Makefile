@@ -85,7 +85,7 @@ libkernel.a:
 	${MAKE} -C ../kernlib
 
 port_manager:
-	${MAKE} -C ../servers
+	${MAKE} -C ../../servers
 
 tags:
 	etags ../*/*.[hcs]
@@ -97,7 +97,7 @@ clean:
 	rm -f $(OBJS)
 	rm -f itron.image
 	${MAKE} -C ../kernlib clean
-	${MAKE} -C ../servers clean
+	${MAKE} -C ../../servers clean
 
 include CFILES
 include SFILES

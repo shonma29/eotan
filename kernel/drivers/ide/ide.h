@@ -30,7 +30,7 @@ Version 2, June 1991
 #include "kernlib/dma.h"
 #include "kernlib/device.h"
 #include "../console/console.h"
-#include "servers/port-manager.h"
+#include "../../servers/port-manager.h"
 
 #define USE_LBA
 

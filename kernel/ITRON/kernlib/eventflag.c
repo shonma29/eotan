@@ -38,7 +38,7 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 #include <itron.h>
 #include <config.h>
 #include <errno.h>
-#include "port-manager.h"
+#include "../servers/port-manager.h"
 
 
 /*

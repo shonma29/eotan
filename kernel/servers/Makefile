@@ -6,13 +6,10 @@
 TARGET =	port-manager
 LOAD_POINT =	0x00010000
 ENTRY =		_main
-#LD = /usr/local/bin/ld		# ZIMAGE タイプの実行ファイルを作成する
-				# ことができる LD を使う。
-#LD=/usr/bin/ld
-LD=ld
 
+LD=ld
 CC=gcc
-INC=-I../../ITRON/h -I../../ITRON/i386
+INC=-I../ITRON/h -I../ITRON/i386
 CFLAGS=$(INC) -O2 -fno-builtin
 
 
@@ -23,7 +20,7 @@ all: $(TARGET)
 
 
 $(TARGET): $(OBJS)
-	$(LD) -static -o $(TARGET) -e $(ENTRY) -Ttext=$(LOAD_POINT)  $(OBJS) ../kernlib/libkernel.a	
+	$(LD) -static -o $(TARGET) -e $(ENTRY) -Ttext=$(LOAD_POINT)  $(OBJS) ../ITRON/kernlib/libkernel.a	
 
 
 clean:

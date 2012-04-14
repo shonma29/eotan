@@ -42,7 +42,7 @@ static char rcsid[] =
 **********************************************************************/
 
 #include "wconsole_int.h"
-#include "../../kernel/ITRON/servers/port-manager.h"
+#include "../../kernel/servers/port-manager.h"
 #include "../../kernel/lib/frtm/frtm.h"
 
 #define USE_MALLOC
