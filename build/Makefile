@@ -35,7 +35,7 @@ clean:
 	${MAKE} -C ../kernel/drivers/keyboard clean
 	${MAKE} -C ../kernel/drivers/fd765a clean
 	${MAKE} -C ../kernel/drivers/ide clean
-	${MAKE} -C ../kernel/ITRON/make clean
+	${MAKE} -C ../kernel/ITRON clean
 	${MAKE} -C ../kernel/init clean
 	${MAKE} -C ../servers/fs clean
 	${MAKE} -C ../servers/wconsole clean
@@ -51,7 +51,7 @@ $(DRIVERS):
 	${MAKE} -C ../kernel/drivers/$@
 
 itron:
-	${MAKE} -C ../kernel/ITRON/make
+	${MAKE} -C ../kernel/ITRON
 
 posix_lowlib:
 	${MAKE} -C ../lib/lowlib

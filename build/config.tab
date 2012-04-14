@@ -84,7 +84,7 @@
 #
 
 #  file name			virtual addr	physical addr	type    name
-../kernel/ITRON/make/itron.image	0x80020000	0x020000	kernel  kernel
+../kernel/ITRON/core.bin	0x80020000	0x020000	kernel  kernel
 ../kernel/servers/port-manager 0x00010000	0x080000	kernel port-manager
 
 #

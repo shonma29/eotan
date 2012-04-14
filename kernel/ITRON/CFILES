@@ -1,0 +1,98 @@
+devconfig.o:	common/devconfig.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+console.o:	common/console.c
+	$(CC) $(CFLAGS) -c $< -o $@
+	
+dummy.o:	common/dummy.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+error.o:	common/error.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+itron_memory.o:	common/itron_memory.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+kalloc.o:	common/kalloc.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+main.o:	common/main.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+memory.o:	common/memory.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+misc.o:	common/misc.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+pmemory.o:	common/pmemory.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+printf.o:	common/printf.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+syscall.o:	common/syscall.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+task.o:	common/task.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+time.o:	common/time.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+version.o:	common/version.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+virtual_mem.o:	i386/virtual_mem.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+gdt.o:	i386/gdt.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+tss.o:	i386/tss.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+fault.o:	i386/fault.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+fpu.o:	i386/fpu.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+semaphore.o:	common/semaphore.c
+	$(CC) $(CFLAGS) -c $< -o $@
+	
+timer.o:	ibmpc/timer.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+task2.o:	common/task2.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+message.o:	common/message.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+eventflag.o:	common/eventflag.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+keyboard.o:	ibmpc/keyboard.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+dbg_funcs.o:	common/dbg_funcs.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+debug.o:	common/debug.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+device.o:	io/device.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+syscall-if.o: common/syscall-if.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+system.o: common/system.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+lowlib.o: common/lowlib.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+posix.o: common/posix.c
+	$(CC) $(CFLAGS) -IITRON -c $< -o $@

@@ -1,7 +1,7 @@
 # $Revision: 1.14 $
 #
 #
-COMMON=../../../include
+COMMON=../../include
 
 
 #DEBUG=-DTSKSW_DEBUG
@@ -10,14 +10,9 @@ DEBUG=-DKEYBOARD_DEBUG
 IDENT=-DTIMER_TEST -DI386 -DIBMPC -DAUTO_START -DPORTMANAGER -DKERNLIB -DITRON $(DEBUG)
 
 CPP=/lib/cpp
-#LD=/usr/local/bin/ld		# ZMAGIC タイプの実行ファイルを作ることができる
-#                                # 古い ld を使うこと
-#LD=/usr/bin/ld			# システムに古い実行ファイルを作ることができる 
-				# ld がある場合にはこちらを使う。
-#AS=/usr/local/bin/as-new
 LD=ld
 AS=as
-CFLAGS=-O2 -fno-builtin -I. -I.. -I../h -I../i386 -I../ibmpc -I$(COMMON) -Wall -fno-builtin $(IDENT)
+CFLAGS=-O2 -fno-builtin -I. -Ih -Ii386 -Iibmpc -I$(COMMON) -Wall -fno-builtin $(IDENT)
 CC=gcc
 MKDEPEND=$(CC) -M
 STARTADDR=0x80020000
@@ -66,26 +61,24 @@ OBJS= \
 	lowlib.o \
 	posix.o
 
-OTHEROBJ=../kernlib/port_manager.o ../kernlib/message_port.o \
-           ../kernlib/sys_errno.o
+OTHEROBJ=kernlib/port_manager.o kernlib/message_port.o \
+           kernlib/sys_errno.o
 
 SRCS=main.c memory.c task.c time.c version.c error.c dummy.c printf.c \
      console.c fault.c syscall.c misc.c timer.c \
      virtual_mem.c itron_memory.c pmemory.c \
      startup.S
 
-#ASRCS=startup.s io.s interrupt.s locore.s
+all: core.bin
 
-all: itron.image
-
-itron.image: $(OBJS) libkernel.a port_manager
-	$(LD) -static -o itron.image -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) $(OTHEROBJ)
+core.bin: $(OBJS) libkernel.a port_manager
+	$(LD) -static -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) $(OTHEROBJ)
 
 libkernel.a:
-	${MAKE} -C ../kernlib
+	${MAKE} -C kernlib
 
 port_manager:
-	${MAKE} -C ../../servers
+	${MAKE} -C ../servers
 
 tags:
 	etags ../*/*.[hcs]
@@ -95,9 +88,9 @@ depend:
 
 clean:
 	rm -f $(OBJS)
-	rm -f itron.image
-	${MAKE} -C ../kernlib clean
-	${MAKE} -C ../../servers clean
+	rm -f core.bin
+	${MAKE} -C kernlib clean
+	${MAKE} -C ../servers clean
 
 include CFILES
 include SFILES
