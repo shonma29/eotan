@@ -36,7 +36,7 @@ Version 2, June 1991
  *
  */
 
-#include "../../ITRON/types.h"
+#include "../../core/types.h"
 
 /*
  * メッセージ

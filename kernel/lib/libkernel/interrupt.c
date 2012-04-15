@@ -16,7 +16,7 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 
 #include <types.h>
 #include <errno.h>
-#include "../../kernel/ITRON/ibmpc/ibmpc.h"
+#include "../../kernel/core/ibmpc/ibmpc.h"
 /* #include "dma.h" */
 
 /*

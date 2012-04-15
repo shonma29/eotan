@@ -4,7 +4,7 @@ IDENT=-DI386 -DIBMPC $(DEBUG)
 CPP=/lib/cpp
 ROOT=../..
 
-CFLAGS=-O2 -I. -I$(ROOT)/ITRON -I$(ROOT)/lib/libkernel -fno-builtin $(IDENT) $(DEBUG)
+CFLAGS=-O2 -I. -I$(ROOT)/core -I$(ROOT)/lib/libkernel -fno-builtin $(IDENT) $(DEBUG)
 
 CC=gcc
 LIBS=$(ROOT)/lib/libkernel/libkernel.a

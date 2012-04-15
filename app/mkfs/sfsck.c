@@ -52,7 +52,7 @@ Version 2, June 1991
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <time.h>
-#include "../../kernel/ITRON/types.h"
+#include "../../kernel/core/types.h"
 #include "../../servers/fs/sfs/sfs_fs.h"
 
 static char rcsid[] =

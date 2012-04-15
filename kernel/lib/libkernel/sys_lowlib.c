@@ -14,11 +14,11 @@ Version 2, June 1991
 static unsigned char rcsid[] = "$Id: sys_lowlib.c,v 1.1 1999/04/18 17:48:34 monaka Exp $";
 
 
-#include "../../ITRON/types.h"
-#include "../../ITRON/itron.h"
-#include "../../ITRON/syscall.h"
-#include "../../ITRON/errno.h"
-#include "../../ITRON/lowlib.h"
+#include "../../core/types.h"
+#include "../../core/itron.h"
+#include "../../core/syscall.h"
+#include "../../core/errno.h"
+#include "../../core/lowlib.h"
 
 
 /* lowlib を特定のタスクに attach する

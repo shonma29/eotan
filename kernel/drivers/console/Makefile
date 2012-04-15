@@ -7,7 +7,7 @@ DEBUG=-DTSKSW_DEBUG
 
 CPP=/lib/cpp
 ROOT=../..
-CFLAGS= -Wall -I. -I$(ROOT)/ITRON -I$(ROOT)/lib/libkernel $(IDENT)
+CFLAGS= -Wall -I. -I$(ROOT)/core -I$(ROOT)/lib/libkernel $(IDENT)
 OFLAGS= -O2 -fno-builtin $(CFLAGS)
 CC=gcc
 AS=/usr/bin/as

@@ -3,7 +3,7 @@
 # Makefile for init.
 #
 ROOT = ../..
-CFLAGS = -O2 -fno-builtin -Wall -I.. -I../lib -I$(ROOT) -I$(ROOT)/ITRON -I$(ROOT)/ITRON/kernlib
+CFLAGS = -O2 -fno-builtin -Wall -I.. -I../lib -I$(ROOT)/core -I$(ROOT)/lib/kernlib
 CXXFLAGS = $(CFLAGS)
 
 CC = gcc

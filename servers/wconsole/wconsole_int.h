@@ -36,7 +36,7 @@ Version 2, June 1991
 #include <types.h>
 #include <errno.h>
 #include <misc.h>
-#include "../../kernel/ITRON/ibmpc/ibmpc.h"
+#include <ibmpc/ibmpc.h>
 #include "../../kernel/lib/libkernel/device.h"
 
 #include "wconsole.h"

@@ -17,11 +17,11 @@ Version 2, June 1991
 #include <types.h>
 #include <errno.h>
 #ifdef notdef
-#include "../../../kernel/ITRON/ibmpc/ibmpc.h"
+#include "../../../kernel/core/ibmpc/ibmpc.h"
 #endif
 #include <itron_module.h>
 #ifdef notdef
-#include "../../../kernel/ITRON/kernlib/device.h"
+#include "../../../kernel/core/kernlib/device.h"
 #include "../../../kernel/servers/port-manager.h"
 /* #include <kernlib/libkernel.h> */
 #include "BTRON/wconsole/wconsole.h"

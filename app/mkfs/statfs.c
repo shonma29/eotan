@@ -114,7 +114,7 @@
 #endif
 #include <fcntl.h>
 #include <time.h>
-#include "../../kernel/ITRON/types.h"
+#include "../../kernel/core/types.h"
 #include "../../servers/fs/sfs/sfs_fs.h"
 #ifdef EOTA
 struct stat {

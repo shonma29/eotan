@@ -9,7 +9,7 @@ ENTRY =		_main
 
 LD=ld
 CC=gcc
-INC=-I../ITRON
+INC=-I../core
 CFLAGS=$(INC) -O2 -fno-builtin
 
 

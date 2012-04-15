@@ -9,7 +9,7 @@ IDENT=-DTIMER_TEST -DI386 -DIBMPC $(DEBUG)
 
 CPP=/lib/cpp
 ROOT=../..
-CFLAGS=-O -I. -I$(ROOT)/ITRON -I$(ROOT)/lib/libkernel -fno-builtin $(IDENT)
+CFLAGS=-O -I. -I$(ROOT)/core -I$(ROOT)/lib/libkernel -fno-builtin $(IDENT)
 CC=gcc
 AS=/usr/bin/as
 KP=kp -input-code euc

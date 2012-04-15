@@ -46,10 +46,10 @@ static char	rcsid[] = "$Id: sys_misc.c,v 1.5 2000/07/09 16:37:59 kishida0 Exp $"
 
 
 
-#include "../ITRON/types.h"
-#include "../ITRON/itron.h"
-#include "../ITRON/syscall.h"
-#include "../ITRON/errno.h"
+#include "../../core/types.h"
+#include "../../core/itron.h"
+#include "../../core/syscall.h"
+#include "../../core/errno.h"
 
 
 /* vget_csl

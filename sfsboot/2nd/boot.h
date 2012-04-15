@@ -47,7 +47,7 @@ Version 2, June 1991
 #ifndef __BOOT_H__
 #define __BOOT_H__	1
 
-#include "../../kernel/ITRON/itron_module.h"
+#include "../../kernel/core/itron_module.h"
 
 
 #endif /* __BOOT_H__ */

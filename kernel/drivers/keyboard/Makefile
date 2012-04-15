@@ -8,7 +8,7 @@ DEBUG=-DTSKSW_DEBUG
 CPP=/lib/cpp
 ROOT=../..
 COMMON=../../../include
-CFLAGS=-O -I. -I$(ROOT)/ITRON -I$(ROOT)/lib/libkernel -I$(COMMON) \
+CFLAGS=-O -I. -I$(ROOT)/core -I$(ROOT)/lib/libkernel -I$(COMMON) \
        -fno-builtin $(IDENT)
 CC=gcc
 #AS=/usr/local/bin/as

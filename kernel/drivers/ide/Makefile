@@ -7,7 +7,7 @@ IDENT=-DI386 -DIBMPC $(DEBUG)
 
 CPP=/lib/cpp
 ROOT=../..
-CFLAGS=-O2 -I. -I$(ROOT)/ITRON -I$(ROOT)/lib/libkernel -fno-builtin $(IDENT)
+CFLAGS=-O2 -I. -I$(ROOT)/core -I$(ROOT)/lib/libkernel -fno-builtin $(IDENT)
 CC=gcc
 AS=/usr/local/bin/as
 KP=kp -input-code euc

@@ -14,10 +14,10 @@ Version 2, June 1991
  *
  */
 
-#include "../../ITRON/types.h"
-#include "../../ITRON/itron.h"
-#include "../../ITRON/syscall.h"
-#include "../../ITRON/errno.h"
+#include "../../core/types.h"
+#include "../../core/itron.h"
+#include "../../core/syscall.h"
+#include "../../core/errno.h"
 
 static ER dbg_vprintf(B * fmt, VP arg0);
 

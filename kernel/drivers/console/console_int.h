@@ -42,7 +42,7 @@ Version 2, June 1991
 
 #include <types.h>
 #include <errno.h>
-#include "../../ITRON/misc.h"
+#include "../../core/misc.h"
 #include "../../servers/port-manager.h"
 #include <i386/i386.h>
 #include <itron_struct.h>

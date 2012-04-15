@@ -63,7 +63,7 @@ LIBS =	syscalls/libsyscall.a $(ROOT)/kernel/lib/libkernel/libkernel.a
 
 # DEBUG  = -DDEBUG
 IDENT  = $(DEBUG)
-CFLAGS = -O2 -I../libc/include -I../libc/include/sys -I$(ROOT)/kernel/ITRON $(IDENT)
+CFLAGS = -O2 -I../libc/include -I../libc/include/sys -I$(ROOT)/kernel/core $(IDENT)
 CC=gcc
 
 all: lowlib

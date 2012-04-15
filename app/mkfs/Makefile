@@ -1,8 +1,8 @@
 ROOT=../..
-ECFLAGS=-O -Wall -I. -I$(ROOT)/kernel/ITRON -DEOTA $(IDENT)
+ECFLAGS=-O -Wall -I. -I$(ROOT)/kernel/core -DEOTA $(IDENT)
 STARTADDR=0x00001000
 ENTRY=_main
-KERNLIBS=$(ROOT)/lib/libc/libc.a #$(ROOT)/kernel/ITRON/kernlib/libitron.a 
+KERNLIBS=$(ROOT)/lib/libc/libc.a #$(ROOT)/kernel/lib/libkernel/libitron.a 
 
 NEWLIB=../../../../libc/newlib-1.8.1-eota/eota/newlib
 NCFLAGS=-O -Wall -I$(NEWLIB)/targ-include -I$(NEWLIB)/libc/include -DEOTA
