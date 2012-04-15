@@ -21,7 +21,7 @@ Version 2, June 1991
 #ifndef _I386_H_
 #define _I386_H_	1
 
-#include "../h/types.h"
+#include "../types.h"
 
 #define I386	1
 

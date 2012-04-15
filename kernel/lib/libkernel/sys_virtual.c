@@ -50,10 +50,10 @@ static char	rcsid[] = "$Id: sys_virtual.c,v 1.1 1999/04/18 17:48:34 monaka Exp $
  */
 
 
-#include "../ITRON/h/types.h"
-#include "../ITRON/h/itron.h"
-#include "../ITRON/h/syscall.h"
-#include "../ITRON/h/errno.h"
+#include "../ITRON/types.h"
+#include "../ITRON/itron.h"
+#include "../ITRON/syscall.h"
+#include "../ITRON/errno.h"
 
 /*
  * 

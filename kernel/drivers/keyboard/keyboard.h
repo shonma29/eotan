@@ -67,7 +67,7 @@ Version 2, June 1991
 
 #include <types.h>
 #include <errno.h>
-#include "../../ITRON/ibmpc/ibmpc.h"
+#include <ibmpc/ibmpc.h>
 #include <itron.h>
 #include "../../lib/libkernel/device.h"
 #include "../../../servers/fs/posix.h"

@@ -7,7 +7,7 @@ DEBUG=-DTSKSW_DEBUG
 
 CPP=/lib/cpp
 ROOT=../..
-CFLAGS=-O2 -I. -I$(ROOT)/kernel/ITRON/h $(IDENT)
+CFLAGS=-O2 -I. -I$(ROOT)/kernel/ITRON $(IDENT)
 CC=gcc
 AS=/usr/bin/as
 KP=kp -input-code euc

@@ -13,8 +13,8 @@ Version 2, June 1991
 #ifndef __INIT_H__
 #define __INIT_H__	1
 
-#include <h/types.h>
-#include <h/errno.h>
+#include <types.h>
+#include <errno.h>
 #include <ibmpc/ibmpc.h>
 #include "../lib/libkernel/device.h"
 #include "../servers/port-manager.h"

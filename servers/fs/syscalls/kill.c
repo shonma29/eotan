@@ -17,9 +17,9 @@ Version 2, June 1991
  *
  */
 
-#include "h/task.h"
+#include "task.h"
 #include "posix.h"
-#include "h/lowlib.h"
+#include "lowlib.h"
 
 W psc_kill_f(struct posix_request *req)
 {

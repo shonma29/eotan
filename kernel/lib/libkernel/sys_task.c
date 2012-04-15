@@ -13,10 +13,10 @@ Version 2, June 1991
  * $Id: sys_task.c,v 1.4 2000/04/03 14:37:35 naniwa Exp $
  */
 
-#include "../../ITRON/h/types.h"
-#include "../../ITRON/h/itron.h"
-#include "../../ITRON/h/syscall.h"
-#include "../../ITRON/h/errno.h"
+#include "../../ITRON/types.h"
+#include "../../ITRON/itron.h"
+#include "../../ITRON/syscall.h"
+#include "../../ITRON/errno.h"
 
 
 /* cre_tsk  --- タスクの生成

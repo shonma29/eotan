@@ -16,7 +16,7 @@
 #PATH=.:/bin:/usr/bin:../../tool/kp
 CPP=/lib/cpp
 ROOT=../../../kernel
-CFLAGS=-O -I. -I$(ROOT) -I$(ROOT)/ITRON -I$(ROOT)/ITRON/kernlib -I$(ROOT)/ITRON/h -I$(ROOT)/ITRON/i386 -I$(ROOT)/POSIX/libc/others $(IDENT)
+CFLAGS=-O -I. -I$(ROOT) -I$(ROOT)/ITRON -I$(ROOT)/ITRON/kernlib -I$(ROOT)/POSIX/libc/others $(IDENT)
 CC=gcc
 KP=kp -input-code euc
 

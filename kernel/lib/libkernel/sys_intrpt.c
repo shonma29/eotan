@@ -31,10 +31,10 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
  *
  */
 
-#include "../ITRON/h/types.h"
-#include "../ITRON/h/itron.h"
-#include "../ITRON/h/syscall.h"
-#include "../ITRON/h/errno.h"
+#include "../ITRON/types.h"
+#include "../ITRON/itron.h"
+#include "../ITRON/syscall.h"
+#include "../ITRON/errno.h"
 
 
 /*

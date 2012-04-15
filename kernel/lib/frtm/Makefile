@@ -16,7 +16,7 @@
 #PATH=.:/bin:/usr/bin:../../tool/kp
 CPP=/lib/cpp
 ROOT=../..
-CFLAGS=-O2 -fno-builtin -I. -I$(ROOT) -I$(ROOT)/ITRON -I$(ROOT)/ITRON/kernlib -I$(ROOT)/ITRON/h -I$(ROOT)/ITRON/i386 -I$(ROOT)/../lib/libc/others $(IDENT)
+CFLAGS=-O2 -fno-builtin -I. -I$(ROOT) -I$(ROOT)/ITRON -I$(ROOT)/ITRON/kernlib -I$(ROOT)/../lib/libc/others $(IDENT)
 CC=gcc
 KP=kp -input-code euc
 MKDEPEND=$(CC) -M

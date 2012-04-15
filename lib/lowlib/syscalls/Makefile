@@ -36,7 +36,7 @@
 #ROOT=../../../ITRON
 ROOT=../../..
 CC=gcc
-CFLAGS = -O2 -Wall -I$(ROOT)/../lib/libc/include -I$(ROOT)/../libc/include/sys -I$(ROOT) -I$(ROOT)/ITRON -I$(ROOT)/ITRON/h -I$(ROOT)/ITRON/kernlib $(IDENT)
+CFLAGS = -O2 -Wall -I$(ROOT)/../lib/libc/include -I$(ROOT)/../libc/include/sys -I$(ROOT) -I$(ROOT)/ITRON -I$(ROOT)/ITRON/kernlib $(IDENT)
 
 
 OBJS =	_make_cnnct.o \

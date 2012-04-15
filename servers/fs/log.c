@@ -45,7 +45,7 @@ Version 2, June 1991
  */
 
 #include "posix.h"
-#include "../../../servers/wconsole/wconsole.h"
+#include "../wconsole/wconsole.h"
 
 static ID log_port;
 static ID dev_recv;

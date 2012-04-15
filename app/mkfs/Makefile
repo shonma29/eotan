@@ -1,5 +1,5 @@
 ROOT=../..
-ECFLAGS=-O -Wall -I. -I$(ROOT)/kernel/ITRON/h -DEOTA $(IDENT)
+ECFLAGS=-O -Wall -I. -I$(ROOT)/kernel/ITRON -DEOTA $(IDENT)
 STARTADDR=0x00001000
 ENTRY=_main
 KERNLIBS=$(ROOT)/lib/libc/libc.a #$(ROOT)/kernel/ITRON/kernlib/libitron.a 

@@ -3,7 +3,7 @@
 #
 
 ROOT=../kernel
-ECFLAGS=-Wall -I. -I$(ROOT) -I$(ROOT)/ITRON -I$(ROOT)/ITRON/h -I$(ROOT)/ITRON/i386 -I$(ROOT)/../lib/libc/others -DEOTA $(IDENT)
+ECFLAGS=-Wall -I. -I$(ROOT) -I$(ROOT)/ITRON -I$(ROOT)/../lib/libc/others -DEOTA $(IDENT)
 STARTADDR=0x00001000
 ENTRY=_main
 KERNLIBS=$(ROOT)/../lib/libc/libc.a $(ROOT)/ITRON/kernlib/libkernel.a 

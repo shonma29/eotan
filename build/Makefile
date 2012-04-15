@@ -3,9 +3,9 @@
 #DEBUG=-DDEBUG
 
 
-INC=../kernel/ITRON/h
+INC=../kernel/ITRON
 BUILDSRC=build.c $(INC)/itron_module.h
-CFLAGS=$(DEBUG)
+CFLAGS=$(DEBUG) -I$(INC)
 CC=gcc
 
 KERNLIB=kernlib
@@ -26,8 +26,8 @@ all: $(PROGRAMS) kern.bin
 kern.bin: build config.tab dummy
 	./build config.tab $@
 
-build: build.o $(BUILDSRC)
-	$(CC) $(CFLAGS) -o build build.o
+build: $(BUILDSRC)
+	$(CC) $(CFLAGS) -o $@ build.c
 
 clean:
 	rm -f build build.o kern.bin

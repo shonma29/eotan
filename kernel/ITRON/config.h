@@ -24,7 +24,7 @@ Version 2, June 1991
 
 #define CALL_HANDLER_IN_TASK	1 /* タイマーのハンドラーの実行を task 1 で行う */
 
-#include "../i386/i386.h"
+#include "i386/i386.h"
 
 #define GDT_ADDR	(0x80001000UL)
 #define IDT_ADDR	(0x80002000UL)

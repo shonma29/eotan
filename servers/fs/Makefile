@@ -19,7 +19,7 @@
 DEBUG=#-DEXEC_DEBUG
 IDENT=$(DEBUG) -DKERNEL
 ROOT=../..
-INC=-I$(ROOT)/kernel/ITRON/h
+INC=-I$(ROOT)/kernel/ITRON
 CFLAGS=-O2 -fno-builtin -Wall $(INC) $(IDENT)
 CC=gcc
 

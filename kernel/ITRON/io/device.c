@@ -28,8 +28,8 @@ Version 2, June 1991
 #include "misc.h"
 #include "func.h"
 #include "interrupt.h"
-#include "../h/message.h"
-#include "../io/io.h"
+#include "../message.h"
+#include "io.h"
 
 #define MAX_QUEUE	10
 

@@ -1,46 +1,46 @@
-devconfig.o:	common/devconfig.c
+devconfig.o:	devconfig.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-console.o:	common/console.c
+console.o:	console.c
 	$(CC) $(CFLAGS) -c $< -o $@
 	
-dummy.o:	common/dummy.c
+dummy.o:	dummy.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-error.o:	common/error.c
+error.o:	error.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-itron_memory.o:	common/itron_memory.c
+itron_memory.o:	itron_memory.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-kalloc.o:	common/kalloc.c
+kalloc.o:	kalloc.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-main.o:	common/main.c
+main.o:	main.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-memory.o:	common/memory.c
+memory.o:	memory.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-misc.o:	common/misc.c
+misc.o:	misc.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-pmemory.o:	common/pmemory.c
+pmemory.o:	pmemory.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-printf.o:	common/printf.c
+printf.o:	printf.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-syscall.o:	common/syscall.c
+syscall.o:	syscall.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-task.o:	common/task.c
+task.o:	task.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-time.o:	common/time.c
+time.o:	time.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-version.o:	common/version.c
+version.o:	version.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 virtual_mem.o:	i386/virtual_mem.c
@@ -58,41 +58,41 @@ fault.o:	i386/fault.c
 fpu.o:	i386/fpu.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-semaphore.o:	common/semaphore.c
+semaphore.o:	semaphore.c
 	$(CC) $(CFLAGS) -c $< -o $@
 	
 timer.o:	ibmpc/timer.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-task2.o:	common/task2.c
+task2.o:	task2.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-message.o:	common/message.c
+message.o:	message.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-eventflag.o:	common/eventflag.c
+eventflag.o:	eventflag.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 keyboard.o:	ibmpc/keyboard.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-dbg_funcs.o:	common/dbg_funcs.c
+dbg_funcs.o:	dbg_funcs.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-debug.o:	common/debug.c
+debug.o:	debug.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 device.o:	io/device.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-syscall-if.o: common/syscall-if.c
+syscall-if.o: syscall-if.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-system.o: common/system.c
+system.o: system.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-lowlib.o: common/lowlib.c
+lowlib.o: lowlib.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-posix.o: common/posix.c
+posix.o: posix.c
 	$(CC) $(CFLAGS) -IITRON -c $< -o $@

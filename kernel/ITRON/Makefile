@@ -1,7 +1,7 @@
 # $Revision: 1.14 $
 #
 #
-COMMON=../../include
+INC=../../include
 
 
 #DEBUG=-DTSKSW_DEBUG
@@ -12,7 +12,7 @@ IDENT=-DTIMER_TEST -DI386 -DIBMPC -DAUTO_START -DPORTMANAGER -DKERNLIB -DITRON $
 CPP=/lib/cpp
 LD=ld
 AS=as
-CFLAGS=-O2 -fno-builtin -I. -Ih -Ii386 -Iibmpc -I$(COMMON) -Wall -fno-builtin $(IDENT)
+CFLAGS=-O2 -fno-builtin -I. -Ih -Ii386 -Iibmpc -I$(INC) -Wall -fno-builtin $(IDENT)
 CC=gcc
 MKDEPEND=$(CC) -M
 STARTADDR=0x80020000

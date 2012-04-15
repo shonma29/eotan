@@ -17,7 +17,7 @@ Version 2, June 1991
 #ifndef __H_MEMORY_H__
 #define __H_MEMORY_H__	1
 
-#include "../h/config.h"
+#include "config.h"
 
 #define MAX_MEM			(MAX_MEMORY_SIZE)
 

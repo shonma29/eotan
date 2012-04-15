@@ -17,13 +17,13 @@ Version 2, June 1991
 #ifndef _ITRON_ITRON_H_
 #define _ITRON_ITRON_H_	1
 
-#include "../h/types.h"
-#include "../h/config.h"
-#include "../i386/i386.h"
-#include "../h/region.h"
-#include "../h/itron_module.h"
-#include "../h/itron_struct.h"
-#include "../h/itron_sysc.h"
+#include "types.h"
+#include "config.h"
+#include "i386/i386.h"
+#include "region.h"
+#include "itron_module.h"
+#include "itron_struct.h"
+#include "itron_sysc.h"
 
 #endif /* _ITRON_ITRON_H_ */
 

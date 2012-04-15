@@ -15,9 +15,9 @@ Version 2, June 1991
 #define __RD_H__	1
 
 
-#include <h/itron.h>
-#include <h/types.h>
-#include <h/errno.h>
+#include <itron.h>
+#include <types.h>
+#include <errno.h>
 #include <ibmpc/ibmpc.h>
 #include "../../kernel/lib/libkernel/device.h"
 

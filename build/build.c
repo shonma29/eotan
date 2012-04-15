@@ -33,7 +33,7 @@ struct exec {
 #define ZMAGIC 0413
 #endif
 
-#include "../kernel/ITRON/h/itron_module.h"	/* module_info 構造体の参照のため */
+#include <itron_module.h>	/* module_info 構造体の参照のため */
 
 #define	MAX_LINE	1000
 #define ALIGN(x,al)	((((int)x) + (al) - 1) & ~(al - 1))

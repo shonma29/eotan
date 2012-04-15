@@ -40,15 +40,15 @@ Version 2, June 1991
 #ifndef __CONSOLE_INTERNAL_H__
 #define __CONSOLE_INTERNAL_H__	1
 
-#include "h/types.h"
-#include "h/errno.h"
-#include "h/misc.h"
+#include <types.h>
+#include <errno.h>
+#include "../../ITRON/misc.h"
 #include "../../servers/port-manager.h"
-#include "i386/i386.h"
-#include "h/itron_struct.h"
-#include "h/itron_sysc.h"
-#include "h/itron_misc.h"
-#include "ibmpc/ibmpc.h"
+#include <i386/i386.h>
+#include <itron_struct.h>
+#include <itron_sysc.h>
+#include <itron_misc.h>
+#include <ibmpc/ibmpc.h>
 #include "../../lib/libkernel/device.h"
 
 #include "console.h"
