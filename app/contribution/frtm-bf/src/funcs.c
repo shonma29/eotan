@@ -15,6 +15,7 @@
    Last modified: Mar. 4, 2001.
 */
 
+#include <stdlib.h>
 #include "frtm.h"
 
 /* 組み込みコマンド */

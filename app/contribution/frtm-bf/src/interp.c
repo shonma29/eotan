@@ -15,6 +15,7 @@
    Last modified: Sep. 23, 2002.
 */
 
+#include <stdlib.h>
 #include "frtm.h"
 #include "funcs.h"
 #include "fgraph.h"

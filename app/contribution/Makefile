@@ -1,13 +1,13 @@
 # contribute files
 
-all: frtm install_3rd
+all: frtm pager
 
 frtm:
-	${MAKE} -C applications/frtm-bf/src
+	${MAKE} -C frtm-bf/src
+
+pager:
+	${MAKE} -C pager
 
 clean:
-	${MAKE} -C applications/frtm-bf/src clean
-	rm -f applications/frtm-bf/src/install_3rd
-
-install_3rd:
-	${MAKE} -C applications/frtm-bf install_3rd
+	${MAKE} -C frtm-bf/src clean
+	${MAKE} -C pager clean

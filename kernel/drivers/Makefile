@@ -3,7 +3,7 @@
 #
 
 
-all: dev_console dev_fd765a dev_keyboard dev_ide
+all: dev_console dev_fd765a dev_keyboard dev_ide psaux
 
 kernlib:
 	${MAKE} -C ../kernlib
@@ -20,8 +20,13 @@ dev_ide: kernlib
 dev_keyboard: kernlib
 	${MAKE} -C keyboard
 
+dev_psaus: kernlib
+	${MAKE} -C psaux
+
 clean:
 	${MAKE} -C console clean
 	${MAKE} -C fd765a clean
 	${MAKE} -C ide clean
 	${MAKE} -C keyboard clean
+	${MAKE} -C psaux clean
+

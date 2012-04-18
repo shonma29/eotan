@@ -39,8 +39,8 @@ OBJS= test.o
 
 all: test psauxtst2
 
-test: $(OBJS) $(LIBS) $(KERNLIBS)
-	$(LD) -Bstatic -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) $(LIBS) $(KERNLIBS)
+test: test.o $(LIBS) $(KERNLIBS)
+	$(LD) -Bstatic -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) test.o $(LIBS) $(KERNLIBS)
 
 psauxtst2: psauxtst2.o $(LIBS) $(KERNLIBS)
 	$(LD) -Bstatic -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) psauxtst2.o $(LIBS) $(KERNLIBS)
@@ -53,5 +53,5 @@ depend:
 
 clean:
 	rm -f test
-	rm -f $(OBJS)
+	rm -f *.o
 	rm -f psauxtst2 psauxtst2.o

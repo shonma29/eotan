@@ -205,6 +205,11 @@ fputs (B *line, FILE *port)
   return (i);
 }
 
+W
+puts (B *line)
+{
+  return fputs(line, stdout);
+}
 
 W 
 writechar (ID port, UB *buf, W length)

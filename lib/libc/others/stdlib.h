@@ -89,6 +89,7 @@ extern ID	dev_recv;	/* デバイスドライバからの返答用 */
 extern W	getc (FILE *port);
 extern W	putc (W ch, FILE *port);
 extern W	fputs (B *line, FILE *port);
+extern W	puts (B *line);
 extern W	readchar (ID port);
 extern W 	writechar (ID port, UB *buf, W count);
 extern W	printf (B *fmt,...);

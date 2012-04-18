@@ -15,16 +15,14 @@
 
 #PATH=.:/bin:/usr/bin:../../tool/kp
 CPP=/lib/cpp
-ROOT=../../../../..
-CFLAGS=-I. -I$(ROOT)/kernel/core -I$(ROOT)/kernel/lib/libkernel -I$(ROOT)/lib/libc/others $(IDENT)
+ROOT=../../../..
+CFLAGS=-I. -I$(ROOT)/kernel/core -I$(ROOT)/kernel/lib/libkernel -I$(ROOT)/lib/libc/others $(IDENT) -fno-builtin-printf
 CC=gcc
 KP=kp -input-code euc
 MKDEPEND=$(CC) -M
 STARTADDR=0x00001000
 ENTRY=_main
 KERNLIBS=$(ROOT)/lib/libc/libgt.a $(ROOT)/lib/libc/libc.a #$(ROOT)/kernel/lib/libkernel/libitron.a
-#LD=/usr/local/bin/ld
-#AS=/usr/local/bin/as
 LD=ld
 AS=as
 
