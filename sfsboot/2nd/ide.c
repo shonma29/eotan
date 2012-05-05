@@ -10,7 +10,6 @@
 #include "errno.h"
 #include "file.h"
 #include "page.h"
-#include "a.out.h"
 #include "asm.h"
 #include "lib.h"
 #include "ide.h"

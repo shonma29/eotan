@@ -42,6 +42,7 @@ all:
 
 posix_manager:	$(OBJS) $(LIBS)
 	$(LD) -static -o $@ -e $(ENTRY) -Ttext=$(STARTADDR) $(OBJS) $(LIBS)
+	strip -s $@
 	size $@
 
 clean:

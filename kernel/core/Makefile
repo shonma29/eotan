@@ -73,6 +73,7 @@ all: core.bin
 
 core.bin: $(OBJS) libkernel.a port_manager
 	$(LD) -static -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) $(OTHEROBJ)
+	strip -s $@
 
 libkernel.a:
 	${MAKE} -C ../lib/libkernel

@@ -69,9 +69,6 @@ Version 2, June 1991
 
 static ER init_itron(void);
 static void init_device(void);
-#ifdef notdef
-static void memory_test(void);
-#endif
 void run_init_program(void);
 void banner(void);
 
@@ -132,9 +129,6 @@ ER rm_trmtbl()
  */
 ER itron(void)
 {
-#if 0
-    T_CTSK par_debug_task;
-#endif
     ID type, tskid, id;
     ER errno = E_OK;
 #ifdef HALT_WHEN_IDLE
@@ -157,23 +151,6 @@ ER itron(void)
     do_timer = 0;
     doing = 0;
     system_ticks = 0;
-
-#ifdef notdef
-    par_debug_task.exinf = 0;
-    par_debug_task.startaddr = debugger;
-    par_debug_task.itskpri = 10;
-    par_debug_task.stksz = PAGE_SIZE * 2;
-    par_debug_task.addrmap = NULL;
-    if (cre_tsk(ITRON_DEBUG, &par_debug_task) != E_OK) {
-	printk("cannot create task for debugger.\n");
-    }
-
-    printk("DEBUG TASK START\n");
-
-    if (sta_tsk(ITRON_DEBUG, NULL) != E_OK) {
-	printk("cannot start task for debugger.\n");
-    }
-#endif
 
 #ifdef AUTO_START
     run_init_program();
@@ -213,10 +190,6 @@ ER itron(void)
 	    break;
 	  }
 	  if (errno == E_OK) {
-#if 0
-	    ter_tsk(tskid);
-	    del_tsk(tskid);
-#endif
 	    rm_trmtbl();
 	    if (trmtbl_num == 0) {
 	      /* 強制終了するタスクが無くなったので，優先度を最低に */
@@ -230,10 +203,6 @@ ER itron(void)
 #endif
 
 	task_switch(TRUE);
-#ifdef notdef
-	ena_int();		/* Idle タスクを実行している時は、割り込みはイネーブル
-				 * していなければいけない */
-#endif				/* notdef */
     }
     falldown("falldown.");
 /* not return */
@@ -315,13 +284,6 @@ void run_init_program(void)
 {
     struct boot_header *info;
     W i;
-#if 0
-    struct module_info *modulep;
-    ID rid;
-    T_CTSK pktsk;
-    T_TCB *new_taskp;
-    W n;
-#endif
 
     info = (struct boot_header *) MODULE_TABLE;
     for (i = 1; i < info->count; i++) {
@@ -360,9 +322,6 @@ static ER init_itron(void)
     init_msgbuf();		/* メッセージ管理機能の初期化           */
     init_eventflag();		/* イベントフラグ管理機能の初期化       */
     init_mpl();			/* メモリプール管理機能の初期化         */
-#ifdef nodef
-    simple_init_console();	/* コンソールに文字を出力できるようにする */
-#endif
     init_task();		/* タスク管理機能の初期化 */
 
     /* 1番目のタスクを初期化する。そしてそのタスクを以後の処
@@ -370,9 +329,6 @@ static ER init_itron(void)
      */
     init_task1();
 
-#ifdef notdef
-    printk("call init_timer\n");
-#endif
     init_timer();		/* インターバルタイマ機能の初期化 */
     info = (struct boot_header *) MODULE_TABLE;
     init_time(info->machine.clock);		/* 時間管理機能の初期化 */
@@ -407,22 +363,3 @@ void banner(void)
     printk("extend memory = %d Kbytes\n", ext_mem / 1024);
 }
 
-
-#if 0
-static void memory_test(void)
-{
-    VP p;
-
-    p = (VP) kalloc(1024);
-    printk("p = 0x%x\n", (UW) p);
-    print_memory_list();
-    kfree(p, 1024);
-    print_memory_list();
-
-    p = (VP) kalloc(1024);
-    printk("p = 0x%x\n", (UW) p);
-    kfree(p, 1024);
-    print_memory_list();
-}
-
-#endif

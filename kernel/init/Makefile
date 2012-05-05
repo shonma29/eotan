@@ -48,6 +48,7 @@ init: $(OBJS) $(LIBS) $(KERNLIBS)
 	${MAKE} -C lib
 	${MAKE} -C libCmd
 	$(LD) -static -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) $(LIBS) $(KERNLIBS)
+	strip -s $@
 
 main.s: main.c
 	cc $(CFLAGS) -S main.c

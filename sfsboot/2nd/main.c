@@ -15,7 +15,6 @@
 #include "file.h"
 #include "vram.h"
 #include "page.h"
-#include "a.out.h"		/* for gcc header */
 #include "interrupt.h"
 #include "idt.h"
 #include "ide.h"

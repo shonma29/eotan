@@ -23,6 +23,7 @@ all: psaux
 
 psaux: $(OBJS) 
 	$(LD) -static -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) $(LIBS)
+	strip -s $@
 
 clean:
 	rm -f $(OBJS) psaux

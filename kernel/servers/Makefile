@@ -21,6 +21,7 @@ all: $(TARGET)
 
 $(TARGET): $(OBJS)
 	$(LD) -static -o $(TARGET) -e $(ENTRY) -Ttext=$(LOAD_POINT)  $(OBJS) ../lib/libkernel/libkernel.a
+	strip $@
 
 
 clean:

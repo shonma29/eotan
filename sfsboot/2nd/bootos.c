@@ -2,45 +2,84 @@
 #include "boot.h"
 #include "config.h"
 #include "file.h"
-#include "a.out.h"
 #include "memory.h"
+#include <sys/types.h>
+#include <elf.h>
 
-int
-load_module (struct sfs_inode *ip, int offset, struct module_info *info)
+
+static int load_module (struct sfs_inode *ip, int offset,
+    struct module_info *info)
 {
-  char	tmp[BLOCK_SIZE];
-  struct exec	*exec_info;
+  char tmp[BLOCK_SIZE];
+  Elf32_Ehdr *eHdr = (Elf32_Ehdr*)tmp;
+  Elf32_Phdr *pHdr;
+  int i;
+  int destOffset;
+  int first;
 
-  read_file(ip, offset, sizeof (struct exec), tmp); 
-  exec_info = (struct exec *)tmp;
+  read_file(ip, offset, sizeof(tmp), tmp); 
 
-  if (N_BADMAG(*exec_info)) {
-    boot_printf("This object is not exec format (%d).\n", *exec_info);
-    return (E_SYS);
-  }
-  
-  boot_printf ("[%s]\n",info->name);
-  boot_printf ("Module: exec type = 0x%x, Text size = %d, Data size = %d\n",
-	       N_MAGIC(*exec_info),
-	       exec_info->a_text,
-	       exec_info->a_data);
-
-  if((N_MAGIC(*exec_info) == 0413) || (N_MAGIC(*exec_info) == NMAGIC)) {
-    if(read_file(ip, offset + BLOCK_SIZE, exec_info->a_text + exec_info->a_data, 
-		 (char *)info->paddr) == -1)
-      return E_IO;
-  }
-  else {
-    boot_printf ("I don't know how to read a.out image.(0x%x)\n", N_MAGIC(*exec_info));
+  if (!isValidModule(eHdr)) {
+    boot_printf ("not elf!\n");
     return E_SYS;
   }
 
+  boot_printf ("[%s]\n",info->name);
+
+  info->entry = eHdr->e_entry;
+  info->mem_length = 0;
+
+  pHdr = (Elf32_Phdr*)(&tmp[eHdr->e_phoff]);
+  destOffset = 0;
+  first = 1;
+
+  for (i = 0; i < eHdr->e_phnum; pHdr++, i++) {
+    int j;
+    char *p;
+
+    if (pHdr->p_type != PT_LOAD)	continue;
+
+    if (first) {
+      first = 0;
+      destOffset = pHdr->p_paddr;
+    }
+
+    p = (char*)(info->paddr + pHdr->p_paddr - destOffset);
+
+    if (pHdr->p_filesz > 0) {
+      if (read_file(ip, offset + pHdr->p_offset, pHdr->p_filesz, p) == -1) {
+        return E_IO;
+      }
+    }
+
+    boot_printf ("offset=%x, filesz=%x, memsz=%x, vaddr=%x, paddr=%x\n",
+        offset + pHdr->p_offset, pHdr->p_filesz,
+        pHdr->p_memsz, pHdr->p_vaddr, p);
+
+    p += pHdr->p_filesz;
+
+    for (j = pHdr->p_memsz - pHdr->p_filesz; j > 0; j--) {
+      *p++ = 0;
+    }
+
+    info->mem_length = (((unsigned int)p - info->paddr + 4096 - 1) >> 12) << 12;
+  }
+/*
+  boot_printf ("[%x][%x][%x][%x]\n",
+      ((char*)info->paddr)[0] & 0xff,
+      ((char*)info->paddr)[1] & 0xff,
+      ((char*)info->paddr)[2] & 0xff,
+      ((char*)info->paddr)[3] & 0xff);
+*/
+  boot_printf ("Module: exec size = %x, memsz = %x, entry = %x\n",
+	       eHdr->e_shoff,
+	       info->mem_length,
+	       info->entry);
   return E_OK;
 }
 
 
-int
-multi_boot (struct sfs_inode *ip, int rootfs)
+int multi_boot (struct sfs_inode *ip, int rootfs)
 {
   int		i;
   int		offset;
@@ -73,7 +112,6 @@ multi_boot (struct sfs_inode *ip, int rootfs)
  
   boot_printf ("Module %d\n", info->count);
   offset = BLOCK_SIZE;	                      /* 最初のモジュールが入っているオフセット(バイト) */
-  entry = (void (*)())(info->modules[0].entry);
 
   for (i = 0; i < info->count; i++) {
     boot_printf ("[%d] ", i);
@@ -83,11 +121,11 @@ multi_boot (struct sfs_inode *ip, int rootfs)
       return (E_SYS);
     }
 
-    offset += info->modules[i].length + BLOCK_SIZE;	/* ??? */
-    
+    offset += info->modules[i].length;
   }
   
-  boot_printf ("exec_info->a_entry = 0x%x\n", entry); 
+  entry = (void (*)())(info->modules[0].entry);
+  boot_printf ("exec_info->a_entry = 0x%x\n", entry);
   
   info->machine.clock = clock + ticks/TICKS;
   (*entry)();

@@ -1,11 +1,11 @@
 # contribute files
 
-all: frtm pager
+all: frtm pager/pager
 
 frtm:
 	${MAKE} -C frtm-bf/src
 
-pager:
+pager/pager:
 	${MAKE} -C pager
 
 clean:

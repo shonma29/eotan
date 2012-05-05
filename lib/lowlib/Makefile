@@ -70,6 +70,7 @@ all: lowlib
 
 lowlib: $(OBJS) SYSCALLS
 	$(LD) -static -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) $(LIBS)
+	strip -s $@
 
 SYSCALLS:
 	$(MAKE) -C syscalls

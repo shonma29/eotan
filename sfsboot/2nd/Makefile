@@ -8,14 +8,14 @@ RM = /bin/rm
 
 
 CSRC=main.c console.c keyboard.c memory.c \
-     date.c idt.c cinterrupt.c fd.c fdboot.c\
+     date.c idt.c cinterrupt.c fd.c \
      dma.c page.c lib.c ide.c \
-     evaluate.c bootos.c time.c
+     evaluate.c bootos.c time.c elf.c
 
 OBJ32 = main.o console.o keyboard.o memory.o  \
-	date.o io.o idt.o interrupt.o cinterrupt.o fd.o fdboot.o\
+	date.o io.o idt.o interrupt.o cinterrupt.o fd.o \
 	dma.o page.o paging.o lib.o ide.o sfs.o \
-	evaluate.o bootos.o time.o
+	evaluate.o bootos.o time.o elf.o
 LIBS =
 
 OBJ16 = start16.o

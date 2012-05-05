@@ -30,6 +30,7 @@ all: ide
 
 ide: $(OBJS) $(SRCS) Makefile
 	$(LD) -static -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) $(LIBS)
+	strip -s $@
 
 tags:
 	etags *.[hcs]
