@@ -6,6 +6,8 @@
 #include <sys/types.h>
 #include <elf.h>
 
+#define ALIGN(x,al)	((((int)x) + (al) - 1) & ~(al - 1))
+#define PAGESIZE	4096
 
 static int load_module (struct sfs_inode *ip, int offset,
     struct module_info *info)
@@ -20,7 +22,7 @@ static int load_module (struct sfs_inode *ip, int offset,
   read_file(ip, offset, sizeof(tmp), tmp); 
 
   if (!isValidModule(eHdr)) {
-    boot_printf ("not elf!\n");
+    boot_printf ("not ELF!\n");
     return E_SYS;
   }
 
@@ -28,7 +30,6 @@ static int load_module (struct sfs_inode *ip, int offset,
 
   info->entry = eHdr->e_entry;
   info->mem_length = 0;
-
   pHdr = (Elf32_Phdr*)(&tmp[eHdr->e_phoff]);
   destOffset = 0;
   first = 1;
@@ -51,26 +52,27 @@ static int load_module (struct sfs_inode *ip, int offset,
         return E_IO;
       }
     }
-
+#ifdef DEBUG
     boot_printf ("offset=%x, filesz=%x, memsz=%x, vaddr=%x, paddr=%x\n",
         offset + pHdr->p_offset, pHdr->p_filesz,
         pHdr->p_memsz, pHdr->p_vaddr, p);
-
+#endif
     p += pHdr->p_filesz;
 
+    /* padding */
     for (j = pHdr->p_memsz - pHdr->p_filesz; j > 0; j--) {
       *p++ = 0;
     }
 
-    info->mem_length = (((unsigned int)p - info->paddr + 4096 - 1) >> 12) << 12;
+    info->mem_length = ALIGN(p - info->paddr, PAGESIZE);
   }
-/*
+#ifdef DEBUG
   boot_printf ("[%x][%x][%x][%x]\n",
       ((char*)info->paddr)[0] & 0xff,
       ((char*)info->paddr)[1] & 0xff,
       ((char*)info->paddr)[2] & 0xff,
       ((char*)info->paddr)[3] & 0xff);
-*/
+#endif
   boot_printf ("Module: exec size = %x, memsz = %x, entry = %x\n",
 	       eHdr->e_shoff,
 	       info->mem_length,

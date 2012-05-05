@@ -14,16 +14,12 @@ Version 2, June 1991
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/file.h>
 #include <sys/stat.h>
 #include <elf.h>
 #include <itron_module.h>	/* module_info 構造体の参照のため */
 
 #define	MAX_LINE	1000
-#define ALIGN(x,al)	((((int)x) + (al) - 1) & ~(al - 1))
 #define BLOCKSIZE	1024
-#define PAGESIZE	4096
-
 
 #ifdef DEBUG
 #define DPRINTF(x)	printf x;
@@ -85,12 +81,11 @@ int main(const int argc, const char **argv)
     fprintf(stderr, "modinfo: \n");
     for (i = 0; i < modules.nmodule; i++) {
 	fprintf(stderr,
-		"%02d: %-20.20s  vaddr = 0x%08x, paddr = 0x%08x, entry = 0x%08x, memsize = %6d, file size = %6d\n",
+		"%02d: %-20.20s type = %d, vaddr = 0x%08x, paddr = 0x%08x, file size = %6d\n",
 		i, modules.entry[i].mod_info.name,
+		modules.entry[i].mod_info.type,
 		modules.entry[i].mod_info.vaddr,
 		modules.entry[i].mod_info.paddr,
-		modules.entry[i].mod_info.entry,
-		modules.entry[i].mod_info.mem_length,
 		modules.entry[i].mod_info.length);
     }
 
@@ -260,6 +255,7 @@ static void pass2(ModuleTable *modules, const char *outputfile)
 	    exit(ERR_FILE);
 	}
 
+	/* append ELF */
 	for (len = modules->entry[i].mod_info.length; len > 0; len--) {
 		fputc(fgetc(fp), outfp);
 	}
