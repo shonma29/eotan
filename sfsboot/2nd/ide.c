@@ -108,7 +108,7 @@ ide_id (void)
 
 }
 
-void
+int
 ide_init (void)
 {
   int	status;
@@ -123,10 +123,15 @@ ide_init (void)
 
   status = inb (IDE_STAT_REG);
   boot_printf ("IDE init status = 0x%x\n", status);
+  if (status != 0x50) {
+    return E_SYS;
+  }
 
-  get_ide_parameter (&ide_parameter);
+  if (get_ide_parameter (&ide_parameter) != E_OK) {
+    return E_SYS;
+  }
 
-  read_partition_table (0, partition_table);
+  return read_partition_table (0, partition_table);
 }
 
 /* IDE HD のテスト関数 
@@ -136,6 +141,7 @@ ide_init (void)
 int get_ide_parameter (struct ide_id *id)
 {
   int	i;
+  int result;
   UWORD16 *p;
 
   clear_int ();
@@ -150,17 +156,19 @@ int get_ide_parameter (struct ide_id *id)
 	  *p = inw (IDE_DATA_REG);
 	  p++;
 	}
+      result = E_OK;       
     }
   else
     {
       boot_printf ("drive busy. (%d)\n", __LINE__);
+      result = E_SYS;
     }
 
   set_int ();
 
   boot_printf ("\n");
 
-  return E_OK;
+  return result;
 }
 
 
@@ -223,6 +231,7 @@ read_partition_table (int drive, struct ide_partition *table)
 {
   BYTE buf[IDE_BLOCK_SIZE];
   int	i, have_ext_partition;
+  int bootable = 0;
   struct ide_partition pt_buf[IDE_MAX_PARTITION], *tp;
   unsigned int ext_offset;
 
@@ -233,6 +242,9 @@ read_partition_table (int drive, struct ide_partition *table)
   have_ext_partition = -1;
   for (i = 0; i < IDE_MAX_PARTITION; i++)
     {
+      if (table[i].boot_flag) {
+      	bootable++;
+      }
       boot_printf ("partition[%d] type = 0x%x, start = %d, length = %d, bootable = %d\n",
 	      i + 1, 
 	      table[i].type,
@@ -292,7 +304,7 @@ read_partition_table (int drive, struct ide_partition *table)
 		 IDE_MAX_PARTITION + i + 1, 
 		 tp->type, tp->start, tp->length, tp->boot_flag);
   }
-  return E_OK;
+  return (bootable > 0)? E_OK:E_SYS;
 }
 
 int

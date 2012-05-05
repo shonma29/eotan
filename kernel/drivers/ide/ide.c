@@ -103,7 +103,7 @@ static W initialized;
  *	局所関数群の定義
  */
 static void main_loop(void);
-static void init_ide_driver(void);
+static int init_ide_driver(void);
 static void doit(DDEV_REQ * packet);
 
 /*
@@ -119,7 +119,9 @@ start()
     /* 
      * 要求受信用のポートの作成
      */
-    init_ide_driver();
+    if (init_ide_driver() != E_OK) {
+	slp_tsk();
+    }
 
     /*
      * 立ち上げメッセージ
@@ -211,11 +213,16 @@ static void doit(DDEV_REQ * packet)
  * o ファイルテーブル (file_table) の初期化
  * o 要求受けつけ用のメッセージバッファ ID をポートマネージャに登録
  */
-static void init_ide_driver(void)
+static int init_ide_driver(void)
 {
     int i;
     ID root_dev;
     ER error;
+
+    initialized = 0;
+    if (init_ide() != E_OK) {
+	return E_SYS;
+    }
 
     /*
      * 要求受けつけ用のポートを初期化する。
@@ -237,8 +244,7 @@ static void init_ide_driver(void)
     }
 
     init_log();
-    initialized = 0;
-    init_ide();
+    return E_OK;
 }
 
 /*
@@ -270,9 +276,12 @@ W init_ide(void)
     status = ide_wait_while_busy();
     dbg_printf("IDE init status = 0x%x/0x%x\n",
 	       inb(IDE_ERROR_REG), status);
-
-    ide_recalibrate(0);		/* drive 0 の recalibrate */
-    read_partition(0);
+    if (status == 0x50) {
+	ide_recalibrate(0);		/* drive 0 の recalibrate */
+	read_partition(0);
+	return E_OK;
+    }
+    return E_SYS;
 }
 
 /************************************************************************

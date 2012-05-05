@@ -23,6 +23,9 @@
 
 #include "main.h"
 
+#define BOOT_IDE 0x01
+#define BOOT_FDD 0x02
+
 extern int evaluate(char* line);
 int read_single_module (int start_block, void *paddr, struct module_info *info);
 
@@ -39,6 +42,7 @@ struct file		cwd;
 void
 _main ()
 {
+  int bootable = 0;
   char	line[MAX_LINE];
   extern int setidt ();
   extern UWORD ticks;
@@ -63,9 +67,16 @@ _main ()
   enable_page ();
 
   init_fd ();
-  ide_init ();
+  if (ide_init () == E_OK) {
+    bootable |= BOOT_IDE;
+  }
 
   set_int();
+
+  if (!bootable) {
+    evaluate("boot fd 0");
+    return;
+  }
 
   for (;;)
     {

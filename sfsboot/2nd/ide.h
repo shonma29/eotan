@@ -94,7 +94,7 @@ struct ide_partition
 };
 
 
-extern void ide_init (void);
+extern int ide_init (void);
 extern int ide_read (int drive, int partition, ULONG blockno, BYTE *buf, int length);
 extern int test_ide (char **arg);
 extern void ide_read_dump (char **arg);
