@@ -5,7 +5,7 @@ export LD = ld
 #DEBUG = -DDEBUG
 export LINUX_INCLUDE = -I../../usr/include
 
-TARGET = sfsboot.img 1st_fd.img 2nd_fd.img 3rd_fd.img
+TARGET = sfsboot_img 1st_fd_img 2nd_fd_img 3rd_fd_img
 TARGET1 = tool
 
 all: kern tool applications boot ${TARGET}
@@ -23,16 +23,16 @@ applications:
 	${MAKE} -C app/psaux
 	${MAKE} -C app/contribution
 
-1st_fd.img:
+1st_fd_img:
 	${MAKE} -f build/hdboot.mk
 
-2nd_fd.img:
+2nd_fd_img:
 	cp -p build/kern.bin ./2nd_fd.img
 
-3rd_fd.img:
+3rd_fd_img:
 	${MAKE} -f build/posix.mk
 
-sfsboot.img:
+sfsboot_img:
 	${MAKE} -f build/sfsboot.mk
 
 clean:
