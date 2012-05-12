@@ -49,7 +49,6 @@ OBJS= \
 	timer.o \
 	io.o \
 	gdt.o \
-	task2.o \
 	message.o \
 	eventflag.o \
 	locore.o \

@@ -64,9 +64,6 @@ semaphore.o:	semaphore.c
 timer.o:	ibmpc/timer.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-task2.o:	task2.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
 message.o:	message.c
 	$(CC) $(CFLAGS) -c $< -o $@
 

@@ -132,11 +132,7 @@ char doing = 0;
 static T_TCB *task;
 static T_TCB task_buffer[MAX_TSKID - MIN_TSKID + 1];
 static T_TCB *ready_task[MAX_PRIORITY + 1];
-#ifdef notdef
-static BOOL dispatch_flag = TRUE;
-#else
 static W dispatch_flag = 0;
-#endif
 
 static ER make_task_stack(T_TCB * task, W size, VP * sp);
 static void print_list(void);
@@ -281,13 +277,8 @@ void init_task1(void)
     bzero(&task[KERNEL_TASK], sizeof(T_TCB));	/* zero clear */
     /* タスク状態：走行状態にセット */
     task[KERNEL_TASK].tskstat = TTS_RUN;
-#if 1
     /* タスクレベルは、31(最低位)にセット */
     task[KERNEL_TASK].tsklevel = MAX_PRIORITY;
-#else
-    /* 初期化の時点では KERNEL LEVEL にセットしておく */
-    task[KERNEL_TASK].tsklevel = KERNEL_LEVEL;
-#endif
     /* タスク ID は、KERNEL_TASK(1)にセット */
     task[KERNEL_TASK].tskid = KERNEL_TASK;
 
@@ -404,10 +395,6 @@ static ER make_task_context(T_TCB * task, T_CTSK * pk_ctsk)
  */
 static ER make_task_stack(T_TCB * task, W size, VP * sp)
 {
-#if 0
-    INT err;
-#endif
-
 /*  err = pget_blk (&sp, TMPL_SYS, ROUNDUP (size, PAGE_SIZE)); */
     /* スタックポインタは 0x80000000 の仮想アドレスでアクセスする必要がある。 */
     (*sp) = (VP*)((UW)palloc(PAGES(size)) | 0x80000000);
@@ -582,31 +569,16 @@ ER task_switch(BOOL save_nowtask)
 	ena_int();
 	return (E_OK);
     }
-#ifdef notdef
-    if (dispatch_flag == FALSE) {
-	ena_int();
-	return (E_CTX);
-    }
-#else
+
     if (dispatch_flag > 0) {
 	ena_int();
 	return (E_CTX);
     }
-#endif
-#if 1
+
     if (doing && (save_nowtask == TRUE))
 	return E_CTX;
     doing = 1;
-#endif
 
-#ifdef notdef
-    if (save_nowtask) {
-	/* 現タスクを ready タスクキューの先頭に保存する */
-	run_task->tskstat = TTS_RDY;
-	ready_task[run_task->tsklevel]
-	    = ins_tcb_list(ready_task[run_task->tsklevel], run_task);
-    }
-#else
     if (save_nowtask == FALSE) {
 	/* 現タスクを ready タスクキューから取り除く */
 	ready_task[run_task->tsklevel]
@@ -615,19 +587,11 @@ ER task_switch(BOOL save_nowtask)
 	old_stat = run_task->tskstat;
 	run_task->tskstat = TTS_RDY;
     }
-#endif
 
     for (tskid = MIN_PRIORITY; tskid <= MAX_PRIORITY; tskid++) {
 	if (ready_task[tskid] == NULL)
 	    continue;
-#if 0
-	if (tskid == 2) {
-	    if (ready_task[tskid]->tskid != 23) {
-		printk("id %d stat %d\n", ready_task[tskid]->tskid,
-		       ready_task[tskid]->tskstat);
-	    }
-	}
-#endif
+
 	if (ready_task[tskid]->tskstat == TTS_RDY)
 	    break;
     }
@@ -641,9 +605,6 @@ ER task_switch(BOOL save_nowtask)
     /* 選択したタスクが、現タスクならば、何もしないで戻る */
     if (run_task == ready_task[tskid]) {
 	run_task->tskstat = old_stat;
-#ifdef notdef
-	ready_task[tskid] = del_tcb_list(ready_task[tskid], run_task);
-#endif
 	doing = 0;
 	ena_int();
 	return (E_OK);
@@ -654,27 +615,15 @@ ER task_switch(BOOL save_nowtask)
     if (tcb->tskstat != TTS_RDY) {
 	doing = 0;
 	ena_int();
-#if 1
 	printk
 	    ("%s, %d: tcb->tskstat != TTS_RDY, lvl = %d id = %d stat = %d\n",
 	     __FILE__, __LINE__, tskid, tcb->tskid, tcb->tskstat);
-#endif
+
 	return (E_SYS);
     }
     old = run_task;		/* */
     run_task = tcb;
     run_task->tskstat = TTS_RUN;
-#ifdef notdef
-    ready_task[run_task->tsklevel]
-	= del_tcb_list(ready_task[run_task->tsklevel], run_task);
-#endif
-
-#ifdef notdef
-    if (run_task->tskid == 23 || old->tskid == 23 ||
-	run_task->tskid == 1 || old->tskid == 1)
-	printk("task switch %d to %d(%d)\n", old->tskid, run_task->tskid,
-	       run_task->tsklevel);
-#endif
 
 #ifdef TSKSW_DEBUG
     printk("task_switch(): new task (ID = %d)\n", tcb->tskid);
@@ -685,18 +634,15 @@ ER task_switch(BOOL save_nowtask)
 	printk("NEW TASK ID = %d\n", run_task->tskid);
 	falldown("SYSTEM DOWN.\n");
     }
-#if 1
+
     delayed_dispatch = FALSE;
-#endif
+
     if (old->use_fpu)
 	fpu_save(old);
 
 /* resume を呼び出す。resume の引数は、TSS へのセレクタ */
 #ifdef TSKSW_DEBUG
     printk("resume (0x%x)\n", ((tcb->tskid + TSS_BASE) << 3) & 0xfff8);
-#endif
-#if 0
-    ena_int();			/* resume の中で実行されるはず */
 #endif
     resume((UW) (tcb->tskid + TSS_BASE) << 3);
 /*  print_context (((tcb->tskid + TSS_BASE) << 3) & 0xfff8); */
@@ -708,98 +654,6 @@ ER task_switch(BOOL save_nowtask)
 
     return (E_OK);
 }
-
-#if 0
-/* task_switch2 --- タスク切り換え
- *
- * 引数：	save_nowtask	TRUE のとき、現タスクを ready タスクキューに保存する
- *				FALSE のとき、現タスクを ready タスクキューに保存しない
- *
- * 返値：	エラー番号
- *
- * 処理：	ready_task の中で、一番優先順位の高いタスクをカレント
- *		タスクにする。
- *		実際のタスク切り換えは、resume () によっておこなう
- *		そのため、この関数の中での処理は、run_tsk 変数と
- *		ready_task[] の更新を行うのが主となる。
- *		
- */
-ER task_switch2(BOOL save_nowtask)
-{
-    T_TCB *tcb;
-    ID tskid;
-
-#ifdef TSKSW_DEBUG
-    printk("task_switch(): start\n");
-#endif
-
-    if (on_interrupt) {
-	delayed_dispatch = TRUE;
-	return (E_OK);
-    }
-    dis_int();
-    if (dispatch_flag == FALSE) {
-	ena_int();
-	return (E_CTX);
-    }
-    ena_int();
-
-    if (save_nowtask) {		/* 現タスクを ready タスクキューに保存する */
-	run_task->tskstat = TTS_RDY;
-	ready_task[run_task->tsklevel] =
-	    add_tcb_list(ready_task[run_task->tsklevel], run_task);
-    }
-
-    for (tskid = MIN_PRIORITY; tskid <= MAX_PRIORITY; tskid++) {
-	if (ready_task[tskid] != NULL)
-	    break;
-    }
-    if (tskid > MAX_PRIORITY) {
-#if defined (TSKSW_DEBUG)
-	printk("task_switch(): error = E_NOEXS\n");	/* */
-#endif
-	ena_int();
-	return (E_NOEXS);
-    }
-
-    /* 選択したタスクが、現タスクならば、何もしないで戻る */
-    if (run_task == ready_task[tskid]) {
-#ifdef TSKSW_DEBUG
-	printk("task is non new.\n");	/* */
-#endif
-	ready_task[tskid] = del_tcb_list(ready_task[tskid], run_task);
-	ena_int();
-	return (E_OK);
-    }
-#ifdef TSKSW_DEBUG
-    printk("new task is %d\n", tskid);	/* */
-#endif
-
-    /* 選択したタスクをready_task キューからはずす */
-    tcb = ready_task[tskid];
-    if (tcb->tskstat != TTS_RDY) {
-	ena_int();
-	return (E_SYS);
-    }
-    run_task = tcb;
-    run_task->tskstat = TTS_RUN;
-    ready_task[run_task->tsklevel] =
-	del_tcb_list(ready_task[run_task->tsklevel], run_task);
-
-#ifdef TSKSW_DEBUG
-    printk("task_switch(): new task (ID = %d)\n", tcb->tskid);
-#endif
-/* resume を呼び出す。resume の引数は、TSS へのセレクタ */
-#ifdef TSKSW_DEBUG
-    printk("resume (0x%x)\n", ((tcb->tskid + TSS_BASE) << 3) & 0xfff8);
-#endif
-    delayed_dispatch = FALSE;
-    ena_int();
-    resume((UW) (tcb->tskid + TSS_BASE) << 3);
-/*  print_context (((tcb->tskid + TSS_BASE) << 3) & 0xfff8); */
-    return (E_OK);		/* 正常に終了した：次のタスクスイッチの時にここに戻る */
-}
-#endif				/* task_switch2 */
 
 void print_context(UW selector)
 {
@@ -945,9 +799,6 @@ ER del_tsk(ID tskid)
 ER sta_tsk(ID tskid, INT stacd)
 {
     register int index;
-#if 0
-    W i;
-#endif
 
 #ifdef TSKSW_DEBUG
     printk("sta_tsk: start\n");
@@ -1003,11 +854,6 @@ ER sta_tsk(ID tskid, INT stacd)
  */
 void ext_tsk(void)
 {
-#if 0
-    T_TCB *tcb;
-    ID tskid;
-#endif
-
     /* 現在のタスクを TTS_DMT 状態にし、選択したタスクを次に走らせるよう */
     /* にする。                                                          */
     dis_int();
@@ -1040,11 +886,6 @@ void ext_tsk(void)
  */
 void exd_tsk(void)
 {
-#if 0
-    T_TCB *tcb;
-    ID tskid;
-#endif
-
     /* 現在のタスクを TTS_NON 状態にし、選択したタスクを次に走らせるようにする。 */
     /* マッピングテーブルを解放する */
     release_vmap((ADDR_MAP) run_task->context.cr3);
@@ -1106,27 +947,19 @@ ER ter_tsk(ID tskid)
 
 ER dis_dsp()
 {
-#ifdef notdef
-    dispatch_flag = FALSE;
-#else
     dispatch_flag++;
-#endif
+
     return (E_OK);
 }
 
 ER ena_dsp()
 {
-#ifdef notdef
-    dispatch_flag = TRUE;
-#else
     dispatch_flag--;
     if (dispatch_flag < 0) {
-#if 1
 	printk("task: unbalanced ena_dsp\n");
-#endif
 	dispatch_flag = 0;
     }
-#endif
+
     return (E_OK);
 }
 
@@ -1135,10 +968,6 @@ ER ena_dsp()
  */
 ER chg_pri(ID tskid, PRI tskpri)
 {
-#if 0
-    T_TCB *p;
-#endif
-
     if (tskid == TSK_SELF)
 	tskid = run_task->tskid;
     if ((tskid < MIN_TSKID) || (tskid > MAX_TSKID)) {
@@ -1183,12 +1012,7 @@ ER rot_rdq(PRI tskpri)
 
     first = ready_task[tskpri];
     if (first != NULL) {
-#if 0
-	ready_task[tskpri] = del_tcb_list(ready_task[tskpri], first);
-	ready_task[tskpri] = add_tcb_list(ready_task[tskpri], first);
-#else
 	ready_task[tskpri] = first->next;
-#endif
     }
     ena_int();
     /* タスクスイッチによる実行権の放棄: 必要無いのかも */
@@ -1203,9 +1027,6 @@ ER rel_wai(ID tskid)
 {
     T_TCB *taskp;
 
-#if 0
-    printk("rel_wai %d\n", tskid);
-#endif
     if ((tskid < MIN_TSKID) || (tskid > MAX_TSKID)) {
 	return (E_ID);
     }
@@ -1326,11 +1147,7 @@ ER wup_tsk(ID taskid)
     }
 
     p = &(task[taskid]);
-#ifdef notdef
-    if (taskid == 23) {
-	printk("\nwup_tsk %d stat %x\n", taskid, p->tskstat);
-    }
-#endif
+
     if ((p == run_task) || (p->tskstat == TTS_DMT)) {
 	return (E_OBJ);
     }
@@ -1363,27 +1180,13 @@ ER wup_tsk(ID taskid)
 	    falldown("kernel: task.\n");
 	} else {
 	    /* ready queue の末尾に追加 */
-#ifdef notdef
-	    if (taskid == 23) {
-		printk("wup_tsk add %d on %d (%d)\n",
-		       taskid, p->tsklevel, run_task->tskid);
-	    }
-#endif
 	    ready_task[p->tsklevel] =
 		add_tcb_list(ready_task[p->tsklevel], p);
 	}
     } else if (p->tskstat == TTS_RDY || p->tskstat == TTS_SUS) {
-#ifdef notdef
-	printk("wup_tsk RDY or SUS task. %d(%d)\n", taskid,
-	       run_task->tskid);
-#endif
 	p->wakeup_count++;
     }
-#ifdef notdef
-    if (taskid == 23) {
-	printk("wup_tsk end\n");
-    }
-#endif
+
     ena_int();
 
     return (E_OK);
@@ -1716,11 +1519,6 @@ ER vcpy_stk(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi, W edi, ID dst)
       dstp -= size;
       vput_reg(dst, (VP) dstp, size, (VP) vtor(src_tsk->tskid, srcp));
     }
-#if 0
-    printk("src: esp = %x ebp = %x, dst: esp = %x ebp = %x \n", 
-	   src_tsk->context.esp, src_tsk->context.ebp,
-	   dst_tsk->context.esp, dst_tsk->context.ebp);
-#endif
 
     /* レジスタのコピー */
 #ifdef I386
@@ -1740,11 +1538,6 @@ ER vcpy_stk(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi, W edi, ID dst)
 
     /* FPU 情報のコピー */
     dst_tsk->use_fpu = src_tsk->use_fpu;
-#if 0
-    printk("ebx = %x ecx = %x edx = %x esi = %x edi = %x\n",
-	   dst_tsk->context.ebx, dst_tsk->context.ecx, dst_tsk->context.edx,
-	   dst_tsk->context.esi, dst_tsk->context.edi);
-#endif
 #endif
 
     ena_int();
@@ -1785,39 +1578,6 @@ void salvage_task()
     ena_int();
 }
 
-#ifdef notdef
-static void print_rdq(int level)
-{
-    T_TCB *p;
-
-    dis_int();
-    p = ready_task[level];
-    if (p == NULL) {
-	printk("rdq %d: NULL\n", level);
-    } else {
-	do {
-	    printk("rdq(%d): task id %d %d %x %d %d",
-		   level, p->tskid, p->tsklevel, p->tskwait,
-		   on_interrupt, dispatch_flag);
-	    if (p->before == NULL) {
-		printk(" NL");
-	    } else {
-		printk(" <%d>", p->before->tskid);
-	    }
-	    if (p->next == NULL) {
-		printk(" NL\n");
-	    } else {
-		printk(" <%d>\n", p->next->tskid);
-	    }
-	    p = p->next;
-	    if (p == NULL)
-		break;
-	} while (p != ready_task[level]);
-    }
-    ena_int();
-}
-#endif
-
 #ifdef I386
 /* default page fault handler */
 W pf_handler(W cr2, W eip)
@@ -1845,11 +1605,6 @@ ER vset_ctx(ID tid, W eip, B * stackp, W stsize)
     dis_int();
     tsk = &task[tid];
 
-#ifdef notdef
-    /* 以前のコードだが，これに戻しても動作しない */
-    tsk->context.esp = tsk->initial_stack;
-    tsk->context.ebp = tsk->initial_stack;
-#else
     /* stack frame の作成． */
     /* stack のサイズが PAGE_SIZE (4KB) を越えると問題が発生する可能性あり */
     /* これに対応するには palloc で割り当てたメモリに stack frame を作成し */
@@ -1885,7 +1640,6 @@ ER vset_ctx(ID tid, W eip, B * stackp, W stsize)
 
     tsk->context.esp = (UW) esp;
     tsk->context.ebp = (UW) esp;
-#endif
 
     /* レジスターの初期化 */
 #ifdef I386
