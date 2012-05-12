@@ -63,7 +63,6 @@
 .globl	syscall_handler, int64_handler, posix_handler
 .globl  btron_handler, int66_handler	
 /* .globl	int32_handler, int33_handler, int41_handler, int43_handler */
-.globl	dis_int, ena_int
 
 .text
 
@@ -1127,20 +1126,6 @@ int66_handler:
 		
 
 lock_count:	.word	0
-/***************************************************************************
- *
- */
-dis_int:
-		cli
-		ret
-
-/*************************************************************************
- *
- */
-ena_int:
-		sti
-		ret
-
 /*****************************************************************************
  *
  */

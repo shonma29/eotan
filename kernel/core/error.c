@@ -18,6 +18,7 @@ Version 2, June 1991
 #include "errno.h"
 #include "version.h"
 #include "func.h"
+#include "../../include/arch/io.h"
 
 
 /* falldown --- ITRON での [panic] 関数。

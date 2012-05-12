@@ -22,6 +22,7 @@ Version 2, June 1991
 #include "interrupt.h"
 #include "task.h"
 #include "func.h"
+#include "../../../include/arch/io.h"
 
 #define TIMER0_WRITE	0x40
 #define TIMER0_READ	0x40

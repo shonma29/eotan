@@ -29,6 +29,7 @@ Version 2, June 1991
 #include "../servers/port-manager.h"
 #endif
 #include "func.h"
+#include "../../include/arch/io.h"
 #ifdef KERNLIB
 #include "../../lib/libkernel/device.h"
 #endif

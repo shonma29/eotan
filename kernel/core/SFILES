@@ -1,6 +1,3 @@
-io.o: i386/io.S
-	$(CC) $(CFLAGS) -c $< -o $@
-
 locore.o: i386/locore.S
 	$(CC) $(CFLAGS) -c $< -o $@
 

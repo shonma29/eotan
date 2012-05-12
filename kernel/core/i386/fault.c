@@ -21,6 +21,7 @@ Version 2, June 1991
 #include "errno.h"
 #include "task.h"
 #include "func.h"
+#include "../../../include/arch/io.h"
 
 /* T_INTR_HANDLER	割り込みハンドラ定義
  *

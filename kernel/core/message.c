@@ -23,7 +23,7 @@ Version 2, June 1991
 #include "func.h"
 #include "ibmpc.h"
 #include "message.h"
-
+#include "../../include/arch/io.h"
 
 static T_MSGHEAD message_table[MAX_MSGBUF + 1];
 static T_MSG msgbuf[MAX_MSGENTRY];

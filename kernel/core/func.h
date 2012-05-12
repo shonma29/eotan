@@ -184,14 +184,6 @@ extern W get_cr0();
 extern W get_cr2();
 extern W get_cr3();
 
-/* is.S */
-extern void outb(UH, UB);
-extern void outw(UH, UH);
-extern void outl(UH, UW);
-extern B inb(UH);
-extern H inw(UH);
-extern W inl(UH);
-
 /* fpu.h */
 void fpu_save(T_TCB * taskp);
 void fpu_restore(T_TCB * taskp);

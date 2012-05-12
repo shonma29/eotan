@@ -118,6 +118,7 @@ Version 2, June 1991
 #include "func.h"
 #include "interrupt.h"
 #include "lowlib.h"
+#include "../../include/arch/io.h"
 /***************************************************************************
  *	タスク管理用の変数
  *

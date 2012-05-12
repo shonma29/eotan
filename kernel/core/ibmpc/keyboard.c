@@ -24,6 +24,7 @@ Version 2, June 1991
 #include "misc.h"
 #include "interrupt.h"
 #include "func.h"
+#include "../../../include/arch/io.h"
 
 #include "key_def.h"
 #include "key_type.h"

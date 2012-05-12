@@ -28,11 +28,4 @@ extern void     bcopy (UB *buf1, UB *buf2, W size);
 extern W        dbg_printf (B *fmt, ...);
 
 
-extern void outb(UH, UB);
-extern void outw(UH, UH);
-extern void outl(UH, UW);
-extern B inb(UH);
-extern H inw(UH);
-extern W inl(UH);
-
 #endif /* __ITRON_FUNC_H__ */

@@ -47,7 +47,6 @@ OBJS= \
 	fault.o \
 	fpu.o \
 	timer.o \
-	io.o \
 	gdt.o \
 	message.o \
 	eventflag.o \

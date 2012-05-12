@@ -16,6 +16,7 @@ Version 2, June 1991
 #include "itron.h"
 #include "func.h"
 #include "task.h"
+#include "../../../include/arch/io.h"
 
 void fpu_save(T_TCB *taskp)
 {

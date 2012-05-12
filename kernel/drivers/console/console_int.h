@@ -50,6 +50,7 @@ Version 2, June 1991
 #include <itron_misc.h>
 #include <ibmpc/ibmpc.h>
 #include "../../lib/libkernel/device.h"
+#include "../../include/arch/io.h"
 
 #include "console.h"
 #include "misc.h"

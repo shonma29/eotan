@@ -21,6 +21,7 @@ Version 2, June 1991
 #include "func.h"
 #include "ibmpc.h"
 #include "semaphore.h"
+#include "../../include/arch/io.h"
 
 static T_SEMAPHORE semaphore_table[MAX_SEMAID + 1];
 

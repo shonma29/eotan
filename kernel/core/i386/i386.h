@@ -202,7 +202,4 @@ typedef struct
 
 #define ADDR_MAP_SIZE	1024
 
-#define dis_int(args...)	asm("cli");
-#define ena_int(args...)	asm("sti");
-
 #endif /* _I386_H_ */

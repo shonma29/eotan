@@ -34,6 +34,7 @@ static char rcsid[] = "$Header: /usr/local/src/master/B-Free/Program/btron-pc/ke
 
 
 #include "wconsole_int.h"
+#include "../../include/arch/io.h"
 
 #ifdef notdef
 /* keyboard.h で定義済み */
