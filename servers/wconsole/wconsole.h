@@ -35,7 +35,7 @@
  */
 
 #define WCONSOLE_DRIVER	"manager.wconsole"
-
+/*
 #define WC_NULL		0x00004000
 #define WC_WINMOD	0x00004001
 #define WC_CHGFCS	0x00004002
@@ -62,4 +62,5 @@ struct winsize {
   unsigned short int ws_xpixel;
   unsigned short int ws_ypixel;
 };
+*/
 #endif /* __WCONSOLE_H__ */

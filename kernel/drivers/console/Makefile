@@ -2,7 +2,7 @@
 #
 #
 
-IDENT=-DTIMER_TEST -DI386 -DVGA
+IDENT=-DTIMER_TEST -DI386
 DEBUG=-DTSKSW_DEBUG
 
 CPP=/lib/cpp
@@ -24,8 +24,8 @@ LD=ld
 %.o: %.s
 	$(CPP) $(ASFLAGS) $*.s | $(AS) -o $*.o
 
-OBJS= main.o misc.o vga.o utils.o
-SRCS= main.c misc.c vga.c utils.c
+OBJS= main.o misc.o
+SRCS= main.c misc.c
 
 all: console
 
@@ -44,8 +44,5 @@ clean:
 
 
 main.o: console.h
-
-utils.o: utils.c
-	$(CC) $(CFLAGS) -c $< -o $@
 
 -include .depend

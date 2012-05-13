@@ -23,8 +23,8 @@ LD=ld
 %.o: %.s
 	$(CPP) $(ASFLAGS) $*.s | $(AS) -o $*.o
 
-OBJS= main.o misc.o graphic.o missing.o
-SRCS= main.c misc.c graphic.c missing.c
+OBJS= main.o misc.o missing.o
+SRCS= main.c misc.c missing.c
 
 all: 
 	${MAKE} -C $(ROOT)/kernel/lib/frtm

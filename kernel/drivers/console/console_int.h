@@ -54,9 +54,7 @@ Version 2, June 1991
 
 #include "console.h"
 #include "misc.h"
-#include "vga.h"
 
-#define MAX_PATTERN_SIZE	(1024 * 10)
 typedef enum { NORMAL = 1, REVERSE = 7} TEXTATTR;
 
 #define VGA_TEXT_BLACK	0

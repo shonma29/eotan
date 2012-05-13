@@ -38,8 +38,8 @@ AS=as
 %.o: %.s
 	$(CPP) $(ASFLAGS) $*.s | $(AS) -o $*.o
 
-OBJS= frtm.o stack.o interp.o funcs.o dict.o demos.o fgraph.o posix.o debug.o
-WOBJS= frtmw.o stack.o interpw.o funcs.o dict.o posixw.o fgraphw.o
+OBJS= frtm.o stack.o interp.o funcs.o dict.o demos.o posix.o debug.o
+WOBJS= frtmw.o stack.o interpw.o funcs.o dict.o posixw.o
 
 all: libfrtm.a libfrtm-w.a
 
@@ -60,7 +60,6 @@ interp.o: interp.c frtm.h funcs.h posix.h
 funcs.o: funcs.c frtm.h
 dict.o: dict.c frtm.h
 demos.o: demos.c frtm.h
-fgraph.o: fgraph.c frtm.h
 posix.o: frtm.h
 debug.o: frtm.h
 
@@ -68,8 +67,6 @@ frtmw.o: frtm.c frtm.h errmes.h
 	$(CC) $(CFLAGS) -DWCONSOLE -c frtm.c -o $@
 interpw.o: interp.c frtm.h funcs.h
 	$(CC) $(CFLAGS) -DWCONSOLE -c interp.c -o $@
-fgraphw.o: fgraph.c frtm.h funcs.h
-	$(CC) $(CFLAGS) -DWCONSOLE -c fgraph.c -o $@
 posixw.o: posix.c frtm.h funcs.h
 	$(CC) $(CFLAGS) -DWCONSOLE -c posix.c -o $@
 

@@ -22,17 +22,6 @@
 #define FCTL_SET_KEY (KEYBOARD_CHANGEMODE << 16)
 #define FCTL_GET_KEY (KEYBOARD_GETMODE << 16)
 
-int get_winsz(int fd, struct winsize *ws)
-{
-  int error;
-
-  if (ws == NULL) {
-    return -1;
-  }
-  error =  fcntl(fd, FCTL_WC_WINSIZ, ws);
-  return error;
-}
-
 int ena_eof(int fd)
 {
   int error;

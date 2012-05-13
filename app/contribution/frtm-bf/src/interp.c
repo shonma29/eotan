@@ -18,7 +18,6 @@
 #include <stdlib.h>
 #include "frtm.h"
 #include "funcs.h"
-#include "fgraph.h"
 #include "posix.h"
 #include "debug.h"
 
@@ -95,27 +94,6 @@ struct bc {
   {"var", f_var, 0},
   {"@", f_fetch, 0},
   {"$", f_store, 0},
-  {"gm", f_gm, 0},
-  {"tm", f_tm, 0},
-  {"cls", f_cls, 0},
-  {"moveto", f_moveto, 0},
-  {"lineto", f_lineto, 0},
-  {"rmoveto", f_rmoveto, 0},
-  {"rlineto", f_rlineto, 0},
-  {"rect", f_rect, 0},
-  {"rectf", f_rectf, 0},
-  {"point", f_point, 0},
-  {"ellips", f_ellips, 0},
-  {"ellipsf", f_ellipsf, 0},
-  {"setcolor", f_setcolor, 0},
-  {"setbgc", f_setbgc, 0},
-  {"setfont", f_setfont, 0},
-  {"drawstr", f_drawstring, 0},
-  {"drawistr", f_drawistring, 0},
-  {"kfopen", f_kfopen, 0},
-  {"kfclose", f_kfclose, 0},
-  {"drawkch", f_drawkch, 0},
-  {"winmod", f_winmod, 0},
   {"open", f_open, 0},
   {"close", f_close, 0},
   {"write", f_write, 0},
@@ -136,8 +114,6 @@ struct bc {
   {"umount", f_umount, 0},
   {"ps", f_ps, 0},
   {"df", f_df, 0},
-  {"multi", f_multi, 0},
-  {"single", f_single, 0},
   {"kill", f_kill, 0},
   {"purge", f_purge, 0},
   {"tasklist", f_tasklist, 0},

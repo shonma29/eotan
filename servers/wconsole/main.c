@@ -69,11 +69,7 @@ static int key_mode;
  */
 ID recvport;
 W initialized = 0;
-W video_mode = TEXT_MODE;
 ID recv, console, keyboard;
-#ifdef notdef
-ID recv_k;
-#endif
 
 extern int focus, max_win;
 extern struct window w[];
@@ -115,17 +111,10 @@ static void main_loop()
      */
     for (;;) {
 	rsize = sizeof(req);
-#ifdef notdef
-	dbg_printf("WCONSOLE: call rcv_mbf on recvport\n");
-#endif
 	errno = rcv_mbf(&req, &rsize, recvport);
 	switch (errno) {
 	case E_OK:
 	    /* 正常ケース */
-#ifdef notdef
-	    dbg_printf("WCONSOLE: receive packet type = %d\n",
-		       req.header.msgtyp);
-#endif
 	    doit(&req);
 	    break;
 	case E_TMOUT:
@@ -139,48 +128,7 @@ static void main_loop()
 	    break;
 	}
 
-#if 0
-	/* keyboard からの返事の処理 */
-	if (cmsg != NULL) {
-	    rsize = sizeof(res);
-	    errno = prcv_mbf(&res, &rsize, recv_k);
-	    if (errno == E_OK) {
-		struct posix_response pres;
-
-#ifdef notdef
-		dbg_printf("\nWCONSOLE: recv from keyboard\n");
-#endif
-		/* POSIX アプリケーション に返事を発行 */
-		vput_reg(cmsg->msg.header.tskid,
-			 cmsg->msg.body.prd_req.buf,
-			 cmsg->msg.body.prd_req.length,
-			 res.body.rea_res.dt);
-
-		pres.receive_port = 0;
-		pres.msg_length = sizeof(pres);
-		pres.operation = PSC_READ;
-		pres.errno = EP_OK;
-		pres.status = cmsg->msg.body.prd_req.length;
-		pres.ret1 = 0;
-		pres.ret2 = 0;
-#ifdef notdef
-		dbg_printf("WCONSOLE: send to appli %d\n",
-			   cmsg->msg.header.mbfid);
-#endif
-		snd_mbf(cmsg->msg.header.mbfid, sizeof(pres), &pres);
-
-		/* cmsg の消去 */
-		cmsg->next = free_req_list;
-		free_req_list = cmsg;
-		cmsg = NULL;
-	    }
-	}
-#endif
-
 	if ((cmsg == NULL) && (w[focus].list != NULL)) {
-#ifdef notdef
-	    dbg_printf("\nWCONSOLE: pick up new msg\n");
-#endif
 	    /* 次のメッセージの獲得 */
 	    cmsg = w[focus].list;
 	    w[focus].list = cmsg->next;
@@ -195,9 +143,6 @@ static void main_loop()
 	    req.body.rea_req.dd = focus;
 	    req.body.rea_req.start = cmsg->msg.body.prd_req.start;
 	    req.body.rea_req.size = cmsg->msg.body.prd_req.length;
-#ifdef notdef
-	    dbg_printf("WCONSOLE: snd_mbf to key again\n");
-#endif
 	    errno = snd_mbf(keyboard, sizeof(req), &req);
 
 	    /* 送信に失敗した場合 */
@@ -244,11 +189,8 @@ W init_wconsole(void)
     /*
      * 要求受けつけ用のポートを初期化する。
      */
-#ifdef notdef
-    recvport = get_port(sizeof(DDEV_REQ), sizeof(DDEV_REQ));
-#else
     recvport = get_port(0, sizeof(DDEV_REQ));
-#endif
+
     if (recvport <= 0) {
 	dbg_printf("WCONSOLE: cannot make receive port.\n");
 	slp_tsk();
@@ -262,26 +204,13 @@ W init_wconsole(void)
     initialized = 1;
     dbg_printf("WCONSOLE: regist port %d\n", recvport);
 
-#ifdef notdef
-    recv = get_port(sizeof(DDEV_RES), sizeof(DDEV_RES));
-#else
     recv = get_port(0, sizeof(DDEV_RES));
-#endif
+
     if (recv <= 0) {
 	dbg_printf("WCONSOLE: cannot make receive port for console.\n");
 	slp_tsk();
     }
-#ifdef notdef
-#if 0
-    recv_k = get_port(sizeof(DDEV_RES), sizeof(DDEV_RES));
-#else
-    recv_k = get_port(0, sizeof(DDEV_RES));
-#endif
-    if (recv_k <= 0) {
-	dbg_printf("WCONSOLE: cannot make receive port for keyboard.\n");
-	slp_tsk();
-    }
-#endif
+
     if (find_port(CONSOLE_DRIVER, &console) != E_PORT_OK) {
 	dbg_printf("WCONSOLE: cannot find port for %s.\n", CONSOLE_DRIVER);
 	slp_tsk();
@@ -329,7 +258,6 @@ W init_wconsole(void)
     /* frtm の初期化 */
     init_hash();
     error_no = E_OK;
-    init_w_des();
 }
 
 /* frtm のエラー処理 */
@@ -488,9 +416,6 @@ W posix_read_wconsole(ID caller, ID tskid, DDEV_REQ * packet)
 
     win = packet->body.prd_req.dd;
     if (cmsg != NULL || (win != focus)) {
-#ifdef notdef
-	dbg_printf("\nWCONSOLE: regist request\n");
-#endif
 	if (!(key_mode & WAITMODE)) {
 	    pres.receive_port = 0;
 	    pres.msg_length = sizeof(pres);
@@ -524,9 +449,6 @@ W posix_read_wconsole(ID caller, ID tskid, DDEV_REQ * packet)
 	    list->prev = new;
 	}
     } else {
-#ifdef notdef
-	dbg_printf("\nWCONSOLE: call keyboard\n");
-#endif
 	/* cmsg へ packet を登録 */
 	cmsg = free_req_list;
 	if (cmsg == NULL) {
@@ -578,7 +500,6 @@ W write_wconsole(ID caller, DDEV_WRI_REQ * packet)
     DDEV_REQ req;		/* 要求パケット */
     W rsize, winid;
 
-    if (video_mode == TEXT_MODE) {
 	req.header.mbfid = recv;
 	req.header.msgtyp = DEV_WRI;
 	bcopy(packet, &(req.body.ctl_req), sizeof(req.body));
@@ -591,9 +512,6 @@ W write_wconsole(ID caller, DDEV_WRI_REQ * packet)
 	    return (error);
 	}
 	rsize = sizeof(res);
-#ifdef notdef
-	dbg_printf("WCONSOLE: call rcv_mbf on recv 1\n");
-#endif
 	error = rcv_mbf(&res, (INT *) & rsize, recv);
 
 	res.body.ctl_res.dd = packet->dd;
@@ -601,7 +519,6 @@ W write_wconsole(ID caller, DDEV_WRI_REQ * packet)
 	res.body.ctl_res.errinfo = E_OK;
 	snd_mbf(caller, sizeof(res), &res);
 	return (E_OK);
-    }
 
     winid = packet->dd;		/* minor device 番号で window を指定 */
     if (winid >= max_win || winid < 0)
@@ -736,135 +653,6 @@ W control_wconsole(ID caller, ID tskid, DDEV_CTL_REQ * packet)
     int redraw;
     extern void winsize(int wid, ID tskid, VP pt);
 
-    if ((packet->cmd & GR_NULL) != 0) {
-	if (video_mode != GRAPHIC_MODE) {
-	    respond_ctrl(caller, packet->dd, E_PAR);
-	    return (E_PAR);
-	}
-#ifdef VGA
-	req.header.mbfid = recv;
-	req.header.msgtyp = DEV_CTL;
-	bcopy(packet, &(req.body.ctl_req), sizeof(req.body));
-	errno = snd_mbf(console, sizeof(req), &req);
-	/*      errno = graphic_command (caller, packet); */
-	if (errno != E_OK) {
-	    respond_ctrl(caller, packet->dd, errno);
-	    return (errno);
-	}
-	rsize = sizeof(res);
-#ifdef notdef
-	dbg_printf("WCONSOLE: call rcv_mbf on recv 2\n");
-#endif
-	errno = rcv_mbf(&res, (INT *) & rsize, recv);
-	respond_ctrl(caller, packet->dd, errno);
-#else
-	respond_ctrl(caller, packet->dd, E_NOSPT);
-#endif
-	return (errno);
-    }
-#if 0
-    else if ((packet->cmd & WC_NULL) != 0)
-#else
-    else if (((packet->cmd & WC_NULL) != 0)
-	       && (video_mode == GRAPHIC_MODE))
-#endif
-      {
-	switch (packet->cmd) {
-	case WC_WINMOD:
-	    redraw = 0;
-	    p = (union wc_cmd_t *) packet->param;
-	    if (p->winmod.mode == 0) {
-		if (focus != 0)
-		    redraw = 1;
-		focus = 0;
-		w[0].map = 1;
-		w[1].map = 0;
-		w[2].map = 0;
-	    } else if (p->winmod.mode == 1) {
-		if (focus == 0)
-		    redraw = 1;
-		else
-		    erase_cursor(focus);
-		focus = 1;
-		w[0].map = 0;
-		w[1].map = 1;
-		w[2].map = 1;
-	    } else if (p->winmod.mode == 2) {
-		if (focus == 0)
-		    redraw = 1;
-		else
-		    erase_cursor(focus);
-		focus = 2;
-		w[0].map = 0;
-		w[1].map = 1;
-		w[2].map = 1;
-	    }
-	    if (redraw) {
-		fillbox_vga(0, 0, 640, 480, 0);
-		draw_window();
-		handle_error();
-	    }
-	    respond_ctrl(caller, packet->dd, E_OK);
-	    return (E_OK);
-	case WC_CHGFCS:
-	    {
-		int i;
-		i = (focus + 1) % max_win;
-		while (focus != i) {
-		    if (w[i].map)
-			break;
-		    i = (i + 1) % max_win;
-		}
-		if (i != focus) {
-		    erase_cursor(focus);
-		    focus = i;
-		    move_curpos(0, 0, focus);
-		}
-	    }
-#if 0
-	    dbg_printf("WC_CHGFCS to %d\n", focus);
-#endif
-#ifdef notdef
-	    dbg_printf("send reply\n");
-#endif
-	    respond_ctrl(caller, packet->dd, E_OK);
-	    return (E_OK);
-	case WC_DEBUG:
-	    if (video_mode == GRAPHIC_MODE) {
-		req.header.mbfid = recv;
-		req.header.msgtyp = DEV_CTL;
-		req.body.ctl_req.cmd = CONSOLE_TEXT;
-		req.body.ctl_req.len = 0;
-		errno = snd_mbf(console, sizeof(req), &req);
-		rsize = sizeof(res);
-		errno = rcv_mbf(&res, (INT *) & rsize, recv);
-
-		/* video_mode = TEXT_MODE; */
-		if (vget_csl(&x, &y) == E_OK) {
-		    set_curpos(x, y, 0);
-		} else {
-		    clear_wconsole(0);
-		}
-		/* window 状態の初期化 */
-		focus = 0;
-		w[0].map = 1;
-		w[1].map = 0;
-		w[2].map = 0;
-	    }
-	    /* sequence for debug */
-	    dbg_printf("\ntask-list\n");
-	    vsys_msc(6, NULL);	/* task list */
-	    dbg_printf("salvage_task\n");
-	    vsys_msc(8, NULL);
-#ifdef notdef
-	    dbg_printf("send reply\n");
-#endif
-	    respond_ctrl(caller, packet->dd, E_OK);
-	    return (E_OK);
-	}
-	respond_ctrl(caller, packet->dd, E_NOSPT);
-	return (E_NOSPT);
-    } else {
 	switch (packet->cmd) {
 	case CONSOLE_CLEAR:
 	    clear_wconsole(0);
@@ -877,104 +665,6 @@ W control_wconsole(ID caller, ID tskid, DDEV_CTL_REQ * packet)
 		return (E_PAR);
 	    }
 	    set_curpos(packet->param[0], packet->param[1], 0);
-	    respond_ctrl(caller, packet->dd, E_OK);
-	    return (E_OK);
-
-	case CONSOLE_GRAPHIC:
-	    if (video_mode == TEXT_MODE) {
-#ifdef VGA
-		req.header.mbfid = recv;
-		req.header.msgtyp = DEV_CTL;
-		req.body.ctl_req.cmd = CONSOLE_GRAPHIC;
-		req.body.ctl_req.len = 0;
-		errno = snd_mbf(console, sizeof(req), &req);
-		/*      errno = graphic_command (caller, packet); */
-		if (errno != E_OK) {
-		    respond_ctrl(caller, packet->dd, errno);
-		    return (errno);
-		}
-		rsize = sizeof(res);
-#ifdef notdef
-		dbg_printf("WCONSOLE: call rcv_mbf on recv 3\n");
-#endif
-		errno = rcv_mbf(&res, (INT *) & rsize, recv);
-
-		video_mode = GRAPHIC_MODE;
-		draw_window();
-		handle_error();
-		set_curpos(0, 0, focus);
-		respond_ctrl(caller, packet->dd, E_OK);
-#else
-		respond_ctrl(caller, packet->dd, E_NOSPT);
-#endif
-		return (E_OK);
-	    } else {
-		respond_ctrl(caller, packet->dd, E_PAR);
-		return (E_PAR);
-	    }
-
-	case CONSOLE_TEXT:
-	    if (video_mode == GRAPHIC_MODE) {
-#ifdef VGA
-		req.header.mbfid = recv;
-		req.header.msgtyp = DEV_CTL;
-		req.body.ctl_req.cmd = CONSOLE_TEXT;
-		req.body.ctl_req.len = 0;
-		errno = snd_mbf(console, sizeof(req), &req);
-		if (errno != E_OK) {
-		    respond_ctrl(caller, packet->dd, errno);
-		    return (errno);
-		}
-		rsize = sizeof(res);
-#ifdef notdef
-		dbg_printf("WCONSOLE: call rcv_mbf on recv 4\n");
-#endif
-		errno = rcv_mbf(&res, (INT *) & rsize, recv);
-
-		video_mode = TEXT_MODE;
-		respond_ctrl(caller, packet->dd, E_OK);
-#else
-		respond_ctrl(caller, packet->dd, E_NOSPT);
-#endif
-		if (vget_csl(&x, &y) == E_OK) {
-		    set_curpos(x, y, 0);
-		} else {
-		    clear_wconsole(0);
-		}
-		/* window 状態の初期化 */
-		focus = 0;
-		w[0].map = 1;
-		w[1].map = 0;
-		w[2].map = 0;
-		w[0].attr = NORMAL;
-		w[1].attr = NORMAL;
-		w[2].attr = NORMAL;
-		return (E_OK);
-	    } else {
-		respond_ctrl(caller, packet->dd, E_PAR);
-		return (E_PAR);
-	    }
-
-	case KF_OPEN:
-	    kfopen();
-	    respond_ctrl(caller, packet->dd, E_OK);
-	    return (E_OK);
-
-	case WD_LOAD:
-	    wd_load(packet->param);
-	    handle_error();
-	    respond_ctrl(caller, packet->dd, E_OK);
-	    return (E_OK);
-
-	case WD_ORIG:
-	    f_forgetall();
-	    init_w_des();
-	    handle_error();
-	    respond_ctrl(caller, packet->dd, E_OK);
-	    return (E_OK);
-
-	case WD_WINSIZ:
-	    winsize(packet->dd, tskid, ((VP *) packet->param)[0]);
 	    respond_ctrl(caller, packet->dd, E_OK);
 	    return (E_OK);
 
@@ -1017,7 +707,6 @@ W control_wconsole(ID caller, ID tskid, DDEV_CTL_REQ * packet)
 	    respond_ctrl(caller, packet->dd, E_NOSPT);
 	    return (E_NOSPT);
 	}
-    }
 }
 
 
@@ -1059,9 +748,6 @@ W relay_wconsole(ID caller, DDEV_RLY_REQ * packet)
 	}
 	pres.ret1 = 0;
 	pres.ret2 = 0;
-#ifdef notdef
-	dbg_printf("WCONSOLE: send to appli %d\n", cmsg->msg.header.mbfid);
-#endif
 	snd_mbf(cmsg->msg.header.mbfid, sizeof(pres), &pres);
 
 	/* cmsg の消去 */

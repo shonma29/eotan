@@ -36,7 +36,7 @@ AS=as
 %.o: %.s
 	$(CPP) $(ASFLAGS) $*.s | $(AS) -o $*.o
 
-OBJS= frtm.o stack.o interp.o funcs.o dict.o demos.o fgraph.o posix.o debug.o
+OBJS= frtm.o stack.o interp.o funcs.o dict.o demos.o posix.o debug.o
 IOBJS= 
 
 all: frtm
@@ -50,7 +50,6 @@ interp.o: interp.c frtm.h funcs.h posix.h
 funcs.o: funcs.c frtm.h
 dict.o: dict.c frtm.h
 demos.o: demos.c frtm.h
-fgraph.o: fgraph.c frtm.h
 posix.o: frtm.h
 debug.o: frtm.h
 

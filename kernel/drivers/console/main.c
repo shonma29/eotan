@@ -130,7 +130,6 @@ static void writes(B * s);
  */
 ID recvport;
 W initialized = 0;
-W video_mode = TEXT_MODE;
 TEXTATTR attr;
 
 
@@ -160,9 +159,6 @@ void start(void)
 static void main_loop(void)
 {
     DDEV_REQ req;		/* 受信する要求パケット */
-#ifdef notdef
-    ER err;
-#endif
     extern ER sys_errno;
 
     /*
@@ -208,18 +204,12 @@ static void main_loop(void)
 W init_console(void)
 {
     ER error;
-#ifdef notdef
-    W x, y;
-#endif
 
     /*
      * 要求受けつけ用のポートを初期化する。
      */
-#ifdef notdef
-    recvport = get_port(sizeof(DDEV_REQ), sizeof(DDEV_REQ));
-#else
     recvport = get_port(0, sizeof(DDEV_REQ));
-#endif
+
     if (recvport <= 0) {
 	dbg_printf("CONSOLE: cannot make receive port.\n");
 	slp_tsk();
@@ -235,28 +225,12 @@ W init_console(void)
     dbg_printf("console: regist port %d\n", recvport);
     attr = NORMAL;
 
-#ifdef notdef
-    if (vget_csl(&x, &y) == E_OK) {
-	set_curpos(x, y);
-    } else {
-	clear_console();
-    }
-#else
     set_curpos(0, MAX_LINE-1);
-#endif
 
 #ifdef USE_MALLOC
     init_malloc(0xC0000000);	/* 適当な値 */
 #endif
 
-#ifdef notdef
-    if (vset_cns(recvport) != E_OK) {
-	/* カーネルにコンソール変更を実行させることに
-	 * 失敗した。
-	 */
-	return E_SYS;
-    }
-#endif
     return E_OK;
 }
 
@@ -501,21 +475,6 @@ static void respond_ctrl(ID caller, W dd, ER errno)
 
 W control_console(ID caller, DDEV_CTL_REQ * packet)
 {
-    ER errno;
-
-    if ((packet->cmd & GR_NULL) != 0) {
-	if (video_mode != GRAPHIC_MODE) {
-	    respond_ctrl(caller, packet->dd, E_PAR);
-	    return (E_PAR);
-	}
-#ifdef VGA
-	errno = graphic_command(caller, packet);
-	respond_ctrl(caller, packet->dd, errno);
-#else
-	respond_ctrl(caller, packet->dd, E_NOSPT);
-#endif
-	return (errno);
-    } else {
 	switch (packet->cmd) {
 	case CONSOLE_CLEAR:
 	    clear_console();
@@ -531,43 +490,10 @@ W control_console(ID caller, DDEV_CTL_REQ * packet)
 	    respond_ctrl(caller, packet->dd, E_OK);
 	    return (E_OK);
 
-	case CONSOLE_GRAPHIC:
-	    if (video_mode == TEXT_MODE) {
-#ifdef VGA
-		vga_graph();
-		video_mode = GRAPHIC_MODE;
-		attr = NORMAL;
-		respond_ctrl(caller, packet->dd, E_OK);
-#else
-		respond_ctrl(caller, packet->dd, E_NOSPT);
-#endif
-		return (E_OK);
-	    } else {
-		respond_ctrl(caller, packet->dd, E_PAR);
-		return (E_PAR);
-	    }
-
-	case CONSOLE_TEXT:
-	    if (video_mode == GRAPHIC_MODE) {
-#ifdef VGA
-		vga_text();
-		video_mode = TEXT_MODE;
-		attr = NORMAL;
-		respond_ctrl(caller, packet->dd, E_OK);
-#else
-		respond_ctrl(caller, packet->dd, E_NOSPT);
-#endif
-		return (E_OK);
-	    } else {
-		respond_ctrl(caller, packet->dd, E_PAR);
-		return (E_PAR);
-	    }
-
 	default:
 	    respond_ctrl(caller, packet->dd, E_NOSPT);
 	    return (E_NOSPT);
 	}
-    }
 }
 
 

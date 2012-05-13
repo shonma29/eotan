@@ -86,7 +86,6 @@ ID waitflag;			/* キーボードからキー入力を待つ時に */
 				/* 使用するイベントフラグの ID */
 W driver_mode;
 ID wconsole = 0, local_recv = 0;
-W send_msg = 0;
 ID my_tskid;
 
 
@@ -146,18 +145,6 @@ static void main_loop()
 	    dbg_printf("KEYBOARD: get_req() Unknown error(error = %d)\n",
 		       errno);
 	    break;
-	}
-
-	if (send_msg) {
-	    switch (send_msg) {
-	    case 1:
-		send_switch_msg();
-		break;
-	    case 2:
-		send_dbg_msg();
-		break;
-	    }
-	    send_msg = 0;
 	}
     }
 
@@ -472,81 +459,6 @@ W control_keyboard(ID caller, ID tskid, DDEV_CTL_REQ * packet)
     default:
 	respond_ctrl(caller, packet->dd, E_NOSPT);
 	return (E_NOSPT);
-    }
-}
-
-W send_switch_msg()
-{
-    DDEV_REQ req;
-    DDEV_RES res;
-    W rsize;
-    W error;
-
-    if (wconsole == 0) {
-	if (find_port(WCONSOLE_DRIVER, &wconsole) != E_PORT_OK)
-	    return (E_DEV);
-    }
-    if (local_recv == 0) {
-	local_recv = get_port(sizeof(DDEV_RES), sizeof(DDEV_RES));
-	if (local_recv <= 0)
-	    return (E_NOMEM);
-    }
-
-    req.header.mbfid = local_recv;
-    req.header.msgtyp = DEV_CTL;
-    req.body.ctl_req.cmd = WC_CHGFCS;
-    req.body.ctl_req.len = 0;
-#ifdef notdef
-    dbg_printf("KEYBOARD: send to wconsole\n");
-#endif
-    error = snd_mbf(wconsole, sizeof(req), &req);
-    if (error != E_OK) {
-	dbg_printf("KEYBOARD: can't send to wconsole %d\n", error);
-	return (error);
-    }
-    rsize = sizeof(res);
-#ifdef notdef
-    dbg_printf("KEYBOARD: wait from wconsole\n");
-#endif
-    error = rcv_mbf(&res, (INT *) & rsize, local_recv);
-#ifdef notdef
-    dbg_printf("KEYBOARD: recv from wconsole\n");
-#endif
-    if (res.body.ctl_res.errcd != E_OK) {
-	return (res.body.ctl_res.errcd);
-    }
-}
-
-W send_dbg_msg()
-{
-    DDEV_REQ req;
-    DDEV_RES res;
-    W rsize;
-    W error;
-
-    if (wconsole == 0) {
-	if (find_port(WCONSOLE_DRIVER, &wconsole) != E_PORT_OK)
-	    return (E_DEV);
-    }
-    if (local_recv == 0) {
-	local_recv = get_port(sizeof(DDEV_RES), sizeof(DDEV_RES));
-	if (local_recv <= 0)
-	    return (E_NOMEM);
-    }
-
-    req.header.mbfid = local_recv;
-    req.header.msgtyp = DEV_CTL;
-    req.body.ctl_req.cmd = WC_DEBUG;
-    req.body.ctl_req.len = 0;
-    error = snd_mbf(wconsole, sizeof(req), &req);
-    if (error != E_OK) {
-	dbg_printf("KEYBOARD: can't send to wconsole %d\n", error);
-	return (error);
-    }
-    rsize = sizeof(res);
-    error = rcv_mbf(&res, (INT *) & rsize, local_recv);
-    if (res.body.ctl_res.errcd != E_OK) {
-	return (res.body.ctl_res.errcd);
     }
 }
 

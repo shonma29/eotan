@@ -17,7 +17,6 @@
 
 #include "frtm.h"
 #include "funcs.h"
-#include "fgraph.h"
 #include "posix.h"
 #include "debug.h"
 #include "command.h"
@@ -98,29 +97,6 @@ struct bc {
   {"@", f_fetch, 0},
   {"$", f_store, 0},
 #ifndef WCONSOLE
-  {"gm", f_gm, 0},
-  {"tm", f_tm, 0},
-#endif
-  {"cls", f_cls, 0},
-  {"moveto", f_moveto, 0},
-  {"lineto", f_lineto, 0},
-  {"rmoveto", f_rmoveto, 0},
-  {"rlineto", f_rlineto, 0},
-  {"rect", f_rect, 0},
-  {"rectf", f_rectf, 0},
-  {"point", f_point, 0},
-  {"ellips", f_ellips, 0},
-  {"ellipsf", f_ellipsf, 0},
-  {"setcolor", f_setcolor, 0},
-  {"setbgc", f_setbgc, 0},
-  {"setfont", f_setfont, 0},
-  {"drawstr", f_drawstring, 0},
-  {"drawistr", f_drawistring, 0},
-#ifndef WCONSOLE
-  {"kfopen", f_kfopen, 0},
-  {"kfclose", f_kfclose, 0},
-  {"drawkch", f_drawkch, 0},
-  /*  {"winmod", f_winmod, 0},*/
   {"open", f_open, 0},
   {"close", f_close, 0},
   {"write", f_write, 0},
@@ -155,9 +131,6 @@ struct bc {
   {"graphics", f_graphics, 0},
   {"k101us", k101us, 0},
   {"k106jp", k106jp, 0},
-  {"kf-load", kf_load, 0},
-  {"wd-load", f_wdload, 0},
-  {"wd-orig", wd_orig, 0},
   {"reset", reset, 0},
   {"falldown", falldown, 0}
 /*  {"quit", f_quit, 0}*/

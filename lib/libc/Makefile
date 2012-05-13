@@ -106,7 +106,7 @@ OBJS=   call_posix.o \
 	native/sys_write.o \
 	errno.o
 
-GTOBJS = others/graphic.o others/tty.o 
+GTOBJS = others/tty.o 
 
 all: libc.a libnative.a libgt.a
 	ranlib libc.a

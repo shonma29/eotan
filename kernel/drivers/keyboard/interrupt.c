@@ -232,19 +232,6 @@ static void keyboard_interrupt()
     dbg_printf("<%x>", key_code);
 #endif
 
-    if (key_code == 0x3B) {	/* FN01 */
-	send_msg = 1;
-#if 1
-	rel_wai(my_tskid);
-#endif
-    }
-    else if (key_code == 0x58) { /* FN12 */
-	send_msg = 2;
-#if 1
-	rel_wai(my_tskid);
-#endif
-    }
-
     if (ch == NULL)
 	return;
 

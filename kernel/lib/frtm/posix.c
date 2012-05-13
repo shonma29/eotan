@@ -547,14 +547,6 @@ void f_load(void)
 }
 
 #ifndef WCONSOLE
-void f_wdload()
-{
-  char str[256];
-
-  pop_string(str); EC;
-  wd_load(str);
-}
-
 void f_mount()
 {
   char dev[256];

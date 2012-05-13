@@ -8,7 +8,7 @@ CXXFLAGS = $(CFLAGS)
 
 CC = gcc
 
-OBJS = command.o graphic.o
+OBJS = command.o
 
 all: libCmd.a
 
@@ -17,10 +17,6 @@ libCmd.a: $(OBJS)
 	ranlib libCmd.a
 
 command.o: command.c
-
-graphic.o: graphic.c
-
-GraphicOp.o: GraphicOp.c
 
 clean:
 	rm -f libCmd.a
