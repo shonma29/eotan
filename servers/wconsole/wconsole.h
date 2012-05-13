@@ -35,32 +35,5 @@
  */
 
 #define WCONSOLE_DRIVER	"manager.wconsole"
-/*
-#define WC_NULL		0x00004000
-#define WC_WINMOD	0x00004001
-#define WC_CHGFCS	0x00004002
-#define WC_DEBUG	0x00004003
 
-#define KF_OPEN		0x00000010
-#define WD_LOAD		0x00000011
-#define WD_ORIG		0x00000012
-#define WD_WINSIZ	0x00000013
-
-struct wc_winmod_t
-{
-  W	mode;
-};
-
-union wc_cmd_t
-{
-  struct wc_winmod_t winmod;
-};
-
-struct winsize {
-  unsigned short int ws_row;
-  unsigned short int ws_col;
-  unsigned short int ws_xpixel;
-  unsigned short int ws_ypixel;
-};
-*/
 #endif /* __WCONSOLE_H__ */

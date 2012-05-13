@@ -48,15 +48,12 @@ static char rcsid[] =
 #define USE_MALLOC
 #define START_FROM_INIT
 
-extern void draw_window();
-
 /*********************************************************************
  *	 局所変数群の宣言
  *
  */
 static void main_loop();
 static void doit(DDEV_REQ * packet);
-static void writes(B * s, W winid);
 
 static REQ_LIST req_list[MAX_REQ_LIST], *free_req_list = NULL, *cmsg =
     NULL;
@@ -254,29 +251,8 @@ W init_wconsole(void)
 #endif
 
     key_mode = WAITMODE | ENAEOFMODE;
-
-    /* frtm の初期化 */
-    init_hash();
-    error_no = E_OK;
 }
 
-/* frtm のエラー処理 */
-handle_error()
-{
-    if (error_no != E_OK) {
-	error_no = E_OK;
-	reload_old_csp();
-	if (eval_mode == DIC2) {
-	    /* 未完辞書の破棄 */
-	    drop_dict();
-	}
-	eval_mode = RUN;
-	memory = OFF;
-	clear_stack();
-	clear_rstack();
-	clear_sstack();
-    }
-}
 
 /************************************************************************
  *
@@ -413,7 +389,6 @@ W posix_read_wconsole(ID caller, ID tskid, DDEV_REQ * packet)
     W rsize, errno, win;
     REQ_LIST *list, *new;
 
-
     win = packet->body.prd_req.dd;
     if (cmsg != NULL || (win != focus)) {
 	if (!(key_mode & WAITMODE)) {
@@ -492,13 +467,9 @@ W posix_read_wconsole(ID caller, ID tskid, DDEV_REQ * packet)
 W write_wconsole(ID caller, DDEV_WRI_REQ * packet)
 {
     DDEV_RES res;
-    int i;
     ER error;
-    static int esc_flag = 0, cnum = 0;
-    W cpos[2];
-    UB ch;
     DDEV_REQ req;		/* 要求パケット */
-    W rsize, winid;
+    W rsize;
 
 	req.header.mbfid = recv;
 	req.header.msgtyp = DEV_WRI;
@@ -519,105 +490,6 @@ W write_wconsole(ID caller, DDEV_WRI_REQ * packet)
 	res.body.ctl_res.errinfo = E_OK;
 	snd_mbf(caller, sizeof(res), &res);
 	return (E_OK);
-
-    winid = packet->dd;		/* minor device 番号で window を指定 */
-    if (winid >= max_win || winid < 0)
-	winid = 0;
-    if (winid == 0)
-	winid = focus;		/* default console の扱いはちょっと特殊 */
-    error = E_OK;
-    if (w[winid].map) {
-	for (i = 0; i < (packet->size); i++) {
-	    erase_cursor(winid);
-	    ch = packet->dt[i];
-	    if (esc_flag == 1) {
-		if (ch == '[') {
-		    esc_flag = 2;
-		} else {
-		    error = write_char(ch, winid);
-		    esc_flag = 0;
-		}
-	    } else if (esc_flag == 2) {
-		if (ISDIGIT(ch)) {
-		    cpos[cnum] *= 10;
-		    cpos[cnum] += ch - '0';
-		} else {
-		    if (cpos[cnum] == 0)
-			cpos[cnum] = 1;
-		    switch (ch) {
-		    case ';':
-			cnum++;
-			if (cnum == 2)
-			    esc_flag = 0;
-			break;
-		    case 'H':
-			if (cpos[1] == 0)
-			    cpos[1] = 1;
-			set_curpos(cpos[1] - 1, cpos[0] - 1, winid);
-			esc_flag = 0;
-			break;
-		    case 'A':
-			move_curpos(0, -cpos[0], winid);
-			esc_flag = 0;
-			break;
-		    case 'B':
-			move_curpos(0, cpos[0], winid);
-			esc_flag = 0;
-			break;
-		    case 'C':
-			move_curpos(cpos[0], 0, winid);
-			esc_flag = 0;
-			break;
-		    case 'D':
-			move_curpos(-cpos[0], 0, winid);
-			esc_flag = 0;
-			break;
-		    case 'J':
-			if (cpos[0] == 2) {
-			    set_curpos(0, 0, winid);
-			    clear_wconsole(winid);
-			} else if (cpos[0] == 1) {
-			    clear_rest_screen(winid);
-			}
-			esc_flag = 0;
-			break;
-		    case 'K':
-			clear_rest_line(winid);
-			esc_flag = 0;
-			break;
-		    case 'm':
-			if (cpos[0] == NORMAL)
-			    w[winid].attr = NORMAL;
-			else if (cpos[0] == REVERSE)
-			    w[winid].attr = REVERSE;
-			esc_flag = 0;
-			break;
-		    default:
-			esc_flag = 0;
-			error = write_char(ch, winid);
-		    }
-		}
-	    } else {
-		if (ch == 0x1B) {
-		    esc_flag = 1;
-		    cpos[0] = 0;
-		    cpos[1] = 0;
-		    cnum = 0;
-		} else {
-		    error = write_char(ch, winid);
-		}
-	    }
-	    if (error != E_OK)
-		break;
-	}
-    }
-
-    res.body.wri_res.dd = packet->dd;
-    res.body.wri_res.errcd = error;
-    res.body.wri_res.errinfo = error;
-    res.body.wri_res.a_size = i;
-    snd_mbf(caller, sizeof(res), &res);
-    return (error);
 }
 
 /************************************************************************
@@ -651,7 +523,6 @@ W control_wconsole(ID caller, ID tskid, DDEV_CTL_REQ * packet)
     W x, y;
     union wc_cmd_t *p;
     int redraw;
-    extern void winsize(int wid, ID tskid, VP pt);
 
 	switch (packet->cmd) {
 	case CONSOLE_CLEAR:
@@ -709,18 +580,6 @@ W control_wconsole(ID caller, ID tskid, DDEV_CTL_REQ * packet)
 	}
 }
 
-
-static void writes(B * s, W winid)
-{
-    ER error;
-
-    while (*s != '\0') {
-	error = write_char(*s, winid);
-	if (error != E_OK)
-	    break;
-	s++;
-    }
-}
 
 /* relay_wconsoe()
  */

@@ -14,7 +14,7 @@ KP=kp -input-code euc
 MKDEPEND=$(CC) -M
 STARTADDR=0x00001000
 ENTRY=start
-LIBS=$(ROOT)/kernel/lib/frtm/libfrtm-w.a $(ROOT)/lib/libc/libc.a $(ROOT)/kernel/lib/libkernel/libitron.a
+LIBS=$(ROOT)/kernel/lib/libkernel/libitron.a $(ROOT)/lib/libc/libc.a
 LD=ld
 
 %.o: %.c wconsole.h wconsole_int.h
@@ -27,7 +27,6 @@ OBJS= main.o misc.o missing.o
 SRCS= main.c misc.c missing.c
 
 all: 
-	${MAKE} -C $(ROOT)/kernel/lib/frtm
 	${MAKE} wconsole
 
 wconsole: $(OBJS) $(SRCS) Makefile $(LIBS)
