@@ -8,8 +8,6 @@ all: clean
 	rm -f ${TARGET}
 	${MKFS}/mksfs ${TARGET} 2880 512 12
 	${MKFS}/statfs ${TARGET} mkdir /system
-	${MKFS}/statfs ${TARGET} write /system/wconsole servers/wconsole/wconsole
-	${MKFS}/statfs ${TARGET} chmod 755 /system/wconsole
 	${MKFS}/statfs ${TARGET} write /system/ramdisk servers/ramdisk/ramdisk
 	${MKFS}/statfs ${TARGET} chmod 755 /system/ramdisk
 	${MKFS}/statfs ${TARGET} mkdir /dev

@@ -16,25 +16,8 @@ Version 2, June 1991
 
 #include <types.h>
 #include <errno.h>
-#ifdef notdef
-#include "../../../kernel/core/ibmpc/ibmpc.h"
-#endif
 #include <itron_module.h>
-#ifdef notdef
-#include "../../../kernel/core/kernlib/device.h"
-#include "../../../kernel/servers/port-manager.h"
-/* #include <kernlib/libkernel.h> */
-#include "BTRON/wconsole/wconsole.h"
-#include "drivers/keyboard/keyboard.h"
-#include "drivers/ide/ide.h"
-#endif
 #include "../../lowlib/lowlib.h"
-#if 0
-/* included by lowlib.h */
-#include "../../../servers/fs/posix_fs.h"
-#include "../../../servers/fs/posix_mm.h"
-#include "../../../servers/fs/posix_sysc.h"
-#endif
 #include "../../../servers/fs/sfs/sfs_fs.h"
 
 #define putchar(ch)	putc (ch, stdout)
@@ -80,11 +63,6 @@ extern FILE	__file_table__[];
 #define stdout	(&__file_table__[1])
 #define stderr	(&__file_table__[2])
 
-
-#ifdef notdef
-extern ID	console;
-extern ID	dev_recv;	/* デバイスドライバからの返答用 */
-#endif
 
 extern W	getc (FILE *port);
 extern W	putc (W ch, FILE *port);

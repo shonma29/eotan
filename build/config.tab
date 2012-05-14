@@ -111,9 +111,6 @@
 #
 # BTRON
 #
-# wconsole --- now boot from init
-#
-# ../kernel/BTRON/wconsole/wconsole	0x00001000	0x1A0000	user	manager.wconsole
 # RAMDISK  --- now boot from init
 # ../kernel/drivers/ramdisk/ramdisk	0x00001000	0x170000	user	driver.ramdisk
 

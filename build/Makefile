@@ -14,7 +14,7 @@ SERVER=port-manager
 DRIVERS=console keyboard fd765a ide psaux 
 LOWLIB=posix_lowlib
 USERLIBS=posix_libc
-SERVERS = wconsole ramdisk
+SERVERS = ramdisk
 MANAGERS=posix_manager $(SERVERS)
 USERAP=init
 
@@ -38,7 +38,6 @@ clean:
 	${MAKE} -C ../kernel/core clean
 	${MAKE} -C ../kernel/init clean
 	${MAKE} -C ../servers/fs clean
-	${MAKE} -C ../servers/wconsole clean
 	${MAKE} -C ../servers/ramdisk clean
 	${MAKE} -C ../lib/lowlib clean
 	${MAKE} -C ../lib/libc clean

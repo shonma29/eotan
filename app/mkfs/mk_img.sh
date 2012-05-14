@@ -5,8 +5,6 @@
 rm -f posix_fd.img
 ./mksfs posix_fd.img 2880 512 12
 ./statfs posix_fd.img mkdir /system
-./statfs posix_fd.img write /system/wconsole ../../servers/wconsole/wconsole
-./statfs posix_fd.img chmod 755 /system/wconsole
 ./statfs posix_fd.img write /system/ramdisk ../../servers/ramdisk/ramdisk
 ./statfs posix_fd.img chmod 755 /system/ramdisk
 ./statfs posix_fd.img mkdir /dev

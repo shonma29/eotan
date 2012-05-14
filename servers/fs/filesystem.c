@@ -182,7 +182,7 @@ static int use_count = 0;
 struct special_file special_file_table[] = {
 /* キャラクタデバイス */
 /* major/minor        name         port      dd         handler */
-    {0x00000000, "manager.wconsole", 0, 0x00000000, 0},
+    {0x00000000, "driver.console", 0, 0x00000000, 0},
     {0x00010000, "driver.keyboard", 0, 0x00000000, 0},
     {0x00020000, "driver.psaux", 0, 0x00000000, 0},	/* psaux driver */
 

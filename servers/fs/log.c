@@ -45,11 +45,9 @@ Version 2, June 1991
  */
 
 #include "posix.h"
-#include "../wconsole/wconsole.h"
 
 static ID log_port;
 static ID dev_recv;
-static W check_wconsole;
 
 extern W put_string(B * line, ID port);
 extern W putc(int ch, ID port);
@@ -70,7 +68,6 @@ void init_log(void)
 	slp_tsk();
 	/* DO NOT REACHED */
     }
-    check_wconsole = 1;
 #ifdef notdef
     dev_recv = get_port(sizeof(DDEV_RES), sizeof(DDEV_RES));
 #else
@@ -173,13 +170,6 @@ W putc(int ch, ID port)
     W rsize;
     ER error;
     ID new_port;
-
-    if (check_wconsole) {
-      if (find_port(WCONSOLE_DRIVER, &new_port) == E_PORT_OK) {
-	log_port = port = new_port;
-	check_wconsole = 0;
-      }
-    }
 
     req.header.mbfid = dev_recv;
     req.header.msgtyp = DEV_WRI;

@@ -13,8 +13,7 @@
 
    Last modified: Apr. 28, 2002.
 */
-
-#include "../../servers/wconsole/wconsole.h"
+#include "../../../kernel/drivers/keyboard/keyboard.h"
 
 #define FCTL_WC_WINSIZ (WD_WINSIZ << 16)
 #define FCTL_ENA_EOF (KEYBOARD_ENA_EOF << 16)

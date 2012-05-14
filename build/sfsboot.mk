@@ -8,8 +8,6 @@ all: clean
 	${MKFS}/statfs ${TARGET} mkdir /system
 	${MKFS}/statfs ${TARGET} write /system/2ndboot sfsboot/2nd/2ndboot
 	${MKFS}/statfs ${TARGET} write /system/kern build/kern.bin
-	${MKFS}/statfs ${TARGET} write /system/wconsole servers/wconsole/wconsole
-	${MKFS}/statfs ${TARGET} chmod 755 /system/wconsole
 	${MKFS}/statfs ${TARGET} write /system/ramdisk servers/ramdisk/ramdisk
 	${MKFS}/statfs ${TARGET} chmod 755 /system/ramdisk
 	${MKFS}/statfs ${TARGET} mkdir /dev

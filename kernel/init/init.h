@@ -18,7 +18,6 @@ Version 2, June 1991
 #include <ibmpc/ibmpc.h>
 #include "../lib/libkernel/device.h"
 #include "../servers/port-manager.h"
-#include "../../servers/wconsole/wconsole.h"
 #include "../drivers/keyboard/keyboard.h"
 #include "../drivers/ide/ide.h"
 #include "../../servers/fs/posix_sysc.h"

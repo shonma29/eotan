@@ -66,7 +66,6 @@ static char rcsid[] =
 
 #include "keyboard.h"
 #include "key_type.h"
-#include "../servers/wconsole/wconsole.h"
 
 /*********************************************************************
  *	 局所変数群の宣言
@@ -85,7 +84,7 @@ W initialized = 0;
 ID waitflag;			/* キーボードからキー入力を待つ時に */
 				/* 使用するイベントフラグの ID */
 W driver_mode;
-ID wconsole = 0, local_recv = 0;
+ID local_recv = 0;
 ID my_tskid;
 
 

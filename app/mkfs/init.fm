@@ -1,5 +1,4 @@
 # init.fm
-(/system/wconsole) daemon
 (/system/ramdisk) daemon
 
 # k106jp
