@@ -74,17 +74,11 @@ extern FILE	__file_table__[];
 
 
 
-extern ID	console;
 extern ID	dev_recv;	/* デバイスドライバからの返答用 */
 
 extern void init_device(void);
 extern ER open_device(B * dev_name, ID * id, W * dev_desc);
 
-extern void	banner (void);
-extern void	eval (B *line);
-extern W	read_line (FILE *port, B *line, W length);
-extern W	read_line_edit (B *line, W length);
-extern W	parse_line (B *line, B **av, W size);
 extern W	getc (FILE *port);
 extern W	putc (W ch, FILE *port);
 extern W	fputs (B *line, FILE *port);
@@ -93,17 +87,10 @@ extern W 	writechar (ID port, ID resport, UB *buf, W count);
 extern W	printf (B *fmt,...);
 extern W	fprintf (FILE *port, B *fmt,...);
 
-extern void	console_clear ();
-
 /* lib.c */
 extern B	*strchr (B *s, W ch);
 extern B	*strnchr (B *s, W ch, W size);
 
-
-#if 0
-/* ether.c */
-extern ER	ether (W ac, B **av);
-#endif
 
 #include "file.h"
 

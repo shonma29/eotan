@@ -106,13 +106,14 @@ static char rcsid[] =
 /*
  * 入出力を行う。
  */
-ID console;
 ID dev_recv;			/* デバイスドライバからの返答用 */
 
 extern void lowlib_load (B *name);
 extern int strcmp(char *, char *);
 extern int strcpy(char *, char *);
-extern void frtm_main();
+static void exec(char *);
+static void banner(void);
+static W read_line_edit(B * line, W length);
 
 /*
  *
@@ -155,39 +156,75 @@ void main(int ac, B ** av)
     lowlib_load("lowlib.posix");
     strcpy((LOWLIB_DATA)->dpath, "/");
     (LOWLIB_DATA)->dpath_len = 1;
-#ifdef notdef
-    printf("k14 font loading...\n");
-    kf_load();
-#endif
-    frtm_main();
+
+    for (;;) {
+	printf ("# ");
+	read_line_edit(line, sizeof(line));
+	exec(line);
+    }
+
+    return(0);
 }
 
-
-void banner(void)
+static void exec(char *str)
 {
-    printf("EOTA Initialize program (powered by FRTM).\n");
+    int pid, res;
+    int i, flg, argc, len = strlen(str);
+
+    for (i = 0, flg = 0, argc = 0; i < len; i++) {
+	if (isspace(str[i])) {
+	    flg = 0;
+	    continue;
+	}
+
+	if (flg == 0) {
+	    flg = 1;
+	    ++argc;
+	}
+    }
+
+    if (!argc)	return;
+
+    if ((res = fork()) == 0) {
+	char *argv[argc + 1];
+
+	for (i = 0, flg = 0, argc = 0; i < len; i++) {
+	    if (isspace(str[i])) {
+		str[i] = 0;
+		flg = 0;
+		continue;
+	    }
+
+	    if (flg == 0) {
+		flg = 1;
+		argv[argc] = &(str[i]);
+		++argc;
+	    }
+	}
+
+	argv[argc] = 0;
+	execve(argv[0], argv, NULL);
+
+	_exit(1);
+    }
+    else if (res == -1) {
+	printf("fork error\n");
+    }
+    else {
+	printf("[INIT] waiting pid=%d ...\n", res);
+	pid = waitpid(-1, &res, 0);
+	printf("[INIT] child process exited pid=%d stat=%d\n", pid, res);
+    }
+}
+
+static void banner(void)
+{
+    printf("EOTA Initialize program.\n");
     printf("Version %d.%d\n", MAJOR_VERSION, MINOR_VERSION);
     printf("Developing release %s\n", RELID);
 }
 
-W read_line(FILE * port, B * line, W length)
-{
-    W i;
-    W ch;
-
-    for (i = 0; i < length; i++) {
-	ch = getc(port);
-	if ((ch == C('m')) || (ch == C('j')))
-	    break;
-	if (isprint(ch)) {
-	    line[i] = ch;
-	}
-    }
-    line[i] = '\0';
-    return (i);
-}
-
-W read_line_edit(B * line, W length)
+static W read_line_edit(B * line, W length)
 {
     W i;
     W ch;

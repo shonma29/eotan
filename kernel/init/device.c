@@ -50,6 +50,7 @@ FILE __file_table__[NFILE];
 
 void init_device(void)
 {
+    ID console;
     ID keyboard;
     ER result;
     W dev_desc;
