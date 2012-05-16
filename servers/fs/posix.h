@@ -24,8 +24,8 @@ Version 2, June 1991
 #include "../../kernel/core/errno.h"
 #include "../../kernel/core/misc.h"
 #include "../../kernel/lib/libkernel/device.h"
-#include "../../kernel/drivers/console/console.h"
-#include "../../kernel/servers/port-manager.h"
+#include "../../kernel/servers/console/console.h"
+#include "../../kernel/servers/port-manager/port-manager.h"
 
 #ifdef notdef
 #define ROUNDUP(x,align)	((((int)x) + (align) - 1) & ~((align) - 1))

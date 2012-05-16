@@ -109,7 +109,7 @@ static void pass0(ModuleTable *modules, const char *config)
 
     fp = fopen(config, "r");
     if (!fp) {
-	perror("fopen");
+	perror(config);
 	exit(ERR_FILE);
     }
 
@@ -187,7 +187,7 @@ static void pass0(ModuleTable *modules, const char *config)
 
 	/* get file size */
 	if (stat(mod->fname, &buf)) {
-	    perror("stat");
+	    perror(mod->fname);
 	    exit(ERR_FILE);
 	}
 
@@ -217,7 +217,7 @@ static void pass2(ModuleTable *modules, const char *outputfile)
 
     outfp = fopen(outputfile, "w");
     if (!outfp) {
-	perror("fopen");
+	perror(outputfile);
 	exit(ERR_FILE);
     }
 
@@ -228,7 +228,7 @@ static void pass2(ModuleTable *modules, const char *outputfile)
 
     /* ヘッダの出力 */
     if (fwrite(&boot, sizeof(boot), 1, outfp) != 1) {
-	perror("fwrite");
+	perror(outputfile);
 	fclose(outfp);
     }
 
@@ -236,7 +236,7 @@ static void pass2(ModuleTable *modules, const char *outputfile)
 	if (fwrite
 	    (&(modules->entry[i].mod_info), sizeof(struct module_info), 1,
 	     outfp) != 1) {
-	    perror("fwrite");
+	    perror(outputfile);
 	    fclose(outfp);
 	    exit(ERR_FILE);
 	}
@@ -250,7 +250,7 @@ static void pass2(ModuleTable *modules, const char *outputfile)
 
 	fp = fopen(modules->entry[i].fname, "r");
 	if (!fp) {
-	    perror("fopen");
+	    perror(modules->entry[i].fname);
 	    fclose(outfp);
 	    exit(ERR_FILE);
 	}

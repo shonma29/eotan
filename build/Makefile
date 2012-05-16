@@ -10,16 +10,15 @@ CC=gcc
 
 KERNLIB=kernlib
 MKERNEL=itron
-SERVER=port-manager
-DRIVERS=console keyboard fd765a ide psaux 
+KSERVERS=console keyboard fd ide psaux port-manager
 LOWLIB=posix_lowlib
 USERLIBS=posix_libc
-SERVERS = ramdisk
-MANAGERS=posix_manager $(SERVERS)
+USERVERS = posix_manager ramdisk
 USERAP=init
 
 
-PROGRAMS=$(MKERNEL) $(DRIVERS) $(LOWLIB) $(USERLIBS) $(MANAGERS) $(USERAP)
+PROGRAMS=$(MKERNEL) $(DRIVERS) $(LOWLIB) $(USERLIBS) \
+		$(KSERVERS) $(USERVERS) $(USERAP)
 
 all: $(PROGRAMS) kern.bin 
 
@@ -31,23 +30,23 @@ build: $(BUILDSRC)
 
 clean:
 	rm -f build build.o kern.bin
-	${MAKE} -C ../kernel/drivers/console clean
-	${MAKE} -C ../kernel/drivers/keyboard clean
-	${MAKE} -C ../kernel/drivers/fd765a clean
-	${MAKE} -C ../kernel/drivers/ide clean
+	${MAKE} -C ../kernel/servers/console clean
+	${MAKE} -C ../kernel/servers/keyboard clean
+	${MAKE} -C ../kernel/servers/fd clean
+	${MAKE} -C ../kernel/servers/ide clean
+	${MAKE} -C ../kernel/servers/psaux clean
 	${MAKE} -C ../kernel/core clean
 	${MAKE} -C ../kernel/init clean
 	${MAKE} -C ../servers/fs clean
 	${MAKE} -C ../servers/ramdisk clean
 	${MAKE} -C ../lib/lowlib clean
 	${MAKE} -C ../lib/libc clean
-	${MAKE} -C ../kernel/drivers/psaux clean
 
 dummy:
 	echo '*dummy*'
 
-$(DRIVERS):
-	${MAKE} -C ../kernel/drivers/$@
+$(KSERVERS):
+	${MAKE} -C ../kernel/servers/$@
 
 itron:
 	${MAKE} -C ../kernel/core
@@ -55,7 +54,7 @@ itron:
 posix_lowlib:
 	${MAKE} -C ../lib/lowlib
 
-$(SERVERS):
+$(USERVERS):
 	${MAKE} -C ../servers/$@
 
 posix_manager:

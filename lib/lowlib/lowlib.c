@@ -67,7 +67,7 @@ static char rcsid[] =
  */
 
 #include "lowlib.h"
-#include "../../kernel/servers/port-manager.h"
+#include "../../kernel/servers/port-manager/port-manager.h"
 
 
 

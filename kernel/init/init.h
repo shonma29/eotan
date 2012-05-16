@@ -17,9 +17,9 @@ Version 2, June 1991
 #include <errno.h>
 #include <ibmpc/ibmpc.h>
 #include "../lib/libkernel/device.h"
-#include "../servers/port-manager.h"
-#include "../drivers/keyboard/keyboard.h"
-#include "../drivers/ide/ide.h"
+#include "../servers/port-manager/port-manager.h"
+#include "../servers/keyboard/keyboard.h"
+#include "../servers/ide/ide.h"
 #include "../../servers/fs/posix_sysc.h"
 #include "../../servers/fs/sfs/sfs_fs.h"
 #include "../../servers/fs/posix_fs.h"

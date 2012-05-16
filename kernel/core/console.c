@@ -26,7 +26,7 @@ Version 2, June 1991
 #include "errno.h"
 #include "misc.h"
 #ifdef PORTMANAGER
-#include "../servers/port-manager.h"
+#include "../servers/port-manager/port-manager.h"
 #endif
 #include "func.h"
 #include "../../include/arch/io.h"

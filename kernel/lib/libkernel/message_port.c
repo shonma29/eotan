@@ -49,7 +49,7 @@ static char rcsid[] =
 #include <itron.h>
 #include <config.h>
 #include <errno.h>
-#include "../../servers/port-manager.h"
+#include "../../servers/port-manager/port-manager.h"
 
 
 /*

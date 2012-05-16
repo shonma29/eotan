@@ -22,7 +22,7 @@ Version 2, June 1991
 #include "itron.h"
 #include "task.h"
 
-#include "../servers/port-manager.h"
+#include "../servers/port-manager/port-manager.h"
 #include "itron_sysc.h"
 
 /* main.c */

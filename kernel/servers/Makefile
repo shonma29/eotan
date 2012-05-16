@@ -1,33 +1,36 @@
 #
-# @(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/servers/Makefile,v 1.2 1999/12/26 11:13:24 naniwa Exp $
+#$Id: Makefile,v 1.8 2000/01/29 16:14:03 naniwa Exp $
 #
-#
-
-TARGET =	port-manager
-LOAD_POINT =	0x00010000
-ENTRY =		_main
-
-LD=ld
-CC=gcc
-INC=-I../core
-CFLAGS=$(INC) -O2 -fno-builtin
 
 
-OBJS=port-manager.o database.o
+all: dev_console dev_fd dev_keyboard dev_ide psaux srv_port-manager
 
+kernlib:
+	${MAKE} -C ../lib/libkernel
 
-all: $(TARGET)
+dev_console: kernlib
+	${MAKE} -C console
 
+dev_fd: kernlib
+	${MAKE} -C fd
 
-$(TARGET): $(OBJS)
-	$(LD) -static -o $(TARGET) -e $(ENTRY) -Ttext=$(LOAD_POINT)  $(OBJS) ../lib/libkernel/libkernel.a
-	strip $@
+dev_ide: kernlib
+	${MAKE} -C ide
 
+dev_keyboard: kernlib
+	${MAKE} -C keyboard
+
+dev_psaus: kernlib
+	${MAKE} -C psaux
+
+srv_port-manager: kernlib
+	${MAKE} -C port-manager
 
 clean:
-	rm -f $(OBJS) $(TARGET)
+	${MAKE} -C console clean
+	${MAKE} -C fd clean
+	${MAKE} -C ide clean
+	${MAKE} -C keyboard clean
+	${MAKE} -C psaux clean
+	${MAKE} -C port-manager clean
 
-
-database.o: port-manager.h
-
-port-manager.o: port-manager.h

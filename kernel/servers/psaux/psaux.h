@@ -16,7 +16,7 @@
 
 #include <itron.h>
 #include <errno.h>
-#include "../../servers/port-manager.h"
+#include "../port-manager/port-manager.h"
 #include "../../../servers/fs/posix.h"
 #include "../console/console.h"
 
