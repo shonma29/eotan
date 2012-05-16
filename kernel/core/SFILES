@@ -1,8 +1,8 @@
-locore.o: i386/locore.S
+locore.o: mpu/locore.S
 	$(CC) $(CFLAGS) -c $< -o $@
 
-interrupt.o: i386/interrupt.S
+interrupt.o: mpu/interrupt.S
 	$(CC) $(CFLAGS) -c $< -o $@
 
-startup.o: i386/startup.S
+startup.o: mpu/startup.S
 	$(CC) $(CFLAGS) -c $< -o $@

@@ -13,7 +13,7 @@
 
 #include "psaux.h"
 #include "kbc.h"
-#include "../../../include/arch/io.h"
+#include "../../../include/mpu/io.h"
 
 extern W driver_mode;
 extern ID waitflag;

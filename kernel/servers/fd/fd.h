@@ -26,7 +26,7 @@ Version 2, June 1991
 #include <itron.h>
 #include <types.h>
 #include <errno.h>
-#include <ibmpc/ibmpc.h>
+#include <arch/ibmpc.h>
 #include "dma.h"
 #include "device.h"
 

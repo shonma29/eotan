@@ -15,7 +15,7 @@
 
 #include "psaux.h"
 #include "kbc.h"
-#include "../../../include/arch/io.h"
+#include "../../../include/mpu/io.h"
 
 W       mydevid;	   /* 自分自身のid */
 ID      recvport;	   /* 要求受けつけ用ポート */

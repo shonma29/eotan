@@ -97,7 +97,7 @@ static char rcsid[] =
 #include "keyboard.h"
 #include "key_def.h"
 #include "key_type.h"
-#include "../../../include/arch/io.h"
+#include "../../../include/mpu/io.h"
 
 #define NORMAL_CODE	0
 #define SHIFT_CODE	1

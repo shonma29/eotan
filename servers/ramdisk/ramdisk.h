@@ -18,7 +18,7 @@ Version 2, June 1991
 #include <itron.h>
 #include <types.h>
 #include <errno.h>
-#include <ibmpc/ibmpc.h>
+#include <arch/ibmpc.h>
 #include "../../kernel/lib/libkernel/device.h"
 
 #define ROUNDDOWN(x,b)	((x / b) * b)

@@ -16,7 +16,7 @@ Version 2, June 1991
 #ifndef _FPU_H_
 #define _FPU_H_	1
 
-#include "../types.h"
+#include "../../core/types.h"
 
 typedef int FPU_CONTEXT[28];
 

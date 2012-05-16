@@ -68,7 +68,7 @@ static char	rcsid[] = "$Header: /usr/local/src/master/B-Free/Program/btron-pc/ke
 
 #include "types.h"
 #include "dma.h"
-#include "../../../include/arch/io.h"
+#include "../../../include/mpu/io.h"
 
 
 /****************************************************************************

@@ -44,13 +44,13 @@ Version 2, June 1991
 #include <errno.h>
 #include "../../core/misc.h"
 #include "../port-manager/port-manager.h"
-#include <i386/i386.h>
+#include <mpu/i386.h>
 #include <itron_struct.h>
 #include <itron_sysc.h>
 #include <itron_misc.h>
-#include <ibmpc/ibmpc.h>
+#include <arch/ibmpc.h>
 #include "../../lib/libkernel/device.h"
-#include "../../include/arch/io.h"
+#include "../../include/mpu/io.h"
 
 #include "console.h"
 #include "misc.h"

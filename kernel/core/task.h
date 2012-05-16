@@ -18,8 +18,8 @@ Version 2, June 1991
 #define __ITRON_TASK_H__	1
 
 #include "itron.h"
-#include "i386/i386.h"
-#include "i386/fpu.h"
+#include "mpu/i386.h"
+#include "mpu/fpu.h"
 
 #define KERNEL_TASK	(1)
 

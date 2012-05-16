@@ -17,7 +17,7 @@ static char rcsid[] =
 
 
 #include "ide.h"
-#include "../../../include/arch/io.h"
+#include "../../../include/mpu/io.h"
 
 
 int ide_wait_while_busy()

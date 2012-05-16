@@ -16,8 +16,8 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 
 #include <types.h>
 #include <errno.h>
-#include "../../kernel/core/ibmpc/ibmpc.h"
-#include "../../include/arch/io.h"
+#include "../../kernel/core/arch/ibmpc.h"
+#include "../../include/mpu/io.h"
 
 /*
  * reset_intr_mask 

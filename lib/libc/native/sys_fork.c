@@ -18,7 +18,7 @@ static char rcsid[] = "@(#)$Id: sys_fork.c,v 1.3 1999/11/10 10:39:32 naniwa Exp 
 
 
 #include "../native.h"
-#include "../../../include/arch/io.h"
+#include "../../../include/mpu/io.h"
 
 /* fork 用エントリールーチン */
 int fork_entry()

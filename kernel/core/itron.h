@@ -19,7 +19,7 @@ Version 2, June 1991
 
 #include "types.h"
 #include "config.h"
-#include "i386/i386.h"
+#include "mpu/i386.h"
 #include "region.h"
 #include "itron_module.h"
 #include "itron_struct.h"

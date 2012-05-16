@@ -23,7 +23,7 @@ Version 2, June 1991
 #include "func.h"
 #include "ibmpc.h"
 #include "eventflag.h"
-#include "../../include/arch/io.h"
+#include "../../include/mpu/io.h"
 
 static T_EVENTFLAG flag_table[MAX_EVENTFLAG + 1];
 

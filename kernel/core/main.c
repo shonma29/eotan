@@ -61,7 +61,7 @@ Version 2, June 1991
 #include "func.h"
 #include "misc.h"
 #include "memory.h"
-#include "../io/io.h"
+#include "../../include/mpu/io.h"
 #ifdef I386
 #include "interrupt.h"
 #endif

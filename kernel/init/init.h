@@ -15,7 +15,7 @@ Version 2, June 1991
 
 #include <types.h>
 #include <errno.h>
-#include <ibmpc/ibmpc.h>
+#include <arch/ibmpc.h>
 #include "../lib/libkernel/device.h"
 #include "../servers/port-manager/port-manager.h"
 #include "../servers/keyboard/keyboard.h"

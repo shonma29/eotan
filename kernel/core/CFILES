@@ -43,25 +43,25 @@ time.o:	time.c
 version.o:	version.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-virtual_mem.o:	i386/virtual_mem.c
+virtual_mem.o:	mpu/virtual_mem.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-gdt.o:	i386/gdt.c
+gdt.o:	mpu/gdt.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-tss.o:	i386/tss.c
+tss.o:	mpu/tss.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-fault.o:	i386/fault.c
+fault.o:	mpu/fault.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-fpu.o:	i386/fpu.c
+fpu.o:	mpu/fpu.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 semaphore.o:	semaphore.c
 	$(CC) $(CFLAGS) -c $< -o $@
 	
-timer.o:	ibmpc/timer.c
+timer.o:	arch/timer.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 message.o:	message.c
@@ -70,7 +70,7 @@ message.o:	message.c
 eventflag.o:	eventflag.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-keyboard.o:	ibmpc/keyboard.c
+keyboard.o:	arch/keyboard.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 dbg_funcs.o:	dbg_funcs.c
