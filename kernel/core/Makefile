@@ -28,7 +28,6 @@ OBJS= \
 	startup.o \
 	devconfig.o \
 	console.o \
-	dummy.o \
 	error.o \
 	itron_memory.o \
 	main.o \

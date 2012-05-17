@@ -4,9 +4,6 @@ devconfig.o:	devconfig.c
 console.o:	console.c
 	$(CC) $(CFLAGS) -c $< -o $@
 	
-dummy.o:	dummy.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
 error.o:	error.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
