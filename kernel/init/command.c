@@ -201,7 +201,7 @@ char rcsid[] = "$Id: command.c,v 1.17 2000/01/28 10:28:07 monaka Exp $";
  */
 #include "init.h"
 #include "lowlib.h"
-#include "lib/init-stdlib.h"
+#include "init-stdlib.h"
 #include "../lib/libkernel/libkernel.h"
 
 

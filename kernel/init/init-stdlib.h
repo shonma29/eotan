@@ -14,7 +14,7 @@ Version 2, June 1991
 #ifndef __INIT_STDLIB_H__
 #define __INIT_STDLIB_H__
 
-#include "../init.h"
+#include "init.h"
 
 extern W putc (W ch, FILE *port);
 extern void fflush (FILE *port);
@@ -25,7 +25,6 @@ extern W isspace (W ch);
 extern W isnum (W ch);
 extern W getc (FILE *port);
 extern W readchar (ID port, ID resport);
-extern int atoi (char *s);
 
 #endif
 

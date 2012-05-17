@@ -99,7 +99,7 @@ static char rcsid[] =
 #include "init.h"
 #include <lowlib.h>
 #include "posix_if.h"
-#include "lib/init-stdlib.h"
+#include "init-stdlib.h"
 #define RELID "2003/6/7-1"
 
 

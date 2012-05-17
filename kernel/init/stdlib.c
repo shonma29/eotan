@@ -40,7 +40,7 @@ static char rcsid[] =
  *
  */
 
-#include "../init.h"
+#include "init.h"
 
 static ER vfprintf(FILE * port, B * fmt, VP arg0);
 
