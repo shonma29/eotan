@@ -68,8 +68,7 @@ extern void check_timer(void);
 extern W left_time(void (*func) (VP), VP arg);
 
 /* misc.c */
-extern UH halfword_swap(UH w);
-extern VP bcopy(VP src, VP dest, W count);
+extern void bcopy(VP src, VP dest, W count);
 extern void bzero(VP src, W count);
 extern INT strlen(B * buf);
 extern W strncmp(B * s1, B * s2, W size);

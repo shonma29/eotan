@@ -84,10 +84,6 @@ void bcopy(UB * buf1, UB * buf2, W size)
      * 1バイトずつコピーしていく。
      */
     for (counter = 0; counter < size; counter++) {
-#if 0
-	buf2[counter] = buf1[counter];
-#else
 	*buf2++ = *buf1++;
-#endif
     }
 }

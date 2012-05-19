@@ -16,27 +16,11 @@ Version 2, June 1991
 
 #include "core.h"
 
-/*************************************************************************
- * halfword_swap
- *
- * 引数：
- *
- * 返値：
- *
- * 処理：
- *
- */
-UH halfword_swap(UH w)
-{
-    w = ((w & 0xff) << 8) | ((w & 0xff00) >> 8);
-    return (w);
-}
-
 /**************************************************************************
  *
  *
  */
-VP bcopy(VP src, VP dest, W count)
+void bcopy(VP src, VP dest, W count)
 {
     B *d = (B*)dest;
     B *s = (B*)src;
@@ -44,7 +28,6 @@ VP bcopy(VP src, VP dest, W count)
     while (count-- > 0) {
 	*d++ = *s++;
     }
-    return (dest);
 }
 
 /**************************************************************************

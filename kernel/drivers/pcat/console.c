@@ -64,7 +64,6 @@ static	struct position	cursor;
 static void	set_cursor_pos (W x, W y);
 static void	inc_cursor (W count);
 static void	write_vram (W x, W y, W ch, W attr);
-static void	write_kanji_vram (W x, W y, UW kanji, W attr);
 static void	scroll_up (void);
 
 /*************************************************************************
@@ -216,9 +215,10 @@ putchar_tron (TC ch)
     default:
       if (ch & 0xFF00)
 	{
-	  c = halfword_swap (ch);
-	  write_kanji_vram (cursor.x, cursor.y, c, NORM_ATTR);
-	  inc_cursor (2);
+	  write_vram (cursor.x, cursor.y, '?', NORM_ATTR);
+	  inc_cursor (1);
+	  write_vram (cursor.x, cursor.y, '?', NORM_ATTR);
+	  inc_cursor (1);
 	}
       else
 	{
@@ -394,36 +394,6 @@ write_vram (W x, W y, W ch, W attr)
   addr = (short *)TEXT_VRAM_ADDR;
   ch = ch | (addr [CURSOR_POS (x, y)] & 0xff00);
   addr [CURSOR_POS (x, y)] = ch;
-}
-
-/*************************************************************************
- * write_kanji_vram --- ＶＲＡＭに漢字を１文字書き込む.
- *
- * 引数：	x, y	座標
- *		kanji	出力する文字
- *		attr	文字属性
- *
- * 返値：	なし
- *
- * 処理：	引数 x, y で指定した座標に文字を書き込む.
- *		この関数は、TRON 文字用になっている。
- *
- *
- * 注意：	現在、attr は無視している。
- *
- */
-static void
-write_kanji_vram (W x, W y, UW kanji, W attr)
-{
-  UH	*addr;
-  UH	 first, second;
-
-  first = ((kanji >> 8) & 0xff) - 0x20;
-  second = (kanji << 8) & 0xff00;
-
-  addr = (unsigned short *)TEXT_VRAM_ADDR;
-  addr [CURSOR_POS (x, y)] = second | first;
-  addr [CURSOR_POS (x + 1, y)] = second | (first | 0x80);
 }
 
 /*************************************************************************
