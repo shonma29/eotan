@@ -17,12 +17,8 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 struct spec	fd_spec[] =
 {
   /* name    head  sector  length    dtl  lencode  gap3  gapskip    srt    hut    hlt     nd  dmachan  retry  motor            */
-#ifdef IBMPC
   /*  {  "2HD",	2,	18,   512,  0xff,       2,   42,     0x2a, 0x0C,  0x0f,  0x08,   0x0,       2,    10,     0 },*/
   {  "2HD",	2,	18,   512,  0xff,       2,   42,     0x1B, 0x0C,  0x0f,  0x08,   0x0,       2,    10,     0 },
-#else
-  {  "2HD",     2,      8,   1024,  0xff,       3,  116,      53,  0x0d,  0x06,  0x0f,   0x0,       2,     3,     0 },	/* 2HD */
-#endif
   {  "2HC",     2,     15,    512,  0xff,       2,   84,      27,  0x0d,  0x06,  0x0e,   0x0,       2,     3,     0 },	/* 2HC */
   {   NULL,     0,      0,      0,     0,       0,    0,       0,     0,     0,     0,     0,       0,     0,     0 }
 };

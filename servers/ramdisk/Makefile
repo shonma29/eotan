@@ -2,7 +2,7 @@
 #
 #
 
-IDENT=-DI386 -DIBMPC $(DEBUG)
+IDENT=-DI386 $(DEBUG)
 
 CPP=/lib/cpp
 ROOT=../..

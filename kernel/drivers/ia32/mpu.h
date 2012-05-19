@@ -18,8 +18,8 @@ Version 2, June 1991
 
 */
 
-#ifndef _I386_H_
-#define _I386_H_	1
+#ifndef _IA32_MPU_H_
+#define _IA32_MPU_H_	1
 
 #include "../../../include/itron/types.h"
 
@@ -202,4 +202,4 @@ typedef struct
 
 #define ADDR_MAP_SIZE	1024
 
-#endif /* _I386_H_ */
+#endif /* _IA32_MPU_H_ */

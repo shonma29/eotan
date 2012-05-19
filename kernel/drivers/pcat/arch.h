@@ -16,8 +16,8 @@ Version 2, June 1991
  *	IBMPC に依存する部分の定義
  */
 
-#ifndef __ITRON_IBMPC_H__
-#define __ITRON_IBMPC_H__	1
+#ifndef __PCAT_ARCH_H__
+#define __PCAT_ARCH_H__	1
 
 #define MASTER_8259A_COM	0x20
 #define MASTER_8259A_DATA	0x21
@@ -43,6 +43,4 @@ Version 2, June 1991
 #define VRAM_MEM_END		(0xFFFFF)
 
 
-#endif /* __ITRON_IBMPC_H__ */
-
-
+#endif /* __PCAT_ARCH_H__ */

@@ -17,8 +17,8 @@ Version 2, June 1991
  *
  */
 
-#ifndef __ITRON_INTERRUPT_H__
-#define __ITRON_INTERRUPT_H__	1
+#ifndef __IA32_INTERRUPT_H__
+#define __IA32_INTERRUPT_H__	1
 
 #define INTERRUPT_DESC	0x0e
 #define TRAP_DESC	0x0f
@@ -108,6 +108,6 @@ extern W	posix_handler (void);
 extern void	intr_interval (void);
 extern void	start_interval (void);
 
-#endif /* __ITRON_INTERRUPT_H__ */
+#endif /* __IA32_INTERRUPT_H__ */
 
 

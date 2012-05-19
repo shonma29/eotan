@@ -38,26 +38,14 @@ Version 2, June 1991
 #define MAX_WIDTH	79
 #define MAX_HEIGHT	24
 
-#ifdef IBMPC
 #define TEXT_VRAM_ADDR	0x800B8000
 #define TEXT_VRAM_SIZE	2000
 
 #define GDC_ADDR	0x03d4
 #define GDC_DATA	0x03d5
-#else
-#define TEXT_VRAM_ADDR	0x800A0000	/* TEXT VRAM のアドレス		*/
-#define TEXT_VRAM_SIZE	2000
-
-#define GDC_STAT	0x0060
-#define GDC_COMMAND	0x0062
-#endif
-
 
 #define CURSOR_POS(x,y)		(x + y * 80)
 
-#if 0
-static W	mydevid;
-#endif
 static ER	call_console (ID driver, TC ch);
 
 ID		console_driver = 0;
@@ -151,21 +139,10 @@ intr_crt ()
 void
 putchar (TC ch)
 {
-#if 0
-  TC	c;
-  static B before_ch;
-#endif
-
   if (console_driver != NULL)
     {
       call_console (console_driver, ch);
-#ifdef notdef
-      return;
-#endif
     }
-#ifdef ntodef
-  dis_int ();
-#endif
 
   switch (ch)
     {
@@ -182,9 +159,6 @@ putchar (TC ch)
       write_tab ();
       break;
     }
-#ifdef ntodef
-  ena_int ();
-#endif
 }
 
 
@@ -198,9 +172,6 @@ call_console (ID driver, TC ch)
   DDEV_RES		res;		/* 返答パケット */
   W			rsize;
   ER			error;
-#if 0
-  W			i;
-#endif
   
   ena_int ();
   req.header.mbfid = console_recv;
@@ -402,9 +373,6 @@ console_clear (void)
 	write_vram (x, y, ' ', 0xE1);
       }
   cursor.x = cursor.y = 0;
-#ifdef PC9801
-  set_cursor_pos (cursor.x, cursor.y);
-#endif
 }
 
 /*************************************************************************
@@ -427,9 +395,6 @@ static void
 write_vram (W x, W y, W ch, W attr)
 {
   short	*addr;
-#if 0
-  short *attr_addr;
-#endif
   
   addr = (short *)TEXT_VRAM_ADDR;
   ch = ch | (addr [CURSOR_POS (x, y)] & 0xff00);
@@ -456,9 +421,6 @@ static void
 write_kanji_vram (W x, W y, UW kanji, W attr)
 {
   UH	*addr;
-#if 0
-  H	*attr_addr;
-#endif
   UH	 first, second;
 
   first = ((kanji >> 8) & 0xff) - 0x20;
@@ -483,17 +445,12 @@ static void
 set_cursor_pos (W x, W y)
 {
   W	addr;
-#ifdef notdef  
-  dis_int ();
-#endif
+
   addr = CURSOR_POS (x, y);
   outb (GDC_ADDR, 0x0e);
   outb (GDC_DATA, (addr >> 8) & 0xff);
   outb (GDC_ADDR, 0x0f);
   outb (GDC_DATA, addr & 0xff);
-#ifdef notdef
-  ena_int ();
-#endif
 }
 
 /*************************************************************************

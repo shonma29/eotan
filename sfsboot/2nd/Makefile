@@ -28,7 +28,7 @@ COMMON = ../../include
 ITRON = ../../kernel/core
 INCPATH = -I. -I$(COMMON) -I$(ITRON)
 
-NOFLAGS=-c -m386 -msoft-float -fno-builtin -Wall -D__LINUX__ -DSUPPORT_144 $(DEBUG) -DIBMPC $(HDBOOT) $(INCPATH)
+NOFLAGS=-c -m386 -msoft-float -fno-builtin -Wall -D__LINUX__ -DSUPPORT_144 $(DEBUG) $(HDBOOT) $(INCPATH)
 CFLAGS=-O $(NOFLAGS)
 
 LDOPT32 = -n -Ttext=$(START_ADDR) -static -e _main

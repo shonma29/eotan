@@ -1,7 +1,7 @@
 devconfig.o:	arch/devconfig.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-console.o:	console.c
+console.o:	arch/console.c
 	$(CC) $(CFLAGS) -c $< -o $@
 	
 error.o:	error.c
