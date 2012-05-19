@@ -1,4 +1,4 @@
-devconfig.o:	devconfig.c
+devconfig.o:	arch/devconfig.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 console.o:	console.c
@@ -25,7 +25,7 @@ misc.o:	misc.c
 pmemory.o:	pmemory.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-printf.o:	printf.c
+printk.o:	printk.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 syscall.o:	syscall.c
@@ -70,7 +70,7 @@ eventflag.o:	eventflag.c
 keyboard.o:	arch/keyboard.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-dbg_funcs.o:	dbg_funcs.c
+sys_dbg_puts.o:	sys_dbg_puts.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 debug.o:	debug.c

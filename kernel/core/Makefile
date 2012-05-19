@@ -34,7 +34,7 @@ OBJS= \
 	misc.o \
 	kalloc.o \
 	pmemory.o \
-	printf.o \
+	printk.o \
 	syscall.o \
 	syscall-if.o \
 	task.o \
@@ -53,7 +53,7 @@ OBJS= \
 	interrupt.o  \
 	device.o \
 	keyboard.o \
-	dbg_funcs.o \
+	sys_dbg_puts.o \
 	system.o \
 	lowlib.o \
 	posix.o
@@ -61,7 +61,7 @@ OBJS= \
 OTHEROBJ=../lib/libkernel/port_manager.o ../lib/libkernel/message_port.o \
            ../lib/libkernel/sys_errno.o
 
-SRCS=main.c memory.c task.c time.c version.c error.c dummy.c printf.c \
+SRCS=main.c memory.c task.c time.c version.c error.c dummy.c printk.c \
      console.c fault.c syscall.c misc.c timer.c \
      virtual_mem.c itron_memory.c pmemory.c \
      startup.S
