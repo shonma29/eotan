@@ -52,7 +52,7 @@ static char	rcsid[] = "$Id: sys_virtual.c,v 1.1 1999/04/18 17:48:34 monaka Exp $
 
 #include "../../core/types.h"
 #include "../../core/itron.h"
-#include "../../core/syscall.h"
+#include "../../core/api.h"
 #include "../../core/errno.h"
 
 /*

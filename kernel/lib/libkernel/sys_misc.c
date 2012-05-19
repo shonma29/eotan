@@ -48,7 +48,7 @@ static char	rcsid[] = "$Id: sys_misc.c,v 1.5 2000/07/09 16:37:59 kishida0 Exp $"
 
 #include "../../core/types.h"
 #include "../../core/itron.h"
-#include "../../core/syscall.h"
+#include "../../core/api.h"
 #include "../../core/errno.h"
 
 

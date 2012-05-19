@@ -179,7 +179,7 @@ static char rcsid[] =
 #include "itron.h"
 #include "errno.h"
 #include "func.h"
-#include "syscall.h"
+#include "api.h"
 #include "interrupt.h"
 #include "../../lib/libkernel/device.h"
 #include "../../include/mpu/io.h"

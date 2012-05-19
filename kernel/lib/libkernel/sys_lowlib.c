@@ -16,7 +16,7 @@ static unsigned char rcsid[] = "$Id: sys_lowlib.c,v 1.1 1999/04/18 17:48:34 mona
 
 #include "../../core/types.h"
 #include "../../core/itron.h"
-#include "../../core/syscall.h"
+#include "../../core/api.h"
 #include "../../core/errno.h"
 #include "../../core/lowlib.h"
 

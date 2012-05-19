@@ -49,7 +49,7 @@ gdt.o:	mpu/gdt.c
 tss.o:	mpu/tss.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-fault.o:	mpu/fault.c
+interrupt.o:	mpu/interrupt.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 fpu.o:	mpu/fpu.c
@@ -73,13 +73,7 @@ keyboard.o:	arch/keyboard.c
 sys_dbg_puts.o:	sys_dbg_puts.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-debug.o:	debug.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-device.o:	io/device.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-syscall-if.o: syscall-if.c
+api.o: api.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 system.o: system.c

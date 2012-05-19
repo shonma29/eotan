@@ -22,7 +22,7 @@ static char rcsid[] = "$Header: /usr/local/src/master/B-Free/Program/btron-pc/ke
 
 #include "itron.h"
 #include "errno.h"
-#include "syscall.h"
+#include "api.h"
 #include "func.h"
 
 #define DEF_SYSCALL(x,n)	{ #x, sys_ ## x, n }

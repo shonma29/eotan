@@ -18,7 +18,7 @@ static char rcsid[] = "$Header: /usr/local/src/master/B-Free/Program/btron-pc/ke
 #include "config_boot.h"
 #include "itron.h"
 #include "errno.h"
-#include "syscall.h"
+#include "api.h"
 #include "func.h"
 
 ER

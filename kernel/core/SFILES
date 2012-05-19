@@ -1,7 +1,7 @@
 locore.o: mpu/locore.S
 	$(CC) $(CFLAGS) -c $< -o $@
 
-interrupt.o: mpu/interrupt.S
+handler.o: mpu/handler.S
 	$(CC) $(CFLAGS) -c $< -o $@
 
 startup.o: mpu/startup.S

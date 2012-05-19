@@ -36,22 +36,21 @@ OBJS= \
 	pmemory.o \
 	printk.o \
 	syscall.o \
-	syscall-if.o \
+	api.o \
 	task.o \
 	time.o \
 	version.o \
 	virtual_mem.o \
 	semaphore.o \
 	tss.o \
-	fault.o \
+	interrupt.o \
 	fpu.o \
 	timer.o \
 	gdt.o \
 	message.o \
 	eventflag.o \
 	locore.o \
-	interrupt.o  \
-	device.o \
+	handler.o  \
 	keyboard.o \
 	sys_dbg_puts.o \
 	system.o \
@@ -62,7 +61,7 @@ OTHEROBJ=../lib/libkernel/port_manager.o ../lib/libkernel/message_port.o \
            ../lib/libkernel/sys_errno.o
 
 SRCS=main.c memory.c task.c time.c version.c error.c dummy.c printk.c \
-     console.c fault.c syscall.c misc.c timer.c \
+     console.c interrupt.c syscall.c misc.c timer.c \
      virtual_mem.c itron_memory.c pmemory.c \
      startup.S
 

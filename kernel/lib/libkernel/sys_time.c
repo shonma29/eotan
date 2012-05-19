@@ -16,7 +16,7 @@ Version 2, June 1991
 
 #include "types.h"
 #include "itron.h"
-#include "syscall.h"
+#include "api.h"
 #include "errno.h"
 
 /*

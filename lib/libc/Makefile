@@ -9,15 +9,10 @@ CPP=/lib/cpp
 ROOT=../..
 CFLAGS=-O2 -fno-builtin -I. -I$(ROOT)/kernel/core $(IDENT)
 CC=gcc
-KP=kp -input-code euc
 MKDEPEND=$(CC) -M
 LD=ld
 AS=as
 
-#%.o: %.c
-#	kp -input-code euc -input $< -output kptmp.c
-#	$(CC) $(CFLAGS) -c kptmp.c -o $@
-#	rm -f kptmp.c
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
@@ -33,7 +28,7 @@ OTHEROBJS= others/atoi.o others/stdlib.o _main.o \
 STRINGOBJS = string/strcat.o string/strcmp.o string/strcpy.o string/strlen.o \
 	string/ctype.o
 
-OBJS=   call_posix.o \
+OBJS=   call_lowlib.o \
 	native/sys_noaction.o \
 	native/sys_access.o \
 	native/sys_brk.o \
@@ -124,10 +119,8 @@ libgt.a: $(GTOBJS)
 
 syscall.o: syscall.c
 
-call_posix.o: call_posix.S
+call_lowlib.o: call_lowlib.S
 
-errno.S: errno.c
-	$(CC) $(CFLAGS) -S $< -o $@
 
 clean:
 	rm -f $(OBJS)

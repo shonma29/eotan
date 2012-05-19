@@ -33,7 +33,7 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 
 #include "../../core/types.h"
 #include "../../core/itron.h"
-#include "../../core/syscall.h"
+#include "../../core/api.h"
 #include "../../core/errno.h"
 
 

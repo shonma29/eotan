@@ -3,12 +3,7 @@
 
 extern void enable_page (void);
 
-extern void outb (short ioaddr, unsigned char byte);
-extern void outw (short ioaddr, unsigned short data);
-extern void outl (short ioaddr, unsigned long data);
-extern unsigned char inb (short ioaddr);
-extern unsigned short inw (short ioaddr);
-extern unsigned long inl (short ioaddr);
+#include "../../include/mpu/io.h"
 
 extern void clear_int(void);
 extern void set_int(void);

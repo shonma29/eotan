@@ -14,7 +14,7 @@ Version 2, June 1991
 
 #include "itron.h"
 #include "errno.h"
-#include "syscall.h"
+#include "api.h"
 #include "func.h"
 
 
