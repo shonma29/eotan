@@ -11,7 +11,7 @@
 # -D USE_LOWLIB		POSIX マネージャを呼び出すとき、lowlib を使用する。
 #
 IDENT=-DI386 -DUSE_LOWLIB
-DEBUG=-DTSKSW_DEBUG
+DEBUG=
 
 CPP=/lib/cpp
 ROOT=..

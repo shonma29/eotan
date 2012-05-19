@@ -23,14 +23,9 @@ Version 2, June 1991
 
 #include "core.h"
 #include "misc.h"
-#ifdef PORTMANAGER
-#include "../servers/port-manager/port-manager.h"
-#endif
 #include "func.h"
 #include "../../include/mpu/io.h"
-#ifdef KERNLIB
 #include "../../lib/libkernel/device.h"
-#endif
 
 /*	アトリビュートの設定
  */

@@ -85,11 +85,6 @@ extern void adjust_vm(UW max_mem);
 extern void init_task(void);
 extern void init_task1(void);
 extern void init_task_state_segment(W index, T_I386_CONTEXT * tss);
-#ifdef notdef
-extern T_TCB *add_tcb_list(T_TCB * list, T_TCB * new);
-extern T_TCB *ins_tcb_list(T_TCB * list, T_TCB * new);
-extern T_TCB *del_tcb_list(T_TCB * list, T_TCB * del);
-#endif
 extern ER task_switch(BOOL save_nowtask);
 extern void print_task_list(void);
 extern T_TCB *get_tskp(ID tskid);
@@ -100,7 +95,9 @@ void make_local_stack(T_TCB *tsk, W size, W acc);
 extern ER posix_kill_proc(ID pid);
 
 /* tss.c */
+#ifdef TSKSW_DEBUG
 extern void print_task_desc(TASK_DESC * desc);
+#endif
 
 /* keyboard.c */
 extern W intr_kbd(void);

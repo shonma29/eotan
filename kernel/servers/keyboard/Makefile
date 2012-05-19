@@ -3,7 +3,7 @@
 #
 
 IDENT=-DI386
-DEBUG=-DTSKSW_DEBUG
+DEBUG=
 
 CPP=/lib/cpp
 ROOT=../..

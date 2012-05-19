@@ -69,9 +69,15 @@ typedef TCODE		*TPTR;
 typedef SCODE		*SPTR;
 typedef int		(*FUNCP)();
 
+#ifndef SNULL
 #define SNULL		(BYTE)0
+#endif
+#ifndef TNULL
 #define TNULL		(WORD)0
+#endif
+#ifndef NULL
 #define NULL		(LONG)0
+#endif
 
 #define LOCAL		static
 #define GLOBAL		/* 何も定義しない */

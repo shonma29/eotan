@@ -77,6 +77,7 @@ init_task_state_segment (W index, T_I386_CONTEXT *tss)
 #endif
 }
 
+#ifdef TSKSW_DEBUG
 void
 print_task_desc (TASK_DESC *desc)
 {
@@ -87,4 +88,5 @@ print_task_desc (TASK_DESC *desc)
   printk ("   addr  = 0x%x\n", GET_TSS_ADDR(*desc));
   printk ("   limit = 0x%x\n", GET_TSS_LIMIT(*desc));
 }
+#endif
 

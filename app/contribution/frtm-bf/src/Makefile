@@ -11,14 +11,12 @@
 # -D USE_LOWLIB		POSIX マネージャを呼び出すとき、lowlib を使用する。
 #
 #IDENT=-DI386 -DUSE_LOWLIB
-#DEBUG=-DTSKSW_DEBUG
+#DEBUG=
 
-#PATH=.:/bin:/usr/bin:../../tool/kp
 CPP=/lib/cpp
 ROOT=../../../..
 CFLAGS=-I. -I$(ROOT)/kernel/core -I$(ROOT)/kernel/lib/libkernel -I$(ROOT)/lib/libc/others $(IDENT) -fno-builtin-printf
 CC=gcc
-KP=kp -input-code euc
 MKDEPEND=$(CC) -M
 STARTADDR=0x00001000
 ENTRY=_main
@@ -26,10 +24,6 @@ KERNLIBS=$(ROOT)/lib/libc/libgt.a $(ROOT)/lib/libc/libc.a #$(ROOT)/kernel/lib/li
 LD=ld
 AS=as
 
-#%.o: %.c
-#	kp -input-code euc -input $< -output kptmp.c
-#	$(CC) $(CFLAGS) -c kptmp.c -o $@
-#	rm -f kptmp.c
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
