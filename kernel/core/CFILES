@@ -7,16 +7,13 @@ console.o:	console.c
 error.o:	error.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-itron_memory.o:	itron_memory.c
+memory.o:	memory.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 kalloc.o:	kalloc.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 main.o:	main.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-memory.o:	memory.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 misc.o:	misc.c

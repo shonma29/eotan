@@ -13,8 +13,8 @@ Version 2, June 1991
  *
  */
 
-#ifndef __H_EVENTFLAG_H__
-#define __H_EVENTFLAG_H__	1
+#ifndef __CORE_EVENTFLAG_H__
+#define __CORE_EVENTFLAG_H__	1
 
 
 /***************************************************************************
@@ -33,4 +33,4 @@ typedef struct eventflag_t
 } T_EVENTFLAG;
 
 
-#endif /* __H_EVENTFLAG_H__ */
+#endif /* __CORE_EVENTFLAG_H__ */

@@ -20,7 +20,7 @@ Version 2, June 1991
 #include "../../servers/fs/posix_mm.h"
 #include "../../servers/fs/posix_sysc.h"
 #include "../libc/errno.h"
-#include "../../kernel/core/types.h"
+#include "../../include/itron/types.h"
 #include "../../kernel/core/lowlib.h"
 
 #include "syscall.h"

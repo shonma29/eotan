@@ -67,10 +67,7 @@ static char rcs[] =
  *
  */
 
-#include <types.h>
-#include <itron.h>
-#include <config.h>
-#include "../../kernel/core/errno.h"
+#include <core.h>
 #include <misc.h>
 
 

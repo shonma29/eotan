@@ -27,7 +27,7 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
  *
  */
 
-#include "types.h"
+#include "../../../include/itron/types.h"
 
 /* エラー番号を記憶するためのモジュール。
  * エラー番号を返さない関数が使用する。

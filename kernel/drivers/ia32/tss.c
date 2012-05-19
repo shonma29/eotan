@@ -22,8 +22,7 @@ Version 2, June 1991
  */
 
 
-#include "itron.h"
-#include "errno.h"
+#include "core.h"
 #include "task.h"
 #include "misc.h"
 #include "func.h"

@@ -15,10 +15,9 @@ Version 2, June 1991
  *
  */
 
-#include "itron.h"
-#include "ibmpc.h"
+#include "core.h"
+#include "arch.h"
 #include "interrupt.h"
-#include "errno.h"
 #include "task.h"
 #include "func.h"
 #include "../../include/mpu/io.h"

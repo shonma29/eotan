@@ -15,10 +15,8 @@ Version 2, June 1991
 #define __RD_H__	1
 
 
-#include <itron.h>
-#include <types.h>
-#include <errno.h>
-#include <arch/ibmpc.h>
+#include <core.h>
+#include <arch/arch.h>
 #include "../../kernel/lib/libkernel/device.h"
 
 #define ROUNDDOWN(x,b)	((x / b) * b)

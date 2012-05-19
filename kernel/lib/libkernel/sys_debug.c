@@ -14,10 +14,8 @@ Version 2, June 1991
  *
  */
 
-#include "../../core/types.h"
-#include "../../core/itron.h"
+#include "../../core/core.h"
 #include "../../core/api.h"
-#include "../../core/errno.h"
 
 static ER dbg_vprintf(B * fmt, VP arg0);
 

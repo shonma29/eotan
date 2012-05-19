@@ -20,8 +20,7 @@ Version 2, June 1991
 #define __POSIX_H__	1
 
 
-#include "../../kernel/core/itron.h"
-#include "../../kernel/core/errno.h"
+#include "../../kernel/core/core.h"
 #include "../../kernel/core/misc.h"
 #include "../../kernel/lib/libkernel/device.h"
 #include "../../kernel/servers/console/console.h"

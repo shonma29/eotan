@@ -13,10 +13,8 @@ Version 2, June 1991
  * $Id: sys_task.c,v 1.4 2000/04/03 14:37:35 naniwa Exp $
  */
 
-#include "../../core/types.h"
-#include "../../core/itron.h"
+#include "../../core/core.h"
 #include "../../core/api.h"
-#include "../../core/errno.h"
 
 
 /* cre_tsk  --- タスクの生成

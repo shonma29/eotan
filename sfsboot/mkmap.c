@@ -23,7 +23,7 @@
 #include <fcntl.h>
 #include <time.h>
 
-#include "../kernel/core/types.h"
+#include "../include/itron/types.h"
 #include "../servers/fs/sfs/sfs_fs.h"
 
 #define BLOCKSIZE 512

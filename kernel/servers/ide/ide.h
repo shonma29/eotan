@@ -23,10 +23,8 @@ Version 2, June 1991
 #define __IDE_H__	1
 
 
-#include <itron.h>
-#include <types.h>
-#include <errno.h>
-#include <arch/ibmpc.h>
+#include <core.h>
+#include <arch/arch.h>
 #include "../../lib/libkernel/dma.h"
 #include "../../lib/libkernel/device.h"
 #include "../console/console.h"

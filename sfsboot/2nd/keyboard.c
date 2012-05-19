@@ -22,7 +22,6 @@ Version 2, June 1991
 #include "keyboard.h"
 #include "lib.h"
 
-typedef WORD W;
 #include "key_def.h"
 #include "key_type.h"
 

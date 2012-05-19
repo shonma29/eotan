@@ -15,8 +15,8 @@ Version 2, June 1991
  *
  */
 
-#ifndef __ITRON_MISC_H__
-#define __ITRON_MISC_H__	1
+#ifndef __CORE_MISC_H__
+#define __CORE_MISC_H__	1
 
 #ifdef notdef
 #define ROUNDUP(x,align)	(((((int)x) + ((align) - 1))/(align))*(align))
@@ -52,4 +52,4 @@ if (exp) \
 #define PTOV(page)	((page << PAGE_SHIFT) | 0x80000000UL)
 
 
-#endif /* __ITRON_MISC_H__ */
+#endif /* __CORE_MISC_H__ */

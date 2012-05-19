@@ -52,8 +52,6 @@ Version 2, June 1991
 
 #define GDT		0x1000
 #define IDT		0x2000
-#define PAGE_DIR_ADDR	0x3000
-#define PAGE_ENTRY_ADDR	0x4000
 
 #define START32		0x9000
 

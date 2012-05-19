@@ -11,8 +11,7 @@ Version 2, June 1991
 /* version.cj
  */
 
-#include "itron.h"
-#include "errno.h"
+#include "core.h"
 #include "version.h"
 #include "func.h"
 

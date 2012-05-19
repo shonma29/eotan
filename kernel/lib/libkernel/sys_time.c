@@ -14,10 +14,8 @@ Version 2, June 1991
  * sys_time.c -- 時間管理関係のシステムコール
  */
 
-#include "types.h"
-#include "itron.h"
+#include "core.h"
 #include "api.h"
-#include "errno.h"
 
 /*
  * システムクロック設定

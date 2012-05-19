@@ -14,8 +14,8 @@ Version 2, June 1991
  *
  */
 
-#ifndef __H_MEMORY_H__
-#define __H_MEMORY_H__	1
+#ifndef __CORE_MEMORY_H__
+#define __CORE_MEMORY_H__	1
 
 #include "config.h"
 
@@ -34,5 +34,5 @@ extern unsigned int	base_mem;	/* 下位にあるメモリのサイズ  */
 extern unsigned int	ext_mem;	/* 拡張メモリのサイズ */
 
 
-#endif /* __H_MEMORY_H__ */
+#endif /* __CORE_MEMORY_H__ */
 

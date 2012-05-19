@@ -7,6 +7,7 @@
 
 #include "types.h"
 #include "errno.h"
+#include "../../kernel/core/config.h"
 #include "idt.h"
 #include "interrupt.h"
 

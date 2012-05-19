@@ -22,8 +22,8 @@ static unsigned char rcsid[] =
     "$Id: lowlib.c,v 1.8 2000/02/06 09:10:52 naniwa Exp $";
 
 
-#include "types.h"
-#include "errno.h"
+#include "../../include/itron/types.h"
+#include "../../include/itron/errno.h"
 #include "task.h"
 #include "func.h"
 #include "lowlib.h"

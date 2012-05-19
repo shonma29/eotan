@@ -13,8 +13,8 @@ Version 2, June 1991
  *
  */
 
-#ifndef __H_CTYPE_H__
-#define __H_CTYPE_H__	1
+#ifndef __CORE_CTYPE_H__
+#define __CORE_CTYPE_H__	1
 
 /* ISCONTROL --- 引数がコントロール文字かどうかを調べる
  */
@@ -28,4 +28,4 @@ Version 2, June 1991
 
 
 
-#endif /* __H_CTYPE_H__ */
+#endif /* __CORE_CTYPE_H__ */

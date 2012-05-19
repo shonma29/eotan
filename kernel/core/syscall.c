@@ -20,8 +20,7 @@ Version 2, June 1991
 
 static char rcsid[] = "$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/common/syscall.c,v 1.13 2000/04/03 14:34:46 naniwa Exp $";
 
-#include "itron.h"
-#include "errno.h"
+#include "core.h"
 #include "api.h"
 #include "func.h"
 

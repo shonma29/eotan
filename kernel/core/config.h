@@ -19,12 +19,12 @@ Version 2, June 1991
 
 */
 
-#ifndef _ITRON_CONFIG_H_
-#define _ITRON_CONFIG_H_	1
+#ifndef _CORE_CONFIG_H_
+#define _CORE_CONFIG_H_	1
 
 #define CALL_HANDLER_IN_TASK	1 /* タイマーのハンドラーの実行を task 1 で行う */
 
-#include "mpu/i386.h"
+#include "mpu/mpu.h"
 
 #define GDT_ADDR	(0x80001000UL)
 #define IDT_ADDR	(0x80002000UL)
@@ -178,9 +178,12 @@ Version 2, June 1991
 #define ITRON_RS232C_MBF	(2)	/* ITRON 用 RS232C ドライバタスクで使用 */
 #define ITRON_KEYBOARD_MBF	(3)	/* キーボード入力用のメッセージバッファ */
 
+#define MAX_MODULE_NAME	(40)
+#define MAX_MODULE	(20)
+
 
 extern W ndevice;
 extern ER(*devices[]) (void);
 
 
-#endif				/* _ITRON_CONFIG_H_ */
+#endif				/* _CORE_CONFIG_H_ */

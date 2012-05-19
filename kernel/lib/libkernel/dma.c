@@ -66,7 +66,7 @@ Version 2, June 1991
 
 static char	rcsid[] = "$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/kernlib/dma.c,v 1.5 2000/02/29 14:07:56 naniwa Exp $";
 
-#include "types.h"
+#include "../../../include/itron/types.h"
 #include "dma.h"
 #include "../../../include/mpu/io.h"
 

@@ -15,9 +15,8 @@ Version 2, June 1991
 
 static char rcsid[] = "$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/common/system.c,v 1.7 1999/04/13 04:49:06 monaka Exp $";
 
-#include "config_boot.h"
-#include "itron.h"
-#include "errno.h"
+#include "core.h"
+#include "boot.h"
 #include "api.h"
 #include "func.h"
 

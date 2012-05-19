@@ -13,11 +13,11 @@ Version 2, June 1991
 
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/h/lowlib.h,v 1.5 2000/01/29 16:19:43 naniwa Exp $ */
 
-#ifndef __LOWLIB_H__
-#define __LOWLIB_H__	1
+#ifndef __CORE_LOWLIB_H__
+#define __CORE_LOWLIB_H__	1
 
 
-#include "itron_module.h"
+#include "boot.h"
 
 /* LOWLIB 関連のシステムコール
  */
@@ -78,4 +78,4 @@ extern ER			unload_lowlib (VP *argp);
 #endif /* __ITRON__ */
 
 
-#endif /* __LOWLIB_H__ */
+#endif /* __CORE_LOWLIB_H__ */

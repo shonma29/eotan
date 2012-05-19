@@ -14,9 +14,9 @@ Version 2, June 1991
 #ifndef __STDLIB_H__
 #define __STDLIB_H__	1
 
-#include <types.h>
-#include <errno.h>
-#include <itron_module.h>
+#include "../../../include/itron/types.h"
+#include "../../../include/itron/errno.h"
+#include <config.h>
 #include "../../lowlib/lowlib.h"
 #include "../../../servers/fs/sfs/sfs_fs.h"
 

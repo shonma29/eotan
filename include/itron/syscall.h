@@ -1,6 +1,6 @@
 
-#ifndef __ITRON_SYSCALL_FUNC_H__
-#define __ITRON_SYSCALL_FUNC_H__
+#ifndef __ITRON_SYSCALL_H__
+#define __ITRON_SYSCALL_H__
 
 /* システムコール関数の定義 */
 /* --------------------------------------------------------- */
@@ -147,4 +147,4 @@ extern ER vcpy_stk(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi , W edi, ID 
 extern ER vset_ctx (ID tid, W eip, B *stackp, W stsize);
 extern ER vuse_fpu (ID tid);
 
-#endif /*__ITRON_SYSCALL_FUNC_H__*/
+#endif /*__ITRON_SYSCALL_H__*/

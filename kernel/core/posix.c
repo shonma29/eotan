@@ -7,8 +7,7 @@
 
 */
 
-#include "itron.h"
-#include "errno.h"
+#include "core.h"
 #include "lowlib.h"
 #include "task.h"
 #include "func.h"

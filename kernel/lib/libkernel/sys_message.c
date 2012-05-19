@@ -18,10 +18,8 @@ static char	rcsid[] = "$Header: /usr/local/src/master/B-Free/Program/btron-pc/ke
  */
 
 
-#include "../../core/types.h"
-#include "../../core/itron.h"
+#include "../../core/core.h"
 #include "../../core/api.h"
-#include "../../core/errno.h"
 
 /*
  * メッセージバッファの作成

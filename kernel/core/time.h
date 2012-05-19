@@ -12,10 +12,10 @@ Version 2, June 1991
  * 時間管理
  */
 
-#ifndef __ITRON_TIME_H__
-#define __ITRON_TIME_H__	1
+#ifndef __CORE_TIME_H__
+#define __CORE_TIME_H__	1
 
-#include "itron.h"
+#include "core.h"
 
 typedef T_DCYC T_CYCHANDLER;
 typedef T_DALM T_ALMHANDLER;

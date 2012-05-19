@@ -14,11 +14,10 @@ Version 2, June 1991
  *
  */
 
-#ifndef __ITRON_TASK_H__
-#define __ITRON_TASK_H__	1
+#ifndef __CORE_TASK_H__
+#define __CORE_TASK_H__	1
 
-#include "itron.h"
-#include "mpu/i386.h"
+#include "core.h"
 #include "mpu/fpu.h"
 
 #define KERNEL_TASK	(1)
@@ -130,4 +129,4 @@ extern T_TCB *run_task;		/* 現在、走行中のタスク */
 #define GET_TSKWAIT(tcb)	(tcb.tskwait)
 
 
-#endif				/* __ITRON_TASK_H__ */
+#endif				/* __CORE_TASK_H__ */

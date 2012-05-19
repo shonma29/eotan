@@ -1,8 +1,24 @@
-#ifndef __ITRON_MODULE_H__
-#define __ITRON_MODULE_H__
+/*
 
-#define MAX_MODULE_NAME	(40)
-#define MAX_MODULE	(20)
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
+
+GNU GENERAL PUBLIC LICENSE
+Version 2, June 1991
+
+(C) B-Free Project.
+
+*/
+/**************************************************************************
+ *
+ *
+ */
+
+#ifndef __CORE_BOOT_H__
+#define __CORE_BOOT_H__	1
+
+#include "config.h"
+
+#define MODULE_TABLE	(0x00000800)
 
 enum module_type 
 {
@@ -56,4 +72,4 @@ struct boot_header
 };
 
 
-#endif /*__ITRON_MODULE_H__*/
+#endif /*__CORE_BOOT_H__*/

@@ -45,10 +45,7 @@ static char rcsid[] =
  * メッセージバッファを簡単に扱うための関数群。
  *
  */
-#include <types.h>
-#include <itron.h>
-#include <config.h>
-#include <errno.h>
+#include <core.h>
 #include "../../servers/port-manager/port-manager.h"
 
 

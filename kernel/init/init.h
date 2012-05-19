@@ -13,9 +13,9 @@ Version 2, June 1991
 #ifndef __INIT_H__
 #define __INIT_H__	1
 
-#include <types.h>
-#include <errno.h>
-#include <arch/ibmpc.h>
+#include "../../include/itron/types.h"
+#include "../../include/itron/errno.h"
+#include <arch/arch.h>
 #include "../lib/libkernel/device.h"
 #include "../servers/port-manager/port-manager.h"
 #include "../servers/keyboard/keyboard.h"

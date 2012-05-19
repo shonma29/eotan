@@ -18,7 +18,7 @@ Version 2, June 1991
 #ifndef __CONFIG_H__
 #define __CONFIG_H__	1
 
-#include "config_boot.h"
+#include "../../kernel/core/boot.h"
 
 #define MAJOR_VER	0
 #define MINOR_VER	2
@@ -38,8 +38,6 @@ Version 2, June 1991
 #define TIMER0_WRITE	0x40
 #define TIMER0_READ	0x40
 #define TIMER_CONTROL	0x43
-#define CLOCK		50		/* clock 周期 10 ms */
-#define TICKS		(1000/CLOCK)	/* 1 秒間の tick 数 */
 #define TIMER_FREQ	1193182L
 #define BTRON_OFFSET	473353200L
 

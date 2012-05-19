@@ -15,8 +15,8 @@ Version 2, June 1991
  * $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/h/syscall.h,v 1.10 1999/12/29 17:03:15 monaka Exp $
  */
 
-#ifndef __H_SYSCALL_H__
-#define __H_SYSCALL_H__	1
+#ifndef __CORE_API_H__
+#define __CORE_API_H__	1
 
 
 /* システムコール番号の定義 
@@ -204,4 +204,4 @@ extern ER	sys_vcpy_stk (void *argp);
 extern ER	sys_vset_ctx (void *argp);
 extern ER	sys_vuse_fpu (void *argp);
 
-#endif /* __H_SYSCALL_H__ */
+#endif /* __CORE_API_H__ */

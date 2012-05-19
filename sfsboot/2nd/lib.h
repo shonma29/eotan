@@ -1,7 +1,7 @@
 #ifndef __LIB_H__
 #define __LIB_H__
 
-#include "types.h"
+#include "./types.h"
 
 extern void boot_printf (char *fmt, ...);
 extern WORD strlen (BPTR s);

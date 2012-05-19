@@ -58,8 +58,6 @@ struct idt_t
 #define	TRAP_DESC	0xf
 #define INTERRUPT_DESC	0xe
 
-#define MAX_IDT		256
-
 
 void	init_idt (void);
 int	set_idt (int entry, int selector, int offset, int type, int dpl);

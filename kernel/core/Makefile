@@ -29,7 +29,7 @@ OBJS= \
 	devconfig.o \
 	console.o \
 	error.o \
-	itron_memory.o \
+	memory.o \
 	main.o \
 	misc.o \
 	kalloc.o \
@@ -62,7 +62,7 @@ OTHEROBJ=../lib/libkernel/port_manager.o ../lib/libkernel/message_port.o \
 
 SRCS=main.c memory.c task.c time.c version.c error.c dummy.c printk.c \
      console.c interrupt.c syscall.c misc.c timer.c \
-     virtual_mem.c itron_memory.c pmemory.c \
+     virtual_mem.c memory.c pmemory.c \
      startup.S
 
 all: core.bin

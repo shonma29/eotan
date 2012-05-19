@@ -65,10 +65,8 @@ Version 2, June 1991
 #define __KEYBOARD_H__	1
 
 
-#include <types.h>
-#include <errno.h>
-#include <arch/ibmpc.h>
-#include <itron.h>
+#include <arch/arch.h>
+#include <core.h>
 #include "../../lib/libkernel/device.h"
 #include "../../../servers/fs/posix.h"
 

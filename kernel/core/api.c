@@ -176,8 +176,7 @@ static char rcsid[] =
  *
  */
 
-#include "itron.h"
-#include "errno.h"
+#include "core.h"
 #include "func.h"
 #include "api.h"
 #include "interrupt.h"

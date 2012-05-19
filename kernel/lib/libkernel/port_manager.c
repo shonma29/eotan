@@ -57,9 +57,7 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
  * alloc_port (void);                       ポートの生成
  */
 
-#include <itron.h>
-#include <errno.h>
-#include <types.h>
+#include <core.h>
 #include "../servers/port-manager/port-manager.h"
 #include "libkernel.h"
 

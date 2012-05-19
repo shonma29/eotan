@@ -154,13 +154,10 @@ static char rcsid[] =
  *
  */
 
-#include "i386.h"
-#include "itron.h"
+#include "core.h"
 #include "misc.h"
 #include "func.h"
 #include "task.h"
-#include "errno.h"
-#include "region.h"
 
 static I386_PAGE_ENTRY *alloc_pagetable(W);
 

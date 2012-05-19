@@ -4,7 +4,7 @@
 
 
 INC=../kernel/core
-BUILDSRC=build.c $(INC)/itron_module.h
+BUILDSRC=build.c $(INC)/boot.h
 CFLAGS=$(DEBUG) -I$(INC) -I../include
 CC=gcc
 

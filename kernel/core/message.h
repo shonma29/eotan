@@ -13,8 +13,8 @@ Version 2, June 1991
  *
  */
 
-#ifndef __H_MESSAGE_H__
-#define __H_MESSAGE_H__		1
+#ifndef __CORE_MESSAGE_H__
+#define __CORE_MESSAGE_H__		1
 
 /*******************************************************************************
  * メッセージバッファのヘッダ
@@ -50,4 +50,4 @@ typedef struct message_t
 } T_MSG;
 
 
-#endif /* __H_MESSAGE_H__ */
+#endif /* __CORE_MESSAGE_H__ */

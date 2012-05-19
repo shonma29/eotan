@@ -21,9 +21,7 @@ Version 2, June 1991
  *
  */
 
-#include "itron.h"
-#include "itron_module.h"
-#include "errno.h"
+#include "core.h"
 #include "misc.h"
 #ifdef PORTMANAGER
 #include "../servers/port-manager/port-manager.h"

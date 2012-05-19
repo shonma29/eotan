@@ -8,6 +8,7 @@
  */
 
 #include "types.h"
+#include "../../include/itron/types.h"
 #include "asm.h"
 #include "interrupt.h"
 #include "lib.h"

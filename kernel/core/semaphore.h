@@ -12,8 +12,8 @@ Version 2, June 1991
  *
  */
 
-#ifndef __H_SEMAPHORE_H__
-#define __H_SEMAPHORE_H__	1
+#ifndef __CORE_SEMAPHORE_H__
+#define __CORE_SEMAPHORE_H__	1
 
 /* セマフォ構造体:
  *
@@ -29,4 +29,4 @@ typedef struct semaphore_t
 } T_SEMAPHORE;
 
 
-#endif /* __H_SEMAPHORE_H__ */
+#endif /* __CORE_SEMAPHORE_H__ */

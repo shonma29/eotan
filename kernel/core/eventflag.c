@@ -16,12 +16,10 @@ Version 2, June 1991
  */
 
 
-#include "itron.h"
-#include "config.h"
+#include "core.h"
 #include "memory.h"
-#include "errno.h"
 #include "func.h"
-#include "ibmpc.h"
+#include "arch.h"
 #include "eventflag.h"
 #include "../../include/mpu/io.h"
 

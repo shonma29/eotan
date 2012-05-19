@@ -38,10 +38,8 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
  * イベントフラグ関係のシステムコールインタフェース関数
  */
 
-#include "../../core/types.h"
-#include "../../core/itron.h"
+#include "../../core/core.h"
 #include "../../core/api.h"
-#include "../../core/errno.h"
 
 
 ER

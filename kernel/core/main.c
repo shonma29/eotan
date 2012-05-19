@@ -54,9 +54,8 @@ Version 2, June 1991
  *
  */
 
-#include "itron.h"
+#include "core.h"
 #include "version.h"
-#include "errno.h"
 #include "task.h"
 #include "func.h"
 #include "misc.h"
@@ -65,7 +64,7 @@ Version 2, June 1991
 #ifdef I386
 #include "interrupt.h"
 #endif
-#include "config_boot.h"
+#include "boot.h"
 
 static ER init_itron(void);
 static void init_device(void);

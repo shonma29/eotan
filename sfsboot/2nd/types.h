@@ -55,7 +55,6 @@ typedef float		FLOAT;
 typedef double		DOUBLE;
 typedef void		VOID;
 
-typedef enum { FALSE=0, TRUE=1 } BOOL;
 typedef unsigned char	SCODE;			/* ASCII code */
 typedef unsigned char	TCODE;			/* TRON code */
 

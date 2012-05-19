@@ -14,16 +14,15 @@ Version 2, June 1991
  *
  */
 
-#ifndef __ITRON_FUNC_H__
-#define __ITRON_FUNC_H__	1
+#ifndef __CORE_FUNC_H__
+#define __CORE_FUNC_H__	1
 
 
-#include "types.h"
-#include "itron.h"
+#include "core.h"
+#include "boot.h"
 #include "task.h"
 
 #include "../servers/port-manager/port-manager.h"
-#include "itron_sysc.h"
 
 /* main.c */
 extern ER main(void);
@@ -190,4 +189,4 @@ void fpu_restore(T_TCB * taskp);
 void fpu_start(T_TCB * taskp);
 #endif
 
-#endif				/* __ITRON_FUNC_H__ */
+#endif				/* __CORE_FUNC_H__ */

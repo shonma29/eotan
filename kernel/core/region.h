@@ -33,10 +33,10 @@ Version 2, June 1991
  *
  */
 
-#ifndef __ITRON_REGION_H__
-#define __ITRON_REGION_H__	1
+#ifndef __CORE_REGION_H__
+#define __CORE_REGION_H__	1
 
-#include "types.h"
+#include "../../include/itron/types.h"
 
 
 /*
@@ -62,4 +62,4 @@ typedef struct region_t	T_REGION;
 #define VPROT_USER	(0x00010000)
 
 
-#endif /* __ITRON_REGION_H__ */
+#endif /* __CORE_REGION_H__ */

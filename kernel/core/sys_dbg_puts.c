@@ -12,8 +12,7 @@ Version 2, June 1991
  *
  */
 
-#include "itron.h"
-#include "errno.h"
+#include "core.h"
 #include "api.h"
 #include "func.h"
 

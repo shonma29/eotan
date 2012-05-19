@@ -14,7 +14,7 @@ Version 2, June 1991
  *
  */
 
-#include "itron.h"
+#include "core.h"
 #include "func.h"
 
 

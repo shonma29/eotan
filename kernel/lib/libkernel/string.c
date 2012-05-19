@@ -84,7 +84,7 @@ static char rcsid[] =
  * ヘッダファイルの読み込み
  * ヘッダファイルのパスは、Makefile に指定してある。
  */
-#include <types.h>
+#include "../../../include/itron/types.h"
 
 
 /*

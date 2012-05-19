@@ -40,7 +40,7 @@ extern void		strncpy (B *s1, B *s2, W size);
 extern W	dbg_printf (B *fmt, ...);
 
 
-#include <itron_sysc.h>
+#include "../../../include/itron/syscall.h"
 
 
 /* malloc.c */
