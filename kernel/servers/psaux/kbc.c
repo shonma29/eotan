@@ -10,10 +10,10 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
-
+#include "../../../include/mpu/io.h"
+#include "../../lib/libkernel/libkernel.h"
 #include "psaux.h"
 #include "kbc.h"
-#include "../../../include/mpu/io.h"
 
 extern W driver_mode;
 extern ID waitflag;

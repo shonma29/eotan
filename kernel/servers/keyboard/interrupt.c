@@ -94,10 +94,11 @@ static char rcsid[] =
  *
  */
 
+#include "../../../include/mpu/io.h"
+#include "../../lib/libkernel/libkernel.h"
 #include "keyboard.h"
 #include "key_def.h"
 #include "key_type.h"
-#include "../../../include/mpu/io.h"
 
 #define NORMAL_CODE	0
 #define SHIFT_CODE	1

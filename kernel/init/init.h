@@ -25,8 +25,6 @@ Version 2, June 1991
 #include "../../servers/fs/posix_fs.h"
 #include "../../servers/fs/posix_mm.h"
 
-#define putchar(ch)	putc (ch, stdout)
-
 #define MAJOR_VERSION	1
 #define MINOR_VERSION	1
 
@@ -80,12 +78,7 @@ extern void init_device(void);
 extern ER open_device(B * dev_name, ID * id, W * dev_desc);
 
 extern W	getc (FILE *port);
-extern W	putc (W ch, FILE *port);
-extern W	fputs (B *line, FILE *port);
-extern W	readchar (ID port, ID resport);
-extern W 	writechar (ID port, ID resport, UB *buf, W count);
-extern W	printf (B *fmt,...);
-extern W	fprintf (FILE *port, B *fmt,...);
+extern W	printf (B *fmt, ...);
 
 /* lib.c */
 extern B	*strchr (B *s, W ch);

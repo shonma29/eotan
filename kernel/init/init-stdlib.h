@@ -24,7 +24,6 @@ extern W isprint (W ch);
 extern W isspace (W ch);
 extern W isnum (W ch);
 extern W getc (FILE *port);
-extern W readchar (ID port, ID resport);
 
 #endif
 

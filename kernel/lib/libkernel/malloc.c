@@ -69,6 +69,7 @@ static char rcs[] =
 
 #include <core.h>
 #include <misc.h>
+#include "libkernel.h"
 
 
 #define MEMORY_CLICK		(PAGE_SIZE * 10)

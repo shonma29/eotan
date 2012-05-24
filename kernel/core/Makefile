@@ -56,7 +56,7 @@ OBJS= \
 	posix.o
 
 OTHEROBJ=../lib/libkernel/port_manager.o ../lib/libkernel/message_port.o \
-           ../lib/libkernel/sys_errno.o
+           ../lib/libkernel/sys_errno.o ../lib/libkernel/vnprintf.o
 
 SRCS=main.c memory.c task.c time.c version.c error.c dummy.c printk.c \
      console.c interrupt.c syscall.c misc.c timer.c \

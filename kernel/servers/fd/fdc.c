@@ -15,8 +15,9 @@ Version 2, June 1991
 static char rcsid[] =
     "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/BTRON/device/fd765a/fdc.c,v 1.14 2000/05/06 03:42:45 naniwa Exp $";
 
-#include "fd.h"
+#include "../../lib/libkernel/libkernel.h"
 #include "../../../include/mpu/io.h"
+#include "fd.h"
 
 #undef USE_EVENTFLAG
 

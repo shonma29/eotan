@@ -7,6 +7,9 @@
 /* タスク管理機能                                            */
 /* --------------------------------------------------------- */
 
+#include "types.h"
+#include "struct.h"
+
 extern ER	cre_tsk (ID tskid, T_CTSK *pk_ctsk);
 extern ER	del_tsk (ID tskid);
 extern ER	sta_tsk (ID tskid, INT stacd);

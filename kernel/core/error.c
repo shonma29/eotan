@@ -13,11 +13,11 @@ Version 2, June 1991
 /* error.cj
  *
  */
-
+#include "../../include/stdarg.h"
+#include "../../include/mpu/io.h"
 #include "core.h"
 #include "version.h"
 #include "func.h"
-#include "../../include/mpu/io.h"
 
 
 /* falldown --- ITRON での [panic] 関数。
@@ -32,8 +32,10 @@ Version 2, June 1991
  */
 void falldown(B * fmt, ...)
 {
-    VP arg0;
-    vprintk(fmt, (VP) & arg0);
+    va_list ap;
+
+    va_start(ap, fmt);
+    vnprintf(putchar, fmt, ap);
 
 /* もし、ITRON_DBG マクロが定義されていれば、デバッガを起動する。
  */

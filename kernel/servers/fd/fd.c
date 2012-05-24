@@ -157,6 +157,7 @@ static char rcsid[] =
 	
 **********************************************************************/
 
+#include "../../lib/libkernel/libkernel.h"
 #include "fd.h"
 
 

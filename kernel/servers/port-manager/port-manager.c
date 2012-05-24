@@ -88,6 +88,7 @@ static char rcs[] = "@(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc
 
 
 #include <core.h>
+#include "../../lib/libkernel/libkernel.h"
 #include "port-manager.h"
 
 

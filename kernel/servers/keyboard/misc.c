@@ -40,7 +40,7 @@ static char rcsid[] =
  *
  *
  */
-
+#include "../../lib/libkernel/libkernel.h"
 #include "keyboard.h"
 
 #define MAX_LIST	1024

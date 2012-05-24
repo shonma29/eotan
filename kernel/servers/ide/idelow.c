@@ -16,8 +16,9 @@ static char rcsid[] =
     "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/BTRON/device/ide/idelow.c,v 1.13 2000/01/22 10:59:31 naniwa Exp $";
 
 
-#include "ide.h"
 #include "../../../include/mpu/io.h"
+#include "../../lib/libkernel/libkernel.h"
+#include "ide.h"
 
 
 int ide_wait_while_busy()

@@ -246,6 +246,8 @@ extern int 	ide_wait_device_ready();
 extern void 	ide_send_command(int cmd);
 extern void	ide_recalibrate(int drive);
 
-#endif /* __IDE_H__ */
+/* misc.c */
+extern W printf(B *format, ...);
 
+#endif /* __IDE_H__ */
 

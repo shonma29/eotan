@@ -39,98 +39,32 @@ static char rcsid[] =
  *
  *
  */
-
+#include "../lib/libkernel/libkernel.h"
 #include "init.h"
 
-static ER vfprintf(FILE * port, B * fmt, VP arg0);
+static W putc(W ch, FILE * port);
+static void _putc(const B ch);
+static W __putc(W ch, FILE * port);
+static void fflush(FILE * port);
+static W writechar(ID port, ID resport, UB * buf, W length);
+static W readchar(ID port, ID resport);
 
-
-static void print_digit(FILE * port, UW d, UW base)
-{
-    static B digit_table[] = "0123456789ABCDEF";
-
-    if (d < base) {
-	putc(digit_table[d], port);
-    } else {
-	print_digit(port, d / base, base);
-	putc(digit_table[d % base], port);
-    }
-}
-
-#define INC(p,x)	(p = (VP)(((W)p) + sizeof (x *)))
 
 /*
  *
  */
-W printf(B * fmt,...)
+W printf(B *fmt, ...)
 {
-    VP *arg0;
-    ER err;
+    W len;
+    va_list ap;
 
-    arg0 = (VP *) & fmt;
-    INC(arg0, B *);
-    err = vfprintf(stdout, fmt, (VP) arg0);
+    va_start(ap, fmt);
+    len = vnprintf(_putc, fmt, ap);
     fflush(stdout);
-    return (err);
+    return len;
 }
 
-W fprintf(FILE * port, B * fmt,...)
-{
-    VP *arg0;
-    ER err;
-
-    arg0 = (VP *) & fmt;
-    INC(arg0, B *);
-    err = vfprintf(port, fmt, (VP) arg0);
-    fflush(port);
-    return (err);
-}
-
-static ER vfprintf(FILE * port, B * fmt, VP arg0)
-{
-    VP *ap;
-
-    for (ap = (VP *) arg0; *fmt != '\0'; fmt++) {
-	if (*fmt == '%') {
-	    switch (*++fmt) {
-	    case 's':
-		fputs((B *) (*ap), port);
-		INC(ap, B *);
-		break;
-
-	    case 'd':
-		if ((W) * ap < 0) {
-		    W *q = (W*)ap;
-
-		    *q = 0 - ((W) * ap);
-		    putc('-', port);
-		}
-		print_digit(port, (W) * ap, 10);
-		INC(ap, W);
-		break;
-
-	    case 'x':
-		print_digit(port, (W) * ap, 16);
-		INC(ap, W);
-		break;
-
-	    case 'o':
-	      print_digit (port, (W)*ap, 8);
-	      INC (ap, W);
-	      break;
-
-	    default:
-		putc('%', port);
-		break;
-	    }
-	} else {
-	    putc(*fmt, port);
-	}
-    }
-}
-
-
-W putc(W ch, FILE * port)
+static W putc(W ch, FILE * port)
 {
     port->buf[port->count] = ch;
     port->count++;
@@ -146,7 +80,11 @@ W putc(W ch, FILE * port)
     return (ch);
 }
 
-W __putc(W ch, FILE * port)
+static void _putc(const B ch) {
+	putc(ch, stdout);
+}
+
+static W __putc(W ch, FILE * port)
 {
     UB buf[1];
 
@@ -155,32 +93,18 @@ W __putc(W ch, FILE * port)
     return (ch);
 }
 
-
-fflush(FILE * port)
+static void fflush(FILE * port)
 {
     writechar(port->device, dev_recv, port->buf, port->count);
     port->count = 0;
 }
 
-W fputs(B * line, FILE * port)
-{
-    W i;
-
-    for (i = 0; line[i] != '\0'; i++) {
-	putc(line[i], port);
-    }
-    fflush(port);
-    return (i);
-}
-
-
-W writechar(ID port, ID resport, UB * buf, W length)
+static W writechar(ID port, ID resport, UB * buf, W length)
 {
     DDEV_REQ req;		/* 要求パケット */
     DDEV_RES res;		/* 返答パケット */
     W rsize;
     ER error;
-    W i;
 
     req.header.mbfid = resport;
     req.header.msgtyp = DEV_WRI;
@@ -191,7 +115,7 @@ W writechar(ID port, ID resport, UB * buf, W length)
     if (error != E_OK) {
 	dbg_printf("cannot send packet. %d(%s, %d)\n", error, __FILE__,
 		   __LINE__);
-	return;
+	return (-1);
     }
     rsize = sizeof(res);
     error = rcv_mbf(&res, (INT *) & rsize, resport);
@@ -201,7 +125,6 @@ W writechar(ID port, ID resport, UB * buf, W length)
     }
     return (1);
 }
-
 
 W isprint(W ch)
 {
@@ -218,17 +141,6 @@ W isspace(W ch)
     return (FALSE);
 }
 
-W isnum(W ch)
-{
-    ch -= '0';
-
-    if (ch < 0 || ch > 9) {
-	return FALSE;
-    }
-
-    return TRUE;
-}
-
 W getc(FILE * port)
 {
     W ch;
@@ -240,13 +152,12 @@ W getc(FILE * port)
 }
 
 
-W readchar(ID port, ID resport)
+static W readchar(ID port, ID resport)
 {
     DDEV_REQ req;		/* 要求パケット */
     DDEV_RES res;		/* 返答パケット */
     W rsize;
     ER error;
-    W i;
 
     req.header.mbfid = resport;
     req.header.msgtyp = DEV_REA;
@@ -255,7 +166,7 @@ W readchar(ID port, ID resport)
     error = snd_mbf(port, sizeof(req), &req);
     if (error != E_OK) {
 	printf("cannot send packet. %d\n", error);
-	return;
+	return (-1);
     }
     rsize = sizeof(res);
     rcv_mbf(&res, (INT *) & rsize, resport);

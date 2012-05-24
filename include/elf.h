@@ -1,5 +1,5 @@
-#ifndef _IA32_ELF_H_
-#define _IA32_ELF_H_
+#ifndef _ELF_H_
+#define _ELF_H_
 
 /*
 This is free and unencumbered software released into the public domain.

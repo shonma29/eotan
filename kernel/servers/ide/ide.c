@@ -76,8 +76,9 @@ static char rcsid[] =
  *
  *
  */
-#include "ide.h"
 #include "../../../include/mpu/io.h"
+#include "../../lib/libkernel/libkernel.h"
+#include "ide.h"
 
 
 /*********************************************************************

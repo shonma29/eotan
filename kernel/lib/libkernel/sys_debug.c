@@ -13,7 +13,7 @@ Version 2, June 1991
 /* デバッグ用のシステムコール
  *
  */
-
+#include "../../../include/stdarg.h"
 #include "../../core/core.h"
 #include "../../core/api.h"
 
@@ -34,77 +34,10 @@ static void dbg_putchar(B ch)
     dbg_puts(buf);
 }
 
+int dbg_printf(B *format, ...) {
+	va_list ap;
 
-static void print_digit(UW d, UW base)
-{
-    static B digit_table[] = "0123456789ABCDEF";
-
-    if (d < base) {
-	dbg_putchar(digit_table[d]);
-    } else {
-	print_digit(d / base, base);
-	dbg_putchar(digit_table[d % base]);
-    }
+	va_start(ap, format);
+	return vnprintf(dbg_putchar, format, ap);
 }
 
-
-static void print_string(B * string)
-{
-    dbg_puts(string);
-}
-
-#ifdef notdef
-#define INC(p,x)	(((W)p) = (((W)p) + sizeof (x *)))
-#endif
-
-#define INC(p,x)	(p = (VP)(((W)p) + sizeof (x)))
-
-/*
- *
- */
-W dbg_printf(B * fmt,...)
-{
-    VP arg0;
-
-    arg0 = (VP) & fmt;
-    INC(arg0, B *);
-    return (dbg_vprintf(fmt, (VP) arg0));
-}
-
-static ER dbg_vprintf(B * fmt, VP arg0)
-{
-    VP *ap;
-
-    for (ap = (VP *) arg0; *fmt != '\0'; fmt++) {
-	if (*fmt == '%') {
-	    switch (*++fmt) {
-	    case 's':
-		print_string((B *) (*ap));
-		INC(ap, B *);
-		break;
-
-	    case 'd':
-		if ((W) * ap < 0) {
-		    W *q = (W*)ap;
-
-		    *q = -((W) * ap);
-		    dbg_putchar('-');
-		}
-		print_digit((W) * ap, 10);
-		INC(ap, W);
-		break;
-
-	    case 'x':
-		print_digit((UW) * ap, 16);
-		INC(ap, W);
-		break;
-
-	    default:
-		dbg_putchar('%');
-		break;
-	    }
-	} else {
-	    dbg_putchar(*fmt);
-	}
-    }
-}
