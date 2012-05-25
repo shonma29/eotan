@@ -112,57 +112,6 @@ W strcmp(B * s1, B * s2)
 
 
 /*
- * 2 つの文字列を比較する。
- * 文字列が等しい場合には、 0 を返す。
- * 等しくない場合には、以下の規則にとおりの値を返す。
- *
- * (s1) < (s2) : 0 以下の値を返す。
- * (s1) > (s2) : 0 以上の値を返す。
- *
- * この関数では文字列の最大長を指定する。
- */
-W strncmp(B * s1, B * s2, W length)
-{
-    W counter;
-
-    /*
-     * 文字列を一文字ずつ比較していく。
-     * 文字列の最大長まで比較するか、等しくない文字が出た時点でループは
-     * 終了する。 
-     */
-    for (counter = 0;
-	 (*s1 == *s2) && (counter < length) && (*s1 != '\0'); counter++) {
-	s1++;
-	s2++;
-    }
-
-    if (counter >= length)
-	return (0);
-
-    /*
-     * 返り値は、第 1 引数から第 2 引数の最後の文字の値を引くことによっ
-     * て得る。もし、両方との等しい文字ならば、0 が返る。
-     */
-    return (*s1 - *s2);
-}
-
-
-/*
- * 文字列のコピー。
- *
- * 第2引数から第1引数へ文字列をコピーする。
- * 文字列の終りは、文字の値が 0 かどうかで判別する。
- */
-void strcpy(B * s1, B * s2)
-{
-    while (*s2 != '\0') {
-	*s1++ = *s2++;
-    }
-    *s1 = '\0';
-}
-
-
-/*
  * 文字列のコピー。
  *
  * 第2引数から第1引数へ文字列をコピーする。
@@ -174,7 +123,7 @@ void strcpy(B * s1, B * s2)
  * 最大長は、バイト単位で指定する。
  *
  */
-void strncpy(B * s1, B * s2, W size)
+void strncpy2(B * s1, B * s2, W size)
 {
     W counter;			/* コピーするバイト数をカウントするた */
     /* めの変数                           */
@@ -207,24 +156,4 @@ int strnlen(char *s, int count)
 
     for (sc = s; count-- && *sc != '\0'; ++sc);
     return sc - s;
-}
-
-char tolower(char c)
-{
-    if (c >= 'A') {
-	if (c <= 'Z') {
-	    return c - ('A' - 'a');
-	}
-    }
-    return c;
-}
-
-char toupper(char c)
-{
-    if (c >= 'a') {
-	if (c <= 'z') {
-	    return c - ('a' - 'A');
-	}
-    }
-    return c;
 }

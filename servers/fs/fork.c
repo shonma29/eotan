@@ -125,13 +125,13 @@ W fork(struct proc *parent, W * childid, ID main_task, ID signal_task)
     /*  lowlib_data.signal_task = signal_task; */
     lowlib_data.my_pid = *childid;
 
-    strncpy(lowlib_data.dpath, lowlib_par.dpath, lowlib_par.dpath_len + 1);
+    strncpy2(lowlib_data.dpath, lowlib_par.dpath, lowlib_par.dpath_len + 1);
     lowlib_data.dpath_len = lowlib_par.dpath_len;
 
     errno = vput_reg(main_task, LOWLIB_DATA,
 		     sizeof(struct lowlib_data), &lowlib_data);
 
-    strncpy(newproc->proc_name, parent->proc_name, PROC_NAME_LEN);
+    strncpy2(newproc->proc_name, parent->proc_name, PROC_NAME_LEN);
 
     return (EP_OK);
 }

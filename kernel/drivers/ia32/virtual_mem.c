@@ -175,7 +175,7 @@ ADDR_MAP dup_vmap_table(ADDR_MAP dest)
 
     dest = (ADDR_MAP)((UW) RTOV((UW) dest));
     newp = (ADDR_MAP) (palloc(1));	/* ページディレクトリのアロケート */
-    bzero((VP) newp, PAGE_SIZE);
+    memset((VP)newp, 0, PAGE_SIZE);
 
 
 /* 1998/Feb/23 */
@@ -210,9 +210,9 @@ ADDR_MAP dup_vmap_table(ADDR_MAP dest)
 	    }
 
 #ifdef notdef
-	    bcopy((unsigned int)
-		  ((VP) RTOV(dest[i].frame_addr << PAGE_SHIFT)),
-		  (unsigned int) (VP) p, PAGE_SIZE);
+	    memcpy((unsigned int)(VP)p,
+		    (unsigned int)((VP)RTOV(dest[i].frame_addr << PAGE_SHIFT)),
+		    PAGE_SIZE);
 #endif
 
 #ifdef DEBUG
@@ -436,7 +436,7 @@ static I386_PAGE_ENTRY *alloc_pagetable(W accmode)
     if (newp == NULL) {
 	return (NULL);
     }
-    bzero(newp, PAGE_SIZE);
+    memset(newp, 0, PAGE_SIZE);
     for (i = 0, pp = newp; i < PAGE_SIZE / sizeof(I386_PAGE_ENTRY);
 	 ++i, ++pp) {
 	pp->present = 0;
@@ -991,7 +991,7 @@ ER vget_reg(ID id, VP start, UW size, VP buf)
 	copysize = delta_end - delta_start;
 	if (copysize > size)
 	    copysize = size;
-	bcopy((VP) offset, &((B *) buf)[bufoffset], copysize);
+	memcpy(&((B*)buf)[bufoffset], (VP)offset, copysize);
 	bufoffset += copysize;
 	size -= copysize;
     }
@@ -1071,7 +1071,7 @@ ER vput_reg(ID id, VP start, UW size, VP buf)
 	copysize = delta_end - delta_start;
 	if (copysize > size)
 	    copysize = size;
-	bcopy(&((B *) buf)[bufoffset], (VP) offset, copysize);
+	memcpy((VP)offset, &((B*)buf)[bufoffset], copysize);
 	bufoffset += copysize;
 	size -= copysize;
     }

@@ -35,7 +35,7 @@ static char rcsid[] =
 
 #include "../lowlib.h"
 
-extern char *strncpy(char *, char *, int);
+extern char *strncpy2(char *, char *, int);
 
 void *psys_getcwd(void *argp)
 {
@@ -65,7 +65,7 @@ void *psys_getcwd(void *argp)
 	ERRNO = EP_RANGE;
 	return (NULL);
     }
-    strncpy(args->dirname, lowlib_data->dpath, args->dirnamelen);
+    strncpy2(args->dirname, lowlib_data->dpath, args->dirnamelen);
     ERRNO = EP_OK;
     return (args->dirname);
 }

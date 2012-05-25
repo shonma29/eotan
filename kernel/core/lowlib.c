@@ -52,7 +52,7 @@ ER init_lowlib(struct module_info *modp)
     init = modp->entry;
     errno = (init) (&lowlib_table[nlowlib]);
     if (errno == E_OK) {
-	bcopy(modp->name, lowlib_table[nlowlib].name, MAX_MODULE_NAME);
+	memcpy(lowlib_table[nlowlib].name, modp->name, MAX_MODULE_NAME);
 	lowlib_table[nlowlib].modp = modp;
 	printk("LOWLIB: [%d] install %s module\n", nlowlib, modp->name);
 	nlowlib++;
@@ -141,7 +141,7 @@ ER load_lowlib(VP * argp)
 		    printk
 			("WARNING: LOWLIB_DATA has already been mapped\n");
 		}
-		bzero(&ld, sizeof(struct lowlib_data));
+		memset(&ld, 0, sizeof(struct lowlib_data));
 		errno = vput_reg(args->task, LOWLIB_DATA,
 				 sizeof(struct lowlib_data), &ld);
 		if (errno)
@@ -149,7 +149,7 @@ ER load_lowlib(VP * argp)
 	    }
 #ifdef MONAKA
 	    plowlib = (struct lowlib_data *) ppage;
-	    bzero(plowlib, sizeof(struct lowlib_data));
+	    memset(plowlib, 0, sizeof(struct lowlib_data));
 #endif
 	    return (E_OK);
 	}
@@ -202,7 +202,7 @@ ER stat_lowlib(VP * argp)
 	    return (E_PAR);
 	}
 
-	bcopy(&lowlib_table[*(args->nlowlib)], args->infop,
+	memcpy(args->infop, &lowlib_table[*(args->nlowlib)],
 	      sizeof(struct lowlib_info));
 	return (E_OK);
     }
@@ -212,7 +212,7 @@ ER stat_lowlib(VP * argp)
 	    0) {
 	    /* 該当するモジュールを発見した。 */
 
-	    bcopy(&lowlib_table[i], args->infop,
+	    memcpy(args->infop, &lowlib_table[i],
 		  sizeof(struct lowlib_info));
 	    return (E_OK);
 	}

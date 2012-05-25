@@ -8,8 +8,7 @@ BUILDSRC=build.c $(INC)/boot.h
 CFLAGS=$(DEBUG) -I$(INC) -I../include
 CC=gcc
 
-KERNLIB=kernlib
-MKERNEL=itron
+MKERNEL=core
 KSERVERS=console keyboard fd ide psaux port-manager
 LOWLIB=posix_lowlib
 USERLIBS=posix_libc
@@ -37,6 +36,7 @@ clean:
 	${MAKE} -C ../kernel/servers/psaux clean
 	${MAKE} -C ../kernel/core clean
 	${MAKE} -C ../kernel/init clean
+	${MAKE} -C ../kernel/lib/libnc clean
 	${MAKE} -C ../servers/fs clean
 	${MAKE} -C ../servers/ramdisk clean
 	${MAKE} -C ../lib/lowlib clean
@@ -48,7 +48,7 @@ dummy:
 $(KSERVERS):
 	${MAKE} -C ../kernel/servers/$@
 
-itron:
+core:
 	${MAKE} -C ../kernel/core
 
 posix_lowlib:

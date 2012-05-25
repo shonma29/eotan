@@ -1,5 +1,3 @@
-#ifndef _STDARG_H_
-#define _STDARG_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,12 +24,20 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include "string.h"
 
-typedef void** va_list;
+int strncmp(const char *s1, const char *s2, size_t n) {
+	unsigned char *p1 = (unsigned char*)s1;
+	unsigned char *p2 = (unsigned char*)s2;
+	size_t i;
 
-#define va_start(ap, last) ({ap = (va_list)(&last); ap++;})
-#define va_arg(ap, type) (*((type*)(ap++)))
-#define va_end(ap)
-#define va_copy(dest, src) ((va_list)dest = (va_list)src;)
+	for (i = 0; i < n; i++) {
+		int diff = p1[i] - p2[i];
 
-#endif
+		if (diff
+				|| !p1[i])	return diff;
+
+	}
+
+	return 0;
+}

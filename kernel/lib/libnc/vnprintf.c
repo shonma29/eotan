@@ -55,7 +55,7 @@ static void _putchar(State *s, const B c) {
 static void _puts(State *s, const B *str) {
 	B c;
 
-	for (; c = *str; str++)	_putchar(s, c);
+	for (; (c = *str); str++)	_putchar(s, c);
 }
 
 static void _putd(State *s, const W v) {

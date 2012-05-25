@@ -103,7 +103,6 @@ Version 2, June 1991
 #define SYS_VGET_PHS	(111)
 
 #define SYS_VGET_CSL	(120)
-#define SYS_VSET_CNS	(121)
 #define SYS_VSYS_MSC	(122)
 #define SYS_VCPY_STK	(123)
 #define SYS_VSET_CTX	(124)
@@ -198,7 +197,6 @@ extern ER	sys_ref_alm (void *argp);
 
 /* その他のシステムコール */
 extern ER	sys_vget_csl (void *argp);
-extern ER	sys_vset_cns (void *argp);
 extern ER	sys_vsys_msc (void *argp);
 extern ER	sys_vcpy_stk (void *argp);
 extern ER	sys_vset_ctx (void *argp);

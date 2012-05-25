@@ -45,7 +45,7 @@ set_gdt (int index, GEN_DESC *desc)
       return (E_PAR);	/* パラメータがおかしい */
     }
   p = (GEN_DESC *)GDT_ADDR;
-  bcopy (desc, &p[index], sizeof (GEN_DESC));
+  memcpy(&p[index], desc, sizeof(GEN_DESC));
   return (E_OK);
 }
 

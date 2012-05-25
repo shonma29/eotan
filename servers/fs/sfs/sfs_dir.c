@@ -151,7 +151,7 @@ W sfs_getdents(struct inode *ip, ID caller, W offset,
       if ((*rsize) + len >= length) return(EP_OK);
       dent.d_reclen = len;
       dent.d_off = i*s;
-      strncpy(dent.d_name, dirp[i].sfs_d_name, SFS_MAXNAMELEN+1);
+      strncpy2(dent.d_name, dirp[i].sfs_d_name, SFS_MAXNAMELEN+1);
       errno = vput_reg(caller, buf+(*rsize), len, &dent);
       if (errno) return(errno);
       *rsize += len;

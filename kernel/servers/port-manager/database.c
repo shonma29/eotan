@@ -146,7 +146,7 @@ regist_database (PORT_NAME name, ID port, ID task)
 	   * 空いているエントリを見つけた。
 	   * メッセージバッファを登録する。
 	   */
-	  strncpy (table[counter].name, name, (PORT_NAME_LEN + 1));
+	  strncpy2(table[counter].name, name, (PORT_NAME_LEN + 1));
 	  table[counter].port = port;
 	  table[counter].task = task;
 #ifdef DEBUG

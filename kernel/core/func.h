@@ -68,8 +68,6 @@ extern void check_timer(void);
 extern W left_time(void (*func) (VP), VP arg);
 
 /* misc.c */
-extern void bcopy(VP src, VP dest, W count);
-extern void bzero(VP src, W count);
 extern INT strlen(B * buf);
 extern W strncmp(B * s1, B * s2, W size);
 

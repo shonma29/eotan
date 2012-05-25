@@ -59,7 +59,7 @@ void add_dict_name(name)
     error_no = E_DSO;
     return;
   }
-  strncpy(dict_name[dp].name, name, MAX_NAME);
+  strncpy2(dict_name[dp].name, name, MAX_NAME);
   dict_name[dp].point = csp;
   ++dp;
 }
@@ -615,7 +615,7 @@ void do_var(name)
     error_no = E_CSO;
     return;
   }
-  strncpy(dict_name[dp].name, name, MAX_NAME);
+  strncpy2(dict_name[dp].name, name, MAX_NAME);
   dict_name[dp].point = csp;
   cstack[csp].id = IDX;
   cstack[csp].data.val = 0;

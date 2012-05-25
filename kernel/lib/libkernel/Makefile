@@ -12,18 +12,18 @@ OBJS=	call_kernel.o sys_task.o sys_message.o sys_debug.o \
 	sys_virtual.o sys_misc.o eventflag.o sys_evtflg.o sys_time.o
 
 OTHEROBJS= string.o binary.o interrupt.o sys_lowlib.o  \
-	malloc.o dma.o vnprintf.o
+	malloc.o dma.o
 
-all: libkernel.a libitron.a
+all: ../libkernel.a ../libitron.a
 
-libkernel.a: $(OBJS) $(OTHEROBJS)
+../libkernel.a: $(OBJS) $(OTHEROBJS)
 	ar rv $@ $(OBJS) $(OTHEROBJS)
 	ranlib $@
 
-libitron.a: $(OBJS)
+../libitron.a: $(OBJS)
 	ar rv $@ $(OBJS)
 	ranlib $@
 
 
 clean:
-	rm -f $(OBJS) $(OTHEROBJS) libkernel.a libitron.a
+	rm -f $(OBJS) $(OTHEROBJS) ../libkernel.a ../libitron.a

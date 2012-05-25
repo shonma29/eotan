@@ -24,7 +24,7 @@ T_VER	version = { 0, 0, MAJOR_VERSION, MINOR_VERSION, { 0, 0, 0, 0 }, CPU };
 ER
 get_ver (T_VER *ver)
 {
-  bcopy ((B *)&version, (B *)ver, sizeof (T_VER));
+  memcpy((B*)ver, (B*)&version, sizeof(T_VER));
   return (E_OK);
 }
 

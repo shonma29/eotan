@@ -40,14 +40,11 @@ init_driver (void)
   /*
    * 要求受けつけ用のポートを初期化する。
    */
-#ifdef notdef
-  recvport = get_port (sizeof (DDEV_RES), sizeof (DDEV_RES));
-#else
   recvport = get_port (0, sizeof (DDEV_RES));
-#endif
+
   if (recvport <= 0)
     {
-      dbg_printf ("psaux: cannot make receive porrt.\n");
+      dbg_printf ("psaux: cannot make receive port.\n");
       slp_tsk ();
       /* メッセージバッファ生成に失敗 */
     }

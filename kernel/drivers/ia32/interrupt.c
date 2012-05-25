@@ -131,7 +131,7 @@ W init_interrupt(void)
 #if 0
     set_idt(INT_SYSCALL, KERNEL_CSEG, (W) int64_handler, TRAP_DESC, 0);
 #else
-    bzero((VP) &cg, sizeof(GATE_DESC));
+    memset((VP)&cg, 0, sizeof(GATE_DESC));
     cg.type = TYPE_GATE;
     cg.dpl = USER_DPL;
     cg.present = 1;

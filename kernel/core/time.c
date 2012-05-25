@@ -51,8 +51,8 @@ void init_time(UW seconds)
   SYSTIME time;
   UW TH, TM, TL;
   
-  bzero(cyctable, sizeof(T_CYCHANDLER)*MAX_CYCLIC);
-  bzero(almtable, sizeof(T_ALMHANDLER)*MAX_ALARM);
+  memset(cyctable, 0, sizeof(T_CYCHANDLER)*MAX_CYCLIC);
+  memset(almtable, 0, sizeof(T_ALMHANDLER)*MAX_ALARM);
 
   TH = 0;
   TM = (seconds >> 16) * MS;
@@ -167,7 +167,7 @@ ER def_alm(HNO almno, T_DALM *pk_dalm)
     if (almtable[almno].almhdr != NULL) {
       unset_timer((void (*)(VP))almtable[almno].almhdr, almtable[almno].exinf);
     }
-    bzero(&(almtable[almno]), sizeof(T_ALMHANDLER));
+    memset(&(almtable[almno]), 0, sizeof(T_ALMHANDLER));
   }
   else {
     if (pk_dalm->tmmode == TTM_ABS) {
@@ -184,7 +184,7 @@ ER def_alm(HNO almno, T_DALM *pk_dalm)
     almtable[almno].almhdr = pk_dalm->almhdr;
     almtable[almno].almatr = pk_dalm->almatr;
     almtable[almno].tmmode = pk_dalm->tmmode;
-    bcopy(&(pk_dalm->almtim), &(almtable[almno].almtim), sizeof(ALMTIME));
+    memcpy(&(almtable[almno].almtim), &(pk_dalm->almtim), sizeof(ALMTIME));
     set_timer(pk_dalm->almtim.ltime, (void (*)(VP))pk_dalm->almhdr,
 	      pk_dalm->exinf);
   }

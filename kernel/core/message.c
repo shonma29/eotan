@@ -432,7 +432,7 @@ ER snd_mbf(ID id, INT size, VP msg)
 	newmsg->size = size;
 	add_msg_list(&message_table[id], newmsg);
 	message_table[id].total_size -= size;
-	bcopy(msg, buf, size);
+	memcpy(buf, msg, size);
 
 	if (message_table[id].wait_recvtask) {
 	    /* もし、受信待ちタスクがあれば、それを wakeup する */
@@ -551,7 +551,7 @@ ER snd_mbf2(ID id, INT size, VP msg)
     newmsg->buf = buf;
     newmsg->size = size;
     add_msg_list(&message_table[id], newmsg);
-    bcopy(msg, buf, size);
+    memcpy(buf, msg, size);
 
     if (message_table[id].wait_recvtask) {
 	T_TCB *p;
@@ -673,7 +673,7 @@ ER psnd_mbf(ID id, INT size, VP msg)
 	newmsg->size = size;
 	add_msg_list(&message_table[id], newmsg);
 	message_table[id].total_size -= size;
-	bcopy(msg, buf, size);
+	memcpy(buf, msg, size);
 
 	if (message_table[id].wait_recvtask) {
 	    /* もし、受信待ちタスクがあれば、それを wakeup する */
@@ -885,7 +885,7 @@ ER tsnd_mbf(ID id, INT size, VP msg, TMO tmout)
 	newmsg->size = size;
 	add_msg_list(&message_table[id], newmsg);
 	message_table[id].total_size -= size;
-	bcopy(msg, buf, size);
+	memcpy(buf, msg, size);
 
 	if (message_table[id].wait_recvtask) {
 	    /* もし、受信待ちタスクがあれば、それを wakeup する */
@@ -1041,7 +1041,7 @@ ER rcv_mbf(VP msg, INT * size, ID id)
 	/* メッセージリストから1つエントリを取り出す */
 	newmsgp = get_msg(&message_table[id]);
 	/* メッセージの内容をコピーする */
-	bcopy((VP) newmsgp->buf, msg, newmsgp->size);
+	memcpy(msg, (VP)newmsgp->buf, newmsgp->size);
 	*size = (INT) newmsgp->size;
 	kfree(newmsgp->buf, *size);
 	dealloc_msg(newmsgp);
@@ -1144,7 +1144,7 @@ ER prcv_mbf(VP msg, INT * size, ID id)
 	newmsgp = get_msg(&message_table[id]);
 
 	/* メッセージの内容をコピーする */
-	bcopy(newmsgp->buf, msg, newmsgp->size);
+	memcpy(msg, newmsgp->buf, newmsgp->size);
 	*size = newmsgp->size;
 
 	kfree(newmsgp->buf, *size);
@@ -1330,7 +1330,7 @@ ER trcv_mbf(VP msg, INT * size, ID id, TMO tmout)
 	newmsgp = get_msg(&message_table[id]);
 
 	/* メッセージの内容をコピーする */
-	bcopy(newmsgp->buf, msg, newmsgp->size);
+	memcpy(msg, newmsgp->buf, newmsgp->size);
 	*size = newmsgp->size;
 
 	kfree(newmsgp->buf, *size);

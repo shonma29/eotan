@@ -69,7 +69,7 @@ strcpy (char *s1, char *s2)
  *
  */
 char *
-strncpy (char *s1, char *s2, int size)
+strncpy2(char *s1, char *s2, int size)
 {
   int	counter;		/* コピーするバイト数をカウントするた */
 				/* めの変数                           */

@@ -16,9 +16,6 @@ kalloc.o:	kalloc.c
 main.o:	main.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-misc.o:	misc.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
 pmemory.o:	pmemory.c
 	$(CC) $(CFLAGS) -c $< -o $@
 

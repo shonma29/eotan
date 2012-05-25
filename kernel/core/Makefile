@@ -29,7 +29,6 @@ OBJS= \
 	error.o \
 	memory.o \
 	main.o \
-	misc.o \
 	kalloc.o \
 	pmemory.o \
 	printk.o \
@@ -56,21 +55,26 @@ OBJS= \
 	posix.o
 
 OTHEROBJ=../lib/libkernel/port_manager.o ../lib/libkernel/message_port.o \
-           ../lib/libkernel/sys_errno.o ../lib/libkernel/vnprintf.o
+           ../lib/libkernel/sys_errno.o \
+	../lib/libnc/vnprintf.o ../lib/libnc/strcpy.o ../lib/libnc/strncmp.o
 
 SRCS=main.c memory.c task.c time.c version.c error.c dummy.c printk.c \
-     console.c interrupt.c syscall.c misc.c timer.c \
+     console.c interrupt.c syscall.c strncmpk.c timer.c \
      virtual_mem.c memory.c pmemory.c \
      startup.S
 
 all: core.bin
 
-core.bin: $(OBJS) libkernel.a port_manager
-	$(LD) -static -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) $(OTHEROBJ)
+core.bin: $(OBJS) libkernel.a ../lib/libnc.a port_manager
+	$(LD) -static -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) $(OTHEROBJ) \
+		../lib/libnc.a
 	strip -s $@
 
 libkernel.a:
 	${MAKE} -C ../lib/libkernel
+
+../lib/libnc.a:
+	${MAKE} -C ../lib/libnc
 
 port_manager:
 	${MAKE} -C ../servers

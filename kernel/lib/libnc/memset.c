@@ -1,5 +1,3 @@
-#ifndef _STDARG_H_
-#define _STDARG_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,12 +24,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include "string.h"
 
-typedef void** va_list;
+void *memset(void *s, int c, size_t n) {
+	unsigned char *w = (unsigned char*)s;
+	unsigned char v = (unsigned char)(c & 0xff);
 
-#define va_start(ap, last) ({ap = (va_list)(&last); ap++;})
-#define va_arg(ap, type) (*((type*)(ap++)))
-#define va_end(ap)
-#define va_copy(dest, src) ((va_list)dest = (va_list)src;)
+	for (; n; n--)	*w++ = v;
 
-#endif
+	return s;
+}
+

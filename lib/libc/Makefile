@@ -25,8 +25,7 @@ AS=as
 OTHEROBJS= others/atoi.o others/stdlib.o _main.o \
 	others/binary.o malloc/malloc.o
 
-STRINGOBJS = string/strcat.o string/strcmp.o string/strcpy.o string/strlen.o \
-	string/ctype.o
+STRINGOBJS = string/strcat.o string/strcmp.o string/strcpy.o string/strlen.o
 
 OBJS=   call_lowlib.o \
 	native/sys_noaction.o \

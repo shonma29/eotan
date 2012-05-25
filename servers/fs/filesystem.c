@@ -693,9 +693,9 @@ fs_create_file(struct inode * startip,
 		return (EP_NOMEM);
 	    }
 	    /* kernlib の strncpy の仕様にあわせるため */
-	    strncpy(parent_path, path, parent_length + 1);
+	    strncpy2(parent_path, path, parent_length + 1);
 #else
-	    strncpy(parent_path, path, MAX_NAMELEN);
+	    strncpy2(parent_path, path, MAX_NAMELEN);
 #endif
 	    parent_path[parent_length] = '\0';
 	    break;
@@ -968,9 +968,9 @@ fs_remove_file(struct inode * startip, B * path, struct access_info * acc)
 		return (EP_NOMEM);
 	    }
 	    /* kernlib の strncpy の仕様にあわせるため */
-	    strncpy(parent_path, path, parent_length + 1);
+	    strncpy2(parent_path, path, parent_length + 1);
 #else
-	    strncpy(parent_path, path, MAX_NAMELEN);
+	    strncpy2(parent_path, path, MAX_NAMELEN);
 #endif
 	    parent_path[parent_length] = '\0';
 	    break;
@@ -1025,9 +1025,9 @@ W fs_remove_dir(struct inode * startip, B * path, struct access_info * acc)
 		return (EP_NOMEM);
 	    }
 	    /* kernlib の strncpy の仕様にあわせるため */
-	    strncpy(parent_path, path, parent_length + 1);
+	    strncpy2(parent_path, path, parent_length + 1);
 #else
-	    strncpy(parent_path, path, MAX_NAMELEN);
+	    strncpy2(parent_path, path, MAX_NAMELEN);
 #endif
 	    parent_path[parent_length] = '\0';
 	    break;
@@ -1139,9 +1139,9 @@ W fs_make_dir(struct inode * startip,
 		return (EP_NOMEM);
 	    }
 	    /* kernlib の strncpy の仕様にあわせるため */
-	    strncpy(parent_path, path, parent_length + 1);
+	    strncpy2(parent_path, path, parent_length + 1);
 #else
-	    strncpy(parent_path, path, MAX_NAMELEN);
+	    strncpy2(parent_path, path, MAX_NAMELEN);
 #endif
 	    parent_path[parent_length] = '\0';
 	    break;
@@ -1240,7 +1240,7 @@ fs_link_file(W procid, B * src, W srclen, B * dst, W dstlen,
 
     for (parent_length = dstlen; parent_length >= 0; parent_length--) {
 	if (dst[parent_length] == '/') {
-	    strncpy(parent_path, dst, MAX_NAMELEN);
+	    strncpy2(parent_path, dst, MAX_NAMELEN);
 	    parent_path[parent_length] = '\0';
 	    break;
 	}

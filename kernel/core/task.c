@@ -246,7 +246,7 @@ void init_task(void)
 	ready_task[i] = NULL;
     }
 
-/*  bzero (kernel_tss, sizeof (TASK_STATE_SEG_T) * MAX_TASK); */
+/*  memset(kernel_tss, 0, sizeof(TASK_STATE_SEG_T) * MAX_TASK); */
     task = &task_buffer[-1];
 }
 
@@ -274,7 +274,7 @@ void init_task(void)
 void init_task1(void)
 {
     /* タスク 1 の情報を初期化する。 */
-    bzero(&task[KERNEL_TASK], sizeof(T_TCB));	/* zero clear */
+    memset(&task[KERNEL_TASK], 0, sizeof(T_TCB));	/* zero clear */
     /* タスク状態：走行状態にセット */
     task[KERNEL_TASK].tskstat = TTS_RUN;
     /* タスクレベルは、31(最低位)にセット */
@@ -714,7 +714,7 @@ ER cre_tsk(ID tskid, T_CTSK * pk_ctsk)
     }
 
     newtask = &task[tskid];
-    bzero(newtask, sizeof(T_TCB));
+    memset(newtask, 0, sizeof(T_TCB));
 /* タスク生成 */
 
     newtask->tskid = tskid;

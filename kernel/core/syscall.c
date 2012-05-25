@@ -187,7 +187,7 @@ struct t_syscall	syscall_table[] =
 
   /* その他のシステムコール */
   DEF_SYSCALL (vget_csl, 2),	/*  120 */
-  DEF_SYSCALL (vset_cns, 1),	/*  121 */
+  DEF_NOSYSCALL,		/*  121 */
   DEF_SYSCALL (vsys_msc, 2),	/*  122 */
   DEF_SYSCALL (vcpy_stk, 4),	/*  123 */
   DEF_SYSCALL (vset_ctx, 4),	/*  124 */

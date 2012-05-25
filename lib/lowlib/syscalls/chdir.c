@@ -35,7 +35,7 @@ static char rcsid[] =
 
 #include "../lowlib.h"
 
-extern char *strncpy(char *, char *, int);
+extern char *strncpy2(char *, char *, int);
 
 int psys_chdir(void *argp)
 {
@@ -61,10 +61,10 @@ int psys_chdir(void *argp)
 
     /* lowlib_data->dpath の更新 */
     if (args->path[0] == '/') {
-	strncpy(lowlib_data->dpath, args->path, MAX_DPATH + 1);
+	strncpy2(lowlib_data->dpath, args->path, MAX_DPATH + 1);
 	lowlib_data->dpath_len = args->pathlen;
     } else {
-	strncpy(buf, args->path, MAX_DPATH + 1);
+	strncpy2(buf, args->path, MAX_DPATH + 1);
 	top = src = buf;
 	len = lowlib_data->dpath_len;
 	dst = lowlib_data->dpath + len;

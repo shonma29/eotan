@@ -1,5 +1,5 @@
-#ifndef _STDARG_H_
-#define _STDARG_H_
+#ifndef _STRING_H_
+#define _STRING_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,12 +26,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include "sys/types.h"
 
-typedef void** va_list;
+extern char *strcpy(char *dest, const char *src);
+extern char *strncpy(char *dest, const char *src, size_t n);
+extern char *strcat(char *dest, const char *src);
+extern char *strncat(char *dest, const char *src, size_t n);
+extern int strncmp(const char *s1, const char *s2, size_t size);
 
-#define va_start(ap, last) ({ap = (va_list)(&last); ap++;})
-#define va_arg(ap, type) (*((type*)(ap++)))
-#define va_end(ap)
-#define va_copy(dest, src) ((va_list)dest = (va_list)src;)
+extern void *memcpy(void *dest, const void *src, size_t n);
+extern void *memset(void *s, int c, size_t n);
 
 #endif

@@ -1074,33 +1074,6 @@ ER sys_vget_csl(VP argp)
     return (get_cursor_position(args->x, args->y));
 }
 
-/* sys_vset_cns
- *
- */
-ER sys_vset_cns(VP argp)
-{
-    extern ID console_driver;
-    extern ID console_recv;
-    struct {
-	ID driver_id;
-    } *args = argp;
-
-
-    printk("sys_vset_cns: driver id = %d\n", args->driver_id);
-    if (args->driver_id > 0) {
-	console_recv = get_port(sizeof(DDEV_RES), sizeof(DDEV_RES));
-	if (console_recv <= 0) {
-	    printk("Init: Cannot allocate port\n");
-	    return (E_OBJ);
-	}
-
-	printk("console_recv = %d\n", console_recv);
-	console_driver = args->driver_id;
-	return (E_OK);
-    }
-    return (E_ID);
-}
-
 /* sys_vsys_msc - miscellaneous function
  *
  */

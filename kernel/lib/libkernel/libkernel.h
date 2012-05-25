@@ -21,7 +21,7 @@ extern void	bzero (B *bufp, W size);
 extern void	bcopy (UB *buf1, UB *buf2, W size);
 
 /* string.c */
-extern void		strncpy (B *s1, B *s2, W size);
+extern void		strncpy2(B *s1, B *s2, W size);
 
 /* vnprintf.c */
 extern W vnprintf(void (*out)(const B), B *format, va_list ap);

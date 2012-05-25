@@ -294,7 +294,7 @@ VP palloc(W size)
     addr = ((i * BITS + j) * PAGE_SIZE) | MIN_KERNEL;
 #if 1
     /* initialize to 0 */
-    bzero((VP) addr, size * PAGE_SIZE);
+    memset((VP)addr, 0, size * PAGE_SIZE);
 #endif
 
 #ifdef CALL_HANDLER_IN_TASK

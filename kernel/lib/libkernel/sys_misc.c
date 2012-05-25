@@ -60,16 +60,6 @@ vget_csl (W *x, W *y)
 }
 
 
-/* vset_cns
- *
- */
-ER
-vset_cns (ID driver)
-{
-  return (call_syscall (SYS_VSET_CNS, driver));
-}
-
-
 /* vsys_msc
  *
  */
