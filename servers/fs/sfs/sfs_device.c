@@ -63,7 +63,7 @@ W sfs_write_device(ID device, B * buf, W start, W length, W * rlength)
     req.body.wri_req.dd = dd;
     req.body.wri_req.start = start;
     req.body.wri_req.size = length;
-    bcopy(buf, req.body.wri_req.dt, length);
+    memcpy(req.body.wri_req.dt, buf, length);
     errno = snd_mbf(send_port, sizeof(req), &req);
     if (errno != E_OK) {
 	dbg_printf("cannot send packet. %d\n", errno);	/* */
@@ -141,7 +141,7 @@ W sfs_read_device(ID device, B * buf, W start, W length, W * rlength)
 	    return (res.body.rea_res.errinfo);
 	}
 
-	bcopy(res.body.rea_res.dt, &buf[length - rest_length],
+	memcpy(&buf[length - rest_length], res.body.rea_res.dt,
 	      res.body.rea_res.a_size);
 	*rlength += res.body.rea_res.a_size;
     }

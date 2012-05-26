@@ -361,9 +361,9 @@ W sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
 	    copysize = length;
 	}
 #ifdef notdef
-	bcopy(&blockbuf[offset], buf, copysize);
+	memcpy(buf, &blockbuf[offset], copysize);
 #else
-	bcopy(&cbuf[offset], buf, copysize);
+	memcpy(buf, &cbuf[offset], copysize);
 	sfs_put_cache(cn, 0);
 #endif
 	buf += copysize;
@@ -458,9 +458,9 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 #endif
 
 #ifdef notdef
-	bcopy(buf, &blockbuf[offset], copysize);
+	memcpy(&blockbuf[offset], buf, copysize);
 #else
-	bcopy(buf, &cbuf[offset], copysize);
+	memcpy(&cbuf[offset], buf, copysize);
 #endif
 
 #ifdef notdef

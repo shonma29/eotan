@@ -343,8 +343,8 @@ read_exec_header(struct inode *ip,
 	return (EP_NOEXEC);
     }
 
-    bzero((VP) text, sizeof(struct ELF_Pheader));
-    bzero((VP) data, sizeof(struct ELF_Pheader));
+    memset((VP)text, 0, sizeof(struct ELF_Pheader));
+    memset((VP)data, 0, sizeof(struct ELF_Pheader));
     for (ph_index = 0; ph_index < elfp->e_phnum; ph_index++) {
 	/* プログラムヘッダテーブルを順々に見ていき、各セクションのタイプによって
 	 * テキスト、データ、BSS の各情報の初期化を行う。

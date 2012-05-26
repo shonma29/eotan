@@ -5,7 +5,6 @@
 
 extern void boot_printf (char *fmt, ...);
 extern WORD strlen (BPTR s);
-extern WORD strnlen (BPTR s, WORD len);
 extern WORD strcpy (BPTR s1, BPTR s2);
 extern WORD strncpy (BPTR s1, BPTR s2, WORD n);
 extern WORD strncpy_with_key (BPTR s1, BPTR s2, WORD n, int key);
@@ -15,8 +14,6 @@ extern ULONG strcmp (BPTR s1, BPTR s2);
 extern ULONG strncmp (BPTR s1, BPTR s2, WORD n);
 extern char *strchr (char *s, int ch);
 extern char *strnchr (char *s, int ch, int n);
-
-extern int toupper (int ch);
 
 
 

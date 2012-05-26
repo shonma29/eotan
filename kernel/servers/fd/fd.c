@@ -503,8 +503,8 @@ W read_fd(ID caller, DDEV_REA_REQ * packet)
     dbg_printf ("bcopy(): %d, %d, %d\n", packet->start - bufstart, 0, 
 		(done_length < packet->size) ? done_length : packet->size);
 #endif
-    bcopy(&buff[packet->start - bufstart],
-	  res.body.rea_res.dt,
+    memcpy(res.body.rea_res.dt,
+	  &buff[packet->start - bufstart],
 	  (done_length < packet->size) ? done_length : packet->size);
     res.body.rea_res.dd = packet->dd;
     res.body.rea_res.a_size =
@@ -626,7 +626,7 @@ W write_fd(ID caller, DDEV_WRI_REQ * packet)
     done_length = 0;
     error = E_OK;
     ret = E_OK;
-    bcopy(packet->dt, &buff[packet->start - bufstart], packet->size);
+    memcpy(&buff[packet->start - bufstart], packet->dt, packet->size);
 #ifdef notdef
     bufstart = ROUNDDOWN(packet->start, BLOCK_SIZE);
     buflength = ROUNDUP(packet->start + packet->size, BLOCK_SIZE);

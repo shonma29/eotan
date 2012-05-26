@@ -39,14 +39,3 @@ int strlen(char *s)
     for (count = 0; *s++; count++);
     return (count);
 }
-/*
- * 文字列の長さをバイト単位で返す関数(制限値付き)
- *
- */
-int strnlen(char *s, int count)
-{
-    char *sc;
-
-    for (sc = s; count-- && *sc != '\0'; ++sc);
-    return sc - s;
-}

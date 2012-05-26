@@ -11,7 +11,7 @@ OBJS=	call_kernel.o sys_task.o sys_message.o sys_debug.o \
 	port_manager.o message_port.o sys_errno.o sys_intrpt.o \
 	sys_virtual.o sys_misc.o eventflag.o sys_evtflg.o sys_time.o
 
-OTHEROBJS= string.o binary.o interrupt.o sys_lowlib.o  \
+OTHEROBJS= strncpy2.o interrupt.o sys_lowlib.o  \
 	malloc.o dma.o
 
 all: ../libkernel.a ../libitron.a

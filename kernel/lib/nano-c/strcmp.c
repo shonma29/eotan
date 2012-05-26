@@ -1,5 +1,3 @@
-#ifndef _STRING_H_
-#define _STRING_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,17 +24,18 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "sys/types.h"
+#include "string.h"
 
-extern size_t strlen(const char *s);
-extern char *strcpy(char *dest, const char *src);
-extern char *strncpy(char *dest, const char *src, size_t n);
-extern char *strcat(char *dest, const char *src);
-extern char *strncat(char *dest, const char *src, size_t n);
-extern int strcmp(const char *s1, const char *s2);
-extern int strncmp(const char *s1, const char *s2, size_t size);
+int strcmp(const char *s1, const char *s2) {
+	unsigned char *p1 = (unsigned char*)s1;
+	unsigned char *p2 = (unsigned char*)s2;
+	size_t i;
 
-extern void *memcpy(void *dest, const void *src, size_t n);
-extern void *memset(void *s, int c, size_t n);
+	for (i = 0;; i++) {
+		int diff = p1[i] - p2[i];
 
-#endif
+		if (diff
+				|| !p1[i])	return diff;
+
+	}
+}

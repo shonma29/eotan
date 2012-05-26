@@ -223,7 +223,7 @@ VP calloc(UW size, UW nentry)
 
     rp = malloc(size * nentry);
     if (rp) {
-	bzero(rp, size * nentry);
+	memset(rp, 0, size * nentry);
     }
 
     return (rp);

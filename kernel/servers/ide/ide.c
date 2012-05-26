@@ -503,8 +503,8 @@ W read_ide(ID caller, DDEV_REA_REQ * packet)
 	goto bad;
     }
 
-    bcopy(&buff[packet->start - bufstart],
-	  res.body.rea_res.dt, done_length);
+    memcpy(res.body.rea_res.dt,
+	    &buff[packet->start - bufstart], done_length);
     res.body.rea_res.dd = packet->dd;
     res.body.rea_res.a_size = done_length;
     res.body.rea_res.errcd = E_OK;
@@ -641,7 +641,7 @@ W write_ide(ID caller, DDEV_WRI_REQ * packet)
 	done_length = packet->size;
     else
 	dbg_printf("[IDE] write buffer is too small\n");
-    bcopy(packet->dt, &buff[packet->start - bufstart], done_length);
+    memcpy(&buff[packet->start - bufstart], packet->dt, done_length);
 
 #ifdef DEBUG_1
     {
@@ -831,7 +831,7 @@ ER read_partition(W drive)
 #ifdef notdef
     dbg_printf("IDE: get_data length = %d\n", rlength);
 #endif
-    bcopy(&buf[PARTITION_OFFSET], ide_partition[drive],
+    memcpy(ide_partition[drive], &buf[PARTITION_OFFSET],
 	  sizeof(struct ide_partition) * IDE_MAX_PARTITION);
 
     ext_partition = 0;
@@ -864,7 +864,7 @@ ER read_partition(W drive)
 	    rlength =
 		get_data(drive | LBA_MODE_BIT, head, cylinder, sector, buf,
 			 1);
-	    bcopy(&buf[PARTITION_OFFSET], (char *) &pt_buf,
+	    memcpy((char *) &pt_buf, &buf[PARTITION_OFFSET],
 		  sizeof(struct ide_partition) * IDE_MAX_PARTITION);
 #ifdef notdef
 	    dbg_printf

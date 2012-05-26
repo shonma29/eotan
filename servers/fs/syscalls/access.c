@@ -57,7 +57,7 @@ W psc_access_f(struct posix_request *req)
 	return (FAIL);
     }
 #endif
-    bzero(pathname, req->param.par_access.pathlen + 1);
+    memset(pathname, 0, req->param.par_access.pathlen + 1);
 
     /* パス名をユーザプロセスから POSIX サーバにコピーする。
      */

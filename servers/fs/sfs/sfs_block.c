@@ -636,10 +636,10 @@ sfs_set_indirect_block_num(W fd,
 	newinblock = sfs_alloc_block(fd, fsp);
 	ip->sfs_i_indirect[inblock] = newinblock;
 #ifdef notdef
-	bzero((B *) & inbuf, sizeof(inbuf));
+	memset((B*)&inbuf, 0, sizeof(inbuf));
 #else
 	sfs_get_cache(fd, newinblock, &cn, (B **) & inbufp);
-	bzero((B *) inbufp, sizeof(struct sfs_indirect));
+	memset((B*)inbufp, 0, sizeof(struct sfs_indirect));
 #endif
     } else {
 #ifdef notdef
@@ -708,8 +708,8 @@ sfs_set_dindirect_block_num(W fd,
     dinblock_offset = blockno % SFS_INDIRECT_BLOCK;
 
 #ifdef notdef
-    bzero((VP) & inbuf, sizeof(inbuf));
-    bzero((VP) & dinbuf, sizeof(dinbuf));
+    memset((VP)&inbuf, 0, sizeof(inbuf));
+    memset((VP)&dinbuf, 0, sizeof(dinbuf));
 #endif
     if (ip->sfs_i_dindirect[inblock] <= 0) {
 	/* 一重目の間接ブロックの更新(アロケート)
@@ -717,10 +717,10 @@ sfs_set_dindirect_block_num(W fd,
 	newinblock = sfs_alloc_block(fd, fsp);
 	ip->sfs_i_dindirect[inblock] = newinblock;
 #ifdef notdef
-	bzero((B *) & inbuf, sizeof(inbuf));
+	memset((B*)&inbuf, 0, sizeof(inbuf));
 #else
 	sfs_get_cache(fd, newinblock, &cn1, (B **) & inbufp);
-	bzero((B *) inbufp, sizeof(struct sfs_indirect));
+	memset((B*)inbufp, 0, sizeof(struct sfs_indirect));
 #endif
     } else {
 #ifdef notdef
@@ -739,7 +739,7 @@ sfs_set_dindirect_block_num(W fd,
 	 */
 	newdinblock = sfs_alloc_block(fd, fsp);
 	inbuf.sfs_in_block[dinblock] = newdinblock;
-	bzero((B *) & dinbuf, sizeof(dinbuf));
+	memset((B*)&dinbuf, 0, sizeof(dinbuf));
     } else {
 	sfs_read_block(fd, inbuf.sfs_in_block[dinblock], fsp->fs_blksize,
 		       (B *) & dinbuf);
@@ -763,7 +763,7 @@ sfs_set_dindirect_block_num(W fd,
 	inbufp->sfs_in_block[dinblock] = newdinblock;
 	sfs_put_cache(cn1, 1);
 	sfs_get_cache(fd, newdinblock, &cn2, (B **) & dinbufp);
-	bzero((B *) dinbufp, sizeof(struct sfs_indirect));
+	memset((B*)dinbufp, 0, sizeof(struct sfs_indirect));
     } else {
 	sfs_put_cache(cn1, 0);
 	sfs_get_cache(fd, inbufp->sfs_in_block[dinblock], &cn2,

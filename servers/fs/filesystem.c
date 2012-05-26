@@ -387,7 +387,7 @@ struct fs *alloc_fs(void)
     p = free_fs;
     free_fs = free_fs->fs_next;
 
-    bzero((B *) p, sizeof(struct fs));
+    memset((B*)p, 0, sizeof(struct fs));
     return (p);
 }
 
@@ -1298,7 +1298,7 @@ struct inode *alloc_inode(void)
     p = free_inode;
     free_inode = free_inode->i_next;
 
-    bzero((B *) p, sizeof(struct inode));
+    memset((B*)p, 0, sizeof(struct inode));
     p->i_prev = p->i_next = p;
     p->i_refcount = 1;
 #ifdef notdef

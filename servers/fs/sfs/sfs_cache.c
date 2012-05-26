@@ -55,7 +55,7 @@ void sfs_purge_cache(void)
     int i;
 
     for (i = 0; i < CACHE_SIZE; ++i) {
-	bzero((B *) (&cache_data[i]), sizeof(SFS_BLOCK_CACHE));
+	memset((B*)(&cache_data[i]), 0, sizeof(SFS_BLOCK_CACHE));
 	cache_data[i].lru_next = i + 1;
 	cache_data[i].lru_prev = i - 1;
 	cache_data[i].hash_next = -1;
@@ -154,7 +154,7 @@ void sfs_get_cache(W fd, W blockno, W * cn, B ** ptr)
 		}
 	    }
 	}
-	bzero(cp->buf, SFS_BLOCK_SIZE);
+	memset(cp->buf, 0, SFS_BLOCK_SIZE);
 
 	sfs_read_block(fd, blockno, SFS_BLOCK_SIZE, cp->buf);
 	cp->fd = fd;

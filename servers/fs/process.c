@@ -137,12 +137,12 @@ W init_process(void)
     W i;
 
     for (i = 0; i < MAX_PROCESS - 1; i++) {
-	bzero((B *) & proc_table[i], sizeof(struct proc));
+	memset((B*)&proc_table[i], 0, sizeof(struct proc));
 	proc_table[i].proc_status = PS_DORMANT;
 	proc_table[i].proc_next = &proc_table[i + 1];
 	proc_table[i].proc_pid = i;
     }
-    bzero((B *) & proc_table[i], sizeof(struct proc));
+    memset((B*)&proc_table[i], 0, sizeof(struct proc));
     proc_table[i].proc_status = PS_DORMANT;
     proc_table[i].proc_next = NULL;
     proc_table[i].proc_pid = i;
@@ -511,7 +511,7 @@ W proc_alloc_fileid(W procid, W * retval)
     for (i = 0; i < MAX_OPEN; i++) {
 	if (proc_table[procid].proc_open_file[i].f_inode == NULL) {
 	    *retval = i;
-	    bzero((B *) & (proc_table[procid].proc_open_file[i]),
+	    memset((B*)&(proc_table[procid].proc_open_file[i]), 0,
 		  sizeof(struct file));
 	    return (EP_OK);
 	}
@@ -658,7 +658,7 @@ W proc_alloc_proc(struct proc ** procp)
     *procp = free_proc;
     free_proc = (*procp)->proc_next;
     (*procp)->proc_next = NULL;
-/*  bzero ((void *)*procp, sizeof (struct proc)); */
+/*  memset((void *)*procp, 0, sizeof(struct proc)); */
     return (EP_OK);
 }
 

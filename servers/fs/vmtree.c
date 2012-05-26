@@ -498,7 +498,7 @@ struct vm_directory *alloc_vm_directory(struct vm_tree *treep, UW addr)
 	return (NULL);
     }
 
-    bzero((VP) dirp, sizeof(struct vm_directory));
+    memset((VP)dirp, 0, sizeof(struct vm_directory));
     dirp->access = treep->access;
     dirp->tree_top = treep;
     dirp->start = addr;
@@ -590,7 +590,7 @@ setup_vmtree(struct proc * procp, ID taskid, UW access, FP handler,
 	if (treep == NULL) {
 	    return (EP_NOMEM);
 	}
-	bzero((VP) treep, sizeof(struct vm_tree));
+	memset((VP)treep, 0, sizeof(struct vm_tree));
 	treep->access = access;
 	treep->vm_handler = handler;
 	procp->vm_tree = treep;
@@ -612,7 +612,7 @@ setup_vmtree(struct proc * procp, ID taskid, UW access, FP handler,
 		    if (dirp == NULL) {
 			return (EP_NOMEM);
 		    }
-		    bzero((VP) dirp, sizeof(struct vm_directory));
+		    memset((VP)dirp, 0, sizeof(struct vm_directory));
 		    dirp->access = access;
 		    dirp->tree_top = treep;
 		    dirp->start = dir_index * (PAGE_SIZE * MAX_PAGE_ENTRY);
@@ -629,7 +629,7 @@ setup_vmtree(struct proc * procp, ID taskid, UW access, FP handler,
 			/* メモリ不足 */
 			return (EP_NOMEM);
 		    }
-		    bzero((VP) pagep, sizeof(struct vm_page));
+		    memset((VP)pagep, 0, sizeof(struct vm_page));
 		    dirp->page_table[page_index] = pagep;
 		}
 		pagep->addr = paddr;

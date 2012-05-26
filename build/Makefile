@@ -36,7 +36,7 @@ clean:
 	${MAKE} -C ../kernel/servers/psaux clean
 	${MAKE} -C ../kernel/core clean
 	${MAKE} -C ../kernel/init clean
-	${MAKE} -C ../kernel/lib/libnc clean
+	${MAKE} -C ../kernel/lib/nano-c clean
 	${MAKE} -C ../servers/fs clean
 	${MAKE} -C ../servers/ramdisk clean
 	${MAKE} -C ../lib/lowlib clean

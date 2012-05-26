@@ -56,7 +56,7 @@ OBJS= \
 
 OTHEROBJ=../lib/libkernel/port_manager.o ../lib/libkernel/message_port.o \
            ../lib/libkernel/sys_errno.o \
-	../lib/libnc/vnprintf.o ../lib/libnc/strcpy.o ../lib/libnc/strncmp.o
+	../lib/nano-c/vnprintf.o ../lib/nano-c/strcpy.o ../lib/nano-c/strncmp.o
 
 SRCS=main.c memory.c task.c time.c version.c error.c dummy.c printk.c \
      console.c interrupt.c syscall.c strncmpk.c timer.c \
@@ -74,7 +74,7 @@ libkernel.a:
 	${MAKE} -C ../lib/libkernel
 
 ../lib/libnc.a:
-	${MAKE} -C ../lib/libnc
+	${MAKE} -C ../lib/nano-c
 
 port_manager:
 	${MAKE} -C ../servers

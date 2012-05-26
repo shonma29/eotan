@@ -104,7 +104,7 @@ static W	find_entry (PORT_NAME name);
 void
 init_regist_table (void)
 {
-  bzero (table, sizeof (table));
+  memset(table, 0, sizeof(table));
 }
 
 
@@ -205,7 +205,7 @@ unregist_database (PORT_NAME name, ID *port, ID task)
   /*
    * find_entry() によって、発見したエントリを 0 で埋める。
    */
-  bzero (&table[index], sizeof (struct data_entry_t));
+  memset(&table[index], 0, sizeof(struct data_entry_t));
 
   return (E_PORT_OK);  
 }

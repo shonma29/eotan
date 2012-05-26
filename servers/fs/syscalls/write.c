@@ -75,7 +75,7 @@ W psc_write_f(struct posix_request *req)
 	(fp->f_offset > fp->f_inode->i_size)) {
       /* 通常ファイルで，書き込む場所がファイルの内容が存在しない場所 */
       /* そこまでを 0 で埋める */
-      bzero(buf, sizeof(buf));
+      memset(buf, 0, sizeof(buf));
       for (rest_length = fp->f_offset - fp->f_inode->i_size;
 	   rest_length > 0; rest_length -= rlength) {
 	len = rest_length > MAX_BODY_SIZE ? MAX_BODY_SIZE : rest_length;

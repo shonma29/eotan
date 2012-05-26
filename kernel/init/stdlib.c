@@ -110,7 +110,7 @@ static W writechar(ID port, ID resport, UB * buf, W length)
     req.header.msgtyp = DEV_WRI;
     req.body.wri_req.dd = 0xAA;
     req.body.wri_req.size = length;
-    bcopy(buf, req.body.wri_req.dt, length);
+    memcpy(req.body.wri_req.dt, buf, length);
     error = snd_mbf(port, sizeof(req), &req);
     if (error != E_OK) {
 	dbg_printf("cannot send packet. %d(%s, %d)\n", error, __FILE__,

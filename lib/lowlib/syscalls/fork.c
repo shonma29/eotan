@@ -53,8 +53,6 @@ static char rcsid[] =
 
 #include "../lowlib.h"
 
-extern int bzero(VP, int);
-
 /* fork システムコールの処理
  *
  */
@@ -81,7 +79,7 @@ int psys_fork(void *argp)
      */
 
     /* 子プロセスの main task の生成 */
-    bzero(&task_info, sizeof(task_info));
+    memset(&task_info, 0, sizeof(task_info));
     task_info.tskatr = TA_HLNG;
     task_info.startaddr = args->fork_entry;
     task_info.itskpri = POSIX_TASK_LEVEL;
