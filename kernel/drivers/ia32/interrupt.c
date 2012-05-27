@@ -128,9 +128,6 @@ W init_interrupt(void)
 #endif
 
     /* システムコール用割込みルーチン */
-#if 0
-    set_idt(INT_SYSCALL, KERNEL_CSEG, (W) int64_handler, TRAP_DESC, 0);
-#else
     memset((VP)&cg, 0, sizeof(GATE_DESC));
     cg.type = TYPE_GATE;
     cg.dpl = USER_DPL;
@@ -138,13 +135,8 @@ W init_interrupt(void)
     cg.selector = KERNEL_CSEG;
     SET_OFFSET_GATE(cg, (W) syscall_handler);
     set_gdt(ITRON_GATE/sizeof(GEN_DESC), (GEN_DESC *) &cg);
-#endif
-#if 0
-    set_idt(65, KERNEL_CSEG, (W) posix_handler, TRAP_DESC, 0);
-#else
     SET_OFFSET_GATE(cg, (W) posix_handler);
     set_gdt(POSIX_GATE/sizeof(GEN_DESC), (GEN_DESC *) &cg);
-#endif
 
     reset_intr_mask(3);
     reset_intr_mask(9);

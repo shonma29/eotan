@@ -31,7 +31,6 @@ Version 2, June 1991
 #define INT_STACK_SEG		12
 #define INT_PROTECTION		13
 #define INT_PAGE_FAULT		14
-#define INT_SYSCALL		64
 
 struct idt_t
 {
@@ -101,9 +100,7 @@ extern W	int42_handler (void);
 extern W	int43_handler (void);
 extern W        int44_handler (void);   /* psaux */
 extern W	int46_handler (void);
-extern W	int64_handler (void);
 extern W	syscall_handler(void);
-extern W	int65_handler (void);
 extern W	posix_handler (void);
 extern void	intr_interval (void);
 extern void	start_interval (void);

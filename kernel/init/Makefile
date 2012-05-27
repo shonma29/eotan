@@ -31,7 +31,7 @@ AS=as
 %.o: %.s
 	$(CPP) $(ASFLAGS) $*.s | $(AS) -o $*.o
 
-OBJS= start.o main.o device.o posix_if.o command.o stdlib.o
+OBJS= start.o main.o device.o posix_if.o lowlib.o stdlib.o
 
 all: init
 
@@ -45,7 +45,7 @@ device.o: init.h device.c
 
 start.o: init.h start.c
 
-command.o: command.c
+lowlib.o: lowlib.c
 
 stdlib.o: stdlib.c
 

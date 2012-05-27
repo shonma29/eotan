@@ -15,7 +15,6 @@
 #define SLAVE_8259A_DATA	$0xa1
 
 
-.globl	open_interrupt, ignore_handler
 .globl  int1_handler	
 .globl  int2_handler	
 .globl  int3_handler	
@@ -32,22 +31,6 @@
 .globl  int15_handler
 .globl  int16_handler
 .globl  int17_handler
-#ifdef notdef
-.globl  int18_handler
-.globl  int19_handler
-.globl  int20_handler
-.globl  int21_handler
-.globl  int22_handler
-.globl  int23_handler
-.globl  int24_handler
-.globl  int25_handler
-.globl  int26_handler
-.globl  int27_handler
-.globl  int28_handler
-.globl  int29_handler
-.globl  int30_handler
-.globl  int31_handler
-#endif
 .globl  int32_handler
 .globl  int33_handler
 .globl  int34_handler
@@ -60,20 +43,9 @@
 .globl	int43_handler
 .globl  int44_handler
 .globl	int46_handler
-.globl	syscall_handler, int64_handler, posix_handler
-.globl  btron_handler, int66_handler	
-/* .globl	int32_handler, int33_handler, int41_handler, int43_handler */
+.globl	syscall_handler, posix_handler
 
 .text
-
-
-intr_msg:	.ascii	"ignore int.\n"
-ignore_handler:
-		cli
-		movb	0x20, %al
-		movw	MASTER_8259A_COM, %dx
-		outb	%al, %dx
-		iret
 
 /****************************************************************************
  * int0_handler --- 除算エラー
@@ -958,7 +930,6 @@ int47_handler:
  *
  */
 syscall_handler:
-int64_handler:
 		pushl	%ds
 		pushl	%es
 	
@@ -989,11 +960,7 @@ int64_handler:
 
 		popl	%es
 		popl	%ds
-#if 0
-		iret
-#else
 		lret
-#endif
 
 /**************************************************************************
  * int65_handler --- POSIX system call.
@@ -1011,7 +978,6 @@ int64_handler:
  *
  */
 posix_handler:
-int65_handler:
 		pushl	%ds
 		pushl	%es
 	
@@ -1044,120 +1010,4 @@ int65_handler:
 	
 		popl	%es
 		popl	%ds
-#if 0
-		iret
-#else
 		lret
-#endif
-
-#ifdef notdef	
-		pushl 	%ebp
-		movl	%esp,%ebp
-		pushl	%edx	/* 引数の先頭番地 */
-		pushl	%eax	/* システムコール番号 */
-		movw	$0x10, %ax
-		movw	%ax,%ds
-		movw	%ax,%es
-		movw	%ax,%fs
-		movw	%ax,%gs		# and ds to gs
-		call 	trap
-		movw	$0x23, %ax
-		movw	%ax,%ds
-		movw	%ax,%es
-		movw	%ax,%fs
-		movw	%ax,%gs		# and ds to gs
-		iret
-#endif	
-
-/**************************************************************************
- * int66_handler --- BTRON system call.
- *
- *	システムコール割り込みの処理。
- *	そのため、他の割り込みと異なり、EOI などの処理を行わない。
- *
- *	システムコール処理では次のことを「仮定」している。
- *	1) システムコール番号は、レジスタ eax に収められている。
- *	2) 同じくシステムコールへの引数の先頭番地は、レジスタ edx に
- *	   収められている。
- *	3) システムコールからの返り値は、レジスタ eax に収められる。
- *	   (ユーザプロセスはこのことを「知って」いることを仮定している)
- *
- */
-_btron_handler:
-int66_handler:
-		pushl	%ds
-		pushl	%es
-	
-		pushl   %ebx
-		pushl   %ecx
-		pushl	%edx
-		pushl	%esi
-		pushl	%edi
-		pushl 	%ebp
-		movl	%esp,%ebp
-		pushl	%edx	/* 引数の先頭番地 */
-		pushl	%eax	/* システムコール番号 */
-		pushl	$66	/* trap 番号 */
-
-		movw	$0x10, %ax
-		movw	%ax,%ds
-		movw	%ax,%es
-#if 0
-		movw	%ax,%fs
-		movw	%ax,%gs		# and ds to gs
-#endif
-
-		call 	trap
-
-		leave
-		popl	%edi
-		popl	%esi
-		popl	%edx
-		popl    %ecx
-		popl    %ebx
-	
-		popl	%es
-		popl	%ds
-#if 0
-		iret
-#else
-		lret
-#endif
-		
-
-lock_count:	.word	0
-/*****************************************************************************
- *
- */
-open_interrupt:
-		sti
-		ret
-
-	
-	
-.globl	call_syscall
-
-/* call_syscall: 汎用型システムコールルーチン (obsolute)
- *
- * . スタック形式:
- *
- *		+--------------------+
- *		|    return addr     |	+4
- *		+--------------------+
- *		|    syscall no.     |  +8
- *		+--------------------+
- *		|    argument #1     |  +12
- *		+--------------------+
- *		|    argument #2     |  +16
- *		+--------------------+
- *		|    argument #3     |
- *
- */
-call_syscall:
-		pushl 	%ebp
-		movl	%esp,%ebp
-		movl	8(%ebp), %eax
-		leal	12(%ebp), %edx
-		int	$64
-		leave
-		ret

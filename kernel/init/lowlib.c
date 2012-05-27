@@ -201,23 +201,8 @@ char rcsid[] = "$Id: command.c,v 1.17 2000/01/28 10:28:07 monaka Exp $";
  */
 #include "init.h"
 #include "lowlib.h"
-#include "init-stdlib.h"
-#include "../lib/libkernel/libkernel.h"
-#include "../lib/libkernel/port.h"
 
 
-
-ER reset(void)
-{
-    vsys_msc(2, NULL);
-    return E_OK;
-}
-
-ER falldown(void)
-{
-    vsys_msc(1, NULL);
-    return E_OK;
-}
 
 ER lowlib_load(B * name)
 {
@@ -259,92 +244,6 @@ ER lowlib_load(B * name)
 	printf("lowlib_load: cannot write lowlib data.\n");
 	return E_SYS;
     }
-
-    return E_OK;
-}
-
-ER print_task_list(void)
-{
-    vsys_msc(6, NULL);
-    return E_OK;
-}
-
-ER pmemstat(void)
-{
-    vsys_msc(7, NULL);
-    return E_OK;
-}
-
-ER k106jp(void)
-{
-    DDEV_REQ req;		/* 要求パケット */
-    DDEV_RES res;		/* 返答パケット */
-    ER error;
-    W rsize;
-    ID device;
-    ID rport;
-
-    error = find_port("driver.keyboard", &device);
-    if (error) {
-	printf("cannot find port\n");
-	return (error);
-    }
-
-    rport = get_port(sizeof(res), sizeof(res));
-    if (dev_recv == 0) {
-	printf("cannot get port\n");
-	return (E_NOMEM);
-    }
-
-    req.header.mbfid = rport;
-    req.header.msgtyp = DEV_CTL;
-    req.body.ctl_req.cmd = KEYBOARD_CHANGE_106JP;
-    error = snd_mbf(device, sizeof(req), &req);
-    if (error != E_OK) {
-	printf("cannot send packet. %d\n", error);	/* */
-	return (error);
-    }
-    printf("kernel: snd_mbf\n");	/* */
-    rsize = sizeof(res);
-    rcv_mbf((UB *) & res, (INT *) & rsize, rport);
-    del_mbf(rport);
-
-    return E_OK;
-}
-
-ER k101us(void)
-{
-    DDEV_REQ req;		/* 要求パケット */
-    DDEV_RES res;		/* 返答パケット */
-    ER error;
-    W rsize;
-    ID device;
-    ID rport;
-
-    error = find_port("driver.keyboard", &device);
-    if (error) {
-	printf("cannot find port\n");
-	return (error);
-    }
-
-    rport = get_port(sizeof(res), sizeof(res));
-    if (dev_recv == 0) {
-	printf("cannot get port\n");
-	return (E_NOMEM);
-    }
-
-    req.header.mbfid = rport;
-    req.header.msgtyp = DEV_CTL;
-    req.body.ctl_req.cmd = KEYBOARD_CHANGE_101US;
-    error = snd_mbf(device, sizeof(req), &req);
-    if (error != E_OK) {
-	printf("cannot send packet. %d\n", error);	/* */
-	return (error);
-    }
-    printf("kernel: snd_mbf\n");	/* */
-    rsize = sizeof(res);
-    rcv_mbf((UB *) & res, (INT *) & rsize, rport);
-    del_mbf(rport);
 
     return E_OK;
 }
