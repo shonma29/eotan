@@ -148,13 +148,6 @@ extern void sys_init_task(void);
 extern void debugger(void);
 
 /* --------------------------------------------------------- */
-/* RS232C デバイス管理タスク				     */
-/* --------------------------------------------------------- */
-extern void rs232c_task(void);
-extern void keyboard_task(void);
-
-
-/* --------------------------------------------------------- */
 /* port manager                                              */
 /* --------------------------------------------------------- */
 extern void regist_port(struct port_manager_msg_t *msgp);

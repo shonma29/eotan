@@ -89,8 +89,6 @@ static int	keyboard_map_table[4][255] =
 };
 #endif
 
-int  keyboard_type;
-
 volatile int	cbuf;
 volatile int	input_flag;
 
@@ -130,8 +128,6 @@ init_keyboard (void)
 {
   BYTE status;
 
-  keyboard_type = K_101US;
-
   set_idt (INT_KEYBOARD, 0x08, (int)int33_handler, INTERRUPT_DESC, 0);
   reset_intr_mask (1);
   
@@ -160,19 +156,11 @@ read_keyboard (void)
   while (keyboard_map_table[mode][(ch & 0x7f)] == 0);
   return (keyboard_map_table[mode][ch & 0x7f]);
 #endif
-  if(keyboard_type == K_101US){
-    do{
-      ch = get_one_char ();
-      mode = get_mode (ch); 
-    }while(key_table_101[mode][(ch & 0x7f)] == 0);
-    return key_table_101[mode][(ch & 0x7f)];
-  }else{
-    do{
-      ch = get_one_char ();
-      mode = get_mode (ch);
-    }while(key_table_106[mode][(ch & 0x7f)] == 0);
-    return key_table_106[mode][(ch & 0x7f)];
-  }
+  do{
+    ch = get_one_char ();
+    mode = get_mode (ch); 
+  }while(key_table[mode][(ch & 0x7f)] == 0);
+  return key_table[mode][(ch & 0x7f)];
 }
 
 /**************************************************************************
@@ -191,14 +179,7 @@ read_keyboard_no_hung (void)
   return (keyboard_map_table[mode][ch & 0x7f]);
 #endif
   
-  if(keyboard_type == K_101US){
-    return key_table_101[mode][(ch & 0x7f)];
-  }else{
-    return key_table_106[mode][(ch & 0x7f)];
-  }
-
-
-
+  return key_table[mode][(ch & 0x7f)];
 }
 
 void
@@ -290,11 +271,3 @@ get_one_char (void)
   ch = cbuf;
   return (ch);
 }  
-void k101us(char *argv[])
-{
-  keyboard_type = K_101US;
-}
-void k106jp(char *argv[])
-{
-  keyboard_type = K_106JP;
-}

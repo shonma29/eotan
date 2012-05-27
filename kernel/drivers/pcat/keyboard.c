@@ -23,26 +23,13 @@ Version 2, June 1991
 #include "interrupt.h"
 #include "func.h"
 #include "../../include/mpu/io.h"
-
-#include "key_def.h"
-#include "key_type.h"
-
-#define MAX_KEYENTRY	1000
-
+#include "../../include/keycode.h"
 
 #define KEY_COM		0x64
 #define KEY_DATA	0x60
 #define KEY_STAT	0x64
 
-/* 文字をコントロールキーに変換する */
-#define C(x)		(x & 0x1f)
-
 #define INT_KEYBOARD	33
-
-#define NORMAL_MODE	0
-#define SHIFT_MODE	1
-#define CONTROL_MODE	2
-#define ALT_MODE	3
 
 /* status bit mask */
 #define I_BUF_FULL_BIT	0x02
@@ -54,94 +41,6 @@ Version 2, June 1991
 #define RESET_COMMAND	0xF0
 
 #define ISBREAK(ch)     (ch & 0x80)
-
-#if 0				/* include btron-pc/include/keyboard.h */
-  /* 下記の記述はいずれ消去する予定 */
-
-/*******************************************************************************
- *	シフトキーの状態を表すマクロ定数
- *
- */
-#define CTL	(0x0100)
-#define SFT	(0x0200)
-#define ALT	(0x0400)
-#define ENCAP	(0x0800)
-
-#define NORMAL_MODE	0
-#define SHIFT_MODE	1
-#define ALT_MODE	2
-#define CTL_MODE	3
-
-#define CAPS_DOWN	1
-
-/* 特殊キー */
-#define NOK	0
-#define ESC	0x1b
-#define BS	'\b'
-#define TAB	'\t'
-#define CTL	(0x0100)
-#define SFT	(0x0200)
-#define ALT	(0x0400)
-#define ENCAP	(0x0800)
-
-#define ISBREAK(ch)	(ch & 0x80)
-
-static int key_table[4][255] = {
-
-    {				/* normal */
-/*         0     1    2    3    4    5    6    7    8    9    a    b    c    d    e    f */
-/* 0 */ NOK, ESC, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
-     '-', '=', BS, TAB,
-/* 1 */ 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']',
-     '\n', CTL, 'a', 's',
-/* 2 */ 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '~', SFT, NOK,
-     'z', 'x', 'c', 'v',
-/* 3 */ 'b', 'n', 'm', '<', '>', '/', SFT, '-', ALT, ' ', 0, 0, 0, 0,
-     0, 0,
-     },
-
-    {				/* Shift */
-/*         0     1    2    3    4    5    6    7    8    9    a    b    c    d    e    f */
-/* 0 */ NOK, ESC, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
-     '-', '+', BS, TAB,
-/* 1 */ 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']',
-     '\n', CTL, 'A', 'S',
-/* 2 */ 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', '\'', '~', SFT, NOK,
-     'Z', 'X', 'C', 'V',
-/* 3 */ 'B', 'N', 'M', '<', '>', '/', SFT, '-', ALT, ' ', 0, 0, 0, 0,
-     0, 0,
-     },
-
-    {				/* control */
-/*         0     1    2    3    4    5    6    7    8    9    a    b    c    d    e    f */
-/* 0 */ NOK, ESC, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
-     '-', '=', BS, TAB,
-/* 1 */ 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']',
-     '\n', CTL, 'a', 's',
-/* 2 */ 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '~', SFT, NOK,
-     'z', 'x', 'c', 'v',
-/* 3 */ 'b', 'n', 'm', '<', '>', '/', SFT, '-', ALT, ' ', 0, 0, 0, 0,
-     0, 0,
-     },
-
-    {				/* Alt */
-/*         0     1    2    3    4    5    6    7    8    9    a    b    c    d    e    f */
-/* 0 */ NOK, ESC, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
-     '-', '=', BS, TAB,
-/* 1 */ 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']',
-     '\n', CTL, 'a', 's',
-/* 2 */ 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '~', SFT, NOK,
-     'z', 'x', 'c', 'v',
-/* 3 */ 'b', 'n', 'm', '<', '>', '/', SFT, '-', ALT, ' ', 0, 0, 0, 0,
-     0, 0,
-     },
-};
-#endif				/* include btron-pc/include/keyboard.h */
-
-UW keyboard_type;
-
-UW shiftkey_code;
-UW capskey;
 
 struct key_entry {
     struct key_entry *next;
@@ -160,9 +59,6 @@ struct keyboard {
 static struct keyboard input_buffer;
 static struct key_entry *freeentry;
 
-static void cmd_kbd(UB cmd);
-
-
 
 static struct key_entry *alloc_key(UW code)
 {
@@ -178,11 +74,6 @@ static struct key_entry *alloc_key(UW code)
     return (p);
 }
 
-static void dealloc_key(struct key_entry *key)
-{
-    key->next = freeentry;
-    freeentry = key;
-}
 
 /****************************************************************************
  * init_keyboard --- 
@@ -190,14 +81,7 @@ static void dealloc_key(struct key_entry *key)
  */
 ER init_keyboard(void)
 {
-#if 0
-    INT i;
-    T_CTSK par_task;
-    T_CMBF par_msg;
-#endif
     W status;
-
-    keyboard_type = K_101US;
 
     set_idt(INT_KEYBOARD, 0x08, (int) int33_handler, INTERRUPT_DESC, 0);
     reset_intr_mask(1);
@@ -205,121 +89,6 @@ ER init_keyboard(void)
     printk("keyboard status: 0x%x\n", status);
 
     return (E_OK);
-}
-
-
-#if 0
-static void read_keyid(void)
-{
-    cmd_kbd(0x60);
-    outb(KEY_DATA, 0xf2);
-}
-
-#endif
-
-static void kbd_wait(void)
-{
-    W i;
-
-    for (i = 0; i < 100000; i++) {
-	if ((inb(KEY_STAT) & I_BUF_FULL_BIT) == 0)
-	    return;
-    }
-    printk("keyboard overflow.\n");
-}
-
-static void cmd_kbd(UB cmd)
-{
-#if 0
-    UH ret;
-#endif
-
-    kbd_wait();
-    outb(KEY_COM, cmd);
-}
-
-/*
- *
- */
-int get_mode(int ch)
-{
-    if (ch & CTRL) {
-	return (CONTROL_MODE);
-    } else if (ch & SHIFT) {
-	return (SHIFT_MODE);
-    } else if (ch & ALT) {
-	return (ALT_MODE);
-    } else if (ch & ENCAP) {
-	return (NORMAL_MODE);	/* 本当は違う値が返る */
-    }
-
-    return (NORMAL_MODE);
-}
-
-void set_keyboard_type(UW type)
-{
-    keyboard_type = type;
-}
-
-W getchar(void)
-{
-    struct key_entry ch;
-    INT size;
-
-    rcv_mbf((VP) & ch, &size, ITRON_KEYBOARD_MBF);
-#ifdef notdef
-    printk("getchar: key = 0x%x, mode = %d, converted key = 0x%x\n",
-	   ch.ch & 0x7f, get_mode(ch.ch),
-	   key_table[get_mode(ch.ch)][(ch.ch) & 0xff]);
-#endif
-
-    if (keyboard_type == K_101US) {
-	return (key_table_101[get_mode(ch.ch)][ch.ch & 0x7f]);
-    } else {
-	return (key_table_106[get_mode(ch.ch)][ch.ch & 0x7f]);
-    }
-}
-
-
-
-/***********************************************************************************
- * keyboard_task --- 
- *
- */
-void keyboard_task(void)
-{
-    struct key_entry *p;
-
-    for (;;) {
-	slp_tsk();		/* 割り込みによって目覚めるのを待つ */
-	if (input_buffer.first) {
-	    p = input_buffer.first;
-	    if (input_buffer.first == input_buffer.last) {
-		input_buffer.first = input_buffer.last = NULL;
-	    } else {
-		input_buffer.first = input_buffer.first->next;
-	    }
-	    snd_mbf(ITRON_KEYBOARD_MBF, sizeof(struct key_entry), p);	/** */
-	    dealloc_key(p);
-#if 0
-	    printk("-- %d --\n", p->ch);/** **/
-#endif
-	}
-    }
-}
-
-void intr_kbd_test(void)
-{
-    UW key_code;
-
-    kbd_wait();
-    key_code = inb(KEY_DATA);
-    if (key_code == 0xfe)
-	return;
-    printk("- key_code = 0x%x\n", key_code);
-    cmd_kbd(0xad);
-    cmd_kbd(0xae);
-    return;
 }
 
 /*
@@ -399,10 +168,6 @@ W intr_kbd(void)
     }
     ena_int();
 
-#if 0
-    printk("key code = 0x%x, char = 0x%x", key_code, ch);	/* */
-#endif
-
     if ((error = wup_tsk(ITRON_KEYBOARD)) != E_OK) {
 	if (error != E_OBJ) {
 	    printk("errno = %d\n", error);
@@ -418,10 +183,6 @@ void system_reset()
   while ((inb(KEY_STAT) & I_BUF_FULL_BIT) == I_BUF_FULL_BIT)
     inb(KEY_DATA);
   dis_int();
-#if 0
-  outb(KEY_COM, AUX_ITF_DISABLE);
-  outb(KEY_COM, KBD_ITF_DISABLE);
-#endif
   outb(KEY_COM, RESET_COMMAND);
   asm("hlt");
 }

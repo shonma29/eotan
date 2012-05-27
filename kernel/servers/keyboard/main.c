@@ -432,14 +432,12 @@ W control_keyboard(ID caller, ID tskid, DDEV_CTL_REQ * packet)
 	return (E_OK);
 
     case KEYBOARD_CHANGE_106JP:
-	keyboard_select = K_106JP;
-	respond_ctrl(caller, packet->dd, E_OK);
-	return (E_OK);
+	respond_ctrl(caller, packet->dd, E_NOSPT);
+	return (E_NOSPT);
 
     case KEYBOARD_CHANGE_101US:
-	keyboard_select = K_101US;
-	respond_ctrl(caller, packet->dd, E_OK);
-	return (E_OK);
+	respond_ctrl(caller, packet->dd, E_NOSPT);
+	return (E_NOSPT);
 
     case KEYBOARD_ENA_EOF:
 	driver_mode |= ENAEOFMODE;

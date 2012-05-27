@@ -120,8 +120,6 @@ static char rcsid[] =
 
 
 
-W keyboard_select = K_101US;
-
 UW shiftkey_code;
 UW capskey;
 
@@ -148,11 +146,7 @@ init_keyboard_interrupt()
 
 static W get_keycode(int cont, int num)
 {
-    if (keyboard_select == K_101US) {
-	return key_table_101[cont][num];
-    } else {
-	return key_table_106[cont][num];
-    }
+    return key_table[cont][num];
 }
 /*
  * キーボード割り込みのハンドラ
