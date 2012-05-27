@@ -27,6 +27,7 @@ static char rcsid[] =
  *
  */
 
+#include "../../../include/stdarg.h"
 #include "../../lib/libkernel/libkernel.h"
 #include "ide.h"
 

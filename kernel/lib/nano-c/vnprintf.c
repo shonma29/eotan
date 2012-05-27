@@ -25,43 +25,49 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include "../../../include/stdarg.h"
-#include "../../../include/itron/types.h"
 
 #define MAX_INT_COLUMN (10)
 #define MAX_INT_BITS (32)
 
+#ifndef TRUE
+#define TRUE 1
+#endif
+#ifndef FALSE
+#define FALSE 0
+#endif
+
 typedef struct _State {
-	W (*handler)(struct _State*);
-	B *format;
+	int (*handler)(struct _State*);
+	char *format;
 	va_list ap;
-	void (*out)(const B);
-	W len;
+	void (*out)(const char);
+	int len;
 } State;
 
-static void _putchar(State *s, const B c);
-static void _puts(State *s, const B *str);
-static void _putd(State *s, const W v);
-static void _puth(State *s, const W v);
-static W _immediate(State *s);
-static W _format(State *s);
-static W _escape(State *s);
+static void _putchar(State *s, const char c);
+static void _puts(State *s, const char *str);
+static void _putd(State *s, const int v);
+static void _puth(State *s, const int v);
+static int _immediate(State *s);
+static int _format(State *s);
+static int _escape(State *s);
 
 
-static void _putchar(State *s, const B c) {
+static void _putchar(State *s, const char c) {
 	s->len++;
 	s->out(c);
 }
 
-static void _puts(State *s, const B *str) {
-	B c;
+static void _puts(State *s, const char *str) {
+	char c;
 
 	for (; (c = *str); str++)	_putchar(s, c);
 }
 
-static void _putd(State *s, const W v) {
-	B buf[MAX_INT_COLUMN];
-	B *p = &buf[sizeof(buf) - 1];
-	W x = v;
+static void _putd(State *s, const int v) {
+	char buf[MAX_INT_COLUMN];
+	char *p = &buf[sizeof(buf) - 1];
+	int x = v;
 
 	if (x < 0) {
 		_putchar(s, '-');
@@ -78,18 +84,18 @@ static void _putd(State *s, const W v) {
 	}
 }
 
-static void _puth(State *s, const W x) {
-	W shift;
+static void _puth(State *s, const int x) {
+	int shift;
 
 	for (shift = MAX_INT_BITS - 4; shift >= 0; shift -= 4) {
-		W c = (x >> shift) & 0xf;
+		int c = (x >> shift) & 0xf;
 
 		_putchar(s, c + ((c >= 10)? ('a' - 10):'0'));
 	}
 }
 
-static W _immediate(State *s) {
-	B c = *(s->format)++;
+static int _immediate(State *s) {
+	char c = *(s->format)++;
 
 	switch (c) {
 	case '\0':
@@ -108,8 +114,8 @@ static W _immediate(State *s) {
 	return TRUE;
 }
 
-static W _format(State *s) {
-	B c = *(s->format)++;
+static int _format(State *s) {
+	char c = *(s->format)++;
 
 	switch (c) {
 	case '\0':
@@ -141,8 +147,8 @@ static W _format(State *s) {
 	return TRUE;
 }
 
-static W _escape(State *s) {
-	B c = *(s->format)++;
+static int _escape(State *s) {
+	char c = *(s->format)++;
 
 	switch (c) {
 	case '\0':
@@ -166,7 +172,7 @@ static W _escape(State *s) {
 	return TRUE;
 }
 
-W vnprintf(void (*out)(B), B *format, va_list ap) {
+int vnprintf(void (*out)(char), char *format, va_list ap) {
 	State s = { _immediate, format, ap, out, 0 };
 
 	while (s.handler(&s));

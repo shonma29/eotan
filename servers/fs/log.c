@@ -43,7 +43,7 @@ Version 2, June 1991
  * 最初の登録
  *
  */
-
+#include "../../include/stdarg.h"
 #include "posix.h"
 
 static ID log_port;
