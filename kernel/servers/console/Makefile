@@ -11,7 +11,6 @@ CFLAGS= -Wall -I. -I$(ROOT)/core -I$(ROOT)/lib/libkernel $(IDENT)
 OFLAGS= -O2 -fno-builtin $(CFLAGS)
 CC=gcc
 AS=/usr/bin/as
-KP=kp -input-code euc
 MKDEPEND=$(CC) -M
 STARTADDR=0x80100000
 ENTRY=start
@@ -24,8 +23,8 @@ LD=ld
 %.o: %.s
 	$(CPP) $(ASFLAGS) $*.s | $(AS) -o $*.o
 
-OBJS= main.o misc.o
-SRCS= main.c misc.c
+OBJS= main.o cga.o
+SRCS= main.c cga.c
 
 all: console
 

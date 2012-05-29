@@ -81,16 +81,15 @@ static char misc_rcsid[] =
  *
  *
  */
-
-
-#include "console_int.h"
+#include "../../../include/itron/errno.h"
+#include "../../../include/mpu/io.h"
+#include "cga.h"
 
 extern TEXTATTR attr;
 
-#define C(x)	((x) & 0x1f)
-
 static void scroll_up(void);
 static void write_vram_xy(W x, W y, W ch, TEXTATTR attr);
+static void goto_cursol(W x, W y);
 static void caridge_return(void);
 static void next_tab(void);
 static void backspace(void);
@@ -135,7 +134,7 @@ void move_curpos(W x, W y)
  * 処理：	指定した座標にカーソルを移動させる。
  *
  */
-void goto_cursol(W x, W y)
+static void goto_cursol(W x, W y)
 {
     W addr;
 

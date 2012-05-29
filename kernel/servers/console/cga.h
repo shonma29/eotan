@@ -37,23 +37,22 @@ Version 2, June 1991
  */
 
 
-#ifndef __CONSOLE_INTERNAL_H__
-#define __CONSOLE_INTERNAL_H__	1
+#ifndef __CGA_H__
+#define __CGA_H__	1
 
 #include "../../../include/itron/types.h"
-#include "../../../include/itron/errno.h"
-#include "../../core/misc.h"
-#include "../port-manager/port-manager.h"
-#include <mpu/mpu.h>
-#include "../../../include/itron/struct.h"
-#include "../../../include/itron/syscall.h"
-#include "../../lib/libkernel/libkernel.h"
-#include <arch/arch.h>
-#include "../../lib/libkernel/device.h"
-#include "../../include/mpu/io.h"
 
-#include "console.h"
-#include "misc.h"
+#define MAX_COLUMN	80
+#define MAX_LINE	25
+
+#define TEXT_VRAM_ADDR	0x800B8000	/* TEXT VRAM のアドレス */
+#define TEXT_VRAM_SIZE	2000
+
+#define GDC_ADDR	0x03d4
+#define GDC_DATA	0x03d5
+
+#define GDC_STAT	0x03d4
+#define GDC_COMMAND	0x03d5
 
 typedef enum { NORMAL = 1, REVERSE = 7} TEXTATTR;
 
@@ -61,16 +60,11 @@ typedef enum { NORMAL = 1, REVERSE = 7} TEXTATTR;
 #define VGA_TEXT_WHITE	7
 #define VGA_TEXT_ATTR(fg, bg) ((bg << 4) |  fg)
 
-/* main.c */
-extern W    	init_console(void);	/* 初期化		*/
-extern W    	open_console(ID caller, DDEV_OPN_REQ *packet);		/* オープン		*/
-extern W  	close_console(ID caller, DDEV_CLS_REQ *packet);	/* クローズ		*/
-extern W    	read_console(ID caller, DDEV_REA_REQ *packet);		/* 読み込み		*/
-extern W    	write_console(ID caller, DDEV_WRI_REQ *packet);	/* 書き込み		*/
-extern W    	control_console(ID caller, DDEV_CTL_REQ *packet);	/* コントロール		*/
+extern void set_curpos (W x, W y);
+extern void move_curpos (W x, W y);
+extern ER write_char (UB ch);
+extern void clear_console (void);
+extern void clear_rest_line(void);
+extern void clear_rest_screen(void);
 
-extern ER	write_char(UB c);
-extern void	goto_cursol (W x, W y);
-extern void	set_curpos (W x, W y);
-extern void	move_curpos (W x, W y);
-#endif /* __CONSOLE_INTERNAL_H__ */
+#endif /* __CGA_H__ */

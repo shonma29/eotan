@@ -110,8 +110,14 @@ static char revision[] = "$Revision: 1.10 $";
  Discription
 
 **********************************************************************/
+#include "../../../include/itron/errno.h"
+#include "../../../include/itron/syscall.h"
+#include "../../lib/libkernel/device.h"
+#include "../../lib/libkernel/libkernel.h"
+#include "console.h"
+#include "cga.h"
 
-#include "console_int.h"
+#define ISDIGIT(x)              ((x >= '0') && (x <= '9'))
 
 /*********************************************************************
  *	 局所変数群の宣言
@@ -120,7 +126,14 @@ static char revision[] = "$Revision: 1.10 $";
 
 void start(void);
 static void main_loop(void);
+static W init_console(void);	/* 初期化		*/
 static void doit(DDEV_REQ * packet);
+static W open_console(ID caller, DDEV_OPN_REQ *packet);		/* オープン		*/
+static W close_console(ID caller, DDEV_CLS_REQ *packet);	/* クローズ		*/
+static W read_console(ID caller, DDEV_REA_REQ *packet);		/* 読み込み		*/
+static W write_console(ID caller, DDEV_WRI_REQ *packet);	/* 書き込み		*/
+static void respond_ctrl(ID caller, W dd, ER errno);
+static W control_console(ID caller, DDEV_CTL_REQ *packet);	/* コントロール		*/
 static void writes(B * s);
 
 
@@ -128,8 +141,8 @@ static void writes(B * s);
  *	 大域変数群の宣言
  *
  */
-ID recvport;
-W initialized = 0;
+static ID recvport;
+static W initialized = 0;
 TEXTATTR attr;
 
 
@@ -201,7 +214,7 @@ static void main_loop(void)
  *
  * o 要求受けつけ用のメッセージバッファ ID をポートマネージャに登録
  */
-W init_console(void)
+static W init_console(void)
 {
     ER error;
 
@@ -279,7 +292,7 @@ static void doit(DDEV_REQ * packet)
  * 処理：	E_OK をメッセージの送り手に返す。
  *
  */
-W open_console(ID caller, DDEV_OPN_REQ * packet)
+static W open_console(ID caller, DDEV_OPN_REQ * packet)
 {
     DDEV_RES res;
 
@@ -303,7 +316,7 @@ W open_console(ID caller, DDEV_OPN_REQ * packet)
  * 処理：	コンソールはクローズの処理ではなにもしない。
  *
  */
-W close_console(ID caller, DDEV_CLS_REQ * packet)
+static W close_console(ID caller, DDEV_CLS_REQ * packet)
 {
     DDEV_RES res;
 
@@ -327,7 +340,7 @@ W close_console(ID caller, DDEV_CLS_REQ * packet)
  *		いない。
  *
  */
-W read_console(ID caller, DDEV_REA_REQ * packet)
+static W read_console(ID caller, DDEV_REA_REQ * packet)
 {
     DDEV_RES res;
 
@@ -350,7 +363,7 @@ W read_console(ID caller, DDEV_REA_REQ * packet)
  *		このとき、エスケープシーケンスによる処理も行う。		
  *
  */
-W write_console(ID caller, DDEV_WRI_REQ * packet)
+static W write_console(ID caller, DDEV_WRI_REQ * packet)
 {
     DDEV_RES res;
     int i;
@@ -473,7 +486,7 @@ static void respond_ctrl(ID caller, W dd, ER errno)
 }
 
 
-W control_console(ID caller, DDEV_CTL_REQ * packet)
+static W control_console(ID caller, DDEV_CTL_REQ * packet)
 {
 	switch (packet->cmd) {
 	case CONSOLE_CLEAR:

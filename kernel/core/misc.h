@@ -28,7 +28,6 @@ Version 2, June 1991
 #define CUTDOWN(x,align)	((((int)x) & ~((align) - 1)))
 
 #define TABLE_SIZE(table)	(sizeof(table) / sizeof(table[0]))
-#define ISDIGIT(x)		((x >= '0') && (x <= '9'))
 #define MAX(a,b)		((a > b) ? a : b)
 #define MIN(a,b)		((a < b) ? a : b)
 

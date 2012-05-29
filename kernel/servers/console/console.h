@@ -117,28 +117,13 @@ Version 2, June 1991
 #ifndef __CONSOLE_H__
 #define __CONSOLE_H__	1
 
-
-#include "../../lib/libkernel/device.h"
-
 /*  定数の設定
  */
 
 #define CONSOLE_DRIVER	"driver.console"
 
-#define MAX_COLUMN	80
-#define MAX_LINE	25
-
 /* Console control */
 #define CONSOLE_CLEAR	0x00000001
 #define CONSOLE_MOVE	0x00000002
-
-#define TEXT_VRAM_ADDR	0x800B8000	/* TEXT VRAM のアドレス */
-#define TEXT_VRAM_SIZE	2000
-
-#define GDC_ADDR	0x03d4
-#define GDC_DATA	0x03d5
-
-#define GDC_STAT	0x03d4
-#define GDC_COMMAND	0x03d5
 
 #endif /* __CONSOLE_H__ */
