@@ -7,18 +7,12 @@
 
 */
 
+#include "../../include/services.h"
 #include "core.h"
 #include "lowlib.h"
 #include "task.h"
 #include "func.h"
 #include "../../servers/fs/posix.h"
-
-#ifdef notdef
-static ID posix_manager = 0;
-/* 静的変数の初期化に問題がある */
-#else
-ID posix_manager;
-#endif
 
 ER posix_kill_proc(ID pid)
 {
@@ -32,9 +26,6 @@ ER posix_kill_proc(ID pid)
   req.procid = pid;
   req.caller = KERNEL_TASK; /* KERNEL_TASK で実行 */
 
-  if (posix_manager == 0) {
-    find_port (POSIX_MANAGER, &posix_manager);
-  }
-  errno = psnd_mbf (posix_manager, sizeof (struct posix_request), &req);
+  errno = psnd_mbf (PORT_FS, sizeof (struct posix_request), &req);
   return(errno);
 }

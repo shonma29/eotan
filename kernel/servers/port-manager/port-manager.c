@@ -86,7 +86,7 @@ static char rcs[] = "@(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc
  * 
  */
 
-
+#include "../../../include/services.h"
 #include <core.h>
 #include "../../lib/libkernel/libkernel.h"
 #include "port-manager.h"
@@ -145,7 +145,7 @@ _main (void)
   msg_pk.bufsz = sizeof (struct port_manager_msg_t);
   msg_pk.maxmsz = sizeof (struct port_manager_msg_t) * MAX_MSG_ENTRY;
   msg_pk.mbfatr = TA_TFIFO;
-  error = cre_mbf (PORT_MANAGER_PORT, &msg_pk);
+  error = cre_mbf (PORT_NAME, &msg_pk);
   if (error != E_OK)
     {
       exd_tsk ();
@@ -171,7 +171,7 @@ _main (void)
        * 受信するときに使用するメッセージバッファは、PORT_MANAGER_PORT
        * マクロで指定したものを使用する。
        */
-      error = rcv_mbf (&msg_buf, &size, PORT_MANAGER_PORT);
+      error = rcv_mbf (&msg_buf, &size, PORT_NAME);
       if (error == E_OK)
 	{
 	  /*

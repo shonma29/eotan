@@ -101,7 +101,7 @@ struct port_message_header_t
 /*
  * メッセージバッファを識別するためにつける名前の型
  */
-typedef B	PORT_NAME[PORT_NAME_LEN + 1];
+typedef B	port_name[PORT_NAME_LEN + 1];
 
 
 /*
@@ -109,7 +109,7 @@ typedef B	PORT_NAME[PORT_NAME_LEN + 1];
  */
 struct regist_port_t
 {
-  PORT_NAME	name;	/* ポートの名前； この名前はシステムグローバル */
+  port_name	name;	/* ポートの名前； この名前はシステムグローバル */
 			/* でなければいけない。もし、すでに同じ名前が  */
 			/* 登録されていたときにはエラーとなる。        */
 
@@ -135,7 +135,7 @@ struct regist_port_t
  */
 struct unregist_port_t
 {
-  PORT_NAME name;	/* 登録テーブルから抹消するメッセージバッファ */
+  port_name name;	/* 登録テーブルから抹消するメッセージバッファ */
 			/* の名前。登録するときに使用した名前を指定す */
 			/* る。*/
 
@@ -150,7 +150,7 @@ struct unregist_port_t
  */
 struct find_port_t
 {
-  PORT_NAME	name;	/* 検索するポートの名前; メッセージバッファを */
+  port_name	name;	/* 検索するポートの名前; メッセージバッファを */
 			/* 登録するときに使用した名前を指定する。     */
 };
 
@@ -248,9 +248,9 @@ struct recv_port_message_t
  * データベース操作関数。
  * <登録> <削除> <参照 (検索)> の処理を行う。
  */
-extern PORT_MANAGER_ERROR regist_database (PORT_NAME name, ID port, ID task);
-extern PORT_MANAGER_ERROR unregist_database (PORT_NAME name, ID *port, ID task);
-extern PORT_MANAGER_ERROR find_database (PORT_NAME name, ID *port);
+extern PORT_MANAGER_ERROR regist_database (port_name name, ID port, ID task);
+extern PORT_MANAGER_ERROR unregist_database (port_name name, ID *port, ID task);
+extern PORT_MANAGER_ERROR find_database (port_name name, ID *port);
 
 
 #endif /* __PORT_MANAGER_H__ */

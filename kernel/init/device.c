@@ -77,11 +77,8 @@ void init_device(void)
     __file_table__[STDERR].length = 0;
     __file_table__[STDERR].bufsize = BUFSIZE;
 
-#ifdef notdef
-    dev_recv = get_port(sizeof(DDEV_RES), sizeof(DDEV_RES));
-#else
     dev_recv = get_port(0, sizeof(DDEV_RES));
-#endif
+
     if (dev_recv <= 0) {
 	dbg_printf("Init: Cannot allocate port\n");
 	slp_tsk();

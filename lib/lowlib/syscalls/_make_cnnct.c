@@ -26,7 +26,7 @@ static char rcsid[] =
  * First version.
  *
  */
-
+#include "../../../include/services.h"
 #include "../lowlib.h"
 
 ER
@@ -46,7 +46,7 @@ _make_connection(W wOperation,
     req->operation = wOperation;
     req->procid = MY_PID;
     req->caller = myself;
-    snd_mbf(posix_manager, sizeof(struct posix_request), req);
+    snd_mbf(PORT_FS, sizeof(struct posix_request), req);
 
     rsize = sizeof(struct posix_response);
     error = rcv_mbf(res, (INT *) & rsize, lowlib_data->recv_port);

@@ -67,10 +67,6 @@ extern ER unset_timer(void (*func) (VP), VP arg);
 extern void check_timer(void);
 extern W left_time(void (*func) (VP), VP arg);
 
-/* misc.c */
-extern INT strlen(B * buf);
-extern W strncmp(B * s1, B * s2, W size);
-
 /* virtual_memory.c */
 extern ADDR_MAP dup_vmap_table(ADDR_MAP dest);
 extern ER release_vmap(ADDR_MAP dest);
@@ -134,9 +130,6 @@ extern ER stat_lowlib(VP * argp);
 /* itron_memory.c */
 extern ER init_mpl(void);
 
-/* kernlib/message_port.c */
-extern ID get_port(W minsize, W maxsize);
-
 /* --------------------------------------------------------- */
 /* システム管理用タスク                                      */
 /* --------------------------------------------------------- */
@@ -146,13 +139,6 @@ extern void sys_init_task(void);
 /* デバッグ用タスク                                          */
 /* --------------------------------------------------------- */
 extern void debugger(void);
-
-/* --------------------------------------------------------- */
-/* port manager                                              */
-/* --------------------------------------------------------- */
-extern void regist_port(struct port_manager_msg_t *msgp);
-extern void unregist_port(struct port_manager_msg_t *msgp);
-extern ER find_port(B * name, ID * rport);
 
 #ifdef I386
 /* tss.c */

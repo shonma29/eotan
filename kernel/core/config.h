@@ -158,12 +158,6 @@ Version 2, June 1991
 #define ITRON_CONSOLE	(4)	/* コンソールデバイスドライバ */
 #define ITRON_DEBUG	(5)	/* デバッグ用プロセス: コマンドインタプリタ用 */
 
-/*
- * ポートマネージャが要求受けつけ用に指定するメッセージバッファの ID 
- */
-#define PORT_MANAGER_PORT	(11)
-
-
 /* システムセマフォのリスト */
 #define ITRON_KEYBOARD_SEM	(3)	/* キーボード入力用のセマフォ    */
 

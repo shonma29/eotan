@@ -57,28 +57,18 @@ static char rcsid[] =
 #include "others/stdlib.h"
 
 void init_device();
-#ifdef notdef
-void del_device();
-#endif
 
 W _main(W argc, B * argv[], B * envp[])
 {
     init_device();
 
     main(argc, argv, envp);
-#ifdef notdef
-    del_device();
-#endif
     _exit(0);
 }
 
 static void InitFileTable(void);
 
 FILE __file_table__[NFILE];
-#ifdef notdef
-ID dev_recv;
-ID console;
-#endif
 
 void init_device(void)
 {
@@ -87,34 +77,6 @@ void init_device(void)
     W dev_desc;
 
     InitFileTable();
-#ifdef notdef
-    result = open_device(KEYBOARD_DRIVER, &keyboard, &dev_desc);
-    if (result != E_OK || dev_desc != STDIN) {
-	dbg_printf("LIBC: Cannot open keyboard device.\n");
-	_exit(-1);
-	/* DO NOT REACHED */
-    }
-
-    result = open_device(WCONSOLE_DRIVER, &console, &dev_desc);
-    if (result != E_OK || dev_desc != STDOUT) {
-	dbg_printf("LIBC: Cannot open console device.\n");
-	_exit(-1);
-	/* DO NOT REACHED */
-    }
-
-    __file_table__[STDERR].device = console;
-    __file_table__[STDERR].count = 0;
-    __file_table__[STDERR].length = 0;
-    __file_table__[STDERR].bufsize = BUFSIZE;
-#else
-#ifdef notdef
-    if (find_port(WCONSOLE_DRIVER, &console) != E_PORT_OK) {
-#ifdef DEBUG
-	dbg_printf("LIBC: Cannnot open console device.");
-#endif
-	_exit(-1);
-    }
-#endif
     __file_table__[STDIN].device = 0;
     __file_table__[STDIN].count = 0;
     __file_table__[STDIN].length = 0;
@@ -127,65 +89,7 @@ void init_device(void)
     __file_table__[STDERR].count = 0;
     __file_table__[STDERR].length = 0;
     __file_table__[STDERR].bufsize = BUFSIZE;
-#endif
-
-#ifdef notdef
-    dev_recv = get_port(sizeof(DDEV_RES), sizeof(DDEV_RES));
-    if (dev_recv <= 0) {
-#ifdef DEBUG
-	dbg_printf("LIBC: Cannot allocate port\n");
-#endif
-	_exit(-1);
-	/* DO NOT REACHED */
-    }
-#endif
 }
-
-#ifdef notdef
-void del_device()
-{
-    del_mbf(dev_recv);
-}
-
-
-ER open_device(B * dev_name, ID * id, W * dev_desc)
-{
-    for (*dev_desc = 0;
-	 (*dev_desc < NFILE) && (__file_table__[*dev_desc].device != -1);
-	 (*dev_desc)++) {
-	/* do nothing */
-    }
-
-    /* out of file table. */
-    if (*dev_desc == NFILE) {
-#ifdef DEBUG
-	dbg_printf("LIBC: File table exhaust.");
-#endif
-	return (E_NOMEM);
-    }
-
-    if (find_port(dev_name, id) != E_PORT_OK) {
-#ifdef DEBUG
-	dbg_printf("LIBC: Port not found.");
-#endif
-	return (E_OBJ);
-    }
-
-    __file_table__[*dev_desc].device = *id;
-    __file_table__[*dev_desc].count = 0;
-    __file_table__[*dev_desc].length = 0;
-    __file_table__[*dev_desc].bufsize = BUFSIZE;
-
-    return (E_OK);
-}
-
-ER close_device(W dev_desc)
-{
-    __file_table__[dev_desc].device = -1;
-
-    return (E_OK);
-}
-#endif
 
 static void InitFileTable(void)
 {

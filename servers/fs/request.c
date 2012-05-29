@@ -42,15 +42,9 @@ Version 2, June 1991
  * 最初の登録
  *
  */
-
+#include "../../include/services.h"
 #include "posix.h"
 #include "../../kernel/servers/port-manager/port-manager.h"
-
-
-static ID request_port;		/* 要求受け付け用のポート       */
-				/* ITRON のメッセージポート     */
-
-
 
 
 /* init_port - 要求受け付け用のポートを初期化する
@@ -66,33 +60,15 @@ static ID request_port;		/* 要求受け付け用のポート       */
  */
 W init_port(void)
 {
-    ID port;
+    T_CMBF arg;
 
-    /* すでにポートが初期化されていた
-     */
-    if (request_port != 0) {
-	return (SUCCESS);
-    }
+    arg.bufsz = 0;
+    arg.maxmsz = sizeof(struct posix_request);
+    arg.mbfatr = TA_TFIFO;
 
     /* ポートを作成する */
-#ifdef notdef
-    if ((port = get_port(sizeof(struct posix_request),
-			 sizeof(struct posix_request))) <= 0) {
+    if (cre_mbf(PORT_FS, &arg)) {
 	/* ポートが作成できなかった */
-	return (FAIL);
-    }
-#else
-    if ((port = get_port(0, sizeof(struct posix_request))) <= 0) {
-	/* ポートが作成できなかった */
-	return (FAIL);
-    }
-#endif
-
-    request_port = port;
-
-    /* ポートマネージャに登録する */
-    if (regist_port((PORT_NAME *) POSIX_MANAGER, port) != E_PORT_OK) {
-	/* ポートを削除する処理がここに入る */
 	return (FAIL);
     }
 
@@ -111,7 +87,7 @@ W get_request(struct posix_request * req)
     ASSERT(req != NULL);
 
     size = sizeof(struct posix_request);
-    sys_errno = rcv_mbf(req, &size, request_port);
+    sys_errno = rcv_mbf(req, &size, PORT_FS);
     if (sys_errno != E_OK) {
 	dbg_printf("[PM] get_request: rcv_mbf error %d\n", sys_errno);
 	return (FAIL);
@@ -133,7 +109,7 @@ put_response(struct posix_request * req, W errno, W status, W ret1, W ret2)
 	return (EP_INVAL);
     }
 
-    res.receive_port = request_port;
+    res.receive_port = PORT_FS;
     res.msg_length = sizeof(res);
     res.operation = req->operation;
     res.errno = errno;

@@ -88,15 +88,13 @@ static char rcsid[] =
  *
  */
 
-
+#include "../../include/services.h"
 #include "init.h"
 
-static ID posix_port;
 static ID recv_port;
 static ID myself;
 
-static W posix_mountroot(W);
-
+static W posix_mountroot(W root_device);
 
 /*
  *
@@ -107,13 +105,6 @@ W posix_init(W root_device)
     struct posix_request req;
     struct posix_response res;
     INT rsize;
-
-
-    error = find_port("manager.posix", &posix_port);
-    if (error != E_OK) {
-	printf("Cannot find port.\n");
-	return (error);
-    }
 
     recv_port = get_port(0, sizeof(res));
     if (recv_port == 0) {
@@ -127,7 +118,7 @@ W posix_init(W root_device)
     }
 #ifdef DEBUG
     printf("init: pinit, send port = %d, receive port = %d\n",
-	   posix_port, recv_port);
+	   PORT_FS, recv_port);
 #endif
 
     /* ROOT ファイルシステムの設定
@@ -156,7 +147,7 @@ W posix_init(W root_device)
     req.param.par_misc.arg.set_procinfo.proc_ppid = 0;
     req.param.par_misc.arg.set_procinfo.proc_access =
 	VM_READ | VM_WRITE | VM_EXEC;
-    snd_mbf(posix_port, sizeof(req), &req);
+    snd_mbf(PORT_FS, sizeof(req), &req);
 
     rsize = sizeof(res);
     rcv_mbf(&res, &rsize, recv_port);
@@ -167,17 +158,9 @@ W posix_init(W root_device)
 
 static W posix_mountroot(W root_device)
 {
-    ID posix_manager;
-    ER error;
     struct posix_request req;
     struct posix_response res;
     INT rsize;
-
-    error = find_port("manager.posix", &posix_manager);
-    if (error != E_OK) {
-	printf("Cannot find port.\n");
-	return (error);
-    }
 
     req.receive_port = recv_port;
     req.msg_length = sizeof(req);
@@ -185,7 +168,7 @@ static W posix_mountroot(W root_device)
     req.param.par_mountroot.device = root_device;
     req.param.par_mountroot.fstype = 1;
     req.param.par_mountroot.option = 0;
-    snd_mbf(posix_manager, sizeof(req), &req);
+    snd_mbf(PORT_FS, sizeof(req), &req);
     rsize = sizeof(res);
     rcv_mbf(&res, &rsize, recv_port);
     if (res.errno) {

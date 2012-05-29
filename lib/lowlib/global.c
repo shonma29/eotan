@@ -58,6 +58,4 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 
 struct lowlib_data	*lowlib_data = (struct lowlib_data *)LOWLIB_DATA;
 
-ID	posix_manager = 0;
-
 int	errno;

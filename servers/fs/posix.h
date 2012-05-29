@@ -34,9 +34,6 @@ Version 2, June 1991
 
 /* =========================== マクロ定義 =========================== */
 
-#define POSIX_MANAGER	"manager.posix"
-
-
 /* 各種制限値 */
 #define MAX_BODY_SIZE	1024
 #define MAX_LINE_LENGTH	512

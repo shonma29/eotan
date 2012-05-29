@@ -21,7 +21,7 @@ Version 2, June 1991
 static unsigned char rcsid[] =
     "$Id: lowlib.c,v 1.8 2000/02/06 09:10:52 naniwa Exp $";
 
-
+#include "../../include/string.h"
 #include "../../include/itron/types.h"
 #include "../../include/itron/errno.h"
 #include "task.h"

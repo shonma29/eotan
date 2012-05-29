@@ -163,29 +163,11 @@ ER setup_port(void)
 
 #ifdef DEBUG
     dbg_printf("setup_port\n");
-#endif
-    /* port の初期化 */
-    if (posix_manager == 0) {
-	error = find_port(POSIX_MANAGER, &posix_manager);
-	if (error != E_OK) {
-#ifdef DEBUG
-	    dbg_printf("Cannot find port.\n");
-#endif
-	    return (error);
-	}
-    }
-#ifdef DEBUG
     dbg_printf("Port found.(%d)\n", lowlib_data);
 #endif
     if (lowlib_data->recv_port == 0) {
-#ifdef notdef
-	lowlib_data->recv_port =
-	    get_port(sizeof(struct posix_response),
-		     sizeof(struct posix_response));
-#else
 	lowlib_data->recv_port =
 	    get_port(0, sizeof(struct posix_response));
-#endif
 #ifdef DEBUG
 	dbg_printf("Port got.\n");
 #endif

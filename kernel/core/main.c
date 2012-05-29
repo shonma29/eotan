@@ -74,7 +74,6 @@ void banner(void);
 /* 外部変数の宣言 */
 extern W do_timer;
 extern UW system_ticks;
-extern ID posix_manager;
 extern char doing;
 
 /* 強制終了するタスクのテーブル */
@@ -143,9 +142,6 @@ ER itron(void)
     /* TRMTBL の初期化 */
     trmtbl_num = 0;
     trmtbl_top = 0;
-
-    /* POSIX manager port ID の初期化 */
-    posix_manager = 0;
 
     do_timer = 0;
     doing = 0;

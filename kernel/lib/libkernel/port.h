@@ -24,6 +24,6 @@ extern W	get_req (ID port, VP request, W *size);
 extern PORT_MANAGER_ERROR	find_port (B *name, ID *rport);
 extern ID			alloc_port (W size, W max_entry);
 
-extern PORT_MANAGER_ERROR	regist_port (PORT_NAME *name, ID port);
+extern PORT_MANAGER_ERROR	regist_port (port_name *name, ID port);
 
 #endif /* __LIBKERN_PORT_H__ */

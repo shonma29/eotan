@@ -56,12 +56,8 @@ Version 2, June 1991
 
 #ifndef __GLOBAL_H__
 #define __GLOBAL_H__	1
-#if 0
-#include <sys/types.h>
-#endif
 
 extern struct lowlib_data	*lowlib_data;
-extern ID			posix_manager;
 
 extern struct syscall_entry	syscalls[];
 extern int			nsyscall;

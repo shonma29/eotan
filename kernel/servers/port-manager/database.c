@@ -72,7 +72,7 @@ static char rcs[] = "@(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc
  */
 struct data_entry_t
 {
-  PORT_NAME	name;		/* メッセージバッファに結びついた名前。   */
+  port_name	name;		/* メッセージバッファに結びついた名前。   */
 				/* 登録するときに指定する。               */
 
   ID		port;		/* メッセージバッファ ID                  */
@@ -93,7 +93,7 @@ static struct data_entry_t	table[MAX_PORT_ENTRY];
  * テーブルから名前によってエントリを検索する関数。
  * unregist_database() と find_database() で使用する。
  */
-static W	find_entry (PORT_NAME name);
+static W	find_entry (port_name name);
 
 
 /*
@@ -115,7 +115,7 @@ init_regist_table (void)
  *
  */
 PORT_MANAGER_ERROR
-regist_database (PORT_NAME name, ID port, ID task)
+regist_database (port_name name, ID port, ID task)
 {
   W	counter;		/* 空いているエントリをテーブルから */
 				/* 見つけるときに使用するカウンタ   */
@@ -175,7 +175,7 @@ regist_database (PORT_NAME name, ID port, ID task)
  *
  */
 PORT_MANAGER_ERROR
-unregist_database (PORT_NAME name, ID *port, ID task)
+unregist_database (port_name name, ID *port, ID task)
 {
   W	index;		/* データベースから見つけたエントリ */
 
@@ -219,7 +219,7 @@ unregist_database (PORT_NAME name, ID *port, ID task)
  *
  */
 PORT_MANAGER_ERROR
-find_database (PORT_NAME name, ID *port)
+find_database (port_name name, ID *port)
 {
   W	index;	/* データベーステーブルから見つけたエントリを表す  */
 		/* table 変数のインデックス。			   */
@@ -255,7 +255,7 @@ find_database (PORT_NAME name, ID *port)
  * た場合には、-1 を返す。
  */
 static W
-find_entry (PORT_NAME name)
+find_entry (port_name name)
 {
   W	index;			/* 情報テーブルをサーチするときに、使 */
 				/* 用するカウンタ。                   */

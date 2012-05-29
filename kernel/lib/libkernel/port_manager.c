@@ -56,7 +56,7 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
  * find_port (PORT_NAME name, ID &port);    メッセージバッファ ID の検索
  * alloc_port (void);                       ポートの生成
  */
-
+#include "../../../include/services.h"
 #include <core.h>
 #include "../servers/port-manager/port-manager.h"
 #include "libkernel.h"
@@ -67,7 +67,7 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
  *
  */
 PORT_MANAGER_ERROR
-regist_port (PORT_NAME *name, ID port)
+regist_port (port_name *name, ID port)
 {
   struct recv_port_message_t	recv_msg;
   struct port_manager_msg_t  	send_msg;
@@ -103,7 +103,7 @@ regist_port (PORT_NAME *name, ID port)
   /*
    * ポートマネージャに対して登録要求メッセージを送信する。
    */
-  if (snd_mbf (PORT_MANAGER_PORT, sizeof (send_msg), &send_msg) != E_OK)
+  if (snd_mbf (PORT_NAME, sizeof (send_msg), &send_msg) != E_OK)
     {
       del_mbf (recv_port);
       return (E_PORT_SYSTEM);
@@ -139,7 +139,7 @@ regist_port (PORT_NAME *name, ID port)
 }
 
 PORT_MANAGER_ERROR
-unregist_port (PORT_NAME *name)
+unregist_port (port_name *name)
 {
   struct recv_port_message_t	recv_msg;
   struct port_manager_msg_t  	send_msg;
@@ -174,7 +174,7 @@ unregist_port (PORT_NAME *name)
   /*
    * ポートマネージャに対して登録要求メッセージを送信する。
    */
-  if (snd_mbf (PORT_MANAGER_PORT, sizeof (send_msg), &send_msg) != E_OK)
+  if (snd_mbf (PORT_NAME, sizeof (send_msg), &send_msg) != E_OK)
     {
       del_mbf (recv_port);
       return (E_PORT_SYSTEM);
@@ -262,7 +262,7 @@ find_port (B *name, ID *rport)
   /*
    * ポートマネージャに対して検索要求メッセージを送信する。
    */
-  if (snd_mbf (PORT_MANAGER_PORT, sizeof (send_msg), &send_msg) != E_OK)
+  if (snd_mbf (PORT_NAME, sizeof (send_msg), &send_msg) != E_OK)
     {
       del_mbf (recv_port);
       return (E_PORT_SYSTEM);

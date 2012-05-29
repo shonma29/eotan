@@ -55,8 +55,8 @@ STARTADDR=0x80290000
 %.o: %.S
 	$(CC) $(CFLAGS) -c $*.S
 
-OBJS =	lowlib.o entry.o api.o global.o signal.o jmp_user.o posix_server.o virtual.o
-SRCS =	lowlib.c entry.c api.c global.c signal.c jmp_user.S posix_server.c virtual.c
+OBJS =	lowlib.o entry.o api.o global.o signal.o jmp_user.o virtual.o
+SRCS =	lowlib.c entry.c api.c global.c signal.c jmp_user.S virtual.c
 
 ROOT=../..
 LIBS =	syscalls/libsyscall.a $(ROOT)/kernel/lib/libkernel.a \

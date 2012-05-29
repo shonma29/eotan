@@ -54,9 +54,8 @@ OBJS= \
 	lowlib.o \
 	posix.o
 
-OTHEROBJ=../lib/libkernel/port_manager.o ../lib/libkernel/message_port.o \
-           ../lib/libkernel/sys_errno.o \
-	../lib/nano-c/vnprintf.o ../lib/nano-c/strcpy.o ../lib/nano-c/strncmp.o
+OTHEROBJ= ../lib/nano-c/vnprintf.o \
+	../lib/nano-c/strcpy.o ../lib/nano-c/strncmp.o
 
 SRCS=main.c memory.c task.c time.c version.c error.c dummy.c printk.c \
      console.c interrupt.c syscall.c strncmpk.c timer.c \
