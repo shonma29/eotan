@@ -102,7 +102,6 @@ OBJS =	_make_cnnct.o \
 	sleep.o \
 	stat.o \
 	statfs.o \
-	template.o \
 	time.o \
 	times.o \
 	ttyname.o \
