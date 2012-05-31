@@ -654,10 +654,10 @@ struct psc_sleep
 };
 
 
-/* psc_stat -
+/* psc_fstat -
  *
  */
-struct psc_stat
+struct psc_fstat
 {
   W		fileid;
   struct stat	*st;
@@ -945,7 +945,7 @@ struct posix_request
     struct psc_sigsetjmp  	par_sigsetjmp;
     struct psc_sigsuspend	par_sigsuspend;
     struct psc_sleep 		par_sleep;
-    struct psc_stat  		par_stat;
+    struct psc_fstat  		par_fstat;
     struct psc_time  		par_time;
     struct psc_times 		par_times;
     struct psc_ttyname		par_ttyname;
@@ -1046,7 +1046,7 @@ extern W	psc_sigprocmask_f (struct posix_request *);
 extern W	psc_sigsetjmp_f (struct posix_request *);
 extern W	psc_sigsuspend_f (struct posix_request *);
 extern W	psc_sleep_f (struct posix_request *);
-extern W	psc_stat_f (struct posix_request *);
+extern W	psc_fstat_f (struct posix_request *);
 extern W	psc_time_f (struct posix_request *);
 extern W	psc_times_f (struct posix_request *);
 extern W	psc_ttyname_f (struct posix_request *);

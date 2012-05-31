@@ -75,7 +75,7 @@ OBJS =	access.o \
 	setgid.o \
 	setpgid.o \
 	setuid.o \
-	stat.o \
+	fstat.o \
 	statfs.o \
 	time.o \
 	umask.o \

@@ -24,7 +24,7 @@ static char rcsid[] = "@(#)$Id: sys_fstat.c,v 1.1 1997/08/31 13:25:20 night Exp 
 int
 fstat (int fd, struct stat *st)
 {
-  return (call_lowlib (PSC_STAT, fd, st));
+  return (call_lowlib (PSC_FSTAT, fd, st));
 }
 
 

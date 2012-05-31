@@ -61,7 +61,7 @@ extern int	psys_sigprocmask (void *argp);
 extern int	psys_sigsetjmp (void *argp);
 extern int	psys_sigsuspend (void *argp);
 extern int	psys_sleep (void *argp);
-extern int	psys_stat (void *argp);
+extern int	psys_fstat (void *argp);
 extern int	psys_time (void *argp);
 extern int	psys_times (void *argp);
 extern int	psys_ttyname (void *argp);

@@ -33,17 +33,17 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 
 
 int
-psys_stat (void *argp)
+psys_fstat (void *argp)
 {
   ER			error;
   struct posix_request	req;
   struct posix_response res;
-  struct psc_stat *args = (struct psc_stat *)argp;
+  struct psc_fstat *args = (struct psc_fstat *)argp;
 
-  req.param.par_stat.fileid = args->fileid;
-  req.param.par_stat.st = args->st;
+  req.param.par_fstat.fileid = args->fileid;
+  req.param.par_fstat.st = args->st;
 
-  error = _make_connection(PSC_STAT, &req, &res);
+  error = _make_connection(PSC_FSTAT, &req, &res);
   if (error != E_OK)
     {
       /* What should I do? */

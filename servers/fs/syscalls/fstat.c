@@ -19,15 +19,15 @@ Version 2, June 1991
 
 #include "posix.h"
 
-/* psc_stat_f - ファイルの情報を返す
+/* psc_fstat_f - ファイルの情報を返す
  */
-W psc_stat_f(struct posix_request *req)
+W psc_fstat_f(struct posix_request *req)
 {
     struct file *fp;
     W errno;
     struct stat st;
 
-    errno = proc_get_file(req->procid, req->param.par_stat.fileid, &fp);
+    errno = proc_get_file(req->procid, req->param.par_fstat.fileid, &fp);
     if (errno) {
 	put_response(req, errno, -1, 0, 0);
 	return (FAIL);
@@ -50,7 +50,7 @@ W psc_stat_f(struct posix_request *req)
     st.st_gid = fp->f_inode->i_gid;
     st.st_rdev = fp->f_inode->i_dev;
     if (fp->f_inode->i_fs == NULL) {
-      printk("STAT: illegal i_fs\n");
+      printk("FSTAT: illegal i_fs\n");
       st.st_blksize = 512;
     }
     else {
@@ -62,7 +62,7 @@ W psc_stat_f(struct posix_request *req)
     st.st_ctime = fp->f_inode->i_ctime;
 
     errno =
-	vput_reg(req->caller, req->param.par_stat.st, sizeof(struct stat),
+	vput_reg(req->caller, req->param.par_fstat.st, sizeof(struct stat),
 		 &st);
     if (errno) {
 	put_response(req, EP_INVAL, 0, 0, 0);
