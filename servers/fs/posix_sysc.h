@@ -992,7 +992,6 @@ struct posix_syscall
 extern struct posix_syscall	syscall_table[];
 
 
-extern W	psc_noaction_f (struct posix_request *);
 extern W	psc_access_f (struct posix_request *);
 extern W	psc_chdir_f (struct posix_request *);
 extern W	psc_chmod_f (struct posix_request *);

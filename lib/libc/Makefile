@@ -28,7 +28,6 @@ OTHEROBJS= others/atoi.o others/stdlib.o _main.o \
 STRINGOBJS = string/strcat.o string/strcmp.o string/strcpy.o string/strlen.o
 
 OBJS=   call_lowlib.o \
-	native/sys_noaction.o \
 	native/sys_access.o \
 	native/sys_brk.o \
 	native/sys_chdir.o \
@@ -46,14 +45,9 @@ OBJS=   call_lowlib.o \
 	native/sys_getcwd.o \
 	native/sys_getdents.o \
 	native/sys_getegid.o \
-	native/sys_getenv.o \
 	native/sys_geteuid.o \
 	native/sys_getgid.o \
 	native/sys_getgrgid.o \
-	native/sys_getgrnam.o \
-	native/sys_getgrps.o \
-	native/sys_getlogin.o \
-	native/sys_getpgrp.o \
 	native/sys_getpid.o \
 	native/sys_getppid.o \
 	native/sys_getuid.o \
@@ -61,37 +55,20 @@ OBJS=   call_lowlib.o \
 	native/sys_link.o \
 	native/sys_lseek.o \
 	native/sys_mkdir.o \
-	native/sys_mkfifo.o \
 	native/sys_misc.o \
 	native/sys_mount.o \
 	native/sys_umount.o \
 	native/sys_open.o \
-	native/sys_pause.o \
-	native/sys_pipe.o \
 	native/sys_read.o \
 	native/sys_remove.o \
 	native/sys_rename.o \
 	native/sys_rmdir.o \
 	native/sys_setgid.o \
 	native/sys_setpgid.o \
-	native/sys_setsid.o \
 	native/sys_setuid.o \
-	native/sys_sigact.o \
-	native/sys_sigaset.o \
-	native/sys_sigdset.o \
-	native/sys_sigeset.o \
-	native/sys_sigfset.o \
-	native/sys_sigismem.o \
-	native/sys_sigljmp.o \
-	native/sys_sigpend.o \
-	native/sys_sigpmask.o \
-	native/sys_sigsjmp.o \
-	native/sys_sigsus.o \
 	native/sys_sleep.o \
 	native/sys_fstat.o \
 	native/sys_time.o \
-	native/sys_times.o \
-	native/sys_ttyname.o \
 	native/sys_umask.o \
 	native/sys_uname.o \
 	native/sys_unlink.o \

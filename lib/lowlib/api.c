@@ -44,17 +44,8 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 
 
 #define DEF_SYSCALL(x)		{ (int (*)())psys_ ## x, #x }
-#define DEF_NOSYSCALL		{ nodef, "nosyscall" }
 
-/*
- * 何もしない、システムコールの定義 (ENOSYS エラーを返す)。
- */
-static int
-nodef () 
-{
-  return (ENOSYS); 
-}
-
+static int psys_noaction(void *argp);
 
 struct syscall_entry syscalls[] =
 {
@@ -74,7 +65,7 @@ struct syscall_entry syscalls[] =
   DEF_SYSCALL (getegid),	/* 13 */
   DEF_SYSCALL (geteuid),	/* 14 */
   DEF_SYSCALL (getgid),		/* 15 */
-  DEF_SYSCALL (getpgrp),	/* 16 */
+  DEF_SYSCALL (noaction),	/* 16 */
   DEF_SYSCALL (getpid),		/* 17 */
   DEF_SYSCALL (getppid),	/* 18 */
   DEF_SYSCALL (getuid),		/* 19 */
@@ -82,17 +73,17 @@ struct syscall_entry syscalls[] =
   DEF_SYSCALL (lseek),		/* 21 */
   DEF_SYSCALL (mkdir),		/* 22 */
   DEF_SYSCALL (open),		/* 23 */
-  DEF_SYSCALL (pipe),		/* 24 */
+  DEF_SYSCALL (noaction),		/* 24 */
   DEF_SYSCALL (read),		/* 25 */
-  DEF_SYSCALL (rename),		/* 26 */
+  DEF_SYSCALL (noaction),		/* 26 */
   DEF_SYSCALL (rmdir),		/* 27 */
   DEF_SYSCALL (setgid),		/* 28 */
   DEF_SYSCALL (setpgid),	/* 29 */
-  DEF_SYSCALL (setsid),		/* 30 */
+  DEF_SYSCALL (noaction),		/* 30 */
   DEF_SYSCALL (setuid),		/* 31 */
   DEF_SYSCALL (stat),		/* 32 */
   DEF_SYSCALL (time),		/* 33 */
-  DEF_SYSCALL (times),		/* 34 */
+  DEF_SYSCALL (noaction),		/* 34 */
   DEF_SYSCALL (umask),		/* 35 */
   DEF_SYSCALL (unlink),		/* 36 */
   DEF_SYSCALL (utime),		/* 37 */
@@ -104,42 +95,49 @@ struct syscall_entry syscalls[] =
   DEF_SYSCALL (noaction),	/* 43 */ /* MKNOD */
   DEF_SYSCALL (mount),		/* 44 */
   DEF_SYSCALL (noaction),	/* 45 */ /* mountroot */
-  DEF_SYSCALL (statfs),		/* 46 */
+  DEF_SYSCALL (noaction),		/* 46 */
   DEF_SYSCALL (noaction),	/* 47 */ /* STIME */
   DEF_SYSCALL (noaction),	/* 48 */ /* SYNC */
   DEF_SYSCALL (umount),		/* 49 */
   DEF_SYSCALL (noaction),	/* 50 */ /* ALARM */
   DEF_SYSCALL (kill),		/* 51 */
-  DEF_SYSCALL (pause),		/* 52 */
-  DEF_SYSCALL (sigaction),	/* 53 */
+  DEF_SYSCALL (noaction),		/* 52 */
+  DEF_SYSCALL (noaction),	/* 53 */
   DEF_SYSCALL (noaction),	/* 54 */ /* SIGRETURN */
-  DEF_SYSCALL (sigprocmask),	/* 55 */
-  DEF_SYSCALL (sigpending),	/* 56 */
-  DEF_SYSCALL (sigsuspend),	/* 57 */
-  DEF_SYSCALL (sigaddset),	/* 58 */
-  DEF_SYSCALL (sigdelset),	/* 59 */
-  DEF_SYSCALL (sigemptyset),	/* 60 */
-  DEF_SYSCALL (sigfillset),	/* 61 */
-  DEF_SYSCALL (sigismember),	/* 62 */
-  DEF_SYSCALL (siglongjmp),	/* 63 */
-  DEF_SYSCALL (sigsetjmp),	/* 64 */
+  DEF_SYSCALL (noaction),	/* 55 */
+  DEF_SYSCALL (noaction),	/* 56 */
+  DEF_SYSCALL (noaction),	/* 57 */
+  DEF_SYSCALL (noaction),	/* 58 */
+  DEF_SYSCALL (noaction),	/* 59 */
+  DEF_SYSCALL (noaction),	/* 60 */
+  DEF_SYSCALL (noaction),	/* 61 */
+  DEF_SYSCALL (noaction),	/* 62 */
+  DEF_SYSCALL (noaction),	/* 63 */
+  DEF_SYSCALL (noaction),	/* 64 */
   DEF_SYSCALL (misc),		/* 65 */
-  DEF_SYSCALL (memory),		/* 66 */
+  DEF_SYSCALL (noaction),		/* 66 */
   DEF_SYSCALL (dup2),		/* 67 */
   DEF_SYSCALL (getcwd),		/* 68 */
-  DEF_SYSCALL (getenv),		/* 69 */
+  DEF_SYSCALL (noaction),		/* 69 */
   DEF_SYSCALL (getgrgid),	/* 70 */
-  DEF_SYSCALL (getgrnam),	/* 71 */
-  DEF_SYSCALL (getgroups),	/* 72 */
-  DEF_SYSCALL (getlogin),	/* 73 */
-  DEF_SYSCALL (mkfifo),		/* 74 */
+  DEF_SYSCALL (noaction),	/* 71 */
+  DEF_SYSCALL (noaction),	/* 72 */
+  DEF_SYSCALL (noaction),	/* 73 */
+  DEF_SYSCALL (noaction),		/* 74 */
   DEF_SYSCALL (remove),		/* 75 */
   DEF_SYSCALL (rewind),		/* 76 */
   DEF_SYSCALL (sleep),		/* 77 */
-  DEF_SYSCALL (ttyname),	/* 78 */
-  DEF_SYSCALL (tzset),		/* 79*/
+  DEF_SYSCALL (noaction),	/* 78 */
+  DEF_SYSCALL (noaction),		/* 79*/
   DEF_SYSCALL (uname),		/* 80 */
 };
 
 
 int	nsyscall = (sizeof (syscalls) / sizeof (syscalls[0]));
+
+static int psys_noaction(void *argp)
+{
+	errno = ENOSYS;
+
+	return NULL;
+}

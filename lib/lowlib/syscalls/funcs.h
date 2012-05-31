@@ -2,7 +2,6 @@ extern ER	_make_connection(W wOperation,
 		 struct posix_request *req,
 		 struct posix_response *res);
 
-extern int	psys_noaction (void *argp);
 extern int	psys_access (void *argp);
 extern int	psys_brk (void *argp);
 extern int	psys_chdir (void *argp);

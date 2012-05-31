@@ -56,56 +56,29 @@ OBJS =	_make_cnnct.o \
 	getcwd.o \
 	getdents.o \
 	getegid.o \
-	getenv.o \
 	geteuid.o \
 	getgid.o \
 	getgrgid.o \
-	getgrnam.o \
-	getgroups.o \
-	getlogin.o \
-	getpgrp.o \
 	getpid.o \
 	getppid.o \
 	getuid.o \
 	kill.o \
 	link.o \
 	lseek.o \
-	memory.o \
 	misc.o \
 	mkdir.o \
-	mkfifo.o \
 	mount.o \
-	noaction.o \
 	open.o \
-	pause.o \
-	pipe.o \
 	read.o \
 	remove.o \
-	rename.o \
 	rewind.o \
 	rmdir.o \
 	setgid.o \
 	setpgid.o \
-	setsid.o \
 	setuid.o \
-	sigaction.o \
-	sigaddset.o \
-	sigdelset.o \
-	sigemptyset.o \
-	sigfillset.o \
-	sigismember.o \
-	siglongjmp.o \
-	sigpending.o \
-	sigprocmask.o \
-	sigsetjmp.o \
-	sigsuspend.o \
 	sleep.o \
 	stat.o \
-	statfs.o \
 	time.o \
-	times.o \
-	ttyname.o \
-	tzset.o \
 	umask.o \
 	umount.o \
 	uname.o \
