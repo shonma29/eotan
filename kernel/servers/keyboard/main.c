@@ -125,11 +125,8 @@ static void main_loop()
     for (;;) {
 
 	/* 要求の受信 */
-#ifdef undef
-	errno = trcv_mbf(&req, &rsize, recvport, 51);
-#else
 	errno = rcv_mbf(&req, &rsize, recvport);
-#endif
+
 	switch (errno) {
 	case E_OK:
 	    /* 正常ケース */

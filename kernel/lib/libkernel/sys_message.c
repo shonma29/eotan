@@ -62,16 +62,6 @@ psnd_mbf (ID id, INT size, VP msg)
 
 
 /*
- *  メッセージの送信 (タイムアウト機能つき)
- */
-ER
-tsnd_mbf (ID id, INT size, VP msg, TMO tmout)
-{
-  return (call_syscall (SYS_TSND_MBF, id, size, msg, tmout));
-}
-
-
-/*
  *  メッセージの受信
  */
 ER
@@ -79,26 +69,4 @@ rcv_mbf (VP msg, INT *size, ID id)
 {
   return (call_syscall (SYS_RCV_MBF, msg, size, id));
 }
-
-
-/*
- *  メッセージの受信 (ポーリング機能つき)
- */
-
-ER
-prcv_mbf (VP msg, INT *size, ID id)
-{
-  return (call_syscall (SYS_PRCV_MBF, msg, size, id));
-}
-
-
-/*
- * メッセージ受信 (タイムアウト機能つき)
- */
-ER
-trcv_mbf (VP msg, INT *size, ID id, TMO tmout)
-{
-  return (call_syscall (SYS_TRCV_MBF, msg, size, id, tmout));
-}
-
 

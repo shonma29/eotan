@@ -532,18 +532,6 @@ ER sys_psnd_mbf(VP argp)
     return (psnd_mbf(args->id, args->size, args->msg));
 }
 
-ER sys_tsnd_mbf(VP argp)
-{
-    struct {
-	ID id;
-	INT size;
-	VP msg;
-	TMO tmout;
-    } *args = argp;
-
-    return (tsnd_mbf(args->id, args->size, args->msg, args->tmout));
-}
-
 ER sys_rcv_mbf(VP argp)
 {
     struct {
@@ -554,30 +542,6 @@ ER sys_rcv_mbf(VP argp)
 
     return (rcv_mbf(args->msg, args->size, args->id));
 }
-
-ER sys_prcv_mbf(VP argp)
-{
-    struct {
-	VP msg;
-	INT *size;
-	ID id;
-    } *args = argp;
-
-    return (prcv_mbf(args->msg, args->size, args->id));
-}
-
-ER sys_trcv_mbf(VP argp)
-{
-    struct {
-	VP msg;
-	INT *size;
-	ID id;
-	TMO tmout;
-    } *args = argp;
-
-    return (trcv_mbf(args->msg, args->size, args->id, args->tmout));
-}
-
 
 ER sys_dis_int(VP argp)
 {

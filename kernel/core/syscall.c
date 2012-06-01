@@ -92,10 +92,10 @@ struct t_syscall	syscall_table[] =
   DEF_SYSCALL (del_mbf, 1),	/*   37 */
   DEF_SYSCALL (snd_mbf, 3),	/*   38 */
   DEF_SYSCALL (psnd_mbf, 3),	/*   39 */
-  DEF_SYSCALL (tsnd_mbf, 4),	/*   40 */
+  DEF_NOSYSCALL,		/*   40 */
   DEF_SYSCALL (rcv_mbf, 3),	/*   41 */
-  DEF_SYSCALL (prcv_mbf, 3),	/*   42 */
-  DEF_SYSCALL (trcv_mbf, 4),	/*   43 */
+  DEF_NOSYSCALL,		/*   42 */
+  DEF_NOSYSCALL,		/*   43 */
 
   /* 割りこみ管理 */
   DEF_SYSCALL (dis_int, 0),	/*   44 */

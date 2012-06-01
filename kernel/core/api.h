@@ -54,10 +54,9 @@ Version 2, June 1991
 #define SYS_DEL_MBF	(37)
 #define SYS_SND_MBF	(38)
 #define SYS_PSND_MBF	(39)
-#define SYS_TSND_MBF	(40)
+
 #define SYS_RCV_MBF	(41)
-#define SYS_PRCV_MBF	(42)
-#define SYS_TRCV_MBF	(43)
+
 #define SYS_DIS_INT   	(44)
 #define SYS_ENA_INT   	(45)
 #define SYS_CRE_MPL   	(46)
@@ -137,10 +136,7 @@ extern ER	sys_cre_mbf (void *argp);		/*  36 */
 extern ER	sys_del_mbf (void *argp);		/*  37 */
 extern ER	sys_snd_mbf (void *argp);		/*  38 */
 extern ER	sys_psnd_mbf (void *argp);	/*  39 */
-extern ER	sys_tsnd_mbf (void *argp);	/*  40 */
 extern ER	sys_rcv_mbf (void *argp);		/*  41 */
-extern ER	sys_prcv_mbf (void *argp);	/*  42 */
-extern ER	sys_trcv_mbf (void *argp);	/*  43 */
 extern ER	sys_dis_int (void *argp);		/*  44 */
 extern ER	sys_ena_int (void *argp);		/*  45 */
 extern ER	sys_cre_mpl (void *argp);		/*  46 */
