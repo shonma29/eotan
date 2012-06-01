@@ -41,13 +41,7 @@ Version 2, June 1991
 #define	SYS_TSLP_TSK	(18)
 #define	SYS_WUP_TSK	(19)
 #define SYS_CAN_WUP	(20)
-#define SYS_CRE_SEM	(21)
-#define SYS_DEL_SEM	(22)
-#define SYS_SIG_SEM	(23)
-#define SYS_WAI_SEM	(24)
-#define SYS_PREQ_SEM	(25)
-#define SYS_TWAI_SEM	(26)
-#define SYS_REF_SEM	(27)
+
 #define SYS_CRE_FLG   	(28)
 #define SYS_DEL_FLG   	(29)
 #define SYS_SET_FLG   	(30)
@@ -73,7 +67,6 @@ Version 2, June 1991
 #define SYS_REL_BLK   	(50)
 #define SYS_REF_BLK   	(51)
 #define SYS_TGET_BLK   	(52)
-#define SYS_GET_VER   	(53)
 
 #define SYS_SET_TIM	(58)
 #define SYS_GET_TIM	(59)
@@ -132,13 +125,6 @@ extern ER	sys_tslp_tsk (void *argp);	/*  18 */
 #endif /* notdef */
 extern ER	sys_wup_tsk (void *argp);		/*  19 */
 extern ER	sys_can_wup (void *argp);		/*  20 */
-extern ER	sys_cre_sem (void *argp);		/*  21 */
-extern ER	sys_del_sem (void *argp);		/*  22 */
-extern ER       sys_sig_sem (void *argp);		/*  23 */
-extern ER	sys_wai_sem (void *argp);		/*  24 */
-extern ER	sys_preq_sem (void *argp);	/*  25 */
-extern ER	sys_twai_sem (void *argp);	/*  26 */
-extern ER	sys_ref_sem (void *argp);		/*  27 */
 extern ER	sys_cre_flg (void *argp);		/*  28 */
 extern ER	sys_del_flg (void *argp);		/*  29 */
 extern ER	sys_set_flg (void *argp);		/*  30 */
@@ -164,7 +150,6 @@ extern ER	sys_pget_blk (void *argp);	/*  49 */
 extern ER	sys_rel_blk (void *argp);		/*  50 */
 extern ER	sys_ref_mpl (void *argp);		/*  51 */
 extern ER	sys_tget_blk (void *argp);	/*  52 */
-extern ER	sys_get_ver (void *argp);		/*  53 */
 
 extern ER	sys_def_int (void *argp);		/*  67 */
 

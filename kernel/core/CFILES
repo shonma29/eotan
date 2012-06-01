@@ -31,9 +31,6 @@ task.o:	task.c
 time.o:	time.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-version.o:	version.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
 virtual_mem.o:	mpu/virtual_mem.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
@@ -49,9 +46,6 @@ interrupt.o:	mpu/interrupt.c
 fpu.o:	mpu/fpu.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-semaphore.o:	semaphore.c
-	$(CC) $(CFLAGS) -c $< -o $@
-	
 timer.o:	arch/timer.c
 	$(CC) $(CFLAGS) -c $< -o $@
 

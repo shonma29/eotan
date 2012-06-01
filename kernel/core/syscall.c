@@ -69,13 +69,13 @@ struct t_syscall	syscall_table[] =
   
   /* 同期・通信機構 */
   /* セマフォ */
-  DEF_SYSCALL (cre_sem, 2),	/*   21 */
-  DEF_SYSCALL (del_sem, 1),	/*   22 */
-  DEF_SYSCALL (sig_sem, 1),	/*   23 */
-  DEF_SYSCALL (wai_sem, 1),	/*   24 */
-  DEF_SYSCALL (preq_sem, 1),	/*   25 */
-  DEF_SYSCALL (twai_sem, 2),	/*   26 */
-  DEF_SYSCALL (ref_sem, 2),	/*   27 */
+  DEF_NOSYSCALL,		/*   21 */
+  DEF_NOSYSCALL,		/*   22 */
+  DEF_NOSYSCALL,		/*   23 */
+  DEF_NOSYSCALL,		/*   24 */
+  DEF_NOSYSCALL,		/*   25 */
+  DEF_NOSYSCALL,		/*   26 */
+  DEF_NOSYSCALL,		/*   27 */
 
   /* イベントフラグ */
   DEF_SYSCALL (cre_flg, 2),	/*   28 */
@@ -111,7 +111,7 @@ struct t_syscall	syscall_table[] =
   DEF_SYSCALL (tget_blk, 2),	/*   52 */
 
   /* システム管理 */
-  DEF_SYSCALL (get_ver, 1),	/*   53 */
+  DEF_NOSYSCALL,		/*   53 */
   DEF_NOSYSCALL,		/*   54 ref_sys */
   DEF_NOSYSCALL,		/*   55 ref_cfg */
   DEF_NOSYSCALL,		/*   56 def_svc */

@@ -929,8 +929,6 @@ ER ter_tsk(ID tskid)
     case TTS_WAI:
 	if (task[tskid].tskwait.msg_wait)
 	    del_task_mbf(tskid);
-	if (task[tskid].tskwait.semaph_wait)
-	    del_task_sem(tskid);
 	if (task[tskid].tskwait.event_wait)
 	    del_task_evt(tskid);
 	dis_int();
@@ -1039,11 +1037,6 @@ ER rel_wai(ID tskid)
     case TTS_WAI:
 	dis_int();
 	taskp->tskwait.time_wait = 0;
-	if (taskp->tskwait.semaph_wait) {
-	    taskp->tskwait.semaph_wait = 0;
-	    del_task_sem(tskid);
-	    dis_int();
-	}
 	if (taskp->tskwait.event_wait) {
 	    taskp->tskwait.event_wait = 0;
 	    del_task_evt(tskid);

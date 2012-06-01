@@ -36,9 +36,7 @@ OBJS= \
 	api.o \
 	task.o \
 	time.o \
-	version.o \
 	virtual_mem.o \
-	semaphore.o \
 	tss.o \
 	interrupt.o \
 	fpu.o \

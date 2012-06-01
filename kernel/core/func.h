@@ -101,16 +101,9 @@ extern void init_kalloc(void);
 extern VP kalloc(W size);
 extern void kfree(VP area, W size);
 
-/* version.c */
-extern ER get_ver(T_VER * ver);
-
 /* message.c */
 extern ER init_msgbuf(void);
 extern void del_task_mbf(ID tid);
-
-/* semaphore.c */
-extern ER init_semaphore(void);
-extern void del_task_sem(ID tid);
 
 /* eventflag.c */
 extern ER init_eventflag(void);

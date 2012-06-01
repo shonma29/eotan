@@ -16,7 +16,6 @@ Version 2, June 1991
 #include "../../include/stdarg.h"
 #include "../../include/mpu/io.h"
 #include "core.h"
-#include "version.h"
 #include "func.h"
 
 

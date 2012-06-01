@@ -401,79 +401,6 @@ ER sys_can_wup(VP argp)
 /* ----------------------------------------------------------------------- *
  * タスク間通信システムコール                                              *
  * ----------------------------------------------------------------------- */
-ER sys_cre_sem(VP argp)
-{
-    struct {
-	ID semid;
-	T_CSEM *pkcsem;
-    } *args = argp;
-
-    return (cre_sem(args->semid, args->pkcsem));
-}
-
-
-ER sys_del_sem(VP argp)
-{
-    struct {
-	ID semid;
-    } *args = argp;
-
-    return (del_sem(args->semid));
-}
-
-
-ER sys_sig_sem(VP argp)
-{
-    struct {
-	ID semid;
-    } *args = argp;
-
-    return (sig_sem(args->semid));
-}
-
-
-ER sys_wai_sem(VP argp)
-{
-    struct {
-	ID semid;
-    } *args = argp;
-
-    return (wai_sem(args->semid));
-}
-
-
-ER sys_preq_sem(VP argp)
-{
-    struct {
-	ID semid;
-    } *args = argp;
-
-    return (preq_sem(args->semid));
-}
-
-
-ER sys_twai_sem(VP argp)
-{
-    struct {
-	ID semid;
-	TMO tmout;
-    } *args = argp;
-
-    return (twai_sem(args->semid, args->tmout));
-}
-
-
-ER sys_ref_sem(VP argp)
-{
-    struct {
-	T_RSEM *pk_rsem;
-	ID semid;
-    } *args = argp;
-
-    return (ref_sem(args->pk_rsem, args->semid));
-}
-
-
 ER sys_cre_flg(VP argp)
 {
     struct {
@@ -740,16 +667,6 @@ ER sys_tget_blk(VP argp)
 
     return (tget_blk(args->p_blk, args->mplid, args->blksz, args->tmout));
 }
-
-ER sys_get_ver(VP argp)
-{
-    struct {
-	T_VER *ver;
-    } *args = argp;
-
-    return (get_ver(args->ver));
-}
-
 
 /*
  * 割り込みハンドラを定義する。
