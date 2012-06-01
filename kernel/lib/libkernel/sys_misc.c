@@ -50,16 +50,6 @@ static char	rcsid[] = "$Id: sys_misc.c,v 1.5 2000/07/09 16:37:59 kishida0 Exp $"
 #include "../../core/api.h"
 
 
-/* vget_csl
- *
- */
-ER
-vget_csl (W *x, W *y)
-{
-  return (call_syscall (SYS_VGET_CSL, x, y));
-}
-
-
 /* vsys_msc
  *
  */

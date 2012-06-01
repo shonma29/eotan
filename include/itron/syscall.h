@@ -142,7 +142,6 @@ extern ER ref_alm(T_RALM *pk_ralm, HNO almno);
 /* --------------------------------------------------------- */
 extern ER lod_low (ID task, B *name);
 
-extern ER vget_csl (W *x, W *y);
 extern ER vsys_msc (W cmd, VP argp);
 extern ER vsys_inf (W func, W sub, VP argp);
 extern ER vcpy_stk(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi , W edi, ID dst);

@@ -945,15 +945,6 @@ ER sys_ref_alm(VP argp)
 /*
  *
  */
-ER sys_vget_csl(VP argp)
-{
-    struct {
-	W *x;
-	W *y;
-    } *args = argp;
-
-    return (get_cursor_position(args->x, args->y));
-}
 
 /* sys_vsys_msc - miscellaneous function
  *

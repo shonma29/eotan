@@ -27,7 +27,6 @@ static char rcsid[] = "$Header: /usr/local/src/master/B-Free/Program/btron-pc/ke
 #define DEF_SYSCALL(x,n)	{ #x, sys_ ## x, n }
 #define DEF_NOSYSCALL		{ "nosys", nodef, 0 }
 
-extern ER	nosyscall (VP argp);
 static ER	nodef (VP argp);
 
 struct t_syscall
@@ -186,7 +185,7 @@ struct t_syscall	syscall_table[] =
   DEF_NOSYSCALL,		/*  119 */
 
   /* その他のシステムコール */
-  DEF_SYSCALL (vget_csl, 2),	/*  120 */
+  DEF_NOSYSCALL,		/*  120 */
   DEF_NOSYSCALL,		/*  121 */
   DEF_SYSCALL (vsys_msc, 2),	/*  122 */
   DEF_SYSCALL (vcpy_stk, 4),	/*  123 */
