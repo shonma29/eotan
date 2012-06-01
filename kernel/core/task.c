@@ -1068,30 +1068,7 @@ ER get_tid(ID * p_tskid)
     *p_tskid = run_task->tskid;
     return (E_OK);
 }
-
-/***********************************************************************************
- * ref_tsk --- タスク状態の参照
- *
- * タスク状態を返す。
- *
- */
-ER ref_tsk(T_RTSK * pk_rtsk, ID tskid)
-{
-    if ((tskid < MIN_TSKID) || (tskid > MAX_TSKID)) {
-	return (E_ID);
-    }
-    switch (task[tskid].tskstat) {
-    case TTS_NON:
-	return (E_NOEXS);
-    default:
-	pk_rtsk->tskpri = task[tskid].tsklevel;
-	pk_rtsk->tskstat = task[tskid].tskstat;
-	pk_rtsk->total_time = task[tskid].total;
-	break;
-    }
-    return (E_OK);
-}
-
+
 /*********************************************************************************
  * slp_tsk --- 自タスクを待ち状態にする
  *

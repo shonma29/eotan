@@ -33,7 +33,7 @@ Version 2, June 1991
 #define	SYS_ROT_RDQ	(10)
 #define	SYS_REL_WAI	(11)
 #define	SYS_GET_TID	(12)
-#define	SYS_REF_TSK	(13)
+
 #define	SYS_SUS_TSK	(14)
 #define	SYS_RSM_TSK	(15)
 #define	SYS_FRSM_TSK	(16)
@@ -113,7 +113,6 @@ extern ER	sys_chg_pri (void *argp);		/*   9 */
 extern ER	sys_rot_rdq (void *argp);		/*  10 */
 extern ER	sys_rel_wai (void *argp);		/*  11 */
 extern ER	sys_get_tid (void *argp);		/*  12 */
-extern ER	sys_ref_tsk (void *argp);		/*  13 */
 extern ER	sys_sus_tsk (void *argp);		/*  14 */
 extern ER	sys_rsm_tsk (void *argp);		/*  15 */
 extern ER	sys_frsm_tsk (void *argp);	/*  16 */

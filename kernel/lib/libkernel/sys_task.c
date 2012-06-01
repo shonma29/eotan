@@ -121,14 +121,6 @@ get_tid (ID *rid)
   return call_syscall (SYS_GET_TID, rid);
 }
 
-/* ref_tsk  --- タスク状態の参照
-*/
-ER
-ref_tsk (T_RTSK *stat, ID taskid)
-{
-  return call_syscall (SYS_REF_TSK, stat, taskid);
-}
-
 /* rot_rdq  --- 同一プライオリティでのタスクの順序を変更する
 */
 ER

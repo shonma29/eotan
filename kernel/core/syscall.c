@@ -55,7 +55,7 @@ struct t_syscall	syscall_table[] =
   DEF_SYSCALL (rot_rdq, 1),	/*   10 */
   DEF_SYSCALL (rel_wai, 1),	/*   11 */
   DEF_SYSCALL (get_tid, 1),	/*   12 */
-  DEF_SYSCALL (ref_tsk, 2),	/*   13 */
+  DEF_NOSYSCALL,		/*   13 */
 
   /* タスク附属同期機能 */
   DEF_SYSCALL (sus_tsk, 1),    	/*   14 */

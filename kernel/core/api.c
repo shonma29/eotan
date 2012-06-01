@@ -324,16 +324,6 @@ ER sys_get_tid(VP argp)
     return (err);
 }
 
-ER sys_ref_tsk(VP argp)
-{
-    struct {
-	T_RTSK *pk_rtsk;
-	ID tskid;
-    } *args = argp;
-
-    return (ref_tsk(args->pk_rtsk, args->tskid));
-}
-
 ER sys_sus_tsk(VP argp)
 {
     struct {
