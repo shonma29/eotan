@@ -344,16 +344,6 @@ ER sys_rsm_tsk(VP argp)
 }
 
 
-ER sys_frsm_tsk(VP argp)
-{
-    struct {
-	ID taskid;
-    } *args = argp;
-
-    return (frsm_tsk(args->taskid));
-}
-
-
 ER sys_slp_tsk(VP argp)
 {
     return (slp_tsk());

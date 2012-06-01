@@ -60,7 +60,7 @@ struct t_syscall	syscall_table[] =
   /* タスク附属同期機能 */
   DEF_SYSCALL (sus_tsk, 1),    	/*   14 */
   DEF_SYSCALL (rsm_tsk, 1),	/*   15 */
-  DEF_SYSCALL (frsm_tsk, 1),	/*   16 */
+  DEF_NOSYSCALL,		/*   16 */
   DEF_SYSCALL (slp_tsk, 0),	/*   17 */
   DEF_NOSYSCALL,		/*   18; tslp_tsk */
   DEF_SYSCALL (wup_tsk, 1),	/*   19 */

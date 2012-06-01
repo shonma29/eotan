@@ -98,14 +98,6 @@ ena_dsp (void)
   return call_syscall (SYS_ENA_DSP);
 }
 
-/* frsm_tsk --- 強制待ち状態のタスクから待ち状態を解除(多重の待ち状態用)
-*/
-ER
-frsm_tsk (ID taskid)
-{
-  return call_syscall (SYS_FRSM_TSK, taskid);
-}
-
 /* rel_wai --- 待ち状態の解除
  */
 rel_wai (ID taskid)

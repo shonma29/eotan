@@ -1282,52 +1282,7 @@ ER rsm_tsk(ID taskid)
     ena_int();
     return (E_OK);
 }
-
-/******************************************************************************
- * frsm_tsk --- 強制待ち状態のタスクから待ち状態を解除(多重の待ち状態用)
- *
- * 引数：
- *	taskid --- suspend するタスクの ID
- *
- * 返り値：
- *	エラー番号
- *
- * 機能：
- *
- */
-ER frsm_tsk(ID taskid)
-{
-    T_TCB *taskp;
 
-    if ((taskid < MIN_TSKID) || (taskid > MAX_TSKID)) {
-	return (E_ID);
-    }
-
-    dis_int();
-    taskp = &task[taskid];
-    switch (taskp->tskstat) {
-    case TTS_SUS:
-	taskp->tskstat = TTS_RDY;
-	ready_task[taskp->tsklevel]
-	    = ins_tcb_list(ready_task[taskp->tsklevel], taskp);
-	break;
-
-    case TTS_WAS:
-	taskp->tskstat = TTS_WAI;
-	break;
-
-    case TTS_NON:
-	ena_int();
-	return (E_NOEXS);
-
-    default:
-	ena_int();
-	return (E_OBJ);
-    }
-    ena_int();
-    return (E_OK);
-}
-
 /******************************************************************************************
  * can_wup --- タスクの起床要求を無効化
  *

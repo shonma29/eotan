@@ -36,7 +36,7 @@ Version 2, June 1991
 
 #define	SYS_SUS_TSK	(14)
 #define	SYS_RSM_TSK	(15)
-#define	SYS_FRSM_TSK	(16)
+
 #define	SYS_SLP_TSK	(17)
 #define	SYS_TSLP_TSK	(18)
 #define	SYS_WUP_TSK	(19)
@@ -115,7 +115,6 @@ extern ER	sys_rel_wai (void *argp);		/*  11 */
 extern ER	sys_get_tid (void *argp);		/*  12 */
 extern ER	sys_sus_tsk (void *argp);		/*  14 */
 extern ER	sys_rsm_tsk (void *argp);		/*  15 */
-extern ER	sys_frsm_tsk (void *argp);	/*  16 */
 extern ER	sys_slp_tsk (void *argp);		/*  17 */
 #ifdef notdef
 extern ER	sys_tslp_tsk (void *argp);	/*  18 */
