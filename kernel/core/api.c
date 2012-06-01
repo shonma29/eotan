@@ -446,31 +446,6 @@ ER sys_pol_flg(VP argp)
 	    (args->p_flgptn, args->flgid, args->waiptn, args->wfmode));
 }
 
-ER sys_twai_flg(VP argp)
-{
-    struct {
-	UINT *p_flgptn;
-	ID flgid;
-	UINT waiptn;
-	UINT wfmode;
-	TMO tmout;
-    } *args = argp;
-
-    return (twai_flg
-	    (args->p_flgptn, args->flgid, args->waiptn, args->wfmode,
-	     args->tmout));
-}
-
-ER sys_ref_flg(VP argp)
-{
-    struct {
-	T_RFLG *pk_rflg;
-	ID flgid;
-    } *args = argp;
-
-    return (ref_flg(args->pk_rflg, args->flgid));
-}
-
 ER sys_cre_mbf(VP argp)
 {
     struct {

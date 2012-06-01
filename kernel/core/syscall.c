@@ -83,8 +83,8 @@ struct t_syscall	syscall_table[] =
   DEF_SYSCALL (clr_flg, 2),     /*   31 */
   DEF_SYSCALL (wai_flg, 4),	/*   32 */
   DEF_SYSCALL (pol_flg, 4),	/*   33 */
-  DEF_SYSCALL (twai_flg, 5),	/*   34 */
-  DEF_SYSCALL (ref_flg, 2),	/*   35 */
+  DEF_NOSYSCALL,		/*   34 */
+  DEF_NOSYSCALL,		/*   35 */
 
   /* メッセージバッファ */
   DEF_SYSCALL (cre_mbf, 2),	/*   36	*/

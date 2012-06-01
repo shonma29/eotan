@@ -48,8 +48,7 @@ Version 2, June 1991
 #define SYS_CLR_FLG  	(31)
 #define SYS_WAI_FLG   	(32)
 #define SYS_POL_FLG   	(33)
-#define SYS_TWAI_FLG   	(34)
-#define SYS_REF_FLG   	(35)
+
 #define SYS_CRE_MBF	(36)
 #define SYS_DEL_MBF	(37)
 #define SYS_SND_MBF	(38)
@@ -127,8 +126,6 @@ extern ER	sys_set_flg (void *argp);		/*  30 */
 extern ER	sys_clr_flg (void *argp);		/*  31 */
 extern ER	sys_wai_flg (void *argp);		/*  32 */
 extern ER	sys_pol_flg (void *argp);		/*  33 */
-extern ER	sys_twai_flg (void *argp);	/*  34 */
-extern ER	sys_ref_flg (void *argp);		/*  35 */
 extern ER	sys_cre_mbf (void *argp);		/*  36 */
 extern ER	sys_del_mbf (void *argp);		/*  37 */
 extern ER	sys_snd_mbf (void *argp);		/*  38 */
