@@ -101,11 +101,11 @@ struct t_syscall	syscall_table[] =
   DEF_SYSCALL (ena_int, 0),	/*   45 */
 
   /* メモリ管理 */
-  DEF_SYSCALL (cre_mpl, 2),	/*   46 */
-  DEF_SYSCALL (del_mpl, 1),	/*   47 */
-  DEF_SYSCALL (get_blk, 3),	/*   48 */
-  DEF_SYSCALL (pget_blk, 3),	/*   49 */
-  DEF_SYSCALL (rel_blk, 2),	/*   50 */
+  DEF_NOSYSCALL,		/*   46 */
+  DEF_NOSYSCALL,		/*   47 */
+  DEF_NOSYSCALL,		/*   48 */
+  DEF_NOSYSCALL,		/*   49 */
+  DEF_NOSYSCALL,		/*   50 */
   DEF_NOSYSCALL,		/*   51 */
   DEF_NOSYSCALL,		/*   52 */
 

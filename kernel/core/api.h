@@ -58,11 +58,6 @@ Version 2, June 1991
 
 #define SYS_DIS_INT   	(44)
 #define SYS_ENA_INT   	(45)
-#define SYS_CRE_MPL   	(46)
-#define SYS_DEL_MPL   	(47)
-#define SYS_GET_BLK   	(48)
-#define SYS_PGET_BLK   	(49)
-#define SYS_REL_BLK   	(50)
 
 #define SYS_SET_TIM	(58)
 #define SYS_GET_TIM	(59)
@@ -129,11 +124,6 @@ extern ER	sys_psnd_mbf (void *argp);	/*  39 */
 extern ER	sys_rcv_mbf (void *argp);		/*  41 */
 extern ER	sys_dis_int (void *argp);		/*  44 */
 extern ER	sys_ena_int (void *argp);		/*  45 */
-extern ER	sys_cre_mpl (void *argp);		/*  46 */
-extern ER	sys_del_mpl (void *argp);		/*  47 */
-extern ER	sys_get_blk (void *argp);		/*  48 */
-extern ER	sys_pget_blk (void *argp);	/*  49 */
-extern ER	sys_rel_blk (void *argp);		/*  50 */
 
 extern ER	sys_def_int (void *argp);		/*  67 */
 

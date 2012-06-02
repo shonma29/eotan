@@ -512,58 +512,6 @@ ER sys_ena_int(VP argp)
 }
 
 
-ER sys_cre_mpl(VP argp)
-{
-    struct {
-	ID mplid;
-	T_CMPL *pk_cmpl;
-    } *args = argp;
-
-    return (cre_mpl(args->mplid, args->pk_cmpl));
-}
-
-ER sys_del_mpl(VP argp)
-{
-    struct {
-	ID mplid;
-    } *args = argp;
-
-    return (del_mpl(args->mplid));
-}
-
-ER sys_get_blk(VP argp)
-{
-    struct {
-	VP pblk;
-	ID mplid;
-	INT blksz;
-    } *args = argp;
-
-    return (get_blk(args->pblk, args->mplid, args->blksz));
-}
-
-ER sys_pget_blk(VP argp)
-{
-    struct {
-	VP pblk;
-	ID mplid;
-	INT blksz;
-    } *args = argp;
-
-    return (pget_blk(args->pblk, args->mplid, args->blksz));
-}
-
-ER sys_rel_blk(VP argp)
-{
-    struct {
-	ID mplid;
-	VP blk;
-    } *args = argp;
-
-    return (rel_blk(args->mplid, args->blk));
-}
-
-
 /*
  * 割り込みハンドラを定義する。
  *

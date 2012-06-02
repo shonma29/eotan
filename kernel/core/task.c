@@ -395,7 +395,6 @@ static ER make_task_context(T_TCB * task, T_CTSK * pk_ctsk)
  */
 static ER make_task_stack(T_TCB * task, W size, VP * sp)
 {
-/*  err = pget_blk (&sp, TMPL_SYS, ROUNDUP (size, PAGE_SIZE)); */
     /* スタックポインタは 0x80000000 の仮想アドレスでアクセスする必要がある。 */
     (*sp) = (VP*)((UW)palloc(PAGES(size)) | 0x80000000);
 #ifdef TSKSW_DEBUG

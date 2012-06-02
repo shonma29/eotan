@@ -119,9 +119,6 @@ extern ER init_lowlib(struct module_info *modp);
 extern ER load_lowlib(VP * argp);
 extern ER stat_lowlib(VP * argp);
 
-/* itron_memory.c */
-extern ER init_mpl(void);
-
 /* --------------------------------------------------------- */
 /* システム管理用タスク                                      */
 /* --------------------------------------------------------- */

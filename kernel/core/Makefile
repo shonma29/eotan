@@ -27,7 +27,6 @@ OBJS= \
 	devconfig.o \
 	console.o \
 	error.o \
-	memory.o \
 	main.o \
 	kalloc.o \
 	pmemory.o \

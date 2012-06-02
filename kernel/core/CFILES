@@ -7,9 +7,6 @@ console.o:	arch/console.c
 error.o:	error.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-memory.o:	memory.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
 kalloc.o:	kalloc.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
