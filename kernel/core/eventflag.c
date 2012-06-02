@@ -333,60 +333,6 @@ ER wai_flg(UINT * flgptn, ID flgid, UINT waiptn, UINT wfmode)
 }
 
 
-/*******************************************************************************
- * pol_flg --- イベントフラグ待ち(ポーリング付き)
- *
- * 引数：
- *
- * 返り値：
- *
- * 機能：
- *
- */
-ER pol_flg(UINT * flgptn, ID flgid, UINT waiptn, UINT wfmode)
-{
-    *flgptn = NULL;
-    if (flgid < MIN_EVENTFLAG || flgid > MAX_EVENTFLAG) {
-	return (E_ID);
-    }
-
-    if (flag_table[flgid].flgatr == TA_FREE) {
-	return (E_NOEXS);
-    }
-
-    if ((flag_table[flgid].flgatr == TA_WSGL)
-	&& (flag_table[flgid].wait_task)) {
-	return (E_OBJ);
-    }
-    if (waiptn == 0) {
-	return (E_PAR);
-    }
-
-    switch ((wfmode) & (TWF_ANDW | TWF_ORW)) {
-    case TWF_ANDW:
-	if (!((flag_table[flgid].iflgptn & waiptn) == waiptn)) {
-	    return (E_TMOUT);
-	}
-	/* DO NOT REACHED */
-
-    case TWF_ORW:
-	if (!(flag_table[flgid].iflgptn & waiptn)) {
-	    return (E_TMOUT);
-	}
-	/* DO NOT REACHED */
-
-    default:
-	return (E_TMOUT);
-    }
-
-    *flgptn = flag_table[flgid].iflgptn;
-    if (wfmode & TWF_CLR) {
-	flag_table[flgid].iflgptn = 0;
-    }
-
-    return (E_OK);
-}
-
 /* del_task_evt -- イベントフラグからタスクを削除
  *
  *

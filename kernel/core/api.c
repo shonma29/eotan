@@ -433,19 +433,6 @@ ER sys_wai_flg(VP argp)
 	    (args->p_flgptn, args->flgid, args->waiptn, args->wfmode));
 }
 
-ER sys_pol_flg(VP argp)
-{
-    struct {
-	UINT *p_flgptn;
-	ID flgid;
-	UINT waiptn;
-	UINT wfmode;
-    } *args = argp;
-
-    return (pol_flg
-	    (args->p_flgptn, args->flgid, args->waiptn, args->wfmode));
-}
-
 ER sys_cre_mbf(VP argp)
 {
     struct {
@@ -777,17 +764,6 @@ ER sys_def_alm(VP argp)
 
     return (def_alm(args->almo, args->pk_dalm));
 }
-
-ER sys_ref_alm(VP argp)
-{
-    struct {
-	T_RALM *pk_ralm;
-	HNO almo;
-    } *args = argp;
-
-    return (ref_alm(args->pk_ralm, args->almo));
-}
-
 
 /*
  * その他の関数群 

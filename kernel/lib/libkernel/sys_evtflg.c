@@ -71,9 +71,3 @@ wai_flg (UINT *flgptn, ID flgid, UINT waiptn, UINT wfmode)
 {
   return (call_syscall (SYS_WAI_FLG, flgptn, flgid, waiptn, wfmode));
 }
-
-ER
-pol_flg (UINT *flgptn, ID flgid, UINT waiptn, UINT wfmode)
-{
-  return (call_syscall (SYS_POL_FLG, flgptn, flgid, waiptn, wfmode));
-}

@@ -147,15 +147,6 @@ void print_task_list(void)
     ena_int();
 }
 
-void print_ready_task(void)
-{
-    int i;
-
-    for (i = 5; i <= 10; i++) {
-	printk("ready_task[%d] = 0x%x\n", i, ready_task[i]);
-    }
-}
-
 static void print_list(void)
 {
     int i;

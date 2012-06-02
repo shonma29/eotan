@@ -82,7 +82,7 @@ struct t_syscall	syscall_table[] =
   DEF_SYSCALL (set_flg, 2),	/*   30 */
   DEF_SYSCALL (clr_flg, 2),     /*   31 */
   DEF_SYSCALL (wai_flg, 4),	/*   32 */
-  DEF_SYSCALL (pol_flg, 4),	/*   33 */
+  DEF_NOSYSCALL,		/*   33 */
   DEF_NOSYSCALL,		/*   34 */
   DEF_NOSYSCALL,		/*   35 */
 
@@ -124,7 +124,7 @@ struct t_syscall	syscall_table[] =
   DEF_NOSYSCALL,		/*   62 act_cyc */
   DEF_NOSYSCALL,		/*   63 ref_cyc */
   DEF_SYSCALL (def_alm, 2),	/*   64 def_alm */
-  DEF_SYSCALL (ref_alm, 2),	/*   65 ref_alm */
+  DEF_NOSYSCALL,		/*   65 ref_alm */
   DEF_NOSYSCALL,		/*   66 ret_tmr */
 
   DEF_SYSCALL (def_int, 2),	/*   67 */

@@ -47,7 +47,6 @@ Version 2, June 1991
 #define SYS_SET_FLG   	(30)
 #define SYS_CLR_FLG  	(31)
 #define SYS_WAI_FLG   	(32)
-#define SYS_POL_FLG   	(33)
 
 #define SYS_CRE_MBF	(36)
 #define SYS_DEL_MBF	(37)
@@ -64,7 +63,6 @@ Version 2, June 1991
 #define SYS_DLY_TSK	(60)
 
 #define SYS_DEF_ALM	(64)
-#define SYS_REF_ALM	(65)
 
 #define SYS_DEF_INT	(67)
 
@@ -116,7 +114,6 @@ extern ER	sys_del_flg (void *argp);		/*  29 */
 extern ER	sys_set_flg (void *argp);		/*  30 */
 extern ER	sys_clr_flg (void *argp);		/*  31 */
 extern ER	sys_wai_flg (void *argp);		/*  32 */
-extern ER	sys_pol_flg (void *argp);		/*  33 */
 extern ER	sys_cre_mbf (void *argp);		/*  36 */
 extern ER	sys_del_mbf (void *argp);		/*  37 */
 extern ER	sys_snd_mbf (void *argp);		/*  38 */
@@ -149,7 +146,6 @@ extern ER	sys_set_tim (void *argp);
 extern ER	sys_get_tim (void *argp);
 extern ER	sys_dly_tsk (void *argp);
 extern ER	sys_def_alm (void *argp);
-extern ER	sys_ref_alm (void *argp);
 
 /* その他のシステムコール */
 extern ER	sys_vsys_msc (void *argp);

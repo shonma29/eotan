@@ -164,7 +164,7 @@ call_console (ID driver, TC ch)
 {
   DDEV_REQ		req;		/* 要求パケット */
   DDEV_RES		res;		/* 返答パケット */
-  W			rsize;
+  INT			rsize;
   ER			error;
   
   ena_int ();
@@ -179,7 +179,7 @@ call_console (ID driver, TC ch)
       return (E_SYS);
     }
   rsize = sizeof (res);
-  error = rcv_mbf (&res, (INT *)&rsize, console_recv);
+  error = rcv_mbf (&res, &rsize, console_recv);
   if (res.body.wri_res.errcd != E_OK)
     {
       return (E_SYS);
@@ -208,8 +208,6 @@ call_console (ID driver, TC ch)
 void
 putchar_tron (TC ch)
 {
-  TC c;
-
   switch (ch)
     {
     default:

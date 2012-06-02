@@ -40,7 +40,6 @@ Version 2, June 1991
  * 変数宣言
  */
 
-static T_CYCHANDLER cyctable[MAX_CYCLIC];
 static T_ALMHANDLER almtable[MAX_ALARM];
 
 SYSTIME system_time;
@@ -51,7 +50,6 @@ void init_time(UW seconds)
   SYSTIME time;
   UW TH, TM, TL;
   
-  memset(cyctable, 0, sizeof(T_CYCHANDLER)*MAX_CYCLIC);
   memset(almtable, 0, sizeof(T_ALMHANDLER)*MAX_ALARM);
 
   TH = 0;
@@ -161,22 +159,5 @@ ER def_alm(HNO almno, T_DALM *pk_dalm)
     set_timer(pk_dalm->almtim.ltime, (void (*)(VP))pk_dalm->almhdr,
 	      pk_dalm->exinf);
   }
-  return(E_OK);
-}
-
-/*
- * アラームハンドラ状態参照
- */
-
-ER ref_alm(T_RALM *pk_ralm, HNO almno)
-{
-  if (almno < 0) return(E_PAR);
-  else if (almno >= MAX_ALARM) return(E_PAR);
-  if (pk_ralm == NULL) return(E_PAR);
-  if (almtable[almno].almhdr == NULL) return(E_NOEXS);
-  pk_ralm->exinf = almtable[almno].exinf;
-  pk_ralm->lfttim.utime = 0;
-  pk_ralm->lfttim.ltime = left_time((void (*)(VP))almtable[almno].almhdr,
-				    almtable[almno].exinf);
   return(E_OK);
 }

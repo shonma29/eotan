@@ -50,12 +50,3 @@ ER def_alm(HNO almo, T_DALM *pk_dalm)
 {
   return call_syscall (SYS_DEF_ALM, almo, pk_dalm);
 }
-
-/*
- * アラームハンドラ状態参照
- */
-
-ER ref_alm(T_RALM *pk_ralm, HNO almno)
-{
-  return call_syscall (SYS_REF_ALM, pk_ralm, almno);
-}
