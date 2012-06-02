@@ -72,7 +72,6 @@ extern struct lowlib_info	lowlib_table[MAX_MODULE];
 
 extern ER			init_lowlib (struct module_info *modp);
 extern ER			load_lowlib (VP *argp);
-extern ER			unload_lowlib (VP *argp);
 
 
 #endif /* __ITRON__ */

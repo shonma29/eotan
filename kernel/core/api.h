@@ -63,14 +63,11 @@ Version 2, June 1991
 #define SYS_GET_BLK   	(48)
 #define SYS_PGET_BLK   	(49)
 #define SYS_REL_BLK   	(50)
-#define SYS_REF_BLK   	(51)
 
 #define SYS_SET_TIM	(58)
 #define SYS_GET_TIM	(59)
 #define SYS_DLY_TSK	(60)
-#define SYS_DEF_CYC	(61)
-#define SYS_ACT_CYC	(62)
-#define SYS_REF_CYC	(63)
+
 #define SYS_DEF_ALM	(64)
 #define SYS_REF_ALM	(65)
 
@@ -161,9 +158,6 @@ extern ER	sys_vget_phs (void *argp);
 extern ER	sys_set_tim (void *argp);
 extern ER	sys_get_tim (void *argp);
 extern ER	sys_dly_tsk (void *argp);
-extern ER	sys_def_cyc (void *argp);
-extern ER	sys_act_cyc (void *argp);
-extern ER	sys_ref_cyc (void *argp);
 extern ER	sys_def_alm (void *argp);
 extern ER	sys_ref_alm (void *argp);
 

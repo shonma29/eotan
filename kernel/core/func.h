@@ -117,7 +117,6 @@ extern ER get_tim(SYSTIME *pk_tim);
 /* lowlib.c */
 extern ER init_lowlib(struct module_info *modp);
 extern ER load_lowlib(VP * argp);
-extern ER unload_lowlib(VP * argp);
 extern ER stat_lowlib(VP * argp);
 
 /* itron_memory.c */

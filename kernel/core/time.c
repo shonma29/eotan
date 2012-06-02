@@ -128,33 +128,6 @@ ER dly_tsk(DLYTIME dlytim)
 }
 
 /*
- * 周期起動ハンドラ定義
- */
-
-ER def_cyc(HNO cycno, T_DCYC *pk_dcyc)
-{
-  return(E_NOSPT);
-}
-
-/*
- * 周期起動ハンドラ活性制御
- */
-
-ER act_cyc(HNO cycno, UINT cycact)
-{
-  return(E_NOSPT);
-}
-
-/*
- * 周期起動ハンドラ状態参照
- */
-
-ER ref_cyc(T_RCYC *pk_rcyc, HNO cycno)
-{
-  return(E_NOSPT);
-}
-
-/*
  * アラームハンドラ定義
  */
 

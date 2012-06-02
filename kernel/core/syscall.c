@@ -120,9 +120,9 @@ struct t_syscall	syscall_table[] =
   DEF_SYSCALL (set_tim, 1),	/*   58 set_tim */
   DEF_SYSCALL (get_tim, 1),	/*   59 get_tim */
   DEF_SYSCALL (dly_tsk, 1),	/*   60 dly_tsk */
-  DEF_SYSCALL (def_cyc, 2),	/*   61 def_cyc */
-  DEF_SYSCALL (act_cyc, 2),	/*   62 act_cyc */
-  DEF_SYSCALL (ref_cyc, 2),	/*   63 ref_cyc */
+  DEF_NOSYSCALL,		/*   61 def_cyc */
+  DEF_NOSYSCALL,		/*   62 act_cyc */
+  DEF_NOSYSCALL,		/*   63 ref_cyc */
   DEF_SYSCALL (def_alm, 2),	/*   64 def_alm */
   DEF_SYSCALL (ref_alm, 2),	/*   65 ref_alm */
   DEF_NOSYSCALL,		/*   66 ret_tmr */

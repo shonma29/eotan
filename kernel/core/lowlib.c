@@ -158,21 +158,6 @@ ER load_lowlib(VP * argp)
 
     return (E_PAR);
 }
-
-/*
- *	Removeing LOWLIB on specified task.
- */
-ER unload_lowlib(VP * argp)
-{
-#ifdef notdef
-    struct a {
-	ID task;
-	B *mod_name;
-    } *args = (struct a *) argp;
-#endif
-    return (E_NOSPT);
-}
-
 
 /*
  *	LOWLIB の情報を返す

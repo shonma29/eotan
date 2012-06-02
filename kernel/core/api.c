@@ -820,36 +820,6 @@ ER sys_dly_tsk(VP argp)
     return (dly_tsk(args->dlytim));
 }
 
-ER sys_def_cyc(VP argp)
-{
-    struct {
-	HNO cycno;
-	T_DCYC *pk_dcyc;
-    } *args = argp;
-
-    return (def_cyc(args->cycno, args->pk_dcyc));
-}
-
-ER sys_act_cyc(VP argp)
-{
-    struct {
-	HNO cycno;
-	UINT cycact;
-    } *args = argp;
-
-    return (act_cyc(args->cycno, args->cycact));
-}
-
-ER sys_ref_cyc(VP argp)
-{
-    struct {
-	T_RCYC *pk_rcyc;
-	HNO cycno;
-    } *args = argp;
-
-    return (ref_cyc(args->pk_rcyc, args->cycno));
-}
-
 ER sys_def_alm(VP argp)
 {
     struct {
@@ -916,7 +886,7 @@ ER sys_vsys_msc(VP argp)
 
     case 4:
 	/* unload lowlib */
-	return (unload_lowlib(args->arg));
+	return E_NOSPT;
 	break;
 
     case 5:
