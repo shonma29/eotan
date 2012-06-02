@@ -280,27 +280,6 @@ ER pget_blk(VP * pblk, ID mplid, INT blksz)
 }
 
 
-/* 可変長メモリブロック獲得 (タイムアウト有) - まだ、作成中
- *
- *	エラー番号:
- *	E_ID	mplid不正
- *	E_OBJ	指定された ID の可変長メモリ ID が存在しない。
- *
- * 
- */
-ER tget_blk(VP * pblk, ID mplid, INT blksz, TMO tmout)
-{
-    if (mplid < 0 || mplid > MAX_MEMORY_POOL) {
-	return (E_ID);
-    }
-
-    if (memory_pool_table[mplid].id != mplid) {
-	return (E_OBJ);
-    }
-    return (E_OK);
-}
-
-
 /* 可変長メモリブロック返却 - まだ、作成中
  *
  *	エラー番号:
@@ -322,26 +301,5 @@ ER rel_blk(ID mplid, VP blk)
      * メモリプールにメモリブロックを返却する。
      */
 
-    return (E_OK);
-}
-
-
-
-/* 可変長メモリブロック状態参照
- *
- *	エラー番号:
- *	E_ID	mplid不正
- *	E_OBJ	すでに同一 ID の可変長メモリ ID が存在する。
- *
- */
-ER ref_mpl(ID mplid, T_RMPL * pk_rmpl)
-{
-    if (mplid < 0 || mplid > MAX_MEMORY_POOL) {
-	return (E_ID);
-    }
-
-    if (memory_pool_table[mplid].id != mplid) {
-	return (E_OBJ);
-    }
     return (E_OK);
 }

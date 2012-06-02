@@ -106,8 +106,8 @@ struct t_syscall	syscall_table[] =
   DEF_SYSCALL (get_blk, 3),	/*   48 */
   DEF_SYSCALL (pget_blk, 3),	/*   49 */
   DEF_SYSCALL (rel_blk, 2),	/*   50 */
-  DEF_SYSCALL (ref_mpl, 3),	/*   51 */
-  DEF_SYSCALL (tget_blk, 2),	/*   52 */
+  DEF_NOSYSCALL,		/*   51 */
+  DEF_NOSYSCALL,		/*   52 */
 
   /* システム管理 */
   DEF_NOSYSCALL,		/*   53 */
@@ -191,31 +191,6 @@ struct t_syscall	syscall_table[] =
   DEF_SYSCALL (vcpy_stk, 4),	/*  123 */
   DEF_SYSCALL (vset_ctx, 4),	/*  124 */
   DEF_SYSCALL (vuse_fpu, 1),	/*  125 */
-  DEF_NOSYSCALL,		/*  126 */
-  DEF_NOSYSCALL,		/*  127 */
-  DEF_NOSYSCALL,		/*  128 */
-  DEF_NOSYSCALL,		/*  129 */
-  DEF_NOSYSCALL,		/*  130 */
-  DEF_NOSYSCALL,		/*  131 */
-  DEF_NOSYSCALL,		/*  132 */
-  DEF_NOSYSCALL,		/*  133 */
-  DEF_NOSYSCALL,		/*  134 */
-  DEF_NOSYSCALL,		/*  135 */
-  DEF_NOSYSCALL,		/*  136 */
-  DEF_NOSYSCALL,		/*  137 */
-  DEF_NOSYSCALL,		/*  138 */
-  DEF_NOSYSCALL,		/*  139 */
-  DEF_NOSYSCALL,		/*  140 */
-  DEF_NOSYSCALL,		/*  141 */
-  DEF_NOSYSCALL,		/*  142 */
-  DEF_NOSYSCALL,		/*  143 */
-  DEF_NOSYSCALL,		/*  144 */
-  DEF_NOSYSCALL,		/*  145 */
-  DEF_NOSYSCALL,		/*  146 */
-  DEF_NOSYSCALL,		/*  147 */
-  DEF_NOSYSCALL,		/*  148 */
-  DEF_NOSYSCALL,		/*  149 */
-  DEF_NOSYSCALL,		/*  150 */
 };
 
 W	nsyscall = sizeof (syscall_table) / sizeof (syscall_table[0]);

@@ -64,7 +64,6 @@ Version 2, June 1991
 #define SYS_PGET_BLK   	(49)
 #define SYS_REL_BLK   	(50)
 #define SYS_REF_BLK   	(51)
-#define SYS_TGET_BLK   	(52)
 
 #define SYS_SET_TIM	(58)
 #define SYS_GET_TIM	(59)
@@ -138,8 +137,6 @@ extern ER	sys_del_mpl (void *argp);		/*  47 */
 extern ER	sys_get_blk (void *argp);		/*  48 */
 extern ER	sys_pget_blk (void *argp);	/*  49 */
 extern ER	sys_rel_blk (void *argp);		/*  50 */
-extern ER	sys_ref_mpl (void *argp);		/*  51 */
-extern ER	sys_tget_blk (void *argp);	/*  52 */
 
 extern ER	sys_def_int (void *argp);		/*  67 */
 

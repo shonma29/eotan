@@ -564,29 +564,6 @@ ER sys_rel_blk(VP argp)
 }
 
 
-ER sys_ref_mpl(VP argp)
-{
-    struct {
-	ID mplid;
-	T_RMPL *pk_rmpl;
-    } *args = argp;
-
-    return (ref_mpl(args->mplid, args->pk_rmpl));
-}
-
-
-ER sys_tget_blk(VP argp)
-{
-    struct {
-	VP p_blk;
-	ID mplid;
-	INT blksz;
-	TMO tmout;
-    } *args = argp;
-
-    return (tget_blk(args->p_blk, args->mplid, args->blksz, args->tmout));
-}
-
 /*
  * 割り込みハンドラを定義する。
  *
