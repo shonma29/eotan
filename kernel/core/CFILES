@@ -19,9 +19,6 @@ pmemory.o:	pmemory.c
 printk.o:	printk.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-syscall.o:	syscall.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
 task.o:	task.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
@@ -55,13 +52,7 @@ eventflag.o:	eventflag.c
 keyboard.o:	arch/keyboard.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-sys_dbg_puts.o:	sys_dbg_puts.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
 api.o: api.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-system.o: system.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 lowlib.o: lowlib.c

@@ -31,7 +31,6 @@ OBJS= \
 	kalloc.o \
 	pmemory.o \
 	printk.o \
-	syscall.o \
 	api.o \
 	task.o \
 	time.o \
@@ -46,8 +45,6 @@ OBJS= \
 	locore.o \
 	handler.o  \
 	keyboard.o \
-	sys_dbg_puts.o \
-	system.o \
 	lowlib.o \
 	posix.o
 
