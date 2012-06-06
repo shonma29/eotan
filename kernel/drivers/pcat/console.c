@@ -41,8 +41,6 @@ Version 2, June 1991
 
 #define CURSOR_POS(x,y)		(x + y * 80)
 
-static ER	call_console (ID driver, TC ch);
-
 ID		console_driver = 0;
 ID		console_recv;
 
@@ -61,10 +59,14 @@ struct position
 static	struct position	cursor;
 
 
-static void	set_cursor_pos (W x, W y);
+static ER	call_console (ID driver, TC ch);
 static void	inc_cursor (W count);
-static void	write_vram (W x, W y, W ch, W attr);
+static void write_cr (void);
+static void write_tab ();
 static void	scroll_up (void);
+static void console_clear (void);
+static void	write_vram (W x, W y, W ch, W attr);
+static void	set_cursor_pos (W x, W y);
 
 /*************************************************************************
  * simple_init_console 
@@ -81,38 +83,7 @@ simple_init_console (void)
 {
   console_clear ();
 }
-
-/*************************************************************************
- * init_crt --- CRT の初期化
- *
- * 引数：	なし
- *
- * 返値：	コンソールデバイスのデバイス情報
- *
- * 処理：	コンソールデバイスを初期化する(画面をクリアする)。
- *		カーソルポインタ (cursor) を初期化する。
- *		ドライバ情報を初期化し、呼び出し関数に返す。
- *
- * 注意：	ドライバ情報は、あらかじめ GLOBAL として宣言してあるが、
- *		ドライバ名だけは、開発環境の漢字コードが TRON コードで
- *		ないため、この関数で TRON コードに変換する。
- *
- */
-BOOL
-init_crt (W id)
-{
-  return (TRUE);
-}
-
-/************************************************************************
- * intr_crt
- */
-W
-intr_crt ()
-{
-  return 0;  /* dummy value */
-}
-
+
 /*************************************************************************
  * putchar --- １文字出力; カーネル内のサービスルーチン
  *
@@ -159,8 +130,7 @@ putchar (TC ch)
 /* call_console
  *
  */
-static ER
-call_console (ID driver, TC ch)
+static ER call_console (ID driver, TC ch)
 {
   DDEV_REQ		req;		/* 要求パケット */
   DDEV_RES		res;		/* 返答パケット */
@@ -185,54 +155,6 @@ call_console (ID driver, TC ch)
       return (E_SYS);
     }
   return (E_OK);
-}
-
-
-/*************************************************************************
- * putchar_tron --- １文字出力; カーネル内のサービスルーチン
- *
- *
- * 引数：	ch	出力する文字コード (TRON コード)
- *
- * 返値：	なし
- *
- * 処理：	write_vram を呼び出し、VRAM に１文字出力する。
- *		この関数は、カーネルからメッセージを出力する時にも使用する。
- *		そのため、この関数は GLOBAL として定義している。
- *
- *
- * 注意：	この関数は、出力できる文字かどうかをチェックしていない。
- *		出力できない文字が指定された場合でも、VRAM に書き込もうとする。
- *
- */
-void
-putchar_tron (TC ch)
-{
-  switch (ch)
-    {
-    default:
-      if (ch & 0xFF00)
-	{
-	  write_vram (cursor.x, cursor.y, '?', NORM_ATTR);
-	  inc_cursor (1);
-	  write_vram (cursor.x, cursor.y, '?', NORM_ATTR);
-	  inc_cursor (1);
-	}
-      else
-	{
-	  write_vram (cursor.x, cursor.y, ch, NORM_ATTR);
-	  inc_cursor (1);
-	}
-      break;
-
-    case '\n':
-      write_cr ();
-      break;
-
-    case '\t':
-      write_tab ();
-      break;
-    }
 }
 
 /*************************************************************************
@@ -277,8 +199,7 @@ inc_cursor (W count)
  *		もし、すでに行が一番最後ならば、画面全体をスクロールする。
  *
  */
-void
-write_cr (void)
+static void write_cr (void)
 {
   cursor.x = 0;
   if (cursor.y >= MAX_HEIGHT)
@@ -302,8 +223,7 @@ write_cr (void)
  * 処理：	タブを出力する。
  *
  */
-void
-write_tab ()
+static void write_tab ()
 {
   W	tmp;
 
@@ -355,8 +275,7 @@ scroll_up (void)
  * 処理：	コンソールのはじからはじまでを空白文字で埋める。
  *
  */
-void
-console_clear (void)
+static void console_clear (void)
 {
   W	x, y;
   
@@ -414,69 +333,4 @@ set_cursor_pos (W x, W y)
   outb (GDC_DATA, (addr >> 8) & 0xff);
   outb (GDC_ADDR, 0x0f);
   outb (GDC_DATA, addr & 0xff);
-}
-
-/*************************************************************************
- * delete_key --- 文字を一文字消去する。
- *
- * 引数：	なし
- *
- * 返値：	なし
- *
- * 処理：	現在カーソルがある行の最後の文字を消去する。
- *
- */
-void
-delete_key (void)
-{
-  if (cursor.x > 0)
-    {
-      cursor.x--;
-      write_vram (cursor.x, cursor.y, ' ', 0x1f);
-      set_cursor_pos (cursor.x, cursor.y);
-    }
-}
-
-
-/*************************************************************************
- * move_cursol --- カーソルを指定した位置に移動
- *
- * 引数：	x
- *		y
- *
- * 返値：	TRUE
- *		FALSE
- *
- * 処理：	大域変数 cursor には、カーソル位置が入っている。
- *		move_cursol() は、cursor の値を変更する。
- *		さらに、カーソルの表示位置を新しい cursor の位置に変更する。
- *
- */
-W
-move_cursol (int x, int y)
-{
-  if ((x >= 0) && (x < 80) &&
-      (y >= 0) && (y < 25))
-    {
-      cursor.x = x;
-      cursor.y = y;
-      set_cursor_pos (cursor.x, cursor.y);
-      return (TRUE);
-    }
-  else
-    {
-      return (FALSE);
-    }
-}
-
-
-/*
- * 現在のカーソル位置を返す
- */
-ER
-get_cursor_position (W *x, W *y)
-{
-  *x = cursor.x;
-  *y = cursor.y;
-  return (E_OK);  
 }

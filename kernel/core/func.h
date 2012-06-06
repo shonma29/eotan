@@ -49,14 +49,7 @@ extern UW pmemfree(void);
 
 /* console.c */
 extern void simple_init_console(void);
-extern BOOL init_crt(W);	/* 初期化                       */
-extern W intr_crt(void);	/* 割り込みハンドラ             */
-
 extern void putchar(TC ch);	/* １文字出力                   */
-extern void write_cr(void);
-extern void write_tab(void);
-extern void console_clear(void);
-extern ER get_cursor_position(W * x, W * y);
 
 /* timer.c */
 extern void start_interval(void);
