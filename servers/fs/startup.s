@@ -21,7 +21,7 @@ startup:
 	movl %esp,%ebp
 	pushl $0
 	pushl $0
-	call	posix_start
+	call	main
 	addl $8,%esp
 L2:
 	movl %ebp,%esp

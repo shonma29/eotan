@@ -11,14 +11,11 @@ COMMON=../../../include
 CFLAGS=-O -I. -I$(ROOT)/core -I$(ROOT)/lib/libkernel -I$(COMMON) \
        -fno-builtin $(IDENT)
 CC=gcc
-#AS=/usr/local/bin/as
 AS=/usr/bin/as
-KP=kp -input-code euc
 MKDEPEND=$(CC) -M
 STARTADDR=0x80110000
 ENTRY=start
-LIBS=$(ROOT)/lib/libkernel.a $(ROOT)/lib/libnc.a
-#LD=/usr/local/bin/ld
+LIBS=$(ROOT)/lib/libkernel.a $(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a
 LD=ld
 
 %.o: %.c

@@ -28,67 +28,67 @@ OTHEROBJS= others/atoi.o others/stdlib.o _main.o \
 STRINGOBJS = string/strcat.o string/strcmp.o string/strcpy.o string/strlen.o
 
 OBJS=   call_lowlib.o \
-	native/sys_access.o \
-	native/sys_brk.o \
-	native/sys_chdir.o \
-	native/sys_chmod.o \
-	native/sys_chown.o \
-	native/sys_close.o \
-	native/sys_creat.o \
-	native/sys_dup.o \
-	native/sys_dup2.o \
-	native/sys_exec.o \
-	native/sys_exit.o \
-	native/sys_fcntl.o \
-	native/sys_fork.o \
-	native/fork.o \
-	native/sys_getcwd.o \
-	native/sys_getdents.o \
-	native/sys_getegid.o \
-	native/sys_geteuid.o \
-	native/sys_getgid.o \
-	native/sys_getgrgid.o \
-	native/sys_getpid.o \
-	native/sys_getppid.o \
-	native/sys_getuid.o \
-	native/sys_kill.o \
-	native/sys_link.o \
-	native/sys_lseek.o \
-	native/sys_mkdir.o \
-	native/sys_misc.o \
-	native/sys_mount.o \
-	native/sys_umount.o \
-	native/sys_open.o \
-	native/sys_read.o \
-	native/sys_remove.o \
-	native/sys_rename.o \
-	native/sys_rmdir.o \
-	native/sys_setgid.o \
-	native/sys_setpgid.o \
-	native/sys_setuid.o \
-	native/sys_sleep.o \
-	native/sys_fstat.o \
-	native/sys_time.o \
-	native/sys_umask.o \
-	native/sys_uname.o \
-	native/sys_unlink.o \
-	native/sys_utime.o \
-	native/sys_waitpid.o \
-	native/sys_write.o \
+	posix/sys_access.o \
+	posix/sys_brk.o \
+	posix/sys_chdir.o \
+	posix/sys_chmod.o \
+	posix/sys_chown.o \
+	posix/sys_close.o \
+	posix/sys_creat.o \
+	posix/sys_dup.o \
+	posix/sys_dup2.o \
+	posix/sys_exec.o \
+	posix/sys_exit.o \
+	posix/sys_fcntl.o \
+	posix/sys_fork.o \
+	posix/fork.o \
+	posix/sys_getcwd.o \
+	posix/sys_getdents.o \
+	posix/sys_getegid.o \
+	posix/sys_geteuid.o \
+	posix/sys_getgid.o \
+	posix/sys_getgrgid.o \
+	posix/sys_getpid.o \
+	posix/sys_getppid.o \
+	posix/sys_getuid.o \
+	posix/sys_kill.o \
+	posix/sys_link.o \
+	posix/sys_lseek.o \
+	posix/sys_mkdir.o \
+	posix/sys_misc.o \
+	posix/sys_mount.o \
+	posix/sys_umount.o \
+	posix/sys_open.o \
+	posix/sys_read.o \
+	posix/sys_remove.o \
+	posix/sys_rename.o \
+	posix/sys_rmdir.o \
+	posix/sys_setgid.o \
+	posix/sys_setpgid.o \
+	posix/sys_setuid.o \
+	posix/sys_sleep.o \
+	posix/sys_fstat.o \
+	posix/sys_time.o \
+	posix/sys_umask.o \
+	posix/sys_uname.o \
+	posix/sys_unlink.o \
+	posix/sys_utime.o \
+	posix/sys_waitpid.o \
+	posix/sys_write.o \
 	errno.o
 
 GTOBJS = others/tty.o 
 
-all: libc.a libnative.a libgt.a
+all: libc.a libposix.a libgt.a
 	ranlib libc.a
-	ranlib libnative.a
+	ranlib libposix.a
 	ranlib libgt.a
 
 libc.a: $(OBJS) $(OTHEROBJS) $(STRINGOBJS)
 	ar rv libc.a $(OBJS) $(OTHEROBJS) $(STRINGOBJS)
 
-libnative.a: $(OBJS)
-	ar rv libnative.a $(OBJS)
+libposix.a: $(OBJS)
+	ar rv libposix.a $(OBJS)
 
 libgt.a: $(GTOBJS)
 	ar rv $@ $(GTOBJS)
@@ -104,5 +104,5 @@ clean:
 	rm -f $(STRINGOBJS)
 	rm -f $(GTOBJS)
 	rm -f libc.a
-	rm -f libnative.a
+	rm -f libposix.a
 	rm -f libgt.a

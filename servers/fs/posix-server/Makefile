@@ -87,13 +87,13 @@ OBJS =	access.o \
 	write.o
 
 
-all: libsysc.a
+all: libposix-server.a
 
 
-libsysc.a: $(OBJS)
-	ar rv libsysc.a $(OBJS)
-	ranlib libsysc.a
+libposix-server.a: $(OBJS)
+	ar rv libposix-server.a $(OBJS)
+	ranlib libposix-server.a
 
 
 clean:
-	rm -f $(OBJS) libsysc.a
+	rm -f $(OBJS) libposix-server.a

@@ -16,7 +16,7 @@ KP=kp -input-code euc
 MKDEPEND=$(CC) -M
 STARTADDR=0x80120000
 ENTRY=start
-LIBS=$(ROOT)/lib/libkernel.a $(ROOT)/lib/libnc.a
+LIBS=$(ROOT)/lib/libkernel.a $(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a
 LD=ld
 
 %.o: %.c

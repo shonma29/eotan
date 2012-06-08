@@ -58,7 +58,7 @@ Version 2, June 1991
 /*
  * システムコール処理用関数の定義。
  */
-#include "syscalls/funcs.h"
+#include "posix-client/funcs.h"
 
 /*
  * POSIX ではインプリメント依存となっているシステムコール

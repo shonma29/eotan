@@ -14,7 +14,7 @@ MKDEPEND=$(CC) -M
 STARTADDR=0x00001000
 ENTRY=start
 LIBS=$(ROOT)/kernel/lib/libkernel.a ../../lib/libc/libc.a \
-	$(ROOT)/kernel/lib/libnc.a
+	$(ROOT)/kernel/lib/libitron.a $(ROOT)/kernel/lib/libnc.a
 LD=ld
 
 %.o: %.c

@@ -27,17 +27,18 @@ ENTRY=startup
 STARTADDR=0x00001000
 
 
-OBJS=s0.o posix.o version.o request.o filesystem.o memory.o process.o \
+OBJS=startup.o main.o version.o request.o filesystem.o memory.o process.o \
 	log.o syscall.o global.o vmtree.o exec.o fork.o
-SRCS=posix.c version.c request.c filesystem.c memory.c process.c \
+SRCS=main.c version.c request.c filesystem.c memory.c process.c \
 	log.c syscall.c global.c vmtree.c exec.c fork.c
 
-KERNLIB=../../kernel/lib/libkernel.a ../../kernel/lib/libnc.a
-LIBS=sfs/libsfs.a syscalls/libsysc.a $(KERNLIB)
+KERNLIB=../../kernel/lib/libkernel.a ../../kernel/lib/libitron.a \
+	../../kernel/lib/libnc.a
+LIBS=sfs/libsfs.a posix-server/libposix-server.a $(KERNLIB)
 
 all:
 	${MAKE} -C sfs
-	${MAKE} -C syscalls
+	${MAKE} -C posix-server
 	${MAKE} posix_manager
 
 posix_manager:	$(OBJS) $(LIBS)
@@ -48,7 +49,7 @@ posix_manager:	$(OBJS) $(LIBS)
 clean:
 	rm -f $(OBJS) posix_manager
 	${MAKE} -C sfs clean
-	${MAKE} -C syscalls clean
+	${MAKE} -C posix-server clean
 
 depend:
 	cc -M $(CFLAGS) $(SRCS) > .depend

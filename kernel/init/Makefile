@@ -20,8 +20,8 @@ CC=gcc
 MKDEPEND=$(CC) -M
 STARTADDR=0x00001000
 ENTRY=start
-KERNLIBS=$(ROOT)/lib/libkernel.a $(ROOT)/../lib/libc/libnative.a \
-	$(ROOT)/lib/libnc.a
+KERNLIBS=$(ROOT)/lib/libkernel.a $(ROOT)/../lib/libc/libposix.a \
+	$(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a
 LD=ld
 AS=as
 

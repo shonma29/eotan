@@ -16,8 +16,8 @@ OTHEROBJS= strncpy2.o interrupt.o sys_lowlib.o  \
 
 all: ../libkernel.a ../libitron.a
 
-../libkernel.a: $(OBJS) $(OTHEROBJS)
-	ar rv $@ $(OBJS) $(OTHEROBJS)
+../libkernel.a: $(OTHEROBJS)
+	ar rv $@ $(OTHEROBJS)
 	ranlib $@
 
 ../libitron.a: $(OBJS)

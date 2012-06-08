@@ -88,14 +88,14 @@ OBJS =	_make_cnnct.o \
 	write.o
 
 
-all: libsyscall.a
+all: libposix-client.a
 
 
-libsyscall.a: $(OBJS)
-	ar rv libsyscall.a $(OBJS)
-	ranlib libsyscall.a
+libposix-client.a: $(OBJS)
+	ar rv libposix-client.a $(OBJS)
+	ranlib libposix-client.a
 
 
 clean:
 	rm -f $(OBJS)
-	rm -f libsyscall.a
+	rm -f libposix-client.a

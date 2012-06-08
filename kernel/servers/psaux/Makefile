@@ -7,7 +7,7 @@ ROOT=../..
 CFLAGS=-O2 -I. -I$(ROOT)/core -I$(ROOT)/lib/libkernel -fno-builtin $(IDENT) $(DEBUG)
 
 CC=gcc
-LIBS=$(ROOT)/lib/libkernel.a $(ROOT)/lib/libnc.a
+LIBS=$(ROOT)/lib/libkernel.a $(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a
 LD=ld
 
 STARTADDR=0x80140000

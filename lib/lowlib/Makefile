@@ -59,8 +59,8 @@ OBJS =	lowlib.o entry.o api.o global.o signal.o jmp_user.o virtual.o
 SRCS =	lowlib.c entry.c api.c global.c signal.c jmp_user.S virtual.c
 
 ROOT=../..
-LIBS =	syscalls/libsyscall.a $(ROOT)/kernel/lib/libkernel.a \
-	$(ROOT)/kernel/lib/libnc.a
+LIBS =	posix-client/libposix-client.a $(ROOT)/kernel/lib/libkernel.a \
+	$(ROOT)/kernel/lib/libitron.a $(ROOT)/kernel/lib/libnc.a
 
 # DEBUG  = -DDEBUG
 IDENT  = $(DEBUG)
@@ -74,9 +74,9 @@ lowlib: $(OBJS) SYSCALLS
 	strip -s $@
 
 SYSCALLS:
-	$(MAKE) -C syscalls
+	$(MAKE) -C posix-client
 
 clean:
 	rm -f $(OBJS) lowlib
-	$(MAKE) -C syscalls clean
+	$(MAKE) -C posix-client clean
 

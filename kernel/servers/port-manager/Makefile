@@ -21,7 +21,8 @@ all: $(TARGET)
 
 $(TARGET): $(OBJS)
 	$(LD) -static -o $(TARGET) -e $(ENTRY) -Ttext=$(LOAD_POINT) \
-		$(OBJS) ../../lib/libkernel.a ../../lib/libnc.a
+		$(OBJS) ../../lib/libkernel.a ../../lib/libitron.a \
+		../../lib/libnc.a
 	strip $@
 
 

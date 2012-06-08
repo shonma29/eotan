@@ -108,7 +108,7 @@ static char rcsid[] =
  *
  *   要求の受けつけから処理がおわるまでは他の要求は受け付けない。
  */
-void posix_start(void)
+void main(void)
 {
     struct posix_request request;
     W res;
