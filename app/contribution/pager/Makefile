@@ -37,7 +37,7 @@ all: pager
 
 pager: $(OBJS) $(IOBJS) $(LIBS) $(KERNLIBS)
 	$(LD) -Bstatic -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) $(IOBJS) $(LIBS) $(KERNLIBS)
-	strip $@
+	strip -s -R .comment -R .note -R .note.ABI-tag $@
 
 pager.o: pager.c
 

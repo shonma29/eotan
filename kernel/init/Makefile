@@ -37,7 +37,7 @@ all: init
 
 init: $(OBJS) $(KERNLIBS)
 	$(LD) -static -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) $(KERNLIBS)
-	strip -s $@
+	strip -s -R .comment -R .note -R .note.ABI-tag $@
 
 main.o: init.h main.c
 

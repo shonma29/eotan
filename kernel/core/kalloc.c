@@ -94,10 +94,6 @@ getcore(W size)
 void
 init_kalloc (void)
 {
-#if 0
-  T_CMPL flag;
-#endif
-
   pivot = &freelist;
   freelist.size = 0;
   freelist.next = &freelist;
@@ -170,40 +166,6 @@ kfree (VP ap, W size)
     return;
   }
 
-#ifdef notdef
-  while ((p < area) && (p != &freelist))
-    {
-      before = p;
-      p = before->next;
-    }
-
-  if ((B *)before + before->size == (B *)area)
-    {
-      area = before;
-      before->size += size;
-    }
-  else
-    {
-      area->size = size;
-      before->next = area;
-    }
-
-  if ((B *)area + size == (B *)p)
-    {
-      /* 領域を前のものと統合する */
-
-      area->next = p->next;
-      area->size += p->size;
-      if (pivot == p)
-	{
-	  pivot = area;
-	}
-    }
-  else
-    {
-      area->next = p;
-    }
-#else
   if (area > pivot) before = pivot;
   p = before;
   while(1) {
@@ -243,5 +205,4 @@ kfree (VP ap, W size)
   }	/* for */
   printk("kfree: missing. %x:%d \n",
 	 area, area->size+sizeof(struct kmem_entry));
-#endif
 }

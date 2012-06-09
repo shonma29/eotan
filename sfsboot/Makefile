@@ -44,7 +44,7 @@ modboot: modboot.c
 
 modboot-e: modboot.no $(NLIBS) $(NKERNLIBS)
 	$(LD) -Bstatic -o $@ -e ${NENTRY} -Ttext=$(STARTADDR) modboot.no $(NLIBS) $(NKERNLIBS) 
-	strip $@
+	strip -s -R .comment -R .note -R .note.ABI-tag $@
 clean:
 	${MAKE} -C 1st clean
 	${MAKE} -C 2nd clean

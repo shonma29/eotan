@@ -184,53 +184,51 @@ static char rcsid[] =
 #include "../../include/mpu/io.h"
 #include "boot.h"
 
-#define DEF_SYSCALL(x,n)	{ #x, sys_ ## x, n }
-#define DEF_NOSYSCALL		{ "nosys", nodef, 0 }
-
-struct t_syscall
-{
-  B	*name;		/* システムコール名	*/
-  ER	(*func)(VP argp);	/* 関数へのポインタ	*/
-  W	argn;		/* 引数の数		*/
-};
+#define DEF_SYSCALL(x,n)	sys_ ## x
+#define DEF_NOSYSCALL		nodef
 
 static ER	nodef (VP argp);
 
-static ER	sys_cre_tsk (void *argp);		/*   1 */
-static ER	sys_del_tsk (void *argp);		/*   2 */
-static ER	sys_sta_tsk (void *argp);		/*   3 */
-static ER	sys_ext_tsk (void *argp);		/*   4 */
-static ER	sys_exd_tsk (void *argp);		/*   6 */
-static ER	sys_ter_tsk (void *argp);		/*   6 */
-static ER	sys_dis_dsp (void *argp);		/*   7 */
-static ER	sys_ena_dsp (void *argp);		/*   8 */
-static ER	sys_chg_pri (void *argp);		/*   9 */
-static ER	sys_rot_rdq (void *argp);		/*  10 */
-static ER	sys_rel_wai (void *argp);		/*  11 */
-static ER	sys_get_tid (void *argp);		/*  12 */
-static ER	sys_sus_tsk (void *argp);		/*  14 */
-static ER	sys_rsm_tsk (void *argp);		/*  15 */
-static ER	sys_slp_tsk (void *argp);		/*  17 */
-static ER	sys_wup_tsk (void *argp);		/*  19 */
-static ER	sys_can_wup (void *argp);		/*  20 */
-static ER	sys_cre_flg (void *argp);		/*  28 */
-static ER	sys_del_flg (void *argp);		/*  29 */
-static ER	sys_set_flg (void *argp);		/*  30 */
-static ER	sys_clr_flg (void *argp);		/*  31 */
-static ER	sys_wai_flg (void *argp);		/*  32 */
-static ER	sys_cre_mbf (void *argp);		/*  36 */
-static ER	sys_del_mbf (void *argp);		/*  37 */
-static ER	sys_snd_mbf (void *argp);		/*  38 */
-static ER	sys_psnd_mbf (void *argp);	/*  39 */
-static ER	sys_rcv_mbf (void *argp);		/*  41 */
-static ER	sys_dis_int (void *argp);		/*  44 */
-static ER	sys_ena_int (void *argp);		/*  45 */
+static ER	sys_cre_tsk (void *argp);
+static ER	sys_del_tsk (void *argp);
+static ER	sys_sta_tsk (void *argp);
+static ER	sys_ext_tsk (void *argp);
+static ER	sys_exd_tsk (void *argp);
+static ER	sys_ter_tsk (void *argp);
+static ER	sys_dis_dsp (void *argp);
+static ER	sys_ena_dsp (void *argp);
+static ER	sys_chg_pri (void *argp);
+static ER	sys_rot_rdq (void *argp);
+static ER	sys_rel_wai (void *argp);
+static ER	sys_get_tid (void *argp);
+static ER	sys_sus_tsk (void *argp);
+static ER	sys_rsm_tsk (void *argp);
+static ER	sys_slp_tsk (void *argp);
+static ER	sys_wup_tsk (void *argp);
+static ER	sys_can_wup (void *argp);
+static ER	sys_cre_flg (void *argp);
+static ER	sys_del_flg (void *argp);
+static ER	sys_set_flg (void *argp);
+static ER	sys_clr_flg (void *argp);
+static ER	sys_wai_flg (void *argp);
+static ER	sys_cre_mbf (void *argp);
+static ER	sys_del_mbf (void *argp);
+static ER	sys_snd_mbf (void *argp);
+static ER	sys_psnd_mbf (void *argp);
+static ER	sys_rcv_mbf (void *argp);
+static ER	sys_dis_int (void *argp);
+static ER	sys_ena_int (void *argp);
 
-static ER	sys_def_int (void *argp);		/*  67 */
+/* 時間管理用システムコール */
+static ER	sys_set_tim (void *argp);
+static ER	sys_get_tim (void *argp);
+static ER	sys_dly_tsk (void *argp);
+static ER	sys_def_alm (void *argp);
 
-/* common/dbg_functions.c */
-static ER	sys_vsys_inf (void *argp);	/* 99 */
-static ER	sys_dbg_puts (void *args);	/* 100 */
+static ER	sys_def_int (void *argp);
+
+static ER	sys_vsys_inf (void *argp);
+static ER	sys_dbg_puts (void *args);
 
 /* 仮想メモリ管理用システムコール */
 static ER	sys_vcre_reg (void *argp);
@@ -245,12 +243,6 @@ static ER	sys_vget_reg (void *argp);
 static ER	sys_vsts_reg (void *argp);
 static ER	sys_vget_phs (void *argp);
 
-/* 時間管理用システムコール */
-static ER	sys_set_tim (void *argp);
-static ER	sys_get_tim (void *argp);
-static ER	sys_dly_tsk (void *argp);
-static ER	sys_def_alm (void *argp);
-
 /* その他のシステムコール */
 static ER	sys_vsys_msc (void *argp);
 static ER	sys_vcpy_stk (void *argp);
@@ -259,7 +251,7 @@ static ER	sys_vuse_fpu (void *argp);
 
 /* システムコールテーブル
  */  
-struct t_syscall	syscall_table[] =
+static ER (*syscall_table[])(VP argp) =
 {
   DEF_NOSYSCALL,		/*    0 */
 
@@ -276,145 +268,71 @@ struct t_syscall	syscall_table[] =
   DEF_SYSCALL (rot_rdq, 1),	/*   10 */
   DEF_SYSCALL (rel_wai, 1),	/*   11 */
   DEF_SYSCALL (get_tid, 1),	/*   12 */
-  DEF_NOSYSCALL,		/*   13 */
 
   /* タスク附属同期機能 */
-  DEF_SYSCALL (sus_tsk, 1),    	/*   14 */
-  DEF_SYSCALL (rsm_tsk, 1),	/*   15 */
-  DEF_NOSYSCALL,		/*   16 */
-  DEF_SYSCALL (slp_tsk, 0),	/*   17 */
-  DEF_NOSYSCALL,		/*   18; tslp_tsk */
-  DEF_SYSCALL (wup_tsk, 1),	/*   19 */
-  DEF_SYSCALL (can_wup, 2),	/*   20 */
+  DEF_SYSCALL (sus_tsk, 1),    	/*   13 */
+  DEF_SYSCALL (rsm_tsk, 1),	/*   14 */
+  DEF_SYSCALL (slp_tsk, 0),	/*   15 */
+  DEF_SYSCALL (wup_tsk, 1),	/*   16 */
+  DEF_SYSCALL (can_wup, 2),	/*   17 */
   
   /* 同期・通信機構 */
   /* セマフォ */
-  DEF_NOSYSCALL,		/*   21 */
-  DEF_NOSYSCALL,		/*   22 */
-  DEF_NOSYSCALL,		/*   23 */
-  DEF_NOSYSCALL,		/*   24 */
-  DEF_NOSYSCALL,		/*   25 */
-  DEF_NOSYSCALL,		/*   26 */
-  DEF_NOSYSCALL,		/*   27 */
 
   /* イベントフラグ */
-  DEF_SYSCALL (cre_flg, 2),	/*   28 */
-  DEF_SYSCALL (del_flg, 1),	/*   29 */
-  DEF_SYSCALL (set_flg, 2),	/*   30 */
-  DEF_SYSCALL (clr_flg, 2),     /*   31 */
-  DEF_SYSCALL (wai_flg, 4),	/*   32 */
-  DEF_NOSYSCALL,		/*   33 */
-  DEF_NOSYSCALL,		/*   34 */
-  DEF_NOSYSCALL,		/*   35 */
+  DEF_SYSCALL (cre_flg, 2),	/*   18 */
+  DEF_SYSCALL (del_flg, 1),	/*   19 */
+  DEF_SYSCALL (set_flg, 2),	/*   20 */
+  DEF_SYSCALL (clr_flg, 2),     /*   21 */
+  DEF_SYSCALL (wai_flg, 4),	/*   22 */
 
   /* メッセージバッファ */
-  DEF_SYSCALL (cre_mbf, 2),	/*   36	*/
-  DEF_SYSCALL (del_mbf, 1),	/*   37 */
-  DEF_SYSCALL (snd_mbf, 3),	/*   38 */
-  DEF_SYSCALL (psnd_mbf, 3),	/*   39 */
-  DEF_NOSYSCALL,		/*   40 */
-  DEF_SYSCALL (rcv_mbf, 3),	/*   41 */
-  DEF_NOSYSCALL,		/*   42 */
-  DEF_NOSYSCALL,		/*   43 */
+  DEF_SYSCALL (cre_mbf, 2),	/*   23	*/
+  DEF_SYSCALL (del_mbf, 1),	/*   24 */
+  DEF_SYSCALL (snd_mbf, 3),	/*   25 */
+  DEF_SYSCALL (psnd_mbf, 3),	/*   26 */
+  DEF_SYSCALL (rcv_mbf, 3),	/*   27 */
 
   /* 割りこみ管理 */
-  DEF_SYSCALL (dis_int, 0),	/*   44 */
-  DEF_SYSCALL (ena_int, 0),	/*   45 */
+  DEF_SYSCALL (dis_int, 0),	/*   28 */
+  DEF_SYSCALL (ena_int, 0),	/*   29 */
 
   /* メモリ管理 */
-  DEF_NOSYSCALL,		/*   46 */
-  DEF_NOSYSCALL,		/*   47 */
-  DEF_NOSYSCALL,		/*   48 */
-  DEF_NOSYSCALL,		/*   49 */
-  DEF_NOSYSCALL,		/*   50 */
-  DEF_NOSYSCALL,		/*   51 */
-  DEF_NOSYSCALL,		/*   52 */
 
   /* システム管理 */
-  DEF_NOSYSCALL,		/*   53 */
-  DEF_NOSYSCALL,		/*   54 ref_sys */
-  DEF_NOSYSCALL,		/*   55 ref_cfg */
-  DEF_NOSYSCALL,		/*   56 def_svc */
-  DEF_NOSYSCALL,		/*   57 def_exc */
 
   /* 時間管理機能 */
-  DEF_SYSCALL (set_tim, 1),	/*   58 set_tim */
-  DEF_SYSCALL (get_tim, 1),	/*   59 get_tim */
-  DEF_SYSCALL (dly_tsk, 1),	/*   60 dly_tsk */
-  DEF_NOSYSCALL,		/*   61 def_cyc */
-  DEF_NOSYSCALL,		/*   62 act_cyc */
-  DEF_NOSYSCALL,		/*   63 ref_cyc */
-  DEF_SYSCALL (def_alm, 2),	/*   64 def_alm */
-  DEF_NOSYSCALL,		/*   65 ref_alm */
-  DEF_NOSYSCALL,		/*   66 ret_tmr */
+  DEF_SYSCALL (set_tim, 1),	/*   30 set_tim */
+  DEF_SYSCALL (get_tim, 1),	/*   31 get_tim */
+  DEF_SYSCALL (dly_tsk, 1),	/*   32 dly_tsk */
+  DEF_SYSCALL (def_alm, 2),	/*   33 def_alm */
 
-  DEF_SYSCALL (def_int, 2),	/*   67 */
-  DEF_NOSYSCALL,		/*   68 */
-  DEF_NOSYSCALL,		/*   69 */
-  DEF_NOSYSCALL,		/*   70 */
-  DEF_NOSYSCALL,		/*   71 */
-  DEF_NOSYSCALL,		/*   72 */
-  DEF_NOSYSCALL,		/*   73 */
-  DEF_NOSYSCALL,		/*   74 */
-  DEF_NOSYSCALL,		/*   75 */
-  DEF_NOSYSCALL,		/*   76 */
-  DEF_NOSYSCALL,		/*   77 */
-  DEF_NOSYSCALL,		/*   78 */
-  DEF_NOSYSCALL,		/*   79 */
-  DEF_NOSYSCALL,		/*   80 */
-  DEF_NOSYSCALL,		/*   81 */
-  DEF_NOSYSCALL,		/*   82 */
-  DEF_NOSYSCALL,		/*   83 */
-  DEF_NOSYSCALL,		/*   84 */
-  DEF_NOSYSCALL,		/*   85 */
-  DEF_NOSYSCALL,		/*   86 */
-  DEF_NOSYSCALL,		/*   87 */
-  DEF_NOSYSCALL,		/*   88 */
-  DEF_NOSYSCALL,		/*   89 */
-  DEF_NOSYSCALL,		/*   90 */
-  DEF_NOSYSCALL,		/*   91 */
-  DEF_NOSYSCALL,		/*   92 */
-  DEF_NOSYSCALL,		/*   93 */
-  DEF_NOSYSCALL,		/*   94 */
-  DEF_NOSYSCALL,		/*   95 */
-  DEF_NOSYSCALL,		/*   96 */
-  DEF_NOSYSCALL,		/*   97 */
-  DEF_NOSYSCALL,		/*   98 */
+  DEF_SYSCALL (def_int, 2),	/*   34 */
 
-  DEF_SYSCALL (vsys_inf, 3),	/*   99 */
-  DEF_SYSCALL (dbg_puts, 1),	/*  100 */
+  DEF_SYSCALL (vsys_inf, 3),	/*   35 */
+  DEF_SYSCALL (dbg_puts, 1),	/*   36 */
 
   /* 仮想メモリ管理システムコール */	
-  DEF_SYSCALL (vcre_reg, 7),	/*  101 */
-  DEF_SYSCALL (vdel_reg, 2),	/*  102 */
-  DEF_SYSCALL (vmap_reg, 3),	/*  103 */
-  DEF_SYSCALL (vunm_reg, 3),	/*  104 */
-  DEF_SYSCALL (vdup_reg, 3),	/*  105 */
-  DEF_SYSCALL (vprt_reg, 3),	/*  106 */
-  DEF_SYSCALL (vshr_reg, 3),	/*  107 */
-  DEF_SYSCALL (vput_reg, 4),	/*  108 */
-  DEF_SYSCALL (vget_reg, 4),	/*  109 */
-  DEF_SYSCALL (vsts_reg, 3),	/*  110 */
-  DEF_SYSCALL (vget_phs, 3),	/*  111 */
-  DEF_NOSYSCALL,		/*  112 */
-  DEF_NOSYSCALL,		/*  113 */
-  DEF_NOSYSCALL,		/*  114 */
-  DEF_NOSYSCALL,		/*  115 */
-  DEF_NOSYSCALL,		/*  116 */
-  DEF_NOSYSCALL,		/*  117 */
-  DEF_NOSYSCALL,		/*  118 */
-  DEF_NOSYSCALL,		/*  119 */
+  DEF_SYSCALL (vcre_reg, 7),	/*   37 */
+  DEF_SYSCALL (vdel_reg, 2),	/*   38 */
+  DEF_SYSCALL (vmap_reg, 3),	/*   39 */
+  DEF_SYSCALL (vunm_reg, 3),	/*   40 */
+  DEF_SYSCALL (vdup_reg, 3),	/*   41 */
+  DEF_SYSCALL (vprt_reg, 3),	/*   42 */
+  DEF_SYSCALL (vshr_reg, 3),	/*   43 */
+  DEF_SYSCALL (vput_reg, 4),	/*   44 */
+  DEF_SYSCALL (vget_reg, 4),	/*   45 */
+  DEF_SYSCALL (vsts_reg, 3),	/*   46 */
+  DEF_SYSCALL (vget_phs, 3),	/*   47 */
 
   /* その他のシステムコール */
-  DEF_NOSYSCALL,		/*  120 */
-  DEF_NOSYSCALL,		/*  121 */
-  DEF_SYSCALL (vsys_msc, 2),	/*  122 */
-  DEF_SYSCALL (vcpy_stk, 4),	/*  123 */
-  DEF_SYSCALL (vset_ctx, 4),	/*  124 */
-  DEF_SYSCALL (vuse_fpu, 1),	/*  125 */
+  DEF_SYSCALL (vsys_msc, 2),	/*   48 */
+  DEF_SYSCALL (vcpy_stk, 4),	/*   49 */
+  DEF_SYSCALL (vset_ctx, 4),	/*   50 */
+  DEF_SYSCALL (vuse_fpu, 1),	/*   51 */
 };
 
-static W	nsyscall = sizeof (syscall_table) / sizeof (syscall_table[0]);
+#define NSYSCALL (sizeof (syscall_table) / sizeof (syscall_table[0]))
 
 
 /**************************************************************************
@@ -432,20 +350,16 @@ static W	nsyscall = sizeof (syscall_table) / sizeof (syscall_table[0]);
 W
 syscall (UW sysno, W *arg_addr)
 {
-#if 0
-  W	i;
-  FP	 func;
-#endif
   W	errno;
 
 /* システムコール番号のチェック 
  */
-  if ((sysno <= 0) || (sysno > nsyscall))
+  if ((sysno <= 0) || (sysno > NSYSCALL))
     {
       return (E_OBJ);
     }
 
-  errno = (syscall_table[sysno].func)(arg_addr);
+  errno = (syscall_table[sysno])(arg_addr);
 
   /* 
    * システムコール処理用のデバッグ文。

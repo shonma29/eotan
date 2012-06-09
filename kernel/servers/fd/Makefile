@@ -31,7 +31,7 @@ all: fd765a
 
 fd765a: $(OBJS) $(SRCS) Makefile
 	$(LD) -static -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) $(LIBS)
-	strip -s $@
+	strip -s -R .comment -R .note -R .note.ABI-tag $@
 
 tags:
 	etags ../*/*.[hcs]

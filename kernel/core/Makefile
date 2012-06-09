@@ -10,7 +10,7 @@ IDENT=-DTIMER_TEST -DI386 -DAUTO_START $(DEBUG)
 
 LD=ld
 AS=as
-CFLAGS=-O2 -fno-builtin -I. -Ih -Impu -Iarch -I$(INC) -Wall -fno-builtin $(IDENT)
+CFLAGS=-Os -fno-builtin -I. -Ih -Impu -Iarch -I$(INC) -Wall -fno-builtin $(IDENT)
 CC=gcc
 MKDEPEND=$(CC) -M
 STARTADDR=0x80020000
@@ -61,7 +61,7 @@ all: core.bin
 core.bin: $(OBJS) libkernel.a ../lib/libnc.a port_manager
 	$(LD) -static -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) $(OTHEROBJ) \
 		../lib/libnc.a
-	strip -s $@
+	strip -s -R .comment -R .note -R .note.ABI-tag $@
 
 libkernel.a:
 	${MAKE} -C ../lib/libkernel

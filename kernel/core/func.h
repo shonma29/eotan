@@ -30,7 +30,6 @@ extern ER add_trmtbl(ID, ID, ID);
 
 /* printk.c */
 extern W printk(B *, ...);
-extern W vprintk(B *, VP);
 
 /* error.c */
 extern void falldown(B *, ...);

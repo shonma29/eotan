@@ -23,7 +23,7 @@ $(TARGET): $(OBJS)
 	$(LD) -static -o $(TARGET) -e $(ENTRY) -Ttext=$(LOAD_POINT) \
 		$(OBJS) ../../lib/libkernel.a ../../lib/libitron.a \
 		../../lib/libnc.a
-	strip $@
+	strip -s -R .comment -R .note -R .note.ABI-tag $@
 
 
 clean:
