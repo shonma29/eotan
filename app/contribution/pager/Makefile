@@ -20,7 +20,7 @@ CC=gcc
 
 STARTADDR=0x00001000
 ENTRY=_main
-KERNLIBS=$(ROOT)/lib/libc/libc.a
+KERNLIBS=$(ROOT)/lib/libc.a
 LD=ld
 AS=as
 

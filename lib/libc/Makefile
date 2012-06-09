@@ -79,18 +79,18 @@ OBJS=   call_lowlib.o \
 
 GTOBJS = others/tty.o 
 
-all: libc.a libposix.a libgt.a
-	ranlib libc.a
-	ranlib libposix.a
-	ranlib libgt.a
+all: ../libc.a ../libposix.a ../libgt.a
+	ranlib ../libc.a
+	ranlib ../libposix.a
+	ranlib ../libgt.a
 
-libc.a: $(OBJS) $(OTHEROBJS) $(STRINGOBJS)
-	ar rv libc.a $(OBJS) $(OTHEROBJS) $(STRINGOBJS)
+../libc.a: $(OBJS) $(OTHEROBJS) $(STRINGOBJS)
+	ar rv $@ $(OBJS) $(OTHEROBJS) $(STRINGOBJS)
 
-libposix.a: $(OBJS)
-	ar rv libposix.a $(OBJS)
+../libposix.a: $(OBJS)
+	ar rv $@ $(OBJS)
 
-libgt.a: $(GTOBJS)
+../libgt.a: $(GTOBJS)
 	ar rv $@ $(GTOBJS)
 
 syscall.o: syscall.c
@@ -103,6 +103,6 @@ clean:
 	rm -f $(OTHEROBJS)
 	rm -f $(STRINGOBJS)
 	rm -f $(GTOBJS)
-	rm -f libc.a
-	rm -f libposix.a
-	rm -f libgt.a
+	rm -f ../libc.a
+	rm -f ../libposix.a
+	rm -f ../libgt.a

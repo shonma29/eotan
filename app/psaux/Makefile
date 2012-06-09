@@ -10,25 +10,17 @@
 IDENT=
 DEBUG=
 
-#PATH=.:/bin:/usr/bin:../../tool/kp
 CPP=/lib/cpp
 ROOT=../..
 CFLAGS=-Wall -I. -I$(ROOT)/kernel/core -I$(ROOT)/lib/libc/others $(IDENT)
 CC=gcc
-KP=kp -input-code euc
 MKDEPEND=$(CC) -M
 STARTADDR=0x00001000
 ENTRY=_main
-KERNLIBS=$(ROOT)/lib/libc/libc.a #$(ROOT)/kernel/lib/libkernel/libitron.a 
-#LD=/usr/local/bin/ld
-#AS=/usr/local/bin/as
+KERNLIBS=$(ROOT)/lib/libc.a
 LD=ld
 AS=as
 
-#%.o: %.c
-#	kp -input-code euc -input $< -output kptmp.c
-#	$(CC) $(CFLAGS) -c kptmp.c -o $@
-#	rm -f kptmp.c
 .o.c:
 	$(CC) $(CFLAGS) -c $< -o $@
 

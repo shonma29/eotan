@@ -20,7 +20,7 @@ CC=gcc
 MKDEPEND=$(CC) -M
 STARTADDR=0x00001000
 ENTRY=_main
-KERNLIBS=$(ROOT)/lib/libc/libgt.a $(ROOT)/lib/libc/libc.a #$(ROOT)/kernel/lib/libkernel/libitron.a
+KERNLIBS=$(ROOT)/lib/libgt.a $(ROOT)/lib/libc.a
 LD=ld
 AS=as
 
