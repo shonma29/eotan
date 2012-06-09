@@ -25,8 +25,7 @@ Version 2, June 1991
 
 #include <core.h>
 #include <arch/arch.h>
-#include "../../lib/libkernel/dma.h"
-#include "../../lib/libkernel/device.h"
+#include "../../../include/device.h"
 #include "../console/console.h"
 #include "../port-manager/port-manager.h"
 

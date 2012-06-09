@@ -44,6 +44,7 @@ Version 2, June 1991
  *
  */
 #include "../../include/stdarg.h"
+#include "../../include/device.h"
 #include "posix.h"
 
 static ID log_port;

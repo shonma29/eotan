@@ -12,6 +12,7 @@
 
    Modified by Tomohide Naniwa, 2001
 */
+#include "../../../include/device.h"
 #include "../../../include/mpu/io.h"
 #include "../../lib/libkernel/libkernel.h"
 #include "psaux.h"

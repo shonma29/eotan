@@ -67,7 +67,6 @@ Version 2, June 1991
 
 #include <arch/arch.h>
 #include <core.h>
-#include "../../lib/libkernel/device.h"
 #include "../../../servers/fs/posix.h"
 
 #define KEYBOARD_DRIVER	"driver.keyboard"

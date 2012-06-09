@@ -15,7 +15,7 @@
 
 CPP=/lib/cpp
 ROOT=../../../..
-CFLAGS=-I. -I$(ROOT)/kernel/core -I$(ROOT)/kernel/lib/libkernel -I$(ROOT)/lib/libc/others $(IDENT) -fno-builtin-printf
+CFLAGS=-I. -I$(ROOT)/kernel/core -I$(ROOT)/lib/libc/others $(IDENT) -fno-builtin-printf
 CC=gcc
 MKDEPEND=$(CC) -M
 STARTADDR=0x00001000

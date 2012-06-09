@@ -15,7 +15,7 @@
 
 CPP=/lib/cpp
 ROOT=../../..
-CFLAGS=-O -I. -I$(ROOT) -I$(ROOT)/kernel/core -I$(ROOT)/kernel/lib/libkernel -I$(ROOT)/lib/libc/others $(IDENT)
+CFLAGS=-O -I. -I$(ROOT) -I$(ROOT)/kernel/core -I$(ROOT)/lib/libc/others $(IDENT)
 CC=gcc
 
 STARTADDR=0x00001000

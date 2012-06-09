@@ -64,7 +64,18 @@ Version 2, June 1991
 #ifndef __KERNLIB_DEVICE_H__
 #define __KERNLIB_DEVICE_H__	1
 
-#include "message.h"
+#include "itron/types.h"
+
+/*
+ * メッセージ
+ */
+typedef struct {
+  ID	mbfid;		/* 応答メッセージを送信するメッセージバッファ	*/
+  W	msgtyp;		/* メッセージ識別番号				*/
+  ID	tskid;		/* メッセージを送信したタスク			*/
+  W	len;		/* 独自パラメタのサイズ（バイト）		*/
+  UW	arg[0];		/* 独自パラメタ 				*/
+} SVC_REQ;
 
 /*
  * ドライバへ渡すコマンド一覧

@@ -25,7 +25,7 @@ Version 2, June 1991
  * They are separated from syscall.c. Still no major changes available.
  *
  */
-
+#include "../../../include/device.h"
 #include "posix.h"
 
 /* ctl_device - デバイスにコントロールメッセージを送る

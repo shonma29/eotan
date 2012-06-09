@@ -112,7 +112,7 @@ static char revision[] = "$Revision: 1.10 $";
 **********************************************************************/
 #include "../../../include/itron/errno.h"
 #include "../../../include/itron/syscall.h"
-#include "../../lib/libkernel/device.h"
+#include "../../../include/device.h"
 #include "../../lib/libkernel/libkernel.h"
 #include "console.h"
 #include "cga.h"

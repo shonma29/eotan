@@ -22,7 +22,6 @@ Version 2, June 1991
 
 #include "../../kernel/core/core.h"
 #include "../../kernel/core/misc.h"
-#include "../../kernel/lib/libkernel/device.h"
 #include "../../kernel/servers/console/console.h"
 #include "../../kernel/servers/port-manager/port-manager.h"
 

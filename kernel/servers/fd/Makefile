@@ -25,7 +25,7 @@ LD=ld
 %.o: %.s
 	$(CPP) $(ASFLAGS) $*.s | $(AS) -o $*.o
 
-OBJS= fd.o misc.o version.o spec.o fdc.o 
+OBJS= fd.o misc.o version.o spec.o fdc.o dma.o
 
 all: fd765a
 
@@ -45,3 +45,4 @@ clean:
 
 fd.o: fd.h
 fdc.o: fd.h
+dma.o: dma.h

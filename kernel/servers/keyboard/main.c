@@ -64,6 +64,7 @@ static char rcsid[] =
 
 **********************************************************************/
 
+#include "../../../include/device.h"
 #include "../../lib/libkernel/libkernel.h"
 #include "keyboard.h"
 #include "key_type.h"
