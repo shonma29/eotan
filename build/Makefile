@@ -10,13 +10,14 @@ CC=gcc
 
 MKERNEL=core
 KSERVERS=console keyboard fd ide psaux port-manager
+KERNLIB=libkernel nano-c itron
 LOWLIB=posix_lowlib
 USERLIBS=posix_libc
 USERVERS = posix_manager ramdisk
 USERAP=init
 
 
-PROGRAMS=$(MKERNEL) $(DRIVERS) $(LOWLIB) $(USERLIBS) \
+PROGRAMS=$(MKERNEL) $(KERNLIB) $(DRIVERS) $(LOWLIB) $(USERLIBS) \
 		$(KSERVERS) $(USERVERS) $(USERAP)
 
 all: $(PROGRAMS) kern.bin 
@@ -36,6 +37,8 @@ clean:
 	${MAKE} -C ../kernel/servers/psaux clean
 	${MAKE} -C ../kernel/core clean
 	${MAKE} -C ../kernel/init clean
+	${MAKE} -C ../kernel/lib/libkernel clean
+	${MAKE} -C ../kernel/lib/itron clean
 	${MAKE} -C ../kernel/lib/nano-c clean
 	${MAKE} -C ../servers/fs clean
 	${MAKE} -C ../servers/ramdisk clean
@@ -50,6 +53,15 @@ $(KSERVERS):
 
 core:
 	${MAKE} -C ../kernel/core
+
+libkernel:
+	${MAKE} -C ../kernel/lib/libkernel
+
+itron:
+	${MAKE} -C ../kernel/lib/itron
+
+nano-c:
+	${MAKE} -C ../kernel/lib/nano-c
 
 posix_lowlib:
 	${MAKE} -C ../lib/lowlib

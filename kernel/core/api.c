@@ -180,7 +180,6 @@ static char rcsid[] =
 #include "func.h"
 #include "api.h"
 #include "interrupt.h"
-#include "../../lib/libkernel/device.h"
 #include "../../include/mpu/io.h"
 #include "boot.h"
 

@@ -59,7 +59,6 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 #include "../../../include/services.h"
 #include <core.h>
 #include "../servers/port-manager/port-manager.h"
-#include "libkernel.h"
 
 /*
  * ポートマネージャにメッセージバッファ情報を登録する。

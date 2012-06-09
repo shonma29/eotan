@@ -58,19 +58,13 @@ SRCS=main.c memory.c task.c time.c version.c error.c dummy.c printk.c \
 
 all: core.bin
 
-core.bin: $(OBJS) libkernel.a ../lib/libnc.a port_manager
+core.bin: $(OBJS) ../lib/libnc.a
 	$(LD) -static -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) $(OTHEROBJ) \
 		../lib/libnc.a
 	strip -s -R .comment -R .note -R .note.ABI-tag $@
 
-libkernel.a:
-	${MAKE} -C ../lib/libkernel
-
 ../lib/libnc.a:
 	${MAKE} -C ../lib/nano-c
-
-port_manager:
-	${MAKE} -C ../servers
 
 tags:
 	etags ../*/*.[hcs]
@@ -81,7 +75,7 @@ depend:
 clean:
 	rm -f $(OBJS)
 	rm -f core.bin
-	${MAKE} -C ../lib/libkernel clean
+	${MAKE} -C ../lib/nano-c clean
 	${MAKE} -C ../servers clean
 
 include CFILES
