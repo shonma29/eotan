@@ -59,12 +59,12 @@ OBJS =	lowlib.o entry.o api.o global.o signal.o jmp_user.o virtual.o
 SRCS =	lowlib.c entry.c api.c global.c signal.c jmp_user.S virtual.c
 
 ROOT=../..
-LIBS =	posix-client/libposix-client.a $(ROOT)/kernel/lib/libkernel.a \
-	$(ROOT)/kernel/lib/libitron.a $(ROOT)/kernel/lib/libnc.a
+LIBS =	posix-client/libposix-client.a $(ROOT)/lib/libserv.a \
+	$(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a
 
 # DEBUG  = -DDEBUG
 IDENT  = $(DEBUG)
-CFLAGS = -O2 -I../libc/include -I../libc/include/sys -I$(ROOT)/kernel/core $(IDENT)
+CFLAGS = -O2 -I../libc/include -I../libc/include/sys -I$(ROOT)/kernel $(IDENT)
 CC=gcc
 
 all: lowlib

@@ -18,7 +18,7 @@ Version 2, June 1991
 #ifndef __CONFIG_H__
 #define __CONFIG_H__	1
 
-#include "../../kernel/core/boot.h"
+#include "../../kernel/boot.h"
 
 #define MAJOR_VER	0
 #define MINOR_VER	2

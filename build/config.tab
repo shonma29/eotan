@@ -84,17 +84,17 @@
 #
 
 #  file name			virtual addr	physical addr	type    name
-../kernel/core/core.bin	0x80020000	0x020000	kernel  kernel
-../kernel/servers/port-manager/port-manager 0x00010000	0x080000	kernel port-manager
+../kernel/core.bin	0x80020000	0x020000	kernel  kernel
+../servers/port-manager/port-manager 0x00010000	0x080000	kernel port-manager
 
 #
 #  Driver(s)
 #
-../kernel/servers/console/console	0x80100000	0x100000	driver	driver.console
-../kernel/servers/keyboard/keyboard	0x80110000	0x110000	driver  driver.keyboard
-../kernel/servers/fd/fd765a		0x80120000	0x120000	driver	driver.fd
-../kernel/servers/ide/ide		0x80130000	0x130000	driver  driver.ide
-../kernel/servers/psaux/psaux           0x80140000      0x140000        driver  driver.psaux
+../servers/console/console	0x80100000	0x100000	driver	driver.console
+../servers/keyboard/keyboard	0x80110000	0x110000	driver  driver.keyboard
+../servers/fd/fd765a		0x80120000	0x120000	driver	driver.fd
+../servers/ide/ide		0x80130000	0x130000	driver  driver.ide
+../servers/psaux/psaux           0x80140000      0x140000        driver  driver.psaux
 
 #
 # LOWLIB
@@ -122,5 +122,5 @@
 #
 # System initialize program
 #
-../kernel/init/init			0x00001000	0x300000	user	init
+../app/init/init			0x00001000	0x300000	user	init
 

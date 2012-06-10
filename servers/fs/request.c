@@ -44,7 +44,7 @@ Version 2, June 1991
  */
 #include "../../include/services.h"
 #include "posix.h"
-#include "../../kernel/servers/port-manager/port-manager.h"
+#include "../port-manager/port-manager.h"
 
 
 /* init_port - 要求受け付け用のポートを初期化する

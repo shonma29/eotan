@@ -10,7 +10,7 @@ Version 2, June 1991
 (C) 2001-2002, Tomohide Naniwa
 
 */
-#include "../../kernel/lib/libkernel/libkernel.h"
+#include "../../lib/libserv/libserv.h"
 #include "ramdisk.h"
 
 #define START_FROM_INIT

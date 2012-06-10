@@ -13,7 +13,7 @@
 
    Last modified: Apr. 28, 2002.
 */
-#include "../../../kernel/servers/keyboard/keyboard.h"
+#include "../../../servers/keyboard/keyboard.h"
 
 #define FCTL_WC_WINSIZ (WD_WINSIZ << 16)
 #define FCTL_ENA_EOF (KEYBOARD_ENA_EOF << 16)

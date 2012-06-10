@@ -44,6 +44,3 @@ clean:
 	rm -f 1st_fd.img 2nd_fd.img 3rd_fd.img
 	rm -f sfsboot.img
 
-dummy:
-	echo '*dummy*'
-

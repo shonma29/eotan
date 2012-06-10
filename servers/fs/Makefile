@@ -19,7 +19,7 @@
 DEBUG=#-DEXEC_DEBUG
 IDENT=$(DEBUG) -DKERNEL
 ROOT=../..
-INC=-I$(ROOT)/kernel/core
+INC=-I$(ROOT)/kernel
 CFLAGS=-O2 -fno-builtin -Wall $(INC) $(IDENT)
 CC=gcc
 
@@ -32,8 +32,8 @@ OBJS=startup.o main.o version.o request.o filesystem.o memory.o process.o \
 SRCS=main.c version.c request.c filesystem.c memory.c process.c \
 	log.c syscall.c global.c vmtree.c exec.c fork.c
 
-KERNLIB=../../kernel/lib/libkernel.a ../../kernel/lib/libitron.a \
-	../../kernel/lib/libnc.a
+KERNLIB=../../lib/libserv.a ../../lib/libitron.a \
+	../../lib/libnc.a
 LIBS=sfs/libsfs.a posix-server/libposix-server.a $(KERNLIB)
 
 all:

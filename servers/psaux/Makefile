@@ -1,0 +1,32 @@
+
+IDENT=-DI386 $(DEBUG)
+
+CPP=/lib/cpp
+ROOT=../..
+
+CFLAGS=-O2 -I. -I$(ROOT)/kernel -I$(ROOT)/lib/libserv -fno-builtin $(IDENT) $(DEBUG)
+
+CC=gcc
+LIBS=$(ROOT)/lib/libserv.a $(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a
+LD=ld
+
+STARTADDR=0x80140000
+ENTRY=start
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+OBJS=psaux.o  kbc.o 
+SRCS=psaux.c  kbc.c
+
+all: psaux
+
+psaux: $(OBJS) 
+	$(LD) -static -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) $(LIBS)
+	strip -s -R .comment -R .note -R .note.ABI-tag $@
+
+clean:
+	rm -f $(OBJS) psaux
+
+
+

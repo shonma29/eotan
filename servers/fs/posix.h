@@ -20,10 +20,10 @@ Version 2, June 1991
 #define __POSIX_H__	1
 
 
-#include "../../kernel/core/core.h"
-#include "../../kernel/core/misc.h"
-#include "../../kernel/servers/console/console.h"
-#include "../../kernel/servers/port-manager/port-manager.h"
+#include "../../kernel/core.h"
+#include "../../kernel/misc.h"
+#include "../console/console.h"
+#include "../port-manager/port-manager.h"
 
 #ifdef notdef
 #define ROUNDUP(x,align)	((((int)x) + (align) - 1) & ~((align) - 1))
@@ -141,7 +141,7 @@ struct utimbuf {
 #include "elf.h"
 
 
-#include "../../kernel/lib/libkernel/libkernel.h"
+#include "../../lib/libserv/libserv.h"
 
 
 

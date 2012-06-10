@@ -89,6 +89,8 @@ Version 2, June 1991
 #ifndef __POSIX_FS_H__
 #define __POSIX_FS_H__	1
 
+#include "../../kernel/config.h"
+
 #ifndef O_RDONLY
 #define O_RDONLY	0x00
 #define O_WRONLY	0x01

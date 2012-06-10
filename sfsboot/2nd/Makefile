@@ -25,7 +25,7 @@ TOOLS = build_boot2
 START_ADDR = 0x380000
 
 COMMON = ../../include
-ITRON = ../../kernel/core
+ITRON = ../../kernel
 INCPATH = -I. -I$(COMMON) -I$(ITRON)
 
 NOFLAGS=-c -m386 -msoft-float -fno-builtin -Wall -D__LINUX__ -DSUPPORT_144 $(DEBUG) $(HDBOOT) $(INCPATH)

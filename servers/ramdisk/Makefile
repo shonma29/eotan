@@ -6,15 +6,14 @@ IDENT=-DI386 $(DEBUG)
 
 CPP=/lib/cpp
 ROOT=../..
-CFLAGS=-O2 -I. -I$(ROOT)/kernel/core -fno-builtin $(IDENT)
+CFLAGS=-O2 -I. -I$(ROOT)/kernel -fno-builtin $(IDENT)
 CC=gcc
 AS=/usr/bin/as
-KP=kp -input-code euc
 MKDEPEND=$(CC) -M
 STARTADDR=0x00001000
 ENTRY=start
-LIBS=$(ROOT)/kernel/lib/libkernel.a ../../lib/libc.a \
-	$(ROOT)/kernel/lib/libitron.a $(ROOT)/kernel/lib/libnc.a
+LIBS=$(ROOT)/lib/libserv.a $(ROOT)/lib/libc.a \
+	$(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a
 LD=ld
 
 %.o: %.c

@@ -16,7 +16,7 @@ Version 2, June 1991
 
 #include "../../../include/itron/types.h"
 #include "../../../include/itron/errno.h"
-#include <config.h>
+#include "../../../kernel/config.h"
 #include "../../lowlib/lowlib.h"
 #include "../../../servers/fs/sfs/sfs_fs.h"
 

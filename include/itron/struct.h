@@ -15,7 +15,7 @@ Version 2, June 1991
 #ifndef _ITRON_STRUCT_H_
 #define _ITRON_STRUCT_H_	1
 
-#include "../../kernel/core/mpu/mpu.h"
+#include "../../kernel/mpu/mpu.h"
 
 /* --------------------- 全体 ------------------ */
 

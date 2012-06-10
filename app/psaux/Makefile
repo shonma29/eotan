@@ -12,7 +12,7 @@ DEBUG=
 
 CPP=/lib/cpp
 ROOT=../..
-CFLAGS=-Wall -I. -I$(ROOT)/kernel/core -I$(ROOT)/lib/libc/others $(IDENT)
+CFLAGS=-Wall -I. -I$(ROOT)/kernel -I$(ROOT)/lib/libc/others $(IDENT)
 CC=gcc
 MKDEPEND=$(CC) -M
 STARTADDR=0x00001000

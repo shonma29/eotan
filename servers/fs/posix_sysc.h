@@ -21,6 +21,7 @@ Version 2, June 1991
 #ifndef __POSIX_SYSCALL_H__
 #define __POSIX_SYSCALL_H__	1
 
+#include "../../include/itron/types.h"
 
 #define NR_POSIX_SYSCALL	80
 

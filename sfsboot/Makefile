@@ -3,7 +3,7 @@
 #
 
 ROOT=../kernel
-ECFLAGS=-Wall -I. -I$(ROOT) -I$(ROOT)/core -I$(ROOT)/../lib/libc/others -DEOTA $(IDENT)
+ECFLAGS=-Wall -I. -I$(ROOT) -I$(ROOT) -I$(ROOT)/../lib/libc/others -DEOTA $(IDENT)
 STARTADDR=0x00001000
 ENTRY=_main
 KERNLIBS=$(ROOT)/../lib/libc/libc.a $(ROOT)/lib/libkernel/libkernel.a 

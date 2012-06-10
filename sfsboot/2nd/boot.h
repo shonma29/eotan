@@ -47,7 +47,7 @@ Version 2, June 1991
 #ifndef __BOOT_H__
 #define __BOOT_H__	1
 
-#include "../../kernel/core/boot.h"
+#include "../../kernel/boot.h"
 
 
 #endif /* __BOOT_H__ */
