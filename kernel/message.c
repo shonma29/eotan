@@ -220,6 +220,36 @@ ER cre_mbf(ID id, T_CMBF * pk_cmbf)
 #endif
     return (E_OK);
 }
+
+ER_ID acre_mbf(T_CMBF * pk_cmbf)
+{
+    ID id;
+
+    if ((pk_cmbf->mbfatr != TA_TFIFO) || (pk_cmbf->bufsz < 0)
+	|| (pk_cmbf->maxmsz < 0)) {
+	return E_PAR;
+    }
+
+    for (id = MIN_MSGBUF; id <= MAX_MSGBUF; id++) {
+	if (message_table[id].mbfatr == TA_UNDEF) {
+	    break;
+	}
+    }
+
+    if (id > MAX_MSGBUF) {
+	return E_NOID;
+    }
+
+    dis_int();
+    message_table[id].total_size = pk_cmbf->bufsz;
+    message_table[id].message_ptr = NULL;
+    message_table[id].msgsz = pk_cmbf->maxmsz;
+    message_table[id].bufsz = pk_cmbf->bufsz;
+    message_table[id].mbfatr = pk_cmbf->mbfatr;
+    ena_int();
+
+    return id;
+}
 
 /**************************************************************************************
  * del_mbf --- メッセージバッファを削除する

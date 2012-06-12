@@ -82,6 +82,31 @@ ER cre_flg(ID flgid, T_CFLG * pk_flg)
     flag_table[flgid].exinf = pk_flg->exinf;
     return (E_OK);
 }
+
+ER_ID acre_flg(T_CFLG * pk_flg)
+{
+    ID flgid;
+
+    if ((pk_flg->flgatr != TA_WSGL) && (pk_flg->flgatr != TA_WMUL)) {
+	return (E_PAR);
+    }
+
+    for (flgid = MIN_EVENTFLAG; flgid <= MAX_EVENTFLAG; flgid++) {
+	if (flag_table[flgid].flgatr == TA_FREE) {
+	    break;
+	}
+    }
+
+    if (flgid > MAX_EVENTFLAG)	return E_ID;
+
+    flag_table[flgid].flgatr = pk_flg->flgatr;
+    flag_table[flgid].iflgptn = pk_flg->iflgptn;
+    flag_table[flgid].wait_task = NULL;
+    flag_table[flgid].wait_tail = NULL;
+    flag_table[flgid].exinf = pk_flg->exinf;
+
+    return flgid;
+}
 
 
 /*******************************************************************************

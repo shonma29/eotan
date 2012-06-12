@@ -85,7 +85,7 @@ start(int argc, char *argv[])
 static void main_loop()
 {
     DDEV_REQ req;
-    extern ER sys_errno;
+    ER errno;
     UW rsize;
 
     /*
@@ -93,8 +93,9 @@ static void main_loop()
      */
     for (;;) {
 	/* 要求の受信 */
-	get_req(recvport, &req, &rsize);
-	switch (sys_errno) {
+	errno = rcv_mbf(&req, &rsize, recvport);
+
+	switch (errno) {
 	case E_OK:
 	    /* 正常ケース */
 	    doit(&req);
@@ -103,7 +104,7 @@ static void main_loop()
 	default:
 	    /* Unknown error */
 	    dbg_printf("rd: get_req() Unknown error(error = %d)\n",
-		       sys_errno);
+		       errno);
 	    dbg_printf("RAM DISK driver is halt.\n");
 	    slp_tsk();
 	    break;
@@ -157,15 +158,13 @@ static void init_rd_driver(W size)
     int i;
     ID root_dev;
     ER error;
+    T_CMBF pk_cmbf = { NULL, TA_TFIFO, 0, sizeof(DDEV_RES) };
 
     /*
      * 要求受けつけ用のポートを初期化する。
      */
-#ifdef notdef
-    recvport = get_port(sizeof(DDEV_RES), sizeof(DDEV_RES));
-#else
-    recvport = get_port(0, sizeof(DDEV_RES));
-#endif
+    recvport = acre_mbf(&pk_cmbf);
+
     if (recvport <= 0) {
 	dbg_printf("RD: cannot make receive porrt.\n");
 	slp_tsk();

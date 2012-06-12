@@ -55,6 +55,7 @@ extern ER	ref_sem (T_RSEM *pk_rsem, ID semid);
 /* イベントフラグ用関数                                      */
 /* --------------------------------------------------------- */
 extern ER	cre_flg (ID flgid, T_CFLG *pk_cflg);
+extern ER_ID	acre_flg (T_CFLG *pk_cflg);
 extern ER	del_flg (ID flgid);
 extern ER	set_flg (ID flgid, UINT setptn);
 extern ER	clr_flg (ID flgid, UINT clrptn);
@@ -68,6 +69,7 @@ extern ER	ref_flg (T_RFLG *pk_rflg, ID flgid);
 /* --------------------------------------------------------- */
 extern ER	init_msgbuf (void);
 extern ER	cre_mbf (ID id, T_CMBF *pk_cmbf);
+extern ER_ID	acre_mbf (T_CMBF *pk_cmbf);
 extern ER	del_mbf (ID id);
 extern ER	snd_mbf (ID id, INT size, VP msg);
 extern ER	psnd_mbf (ID id, INT size, VP msg);

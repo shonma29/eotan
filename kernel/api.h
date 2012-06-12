@@ -86,4 +86,8 @@ Version 2, June 1991
 #define SYS_VSET_CTX	(50)
 #define SYS_VUSE_FPU	(51)
 
+#define SYS_ACRE_FLG	(52)
+#define SYS_ACRE_MBF	(53)
+
+
 #endif /* __CORE_API_H__ */

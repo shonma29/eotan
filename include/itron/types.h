@@ -47,6 +47,7 @@ typedef int		RNO;
 typedef int		NODE;
 typedef unsigned int	ATR;
 typedef int		ER;
+typedef int		ER_ID;
 typedef int		PRI;
 typedef int		TMO;
 

@@ -37,11 +37,13 @@ init_driver (void)
 {
   int		i;
   ER		error;
+  T_CMBF pk_cmbf = { NULL, TA_TFIFO, 0, sizeof(DDEV_RES) };
+  T_CFLG pk_cflg = { NULL, TA_WSGL, 0 };
 
   /*
    * 要求受けつけ用のポートを初期化する。
    */
-  recvport = get_port (0, sizeof (DDEV_RES));
+  recvport = acre_mbf(&pk_cmbf);
 
   if (recvport <= 0)
     {
@@ -59,7 +61,7 @@ init_driver (void)
     }
 
   /* イベントフラグを生成 */
-  waitflag = get_flag (TA_WSGL, 0);   
+  waitflag = acre_flg(&pk_cflg);   
 
   /* バッファの初期化 */
   init_buffer();
@@ -85,7 +87,6 @@ static void
 main_loop (void)
 {
   DDEV_REQ	req;
-  extern ER	sys_errno;
   UW		rsize;
 
   /*
@@ -94,8 +95,7 @@ main_loop (void)
   for (;;)
     {
       /* 要求の受信 */
-      get_req (recvport, &req, &rsize);
-      switch (sys_errno)
+      switch (rcv_mbf(&req, &rsize, recvport))
 	{
 	case E_OK:
 	  /* 正常ケース */

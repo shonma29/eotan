@@ -215,16 +215,17 @@ start()
 static void main_loop()
 {
     DDEV_REQ req;
-    extern ER sys_errno;
     UW rsize;
+    ER errno;
 
     /*
      * 要求受信 - 処理のループ
      */
     for (;;) {
 	/* 要求の受信 */
-	get_req(recvport, &req, &rsize);
-	switch (sys_errno) {
+	errno = rcv_mbf(&req, &rsize, recvport);
+
+	switch (errno) {
 	case E_OK:
 	    /* 正常ケース */
 #ifdef FDDEBUG
@@ -236,7 +237,7 @@ static void main_loop()
 	default:
 	    /* Unknown error */
 	    dbg_printf("fd: get_req() Unknown error(error = %d)\n",
-		       sys_errno);
+		       errno);
 	    dbg_printf("FD driver is halt.\n");
 	    slp_tsk();
 	    break;
@@ -291,15 +292,14 @@ static void init_fd_driver(void)
     int i;
     ID root_dev;
     ER error;
+    T_CMBF pk_cmbf = { NULL, TA_TFIFO, 0, sizeof(DDEV_RES) };
+    T_CFLG pk_cflg = { NULL, TA_WSGL, 0 };
 
     /*
      * 要求受けつけ用のポートを初期化する。
      */
-#ifdef notdef
-    recvport = get_port(sizeof(DDEV_RES), sizeof(DDEV_RES));
-#else
-    recvport = get_port(0, sizeof(DDEV_RES));
-#endif
+    recvport = acre_mbf(&pk_cmbf);
+
     if (recvport <= 0) {
 	dbg_printf("FD: cannot make receive porrt.\n");
 	slp_tsk();
@@ -312,7 +312,7 @@ static void init_fd_driver(void)
     }
 
     /* event flag の生成 */
-    waitflag = get_flag(TA_WSGL, 0);
+    waitflag = acre_flg(&pk_cflg);
 
     fd_data[0] = get_fdspec("2HD");
     fd_data[1] = get_fdspec("2HD");

@@ -47,13 +47,15 @@ static ID dev_recv;
  */
 void init_log(void)
 {
+    T_CMBF pk_cmbf = { NULL, TA_TFIFO, 0, sizeof(DDEV_RES) };
+
     if (find_port(CONSOLE_DRIVER, &log_port) != E_PORT_OK) {
 	dbg_printf("IDE: Cannot open console device.\n");
 	slp_tsk();
 	/* DO NOT REACHED */
     }
 
-    dev_recv = get_port(0, sizeof(DDEV_RES));
+    dev_recv = acre_mbf(&pk_cmbf);
 
     if (dev_recv <= 0) {
 	dbg_printf("IDE: Cannot allocate port\n");

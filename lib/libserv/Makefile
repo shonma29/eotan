@@ -8,7 +8,7 @@ CFLAGS=$(COPT) -I../../kernel -I../servers
 CC=gcc
 
 OBJS= strncpy2.o interrupt.o malloc.o \
-	port_manager.o message_port.o eventflag.o
+	port_manager.o
 
 all: ../libserv.a
 

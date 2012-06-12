@@ -48,5 +48,6 @@ Version 2, June 1991
 /*************** 拡張部分 **************/
 
 #define E_DEV		(-101)
+#define E_NOID		(-102)
 
 #endif /* __ITRON_ERRNO_H__ */

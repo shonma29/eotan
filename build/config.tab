@@ -86,6 +86,7 @@
 #  file name			virtual addr	physical addr	type    name
 ../kernel/core.bin	0x80020000	0x020000	kernel  kernel
 ../servers/port-manager/port-manager 0x00010000	0x080000	kernel port-manager
+../servers/fs/fs	0x00001000	0x200000	user	fs
 
 #
 #  Driver(s)
@@ -107,7 +108,7 @@
 # Manager
 #
 # POSIX
-../servers/fs/posix_manager	0x00001000	0x200000	user	manager.posix
+#../servers/fs/posix_manager	0x00001000	0x200000	user	manager.posix
 #
 # BTRON
 #

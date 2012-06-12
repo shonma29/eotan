@@ -139,8 +139,8 @@ start()
 static void main_loop()
 {
     DDEV_REQ req;
-    extern ER sys_errno;
     UW rsize;
+    ER errno;
 
     /*
      * 要求受信 - 処理のループ
@@ -148,8 +148,9 @@ static void main_loop()
     for (;;) {
 	/* 要求の受信 */
 /*      printf ("ide: get_req\n");	/* */
-	get_req(recvport, &req, &rsize);
-	switch (sys_errno) {
+	errno = rcv_mbf(&req, &rsize, recvport);
+
+	switch (errno) {
 	case E_OK:
 	    /* 正常ケース */
 #ifdef DEBUG
@@ -161,7 +162,7 @@ static void main_loop()
 	default:
 	    /* Unknown error */
 	    dbg_printf("ide: get_req() Unknown error(error = %d)\n",
-		       sys_errno);
+		       errno);
 	    dbg_printf("IDE driver is halt.\n");
 	    slp_tsk();
 	    break;
@@ -220,6 +221,7 @@ static int init_ide_driver(void)
     int i;
     ID root_dev;
     ER error;
+    T_CMBF pk_cmbf = { NULL, TA_TFIFO, 0, sizeof(DDEV_RES) };
 
     initialized = 0;
     if (init_ide() != E_OK) {
@@ -229,11 +231,8 @@ static int init_ide_driver(void)
     /*
      * 要求受けつけ用のポートを初期化する。
      */
-#ifdef notdef
-    recvport = get_port(sizeof(DDEV_RES), sizeof(DDEV_RES));
-#else
-    recvport = get_port(0, sizeof(DDEV_RES));
-#endif
+    recvport = acre_mbf(&pk_cmbf);
+
     if (recvport <= 0) {
 	dbg_printf("IDE: cannot make receive porrt.\n");
 	slp_tsk();

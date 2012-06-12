@@ -88,6 +88,7 @@ static char rcsid[] =
  *
  */
 
+#include "../../include/itron/struct.h"
 #include "../../include/services.h"
 #include "../../servers/fs/posix_sysc.h"
 #include "../../servers/fs/posix_mm.h"
@@ -107,8 +108,9 @@ W posix_init(W root_device)
     struct posix_request req;
     struct posix_response res;
     INT rsize;
+    T_CMBF pk_cmbf = { NULL, TA_TFIFO, 0, sizeof(res) };
 
-    recv_port = get_port(0, sizeof(res));
+    recv_port = acre_mbf(&pk_cmbf);
     if (recv_port == 0) {
 	printf("Cannot allocate port\n");
 	return (E_NOMEM);

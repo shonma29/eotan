@@ -160,14 +160,14 @@ B *posix_name;
 ER setup_port(void)
 {
     ER error;
+    T_CMBF pk_cmbf = { NULL, TA_TFIFO, 0, sizeof(struct posix_response) };
 
 #ifdef DEBUG
     dbg_printf("setup_port\n");
     dbg_printf("Port found.(%d)\n", lowlib_data);
 #endif
     if (lowlib_data->recv_port == 0) {
-	lowlib_data->recv_port =
-	    get_port(0, sizeof(struct posix_response));
+	lowlib_data->recv_port = acre_mbf(&pk_cmbf);
 #ifdef DEBUG
 	dbg_printf("Port got.\n");
 #endif

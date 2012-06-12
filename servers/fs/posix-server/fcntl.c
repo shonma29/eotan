@@ -40,16 +40,15 @@ static W control_device(ID device, struct posix_request *preq)
     ID send_port;
     UW dd;
     W rlength;
+    T_CMBF pk_cmbf = { NULL, TA_TFIFO, 0, sizeof(res) };
 
     errno = get_device_info(device, &send_port, &dd);
     if (errno) {
 	return (errno);
     }
-#ifdef notdef
-    res_port = get_port(sizeof(res), sizeof(res));
-#else
-    res_port = get_port(0, sizeof(res));
-#endif
+
+    res_port = acre_mbf(&pk_cmbf);
+
     if (res_port <= 0) {
 	return (EP_NOMEM);
     }

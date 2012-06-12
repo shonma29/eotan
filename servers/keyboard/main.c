@@ -158,15 +158,14 @@ W init_keyboard(void)
 {
     int i;
     ER error;
+    T_CMBF pk_cmbf = { NULL, TA_TFIFO, 0, sizeof(DDEV_REQ) };
+    T_CFLG pk_cflg = { NULL, TA_WSGL, 0 };
 
     /*
      * 要求受けつけ用のポートを初期化する。
      */
-#ifdef notdef
-    recvport = get_port(sizeof(DDEV_REQ), sizeof(DDEV_REQ));
-#else
-    recvport = get_port(0, sizeof(DDEV_REQ));
-#endif
+    recvport = acre_mbf(&pk_cmbf);
+
     if (recvport <= 0) {
 	dbg_printf("KEYBOARD: cannot make receive port.\n");
 	slp_tsk();
@@ -182,7 +181,7 @@ W init_keyboard(void)
     init_keybuffer();		/* キーボードバッファの初期化 */
 
     /* キー入力を待つ時に使用するイベントフラグの初期化 */
-    waitflag = get_flag(TA_WSGL, 0);
+    waitflag = acre_flg(&pk_cflg);
     dbg_printf("keyboard: eventflag = %d\n", waitflag);	/* */
 
     driver_mode = WAITMODE | ENAEOFMODE;

@@ -61,63 +61,7 @@ static ER putc(B ch);
  */
 void init_log(void)
 {
-    if (find_port(CONSOLE_DRIVER, &log_port) != E_PORT_OK) {
-	dbg_printf("POSIX: Cannot open console device.\n");
-	slp_tsk();
-	/* DO NOT REACHED */
-    }
-#ifdef notdef
-    dev_recv = get_port(sizeof(DDEV_RES), sizeof(DDEV_RES));
-#else
-    dev_recv = get_port(0, sizeof(DDEV_RES));
-#endif
-    if (dev_recv <= 0) {
-	dbg_printf("POSIX: Cannot allocate port\n");
-	slp_tsk();
-	/* DO NOT REACHED */
-    }
 }
-
-/*
- *
- */
-W printk(B * fmt,...)
-{
-    va_list ap;
-
-    va_start(ap, fmt);
-    return vnprintf(putc, fmt, ap);
-}
-
-static ER putc(B ch)
-{
-    DDEV_REQ req;		/* 要求パケット */
-    DDEV_RES res;		/* 返答パケット */
-    W rsize;
-    ER error;
-    ID new_port;
-
-    req.header.mbfid = dev_recv;
-    req.header.msgtyp = DEV_WRI;
-    req.body.wri_req.dd = 0x00;
-    req.body.wri_req.size = 1;
-    req.body.wri_req.dt[0] = (char) (ch & 0xff);
-    error = snd_mbf(log_port, sizeof(req), &req);
-    if (error != E_OK) {
-	dbg_printf("cannot send packet. %d\n", error);
-	return (EP_IO);
-    }
-    rsize = sizeof(res);
-    error = rcv_mbf(&res, (INT *) & rsize, dev_recv);
-    if (res.body.wri_res.errcd != E_OK) {
-	dbg_printf("%d\n", res.body.wri_res.errcd);
-	return (EP_IO);
-    }
-    return (EP_OK);
-}
-
-
-
 
 /* _assert - ASSERT マクロによって呼び出される関数
  *

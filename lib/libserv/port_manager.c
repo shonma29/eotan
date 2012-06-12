@@ -72,12 +72,12 @@ regist_port (port_name *name, ID port)
   struct port_manager_msg_t  	send_msg;
   ID			     	recv_port;
   W			     	rsize;
-
+  T_CMBF pk_cmbf = { NULL, TA_TFIFO, sizeof(recv_msg), sizeof(recv_msg) };
 
   /*
    * ポートマネージャからの返答受けつけ用のメッセージバッファ作成。
    */
-  recv_port = get_port (sizeof (recv_msg), sizeof (recv_msg));
+  recv_port = acre_mbf(&pk_cmbf);
   if (recv_port == 0)
     {
 #ifdef DEBUG
@@ -144,12 +144,12 @@ unregist_port (port_name *name)
   struct port_manager_msg_t  	send_msg;
   ID			     	recv_port;
   W			     	rsize;
-
+  T_CMBF pk_cmbf = { NULL, TA_TFIFO, sizeof(recv_msg), sizeof(recv_msg) };
 
   /*
    * ポートマネージャからの返答受けつけ用のメッセージバッファ作成。
    */
-  recv_port = get_port (sizeof (recv_msg), sizeof (recv_msg));
+  recv_port = acre_mbf(&pk_cmbf);
   if (recv_port == 0)
     {
 #ifdef DEBUG
@@ -221,7 +221,7 @@ find_port (B *name, ID *rport)
   struct port_manager_msg_t  	send_msg;
   ID			     	recv_port;
   W			     	rsize;
-
+  T_CMBF pk_cmbf = { NULL, TA_TFIFO, sizeof(recv_msg), sizeof(recv_msg) };
 
 #ifdef DEBUG
   dbg_printf ("find_port, name = <%s>\n", name);		/* */
@@ -230,7 +230,7 @@ find_port (B *name, ID *rport)
   /*
    * ポートマネージャからの返答受けつけ用のメッセージバッファ作成。
    */
-  recv_port = get_port (sizeof (recv_msg), sizeof (recv_msg));
+  recv_port = acre_mbf(&pk_cmbf);
   if (recv_port == 0)
     {
 #ifdef DEBUG

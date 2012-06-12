@@ -16,10 +16,6 @@ Version 2, June 1991
 #include "../../include/itron/types.h"
 #include "../../servers/port-manager/port-manager.h"
 
-/* message_port.c */
-extern ID	get_port (W minsize, W maxsize);
-extern W	get_req (ID port, VP request, W *size);
-
 /* port_manager.c */
 extern PORT_MANAGER_ERROR	find_port (B *name, ID *rport);
 extern ID			alloc_port (W size, W max_entry);

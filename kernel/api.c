@@ -206,11 +206,13 @@ static ER	sys_slp_tsk (void *argp);
 static ER	sys_wup_tsk (void *argp);
 static ER	sys_can_wup (void *argp);
 static ER	sys_cre_flg (void *argp);
+static ER	sys_acre_flg (void *argp);
 static ER	sys_del_flg (void *argp);
 static ER	sys_set_flg (void *argp);
 static ER	sys_clr_flg (void *argp);
 static ER	sys_wai_flg (void *argp);
 static ER	sys_cre_mbf (void *argp);
+static ER	sys_acre_mbf (void *argp);
 static ER	sys_del_mbf (void *argp);
 static ER	sys_snd_mbf (void *argp);
 static ER	sys_psnd_mbf (void *argp);
@@ -329,6 +331,9 @@ static ER (*syscall_table[])(VP argp) =
   DEF_SYSCALL (vcpy_stk, 4),	/*   49 */
   DEF_SYSCALL (vset_ctx, 4),	/*   50 */
   DEF_SYSCALL (vuse_fpu, 1),	/*   51 */
+
+  DEF_SYSCALL (acre_flg, 1),	/*   52 */
+  DEF_SYSCALL (acre_mbf, 1),	/*   53	*/
 };
 
 #define NSYSCALL (sizeof (syscall_table) / sizeof (syscall_table[0]))
@@ -587,6 +592,15 @@ static ER sys_cre_flg(VP argp)
     return (cre_flg(args->flgid, args->pk_cflg));
 }
 
+static ER sys_acre_flg(VP argp)
+{
+    struct {
+	T_CFLG *pk_cflg;
+    } *args = argp;
+
+    return (acre_flg(args->pk_cflg));
+}
+
 static ER sys_del_flg(VP argp)
 {
     struct {
@@ -637,6 +651,15 @@ static ER sys_cre_mbf(VP argp)
     } *args = argp;
 
     return (cre_mbf(args->id, args->pk_cmbf));
+}
+
+static ER sys_acre_mbf(VP argp)
+{
+    struct {
+	T_CMBF *pk_cmbf;
+    } *args = argp;
+
+    return (acre_mbf(args->pk_cmbf));
 }
 
 static ER sys_del_mbf(VP argp)

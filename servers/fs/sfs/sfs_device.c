@@ -40,16 +40,15 @@ W sfs_write_device(ID device, B * buf, W start, W length, W * rlength)
     W errno;
     ID send_port;
     UW dd;
+    T_CMBF pk_cmbf = { NULL, TA_TFIFO, 0, sizeof(res) };
 
     errno = get_device_info(device, &send_port, &dd);
     if (errno) {
 	return (errno);
     }
-#ifdef notdef
-    res_port = get_port(sizeof(res), sizeof(res));
-#else
-    res_port = get_port(0, sizeof(res));
-#endif
+
+    res_port = acre_mbf(&pk_cmbf);
+
     if (res_port <= 0) {
 	return (EP_NOMEM);
     }
@@ -98,16 +97,15 @@ W sfs_read_device(ID device, B * buf, W start, W length, W * rlength)
     W rsize;
     ID send_port;
     UW dd;
+    T_CMBF pk_cmbf = { NULL, TA_TFIFO, 0, sizeof(res) };
 
     errno = get_device_info(device, &send_port, &dd);
     if (errno) {
 	return (errno);
     }
-#ifdef ntodef
-    res_port = get_port(sizeof(res), sizeof(res));
-#else
-    res_port = get_port(0, sizeof(res));
-#endif
+
+    res_port = acre_mbf(&pk_cmbf);
+
     if (res_port <= 0) {
 	return (EP_NOMEM);
     }
@@ -195,16 +193,15 @@ W sfs_open_device(ID device, W * rsize)
     ID send_port;
     UW dd;
     INT rlength;
+    T_CMBF pk_cmbf = { NULL, TA_TFIFO, 0, sizeof(res) };
 
     errno = get_device_info(device, &send_port, &dd);
     if (errno) {
 	return (errno);
     }
-#ifdef notdef
-    res_port = get_port(sizeof(res), sizeof(res));
-#else
-    res_port = get_port(0, sizeof(res));
-#endif
+
+    res_port = acre_mbf(&pk_cmbf);
+
     if (res_port <= 0) {
 	return (EP_NOMEM);
     }
@@ -245,16 +242,15 @@ W sfs_close_device(ID device)
     ID send_port;
     UW dd;
     INT rlength;
+    T_CMBF pk_cmbf = { NULL, TA_TFIFO, 0, sizeof(res) };
 
     errno = get_device_info(device, &send_port, &dd);
     if (errno) {
 	return (errno);
     }
-#ifdef notdef
-    res_port = get_port(sizeof(res), sizeof(res));
-#else
-    res_port = get_port(0, sizeof(res));
-#endif
+
+    res_port = acre_mbf(&pk_cmbf);
+
     if (res_port <= 0) {
 	return (EP_NOMEM);
     }

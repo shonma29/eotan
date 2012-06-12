@@ -172,7 +172,6 @@ void start(void)
 static void main_loop(void)
 {
     DDEV_REQ req;		/* 受信する要求パケット */
-    extern ER sys_errno;
 
     /*
      * 要求受信 - 処理のループ
@@ -185,8 +184,8 @@ static void main_loop(void)
 	dbg_printf("call get_req ()\n");
 #endif
 	rsize = sizeof(req);
-	get_req(recvport, &req, &rsize);
-	switch (sys_errno) {
+
+	switch (rcv_mbf(&req, &rsize, recvport)) {
 	case E_OK:
 	    /* 正常ケース */
 #ifdef DEBUG
@@ -217,11 +216,12 @@ static void main_loop(void)
 static W init_console(void)
 {
     ER error;
+    T_CMBF pk_cmbf = { NULL, TA_TFIFO, 0, sizeof(DDEV_REQ) };
 
     /*
      * 要求受けつけ用のポートを初期化する。
      */
-    recvport = get_port(0, sizeof(DDEV_REQ));
+    recvport = acre_mbf(&pk_cmbf);
 
     if (recvport <= 0) {
 	dbg_printf("CONSOLE: cannot make receive port.\n");

@@ -39,15 +39,15 @@ LIBS=sfs/libsfs.a posix-server/libposix-server.a $(KERNLIB)
 all:
 	${MAKE} -C sfs
 	${MAKE} -C posix-server
-	${MAKE} posix_manager
+	${MAKE} fs
 
-posix_manager:	$(OBJS) $(LIBS)
+fs:	$(OBJS) $(LIBS)
 	$(LD) -static -o $@ -e $(ENTRY) -Ttext=$(STARTADDR) $(OBJS) $(LIBS)
 	strip -s -R .comment -R .note -R .note.ABI-tag $@
 	size $@
 
 clean:
-	rm -f $(OBJS) posix_manager
+	rm -f $(OBJS) fs
 	${MAKE} -C sfs clean
 	${MAKE} -C posix-server clean
 

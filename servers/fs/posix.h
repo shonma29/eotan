@@ -162,8 +162,9 @@ extern W error_response(struct posix_request *req, W errno);
 
 
 /* log.c */
-extern void init_log(void);
-extern W printk(B * fmt, ...);
+void init_log(void);
+
+#define printk dbg_printf
 
 
 /* global.c */
