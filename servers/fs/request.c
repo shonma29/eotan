@@ -81,15 +81,15 @@ W init_port(void)
  */
 W get_request(struct posix_request * req)
 {
-    extern ER sys_errno;
+    ER errno;
     INT size;
 
     ASSERT(req != NULL);
 
     size = sizeof(struct posix_request);
-    sys_errno = rcv_mbf(req, &size, PORT_FS);
-    if (sys_errno != E_OK) {
-	dbg_printf("[PM] get_request: rcv_mbf error %d\n", sys_errno);
+    errno = rcv_mbf(req, &size, PORT_FS);
+    if (errno != E_OK) {
+	dbg_printf("[PM] get_request: rcv_mbf error %d\n", errno);
 	return (FAIL);
     }
     return (SUCCESS);

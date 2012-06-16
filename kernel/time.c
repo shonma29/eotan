@@ -32,7 +32,6 @@ Version 2, June 1991
 #include "core.h"
 #include "misc.h"
 #include "arch.h"
-#include "time.h"
 #include "task.h"
 #include "func.h"
 
@@ -40,7 +39,7 @@ Version 2, June 1991
  * 変数宣言
  */
 
-static T_ALMHANDLER almtable[MAX_ALARM];
+static T_DALM almtable[MAX_ALARM];
 
 SYSTIME system_time;
 #define MS 1000
@@ -50,7 +49,7 @@ void init_time(UW seconds)
   SYSTIME time;
   UW TH, TM, TL;
   
-  memset(almtable, 0, sizeof(T_ALMHANDLER)*MAX_ALARM);
+  memset(almtable, 0, sizeof(T_DALM)*MAX_ALARM);
 
   TH = 0;
   TM = (seconds >> 16) * MS;
@@ -138,7 +137,7 @@ ER def_alm(HNO almno, T_DALM *pk_dalm)
     if (almtable[almno].almhdr != NULL) {
       unset_timer((void (*)(VP))almtable[almno].almhdr, almtable[almno].exinf);
     }
-    memset(&(almtable[almno]), 0, sizeof(T_ALMHANDLER));
+    memset(&(almtable[almno]), 0, sizeof(T_DALM));
   }
   else {
     if (pk_dalm->tmmode == TTM_ABS) {
