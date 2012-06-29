@@ -229,7 +229,9 @@ void run(W entry)
 	printk("Can not make new task.\n");
 	return;
     }
+#ifdef DEBUG
     printk("Task id = %d, eip = 0x%x\n", rid, modulep[entry].entry);
+#endif
     new_taskp = get_tskp(rid);
     if (new_taskp == NULL) {
 	printk("new task is NULL.\n");
@@ -239,7 +241,9 @@ void run(W entry)
     /* 生成したタスクの仮想メモリにモジュールをマッピング */
     /* ただしドライバの場合には、マッピングしない */
     if ((modulep[entry].type == driver) || (modulep[entry].type == lowlib)) {
+#ifdef DEBUG
 	printk("This module is driver or lowlib. not mapped\n");
+#endif
     } else {
 	for (i = 0;
 	     i < PAGES(modulep[entry].mem_length);
@@ -306,8 +310,9 @@ static ER init_itron(void)
 
     init_interrupt();
     simple_init_console();	/* コンソールに文字を出力できるようにする */
+#ifdef DEBUG
     printk("init_itron: start\n");
-
+#endif
     pmem_init();		/* 物理メモリ管理機能の初期化           */
     adjust_vm(physmem_max);
     banner();			/* 立ち上げメッセージ出力               */
@@ -335,12 +340,18 @@ static void init_device(void)
 {
     W i;
 
+#ifdef DEBUG
     printk("init_device: start.\n");
+#endif
     for (i = 0; devices[i] != NULL; i++) {
+#ifdef DEBUG
 	printk("Init device: 0x%x call.\n", (*devices[i]));
+#endif
 	(*devices[i]) ();
     }
+#ifdef DEBUG
     printk("init_device: end.\n");
+#endif
 }
 
 
@@ -349,9 +360,8 @@ static void init_device(void)
  */
 void banner(void)
 {
-    printk("** startup ITRON for BTRON/386 **\n");
-    printk("version %d.%d\n", MAJOR_VERSION, MINOR_VERSION);
-    printk("target CPU ID: %d\n", CPU);
+    printk("kernel %s for %s/%s\n",
+	KERN_VERSION, KERN_ARCH, KERN_MPU);
     printk("base memory = %d Kbytes\n", base_mem / 1024);
     printk("extend memory = %d Kbytes\n", ext_mem / 1024);
 }

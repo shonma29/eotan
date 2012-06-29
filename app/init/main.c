@@ -104,8 +104,6 @@ static char rcsid[] =
 #include "posix_if.h"
 #include "init-stdlib.h"
 
-#define RELID "2003/6/7-1"
-
 
 /*
  * 入出力を行う。
@@ -223,9 +221,7 @@ static void exec(char *str)
 
 static void banner(void)
 {
-    printf("EOTA Initialize program.\n");
-    printf("Version %d.%d\n", MAJOR_VERSION, MINOR_VERSION);
-    printf("Developing release %s\n", RELID);
+    printf("init version %d.%d\n", MAJOR_VERSION, MINOR_VERSION);
 }
 
 static W read_line_edit(B * line, W length)

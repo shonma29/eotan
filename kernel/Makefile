@@ -53,12 +53,15 @@ SRCS=main.c memory.c task.c time.c version.c error.c dummy.c printk.c \
      virtual_mem.c memory.c pmemory.c \
      startup.S
 
-all: core.bin
+all: version.h core.bin
 
 core.bin: $(OBJS) ../lib/libnc.a
 	$(LD) -static -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) $(OTHEROBJ) \
 		../lib/libnc.a
 	strip -s -R .comment -R .note -R .note.ABI-tag $@
+
+version.h: version.sh
+	./version.sh > version.h
 
 ../lib/libnc.a:
 	${MAKE} -C ../lib/nano-c
@@ -71,6 +74,7 @@ depend:
 
 clean:
 	rm -f $(OBJS)
+	rm -f version.h
 	rm -f core.bin
 	${MAKE} -C ../lib/nano-c clean
 	${MAKE} -C ../servers clean

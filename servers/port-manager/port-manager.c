@@ -192,7 +192,9 @@ _main (void)
 	      /*
 	       * メッセージバッファ ID の登録
 	       */
-	      dbg_printf ("port-manager: (regist) <%s>\n", msg_buf.body.regist.name);
+	      dbg_printf ("port-manager: (regist) <%s> %d\n",
+		msg_buf.body.regist.name,
+		msg_buf.body.regist.port);
 	      regist_port (&msg_buf);
 	      break;
 
