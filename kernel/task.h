@@ -24,7 +24,6 @@ Version 2, June 1991
 
 struct t_task_wait {
     W time_wait:1;
-    W semaph_wait:1;
     W event_wait:1;
     W msg_wait:1;
 };

@@ -1113,12 +1113,10 @@ ER wup_tsk(ID taskid)
     }
 
     /* すべての待ち状態が解除されていなければ、先には進まない */
-    if ((p->tskwait.time_wait) || (p->tskwait.semaph_wait)
+    if ((p->tskwait.time_wait)
 	|| (p->tskwait.event_wait) || (p->tskwait.msg_wait)) {
 	printk("task %d is waiting. abort wakeup.\n", p->tskid);
 	printk("(p->tskwait.time_wait) = %d\n", (p->tskwait.time_wait));
-	printk("(p->tskwait.semaph_wait) = %d\n",
-	       (p->tskwait.semaph_wait));
 	printk("(p->tskwait.event_wait) = %d\n", (p->tskwait.event_wait));
 	printk("(p->tskwait.msg_wait) = %d\n", (p->tskwait.msg_wait));
 	return (E_OBJ);
@@ -1580,7 +1578,6 @@ ER vset_ctx(ID tid, W eip, B * stackp, W stsize)
 
     /* タスクの初期化 */
     tsk->tskwait.time_wait = 0;
-    tsk->tskwait.semaph_wait = 0;
     tsk->tskwait.event_wait = 0;
     tsk->tskwait.msg_wait = 0;
 
