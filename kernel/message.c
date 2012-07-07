@@ -22,15 +22,25 @@ Version 2, June 1991
 #include "arch.h"
 #include "message.h"
 #include "../../include/mpu/io.h"
+#include "../../include/set/list.h"
+#include "../../include/stddef.h"
 
 static T_MSGHEAD message_table[MAX_MSGBUF + 1];
 static T_MSG msgbuf[MAX_MSGENTRY];
-static T_MSG *free_msg;
+static list unused_msg;
 
 static void del_sendtask(ID mid, ID tid);
 static void del_recvtask(ID mid, ID tid);
 
 
+
+static T_MSG *getMessageParent(list *p) {
+	return (T_MSG*)((ptr_t)p - offsetof(T_MSG, message));
+}
+
+static T_TCB *getTaskParent(list *p) {
+	return (T_TCB*)((ptr_t)p - offsetof(T_TCB, message));
+}
 
 /****************************************************************************
  * alloc_msg
@@ -38,18 +48,16 @@ static void del_recvtask(ID mid, ID tid);
 static T_MSG *alloc_msg(void)
 {
     T_MSG *p;
+    list *q;
 
-    if (free_msg == NULL) {
-	return (NULL);
-    }
 #ifdef CALL_HANDLER_IN_TASK
     dis_dsp();
 #else
     dis_int();
 #endif
 
-    p = free_msg;
-    free_msg = free_msg->next;
+    q = list_pick(&unused_msg);
+    p = q? getMessageParent(q):NULL;
 
 #ifdef CALL_HANDLER_IN_TASK
     ena_dsp();
@@ -72,8 +80,7 @@ static void dealloc_msg(T_MSG * p)
     dis_int();
 #endif
 
-    p->next = free_msg;
-    free_msg = p;
+    list_append(&unused_msg, &(p->message));
 
 #ifdef CALL_HANDLER_IN_TASK
     ena_dsp();
@@ -94,13 +101,9 @@ static void add_msg_list(T_MSGHEAD * list, T_MSG * newmsg)
 #else
     dis_int();
 #endif
-    if (list->last_message_ptr == NULL) {
-	list->message_ptr = list->last_message_ptr = newmsg;
-    } else {
-	list->last_message_ptr->next = newmsg;
-	list->last_message_ptr = newmsg;
-	newmsg->next = NULL;
-    }
+
+    list_insert(&(list->message), &(newmsg->message));
+
 #ifdef CALL_HANDLER_IN_TASK
     ena_dsp();
 #else
@@ -112,24 +115,20 @@ static void add_msg_list(T_MSGHEAD * list, T_MSG * newmsg)
  * get_msg --- メッセージリストからメッセージを取り出す
  *
  */
-static T_MSG *get_msg(T_MSGHEAD * list)
+static T_MSG *get_msg(T_MSGHEAD * head)
 {
     T_MSG *p;
-
-    if (list->message_ptr == NULL)
-	return (NULL);
+    list *q;
 
 #ifdef CALL_HANDLER_IN_TASK
     dis_dsp();
 #else
     dis_int();
 #endif
-    p = list->message_ptr;
-    if (p == list->last_message_ptr) {
-	list->message_ptr = list->last_message_ptr = NULL;
-    } else {
-	list->message_ptr = p->next;
-    }
+
+    q = list_pick(&(head->message));
+    p = q? getMessageParent(q):NULL;
+
 #ifdef CALL_HANDLER_IN_TASK
     ena_dsp();
 #else
@@ -149,19 +148,18 @@ static T_MSG *get_msg(T_MSGHEAD * list)
  */
 ER init_msgbuf(void)
 {
-#if 0
-    T_MSG *p;
-#endif
     INT i;
 
-    free_msg = &msgbuf[0];
-    for (i = 0; i < MAX_MSGENTRY - 1; i++) {
-	msgbuf[i].next = &msgbuf[i + 1];
+    list_initialize(&unused_msg);
+
+    for (i = 0; i < MAX_MSGENTRY; i++) {
+	list_insert(&unused_msg, &(msgbuf[i].message));
     }
-    msgbuf[MAX_MSGENTRY - 1].next = NULL;
 
     for (i = 0; i <= MAX_MSGBUF; i++) {
 	message_table[i].mbfatr = TA_UNDEF;
+	list_initialize(&(message_table[i].sender));
+	list_initialize(&(message_table[i].receiver));
     }
     return (E_OK);
 }
@@ -197,10 +195,6 @@ ER cre_mbf(ID id, T_CMBF * pk_cmbf)
 	return (E_PAR);
     }
     if (message_table[id].mbfatr != TA_UNDEF) {
-#if 0
-	printk("cre_msg: message_table[id].mbfatr = %d\n",
-	       message_table[id].mbfatr);	/* */
-#endif
 	return (E_OBJ);
     }
 #ifdef CALL_HANDLER_IN_TASK
@@ -209,7 +203,7 @@ ER cre_mbf(ID id, T_CMBF * pk_cmbf)
     dis_int();
 #endif
     message_table[id].total_size = pk_cmbf->bufsz;
-    message_table[id].message_ptr = NULL;
+    list_initialize(&(message_table[id].message));
     message_table[id].msgsz = pk_cmbf->maxmsz;
     message_table[id].bufsz = pk_cmbf->bufsz;
     message_table[id].mbfatr = pk_cmbf->mbfatr;
@@ -242,7 +236,7 @@ ER_ID acre_mbf(T_CMBF * pk_cmbf)
 
     dis_int();
     message_table[id].total_size = pk_cmbf->bufsz;
-    message_table[id].message_ptr = NULL;
+    list_initialize(&(message_table[id].message));
     message_table[id].msgsz = pk_cmbf->maxmsz;
     message_table[id].bufsz = pk_cmbf->bufsz;
     message_table[id].mbfatr = pk_cmbf->mbfatr;
@@ -270,7 +264,8 @@ ER_ID acre_mbf(T_CMBF * pk_cmbf)
 ER del_mbf(ID id)
 {
     T_TCB *p;
-    T_MSG *msgp, *tmpp;
+    T_MSG *msgp;
+    list *q;
 
     if ((id < MIN_MSGBUF) || (id > MAX_MSGBUF)) {
 	return (E_ID);
@@ -279,33 +274,23 @@ ER del_mbf(ID id)
 	return (E_NOEXS);
     }
 
-    for (msgp = message_table[id].message_ptr; msgp != NULL; msgp = tmpp) {
+    while ((q = list_pick(&(message_table[id].message))) != NULL) {
+        msgp = getMessageParent(q);
 	kfree(msgp->buf, msgp->size);
-	tmpp = msgp->next;
 	dealloc_msg(msgp);
     }
 
     /* 受信待ちタスクに対して E_DLT を返す */
-    for (p = message_table[id].wait_recvtask; p != NULL; p = p->msg_next) {
+    while ((q = list_pick(&(message_table[id].receiver))) != NULL) {
+	p = getTaskParent(q);
 	p->slp_err = E_DLT;
 	p->tskwait.msg_wait = 0;
 	wup_tsk(p->tskid);
     }
-#ifdef CALL_HANDLER_IN_TASK
-    dis_dsp();
-#else
-    dis_int();
-#endif
-    message_table[id].wait_recvtask = NULL;
-    message_table[id].wait_recvtail = NULL;
-#ifdef CALL_HANDLER_IN_TASK
-    ena_dsp();
-#else
-    ena_int();
-#endif
 
     /* 送信待ちタスクに対して E_DLT を返す */
-    for (p = message_table[id].wait_sendtask; p != NULL; p = p->msg_next) {
+    while ((q = list_pick(&(message_table[id].sender))) != NULL) {
+	p = getTaskParent(q);
 	p->slp_err = E_DLT;
 	p->tskwait.msg_wait = 0;
 	wup_tsk(p->tskid);
@@ -315,8 +300,6 @@ ER del_mbf(ID id)
 #else
     dis_int();
 #endif
-    message_table[id].wait_sendtask = NULL;
-    message_table[id].wait_sendtail = NULL;
     message_table[id].mbfatr = TA_UNDEF;
 #ifdef CALL_HANDLER_IN_TASK
     ena_dsp();
@@ -347,6 +330,7 @@ ER snd_mbf(ID id, INT size, VP msg)
     VP buf;
     INT wcnt;
     BOOL tsksw = FALSE;
+    list *q;
 
     if ((id < MIN_MSGBUF) || (id > MAX_MSGBUF)) {
 	return (E_ID);
@@ -359,21 +343,16 @@ ER snd_mbf(ID id, INT size, VP msg)
     }
 
     if (message_table[id].bufsz == 0) {
-	/* 受信を待っているタスクが無ければ sleep */
 #ifdef CALL_HANDLER_IN_TASK
-	    dis_dsp();
+	dis_dsp();
 #else
-	    dis_int();
+	dis_int();
 #endif
-	if (! message_table[id].wait_recvtask) {
-	    run_task->msg_next = NULL;
-	    if (message_table[id].wait_sendtail != NULL) {
-	      message_table[id].wait_sendtail->msg_next = run_task;
-	    }
-	    message_table[id].wait_sendtail = run_task;
-	    if (message_table[id].wait_sendtask == NULL) {
-	      message_table[id].wait_sendtask = run_task;
-	    }
+	q = list_pick(&(message_table[id].receiver));
+
+	if (!q) {
+	    /* 受信を待っているタスクが無ければ sleep */
+	    list_insert(&(message_table[id].sender), &(run_task->message));
 	    run_task->msg_size = size;
 	    run_task->msg_buf = msg;
 	    run_task->tskwait.msg_wait = 1;
@@ -390,17 +369,12 @@ ER snd_mbf(ID id, INT size, VP msg)
 	    }
 	} else {
 	    /* もし、受信待ちタスクがあれば、message を転送して wakeup する */
-	    p = message_table[id].wait_recvtask;
-	    message_table[id].wait_recvtask = p->msg_next;
-	    if (p->msg_next == NULL) {
-		message_table[id].wait_recvtail = NULL;
-	    }
-	    p->msg_next = NULL;
 #ifdef CALL_HANDLER_IN_TASK
 	    ena_dsp();
 #else
 	    ena_int();
 #endif
+	    p = getTaskParent(q);
 	    vput_reg(p->tskid, p->msg_buf, size, msg);
 	    p->msg_size = size;
 	    p->tskwait.msg_wait = 0;
@@ -418,19 +392,7 @@ ER snd_mbf(ID id, INT size, VP msg)
 #else
 	    dis_int();
 #endif
-	    run_task->msg_next = NULL;
-	    if (message_table[id].wait_sendtail != NULL) {
-	      message_table[id].wait_sendtail->msg_next = run_task;
-	    }
-	    message_table[id].wait_sendtail = run_task;
-	    if (message_table[id].wait_sendtask == NULL) {
-	      message_table[id].wait_sendtask = run_task;
-	    }
-#ifdef notdef
-	    if (run_task->tskid == 23) {
-		printk("\nsnd_mbf sleep %d\n", run_task->tskid);
-	    }
-#endif
+	    list_insert(&(message_table[id].sender), &(run_task->message));
 	    run_task->tskwait.msg_wait = 1;
 	    can_wup(&wcnt, run_task->tskid);
 #ifdef CALL_HANDLER_IN_TASK
@@ -440,11 +402,6 @@ ER snd_mbf(ID id, INT size, VP msg)
 	    ena_int();
 #endif
 	    slp_tsk();
-#ifdef notdef
-	    if (run_task->tskid == 23) {
-		printk("\nsnd_mbf waked up %d\n", run_task->tskid);
-	    }
-#endif
 	    dealloc_msg(newmsg);
 	    if (run_task->slp_err) {
 		return (run_task->slp_err);
@@ -464,43 +421,26 @@ ER snd_mbf(ID id, INT size, VP msg)
 	message_table[id].total_size -= size;
 	memcpy(buf, msg, size);
 
-	if (message_table[id].wait_recvtask) {
-	    /* もし、受信待ちタスクがあれば、それを wakeup する */
-	    p = message_table[id].wait_recvtask;
-#ifdef notdef
-	    message_table[id].wait_recvtask =
-		del_tcb_list(message_table[id].wait_recvtask, p);
-#else
+	/* もし、受信待ちタスクがあれば、それを wakeup する */
+	if (!list_is_empty(&(message_table[id].receiver))) {
 #ifdef CALL_HANDLER_IN_TASK
 	    dis_dsp();
 #else
 	    dis_int();
 #endif
-	    message_table[id].wait_recvtask = p->msg_next;
-	    if (p->msg_next == NULL) {
-		message_table[id].wait_recvtail = NULL;
-	    }
-	    p->msg_next = NULL;
+	    q = list_pick(&(message_table[id].receiver));
 #ifdef CALL_HANDLER_IN_TASK
 	    ena_dsp();
 #else
 	    ena_int();
 #endif
-#endif
+	    p = getTaskParent(q);
 	    p->tskwait.msg_wait = 0;
-#ifdef notdef
-	    if (p->tskid == 23) {
-		printk("\nsnd_mbf wake up %d(%d)\n", p->tskid,
-		       run_task->tskid);
-	    }
-#endif
 	    tsksw = TRUE;
 	    wup_tsk(p->tskid);
 	}
     }
-#ifdef notdef
-    if (tsksw == TRUE) task_switch(TRUE);
-#endif
+
     return (E_OK);
 }
 
@@ -524,6 +464,7 @@ ER psnd_mbf(ID id, INT size, VP msg)
     T_MSG *newmsg;
     VP buf;
     BOOL tsksw = FALSE;
+    list *q;
 
     if ((id < MIN_MSGBUF) || (id > MAX_MSGBUF)) {
 	return (E_ID);
@@ -536,32 +477,23 @@ ER psnd_mbf(ID id, INT size, VP msg)
     }
 
     if (message_table[id].bufsz == 0) {
-	/* 受信を待っているタスクが無ければ E_TMOUT を返す */
 #ifdef CALL_HANDLER_IN_TASK
-	    dis_dsp();
+	dis_dsp();
 #else
-	    dis_int();
+	dis_int();
 #endif
-	if (!message_table[id].wait_recvtask) {
+	q = list_pick(&(message_table[id].receiver));
 #ifdef CALL_HANDLER_IN_TASK
-	    ena_dsp();
+	ena_dsp();
 #else
-	    ena_int();
+	ena_int();
 #endif
+	if (!q) {
+	    /* 受信を待っているタスクが無ければ E_TMOUT を返す */
 	    return (E_TMOUT);
 	} else {
 	    /* もし、受信待ちタスクがあれば、message を転送して wakeup する */
-	    p = message_table[id].wait_recvtask;
-	    message_table[id].wait_recvtask = p->msg_next;
-	    if (p->msg_next == NULL) {
-		message_table[id].wait_recvtail = NULL;
-	    }
-	    p->msg_next = NULL;
-#ifdef CALL_HANDLER_IN_TASK
-	    ena_dsp();
-#else
-	    ena_int();
-#endif
+	    p = getTaskParent(q);
 	    vput_reg(p->tskid, p->msg_buf, size, msg);
 	    p->msg_size = size;
 	    p->tskwait.msg_wait = 0;
@@ -588,32 +520,26 @@ ER psnd_mbf(ID id, INT size, VP msg)
 	message_table[id].total_size -= size;
 	memcpy(buf, msg, size);
 
-	if (message_table[id].wait_recvtask) {
-	    /* もし、受信待ちタスクがあれば、それを wakeup する */
-	    p = message_table[id].wait_recvtask;
+	/* もし、受信待ちタスクがあれば、それを wakeup する */
+	if (!list_is_empty(&(message_table[id].receiver))) {
 #ifdef CALL_HANDLER_IN_TASK
 	    dis_dsp();
 #else
 	    dis_int();
 #endif
-	    message_table[id].wait_recvtask = p->msg_next;
-	    if (p->msg_next == NULL) {
-		message_table[id].wait_recvtail = NULL;
-	    }
-	    p->msg_next = NULL;
+	    q = list_pick(&(message_table[id].receiver));
 #ifdef CALL_HANDLER_IN_TASK
 	    ena_dsp();
 #else
 	    ena_int();
 #endif
+	    p = getTaskParent(q);
 	    p->tskwait.msg_wait = 0;
 	    tsksw = TRUE;
 	    wup_tsk(p->tskid);
 	}
     }
-#ifdef notdef
-    if (tsksw == TRUE) task_switch(TRUE);
-#endif
+
     return (E_OK);
 }
 
@@ -636,6 +562,7 @@ ER rcv_mbf(VP msg, INT * size, ID id)
     T_TCB *p;
     T_MSG *newmsgp;
     INT wcnt;
+    list *q;
 
     if ((id < MIN_MSGBUF) || (id > MAX_MSGBUF)) {
 	return (E_ID);
@@ -650,15 +577,10 @@ ER rcv_mbf(VP msg, INT * size, ID id)
 #else
 	    dis_int();
 #endif
-	if (! message_table[id].wait_sendtask) {
-	    run_task->msg_next = NULL;
-	    if (message_table[id].wait_recvtail != NULL) {
-		message_table[id].wait_recvtail->msg_next = run_task;
-	    }
-	    message_table[id].wait_recvtail = run_task;
-	    if (message_table[id].wait_recvtask == NULL) {
-		message_table[id].wait_recvtask = run_task;
-	    }
+	q = list_pick(&(message_table[id].sender));
+
+	if (!q) {
+	    list_insert(&(message_table[id].receiver), &(run_task->message));
 	    run_task->msg_size = 0;
 	    run_task->msg_buf = msg;
 	    run_task->tskwait.msg_wait = 1;
@@ -675,17 +597,12 @@ ER rcv_mbf(VP msg, INT * size, ID id)
 		return (run_task->slp_err);
 	    }
 	} else {
-	    p = message_table[id].wait_sendtask;
-	    message_table[id].wait_sendtask = p->msg_next;
-	    if (p->msg_next == NULL) {
-		message_table[id].wait_sendtail = NULL;
-	    }
-	    p->msg_next = NULL;
 #ifdef CALL_HANDLER_IN_TASK
 	    ena_dsp();
 #else
 	    ena_int();
 #endif
+	    p = getTaskParent(q);
 	    *size = p->msg_size;
 	    vget_reg(p->tskid, p->msg_buf, p->msg_size, msg);
 	    p->tskwait.msg_wait = 0;
@@ -694,25 +611,13 @@ ER rcv_mbf(VP msg, INT * size, ID id)
     } else {
 	/* メッセージが存在しない --> sleep する。 */
       retry:
-	if (message_table[id].message_ptr == NULL) {
+	if (list_is_empty(&(message_table[id].message))) {
 #ifdef CALL_HANDLER_IN_TASK
 	    dis_dsp();
 #else
 	    dis_int();
 #endif
-	    run_task->msg_next = NULL;
-	    if (message_table[id].wait_recvtail != NULL) {
-		message_table[id].wait_recvtail->msg_next = run_task;
-	    }
-	    message_table[id].wait_recvtail = run_task;
-	    if (message_table[id].wait_recvtask == NULL) {
-		message_table[id].wait_recvtask = run_task;
-	    }
-#ifdef notdef
-	    if (run_task->tskid == 23) {
-		printk("\nrcv_mbf sleep %d\n", run_task->tskid);
-	    }
-#endif
+	    list_insert(&(message_table[id].receiver), &(run_task->message));
 	    run_task->tskwait.msg_wait = 1;
 	    can_wup(&wcnt, run_task->tskid);
 #ifdef CALL_HANDLER_IN_TASK
@@ -722,11 +627,7 @@ ER rcv_mbf(VP msg, INT * size, ID id)
 	    ena_int();
 #endif
 	    slp_tsk();
-#ifdef notdef
-	    if (run_task->tskid == 23) {
-		printk("\nrcv_mbf waked up %d\n", run_task->tskid);
-	    }
-#endif
+
 	    if (run_task->slp_err) {
 		return (run_task->slp_err);
 	    }
@@ -743,118 +644,23 @@ ER rcv_mbf(VP msg, INT * size, ID id)
 	message_table[id].total_size += *size;
 
 	/* 送信待ちのタスクがあれば wakeup する */
-	if (message_table[id].wait_sendtask) {
-	    p = message_table[id].wait_sendtask;
+	if (!list_is_empty(&(message_table[id].sender))) {
 #ifdef CALL_HANDLER_IN_TASK
 	    dis_dsp();
 #else
 	    dis_int();
 #endif
-	    message_table[id].wait_sendtask = p->msg_next;
-	    if (p->msg_next == NULL) {
-		message_table[id].wait_sendtail = NULL;
-	    }
-	    p->msg_next = NULL;
+	    q = list_pick(&(message_table[id].sender));
 #ifdef CALL_HANDLER_IN_TASK
 	    ena_dsp();
 #else
 	    ena_int();
 #endif
+	    p = getTaskParent(q);
 	    p->tskwait.msg_wait = 0;
-#ifdef notdef
-	    if (p->tskid == 23) {
-		printk("\nrcv_mbf wake up %d(%d)\n", p->tskid,
-		       run_task->tskid);
-	    }
-#endif
 	    wup_tsk(p->tskid);
 	}
     }
+
     return (E_OK);
-}
-
-/* del_task_mbf -- メッセージバッファからタスクを削除
- *
- *
- */
-
-static void del_recvtask(ID mid, ID tid)
-{
-    T_TCB *p, *q;
-
-    /* もし、受信待ちタスクが tid であれば、それを除去する */
-    if (message_table[mid].mbfatr == TA_UNDEF)
-	return;
-#ifdef CALL_HANDLER_IN_TASK
-    dis_dsp();
-#else
-    dis_int();
-#endif
-    q = NULL;
-    for (p = message_table[mid].wait_recvtask; p != NULL; p = p->msg_next) {
-	if (p->tskid == tid) {
-	    if (p->msg_next == NULL) {
-		message_table[mid].wait_recvtail = q;
-	    }
-	    if (q == NULL) {
-		message_table[mid].wait_recvtask = p->msg_next;
-	    } else {
-		q->msg_next = p->msg_next;
-	    }
-	} else {
-	    q = p;
-	}
-    }
-#ifdef CALL_HANDLER_IN_TASK
-    ena_dsp();
-#else
-    ena_int();
-#endif
-}
-
-static void del_sendtask(ID mid, ID tid)
-{
-    T_TCB *p, *q;
-
-    if (message_table[mid].mbfatr == TA_UNDEF)
-	return;
-    /* もし、送信待ちタスクが tid であれば、それを除去する */
-#ifdef CALL_HANDLER_IN_TASK
-    dis_dsp();
-#else
-    dis_int();
-#endif
-    q = NULL;
-    for (p = message_table[mid].wait_sendtask; p != NULL; p = p->msg_next) {
-	if (p->tskid == tid) {
-	    if (p->msg_next == NULL) {
-		message_table[mid].wait_sendtail = q;
-	    }
-	    if (q == NULL) {
-		message_table[mid].wait_sendtask = p->msg_next;
-	    } else {
-		q->msg_next = p->msg_next;
-	    }
-	} else {
-	    q = p;
-	}
-    }
-#ifdef CALL_HANDLER_IN_TASK
-    ena_dsp();
-#else
-    ena_int();
-#endif
-}
-
-void del_task_mbf(ID tid)
-{
-    ID mid;
-
-    for (mid = MIN_MSGBUF; mid <= MAX_MSGBUF; ++mid) {
-	/* もし、受信待ちタスクが tid であれば、それを除去する */
-	del_recvtask(mid, tid);
-
-	/* もし、送信待ちタスクが tid であれば、それを除去する */
-	del_sendtask(mid, tid);
-    }
 }

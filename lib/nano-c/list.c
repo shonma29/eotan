@@ -1,5 +1,3 @@
-#ifndef _STDDEF_H_
-#define _STDDEF_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,15 +24,63 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include "stddef.h"
+#include "set/list.h"
 
-typedef unsigned int ptr_t;
 
-typedef int ptrdiff_t;
-typedef unsigned int size_t;
-typedef unsigned int wchar_t;
+void list_initialize(list *entry) {
+	entry->prev = entry->next = entry;
+}
 
-#define NULL ((void*)0)
+void list_release(list *guard) {
+	list *entry = guard;
 
-#define offsetof(type, member) (size_t)&(((type*)0)->member)
+	do {
+		list *next = entry->next;
 
-#endif
+		list_initialize(entry);
+		entry = next;
+	} while (!list_is_edge(guard, entry));
+}
+
+list *list_head(const list *guard) {
+	return list_edge_to_null(guard, guard->next);
+}
+
+list *list_tail(const list *guard) {
+	return list_edge_to_null(guard, guard->prev);
+}
+
+void list_append(list *to, list *entry) {
+	list *next = to->next;
+
+	entry->next = next;
+	entry->prev = to;
+	next->prev = to->next = entry;
+}
+
+void list_insert(list *to, list *entry) {
+	list *prev = to->prev;
+
+	entry->next = to;
+	entry->prev = prev;
+	prev->next = to->prev = entry;
+}
+
+void list_remove(list *entry) {
+	list *next = entry->next;
+	list *prev = entry->prev;
+
+	next->prev = prev;
+	prev->next = next;
+	list_initialize(entry);
+}
+
+list *list_pick(list *guard) {
+	list *entry = guard->next;
+
+	if (list_is_edge(guard, entry))	entry = NULL;
+	else	list_remove(entry);
+
+	return entry;
+}

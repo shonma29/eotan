@@ -95,7 +95,6 @@ extern void kfree(VP area, W size);
 
 /* message.c */
 extern ER init_msgbuf(void);
-extern void del_task_mbf(ID tid);
 
 /* eventflag.c */
 extern ER init_eventflag(void);

@@ -1,5 +1,5 @@
-#ifndef _STDDEF_H_
-#define _STDDEF_H_
+#ifndef LIST_H
+#define LIST_H
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,14 +27,38 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-typedef unsigned int ptr_t;
+typedef struct _list {
+	struct _list *next;
+	struct _list *prev;
+} list;
 
-typedef int ptrdiff_t;
-typedef unsigned int size_t;
-typedef unsigned int wchar_t;
 
-#define NULL ((void*)0)
+#define list_next(entry) ((entry)->next)
+#define list_prev(entry) ((entry)->prev)
 
-#define offsetof(type, member) (size_t)&(((type*)0)->member)
+#define list_is_empty(entry) (((entry)->next) == entry)
+
+#define list_is_edge(guard, entry) ((guard) == (entry))
+#define list_edge_to_null(guard, entry) (list_is_edge(guard, entry)? \
+  NULL:(entry))
+
+#define list_push(guard, entry) list_append(guard, entry)
+#define list_pop(guard) list_pick(guard)
+
+#define list_enqueue(guard, entry) list_insert(guard, entry)
+#define list_dequeue(guard) list_pick(guard)
+
+
+extern void list_initialize(list *entry);
+extern void list_release(list *guard);
+
+extern list *list_head(const list *guard);
+extern list *list_tail(const list *guard);
+
+extern void list_append(list *to, list *entry);
+extern void list_insert(list *to, list *entry);
+extern void list_remove(list *entry);
+
+extern list *list_pick(list *guard);
 
 #endif

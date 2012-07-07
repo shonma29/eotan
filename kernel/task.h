@@ -19,6 +19,7 @@ Version 2, June 1991
 
 #include "core.h"
 #include "mpu/fpu.h"
+#include "../../include/set/list.h"
 
 #define KERNEL_TASK	(1)
 
@@ -69,10 +70,6 @@ typedef struct t_tcb {
     UW slp_time;		/* for debug */
 
 /* タスク同期機能 */
-    /* セマフォ */
-    struct t_tcb *sem_next;	/* 次のセマフォ待ちタスクへ     */
-    ID sem_id;			/* 今、現在待っているセマフォの ID */
-
     /* イベントフラグ */
     struct t_tcb *event_next;	/* 次のイベントフラグ待ちタスクへ       */
     UINT flag_pattern;		/* イベントフラグの待ちパターン */
@@ -81,7 +78,7 @@ typedef struct t_tcb {
     UINT rflgptn;		/* 関数の値として返すフラグパターンq */
 
     /* メッセージ */
-    struct t_tcb *msg_next;	/* 次のメッセージ待ちタスクへ   */
+    list message;
 #ifdef notdef
     ID msg_id;			/* 今、現在待っているメッセージの ID */
 #endif

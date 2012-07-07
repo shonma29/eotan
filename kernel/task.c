@@ -272,6 +272,7 @@ void init_task1(void)
     task[KERNEL_TASK].tsklevel = MAX_PRIORITY;
     /* タスク ID は、KERNEL_TASK(1)にセット */
     task[KERNEL_TASK].tskid = KERNEL_TASK;
+    list_initialize(&(task[KERNEL_TASK].message));
 
 #ifdef I386
     /* タスク 1 のコンテキスト情報を初期化する                    */
@@ -711,6 +712,8 @@ ER cre_tsk(ID tskid, T_CTSK * pk_ctsk)
     newtask->tskstat = TTS_DMT;
     newtask->tsklevel = pk_ctsk->itskpri;
     newtask->tsklevel0 = pk_ctsk->itskpri;
+    list_initialize(&(newtask->message));
+
     if (make_task_context(newtask, pk_ctsk) != E_OK) {
 	return (E_NOMEM);
     }
@@ -918,7 +921,7 @@ ER ter_tsk(ID tskid)
 	/* 待ち状態にあるタスクの場合：待ち状態から解放してから強制終了させる。 */
     case TTS_WAI:
 	if (task[tskid].tskwait.msg_wait)
-	    del_task_mbf(tskid);
+	    list_remove(&(task[tskid].message));
 	if (task[tskid].tskwait.event_wait)
 	    del_task_evt(tskid);
 	dis_int();
@@ -1034,7 +1037,7 @@ ER rel_wai(ID tskid)
 	}
 	if (taskp->tskwait.msg_wait) {
 	    taskp->tskwait.msg_wait = 0;
-	    del_task_mbf(tskid);
+	    list_remove(&(task[tskid].message));
 	    dis_int();
 	}
 	taskp->slp_err = E_RLWAI;
@@ -1588,7 +1591,7 @@ ER vset_ctx(ID tid, W eip, B * stackp, W stsize)
     tsk->quantum = QUANTUM;
     ena_int();
 
-    del_task_mbf(tid);
+    list_remove(&(tsk->message));
     wup_tsk(tid);
     return (E_OK);
 }

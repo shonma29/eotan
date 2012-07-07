@@ -16,20 +16,19 @@ Version 2, June 1991
 #ifndef __CORE_MESSAGE_H__
 #define __CORE_MESSAGE_H__		1
 
+#include "../../include/set/list.h"
+
 /*******************************************************************************
  * メッセージバッファのヘッダ
  *
  */
 typedef struct message_head_t
 {
+  list message;
   ATR			mbfatr;
   int			total_size;	/* 空きバッファのサイズ */
-  struct message_t	*message_ptr;
-  struct message_t	*last_message_ptr;
-  T_TCB			*wait_sendtask;	/* メッセージを待っているタスク(送信側) */
-  T_TCB			*wait_sendtail;
-  T_TCB			*wait_recvtask;	/* メッセージを待っているタスク(受信側) */
-  T_TCB			*wait_recvtail;
+  list sender;
+  list receiver;
   INT			bufsz;		/* バッファの最大長	*/
   INT			msgsz;		/* メッセージの最大長	*/
 } T_MSGHEAD;
@@ -44,8 +43,8 @@ typedef struct message_head_t
  */
 typedef struct message_t
 {
+  list	message;
   INT			size;
-  struct message_t	*next;
   VP			buf;
 } T_MSG;
 
