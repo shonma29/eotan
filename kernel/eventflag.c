@@ -16,17 +16,23 @@ Version 2, June 1991
  */
 
 
+#include "../include/mpu/io.h"
+#include "../include/set/list.h"
 #include "core.h"
 #include "memory.h"
 #include "func.h"
 #include "arch.h"
 #include "eventflag.h"
-#include "../../include/mpu/io.h"
 
 static T_EVENTFLAG flag_table[MAX_EVENTFLAG + 1];
 
 static void tflg_func(VP p);
-static void del_evt_wait(ID fid, ID tid);
+static T_TCB *getTaskParent(const list_t *p);
+
+
+static T_TCB *getTaskParent(const list_t *p) {
+	return (T_TCB*)((ptr_t)p - offsetof(T_TCB, evflag));
+}
 
 /*******************************************************************************
  * init_eventflag
@@ -43,10 +49,9 @@ ER init_eventflag(void)
     W i;
 
     for (i = MIN_EVENTFLAG; i <= MAX_EVENTFLAG; i++) {
-	flag_table[i].flgatr = TA_FREE;
+	flag_table[i].flgatr = TA_UNDEF;
 	flag_table[i].id = i;
-	flag_table[i].wait_task = NULL;
-	flag_table[i].wait_tail = NULL;
+	list_initialize(&(flag_table[i].receiver));
     }
     return (E_OK);
 }
@@ -67,7 +72,7 @@ ER cre_flg(ID flgid, T_CFLG * pk_flg)
 	return (E_ID);
     }
 
-    if (flag_table[flgid].flgatr != TA_FREE) {
+    if (flag_table[flgid].flgatr != TA_UNDEF) {
 	return (E_OBJ);
     }
 
@@ -77,8 +82,7 @@ ER cre_flg(ID flgid, T_CFLG * pk_flg)
 
     flag_table[flgid].flgatr = pk_flg->flgatr;
     flag_table[flgid].iflgptn = pk_flg->iflgptn;
-    flag_table[flgid].wait_task = NULL;
-    flag_table[flgid].wait_tail = NULL;
+    list_initialize(&(flag_table[flgid].receiver));
     flag_table[flgid].exinf = pk_flg->exinf;
     return (E_OK);
 }
@@ -92,7 +96,7 @@ ER_ID acre_flg(T_CFLG * pk_flg)
     }
 
     for (flgid = MIN_EVENTFLAG; flgid <= MAX_EVENTFLAG; flgid++) {
-	if (flag_table[flgid].flgatr == TA_FREE) {
+	if (flag_table[flgid].flgatr == TA_UNDEF) {
 	    break;
 	}
     }
@@ -101,8 +105,7 @@ ER_ID acre_flg(T_CFLG * pk_flg)
 
     flag_table[flgid].flgatr = pk_flg->flgatr;
     flag_table[flgid].iflgptn = pk_flg->iflgptn;
-    flag_table[flgid].wait_task = NULL;
-    flag_table[flgid].wait_tail = NULL;
+    list_initialize(&(flag_table[flgid].receiver));
     flag_table[flgid].exinf = pk_flg->exinf;
 
     return flgid;
@@ -126,24 +129,24 @@ ER_ID acre_flg(T_CFLG * pk_flg)
 ER del_flg(ID flgid)
 {
     T_TCB *p;
+    list_t *q;
 
     if (flgid < MIN_EVENTFLAG || flgid > MAX_EVENTFLAG) {
 	return (E_ID);
     }
 
-    if (flag_table[flgid].flgatr == TA_FREE) {
+    if (flag_table[flgid].flgatr == TA_UNDEF) {
 	return (E_OBJ);
     }
 
-    for (p = flag_table[flgid].wait_task; p != NULL; p = p->event_next) {
+    while ((q = list_dequeue(&(flag_table[flgid].receiver))) != NULL) {
+	p = getTaskParent(q);
 	p->tskwait.event_wait = 0;
-	p->slp_err = E_TMOUT;
+	p->slp_err = E_DLT;
 	wup_tsk(p->tskid);
     }
 
-    flag_table[flgid].flgatr = TA_FREE;
-    flag_table[flgid].wait_task = NULL;
-    flag_table[flgid].wait_tail = NULL;
+    flag_table[flgid].flgatr = TA_UNDEF;
     return (E_OK);
 }
 
@@ -163,28 +166,28 @@ ER del_flg(ID flgid)
  */
 ER set_flg(ID flgid, UINT setptn)
 {
-    T_TCB *p, *q;
+    T_TCB *p;
     BOOL result;
     BOOL tsw_flag = FALSE;
+    list_t *q, *next;
 
     if (flgid < MIN_EVENTFLAG || flgid > MAX_EVENTFLAG) {
 	return (E_ID);
     }
 
-    if (flag_table[flgid].flgatr == TA_FREE) {
+    if (flag_table[flgid].flgatr == TA_UNDEF) {
 	return (E_NOEXS);
     }
 
 /*  printk ("set_flag: count = %d\n", list_counter (flag_table[flgid].wait_task)); */
-#ifdef notdef
-    printk("set_flg id %d ptn %x\n", flgid, setptn);
-#endif
     dis_int();
     flag_table[flgid].iflgptn |= setptn;
     ena_int();
 
-    q = NULL;
-    for (p = flag_table[flgid].wait_task; p != NULL; p = p->event_next) {
+    for (q = list_next(&(flag_table[flgid].receiver));
+	    !list_is_edge(&(flag_table[flgid].receiver), q); q = next) {
+    	next = q->next;
+    	p = getTaskParent(q);
 	result = FALSE;
 	switch ((p->wfmode) & (TWF_ANDW | TWF_ORW)) {
 	case TWF_ANDW:
@@ -201,17 +204,7 @@ ER set_flg(ID flgid, UINT setptn)
 
 	if (result == TRUE) {
 	    dis_int();
-	    if (p->event_next == NULL) {
-		flag_table[flgid].wait_tail = q;
-	    }
-	    if (q == NULL) {
-		flag_table[flgid].wait_task = p->event_next;
-	    } else {
-		q->event_next = p->event_next;
-	    }
-#ifdef notdef
-	    printk("eventflag: wup tsk %d\n", p->tskid);
-#endif
+	    list_remove(q);
 	    ena_int();
 	    p->rflgptn = flag_table[flgid].iflgptn;
 	    p->tskwait.event_wait = 0;
@@ -223,14 +216,9 @@ ER set_flg(ID flgid, UINT setptn)
 		flag_table[flgid].iflgptn = 0;
 		ena_int();
 	    }
-	} else {
-	    q = p;
 	}
     }
     if (tsw_flag) {
-#ifdef notdef
-	printk("eventflag: task_switch\n");
-#endif
 	task_switch(TRUE);
     }
 
@@ -257,7 +245,7 @@ ER clr_flg(ID flgid, UINT clrptn)
 	return (E_ID);
     }
 
-    if (flag_table[flgid].flgatr == TA_FREE) {
+    if (flag_table[flgid].flgatr == TA_UNDEF) {
 	return (E_NOEXS);
     }
 
@@ -283,21 +271,18 @@ ER wai_flg(UINT * flgptn, ID flgid, UINT waiptn, UINT wfmode)
 {
     BOOL result;
     INT wcnt;
-
-#ifdef notdef
-    printk("wai_flg id %d ptn %x\n", flgid, waiptn);
-#endif
     *flgptn = NULL;
+
     if (flgid < MIN_EVENTFLAG || flgid > MAX_EVENTFLAG) {
 	return (E_ID);
     }
 
-    if (flag_table[flgid].flgatr == TA_FREE) {
+    if (flag_table[flgid].flgatr == TA_UNDEF) {
 	return (E_NOEXS);
     }
 
     if ((flag_table[flgid].flgatr == TA_WSGL)
-	&& (flag_table[flgid].wait_task)) {
+	&& !list_is_empty(&(flag_table[flgid].receiver))) {
 	return (E_OBJ);
     }
     if (waiptn == 0) {
@@ -325,74 +310,17 @@ ER wai_flg(UINT * flgptn, ID flgid, UINT waiptn, UINT wfmode)
 	}
 	return (E_OK);
     }
-#if 0
-    /* for debug */
-    printk("wai_flg: before = %d  ", list_counter(flag_table[flgid].wait_task));	/* debug */
-#endif
 
     dis_int();
     run_task->flag_pattern = waiptn;
     run_task->wfmode = wfmode;
     run_task->tskwait.event_wait = 1;
     run_task->event_id = flgid;
-    run_task->event_next = NULL;
-    if (flag_table[flgid].wait_tail != NULL) {
-	flag_table[flgid].wait_tail->event_next = run_task;
-    }
-    flag_table[flgid].wait_tail = run_task;
-    if (flag_table[flgid].wait_task == NULL) {
-	flag_table[flgid].wait_task = run_task;
-    }
-
-#if 0
-/* for debug */
-    printk("wai_flg: after = %d\n", list_counter(flag_table[flgid].wait_task));	/* debug */
-#endif
-
+    list_enqueue(&(flag_table[flgid].receiver), &(run_task->evflag));
 /*  task_switch (TRUE); */
     ena_int();
     can_wup(&wcnt, run_task->tskid);
     slp_tsk();
     *flgptn = run_task->rflgptn;
     return (E_OK);
-}
-
-
-/* del_task_evt -- イベントフラグからタスクを削除
- *
- *
- */
-
-static void del_evt_wait(ID fid, ID tid)
-{
-    T_TCB *p, *q;
-
-    if (flag_table[fid].flgatr == TA_FREE)
-	return;
-    dis_int();
-    q = NULL;
-    for (p = flag_table[fid].wait_task; p != NULL; p = p->event_next) {
-	if (p->tskid == tid) {
-	    if (p->event_next == NULL) {
-		flag_table[fid].wait_tail = q;
-	    }
-	    if (q == NULL) {
-		flag_table[fid].wait_task = p->event_next;
-	    } else {
-		q->event_next = p->event_next;
-	    }
-	} else {
-	    q = p;
-	}
-    }
-    ena_int();
-}
-
-void del_task_evt(ID tid)
-{
-    ID fid;
-
-    for (fid = MIN_EVENTFLAG; fid <= MAX_EVENTFLAG; ++fid) {
-	del_evt_wait(fid, tid);
-    }
 }

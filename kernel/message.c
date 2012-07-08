@@ -16,29 +16,27 @@ Version 2, June 1991
  */
 
 
+#include "../include/mpu/io.h"
+#include "../include/set/list.h"
 #include "core.h"
 #include "memory.h"
 #include "func.h"
 #include "arch.h"
 #include "message.h"
-#include "../../include/mpu/io.h"
-#include "../../include/set/list.h"
-#include "../../include/stddef.h"
 
 static T_MSGHEAD message_table[MAX_MSGBUF + 1];
 static T_MSG msgbuf[MAX_MSGENTRY];
 static list_t unused_msg;
 
-static void del_sendtask(ID mid, ID tid);
-static void del_recvtask(ID mid, ID tid);
-
+static T_MSG *getMessageParent(const list_t *p);
+static T_TCB *getTaskParent(const list_t *p);
 
 
-static T_MSG *getMessageParent(list_t *p) {
+static T_MSG *getMessageParent(const list_t *p) {
 	return (T_MSG*)((ptr_t)p - offsetof(T_MSG, message));
 }
 
-static T_TCB *getTaskParent(list_t *p) {
+static T_TCB *getTaskParent(const list_t *p) {
 	return (T_TCB*)((ptr_t)p - offsetof(T_TCB, message));
 }
 
@@ -56,7 +54,7 @@ static T_MSG *alloc_msg(void)
     dis_int();
 #endif
 
-    q = list_pick(&unused_msg);
+    q = list_pop(&unused_msg);
     p = q? getMessageParent(q):NULL;
 
 #ifdef CALL_HANDLER_IN_TASK
@@ -80,7 +78,7 @@ static void dealloc_msg(T_MSG * p)
     dis_int();
 #endif
 
-    list_append(&unused_msg, &(p->message));
+    list_push(&unused_msg, &(p->message));
 
 #ifdef CALL_HANDLER_IN_TASK
     ena_dsp();
@@ -102,7 +100,7 @@ static void add_msg_list(T_MSGHEAD * list, T_MSG * newmsg)
     dis_int();
 #endif
 
-    list_insert(&(list->message), &(newmsg->message));
+    list_enqueue(&(list->message), &(newmsg->message));
 
 #ifdef CALL_HANDLER_IN_TASK
     ena_dsp();
@@ -126,7 +124,7 @@ static T_MSG *get_msg(T_MSGHEAD * list)
     dis_int();
 #endif
 
-    q = list_pick(&(list->message));
+    q = list_dequeue(&(list->message));
     p = q? getMessageParent(q):NULL;
 
 #ifdef CALL_HANDLER_IN_TASK
@@ -153,7 +151,7 @@ ER init_msgbuf(void)
     list_initialize(&unused_msg);
 
     for (i = 0; i < MAX_MSGENTRY; i++) {
-	list_insert(&unused_msg, &(msgbuf[i].message));
+	list_enqueue(&unused_msg, &(msgbuf[i].message));
     }
 
     for (i = 0; i <= MAX_MSGBUF; i++) {
@@ -274,14 +272,14 @@ ER del_mbf(ID id)
 	return (E_NOEXS);
     }
 
-    while ((q = list_pick(&(message_table[id].message))) != NULL) {
+    while ((q = list_dequeue(&(message_table[id].message))) != NULL) {
         msgp = getMessageParent(q);
 	kfree(msgp->buf, msgp->size);
 	dealloc_msg(msgp);
     }
 
     /* 受信待ちタスクに対して E_DLT を返す */
-    while ((q = list_pick(&(message_table[id].receiver))) != NULL) {
+    while ((q = list_dequeue(&(message_table[id].receiver))) != NULL) {
 	p = getTaskParent(q);
 	p->slp_err = E_DLT;
 	p->tskwait.msg_wait = 0;
@@ -289,7 +287,7 @@ ER del_mbf(ID id)
     }
 
     /* 送信待ちタスクに対して E_DLT を返す */
-    while ((q = list_pick(&(message_table[id].sender))) != NULL) {
+    while ((q = list_dequeue(&(message_table[id].sender))) != NULL) {
 	p = getTaskParent(q);
 	p->slp_err = E_DLT;
 	p->tskwait.msg_wait = 0;
@@ -348,11 +346,11 @@ ER snd_mbf(ID id, INT size, VP msg)
 #else
 	dis_int();
 #endif
-	q = list_pick(&(message_table[id].receiver));
+	q = list_dequeue(&(message_table[id].receiver));
 
 	if (!q) {
 	    /* 受信を待っているタスクが無ければ sleep */
-	    list_insert(&(message_table[id].sender), &(run_task->message));
+	    list_enqueue(&(message_table[id].sender), &(run_task->message));
 	    run_task->msg_size = size;
 	    run_task->msg_buf = msg;
 	    run_task->tskwait.msg_wait = 1;
@@ -392,7 +390,7 @@ ER snd_mbf(ID id, INT size, VP msg)
 #else
 	    dis_int();
 #endif
-	    list_insert(&(message_table[id].sender), &(run_task->message));
+	    list_enqueue(&(message_table[id].sender), &(run_task->message));
 	    run_task->tskwait.msg_wait = 1;
 	    can_wup(&wcnt, run_task->tskid);
 #ifdef CALL_HANDLER_IN_TASK
@@ -428,7 +426,7 @@ ER snd_mbf(ID id, INT size, VP msg)
 #else
 	    dis_int();
 #endif
-	    q = list_pick(&(message_table[id].receiver));
+	    q = list_dequeue(&(message_table[id].receiver));
 #ifdef CALL_HANDLER_IN_TASK
 	    ena_dsp();
 #else
@@ -482,7 +480,7 @@ ER psnd_mbf(ID id, INT size, VP msg)
 #else
 	dis_int();
 #endif
-	q = list_pick(&(message_table[id].receiver));
+	q = list_dequeue(&(message_table[id].receiver));
 #ifdef CALL_HANDLER_IN_TASK
 	ena_dsp();
 #else
@@ -527,7 +525,7 @@ ER psnd_mbf(ID id, INT size, VP msg)
 #else
 	    dis_int();
 #endif
-	    q = list_pick(&(message_table[id].receiver));
+	    q = list_dequeue(&(message_table[id].receiver));
 #ifdef CALL_HANDLER_IN_TASK
 	    ena_dsp();
 #else
@@ -577,10 +575,10 @@ ER rcv_mbf(VP msg, INT * size, ID id)
 #else
 	    dis_int();
 #endif
-	q = list_pick(&(message_table[id].sender));
+	q = list_dequeue(&(message_table[id].sender));
 
 	if (!q) {
-	    list_insert(&(message_table[id].receiver), &(run_task->message));
+	    list_enqueue(&(message_table[id].receiver), &(run_task->message));
 	    run_task->msg_size = 0;
 	    run_task->msg_buf = msg;
 	    run_task->tskwait.msg_wait = 1;
@@ -617,7 +615,7 @@ ER rcv_mbf(VP msg, INT * size, ID id)
 #else
 	    dis_int();
 #endif
-	    list_insert(&(message_table[id].receiver), &(run_task->message));
+	    list_enqueue(&(message_table[id].receiver), &(run_task->message));
 	    run_task->tskwait.msg_wait = 1;
 	    can_wup(&wcnt, run_task->tskid);
 #ifdef CALL_HANDLER_IN_TASK
@@ -650,7 +648,7 @@ ER rcv_mbf(VP msg, INT * size, ID id)
 #else
 	    dis_int();
 #endif
-	    q = list_pick(&(message_table[id].sender));
+	    q = list_dequeue(&(message_table[id].sender));
 #ifdef CALL_HANDLER_IN_TASK
 	    ena_dsp();
 #else

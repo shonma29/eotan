@@ -19,7 +19,7 @@ Version 2, June 1991
 
 #include "core.h"
 #include "mpu/fpu.h"
-#include "../../include/set/list.h"
+#include "../include/set/list.h"
 
 #define KERNEL_TASK	(1)
 
@@ -71,7 +71,7 @@ typedef struct t_tcb {
 
 /* タスク同期機能 */
     /* イベントフラグ */
-    struct t_tcb *event_next;	/* 次のイベントフラグ待ちタスクへ       */
+    list_t evflag;
     UINT flag_pattern;		/* イベントフラグの待ちパターン */
     UINT wfmode;		/* 待ち条件の指定               */
     ID event_id;		/* 今、現在待っているイベントフラグの ID */

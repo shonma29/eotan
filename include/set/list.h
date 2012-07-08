@@ -26,6 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include "stddef.h"
 
 typedef struct _list_t {
 	struct _list_t *next;

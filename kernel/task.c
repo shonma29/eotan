@@ -117,7 +117,7 @@ Version 2, June 1991
 #include "func.h"
 #include "interrupt.h"
 #include "lowlib.h"
-#include "../../include/mpu/io.h"
+#include "../include/mpu/io.h"
 /***************************************************************************
  *	タスク管理用の変数
  *
@@ -273,6 +273,7 @@ void init_task1(void)
     /* タスク ID は、KERNEL_TASK(1)にセット */
     task[KERNEL_TASK].tskid = KERNEL_TASK;
     list_initialize(&(task[KERNEL_TASK].message));
+    list_initialize(&(task[KERNEL_TASK].evflag));
 
 #ifdef I386
     /* タスク 1 のコンテキスト情報を初期化する                    */
@@ -713,6 +714,7 @@ ER cre_tsk(ID tskid, T_CTSK * pk_ctsk)
     newtask->tsklevel = pk_ctsk->itskpri;
     newtask->tsklevel0 = pk_ctsk->itskpri;
     list_initialize(&(newtask->message));
+    list_initialize(&(newtask->evflag));
 
     if (make_task_context(newtask, pk_ctsk) != E_OK) {
 	return (E_NOMEM);
@@ -923,7 +925,7 @@ ER ter_tsk(ID tskid)
 	if (task[tskid].tskwait.msg_wait)
 	    list_remove(&(task[tskid].message));
 	if (task[tskid].tskwait.event_wait)
-	    del_task_evt(tskid);
+	    list_remove(&(task[tskid].evflag));
 	dis_int();
 	task[tskid].tskstat = TTS_DMT;
 	ena_int();
@@ -1032,7 +1034,7 @@ ER rel_wai(ID tskid)
 	taskp->tskwait.time_wait = 0;
 	if (taskp->tskwait.event_wait) {
 	    taskp->tskwait.event_wait = 0;
-	    del_task_evt(tskid);
+	    list_remove(&(task[tskid].evflag));
 	    dis_int();
 	}
 	if (taskp->tskwait.msg_wait) {

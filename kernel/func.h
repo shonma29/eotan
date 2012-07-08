@@ -98,7 +98,6 @@ extern ER init_msgbuf(void);
 
 /* eventflag.c */
 extern ER init_eventflag(void);
-extern void del_task_evt(ID tid);
 
 /* time.c */
 extern void init_time(UW seconds);

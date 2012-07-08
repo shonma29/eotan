@@ -16,7 +16,7 @@ Version 2, June 1991
 #ifndef __CORE_MESSAGE_H__
 #define __CORE_MESSAGE_H__		1
 
-#include "../../include/set/list.h"
+#include "../include/set/list.h"
 
 /*******************************************************************************
  * メッセージバッファのヘッダ
