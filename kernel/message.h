@@ -24,11 +24,11 @@ Version 2, June 1991
  */
 typedef struct message_head_t
 {
-  list message;
+  list_t message;
   ATR			mbfatr;
   int			total_size;	/* 空きバッファのサイズ */
-  list sender;
-  list receiver;
+  list_t sender;
+  list_t receiver;
   INT			bufsz;		/* バッファの最大長	*/
   INT			msgsz;		/* メッセージの最大長	*/
 } T_MSGHEAD;
@@ -43,7 +43,7 @@ typedef struct message_head_t
  */
 typedef struct message_t
 {
-  list	message;
+  list_t message;
   INT			size;
   VP			buf;
 } T_MSG;

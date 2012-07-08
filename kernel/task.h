@@ -78,7 +78,7 @@ typedef struct t_tcb {
     UINT rflgptn;		/* 関数の値として返すフラグパターンq */
 
     /* メッセージ */
-    list message;
+    list_t message;
 #ifdef notdef
     ID msg_id;			/* 今、現在待っているメッセージの ID */
 #endif

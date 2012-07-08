@@ -28,56 +28,56 @@ For more information, please refer to <http://unlicense.org/>
 #include "set/list.h"
 
 
-void list_initialize(list *entry) {
+void list_initialize(list_t *entry) {
 	entry->prev = entry->next = entry;
 }
 
-void list_release(list *guard) {
-	list *entry = guard;
+void list_release(list_t *guard) {
+	list_t *entry = guard;
 
 	do {
-		list *next = entry->next;
+		list_t *next = entry->next;
 
 		list_initialize(entry);
 		entry = next;
 	} while (!list_is_edge(guard, entry));
 }
 
-list *list_head(const list *guard) {
+list_t *list_head(const list_t *guard) {
 	return list_edge_to_null(guard, guard->next);
 }
 
-list *list_tail(const list *guard) {
+list_t *list_tail(const list_t *guard) {
 	return list_edge_to_null(guard, guard->prev);
 }
 
-void list_append(list *to, list *entry) {
-	list *next = to->next;
+void list_append(list_t *to, list_t *entry) {
+	list_t *next = to->next;
 
 	entry->next = next;
 	entry->prev = to;
 	next->prev = to->next = entry;
 }
 
-void list_insert(list *to, list *entry) {
-	list *prev = to->prev;
+void list_insert(list_t *to, list_t *entry) {
+	list_t *prev = to->prev;
 
 	entry->next = to;
 	entry->prev = prev;
 	prev->next = to->prev = entry;
 }
 
-void list_remove(list *entry) {
-	list *next = entry->next;
-	list *prev = entry->prev;
+void list_remove(list_t *entry) {
+	list_t *next = entry->next;
+	list_t *prev = entry->prev;
 
 	next->prev = prev;
 	prev->next = next;
 	list_initialize(entry);
 }
 
-list *list_pick(list *guard) {
-	list *entry = guard->next;
+list_t *list_pick(list_t *guard) {
+	list_t *entry = guard->next;
 
 	if (list_is_edge(guard, entry))	entry = NULL;
 	else	list_remove(entry);

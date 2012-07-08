@@ -27,18 +27,18 @@ Version 2, June 1991
 
 static T_MSGHEAD message_table[MAX_MSGBUF + 1];
 static T_MSG msgbuf[MAX_MSGENTRY];
-static list unused_msg;
+static list_t unused_msg;
 
 static void del_sendtask(ID mid, ID tid);
 static void del_recvtask(ID mid, ID tid);
 
 
 
-static T_MSG *getMessageParent(list *p) {
+static T_MSG *getMessageParent(list_t *p) {
 	return (T_MSG*)((ptr_t)p - offsetof(T_MSG, message));
 }
 
-static T_TCB *getTaskParent(list *p) {
+static T_TCB *getTaskParent(list_t *p) {
 	return (T_TCB*)((ptr_t)p - offsetof(T_TCB, message));
 }
 
@@ -48,7 +48,7 @@ static T_TCB *getTaskParent(list *p) {
 static T_MSG *alloc_msg(void)
 {
     T_MSG *p;
-    list *q;
+    list_t *q;
 
 #ifdef CALL_HANDLER_IN_TASK
     dis_dsp();
@@ -115,10 +115,10 @@ static void add_msg_list(T_MSGHEAD * list, T_MSG * newmsg)
  * get_msg --- メッセージリストからメッセージを取り出す
  *
  */
-static T_MSG *get_msg(T_MSGHEAD * head)
+static T_MSG *get_msg(T_MSGHEAD * list)
 {
     T_MSG *p;
-    list *q;
+    list_t *q;
 
 #ifdef CALL_HANDLER_IN_TASK
     dis_dsp();
@@ -126,7 +126,7 @@ static T_MSG *get_msg(T_MSGHEAD * head)
     dis_int();
 #endif
 
-    q = list_pick(&(head->message));
+    q = list_pick(&(list->message));
     p = q? getMessageParent(q):NULL;
 
 #ifdef CALL_HANDLER_IN_TASK
@@ -265,7 +265,7 @@ ER del_mbf(ID id)
 {
     T_TCB *p;
     T_MSG *msgp;
-    list *q;
+    list_t *q;
 
     if ((id < MIN_MSGBUF) || (id > MAX_MSGBUF)) {
 	return (E_ID);
@@ -330,7 +330,7 @@ ER snd_mbf(ID id, INT size, VP msg)
     VP buf;
     INT wcnt;
     BOOL tsksw = FALSE;
-    list *q;
+    list_t *q;
 
     if ((id < MIN_MSGBUF) || (id > MAX_MSGBUF)) {
 	return (E_ID);
@@ -464,7 +464,7 @@ ER psnd_mbf(ID id, INT size, VP msg)
     T_MSG *newmsg;
     VP buf;
     BOOL tsksw = FALSE;
-    list *q;
+    list_t *q;
 
     if ((id < MIN_MSGBUF) || (id > MAX_MSGBUF)) {
 	return (E_ID);
@@ -562,7 +562,7 @@ ER rcv_mbf(VP msg, INT * size, ID id)
     T_TCB *p;
     T_MSG *newmsgp;
     INT wcnt;
-    list *q;
+    list_t *q;
 
     if ((id < MIN_MSGBUF) || (id > MAX_MSGBUF)) {
 	return (E_ID);

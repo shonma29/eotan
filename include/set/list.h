@@ -27,10 +27,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-typedef struct _list {
-	struct _list *next;
-	struct _list *prev;
-} list;
+typedef struct _list_t {
+	struct _list_t *next;
+	struct _list_t *prev;
+} list_t;
 
 
 #define list_next(entry) ((entry)->next)
@@ -49,16 +49,16 @@ typedef struct _list {
 #define list_dequeue(guard) list_pick(guard)
 
 
-extern void list_initialize(list *entry);
-extern void list_release(list *guard);
+extern void list_initialize(list_t *entry);
+extern void list_release(list_t *guard);
 
-extern list *list_head(const list *guard);
-extern list *list_tail(const list *guard);
+extern list_t *list_head(const list_t *guard);
+extern list_t *list_tail(const list_t *guard);
 
-extern void list_append(list *to, list *entry);
-extern void list_insert(list *to, list *entry);
-extern void list_remove(list *entry);
+extern void list_append(list_t *to, list_t *entry);
+extern void list_insert(list_t *to, list_t *entry);
+extern void list_remove(list_t *entry);
 
-extern list *list_pick(list *guard);
+extern list_t *list_pick(list_t *guard);
 
 #endif
