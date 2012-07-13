@@ -10,7 +10,7 @@ IDENT=-DTIMER_TEST -DI386 -DAUTO_START $(DEBUG)
 
 LD=ld
 AS=as
-CFLAGS=-Os -fno-builtin -I. -Ih -Impu -Iarch -I$(INC) -Wall -fno-builtin $(IDENT)
+CFLAGS=-Os -fno-builtin -I. -Impu -Iarch -I$(INC) -Wall $(IDENT)
 CC=gcc
 MKDEPEND=$(CC) -M
 STARTADDR=0x80020000

@@ -7,12 +7,12 @@
 
 */
 
-#include "../../include/services.h"
+#include "../include/services.h"
 #include "core.h"
 #include "lowlib.h"
 #include "task.h"
 #include "func.h"
-#include "../../servers/fs/posix.h"
+#include "../servers/fs/posix.h"
 
 ER posix_kill_proc(ID pid)
 {

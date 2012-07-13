@@ -180,7 +180,7 @@ static char rcsid[] =
 #include "func.h"
 #include "api.h"
 #include "interrupt.h"
-#include "../../include/mpu/io.h"
+#include "../include/mpu/io.h"
 #include "boot.h"
 
 #define DEF_SYSCALL(x,n)	sys_ ## x

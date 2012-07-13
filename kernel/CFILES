@@ -59,4 +59,4 @@ lowlib.o: lowlib.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 posix.o: posix.c
-	$(CC) $(CFLAGS) -IITRON -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@

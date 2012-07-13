@@ -13,7 +13,7 @@ Version 2, June 1991
 /* printk.c --- printk 関係の関数
  *
  */
-#include "../../include/stdarg.h"
+#include "../include/stdarg.h"
 #include "core.h"
 #include "func.h"
 

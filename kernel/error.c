@@ -13,8 +13,8 @@ Version 2, June 1991
 /* error.cj
  *
  */
-#include "../../include/stdarg.h"
-#include "../../include/mpu/io.h"
+#include "../include/stdarg.h"
+#include "../include/mpu/io.h"
 #include "core.h"
 #include "func.h"
 
