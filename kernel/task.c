@@ -1462,40 +1462,6 @@ ER vcpy_stk(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi, W edi, ID dst)
     return (E_OK);
 }
 
-/* salvage_task() */
-void salvage_task()
-{
-    int i;
-    T_TCB *p;
-
-    dis_int();
-    for (i = 1; i < MAX_TSKID; i++) {
-	if ((task[i].tskstat == TTS_RUN)
-	    || (task[i].tsklevel == USER_LEVEL) || i == 27) {
-	    p = &task[i];
-	    printk("salvaged: task id %d-%d %d %x %d %d",
-		   i, p->tskid, p->tsklevel, p->tskwait,
-		   on_interrupt, dispatch_flag);
-	    if (p->msg_size == 0) {
-		printk(" RCV %x", p->slp_time);
-	    } else {
-		printk(" SND %x", p->slp_time);
-	    }
-	    if (p->before == NULL) {
-		printk(" NL");
-	    } else {
-		printk(" <%d>", p->before->tskid);
-	    }
-	    if (p->next == NULL) {
-		printk(" NL\n");
-	    } else {
-		printk(" <%d>\n", p->next->tskid);
-	    }
-	}
-    }
-    ena_int();
-}
-
 #ifdef I386
 /* default page fault handler */
 W pf_handler(W cr2, W eip)

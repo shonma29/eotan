@@ -95,19 +95,12 @@ dly_func (VP p)
 {
   T_TCB *taskp;
 
-#ifdef CALL_HANDLER_IN_TASK
   dis_dsp();
-#else
-  dis_int();
-#endif
   taskp = (T_TCB *)p;
   taskp->slp_err = E_OK;
   taskp->tskwait.time_wait = 0;
-#ifdef CALL_HANDLER_IN_TASK
   ena_dsp();
-#else
-  ena_int();
-#endif
+
   wup_tsk (taskp->tskid);
 }
 

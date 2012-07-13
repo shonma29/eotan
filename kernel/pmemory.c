@@ -62,11 +62,8 @@ static void release_memory(UW paddr, UW length)
 {
     UW i, j, k, page, index;
 
-#ifdef CALL_HANDLER_IN_TASK
     dis_dsp();
-#else
-    dis_int();
-#endif
+
     page = PAGES(length);
     index = paddr / PAGE_SIZE;
     i = (index / BITS);
@@ -86,11 +83,8 @@ static void release_memory(UW paddr, UW length)
 	    memory_map[i] |= map_mask[j];
 	}
     }
-#ifdef CALL_HANDLER_IN_TASK
+
     ena_dsp();
-#else
-    ena_int();
-#endif
 }
 
 /*
@@ -112,11 +106,8 @@ void pmem_init(void)
     }
     memory_map_size /= BITS;
 
-#ifdef CALL_HANDLER_IN_TASK
     dis_dsp();
-#else
-    dis_int();
-#endif
+
     for (i = 0; i < memory_map_size; i++) {
 	memory_map[i] = MEM_FREE;
     }
@@ -183,11 +174,8 @@ void pmem_init(void)
 	    }
 	}
     }
-#ifdef CALL_HANDLER_IN_TASK
+
     ena_dsp();
-#else
-    ena_int();
-#endif
 
 #ifdef notdef
     printk("physmem = %d, base_mem = %d, ext_mem = %d\n", physmem_max,
@@ -210,11 +198,9 @@ VP palloc(W size)
 	return (NULL);
     if (free_mem < size)
 	return (NULL);
-#ifdef CALL_HANDLER_IN_TASK
+
     dis_dsp();
-#else
-    dis_int();
-#endif
+
     if (size == 1) {
 	found = 0;
 	j = 0;
@@ -240,11 +226,8 @@ VP palloc(W size)
 	    }
 	}
 	if (found == 0) {
-#ifdef CALL_HANDLER_IN_TASK
 	    ena_dsp();
-#else
-	    ena_int();
-#endif
+
 	    return (NULL);
 	}
     } else {
@@ -266,11 +249,8 @@ VP palloc(W size)
 	    }
 	}
 	if (found == 0) {
-#ifdef CALL_HANDLER_IN_TASK
 	    ena_dsp();
-#else
-	    ena_int();
-#endif
+
 	    return (NULL);
 	}
 	for (j = 0; j < size / BITS; ++j) {
@@ -297,11 +277,8 @@ VP palloc(W size)
     memset((VP)addr, 0, size * PAGE_SIZE);
 #endif
 
-#ifdef CALL_HANDLER_IN_TASK
     ena_dsp();
-#else
-    ena_int();
-#endif
+
     return ((VP) addr);
 }
 
@@ -319,11 +296,8 @@ ER pfree(VP p, W size)
     if ((ROUNDUP(index + size, BITS) / BITS) >= memory_map_size) {
 	return (E_PAR);
     }
-#ifdef CALL_HANDLER_IN_TASK
+
     dis_dsp();
-#else
-    dis_int();
-#endif
 
     i = (index / BITS);
     j = (index % BITS);
@@ -355,11 +329,9 @@ ER pfree(VP p, W size)
 	    memory_map[i] &= ~map_mask[j];
 	}
     }
-#ifdef CALL_HANDLER_IN_TASK
+
     ena_dsp();
-#else
-    ena_int();
-#endif
+
     return (E_OK);
 }
 

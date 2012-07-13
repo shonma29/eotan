@@ -48,20 +48,11 @@ static T_MSG *alloc_msg(void)
     T_MSG *p;
     list_t *q;
 
-#ifdef CALL_HANDLER_IN_TASK
     dis_dsp();
-#else
-    dis_int();
-#endif
-
     q = list_pop(&unused_msg);
     p = q? getMessageParent(q):NULL;
-
-#ifdef CALL_HANDLER_IN_TASK
     ena_dsp();
-#else
-    ena_int();
-#endif
+
     return (p);
 }
 
@@ -72,19 +63,10 @@ static void dealloc_msg(T_MSG * p)
 {
     if (p == NULL)
 	return;
-#ifdef CALL_HANDLER_IN_TASK
+
     dis_dsp();
-#else
-    dis_int();
-#endif
-
     list_push(&unused_msg, &(p->message));
-
-#ifdef CALL_HANDLER_IN_TASK
     ena_dsp();
-#else
-    ena_int();
-#endif
 }
 
 /***************************************************************************
@@ -94,19 +76,9 @@ static void dealloc_msg(T_MSG * p)
  */
 static void add_msg_list(T_MSGHEAD * list, T_MSG * newmsg)
 {
-#ifdef CALL_HANDLER_IN_TASK
     dis_dsp();
-#else
-    dis_int();
-#endif
-
     list_enqueue(&(list->message), &(newmsg->message));
-
-#ifdef CALL_HANDLER_IN_TASK
     ena_dsp();
-#else
-    ena_int();
-#endif
 }
 
 /***************************************************************************
@@ -118,20 +90,11 @@ static T_MSG *get_msg(T_MSGHEAD * list)
     T_MSG *p;
     list_t *q;
 
-#ifdef CALL_HANDLER_IN_TASK
     dis_dsp();
-#else
-    dis_int();
-#endif
-
     q = list_dequeue(&(list->message));
     p = q? getMessageParent(q):NULL;
-
-#ifdef CALL_HANDLER_IN_TASK
     ena_dsp();
-#else
-    ena_int();
-#endif
+
     return (p);
 }
 
@@ -195,21 +158,15 @@ ER cre_mbf(ID id, T_CMBF * pk_cmbf)
     if (message_table[id].mbfatr != TA_UNDEF) {
 	return (E_OBJ);
     }
-#ifdef CALL_HANDLER_IN_TASK
+
     dis_dsp();
-#else
-    dis_int();
-#endif
     message_table[id].total_size = pk_cmbf->bufsz;
     list_initialize(&(message_table[id].message));
     message_table[id].msgsz = pk_cmbf->maxmsz;
     message_table[id].bufsz = pk_cmbf->bufsz;
     message_table[id].mbfatr = pk_cmbf->mbfatr;
-#ifdef CALL_HANDLER_IN_TASK
     ena_dsp();
-#else
-    ena_int();
-#endif
+
     return (E_OK);
 }
 
@@ -232,13 +189,13 @@ ER_ID acre_mbf(T_CMBF * pk_cmbf)
 	return E_NOID;
     }
 
-    dis_int();
+    dis_dsp();
     message_table[id].total_size = pk_cmbf->bufsz;
     list_initialize(&(message_table[id].message));
     message_table[id].msgsz = pk_cmbf->maxmsz;
     message_table[id].bufsz = pk_cmbf->bufsz;
     message_table[id].mbfatr = pk_cmbf->mbfatr;
-    ena_int();
+    ena_dsp();
 
     return id;
 }
@@ -293,17 +250,11 @@ ER del_mbf(ID id)
 	p->tskwait.msg_wait = 0;
 	wup_tsk(p->tskid);
     }
-#ifdef CALL_HANDLER_IN_TASK
+
     dis_dsp();
-#else
-    dis_int();
-#endif
     message_table[id].mbfatr = TA_UNDEF;
-#ifdef CALL_HANDLER_IN_TASK
     ena_dsp();
-#else
-    ena_int();
-#endif
+
     return (E_OK);
 }
 
@@ -341,11 +292,7 @@ ER snd_mbf(ID id, INT size, VP msg)
     }
 
     if (message_table[id].bufsz == 0) {
-#ifdef CALL_HANDLER_IN_TASK
 	dis_dsp();
-#else
-	dis_int();
-#endif
 	q = list_dequeue(&(message_table[id].receiver));
 
 	if (!q) {
@@ -355,23 +302,17 @@ ER snd_mbf(ID id, INT size, VP msg)
 	    run_task->msg_buf = msg;
 	    run_task->tskwait.msg_wait = 1;
 	    can_wup(&wcnt, run_task->tskid);
-#ifdef CALL_HANDLER_IN_TASK
 	    dis_int();
 	    ena_dsp();
-#else
-	    ena_int();
-#endif
+
 	    slp_tsk();
 	    if (run_task->slp_err) {
 		return (run_task->slp_err);
 	    }
 	} else {
 	    /* もし、受信待ちタスクがあれば、message を転送して wakeup する */
-#ifdef CALL_HANDLER_IN_TASK
 	    ena_dsp();
-#else
-	    ena_int();
-#endif
+
 	    p = getTaskParent(q);
 	    vput_reg(p->tskid, p->msg_buf, size, msg);
 	    p->msg_size = size;
@@ -385,20 +326,13 @@ ER snd_mbf(ID id, INT size, VP msg)
 	if ((newmsg == NULL) || (message_table[id].total_size < size)) {
 	    /* メッセージバッファがアロケートできなかった。 */
 	    /* 送信待ちリストに入れ、sleep する。           */
-#ifdef CALL_HANDLER_IN_TASK
 	    dis_dsp();
-#else
-	    dis_int();
-#endif
 	    list_enqueue(&(message_table[id].sender), &(run_task->message));
 	    run_task->tskwait.msg_wait = 1;
 	    can_wup(&wcnt, run_task->tskid);
-#ifdef CALL_HANDLER_IN_TASK
 	    dis_int();
 	    ena_dsp();
-#else
-	    ena_int();
-#endif
+
 	    slp_tsk();
 	    dealloc_msg(newmsg);
 	    if (run_task->slp_err) {
@@ -421,17 +355,10 @@ ER snd_mbf(ID id, INT size, VP msg)
 
 	/* もし、受信待ちタスクがあれば、それを wakeup する */
 	if (!list_is_empty(&(message_table[id].receiver))) {
-#ifdef CALL_HANDLER_IN_TASK
 	    dis_dsp();
-#else
-	    dis_int();
-#endif
 	    q = list_dequeue(&(message_table[id].receiver));
-#ifdef CALL_HANDLER_IN_TASK
 	    ena_dsp();
-#else
-	    ena_int();
-#endif
+
 	    p = getTaskParent(q);
 	    p->tskwait.msg_wait = 0;
 	    tsksw = TRUE;
@@ -475,17 +402,10 @@ ER psnd_mbf(ID id, INT size, VP msg)
     }
 
     if (message_table[id].bufsz == 0) {
-#ifdef CALL_HANDLER_IN_TASK
 	dis_dsp();
-#else
-	dis_int();
-#endif
 	q = list_dequeue(&(message_table[id].receiver));
-#ifdef CALL_HANDLER_IN_TASK
 	ena_dsp();
-#else
-	ena_int();
-#endif
+
 	if (!q) {
 	    /* 受信を待っているタスクが無ければ E_TMOUT を返す */
 	    return (E_TMOUT);
@@ -520,17 +440,10 @@ ER psnd_mbf(ID id, INT size, VP msg)
 
 	/* もし、受信待ちタスクがあれば、それを wakeup する */
 	if (!list_is_empty(&(message_table[id].receiver))) {
-#ifdef CALL_HANDLER_IN_TASK
 	    dis_dsp();
-#else
-	    dis_int();
-#endif
 	    q = list_dequeue(&(message_table[id].receiver));
-#ifdef CALL_HANDLER_IN_TASK
 	    ena_dsp();
-#else
-	    ena_int();
-#endif
+
 	    p = getTaskParent(q);
 	    p->tskwait.msg_wait = 0;
 	    tsksw = TRUE;
@@ -570,11 +483,7 @@ ER rcv_mbf(VP msg, INT * size, ID id)
     }
 
     if (message_table[id].bufsz == 0) {
-#ifdef CALL_HANDLER_IN_TASK
-	    dis_dsp();
-#else
-	    dis_int();
-#endif
+	dis_dsp();
 	q = list_dequeue(&(message_table[id].sender));
 
 	if (!q) {
@@ -583,23 +492,17 @@ ER rcv_mbf(VP msg, INT * size, ID id)
 	    run_task->msg_buf = msg;
 	    run_task->tskwait.msg_wait = 1;
 	    can_wup(&wcnt, run_task->tskid);
-#ifdef CALL_HANDLER_IN_TASK
 	    dis_int();
 	    ena_dsp();
-#else
-	    ena_int();
-#endif
+
 	    slp_tsk();
 	    *size = run_task->msg_size;
 	    if (run_task->slp_err) {
 		return (run_task->slp_err);
 	    }
 	} else {
-#ifdef CALL_HANDLER_IN_TASK
 	    ena_dsp();
-#else
-	    ena_int();
-#endif
+
 	    p = getTaskParent(q);
 	    *size = p->msg_size;
 	    vget_reg(p->tskid, p->msg_buf, p->msg_size, msg);
@@ -610,20 +513,13 @@ ER rcv_mbf(VP msg, INT * size, ID id)
 	/* メッセージが存在しない --> sleep する。 */
       retry:
 	if (list_is_empty(&(message_table[id].message))) {
-#ifdef CALL_HANDLER_IN_TASK
 	    dis_dsp();
-#else
-	    dis_int();
-#endif
 	    list_enqueue(&(message_table[id].receiver), &(run_task->message));
 	    run_task->tskwait.msg_wait = 1;
 	    can_wup(&wcnt, run_task->tskid);
-#ifdef CALL_HANDLER_IN_TASK
 	    dis_int();
 	    ena_dsp();
-#else
-	    ena_int();
-#endif
+
 	    slp_tsk();
 
 	    if (run_task->slp_err) {
@@ -643,17 +539,10 @@ ER rcv_mbf(VP msg, INT * size, ID id)
 
 	/* 送信待ちのタスクがあれば wakeup する */
 	if (!list_is_empty(&(message_table[id].sender))) {
-#ifdef CALL_HANDLER_IN_TASK
 	    dis_dsp();
-#else
-	    dis_int();
-#endif
 	    q = list_dequeue(&(message_table[id].sender));
-#ifdef CALL_HANDLER_IN_TASK
 	    ena_dsp();
-#else
-	    ena_int();
-#endif
+
 	    p = getTaskParent(q);
 	    p->tskwait.msg_wait = 0;
 	    wup_tsk(p->tskid);

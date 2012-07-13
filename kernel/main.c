@@ -155,7 +155,7 @@ ER itron(void)
 #ifdef HALT_WHEN_IDLE
         do_halt = 1;
 #endif
-#ifdef CALL_HANDLER_IN_TASK
+
 	if (do_timer) {
 	    /* timer に定義されている関数の実行 */
 	    check_timer();
@@ -165,12 +165,7 @@ ER itron(void)
 #endif
 	    chg_pri(KERNEL_TASK, MAX_PRIORITY);
 	}
-#ifdef TSK_DEBUG
-	else {
-	    salvage_task();
-	}
-#endif
-#endif
+
 	/* タスクの強制終了処理 */
 	if (trmtbl_num != 0) {
 #ifdef HALT_WHEN_IDLE

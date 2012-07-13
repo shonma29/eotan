@@ -153,7 +153,7 @@ void intr_interval(void)
 #endif
 	}
     }
-#ifdef CALL_HANDLER_IN_TASK
+
     if (time_list != NULL) {
 	(time_list->time)--;
 	if ((time_list->time <= 0) && (do_timer == 0)) {
@@ -163,12 +163,6 @@ void intr_interval(void)
 	    task_switch(TRUE);
 	}
     }
-#else
-    check_timer();
-#endif
-#if 0
-    free_run++;
-#endif
 }
 
 /*************************************************************************
@@ -336,9 +330,6 @@ void check_timer(void)
 #endif
 	return;
     }
-#ifndef CALL_HANDLER_IN_TASK
-    (time_list->time)--;
-#endif
 
     for (p = time_list; (p != NULL) && (p->time <= 0L); p = q) {
 	(p->func) (p->argp);

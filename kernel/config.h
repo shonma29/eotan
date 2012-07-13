@@ -22,8 +22,6 @@ Version 2, June 1991
 #ifndef _CORE_CONFIG_H_
 #define _CORE_CONFIG_H_	1
 
-#define CALL_HANDLER_IN_TASK	1 /* タイマーのハンドラーの実行を task 1 で行う */
-
 #include "mpu/mpu.h"
 
 #define GDT_ADDR	(0x80001000UL)

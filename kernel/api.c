@@ -1086,11 +1086,6 @@ static ER sys_vsys_msc(VP argp)
 	/* pmemstat */
 	pmemstat();
 	break;
-
-    case 8:
-	/* print_task_list */
-	salvage_task();
-	break;
     }
 
     return (E_OK);
