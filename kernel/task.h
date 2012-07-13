@@ -20,17 +20,9 @@ Version 2, June 1991
 #include "core.h"
 #include "mpu/fpu.h"
 #include "../include/set/list.h"
+#include "wait.h"
 
 #define KERNEL_TASK	(1)
-
-struct t_task_wait {
-    W time_wait:1;
-    W event_wait:1;
-    W msg_wait:1;
-};
-
-typedef struct t_task_wait T_TASK_WAIT;
-
 
 /* task_spec_interrupt - タスク固有割り込み処理関数
  *
@@ -61,30 +53,7 @@ typedef struct t_tcb {
     H tskstat;			/* タスクの状態                 */
 
     /* タスクの待ち状態用の要素 */
-    T_TASK_WAIT tskwait;	/* タスクの待ち状態を示すフラグ */
-    W wakeup_count;		/* ウェイト状態のカウンタ       */
-    W suspend_count;		/* サスペンド状態のカウンタ     */
-
-    ER slp_err;			/* 待ち状態に関してのエラー     */
-    /* すべての同期機構で共通に使用する                         */
-    UW slp_time;		/* for debug */
-
-/* タスク同期機能 */
-    /* イベントフラグ */
-    list_t evflag;
-    UINT flag_pattern;		/* イベントフラグの待ちパターン */
-    UINT wfmode;		/* 待ち条件の指定               */
-    ID event_id;		/* 今、現在待っているイベントフラグの ID */
-    UINT rflgptn;		/* 関数の値として返すフラグパターンq */
-
-    /* メッセージ */
-    list_t message;
-#ifdef notdef
-    ID msg_id;			/* 今、現在待っているメッセージの ID */
-#endif
-    INT msg_size;			/* メッセージサイズ */
-    VP msg_buf;			/* メッセージ受信用 buffer へのポインタ */
-
+    wait_reason_t wait;
 
 /* スタック情報 */
     W stksz;			/* タスクの持つ現在のスタックのサイズ */

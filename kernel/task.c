@@ -272,8 +272,7 @@ void init_task1(void)
     task[KERNEL_TASK].tsklevel = MAX_PRIORITY;
     /* タスク ID は、KERNEL_TASK(1)にセット */
     task[KERNEL_TASK].tskid = KERNEL_TASK;
-    list_initialize(&(task[KERNEL_TASK].message));
-    list_initialize(&(task[KERNEL_TASK].evflag));
+    list_initialize(&(task[KERNEL_TASK].wait.waiting));
 
 #ifdef I386
     /* タスク 1 のコンテキスト情報を初期化する                    */
@@ -713,8 +712,7 @@ ER cre_tsk(ID tskid, T_CTSK * pk_ctsk)
     newtask->tskstat = TTS_DMT;
     newtask->tsklevel = pk_ctsk->itskpri;
     newtask->tsklevel0 = pk_ctsk->itskpri;
-    list_initialize(&(newtask->message));
-    list_initialize(&(newtask->evflag));
+    list_initialize(&(newtask->wait.waiting));
 
     if (make_task_context(newtask, pk_ctsk) != E_OK) {
 	return (E_NOMEM);
@@ -813,8 +811,8 @@ ER sta_tsk(ID tskid, INT stacd)
     }
     index = task[tskid].tsklevel;
     task[tskid].tskstat = TTS_RDY;
-    task[tskid].wakeup_count = 0;
-    task[tskid].suspend_count = 0;
+    task[tskid].wait.wup_cnt = 0;
+    task[tskid].wait.sus_cnt = 0;
     task[tskid].total = 0;
     dis_int();
     ready_task[index] = add_tcb_list(ready_task[index], &task[tskid]);
@@ -922,10 +920,8 @@ ER ter_tsk(ID tskid)
 
 	/* 待ち状態にあるタスクの場合：待ち状態から解放してから強制終了させる。 */
     case TTS_WAI:
-	if (task[tskid].tskwait.msg_wait)
-	    list_remove(&(task[tskid].message));
-	if (task[tskid].tskwait.event_wait)
-	    list_remove(&(task[tskid].evflag));
+	if (task[tskid].wait.type)
+	    list_remove(&(task[tskid].wait.waiting));
 	dis_int();
 	task[tskid].tskstat = TTS_DMT;
 	ena_int();
@@ -1031,18 +1027,9 @@ ER rel_wai(ID tskid)
 
     case TTS_WAI:
 	dis_int();
-	taskp->tskwait.time_wait = 0;
-	if (taskp->tskwait.event_wait) {
-	    taskp->tskwait.event_wait = 0;
-	    list_remove(&(task[tskid].evflag));
-	    dis_int();
-	}
-	if (taskp->tskwait.msg_wait) {
-	    taskp->tskwait.msg_wait = 0;
-	    list_remove(&(task[tskid].message));
-	    dis_int();
-	}
-	taskp->slp_err = E_RLWAI;
+	taskp->wait.type = wait_none;
+	list_remove(&(task[tskid].wait.waiting));
+	taskp->wait.result = E_RLWAI;
 	ena_int();
 	wup_tsk(tskid);
 	break;
@@ -1078,20 +1065,20 @@ ER slp_tsk(void)
 	printk("slp_tsk: %d\n", run_task->tskid);	/* */
 #endif
     dis_int();
-    if (run_task->wakeup_count > 0) {
-	run_task->wakeup_count--;
+    if (run_task->wait.wup_cnt > 0) {
+	run_task->wait.wup_cnt--;
 #ifdef TSKSW_DEBUG
-	printk("sleep task: wakeup count = %d\n", run_task->wakeup_count);
+	printk("sleep task: wakeup count = %d\n", run_task->wait.wup_cnt);
 #endif
 	ena_int();
 	return (E_OK);
     }
 
-    run_task->slp_time = system_ticks;
-    run_task->slp_err = E_OK;
+    run_task->wait.tmout = system_ticks;
+    run_task->wait.result = E_OK;
     run_task->tskstat = TTS_WAI;
     task_switch(FALSE);		/* run_task を ready_task キューに保存しない */
-    return (run_task->slp_err);
+    return (run_task->wait.result);
 }
 
 /*********************************************************************************
@@ -1118,12 +1105,9 @@ ER wup_tsk(ID taskid)
     }
 
     /* すべての待ち状態が解除されていなければ、先には進まない */
-    if ((p->tskwait.time_wait)
-	|| (p->tskwait.event_wait) || (p->tskwait.msg_wait)) {
-	printk("task %d is waiting. abort wakeup.\n", p->tskid);
-	printk("(p->tskwait.time_wait) = %d\n", (p->tskwait.time_wait));
-	printk("(p->tskwait.event_wait) = %d\n", (p->tskwait.event_wait));
-	printk("(p->tskwait.msg_wait) = %d\n", (p->tskwait.msg_wait));
+    if (p->wait.type) {
+	printk("task %d is waiting for %d. abort wakeup.\n",
+		p->tskid, p->wait.type);
 	return (E_OBJ);
     }
 
@@ -1147,7 +1131,7 @@ ER wup_tsk(ID taskid)
 		add_tcb_list(ready_task[p->tsklevel], p);
 	}
     } else if (p->tskstat == TTS_RDY || p->tskstat == TTS_SUS) {
-	p->wakeup_count++;
+	p->wait.wup_cnt++;
     }
 
     ena_int();
@@ -1181,7 +1165,7 @@ ER sus_tsk(ID taskid)
 
     dis_int();
     taskp = &task[taskid];
-    taskp->suspend_count++;
+    taskp->wait.sus_cnt++;
     switch (taskp->tskstat) {
     case TTS_RDY:
 	ready_task[taskp->tsklevel]
@@ -1190,8 +1174,8 @@ ER sus_tsk(ID taskid)
 	break;
 
     case TTS_SUS:
-	if (taskp->suspend_count > MAX_SUSPEND_NEST) {
-	    taskp->suspend_count = MAX_SUSPEND_NEST;
+	if (taskp->wait.sus_cnt > MAX_SUSPEND_NEST) {
+	    taskp->wait.sus_cnt = MAX_SUSPEND_NEST;
 	    ena_int();
 	    return (E_QOVR);
 	}
@@ -1249,8 +1233,8 @@ ER rsm_tsk(ID taskid)
     taskp = &task[taskid];
     switch (taskp->tskstat) {
     case TTS_SUS:
-	taskp->suspend_count--;
-	if (taskp->suspend_count <= 0) {
+	taskp->wait.sus_cnt--;
+	if (taskp->wait.sus_cnt <= 0) {
 	    taskp->tskstat = TTS_RDY;
 	    ready_task[taskp->tsklevel]
 		= ins_tcb_list(ready_task[taskp->tsklevel], taskp);
@@ -1258,8 +1242,8 @@ ER rsm_tsk(ID taskid)
 	break;
 
     case TTS_WAS:
-	taskp->suspend_count--;
-	if (taskp->suspend_count <= 0) {
+	taskp->wait.sus_cnt--;
+	if (taskp->wait.sus_cnt <= 0) {
 	    taskp->tskstat = TTS_WAI;
 	}
 	break;
@@ -1307,8 +1291,8 @@ ER can_wup(INT * p_wupcnt, ID taskid)
 	ena_int();
 	return (E_NOEXS);
     }
-    *p_wupcnt = taskp->wakeup_count;
-    taskp->wakeup_count = 0;
+    *p_wupcnt = taskp->wait.wup_cnt;
+    taskp->wait.wup_cnt = 0;
     ena_int();
     return (E_OK);
 }
@@ -1548,9 +1532,7 @@ ER vset_ctx(ID tid, W eip, B * stackp, W stsize)
 #endif
 
     /* タスクの初期化 */
-    tsk->tskwait.time_wait = 0;
-    tsk->tskwait.event_wait = 0;
-    tsk->tskwait.msg_wait = 0;
+    tsk->wait.type = wait_none;
 
     /* page fault handler の登録 */
     tsk->page_fault_handler = pf_handler;
@@ -1559,7 +1541,7 @@ ER vset_ctx(ID tid, W eip, B * stackp, W stsize)
     tsk->quantum = QUANTUM;
     ena_int();
 
-    list_remove(&(tsk->message));
+    list_remove(&(tsk->wait.waiting));
     wup_tsk(tid);
     return (E_OK);
 }

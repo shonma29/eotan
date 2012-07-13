@@ -31,7 +31,7 @@ static T_TCB *getTaskParent(const list_t *p);
 
 
 static T_TCB *getTaskParent(const list_t *p) {
-	return (T_TCB*)((ptr_t)p - offsetof(T_TCB, evflag));
+	return (T_TCB*)((ptr_t)p - offsetof(T_TCB, wait.waiting));
 }
 
 /*******************************************************************************
@@ -141,8 +141,8 @@ ER del_flg(ID flgid)
 
     while ((q = list_dequeue(&(flag_table[flgid].receiver))) != NULL) {
 	p = getTaskParent(q);
-	p->tskwait.event_wait = 0;
-	p->slp_err = E_DLT;
+	p->wait.type = wait_none;
+	p->wait.result = E_DLT;
 	wup_tsk(p->tskid);
     }
 
@@ -189,16 +189,16 @@ ER set_flg(ID flgid, UINT setptn)
     	next = q->next;
     	p = getTaskParent(q);
 	result = FALSE;
-	switch ((p->wfmode) & (TWF_ANDW | TWF_ORW)) {
+	switch ((p->wait.detail.evf.wfmode) & (TWF_ANDW | TWF_ORW)) {
 	case TWF_ANDW:
 	    result =
-		((flag_table[flgid].iflgptn & p->flag_pattern) ==
-		 p->flag_pattern) ? TRUE : FALSE;
+		((flag_table[flgid].iflgptn & p->wait.detail.evf.waiptn) ==
+		 p->wait.detail.evf.waiptn) ? TRUE : FALSE;
 	    break;
 	case TWF_ORW:
 	    result =
 		(flag_table[flgid].iflgptn & p->
-		 flag_pattern) ? TRUE : FALSE;
+		 wait.detail.evf.waiptn) ? TRUE : FALSE;
 	    break;
 	}
 
@@ -206,11 +206,11 @@ ER set_flg(ID flgid, UINT setptn)
 	    dis_int();
 	    list_remove(q);
 	    ena_int();
-	    p->rflgptn = flag_table[flgid].iflgptn;
-	    p->tskwait.event_wait = 0;
+	    p->wait.detail.evf.flgptn = flag_table[flgid].iflgptn;
+	    p->wait.type = wait_none;
 	    tsw_flag = TRUE;
 	    wup_tsk(p->tskid);
-	    if (p->wfmode & TWF_CLR) {
+	    if (p->wait.detail.evf.wfmode & TWF_CLR) {
 		/* μITORN 3.0 標準ハンドブック p.141 参照 */
 		dis_int();
 		flag_table[flgid].iflgptn = 0;
@@ -312,15 +312,15 @@ ER wai_flg(UINT * flgptn, ID flgid, UINT waiptn, UINT wfmode)
     }
 
     dis_int();
-    run_task->flag_pattern = waiptn;
-    run_task->wfmode = wfmode;
-    run_task->tskwait.event_wait = 1;
-    run_task->event_id = flgid;
-    list_enqueue(&(flag_table[flgid].receiver), &(run_task->evflag));
+    run_task->wait.detail.evf.waiptn = waiptn;
+    run_task->wait.detail.evf.wfmode = wfmode;
+    run_task->wait.type = wait_evf;
+    run_task->wait.obj_id = flgid;
+    list_enqueue(&(flag_table[flgid].receiver), &(run_task->wait.waiting));
 /*  task_switch (TRUE); */
     ena_int();
     can_wup(&wcnt, run_task->tskid);
     slp_tsk();
-    *flgptn = run_task->rflgptn;
+    *flgptn = run_task->wait.detail.evf.flgptn;
     return (E_OK);
 }

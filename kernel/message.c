@@ -37,7 +37,7 @@ static T_MSG *getMessageParent(const list_t *p) {
 }
 
 static T_TCB *getTaskParent(const list_t *p) {
-	return (T_TCB*)((ptr_t)p - offsetof(T_TCB, message));
+	return (T_TCB*)((ptr_t)p - offsetof(T_TCB, wait.waiting));
 }
 
 /****************************************************************************
@@ -238,16 +238,16 @@ ER del_mbf(ID id)
     /* 受信待ちタスクに対して E_DLT を返す */
     while ((q = list_dequeue(&(message_table[id].receiver))) != NULL) {
 	p = getTaskParent(q);
-	p->slp_err = E_DLT;
-	p->tskwait.msg_wait = 0;
+	p->wait.result = E_DLT;
+	p->wait.type = wait_none;
 	wup_tsk(p->tskid);
     }
 
     /* 送信待ちタスクに対して E_DLT を返す */
     while ((q = list_dequeue(&(message_table[id].sender))) != NULL) {
 	p = getTaskParent(q);
-	p->slp_err = E_DLT;
-	p->tskwait.msg_wait = 0;
+	p->wait.result = E_DLT;
+	p->wait.type = wait_none;
 	wup_tsk(p->tskid);
     }
 
@@ -297,26 +297,27 @@ ER snd_mbf(ID id, INT size, VP msg)
 
 	if (!q) {
 	    /* 受信を待っているタスクが無ければ sleep */
-	    list_enqueue(&(message_table[id].sender), &(run_task->message));
-	    run_task->msg_size = size;
-	    run_task->msg_buf = msg;
-	    run_task->tskwait.msg_wait = 1;
+	    list_enqueue(&(message_table[id].sender),
+		    &(run_task->wait.waiting));
+	    run_task->wait.detail.msg.size = size;
+	    run_task->wait.detail.msg.msg = msg;
+	    run_task->wait.type = wait_msg;
 	    can_wup(&wcnt, run_task->tskid);
 	    dis_int();
 	    ena_dsp();
 
 	    slp_tsk();
-	    if (run_task->slp_err) {
-		return (run_task->slp_err);
+	    if (run_task->wait.result) {
+		return (run_task->wait.result);
 	    }
 	} else {
 	    /* もし、受信待ちタスクがあれば、message を転送して wakeup する */
 	    ena_dsp();
 
 	    p = getTaskParent(q);
-	    vput_reg(p->tskid, p->msg_buf, size, msg);
-	    p->msg_size = size;
-	    p->tskwait.msg_wait = 0;
+	    vput_reg(p->tskid, p->wait.detail.msg.msg, size, msg);
+	    p->wait.detail.msg.size = size;
+	    p->wait.type = wait_none;
 	    tsksw = TRUE;
 	    wup_tsk(p->tskid);
 	}
@@ -327,16 +328,17 @@ ER snd_mbf(ID id, INT size, VP msg)
 	    /* メッセージバッファがアロケートできなかった。 */
 	    /* 送信待ちリストに入れ、sleep する。           */
 	    dis_dsp();
-	    list_enqueue(&(message_table[id].sender), &(run_task->message));
-	    run_task->tskwait.msg_wait = 1;
+	    list_enqueue(&(message_table[id].sender),
+		    &(run_task->wait.waiting));
+	    run_task->wait.type = wait_msg;
 	    can_wup(&wcnt, run_task->tskid);
 	    dis_int();
 	    ena_dsp();
 
 	    slp_tsk();
 	    dealloc_msg(newmsg);
-	    if (run_task->slp_err) {
-		return (run_task->slp_err);
+	    if (run_task->wait.result) {
+		return (run_task->wait.result);
 	    }
 	    goto retry;
 	}
@@ -360,7 +362,7 @@ ER snd_mbf(ID id, INT size, VP msg)
 	    ena_dsp();
 
 	    p = getTaskParent(q);
-	    p->tskwait.msg_wait = 0;
+	    p->wait.type = wait_none;
 	    tsksw = TRUE;
 	    wup_tsk(p->tskid);
 	}
@@ -412,9 +414,9 @@ ER psnd_mbf(ID id, INT size, VP msg)
 	} else {
 	    /* もし、受信待ちタスクがあれば、message を転送して wakeup する */
 	    p = getTaskParent(q);
-	    vput_reg(p->tskid, p->msg_buf, size, msg);
-	    p->msg_size = size;
-	    p->tskwait.msg_wait = 0;
+	    vput_reg(p->tskid, p->wait.detail.msg.msg, size, msg);
+	    p->wait.detail.msg.size = size;
+	    p->wait.type = wait_none;
 	    tsksw = TRUE;
 	    wup_tsk(p->tskid);
 	}
@@ -445,7 +447,7 @@ ER psnd_mbf(ID id, INT size, VP msg)
 	    ena_dsp();
 
 	    p = getTaskParent(q);
-	    p->tskwait.msg_wait = 0;
+	    p->wait.type = wait_none;
 	    tsksw = TRUE;
 	    wup_tsk(p->tskid);
 	}
@@ -487,26 +489,28 @@ ER rcv_mbf(VP msg, INT * size, ID id)
 	q = list_dequeue(&(message_table[id].sender));
 
 	if (!q) {
-	    list_enqueue(&(message_table[id].receiver), &(run_task->message));
-	    run_task->msg_size = 0;
-	    run_task->msg_buf = msg;
-	    run_task->tskwait.msg_wait = 1;
+	    list_enqueue(&(message_table[id].receiver),
+		    &(run_task->wait.waiting));
+	    run_task->wait.detail.msg.size = 0;
+	    run_task->wait.detail.msg.msg = msg;
+	    run_task->wait.type = wait_msg;
 	    can_wup(&wcnt, run_task->tskid);
 	    dis_int();
 	    ena_dsp();
 
 	    slp_tsk();
-	    *size = run_task->msg_size;
-	    if (run_task->slp_err) {
-		return (run_task->slp_err);
+	    *size = run_task->wait.detail.msg.size;
+	    if (run_task->wait.result) {
+		return (run_task->wait.result);
 	    }
 	} else {
 	    ena_dsp();
 
 	    p = getTaskParent(q);
-	    *size = p->msg_size;
-	    vget_reg(p->tskid, p->msg_buf, p->msg_size, msg);
-	    p->tskwait.msg_wait = 0;
+	    *size = p->wait.detail.msg.size;
+	    vget_reg(p->tskid, p->wait.detail.msg.msg,
+		    p->wait.detail.msg.size, msg);
+	    p->wait.type = wait_none;
 	    wup_tsk(p->tskid);
 	}
     } else {
@@ -514,16 +518,17 @@ ER rcv_mbf(VP msg, INT * size, ID id)
       retry:
 	if (list_is_empty(&(message_table[id].message))) {
 	    dis_dsp();
-	    list_enqueue(&(message_table[id].receiver), &(run_task->message));
-	    run_task->tskwait.msg_wait = 1;
+	    list_enqueue(&(message_table[id].receiver),
+		    &(run_task->wait.waiting));
+	    run_task->wait.type = wait_msg;
 	    can_wup(&wcnt, run_task->tskid);
 	    dis_int();
 	    ena_dsp();
 
 	    slp_tsk();
 
-	    if (run_task->slp_err) {
-		return (run_task->slp_err);
+	    if (run_task->wait.result) {
+		return (run_task->wait.result);
 	    }
 	    goto retry;
 	}
@@ -544,7 +549,7 @@ ER rcv_mbf(VP msg, INT * size, ID id)
 	    ena_dsp();
 
 	    p = getTaskParent(q);
-	    p->tskwait.msg_wait = 0;
+	    p->wait.type = wait_none;
 	    wup_tsk(p->tskid);
 	}
     }

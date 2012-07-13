@@ -97,8 +97,8 @@ dly_func (VP p)
 
   dis_dsp();
   taskp = (T_TCB *)p;
-  taskp->slp_err = E_OK;
-  taskp->tskwait.time_wait = 0;
+  taskp->wait.result = E_OK;
+  taskp->wait.type = wait_none;
   ena_dsp();
 
   wup_tsk (taskp->tskid);
@@ -109,11 +109,11 @@ ER dly_tsk(DLYTIME dlytim)
   if (dlytim < 0) return(E_PAR);
   else if (! dlytim) return(E_OK);
   set_timer (dlytim, (void (*)(VP))dly_func, run_task);
-  run_task->tskwait.time_wait = 1;
+  run_task->wait.type = wait_dly;
   slp_tsk ();
   unset_timer ((void (*)(VP))dly_func, run_task);
-  if (run_task->slp_err)
-    return (run_task->slp_err);
+  if (run_task->wait.result)
+    return (run_task->wait.result);
   return(E_OK);
 }
 
