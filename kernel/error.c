@@ -17,6 +17,7 @@ Version 2, June 1991
 #include "../include/mpu/io.h"
 #include "core.h"
 #include "func.h"
+#include "arch/archfunc.h"
 
 
 /* falldown --- ITRON での [panic] 関数。
@@ -36,16 +37,10 @@ void falldown(B * fmt, ...)
     va_start(ap, fmt);
     vnprintf(putchar, fmt, ap);
 
-/* もし、ITRON_DBG マクロが定義されていれば、デバッガを起動する。
- */
-#ifdef ITRON_DBG
-    itron_debugger();
-#else
     dis_int();
 #ifndef I386
     for (;;);
 #else
     asm("hlt");
 #endif
-#endif				/* ITRON_DBG */
 }

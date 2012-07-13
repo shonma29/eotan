@@ -42,5 +42,4 @@ Version 2, June 1991
 #define VRAM_MEM_START		(0xB8000)
 #define VRAM_MEM_END		(0xFFFFF)
 
-
 #endif /* __PCAT_ARCH_H__ */

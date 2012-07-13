@@ -23,9 +23,6 @@ ENTRY=startup
 	$(CC) $(CFLAGS) -c $< -o $@
 
 OBJS= \
-	startup.o \
-	devconfig.o \
-	console.o \
 	error.o \
 	main.o \
 	kalloc.o \
@@ -34,30 +31,17 @@ OBJS= \
 	api.o \
 	task.o \
 	time.o \
-	virtual_mem.o \
-	tss.o \
-	interrupt.o \
-	fpu.o \
-	timer.o \
-	gdt.o \
 	message.o \
 	eventflag.o \
-	locore.o \
-	handler.o  \
-	keyboard.o \
 	lowlib.o \
 	posix.o
 
-SRCS=main.c memory.c task.c time.c version.c error.c dummy.c printk.c \
-     console.c interrupt.c syscall.c strncmpk.c timer.c \
-     virtual_mem.c memory.c pmemory.c \
-     startup.S
-
 all: version.h core.bin
 
-core.bin: $(OBJS) ../lib/libnc.a
-	$(LD) -static -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) $(OTHEROBJ) \
-		../lib/libnc.a
+core.bin: $(OBJS) ../lib/libnc.a mpu/libmpu.a arch/libarch.a
+	$(LD) -static -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) \
+		mpu/startup.o $(OBJS) \
+		../lib/libnc.a mpu/libmpu.a arch/libarch.a
 	strip -s -R .comment -R .note -R .note.ABI-tag $@
 
 version.h: version.sh
@@ -66,18 +50,17 @@ version.h: version.sh
 ../lib/libnc.a:
 	${MAKE} -C ../lib/nano-c
 
-tags:
-	etags ../*/*.[hcs]
+mpu/libmpu.a:
+	${MAKE} -C mpu
 
-depend:
-	$(MKDEPEND) -x c $(SRCS) > .depend
+arch/libarch.a:
+	${MAKE} -C arch
 
 clean:
 	rm -f $(OBJS)
 	rm -f version.h
 	rm -f core.bin
 	${MAKE} -C ../lib/nano-c clean
+	${MAKE} -C mpu clean
+	${MAKE} -C arch clean
 	${MAKE} -C ../servers clean
-
-include CFILES
-include SFILES

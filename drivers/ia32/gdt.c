@@ -16,7 +16,6 @@ Version 2, June 1991
 
 
 #include "core.h"
-#include "version.h"
 #include "task.h"
 #include "func.h"
 

@@ -16,7 +16,7 @@ Version 2, June 1991
  */
 
 #include "core.h"
-#include "arch.h"
+#include "../../kernel/arch/arch.h"
 #include "interrupt.h"
 #include "task.h"
 #include "func.h"

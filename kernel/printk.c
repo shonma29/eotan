@@ -16,6 +16,7 @@ Version 2, June 1991
 #include "../include/stdarg.h"
 #include "core.h"
 #include "func.h"
+#include "arch/archfunc.h"
 
 /*
  *

@@ -17,7 +17,7 @@ Version 2, June 1991
 
 #include "core.h"
 #include "arch.h"
-#include "interrupt.h"
+#include "../../kernel/mpu/interrupt.h"
 #include "task.h"
 #include "func.h"
 #include "../../include/mpu/io.h"

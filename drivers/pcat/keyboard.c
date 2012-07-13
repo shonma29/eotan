@@ -16,12 +16,10 @@ Version 2, June 1991
  */
 
 #include "core.h"
-#include "version.h"
 #include "task.h"
 #include "func.h"
 #include "misc.h"
-#include "interrupt.h"
-#include "func.h"
+#include "../../kernel/mpu/interrupt.h"
 #include "../../include/mpu/io.h"
 #include "../../include/keycode.h"
 

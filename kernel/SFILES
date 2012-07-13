@@ -1,8 +1,0 @@
-locore.o: mpu/locore.S
-	$(CC) $(CFLAGS) -c $< -o $@
-
-handler.o: mpu/handler.S
-	$(CC) $(CFLAGS) -c $< -o $@
-
-startup.o: mpu/startup.S
-	$(CC) $(CFLAGS) -c $< -o $@
