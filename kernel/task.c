@@ -181,40 +181,6 @@ static void print_list(void)
     }
 }
 
-W list_counter(T_TCB * list)
-{
-    W i;
-    T_TCB *p, *q;
-
-    q = NULL;
-    for (i = 0, p = list; (q != list) && (list != NULL); p = q, i++) {
-	q = p->next;
-    }
-    return (i);
-}
-
-
-#ifdef TASK_DEBUG_PRORAM
-main()
-{
-    T_TCB a, b, c;
-    T_TCB *list = NULL;
-
-    a.tsklevel = 0;
-    b.tsklevel = 1;
-    c.tsklevel = 2;
-    print_list(list);
-    list = ins_tcb_list(list, &a);
-    print_list(list);
-    list = ins_tcb_list(list, &b);
-    print_list(list);
-    list = ins_tcb_list(list, &c);
-    print_list(list);
-}
-#endif				/* TASK_DEBUG_PROGRAM */
-
-
-
 /* init_task --- タスク管理の初期化
  *
  * TCB テーブルの内容を初期化する。そして、カレントタスクをタスク番号 -1 
@@ -237,7 +203,6 @@ void init_task(void)
 	ready_task[i] = NULL;
     }
 
-/*  memset(kernel_tss, 0, sizeof(TASK_STATE_SEG_T) * MAX_TASK); */
     task = &task_buffer[-1];
 }
 
@@ -343,7 +308,6 @@ static ER make_task_context(T_TCB * task, T_CTSK * pk_ctsk)
      *   2) タスクのスタートアドレス
      *   3) カーネルスタックのアドレス
      */
-/*  task->context.cr3 = (UW)PAGE_DIR_ADDR; */
     task->context.cs = KERNEL_CSEG;
     task->context.ds = KERNEL_DSEG;
     task->context.es = KERNEL_DSEG;
@@ -354,10 +318,6 @@ static ER make_task_context(T_TCB * task, T_CTSK * pk_ctsk)
     task->context.esp = (UW) ((sp + pk_ctsk->stksz));
     task->context.ebp = (UW) ((sp + pk_ctsk->stksz));
     task->initial_stack = task->context.esp;
-    /* cre_tsk の中で bzero によって初期化される．
-       task->context.ldtr = 0;
-       task->context.iobitmap = 0;
-     */
     task->context.eip = (UW) pk_ctsk->startaddr;
 #ifdef TSKSW_DEBUG
     printk("(UW)pk_ctsk->startaddr = 0x%x\n", (UW) pk_ctsk->startaddr);
@@ -636,7 +596,6 @@ ER task_switch(BOOL save_nowtask)
     printk("resume (0x%x)\n", ((tcb->tskid + TSS_BASE) << 3) & 0xfff8);
 #endif
     resume((UW) (tcb->tskid + TSS_BASE) << 3);
-/*  print_context (((tcb->tskid + TSS_BASE) << 3) & 0xfff8); */
     doing = 0;
 
     /* 正常に終了した：次のタスクスイッチの時にここに戻る */
@@ -727,9 +686,6 @@ ER cre_tsk(ID tskid, T_CTSK * pk_ctsk)
     } else {
 	newtask->context.cr3 =
 	    VTOR((UW) dup_vmap_table((ADDR_MAP) run_task->context.cr3));
-/*
-      newtask->context.cr3 = run_task->context.cr3;
-*/
     }
 
     /* タスクのリージョンテーブルを初期化
@@ -1510,7 +1466,6 @@ ER vset_ctx(ID tid, W eip, B * stackp, W stsize)
     tsk->context.ebp = (UW) esp;
 
     /* レジスターの初期化 */
-#ifdef I386
     tsk->context.eip = eip;
 
     tsk->context.eflags = EFLAG_IBIT | EFLAG_IOPL3;
@@ -1529,7 +1484,6 @@ ER vset_ctx(ID tid, W eip, B * stackp, W stsize)
     tsk->context.fs = USER_DSEG;
     tsk->context.gs = USER_DSEG;
     tsk->context.ss = USER_SSEG | USER_DPL;
-#endif
 
     /* タスクの初期化 */
     tsk->wait.type = wait_none;

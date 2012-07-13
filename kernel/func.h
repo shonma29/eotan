@@ -73,7 +73,6 @@ extern void init_task_state_segment(W index, T_I386_CONTEXT * tss);
 extern ER task_switch(BOOL save_nowtask);
 extern void print_task_list(void);
 extern T_TCB *get_tskp(ID tskid);
-extern void salvage_task(void);
 void make_local_stack(T_TCB *tsk, W size, W acc);
 
 /* posix.c */

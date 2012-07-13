@@ -179,7 +179,6 @@ ER set_flg(ID flgid, UINT setptn)
 	return (E_NOEXS);
     }
 
-/*  printk ("set_flag: count = %d\n", list_counter (flag_table[flgid].wait_task)); */
     dis_int();
     flag_table[flgid].iflgptn |= setptn;
     ena_int();
