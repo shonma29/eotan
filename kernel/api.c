@@ -217,8 +217,6 @@ static ER	sys_del_mbf (void *argp);
 static ER	sys_snd_mbf (void *argp);
 static ER	sys_psnd_mbf (void *argp);
 static ER	sys_rcv_mbf (void *argp);
-static ER	sys_dis_int (void *argp);
-static ER	sys_ena_int (void *argp);
 
 /* 時間管理用システムコール */
 static ER	sys_set_tim (void *argp);
@@ -295,8 +293,6 @@ static ER (*syscall_table[])(VP argp) =
   DEF_SYSCALL (rcv_mbf, 3),	/*   27 */
 
   /* 割りこみ管理 */
-  DEF_SYSCALL (dis_int, 0),	/*   28 */
-  DEF_SYSCALL (ena_int, 0),	/*   29 */
 
   /* メモリ管理 */
 
@@ -703,20 +699,6 @@ static ER sys_rcv_mbf(VP argp)
 
     return (rcv_mbf(args->msg, args->size, args->id));
 }
-
-static ER sys_dis_int(VP argp)
-{
-    dis_int();
-    return (E_OK);
-}
-
-
-static ER sys_ena_int(VP argp)
-{
-    ena_int();
-    return (E_OK);
-}
-
 
 /*
  * 割り込みハンドラを定義する。
