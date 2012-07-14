@@ -13,7 +13,8 @@ AS=/usr/local/bin/as
 MKDEPEND=$(CC) -M
 STARTADDR=0x80130000
 ENTRY=start
-LIBS=$(ROOT)/lib/libserv.a $(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a
+LIBS=$(ROOT)/lib/libserv.a $(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a \
+	$(ROOT)/kernel/mpu/libmpu.a
 LD=ld
 
 %.o: %.c

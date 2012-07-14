@@ -35,7 +35,7 @@ LDFLAGS = --oformat binary
 AR = ar
 
 INCLUDES = -I . -I ../../kernel -I ../../include
-OBJS = fpu.o gdt.o interrupt.o tss.o virtual_mem.o \
+OBJS = fpu.o gdt.o interrupt.o reset_intr_mask.o tss.o virtual_mem.o \
 	handler.o locore.o startup.o
 
 .c.o:

@@ -7,7 +7,7 @@ COPT=-O2 -fno-builtin
 CFLAGS=$(COPT) -I../../kernel -I../servers
 CC=gcc
 
-OBJS= strncpy2.o interrupt.o malloc.o \
+OBJS= strncpy2.o malloc.o \
 	port_manager.o
 
 all: ../libserv.a

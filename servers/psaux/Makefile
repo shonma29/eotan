@@ -7,7 +7,8 @@ ROOT=../..
 CFLAGS=-O2 -I. -I$(ROOT)/kernel -I$(ROOT)/lib/libserv -fno-builtin $(IDENT) $(DEBUG)
 
 CC=gcc
-LIBS=$(ROOT)/lib/libserv.a $(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a
+LIBS=$(ROOT)/lib/libserv.a $(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a \
+	$(ROOT)/kernel/mpu/libmpu.a
 LD=ld
 
 STARTADDR=0x80140000

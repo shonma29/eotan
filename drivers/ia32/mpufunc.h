@@ -42,9 +42,12 @@ extern W get_cr0();
 extern W get_cr2();
 extern W get_cr3();
 
-/* fpu.h */
-void fpu_save(T_TCB * taskp);
-void fpu_restore(T_TCB * taskp);
-void fpu_start(T_TCB * taskp);
+/* fpu.c */
+extern void fpu_save(T_TCB * taskp);
+extern void fpu_restore(T_TCB * taskp);
+extern void fpu_start(T_TCB * taskp);
+
+/* reset_intr_mask.c */
+extern void reset_intr_mask(W intn);
 
 #endif /* _IA32_MPU_H_ */

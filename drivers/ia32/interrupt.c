@@ -160,28 +160,7 @@ W init_interrupt(void)
     delayed_dispatch = FALSE;
     return (E_OK);
 }
-
-/*************************************************************************
- * reset_intr_mask 
- *
- * 引数：	intn	割り込み番号
- *
- * 返値：	なし
- *
- * 処理：	割り込みマスクをリセットする。
- *
- */
-void reset_intr_mask(W intn)
-{
-    dis_int();
-    if (intn < 8) {
-	outb(MASTER_8259A_DATA, inb(MASTER_8259A_DATA) & ~(1 << intn));
-    } else {
-	outb(SLAVE_8259A_DATA, inb(SLAVE_8259A_DATA) & ~(1 << (intn - 8)));
-    }
-    ena_int();
-}
-
+
 /*************************************************************************
  * interrupt --- 外部割り込みの処理
  *
