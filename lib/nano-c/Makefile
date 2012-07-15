@@ -37,7 +37,7 @@ INCLUDES = -I ../../include
 OBJS = vnprintf.o memcpy.o memset.o \
 	strlen.o strcpy.o strncpy.o strcat.o strncat.o \
 	strcmp.o strncmp.o \
-	list.o
+	list.o heap.o
 
 .c.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<

@@ -111,13 +111,14 @@ Version 2, June 1991
  *
  */
 
+#include "../include/mpu/io.h"
 #include "core.h"
 #include "task.h"
 #include "misc.h"
 #include "func.h"
 #include "interrupt.h"
 #include "lowlib.h"
-#include "../include/mpu/io.h"
+#include "ready.h"
 /***************************************************************************
  *	タスク管理用の変数
  *
@@ -131,7 +132,6 @@ char doing = 0;
 
 static T_TCB *task;
 static T_TCB task_buffer[MAX_TSKID - MIN_TSKID + 1];
-static list_t ready_task[MAX_PRIORITY + 1];
 static W dispatch_flag = 0;
 
 static ER make_task_stack(T_TCB * task, W size, VP * sp);
@@ -200,9 +200,7 @@ void init_task(void)
 	list_initialize(&(task_buffer[i].ready));
     }
 
-    for (i = MIN_PRIORITY; i <= MAX_PRIORITY; i++) {
-	list_initialize(&(ready_task[i]));
-    }
+    ready_initialize();
 
     task = &task_buffer[-1];
 }
@@ -266,7 +264,7 @@ void init_task1(void)
 
     /* 現タスクはタスク1である。 */
     run_task = &(task[KERNEL_TASK]);
-    list_enqueue(&(ready_task[run_task->tsklevel]), &(run_task->ready));
+    ready_enqueue(run_task->tsklevel, &(run_task->ready));
 
     /* セレクタをセット */
     task[KERNEL_TASK].tss_selector =
@@ -384,6 +382,7 @@ ER task_switch(BOOL save_nowtask)
     T_TCB *old;			/* */
     T_TCB *next = NULL;
     H old_stat = 0;
+    list_t *q;
 
     dis_int();
 #ifdef TSKSW_DEBUG
@@ -413,23 +412,16 @@ ER task_switch(BOOL save_nowtask)
 	run_task->tskstat = TTS_RDY;
     }
 
-    for (tskid = MIN_PRIORITY; tskid <= MAX_PRIORITY; tskid++) {
-	list_t *q = list_head(&(ready_task[tskid]));
+    q = ready_dequeue();
 
-	if (!q)
-	    continue;
-
-	next = getTaskParent(q);
-	if (next->tskstat == TTS_RDY)
-	    break;
-	else next = NULL;
-    }
-    if (tskid > MAX_PRIORITY) {
+    if (!q) {
 	printk("task_switch(): error = E_NOEXS\n");	/* */
 	doing = 0;
 	ena_int();
 	return (E_NOEXS);
     }
+
+    next = getTaskParent(q);
 
     /* 選択したタスクが、現タスクならば、何もしないで戻る */
     if (run_task == next) {
@@ -649,7 +641,7 @@ ER sta_tsk(ID tskid, INT stacd)
     task[tskid].wait.sus_cnt = 0;
     task[tskid].total = 0;
     dis_int();
-    list_enqueue(&(ready_task[index]), &(task[tskid].ready));
+    ready_enqueue(index, &(task[tskid].ready));
     ena_int();
 #ifdef TSKSW_DEBUG
     printk("sta_tsk: task level = %d\n", index);
@@ -804,7 +796,7 @@ ER chg_pri(ID tskid, PRI tskpri)
 	dis_int();
 	list_remove(&(task[tskid].ready));
 	task[tskid].tsklevel = tskpri;
-	list_enqueue(&(ready_task[task[tskid].tsklevel]), &(task[tskid].ready));
+	ready_enqueue(task[tskid].tsklevel, &(task[tskid].ready));
 	ena_int();
 	break;
 
@@ -821,20 +813,16 @@ ER chg_pri(ID tskid, PRI tskpri)
  */
 ER rot_rdq(PRI tskpri)
 {
-    list_t *head;
-
     if (tskpri == TPRI_RUN)
 	tskpri = run_task->tsklevel;
     if ((tskpri < MIN_PRIORITY) || (tskpri > MAX_PRIORITY)) {
 	return (E_PAR);
     }
-    dis_int();
 
-    head = list_dequeue(&(ready_task[tskpri]));
-    if (head) {
-	list_enqueue(&(ready_task[tskpri]), head);
-    }
+    dis_int();
+    ready_rotate(tskpri);
     ena_int();
+
     /* タスクスイッチによる実行権の放棄: 必要無いのかも */
     task_switch(TRUE);
     return (E_OK);
@@ -958,7 +946,7 @@ ER wup_tsk(ID taskid)
 	    falldown("kernel: task.\n");
 	} else {
 	    /* ready queue の末尾に追加 */
-	    list_enqueue(&(ready_task[p->tsklevel]), &(p->ready));
+	    ready_enqueue(p->tsklevel, &(p->ready));
 	}
     } else if (p->tskstat == TTS_RDY || p->tskstat == TTS_SUS) {
 	p->wait.wup_cnt++;
@@ -1065,7 +1053,7 @@ ER rsm_tsk(ID taskid)
 	taskp->wait.sus_cnt--;
 	if (taskp->wait.sus_cnt <= 0) {
 	    taskp->tskstat = TTS_RDY;
-	    list_push(&(ready_task[taskp->tsklevel]), &(taskp->ready));
+	    ready_push(taskp->tsklevel, &(taskp->ready));
 	}
 	break;
 

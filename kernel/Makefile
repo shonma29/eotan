@@ -34,7 +34,8 @@ OBJS= \
 	message.o \
 	eventflag.o \
 	lowlib.o \
-	posix.o
+	posix.o \
+	ready.o
 
 all: version.h core.bin
 
