@@ -131,14 +131,16 @@ char doing = 0;
 
 static T_TCB *task;
 static T_TCB task_buffer[MAX_TSKID - MIN_TSKID + 1];
-static T_TCB *ready_task[MAX_PRIORITY + 1];
+static list_t ready_task[MAX_PRIORITY + 1];
 static W dispatch_flag = 0;
 
 static ER make_task_stack(T_TCB * task, W size, VP * sp);
 static void print_list(void);
-static T_TCB *add_tcb_list(T_TCB * list, T_TCB * new);
-static T_TCB *ins_tcb_list(T_TCB * list, T_TCB * new);
-static T_TCB *del_tcb_list(T_TCB * list, T_TCB * del);
+static T_TCB *getTaskParent(const list_t *p);
+
+static T_TCB *getTaskParent(const list_t *p) {
+	return (T_TCB*)((ptr_t)p - offsetof(T_TCB, ready));
+}
 
 void print_task_list(void)
 {
@@ -195,12 +197,11 @@ void init_task(void)
      */
     for (i = 0; i < NTASK; i++) {
 	task_buffer[i].tskstat = TTS_NON;
-	task_buffer[i].next = NULL;
-	task_buffer[i].before = NULL;
+	list_initialize(&(task_buffer[i].ready));
     }
 
     for (i = MIN_PRIORITY; i <= MAX_PRIORITY; i++) {
-	ready_task[i] = NULL;
+	list_initialize(&(ready_task[i]));
     }
 
     task = &task_buffer[-1];
@@ -265,8 +266,7 @@ void init_task1(void)
 
     /* 現タスクはタスク1である。 */
     run_task = &(task[KERNEL_TASK]);
-    ready_task[run_task->tsklevel]
-	= add_tcb_list(ready_task[run_task->tsklevel], run_task);
+    list_enqueue(&(ready_task[run_task->tsklevel]), &(run_task->ready));
 
     /* セレクタをセット */
     task[KERNEL_TASK].tss_selector =
@@ -361,133 +361,7 @@ static ER make_task_stack(T_TCB * task, W size, VP * sp)
 
     return (E_OK);
 }
-
-/*****************************************************************************
- * タスクリストを操作するための関数群
- *
- * 
-******************************************************************************/
 
-/* add_tcb_list --- 引数 list で指定されたリストの一番最後にタスクを追加する。
- *
- * 引数:
- *	list
- *	new
- *
- * 返り値:
- *	新しいリストへのポインタ
- *
- * 注意.
- *	この関数を実行しても、リストの先頭ポインタは *変更されない*。
- *	ただし、リストの要素がなかった場合には例外で、その場合には
- *	引数 new の要素だけをもつリストを返す。
- *
- */
-static T_TCB *add_tcb_list(T_TCB * list, T_TCB * new)
-{
-    if (new == NULL)
-	return list;
-    if (list == NULL) {
-	new->before = new;
-	new->next = new;
-	return new;
-    }
-    new->next = list;
-    new->before = list->before;
-    list->before->next = new;
-    list->before = new;
-    return (list);
-}
-
-/* ins_tcb_list --- 引数 list で指定されたリストの一番最初にタスクを挿入する。
- *
- * 引数:
- *	list
- *	new
- *
- * 返り値:
- *	新しいリストへのポインタ
- *
- * 注意.
- *	この関数を実行した結果、リストの先頭ポインタが変更される。
- *	よって、この関数が返す新しいリストへのポインタをリストポインタに
- *	再代入する必要がある。
- */
-static T_TCB *ins_tcb_list(T_TCB * list, T_TCB * new)
-{
-    if (new == NULL)
-	return list;
-    if (list == NULL) {
-	new->before = new;
-	new->next = new;
-	return (new);
-    }
-    new->next = list;
-    new->before = list->before;
-    list->before->next = new;
-    list->before = new;
-    return (new);
-}
-
-
-/* del_tcb_list --- 引数 list で指定されたリストから、要素 del を削除する。
- *
- * 引数:
- *	list
- *	del
- *
- * 返り値:
- *	新しいリストへのポインタ
- *
- * 例外:
- *	1) もし、要素 del がリストの先頭要素の場合、リストの先頭ポインタは、
- *	   del の次の要素になる。
- *	2) もし、要素 del がリストの唯一の要素の場合、返り値として NULL を
- *	   返す。
- *
- * 注意.
- *	この関数を実行した結果、リストの先頭ポインタが変更される。
- *	よって、この関数が返す新しいリストへのポインタをリストポインタに
- *	再代入する必要がある。
- *
- */
-static T_TCB *del_tcb_list(T_TCB * list, T_TCB * del)
-{
-    T_TCB *p;
-
-    if (list == NULL)
-	return (NULL);
-    if (del == NULL)
-	return (list);
-    /* del はリストの先頭にあるとは限らない。リストを探索する必要がある */
-    if (list == del) {
-	/* リストの先頭にあった場合 */
-	if (list == list->next) {
-	    /* リストに要素が一つしか無かった */
-	    del->next = NULL;
-	    del->before = NULL;
-	    return (NULL);
-	}
-	list = list->next;
-	del->next->before = del->before;
-	del->before->next = del->next;
-	del->next = NULL;
-	del->before = NULL;
-	return (list);
-    }
-    for (p = list->next; p != list; p = p->next) {
-	if (p == del)
-	    break;
-    }
-    if (p == del) {
-	del->next->before = del->before;
-	del->before->next = del->next;
-	del->next = NULL;
-	del->before = NULL;
-    }
-    return (list);
-}
-
 /* task_switch --- タスク切り換え
  *
  * 引数：	save_nowtask	
@@ -508,6 +382,7 @@ ER task_switch(BOOL save_nowtask)
     T_TCB *tcb;
     ID tskid;
     T_TCB *old;			/* */
+    T_TCB *next = NULL;
     H old_stat = 0;
 
     dis_int();
@@ -532,19 +407,22 @@ ER task_switch(BOOL save_nowtask)
 
     if (save_nowtask == FALSE) {
 	/* 現タスクを ready タスクキューから取り除く */
-	ready_task[run_task->tsklevel]
-	    = del_tcb_list(ready_task[run_task->tsklevel], run_task);
+	list_remove(&(run_task->ready));
     } else {
 	old_stat = run_task->tskstat;
 	run_task->tskstat = TTS_RDY;
     }
 
     for (tskid = MIN_PRIORITY; tskid <= MAX_PRIORITY; tskid++) {
-	if (ready_task[tskid] == NULL)
+	list_t *q = list_head(&(ready_task[tskid]));
+
+	if (!q)
 	    continue;
 
-	if (ready_task[tskid]->tskstat == TTS_RDY)
+	next = getTaskParent(q);
+	if (next->tskstat == TTS_RDY)
 	    break;
+	else next = NULL;
     }
     if (tskid > MAX_PRIORITY) {
 	printk("task_switch(): error = E_NOEXS\n");	/* */
@@ -554,7 +432,7 @@ ER task_switch(BOOL save_nowtask)
     }
 
     /* 選択したタスクが、現タスクならば、何もしないで戻る */
-    if (run_task == ready_task[tskid]) {
+    if (run_task == next) {
 	run_task->tskstat = old_stat;
 	doing = 0;
 	ena_int();
@@ -562,7 +440,7 @@ ER task_switch(BOOL save_nowtask)
     }
 
     /* 選択したタスクを run_task にする */
-    tcb = ready_task[tskid];
+    tcb = next;
     if (tcb->tskstat != TTS_RDY) {
 	doing = 0;
 	ena_int();
@@ -771,7 +649,7 @@ ER sta_tsk(ID tskid, INT stacd)
     task[tskid].wait.sus_cnt = 0;
     task[tskid].total = 0;
     dis_int();
-    ready_task[index] = add_tcb_list(ready_task[index], &task[tskid]);
+    list_enqueue(&(ready_task[index]), &(task[tskid].ready));
     ena_int();
 #ifdef TSKSW_DEBUG
     printk("sta_tsk: task level = %d\n", index);
@@ -869,8 +747,7 @@ ER ter_tsk(ID tskid)
 	dis_int();
 	task[tskid].tskstat = TTS_DMT;
 	/* レディキューから削除 */
-	ready_task[task[tskid].tsklevel]
-	    = del_tcb_list(ready_task[task[tskid].tsklevel], &task[tskid]);
+	list_remove(&(task[tskid].ready));
 	ena_int();
 	break;
 
@@ -925,11 +802,9 @@ ER chg_pri(ID tskid, PRI tskpri)
     case TTS_RDY:
     case TTS_RUN:
 	dis_int();
-	ready_task[task[tskid].tsklevel]
-	    = del_tcb_list(ready_task[task[tskid].tsklevel], &task[tskid]);
+	list_remove(&(task[tskid].ready));
 	task[tskid].tsklevel = tskpri;
-	ready_task[task[tskid].tsklevel]
-	    = add_tcb_list(ready_task[task[tskid].tsklevel], &task[tskid]);
+	list_enqueue(&(ready_task[task[tskid].tsklevel]), &(task[tskid].ready));
 	ena_int();
 	break;
 
@@ -946,7 +821,7 @@ ER chg_pri(ID tskid, PRI tskpri)
  */
 ER rot_rdq(PRI tskpri)
 {
-    T_TCB *first;
+    list_t *head;
 
     if (tskpri == TPRI_RUN)
 	tskpri = run_task->tsklevel;
@@ -955,9 +830,9 @@ ER rot_rdq(PRI tskpri)
     }
     dis_int();
 
-    first = ready_task[tskpri];
-    if (first != NULL) {
-	ready_task[tskpri] = first->next;
+    head = list_dequeue(&(ready_task[tskpri]));
+    if (head) {
+	list_enqueue(&(ready_task[tskpri]), head);
     }
     ena_int();
     /* タスクスイッチによる実行権の放棄: 必要無いのかも */
@@ -1083,8 +958,7 @@ ER wup_tsk(ID taskid)
 	    falldown("kernel: task.\n");
 	} else {
 	    /* ready queue の末尾に追加 */
-	    ready_task[p->tsklevel] =
-		add_tcb_list(ready_task[p->tsklevel], p);
+	    list_enqueue(&(ready_task[p->tsklevel]), &(p->ready));
 	}
     } else if (p->tskstat == TTS_RDY || p->tskstat == TTS_SUS) {
 	p->wait.wup_cnt++;
@@ -1124,8 +998,7 @@ ER sus_tsk(ID taskid)
     taskp->wait.sus_cnt++;
     switch (taskp->tskstat) {
     case TTS_RDY:
-	ready_task[taskp->tsklevel]
-	    = del_tcb_list(ready_task[taskp->tsklevel], taskp);
+	list_remove(&(taskp->ready));
 	taskp->tskstat = TTS_SUS;
 	break;
 
@@ -1192,8 +1065,7 @@ ER rsm_tsk(ID taskid)
 	taskp->wait.sus_cnt--;
 	if (taskp->wait.sus_cnt <= 0) {
 	    taskp->tskstat = TTS_RDY;
-	    ready_task[taskp->tsklevel]
-		= ins_tcb_list(ready_task[taskp->tsklevel], taskp);
+	    list_push(&(ready_task[taskp->tsklevel]), &(taskp->ready));
 	}
 	break;
 

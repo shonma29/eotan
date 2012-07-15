@@ -42,8 +42,7 @@ typedef struct task_spec_interrupt {
  *
  */
 typedef struct t_tcb {
-    struct t_tcb *next;		/* 次のTCBへ                    */
-    struct t_tcb *before;	/* 前のTCBへ                    */
+    list_t ready;
 
     W tskid;			/* タスク ID                    */
     W tsklevel;			/* タスクの優先順位             */
