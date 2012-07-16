@@ -181,6 +181,7 @@ static char rcsid[] =
 #include "api.h"
 #include "interrupt.h"
 #include "../include/mpu/io.h"
+#include "sync.h"
 #include "boot.h"
 
 #define DEF_SYSCALL(x,n)	sys_ ## x
@@ -471,12 +472,14 @@ static ER sys_ter_tsk(VP argp)
 
 static ER sys_dis_dsp(VP argp)
 {
-    return (dis_dsp());
+    enter_serialize();
+    return E_OK;
 }
 
 static ER sys_ena_dsp(VP argp)
 {
-    return (ena_dsp());
+    leave_serialize();
+    return E_OK;
 }
 
 static ER sys_chg_pri(VP argp)

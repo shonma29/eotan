@@ -23,6 +23,7 @@ Version 2, June 1991
 #include "func.h"
 #include "arch.h"
 #include "message.h"
+#include "sync.h"
 
 static T_MSGHEAD message_table[MAX_MSGBUF + 1];
 static T_MSG msgbuf[MAX_MSGENTRY];
@@ -48,10 +49,10 @@ static T_MSG *alloc_msg(void)
     T_MSG *p;
     list_t *q;
 
-    dis_dsp();
+    enter_serialize();
     q = list_pop(&unused_msg);
     p = q? getMessageParent(q):NULL;
-    ena_dsp();
+    leave_serialize();
 
     return (p);
 }
@@ -64,9 +65,9 @@ static void dealloc_msg(T_MSG * p)
     if (p == NULL)
 	return;
 
-    dis_dsp();
+    enter_serialize();
     list_push(&unused_msg, &(p->message));
-    ena_dsp();
+    leave_serialize();
 }
 
 /***************************************************************************
@@ -76,9 +77,9 @@ static void dealloc_msg(T_MSG * p)
  */
 static void add_msg_list(T_MSGHEAD * list, T_MSG * newmsg)
 {
-    dis_dsp();
+    enter_serialize();
     list_enqueue(&(list->message), &(newmsg->message));
-    ena_dsp();
+    leave_serialize();
 }
 
 /***************************************************************************
@@ -90,10 +91,10 @@ static T_MSG *get_msg(T_MSGHEAD * list)
     T_MSG *p;
     list_t *q;
 
-    dis_dsp();
+    enter_serialize();
     q = list_dequeue(&(list->message));
     p = q? getMessageParent(q):NULL;
-    ena_dsp();
+    leave_serialize();
 
     return (p);
 }
@@ -159,13 +160,13 @@ ER cre_mbf(ID id, T_CMBF * pk_cmbf)
 	return (E_OBJ);
     }
 
-    dis_dsp();
+    enter_serialize();
     message_table[id].total_size = pk_cmbf->bufsz;
     list_initialize(&(message_table[id].message));
     message_table[id].msgsz = pk_cmbf->maxmsz;
     message_table[id].bufsz = pk_cmbf->bufsz;
     message_table[id].mbfatr = pk_cmbf->mbfatr;
-    ena_dsp();
+    leave_serialize();
 
     return (E_OK);
 }
@@ -189,13 +190,13 @@ ER_ID acre_mbf(T_CMBF * pk_cmbf)
 	return E_NOID;
     }
 
-    dis_dsp();
+    enter_serialize();
     message_table[id].total_size = pk_cmbf->bufsz;
     list_initialize(&(message_table[id].message));
     message_table[id].msgsz = pk_cmbf->maxmsz;
     message_table[id].bufsz = pk_cmbf->bufsz;
     message_table[id].mbfatr = pk_cmbf->mbfatr;
-    ena_dsp();
+    leave_serialize();
 
     return id;
 }
@@ -251,9 +252,9 @@ ER del_mbf(ID id)
 	wup_tsk(p->tskid);
     }
 
-    dis_dsp();
+    enter_serialize();
     message_table[id].mbfatr = TA_UNDEF;
-    ena_dsp();
+    leave_serialize();
 
     return (E_OK);
 }
@@ -292,7 +293,7 @@ ER snd_mbf(ID id, INT size, VP msg)
     }
 
     if (message_table[id].bufsz == 0) {
-	dis_dsp();
+	enter_serialize();
 	q = list_dequeue(&(message_table[id].receiver));
 
 	if (!q) {
@@ -304,7 +305,7 @@ ER snd_mbf(ID id, INT size, VP msg)
 	    run_task->wait.type = wait_msg;
 	    can_wup(&wcnt, run_task->tskid);
 	    dis_int();
-	    ena_dsp();
+	    leave_serialize();
 
 	    slp_tsk();
 	    if (run_task->wait.result) {
@@ -312,7 +313,7 @@ ER snd_mbf(ID id, INT size, VP msg)
 	    }
 	} else {
 	    /* もし、受信待ちタスクがあれば、message を転送して wakeup する */
-	    ena_dsp();
+	    leave_serialize();
 
 	    p = getTaskParent(q);
 	    vput_reg(p->tskid, p->wait.detail.msg.msg, size, msg);
@@ -327,13 +328,13 @@ ER snd_mbf(ID id, INT size, VP msg)
 	if ((newmsg == NULL) || (message_table[id].total_size < size)) {
 	    /* メッセージバッファがアロケートできなかった。 */
 	    /* 送信待ちリストに入れ、sleep する。           */
-	    dis_dsp();
+	    enter_serialize();
 	    list_enqueue(&(message_table[id].sender),
 		    &(run_task->wait.waiting));
 	    run_task->wait.type = wait_msg;
 	    can_wup(&wcnt, run_task->tskid);
 	    dis_int();
-	    ena_dsp();
+	    leave_serialize();
 
 	    slp_tsk();
 	    dealloc_msg(newmsg);
@@ -357,9 +358,9 @@ ER snd_mbf(ID id, INT size, VP msg)
 
 	/* もし、受信待ちタスクがあれば、それを wakeup する */
 	if (!list_is_empty(&(message_table[id].receiver))) {
-	    dis_dsp();
+	    enter_serialize();
 	    q = list_dequeue(&(message_table[id].receiver));
-	    ena_dsp();
+	    leave_serialize();
 
 	    p = getTaskParent(q);
 	    p->wait.type = wait_none;
@@ -404,9 +405,9 @@ ER psnd_mbf(ID id, INT size, VP msg)
     }
 
     if (message_table[id].bufsz == 0) {
-	dis_dsp();
+	enter_serialize();
 	q = list_dequeue(&(message_table[id].receiver));
-	ena_dsp();
+	leave_serialize();
 
 	if (!q) {
 	    /* 受信を待っているタスクが無ければ E_TMOUT を返す */
@@ -442,9 +443,9 @@ ER psnd_mbf(ID id, INT size, VP msg)
 
 	/* もし、受信待ちタスクがあれば、それを wakeup する */
 	if (!list_is_empty(&(message_table[id].receiver))) {
-	    dis_dsp();
+	    enter_serialize();
 	    q = list_dequeue(&(message_table[id].receiver));
-	    ena_dsp();
+	    leave_serialize();
 
 	    p = getTaskParent(q);
 	    p->wait.type = wait_none;
@@ -485,7 +486,7 @@ ER rcv_mbf(VP msg, INT * size, ID id)
     }
 
     if (message_table[id].bufsz == 0) {
-	dis_dsp();
+	enter_serialize();
 	q = list_dequeue(&(message_table[id].sender));
 
 	if (!q) {
@@ -496,7 +497,7 @@ ER rcv_mbf(VP msg, INT * size, ID id)
 	    run_task->wait.type = wait_msg;
 	    can_wup(&wcnt, run_task->tskid);
 	    dis_int();
-	    ena_dsp();
+	    leave_serialize();
 
 	    slp_tsk();
 	    *size = run_task->wait.detail.msg.size;
@@ -504,7 +505,7 @@ ER rcv_mbf(VP msg, INT * size, ID id)
 		return (run_task->wait.result);
 	    }
 	} else {
-	    ena_dsp();
+	    leave_serialize();
 
 	    p = getTaskParent(q);
 	    *size = p->wait.detail.msg.size;
@@ -517,13 +518,13 @@ ER rcv_mbf(VP msg, INT * size, ID id)
 	/* メッセージが存在しない --> sleep する。 */
       retry:
 	if (list_is_empty(&(message_table[id].message))) {
-	    dis_dsp();
+	    enter_serialize();
 	    list_enqueue(&(message_table[id].receiver),
 		    &(run_task->wait.waiting));
 	    run_task->wait.type = wait_msg;
 	    can_wup(&wcnt, run_task->tskid);
 	    dis_int();
-	    ena_dsp();
+	    leave_serialize();
 
 	    slp_tsk();
 
@@ -544,9 +545,9 @@ ER rcv_mbf(VP msg, INT * size, ID id)
 
 	/* 送信待ちのタスクがあれば wakeup する */
 	if (!list_is_empty(&(message_table[id].sender))) {
-	    dis_dsp();
+	    enter_serialize();
 	    q = list_dequeue(&(message_table[id].sender));
-	    ena_dsp();
+	    leave_serialize();
 
 	    p = getTaskParent(q);
 	    p->wait.type = wait_none;

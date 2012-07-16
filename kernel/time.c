@@ -34,6 +34,7 @@ Version 2, June 1991
 #include "arch.h"
 #include "task.h"
 #include "func.h"
+#include "sync.h"
 
 /* 
  * 変数宣言
@@ -95,11 +96,11 @@ dly_func (VP p)
 {
   T_TCB *taskp;
 
-  dis_dsp();
+  enter_serialize();
   taskp = (T_TCB *)p;
   taskp->wait.result = E_OK;
   taskp->wait.type = wait_none;
-  ena_dsp();
+  leave_serialize();
 
   wup_tsk (taskp->tskid);
 }

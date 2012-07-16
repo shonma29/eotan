@@ -119,6 +119,7 @@ Version 2, June 1991
 #include "interrupt.h"
 #include "lowlib.h"
 #include "ready.h"
+#include "sync.h"
 /***************************************************************************
  *	タスク管理用の変数
  *
@@ -132,7 +133,6 @@ char doing = 0;
 
 static T_TCB *task;
 static T_TCB task_buffer[MAX_TSKID - MIN_TSKID + 1];
-static W dispatch_flag = 0;
 
 static ER make_task_stack(T_TCB * task, W size, VP * sp);
 static void print_list(void);
@@ -395,7 +395,7 @@ ER task_switch(BOOL save_nowtask)
 	return (E_OK);
     }
 
-    if (dispatch_flag > 0) {
+    if (!dispatchable) {
 	ena_int();
 	return (E_CTX);
     }
@@ -758,25 +758,7 @@ ER ter_tsk(ID tskid)
     }
     return (E_OK);
 }
-
-ER dis_dsp()
-{
-    dispatch_flag++;
 
-    return (E_OK);
-}
-
-ER ena_dsp()
-{
-    dispatch_flag--;
-    if (dispatch_flag < 0) {
-	printk("task: unbalanced ena_dsp\n");
-	dispatch_flag = 0;
-    }
-
-    return (E_OK);
-}
-
 /* chg_pri --- プライオリティの変更
  *
  */

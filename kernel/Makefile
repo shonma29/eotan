@@ -35,7 +35,8 @@ OBJS= \
 	eventflag.o \
 	lowlib.o \
 	posix.o \
-	ready.o
+	ready.o \
+	sync.o
 
 all: version.h core.bin
 

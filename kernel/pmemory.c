@@ -23,6 +23,7 @@ Version 2, June 1991
 #include "func.h"
 #include "arch.h"
 #include "misc.h"
+#include "sync.h"
 #include "boot.h"
 
 /* memory_map: 0x80000000 から最大 128 M bytes 分のメモリ領域を管理する
@@ -62,7 +63,7 @@ static void release_memory(UW paddr, UW length)
 {
     UW i, j, k, page, index;
 
-    dis_dsp();
+    enter_serialize();
 
     page = PAGES(length);
     index = paddr / PAGE_SIZE;
@@ -84,7 +85,7 @@ static void release_memory(UW paddr, UW length)
 	}
     }
 
-    ena_dsp();
+    leave_serialize();
 }
 
 /*
@@ -106,7 +107,7 @@ void pmem_init(void)
     }
     memory_map_size /= BITS;
 
-    dis_dsp();
+    enter_serialize();
 
     for (i = 0; i < memory_map_size; i++) {
 	memory_map[i] = MEM_FREE;
@@ -175,7 +176,7 @@ void pmem_init(void)
 	}
     }
 
-    ena_dsp();
+    leave_serialize();
 
 #ifdef notdef
     printk("physmem = %d, base_mem = %d, ext_mem = %d\n", physmem_max,
@@ -199,7 +200,7 @@ VP palloc(W size)
     if (free_mem < size)
 	return (NULL);
 
-    dis_dsp();
+    enter_serialize();
 
     if (size == 1) {
 	found = 0;
@@ -226,7 +227,7 @@ VP palloc(W size)
 	    }
 	}
 	if (found == 0) {
-	    ena_dsp();
+	    leave_serialize();
 
 	    return (NULL);
 	}
@@ -249,7 +250,7 @@ VP palloc(W size)
 	    }
 	}
 	if (found == 0) {
-	    ena_dsp();
+	    leave_serialize();
 
 	    return (NULL);
 	}
@@ -277,7 +278,7 @@ VP palloc(W size)
     memset((VP)addr, 0, size * PAGE_SIZE);
 #endif
 
-    ena_dsp();
+    leave_serialize();
 
     return ((VP) addr);
 }
@@ -297,7 +298,7 @@ ER pfree(VP p, W size)
 	return (E_PAR);
     }
 
-    dis_dsp();
+    enter_serialize();
 
     i = (index / BITS);
     j = (index % BITS);
@@ -330,7 +331,7 @@ ER pfree(VP p, W size)
 	}
     }
 
-    ena_dsp();
+    leave_serialize();
 
     return (E_OK);
 }
