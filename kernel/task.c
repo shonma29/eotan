@@ -475,21 +475,6 @@ ER task_switch(BOOL save_nowtask)
     return (E_OK);
 }
 
-void print_context(UW selector)
-{
-    TASK_DESC *desc;
-    T_I386_CONTEXT *tcb;
-
-    desc = (TASK_DESC *) get_gdt(((selector >> 3) - TSS_BASE) & 0xffff);
-    tcb = (T_I386_CONTEXT *) GET_TSS_ADDR(*desc);
-#ifdef TSKSW_DEBUG
-    printk("task ID = %d\n", (selector >> 3) - TSS_BASE);
-    printk("TSS addr = 0x%x\n", tcb);
-    printk("EIP = 0x%x\n", tcb->eip);
-#endif
-}
-
-
 /*****************************************************************************
  *
  *		S Y S T E M   C A L L  

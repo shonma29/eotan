@@ -45,11 +45,10 @@ extern UW pmemfree(void);
 /* task.c */
 extern void init_task(void);
 extern void init_task1(void);
-extern void init_task_state_segment(W index, T_I386_CONTEXT * tss);
 extern ER task_switch(BOOL save_nowtask);
 extern void print_task_list(void);
 extern T_TCB *get_tskp(ID tskid);
-void make_local_stack(T_TCB *tsk, W size, W acc);
+extern void make_local_stack(T_TCB *tsk, W size, W acc);
 
 /* posix.c */
 extern ER posix_kill_proc(ID pid);
@@ -74,10 +73,5 @@ extern ER get_tim(SYSTIME *pk_tim);
 extern ER init_lowlib(struct module_info *modp);
 extern ER load_lowlib(VP * argp);
 extern ER stat_lowlib(VP * argp);
-
-/* --------------------------------------------------------- */
-/* システム管理用タスク                                      */
-/* --------------------------------------------------------- */
-extern void sys_init_task(void);
 
 #endif				/* __CORE_FUNC_H__ */
