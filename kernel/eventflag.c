@@ -23,6 +23,7 @@ Version 2, June 1991
 #include "func.h"
 #include "arch.h"
 #include "eventflag.h"
+#include "sync.h"
 
 static T_EVENTFLAG flag_table[MAX_EVENTFLAG + 1];
 
@@ -179,9 +180,9 @@ ER set_flg(ID flgid, UINT setptn)
 	return (E_NOEXS);
     }
 
-    dis_int();
+    enter_critical();
     flag_table[flgid].iflgptn |= setptn;
-    ena_int();
+    leave_critical();
 
     for (q = list_next(&(flag_table[flgid].receiver));
 	    !list_is_edge(&(flag_table[flgid].receiver), q); q = next) {
@@ -202,18 +203,18 @@ ER set_flg(ID flgid, UINT setptn)
 	}
 
 	if (result == TRUE) {
-	    dis_int();
+	    enter_critical();
 	    list_remove(q);
-	    ena_int();
+	    leave_critical();
 	    p->wait.detail.evf.flgptn = flag_table[flgid].iflgptn;
 	    p->wait.type = wait_none;
 	    tsw_flag = TRUE;
 	    wup_tsk(p->tskid);
 	    if (p->wait.detail.evf.wfmode & TWF_CLR) {
 		/* μITORN 3.0 標準ハンドブック p.141 参照 */
-		dis_int();
+		enter_critical();
 		flag_table[flgid].iflgptn = 0;
-		ena_int();
+		leave_critical();
 	    }
 	}
     }
@@ -248,9 +249,9 @@ ER clr_flg(ID flgid, UINT clrptn)
 	return (E_NOEXS);
     }
 
-    dis_int();
+    enter_critical();
     flag_table[flgid].iflgptn &= clrptn;
-    ena_int();
+    leave_critical();
 
     return (E_OK);
 }
@@ -303,21 +304,20 @@ ER wai_flg(UINT * flgptn, ID flgid, UINT waiptn, UINT wfmode)
     if (result == TRUE) {
 	*flgptn = flag_table[flgid].iflgptn;
 	if (wfmode & TWF_CLR) {
-	    dis_int();
+	    enter_critical();
 	    flag_table[flgid].iflgptn = 0;
-	    ena_int();
+	    leave_critical();
 	}
 	return (E_OK);
     }
 
-    dis_int();
+    enter_critical();
     run_task->wait.detail.evf.waiptn = waiptn;
     run_task->wait.detail.evf.wfmode = wfmode;
     run_task->wait.type = wait_evf;
     run_task->wait.obj_id = flgid;
     list_enqueue(&(flag_table[flgid].receiver), &(run_task->wait.waiting));
-/*  task_switch (TRUE); */
-    ena_int();
+    leave_critical();
     can_wup(&wcnt, run_task->tskid);
     slp_tsk();
     *flgptn = run_task->wait.detail.evf.flgptn;

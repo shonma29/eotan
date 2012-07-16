@@ -20,6 +20,7 @@ Version 2, June 1991
 #include "../../kernel/mpu/interrupt.h"
 #include "task.h"
 #include "func.h"
+#include "sync.h"
 #include "../../include/mpu/io.h"
 
 #define TIMER0_WRITE	0x40
@@ -74,7 +75,7 @@ void start_interval(void)
     set_idt(32, 0x08, (int) int32_handler, INTERRUPT_DESC, 0);
     reset_intr_mask(0);
 
-    dis_int();
+    enter_critical();
 #ifdef notdef
     outb(TIMER_CONTROL, 0x34);
     outb(TIMER0_WRITE, 11930 & 0xff);
@@ -84,7 +85,7 @@ void start_interval(void)
     outb(TIMER0_WRITE, (TIMER_FREQ/TICKS) & 0xff);
     outb(TIMER0_WRITE, ((TIMER_FREQ/TICKS) >> 8) & 0xff);
 #endif
-    ena_int();
+    leave_critical();
 
     write_vram(78, 0, 'x', 0);
 }
@@ -183,14 +184,14 @@ void init_timer(void)
 #endif
 
     printk("** init_timer **\n");
-    dis_int();
+    enter_critical();
     for (i = 0; i <= MAX_TIMER - 2; i++) {
 	timer[i].next = &timer[i + 1];
     }
     timer[MAX_TIMER - 1].next = NULL;
     free_timer = timer;
     time_list = NULL;
-    ena_int();
+    leave_critical();
 }
 
 /*************************************************************************
@@ -211,24 +212,24 @@ void set_timer(W time, void (*func) (VP), VP argp)
     if ((func == NULL) || (time <= 0)) {
 	return;
     }
-    dis_int();
+    enter_critical();
     p = free_timer;
     if (p == NULL) {
 	printk("timer entry empty.\n");
-	ena_int();
+	leave_critical();
 	return;
     }
     free_timer = free_timer->next;
-    ena_int();
+    leave_critical();
     p->time = time;
     p->func = (void (*)(VP)) func;
     p->argp = argp;
     p->next = NULL;
 
-    dis_int();
+    enter_critical();
     if (time_list == NULL) {
 	time_list = p;
-	ena_int();
+	leave_critical();
 	return;
     }
 
@@ -237,7 +238,7 @@ void set_timer(W time, void (*func) (VP), VP argp)
 	time_list->time -= p->time;
 	p->next = time_list;
 	time_list = p;
-	ena_int();
+	leave_critical();
 	return;
     }
 
@@ -252,7 +253,7 @@ void set_timer(W time, void (*func) (VP), VP argp)
     q->next = p;
     if (r != NULL)
 	r->time -= p->time;
-    ena_int();
+    leave_critical();
 }
 
 /*************************************************************************
@@ -276,7 +277,7 @@ ER unset_timer(void (*func) (VP), VP arg)
 {
     struct timer_list *point, *before;
 
-    dis_int();
+    enter_critical();
     before = NULL;
     for (point = time_list; point != NULL; point = point->next) {
 	if ((point->func == func) && (point->argp == arg)) {
@@ -285,7 +286,7 @@ ER unset_timer(void (*func) (VP), VP arg)
 	before = point;
     }
     if (point == NULL) {
-	ena_int();
+	leave_critical();
 	return (E_PAR);
     }
 
@@ -299,7 +300,7 @@ ER unset_timer(void (*func) (VP), VP arg)
     }
     point->next = free_timer;
     free_timer = point;
-    ena_int();
+    leave_critical();
     return (E_OK);
 }
 
@@ -322,11 +323,11 @@ void check_timer(void)
     struct timer_list *p, *q;
 
 #ifdef notdef
-    dis_int();
+    enter_critical();
 #endif
     if (time_list == NULL) {
 #ifdef notdef
-	ena_int();
+	leave_critical();
 #endif
 	return;
     }
@@ -337,10 +338,10 @@ void check_timer(void)
 	if (q != NULL)
 	    q->time += time_list->time;
 	p->next = free_timer;
-	dis_int();
+	enter_critical();
 	free_timer = p;
 	time_list = q;
-	ena_int();
+	leave_critical();
     }
 }
 

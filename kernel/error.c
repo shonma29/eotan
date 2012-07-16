@@ -17,6 +17,7 @@ Version 2, June 1991
 #include "../include/mpu/io.h"
 #include "core.h"
 #include "func.h"
+#include "sync.h"
 #include "arch/archfunc.h"
 
 
@@ -37,7 +38,7 @@ void falldown(B * fmt, ...)
     va_start(ap, fmt);
     vnprintf(putchar, fmt, ap);
 
-    dis_int();
+    enter_critical();
 #ifndef I386
     for (;;);
 #else

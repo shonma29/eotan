@@ -144,9 +144,9 @@ static T_TCB *getTaskParent(const list_t *p) {
 
 void print_task_list(void)
 {
-    dis_int();
+    enter_critical();
     print_list();
-    ena_int();
+    leave_critical();
 }
 
 static void print_list(void)
@@ -384,19 +384,19 @@ ER task_switch(BOOL save_nowtask)
     H old_stat = 0;
     list_t *q;
 
-    dis_int();
+    enter_critical();
 #ifdef TSKSW_DEBUG
     printk("task_switch(): start\n");
 #endif
 
     if (on_interrupt) {
 	delayed_dispatch = TRUE;
-	ena_int();
+	leave_critical();
 	return (E_OK);
     }
 
     if (!dispatchable) {
-	ena_int();
+	leave_critical();
 	return (E_CTX);
     }
 
@@ -417,7 +417,7 @@ ER task_switch(BOOL save_nowtask)
     if (!q) {
 	printk("task_switch(): error = E_NOEXS\n");	/* */
 	doing = 0;
-	ena_int();
+	leave_critical();
 	return (E_NOEXS);
     }
 
@@ -427,7 +427,7 @@ ER task_switch(BOOL save_nowtask)
     if (run_task == next) {
 	run_task->tskstat = old_stat;
 	doing = 0;
-	ena_int();
+	leave_critical();
 	return (E_OK);
     }
 
@@ -435,7 +435,7 @@ ER task_switch(BOOL save_nowtask)
     tcb = next;
     if (tcb->tskstat != TTS_RDY) {
 	doing = 0;
-	ena_int();
+	leave_critical();
 	printk
 	    ("%s, %d: tcb->tskstat != TTS_RDY, lvl = %d id = %d stat = %d\n",
 	     __FILE__, __LINE__, tskid, tcb->tskid, tcb->tskstat);
@@ -640,9 +640,9 @@ ER sta_tsk(ID tskid, INT stacd)
     task[tskid].wait.wup_cnt = 0;
     task[tskid].wait.sus_cnt = 0;
     task[tskid].total = 0;
-    dis_int();
+    enter_critical();
     ready_enqueue(index, &(task[tskid].ready));
-    ena_int();
+    leave_critical();
 #ifdef TSKSW_DEBUG
     printk("sta_tsk: task level = %d\n", index);
 #endif
@@ -675,7 +675,7 @@ void ext_tsk(void)
 {
     /* 現在のタスクを TTS_DMT 状態にし、選択したタスクを次に走らせるよう */
     /* にする。                                                          */
-    dis_int();
+    enter_critical();
     run_task->tskstat = TTS_DMT;
     task_switch(FALSE);
 }
@@ -712,7 +712,7 @@ void exd_tsk(void)
     /* kernel 領域の stack を開放する */
     pfree((VP) VTOR((UW) run_task->stackptr0), PAGES(run_task->stksz0));
 
-    dis_int();
+    enter_critical();
     run_task->tskstat = TTS_NON;
     task_switch(FALSE);
 }
@@ -736,20 +736,20 @@ ER ter_tsk(ID tskid)
 
 	/* ready 状態にあるタスクの場合：強制終了させる */
     case TTS_RDY:
-	dis_int();
+	enter_critical();
 	task[tskid].tskstat = TTS_DMT;
 	/* レディキューから削除 */
 	list_remove(&(task[tskid].ready));
-	ena_int();
+	leave_critical();
 	break;
 
 	/* 待ち状態にあるタスクの場合：待ち状態から解放してから強制終了させる。 */
     case TTS_WAI:
 	if (task[tskid].wait.type)
 	    list_remove(&(task[tskid].wait.waiting));
-	dis_int();
+	enter_critical();
 	task[tskid].tskstat = TTS_DMT;
-	ena_int();
+	leave_critical();
 	break;
     case TTS_NON:
 	return (E_NOEXS);
@@ -775,11 +775,11 @@ ER chg_pri(ID tskid, PRI tskpri)
 
     case TTS_RDY:
     case TTS_RUN:
-	dis_int();
+	enter_critical();
 	list_remove(&(task[tskid].ready));
 	task[tskid].tsklevel = tskpri;
 	ready_enqueue(task[tskid].tsklevel, &(task[tskid].ready));
-	ena_int();
+	leave_critical();
 	break;
 
 	break;
@@ -801,9 +801,9 @@ ER rot_rdq(PRI tskpri)
 	return (E_PAR);
     }
 
-    dis_int();
+    enter_critical();
     ready_rotate(tskpri);
-    ena_int();
+    leave_critical();
 
     /* タスクスイッチによる実行権の放棄: 必要無いのかも */
     task_switch(TRUE);
@@ -827,11 +827,11 @@ ER rel_wai(ID tskid)
 	return (E_NOEXS);
 
     case TTS_WAI:
-	dis_int();
+	enter_critical();
 	taskp->wait.type = wait_none;
 	list_remove(&(task[tskid].wait.waiting));
 	taskp->wait.result = E_RLWAI;
-	ena_int();
+	leave_critical();
 	wup_tsk(tskid);
 	break;
 
@@ -865,13 +865,13 @@ ER slp_tsk(void)
     if (run_task->tskid == 23 || run_task->tskid == 26)
 	printk("slp_tsk: %d\n", run_task->tskid);	/* */
 #endif
-    dis_int();
+    enter_critical();
     if (run_task->wait.wup_cnt > 0) {
 	run_task->wait.wup_cnt--;
 #ifdef TSKSW_DEBUG
 	printk("sleep task: wakeup count = %d\n", run_task->wait.wup_cnt);
 #endif
-	ena_int();
+	leave_critical();
 	return (E_OK);
     }
 
@@ -912,7 +912,7 @@ ER wup_tsk(ID taskid)
 	return (E_OBJ);
     }
 
-    dis_int();
+    enter_critical();
     if (p->tskstat == TTS_WAS) {
 	p->tskstat = TTS_SUS;
     } else if (p->tskstat == TTS_WAI) {
@@ -934,7 +934,7 @@ ER wup_tsk(ID taskid)
 	p->wait.wup_cnt++;
     }
 
-    ena_int();
+    leave_critical();
 
     return (E_OK);
 }
@@ -963,7 +963,7 @@ ER sus_tsk(ID taskid)
 	return (E_OBJ);
     }
 
-    dis_int();
+    enter_critical();
     taskp = &task[taskid];
     taskp->wait.sus_cnt++;
     switch (taskp->tskstat) {
@@ -975,7 +975,7 @@ ER sus_tsk(ID taskid)
     case TTS_SUS:
 	if (taskp->wait.sus_cnt > MAX_SUSPEND_NEST) {
 	    taskp->wait.sus_cnt = MAX_SUSPEND_NEST;
-	    ena_int();
+	    leave_critical();
 	    return (E_QOVR);
 	}
 	break;
@@ -985,16 +985,16 @@ ER sus_tsk(ID taskid)
 	break;
 
     case TTS_NON:
-	ena_int();
+	leave_critical();
 	return (E_NOEXS);
 	/* DO NOT REACHED */
 
     default:
-	ena_int();
+	leave_critical();
 	return (E_OBJ);
 	/* DO NOT REACHED */
     }
-    ena_int();
+    leave_critical();
     return (E_OK);
 }
 
@@ -1028,7 +1028,7 @@ ER rsm_tsk(ID taskid)
 	return (E_ID);
     }
 
-    dis_int();
+    enter_critical();
     taskp = &task[taskid];
     switch (taskp->tskstat) {
     case TTS_SUS:
@@ -1047,14 +1047,14 @@ ER rsm_tsk(ID taskid)
 	break;
 
     case TTS_NON:
-	ena_int();
+	leave_critical();
 	return (E_NOEXS);
 
     default:
-	ena_int();
+	leave_critical();
 	return (E_OBJ);
     }
-    ena_int();
+    leave_critical();
     return (E_OK);
 }
 
@@ -1078,20 +1078,20 @@ ER can_wup(INT * p_wupcnt, ID taskid)
 	return (E_ID);
     }
 
-    dis_int();
+    enter_critical();
     taskp = &task[taskid];
     switch (taskp->tskstat) {
     case TTS_DMT:
-	ena_int();
+	leave_critical();
 	return (E_OBJ);
 
     case TTS_NON:
-	ena_int();
+	leave_critical();
 	return (E_NOEXS);
     }
     *p_wupcnt = taskp->wait.wup_cnt;
     taskp->wait.wup_cnt = 0;
-    ena_int();
+    leave_critical();
     return (E_OK);
 }
 
@@ -1190,7 +1190,7 @@ ER vcpy_stk(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi, W edi, ID dst)
 	return (E_ID);
     }
 
-    dis_int();
+    enter_critical();
     src_tsk = &task[src];
     dst_tsk = &task[dst];
 
@@ -1240,7 +1240,7 @@ ER vcpy_stk(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi, W edi, ID dst)
     dst_tsk->use_fpu = src_tsk->use_fpu;
 #endif
 
-    ena_int();
+    leave_critical();
     return (E_OK);
 }
 
@@ -1268,7 +1268,7 @@ ER vset_ctx(ID tid, W eip, B * stackp, W stsize)
 	return (E_ID);
     }
 
-    dis_int();
+    enter_critical();
     tsk = &task[tid];
 
     /* stack frame の作成． */
@@ -1335,7 +1335,7 @@ ER vset_ctx(ID tid, W eip, B * stackp, W stsize)
 
     /* quantum の設定 */
     tsk->quantum = QUANTUM;
-    ena_int();
+    leave_critical();
 
     list_remove(&(tsk->wait.waiting));
     wup_tsk(tid);

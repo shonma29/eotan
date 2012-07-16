@@ -16,6 +16,7 @@ Version 2, June 1991
 #include "core.h"
 #include "func.h"
 #include "task.h"
+#include "sync.h"
 #include "../../include/mpu/io.h"
 
 void fpu_save(T_TCB *taskp)
@@ -31,7 +32,7 @@ void fpu_restore(T_TCB *taskp)
 void fpu_start(T_TCB *taskp)
 {
   if (taskp->use_fpu) return;
-  dis_int();
+  enter_critical();
   if (run_task == taskp) {
     __asm__("finit");
     __asm__("fsave %0" : "=m" (taskp->fpu_context));
@@ -48,5 +49,5 @@ void fpu_start(T_TCB *taskp)
     }
     taskp->use_fpu = 1;
   }
-  ena_int();
+  leave_critical();
 }

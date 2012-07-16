@@ -304,7 +304,7 @@ ER snd_mbf(ID id, INT size, VP msg)
 	    run_task->wait.detail.msg.msg = msg;
 	    run_task->wait.type = wait_msg;
 	    can_wup(&wcnt, run_task->tskid);
-	    dis_int();
+	    enter_critical();
 	    leave_serialize();
 
 	    slp_tsk();
@@ -333,7 +333,7 @@ ER snd_mbf(ID id, INT size, VP msg)
 		    &(run_task->wait.waiting));
 	    run_task->wait.type = wait_msg;
 	    can_wup(&wcnt, run_task->tskid);
-	    dis_int();
+	    enter_critical();
 	    leave_serialize();
 
 	    slp_tsk();
@@ -496,7 +496,7 @@ ER rcv_mbf(VP msg, INT * size, ID id)
 	    run_task->wait.detail.msg.msg = msg;
 	    run_task->wait.type = wait_msg;
 	    can_wup(&wcnt, run_task->tskid);
-	    dis_int();
+	    enter_critical();
 	    leave_serialize();
 
 	    slp_tsk();
@@ -523,7 +523,7 @@ ER rcv_mbf(VP msg, INT * size, ID id)
 		    &(run_task->wait.waiting));
 	    run_task->wait.type = wait_msg;
 	    can_wup(&wcnt, run_task->tskid);
-	    dis_int();
+	    enter_critical();
 	    leave_serialize();
 
 	    slp_tsk();

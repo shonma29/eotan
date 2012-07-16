@@ -1037,7 +1037,7 @@ static ER sys_vsys_msc(VP argp)
     case 1:
 	/* fall down */
 	falldown(args->arg);
-	dis_int();
+	enter_critical();
 	for (;;);
 	/* NOT REACHED */
 

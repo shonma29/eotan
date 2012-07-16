@@ -12,6 +12,7 @@ Version 2, June 1991
 */
 #include "../../include/itron/types.h"
 #include "../../include/mpu/io.h"
+#include "../../kernel/sync.h"
 #include "../../kernel/arch/arch.h"
 
 /*************************************************************************
@@ -26,11 +27,11 @@ Version 2, June 1991
  */
 void reset_intr_mask(W intn)
 {
-    dis_int();
+    enter_critical();
     if (intn < 8) {
 	outb(MASTER_8259A_DATA, inb(MASTER_8259A_DATA) & ~(1 << intn));
     } else {
 	outb(SLAVE_8259A_DATA, inb(SLAVE_8259A_DATA) & ~(1 << (intn - 8)));
     }
-    ena_int();
+    leave_critical();
 }

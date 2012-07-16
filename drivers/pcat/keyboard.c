@@ -19,6 +19,7 @@ Version 2, June 1991
 #include "task.h"
 #include "func.h"
 #include "misc.h"
+#include "sync.h"
 #include "../../kernel/mpu/interrupt.h"
 #include "../../include/mpu/io.h"
 #include "../../include/keycode.h"
@@ -150,10 +151,10 @@ W intr_kbd(void)
 	return E_OK;
     }
 
-    dis_int();
+    enter_critical();
     key = alloc_key(ch);
     if (key == NULL) {		/* キーがない */
-	ena_int();
+	leave_critical();
 	return E_OK;
     }
 
@@ -164,7 +165,7 @@ W intr_kbd(void)
     } else {
 	input_buffer.first = input_buffer.last = key;
     }
-    ena_int();
+    leave_critical();
 
     if ((error = wup_tsk(ITRON_KEYBOARD)) != E_OK) {
 	if (error != E_OBJ) {
@@ -180,7 +181,7 @@ void system_reset()
 {
   while ((inb(KEY_STAT) & I_BUF_FULL_BIT) == I_BUF_FULL_BIT)
     inb(KEY_DATA);
-  dis_int();
+  enter_critical();
   outb(KEY_COM, RESET_COMMAND);
   asm("hlt");
 }

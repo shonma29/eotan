@@ -20,6 +20,7 @@ Version 2, June 1991
 #include "interrupt.h"
 #include "task.h"
 #include "func.h"
+#include "sync.h"
 #include "../../include/mpu/io.h"
 
 /* T_INTR_HANDLER	割り込みハンドラ定義
@@ -254,18 +255,13 @@ void interrupt(W intn)
       asm("outb %al, $0x21");
     }
 
-#if 0
-    on_interrupt = FALSE;
-#else
-    dis_int();
+    enter_critical();
     --on_interrupt;
-    ena_int();
-#endif
-#if 1
+    leave_critical();
+
     if (delayed_dispatch && (on_interrupt == 0)) {
 	task_switch(TRUE);
     }
-#endif
 }
 
 /*
@@ -469,13 +465,13 @@ void fault(UW intn, UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 	   UW errcode, UW eip, UW cs, UW eflags)
 {
     if (intn == 1) {
-	ena_int();
+	leave_critical();
 	printk("\nFAULT: Interrupt Number is %d ", intn);
 	printk("PID = %d eflags = 0x%x\n", run_task->tskid, eflags);
 	return;
     }
 
-    dis_int();
+    enter_critical();
     printk("\nFAULT: Interrupt Number is %d.\n", intn);
     printk("PID = %d\n", run_task->tskid);
     printk("run_task->state.state = %d\n", run_task->tskstat);
@@ -508,7 +504,7 @@ void fault(UW intn, UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 #if 0
     printk("        ss = 0x%x\n", ss);
 #endif
-    ena_int();
+    leave_critical();
     for (;;);
 }
 
@@ -518,9 +514,9 @@ void fault(UW intn, UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 W wait_int(W * flag)
 {
     while (*flag == FALSE);
-    dis_int();
+    enter_critical();
     *flag = FALSE;
-    ena_int();
+    leave_critical();
     return (*flag);
 }
 
