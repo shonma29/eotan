@@ -142,9 +142,8 @@ ER del_flg(ID flgid)
 
     while ((q = list_dequeue(&(flag_table[flgid].receiver))) != NULL) {
 	p = getTaskParent(q);
-	p->wait.type = wait_none;
 	p->wait.result = E_DLT;
-	wup_tsk(p->tskid);
+	release(p);
     }
 
     flag_table[flgid].flgatr = TA_UNDEF;
@@ -207,9 +206,8 @@ ER set_flg(ID flgid, UINT setptn)
 	    list_remove(q);
 	    leave_critical();
 	    p->wait.detail.evf.flgptn = flag_table[flgid].iflgptn;
-	    p->wait.type = wait_none;
 	    tsw_flag = TRUE;
-	    wup_tsk(p->tskid);
+	    release(p);
 	    if (p->wait.detail.evf.wfmode & TWF_CLR) {
 		/* μITORN 3.0 標準ハンドブック p.141 参照 */
 		enter_critical();

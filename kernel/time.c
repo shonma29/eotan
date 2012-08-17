@@ -99,10 +99,9 @@ dly_func (VP p)
   enter_serialize();
   taskp = (T_TCB *)p;
   taskp->wait.result = E_OK;
-  taskp->wait.type = wait_none;
   leave_serialize();
 
-  wup_tsk (taskp->tskid);
+  release(taskp);
 }
 
 ER dly_tsk(DLYTIME dlytim)

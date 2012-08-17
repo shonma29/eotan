@@ -240,16 +240,14 @@ ER del_mbf(ID id)
     while ((q = list_dequeue(&(message_table[id].receiver))) != NULL) {
 	p = getTaskParent(q);
 	p->wait.result = E_DLT;
-	p->wait.type = wait_none;
-	wup_tsk(p->tskid);
+	release(p);
     }
 
     /* 送信待ちタスクに対して E_DLT を返す */
     while ((q = list_dequeue(&(message_table[id].sender))) != NULL) {
 	p = getTaskParent(q);
 	p->wait.result = E_DLT;
-	p->wait.type = wait_none;
-	wup_tsk(p->tskid);
+	release(p);
     }
 
     enter_serialize();
@@ -316,9 +314,8 @@ ER snd_mbf(ID id, INT size, VP msg)
 	    p = getTaskParent(q);
 	    vput_reg(p->tskid, p->wait.detail.msg.msg, size, msg);
 	    p->wait.detail.msg.size = size;
-	    p->wait.type = wait_none;
 	    tsksw = TRUE;
-	    wup_tsk(p->tskid);
+	    release(p);
 	}
     } else {
       retry:
@@ -360,9 +357,8 @@ ER snd_mbf(ID id, INT size, VP msg)
 	    leave_serialize();
 
 	    p = getTaskParent(q);
-	    p->wait.type = wait_none;
 	    tsksw = TRUE;
-	    wup_tsk(p->tskid);
+	    release(p);
 	}
     }
 
@@ -414,9 +410,8 @@ ER psnd_mbf(ID id, INT size, VP msg)
 	    p = getTaskParent(q);
 	    vput_reg(p->tskid, p->wait.detail.msg.msg, size, msg);
 	    p->wait.detail.msg.size = size;
-	    p->wait.type = wait_none;
 	    tsksw = TRUE;
-	    wup_tsk(p->tskid);
+	    release(p);
 	}
     } else {
 	newmsg = alloc_msg();
@@ -445,9 +440,8 @@ ER psnd_mbf(ID id, INT size, VP msg)
 	    leave_serialize();
 
 	    p = getTaskParent(q);
-	    p->wait.type = wait_none;
 	    tsksw = TRUE;
-	    wup_tsk(p->tskid);
+	    release(p);
 	}
     }
 
@@ -506,8 +500,7 @@ ER rcv_mbf(VP msg, INT * size, ID id)
 	    *size = p->wait.detail.msg.size;
 	    vget_reg(p->tskid, p->wait.detail.msg.msg,
 		    p->wait.detail.msg.size, msg);
-	    p->wait.type = wait_none;
-	    wup_tsk(p->tskid);
+	    release(p);
 	}
     } else {
 	/* メッセージが存在しない --> sleep する。 */
@@ -544,8 +537,7 @@ ER rcv_mbf(VP msg, INT * size, ID id)
 	    leave_serialize();
 
 	    p = getTaskParent(q);
-	    p->wait.type = wait_none;
-	    wup_tsk(p->tskid);
+	    release(p);
 	}
     }
 

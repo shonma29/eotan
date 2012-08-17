@@ -422,7 +422,7 @@ ER task_switch(void)
 #endif
     if ((next->tskstat != TTS_RDY)
 	    || (next->context.eip == 0)) {
-	falldown("task_switch: panic next(%d) stat=%d, eip=%d\n",
+	falldown("task_switch: panic next(%d) stat=%d, eip=%x\n",
 		next->tskid, next->tskstat, next->context.eip);
     }
 
@@ -787,11 +787,10 @@ ER rel_wai(ID tskid)
 
     case TTS_WAI:
 	enter_critical();
-	taskp->wait.type = wait_none;
 	list_remove(&(task[tskid].wait.waiting));
 	taskp->wait.result = E_RLWAI;
 	leave_critical();
-	wup_tsk(tskid);
+	release(taskp);
 	break;
 
     default:
@@ -833,6 +832,7 @@ ER slp_tsk(void)
 	return (E_OK);
     }
 
+    run_task->wait.type = wait_slp;
     wait(run_task);
     return (run_task->wait.result);
 }
@@ -856,37 +856,43 @@ ER wup_tsk(ID taskid)
 
     p = &(task[taskid]);
 
+    if (p->tskstat == TTS_NON) {
+	return (E_NOEXS);
+    }
+
     if ((p == run_task) || (p->tskstat == TTS_DMT)) {
 	return (E_OBJ);
     }
 
-    /* すべての待ち状態が解除されていなければ、先には進まない */
-    if (p->wait.type) {
+    if (p->wait.type != wait_slp) {
 	printk("task %d is waiting for %d. abort wakeup.\n",
 		p->tskid, p->wait.type);
 	return (E_OBJ);
     }
 
     enter_critical();
-    if (p->tskstat == TTS_WAS) {
-	p->tskstat = TTS_SUS;
-    } else if (p->tskstat == TTS_WAI) {
-	p->tskstat = TTS_RDY;
-	if (p->quantum > 0)
-	    p->quantum = QUANTUM;
-	if (((UW) p < MIN_KERNEL) || ((UW) p >= 0x81000000)) {
+    p->tskstat &= ~TTS_WAI;
+
+    if (p->tskstat) {
+	p->wait.wup_cnt++;
+    }
+
+    else {
+	if (((UW) p->context.eip < MIN_KERNEL)
+		|| ((UW) p->context.eip >= 0x81000000)) {
 	  /* kernel プロセスの上限は適当 */
 #ifdef TSKSW_DEBUG
-	    printk("wup_tsk: error on tasklist\n");
-#endif
 	    print_task_list();
-	    falldown("kernel: task.\n");
-	} else {
-	    /* ready queue の末尾に追加 */
-	    ready_enqueue(p->tsklevel, &(p->ready));
+#endif
+	    falldown("wup_tsk: task(%d) eip=%x\n", p->tskid, p->context.eip);
 	}
-    } else if (p->tskstat == TTS_RDY || p->tskstat == TTS_SUS) {
-	p->wait.wup_cnt++;
+
+	p->tskstat = TTS_RDY;
+	/* ready queue の末尾に追加 */
+	ready_enqueue(p->tsklevel, &(p->ready));
+
+	if (p->quantum > 0)
+	    p->quantum = QUANTUM;
     }
 
     leave_critical();
@@ -1283,7 +1289,6 @@ ER vset_ctx(ID tid, W eip, B * stackp, W stsize)
     tsk->context.ss = USER_SSEG | USER_DPL;
 
     /* タスクの初期化 */
-    tsk->wait.type = wait_none;
 
     /* page fault handler の登録 */
     tsk->page_fault_handler = pf_handler;
@@ -1293,7 +1298,7 @@ ER vset_ctx(ID tid, W eip, B * stackp, W stsize)
     leave_critical();
 
     list_remove(&(tsk->wait.waiting));
-    wup_tsk(tid);
+    release(tsk);
     return (E_OK);
 }
 

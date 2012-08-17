@@ -44,5 +44,6 @@ extern int dispatchable;
 #define leave_critical() ena_int()
 
 extern void wait(T_TCB *task);
+extern void release(T_TCB *task);
 
 #endif

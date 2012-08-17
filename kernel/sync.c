@@ -36,3 +36,13 @@ void wait(T_TCB *task) {
 	list_remove(&(task->ready));
 	task_switch();
 }
+
+void release(T_TCB *task) {
+	task->wait.type = wait_none;
+	task->tskstat &= ~TTS_WAI;
+
+	if (!task->tskstat) {
+	    task->tskstat = TTS_RDY;
+	    ready_enqueue(task->tsklevel, &(task->ready));
+	}
+}
