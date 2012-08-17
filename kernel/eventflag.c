@@ -219,7 +219,7 @@ ER set_flg(ID flgid, UINT setptn)
 	}
     }
     if (tsw_flag) {
-	task_switch(TRUE);
+	task_switch();
     }
 
     return (E_OK);

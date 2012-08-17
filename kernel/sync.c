@@ -26,5 +26,13 @@ For more information, please refer to <http://unlicense.org/>
 */
 
 #include "sync.h"
+#include "task.h"
 
 int dispatchable = TRUE;
+
+void wait(T_TCB *task) {
+	task->wait.result = E_OK;
+	task->tskstat = TTS_WAI;
+	list_remove(&(task->ready));
+	task_switch();
+}

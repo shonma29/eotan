@@ -150,7 +150,7 @@ void intr_interval(void)
 	    rot_rdq(TPRI_RUN);
 #ifdef notdef
 	    /* rot_rdq 内部でも呼び出される */
-	    task_switch(TRUE);
+	    task_switch();
 #endif
 	}
     }
@@ -161,7 +161,7 @@ void intr_interval(void)
 	    /* KERNEL_TASK で timer に設定されている関数を実行 */
 	    do_timer = 1;
 	    chg_pri(KERNEL_TASK, MIN_PRIORITY);
-	    task_switch(TRUE);
+	    task_switch();
 	}
     }
 }

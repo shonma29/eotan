@@ -129,7 +129,6 @@ Version 2, June 1991
 extern UW system_ticks;
 
 T_TCB *run_task;		/* 現在、走行中のタスク */
-char doing = 0;
 
 static T_TCB *task;
 static T_TCB task_buffer[MAX_TSKID - MIN_TSKID + 1];
@@ -375,13 +374,9 @@ static ER make_task_stack(T_TCB * task, W size, VP * sp)
  *		ready_task[] の更新を行うのが主となる。
  *		
  */
-ER task_switch(BOOL save_nowtask)
+ER task_switch(void)
 {
-    T_TCB *tcb;
-    ID tskid;
-    T_TCB *old;			/* */
-    T_TCB *next = NULL;
-    H old_stat = 0;
+    T_TCB *next;
     list_t *q;
 
     enter_critical();
@@ -400,23 +395,10 @@ ER task_switch(BOOL save_nowtask)
 	return (E_CTX);
     }
 
-    if (doing && (save_nowtask == TRUE))
-	return E_CTX;
-    doing = 1;
-
-    if (save_nowtask == FALSE) {
-	/* 現タスクを ready タスクキューから取り除く */
-	list_remove(&(run_task->ready));
-    } else {
-	old_stat = run_task->tskstat;
-	run_task->tskstat = TTS_RDY;
-    }
-
     q = ready_dequeue();
 
     if (!q) {
 	printk("task_switch(): error = E_NOEXS\n");	/* */
-	doing = 0;
 	leave_critical();
 	return (E_NOEXS);
     }
@@ -425,48 +407,38 @@ ER task_switch(BOOL save_nowtask)
 
     /* 選択したタスクが、現タスクならば、何もしないで戻る */
     if (run_task == next) {
-	run_task->tskstat = old_stat;
-	doing = 0;
 	leave_critical();
 	return (E_OK);
     }
 
+    else if (!list_is_empty(&(run_task->ready))) {
+	run_task->tskstat = TTS_RDY;
+    }
+
     /* 選択したタスクを run_task にする */
-    tcb = next;
-    if (tcb->tskstat != TTS_RDY) {
-	doing = 0;
-	leave_critical();
-	printk
-	    ("%s, %d: tcb->tskstat != TTS_RDY, lvl = %d id = %d stat = %d\n",
-	     __FILE__, __LINE__, tskid, tcb->tskid, tcb->tskstat);
-
-	return (E_SYS);
-    }
-    old = run_task;		/* */
-    run_task = tcb;
-    run_task->tskstat = TTS_RUN;
-
 #ifdef TSKSW_DEBUG
-    printk("task_switch(): new task (ID = %d)\n", tcb->tskid);
+    printk("task_switch: current(%d) -> next(%d)\n",
+	    run_task->tskid, next->tskid);
 #endif
-    if (run_task->context.eip == 0) {
-	printk("ERROR!!!! context data is invalid.\n");
-	printk("OLD TASK ID = %d\n", old->tskid);
-	printk("NEW TASK ID = %d\n", run_task->tskid);
-	falldown("SYSTEM DOWN.\n");
+    if ((next->tskstat != TTS_RDY)
+	    || (next->context.eip == 0)) {
+	falldown("task_switch: panic next(%d) stat=%d, eip=%d\n",
+		next->tskid, next->tskstat, next->context.eip);
     }
+
+    if (run_task->use_fpu)
+	fpu_save(run_task);
+
+    run_task = next;
+    run_task->tskstat = TTS_RUN;
 
     delayed_dispatch = FALSE;
 
-    if (old->use_fpu)
-	fpu_save(old);
-
 /* resume を呼び出す。resume の引数は、TSS へのセレクタ */
 #ifdef TSKSW_DEBUG
-    printk("resume (0x%x)\n", ((tcb->tskid + TSS_BASE) << 3) & 0xfff8);
+    printk("resume (0x%x)\n", ((next->tskid + TSS_BASE) << 3) & 0xfff8);
 #endif
-    resume((UW) (tcb->tskid + TSS_BASE) << 3);
-    doing = 0;
+    resume((UW) (next->tskid + TSS_BASE) << 3);
 
     /* 正常に終了した：次のタスクスイッチの時にここに戻る */
     if (run_task->use_fpu)
@@ -662,7 +634,8 @@ void ext_tsk(void)
     /* にする。                                                          */
     enter_critical();
     run_task->tskstat = TTS_DMT;
-    task_switch(FALSE);
+    list_remove(&(run_task->ready));
+    task_switch();
 }
 
 /******************************************************************************
@@ -699,7 +672,8 @@ void exd_tsk(void)
 
     enter_critical();
     run_task->tskstat = TTS_NON;
-    task_switch(FALSE);
+    list_remove(&(run_task->ready));
+    task_switch();
 }
 
 /*************************************************************************
@@ -791,7 +765,7 @@ ER rot_rdq(PRI tskpri)
     leave_critical();
 
     /* タスクスイッチによる実行権の放棄: 必要無いのかも */
-    task_switch(TRUE);
+    task_switch();
     return (E_OK);
 }
 
@@ -847,8 +821,7 @@ ER get_tid(ID * p_tskid)
 ER slp_tsk(void)
 {
 #ifdef TSKSW_DEBUG
-    if (run_task->tskid == 23 || run_task->tskid == 26)
-	printk("slp_tsk: %d\n", run_task->tskid);	/* */
+	printk("slp_tsk: %d\n", run_task->tskid);
 #endif
     enter_critical();
     if (run_task->wait.wup_cnt > 0) {
@@ -860,10 +833,7 @@ ER slp_tsk(void)
 	return (E_OK);
     }
 
-    run_task->wait.tmout = system_ticks;
-    run_task->wait.result = E_OK;
-    run_task->tskstat = TTS_WAI;
-    task_switch(FALSE);		/* run_task を ready_task キューに保存しない */
+    wait(run_task);
     return (run_task->wait.result);
 }
 

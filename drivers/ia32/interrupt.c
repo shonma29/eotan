@@ -260,7 +260,7 @@ void interrupt(W intn)
     leave_critical();
 
     if (delayed_dispatch && (on_interrupt == 0)) {
-	task_switch(TRUE);
+	task_switch();
     }
 }
 

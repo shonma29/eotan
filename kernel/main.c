@@ -74,7 +74,6 @@ void banner(void);
 /* 外部変数の宣言 */
 extern W do_timer;
 extern UW system_ticks;
-extern char doing;
 
 /* 強制終了するタスクのテーブル */
 #define TRMTBL_SIZE 10
@@ -144,7 +143,6 @@ ER itron(void)
     trmtbl_top = 0;
 
     do_timer = 0;
-    doing = 0;
     system_ticks = 0;
 
 #ifdef AUTO_START
@@ -192,7 +190,7 @@ ER itron(void)
 	if (do_halt) asm("hlt");
 #endif
 
-	task_switch(TRUE);
+	task_switch();
     }
     falldown("falldown.");
 /* not return */
@@ -271,7 +269,7 @@ void run(W entry)
 #endif
     }
     sta_tsk(rid, 0);
-    task_switch(TRUE);
+    task_switch();
 }
 
 void run_init_program(void)

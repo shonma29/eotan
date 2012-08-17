@@ -45,7 +45,7 @@ extern UW pmemfree(void);
 /* task.c */
 extern void init_task(void);
 extern void init_task1(void);
-extern ER task_switch(BOOL save_nowtask);
+extern ER task_switch(void);
 extern void print_task_list(void);
 extern T_TCB *get_tskp(ID tskid);
 extern void make_local_stack(T_TCB *tsk, W size, W acc);
