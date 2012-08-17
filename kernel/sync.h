@@ -1,3 +1,5 @@
+#ifndef _CORE_SYNC_H_
+#define _CORE_SYNC_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,6 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include "func.h"
 
 #ifndef TRUE
 #define TRUE 1
@@ -40,3 +43,6 @@ extern int dispatchable;
 #define enter_critical() dis_int()
 #define leave_critical() ena_int()
 
+extern void wait(T_TCB *task);
+
+#endif

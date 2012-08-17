@@ -1,3 +1,5 @@
+#ifndef _CORE_READY_H_
+#define _CORE_READY_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -31,3 +33,5 @@ extern void ready_enqueue(const int pri, list_t *src);
 extern void ready_push(const int pri, list_t *src);
 extern void ready_rotate(const int pri);
 extern list_t *ready_dequeue();
+
+#endif

@@ -1,5 +1,5 @@
-#ifndef _WAIT_H_
-#define _WAIT_H_
+#ifndef _CORE_WAIT_H_
+#define _CORE_WAIT_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -45,7 +45,6 @@ typedef struct {
 	list_t waiting;
 	ID obj_id;
 	ER result;
-	UW tmout;
 	union {
 		struct {
 			UINT waiptn;
