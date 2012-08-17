@@ -117,32 +117,15 @@ offset:		.long	0x0000
 selector:	.word	0x0000
 
 resume:
-#if 0
-		pushl	%ebp
-		movl	%esp, %ebp
-		movl	8(%ebp), %edx
-		pushl	%edx
-		pushl	$LC0
-		call	printf
-		leave
-		ret
-#endif
 		cli
 		pushl	%ebp
 		movl	%esp, %ebp
-#if 0	
-		movl	8(%ebp), %edx		/* original is 8(%ebp) */
-		movw	%dx, (selector)
-		lea	offset, %eax		/* */
-		movl	%cr3, %edx	/* TLB キャッシュをフラッシュする */
-		movl	%edx, %cr3
-#else
 		movl	8(%ebp), %eax		/* original is 8(%ebp) */
 		movw	%ax, (selector)
 		movl	%cr3, %eax	/* TLB キャッシュをフラッシュする */
 		movl	%eax, %cr3
 		lea	offset, %eax		/* */
-#endif
+
 /*
  *		プロセス切り換え
  *		ljmp	far (%ax)
