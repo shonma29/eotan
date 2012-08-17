@@ -20,7 +20,6 @@ extern void simple_init_console(void);
 extern void putchar(TC ch);	/* １文字出力                   */
 
 /* keyboard.c */
-extern W intr_kbd(void);
 extern void system_reset(void);
 
 /* timer.c */

@@ -35,11 +35,7 @@ typedef struct intr_handler_t {
  *	割り込み処理の大域変数
  *
  */
-#if 0
-BOOL on_interrupt = FALSE;	/* 割り込み中かどうかを示すフラグ */
-#else
 W on_interrupt = 0;
-#endif
 BOOL delayed_dispatch = FALSE;
 
 /*
@@ -74,22 +70,13 @@ W init_interrupt(void)
     outb(MASTER_8259A_COM, 0x11);	/* ICW1 */
     outb(MASTER_8259A_DATA, 0x20);	/* ICW2 */
     outb(MASTER_8259A_DATA, 0x04);	/* ICW3 */
-#ifdef notdef
-    outb(MASTER_8259A_DATA, 0x1d);	/* ICW4 */
-#else
     outb(MASTER_8259A_DATA, 0x01);	/* ICW4 */
-#endif
 
     /* init slave 8259A */
     outb(SLAVE_8259A_COM, 0x11);	/* ICW1 */
     outb(SLAVE_8259A_DATA, 0x28);	/* ICW2 */
-#ifdef notdef
-    outb(SLAVE_8259A_DATA, 0x07);	/* ICW3 */
-    outb(SLAVE_8259A_DATA, 0x09);	/* ICW4 */
-#else
     outb(SLAVE_8259A_DATA, 0x02);	/* ICW3 */
     outb(SLAVE_8259A_DATA, 0x01);	/* ICW4 */
-#endif
 
 /* set mask */
     outb(MASTER_8259A_DATA, 0xfb);	/* 1111 1011 */
@@ -175,14 +162,7 @@ W init_interrupt(void)
 static int mask;
 void interrupt(W intn)
 {
-#if 0
-    if (on_interrupt) {
-	return;
-    }
-    on_interrupt = TRUE;
-#else
     on_interrupt++;
-#endif
     delayed_dispatch = FALSE;
 
 #ifdef notdef
@@ -210,8 +190,6 @@ void interrupt(W intn)
 	    printk("%d[%d]", intn, run_task->tskid);
 #endif
 	    (intr_table[INT_KEYBOARD].func) ();
-	} else {
-	    intr_kbd();
 	}
 	break;
 
@@ -226,15 +204,6 @@ void interrupt(W intn)
 	printk("interrupt: int HD\n");	/* */
 	if (intr_table[INT_HD].func != 0) {
 	    (intr_table[INT_HD].func) ();
-	}
-	break;
-#endif
-
-#ifdef notdef
-    case INT_SCSI:
-	printk("fault: int SCSI\n");	/* */
-	if (intr_table[INT_SCSI].func != 0) {
-	    (intr_table[INT_SCSI].func) ();
 	}
 	break;
 #endif
@@ -442,11 +411,8 @@ void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
     }
 #endif
 
-#if 0
-    on_interrupt = FALSE;
-#else
     --on_interrupt;
-#endif
+
     for (;;);
 }
 

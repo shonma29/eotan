@@ -147,28 +147,11 @@ Version 2, June 1991
 #define MAX_TIMER	(500)
 
 
-/* システムタスクのリスト */
-#define NSYSTEM_TASK	(20)	/* システムタスクの数 */
-
-#define ITRON_IDLE	(1)
-#define ITRON_RS232C	(2)	/* ITRON 用 RS232C ドライバタスク */
-#define ITRON_KEYBOARD	(3)
-#define ITRON_CONSOLE	(4)	/* コンソールデバイスドライバ */
-#define ITRON_DEBUG	(5)	/* デバッグ用プロセス: コマンドインタプリタ用 */
-
-/* システムセマフォのリスト */
-#define ITRON_KEYBOARD_SEM	(3)	/* キーボード入力用のセマフォ    */
-
 /* 時間管理 */
 #define MAX_CYCLIC		(50)	/* 周期起動ハンドラの最大数 */
 #define MAX_ALARM		(50)	/* アラームハンドラの最大数 */
 
 #define FDC_ALARM		(0)
-
-/* システムメッセージバッファのリスト */
-#define ITRON_DEBUG_MBF		(1)	/* デバッグ用プロセス: コマンドインタプリタで使用 */
-#define ITRON_RS232C_MBF	(2)	/* ITRON 用 RS232C ドライバタスクで使用 */
-#define ITRON_KEYBOARD_MBF	(3)	/* キーボード入力用のメッセージバッファ */
 
 #define MAX_MODULE_NAME	(40)
 #define MAX_MODULE	(20)
