@@ -303,14 +303,12 @@ ER snd_mbf(ID id, INT size, VP msg)
 	    run_task->wait.detail.msg.size = size;
 	    run_task->wait.detail.msg.msg = msg;
 	    run_task->wait.type = wait_msg;
-	    can_wup(&wcnt, run_task->tskid);
 	    enter_critical();
 	    leave_serialize();
 
-	    slp_tsk();
-	    if (run_task->wait.result) {
-		return (run_task->wait.result);
-	    }
+	    wait(run_task);
+	    return (run_task->wait.result);
+
 	} else {
 	    /* もし、受信待ちタスクがあれば、message を転送して wakeup する */
 	    leave_serialize();
@@ -332,11 +330,10 @@ ER snd_mbf(ID id, INT size, VP msg)
 	    list_enqueue(&(message_table[id].sender),
 		    &(run_task->wait.waiting));
 	    run_task->wait.type = wait_msg;
-	    can_wup(&wcnt, run_task->tskid);
 	    enter_critical();
 	    leave_serialize();
 
-	    slp_tsk();
+	    wait(run_task);
 	    dealloc_msg(newmsg);
 	    if (run_task->wait.result) {
 		return (run_task->wait.result);
@@ -495,15 +492,13 @@ ER rcv_mbf(VP msg, INT * size, ID id)
 	    run_task->wait.detail.msg.size = 0;
 	    run_task->wait.detail.msg.msg = msg;
 	    run_task->wait.type = wait_msg;
-	    can_wup(&wcnt, run_task->tskid);
 	    enter_critical();
 	    leave_serialize();
 
-	    slp_tsk();
+	    wait(run_task);
 	    *size = run_task->wait.detail.msg.size;
-	    if (run_task->wait.result) {
-		return (run_task->wait.result);
-	    }
+	    return (run_task->wait.result);
+
 	} else {
 	    leave_serialize();
 
@@ -522,11 +517,10 @@ ER rcv_mbf(VP msg, INT * size, ID id)
 	    list_enqueue(&(message_table[id].receiver),
 		    &(run_task->wait.waiting));
 	    run_task->wait.type = wait_msg;
-	    can_wup(&wcnt, run_task->tskid);
 	    enter_critical();
 	    leave_serialize();
 
-	    slp_tsk();
+	    wait(run_task);
 
 	    if (run_task->wait.result) {
 		return (run_task->wait.result);

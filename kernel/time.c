@@ -111,11 +111,9 @@ ER dly_tsk(DLYTIME dlytim)
   else if (! dlytim) return(E_OK);
   set_timer (dlytim, (void (*)(VP))dly_func, run_task);
   run_task->wait.type = wait_dly;
-  slp_tsk ();
+  wait(run_task);
   unset_timer ((void (*)(VP))dly_func, run_task);
-  if (run_task->wait.result)
-    return (run_task->wait.result);
-  return(E_OK);
+  return (run_task->wait.result);
 }
 
 /*

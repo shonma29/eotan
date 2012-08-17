@@ -318,8 +318,7 @@ ER wai_flg(UINT * flgptn, ID flgid, UINT waiptn, UINT wfmode)
     run_task->wait.obj_id = flgid;
     list_enqueue(&(flag_table[flgid].receiver), &(run_task->wait.waiting));
     leave_critical();
-    can_wup(&wcnt, run_task->tskid);
-    slp_tsk();
+    wait(run_task);
     *flgptn = run_task->wait.detail.evf.flgptn;
-    return (E_OK);
+    return (run_task->wait.result);
 }
