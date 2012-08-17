@@ -550,13 +550,6 @@ static ER sys_slp_tsk(VP argp)
 }
 
 
-#ifdef notdef
-static ER sys_tslp_tsk(VP argp)
-{
-}
-#endif				/* notdef */
-
-
 static ER sys_wup_tsk(VP argp)
 {
     struct {
