@@ -51,11 +51,7 @@ struct idt_t
 (desc.offset0 = x & 0xffff);		\
   (desc.offset1 = x >> 16 & 0xffff);
 
-#if 0
-extern BOOL	on_interrupt;
-#else
 extern W	on_interrupt;
-#endif
 extern BOOL	delayed_dispatch;
 
 extern W	init_interrupt (void);
