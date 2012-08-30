@@ -80,10 +80,7 @@ Version 2, June 1991
 
 /* イベントフラグ管理関係 */
 #define MIN_EVENTFLAG		(1)
-#define MAX_EVENTFLAG		(256)
-#define NEVENTFLAG		(MAX_SEMAID - MIN_SEMAID + 1)
-#define MIN_USEREVENTID		(10)
-#define MAX_USEREVENTID		MAX_EVENTFLAG
+#define MAX_EVENTFLAG		(65535)
 
 
 /* メッセージバッファ管理関係 */

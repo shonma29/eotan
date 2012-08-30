@@ -17,6 +17,7 @@ Version 2, June 1991
 #define __CORE_EVENTFLAG_H__	1
 
 #include "../include/set/list.h"
+#include "../include/set/tree.h"
 
 /***************************************************************************
  *	イベントフラグ情報
@@ -24,11 +25,10 @@ Version 2, June 1991
  */
 typedef struct eventflag_t
 {
+  node_t node;
   list_t receiver;
-  ID		id;			/* イベントフラグ ID 			*/
   ATR		flgatr;			/* イベントフラグ属性			*/
   UINT		iflgptn;		/* イベントフラグの値			*/
-  VP		exinf;			/* 拡張情報				*/
 } T_EVENTFLAG;
 
 

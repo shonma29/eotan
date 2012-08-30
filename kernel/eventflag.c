@@ -18,6 +18,8 @@ Version 2, June 1991
 
 #include "../include/mpu/io.h"
 #include "../include/set/list.h"
+#include "../include/set/slab.h"
+#include "../include/set/tree.h"
 #include "core.h"
 #include "memory.h"
 #include "func.h"
@@ -25,7 +27,8 @@ Version 2, June 1991
 #include "eventflag.h"
 #include "sync.h"
 
-static T_EVENTFLAG flag_table[MAX_EVENTFLAG + 1];
+static slab_t slab;
+static tree_t tree;
 
 static void tflg_func(VP p);
 static T_TCB *getTaskParent(const list_t *p);
@@ -47,13 +50,16 @@ static T_TCB *getTaskParent(const list_t *p) {
  */
 ER init_eventflag(void)
 {
-    W i;
+    slab.unit_size = sizeof(T_EVENTFLAG);
+    slab.block_size = I386_PAGESIZE;
+    slab.min_block = 1;
+    slab.max_block = tree_max_block(65536, I386_PAGESIZE, sizeof(T_EVENTFLAG));
+    slab.palloc = palloc;
+    slab.pfree = pfree;
+    slab_create(&slab);
 
-    for (i = MIN_EVENTFLAG; i <= MAX_EVENTFLAG; i++) {
-	flag_table[i].flgatr = TA_UNDEF;
-	flag_table[i].id = i;
-	list_initialize(&(flag_table[i].receiver));
-    }
+    tree_create(&tree, &slab);
+
     return (E_OK);
 }
 
@@ -69,27 +75,35 @@ ER init_eventflag(void)
  */
 ER cre_flg(ID flgid, T_CFLG * pk_flg)
 {
+    T_EVENTFLAG *p;
+
     if (flgid < MIN_EVENTFLAG || flgid > MAX_EVENTFLAG) {
 	return (E_ID);
-    }
-
-    if (flag_table[flgid].flgatr != TA_UNDEF) {
-	return (E_OBJ);
     }
 
     if ((pk_flg->flgatr != TA_WSGL) && (pk_flg->flgatr != TA_WMUL)) {
 	return (E_PAR);
     }
 
-    flag_table[flgid].flgatr = pk_flg->flgatr;
-    flag_table[flgid].iflgptn = pk_flg->iflgptn;
-    list_initialize(&(flag_table[flgid].receiver));
-    flag_table[flgid].exinf = pk_flg->exinf;
+    if (tree_get(&tree, flgid)) {
+	return (E_OBJ);
+    }
+
+    p = (T_EVENTFLAG*)tree_put(&tree, flgid);
+    if (p) {
+	return (E_NOMEM);
+    }
+
+    list_initialize(&(p->receiver));
+    p->flgatr = pk_flg->flgatr;
+    p->iflgptn = pk_flg->iflgptn;
+
     return (E_OK);
 }
 
 ER_ID acre_flg(T_CFLG * pk_flg)
 {
+    T_EVENTFLAG *p;
     ID flgid;
 
     if ((pk_flg->flgatr != TA_WSGL) && (pk_flg->flgatr != TA_WMUL)) {
@@ -97,17 +111,21 @@ ER_ID acre_flg(T_CFLG * pk_flg)
     }
 
     for (flgid = MIN_EVENTFLAG; flgid <= MAX_EVENTFLAG; flgid++) {
-	if (flag_table[flgid].flgatr == TA_UNDEF) {
+	if (!tree_get(&tree, flgid)) {
 	    break;
 	}
     }
 
     if (flgid > MAX_EVENTFLAG)	return E_ID;
 
-    flag_table[flgid].flgatr = pk_flg->flgatr;
-    flag_table[flgid].iflgptn = pk_flg->iflgptn;
-    list_initialize(&(flag_table[flgid].receiver));
-    flag_table[flgid].exinf = pk_flg->exinf;
+    p = (T_EVENTFLAG*)tree_put(&tree, flgid);
+    if (p) {
+	return (E_NOMEM);
+    }
+
+    list_initialize(&(p->receiver));
+    p->flgatr = pk_flg->flgatr;
+    p->iflgptn = pk_flg->iflgptn;
 
     return flgid;
 }
@@ -129,24 +147,22 @@ ER_ID acre_flg(T_CFLG * pk_flg)
  */
 ER del_flg(ID flgid)
 {
-    T_TCB *p;
+    T_EVENTFLAG *p = (T_EVENTFLAG*)tree_get(&tree, flgid);
     list_t *q;
 
-    if (flgid < MIN_EVENTFLAG || flgid > MAX_EVENTFLAG) {
-	return (E_ID);
+    if (!p) {
+	return (E_NOEXS);
     }
 
-    if (flag_table[flgid].flgatr == TA_UNDEF) {
-	return (E_OBJ);
-    }
+    while ((q = list_dequeue(&(p->receiver))) != NULL) {
+	T_TCB *task = getTaskParent(q);
 
-    while ((q = list_dequeue(&(flag_table[flgid].receiver))) != NULL) {
-	p = getTaskParent(q);
-	p->wait.result = E_DLT;
+	task->wait.result = E_DLT;
 	release(p);
     }
 
-    flag_table[flgid].flgatr = TA_UNDEF;
+    tree_remove(&tree, p->node.key);
+
     return (E_OK);
 }
 
@@ -166,37 +182,34 @@ ER del_flg(ID flgid)
  */
 ER set_flg(ID flgid, UINT setptn)
 {
-    T_TCB *p;
+    T_EVENTFLAG *p = (T_EVENTFLAG*)tree_get(&tree, flgid);
+    T_TCB *task;
     BOOL result;
     BOOL tsw_flag = FALSE;
     list_t *q, *next;
 
-    if (flgid < MIN_EVENTFLAG || flgid > MAX_EVENTFLAG) {
-	return (E_ID);
-    }
-
-    if (flag_table[flgid].flgatr == TA_UNDEF) {
+    if (!p) {
 	return (E_NOEXS);
     }
 
     enter_critical();
-    flag_table[flgid].iflgptn |= setptn;
+    p->iflgptn |= setptn;
     leave_critical();
 
-    for (q = list_next(&(flag_table[flgid].receiver));
-	    !list_is_edge(&(flag_table[flgid].receiver), q); q = next) {
+    for (q = list_next(&(p->receiver));
+	    !list_is_edge(&(p->receiver), q); q = next) {
     	next = q->next;
-    	p = getTaskParent(q);
+    	task = getTaskParent(q);
 	result = FALSE;
-	switch ((p->wait.detail.evf.wfmode) & (TWF_ANDW | TWF_ORW)) {
+	switch ((task->wait.detail.evf.wfmode) & (TWF_ANDW | TWF_ORW)) {
 	case TWF_ANDW:
 	    result =
-		((flag_table[flgid].iflgptn & p->wait.detail.evf.waiptn) ==
-		 p->wait.detail.evf.waiptn) ? TRUE : FALSE;
+		((p->iflgptn & task->wait.detail.evf.waiptn) ==
+		 task->wait.detail.evf.waiptn) ? TRUE : FALSE;
 	    break;
 	case TWF_ORW:
 	    result =
-		(flag_table[flgid].iflgptn & p->
+		(p->iflgptn & task->
 		 wait.detail.evf.waiptn) ? TRUE : FALSE;
 	    break;
 	}
@@ -205,13 +218,13 @@ ER set_flg(ID flgid, UINT setptn)
 	    enter_critical();
 	    list_remove(q);
 	    leave_critical();
-	    p->wait.detail.evf.flgptn = flag_table[flgid].iflgptn;
+	    task->wait.detail.evf.flgptn = p->iflgptn;
 	    tsw_flag = TRUE;
-	    release(p);
-	    if (p->wait.detail.evf.wfmode & TWF_CLR) {
+	    release(task);
+	    if (task->wait.detail.evf.wfmode & TWF_CLR) {
 		/* μITORN 3.0 標準ハンドブック p.141 参照 */
 		enter_critical();
-		flag_table[flgid].iflgptn = 0;
+		p->iflgptn = 0;
 		leave_critical();
 	    }
 	}
@@ -239,16 +252,14 @@ ER set_flg(ID flgid, UINT setptn)
  */
 ER clr_flg(ID flgid, UINT clrptn)
 {
-    if (flgid < MIN_EVENTFLAG || flgid > MAX_EVENTFLAG) {
-	return (E_ID);
-    }
+    T_EVENTFLAG *p = (T_EVENTFLAG*)tree_get(&tree, flgid);
 
-    if (flag_table[flgid].flgatr == TA_UNDEF) {
+    if (!p) {
 	return (E_NOEXS);
     }
 
     enter_critical();
-    flag_table[flgid].iflgptn &= clrptn;
+    p->iflgptn &= clrptn;
     leave_critical();
 
     return (E_OK);
@@ -267,43 +278,42 @@ ER clr_flg(ID flgid, UINT clrptn)
  */
 ER wai_flg(UINT * flgptn, ID flgid, UINT waiptn, UINT wfmode)
 {
+    T_EVENTFLAG *p;
     BOOL result;
-    INT wcnt;
-    *flgptn = NULL;
 
-    if (flgid < MIN_EVENTFLAG || flgid > MAX_EVENTFLAG) {
-	return (E_ID);
+    *flgptn = 0;
+
+    if (waiptn == 0) {
+	return (E_PAR);
     }
 
-    if (flag_table[flgid].flgatr == TA_UNDEF) {
+    p = (T_EVENTFLAG*)tree_get(&tree, flgid);
+    if (!p) {
 	return (E_NOEXS);
     }
 
-    if ((flag_table[flgid].flgatr == TA_WSGL)
-	&& !list_is_empty(&(flag_table[flgid].receiver))) {
+    if ((p->flgatr == TA_WSGL)
+	&& !list_is_empty(&(p->receiver))) {
 	return (E_OBJ);
-    }
-    if (waiptn == 0) {
-	return (E_PAR);
     }
 
     result = FALSE;
     switch (wfmode & (TWF_ANDW | TWF_ORW)) {
     case TWF_ANDW:
 	result =
-	    ((flag_table[flgid].iflgptn & waiptn) == waiptn) ?
+	    ((p->iflgptn & waiptn) == waiptn) ?
 	    TRUE : FALSE;
 	break;
     case TWF_ORW:
-	result = (flag_table[flgid].iflgptn & waiptn) ? TRUE : FALSE;
+	result = (p->iflgptn & waiptn) ? TRUE : FALSE;
 	break;
     }
 
     if (result == TRUE) {
-	*flgptn = flag_table[flgid].iflgptn;
+	*flgptn = p->iflgptn;
 	if (wfmode & TWF_CLR) {
 	    enter_critical();
-	    flag_table[flgid].iflgptn = 0;
+	    p->iflgptn = 0;
 	    leave_critical();
 	}
 	return (E_OK);
@@ -314,7 +324,7 @@ ER wai_flg(UINT * flgptn, ID flgid, UINT waiptn, UINT wfmode)
     run_task->wait.detail.evf.wfmode = wfmode;
     run_task->wait.type = wait_evf;
     run_task->wait.obj_id = flgid;
-    list_enqueue(&(flag_table[flgid].receiver), &(run_task->wait.waiting));
+    list_enqueue(&(p->receiver), &(run_task->wait.waiting));
     leave_critical();
     wait(run_task);
     *flgptn = run_task->wait.detail.evf.flgptn;
