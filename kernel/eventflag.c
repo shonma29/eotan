@@ -26,6 +26,7 @@ Version 2, June 1991
 #include "arch.h"
 #include "eventflag.h"
 #include "sync.h"
+#include "setting.h"
 
 static slab_t slab;
 static tree_t tree;
@@ -77,7 +78,7 @@ ER cre_flg(ID flgid, T_CFLG * pk_flg)
 {
     T_EVENTFLAG *p;
 
-    if (flgid < MIN_EVENTFLAG || flgid > MAX_EVENTFLAG) {
+    if (flgid < MIN_MANUAL_ID || flgid > MAX_MANUAL_ID) {
 	return (E_ID);
     }
 
@@ -110,13 +111,13 @@ ER_ID acre_flg(T_CFLG * pk_flg)
 	return (E_PAR);
     }
 
-    for (flgid = MIN_EVENTFLAG; flgid <= MAX_EVENTFLAG; flgid++) {
+    for (flgid = MIN_AUTO_ID; flgid <= MAX_AUTO_ID; flgid++) {
 	if (!tree_get(&tree, flgid)) {
 	    break;
 	}
     }
 
-    if (flgid > MAX_EVENTFLAG)	return E_ID;
+    if (flgid > MAX_AUTO_ID)	return E_ID;
 
     p = (T_EVENTFLAG*)tree_put(&tree, flgid);
     if (p) {

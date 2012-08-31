@@ -70,19 +70,6 @@ Version 2, June 1991
 #define QUANTUM		(40/CLOCK)	/* 40 ms */
 #define HALT_WHEN_IDLE	1	/* IDLE 時に CPU を Halt で停止する */
 
-/* セマフォ管理関係 */
-#define MIN_SEMAID		(1)
-#define MAX_SEMAID		(256)
-#define NSEMAPHORE		(MAX_SEMAID - MIN_SEMAID + 1)
-#define MIN_USERSEMAID		(10)
-#define MAX_USERSEMAID		MAX_SEMAID
-
-
-/* イベントフラグ管理関係 */
-#define MIN_EVENTFLAG		(1)
-#define MAX_EVENTFLAG		(65535)
-
-
 /* メッセージバッファ管理関係 */
 #define MIN_MSGBUF		(1)
 #define MAX_MSGBUF		(256)
