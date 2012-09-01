@@ -198,7 +198,6 @@ static ER	sys_ter_tsk (void *argp);
 static ER	sys_dis_dsp (void *argp);
 static ER	sys_ena_dsp (void *argp);
 static ER	sys_chg_pri (void *argp);
-static ER	sys_rot_rdq (void *argp);
 static ER	sys_rel_wai (void *argp);
 static ER	sys_get_tid (void *argp);
 static ER	sys_sus_tsk (void *argp);
@@ -262,32 +261,31 @@ static ER (*syscall_table[])(VP argp) =
   DEF_SYSCALL (dis_dsp, 0),	/*    7 */
   DEF_SYSCALL (ena_dsp, 0),	/*    8 */
   DEF_SYSCALL (chg_pri, 2),	/*    9 */
-  DEF_SYSCALL (rot_rdq, 1),	/*   10 */
-  DEF_SYSCALL (rel_wai, 1),	/*   11 */
-  DEF_SYSCALL (get_tid, 1),	/*   12 */
+  DEF_SYSCALL (rel_wai, 1),	/*   10 */
+  DEF_SYSCALL (get_tid, 1),	/*   11 */
 
   /* タスク附属同期機能 */
-  DEF_SYSCALL (sus_tsk, 1),    	/*   13 */
-  DEF_SYSCALL (rsm_tsk, 1),	/*   14 */
-  DEF_SYSCALL (slp_tsk, 0),	/*   15 */
-  DEF_SYSCALL (wup_tsk, 1),	/*   16 */
-  DEF_SYSCALL (can_wup, 2),	/*   17 */
+  DEF_SYSCALL (sus_tsk, 1),    	/*   12 */
+  DEF_SYSCALL (rsm_tsk, 1),	/*   13 */
+  DEF_SYSCALL (slp_tsk, 0),	/*   14 */
+  DEF_SYSCALL (wup_tsk, 1),	/*   15 */
+  DEF_SYSCALL (can_wup, 2),	/*   16 */
   
   /* 同期・通信機構 */
   /* セマフォ */
 
   /* イベントフラグ */
-  DEF_SYSCALL (del_flg, 1),	/*   18 */
-  DEF_SYSCALL (set_flg, 2),	/*   19 */
-  DEF_SYSCALL (clr_flg, 2),     /*   20 */
-  DEF_SYSCALL (wai_flg, 4),	/*   21 */
+  DEF_SYSCALL (del_flg, 1),	/*   17 */
+  DEF_SYSCALL (set_flg, 2),	/*   18 */
+  DEF_SYSCALL (clr_flg, 2),     /*   19 */
+  DEF_SYSCALL (wai_flg, 4),	/*   20 */
 
   /* メッセージバッファ */
-  DEF_SYSCALL (cre_mbf, 2),	/*   22	*/
-  DEF_SYSCALL (del_mbf, 1),	/*   23 */
-  DEF_SYSCALL (snd_mbf, 3),	/*   24 */
-  DEF_SYSCALL (psnd_mbf, 3),	/*   25 */
-  DEF_SYSCALL (rcv_mbf, 3),	/*   26 */
+  DEF_SYSCALL (cre_mbf, 2),	/*   21	*/
+  DEF_SYSCALL (del_mbf, 1),	/*   22 */
+  DEF_SYSCALL (snd_mbf, 3),	/*   23 */
+  DEF_SYSCALL (psnd_mbf, 3),	/*   24 */
+  DEF_SYSCALL (rcv_mbf, 3),	/*   25 */
 
   /* 割りこみ管理 */
 
@@ -296,35 +294,35 @@ static ER (*syscall_table[])(VP argp) =
   /* システム管理 */
 
   /* 時間管理機能 */
-  DEF_SYSCALL (set_tim, 1),	/*   27 set_tim */
-  DEF_SYSCALL (get_tim, 1),	/*   28 get_tim */
-  DEF_SYSCALL (dly_tsk, 1),	/*   29 dly_tsk */
-  DEF_SYSCALL (def_alm, 2),	/*   30 def_alm */
+  DEF_SYSCALL (set_tim, 1),	/*   26 set_tim */
+  DEF_SYSCALL (get_tim, 1),	/*   27 get_tim */
+  DEF_SYSCALL (dly_tsk, 1),	/*   28 dly_tsk */
+  DEF_SYSCALL (def_alm, 2),	/*   29 def_alm */
 
-  DEF_SYSCALL (def_int, 2),	/*   31 */
+  DEF_SYSCALL (def_int, 2),	/*   30 */
 
-  DEF_SYSCALL (vsys_inf, 3),	/*   32 */
-  DEF_SYSCALL (dbg_puts, 1),	/*   33 */
+  DEF_SYSCALL (vsys_inf, 3),	/*   31 */
+  DEF_SYSCALL (dbg_puts, 1),	/*   32 */
 
   /* 仮想メモリ管理システムコール */	
-  DEF_SYSCALL (vcre_reg, 7),	/*   34 */
-  DEF_SYSCALL (vdel_reg, 2),	/*   35 */
-  DEF_SYSCALL (vmap_reg, 3),	/*   36 */
-  DEF_SYSCALL (vunm_reg, 3),	/*   37 */
-  DEF_SYSCALL (vdup_reg, 3),	/*   38 */
-  DEF_SYSCALL (vput_reg, 4),	/*   39 */
-  DEF_SYSCALL (vget_reg, 4),	/*   40 */
-  DEF_SYSCALL (vsts_reg, 3),	/*   41 */
-  DEF_SYSCALL (vget_phs, 3),	/*   42 */
+  DEF_SYSCALL (vcre_reg, 7),	/*   33 */
+  DEF_SYSCALL (vdel_reg, 2),	/*   34 */
+  DEF_SYSCALL (vmap_reg, 3),	/*   35 */
+  DEF_SYSCALL (vunm_reg, 3),	/*   36 */
+  DEF_SYSCALL (vdup_reg, 3),	/*   37 */
+  DEF_SYSCALL (vput_reg, 4),	/*   38 */
+  DEF_SYSCALL (vget_reg, 4),	/*   39 */
+  DEF_SYSCALL (vsts_reg, 3),	/*   40 */
+  DEF_SYSCALL (vget_phs, 3),	/*   41 */
 
   /* その他のシステムコール */
-  DEF_SYSCALL (vsys_msc, 2),	/*   43 */
-  DEF_SYSCALL (vcpy_stk, 4),	/*   44 */
-  DEF_SYSCALL (vset_ctx, 4),	/*   45 */
-  DEF_SYSCALL (vuse_fpu, 1),	/*   46 */
+  DEF_SYSCALL (vsys_msc, 2),	/*   42 */
+  DEF_SYSCALL (vcpy_stk, 4),	/*   43 */
+  DEF_SYSCALL (vset_ctx, 4),	/*   44 */
+  DEF_SYSCALL (vuse_fpu, 1),	/*   45 */
 
-  DEF_SYSCALL (acre_flg, 1),	/*   47 */
-  DEF_SYSCALL (acre_mbf, 1),	/*   48	*/
+  DEF_SYSCALL (acre_flg, 1),	/*   46 */
+  DEF_SYSCALL (acre_mbf, 1),	/*   47	*/
 };
 
 #define NSYSCALL (sizeof (syscall_table) / sizeof (syscall_table[0]))
@@ -484,15 +482,6 @@ static ER sys_chg_pri(VP argp)
     } *args = argp;
 
     return (chg_pri(args->tskid, args->tskpri));
-}
-
-static ER sys_rot_rdq(VP argp)
-{
-    struct {
-	PRI tskpri;
-    } *args = argp;
-
-    return (rot_rdq(args->tskpri));
 }
 
 static ER sys_rel_wai(VP argp)

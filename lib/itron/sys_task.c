@@ -113,14 +113,6 @@ get_tid (ID *rid)
   return call_syscall (SYS_GET_TID, rid);
 }
 
-/* rot_rdq  --- 同一プライオリティでのタスクの順序を変更する
-*/
-ER
-rot_rdq (PRI tskpri)
-{
-  return call_syscall (SYS_ROT_RDQ, tskpri);
-}
-
 /* rsm_tsk  --- 強制待ち状態のタスクから待ち状態を解除
 */
 ER
