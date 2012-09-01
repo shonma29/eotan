@@ -48,7 +48,7 @@ init_driver (void)
   if (recvport <= 0)
     {
       dbg_printf ("psaux: cannot make receive port.\n");
-      slp_tsk ();
+      ext_tsk ();
       /* メッセージバッファ生成に失敗 */
     }
 
@@ -57,7 +57,7 @@ init_driver (void)
     {
       /* error */
       dbg_printf("psaux: cannot make receive port.\n"); 
-      slp_tsk();
+      ext_tsk();
     }
 
   /* イベントフラグを生成 */

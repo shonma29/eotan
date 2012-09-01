@@ -118,7 +118,7 @@ void main(void)
 
     if (init_port() == FAIL) {
 	dbg_printf("Cannot allocate port.\n");
-	slp_tsk();
+	ext_tsk();
     }
     init_log();
     init_malloc(VADDR_HEAP);

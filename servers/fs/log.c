@@ -73,6 +73,6 @@ void _assert(B * msg)
     printk("ASSERT: ");
     printk("%s\n", msg);
     for (;;) {
-	slp_tsk();
+	ext_tsk();
     }
 }

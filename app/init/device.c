@@ -64,14 +64,14 @@ void init_device(void)
     result = open_device(KEYBOARD_DRIVER, &keyboard, &dev_desc);
     if (result != E_OK || dev_desc != STDIN) {
 	dbg_printf("Init: Cannot open keyboard device.\n");
-	slp_tsk();
+	ext_tsk();
 	/* DO NOT REACHED */
     }
 
     result = open_device(CONSOLE_DRIVER, &console, &dev_desc);
     if (result != E_OK || dev_desc != STDOUT) {
 	dbg_printf("Init: Cannot open console device.\n");
-	slp_tsk();
+	ext_tsk();
 	/* DO NOT REACHED */
     }
 
@@ -84,7 +84,7 @@ void init_device(void)
 
     if (dev_recv <= 0) {
 	dbg_printf("Init: Cannot allocate port%d\n", dev_recv);
-	slp_tsk();
+	ext_tsk();
 	/* DO NOT REACHED */
     }
 

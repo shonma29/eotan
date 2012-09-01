@@ -51,7 +51,7 @@ void init_log(void)
 
     if (find_port(CONSOLE_DRIVER, &log_port) != E_PORT_OK) {
 	dbg_printf("IDE: Cannot open console device.\n");
-	slp_tsk();
+	ext_tsk();
 	/* DO NOT REACHED */
     }
 
@@ -59,7 +59,7 @@ void init_log(void)
 
     if (dev_recv <= 0) {
 	dbg_printf("IDE: Cannot allocate port\n");
-	slp_tsk();
+	ext_tsk();
 	/* DO NOT REACHED */
     }
 }
@@ -108,6 +108,6 @@ void _assert(B * msg)
     printf("ASSERT: ");
     printf("%s\n", msg);
     for (;;) {
-	slp_tsk();
+	ext_tsk();
     }
 }

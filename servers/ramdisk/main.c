@@ -106,7 +106,7 @@ static void main_loop()
 	    dbg_printf("rd: get_req() Unknown error(error = %d)\n",
 		       errno);
 	    dbg_printf("RAM DISK driver is halt.\n");
-	    slp_tsk();
+	    ext_tsk();
 	    break;
 	}
     }
@@ -167,7 +167,7 @@ static void init_rd_driver(W size)
 
     if (recvport <= 0) {
 	dbg_printf("RD: cannot make receive porrt.\n");
-	slp_tsk();
+	ext_tsk();
 	/* メッセージバッファ生成に失敗 */
     }
 
@@ -197,7 +197,7 @@ void init_rd(W size)
     ramdisk = (char *) malloc(size);
     if (ramdisk == NULL) {
 	dbg_printf("RD: cannot allocate memory.\n");
-	slp_tsk();
+	ext_tsk();
     }
 #endif
     rd_size = size;

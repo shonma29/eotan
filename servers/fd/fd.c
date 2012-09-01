@@ -239,7 +239,7 @@ static void main_loop()
 	    dbg_printf("fd: get_req() Unknown error(error = %d)\n",
 		       errno);
 	    dbg_printf("FD driver is halt.\n");
-	    slp_tsk();
+	    ext_tsk();
 	    break;
 	}
     }
@@ -302,7 +302,7 @@ static void init_fd_driver(void)
 
     if (recvport <= 0) {
 	dbg_printf("FD: cannot make receive porrt.\n");
-	slp_tsk();
+	ext_tsk();
 	/* メッセージバッファ生成に失敗 */
     }
 

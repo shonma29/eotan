@@ -839,69 +839,6 @@ ER slp_tsk(void)
     return (run_task->wait.result);
 }
 
-/*********************************************************************************
- * wup_tsk --- 指定されたタスクを起床する。
- *
- * 機能：
- * 	待ち状態フラグ(tskwai)は、この関数を呼び出す時にリセットしていなければ
- *	いけない。
- * 	もし待ち状態フラグがセットされていたならば、E_OBJ のエラーとなる。
- * 
- */
-ER wup_tsk(ID taskid)
-{
-    T_TCB *p;
-
-    if ((taskid < MIN_TSKID) || (taskid > MAX_TSKID)) {
-	return (E_ID);
-    }
-
-    p = &(task[taskid]);
-
-    if (p->tskstat == TTS_NON) {
-	return (E_NOEXS);
-    }
-
-    if ((p == run_task) || (p->tskstat == TTS_DMT)) {
-	return (E_OBJ);
-    }
-
-    if (p->wait.type != wait_slp) {
-	printk("task %d is waiting for %d. abort wakeup.\n",
-		p->tskid, p->wait.type);
-	return (E_OBJ);
-    }
-
-    enter_critical();
-    p->tskstat &= ~TTS_WAI;
-
-    if (p->tskstat) {
-	p->wait.wup_cnt++;
-    }
-
-    else {
-	if (((UW) p->context.eip < MIN_KERNEL)
-		|| ((UW) p->context.eip >= 0x81000000)) {
-	  /* kernel プロセスの上限は適当 */
-#ifdef TSKSW_DEBUG
-	    print_task_list();
-#endif
-	    falldown("wup_tsk: task(%d) eip=%x\n", p->tskid, p->context.eip);
-	}
-
-	p->tskstat = TTS_RDY;
-	/* ready queue の末尾に追加 */
-	ready_enqueue(p->tsklevel, &(p->ready));
-
-	if (p->quantum > 0)
-	    p->quantum = QUANTUM;
-    }
-
-    leave_critical();
-
-    return (E_OK);
-}
-
 /*****************************************************************************
  * sus_tsk --- 指定したタスクを強制待ち状態に移行
  *
@@ -1020,44 +957,6 @@ ER rsm_tsk(ID taskid)
     leave_critical();
     return (E_OK);
 }
-
-/******************************************************************************************
- * can_wup --- タスクの起床要求を無効化
- *
- * 引数：
- *	taskid --- タスクの ID
- *
- * 返り値：
- *	エラー番号
- *
- * 機能：
- *
- */
-ER can_wup(INT * p_wupcnt, ID taskid)
-{
-    T_TCB *taskp;
-
-    if ((taskid < MIN_TSKID) || (taskid > MAX_TSKID)) {
-	return (E_ID);
-    }
-
-    enter_critical();
-    taskp = &task[taskid];
-    switch (taskp->tskstat) {
-    case TTS_DMT:
-	leave_critical();
-	return (E_OBJ);
-
-    case TTS_NON:
-	leave_critical();
-	return (E_NOEXS);
-    }
-    *p_wupcnt = taskp->wait.wup_cnt;
-    taskp->wait.wup_cnt = 0;
-    leave_critical();
-    return (E_OK);
-}
-
 
 /***********************************************************************
  * new_task --- 任意のタスク ID でのタスク生成

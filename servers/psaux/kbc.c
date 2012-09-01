@@ -136,7 +136,7 @@ init_interrupt()
   if (errno != E_OK)
     {
       dbg_printf("psaux: cannnot define interrupt handler.\n");
-      slp_tsk();
+      ext_tsk();
     }
 }
 

@@ -168,7 +168,7 @@ W init_keyboard(void)
 
     if (recvport <= 0) {
 	dbg_printf("KEYBOARD: cannot make receive port.\n");
-	slp_tsk();
+	ext_tsk();
 	/* メッセージバッファ生成に失敗 */
     }
 

@@ -225,7 +225,7 @@ static W init_console(void)
 
     if (recvport <= 0) {
 	dbg_printf("CONSOLE: cannot make receive port.\n");
-	slp_tsk();
+	ext_tsk();
 	/* メッセージバッファ生成に失敗 */
     }
 

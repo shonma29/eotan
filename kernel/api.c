@@ -202,9 +202,6 @@ static ER	sys_rel_wai (void *argp);
 static ER	sys_get_tid (void *argp);
 static ER	sys_sus_tsk (void *argp);
 static ER	sys_rsm_tsk (void *argp);
-static ER	sys_slp_tsk (void *argp);
-static ER	sys_wup_tsk (void *argp);
-static ER	sys_can_wup (void *argp);
 static ER	sys_acre_flg (void *argp);
 static ER	sys_del_flg (void *argp);
 static ER	sys_set_flg (void *argp);
@@ -267,25 +264,22 @@ static ER (*syscall_table[])(VP argp) =
   /* タスク附属同期機能 */
   DEF_SYSCALL (sus_tsk, 1),    	/*   12 */
   DEF_SYSCALL (rsm_tsk, 1),	/*   13 */
-  DEF_SYSCALL (slp_tsk, 0),	/*   14 */
-  DEF_SYSCALL (wup_tsk, 1),	/*   15 */
-  DEF_SYSCALL (can_wup, 2),	/*   16 */
-  
+
   /* 同期・通信機構 */
   /* セマフォ */
 
   /* イベントフラグ */
-  DEF_SYSCALL (del_flg, 1),	/*   17 */
-  DEF_SYSCALL (set_flg, 2),	/*   18 */
-  DEF_SYSCALL (clr_flg, 2),     /*   19 */
-  DEF_SYSCALL (wai_flg, 4),	/*   20 */
+  DEF_SYSCALL (del_flg, 1),	/*   14 */
+  DEF_SYSCALL (set_flg, 2),	/*   15 */
+  DEF_SYSCALL (clr_flg, 2),     /*   16 */
+  DEF_SYSCALL (wai_flg, 4),	/*   17 */
 
   /* メッセージバッファ */
-  DEF_SYSCALL (cre_mbf, 2),	/*   21	*/
-  DEF_SYSCALL (del_mbf, 1),	/*   22 */
-  DEF_SYSCALL (snd_mbf, 3),	/*   23 */
-  DEF_SYSCALL (psnd_mbf, 3),	/*   24 */
-  DEF_SYSCALL (rcv_mbf, 3),	/*   25 */
+  DEF_SYSCALL (cre_mbf, 2),	/*   18	*/
+  DEF_SYSCALL (del_mbf, 1),	/*   19 */
+  DEF_SYSCALL (snd_mbf, 3),	/*   20 */
+  DEF_SYSCALL (psnd_mbf, 3),	/*   21 */
+  DEF_SYSCALL (rcv_mbf, 3),	/*   22 */
 
   /* 割りこみ管理 */
 
@@ -294,35 +288,35 @@ static ER (*syscall_table[])(VP argp) =
   /* システム管理 */
 
   /* 時間管理機能 */
-  DEF_SYSCALL (set_tim, 1),	/*   26 set_tim */
-  DEF_SYSCALL (get_tim, 1),	/*   27 get_tim */
-  DEF_SYSCALL (dly_tsk, 1),	/*   28 dly_tsk */
-  DEF_SYSCALL (def_alm, 2),	/*   29 def_alm */
+  DEF_SYSCALL (set_tim, 1),	/*   23 */
+  DEF_SYSCALL (get_tim, 1),	/*   24 */
+  DEF_SYSCALL (dly_tsk, 1),	/*   25 */
+  DEF_SYSCALL (def_alm, 2),	/*   26 */
 
-  DEF_SYSCALL (def_int, 2),	/*   30 */
+  DEF_SYSCALL (def_int, 2),	/*   27 */
 
-  DEF_SYSCALL (vsys_inf, 3),	/*   31 */
-  DEF_SYSCALL (dbg_puts, 1),	/*   32 */
+  DEF_SYSCALL (vsys_inf, 3),	/*   28 */
+  DEF_SYSCALL (dbg_puts, 1),	/*   29 */
 
   /* 仮想メモリ管理システムコール */	
-  DEF_SYSCALL (vcre_reg, 7),	/*   33 */
-  DEF_SYSCALL (vdel_reg, 2),	/*   34 */
-  DEF_SYSCALL (vmap_reg, 3),	/*   35 */
-  DEF_SYSCALL (vunm_reg, 3),	/*   36 */
-  DEF_SYSCALL (vdup_reg, 3),	/*   37 */
-  DEF_SYSCALL (vput_reg, 4),	/*   38 */
-  DEF_SYSCALL (vget_reg, 4),	/*   39 */
-  DEF_SYSCALL (vsts_reg, 3),	/*   40 */
-  DEF_SYSCALL (vget_phs, 3),	/*   41 */
+  DEF_SYSCALL (vcre_reg, 7),	/*   30 */
+  DEF_SYSCALL (vdel_reg, 2),	/*   31 */
+  DEF_SYSCALL (vmap_reg, 3),	/*   32 */
+  DEF_SYSCALL (vunm_reg, 3),	/*   33 */
+  DEF_SYSCALL (vdup_reg, 3),	/*   34 */
+  DEF_SYSCALL (vput_reg, 4),	/*   35 */
+  DEF_SYSCALL (vget_reg, 4),	/*   36 */
+  DEF_SYSCALL (vsts_reg, 3),	/*   37 */
+  DEF_SYSCALL (vget_phs, 3),	/*   38 */
 
   /* その他のシステムコール */
-  DEF_SYSCALL (vsys_msc, 2),	/*   42 */
-  DEF_SYSCALL (vcpy_stk, 4),	/*   43 */
-  DEF_SYSCALL (vset_ctx, 4),	/*   44 */
-  DEF_SYSCALL (vuse_fpu, 1),	/*   45 */
+  DEF_SYSCALL (vsys_msc, 2),	/*   39 */
+  DEF_SYSCALL (vcpy_stk, 4),	/*   40 */
+  DEF_SYSCALL (vset_ctx, 4),	/*   41 */
+  DEF_SYSCALL (vuse_fpu, 1),	/*   42 */
 
-  DEF_SYSCALL (acre_flg, 1),	/*   46 */
-  DEF_SYSCALL (acre_mbf, 1),	/*   47	*/
+  DEF_SYSCALL (acre_flg, 1),	/*   43 */
+  DEF_SYSCALL (acre_mbf, 1),	/*   44	*/
 };
 
 #define NSYSCALL (sizeof (syscall_table) / sizeof (syscall_table[0]))
@@ -524,33 +518,6 @@ static ER sys_rsm_tsk(VP argp)
     } *args = argp;
 
     return (rsm_tsk(args->taskid));
-}
-
-
-static ER sys_slp_tsk(VP argp)
-{
-    return (slp_tsk());
-}
-
-
-static ER sys_wup_tsk(VP argp)
-{
-    struct {
-	ID taskid;
-    } *args = argp;
-
-    return (wup_tsk(args->taskid));
-}
-
-
-static ER sys_can_wup(VP argp)
-{
-    struct {
-	INT *p_wupcnt;
-	ID taskid;
-    } *args = argp;
-
-    return (can_wup(args->p_wupcnt, args->taskid));
 }
 
 

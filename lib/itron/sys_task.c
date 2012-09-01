@@ -66,14 +66,6 @@ exd_tsk (void)
   call_syscall (SYS_EXD_TSK);
 }
 
-/* can_wup  --- タスクの起床要求を無効化
-*/
-ER
-can_wup (INT *p_wupcnt, ID taskid)
-{
-  return call_syscall (SYS_CAN_WUP, p_wupcnt, taskid);
-}
-
 /* chg_pri  --- プライオリティの変更
 */
 ER
@@ -121,14 +113,6 @@ rsm_tsk (ID taskid)
   return call_syscall (SYS_RSM_TSK, taskid);
 }
 
-/* slp_tsk  --- 自タスクを待ち状態にする
-*/
-ER
-slp_tsk (void)
-{
-  return call_syscall (SYS_SLP_TSK);
-}
-
 /* sta_tsk  --- タスクの起動
 */
 ER
@@ -151,14 +135,6 @@ ER
 ter_tsk (ID tskid)
 {
   return call_syscall (SYS_TER_TSK, tskid);
-}
-
-/* wup_tsk  --- 指定されたタスクを起床する。
-*/
-ER
-wup_tsk (ID taskid)
-{
-  return call_syscall (SYS_WUP_TSK, taskid);
 }
 
 /* del_tsk --- 他タスク削除

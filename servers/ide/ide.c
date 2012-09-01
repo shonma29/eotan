@@ -122,7 +122,7 @@ start()
      * 要求受信用のポートの作成
      */
     if (init_ide_driver() != E_OK) {
-	slp_tsk();
+	ext_tsk();
     }
 
     /*
@@ -164,7 +164,7 @@ static void main_loop()
 	    dbg_printf("ide: get_req() Unknown error(error = %d)\n",
 		       errno);
 	    dbg_printf("IDE driver is halt.\n");
-	    slp_tsk();
+	    ext_tsk();
 	    break;
 	}
     }
@@ -235,7 +235,7 @@ static int init_ide_driver(void)
 
     if (recvport <= 0) {
 	dbg_printf("IDE: cannot make receive porrt.\n");
-	slp_tsk();
+	ext_tsk();
 	/* メッセージバッファ生成に失敗 */
     }
 
