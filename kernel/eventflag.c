@@ -31,7 +31,6 @@ Version 2, June 1991
 static slab_t slab;
 static tree_t tree;
 
-static void tflg_func(VP p);
 static T_TCB *getTaskParent(const list_t *p);
 
 
@@ -159,7 +158,7 @@ ER del_flg(ID flgid)
 	T_TCB *task = getTaskParent(q);
 
 	task->wait.result = E_DLT;
-	release(p);
+	release(task);
     }
 
     tree_remove(&tree, p->node.key);

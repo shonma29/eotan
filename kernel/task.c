@@ -111,6 +111,7 @@ Version 2, June 1991
  *
  */
 
+#include "../include/string.h"
 #include "../include/mpu/io.h"
 #include "core.h"
 #include "task.h"
@@ -120,6 +121,7 @@ Version 2, June 1991
 #include "lowlib.h"
 #include "ready.h"
 #include "sync.h"
+#include "mpu/mpufunc.h"
 /***************************************************************************
  *	タスク管理用の変数
  *

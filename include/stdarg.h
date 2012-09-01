@@ -27,7 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-typedef void** va_list;
+typedef char** va_list;
 
 #define va_start(ap, last) ({ap = (va_list)(&last); ap++;})
 #define va_arg(ap, type) (*((type*)(ap++)))

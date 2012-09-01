@@ -29,12 +29,14 @@ Version 2, June 1991
  *
  */
 
+#include "../include/string.h"
 #include "core.h"
 #include "misc.h"
 #include "arch.h"
 #include "task.h"
 #include "func.h"
 #include "sync.h"
+#include "arch/archfunc.h"
 
 /* 
  * 変数宣言

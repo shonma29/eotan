@@ -18,6 +18,7 @@ Version 2, June 1991
  *
  */
 
+#include "../include/string.h"
 #include "core.h"
 #include "memory.h"
 #include "func.h"

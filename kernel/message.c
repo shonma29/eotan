@@ -16,6 +16,7 @@ Version 2, June 1991
  */
 
 
+#include "../include/string.h"
 #include "../include/mpu/io.h"
 #include "../include/set/list.h"
 #include "core.h"
@@ -276,7 +277,6 @@ ER snd_mbf(ID id, INT size, VP msg)
     T_TCB *p;
     T_MSG *newmsg;
     VP buf;
-    INT wcnt;
     BOOL tsksw = FALSE;
     list_t *q;
 
@@ -466,7 +466,6 @@ ER rcv_mbf(VP msg, INT * size, ID id)
 {
     T_TCB *p;
     T_MSG *newmsgp;
-    INT wcnt;
     list_t *q;
 
     if ((id < MIN_MSGBUF) || (id > MAX_MSGBUF)) {

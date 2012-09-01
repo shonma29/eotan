@@ -65,6 +65,8 @@ Version 2, June 1991
 #include "interrupt.h"
 #endif
 #include "boot.h"
+#include "mpu/mpufunc.h"
+#include "arch/archfunc.h"
 
 static ER init_itron(void);
 static void init_device(void);
@@ -194,6 +196,7 @@ ER itron(void)
     }
     falldown("falldown.");
 /* not return */
+    return E_OK;
 }
 
 

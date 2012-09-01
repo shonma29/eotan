@@ -18,15 +18,13 @@ Version 2, June 1991
 
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/common/lowlib.c,v 1.8 2000/02/06 09:10:52 naniwa Exp $ */
 
-static unsigned char rcsid[] =
-    "$Id: lowlib.c,v 1.8 2000/02/06 09:10:52 naniwa Exp $";
-
 #include "../include/string.h"
 #include "../include/itron/types.h"
 #include "../include/itron/errno.h"
 #include "task.h"
 #include "func.h"
 #include "lowlib.h"
+#include "mpu/mpufunc.h"
 
 
 

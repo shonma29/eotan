@@ -11,8 +11,6 @@ Version 2, June 1991
 
 */
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/common/syscall-if.c,v 1.23 2000/04/03 14:34:45 naniwa Exp $ */
-static char rcsid[] =
-    "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/common/syscall-if.c,v 1.23 2000/04/03 14:34:45 naniwa Exp $";
 
 /* syscall-if.c --- システムコールのインタフェース関数
  *
@@ -183,6 +181,8 @@ static char rcsid[] =
 #include "../include/mpu/io.h"
 #include "sync.h"
 #include "boot.h"
+#include "mpu/mpufunc.h"
+#include "arch/archfunc.h"
 
 #define DEF_SYSCALL(x,n)	sys_ ## x
 #define DEF_NOSYSCALL		nodef
