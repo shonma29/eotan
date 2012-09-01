@@ -236,8 +236,6 @@ static ER	sys_vdel_reg (void *argp);
 static ER	sys_vmap_reg (void *argp);
 static ER	sys_vunm_reg (void *argp);
 static ER	sys_vdup_reg (void *argp);
-static ER	sys_vprt_reg (void *argp);
-static ER	sys_vshr_reg (void *argp);
 static ER	sys_vput_reg (void *argp);
 static ER	sys_vget_reg (void *argp);
 static ER	sys_vsts_reg (void *argp);
@@ -300,37 +298,35 @@ static ER (*syscall_table[])(VP argp) =
   /* システム管理 */
 
   /* 時間管理機能 */
-  DEF_SYSCALL (set_tim, 1),	/*   30 set_tim */
-  DEF_SYSCALL (get_tim, 1),	/*   31 get_tim */
-  DEF_SYSCALL (dly_tsk, 1),	/*   32 dly_tsk */
-  DEF_SYSCALL (def_alm, 2),	/*   33 def_alm */
+  DEF_SYSCALL (set_tim, 1),	/*   28 set_tim */
+  DEF_SYSCALL (get_tim, 1),	/*   29 get_tim */
+  DEF_SYSCALL (dly_tsk, 1),	/*   30 dly_tsk */
+  DEF_SYSCALL (def_alm, 2),	/*   31 def_alm */
 
-  DEF_SYSCALL (def_int, 2),	/*   34 */
+  DEF_SYSCALL (def_int, 2),	/*   32 */
 
-  DEF_SYSCALL (vsys_inf, 3),	/*   35 */
-  DEF_SYSCALL (dbg_puts, 1),	/*   36 */
+  DEF_SYSCALL (vsys_inf, 3),	/*   33 */
+  DEF_SYSCALL (dbg_puts, 1),	/*   34 */
 
   /* 仮想メモリ管理システムコール */	
-  DEF_SYSCALL (vcre_reg, 7),	/*   37 */
-  DEF_SYSCALL (vdel_reg, 2),	/*   38 */
-  DEF_SYSCALL (vmap_reg, 3),	/*   39 */
-  DEF_SYSCALL (vunm_reg, 3),	/*   40 */
-  DEF_SYSCALL (vdup_reg, 3),	/*   41 */
-  DEF_SYSCALL (vprt_reg, 3),	/*   42 */
-  DEF_SYSCALL (vshr_reg, 3),	/*   43 */
-  DEF_SYSCALL (vput_reg, 4),	/*   44 */
-  DEF_SYSCALL (vget_reg, 4),	/*   45 */
-  DEF_SYSCALL (vsts_reg, 3),	/*   46 */
-  DEF_SYSCALL (vget_phs, 3),	/*   47 */
+  DEF_SYSCALL (vcre_reg, 7),	/*   35 */
+  DEF_SYSCALL (vdel_reg, 2),	/*   36 */
+  DEF_SYSCALL (vmap_reg, 3),	/*   37 */
+  DEF_SYSCALL (vunm_reg, 3),	/*   38 */
+  DEF_SYSCALL (vdup_reg, 3),	/*   39 */
+  DEF_SYSCALL (vput_reg, 4),	/*   40 */
+  DEF_SYSCALL (vget_reg, 4),	/*   41 */
+  DEF_SYSCALL (vsts_reg, 3),	/*   42 */
+  DEF_SYSCALL (vget_phs, 3),	/*   43 */
 
   /* その他のシステムコール */
-  DEF_SYSCALL (vsys_msc, 2),	/*   48 */
-  DEF_SYSCALL (vcpy_stk, 4),	/*   49 */
-  DEF_SYSCALL (vset_ctx, 4),	/*   50 */
-  DEF_SYSCALL (vuse_fpu, 1),	/*   51 */
+  DEF_SYSCALL (vsys_msc, 2),	/*   44 */
+  DEF_SYSCALL (vcpy_stk, 4),	/*   45 */
+  DEF_SYSCALL (vset_ctx, 4),	/*   46 */
+  DEF_SYSCALL (vuse_fpu, 1),	/*   47 */
 
-  DEF_SYSCALL (acre_flg, 1),	/*   52 */
-  DEF_SYSCALL (acre_mbf, 1),	/*   53	*/
+  DEF_SYSCALL (acre_flg, 1),	/*   48 */
+  DEF_SYSCALL (acre_mbf, 1),	/*   49	*/
 };
 
 #define NSYSCALL (sizeof (syscall_table) / sizeof (syscall_table[0]))
@@ -816,34 +812,6 @@ static ER sys_vdup_reg(VP argp)
 #else
     return vdup_reg(args->src, args->dst, args->rid);
 #endif
-}
-
-/*
- *
- */
-static ER sys_vprt_reg(VP argp)
-{
-    struct {
-	ID id;
-	VP start;
-	UW prot;
-    } *args = argp;
-
-    return vprt_reg(args->id, args->start, args->prot);
-}
-
-/*
- *
- */
-static ER sys_vshr_reg(VP argp)
-{
-    struct {
-	ID src;
-	ID dst;
-	VP start;
-    } *args = argp;
-
-    return vshr_reg(args->src, args->dst, args->start);
 }
 
 /*

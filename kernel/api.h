@@ -51,7 +51,6 @@ Version 2, June 1991
 #define SYS_DEL_MBF	(24)
 #define SYS_SND_MBF	(25)
 #define SYS_PSND_MBF	(26)
-
 #define SYS_RCV_MBF	(27)
 
 #define SYS_SET_TIM	(28)
@@ -70,21 +69,19 @@ Version 2, June 1991
 #define SYS_VMAP_REG	(37)
 #define SYS_VUNM_REG	(38)
 #define SYS_VDUP_REG	(39)
-#define SYS_VPRT_REG	(40)
-#define SYS_VSHR_REG	(41)
-#define SYS_VPUT_REG	(42)
-#define SYS_VGET_REG	(43)
-#define SYS_VSTS_REG	(44)
+#define SYS_VPUT_REG	(40)
+#define SYS_VGET_REG	(41)
+#define SYS_VSTS_REG	(42)
 
-#define SYS_VGET_PHS	(45)
+#define SYS_VGET_PHS	(43)
 
-#define SYS_VSYS_MSC	(46)
-#define SYS_VCPY_STK	(47)
-#define SYS_VSET_CTX	(48)
-#define SYS_VUSE_FPU	(49)
+#define SYS_VSYS_MSC	(44)
+#define SYS_VCPY_STK	(45)
+#define SYS_VSET_CTX	(46)
+#define SYS_VUSE_FPU	(47)
 
-#define SYS_ACRE_FLG	(50)
-#define SYS_ACRE_MBF	(51)
+#define SYS_ACRE_FLG	(48)
+#define SYS_ACRE_MBF	(49)
 
 
 #endif /* __CORE_API_H__ */
