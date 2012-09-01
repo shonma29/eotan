@@ -206,7 +206,6 @@ static ER	sys_rsm_tsk (void *argp);
 static ER	sys_slp_tsk (void *argp);
 static ER	sys_wup_tsk (void *argp);
 static ER	sys_can_wup (void *argp);
-static ER	sys_cre_flg (void *argp);
 static ER	sys_acre_flg (void *argp);
 static ER	sys_del_flg (void *argp);
 static ER	sys_set_flg (void *argp);
@@ -278,18 +277,17 @@ static ER (*syscall_table[])(VP argp) =
   /* セマフォ */
 
   /* イベントフラグ */
-  DEF_SYSCALL (cre_flg, 2),	/*   18 */
-  DEF_SYSCALL (del_flg, 1),	/*   19 */
-  DEF_SYSCALL (set_flg, 2),	/*   20 */
-  DEF_SYSCALL (clr_flg, 2),     /*   21 */
-  DEF_SYSCALL (wai_flg, 4),	/*   22 */
+  DEF_SYSCALL (del_flg, 1),	/*   18 */
+  DEF_SYSCALL (set_flg, 2),	/*   19 */
+  DEF_SYSCALL (clr_flg, 2),     /*   20 */
+  DEF_SYSCALL (wai_flg, 4),	/*   21 */
 
   /* メッセージバッファ */
-  DEF_SYSCALL (cre_mbf, 2),	/*   23	*/
-  DEF_SYSCALL (del_mbf, 1),	/*   24 */
-  DEF_SYSCALL (snd_mbf, 3),	/*   25 */
-  DEF_SYSCALL (psnd_mbf, 3),	/*   26 */
-  DEF_SYSCALL (rcv_mbf, 3),	/*   27 */
+  DEF_SYSCALL (cre_mbf, 2),	/*   22	*/
+  DEF_SYSCALL (del_mbf, 1),	/*   23 */
+  DEF_SYSCALL (snd_mbf, 3),	/*   24 */
+  DEF_SYSCALL (psnd_mbf, 3),	/*   25 */
+  DEF_SYSCALL (rcv_mbf, 3),	/*   26 */
 
   /* 割りこみ管理 */
 
@@ -298,35 +296,35 @@ static ER (*syscall_table[])(VP argp) =
   /* システム管理 */
 
   /* 時間管理機能 */
-  DEF_SYSCALL (set_tim, 1),	/*   28 set_tim */
-  DEF_SYSCALL (get_tim, 1),	/*   29 get_tim */
-  DEF_SYSCALL (dly_tsk, 1),	/*   30 dly_tsk */
-  DEF_SYSCALL (def_alm, 2),	/*   31 def_alm */
+  DEF_SYSCALL (set_tim, 1),	/*   27 set_tim */
+  DEF_SYSCALL (get_tim, 1),	/*   28 get_tim */
+  DEF_SYSCALL (dly_tsk, 1),	/*   29 dly_tsk */
+  DEF_SYSCALL (def_alm, 2),	/*   30 def_alm */
 
-  DEF_SYSCALL (def_int, 2),	/*   32 */
+  DEF_SYSCALL (def_int, 2),	/*   31 */
 
-  DEF_SYSCALL (vsys_inf, 3),	/*   33 */
-  DEF_SYSCALL (dbg_puts, 1),	/*   34 */
+  DEF_SYSCALL (vsys_inf, 3),	/*   32 */
+  DEF_SYSCALL (dbg_puts, 1),	/*   33 */
 
   /* 仮想メモリ管理システムコール */	
-  DEF_SYSCALL (vcre_reg, 7),	/*   35 */
-  DEF_SYSCALL (vdel_reg, 2),	/*   36 */
-  DEF_SYSCALL (vmap_reg, 3),	/*   37 */
-  DEF_SYSCALL (vunm_reg, 3),	/*   38 */
-  DEF_SYSCALL (vdup_reg, 3),	/*   39 */
-  DEF_SYSCALL (vput_reg, 4),	/*   40 */
-  DEF_SYSCALL (vget_reg, 4),	/*   41 */
-  DEF_SYSCALL (vsts_reg, 3),	/*   42 */
-  DEF_SYSCALL (vget_phs, 3),	/*   43 */
+  DEF_SYSCALL (vcre_reg, 7),	/*   34 */
+  DEF_SYSCALL (vdel_reg, 2),	/*   35 */
+  DEF_SYSCALL (vmap_reg, 3),	/*   36 */
+  DEF_SYSCALL (vunm_reg, 3),	/*   37 */
+  DEF_SYSCALL (vdup_reg, 3),	/*   38 */
+  DEF_SYSCALL (vput_reg, 4),	/*   39 */
+  DEF_SYSCALL (vget_reg, 4),	/*   40 */
+  DEF_SYSCALL (vsts_reg, 3),	/*   41 */
+  DEF_SYSCALL (vget_phs, 3),	/*   42 */
 
   /* その他のシステムコール */
-  DEF_SYSCALL (vsys_msc, 2),	/*   44 */
-  DEF_SYSCALL (vcpy_stk, 4),	/*   45 */
-  DEF_SYSCALL (vset_ctx, 4),	/*   46 */
-  DEF_SYSCALL (vuse_fpu, 1),	/*   47 */
+  DEF_SYSCALL (vsys_msc, 2),	/*   43 */
+  DEF_SYSCALL (vcpy_stk, 4),	/*   44 */
+  DEF_SYSCALL (vset_ctx, 4),	/*   45 */
+  DEF_SYSCALL (vuse_fpu, 1),	/*   46 */
 
-  DEF_SYSCALL (acre_flg, 1),	/*   48 */
-  DEF_SYSCALL (acre_mbf, 1),	/*   49	*/
+  DEF_SYSCALL (acre_flg, 1),	/*   47 */
+  DEF_SYSCALL (acre_mbf, 1),	/*   48	*/
 };
 
 #define NSYSCALL (sizeof (syscall_table) / sizeof (syscall_table[0]))
@@ -570,16 +568,6 @@ static ER sys_can_wup(VP argp)
 /* ----------------------------------------------------------------------- *
  * タスク間通信システムコール                                              *
  * ----------------------------------------------------------------------- */
-static ER sys_cre_flg(VP argp)
-{
-    struct {
-	ID flgid;
-	T_CFLG *pk_cflg;
-    } *args = argp;
-
-    return (cre_flg(args->flgid, args->pk_cflg));
-}
-
 static ER sys_acre_flg(VP argp)
 {
     struct {

@@ -63,44 +63,6 @@ ER init_eventflag(void)
     return (E_OK);
 }
 
-/*******************************************************************************
- * cre_flg --- イベントフラグの生成
- *
- * 引数：
- *
- * 返り値：
- *
- * 機能：
- *
- */
-ER cre_flg(ID flgid, T_CFLG * pk_flg)
-{
-    T_EVENTFLAG *p;
-
-    if (flgid < MIN_MANUAL_ID || flgid > MAX_MANUAL_ID) {
-	return (E_ID);
-    }
-
-    if ((pk_flg->flgatr != TA_WSGL) && (pk_flg->flgatr != TA_WMUL)) {
-	return (E_PAR);
-    }
-
-    if (tree_get(&tree, flgid)) {
-	return (E_OBJ);
-    }
-
-    p = (T_EVENTFLAG*)tree_put(&tree, flgid);
-    if (p) {
-	return (E_NOMEM);
-    }
-
-    list_initialize(&(p->receiver));
-    p->flgatr = pk_flg->flgatr;
-    p->iflgptn = pk_flg->iflgptn;
-
-    return (E_OK);
-}
-
 ER_ID acre_flg(T_CFLG * pk_flg)
 {
     T_EVENTFLAG *p;

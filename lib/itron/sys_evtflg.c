@@ -43,12 +43,6 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 
 
 ER
-cre_flg (ID flgid, T_CFLG *pk_flg)
-{
-  return (call_syscall (SYS_CRE_FLG, flgid, pk_flg));
-}
-
-ER
 del_flg (ID flgid)
 {
   return (call_syscall (SYS_DEL_FLG, flgid));
