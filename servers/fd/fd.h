@@ -305,7 +305,6 @@ extern W    	change_fd();	/* アクセスモード切り替え */
 extern W    	status_fd();	/* ステータス		*/
 extern W	intr_flag;
 extern struct spec	*fd_data[];
-extern ID	waitflag;
 
 /* fdc.c */
 extern void    	intr_fd();	/* 割り込みハンドラ	*/

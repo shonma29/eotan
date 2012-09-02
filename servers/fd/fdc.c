@@ -19,8 +19,6 @@ static char rcsid[] =
 #include "../../include/mpu/io.h"
 #include "fd.h"
 
-#undef USE_EVENTFLAG
-
 #define printf	dbg_printf
 
 struct status {
@@ -93,11 +91,7 @@ void intr_fd(void)
 #ifdef FDDEBUG
     printf("!!interrupt!!\n");
 #endif
-#ifdef USE_EVENTFLAG
-    set_flg(waitflag, 1);
-#else
     intr_flag = TRUE;
-#endif
     ena_int();
 /*  signal (FD_EVENT); */
 }
@@ -397,18 +391,11 @@ W recalibrate(W drive)
 
     dis_int();
     intr_flag = FALSE;
-#ifdef USE_EVENTFLAG
-    clr_flg(waitflag, 0);
-#endif
     write_fdc(FDC_RECALIBRATE);
     write_fdc(drive & 0x03);
     ena_int();
 
-#ifdef USE_EVENTFLAG
-    wai_flg(&rflag, waitflag, 1, TWF_ORW);
-#else
     wait_int(&intr_flag);
-#endif
     fdc_isense();
     if (fd_status.status_data[0] != 0) {
 	return (FALSE);
@@ -499,9 +486,6 @@ W seek(W head, W drive, W cylinder)
 #endif
 
     dis_int();
-#ifdef USE_EVENTFLAG
-    clr_flg(waitflag, 0);
-#endif
     intr_flag = FALSE;
     fd_status.status_data[0] = 0;
     fd_status.status_data[1] = 0;
@@ -515,11 +499,7 @@ W seek(W head, W drive, W cylinder)
     printf("fd_seek:writed to FDC.\n");
 #endif
 
-#ifdef USE_EVENTFLAG
-    wai_flg(&rflag, waitflag, 1, TWF_ORW);
-#else
     wait_int(&intr_flag);
-#endif
     fdc_isense();
     if ((fd_status.status_data[0] & 0xF8) != ST0_SE)
 	result = E_DEV;
@@ -581,17 +561,9 @@ W get_data(W drive, W head, W cylinder, W sector, B * buff)
     ready_check();
 
     dis_int();
-#ifdef USE_EVENTFLAG
-    clr_flg(waitflag, 0);
-#endif
     intr_flag = FALSE;
-#if 1
     setup_dma(CHAN, (void *) (((W) buff) & 0x7fffffff), DMA_READ, LEN,
 	      DMA_MASK & 0x02);
-#else
-    setup_dma(CHAN, (void *) (((W) buff) & 0x7fffffff), DMA_READ,
-	      BLOCK_SIZE, DMA_MASK);
-#endif
     write_fdc(FDC_READ);
     write_fdc((head << 2) | drive);
     write_fdc(cylinder);
@@ -603,11 +575,7 @@ W get_data(W drive, W head, W cylinder, W sector, B * buff)
     write_fdc(fd_data[drive]->dtl);
     ena_int();
 
-#ifdef USE_EVENTFLAG
-    wai_flg(&rflag, waitflag, 1, TWF_ORW);
-#else
     wait_int(&intr_flag);	/* busy wait 待ち */
-#endif
     ret = fdc_sense();
     if (ret != TRUE)
 	return (E_DEV);
@@ -667,17 +635,9 @@ W put_data(W drive, W head, W cylinder, W sector, B * buff)
     ready_check();
 
     dis_int();
-#ifdef USE_EVENTFLAG
-    clr_flg(waitflag, 0);
-#endif
     intr_flag = FALSE;
-#if 1
     setup_dma(CHAN, (void *) (((W) buff) & 0x7fffffff), DMA_WRITE, LEN,
 	      DMA_MASK & 0x02);
-#else
-    setup_dma(CHAN, (void *) (((W) buff) & 0x7fffffff), DMA_WRITE,
-	      BLOCK_SIZE, DMA_MASK);
-#endif
     write_fdc(FDC_WRITE);
     write_fdc((head << 2) | drive);
     write_fdc(cylinder);
@@ -689,11 +649,7 @@ W put_data(W drive, W head, W cylinder, W sector, B * buff)
     write_fdc(fd_data[drive]->dtl);
     ena_int();
 
-#ifdef USE_EVENTFLAG
-    wai_flg(&rflag, waitflag, 1, TWF_ORW);
-#else
     wait_int(&intr_flag);	/* busy wait 待ち */
-#endif
     ret = fdc_sense();
     if (ret != TRUE)
 	return (E_DEV);

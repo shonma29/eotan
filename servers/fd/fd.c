@@ -167,7 +167,6 @@ static char rcsid[] =
  */
 struct spec *fd_data[MAXFD];
 W intr_flag;
-ID waitflag;
 
 
 /*********************************************************************
@@ -310,9 +309,6 @@ static void init_fd_driver(void)
     if (error != E_OK) {
 	/* error */
     }
-
-    /* event flag の生成 */
-    waitflag = acre_flg(&pk_cflg);
 
     fd_data[0] = get_fdspec("2HD");
     fd_data[1] = get_fdspec("2HD");
