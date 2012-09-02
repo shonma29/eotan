@@ -26,7 +26,7 @@
 TARGET = ../libnc.a
 MAKE = gmake
 CC = cc
-CFLAGS = -Wall -Werror -O6
+CFLAGS = -Wall -Werror -Os
 AS = as
 ASFLAGS = 
 LD = ld
