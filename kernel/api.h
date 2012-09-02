@@ -27,21 +27,21 @@ Version 2, June 1991
 #define	SYS_EXT_TSK	(4)
 #define	SYS_EXD_TSK	(5)
 #define	SYS_TER_TSK	(6)
-#define	SYS_DIS_DSP	(7)
-#define	SYS_ENA_DSP	(8)
-#define	SYS_CHG_PRI	(9)
-#define	SYS_REL_WAI	(10)
-#define	SYS_GET_TID	(11)
+#define	SYS_CHG_PRI	(7)
+#define	SYS_REL_WAI	(8)
+#define	SYS_GET_TID	(9)
 
-#define	SYS_SUS_TSK	(12)
-#define	SYS_RSM_TSK	(13)
+#define	SYS_SUS_TSK	(10)
+#define	SYS_RSM_TSK	(11)
 
-#define SYS_DEL_FLG   	(14)
-#define SYS_SET_FLG   	(15)
-#define SYS_CLR_FLG  	(16)
-#define SYS_WAI_FLG   	(17)
+#define SYS_ACRE_FLG	(12)
+#define SYS_DEL_FLG   	(13)
+#define SYS_SET_FLG   	(14)
+#define SYS_CLR_FLG  	(15)
+#define SYS_WAI_FLG   	(16)
 
-#define SYS_CRE_MBF	(18)
+#define SYS_CRE_MBF	(17)
+#define SYS_ACRE_MBF	(18)
 #define SYS_DEL_MBF	(19)
 #define SYS_SND_MBF	(20)
 #define SYS_PSND_MBF	(21)
@@ -73,9 +73,5 @@ Version 2, June 1991
 #define SYS_VCPY_STK	(40)
 #define SYS_VSET_CTX	(41)
 #define SYS_VUSE_FPU	(42)
-
-#define SYS_ACRE_FLG	(43)
-#define SYS_ACRE_MBF	(44)
-
 
 #endif /* __CORE_API_H__ */

@@ -195,8 +195,6 @@ static ER	sys_sta_tsk (void *argp);
 static ER	sys_ext_tsk (void *argp);
 static ER	sys_exd_tsk (void *argp);
 static ER	sys_ter_tsk (void *argp);
-static ER	sys_dis_dsp (void *argp);
-static ER	sys_ena_dsp (void *argp);
 static ER	sys_chg_pri (void *argp);
 static ER	sys_rel_wai (void *argp);
 static ER	sys_get_tid (void *argp);
@@ -255,27 +253,27 @@ static ER (*syscall_table[])(VP argp) =
   DEF_SYSCALL (ext_tsk, 0),     /*    4 */
   DEF_SYSCALL (exd_tsk, 0),     /*    5 */
   DEF_SYSCALL (ter_tsk, 1),     /*    6 */
-  DEF_SYSCALL (dis_dsp, 0),	/*    7 */
-  DEF_SYSCALL (ena_dsp, 0),	/*    8 */
-  DEF_SYSCALL (chg_pri, 2),	/*    9 */
-  DEF_SYSCALL (rel_wai, 1),	/*   10 */
-  DEF_SYSCALL (get_tid, 1),	/*   11 */
+  DEF_SYSCALL (chg_pri, 2),	/*    7 */
+  DEF_SYSCALL (rel_wai, 1),	/*    8 */
+  DEF_SYSCALL (get_tid, 1),	/*    9 */
 
   /* タスク附属同期機能 */
-  DEF_SYSCALL (sus_tsk, 1),    	/*   12 */
-  DEF_SYSCALL (rsm_tsk, 1),	/*   13 */
+  DEF_SYSCALL (sus_tsk, 1),    	/*   10 */
+  DEF_SYSCALL (rsm_tsk, 1),	/*   11 */
 
   /* 同期・通信機構 */
   /* セマフォ */
 
   /* イベントフラグ */
-  DEF_SYSCALL (del_flg, 1),	/*   14 */
-  DEF_SYSCALL (set_flg, 2),	/*   15 */
-  DEF_SYSCALL (clr_flg, 2),     /*   16 */
-  DEF_SYSCALL (wai_flg, 4),	/*   17 */
+  DEF_SYSCALL (acre_flg, 1),	/*   12 */
+  DEF_SYSCALL (del_flg, 1),	/*   13 */
+  DEF_SYSCALL (set_flg, 2),	/*   14 */
+  DEF_SYSCALL (clr_flg, 2),     /*   15 */
+  DEF_SYSCALL (wai_flg, 4),	/*   16 */
 
   /* メッセージバッファ */
-  DEF_SYSCALL (cre_mbf, 2),	/*   18	*/
+  DEF_SYSCALL (cre_mbf, 2),	/*   17	*/
+  DEF_SYSCALL (acre_mbf, 1),	/*   18	*/
   DEF_SYSCALL (del_mbf, 1),	/*   19 */
   DEF_SYSCALL (snd_mbf, 3),	/*   20 */
   DEF_SYSCALL (psnd_mbf, 3),	/*   21 */
@@ -314,9 +312,6 @@ static ER (*syscall_table[])(VP argp) =
   DEF_SYSCALL (vcpy_stk, 4),	/*   40 */
   DEF_SYSCALL (vset_ctx, 4),	/*   41 */
   DEF_SYSCALL (vuse_fpu, 1),	/*   42 */
-
-  DEF_SYSCALL (acre_flg, 1),	/*   43 */
-  DEF_SYSCALL (acre_mbf, 1),	/*   44	*/
 };
 
 #define NSYSCALL (sizeof (syscall_table) / sizeof (syscall_table[0]))
@@ -455,18 +450,6 @@ static ER sys_ter_tsk(VP argp)
     return (ter_tsk(args->tskid));
 }
 
-
-static ER sys_dis_dsp(VP argp)
-{
-    enter_serialize();
-    return E_OK;
-}
-
-static ER sys_ena_dsp(VP argp)
-{
-    leave_serialize();
-    return E_OK;
-}
 
 static ER sys_chg_pri(VP argp)
 {

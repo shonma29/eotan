@@ -74,22 +74,6 @@ chg_pri (ID tskid, PRI tskpri)
   return call_syscall (SYS_CHG_PRI, tskid, tskpri);
 }
 
-/* dis_dsp  --- ディスパッチ禁止
-*/
-ER
-dis_dsp (void)
-{
-  return call_syscall (SYS_DIS_DSP);
-}
-
-/* ena_dsp  --- ディスパッチ許可
-*/
-ER
-ena_dsp (void)
-{
-  return call_syscall (SYS_ENA_DSP);
-}
-
 /* rel_wai --- 待ち状態の解除
  */
 rel_wai (ID taskid)
