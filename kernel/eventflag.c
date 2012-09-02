@@ -81,7 +81,7 @@ ER_ID acre_flg(T_CFLG * pk_flg)
     if (flgid > MAX_AUTO_ID)	return E_ID;
 
     p = (T_EVENTFLAG*)tree_put(&tree, flgid);
-    if (p) {
+    if (!p) {
 	return (E_NOMEM);
     }
 
