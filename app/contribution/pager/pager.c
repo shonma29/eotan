@@ -76,18 +76,14 @@ void prompt()
 
 int read_ln(int fd, char *buf, int  buf_len)
 {
-  int  len = 0;
-  int  n;
+  int  len;
 
-  while (buf_len > len) {
-    n = read(fd, buf, 1);
-    if (n <= 0) {
-      if (n < 0) len = n;
+  for (len = 0; buf_len - 1 > len; buf++) {
+    if (read(fd, buf, 1) <= 0) {
       break;
     }
     len ++;
     if(*buf == '\n') break;
-    buf ++;
   }
   *buf=0;
   return(len);
