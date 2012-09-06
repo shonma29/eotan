@@ -100,7 +100,6 @@ fprintf (FILE *port, B *fmt,...)
   arg0 = (VP *)&fmt;
   INC (arg0, B *);
   err = vfprintf (port, fmt, (VP)arg0);
-  fflush (port);
   return (err);
 }
 
@@ -201,14 +200,17 @@ fputs (B *line, FILE *port)
     {
       putc (line[i], port);
     }
-  fflush (port);
   return (i);
 }
 
 W
 puts (B *line)
 {
-  return fputs(line, stdout);
+  W len = fputs (line, stdout);
+
+  putc ('\n', stdout);
+  fflush (stdout);
+  return (len + 1);
 }
 
 W 
