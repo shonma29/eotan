@@ -31,8 +31,13 @@ Version 2, June 1991
 static slab_t slab;
 static tree_t tree;
 
+static T_EVENTFLAG *getParent(const node_t *p);
 static T_TCB *getTaskParent(const list_t *p);
 
+
+static T_EVENTFLAG *getParent(const node_t *p) {
+	return (T_EVENTFLAG*)((ptr_t)p - offsetof(T_EVENTFLAG, node));
+}
 
 static T_TCB *getTaskParent(const list_t *p) {
 	return (T_TCB*)((ptr_t)p - offsetof(T_TCB, wait.waiting));
@@ -66,6 +71,7 @@ ER init_eventflag(void)
 ER_ID acre_flg(T_CFLG * pk_flg)
 {
     T_EVENTFLAG *p;
+    node_t *node;
     ID flgid;
 
     if ((pk_flg->flgatr != TA_WSGL) && (pk_flg->flgatr != TA_WMUL)) {
@@ -80,11 +86,12 @@ ER_ID acre_flg(T_CFLG * pk_flg)
 
     if (flgid > MAX_AUTO_ID)	return E_ID;
 
-    p = (T_EVENTFLAG*)tree_put(&tree, flgid);
-    if (!p) {
+    node = tree_put(&tree, flgid);
+    if (!node) {
 	return (E_NOMEM);
     }
 
+    p = getParent(node);
     list_initialize(&(p->receiver));
     p->flgatr = pk_flg->flgatr;
     p->iflgptn = pk_flg->iflgptn;
@@ -109,13 +116,15 @@ ER_ID acre_flg(T_CFLG * pk_flg)
  */
 ER del_flg(ID flgid)
 {
-    T_EVENTFLAG *p = (T_EVENTFLAG*)tree_get(&tree, flgid);
+    T_EVENTFLAG *p;
+    node_t *node = tree_get(&tree, flgid);
     list_t *q;
 
-    if (!p) {
+    if (!node) {
 	return (E_NOEXS);
     }
 
+    p = getParent(node);
     while ((q = list_dequeue(&(p->receiver))) != NULL) {
 	T_TCB *task = getTaskParent(q);
 
@@ -144,15 +153,18 @@ ER del_flg(ID flgid)
  */
 ER set_flg(ID flgid, UINT setptn)
 {
-    T_EVENTFLAG *p = (T_EVENTFLAG*)tree_get(&tree, flgid);
+    T_EVENTFLAG *p;
+    node_t *node = tree_get(&tree, flgid);
     T_TCB *task;
     BOOL result;
     BOOL tsw_flag = FALSE;
     list_t *q, *next;
 
-    if (!p) {
+    if (!node) {
 	return (E_NOEXS);
     }
+
+    p = getParent(node);
 
     enter_critical();
     p->iflgptn |= setptn;
@@ -214,11 +226,14 @@ ER set_flg(ID flgid, UINT setptn)
  */
 ER clr_flg(ID flgid, UINT clrptn)
 {
-    T_EVENTFLAG *p = (T_EVENTFLAG*)tree_get(&tree, flgid);
+    T_EVENTFLAG *p;
+    node_t *node = tree_get(&tree, flgid);
 
-    if (!p) {
+    if (!node) {
 	return (E_NOEXS);
     }
+
+    p = getParent(node);
 
     enter_critical();
     p->iflgptn &= clrptn;
@@ -241,6 +256,7 @@ ER clr_flg(ID flgid, UINT clrptn)
 ER wai_flg(UINT * flgptn, ID flgid, UINT waiptn, UINT wfmode)
 {
     T_EVENTFLAG *p;
+    node_t *node;
     BOOL result;
 
     *flgptn = 0;
@@ -249,11 +265,12 @@ ER wai_flg(UINT * flgptn, ID flgid, UINT waiptn, UINT wfmode)
 	return (E_PAR);
     }
 
-    p = (T_EVENTFLAG*)tree_get(&tree, flgid);
-    if (!p) {
+    node = tree_get(&tree, flgid);
+    if (!node) {
 	return (E_NOEXS);
     }
 
+    p = getParent(node);
     if ((p->flgatr == TA_WSGL)
 	&& !list_is_empty(&(p->receiver))) {
 	return (E_OBJ);
