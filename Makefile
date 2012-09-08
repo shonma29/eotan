@@ -20,7 +20,7 @@ boot:
 	${MAKE} -C sfsboot
 
 applications:
-	${MAKE} -C app/psaux
+	${MAKE} -C app/test
 	${MAKE} -C app/contribution
 
 1st_fd_img:
@@ -39,7 +39,7 @@ clean:
 	${MAKE} -C sfsboot clean
 	${MAKE} -C build clean
 	${MAKE} -C app/mkfs clean
-	${MAKE} -C app/psaux clean
+	${MAKE} -C app/test clean
 	${MAKE} -C app/contribution clean
 	rm -f 1st_fd.img 2nd_fd.img 3rd_fd.img
 	rm -f sfsboot.img

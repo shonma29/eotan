@@ -31,7 +31,7 @@ all: clean
 	echo dir /dev
 	${MKFS}/statfs ${TARGET} dir /dev
 	${MKFS}/statfs ${TARGET} write /init.fm app/mkfs/init.fm
-	(cd app/psaux && ./inst_app.sh ${TARGET})
+	(cd app/test && ./inst_app.sh ${TARGET})
 	(cd app/contribution && ./inst_app.sh ${TARGET})
 	sfsboot/mkmap ${TARGET} /system/2ndboot | sfsboot/mkboot ${TARGET}
 
