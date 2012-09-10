@@ -21,6 +21,7 @@ Version 2, June 1991
 #include "core.h"
 #include "boot.h"
 #include "task.h"
+#include "../include/itron/rendezvous.h"
 
 #include "../servers/port-manager/port-manager.h"
 
@@ -73,5 +74,16 @@ extern ER get_tim(SYSTIME *pk_tim);
 extern ER init_lowlib(struct module_info *modp);
 extern ER load_lowlib(VP * argp);
 extern ER stat_lowlib(VP * argp);
+
+
+/* rendezvous.c */
+ER port_initialize(void);
+ER port_create(ID porid, T_CPOR *pk_cpor);
+ER_ID port_create_auto(T_CPOR *pk_cpor);
+ER port_destroy(ID porid);
+ER_UINT port_call(ID porid, RDVPTN calptn, VP msg, UINT cmsgsz);
+ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg);
+ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz);
+
 
 #endif				/* __CORE_FUNC_H__ */

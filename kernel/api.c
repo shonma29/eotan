@@ -183,6 +183,7 @@ Version 2, June 1991
 #include "boot.h"
 #include "mpu/mpufunc.h"
 #include "arch/archfunc.h"
+#include "../include/itron/rendezvous.h"
 
 #define DEF_SYSCALL(x,n)	sys_ ## x
 #define DEF_NOSYSCALL		nodef
@@ -239,6 +240,14 @@ static ER	sys_vsys_msc (void *argp);
 static ER	sys_vcpy_stk (void *argp);
 static ER	sys_vset_ctx (void *argp);
 static ER	sys_vuse_fpu (void *argp);
+
+static ER sys_cre_por(void *argp);
+static ER_ID sys_acre_por(void *argp);
+static ER sys_del_por(void *argp);
+static ER_UINT sys_cal_por(void *argp);
+static ER_UINT sys_acp_por(void *argp);
+static ER sys_rpl_rdv(void *argp);
+
 
 /* システムコールテーブル
  */  
@@ -312,6 +321,13 @@ static ER (*syscall_table[])(VP argp) =
   DEF_SYSCALL (vcpy_stk, 4),	/*   40 */
   DEF_SYSCALL (vset_ctx, 4),	/*   41 */
   DEF_SYSCALL (vuse_fpu, 1),	/*   42 */
+
+  DEF_SYSCALL (cre_por, 2),	/*   43 */
+  DEF_SYSCALL (acre_por, 1),	/*   44 */
+  DEF_SYSCALL (del_por, 1),	/*   45 */
+  DEF_SYSCALL (cal_por, 4),	/*   46 */
+  DEF_SYSCALL (acp_por, 4),	/*   47 */
+  DEF_SYSCALL (rpl_rdv, 3),	/*   48 */
 };
 
 #define NSYSCALL (sizeof (syscall_table) / sizeof (syscall_table[0]))
@@ -1006,4 +1022,67 @@ static ER sys_vuse_fpu(VP argp)
     } *args = argp;
 
     return vuse_fpu(args->tid);
+}
+
+static ER sys_cre_por(VP argp)
+{
+    struct {
+	ID porid;
+	T_CPOR *pk_cpor;
+    } *args = argp;
+
+    return port_create(args->porid, args->pk_cpor);
+}
+
+static ER_ID sys_acre_por(VP argp)
+{
+    struct {
+	T_CPOR *pk_cpor;
+    } *args = argp;
+
+    return port_create_auto(args->pk_cpor);
+}
+
+static ER sys_del_por(VP argp)
+{
+    struct {
+	ID porid;
+    } *args = argp;
+
+    return port_destroy(args->porid);
+}
+
+static ER_UINT sys_cal_por(VP argp)
+{
+    struct {
+	ID porid;
+	RDVPTN calptn;
+	VP msg;
+	UINT cmsgsz;
+    } *args = argp;
+
+    return port_call(args->porid, args->calptn, args->msg, args->cmsgsz);
+}
+
+static ER_UINT sys_acp_por(VP argp)
+{
+    struct {
+	ID porid;
+	RDVPTN calptn;
+	RDVNO *p_rdvno;
+	VP msg;
+    } *args = argp;
+
+    return port_accept(args->porid, args->p_rdvno, args->msg);
+}
+
+static ER sys_rpl_rdv(VP argp)
+{
+    struct {
+	RDVNO rdvno;
+	VP msg;
+	UINT rmsgsz;
+    } *args = argp;
+
+    return port_reply(args->rdvno, args->msg, args->rmsgsz);
 }

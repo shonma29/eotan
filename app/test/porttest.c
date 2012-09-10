@@ -1,5 +1,3 @@
-#ifndef _CORE_WAIT_H_
-#define _CORE_WAIT_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,44 +24,46 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "../include/set/list.h"
-#include "../include/itron/types.h"
-#include "../include/itron/rendezvous.h"
+#include <stdlib.h>
+#include "../../include/itron/types.h"
+#include "../../include/itron/rendezvous.h"
+#include "../../include/itron/errno.h"
 
-typedef enum {
-	wait_none,
-	wait_slp,
-	wait_dly,
-	wait_evf,
-	wait_msg,
-	wait_por,
-	wait_rdv,
-	wait_alm
-} wait_type_e;
+#define TEST_PORT 49152
 
-typedef struct {
-	W wup_cnt;
-	W sus_cnt;
-	wait_type_e type;
-	list_t waiting;
-	ID obj_id;
-	ER result;
-	union {
-		struct {
-			UINT waiptn;
-			UINT wfmode;
-			UINT flgptn;
-		} evf;
-		struct {
-			UINT size;
-			VP msg;
-		} msg;
-		struct {
-			UINT size;
-			VP msg;
-			RDVNO rdvno;
-		} por;
-	} detail;
-} wait_reason_t;
+int main(int argc, char **argv)
+{
+	unsigned char buf[8];
+	ER_UINT size;
+	int i;
 
-#endif
+	printf("Hello World!\n");
+
+	buf[0] = 'H';
+	buf[1] = 'e';
+	buf[2] = 'l';
+	buf[3] = 'l';
+	buf[4] = 'o';
+
+	size = cal_por(TEST_PORT, 1, buf, 5);
+	printf("cal_por: result=%d\n", size);
+	if (size != E_NOSPT)	return -1;
+
+	size = cal_por(TEST_PORT - 1, 0xffffffff, buf, 5);
+	printf("cal_por: result=%d\n", size);
+	if (size != E_NOEXS)	return -1;
+
+	size = cal_por(TEST_PORT, 0xffffffff, buf, 33);
+	printf("cal_por: result=%d\n", size);
+	if (size != E_PAR)	return -1;
+
+	size = cal_por(TEST_PORT, 0xffffffff, buf, 5);
+	printf("cal_por: result=%d\n", size);
+	if (size != 4)	return -1;
+
+	buf[size] = 0;
+	printf("buf=%s\n", buf);
+
+	printf("success\n");
+	return 0;
+}

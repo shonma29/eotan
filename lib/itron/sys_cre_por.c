@@ -1,5 +1,3 @@
-#ifndef _CORE_WAIT_H_
-#define _CORE_WAIT_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,44 +24,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "../include/set/list.h"
-#include "../include/itron/types.h"
-#include "../include/itron/rendezvous.h"
+#include "../../include/itron/types.h"
+#include "../../include/itron/rendezvous.h"
+#include "../../kernel/api.h"
 
-typedef enum {
-	wait_none,
-	wait_slp,
-	wait_dly,
-	wait_evf,
-	wait_msg,
-	wait_por,
-	wait_rdv,
-	wait_alm
-} wait_type_e;
-
-typedef struct {
-	W wup_cnt;
-	W sus_cnt;
-	wait_type_e type;
-	list_t waiting;
-	ID obj_id;
-	ER result;
-	union {
-		struct {
-			UINT waiptn;
-			UINT wfmode;
-			UINT flgptn;
-		} evf;
-		struct {
-			UINT size;
-			VP msg;
-		} msg;
-		struct {
-			UINT size;
-			VP msg;
-			RDVNO rdvno;
-		} por;
-	} detail;
-} wait_reason_t;
-
-#endif
+ER cre_por(ID porid, T_CPOR *pk_cpor) {
+	return call_syscall(SYS_CRE_POR, porid, pk_cpor);
+}

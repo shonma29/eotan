@@ -17,7 +17,7 @@ CC=gcc
 MKDEPEND=$(CC) -M
 STARTADDR=0x00001000
 ENTRY=_main
-KERNLIBS=$(ROOT)/lib/libc.a
+KERNLIBS=$(ROOT)/lib/libc.a $(ROOT)/lib/libitron.a
 LD=ld
 AS=as
 
@@ -29,13 +29,16 @@ AS=as
 
 OBJS= test.o
 
-all: test psauxtst2
+all: test psauxtst2 porttest
 
 test: test.o $(LIBS) $(KERNLIBS)
 	$(LD) -Bstatic -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) test.o $(LIBS) $(KERNLIBS)
 
 psauxtst2: psauxtst2.o $(LIBS) $(KERNLIBS)
 	$(LD) -Bstatic -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) psauxtst2.o $(LIBS) $(KERNLIBS)
+
+porttest: porttest.o $(LIBS) $(KERNLIBS)
+	$(LD) -Bstatic -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) porttest.o $(LIBS) $(KERNLIBS)
 
 tags:
 	etags ../*/*.[hcs]
@@ -46,4 +49,5 @@ depend:
 clean:
 	rm -f test
 	rm -f *.o
-	rm -f psauxtst2 psauxtst2.o
+	rm -f psauxtst2
+	rm -f porttest

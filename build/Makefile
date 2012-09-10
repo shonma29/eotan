@@ -9,7 +9,7 @@ CFLAGS=$(DEBUG) -I$(INC) -I../include
 CC=gcc
 
 KERNEL=core
-SERVERS=console keyboard fd ide psaux port-manager fs ramdisk
+SERVERS=console keyboard fd ide psaux port-manager fs ramdisk dumb
 KERNLIB=libserv nano-c itron
 LOWLIB=posix_lowlib
 USERLIBS=posix_libc

@@ -36,7 +36,8 @@ OBJS= \
 	lowlib.o \
 	posix.o \
 	ready.o \
-	sync.o
+	sync.o \
+	rendezvous.o
 
 all: version.h core.bin
 

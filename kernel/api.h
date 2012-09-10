@@ -74,4 +74,11 @@ Version 2, June 1991
 #define SYS_VSET_CTX	(41)
 #define SYS_VUSE_FPU	(42)
 
+#define SYS_CRE_POR	(43)
+#define SYS_ACRE_POR	(44)
+#define SYS_DEL_POR	(45)
+#define SYS_CAL_POR	(46)
+#define SYS_ACP_POR	(47)
+#define SYS_RPL_RDV	(48)
+
 #endif /* __CORE_API_H__ */

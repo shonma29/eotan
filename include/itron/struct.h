@@ -183,25 +183,6 @@ typedef struct t_rmbf
 } T_RMBF;
 
 
-/* -------------------- ポート、ランデブ関係 --------------- */
-
-typedef struct t_cpor
-{
-  VP		exinf;
-  ATR		poratr;
-  INT		maxcmsz;
-  INT		maxrmsz;
-} T_CPOR;
-
-
-typedef struct t_rpor
-{
-  VP		exinf;
-  BOOL_ID	wtsk;
-  BOOL_ID	stsk;
-} T_RPOR;
-
-
 /* ------------------- 割込み管理関係 ------------------ */
 
 typedef struct t_dint

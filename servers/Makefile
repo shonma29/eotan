@@ -32,6 +32,7 @@ all:
 	$(MAKE) -C port-manager
 	$(MAKE) -C psaux
 	$(MAKE) -C ramdisk
+	$(MAKE) -C dumb
 
 clean:
 	$(MAKE) -C console clean
@@ -42,3 +43,4 @@ clean:
 	$(MAKE) -C port-manager clean
 	$(MAKE) -C psaux clean
 	$(MAKE) -C ramdisk clean
+	$(MAKE) -C dumb clean
