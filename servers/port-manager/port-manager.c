@@ -88,6 +88,7 @@ static char rcs[] = "@(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc
 
 #include "../../include/services.h"
 #include <core.h>
+#include "../../include/itron/rendezvous.h"
 #include "../../lib/libserv/libserv.h"
 #include "port-manager.h"
 
@@ -103,15 +104,15 @@ ID	request_port;
  *
  */
 extern void	_main (void);
-extern void	regist_port (struct port_manager_msg_t *msgp);
-extern void	unregist_port (struct port_manager_msg_t *msgp);
-extern void	find_port (struct port_manager_msg_t *msgp);
+extern void	regist_port (RDVNO rdvno, struct port_manager_msg_t *msgp);
+extern void	unregist_port (RDVNO rdvno, struct port_manager_msg_t *msgp);
+extern void	find_port (RDVNO rdvno, struct port_manager_msg_t *msgp);
 
 
 /*
  * このファイルの中でしか使用しないスタティック関数の定義
  */
-static void	recv_port_manager (ID rport, PORT_MANAGER_ERROR errno, ID port);
+static void	recv_port_manager (RDVNO rdvno, PORT_MANAGER_ERROR errno, ID port);
 
 
 /*
@@ -122,11 +123,9 @@ static void	recv_port_manager (ID rport, PORT_MANAGER_ERROR errno, ID port);
 void
 _main (void)
 {
-  T_CMBF				msg_pk;
+  T_CPOR				pk_cpor;
   ER					error;
   struct port_manager_msg_t		msg_buf;
-  INT					size;
-
 
   /*
    * プログラムの初期化
@@ -142,10 +141,10 @@ _main (void)
    * ク以外は、メッセージを読み取れないなどの設定を可能とする。
    *
    */
-  msg_pk.bufsz = sizeof (struct port_manager_msg_t);
-  msg_pk.maxmsz = sizeof (struct port_manager_msg_t) * MAX_MSG_ENTRY;
-  msg_pk.mbfatr = TA_TFIFO;
-  error = cre_mbf (PORT_NAME, &msg_pk);
+  pk_cpor.poratr = TA_TFIFO;
+  pk_cpor.maxcmsz = sizeof (struct port_manager_msg_t) * MAX_MSG_ENTRY;
+  pk_cpor.maxrmsz = sizeof (struct port_manager_msg_t) * MAX_MSG_ENTRY;
+  error = cre_por (PORT_NAME, &pk_cpor);
   if (error != E_OK)
     {
       exd_tsk ();
@@ -171,8 +170,11 @@ _main (void)
        * 受信するときに使用するメッセージバッファは、PORT_MANAGER_PORT
        * マクロで指定したものを使用する。
        */
-      error = rcv_mbf (&msg_buf, &size, PORT_NAME);
-      if (error == E_OK)
+      RDVNO rdvno;
+      ER_UINT size;
+
+      size = acp_por (PORT_NAME, 0xffffffff, &rdvno, &msg_buf);
+      if (size >= 0)
 	{
 	  /*
 	   * メッセージを受信したことを表示する。
@@ -195,21 +197,21 @@ _main (void)
 	      dbg_printf ("port-manager: (regist) <%s> %d\n",
 		msg_buf.body.regist.name,
 		msg_buf.body.regist.port);
-	      regist_port (&msg_buf);
+	      regist_port (rdvno, &msg_buf);
 	      break;
 
 	    case UNREGIST_PORT:
 	      /*
 	       * メッセージバッファ ID の抹消
 	       */
-	      unregist_port (&msg_buf);
+	      unregist_port (rdvno, &msg_buf);
 	      break;
 
 	    case FIND_PORT:
 	      /*
 	       * メッセージバッファ ID の検索
 	       */
-	      find_port (&msg_buf);
+	      find_port (rdvno, &msg_buf);
 	      break;
 	    }
 	}
@@ -222,7 +224,7 @@ _main (void)
  *
  */
 void
-regist_port (struct port_manager_msg_t *msgp)
+regist_port (RDVNO rdvno, struct port_manager_msg_t *msgp)
 {
   PORT_MANAGER_ERROR errno;
 
@@ -247,7 +249,7 @@ regist_port (struct port_manager_msg_t *msgp)
       /*
        * 正常に処理が終了した場合の返答メッセージ送信
        */
-      recv_port_manager (msgp->hdr.rport,
+      recv_port_manager (rdvno,
 			 errno, 
 			 msgp->body.regist.port);
     }
@@ -258,7 +260,7 @@ regist_port (struct port_manager_msg_t *msgp)
        * 返答メッセージのうちメッセージバッファ ID については
        * 取得できなかったので、0 を返す。
        */
-      recv_port_manager (msgp->hdr.rport, errno, 0);
+      recv_port_manager (rdvno, errno, 0);
     }
 }
 
@@ -269,7 +271,7 @@ regist_port (struct port_manager_msg_t *msgp)
  *
  */
 void
-unregist_port (struct port_manager_msg_t *msgp)
+unregist_port (RDVNO rdvno, struct port_manager_msg_t *msgp)
 {
   PORT_MANAGER_ERROR	errno;
   ID		     	port;
@@ -289,7 +291,7 @@ unregist_port (struct port_manager_msg_t *msgp)
       /*
        * 正常に処理が終了した場合の返答メッセージ送信
        */
-      recv_port_manager (msgp->hdr.rport,
+      recv_port_manager (rdvno,
 			 errno, 
 			 port);
     }
@@ -300,7 +302,7 @@ unregist_port (struct port_manager_msg_t *msgp)
        * エラーメッセージを返答する。
        * エラー番号以外の内容はすべて 0 を埋めて返す。
        */
-      recv_port_manager (msgp->hdr.rport, errno, 0);
+      recv_port_manager (rdvno, errno, 0);
     }
 }
 
@@ -310,7 +312,7 @@ unregist_port (struct port_manager_msg_t *msgp)
  *
  */
 void
-find_port (struct port_manager_msg_t *msgp)
+find_port (RDVNO rdvno, struct port_manager_msg_t *msgp)
 {
   PORT_MANAGER_ERROR	errno;
   ID		     	port;
@@ -337,7 +339,7 @@ find_port (struct port_manager_msg_t *msgp)
        * ポート番号として、find_database() で発見したメッセージバッファ 
        * ID を返す。
        */
-      recv_port_manager (msgp->hdr.rport,
+      recv_port_manager (rdvno,
 			 errno, 
 			 port);
     }
@@ -348,7 +350,7 @@ find_port (struct port_manager_msg_t *msgp)
        * エラーメッセージを返答する。
        * エラー番号以外の内容はすべて 0 を埋めて返す。
        */
-      recv_port_manager (msgp->hdr.rport, errno, 0);
+      recv_port_manager (rdvno, errno, 0);
     }
 }
 
@@ -357,7 +359,7 @@ find_port (struct port_manager_msg_t *msgp)
  * ポートマネージャに対して要求を送ったタスクに対して返答メッセージを返す。
  */
 static void
-recv_port_manager (ID rport, PORT_MANAGER_ERROR errno, ID port)
+recv_port_manager (RDVNO rdvno, PORT_MANAGER_ERROR errno, ID port)
 {
   /*
    * 返答メッセージの内容が入る領域。
@@ -375,6 +377,6 @@ recv_port_manager (ID rport, PORT_MANAGER_ERROR errno, ID port)
    * 返答メッセージを要求元に送る。
    * 今のところ、snd_mbf() システムコールのエラーは無視している。
    */
-  snd_mbf (rport, sizeof (recv_msg), &recv_msg);
+  rpl_rdv (rdvno, &recv_msg, sizeof (recv_msg));
 }
 

@@ -58,6 +58,7 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
  */
 #include "../../include/services.h"
 #include <core.h>
+#include "../../include/itron/rendezvous.h"
 #include "../../servers/port-manager/port-manager.h"
 
 /*
@@ -68,144 +69,76 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 PORT_MANAGER_ERROR
 regist_port (port_name *name, ID port)
 {
-  struct recv_port_message_t	recv_msg;
-  struct port_manager_msg_t  	send_msg;
-  ID			     	recv_port;
-  W			     	rsize;
-  T_CMBF pk_cmbf = { NULL, TA_TFIFO, sizeof(recv_msg), sizeof(recv_msg) };
-
-  /*
-   * ポートマネージャからの返答受けつけ用のメッセージバッファ作成。
-   */
-  recv_port = acre_mbf(&pk_cmbf);
-  if (recv_port == 0)
-    {
-#ifdef DEBUG
-      dbg_printf ("regist_port: cannot get port.\n");
-#endif /* DEBUG */
-      return (E_PORT_SYSTEM);
-    }
+  union {
+    struct recv_port_message_t	recv_msg;
+    struct port_manager_msg_t  	send_msg;
+  } buf;
+  ER_UINT		     	rsize;
 
   /*
    * ポートマネージャへ送る要求メッセージを作成。
    */
-  send_msg.hdr.type  = REGIST_PORT;
-  send_msg.hdr.size  = sizeof (send_msg);
-  send_msg.hdr.rport = recv_port;
-  strcpy (&(send_msg.body.regist.name), name);
-  send_msg.body.regist.port = port;
+  buf.send_msg.hdr.type  = REGIST_PORT;
+  buf.send_msg.hdr.size  = sizeof (buf.send_msg);
+  buf.send_msg.hdr.rport = 0;
+  strcpy (&(buf.send_msg.body.regist.name), name);
+  buf.send_msg.body.regist.port = port;
 
 #ifdef DEBUG
-  dbg_printf ("regist_port: name = <%s>\n", &(send_msg.body.regist.name));
+  dbg_printf ("regist_port: name = <%s>\n", &(buf.send_msg.body.regist.name));
 #endif /* DEBUG */
 
   /*
    * ポートマネージャに対して登録要求メッセージを送信する。
    */
-  if (snd_mbf (PORT_NAME, sizeof (send_msg), &send_msg) != E_OK)
+  rsize = cal_por (PORT_NAME, 0xffffffff, &buf, sizeof (buf.send_msg));
+  if (rsize < 0)
     {
-      del_mbf (recv_port);
       return (E_PORT_SYSTEM);
     }
 
 #ifdef DEBUG
-  dbg_printf ("port_manager:snd_msg: ok.\n");
+  dbg_printf ("port_manager:cal_por: ok.\n");
+  dbg_printf ("port_manager: errno = %d\n", buf.recv_msg.error);
 #endif /* DEBUG */
-
-  /*
-   * ポートマネージャからの返答メッセージの受けつけ
-   */
-  if (rcv_mbf (&recv_msg, (VP)&rsize, recv_port) != E_OK)
-    {
-      del_mbf (recv_port);
-      return (E_PORT_SYSTEM);
-    }
-
-#ifdef DEBUG
-  dbg_printf ("port_manager:rcv_msg: ok.\n");
-#endif /* DEBUG */
-
-
-  /*
-   * 使いおわった返答受信用のメッセージバッファを削除する。
-   */
-  del_mbf (recv_port);
-
-#ifdef DEBUG
-  dbg_printf ("port_manager: errno = %d\n", recv_msg.error);
-#endif /* DEBUG */
-  return (recv_msg.error);
+  return (buf.recv_msg.error);
 }
 
 PORT_MANAGER_ERROR
 unregist_port (port_name *name)
 {
-  struct recv_port_message_t	recv_msg;
-  struct port_manager_msg_t  	send_msg;
-  ID			     	recv_port;
-  W			     	rsize;
-  T_CMBF pk_cmbf = { NULL, TA_TFIFO, sizeof(recv_msg), sizeof(recv_msg) };
-
-  /*
-   * ポートマネージャからの返答受けつけ用のメッセージバッファ作成。
-   */
-  recv_port = acre_mbf(&pk_cmbf);
-  if (recv_port == 0)
-    {
-#ifdef DEBUG
-      dbg_printf ("regist_port: cannot get port.\n");
-#endif /* DEBUG */
-      return (E_PORT_SYSTEM);
-    }
+  union {
+    struct recv_port_message_t	recv_msg;
+    struct port_manager_msg_t  	send_msg;
+  } buf;
+  ER_UINT		     	rsize;
 
   /*
    * ポートマネージャへ送る要求メッセージを作成。
    */
-  send_msg.hdr.type  = UNREGIST_PORT;
-  send_msg.hdr.size  = sizeof (send_msg);
-  send_msg.hdr.rport = recv_port;
-  strcpy (&(send_msg.body.regist.name), name);
+  buf.send_msg.hdr.type  = UNREGIST_PORT;
+  buf.send_msg.hdr.size  = sizeof (buf.send_msg);
+  buf.send_msg.hdr.rport = 0;
+  strcpy (&(buf.send_msg.body.regist.name), name);
 
 #ifdef DEBUG
-  dbg_printf ("regist_port: name = <%s>\n", &(send_msg.body.regist.name));
+  dbg_printf ("regist_port: name = <%s>\n", &(buf.send_msg.body.regist.name));
 #endif /* DEBUG */
 
   /*
    * ポートマネージャに対して登録要求メッセージを送信する。
    */
-  if (snd_mbf (PORT_NAME, sizeof (send_msg), &send_msg) != E_OK)
+  rsize = cal_por (PORT_NAME, 0xffffffff, &buf, sizeof (buf.send_msg));
+  if (rsize < 0)
     {
-      del_mbf (recv_port);
       return (E_PORT_SYSTEM);
     }
 
 #ifdef DEBUG
-  dbg_printf ("port_manager:snd_msg: ok.\n");
+  dbg_printf ("port_manager:cal_por: ok.\n");
+  dbg_printf ("port_manager: errno = %d\n", buf.recv_msg.error);
 #endif /* DEBUG */
-
-  /*
-   * ポートマネージャからの返答メッセージの受けつけ
-   */
-  if (rcv_mbf (&recv_msg, (VP)&rsize, recv_port) != E_OK)
-    {
-      del_mbf (recv_port);
-      return (E_PORT_SYSTEM);
-    }
-
-#ifdef DEBUG
-  dbg_printf ("port_manager:rcv_msg: ok.\n");
-#endif /* DEBUG */
-
-
-  /*
-   * 使いおわった返答受信用のメッセージバッファを削除する。
-   */
-  del_mbf (recv_port);
-
-#ifdef DEBUG
-  dbg_printf ("port_manager: errno = %d\n", recv_msg.error);
-#endif /* DEBUG */
-  return (recv_msg.error);
+  return (buf.recv_msg.error);
 }
 
 
@@ -217,90 +150,53 @@ unregist_port (port_name *name)
 PORT_MANAGER_ERROR
 find_port (B *name, ID *rport)
 {
-  struct recv_port_message_t	recv_msg;
-  struct port_manager_msg_t  	send_msg;
-  ID			     	recv_port;
-  W			     	rsize;
-  T_CMBF pk_cmbf = { NULL, TA_TFIFO, sizeof(recv_msg), sizeof(recv_msg) };
+  union {
+    struct recv_port_message_t	recv_msg;
+    struct port_manager_msg_t  	send_msg;
+  } buf;
+  ER_UINT		     	rsize;
 
 #ifdef DEBUG
   dbg_printf ("find_port, name = <%s>\n", name);		/* */
 #endif
 
-  /*
-   * ポートマネージャからの返答受けつけ用のメッセージバッファ作成。
-   */
-  recv_port = acre_mbf(&pk_cmbf);
-  if (recv_port == 0)
-    {
-#ifdef DEBUG
-      dbg_printf ("regist_port: cannot get port.\n");
-#endif /* DEBUG */
-      return (E_PORT_SYSTEM);
-    }
-
 #ifdef DEBUG
   dbg_printf ("strcpy (0x%x, %s)\n",
-	      &(send_msg.body.find.name), name);
+	      &(buf.send_msg.body.find.name), name);
 #endif /* DEBUG */
   /*
    * ポートマネージャへ送る要求メッセージを作成。
    */
-  send_msg.hdr.type  = FIND_PORT;
-  send_msg.hdr.size  = sizeof (send_msg);
-  send_msg.hdr.rport = recv_port;
-#ifdef notdef
-  strcpy (&(send_msg.body.find.name), name);
-#else
-  strcpy (send_msg.body.find.name, name);
-#endif
+  buf.send_msg.hdr.type  = FIND_PORT;
+  buf.send_msg.hdr.size  = sizeof (buf.send_msg);
+  buf.send_msg.hdr.rport = 0;
+  strcpy (buf.send_msg.body.find.name, name);
 
 #ifdef DEBUG
-  dbg_printf ("find_port: name = <%s>\n", &(send_msg.body.find.name));
+  dbg_printf ("find_port: name = <%s>\n", &(buf.send_msg.body.find.name));
 #endif /* DEBUG */
   /*
    * ポートマネージャに対して検索要求メッセージを送信する。
    */
-  if (snd_mbf (PORT_NAME, sizeof (send_msg), &send_msg) != E_OK)
+  rsize = cal_por (PORT_NAME, 0xffffffff, &buf, sizeof (buf.send_msg));
+  if (rsize < 0)
     {
-      del_mbf (recv_port);
       return (E_PORT_SYSTEM);
     }
 
 #ifdef DEBUG
-  dbg_printf ("port_manager:snd_msg: ok.\n");
-#endif /* DEBUG */
-
-  /*
-   * ポートマネージャからの返答メッセージの受けつけ
-   */
-  if (rcv_mbf (&recv_msg, (INT *)&rsize, recv_port) != E_OK)
-    {
-#ifdef DEBUG
-  dbg_printf ("port_manager:rcv_mbf: failed.\n");
-#endif /* DEBUG */
-      del_mbf (recv_port);
-      return (E_PORT_SYSTEM);
-    }
-
-#ifdef DEBUG
-  dbg_printf ("port_manager:rcv_msg: ok.\n");
+  dbg_printf ("port_manager:cal_por: ok.\n");
 #endif /* DEBUG */
 
   /*
    * ポートマネージャが検索したポート番号を返す。
    */
-  *rport = recv_msg.port;
-
-  /*
-   * 使いおわった返答受信用のメッセージバッファを削除する。
-   */
-  del_mbf (recv_port);
+  *rport = buf.recv_msg.port;
 
 #ifdef DEBUG
-  dbg_printf ("port_manager: errno = %d\n", recv_msg.error);
+  dbg_printf ("port_manager: errno = %d\n", buf.recv_msg.error);
 #endif /* DEBUG */
-  return (recv_msg.error);
+  return (buf.recv_msg.error);
 }
 
 /*
