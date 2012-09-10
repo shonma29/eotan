@@ -41,10 +41,6 @@ Version 2, June 1991
 
 #define CURSOR_POS(x,y)		(x + y * 80)
 
-ID		console_driver = 0;
-ID		console_recv;
-
-
 
 /***********************************************************************
  * position --- カーソル位置情報
@@ -59,7 +55,6 @@ struct position
 static	struct position	cursor;
 
 
-static ER	call_console (ID driver, TC ch);
 static void	inc_cursor (W count);
 static void write_cr (void);
 static void write_tab ();
@@ -104,11 +99,6 @@ simple_init_console (void)
 void
 putchar (TC ch)
 {
-  if (console_driver != NULL)
-    {
-      call_console (console_driver, ch);
-    }
-
   switch (ch)
     {
     default:
@@ -124,37 +114,6 @@ putchar (TC ch)
       write_tab ();
       break;
     }
-}
-
-
-/* call_console
- *
- */
-static ER call_console (ID driver, TC ch)
-{
-  DDEV_REQ		req;		/* 要求パケット */
-  DDEV_RES		res;		/* 返答パケット */
-  INT			rsize;
-  ER			error;
-  
-  ena_int ();
-  req.header.mbfid = console_recv;
-  req.header.msgtyp = DEV_WRI;
-  req.body.wri_req.dd = 0xAA;
-  req.body.wri_req.size = 1;
-  req.body.wri_req.dt[0] = (B) (ch & 0xff);
-  error = snd_mbf (console_driver, sizeof (req), &req);
-  if (error != E_OK)
-    {
-      return (E_SYS);
-    }
-  rsize = sizeof (res);
-  error = rcv_mbf (&res, &rsize, console_recv);
-  if (res.body.wri_res.errcd != E_OK)
-    {
-      return (E_SYS);
-    }
-  return (E_OK);
 }
 
 /*************************************************************************
