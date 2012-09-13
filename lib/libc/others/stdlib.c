@@ -216,39 +216,7 @@ puts (B *line)
 W 
 writechar (ID port, UB *buf, W length)
 {
-#ifdef notdef
-  DDEV_REQ		req;		/* 要求パケット */
-  DDEV_RES		res;		/* 返答パケット */
-  W			rsize;
-  ER			error;
-  W			i;
-  
-  req.header.mbfid = dev_recv;
-  req.header.msgtyp = DEV_WRI;
-  req.body.wri_req.dd = 0xAA;
-  req.body.wri_req.size = length;
-  bcopy (buf, req.body.wri_req.dt, length);
-  error = snd_mbf (port, sizeof (req), &req);
-  if (error != E_OK)
-    {
-#ifdef DEBUG
-      dbg_printf ("cannot send packet. %d(%s, %d)\n", error, __FILE__, __LINE__);
-#endif
-      return;
-    }
-  rsize = sizeof (res);
-  error = rcv_mbf (&res, (INT *)&rsize, dev_recv);
-  if (res.body.wri_res.errcd != E_OK)
-    {
-#ifdef DEBUG
-      dbg_printf ("%d\n", res.body.wri_res.errcd);
-#endif
-      return (0);
-    }      
-  return (1);
-#else
   write(port, buf, length);
-#endif
 }
 
 
@@ -296,33 +264,7 @@ getc (FILE *port)
 W
 readchar (ID port)
 {
-#ifdef notdef
-  DDEV_REQ		req;		/* 要求パケット */
-  DDEV_RES		res;		/* 返答パケット */
-  W			rsize;
-  ER			error;
-  W			i;
-  
-  req.header.mbfid = dev_recv;
-  req.header.msgtyp = DEV_REA;
-  req.body.rea_req.dd = 0xAA;
-  req.body.rea_req.size = 1;
-  error = snd_mbf (port, sizeof (req), &req);
-  if (error != E_OK)
-    {
-      printf ("cannot send packet. %d\n", error);
-      return;
-    }
-  rsize = sizeof (res);
-  rcv_mbf (&res, (INT *)&rsize, dev_recv);
-  if (res.body.rea_res.dt[0] != 0)
-    {
-      return (res.body.rea_res.dt[0]);
-    }
-  return (0);
-#else
   B buf[1];
   read(port, buf, 1);
   return(buf[0]);
-#endif
 }
