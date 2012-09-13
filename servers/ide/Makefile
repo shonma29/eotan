@@ -23,7 +23,7 @@ LD=ld
 %.o: %.s
 	$(CPP) $(ASFLAGS) $*.s | $(AS) -o $*.o
 
-OBJS=ide.o idelow.o misc.o
+OBJS=ide.o idelow.o
 
 
 all: ide
