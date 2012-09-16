@@ -185,108 +185,108 @@ Version 2, June 1991
 #include "arch/archfunc.h"
 #include "../include/itron/rendezvous.h"
 
-#define DEF_SYSCALL(x,n)	sys_ ## x
-#define DEF_NOSYSCALL		nodef
+#define SVC_IF(x,n)	if_ ## x
+#define SVC_UNDEFINED		nodef
 
 static ER	nodef (VP argp);
 
-static ER	sys_cre_tsk (void *argp);
-static ER	sys_del_tsk (void *argp);
-static ER	sys_sta_tsk (void *argp);
-static ER	sys_ext_tsk (void *argp);
-static ER	sys_exd_tsk (void *argp);
-static ER	sys_ter_tsk (void *argp);
-static ER	sys_chg_pri (void *argp);
-static ER	sys_rel_wai (void *argp);
-static ER	sys_get_tid (void *argp);
-static ER	sys_sus_tsk (void *argp);
-static ER	sys_rsm_tsk (void *argp);
-static ER	sys_acre_flg (void *argp);
-static ER	sys_del_flg (void *argp);
-static ER	sys_set_flg (void *argp);
-static ER	sys_clr_flg (void *argp);
-static ER	sys_wai_flg (void *argp);
-static ER	sys_cre_mbf (void *argp);
-static ER	sys_acre_mbf (void *argp);
-static ER	sys_del_mbf (void *argp);
-static ER	sys_snd_mbf (void *argp);
-static ER	sys_psnd_mbf (void *argp);
-static ER	sys_rcv_mbf (void *argp);
+static ER	if_cre_tsk (void *argp);
+static ER	if_del_tsk (void *argp);
+static ER	if_sta_tsk (void *argp);
+static ER	if_ext_tsk (void *argp);
+static ER	if_exd_tsk (void *argp);
+static ER	if_ter_tsk (void *argp);
+static ER	if_chg_pri (void *argp);
+static ER	if_rel_wai (void *argp);
+static ER	if_get_tid (void *argp);
+static ER	if_sus_tsk (void *argp);
+static ER	if_rsm_tsk (void *argp);
+static ER	if_acre_flg (void *argp);
+static ER	if_del_flg (void *argp);
+static ER	if_set_flg (void *argp);
+static ER	if_clr_flg (void *argp);
+static ER	if_wai_flg (void *argp);
+static ER	if_cre_mbf (void *argp);
+static ER	if_acre_mbf (void *argp);
+static ER	if_del_mbf (void *argp);
+static ER	if_snd_mbf (void *argp);
+static ER	if_psnd_mbf (void *argp);
+static ER	if_rcv_mbf (void *argp);
 
 /* 時間管理用システムコール */
-static ER	sys_set_tim (void *argp);
-static ER	sys_get_tim (void *argp);
-static ER	sys_dly_tsk (void *argp);
-static ER	sys_def_alm (void *argp);
+static ER	if_set_tim (void *argp);
+static ER	if_get_tim (void *argp);
+static ER	if_dly_tsk (void *argp);
+static ER	if_def_alm (void *argp);
 
-static ER	sys_def_int (void *argp);
+static ER	if_def_int (void *argp);
 
-static ER	sys_vsys_inf (void *argp);
-static ER	sys_dbg_puts (void *args);
+static ER	if_vsys_inf (void *argp);
+static ER	if_dbg_puts (void *args);
 
 /* 仮想メモリ管理用システムコール */
-static ER	sys_vcre_reg (void *argp);
-static ER	sys_vdel_reg (void *argp);
-static ER	sys_vmap_reg (void *argp);
-static ER	sys_vunm_reg (void *argp);
-static ER	sys_vdup_reg (void *argp);
-static ER	sys_vput_reg (void *argp);
-static ER	sys_vget_reg (void *argp);
-static ER	sys_vsts_reg (void *argp);
-static ER	sys_vget_phs (void *argp);
+static ER	if_vcre_reg (void *argp);
+static ER	if_vdel_reg (void *argp);
+static ER	if_vmap_reg (void *argp);
+static ER	if_vunm_reg (void *argp);
+static ER	if_vdup_reg (void *argp);
+static ER	if_vput_reg (void *argp);
+static ER	if_vget_reg (void *argp);
+static ER	if_vsts_reg (void *argp);
+static ER	if_vget_phs (void *argp);
 
 /* その他のシステムコール */
-static ER	sys_vsys_msc (void *argp);
-static ER	sys_vcpy_stk (void *argp);
-static ER	sys_vset_ctx (void *argp);
-static ER	sys_vuse_fpu (void *argp);
+static ER	if_vsys_msc (void *argp);
+static ER	if_vcpy_stk (void *argp);
+static ER	if_vset_ctx (void *argp);
+static ER	if_vuse_fpu (void *argp);
 
-static ER sys_cre_por(void *argp);
-static ER_ID sys_acre_por(void *argp);
-static ER sys_del_por(void *argp);
-static ER_UINT sys_cal_por(void *argp);
-static ER_UINT sys_acp_por(void *argp);
-static ER sys_rpl_rdv(void *argp);
+static ER if_cre_por(void *argp);
+static ER_ID if_acre_por(void *argp);
+static ER if_del_por(void *argp);
+static ER_UINT if_cal_por(void *argp);
+static ER_UINT if_acp_por(void *argp);
+static ER if_rpl_rdv(void *argp);
 
 
 /* システムコールテーブル
  */  
 static ER (*syscall_table[])(VP argp) =
 {
-  DEF_NOSYSCALL,		/*    0 */
+  SVC_UNDEFINED,		/*    0 */
 
   /* タスク管理システムコール */
-  DEF_SYSCALL (cre_tsk, 2),	/*    1 */
-  DEF_SYSCALL (del_tsk, 1),	/*    2 */
-  DEF_SYSCALL (sta_tsk, 2),	/*    3 */
-  DEF_SYSCALL (ext_tsk, 0),     /*    4 */
-  DEF_SYSCALL (exd_tsk, 0),     /*    5 */
-  DEF_SYSCALL (ter_tsk, 1),     /*    6 */
-  DEF_SYSCALL (chg_pri, 2),	/*    7 */
-  DEF_SYSCALL (rel_wai, 1),	/*    8 */
-  DEF_SYSCALL (get_tid, 1),	/*    9 */
+  SVC_IF (cre_tsk, 2),	/*    1 */
+  SVC_IF (del_tsk, 1),	/*    2 */
+  SVC_IF (sta_tsk, 2),	/*    3 */
+  SVC_IF (ext_tsk, 0),     /*    4 */
+  SVC_IF (exd_tsk, 0),     /*    5 */
+  SVC_IF (ter_tsk, 1),     /*    6 */
+  SVC_IF (chg_pri, 2),	/*    7 */
+  SVC_IF (rel_wai, 1),	/*    8 */
+  SVC_IF (get_tid, 1),	/*    9 */
 
   /* タスク附属同期機能 */
-  DEF_SYSCALL (sus_tsk, 1),    	/*   10 */
-  DEF_SYSCALL (rsm_tsk, 1),	/*   11 */
+  SVC_IF (sus_tsk, 1),    	/*   10 */
+  SVC_IF (rsm_tsk, 1),	/*   11 */
 
   /* 同期・通信機構 */
   /* セマフォ */
 
   /* イベントフラグ */
-  DEF_SYSCALL (acre_flg, 1),	/*   12 */
-  DEF_SYSCALL (del_flg, 1),	/*   13 */
-  DEF_SYSCALL (set_flg, 2),	/*   14 */
-  DEF_SYSCALL (clr_flg, 2),     /*   15 */
-  DEF_SYSCALL (wai_flg, 4),	/*   16 */
+  SVC_IF (acre_flg, 1),	/*   12 */
+  SVC_IF (del_flg, 1),	/*   13 */
+  SVC_IF (set_flg, 2),	/*   14 */
+  SVC_IF (clr_flg, 2),     /*   15 */
+  SVC_IF (wai_flg, 4),	/*   16 */
 
   /* メッセージバッファ */
-  DEF_SYSCALL (cre_mbf, 2),	/*   17	*/
-  DEF_SYSCALL (acre_mbf, 1),	/*   18	*/
-  DEF_SYSCALL (del_mbf, 1),	/*   19 */
-  DEF_SYSCALL (snd_mbf, 3),	/*   20 */
-  DEF_SYSCALL (psnd_mbf, 3),	/*   21 */
-  DEF_SYSCALL (rcv_mbf, 3),	/*   22 */
+  SVC_IF (cre_mbf, 2),	/*   17	*/
+  SVC_IF (acre_mbf, 1),	/*   18	*/
+  SVC_IF (del_mbf, 1),	/*   19 */
+  SVC_IF (snd_mbf, 3),	/*   20 */
+  SVC_IF (psnd_mbf, 3),	/*   21 */
+  SVC_IF (rcv_mbf, 3),	/*   22 */
 
   /* 割りこみ管理 */
 
@@ -295,39 +295,39 @@ static ER (*syscall_table[])(VP argp) =
   /* システム管理 */
 
   /* 時間管理機能 */
-  DEF_SYSCALL (set_tim, 1),	/*   23 */
-  DEF_SYSCALL (get_tim, 1),	/*   24 */
-  DEF_SYSCALL (dly_tsk, 1),	/*   25 */
-  DEF_SYSCALL (def_alm, 2),	/*   26 */
+  SVC_IF (set_tim, 1),	/*   23 */
+  SVC_IF (get_tim, 1),	/*   24 */
+  SVC_IF (dly_tsk, 1),	/*   25 */
+  SVC_IF (def_alm, 2),	/*   26 */
 
-  DEF_SYSCALL (def_int, 2),	/*   27 */
+  SVC_IF (def_int, 2),	/*   27 */
 
-  DEF_SYSCALL (vsys_inf, 3),	/*   28 */
-  DEF_SYSCALL (dbg_puts, 1),	/*   29 */
+  SVC_IF (vsys_inf, 3),	/*   28 */
+  SVC_IF (dbg_puts, 1),	/*   29 */
 
   /* 仮想メモリ管理システムコール */	
-  DEF_SYSCALL (vcre_reg, 7),	/*   30 */
-  DEF_SYSCALL (vdel_reg, 2),	/*   31 */
-  DEF_SYSCALL (vmap_reg, 3),	/*   32 */
-  DEF_SYSCALL (vunm_reg, 3),	/*   33 */
-  DEF_SYSCALL (vdup_reg, 3),	/*   34 */
-  DEF_SYSCALL (vput_reg, 4),	/*   35 */
-  DEF_SYSCALL (vget_reg, 4),	/*   36 */
-  DEF_SYSCALL (vsts_reg, 3),	/*   37 */
-  DEF_SYSCALL (vget_phs, 3),	/*   38 */
+  SVC_IF (vcre_reg, 7),	/*   30 */
+  SVC_IF (vdel_reg, 2),	/*   31 */
+  SVC_IF (vmap_reg, 3),	/*   32 */
+  SVC_IF (vunm_reg, 3),	/*   33 */
+  SVC_IF (vdup_reg, 3),	/*   34 */
+  SVC_IF (vput_reg, 4),	/*   35 */
+  SVC_IF (vget_reg, 4),	/*   36 */
+  SVC_IF (vsts_reg, 3),	/*   37 */
+  SVC_IF (vget_phs, 3),	/*   38 */
 
   /* その他のシステムコール */
-  DEF_SYSCALL (vsys_msc, 2),	/*   39 */
-  DEF_SYSCALL (vcpy_stk, 4),	/*   40 */
-  DEF_SYSCALL (vset_ctx, 4),	/*   41 */
-  DEF_SYSCALL (vuse_fpu, 1),	/*   42 */
+  SVC_IF (vsys_msc, 2),	/*   39 */
+  SVC_IF (vcpy_stk, 4),	/*   40 */
+  SVC_IF (vset_ctx, 4),	/*   41 */
+  SVC_IF (vuse_fpu, 1),	/*   42 */
 
-  DEF_SYSCALL (cre_por, 2),	/*   43 */
-  DEF_SYSCALL (acre_por, 1),	/*   44 */
-  DEF_SYSCALL (del_por, 1),	/*   45 */
-  DEF_SYSCALL (cal_por, 4),	/*   46 */
-  DEF_SYSCALL (acp_por, 4),	/*   47 */
-  DEF_SYSCALL (rpl_rdv, 3),	/*   48 */
+  SVC_IF (cre_por, 2),	/*   43 */
+  SVC_IF (acre_por, 1),	/*   44 */
+  SVC_IF (del_por, 1),	/*   45 */
+  SVC_IF (cal_por, 4),	/*   46 */
+  SVC_IF (acp_por, 4),	/*   47 */
+  SVC_IF (rpl_rdv, 3),	/*   48 */
 };
 
 #define NSYSCALL (sizeof (syscall_table) / sizeof (syscall_table[0]))
@@ -382,7 +382,7 @@ nodef (VP argp)
  * タスク関係システムコール                                                *
  * ----------------------------------------------------------------------- */
 
-/* sys_cre_tsk --- タスクの生成
+/* if_cre_tsk --- タスクの生成
  *
  * 引数: tskid 		生成するタスクのID
  *	 pk_ctsk	生成するタスクの属性情報
@@ -393,7 +393,7 @@ nodef (VP argp)
  *			addrmap		アドレスマップ
  *	
  */
-static ER sys_cre_tsk(VP argp)
+static ER if_cre_tsk(VP argp)
 {
     struct {
 	ID tskid;
@@ -403,12 +403,12 @@ static ER sys_cre_tsk(VP argp)
     return (cre_tsk(args->tskid, args->tskpkt));
 }
 
-/* sys_del_tsk --- 指定したタスクを削除
+/* if_del_tsk --- 指定したタスクを削除
  *
  * 引数：tskid	削除するタスクの ID
  *
  */
-static ER sys_del_tsk(VP argp)
+static ER if_del_tsk(VP argp)
 {
     struct {
 	ID tskid;
@@ -418,13 +418,13 @@ static ER sys_del_tsk(VP argp)
 }
 
 
-/* sys_sta_tsk --- タスクの状態を取り出す
+/* if_sta_tsk --- タスクの状態を取り出す
  *
  * 引数：tskid	状態を取り出すタスの ID
  *	 stacd  状態を取り出す領域
  *
  */
-static ER sys_sta_tsk(VP argp)
+static ER if_sta_tsk(VP argp)
 {
     struct {
 	ID tskid;
@@ -434,30 +434,30 @@ static ER sys_sta_tsk(VP argp)
     return (sta_tsk(args->tskid, args->stacd));
 }
 
-/* sys_ext_tsk --- 自タスクを終了する
+/* if_ext_tsk --- 自タスクを終了する
  *
  */
-static ER sys_ext_tsk(VP argp)
+static ER if_ext_tsk(VP argp)
 {
     ext_tsk();
     return (E_OK);		/* 本当は、返り値はないが... */
 }
 
-/* sys_exd_tsk --- 自タスクを終了して、資源を解放する。
+/* if_exd_tsk --- 自タスクを終了して、資源を解放する。
  *
  */
-static ER sys_exd_tsk(VP argp)
+static ER if_exd_tsk(VP argp)
 {
     exd_tsk();
     return (E_OK);		/* 本当は、返り値はないが... */
 }
 
-/* sys_ter_tsk --- 指定したタスクを終了する
+/* if_ter_tsk --- 指定したタスクを終了する
  *
  * 引数：tskid	終了するタスクの ID
  *
  */
-static ER sys_ter_tsk(VP argp)
+static ER if_ter_tsk(VP argp)
 {
     struct {
 	ID tskid;
@@ -467,7 +467,7 @@ static ER sys_ter_tsk(VP argp)
 }
 
 
-static ER sys_chg_pri(VP argp)
+static ER if_chg_pri(VP argp)
 {
     struct {
 	ID tskid;
@@ -477,7 +477,7 @@ static ER sys_chg_pri(VP argp)
     return (chg_pri(args->tskid, args->tskpri));
 }
 
-static ER sys_rel_wai(VP argp)
+static ER if_rel_wai(VP argp)
 {
     struct {
 	ID tskid;
@@ -486,7 +486,7 @@ static ER sys_rel_wai(VP argp)
     return (rel_wai(args->tskid));
 }
 
-static ER sys_get_tid(VP argp)
+static ER if_get_tid(VP argp)
 {
     struct {
 	ID *p_tskid;
@@ -500,7 +500,7 @@ static ER sys_get_tid(VP argp)
     return (err);
 }
 
-static ER sys_sus_tsk(VP argp)
+static ER if_sus_tsk(VP argp)
 {
     struct {
 	ID taskid;
@@ -510,7 +510,7 @@ static ER sys_sus_tsk(VP argp)
 }
 
 
-static ER sys_rsm_tsk(VP argp)
+static ER if_rsm_tsk(VP argp)
 {
     struct {
 	ID taskid;
@@ -523,7 +523,7 @@ static ER sys_rsm_tsk(VP argp)
 /* ----------------------------------------------------------------------- *
  * タスク間通信システムコール                                              *
  * ----------------------------------------------------------------------- */
-static ER sys_acre_flg(VP argp)
+static ER if_acre_flg(VP argp)
 {
     struct {
 	T_CFLG *pk_cflg;
@@ -532,7 +532,7 @@ static ER sys_acre_flg(VP argp)
     return (acre_flg(args->pk_cflg));
 }
 
-static ER sys_del_flg(VP argp)
+static ER if_del_flg(VP argp)
 {
     struct {
 	ID flgid;
@@ -541,7 +541,7 @@ static ER sys_del_flg(VP argp)
     return (del_flg(args->flgid));
 }
 
-static ER sys_set_flg(VP argp)
+static ER if_set_flg(VP argp)
 {
     struct {
 	ID flgid;
@@ -551,7 +551,7 @@ static ER sys_set_flg(VP argp)
     return (set_flg(args->flgid, args->setptn));
 }
 
-static ER sys_clr_flg(VP argp)
+static ER if_clr_flg(VP argp)
 {
     struct {
 	ID flgid;
@@ -561,7 +561,7 @@ static ER sys_clr_flg(VP argp)
     return (clr_flg(args->flgid, args->clrptn));
 }
 
-static ER sys_wai_flg(VP argp)
+static ER if_wai_flg(VP argp)
 {
     struct {
 	UINT *p_flgptn;
@@ -574,7 +574,7 @@ static ER sys_wai_flg(VP argp)
 	    (args->p_flgptn, args->flgid, args->waiptn, args->wfmode));
 }
 
-static ER sys_cre_mbf(VP argp)
+static ER if_cre_mbf(VP argp)
 {
     struct {
 	ID id;
@@ -584,7 +584,7 @@ static ER sys_cre_mbf(VP argp)
     return (cre_mbf(args->id, args->pk_cmbf));
 }
 
-static ER sys_acre_mbf(VP argp)
+static ER if_acre_mbf(VP argp)
 {
     struct {
 	T_CMBF *pk_cmbf;
@@ -593,7 +593,7 @@ static ER sys_acre_mbf(VP argp)
     return (acre_mbf(args->pk_cmbf));
 }
 
-static ER sys_del_mbf(VP argp)
+static ER if_del_mbf(VP argp)
 {
     struct {
 	ID id;
@@ -602,7 +602,7 @@ static ER sys_del_mbf(VP argp)
     return (del_mbf(args->id));
 }
 
-static ER sys_snd_mbf(VP argp)
+static ER if_snd_mbf(VP argp)
 {
     struct {
 	ID id;
@@ -613,7 +613,7 @@ static ER sys_snd_mbf(VP argp)
     return (snd_mbf(args->id, args->size, args->msg));
 }
 
-static ER sys_psnd_mbf(VP argp)
+static ER if_psnd_mbf(VP argp)
 {
     struct {
 	ID id;
@@ -624,7 +624,7 @@ static ER sys_psnd_mbf(VP argp)
     return (psnd_mbf(args->id, args->size, args->msg));
 }
 
-static ER sys_rcv_mbf(VP argp)
+static ER if_rcv_mbf(VP argp)
 {
     struct {
 	VP msg;
@@ -642,7 +642,7 @@ static ER sys_rcv_mbf(VP argp)
  * ハンドラを設定している。
  *
  */
-static ER sys_def_int(VP argp)
+static ER if_def_int(VP argp)
 {
     struct a {
 	UINT dintno;
@@ -653,7 +653,7 @@ static ER sys_def_int(VP argp)
 	return (E_PAR);
     }
 #ifdef notdef
-    printk("sys_def_int: dintno = %d(0x%x), inthdr = 0x%x, intatr = %d\n",
+    printk("if_def_int: dintno = %d(0x%x), inthdr = 0x%x, intatr = %d\n",
 	   args->dintno,
 	   args->dintno, args->pk_dint->inthdr, args->pk_dint->intatr);
 #endif
@@ -670,7 +670,7 @@ static ER sys_def_int(VP argp)
 /*
  *
  */
-static ER sys_vcre_reg(VP argp)
+static ER if_vcre_reg(VP argp)
 {
     struct {
 	ID id;
@@ -689,27 +689,20 @@ static ER sys_vcre_reg(VP argp)
 /*
  *
  */
-static ER sys_vdel_reg(VP argp)
+static ER if_vdel_reg(VP argp)
 {
     struct {
 	ID id;
-#ifdef notdef
-	VP start;
-#else
 	ID rid;
-#endif
     } *args = argp;
-#ifdef notdef
-    return vdel_reg(args->id, args->start);
-#else
+
     return vdel_reg(args->id, args->rid);
-#endif
 }
 
 /*
  *
  */
-static ER sys_vmap_reg(VP argp)
+static ER if_vmap_reg(VP argp)
 {
     struct {
 	ID id;
@@ -724,7 +717,7 @@ static ER sys_vmap_reg(VP argp)
 /*
  *
  */
-static ER sys_vunm_reg(VP argp)
+static ER if_vunm_reg(VP argp)
 {
     struct {
 	ID id;
@@ -738,29 +731,21 @@ static ER sys_vunm_reg(VP argp)
 /*
  *
  */
-static ER sys_vdup_reg(VP argp)
+static ER if_vdup_reg(VP argp)
 {
     struct {
 	ID src;
 	ID dst;
-#ifdef notdef
-	VP start;
-#else
 	ID rid;
-#endif
     } *args = argp;
 
-#ifdef notdef
-    return vdup_reg(args->src, args->dst, args->start);
-#else
     return vdup_reg(args->src, args->dst, args->rid);
-#endif
 }
 
 /*
  *
  */
-static ER sys_vput_reg(VP argp)
+static ER if_vput_reg(VP argp)
 {
     struct {
 	ID id;
@@ -775,7 +760,7 @@ static ER sys_vput_reg(VP argp)
 /*
  *
  */
-static ER sys_vget_reg(VP argp)
+static ER if_vget_reg(VP argp)
 {
     struct {
 	ID id;
@@ -791,22 +776,15 @@ static ER sys_vget_reg(VP argp)
 /*
  *
  */
-static ER sys_vsts_reg(VP argp)
+static ER if_vsts_reg(VP argp)
 {
     struct {
 	ID id;
-#ifdef notdef
-	VP start;
-#else
 	ID rid;
-#endif
 	VP stat;
     } *args = argp;
-#ifdef notdef
-    return vsts_reg(args->id, args->start, args->stat);
-#else
+
     return vsts_reg(args->id, args->rid, args->stat);
-#endif
 }
 
 
@@ -814,7 +792,7 @@ static ER sys_vsts_reg(VP argp)
 /*
  *
  */
-static ER sys_vget_phs(VP argp)
+static ER if_vget_phs(VP argp)
 {
     struct {
 	ID id;
@@ -836,7 +814,7 @@ static ER sys_vget_phs(VP argp)
  * 時間管理の関数群 
  */
 
-static ER sys_set_tim(VP argp)
+static ER if_set_tim(VP argp)
 {
     struct {
 	SYSTIME *pk_tim;
@@ -845,7 +823,7 @@ static ER sys_set_tim(VP argp)
     return (set_tim(args->pk_tim));
 }
 
-static ER sys_get_tim(VP argp)
+static ER if_get_tim(VP argp)
 {
     struct {
 	SYSTIME *pk_tim;
@@ -854,7 +832,7 @@ static ER sys_get_tim(VP argp)
     return (get_tim(args->pk_tim));
 }
 
-static ER sys_dly_tsk(VP argp)
+static ER if_dly_tsk(VP argp)
 {
     struct {
 	DLYTIME dlytim;
@@ -863,7 +841,7 @@ static ER sys_dly_tsk(VP argp)
     return (dly_tsk(args->dlytim));
 }
 
-static ER sys_def_alm(VP argp)
+static ER if_def_alm(VP argp)
 {
     struct {
 	HNO almo;
@@ -880,7 +858,7 @@ static ER sys_def_alm(VP argp)
  *
  */
 static ER
-sys_vsys_inf (VP argp)
+if_vsys_inf (VP argp)
 {
   struct 
     {
@@ -909,7 +887,7 @@ sys_vsys_inf (VP argp)
 }
 
 static ER
-sys_dbg_puts (VP args)
+if_dbg_puts (VP args)
 {
   struct a
     {
@@ -920,10 +898,10 @@ sys_dbg_puts (VP args)
   return (E_OK);
 }
 
-/* sys_vsys_msc - miscellaneous function
+/* if_vsys_msc - miscellaneous function
  *
  */
-static ER sys_vsys_msc(VP argp)
+static ER if_vsys_msc(VP argp)
 {
     struct {
 	W cmd;
@@ -980,10 +958,10 @@ static ER sys_vsys_msc(VP argp)
     return (E_OK);
 }
 
-/* sys_vcpy_stk - copy task stack 
+/* if_vcpy_stk - copy task stack 
  *
  */
-static ER sys_vcpy_stk(VP argp)
+static ER if_vcpy_stk(VP argp)
 {
     struct {
 	ID src;
@@ -997,10 +975,10 @@ static ER sys_vcpy_stk(VP argp)
 		    args->esi, args->edi, args->dst);
 }
 
-/* sys_vset_cxt - set task context
+/* if_vset_cxt - set task context
  *
  */
-static ER sys_vset_ctx(VP argp)
+static ER if_vset_ctx(VP argp)
 {
     struct {
 	ID tid;
@@ -1012,10 +990,10 @@ static ER sys_vset_ctx(VP argp)
     return vset_ctx(args->tid, args->eip, args->stackp, args->stsize);
 }
 
-/* sys_vuse_fpu - use FPU
+/* if_vuse_fpu - use FPU
  *
  */
-static ER sys_vuse_fpu(VP argp)
+static ER if_vuse_fpu(VP argp)
 {
     struct {
 	ID tid;
@@ -1024,7 +1002,7 @@ static ER sys_vuse_fpu(VP argp)
     return vuse_fpu(args->tid);
 }
 
-static ER sys_cre_por(VP argp)
+static ER if_cre_por(VP argp)
 {
     struct {
 	ID porid;
@@ -1034,7 +1012,7 @@ static ER sys_cre_por(VP argp)
     return port_create(args->porid, args->pk_cpor);
 }
 
-static ER_ID sys_acre_por(VP argp)
+static ER_ID if_acre_por(VP argp)
 {
     struct {
 	T_CPOR *pk_cpor;
@@ -1043,7 +1021,7 @@ static ER_ID sys_acre_por(VP argp)
     return port_create_auto(args->pk_cpor);
 }
 
-static ER sys_del_por(VP argp)
+static ER if_del_por(VP argp)
 {
     struct {
 	ID porid;
@@ -1052,7 +1030,7 @@ static ER sys_del_por(VP argp)
     return port_destroy(args->porid);
 }
 
-static ER_UINT sys_cal_por(VP argp)
+static ER_UINT if_cal_por(VP argp)
 {
     struct {
 	ID porid;
@@ -1064,7 +1042,7 @@ static ER_UINT sys_cal_por(VP argp)
     return port_call(args->porid, args->calptn, args->msg, args->cmsgsz);
 }
 
-static ER_UINT sys_acp_por(VP argp)
+static ER_UINT if_acp_por(VP argp)
 {
     struct {
 	ID porid;
@@ -1076,7 +1054,7 @@ static ER_UINT sys_acp_por(VP argp)
     return port_accept(args->porid, args->p_rdvno, args->msg);
 }
 
-static ER sys_rpl_rdv(VP argp)
+static ER if_rpl_rdv(VP argp)
 {
     struct {
 	RDVNO rdvno;
