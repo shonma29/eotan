@@ -124,12 +124,14 @@ static node_t *node_rebalance(node_t *p) {
 	return p;
 }
 
-static node_t *node_remove_swap(tree_t *tree, node_t *p, node_t *to) {
+static node_t *node_remove_swap(tree_t *tree, node_t *p, node_t **to) {
 	if (IS_NIL(p->left)) {
 		node_t *q = p->right;
 
-		to->key = p->key;
-		node_destroy(tree, p);
+		p->level = (*to)->level;
+		p->left = (*to)->left;
+		node_destroy(tree, *to);
+		*to = p;
 		return q;
 	}
 	else	p->left = node_remove_swap(tree, p->left, to);
@@ -156,7 +158,9 @@ static node_t *node_remove(tree_t *tree, node_t *p, const int key) {
 				node_destroy(tree, q);
 				return p;
 			}
-			else	p->right = node_remove_swap(tree, p->right, p);
+			else {
+				p->right = node_remove_swap(tree, p->right, &p);
+			}
 		}
 		else if (d < 0)	p->left = node_remove(tree, p->left, key);
 		else	p->right = node_remove(tree, p->right, key);
