@@ -35,7 +35,7 @@ get_fdspec (B *name)
 
   for (i = 0; fd_spec[i].typename != NULL; i++)
     {
-      dbg_printf ("compare: <%s>, <%s>\n", name, fd_spec[i].typename);	/* */
+/*      dbg_printf ("compare: <%s>, <%s>\n", name, fd_spec[i].typename); */
       if (strcmp (name, (B *)(fd_spec[i].typename)) == 0)
 	{
 	  return (&(fd_spec[i]));

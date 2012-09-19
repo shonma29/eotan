@@ -106,11 +106,11 @@ ER read_stat(W drive, struct ide_id * stat)
 	return (E_SYS);
     }
 #ifdef notdef
-    printf("IDE ID %d\n", sizeof(struct ide_id));
-    printf("[%s]\n", stat->firm_ware);
-    printf("  CYL:  %d(%d)\n", stat->n_cylinder, stat->now_cylinder);
-    printf("  HEAD: %d(%d)\n", stat->n_head, stat->now_head);
-    printf("  SEC:  %d(%d)\n", stat->n_sector, stat->now_sector);
+    dbg_printf("IDE ID %d\n", sizeof(struct ide_id));
+    dbg_printf("[%s]\n", stat->firm_ware);
+    dbg_printf("  CYL:  %d(%d)\n", stat->n_cylinder, stat->now_cylinder);
+    dbg_printf("  HEAD: %d(%d)\n", stat->n_head, stat->now_head);
+    dbg_printf("  SEC:  %d(%d)\n", stat->n_sector, stat->now_sector);
 #endif
 
 #ifdef notdef

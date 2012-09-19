@@ -13,6 +13,7 @@
    Modified by Tomohide Naniwa, 2001
 */
 #include "../../include/device.h"
+#include "../../include/itron/rendezvous.h"
 #include "../../include/mpu/io.h"
 #include "../../lib/libserv/libserv.h"
 #include "psaux.h"
@@ -37,17 +38,17 @@ init_driver (void)
 {
   int		i;
   ER		error;
-  T_CMBF pk_cmbf = { NULL, TA_TFIFO, 0, sizeof(DDEV_RES) };
+  T_CPOR pk_cpor = { TA_TFIFO, sizeof(DDEV_REQ), sizeof(DDEV_RES) };
   T_CFLG pk_cflg = { NULL, TA_WSGL, 0 };
 
   /*
    * 要求受けつけ用のポートを初期化する。
    */
-  recvport = acre_mbf(&pk_cmbf);
+  recvport = acre_por(&pk_cpor);
 
   if (recvport <= 0)
     {
-      dbg_printf ("psaux: cannot make receive port.\n");
+      dbg_printf ("[PSAUX] acre_por error = %d\n", recvport);
       ext_tsk ();
       /* メッセージバッファ生成に失敗 */
     }
@@ -56,7 +57,7 @@ init_driver (void)
   if (error != E_OK)
     {
       /* error */
-      dbg_printf("psaux: cannot make receive port.\n"); 
+      dbg_printf("[PSAUX] cannot make receive port. error = %d\n", error); 
       ext_tsk();
     }
 
@@ -86,30 +87,26 @@ init_driver (void)
 static void
 main_loop (void)
 {
-  DDEV_REQ	req;
-  UW		rsize;
-
   /*
    * 要求受信 - 処理のループ
    */
   for (;;)
     {
-      /* 要求の受信 */
-      switch (rcv_mbf(&req, &rsize, recvport))
-	{
-	case E_OK:
-	  /* 正常ケース */
-	  process_request (&req);
-	  break;
+      devmsg_t packet;
+      ER_UINT rsize;
+      RDVNO rdvno;
 
-	case E_TMOUT:
-	case E_RLWAI:
-	  break;
-	  
-	default:
+      /* 要求の受信 */
+      rsize = acp_por(recvport, 0xffffffff, &rdvno, &packet);
+      if (rsize >= 0)
+	{
+	  /* 正常ケース */
+	  process_request (rdvno, &packet);
+	}
+	else
+	{
 	  /* Unknown error */
-	  dbg_printf ("PSAUX: get_req() Unknown error");
-	  break;
+	  dbg_printf ("[PSAUX] acp_por error = %d\n", rsize);
 	}
     }
 
@@ -121,35 +118,30 @@ main_loop (void)
  *
  */
 ER
-process_request (DDEV_REQ *req)
+process_request (RDVNO rdvno, devmsg_t *packet)
 {
-  switch (req->header.msgtyp)
+  switch (packet->req.header.msgtyp)
     {
     case DEV_OPN:
       /* デバイスのオープン */
-      open_psaux (req->header.mbfid, &(req->body.opn_req));
+      open_psaux (rdvno, packet);
       break;
 
     case DEV_CLS:
       /* デバイスのクローズ */
-      close_psaux (req->header.mbfid, &(req->body.cls_req));
+      close_psaux (rdvno, packet);
       break;
 
     case DEV_REA:
-      read_psaux (req->header.mbfid, &(req->body.rea_req));
-      break;
-
-    case DEV_PRD:
-      posix_read_psaux (req->header.mbfid, req->header.tskid,
-			   &(req->body.prd_req));
+      read_psaux (rdvno, packet);
       break;
 
     case DEV_WRI:
-      write_psaux (req->header.mbfid, &(req->body.wri_req));
+      write_psaux (rdvno, packet);
       break;
 
     case DEV_CTL:
-      control_psaux (req->header.mbfid, &(req->body.ctl_req));
+      control_psaux (rdvno, packet);
       break;
     }
 }
@@ -164,7 +156,7 @@ void
 start (void)
 {
   init_driver ();
-  dbg_printf ("registed psaux driver\n");
+  dbg_printf ("[PSAUX] started. port = %d\n", recvport);
   main_loop ();
 }
 
@@ -175,24 +167,25 @@ start (void)
  */
 
 ER
-open_psaux (ID caller, DDEV_OPN_REQ *packet)
+open_psaux (RDVNO rdvno, devmsg_t *packet)
 {
-  DDEV_RES res;
+  DDEV_OPN_REQ * req = &(packet->req.body.opn_req);
+  DDEV_OPN_RES * res = &(packet->res.body.opn_res);
 
   driver_mode = NOWAITMODE;
 
-  res.body.opn_res.dd = packet->dd;
-  res.body.opn_res.size = 0;
+  res->dd = req->dd;
+  res->size = 0;
  
   if(driver_opened == TRUE)
     {
-      res.body.opn_res.errcd = E_DEV; 
-      res.body.opn_res.errinfo = E_DEV;	
+      res->errcd = E_DEV; 
+      res->errinfo = E_DEV;	
     }
   else
     {
-      res.body.opn_res.errcd = E_OK;
-      res.body.opn_res.errinfo = E_OK;
+      res->errcd = E_OK;
+      res->errinfo = E_OK;
 
       driver_opened = TRUE;
 
@@ -209,7 +202,7 @@ open_psaux (ID caller, DDEV_OPN_REQ *packet)
       ena_int();
     }
 
-  snd_mbf(caller, sizeof(res), &res);
+  rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
   return E_OK;
 }
 
@@ -217,9 +210,10 @@ open_psaux (ID caller, DDEV_OPN_REQ *packet)
  *
  */
 ER
-close_psaux (ID caller, DDEV_CLS_REQ *packet)
+close_psaux (RDVNO rdvno, devmsg_t *packet)
 {
-  DDEV_RES res;
+  DDEV_CLS_REQ * req = &(packet->req.body.cls_req);
+  DDEV_CLS_RES * res = &(packet->res.body.cls_res);
 
   driver_opened = FALSE;
 
@@ -234,10 +228,10 @@ close_psaux (ID caller, DDEV_CLS_REQ *packet)
   kbc_wr_command(0xA7); /* aux interface disable */
   ena_int();
 
-  res.body.cls_res.dd = packet->dd;
-  res.body.cls_res.errcd = E_OK;
-  res.body.cls_res.errinfo = E_OK;
-  snd_mbf(caller, sizeof(res), &res);
+  res->dd = req->dd;
+  res->errcd = E_OK;
+  res->errinfo = E_OK;
+  rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
   return E_OK;
 }
 
@@ -245,23 +239,24 @@ close_psaux (ID caller, DDEV_CLS_REQ *packet)
  *
  */
 ER
-read_psaux (ID caller, DDEV_REA_REQ *packet)
+read_psaux (RDVNO rdvno, devmsg_t *packet)
 {
-  DDEV_RES	res;
+  DDEV_REA_REQ * req = &(packet->req.body.rea_req);
+  DDEV_REA_RES * res = &(packet->res.body.rea_res);
   W		i;
   B             data;
 
-  res.body.rea_res.dd = packet->dd;
-  for (i = 0; i < packet->size; i++)
+  res->dd = req->dd;
+  for (i = 0; i < req->size; i++)
     {
       if(psaux_data_in(&data) == FALSE)
 	break;
-      res.body.rea_res.dt[i] = data;
+      res->dt[i] = data;
     }
-  res.body.rea_res.a_size = i;
-  res.body.rea_res.errcd = E_OK;
-  res.body.rea_res.errinfo = E_OK;
-  snd_mbf (caller, sizeof (res), &res);
+  res->a_size = i;
+  res->errcd = E_OK;
+  res->errinfo = E_OK;
+  rpl_rdv (rdvno, packet, sizeof (DDEV_RES));
   return (E_OK);  
 }
 
@@ -269,51 +264,21 @@ read_psaux (ID caller, DDEV_REA_REQ *packet)
  *
  */
 ER
-posix_read_psaux (ID caller, ID tskid, DDEV_PRD_REQ *packet)
+write_psaux (RDVNO rdvno, devmsg_t *packet)
 {
-  struct posix_response res;
-  W      i;
-  B      data;
-  B      buf[packet->length+1];
-
-  for (i = 0; i < packet->length; i++) 
-    {
-      if(psaux_data_in(&data) == FALSE)
-	break;
-      buf[i] = data;
-    }
-  buf[packet->length] = 0;
-  vput_reg(tskid, packet->buf, packet->length, buf);
-  
-  res.receive_port = 0;
-  res.msg_length = sizeof (res);
-  res.operation = PSC_READ;
-  res.errno = EP_OK;
-  res.status = i; 
-  res.ret1 = 0;
-  res.ret2 = 0;
-  snd_mbf (caller, sizeof (res), &res);
-  return (E_OK);
-}
-
-/*
- *
- */
-ER
-write_psaux (ID caller, DDEV_WRI_REQ *packet)
-{
-  DDEV_RES	res;
+  DDEV_WRI_REQ * req = &(packet->req.body.wri_req);
+  DDEV_WRI_RES * res = &(packet->res.body.wri_res);
   H             i;
   B data;
 
-  for(i = 0; i < packet->size; i++)
+  for(i = 0; i < req->size; i++)
     {
-      psaux_data_out(packet->dt[i]);
+      psaux_data_out(req->dt[i]);
     }
-  res.body.rea_res.dd = packet->dd;
-  res.body.rea_res.errcd = E_OK;
-  res.body.rea_res.errinfo = E_OK;
-  snd_mbf (caller, sizeof (res), &res);
+  res->dd = req->dd;
+  res->errcd = E_OK;
+  res->errinfo = E_OK;
+  rpl_rdv (rdvno, packet, sizeof (DDEV_RES));
   return (E_OK);
 }
 
@@ -321,40 +286,38 @@ write_psaux (ID caller, DDEV_WRI_REQ *packet)
  *
  */
 ER
-control_psaux (ID caller, DDEV_CTL_REQ *packet)
+control_psaux (RDVNO rdvno, devmsg_t *packet)
 {
-  DDEV_RES      res;
+  DDEV_CTL_REQ * req = &(packet->req.body.ctl_req);
+  DDEV_CTL_RES * res = &(packet->res.body.ctl_res);
 
-  switch (packet->cmd)
+  switch (req->cmd)
     {
     case PSAUX_CLEAR:
       dis_int();
       init_buffer();
       ena_int();
-      res.body.ctl_res.dd = packet->dd;
-      res.body.ctl_res.errcd = E_OK;
-      res.body.ctl_res.errinfo = E_OK;
-      snd_mbf (caller, sizeof (res), &res);
+      res->dd = req->dd;
+      res->errcd = E_OK;
+      res->errinfo = E_OK;
+      rpl_rdv (rdvno, packet, sizeof (DDEV_RES));
       return (E_OK);
       break;
 
     case PSAUX_CHANGEMODE:
-      driver_mode = packet->param[0];
-      res.body.ctl_res.dd = packet->dd;
-      res.body.ctl_res.errcd = E_OK;
-      res.body.ctl_res.errinfo = E_OK;
-      snd_mbf (caller, sizeof (res), &res);
+      driver_mode = req->param[0];
+      res->dd = req->dd;
+      res->errcd = E_OK;
+      res->errinfo = E_OK;
+      rpl_rdv (rdvno, packet, sizeof (DDEV_RES));
       return (E_OK);
       break;
 
     default:
-      res.body.ctl_res.dd = packet->dd;
-      res.body.ctl_res.errcd = E_NOSPT;
-      res.body.ctl_res.errinfo = E_NOSPT;
-      snd_mbf (caller, sizeof (res), &res);
+      res->dd = req->dd;
+      res->errcd = E_NOSPT;
+      res->errinfo = E_NOSPT;
+      rpl_rdv (rdvno, packet, sizeof (DDEV_RES));
       return (E_NOSPT);
     }
 }
-
-
-

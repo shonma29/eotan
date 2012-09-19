@@ -88,7 +88,6 @@ enum driver_command
   DEV_WRI,
   DEV_CTL,
   DEV_CHG,
-  DEV_PRD,
   DEV_RLY
 };
 
@@ -336,13 +335,6 @@ typedef struct {
   W	start;     /* デバイスの先頭からの位置（物理ブロック単位）	*/
   W	size;      /* 書き込み量（物理ブロック単位）	*/
 } DDEV_REA_REQ;
-
-typedef struct {
-  W dd;
-  B *buf;
-  W start;
-  W length;
-} DDEV_PRD_REQ;
 
 typedef struct {
   W	dd;	/* デバイスドライバマネージャ管理情報	*/
@@ -594,7 +586,6 @@ typedef struct DDEV_REQ
       DDEV_REA_REQ	rea_req;	
       DDEV_WRI_REQ	wri_req;
       DDEV_CTL_REQ	ctl_req;
-      DDEV_PRD_REQ	prd_req;
       DDEV_RLY_REQ	rly_req;
     } body;
 } DDEV_REQ;
@@ -618,6 +609,10 @@ typedef struct DDEV_RES
     } body;
 } DDEV_RES;
 
+typedef union _devmsg_t {
+    DDEV_REQ req;
+    DDEV_RES res;
+} devmsg_t;
 
 
 #define DEVID(id)	(id >> 16)

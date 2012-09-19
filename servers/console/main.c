@@ -11,9 +11,6 @@ Version 2, June 1991
 
 */
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/BTRON/device/console/main.c,v 1.10 2000/07/09 16:44:47 kishida0 Exp $ */
-static char rcsid[] =
-    "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/BTRON/device/console/main.c,v 1.10 2000/07/09 16:44:47 kishida0 Exp $";
-static char revision[] = "$Revision: 1.10 $";
 
 /*
  * $Log: main.c,v $
@@ -112,6 +109,7 @@ static char revision[] = "$Revision: 1.10 $";
 **********************************************************************/
 #include "../../include/itron/errno.h"
 #include "../../include/itron/syscall.h"
+#include "../../include/itron/rendezvous.h"
 #include "../../include/device.h"
 #include "../../lib/libserv/libserv.h"
 #include "console.h"
@@ -127,15 +125,14 @@ static char revision[] = "$Revision: 1.10 $";
 void start(void);
 static void main_loop(void);
 static W init_console(void);	/* 初期化		*/
-static void doit(DDEV_REQ * packet);
-static W open_console(ID caller, DDEV_OPN_REQ *packet);		/* オープン		*/
-static W close_console(ID caller, DDEV_CLS_REQ *packet);	/* クローズ		*/
-static W read_console(ID caller, DDEV_REA_REQ *packet);		/* 読み込み		*/
-static W write_console(ID caller, DDEV_WRI_REQ *packet);	/* 書き込み		*/
-static void respond_ctrl(ID caller, W dd, ER errno);
-static W control_console(ID caller, DDEV_CTL_REQ *packet);	/* コントロール		*/
+static void doit(RDVNO rdvno, devmsg_t *packet);
+static W open_console(RDVNO rdvno, devmsg_t *packet);		/* オープン		*/
+static W close_console(RDVNO rdvno, devmsg_t *packet);	/* クローズ		*/
+static W read_console(RDVNO rdvno, devmsg_t *packet);		/* 読み込み		*/
+static W write_console(RDVNO rdvno, devmsg_t *packet);	/* 書き込み		*/
+static void respond_ctrl(RDVNO rdvno, devmsg_t *packet, W dd, ER errno);
+static W control_console(RDVNO rdvno, devmsg_t *packet);	/* コントロール		*/
 static void writes(B * s);
-
 
 /*********************************************************************
  *	 大域変数群の宣言
@@ -154,7 +151,6 @@ TEXTATTR attr;
  */
 void start(void)
 {
-    char *p;
     /* 
      * 要求受信用のポートの作成
      */
@@ -164,44 +160,37 @@ void start(void)
      * 立ち上げメッセージ
      */
     writes("console driver start\n");
-    p = rcsid;
-    p = revision;
     main_loop();
 }
 
 static void main_loop(void)
 {
-    DDEV_REQ req;		/* 受信する要求パケット */
-
     /*
      * 要求受信 - 処理のループ
      */
     for (;;) {
-	W rsize;
+	devmsg_t packet;
+	ER_UINT rsize;
+	RDVNO rdvno;
 
 	/* 要求の受信 */
 #ifdef DEBUG
-	dbg_printf("call get_req ()\n");
+	dbg_printf("[CONSOLE] call acp_por\n");
 #endif
-	rsize = sizeof(req);
+	rsize = acp_por(recvport, 0xffffffff, &rdvno, &packet);
 
-	switch (rcv_mbf(&req, &rsize, recvport)) {
-	case E_OK:
+	if (rsize >= 0) {
 	    /* 正常ケース */
 #ifdef DEBUG
-	    dbg_printf("console: receive packet type = %d\n",
-		       req.header.msgtyp);
+	    dbg_printf("[CONSOLE] receive packet type = %d\n",
+		       packet.req.header.msgtyp);
 #endif
-	    doit(&req);
-	    break;
+	    doit(rdvno, &packet);
+	}
 
-	default:
+	else {
 	    /* Unknown error */
-#ifdef DEBUG
-	    dbg_printf("CONSOLE: get_req() Unknown error(error = %d)\n",
-		       err);
-#endif
-	    break;
+	    dbg_printf("[CONSOLE] acp_por error = %d\n", rsize);
 	}
     }
 
@@ -216,26 +205,26 @@ static void main_loop(void)
 static W init_console(void)
 {
     ER error;
-    T_CMBF pk_cmbf = { NULL, TA_TFIFO, 0, sizeof(DDEV_REQ) };
+    T_CPOR pk_cpor = { TA_TFIFO, sizeof(DDEV_REQ), sizeof(DDEV_RES) };
 
     /*
      * 要求受けつけ用のポートを初期化する。
      */
-    recvport = acre_mbf(&pk_cmbf);
+    recvport = acre_por(&pk_cpor);
 
     if (recvport <= 0) {
-	dbg_printf("CONSOLE: cannot make receive port.\n");
+	dbg_printf("[CONSOLE] acre_por error = %d\n", recvport);
 	ext_tsk();
 	/* メッセージバッファ生成に失敗 */
     }
 
     error = regist_port(CONSOLE_DRIVER, recvport);
     if (error != E_OK) {
-	dbg_printf("console: cannot regist port (error = %d)\n", error);
+	dbg_printf("[CONSOLE] cannot regist port. error = %d\n", error);
 	return E_SYS;
     }
     initialized = 1;
-    dbg_printf("console: regist port %d\n", recvport);
+    dbg_printf("[CONSOLE] started. port = %d\n", recvport);
     attr = NORMAL;
 
     set_curpos(0, MAX_LINE-1);
@@ -251,32 +240,32 @@ static W init_console(void)
  *
  *
  */
-static void doit(DDEV_REQ * packet)
+static void doit(RDVNO rdvno, devmsg_t * packet)
 {
-    switch (packet->header.msgtyp) {
+    switch (packet->req.header.msgtyp) {
     case DEV_OPN:
 	/* デバイスのオープン */
 	if (!initialized) {
 	    init_console();
 	}
-	open_console(packet->header.mbfid, &(packet->body.opn_req));
+	open_console(rdvno, packet);
 	break;
 
     case DEV_CLS:
 	/* デバイスのクローズ */
-	close_console(packet->header.mbfid, &(packet->body.cls_req));
+	close_console(rdvno, packet);
 	break;
 
     case DEV_REA:
-	read_console(packet->header.mbfid, &(packet->body.rea_req));
+	read_console(rdvno, packet);
 	break;
 
     case DEV_WRI:
-	write_console(packet->header.mbfid, &(packet->body.wri_req));
+	write_console(rdvno, packet);
 	break;
 
     case DEV_CTL:
-	control_console(packet->header.mbfid, &(packet->body.ctl_req));
+	control_console(rdvno, packet);
 	break;
     }
 }
@@ -284,54 +273,55 @@ static void doit(DDEV_REQ * packet)
 /************************************************************************
  * open_console --- console のオープン
  *
- * 引数：	caller	メッセージの送り手
- *		packet	オープンパケット
+ * 引数：	rdvno	メッセージの送り手
+ *		packet	パケット
  *
  * 返値：	常に E_OK を返す。
  *
  * 処理：	E_OK をメッセージの送り手に返す。
  *
  */
-static W open_console(ID caller, DDEV_OPN_REQ * packet)
+static W open_console(RDVNO rdvno, devmsg_t * packet)
 {
-    DDEV_RES res;
+    DDEV_OPN_REQ * req = &(packet->req.body.opn_req);
+    DDEV_OPN_RES * res = &(packet->res.body.opn_res);
 
-    res.body.opn_res.dd = packet->dd;
-    res.body.opn_res.size = 0;
-    res.body.opn_res.errcd = E_OK;
-    res.body.opn_res.errinfo = E_OK;
-    snd_mbf(caller, sizeof(res), &res);
+    res->dd = req->dd;
+    res->size = 0;
+    res->errcd = E_OK;
+    res->errinfo = E_OK;
+    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
     return (E_OK);
 }
 
 /************************************************************************
  * close_console --- ドライバのクローズ
  *
- * 引数：	dd	console ドライバ番号
- *		o_mode	オープンモード
- *		error	エラー番号
+ * 引数：	rdvno	メッセージの送り手
+ *		packet	パケット
  *
  * 返値：	常に E_OK を返す。
  *
  * 処理：	コンソールはクローズの処理ではなにもしない。
  *
  */
-static W close_console(ID caller, DDEV_CLS_REQ * packet)
+static W close_console(RDVNO rdvno, devmsg_t * packet)
 {
-    DDEV_RES res;
+    DDEV_CLS_REQ * req = &(packet->req.body.cls_req);
+    DDEV_CLS_RES * res = &(packet->res.body.cls_res);
 
-    res.body.cls_res.dd = packet->dd;
-    res.body.cls_res.errcd = E_OK;
-    res.body.cls_res.errinfo = E_OK;
-    snd_mbf(caller, sizeof(res), &res);
+    res->dd = req->dd;
+    res->errcd = E_OK;
+    res->errinfo = E_OK;
+    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
     return (E_OK);
 }
 
 /*************************************************************************
  * read_console --- 
  *
- * 引数：	caller
- *		packet
+ * 引数：	rdvno	メッセージの送り手
+ *		packet	パケット
  *
  * 返値：	E_NOSPT を返す。
  *
@@ -340,22 +330,23 @@ static W close_console(ID caller, DDEV_CLS_REQ * packet)
  *		いない。
  *
  */
-static W read_console(ID caller, DDEV_REA_REQ * packet)
+static W read_console(RDVNO rdvno, devmsg_t * packet)
 {
-    DDEV_RES res;
+    DDEV_REA_REQ * req = &(packet->req.body.rea_req);
+    DDEV_REA_RES * res = &(packet->res.body.rea_res);
 
-    res.body.rea_res.dd = packet->dd;
-    res.body.rea_res.errcd = E_NOSPT;
-    res.body.rea_res.errinfo = E_NOSPT;
-    snd_mbf(caller, sizeof(res), &res);
+    res->dd = req->dd;
+    res->errcd = E_NOSPT;
+    res->errinfo = E_NOSPT;
+    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
     return (E_NOSPT);
 }
 
 /************************************************************************
  * write_console
  *
- * 引数：	caller
- *		packet
+ * 引数：	rdvno	メッセージの送り手
+ *		packet	パケット
  *
  * 返値：	
  *
@@ -363,9 +354,10 @@ static W read_console(ID caller, DDEV_REA_REQ * packet)
  *		このとき、エスケープシーケンスによる処理も行う。		
  *
  */
-static W write_console(ID caller, DDEV_WRI_REQ * packet)
+static W write_console(RDVNO rdvno, devmsg_t * packet)
 {
-    DDEV_RES res;
+    DDEV_WRI_REQ * req = &(packet->req.body.wri_req);
+    DDEV_WRI_RES * res = &(packet->res.body.wri_res);
     int i;
     ER error;
     static int esc_flag = 0, cnum = 0;
@@ -373,8 +365,8 @@ static W write_console(ID caller, DDEV_WRI_REQ * packet)
     UB ch;
 
     error = E_OK;
-    for (i = 0; i < (packet->size); i++) {
-	ch = packet->dt[i];
+    for (i = 0; i < (req->size); i++) {
+	ch = req->dt[i];
 	if (esc_flag == 1) {
 	    if (ch == '[') {
 		esc_flag = 2;
@@ -455,19 +447,19 @@ static W write_console(ID caller, DDEV_WRI_REQ * packet)
 	if (error != E_OK)
 	    break;
     }
-    res.body.wri_res.dd = packet->dd;
-    res.body.wri_res.errcd = error;
-    res.body.wri_res.errinfo = error;
-    res.body.wri_res.a_size = i;
-    snd_mbf(caller, sizeof(res), &res);
+    res->dd = req->dd;
+    res->errcd = error;
+    res->errinfo = error;
+    res->a_size = i;
+    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
     return (error);
 }
 
 /************************************************************************
  * control_console
  *
- * 引数：	caller
- *		packet
+ * 引数：	rdvno	メッセージの送り手
+ *		packet	パケット
  *
  * 返値：	E_NOSPT を返す。
  *
@@ -475,36 +467,38 @@ static W write_console(ID caller, DDEV_WRI_REQ * packet)
  *
  */
 
-static void respond_ctrl(ID caller, W dd, ER errno)
+static void respond_ctrl(RDVNO rdvno, devmsg_t * packet, W dd, ER errno)
 {
-    DDEV_RES res;
+    DDEV_CTL_RES * res = &(packet->res.body.ctl_res);
 
-    res.body.ctl_res.dd = dd;
-    res.body.ctl_res.errcd = errno;
-    res.body.ctl_res.errinfo = errno;
-    snd_mbf(caller, sizeof(res), &res);
+    res->dd = dd;
+    res->errcd = errno;
+    res->errinfo = errno;
+    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
 }
 
 
-static W control_console(ID caller, DDEV_CTL_REQ * packet)
+static W control_console(RDVNO rdvno, devmsg_t * packet)
 {
-	switch (packet->cmd) {
+	DDEV_CTL_REQ * req = &(packet->req.body.ctl_req);
+
+	switch (req->cmd) {
 	case CONSOLE_CLEAR:
 	    clear_console();
-	    respond_ctrl(caller, packet->dd, E_OK);
+	    respond_ctrl(rdvno, packet, req->dd, E_OK);
 	    return (E_OK);
 
 	case CONSOLE_MOVE:
-	    if (packet->len != 2) {
-		respond_ctrl(caller, packet->dd, E_PAR);
+	    if (req->len != 2) {
+		respond_ctrl(rdvno, packet, req->dd, E_PAR);
 		return (E_PAR);
 	    }
-	    set_curpos(packet->param[0], packet->param[1]);
-	    respond_ctrl(caller, packet->dd, E_OK);
+	    set_curpos(req->param[0], req->param[1]);
+	    respond_ctrl(rdvno, packet, req->dd, E_OK);
 	    return (E_OK);
 
 	default:
-	    respond_ctrl(caller, packet->dd, E_NOSPT);
+	    respond_ctrl(rdvno, packet, req->dd, E_NOSPT);
 	    return (E_NOSPT);
 	}
 }

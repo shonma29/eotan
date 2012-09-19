@@ -11,8 +11,6 @@ Version 2, June 1991
 
 */
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/BTRON/device/keyboard/main.c,v 1.7 2000/04/03 14:30:05 naniwa Exp $ */
-static char rcsid[] =
-    "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/BTRON/device/keyboard/main.c,v 1.7 2000/04/03 14:30:05 naniwa Exp $";
 
 /*
  * $Log: main.c,v $
@@ -65,6 +63,7 @@ static char rcsid[] =
 **********************************************************************/
 
 #include "../../include/device.h"
+#include "../../include/itron/rendezvous.h"
 #include "../libserv/libserv.h"
 #include "keyboard.h"
 #include "key_type.h"
@@ -74,7 +73,7 @@ static char rcsid[] =
  *
  */
 static void main_loop();
-static void doit(DDEV_REQ * packet);
+static void doit(RDVNO rdvno, devmsg_t * packet);
 W send_dbg_msg();
 
 /*********************************************************************
@@ -98,8 +97,6 @@ ID my_tskid;
  */
 start()
 {
-    extern char version[];
-
     /* 
      * 要求受信用のポートの作成
      */
@@ -108,41 +105,33 @@ start()
     /*
      * 立ち上げメッセージ
      */
-    dbg_printf("keyboard driver started. receive port is %d\n", recvport);
+    dbg_printf("[KEYBOARD] started. port = %d\n", recvport);
 
     main_loop();
 }
 
 static void main_loop()
 {
-    DDEV_REQ req;		/* 受信する要求パケット */
-    ER errno;
-    INT rsize;
-
     /*
      * 要求受信 - 処理のループ
      */
-    rsize = sizeof(req);
     for (;;) {
+	devmsg_t packet;
+	ER_UINT rsize;
+	RDVNO rdvno;
 
 	/* 要求の受信 */
-	errno = rcv_mbf(&req, &rsize, recvport);
+	rsize = acp_por(recvport, 0xffffffff, &rdvno, &packet);
 
-	switch (errno) {
-	case E_OK:
+	if (rsize >= 0) {
 	    /* 正常ケース */
-	    doit(&req);
-	    break;
+	    doit(rdvno, &packet);
+	}
 
-	case E_TMOUT:
-	case E_RLWAI:
-	    break;
-
-	default:
+	else {
 	    /* Unknown error */
-	    dbg_printf("KEYBOARD: get_req() Unknown error(error = %d)\n",
-		       errno);
-	    break;
+	    dbg_printf("[KEYBOARD] acp_por error = %d\n",
+		       rsize);
 	}
     }
 
@@ -158,23 +147,24 @@ W init_keyboard(void)
 {
     int i;
     ER error;
-    T_CMBF pk_cmbf = { NULL, TA_TFIFO, 0, sizeof(DDEV_REQ) };
+    T_CPOR pk_cpor = { TA_TFIFO, sizeof(DDEV_REQ), sizeof(DDEV_RES) };
     T_CFLG pk_cflg = { NULL, TA_WSGL, 0 };
 
     /*
      * 要求受けつけ用のポートを初期化する。
      */
-    recvport = acre_mbf(&pk_cmbf);
+    recvport = acre_por(&pk_cpor);
 
     if (recvport <= 0) {
-	dbg_printf("KEYBOARD: cannot make receive port.\n");
+	dbg_printf("[KEYBOARD] acre_por error = \n", recvport);
 	ext_tsk();
 	/* メッセージバッファ生成に失敗 */
     }
 
     error = regist_port(KEYBOARD_DRIVER, recvport);
     if (error != E_OK) {
-	dbg_printf("keyboard: cannot regist port (error = %d)\n", error);
+	dbg_printf("[KEYBOARD] cannot regist port. error = %d\n", error);
+	ext_tsk();
     }
 
     init_keyboard_interrupt();	/* 割り込みハンドラの登録 */
@@ -182,7 +172,7 @@ W init_keyboard(void)
 
     /* キー入力を待つ時に使用するイベントフラグの初期化 */
     waitflag = acre_flg(&pk_cflg);
-    dbg_printf("keyboard: eventflag = %d\n", waitflag);	/* */
+    dbg_printf("[KEYBOARD] eventflag = %d\n", waitflag);	/* */
 
     driver_mode = WAITMODE | ENAEOFMODE;
 
@@ -195,42 +185,32 @@ W init_keyboard(void)
  *
  *
  */
-static void doit(DDEV_REQ * packet)
+static void doit(RDVNO rdvno, devmsg_t * packet)
 {
-    switch (packet->header.msgtyp) {
+    switch (packet->req.header.msgtyp) {
     case DEV_OPN:
 	/* デバイスのオープン */
 	if (!initialized) {
 	    init_keyboard();
 	}
-	open_keyboard(packet->header.mbfid, &(packet->body.opn_req));
+	open_keyboard(rdvno, packet);
 	break;
 
     case DEV_CLS:
 	/* デバイスのクローズ */
-	close_keyboard(packet->header.mbfid, &(packet->body.cls_req));
+	close_keyboard(rdvno, packet);
 	break;
 
     case DEV_REA:
-	read_keyboard(packet->header.mbfid, &(packet->body.rea_req));
-	break;
-
-    case DEV_PRD:
-	posix_read_keyboard(packet->header.mbfid, packet->header.tskid,
-			    &(packet->body.prd_req));
-	break;
-
-    case DEV_RLY:
-	relay_keyboard(packet->header.mbfid, &(packet->body.rly_req));
+	read_keyboard(rdvno, packet);
 	break;
 
     case DEV_WRI:
-	write_keyboard(packet->header.mbfid, &(packet->body.wri_req));
+	write_keyboard(rdvno, packet);
 	break;
 
     case DEV_CTL:
-	control_keyboard(packet->header.mbfid, packet->header.tskid,
-			 &(packet->body.ctl_req));
+	control_keyboard(rdvno, packet);
 	break;
     }
 }
@@ -246,15 +226,16 @@ static void doit(DDEV_REQ * packet)
  * 処理：	E_OK をメッセージの送り手に返す。
  *
  */
-W open_keyboard(ID caller, DDEV_OPN_REQ * packet)
+W open_keyboard(RDVNO rdvno, devmsg_t * packet)
 {
-    DDEV_RES res;
+    DDEV_OPN_REQ * req = &(packet->req.body.opn_req);
+    DDEV_OPN_RES * res = &(packet->res.body.opn_res);
 
-    res.body.opn_res.dd = packet->dd;
-    res.body.opn_res.size = 0;
-    res.body.opn_res.errcd = E_OK;
-    res.body.opn_res.errinfo = E_OK;
-    snd_mbf(caller, sizeof(res), &res);
+    res->dd = req->dd;
+    res->size = 0;
+    res->errcd = E_OK;
+    res->errinfo = E_OK;
+    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
     return (E_OK);
 }
 
@@ -270,14 +251,15 @@ W open_keyboard(ID caller, DDEV_OPN_REQ * packet)
  * 処理：	キーボードはクローズの処理ではなにもしない。
  *
  */
-W close_keyboard(ID caller, DDEV_CLS_REQ * packet)
+W close_keyboard(RDVNO rdvno, devmsg_t * packet)
 {
-    DDEV_RES res;
+    DDEV_CLS_REQ * req = &(packet->req.body.cls_req);
+    DDEV_CLS_RES * res = &(packet->res.body.cls_res);
 
-    res.body.cls_res.dd = packet->dd;
-    res.body.cls_res.errcd = E_OK;
-    res.body.cls_res.errinfo = E_OK;
-    snd_mbf(caller, sizeof(res), &res);
+    res->dd = req->dd;
+    res->errcd = E_OK;
+    res->errinfo = E_OK;
+    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
     return (E_OK);
 }
 
@@ -292,80 +274,34 @@ W close_keyboard(ID caller, DDEV_CLS_REQ * packet)
  * 処理：	メッセージの送り手に読み込んだ文字列を返す。
  *
  */
-W read_keyboard(ID caller, DDEV_REA_REQ * packet)
+W read_keyboard(RDVNO rdvno, devmsg_t * packet)
 {
-    DDEV_RES res;
+    DDEV_REA_REQ * req = &(packet->req.body.rea_req);
+    DDEV_REA_RES * res = &(packet->res.body.rea_res);
     W i;
+    ER error;
 
-    res.body.rea_res.dd = packet->dd;
-    for (i = 0; i < packet->size; i++) {
-	res.body.rea_res.dt[i] = read_key(driver_mode);
+    res->dd = req->dd;
+    for (i = 0; i < req->size; i++) {
+	res->dt[i] = read_key(driver_mode);
     }
-    if ((driver_mode & ENAEOFMODE) && (packet->size == 1) &&
-	(res.body.rea_res.dt[0] == C('d'))) {
-	res.body.rea_res.a_size = 0;
+    if ((driver_mode & ENAEOFMODE) && (req->size == 1) &&
+	(res->dt[0] == C('d'))) {
+	res->a_size = 0;
     } else {
-	res.body.rea_res.a_size = i;
+	res->a_size = i;
     }
-    res.body.rea_res.errcd = E_OK;
-    res.body.rea_res.errinfo = E_OK;
+    res->errcd = E_OK;
+    res->errinfo = E_OK;
 
 #if 0
-    dbg_printf("KEYBOARD: send to caller\n");
+    dbg_printf("[KEYBOARD] reply to caller\n");
 #endif
-    snd_mbf(caller, sizeof(res), &res);
-    return (E_OK);
-}
-
-/*************************************************************************
- * posix_read_keyboard --- 
- *
- * 引数：	caller
- *		packet
- *
- * 返値：	E_OK を返す。
- *
- * 処理：	メッセージの送り手(POSIX lowlib)に文字列を返す。
- *
- */
-W posix_read_keyboard(ID caller, ID tskid, DDEV_PRD_REQ * packet)
-{
-    struct posix_response res;
-    W i;
-
-#ifdef notdef
-    dbg_printf("\nKEYBOARD: posix_read_keyboard %d len = %d\n",
-	       caller, packet->length);
-#endif
-    {
-	B buf[packet->length + 1];
-
-	for (i = 0; i < packet->length; i++) {
-	    buf[i] = read_key(driver_mode);
-	}
-	buf[packet->length] = 0;
-	if ((driver_mode & ENAEOFMODE) && (packet->length == 1) &&
-	    (buf[0] == C('d'))) {
-	    i = 0;
-	} else {
-	    i = packet->length;
-	}
-	vput_reg(tskid, packet->buf, i, buf);
-
-	res.receive_port = 0;
-	res.msg_length = sizeof(res);
-	res.operation = PSC_READ;
-	res.errno = EP_OK;
-	res.status = packet->length;
-	res.ret1 = 0;
-	res.ret2 = 0;
-
-#ifdef notdef
-	dbg_printf("KEYBOARD: reply to app %d\n", caller);
-#endif
-	snd_mbf(caller, sizeof(res), &res);
-	return (E_OK);
+    error = rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
+    if (error) {
+	dbg_printf("[KEYBOARD] read_keyboard rpl_rdv(%d) = %d\n", rdvno, error);
     }
+    return (E_OK);
 }
 
 /************************************************************************
@@ -379,14 +315,15 @@ W posix_read_keyboard(ID caller, ID tskid, DDEV_PRD_REQ * packet)
  * 処理：	write は、キーボードでは行わない。
  *
  */
-W write_keyboard(ID caller, DDEV_WRI_REQ * packet)
+W write_keyboard(RDVNO rdvno, devmsg_t * packet)
 {
-    DDEV_RES res;
+    DDEV_WRI_REQ * req = &(packet->req.body.wri_req);
+    DDEV_WRI_RES * res = &(packet->res.body.wri_res);
 
-    res.body.rea_res.dd = packet->dd;
-    res.body.rea_res.errcd = E_NOSPT;
-    res.body.rea_res.errinfo = E_NOSPT;
-    snd_mbf(caller, sizeof(res), &res);
+    res->dd = req->dd;
+    res->errcd = E_NOSPT;
+    res->errinfo = E_NOSPT;
+    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
     return (E_NOSPT);
 }
 
@@ -402,82 +339,61 @@ W write_keyboard(ID caller, DDEV_WRI_REQ * packet)
  *
  */
 
-static void respond_ctrl(ID caller, W dd, ER errno)
+static void respond_ctrl(RDVNO rdvno, devmsg_t * packet, W dd, ER errno)
 {
-    DDEV_RES res;
+    DDEV_CTL_RES * res = &(packet->res.body.ctl_res);
 
-    res.body.ctl_res.dd = dd;
-    res.body.ctl_res.errcd = errno;
-    res.body.ctl_res.errinfo = errno;
-    snd_mbf(caller, sizeof(res), &res);
+    res->dd = dd;
+    res->errcd = errno;
+    res->errinfo = errno;
+    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
 }
 
-W control_keyboard(ID caller, ID tskid, DDEV_CTL_REQ * packet)
+W control_keyboard(RDVNO rdvno, devmsg_t * packet)
 {
-    switch (packet->cmd) {
+    DDEV_CTL_REQ * req = &(packet->req.body.ctl_req);
+
+    switch (req->cmd) {
     case KEYBOARD_CLEAR:
 	clear_keybuffer();
-	respond_ctrl(caller, packet->dd, E_OK);
+	respond_ctrl(rdvno, packet, req->dd, E_OK);
 	return (E_OK);
 
     case KEYBOARD_CHANGEMODE:
-        driver_mode = ((W *) packet->param)[0];
+        driver_mode = ((W *) req->param)[0];
 #ifdef notdef
-	dbg_printf("KEYBOARD: new keyboard mode %d\n", driver_mode);
+	dbg_printf("[KEYBOARD] respond_ctrl new keyboard mode %d\n",
+		driver_mode);
 #endif
-	respond_ctrl(caller, packet->dd, E_OK);
+	respond_ctrl(rdvno, packet, req->dd, E_OK);
 	return (E_OK);
 
     case KEYBOARD_CHANGE_106JP:
-	respond_ctrl(caller, packet->dd, E_NOSPT);
+	respond_ctrl(rdvno, packet, req->dd, E_NOSPT);
 	return (E_NOSPT);
 
     case KEYBOARD_CHANGE_101US:
-	respond_ctrl(caller, packet->dd, E_NOSPT);
+	respond_ctrl(rdvno, packet, req->dd, E_NOSPT);
 	return (E_NOSPT);
 
     case KEYBOARD_ENA_EOF:
 	driver_mode |= ENAEOFMODE;
-	respond_ctrl(caller, packet->dd, E_OK);
+	respond_ctrl(rdvno, packet, req->dd, E_OK);
 	return (E_OK);
 
     case KEYBOARD_DIS_EOF:
         driver_mode &= ~ENAEOFMODE;
-	respond_ctrl(caller, packet->dd, E_OK);
+	respond_ctrl(rdvno, packet, req->dd, E_OK);
 	return (E_OK);
 
     case KEYBOARD_GETMODE:
-        vput_reg(tskid, ((W *) packet->param)[0], sizeof(W), &driver_mode);
-        respond_ctrl(caller, packet->dd, E_OK);
+        vput_reg(packet->req.header.tskid, ((W *) req->param)[0], sizeof(W),
+                &driver_mode);
+        respond_ctrl(rdvno, packet, req->dd, E_OK);
 	return (E_OK);
 
     default:
-	respond_ctrl(caller, packet->dd, E_NOSPT);
+	respond_ctrl(rdvno, packet, req->dd, E_NOSPT);
 	return (E_NOSPT);
     }
-}
-
-/* relay_keyboard()
- */
-W relay_keyboard(ID caller, DDEV_RLY_REQ * packet)
-{
-    DDEV_REQ req;
-    W i;
-
-    req.header.mbfid = local_recv;
-    req.header.msgtyp = DEV_RLY;
-    req.body.rly_req.dd = packet->dd;
-#ifdef notdef
-    dbg_printf("KEYBOARD: read %d\n", packet->size);
-#endif
-    for (i = 0; i < packet->size; i++) {
-	req.body.rly_req.dt[i] = read_key(driver_mode);
-    }
-    req.body.rly_req.size = i;
-
-#ifdef notdef
-    dbg_printf("KEYBORAD: send relay to wconsole\n");
-#endif
-    snd_mbf(caller, sizeof(req), &req);
-    return (E_OK);
 }

@@ -41,6 +41,7 @@ static char rcsid[] =
  */
 #include "../../include/stdarg.h"
 #include "../../include/device.h"
+#include "../../include/itron/rendezvous.h"
 #include "init.h"
 
 static W putc(W ch, FILE * port);
@@ -102,26 +103,23 @@ static void fflush(FILE * port)
 
 static W writechar(ID port, ID resport, UB * buf, W length)
 {
-    DDEV_REQ req;		/* 要求パケット */
-    DDEV_RES res;		/* 返答パケット */
-    W rsize;
-    ER error;
+    devmsg_t packet;
+    ER_UINT rsize;
 
-    req.header.mbfid = resport;
-    req.header.msgtyp = DEV_WRI;
-    req.body.wri_req.dd = 0xAA;
-    req.body.wri_req.size = length;
-    memcpy(req.body.wri_req.dt, buf, length);
-    error = snd_mbf(port, sizeof(req), &req);
-    if (error != E_OK) {
-	dbg_printf("cannot send packet. %d(%s, %d)\n", error, __FILE__,
-		   __LINE__);
+    packet.req.header.mbfid = resport;
+    packet.req.header.msgtyp = DEV_WRI;
+    packet.req.body.wri_req.dd = 0xAA;
+    packet.req.body.wri_req.size = length;
+    memcpy(packet.req.body.wri_req.dt, buf, length);
+    rsize = cal_por(port, 0xffffffff, &packet, sizeof(packet.req));
+    if (rsize < 0) {
+	dbg_printf("[INIT] writechar cal_port[%d] error = %d\n",
+		port, rsize);
 	return (-1);
     }
-    rsize = sizeof(res);
-    error = rcv_mbf(&res, (INT *) & rsize, resport);
-    if (res.body.wri_res.errcd != E_OK) {
-	dbg_printf("%d\n", res.body.wri_res.errcd);
+    if (packet.res.body.wri_res.errcd != E_OK) {
+	dbg_printf("[INIT] writechar[%d] res.errcd = %d\n",
+		port, packet.res.body.wri_res.errcd);
 	return (0);
     }
     return (1);
@@ -155,24 +153,20 @@ W getc(FILE * port)
 
 static W readchar(ID port, ID resport)
 {
-    DDEV_REQ req;		/* 要求パケット */
-    DDEV_RES res;		/* 返答パケット */
-    W rsize;
-    ER error;
+    devmsg_t packet;
+    ER_UINT rsize;
 
-    req.header.mbfid = resport;
-    req.header.msgtyp = DEV_REA;
-    req.body.rea_req.dd = 0xAA;
-    req.body.rea_req.size = 1;
-    error = snd_mbf(port, sizeof(req), &req);
-    if (error != E_OK) {
-	printf("cannot send packet. %d\n", error);
+    packet.req.header.mbfid = resport;
+    packet.req.header.msgtyp = DEV_REA;
+    packet.req.body.rea_req.dd = 0xAA;
+    packet.req.body.rea_req.size = 1;
+    rsize = cal_por(port, 0xffffffff, &packet, sizeof(packet.req));
+    if (rsize < 0) {
+	dbg_printf("[INIT] readchar cal_por[%d] error = %d\n", port, rsize);
 	return (-1);
     }
-    rsize = sizeof(res);
-    rcv_mbf(&res, (INT *) & rsize, resport);
-    if (res.body.rea_res.dt[0] != 0) {
-	return (res.body.rea_res.dt[0]);
+    if (packet.res.body.rea_res.dt[0] != 0) {
+	return (packet.res.body.rea_res.dt[0]);
     }
     return (0);
 }

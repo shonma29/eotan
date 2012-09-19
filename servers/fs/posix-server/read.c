@@ -40,8 +40,6 @@ Version 2, June 1991
 
 #include "posix.h"
 
-extern W sfs_trans_device(ID device, ID port, ID tskid, B * buf, W start,
-			  W length);
 extern W sfs_read_device(ID device, B * buf, W start, W length, W * rlength);
 
 
@@ -86,56 +84,43 @@ W psc_read_f(struct posix_request *req)
 		/* データの読み込みを 1 byte ずつに分割する */
 		req->param.par_read.length = 1;
 	    }
-
-	    /* デバイスに read メッセージを転送 */
-	    errno = sfs_trans_device(fp->f_inode->i_dev,
-				     req->receive_port,
-				     req->caller,
-				     req->param.par_read.buf,
-				     fp->f_offset,
-				     req->param.par_read.length);
-	    if (errno == E_OK) {
-		fp->f_offset += req->param.par_read.length;
-		return (SUCCESS);
-	    }
-	    return (FAIL);
 	} else {
 	    /* ブロックデバイスだった */
-	    rest_length = req->param.par_read.length;
 	    if (fp->f_offset >= fp->f_inode->i_size) {
 		errno = EP_OK;
-		rest_length = 0;
+		req->param.par_read.length = 0;
 	    }
-	    for (i = 0; rest_length > 0;
-		 rest_length -= rlength, i += rlength) {
-		/* MAX_BODY_SIZE 毎にバッファに読み込み */
-		len =
-		    rest_length >
-		    MAX_BODY_SIZE ? MAX_BODY_SIZE : rest_length;
-		errno =
-		    sfs_read_device(fp->f_inode->i_dev, buf,
-				    fp->f_offset + i, len, &rlength);
-		if (errno)
-		    break;
-
-		/* 呼び出したプロセスのバッファへの書き込み */
-		errno = vput_reg(req->caller, req->param.par_read.buf + i,
-				 rlength, buf);
-		if (errno || (rlength < len)) {
-		    i += rlength;
-		    break;
-		}
-	    }
-
-	    if (errno) {
-		put_response(req, errno, -1, 0, 0);
-		return (FAIL);
-	    }
-
-	    fp->f_offset += i;
-	    put_response(req, EP_OK, i, 0, 0);
-	    return (SUCCESS);
 	}
+
+	rest_length = req->param.par_read.length;
+	for (i = 0; rest_length > 0;
+	    rest_length -= rlength, i += rlength) {
+	    /* MAX_BODY_SIZE 毎にバッファに読み込み */
+	    len =
+		rest_length >
+		MAX_BODY_SIZE ? MAX_BODY_SIZE : rest_length;
+	    errno =
+		sfs_read_device(fp->f_inode->i_dev, buf,
+				    fp->f_offset + i, len, &rlength);
+	    if (errno)
+		break;
+
+	    /* 呼び出したプロセスのバッファへの書き込み */
+	    errno = vput_reg(req->caller, req->param.par_read.buf + i,
+			rlength, buf);
+	    if (errno || (rlength < len)) {
+		i += rlength;
+		break;
+	    }
+	}
+	if (errno) {
+	    put_response(req, errno, -1, 0, 0);
+	    return (FAIL);
+	}
+
+	fp->f_offset += i;
+	put_response(req, EP_OK, i, 0, 0);
+	return (SUCCESS);
     }
 #ifdef DEBUG
     printk
@@ -166,12 +151,10 @@ W psc_read_f(struct posix_request *req)
 	    break;
 	}
     }
-
     if (errno) {
 	put_response(req, errno, -1, 0, 0);
 	return (FAIL);
     }
-
     fp->f_offset += i;
     put_response(req, EP_OK, i, 0, 0);
     return (SUCCESS);

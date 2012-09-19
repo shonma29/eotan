@@ -11,8 +11,6 @@ Version 2, June 1991
 
 */
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/BTRON/device/ide/ide.c,v 1.15 2000/01/22 10:59:30 naniwa Exp $ */
-static char rcsid[] =
-    "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/BTRON/device/ide/ide.c,v 1.15 2000/01/22 10:59:30 naniwa Exp $";
 
 /*
  * $Log: ide.c,v $
@@ -76,6 +74,7 @@ static char rcsid[] =
  *
  *
  */
+#include "../../include/itron/rendezvous.h"
 #include "../../include/mpu/io.h"
 #include "../../lib/libserv/libserv.h"
 #include "ide.h"
@@ -106,7 +105,7 @@ static W initialized;
  */
 static void main_loop(void);
 static int init_ide_driver(void);
-static void doit(DDEV_REQ * packet);
+static void doit(RDVNO rdvno, devmsg_t * packet);
 
 /*
  * FD デバイスドライバの main 関数
@@ -116,8 +115,6 @@ static void doit(DDEV_REQ * packet);
  */
 start()
 {
-    extern char version[];
-
     /* 
      * 要求受信用のポートの作成
      */
@@ -128,7 +125,7 @@ start()
     /*
      * 立ち上げメッセージ
      */
-    dbg_printf("IDE disk driver started. receive port is %d\n", recvport);
+    dbg_printf("[IDE] started. port = %d\n", recvport);
 
     /*
      * ドライバを初期化する。
@@ -138,34 +135,33 @@ start()
 
 static void main_loop()
 {
-    DDEV_REQ req;
-    UW rsize;
-    ER errno;
-
     /*
      * 要求受信 - 処理のループ
      */
     for (;;) {
-	/* 要求の受信 */
-/*      printf ("ide: get_req\n");	/* */
-	errno = rcv_mbf(&req, &rsize, recvport);
+	devmsg_t packet;
+	ER_UINT rsize;
+	RDVNO rdvno;
 
-	switch (errno) {
-	case E_OK:
+	/* 要求の受信 */
+/*      dbg_printf ("[IDE] acp_por\n");	/* */
+	rsize = acp_por(recvport, 0xffffffff, &rdvno, &packet);
+
+	if (rsize >= 0) {
 	    /* 正常ケース */
 #ifdef DEBUG
-	    printf("ide: receive packet type = %d\n", req.header.msgtyp);
+	    dbg_printf("[IDE] receive packet type = %d\n",
+		    packet.req.header.msgtyp);
 #endif
-	    doit(&req);
-	    break;
+	    doit(rdvno, &packet);
+	}
 
-	default:
+	else {
 	    /* Unknown error */
-	    dbg_printf("ide: get_req() Unknown error(error = %d)\n",
-		       errno);
-	    dbg_printf("IDE driver is halt.\n");
+	    dbg_printf("[IDE] acp_por error = %d\n",
+		       rsize);
+	    dbg_printf("[IDE] halt.\n");
 	    ext_tsk();
-	    break;
 	}
     }
 
@@ -179,33 +175,33 @@ static void main_loop()
  *
  *
  */
-static void doit(DDEV_REQ * packet)
+static void doit(RDVNO rdvno, devmsg_t * packet)
 {
 
     if (!initialized) {
-	dbg_printf("[IDE] devie is not initialized\n");
+	dbg_printf("[IDE] device is not initialized\n");
     }
-    switch (packet->header.msgtyp) {
+    switch (packet->req.header.msgtyp) {
     case DEV_OPN:
 	/* デバイスのオープン */
-	open_ide(packet->header.mbfid, &(packet->body.opn_req));
+	open_ide(rdvno, packet);
 	break;
 
     case DEV_CLS:
 	/* デバイスのクローズ */
-	close_ide(packet->header.mbfid, &(packet->body.cls_req));
+	close_ide(rdvno, packet);
 	break;
 
     case DEV_REA:
-	read_ide(packet->header.mbfid, &(packet->body.rea_req));
+	read_ide(rdvno, packet);
 	break;
 
     case DEV_WRI:
-	write_ide(packet->header.mbfid, &(packet->body.wri_req));
+	write_ide(rdvno, packet);
 	break;
 
     case DEV_CTL:
-	control_ide(packet->header.mbfid, &(packet->body.ctl_req));
+	control_ide(rdvno, packet);
 	break;
     }
 }
@@ -218,10 +214,8 @@ static void doit(DDEV_REQ * packet)
  */
 static int init_ide_driver(void)
 {
-    int i;
-    ID root_dev;
     ER error;
-    T_CMBF pk_cmbf = { NULL, TA_TFIFO, 0, sizeof(DDEV_RES) };
+    T_CPOR pk_cpor = { TA_TFIFO, sizeof(DDEV_REQ), sizeof(DDEV_RES) };
 
     initialized = 0;
     if (init_ide() != E_OK) {
@@ -231,20 +225,19 @@ static int init_ide_driver(void)
     /*
      * 要求受けつけ用のポートを初期化する。
      */
-    recvport = acre_mbf(&pk_cmbf);
+    recvport = acre_por(&pk_cpor);
 
     if (recvport <= 0) {
-	dbg_printf("IDE: cannot make receive porrt.\n");
+	dbg_printf("[IDE] acre_por error = %d\n", recvport);
 	ext_tsk();
 	/* メッセージバッファ生成に失敗 */
     }
 
     error = regist_port(IDE_DRIVER, recvport);
     if (error != E_OK) {
-	/* error */
+	dbg_printf("[IDE] cannot regist port. error = %d\n", error);
     }
 
-    init_log();
     return E_OK;
 }
 
@@ -256,26 +249,11 @@ W init_ide(void)
 {
     ER err;
     int status;
-#ifdef notdef
-    T_DINT pkt;
-#endif
-
-#ifdef notdef
-    /* 割込みは使用しない */
-    pkt.intatr = ATR_INTR;
-    pkt.inthdr = (FP) intr_ide;
-    err = def_int(INT_IDE0, &pkt);
-    if (err != E_OK) {
-	dbg_printf("ide: error on def_int (errno = %d)\n", err);
-	return (err);
-    }
-    reset_intr_mask(IDE0_INTR_MASK);
-#endif
 
     outb(IDE_CONTROL_REG, IDE_SRST);	/* ソフトウェア・リセット */
     outb(IDE_CONTROL_REG, IDE_nIEN);	/* 割込み禁止 */
     status = ide_wait_while_busy();
-    dbg_printf("IDE init status = 0x%x/0x%x\n",
+    dbg_printf("[IDE] init status = 0x%x/0x%x\n",
 	       inb(IDE_ERROR_REG), status);
     if (status == 0x50) {
 	ide_recalibrate(0);		/* drive 0 の recalibrate */
@@ -298,9 +276,10 @@ W init_ide(void)
  *		使用状態 (DRIVE_USING) にする。
  *
  */
-W open_ide(ID caller, DDEV_OPN_REQ * packet)
+W open_ide(RDVNO rdvno, devmsg_t * packet)
 {
-    DDEV_RES res;
+    DDEV_OPN_REQ * req = &(packet->req.body.opn_req);
+    DDEV_OPN_RES * res = &(packet->res.body.opn_res);
     W drive;			/* ドライブ番号 */
     UW partition;		/* パーティション番号 */
     int i;
@@ -312,32 +291,32 @@ W open_ide(ID caller, DDEV_OPN_REQ * packet)
     outb(0x29, (0x0c | 2));	/* Bank Mode Reg. 16M mode */
     outb(0x29, (0x0c | 3));	/* Bank Mode Reg. 16M mode */
 #endif
-    res.body.opn_res.dd = packet->dd;
-    drive = IDE_GET_DRIVE(packet->dd);
-    partition = IDE_GET_PARTITION(packet->dd);
+    res->dd = req->dd;
+    drive = IDE_GET_DRIVE(req->dd);
+    partition = IDE_GET_PARTITION(req->dd);
     if ((partition > IDE_WHOLE_DISK) &&
 	(partition <= (IDE_MAX_PARTITION + ext_partition))) {
-	res.body.opn_res.size =
+	res->size =
 	    ide_partition[drive][partition - 1].length * IDE_BLOCK_SIZE;
     } else if (partition == IDE_WHOLE_DISK) {
-	res.body.opn_res.size = ((UW) ide_spec[drive].now_sector) *
+	res->size = ((UW) ide_spec[drive].now_sector) *
 	    ((UW) ide_spec[drive].now_head) *
 	    ((UW) ide_spec[drive].now_cylinder);
-	if (res.body.opn_res.size >= IDE_USABLE_SIZE) {
-	    res.body.opn_res.size = MAX_UINT;
+	if (res->size >= IDE_USABLE_SIZE) {
+	    res->size = MAX_UINT;
 	} else {
-	    res.body.opn_res.size *= IDE_BLOCK_SIZE;
+	    res->size *= IDE_BLOCK_SIZE;
 	}
     } else {
-	res.body.opn_res.size = 0;
+	res->size = 0;
     }
 #if 0
-    dbg_printf("partition #%d size = %d\n", partition,
-	       res.body.opn_res.size);
+    dbg_printf("[IDE] open partition #%d size = %d\n", partition,
+	       res->size);
 #endif
-    res.body.opn_res.errcd = E_OK;
-    res.body.opn_res.errinfo = E_OK;
-    snd_mbf(caller, sizeof(res), &res);
+    res->errcd = E_OK;
+    res->errinfo = E_OK;
+    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
     return (E_OK);
 }
 
@@ -354,14 +333,14 @@ W open_ide(ID caller, DDEV_OPN_REQ * packet)
  *		使用状態 (DRIVE_USING) のフラグを消す。
  *
  */
-W close_ide(ID caller, DDEV_CLS_REQ * packet)
+W close_ide(RDVNO rdvno, devmsg_t * packet)
 {
-    DDEV_RES res;
-
-    res.body.cls_res.dd = packet->dd;
-    res.body.cls_res.errcd = E_OK;
-    res.body.cls_res.errinfo = E_OK;
-    snd_mbf(caller, sizeof(res), &res);
+    DDEV_CLS_REQ * req = &(packet->req.body.cls_req);
+    DDEV_CLS_RES * res = &(packet->res.body.cls_res);
+    res->dd = req->dd;
+    res->errcd = E_OK;
+    res->errinfo = E_OK;
+    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
     return (E_OK);
 }
 
@@ -380,9 +359,10 @@ W close_ide(ID caller, DDEV_CLS_REQ * packet)
  *		3) 変換した数を引数にして get_data() を呼び出す
  *
  */
-W read_ide(ID caller, DDEV_REA_REQ * packet)
+W read_ide(RDVNO rdvno, devmsg_t * packet)
 {
-    DDEV_RES res;
+    DDEV_REA_REQ * req = &(packet->req.body.rea_req);
+    DDEV_REA_RES * res = &(packet->res.body.rea_res);
     W blockno;			/* 物理ブロック番号 */
     W bcount;			/* 論理ブロックが物理ブロックより大きい場合に使用する。 */
     /* 物理ブロックを読みとるときの回数となる              */
@@ -400,25 +380,28 @@ W read_ide(ID caller, DDEV_REA_REQ * packet)
     UW bufstart;
     UW buflength;
     UW parstart;
+    ER reply_error;
+    UW reqstart = req->start;
+    UW reqsize = req->size;
 
-    drive = IDE_GET_DRIVE(packet->dd);
-    partition = IDE_GET_PARTITION(packet->dd);
+    drive = IDE_GET_DRIVE(req->dd);
+    partition = IDE_GET_PARTITION(req->dd);
     if (partition == IDE_WHOLE_DISK) {
 	parstart = 0;
     }
     if ((drive < 0) ||
 	(partition > (IDE_MAX_PARTITION + ext_partition))) {
-	dbg_printf("[IDE] Illegal driver or partition number [%d/%d]\n",
+	dbg_printf("[IDE] read_ide Illegal driver or partition number [%d/%d]\n",
 		   drive, partition);
 	goto bad;
     } else {
 	parstart = ide_partition[drive][partition - 1].start * BLOCK_SIZE;
     }
 
-    bufstart = ROUNDDOWN(packet->start, BLOCK_SIZE);
-    buflength = ROUNDUP(packet->start + packet->size, BLOCK_SIZE);
+    bufstart = ROUNDDOWN(reqstart, BLOCK_SIZE);
+    buflength = ROUNDUP(reqstart + reqsize, BLOCK_SIZE);
 #ifdef DEBUG
-    dbg_printf("partition = %d, bufstart = %d, buflength = %d\n",
+    dbg_printf("[IDE] read_ide partition = %d, bufstart = %d, buflength = %d\n",
 	       partition, bufstart, buflength);	/* */
 #endif
 
@@ -428,15 +411,15 @@ W read_ide(ID caller, DDEV_REA_REQ * packet)
 
     for (bp = 0; bp < (buflength - bufstart); bp += BLOCK_SIZE) {
 #ifdef DEBUG
-	dbg_printf("read_ide: bp = %d, length = %d\n", bp, BLOCK_SIZE);	/* */
+	dbg_printf("[IDE] read_ide bp = %d, length = %d\n", bp, BLOCK_SIZE);	/* */
 #endif
 	/* バイトオフセットから物理ブロック番号への変換 */
 	blockno = ((UW) (bp + bufstart + parstart) / BLOCK_SIZE)
 	    * (BLOCK_SIZE / IDE_BLOCK_SIZE);
 	bcount = BLOCK_SIZE / IDE_BLOCK_SIZE;
 
-#define H	(ide_spec[IDE_GET_DRIVE (packet->dd)].n_head)
-#define S	(ide_spec[IDE_GET_DRIVE (packet->dd)].n_sector)
+#define H	(ide_spec[IDE_GET_DRIVE (req->dd)].n_head)
+#define S	(ide_spec[IDE_GET_DRIVE (req->dd)].n_sector)
 #define LEN	IDE_BLOCK_SIZE
 
 #ifdef USE_LBA
@@ -455,12 +438,12 @@ W read_ide(ID caller, DDEV_REA_REQ * packet)
 #endif
 
 #ifdef DEBUG
-	    dbg_printf("read_ide: (H = %d, C = %d, S = %d)\n", head,
+	    dbg_printf("[IDE] read_ide (H = %d, C = %d, S = %d)\n", head,
 		       cylinder, sector);	/* */
 #endif
 	    for (try = 0; try < IDE_RETRY; try++) {
 #ifdef DEBUG
-		dbg_printf("get_data (%d, %d, %d, %d, 0x%x)\n",
+		dbg_printf("[IDE] read_ide get_data (%d, %d, %d, %d, 0x%x)\n",
 			   drive, head, cylinder, sector,
 			   (void *) &(buff[bp + (i * LEN)]));
 #endif
@@ -483,43 +466,46 @@ W read_ide(ID caller, DDEV_REA_REQ * packet)
     }
 
 #ifdef DEBUG_1
-    dbg_printf("bcopy(): 0x%x, 0x%x, %d\n",
+    dbg_printf("[IDE] read_ide bcopy(0x%x, 0x%x, %d)\n",
 	       diff,
-	       res.body.rea_res.dt,
-	       (done_length < packet->size) ? done_length : packet->size);
+	       res->dt,
+	       (done_length < reqsize) ? done_length : reqsize);
 #endif
 
     done_length =
-	((done_length < packet->size) ? done_length : packet->size);
+	((done_length < reqsize) ? done_length : reqsize);
 #ifdef notdef
-    done_length -= packet->start - bufstart;
+    done_length -= reqstart - bufstart;
 #endif
     if (done_length > BLOCK_SIZE * 2) {
-	dbg_printf("buffer overflow (size = %d)\n",
+	dbg_printf("[IDE] read_ide buffer overflow (size = %d)\n",
 		   (done_length <
-		    packet->size) ? done_length : packet->size);
+		    reqsize) ? done_length : reqsize);
 	error = E_SYS;
 	goto bad;
     }
 
-    memcpy(res.body.rea_res.dt,
-	    &buff[packet->start - bufstart], done_length);
-    res.body.rea_res.dd = packet->dd;
-    res.body.rea_res.a_size = done_length;
-    res.body.rea_res.errcd = E_OK;
-    res.body.rea_res.errinfo = 0;
-    snd_mbf(caller, sizeof(res), &res);
-#ifdef DEBUG_1
-    dbg_printf("ide: snd_mbuf done.\n");
-#endif
+    memcpy(res->dt,
+	    &buff[reqstart - bufstart], done_length);
+    res->dd = req->dd;
+    res->a_size = done_length;
+    res->errcd = E_OK;
+    res->errinfo = 0;
+    reply_error = rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
+    if (reply_error) {
+	dbg_printf("[IDE] read_ide rpl_rdv error = %d\n", reply_error);
+    }
     return (E_OK);
 
   bad:
-    res.body.rea_res.dd = packet->dd;
-    res.body.rea_res.a_size = done_length;
-    res.body.rea_res.errcd = error;
-    res.body.rea_res.errinfo = error;
-    snd_mbf(caller, sizeof(res), &res);
+    res->dd = req->dd;
+    res->a_size = done_length;
+    res->errcd = error;
+    res->errinfo = error;
+    reply_error = rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
+    if (reply_error) {
+	dbg_printf("[IDE] read_ide rpl_rdv error = %d\n", reply_error);
+    }
     return (error);
 
 #undef H
@@ -531,9 +517,10 @@ W read_ide(ID caller, DDEV_REA_REQ * packet)
 /************************************************************************
  *	write_ide
  */
-W write_ide(ID caller, DDEV_WRI_REQ * packet)
+W write_ide(RDVNO rdvno, devmsg_t * packet)
 {
-    DDEV_RES res;
+    DDEV_WRI_REQ * req = &(packet->req.body.wri_req);
+    DDEV_WRI_RES * res = &(packet->res.body.wri_res);
     W blockno;			/* 物理ブロック番号 */
     W bcount;			/* 論理ブロックが物理ブロックより大きい場合に使用する。 */
     /* 物理ブロックを読みとるときの回数となる              */
@@ -551,25 +538,26 @@ W write_ide(ID caller, DDEV_WRI_REQ * packet)
     UW bufstart;
     UW buflength;
     UW parstart;
+    ER reply_error;
 
-    drive = IDE_GET_DRIVE(packet->dd);
-    partition = IDE_GET_PARTITION(packet->dd);
+    drive = IDE_GET_DRIVE(req->dd);
+    partition = IDE_GET_PARTITION(req->dd);
     if (partition == IDE_WHOLE_DISK) {
 	parstart = 0;
     }
     if ((drive < 0) ||
 	(partition > (IDE_MAX_PARTITION + ext_partition))) {
-	dbg_printf("[IDE] Illegal driver or partition number [%d/%d]\n",
+	dbg_printf("[IDE] write_ide Illegal driver or partition number [%d/%d]\n",
 		   drive, partition);
 	goto bad;
     } else {
 	parstart = ide_partition[drive][partition - 1].start * BLOCK_SIZE;
     }
 
-    bufstart = ROUNDDOWN(packet->start, BLOCK_SIZE);
-    buflength = ROUNDUP(packet->start + packet->size, BLOCK_SIZE);
+    bufstart = ROUNDDOWN(req->start, BLOCK_SIZE);
+    buflength = ROUNDUP(req->start + req->size, BLOCK_SIZE);
 #ifdef DEBUG
-    dbg_printf("partition = %d parstart = %d bufstart = %d length = %d\n",
+    dbg_printf("[IDE] write_ide partition = %d parstart = %d bufstart = %d length = %d\n",
 	       partition, parstart, bufstart, buflength - bufstart);	/* */
 #endif
 
@@ -581,15 +569,15 @@ W write_ide(ID caller, DDEV_WRI_REQ * packet)
 
     for (bp = 0; bp < (buflength - bufstart); bp += BLOCK_SIZE) {
 #ifdef DEBUG
-	dbg_printf("write_ide: bp = %d, length = %d\n", bp, BLOCK_SIZE);
+	dbg_printf("[IDE] write_ide bp = %d, length = %d\n", bp, BLOCK_SIZE);
 #endif
 	/* バイトオフセットから物理ブロック番号への変換 */
 	blockno = ((UW) (bp + bufstart + parstart) / BLOCK_SIZE)
 	    * (BLOCK_SIZE / IDE_BLOCK_SIZE);
 	bcount = BLOCK_SIZE / IDE_BLOCK_SIZE;
 
-#define H	(ide_spec[IDE_GET_DRIVE (packet->dd)].n_head)
-#define S	(ide_spec[IDE_GET_DRIVE (packet->dd)].n_sector)
+#define H	(ide_spec[IDE_GET_DRIVE (req->dd)].n_head)
+#define S	(ide_spec[IDE_GET_DRIVE (req->dd)].n_sector)
 #define LEN	IDE_BLOCK_SIZE
 
 #ifdef USE_LBA
@@ -607,12 +595,12 @@ W write_ide(ID caller, DDEV_WRI_REQ * packet)
 #endif
 
 #ifdef DEBUG
-	    dbg_printf("write_ide: parstart %d(H = %d, C = %d, S = %d)\n",
+	    dbg_printf("[IDE] write_ide parstart %d(H = %d, C = %d, S = %d)\n",
 		       parstart, head, cylinder, sector);	/* */
 #endif
 	    for (try = 0; try < IDE_RETRY; try++) {
 #ifdef DEBUG
-		dbg_printf("get_data (%d, %d, %d, %d, 0x%x)\n",
+		dbg_printf("[IDE] write_ide get_data (%d, %d, %d, %d, 0x%x)\n",
 			   drive, head, cylinder, sector,
 			   (void *) &(buff[bp + (i * LEN)]));
 #endif
@@ -635,18 +623,18 @@ W write_ide(ID caller, DDEV_WRI_REQ * packet)
     }
 
     /* 読み取ったデータ上の必要な部分に、書き換えたいデータを上書きする */
-    done_length = sizeof(buff) - packet->start + bufstart;
-    if (packet->size <= done_length)
-	done_length = packet->size;
+    done_length = sizeof(buff) - req->start + bufstart;
+    if (req->size <= done_length)
+	done_length = req->size;
     else
-	dbg_printf("[IDE] write buffer is too small\n");
-    memcpy(&buff[packet->start - bufstart], packet->dt, done_length);
+	dbg_printf("[IDE] write_ide write buffer is too small\n");
+    memcpy(&buff[req->start - bufstart], req->dt, done_length);
 
 #ifdef DEBUG_1
     {
 	int i;
 
-	dbg_printf("buff = 0x%x\n", buff);
+	dbg_printf("[IDE] write_ide buff = 0x%x\n", buff);
 	for (i = 0; i < 20 - 1; i++) {
 	    dbg_printf("0x%x, ", buff[i]);
 	}
@@ -668,11 +656,11 @@ W write_ide(ID caller, DDEV_WRI_REQ * packet)
 	bcount = BLOCK_SIZE / IDE_BLOCK_SIZE;
 #endif
 #ifdef DEBUG
-	dbg_printf("write_ide: bp = %d, no = %d\n", bp, blockno);
+	dbg_printf("[IDE] write_ide bp = %d, no = %d\n", bp, blockno);
 #endif
 
-#define H	(ide_spec[IDE_GET_DRIVE (packet->dd)].n_head)
-#define S	(ide_spec[IDE_GET_DRIVE (packet->dd)].n_sector)
+#define H	(ide_spec[IDE_GET_DRIVE (req->dd)].n_head)
+#define S	(ide_spec[IDE_GET_DRIVE (req->dd)].n_sector)
 #define LEN	IDE_BLOCK_SIZE
 
 	for (i = 0; i < bcount; i++) {
@@ -687,12 +675,12 @@ W write_ide(ID caller, DDEV_WRI_REQ * packet)
 #endif
 
 #ifdef DEBUG
-	    dbg_printf("write_ide: (H = %d, C = %d, S = %d)\n", head,
+	    dbg_printf("[IDE] write_ide (H = %d, C = %d, S = %d)\n", head,
 		       cylinder, sector);
 #endif
 	    for (try = 0; try < IDE_RETRY; try++) {
 #ifdef DEBUG
-		dbg_printf("write_data (%d, %d, %d, %d, 0x%x)\n",
+		dbg_printf("[IDE] write_ide write_data (%d, %d, %d, %d, 0x%x)\n",
 			   drive, head, cylinder, sector,
 			   (void *) &(buff[bp + (i * LEN)]));
 #endif
@@ -714,32 +702,35 @@ W write_ide(ID caller, DDEV_WRI_REQ * packet)
     }
 
 #ifdef notdef
-    done_length -= packet->start - bufstart;
+    done_length -= req->start - bufstart;
 #endif
     done_length =
-	((done_length < packet->size) ? done_length : packet->size);
+	((done_length < req->size) ? done_length : req->size);
     if (done_length > BLOCK_SIZE * 2) {
-	dbg_printf("buffer overflow (size = %d)\n", done_length);
+	dbg_printf("[IDE] write_ide buffer overflow (size = %d)\n", done_length);
 	error = E_SYS;
 	goto bad;
     }
 
-    res.body.wri_res.dd = packet->dd;
-    res.body.wri_res.a_size = done_length;
-    res.body.wri_res.errcd = E_OK;
-    res.body.wri_res.errinfo = 0;
-    snd_mbf(caller, sizeof(res), &res);
-#ifdef DEBUG_1
-    dbg_printf("ide: snd_mbuf done.\n");
-#endif
+    res->dd = req->dd;
+    res->a_size = done_length;
+    res->errcd = E_OK;
+    res->errinfo = 0;
+    reply_error = rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
+    if (reply_error) {
+	dbg_printf("[IDE] write_ide rpl_rdv error = %d\n", reply_error);
+    }
     return (E_OK);
 
   bad:
-    res.body.wri_res.dd = packet->dd;
-    res.body.wri_res.a_size = done_length;
-    res.body.wri_res.errcd = error;
-    res.body.wri_res.errinfo = error;
-    snd_mbf(caller, sizeof(res), &res);
+    res->dd = req->dd;
+    res->a_size = done_length;
+    res->errcd = error;
+    res->errinfo = error;
+    reply_error = rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
+    if (reply_error) {
+	dbg_printf("[IDE] write_ide rpl_rdv error = %d\n", reply_error);
+    }
     return (error);
 
 #undef H
@@ -750,25 +741,26 @@ W write_ide(ID caller, DDEV_WRI_REQ * packet)
 /************************************************************************
  *	control_ide
  */
-W control_ide(ID caller, DDEV_CTL_REQ * packet)
+W control_ide(RDVNO rdvno, devmsg_t * packet)
 {
-    DDEV_RES res;
+    DDEV_CTL_REQ * req = &(packet->req.body.ctl_req);
+    DDEV_CTL_RES * res = &(packet->res.body.ctl_res);
     ER error = E_OK;
     W drive;
     struct ide_partition *p;
     W i;
 
-    drive = IDE_GET_DRIVE(packet->dd);
-    switch (packet->cmd) {
+    drive = IDE_GET_DRIVE(req->dd);
+    switch (req->cmd) {
     case IDE_GET_STAT:
 	/* IDE の情報を取り出す */
 	error = read_stat(drive, &ide_spec[drive]);
 	break;
 
     case IDE_GET_GEOMETRIC:
-	dbg_printf("IDE_GET_GEOMETRIC: start. (drive = %d)\n", drive);
+	dbg_printf("[IDE] control_ide IDE_GET_GEOMETRIC: start. (drive = %d)\n", drive);
 	error = read_partition(drive);
-	p = (struct ide_partition *) res.body.ctl_res.res;
+	p = (struct ide_partition *) res->res;
 	for (i = 0; i < IDE_MAX_PARTITION; i++) {
 	    p[i].boot_flag = ide_partition[drive][i].boot_flag;
 #ifdef notdef
@@ -787,10 +779,10 @@ W control_ide(ID caller, DDEV_CTL_REQ * packet)
 	error = E_NOSPT;
 	break;
     }
-    res.body.ctl_res.dd = packet->dd;
-    res.body.ctl_res.errcd = error;
-    res.body.ctl_res.errinfo = error;
-    snd_mbf(caller, sizeof(res), &res);
+    res->dd = req->dd;
+    res->errcd = error;
+    res->errinfo = error;
+    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
     return (error);
 }
 
@@ -823,12 +815,12 @@ ER read_partition(W drive)
 	    break;
     }
     if (rlength == 0) {
-	dbg_printf("[IDE] can not read partition table of drive %d\n",
+	dbg_printf("[IDE] read_partition can not read partition table of drive %d\n",
 		   drive);
 	return (E_SYS);
     }
 #ifdef notdef
-    dbg_printf("IDE: get_data length = %d\n", rlength);
+    dbg_printf("[IDE] read_partition get_data length = %d\n", rlength);
 #endif
     memcpy(ide_partition[drive], &buf[PARTITION_OFFSET],
 	  sizeof(struct ide_partition) * IDE_MAX_PARTITION);
@@ -837,7 +829,7 @@ ER read_partition(W drive)
     have_ext_partition = -1;
     for (i = 0; i < IDE_MAX_PARTITION; i++) {
 #ifdef notdef
-	dbg_printf("[%d]: start = %d, length = %d\n",
+	dbg_printf("[IDE] read_partition [%d]: start = %d, length = %d\n",
 		   i,
 		   ide_partition[drive][i].start,
 		   ide_partition[drive][i].length);
@@ -867,7 +859,7 @@ ER read_partition(W drive)
 		  sizeof(struct ide_partition) * IDE_MAX_PARTITION);
 #ifdef notdef
 	    dbg_printf
-		("partition[%d] type = 0x%x, start = %d, length = %d, bootable = %d\n",
+		("[IDE] read_partition partition[%d] type = 0x%x, start = %d, length = %d, bootable = %d\n",
 		 IDE_MAX_PARTITION + ext_partition, pt_buf[0].type,
 		 pt_buf[0].start, pt_buf[0].length, pt_buf[0].boot_flag);
 #endif
@@ -888,7 +880,7 @@ ER read_partition(W drive)
     for (i = 0, tp = ide_partition[drive];
 	 i < IDE_MAX_PARTITION + ext_partition; ++i, ++tp) {
 	dbg_printf
-	    ("partition[%d] type = 0x%x, start = %d, length = %d, bootable = %d\n",
+	    ("[IDE] read_partition partition[%d] type = 0x%x, start = %d, length = %d, bootable = %d\n",
 	     i, tp->type, tp->start, tp->length, tp->boot_flag);
     }
 #endif
@@ -939,7 +931,7 @@ ER read_partition(W drive)
 		   * ide_spec[drive].now_sector_track);
 #endif
 	    dbg_printf
-		("ide partition: drive = %d, partition = %d, start = %d, size = %d\n",
+		("[IDE] read_partition ide partition: drive = %d, partition = %d, start = %d, size = %d\n",
 		 drive, i, table[i].start, table[i].length);
 	}
 	return (E_OK);

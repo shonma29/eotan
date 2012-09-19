@@ -46,7 +46,6 @@ extern W sfs_free_all_dindirect(W fd, struct fs *fsp,
 /* sfs_device.c */
 extern W sfs_write_device (ID device, B *buf, W start, W length, W *rlength);
 extern W sfs_read_device (ID device, B *buf, W start, W length, W *rlength);
-extern W sfs_trans_device (ID device, ID port, ID tskid, B *buf, W start, W length);
 
 /* sfs_dir.c */
 extern W sfs_read_dir (struct inode *ip, W nentry, struct sfs_dir *dirp);

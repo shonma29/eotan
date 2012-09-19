@@ -11,8 +11,6 @@ Version 2, June 1991
 
 */
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/BTRON/device/fd765a/fd.c,v 1.8 2000/02/06 09:05:06 naniwa Exp $ */
-static char rcsid[] =
-    "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/BTRON/device/fd765a/fd.c,v 1.8 2000/02/06 09:05:06 naniwa Exp $";
 
 /*
  * $Log: fd.c,v $
@@ -157,6 +155,7 @@ static char rcsid[] =
 	
 **********************************************************************/
 
+#include "../../include/itron/rendezvous.h"
 #include "../../lib/libserv/libserv.h"
 #include "fd.h"
 
@@ -182,7 +181,7 @@ static W initialized;
  */
 static void main_loop(void);
 static void init_fd_driver(void);
-static void doit(DDEV_REQ * packet);
+static void doit(RDVNO rdvno, devmsg_t * packet);
 
 /*
  * FD デバイスドライバの main 関数
@@ -202,8 +201,7 @@ start()
     /*
      * 立ち上げメッセージ
      */
-    dbg_printf("floppy disk driver start\n");
-    dbg_printf("  receive port is %d\n", recvport);
+    dbg_printf("[FD] started. port = %d\n", recvport);
 
     /*
      * ドライバを初期化する。
@@ -213,33 +211,31 @@ start()
 
 static void main_loop()
 {
-    DDEV_REQ req;
-    UW rsize;
-    ER errno;
-
     /*
      * 要求受信 - 処理のループ
      */
     for (;;) {
-	/* 要求の受信 */
-	errno = rcv_mbf(&req, &rsize, recvport);
+	devmsg_t packet;
+	ER_UINT rsize;
+	RDVNO rdvno;
 
-	switch (errno) {
-	case E_OK:
+	/* 要求の受信 */
+	rsize = acp_por(recvport, 0xffffffff, &rdvno, &packet);
+
+	if (rsize >= 0) {
 	    /* 正常ケース */
 #ifdef FDDEBUG
-	  dbg_printf ("fd: receive packet type = %d\n", req.header.msgtyp);
+	dbg_printf ("[FD] receive packet type = %d\n",
+		packet.req.header.msgtyp);
 #endif
-	    doit(&req);
-	    break;
+	    doit(rdvno, &packet);
+	}
 
-	default:
+	else {
 	    /* Unknown error */
-	    dbg_printf("fd: get_req() Unknown error(error = %d)\n",
-		       errno);
-	    dbg_printf("FD driver is halt.\n");
+	    dbg_printf("[FD] acp_por error = %d\n", rsize);
+	    dbg_printf("[FD] halt.\n");
 	    ext_tsk();
-	    break;
 	}
     }
 
@@ -253,29 +249,29 @@ static void main_loop()
  *
  *
  */
-static void doit(DDEV_REQ * packet)
+static void doit(RDVNO rdvno, devmsg_t * packet)
 {
-    switch (packet->header.msgtyp) {
+    switch (packet->req.header.msgtyp) {
     case DEV_OPN:
 	/* デバイスのオープン */
-	open_fd(packet->header.mbfid, &(packet->body.opn_req));
+	open_fd(rdvno, packet);
 	break;
 
     case DEV_CLS:
 	/* デバイスのクローズ */
-	close_fd(packet->header.mbfid, &(packet->body.cls_req));
+	close_fd(rdvno, packet);
 	break;
 
     case DEV_REA:
-	read_fd(packet->header.mbfid, &(packet->body.rea_req));
+	read_fd(rdvno, packet);
 	break;
 
     case DEV_WRI:
-	write_fd(packet->header.mbfid, &(packet->body.wri_req));
+	write_fd(rdvno, packet);
 	break;
 
     case DEV_CTL:
-	control_fd(packet->header.mbfid, &(packet->body.ctl_req));
+	control_fd(rdvno, packet);
 	break;
     }
 }
@@ -288,26 +284,24 @@ static void doit(DDEV_REQ * packet)
  */
 static void init_fd_driver(void)
 {
-    int i;
-    ID root_dev;
     ER error;
-    T_CMBF pk_cmbf = { NULL, TA_TFIFO, 0, sizeof(DDEV_RES) };
-    T_CFLG pk_cflg = { NULL, TA_WSGL, 0 };
+    T_CPOR pk_cpor = { TA_TFIFO, sizeof(DDEV_REQ), sizeof(DDEV_RES) };
 
     /*
      * 要求受けつけ用のポートを初期化する。
      */
-    recvport = acre_mbf(&pk_cmbf);
+    recvport = acre_por(&pk_cpor);
 
     if (recvport <= 0) {
-	dbg_printf("FD: cannot make receive porrt.\n");
+	dbg_printf("[FD] cre_por error = %d\n", recvport);
 	ext_tsk();
 	/* メッセージバッファ生成に失敗 */
     }
 
     error = regist_port(FD_DRIVER, recvport);
     if (error != E_OK) {
-	/* error */
+	dbg_printf("[FD] cannot regist port. error = %d\n", error);
+	ext_tsk();
     }
 
     fd_data[0] = get_fdspec("2HD");
@@ -329,7 +323,7 @@ W init_fd(void)
     pkt.inthdr = (FP) intr_fd;
     err = def_int(INT_FD, &pkt);
     if (err != E_OK) {
-	dbg_printf("fd: error on def_int (errno = %d)\n", err);
+	dbg_printf("[FD] def_int error = %d\n", err);
 	return (err);
     }
     reset_intr_mask(6);
@@ -344,9 +338,8 @@ W init_fd(void)
 /************************************************************************
  * open_fd --- FD のオープン
  *
- * 引数：	dd	FD ドライバ番号
- *		o_mode	オープンモード
- *		error	エラー番号
+ * 引数：	caller	呼び出し元への返答を返すためのポート
+ *		packet	読み込みデータのパラメータ
  *
  * 返値：	
  *
@@ -354,9 +347,10 @@ W init_fd(void)
  *		使用状態 (DRIVE_USING) にする。
  *
  */
-W open_fd(ID caller, DDEV_OPN_REQ * packet)
+W open_fd(RDVNO rdvno, devmsg_t * packet)
 {
-    DDEV_RES res;
+    DDEV_OPN_REQ * req = &(packet->req.body.opn_req);
+    DDEV_OPN_RES * res = &(packet->res.body.opn_res);
 
 #ifdef notdef
     outb(0x439, (inb(0x439) & 0xfb));	/* DMA Accsess Control over 1MB */
@@ -365,20 +359,19 @@ W open_fd(ID caller, DDEV_OPN_REQ * packet)
     outb(0x29, (0x0c | 2));	/* Bank Mode Reg. 16M mode */
     outb(0x29, (0x0c | 3));	/* Bank Mode Reg. 16M mode */
 #endif
-    res.body.opn_res.dd = packet->dd;
-    res.body.opn_res.size = FD_CAPACITY;
-    res.body.opn_res.errcd = E_OK;
-    res.body.opn_res.errinfo = E_OK;
-    snd_mbf(caller, sizeof(res), &res);
+    res->dd = req->dd;
+    res->size = FD_CAPACITY;
+    res->errcd = E_OK;
+    res->errinfo = E_OK;
+    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
     return (E_OK);
 }
 
 /************************************************************************
  * fd_close --- ドライバのクローズ
  *
- * 引数：	dd	FD ドライバ番号
- *		o_mode	オープンモード
- *		error	エラー番号
+ * 引数：	caller	呼び出し元への返答を返すためのポート
+ *		packet	読み込みデータのパラメータ
  *
  * 返値：	
  *
@@ -386,14 +379,15 @@ W open_fd(ID caller, DDEV_OPN_REQ * packet)
  *		使用状態 (DRIVE_USING) にする。
  *
  */
-W close_fd(ID caller, DDEV_CLS_REQ * packet)
+W close_fd(RDVNO rdvno, devmsg_t * packet)
 {
-    DDEV_RES res;
+    DDEV_CLS_REQ * req = &(packet->req.body.cls_req);
+    DDEV_CLS_RES * res = &(packet->res.body.cls_res);
 
-    res.body.cls_res.dd = packet->dd;
-    res.body.cls_res.errcd = E_OK;
-    res.body.cls_res.errinfo = E_OK;
-    snd_mbf(caller, sizeof(res), &res);
+    res->dd = req->dd;
+    res->errcd = E_OK;
+    res->errinfo = E_OK;
+    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
     return (E_OK);
 }
 
@@ -412,9 +406,10 @@ W close_fd(ID caller, DDEV_CLS_REQ * packet)
  *		3) 変換した数を引数にして get_data() を呼び出す
  *
  */
-W read_fd(ID caller, DDEV_REA_REQ * packet)
+W read_fd(RDVNO rdvno, devmsg_t * packet)
 {
-    DDEV_RES res;
+    DDEV_REA_REQ * req = &(packet->req.body.rea_req);
+    DDEV_REA_RES * res = &(packet->res.body.rea_res);
     W blockno;			/* 物理ブロック番号 */
     W bcount;			/* 論理ブロックが物理ブロックより大きい場合に使用する。 */
     /* 物理ブロックを読みとるときの回数となる              */
@@ -430,36 +425,40 @@ W read_fd(ID caller, DDEV_REA_REQ * packet)
     ER error;
     UW bufstart;
     UW buflength;
+    UW reqsize = req->size;
+    UW reqstart = req->start;
 
-    drive = packet->dd & 0xff;
+    drive = req->dd & 0xff;
     if (reset_fdc(drive) == FALSE) {
 	goto bad;
     }
 
-    bufstart = ROUNDDOWN(packet->start, BLOCK_SIZE);
-    buflength = ROUNDUP(packet->start + packet->size, BLOCK_SIZE);
-    /*  dbg_printf ("bufstart = %d, buflength = %d\n", bufstart, buflength); */
+    bufstart = ROUNDDOWN(reqstart, BLOCK_SIZE);
+    buflength = ROUNDUP(reqstart + reqsize, BLOCK_SIZE);
+    /*  dbg_printf ("[FD] read_fd bufstart = %d, buflength = %d\n",
+	     bufstart, buflength); */
 
     for (bp = 0; bp < (buflength - bufstart); bp += BLOCK_SIZE) {
-	/* dbg_printf ("read_fd: bp = %d, length = %d\n", bp, BLOCK_SIZE); */
+	/* dbg_printf ("[FD] read_fd bp = %d, length = %d\n",
+		bp, BLOCK_SIZE); */
 	/* バイトオフセットから物理ブロック番号への変換 */
 	blockno =
 	    ((UW) (bp + bufstart) / BLOCK_SIZE) * (BLOCK_SIZE /
-						   fd_data[packet->
+						   fd_data[req->
 							   dd & 0xff]->
 						   length);
 #if 1
-	if (BLOCK_SIZE >= (fd_data[packet->dd & 0xff]->length)) {
-	    bcount = BLOCK_SIZE / (fd_data[packet->dd & 0xff]->length);
+	if (BLOCK_SIZE >= (fd_data[req->dd & 0xff]->length)) {
+	    bcount = BLOCK_SIZE / (fd_data[req->dd & 0xff]->length);
 	}
 #else
 	bcount = 1;
 #endif
 
-#define H	(fd_data[packet->dd & 0xff]->head)
-#define S	(fd_data[packet->dd & 0xff]->sector)
-#define LEN	(fd_data[packet->dd & 0xff]->length)
-#define CHAN	(fd_data[packet->dd & 0xff]->dmachan)
+#define H	(fd_data[req->dd & 0xff]->head)
+#define S	(fd_data[req->dd & 0xff]->sector)
+#define LEN	(fd_data[req->dd & 0xff]->length)
+#define CHAN	(fd_data[req->dd & 0xff]->dmachan)
 
 	done_length = 0;
 	error = E_OK;
@@ -475,10 +474,10 @@ W read_fd(ID caller, DDEV_REA_REQ * packet)
 	    }
 
 #ifdef FDDEBUG
-	    dbg_printf("read_fd: (H = %d, C = %d, S = %d)\n", head,
+	    dbg_printf("[FD] read_fd (H = %d, C = %d, S = %d)\n", head,
 		       cylinder, sector);	/* */
 #endif
-	    for (try = 0; try < (fd_data[packet->dd & 0xff]->retry); try++) {
+	    for (try = 0; try < (fd_data[req->dd & 0xff]->retry); try++) {
 		ret =
 		    get_data(drive, head, cylinder, sector,
 			     (void *) &(buff[bp + (i * LEN)]));
@@ -496,29 +495,35 @@ W read_fd(ID caller, DDEV_REA_REQ * packet)
     }
 
 #ifdef FDDEBUG
-    dbg_printf ("bcopy(): %d, %d, %d\n", packet->start - bufstart, 0, 
-		(done_length < packet->size) ? done_length : packet->size);
+    dbg_printf ("[FD] read_fd bcopy(%d, %d, %d)\n", reqstart - bufstart, 0, 
+		(done_length < reqsize) ? done_length : reqsize);
 #endif
-    memcpy(res.body.rea_res.dt,
-	  &buff[packet->start - bufstart],
-	  (done_length < packet->size) ? done_length : packet->size);
-    res.body.rea_res.dd = packet->dd;
-    res.body.rea_res.a_size =
-	(done_length < packet->size) ? done_length : packet->size;
-    res.body.rea_res.errcd = error;
-    res.body.rea_res.errinfo = E_OK;
-    snd_mbf(caller, sizeof(res), &res);
+    memcpy(res->dt,
+	  &buff[reqstart - bufstart],
+	  (done_length < reqsize) ? done_length : reqsize);
+    res->dd = req->dd;
+    res->a_size =
+	(done_length < reqsize) ? done_length : reqsize;
+    res->errcd = error;
+    res->errinfo = E_OK;
+    error = rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
+    if (error) {
+	dbg_printf("[FD] read_fd rpl_rdv error = %d\n", error);
+    }
     return (E_OK);
 
   bad:
     stop_motor(drive);
-    dbg_printf("fd: read fail. head = %d cylinder = %d sector = %d\n",
+    dbg_printf("[FD] read_fd failed. head = %d cylinder = %d sector = %d\n",
 	       head, cylinder, sector);
-    res.body.rea_res.dd = packet->dd;
-    res.body.rea_res.a_size = done_length;
-    res.body.rea_res.errcd = error;
-    res.body.rea_res.errinfo = error;
-    snd_mbf(caller, sizeof(res), &res);
+    res->dd = req->dd;
+    res->a_size = done_length;
+    res->errcd = error;
+    res->errinfo = error;
+    error = rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
+    if (error) {
+	dbg_printf("[FD] read_fd rpl_rdv error = %d\n", error);
+    }
     return (error);
 
 #undef H
@@ -531,9 +536,10 @@ W read_fd(ID caller, DDEV_REA_REQ * packet)
 /************************************************************************
  *	write_fd
  */
-W write_fd(ID caller, DDEV_WRI_REQ * packet)
+W write_fd(RDVNO rdvno, devmsg_t * packet)
 {
-    DDEV_RES res;
+    DDEV_WRI_REQ * req = &(packet->req.body.wri_req);
+    DDEV_WRI_RES * res = &(packet->res.body.wri_res);
     W blockno;			/* 物理ブロック番号 */
     W bcount;			/* 論理ブロックが物理ブロックより大きい場合に使用する。 */
     /* 物理ブロックを読みとるときの回数となる              */
@@ -550,36 +556,36 @@ W write_fd(ID caller, DDEV_WRI_REQ * packet)
     UW bufstart;
     UW buflength;
 
-#define H	(fd_data[packet->dd & 0xff]->head)
-#define S	(fd_data[packet->dd & 0xff]->sector)
-#define LEN	(fd_data[packet->dd & 0xff]->length)
-#define CHAN	(fd_data[packet->dd & 0xff]->dmachan)
+#define H	(fd_data[req->dd & 0xff]->head)
+#define S	(fd_data[req->dd & 0xff]->sector)
+#define LEN	(fd_data[req->dd & 0xff]->length)
+#define CHAN	(fd_data[req->dd & 0xff]->dmachan)
 
-
-    drive = packet->dd & 0xff;
+    drive = req->dd & 0xff;
     if (reset_fdc(drive) == FALSE) {
 	goto bad;
     }
 
-    bufstart = ROUNDDOWN(packet->start, BLOCK_SIZE);
-    buflength = ROUNDUP(packet->start + packet->size, BLOCK_SIZE);
+    bufstart = ROUNDDOWN(req->start, BLOCK_SIZE);
+    buflength = ROUNDUP(req->start + req->size, BLOCK_SIZE);
 
 #ifdef FDDEBUG
-    dbg_printf ("bufstart = %d, buflength = %d\n", bufstart, buflength);
+    dbg_printf ("[FD] read_fd bufstart = %d, buflength = %d\n",
+	    bufstart, buflength);
 #endif
     for (bp = 0; bp < (buflength - bufstart); bp += BLOCK_SIZE) {
 #ifdef FDDEBUG
-      dbg_printf ("read_fd: bp = %d, length = %d\n", bp, BLOCK_SIZE);
+	dbg_printf ("[FD] read_fd bp = %d, length = %d\n", bp, BLOCK_SIZE);
 #endif
 	/* バイトオフセットから物理ブロック番号への変換 */
 	blockno =
 	    ((UW) (bp + bufstart) / BLOCK_SIZE) * (BLOCK_SIZE /
-						   fd_data[packet->
+						   fd_data[req->
 							   dd & 0xff]->
 						   length);
 #if 1
-	if (BLOCK_SIZE >= (fd_data[packet->dd & 0xff]->length)) {
-	    bcount = BLOCK_SIZE / (fd_data[packet->dd & 0xff]->length);
+	if (BLOCK_SIZE >= (fd_data[req->dd & 0xff]->length)) {
+	    bcount = BLOCK_SIZE / (fd_data[req->dd & 0xff]->length);
 	}
 #else
 	bcount = 1;
@@ -599,10 +605,10 @@ W write_fd(ID caller, DDEV_WRI_REQ * packet)
 	    }
 
 #ifdef FDDEBUG
-	    dbg_printf("read_fd: (H = %d, C = %d, S = %d)\n", head,
+	    dbg_printf("[FD] read_fd (H = %d, C = %d, S = %d)\n", head,
 		       cylinder, sector);	/* */
 #endif
-	    for (try = 0; try < (fd_data[packet->dd & 0xff]->retry); try++) {
+	    for (try = 0; try < (fd_data[req->dd & 0xff]->retry); try++) {
 		ret =
 		    get_data(drive, head, cylinder, sector,
 			     (void *) &(buff[bp + (i * LEN)]));
@@ -622,21 +628,21 @@ W write_fd(ID caller, DDEV_WRI_REQ * packet)
     done_length = 0;
     error = E_OK;
     ret = E_OK;
-    memcpy(&buff[packet->start - bufstart], packet->dt, packet->size);
+    memcpy(&buff[req->start - bufstart], req->dt, req->size);
 #ifdef notdef
-    bufstart = ROUNDDOWN(packet->start, BLOCK_SIZE);
-    buflength = ROUNDUP(packet->start + packet->size, BLOCK_SIZE);
+    bufstart = ROUNDDOWN(req->start, BLOCK_SIZE);
+    buflength = ROUNDUP(req->start + req->size, BLOCK_SIZE);
 #endif
 
     for (bp = 0; bp < (buflength - bufstart); bp += BLOCK_SIZE) {
 	/* バイトオフセットから物理ブロック番号への変換 */
 	blockno =
 	    ((bp + bufstart) / BLOCK_SIZE) * (BLOCK_SIZE /
-					      fd_data[packet->dd & 0xff]->
+					      fd_data[req->dd & 0xff]->
 					      length);
 #if 1
-	if (BLOCK_SIZE >= (fd_data[packet->dd & 0xff]->length)) {
-	    bcount = BLOCK_SIZE / (fd_data[packet->dd & 0xff]->length);
+	if (BLOCK_SIZE >= (fd_data[req->dd & 0xff]->length)) {
+	    bcount = BLOCK_SIZE / (fd_data[req->dd & 0xff]->length);
 	}
 #else
 	bcount = 1;
@@ -648,10 +654,10 @@ W write_fd(ID caller, DDEV_WRI_REQ * packet)
 	    sector = (blockno % S) + 1;
 
 #ifdef FDDEBUG
-	    dbg_printf("write_fd: (H = %d, C = %d, S = %d)\n", head,
+	    dbg_printf("[FD] write_fd (H = %d, C = %d, S = %d)\n", head,
 		       cylinder, sector);	/* */
 #endif
-	    for (try = 0; try < (fd_data[packet->dd & 0xff]->retry); try++) {
+	    for (try = 0; try < (fd_data[req->dd & 0xff]->retry); try++) {
 		ret = put_data(drive,
 			       head,
 			       cylinder,
@@ -669,23 +675,23 @@ W write_fd(ID caller, DDEV_WRI_REQ * packet)
 	    }
 	}
     }
-    res.body.wri_res.dd = packet->dd;
-    res.body.wri_res.a_size =
-	(done_length < packet->size) ? done_length : packet->size;
-    res.body.wri_res.errcd = error;
-    res.body.wri_res.errinfo = E_OK;
-    snd_mbf(caller, sizeof(res), &res);
+    res->dd = req->dd;
+    res->a_size =
+	(done_length < req->size) ? done_length : req->size;
+    res->errcd = error;
+    res->errinfo = E_OK;
+    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
     return (E_OK);
 
   bad:
     stop_motor(drive);
-    dbg_printf("fd: write fail. head = %d cylinder = %d sector = %d\n",
+    dbg_printf("[FD] write_fd failed. head = %d cylinder = %d sector = %d\n",
 	       head, cylinder, sector);
-    res.body.wri_res.dd = packet->dd;
-    res.body.wri_res.a_size = done_length;
-    res.body.wri_res.errcd = error;
-    res.body.wri_res.errinfo = error;
-    snd_mbf(caller, sizeof(res), &res);
+    res->dd = req->dd;
+    res->a_size = done_length;
+    res->errcd = error;
+    res->errinfo = error;
+    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
     return (error);
 
 #undef H
@@ -697,50 +703,51 @@ W write_fd(ID caller, DDEV_WRI_REQ * packet)
 /************************************************************************
  *	control_fd
  */
-W control_fd(ID caller, DDEV_CTL_REQ * packet)
+W control_fd(RDVNO rdvno, devmsg_t * packet)
 {
-    DDEV_RES res;
+    DDEV_CTL_REQ * req = &(packet->req.body.ctl_req);
+    DDEV_CTL_RES * res = &(packet->res.body.ctl_res);
     ER error = E_OK;
     W drive;
 
-    switch (packet->cmd) {
+    switch (req->cmd) {
     case CHANGE_MODE:
-	switch (packet->param[0]) {
+	switch (req->param[0]) {
 	case M2HD:
-	    fd_data[packet->param[1]] = get_fdspec("2HD");
-	    if (reset_fdc(packet->param[1]) == FALSE)
+	    fd_data[req->param[1]] = get_fdspec("2HD");
+	    if (reset_fdc(req->param[1]) == FALSE)
 		error = E_DEV;
 	    break;
 
 	case M2HC:
-	    fd_data[packet->param[1]] = get_fdspec("2HC");
-	    if (reset_fdc(packet->param[1]) == FALSE)
+	    fd_data[req->param[1]] = get_fdspec("2HC");
+	    if (reset_fdc(req->param[1]) == FALSE)
 		error = E_DEV;
 	    break;
 
 	case OTHER_FD:
-	    dbg_printf("control_fd: Unknown FD type.\n");
+	    dbg_printf("[FD] control_fd Unknown FD type.\n");
 	    break;
 
 	default:
-	    dbg_printf("control_fd: unknown FD type (%d)\n",
-		       packet->param[0]);
+	    dbg_printf("[FD] control_fd unknown FD type (%d)\n",
+		       req->param[0]);
 	    error = E_PAR;
 	    break;
 	}
 	break;
 
     case NOWORK:
-	dbg_printf("control_fd: nowork\n");
+	dbg_printf("[FD] control_fd nowork\n");
 	break;
 
     default:
 	error = E_NOSPT;
 	break;
     }
-    res.body.ctl_res.dd = packet->dd;
-    res.body.ctl_res.errcd = error;
-    res.body.ctl_res.errinfo = error;
-    snd_mbf(caller, sizeof(res), &res);
+    res->dd = req->dd;
+    res->errcd = error;
+    res->errinfo = error;
+    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
     return (error);
 }

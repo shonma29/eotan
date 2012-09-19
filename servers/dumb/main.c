@@ -42,24 +42,24 @@ static int test(void)
 {
 	T_CPOR pk_cpor = { TA_TFIFO, BUFSIZ, BUFSIZ };
 
-	dbg_printf("dumb: test1 acre_por port=%d\n",
+	dbg_printf("[DUMB] test1 acre_por port = %d\n",
 			acre_por(0) == E_PAR);
 
 	pk_cpor.poratr = TA_TPRI;
-	dbg_printf("dumb: test2 acre_por port=%d\n",
+	dbg_printf("[DUMB] test2 acre_por port = %d\n",
 			acre_por(&pk_cpor) == E_RSATR);
 	pk_cpor.poratr = TA_TFIFO;
 }
 
 void start(void)
 {
-	dbg_printf("dumb: start\n");
+	dbg_printf("[DUMB] start\n");
 	test();
 	if (initialize())	main();
 
-	if (port > 0)	dbg_printf("dumb: del_por port=%d\n", del_por(port));
+	if (port > 0)	dbg_printf("[DUMB] del_por port = %d\n", del_por(port));
 
-	dbg_printf("dumb: exit\n");
+	dbg_printf("[DUMB] exit\n");
 	exd_tsk();
 }
 
@@ -68,7 +68,7 @@ static int initialize(void)
 	T_CPOR pk_cpor = { TA_TFIFO, BUFSIZ, BUFSIZ };
 
 	port = acre_por(&pk_cpor);
-	dbg_printf("dumb: acre_por port=%d\n", port);
+	dbg_printf("[DUMB] acre_por port = %d\n", port);
 	return (port > 0);
 }
 
@@ -82,13 +82,13 @@ static void main(void)
 		INT i;
 		ER result;
 
-		dbg_printf("dumb: acp_por rdvno=%d, size=%d\n",
+		dbg_printf("[DUMB] acp_por rdvno = %d, size = %d\n",
 				rdvno, size);
 
 		if (size < 0)	break;
 
 		for (i = 0; i < size; i++) {
-			dbg_printf("dumb: buf[%d]=%c\n", i, buf[i]);
+			dbg_printf("[DUMB] buf[%d] = %c\n", i, buf[i]);
 		}
 
 		buf[0] = 'd';
@@ -96,6 +96,7 @@ static void main(void)
 		buf[2] = 'm';
 		buf[3] = 'b';
 
-		dbg_printf("dumb: rpl_rdb result=%d\n", rpl_rdv(rdvno, buf, 4));
+		dbg_printf("[DUMB] rpl_rdb result = %d\n",
+				rpl_rdv(rdvno, buf, 4));
 	}
 }

@@ -11,8 +11,6 @@ Version 2, June 1991
 
 */
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/BTRON/device/console/misc.c,v 1.7 2000/07/09 16:44:48 kishida0 Exp $ */
-static char misc_rcsid[] =
-    "$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/BTRON/device/console/misc.c,v 1.7 2000/07/09 16:44:48 kishida0 Exp $";
 
 /*
  * $Log: misc.c,v $

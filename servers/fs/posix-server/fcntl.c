@@ -26,6 +26,7 @@ Version 2, June 1991
  *
  */
 #include "../../../include/device.h"
+#include "../../../include/itron/rendezvous.h"
 #include "posix.h"
 
 /* ctl_device - デバイスにコントロールメッセージを送る
@@ -33,64 +34,47 @@ Version 2, June 1991
  */
 static W control_device(ID device, struct posix_request *preq)
 {
-    DDEV_REQ req;		/* 要求パケット */
-    DDEV_RES res;		/* 返答パケット */
-    ID res_port;
+    devmsg_t packet;
     W errno;
     ID send_port;
     UW dd;
-    W rlength;
-    T_CMBF pk_cmbf = { NULL, TA_TFIFO, 0, sizeof(res) };
+    ER_UINT rlength;
 
     errno = get_device_info(device, &send_port, &dd);
     if (errno) {
 	return (errno);
     }
 
-    res_port = acre_mbf(&pk_cmbf);
+    packet.req.header.mbfid = 0;
+    packet.req.header.msgtyp = DEV_CTL;
+    packet.req.header.tskid = preq->caller;
+    packet.req.body.ctl_req.dd = dd;
+    packet.req.body.ctl_req.cmd = (preq->param.par_fcntl.cmd >> 16)
+	    & 0x0FFFF;
+    packet.req.body.ctl_req.len = preq->param.par_fcntl.cmd & 0x0FFFF;
 
-    if (res_port <= 0) {
-	return (EP_NOMEM);
-    }
-
-    req.header.mbfid = res_port;
-    req.header.msgtyp = DEV_CTL;
-    req.header.tskid = preq->caller;
-    req.body.ctl_req.dd = dd;
-    req.body.ctl_req.cmd = (preq->param.par_fcntl.cmd >> 16) & 0x0FFFF;
-    req.body.ctl_req.len = preq->param.par_fcntl.cmd & 0x0FFFF;
-
-    if (req.body.ctl_req.len == 0) {
+    if (packet.req.body.ctl_req.len == 0) {
 	/* W に cast しているが、UB のまま代入したほうが良いかも */
-	((W *) req.body.ctl_req.param)[0] = (W) preq->param.par_fcntl.arg;
-	req.body.ctl_req.len = sizeof(W);
+	((W *) packet.req.body.ctl_req.param)[0]
+		= (W) preq->param.par_fcntl.arg;
+	packet.req.body.ctl_req.len = sizeof(W);
     } else {
 	errno = vget_reg(preq->caller, preq->param.par_fcntl.arg,
-			 req.body.ctl_req.len, req.body.ctl_req.param);
+			 packet.req.body.ctl_req.len,
+			 packet.req.body.ctl_req.param);
 	if (errno) {
 	    dbg_printf("fctl: vget_reg error\n");
-	    del_mbf(res_port);
 	    return (errno);
 	}
     }
 
-    errno = snd_mbf(send_port, sizeof(req), &req);
-    if (errno != E_OK) {
-	dbg_printf("cannot send packet. %d\n", errno);	/* */
-	del_mbf(res_port);
+    rlength = cal_por(send_port, 0xffffffff, &packet, sizeof(packet.req));
+    if (rlength < 0) {
+	dbg_printf("cannot call port. %d\n", rlength);	/* */
 	return (EP_NODEV);
     }
 
-    rlength = sizeof(res);
-    errno = rcv_mbf((UB *) & res, (INT *) & rlength, res_port);
-    if (errno != E_OK) {
-	dbg_printf("cannot receive packet. %d\n", errno);	/* */
-	del_mbf(res_port);
-	return (EP_NODEV);
-    }
-
-    del_mbf(res_port);
-    return (res.body.ctl_res.errinfo);
+    return (packet.res.body.ctl_res.errinfo);
 }
 
 /* psc_fcntl_f - ファイルに対して特殊な操作を行う。

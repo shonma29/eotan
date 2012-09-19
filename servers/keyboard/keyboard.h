@@ -115,7 +115,6 @@ extern W  	close_keyboard();	/* クローズ		*/
 extern W    	read_keyboard();	/* 読み込み		*/
 extern W    	write_keyboard();	/* 書き込み		*/
 extern W    	control_keyboard();	/* コントロール		*/
-extern W	posix_read_keyboard();
 extern W	send_switch_msg();
 extern W	relay_keyboard ();
 

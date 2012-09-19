@@ -176,9 +176,9 @@ static W posix_mountroot(W root_device)
     rsize = sizeof(res);
     rcv_mbf(&res, &rsize, recv_port);
     if (res.errno) {
-	printf("syscall error = %d\n", (int) res.errno);
+	printf("mountroot error = %d\n", (int) res.errno);
     } else {
-	printf("syscall success.\n");
+	printf("mountroot success.\n");
     }
 
     return (E_OK);

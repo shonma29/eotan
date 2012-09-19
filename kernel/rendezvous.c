@@ -242,8 +242,9 @@ ER port_destroy(ID porid)
 
 		p = getPortParent(node);
 		release_all(&(p->acceptor));
+/* TODO remove rendevous */
 		release_all(&(p->caller));
-		tree_remove(&port_tree, p->node.key);
+		tree_remove(&port_tree, porid);
 		result = E_OK;
 /* TODO test */
 
@@ -358,7 +359,6 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 		list_enqueue(&(r->caller), &(tp->wait.waiting));
 		tp->wait.detail.por.rdvno = rdvno;
 		tp->wait.type = wait_rdv;
-		leave_serialize();
 	}
 	else {
 		list_enqueue(&(p->acceptor), &(run_task->wait.waiting));
@@ -369,6 +369,7 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 
 		wait(run_task);
 
+		enter_serialize();
 		if (run_task->wait.result) {
 			result = run_task->wait.result;
 			tree_remove(&rdv_tree, rdvno);
@@ -377,6 +378,7 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 /* TODO test */
 	}
 
+	leave_serialize();
 	return result;
 }
 
@@ -398,6 +400,9 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 	r = getRdvParent(node);
 
 	if (rmsgsz > r->maxrmsz) {
+		printk("[KERN] port_reply[%d] rmsgsiz %d > %d\n",
+				rdvno, rmsgsz, r->maxrmsz);
+/* TODO tree_remove? */
 		leave_serialize();
 		return E_PAR;
 /* TODO test */
@@ -407,7 +412,12 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 	if (q) {
 		T_TCB *tp = getTaskParent(q);
 
-		if (vput_reg(tp->tskid, tp->wait.detail.por.msg, rmsgsz, msg)) {
+		if (vput_reg(tp->tskid, tp->wait.detail.por.msg,
+				rmsgsz, msg)) {
+			printk("[KERN] port_reply[%d] vput_reg(%d, %p, %d, %p) error\n",
+					rdvno, tp->tskid,
+					tp->wait.detail.por.msg, rmsgsz, msg);
+/* TODO tree_remove? */
 			leave_serialize();
 			return E_PAR;
 /* TODO test */
@@ -420,7 +430,7 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 	else	result = E_OBJ;
 /* TODO test */
 
-	tree_remove(&rdv_tree, node->key);
+	tree_remove(&rdv_tree, rdvno);
 	leave_serialize();
 
 	task_switch();

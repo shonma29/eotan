@@ -156,7 +156,7 @@ _main (void)
    */
   init_regist_table ();
 
-  dbg_puts ("port manager start.\n");
+  dbg_puts ("[PORT-MANAGER] started.\n");
   /*
    *	メッセージ受信と処理
    *	ポートマネージャは、シングルタスクで動作する。
@@ -181,7 +181,7 @@ _main (void)
 	   * これは、デバッグのために入れた。
 	   */
 #ifdef DEBUG
-	  dbg_puts ("port-manager: message read.\n");
+	  dbg_puts ("[PORT-MANAGER] message read.\n");
 #endif /* DEBUG */
 
 	  /*
@@ -194,7 +194,7 @@ _main (void)
 	      /*
 	       * メッセージバッファ ID の登録
 	       */
-	      dbg_printf ("port-manager: (regist) <%s> %d\n",
+	      dbg_printf ("[PORT-MANAGER] regist <%s> %d\n",
 		msg_buf.body.regist.name,
 		msg_buf.body.regist.port);
 	      regist_port (rdvno, &msg_buf);
@@ -236,7 +236,7 @@ regist_port (RDVNO rdvno, struct port_manager_msg_t *msgp)
 			   msgp->body.regist.task);
 
 #ifdef DEBUG  
-  dbg_printf ("port-server: regist_port: <%s>\n", msgp->body.regist.name);
+  dbg_printf ("[PORT-MANAGER] regist_port <%s>\n", msgp->body.regist.name);
 #endif /* DEBUG */
 
   /*
@@ -326,7 +326,7 @@ find_port (RDVNO rdvno, struct port_manager_msg_t *msgp)
    * デバッグ文：データベースからの検索結果
    */
 #ifdef DEBUG
-  dbg_printf ("port-manager: find_port: errno = %d, port = %d\n", errno, port);
+  dbg_printf ("[PORT-MANAGER] find_port errno = %d, port = %d\n", errno, port);
 #endif /* DEBUG */
 
   /*
@@ -375,7 +375,7 @@ recv_port_manager (RDVNO rdvno, PORT_MANAGER_ERROR errno, ID port)
 
   /*
    * 返答メッセージを要求元に送る。
-   * 今のところ、snd_mbf() システムコールのエラーは無視している。
+   * 今のところ、rpl_rdv() システムコールのエラーは無視している。
    */
   rpl_rdv (rdvno, &recv_msg, sizeof (recv_msg));
 }

@@ -11,6 +11,7 @@ Version 2, June 1991
 
 */
 #include "../../lib/libserv/libserv.h"
+#include "../../include/itron/rendezvous.h"
 #include "ramdisk.h"
 
 #define START_FROM_INIT
@@ -35,7 +36,7 @@ static W rd_size;
 static void main_loop(void);
 static void init_rd_driver(W size);
 static void init_rd(W size);
-static void doit(DDEV_REQ * packet);
+static void doit(RDVNO rdvno, devmsg_t * packet);
 
 #ifdef START_FROM_INIT
 /* ダミーの main 関数 */
@@ -73,8 +74,8 @@ start(int argc, char *argv[])
     /*
      * 立ち上げメッセージ
      */
-    dbg_printf("ram disk driver start (size = %d KB)\n", size / 1024);
-    dbg_printf("  receive port is %d\n", recvport);
+    dbg_printf("[RAMDISK] started. port = %d, size = %d KB\n",
+	    recvport, size / 1024);
 
     /*
      * ドライバを初期化する。
@@ -84,30 +85,27 @@ start(int argc, char *argv[])
 
 static void main_loop()
 {
-    DDEV_REQ req;
-    ER errno;
-    UW rsize;
-
     /*
      * 要求受信 - 処理のループ
      */
     for (;;) {
+	devmsg_t packet;
+	ER_UINT rsize;
+	RDVNO rdvno;
+
 	/* 要求の受信 */
-	errno = rcv_mbf(&req, &rsize, recvport);
+	rsize = acp_por(recvport, 0xffffffff, &rdvno, &packet);
 
-	switch (errno) {
-	case E_OK:
+	if (rsize >= 0) {
 	    /* 正常ケース */
-	    doit(&req);
-	    break;
-
-	default:
+	    doit(rdvno, &packet);
+	}
+	else {
 	    /* Unknown error */
-	    dbg_printf("rd: get_req() Unknown error(error = %d)\n",
-		       errno);
-	    dbg_printf("RAM DISK driver is halt.\n");
+	    dbg_printf("[RAMDISK] acp_por error = %d\n",
+		       rsize);
+	    dbg_printf("[RAMDISK] halt.\n");
 	    ext_tsk();
-	    break;
 	}
     }
     /* ここの行には、来ない */
@@ -120,29 +118,29 @@ static void main_loop()
  *
  *
  */
-static void doit(DDEV_REQ * packet)
+static void doit(RDVNO rdvno, devmsg_t * packet)
 {
-    switch (packet->header.msgtyp) {
+    switch (packet->req.header.msgtyp) {
     case DEV_OPN:
 	/* デバイスのオープン */
-	open_rd(packet->header.mbfid, &(packet->body.opn_req));
+	open_rd(rdvno, packet);
 	break;
 
     case DEV_CLS:
 	/* デバイスのクローズ */
-	close_rd(packet->header.mbfid, &(packet->body.cls_req));
+	close_rd(rdvno, packet);
 	break;
 
     case DEV_REA:
-	read_rd(packet->header.mbfid, &(packet->body.rea_req));
+	read_rd(rdvno, packet);
 	break;
 
     case DEV_WRI:
-	write_rd(packet->header.mbfid, &(packet->body.wri_req));
+	write_rd(rdvno, packet);
 	break;
 
     case DEV_CTL:
-	control_rd(packet->header.mbfid, &(packet->body.ctl_req));
+	control_rd(rdvno, packet);
 	break;
     }
 }
@@ -158,15 +156,15 @@ static void init_rd_driver(W size)
     int i;
     ID root_dev;
     ER error;
-    T_CMBF pk_cmbf = { NULL, TA_TFIFO, 0, sizeof(DDEV_RES) };
+    T_CPOR pk_cpor = { TA_TFIFO, sizeof(DDEV_REQ), sizeof(DDEV_RES) };
 
     /*
      * 要求受けつけ用のポートを初期化する。
      */
-    recvport = acre_mbf(&pk_cmbf);
+    recvport = acre_por(&pk_cpor);
 
     if (recvport <= 0) {
-	dbg_printf("RD: cannot make receive porrt.\n");
+	dbg_printf("[RAMDISK] cre_por error = %d\n", recvport);
 	ext_tsk();
 	/* メッセージバッファ生成に失敗 */
     }
@@ -187,7 +185,7 @@ void init_rd(W size)
 {
 #ifdef START_FROM_INIT
     if (brk(VADDR_HEAP + size) < 0) {
-	dbg_printf("RD: cannot allocate memory.\n");
+	dbg_printf("[RAMDISK] cannot allocate memory.\n");
 	_exit(-1);
     } else {
 	ramdisk = (char *) VADDR_HEAP;
@@ -196,7 +194,7 @@ void init_rd(W size)
     init_malloc(VADDR_HEAP);	/* 適当な値 */
     ramdisk = (char *) malloc(size);
     if (ramdisk == NULL) {
-	dbg_printf("RD: cannot allocate memory.\n");
+	dbg_printf("[RAMDISK] cannot allocate memory.\n");
 	ext_tsk();
     }
 #endif
@@ -214,15 +212,16 @@ void init_rd(W size)
  *
  *
  */
-W open_rd(ID caller, DDEV_OPN_REQ * packet)
+W open_rd(RDVNO rdvno, devmsg_t * packet)
 {
-    DDEV_RES res;
+    DDEV_OPN_REQ * req = &(packet->req.body.opn_req);
+    DDEV_OPN_RES * res = &(packet->res.body.opn_res);
 
-    res.body.opn_res.dd = packet->dd;
-    res.body.opn_res.size = rd_size;
-    res.body.opn_res.errcd = E_OK;
-    res.body.opn_res.errinfo = E_OK;
-    snd_mbf(caller, sizeof(res), &res);
+    res->dd = req->dd;
+    res->size = rd_size;
+    res->errcd = E_OK;
+    res->errinfo = E_OK;
+    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
     return (E_OK);
 }
 
@@ -236,14 +235,15 @@ W open_rd(ID caller, DDEV_OPN_REQ * packet)
  * 返値：	
  *
  */
-W close_rd(ID caller, DDEV_CLS_REQ * packet)
+W close_rd(RDVNO rdvno, devmsg_t * packet)
 {
-    DDEV_RES res;
+    DDEV_CLS_REQ * req = &(packet->req.body.cls_req);
+    DDEV_CLS_RES * res = &(packet->res.body.cls_res);
 
-    res.body.cls_res.dd = packet->dd;
-    res.body.cls_res.errcd = E_OK;
-    res.body.cls_res.errinfo = E_OK;
-    snd_mbf(caller, sizeof(res), &res);
+    res->dd = req->dd;
+    res->errcd = E_OK;
+    res->errinfo = E_OK;
+    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
     return (E_OK);
 }
 
@@ -258,22 +258,23 @@ W close_rd(ID caller, DDEV_CLS_REQ * packet)
  * 処理：	この関数は、以下の処理を行う。
  *
  */
-W read_rd(ID caller, DDEV_REA_REQ * packet)
+W read_rd(RDVNO rdvno, devmsg_t * packet)
 {
-    DDEV_RES res;
+    DDEV_REA_REQ * req = &(packet->req.body.rea_req);
+    DDEV_REA_RES * res = &(packet->res.body.rea_res);
     W done_length;
 
-    if (packet->start + packet->size >= rd_size)
-	done_length = rd_size - packet->start;
+    if (req->start + req->size >= rd_size)
+	done_length = rd_size - req->start;
     else
-	done_length = packet->size;
+	done_length = req->size;
 
-    bcopy(&ramdisk[packet->start], res.body.rea_res.dt, done_length);
-    res.body.rea_res.dd = packet->dd;
-    res.body.rea_res.a_size = done_length;
-    res.body.rea_res.errcd = E_OK;
-    res.body.rea_res.errinfo = E_OK;
-    snd_mbf(caller, sizeof(res), &res);
+    bcopy(&ramdisk[req->start], res->dt, done_length);
+    res->dd = req->dd;
+    res->a_size = done_length;
+    res->errcd = E_OK;
+    res->errinfo = E_OK;
+    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
     return (E_OK);
 }
 
@@ -281,43 +282,45 @@ W read_rd(ID caller, DDEV_REA_REQ * packet)
 /************************************************************************
  *	write_rd
  */
-W write_rd(ID caller, DDEV_WRI_REQ * packet)
+W write_rd(RDVNO rdvno, devmsg_t * packet)
 {
-    DDEV_RES res;
+    DDEV_WRI_REQ * req = &(packet->req.body.wri_req);
+    DDEV_WRI_RES * res = &(packet->res.body.wri_res);
     W done_length;
 
-    if (packet->start + packet->size >= rd_size)
-	done_length = rd_size - packet->start;
+    if (req->start + req->size >= rd_size)
+	done_length = rd_size - req->start;
     else
-	done_length = packet->size;
+	done_length = req->size;
 
-    bcopy(packet->dt, &ramdisk[packet->start], done_length);
+    bcopy(req->dt, &ramdisk[req->start], done_length);
 
-    res.body.wri_res.dd = packet->dd;
-    res.body.wri_res.a_size = done_length;
-    res.body.wri_res.errcd = E_OK;
-    res.body.wri_res.errinfo = E_OK;
-    snd_mbf(caller, sizeof(res), &res);
+    res->dd = req->dd;
+    res->a_size = done_length;
+    res->errcd = E_OK;
+    res->errinfo = E_OK;
+    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
     return (E_OK);
 }
 
 /************************************************************************
  *	control_rd
  */
-W control_rd(ID caller, DDEV_CTL_REQ * packet)
+W control_rd(RDVNO rdvno, devmsg_t * packet)
 {
-    DDEV_RES res;
+    DDEV_CTL_REQ * req = &(packet->req.body.ctl_req);
+    DDEV_CTL_RES * res = &(packet->res.body.ctl_res);
     ER error = E_OK;
     W drive;
 
-    switch (packet->cmd) {
+    switch (req->cmd) {
     default:
 	error = E_NOSPT;
 	break;
     }
-    res.body.ctl_res.dd = packet->dd;
-    res.body.ctl_res.errcd = error;
-    res.body.ctl_res.errinfo = error;
-    snd_mbf(caller, sizeof(res), &res);
+    res->dd = req->dd;
+    res->errcd = error;
+    res->errinfo = error;
+    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
     return (error);
 }
