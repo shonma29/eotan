@@ -55,8 +55,8 @@ STARTADDR=0x80290000
 %.o: %.S
 	$(CC) $(CFLAGS) -c $*.S
 
-OBJS =	lowlib.o entry.o api.o global.o signal.o jmp_user.o
-SRCS =	lowlib.c entry.c api.c global.c signal.c jmp_user.S
+OBJS =	lowlib.o api.o global.o signal.o jmp_user.o
+SRCS =	lowlib.c api.c global.c signal.c jmp_user.S
 
 ROOT=../..
 LIBS =	posix-client/libposix-client.a $(ROOT)/lib/libserv.a \
