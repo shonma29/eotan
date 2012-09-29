@@ -596,7 +596,6 @@ ER sta_tsk(ID tskid, INT stacd)
     }
     index = task[tskid].tsklevel;
     task[tskid].tskstat = TTS_RDY;
-    task[tskid].wait.wup_cnt = 0;
     task[tskid].wait.sus_cnt = 0;
     task[tskid].total = 0;
     enter_critical();
@@ -812,33 +811,6 @@ ER get_tid(ID * p_tskid)
     return (E_OK);
 }
 
-/*********************************************************************************
- * slp_tsk --- 自タスクを待ち状態にする
- *
- *	自分自身を待ち状態にして、他のタスクに制御を渡す。
- *	待ち要因は、この関数ではセットしない。
- *
- */
-ER slp_tsk(void)
-{
-#ifdef TSKSW_DEBUG
-	printk("slp_tsk: %d\n", run_task->tskid);
-#endif
-    enter_critical();
-    if (run_task->wait.wup_cnt > 0) {
-	run_task->wait.wup_cnt--;
-#ifdef TSKSW_DEBUG
-	printk("sleep task: wakeup count = %d\n", run_task->wait.wup_cnt);
-#endif
-	leave_critical();
-	return (E_OK);
-    }
-
-    run_task->wait.type = wait_slp;
-    wait(run_task);
-    return (run_task->wait.result);
-}
-
 /*****************************************************************************
  * sus_tsk --- 指定したタスクを強制待ち状態に移行
  *

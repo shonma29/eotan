@@ -32,7 +32,6 @@ For more information, please refer to <http://unlicense.org/>
 
 typedef enum {
 	wait_none,
-	wait_slp,
 	wait_dly,
 	wait_evf,
 	wait_msg,
@@ -42,7 +41,6 @@ typedef enum {
 } wait_type_e;
 
 typedef struct {
-	W wup_cnt;
 	W sus_cnt;
 	wait_type_e type;
 	list_t waiting;
