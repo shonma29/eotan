@@ -129,15 +129,12 @@ ER port_create(ID porid, T_CPOR *pk_cpor)
 
 	if ((porid < MIN_MANUAL_ID)
 			|| (porid > MAX_MANUAL_ID)) {
-/* TODO test */
 		return E_ID;
 	}
 
 	if (!pk_cpor)	return E_PAR;
-/* TODO test */
 
 	if (pk_cpor->poratr != TA_TFIFO)	return E_RSATR;
-/* TODO test */
 
 	enter_serialize();
 	do {
@@ -146,7 +143,6 @@ ER port_create(ID porid, T_CPOR *pk_cpor)
 		if (tree_get(&port_tree, porid)) {
 			result = E_OBJ;
 			break;
-/* TODO test */
 		}
 
 		node = tree_put(&port_tree, porid);
@@ -158,7 +154,6 @@ ER port_create(ID porid, T_CPOR *pk_cpor)
 
 		clear(getPortParent(node), pk_cpor);
 		result = E_OK;
-/* TODO test */
 
 	} while (FALSE);
 	leave_serialize();
@@ -170,6 +165,8 @@ static node_t *find_empty_key(tree_t *tree, int *hand) {
 	int key;
 
 	for (key = *hand + 1; key <= MAX_AUTO_ID; key++) {
+/*int max = (tree == &(port_tree))? 49156:MAX_AUTO_ID;
+	for (key = *hand + 1; key <= max; key++) {*/
 		if (!tree_get(tree, key)) {
 			*hand = key;
 			return tree_put(tree, key);
@@ -182,7 +179,7 @@ static node_t *find_empty_key(tree_t *tree, int *hand) {
 			return tree_put(tree, key);
 		}
 	}
-/* TODO test */
+
 	return NULL;
 }
 
@@ -201,7 +198,6 @@ ER_ID port_create_auto(T_CPOR *pk_cpor)
 		if (!node) {
 			result = E_NOID;
 			break;
-/* TODO test */
 		}
 
 		clear(getPortParent(node), pk_cpor);
@@ -295,7 +291,6 @@ ER_UINT port_call(ID porid, RDVPTN calptn, VP msg, UINT cmsgsz)
 		run_task->wait.detail.por.rdvno = tp->wait.detail.por.rdvno;
 		run_task->wait.type = wait_rdv;
 		release(tp);
-/* TODO test */
 	}
 	else {
 		list_enqueue(&(p->caller), &(run_task->wait.waiting));

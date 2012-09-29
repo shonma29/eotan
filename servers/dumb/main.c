@@ -31,6 +31,8 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../include/itron/errno.h"
 
 #define BUFSIZ 16
+#define MIN_AUTO_PORT 49152
+#define STATIC_PORT 49151
 
 static ID      port;
 
@@ -38,38 +40,73 @@ static int initialize();
 static void main();
 
 
-static int test(void)
+static int test_cre_por(void)
+{
+	T_CPOR pk_cpor = { TA_TFIFO, BUFSIZ, BUFSIZ };
+	ID dupport;
+
+	port = cre_por(0, &pk_cpor);
+	dbg_printf("[DUMB] test_cre_por_1 result = %d\n", port);
+	if (port != E_ID)	return 0;
+
+	port = cre_por(MIN_AUTO_PORT, &pk_cpor);
+	dbg_printf("[DUMB] test_cre_por_2 result = %d\n", port);
+	if (port != E_ID)	return 0;
+
+	port = cre_por(STATIC_PORT, 0);
+	dbg_printf("[DUMB] test_cre_por_3 result = %d\n", port);
+	if (port != E_PAR)	return 0;
+
+	pk_cpor.poratr = TA_TPRI;
+	port = cre_por(STATIC_PORT, &pk_cpor);
+	dbg_printf("[DUMB] test_cre_por_4 result = %d\n", port);
+	if (port != E_RSATR)	return 0;
+
+	pk_cpor.poratr = TA_TFIFO;
+	port = cre_por(STATIC_PORT, &pk_cpor);
+	dbg_printf("[DUMB] test_cre_por_5 result  = %d\n", port);
+	if (port != E_OK)	return 0;
+	port = STATIC_PORT;
+
+	dupport = cre_por(STATIC_PORT, &pk_cpor);
+	dbg_printf("[DUMB] test_cre_por_6 result = %d\n", dupport);
+	if (dupport != E_OBJ)	return 0;
+
+	return 1;
+}
+
+static int test_acre_por(void)
 {
 	T_CPOR pk_cpor = { TA_TFIFO, BUFSIZ, BUFSIZ };
 
-	dbg_printf("[DUMB] test1 acre_por port = %d\n",
-			acre_por(0) == E_PAR);
+	port = acre_por(0);
+	dbg_printf("[DUMB] test_acre_por_1 port = %d\n", port);
+	if (port != E_PAR)	return 0;
 
 	pk_cpor.poratr = TA_TPRI;
-	dbg_printf("[DUMB] test2 acre_por port = %d\n",
-			acre_por(&pk_cpor) == E_RSATR);
+	port = acre_por(&pk_cpor);
+	dbg_printf("[DUMB] test_acre_por_2 port = %d\n", port);
+	if (port != E_RSATR)	return 0;
+
 	pk_cpor.poratr = TA_TFIFO;
+	port = acre_por(&pk_cpor);
+	dbg_printf("[DUMB] test_acre_por_3 port = %d\n", port);
+	if (port <= 0)	return 0;
+
+	return 1;
 }
 
 void start(void)
 {
 	dbg_printf("[DUMB] start\n");
-	test();
-	if (initialize())	main();
+
+	if (test_cre_por())	main();
 
 	if (port > 0)	dbg_printf("[DUMB] del_por port = %d\n", del_por(port));
 
 	dbg_printf("[DUMB] exit\n");
+
 	exd_tsk();
-}
-
-static int initialize(void)
-{
-	T_CPOR pk_cpor = { TA_TFIFO, BUFSIZ, BUFSIZ };
-
-	port = acre_por(&pk_cpor);
-	dbg_printf("[DUMB] acre_por port = %d\n", port);
-	return (port > 0);
 }
 
 static void main(void)
@@ -78,10 +115,12 @@ static void main(void)
 
 	for (;;) {
 		RDVNO rdvno;
-		INT size = acp_por(port, 0xffffffff, &rdvno, buf);
+		INT size;
 		INT i;
 		ER result;
 
+		dbg_printf("[DUMB] acp_por port = %d\n", port);
+		size = acp_por(port, 0xffffffff, &rdvno, buf);
 		dbg_printf("[DUMB] acp_por rdvno = %d, size = %d\n",
 				rdvno, size);
 
@@ -96,7 +135,7 @@ static void main(void)
 		buf[2] = 'm';
 		buf[3] = 'b';
 
-		dbg_printf("[DUMB] rpl_rdb result = %d\n",
+		dbg_printf("[DUMB] rpl_rdv result = %d\n",
 				rpl_rdv(rdvno, buf, 4));
 	}
 }
