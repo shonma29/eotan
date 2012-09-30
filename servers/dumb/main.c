@@ -150,8 +150,12 @@ static int test_acp_por(void)
 		dbg_printf("[DUMB] test_rpl_rdv_2 result = %d\n", result);
 		if (result != E_PAR)	return 0;
 
-		result = rpl_rdv(rdvno, buf, 4);
+		result = rpl_rdv(rdvno, 0, 4);
 		dbg_printf("[DUMB] test_rpl_rdv_3 result = %d\n", result);
+		if (result != E_PAR)	return 0;
+
+		result = rpl_rdv(rdvno, buf, 4);
+		dbg_printf("[DUMB] test_rpl_rdv_4 result = %d\n", result);
 		if (result != E_OK)	return 0;
 	}
 

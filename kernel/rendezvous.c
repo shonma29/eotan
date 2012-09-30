@@ -271,7 +271,7 @@ ER_UINT port_call(ID porid, RDVPTN calptn, VP msg, UINT cmsgsz)
 		return E_PAR;
 	}
 
-	q = list_dequeue(&(p->acceptor));
+	q = list_head(&(p->acceptor));
 	if (q) {
 		T_TCB *tp = getTaskParent(q);
 		rendezvous_t *r;
@@ -281,6 +281,7 @@ ER_UINT port_call(ID porid, RDVPTN calptn, VP msg, UINT cmsgsz)
 /* TODO test */
 		}
 
+		list_dequeue(&(p->acceptor));
 		tp->wait.detail.por.size = cmsgsz;
 
 		node = tree_get(&rdv_tree, tp->wait.detail.por.rdvno);
@@ -338,7 +339,7 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 	r->maxrmsz = p->maxrmsz;
 	*p_rdvno = rdvno;
 
-	q = list_dequeue(&(p->caller));
+	q = list_head(&(p->caller));
 	if (q) {
 		T_TCB *tp = getTaskParent(q);
 
@@ -350,6 +351,7 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 /* TODO test */
 		}
 
+		list_dequeue(&(p->caller));
 		list_enqueue(&(r->caller), &(tp->wait.waiting));
 		tp->wait.detail.por.rdvno = rdvno;
 		tp->wait.type = wait_rdv;
@@ -400,7 +402,7 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 		return E_PAR;
 	}
 
-	q = list_dequeue(&(r->caller));
+	q = list_head(&(r->caller));
 	if (q) {
 		T_TCB *tp = getTaskParent(q);
 
@@ -411,9 +413,9 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 					tp->wait.detail.por.msg, rmsgsz, msg);
 			leave_serialize();
 			return E_PAR;
-/* TODO test */
 		}
 
+		list_dequeue(&(r->caller));
 		tp->wait.detail.por.size = rmsgsz;
 		release(tp);
 		result = E_OK;
