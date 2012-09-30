@@ -37,7 +37,7 @@ For more information, please refer to <http://unlicense.org/>
 static ID      port;
 
 static int initialize();
-static void main();
+static int test_acp_por();
 
 
 static int test_cre_por(void)
@@ -100,7 +100,7 @@ void start(void)
 {
 	dbg_printf("[DUMB] start\n");
 
-	if (test_cre_por())	main();
+	if (test_acre_por())	test_acp_por();
 
 	if (port > 0)	dbg_printf("[DUMB] del_por port = %d\n", del_por(port));
 
@@ -109,19 +109,26 @@ void start(void)
 	exd_tsk();
 }
 
-static void main(void)
+static int test_acp_por(void)
 {
 	unsigned char buf[BUFSIZ];
+	RDVNO rdvno;
+	ER_UINT size;
+	INT i;
+	ER result;
+
+	size = acp_por(port, 1, &rdvno, buf);
+	dbg_printf("[DUMB] test_acp_por_1 size = %d\n", size);
+	if (size != E_NOSPT)	return 0;
+
+	size = acp_por(0, 0xffffffff, &rdvno, buf);
+	dbg_printf("[DUMB] test_acp_por_2 size = %d\n", size);
+	if (size != E_NOEXS)	return 0;
 
 	for (;;) {
-		RDVNO rdvno;
-		INT size;
-		INT i;
-		ER result;
-
-		dbg_printf("[DUMB] acp_por port = %d\n", port);
+		dbg_printf("[DUMB] test_acp_por_3 port = %d\n", port);
 		size = acp_por(port, 0xffffffff, &rdvno, buf);
-		dbg_printf("[DUMB] acp_por rdvno = %d, size = %d\n",
+		dbg_printf("[DUMB] test_acp_por_3 rdvno = %d, size = %d\n",
 				rdvno, size);
 
 		if (size < 0)	break;
@@ -135,7 +142,18 @@ static void main(void)
 		buf[2] = 'm';
 		buf[3] = 'b';
 
-		dbg_printf("[DUMB] rpl_rdv result = %d\n",
-				rpl_rdv(rdvno, buf, 4));
+		result = rpl_rdv(0, buf, 4);
+		dbg_printf("[DUMB] test_rpl_rdv_1 result = %d\n", result);
+		if (result != E_OBJ)	return 0;
+
+		result = rpl_rdv(rdvno, buf, 17);
+		dbg_printf("[DUMB] test_rpl_rdv_2 result = %d\n", result);
+		if (result != E_PAR)	return 0;
+
+		result = rpl_rdv(rdvno, buf, 4);
+		dbg_printf("[DUMB] test_rpl_rdv_3 result = %d\n", result);
+		if (result != E_OK)	return 0;
 	}
+
+	return 1;
 }
