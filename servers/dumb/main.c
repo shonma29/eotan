@@ -34,10 +34,12 @@ For more information, please refer to <http://unlicense.org/>
 #define MIN_AUTO_PORT 49152
 #define STATIC_PORT 49151
 
-static ID      port;
+static ID port = 0;
 
-static int initialize();
+static int test_cre_por();
+static int test_acre_por();
 static int test_acp_por();
+static int test_del_por();
 
 
 static int test_cre_por(void)
@@ -96,19 +98,6 @@ static int test_acre_por(void)
 	return 1;
 }
 
-void start(void)
-{
-	dbg_printf("[DUMB] start\n");
-
-	if (test_acre_por())	test_acp_por();
-
-	if (port > 0)	dbg_printf("[DUMB] del_por port = %d\n", del_por(port));
-
-	dbg_printf("[DUMB] exit\n");
-
-	exd_tsk();
-}
-
 static int test_acp_por(void)
 {
 	unsigned char buf[BUFSIZ];
@@ -126,9 +115,15 @@ static int test_acp_por(void)
 	if (size != E_NOEXS)	return 0;
 
 	for (;;) {
-		dbg_printf("[DUMB] test_acp_por_3 port = %d\n", port);
-		size = acp_por(port, 0xffffffff, &rdvno, buf);
+/*
+		size = acp_por(port, 0xffffffff, &rdvno, 0);
 		dbg_printf("[DUMB] test_acp_por_3 rdvno = %d, size = %d\n",
+				rdvno, size);
+		if (size != E_PAR)	return 0;
+*/
+		dbg_printf("[DUMB] test_acp_por_4 port = %d\n", port);
+		size = acp_por(port, 0xffffffff, &rdvno, buf);
+		dbg_printf("[DUMB] test_acp_por_4 rdvno = %d, size = %d\n",
 				rdvno, size);
 
 		if (size < 0)	break;
@@ -157,7 +152,43 @@ static int test_acp_por(void)
 		result = rpl_rdv(rdvno, buf, 4);
 		dbg_printf("[DUMB] test_rpl_rdv_4 result = %d\n", result);
 		if (result != E_OK)	return 0;
+
+		break;
 	}
 
 	return 1;
 }
+
+static int test_del_por(void)
+{
+	ER result;
+
+	result = del_por(0);
+	dbg_printf("[DUMB] test_del_por_1 result = %d\n", result);
+	if (result != E_NOEXS)	return 0;
+
+	result = del_por(port);
+	dbg_printf("[DUMB] test_del_por_2 result = %d\n", result);
+	if (result != E_OK)	return 0;
+
+	result = del_por(port);
+	dbg_printf("[DUMB] test_del_por_3 result = %d\n", result);
+	if (result != E_NOEXS)	return 0;
+
+	port = 0;
+	return 1;
+}
+
+void start(void)
+{
+	dbg_printf("[DUMB] start\n");
+
+	if (test_acre_por())	test_acp_por();
+
+	if (port > 0)	test_del_por();
+
+	dbg_printf("[DUMB] exit\n");
+
+	exd_tsk();
+}
+

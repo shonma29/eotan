@@ -44,21 +44,25 @@ int main(int argc, char **argv)
 	buf[2] = 'l';
 	buf[3] = 'l';
 	buf[4] = 'o';
-/*
+
 	size = cal_por(TEST_PORT, 1, buf, 5);
-	printf("cal_por: result=%d\n", size);
+	printf("test_cal_por_1: result=%d\n", size);
 	if (size != E_NOSPT)	return -1;
 
-	size = cal_por(TEST_PORT + 1, 0xffffffff, buf, 5);
-	printf("cal_por: result=%d\n", size);
+	size = cal_por(0, 0xffffffff, buf, 5);
+	printf("test_cal_por_2: result=%d\n", size);
 	if (size != E_NOEXS)	return -1;
 
 	size = cal_por(TEST_PORT, 0xffffffff, buf, 33);
-	printf("cal_por: result=%d\n", size);
+	printf("test_cal_por_3: result=%d\n", size);
 	if (size != E_PAR)	return -1;
-*/
+
+	size = cal_por(TEST_PORT, 0xffffffff, 0, 5);
+	printf("test_cal_por_4: result=%d\n", size);
+	if (size != E_PAR)	return -1;
+
 	size = cal_por(TEST_PORT, 0xffffffff, buf, 5);
-	printf("cal_por: result=%d\n", size);
+	printf("test_cal_por_5: result=%d\n", size);
 	if (size != 4)	return -1;
 
 	buf[size] = 0;
