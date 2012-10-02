@@ -133,7 +133,7 @@ ER port_create(ID porid, T_CPOR *pk_cpor)
 	}
 
 	if (!pk_cpor)	return E_PAR;
-
+/* TODO validate pk */
 	if (pk_cpor->poratr != TA_TFIFO)	return E_RSATR;
 
 	enter_serialize();
@@ -188,7 +188,7 @@ ER_ID port_create_auto(T_CPOR *pk_cpor)
 	ER_ID result;
 
 	if (!pk_cpor)	return E_PAR;
-
+/* TODO validate pk */
 	if (pk_cpor->poratr != TA_TFIFO)	return E_RSATR;
 
 	enter_serialize();
@@ -254,7 +254,7 @@ ER_UINT port_call(ID porid, RDVPTN calptn, VP msg, UINT cmsgsz)
 	port_t *p;
 	node_t *node;
 	list_t *q;
-
+/* TODO validate msg */
 	enter_serialize();
 	node = tree_get(&port_tree, porid);
 	if (!node) {
@@ -283,7 +283,7 @@ ER_UINT port_call(ID porid, RDVPTN calptn, VP msg, UINT cmsgsz)
 			return E_PAR;
 		}
 
-		list_dequeue(&(p->acceptor));
+		list_remove(q);
 		tp->wait.detail.por.size = cmsgsz;
 
 		node = tree_get(&rdv_tree, tp->wait.detail.por.rdvno);
@@ -318,7 +318,7 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 	list_t *q;
 	ER_UINT result;
 	int rdvno;
-
+/* TODO validate msg */
 	enter_serialize();
 	node = tree_get(&port_tree, porid);
 	if (!node) {
@@ -351,12 +351,13 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 			printk("[KERN] port_accept[%d] vget_reg(%d, %p, %d, %p) error\n",
 					porid, tp->tskid,
 					tp->wait.detail.por.msg, result, msg);
+/* TODO release rendezvous */
 			leave_serialize();
 			return E_PAR;
 /* TODO test */
 		}
 
-		list_dequeue(&(p->caller));
+		list_remove(q);
 		list_enqueue(&(r->caller), &(tp->wait.waiting));
 		tp->wait.detail.por.rdvno = rdvno;
 		tp->wait.type = wait_rdv;
@@ -390,7 +391,7 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 	node_t *node;
 	list_t *q;
 	ER result;
-
+/* TODO validate msg */
 	enter_serialize();
 	node = tree_get(&rdv_tree, rdvno);
 	if (!node) {
@@ -420,7 +421,7 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 			return E_PAR;
 		}
 
-		list_dequeue(&(r->caller));
+		list_remove(q);
 		tp->wait.detail.por.size = rmsgsz;
 		release(tp);
 		result = E_OK;
