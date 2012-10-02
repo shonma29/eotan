@@ -145,21 +145,23 @@ static node_t *node_remove(tree_t *tree, node_t *p, const int key) {
 
 		if (d == 0) {
 			if (IS_NIL(p->left)) {
-				node_t *q = p;
+				node_t *q = p->right;
 
-				p = p->right;
-				node_destroy(tree, q);
-				return p;
+				node_destroy(tree, p);
+				return q;
 			}
 			else if (IS_NIL(p->right)) {
-				node_t *q = p;
+				node_t *q = p->left;
 
-				p = p->left;
-				node_destroy(tree, q);
-				return p;
+				node_destroy(tree, p);
+				return q;
 			}
 			else {
-				p->right = node_remove_swap(tree, p->right, &p);
+				node_t *q = p;
+				node_t *r = node_remove_swap(tree, p->right, &q);
+
+				p = q;
+				p->right = r;
 			}
 		}
 		else if (d < 0)	p->left = node_remove(tree, p->left, key);
