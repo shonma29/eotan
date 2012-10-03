@@ -27,10 +27,10 @@ ENTRY=startup
 STARTADDR=0x00001000
 
 
-OBJS=startup.o main.o version.o request.o filesystem.o memory.o process.o \
-	log.o syscall.o global.o vmtree.o exec.o fork.o
-SRCS=main.c version.c request.c filesystem.c memory.c process.c \
-	log.c syscall.c global.c vmtree.c exec.c fork.c
+OBJS=startup.o main.o request.o filesystem.o memory.o process.o \
+	syscall.o global.o vmtree.o exec.o fork.o
+SRCS=main.c request.c filesystem.c memory.c process.c \
+	syscall.c global.c vmtree.c exec.c fork.c
 
 KERNLIB=../../lib/libserv.a ../../lib/libitron.a \
 	../../lib/libnc.a

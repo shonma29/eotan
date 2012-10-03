@@ -84,8 +84,6 @@ W get_request(struct posix_request * req)
     ER errno;
     INT size;
 
-    ASSERT(req != NULL);
-
     size = sizeof(struct posix_request);
     errno = rcv_mbf(req, &size, PORT_FS);
     if (errno != E_OK) {

@@ -23,24 +23,17 @@ Version 2, June 1991
 
 #define SYS_SYSNAME		"B-Free/POSIX"
 #define SYS_NODENAME		""
-#define SYS_RELEASE		"A"
-#define SYS_VERSION		"1.0"
+#define SYS_RELEASE		"A1.0"
+#define SYS_VERSION		"B-Free/POSIX A1.0 PC"
 #define SYS_MACHINE		"PC"
-
-#define SYS_SYSNAME_LENGTH	32
-#define SYS_NODENAME_LENGTH	64
-#define SYS_RELEASE_LENGTH	4
-#define SYS_VERSION_LENGTH	4
-#define SYS_MACHINE_LENGTH	32
-
 
 struct utsname
 {
-  char		sysname[SYS_SYSNAME_LENGTH];
-  char		nodename[SYS_NODENAME_LENGTH];
-  char		release[SYS_RELEASE_LENGTH];
-  char		version[SYS_VERSION_LENGTH];
-  char		machine[SYS_MACHINE_LENGTH];
+  char		sysname[sizeof(SYS_SYSNAME)];
+  char		nodename[sizeof(SYS_NODENAME)];
+  char		release[sizeof(SYS_RELEASE)];
+  char		version[sizeof(SYS_VERSION)];
+  char		machine[sizeof(SYS_MACHINE)];
 };
 
 #endif /* __UTSNAME_H__ */

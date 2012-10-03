@@ -120,7 +120,6 @@ void main(void)
 	dbg_printf("Cannot allocate port.\n");
 	ext_tsk();
     }
-    init_log();
     init_malloc(VADDR_HEAP);
 
     /* 各機能単位での初期化
@@ -172,7 +171,7 @@ void main(void)
 
 void banner(void)
 {
-    extern char *posix_version;
+    extern struct utsname system_name;
     ID taskid;
 #ifdef notdef
     W pid, low, hi;
@@ -180,7 +179,7 @@ void banner(void)
     static B buf[3];
 #endif
 
-    dbg_printf("POSIX Manager ver %s started.", posix_version);
+    dbg_printf("[FS] %s started.", system_name.version);
     if (get_tid(&taskid) == E_OK) {
 #ifdef notdef
 	low = pid % 10;

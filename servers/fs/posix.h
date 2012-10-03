@@ -132,7 +132,6 @@ struct utimbuf {
 #ifdef KERNEL
 
 
-#include "assert.h"
 #include "sfs/sfs_fs.h"
 #include "posix_fs.h"
 #include "posix_proc.h"
@@ -150,7 +149,6 @@ struct utimbuf {
 /* posix.c */
 extern void posix_start(void);
 extern void banner(void);
-extern void _assert(B * msg);
 
 /* request.c */
 extern W init_port(void);
@@ -159,9 +157,6 @@ extern W put_response(struct posix_request *req,
 		      W errno, W status, W ret1, W ret2);
 extern W error_response(struct posix_request *req, W errno);
 
-
-/* log.c */
-void init_log(void);
 
 #define printk dbg_printf
 
