@@ -54,15 +54,15 @@ Version 2, June 1991
  *
  */
 
-
+#include "../../include/elf.h"
 #include "posix.h"
 
-static W read_exec_header(struct inode *ip, struct ELFheader *elfp,
-			  struct ELF_Pheader *text,
-			  struct ELF_Pheader *data);
-static W load_text(W procid, struct inode *ip, struct ELF_Pheader *text,
+static W read_exec_header(struct inode *ip, Elf32_Ehdr *elfp,
+			  Elf32_Phdr *text,
+			  Elf32_Phdr *data);
+static W load_text(W procid, struct inode *ip, Elf32_Phdr *text,
 		   ID task);
-static W load_data(W procid, struct inode *ip, struct ELF_Pheader *data,
+static W load_data(W procid, struct inode *ip, Elf32_Phdr *data,
 		   ID task);
 
 
@@ -75,8 +75,8 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     struct inode *ip;
     W errno;
     struct access_info acc;
-    struct ELFheader elf_header;
-    struct ELF_Pheader text, data;
+    Elf32_Ehdr elf_header;
+    Elf32_Phdr text, data;
     ID main_task;
 #if 0
     ID signal_task;
@@ -272,21 +272,21 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
  */
 static W
 read_exec_header(struct inode *ip,
-		 struct ELFheader *elfp,
-		 struct ELF_Pheader *text, struct ELF_Pheader *data)
+		 Elf32_Ehdr *elfp,
+		 Elf32_Phdr *text, Elf32_Phdr *data)
 {
     W errno;
     W rlength;
 #ifdef USE_ALLOCA
-    struct ELF_Pheader *ph_table;
+    Elf32_Phdr *ph_table;
 #else
-    struct ELF_Pheader ph_table[10];
+    Elf32_Phdr ph_table[10];
 #endif
     W ph_index;
 
 
     errno =
-	fs_read_file(ip, 0, (B *) elfp, sizeof(struct ELFheader),
+	fs_read_file(ip, 0, (B *) elfp, sizeof(Elf32_Ehdr),
 		     &rlength);
     if (errno) {
 	return (errno);
@@ -320,7 +320,7 @@ read_exec_header(struct inode *ip,
 	return (EP_NOEXEC);
     }
 
-    if (sizeof(struct ELF_Pheader) != elfp->e_phentsize) {
+    if (sizeof(Elf32_Phdr) != elfp->e_phentsize) {
 	/* プログラムヘッダのサイズが定義と違っている
 	 */
 	return (EP_NOEXEC);
@@ -343,8 +343,8 @@ read_exec_header(struct inode *ip,
 	return (EP_NOEXEC);
     }
 
-    memset((VP)text, 0, sizeof(struct ELF_Pheader));
-    memset((VP)data, 0, sizeof(struct ELF_Pheader));
+    memset((VP)text, 0, sizeof(Elf32_Phdr));
+    memset((VP)data, 0, sizeof(Elf32_Phdr));
     for (ph_index = 0; ph_index < elfp->e_phnum; ph_index++) {
 	/* プログラムヘッダテーブルを順々に見ていき、各セクションのタイプによって
 	 * テキスト、データ、BSS の各情報の初期化を行う。
@@ -377,7 +377,7 @@ read_exec_header(struct inode *ip,
  *
  */
 static W
-load_text(W procid, struct inode *ip, struct ELF_Pheader *text, ID task)
+load_text(W procid, struct inode *ip, Elf32_Phdr *text, ID task)
 {
     W errno;
     W rest_length;
@@ -439,7 +439,7 @@ load_text(W procid, struct inode *ip, struct ELF_Pheader *text, ID task)
  *
  */
 static W
-load_data(W procid, struct inode *ip, struct ELF_Pheader *data, ID task)
+load_data(W procid, struct inode *ip, Elf32_Phdr *data, ID task)
 {
     W errno;
     W rest_length;

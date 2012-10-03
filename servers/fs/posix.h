@@ -138,7 +138,6 @@ struct utimbuf {
 #include "posix_proc.h"
 #include "posix_mm.h"
 #include "utsname.h"
-#include "elf.h"
 
 
 #include "../../lib/libserv/libserv.h"

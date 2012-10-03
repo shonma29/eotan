@@ -72,32 +72,32 @@ For more information, please refer to <http://unlicense.org/>
 #define ELFDATA2LSB (1)
 #define ELFDATA2MSB (2)
 
-typedef uint32_t Elf32_Addr;
-typedef uint32_t Elf32_Off;
-typedef uint16_t Elf32_Section;
-typedef uint16_t Elf32_Versym;
+typedef unsigned int Elf32_Addr;
+typedef unsigned int Elf32_Off;
+typedef unsigned short Elf32_Section;
+typedef unsigned short Elf32_Versym;
 typedef unsigned char Elf_Byte;
-typedef uint16_t Elf32_Half;
-typedef int32_t Elf32_Sword;
-typedef uint32_t Elf32_Word;
-typedef int64_t Elf32_Sxword;
-typedef uint64_t Elf32_Xword;
+typedef unsigned short Elf32_Half;
+typedef int Elf32_Sword;
+typedef unsigned int Elf32_Word;
+typedef long long Elf32_Sxword;
+typedef unsigned long long Elf32_Xword;
 
 typedef struct {
 	unsigned char e_ident[EI_NIDENT];
-	uint16_t e_type;
-	uint16_t e_machine;
-	uint32_t e_version;
+	Elf32_Half e_type;
+	Elf32_Half e_machine;
+	Elf32_Word e_version;
 	Elf32_Addr e_entry;
 	Elf32_Off e_phoff;
 	Elf32_Off e_shoff;
-	uint32_t e_flags;
-	uint16_t e_ehsize;
-	uint16_t e_phentsize;
-	uint16_t e_phnum;
-	uint16_t e_shentsize;
-	uint16_t e_shnum;
-	uint16_t e_shstrndx;
+	Elf32_Word e_flags;
+	Elf32_Half e_ehsize;
+	Elf32_Half e_phentsize;
+	Elf32_Half e_phnum;
+	Elf32_Half e_shentsize;
+	Elf32_Half e_shnum;
+	Elf32_Half e_shstrndx;
 } Elf32_Ehdr;
 
 #define PT_NULL (0)
