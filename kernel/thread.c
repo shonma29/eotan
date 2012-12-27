@@ -114,7 +114,7 @@ Version 2, June 1991
 #include "../include/string.h"
 #include "../include/mpu/io.h"
 #include "core.h"
-#include "task.h"
+#include "thread.h"
 #include "misc.h"
 #include "func.h"
 #include "interrupt.h"
@@ -143,7 +143,7 @@ static T_TCB *getTaskParent(const list_t *p) {
 	return (T_TCB*)((ptr_t)p - offsetof(T_TCB, ready));
 }
 
-void print_task_list(void)
+void print_thread_list(void)
 {
     enter_critical();
     print_list();
@@ -184,13 +184,13 @@ static void print_list(void)
     }
 }
 
-/* init_task --- タスク管理の初期化
+/* thread_initialize --- タスク管理の初期化
  *
  * TCB テーブルの内容を初期化する。そして、カレントタスクをタスク番号 -1 
  * のタスクとする。
  *
  */
-void init_task(void)
+void thread_initialize(void)
 {
     W i;
 
@@ -207,7 +207,7 @@ void init_task(void)
 }
 
 
-/* init_task1 --- タスク1 の情報を初期化する。
+/* thread_initialize1 --- タスク1 の情報を初期化する。
  *
  * 引数：	なし
  *
@@ -227,7 +227,7 @@ void init_task(void)
  *		領域に今現在のタスク情報を退避する。
  *		そのため、事前にタスクレジスタの値を設定しておく必要がある。
  */
-void init_task1(void)
+void thread_initialize1(void)
 {
     /* タスク 1 の情報を初期化する。 */
     memset(&task[KERNEL_TASK], 0, sizeof(T_TCB));	/* zero clear */
@@ -361,11 +361,7 @@ static ER make_task_stack(T_TCB * task, W size, VP * sp)
     return (E_OK);
 }
 
-/* task_switch --- タスク切り換え
- *
- * 引数：	save_nowtask	
- *                  TRUE のとき、現タスクを ready タスクキューから削除しない．
- *		    FALSE のとき、現タスクを ready タスクキューから削除する．
+/* thread_switch --- タスク切り換え
  *
  * 返値：	エラー番号
  *
@@ -376,14 +372,14 @@ static ER make_task_stack(T_TCB * task, W size, VP * sp)
  *		ready_task[] の更新を行うのが主となる。
  *		
  */
-ER task_switch(void)
+ER thread_switch(void)
 {
     T_TCB *next;
     list_t *q;
 
     enter_critical();
 #ifdef TSKSW_DEBUG
-    printk("task_switch(): start\n");
+    printk("thread_switch(): start\n");
 #endif
 
     if (on_interrupt) {
@@ -400,7 +396,7 @@ ER task_switch(void)
     q = ready_dequeue();
 
     if (!q) {
-	printk("task_switch(): error = E_NOEXS\n");	/* */
+	printk("thread_switch(): error = E_NOEXS\n");	/* */
 	leave_critical();
 	return (E_NOEXS);
     }
@@ -419,12 +415,12 @@ ER task_switch(void)
 
     /* 選択したタスクを run_task にする */
 #ifdef TSKSW_DEBUG
-    printk("task_switch: current(%d) -> next(%d)\n",
+    printk("thread_switch: current(%d) -> next(%d)\n",
 	    run_task->tskid, next->tskid);
 #endif
     if ((next->tskstat != TTS_RDY)
 	    || (next->context.eip == 0)) {
-	falldown("task_switch: panic next(%d) stat=%d, eip=%x\n",
+	falldown("thread_switch: panic next(%d) stat=%d, eip=%x\n",
 		next->tskid, next->tskstat, next->context.eip);
     }
 
@@ -457,7 +453,7 @@ ER task_switch(void)
  *
  */
 
-/* cre_tsk --- create task.
+/* thread_create --- create task.
  *
  * タスクを1つ生成する。
  * 生成したタスクは、TTS_DMT 状態となり、sta_tsk()を実行するまでは
@@ -478,7 +474,7 @@ ER task_switch(void)
  *		E_OBJ	同一のタスクが存在している
  *
  */
-ER cre_tsk(ID tskid, T_CTSK * pk_ctsk)
+ER thread_create(ID tskid, T_CTSK * pk_ctsk)
 {
     T_TCB *newtask;
     W i;
@@ -531,7 +527,7 @@ ER cre_tsk(ID tskid, T_CTSK * pk_ctsk)
     return (E_OK);
 }
 
-/* del_tsk --- タスクの削除
+/* thread_destroy --- タスクの削除
  * 
  * 引数tskidで指定したタスクを削除する。
  *
@@ -541,7 +537,7 @@ ER cre_tsk(ID tskid, T_CTSK * pk_ctsk)
  * 戻り値：
  *	E_OK	正常終了
  */
-ER del_tsk(ID tskid)
+ER thread_destroy(ID tskid)
 {
     if ((tskid < MIN_TSKID) || (tskid > MAX_TSKID)) {
 	return (E_ID);
@@ -561,7 +557,7 @@ ER del_tsk(ID tskid)
     return (E_OK);
 }
 
-/* sta_tsk --- タスクの起動
+/* thread_start --- タスクの起動
  * 
  * 引数tskidで指定したタスクを起動する。
  * 指定したタスクは、cre_tsk で生成されている必要がある。
@@ -574,7 +570,7 @@ ER del_tsk(ID tskid)
  *	E_OK	正常終了
  *
  */
-ER sta_tsk(ID tskid, INT stacd)
+ER thread_start(ID tskid, INT stacd)
 {
     register int index;
 
@@ -608,7 +604,7 @@ ER sta_tsk(ID tskid, INT stacd)
 }
 
 /******************************************************************************
- * ext_tsk --- 自タスク終了
+ * thread_end --- 自タスク終了
  *
  * run_task につながれているタスクを TTS_DMT 状態へ移動する。
  * メモリ資源などは返却しない。
@@ -629,18 +625,18 @@ ER sta_tsk(ID tskid, INT stacd)
  *	れる。しかし、ext_tsk() では、元のタスクは終了するため、ready
  *	タスクキューには入れず、状態をTTS_DMTにする。
  */
-void ext_tsk(void)
+void thread_end(void)
 {
     /* 現在のタスクを TTS_DMT 状態にし、選択したタスクを次に走らせるよう */
     /* にする。                                                          */
     enter_critical();
     run_task->tskstat = TTS_DMT;
     list_remove(&(run_task->ready));
-    task_switch();
+    thread_switch();
 }
 
 /******************************************************************************
- * exd_tsk --- 自タスク終了と削除
+ * thread_end_and_destroy --- 自タスク終了と削除
  *
  * run_task につながれているタスクを TTS_NON 状態へ移動する。
  * メモリ資源などは返却しないが、マッピングされたメモリについては、解
@@ -662,7 +658,7 @@ void ext_tsk(void)
  *	れる。しかし、ext_tsk() では、元のタスクは終了するため、ready
  *	タスクキューには入れず、状態をTTS_DMTにする。
  */
-void exd_tsk(void)
+void thread_end_and_destroy(void)
 {
     /* 現在のタスクを TTS_NON 状態にし、選択したタスクを次に走らせるようにする。 */
     /* マッピングテーブルを解放する */
@@ -674,11 +670,11 @@ void exd_tsk(void)
     enter_critical();
     run_task->tskstat = TTS_NON;
     list_remove(&(run_task->ready));
-    task_switch();
+    thread_switch();
 }
 
 /*************************************************************************
- * ter_tsk --- 他タスク強制終了
+ * thread_terminate --- 他タスク強制終了
  *
  * 機能：
  *	引数で指定したタスクを強制的に終了させる。
@@ -687,7 +683,7 @@ void exd_tsk(void)
  *	態になっただけなので、sta_tsk システムコールによって再開する
  *	ことができる。
  */
-ER ter_tsk(ID tskid)
+ER thread_terminate(ID tskid)
 {
     switch (task[tskid].tskstat) {
     case TTS_RUN:		/* 自タスクの場合 */
@@ -719,10 +715,10 @@ ER ter_tsk(ID tskid)
     return (E_OK);
 }
 
-/* chg_pri --- プライオリティの変更
+/* thread_change_priority --- プライオリティの変更
  *
  */
-ER chg_pri(ID tskid, PRI tskpri)
+ER thread_change_priority(ID tskid, PRI tskpri)
 {
     if (tskid == TSK_SELF)
 	tskid = run_task->tskid;
@@ -766,14 +762,14 @@ ER rot_rdq(PRI tskpri)
     leave_critical();
 
     /* タスクスイッチによる実行権の放棄: 必要無いのかも */
-    task_switch();
+    thread_switch();
     return (E_OK);
 }
 
 /*
- * rel_wai --- 待ち状態の解除
+ * thread_release --- 待ち状態の解除
  */
-ER rel_wai(ID tskid)
+ER thread_release(ID tskid)
 {
     T_TCB *taskp;
 
@@ -801,18 +797,18 @@ ER rel_wai(ID tskid)
 }
 
 /***********************************************************************************
- * get_tid --- 自タスクのタスク ID 参照
+ * thread_get_id --- 自タスクのタスク ID 参照
  *
  *
  */
-ER get_tid(ID * p_tskid)
+ER thread_get_id(ID * p_tskid)
 {
     *p_tskid = run_task->tskid;
     return (E_OK);
 }
 
 /*****************************************************************************
- * sus_tsk --- 指定したタスクを強制待ち状態に移行
+ * thread_suspend --- 指定したタスクを強制待ち状態に移行
  *
  * 引数：
  *	taskid --- suspend するタスクの ID
@@ -823,7 +819,7 @@ ER get_tid(ID * p_tskid)
  * 機能：
  *
  */
-ER sus_tsk(ID taskid)
+ER thread_suspend(ID taskid)
 {
     T_TCB *taskp;
 
@@ -871,7 +867,7 @@ ER sus_tsk(ID taskid)
 }
 
 /******************************************************************************************
- * rsm_tsk --- 強制待ち状態のタスクから待ち状態を解除
+ * thread_resume --- 強制待ち状態のタスクから待ち状態を解除
  *
  * 引数：
  *	taskid --- suspend しているタスクの ID
@@ -892,7 +888,7 @@ ER sus_tsk(ID taskid)
  *	待ち状態は多重になることがあるが、このシステムコールは、ひとつだけ待ち
  *	を解除する。
  */
-ER rsm_tsk(ID taskid)
+ER thread_resume(ID taskid)
 {
     T_TCB *taskp;
 
@@ -959,11 +955,11 @@ ER new_task(T_CTSK * pk_ctsk, ID * rid, BOOL run_flag)
     ER err;
 
     for (i = MIN_USERTASKID; i <= MAX_USERTASKID; i++) {
-	err = cre_tsk(i, pk_ctsk);
+	err = thread_create(i, pk_ctsk);
 	if (err == E_OK) {
 	    *rid = i;
 	    if (run_flag == TRUE)
-		sta_tsk(i, 0);
+		thread_start(i, 0);
 	    return (E_OK);
 	}
     }
@@ -1086,7 +1082,7 @@ W pf_handler(W cr2, W eip)
     /* type = POSIX, id = pid */
     add_trmtbl(0, run_task->tskid, (LOWLIB_DATA)->my_pid);
     /* KERNEL_TASK の優先度変更 */
-    chg_pri(KERNEL_TASK, MID_LEVEL);
+    thread_change_priority(KERNEL_TASK, MID_LEVEL);
     return (E_OK);
 }
 

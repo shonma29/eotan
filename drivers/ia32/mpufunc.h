@@ -15,7 +15,7 @@ Version 2, June 1991
 #define _IA32_MPUFUNC_H_	1
 
 #include "../../include/itron/types.h"
-#include "../../kernel/task.h"
+#include "../../kernel/thread.h"
 
 /* tss.c */
 #ifdef TSKSW_DEBUG

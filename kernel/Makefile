@@ -29,7 +29,7 @@ OBJS= \
 	pmemory.o \
 	printk.o \
 	api.o \
-	task.o \
+	thread.o \
 	time.o \
 	message.o \
 	flag.o \

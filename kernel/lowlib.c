@@ -21,7 +21,7 @@ Version 2, June 1991
 #include "../include/string.h"
 #include "../include/itron/types.h"
 #include "../include/itron/errno.h"
-#include "task.h"
+#include "thread.h"
 #include "func.h"
 #include "lowlib.h"
 #include "mpu/mpufunc.h"

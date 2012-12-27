@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "func.h"
 #include "sync.h"
 #include "setting.h"
-#include "task.h"
+#include "thread.h"
 
 typedef struct {
 	node_t node;
@@ -245,7 +245,7 @@ ER port_destroy(ID porid)
 	} while (FALSE);
 	leave_serialize();
 
-	task_switch();
+	thread_switch();
 	return result;
 }
 
@@ -432,7 +432,7 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 	tree_remove(&rdv_tree, rdvno);
 	leave_serialize();
 
-	task_switch();
+	thread_switch();
 	return result;
 }
 

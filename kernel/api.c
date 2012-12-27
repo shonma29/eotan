@@ -190,17 +190,17 @@ Version 2, June 1991
 
 static ER	nodef (VP argp);
 
-static ER	if_cre_tsk (void *argp);
-static ER	if_del_tsk (void *argp);
-static ER	if_sta_tsk (void *argp);
-static ER	if_ext_tsk (void *argp);
-static ER	if_exd_tsk (void *argp);
-static ER	if_ter_tsk (void *argp);
-static ER	if_chg_pri (void *argp);
-static ER	if_rel_wai (void *argp);
-static ER	if_get_tid (void *argp);
-static ER	if_sus_tsk (void *argp);
-static ER	if_rsm_tsk (void *argp);
+static ER	if_thread_create(void *argp);
+static ER	if_thread_destroy(void *argp);
+static ER	if_thread_start(void *argp);
+static ER	if_thread_end(void *argp);
+static ER	if_thread_end_and_destroy(void *argp);
+static ER	if_thread_terminate(void *argp);
+static ER	if_thread_change_priority(void *argp);
+static ER	if_thread_release(void *argp);
+static ER	if_thread_get_id(void *argp);
+static ER	if_thread_suspend(void *argp);
+static ER	if_thread_resume(void *argp);
 static ER	if_flag_create_auto(void *argp);
 static ER	if_flag_destroy(void *argp);
 static ER	if_flag_set(void *argp);
@@ -256,19 +256,19 @@ static ER (*syscall_table[])(VP argp) =
   SVC_UNDEFINED,		/*    0 */
 
   /* タスク管理システムコール */
-  SVC_IF (cre_tsk, 2),	/*    1 */
-  SVC_IF (del_tsk, 1),	/*    2 */
-  SVC_IF (sta_tsk, 2),	/*    3 */
-  SVC_IF (ext_tsk, 0),     /*    4 */
-  SVC_IF (exd_tsk, 0),     /*    5 */
-  SVC_IF (ter_tsk, 1),     /*    6 */
-  SVC_IF (chg_pri, 2),	/*    7 */
-  SVC_IF (rel_wai, 1),	/*    8 */
-  SVC_IF (get_tid, 1),	/*    9 */
+  SVC_IF (thread_create, 2),	/*    1 */
+  SVC_IF (thread_destroy, 1),	/*    2 */
+  SVC_IF (thread_start, 2),	/*    3 */
+  SVC_IF (thread_end, 0),     /*    4 */
+  SVC_IF (thread_end_and_destroy, 0),     /*    5 */
+  SVC_IF (thread_terminate, 1),     /*    6 */
+  SVC_IF (thread_change_priority, 2),	/*    7 */
+  SVC_IF (thread_release, 1),	/*    8 */
+  SVC_IF (thread_get_id, 1),	/*    9 */
 
   /* タスク附属同期機能 */
-  SVC_IF (sus_tsk, 1),    	/*   10 */
-  SVC_IF (rsm_tsk, 1),	/*   11 */
+  SVC_IF (thread_suspend, 1),    	/*   10 */
+  SVC_IF (thread_resume, 1),	/*   11 */
 
   /* 同期・通信機構 */
   /* セマフォ */
@@ -382,7 +382,7 @@ nodef (VP argp)
  * タスク関係システムコール                                                *
  * ----------------------------------------------------------------------- */
 
-/* if_cre_tsk --- タスクの生成
+/* if_thread_create --- タスクの生成
  *
  * 引数: tskid 		生成するタスクのID
  *	 pk_ctsk	生成するタスクの属性情報
@@ -393,100 +393,100 @@ nodef (VP argp)
  *			addrmap		アドレスマップ
  *	
  */
-static ER if_cre_tsk(VP argp)
+static ER if_thread_create(VP argp)
 {
     struct {
 	ID tskid;
 	T_CTSK *tskpkt;
     } *args = argp;
 
-    return (cre_tsk(args->tskid, args->tskpkt));
+    return (thread_create(args->tskid, args->tskpkt));
 }
 
-/* if_del_tsk --- 指定したタスクを削除
+/* if_thread_destroy --- 指定したタスクを削除
  *
  * 引数：tskid	削除するタスクの ID
  *
  */
-static ER if_del_tsk(VP argp)
+static ER if_thread_destroy(VP argp)
 {
     struct {
 	ID tskid;
     } *args = argp;
 
-    return (del_tsk(args->tskid));
+    return (thread_destroy(args->tskid));
 }
 
 
-/* if_sta_tsk --- タスクの状態を取り出す
+/* if_thread_start --- タスクの状態を取り出す
  *
  * 引数：tskid	状態を取り出すタスの ID
  *	 stacd  状態を取り出す領域
  *
  */
-static ER if_sta_tsk(VP argp)
+static ER if_thread_start(VP argp)
 {
     struct {
 	ID tskid;
 	INT stacd;
     } *args = argp;
 
-    return (sta_tsk(args->tskid, args->stacd));
+    return (thread_start(args->tskid, args->stacd));
 }
 
-/* if_ext_tsk --- 自タスクを終了する
+/* if_thread_end --- 自タスクを終了する
  *
  */
-static ER if_ext_tsk(VP argp)
+static ER if_thread_end(VP argp)
 {
-    ext_tsk();
+    thread_end();
     return (E_OK);		/* 本当は、返り値はないが... */
 }
 
 /* if_exd_tsk --- 自タスクを終了して、資源を解放する。
  *
  */
-static ER if_exd_tsk(VP argp)
+static ER if_thread_end_and_destroy(VP argp)
 {
-    exd_tsk();
+    thread_end_and_destroy();
     return (E_OK);		/* 本当は、返り値はないが... */
 }
 
-/* if_ter_tsk --- 指定したタスクを終了する
+/* if_thread_terminate --- 指定したタスクを終了する
  *
  * 引数：tskid	終了するタスクの ID
  *
  */
-static ER if_ter_tsk(VP argp)
+static ER if_thread_terminate(VP argp)
 {
     struct {
 	ID tskid;
     } *args = argp;
 
-    return (ter_tsk(args->tskid));
+    return (thread_terminate(args->tskid));
 }
 
 
-static ER if_chg_pri(VP argp)
+static ER if_thread_change_priority(VP argp)
 {
     struct {
 	ID tskid;
 	PRI tskpri;
     } *args = argp;
 
-    return (chg_pri(args->tskid, args->tskpri));
+    return (thread_change_priority(args->tskid, args->tskpri));
 }
 
-static ER if_rel_wai(VP argp)
+static ER if_thread_release(VP argp)
 {
     struct {
 	ID tskid;
     } *args = argp;
 
-    return (rel_wai(args->tskid));
+    return (thread_release(args->tskid));
 }
 
-static ER if_get_tid(VP argp)
+static ER if_thread_get_id(VP argp)
 {
     struct {
 	ID *p_tskid;
@@ -494,29 +494,29 @@ static ER if_get_tid(VP argp)
     ID rid;
     ER err;
 
-    err = get_tid(&rid);
+    err = thread_get_id(&rid);
     if (err == E_OK)
 	err = vput_reg(run_task->tskid, args->p_tskid, sizeof(ID), &rid);
     return (err);
 }
 
-static ER if_sus_tsk(VP argp)
+static ER if_thread_suspend(VP argp)
 {
     struct {
 	ID taskid;
     } *args = argp;
 
-    return (sus_tsk(args->taskid));
+    return (thread_suspend(args->taskid));
 }
 
 
-static ER if_rsm_tsk(VP argp)
+static ER if_thread_resume(VP argp)
 {
     struct {
 	ID taskid;
     } *args = argp;
 
-    return (rsm_tsk(args->taskid));
+    return (thread_resume(args->taskid));
 }
 
 
@@ -945,8 +945,8 @@ static ER if_vsys_msc(VP argp)
 	break;
 
     case 6:
-	/* print_task_list */
-	print_task_list();
+	/* print_thread_list */
+	print_thread_list();
 	break;
 
     case 7:

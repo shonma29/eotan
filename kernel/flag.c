@@ -204,7 +204,7 @@ ER flag_set(ID flgid, UINT setptn)
 	}
     }
     if (tsw_flag) {
-	task_switch();
+	thread_switch();
     }
 
     return (E_OK);

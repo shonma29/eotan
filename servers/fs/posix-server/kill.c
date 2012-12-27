@@ -17,7 +17,7 @@ Version 2, June 1991
  *
  */
 
-#include "task.h"
+#include "thread.h"
 #include "posix.h"
 #include "lowlib.h"
 

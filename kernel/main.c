@@ -56,7 +56,7 @@ Version 2, June 1991
 
 #include "core.h"
 #include "version.h"
-#include "task.h"
+#include "thread.h"
 #include "func.h"
 #include "misc.h"
 #include "memory.h"
@@ -163,7 +163,7 @@ ER itron(void)
 #ifdef HALT_WHEN_IDLE
 	    do_halt = 0;
 #endif
-	    chg_pri(KERNEL_TASK, MAX_PRIORITY);
+	    thread_change_priority(KERNEL_TASK, MAX_PRIORITY);
 	}
 
 	/* タスクの強制終了処理 */
@@ -183,7 +183,7 @@ ER itron(void)
 	    rm_trmtbl();
 	    if (trmtbl_num == 0) {
 	      /* 強制終了するタスクが無くなったので，優先度を最低に */
-	      chg_pri(KERNEL_TASK, MAX_PRIORITY);
+	      thread_change_priority(KERNEL_TASK, MAX_PRIORITY);
 	    }
 	  }
 	}
@@ -192,7 +192,7 @@ ER itron(void)
 	if (do_halt) asm("hlt");
 #endif
 
-	task_switch();
+	thread_switch();
     }
     falldown("falldown.");
 /* not return */
@@ -271,8 +271,8 @@ void run(W entry)
 	}
 #endif
     }
-    sta_tsk(rid, 0);
-    task_switch();
+    thread_start(rid, 0);
+    thread_switch();
 }
 
 void run_init_program(void)
@@ -317,12 +317,12 @@ static ER init_itron(void)
     queue_initialize();		/* メッセージ管理機能の初期化           */
     flag_initialize();		/* イベントフラグ管理機能の初期化       */
     port_initialize();
-    init_task();		/* タスク管理機能の初期化 */
+    thread_initialize();		/* タスク管理機能の初期化 */
 
     /* 1番目のタスクを初期化する。そしてそのタスクを以後の処
      * 理で使用する。
      */
-    init_task1();
+    thread_initialize1();
 
     init_timer();		/* インターバルタイマ機能の初期化 */
     info = (struct boot_header *) MODULE_TABLE;

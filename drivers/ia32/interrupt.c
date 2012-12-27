@@ -18,7 +18,7 @@ Version 2, June 1991
 #include "core.h"
 #include "../../kernel/arch/arch.h"
 #include "interrupt.h"
-#include "task.h"
+#include "thread.h"
 #include "func.h"
 #include "sync.h"
 #include "../../include/mpu/io.h"
@@ -229,7 +229,7 @@ void interrupt(W intn)
     leave_critical();
 
     if (delayed_dispatch && (on_interrupt == 0)) {
-	task_switch();
+	thread_switch();
     }
 }
 

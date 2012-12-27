@@ -18,7 +18,7 @@ Version 2, June 1991
 #include "core.h"
 #include "arch.h"
 #include "../../kernel/mpu/interrupt.h"
-#include "task.h"
+#include "thread.h"
 #include "func.h"
 #include "sync.h"
 #include "../../include/mpu/io.h"
@@ -150,7 +150,7 @@ void intr_interval(void)
 	    rot_rdq(TPRI_RUN);
 #ifdef notdef
 	    /* rot_rdq 内部でも呼び出される */
-	    task_switch();
+	    thread_switch();
 #endif
 	}
     }
@@ -160,8 +160,8 @@ void intr_interval(void)
 	if ((time_list->time <= 0) && (do_timer == 0)) {
 	    /* KERNEL_TASK で timer に設定されている関数を実行 */
 	    do_timer = 1;
-	    chg_pri(KERNEL_TASK, MIN_PRIORITY);
-	    task_switch();
+	    thread_change_priority(KERNEL_TASK, MIN_PRIORITY);
+	    thread_switch();
 	}
     }
 }

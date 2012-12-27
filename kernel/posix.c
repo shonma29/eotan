@@ -10,7 +10,7 @@
 #include "../include/services.h"
 #include "core.h"
 #include "lowlib.h"
-#include "task.h"
+#include "thread.h"
 #include "func.h"
 #include "../servers/fs/posix.h"
 

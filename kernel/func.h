@@ -20,7 +20,7 @@ Version 2, June 1991
 
 #include "core.h"
 #include "boot.h"
-#include "task.h"
+#include "thread.h"
 #include "../include/itron/rendezvous.h"
 
 #include "../servers/port-manager/port-manager.h"
@@ -43,12 +43,12 @@ extern ER pfree(VP p, W size);
 extern void pmemstat(void);
 extern UW pmemfree(void);
 
-/* task.c */
-extern void init_task(void);
-extern void init_task1(void);
-extern ER task_switch(void);
-extern void print_task_list(void);
-extern T_TCB *get_tskp(ID tskid);
+/* thread.c */
+extern void thread_initialize(void);
+extern void thread_initialize1(void);
+extern ER thread_switch(void);
+extern void print_thread_list(void);
+extern T_TCB *get_thread_ptr(ID tskid);
 extern void make_local_stack(T_TCB *tsk, W size, W acc);
 
 /* posix.c */

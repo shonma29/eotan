@@ -33,7 +33,7 @@ Version 2, June 1991
 #include "core.h"
 #include "misc.h"
 #include "arch.h"
-#include "task.h"
+#include "thread.h"
 #include "func.h"
 #include "sync.h"
 #include "arch/archfunc.h"
