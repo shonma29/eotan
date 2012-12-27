@@ -109,7 +109,7 @@ static T_MSG *get_msg(T_MSGHEAD * list)
  * 返り値：
  *	エラー番号
  */
-ER init_msgbuf(void)
+ER queue_initialize(void)
 {
     INT i;
 
@@ -129,7 +129,7 @@ ER init_msgbuf(void)
 
 
 /****************************************************************************
- * cre_mbf -- メッセージバッファ生成
+ * queue_create -- メッセージバッファ生成
  *
  * 引数：
  *	id	メッセージバッファ ID
@@ -148,7 +148,7 @@ ER init_msgbuf(void)
  * 機能：
  *	メッセージバッファを生成する。
  */
-ER cre_mbf(ID id, T_CMBF * pk_cmbf)
+ER queue_create(ID id, T_CMBF * pk_cmbf)
 {
     if ((id < MIN_MSGBUF) || (id > MAX_MSGBUF)) {
 	return (E_ID);
@@ -172,7 +172,7 @@ ER cre_mbf(ID id, T_CMBF * pk_cmbf)
     return (E_OK);
 }
 
-ER_ID acre_mbf(T_CMBF * pk_cmbf)
+ER_ID queue_create_auto(T_CMBF * pk_cmbf)
 {
     ID id;
 
@@ -203,7 +203,7 @@ ER_ID acre_mbf(T_CMBF * pk_cmbf)
 }
 
 /**************************************************************************************
- * del_mbf --- メッセージバッファを削除する
+ * queue_destroy --- メッセージバッファを削除する
  *
  * 引数：
  *	id	メッセージバッファ ID
@@ -218,7 +218,7 @@ ER_ID acre_mbf(T_CMBF * pk_cmbf)
  *	引数 ID で指定したメッセージバッファを削除する。
  *
  */
-ER del_mbf(ID id)
+ER queue_destroy(ID id)
 {
     T_TCB *p;
     T_MSG *msgp;
@@ -259,7 +259,7 @@ ER del_mbf(ID id)
 }
 
 /*********************************************************************************
- * snd_mbf --- メッセージバッファへ送信
+ * message_send --- メッセージバッファへ送信
  *
  * 引数：
  *	id	メッセージバッファ ID
@@ -272,7 +272,7 @@ ER del_mbf(ID id)
  * 機能：
  *	
  */
-ER snd_mbf(ID id, INT size, VP msg)
+ER message_send(ID id, INT size, VP msg)
 {
     T_TCB *p;
     T_MSG *newmsg;
@@ -366,7 +366,7 @@ ER snd_mbf(ID id, INT size, VP msg)
 }
 
 /*********************************************************************************
- * psnd_mbf --- メッセージバッファへ送信(ポーリング)
+ * message_send_nowait --- メッセージバッファへ送信(ポーリング)
  *
  * 引数：
  *	id	メッセージバッファ ID
@@ -379,7 +379,7 @@ ER snd_mbf(ID id, INT size, VP msg)
  * 機能：
  *	
  */
-ER psnd_mbf(ID id, INT size, VP msg)
+ER message_send_nowait(ID id, INT size, VP msg)
 {
     T_TCB *p;
     T_MSG *newmsg;
@@ -449,7 +449,7 @@ ER psnd_mbf(ID id, INT size, VP msg)
 }
 
 /*********************************************************************************
- * rcv_mbf --- メッセージバッファから受信する
+ * message_receive --- メッセージバッファから受信する
  *
  * 引数：
  *	msg	受信したメッセージを入れる領域
@@ -462,7 +462,7 @@ ER psnd_mbf(ID id, INT size, VP msg)
  * 機能：
  *
  */
-ER rcv_mbf(VP msg, INT * size, ID id)
+ER message_receive(VP msg, INT * size, ID id)
 {
     T_TCB *p;
     T_MSG *newmsgp;

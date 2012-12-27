@@ -206,12 +206,12 @@ static ER	if_del_flg (void *argp);
 static ER	if_set_flg (void *argp);
 static ER	if_clr_flg (void *argp);
 static ER	if_wai_flg (void *argp);
-static ER	if_cre_mbf (void *argp);
-static ER	if_acre_mbf (void *argp);
-static ER	if_del_mbf (void *argp);
-static ER	if_snd_mbf (void *argp);
-static ER	if_psnd_mbf (void *argp);
-static ER	if_rcv_mbf (void *argp);
+static ER	if_queue_create(void *argp);
+static ER	if_queue_create_auto(void *argp);
+static ER	if_queue_destroy(void *argp);
+static ER	if_message_send(void *argp);
+static ER	if_message_send_nowait(void *argp);
+static ER	if_message_receive(void *argp);
 
 /* 時間管理用システムコール */
 static ER	if_set_tim (void *argp);
@@ -281,12 +281,12 @@ static ER (*syscall_table[])(VP argp) =
   SVC_IF (wai_flg, 4),	/*   16 */
 
   /* メッセージバッファ */
-  SVC_IF (cre_mbf, 2),	/*   17	*/
-  SVC_IF (acre_mbf, 1),	/*   18	*/
-  SVC_IF (del_mbf, 1),	/*   19 */
-  SVC_IF (snd_mbf, 3),	/*   20 */
-  SVC_IF (psnd_mbf, 3),	/*   21 */
-  SVC_IF (rcv_mbf, 3),	/*   22 */
+  SVC_IF (queue_create, 2),	/*   17	*/
+  SVC_IF (queue_create_auto, 1),	/*   18	*/
+  SVC_IF (queue_destroy, 1),	/*   19 */
+  SVC_IF (message_send, 3),	/*   20 */
+  SVC_IF (message_send_nowait, 3),	/*   21 */
+  SVC_IF (message_receive, 3),	/*   22 */
 
   /* 割りこみ管理 */
 
@@ -574,35 +574,35 @@ static ER if_wai_flg(VP argp)
 	    (args->p_flgptn, args->flgid, args->waiptn, args->wfmode));
 }
 
-static ER if_cre_mbf(VP argp)
+static ER if_queue_create(VP argp)
 {
     struct {
 	ID id;
 	T_CMBF *pk_cmbf;
     } *args = argp;
 
-    return (cre_mbf(args->id, args->pk_cmbf));
+    return (queue_create(args->id, args->pk_cmbf));
 }
 
-static ER if_acre_mbf(VP argp)
+static ER if_queue_create_auto(VP argp)
 {
     struct {
 	T_CMBF *pk_cmbf;
     } *args = argp;
 
-    return (acre_mbf(args->pk_cmbf));
+    return (queue_create_auto(args->pk_cmbf));
 }
 
-static ER if_del_mbf(VP argp)
+static ER if_queue_destroy(VP argp)
 {
     struct {
 	ID id;
     } *args = argp;
 
-    return (del_mbf(args->id));
+    return (queue_destroy(args->id));
 }
 
-static ER if_snd_mbf(VP argp)
+static ER if_message_send(VP argp)
 {
     struct {
 	ID id;
@@ -610,10 +610,10 @@ static ER if_snd_mbf(VP argp)
 	VP msg;
     } *args = argp;
 
-    return (snd_mbf(args->id, args->size, args->msg));
+    return (message_send(args->id, args->size, args->msg));
 }
 
-static ER if_psnd_mbf(VP argp)
+static ER if_message_send_nowait(VP argp)
 {
     struct {
 	ID id;
@@ -621,10 +621,10 @@ static ER if_psnd_mbf(VP argp)
 	VP msg;
     } *args = argp;
 
-    return (psnd_mbf(args->id, args->size, args->msg));
+    return (message_send_nowait(args->id, args->size, args->msg));
 }
 
-static ER if_rcv_mbf(VP argp)
+static ER if_message_receive(VP argp)
 {
     struct {
 	VP msg;
@@ -632,7 +632,7 @@ static ER if_rcv_mbf(VP argp)
 	ID id;
     } *args = argp;
 
-    return (rcv_mbf(args->msg, args->size, args->id));
+    return (message_receive(args->msg, args->size, args->id));
 }
 
 /*

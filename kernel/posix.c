@@ -26,6 +26,6 @@ ER posix_kill_proc(ID pid)
   req.procid = pid;
   req.caller = KERNEL_TASK; /* KERNEL_TASK で実行 */
 
-  errno = psnd_mbf (PORT_FS, sizeof (struct posix_request), &req);
+  errno = message_send_nowait(PORT_FS, sizeof (struct posix_request), &req);
   return(errno);
 }
