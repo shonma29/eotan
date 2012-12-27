@@ -241,12 +241,12 @@ static ER	if_vcpy_stk (void *argp);
 static ER	if_vset_ctx (void *argp);
 static ER	if_vuse_fpu (void *argp);
 
-static ER if_cre_por(void *argp);
-static ER_ID if_acre_por(void *argp);
-static ER if_del_por(void *argp);
-static ER_UINT if_cal_por(void *argp);
-static ER_UINT if_acp_por(void *argp);
-static ER if_rpl_rdv(void *argp);
+static ER if_port_create(void *argp);
+static ER_ID if_port_create_auto(void *argp);
+static ER if_port_destroy(void *argp);
+static ER_UINT if_port_call(void *argp);
+static ER_UINT if_port_accept(void *argp);
+static ER if_port_reply(void *argp);
 
 
 /* システムコールテーブル
@@ -322,12 +322,12 @@ static ER (*syscall_table[])(VP argp) =
   SVC_IF (vset_ctx, 4),	/*   41 */
   SVC_IF (vuse_fpu, 1),	/*   42 */
 
-  SVC_IF (cre_por, 2),	/*   43 */
-  SVC_IF (acre_por, 1),	/*   44 */
-  SVC_IF (del_por, 1),	/*   45 */
-  SVC_IF (cal_por, 4),	/*   46 */
-  SVC_IF (acp_por, 4),	/*   47 */
-  SVC_IF (rpl_rdv, 3),	/*   48 */
+  SVC_IF (port_create, 2),	/*   43 */
+  SVC_IF (port_create_auto, 1),	/*   44 */
+  SVC_IF (port_destroy, 1),	/*   45 */
+  SVC_IF (port_call, 4),	/*   46 */
+  SVC_IF (port_accept, 4),	/*   47 */
+  SVC_IF (port_reply, 3),	/*   48 */
 };
 
 #define NSYSCALL (sizeof (syscall_table) / sizeof (syscall_table[0]))
@@ -1002,7 +1002,7 @@ static ER if_vuse_fpu(VP argp)
     return vuse_fpu(args->tid);
 }
 
-static ER if_cre_por(VP argp)
+static ER if_port_create(VP argp)
 {
     struct {
 	ID porid;
@@ -1012,7 +1012,7 @@ static ER if_cre_por(VP argp)
     return port_create(args->porid, args->pk_cpor);
 }
 
-static ER_ID if_acre_por(VP argp)
+static ER_ID if_port_create_auto(VP argp)
 {
     struct {
 	T_CPOR *pk_cpor;
@@ -1021,7 +1021,7 @@ static ER_ID if_acre_por(VP argp)
     return port_create_auto(args->pk_cpor);
 }
 
-static ER if_del_por(VP argp)
+static ER if_port_destroy(VP argp)
 {
     struct {
 	ID porid;
@@ -1030,7 +1030,7 @@ static ER if_del_por(VP argp)
     return port_destroy(args->porid);
 }
 
-static ER_UINT if_cal_por(VP argp)
+static ER_UINT if_port_call(VP argp)
 {
     struct {
 	ID porid;
@@ -1042,7 +1042,7 @@ static ER_UINT if_cal_por(VP argp)
     return port_call(args->porid, args->calptn, args->msg, args->cmsgsz);
 }
 
-static ER_UINT if_acp_por(VP argp)
+static ER_UINT if_port_accept(VP argp)
 {
     struct {
 	ID porid;
@@ -1054,7 +1054,7 @@ static ER_UINT if_acp_por(VP argp)
     return port_accept(args->porid, args->p_rdvno, args->msg);
 }
 
-static ER if_rpl_rdv(VP argp)
+static ER if_port_reply(VP argp)
 {
     struct {
 	RDVNO rdvno;
