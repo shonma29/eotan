@@ -201,11 +201,11 @@ static ER	if_rel_wai (void *argp);
 static ER	if_get_tid (void *argp);
 static ER	if_sus_tsk (void *argp);
 static ER	if_rsm_tsk (void *argp);
-static ER	if_acre_flg (void *argp);
-static ER	if_del_flg (void *argp);
-static ER	if_set_flg (void *argp);
-static ER	if_clr_flg (void *argp);
-static ER	if_wai_flg (void *argp);
+static ER	if_flag_create_auto(void *argp);
+static ER	if_flag_destroy(void *argp);
+static ER	if_flag_set(void *argp);
+static ER	if_flag_clear(void *argp);
+static ER	if_flag_wait(void *argp);
 static ER	if_queue_create(void *argp);
 static ER	if_queue_create_auto(void *argp);
 static ER	if_queue_destroy(void *argp);
@@ -274,11 +274,11 @@ static ER (*syscall_table[])(VP argp) =
   /* セマフォ */
 
   /* イベントフラグ */
-  SVC_IF (acre_flg, 1),	/*   12 */
-  SVC_IF (del_flg, 1),	/*   13 */
-  SVC_IF (set_flg, 2),	/*   14 */
-  SVC_IF (clr_flg, 2),     /*   15 */
-  SVC_IF (wai_flg, 4),	/*   16 */
+  SVC_IF (flag_create_auto, 1),	/*   12 */
+  SVC_IF (flag_destroy, 1),	/*   13 */
+  SVC_IF (flag_set, 2),	/*   14 */
+  SVC_IF (flag_clear, 2),     /*   15 */
+  SVC_IF (flag_wait, 4),	/*   16 */
 
   /* メッセージバッファ */
   SVC_IF (queue_create, 2),	/*   17	*/
@@ -523,45 +523,45 @@ static ER if_rsm_tsk(VP argp)
 /* ----------------------------------------------------------------------- *
  * タスク間通信システムコール                                              *
  * ----------------------------------------------------------------------- */
-static ER if_acre_flg(VP argp)
+static ER if_flag_create_auto(VP argp)
 {
     struct {
 	T_CFLG *pk_cflg;
     } *args = argp;
 
-    return (acre_flg(args->pk_cflg));
+    return (flag_create_auto(args->pk_cflg));
 }
 
-static ER if_del_flg(VP argp)
+static ER if_flag_destroy(VP argp)
 {
     struct {
 	ID flgid;
     } *args = argp;
 
-    return (del_flg(args->flgid));
+    return (flag_destroy(args->flgid));
 }
 
-static ER if_set_flg(VP argp)
+static ER if_flag_set(VP argp)
 {
     struct {
 	ID flgid;
 	UINT setptn;
     } *args = argp;
 
-    return (set_flg(args->flgid, args->setptn));
+    return (flag_set(args->flgid, args->setptn));
 }
 
-static ER if_clr_flg(VP argp)
+static ER if_flag_clear(VP argp)
 {
     struct {
 	ID flgid;
 	UINT clrptn;
     } *args = argp;
 
-    return (clr_flg(args->flgid, args->clrptn));
+    return (flag_clear(args->flgid, args->clrptn));
 }
 
-static ER if_wai_flg(VP argp)
+static ER if_flag_wait(VP argp)
 {
     struct {
 	UINT *p_flgptn;
@@ -570,7 +570,7 @@ static ER if_wai_flg(VP argp)
 	UINT wfmode;
     } *args = argp;
 
-    return (wai_flg
+    return (flag_wait
 	    (args->p_flgptn, args->flgid, args->waiptn, args->wfmode));
 }
 

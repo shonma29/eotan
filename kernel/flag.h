@@ -8,13 +8,13 @@ Version 2, June 1991
 (C) B-Free Project.
 
 */
-/* eventflag.h
+/* flag.h
  *
  *
  */
 
-#ifndef __CORE_EVENTFLAG_H__
-#define __CORE_EVENTFLAG_H__	1
+#ifndef __CORE_FLAG_H__
+#define __CORE_FLAG_H__	1
 
 #include "../include/set/list.h"
 #include "../include/set/tree.h"
@@ -23,13 +23,13 @@ Version 2, June 1991
  *	イベントフラグ情報
  *
  */
-typedef struct eventflag_t
+typedef struct flag_t
 {
   node_t node;
   list_t receiver;
   ATR		flgatr;			/* イベントフラグ属性			*/
   UINT		iflgptn;		/* イベントフラグの値			*/
-} T_EVENTFLAG;
+} T_FLAG;
 
 
-#endif /* __CORE_EVENTFLAG_H__ */
+#endif /* __CORE_FLAG_H__ */

@@ -32,7 +32,7 @@ OBJS= \
 	task.o \
 	time.o \
 	message.o \
-	eventflag.o \
+	flag.o \
 	lowlib.o \
 	posix.o \
 	ready.o \

@@ -315,7 +315,7 @@ static ER init_itron(void)
 
     init_kalloc();		/* バイト単位のメモリ管理機能の初期化   */
     queue_initialize();		/* メッセージ管理機能の初期化           */
-    init_eventflag();		/* イベントフラグ管理機能の初期化       */
+    flag_initialize();		/* イベントフラグ管理機能の初期化       */
     port_initialize();
     init_task();		/* タスク管理機能の初期化 */
 

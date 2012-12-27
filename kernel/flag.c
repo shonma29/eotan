@@ -10,7 +10,7 @@ Version 2, June 1991
 (C) 2001, Tomohide Naniwa
 
 */
-/* event.c --- イベントフラグ機能
+/* flag.c --- イベントフラグ機能
  *
  *
  */
@@ -24,19 +24,19 @@ Version 2, June 1991
 #include "memory.h"
 #include "func.h"
 #include "arch.h"
-#include "eventflag.h"
+#include "flag.h"
 #include "sync.h"
 #include "setting.h"
 
 static slab_t slab;
 static tree_t tree;
 
-static T_EVENTFLAG *getParent(const node_t *p);
+static T_FLAG *getParent(const node_t *p);
 static T_TCB *getTaskParent(const list_t *p);
 
 
-static T_EVENTFLAG *getParent(const node_t *p) {
-	return (T_EVENTFLAG*)((ptr_t)p - offsetof(T_EVENTFLAG, node));
+static T_FLAG *getParent(const node_t *p) {
+	return (T_FLAG*)((ptr_t)p - offsetof(T_FLAG, node));
 }
 
 static T_TCB *getTaskParent(const list_t *p) {
@@ -44,7 +44,7 @@ static T_TCB *getTaskParent(const list_t *p) {
 }
 
 /*******************************************************************************
- * init_eventflag
+ * flag_initialize
  *
  * 引数：
  *
@@ -53,12 +53,12 @@ static T_TCB *getTaskParent(const list_t *p) {
  * 機能：
  *
  */
-ER init_eventflag(void)
+ER flag_initialize(void)
 {
-    slab.unit_size = sizeof(T_EVENTFLAG);
+    slab.unit_size = sizeof(T_FLAG);
     slab.block_size = I386_PAGESIZE;
     slab.min_block = 1;
-    slab.max_block = tree_max_block(65536, I386_PAGESIZE, sizeof(T_EVENTFLAG));
+    slab.max_block = tree_max_block(65536, I386_PAGESIZE, sizeof(T_FLAG));
     slab.palloc = palloc;
     slab.pfree = pfree;
     slab_create(&slab);
@@ -68,9 +68,9 @@ ER init_eventflag(void)
     return (E_OK);
 }
 
-ER_ID acre_flg(T_CFLG * pk_flg)
+ER_ID flag_create_auto(T_CFLG * pk_flg)
 {
-    T_EVENTFLAG *p;
+    T_FLAG *p;
     node_t *node;
     ID flgid;
 
@@ -101,7 +101,7 @@ ER_ID acre_flg(T_CFLG * pk_flg)
 
 
 /*******************************************************************************
- * del_flg --- イベントフラグの削除
+ * flag_destroy --- イベントフラグの削除
  *
  * 引数：
  *
@@ -114,9 +114,9 @@ ER_ID acre_flg(T_CFLG * pk_flg)
  * 機能：
  *
  */
-ER del_flg(ID flgid)
+ER flag_destroy(ID flgid)
 {
-    T_EVENTFLAG *p;
+    T_FLAG *p;
     node_t *node = tree_get(&tree, flgid);
     list_t *q;
 
@@ -138,7 +138,7 @@ ER del_flg(ID flgid)
 }
 
 /*******************************************************************************
- * set_flg --- イベントフラグに値をセットする
+ * flag_set --- イベントフラグに値をセットする
  *
  * 引数：
  *
@@ -151,9 +151,9 @@ ER del_flg(ID flgid)
  * 機能：
  *
  */
-ER set_flg(ID flgid, UINT setptn)
+ER flag_set(ID flgid, UINT setptn)
 {
-    T_EVENTFLAG *p;
+    T_FLAG *p;
     node_t *node = tree_get(&tree, flgid);
     T_TCB *task;
     BOOL result;
@@ -211,7 +211,7 @@ ER set_flg(ID flgid, UINT setptn)
 }
 
 /*******************************************************************************
- * clr_flg --- イベントフラグの値をクリアする
+ * flag_clear --- イベントフラグの値をクリアする
  *
  * 引数：
  *
@@ -224,9 +224,9 @@ ER set_flg(ID flgid, UINT setptn)
  * 機能：
  *
  */
-ER clr_flg(ID flgid, UINT clrptn)
+ER flag_clear(ID flgid, UINT clrptn)
 {
-    T_EVENTFLAG *p;
+    T_FLAG *p;
     node_t *node = tree_get(&tree, flgid);
 
     if (!node) {
@@ -244,7 +244,7 @@ ER clr_flg(ID flgid, UINT clrptn)
 
 
 /*******************************************************************************
- * wai_flg --- イベントフラグ待ち
+ * flag_wait --- イベントフラグ待ち
  *
  * 引数：
  *
@@ -253,9 +253,9 @@ ER clr_flg(ID flgid, UINT clrptn)
  * 機能：
  *
  */
-ER wai_flg(UINT * flgptn, ID flgid, UINT waiptn, UINT wfmode)
+ER flag_wait(UINT * flgptn, ID flgid, UINT waiptn, UINT wfmode)
 {
-    T_EVENTFLAG *p;
+    T_FLAG *p;
     node_t *node;
     BOOL result;
 

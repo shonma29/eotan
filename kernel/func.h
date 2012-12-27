@@ -60,10 +60,10 @@ extern VP kalloc(W size);
 extern void kfree(VP area, W size);
 
 /* message.c */
-extern ER init_msgbuf(void);
+extern ER queue_initialize(void);
 
-/* eventflag.c */
-extern ER init_eventflag(void);
+/* flag.c */
+extern ER flag_initialize(void);
 
 /* time.c */
 extern void init_time(UW seconds);
