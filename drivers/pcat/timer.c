@@ -134,7 +134,7 @@ void intr_interval(void)
     run_task->total++;
 
     /* システム時間の増加 */
-    get_tim(&time);
+    time_get(&time);
     TH = time.utime;
     TM = time.ltime >> 16;
     TL = time.ltime & 0x0FFFF;
@@ -142,7 +142,7 @@ void intr_interval(void)
     TM += TL >> 16;
     time.ltime = ((TM & 0x0FFFF) << 16) + (TL & 0x0FFFF);
     time.utime = TH + (TM >> 16);
-    set_tim(&time);
+    time_set(&time);
 
     if ((run_task->quantum) > 0 && (run_task->tsklevel >= USER_LEVEL)) {
 	if (--run_task->quantum == 0) {
@@ -176,7 +176,7 @@ void intr_interval(void)
  * 処理：
  *
  */
-void init_timer(void)
+void timer_initialize(void)
 {
     W i;
 #if 0

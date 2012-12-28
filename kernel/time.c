@@ -47,7 +47,7 @@ static T_DALM almtable[MAX_ALARM];
 SYSTIME system_time;
 #define MS 1000
 
-void init_time(UW seconds)
+void time_initialize(UW seconds)
 {
   SYSTIME time;
   UW TH, TM, TL;
@@ -60,13 +60,13 @@ void init_time(UW seconds)
   TM += TL >> 16;
   time.ltime = ((TM & 0x0FFFF) << 16) + (TL & 0x0FFFF);
   time.utime = TH + (TM >> 16);
-  set_tim(&time);
+  time_set(&time);
 }
 
 /*
  * システムクロック設定
  */
-ER set_tim(SYSTIME *pk_tim)
+ER time_set(SYSTIME *pk_tim)
 {
   if (pk_tim == NULL) {
     return (E_PAR);
@@ -79,7 +79,7 @@ ER set_tim(SYSTIME *pk_tim)
 /*
  * システムクロック参照
  */
-ER get_tim(SYSTIME *pk_tim)
+ER time_get(SYSTIME *pk_tim)
 {
   if (pk_tim == NULL) {
     return (E_PAR);
@@ -106,7 +106,7 @@ dly_func (VP p)
   release(taskp);
 }
 
-ER dly_tsk(DLYTIME dlytim)
+ER thread_delay(DLYTIME dlytim)
 {
   if (dlytim < 0) return(E_PAR);
   else if (! dlytim) return(E_OK);
@@ -121,7 +121,7 @@ ER dly_tsk(DLYTIME dlytim)
  * アラームハンドラ定義
  */
 
-ER def_alm(HNO almno, T_DALM *pk_dalm)
+ER alarm_create(HNO almno, T_DALM *pk_dalm)
 {
   if (almno < 0) return(E_PAR);
   else if (almno >= MAX_ALARM) return(E_PAR);

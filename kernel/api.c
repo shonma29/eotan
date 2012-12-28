@@ -214,10 +214,10 @@ static ER	if_message_send_nowait(void *argp);
 static ER	if_message_receive(void *argp);
 
 /* 時間管理用システムコール */
-static ER	if_set_tim (void *argp);
-static ER	if_get_tim (void *argp);
-static ER	if_dly_tsk (void *argp);
-static ER	if_def_alm (void *argp);
+static ER	if_time_set(void *argp);
+static ER	if_time_get(void *argp);
+static ER	if_thread_delay(void *argp);
+static ER	if_alarm_create(void *argp);
 
 static ER	if_def_int (void *argp);
 
@@ -295,10 +295,10 @@ static ER (*syscall_table[])(VP argp) =
   /* システム管理 */
 
   /* 時間管理機能 */
-  SVC_IF (set_tim, 1),	/*   23 */
-  SVC_IF (get_tim, 1),	/*   24 */
-  SVC_IF (dly_tsk, 1),	/*   25 */
-  SVC_IF (def_alm, 2),	/*   26 */
+  SVC_IF (time_set, 1),	/*   23 */
+  SVC_IF (time_get, 1),	/*   24 */
+  SVC_IF (thread_delay, 1),	/*   25 */
+  SVC_IF (alarm_create, 2),	/*   26 */
 
   SVC_IF (def_int, 2),	/*   27 */
 
@@ -814,41 +814,41 @@ static ER if_vget_phs(VP argp)
  * 時間管理の関数群 
  */
 
-static ER if_set_tim(VP argp)
+static ER if_time_set(VP argp)
 {
     struct {
 	SYSTIME *pk_tim;
     } *args = argp;
 
-    return (set_tim(args->pk_tim));
+    return (time_set(args->pk_tim));
 }
 
-static ER if_get_tim(VP argp)
+static ER if_time_get(VP argp)
 {
     struct {
 	SYSTIME *pk_tim;
     } *args = argp;
 
-    return (get_tim(args->pk_tim));
+    return (time_get(args->pk_tim));
 }
 
-static ER if_dly_tsk(VP argp)
+static ER if_thread_delay(VP argp)
 {
     struct {
 	DLYTIME dlytim;
     } *args = argp;
 
-    return (dly_tsk(args->dlytim));
+    return (thread_delay(args->dlytim));
 }
 
-static ER if_def_alm(VP argp)
+static ER if_alarm_create(VP argp)
 {
     struct {
 	HNO almo;
 	T_DALM *pk_dalm;
     } *args = argp;
 
-    return (def_alm(args->almo, args->pk_dalm));
+    return (alarm_create(args->almo, args->pk_dalm));
 }
 
 /*

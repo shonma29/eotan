@@ -324,9 +324,9 @@ static ER init_itron(void)
      */
     thread_initialize1();
 
-    init_timer();		/* インターバルタイマ機能の初期化 */
+    timer_initialize();		/* インターバルタイマ機能の初期化 */
     info = (struct boot_header *) MODULE_TABLE;
-    init_time(info->machine.clock);		/* 時間管理機能の初期化 */
+    time_initialize(info->machine.clock);		/* 時間管理機能の初期化 */
     start_interval();		/* インターバルタイマの起動       */
 
 /*  init_io (); */

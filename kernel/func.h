@@ -66,7 +66,7 @@ extern ER queue_initialize(void);
 extern ER flag_initialize(void);
 
 /* time.c */
-extern void init_time(UW seconds);
+extern void time_initialize(UW seconds);
 extern ER set_tim(SYSTIME *pk_tim);
 extern ER get_tim(SYSTIME *pk_tim);
 
