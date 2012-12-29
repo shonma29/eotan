@@ -130,7 +130,7 @@ ER load_lowlib(VP * argp)
 	    if (tskp->n_interrupt == 1) {
 		paddr = (UW *) vtor(args->task, (UW) LOWLIB_DATA);
 		if (paddr == NULL) {
-		    errno = vmap_reg(args->task, LOWLIB_DATA,
+		    errno = region_map(args->task, LOWLIB_DATA,
 				     sizeof(struct lowlib_data), ACC_USER);
 		    if (errno) {
 			return (errno);
@@ -140,7 +140,7 @@ ER load_lowlib(VP * argp)
 			("WARNING: LOWLIB_DATA has already been mapped\n");
 		}
 		memset(&ld, 0, sizeof(struct lowlib_data));
-		errno = vput_reg(args->task, LOWLIB_DATA,
+		errno = region_put(args->task, LOWLIB_DATA,
 				 sizeof(struct lowlib_data), &ld);
 		if (errno)
 		    return (errno);

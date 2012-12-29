@@ -209,12 +209,6 @@ ADDR_MAP dup_vmap_table(ADDR_MAP dest)
 		}
 	    }
 
-#ifdef notdef
-	    memcpy((unsigned int)(VP)p,
-		    (unsigned int)((VP)RTOV(dest[i].frame_addr << PAGE_SHIFT)),
-		    PAGE_SIZE);
-#endif
-
 #ifdef DEBUG
 	    printk("dup_vmap_table: [%d]copy 0x%x -> 0x%x\n",
 		   i, (VP) RTOV(dest[i].frame_addr << PAGE_SHIFT), (VP) p);
@@ -294,13 +288,6 @@ BOOL vmap(T_TCB * task, UW vpage, UW ppage, W accmode)
     dirindex = vpage & DIR_MASK;
     dirindex = dirindex >> DIR_SHIFT;
     pageindex = (vpage & PAGE_MASK) >> PAGE_SHIFT;
-
-/*
-  dirindex = vpage / (PAGE_SIZE * PAGE_SIZE);
-*/
-/*
-  pageindex = (vpage % (PAGE_SIZE * PAGE_SIZE * PAGE_SIZE));
-*/
 
 #ifdef DEBUG
     printk("dirindex = %d, pageindex = %d\n", dirindex, pageindex);
@@ -465,11 +452,7 @@ UW vtor(ID tskid, UW addr)
     UW pageindex;
 
     taskp = (T_TCB *) get_tskp(tskid);
-#ifdef notdef
-    if ((taskp->tskstat == TTS_NON) || (taskp->tskstat == TTS_DMT))
-#else
     if (taskp->tskstat == TTS_NON)
-#endif
     {
 	return (NULL);
     }
@@ -488,15 +471,12 @@ UW vtor(ID tskid, UW addr)
     if (pageent[pageindex].present != 1) {
 	return (NULL);
     }
-#if 1
+
     /* page の境界でなく，アドレスそのものを返す． */
     /* RTOV を通すことで，カーネルから直接アクセスすることが可能になる */
     return (RTOV
 	    ((pageent[pageindex].frame_addr << PAGE_SHIFT) +
 	     (addr & OFFSET_MASK)));
-#else
-    return (pageent[pageindex].frame_addr << PAGE_SHIFT);
-#endif
 }
 
 
@@ -513,7 +493,7 @@ UW vtor(ID tskid, UW addr)
  * vcre_reg を実行したあとに vmap_reg を実行する必要がある。
  *
  */
-ER vcre_reg(ID id,		/* task ID */
+ER region_create(ID id,		/* task ID */
 	    ID rid,		/* region number */
 	    VP start,		/* リージョンの開始アドレス */
 	    W min,		/* リージョンの最小(初期)サイズ */
@@ -524,9 +504,6 @@ ER vcre_reg(ID id,		/* task ID */
     /* きの処理の指定 */
     T_TCB *taskp;
     T_REGION *regp;
-#ifdef notdef
-    W counter;
-#endif
 #ifdef DEBUG
     printk("vcre_reg %d %d %x %x %x %x %x\n", id, rid, start, min, max,
 	   perm, handle);
@@ -558,33 +535,13 @@ ER vcre_reg(ID id,		/* task ID */
 	 */
 	return (E_OBJ);
     }
-#ifdef notdef
-    /*
-     * 取り出したタスクのコンテキスト情報からリージョン情報のエントリを
-     * 取り出す。 
-     */
-    for (counter = 0; counter < MAX_REGION; counter++) {
-	if (taskp->regions[counter].permission == 0) {
-	    break;
-	}
-    }
-    if (counter == MAX_REGION) {
-	/*
-	 * 空いているリージョンがなかった。
-	 * E_NOMEM のエラーを返す。
-	 */
-	return (E_NOMEM);
-    }
-    regp = &(taskp->regions[counter]);	/* regp に空いているリージョン */
-    /* エントリをポインタを入れる。 */
-#else
+
     if (rid < 0 || rid >= MAX_REGION)
 	return (E_PAR);
     if (taskp->regions[rid].permission != 0) {
 	return (E_ID);
     }
     regp = &(taskp->regions[rid]);
-#endif
 
     /*
      * リージョン情報の設定。
@@ -619,20 +576,9 @@ ER vcre_reg(ID id,		/* task ID */
  * システムコール内で判断する。
  *
  */
-ER
-#ifdef notdef
-    vdel_reg(ID id, VP start)
-    /* id     削除するリージョンをもつタスク
-     * start  削除するリージョンの先頭アドレス
-     */
-#else
-    vdel_reg(ID id, ID rid)
-#endif
+ER region_destroy(ID id, ID rid)
 {
     T_TCB *taskp;
-#ifdef notdef
-    W counter;
-#endif
 
 #ifdef DEBUG
     printk("vdel_reg %d %d\n", id, rid);
@@ -645,23 +591,10 @@ ER
 	 */
 	return (E_OBJ);
     }
-#ifdef notdef
-    for (counter = 0; counter < MAX_REGION; counter++) {
-	if (taskp->regions[counter].start_addr == start) {
-	    taskp->regions[counter].permission = 0;
-	    break;
-	}
-    }
-    if (counter == MAX_REGION)
-	return (E_PAR);
-    else
-	return (E_OK);
-#else
     if (rid < 0 || rid >= MAX_REGION)
 	return (E_PAR);
     taskp->regions[rid].permission = 0;
     return (E_OK);
-#endif
 }
 
 /*
@@ -685,7 +618,7 @@ ER
  *	E_PAR	 引数がおかしい
  *
  */
-ER vmap_reg(ID id, VP start, UW size, W accmode)
+ER region_map(ID id, VP start, UW size, W accmode)
     /* 
      * id        タスク ID
      * start     マップする仮想メモリ領域の先頭アドレス
@@ -702,11 +635,7 @@ ER vmap_reg(ID id, VP start, UW size, W accmode)
     UW newsize;
 
     taskp = (T_TCB *) get_tskp(id);
-#ifdef notdef
-    if ((taskp->tskstat == TTS_NON) || (taskp->tskstat == TTS_DMT))
-#else
     if (taskp->tskstat == TTS_NON)
-#endif
     {
 #ifdef DEBUG
 	printk("vmap_reg : taskp->tskstat = %d\n", taskp->tskstat);	/* */
@@ -774,7 +703,7 @@ ER vmap_reg(ID id, VP start, UW size, W accmode)
 /*
  *
  */
-ER vunm_reg(ID id, VP start, UW size)
+ER region_unmap(ID id, VP start, UW size)
 {
     T_TCB *taskp;
     UW counter;
@@ -827,7 +756,7 @@ ER vunm_reg(ID id, VP start, UW size)
  * のタスクは影響を受けない。
  *
  */
-ER vdup_reg(ID src, ID dst, ID rid)
+ER region_duplicate(ID src, ID dst, ID rid)
     /* src    複製するリージョンをもつタスク
      * dst    リージョンの複製先のタスク
      * rid    region number
@@ -877,7 +806,7 @@ ER vdup_reg(ID src, ID dst, ID rid)
  *	E_NOSPT  本システムコールは、未サポート機能である
  *
  */
-ER vget_reg(ID id, VP start, UW size, VP buf)
+ER region_get(ID id, VP start, UW size, VP buf)
     /*
      * id     リージョンを持つタスク
      * start  読み込む領域の先頭アドレス
@@ -914,9 +843,7 @@ ER vget_reg(ID id, VP start, UW size, VP buf)
 	if (paddr == NULL) {
 	    return (E_PAR);
 	}
-#ifdef notdef
-	paddr = (UW) RTOV(paddr);	/* V = R 領域のアドレスへ変換 */
-#endif
+
 	if (p == align_start) {
 	    offset = (UW) paddr + ((UW) start - align_start);
 	    delta_start = (UW) start - align_start;
@@ -958,7 +885,7 @@ ER vget_reg(ID id, VP start, UW size, VP buf)
  *	E_NOSPT  本システムコールは、未サポート機能である
  *
  */
-ER vput_reg(ID id, VP start, UW size, VP buf)
+ER region_put(ID id, VP start, UW size, VP buf)
     /*
      * id     リージョンを持つタスク
      * start  書き込む領域の先頭アドレス
@@ -994,9 +921,7 @@ ER vput_reg(ID id, VP start, UW size, VP buf)
 	if (paddr == NULL) {
 	    return (E_PAR);
 	}
-#ifdef notdef
-	paddr = (VP) RTOV((UW) paddr);	/* V = R 領域のアドレスへ変換 */
-#endif
+
 	if (p == align_start) {
 	    offset = (UW) paddr + ((UW) start - align_start);
 	    delta_start = (UW) start - align_start;
@@ -1040,7 +965,7 @@ ER vput_reg(ID id, VP start, UW size, VP buf)
  *	E_NOSPT  本システムコールは、未サポート機能である
  *
  */
-ER vsts_reg(ID id, ID rid, VP stat)
+ER region_get_status(ID id, ID rid, VP stat)
     /*
      * id     リージョンをもつタスク
      * rid    region number

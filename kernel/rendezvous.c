@@ -275,8 +275,8 @@ ER_UINT port_call(ID porid, RDVPTN calptn, VP msg, UINT cmsgsz)
 	if (q) {
 		T_TCB *tp = getTaskParent(q);
 		rendezvous_t *r;
-		if (vput_reg(tp->tskid, tp->wait.detail.por.msg, cmsgsz, msg)) {
-			printk("[KERN] port_call[%d] vput_reg(%d, %p, %d, %p) error\n",
+		if (region_put(tp->tskid, tp->wait.detail.por.msg, cmsgsz, msg)) {
+			printk("[KERN] port_call[%d] region_put(%d, %p, %d, %p) error\n",
 					porid, tp->tskid,
 					tp->wait.detail.por.msg, cmsgsz, msg);
 			leave_serialize();
@@ -347,8 +347,8 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 
 		result = tp->wait.detail.por.size;
 
-		if (vget_reg(tp->tskid, tp->wait.detail.por.msg, result, msg)) {
-			printk("[KERN] port_accept[%d] vget_reg(%d, %p, %d, %p) error\n",
+		if (region_get(tp->tskid, tp->wait.detail.por.msg, result, msg)) {
+			printk("[KERN] port_accept[%d] region_get(%d, %p, %d, %p) error\n",
 					porid, tp->tskid,
 					tp->wait.detail.por.msg, result, msg);
 /* TODO release rendezvous */
@@ -412,9 +412,9 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 	if (q) {
 		T_TCB *tp = getTaskParent(q);
 
-		if (vput_reg(tp->tskid, tp->wait.detail.por.msg,
+		if (region_put(tp->tskid, tp->wait.detail.por.msg,
 				rmsgsz, msg)) {
-			printk("[KERN] port_reply[%d] vput_reg(%d, %p, %d, %p) error\n",
+			printk("[KERN] port_reply[%d] region_put(%d, %p, %d, %p) error\n",
 					rdvno, tp->tskid,
 					tp->wait.detail.por.msg, rmsgsz, msg);
 			leave_serialize();

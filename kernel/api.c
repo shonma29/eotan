@@ -225,14 +225,14 @@ static ER	if_vsys_inf (void *argp);
 static ER	if_dbg_puts (void *args);
 
 /* 仮想メモリ管理用システムコール */
-static ER	if_vcre_reg (void *argp);
-static ER	if_vdel_reg (void *argp);
-static ER	if_vmap_reg (void *argp);
-static ER	if_vunm_reg (void *argp);
-static ER	if_vdup_reg (void *argp);
-static ER	if_vput_reg (void *argp);
-static ER	if_vget_reg (void *argp);
-static ER	if_vsts_reg (void *argp);
+static ER	if_region_create(void *argp);
+static ER	if_region_destroy(void *argp);
+static ER	if_region_map(void *argp);
+static ER	if_region_unmap(void *argp);
+static ER	if_region_duplicate(void *argp);
+static ER	if_region_put(void *argp);
+static ER	if_region_get(void *argp);
+static ER	if_region_get_status(void *argp);
 static ER	if_vget_phs (void *argp);
 
 /* その他のシステムコール */
@@ -306,14 +306,14 @@ static ER (*syscall_table[])(VP argp) =
   SVC_IF (dbg_puts, 1),	/*   29 */
 
   /* 仮想メモリ管理システムコール */	
-  SVC_IF (vcre_reg, 7),	/*   30 */
-  SVC_IF (vdel_reg, 2),	/*   31 */
-  SVC_IF (vmap_reg, 3),	/*   32 */
-  SVC_IF (vunm_reg, 3),	/*   33 */
-  SVC_IF (vdup_reg, 3),	/*   34 */
-  SVC_IF (vput_reg, 4),	/*   35 */
-  SVC_IF (vget_reg, 4),	/*   36 */
-  SVC_IF (vsts_reg, 3),	/*   37 */
+  SVC_IF (region_create, 7),	/*   30 */
+  SVC_IF (region_destroy, 2),	/*   31 */
+  SVC_IF (region_map, 3),	/*   32 */
+  SVC_IF (region_unmap, 3),	/*   33 */
+  SVC_IF (region_duplicate, 3),	/*   34 */
+  SVC_IF (region_put, 4),	/*   35 */
+  SVC_IF (region_get, 4),	/*   36 */
+  SVC_IF (region_get_status, 3),	/*   37 */
   SVC_IF (vget_phs, 3),	/*   38 */
 
   /* その他のシステムコール */
@@ -496,7 +496,7 @@ static ER if_thread_get_id(VP argp)
 
     err = thread_get_id(&rid);
     if (err == E_OK)
-	err = vput_reg(run_task->tskid, args->p_tskid, sizeof(ID), &rid);
+	err = region_put(run_task->tskid, args->p_tskid, sizeof(ID), &rid);
     return (err);
 }
 
@@ -670,7 +670,7 @@ static ER if_def_int(VP argp)
 /*
  *
  */
-static ER if_vcre_reg(VP argp)
+static ER if_region_create(VP argp)
 {
     struct {
 	ID id;
@@ -682,27 +682,27 @@ static ER if_vcre_reg(VP argp)
 	FP handle;
     } *args = argp;
 
-    return vcre_reg(args->id, args->rid, args->start, args->min,
+    return region_create(args->id, args->rid, args->start, args->min,
 		    args->max, args->perm, args->handle);
 }
 
 /*
  *
  */
-static ER if_vdel_reg(VP argp)
+static ER if_region_destroy(VP argp)
 {
     struct {
 	ID id;
 	ID rid;
     } *args = argp;
 
-    return vdel_reg(args->id, args->rid);
+    return region_destroy(args->id, args->rid);
 }
 
 /*
  *
  */
-static ER if_vmap_reg(VP argp)
+static ER if_region_map(VP argp)
 {
     struct {
 	ID id;
@@ -711,13 +711,13 @@ static ER if_vmap_reg(VP argp)
 	W accmode;
     } *args = argp;
 
-    return vmap_reg(args->id, args->start, args->size, args->accmode);
+    return region_map(args->id, args->start, args->size, args->accmode);
 }
 
 /*
  *
  */
-static ER if_vunm_reg(VP argp)
+static ER if_region_unmap(VP argp)
 {
     struct {
 	ID id;
@@ -725,13 +725,13 @@ static ER if_vunm_reg(VP argp)
 	W size;
     } *args = argp;
 
-    return vunm_reg(args->id, args->addr, args->size);
+    return region_unmap(args->id, args->addr, args->size);
 }
 
 /*
  *
  */
-static ER if_vdup_reg(VP argp)
+static ER if_region_duplicate(VP argp)
 {
     struct {
 	ID src;
@@ -739,13 +739,13 @@ static ER if_vdup_reg(VP argp)
 	ID rid;
     } *args = argp;
 
-    return vdup_reg(args->src, args->dst, args->rid);
+    return region_duplicate(args->src, args->dst, args->rid);
 }
 
 /*
  *
  */
-static ER if_vput_reg(VP argp)
+static ER if_region_put(VP argp)
 {
     struct {
 	ID id;
@@ -754,13 +754,13 @@ static ER if_vput_reg(VP argp)
 	VP buf;
     } *args = argp;
 
-    return vput_reg(args->id, args->start, args->size, args->buf);
+    return region_put(args->id, args->start, args->size, args->buf);
 }
 
 /*
  *
  */
-static ER if_vget_reg(VP argp)
+static ER if_region_get(VP argp)
 {
     struct {
 	ID id;
@@ -770,13 +770,13 @@ static ER if_vget_reg(VP argp)
     } *args = argp;
 
 
-    return vget_reg(args->id, args->start, args->size, args->buf);
+    return region_get(args->id, args->start, args->size, args->buf);
 }
 
 /*
  *
  */
-static ER if_vsts_reg(VP argp)
+static ER if_region_get_status(VP argp)
 {
     struct {
 	ID id;
@@ -784,7 +784,7 @@ static ER if_vsts_reg(VP argp)
 	VP stat;
     } *args = argp;
 
-    return vsts_reg(args->id, args->rid, args->stat);
+    return region_get_status(args->id, args->rid, args->stat);
 }
 
 

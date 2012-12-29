@@ -312,7 +312,7 @@ ER message_send(ID id, INT size, VP msg)
 	    leave_serialize();
 
 	    p = getTaskParent(q);
-	    vput_reg(p->tskid, p->wait.detail.msg.msg, size, msg);
+	    region_put(p->tskid, p->wait.detail.msg.msg, size, msg);
 	    p->wait.detail.msg.size = size;
 	    tsksw = TRUE;
 	    release(p);
@@ -408,7 +408,7 @@ ER message_send_nowait(ID id, INT size, VP msg)
 	} else {
 	    /* もし、受信待ちタスクがあれば、message を転送して wakeup する */
 	    p = getTaskParent(q);
-	    vput_reg(p->tskid, p->wait.detail.msg.msg, size, msg);
+	    region_put(p->tskid, p->wait.detail.msg.msg, size, msg);
 	    p->wait.detail.msg.size = size;
 	    tsksw = TRUE;
 	    release(p);
@@ -497,7 +497,7 @@ ER message_receive(VP msg, INT * size, ID id)
 
 	    p = getTaskParent(q);
 	    *size = p->wait.detail.msg.size;
-	    vget_reg(p->tskid, p->wait.detail.msg.msg,
+	    region_get(p->tskid, p->wait.detail.msg.msg,
 		    p->wait.detail.msg.size, msg);
 	    release(p);
 	}

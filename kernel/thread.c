@@ -992,7 +992,7 @@ void make_local_stack(T_TCB * tsk, W size, W acc)
 #define VM_READ		0x00000001
 #define VM_WRITE	0x00000002
 #define VM_USER		0x00010000
-    vcre_reg(tsk->tskid, STACK_REGION,
+    region_create(tsk->tskid, STACK_REGION,
 	     (VP) VADDR_STACK_HEAD, STD_STACK_SIZE, STD_STACK_SIZE,
 	     (VM_READ | VM_WRITE | VM_USER), NULL);
 
@@ -1000,7 +1000,7 @@ void make_local_stack(T_TCB * tsk, W size, W acc)
     tsk->stackptr = (VP) (VADDR_STACK_TAIL - size);
     tsk->stksz = size;
     tsk->initial_stack = VADDR_STACK_TAIL;
-    err = vmap_reg(tsk->tskid, (VP) tsk->stackptr, size, acc);
+    err = region_map(tsk->tskid, (VP) tsk->stackptr, size, acc);
 
     if (err != E_OK) {
 	printk("[ITRON] can't allocate stack\n");
@@ -1041,13 +1041,13 @@ ER vcpy_stk(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi, W edi, ID dst)
     while(size >= PAGE_SIZE) {
       srcp -= PAGE_SIZE;
       dstp -= PAGE_SIZE;
-      vput_reg(dst, (VP) dstp, PAGE_SIZE, (VP) vtor(src_tsk->tskid, srcp));
+      region_put(dst, (VP) dstp, PAGE_SIZE, (VP) vtor(src_tsk->tskid, srcp));
       size -= PAGE_SIZE;
     }
     if (size > 0) {
       srcp -= size;
       dstp -= size;
-      vput_reg(dst, (VP) dstp, size, (VP) vtor(src_tsk->tskid, srcp));
+      region_put(dst, (VP) dstp, size, (VP) vtor(src_tsk->tskid, srcp));
     }
 
     /* レジスタのコピー */
@@ -1113,7 +1113,7 @@ ER vset_ctx(ID tid, W eip, B * stackp, W stsize)
     esp = (char **) stbase;
     ap = bp = (char **) vtor(tsk->tskid, stbase);
 
-    err = vget_reg(tid, stackp, stsize, (VP) ap);
+    err = region_get(tid, stackp, stsize, (VP) ap);
     if (err)
 	return err;
 

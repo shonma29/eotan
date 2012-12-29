@@ -326,7 +326,7 @@ void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 	printk("        cs = 0x%x ds = 0x%x\n", cs, ds);
 	printk("    eflags = 0x%x\n", eflags);
 #endif
-	result = vmap_reg(run_task->tskid, (VP) addr, PAGE_SIZE, ACC_USER);
+	result = region_map(run_task->tskid, (VP) addr, PAGE_SIZE, ACC_USER);
 	if (result == E_OK) {
 	  /* ページフォルト処理に成功した */
 	  --on_interrupt;
