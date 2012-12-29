@@ -1007,10 +1007,10 @@ void make_local_stack(T_TCB * tsk, W size, W acc)
     }
 }
 
-/* vcpy_stk
+/* mpu_copy_stack
  */
 
-ER vcpy_stk(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi, W edi, ID dst)
+ER mpu_copy_stack(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi, W edi, ID dst)
 {
     T_TCB *src_tsk, *dst_tsk;
     UW srcp, dstp;
@@ -1086,8 +1086,8 @@ W pf_handler(W cr2, W eip)
     return (E_OK);
 }
 
-/* vset_ctx */
-ER vset_ctx(ID tid, W eip, B * stackp, W stsize)
+/* mpu_set_context */
+ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
 {
     T_TCB *tsk;
     UW stbase;
@@ -1171,8 +1171,8 @@ ER vset_ctx(ID tid, W eip, B * stackp, W stsize)
     return (E_OK);
 }
 
-/* vuse_fpu */
-ER vuse_fpu(ID tid)
+/* mpu_use_float */
+ER mpu_use_float(ID tid)
 {
     if ((tid < MIN_TSKID) || (tid > MAX_TSKID)) {
 	return (E_ID);

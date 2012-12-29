@@ -219,10 +219,10 @@ static ER	if_time_get(void *argp);
 static ER	if_thread_delay(void *argp);
 static ER	if_alarm_create(void *argp);
 
-static ER	if_def_int (void *argp);
+static ER	if_interrupt_bind(void *argp);
 
-static ER	if_vsys_inf (void *argp);
-static ER	if_dbg_puts (void *args);
+static ER	if_get_system_info(void *argp);
+static ER	if_kernlog(void *args);
 
 /* 仮想メモリ管理用システムコール */
 static ER	if_region_create(void *argp);
@@ -233,13 +233,13 @@ static ER	if_region_duplicate(void *argp);
 static ER	if_region_put(void *argp);
 static ER	if_region_get(void *argp);
 static ER	if_region_get_status(void *argp);
-static ER	if_vget_phs (void *argp);
+static ER	if_get_physical_address(void *argp);
 
 /* その他のシステムコール */
-static ER	if_vsys_msc (void *argp);
-static ER	if_vcpy_stk (void *argp);
-static ER	if_vset_ctx (void *argp);
-static ER	if_vuse_fpu (void *argp);
+static ER	if_misc(void *argp);
+static ER	if_mpu_copy_stack(void *argp);
+static ER	if_mpu_set_context(void *argp);
+static ER	if_mpu_use_float(void *argp);
 
 static ER if_port_create(void *argp);
 static ER_ID if_port_create_auto(void *argp);
@@ -300,10 +300,10 @@ static ER (*syscall_table[])(VP argp) =
   SVC_IF (thread_delay, 1),	/*   25 */
   SVC_IF (alarm_create, 2),	/*   26 */
 
-  SVC_IF (def_int, 2),	/*   27 */
+  SVC_IF (interrupt_bind, 2),	/*   27 */
 
-  SVC_IF (vsys_inf, 3),	/*   28 */
-  SVC_IF (dbg_puts, 1),	/*   29 */
+  SVC_IF (get_system_info, 3),	/*   28 */
+  SVC_IF (kernlog, 1),	/*   29 */
 
   /* 仮想メモリ管理システムコール */	
   SVC_IF (region_create, 7),	/*   30 */
@@ -314,13 +314,13 @@ static ER (*syscall_table[])(VP argp) =
   SVC_IF (region_put, 4),	/*   35 */
   SVC_IF (region_get, 4),	/*   36 */
   SVC_IF (region_get_status, 3),	/*   37 */
-  SVC_IF (vget_phs, 3),	/*   38 */
+  SVC_IF (get_physical_address, 3),	/*   38 */
 
   /* その他のシステムコール */
-  SVC_IF (vsys_msc, 2),	/*   39 */
-  SVC_IF (vcpy_stk, 4),	/*   40 */
-  SVC_IF (vset_ctx, 4),	/*   41 */
-  SVC_IF (vuse_fpu, 1),	/*   42 */
+  SVC_IF (misc, 2),	/*   39 */
+  SVC_IF (mpu_copy_stack, 4),	/*   40 */
+  SVC_IF (mpu_set_context, 4),	/*   41 */
+  SVC_IF (mpu_use_float, 1),	/*   42 */
 
   SVC_IF (port_create, 2),	/*   43 */
   SVC_IF (port_create_auto, 1),	/*   44 */
@@ -642,7 +642,7 @@ static ER if_message_receive(VP argp)
  * ハンドラを設定している。
  *
  */
-static ER if_def_int(VP argp)
+static ER if_interrupt_bind(VP argp)
 {
     struct a {
 	UINT dintno;
@@ -653,7 +653,7 @@ static ER if_def_int(VP argp)
 	return (E_PAR);
     }
 #ifdef notdef
-    printk("if_def_int: dintno = %d(0x%x), inthdr = 0x%x, intatr = %d\n",
+    printk("if_interrupt_bind: dintno = %d(0x%x), inthdr = 0x%x, intatr = %d\n",
 	   args->dintno,
 	   args->dintno, args->pk_dint->inthdr, args->pk_dint->intatr);
 #endif
@@ -792,7 +792,7 @@ static ER if_region_get_status(VP argp)
 /*
  *
  */
-static ER if_vget_phs(VP argp)
+static ER if_get_physical_address(VP argp)
 {
     struct {
 	ID id;
@@ -858,7 +858,7 @@ static ER if_alarm_create(VP argp)
  *
  */
 static ER
-if_vsys_inf (VP argp)
+if_get_system_info(VP argp)
 {
   struct 
     {
@@ -877,7 +877,7 @@ if_vsys_inf (VP argp)
       rootfs = (W *)args->buf;
       info = (struct boot_header *)(MODULE_TABLE | 0x80000000);
       *rootfs = info->machine.rootfs;
-      printk ("vsys_inf: rootfs_info: rootfs = 0x%x\n", info->machine.rootfs);	/* */
+      printk ("get_system_info: rootfs_info: rootfs = 0x%x\n", info->machine.rootfs);	/* */
       return (E_OK);
 
     default:
@@ -887,7 +887,7 @@ if_vsys_inf (VP argp)
 }
 
 static ER
-if_dbg_puts (VP args)
+if_kernlog(VP args)
 {
   struct a
     {
@@ -898,10 +898,10 @@ if_dbg_puts (VP args)
   return (E_OK);
 }
 
-/* if_vsys_msc - miscellaneous function
+/* if_misc - miscellaneous function
  *
  */
-static ER if_vsys_msc(VP argp)
+static ER if_misc(VP argp)
 {
     struct {
 	W cmd;
@@ -909,7 +909,7 @@ static ER if_vsys_msc(VP argp)
     } *args = argp;
 
 #ifdef notdef
-    printk("vsys_msc: cmd = %d\n", args->cmd);
+    printk("misc: cmd = %d\n", args->cmd);
 #endif
 
     switch (args->cmd) {
@@ -958,10 +958,10 @@ static ER if_vsys_msc(VP argp)
     return (E_OK);
 }
 
-/* if_vcpy_stk - copy task stack 
+/* if_mpu_copy_stack - copy task stack 
  *
  */
-static ER if_vcpy_stk(VP argp)
+static ER if_mpu_copy_stack(VP argp)
 {
     struct {
 	ID src;
@@ -970,7 +970,7 @@ static ER if_vcpy_stk(VP argp)
 	ID dst;
     } *args = argp;
 
-    return vcpy_stk(args->src, args->esp, args->ebp,
+    return mpu_copy_stack(args->src, args->esp, args->ebp,
 		    args->ebx, args->ecx, args->edx,
 		    args->esi, args->edi, args->dst);
 }
@@ -978,7 +978,7 @@ static ER if_vcpy_stk(VP argp)
 /* if_vset_cxt - set task context
  *
  */
-static ER if_vset_ctx(VP argp)
+static ER if_mpu_set_context(VP argp)
 {
     struct {
 	ID tid;
@@ -987,19 +987,19 @@ static ER if_vset_ctx(VP argp)
 	W stsize;
     } *args = argp;
 
-    return vset_ctx(args->tid, args->eip, args->stackp, args->stsize);
+    return mpu_set_context(args->tid, args->eip, args->stackp, args->stsize);
 }
 
-/* if_vuse_fpu - use FPU
+/* if_mpu_use_float - use FPU
  *
  */
-static ER if_vuse_fpu(VP argp)
+static ER if_mpu_use_float(VP argp)
 {
     struct {
 	ID tid;
     } *args = argp;
 
-    return vuse_fpu(args->tid);
+    return mpu_use_float(args->tid);
 }
 
 static ER if_port_create(VP argp)

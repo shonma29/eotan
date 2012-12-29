@@ -490,7 +490,7 @@ UW vtor(ID tskid, UW addr)
  * この関数の中では、物理メモリをマッピングするような処理はしない。
  * 単に新しいリージョンをひとつ割り当てるだけである。
  * もし、リージョンを生成したときに物理メモリを割り当てたいときには、
- * vcre_reg を実行したあとに vmap_reg を実行する必要がある。
+ * region_create を実行したあとに region_map を実行する必要がある。
  *
  */
 ER region_create(ID id,		/* task ID */
@@ -505,7 +505,7 @@ ER region_create(ID id,		/* task ID */
     T_TCB *taskp;
     T_REGION *regp;
 #ifdef DEBUG
-    printk("vcre_reg %d %d %x %x %x %x %x\n", id, rid, start, min, max,
+    printk("region_create %d %d %x %x %x %x %x\n", id, rid, start, min, max,
 	   perm, handle);
 #endif
 
@@ -581,7 +581,7 @@ ER region_destroy(ID id, ID rid)
     T_TCB *taskp;
 
 #ifdef DEBUG
-    printk("vdel_reg %d %d\n", id, rid);
+    printk("region_destroy %d %d\n", id, rid);
 #endif
     taskp = get_tskp(id);
     if (taskp == NULL) {
@@ -638,7 +638,7 @@ ER region_map(ID id, VP start, UW size, W accmode)
     if (taskp->tskstat == TTS_NON)
     {
 #ifdef DEBUG
-	printk("vmap_reg : taskp->tskstat = %d\n", taskp->tskstat);	/* */
+	printk("region_map: taskp->tskstat = %d\n", taskp->tskstat);	/* */
 #endif
 	return (E_PAR);
     }
@@ -684,14 +684,14 @@ ER region_map(ID id, VP start, UW size, W accmode)
 		if (newsize > regp->min_size) {
 #ifdef DEBUG
 		    printk
-			("vmap_reg: new region size %x:%x->%x  (%x %x)\n",
+			("region_map: new region size %x:%x->%x  (%x %x)\n",
 			 regp->start_addr, regp->min_size, newsize, start,
 			 size);
 #endif
 		    regp->min_size = newsize;
 		    if (regp->min_size > regp->max_size) {
 			printk
-			    ("[WARNING] vmap_reg: min_size exceeds max_size\n");
+			    ("[WARNING] region_map: min_size exceeds max_size\n");
 		    }
 		}
 	    }
@@ -740,7 +740,7 @@ ER region_unmap(ID id, VP start, UW size)
 	    if (newsize + size == regp->min_size) {
 		regp->min_size = newsize;
 #ifdef DEBUG
-		printk("vunm_reg: new region size %x\n", newsize);
+		printk("region_unmap: new region size %x\n", newsize);
 #endif
 	    }
 	}
@@ -766,7 +766,7 @@ ER region_duplicate(ID src, ID dst, ID rid)
     UW counter;
 
 #ifdef DEBUG
-    printk("vdup_reg %d %d %d\n", src, dst, rid);
+    printk("region_duplicate %d %d %d\n", src, dst, rid);
 #endif
     taskp = (T_TCB *) get_tskp(src);
     if (taskp->tskstat == TTS_NON) {
