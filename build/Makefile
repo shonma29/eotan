@@ -5,7 +5,7 @@
 
 INC=../kernel
 BUILDSRC=build.c $(INC)/boot.h
-CFLAGS=$(DEBUG) -I$(INC) -I../include
+CFLAGS=$(DEBUG) -Wall -Werror -I$(INC)
 CC=gcc
 
 KERNEL=core

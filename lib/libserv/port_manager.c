@@ -11,7 +11,6 @@ Version 2, June 1991
 
 */
 /* @(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/kernlib/port_manager.c,v 1.1 1999/04/18 17:48:33 monaka Exp $ */
-static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/kernlib/port_manager.c,v 1.1 1999/04/18 17:48:33 monaka Exp $";
 
 /*
  * $Log: port_manager.c,v $
@@ -56,9 +55,10 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
  * find_port (PORT_NAME name, ID &port);    メッセージバッファ ID の検索
  * alloc_port (void);                       ポートの生成
  */
-#include "../../include/services.h"
+#include <string.h>
+#include <services.h>
 #include <core.h>
-#include "../../include/itron/rendezvous.h"
+#include <itron/rendezvous.h>
 #include "../../servers/port-manager/port-manager.h"
 
 /*
@@ -81,7 +81,7 @@ regist_port (port_name *name, ID port)
   buf.send_msg.hdr.type  = REGIST_PORT;
   buf.send_msg.hdr.size  = sizeof (buf.send_msg);
   buf.send_msg.hdr.rport = 0;
-  strcpy (&(buf.send_msg.body.regist.name), name);
+  strcpy ((char*)&(buf.send_msg.body.regist.name), (char*)name);
   buf.send_msg.body.regist.port = port;
 
 #ifdef DEBUG
@@ -119,7 +119,7 @@ unregist_port (port_name *name)
   buf.send_msg.hdr.type  = UNREGIST_PORT;
   buf.send_msg.hdr.size  = sizeof (buf.send_msg);
   buf.send_msg.hdr.rport = 0;
-  strcpy (&(buf.send_msg.body.regist.name), name);
+  strcpy ((char*)&(buf.send_msg.body.regist.name), (char*)name);
 
 #ifdef DEBUG
   dbg_printf ("regist_port: name = <%s>\n", &(buf.send_msg.body.regist.name));

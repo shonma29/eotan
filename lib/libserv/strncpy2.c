@@ -11,8 +11,6 @@ Version 2, June 1991
 
 */
 /* @(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/kernlib/string.c,v 1.4 2000/02/07 18:23:58 kishida0 Exp $ */
-static char rcsid[] =
-    "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/kernlib/string.c,v 1.4 2000/02/07 18:23:58 kishida0 Exp $";
 
 
 /*

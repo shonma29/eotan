@@ -3,8 +3,8 @@
 #
 
 # -DDEBUG
-COPT=-O2 -fno-builtin
-CFLAGS=$(COPT) -I../../kernel -I../servers
+COPT=-O2 -Wall -Werror -fno-builtin
+CFLAGS=$(COPT) -I../../include -I../../kernel -I../servers
 CC=gcc
 
 OBJS= strncpy2.o malloc.o \

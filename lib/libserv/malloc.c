@@ -12,10 +12,6 @@ Version 2, June 1991
 */
 /* @(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/kernlib/malloc.c,v 1.6 2000/02/13 09:07:21 naniwa Exp $ */
 
-static char rcs[] =
-    "@(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/kernlib/malloc.c,v 1.6 2000/02/13 09:07:21 naniwa Exp $";
-
-
 /* 
  * $Log: malloc.c,v $
  * Revision 1.6  2000/02/13 09:07:21  naniwa
@@ -67,8 +63,10 @@ static char rcs[] =
  *
  */
 
+#include <string.h>
 #include <core.h>
 #include <misc.h>
+#include "libserv.h"
 
 #define MEMORY_CLICK		(PAGE_SIZE * 10)
 #define MALLOC_SIZE		(1024 * 1024 * 10)	/* 10MB */
@@ -158,7 +156,6 @@ ER init_malloc(UW free_memory_erea)
 VP malloc(UW size)
 {
     struct alloc_entry_t *p;
-    struct alloc_entry_t *q;
     struct alloc_entry_t *newmem;
     int alloc_size;
     extern void free(VP addr);
@@ -358,7 +355,7 @@ static VP get_system_memory(UW size)
     return (rp);
 }
 
-print_freelist(void)
+void print_freelist(void)
 {
     struct alloc_entry_t *p;
     int i;

@@ -221,7 +221,7 @@ static void pass2(ModuleTable *modules, const char *outputfile)
 	exit(ERR_FILE);
     }
 
-    bzero(&boot, sizeof(boot));
+    memset(&boot, 0, sizeof(boot));
     boot.cookie = 1;
     boot.count = modules->nmodule;
     boot.machine.rootfs = 0xffffffff;
