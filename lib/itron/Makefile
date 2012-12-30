@@ -3,8 +3,7 @@
 #
 
 # -DDEBUG
-COPT=-O2 -fno-builtin
-CFLAGS=$(COPT) -I../../kernel -I../../servers
+CFLAGS=-O2 -Wall -Werror -fno-builtin -I../../kernel -I../../servers
 CC=gcc
 
 OBJS=	call_kernel.o task.o message.o debug.o \

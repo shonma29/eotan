@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../include/itron/rendezvous.h"
 #include "../../include/itron/errno.h"
 #include "../../kernel/api.h"
+#include "call_kernel.h"
 
 ER_UINT acp_por(ID porid, RDVPTN acpptn, RDVNO *p_rdvno, VP msg) {
 	return (acpptn == 0xffffffff)? 

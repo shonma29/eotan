@@ -14,10 +14,10 @@ Version 2, June 1991
  *
  */
 #include "../../include/stdarg.h"
+#include "../../include/string.h"
 #include "../../kernel/core.h"
 #include "../../kernel/api.h"
-
-static ER dbg_vprintf(B * fmt, VP arg0);
+#include "call_kernel.h"
 
 ER dbg_puts(B * msg)
 {

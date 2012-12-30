@@ -9,8 +9,6 @@ Version 2, June 1991
 
 */
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/kernlib/sys_virtual.c,v 1.1 1999/04/18 17:48:34 monaka Exp $ */
-static char	rcsid[] = "$Id: sys_virtual.c,v 1.1 1999/04/18 17:48:34 monaka Exp $";
-
 
 /*
  * $Log: sys_virtual.c,v $
@@ -52,6 +50,7 @@ static char	rcsid[] = "$Id: sys_virtual.c,v 1.1 1999/04/18 17:48:34 monaka Exp $
 
 #include "../../kernel/core.h"
 #include "../../kernel/api.h"
+#include "call_kernel.h"
 
 /*
  * 
@@ -171,21 +170,21 @@ vput_reg (ID id, VP start, UW size, VP buf)
 
 /*
  */
-vget_phs (ID id, VP addr, UW *paddr)
+ER vget_phs (ID id, VP addr, UW *paddr)
 {
   return (call_syscall (SYS_VGET_PHS, id, addr, paddr));
 }
 
 /*
  */
-vdup_reg (ID src, ID dst, ID rid)
+ER vdup_reg (ID src, ID dst, ID rid)
 {
   return (call_syscall (SYS_VDUP_REG, src, dst, rid));
 }
 
 /*
  */
-vsts_reg (ID id, ID rid, VP stat)
+ER vsts_reg (ID id, ID rid, VP stat)
 {
   return (call_syscall (SYS_VSTS_REG, id, rid, stat));
 }

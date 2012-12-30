@@ -9,7 +9,6 @@ Version 2, June 1991
 
 */
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/kernlib/sys_interrupt.c,v 1.1 1999/04/18 17:48:34 monaka Exp $ */
-static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/kernlib/sys_interrupt.c,v 1.1 1999/04/18 17:48:34 monaka Exp $";
 
 /*
  * $Log: sys_interrupt.c,v $
@@ -33,6 +32,7 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 
 #include "../../kernel/core.h"
 #include "../../kernel/api.h"
+#include "call_kernel.h"
 
 
 /*

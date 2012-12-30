@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../include/itron/types.h"
 #include "../../include/itron/rendezvous.h"
 #include "../../kernel/api.h"
+#include "call_kernel.h"
 
 ER del_por(ID porid) {
 	return call_syscall(SYS_DEL_POR, porid);

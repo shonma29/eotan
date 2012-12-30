@@ -16,6 +16,7 @@ Version 2, June 1991
 
 #include "../../kernel/core.h"
 #include "../../kernel/api.h"
+#include "call_kernel.h"
 
 /*
  * システムクロック設定

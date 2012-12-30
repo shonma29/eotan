@@ -15,6 +15,7 @@ Version 2, June 1991
 
 #include "../../kernel/core.h"
 #include "../../kernel/api.h"
+#include "call_kernel.h"
 
 
 /* cre_tsk  --- タスクの生成
@@ -76,6 +77,7 @@ chg_pri (ID tskid, PRI tskpri)
 
 /* rel_wai --- 待ち状態の解除
  */
+ER
 rel_wai (ID taskid)
 {
   return call_syscall (SYS_REL_WAI, taskid);

@@ -26,6 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include "stdarg.h"
 #include "stddef.h"
 
 extern size_t strlen(const char *s);
@@ -38,5 +39,7 @@ extern int strncmp(const char *s1, const char *s2, size_t size);
 
 extern void *memcpy(void *dest, const void *src, size_t n);
 extern void *memset(void *s, int c, size_t n);
+
+extern int vnprintf(void (*out)(char), char *format, va_list ap);
 
 #endif

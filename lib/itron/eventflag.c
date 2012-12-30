@@ -9,7 +9,6 @@ Version 2, June 1991
 
 */
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/kernlib/sys_eventflag.c,v 1.2 2000/01/28 08:55:29 monaka Exp $ */
-static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/kernlib/sys_eventflag.c,v 1.2 2000/01/28 08:55:29 monaka Exp $";
 
 /*
  * $Log: sys_eventflag.c,v $
@@ -40,6 +39,7 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
 
 #include "../../kernel/core.h"
 #include "../../kernel/api.h"
+#include "call_kernel.h"
 
 
 ER

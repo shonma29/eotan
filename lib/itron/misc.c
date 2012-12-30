@@ -9,8 +9,6 @@ Version 2, June 1991
 
 */
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/kernlib/sys_misc.c,v 1.5 2000/07/09 16:37:59 kishida0 Exp $ */
-static char	rcsid[] = "$Id: sys_misc.c,v 1.5 2000/07/09 16:37:59 kishida0 Exp $";
-
 
 /*
  * $Log: sys_misc.c,v $
@@ -48,6 +46,7 @@ static char	rcsid[] = "$Id: sys_misc.c,v 1.5 2000/07/09 16:37:59 kishida0 Exp $"
 
 #include "../../kernel/core.h"
 #include "../../kernel/api.h"
+#include "call_kernel.h"
 
 
 /* vsys_msc

@@ -1,3 +1,5 @@
+#ifndef _LIBKERN_CALL_SYSCALL_H_
+#define _LIBKERN_CALL_SYSCALL_H_ 1
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,11 +26,27 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "../../include/itron/types.h"
-#include "../../include/itron/rendezvous.h"
-#include "../../kernel/api.h"
-#include "call_kernel.h"
 
-ER_ID acre_por(T_CPOR *pk_cpor) {
-	return call_syscall(SYS_ACRE_POR, pk_cpor);
+#define NCALL 1
+
+#if NCALL
+static inline int ncall(int no, ...) {
+	int result;
+
+	__asm__ __volatile__ ( \
+		"movl %1, %%eax\n\t" \
+		"leal 8(%%ebp), %%edx\n\t" \
+		"lcall $0x30,$0\n\t" \
+		:"=a"(result) \
+		:"n"(no)  \
+		:"%edx");
+
+	return result;
 }
+#else
+#define ncall call_syscall
+#endif
+
+extern int call_syscall(int no, ...);
+
+#endif
