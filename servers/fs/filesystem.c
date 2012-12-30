@@ -150,10 +150,9 @@ Version 2, June 1991
  *
  */
 
+#include "../../include/string.h"
+#include "../../lib/libserv/port.h"
 #include "posix.h"
-
-extern int strlen(char *);
-extern int strcmp(char *, char *);
 
 struct fs_entry {
     B *fsname;

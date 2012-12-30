@@ -11,10 +11,6 @@ Version 2, June 1991
 
 */
 
-static char rcsid[] =
-    "@(#)$Id: posix.c,v 1.21 2000/04/03 14:32:33 naniwa Exp $";
-
-
 /* posix.c - POSIX 環境マネージャ
  *
  *
@@ -108,17 +104,15 @@ static char rcsid[] =
  *
  *   要求の受けつけから処理がおわるまでは他の要求は受け付けない。
  */
-void main(void)
+int main(void)
 {
     struct posix_request request;
     W res;
-#if 0
-    extern B _end;
-#endif
 
     if (init_port() == FAIL) {
 	dbg_printf("Cannot allocate port.\n");
 	ext_tsk();
+	return FAIL;
     }
     init_malloc(VADDR_HEAP);
 

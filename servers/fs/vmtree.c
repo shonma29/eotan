@@ -83,7 +83,7 @@ Version 2, June 1991
  *
  */
 
-
+#include "../../include/string.h"
 #include "posix.h"
 
 
@@ -264,7 +264,7 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
     struct vm_tree *source;
     struct vm_tree *destination;
     static B page_buf[PAGE_SIZE];
-    W addr;
+    UW addr;
 
 
     source = source_proc->vm_tree;

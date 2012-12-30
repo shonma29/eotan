@@ -20,7 +20,7 @@ DEBUG=#-DEXEC_DEBUG
 IDENT=$(DEBUG) -DKERNEL
 ROOT=../..
 INC=-I$(ROOT)/kernel
-CFLAGS=-O2 -fno-builtin -Wall $(INC) $(IDENT)
+CFLAGS=-O2 -fno-builtin -Wall -Werror $(INC) $(IDENT)
 CC=gcc
 
 ENTRY=startup

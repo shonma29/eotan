@@ -120,6 +120,7 @@ Version 2, June 1991
  *
  */
 
+#include "../../include/string.h"
 #include "posix.h"
 #include <lowlib.h>
 
@@ -166,7 +167,7 @@ W proc_set_info(struct posix_request * req)
     UW procid;
     struct proc *procp;
     W error;
-    ID tskid, rid;
+    ID tskid;
 
     procid = req->procid;
 #ifdef DEBUG
