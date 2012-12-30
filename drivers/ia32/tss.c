@@ -26,6 +26,7 @@ Version 2, June 1991
 #include "thread.h"
 #include "misc.h"
 #include "func.h"
+#include "mpufunc.h"
 
 /* creat_context コンテキスト情報を新しく作成する。
  *

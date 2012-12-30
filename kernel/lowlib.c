@@ -90,7 +90,7 @@ ER load_lowlib(VP * argp)
 	return (E_PAR);
     }
 
-    tskp = get_tskp(args->task);
+    tskp = get_thread_ptr(args->task);
     if (tskp == NULL) {
 	return (E_ID);
     }

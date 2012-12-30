@@ -11,8 +11,6 @@ Version 2, June 1991
 
 */
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/i386/virtual_memory.c,v 1.26 2000/01/26 08:31:49 naniwa Exp $ */
-static char rcsid[] =
-    "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/i386/virtual_memory.c,v 1.26 2000/01/26 08:31:49 naniwa Exp $";
 
 /*
  * $Log: virtual_memory.c,v $
@@ -154,6 +152,7 @@ static char rcsid[] =
  *
  */
 
+#include "../../include/string.h"
 #include "core.h"
 #include "misc.h"
 #include "func.h"
@@ -356,7 +355,7 @@ BOOL vmap(T_TCB * task, UW vpage, UW ppage, W accmode)
  * 引数:	virtual	仮想メモリアドレス
  *
  */
-extern ER vunmap(T_TCB * task, UW vpage)
+ER vunmap(T_TCB * task, UW vpage)
 {
     I386_DIRECTORY_ENTRY *dirent;
     I386_PAGE_ENTRY *pageent;
@@ -451,7 +450,7 @@ UW vtor(ID tskid, UW addr)
     UW dirindex;
     UW pageindex;
 
-    taskp = (T_TCB *) get_tskp(tskid);
+    taskp = (T_TCB *) get_thread_ptr(tskid);
     if (taskp->tskstat == TTS_NON)
     {
 	return (NULL);
@@ -527,7 +526,7 @@ ER region_create(ID id,		/* task ID */
      * タスク ID から該当するタスクのコンテキストへの
      * ポインタを取り出す。
      */
-    taskp = get_tskp(id);
+    taskp = get_thread_ptr(id);
     if (taskp == NULL) {
 	/*
 	 * 引数で指定した ID をもつタスクは存在していない。
@@ -583,7 +582,7 @@ ER region_destroy(ID id, ID rid)
 #ifdef DEBUG
     printk("region_destroy %d %d\n", id, rid);
 #endif
-    taskp = get_tskp(id);
+    taskp = get_thread_ptr(id);
     if (taskp == NULL) {
 	/*
 	 * 引数で指定した ID をもつタスクは存在していない。
@@ -634,7 +633,7 @@ ER region_map(ID id, VP start, UW size, W accmode)
     T_REGION *regp;
     UW newsize;
 
-    taskp = (T_TCB *) get_tskp(id);
+    taskp = (T_TCB *) get_thread_ptr(id);
     if (taskp->tskstat == TTS_NON)
     {
 #ifdef DEBUG
@@ -710,7 +709,7 @@ ER region_unmap(ID id, VP start, UW size)
     T_REGION *regp;
     UW newsize;
 
-    taskp = (T_TCB *) get_tskp(id);
+    taskp = (T_TCB *) get_thread_ptr(id);
     if (taskp->tskstat == TTS_NON) {
 	return (E_PAR);
     }
@@ -768,11 +767,11 @@ ER region_duplicate(ID src, ID dst, ID rid)
 #ifdef DEBUG
     printk("region_duplicate %d %d %d\n", src, dst, rid);
 #endif
-    taskp = (T_TCB *) get_tskp(src);
+    taskp = (T_TCB *) get_thread_ptr(src);
     if (taskp->tskstat == TTS_NON) {
 	return (E_PAR);
     }
-    dstp = (T_TCB *) get_tskp(dst);
+    dstp = (T_TCB *) get_thread_ptr(dst);
     if (dstp->tskstat == TTS_NON) {
 	return (E_PAR);
     }
@@ -975,7 +974,7 @@ ER region_get_status(ID id, ID rid, VP stat)
     T_REGION *regp = stat;
     T_TCB *taskp;
 
-    taskp = get_tskp(id);
+    taskp = get_thread_ptr(id);
     if (taskp == NULL) {
 	/*
 	 * 引数で指定した ID をもつタスクは存在していない。

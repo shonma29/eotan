@@ -228,7 +228,7 @@ void run(W entry)
 #ifdef DEBUG
     printk("Task id = %d, eip = 0x%x\n", rid, modulep[entry].entry);
 #endif
-    new_taskp = get_tskp(rid);
+    new_taskp = get_thread_ptr(rid);
     if (new_taskp == NULL) {
 	printk("new task is NULL.\n");
 	return;

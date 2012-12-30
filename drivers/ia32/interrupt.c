@@ -15,6 +15,7 @@ Version 2, June 1991
  *
  */
 
+#include "../../include/string.h"
 #include "core.h"
 #include "../../kernel/arch/arch.h"
 #include "interrupt.h"
@@ -22,6 +23,7 @@ Version 2, June 1991
 #include "func.h"
 #include "sync.h"
 #include "../../include/mpu/io.h"
+#include "mpufunc.h"
 
 /* T_INTR_HANDLER	割り込みハンドラ定義
  *

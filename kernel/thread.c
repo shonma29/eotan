@@ -967,7 +967,7 @@ ER new_task(T_CTSK * pk_ctsk, ID * rid, BOOL run_flag)
 }
 
 
-T_TCB *get_tskp(ID tskid)
+T_TCB *get_thread_ptr(ID tskid)
 {
     if ((tskid < MIN_TSKID) || (tskid > MAX_TSKID)) {
 	return ((T_TCB *) NULL);

@@ -28,7 +28,16 @@ extern void init_task_state_segment(W index, T_I386_CONTEXT * tss);
 extern ADDR_MAP dup_vmap_table(ADDR_MAP dest);
 extern ER release_vmap(ADDR_MAP dest);
 extern BOOL vmap(T_TCB * task, UW vpage, UW ppage, W accmode);
+extern ER vunmap(T_TCB * task, UW vpage);
 extern UW vtor(ID tskid, UW addr);
+extern ER region_create(ID id, ID rid, VP start, W min, W max, UW perm, FP handle);
+extern ER region_destroy(ID id, ID rid);
+extern ER region_map(ID id, VP start, UW size, W accmode);
+extern ER region_unmap(ID id, VP start, UW size);
+extern ER region_duplicate(ID src, ID dst, ID rid);
+extern ER region_get(ID id, VP start, UW size, VP buf);
+extern ER region_put(ID id, VP start, UW size, VP buf);
+extern ER region_get_status(ID id, ID rid, VP stat);
 extern void adjust_vm(UW max_mem);
 
 /* gdt.c */
