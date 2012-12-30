@@ -10,7 +10,6 @@ Version 2, June 1991
 */
 
 /* $Id: stdlib.c,v 1.6 2000/06/04 04:10:15 naniwa Exp $ */
-static char rcsid[] = "$Id: stdlib.c,v 1.6 2000/06/04 04:10:15 naniwa Exp $";
 
 /*
  * $Log: stdlib.c,v $
@@ -52,25 +51,32 @@ static char rcsid[] = "$Id: stdlib.c,v 1.6 2000/06/04 04:10:15 naniwa Exp $";
  *
  */
 
+#include <unistd.h>
 #include "stdlib.h"
 
 static ER	vfprintf (FILE *port, B *fmt, VP arg0);
 
+
 
-static void
+static W
 print_digit (FILE *port, UW d, UW base)
 {
   static B digit_table[] = "0123456789ABCDEF";
+  W len = 0;
 
   if (d < base)
     {
       putc (digit_table[d], port);
+      len++;
     }
   else
     {
-      print_digit (port, d / base, base);
+      len += print_digit (port, d / base, base);
       putc (digit_table[d % base], port);
+      len++;
     }
+
+  return len;
 }
 
 #define INC(p,x)	(p = (VP)(((W)p) + sizeof (x *)))
@@ -107,6 +113,7 @@ static ER
 vfprintf (FILE *port, B *fmt, VP arg0)
 {
   VP *ap;
+  W len = 0;
 
   for (ap = (VP *)arg0; *fmt != '\0'; fmt++)
     {
@@ -115,7 +122,7 @@ vfprintf (FILE *port, B *fmt, VP arg0)
 	  switch (*++fmt)
 	    {
 	    case 's':
-	      fputs ((B*)(*ap), port);
+	      len += fputs ((B*)(*ap), port);
 	      INC (ap, B *);
 	      break;
 
@@ -126,31 +133,36 @@ vfprintf (FILE *port, B *fmt, VP arg0)
 
 		  *q = 0 - ((W)*ap);
 		  putc ('-', port);
+		  len++;
 		}
-	      print_digit (port, (W)*ap, 10);
+	      len += print_digit (port, (W)*ap, 10);
 	      INC (ap, W);
 	      break;
 
 	    case 'x':
-	      print_digit (port, (W)*ap, 16);
+	      len += print_digit (port, (W)*ap, 16);
 	      INC (ap, W);
 	      break;
 
 	    case 'o':
-	      print_digit (port, (W)*ap, 8);
+	      len += print_digit (port, (W)*ap, 8);
 	      INC (ap, W);
 	      break;
 
 	    default:
 	      putc ('%', port);
+	      len++;
 	      break;
 	    }
 	}
       else
 	{
 	  putc (*fmt, port);
+	  len++;
 	}
     }
+
+    return len;
 }
 
 
@@ -185,10 +197,13 @@ __putc (W ch, FILE *port)
 }
 
 
+W
 fflush (FILE *port)
 {
   writechar (port->device, port->buf, port->count);
   port->count = 0;
+
+  return 0;
 }
 
 W
@@ -213,10 +228,12 @@ puts (B *line)
   return (len + 1);
 }
 
-W 
+W
 writechar (ID port, UB *buf, W length)
 {
   write(port, buf, length);
+
+  return length;
 }
 
 
@@ -239,7 +256,7 @@ isspace (W ch)
 }
 
 W
-isnum (W ch)
+isdigit (W ch)
 {
   ch -= '0';
 

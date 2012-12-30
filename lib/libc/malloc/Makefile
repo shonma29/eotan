@@ -2,7 +2,7 @@
 #
 #
 
-CFLAGS=-g -I../../../../include
+CFLAGS=-g -Wall -I../../../include -I../../../kernel
 
 all: malloc.o
 

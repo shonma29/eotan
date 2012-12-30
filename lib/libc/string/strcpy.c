@@ -14,9 +14,6 @@ Version 2, June 1991
 
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/string/strcpy.c,v 1.3 2000/02/17 14:29:03 naniwa Exp $ */
 
-static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/string/strcpy.c,v 1.3 2000/02/17 14:29:03 naniwa Exp $";
-
-
 /* 
  * $Log: strcpy.c,v $
  * Revision 1.3  2000/02/17 14:29:03  naniwa

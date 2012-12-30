@@ -15,9 +15,6 @@ Version 2, June 1991
 
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/string/strcmp.c,v 1.4 2000/02/17 14:29:02 naniwa Exp $ */
 
-static char rcsid[] = "@(#)$Header";
-
-
 /* 
  * $Log: strcmp.c,v $
  * Revision 1.4  2000/02/17 14:29:02  naniwa

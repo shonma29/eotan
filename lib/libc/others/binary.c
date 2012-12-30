@@ -11,9 +11,6 @@ Version 2, June 1991
 
 */
 /* @(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/kernlib/binary.c,v 1.1 1999/04/18 17:48:33 monaka Exp $ */
-static char rcsid[] =
-    "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/kernlib/binary.c,v 1.1 1999/04/18 17:48:33 monaka Exp $";
-
 
 /*
  * $Log: binary.c,v $

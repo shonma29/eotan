@@ -10,10 +10,10 @@ Version 2, June 1991
 */
 
 /* $Id: atoi.c,v 1.1 1998/12/12 05:36:51 monaka Exp $ */
-static char rcsid[] = "$Id: atoi.c,v 1.1 1998/12/12 05:36:51 monaka Exp $";
 
-#include "../../../include/itron/types.h"
+#include <itron/types.h>
 #include <string.h>
+#include <ctype.h>
 
 int
 atoi (char *s)
@@ -28,7 +28,7 @@ atoi (char *s)
       minus = TRUE;
     }
 
-  while (isnum(*s))
+  while (isdigit(*s))
     {
       result = (result * 10) + (*s - '0');
       s++;

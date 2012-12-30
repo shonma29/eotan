@@ -65,6 +65,7 @@ extern FILE	__file_table__[];
 
 
 extern W	getc (FILE *port);
+extern W        fflush(FILE *port);
 extern W	putc (W ch, FILE *port);
 extern W	fputs (B *line, FILE *port);
 extern W	puts (B *line);

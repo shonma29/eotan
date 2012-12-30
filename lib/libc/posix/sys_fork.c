@@ -14,11 +14,9 @@ Version 2, June 1991
 */
 
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_fork.c,v 1.3 1999/11/10 10:39:32 naniwa Exp $  */
-static char rcsid[] = "@(#)$Id: sys_fork.c,v 1.3 1999/11/10 10:39:32 naniwa Exp $";
 
-
+#include <mpu/io.h>
 #include "../native.h"
-#include "../../../include/mpu/io.h"
 
 /* fork 用エントリールーチン */
 int fork_entry()

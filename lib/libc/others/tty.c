@@ -13,6 +13,7 @@
 
    Last modified: Apr. 28, 2002.
 */
+#include <unistd.h>
 #include "../../../servers/keyboard/keyboard.h"
 
 #define FCTL_WC_WINSIZ (WD_WINSIZ << 16)

@@ -7,7 +7,7 @@ DEBUG=
 
 CPP=/lib/cpp
 ROOT=../..
-CFLAGS=-O2 -fno-builtin -I. -I$(ROOT)/kernel $(IDENT)
+CFLAGS=-O2 -Wall -Werror -fno-builtin -I. -I../../include -I$(ROOT)/kernel $(IDENT)
 CC=gcc
 MKDEPEND=$(CC) -M
 LD=ld

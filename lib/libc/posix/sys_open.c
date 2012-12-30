@@ -12,9 +12,8 @@ Version 2, June 1991
 */
 
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_open.c,v 1.3 1999/03/15 08:36:44 monaka Exp $  */
-static char rcsid[] = "@(#)$Id: sys_open.c,v 1.3 1999/03/15 08:36:44 monaka Exp $";
 
-
+#include <string.h>
 #include "../native.h"
 
 

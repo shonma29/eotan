@@ -11,8 +11,6 @@ Version 2, June 1991
 
 */
 /* $Id: _main.c,v 1.6 2000/01/29 16:21:21 naniwa Exp $ */
-static char rcsid[] =
-    "$Id: _main.c,v 1.6 2000/01/29 16:21:21 naniwa Exp $";
 
 /*
  * $Log: _main.c,v $
@@ -54,16 +52,22 @@ static char rcsid[] =
  *
  */
 
+#include <unistd.h>
 #include "others/stdlib.h"
+
+extern W main(W argc, B * argv[], B * envp[]);
 
 void init_device();
 
 W _main(W argc, B * argv[], B * envp[])
 {
+    int result;
     init_device();
 
-    main(argc, argv, envp);
-    _exit(0);
+    result = main(argc, argv, envp);
+    _exit(result);
+
+    return result;
 }
 
 static void InitFileTable(void);
@@ -72,10 +76,6 @@ FILE __file_table__[NFILE];
 
 void init_device(void)
 {
-    ID keyboard;
-    ER result;
-    W dev_desc;
-
     InitFileTable();
     __file_table__[STDIN].device = 0;
     __file_table__[STDIN].count = 0;

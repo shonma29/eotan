@@ -14,10 +14,8 @@ Version 2, June 1991
 */
 
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_rename.c,v 1.1 1997/08/31 13:25:24 night Exp $  */
-static char rcsid[] =
-    "@(#)$Id: sys_rename.c,v 1.1 1997/08/31 13:25:24 night Exp $";
 
-
+#include <unistd.h>
 #include "../native.h"
 
 

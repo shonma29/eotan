@@ -453,7 +453,7 @@ UW vtor(ID tskid, UW addr)
     taskp = (T_TCB *) get_thread_ptr(tskid);
     if (taskp->tskstat == TTS_NON)
     {
-	return (NULL);
+	return (UW)(NULL);
     }
 
     dirent = (I386_DIRECTORY_ENTRY *) taskp->context.cr3;
@@ -461,14 +461,14 @@ UW vtor(ID tskid, UW addr)
     dirindex = (addr & DIR_MASK) >> DIR_SHIFT;
     pageindex = (addr & PAGE_MASK) >> PAGE_SHIFT;
     if (dirent[dirindex].present != 1) {
-	return (NULL);
+	return (UW)(NULL);
     }
 
     pageent =
 	(I386_PAGE_ENTRY *) (dirent[dirindex].frame_addr << PAGE_SHIFT);
     pageent = (I386_PAGE_ENTRY*)(RTOV((UW) pageent));
     if (pageent[pageindex].present != 1) {
-	return (NULL);
+	return (UW)(NULL);
     }
 
     /* page の境界でなく，アドレスそのものを返す． */
@@ -839,7 +839,7 @@ ER region_get(ID id, VP start, UW size, VP buf)
 
     for (p = align_start; p < align_end; p += PAGE_SIZE) {
 	paddr = (UW) vtor(id, p);	/* 物理メモリアドレスの取得 */
-	if (paddr == NULL) {
+	if (paddr == (UW)NULL) {
 	    return (E_PAR);
 	}
 

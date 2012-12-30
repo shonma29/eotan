@@ -61,7 +61,6 @@ typedef enum {RUN, SKIP, DIC1, DIC2, FGT, DEF, VAR,
 #define pop POP
 #define eval EVAL
 #endif
-#define isdigit isnum
 #endif
 
 #ifdef MAIN

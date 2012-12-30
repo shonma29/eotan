@@ -31,15 +31,9 @@ call_lowlib:
 		movl	%esp,%ebp
 		movl	8(%ebp), %eax
 		leal	12(%ebp), %edx
-#if 0
-		int	$65
-#else
 		lcall	$0x38,$0
-#endif
 	        movl 2147418144,%edx
 		negl %edx
 	        movl %edx,errno
 		leave
 		ret
-
-

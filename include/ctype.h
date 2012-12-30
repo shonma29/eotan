@@ -1,5 +1,5 @@
-#ifndef _STRING_H_
-#define _STRING_H_
+#ifndef _CTYPE_H_
+#define _CTYPE_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,17 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "stddef.h"
 
-extern size_t strlen(const char *s);
-extern char *strcpy(char *dest, const char *src);
-extern char *strncpy(char *dest, const char *src, size_t n);
-extern char *strcat(char *dest, const char *src);
-extern char *strncat(char *dest, const char *src, size_t n);
-extern int strcmp(const char *s1, const char *s2);
-extern int strncmp(const char *s1, const char *s2, size_t size);
-
-extern void *memcpy(void *dest, const void *src, size_t n);
-extern void *memset(void *s, int c, size_t n);
+extern int isdigit(int c);
 
 #endif

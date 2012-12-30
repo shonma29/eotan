@@ -12,8 +12,6 @@ Version 2, June 1991
 */
 
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_write.c,v 1.1 1997/08/31 13:25:28 night Exp $  */
-static char rcsid[] = "@(#)$Id: sys_write.c,v 1.1 1997/08/31 13:25:28 night Exp $";
-
 
 #include "../native.h"
 

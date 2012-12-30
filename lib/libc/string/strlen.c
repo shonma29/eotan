@@ -16,8 +16,6 @@ Version 2, June 1991
 
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/string/strlen.c,v 1.2 2000/02/17 14:29:04 naniwa Exp $ */
 
-static char rcsid[] =
-    "$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/string/strlen.c,v 1.2 2000/02/17 14:29:04 naniwa Exp $";
 /* 
  * $Log: strlen.c,v $
  * Revision 1.2  2000/02/17 14:29:04  naniwa

@@ -12,8 +12,6 @@ Version 2, June 1991
 */
 
 /* @(#)$Header$  */
-static char rcsid[] = "@(#)$Id$";
-
 
 #include "../native.h"
 
