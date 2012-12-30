@@ -26,7 +26,6 @@
 TARGET = libmpu.a
 MAKE = gmake
 CC = cc
-#CFLAGS = -Wall -Werror -O6
 CFLAGS = -Wall -Werror -Os -fno-builtin
 AS = as
 ASFLAGS = 

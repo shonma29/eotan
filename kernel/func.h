@@ -47,6 +47,7 @@ extern UW pmemfree(void);
 extern void thread_initialize(void);
 extern void thread_initialize1(void);
 extern ER thread_switch(void);
+extern ER thread_change_priority(ID tskid, PRI tskpri);
 extern void print_thread_list(void);
 extern T_TCB *get_thread_ptr(ID tskid);
 extern void make_local_stack(T_TCB *tsk, W size, W acc);
@@ -67,8 +68,8 @@ extern ER flag_initialize(void);
 
 /* time.c */
 extern void time_initialize(UW seconds);
-extern ER set_tim(SYSTIME *pk_tim);
-extern ER get_tim(SYSTIME *pk_tim);
+extern ER time_set(SYSTIME *pk_tim);
+extern ER time_get(SYSTIME *pk_tim);
 
 /* lowlib.c */
 extern ER init_lowlib(struct module_info *modp);

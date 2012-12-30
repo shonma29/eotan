@@ -26,8 +26,7 @@
 TARGET = libarch.a
 MAKE = gmake
 CC = cc
-#CFLAGS = -Wall -Werror -O6
-CFLAGS = -Wall -Os -fno-builtin
+CFLAGS = -Wall -Werror -Os -fno-builtin
 AS = as
 ASFLAGS = 
 LD = ld
