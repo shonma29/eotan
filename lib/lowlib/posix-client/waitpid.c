@@ -11,8 +11,6 @@ Version 2, June 1991
 
 */
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/syscalls/watipid.c,v 1.3 1999/07/21 15:07:19 naniwa Exp $ */
-static char rcsid[] =
-    "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/syscalls/watipid.c,v 1.3 1999/07/21 15:07:19 naniwa Exp $";
 
 /*
  * $Log: watipid.c,v $

@@ -9,7 +9,6 @@ Version 2, June 1991
 
 */
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/signal.c,v 1.3 1999/04/13 04:15:17 monaka Exp $ */
-static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/signal.c,v 1.3 1999/04/13 04:15:17 monaka Exp $";
 
 /*
  * $Log: signal.c,v $
@@ -109,6 +108,7 @@ static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-p
  * 
  */
 
+#include "../libserv/port.h"
 #include "lowlib.h"
 
 
@@ -135,11 +135,14 @@ struct signal_handler
  * このファイルの中でのみ参照可能な関数 (static function)
  */
 static int	sig_null (void *arg);	/* 何もしない */
+#if 0
 static int	sig_user (void *arg);	/* ユーザハンドラを実行 */
+#endif
 static int	sig_core (void *arg);	/* コアダンプする */
 static int	sig_kill (void *arg);	/* 終了する */
 static int	sig_stop (void *arg);	/* プロセスを一時停止する */
 static int	sig_cont (void *arg);	/* プロセスの実行を再開する */
+static int proc_set_signal_port (int my_pid, ID sigport);
 
 /*
  * 大域変数の宣言 (実際に場所を確保する)
@@ -188,7 +191,7 @@ init_signal (void)
   /*
    * シグナル受信用のメッセージポートを初期化する。
    */
-  sigport = alloc_port ();		/* メッセージバッファの取得 */
+  sigport = alloc_port (sizeof(W), 1);		/* メッセージバッファの取得 */
 
   /*
    * シグナルを受信するポートをプロセスマネージャに登録する。
@@ -201,7 +204,7 @@ init_signal (void)
    * シグナルを受信するためのタスクを起動する。
    * もちろん、シグナルは↑の関数で生成/登録したポートを使用する。
    */
-  
+  return (EP_OK);
 }
 
 
@@ -209,9 +212,10 @@ init_signal (void)
 /* proc_set_signal_port - 
  *
  */
-int
+static int
 proc_set_signal_port (int my_pid, ID sigport)
 {
+  return (EP_OK);
 }
 
 
@@ -226,6 +230,7 @@ sig_null (void *arg)
   return (EP_OK);  /* 一応正常終了したことだけは返す。*/
 }
 
+#if 0
 /*
  * ユーザハンドラを (主タスクのコンテキストで) 実行する。
  *
@@ -254,7 +259,7 @@ sig_user (void *arg)
 
   return (EP_OK);
 }
-
+#endif
 
 /*
  * コアダンプする。
@@ -263,7 +268,7 @@ static int
 sig_core (void *arg)
 {
   /* ユーザのデータ領域およびスタック領域をcoreファイルに吐き出す */
-
+  return (EP_OK);
 }
 
 
@@ -273,8 +278,7 @@ sig_core (void *arg)
 static int
 sig_kill (void *arg)
 {
-
-
+  return (EP_OK);
 }
 
 
@@ -312,7 +316,7 @@ sig_stop (void *arg)
 static int
 sig_cont (void *arg)
 {
-
+  return (EP_OK);
 }
 
 

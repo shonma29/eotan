@@ -11,8 +11,6 @@ Version 2, June 1991
 
 */
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/syscalls/fork.c,v 1.7 2000/04/03 14:33:04 naniwa Exp $ */
-static char rcsid[] =
-    "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/syscalls/fork.c,v 1.7 2000/04/03 14:33:04 naniwa Exp $";
 
 /*
  * $Log: fork.c,v $
@@ -50,7 +48,7 @@ static char rcsid[] =
  *
  */
 
-
+#include "../../include/string.h"
 #include "../lowlib.h"
 
 /* fork システムコールの処理

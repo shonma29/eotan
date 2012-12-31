@@ -11,8 +11,6 @@ Version 2, June 1991
 
 */
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/syscalls/open.c,v 1.8 1999/03/30 13:26:41 monaka Exp $ */
-static char rcsid[] =
-    "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/syscalls/open.c,v 1.8 1999/03/30 13:26:41 monaka Exp $";
 
 /*
  * $Log: open.c,v $

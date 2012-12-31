@@ -9,7 +9,6 @@ Version 2, June 1991
 
 */
 /* $Header$ */
-static char rcsid[] = "@(#)$Header$";
 
 /*
  * $Log$

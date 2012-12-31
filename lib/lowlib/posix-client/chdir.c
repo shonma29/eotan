@@ -11,8 +11,6 @@ Version 2, June 1991
 
 */
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/syscalls/chdir.c,v 1.4 1999/03/21 00:57:10 monaka Exp $ */
-static char rcsid[] =
-    "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/syscalls/chdir.c,v 1.4 1999/03/21 00:57:10 monaka Exp $";
 
 /*
  * $Log: chdir.c,v $
@@ -32,7 +30,7 @@ static char rcsid[] =
  *
  */
 
-
+#include "../../include/string.h"
 #include "../lowlib.h"
 
 extern char *strncpy2(char *, char *, int);

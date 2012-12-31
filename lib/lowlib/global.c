@@ -9,7 +9,6 @@ Version 2, June 1991
 
 */
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/global.c,v 1.3 1998/02/25 12:47:52 night Exp $ */
-static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/global.c,v 1.3 1998/02/25 12:47:52 night Exp $";
 
 /*
  * $Log: global.c,v $

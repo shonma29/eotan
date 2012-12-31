@@ -11,7 +11,6 @@ Version 2, June 1991
 
 */
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/syscalls/mount.c,v 1.2 1999/03/21 00:57:49 monaka Exp $ */
-static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/syscalls/mount.c,v 1.2 1999/03/21 00:57:49 monaka Exp $";
 
 /*
  * $Log: mount.c,v $

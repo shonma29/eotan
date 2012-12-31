@@ -11,8 +11,6 @@ Version 2, June 1991
 
 */
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/lowlib.c,v 1.9 2000/02/16 08:16:48 naniwa Exp $ */
-static char rcsid[] =
-    "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/lowlib.c,v 1.9 2000/02/16 08:16:48 naniwa Exp $";
 
 /*
  * $Log: lowlib.c,v $
@@ -77,9 +75,6 @@ static char rcsid[] =
  */
 ER lowlib_init(struct lowlib_info *lowlib)
 {
-    ER error;
-
-
     dbg_printf("POSIX lowlib: now loading...\n");
 
     /* POSIX マネージャの port の取得 */
@@ -118,9 +113,6 @@ ER lowlib_start(VP stack_top)
 	int pid;		/* このプロセスの ID */
     } *args = (struct a *) stack_top;
 
-    VP user_stack_bottom;	/* ユーザスタックのボトムqアドレス */
-
-
     lowlib_data->my_pid = args->pid;	/* LOWLIB が貼りついているプロセスの 
 					 * ID を記憶する。
 					 */
@@ -150,7 +142,7 @@ ER lowlib_start(VP stack_top)
      * ここには、戻ってこない。もし、もどってきた場合には、ユーザプロセ
      * スの破棄を行う。
      */
-    lowlib_exit();
+    return lowlib_exit();
 }
 
 
@@ -159,7 +151,6 @@ B *posix_name;
 
 ER setup_port(void)
 {
-    ER error;
     T_CMBF pk_cmbf = { NULL, TA_TFIFO, 0, sizeof(struct posix_response) };
 
 #ifdef DEBUG
@@ -225,4 +216,6 @@ ER lowlib_exit()
      * そして、最後に自分自身を終了する。
      */
     exd_tsk();
+
+    return E_OK;
 }

@@ -11,8 +11,6 @@ Version 2, June 1991
 
 */
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/syscalls/exec.c,v 1.6 1999/11/10 10:47:25 naniwa Exp $ */
-static char rcsid[] =
-    "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/syscalls/exec.c,v 1.6 1999/11/10 10:47:25 naniwa Exp $";
 
 /*
  * $Log: exec.c,v $
@@ -38,7 +36,7 @@ static char rcsid[] =
  *
  */
 
-
+#include "../../include/string.h"
 #include "../lowlib.h"
 
 

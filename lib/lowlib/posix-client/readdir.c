@@ -9,7 +9,6 @@ Version 2, June 1991
 
 */
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/syscalls/readdir.c,v 1.4 1999/12/26 11:15:04 naniwa Exp $ */
-static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/syscalls/readdir.c,v 1.4 1999/12/26 11:15:04 naniwa Exp $";
 
 /*
  * $Log: readdir.c,v $

@@ -11,7 +11,6 @@ Version 2, June 1991
 
 */
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/syscalls/sleep.c,v 1.3 1999/03/21 00:58:18 monaka Exp $ */
-static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/syscalls/sleep.c,v 1.3 1999/03/21 00:58:18 monaka Exp $";
 
 /*
  * $Log: sleep.c,v $

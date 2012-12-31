@@ -64,7 +64,7 @@ LIBS =	posix-client/libposix-client.a $(ROOT)/lib/libserv.a \
 
 # DEBUG  = -DDEBUG
 IDENT  = $(DEBUG)
-CFLAGS = -O2 -I../libc/include -I../libc/include/sys -I$(ROOT)/kernel $(IDENT)
+CFLAGS = -O2 -Wall -Werror -I../libc/include -I../libc/include/sys -I$(ROOT)/kernel $(IDENT)
 CC=gcc
 
 all: lowlib

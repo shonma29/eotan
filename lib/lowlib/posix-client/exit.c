@@ -9,7 +9,6 @@ Version 2, June 1991
 
 */
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/syscalls/exit.c,v 1.3 1999/07/23 14:37:36 naniwa Exp $ */
-static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/syscalls/exit.c,v 1.3 1999/07/23 14:37:36 naniwa Exp $";
 
 /*
  * $Log: exit.c,v $

@@ -74,4 +74,10 @@ extern ER	lowlib_exit ();
 extern ER	lowlib_start (VP stack_top);
 extern ER	lowlib_syscall (W syscallno, VP arg);
 
+/* signal.c */
+extern int init_signal(void);
+
+/* jmp_user.S */
+extern void jmp_user_entry(void);
+
 #endif /* __FUNCS_H__ */

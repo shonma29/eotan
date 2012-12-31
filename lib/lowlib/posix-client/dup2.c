@@ -9,7 +9,6 @@ Version 2, June 1991
 
 */
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/syscalls/dup2.c,v 1.3 1999/03/21 00:57:18 monaka Exp $ */
-static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/syscalls/dup2.c,v 1.3 1999/03/21 00:57:18 monaka Exp $";
 
 /*
  * $Log: dup2.c,v $

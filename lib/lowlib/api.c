@@ -9,7 +9,6 @@ Version 2, June 1991
 
 */
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/api.c,v 1.6 2000/06/01 08:44:40 naniwa Exp $ */
-static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/api.c,v 1.6 2000/06/01 08:44:40 naniwa Exp $";
 
 /*
  * $Log: api.c,v $

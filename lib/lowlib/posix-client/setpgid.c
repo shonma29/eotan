@@ -9,7 +9,6 @@ Version 2, June 1991
 
 */
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/syscalls/setpgid.c,v 1.3 1999/03/21 00:58:04 monaka Exp $ */
-static char rcsid[] = "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/lowlib/syscalls/setpgid.c,v 1.3 1999/03/21 00:58:04 monaka Exp $";
 
 /*
  * $Log: setpgid.c,v $
