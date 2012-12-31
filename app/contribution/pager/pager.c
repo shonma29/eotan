@@ -19,12 +19,13 @@
  */
 
 #include    <stdlib.h>
+#include    <unistd.h>
         
 int read_ln(int fd, char *buf, int  buf_len);
 void prompt();
 int p_lines();
 
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
   int     fd;
   int     line;
@@ -55,6 +56,8 @@ main(int argc, char **argv)
     if (line < 0) break;
     prompt();
   }
+
+  return 0;
 }
     
 void prompt()
@@ -95,7 +98,6 @@ int read_ln(int fd, char *buf, int  buf_len)
 
 int p_lines(void)
 {
-  char *s;
   struct winsize {
     unsigned short int ws_row;
     unsigned short int ws_col;
@@ -104,7 +106,7 @@ int p_lines(void)
   } ws;
 
 
-  int LINES, COLS, i;
+  int LINES, COLS;
 
   fcntl(1, (0x00000013 << 16), &ws);
   LINES = ws.ws_row;

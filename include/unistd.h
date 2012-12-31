@@ -60,7 +60,7 @@ extern int misc(int cmd, int len, void *argp);
 extern int mkdir(char *path, int mode);
 extern int mntroot(int devnum);
 extern int mount(char *special_file, char *dir, int rwflag, char *fstype);
-extern int open(char *path, int oflag, int mode);
+extern int open(char *path, int oflag, ...);
 extern int opendir(char *path, int mode);
 extern int read(int fd, void *buf, int size);
 /*

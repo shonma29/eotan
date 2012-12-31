@@ -15,7 +15,7 @@
 
 CPP=/lib/cpp
 ROOT=../../..
-CFLAGS=-O -I. -I$(ROOT) -I$(ROOT)/kernel -I$(ROOT)/lib/libc/others $(IDENT)
+CFLAGS=-O -Wall -Werror -fno-builtin -I. -I$(ROOT)/include -I$(ROOT)/kernel -I$(ROOT)/lib/libc/others $(IDENT)
 CC=gcc
 
 STARTADDR=0x00001000
