@@ -11,8 +11,6 @@ Version 2, June 1991
 
 */
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/BTRON/device/keyboard/misc.c,v 1.4 2000/04/03 14:30:06 naniwa Exp $ */
-static char rcsid[] =
-    "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/BTRON/device/keyboard/misc.c,v 1.4 2000/04/03 14:30:06 naniwa Exp $";
 
 /*
  * $Log: misc.c,v $
@@ -62,7 +60,7 @@ struct key_entry keybuffer[MAX_LIST];
 /*
  *
  */
-init_keybuffer(void)
+void init_keybuffer(void)
 {
     W i;
 
@@ -78,7 +76,7 @@ init_keybuffer(void)
 /*
  * バッファの内容をクリアする。
  */
-clear_keybuffer()
+void clear_keybuffer()
 {
     init_keybuffer();
     current.first = NULL;

@@ -118,4 +118,13 @@ extern W    	control_keyboard();	/* コントロール		*/
 extern W	send_switch_msg();
 extern W	relay_keyboard ();
 
+/* interrupt.c */
+extern void init_keyboard_interrupt();
+
+/* misc.c */
+extern void init_keybuffer(void);
+extern void clear_keybuffer();
+extern void put_entry(W keycode);
+extern W read_key(W mode);
+
 #endif /* __KEYBOARD_H__ */

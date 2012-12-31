@@ -11,8 +11,6 @@ Version 2, June 1991
 
 */
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/BTRON/device/keyboard/interrupt.c,v 1.14 2000/04/03 14:30:03 naniwa Exp $ */
-static char rcsid[] =
-    "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/BTRON/device/keyboard/interrupt.c,v 1.14 2000/04/03 14:30:03 naniwa Exp $";
 
 /*
  * $Log: interrupt.c,v $
@@ -130,7 +128,7 @@ static void keyboard_interrupt();
  * キーボード割り込みハンドラの登録
  *
  */
-init_keyboard_interrupt()
+void init_keyboard_interrupt()
 {
     T_DINT pk_dint;
     ER errno;

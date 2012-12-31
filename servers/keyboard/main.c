@@ -65,6 +65,7 @@ Version 2, June 1991
 #include "../../include/device.h"
 #include "../../include/itron/rendezvous.h"
 #include "../libserv/libserv.h"
+#include "../libserv/port.h"
 #include "keyboard.h"
 #include "key_type.h"
 
@@ -95,7 +96,7 @@ ID my_tskid;
  * この関数は、デバイスドライバ立ち上げ時に一回だけ実行する。
  *
  */
-start()
+void start()
 {
     /* 
      * 要求受信用のポートの作成
@@ -145,7 +146,6 @@ static void main_loop()
  */
 W init_keyboard(void)
 {
-    int i;
     ER error;
     T_CPOR pk_cpor = { TA_TFIFO, sizeof(DDEV_REQ), sizeof(DDEV_RES) };
     T_CFLG pk_cflg = { NULL, TA_WSGL, 0 };
@@ -161,7 +161,7 @@ W init_keyboard(void)
 	/* メッセージバッファ生成に失敗 */
     }
 
-    error = regist_port(KEYBOARD_DRIVER, recvport);
+    error = regist_port((port_name*)KEYBOARD_DRIVER, recvport);
     if (error != E_OK) {
 	dbg_printf("[KEYBOARD] cannot regist port. error = %d\n", error);
 	ext_tsk();
@@ -179,6 +179,8 @@ W init_keyboard(void)
     initialized = 1;
 
     get_tid(&my_tskid);
+
+    return E_OK;
 }
 
 /************************************************************************
@@ -387,7 +389,8 @@ W control_keyboard(RDVNO rdvno, devmsg_t * packet)
 	return (E_OK);
 
     case KEYBOARD_GETMODE:
-        vput_reg(packet->req.header.tskid, ((W *) req->param)[0], sizeof(W),
+        vput_reg(packet->req.header.tskid, (VP)(((W *) req->param)[0]),
+                sizeof(W),
                 &driver_mode);
         respond_ctrl(rdvno, packet, req->dd, E_OK);
 	return (E_OK);

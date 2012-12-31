@@ -8,7 +8,7 @@ DEBUG=
 CPP=/lib/cpp
 ROOT=../..
 COMMON=$(ROOT)/include
-CFLAGS=-O -I. -I$(ROOT)/kernel -I$(ROOT)/lib/libserv -I$(COMMON) \
+CFLAGS=-O -Wall -Werror -I. -I$(ROOT)/kernel -I$(ROOT)/lib/libserv -I$(COMMON) \
        -fno-builtin $(IDENT)
 CC=gcc
 AS=/usr/bin/as
