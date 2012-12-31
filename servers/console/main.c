@@ -112,6 +112,7 @@ Version 2, June 1991
 #include "../../include/itron/rendezvous.h"
 #include "../../include/device.h"
 #include "../../lib/libserv/libserv.h"
+#include "../../lib/libserv/port.h"
 #include "console.h"
 #include "cga.h"
 
@@ -218,7 +219,7 @@ static W init_console(void)
 	/* メッセージバッファ生成に失敗 */
     }
 
-    error = regist_port(CONSOLE_DRIVER, recvport);
+    error = regist_port((port_name*)CONSOLE_DRIVER, recvport);
     if (error != E_OK) {
 	dbg_printf("[CONSOLE] cannot regist port. error = %d\n", error);
 	return E_SYS;
