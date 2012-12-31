@@ -16,6 +16,8 @@
 #include "../../include/itron/rendezvous.h"
 #include "../../include/mpu/io.h"
 #include "../../lib/libserv/libserv.h"
+#include "../../lib/libserv/port.h"
+#include "../../kernel/mpu/mpufunc.h"
 #include "psaux.h"
 #include "kbc.h"
 
@@ -25,6 +27,13 @@ ID      waitflag;          /* 入力待ちフラグ　*/
 
 W       driver_opened;     /* ドライバオープン時の排他制御用 */
 W       driver_mode;       /* ドライバモード */ 
+
+static ER process_request (RDVNO rdvno, devmsg_t *packet);
+static ER open_psaux (RDVNO rdvno, devmsg_t *packet);
+static ER close_psaux (RDVNO rdvno, devmsg_t *packet);
+static ER read_psaux (RDVNO rdvno, devmsg_t *packet);
+static ER write_psaux (RDVNO rdvno, devmsg_t *packet);
+static ER control_psaux (RDVNO rdvno, devmsg_t *packet);
 
 /*********************************************************************
  * 初期化
@@ -36,7 +45,6 @@ W       driver_mode;       /* ドライバモード */
 static void
 init_driver (void)
 {
-  int		i;
   ER		error;
   T_CPOR pk_cpor = { TA_TFIFO, sizeof(DDEV_REQ), sizeof(DDEV_RES) };
   T_CFLG pk_cflg = { NULL, TA_WSGL, 0 };
@@ -53,7 +61,7 @@ init_driver (void)
       /* メッセージバッファ生成に失敗 */
     }
 
-  error = regist_port (PSAUX_DRIVER, recvport);
+  error = regist_port ((port_name*)PSAUX_DRIVER, recvport);
   if (error != E_OK)
     {
       /* error */
@@ -117,33 +125,37 @@ main_loop (void)
 /*********************************************************************
  *
  */
-ER
+static ER
 process_request (RDVNO rdvno, devmsg_t *packet)
 {
+  ER result = E_NOSPT;
+
   switch (packet->req.header.msgtyp)
     {
     case DEV_OPN:
       /* デバイスのオープン */
-      open_psaux (rdvno, packet);
+      result = open_psaux (rdvno, packet);
       break;
 
     case DEV_CLS:
       /* デバイスのクローズ */
-      close_psaux (rdvno, packet);
+      result = close_psaux (rdvno, packet);
       break;
 
     case DEV_REA:
-      read_psaux (rdvno, packet);
+      result = read_psaux (rdvno, packet);
       break;
 
     case DEV_WRI:
-      write_psaux (rdvno, packet);
+      result = write_psaux (rdvno, packet);
       break;
 
     case DEV_CTL:
-      control_psaux (rdvno, packet);
+      result = control_psaux (rdvno, packet);
       break;
     }
+
+    return result;
 }
 
 
@@ -166,7 +178,7 @@ start (void)
  *
  */
 
-ER
+static ER
 open_psaux (RDVNO rdvno, devmsg_t *packet)
 {
   DDEV_OPN_REQ * req = &(packet->req.body.opn_req);
@@ -209,7 +221,7 @@ open_psaux (RDVNO rdvno, devmsg_t *packet)
 /*
  *
  */
-ER
+static ER
 close_psaux (RDVNO rdvno, devmsg_t *packet)
 {
   DDEV_CLS_REQ * req = &(packet->req.body.cls_req);
@@ -238,7 +250,7 @@ close_psaux (RDVNO rdvno, devmsg_t *packet)
 /*
  *
  */
-ER
+static ER
 read_psaux (RDVNO rdvno, devmsg_t *packet)
 {
   DDEV_REA_REQ * req = &(packet->req.body.rea_req);
@@ -263,13 +275,12 @@ read_psaux (RDVNO rdvno, devmsg_t *packet)
 /*
  *
  */
-ER
+static ER
 write_psaux (RDVNO rdvno, devmsg_t *packet)
 {
   DDEV_WRI_REQ * req = &(packet->req.body.wri_req);
   DDEV_WRI_RES * res = &(packet->res.body.wri_res);
   H             i;
-  B data;
 
   for(i = 0; i < req->size; i++)
     {
@@ -285,7 +296,7 @@ write_psaux (RDVNO rdvno, devmsg_t *packet)
 /*
  *
  */
-ER
+static ER
 control_psaux (RDVNO rdvno, devmsg_t *packet)
 {
   DDEV_CTL_REQ * req = &(packet->req.body.ctl_req);

@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../include/itron/syscall.h"
 #include "../../include/itron/rendezvous.h"
 #include "../../include/itron/errno.h"
+#include "../../lib/libserv/libserv.h"
 
 #define BUFSIZ 16
 #define MIN_AUTO_PORT 49152
@@ -36,12 +37,14 @@ For more information, please refer to <http://unlicense.org/>
 
 static ID port = 0;
 
+#if 0
 static int test_cre_por();
+#endif
 static int test_acre_por();
 static int test_acp_por();
 static int test_del_por();
 
-
+#if 0
 static int test_cre_por(void)
 {
 	T_CPOR pk_cpor = { TA_TFIFO, BUFSIZ, BUFSIZ };
@@ -76,6 +79,7 @@ static int test_cre_por(void)
 
 	return 1;
 }
+#endif
 
 static int test_acre_por(void)
 {

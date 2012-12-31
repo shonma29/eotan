@@ -19,6 +19,7 @@ Version 2, June 1991
 extern void		strncpy2(B *s1, B *s2, W size);
 
 /* sys_debug.c */
+extern W dbg_puts(B *msg);
 extern W dbg_printf(B *format, ...);
 
 /* malloc.c */

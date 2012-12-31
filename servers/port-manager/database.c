@@ -10,9 +10,6 @@ Version 2, June 1991
 */
 /* @(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/servers/database.c,v 1.1 1999/04/18 17:48:36 monaka Exp $ */
 
-static char rcs[] = "@(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/servers/database.c,v 1.1 1999/04/18 17:48:36 monaka Exp $";
-
-
 /*
  * $Log: database.c,v $
  * Revision 1.1  1999/04/18 17:48:36  monaka
@@ -59,6 +56,8 @@ static char rcs[] = "@(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc
 /*
  * 必要なインクルードファイルの読み込み。
  */
+#include "../../include/string.h"
+#include "../../lib/libserv/libserv.h"
 #include <core.h>
 #include "port-manager.h"
 

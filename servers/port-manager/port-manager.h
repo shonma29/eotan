@@ -248,6 +248,7 @@ struct recv_port_message_t
  * データベース操作関数。
  * <登録> <削除> <参照 (検索)> の処理を行う。
  */
+extern void init_regist_table (void);
 extern PORT_MANAGER_ERROR regist_database (port_name name, ID port, ID task);
 extern PORT_MANAGER_ERROR unregist_database (port_name name, ID *port, ID task);
 extern PORT_MANAGER_ERROR find_database (port_name name, ID *port);

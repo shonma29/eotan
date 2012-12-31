@@ -29,4 +29,14 @@
 #define WAITMODE        0x0000
 #define NOWAITMODE      0x0001
 
+/* kbc.c */
+extern void init_buffer();
+extern W kbc_wr_command(B command);
+extern W kbc_wr_data(B data);
+extern B kbc_rd_data(void);
+extern void psaux_interrupt();
+extern void init_interrupt();
+extern W psaux_data_in(B* val);
+extern W psaux_data_out(B data);
+
 #endif

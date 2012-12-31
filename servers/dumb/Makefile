@@ -1,6 +1,6 @@
 ROOT=../..
 
-CFLAGS=-O2 -I. -I$(ROOT)/kernel -fno-builtin
+CFLAGS=-O2 -Wall -Werror -I. -I$(ROOT)/kernel -fno-builtin
 
 LIBS=$(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a
 

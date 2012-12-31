@@ -10,7 +10,7 @@ ENTRY =		_main
 LD=ld
 CC=gcc
 INC=-I../../kernel
-CFLAGS=$(INC) -O2 -fno-builtin
+CFLAGS=$(INC) -O2 -Wall -Werror -fno-builtin
 
 
 OBJS=port-manager.o database.o

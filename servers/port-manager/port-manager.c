@@ -10,8 +10,6 @@ Version 2, June 1991
 */
 /* @(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/servers/port-manager.c,v 1.1 1999/04/18 17:48:36 monaka Exp $ */
 
-static char rcs[] = "@(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/servers/port-manager.c,v 1.1 1999/04/18 17:48:36 monaka Exp $";
-
 /*
  * $Log: port-manager.c,v $
  * Revision 1.1  1999/04/18 17:48:36  monaka
@@ -90,6 +88,7 @@ static char rcs[] = "@(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc
 #include <core.h>
 #include "../../include/itron/rendezvous.h"
 #include "../../lib/libserv/libserv.h"
+#include "../../lib/libserv/port.h"
 #include "port-manager.h"
 
 
@@ -104,15 +103,15 @@ ID	request_port;
  *
  */
 extern void	_main (void);
-extern void	regist_port (RDVNO rdvno, struct port_manager_msg_t *msgp);
-extern void	unregist_port (RDVNO rdvno, struct port_manager_msg_t *msgp);
-extern void	find_port (RDVNO rdvno, struct port_manager_msg_t *msgp);
 
 
 /*
  * このファイルの中でしか使用しないスタティック関数の定義
  */
-static void	recv_port_manager (RDVNO rdvno, PORT_MANAGER_ERROR errno, ID port);
+static void regist (RDVNO rdvno, struct port_manager_msg_t *msgp);
+static void unregist (RDVNO rdvno, struct port_manager_msg_t *msgp);
+static void find (RDVNO rdvno, struct port_manager_msg_t *msgp);
+static void	reply (RDVNO rdvno, PORT_MANAGER_ERROR errno, ID port);
 
 
 /*
@@ -197,21 +196,21 @@ _main (void)
 	      dbg_printf ("[PORT-MANAGER] regist <%s> %d\n",
 		msg_buf.body.regist.name,
 		msg_buf.body.regist.port);
-	      regist_port (rdvno, &msg_buf);
+	      regist (rdvno, &msg_buf);
 	      break;
 
 	    case UNREGIST_PORT:
 	      /*
 	       * メッセージバッファ ID の抹消
 	       */
-	      unregist_port (rdvno, &msg_buf);
+	      unregist (rdvno, &msg_buf);
 	      break;
 
 	    case FIND_PORT:
 	      /*
 	       * メッセージバッファ ID の検索
 	       */
-	      find_port (rdvno, &msg_buf);
+	      find (rdvno, &msg_buf);
 	      break;
 	    }
 	}
@@ -223,8 +222,8 @@ _main (void)
  * メッセージバッファ ID の登録処理を行う。
  *
  */
-void
-regist_port (RDVNO rdvno, struct port_manager_msg_t *msgp)
+static void
+regist (RDVNO rdvno, struct port_manager_msg_t *msgp)
 {
   PORT_MANAGER_ERROR errno;
 
@@ -236,7 +235,7 @@ regist_port (RDVNO rdvno, struct port_manager_msg_t *msgp)
 			   msgp->body.regist.task);
 
 #ifdef DEBUG  
-  dbg_printf ("[PORT-MANAGER] regist_port <%s>\n", msgp->body.regist.name);
+  dbg_printf ("[PORT-MANAGER] regist <%s>\n", msgp->body.regist.name);
 #endif /* DEBUG */
 
   /*
@@ -249,7 +248,7 @@ regist_port (RDVNO rdvno, struct port_manager_msg_t *msgp)
       /*
        * 正常に処理が終了した場合の返答メッセージ送信
        */
-      recv_port_manager (rdvno,
+      reply (rdvno,
 			 errno, 
 			 msgp->body.regist.port);
     }
@@ -260,7 +259,7 @@ regist_port (RDVNO rdvno, struct port_manager_msg_t *msgp)
        * 返答メッセージのうちメッセージバッファ ID については
        * 取得できなかったので、0 を返す。
        */
-      recv_port_manager (rdvno, errno, 0);
+      reply (rdvno, errno, 0);
     }
 }
 
@@ -270,8 +269,8 @@ regist_port (RDVNO rdvno, struct port_manager_msg_t *msgp)
  * メッセージバッファ ID の登録抹消処理を行う。
  *
  */
-void
-unregist_port (RDVNO rdvno, struct port_manager_msg_t *msgp)
+static void
+unregist (RDVNO rdvno, struct port_manager_msg_t *msgp)
 {
   PORT_MANAGER_ERROR	errno;
   ID		     	port;
@@ -291,7 +290,7 @@ unregist_port (RDVNO rdvno, struct port_manager_msg_t *msgp)
       /*
        * 正常に処理が終了した場合の返答メッセージ送信
        */
-      recv_port_manager (rdvno,
+      reply (rdvno,
 			 errno, 
 			 port);
     }
@@ -302,7 +301,7 @@ unregist_port (RDVNO rdvno, struct port_manager_msg_t *msgp)
        * エラーメッセージを返答する。
        * エラー番号以外の内容はすべて 0 を埋めて返す。
        */
-      recv_port_manager (rdvno, errno, 0);
+      reply (rdvno, errno, 0);
     }
 }
 
@@ -311,8 +310,8 @@ unregist_port (RDVNO rdvno, struct port_manager_msg_t *msgp)
  * 
  *
  */
-void
-find_port (RDVNO rdvno, struct port_manager_msg_t *msgp)
+static void
+find (RDVNO rdvno, struct port_manager_msg_t *msgp)
 {
   PORT_MANAGER_ERROR	errno;
   ID		     	port;
@@ -326,7 +325,7 @@ find_port (RDVNO rdvno, struct port_manager_msg_t *msgp)
    * デバッグ文：データベースからの検索結果
    */
 #ifdef DEBUG
-  dbg_printf ("[PORT-MANAGER] find_port errno = %d, port = %d\n", errno, port);
+  dbg_printf ("[PORT-MANAGER] find errno = %d, port = %d\n", errno, port);
 #endif /* DEBUG */
 
   /*
@@ -339,7 +338,7 @@ find_port (RDVNO rdvno, struct port_manager_msg_t *msgp)
        * ポート番号として、find_database() で発見したメッセージバッファ 
        * ID を返す。
        */
-      recv_port_manager (rdvno,
+      reply (rdvno,
 			 errno, 
 			 port);
     }
@@ -350,7 +349,7 @@ find_port (RDVNO rdvno, struct port_manager_msg_t *msgp)
        * エラーメッセージを返答する。
        * エラー番号以外の内容はすべて 0 を埋めて返す。
        */
-      recv_port_manager (rdvno, errno, 0);
+      reply (rdvno, errno, 0);
     }
 }
 
@@ -359,7 +358,7 @@ find_port (RDVNO rdvno, struct port_manager_msg_t *msgp)
  * ポートマネージャに対して要求を送ったタスクに対して返答メッセージを返す。
  */
 static void
-recv_port_manager (RDVNO rdvno, PORT_MANAGER_ERROR errno, ID port)
+reply (RDVNO rdvno, PORT_MANAGER_ERROR errno, ID port)
 {
   /*
    * 返答メッセージの内容が入る領域。
