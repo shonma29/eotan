@@ -27,6 +27,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
+typedef int pid_t;
+
 extern int chdir(char *path);
 extern int access(char *path, int mode);
 extern int brk(void *endds);
@@ -84,8 +86,8 @@ extern int uname(char *buf);
 extern int unlink(char *path);
 /*
 extern int utime(char *path, struct utimbuf *buf);
-extern int waitpid(pid_t pid, int *status, int option);
 */
+extern int waitpid(pid_t pid, int *status, int option);
 extern int write(int fd, void *buf, int length);
 
 #endif

@@ -13,9 +13,8 @@
 IDENT=-DI386 -DUSE_LOWLIB
 DEBUG=
 
-CPP=/lib/cpp
 ROOT=../..
-CFLAGS=-O2 -fno-builtin -Wall -I. -I$(ROOT)/kernel $(IDENT)
+CFLAGS=-O2 -fno-builtin -Wall -Werror -I. -I$(ROOT)/kernel $(IDENT)
 CC=gcc
 MKDEPEND=$(CC) -M
 STARTADDR=0x00001000
@@ -28,9 +27,6 @@ AS=as
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
-
-%.o: %.s
-	$(CPP) $(ASFLAGS) $*.s | $(AS) -o $*.o
 
 OBJS= start.o main.o device.o posix_if.o lowlib.o stdlib.o
 

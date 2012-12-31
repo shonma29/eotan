@@ -26,10 +26,6 @@ Version 2, June 1991
 #define MAXFSNAME	8
 #define MAXDIRENTRY	100
 
-#ifndef ROUNDUP
-#define ROUNDUP(x,align)	(((((int)x) + ((align) - 1))/(align))*(align))
-#endif
-
 
 /*
  * SCSI デバイスの ID 2、パーティション 1 を root にする

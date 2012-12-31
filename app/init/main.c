@@ -11,8 +11,6 @@ Version 2, June 1991
 
 */
 /* $Id: main.c,v 1.15 2000/01/15 15:17:02 naniwa Exp $ */
-static char rcsid[] =
-    "$Id: main.c,v 1.15 2000/01/15 15:17:02 naniwa Exp $";
 
 /*
  * $Log: main.c,v $
@@ -97,6 +95,8 @@ static char rcsid[] =
  */
 #include "init.h"
 #include "../../include/device.h"
+#include "../../include/string.h"
+#include "../../include/unistd.h"
 #include "../../include/itron/syscall.h"
 #include "../../include/itron/errno.h"
 #include "../../kernel/lowlib.h"
@@ -111,8 +111,6 @@ static char rcsid[] =
 ID dev_recv;			/* デバイスドライバからの返答用 */
 
 extern void lowlib_load (B *name);
-extern int strcmp(char *, char *);
-extern int strcpy(char *, char *);
 static void exec(char *);
 static void banner(void);
 static W read_line_edit(B * line, W length);
@@ -120,7 +118,7 @@ static W read_line_edit(B * line, W length);
 /*
  *
  */
-void main(int ac, B ** av)
+int main(int ac, B ** av)
 {
     static B line[100];
     UW rootfs;

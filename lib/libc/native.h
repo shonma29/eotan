@@ -44,8 +44,6 @@ struct tms
 
 typedef unsigned long	clock_t;
 
-typedef unsigned int	pid_t;
-
 
 extern int call_lowlib(const int svcno, ...);
 

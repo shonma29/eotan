@@ -13,6 +13,7 @@ Version 2, June 1991
 
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_waitpid.c,v 1.3 1999/02/17 05:28:33 monaka Exp $  */
 
+#include "../../include/unistd.h"
 #include "../native.h"
 
 

@@ -11,8 +11,6 @@ Version 2, June 1991
 
 */
 /* $Id: device.c,v 1.4 1999/05/15 09:57:58 naniwa Exp $ */
-static char rcsid[] =
-    "$Id: device.c,v 1.4 1999/05/15 09:57:58 naniwa Exp $";
 
 /*
  * $Log: device.c,v $

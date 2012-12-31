@@ -4,11 +4,10 @@
 
 IDENT=-DI386 $(DEBUG)
 
-CPP=/lib/cpp
 ROOT=../..
-CFLAGS=-O2 -I. -I$(ROOT)/kernel -fno-builtin $(IDENT)
+CFLAGS=-O2 -Wall -Werror -I. -I$(ROOT)/kernel -fno-builtin $(IDENT)
 CC=gcc
-AS=/usr/bin/as
+AS=as
 MKDEPEND=$(CC) -M
 STARTADDR=0x00001000
 ENTRY=start
@@ -18,9 +17,6 @@ LD=ld
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
-
-%.o: %.s
-	$(CPP) $(ASFLAGS) $*.s | $(AS) -o $*.o
 
 OBJS= main.o
 

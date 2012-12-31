@@ -12,8 +12,6 @@ Version 2, June 1991
 */
 
 /* $Id: stdlib.c,v 1.5 1999/05/10 02:57:17 naniwa Exp $ */
-static char rcsid[] =
-    "$Id: stdlib.c,v 1.5 1999/05/10 02:57:17 naniwa Exp $";
 
 /*
  * $Log: stdlib.c,v $
@@ -40,8 +38,10 @@ static char rcsid[] =
  *
  */
 #include "../../include/stdarg.h"
+#include "../../include/string.h"
 #include "../../include/device.h"
 #include "../../include/itron/rendezvous.h"
+#include "../../lib/libserv/libserv.h"
 #include "init.h"
 
 static W putc(W ch, FILE * port);

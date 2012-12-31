@@ -10,8 +10,11 @@ Version 2, June 1991
 (C) 2001-2002, Tomohide Naniwa
 
 */
-#include "../../lib/libserv/libserv.h"
+#include "../../include/string.h"
+#include "../../include/unistd.h"
 #include "../../include/itron/rendezvous.h"
+#include "../../lib/libserv/libserv.h"
+#include "../../lib/libserv/port.h"
 #include "ramdisk.h"
 
 #define START_FROM_INIT
@@ -25,7 +28,6 @@ Version 2, June 1991
  *	 局所変数群の宣言
  *
  */
-static W mydevid;		/* 自分自身のid */
 static ID recvport;		/* 要求受けつけ用ポート */
 static char *ramdisk;
 static W rd_size;
@@ -40,8 +42,9 @@ static void doit(RDVNO rdvno, devmsg_t * packet);
 
 #ifdef START_FROM_INIT
 /* ダミーの main 関数 */
-main()
+int main()
 {
+    return 0;
 }
 
 #endif
@@ -52,7 +55,7 @@ main()
  *
  */
 
-start(int argc, char *argv[])
+void start(int argc, char *argv[])
 {
     W size;
     extern int atoi(char *);
@@ -153,8 +156,6 @@ static void doit(RDVNO rdvno, devmsg_t * packet)
  */
 static void init_rd_driver(W size)
 {
-    int i;
-    ID root_dev;
     ER error;
     T_CPOR pk_cpor = { TA_TFIFO, sizeof(DDEV_REQ), sizeof(DDEV_RES) };
 
@@ -169,7 +170,7 @@ static void init_rd_driver(W size)
 	/* メッセージバッファ生成に失敗 */
     }
 
-    error = regist_port(RD_DRIVER, recvport);
+    error = regist_port((port_name*)RD_DRIVER, recvport);
     if (error != E_OK) {
 	/* error */
     }
@@ -184,7 +185,7 @@ static void init_rd_driver(W size)
 void init_rd(W size)
 {
 #ifdef START_FROM_INIT
-    if (brk(VADDR_HEAP + size) < 0) {
+    if (brk((UW*)(VADDR_HEAP + size)) < 0) {
 	dbg_printf("[RAMDISK] cannot allocate memory.\n");
 	_exit(-1);
     } else {
@@ -269,7 +270,7 @@ W read_rd(RDVNO rdvno, devmsg_t * packet)
     else
 	done_length = req->size;
 
-    bcopy(&ramdisk[req->start], res->dt, done_length);
+    memcpy(res->dt, &ramdisk[req->start], done_length);
     res->dd = req->dd;
     res->a_size = done_length;
     res->errcd = E_OK;
@@ -293,7 +294,7 @@ W write_rd(RDVNO rdvno, devmsg_t * packet)
     else
 	done_length = req->size;
 
-    bcopy(req->dt, &ramdisk[req->start], done_length);
+    memcpy(&ramdisk[req->start], req->dt, done_length);
 
     res->dd = req->dd;
     res->a_size = done_length;
@@ -311,7 +312,6 @@ W control_rd(RDVNO rdvno, devmsg_t * packet)
     DDEV_CTL_REQ * req = &(packet->req.body.ctl_req);
     DDEV_CTL_RES * res = &(packet->res.body.ctl_res);
     ER error = E_OK;
-    W drive;
 
     switch (req->cmd) {
     default:

@@ -13,10 +13,6 @@ Version 2, June 1991
 
 /* $Id: posix_if.c,v 1.20 2000/02/16 08:20:36 naniwa Exp $ */
 
-static char rcsid[] =
-    "$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/BTRON/init/posix_if.c,v 1.20 2000/02/16 08:20:36 naniwa Exp $";
-
-
 /* 
  * $Log: posix_if.c,v $
  * Revision 1.20  2000/02/16 08:20:36  naniwa
@@ -88,8 +84,9 @@ static char rcsid[] =
  *
  */
 
-#include "../../include/itron/struct.h"
 #include "../../include/services.h"
+#include "../../include/itron/struct.h"
+#include "../../include/itron/syscall.h"
 #include "../../servers/fs/posix_sysc.h"
 #include "../../servers/fs/posix_mm.h"
 #include "init.h"

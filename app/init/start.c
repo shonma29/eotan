@@ -12,7 +12,6 @@ Version 2, June 1991
 */
 
 /* $Id: start.c,v 1.2 2000/02/07 18:09:21 kishida0 Exp $ */
-static char rcsid[] = "$Id: start.c,v 1.2 2000/02/07 18:09:21 kishida0 Exp $";
 
 /*
  * $Log: start.c,v $
