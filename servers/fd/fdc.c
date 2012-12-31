@@ -12,8 +12,6 @@ Version 2, June 1991
 */
 
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/BTRON/device/fd765a/fdc.c,v 1.14 2000/05/06 03:42:45 naniwa Exp $ */
-static char rcsid[] =
-    "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/BTRON/device/fd765a/fdc.c,v 1.14 2000/05/06 03:42:45 naniwa Exp $";
 
 #include "../../lib/libserv/libserv.h"
 #include "../../include/mpu/io.h"
@@ -85,8 +83,6 @@ W write_fdc(UW value)
  */
 void intr_fd(void)
 {
-    B status;
-
     dis_int();
 #ifdef FDDEBUG
     printf("!!interrupt!!\n");
@@ -187,24 +183,6 @@ W read_fdc(void)
  */
 W reset_fdc(W drive)
 {
-    W data;
-    UW result[8];
-    W count;
-    W i;
-
-#ifdef notdef
-    dis_int();
-    intr_flag = FALSE;
-    outb(FDC_WCNTL, 0);
-    outb(FDC_WCNTL, 0x0c | 0x04);
-    ena_int();
-    wait_int(&intr_flag);
-    printf("collect interrupt sense data.\n");
-    for (i = 0; i < 4; i++) {
-	fdc_isense();
-    }
-#endif
-
 #ifdef FDDEBUG
     printf("reset_fdc: start\n");
     printf("  srt = 0x%x\n", fd_data[drive]->srt);
@@ -214,9 +192,8 @@ W reset_fdc(W drive)
     specify(drive,
 	    fd_data[drive]->srt,
 	    fd_data[drive]->hut, fd_data[drive]->hlt, fd_data[drive]->nd);
-#if 1
     outb(FDC_DCR, 0x00);
-#endif
+
     return (TRUE);
 }
 
@@ -247,7 +224,7 @@ BOOL fdc_isense()
 	    return (TRUE);
 	}
     }
-/*  need_reset = TRUE;		/* controller chip must be reset */
+/*  need_reset = TRUE;*/		/* controller chip must be reset */
     return (FALSE);
 }
 
@@ -315,7 +292,7 @@ W specify(W drive, UW srt, UW hut, UW hlt, UW nd)
 }
 
 
-fdc_sense()
+int fdc_sense()
 {
     int result_nr = 0;
     int status;
@@ -339,7 +316,7 @@ fdc_sense()
 	    return (TRUE);
 	}
     }
-/*  need_reset = TRUE;		/* controller chip must be reset */
+/*  need_reset = TRUE;*/		/* controller chip must be reset */
     return (FALSE);
 }
 
@@ -384,9 +361,6 @@ W read_result(W drive, UW * result, W n)
  */
 W recalibrate(W drive)
 {
-    UW result[2];
-    UINT rflag;
-
     ready_check();
 
     dis_int();
@@ -476,9 +450,7 @@ void stop_motor(W drive)
  */
 W seek(W head, W drive, W cylinder)
 {
-    int i;
     int result;
-    UINT rflag;
 
     ready_check();
 #ifdef FDDEBUG
@@ -529,10 +501,8 @@ W seek(W head, W drive, W cylinder)
  */
 W get_data(W drive, W head, W cylinder, W sector, B * buff)
 {
-    W i;
     int ret;
     int s;
-    UINT rflag;
 
 #define LEN	(fd_data[drive]->length)
 #define CHAN	(fd_data[drive]->dmachan)
@@ -613,10 +583,8 @@ W get_data(W drive, W head, W cylinder, W sector, B * buff)
  */
 W put_data(W drive, W head, W cylinder, W sector, B * buff)
 {
-    W i;
     int ret;
     int s;
-    UINT rflag;
 
 #define LEN	(fd_data[drive]->length)
 #define CHAN	(fd_data[drive]->dmachan)

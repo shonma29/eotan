@@ -155,8 +155,11 @@ Version 2, June 1991
 	
 **********************************************************************/
 
+#include "../../include/string.h"
+#include "../../include/itron/syscall.h"
 #include "../../include/itron/rendezvous.h"
 #include "../../lib/libserv/libserv.h"
+#include "../../lib/libserv/port.h"
 #include "fd.h"
 
 
@@ -172,9 +175,7 @@ W intr_flag;
  *	 局所変数群の宣言
  *
  */
-static W mydevid;		/* 自分自身のid */
 static ID recvport;		/* 要求受けつけ用ポート */
-static W initialized;
 
 /*
  *	局所関数群の定義
@@ -189,10 +190,8 @@ static void doit(RDVNO rdvno, devmsg_t * packet);
  * この関数は、デバイスドライバ立ち上げ時に一回だけ実行する。
  *
  */
-start()
+void start()
 {
-    extern char version[];
-
     /* 
      * 要求受信用のポートの作成
      */
@@ -298,7 +297,7 @@ static void init_fd_driver(void)
 	/* メッセージバッファ生成に失敗 */
     }
 
-    error = regist_port(FD_DRIVER, recvport);
+    error = regist_port((port_name*)FD_DRIVER, recvport);
     if (error != E_OK) {
 	dbg_printf("[FD] cannot regist port. error = %d\n", error);
 	ext_tsk();
@@ -315,7 +314,6 @@ static void init_fd_driver(void)
  */
 W init_fd(void)
 {
-    W status;
     T_DINT pkt;
     ER err;
 
@@ -333,6 +331,7 @@ W init_fd(void)
     reset_fdc (1);
     fd_test();
 #endif
+    return E_OK;
 }
 
 /************************************************************************
@@ -411,18 +410,17 @@ W read_fd(RDVNO rdvno, devmsg_t * packet)
     DDEV_REA_REQ * req = &(packet->req.body.rea_req);
     DDEV_REA_RES * res = &(packet->res.body.rea_res);
     W blockno;			/* 物理ブロック番号 */
-    W bcount;			/* 論理ブロックが物理ブロックより大きい場合に使用する。 */
     /* 物理ブロックを読みとるときの回数となる              */
-    W cylinder;
-    W head;
-    W sector;
+    W cylinder = 0;
+    W head = 0;
+    W sector = 0;
     W drive;
     W i, try;
-    W done_length;		/* 本当に読み込んだバイト数 */
+    W done_length = 0;		/* 本当に読み込んだバイト数 */
     static B buff[BLOCK_SIZE * 2];
     UW bp;
     ER ret;
-    ER error;
+    ER error = E_OK;
     UW bufstart;
     UW buflength;
     UW reqsize = req->size;
@@ -439,6 +437,7 @@ W read_fd(RDVNO rdvno, devmsg_t * packet)
 	     bufstart, buflength); */
 
     for (bp = 0; bp < (buflength - bufstart); bp += BLOCK_SIZE) {
+	W bcount = 1;		/* 論理ブロックが物理ブロックより大きい場合に使用する。 */
 	/* dbg_printf ("[FD] read_fd bp = %d, length = %d\n",
 		bp, BLOCK_SIZE); */
 	/* バイトオフセットから物理ブロック番号への変換 */
@@ -447,21 +446,15 @@ W read_fd(RDVNO rdvno, devmsg_t * packet)
 						   fd_data[req->
 							   dd & 0xff]->
 						   length);
-#if 1
 	if (BLOCK_SIZE >= (fd_data[req->dd & 0xff]->length)) {
 	    bcount = BLOCK_SIZE / (fd_data[req->dd & 0xff]->length);
 	}
-#else
-	bcount = 1;
-#endif
 
 #define H	(fd_data[req->dd & 0xff]->head)
 #define S	(fd_data[req->dd & 0xff]->sector)
 #define LEN	(fd_data[req->dd & 0xff]->length)
 #define CHAN	(fd_data[req->dd & 0xff]->dmachan)
 
-	done_length = 0;
-	error = E_OK;
 	ret = E_OK;
 
 	for (i = 0; i < bcount; i++) {
@@ -541,17 +534,16 @@ W write_fd(RDVNO rdvno, devmsg_t * packet)
     DDEV_WRI_REQ * req = &(packet->req.body.wri_req);
     DDEV_WRI_RES * res = &(packet->res.body.wri_res);
     W blockno;			/* 物理ブロック番号 */
-    W bcount;			/* 論理ブロックが物理ブロックより大きい場合に使用する。 */
     /* 物理ブロックを読みとるときの回数となる              */
-    W cylinder;
-    W head;
-    W sector;
+    W cylinder = 0;
+    W head = 0;
+    W sector = 0;
     W drive;
     W i, try;
-    W done_length;		/* 本当に読み込んだバイト数 */
+    W done_length = 0;		/* 本当に読み込んだバイト数 */
     static B buff[BLOCK_SIZE * 2];
     ER ret;
-    ER error;
+    ER error = E_OK;
     UW bp;
     UW bufstart;
     UW buflength;
@@ -574,6 +566,7 @@ W write_fd(RDVNO rdvno, devmsg_t * packet)
 	    bufstart, buflength);
 #endif
     for (bp = 0; bp < (buflength - bufstart); bp += BLOCK_SIZE) {
+	W bcount = 1;		/* 論理ブロックが物理ブロックより大きい場合に使用する。 */
 #ifdef FDDEBUG
 	dbg_printf ("[FD] read_fd bp = %d, length = %d\n", bp, BLOCK_SIZE);
 #endif
@@ -583,16 +576,10 @@ W write_fd(RDVNO rdvno, devmsg_t * packet)
 						   fd_data[req->
 							   dd & 0xff]->
 						   length);
-#if 1
 	if (BLOCK_SIZE >= (fd_data[req->dd & 0xff]->length)) {
 	    bcount = BLOCK_SIZE / (fd_data[req->dd & 0xff]->length);
 	}
-#else
-	bcount = 1;
-#endif
 
-	done_length = 0;
-	error = E_OK;
 	ret = E_OK;
 
 	for (i = 0; i < bcount; i++) {
@@ -635,18 +622,15 @@ W write_fd(RDVNO rdvno, devmsg_t * packet)
 #endif
 
     for (bp = 0; bp < (buflength - bufstart); bp += BLOCK_SIZE) {
+	W bcount = 1;		/* 論理ブロックが物理ブロックより大きい場合に使用する。 */
 	/* バイトオフセットから物理ブロック番号への変換 */
 	blockno =
 	    ((bp + bufstart) / BLOCK_SIZE) * (BLOCK_SIZE /
 					      fd_data[req->dd & 0xff]->
 					      length);
-#if 1
 	if (BLOCK_SIZE >= (fd_data[req->dd & 0xff]->length)) {
 	    bcount = BLOCK_SIZE / (fd_data[req->dd & 0xff]->length);
 	}
-#else
-	bcount = 1;
-#endif
 
 	for (i = 0; i < bcount; i++) {
 	    head = (blockno % (H * S)) / S;
@@ -708,7 +692,6 @@ W control_fd(RDVNO rdvno, devmsg_t * packet)
     DDEV_CTL_REQ * req = &(packet->req.body.ctl_req);
     DDEV_CTL_RES * res = &(packet->res.body.ctl_res);
     ER error = E_OK;
-    W drive;
 
     switch (req->cmd) {
     case CHANGE_MODE:

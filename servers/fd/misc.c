@@ -9,7 +9,6 @@ Version 2, June 1991
 
 */
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/BTRON/device/fd765a/misc.c,v 1.1 1996/07/28 19:59:33 night Exp $ */
-static char rcsid[] = "@(#)$header$";
 
 /*
  * $Log: misc.c,v $

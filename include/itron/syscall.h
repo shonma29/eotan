@@ -35,6 +35,8 @@ extern ER	sus_tsk (ID taskid);
 extern ER	rsm_tsk (ID taskid);
 extern ER	frsm_tsk (ID taskid);
 
+extern ER def_int(W intno, T_DINT *pk_dint);
+
 /* B-Free Extention */
 extern ER new_task (T_CTSK *pk_ctsk, ID *rid, BOOL run_flag);
 extern ER vcre_tsk (T_CTSK *pk_ctsk, ID *rid);

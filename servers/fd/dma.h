@@ -51,6 +51,6 @@ Version 2, June 1991
 #define DMA_WRITE		0x48		/* memory -> I/O */
 #define DMA_MASK		0x02		/* ?? */
 
-extern int	setup_dma (UW chan, VP addr, int mode, int length, int mask);
+extern void	setup_dma (UW chan, VP addr, int mode, int length, int mask);
 
 #endif /* __DMA_H__ */

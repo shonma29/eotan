@@ -74,9 +74,12 @@ Version 2, June 1991
  *
  *
  */
+#include "../../include/string.h"
 #include "../../include/itron/rendezvous.h"
 #include "../../include/mpu/io.h"
 #include "../../lib/libserv/libserv.h"
+#include "../../lib/libserv/port.h"
+#include "../../kernel/mpu/mpufunc.h"
 #include "ide.h"
 
 
@@ -96,7 +99,6 @@ W ext_partition;
  *	 局所変数群の宣言
  *
  */
-static W mydevid;		/* 自分自身のid */
 static ID recvport;		/* 要求受けつけ用ポート */
 static W initialized;
 
@@ -113,7 +115,7 @@ static void doit(RDVNO rdvno, devmsg_t * packet);
  * この関数は、デバイスドライバ立ち上げ時に一回だけ実行する。
  *
  */
-start()
+void start()
 {
     /* 
      * 要求受信用のポートの作成
@@ -144,7 +146,7 @@ static void main_loop()
 	RDVNO rdvno;
 
 	/* 要求の受信 */
-/*      dbg_printf ("[IDE] acp_por\n");	/* */
+/*      dbg_printf ("[IDE] acp_por\n"); */
 	rsize = acp_por(recvport, 0xffffffff, &rdvno, &packet);
 
 	if (rsize >= 0) {
@@ -233,7 +235,7 @@ static int init_ide_driver(void)
 	/* メッセージバッファ生成に失敗 */
     }
 
-    error = regist_port(IDE_DRIVER, recvport);
+    error = regist_port((port_name*)IDE_DRIVER, recvport);
     if (error != E_OK) {
 	dbg_printf("[IDE] cannot regist port. error = %d\n", error);
     }
@@ -247,7 +249,6 @@ static int init_ide_driver(void)
  */
 W init_ide(void)
 {
-    ER err;
     int status;
 
     outb(IDE_CONTROL_REG, IDE_SRST);	/* ソフトウェア・リセット */
@@ -282,7 +283,6 @@ W open_ide(RDVNO rdvno, devmsg_t * packet)
     DDEV_OPN_RES * res = &(packet->res.body.opn_res);
     W drive;			/* ドライブ番号 */
     UW partition;		/* パーティション番号 */
-    int i;
 
 #ifdef notdef
     outb(0x439, (inb(0x439) & 0xfb));	/* DMA Accsess Control over 1MB */
@@ -372,7 +372,7 @@ W read_ide(RDVNO rdvno, devmsg_t * packet)
     W drive;			/* ドライブ番号 */
     UW partition;		/* パーティション番号 */
     W i, try;
-    W done_length;		/* 本当に読み込んだバイト数 */
+    W done_length = 0;		/* 本当に読み込んだバイト数 */
     static B buff[BLOCK_SIZE * 2];
     UW bp;
     ER ret;
@@ -405,7 +405,6 @@ W read_ide(RDVNO rdvno, devmsg_t * packet)
 	       partition, bufstart, buflength);	/* */
 #endif
 
-    done_length = 0;
     error = E_OK;
     ret = E_OK;
 
@@ -530,7 +529,7 @@ W write_ide(RDVNO rdvno, devmsg_t * packet)
     W drive;			/* ドライブ番号 */
     UW partition;		/* パーティション番号 */
     W i, try;
-    W done_length;		/* 本当に読み込んだバイト数 */
+    W done_length = 0;		/* 本当に読み込んだバイト数 */
     static B buff[BLOCK_SIZE * 2];
     UW bp;
     ER ret;
@@ -563,7 +562,6 @@ W write_ide(RDVNO rdvno, devmsg_t * packet)
 
     /* まず、該当するブロックの最初にディスクの中身を読み取る
      */
-    done_length = 0;
     error = E_OK;
     ret = E_OK;
 
@@ -791,7 +789,6 @@ ER read_partition(W drive)
 {
     static UB buf[BLOCK_SIZE];
     W rlength;
-    UW *ip;
     W i;
     ER error = E_OK;
     int cylinder, sector, head;
@@ -810,7 +807,7 @@ ER read_partition(W drive)
     }
 
     for (i = 0; i < IDE_RETRY; ++i) {
-	rlength = get_data(drive, 0, 0, 1, buf, 1);	/* H = 0, C = 0, S = 1 */
+	rlength = get_data(drive, 0, 0, 1, (B*)buf, 1);	/* H = 0, C = 0, S = 1 */
 	if (rlength > 0)
 	    break;
     }
@@ -853,7 +850,7 @@ ER read_partition(W drive)
 	    cylinder = LBA_16(true_block);
 	    head = LBA_4(true_block);
 	    rlength =
-		get_data(drive | LBA_MODE_BIT, head, cylinder, sector, buf,
+		get_data(drive | LBA_MODE_BIT, head, cylinder, sector, (B*)buf,
 			 1);
 	    memcpy((char *) &pt_buf, &buf[PARTITION_OFFSET],
 		  sizeof(struct ide_partition) * IDE_MAX_PARTITION);

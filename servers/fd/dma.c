@@ -64,8 +64,6 @@ Version 2, June 1991
  * 
  */
 
-static char	rcsid[] = "$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/kernlib/dma.c,v 1.5 2000/02/29 14:07:56 naniwa Exp $";
-
 #include "../../include/itron/types.h"
 #include "../../include/mpu/io.h"
 #include "dma.h"
@@ -74,7 +72,7 @@ static char	rcsid[] = "$Header: /usr/local/src/master/B-Free/Program/btron-pc/ke
 /****************************************************************************
  *
  */
-int
+void
 init_dma (void)
 {
 }
@@ -83,11 +81,10 @@ init_dma (void)
  * setup_dma --- ＤＭＡの設定を行う
  *
  */
-int
+void
 setup_dma (UW chan, VP addr, int mode, int length, int mask)
 {
   unsigned long	p;
-  static int	dma_init_flag = 0;
   
   length -= 1;
   p = (unsigned long)addr;

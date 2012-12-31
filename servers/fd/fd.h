@@ -277,7 +277,7 @@ struct spec
 {
   B	*typename;	/* タイプ名; */
   UW	head;		/* ヘッドの数 */
-/*  UW	cylinder;	/* シリンダ数 */
+/*  UW	cylinder;*/	/* シリンダ数 */
   UW	sector;		/* セクタ数 / トラック */
   UW	length;		/* セクタ長*/
   UW	dtl;		/* セクタ長 (lencode = 0 の時に使用)。使用しない場合には 0xFF */

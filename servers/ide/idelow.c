@@ -12,9 +12,6 @@ Version 2, June 1991
 */
 
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/BTRON/device/ide/idelow.c,v 1.13 2000/01/22 10:59:31 naniwa Exp $ */
-static char rcsid[] =
-    "@(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/BTRON/device/ide/idelow.c,v 1.13 2000/01/22 10:59:31 naniwa Exp $";
-
 
 #include "../../include/mpu/io.h"
 #include "../../lib/libserv/libserv.h"
@@ -28,29 +25,14 @@ int ide_wait_while_busy()
     return(stat);
 }
 
-int ide_wait_device_ready()
+void ide_wait_device_ready()
 {
     while (!(inb(IDE_STAT_REG) & IDE_DRDY));
-}
-
-static int ide_check_ready()
-{
-    return (inb(IDE_STAT_REG) & IDE_DRDY);
 }
 
 static int ide_chk_drq()
 {
     return (inb(IDE_STAT_REG) & IDE_DRQ);
-}
-
-static int ide_enable_int()
-{
-    outb(IDE_CONTROL_REG, 0x00);
-}
-
-static int ide_disable_int()
-{
-    outb(IDE_CONTROL_REG, IDE_nIEN);
 }
 
 void ide_send_command(int cmd)
@@ -77,7 +59,7 @@ ER read_stat(W drive, struct ide_id * stat)
 {
     UH *p;
     W i, j;
-    W N, status;
+    W status;
 
 #ifdef notdef
     dbg_printf("IDE:read_stat start\n");

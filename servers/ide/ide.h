@@ -241,9 +241,10 @@ extern void	busywait (W);
 extern ER	put_data (W drive, UW head, UW cyl, UW sec, B *buf, W length);
 extern ER	get_data (W drive, UW head, UW cyl, UW sec, B *buf, W length);
 extern int      ide_wait_while_busy();
-extern int 	ide_wait_device_ready();
+extern void 	ide_wait_device_ready();
 extern void 	ide_send_command(int cmd);
 extern void	ide_recalibrate(int drive);
+extern ER read_stat(W drive, struct ide_id * stat);
 
 /* misc.c */
 extern W printf(B *format, ...);
