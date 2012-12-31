@@ -88,9 +88,6 @@ Version 2, June 1991
  *
  */
 
-static char rcsid[] =
-    "$Id: sfs_fs.c,v 1.23 2000/07/02 04:14:24 naniwa Exp $";
-
 #include "../posix.h"
 #include "sfs_func.h"
 

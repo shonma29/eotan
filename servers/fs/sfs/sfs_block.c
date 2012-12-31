@@ -56,9 +56,7 @@ Version 2, June 1991
  *
  */
 
-static char rcsid[] =
-    "$Id: sfs_block.c,v 1.13 2000/07/02 04:14:22 naniwa Exp $";
-
+#include "../../../include/string.h"
 #include "../posix.h"
 #include "sfs_func.h"
 

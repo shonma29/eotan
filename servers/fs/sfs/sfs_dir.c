@@ -51,8 +51,6 @@ Version 2, June 1991
  *
  */
 
-static char rcsid[] = "$Id: sfs_dir.c,v 1.11 2000/06/01 08:47:24 naniwa Exp $";
-
 #include "../posix.h"
 #include "sfs_fs.h"
 #include "sfs_func.h"

@@ -16,12 +16,10 @@ Version 2, June 1991
  *
  */
 
-static char rcsid[] =
-    "$Id: sfs_device.c,v 1.18 2000/05/06 03:53:16 naniwa Exp $";
-
-#include "../posix.h"
+#include "../../../include/string.h"
 #include "../../../include/device.h"
 #include "../../../include/itron/rendezvous.h"
+#include "../posix.h"
 #include "sfs_func.h"
 
 

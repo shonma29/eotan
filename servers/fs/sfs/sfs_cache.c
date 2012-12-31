@@ -18,9 +18,8 @@ Version 2, June 1991
  *
  *
  */
-static char rcsid[] =
-    "$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/manager/sfs/sfs_cache.c,v 1.1 2000/07/02 04:13:18 naniwa Exp $";
 
+#include "../../../include/string.h"
 #include "../posix.h"
 #include "sfs_func.h"
 

@@ -111,9 +111,7 @@ Version 2, June 1991
  *
  */
 
-static char rcsid[] =
-    "$Id: sfs_file.c,v 1.30 2000/07/02 04:14:23 naniwa Exp $";
-
+#include "../../../include/string.h"
 #include "../posix.h"
 #include "../posix_fs.h"
 #include "../../../lib/libserv/libserv.h"
@@ -122,8 +120,6 @@ static char rcsid[] =
 #ifndef MIN
 #define MIN(x,y)		((x > y) ? y : x)
 #endif
-extern W strncmp(B *, B *, W);
-extern W strcmp(B *, B *);
 
 
 

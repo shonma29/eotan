@@ -64,9 +64,7 @@ Version 2, June 1991
  *
  */
 
-static char rcsid[] =
-    "$Id: sfs_inode.c,v 1.15 2000/07/02 04:14:26 naniwa Exp $";
-
+#include "../../../include/string.h"
 #include "../posix.h"
 #include "sfs_func.h"
 
@@ -255,7 +253,7 @@ W sfs_write_inode(W fd, struct fs * fsp, struct sfs_inode * ip)
     B *buf;
 
     if (sizeof(struct sfs_inode) >= MAX_BODY_SIZE) {	/* Kludge!! */
-	UB *tmp;
+	B *tmp;
 
 	tmp = (B *) ip;
 	errno = sfs_write_device(fd,
