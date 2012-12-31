@@ -35,7 +35,7 @@
 #DEBUG=-DEXEC_DEBUG -DDEBUG
 IDENT=$(DEBUG) -DKERNEL
 INC=-I.. -I../../../kernel
-CFLAGS = -O2 -fno-builtin -Wall $(INC) $(IDENT)
+CFLAGS=-O2 -fno-builtin -Wall -Werror $(INC) $(IDENT)
 CC=gcc
 
 OBJS =	access.o \

@@ -54,9 +54,9 @@ static W control_device(ID device, struct posix_request *preq)
     packet.req.body.ctl_req.len = preq->param.par_fcntl.cmd & 0x0FFFF;
 
     if (packet.req.body.ctl_req.len == 0) {
+	W *p = (W*)(packet.req.body.ctl_req.param);
 	/* W に cast しているが、UB のまま代入したほうが良いかも */
-	((W *) packet.req.body.ctl_req.param)[0]
-		= (W) preq->param.par_fcntl.arg;
+	*p = (W) preq->param.par_fcntl.arg;
 	packet.req.body.ctl_req.len = sizeof(W);
     } else {
 	errno = vget_reg(preq->caller, preq->param.par_fcntl.arg,

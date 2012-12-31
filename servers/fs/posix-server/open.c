@@ -48,7 +48,7 @@ W psc_open_f(struct posix_request *req)
     struct inode *newip;
     struct access_info acc;
     W umask;
-    UW rsize;
+    W rsize;
 
     errno = proc_alloc_fileid(req->procid, &fileid);
     if (errno) {
