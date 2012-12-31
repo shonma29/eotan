@@ -135,9 +135,6 @@ struct stat {
 
 #endif
 
-static char rcsid[] = "@(#)$Id: statfs.c,v 1.25 2000/07/02 15:29:36 kishida0 Exp $";
-
-
 #define BLOCKSIZE 512
 
 #define RDONLY			1

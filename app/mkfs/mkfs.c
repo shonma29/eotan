@@ -71,10 +71,6 @@
 #include "mkfs.h"
 
 
-static char rcsid[] =
-    "$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/mkfs/mkfs.c,v 1.12 2000/05/06 03:50:59 naniwa Exp $";
-
-
 int nblock;
 int blocksize;
 int inodecount;

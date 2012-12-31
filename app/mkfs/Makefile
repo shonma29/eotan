@@ -1,4 +1,4 @@
-CFLAGS=-Wall
+CFLAGS=-Wall -Werror
 
 all: mksfs statfs sfsck
 

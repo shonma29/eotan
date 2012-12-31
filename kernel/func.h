@@ -38,8 +38,8 @@ extern void falldown(B *, ...);
 /* pmemory.c */
 extern void init_memory(void);
 extern void pmem_init(void);
-extern VP palloc(W size);
-extern ER pfree(VP p, W size);
+extern void *palloc(size_t size);
+extern void pfree(void *p, size_t size);
 extern void pmemstat(void);
 extern UW pmemfree(void);
 
@@ -47,10 +47,24 @@ extern UW pmemfree(void);
 extern void thread_initialize(void);
 extern void thread_initialize1(void);
 extern ER thread_switch(void);
+extern ER thread_create(ID tskid, T_CTSK * pk_ctsk);
+extern ER thread_start(ID tskid, INT stacd);
+extern ER thread_destroy(ID tskid);
+extern void thread_end(void);
+extern void thread_end_and_destroy(void);
+extern ER thread_terminate(ID tskid);
+extern ER thread_release(ID tskid);
+extern ER thread_get_id(ID * p_tskid);
+extern ER thread_suspend(ID taskid);
+extern ER thread_resume(ID taskid);
 extern ER thread_change_priority(ID tskid, PRI tskpri);
 extern void print_thread_list(void);
 extern T_TCB *get_thread_ptr(ID tskid);
 extern void make_local_stack(T_TCB *tsk, W size, W acc);
+
+extern ER mpu_copy_stack(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi, W edi, ID dst);
+extern ER mpu_set_context(ID tid, W eip, B * stackp, W stsize);
+extern ER mpu_use_float(ID tid);
 
 /* posix.c */
 extern ER posix_kill_proc(ID pid);
@@ -62,14 +76,27 @@ extern void kfree(VP area, W size);
 
 /* message.c */
 extern ER queue_initialize(void);
+extern ER queue_create(ID id, T_CMBF * pk_cmbf);
+extern ER_ID queue_create_auto(T_CMBF * pk_cmbf);
+extern ER queue_destroy(ID id);
+extern ER message_send(ID id, INT size, VP msg);
+extern ER message_send_nowait(ID id, INT size, VP msg);
+extern ER message_receive(VP msg, INT * size, ID id);
 
 /* flag.c */
 extern ER flag_initialize(void);
+extern ER_ID flag_create_auto(T_CFLG * pk_flg);
+extern ER flag_destroy(ID flgid);
+extern ER flag_set(ID flgid, UINT setptn);
+extern ER flag_clear(ID flgid, UINT clrptn);
+extern ER flag_wait(UINT * flgptn, ID flgid, UINT waiptn, UINT wfmode);
 
 /* time.c */
 extern void time_initialize(UW seconds);
 extern ER time_set(SYSTIME *pk_tim);
 extern ER time_get(SYSTIME *pk_tim);
+extern ER thread_delay(DLYTIME dlytim);
+extern ER alarm_create(HNO almno, T_DALM *pk_dalm);
 
 /* lowlib.c */
 extern ER init_lowlib(struct module_info *modp);

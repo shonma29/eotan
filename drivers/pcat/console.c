@@ -97,7 +97,7 @@ simple_init_console (void)
  *
  */
 void
-putchar (TC ch)
+putchar (char ch)
 {
   switch (ch)
     {

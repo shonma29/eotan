@@ -191,7 +191,7 @@ void pmem_init(void)
  *
  * 引数はアロケートするサイズを指定する。単位は、ページ数である。
  */
-VP palloc(W size)
+void *palloc(size_t size)
 {
     UW i, j, k, addr;
     W bsize, found;
@@ -287,16 +287,20 @@ VP palloc(W size)
 /*
  *
  */
-ER pfree(VP p, W size)
+void pfree(void *p, size_t size)
 {
     UW i, j, k, index;
 
     if (size < 0) {
-	return (E_PAR);
+	/*TODO handle error */
+	/* return (E_PAR);*/
+	return;
     }
     index = ((UW) p) / PAGE_SIZE;
     if ((ROUNDUP(index + size, BITS) / BITS) >= memory_map_size) {
-	return (E_PAR);
+	/*TODO handle error */
+	/* return (E_PAR);*/
+	return;
     }
 
     enter_serialize();
@@ -334,7 +338,9 @@ ER pfree(VP p, W size)
 
     leave_serialize();
 
-    return (E_OK);
+    /*TODO handle error */
+    /*return (E_OK);*/
+    return;
 }
 
 void pmemstat(void)

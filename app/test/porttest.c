@@ -35,7 +35,6 @@ int main(int argc, char **argv)
 {
 	unsigned char buf[8];
 	ER_UINT size;
-	int i;
 
 	printf("Hello World!\n");
 

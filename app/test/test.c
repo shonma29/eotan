@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   int i;
 
@@ -18,4 +18,6 @@ main(int argc, char *argv[])
   for(i = 0; i < 100000000; ++i) ;
   printf("loop end\n");
 #endif
+
+  return 0;
 }

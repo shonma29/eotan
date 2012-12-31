@@ -362,7 +362,7 @@ ER vunmap(T_TCB * task, UW vpage)
     UW dirindex;
     UW pageindex;
     UW ppage;
-    ER errno;
+/*    ER errno;*/
 
     dirent = (I386_DIRECTORY_ENTRY *) (task->context.cr3);
     dirent = (I386_DIRECTORY_ENTRY*)(RTOV((UW) dirent));
@@ -394,9 +394,13 @@ ER vunmap(T_TCB * task, UW vpage)
     }
 
     ppage = VTOR(pageent[pageindex].frame_addr << PAGE_SHIFT);
+    /*TODO handle error */
+    /*
     errno = pfree((VP) ppage, 1);
     if (errno)
 	return (FALSE);
+    */
+    pfree((VP) ppage, 1);
     pageent[pageindex].present = 0;
     return (TRUE);
 }

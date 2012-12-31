@@ -33,6 +33,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "sync.h"
 #include "setting.h"
 #include "thread.h"
+#include "mpu/mpufunc.h"
 
 typedef struct {
 	node_t node;

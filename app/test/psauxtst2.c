@@ -1,4 +1,5 @@
 #include "stdlib.h"
+#include "../../include/unistd.h"
 #if 0
 #include "fcntl.h"
 #endif
@@ -14,9 +15,9 @@ read_psaux()
   return c;
 }
 
-main()
+int main()
 {
-  int  i, x ,y, l, r;
+  int  x ,y, l, r;
   unsigned char cmd, d1, d2, d3;
 
   x = y = 0;
@@ -88,4 +89,6 @@ main()
 
  psauxtst_exit:
   close(fd);
+
+  return 0;
 }

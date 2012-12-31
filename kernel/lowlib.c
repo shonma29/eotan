@@ -47,7 +47,7 @@ ER init_lowlib(struct module_info *modp)
 
     printk("LOWLIB: call init function in module.\n");
 
-    init = modp->entry;
+    init = (void*)(modp->entry);
     errno = (init) (&lowlib_table[nlowlib]);
     if (errno == E_OK) {
 	memcpy(lowlib_table[nlowlib].name, modp->name, MAX_MODULE_NAME);

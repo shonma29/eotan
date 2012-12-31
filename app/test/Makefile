@@ -10,9 +10,8 @@
 IDENT=
 DEBUG=
 
-CPP=/lib/cpp
 ROOT=../..
-CFLAGS=-Wall -I. -I$(ROOT)/kernel -I$(ROOT)/lib/libc/others $(IDENT)
+CFLAGS=-O2 -fno-builtin -Wall -Werror -I. -I$(ROOT)/kernel -I$(ROOT)/lib/libc/others $(IDENT)
 CC=gcc
 MKDEPEND=$(CC) -M
 STARTADDR=0x00001000
@@ -23,9 +22,6 @@ AS=as
 
 .o.c:
 	$(CC) $(CFLAGS) -c $< -o $@
-
-.o.s:
-	$(CPP) $(ASFLAGS) $*.s | $(AS) -o $*.o
 
 OBJS= test.o
 
