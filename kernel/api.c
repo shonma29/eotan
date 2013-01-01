@@ -174,16 +174,17 @@ Version 2, June 1991
  *
  */
 
+#include <mpu/io.h>
+#include <itron/rendezvous.h>
 #include "core.h"
 #include "func.h"
+#include "lowlib.h"
 #include "api.h"
-#include "interrupt.h"
-#include "../include/mpu/io.h"
 #include "sync.h"
 #include "boot.h"
+#include "mpu/interrupt.h"
 #include "mpu/mpufunc.h"
 #include "arch/archfunc.h"
-#include "../include/itron/rendezvous.h"
 
 #define SVC_IF(x,n)	if_ ## x
 #define SVC_UNDEFINED		nodef

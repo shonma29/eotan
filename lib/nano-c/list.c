@@ -24,8 +24,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "stddef.h"
-#include "set/list.h"
+#include <stddef.h>
+#include <set/list.h>
 
 
 void list_initialize(list_t *entry) {

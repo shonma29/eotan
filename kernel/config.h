@@ -22,8 +22,6 @@ Version 2, June 1991
 #ifndef _CORE_CONFIG_H_
 #define _CORE_CONFIG_H_	1
 
-#include "mpu/mpu.h"
-
 #define GDT_ADDR	(0x80001000UL)
 #define IDT_ADDR	(0x80002000UL)
 #define MAX_GDT		(255)	/* GDT の最大のインデックス */
@@ -139,10 +137,5 @@ Version 2, June 1991
 
 #define MAX_MODULE_NAME	(40)
 #define MAX_MODULE	(20)
-
-
-extern W ndevice;
-extern ER(*devices[]) (void);
-
 
 #endif				/* _CORE_CONFIG_H_ */

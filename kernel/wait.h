@@ -26,9 +26,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "../include/set/list.h"
-#include "../include/itron/types.h"
-#include "../include/itron/rendezvous.h"
+#include <set/list.h>
+#include <itron/types.h>
+#include <itron/rendezvous.h>
 
 typedef enum {
 	wait_none,

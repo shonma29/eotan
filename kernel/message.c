@@ -16,16 +16,16 @@ Version 2, June 1991
  */
 
 
-#include "../include/string.h"
-#include "../include/mpu/io.h"
-#include "../include/set/list.h"
+#include <string.h>
+#include <mpu/io.h>
+#include <set/list.h>
 #include "core.h"
 #include "memory.h"
 #include "func.h"
-#include "arch.h"
 #include "message.h"
 #include "sync.h"
 #include "mpu/mpufunc.h"
+#include "arch/arch.h"
 
 static T_MSGHEAD message_table[MAX_MSGBUF + 1];
 static T_MSG msgbuf[MAX_MSGENTRY];

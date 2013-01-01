@@ -42,19 +42,6 @@ Version 2, June 1991
 #ifndef __FUNCS_H__
 #define __FUNCS_H__	1
 
-#ifdef notdef
-
-#include <sys/types.h>
-#include <sys/dirent.h>
-#include <sys/stat.h>
-#include <signal.h>
-#include <sys/times.h>
-#include <sys/utsname.h>
-#include <sys/utime.h>
-
-
-#endif
-
 /*
  * システムコール処理用関数の定義。
  */

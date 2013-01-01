@@ -59,7 +59,7 @@ Version 2, June 1991
 #include <services.h>
 #include <core.h>
 #include <itron/rendezvous.h>
-#include "../../servers/port-manager/port-manager.h"
+#include <port-manager/port-manager.h>
 
 /*
  * ポートマネージャにメッセージバッファ情報を登録する。

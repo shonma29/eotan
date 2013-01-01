@@ -13,7 +13,7 @@ Version 2, June 1991
  *
  */
 
-#include "../../include/itron/types.h"
+#include <itron/types.h>
 #include "config.h"
 
 extern ER	init_keyboard (void);

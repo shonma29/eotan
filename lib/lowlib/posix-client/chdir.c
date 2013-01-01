@@ -30,7 +30,7 @@ Version 2, June 1991
  *
  */
 
-#include "../../include/string.h"
+#include <string.h>
 #include "../lowlib.h"
 
 extern char *strncpy2(char *, char *, int);

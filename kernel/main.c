@@ -54,23 +54,25 @@ Version 2, June 1991
  *
  */
 
+#include <mpu/io.h>
 #include "core.h"
 #include "version.h"
 #include "thread.h"
 #include "func.h"
+#include "lowlib.h"
 #include "misc.h"
 #include "memory.h"
-#include "../include/mpu/io.h"
-#ifdef I386
-#include "interrupt.h"
-#endif
 #include "boot.h"
+#include "mpu/interrupt.h"
 #include "mpu/mpufunc.h"
 #include "arch/archfunc.h"
 
 static ER init_itron(void);
 static void init_device(void);
-void run_init_program(void);
+#ifdef AUTO_START
+static void run(W entry);
+static void run_init_program(void);
+#endif
 void banner(void);
 
 /* 外部変数の宣言 */
@@ -199,8 +201,8 @@ ER itron(void)
     return E_OK;
 }
 
-
-void run(W entry)
+#ifdef AUTO_START
+static void run(W entry)
 {
     W i;
     struct boot_header *info;
@@ -294,7 +296,7 @@ void run_init_program(void)
 	}
     }
 }
-
+#endif
 
 
 /* init_itron --- ITRON の初期化を行う。

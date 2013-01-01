@@ -1,3 +1,4 @@
+#include <itron/types.h>
 #include "types.h"
 #include "macros.h"
 #include "config.h"

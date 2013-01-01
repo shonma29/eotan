@@ -15,14 +15,14 @@ Version 2, June 1991
  *
  */
 
-#include "../../include/string.h"
+#include <string.h>
+#include <mpu/io.h>
 #include "core.h"
 #include "../../kernel/arch/arch.h"
 #include "interrupt.h"
 #include "thread.h"
 #include "func.h"
 #include "sync.h"
-#include "../../include/mpu/io.h"
 #include "mpufunc.h"
 
 /* T_INTR_HANDLER	割り込みハンドラ定義

@@ -16,8 +16,8 @@ Version 2, June 1991
 #ifndef __CORE_FLAG_H__
 #define __CORE_FLAG_H__	1
 
-#include "../include/set/list.h"
-#include "../include/set/tree.h"
+#include <set/list.h>
+#include <set/tree.h>
 
 /***************************************************************************
  *	イベントフラグ情報

@@ -82,7 +82,7 @@ Version 2, June 1991
  * ヘッダファイルの読み込み
  * ヘッダファイルのパスは、Makefile に指定してある。
  */
-#include "../../include/itron/types.h"
+#include <itron/types.h>
 
 
 /*

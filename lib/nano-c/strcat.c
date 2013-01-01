@@ -24,7 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "string.h"
+#include <string.h>
 
 char *strcat(char *dest, const char *src) {
 	unsigned char *w = (unsigned char*)dest;

@@ -18,9 +18,9 @@ Version 2, June 1991
 
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/common/lowlib.c,v 1.8 2000/02/06 09:10:52 naniwa Exp $ */
 
-#include "../include/string.h"
-#include "../include/itron/types.h"
-#include "../include/itron/errno.h"
+#include <string.h>
+#include <itron/types.h>
+#include <itron/errno.h>
 #include "thread.h"
 #include "func.h"
 #include "lowlib.h"
@@ -28,10 +28,11 @@ Version 2, June 1991
 
 
 
-struct lowlib_info lowlib_table[MAX_MODULE];
-W nlowlib = 0;
+static struct lowlib_info lowlib_table[MAX_MODULE];
+static W nlowlib = 0;
 
 
+#ifdef AUTO_START
 /*
  *	引数で指定した lowlib モジュールの初期化
  */
@@ -60,8 +61,7 @@ ER init_lowlib(struct module_info *modp)
 
     return (errno);
 }
-
-
+#endif
 
 /*
  *	指定したタスクに LOWLIB をくっつける

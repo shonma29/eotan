@@ -18,14 +18,14 @@ Version 2, June 1991
  *
  */
 
-#include "../include/string.h"
+#include <string.h>
 #include "core.h"
 #include "memory.h"
 #include "func.h"
-#include "arch.h"
 #include "misc.h"
 #include "sync.h"
 #include "boot.h"
+#include "arch/arch.h"
 
 /* memory_map: 0x80000000 から最大 128 M bytes 分のメモリ領域を管理する
  *  ただし最初の 1M と周辺核を読み込んだ部分については管理しない。

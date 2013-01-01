@@ -24,7 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "set/heap.h"
+#include <set/heap.h>
 
 void heap_initialize(heap_t *h, const int max, int *buf) {
 	h->cnt = 0;

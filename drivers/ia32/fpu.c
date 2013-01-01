@@ -13,11 +13,11 @@ Version 2, June 1991
  *
  */
 
+#include <mpu/io.h>
 #include "core.h"
 #include "func.h"
 #include "thread.h"
 #include "sync.h"
-#include "../../include/mpu/io.h"
 
 void fpu_save(T_TCB *taskp)
 {

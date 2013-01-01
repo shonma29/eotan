@@ -34,7 +34,7 @@
 
 #DEBUG=-DEXEC_DEBUG -DDEBUG
 IDENT=$(DEBUG) -DKERNEL
-INC=-I.. -I../../../kernel
+INC=-I.. -I../../../include -I../../../kernel
 CFLAGS=-O2 -fno-builtin -Wall -Werror $(INC) $(IDENT)
 CC=gcc
 

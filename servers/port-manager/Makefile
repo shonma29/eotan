@@ -9,7 +9,7 @@ ENTRY =		_main
 
 LD=ld
 CC=gcc
-INC=-I../../kernel
+INC=-I../../include -I../../kernel
 CFLAGS=$(INC) -O2 -Wall -Werror -fno-builtin
 
 

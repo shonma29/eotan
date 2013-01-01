@@ -1,10 +1,9 @@
 
 IDENT=-DI386 $(DEBUG)
 
-CPP=/lib/cpp
 ROOT=../..
 
-CFLAGS=-O2 -Wall -Werror -I. -I$(ROOT)/kernel -I$(ROOT)/lib/libserv -fno-builtin $(IDENT) $(DEBUG)
+CFLAGS=-O2 -Wall -Werror -I. -I$(ROOT)/include -I$(ROOT)/kernel -I$(ROOT)/lib/libserv -fno-builtin $(IDENT) $(DEBUG)
 
 CC=gcc
 LIBS=$(ROOT)/lib/libserv.a $(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a \

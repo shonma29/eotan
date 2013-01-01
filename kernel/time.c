@@ -29,13 +29,13 @@ Version 2, June 1991
  *
  */
 
-#include "../include/string.h"
+#include <string.h>
 #include "core.h"
 #include "misc.h"
-#include "arch.h"
 #include "thread.h"
 #include "func.h"
 #include "sync.h"
+#include "arch/arch.h"
 #include "arch/archfunc.h"
 
 /* 

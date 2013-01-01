@@ -21,7 +21,7 @@ Version 2, June 1991
 #ifndef _IA32_MPU_H_
 #define _IA32_MPU_H_	1
 
-#include "../../include/itron/types.h"
+#include <itron/types.h>
 
 #define I386	1
 

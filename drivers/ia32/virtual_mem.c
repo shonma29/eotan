@@ -152,7 +152,7 @@ Version 2, June 1991
  *
  */
 
-#include "../../include/string.h"
+#include <string.h>
 #include "core.h"
 #include "misc.h"
 #include "func.h"

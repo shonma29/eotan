@@ -16,17 +16,17 @@ Version 2, June 1991
  */
 
 
-#include "../include/mpu/io.h"
-#include "../include/set/list.h"
-#include "../include/set/slab.h"
-#include "../include/set/tree.h"
+#include <mpu/io.h>
+#include <set/list.h>
+#include <set/slab.h>
+#include <set/tree.h>
 #include "core.h"
 #include "memory.h"
 #include "func.h"
-#include "arch.h"
 #include "flag.h"
 #include "sync.h"
 #include "setting.h"
+#include "arch/arch.h"
 
 static slab_t slab;
 static tree_t tree;

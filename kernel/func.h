@@ -98,12 +98,6 @@ extern ER time_get(SYSTIME *pk_tim);
 extern ER thread_delay(DLYTIME dlytim);
 extern ER alarm_create(HNO almno, T_DALM *pk_dalm);
 
-/* lowlib.c */
-extern ER init_lowlib(struct module_info *modp);
-extern ER load_lowlib(VP * argp);
-extern ER stat_lowlib(VP * argp);
-
-
 /* rendezvous.c */
 ER port_initialize(void);
 ER port_create(ID porid, T_CPOR *pk_cpor);

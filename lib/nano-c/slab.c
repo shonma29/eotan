@@ -24,7 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "set/slab.h"
+#include <set/slab.h>
 
 
 static slab_block_t *slab_add_block(slab_t *slab) {

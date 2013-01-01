@@ -10,8 +10,8 @@ Version 2, June 1991
 (C) 2001-2002, Tomohide Naniwa
 
 */
-#include "../../include/itron/types.h"
-#include "../../include/mpu/io.h"
+#include <itron/types.h>
+#include <mpu/io.h>
 #include "../../kernel/sync.h"
 #include "../../kernel/arch/arch.h"
 

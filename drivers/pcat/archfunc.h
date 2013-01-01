@@ -13,7 +13,7 @@ Version 2, June 1991
 #ifndef __PCAT_ARCHFUNC_H__
 #define __PCAT_ARCHFUNC_H__	1
 
-#include "../../include/itron/types.h"
+#include <itron/types.h>
 
 /* console.c */
 extern void simple_init_console(void);
@@ -30,5 +30,9 @@ extern void set_timer(W time, void (*func) (VP), VP argp);
 extern ER unset_timer(void (*func) (VP), VP arg);
 extern void check_timer(void);
 extern W left_time(void (*func) (VP), VP arg);
+
+/* devconfig.c */
+extern W ndevice;
+extern ER(*devices[]) (void);
 
 #endif /* __PCAT_ARCH_H__ */

@@ -66,15 +66,8 @@ struct lowlib_data
 #define LOWLIB_DATA		((struct lowlib_data *)(0x7fff0000))
 
 
-#ifdef __ITRON__
-
-extern struct lowlib_info	lowlib_table[MAX_MODULE];
-
 extern ER			init_lowlib (struct module_info *modp);
 extern ER			load_lowlib (VP *argp);
-
-
-#endif /* __ITRON__ */
-
+extern ER stat_lowlib(VP * argp);
 
 #endif /* __CORE_LOWLIB_H__ */

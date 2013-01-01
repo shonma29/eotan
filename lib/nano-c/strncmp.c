@@ -24,7 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "string.h"
+#include <string.h>
 
 int strncmp(const char *s1, const char *s2, size_t n) {
 	unsigned char *p1 = (unsigned char*)s1;

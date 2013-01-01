@@ -24,7 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "set/tree.h"
+#include <set/tree.h>
 
 static node_t nil_node = { 0, 0, &nil_node, &nil_node };
 

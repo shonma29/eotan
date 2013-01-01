@@ -21,11 +21,11 @@ Version 2, June 1991
  *
  */
 
+#include <device.h>
+#include <mpu/io.h>
 #include "core.h"
 #include "misc.h"
 #include "func.h"
-#include "../../include/mpu/io.h"
-#include "../../include/device.h"
 
 /*	アトリビュートの設定
  */

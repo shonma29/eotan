@@ -24,7 +24,7 @@ Version 2, June 1991
  * First version.
  *
  */
-#include "../../../include/services.h"
+#include <services.h>
 #include "../lowlib.h"
 
 ER

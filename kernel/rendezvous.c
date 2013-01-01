@@ -24,15 +24,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "../include/itron/types.h"
-#include "../include/itron/rendezvous.h"
-#include "../include/set/list.h"
-#include "../include/set/tree.h"
-#include "mpu.h"
+#include <itron/types.h>
+#include <itron/rendezvous.h>
+#include <set/list.h>
+#include <set/tree.h>
 #include "func.h"
 #include "sync.h"
 #include "setting.h"
 #include "thread.h"
+#include "mpu/mpu.h"
 #include "mpu/mpufunc.h"
 
 typedef struct {

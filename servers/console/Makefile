@@ -5,12 +5,11 @@
 IDENT=-DI386
 DEBUG=
 
-CPP=/lib/cpp
 ROOT=../..
-CFLAGS= -Wall -Werror -I. -I$(ROOT)/kernel -I$(ROOT)/lib/libserv $(IDENT)
+CFLAGS= -Wall -Werror -I. -I$(ROOT)/include -I$(ROOT)/kernel -I$(ROOT)/lib/libserv $(IDENT)
 OFLAGS= -O2 -fno-builtin $(CFLAGS)
 CC=gcc
-AS=/usr/bin/as
+AS=as
 MKDEPEND=$(CC) -M
 STARTADDR=0x80100000
 ENTRY=start
@@ -19,9 +18,6 @@ LD=ld
 
 %.o: %.c
 	$(CC) $(OFLAGS) -c $< -o $@
-
-%.o: %.s
-	$(CPP) $(ASFLAGS) $*.s | $(AS) -o $*.o
 
 OBJS= main.o cga.o
 SRCS= main.c cga.c

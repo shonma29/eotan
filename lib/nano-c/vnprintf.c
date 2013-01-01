@@ -24,7 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "stdarg.h"
+#include <stdarg.h>
 
 #define MAX_INT_COLUMN (10)
 #define MAX_INT_BITS (32)

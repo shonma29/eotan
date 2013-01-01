@@ -24,7 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "string.h"
+#include <string.h>
 
 void *memset(void *s, int c, size_t n) {
 	unsigned char *w = (unsigned char*)s;

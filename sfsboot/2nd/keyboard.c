@@ -12,6 +12,7 @@ Version 2, June 1991
  * 
  */
 
+#include <itron/types.h>
 #include "types.h"
 #include "location.h"
 #include "config.h"

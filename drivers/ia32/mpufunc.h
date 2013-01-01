@@ -14,7 +14,7 @@ Version 2, June 1991
 #ifndef _IA32_MPUFUNC_H_
 #define _IA32_MPUFUNC_H_	1
 
-#include "../../include/itron/types.h"
+#include <itron/types.h>
 #include "../../kernel/thread.h"
 
 /* tss.c */

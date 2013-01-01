@@ -14,7 +14,7 @@ IDENT=-DI386 -DUSE_LOWLIB
 DEBUG=
 
 ROOT=../..
-CFLAGS=-O2 -fno-builtin -Wall -Werror -I. -I$(ROOT)/kernel $(IDENT)
+CFLAGS=-O2 -fno-builtin -Wall -Werror -I. -I$(ROOT)/include -I$(ROOT)/kernel $(IDENT)
 CC=gcc
 MKDEPEND=$(CC) -M
 STARTADDR=0x00001000

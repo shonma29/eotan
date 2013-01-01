@@ -15,10 +15,10 @@ Version 2, June 1991
  *
  */
 
+#include <mpu/io.h>
 #include "core.h"
 #include "sync.h"
 #include "../../kernel/mpu/interrupt.h"
-#include "../../include/mpu/io.h"
 
 #define KEY_COM		0x64
 #define KEY_DATA	0x60

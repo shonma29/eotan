@@ -8,7 +8,7 @@ IDENT=-DI386 $(DEBUG)
 
 
 ROOT=../..
-CFLAGS=-O -Wall -Werror -I. -I$(ROOT)/kernel -I$(ROOT)/lib/libserv -fno-builtin $(IDENT)
+CFLAGS=-O -Wall -Werror -I. -I$(ROOT)/include -I$(ROOT)/kernel -I$(ROOT)/lib/libserv -fno-builtin $(IDENT)
 CC=gcc
 AS=as
 MKDEPEND=$(CC) -M

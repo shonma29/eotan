@@ -17,10 +17,10 @@ Version 2, June 1991
 #ifndef __CORE_TASK_H__
 #define __CORE_TASK_H__	1
 
+#include <set/list.h>
 #include "core.h"
-#include "mpu/fpu.h"
-#include "../include/set/list.h"
 #include "wait.h"
+#include "mpu/fpu.h"
 
 #define KERNEL_TASK	(1)
 

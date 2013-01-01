@@ -3,7 +3,7 @@
 #
 
 # -DDEBUG
-CFLAGS=-O2 -Wall -Werror -fno-builtin -I../../include -I../../kernel -I../servers
+CFLAGS=-O2 -Wall -Werror -fno-builtin -I../../include -I../../kernel -I../../servers
 CC=gcc
 
 OBJS= strncpy2.o malloc.o \

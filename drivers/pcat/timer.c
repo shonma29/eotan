@@ -15,13 +15,13 @@ Version 2, June 1991
  *
  */
 
+#include <mpu/io.h>
 #include "core.h"
 #include "arch.h"
-#include "../../kernel/mpu/interrupt.h"
 #include "thread.h"
 #include "func.h"
 #include "sync.h"
-#include "../../include/mpu/io.h"
+#include "../../kernel/mpu/interrupt.h"
 
 #define TIMER0_WRITE	0x40
 #define TIMER0_READ	0x40

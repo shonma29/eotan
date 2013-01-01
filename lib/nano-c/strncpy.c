@@ -24,7 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "string.h"
+#include <string.h>
 
 char *strncpy(char *dest, const char *src, size_t n) {
 	unsigned char *w = (unsigned char*)dest;

@@ -26,7 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "../include/mpu/io.h"
+#include <mpu/io.h>
 #include "func.h"
 
 #ifndef TRUE

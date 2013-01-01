@@ -5,22 +5,22 @@ INC=../include
 
 
 #DEBUG=-DTSKSW_DEBUG
-DEBUG=-DKEYBOARD_DEBUG
 IDENT=-DTIMER_TEST -DI386 -DAUTO_START $(DEBUG)
 
 LD=ld
 AS=as
-CFLAGS=-Os -fno-builtin -I. -Impu -Iarch -I$(INC) -Wall -Werror $(IDENT)
+#CFLAGS=-Os -fno-builtin -I. -Impu -Iarch -I$(INC) -Wall -Werror $(IDENT)
+CFLAGS=-Os -fno-builtin -I. -I$(INC) -Wall -Werror $(IDENT)
 CC=gcc
 MKDEPEND=$(CC) -M
 STARTADDR=0x80020000
 ENTRY=startup
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+#%.o: %.c
+#	$(CC) $(CFLAGS) -c $< -o $@
 
-%.o: %.S
-	$(CC) $(CFLAGS) -c $< -o $@
+#%.o: %.S
+#	$(CC) $(CFLAGS) -c $< -o $@
 
 OBJS= \
 	error.o \
