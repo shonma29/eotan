@@ -1,5 +1,5 @@
+#include <itron/types.h>
 #include "types.h"
-#include "../../include/itron/types.h"
 #include "lib.h"
 #include "interrupt.h"
 #include "idt.h"

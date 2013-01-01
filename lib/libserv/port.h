@@ -13,7 +13,7 @@ Version 2, June 1991
 
 */
 /* @(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/kernlib/libkernel.h,v 1.1 1999/04/18 17:48:33 monaka Exp $ */
-#include "../../include/itron/types.h"
+#include <itron/types.h>
 #include "../../servers/port-manager/port-manager.h"
 
 /* port_manager.c */

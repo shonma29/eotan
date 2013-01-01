@@ -15,31 +15,17 @@ Version 2, June 1991
 #ifndef __POSIX_LOWLIB_H__
 #define __POSIX_LOWLIB_H__	1
 
+#include <itron/types.h>
+#include <lowlib.h>
 #include "../../servers/fs/posix.h"
 #include "../../servers/fs/posix_fs.h"
 #include "../../servers/fs/posix_mm.h"
 #include "../../servers/fs/posix_sysc.h"
 #include "../libc/errno.h"
-#include "../../include/itron/types.h"
-#include "../../kernel/lowlib.h"
-
 #include "syscall.h"
 #include "global.h"
 #include "funcs.h"
 
-#ifdef notdef
-struct posix_process_info {
-    UW errno;
-    ID recv_port;
-
-    UW procid;
-    UW entry_point;
-
-    ID main_task;
-    ID signal_task;
-};
-
-#endif
 
 #define PROC_INFO	(LOWLIB_DATA)
 #define MY_PID	(PROC_INFO->my_pid)

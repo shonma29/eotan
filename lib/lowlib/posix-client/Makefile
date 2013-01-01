@@ -35,7 +35,7 @@
 
 ROOT=../../..
 CC=gcc
-CFLAGS=-O2 -Wall -Werror -I$(ROOT)/include $(IDENT)
+CFLAGS=-O2 -Wall -Werror -I$(ROOT)/include -I$(ROOT)/kernel $(IDENT)
 
 
 OBJS =	_make_cnnct.o \

@@ -3,7 +3,7 @@
 
 extern void enable_page (void);
 
-#include "../../include/mpu/io.h"
+#include <mpu/io.h>
 
 extern void clear_int(void);
 extern void set_int(void);
