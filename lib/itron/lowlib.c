@@ -36,28 +36,3 @@ lod_low (ID task, B *name)
 
   return (erResult);
 }
-
-
-/* lowlib の情報を取得
- */
-ER
-sts_low (B *name, struct lowlib_info *infop, W *nlowlib)
-{
-  ER erResult;
-  struct a
-    {
-      B				*name;
-      struct lowlib_info	*infop;
-      W				*nlowlib; /* lowlib の登録数 (name == */
-					  /* NULL のとき) 	    */
-    } args;
-
-  args.name = name;
-  args.infop = infop;
-  args.nlowlib = nlowlib;
-  
-  erResult = call_syscall (SYS_VSYS_MSC, 5, &args);
-
-  return (erResult);
-}
-

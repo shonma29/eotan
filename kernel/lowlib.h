@@ -68,6 +68,5 @@ struct lowlib_data
 
 extern ER			init_lowlib (struct module_info *modp);
 extern ER			load_lowlib (VP *argp);
-extern ER stat_lowlib(VP * argp);
 
 #endif /* __CORE_LOWLIB_H__ */

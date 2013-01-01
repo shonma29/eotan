@@ -940,11 +940,6 @@ static ER if_misc(VP argp)
 	return E_NOSPT;
 	break;
 
-    case 5:
-	/* status lowlib */
-	return (stat_lowlib(args->arg));
-	break;
-
     case 6:
 	/* print_thread_list */
 	print_thread_list();
