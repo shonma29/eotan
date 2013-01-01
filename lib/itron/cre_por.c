@@ -24,9 +24,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "../../include/itron/types.h"
-#include "../../include/itron/rendezvous.h"
-#include "../../kernel/api.h"
+#include <itron/types.h>
+#include <itron/rendezvous.h>
+#include <api.h>
 #include "call_kernel.h"
 
 ER cre_por(ID porid, T_CPOR *pk_cpor) {
