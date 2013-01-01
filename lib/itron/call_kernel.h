@@ -41,6 +41,4 @@ static inline int ncall(int no, ...) {
 	return result;
 }
 
-extern int call_syscall(int no, ...);
-
 #endif
