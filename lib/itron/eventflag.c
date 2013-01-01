@@ -37,31 +37,31 @@ Version 2, June 1991
  * イベントフラグ関係のシステムコールインタフェース関数
  */
 
-#include "../../kernel/core.h"
-#include "../../kernel/api.h"
+#include <core.h>
+#include <api.h>
 #include "call_kernel.h"
 
 
 ER
 del_flg (ID flgid)
 {
-  return (call_syscall (SYS_DEL_FLG, flgid));
+  return ncall(SYS_DEL_FLG, flgid);
 }
 
 ER
 set_flg (ID flgid, UINT setptn)
 {
-  return (call_syscall (SYS_SET_FLG, flgid, setptn));
+  return ncall(SYS_SET_FLG, flgid, setptn);
 }
 
 ER
 clr_flg (ID flgid, UINT clrptn)
 {
-  return (call_syscall (SYS_CLR_FLG, flgid, clrptn));
+  return ncall(SYS_CLR_FLG, flgid, clrptn);
 }
 
 ER
 wai_flg (UINT *flgptn, ID flgid, UINT waiptn, UINT wfmode)
 {
-  return (call_syscall (SYS_WAI_FLG, flgptn, flgid, waiptn, wfmode));
+  return ncall(SYS_WAI_FLG, flgptn, flgid, waiptn, wfmode);
 }

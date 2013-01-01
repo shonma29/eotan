@@ -30,5 +30,5 @@ For more information, please refer to <http://unlicense.org/>
 #include "call_kernel.h"
 
 ER cre_por(ID porid, T_CPOR *pk_cpor) {
-	return call_syscall(SYS_CRE_POR, porid, pk_cpor);
+	return ncall(SYS_CRE_POR, porid, pk_cpor);
 }

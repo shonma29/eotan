@@ -32,6 +32,6 @@ For more information, please refer to <http://unlicense.org/>
 
 ER_UINT acp_por(ID porid, RDVPTN acpptn, RDVNO *p_rdvno, VP msg) {
 	return (acpptn == 0xffffffff)? 
-			call_syscall(SYS_ACP_POR, porid, acpptn, p_rdvno, msg)
+			ncall(SYS_ACP_POR, porid, acpptn, p_rdvno, msg)
 					:E_NOSPT;
 }

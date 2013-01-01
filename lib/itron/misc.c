@@ -44,8 +44,8 @@ Version 2, June 1991
 
 
 
-#include "../../kernel/core.h"
-#include "../../kernel/api.h"
+#include <core.h>
+#include <api.h>
 #include "call_kernel.h"
 
 
@@ -55,7 +55,7 @@ Version 2, June 1991
 ER
 vsys_msc (W cmd, VP argp)
 {
-  return (call_syscall (SYS_VSYS_MSC, cmd, argp));
+  return ncall(SYS_VSYS_MSC, cmd, argp);
 }
 
 /* vsys_inf
@@ -64,27 +64,30 @@ vsys_msc (W cmd, VP argp)
 ER
 vsys_inf (W func, W sub, VP argp)
 {
-  return (call_syscall (SYS_VSYS_INF, func, sub, argp));
+  return ncall(SYS_VSYS_INF, func, sub, argp);
 }
 
 /* vcpy_stk */
 ER
 vcpy_stk (ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi , W edi, ID dst)
 {
-  return (call_syscall (SYS_VCPY_STK, src, esp, ebp,
-			ebx, ecx, edx, esi , edi, dst));
+  return ncall(SYS_VCPY_STK, src, esp, ebp,
+			ebx, ecx, edx, esi , edi, dst);
 }
 
 /* vset_cxt */
 ER
 vset_ctx (ID tid, W eip, B *stackp, W stsize)
 {
-  return (call_syscall (SYS_VSET_CTX, tid, eip, stackp, stsize));
+  return ncall(SYS_VSET_CTX, tid, eip, stackp, stsize);
 }
 
 /* vuse_fpu */
 ER
 vuse_fpu (ID tid)
 {
-  return (call_syscall (SYS_VUSE_FPU));
+/*TODO fix bug of vuse_fpu
+  return ncall(SYS_VUSE_FPU, tid);
+*/
+  return E_NOSPT;
 }

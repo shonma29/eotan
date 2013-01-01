@@ -30,6 +30,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "call_kernel.h"
 
 ER acre_flg(T_CFLG *pk_cflg) {
-	return call_syscall(SYS_ACRE_FLG, pk_cflg);
+	return ncall(SYS_ACRE_FLG, pk_cflg);
 }
 

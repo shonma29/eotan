@@ -11,9 +11,9 @@ Version 2, June 1991
 
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/kernlib/sys_lowlib.c,v 1.1 1999/04/18 17:48:34 monaka Exp $ */
 
-#include "../../kernel/core.h"
-#include "../../kernel/api.h"
-#include "../../kernel/lowlib.h"
+#include <core.h>
+#include <api.h>
+#include <lowlib.h>
 #include "call_kernel.h"
 
 

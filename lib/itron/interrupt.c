@@ -30,8 +30,8 @@ Version 2, June 1991
  *
  */
 
-#include "../../kernel/core.h"
-#include "../../kernel/api.h"
+#include <core.h>
+#include <api.h>
 #include "call_kernel.h"
 
 
@@ -41,5 +41,5 @@ Version 2, June 1991
 ER
 def_int (W intno, T_DINT *pk_dint)
 {
-  return (call_syscall (SYS_DEF_INT, intno, pk_dint));
+  return ncall(SYS_DEF_INT, intno, pk_dint);
 }

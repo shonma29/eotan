@@ -48,8 +48,8 @@ Version 2, June 1991
  */
 
 
-#include "../../kernel/core.h"
-#include "../../kernel/api.h"
+#include <core.h>
+#include <api.h>
 #include "call_kernel.h"
 
 /*
@@ -65,47 +65,17 @@ vcre_reg (ID	id, 	/* task ID */
 	  FP	handle)	/* リージョン内でページフォールトが発生したと */
 			/* きの処理の指定 */
 {
-  return (call_syscall (SYS_VCRE_REG, id, rid, start, min, max, perm, handle));
-}
-
-ER
-vnew_reg (ID	id, 	/* task ID */
-	  VP	start,	/* リージョンの開始アドレス */
-	  W	min,	/* リージョンの最小(初期)サイズ */
-	  W	max,	/* リージョンの最大サイズ */
-	  UW	perm,	/* リージョンのパーミッション */
-	  FP	handle,	/* リージョン内でページフォールトが発生したと */
-			/* きの処理の指定 */
-	  ID	*rid)    /* region number */
-{
-  int i;
-  ER err;
-  
-  for (i = 0; i < MAX_REGION; ++i) {
-    err = vcre_reg(id, i, start, min, max, perm, handle);
-    if (err == E_OK) {
-      *rid = i;
-      return(E_OK);
-    }
-  }
-  return(E_NOMEM);
+  return ncall(SYS_VCRE_REG, id, rid, start, min, max, perm, handle);
 }
 
 /* vdel_reg - リージョンの破棄
  *
  */
 ER
-#ifdef notdef
-vdel_reg (ID taskid, VP start)
-{
-  return (call_syscall (SYS_VDEL_REG, taskid, start));
-}
-#else
 vdel_reg (ID taskid, ID rid)
 {
-  return (call_syscall (SYS_VDEL_REG, taskid, rid));
+  return ncall(SYS_VDEL_REG, taskid, rid);
 }
-#endif
 
 /*
  *
@@ -118,7 +88,7 @@ vunm_reg (ID id, VP start, UW size)
       * size      アンマップする仮想メモリ領域の大きさ(バイト単位)
       */
 {
-  return (call_syscall (SYS_VUNM_REG, id, start, size));
+  return ncall(SYS_VUNM_REG, id, start, size);
 }
 
 
@@ -133,7 +103,7 @@ vmap_reg (ID id, VP start, UW size, W accmode)
       * size      マップする仮想メモリ領域の大きさ(バイト単位)
       */
 {
-  return (call_syscall (SYS_VMAP_REG, id, start, size, accmode));
+  return ncall(SYS_VMAP_REG, id, start, size, accmode);
 }
 
 
@@ -149,7 +119,7 @@ vget_reg (ID id, VP start, UW size, VP buf)
       * buf    リージョンから読み込んだデータを収めるバッファ
       */
 {
-  return (call_syscall (SYS_VGET_REG, id, start, size, buf));
+  return ncall(SYS_VGET_REG, id, start, size, buf);
 }
 
 /*
@@ -164,7 +134,7 @@ vput_reg (ID id, VP start, UW size, VP buf)
       * buf    リージョンに書き込むデータを収めるバッファ
       */
 {
-  return (call_syscall (SYS_VPUT_REG, id, start, size, buf));
+  return ncall(SYS_VPUT_REG, id, start, size, buf);
 }
 
 
@@ -172,19 +142,19 @@ vput_reg (ID id, VP start, UW size, VP buf)
  */
 ER vget_phs (ID id, VP addr, UW *paddr)
 {
-  return (call_syscall (SYS_VGET_PHS, id, addr, paddr));
+  return ncall(SYS_VGET_PHS, id, addr, paddr);
 }
 
 /*
  */
 ER vdup_reg (ID src, ID dst, ID rid)
 {
-  return (call_syscall (SYS_VDUP_REG, src, dst, rid));
+  return ncall(SYS_VDUP_REG, src, dst, rid);
 }
 
 /*
  */
 ER vsts_reg (ID id, ID rid, VP stat)
 {
-  return (call_syscall (SYS_VSTS_REG, id, rid, stat));
+  return ncall(SYS_VSTS_REG, id, rid, stat);
 }

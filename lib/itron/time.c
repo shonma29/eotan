@@ -14,8 +14,8 @@ Version 2, June 1991
  * sys_time.c -- 時間管理関係のシステムコール
  */
 
-#include "../../kernel/core.h"
-#include "../../kernel/api.h"
+#include <core.h>
+#include <api.h>
 #include "call_kernel.h"
 
 /*
@@ -23,7 +23,7 @@ Version 2, June 1991
  */
 ER set_tim(SYSTIME *pk_tim)
 {
-  return call_syscall (SYS_SET_TIM, pk_tim);
+  return ncall(SYS_SET_TIM, pk_tim);
 }
 
 /*
@@ -31,7 +31,7 @@ ER set_tim(SYSTIME *pk_tim)
  */
 ER get_tim(SYSTIME *pk_tim)
 {
-  return call_syscall (SYS_GET_TIM, pk_tim);
+  return ncall(SYS_GET_TIM, pk_tim);
 }
 
 /*
@@ -40,7 +40,7 @@ ER get_tim(SYSTIME *pk_tim)
 
 ER dly_tsk(DLYTIME dlytim)
 {
-  return call_syscall (SYS_DLY_TSK, dlytim);
+  return ncall(SYS_DLY_TSK, dlytim);
 }
 
 /*
@@ -49,5 +49,5 @@ ER dly_tsk(DLYTIME dlytim)
 
 ER def_alm(HNO almo, T_DALM *pk_dalm)
 {
-  return call_syscall (SYS_DEF_ALM, almo, pk_dalm);
+  return ncall(SYS_DEF_ALM, almo, pk_dalm);
 }

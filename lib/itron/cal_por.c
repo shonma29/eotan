@@ -32,6 +32,6 @@ For more information, please refer to <http://unlicense.org/>
 
 ER_UINT cal_por(ID porid, RDVPTN calptn, VP msg, UINT cmsgsz) {
 	return (calptn == 0xffffffff)? 
-			call_syscall(SYS_CAL_POR, porid, calptn, msg, cmsgsz)
+			ncall(SYS_CAL_POR, porid, calptn, msg, cmsgsz)
 					:E_NOSPT;
 }

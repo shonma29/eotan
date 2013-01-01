@@ -30,5 +30,5 @@ For more information, please refer to <http://unlicense.org/>
 #include "call_kernel.h"
 
 ER rpl_rdv(RDVNO rdvno, VP msg, UINT rmsgsz) {
-	return call_syscall(SYS_RPL_RDV, rdvno, msg, rmsgsz);
+	return ncall(SYS_RPL_RDV, rdvno, msg, rmsgsz);
 }

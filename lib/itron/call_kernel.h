@@ -27,9 +27,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-#define NCALL 1
-
-#if NCALL
 static inline int ncall(int no, ...) {
 	int result;
 
@@ -43,9 +40,6 @@ static inline int ncall(int no, ...) {
 
 	return result;
 }
-#else
-#define ncall call_syscall
-#endif
 
 extern int call_syscall(int no, ...);
 

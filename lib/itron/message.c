@@ -16,8 +16,8 @@ Version 2, June 1991
  */
 
 
-#include "../../kernel/core.h"
-#include "../../kernel/api.h"
+#include <core.h>
+#include <api.h>
 #include "call_kernel.h"
 
 /*
@@ -26,7 +26,7 @@ Version 2, June 1991
 ER
 cre_mbf (ID id, T_CMBF *pk_cmbf)
 {
-  return (call_syscall (SYS_CRE_MBF, id, pk_cmbf));
+  return ncall(SYS_CRE_MBF, id, pk_cmbf);
 }
 
 
@@ -36,7 +36,7 @@ cre_mbf (ID id, T_CMBF *pk_cmbf)
 ER
 del_mbf (ID id)
 {
-  return (call_syscall (SYS_DEL_MBF, id));
+  return ncall(SYS_DEL_MBF, id);
 }
 
 
@@ -46,7 +46,7 @@ del_mbf (ID id)
 ER
 snd_mbf (ID id, INT size, VP msg)
 {
-  return (call_syscall (SYS_SND_MBF, id, size, msg));
+  return ncall(SYS_SND_MBF, id, size, msg);
 }
 
 
@@ -56,7 +56,7 @@ snd_mbf (ID id, INT size, VP msg)
 ER
 psnd_mbf (ID id, INT size, VP msg)
 {
-  return (call_syscall (SYS_PSND_MBF, id, size, msg));
+  return ncall(SYS_PSND_MBF, id, size, msg);
 }
 
 
@@ -66,6 +66,6 @@ psnd_mbf (ID id, INT size, VP msg)
 ER
 rcv_mbf (VP msg, INT *size, ID id)
 {
-  return (call_syscall (SYS_RCV_MBF, msg, size, id));
+  return ncall(SYS_RCV_MBF, msg, size, id);
 }
 

@@ -17,13 +17,8 @@ Version 2, June 1991
 #include <string.h>
 #include <core.h>
 #include <api.h>
+#include "../libserv/libserv.h"
 #include "call_kernel.h"
-
-ER dbg_puts(B * msg)
-{
-    return call_syscall(SYS_DBG_PUTS, msg);
-}
-
 
 static void dbg_putchar(B ch)
 {
@@ -34,7 +29,7 @@ static void dbg_putchar(B ch)
     dbg_puts(buf);
 }
 
-int dbg_printf(B *format, ...) {
+W dbg_printf(B *format, ...) {
 	va_list ap;
 
 	va_start(ap, format);
