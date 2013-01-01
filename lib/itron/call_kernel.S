@@ -21,14 +21,7 @@
  *
  */
 call_syscall:
-		pushl 	%ebp
-		movl	%esp,%ebp
-		movl	8(%ebp), %eax
-		leal	12(%ebp), %edx
-#if 0
-		int	$64
-#else
+		movl	4(%esp), %eax
+		leal	8(%esp), %edx
 		lcall	$0x30,$0
-#endif
-		leave
 		ret
