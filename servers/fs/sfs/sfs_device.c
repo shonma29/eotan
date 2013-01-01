@@ -16,9 +16,9 @@ Version 2, June 1991
  *
  */
 
-#include "../../../include/string.h"
-#include "../../../include/device.h"
-#include "../../../include/itron/rendezvous.h"
+#include <string.h>
+#include <device.h>
+#include <itron/rendezvous.h>
 #include "../posix.h"
 #include "sfs_func.h"
 

@@ -111,7 +111,7 @@ Version 2, June 1991
  *
  */
 
-#include "../../../include/string.h"
+#include <string.h>
 #include "../posix.h"
 #include "../posix_fs.h"
 #include "../../../lib/libserv/libserv.h"

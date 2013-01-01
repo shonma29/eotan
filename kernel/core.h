@@ -17,13 +17,13 @@ Version 2, June 1991
 #ifndef _CORE_CORE_H_
 #define _CORE_CORE_H_	1
 
-#include "../include/itron/types.h"
-#include "../include/itron/errno.h"
+#include <itron/types.h>
+#include <itron/struct.h>
+#include <itron/syscall.h>
+#include <itron/errno.h>
 #include "config.h"
 #include "mpu/mpu.h"
 #include "region.h"
-#include "../include/itron/struct.h"
-#include "../include/itron/syscall.h"
 
 #endif /* _CORE_CORE_H_ */
 

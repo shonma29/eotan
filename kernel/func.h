@@ -18,10 +18,10 @@ Version 2, June 1991
 #define __CORE_FUNC_H__	1
 
 
+#include <itron/rendezvous.h>
 #include "core.h"
 #include "boot.h"
 #include "thread.h"
-#include "../include/itron/rendezvous.h"
 
 #include "../servers/port-manager/port-manager.h"
 

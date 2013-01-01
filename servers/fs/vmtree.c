@@ -83,7 +83,7 @@ Version 2, June 1991
  *
  */
 
-#include "../../include/string.h"
+#include <string.h>
 #include "posix.h"
 
 

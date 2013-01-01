@@ -54,8 +54,8 @@ Version 2, June 1991
  *
  */
 
-#include "../../include/elf.h"
-#include "../../include/string.h"
+#include <elf.h>
+#include <string.h>
 #include "posix.h"
 
 static W read_exec_header(struct inode *ip, Elf32_Ehdr *elfp,

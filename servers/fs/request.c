@@ -42,7 +42,7 @@ Version 2, June 1991
  * 最初の登録
  *
  */
-#include "../../include/services.h"
+#include <services.h>
 #include "posix.h"
 #include "../port-manager/port-manager.h"
 

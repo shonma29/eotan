@@ -29,7 +29,7 @@ Version 2, June 1991
  *
  */
 
-#include "../../include/string.h"
+#include <string.h>
 #include "posix.h"
 
 W psc_write_f(struct posix_request *req)
