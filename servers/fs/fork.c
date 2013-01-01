@@ -85,6 +85,10 @@ W fork(struct proc *parent, W * childid, ID main_task, ID signal_task)
 /*   ID		main_task, signal_task;
  */
     struct lowlib_data lowlib_data, lowlib_par;
+    struct lod_low_args {
+    	ID task;
+    	B *name;
+    } args;
 
 #ifdef FKDEBUG
     printk
@@ -116,7 +120,9 @@ W fork(struct proc *parent, W * childid, ID main_task, ID signal_task)
 
     newproc->proc_status = PS_RUN;
     newproc->proc_ppid = parent->proc_pid;
-    lod_low(main_task, "lowlib.posix");
+    args.task = main_task;
+    args.name = "lowlib.posix";
+    vsys_msc(3, &args);
     errno = vget_reg(main_task, LOWLIB_DATA,
 		     sizeof(struct lowlib_data), &lowlib_data);
     errno = vget_reg(parent->proc_maintask, LOWLIB_DATA,

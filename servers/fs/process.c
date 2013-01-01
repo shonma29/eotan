@@ -256,6 +256,10 @@ W proc_enter_posix(struct posix_request * req)
     struct proc *newproc;
     W errno;
     struct lowlib_data lowlib_data;
+    struct lod_low_args {
+    	ID task;
+    	B *name;
+    } args;
 
     /* 新しくプロセス構造体を確保する
      */
@@ -274,7 +278,9 @@ W proc_enter_posix(struct posix_request * req)
     newproc->proc_umask = 022;
     newproc->proc_workdir = NULL;
 
-    lod_low(req->caller, "lowlib.posix");
+    args.task = req->caller;
+    args.name = "lowlib.posix";
+    vsys_msc(3, &args);
     errno = vget_reg(req->caller, LOWLIB_DATA,
 		     sizeof(struct lowlib_data), &lowlib_data);
     if (errno)

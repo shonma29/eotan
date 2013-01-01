@@ -210,6 +210,10 @@ ER lowlib_load(B * name)
     ID my;
     ER errno;
     struct lowlib_data lowlib_data;
+    struct lod_low_args {
+    	ID task;
+    	B *name;
+    } args;
 
     printf("loading lowlib: %s\n", name);
 
@@ -218,7 +222,9 @@ ER lowlib_load(B * name)
 	return E_SYS;
     }
 
-    errno = lod_low(my, name);
+    args.task = my;
+    args.name = name;
+    errno = vsys_msc(3, &args);
     if (errno) {
 	printf("lowlib_load: cannot load lowlib. errno = %d\n", errno);
 	return E_SYS;
