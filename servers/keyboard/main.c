@@ -62,8 +62,8 @@ Version 2, June 1991
 
 **********************************************************************/
 
-#include "../../include/device.h"
-#include "../../include/itron/rendezvous.h"
+#include <device.h>
+#include <itron/rendezvous.h>
 #include "../libserv/libserv.h"
 #include "../libserv/port.h"
 #include "keyboard.h"

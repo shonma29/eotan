@@ -79,8 +79,8 @@ Version 2, June 1991
  *
  *
  */
-#include "../../include/itron/errno.h"
-#include "../../include/mpu/io.h"
+#include <itron/errno.h>
+#include <mpu/io.h>
 #include "cga.h"
 
 extern TEXTATTR attr;

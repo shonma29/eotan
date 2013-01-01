@@ -40,7 +40,7 @@ Version 2, June 1991
 #ifndef __CGA_H__
 #define __CGA_H__	1
 
-#include "../../include/itron/types.h"
+#include <itron/types.h>
 
 #define MAX_COLUMN	80
 #define MAX_LINE	25

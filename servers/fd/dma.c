@@ -64,8 +64,8 @@ Version 2, June 1991
  * 
  */
 
-#include "../../include/itron/types.h"
-#include "../../include/mpu/io.h"
+#include <itron/types.h>
+#include <mpu/io.h>
 #include "dma.h"
 
 

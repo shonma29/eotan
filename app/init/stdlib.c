@@ -37,10 +37,10 @@ Version 2, June 1991
  *
  *
  */
-#include "../../include/stdarg.h"
-#include "../../include/string.h"
-#include "../../include/device.h"
-#include "../../include/itron/rendezvous.h"
+#include <device.h>
+#include <stdarg.h>
+#include <string.h>
+#include <itron/rendezvous.h>
 #include "../../lib/libserv/libserv.h"
 #include "init.h"
 

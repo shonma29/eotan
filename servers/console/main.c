@@ -107,10 +107,10 @@ Version 2, June 1991
  Discription
 
 **********************************************************************/
-#include "../../include/itron/errno.h"
-#include "../../include/itron/syscall.h"
-#include "../../include/itron/rendezvous.h"
-#include "../../include/device.h"
+#include <device.h>
+#include <itron/errno.h>
+#include <itron/syscall.h>
+#include <itron/rendezvous.h>
 #include "../../lib/libserv/libserv.h"
 #include "../../lib/libserv/port.h"
 #include "console.h"

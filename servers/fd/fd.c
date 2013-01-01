@@ -155,9 +155,9 @@ Version 2, June 1991
 	
 **********************************************************************/
 
-#include "../../include/string.h"
-#include "../../include/itron/syscall.h"
-#include "../../include/itron/rendezvous.h"
+#include <string.h>
+#include <itron/syscall.h>
+#include <itron/rendezvous.h>
 #include "../../lib/libserv/libserv.h"
 #include "../../lib/libserv/port.h"
 #include "fd.h"

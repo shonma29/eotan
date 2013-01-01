@@ -92,7 +92,7 @@ Version 2, June 1991
  *
  */
 
-#include "../../include/mpu/io.h"
+#include <mpu/io.h>
 #include "../libserv/libserv.h"
 #include "keyboard.h"
 #include "key_def.h"

@@ -84,9 +84,9 @@ Version 2, June 1991
  *
  */
 
-#include "../../include/services.h"
-#include "../../include/itron/struct.h"
-#include "../../include/itron/syscall.h"
+#include <services.h>
+#include <itron/struct.h>
+#include <itron/syscall.h>
 #include "../../servers/fs/posix_sysc.h"
 #include "../../servers/fs/posix_mm.h"
 #include "init.h"

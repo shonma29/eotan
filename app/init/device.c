@@ -37,7 +37,7 @@ Version 2, June 1991
  *
  */
 
-#include "../../include/device.h"
+#include <device.h>
 #include "../../lib/libserv/libserv.h"
 #include "../../lib/libserv/port.h"
 #include "../../servers/console/console.h"

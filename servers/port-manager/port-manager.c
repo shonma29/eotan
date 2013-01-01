@@ -84,9 +84,9 @@ Version 2, June 1991
  * 
  */
 
-#include "../../include/services.h"
+#include <services.h>
+#include <itron/rendezvous.h>
 #include <core.h>
-#include "../../include/itron/rendezvous.h"
 #include "../../lib/libserv/libserv.h"
 #include "../../lib/libserv/port.h"
 #include "port-manager.h"

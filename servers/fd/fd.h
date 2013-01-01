@@ -23,10 +23,10 @@ Version 2, June 1991
 #define __FD_H__	1
 
 
+#include <device.h>
 #include <core.h>
 #include <arch/arch.h>
 #include "dma.h"
-#include "../../include/device.h"
 
 #define ROUNDDOWN(x,b)	((x / b) * b)
 #define ROUNDUP(x,b)	((x + (b -1)) / b * b)

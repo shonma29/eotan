@@ -56,9 +56,9 @@ Version 2, June 1991
 /*
  * 必要なインクルードファイルの読み込み。
  */
-#include "../../include/string.h"
-#include "../../lib/libserv/libserv.h"
+#include <string.h>
 #include <core.h>
+#include "../../lib/libserv/libserv.h"
 #include "port-manager.h"
 
 

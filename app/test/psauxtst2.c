@@ -1,5 +1,5 @@
-#include "stdlib.h"
-#include "../../include/unistd.h"
+#include <stdlib.h>
+#include <unistd.h>
 #if 0
 #include "fcntl.h"
 #endif

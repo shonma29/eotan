@@ -11,7 +11,7 @@ Version 2, June 1991
 
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/BTRON/device/fd765a/spec.c,v 1.3 1999/12/19 10:59:20 naniwa Exp $ */
 
-#include "../../include/string.h"
+#include <string.h>
 #include "../../lib/libserv/libserv.h"
 #include "fd.h"
 

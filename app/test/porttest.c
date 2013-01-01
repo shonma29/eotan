@@ -25,9 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stdlib.h>
-#include "../../include/itron/types.h"
-#include "../../include/itron/rendezvous.h"
-#include "../../include/itron/errno.h"
+#include <itron/types.h>
+#include <itron/rendezvous.h>
+#include <itron/errno.h>
 
 #define TEST_PORT 49157
 

@@ -93,16 +93,16 @@ Version 2, June 1991
  *
  *
  */
-#include "init.h"
-#include "../../include/device.h"
-#include "../../include/string.h"
-#include "../../include/unistd.h"
-#include "../../include/itron/syscall.h"
-#include "../../include/itron/errno.h"
-#include "../../kernel/lowlib.h"
+#include <device.h>
+#include <string.h>
+#include <unistd.h>
+#include <itron/syscall.h>
+#include <itron/errno.h>
+#include <lowlib.h>
 #include "../../servers/keyboard/keyboard.h"
 #include "posix_if.h"
 #include "init-stdlib.h"
+#include "init.h"
 
 
 /*

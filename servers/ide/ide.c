@@ -74,12 +74,12 @@ Version 2, June 1991
  *
  *
  */
-#include "../../include/string.h"
-#include "../../include/itron/rendezvous.h"
-#include "../../include/mpu/io.h"
+#include <string.h>
+#include <itron/rendezvous.h>
+#include <mpu/io.h>
+#include <mpu/mpufunc.h>
 #include "../../lib/libserv/libserv.h"
 #include "../../lib/libserv/port.h"
-#include "../../kernel/mpu/mpufunc.h"
 #include "ide.h"
 
 

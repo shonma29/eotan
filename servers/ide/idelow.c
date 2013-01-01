@@ -13,7 +13,7 @@ Version 2, June 1991
 
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/BTRON/device/ide/idelow.c,v 1.13 2000/01/22 10:59:31 naniwa Exp $ */
 
-#include "../../include/mpu/io.h"
+#include <mpu/io.h>
 #include "../../lib/libserv/libserv.h"
 #include "ide.h"
 

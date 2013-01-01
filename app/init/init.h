@@ -13,8 +13,8 @@ Version 2, June 1991
 #ifndef __INIT_H__
 #define __INIT_H__	1
 
-#include "../../include/itron/types.h"
-#include "../../include/itron/errno.h"
+#include <itron/types.h>
+#include <itron/errno.h>
 
 #define MAJOR_VERSION	1
 #define MINOR_VERSION	1

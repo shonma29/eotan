@@ -24,11 +24,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "../../include/itron/types.h"
-#include "../../include/itron/struct.h"
-#include "../../include/itron/syscall.h"
-#include "../../include/itron/rendezvous.h"
-#include "../../include/itron/errno.h"
+#include <itron/types.h>
+#include <itron/struct.h>
+#include <itron/syscall.h>
+#include <itron/rendezvous.h>
+#include <itron/errno.h>
 #include "../../lib/libserv/libserv.h"
 
 #define BUFSIZ 16

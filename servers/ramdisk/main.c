@@ -10,9 +10,9 @@ Version 2, June 1991
 (C) 2001-2002, Tomohide Naniwa
 
 */
-#include "../../include/string.h"
-#include "../../include/unistd.h"
-#include "../../include/itron/rendezvous.h"
+#include <string.h>
+#include <unistd.h>
+#include <itron/rendezvous.h>
 #include "../../lib/libserv/libserv.h"
 #include "../../lib/libserv/port.h"
 #include "ramdisk.h"
