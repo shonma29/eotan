@@ -282,7 +282,7 @@ BOOL vmap(T_TCB * task, UW vpage, UW ppage, W accmode)
     printk("[%d] vmap: 0x%x -> 0x%x\n", task->tskid, ppage, vpage);
 #endif				/* DEBUG */
 /*  task->context.cr3 &= 0x7fffffff; */
-    dirent = (I386_DIRECTORY_ENTRY *) (task->context.cr3);
+    dirent = (I386_DIRECTORY_ENTRY *) (task->mpu.context.cr3);
     dirent = (I386_DIRECTORY_ENTRY*)(RTOV((UW) dirent));
     dirindex = vpage & DIR_MASK;
     dirindex = dirindex >> DIR_SHIFT;
@@ -364,7 +364,7 @@ ER vunmap(T_TCB * task, UW vpage)
     UW ppage;
 /*    ER errno;*/
 
-    dirent = (I386_DIRECTORY_ENTRY *) (task->context.cr3);
+    dirent = (I386_DIRECTORY_ENTRY *) (task->mpu.context.cr3);
     dirent = (I386_DIRECTORY_ENTRY*)(RTOV((UW) dirent));
     dirindex = vpage & DIR_MASK;
     dirindex = dirindex >> DIR_SHIFT;
@@ -460,7 +460,7 @@ UW vtor(ID tskid, UW addr)
 	return (UW)(NULL);
     }
 
-    dirent = (I386_DIRECTORY_ENTRY *) taskp->context.cr3;
+    dirent = (I386_DIRECTORY_ENTRY *) taskp->mpu.context.cr3;
     dirent = (I386_DIRECTORY_ENTRY*)(RTOV((UW) dirent));
     dirindex = (addr & DIR_MASK) >> DIR_SHIFT;
     pageindex = (addr & PAGE_MASK) >> PAGE_SHIFT;

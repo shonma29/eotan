@@ -191,8 +191,8 @@ ER itron(void)
 	  }
 	}
 
-#if defined(HALT_WHEN_IDLE) && defined(I386)
-	if (do_halt) asm("hlt");
+#if defined(HALT_WHEN_IDLE)
+	if (do_halt) halt();
 #endif
 
 	thread_switch();
@@ -258,22 +258,10 @@ static void run(W entry)
 		     modulep[entry].paddr + i * PAGE_SIZE);
 	    }
 	}
-#ifdef I386
-	if (modulep[entry].type == user){
-	  /* 固有のスタックを用意 */
-	  make_local_stack(new_taskp, KERNEL_STACK_SIZE, ACC_USER);
-	  new_taskp->context.esp = new_taskp->initial_stack;
-	  new_taskp->context.ebp = new_taskp->initial_stack;
 
-	  /* セレクタの設定 */
-	  new_taskp->context.cs = USER_CSEG | USER_DPL;
-	  new_taskp->context.ds = USER_DSEG;
-	  new_taskp->context.es = USER_DSEG;
-	  new_taskp->context.fs = USER_DSEG;
-	  new_taskp->context.gs = USER_DSEG;
-	  new_taskp->context.ss = USER_SSEG | USER_DPL;
+	if (modulep[entry].type == user){
+	    set_autorun_context(new_taskp);
 	}
-#endif
     }
     thread_start(rid, 0);
     thread_switch();

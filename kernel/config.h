@@ -22,23 +22,7 @@ Version 2, June 1991
 #ifndef _CORE_CONFIG_H_
 #define _CORE_CONFIG_H_	1
 
-#define GDT_ADDR	(0x80001000UL)
-#define IDT_ADDR	(0x80002000UL)
-#define MAX_GDT		(255)	/* GDT の最大のインデックス */
-#define MAX_IDT		(255)	/* IDT の最大のインデックス */
-
-#define TASK_DESC_MIN	TSS_BASE
-#define KERNEL_CSEG	(0x0008)	/* カーネルのコードセグメント */
-#define KERNEL_DSEG	(0x0010)	/* カーネルのデータセグメント */
-#define USER_CSEG	(0x0018)	/* ユーザのコードセグメント */
-#define USER_DSEG	(0x0020)	/* ユーザのデータセグメント */
-#define USER_SSEG	(0x0028)	/* ユーザのスタックセグメント */
-#define ITRON_GATE	(0x0030)	/* ITRON システムコール用ゲート */
-#define POSIX_GATE	(0x0038)	/* POSIX システムコール用ゲート */
-#define BTRON_GATE	(0x0040)	/* BTRON システムコール用ゲート */
-
-#define PAGE_DIR_ADDR	(0x3000)	/* 仮想ページディレクトリテーブル */
-#define PAGE_ENTRY_ADDR	(0x4000)	/* 仮想ページテーブル */
+#include "mpu/mpuconfig.h"
 
 /* タスク管理関係 */
 #define MAX_TSKID	(128)	/* 最大のタスク ID 数   */
@@ -53,15 +37,9 @@ Version 2, June 1991
 
 #define MAX_SUSPEND_NEST	(10)	/* サスペンドのネストのオーバーフロー */
 
-#define KERNEL_DPL	0
-#define USER_DPL	3
-
 #define KERNEL_LEVEL	(2)
 #define USER_LEVEL	(16)
 #define MID_LEVEL	(10)
-
-#define KERNEL_STACK_SIZE	(PAGE_SIZE * 10)
-#define POSIX_STACK_SIZE	(PAGE_SIZE * 10)
 
 #define CLOCK		10		/* clock 周期 10 ms */
 #define TICKS		(1000/CLOCK)	/* 1 秒間の tick 数 */
@@ -79,27 +57,13 @@ Version 2, June 1991
 #define MIN_USERMBFID		(100)
 #define MAX_USERMBFID		MAX_MSGBUF
 
-
 /* メモリ管理関係 */
 #define MAX_MEMPOOL	(100)
-#ifndef PAGE_SIZE
-#define PAGE_SIZE	I386_PAGESIZE
-#endif
-#define PAGE_SHIFT	(12)
-#define DIR_SHIFT	(22)
-#define PAGE_MASK	(0x003FF000L)
-#define DIR_MASK	(0xFFC00000UL)
-#define OFFSET_MASK	(0x00000FFFL)
-#define	MIN_KERNEL	(0x80000000UL)
-#define MAX_KERNEL	(0xFFFFFFFFUL)
-#define KERNEL_SIZE	(MAX_KERNEL - MIN_KERNEL)
 
-#define MEM_SIZE		(0x100000)	/* 拡張メモリは 1M バイト */
 #define MAX_FREEMEM_ENTRY	(1000)	/* フリーメモリを管理するためのテーブル */
 #define MAX_MEMORY_POOL		(100)
 #define MIN_MEMORY_SIZE		(16 * 1024 * 1024) /* メモリは最小 16 M */
 #define MAX_MEMORY_SIZE		(128 * 1024 * 1024) /* メモリは最大 128 M */
-#define MEMORY_POOL_BASE	(0x80010000UL)	/* システムメモリとして管理する領域のベース */
 
 #define SYSTEM_MEMORY_POOL	(0)	/* システムメモリプールの ID */
 
@@ -109,14 +73,6 @@ Version 2, June 1991
 #define DATA_REGION		2
 #define HEAP_REGION		3
 #define STACK_REGION		4
-
-/* マネージャータスクのヒープ領域の推奨値 */
-#define VADDR_HEAP	(0x10000000L)
-#define STD_HEAP_SIZE	(0x3FFFFFFFL)
-
-#define STD_STACK_SIZE	 (0x3FF00000L)
-#define VADDR_STACK_TAIL (0x7FF00000L)
-#define VADDR_STACK_HEAD (VADDR_STACK_TAIL - STD_STACK_SIZE)
 
 /* IO 管理関係 */
 #define MAX_DEVICE_NAME		(16)	/* デバイス名の最大長 (16 バイト) */

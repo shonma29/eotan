@@ -56,9 +56,9 @@ static T_TCB *getTaskParent(const list_t *p) {
 ER flag_initialize(void)
 {
     slab.unit_size = sizeof(T_FLAG);
-    slab.block_size = I386_PAGESIZE;
+    slab.block_size = PAGE_SIZE;
     slab.min_block = 1;
-    slab.max_block = tree_max_block(65536, I386_PAGESIZE, sizeof(T_FLAG));
+    slab.max_block = tree_max_block(65536, PAGE_SIZE, sizeof(T_FLAG));
     slab.palloc = palloc;
     slab.pfree = pfree;
     slab_create(&slab);

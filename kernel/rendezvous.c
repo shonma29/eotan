@@ -90,9 +90,9 @@ static inline T_TCB *getTaskParent(const list_t *p) {
 ER port_initialize(void)
 {
 	port_slab.unit_size = sizeof(port_t);
-	port_slab.block_size = I386_PAGESIZE;
+	port_slab.block_size = PAGE_SIZE;
 	port_slab.min_block = 1;
-	port_slab.max_block = tree_max_block(65536, I386_PAGESIZE,
+	port_slab.max_block = tree_max_block(65536, PAGE_SIZE,
 			sizeof(port_t));
 	port_slab.palloc = palloc;
 	port_slab.pfree = pfree;
@@ -102,9 +102,9 @@ ER port_initialize(void)
 	port_hand = MIN_AUTO_ID - 1;
 
 	rdv_slab.unit_size = sizeof(rendezvous_t);
-	rdv_slab.block_size = I386_PAGESIZE;
+	rdv_slab.block_size = PAGE_SIZE;
 	rdv_slab.min_block = 1;
-	rdv_slab.max_block = tree_max_block(65536, I386_PAGESIZE,
+	rdv_slab.max_block = tree_max_block(65536, PAGE_SIZE,
 			sizeof(rendezvous_t));
 	rdv_slab.palloc = palloc;
 	rdv_slab.pfree = pfree;

@@ -34,9 +34,9 @@ Version 2, June 1991
 void
 create_context (T_TCB *task)
 {
-  T_I386_CONTEXT	*tss;
+  T_CONTEXT	*tss;
 
-  tss = &(task->context);
+  tss = &(task->mpu.context);
   init_task_state_segment (task->tskid, tss);
 }
 
@@ -54,7 +54,7 @@ create_context (T_TCB *task)
  *
  */
 void
-init_task_state_segment (W index, T_I386_CONTEXT *tss)
+init_task_state_segment (W index, T_CONTEXT *tss)
 {
   TASK_DESC *task_desc;
 
@@ -72,7 +72,7 @@ init_task_state_segment (W index, T_I386_CONTEXT *tss)
   task_desc->g = 0;
   task_desc->d = 1;
   SET_TSS_ADDR (*task_desc, tss);
-  SET_TSS_LIMIT (*task_desc, sizeof(T_I386_CONTEXT));
+  SET_TSS_LIMIT (*task_desc, sizeof(T_CONTEXT));
 #ifdef TSKSW_DEBUG
   print_task_desc (task_desc);
 #endif

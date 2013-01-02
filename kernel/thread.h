@@ -20,7 +20,6 @@ Version 2, June 1991
 #include <set/list.h>
 #include "core.h"
 #include "wait.h"
-#include "mpu/fpu.h"
 
 #define KERNEL_TASK	(1)
 
@@ -66,12 +65,7 @@ typedef struct t_tcb {
     W total;			/* 総実行時間                   */
     H quantum;			/* ユーザータスクの連続実行可能時間 ≧ 0 */
 
-#ifdef I386
-    T_I386_CONTEXT context;	/* コンテキスト情報 (CPU依存)   */
-    UW tss_selector;		/* タスクのセレクタ (CPU依存)   */
-    H use_fpu;
-    FPU_CONTEXT fpu_context;	/* FPU のコンテキスト情報 */
-#endif
+    T_MPU_CONTEXT mpu;
 
 /* 仮想記憶情報 */
     T_REGION regions[MAX_REGION];	/* タスクに結びついて */

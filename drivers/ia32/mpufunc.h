@@ -24,7 +24,7 @@ Version 2, June 1991
 extern void print_task_desc(TASK_DESC * desc);
 #endif
 extern void create_context(T_TCB * task);
-extern void init_task_state_segment(W index, T_I386_CONTEXT * tss);
+extern void init_task_state_segment(W index, T_CONTEXT * tss);
 
 /* virtual_memory.c */
 extern ADDR_MAP dup_vmap_table(ADDR_MAP dest);
@@ -63,9 +63,13 @@ extern void reset_intr_mask(W intn);
 
 /* context.c */
 extern ER make_task_context(T_TCB * task, T_CTSK * pk_ctsk);
-extern void make_local_stack(T_TCB *tsk, W size, W acc);
 extern ER mpu_copy_stack(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi, W edi, ID dst);
 extern ER mpu_set_context(ID tid, W eip, B * stackp, W stsize);
 extern ER mpu_use_float(ID tid);
+extern void set_autorun_context(T_TCB *taskp);
+extern void set_thread1_context(T_TCB *taskp);
+extern void set_thread1_start(T_TCB *taskp);
+extern void set_page_table(T_TCB *taskp, UW p);
+extern void set_sp(T_TCB *taskp, UW p);
 
 #endif /* _IA32_MPU_H_ */

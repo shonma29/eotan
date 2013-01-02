@@ -348,8 +348,8 @@ void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 	     run_task->context.esp1, run_task->context.esp2);
 #endif
       printk("fault addr = 0x%x\n", get_cr2());
-      printk("current stack segment = 0x%x\n", run_task->context.ss);
-      printk("       esp = 0x%x (0x%x)\n", esp, run_task->context.esp);
+      printk("current stack segment = 0x%x\n", run_task->mpu.context.ss);
+      printk("       esp = 0x%x (0x%x)\n", esp, run_task->mpu.context.esp);
       printk("error code = 0x%x\n", errcode);
       printk("       eip = 0x%x\n", eip);
       printk("        cs = 0x%x ds = 0x%x\n", cs, ds);
@@ -380,18 +380,18 @@ void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
     printk("current PID= %d (0x%x)\n", run_task->tskid, run_task->tskid);
     printk("context addr = %d (0x%x)\n", run_task, run_task);
     printk("ss0 = 0x%x/ss1 = 0x%x/ss2 = 0x%x\n",
-	   run_task->context.ss0,
-	   run_task->context.ss1, run_task->context.ss2);
+	   run_task->mpu.context.ss0,
+	   run_task->mpu.context.ss1, run_task->mpu.context.ss2);
     printk("esp0 = 0x%x/esp1 = 0x%x/esp2 = 0x%x\n",
-	   run_task->context.esp0,
-	   run_task->context.esp1, run_task->context.esp2);
+	   run_task->mpu.context.esp0,
+	   run_task->mpu.context.esp1, run_task->mpu.context.esp2);
 
-    printk("current stack segment = 0x%x\n", run_task->context.ss);
-    printk("stack pointer = 0x%x\n", run_task->context.esp);
+    printk("current stack segment = 0x%x\n", run_task->mpu.context.ss);
+    printk("stack pointer = 0x%x\n", run_task->mpu.context.esp);
     printk("initial stack pointer = 0x%x\n", run_task->initial_stack);
     printk("fault addr = 0x%x\n", get_cr2());
-    printk("       esp = 0x%x (0x%x)\n", esp, run_task->context.esp);
-    printk("       cr3 = 0x%x (0x%x)\n", get_cr3(), run_task->context.cr3);
+    printk("       esp = 0x%x (0x%x)\n", esp, run_task->mpu.context.esp);
+    printk("       cr3 = 0x%x (0x%x)\n", get_cr3(), run_task->mpu.context.cr3);
     printk("error code = 0x%x\n", errcode);
     printk("       eip = 0x%x\n", eip);
     printk("        cs = 0x%x\n", cs);
@@ -444,22 +444,22 @@ void fault(UW intn, UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
     printk("run_task->state.state = %d\n", run_task->tskstat);
 /*  printk ("tss selector      = %d\n", run_task->tss_selector); */
     printk("run_task->context.backlink = 0%x\n",
-	   run_task->context.backlink);
-    printk("run_task->context.cs  = 0x%x\n", run_task->context.cs);
-    printk("run_task->context.ds  = 0x%x\n", run_task->context.ds);
-    printk("run_task->context.ss  = 0x%x\n", run_task->context.ss);
-    printk("run_task->context.eip = 0x%x\n", run_task->context.eip);
-    printk("run_task->context.esp = 0x%x\n", run_task->context.esp);
+	   run_task->mpu.context.backlink);
+    printk("run_task->context.cs  = 0x%x\n", run_task->mpu.context.cs);
+    printk("run_task->context.ds  = 0x%x\n", run_task->mpu.context.ds);
+    printk("run_task->context.ss  = 0x%x\n", run_task->mpu.context.ss);
+    printk("run_task->context.eip = 0x%x\n", run_task->mpu.context.eip);
+    printk("run_task->context.esp = 0x%x\n", run_task->mpu.context.esp);
     printk("context addr = %d (0x%x)\n", run_task, run_task);
     printk("ss0 = 0x%x/ss1 = 0x%x/ss2 = 0x%x\n",
-	   run_task->context.ss0,
-	   run_task->context.ss1, run_task->context.ss2);
+	   run_task->mpu.context.ss0,
+	   run_task->mpu.context.ss1, run_task->mpu.context.ss2);
     printk("esp0 = 0x%x/esp1 = 0x%x/esp2 = 0x%x\n",
-	   run_task->context.esp0,
-	   run_task->context.esp1, run_task->context.esp2);
+	   run_task->mpu.context.esp0,
+	   run_task->mpu.context.esp1, run_task->mpu.context.esp2);
 
-    printk("current stack segment = 0x%x\n", run_task->context.ss);
-    printk("stack pointer = 0x%x\n", run_task->context.esp);
+    printk("current stack segment = 0x%x\n", run_task->mpu.context.ss);
+    printk("stack pointer = 0x%x\n", run_task->mpu.context.esp);
     printk("initial stack pointer = 0x%x\n", run_task->initial_stack);
     printk("error code = 0x%x\n", errcode);
     printk("fault addr = 0x%x\n", get_cr2());
@@ -556,7 +556,7 @@ void protect_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 	     run_task->context.esp1, run_task->context.esp2);
       printk("current stack segment = 0x%x\n", run_task->context.ss);
 #endif
-      printk("       esp = 0x%x (0x%x)\n", esp, run_task->context.esp);
+      printk("       esp = 0x%x (0x%x)\n", esp, run_task->mpu.context.esp);
       printk("error code = 0x%x\n", errcode);
       printk("       eip = 0x%x\n", eip);
       printk("        cs = 0x%x ds = 0x%x\n", cs, ds);

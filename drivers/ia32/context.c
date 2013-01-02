@@ -19,6 +19,7 @@ Version 2, June 1991
 #include "mpu/mpufunc.h"
 
 static ER make_task_stack(T_TCB * task, W size, VP * sp);
+static void make_local_stack(T_TCB * tsk, W size, W acc);
 
 
 /* タスク情報を生成する:
@@ -48,21 +49,21 @@ ER make_task_context(T_TCB * task, T_CTSK * pk_ctsk)
      *   2) タスクのスタートアドレス
      *   3) カーネルスタックのアドレス
      */
-    task->context.cs = KERNEL_CSEG;
-    task->context.ds = KERNEL_DSEG;
-    task->context.es = KERNEL_DSEG;
-    task->context.fs = KERNEL_DSEG;
-    task->context.gs = KERNEL_DSEG;
-    task->context.ss = KERNEL_DSEG;
-    task->context.ss0 = KERNEL_DSEG;
-    task->context.esp = (UW) ((sp + pk_ctsk->stksz));
-    task->context.ebp = (UW) ((sp + pk_ctsk->stksz));
-    task->initial_stack = task->context.esp;
-    task->context.eip = (UW) pk_ctsk->startaddr;
+    task->mpu.context.cs = KERNEL_CSEG;
+    task->mpu.context.ds = KERNEL_DSEG;
+    task->mpu.context.es = KERNEL_DSEG;
+    task->mpu.context.fs = KERNEL_DSEG;
+    task->mpu.context.gs = KERNEL_DSEG;
+    task->mpu.context.ss = KERNEL_DSEG;
+    task->mpu.context.ss0 = KERNEL_DSEG;
+    task->mpu.context.esp = (UW) ((sp + pk_ctsk->stksz));
+    task->mpu.context.ebp = (UW) ((sp + pk_ctsk->stksz));
+    task->initial_stack = task->mpu.context.esp;
+    task->mpu.context.eip = (UW) pk_ctsk->startaddr;
 #ifdef TSKSW_DEBUG
     printk("(UW)pk_ctsk->startaddr = 0x%x\n", (UW) pk_ctsk->startaddr);
 #endif
-    task->context.eflags = EFLAG_IBIT | EFLAG_IOPL3;
+    task->mpu.context.eflags = EFLAG_IBIT | EFLAG_IOPL3;
     /* cre_tsk の中で bzero によって初期化される．
        task->context.eax = 0;
        task->context.ebx = 0;
@@ -73,8 +74,8 @@ ER make_task_context(T_TCB * task, T_CTSK * pk_ctsk)
        task->context.t = 0;
        task->context.iobitmap = 0;
      */
-    task->tss_selector = ((TSS_BASE + task->tskid) << 3) & 0xfff8;
-    task->use_fpu = 0;		/* 初期状態では FPU は利用しない */
+    task->mpu.tss_selector = ((TSS_BASE + task->tskid) << 3) & 0xfff8;
+    task->mpu.use_fpu = 0;		/* 初期状態では FPU は利用しない */
 
     create_context(task);	/* コンテキスト領域(TSS)のアドレスをGDTにセット */
     return (E_OK);		/* set_task_registers (task, pk_ctsk->startaddr, sp)); */
@@ -105,12 +106,12 @@ static ER make_task_stack(T_TCB * task, W size, VP * sp)
 /*
  * make_local_stack
  */
-void make_local_stack(T_TCB * tsk, W size, W acc)
+static void make_local_stack(T_TCB * tsk, W size, W acc)
 {
     W err;
 
     /* task の kernel stack 領域を特権レベル 0 のスタックに設定 */
-    tsk->context.esp0 = tsk->initial_stack;
+    tsk->mpu.context.esp0 = tsk->initial_stack;
 
     /* stack region の作成 number は 4 で固定 */
     /* VM_READ, VM_WRITE, VM_USER) is originally defined in posix_mm.h */
@@ -155,11 +156,11 @@ ER mpu_copy_stack(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi, W edi, ID ds
 
     size = ((UW) src_tsk->stackptr) + src_tsk->stksz - ebp;
     dstp = ((UW) dst_tsk->stackptr) + dst_tsk->stksz - size;
-    dst_tsk->context.ebp = dstp;
+    dst_tsk->mpu.context.ebp = dstp;
 
     size = ((UW) src_tsk->stackptr) + src_tsk->stksz - esp;
     dstp = ((UW) dst_tsk->stackptr) + dst_tsk->stksz - size;
-    dst_tsk->context.esp = dstp;
+    dst_tsk->mpu.context.esp = dstp;
 
     /* src task のスタックの内容を dst task にコピー */
     srcp = (UW) src_tsk->initial_stack;
@@ -177,22 +178,22 @@ ER mpu_copy_stack(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi, W edi, ID ds
     }
 
     /* レジスタのコピー */
-    dst_tsk->context.ebx = ebx;
-    dst_tsk->context.ecx = ecx;
-    dst_tsk->context.edx = edx;
-    dst_tsk->context.esi = esi;
-    dst_tsk->context.edi = edi;
+    dst_tsk->mpu.context.ebx = ebx;
+    dst_tsk->mpu.context.ecx = ecx;
+    dst_tsk->mpu.context.edx = edx;
+    dst_tsk->mpu.context.esi = esi;
+    dst_tsk->mpu.context.edi = edi;
 
     /* セレクタの設定 */
-    dst_tsk->context.cs = USER_CSEG | USER_DPL;
-    dst_tsk->context.ds = USER_DSEG;
-    dst_tsk->context.es = USER_DSEG;
-    dst_tsk->context.fs = USER_DSEG;
-    dst_tsk->context.gs = USER_DSEG;
-    dst_tsk->context.ss = USER_SSEG | USER_DPL;
+    dst_tsk->mpu.context.cs = USER_CSEG | USER_DPL;
+    dst_tsk->mpu.context.ds = USER_DSEG;
+    dst_tsk->mpu.context.es = USER_DSEG;
+    dst_tsk->mpu.context.fs = USER_DSEG;
+    dst_tsk->mpu.context.gs = USER_DSEG;
+    dst_tsk->mpu.context.ss = USER_SSEG | USER_DPL;
 
     /* FPU 情報のコピー */
-    dst_tsk->use_fpu = src_tsk->use_fpu;
+    dst_tsk->mpu.use_fpu = src_tsk->mpu.use_fpu;
 
     leave_critical();
     return (E_OK);
@@ -256,28 +257,28 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
     *--bp = NULL;
     --esp;
 
-    tsk->context.esp = (UW) esp;
-    tsk->context.ebp = (UW) esp;
+    tsk->mpu.context.esp = (UW) esp;
+    tsk->mpu.context.ebp = (UW) esp;
 
     /* レジスターの初期化 */
-    tsk->context.eip = eip;
+    tsk->mpu.context.eip = eip;
 
-    tsk->context.eflags = EFLAG_IBIT | EFLAG_IOPL3;
-    tsk->context.eax = 0;
-    tsk->context.ebx = 0;
-    tsk->context.ecx = 0;
-    tsk->context.edx = 0;
-    tsk->context.esi = 0;
-    tsk->context.edi = 0;
-    tsk->context.t = 0;
+    tsk->mpu.context.eflags = EFLAG_IBIT | EFLAG_IOPL3;
+    tsk->mpu.context.eax = 0;
+    tsk->mpu.context.ebx = 0;
+    tsk->mpu.context.ecx = 0;
+    tsk->mpu.context.edx = 0;
+    tsk->mpu.context.esi = 0;
+    tsk->mpu.context.edi = 0;
+    tsk->mpu.context.t = 0;
 
     /* セレクタの設定 */
-    tsk->context.cs = USER_CSEG | USER_DPL;
-    tsk->context.ds = USER_DSEG;
-    tsk->context.es = USER_DSEG;
-    tsk->context.fs = USER_DSEG;
-    tsk->context.gs = USER_DSEG;
-    tsk->context.ss = USER_SSEG | USER_DPL;
+    tsk->mpu.context.cs = USER_CSEG | USER_DPL;
+    tsk->mpu.context.ds = USER_DSEG;
+    tsk->mpu.context.es = USER_DSEG;
+    tsk->mpu.context.fs = USER_DSEG;
+    tsk->mpu.context.gs = USER_DSEG;
+    tsk->mpu.context.ss = USER_SSEG | USER_DPL;
 
     /* タスクの初期化 */
 
@@ -304,3 +305,52 @@ ER mpu_use_float(ID tid)
     fpu_start(taskp);
     return (E_OK);
 }
+
+void set_autorun_context(T_TCB *taskp) {
+   /* 固有のスタックを用意 */
+   make_local_stack(taskp, KERNEL_STACK_SIZE, ACC_USER);
+   taskp->mpu.context.esp = taskp->initial_stack;
+   taskp->mpu.context.ebp = taskp->initial_stack;
+
+   /* セレクタの設定 */
+   taskp->mpu.context.cs = USER_CSEG | USER_DPL;
+   taskp->mpu.context.ds = USER_DSEG;
+   taskp->mpu.context.es = USER_DSEG;
+   taskp->mpu.context.fs = USER_DSEG;
+   taskp->mpu.context.gs = USER_DSEG;
+   taskp->mpu.context.ss = USER_SSEG | USER_DPL;
+}
+
+void set_thread1_context(T_TCB *taskp) {
+    /* タスク 1 のコンテキスト情報を初期化する                    */
+    /* これらの情報は、次にタスク1がカレントタスクになった時に    */
+    /* 使用する                                                   */
+    taskp->mpu.context.cr3 = (UW) PAGE_DIR_ADDR;
+    taskp->mpu.context.cs = KERNEL_CSEG;
+    taskp->mpu.context.ds = KERNEL_DSEG;
+    taskp->mpu.context.es = KERNEL_DSEG;
+    taskp->mpu.context.fs = KERNEL_DSEG;
+    taskp->mpu.context.gs = KERNEL_DSEG;
+    taskp->mpu.context.ss = KERNEL_DSEG;
+    taskp->mpu.context.ss0 = KERNEL_DSEG;
+    taskp->mpu.context.eflags = EFLAG_IBIT | EFLAG_IOPL3;
+}
+
+void set_thread1_start(T_TCB *taskp) {
+    /* セレクタをセット */
+    taskp->mpu.tss_selector =
+	((KERNEL_TASK + TSS_BASE) << 3) & 0xfff8;
+    create_context(taskp);
+
+    /* タスクレジスタの値を設定する. */
+    load_task_register((KERNEL_TASK + TSS_BASE) << 3);
+}
+
+void set_page_table(T_TCB *taskp, UW p) {
+    taskp->mpu.context.cr3 = p;
+}
+
+void set_sp(T_TCB *taskp, UW p) {
+    taskp->mpu.context.esp -= p;
+}
+

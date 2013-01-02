@@ -156,27 +156,27 @@ static void print_list(void)
 	switch (task[i].tskstat) {
 	case TTS_RUN:
 	    printk("%d (%d)  <RUN>           0x%x\n", i,
-		   task[i].tsklevel, task[i].context.eip);
+		   task[i].tsklevel, MPU_PC(&(task[i])));
 	    break;
 	case TTS_RDY:
 	    printk("%d (%d)  <RDY>           0x%x\n", i,
-		   task[i].tsklevel, task[i].context.eip);
+		   task[i].tsklevel, MPU_PC(&(task[i])));
 	    break;
 	case TTS_WAI:
 	    printk("%d (%d)  <WAIT>          0x%x\n", i,
-		   task[i].tsklevel, task[i].context.eip);
+		   task[i].tsklevel, MPU_PC(&(task[i])));
 	    break;
 	case TTS_SUS:
 	    printk("%d (%d)  <SUSPEND>       0x%x\n", i,
-		   task[i].tsklevel, task[i].context.eip);
+		   task[i].tsklevel, MPU_PC(&(task[i])));
 	    break;
 	case TTS_WAS:
 	    printk("%d (%d)  <WAIT-SUSPEND>  0x%x\n", i,
-		   task[i].tsklevel, task[i].context.eip);
+		   task[i].tsklevel, MPU_PC(&(task[i])));
 	    break;
 	case TTS_DMT:
 	    printk("%d (%d)  <DORMANT>       0x%x\n", i,
-		   task[i].tsklevel, task[i].context.eip);
+		   task[i].tsklevel, MPU_PC(&(task[i])));
 	    break;
 	}
     }
@@ -237,43 +237,13 @@ void thread_initialize1(void)
     task[KERNEL_TASK].tskid = KERNEL_TASK;
     list_initialize(&(task[KERNEL_TASK].wait.waiting));
 
-#ifdef I386
-    /* タスク 1 のコンテキスト情報を初期化する                    */
-    /* これらの情報は、次にタスク1がカレントタスクになった時に    */
-    /* 使用する                                                   */
-    task[KERNEL_TASK].context.cr3 = (UW) PAGE_DIR_ADDR;
-    task[KERNEL_TASK].context.cs = KERNEL_CSEG;
-    task[KERNEL_TASK].context.ds = KERNEL_DSEG;
-    task[KERNEL_TASK].context.es = KERNEL_DSEG;
-    task[KERNEL_TASK].context.fs = KERNEL_DSEG;
-    task[KERNEL_TASK].context.gs = KERNEL_DSEG;
-    task[KERNEL_TASK].context.ss = KERNEL_DSEG;
-    task[KERNEL_TASK].context.ss0 = KERNEL_DSEG;
-    /*
-       task[KERNEL_TASK].context.zero = 0;
-       task[KERNEL_TASK].context.ldtr = 0;
-       task[KERNEL_TASK].context.backlink = 0;
-       task[KERNEL_TASK].context.iobitmap = 0;
-     */
-    task[KERNEL_TASK].context.eflags = EFLAG_IBIT | EFLAG_IOPL3;
-    /*
-       task[KERNEL_TASK].context.t = 0;
-     */
-#endif				/* I386 */
+    set_thread1_context(&(task[KERNEL_TASK]));
 
     /* 現タスクはタスク1である。 */
     run_task = &(task[KERNEL_TASK]);
     ready_enqueue(run_task->tsklevel, &(run_task->ready));
 
-    /* セレクタをセット */
-    task[KERNEL_TASK].tss_selector =
-	((KERNEL_TASK + TSS_BASE) << 3) & 0xfff8;
-    create_context(&task[KERNEL_TASK]);
-
-    /* タスクレジスタの値を設定する. */
-#ifdef I386
-    load_task_register((KERNEL_TASK + TSS_BASE) << 3);
-#endif				/* I386 */
+    set_thread1_start(&(task[KERNEL_TASK]));
 }
 
 
@@ -335,13 +305,13 @@ ER thread_switch(void)
 	    run_task->tskid, next->tskid);
 #endif
     if ((next->tskstat != TTS_RDY)
-	    || (next->context.eip == 0)) {
+	    || (MPU_PC(next) == 0)) {
 	printk("thread_switch: panic next(%d) stat=%d, eip=%x\n",
-		next->tskid, next->tskstat, next->context.eip);
+		next->tskid, next->tskstat, MPU_PC(next));
 	falldown();
     }
 
-    if (run_task->use_fpu)
+    if (run_task->mpu.use_fpu)
 	fpu_save(run_task);
 
     run_task = next;
@@ -356,7 +326,7 @@ ER thread_switch(void)
     resume((UW) (next->tskid + TSS_BASE) << 3);
 
     /* 正常に終了した：次のタスクスイッチの時にここに戻る */
-    if (run_task->use_fpu)
+    if (run_task->mpu.use_fpu)
 	fpu_restore(run_task);
 
     return (E_OK);
@@ -424,10 +394,10 @@ ER thread_create(ID tskid, T_CTSK * pk_ctsk)
      * 指定がないときには、カレントプロセスと同じマップとなる。
      */
     if (pk_ctsk->addrmap != NULL) {
-	newtask->context.cr3 = (UW) (pk_ctsk->addrmap);
+	set_page_table(newtask, (UW) (pk_ctsk->addrmap));
     } else {
-	newtask->context.cr3 =
-	    VTOR((UW) dup_vmap_table((ADDR_MAP) run_task->context.cr3));
+	set_page_table(newtask,
+		VTOR((UW) dup_vmap_table((ADDR_MAP) MPU_PAGE_TABLE(run_task))));
     }
 
     /* タスクのリージョンテーブルを初期化
@@ -465,7 +435,7 @@ ER thread_destroy(ID tskid)
 	return (E_OBJ);
     }
     /* マッピングテーブルを解放する */
-    release_vmap((ADDR_MAP) task[tskid].context.cr3);
+    release_vmap((ADDR_MAP) MPU_PAGE_TABLE(&(task[tskid])));
 
     /* kernel 領域の stack を開放する */
     pfree((VP) VTOR((UW) task[tskid].stackptr0), PAGES(task[tskid].stksz0));
@@ -505,7 +475,7 @@ ER thread_start(ID tskid, INT stacd)
     }
 
     if (stacd > 0) {
-	task[tskid].context.esp -= (stacd);
+	set_sp(&(task[tskid]), stacd);
     }
     index = task[tskid].tsklevel;
     task[tskid].tskstat = TTS_RDY;
@@ -579,7 +549,7 @@ void thread_end_and_destroy(void)
 {
     /* 現在のタスクを TTS_NON 状態にし、選択したタスクを次に走らせるようにする。 */
     /* マッピングテーブルを解放する */
-    release_vmap((ADDR_MAP) run_task->context.cr3);
+    release_vmap((ADDR_MAP) MPU_PAGE_TABLE(run_task));
 
     /* kernel 領域の stack を開放する */
     pfree((VP) VTOR((UW) run_task->stackptr0), PAGES(run_task->stksz0));

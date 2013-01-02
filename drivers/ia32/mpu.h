@@ -22,11 +22,14 @@ Version 2, June 1991
 #define _IA32_MPU_H_	1
 
 #include <itron/types.h>
+#include "fpu.h"
 
 #define I386	1
 
 #define I386_PAGESIZE	4096
 
+#define MPU_PC(taskp) ((taskp)->mpu.context.eip)
+#define MPU_PAGE_TABLE(taskp) ((taskp)->mpu.context.cr3)
 
 /***********************************************************************
  *	directory table entry.
@@ -71,7 +74,7 @@ typedef struct
 } I386_PAGE_ENTRY;
 
 /****************************************************************************
- * T_I386_CONTEXT --- Task State Segment
+ * T_CONTEXT --- Task State Segment
  *
  */
 typedef struct 
@@ -105,7 +108,14 @@ typedef struct
   UH		t:1;
   UH		zero:15;
   UH		iobitmap;
-} T_I386_CONTEXT;
+} T_CONTEXT;
+
+typedef struct {
+  T_CONTEXT context;
+  UW tss_selector;
+  H use_fpu;
+  FPU_CONTEXT fpu_context;
+} T_MPU_CONTEXT;
 
 /**************************************************************
  *

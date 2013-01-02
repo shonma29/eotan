@@ -21,33 +21,33 @@ Version 2, June 1991
 
 void fpu_save(T_TCB *taskp)
 {
-  __asm__("fsave %0" : "=m" (taskp->fpu_context));
+  __asm__("fsave %0" : "=m" (taskp->mpu.fpu_context));
 }
 
 void fpu_restore(T_TCB *taskp)
 {
-  __asm__("frstor %0" : "=m" (taskp->fpu_context));
+  __asm__("frstor %0" : "=m" (taskp->mpu.fpu_context));
 }
 
 void fpu_start(T_TCB *taskp)
 {
-  if (taskp->use_fpu) return;
+  if (taskp->mpu.use_fpu) return;
   enter_critical();
   if (run_task == taskp) {
     __asm__("finit");
-    __asm__("fsave %0" : "=m" (taskp->fpu_context));
-    taskp->use_fpu = 1;
+    __asm__("fsave %0" : "=m" (taskp->mpu.fpu_context));
+    taskp->mpu.use_fpu = 1;
   }
   else {
-    if (run_task->use_fpu) {
-      __asm__("fsave %0" : "=m" (run_task->fpu_context));
+    if (run_task->mpu.use_fpu) {
+      __asm__("fsave %0" : "=m" (run_task->mpu.fpu_context));
     }
     __asm__("finit");
-    __asm__("fsave %0" : "=m" (taskp->fpu_context));
-    if (run_task->use_fpu) {
-      __asm__("frstor %0" : "=m" (run_task->fpu_context));
+    __asm__("fsave %0" : "=m" (taskp->mpu.fpu_context));
+    if (run_task->mpu.use_fpu) {
+      __asm__("frstor %0" : "=m" (run_task->mpu.fpu_context));
     }
-    taskp->use_fpu = 1;
+    taskp->mpu.use_fpu = 1;
   }
   leave_critical();
 }
