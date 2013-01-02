@@ -73,7 +73,7 @@ static void init_device(void);
 static void run(W entry);
 static void run_init_program(void);
 #endif
-void banner(void);
+static void banner(void);
 
 /* 外部変数の宣言 */
 extern W do_timer;
@@ -137,7 +137,8 @@ ER itron(void)
 #endif
 
     if (init_itron() != E_OK) {
-	falldown("main: cannot initialize.\n");
+	printk("main: cannot initialize.\n");
+	falldown();
     }
 
     init_device();
@@ -196,7 +197,8 @@ ER itron(void)
 
 	thread_switch();
     }
-    falldown("falldown.");
+    printk("falldown.");
+    falldown();
 /* not return */
     return E_OK;
 }
@@ -306,15 +308,14 @@ static ER init_itron(void)
 {
     struct boot_header *info; 
 
+    kernlog_initialize();	/* コンソールに文字を出力できるようにする */
     init_interrupt();
-    simple_init_console();	/* コンソールに文字を出力できるようにする */
 #ifdef DEBUG
     printk("init_itron: start\n");
 #endif
     pmem_init();		/* 物理メモリ管理機能の初期化           */
     adjust_vm(physmem_max);
     banner();			/* 立ち上げメッセージ出力               */
-
     init_kalloc();		/* バイト単位のメモリ管理機能の初期化   */
     queue_initialize();		/* メッセージ管理機能の初期化           */
     flag_initialize();		/* イベントフラグ管理機能の初期化       */
@@ -331,7 +332,6 @@ static ER init_itron(void)
     time_initialize(info->machine.clock);		/* 時間管理機能の初期化 */
     start_interval();		/* インターバルタイマの起動       */
 
-/*  init_io (); */
     return (E_OK);
 }
 
@@ -357,7 +357,7 @@ static void init_device(void)
 /*
  *
  */
-void banner(void)
+static void banner(void)
 {
     printk("kernel %s for %s/%s\n",
 	KERN_VERSION, KERN_ARCH, KERN_MPU);

@@ -13,13 +13,8 @@ Version 2, June 1991
 /* error.cj
  *
  */
-#include <stdarg.h>
-#include <string.h>
-#include <mpu/io.h>
-#include "core.h"
-#include "func.h"
 #include "sync.h"
-#include "arch/archfunc.h"
+#include "mpu/mpufunc.h"
 
 
 /* falldown --- ITRON での [panic] 関数。
@@ -32,17 +27,8 @@ Version 2, June 1991
  *	メッセージを表示した後は、無限ループに入る。
  *
  */
-void falldown(B * fmt, ...)
+void falldown()
 {
-    va_list ap;
-
-    va_start(ap, fmt);
-    vnprintf(putchar, fmt, ap);
-
     enter_critical();
-#ifndef I386
-    for (;;);
-#else
-    asm("hlt");
-#endif
+    halt();
 }

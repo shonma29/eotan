@@ -17,6 +17,8 @@ Version 2, June 1991
 #include <itron/types.h>
 #include "../../kernel/thread.h"
 
+#define halt() asm("hlt")
+
 /* tss.c */
 #ifdef TSKSW_DEBUG
 extern void print_task_desc(TASK_DESC * desc);
@@ -58,5 +60,12 @@ extern void fpu_start(T_TCB * taskp);
 
 /* reset_intr_mask.c */
 extern void reset_intr_mask(W intn);
+
+/* context.c */
+extern ER make_task_context(T_TCB * task, T_CTSK * pk_ctsk);
+extern void make_local_stack(T_TCB *tsk, W size, W acc);
+extern ER mpu_copy_stack(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi, W edi, ID dst);
+extern ER mpu_set_context(ID tid, W eip, B * stackp, W stsize);
+extern ER mpu_use_float(ID tid);
 
 #endif /* _IA32_MPU_H_ */

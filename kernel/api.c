@@ -919,9 +919,8 @@ static ER if_misc(VP argp)
 
     case 1:
 	/* fall down */
-	falldown(args->arg);
-	enter_critical();
-	for (;;);
+	printk(args->arg);
+	falldown();
 	/* NOT REACHED */
 
     case 2:

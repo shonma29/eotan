@@ -30,10 +30,11 @@ extern ER main(void);
 extern ER add_trmtbl(ID, ID, ID);
 
 /* printk.c */
-extern W printk(B *, ...);
+extern void kernlog_initialize();
+extern int printk(char *format, ...);
 
 /* error.c */
-extern void falldown(B *, ...);
+extern void falldown();
 
 /* pmemory.c */
 extern void init_memory(void);
@@ -60,11 +61,6 @@ extern ER thread_resume(ID taskid);
 extern ER thread_change_priority(ID tskid, PRI tskpri);
 extern void print_thread_list(void);
 extern T_TCB *get_thread_ptr(ID tskid);
-extern void make_local_stack(T_TCB *tsk, W size, W acc);
-
-extern ER mpu_copy_stack(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi, W edi, ID dst);
-extern ER mpu_set_context(ID tid, W eip, B * stackp, W stsize);
-extern ER mpu_use_float(ID tid);
 
 /* posix.c */
 extern ER posix_kill_proc(ID pid);

@@ -1,3 +1,5 @@
+#ifndef _CGA_H_
+#define _CGA_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,19 +26,22 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "cga.h"
-#include "stdarg.h"
-#include "string.h"
 
-static CGA_Console *cns;
+#define CGA_VRAM_ADDR (0x800b8000)
+#define CGA_COLUMNS (80)
+#define CGA_ROWS (25)
+#define CGA_COLORS (16)
+#define CGA_TAB_COLUMNS (8)
+#define CGA_DEFAULT_COLOR (15)
 
-void kernlog_initialize() {
-	cns = getConsole();
-}
+typedef struct _CGA_Console {
+	void (*cls)(void);
+	int (*locate)(const int x, const int y);
+	int (*color)(const int color);
+	void (*putc)(const unsigned char ch);
+	int (*rollup)(const int lines);
+} CGA_Console;
 
-int printk(const unsigned char *format, ...) {
-	va_list ap;
+extern CGA_Console *getConsole(void);
 
-	va_start(ap, format);
-	return vnprintf((void*)(cns->putc), (char*)format, ap);
-}
+#endif
