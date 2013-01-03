@@ -24,7 +24,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "cga.h"
+#include <cga.h>
+#include <mpu/io.h>
+
+#define CGA_VRAM_ADDR (0x800b8000)
+
+#define PORT_CRTC 0x03d4
+#define CRTC_CURSOR_HIGH 0x0e
+#define CRTC_CURSOR_LOW 0x0f
 
 #define True 1
 #define False 0
@@ -35,6 +42,7 @@ static int _color(const int color);
 static void _putc(const unsigned char ch);
 static void __putc(const unsigned char ch);
 static void _newline(void);
+static void _cursor(void);
 static int _rollup(const int lines);
 
 static CGA_Console _cns = {
@@ -69,6 +77,7 @@ static void _cls(void) {
 	_s.p = p;
 
 	for (i = CGA_COLUMNS * CGA_ROWS; i > 0; i--)	*p++ = c;
+	_cursor();
 }
 
 static int _locate(const int x, const int y) {
@@ -80,6 +89,7 @@ static int _locate(const int x, const int y) {
 	_s.x = x;
 	_s.y = y;
 	_s.p = ((unsigned short*)CGA_VRAM_ADDR) + y * CGA_COLUMNS + x;
+	_cursor();
 
 	return True;
 }
@@ -139,6 +149,8 @@ static void _putc(const unsigned char ch) {
 		}
 		break;
 	}
+
+	_cursor();
 }
 
 static void __putc(const unsigned char ch) {
@@ -151,6 +163,13 @@ static void _newline(void) {
 
 	_s.x = 0;
 	_s.p = ((unsigned short*)CGA_VRAM_ADDR) + _s.y * CGA_COLUMNS;
+}
+
+static void _cursor() {
+	unsigned int pos = _s.y * CGA_COLUMNS + _s.x;
+
+	outw(PORT_CRTC, (pos & 0xff00) | CRTC_CURSOR_HIGH);
+	outw(PORT_CRTC, ((pos & 0xff) << 8) | CRTC_CURSOR_LOW);
 }
 
 static int _rollup(const int lines) {
@@ -170,6 +189,8 @@ static int _rollup(const int lines) {
 		_s.p = (unsigned short*)CGA_VRAM_ADDR;
 	}
 	else	_s.p -= lines * CGA_COLUMNS;
+
+	_cursor();
 
 	return True;
 }

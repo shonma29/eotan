@@ -27,7 +27,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-#define CGA_VRAM_ADDR (0x800b8000)
 #define CGA_COLUMNS (80)
 #define CGA_ROWS (25)
 #define CGA_COLORS (16)
