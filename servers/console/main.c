@@ -131,9 +131,7 @@ static W open_console(RDVNO rdvno, devmsg_t *packet);		/* オープン		*/
 static W close_console(RDVNO rdvno, devmsg_t *packet);	/* クローズ		*/
 static W read_console(RDVNO rdvno, devmsg_t *packet);		/* 読み込み		*/
 static W write_console(RDVNO rdvno, devmsg_t *packet);	/* 書き込み		*/
-static void respond_ctrl(RDVNO rdvno, devmsg_t *packet, W dd, ER errno);
 static W control_console(RDVNO rdvno, devmsg_t *packet);	/* コントロール		*/
-static void writes(B * s);
 
 /*********************************************************************
  *	 大域変数群の宣言
@@ -157,10 +155,6 @@ void start(void)
      */
     init_console();
 
-    /*
-     * 立ち上げメッセージ
-     */
-    writes("console driver start\n");
     main_loop();
 }
 
@@ -229,10 +223,6 @@ static W init_console(void)
     attr = NORMAL;
 
     set_curpos(0, MAX_LINE-1);
-
-#ifdef USE_MALLOC
-    init_malloc(0xC0000000);	/* 適当な値 */
-#endif
 
     return E_OK;
 }
@@ -467,52 +457,14 @@ static W write_console(RDVNO rdvno, devmsg_t * packet)
  * 処理：
  *
  */
-
-static void respond_ctrl(RDVNO rdvno, devmsg_t * packet, W dd, ER errno)
-{
-    DDEV_CTL_RES * res = &(packet->res.body.ctl_res);
-
-    res->dd = dd;
-    res->errcd = errno;
-    res->errinfo = errno;
-    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
-}
-
-
 static W control_console(RDVNO rdvno, devmsg_t * packet)
 {
-	DDEV_CTL_REQ * req = &(packet->req.body.ctl_req);
+    DDEV_CTL_REQ * req = &(packet->req.body.ctl_req);
+    DDEV_CTL_RES * res = &(packet->res.body.ctl_res);
 
-	switch (req->cmd) {
-	case CONSOLE_CLEAR:
-	    clear_console();
-	    respond_ctrl(rdvno, packet, req->dd, E_OK);
-	    return (E_OK);
-
-	case CONSOLE_MOVE:
-	    if (req->len != 2) {
-		respond_ctrl(rdvno, packet, req->dd, E_PAR);
-		return (E_PAR);
-	    }
-	    set_curpos(req->param[0], req->param[1]);
-	    respond_ctrl(rdvno, packet, req->dd, E_OK);
-	    return (E_OK);
-
-	default:
-	    respond_ctrl(rdvno, packet, req->dd, E_NOSPT);
-	    return (E_NOSPT);
-	}
-}
-
-
-static void writes(B * s)
-{
-    ER error;
-
-    while (*s != '\0') {
-	error = write_char(*s);
-	if (error != E_OK)
-	    break;
-	s++;
-    }
+    res->dd = req->dd;
+    res->errcd = E_NOSPT;
+    res->errinfo = E_NOSPT;
+    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
+    return (E_NOSPT);
 }

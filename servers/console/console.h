@@ -122,8 +122,4 @@ Version 2, June 1991
 
 #define CONSOLE_DRIVER	"driver.console"
 
-/* Console control */
-#define CONSOLE_CLEAR	0x00000001
-#define CONSOLE_MOVE	0x00000002
-
 #endif /* __CONSOLE_H__ */
