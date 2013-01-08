@@ -27,7 +27,7 @@ Version 2, June 1991
 #include "posix.h"
 
 W
-psc_waitpid_f (struct posix_request *req)
+psc_waitpid_f (RDVNO rdvno, struct posix_request *req)
 {
   W i;
   W mypid, pid, children, exst;
@@ -49,7 +49,7 @@ psc_waitpid_f (struct posix_request *req)
       if (procp->proc_status == PS_ZOMBIE) {
 	/* 子プロセスの情報をクリアし，親プロセスに返事を送る */
 	exst = (procp->proc_exst << 8);
-	put_response (req, EP_OK, i, exst, 0);
+	put_response (rdvno, req, EP_OK, i, exst, 0);
 	
 	/* 親プロセスの状態変更 */
 	proc_get_procp(mypid, &procp);
@@ -66,19 +66,19 @@ psc_waitpid_f (struct posix_request *req)
     /* 対応する子プロセスはあったが，まだ終了していなかった */
     if (req->param.par_waitpid.opts & WNOHANG) {
       /* 親に返事を送る必要がある */
-      put_response (req, EP_OK, 0, 0, 0);
+      put_response (rdvno, req, EP_OK, 0, 0, 0);
       return (SUCCESS);
     }
     /* 親プロセスの状態を変更し，返事を送らずにシステムコールを終了 */
     proc_get_procp(mypid, &procp);
     procp->proc_status = PS_WAIT;
     procp->proc_wpid = pid;
-    procp->proc_rvpt = req->receive_port;
+    procp->proc_wait_rdvno = rdvno;
     return (SUCCESS);
   }
   else {
     /* エラーを返す */
-    put_response (req, EP_CHILD, 0, 0, 0);
+    put_response (rdvno, req, EP_CHILD, 0, 0, 0);
     return (FAIL);
   }
 }  

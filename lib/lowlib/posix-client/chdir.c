@@ -39,7 +39,7 @@ int psys_chdir(void *argp)
 {
     ER error;
     struct posix_request req;
-    struct posix_response res;
+    struct posix_response *res = (struct posix_response*)&req;
     struct psc_chdir *args = (struct psc_chdir *) argp;
     char buf[MAX_DPATH + 1], *src, *top, *dst;
     int len, l2, flag = 0;
@@ -47,13 +47,13 @@ int psys_chdir(void *argp)
     req.param.par_chdir.path = args->path;
     req.param.par_chdir.pathlen = args->pathlen;
 
-    error = _make_connection(PSC_CHDIR, &req, &res);
+    error = _make_connection(PSC_CHDIR, &req);
     if (error != E_OK) {
 	/* What should I do? */
     }
 
-    else if (res.errno) {
-	ERRNO = res.errno;
+    else if (res->errno) {
+	ERRNO = res->errno;
 	return (-1);
     }
 
@@ -105,5 +105,5 @@ int psys_chdir(void *argp)
 	lowlib_data->dpath_len = len;
     }
 
-    return (res.status);
+    return (res->status);
 }

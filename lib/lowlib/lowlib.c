@@ -149,37 +149,12 @@ ER lowlib_start(VP stack_top)
 
 B *posix_name;
 
-ER setup_port(void)
-{
-    T_CMBF pk_cmbf = { NULL, TA_TFIFO, 0, sizeof(struct posix_response) };
-
-#ifdef DEBUG
-    dbg_printf("setup_port\n");
-    dbg_printf("Port found.(%d)\n", lowlib_data);
-#endif
-    if (lowlib_data->recv_port == 0) {
-	lowlib_data->recv_port = acre_mbf(&pk_cmbf);
-#ifdef DEBUG
-	dbg_printf("Port got.\n");
-#endif
-	if (lowlib_data->recv_port == 0) {
-#ifdef DEBUG
-	    dbg_printf("Cannot allocate port\n");
-#endif
-	    return (E_NOMEM);
-	}
-    }
-    return (E_OK);
-}
-
-
 /*
  *	POSIX システムコールの処理関数 (入口)
  */
 ER lowlib_syscall(W syscallno, VP arg)
 {
     int (*func) ();
-    ER errno;
 
     if ((syscallno < 0) || (syscallno >= nsyscall)) {
 	return (EP_INVAL);
@@ -188,12 +163,6 @@ ER lowlib_syscall(W syscallno, VP arg)
     func = syscalls[syscallno].func;
     if (func == NULL) {
 	return (EP_NOSYS);
-    }
-
-    if (lowlib_data->recv_port == 0) {
-	errno = setup_port();
-	if (errno != E_OK)
-	    return (errno);
     }
 
     return ((*func) (arg));

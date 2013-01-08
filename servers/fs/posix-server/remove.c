@@ -23,7 +23,7 @@ Version 2, June 1991
 /* psc_rmeove_f - ファイルの削除
  */
 W
-psc_remove_f (struct posix_request *req)
+psc_remove_f (RDVNO rdvno, struct posix_request *req)
 {
 #ifdef USE_ALLCOA
   B			*pathname;
@@ -40,7 +40,7 @@ psc_remove_f (struct posix_request *req)
   if (pathname == NULL)
     {
       /* メモリ取得エラー */
-      put_response (req, EP_NOMEM, 0, 0, 0);
+      put_response (rdvno, req, EP_NOMEM, 0, 0, 0);
       return (FAIL);
     }
 #endif
@@ -50,9 +50,9 @@ psc_remove_f (struct posix_request *req)
     {
       /* パス名のコピーエラー */
       if (errno == E_PAR)
-	put_response (req, EP_INVAL, 0, 0, 0);
+	put_response (rdvno, req, EP_INVAL, 0, 0, 0);
       else
-	put_response (req, EP_FAULT, 0, 0, 0);
+	put_response (rdvno, req, EP_FAULT, 0, 0, 0);
 	
       return (FAIL);
     }
@@ -63,7 +63,7 @@ psc_remove_f (struct posix_request *req)
       errno = proc_get_cwd (req->procid, &startip);
       if (errno)
 	{
-	  put_response (req, errno, 0, 0, 0);
+	  put_response (rdvno, req, errno, 0, 0, 0);
 	  return (FAIL);
 	}
     }
@@ -74,14 +74,14 @@ psc_remove_f (struct posix_request *req)
   errno = proc_get_euid (req->procid, &(acc.uid));
   if (errno)
     {
-      put_response (req, errno, 0, 0, 0);
+      put_response (rdvno, req, errno, 0, 0, 0);
       return (FAIL);
     }
 
   errno = proc_get_egid (req->procid, &(acc.gid));
   if (errno)
     {
-      put_response (req, errno, 0, 0, 0);
+      put_response (rdvno, req, errno, 0, 0, 0);
       return (FAIL);
     }
 
@@ -91,10 +91,10 @@ psc_remove_f (struct posix_request *req)
   if (errno)
     {
       /* ファイルがオープンできない */
-      put_response (req, errno, 0, 0, 0);
+      put_response (rdvno, req, errno, 0, 0, 0);
       return (FAIL);
     }
   
-  put_response (req, EP_OK, 0, 0, 0);
+  put_response (rdvno, req, EP_OK, 0, 0, 0);
   return (SUCCESS);
 }  

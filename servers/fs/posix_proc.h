@@ -144,8 +144,8 @@ struct proc
 
   UW			proc_pgid;		/* process group ID */
   UW			proc_wpid;		/* pid parameter of waitpid */
+  RDVNO proc_wait_rdvno;
   UW			proc_exst;		/* exit status */
-  UW			proc_rvpt;		/* receive_port */
  
 
   struct vm_tree	*vm_tree;		/* 仮想空間の情報 

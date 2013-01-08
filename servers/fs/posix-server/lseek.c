@@ -25,14 +25,14 @@ Version 2, June 1991
 
 #include "posix.h"
 
-W psc_lseek_f(struct posix_request *req)
+W psc_lseek_f(RDVNO rdvno, struct posix_request *req)
 {
     struct file *fp;
     W errno;
 
     errno = proc_get_file(req->procid, req->param.par_lseek.fileid, &fp);
     if (errno) {
-	put_response(req, errno, -1, errno, 0);
+	put_response(rdvno, req, errno, -1, errno, 0);
 	return (FAIL);
     }
 
@@ -50,7 +50,7 @@ W psc_lseek_f(struct posix_request *req)
 	break;
 
     default:
-	put_response(req, EP_INVAL, -1, 0, 0);
+	put_response(rdvno, req, EP_INVAL, -1, 0, 0);
 	return (FAIL);
     }
 
@@ -71,7 +71,7 @@ W psc_lseek_f(struct posix_request *req)
     }
 #endif
 
-    put_response(req, EP_OK, fp->f_offset, 0, 0);
+    put_response(rdvno, req, EP_OK, fp->f_offset, 0, 0);
 
     return (SUCCESS);
 }

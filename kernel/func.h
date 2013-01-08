@@ -65,11 +65,6 @@ extern T_TCB *get_thread_ptr(ID tskid);
 /* posix.c */
 extern ER posix_kill_proc(ID pid);
 
-/* kalloc.c */
-extern void init_kalloc(void);
-extern VP kalloc(W size);
-extern void kfree(VP area, W size);
-
 /* message.c */
 extern ER queue_initialize(void);
 extern ER queue_create(ID id, T_CMBF * pk_cmbf);

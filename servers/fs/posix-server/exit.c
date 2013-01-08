@@ -25,7 +25,7 @@ Version 2, June 1991
 /* psc_exit_f - プロセスを終了させる
  */
 W
-psc_exit_f (struct posix_request *req)
+psc_exit_f (RDVNO rdvno, struct posix_request *req)
 {
   struct proc *myprocp, *procp;
   struct posix_request preq;
@@ -37,7 +37,7 @@ psc_exit_f (struct posix_request *req)
   mypid = req->procid;
   errno = proc_get_procp(mypid, &myprocp);
   if (errno) {
-    put_response (req, EP_SRCH, 0, 0, 0);
+    put_response (rdvno, req, EP_SRCH, 0, 0, 0);
     /* メッセージの呼び出し元にエラーを返しても処理できないが，
        タスクは exd_tsk で終了する */
     return errno;
@@ -47,7 +47,7 @@ psc_exit_f (struct posix_request *req)
 
   errno = proc_get_procp(myprocp->proc_ppid, &procp);
   if (errno) {
-    put_response (req, EP_SRCH, 0, 0, 0);
+    put_response (rdvno, req, EP_SRCH, 0, 0, 0);
     /* メッセージの呼び出し元にエラーを返しても処理できないが，
        タスクは exd_tsk で終了する */
     return errno;
@@ -58,10 +58,9 @@ psc_exit_f (struct posix_request *req)
       (wpid == -1 || wpid == mypid || -wpid == myprocp->proc_pgid)) {
     /* 親プロセスが自分を WAIT していればメッセージ送信 */
     procp->proc_status = PS_RUN;
-    preq.receive_port = procp->proc_rvpt;
     preq.operation = PSC_WAITPID;
     exst = (myprocp->proc_exst << 8);
-    put_response (&preq, EP_OK, mypid, exst, 0);
+    put_response (procp->proc_wait_rdvno, &preq, EP_OK, mypid, exst, 0);
 
     /* エントリーの開放 */
     proc_exit(mypid);
@@ -93,6 +92,6 @@ psc_exit_f (struct posix_request *req)
   vdel_reg(tskid, STACK_REGION); /* stack */
 #endif
 
-  put_response (req, EP_OK, 0, 0, 0);
+  put_response (rdvno, req, EP_OK, 0, 0, 0);
   return (SUCCESS);
 }  

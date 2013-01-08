@@ -41,8 +41,6 @@ struct lowlib_info
 
 struct lowlib_data
 {
-  ID	recv_port;	/* POSIX マネージャへの要求の返答受け付け用ポート */
-
   ID	my_pid;		/* POSIX プロセス ID */
 
   ID	main_task;	/* ユーザプログラムのコードを実行するタスク */

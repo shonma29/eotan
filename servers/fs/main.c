@@ -125,8 +125,10 @@ int main(void)
     banner();
 
     for (;;) {
+    	W rdvno = get_request(&request);
+
 	/* 次の要求メッセージを待つ */
-	if (get_request(&request) == FAIL) {
+	if (rdvno < 0) {
 	    /* リクエスト取得に失敗した */
 #ifdef DEBUG
 	    dbg_printf("Cannot get request.\n");
@@ -141,7 +143,7 @@ int main(void)
 	if ((request.operation < 0)
 	    || (request.operation > NR_POSIX_SYSCALL)) {
 	    /* リクエスト要求にあるオペレーションは、サポートしていない */
-	    error_response(&request, EP_NOSUP);
+	    error_response((RDVNO)rdvno, &request, EP_NOSUP);
 	} else {
 #ifdef DEBUG
 	  if ((request.operation != PSC_WRITE) &&
@@ -150,7 +152,7 @@ int main(void)
 		   syscall_table[request.operation].name);
 #endif
 
-	    res = (*syscall_table[request.operation].syscall) (&request);
+	    res = (*syscall_table[request.operation].syscall) ((RDVNO)rdvno, &request);
 #ifdef DEBUG
 	    if ((request.operation != PSC_WRITE) &&
 		(request.operation != PSC_READ))

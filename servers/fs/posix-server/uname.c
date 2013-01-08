@@ -20,7 +20,7 @@ Version 2, June 1991
 /* psc_uname_f -
  */
 W
-psc_uname_f (struct posix_request *req)
+psc_uname_f (RDVNO rdvno, struct posix_request *req)
 {
   W	errno;
 
@@ -30,10 +30,10 @@ psc_uname_f (struct posix_request *req)
 		    (VP)&system_name);
   if (errno)
     {
-      put_response (req, errno, -1, 0, 0);
+      put_response (rdvno, req, errno, -1, 0, 0);
       return (FAIL);
     }
 
-  put_response (req, EP_OK, 0, 0, 0);
+  put_response (rdvno, req, EP_OK, 0, 0, 0);
   return (SUCCESS);
 }  

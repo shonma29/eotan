@@ -43,8 +43,8 @@ Version 2, June 1991
  *
  */
 #include <services.h>
+#include <itron/rendezvous.h>
 #include "posix.h"
-#include "../port-manager/port-manager.h"
 
 
 /* init_port - 要求受け付け用のポートを初期化する
@@ -60,14 +60,14 @@ Version 2, June 1991
  */
 W init_port(void)
 {
-    T_CMBF arg;
+    T_CPOR arg;
 
-    arg.bufsz = 0;
-    arg.maxmsz = sizeof(struct posix_request);
-    arg.mbfatr = TA_TFIFO;
+    arg.poratr = TA_TFIFO;
+    arg.maxcmsz = sizeof(struct posix_request);
+    arg.maxrmsz = sizeof(struct posix_response);
 
     /* ポートを作成する */
-    if (cre_mbf(PORT_FS, &arg)) {
+    if (cre_por(PORT_FS, &arg)) {
 	/* ポートが作成できなかった */
 	return (FAIL);
     }
@@ -81,16 +81,15 @@ W init_port(void)
  */
 W get_request(struct posix_request * req)
 {
-    ER errno;
-    INT size;
+    ER_UINT size;
+    RDVNO rdvno;
 
-    size = sizeof(struct posix_request);
-    errno = rcv_mbf(req, &size, PORT_FS);
-    if (errno != E_OK) {
-	dbg_printf("[PM] get_request: rcv_mbf error %d\n", errno);
-	return (FAIL);
+    size = acp_por(PORT_FS, 0xffffffff, &rdvno, req);
+    if (size < 0) {
+	dbg_printf("[FS] get_request: acp_por error %d\n", size);
+	return size;
     }
-    return (SUCCESS);
+    return rdvno;
 }
 
 
@@ -98,7 +97,7 @@ W get_request(struct posix_request * req)
  *
  */
 W
-put_response(struct posix_request * req, W errno, W status, W ret1, W ret2)
+put_response(RDVNO rdvno, struct posix_request * req, W errno, W status, W ret1, W ret2)
 {
     static struct posix_response res;
     ER syserr;
@@ -116,7 +115,7 @@ put_response(struct posix_request * req, W errno, W status, W ret1, W ret2)
     res.ret2 = ret2;
 
     /* 要求元に送信する */
-    syserr = snd_mbf(req->receive_port, sizeof(res), &res);
+    syserr = rpl_rdv(rdvno, &res, sizeof(res));
     return (EP_OK);
 }
 
@@ -124,8 +123,8 @@ put_response(struct posix_request * req, W errno, W status, W ret1, W ret2)
 /* エラーになったことをリクエストの送り元に返す
  *
  */
-W error_response(struct posix_request * req, W errno)
+W error_response(RDVNO rdvno, struct posix_request * req, W errno)
 {
     /* 要求元に送信する */
-    return (put_response(req, errno, 0, 0, 0));
+    return (put_response(rdvno, req, errno, 0, 0, 0));
 }

@@ -49,37 +49,27 @@ int psys_exec(void *argp)
 {
     ER error;
     struct posix_request req;
-    struct posix_response res;
+    struct posix_response *res = (struct posix_response*)&req;
     struct a {
 	B *name;
-#if 0
-	 B(*argv)[];
-	 B(*envp)[];
-#else
 	B *stackp;
 	W stsize;
-#endif
     } *args = (struct a *) argp;
 
 
     req.param.par_execve.pathlen = strlen(args->name);
     req.param.par_execve.name = args->name;
-#if 0
-    req.param.par_execve.argv = args->argv;
-    req.param.par_execve.envp = args->envp;
-#else
     req.param.par_execve.stackp = args->stackp;
     req.param.par_execve.stsize = args->stsize;
-#endif
 
-    error = _make_connection(PSC_EXEC, &req, &res);
+    error = _make_connection(PSC_EXEC, &req);
     if (error != E_OK) {
 	/* What should I do? */
         return (error);
-    } else if (res.errno) {
-	ERRNO = res.errno;
+    } else if (res->errno) {
+	ERRNO = res->errno;
 	return (-1);
     }
 
-    return (res.status);
+    return (res->status);
 }

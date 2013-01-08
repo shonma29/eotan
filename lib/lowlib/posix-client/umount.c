@@ -32,21 +32,21 @@ psys_umount (void *argp)
 {
   ER			error;
   struct posix_request	req;
-  struct posix_response	res;
+  struct posix_response	*res = (struct posix_response*)&req;
   struct psc_umount *args = (struct psc_umount *)argp;
 
   req.param.par_umount.dirnamelen = args->dirnamelen;
   req.param.par_umount.dirname = args->dirname;
 
-  error = _make_connection(PSC_UMOUNT, &req, &res);
+  error = _make_connection(PSC_UMOUNT, &req);
 
   if (error != E_OK) {
       /* What should I do? */
   }
-  else if (res.errno) {
-    ERRNO = res.errno;
+  else if (res->errno) {
+    ERRNO = res->errno;
     return (-1);
   }
 
-  return (res.status);
+  return (res->status);
 }

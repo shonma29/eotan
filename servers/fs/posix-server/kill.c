@@ -19,16 +19,14 @@ Version 2, June 1991
 
 #include "thread.h"
 #include "posix.h"
-#include "lowlib.h"
 
-W psc_kill_f(struct posix_request *req)
+W psc_kill_f(RDVNO rdvno, struct posix_request *req)
 {
     struct proc *myprocp, *procp;
     struct posix_request preq;
     W mypid, wpid, exst;
     W i;
     ER errno;
-    struct lowlib_data lowlib_data;
 
     /* req->caller が task 1 の場合は，返事のメッセージを送らない */
 
@@ -37,7 +35,7 @@ W psc_kill_f(struct posix_request *req)
     if (errno) {
 	return errno;
 	if (req->caller != KERNEL_TASK) {
-	    put_response(req, EP_SRCH, 0, 0, 0);
+	    put_response(rdvno, req, EP_SRCH, 0, 0, 0);
 	}
     }
     myprocp->proc_exst = (-1);	/* 強制終了時のステータスは (-1) で良いか? */
@@ -46,7 +44,7 @@ W psc_kill_f(struct posix_request *req)
     if (errno) {
 	return errno;
 	if (req->caller != KERNEL_TASK) {
-	    put_response(req, EP_SRCH, 0, 0, 0);
+	    put_response(rdvno, req, EP_SRCH, 0, 0, 0);
 	}
     }
     wpid = procp->proc_wpid;
@@ -54,10 +52,9 @@ W psc_kill_f(struct posix_request *req)
 	(wpid == -1 || wpid == mypid || -wpid == myprocp->proc_pgid)) {
 	/* 親プロセスが自分を WAIT していればメッセージ送信 */
 	procp->proc_status = PS_RUN;
-	preq.receive_port = procp->proc_rvpt;
 	preq.operation = PSC_WAITPID;
 	exst = (myprocp->proc_exst << 8);
-	put_response(&preq, EP_OK, mypid, exst, 0);
+	put_response(rdvno, &preq, EP_OK, mypid, exst, 0);
 
 	/* エントリーの開放 */
 	proc_exit(mypid);
@@ -81,18 +78,13 @@ W psc_kill_f(struct posix_request *req)
     /* POSIX の vmtree のみを開放．仮想メモリーは del_tsk で開放 */
     destroy_proc_memory(myprocp, 0);
 
-    /* メインタスクの mbf の開放 */
-    errno = vget_reg(myprocp->proc_maintask, LOWLIB_DATA,
-		     sizeof(struct lowlib_data), &lowlib_data);
-    del_mbf(lowlib_data.recv_port);
-
     /* メインタスクの強制終了 */
     ter_tsk(myprocp->proc_maintask);
     del_tsk(myprocp->proc_maintask);
 
     if ((req->caller != KERNEL_TASK) &&
 	(req->caller != myprocp->proc_maintask)) {
-	put_response(req, EP_OK, 0, 0, 0);
+	put_response(rdvno, req, EP_OK, 0, 0, 0);
     }
     return (SUCCESS);
 }

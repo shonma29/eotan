@@ -39,24 +39,24 @@ psys_readdir (void *argp)
 {
   ER			error;
   struct posix_request	req;
-  struct posix_response	res;
+  struct posix_response	*res = (struct posix_response*)&req;
   struct psc_readdir *args = (struct psc_readdir *)argp;
 
   req.param.par_readdir.fileid = args->fileid;
   req.param.par_readdir.buf = args->buf;
   req.param.par_readdir.length = args->length;
 
-  error = _make_connection(PSC_READDIR, &req, &res);
+  error = _make_connection(PSC_READDIR, &req);
   if (error != E_OK)
     {
       /* What should I do? */
     }
 
-  else if (res.errno)
+  else if (res->errno)
     {
-      ERRNO = res.errno;
+      ERRNO = res->errno;
       return (-1);
     }
 
-  return (res.status);
+  return (res->status);
 }

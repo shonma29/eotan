@@ -55,7 +55,6 @@ void init_device(void)
     ID keyboard;
     ER result;
     W dev_desc;
-    T_CMBF pk_cmbf = { NULL, TA_TFIFO, 0, sizeof(DDEV_RES) };
 
     InitFileTable();
 
@@ -77,15 +76,6 @@ void init_device(void)
     __file_table__[STDERR].count = 0;
     __file_table__[STDERR].length = 0;
     __file_table__[STDERR].bufsize = BUFSIZE;
-
-    dev_recv = acre_mbf(&pk_cmbf);
-
-    if (dev_recv <= 0) {
-	dbg_printf("Init: Cannot allocate port%d\n", dev_recv);
-	ext_tsk();
-	/* DO NOT REACHED */
-    }
-
 }
 
 

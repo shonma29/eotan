@@ -21,7 +21,7 @@ Version 2, June 1991
 #include "posix.h"
 
 W
-psc_getpid_f (struct posix_request *req)
+psc_getpid_f (RDVNO rdvno, struct posix_request *req)
 {
   W	err;
   W	pid;
@@ -29,10 +29,10 @@ psc_getpid_f (struct posix_request *req)
   err = proc_get_pid (req->procid, &pid);
   if (err)
     {
-      put_response (req, err, -1, 0, 0);
+      put_response (rdvno, req, err, -1, 0, 0);
       return (FAIL);
     }
   
-  put_response (req, EP_OK, pid, 0, 0);
+  put_response (rdvno, req, EP_OK, pid, 0, 0);
   return (SUCCESS);
 }  

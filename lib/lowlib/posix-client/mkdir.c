@@ -39,24 +39,24 @@ psys_mkdir (void *argp)
 {
   ER			error;
   struct posix_request	req;
-  struct posix_response	res;
+  struct posix_response	*res = (struct posix_response*)&req;
   struct psc_mkdir *args = (struct psc_mkdir *)argp;
 
   req.param.par_mkdir.pathlen = args->pathlen;
   req.param.par_mkdir.path = args->path;
   req.param.par_mkdir.mode = args->mode;
 
-  error = _make_connection(PSC_MKDIR, &req, &res);
+  error = _make_connection(PSC_MKDIR, &req);
   if (error != E_OK)
     {
       /* What should I do? */
     }
 
-  else if (res.errno)
+  else if (res->errno)
     {
-      ERRNO = res.errno;
+      ERRNO = res->errno;
       return (-1);
     }
 
-  return (res.status);
+  return (res->status);
 }

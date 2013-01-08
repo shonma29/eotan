@@ -36,22 +36,22 @@ psys_setpgid (void *argp)
 {
   ER			error;
   struct posix_request	req;
-  struct posix_response	res;
+  struct posix_response	*res = (struct posix_response*)&req;
   struct psc_setpgid *args = (struct psc_setpgid *)argp;
 
   req.param.par_setpgid.gid = args->gid;
 
-  error = _make_connection(PSC_SETPGID, &req, &res);
+  error = _make_connection(PSC_SETPGID, &req);
   if (error != E_OK)
     {
       /* What should I do? */
     }
 
-  else if (res.errno)
+  else if (res->errno)
     {
-      ERRNO = res.errno;
+      ERRNO = res->errno;
       return (-1);
     }
 
-  return (res.status);
+  return (res->status);
 }

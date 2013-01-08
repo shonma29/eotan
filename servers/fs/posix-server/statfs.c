@@ -18,7 +18,7 @@ Version 2, June 1991
 #include "posix.h"
 
 W
-psc_statfs_f (struct posix_request *req)
+psc_statfs_f (RDVNO rdvno, struct posix_request *req)
 {
   struct statfs	result;
   ER		errno;
@@ -26,7 +26,7 @@ psc_statfs_f (struct posix_request *req)
   errno = fs_statfs (req->param.par_statfs.device, &result);
   if (errno)
     {
-      put_response (req, errno, -1, 0, 0);    
+      put_response (rdvno, req, errno, -1, 0, 0);    
       return (FAIL);
     }
 
@@ -38,9 +38,9 @@ psc_statfs_f (struct posix_request *req)
   errno = vput_reg (req->caller, req->param.par_statfs.fsp, sizeof (struct statfs), &result);
   if (errno)
     {
-      put_response (req, EP_FAULT, -1, 0, 0);
+      put_response (rdvno, req, EP_FAULT, -1, 0, 0);
       return (FAIL);
     }
-  put_response (req, EP_OK, 0, 0, 0);
+  put_response (rdvno, req, EP_OK, 0, 0, 0);
   return (SUCCESS);
 }

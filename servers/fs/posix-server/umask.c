@@ -20,7 +20,7 @@ Version 2, June 1991
 /* psc_umask_f - umask の設定
  */
 W
-psc_umask_f (struct posix_request *req)
+psc_umask_f (RDVNO rdvno, struct posix_request *req)
 {
   W	errno;
   W	old_umask;
@@ -32,7 +32,7 @@ psc_umask_f (struct posix_request *req)
   errno = proc_get_umask (req->procid, &old_umask);
   if (errno)
     {
-      put_response (req, errno, -1, 0, 0);
+      put_response (rdvno, req, errno, -1, 0, 0);
       return (FAIL);
     }
   
@@ -41,10 +41,10 @@ psc_umask_f (struct posix_request *req)
   errno = proc_set_umask (req->procid, req->param.par_umask.umask);
   if (errno)
     {
-      put_response (req, errno, -1, 0, 0);
+      put_response (rdvno, req, errno, -1, 0, 0);
       return (FAIL);
     }
 
-  put_response (req, EP_OK, old_umask, 0, 0);
+  put_response (rdvno, req, EP_OK, old_umask, 0, 0);
   return (SUCCESS);
 }  

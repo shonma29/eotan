@@ -21,7 +21,7 @@ Version 2, June 1991
 #include "posix.h"
 
 W
-psc_getppid_f (struct posix_request *req)
+psc_getppid_f (RDVNO rdvno, struct posix_request *req)
 {
   W	err;
   W	ppid;
@@ -29,11 +29,11 @@ psc_getppid_f (struct posix_request *req)
   err = proc_get_ppid (req->procid, &ppid);
   if (err)
     {
-      put_response (req, err, -1, 0, 0);
+      put_response (rdvno, req, err, -1, 0, 0);
       return (FAIL);
     }
   
-  put_response (req, EP_OK, ppid, 0, 0);
+  put_response (rdvno, req, EP_OK, ppid, 0, 0);
   return (SUCCESS);
 }  
 

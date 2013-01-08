@@ -34,23 +34,23 @@ int psys_waitpid(void *argp)
 {
     ER error;
     struct posix_request req;
-    struct posix_response res;
+    struct posix_response *res = (struct posix_response*)&req;
     struct psc_waitpid *args = (struct psc_waitpid *) argp;
 
     req.param.par_waitpid.pid = args->pid;
     req.param.par_waitpid.statloc = args->statloc;
     req.param.par_waitpid.opts = args->opts;
 
-    error = _make_connection(PSC_WAITPID, &req, &res);
+    error = _make_connection(PSC_WAITPID, &req);
     if (error != E_OK) {
 	/* What should I do? */
     }
-    else if (res.errno) {
-	ERRNO = res.errno;
+    else if (res->errno) {
+	ERRNO = res->errno;
 	return (-1);
     }
 
     if (args->statloc != NULL)
-	*(args->statloc) = res.ret1;
-    return (res.status);
+	*(args->statloc) = res->ret1;
+    return (res->status);
 }

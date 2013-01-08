@@ -58,7 +58,7 @@ int psys_fork(void *argp)
 {
     ER error;
     struct posix_request req;
-    struct posix_response res;
+    struct posix_response *res = (struct posix_response*)&req;
     ID child_main;
     ID child_signal;
     ID myself;
@@ -99,15 +99,15 @@ int psys_fork(void *argp)
     req.param.par_fork.main_task = child_main;
     req.param.par_fork.signal_task = child_signal;
 
-    error = _make_connection(PSC_FORK, &req, &res);
+    error = _make_connection(PSC_FORK, &req);
     if (error != E_OK) {
 	/* What should I do? */
 	del_tsk(child_main);
 	ERRNO = error;
 	return (-1);
-    } else if (res.errno) {
+    } else if (res->errno) {
 	del_tsk(child_main);
-	ERRNO = res.errno;
+	ERRNO = res->errno;
 	return (-1);
     }
 
@@ -122,5 +122,5 @@ int psys_fork(void *argp)
 
     /* 子プロセスを有効にする */
     sta_tsk(child_main, 0);
-    return (res.status);
+    return (res->status);
 }

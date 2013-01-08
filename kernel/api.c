@@ -207,12 +207,6 @@ static ER	if_flag_destroy(void *argp);
 static ER	if_flag_set(void *argp);
 static ER	if_flag_clear(void *argp);
 static ER	if_flag_wait(void *argp);
-static ER	if_queue_create(void *argp);
-static ER	if_queue_create_auto(void *argp);
-static ER	if_queue_destroy(void *argp);
-static ER	if_message_send(void *argp);
-static ER	if_message_send_nowait(void *argp);
-static ER	if_message_receive(void *argp);
 
 /* 時間管理用システムコール */
 static ER	if_time_set(void *argp);
@@ -282,12 +276,6 @@ static ER (*syscall_table[])(VP argp) =
   SVC_IF (flag_wait, 4),	/*   16 */
 
   /* メッセージバッファ */
-  SVC_IF (queue_create, 2),	/*   17	*/
-  SVC_IF (queue_create_auto, 1),	/*   18	*/
-  SVC_IF (queue_destroy, 1),	/*   19 */
-  SVC_IF (message_send, 3),	/*   20 */
-  SVC_IF (message_send_nowait, 3),	/*   21 */
-  SVC_IF (message_receive, 3),	/*   22 */
 
   /* 割りこみ管理 */
 
@@ -296,39 +284,39 @@ static ER (*syscall_table[])(VP argp) =
   /* システム管理 */
 
   /* 時間管理機能 */
-  SVC_IF (time_set, 1),	/*   23 */
-  SVC_IF (time_get, 1),	/*   24 */
-  SVC_IF (thread_delay, 1),	/*   25 */
-  SVC_IF (alarm_create, 2),	/*   26 */
+  SVC_IF (time_set, 1),	/*   17 */
+  SVC_IF (time_get, 1),	/*   18 */
+  SVC_IF (thread_delay, 1),	/*   19 */
+  SVC_IF (alarm_create, 2),	/*   20 */
 
-  SVC_IF (interrupt_bind, 2),	/*   27 */
+  SVC_IF (interrupt_bind, 2),	/*   21 */
 
-  SVC_IF (get_system_info, 3),	/*   28 */
-  SVC_IF (kernlog, 1),	/*   29 */
+  SVC_IF (get_system_info, 3),	/*   22 */
+  SVC_IF (kernlog, 1),	/*   23 */
 
   /* 仮想メモリ管理システムコール */	
-  SVC_IF (region_create, 7),	/*   30 */
-  SVC_IF (region_destroy, 2),	/*   31 */
-  SVC_IF (region_map, 3),	/*   32 */
-  SVC_IF (region_unmap, 3),	/*   33 */
-  SVC_IF (region_duplicate, 3),	/*   34 */
-  SVC_IF (region_put, 4),	/*   35 */
-  SVC_IF (region_get, 4),	/*   36 */
-  SVC_IF (region_get_status, 3),	/*   37 */
-  SVC_IF (get_physical_address, 3),	/*   38 */
+  SVC_IF (region_create, 7),	/*   24 */
+  SVC_IF (region_destroy, 2),	/*   25 */
+  SVC_IF (region_map, 3),	/*   26 */
+  SVC_IF (region_unmap, 3),	/*   27 */
+  SVC_IF (region_duplicate, 3),	/*   28 */
+  SVC_IF (region_put, 4),	/*   29 */
+  SVC_IF (region_get, 4),	/*   30 */
+  SVC_IF (region_get_status, 3),	/*   31 */
+  SVC_IF (get_physical_address, 3),	/*   32 */
 
   /* その他のシステムコール */
-  SVC_IF (misc, 2),	/*   39 */
-  SVC_IF (mpu_copy_stack, 4),	/*   40 */
-  SVC_IF (mpu_set_context, 4),	/*   41 */
-  SVC_IF (mpu_use_float, 1),	/*   42 */
+  SVC_IF (misc, 2),	/*   33 */
+  SVC_IF (mpu_copy_stack, 4),	/*   34 */
+  SVC_IF (mpu_set_context, 4),	/*   35 */
+  SVC_IF (mpu_use_float, 1),	/*   36 */
 
-  SVC_IF (port_create, 2),	/*   43 */
-  SVC_IF (port_create_auto, 1),	/*   44 */
-  SVC_IF (port_destroy, 1),	/*   45 */
-  SVC_IF (port_call, 4),	/*   46 */
-  SVC_IF (port_accept, 4),	/*   47 */
-  SVC_IF (port_reply, 3),	/*   48 */
+  SVC_IF (port_create, 2),	/*   37 */
+  SVC_IF (port_create_auto, 1),	/*   38 */
+  SVC_IF (port_destroy, 1),	/*   39 */
+  SVC_IF (port_call, 4),	/*   40 */
+  SVC_IF (port_accept, 4),	/*   41 */
+  SVC_IF (port_reply, 3),	/*   42 */
 };
 
 #define NSYSCALL (sizeof (syscall_table) / sizeof (syscall_table[0]))
@@ -573,67 +561,6 @@ static ER if_flag_wait(VP argp)
 
     return (flag_wait
 	    (args->p_flgptn, args->flgid, args->waiptn, args->wfmode));
-}
-
-static ER if_queue_create(VP argp)
-{
-    struct {
-	ID id;
-	T_CMBF *pk_cmbf;
-    } *args = argp;
-
-    return (queue_create(args->id, args->pk_cmbf));
-}
-
-static ER if_queue_create_auto(VP argp)
-{
-    struct {
-	T_CMBF *pk_cmbf;
-    } *args = argp;
-
-    return (queue_create_auto(args->pk_cmbf));
-}
-
-static ER if_queue_destroy(VP argp)
-{
-    struct {
-	ID id;
-    } *args = argp;
-
-    return (queue_destroy(args->id));
-}
-
-static ER if_message_send(VP argp)
-{
-    struct {
-	ID id;
-	INT size;
-	VP msg;
-    } *args = argp;
-
-    return (message_send(args->id, args->size, args->msg));
-}
-
-static ER if_message_send_nowait(VP argp)
-{
-    struct {
-	ID id;
-	INT size;
-	VP msg;
-    } *args = argp;
-
-    return (message_send_nowait(args->id, args->size, args->msg));
-}
-
-static ER if_message_receive(VP argp)
-{
-    struct {
-	VP msg;
-	INT *size;
-	ID id;
-    } *args = argp;
-
-    return (message_receive(args->msg, args->size, args->id));
 }
 
 /*

@@ -91,7 +91,6 @@ Version 2, June 1991
 #include "../../servers/fs/posix_mm.h"
 #include "init.h"
 
-static ID recv_port;
 static ID myself;
 
 static W posix_mountroot(W root_device);
@@ -105,21 +104,13 @@ W posix_init(W root_device)
     struct posix_request req;
     struct posix_response res;
     INT rsize;
-    T_CMBF pk_cmbf = { NULL, TA_TFIFO, 0, sizeof(res) };
-
-    recv_port = acre_mbf(&pk_cmbf);
-    if (recv_port == 0) {
-	printf("Cannot allocate port\n");
-	return (E_NOMEM);
-    }
 
     if (get_tid(&myself) != E_OK) {
 	printf("Can not get own taskid.\n");
 	return (E_SYS);
     }
 #ifdef DEBUG
-    printf("init: pinit, send port = %d, receive port = %d\n",
-	   PORT_FS, recv_port);
+    printf("init: pinit, send port = %d\n", PORT_FS);
 #endif
 
     /* ROOT ファイルシステムの設定
@@ -131,7 +122,6 @@ W posix_init(W root_device)
 
     /* init プロセスの情報の設定
      */
-    req.receive_port = recv_port;
     req.msg_length = sizeof(res);
     req.operation = PSC_MISC;
     req.procid = 0;
@@ -148,10 +138,7 @@ W posix_init(W root_device)
     req.param.par_misc.arg.set_procinfo.proc_ppid = 0;
     req.param.par_misc.arg.set_procinfo.proc_access =
 	VM_READ | VM_WRITE | VM_EXEC;
-    snd_mbf(PORT_FS, sizeof(req), &req);
-
-    rsize = sizeof(res);
-    rcv_mbf(&res, &rsize, recv_port);
+    rsize = cal_por(PORT_FS, 0xffffffff, &req, sizeof(req));
 
     return (E_OK);
 }
@@ -160,20 +147,20 @@ W posix_init(W root_device)
 static W posix_mountroot(W root_device)
 {
     struct posix_request req;
-    struct posix_response res;
+    struct posix_response *res = (struct posix_response *)&req;
     INT rsize;
 
-    req.receive_port = recv_port;
     req.msg_length = sizeof(req);
     req.operation = PSC_MOUNTROOT;
     req.param.par_mountroot.device = root_device;
     req.param.par_mountroot.fstype = 1;
     req.param.par_mountroot.option = 0;
-    snd_mbf(PORT_FS, sizeof(req), &req);
-    rsize = sizeof(res);
-    rcv_mbf(&res, &rsize, recv_port);
-    if (res.errno) {
-	printf("mountroot error = %d\n", (int) res.errno);
+    rsize = cal_por(PORT_FS, 0xffffffff, &req, sizeof(req));
+    if (rsize < 0) {
+	printf("cal_por error = %d\n", rsize);
+    }
+    else if (res->errno) {
+	printf("mountroot error = %d\n", (int) res->errno);
     } else {
 	printf("mountroot success.\n");
     }

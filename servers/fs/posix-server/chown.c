@@ -19,7 +19,7 @@ Version 2, June 1991
 
 #include "posix.h"
 
-W psc_chown_f(struct posix_request *req)
+W psc_chown_f(RDVNO rdvno, struct posix_request *req)
 {
 #ifdef USE_ALLOCA
     B *path;
@@ -34,7 +34,7 @@ W psc_chown_f(struct posix_request *req)
 #ifdef USE_ALLOCA
     path = alloca(req->param.par_chown.pathlen + 1);
     if (path == 0) {
-	put_response(req, EP_NOMEM, -1, 0, 0);
+	put_response(rdvno, req, EP_NOMEM, -1, 0, 0);
 	return (FAIL);
     }
 #endif
@@ -44,7 +44,7 @@ W psc_chown_f(struct posix_request *req)
 
     if (vget_reg(req->caller, req->param.par_chown.path,
 		 req->param.par_chown.pathlen + 1, path)) {
-	put_response(req, EP_INVAL, -1, 0, 0);
+	put_response(rdvno, req, EP_INVAL, -1, 0, 0);
 	return (FAIL);
     }
 
@@ -53,24 +53,24 @@ W psc_chown_f(struct posix_request *req)
 	startip = rootfile;
     } else {
 	if (proc_get_cwd(req->procid, &startip)) {
-	    put_response(req, EP_INVAL, -1, 0, 0);
+	    put_response(rdvno, req, EP_INVAL, -1, 0, 0);
 	    return (FAIL);
 	}
     }
 
     if (proc_get_euid(req->procid, &acc.uid)) {
-	put_response(req, EP_INVAL, -1, 0, 0);
+	put_response(rdvno, req, EP_INVAL, -1, 0, 0);
 	return (FAIL);
     }
 
     if (proc_get_egid(req->procid, &acc.gid)) {
-	put_response(req, EP_INVAL, -1, 0, 0);
+	put_response(rdvno, req, EP_INVAL, -1, 0, 0);
 	return (FAIL);
     }
 
     err = fs_lookup(startip, path, O_RDWR, 0, &acc, &ipp);
     if (err) {
-	put_response(req, EP_NOENT, -1, 0, 0);
+	put_response(rdvno, req, EP_NOENT, -1, 0, 0);
 	return (FAIL);
     }
 
@@ -81,12 +81,12 @@ W psc_chown_f(struct posix_request *req)
 
     /* fs_close_file で行う処理 */
     if (fs_sync_file(ipp)) {
-	put_response(req, EP_INVAL, -1, 0, 0);
+	put_response(rdvno, req, EP_INVAL, -1, 0, 0);
 	dealloc_inode(ipp);
 	return (FAIL);
     }
 
     dealloc_inode(ipp);
-    put_response(req, EP_OK, 0, 0, 0);
+    put_response(rdvno, req, EP_OK, 0, 0, 0);
     return (SUCCESS);
 }

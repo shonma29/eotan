@@ -191,7 +191,12 @@ init_signal (void)
   /*
    * シグナル受信用のメッセージポートを初期化する。
    */
+/*TODO cre_dtq */
+#if 0
   sigport = alloc_port (sizeof(W), 1);		/* メッセージバッファの取得 */
+#else
+  sigport = 0;
+#endif
 
   /*
    * シグナルを受信するポートをプロセスマネージャに登録する。

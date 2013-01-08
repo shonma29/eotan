@@ -36,25 +36,19 @@ psys_getegid (void *argp)
 {
   ER			error;
   struct posix_request	req;
-  struct posix_response	res;
-#if 0
-  struct psc_getegid
-    {
-      /* void */
-    } *args = (struct psc_getegid *)argp;
-#endif
+  struct posix_response	*res = (struct posix_response*)&req;
 
-  error = _make_connection(PSC_GETEGID, &req, &res);
+  error = _make_connection(PSC_GETEGID, &req);
   if (error != E_OK)
     {
       /* What should I do? */
     }
 
-  else if (res.errno)
+  else if (res->errno)
     {
-      ERRNO = res.errno;
+      ERRNO = res->errno;
       return (-1);
     }
 
-  return (res.status);
+  return (res->status);
 }

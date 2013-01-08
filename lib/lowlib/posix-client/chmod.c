@@ -39,24 +39,24 @@ psys_chmod (void *argp)
 {
   ER			error;
   struct posix_request	req;
-  struct posix_response	res;
+  struct posix_response	*res = (struct posix_response*)&res;
   struct psc_chmod *args = (struct psc_chmod *)argp;
 
   req.param.par_chmod.pathlen = args->pathlen;
   req.param.par_chmod.path = args->path;
   req.param.par_chmod.mode = args->mode;
 
-  error = _make_connection(PSC_CHMOD, &req, &res);
+  error = _make_connection(PSC_CHMOD, &req);
   if (error != E_OK)
     {
       /* What should I do? */
     }
 
-  else if (res.errno)
+  else if (res->errno)
     {
-      ERRNO = res.errno;
+      ERRNO = res->errno;
       return (-1);
     }
 
-  return (res.status);
+  return (res->status);
 }

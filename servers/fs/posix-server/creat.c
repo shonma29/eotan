@@ -31,7 +31,7 @@ extern W sfs_open_device(ID device, W * rsize);
 
 /* psc_creat_f - ファイルを作成する
  */
-W psc_creat_f(struct posix_request *req)
+W psc_creat_f(RDVNO rdvno, struct posix_request *req)
 {
 #ifdef USE_ALLOCA
     B *pathname;
@@ -49,14 +49,14 @@ W psc_creat_f(struct posix_request *req)
     errno = proc_alloc_fileid(req->procid, &fileid);
     if (errno) {
 	/* メモリ取得エラー */
-	put_response(req, EP_NOMEM, 0, 0, 0);
+	put_response(rdvno, req, EP_NOMEM, 0, 0, 0);
 	return (FAIL);
     }
 #ifdef USE_ALLOCA
     pathname = alloca(req->param.par_creat.pathlen);
     if (pathname == NULL) {
 	/* メモリ取得エラー */
-	put_response(req, EP_NOMEM, 0, 0, 0);
+	put_response(rdvno, req, EP_NOMEM, 0, 0, 0);
 	return (FAIL);
     }
 #endif
@@ -66,9 +66,9 @@ W psc_creat_f(struct posix_request *req)
     if (errno) {
 	/* パス名のコピーエラー */
 	if (errno == E_PAR)
-	    put_response(req, EP_INVAL, 0, 0, 0);
+	    put_response(rdvno, req, EP_INVAL, 0, 0, 0);
 	else
-	    put_response(req, EP_FAULT, 0, 0, 0);
+	    put_response(rdvno, req, EP_FAULT, 0, 0, 0);
 
 	return (FAIL);
     }
@@ -76,7 +76,7 @@ W psc_creat_f(struct posix_request *req)
     if (*pathname != '/') {
 	errno = proc_get_cwd(req->procid, &startip);
 	if (errno) {
-	    put_response(req, errno, 0, 0, 0);
+	    put_response(rdvno, req, errno, 0, 0, 0);
 	    return (FAIL);
 	}
     } else {
@@ -84,19 +84,19 @@ W psc_creat_f(struct posix_request *req)
     }
     errno = proc_get_uid(req->procid, &(acc.uid));
     if (errno) {
-	put_response(req, errno, 0, 0, 0);
+	put_response(rdvno, req, errno, 0, 0, 0);
 	return (FAIL);
     }
 
     errno = proc_get_gid(req->procid, &(acc.gid));
     if (errno) {
-	put_response(req, errno, 0, 0, 0);
+	put_response(rdvno, req, errno, 0, 0, 0);
 	return (FAIL);
     }
 
     errno = proc_get_umask(req->procid, &umask);
     if (errno) {
-	put_response(req, errno, -1, 0, 0);
+	put_response(rdvno, req, errno, -1, 0, 0);
 	return (FAIL);
     }
 
@@ -107,7 +107,7 @@ W psc_creat_f(struct posix_request *req)
 
     if (errno) {
 	/* ファイルがオープンできない */
-	put_response(req, errno, 0, 0, 0);
+	put_response(rdvno, req, errno, 0, 0, 0);
 	return (FAIL);
     }
 
@@ -115,7 +115,7 @@ W psc_creat_f(struct posix_request *req)
 	/* ファイルは、ディレクトリだったエラーとする */
 
 	fs_close_file(newip);
-	put_response(req, EP_ISDIR, -1, 0, 0);
+	put_response(rdvno, req, EP_ISDIR, -1, 0, 0);
 	return (FAIL);
     } else if (newip->i_mode & FS_FMT_DEV) {
 	/* スペシャルファイルだった */
@@ -126,16 +126,16 @@ W psc_creat_f(struct posix_request *req)
 	}
 	if (errno != E_OK) {
 	    fs_close_file(newip);
-	    put_response(req, EP_ACCESS, -1, 0, 0);
+	    put_response(rdvno, req, EP_ACCESS, -1, 0, 0);
 	    return (FAIL);
 	}
     }
 
     if (proc_set_file(req->procid, fileid, O_WRONLY, newip)) {
 	fs_close_file(newip);
-	put_response(req, EP_INVAL, -1, 0, 0);
+	put_response(rdvno, req, EP_INVAL, -1, 0, 0);
 	return (FAIL);
     }
-    put_response(req, EP_OK, fileid, 0, 0);
+    put_response(rdvno, req, EP_OK, fileid, 0, 0);
     return (SUCCESS);
 }

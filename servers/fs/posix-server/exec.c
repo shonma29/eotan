@@ -33,7 +33,7 @@ Version 2, June 1991
 
 /* psc_exec_f - 指定されたプログラムファイルをメモリ中に読み込む
  */
-W psc_exec_f(struct posix_request *req)
+W psc_exec_f(RDVNO rdvno, struct posix_request *req)
 {
 #ifdef USE_ALLOCA
     B *pathname;
@@ -49,7 +49,7 @@ W psc_exec_f(struct posix_request *req)
     pathname = alloca(req->param.par_execve.pathlen + 1);
     if (pathname == NULL) {
 	/* メモリ取得エラー */
-	put_response(req, EP_NOMEM, -1, 0, 0);
+	put_response(rdvno, req, EP_NOMEM, -1, 0, 0);
 	return (FAIL);
     }
 #endif
@@ -64,9 +64,9 @@ W psc_exec_f(struct posix_request *req)
     if (errno) {
 	/* パス名のコピーエラー */
 	if (errno == E_PAR)
-	    put_response(req, EP_INVAL, -1, 0, 0);
+	    put_response(rdvno, req, EP_INVAL, -1, 0, 0);
 	else
-	    put_response(req, EP_FAULT, -1, 0, 0);
+	    put_response(rdvno, req, EP_FAULT, -1, 0, 0);
 
 	return (FAIL);
     }
@@ -78,7 +78,7 @@ W psc_exec_f(struct posix_request *req)
 	if (proc_get_vmtree(req->procid) != NULL) {
 	    /* 呼び出しを行ったプロセスがまだ生き残っていた場合 */
 	    /*エラーメッセージを返す */
-	    put_response(req, errno, -1, 0, 0);
+	    put_response(rdvno, req, errno, -1, 0, 0);
 	} else {
 	    /* 既にプロセスの仮想メモリが開放されている場合 */
 	    /* exit が実行されることは無いので，ここで開放する */

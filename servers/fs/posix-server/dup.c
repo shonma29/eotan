@@ -29,7 +29,7 @@ Version 2, June 1991
 /* psc_dup_f - ファイル記述子の複製
  */
 W
-psc_dup_f (struct posix_request *req)
+psc_dup_f (RDVNO rdvno, struct posix_request *req)
 {
   W		errno;
   struct file	*fp;
@@ -41,7 +41,7 @@ psc_dup_f (struct posix_request *req)
   errno = proc_get_file (req->procid, req->param.par_dup.fileid, &fp);
   if (errno)
     {
-      put_response (req, errno, -1, 0, 0);
+      put_response (rdvno, req, errno, -1, 0, 0);
       return (FAIL);
     }
 
@@ -50,14 +50,14 @@ psc_dup_f (struct posix_request *req)
     {
       /* 複製するファイル記述子の番号がおかしかった
        */
-      put_response (req, EP_BADF, -1, 0, 0);
+      put_response (rdvno, req, EP_BADF, -1, 0, 0);
       return (FAIL);
     }
 
   errno = proc_alloc_fileid (req->procid, &newfileid);
   if (errno)
     {
-      put_response (req, errno, -1, 0, 0);
+      put_response (rdvno, req, errno, -1, 0, 0);
       return (FAIL);
     }
 
@@ -65,10 +65,10 @@ psc_dup_f (struct posix_request *req)
   errno = proc_set_file (req->procid, newfileid, fp->f_omode, fp->f_inode);
   if (errno)
     {
-      put_response (req, errno, -1, 0, 0);
+      put_response (rdvno, req, errno, -1, 0, 0);
       return (FAIL);
     }
 
-  put_response (req, EP_OK, newfileid, 0, 0);
+  put_response (rdvno, req, EP_OK, newfileid, 0, 0);
   return (SUCCESS);
 }  

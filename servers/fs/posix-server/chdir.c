@@ -25,7 +25,7 @@ Version 2, June 1991
 
 #include "posix.h"
 
-W psc_chdir_f(struct posix_request *req)
+W psc_chdir_f(RDVNO rdvno, struct posix_request *req)
 {
     struct inode *oldip;
 #ifdef USE_ALLOCA
@@ -41,7 +41,7 @@ W psc_chdir_f(struct posix_request *req)
 #ifdef USE_ALLOCA
     path = alloca(req->param.par_chmod.pathlen + 1);
     if (path == 0) {
-	put_response(req, EP_NOMEM, -1, 0, 0);
+	put_response(rdvno, req, EP_NOMEM, -1, 0, 0);
 	return (FAIL);
     }
 #endif
@@ -51,13 +51,13 @@ W psc_chdir_f(struct posix_request *req)
 
     if (vget_reg(req->caller, req->param.par_chmod.path,
 		 req->param.par_chmod.pathlen + 1, path)) {
-	put_response(req, EP_INVAL, -1, 0, 0);
+	put_response(rdvno, req, EP_INVAL, -1, 0, 0);
 	return (FAIL);
     }
 
     err = proc_get_cwd(req->procid, &oldip);
     if (err) {
-	put_response(req, err, -1, 0, 0);
+	put_response(rdvno, req, err, -1, 0, 0);
 	return (FAIL);
     }
 
@@ -67,7 +67,7 @@ W psc_chdir_f(struct posix_request *req)
     } else {
 #ifdef notdef
 	if (proc_get_cwd(req->procid, &startip)) {
-	    put_response(req, EP_INVAL, -1, 0, 0);
+	    put_response(rdvno, req, EP_INVAL, -1, 0, 0);
 	    return (FAIL);
 	}
 #else
@@ -77,18 +77,18 @@ W psc_chdir_f(struct posix_request *req)
 
 
     if (proc_get_euid(req->procid, &acc.uid)) {
-	put_response(req, EP_INVAL, -1, 0, 0);
+	put_response(rdvno, req, EP_INVAL, -1, 0, 0);
 	return (FAIL);
     }
 
     if (proc_get_egid(req->procid, &acc.gid)) {
-	put_response(req, EP_INVAL, -1, 0, 0);
+	put_response(rdvno, req, EP_INVAL, -1, 0, 0);
 	return (FAIL);
     }
 
     err = fs_lookup(startip, path, O_RDONLY, 0, &acc, &ipp);
     if (err) {
-	put_response(req, err, -1, 0, 0);
+	put_response(rdvno, req, err, -1, 0, 0);
 	return (FAIL);
     }
 
@@ -98,23 +98,23 @@ W psc_chdir_f(struct posix_request *req)
 	 * 
 	 */
 	fs_close_file(ipp);
-	put_response(req, EP_NOTDIR, -1, 0, 0);
+	put_response(rdvno, req, EP_NOTDIR, -1, 0, 0);
 	return (FAIL);
     }
 
     err = permit(ipp, &acc, X_BIT);
     if (err) {
-	put_response(req, err, -1, 0, 0);
+	put_response(rdvno, req, err, -1, 0, 0);
 	return (FAIL);
     }
 
     err = proc_set_cwd(req->procid, ipp);
     if (err) {
-	put_response(req, err, -1, 0, 0);
+	put_response(rdvno, req, err, -1, 0, 0);
 	return (FAIL);
     }
 
     dealloc_inode(oldip);
-    put_response(req, EP_OK, 0, 0, 0);
+    put_response(rdvno, req, EP_OK, 0, 0, 0);
     return (SUCCESS);
 }

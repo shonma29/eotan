@@ -108,8 +108,6 @@ Version 2, June 1991
 /*
  * 入出力を行う。
  */
-ID dev_recv;			/* デバイスドライバからの返答用 */
-
 extern void lowlib_load (B *name);
 static void exec(char *);
 static void banner(void);

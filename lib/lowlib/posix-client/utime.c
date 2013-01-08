@@ -36,24 +36,24 @@ psys_utime (void *argp)
 {
   ER			error;
   struct posix_request	req;
-  struct posix_response	res;
+  struct posix_response	*res = (struct posix_response*)&req;
   struct psc_utime *args = (struct psc_utime *)argp;
 
   req.param.par_utime.pathlen = args->pathlen;
   req.param.par_utime.path = args->path;
   req.param.par_utime.buf = args->buf;
 
-  error = _make_connection(PSC_UTIME, &req, &res);
+  error = _make_connection(PSC_UTIME, &req);
   if (error != E_OK)
     {
       /* What should I do? */
     }
 
-  else if (res.errno)
+  else if (res->errno)
     {
-      ERRNO = res.errno;
+      ERRNO = res->errno;
       return (-1);
     }
 
-  return (res.status);
+  return (res->status);
 }

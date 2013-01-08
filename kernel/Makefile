@@ -1,3 +1,4 @@
+
 # $Revision: 1.14 $
 #
 #
@@ -25,13 +26,11 @@ ENTRY=startup
 OBJS= \
 	error.o \
 	main.o \
-	kalloc.o \
 	pmemory.o \
 	printk.o \
 	api.o \
 	thread.o \
 	time.o \
-	message.o \
 	flag.o \
 	lowlib.o \
 	posix.o \

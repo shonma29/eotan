@@ -25,13 +25,13 @@ Version 2, June 1991
  *
  */
 #include <services.h>
+#include <itron/rendezvous.h>
 #include "../lowlib.h"
 
 ER
 _make_connection(W wOperation,
-		 struct posix_request *req, struct posix_response *res)
+		 struct posix_request *req)
 {
-    ER error;
     W rsize;
     ID myself;
 
@@ -39,16 +39,13 @@ _make_connection(W wOperation,
 	return (EP_PERM);
     }
 
-    req->receive_port = lowlib_data->recv_port;
     req->msg_length = sizeof(struct posix_request);
     req->operation = wOperation;
     req->procid = MY_PID;
     req->caller = myself;
-    snd_mbf(PORT_FS, sizeof(struct posix_request), req);
+    rsize = cal_por(PORT_FS, 0xffffffff, req, sizeof(struct posix_request));
 
-    rsize = sizeof(struct posix_response);
-    error = rcv_mbf(res, (INT *) & rsize, lowlib_data->recv_port);
-    if (error) {
+    if (rsize < 0) {
 	return (EP_PERM);
     }
 

@@ -26,24 +26,24 @@ psys_getdents (void *argp)
 {
   ER			error;
   struct posix_request	req;
-  struct posix_response	res;
+  struct posix_response	*res = (struct posix_response*)&req;
   struct psc_getdents *args = (struct psc_getdents *)argp;
 
   req.param.par_getdents.fileid = args->fileid;
   req.param.par_getdents.buf = args->buf;
   req.param.par_getdents.length = args->length;
 
-  error = _make_connection(PSC_GETDENTS, &req, &res);
+  error = _make_connection(PSC_GETDENTS, &req);
   if (error != E_OK)
     {
       /* What should I do? */
     }
 
-  else if (res.errno)
+  else if (res->errno)
     {
-      ERRNO = res.errno;
+      ERRNO = res->errno;
       return (-1);
     }
 
-  return (res.status);
+  return (res->status);
 }

@@ -20,7 +20,7 @@ Version 2, June 1991
 /* psc_setgid_f - プロセスのグループ ID を設定する
  */
 W
-psc_setgid_f (struct posix_request *req)
+psc_setgid_f (RDVNO rdvno, struct posix_request *req)
 {
   W	uid;
   W	errno;
@@ -28,23 +28,23 @@ psc_setgid_f (struct posix_request *req)
   errno = proc_get_euid (req->procid, &uid);
   if (errno)
     {
-      put_response (req, errno, 0, -1, 0);
+      put_response (rdvno, req, errno, 0, -1, 0);
       return (FAIL);
     }
 
   if (uid != 0)
     {
-      put_response (req, EP_PERM, errno, -1, 0);
+      put_response (rdvno, req, EP_PERM, errno, -1, 0);
       return (FAIL);
     }
 
   errno = proc_set_egid (req->procid, req->param.par_setgid.gid);
   if (errno)
     {
-      put_response (req, errno, 0, -1, 0);
+      put_response (rdvno, req, errno, 0, -1, 0);
       return (FAIL);
     }
 
-  put_response (req, EP_OK, 0, 0, 0);
+  put_response (rdvno, req, EP_OK, 0, 0, 0);
   return (SUCCESS);
 }  

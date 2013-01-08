@@ -39,23 +39,23 @@ psys_remove (void *argp)
 {
   ER			error;
   struct posix_request	req;
-  struct posix_response	res;
+  struct posix_response	*res = (struct posix_response*)&req;
   struct psc_remove *args = (struct psc_remove *)argp;
 
   req.param.par_remove.pathlen = args->pathlen;
   req.param.par_access.path = args->path;
 
-  error = _make_connection(PSC_REMOVE, &req, &res);
+  error = _make_connection(PSC_REMOVE, &req);
   if (error != E_OK)
     {
       /* What should I do? */
     }
 
-  else if (res.errno)
+  else if (res->errno)
     {
-      ERRNO = res.errno;
+      ERRNO = res->errno;
       return (-1);
     }
 
-  return (res.status);
+  return (res->status);
 }

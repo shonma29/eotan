@@ -39,24 +39,24 @@ psys_write (void *argp)
 {
   ER			error;
   struct posix_request	req;
-  struct posix_response res;
+  struct posix_response *res = (struct posix_response*)&req;
   struct psc_write *args = (struct psc_write *)argp;
 
   req.param.par_write.fileid = args->fileid;
   req.param.par_write.buf = args->buf;
   req.param.par_write.length = args->length;
 
-  error = _make_connection(PSC_WRITE, &req, &res);
+  error = _make_connection(PSC_WRITE, &req);
   if (error != E_OK)
     {
       /* What should I do? */
     }
 
-  else if (res.errno)
+  else if (res->errno)
     {
-      ERRNO = res.errno;
+      ERRNO = res->errno;
       return (-1);
     }
 
-  return (res.status);
+  return (res->status);
 }

@@ -39,7 +39,7 @@ psys_chown (void *argp)
 {
   ER			error;
   struct posix_request	req;
-  struct posix_response	res;
+  struct posix_response	*res = (struct posix_response*)&req;
   struct psc_chown *args = (struct psc_chown *)argp;
 
   req.param.par_chown.pathlen = args->pathlen;
@@ -47,17 +47,17 @@ psys_chown (void *argp)
   req.param.par_chown.uid = args->uid;
   req.param.par_chown.gid = args->gid;
 
-  error = _make_connection(PSC_CHOWN, &req, &res);
+  error = _make_connection(PSC_CHOWN, &req);
   if (error != E_OK)
     {
       /* What should I do? */
     }
 
-  else if (res.errno)
+  else if (res->errno)
     {
-      ERRNO = res.errno;
+      ERRNO = res->errno;
       return (-1);
     }
 
-  return (res.status);
+  return (res->status);
 }

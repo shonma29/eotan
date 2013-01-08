@@ -48,7 +48,6 @@ W sfs_write_device(ID device, B * buf, W start, W length, W * rlength)
 	return (EP_INVAL);
     }
 
-    packet.req.header.mbfid = 0;
     packet.req.header.msgtyp = DEV_WRI;
     packet.req.body.wri_req.dd = dd;
     packet.req.body.wri_req.start = start;
@@ -88,7 +87,6 @@ W sfs_read_device(ID device, B * buf, W start, W length, W * rlength)
 
     *rlength = 0;
     for (rest_length = length; rest_length > 0; rest_length -= BLOCK_SIZE) {
-	packet.req.header.mbfid = 0;
 	packet.req.header.msgtyp = DEV_REA;
 	packet.req.body.rea_req.dd = dd;
 	packet.req.body.rea_req.start = start + (length - rest_length);
@@ -131,7 +129,6 @@ W sfs_open_device(ID device, W * rsize)
 	return (errno);
     }
 
-    packet.req.header.mbfid = 0;
     packet.req.header.msgtyp = DEV_OPN;
     packet.req.body.opn_req.dd = dd;
     rlength = cal_por(send_port, 0xffffffff, &packet, sizeof(packet.req));
@@ -161,7 +158,6 @@ W sfs_close_device(ID device)
 	return (errno);
     }
 
-    packet.req.header.mbfid = 0;
     packet.req.header.msgtyp = DEV_CLS;
     packet.req.body.cls_req.dd = dd;
     rsize = cal_por(send_port, 0xffffffff, &packet, sizeof(packet.req));

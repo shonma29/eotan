@@ -198,44 +198,3 @@ find_port (B *name, ID *rport)
 #endif /* DEBUG */
   return (buf.recv_msg.error);
 }
-
-/*
- * メッセージバッファを生成する。
- * メッセージバッファ ID は、自動的に空いているものを使用する。
- *
- */
-ID
-alloc_port (W size, W max_entry)
-{
-  ID		msg_port;
-  T_CMBF	create_argument;
-
-  /*
-   * 要求受けつけのためのメッセージバッファを作成する。
-   * メッセージバッファの ID は特に決まっていない。空いているメッセー
-   * ジバッファを適当に選ぶ。
-   */
-  create_argument.bufsz  = size;
-  create_argument.maxmsz = size * max_entry;
-  create_argument.mbfatr = TA_TFIFO;
-  for (msg_port = MIN_USERMBFID;
-       msg_port <= MAX_USERMBFID;
-       msg_port++)
-    {
-      if (cre_mbf (msg_port, &create_argument) == E_OK)
-	{
-	  /*
-	   * メッセージバッファの取得に成功した。
-	   */
-	  return (msg_port);
-	}
-    }
-
-  /*
-   * メッセージバッファが取得できなかった。
-   */
-#ifdef DEBUG
-  dbg_printf ("posix.process server: cannot allocate messege buffer\n");
-#endif /* DEBUG */
-  return (0);
-}

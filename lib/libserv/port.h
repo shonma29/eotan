@@ -18,8 +18,6 @@ Version 2, June 1991
 
 /* port_manager.c */
 extern PORT_MANAGER_ERROR	find_port (B *name, ID *rport);
-extern ID			alloc_port (W size, W max_entry);
-
 extern PORT_MANAGER_ERROR	regist_port (port_name *name, ID port);
 
 #endif /* __LIBKERN_PORT_H__ */

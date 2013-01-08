@@ -18,7 +18,7 @@ Version 2, June 1991
 #include "posix.h"
 
 W
-psc_setuid_f (struct posix_request *req)
+psc_setuid_f (RDVNO rdvno, struct posix_request *req)
 {
   W	uid;
   W	errno;
@@ -26,23 +26,23 @@ psc_setuid_f (struct posix_request *req)
   errno = proc_get_euid (req->procid, &uid);
   if (errno)
     {
-      put_response (req, errno, 0, -1, 0);
+      put_response (rdvno, req, errno, 0, -1, 0);
       return (FAIL);
     }
 
   if (uid != 0)
     {
-      put_response (req, EP_PERM, errno, -1, 0);
+      put_response (rdvno, req, EP_PERM, errno, -1, 0);
       return (FAIL);
     }
 
   errno = proc_set_euid (req->procid, req->param.par_setuid.uid);
   if (errno)
     {
-      put_response (req, errno, 0, -1, 0);
+      put_response (rdvno, req, errno, 0, -1, 0);
       return (FAIL);
     }
 
-  put_response (req, EP_OK, 0, 0, 0);
+  put_response (rdvno, req, EP_OK, 0, 0, 0);
   return (SUCCESS);
 }  

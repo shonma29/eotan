@@ -304,8 +304,6 @@ static ER init_itron(void)
     pmem_init();		/* 物理メモリ管理機能の初期化           */
     adjust_vm(physmem_max);
     banner();			/* 立ち上げメッセージ出力               */
-    init_kalloc();		/* バイト単位のメモリ管理機能の初期化   */
-    queue_initialize();		/* メッセージ管理機能の初期化           */
     flag_initialize();		/* イベントフラグ管理機能の初期化       */
     port_initialize();
     thread_initialize();		/* タスク管理機能の初期化 */

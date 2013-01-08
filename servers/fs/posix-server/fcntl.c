@@ -26,7 +26,6 @@ Version 2, June 1991
  *
  */
 #include <device.h>
-#include <itron/rendezvous.h>
 #include "posix.h"
 
 /* ctl_device - デバイスにコントロールメッセージを送る
@@ -45,7 +44,6 @@ static W control_device(ID device, struct posix_request *preq)
 	return (errno);
     }
 
-    packet.req.header.mbfid = 0;
     packet.req.header.msgtyp = DEV_CTL;
     packet.req.header.tskid = preq->caller;
     packet.req.body.ctl_req.dd = dd;
@@ -79,7 +77,7 @@ static W control_device(ID device, struct posix_request *preq)
 
 /* psc_fcntl_f - ファイルに対して特殊な操作を行う。
  */
-W psc_fcntl_f(struct posix_request * req)
+W psc_fcntl_f(RDVNO rdvno, struct posix_request * req)
 {
     W errno;
     struct file *fp;
@@ -87,13 +85,13 @@ W psc_fcntl_f(struct posix_request * req)
 
     errno = proc_get_file(req->procid, req->param.par_fcntl.fileid, &fp);
     if (errno) {
-	put_response(req, errno, -1, 0, 0);
+	put_response(rdvno, req, errno, -1, 0, 0);
 	return (FAIL);
     } else if (fp == 0) {
-	put_response(req, EP_INVAL, -1, 0, 0);
+	put_response(rdvno, req, EP_INVAL, -1, 0, 0);
 	return (FAIL);
     } else if (fp->f_inode == 0) {
-	put_response(req, EP_INVAL, -1, 0, 0);
+	put_response(rdvno, req, EP_INVAL, -1, 0, 0);
 	return (FAIL);
     }
 
@@ -106,16 +104,16 @@ W psc_fcntl_f(struct posix_request * req)
 	 */
 	errno = control_device(device, req);
 	if (errno) {
-	    put_response(req, errno, errno, 0, 0);
+	    put_response(rdvno, req, errno, errno, 0, 0);
 	    return (FAIL);
 	} else {
-	    put_response(req, EP_OK, errno, 0, 0);
+	    put_response(rdvno, req, EP_OK, errno, 0, 0);
 	    return (SUCCESS);
 	}
     } else {
 	/* とりあえず、サポートしていないというエラーで返す
 	 */
-	put_response(req, EP_NOSUP, 0, 0, 0);
+	put_response(rdvno, req, EP_NOSUP, 0, 0, 0);
     }
 
     return (FAIL);

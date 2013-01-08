@@ -39,26 +39,6 @@ void *psys_getcwd(void *argp)
 {
     struct psc_getcwd *args = (struct psc_getcwd *) argp;
 
-#if 0
-    ER error;
-    struct posix_request req;
-    struct posix_response res;
-
-    req.param.par_getcwd.dirnamelen = args->dirnamelen;
-    req.param.par_getcwd.dirname = args->dirname;
-
-    error = _make_connection(PSC_GETCWD, &req, &res);
-    if (error != E_OK) {
-	/* What should I do? */
-    }
-
-    else if (res.errno) {
-	ERRNO = res.errno;
-	return (-1);
-    }
-
-    return (res.status);
-#endif
     if (lowlib_data->dpath_len > args->dirnamelen) {
 	ERRNO = EP_RANGE;
 	return (NULL);

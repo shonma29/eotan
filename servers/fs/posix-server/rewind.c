@@ -18,7 +18,7 @@ Version 2, June 1991
 #include "posix.h"
 
 W
-psc_rewind_f (struct posix_request *req)
+psc_rewind_f (RDVNO rdvno, struct posix_request *req)
 {
   W	err;
 
@@ -26,10 +26,10 @@ psc_rewind_f (struct posix_request *req)
   err = proc_rewind_file (req->procid, req->param.par_rewind.fileid);
   if (err)
     {
-      put_response (req, err, -1, 0, 0);
+      put_response (rdvno, req, err, -1, 0, 0);
       return (FAIL);
     }
 
-  put_response (req, EP_OK, 0, 0, 0);
+  put_response (rdvno, req, EP_OK, 0, 0, 0);
   return (SUCCESS);
 }  

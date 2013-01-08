@@ -23,22 +23,22 @@ psys_brk (void *argp)
 {
   ER			error;
   struct posix_request	req;
-  struct posix_response res;
+  struct posix_response *res = (struct posix_response*)&req;
   struct psc_brk *args = (struct psc_brk *)argp;
 
   req.param.par_brk.end_adr = args->end_adr;
 
-  error = _make_connection(PSC_BRK, &req, &res);
+  error = _make_connection(PSC_BRK, &req);
   if (error != E_OK)
     {
       /* What should I do? */
     }
 
-  else if (res.errno)
+  else if (res->errno)
     {
-      ERRNO = res.errno;
+      ERRNO = res->errno;
       return (-1);
     }
 
-  return (res.status);
+  return (res->status);
 }

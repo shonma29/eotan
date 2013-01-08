@@ -36,23 +36,23 @@ psys_closedir (void *argp)
 {
   ER			error;
   struct posix_request	req;
-  struct posix_response	res;
+  struct posix_response	*res = (struct posix_response*)&req;
   struct psc_closedir *args = (struct psc_closedir *)argp;
 
   req.param.par_closedir.fileid = args->fileid;
 
-  error = _make_connection(PSC_CLOSEDIR, &req, &res);
+  error = _make_connection(PSC_CLOSEDIR, &req);
   if (error != E_OK)
     {
       /* What should I do? */
     }
 
-  else if (res.errno)
+  else if (res->errno)
     {
-      ERRNO = res.errno;
+      ERRNO = res->errno;
       return (-1);
     }
 
-  return (res.status);
+  return (res->status);
 }
 

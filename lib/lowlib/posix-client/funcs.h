@@ -1,6 +1,5 @@
 extern ER	_make_connection(W wOperation,
-		 struct posix_request *req,
-		 struct posix_response *res);
+		 struct posix_request *req);
 
 extern int	psys_access (void *argp);
 extern int	psys_brk (void *argp);

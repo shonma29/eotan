@@ -36,24 +36,24 @@ psys_fcntl (void *argp)
 {
   ER			error;
   struct posix_request	req;
-  struct posix_response	res;
+  struct posix_response	*res = (struct posix_response*)&req;
   struct psc_fcntl *args = (struct psc_fcntl *)argp;
 
   req.param.par_fcntl.fileid = args->fileid;
   req.param.par_fcntl.cmd = args->cmd;
   req.param.par_fcntl.arg = args->arg;
 
-  error = _make_connection(PSC_FCNTL, &req, &res);
+  error = _make_connection(PSC_FCNTL, &req);
   if (error != E_OK)
     {
       /* What should I do? */
     }
 
-  else if (res.errno)
+  else if (res->errno)
     {
-      ERRNO = res.errno;
+      ERRNO = res->errno;
       return (-1);
     }
 
-  return (res.status);
+  return (res->status);
 }

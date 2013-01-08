@@ -35,14 +35,11 @@ psys_exit (void *argp)
 {
   ER			error;
   struct posix_request	req;
-  struct posix_response	res;
+  struct posix_response	*res = (struct posix_response*)&req;
   struct psc_exit *args = (struct psc_exit *)argp;
 
   req.param.par_exit.evalue = args->evalue;
-  error = _make_connection(PSC_EXIT, &req, &res);
-
-  /* メッセージポートを開放 */
-  del_mbf(lowlib_data->recv_port);
+  error = _make_connection(PSC_EXIT, &req);
 
   /* 自タスクを終了 */
   exd_tsk ();
@@ -53,11 +50,11 @@ psys_exit (void *argp)
       /* What should I do? */
     }
 
-  else if (res.errno)
+  else if (res->errno)
     {
-      ERRNO = res.errno;
+      ERRNO = res->errno;
       return (-1);
     }
 
-  return (res.status);
+  return (res->status);
 }

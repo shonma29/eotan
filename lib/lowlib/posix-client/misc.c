@@ -33,24 +33,24 @@ psys_misc (void *argp)
 {
   ER			error;
   struct posix_request	req;
-  struct posix_response	res;
+  struct posix_response	*res = (struct posix_response*)&req;
   struct psc_misc *args = (struct psc_misc *)argp;
 
   req.param.par_misc.cmd = args->cmd;
   req.param.par_misc.length = args->length;
   req.param.par_misc.arg = args->arg;
 
-  error = _make_connection(PSC_MISC, &req, &res);
+  error = _make_connection(PSC_MISC, &req);
   if (error != E_OK)
     {
       /* What should I do? */
     }
 
-  else if (res.errno)
+  else if (res->errno)
     {
-      ERRNO = res.errno;
+      ERRNO = res->errno;
       return (-1);
     }
 
-  return (res.status);
+  return (res->status);
 }

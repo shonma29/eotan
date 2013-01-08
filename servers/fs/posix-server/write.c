@@ -32,7 +32,7 @@ Version 2, June 1991
 #include <string.h>
 #include "posix.h"
 
-W psc_write_f(struct posix_request *req)
+W psc_write_f(RDVNO rdvno, struct posix_request *req)
 {
     W errno;
     struct file *fp;
@@ -46,24 +46,24 @@ W psc_write_f(struct posix_request *req)
 
     errno = proc_get_file(req->procid, req->param.par_write.fileid, &fp);
     if (errno) {
-	put_response(req, errno, -1, 0, 0);
+	put_response(rdvno, req, errno, -1, 0, 0);
 	return (FAIL);
     } else if (fp == 0) {
-	put_response(req, EP_INVAL, -1, 0, 0);
+	put_response(rdvno, req, EP_INVAL, -1, 0, 0);
 	return (FAIL);
     } else if (fp->f_inode == 0) {
-	put_response(req, EP_INVAL, -1, 0, 0);
+	put_response(rdvno, req, EP_INVAL, -1, 0, 0);
 	return (FAIL);
     }
 
     if (fp->f_omode == O_RDONLY) {
-	put_response(req, EP_BADF, -1, 0, 0);
+	put_response(rdvno, req, EP_BADF, -1, 0, 0);
 	return (FAIL);
     }
 
     if (fp->f_flag & F_PIPE) {
 	/* パイプの読み書き */
-	put_response(req, EP_NOSUP, -1, 0, 0);
+	put_response(rdvno, req, EP_NOSUP, -1, 0, 0);
 	return (FAIL);
     }
 #ifdef debug
@@ -88,7 +88,7 @@ W psc_write_f(struct posix_request *req)
       }
     }
     if (errno) {
-	put_response(req, errno, -1, 0, 0);
+	put_response(rdvno, req, errno, -1, 0, 0);
 	return (FAIL);
     }
 
@@ -133,11 +133,11 @@ W psc_write_f(struct posix_request *req)
     }
 
     if (errno) {
-	put_response(req, errno, -1, 0, 0);
+	put_response(rdvno, req, errno, -1, 0, 0);
 	return (FAIL);
     }
 
     fp->f_offset += i;
-    put_response(req, EP_OK, i, 0, 0);
+    put_response(rdvno, req, EP_OK, i, 0, 0);
     return (SUCCESS);
 }

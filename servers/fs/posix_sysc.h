@@ -22,6 +22,7 @@ Version 2, June 1991
 #define __POSIX_SYSCALL_H__	1
 
 #include <itron/types.h>
+#include <itron/rendezvous.h>
 
 #define NR_POSIX_SYSCALL	80
 
@@ -884,7 +885,6 @@ struct psc_misc
 /* POSIX マネージャへの要求メッセージの構造体 */
 struct posix_request
 {
-  ID	receive_port;		/* 要求受信用のポート	*/
   ID	caller;			/* 呼び出し元のタスク ID */
   ID	procid;			/* 呼び出し元のプロセス ID */
   W	msg_length;		/* メッセージの長さ	*/
@@ -986,85 +986,85 @@ struct posix_syscall
 {
   B	*name;
   W	callno;
-  W	(*syscall)(struct posix_request *);
+  W	(*syscall)(RDVNO rdvno, struct posix_request *);
 };
 
 
 extern struct posix_syscall	syscall_table[];
 
 
-extern W	psc_access_f (struct posix_request *);
-extern W	psc_chdir_f (struct posix_request *);
-extern W	psc_chmod_f (struct posix_request *);
-extern W	psc_chown_f (struct posix_request *);
-extern W	psc_close_f (struct posix_request *);
-extern W	psc_creat_f (struct posix_request *);
-extern W	psc_dup_f (struct posix_request *);
-extern W	psc_dup2_f (struct posix_request *);
-extern W	psc_exec_f (struct posix_request *);
-extern W	psc_exit_f (struct posix_request *);
-extern W	psc_fcntl_f (struct posix_request *);
-extern W	psc_fork_f (struct posix_request *);
-extern W	psc_getcwd_f (struct posix_request *);
-extern W	psc_getegid_f (struct posix_request *);
-extern W	psc_getenv_f (struct posix_request *);
-extern W	psc_geteuid_f (struct posix_request *);
-extern W	psc_getgid_f (struct posix_request *);
-extern W	psc_getgrgid_f (struct posix_request *);
-extern W	psc_getgrnam_f (struct posix_request *);
-extern W	psc_getgroups_f (struct posix_request *);
-extern W	psc_getlogin_f (struct posix_request *);
-extern W	psc_getpgrp_f (struct posix_request *);
-extern W	psc_getpid_f (struct posix_request *);
-extern W	psc_getppid_f (struct posix_request *);
-extern W	psc_getuid_f (struct posix_request *);
-extern W	psc_kill_f (struct posix_request *);
-extern W	psc_link_f (struct posix_request *);
-extern W	psc_lseek_f (struct posix_request *);
-extern W	psc_mkdir_f (struct posix_request *);
-extern W	psc_mkfifo_f (struct posix_request *);
-extern W	psc_open_f (struct posix_request *);
-extern W	psc_pause_f (struct posix_request *);
-extern W	psc_pipe_f (struct posix_request *);
-extern W	psc_read_f (struct posix_request *);
-extern W	psc_remove_f (struct posix_request *);
-extern W	psc_rename_f (struct posix_request *);
-extern W	psc_rewind_f (struct posix_request *);
-extern W	psc_rmdir_f (struct posix_request *);
-extern W	psc_setgid_f (struct posix_request *);
-extern W	psc_setpgid_f (struct posix_request *);
-extern W	psc_setsid_f (struct posix_request *);
-extern W	psc_setuid_f (struct posix_request *);
-extern W	psc_sigaction_f (struct posix_request *);
-extern W	psc_sigaddset_f (struct posix_request *);
-extern W	psc_sigdelset_f (struct posix_request *);
-extern W	psc_sigemptyset_f (struct posix_request *);
-extern W	psc_sigfillset_f (struct posix_request *);
-extern W	psc_sigismember_f (struct posix_request *);
-extern W	psc_siglongjmp_f (struct posix_request *);
-extern W	psc_sigpending_f (struct posix_request *);
-extern W	psc_sigprocmask_f (struct posix_request *);
-extern W	psc_sigsetjmp_f (struct posix_request *);
-extern W	psc_sigsuspend_f (struct posix_request *);
-extern W	psc_sleep_f (struct posix_request *);
-extern W	psc_fstat_f (struct posix_request *);
-extern W	psc_time_f (struct posix_request *);
-extern W	psc_times_f (struct posix_request *);
-extern W	psc_ttyname_f (struct posix_request *);
-extern W	psc_tzset_f (struct posix_request *);
-extern W	psc_umask_f (struct posix_request *);
-extern W	psc_uname_f (struct posix_request *);
-extern W	psc_unlink_f (struct posix_request *);
-extern W	psc_utime_f (struct posix_request *);
-extern W	psc_waitpid_f (struct posix_request *);
-extern W	psc_write_f (struct posix_request *);
-extern W	psc_mount_f (struct posix_request *);
-extern W	psc_umount_f (struct posix_request *);
-extern W	psc_memory_f (struct posix_request *);
-extern W	psc_mountroot_f (struct posix_request *);
-extern W	psc_statfs_f (struct posix_request *);
-extern W	psc_misc_f (struct posix_request *);
-extern W	psc_getdents_f (struct posix_request *);
-extern W	psc_brk_f (struct posix_request *);
+extern W	psc_access_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_chdir_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_chmod_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_chown_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_close_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_creat_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_dup_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_dup2_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_exec_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_exit_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_fcntl_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_fork_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_getcwd_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_getegid_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_getenv_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_geteuid_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_getgid_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_getgrgid_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_getgrnam_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_getgroups_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_getlogin_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_getpgrp_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_getpid_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_getppid_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_getuid_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_kill_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_link_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_lseek_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_mkdir_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_mkfifo_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_open_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_pause_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_pipe_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_read_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_remove_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_rename_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_rewind_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_rmdir_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_setgid_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_setpgid_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_setsid_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_setuid_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_sigaction_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_sigaddset_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_sigdelset_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_sigemptyset_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_sigfillset_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_sigismember_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_siglongjmp_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_sigpending_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_sigprocmask_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_sigsetjmp_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_sigsuspend_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_sleep_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_fstat_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_time_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_times_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_ttyname_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_tzset_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_umask_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_uname_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_unlink_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_utime_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_waitpid_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_write_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_mount_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_umount_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_memory_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_mountroot_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_statfs_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_misc_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_getdents_f (RDVNO rdvno, struct posix_request *);
+extern W	psc_brk_f (RDVNO rdvno, struct posix_request *);
 
 #endif /* #define __POSIX_SYSCALL_H__ */

@@ -19,7 +19,7 @@ Version 2, June 1991
 
 #include "posix.h"
 
-W psc_umount_f(struct posix_request *req)
+W psc_umount_f(RDVNO rdvno, struct posix_request *req)
 {
     W errno;
     UW device = 0;
@@ -35,9 +35,9 @@ W psc_umount_f(struct posix_request *req)
     if (errno) {
 	/* mount 先/special file のパス名のコピーエラー */
 	if (errno == E_PAR) {
-	    put_response(req, EP_INVAL, -1, 0, 0);
+	    put_response(rdvno, req, EP_INVAL, -1, 0, 0);
 	} else {
-	    put_response(req, EP_FAULT, -1, 0, 0);
+	    put_response(rdvno, req, EP_FAULT, -1, 0, 0);
 	}
 	return (FAIL);
     }
@@ -46,7 +46,7 @@ W psc_umount_f(struct posix_request *req)
     if (*dirname != '/') {
 	errno = proc_get_cwd(req->procid, &startip);
 	if (errno) {
-	    put_response(req, errno, -1, 0, 0);
+	    put_response(rdvno, req, errno, -1, 0, 0);
 	    return (FAIL);
 	}
     } else {
@@ -55,23 +55,23 @@ W psc_umount_f(struct posix_request *req)
 
     errno = proc_get_euid(req->procid, &(acc.uid));
     if (errno) {
-	put_response(req, errno, -1, 0, 0);
+	put_response(rdvno, req, errno, -1, 0, 0);
 	return (FAIL);
     }
     if (acc.uid != SU_UID) {
-	put_response(req, EP_ACCESS, -1, 0, 0);
+	put_response(rdvno, req, EP_ACCESS, -1, 0, 0);
 	return (FAIL);
     }
 
     errno = proc_get_egid(req->procid, &(acc.gid));
     if (errno) {
-	put_response(req, errno, -1, 0, 0);
+	put_response(rdvno, req, errno, -1, 0, 0);
 	return (FAIL);
     }
 
     errno = fs_open_file(dirname, O_RDWR, 0, &acc, startip, &umpoint);
     if (errno) {
-	put_response(req, errno, -1, 0, 0);
+	put_response(rdvno, req, errno, -1, 0, 0);
 	return (FAIL);
     }
 
@@ -99,9 +99,9 @@ W psc_umount_f(struct posix_request *req)
 #if 0
         dbg_printf("[PM] umount errno = %d\n", errno);
 #endif
-	put_response(req, errno, -1, 0, 0);
+	put_response(rdvno, req, errno, -1, 0, 0);
 	return (FAIL);
     }
-    put_response(req, EP_OK, 0, 0, 0);
+    put_response(rdvno, req, EP_OK, 0, 0, 0);
     return (SUCCESS);
 }

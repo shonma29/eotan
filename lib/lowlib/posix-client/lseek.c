@@ -39,24 +39,24 @@ psys_lseek (void *argp)
 {
   ER			error;
   struct posix_request	req;
-  struct posix_response res;
+  struct posix_response *res = (struct posix_response*)&req;
   struct psc_lseek *args = (struct psc_lseek *)argp;
 
   req.param.par_lseek.fileid = args->fileid;
   req.param.par_lseek.offset = args->offset;
   req.param.par_lseek.mode = args->mode;
 
-  error = _make_connection(PSC_LSEEK, &req, &res);
+  error = _make_connection(PSC_LSEEK, &req);
   if (error != E_OK)
     {
       /* What should I do? */
     }
 
-  else if (res.errno)
+  else if (res->errno)
     {
-      ERRNO = res.errno;
+      ERRNO = res->errno;
       return (-1);
     }
 
-  return (res.status);
+  return (res->status);
 }

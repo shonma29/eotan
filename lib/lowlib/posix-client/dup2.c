@@ -36,23 +36,23 @@ psys_dup2 (void *argp)
 {
   ER			error;
   struct posix_request	req;
-  struct posix_response	res;
+  struct posix_response	*res = (struct posix_response*)&req;
   struct psc_dup2 *args = (struct psc_dup2 *)argp;
 
   req.param.par_dup2.fileid1 = args->fileid1;
   req.param.par_dup2.fileid2 = args->fileid2;
 
-  error = _make_connection(PSC_DUP2, &req, &res);
+  error = _make_connection(PSC_DUP2, &req);
   if (error != E_OK)
     {
       /* What should I do? */
     }
 
-  else if (res.errno)
+  else if (res->errno)
     {
-      ERRNO = res.errno;
+      ERRNO = res->errno;
       return (-1);
     }
 
-  return (res.status);
+  return (res->status);
 }

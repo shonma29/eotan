@@ -20,6 +20,7 @@ Version 2, June 1991
 #define __POSIX_H__	1
 
 
+#include <itron/rendezvous.h>
 #include "../../kernel/core.h"
 #include "../../kernel/misc.h"
 #include "../console/console.h"
@@ -153,9 +154,9 @@ extern void banner(void);
 /* request.c */
 extern W init_port(void);
 extern W get_request(struct posix_request *req);
-extern W put_response(struct posix_request *req,
+extern W put_response(RDVNO rdvno, struct posix_request *req,
 		      W errno, W status, W ret1, W ret2);
-extern W error_response(struct posix_request *req, W errno);
+extern W error_response(RDVNO rdvno, struct posix_request *req, W errno);
 
 
 #define printk dbg_printf

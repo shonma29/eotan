@@ -36,7 +36,7 @@ psys_mountroot (void *argp)
 {
   ER	error;
   struct posix_request	req;
-  struct posix_response res;
+  struct posix_response *res = (struct posix_response*)&req;
 
   struct psc_mountroot *args = (struct psc_mountroot *)argp;
 
@@ -44,17 +44,17 @@ psys_mountroot (void *argp)
   req.param.par_mountroot.fstype = 1;
   req.param.par_mountroot.option = 0;
 
-  error = _make_connection(PSC_MOUNTROOT, &req, &res);
+  error = _make_connection(PSC_MOUNTROOT, &req);
   if (error != E_OK)
     {
       /* What should I do? */
     }
 
-  else if (res.errno)
+  else if (res->errno)
     {
-      ERRNO = res.errno;
+      ERRNO = res->errno;
       return (-1);
     }
 
-  return (res.status);
+  return (res->status);
 }

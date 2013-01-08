@@ -23,7 +23,7 @@ extern int strlen(char *);
 
 /* psc_getcwd_f - プロセスのカレントディレクトリの取り出し
  */
-W psc_getcwd_f(struct posix_request *req)
+W psc_getcwd_f(RDVNO rdvno, struct posix_request *req)
 {
     struct inode *cwd;
 #ifdef USE_ALLOCA
@@ -43,13 +43,13 @@ W psc_getcwd_f(struct posix_request *req)
      */
     errno = proc_get_cwd(req->procid, &cwd);
     if (errno) {
-	put_response(req, errno, 0, 0, 0);
+	put_response(rdvno, req, errno, 0, 0, 0);
 	return (FAIL);
     }
 #ifdef USE_ALLOCA
     tmppath = alloca(req->param.par_getcwd.dirnamelen);
     if (tmppath == NULL) {
-	put_response(req, EP_NOMEM, 0, 0, 0);
+	put_response(rdvno, req, EP_NOMEM, 0, 0, 0);
 	return (FAIL);
     }
 #endif
@@ -59,7 +59,7 @@ W psc_getcwd_f(struct posix_request *req)
     errno =
 	fs_convert_path(cwd, tmppath, req->param.par_getcwd.dirnamelen);
     if (errno) {
-	put_response(req, errno, 0, 0, 0);
+	put_response(rdvno, req, errno, 0, 0, 0);
 	return (FAIL);
     }
 
@@ -67,10 +67,10 @@ W psc_getcwd_f(struct posix_request *req)
 		     req->param.par_getcwd.dirname,
 		     strlen(tmppath) + 1, tmppath);
     if (errno) {
-	put_response(req, errno, -1, 0, 0);
+	put_response(rdvno, req, errno, -1, 0, 0);
 	return (FAIL);
     }
 
-    put_response(req, EP_OK, 0, 0, 0);
+    put_response(rdvno, req, EP_OK, 0, 0, 0);
     return (SUCCESS);
 }

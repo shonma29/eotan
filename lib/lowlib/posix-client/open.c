@@ -56,27 +56,11 @@ Version 2, June 1991
 #include "../lowlib.h"
 
 
-#ifdef notdef
-static int strlen_with_length(char *s, int maxlen)
-{
-    int i;
-
-    for (i = 0; i < maxlen; i++) {
-	if (*s == '\0') {
-	    break;
-	}
-	s++;
-    }
-
-    return (i);
-}
-#endif
-
 int psys_open(void *argp)
 {
     ER error;
     struct posix_request req;
-    struct posix_response res;
+    struct posix_response *res = (struct posix_response*)&req;
     struct psc_open *args = (struct psc_open *) argp;
 
     req.param.par_open.pathlen = args->pathlen;
@@ -84,15 +68,15 @@ int psys_open(void *argp)
     req.param.par_open.oflag = args->oflag;	/* o_rdonly | o_wronly | o_rdwr | o_creat */
     req.param.par_open.mode = args->mode;	/* no use except oflag includes o_creat */
 
-    error = _make_connection(PSC_OPEN, &req, &res);
+    error = _make_connection(PSC_OPEN, &req);
 
     if (error != E_OK) {
 	/* What should I do? */
 	return (error);
-    } else if (res.errno) {
-	ERRNO = res.errno;
+    } else if (res->errno) {
+	ERRNO = res->errno;
 	return (-1);
     }
 
-    return (res.status);
+    return (res->status);
 }

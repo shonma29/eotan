@@ -25,7 +25,7 @@ Version 2, June 1991
 
 #include "posix.h"
 
-W psc_close_f(struct posix_request *req)
+W psc_close_f(RDVNO rdvno, struct posix_request *req)
 {
     struct file *fp;
     W err;
@@ -33,12 +33,12 @@ W psc_close_f(struct posix_request *req)
 
     err = proc_get_file(req->procid, req->param.par_close.fileid, &fp);
     if (err) {
-	put_response(req, err, -1, 0, 0);
+	put_response(rdvno, req, err, -1, 0, 0);
 	return (FAIL);
     }
 
     if (fp->f_inode == NULL) {
-	put_response(req, EP_BADF, -1, 0, 0);
+	put_response(rdvno, req, EP_BADF, -1, 0, 0);
 	return (FAIL);
     }
 
@@ -50,11 +50,11 @@ W psc_close_f(struct posix_request *req)
 
     err = fs_close_file(fp->f_inode);
     if (err) {
-	put_response(req, err, -1, 0, 0);
+	put_response(rdvno, req, err, -1, 0, 0);
 	return (FAIL);
     }
 
     fp->f_inode = NULL;
-    put_response(req, EP_OK, 0, 0, 0);
+    put_response(rdvno, req, EP_OK, 0, 0, 0);
     return (SUCCESS);
 }

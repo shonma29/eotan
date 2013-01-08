@@ -59,8 +59,6 @@ extern FILE	__file_table__[];
 
 
 
-extern ID	dev_recv;	/* デバイスドライバからの返答用 */
-
 extern void init_device(void);
 extern ER open_device(B * dev_name, ID * id, W * dev_desc);
 

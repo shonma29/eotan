@@ -25,7 +25,7 @@ Version 2, June 1991
 extern void sfs_purge_cache();
 extern void print_freelist();
 
-W psc_misc_f(struct posix_request *req)
+W psc_misc_f(RDVNO rdvno, struct posix_request *req)
 {
     ER err = 0;
 
@@ -73,7 +73,7 @@ W psc_misc_f(struct posix_request *req)
 	}
     }
 
-    put_response(req, err, err ? -1 : 0, 0, 0);
+    put_response(rdvno, req, err, err ? -1 : 0, 0, 0);
     if (err)
 	return (FAIL);
     else

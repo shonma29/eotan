@@ -29,7 +29,7 @@ Version 2, June 1991
 /* psc_dup2_f -ファイル記述子の複製
  */
 W
-psc_dup2_f (struct posix_request *req)
+psc_dup2_f (RDVNO rdvno, struct posix_request *req)
 {
   W		errno;
   struct file	*fp, *fp2;
@@ -40,7 +40,7 @@ psc_dup2_f (struct posix_request *req)
   errno = proc_get_file (req->procid, req->param.par_dup2.fileid1, &fp);
   if (errno)
     {
-      put_response (req, errno, -1, 0, 0);
+      put_response (rdvno, req, errno, -1, 0, 0);
       return (FAIL);
     }
 
@@ -50,20 +50,20 @@ psc_dup2_f (struct posix_request *req)
       /* 複製するファイル記述子の番号がおかしい。
        * (ファイルをオープンしていない)
        */
-      put_response (req, EP_BADF, -1, 0, 0);
+      put_response (rdvno, req, EP_BADF, -1, 0, 0);
       return (FAIL);
     }
 
   errno = proc_get_file (req->procid, req->param.par_dup2.fileid2, &fp2);
   if (errno) {
-    put_response (req, errno, -1, 0, 0);
+    put_response (rdvno, req, errno, -1, 0, 0);
     return (FAIL);
   }
   if (fp2->f_inode != NULL) {
     /* 既に open されている file id だった */
     errno = fs_close_file (fp2->f_inode);
     if (errno) {
-      put_response (req, errno, -1, 0, 0);
+      put_response (rdvno, req, errno, -1, 0, 0);
       return (FAIL);
     }
     fp2->f_inode = NULL;
@@ -73,10 +73,10 @@ psc_dup2_f (struct posix_request *req)
 			fp->f_omode, fp->f_inode);
   if (errno)
     {
-      put_response (req, errno, -1, 0, 0);
+      put_response (rdvno, req, errno, -1, 0, 0);
       return (FAIL);
     }
 
-  put_response (req, EP_OK, req->param.par_dup2.fileid2, 0, 0);
+  put_response (rdvno, req, EP_OK, req->param.par_dup2.fileid2, 0, 0);
   return (SUCCESS);
 }  

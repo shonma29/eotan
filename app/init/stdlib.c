@@ -48,8 +48,8 @@ static W putc(W ch, FILE * port);
 static void _putc(const B ch);
 static W __putc(W ch, FILE * port);
 static void fflush(FILE * port);
-static W writechar(ID port, ID resport, UB * buf, W length);
-static W readchar(ID port, ID resport);
+static W writechar(ID port, UB * buf, W length);
+static W readchar(ID port);
 
 
 /*
@@ -72,10 +72,10 @@ static W putc(W ch, FILE * port)
     port->count++;
 
     if (ch == '\n') {
-	writechar(port->device, dev_recv, port->buf, port->count);
+	writechar(port->device, port->buf, port->count);
 	port->count = 0;
     } else if (port->count >= port->bufsize) {
-	writechar(port->device, dev_recv, port->buf, port->count);
+	writechar(port->device, port->buf, port->count);
 	port->count = 0;
     }
 
@@ -91,22 +91,21 @@ static W __putc(W ch, FILE * port)
     UB buf[1];
 
     buf[0] = ch;
-    writechar(port->device, dev_recv, buf, 1);
+    writechar(port->device, buf, 1);
     return (ch);
 }
 
 static void fflush(FILE * port)
 {
-    writechar(port->device, dev_recv, port->buf, port->count);
+    writechar(port->device, port->buf, port->count);
     port->count = 0;
 }
 
-static W writechar(ID port, ID resport, UB * buf, W length)
+static W writechar(ID port, UB * buf, W length)
 {
     devmsg_t packet;
     ER_UINT rsize;
 
-    packet.req.header.mbfid = resport;
     packet.req.header.msgtyp = DEV_WRI;
     packet.req.body.wri_req.dd = 0xAA;
     packet.req.body.wri_req.size = length;
@@ -144,19 +143,18 @@ W getc(FILE * port)
 {
     W ch;
 
-    ch = readchar(port->device, dev_recv);
+    ch = readchar(port->device);
     if (ch != '\b')
 	__putc(ch, stdout);
     return (ch);
 }
 
 
-static W readchar(ID port, ID resport)
+static W readchar(ID port)
 {
     devmsg_t packet;
     ER_UINT rsize;
 
-    packet.req.header.mbfid = resport;
     packet.req.header.msgtyp = DEV_REA;
     packet.req.body.rea_req.dd = 0xAA;
     packet.req.body.rea_req.size = 1;

@@ -39,24 +39,24 @@ psys_creat (void *argp)
 {
   ER			error;
   struct posix_request	req;
-  struct posix_response	res;
+  struct posix_response	*res = (struct posix_response*)&req;
   struct psc_creat *args = (struct psc_creat *)argp;
 
   req.param.par_creat.path = args->path;
   req.param.par_creat.pathlen = args->pathlen;
   req.param.par_creat.mode = args->mode;
 
-  error = _make_connection(PSC_CREAT, &req, &res);
+  error = _make_connection(PSC_CREAT, &req);
   if (error != E_OK)
     {
       /* What should I do? */
     }
 
-  else if (res.errno)
+  else if (res->errno)
     {
-      ERRNO = res.errno;
+      ERRNO = res->errno;
       return (-1);
     }
 
-  return (res.status);
+  return (res->status);
 }

@@ -17,15 +17,14 @@
 ER posix_kill_proc(ID pid)
 {
   struct posix_request	req;
-  ER errno;
+  ER_UINT rsize;
 
   req.param.par_kill.pid = pid;
-  req.receive_port = 0; /* 返事は受け取らない */
   req.msg_length = sizeof (struct posix_request);
   req.operation = PSC_KILL;
   req.procid = pid;
   req.caller = KERNEL_TASK; /* KERNEL_TASK で実行 */
 
-  errno = message_send_nowait(PORT_FS, sizeof (struct posix_request), &req);
-  return(errno);
+  rsize = port_call(PORT_FS, 0xffffffff, &req, sizeof (struct posix_request));
+  return(rsize);
 }

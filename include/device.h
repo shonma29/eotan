@@ -70,7 +70,6 @@ Version 2, June 1991
  * メッセージ
  */
 typedef struct {
-  ID	mbfid;		/* 応答メッセージを送信するメッセージバッファ	*/
   W	msgtyp;		/* メッセージ識別番号				*/
   ID	tskid;		/* メッセージを送信したタスク			*/
   W	len;		/* 独自パラメタのサイズ（バイト）		*/
@@ -215,7 +214,6 @@ typedef struct {
 typedef struct {
   W	errcd;
   W	devno;   /* デバイス番号 */
-  ID	mbfid;   /* 古いデバドラへメッセージを送信するためのメッセージバッファ */
 } DEV_RREG_RES;
 
 
@@ -541,7 +539,6 @@ typedef struct {
  *
  */
 typedef struct {
-  W mbfid;		/* イベント通知先のメッセージバッファ	*/
 } DEV_CHG_EVT_REQ;
 
 

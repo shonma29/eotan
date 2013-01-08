@@ -154,7 +154,7 @@ Version 2, June 1991
 
 #include "posix.h"
 
-static W psc_noaction_f(struct posix_request *req);
+static W psc_noaction_f(RDVNO rdvno, struct posix_request *req);
 
 struct posix_syscall	syscall_table[] =
 {
@@ -241,7 +241,7 @@ struct posix_syscall	syscall_table[] =
   { "uname",		PSC_UNAME,		psc_uname_f }
 };
 
-static W psc_noaction_f(struct posix_request *req) {
-	put_response(req, EP_NOSUP, 0, 0, 0);
+static W psc_noaction_f(RDVNO rdvno, struct posix_request *req) {
+	put_response(rdvno, req, EP_NOSUP, 0, 0, 0);
 	return FAIL;
 }
