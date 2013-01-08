@@ -46,9 +46,6 @@ static struct timer_list *time_list;
 static unsigned long free_run;	/* 今の所初期化する予定なし */
 
 
-#ifdef TIMER_TEST
-static W counter = 0;
-#endif
 static void write_vram(W, W, W, W);
 
 
@@ -118,18 +115,6 @@ void intr_interval(void)
     SYSTIME time;
     UW TH, TM, TL;
 
-#ifdef TIMER_TEST
-    static W flag = 0;
-
-    if (counter-- < 0) {
-	if (flag)
-	    write_vram(78, 0, 'o', 0);
-	else
-	    write_vram(78, 0, 'x', 0);
-	flag = flag ^ 1;
-	counter = TICKS;
-    }
-#endif
     system_ticks++;
     run_task->total++;
 
