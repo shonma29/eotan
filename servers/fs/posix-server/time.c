@@ -20,7 +20,6 @@ Version 2, June 1991
 #include "posix.h"
 
 #define MS 1000
-#define BTRON_OFFSET	473353200L
 
 /* gettimeofday として動作する */
 
@@ -39,7 +38,6 @@ UW get_system_time(UW * usec)
     i = (time.utime % MS) << 16;
     clock += (i / MS) << 16;
     clock += ((i % MS) << 16) / MS;
-    clock += BTRON_OFFSET;
     if (usec != NULL) {
 	*usec = (time.ltime % MS) / 10;
     }

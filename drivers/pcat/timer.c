@@ -32,7 +32,6 @@ Version 2, June 1991
 
 /* 大域変数の宣言 */
 W do_timer = 0;
-UW system_ticks = 0;
 
 static struct timer_list {
     struct timer_list *next;
@@ -115,7 +114,6 @@ void intr_interval(void)
     SYSTIME time;
     UW TH, TM, TL;
 
-    system_ticks++;
     run_task->total++;
 
     /* システム時間の増加 */

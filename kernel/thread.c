@@ -127,8 +127,6 @@ Version 2, June 1991
  *
  */
 
-extern UW system_ticks;
-
 T_TCB *run_task;		/* 現在、走行中のタスク */
 
 static T_TCB *task;

@@ -31,6 +31,9 @@ extern ER unset_timer(void (*func) (VP), VP arg);
 extern void check_timer(void);
 extern W left_time(void (*func) (VP), VP arg);
 
+/* rtc.c */
+extern int rtc_get_time(void);
+
 /* devconfig.c */
 extern W ndevice;
 extern ER(*devices[]) (void);

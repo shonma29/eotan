@@ -77,7 +77,6 @@ static void banner(void);
 
 /* 外部変数の宣言 */
 extern W do_timer;
-extern UW system_ticks;
 
 /* 強制終了するタスクのテーブル */
 #define TRMTBL_SIZE 10
@@ -148,7 +147,6 @@ ER itron(void)
     trmtbl_top = 0;
 
     do_timer = 0;
-    system_ticks = 0;
 
 #ifdef AUTO_START
     run_init_program();
@@ -315,7 +313,7 @@ static ER init_itron(void)
 
     timer_initialize();		/* インターバルタイマ機能の初期化 */
     info = (struct boot_header *) MODULE_TABLE;
-    time_initialize(info->machine.clock);		/* 時間管理機能の初期化 */
+    time_initialize(rtc_get_time());		/* 時間管理機能の初期化 */
     start_interval();		/* インターバルタイマの起動       */
 
     return (E_OK);

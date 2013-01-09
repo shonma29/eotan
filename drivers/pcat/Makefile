@@ -34,7 +34,7 @@ LDFLAGS = --oformat binary
 AR = ar
 
 INCLUDES = -I . -I ../../kernel -I ../../include
-OBJS = console.o devconfig.o keyboard.o timer.o
+OBJS = console.o devconfig.o keyboard.o timer.o rtc.o
 
 .c.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
