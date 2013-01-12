@@ -343,9 +343,13 @@ static void init_device(void)
  */
 static void banner(void)
 {
+    struct boot_header *info = (struct boot_header *) MODULE_TABLE;
+
     printk("kernel %s for %s/%s\n",
 	KERN_VERSION, KERN_ARCH, KERN_MPU);
-    printk("base memory = %d Kbytes\n", base_mem / 1024);
-    printk("extend memory = %d Kbytes\n", ext_mem / 1024);
+    printk("base memory = %d Kbytes\n", info->machine.base_mem / 1024);
+    printk("extend memory = %d Kbytes\n", info->machine.ext_mem / 1024);
+    printk("real memory = %d Kbytes\n", info->machine.real_mem / 1024);
+    printk("root fs = %x\n", info->machine.rootfs);
 }
 

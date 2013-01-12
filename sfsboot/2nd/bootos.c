@@ -88,7 +88,7 @@ int multi_boot (struct sfs_inode *ip, int rootfs)
   struct boot_header	*info;
   void  	(*entry)();
   int		errno;
-  extern UWORD	ticks, clock;
+  extern UWORD	ticks;
 
   boot_printf ("Multiple module boot.\n");
   info = (struct boot_header *)MODULE_TABLE;
@@ -129,7 +129,6 @@ int multi_boot (struct sfs_inode *ip, int rootfs)
   entry = (void (*)())(info->modules[0].entry);
   boot_printf ("exec_info->a_entry = 0x%x\n", entry);
   
-  info->machine.clock = clock + ticks/TICKS;
   (*entry)();
 
   return E_OK;

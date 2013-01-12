@@ -60,7 +60,6 @@ struct machine_info
   unsigned int	real_mem;
   unsigned int	base_mem;
   unsigned int	rootfs;
-  unsigned int	clock;
 };
 
 struct boot_header
