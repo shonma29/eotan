@@ -41,7 +41,6 @@ CFLAGS=-O2 -Wall -Werror -I$(ROOT)/include -I$(ROOT)/kernel $(IDENT)
 OBJS =	_make_cnnct.o \
 	access.o \
 	brk.o \
-	chdir.o \
 	chmod.o \
 	chown.o \
 	close.o \

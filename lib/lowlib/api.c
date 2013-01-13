@@ -50,7 +50,7 @@ struct syscall_entry syscalls[] =
 {
   DEF_SYSCALL (noaction),	/*  0 */
   DEF_SYSCALL (access),		/*  1 */
-  DEF_SYSCALL (chdir),		/*  2 */
+  DEF_SYSCALL (noaction),		/*  2 */
   DEF_SYSCALL (chmod),		/*  3 */
   DEF_SYSCALL (chown),		/*  4 */
   DEF_SYSCALL (close),		/*  5 */

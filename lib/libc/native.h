@@ -48,5 +48,6 @@ typedef unsigned long	clock_t;
 extern struct lowlib_data *lowlib_data;
 
 extern int call_lowlib(const int svcno, ...);
+extern ER _make_connection(W wOperation, struct posix_request *req);
 
 #endif

@@ -22,12 +22,13 @@ AS=as
 %.o: %.S
 	$(CC) $(CFLAGS) -c $< -o $@
 
-OTHEROBJS= others/atoi.o others/stdlib.o _main.o global.o \
+OTHEROBJS= others/atoi.o others/stdlib.o _main.o \
 	others/binary.o malloc/malloc.o
 
 STRINGOBJS = string/strcat.o string/strcmp.o string/strcpy.o string/strlen.o
 
 OBJS=   call_lowlib.o \
+	posix/_make_cnnct.o \
 	posix/sys_access.o \
 	posix/sys_brk.o \
 	posix/sys_chdir.o \

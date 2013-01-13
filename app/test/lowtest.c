@@ -32,5 +32,7 @@ int main(int argc, char **argv)
 	char buf[1024];
 
 	printf("dir = %s\n", getcwd(buf, sizeof(buf)));
+	chdir("/system");
+	printf("dir = %s\n", getcwd(buf, sizeof(buf)));
 	return 0;
 }

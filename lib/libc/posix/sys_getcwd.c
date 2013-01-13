@@ -28,6 +28,8 @@ Version 2, June 1991
 char *
 getcwd (char *buf, int size)
 {
+    struct lowlib_data	*lowlib_data = (struct lowlib_data *)LOWLIB_DATA;
+
     if (lowlib_data->dpath_len > size) {
 	errno = EP_RANGE;
 	return (NULL);
