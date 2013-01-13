@@ -56,8 +56,6 @@ OBJS =	_make_cnnct.o \
 	geteuid.o \
 	getgid.o \
 	getgrgid.o \
-	getpid.o \
-	getppid.o \
 	getuid.o \
 	kill.o \
 	link.o \

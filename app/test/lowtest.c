@@ -30,9 +30,23 @@ For more information, please refer to <http://unlicense.org/>
 int main(int argc, char **argv)
 {
 	char buf[1024];
+	int pid;
 
 	printf("dir = %s\n", getcwd(buf, sizeof(buf)));
 	chdir("/system");
 	printf("dir = %s\n", getcwd(buf, sizeof(buf)));
+
+	pid = fork();
+	if (pid == 0) {
+		printf("child's pid = %d, ppid = %d\n",
+				getpid(), getppid());
+		_exit(0);
+	}
+	else {
+		printf("parent's pid = %d, ppid = %d\n",
+				getpid(), getppid());
+		waitpid(-1, &pid, 0);
+	}
+
 	return 0;
 }

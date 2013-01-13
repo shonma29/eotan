@@ -65,8 +65,8 @@ struct syscall_entry syscalls[] =
   DEF_SYSCALL (geteuid),	/* 14 */
   DEF_SYSCALL (getgid),		/* 15 */
   DEF_SYSCALL (noaction),	/* 16 */
-  DEF_SYSCALL (getpid),		/* 17 */
-  DEF_SYSCALL (getppid),	/* 18 */
+  DEF_SYSCALL (noaction),		/* 17 */
+  DEF_SYSCALL (noaction),	/* 18 */
   DEF_SYSCALL (getuid),		/* 19 */
   DEF_SYSCALL (link),		/* 20 */
   DEF_SYSCALL (lseek),		/* 21 */
