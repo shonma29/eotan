@@ -45,6 +45,8 @@ struct tms
 typedef unsigned long	clock_t;
 
 
+extern struct lowlib_data *lowlib_data;
+
 extern int call_lowlib(const int svcno, ...);
 
 #endif

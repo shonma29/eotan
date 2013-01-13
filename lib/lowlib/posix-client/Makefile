@@ -52,7 +52,6 @@ OBJS =	_make_cnnct.o \
 	exit.o \
 	fcntl.o \
 	fork.o \
-	getcwd.o \
 	getdents.o \
 	getegid.o \
 	geteuid.o \

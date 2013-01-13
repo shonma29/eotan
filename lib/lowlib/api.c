@@ -116,7 +116,7 @@ struct syscall_entry syscalls[] =
   DEF_SYSCALL (misc),		/* 65 */
   DEF_SYSCALL (noaction),		/* 66 */
   DEF_SYSCALL (dup2),		/* 67 */
-  DEF_SYSCALL (getcwd),		/* 68 */
+  DEF_SYSCALL (noaction),		/* 68 */
   DEF_SYSCALL (noaction),		/* 69 */
   DEF_SYSCALL (getgrgid),	/* 70 */
   DEF_SYSCALL (noaction),	/* 71 */

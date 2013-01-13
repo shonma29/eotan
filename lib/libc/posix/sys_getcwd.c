@@ -15,7 +15,11 @@ Version 2, June 1991
 
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_getcwd.c,v 1.1 1997/08/31 13:25:20 night Exp $  */
 
+#include <itron/types.h>
+#include <lowlib.h>
 #include "../native.h"
+#include "../errno.h"
+#include "../libserv/libserv.h"
 
 
 /* getcwd 
@@ -24,7 +28,13 @@ Version 2, June 1991
 char *
 getcwd (char *buf, int size)
 {
-  return ((char *) call_lowlib (PSC_GETCWD, buf, size));
+    if (lowlib_data->dpath_len > size) {
+	errno = EP_RANGE;
+	return (NULL);
+    }
+    strncpy2(buf, lowlib_data->dpath, size);
+    errno = EP_OK;
+    return (buf);
 }
 
 
