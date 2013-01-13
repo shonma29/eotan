@@ -18,7 +18,7 @@ CFLAGS=-O2 -fno-builtin -Wall -Werror -I. -I$(ROOT)/include -I$(ROOT)/kernel $(I
 CC=gcc
 MKDEPEND=$(CC) -M
 STARTADDR=0x00001000
-ENTRY=start
+ENTRY=main
 KERNLIBS= $(ROOT)/lib/libserv.a $(ROOT)/lib/libposix.a \
 	$(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a
 
@@ -28,7 +28,7 @@ AS=as
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-OBJS= start.o main.o device.o posix_if.o lowlib.o stdlib.o
+OBJS= main.o device.o posix_if.o lowlib.o stdlib.o
 
 all: init
 
@@ -39,8 +39,6 @@ init: $(OBJS) $(KERNLIBS)
 main.o: init.h main.c
 
 device.o: init.h device.c
-
-start.o: init.h start.c
 
 lowlib.o: lowlib.c
 
