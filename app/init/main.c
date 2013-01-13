@@ -131,24 +131,12 @@ int main(int ac, B ** av)
     banner();
 
     errno = vsys_inf(1, 0, &rootfs);
-    if ((errno == E_OK) && (rootfs != 0xffffffff)) {
+    if (errno == E_OK) {
 	errno = posix_init(rootfs);
-    } else {
-	for (;;) {
-	    printf("Root file system is... [fd]/hd: ");
-	    read_line_edit(line, sizeof(line));
-	    if (*line == '\0') {
-		if (posix_init(0x80000000) == E_OK)
-		    break;
-	    } else if (strcmp(line, "fd") == 0) {
-		if (posix_init(0x80000000) == E_OK)
-		    break;
-	    } else if (strcmp(line, "hd") == 0) {
-		if (posix_init(0x80010002) == E_OK)
-		    break;
-	    }
-	    printf("Error on boot. retry...\n");
-	}
+    }
+
+    if (errno != E_OK) {
+    	return -1;
     }
 
     lowlib_load("lowlib.posix");

@@ -65,7 +65,5 @@ extern ER open_device(B * dev_name, ID * id, W * dev_desc);
 extern W	getc (FILE *port);
 extern W	printf (B *fmt, ...);
 
-#include "file.h"
-
 
 #endif /* __INIT_H__ */
