@@ -81,7 +81,7 @@ struct syscall_entry syscalls[] =
   DEF_SYSCALL (noaction),		/* 30 */
   DEF_SYSCALL (setuid),		/* 31 */
   DEF_SYSCALL (noaction),		/* 32 */
-  DEF_SYSCALL (time),		/* 33 */
+  DEF_SYSCALL (noaction),		/* 33 */
   DEF_SYSCALL (noaction),		/* 34 */
   DEF_SYSCALL (umask),		/* 35 */
   DEF_SYSCALL (unlink),		/* 36 */

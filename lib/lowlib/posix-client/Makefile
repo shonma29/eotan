@@ -73,7 +73,6 @@ OBJS =	_make_cnnct.o \
 	setuid.o \
 	sleep.o \
 	fstat.o \
-	time.o \
 	umask.o \
 	umount.o \
 	unlink.o \

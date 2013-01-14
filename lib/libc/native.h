@@ -36,8 +36,6 @@ struct sigaction
 
 typedef int	sigset_t;
 
-typedef unsigned long	time_t;
-
 struct tms
 {
 };

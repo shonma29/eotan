@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
+#include <time.h>
 #include <sys/utsname.h>
 
 typedef int pid_t;
@@ -81,7 +82,9 @@ extern int usleep(int usecond);
 extern int sleep(int second);
 /*
 extern int gettimeofday(struct timeval *tv, struct timezone *tz);
+*/
 extern int time(time_t *tm);
+/*
 extern int umask(mode_t mask);
 */
 extern int umount(char *special_file);
