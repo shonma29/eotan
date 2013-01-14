@@ -209,7 +209,7 @@ extern W		exec_program (struct posix_request *req, W procid, B *pathname);
 
 
 /* fork.c */
-extern W		fork (struct proc *parent, W *childid, ID main_task, ID signal_task);
+extern W		proc_fork (struct proc *parent, W *childid, ID main_task, ID signal_task);
 extern W		proc_duplicate (struct proc *source, struct proc *destination);
 
 /* filesystem.c */

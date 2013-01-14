@@ -27,7 +27,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
+#include <sys/utsname.h>
+
 typedef int pid_t;
+
 
 extern int chdir(char *path);
 extern int access(char *path, int mode);
@@ -82,7 +85,7 @@ extern int time(time_t *tm);
 extern int umask(mode_t mask);
 */
 extern int umount(char *special_file);
-extern int uname(char *buf);
+extern int uname(struct utsname *name);
 extern int unlink(char *path);
 /*
 extern int utime(char *path, struct utimbuf *buf);

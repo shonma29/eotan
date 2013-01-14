@@ -1,3 +1,5 @@
+#ifndef _SYS_UTSNAME_H_
+#define _SYS_UTSNAME_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,43 +26,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stdlib.h>
-#include <unistd.h>
 
-int main(int argc, char **argv)
-{
-	char buf[1024];
-	struct utsname name;
-	int pid;
-	int result;
+#define LEN_SYSNAME (256)
 
-	printf("dir = %s\n", getcwd(buf, sizeof(buf)));
-	chdir("/system");
-	printf("dir = %s\n", getcwd(buf, sizeof(buf)));
+struct utsname {
+	char sysname[LEN_SYSNAME];
+	char nodename[LEN_SYSNAME];
+	char release[LEN_SYSNAME];
+	char version[LEN_SYSNAME];
+	char machine[LEN_SYSNAME];
+};
 
-	pid = fork();
-	if (pid == 0) {
-		printf("child's pid = %d, ppid = %d\n",
-				getpid(), getppid());
-		_exit(0);
-	}
-	else {
-		printf("parent's pid = %d, ppid = %d\n",
-				getpid(), getppid());
-		waitpid(-1, &pid, 0);
-	}
-
-	result = uname(&name);
-	if (result == 0) {
-		printf("uname = %s\n", name.sysname);
-		printf("uname = %s\n", name.nodename);
-		printf("uname = %s\n", name.release);
-		printf("uname = %s\n", name.version);
-		printf("uname = %s\n", name.machine);
-	}
-	else {
-		printf("uname errno = %d\n", errno);
-	}
-
-	return 0;
-}
+#endif

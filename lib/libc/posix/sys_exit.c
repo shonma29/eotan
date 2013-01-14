@@ -20,7 +20,7 @@ Version 2, June 1991
  *
  */
 int
-_exit (W status)
+_exit (int status)
 {
   return (call_lowlib (PSC_EXIT, status));
 }

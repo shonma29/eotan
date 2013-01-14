@@ -44,7 +44,7 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
   printk ("psc_fork_f(): proc = 0x%x, proc->vm_tree = 0x%x\n", procp, procp->vm_tree);
 #endif
 
-  errno = fork (procp, &childid, req->param.par_fork.main_task, req->param.par_fork.signal_task);
+  errno = proc_fork (procp, &childid, req->param.par_fork.main_task, req->param.par_fork.signal_task);
   if (errno)
     {
       put_response (rdvno, req, errno, -1, 0, 0);

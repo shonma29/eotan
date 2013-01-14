@@ -42,7 +42,7 @@ int set_keymode(int fd, int mode)
 {
   int error;
 
-  error =  fcntl(fd, FCTL_SET_KEY, mode);
+  error =  fcntl(fd, FCTL_SET_KEY, (void*)mode);
   return error;
 }
 

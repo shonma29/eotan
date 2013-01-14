@@ -15,15 +15,34 @@ Version 2, June 1991
 
 #include <string.h>
 #include "../native.h"
+#include "../errno.h"
 
 
 /* uname 
  *
  */
 int
-uname (char *buf)
+uname (struct utsname *name)
 {
-  return (call_lowlib (PSC_UNAME, strlen (buf), buf));
+  ER			error;
+  struct posix_request	req;
+  struct posix_response	*res = (struct posix_response*)&req;
+
+  req.param.par_uname.uname = name;
+
+  error = _make_connection(PSC_UNAME, &req);
+  if (error != E_OK)
+    {
+      /* What should I do? */
+    }
+
+  else if (res->errno)
+    {
+      errno = res->errno;
+      return (-1);
+    }
+
+  return (res->status);
 }
 
 

@@ -27,13 +27,4 @@ Version 2, June 1991
 #define SYS_VERSION		"B-Free/POSIX A1.0 PC"
 #define SYS_MACHINE		"PC"
 
-struct utsname
-{
-  char		sysname[sizeof(SYS_SYSNAME)];
-  char		nodename[sizeof(SYS_NODENAME)];
-  char		release[sizeof(SYS_RELEASE)];
-  char		version[sizeof(SYS_VERSION)];
-  char		machine[sizeof(SYS_MACHINE)];
-};
-
 #endif /* __UTSNAME_H__ */

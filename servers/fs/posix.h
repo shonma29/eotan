@@ -20,6 +20,7 @@ Version 2, June 1991
 #define __POSIX_H__	1
 
 
+#include <unistd.h>
 #include <itron/rendezvous.h>
 #include "../../kernel/core.h"
 #include "../../kernel/misc.h"

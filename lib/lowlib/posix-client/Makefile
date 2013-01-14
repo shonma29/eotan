@@ -35,7 +35,7 @@
 
 ROOT=../../..
 CC=gcc
-CFLAGS=-O2 -Wall -Werror -I$(ROOT)/include -I$(ROOT)/kernel $(IDENT)
+CFLAGS=-O2 -Wall -Werror -fno-builtin -I$(ROOT)/include -I$(ROOT)/kernel $(IDENT)
 
 
 OBJS =	_make_cnnct.o \
@@ -76,7 +76,6 @@ OBJS =	_make_cnnct.o \
 	time.o \
 	umask.o \
 	umount.o \
-	uname.o \
 	unlink.o \
 	utime.o \
 	waitpid.o \

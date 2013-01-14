@@ -21,12 +21,14 @@ Version 2, June 1991
  *
  */
 int
-open (char *path, int oflag, int mode)
+open (char *path, int oflag, ...)
 {
+  va_list args;
   int pathLen;
 
+  va_start(args, oflag);
   pathLen = strlen (path);
-  return (call_lowlib (PSC_OPEN, pathLen, path, oflag, mode));
+  return (call_lowlib (PSC_OPEN, pathLen, path, oflag, va_arg(args, int)));
 }
 
 

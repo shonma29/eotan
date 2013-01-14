@@ -78,7 +78,7 @@ Version 2, June 1991
  *
  *
  */
-W fork(struct proc *parent, W * childid, ID main_task, ID signal_task)
+W proc_fork(struct proc *parent, W * childid, ID main_task, ID signal_task)
 {
     struct proc *newproc;
     W errno;
