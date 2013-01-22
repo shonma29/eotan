@@ -1,5 +1,5 @@
-#ifndef LIST_H
-#define LIST_H
+#ifndef SET_LIST_H
+#define SET_LIST_H
 /*
 This is free and unencumbered software released into the public domain.
 

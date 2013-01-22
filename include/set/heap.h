@@ -1,5 +1,5 @@
-#ifndef HEAP_H
-#define HEAP_H
+#ifndef SET_HEAP_H
+#define SET_HEAP_H
 /*
 This is free and unencumbered software released into the public domain.
 

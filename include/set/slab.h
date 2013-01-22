@@ -1,5 +1,5 @@
-#ifndef SLAB_H
-#define SLAB_H
+#ifndef SET_SLAB_H
+#define SET_SLAB_H
 /*
 This is free and unencumbered software released into the public domain.
 

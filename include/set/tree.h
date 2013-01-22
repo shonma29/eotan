@@ -1,5 +1,5 @@
-#ifndef TREE_H
-#define TREE_H
+#ifndef SET_TREE_H
+#define SET_TREE_H
 /*
 This is free and unencumbered software released into the public domain.
 
