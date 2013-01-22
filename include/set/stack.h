@@ -1,5 +1,5 @@
-#ifndef _IA32_MUTEX_H_
-#define _IA32_MUTEX_H_ 1
+#ifndef SET_STACK_H
+#define SET_STACK_H
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,40 +26,38 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include "stddef.h"
 
-static inline int mutex_get(volatile char *mtx) {
-	char v;
+typedef struct _stack_entry_t {
+	struct _stack_entry_t *next;
+} stack_entry_t;
 
-	__asm__ __volatile__ ( \
-			"movb $1, %b0\n\t" \
-			"xchgb %b0, (%1)\n\t" \
-			:"=q"(v) \
-			:"r"(mtx));
-	return v;
+typedef struct _stack_head_t {
+	stack_entry_t *next;
+	size_t clock;
+} stack_head_t;
+
+typedef struct _stack_t {
+	stack_head_t head;
+	void *buf;
+} stack_t;
+
+
+static inline void *stack_next(stack_entry_t *entry) {
+	return entry->next;
 }
 
-static inline void mutex_release(volatile char *mtx) {
-	__asm__ __volatile__ ( \
-			"xorb %%al, %%al\n\t" \
-			"xchgb %%al, (%0)\n\t" \
-			: \
-			:"r"(mtx) \
-			:"%al");
+static inline int stack_is_empty(stack_t *guard) {
+	return !(guard->head.next);
 }
 
-static inline int cas2(char *p, unsigned int old_high, unsigned int old_low,
-		unsigned int new_high, unsigned int new_low) {
-	char eq;
+extern size_t stack_entry_size(size_t size);
+extern size_t stack_buf_size(size_t entry_size, size_t entry_num);
 
-	__asm__ __volatile__ ( \
-			"lock\n\t" \
-			"cmpxchg8b %1\n\t" \
-			"setz %0\n\t" \
-			:"=q"(eq) \
-			:"m"(*p), "d"(old_high), "a"(old_low),
-					"c"(new_high), "b"(new_low) \
-			:"memory");
-	return (int)eq;
-}
+extern void stack_initialize(stack_t *guard, void *buf,
+	size_t entry_size, size_t entry_num);
+
+extern void stack_push(stack_t *guard, void *p);
+extern void *stack_pop(stack_t *guard);
 
 #endif

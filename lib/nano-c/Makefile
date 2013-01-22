@@ -38,7 +38,8 @@ OBJS = vnprintf.o memcpy.o memset.o \
 	strlen.o strcpy.o strncpy.o strcat.o strncat.o \
 	strcmp.o strncmp.o \
 	list.o heap.o \
-	slab.o aatree.o
+	slab.o aatree.o \
+	stack.o
 
 .c.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
