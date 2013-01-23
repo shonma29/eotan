@@ -61,13 +61,13 @@ struct syscall_entry syscalls[] =
   DEF_SYSCALL (fcntl),		/* 10 */
   DEF_SYSCALL (fork),		/* 11 */
   DEF_SYSCALL (fstat),	/* 12 */ /* fstat */
-  DEF_SYSCALL (getegid),	/* 13 */
-  DEF_SYSCALL (geteuid),	/* 14 */
-  DEF_SYSCALL (getgid),		/* 15 */
+  DEF_SYSCALL (noaction),	/* 13 */
+  DEF_SYSCALL (noaction),	/* 14 */
+  DEF_SYSCALL (noaction),		/* 15 */
   DEF_SYSCALL (noaction),	/* 16 */
   DEF_SYSCALL (noaction),		/* 17 */
   DEF_SYSCALL (noaction),	/* 18 */
-  DEF_SYSCALL (getuid),		/* 19 */
+  DEF_SYSCALL (noaction),		/* 19 */
   DEF_SYSCALL (link),		/* 20 */
   DEF_SYSCALL (lseek),		/* 21 */
   DEF_SYSCALL (mkdir),		/* 22 */
@@ -76,10 +76,10 @@ struct syscall_entry syscalls[] =
   DEF_SYSCALL (read),		/* 25 */
   DEF_SYSCALL (noaction),		/* 26 */
   DEF_SYSCALL (rmdir),		/* 27 */
-  DEF_SYSCALL (setgid),		/* 28 */
+  DEF_SYSCALL (noaction),		/* 28 */
   DEF_SYSCALL (setpgid),	/* 29 */
   DEF_SYSCALL (noaction),		/* 30 */
-  DEF_SYSCALL (setuid),		/* 31 */
+  DEF_SYSCALL (noaction),		/* 31 */
   DEF_SYSCALL (noaction),		/* 32 */
   DEF_SYSCALL (noaction),		/* 33 */
   DEF_SYSCALL (noaction),		/* 34 */

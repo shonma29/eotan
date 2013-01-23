@@ -52,11 +52,7 @@ OBJS =	_make_cnnct.o \
 	fcntl.o \
 	fork.o \
 	getdents.o \
-	getegid.o \
-	geteuid.o \
-	getgid.o \
 	getgrgid.o \
-	getuid.o \
 	kill.o \
 	link.o \
 	lseek.o \
@@ -68,9 +64,7 @@ OBJS =	_make_cnnct.o \
 	remove.o \
 	rewind.o \
 	rmdir.o \
-	setgid.o \
 	setpgid.o \
-	setuid.o \
 	sleep.o \
 	fstat.o \
 	umask.o \

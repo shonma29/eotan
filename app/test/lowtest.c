@@ -63,8 +63,19 @@ int main(int argc, char **argv)
 		printf("uname errno = %d\n", errno);
 	}
 
-	time(&t);
+	printf("time = %d\n", time(&t));
 	printf("time = %d\n", t);
+
+	printf("uid = %d\n", getuid());
+	printf("euid = %d\n", geteuid());
+	printf("gid = %d\n", getgid());
+	printf("egid = %d\n", getegid());
+	setuid(682);
+	setgid(345);
+	printf("uid = %d\n", getuid());
+	printf("euid = %d\n", geteuid());
+	printf("gid = %d\n", getgid());
+	printf("egid = %d\n", getegid());
 
 	return 0;
 }
