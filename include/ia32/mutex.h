@@ -47,7 +47,8 @@ static inline void mutex_release(volatile char *mtx) {
 			:"%al");
 }
 
-static inline int cas2(char *p, unsigned int old_high, unsigned int old_low,
+static inline int cas64(char *p,
+		unsigned int old_high, unsigned int old_low,
 		unsigned int new_high, unsigned int new_low) {
 	char eq;
 

@@ -34,7 +34,7 @@ typedef struct _stack_entry_t {
 
 typedef struct _stack_head_t {
 	stack_entry_t *next;
-	size_t clock;
+	size_t count;
 } stack_head_t;
 
 typedef struct _stack_t {

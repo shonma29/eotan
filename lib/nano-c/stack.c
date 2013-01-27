@@ -44,7 +44,6 @@ void stack_initialize(stack_t *guard, void *buf,
 	stack_entry_t *p = (stack_entry_t*)buf;
 
 	guard->head.next = p;
-	guard->head.clock = 0;
 	guard->buf = buf;
 
 	for (i = 0; i < entry_num - 1; i++) {
@@ -68,12 +67,12 @@ void stack_push(stack_t *guard, void *p) {
 		stack_head_t oldhead = guard->head;
 
 		entry->next = oldhead.next;
-		newhead.clock = oldhead.clock + 1;
+		newhead.count = oldhead.count + 1;
 
-		if (cas2((char*)&(guard->head),
-				(unsigned int)oldhead.clock,
+		if (cas64((char*)&(guard->head),
+				(unsigned int)oldhead.count,
 				(unsigned int)oldhead.next,
-				(unsigned int)newhead.clock,
+				(unsigned int)newhead.count,
 				(unsigned int)newhead.next)) {
 			break;
 		}
@@ -88,12 +87,12 @@ void *stack_pop(stack_t *guard) {
 		if (!oldhead.next)	return NULL;
 
 		newhead.next = oldhead.next->next;
-		newhead.clock = oldhead.clock + 1;
+		newhead.count = oldhead.count + 1;
 
-		if (cas2((char*)&(guard->head),
-				(unsigned int)oldhead.clock,
+		if (cas64((char*)&(guard->head),
+				(unsigned int)oldhead.count,
 				(unsigned int)oldhead.next,
-				(unsigned int)newhead.clock,
+				(unsigned int)newhead.count,
 				(unsigned int)newhead.next)) {
 			return oldhead.next;
 		}
