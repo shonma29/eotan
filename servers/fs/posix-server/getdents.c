@@ -29,13 +29,13 @@ W psc_getdents_f(RDVNO rdvno, struct posix_request *req)
     errno =
 	proc_get_file(req->procid, req->param.par_getdents.fileid, &fp);
     if (errno) {
-	put_response(rdvno, req, errno, -1, 0, 0);
+	put_response(rdvno, errno, -1, 0);
 	return (FAIL);
     } else if (fp == 0) {
-	put_response(rdvno, req, EP_INVAL, -1, 0, 0);
+	put_response(rdvno, EP_INVAL, -1, 0);
 	return (FAIL);
     } else if (fp->f_inode == 0) {
-	put_response(rdvno, req, EP_INVAL, -1, 0, 0);
+	put_response(rdvno, EP_INVAL, -1, 0);
 	return (FAIL);
     }
 
@@ -44,12 +44,12 @@ W psc_getdents_f(RDVNO rdvno, struct posix_request *req)
      */
     if (fp->f_flag & F_PIPE) {
 	/* パイプの読み書き */
-	put_response(rdvno, req, EP_INVAL, -1, 0, 0);
+	put_response(rdvno, EP_INVAL, -1, 0);
 	return (FAIL);
     }
 
     if ((fp->f_inode->i_mode & FS_FMT_MSK) != FS_FMT_DIR) {
-	put_response(rdvno, req, EP_INVAL, -1, 0, 0);
+	put_response(rdvno, EP_INVAL, -1, 0);
 	return (FAIL);
     }
 
@@ -58,10 +58,10 @@ W psc_getdents_f(RDVNO rdvno, struct posix_request *req)
 			req->param.par_getdents.length, &len, &flen);
 
     if (errno) {
-	put_response(rdvno, req, errno, -1, 0, 0);
+	put_response(rdvno, errno, -1, 0);
     }
 
     fp->f_offset += flen;
-    put_response(rdvno, req, EP_OK, len, 0, 0);
+    put_response(rdvno, EP_OK, len, 0);
     return (SUCCESS);
 }

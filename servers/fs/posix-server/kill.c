@@ -35,7 +35,7 @@ W psc_kill_f(RDVNO rdvno, struct posix_request *req)
     if (errno) {
 	return errno;
 	if (req->caller != KERNEL_TASK) {
-	    put_response(rdvno, req, EP_SRCH, 0, 0, 0);
+	    put_response(rdvno, EP_SRCH, 0, 0);
 	}
     }
     myprocp->proc_exst = (-1);	/* 強制終了時のステータスは (-1) で良いか? */
@@ -44,7 +44,7 @@ W psc_kill_f(RDVNO rdvno, struct posix_request *req)
     if (errno) {
 	return errno;
 	if (req->caller != KERNEL_TASK) {
-	    put_response(rdvno, req, EP_SRCH, 0, 0, 0);
+	    put_response(rdvno, EP_SRCH, 0, 0);
 	}
     }
     wpid = procp->proc_wpid;
@@ -54,7 +54,7 @@ W psc_kill_f(RDVNO rdvno, struct posix_request *req)
 	procp->proc_status = PS_RUN;
 	preq.operation = PSC_WAITPID;
 	exst = (myprocp->proc_exst << 8);
-	put_response(rdvno, &preq, EP_OK, mypid, exst, 0);
+	put_response(rdvno, EP_OK, mypid, exst);
 
 	/* エントリーの開放 */
 	proc_exit(mypid);
@@ -84,7 +84,7 @@ W psc_kill_f(RDVNO rdvno, struct posix_request *req)
 
     if ((req->caller != KERNEL_TASK) &&
 	(req->caller != myprocp->proc_maintask)) {
-	put_response(rdvno, req, EP_OK, 0, 0, 0);
+	put_response(rdvno, EP_OK, 0, 0);
     }
     return (SUCCESS);
 }

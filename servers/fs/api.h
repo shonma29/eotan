@@ -615,14 +615,11 @@ struct posix_request
 
 struct posix_response
 {
-  ID	receive_port;		/* 要求受信用のポート	*/
   W	msg_length;		/* メッセージの長さ	*/
-  W	operation;		/* 要求番号(システムコールに対応)	*/
   W	errno;			/* エラー番号 */
   W	status;			/* ステータス(リターン値) */
 
   W	ret1;			/* サブに使用するリターン値 */
-  W	ret2;			/* サブに使用するリターン値 */
 };
 
 

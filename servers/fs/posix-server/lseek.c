@@ -32,7 +32,7 @@ W psc_lseek_f(RDVNO rdvno, struct posix_request *req)
 
     errno = proc_get_file(req->procid, req->param.par_lseek.fileid, &fp);
     if (errno) {
-	put_response(rdvno, req, errno, -1, errno, 0);
+	put_response(rdvno, errno, -1, errno);
 	return (FAIL);
     }
 
@@ -50,7 +50,7 @@ W psc_lseek_f(RDVNO rdvno, struct posix_request *req)
 	break;
 
     default:
-	put_response(rdvno, req, EP_INVAL, -1, 0, 0);
+	put_response(rdvno, EP_INVAL, -1, 0);
 	return (FAIL);
     }
 
@@ -71,7 +71,7 @@ W psc_lseek_f(RDVNO rdvno, struct posix_request *req)
     }
 #endif
 
-    put_response(rdvno, req, EP_OK, fp->f_offset, 0, 0);
+    put_response(rdvno, EP_OK, fp->f_offset, 0);
 
     return (SUCCESS);
 }

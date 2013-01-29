@@ -46,24 +46,24 @@ W psc_write_f(RDVNO rdvno, struct posix_request *req)
 
     errno = proc_get_file(req->procid, req->param.par_write.fileid, &fp);
     if (errno) {
-	put_response(rdvno, req, errno, -1, 0, 0);
+	put_response(rdvno, errno, -1, 0);
 	return (FAIL);
     } else if (fp == 0) {
-	put_response(rdvno, req, EP_INVAL, -1, 0, 0);
+	put_response(rdvno, EP_INVAL, -1, 0);
 	return (FAIL);
     } else if (fp->f_inode == 0) {
-	put_response(rdvno, req, EP_INVAL, -1, 0, 0);
+	put_response(rdvno, EP_INVAL, -1, 0);
 	return (FAIL);
     }
 
     if (fp->f_omode == O_RDONLY) {
-	put_response(rdvno, req, EP_BADF, -1, 0, 0);
+	put_response(rdvno, EP_BADF, -1, 0);
 	return (FAIL);
     }
 
     if (fp->f_flag & F_PIPE) {
 	/* パイプの読み書き */
-	put_response(rdvno, req, EP_NOSUP, -1, 0, 0);
+	put_response(rdvno, EP_NOSUP, -1, 0);
 	return (FAIL);
     }
 #ifdef debug
@@ -88,7 +88,7 @@ W psc_write_f(RDVNO rdvno, struct posix_request *req)
       }
     }
     if (errno) {
-	put_response(rdvno, req, errno, -1, 0, 0);
+	put_response(rdvno, errno, -1, 0);
 	return (FAIL);
     }
 
@@ -133,11 +133,11 @@ W psc_write_f(RDVNO rdvno, struct posix_request *req)
     }
 
     if (errno) {
-	put_response(rdvno, req, errno, -1, 0, 0);
+	put_response(rdvno, errno, -1, 0);
 	return (FAIL);
     }
 
     fp->f_offset += i;
-    put_response(rdvno, req, EP_OK, i, 0, 0);
+    put_response(rdvno, EP_OK, i, 0);
     return (SUCCESS);
 }

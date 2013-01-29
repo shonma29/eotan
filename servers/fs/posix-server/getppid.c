@@ -29,11 +29,11 @@ psc_getppid_f (RDVNO rdvno, struct posix_request *req)
   err = proc_get_ppid (req->procid, &ppid);
   if (err)
     {
-      put_response (rdvno, req, err, -1, 0, 0);
+      put_response (rdvno, err, -1, 0);
       return (FAIL);
     }
   
-  put_response (rdvno, req, EP_OK, ppid, 0, 0);
+  put_response (rdvno, EP_OK, ppid, 0);
   return (SUCCESS);
 }  
 

@@ -46,7 +46,7 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
     errno = proc_alloc_fileid(req->procid, &fileid);
     if (errno) {
 	/* メモリ取得エラー */
-	put_response(rdvno, req, EP_NOMEM, -1, 0, 0);
+	put_response(rdvno, EP_NOMEM, -1, 0);
 	return (FAIL);
     }
 #ifdef USE_ALLOCA
@@ -54,7 +54,7 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
 
     if (pathname == NULL) {
 	/* メモリ取得エラー */
-	put_response(rdvno, req, EP_NOMEM, -1, 0, 0);
+	put_response(rdvno, EP_NOMEM, -1, 0);
 	return (FAIL);
     }
 #endif
@@ -68,9 +68,9 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
     if (errno) {
 	/* パス名のコピーエラー */
 	if (errno == E_PAR)
-	    put_response(rdvno, req, EP_INVAL, -1, 0, 0);
+	    put_response(rdvno, EP_INVAL, -1, 0);
 	else
-	    put_response(rdvno, req, EP_FAULT, -1, 0, 0);
+	    put_response(rdvno, EP_FAULT, -1, 0);
 
 	return (FAIL);
     }
@@ -80,7 +80,7 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
     if (*pathname != '/') {
 	errno = proc_get_cwd(req->procid, &startip);
 	if (errno) {
-	    put_response(rdvno, req, errno, -1, 0, 0);
+	    put_response(rdvno, errno, -1, 0);
 	    return (FAIL);
 	}
     } else {
@@ -88,18 +88,18 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
     }
     errno = proc_get_uid(req->procid, &(acc.uid));
     if (errno) {
-	put_response(rdvno, req, errno, -1, 0, 0);
+	put_response(rdvno, errno, -1, 0);
 	return (FAIL);
     }
     errno = proc_get_euid(req->procid, &euid);
     if (errno) {
-	put_response(rdvno, req, errno, -1, 0, 0);
+	put_response(rdvno, errno, -1, 0);
 	return (FAIL);
     }
 
     errno = proc_get_gid(req->procid, &(acc.gid));
     if (errno) {
-	put_response(rdvno, req, errno, -1, 0, 0);
+	put_response(rdvno, errno, -1, 0);
 	return (FAIL);
     }
 
@@ -111,7 +111,7 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
 	printf("open systemcall: Not found entry.\n");
 #endif
 	/* ファイルがオープンできない */
-	put_response(rdvno, req, errno, -1, 0, 0);
+	put_response(rdvno, errno, -1, 0);
 	return (FAIL);
     }
 
@@ -125,20 +125,20 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
 
     errno = fs_close_file(newip);
     if (errno) {
-	put_response(rdvno, req, errno, -1, 0, 0);
+	put_response(rdvno, errno, -1, 0);
 	return (FAIL);
     }
 
     /* アクセス権限のチェック */
     if ((acc.uid == 0) || (euid == 0)) {
 	/* root ユーザの場合には、無条件で成功とする */
-	put_response(rdvno, req, EP_OK, 0, 0, 0);
+	put_response(rdvno, EP_OK, 0, 0);
 	return (SUCCESS);
     } else if ((newip->i_mode & accmode) == 0) {
-	put_response(rdvno, req, EP_ACCESS, -1, 0, 0);
+	put_response(rdvno, EP_ACCESS, -1, 0);
 	return (FAIL);
     }
 
-    put_response(rdvno, req, EP_OK, 0, 0, 0);
+    put_response(rdvno, EP_OK, 0, 0);
     return (SUCCESS);
 }

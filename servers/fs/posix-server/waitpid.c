@@ -49,7 +49,7 @@ psc_waitpid_f (RDVNO rdvno, struct posix_request *req)
       if (procp->proc_status == PS_ZOMBIE) {
 	/* 子プロセスの情報をクリアし，親プロセスに返事を送る */
 	exst = (procp->proc_exst << 8);
-	put_response (rdvno, req, EP_OK, i, exst, 0);
+	put_response (rdvno, EP_OK, i, exst);
 	
 	/* 親プロセスの状態変更 */
 	proc_get_procp(mypid, &procp);
@@ -66,7 +66,7 @@ psc_waitpid_f (RDVNO rdvno, struct posix_request *req)
     /* 対応する子プロセスはあったが，まだ終了していなかった */
     if (req->param.par_waitpid.opts & WNOHANG) {
       /* 親に返事を送る必要がある */
-      put_response (rdvno, req, EP_OK, 0, 0, 0);
+      put_response (rdvno, EP_OK, 0, 0);
       return (SUCCESS);
     }
     /* 親プロセスの状態を変更し，返事を送らずにシステムコールを終了 */
@@ -78,7 +78,7 @@ psc_waitpid_f (RDVNO rdvno, struct posix_request *req)
   }
   else {
     /* エラーを返す */
-    put_response (rdvno, req, EP_CHILD, 0, 0, 0);
+    put_response (rdvno, EP_CHILD, 0, 0);
     return (FAIL);
   }
 }  

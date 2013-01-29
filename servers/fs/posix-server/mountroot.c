@@ -34,12 +34,12 @@ psc_mountroot_f (RDVNO rdvno, struct posix_request *req)
 
   if (err)
     {
-      put_response (rdvno, req, err, -1, 0, 0);
+      put_response (rdvno, err, -1, 0);
       return (FAIL);
     }
   else
     {
-      put_response (rdvno, req, err, 0, 0, 0);
+      put_response (rdvno, err, 0, 0);
     }
   return (SUCCESS);
 }

@@ -39,7 +39,7 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
   if (errno)
     {
       /* メモリ取得エラー */
-      put_response (rdvno, req, EP_NOMEM, -1, 0, 0);
+      put_response (rdvno, EP_NOMEM, -1, 0);
       return (FAIL);
     }
 
@@ -48,7 +48,7 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
   if (pathname == NULL)
     {
       /* メモリ取得エラー */
-      put_response (rdvno, req, EP_NOMEM, -1, 0, 0);
+      put_response (rdvno, EP_NOMEM, -1, 0);
       return (FAIL);
     }
 #endif
@@ -59,9 +59,9 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
     {
       /* パス名のコピーエラー */
       if (errno == E_PAR)
-	put_response (rdvno, req, EP_INVAL, -1, 0, 0);
+	put_response (rdvno, EP_INVAL, -1, 0);
       else
-	put_response (rdvno, req, EP_FAULT, -1, 0, 0);
+	put_response (rdvno, EP_FAULT, -1, 0);
 	
       return (FAIL);
     }
@@ -71,7 +71,7 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
       errno = proc_get_cwd (req->procid, &startip);
       if (errno)
 	{
-	  put_response (rdvno, req, errno, -1, 0, 0);
+	  put_response (rdvno, errno, -1, 0);
 	  return (FAIL);
 	}
     }
@@ -82,21 +82,21 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
   errno = proc_get_uid (req->procid, &(acc.uid));
   if (errno)
     {
-      put_response (rdvno, req, errno, -1, 0, 0);
+      put_response (rdvno, errno, -1, 0);
       return (FAIL);
     }
 
   errno = proc_get_gid (req->procid, &(acc.gid));
   if (errno)
     {
-      put_response (rdvno, req, errno, -1, 0, 0);
+      put_response (rdvno, errno, -1, 0);
       return (FAIL);
     }
 
   errno = proc_get_umask (req->procid, &umask);
   if (errno)
     {
-      put_response (rdvno, req, errno, -1, 0, 0);
+      put_response (rdvno, errno, -1, 0);
       return (FAIL);
     }
 
@@ -107,11 +107,11 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
   if (errno)
     {
       /* ファイルがオープンできない */
-      put_response (rdvno, req, errno, -1, 0, 0);
+      put_response (rdvno, errno, -1, 0);
       return (FAIL);
     }
   
   fs_close_file (newip);
-  put_response (rdvno, req, EP_OK, 0, 0, 0);
+  put_response (rdvno, EP_OK, 0, 0);
   return (SUCCESS);
 }  

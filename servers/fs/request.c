@@ -97,22 +97,15 @@ W get_request(struct posix_request * req)
  *
  */
 W
-put_response(RDVNO rdvno, struct posix_request * req, W errno, W status, W ret1, W ret2)
+put_response(RDVNO rdvno, W errno, W status, W ret1)
 {
     static struct posix_response res;
     ER syserr;
 
-    if (req == NULL) {
-	return (EP_INVAL);
-    }
-
-    res.receive_port = PORT_FS;
     res.msg_length = sizeof(res);
-    res.operation = req->operation;
     res.errno = errno;
     res.status = status;
     res.ret1 = ret1;
-    res.ret2 = ret2;
 
     /* 要求元に送信する */
     syserr = rpl_rdv(rdvno, &res, sizeof(res));
@@ -123,8 +116,8 @@ put_response(RDVNO rdvno, struct posix_request * req, W errno, W status, W ret1,
 /* エラーになったことをリクエストの送り元に返す
  *
  */
-W error_response(RDVNO rdvno, struct posix_request * req, W errno)
+W error_response(RDVNO rdvno, W errno)
 {
     /* 要求元に送信する */
-    return (put_response(rdvno, req, errno, 0, 0, 0));
+    return (put_response(rdvno, errno, 0, 0));
 }

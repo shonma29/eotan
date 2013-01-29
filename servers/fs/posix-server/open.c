@@ -53,14 +53,14 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
     errno = proc_alloc_fileid(req->procid, &fileid);
     if (errno) {
 	/* メモリ取得エラー */
-	put_response(rdvno, req, EP_NOMEM, -1, 0, 0);
+	put_response(rdvno, EP_NOMEM, -1, 0);
 	return (FAIL);
     }
 #ifdef USE_ALLOCA
     pathname = alloca(req->param.par_open.pathlen + 1);
     if (pathname == NULL) {
 	/* メモリ取得エラー */
-	put_response(rdvno, req, EP_NOMEM, -1, 0, 0);
+	put_response(rdvno, EP_NOMEM, -1, 0);
 	return (FAIL);
     }
 #endif
@@ -71,9 +71,9 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
     if (errno) {
 	/* パス名のコピーエラー */
 	if (errno == E_PAR)
-	    put_response(rdvno, req, EP_INVAL, -1, 0, 0);
+	    put_response(rdvno, EP_INVAL, -1, 0);
 	else
-	    put_response(rdvno, req, EP_FAULT, -1, 0, 0);
+	    put_response(rdvno, EP_FAULT, -1, 0);
 
 	return (FAIL);
     }
@@ -84,7 +84,7 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
     if (*pathname != '/') {
 	errno = proc_get_cwd(req->procid, &startip);
 	if (errno) {
-	    put_response(rdvno, req, errno, -1, 0, 0);
+	    put_response(rdvno, errno, -1, 0);
 	    return (FAIL);
 	}
     } else {
@@ -92,19 +92,19 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
     }
     errno = proc_get_euid(req->procid, &(acc.uid));
     if (errno) {
-	put_response(rdvno, req, errno, -1, 0, 0);
+	put_response(rdvno, errno, -1, 0);
 	return (FAIL);
     }
 
     errno = proc_get_egid(req->procid, &(acc.gid));
     if (errno) {
-	put_response(rdvno, req, errno, -1, 0, 0);
+	put_response(rdvno, errno, -1, 0);
 	return (FAIL);
     }
 
     errno = proc_get_umask(req->procid, &umask);
     if (errno) {
-	put_response(rdvno, req, errno, -1, 0, 0);
+	put_response(rdvno, errno, -1, 0);
 	return (FAIL);
     }
 
@@ -117,7 +117,7 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
 	printf("open systemcall: Not found entry.\n");
 #endif
 	/* ファイルがオープンできない */
-	put_response(rdvno, req, errno, -1, 0, 0);
+	put_response(rdvno, errno, -1, 0);
 	return (FAIL);
     }
 
@@ -135,28 +135,28 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
 	 */
 #ifdef notdef
 	if (proc_get_uid(req->procid, &uid)) {
-	    put_response(rdvno, req, EP_INVAL, -1, 0, 0);
+	    put_response(rdvno, EP_INVAL, -1, 0);
 	    return (FAIL);
 	}
 	if (proc_get_euid(req->procid, &euid)) {
-	    put_response(rdvno, req, EP_INVAL, -1, 0, 0);
+	    put_response(rdvno, EP_INVAL, -1, 0);
 	    return (FAIL);
 	}
 	if ((uid != 0) && (euid != 0)) {
 	    fs_close_file(newip);
-	    put_response(rdvno, req, EP_ISDIR, -1, 0, 0);
+	    put_response(rdvno, EP_ISDIR, -1, 0);
 	    return (FAIL);
 	}
 #else
 	if (acc.uid != SU_UID) {
 	    fs_close_file(newip);
-	    put_response(rdvno, req, EP_ACCESS, -1, 0, 0);
+	    put_response(rdvno, EP_ACCESS, -1, 0);
 	    return (FAIL);
 	}
 #endif
 	if (req->param.par_open.oflag != O_RDONLY) {
 	    fs_close_file(newip);
-	    put_response(rdvno, req, EP_ISDIR, -1, 0, 0);
+	    put_response(rdvno, EP_ISDIR, -1, 0);
 	    return (FAIL);
 	}
     } else if (newip->i_mode & FS_FMT_DEV) {
@@ -168,7 +168,7 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
 	}
 	if (errno != E_OK) {
 	    fs_close_file(newip);
-	    put_response(rdvno, req, EP_ACCESS, -1, 0, 0);
+	    put_response(rdvno, EP_ACCESS, -1, 0);
 	    return (FAIL);
 	}
     }
@@ -176,10 +176,10 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
     if (proc_set_file(req->procid, fileid,
 		      req->param.par_open.oflag, newip)) {
 	fs_close_file(newip);
-	put_response(rdvno, req, EP_INVAL, -1, 0, 0);
+	put_response(rdvno, EP_INVAL, -1, 0);
 	return (FAIL);
     }
 
-    put_response(rdvno, req, EP_OK, fileid, 0, 0);
+    put_response(rdvno, EP_OK, fileid, 0);
     return (SUCCESS);
 }

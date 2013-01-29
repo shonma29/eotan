@@ -152,9 +152,8 @@ extern void banner(void);
 /* request.c */
 extern W init_port(void);
 extern W get_request(struct posix_request *req);
-extern W put_response(RDVNO rdvno, struct posix_request *req,
-		      W errno, W status, W ret1, W ret2);
-extern W error_response(RDVNO rdvno, struct posix_request *req, W errno);
+extern W put_response(RDVNO rdvno, W errno, W status, W ret1);
+extern W error_response(RDVNO rdvno, W errno);
 
 
 #define printk dbg_printf

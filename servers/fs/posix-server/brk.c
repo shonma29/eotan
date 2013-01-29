@@ -38,7 +38,7 @@ W psc_brk_f(RDVNO rdvno, struct posix_request *req)
 	   req->param.par_brk.end_adr);
 #endif
     if (err) {
-	put_response(rdvno, req, err, -1, 0, 0);
+	put_response(rdvno, err, -1, 0);
 	return (FAIL);
     }
 
@@ -64,7 +64,7 @@ W psc_brk_f(RDVNO rdvno, struct posix_request *req)
     }
 
     if (err) {
-	put_response(rdvno, req, err, -1, 0, 0);
+	put_response(rdvno, err, -1, 0);
 	return (FAIL);
     }
 
@@ -75,6 +75,6 @@ W psc_brk_f(RDVNO rdvno, struct posix_request *req)
 	   reg.start_addr, reg.min_size, reg.max_size);
 #endif
 
-    put_response(rdvno, req, EP_OK, 0, 0, 0);
+    put_response(rdvno, EP_OK, 0, 0);
     return (SUCCESS);
 }

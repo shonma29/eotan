@@ -29,15 +29,15 @@ W psc_fstat_f(RDVNO rdvno, struct posix_request *req)
 
     errno = proc_get_file(req->procid, req->param.par_fstat.fileid, &fp);
     if (errno) {
-	put_response(rdvno, req, errno, -1, 0, 0);
+	put_response(rdvno, errno, -1, 0);
 	return (FAIL);
     }
 
     if (fp == 0) {
-	put_response(rdvno, req, EP_INVAL, -1, 0, 0);
+	put_response(rdvno, EP_INVAL, -1, 0);
 	return (FAIL);
     } else if (fp->f_inode == 0) {
-	put_response(rdvno, req, EP_INVAL, -1, 0, 0);
+	put_response(rdvno, EP_INVAL, -1, 0);
 	return (FAIL);
     }
 
@@ -65,11 +65,11 @@ W psc_fstat_f(RDVNO rdvno, struct posix_request *req)
 	vput_reg(req->caller, req->param.par_fstat.st, sizeof(struct stat),
 		 &st);
     if (errno) {
-	put_response(rdvno, req, EP_INVAL, 0, 0, 0);
+	put_response(rdvno, EP_INVAL, 0, 0);
 	return (FAIL);
     }
 
-    put_response(rdvno, req, EP_OK, 0, 0, 0);
+    put_response(rdvno, EP_OK, 0, 0);
 
     return (SUCCESS);
 }

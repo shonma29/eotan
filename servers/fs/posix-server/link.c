@@ -30,9 +30,9 @@ W psc_link_f(RDVNO rdvno, struct posix_request *req)
     if (errno) {
 	/* パス名のコピーエラー */
 	if (errno == E_PAR)
-	    put_response(rdvno, req, EP_INVAL, -1, 0, 0);
+	    put_response(rdvno, EP_INVAL, -1, 0);
 	else
-	    put_response(rdvno, req, EP_FAULT, -1, 0, 0);
+	    put_response(rdvno, EP_FAULT, -1, 0);
 
 	return (FAIL);
     }
@@ -41,9 +41,9 @@ W psc_link_f(RDVNO rdvno, struct posix_request *req)
     if (errno) {
 	/* パス名のコピーエラー */
 	if (errno == E_PAR)
-	    put_response(rdvno, req, EP_INVAL, -1, 0, 0);
+	    put_response(rdvno, EP_INVAL, -1, 0);
 	else
-	    put_response(rdvno, req, EP_FAULT, -1, 0, 0);
+	    put_response(rdvno, EP_FAULT, -1, 0);
 
 	return (FAIL);
     }
@@ -55,21 +55,21 @@ W psc_link_f(RDVNO rdvno, struct posix_request *req)
      */
     errno = proc_get_euid(req->procid, &(acc.uid));
     if (errno) {
-	put_response(rdvno, req, errno, 0, 0, 0);
+	put_response(rdvno, errno, 0, 0);
 	return (FAIL);
     }
     errno = proc_get_egid(req->procid, &(acc.gid));
     if (errno) {
-	put_response(rdvno, req, errno, 0, 0, 0);
+	put_response(rdvno, errno, 0, 0);
 	return (FAIL);
     }
 
     errno = fs_link_file(req->procid, src, req->param.par_link.srclen,
 			 dst, req->param.par_link.dstlen, &acc);
     if (errno) {
-	put_response(rdvno, req, errno, 0, 0, 0);
+	put_response(rdvno, errno, 0, 0);
 	return (FAIL);
     }
-    put_response(rdvno, req, EP_OK, 0, 0, 0);
+    put_response(rdvno, EP_OK, 0, 0);
     return (SUCCESS);
 }

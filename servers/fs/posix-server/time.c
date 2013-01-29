@@ -63,7 +63,7 @@ W psc_time_f(RDVNO rdvno, struct posix_request * req)
 			 req->param.par_time.tv, sizeof(struct timeval),
 			 &tv);
 	if (errno) {
-	    put_response(rdvno, req, errno, -1, 0, 0);
+	    put_response(rdvno, errno, -1, 0);
 	    return (FAIL);
 	}
 
@@ -73,11 +73,11 @@ W psc_time_f(RDVNO rdvno, struct posix_request * req)
 			 req->param.par_time.tz, sizeof(struct timezone),
 			 &tz);
 	if (errno) {
-	    put_response(rdvno, req, errno, -1, 0, 0);
+	    put_response(rdvno, errno, -1, 0);
 	    return (FAIL);
 	}
     }
 
-    put_response(rdvno, req, EP_OK, 0, 0, 0);
+    put_response(rdvno, EP_OK, 0, 0);
     return (SUCCESS);
 }

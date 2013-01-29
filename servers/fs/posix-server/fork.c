@@ -36,7 +36,7 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
   if (errno)
     {
       printk ("posix: invalid process id (%d)\n", req->procid);
-      put_response (rdvno, req, errno, -1, 0, 0);
+      put_response (rdvno, errno, -1, 0);
       return (FAIL);
     }
 
@@ -47,10 +47,10 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
   errno = proc_fork (procp, &childid, req->param.par_fork.main_task, req->param.par_fork.signal_task);
   if (errno)
     {
-      put_response (rdvno, req, errno, -1, 0, 0);
+      put_response (rdvno, errno, -1, 0);
       return (FAIL);
     }
 
-  put_response (rdvno, req, EP_OK, childid, 0, 0);	/* 親プロセスに対して応答 */
+  put_response (rdvno, EP_OK, childid, 0);	/* 親プロセスに対して応答 */
   return (SUCCESS);
 }  

@@ -85,13 +85,13 @@ W psc_fcntl_f(RDVNO rdvno, struct posix_request * req)
 
     errno = proc_get_file(req->procid, req->param.par_fcntl.fileid, &fp);
     if (errno) {
-	put_response(rdvno, req, errno, -1, 0, 0);
+	put_response(rdvno, errno, -1, 0);
 	return (FAIL);
     } else if (fp == 0) {
-	put_response(rdvno, req, EP_INVAL, -1, 0, 0);
+	put_response(rdvno, EP_INVAL, -1, 0);
 	return (FAIL);
     } else if (fp->f_inode == 0) {
-	put_response(rdvno, req, EP_INVAL, -1, 0, 0);
+	put_response(rdvno, EP_INVAL, -1, 0);
 	return (FAIL);
     }
 
@@ -104,16 +104,16 @@ W psc_fcntl_f(RDVNO rdvno, struct posix_request * req)
 	 */
 	errno = control_device(device, req);
 	if (errno) {
-	    put_response(rdvno, req, errno, errno, 0, 0);
+	    put_response(rdvno, errno, errno, 0);
 	    return (FAIL);
 	} else {
-	    put_response(rdvno, req, EP_OK, errno, 0, 0);
+	    put_response(rdvno, EP_OK, errno, 0);
 	    return (SUCCESS);
 	}
     } else {
 	/* とりあえず、サポートしていないというエラーで返す
 	 */
-	put_response(rdvno, req, EP_NOSUP, 0, 0, 0);
+	put_response(rdvno, EP_NOSUP, 0, 0);
     }
 
     return (FAIL);

@@ -26,10 +26,10 @@ psc_getuid_f (RDVNO rdvno, struct posix_request *req)
   err = proc_get_uid (req->procid, &uid);
   if (err)
     {
-      put_response (rdvno, req, err, -1, 0, 0);
+      put_response (rdvno, err, -1, 0);
       return (FAIL);
     }
   
-  put_response (rdvno, req, EP_OK, uid, 0, 0);
+  put_response (rdvno, EP_OK, uid, 0);
   return (SUCCESS);
 }  
