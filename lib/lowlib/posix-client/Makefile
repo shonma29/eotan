@@ -61,7 +61,6 @@ OBJS =	_make_cnnct.o \
 	mount.o \
 	open.o \
 	read.o \
-	remove.o \
 	rmdir.o \
 	setpgid.o \
 	sleep.o \

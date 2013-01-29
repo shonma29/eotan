@@ -61,7 +61,6 @@ OBJS=   call_lowlib.o \
 	posix/sys_umount.o \
 	posix/sys_open.o \
 	posix/sys_read.o \
-	posix/sys_remove.o \
 	posix/sys_rename.o \
 	posix/sys_rmdir.o \
 	posix/sys_setgid.o \

@@ -69,7 +69,6 @@ OBJS =	access.o \
 	mountroot.o \
 	open.o \
 	read.o \
-	remove.o \
 	rmdir.o \
 	setgid.o \
 	setpgid.o \

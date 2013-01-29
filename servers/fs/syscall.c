@@ -233,7 +233,7 @@ struct posix_syscall	syscall_table[] =
   { "getgroups",	PSC_GETGROUPS,		psc_noaction_f },
   { "getlogin",		PSC_GETLOGIN,		psc_noaction_f },
   { "mkfifo",		PSC_MKFIFO,		psc_noaction_f },
-  { "remove",		PSC_REMOVE,		psc_remove_f },
+  { "remove",		PSC_REMOVE,		psc_noaction_f },
   { "rewind",		PSC_REWIND,		psc_noaction_f },
   { "sleep",		PSC_SLEEP,		psc_noaction_f },
   { "ttyname",		PSC_TTYNAME,		psc_noaction_f },

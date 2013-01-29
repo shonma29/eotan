@@ -479,16 +479,6 @@ struct psc_read
 };
 
 
-/* psc_remove -
- *
- */
-struct psc_remove
-{
-  W		pathlen;
-  B		*path;
-};
-
-
 /* psc_rename -
  *
  */
@@ -498,15 +488,6 @@ struct psc_rename
   B		*oldpath;
   W		newpathlen;
   B		*newpath;
-};
-
-
-/* psc_rewind -
- *
- */
-struct psc_rewind
-{
-  W		fileid;
 };
 
 
@@ -926,9 +907,7 @@ struct posix_request
     struct psc_pause		par_pause;
     struct psc_pipe		par_pipe;
     struct psc_read		par_read;
-    struct psc_remove		par_remove;
     struct psc_rename		par_rename;
-    struct psc_rewind		par_rewind;
     struct psc_rmdir		par_rmdir;
     struct psc_setgid		par_setgid;
     struct psc_setpgid		par_setpgid;
