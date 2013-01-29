@@ -164,7 +164,7 @@ struct posix_syscall	syscall_table[] =
   { "chmod",		PSC_CHMOD,		psc_chmod_f },
   { "chown",		PSC_CHOWN,		psc_chown_f },
   { "close",		PSC_CLOSE,		psc_close_f },
-  { "creat",		PSC_CREAT,		psc_creat_f },
+  { "creat",		PSC_CREAT,		psc_noaction_f },
   { "dup",		PSC_DUP,		psc_dup_f },
   { "exec",		PSC_EXEC,		psc_exec_f },
   { "exit",		PSC_EXIT,		psc_exit_f },

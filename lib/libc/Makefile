@@ -35,7 +35,6 @@ OBJS=   call_lowlib.o \
 	posix/sys_chmod.o \
 	posix/sys_chown.o \
 	posix/sys_close.o \
-	posix/sys_creat.o \
 	posix/sys_dup.o \
 	posix/sys_dup2.o \
 	posix/sys_exec.o \

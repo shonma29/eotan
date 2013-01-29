@@ -187,17 +187,6 @@ struct psc_close
 };
 
 
-/* psc_creat -
- *
- */
-struct psc_creat
-{
-  W pathlen;
-  B *path;
-  W mode;
-};
-
-
 /* psc_dup -
  *
  */
@@ -878,7 +867,6 @@ struct posix_request
     struct psc_chmod		par_chmod;
     struct psc_chown		par_chown;
     struct psc_close		par_close;
-    struct psc_creat		par_creat;
     struct psc_dup		par_dup;
     struct psc_dup2		par_dup2;
     struct psc_execve		par_execve;
@@ -977,7 +965,6 @@ extern W	psc_chdir_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_chmod_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_chown_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_close_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_creat_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_dup_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_dup2_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_exec_f (RDVNO rdvno, struct posix_request *);
@@ -1006,9 +993,7 @@ extern W	psc_open_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_pause_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_pipe_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_read_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_remove_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_rename_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_rewind_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_rmdir_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_setgid_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_setpgid_f (RDVNO rdvno, struct posix_request *);

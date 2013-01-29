@@ -44,7 +44,6 @@ OBJS =	_make_cnnct.o \
 	chmod.o \
 	chown.o \
 	close.o \
-	creat.o \
 	dup.o \
 	dup2.o \
 	exec.o \
