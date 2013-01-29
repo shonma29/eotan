@@ -200,7 +200,6 @@ struct posix_syscall	syscall_table[] =
   { "kill",		PSC_KILL,		psc_kill_f },
   { "misc",		PSC_MISC,		psc_misc_f },
   { "dup2",		PSC_DUP2,		psc_dup2_f },
-  { "getcwd",		PSC_GETCWD,		psc_getcwd_f },
   { "sleep",		PSC_SLEEP,		psc_noaction_f },
 };
 

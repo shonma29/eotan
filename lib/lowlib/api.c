@@ -90,8 +90,7 @@ struct syscall_entry syscalls[] =
   DEF_SYSCALL (kill),		/* 39 */
   DEF_SYSCALL (misc),		/* 40 */
   DEF_SYSCALL (dup2),		/* 41 */
-  DEF_SYSCALL (noaction),		/* 42 */
-  DEF_SYSCALL (sleep),	/* 43 */
+  DEF_SYSCALL (sleep),	/* 42 */
 };
 
 

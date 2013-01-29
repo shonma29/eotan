@@ -24,7 +24,7 @@ Version 2, June 1991
 #include <itron/types.h>
 #include <itron/rendezvous.h>
 
-#define NR_POSIX_SYSCALL	43
+#define NR_POSIX_SYSCALL	42
 
 /* =================== POSIX システムコール番号の定義 =============== */
 #define PSC_NOACTION     0
@@ -75,9 +75,7 @@ Version 2, June 1991
 #define PSC_MISC         40
 
 #define PSC_DUP2         41	/* 不要? */
-#define PSC_GETCWD       42	/* 不要? */
-
-#define PSC_SLEEP        43	/* 不要? */
+#define PSC_SLEEP        42	/* 不要? */
 
 /* MISC 
  */
@@ -215,16 +213,6 @@ struct psc_fork
   ID	signal_task;
 };
 
-
-
-/* psc_getcwd -
- *
- */
-struct psc_getcwd
-{
-  B		*dirname;
-  W		dirnamelen;
-};
 
 
 /* psc_getegid -
@@ -590,7 +578,6 @@ struct posix_request
     struct psc_exit		par_exit;
     struct psc_fcntl		par_fcntl;
     struct psc_fork		par_fork;
-    struct psc_getcwd		par_getcwd;
     struct psc_getegid		par_getegid;
     struct psc_geteuid		par_geteuid;
     struct psc_getgid		par_getgid;
@@ -661,7 +648,6 @@ extern W	psc_exec_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_exit_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_fcntl_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_fork_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_getcwd_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_getegid_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_geteuid_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_getgid_f (RDVNO rdvno, struct posix_request *);
