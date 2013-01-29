@@ -24,7 +24,7 @@ Version 2, June 1991
 #include <itron/types.h>
 #include <itron/rendezvous.h>
 
-#define NR_POSIX_SYSCALL	71
+#define NR_POSIX_SYSCALL	43
 
 /* =================== POSIX システムコール番号の定義 =============== */
 #define PSC_NOACTION     0
@@ -33,81 +33,51 @@ Version 2, June 1991
 #define PSC_CHMOD        3
 #define PSC_CHOWN        4
 #define PSC_CLOSE        5
-#define PSC_CREAT        6
-#define PSC_DUP          7
-#define PSC_EXEC         8
-#define PSC_EXIT         9
-#define PSC_FCNTL        10
-#define PSC_FORK         11
-#define PSC_FSTAT	 12
-#define PSC_GETEGID      13
-#define PSC_GETEUID      14
-#define PSC_GETGID       15
-#define PSC_GETPGRP      16
-#define PSC_GETPID       17
-#define PSC_GETPPID      18
-#define PSC_GETUID       19
-#define PSC_LINK         20
-#define PSC_LSEEK        21
-#define PSC_MKDIR        22
-#define PSC_OPEN         23
-#define PSC_PIPE         24
-#define PSC_READ         25
-#define PSC_RENAME       26
-#define PSC_RMDIR        27
-#define PSC_SETGID       28
-#define PSC_SETPGID      29
-#define PSC_SETSID       30
-#define PSC_SETUID       31
-#define PSC_STAT         32
-#define PSC_TIME         33
-#define PSC_TIMES        34
-#define PSC_UMASK        35
-#define PSC_UNLINK       36
-#define PSC_UTIME        37
-#define PSC_WAITPID      38
-#define PSC_WRITE        39
+#define PSC_DUP          6
+#define PSC_EXEC         7
+#define PSC_EXIT         8
+#define PSC_FCNTL        9
+#define PSC_FORK         10
+#define PSC_FSTAT	 11
+#define PSC_GETEGID      12
+#define PSC_GETEUID      13
+#define PSC_GETGID       14
+#define PSC_GETPID       15
+#define PSC_GETPPID      16
+#define PSC_GETUID       17
+#define PSC_LINK         18
+#define PSC_LSEEK        19
+#define PSC_MKDIR        20
+#define PSC_OPEN         21
+#define PSC_READ         22
+#define PSC_RMDIR        23
+#define PSC_SETGID       24
+#define PSC_SETPGID      25
+#define PSC_SETUID       26
+#define PSC_TIME         27
+#define PSC_UMASK        28
+#define PSC_UNLINK       29
+#define PSC_UTIME        30
+#define PSC_WAITPID      31
+#define PSC_WRITE        32
 
-#define PSC_BRK		 40
-#define PSC_CHROOT	 41
-#define PSC_GETDENTS	 42
-#define PSC_MKNOD	 43
-#define PSC_MOUNT        44
-#define PSC_MOUNTROOT    45
-#define PSC_STATFS       46
-#define PSC_STIME	 47
-#define PSC_SYNC	 48
-#define PSC_UMOUNT       49
+#define PSC_BRK		 33
+#define PSC_GETDENTS	 34
+#define PSC_MOUNT        35
+#define PSC_MOUNTROOT    36
+#define PSC_STATFS       37
+#define PSC_UMOUNT       38
 
 /* =================== SIGNAL 関係 =============== */
-#define PSC_ALARM	 50
-#define PSC_KILL         51
-#define PSC_PAUSE        52
-#define PSC_SIGACTION    53
-#define PSC_SIGRETURN	 54
-#define PSC_SIGPROCMASK  55
-#define PSC_SIGPENDING   56
-#define PSC_SIGSUSPEND   57
-#define PSC_SIGADDSET    58	/* 不要? */
-#define PSC_SIGDELSET    59	/* 不要? */
-#define PSC_SIGEMPTYSET  60	/* 不要? */
-#define PSC_SIGFILLSET   61	/* 不要? */
-#define PSC_SIGISMEMBER  62	/* 不要? */
-#define PSC_SIGLONGJMP   63	/* 不要? */
-#define PSC_SIGSETJMP    64	/* 不要? */
+#define PSC_KILL         39
 
 /* =================== miserous system calls  =============== */
-#define PSC_MISC         65
+#define PSC_MISC         40
 
-#define PSC_MEMORY       66
+#define PSC_DUP2         41	/* 不要? */
+#define PSC_GETCWD       42	/* 不要? */
 
-#define PSC_DUP2         67	/* 不要? */
-#define PSC_GETCWD       68	/* 不要? */
-#define PSC_GETENV       69	/* 不要? */
-
-#define PSC_GETGRGID     70	/* 不要? */
-
-#define PSC_SLEEP        71	/* 不要? */
+#define PSC_SLEEP        43	/* 不要? */
 
 /* MISC 
  */
@@ -265,14 +235,6 @@ struct psc_getegid
 };
 
 
-/* psc_getenv -
- *
- */
-struct psc_getenv
-{
-};
-
-
 /* psc_geteuid -
  *
  */
@@ -288,14 +250,6 @@ struct psc_geteuid
 struct psc_getgid
 {
   /* have no value */
-};
-
-
-/* psc_getpgrp -
- *
- */
-struct psc_getpgrp
-{
 };
 
 
@@ -379,23 +333,6 @@ struct psc_open
 };
 
 
-/* psc_pause -
- *
- */
-struct psc_pause
-{
-};
-
-
-/* psc_pipe -
- *
- */
-struct psc_pipe
-{
-  W		pipeid[2];
-};
-
-
 /* psc_read -
  *
  */
@@ -404,18 +341,6 @@ struct psc_read
   W	fileid;
   B	*buf;
   W	length;
-};
-
-
-/* psc_rename -
- *
- */
-struct psc_rename
-{
-  W		oldpathlen;
-  B		*oldpath;
-  W		newpathlen;
-  B		*newpath;
 };
 
 
@@ -447,112 +372,12 @@ struct psc_setpgid
 };
 
 
-/* psc_setsid -
- *
- */
-struct psc_setsid
-{
-  W sid;
-};
-
-
 /* psc_setuid -
  *
  */
 struct psc_setuid
 {
   UW		uid;
-};
-
-
-/* psc_sigaction -
- *
- */
-struct psc_sigaction
-{
-  int signo;
-  struct sigaction *action;
-  struct sigaction *oldaction;
-};
-
-
-/* psc_sigaddset -
- *
- */
-struct psc_sigaddset
-{
-};
-
-
-/* psc_sigdelset -
- *
- */
-struct psc_sigdelset
-{
-};
-
-
-/* psc_sigemptyset -
- *
- */
-struct psc_sigemptyset
-{
-};
-
-
-/* psc_sigfillset -
- *
- */
-struct psc_sigfillset
-{
-};
-
-
-/* psc_sigismember -
- *
- */
-struct psc_sigismember
-{
-};
-
-
-/* psc_siglongjmp -
- *
- */
-struct psc_siglongjmp
-{
-};
-
-
-/* psc_sigpending -
- *
- */
-struct psc_sigpending
-{
-};
-
-
-/* psc_sigprocmask -
- *
- */
-struct psc_sigprocmask
-{
-};
-
-
-/* psc_sigsetjmp -
- *
- */
-struct psc_sigsetjmp
-{
-};
-
-
-/* psc_sigsuspend -
- *
- */
-struct psc_sigsuspend
-{
 };
 
 
@@ -582,15 +407,6 @@ struct psc_time
 {
   VP tv;
   VP tz;
-};
-
-
-/* psc_times -
- *
- */
-struct psc_times
-{
-  struct tms *buf;
 };
 
 
@@ -671,17 +487,6 @@ struct psc_umount
 #ifdef notdef
   W	option;
 #endif
-};
-
-
-/* psc_memory -
- *
- */
-struct psc_memory
-{
-  W	command;
-  UW	vaddr;
-  UW	paddr;
 };
 
 
@@ -787,10 +592,8 @@ struct posix_request
     struct psc_fork		par_fork;
     struct psc_getcwd		par_getcwd;
     struct psc_getegid		par_getegid;
-    struct psc_getenv		par_getenv;
     struct psc_geteuid		par_geteuid;
     struct psc_getgid		par_getgid;
-    struct psc_getpgrp		par_getpgrp;
     struct psc_getpid		par_getpid;
     struct psc_getppid		par_getppid;
     struct psc_getuid		par_getuid;
@@ -799,30 +602,14 @@ struct posix_request
     struct psc_lseek		par_lseek;
     struct psc_mkdir		par_mkdir;
     struct psc_open		par_open;
-    struct psc_pause		par_pause;
-    struct psc_pipe		par_pipe;
     struct psc_read		par_read;
-    struct psc_rename		par_rename;
     struct psc_rmdir		par_rmdir;
     struct psc_setgid		par_setgid;
     struct psc_setpgid		par_setpgid;
-    struct psc_setsid		par_setsid;
     struct psc_setuid		par_setuid;
-    struct psc_sigaction	par_sigaction;
-    struct psc_sigaddset	par_sigaddset;
-    struct psc_sigdelset 	par_sigdelset;
-    struct psc_sigemptyset	par_sigemptyset;
-    struct psc_sigfillset 	par_sigfillset;
-    struct psc_sigismember	par_sigismember;
-    struct psc_siglongjmp	par_siglongjmp;
-    struct psc_sigpending 	par_sigpending;
-    struct psc_sigprocmask	par_sigprocmask;
-    struct psc_sigsetjmp  	par_sigsetjmp;
-    struct psc_sigsuspend	par_sigsuspend;
     struct psc_sleep 		par_sleep;
     struct psc_fstat  		par_fstat;
     struct psc_time  		par_time;
-    struct psc_times 		par_times;
     struct psc_umask 		par_umask;
     struct psc_unlink     	par_unlink;
     struct psc_utime 		par_utime;
@@ -830,7 +617,6 @@ struct posix_request
     struct psc_write 		par_write;
     struct psc_mount		par_mount;
     struct psc_umount		par_umount;
-    struct psc_memory		par_memory;
     struct psc_mountroot	par_mountroot;
     struct psc_statfs		par_statfs;
     struct psc_misc		par_misc;
@@ -877,10 +663,8 @@ extern W	psc_fcntl_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_fork_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_getcwd_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_getegid_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_getenv_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_geteuid_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_getgid_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_getpgrp_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_getpid_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_getppid_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_getuid_f (RDVNO rdvno, struct posix_request *);
@@ -889,29 +673,13 @@ extern W	psc_link_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_lseek_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_mkdir_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_open_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_pause_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_pipe_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_read_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_rename_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_rmdir_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_setgid_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_setpgid_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_setsid_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_setuid_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_sigaction_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_sigaddset_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_sigdelset_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_sigemptyset_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_sigfillset_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_sigismember_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_siglongjmp_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_sigpending_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_sigprocmask_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_sigsetjmp_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_sigsuspend_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_fstat_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_time_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_times_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_umask_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_unlink_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_utime_f (RDVNO rdvno, struct posix_request *);
@@ -919,7 +687,6 @@ extern W	psc_waitpid_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_write_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_mount_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_umount_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_memory_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_mountroot_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_statfs_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_misc_f (RDVNO rdvno, struct posix_request *);
