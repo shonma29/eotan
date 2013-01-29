@@ -567,28 +567,6 @@ W proc_get_file(W procid, W fileid, struct file ** fp)
 }
 
 
-W proc_rewind_file(W procid, W fileid)
-{
-    struct file *fp;
-
-    if ((procid < 0) || (procid >= MAX_PROCESS)) {
-	return (EP_INVAL);
-    }
-
-    if ((fileid < 0) || (fileid >= MAX_OPEN)) {
-	return (EP_INVAL);
-    }
-
-    fp = &(proc_table[procid].proc_open_file[fileid]);
-    if (fp == (struct file *) 0) {
-	return (EP_INVAL);
-    }
-
-    fp->f_offset = 0;
-    return (EP_OK);
-}
-
-
 W proc_get_cwd(W procid, struct inode ** cwd)
 {
     if ((procid < 0) || (procid >= MAX_PROCESS)) {

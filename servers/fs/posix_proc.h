@@ -189,7 +189,6 @@ extern W		proc_get_cwd (W procid, struct inode **cwd);
 extern W		proc_set_cwd (W procid, struct inode *cwd);
 extern W		proc_get_file (W procid, W fileid, struct file **fp);
 extern W		proc_set_file (W procid, W fileid, W flag, struct inode *ip);
-extern W		proc_rewind_file (W procid, W fileid);
 extern W		proc_get_cwd (W procid, struct inode **cwd);
 extern W		proc_set_umask (W procid, W umask);
 extern W		proc_get_umask (W procid, W *umask);

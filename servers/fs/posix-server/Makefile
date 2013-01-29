@@ -70,7 +70,6 @@ OBJS =	access.o \
 	open.o \
 	read.o \
 	remove.o \
-	rewind.o \
 	rmdir.o \
 	setgid.o \
 	setpgid.o \
