@@ -18,8 +18,8 @@ Version 2, June 1991
  *
  */
 
-#ifndef __POSIX_SYSCALL_H__
-#define __POSIX_SYSCALL_H__	1
+#ifndef __FS_API_H__
+#define __FS_API_H__	1
 
 #include <itron/types.h>
 #include <itron/rendezvous.h>
@@ -693,4 +693,4 @@ extern W	psc_misc_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_getdents_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_brk_f (RDVNO rdvno, struct posix_request *);
 
-#endif /* #define __POSIX_SYSCALL_H__ */
+#endif /* #define __FS_API_H__ */

@@ -24,7 +24,7 @@ Version 2, June 1991
  *
  */
 
-#include "posix.h"
+#include "fs.h"
 
 /* psc_dup2_f -ファイル記述子の複製
  */

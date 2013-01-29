@@ -36,8 +36,8 @@ Version 2, June 1991
  *
  */
 
-#ifndef __POSIX_MM_H__
-#define __POSIX_MM_H__	1
+#ifndef __FS_MM_H__
+#define __FS_MM_H__	1
 
 
 /* virtual memory permission. */
@@ -138,6 +138,4 @@ extern W			setup_vmtree (struct proc *procp, ID taskid, UW access, FP handler, U
 #endif /* KERNEL */
 
 
-#endif /* __POSIX_MM_H__ */
-
-
+#endif /* __FS_MM_H__ */

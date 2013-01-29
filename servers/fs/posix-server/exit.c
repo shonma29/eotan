@@ -20,7 +20,7 @@ Version 2, June 1991
  *
  */
 
-#include "posix.h"
+#include "fs.h"
 
 /* psc_exit_f - プロセスを終了させる
  */

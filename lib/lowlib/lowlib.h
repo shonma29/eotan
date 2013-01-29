@@ -17,10 +17,10 @@ Version 2, June 1991
 
 #include <itron/types.h>
 #include <lowlib.h>
-#include "../../servers/fs/posix.h"
-#include "../../servers/fs/posix_fs.h"
-#include "../../servers/fs/posix_mm.h"
-#include "../../servers/fs/posix_sysc.h"
+#include "../../servers/fs/fs.h"
+#include "../../servers/fs/vfs.h"
+#include "../../servers/fs/mm.h"
+#include "../../servers/fs/api.h"
 #include "../libc/errno.h"
 #include "syscall.h"
 #include "global.h"

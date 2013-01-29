@@ -16,8 +16,8 @@ Version 2, June 1991
  *
  */
 
-#ifndef __POSIX_H__
-#define __POSIX_H__	1
+#ifndef __FS_H__
+#define __FS_H__	1
 
 
 #include <unistd.h>
@@ -127,15 +127,15 @@ struct utimbuf {
 
 
 
-#include "posix_sysc.h"
+#include "api.h"
 
 #ifdef KERNEL
 
 
 #include "sfs/sfs_fs.h"
-#include "posix_fs.h"
-#include "posix_proc.h"
-#include "posix_mm.h"
+#include "vfs.h"
+#include "process.h"
+#include "mm.h"
 
 
 #include "../../lib/libserv/libserv.h"
@@ -165,4 +165,4 @@ extern UW get_system_time(UW *usec);
 
 
 
-#endif				/* __POSIX_H__ */
+#endif				/* __FS_H__ */

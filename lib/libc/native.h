@@ -15,7 +15,7 @@ Version 2, June 1991
 
 #ifndef __NATIVE_H__
 
-#include "../../servers/fs/posix.h"
+#include "../../servers/fs/fs.h"
 
 #define NAME_MAX	14
 

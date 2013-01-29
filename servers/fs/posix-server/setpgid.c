@@ -15,7 +15,7 @@ Version 2, June 1991
  *
  */
 
-#include "posix.h"
+#include "fs.h"
 
 /* psc_setpgid_f - プロセスの実効グループ ID を設定する
  */

@@ -26,7 +26,7 @@ Version 2, June 1991
  *
  */
 #include <device.h>
-#include "posix.h"
+#include "fs.h"
 
 /* ctl_device - デバイスにコントロールメッセージを送る
  *

@@ -23,7 +23,7 @@ Version 2, June 1991
  *
  */
 
-#include "posix.h"
+#include "fs.h"
 
 /* psc_mount_f - ファイルシステムをマウントする
  *

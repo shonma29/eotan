@@ -24,7 +24,7 @@ Version 2, June 1991
  *
  */
 
-#include "posix.h"
+#include "fs.h"
 
 /* psc_unlink_f - ファイルを削除する
  *

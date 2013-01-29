@@ -20,7 +20,7 @@ Version 2, June 1991
  */
 
 #include <string.h>
-#include "../posix.h"
+#include "../fs.h"
 #include "sfs_func.h"
 
 #define USE_MALLOC

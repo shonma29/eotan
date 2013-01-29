@@ -152,7 +152,7 @@ Version 2, June 1991
 
 #include <string.h>
 #include "../../lib/libserv/port.h"
-#include "posix.h"
+#include "fs.h"
 
 struct fs_entry {
     B *fsname;

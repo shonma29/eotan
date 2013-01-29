@@ -152,7 +152,7 @@ Version 2, June 1991
  */
 
 
-#include "posix.h"
+#include "fs.h"
 
 static W psc_noaction_f(RDVNO rdvno, struct posix_request *req);
 

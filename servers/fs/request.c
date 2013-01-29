@@ -44,7 +44,7 @@ Version 2, June 1991
  */
 #include <services.h>
 #include <itron/rendezvous.h>
-#include "posix.h"
+#include "fs.h"
 
 
 /* init_port - 要求受け付け用のポートを初期化する

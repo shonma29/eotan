@@ -86,8 +86,8 @@ Version 2, June 1991
  *
  */
 
-#ifndef __POSIX_FS_H__
-#define __POSIX_FS_H__	1
+#ifndef __FS_VFS_H__
+#define __FS_VFS_H__	1
 
 #include "../../kernel/config.h"
 
@@ -374,4 +374,4 @@ extern struct file *file_buf, *free_file;
 
 #endif
 
-#endif				/* __POSIX_FS_H__ */
+#endif				/* __FS_VFS_H__ */

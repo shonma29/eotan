@@ -112,8 +112,8 @@ Version 2, June 1991
  */
 
 #include <string.h>
-#include "../posix.h"
-#include "../posix_fs.h"
+#include "../fs.h"
+#include "../vfs.h"
 #include "../../../lib/libserv/libserv.h"
 #include "sfs_func.h"
 

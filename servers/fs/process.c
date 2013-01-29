@@ -121,7 +121,7 @@ Version 2, June 1991
  */
 
 #include <string.h>
-#include "posix.h"
+#include "fs.h"
 #include <lowlib.h>
 
 struct proc proc_table[MAX_PROCESS];

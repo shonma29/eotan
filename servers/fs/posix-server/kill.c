@@ -18,7 +18,7 @@ Version 2, June 1991
  */
 
 #include "thread.h"
-#include "posix.h"
+#include "fs.h"
 
 W psc_kill_f(RDVNO rdvno, struct posix_request *req)
 {

@@ -21,7 +21,7 @@ Version 2, June 1991
  *
  */
 
-#include "posix.h"
+#include "fs.h"
 
 /* psc_fork_f - 新しいプロセスを作成する
  */

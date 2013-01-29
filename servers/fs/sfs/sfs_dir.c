@@ -51,7 +51,7 @@ Version 2, June 1991
  *
  */
 
-#include "../posix.h"
+#include "../fs.h"
 #include "sfs_fs.h"
 #include "sfs_func.h"
 

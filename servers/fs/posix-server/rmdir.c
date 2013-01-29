@@ -18,7 +18,7 @@ Version 2, June 1991
  *
  */
 
-#include "posix.h"
+#include "fs.h"
 
 /* psc_rmdir_f - ディレクトリを削除する
  */

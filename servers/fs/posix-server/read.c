@@ -38,7 +38,7 @@ Version 2, June 1991
  *
  */
 
-#include "posix.h"
+#include "fs.h"
 
 extern W sfs_read_device(ID device, B * buf, W start, W length, W * rlength);
 

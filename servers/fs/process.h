@@ -88,8 +88,8 @@ Version 2, June 1991
  *
  */
 
-#ifndef __POSIX_PROC_H__
-#define __POSIX_PROC_H__	1
+#ifndef __FS_PROCESS_H__
+#define __FS_PROCESS_H__	1
 
 
 #define F_FILE		0x0001
@@ -216,4 +216,4 @@ extern W		open_special_dev(struct proc *procp);
 
 #endif
 
-#endif /* __POSIX_PROC_H__ */
+#endif /* __FS_PROCESS_H__ */

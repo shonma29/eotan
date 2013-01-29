@@ -17,7 +17,7 @@ Version 2, June 1991
  *
  */
 
-#include "posix.h"
+#include "fs.h"
 
 W psc_umount_f(RDVNO rdvno, struct posix_request *req)
 {

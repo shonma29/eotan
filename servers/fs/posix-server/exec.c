@@ -29,7 +29,7 @@ Version 2, June 1991
  *
  */
 
-#include "posix.h"
+#include "fs.h"
 
 /* psc_exec_f - 指定されたプログラムファイルをメモリ中に読み込む
  */

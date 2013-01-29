@@ -28,7 +28,7 @@ Version 2, June 1991
 #include <itron/rendezvous.h>
 #include <lowlib.h>
 #include "../errno.h"
-#include "../../../servers/fs/posix.h"
+#include "../../../servers/fs/fs.h"
 
 
 ER

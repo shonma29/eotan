@@ -16,7 +16,7 @@
 
 #include <core.h>
 #include "../port-manager/port-manager.h"
-#include "../fs/posix.h"
+#include "../fs/fs.h"
 #include "../console/console.h"
 
 #define PSAUX_DRIVER "driver.psaux"

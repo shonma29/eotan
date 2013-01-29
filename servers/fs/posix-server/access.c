@@ -24,7 +24,7 @@ Version 2, June 1991
  */
 
 #include <string.h>
-#include "posix.h"
+#include "fs.h"
 
 W psc_access_f(RDVNO rdvno, struct posix_request *req)
 {

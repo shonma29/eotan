@@ -87,8 +87,8 @@ Version 2, June 1991
 #include <services.h>
 #include <itron/struct.h>
 #include <itron/syscall.h>
-#include "../../servers/fs/posix_sysc.h"
-#include "../../servers/fs/posix_mm.h"
+#include "../../servers/fs/api.h"
+#include "../../servers/fs/mm.h"
 #include "init.h"
 
 static ID myself;

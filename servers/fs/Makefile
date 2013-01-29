@@ -28,9 +28,9 @@ STARTADDR=0x00001000
 
 
 OBJS=startup.o main.o request.o filesystem.o memory.o process.o \
-	syscall.o vmtree.o exec.o fork.o
+	api.o vmtree.o exec.o fork.o
 SRCS=main.c request.c filesystem.c memory.c process.c \
-	syscall.c vmtree.c exec.c fork.c
+	api.c vmtree.c exec.c fork.c
 
 KERNLIB=../../lib/libserv.a ../../lib/libitron.a \
 	../../lib/libnc.a

@@ -20,7 +20,7 @@ Version 2, June 1991
  *
  */
 
-#include "posix.h"
+#include "fs.h"
 
 extern void sfs_purge_cache();
 extern void print_freelist();

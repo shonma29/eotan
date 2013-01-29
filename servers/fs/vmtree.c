@@ -84,7 +84,7 @@ Version 2, June 1991
  */
 
 #include <string.h>
-#include "posix.h"
+#include "fs.h"
 
 
 

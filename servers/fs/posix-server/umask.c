@@ -15,7 +15,7 @@ Version 2, June 1991
  *
  */
 
-#include "posix.h"
+#include "fs.h"
 
 /* psc_umask_f - umask の設定
  */
