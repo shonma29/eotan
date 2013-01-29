@@ -46,8 +46,6 @@ Version 2, June 1991
 #define MAX_SIGNAL	32
 #define MAX_PROCESS	100
 
-#define MAX_SYSTEM_NAMELENGTH
-
 #define POSIX_TASK_LEVEL	USER_LEVEL
 
 /* POSIX 環境マネージャが要求元に返すエラー番号 */
@@ -138,7 +136,6 @@ struct utimbuf {
 #include "posix_fs.h"
 #include "posix_proc.h"
 #include "posix_mm.h"
-#include "utsname.h"
 
 
 #include "../../lib/libserv/libserv.h"
@@ -162,9 +159,6 @@ extern W error_response(RDVNO rdvno, struct posix_request *req, W errno);
 
 #define printk dbg_printf
 
-
-/* global.c */
-struct utsname system_name;
 
 extern UW get_system_time(UW *usec);
 #endif				/* KERNEL */

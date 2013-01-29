@@ -119,16 +119,7 @@ struct syscall_entry syscalls[] =
   DEF_SYSCALL (noaction),		/* 68 */
   DEF_SYSCALL (noaction),		/* 69 */
   DEF_SYSCALL (getgrgid),	/* 70 */
-  DEF_SYSCALL (noaction),	/* 71 */
-  DEF_SYSCALL (noaction),	/* 72 */
-  DEF_SYSCALL (noaction),	/* 73 */
-  DEF_SYSCALL (noaction),		/* 74 */
-  DEF_SYSCALL (noaction),		/* 75 */
-  DEF_SYSCALL (noaction),		/* 76 */
-  DEF_SYSCALL (sleep),		/* 77 */
-  DEF_SYSCALL (noaction),	/* 78 */
-  DEF_SYSCALL (noaction),		/* 79*/
-  DEF_SYSCALL (noaction),		/* 80 */
+  DEF_SYSCALL (sleep),	/* 71 */
 };
 
 

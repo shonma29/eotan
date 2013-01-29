@@ -17,8 +17,8 @@ Version 2, June 1991
  *
  */
 
-#ifndef __UTSNAME_H__
-#define __UTSNAME_H__	1
+#ifndef __UNAME_H__
+#define __UNAME_H__	1
 
 
 #define SYS_SYSNAME		"B-Free/POSIX"
@@ -27,4 +27,4 @@ Version 2, June 1991
 #define SYS_VERSION		"B-Free/POSIX A1.0 PC"
 #define SYS_MACHINE		"PC"
 
-#endif /* __UTSNAME_H__ */
+#endif /* __UNAME_H__ */

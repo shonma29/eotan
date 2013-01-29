@@ -77,7 +77,6 @@ OBJS =	access.o \
 	time.o \
 	umask.o \
 	umount.o \
-	uname.o \
 	unlink.o \
 	utime.o \
 	waitpid.o \

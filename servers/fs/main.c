@@ -167,7 +167,6 @@ int main(void)
 
 void banner(void)
 {
-    extern struct utsname system_name;
     ID taskid;
 #ifdef notdef
     W pid, low, hi;
@@ -175,7 +174,7 @@ void banner(void)
     static B buf[3];
 #endif
 
-    dbg_printf("[FS] %s started.", system_name.version);
+    dbg_printf("[FS] started.");
     if (get_tid(&taskid) == E_OK) {
 #ifdef notdef
 	low = pid % 10;

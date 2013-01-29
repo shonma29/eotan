@@ -24,7 +24,7 @@ Version 2, June 1991
 #include <itron/types.h>
 #include <itron/rendezvous.h>
 
-#define NR_POSIX_SYSCALL	80
+#define NR_POSIX_SYSCALL	71
 
 /* =================== POSIX システムコール番号の定義 =============== */
 #define PSC_NOACTION     0
@@ -106,20 +106,8 @@ Version 2, June 1991
 #define PSC_GETENV       69	/* 不要? */
 
 #define PSC_GETGRGID     70	/* 不要? */
-#define PSC_GETGRNAM     71	/* 不要? */
-#define PSC_GETGROUPS    72	/* 不要? */
-#define PSC_GETLOGIN     73	/* 不要? */
 
-#define PSC_MKFIFO       74	/* 不要? */
-
-#define PSC_REMOVE       75	/* 不要? */
-#define PSC_REWIND       76	/* 不要? */
-#define PSC_SLEEP        77	/* 不要? */
-
-#define PSC_TTYNAME      78	/* 不要? */
-#define PSC_TZSET        79	/* 不要? */
-
-#define PSC_UNAME        80	/* 不要? */
+#define PSC_SLEEP        71	/* 不要? */
 
 /* MISC 
  */
@@ -311,36 +299,6 @@ struct psc_getgrgid
 };
 
 
-/* psc_getgrnam -
- *
- */
-struct psc_getgrnam
-{
-  W grnamlen;
-  B *grnam;
-};
-
-
-/* psc_getgroups -
- *
- */
-struct psc_getgroups
-{
-  W grouplen;
-  B *group;
-};
-
-
-/* psc_getlogin -
- *
- */
-struct psc_getlogin
-{
-  W loginlen;
-  B *login;
-};
-
-
 /* psc_getpgrp -
  *
  */
@@ -414,17 +372,6 @@ struct psc_mkdir
   W		pathlen;
   B		*path;
   W		mode;
-};
-
-
-/* psc_mkfifo -
- *
- */
-struct psc_mkfifo
-{
-  W pathlen;
-  B *path;
-  W mode;
 };
 
 
@@ -655,39 +602,12 @@ struct psc_times
 };
 
 
-/* psc_ttyname -
- *
- */
-struct psc_ttyname
-{
-  W namelen;
-  B *name;
-};
-
-
-/* psc_tzset -
- *
- */
-struct psc_tzset
-{
-};
-
-
 /* psc_umask -
  *
  */
 struct psc_umask
 {
   W	umask;
-};
-
-
-/* psc_uname -
- *
- */
-struct psc_uname
-{
-  struct utsname	*uname;
 };
 
 
@@ -879,9 +799,6 @@ struct posix_request
     struct psc_geteuid		par_geteuid;
     struct psc_getgid		par_getgid;
     struct psc_getgrgid		par_getgrgid;
-    struct psc_getgrnam		par_getgrnam;
-    struct psc_getgroups	par_getgroups;
-    struct psc_getlogin		par_getlogin;
     struct psc_getpgrp		par_getpgrp;
     struct psc_getpid		par_getpid;
     struct psc_getppid		par_getppid;
@@ -890,7 +807,6 @@ struct posix_request
     struct psc_link		par_link;
     struct psc_lseek		par_lseek;
     struct psc_mkdir		par_mkdir;
-    struct psc_mkfifo		par_mkfifo;
     struct psc_open		par_open;
     struct psc_pause		par_pause;
     struct psc_pipe		par_pipe;
@@ -916,10 +832,7 @@ struct posix_request
     struct psc_fstat  		par_fstat;
     struct psc_time  		par_time;
     struct psc_times 		par_times;
-    struct psc_ttyname		par_ttyname;
-    struct psc_tzset 		par_tzset;
     struct psc_umask 		par_umask;
-    struct psc_uname 		par_uname;
     struct psc_unlink     	par_unlink;
     struct psc_utime 		par_utime;
     struct psc_waitpid   	par_waitpid;
@@ -977,9 +890,6 @@ extern W	psc_getenv_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_geteuid_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_getgid_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_getgrgid_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_getgrnam_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_getgroups_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_getlogin_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_getpgrp_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_getpid_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_getppid_f (RDVNO rdvno, struct posix_request *);
@@ -988,7 +898,6 @@ extern W	psc_kill_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_link_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_lseek_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_mkdir_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_mkfifo_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_open_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_pause_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_pipe_f (RDVNO rdvno, struct posix_request *);
@@ -1014,10 +923,7 @@ extern W	psc_sleep_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_fstat_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_time_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_times_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_ttyname_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_tzset_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_umask_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_uname_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_unlink_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_utime_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_waitpid_f (RDVNO rdvno, struct posix_request *);

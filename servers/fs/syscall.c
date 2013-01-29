@@ -228,17 +228,7 @@ struct posix_syscall	syscall_table[] =
   { "dup2",		PSC_DUP2,		psc_dup2_f },
   { "getcwd",		PSC_GETCWD,		psc_getcwd_f },
   { "getenv",		PSC_GETENV,		psc_noaction_f },
-  { "getgrgid",		PSC_GETGRGID,		psc_getgrgid_f },
-  { "getgrnam",		PSC_GETGRNAM,		psc_noaction_f },
-  { "getgroups",	PSC_GETGROUPS,		psc_noaction_f },
-  { "getlogin",		PSC_GETLOGIN,		psc_noaction_f },
-  { "mkfifo",		PSC_MKFIFO,		psc_noaction_f },
-  { "remove",		PSC_REMOVE,		psc_noaction_f },
-  { "rewind",		PSC_REWIND,		psc_noaction_f },
-  { "sleep",		PSC_SLEEP,		psc_noaction_f },
-  { "ttyname",		PSC_TTYNAME,		psc_noaction_f },
-  { "tzset",		PSC_TZSET,		psc_noaction_f },
-  { "uname",		PSC_UNAME,		psc_uname_f }
+  { "getgrgid",		PSC_GETGRGID,		psc_getgrgid_f }
 };
 
 static W psc_noaction_f(RDVNO rdvno, struct posix_request *req) {
