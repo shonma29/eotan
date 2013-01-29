@@ -55,7 +55,6 @@ OBJS =	access.o \
 	getegid.o \
 	geteuid.o \
 	getgid.o \
-	getgrgid.o \
 	getpid.o \
 	getppid.o \
 	getuid.o \

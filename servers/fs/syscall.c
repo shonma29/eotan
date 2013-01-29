@@ -228,7 +228,7 @@ struct posix_syscall	syscall_table[] =
   { "dup2",		PSC_DUP2,		psc_dup2_f },
   { "getcwd",		PSC_GETCWD,		psc_getcwd_f },
   { "getenv",		PSC_GETENV,		psc_noaction_f },
-  { "getgrgid",		PSC_GETGRGID,		psc_getgrgid_f }
+  { "getgrgid",		PSC_GETGRGID,		psc_noaction_f }
 };
 
 static W psc_noaction_f(RDVNO rdvno, struct posix_request *req) {

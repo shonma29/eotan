@@ -51,7 +51,6 @@ OBJS =	_make_cnnct.o \
 	fcntl.o \
 	fork.o \
 	getdents.o \
-	getgrgid.o \
 	kill.o \
 	link.o \
 	lseek.o \

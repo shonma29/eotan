@@ -291,14 +291,6 @@ struct psc_getgid
 };
 
 
-/* psc_getgrgid -
- *
- */
-struct psc_getgrgid
-{
-};
-
-
 /* psc_getpgrp -
  *
  */
@@ -798,7 +790,6 @@ struct posix_request
     struct psc_getenv		par_getenv;
     struct psc_geteuid		par_geteuid;
     struct psc_getgid		par_getgid;
-    struct psc_getgrgid		par_getgrgid;
     struct psc_getpgrp		par_getpgrp;
     struct psc_getpid		par_getpid;
     struct psc_getppid		par_getppid;
@@ -889,7 +880,6 @@ extern W	psc_getegid_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_getenv_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_geteuid_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_getgid_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_getgrgid_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_getpgrp_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_getpid_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_getppid_f (RDVNO rdvno, struct posix_request *);
@@ -919,7 +909,6 @@ extern W	psc_sigpending_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_sigprocmask_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_sigsetjmp_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_sigsuspend_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_sleep_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_fstat_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_time_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_times_f (RDVNO rdvno, struct posix_request *);

@@ -47,7 +47,6 @@ OBJS=   call_lowlib.o \
 	posix/sys_getegid.o \
 	posix/sys_geteuid.o \
 	posix/sys_getgid.o \
-	posix/sys_getgrgid.o \
 	posix/sys_getpid.o \
 	posix/sys_getppid.o \
 	posix/sys_getuid.o \
