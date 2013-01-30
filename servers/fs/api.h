@@ -625,8 +625,10 @@ struct posix_response
 
 struct posix_syscall
 {
+#ifdef DEBUG
   B	*name;
   W	callno;
+#endif
   W	(*syscall)(RDVNO rdvno, struct posix_request *);
 };
 
