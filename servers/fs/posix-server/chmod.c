@@ -21,23 +21,11 @@ Version 2, June 1991
 
 W psc_chmod_f(RDVNO rdvno, struct posix_request *req)
 {
-#ifdef USE_ALLOCA
-    B *path;
-#else
     B path[MAX_NAMELEN];
-#endif
     struct inode *startip;
     struct inode *ipp;
     struct access_info acc;
     W err;
-
-#ifdef USE_ALLOCA
-    path = alloca(req->param.par_chmod.pathlen + 1);
-    if (path == 0) {
-	put_response(rdvno, EP_NOMEM, -1, 0);
-	return (FAIL);
-    }
-#endif
 
     if (vget_reg(req->caller, req->param.par_chmod.path,
 		 req->param.par_chmod.pathlen + 1, path)) {

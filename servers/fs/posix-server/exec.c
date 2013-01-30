@@ -35,26 +35,11 @@ Version 2, June 1991
  */
 W psc_exec_f(RDVNO rdvno, struct posix_request *req)
 {
-#ifdef USE_ALLOCA
-    B *pathname;
-#else
     B pathname[MAX_NAMELEN];
-#endif
     W errno;
 
 #ifdef EXEC_DEBUG
     printk("[PM] exec: start\n");
-#endif
-#ifdef USE_ALLOCA
-    pathname = alloca(req->param.par_execve.pathlen + 1);
-    if (pathname == NULL) {
-	/* メモリ取得エラー */
-	put_response(rdvno, EP_NOMEM, -1, 0);
-	return (FAIL);
-    }
-#endif
-#if 0
-    bzero(pathname, req->param.par_execve.pathlen + 1);
 #endif
 
     /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。

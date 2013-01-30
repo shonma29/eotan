@@ -23,11 +23,7 @@ Version 2, June 1991
 W
 psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
 {
-#ifdef USE_ALLOCA
-  B		*pathname;
-#else
   B		pathname[MAX_NAMELEN];
-#endif
   W		fileid;
   W		errno;
   struct inode	*startip;
@@ -42,16 +38,6 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
       put_response (rdvno, EP_NOMEM, -1, 0);
       return (FAIL);
     }
-
-#ifdef USE_ALLOCA
-  pathname = alloca (req->param.par_creat.pathlen);
-  if (pathname == NULL)
-    {
-      /* メモリ取得エラー */
-      put_response (rdvno, EP_NOMEM, -1, 0);
-      return (FAIL);
-    }
-#endif
 
   errno = vget_reg (req->caller, req->param.par_mkdir.path,
 		    req->param.par_mkdir.pathlen + 1, pathname);

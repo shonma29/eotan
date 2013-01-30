@@ -675,27 +675,14 @@ fs_create_file(struct inode * startip,
 	       W oflag,
 	       W mode, struct access_info * acc, struct inode ** newip)
 {
-#ifdef USE_ALLOCA
-    char *parent_path;
-#else
     char parent_path[MAX_NAMELEN];
-#endif
     struct inode *parent_ip;
     W parent_length;
     W errno;
 
     for (parent_length = strlen(path); parent_length >= 0; parent_length--) {
 	if (path[parent_length] == '/') {
-#ifdef USE_ALLOCA
-	    parent_path = alloca(parent_length + 1);
-	    if (parent_path == NULL) {
-		return (EP_NOMEM);
-	    }
-	    /* kernlib の strncpy の仕様にあわせるため */
-	    strncpy2(parent_path, path, parent_length + 1);
-#else
 	    strncpy2(parent_path, path, MAX_NAMELEN);
-#endif
 	    parent_path[parent_length] = '\0';
 	    break;
 	}
@@ -775,22 +762,11 @@ fs_lookup(struct inode * startip,
     struct inode *tmpip;
     struct fs *fsp;
     int len;
-#ifdef USE_ALLOCA
-    char *part;
-#else
     char part[MAX_NAMELEN];
-#endif
     W errno;
 
 #ifdef FMDEBUG
     dbg_printf("[PM] fs_lookup(): start (path = \"%s\")\n", path);
-#endif
-
-#ifdef USE_ALLOCA
-    part = alloca(MAX_NAMELEN);
-    if (part == NULL) {
-	return (EP_NOMEM);
-    }
 #endif
 
     if (startip == NULL) {
@@ -961,16 +937,7 @@ fs_remove_file(struct inode * startip, B * path, struct access_info * acc)
 
     for (parent_length = strlen(path); parent_length >= 0; parent_length--) {
 	if (path[parent_length] == '/') {
-#ifdef USE_ALLOCA
-	    parent_path = alloca(parent_length + 1);
-	    if (parent_path == NULL) {
-		return (EP_NOMEM);
-	    }
-	    /* kernlib の strncpy の仕様にあわせるため */
-	    strncpy2(parent_path, path, parent_length + 1);
-#else
 	    strncpy2(parent_path, path, MAX_NAMELEN);
-#endif
 	    parent_path[parent_length] = '\0';
 	    break;
 	}
@@ -1007,27 +974,14 @@ fs_remove_file(struct inode * startip, B * path, struct access_info * acc)
  */
 W fs_remove_dir(struct inode * startip, B * path, struct access_info * acc)
 {
-#ifdef USE_ALLOCA
-    char *parent_path;
-#else
     char parent_path[MAX_NAMELEN];
-#endif
     struct inode *parent_ip;
     W parent_length;
     W errno;
 
     for (parent_length = strlen(path); parent_length >= 0; parent_length--) {
 	if (path[parent_length] == '/') {
-#ifdef USE_ALLOCA
-	    parent_path = alloca(parent_length + 1);
-	    if (parent_path == NULL) {
-		return (EP_NOMEM);
-	    }
-	    /* kernlib の strncpy の仕様にあわせるため */
-	    strncpy2(parent_path, path, parent_length + 1);
-#else
 	    strncpy2(parent_path, path, MAX_NAMELEN);
-#endif
 	    parent_path[parent_length] = '\0';
 	    break;
 	}
@@ -1113,11 +1067,7 @@ W fs_make_dir(struct inode * startip,
 	      char *path,
 	      W mode, struct access_info * acc, struct inode ** newip)
 {
-#ifdef USE_ALLOCA
-    char *parent_path;
-#else
     char parent_path[MAX_NAMELEN];
-#endif
     struct inode *parent_ip;
     W parent_length;
     W errno;
@@ -1132,16 +1082,7 @@ W fs_make_dir(struct inode * startip,
 
     for (parent_length = strlen(path); parent_length >= 0; parent_length--) {
 	if (path[parent_length] == '/') {
-#ifdef USE_ALLOCA
-	    parent_path = alloca(parent_length + 1);
-	    if (parent_path == NULL) {
-		return (EP_NOMEM);
-	    }
-	    /* kernlib の strncpy の仕様にあわせるため */
-	    strncpy2(parent_path, path, parent_length + 1);
-#else
 	    strncpy2(parent_path, path, MAX_NAMELEN);
-#endif
 	    parent_path[parent_length] = '\0';
 	    break;
 	}

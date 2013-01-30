@@ -25,24 +25,10 @@ Version 2, June 1991
 W
 psc_rmdir_f (RDVNO rdvno, struct posix_request *req)
 {
-#ifdef USE_ALLOCA
-  B		*pathname;
-#else
   B		pathname[MAX_NAMELEN];
-#endif
   W		errno;
   struct inode	*startip;
   struct access_info	acc;
-
-#ifdef USE_ALLCOA
-  pathname = alloca (req->param.par_rmdir.pathlen + 1);
-  if (pathname == NULL)
-    {
-      /* メモリ取得エラー */
-      put_response (rdvno, EP_NOMEM, 0, 0);
-      return (FAIL);
-    }
-#endif
 
   errno = vget_reg (req->caller, req->param.par_rmdir.path,
 		    req->param.par_rmdir.pathlen + 1, pathname);

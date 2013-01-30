@@ -278,11 +278,7 @@ read_exec_header(struct inode *ip,
 {
     W errno;
     W rlength;
-#ifdef USE_ALLOCA
-    Elf32_Phdr *ph_table;
-#else
     Elf32_Phdr ph_table[10];
-#endif
     W ph_index;
 
 
@@ -326,14 +322,6 @@ read_exec_header(struct inode *ip,
 	 */
 	return (EP_NOEXEC);
     }
-#ifdef USE_ALLOCA
-    ph_table = alloca(elfp->e_phentsize * elfp->e_phnum);
-    if (ph_table == NULL) {
-	/* メモリが取得できなかった
-	 */
-	return (EP_NOMEM);
-    }
-#endif
 
     errno =
 	fs_read_file(ip, elfp->e_phoff, (B *) ph_table,

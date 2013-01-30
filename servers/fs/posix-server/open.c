@@ -37,11 +37,7 @@ extern W sfs_open_device(ID device, W * rsize);
  */
 W psc_open_f(RDVNO rdvno, struct posix_request *req)
 {
-#ifdef USE_ALLOCA
-    B *pathname;
-#else
     B pathname[MAX_NAMELEN];
-#endif
     W fileid;
     W errno;
     struct inode *startip;
@@ -56,14 +52,7 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
 	put_response(rdvno, EP_NOMEM, -1, 0);
 	return (FAIL);
     }
-#ifdef USE_ALLOCA
-    pathname = alloca(req->param.par_open.pathlen + 1);
-    if (pathname == NULL) {
-	/* メモリ取得エラー */
-	put_response(rdvno, EP_NOMEM, -1, 0);
-	return (FAIL);
-    }
-#endif
+
     /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。
      */
     errno = vget_reg(req->caller, req->param.par_open.path,

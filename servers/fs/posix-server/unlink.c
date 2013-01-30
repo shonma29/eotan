@@ -36,11 +36,7 @@ Version 2, June 1991
 W
 psc_unlink_f (RDVNO rdvno, struct posix_request *req)
 {
-#ifdef USE_ALLOCA
-  B			*pathname;
-#else
   B			pathname[MAX_NAMELEN];
-#endif
   W			errno;
   struct inode		*startip;
   struct access_info	acc;
@@ -51,18 +47,6 @@ psc_unlink_f (RDVNO rdvno, struct posix_request *req)
    * 呼び出し元のタスク ID は、メッセージパラメータの
    * 中に入っている。
    */
-#ifdef USE_ALLOCA
-  pathname = alloca (req->param.par_unlink.pathlen + 1);
-  if (pathname == NULL)
-    {
-      /* メモリ取得エラー */
-      put_response (rdvno, EP_NOMEM, 0, 0);
-      return (FAIL);
-    }
-#endif
-#if 0
-  bzero (pathname, req->param.par_open.pathlen + 1);
-#endif
   errno = vget_reg (req->caller,
 		    req->param.par_unlink.path,
 		    req->param.par_unlink.pathlen + 1,

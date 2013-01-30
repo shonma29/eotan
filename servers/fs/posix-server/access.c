@@ -28,11 +28,7 @@ Version 2, June 1991
 
 W psc_access_f(RDVNO rdvno, struct posix_request *req)
 {
-#ifdef USE_ALLOCA
-    B *pathname;
-#else
     B pathname[MAX_NAMELEN];
-#endif
     W fileid;
     W errno;
     struct inode *startip;
@@ -49,15 +45,6 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
 	put_response(rdvno, EP_NOMEM, -1, 0);
 	return (FAIL);
     }
-#ifdef USE_ALLOCA
-    pathname = alloca(req->param.par_access.pathlen + 1);
-
-    if (pathname == NULL) {
-	/* メモリ取得エラー */
-	put_response(rdvno, EP_NOMEM, -1, 0);
-	return (FAIL);
-    }
-#endif
     memset(pathname, 0, req->param.par_access.pathlen + 1);
 
     /* パス名をユーザプロセスから POSIX サーバにコピーする。

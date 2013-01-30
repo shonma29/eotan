@@ -43,25 +43,12 @@ Version 2, June 1991
 W psc_mount_f(RDVNO rdvno, struct posix_request *req)
 {
     W errno;
-#ifdef USE_ALLOCA
-    B *dirname, *devname;
-#else
     B dirname[MAX_NAMELEN];
     B devname[MAX_NAMELEN];
-#endif
     B fstype[MAX_NAMELEN];
     struct inode *startip;
     struct inode *mountpoint, *device;
     struct access_info acc;
-
-#ifdef USE_ALLOCA
-    devname =
-	(B *) alloca(sizeof(B) * (req->param.par_mount.devnamelen + 1));
-    if (devname == NULL) {
-	put_response(rdvno, EP_NOMEM, 0, 0);
-	return (FAIL);
-    }
-#endif
 
     errno = vget_reg(req->caller,
 		     req->param.par_mount.devname,
@@ -75,14 +62,6 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
 
 	return (FAIL);
     }
-#ifdef USE_ALLOCA
-    dirname =
-	(B *) alloca(sizeof(B) * (req->param.par_mount.dirnamelen + 1));
-    if (dirname == NULL) {
-	put_response(rdvno, EP_NOMEM, 0, 0);
-	return (FAIL);
-    }
-#endif
     errno = vget_reg(req->caller,
 		     req->param.par_mount.dirname,
 		     req->param.par_mount.dirnamelen + 1, dirname);
