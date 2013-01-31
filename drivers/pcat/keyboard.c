@@ -19,6 +19,7 @@ Version 2, June 1991
 #include "core.h"
 #include "sync.h"
 #include "../../kernel/mpu/interrupt.h"
+#include "../../kernel/mpu/mpufunc.h"
 
 #define KEY_COM		0x64
 #define KEY_DATA	0x60
@@ -55,5 +56,5 @@ void system_reset()
     inb(KEY_DATA);
   enter_critical();
   outb(KEY_COM, RESET_COMMAND);
-  asm("hlt");
+  halt();
 }
