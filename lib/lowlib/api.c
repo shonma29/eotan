@@ -70,7 +70,7 @@ struct syscall_entry syscalls[] =
   DEF_SYSCALL (lseek),		/* 19 */
   DEF_SYSCALL (mkdir),		/* 20 */
   DEF_SYSCALL (noaction),		/* 21 */
-  DEF_SYSCALL (read),		/* 22 */
+  DEF_SYSCALL (noaction),		/* 22 */
   DEF_SYSCALL (rmdir),		/* 23 */
   DEF_SYSCALL (noaction),		/* 24 */
   DEF_SYSCALL (setpgid),	/* 25 */

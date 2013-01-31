@@ -57,7 +57,6 @@ OBJS =	_make_cnnct.o \
 	misc.o \
 	mkdir.o \
 	mount.o \
-	read.o \
 	rmdir.o \
 	setpgid.o \
 	sleep.o \

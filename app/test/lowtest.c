@@ -31,32 +31,43 @@ int testfile() {
 	int fd;
 	int result;
 	struct stat st;
+	char buf[1];
 
-	fd = open("/test", O_RDONLY);
+	fd = open("/init.fm", O_RDONLY);
 	if (fd == -1) {
-		printf("open error=%x\n", errno);
+		printf("open error=%d\n", errno);
+		return -1;
+	}
+
+	result = fstat(fd, &st);
+	if (result == -1) {
+		printf("fstat error=%d\n", errno);
+		return -1;
+	}
+
+	printf("fstat: dev=%x\n", st.st_dev);
+	printf("fstat: ino=%d\n", st.st_ino);
+	printf("fstat: mode=%x\n", st.st_mode);
+	printf("fstat: nlink=%d\n", st.st_nlink);
+	printf("fstat: uid=%d\n", st.st_uid);
+	printf("fstat: gid=%d\n", st.st_gid);
+	printf("fstat: rdev=%x\n", st.st_rdev);
+	printf("fstat: size=%d\n", st.st_size);
+	printf("fstat: blksize=%d\n", st.st_blksize);
+	printf("fstat: blocks=%d\n", st.st_blocks);
+	printf("fstat: atime=%d\n", st.st_atime);
+	printf("fstat: mtime=%d\n", st.st_mtime);
+	printf("fstat: ctime=%d\n", st.st_ctime);
+
+	if (read(fd, buf, 1) != 1) {
+		printf("read error=%d\n", errno);
 	}
 	else {
-		result = fstat(fd, &st);
-		if (result == -1) {
-			printf("fstat error=%x\n", errno);
-		}
-		else {
-			printf("fstat: dev=%x\n", st.st_dev);
-			printf("fstat: ino=%d\n", st.st_ino);
-			printf("fstat: mode=%x\n", st.st_mode);
-			printf("fstat: nlink=%d\n", st.st_nlink);
-			printf("fstat: uid=%d\n", st.st_uid);
-			printf("fstat: gid=%d\n", st.st_gid);
-			printf("fstat: rdev=%x\n", st.st_rdev);
-			printf("fstat: size=%d\n", st.st_size);
-			printf("fstat: blksize=%d\n", st.st_blksize);
-			printf("fstat: blocks=%d\n", st.st_blocks);
-			printf("fstat: atime=%d\n", st.st_atime);
-			printf("fstat: mtime=%d\n", st.st_mtime);
-			printf("fstat: ctime=%d\n", st.st_ctime);
-		}
+		printf("read %x\n", buf[0]);
 	}
+
+	close(fd);
+
 	return 0;
 }
 
