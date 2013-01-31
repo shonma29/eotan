@@ -15,6 +15,7 @@ Version 2, June 1991
 
 #include <string.h>
 #include "../native.h"
+#include "../errno.h"
 
 
 /* open 
@@ -23,12 +24,29 @@ Version 2, June 1991
 int
 open (char *path, int oflag, ...)
 {
-  va_list args;
-  int pathLen;
+    va_list args;
+    ER error;
+    struct posix_request req;
+    struct posix_response *res = (struct posix_response*)&req;
 
-  va_start(args, oflag);
-  pathLen = strlen (path);
-  return (call_lowlib (PSC_OPEN, pathLen, path, oflag, va_arg(args, int)));
+    va_start(args, oflag);
+
+    req.param.par_open.pathlen = strlen (path);
+    req.param.par_open.path = path;
+    req.param.par_open.oflag = oflag;	/* o_rdonly | o_wronly | o_rdwr | o_creat */
+    req.param.par_open.mode = va_arg(args, int);	/* no use except oflag includes o_creat */
+
+    error = _make_connection(PSC_OPEN, &req);
+
+    if (error != E_OK) {
+	/* What should I do? */
+	return (error);
+    } else if (res->errno) {
+	errno = res->errno;
+	return (-1);
+    }
+
+    return (res->status);
 }
 
 

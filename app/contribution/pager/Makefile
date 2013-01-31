@@ -20,7 +20,8 @@ CC=gcc
 
 STARTADDR=0x00001000
 ENTRY=_main
-KERNLIBS=$(ROOT)/lib/libc.a
+LIBS=$(ROOT)/lib/libc.a
+KERNLIBS=$(ROOT)/lib/libitron.a
 LD=ld
 AS=as
 
@@ -36,7 +37,8 @@ IOBJS=
 all: pager
 
 pager: $(OBJS) $(IOBJS) $(LIBS) $(KERNLIBS)
-	$(LD) -Bstatic -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) $(IOBJS) $(LIBS) $(KERNLIBS)
+	$(LD) -Bstatic -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) \
+		$(IOBJS) $(LIBS) $(KERNLIBS)
 	strip -s -R .comment -R .note -R .note.ABI-tag $@
 
 pager.o: pager.c
