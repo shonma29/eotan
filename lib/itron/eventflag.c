@@ -37,9 +37,9 @@ Version 2, June 1991
  * イベントフラグ関係のシステムコールインタフェース関数
  */
 
+#include <mpu/call_kernel.h>
 #include <core.h>
 #include <api.h>
-#include "call_kernel.h"
 
 
 ER

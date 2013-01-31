@@ -15,10 +15,10 @@ Version 2, June 1991
  */
 #include <stdarg.h>
 #include <string.h>
+#include <mpu/call_kernel.h>
 #include <core.h>
 #include <api.h>
 #include "../libserv/libserv.h"
-#include "call_kernel.h"
 
 static void dbg_putchar(B ch)
 {

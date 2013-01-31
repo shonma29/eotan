@@ -26,8 +26,8 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <itron/types.h>
 #include <itron/struct.h>
+#include <mpu/call_kernel.h>
 #include <api.h>
-#include "call_kernel.h"
 
 ER acre_flg(T_CFLG *pk_cflg) {
 	return ncall(SYS_ACRE_FLG, pk_cflg);

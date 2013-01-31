@@ -44,9 +44,9 @@ Version 2, June 1991
 
 
 
+#include <mpu/call_kernel.h>
 #include <core.h>
 #include <api.h>
-#include "call_kernel.h"
 
 
 /* vsys_msc

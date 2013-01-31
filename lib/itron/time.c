@@ -14,9 +14,9 @@ Version 2, June 1991
  * sys_time.c -- 時間管理関係のシステムコール
  */
 
+#include <mpu/call_kernel.h>
 #include <core.h>
 #include <api.h>
-#include "call_kernel.h"
 
 /*
  * システムクロック設定

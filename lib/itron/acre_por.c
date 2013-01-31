@@ -26,8 +26,8 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <itron/types.h>
 #include <itron/rendezvous.h>
+#include <mpu/call_kernel.h>
 #include <api.h>
-#include "call_kernel.h"
 
 ER_ID acre_por(T_CPOR *pk_cpor) {
 	return ncall(SYS_ACRE_POR, pk_cpor);

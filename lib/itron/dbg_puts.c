@@ -13,9 +13,9 @@ Version 2, June 1991
 /* デバッグ用のシステムコール
  *
  */
+#include <mpu/call_kernel.h>
 #include <core.h>
 #include <api.h>
-#include "call_kernel.h"
 
 ER dbg_puts(B * msg)
 {
