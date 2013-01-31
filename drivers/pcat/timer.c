@@ -17,7 +17,6 @@ Version 2, June 1991
 
 #include <mpu/io.h>
 #include "core.h"
-#include "arch.h"
 #include "thread.h"
 #include "func.h"
 #include "sync.h"

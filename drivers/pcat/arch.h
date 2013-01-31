@@ -27,19 +27,8 @@ Version 2, June 1991
 
 #define INT_TIMER		32
 #define INT_KEYBOARD		33
-#if 0
-#define INT_SCSI		5		/* SCSI type */
-#define INT_HD			41		/* SASI type */
-#endif
 #define	INT_FD			38		/* 1M type */
 
 #define RESERVED_MEMORY		(1024 * 1024)
-#define RESERVED_PAGES		(RESERVE_MEMORY / PAGE_SIZE)
-#ifdef notdef
-#define RESERVED_PAGES		(128 * 1024 / PAGE_SIZE)
-#endif /* notdef */
-
-#define VRAM_MEM_START		(0xB8000)
-#define VRAM_MEM_END		(0xFFFFF)
 
 #endif /* __PCAT_ARCH_H__ */

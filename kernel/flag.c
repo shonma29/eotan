@@ -26,7 +26,6 @@ Version 2, June 1991
 #include "flag.h"
 #include "sync.h"
 #include "setting.h"
-#include "arch/arch.h"
 
 static slab_t slab;
 static tree_t tree;

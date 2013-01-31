@@ -35,7 +35,6 @@ Version 2, June 1991
 #include "thread.h"
 #include "func.h"
 #include "sync.h"
-#include "arch/arch.h"
 #include "arch/archfunc.h"
 
 /* 

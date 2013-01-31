@@ -17,7 +17,6 @@ Version 2, June 1991
 
 #include <device.h>
 #include <core.h>
-#include <arch/arch.h>
 
 #define ROUNDDOWN(x,b)	((x / b) * b)
 #define ROUNDUP(x,b)	((x + (b -1)) / b * b)

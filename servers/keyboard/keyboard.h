@@ -65,7 +65,6 @@ Version 2, June 1991
 #define __KEYBOARD_H__	1
 
 
-#include "../../kernel/arch/arch.h"
 #include "../../kernel/core.h"
 #include "../fs/fs.h"
 

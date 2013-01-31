@@ -25,7 +25,6 @@ Version 2, June 1991
 
 #include <device.h>
 #include <core.h>
-#include <arch/arch.h>
 #include "../console/console.h"
 #include "../port-manager/port-manager.h"
 
