@@ -32,6 +32,32 @@ For more information, please refer to <http://unlicense.org/>
 
 typedef int pid_t;
 
+typedef unsigned int dev_t;
+typedef unsigned int ino_t;
+typedef unsigned int mode_t;
+typedef unsigned int nlink_t;
+typedef unsigned int uid_t;
+typedef unsigned int gid_t;
+typedef unsigned int off_t;
+typedef unsigned int blksize_t;
+typedef unsigned int blkcnt_t;
+
+struct stat {
+	dev_t st_dev;
+	ino_t st_ino;
+	mode_t st_mode;
+	nlink_t st_nlink;
+	uid_t st_uid;
+	gid_t st_gid;
+	dev_t st_rdev;
+	off_t st_size;
+	time_t st_atime;
+	time_t st_mtime;
+	time_t st_ctime;
+	blksize_t st_blksize;
+	blkcnt_t st_blocks;
+};
+
 
 extern int chdir(char *path);
 extern int access(char *path, int mode);
@@ -45,8 +71,8 @@ extern int execve(char *name, char *argv[], char *envp[]);
 extern int _exit(int status);
 extern int fcntl(int fileid, int cmd, ...);
 extern int fork();
-/*
 extern int fstat(int fd, struct stat *st);
+/*
 extern int getdents(unsigned int fd, struct dirent *dirp, unsigned int count);
 */
 extern int getegid(void);

@@ -59,7 +59,7 @@ struct syscall_entry syscalls[] =
   DEF_SYSCALL (exit),		/*  8 */
   DEF_SYSCALL (fcntl),		/*  9 */
   DEF_SYSCALL (fork),		/* 10 */
-  DEF_SYSCALL (fstat),	/* 11 */ /* fstat */
+  DEF_SYSCALL (noaction),	/* 11 */ /* fstat */
   DEF_SYSCALL (noaction),	/* 12 */
   DEF_SYSCALL (noaction),	/* 13 */
   DEF_SYSCALL (noaction),		/* 14 */

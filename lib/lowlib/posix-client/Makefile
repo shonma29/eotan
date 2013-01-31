@@ -62,7 +62,6 @@ OBJS =	_make_cnnct.o \
 	rmdir.o \
 	setpgid.o \
 	sleep.o \
-	fstat.o \
 	umask.o \
 	umount.o \
 	unlink.o \

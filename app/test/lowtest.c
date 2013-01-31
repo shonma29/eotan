@@ -27,6 +27,39 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdlib.h>
 #include <unistd.h>
 
+int testfile() {
+	int fd;
+	int result;
+	struct stat st;
+
+	fd = open("/test", O_RDONLY);
+	if (fd == -1) {
+		printf("open error=%x\n", errno);
+	}
+	else {
+		result = fstat(fd, &st);
+		if (result == -1) {
+			printf("fstat error=%x\n", errno);
+		}
+		else {
+			printf("fstat: dev=%x\n", st.st_dev);
+			printf("fstat: ino=%d\n", st.st_ino);
+			printf("fstat: mode=%x\n", st.st_mode);
+			printf("fstat: nlink=%d\n", st.st_nlink);
+			printf("fstat: uid=%d\n", st.st_uid);
+			printf("fstat: gid=%d\n", st.st_gid);
+			printf("fstat: rdev=%x\n", st.st_rdev);
+			printf("fstat: size=%d\n", st.st_size);
+			printf("fstat: blksize=%d\n", st.st_blksize);
+			printf("fstat: blocks=%d\n", st.st_blocks);
+			printf("fstat: atime=%d\n", st.st_atime);
+			printf("fstat: mtime=%d\n", st.st_mtime);
+			printf("fstat: ctime=%d\n", st.st_ctime);
+		}
+	}
+	return 0;
+}
+
 int main(int argc, char **argv)
 {
 	char buf[1024];
@@ -34,6 +67,8 @@ int main(int argc, char **argv)
 	int pid;
 	int result;
 	time_t t;
+
+	testfile();
 
 	printf("dir = %s\n", getcwd(buf, sizeof(buf)));
 	chdir("/system");

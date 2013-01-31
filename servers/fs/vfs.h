@@ -272,25 +272,6 @@ struct access_info {
 #endif				/* KERNEL */
 
 
-/* stat システムコール用
- */
-struct stat {
-    UW st_dev;
-    UW st_ino;
-    UW st_mode;
-    UW st_nlink;
-    UW st_uid;
-    UW st_gid;
-    UW st_rdev;
-    UW st_size;
-    UW st_blksize;
-    UW st_blocks;
-    UW st_atime;
-    UW st_mtime;
-    UW st_ctime;
-};
-
-
 /* statfs システムコール用
  */
 struct statfs {
