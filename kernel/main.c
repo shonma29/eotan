@@ -10,7 +10,7 @@ Version 2, June 1991
 (C) 2001-2002, Tomohide Naniwa
 
 */
-/* main.c --- ITRON のメイン関数の定義。
+/* main.c --- メイン関数の定義。
  *
  *
  */
@@ -67,8 +67,7 @@ Version 2, June 1991
 #include "mpu/mpufunc.h"
 #include "arch/archfunc.h"
 
-static ER init_itron(void);
-static void init_device(void);
+static ER initialize(void);
 #ifdef AUTO_START
 static void run(W entry);
 static void run_init_program(void);
@@ -84,7 +83,7 @@ static int trmtbl_num = 0;
 static int trmtbl_top = 0;
 static struct TRMTBL {
   ID type; /* POSIX = 0, BTRON = 1 */
-  ID tskid; /* ITRON task id */
+  ID tskid; /* task id */
   ID id; /* pid/??? */
 } trmtbl[TRMTBL_SIZE];
 
@@ -102,7 +101,7 @@ ER add_trmtbl(ID type, ID tskid, ID id)
   return(E_OK);
 }
 
-ER pick_trmtbl(ID *type, ID *tskid, ID *id)
+static ER pick_trmtbl(ID *type, ID *tskid, ID *id)
 {
   if (trmtbl_num == 0) {
     return(E_NOMEM);
@@ -113,7 +112,7 @@ ER pick_trmtbl(ID *type, ID *tskid, ID *id)
   return(E_OK);
 }
 
-ER rm_trmtbl()
+static ER rm_trmtbl()
 {
   if (trmtbl_num == 0) {
     return(E_NOMEM);
@@ -124,10 +123,10 @@ ER rm_trmtbl()
 }
 
 /*******************************************************************
- * itron --- メイン関数
+ * main --- メイン関数
  *
  */
-ER itron(void)
+ER main(void)
 {
     ID type, tskid, id;
     ER errno = E_OK;
@@ -135,12 +134,12 @@ ER itron(void)
     int do_halt;
 #endif
 
-    if (init_itron() != E_OK) {
+    if (initialize() != E_OK) {
 	printk("main: cannot initialize.\n");
 	falldown();
     }
 
-    init_device();
+    device_initialize();
 
     /* TRMTBL の初期化 */
     trmtbl_num = 0;
@@ -265,7 +264,7 @@ static void run(W entry)
     thread_switch();
 }
 
-void run_init_program(void)
+static void run_init_program(void)
 {
     struct boot_header *info;
     W i;
@@ -287,17 +286,17 @@ void run_init_program(void)
 #endif
 
 
-/* init_itron --- ITRON の初期化を行う。
+/* initialize --- 初期化を行う。
  *
  */
-static ER init_itron(void)
+static ER initialize(void)
 {
     struct boot_header *info; 
 
     kernlog_initialize();	/* コンソールに文字を出力できるようにする */
     init_interrupt();
 #ifdef DEBUG
-    printk("init_itron: start\n");
+    printk("initialize: start\n");
 #endif
     pmem_init();		/* 物理メモリ管理機能の初期化           */
     adjust_vm(physmem_max);
@@ -318,25 +317,6 @@ static ER init_itron(void)
 
     return (E_OK);
 }
-
-static void init_device(void)
-{
-    W i;
-
-#ifdef DEBUG
-    printk("init_device: start.\n");
-#endif
-    for (i = 0; devices[i] != NULL; i++) {
-#ifdef DEBUG
-	printk("Init device: 0x%x call.\n", (*devices[i]));
-#endif
-	(*devices[i]) ();
-    }
-#ifdef DEBUG
-    printk("init_device: end.\n");
-#endif
-}
-
 
 /*
  *

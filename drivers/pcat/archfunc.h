@@ -20,6 +20,7 @@ extern void simple_init_console(void);
 extern void putchar(char ch);	/* １文字出力                   */
 
 /* keyboard.c */
+extern ER	init_keyboard (void);
 extern void system_reset(void);
 
 /* timer.c */
@@ -35,7 +36,6 @@ extern W left_time(void (*func) (VP), VP arg);
 extern int rtc_get_time(void);
 
 /* devconfig.c */
-extern W ndevice;
-extern ER(*devices[]) (void);
+extern void device_initialize(void);
 
 #endif /* __PCAT_ARCH_H__ */

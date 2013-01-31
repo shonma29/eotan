@@ -30,7 +30,7 @@ startup:
 		pushl	$0
 		cld
 
-		call	itron			/* Go C world. */
+		call	main			/* Go C world. */
 
 .align 4
 stack_ptr:

@@ -15,12 +15,29 @@ Version 2, June 1991
 
 #include <itron/types.h>
 #include "config.h"
+#include "arch/archfunc.h"
 
-extern ER	init_keyboard (void);
-
-ER (*devices[MAX_DEVICE])(void) = {
+static ER (*devices[])(void) = {
   init_keyboard,
-  0,
+  0
 };
 
-W ndevice = (sizeof (devices) / sizeof (devices[0]));
+
+void device_initialize(void)
+{
+    W i;
+
+#ifdef DEBUG
+    printk("device_initialize: start.\n");
+#endif
+    for (i = 0; devices[i] != NULL; i++) {
+#ifdef DEBUG
+	printk("Init device: 0x%x call.\n", (*devices[i]));
+#endif
+	(*devices[i]) ();
+    }
+#ifdef DEBUG
+    printk("device_initialize: end.\n");
+#endif
+}
+
