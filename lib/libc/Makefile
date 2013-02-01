@@ -28,7 +28,7 @@ OTHEROBJS= others/atoi.o others/stdlib.o _main.o \
 STRINGOBJS = string/strcat.o string/strcmp.o string/strcpy.o string/strlen.o
 
 OBJS=   call_lowlib.o \
-	posix/_make_cnnct.o \
+	posix/call_fs.o \
 	posix/sys_access.o \
 	posix/sys_brk.o \
 	posix/sys_chdir.o \

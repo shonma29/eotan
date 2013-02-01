@@ -43,7 +43,6 @@ OBJS =	_make_cnnct.o \
 	brk.o \
 	chmod.o \
 	chown.o \
-	close.o \
 	dup.o \
 	dup2.o \
 	exec.o \
@@ -53,7 +52,6 @@ OBJS =	_make_cnnct.o \
 	getdents.o \
 	kill.o \
 	link.o \
-	lseek.o \
 	misc.o \
 	mkdir.o \
 	mount.o \
@@ -64,8 +62,7 @@ OBJS =	_make_cnnct.o \
 	umount.o \
 	unlink.o \
 	utime.o \
-	waitpid.o \
-	write.o
+	waitpid.o
 
 
 all: libposix-client.a

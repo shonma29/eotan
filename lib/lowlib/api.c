@@ -53,7 +53,7 @@ struct syscall_entry syscalls[] =
   DEF_SYSCALL (noaction),		/*  2 */
   DEF_SYSCALL (chmod),		/*  3 */
   DEF_SYSCALL (chown),		/*  4 */
-  DEF_SYSCALL (close),		/*  5 */
+  DEF_SYSCALL (noaction),		/*  5 */
   DEF_SYSCALL (dup),		/*  6 */
   DEF_SYSCALL (exec),		/*  7 */
   DEF_SYSCALL (exit),		/*  8 */
@@ -67,7 +67,7 @@ struct syscall_entry syscalls[] =
   DEF_SYSCALL (noaction),	/* 16 */
   DEF_SYSCALL (noaction),		/* 17 */
   DEF_SYSCALL (link),		/* 18 */
-  DEF_SYSCALL (lseek),		/* 19 */
+  DEF_SYSCALL (noaction),		/* 19 */
   DEF_SYSCALL (mkdir),		/* 20 */
   DEF_SYSCALL (noaction),		/* 21 */
   DEF_SYSCALL (noaction),		/* 22 */
@@ -80,7 +80,7 @@ struct syscall_entry syscalls[] =
   DEF_SYSCALL (unlink),		/* 29 */
   DEF_SYSCALL (utime),		/* 30 */
   DEF_SYSCALL (waitpid),	/* 31 */
-  DEF_SYSCALL (write),		/* 32 */
+  DEF_SYSCALL (noaction),		/* 32 */
   DEF_SYSCALL (brk),		/* 33 */ /* BRK */
   DEF_SYSCALL (getdents),	/* 34 */
   DEF_SYSCALL (mount),		/* 35 */
