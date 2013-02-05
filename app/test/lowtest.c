@@ -25,25 +25,21 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
+#include "cunit.h"
 
-int testfile() {
+
+char *testfile() {
 	int fd;
-	int result;
 	struct stat st;
 	char buf[1];
+	char buf2[1];
 
-	fd = open("/init.fm", O_RDONLY);
-	if (fd == -1) {
-		printf("open error=%d\n", errno);
-		return -1;
-	}
+	fd = open("/init.fm", O_RDWR);
+	assert_ne("open", -1, fd);
 
-	result = fstat(fd, &st);
-	if (result == -1) {
-		printf("fstat error=%d\n", errno);
-		return -1;
-	}
+	assert_eq("fstat", 0, fstat(fd, &st));
 
 	printf("fstat: dev=%x\n", st.st_dev);
 	printf("fstat: ino=%d\n", st.st_ino);
@@ -59,31 +55,66 @@ int testfile() {
 	printf("fstat: mtime=%d\n", st.st_mtime);
 	printf("fstat: ctime=%d\n", st.st_ctime);
 
-	if (read(fd, buf, 1) != 1) {
-		printf("read error=%d\n", errno);
-	}
-	else {
-		printf("read %x\n", buf[0]);
-	}
+	assert_eq("read[0]", 1, read(fd, buf, 1));
+	assert_eq("read[0] buf[0]", 0x23, buf[0]);
 
-	close(fd);
+	assert_eq("read[1]", 1, read(fd, buf, 1));
+	assert_eq("read[1] buf[0]", 0x20, buf[0]);
 
-	return 0;
+	assert_eq("lseek[1]", 1, lseek(fd, 1, SEEK_SET));
+	assert_eq("read[1-2]", 1, read(fd, buf2, 1));
+	assert_eq("read[1-2] buf[0]", buf[0], buf2[0]);
+	assert_eq("read[1-2] cmp", buf[0], buf2[0]);
+
+	assert_eq("lseek[1]", 1, lseek(fd, 1, SEEK_SET));
+	buf[0] = 0x41;
+	assert_eq("write[1]", 1, write(fd, buf, 1));
+
+	assert_eq("close[0]", 0, close(fd));
+
+	fd = open("/init.fm", O_RDONLY);
+	assert_ne("open", -1, fd);
+
+	printf("fstat: dev=%x\n", st.st_dev);
+	printf("fstat: ino=%d\n", st.st_ino);
+	printf("fstat: mode=%x\n", st.st_mode);
+	printf("fstat: nlink=%d\n", st.st_nlink);
+	printf("fstat: uid=%d\n", st.st_uid);
+	printf("fstat: gid=%d\n", st.st_gid);
+	printf("fstat: rdev=%x\n", st.st_rdev);
+	printf("fstat: size=%d\n", st.st_size);
+	printf("fstat: blksize=%d\n", st.st_blksize);
+	printf("fstat: blocks=%d\n", st.st_blocks);
+	printf("fstat: atime=%d\n", st.st_atime);
+	printf("fstat: mtime=%d\n", st.st_mtime);
+	printf("fstat: ctime=%d\n", st.st_ctime);
+
+	assert_eq("read[0]", 1, read(fd, buf, 1));
+	assert_eq("read[0] buf[0]", 0x23, buf[0]);
+
+	assert_eq("read[1]", read(fd, buf, 1), 1);
+	assert_eq("read[1] buf[0]", 0x41, buf[0]);
+
+	assert_eq("close[0]", 0, close(fd));
+
+	return NULL;
 }
 
-int main(int argc, char **argv)
-{
+char *testdir() {
 	char buf[1024];
+
+	assert_eq("getcwd[0]", 0, strcmp("/", getcwd(buf, sizeof(buf))));
+
+	assert_eq("chdir", 0, chdir("/system"));
+	assert_eq("getcwd[1]", 0, strcmp("/system", getcwd(buf, sizeof(buf))));
+
+	return NULL;
+}
+
+char *testmm() {
 	struct utsname name;
 	int pid;
-	int result;
 	time_t t;
-
-	testfile();
-
-	printf("dir = %s\n", getcwd(buf, sizeof(buf)));
-	chdir("/system");
-	printf("dir = %s\n", getcwd(buf, sizeof(buf)));
 
 	pid = fork();
 	if (pid == 0) {
@@ -97,17 +128,12 @@ int main(int argc, char **argv)
 		waitpid(-1, &pid, 0);
 	}
 
-	result = uname(&name);
-	if (result == 0) {
-		printf("uname = %s\n", name.sysname);
-		printf("uname = %s\n", name.nodename);
-		printf("uname = %s\n", name.release);
-		printf("uname = %s\n", name.version);
-		printf("uname = %s\n", name.machine);
-	}
-	else {
-		printf("uname errno = %d\n", errno);
-	}
+	assert_eq("uname", 0, uname(&name));
+	printf("uname = %s\n", name.sysname);
+	printf("uname = %s\n", name.nodename);
+	printf("uname = %s\n", name.release);
+	printf("uname = %s\n", name.version);
+	printf("uname = %s\n", name.machine);
 
 	printf("time = %d\n", time(&t));
 	printf("time = %d\n", t);
@@ -122,6 +148,15 @@ int main(int argc, char **argv)
 	printf("euid = %d\n", geteuid());
 	printf("gid = %d\n", getgid());
 	printf("egid = %d\n", getegid());
+
+	return NULL;
+}
+
+int main(int argc, char **argv)
+{
+	test(testfile);
+	test(testdir);
+	test(testmm);
 
 	return 0;
 }

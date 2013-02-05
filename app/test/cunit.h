@@ -34,6 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 #define assert_t(msg, exp) {if (!(exp)) return _FAIL(msg);}
 #define assert_f(msg, exp) {if (exp) return _FAIL(msg);}
 #define assert_eq(msg, a, b) {if ((a) != (b)) return _FAIL(msg);}
+#define assert_ne(msg, a, b) {if ((a) == (b)) return _FAIL(msg);}
 
 #define test(q) { \
 	char *msg = q(); \
