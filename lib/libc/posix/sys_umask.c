@@ -19,8 +19,8 @@ Version 2, June 1991
 /* umask 
  *
  */
-int
-umask (int mask)
+mode_t
+umask (mode_t mask)
 {
   return (call_lowlib (PSC_UMASK, mask));
 }

@@ -17,15 +17,37 @@ Version 2, June 1991
 
 #include <string.h>
 #include "../native.h"
+#include "../errno.h"
 
 
 /* chown 
  *
  */
 int
-chown (char *path, int owner, int group)
+chown (char *path, uid_t owner, gid_t group)
 {
-  return (call_lowlib (PSC_CHOWN, strlen (path), path, owner, group));
+  ER			error;
+  struct posix_request	req;
+  struct posix_response	*res = (struct posix_response*)&req;
+
+  req.param.par_chown.pathlen = strlen (path);
+  req.param.par_chown.path = path;
+  req.param.par_chown.uid = owner;
+  req.param.par_chown.gid = group;
+
+  error = _make_connection(PSC_CHOWN, &req);
+  if (error != E_OK)
+    {
+      /* What should I do? */
+    }
+
+  else if (res->errno)
+    {
+      errno = res->errno;
+      return (-1);
+    }
+
+  return (res->status);
 }
 
 

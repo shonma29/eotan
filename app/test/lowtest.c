@@ -33,11 +33,12 @@ For more information, please refer to <http://unlicense.org/>
 char *testfile() {
 	int fd;
 	struct stat st;
+	struct stat st2;
 	char buf[1];
 	char buf2[1];
 
 	fd = open("/init.fm", O_RDWR);
-	assert_ne("open", -1, fd);
+	assert_ne("open[0]", -1, fd);
 
 	assert_eq("fstat", 0, fstat(fd, &st));
 
@@ -72,22 +73,17 @@ char *testfile() {
 
 	assert_eq("close[0]", 0, close(fd));
 
-	fd = open("/init.fm", O_RDONLY);
-	assert_ne("open", -1, fd);
+	assert_eq("chown[0]", 0, chown("/init.fm", 147, 258));
+	assert_eq("chmod[0]", 0, chmod("/init.fm", S_IXGRP | S_IROTH | S_IWOTH));
 
-	printf("fstat: dev=%x\n", st.st_dev);
-	printf("fstat: ino=%d\n", st.st_ino);
-	printf("fstat: mode=%x\n", st.st_mode);
-	printf("fstat: nlink=%d\n", st.st_nlink);
-	printf("fstat: uid=%d\n", st.st_uid);
-	printf("fstat: gid=%d\n", st.st_gid);
-	printf("fstat: rdev=%x\n", st.st_rdev);
-	printf("fstat: size=%d\n", st.st_size);
-	printf("fstat: blksize=%d\n", st.st_blksize);
-	printf("fstat: blocks=%d\n", st.st_blocks);
-	printf("fstat: atime=%d\n", st.st_atime);
-	printf("fstat: mtime=%d\n", st.st_mtime);
-	printf("fstat: ctime=%d\n", st.st_ctime);
+	fd = open("/init.fm", O_RDONLY);
+	assert_ne("open[1]", -1, fd);
+
+	assert_eq("fstat[1]", 0, fstat(fd, &st2));
+	assert_eq("chown[0-1]", 147, st2.st_uid);
+	assert_eq("chown[0-2]", 258, st2.st_gid);
+
+	assert_eq("chmod[0-1]", S_IXGRP | S_IROTH | S_IWOTH, st2.st_mode);
 
 	assert_eq("read[0]", 1, read(fd, buf, 1));
 	assert_eq("read[0] buf[0]", 0x23, buf[0]);

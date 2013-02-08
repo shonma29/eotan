@@ -99,14 +99,6 @@ Version 2, June 1991
 #define WUNTRACED	2	/* ジョブ制御用:未実装 */
 
 
-/* dirent */
-struct dirent {
-    long d_ino;
-    unsigned long d_off;
-    unsigned short d_reclen;
-    char d_name[1];
-};
-
 struct timeval {
   long tv_sec;
   long tv_usec;

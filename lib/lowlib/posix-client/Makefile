@@ -41,8 +41,6 @@ CFLAGS=-O2 -Wall -Werror -fno-builtin -I$(ROOT)/include -I$(ROOT)/kernel $(IDENT
 OBJS =	_make_cnnct.o \
 	access.o \
 	brk.o \
-	chmod.o \
-	chown.o \
 	dup.o \
 	dup2.o \
 	exec.o \

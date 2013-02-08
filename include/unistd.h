@@ -28,42 +28,16 @@ For more information, please refer to <http://unlicense.org/>
 */
 
 #include <time.h>
+#include <sys/dirent.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <sys/utsname.h>
-
-typedef int pid_t;
-
-typedef unsigned int dev_t;
-typedef unsigned int ino_t;
-typedef unsigned int mode_t;
-typedef unsigned int nlink_t;
-typedef unsigned int uid_t;
-typedef unsigned int gid_t;
-typedef unsigned int off_t;
-typedef unsigned int blksize_t;
-typedef unsigned int blkcnt_t;
-
-struct stat {
-	dev_t st_dev;
-	ino_t st_ino;
-	mode_t st_mode;
-	nlink_t st_nlink;
-	uid_t st_uid;
-	gid_t st_gid;
-	dev_t st_rdev;
-	off_t st_size;
-	time_t st_atime;
-	time_t st_mtime;
-	time_t st_ctime;
-	blksize_t st_blksize;
-	blkcnt_t st_blocks;
-};
-
 
 extern int chdir(char *path);
 extern int access(char *path, int mode);
 extern int brk(void *endds);
-extern int chmod(char *path, int mode);
-extern int chown(char *path, int owner, int group);
+extern int chmod(char *path, mode_t mode);
+extern int chown(char *path, uid_t owner, gid_t group);
 extern int close(int fd);
 extern int dup(int fd);
 extern int dup2(int fd, int fd2);
@@ -72,9 +46,7 @@ extern int _exit(int status);
 extern int fcntl(int fileid, int cmd, ...);
 extern int fork();
 extern int fstat(int fd, struct stat *st);
-/*
 extern int getdents(unsigned int fd, struct dirent *dirp, unsigned int count);
-*/
 extern int getegid(void);
 extern char *getcwd(char *buf, int size);
 extern int geteuid(void);
@@ -101,9 +73,7 @@ extern int sleep(int second);
 extern int gettimeofday(struct timeval *tv, struct timezone *tz);
 */
 extern int time(time_t *tm);
-/*
-extern int umask(mode_t mask);
-*/
+extern mode_t umask(mode_t mask);
 extern int umount(char *special_file);
 extern int uname(struct utsname *name);
 extern int unlink(char *path);
