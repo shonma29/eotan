@@ -91,26 +91,6 @@ Version 2, June 1991
 
 #include "../../kernel/config.h"
 
-#ifndef O_RDONLY
-#define O_RDONLY	0x00
-#define O_WRONLY	0x01
-#define O_RDWR		0x02
-#define O_CREAT		0x08
-#define O_APPEND	0x10
-#define O_TRUNC		0x0200
-#endif
-
-#define FS_FMT_MSK	(0170000)
-#define FS_FMT_REG	(0100000)
-#define FS_FMT_DIR	(0040000)
-#define FS_FMT_DEV	(0020000)
-#define FS_FMT_CDEV	FS_FMT_DEV
-#define FS_FMT_BDEV	(0060000)
-
-#define SEEK_SET	0
-#define SEEK_CUR	1
-#define SEEK_END	2
-
 #define X_BIT		1
 #define W_BIT		2
 #define R_BIT		4

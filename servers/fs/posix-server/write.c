@@ -29,6 +29,7 @@ Version 2, June 1991
  *
  */
 
+#include <fcntl.h>
 #include <string.h>
 #include "fs.h"
 
@@ -72,7 +73,7 @@ W psc_write_f(RDVNO rdvno, struct posix_request *req)
 	 fp->f_inode, fp->f_offset, req->param.par_write.buf,
 	 req->param.par_read.length);
 #endif
-    if ((! (fp->f_inode->i_mode & FS_FMT_DEV)) &&
+    if ((! (fp->f_inode->i_mode & S_IFCHR)) &&
 	(fp->f_offset > fp->f_inode->i_size)) {
       /* 通常ファイルで，書き込む場所がファイルの内容が存在しない場所 */
       /* そこまでを 0 で埋める */

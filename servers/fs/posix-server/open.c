@@ -29,6 +29,7 @@ Version 2, June 1991
  *
  */
 
+#include <fcntl.h>
 #include "fs.h"
 
 extern W sfs_open_device(ID device, W * rsize);
@@ -110,7 +111,7 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
 	return (FAIL);
     }
 
-    if ((newip->i_mode & FS_FMT_MSK) == FS_FMT_DIR) {
+    if ((newip->i_mode & S_IFMT) == S_IFDIR) {
 #ifdef notdef
 	W uid, euid;
 #endif
@@ -148,7 +149,7 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
 	    put_response(rdvno, EP_ISDIR, -1, 0);
 	    return (FAIL);
 	}
-    } else if (newip->i_mode & FS_FMT_DEV) {
+    } else if (newip->i_mode & S_IFCHR) {
 	/* スペシャルファイルだった */
 	/* デバイスに DEV_OPN メッセージを発信 */
 	errno = sfs_open_device(newip->i_dev, &rsize);

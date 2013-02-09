@@ -112,6 +112,7 @@ Version 2, June 1991
  */
 
 #include <string.h>
+#include <fcntl.h>
 #include "../fs.h"
 #include "../vfs.h"
 #include "../../../lib/libserv/libserv.h"
@@ -262,7 +263,7 @@ sfs_i_create(struct inode * parent,
     newip->i_ops = parent->i_ops;
     newip->i_refcount = 1;
     newip->i_dirty = 1;
-    newip->i_mode = mode | FS_FMT_REG;
+    newip->i_mode = mode | S_IFREG;
     newip->i_link = 1;
     newip->i_index = i_index;
     newip->i_uid = acc->uid;
@@ -663,7 +664,7 @@ sfs_i_unlink(struct inode * parent, char *fname, struct access_info * acc)
 #endif
 	return (errno);
     }
-    if ((ip->i_mode & SFS_FMT_MSK) == SFS_FMT_DIR) {
+    if ((ip->i_mode & S_IFMT) == S_IFDIR) {
 	fs_close_file(ip);
 	return (EP_ISDIR);
     }
@@ -834,7 +835,7 @@ sfs_i_mkdir(struct inode * parent,
     newip->i_ops = parent->i_ops;
     newip->i_refcount = 1;
     newip->i_dirty = 1;
-    newip->i_mode = mode | FS_FMT_DIR;
+    newip->i_mode = mode | S_IFDIR;
     newip->i_link = 2;
     newip->i_index = i_index;
     newip->i_uid = acc->uid;
@@ -891,7 +892,7 @@ W sfs_i_rmdir(struct inode * parent, char *fname, struct access_info * acc)
 #endif
 	return (errno);
     }
-    if ((ip->i_mode & SFS_FMT_MSK) != SFS_FMT_DIR) {
+    if ((ip->i_mode & S_IFMT) != S_IFDIR) {
 	fs_close_file(ip);
 	return (EP_NOTDIR);
     }

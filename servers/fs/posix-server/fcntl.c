@@ -95,7 +95,7 @@ W psc_fcntl_f(RDVNO rdvno, struct posix_request * req)
 	return (FAIL);
     }
 
-    if (fp->f_inode->i_mode & FS_FMT_DEV) {
+    if (fp->f_inode->i_mode & S_IFCHR) {
 	/* スペシャルファイルだった
 	 */
 	device = fp->f_inode->i_dev;

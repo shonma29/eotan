@@ -17,6 +17,7 @@ Version 2, June 1991
  *
  */
 
+#include <fcntl.h>
 #include "fs.h"
 
 W psc_umount_f(RDVNO rdvno, struct posix_request *req)
@@ -76,14 +77,14 @@ W psc_umount_f(RDVNO rdvno, struct posix_request *req)
     }
 
     errno = EP_OK;
-    switch (umpoint->i_mode & FS_FMT_MSK) {
-    case FS_FMT_DIR:
+    switch (umpoint->i_mode & S_IFMT) {
+    case S_IFDIR:
 	device = umpoint->i_device;
 	break;
-    case FS_FMT_BDEV:
+    case S_IFBLK:
 	device = umpoint->i_dev;
 	break;
-    case FS_FMT_REG:
+    case S_IFREG:
         errno = EP_NOTDIR;
 	break;
       default:

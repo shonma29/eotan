@@ -15,6 +15,7 @@
    Last modified: Sep. 23, 2002.
 */
 
+#include <fcntl.h>
 #include "stdlib.h"
 #include "frtm.h"
 

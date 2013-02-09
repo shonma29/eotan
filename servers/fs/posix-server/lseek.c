@@ -57,7 +57,7 @@ W psc_lseek_f(RDVNO rdvno, struct posix_request *req)
     if (fp->f_offset < 0) {
 	fp->f_offset = 0;
     }
-    else if (fp->f_inode->i_mode & FS_FMT_DEV) {
+    else if (fp->f_inode->i_mode & S_IFCHR) {
       if (fp->f_offset > fp->f_inode->i_size) {
 	/* ブロックデバイスなど，サイズの制限のあるデバイスの場合 */
 	fp->f_offset = fp->f_inode->i_size;

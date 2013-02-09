@@ -23,6 +23,7 @@ Version 2, June 1991
  *
  */
 
+#include <fcntl.h>
 #include "fs.h"
 
 W psc_chdir_f(RDVNO rdvno, struct posix_request *req)
@@ -77,7 +78,7 @@ W psc_chdir_f(RDVNO rdvno, struct posix_request *req)
 	return (FAIL);
     }
 
-    if ((ipp->i_mode & FS_FMT_MSK) != FS_FMT_DIR) {
+    if ((ipp->i_mode & S_IFMT) != S_IFDIR) {
 	/* ファイルは、ディレクトリではなかった。
 	 * エラーとする
 	 * 

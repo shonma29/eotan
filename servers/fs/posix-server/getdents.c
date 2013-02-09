@@ -48,7 +48,7 @@ W psc_getdents_f(RDVNO rdvno, struct posix_request *req)
 	return (FAIL);
     }
 
-    if ((fp->f_inode->i_mode & FS_FMT_MSK) != FS_FMT_DIR) {
+    if ((fp->f_inode->i_mode & S_IFMT) != S_IFDIR) {
 	put_response(rdvno, EP_INVAL, -1, 0);
 	return (FAIL);
     }

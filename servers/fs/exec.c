@@ -55,6 +55,7 @@ Version 2, June 1991
  */
 
 #include <elf.h>
+#include <fcntl.h>
 #include <string.h>
 #include "fs.h"
 

@@ -38,7 +38,9 @@ Version 2, June 1991
  *
  */
 
+#include <fcntl.h>
 #include "fs.h"
+
 
 extern W sfs_read_device(ID device, B * buf, W start, W length, W * rlength);
 
@@ -77,7 +79,7 @@ W psc_read_f(RDVNO rdvno, struct posix_request *req)
 	return (FAIL);
     }
 
-    if (fp->f_inode->i_mode & FS_FMT_DEV) {
+    if (fp->f_inode->i_mode & S_IFCHR) {
 	if ((fp->f_inode->i_dev & BLOCK_DEVICE_MASK) == 0) {
 	    /* スペシャルファイル（キャラクタデバイス）だった */
 	    if (req->param.par_read.length > 1) {

@@ -31,6 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/unistd.h>
 #include <sys/utsname.h>
 
 extern int chdir(char *path);

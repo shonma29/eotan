@@ -1,8 +1,6 @@
+#include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
-#if 0
-#include "fcntl.h"
-#endif
 
 int fd;
 

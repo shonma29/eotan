@@ -150,6 +150,7 @@ Version 2, June 1991
  *
  */
 
+#include <fcntl.h>
 #include <string.h>
 #include "../../lib/libserv/port.h"
 #include "fs.h"
@@ -327,7 +328,7 @@ W open_special_dev(struct proc * procp)
     if (ip == NULL) {
 	return (EP_NOMEM);
     }
-    ip->i_mode = FS_FMT_DEV;
+    ip->i_mode = S_IFCHR;
     ip->i_dev = special_file_table[1].major_minor;
     ip->i_fs = rootfs;
     ip->i_index = -1;
@@ -342,7 +343,7 @@ W open_special_dev(struct proc * procp)
     if (ip == NULL) {
 	return (EP_NOMEM);
     }
-    ip->i_mode = FS_FMT_DEV;
+    ip->i_mode = S_IFCHR;
     ip->i_dev = special_file_table[0].major_minor;
     ip->i_fs = rootfs;
     ip->i_index = -2;
@@ -357,7 +358,7 @@ W open_special_dev(struct proc * procp)
     if (ip == NULL) {
 	return (EP_NOMEM);
     }
-    ip->i_mode = FS_FMT_DEV;
+    ip->i_mode = S_IFCHR;
     ip->i_dev = special_file_table[0].major_minor;
     ip->i_fs = rootfs;
     ip->i_index = -3;
@@ -705,7 +706,7 @@ fs_create_file(struct inode * startip,
 	parent_length += 1;
     }
 
-    if ((parent_ip->i_mode & FS_FMT_MSK) != FS_FMT_DIR) {
+    if ((parent_ip->i_mode & S_IFMT) != S_IFDIR) {
 	fs_close_file(parent_ip);
 	return (EP_NOTDIR);
     }
@@ -894,7 +895,7 @@ W fs_write_file(struct inode * ip, W start, B * buf, W length, W * rlength)
     W errno;
     extern W sfs_write_device(ID, B *, W, W, W *);
 
-    if (ip->i_mode & FS_FMT_DEV) {
+    if (ip->i_mode & S_IFCHR) {
 	/* スペシャルファイルだった */
 	device = ip->i_dev;
 
@@ -1105,7 +1106,7 @@ W fs_make_dir(struct inode * startip,
 	parent_length += 1;
     }
 
-    if ((parent_ip->i_mode & FS_FMT_MSK) != FS_FMT_DIR) {
+    if ((parent_ip->i_mode & S_IFMT) != S_IFDIR) {
 	fs_close_file(parent_ip);
 	return (EP_NOTDIR);
     }
@@ -1163,7 +1164,7 @@ fs_link_file(W procid, B * src, W srclen, B * dst, W dstlen,
     }
 
     /* リンク元がディレクトリならエラー */
-    if ((srcip->i_mode & FS_FMT_MSK) == FS_FMT_DIR) {
+    if ((srcip->i_mode & S_IFMT) == S_IFDIR) {
 	fs_close_file(srcip);
 	return (EP_ISDIR);
     }
@@ -1344,7 +1345,7 @@ W permit(struct inode * ip, struct access_info * acc, UW bits)
 
     mode = ip->i_mode;
     if (acc->uid == SU_UID) {
-	if (((mode & FS_FMT_MSK) == FS_FMT_DIR) ||
+	if (((mode & S_IFMT) == S_IFDIR) ||
 	    (mode & (X_BIT << 6 | X_BIT << 3 | X_BIT))) {
 	    perm_bits = R_BIT | W_BIT | X_BIT;
 	} else {

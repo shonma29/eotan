@@ -155,7 +155,7 @@ W sfs_read_inode(struct fs *fsp, W ino, struct inode *ip)
 #endif
     ip->i_fs = fsp;
     ip->i_device = fsp->fs_device;
-    if (ip->i_mode & FS_FMT_DEV) {
+    if (ip->i_mode & S_IFCHR) {
 	/* スペシャルファイルだった */
 	ip->i_dev = ip->i_private.sfs_inode.sfs_i_direct[0];
     }

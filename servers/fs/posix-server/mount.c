@@ -23,6 +23,7 @@ Version 2, June 1991
  *
  */
 
+#include <fcntl.h>
 #include "fs.h"
 
 /* psc_mount_f - ファイルシステムをマウントする
@@ -122,7 +123,7 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
     }
 
     /* block device かどうかのチェック */
-    if ((device->i_mode & FS_FMT_MSK) != FS_FMT_BDEV) {
+    if ((device->i_mode & S_IFMT) != S_IFBLK) {
 	fs_close_file(device);
 	put_response(rdvno, EP_INVAL, -1, 0);
 	return (FAIL);
@@ -154,7 +155,7 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
 	return (FAIL);
     }
 
-    if ((mountpoint->i_mode & FS_FMT_MSK) != FS_FMT_DIR) {
+    if ((mountpoint->i_mode & S_IFMT) != S_IFDIR) {
 	put_response(rdvno, EP_NOTDIR, -1, 0);
 	fs_close_file(device);
 	fs_close_file(mountpoint);

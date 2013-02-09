@@ -120,6 +120,7 @@ Version 2, June 1991
  *
  */
 
+#include <fcntl.h>
 #include <string.h>
 #include "fs.h"
 #include <lowlib.h>
@@ -340,7 +341,7 @@ W proc_exit(W procid)
     /* open されているファイルの close */
     for (i = 0; i < MAX_OPEN; ++i) {
 	if (procp->proc_open_file[i].f_inode != NULL) {
-	    if (procp->proc_open_file[i].f_inode->i_mode & FS_FMT_DEV) {
+	    if (procp->proc_open_file[i].f_inode->i_mode & S_IFCHR) {
 		/* スペシャルファイルだった */
 		/* デバイスに DEV_CLS メッセージを発信 */
 		sfs_close_device(procp->proc_open_file[i].f_inode->i_dev);

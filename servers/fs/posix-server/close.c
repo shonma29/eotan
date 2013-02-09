@@ -42,7 +42,7 @@ W psc_close_f(RDVNO rdvno, struct posix_request *req)
 	return (FAIL);
     }
 
-    if (fp->f_inode->i_mode & FS_FMT_DEV) {
+    if (fp->f_inode->i_mode & S_IFCHR) {
 	/* スペシャルファイルだった */
 	/* デバイスに DEV_CLS メッセージを発信 */
 	err = sfs_close_device(fp->f_inode->i_dev);
