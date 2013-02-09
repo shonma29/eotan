@@ -75,8 +75,7 @@ char *testfile() {
 	assert_eq("close[0]", 0, close(fd));
 
 	assert_eq("chown[0]", 0, chown("/init.fm", 147, 258));
-/*	assert_eq("chmod[0]", 0, chmod("/init.fm", S_IXGRP | S_IROTH | S_IWOTH));*/
-	chmod("/init.fm", S_IXGRP | S_IROTH | S_IWOTH);
+	assert_eq("chmod[0]", 0, chmod("/init.fm", S_IXGRP | S_IROTH | S_IWOTH));
 
 	fd = open("/init.fm", O_RDONLY);
 	assert_ne("open[1]", -1, fd);

@@ -26,7 +26,7 @@ chmod (char *path, mode_t mode)
 {
   ER			error;
   struct posix_request	req;
-  struct posix_response	*res = (struct posix_response*)&res;
+  struct posix_response	*res = (struct posix_response*)&req;
 
   req.param.par_chmod.pathlen = strlen (path);
   req.param.par_chmod.path = path;
