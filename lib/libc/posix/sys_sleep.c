@@ -24,7 +24,19 @@ Version 2, June 1991
 int
 usleep (int usecond)
 {
-  return (call_lowlib (PSC_SLEEP, usecond));
+  if (usecond < 0) {
+    return(-1);
+  }
+  else if (usecond == 0) {
+    return E_OK;
+  }
+
+  /* CLOCK への ROUNDUP */
+  usecond = (usecond +  CLOCK - 1) / CLOCK;
+
+  dly_tsk(usecond);
+
+  return (E_OK);
 }
 
 /* sleep 

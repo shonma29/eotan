@@ -75,7 +75,6 @@ Version 2, June 1991
 #define PSC_MISC         40
 
 #define PSC_DUP2         41	/* 不要? */
-#define PSC_SLEEP        42	/* 不要? */
 
 /* MISC 
  */
@@ -369,15 +368,6 @@ struct psc_setuid
 };
 
 
-/* psc_sleep -
- *
- */
-struct psc_sleep
-{
-  W second;
-};
-
-
 /* psc_fstat -
  *
  */
@@ -594,7 +584,6 @@ struct posix_request
     struct psc_setgid		par_setgid;
     struct psc_setpgid		par_setpgid;
     struct psc_setuid		par_setuid;
-    struct psc_sleep 		par_sleep;
     struct psc_fstat  		par_fstat;
     struct psc_time  		par_time;
     struct psc_umask 		par_umask;

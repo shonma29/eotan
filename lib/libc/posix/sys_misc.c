@@ -15,6 +15,7 @@ Version 2, June 1991
  */
 
 #include "../native.h"
+#include "../errno.h"
 
 /* misc
  *
@@ -22,7 +23,33 @@ Version 2, June 1991
 int
 misc (int cmd, int len, void *argp)
 {
-  return (call_lowlib (PSC_MISC, cmd, len, argp));
+  ER			error;
+  struct posix_request	req;
+  struct posix_response	*res = (struct posix_response*)&req;
+
+  req.param.par_misc.cmd = cmd;
+  req.param.par_misc.length = len;
+
+  if (cmd == M_SET_PROCINFO) {
+    req.param.par_misc.arg.set_procinfo = *((struct procinfo*)argp);
+  }
+  else {
+    req.param.par_misc.arg.procid = (W)argp;
+  }
+
+  error = _make_connection(PSC_MISC, &req);
+  if (error != E_OK)
+    {
+      /* What should I do? */
+    }
+
+  else if (res->errno)
+    {
+      errno = res->errno;
+      return (-1);
+    }
+
+  return (res->status);
 }
 
 
