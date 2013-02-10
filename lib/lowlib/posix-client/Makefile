@@ -41,21 +41,16 @@ CFLAGS=-O2 -Wall -Werror -fno-builtin -I$(ROOT)/include -I$(ROOT)/kernel $(IDENT
 OBJS =	_make_cnnct.o \
 	access.o \
 	brk.o \
-	dup.o \
-	dup2.o \
 	exec.o \
 	exit.o \
 	fcntl.o \
 	fork.o \
 	kill.o \
-	misc.o \
 	mount.o \
 	setpgid.o \
-	sleep.o \
 	umask.o \
 	umount.o \
-	utime.o \
-	waitpid.o
+	utime.o
 
 
 all: libposix-client.a

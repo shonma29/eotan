@@ -54,7 +54,7 @@ struct syscall_entry syscalls[] =
   DEF_SYSCALL (noaction),		/*  3 */
   DEF_SYSCALL (noaction),		/*  4 */
   DEF_SYSCALL (noaction),		/*  5 */
-  DEF_SYSCALL (dup),		/*  6 */
+  DEF_SYSCALL (noaction),		/*  6 */
   DEF_SYSCALL (exec),		/*  7 */
   DEF_SYSCALL (exit),		/*  8 */
   DEF_SYSCALL (fcntl),		/*  9 */
@@ -79,7 +79,7 @@ struct syscall_entry syscalls[] =
   DEF_SYSCALL (umask),		/* 28 */
   DEF_SYSCALL (noaction),		/* 29 */
   DEF_SYSCALL (utime),		/* 30 */
-  DEF_SYSCALL (waitpid),	/* 31 */
+  DEF_SYSCALL (noaction),	/* 31 */
   DEF_SYSCALL (noaction),		/* 32 */
   DEF_SYSCALL (brk),		/* 33 */ /* BRK */
   DEF_SYSCALL (noaction),	/* 34 */
@@ -88,9 +88,8 @@ struct syscall_entry syscalls[] =
   DEF_SYSCALL (noaction),		/* 37 */
   DEF_SYSCALL (umount),		/* 38 */
   DEF_SYSCALL (kill),		/* 39 */
-  DEF_SYSCALL (misc),		/* 40 */
-  DEF_SYSCALL (dup2),		/* 41 */
-  DEF_SYSCALL (sleep),	/* 42 */
+  DEF_SYSCALL (noaction),		/* 40 */
+  DEF_SYSCALL (noaction),		/* 41 */
 };
 
 
