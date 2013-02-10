@@ -47,18 +47,13 @@ OBJS =	_make_cnnct.o \
 	exit.o \
 	fcntl.o \
 	fork.o \
-	getdents.o \
 	kill.o \
-	link.o \
 	misc.o \
-	mkdir.o \
 	mount.o \
-	rmdir.o \
 	setpgid.o \
 	sleep.o \
 	umask.o \
 	umount.o \
-	unlink.o \
 	utime.o \
 	waitpid.o
 

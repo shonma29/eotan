@@ -101,12 +101,24 @@ char *testfile() {
 }
 
 char *testdir() {
+	int fd;
+	struct stat st;
 	char buf[1024];
 
 	assert_eq("getcwd[0]", 0, strcmp("/", getcwd(buf, sizeof(buf))));
 
-	assert_eq("chdir", 0, chdir("/system"));
+	assert_eq("chdir", 0, chdir("system"));
 	assert_eq("getcwd[1]", 0, strcmp("/system", getcwd(buf, sizeof(buf))));
+
+	assert_eq("mkdir[0]", 0,
+			mkdir("hoge", S_IRGRP | S_IROTH | S_IWOTH));
+	fd = open("hoge", O_RDONLY);
+	assert_ne("mkdir-open[0]", -1, fd);
+	assert_eq("mkdir-fstat[0]", 0, fstat(fd, &st));
+	assert_eq("mkdir-fstat[0-1]",
+			S_IFDIR | S_IRGRP | S_IROTH | S_IWOTH,
+			st.st_mode);
+	assert_eq("mkdir-close[0]", 0, close(fd));
 
 	return NULL;
 }

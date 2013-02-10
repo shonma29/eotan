@@ -15,15 +15,34 @@ Version 2, June 1991
 
 #include <string.h>
 #include "../native.h"
+#include "../errno.h"
 
 
 /* mkdir 
  *
  */
 int
-mkdir (char *path, int mode)
+mkdir (char *path, mode_t mode)
 {
-  return (call_lowlib (PSC_MKDIR, strlen (path), path, mode));
+  ER			error;
+  struct posix_request	req;
+  struct posix_response	*res = (struct posix_response*)&req;
+
+  req.param.par_mkdir.pathlen = strlen (path);
+  req.param.par_mkdir.path = path;
+  req.param.par_mkdir.mode = mode;
+
+  error = _make_connection(PSC_MKDIR, &req);
+  if (error != E_OK)
+    {
+      /* What should I do? */
+    }
+
+  else if (res->errno)
+    {
+      errno = res->errno;
+      return (-1);
+    }
+
+  return (res->status);
 }
-
-

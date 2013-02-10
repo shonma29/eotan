@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
+#include <stddef.h>
 #include <time.h>
 #include <sys/dirent.h>
 #include <sys/stat.h>
@@ -47,7 +48,7 @@ extern int _exit(int status);
 extern int fcntl(int fileid, int cmd, ...);
 extern int fork();
 extern int fstat(int fd, struct stat *st);
-extern int getdents(unsigned int fd, struct dirent *dirp, unsigned int count);
+extern int getdents(int fd, char *buf, size_t nbytes);
 extern int getegid(void);
 extern char *getcwd(char *buf, int size);
 extern int geteuid(void);
@@ -59,7 +60,7 @@ extern int kill(int pid);
 extern int link(char *src, char *dst);
 extern int lseek(int fd, int offset, int mode);
 extern int misc(int cmd, int len, void *argp);
-extern int mkdir(char *path, int mode);
+extern int mkdir(char *path, mode_t mode);
 extern int mntroot(int devnum);
 extern int mount(char *special_file, char *dir, int rwflag, char *fstype);
 extern int open(char *path, int oflag, ...);
