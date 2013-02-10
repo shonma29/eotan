@@ -99,20 +99,11 @@ int read_ln(int fd, char *buf, int  buf_len)
 
 int p_lines(void)
 {
-  struct winsize {
-    unsigned short int ws_row;
-    unsigned short int ws_col;
-    unsigned short int ws_xpixel;
-    unsigned short int ws_ypixel;
-  } ws;
-
-
   int LINES, COLS;
 
-  fcntl(1, (0x00000013 << 16), &ws);
-  LINES = ws.ws_row;
+  LINES = DEFAULT_LINES;
   LINES = (LINES > MAX_LINES)? MAX_LINES:LINES;
-  COLS = ws.ws_col;
+  COLS = DEFAULT_COLS;
   COLS = (COLS > MAX_COLS)? MAX_COLS:COLS;
 
   return (LINES);

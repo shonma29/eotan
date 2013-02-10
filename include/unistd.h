@@ -35,6 +35,11 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/unistd.h>
 #include <sys/utsname.h>
 
+#define STDIN_FILENO (0)
+#define STDOUT_FILENO (1)
+#define STDERR_FILENO (2)
+
+
 extern int chdir(char *path);
 extern int access(char *path, int mode);
 extern int brk(void *endds);
