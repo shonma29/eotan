@@ -25,9 +25,7 @@ Version 2, June 1991
 #define USER_CSEG	(0x0018)	/* ユーザのコードセグメント */
 #define USER_DSEG	(0x0020)	/* ユーザのデータセグメント */
 #define USER_SSEG	(0x0028)	/* ユーザのスタックセグメント */
-#define ITRON_GATE	(0x0030)	/* ITRON システムコール用ゲート */
-#define POSIX_GATE	(0x0038)	/* POSIX システムコール用ゲート */
-#define BTRON_GATE	(0x0040)	/* BTRON システムコール用ゲート */
+#define SVC_GATE	(0x0030)	/* システムコール用ゲート */
 
 #define PAGE_DIR_ADDR	(0x3000)	/* 仮想ページディレクトリテーブル */
 #define PAGE_ENTRY_ADDR	(0x4000)	/* 仮想ページテーブル */

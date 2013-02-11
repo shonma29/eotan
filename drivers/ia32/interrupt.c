@@ -124,9 +124,7 @@ W init_interrupt(void)
     cg.present = 1;
     cg.selector = KERNEL_CSEG;
     SET_OFFSET_GATE(cg, (W) syscall_handler);
-    set_gdt(ITRON_GATE/sizeof(GEN_DESC), (GEN_DESC *) &cg);
-    SET_OFFSET_GATE(cg, (W) posix_handler);
-    set_gdt(POSIX_GATE/sizeof(GEN_DESC), (GEN_DESC *) &cg);
+    set_gdt(SVC_GATE/sizeof(GEN_DESC), (GEN_DESC *) &cg);
 
     reset_intr_mask(3);
     reset_intr_mask(9);

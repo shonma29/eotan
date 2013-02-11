@@ -27,8 +27,7 @@ OTHEROBJS= others/atoi.o others/stdlib.o _main.o \
 
 STRINGOBJS = string/strcat.o string/strcmp.o string/strcpy.o string/strlen.o
 
-OBJS=   call_lowlib.o \
-	posix/call_fs.o \
+OBJS=   posix/call_fs.o \
 	posix/sys_access.o \
 	posix/sys_brk.o \
 	posix/sys_chdir.o \
@@ -89,10 +88,6 @@ all: ../libc.a ../libposix.a ../libgt.a
 
 ../libgt.a: $(GTOBJS)
 	ar rv $@ $(GTOBJS)
-
-syscall.o: syscall.c
-
-call_lowlib.o: call_lowlib.S
 
 
 clean:
