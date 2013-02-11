@@ -43,11 +43,6 @@ Version 2, June 1991
 #define __FUNCS_H__	1
 
 /*
- * システムコール処理用関数の定義。
- */
-#include "posix-client/funcs.h"
-
-/*
  * POSIX ではインプリメント依存となっているシステムコール
  */
 extern int	psys_mount ();

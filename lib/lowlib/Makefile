@@ -45,7 +45,7 @@
 #
 #
 
-.PHONY: clean SYSCALLS
+.PHONY: clean
 
 ENTRY=lowlib_init
 STARTADDR=0x80290000
@@ -55,11 +55,11 @@ STARTADDR=0x80290000
 %.o: %.S
 	$(CC) $(CFLAGS) -c $*.S
 
-OBJS =	lowlib.o api.o global.o signal.o jmp_user.o
-SRCS =	lowlib.c api.c global.c signal.c jmp_user.S
+OBJS =	lowlib.o global.o signal.o jmp_user.o
+SRCS =	lowlib.c global.c signal.c jmp_user.S
 
 ROOT=../..
-LIBS =	posix-client/libposix-client.a $(ROOT)/lib/libserv.a \
+LIBS =	$(ROOT)/lib/libserv.a \
 	$(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a
 
 # DEBUG  = -DDEBUG
@@ -69,14 +69,10 @@ CC=gcc
 
 all: lowlib
 
-lowlib: $(OBJS) SYSCALLS
+lowlib: $(OBJS)
 	$(LD) -static -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) $(LIBS)
 	strip -s -R .comment -R .note -R .note.ABI-tag $@
 
-SYSCALLS:
-	$(MAKE) -C posix-client
-
 clean:
 	rm -f $(OBJS) lowlib
-	$(MAKE) -C posix-client clean
 

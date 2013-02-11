@@ -79,7 +79,7 @@ ER lowlib_init(struct lowlib_info *lowlib)
 
     /* POSIX マネージャの port の取得 */
 
-    lowlib->intr = SYSCALL_INTR;
+    lowlib->intr = 0;
     lowlib->start = lowlib_start;
     lowlib->quit = lowlib_exit;
     lowlib->intr_func = lowlib_syscall;
@@ -154,18 +154,7 @@ B *posix_name;
  */
 ER lowlib_syscall(W syscallno, VP arg)
 {
-    int (*func) ();
-
-    if ((syscallno < 0) || (syscallno >= nsyscall)) {
-	return (EP_INVAL);
-    }
-
-    func = syscalls[syscallno].func;
-    if (func == NULL) {
-	return (EP_NOSYS);
-    }
-
-    return ((*func) (arg));
+    return 0;
 }
 
 

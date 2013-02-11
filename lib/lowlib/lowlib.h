@@ -22,13 +22,8 @@ Version 2, June 1991
 #include "../../servers/fs/mm.h"
 #include "../../servers/fs/api.h"
 #include "../libc/errno.h"
-#include "syscall.h"
 #include "global.h"
 #include "funcs.h"
 
-
-#define PROC_INFO	(LOWLIB_DATA)
-#define MY_PID	(PROC_INFO->my_pid)
-#define ERRNO	(PROC_INFO->errno)
 
 #endif				/* __POSIX_LOWLIB_H__ */

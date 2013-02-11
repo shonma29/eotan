@@ -59,8 +59,4 @@ Version 2, June 1991
 
 extern struct lowlib_data	*lowlib_data;
 
-extern struct syscall_entry	syscalls[];
-extern int			nsyscall;
-
-
 #endif /* __GLOBAL_H__ */
