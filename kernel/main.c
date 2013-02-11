@@ -237,9 +237,9 @@ static void run(W entry)
 
     /* 生成したタスクの仮想メモリにモジュールをマッピング */
     /* ただしドライバの場合には、マッピングしない */
-    if ((modulep[entry].type == driver) || (modulep[entry].type == lowlib)) {
+    if (modulep[entry].type == driver) {
 #ifdef DEBUG
-	printk("This module is driver or lowlib. not mapped\n");
+	printk("This module is driver. not mapped\n");
 #endif
     } else {
 	for (i = 0;
@@ -271,16 +271,7 @@ static void run_init_program(void)
 
     info = (struct boot_header *) MODULE_TABLE;
     for (i = 1; i < info->count; i++) {
-	if (info->modules[i].type == lowlib) {
-	    ER errno;
-
-	    errno = init_lowlib(&info->modules[i]);
-	    if (errno) {
-		printk("cannot initialize LOWLIB.\n");
-	    }
-	} else {
-	    run(i);
-	}
+	run(i);
     }
 }
 #endif

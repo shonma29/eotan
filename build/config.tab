@@ -85,6 +85,10 @@
 
 #  file name			virtual addr	physical addr	type    name
 ../kernel/core.bin	0x80020000	0x020000	kernel  kernel
+
+#
+# Server
+#
 ../servers/port-manager/port-manager 0x00010000	0x080000	kernel port-manager
 ../servers/fs/fs	0x00001000	0x200000	user	fs
 
@@ -97,25 +101,6 @@
 ../servers/ide/ide		0x80130000	0x130000	driver  driver.ide
 ../servers/psaux/psaux           0x80140000      0x140000        driver  driver.psaux
 ../servers/dumb/dumb           0x80150000      0x150000        driver  driver.dumb
-
-#
-# LOWLIB
-#
-../lib/lowlib/lowlib	0x80290000	0x290000	lowlib  lowlib.posix
-   
-
-#
-#
-# Manager
-#
-# POSIX
-#../servers/fs/posix_manager	0x00001000	0x200000	user	manager.posix
-#
-# BTRON
-#
-# RAMDISK  --- now boot from init
-# ../kernel/drivers/ramdisk/ramdisk	0x00001000	0x170000	user	driver.ramdisk
-
 
 #
 # Network

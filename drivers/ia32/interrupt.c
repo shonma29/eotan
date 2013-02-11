@@ -251,44 +251,6 @@ ER set_interrupt_entry(W intno, FP func, ATR attr)
 }
 
 /*************************************************************************
- * trap
- *
- * 引数：
- *
- * 返値：
- *
- * 処理：
- *
- */
-void trap(W intn, W syscallno, VP arg)
-{
-    W i;
-
-#ifdef DEBUG
-    printk("trap: %d, run_task->n_interrupt = %d\n", intn,
-	   run_task->n_interrupt);
-#endif				/* DEBUG */
-    if (run_task->n_interrupt > 0) {
-	for (i = 0; i < run_task->n_interrupt; i++) {
-#ifdef DEBUG
-	    printk("interrupt handler searching...: %d, (trap no. = %d)\n",
-		   i, run_task->interrupt[i].intr_no);
-#endif				/* DEBUG */
-	    if (run_task->interrupt[i].intr_no == intn) {
-#ifdef DEBUG
-		printk("found: %d(0x%x)\n",
-		       run_task->interrupt[i].intr_func,
-		       run_task->interrupt[i].intr_func);
-#endif				/* DEBUG */
-		(run_task->interrupt[i].intr_func) (syscallno, arg);
-		return;
-	    }
-	}
-    }
-
-}
-
-/*************************************************************************
  * page_fault
  *
  * 引数： 

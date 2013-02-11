@@ -11,12 +11,11 @@ CC=gcc
 KERNEL=core
 SERVERS=console keyboard fd ide psaux port-manager fs ramdisk dumb
 KERNLIB=libserv nano-c itron
-LOWLIB=posix_lowlib
 USERLIBS=posix_libc
 USERAPP=init
 
 
-PROGRAMS=$(KERNEL) $(KERNLIB) $(LOWLIB) $(USERLIBS) \
+PROGRAMS=$(KERNEL) $(KERNLIB) $(USERLIBS) \
 		$(SERVERS) $(USERAPP)
 
 all: $(PROGRAMS) kern.bin 
@@ -34,7 +33,6 @@ clean:
 	${MAKE} -C ../lib/libserv clean
 	${MAKE} -C ../lib/itron clean
 	${MAKE} -C ../lib/nano-c clean
-	${MAKE} -C ../lib/lowlib clean
 	${MAKE} -C ../lib/libc clean
 	${MAKE} -C ../servers/fs clean
 	${MAKE} -C ../servers/ramdisk clean
@@ -59,9 +57,6 @@ itron:
 
 nano-c:
 	${MAKE} -C ../lib/nano-c
-
-posix_lowlib:
-	${MAKE} -C ../lib/lowlib
 
 posix_libc:
 	${MAKE} -C ../lib/libc

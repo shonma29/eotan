@@ -172,8 +172,6 @@ static void pass0(ModuleTable *modules, const char *config)
 	    mod->mod_info.type = kernel;
 	} else if (!strcmp(type, "user")) {
 	    mod->mod_info.type = user;
-	} else if (!strcmp(type, "lowlib")) {
-	    mod->mod_info.type = lowlib;
 	} else if (!strcmp(type, "server")) {
 	    mod->mod_info.type = server;
 	} else if (!strcmp(type, "driver")) {

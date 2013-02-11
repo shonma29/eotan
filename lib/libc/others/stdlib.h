@@ -17,7 +17,6 @@ Version 2, June 1991
 #include <itron/types.h>
 #include <itron/errno.h>
 #include <config.h>
-#include "../../lowlib/lowlib.h"
 #include "../../../servers/fs/sfs/sfs_fs.h"
 
 #define putchar(ch)	putc (ch, stdout)

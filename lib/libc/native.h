@@ -17,19 +17,6 @@ Version 2, June 1991
 
 #include "../../servers/fs/fs.h"
 
-struct sigaction
-{
-};
-
-typedef int	sigset_t;
-
-struct tms
-{
-};
-
-typedef unsigned long	clock_t;
-
-
 extern struct lowlib_data *lowlib_data;
 
 extern ER _make_connection(W wOperation, struct posix_request *req);

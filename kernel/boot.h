@@ -24,9 +24,8 @@ enum module_type
 {
   kernel	= 0,
   user		= 1,
-  lowlib	= 2, 
-  server      	= 3,
-  driver	= 4
+  server      	= 2,
+  driver	= 3
 };
 
 

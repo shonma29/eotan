@@ -16,26 +16,7 @@ Version 2, June 1991
 #ifndef __CORE_LOWLIB_H__
 #define __CORE_LOWLIB_H__	1
 
-
 #include "boot.h"
-
-/* LOWLIB 関連のシステムコール
- */
-#define LOD_LOW		(3)
-#define ULD_LOW		(4)
-#define STS_LOW		(5)
-
-
-struct lowlib_info
-{
-  struct module_info	*modp;
-  B			name[MAX_MODULE_NAME];
-  W			intr;
-
-  ER			(*start)(VP stack_top);
-  ER			(*quit)(void);
-  ER			(*intr_func)(W signo, VP arg);	/* 割り込み処理関数 */
-};
 
 #define MAX_DPATH 255
 
@@ -64,7 +45,6 @@ struct lowlib_data
 #define LOWLIB_DATA		((struct lowlib_data *)(0x7fff0000))
 
 
-extern ER			init_lowlib (struct module_info *modp);
 extern ER			load_lowlib (VP *argp);
 
 #endif /* __CORE_LOWLIB_H__ */

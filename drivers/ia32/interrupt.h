@@ -21,7 +21,6 @@ Version 2, June 1991
 #define __IA32_INTERRUPT_H__	1
 
 #define INTERRUPT_DESC	0x0e
-#define TRAP_DESC	0x0f
 #define FAULT_DESC	0x0f
 
 #define INT_INVALID_OPCODE	6
@@ -57,7 +56,6 @@ extern BOOL	delayed_dispatch;
 extern W	init_interrupt (void);
 extern void	reset_intr_mask (W);
 extern void	interrupt (W);
-extern void	trap (W, W, VP);
 extern void	page_fault (UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 		UW ecx, UW eax, UW es, UW ds,
 		UW errcode, UW eip, UW cs, W eflags);
@@ -97,7 +95,6 @@ extern W	int43_handler (void);
 extern W        int44_handler (void);   /* psaux */
 extern W	int46_handler (void);
 extern W	syscall_handler(void);
-extern W	posix_handler (void);
 extern void	intr_interval (void);
 extern void	start_interval (void);
 
