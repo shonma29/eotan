@@ -88,7 +88,7 @@ W psc_chdir_f(RDVNO rdvno, struct posix_request *req)
 	return (FAIL);
     }
 
-    err = permit(ipp, &acc, X_BIT);
+    err = permit(ipp, &acc, X_OK);
     if (err) {
 	put_response(rdvno, err, -1, 0);
 	return (FAIL);

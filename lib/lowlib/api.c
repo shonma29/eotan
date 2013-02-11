@@ -49,7 +49,7 @@ static int psys_noaction(void *argp);
 struct syscall_entry syscalls[] =
 {
   DEF_SYSCALL (noaction),	/*  0 */
-  DEF_SYSCALL (access),		/*  1 */
+  DEF_SYSCALL (noaction),		/*  1 */
   DEF_SYSCALL (noaction),		/*  2 */
   DEF_SYSCALL (noaction),		/*  3 */
   DEF_SYSCALL (noaction),		/*  4 */
@@ -57,7 +57,7 @@ struct syscall_entry syscalls[] =
   DEF_SYSCALL (noaction),		/*  6 */
   DEF_SYSCALL (exec),		/*  7 */
   DEF_SYSCALL (exit),		/*  8 */
-  DEF_SYSCALL (fcntl),		/*  9 */
+  DEF_SYSCALL (noaction),		/*  9 */
   DEF_SYSCALL (fork),		/* 10 */
   DEF_SYSCALL (noaction),	/* 11 */ /* fstat */
   DEF_SYSCALL (noaction),	/* 12 */
@@ -76,9 +76,9 @@ struct syscall_entry syscalls[] =
   DEF_SYSCALL (setpgid),	/* 25 */
   DEF_SYSCALL (noaction),		/* 26 */
   DEF_SYSCALL (noaction),		/* 27 */
-  DEF_SYSCALL (umask),		/* 28 */
+  DEF_SYSCALL (noaction),		/* 28 */
   DEF_SYSCALL (noaction),		/* 29 */
-  DEF_SYSCALL (utime),		/* 30 */
+  DEF_SYSCALL (noaction),		/* 30 */
   DEF_SYSCALL (noaction),	/* 31 */
   DEF_SYSCALL (noaction),		/* 32 */
   DEF_SYSCALL (brk),		/* 33 */ /* BRK */

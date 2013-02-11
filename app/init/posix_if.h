@@ -26,7 +26,6 @@ Version 2, June 1991
 
 #define LOWLIB_INFO_ADDR	0x88030000
 #define POSIX_MIN_PRIORITY	10
-#define X_OK			1
 
 
 struct posix_process

@@ -15,6 +15,7 @@ Version 2, June 1991
 
 #include <stdarg.h>
 #include "../native.h"
+#include "../errno.h"
 
 
 /* fcntl 
@@ -23,10 +24,28 @@ Version 2, June 1991
 int
 fcntl (int fileid, int cmd, ...)
 {
+  ER			error;
+  struct posix_request	req;
+  struct posix_response	*res = (struct posix_response*)&req;
   va_list args;
 
   va_start(args, cmd);
-  return (call_lowlib (PSC_FCNTL, fileid, cmd, va_arg(args, void*)));
+
+  req.param.par_fcntl.fileid = fileid;
+  req.param.par_fcntl.cmd = cmd;
+  req.param.par_fcntl.arg = va_arg(args, void*);
+
+  error = _make_connection(PSC_FCNTL, &req);
+  if (error != E_OK)
+    {
+      /* What should I do? */
+    }
+
+  else if (res->errno)
+    {
+      errno = res->errno;
+      return (-1);
+    }
+
+  return (res->status);
 }
-
-

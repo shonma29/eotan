@@ -120,7 +120,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     }
 
     /* 実行許可のチェック */
-    errno = permit(ip, &acc, X_BIT);
+    errno = permit(ip, &acc, X_OK);
     if (errno) {
 #ifdef EXEC_DEBUG
 	dbg_printf("[PM] Permission denied. -> return from exec_program().\n");

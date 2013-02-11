@@ -91,9 +91,6 @@ Version 2, June 1991
 
 #include "../../kernel/config.h"
 
-#define X_BIT		1
-#define W_BIT		2
-#define R_BIT		4
 #define SU_UID		0
 
 #define BLOCK_DEVICE_MASK	(0x80000000UL)

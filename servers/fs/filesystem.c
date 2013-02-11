@@ -204,7 +204,7 @@ struct special_file special_file_table[] = {
 UW special_file_table_entry =
     sizeof(special_file_table)/sizeof(struct special_file);
 
-static W mode_map[] = { R_BIT, W_BIT, R_BIT | W_BIT };
+static W mode_map[] = { R_OK, W_OK, R_OK | W_OK };
 
 
 
@@ -797,7 +797,7 @@ fs_lookup(struct inode * startip,
 	int i;
 
 	/* ディレクトリの実行許可のチェック */
-	errno = permit(tmpip, acc, X_BIT);
+	errno = permit(tmpip, acc, X_OK);
 	if (errno) {
 	    dealloc_inode(tmpip);
 	    return (errno);
@@ -1346,10 +1346,10 @@ W permit(struct inode * ip, struct access_info * acc, UW bits)
     mode = ip->i_mode;
     if (acc->uid == SU_UID) {
 	if (((mode & S_IFMT) == S_IFDIR) ||
-	    (mode & (X_BIT << 6 | X_BIT << 3 | X_BIT))) {
-	    perm_bits = R_BIT | W_BIT | X_BIT;
+	    (mode & (X_OK << 6 | X_OK << 3 | X_OK))) {
+	    perm_bits = R_OK | W_OK | X_OK;
 	} else {
-	    perm_bits = R_BIT | W_BIT;
+	    perm_bits = R_OK | W_OK;
 	}
     } else {
 	if (acc->uid == ip->i_uid)

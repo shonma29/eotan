@@ -1,5 +1,5 @@
-#ifndef _SYS_UNISTD_H_
-#define _SYS_UNISTD_H_
+#ifndef _UTIME_H_
+#define _UTIME_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,16 +26,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <time.h>
 
-/* access */
-#define F_OK (0)
-#define R_OK (4)
-#define W_OK (2)
-#define X_OK (1)
-
-/* lseek */
-#define SEEK_SET (0)
-#define SEEK_CUR (1)
-#define SEEK_END (2)
+struct utimbuf {
+	time_t actime;
+	time_t modtime;
+};
 
 #endif

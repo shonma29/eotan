@@ -15,6 +15,7 @@ Version 2, June 1991
 
 #include <string.h>
 #include "../native.h"
+#include "../errno.h"
 
 
 /* utime 
@@ -23,7 +24,25 @@ Version 2, June 1991
 int
 utime (char *path, struct utimbuf *buf)
 {
-  return (call_lowlib (PSC_UTIME, strlen (path), path, buf));
+  ER			error;
+  struct posix_request	req;
+  struct posix_response	*res = (struct posix_response*)&req;
+
+  req.param.par_utime.pathlen = strlen (path);
+  req.param.par_utime.path = path;
+  req.param.par_utime.buf = buf;
+
+  error = _make_connection(PSC_UTIME, &req);
+  if (error != E_OK)
+    {
+      /* What should I do? */
+    }
+
+  else if (res->errno)
+    {
+      errno = res->errno;
+      return (-1);
+    }
+
+  return (res->status);
 }
-
-

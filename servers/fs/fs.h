@@ -109,12 +109,6 @@ struct timezone {
   int tz_dsttime;
 } ;
 
-struct utimbuf {
-  unsigned long actime;
-  unsigned long modtime;
-};
-
-
 
 
 

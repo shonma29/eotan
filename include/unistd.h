@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #include <stddef.h>
 #include <time.h>
+#include <utime.h>
 #include <sys/dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -84,9 +85,7 @@ extern mode_t umask(mode_t mask);
 extern int umount(char *special_file);
 extern int uname(struct utsname *name);
 extern int unlink(char *path);
-/*
 extern int utime(char *path, struct utimbuf *buf);
-*/
 extern int waitpid(pid_t pid, int *status, int option);
 extern int write(int fd, void *buf, int length);
 
