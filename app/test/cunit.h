@@ -39,7 +39,7 @@ For more information, please refer to <http://unlicense.org/>
 #define test(q) { \
 	char *msg = q(); \
 	printf("%s %s.\n", #q, msg? msg:"OK"); \
-	if (msg) _exit(-1); \
+	if (msg) _exit(1); \
 }
 
 #endif

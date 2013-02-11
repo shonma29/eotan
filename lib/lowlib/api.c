@@ -55,10 +55,10 @@ struct syscall_entry syscalls[] =
   DEF_SYSCALL (noaction),		/*  4 */
   DEF_SYSCALL (noaction),		/*  5 */
   DEF_SYSCALL (noaction),		/*  6 */
-  DEF_SYSCALL (exec),		/*  7 */
-  DEF_SYSCALL (exit),		/*  8 */
+  DEF_SYSCALL (noaction),		/*  7 */
+  DEF_SYSCALL (noaction),		/*  8 */
   DEF_SYSCALL (noaction),		/*  9 */
-  DEF_SYSCALL (fork),		/* 10 */
+  DEF_SYSCALL (noaction),		/* 10 */
   DEF_SYSCALL (noaction),	/* 11 */ /* fstat */
   DEF_SYSCALL (noaction),	/* 12 */
   DEF_SYSCALL (noaction),	/* 13 */
@@ -73,7 +73,7 @@ struct syscall_entry syscalls[] =
   DEF_SYSCALL (noaction),		/* 22 */
   DEF_SYSCALL (noaction),		/* 23 */
   DEF_SYSCALL (noaction),		/* 24 */
-  DEF_SYSCALL (setpgid),	/* 25 */
+  DEF_SYSCALL (noaction),	/* 25 */
   DEF_SYSCALL (noaction),		/* 26 */
   DEF_SYSCALL (noaction),		/* 27 */
   DEF_SYSCALL (noaction),		/* 28 */
@@ -81,13 +81,13 @@ struct syscall_entry syscalls[] =
   DEF_SYSCALL (noaction),		/* 30 */
   DEF_SYSCALL (noaction),	/* 31 */
   DEF_SYSCALL (noaction),		/* 32 */
-  DEF_SYSCALL (brk),		/* 33 */ /* BRK */
+  DEF_SYSCALL (noaction),		/* 33 */ /* BRK */
   DEF_SYSCALL (noaction),	/* 34 */
-  DEF_SYSCALL (mount),		/* 35 */
+  DEF_SYSCALL (noaction),		/* 35 */
   DEF_SYSCALL (noaction),	/* 36 */ /* mountroot */
   DEF_SYSCALL (noaction),		/* 37 */
-  DEF_SYSCALL (umount),		/* 38 */
-  DEF_SYSCALL (kill),		/* 39 */
+  DEF_SYSCALL (noaction),		/* 38 */
+  DEF_SYSCALL (noaction),		/* 39 */
   DEF_SYSCALL (noaction),		/* 40 */
   DEF_SYSCALL (noaction),		/* 41 */
 };

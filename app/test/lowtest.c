@@ -31,6 +31,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <utime.h>
 #include "cunit.h"
 
+extern void *malloc(size_t);
+extern void free(void*);
 
 char *testfile() {
 	int fd;
@@ -171,6 +173,8 @@ char *testmm() {
 	struct utsname name;
 	int pid;
 	time_t t;
+	char *buf;
+	int i;
 
 	pid = fork();
 	if (pid == 0) {
@@ -198,12 +202,17 @@ char *testmm() {
 	printf("euid = %d\n", geteuid());
 	printf("gid = %d\n", getgid());
 	printf("egid = %d\n", getegid());
-	setuid(682);
-	setgid(345);
-	printf("uid = %d\n", getuid());
-	printf("euid = %d\n", geteuid());
-	printf("gid = %d\n", getgid());
-	printf("egid = %d\n", getegid());
+
+	assert_eq("setgid[0]", 0, setgid(345));
+	assert_eq("getegid[0]", 345, getegid());
+
+	assert_eq("setuid[0]", 0, setuid(682));
+	assert_eq("geteuid[0]", 682, geteuid());
+
+	buf = malloc(1024 * 1024);
+	assert_ne("brk", 0, buf);
+	for (i = 0; i < 1024 * 1024; i++)	buf[i] = '0';
+	free(buf);
 
 	return NULL;
 }

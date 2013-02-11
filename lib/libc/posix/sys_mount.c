@@ -7,19 +7,36 @@
 
 */
 
+#include <string.h>
 #include "../native.h"
+#include "../errno.h"
 
-extern int strlen(char *);
 
 /* mount */
 int
 mount (char *special_file, char *dir, int rwflag, char *fstype)
 {
-  return (call_lowlib (PSC_MOUNT,
-		       strlen(special_file), special_file,
-		       strlen(dir), dir,
-		       rwflag,
-		       strlen(fstype), fstype)); 
+  ER			error;
+  struct posix_request	req;
+  struct posix_response	*res = (struct posix_response*)&req;
+
+  req.param.par_mount.devnamelen = strlen(special_file);
+  req.param.par_mount.devname = special_file;
+  req.param.par_mount.dirnamelen = strlen(dir);
+  req.param.par_mount.dirname = dir;
+  req.param.par_mount.fstypelen = strlen(fstype);
+  req.param.par_mount.fstype = fstype;
+  req.param.par_mount.option = rwflag;
+
+  error = _make_connection(PSC_MOUNT, &req);
+
+  if (error != E_OK) {
+      /* What should I do? */
+  }
+  else if (res->errno) {
+    errno = res->errno;
+    return (-1);
+  }
+
+  return (res->status);
 }
-
-

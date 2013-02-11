@@ -189,7 +189,6 @@ struct posix_syscall	syscall_table[] =
   { s("read",		PSC_READ)		psc_read_f },
   { s("rmdir",		PSC_RMDIR)		psc_rmdir_f },
   { s("setgid",		PSC_SETGID)		psc_setgid_f },
-  { s("setpgid",		PSC_SETPGID)		psc_setpgid_f },
   { s("setuid",		PSC_SETUID)		psc_setuid_f },
   { s("time",		PSC_TIME)		psc_time_f },
   { s("umask",		PSC_UMASK)		psc_umask_f },

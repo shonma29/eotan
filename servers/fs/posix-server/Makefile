@@ -68,7 +68,6 @@ OBJS =	access.o \
 	read.o \
 	rmdir.o \
 	setgid.o \
-	setpgid.o \
 	setuid.o \
 	fstat.o \
 	statfs.o \

@@ -38,15 +38,7 @@ CC=gcc
 CFLAGS=-O2 -Wall -Werror -fno-builtin -I$(ROOT)/include -I$(ROOT)/kernel $(IDENT)
 
 
-OBJS =	_make_cnnct.o \
-	brk.o \
-	exec.o \
-	exit.o \
-	fork.o \
-	kill.o \
-	mount.o \
-	setpgid.o \
-	umount.o
+OBJS =	_make_cnnct.o
 
 
 all: libposix-client.a

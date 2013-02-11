@@ -14,6 +14,7 @@ Version 2, June 1991
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_exit.c,v 1.3 2000/02/16 08:14:50 naniwa Exp $  */
 
 #include "../native.h"
+#include "../errno.h"
 
 
 /* _exit 
@@ -22,7 +23,27 @@ Version 2, June 1991
 int
 _exit (int status)
 {
-  return (call_lowlib (PSC_EXIT, status));
+  ER			error;
+  struct posix_request	req;
+  struct posix_response	*res = (struct posix_response*)&req;
+
+  req.param.par_exit.evalue = status;
+  error = _make_connection(PSC_EXIT, &req);
+
+  /* 自タスクを終了 */
+  exd_tsk ();
+
+  /* これ以降は実行されない */
+  if (error != E_OK)
+    {
+      /* What should I do? */
+    }
+
+  else if (res->errno)
+    {
+      errno = res->errno;
+      return (-1);
+    }
+
+  return (res->status);
 }
-
-

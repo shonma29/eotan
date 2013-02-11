@@ -52,29 +52,28 @@ Version 2, June 1991
 #define PSC_READ         22
 #define PSC_RMDIR        23
 #define PSC_SETGID       24
-#define PSC_SETPGID      25
-#define PSC_SETUID       26
-#define PSC_TIME         27
-#define PSC_UMASK        28
-#define PSC_UNLINK       29
-#define PSC_UTIME        30
-#define PSC_WAITPID      31
-#define PSC_WRITE        32
+#define PSC_SETUID       25
+#define PSC_TIME         26
+#define PSC_UMASK        27
+#define PSC_UNLINK       28
+#define PSC_UTIME        29
+#define PSC_WAITPID      30
+#define PSC_WRITE        31
 
-#define PSC_BRK		 33
-#define PSC_GETDENTS	 34
-#define PSC_MOUNT        35
-#define PSC_MOUNTROOT    36
-#define PSC_STATFS       37
-#define PSC_UMOUNT       38
+#define PSC_BRK		 32
+#define PSC_GETDENTS	 33
+#define PSC_MOUNT        34
+#define PSC_MOUNTROOT    35
+#define PSC_STATFS       36
+#define PSC_UMOUNT       37
 
 /* =================== SIGNAL 関係 =============== */
-#define PSC_KILL         39
+#define PSC_KILL         38
 
 /* =================== miserous system calls  =============== */
-#define PSC_MISC         40
+#define PSC_MISC         39
 
-#define PSC_DUP2         41	/* 不要? */
+#define PSC_DUP2         40	/* 不要? */
 
 /* MISC 
  */
@@ -350,15 +349,6 @@ struct psc_setgid
 };
 
 
-/* psc_setpgid -
- *
- */
-struct psc_setpgid
-{
-  UW		gid;
-};
-
-
 /* psc_setuid -
  *
  */
@@ -582,7 +572,6 @@ struct posix_request
     struct psc_read		par_read;
     struct psc_rmdir		par_rmdir;
     struct psc_setgid		par_setgid;
-    struct psc_setpgid		par_setpgid;
     struct psc_setuid		par_setuid;
     struct psc_fstat  		par_fstat;
     struct psc_time  		par_time;
@@ -650,7 +639,6 @@ extern W	psc_open_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_read_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_rmdir_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_setgid_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_setpgid_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_setuid_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_fstat_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_time_f (RDVNO rdvno, struct posix_request *);

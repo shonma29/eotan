@@ -456,7 +456,7 @@ W proc_set_gid(W procid, W gid)
 	return (EP_INVAL);
     }
 
-    proc_table[procid].proc_egid = gid;
+    proc_table[procid].proc_gid = gid;
     return (EP_OK);
 }
 

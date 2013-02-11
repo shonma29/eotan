@@ -14,6 +14,7 @@ Version 2, June 1991
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_kill.c,v 1.1 1997/08/31 13:25:22 night Exp $  */
 
 #include "../native.h"
+#include "../errno.h"
 
 
 /* kill 
@@ -22,7 +23,23 @@ Version 2, June 1991
 int
 kill (int pid)
 {
-  return (call_lowlib (PSC_KILL, pid));
+  ER			error;
+  struct posix_request	req;
+  struct posix_response	*res = (struct posix_response*)&req;
+
+  req.param.par_kill.pid = pid;
+
+  error = _make_connection(PSC_KILL, &req);
+  if (error != E_OK)
+    {
+      /* What should I do? */
+    }
+
+  else if (res->errno)
+    {
+      errno = res->errno;
+      return (-1);
+    }
+
+  return (res->status);
 }
-
-

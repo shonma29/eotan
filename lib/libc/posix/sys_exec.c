@@ -15,19 +15,12 @@ Version 2, June 1991
 
 #include <string.h>
 #include "../native.h"
+#include "../errno.h"
 
 
 /* exec 
  *
  */
-#if 0
-int
-exec (char *path, int narg, void *args, int nenv, void *envp)
-{
-  return (call_lowlib (PSC_EXEC, strlen (path), path, narg, args, nenv, envp));
-}
-#endif
-
 int
 execve(char *name, char *argv[], char *envp[])
 {
@@ -52,6 +45,9 @@ execve(char *name, char *argv[], char *envp[])
     char buf[stsize], *strp;
     int bufc;
     void **vp;
+    ER error;
+    struct posix_request req;
+    struct posix_response *res = (struct posix_response*)&req;
 
     vp = (void *) buf;
     bufc = (argc + envc + 2) * 4;
@@ -69,6 +65,20 @@ execve(char *name, char *argv[], char *envp[])
     }
     *vp++ = 0;
     
-    return(call_lowlib(PSC_EXEC, name, buf, stsize));
+    req.param.par_execve.pathlen = strlen(name);
+    req.param.par_execve.name = name;
+    req.param.par_execve.stackp = buf;
+    req.param.par_execve.stsize = stsize;
+
+    error = _make_connection(PSC_EXEC, &req);
+    if (error != E_OK) {
+	/* What should I do? */
+        return (error);
+    } else if (res->errno) {
+	errno = res->errno;
+	return (-1);
+    }
+
+    return (res->status);
   }
 }

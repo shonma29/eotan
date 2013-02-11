@@ -14,6 +14,7 @@ Version 2, June 1991
 /* @(#)$Header$  */
 
 #include "../native.h"
+#include "../errno.h"
 
 
 /* brk
@@ -22,7 +23,23 @@ Version 2, June 1991
 int
 brk (void *endds)
 {
-  return (call_lowlib (PSC_BRK, endds));
+  ER			error;
+  struct posix_request	req;
+  struct posix_response *res = (struct posix_response*)&req;
+
+  req.param.par_brk.end_adr = endds;
+
+  error = _make_connection(PSC_BRK, &req);
+  if (error != E_OK)
+    {
+      /* What should I do? */
+    }
+
+  else if (res->errno)
+    {
+      errno = res->errno;
+      return (-1);
+    }
+
+  return (res->status);
 }
-
-

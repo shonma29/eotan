@@ -73,7 +73,6 @@ extern int open(char *path, int oflag, ...);
 extern int read(int fd, void *buf, int size);
 extern int rmdir(char *path);
 extern int setgid(int gid);
-extern int setpgid(int gid);
 extern int setuid(int uid);
 extern int usleep(int usecond);
 extern int sleep(int second);
