@@ -13,8 +13,8 @@ Version 2, June 1991
 
 /* @(#)$Header$  */
 
-#include "../native.h"
-#include "../errno.h"
+#include <errno.h>
+#include "posix.h"
 
 
 /* brk

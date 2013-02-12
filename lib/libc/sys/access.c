@@ -13,9 +13,9 @@ Version 2, June 1991
 
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_access.c,v 1.1 1997/08/31 13:25:17 night Exp $  */
 
+#include <errno.h>
 #include <string.h>
-#include "../native.h"
-#include "../errno.h"
+#include "posix.h"
 
 
 /* access 

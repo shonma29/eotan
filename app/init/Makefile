@@ -19,7 +19,7 @@ CC=gcc
 MKDEPEND=$(CC) -M
 STARTADDR=0x00001000
 ENTRY=main
-KERNLIBS= $(ROOT)/lib/libserv.a $(ROOT)/lib/libposix.a \
+KERNLIBS= $(ROOT)/lib/libserv.a $(ROOT)/lib/libc.a \
 	$(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a
 
 LD=ld

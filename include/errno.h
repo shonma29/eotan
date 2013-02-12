@@ -68,8 +68,5 @@ Version 2, June 1991
 
 extern int	errno;
 
-extern void	perror (const char *msg);
-extern char	*strerror (int errno);
-
 
 #endif /* __ERRNO_H__ */

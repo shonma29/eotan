@@ -13,9 +13,9 @@ Version 2, June 1991
 
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_exec.c,v 1.2 1999/11/10 10:39:07 naniwa Exp $  */
 
+#include <errno.h>
 #include <string.h>
-#include "../native.h"
-#include "../errno.h"
+#include "posix.h"
 
 
 /* exec 

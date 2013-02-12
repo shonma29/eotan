@@ -24,11 +24,10 @@ Version 2, June 1991
  * First version.
  *
  */
+#include <errno.h>
 #include <services.h>
 #include <itron/rendezvous.h>
-#include <lowlib.h>
-#include "../errno.h"
-#include "../../../servers/fs/fs.h"
+#include "posix.h"
 
 
 ER

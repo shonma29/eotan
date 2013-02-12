@@ -14,8 +14,8 @@ Version 2, June 1991
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_misc.c,v 1.1 2000/01/30 09:06:47 naniwa Exp $
  */
 
-#include "../native.h"
-#include "../errno.h"
+#include <errno.h>
+#include "posix.h"
 
 /* misc
  *

@@ -7,9 +7,9 @@
 
 */
 
+#include <errno.h>
 #include <string.h>
-#include "../native.h"
-#include "../errno.h"
+#include "posix.h"
 
 
 /* mount */

@@ -2,12 +2,11 @@
 #
 #
 
-IDENT=-DI386
+IDENT=
 DEBUG=
 
-CPP=/lib/cpp
 ROOT=../..
-CFLAGS=-O2 -Wall -Werror -fno-builtin -I. -I../../include -I$(ROOT)/kernel $(IDENT)
+CFLAGS=-O2 -Wall -Werror -fno-builtin -I. -I$(ROOT)/include -I$(ROOT)/kernel $(IDENT)
 CC=gcc
 MKDEPEND=$(CC) -M
 LD=ld
@@ -15,9 +14,6 @@ AS=as
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
-
-%.o: %.s
-	$(CPP) $(ASFLAGS) $*.s | $(AS) -o $*.o
 
 %.o: %.S
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -73,28 +69,14 @@ OBJS=   sys/call_fs.o \
 	sys/write.o \
 	errno.o
 
-GTOBJS = others/tty.o 
-
-all: ../libc.a ../libposix.a ../libgt.a
+all: ../libc.a
 	ranlib ../libc.a
-	ranlib ../libposix.a
-	ranlib ../libgt.a
 
 ../libc.a: $(OBJS) $(OTHEROBJS) $(STRINGOBJS)
 	ar rv $@ $(OBJS) $(OTHEROBJS) $(STRINGOBJS)
-
-../libposix.a: $(OBJS)
-	ar rv $@ $(OBJS)
-
-../libgt.a: $(GTOBJS)
-	ar rv $@ $(GTOBJS)
-
 
 clean:
 	rm -f $(OBJS)
 	rm -f $(OTHEROBJS)
 	rm -f $(STRINGOBJS)
-	rm -f $(GTOBJS)
 	rm -f ../libc.a
-	rm -f ../libposix.a
-	rm -f ../libgt.a

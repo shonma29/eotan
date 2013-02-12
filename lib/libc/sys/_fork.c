@@ -15,10 +15,10 @@ Version 2, June 1991
 
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_fork.c,v 1.3 1999/11/10 10:39:32 naniwa Exp $  */
 
+#include <errno.h>
 #include <string.h>
 #include <mpu/io.h>
-#include "../native.h"
-#include "../errno.h"
+#include "posix.h"
 
 /* fork 用エントリールーチン */
 static int fork_entry()
