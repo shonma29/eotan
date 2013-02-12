@@ -27,22 +27,22 @@ psc_setuid_f (RDVNO rdvno, struct posix_request *req)
   if (errno)
     {
       put_response (rdvno, errno, 0, -1);
-      return (FAIL);
+      return (FALSE);
     }
 
   if (uid != 0)
     {
-      put_response (rdvno, EP_PERM, errno, -1);
-      return (FAIL);
+      put_response (rdvno, EPERM, errno, -1);
+      return (FALSE);
     }
 
   errno = proc_set_euid (req->procid, req->param.par_setuid.uid);
   if (errno)
     {
       put_response (rdvno, errno, 0, -1);
-      return (FAIL);
+      return (FALSE);
     }
 
-  put_response (rdvno, EP_OK, 0, 0);
-  return (SUCCESS);
+  put_response (rdvno, EOK, 0, 0);
+  return (TRUE);
 }  

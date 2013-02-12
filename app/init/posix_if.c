@@ -88,6 +88,8 @@ Version 2, June 1991
 #include <itron/struct.h>
 #include <itron/syscall.h>
 #include "../../servers/fs/api.h"
+#include "../../servers/fs/fs.h"
+#include "../../servers/fs/process.h"
 #include "../../servers/fs/mm.h"
 #include "init.h"
 

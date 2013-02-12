@@ -151,16 +151,16 @@ sfs_i_lookup(struct inode *parent,
 #ifdef notdef
     if (strcmp(fname, "/") == 0) {
 	*retip = parent;
-	return (EP_OK);
+	return (EOK);
     } else if (strcmp(fname, ".") == 0) {
 	*retip = parent;
-	return (EP_OK);
+	return (EOK);
     }
 #else
     if (strcmp(fname, ".") == 0) {
 	*retip = parent;
 	(*retip)->i_refcount++;
-	return (EP_OK);
+	return (EOK);
     }
 #endif
 
@@ -186,7 +186,7 @@ sfs_i_lookup(struct inode *parent,
 	     i, nentry);
 #endif
 	if (i >= nentry) {
-	    return (EP_NOENT);
+	    return (ENOENT);
 	}
 
 	*retip = fs_check_inode(parent->i_fs, dirp[i].sfs_d_index);
@@ -197,12 +197,12 @@ sfs_i_lookup(struct inode *parent,
 		*retip = (*retip)->coverfile;
 	    }
 	    (*retip)->i_refcount++;
-	    return (EP_OK);
+	    return (EOK);
 	}
 
 	*retip = alloc_inode();
 	if (*retip == NULL) {
-	    return (EP_NOMEM);
+	    return (ENOMEM);
 	}
 
 	errno = sfs_read_inode(parent->i_fs, dirp[i].sfs_d_index, *retip);
@@ -212,13 +212,13 @@ sfs_i_lookup(struct inode *parent,
 	fs_register_inode(*retip);
     }
 
-    return (EP_OK);
+    return (EOK);
 }
 
 
 W sfs_i_close()
 {
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -246,14 +246,14 @@ sfs_i_create(struct inode * parent,
     /* 引数のチェック */
     newip = alloc_inode();
     if (newip == NULL) {
-	return (EP_NOMEM);
+	return (ENOMEM);
     }
     *retip = newip;
 
     /* 新しい sfs_inode をアロケート */
     i_index = sfs_alloc_inode(parent->i_device, parent->i_fs);
     if (i_index <= 0) {
-	return (EP_NOMEM);
+	return (ENOMEM);
     }
 
     /* 設定 */
@@ -285,18 +285,18 @@ sfs_i_create(struct inode * parent,
     /* ディレクトリにエントリを追加 */
     dirnentry = sfs_read_dir(parent, 0, NULL);
     errno = sfs_write_dir(parent, dirnentry, &dirent);
-    if (errno != EP_OK) {
+    if (errno != EOK) {
 	return (errno);
     }
 
     /* inode 情報の更新 */
     /* 本来は inode の deallocate のところで行う処理のはず */
     errno = sfs_i_sync(newip);
-    if (errno != EP_OK) {
+    if (errno != EOK) {
 	return (errno);
     }
 
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -344,7 +344,7 @@ W sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
 	bn = sfs_get_block_num(fd, fsp, &(ip->i_private.sfs_inode),
 			       start / fsp->fs_blksize);
 	if (bn < 0) {
-	    return (EP_IO);
+	    return (EIO);
 	}
 #ifdef notdef
 	sfs_read_block(fd, bn, fsp->fs_blksize, blockbuf);
@@ -371,7 +371,7 @@ W sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
     ip->i_atime = get_system_time(NULL);
     ip->i_dirty = 1;
 #endif
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -422,7 +422,7 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 	    bzero(blockbuf, fsp->fs_blksize);
 #else
 	    if (bn < 0) {
-		return (EP_IO);
+		return (EIO);
 	    }
 	    sfs_get_cache(fd, bn, &cn, &cbuf);
 #endif
@@ -472,7 +472,7 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 	bn = sfs_get_block_num(fd, fsp, &(ip->i_private.sfs_inode),
 			       start / fsp->fs_blksize);
 	if (bn < 0) {
-	    return (EP_IO);
+	    return (EIO);
 	}
 	sfs_write_block(fd, bn, fsp->fs_blksize, blockbuf);
 #else
@@ -513,13 +513,13 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
     dbg_printf("write size: %d bytes\n", *rsize);
 #endif
 
-    return (EP_OK);
+    return (EOK);
 }
 
 
 W sfs_i_stat()
 {
-    return (EP_NOSUP);
+    return (ENOSUP);
 }
 
 
@@ -603,7 +603,7 @@ W sfs_i_truncate(struct inode * ip, W newsize)
     if (errno) {
 	return (errno);
     }
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -617,9 +617,9 @@ W sfs_i_link(struct inode * parent, char *fname, struct inode * srcip,
 
     /* リンク先にファイルが存在していたらエラー */
     errno = fs_lookup(parent, fname, O_RDONLY, 0, acc, &ip);
-    if (errno == EP_OK) {
+    if (errno == EOK) {
 	fs_close_file(ip);
-	return (EP_EXIST);
+	return (EEXIST);
     }
 
     /* ディレクトリのエントリを作成 */
@@ -630,7 +630,7 @@ W sfs_i_link(struct inode * parent, char *fname, struct inode * srcip,
     /* ディレクトリにエントリを追加 */
     dirnentry = sfs_read_dir(parent, 0, NULL);
     errno = sfs_write_dir(parent, dirnentry, &dirent);
-    if (errno != EP_OK) {
+    if (errno != EOK) {
 	return (errno);
     }
 
@@ -641,10 +641,10 @@ W sfs_i_link(struct inode * parent, char *fname, struct inode * srcip,
 
     /* 本来は inode の deallocate のところで行う処理のはず */
     errno = sfs_i_sync(srcip);
-    if (errno != EP_OK) {
+    if (errno != EOK) {
 	return (errno);
     }
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -666,24 +666,24 @@ sfs_i_unlink(struct inode * parent, char *fname, struct access_info * acc)
     }
     if ((ip->i_mode & S_IFMT) == S_IFDIR) {
 	fs_close_file(ip);
-	return (EP_ISDIR);
+	return (EISDIR);
     }
 
     /* ファイルの名前の最後の１つで，使用中なら削除しない */
     if ((ip->i_link == 1) && (ip->i_refcount >= 2)) {
 	fs_close_file(ip);
-	return (EP_BUSY);
+	return (EBUSY);
     }
 
     nentry = sfs_read_dir(parent, 0, NULL);
     if (nentry <= 0) {
 	fs_close_file(ip);
-	return (EP_NOENT);
+	return (ENOENT);
     } {
 	struct sfs_dir buf[nentry];	/* GCC の拡張機能を使っている */
 	if (sfs_read_dir(parent, nentry, buf) != 0) {
 	    fs_close_file(ip);
-	    return (EP_IO);
+	    return (EIO);
 	}
 
 	for (i = 0; i < nentry; i++) {
@@ -694,7 +694,7 @@ sfs_i_unlink(struct inode * parent, char *fname, struct access_info * acc)
 	}
 	if (i >= nentry) {
 	    fs_close_file(ip);
-	    return (EP_NOENT);
+	    return (ENOENT);
 	}
 
 	while (i < nentry) {
@@ -718,37 +718,37 @@ sfs_i_unlink(struct inode * parent, char *fname, struct access_info * acc)
 	}
     }
     fs_close_file(ip);
-    return (EP_OK);
+    return (EOK);
 }
 
 
 W sfs_i_symlink()
 {
-    return (EP_NOSUP);
+    return (ENOSUP);
 }
 
 
 W sfs_i_chmod()
 {
-    return (EP_NOSUP);
+    return (ENOSUP);
 }
 
 
 W sfs_i_chown()
 {
-    return (EP_NOSUP);
+    return (ENOSUP);
 }
 
 
 W sfs_i_chgrp()
 {
-    return (EP_NOSUP);
+    return (ENOSUP);
 }
 
 
 W sfs_i_rename()
 {
-    return (EP_NOSUP);
+    return (ENOSUP);
 }
 
 
@@ -788,7 +788,7 @@ W sfs_i_sync(struct inode * ip)
 #ifdef FMDEBUG
     dbg_printf("sfs_i_sync: done\n");
 #endif
-    return (EP_OK);
+    return (EOK);
 }
 
 /*
@@ -818,14 +818,14 @@ sfs_i_mkdir(struct inode * parent,
     /* 引数のチェック */
     newip = alloc_inode();
     if (newip == NULL) {
-	return (EP_NOMEM);
+	return (ENOMEM);
     }
     *retip = newip;
 
     /* 新しい sfs_inode をアロケート */
     i_index = sfs_alloc_inode(parent->i_device, parent->i_fs);
     if (i_index <= 0) {
-	return (EP_NOMEM);
+	return (ENOMEM);
     }
 
     /* 設定 */
@@ -865,11 +865,11 @@ sfs_i_mkdir(struct inode * parent,
     parent->i_link += 1;
     dirnentry = sfs_read_dir(parent, 0, NULL);
     errno = sfs_write_dir(parent, dirnentry, &dirent);
-    if (errno != EP_OK) {
+    if (errno != EOK) {
 	return (errno);
     }
 
-    return (EP_OK);
+    return (EOK);
 }
 
 /*
@@ -894,27 +894,27 @@ W sfs_i_rmdir(struct inode * parent, char *fname, struct access_info * acc)
     }
     if ((ip->i_mode & S_IFMT) != S_IFDIR) {
 	fs_close_file(ip);
-	return (EP_NOTDIR);
+	return (ENOTDIR);
     }
     if (ip->i_refcount >= 2) {
 	fs_close_file(ip);
-	return (EP_BUSY);
+	return (EBUSY);
     }
     nentry = sfs_read_dir(ip, 0, NULL);
     if (nentry >= 3) {
 	fs_close_file(ip);
-	return (EP_NOTEMPTY);
+	return (ENOTEMPTY);
     }
 
     nentry = sfs_read_dir(parent, 0, NULL);
     if (nentry <= 0) {
 	fs_close_file(ip);
-	return (EP_NOENT);
+	return (ENOENT);
     } {
 	struct sfs_dir buf[nentry];	/* GCC の拡張機能を使っている */
 	if (sfs_read_dir(parent, nentry, buf) != 0) {
 	    fs_close_file(ip);
-	    return (EP_IO);
+	    return (EIO);
 	}
 
 	for (i = 0; i < nentry; i++) {
@@ -925,7 +925,7 @@ W sfs_i_rmdir(struct inode * parent, char *fname, struct access_info * acc)
 	}
 	if (i >= nentry) {
 	    fs_close_file(ip);
-	    return (EP_NOENT);
+	    return (ENOENT);
 	}
 
 	while (i < nentry) {
@@ -953,5 +953,5 @@ W sfs_i_rmdir(struct inode * parent, char *fname, struct access_info * acc)
 	parent->i_dirty = 1;
     }
     fs_close_file(ip);
-    return (EP_OK);
+    return (EOK);
 }

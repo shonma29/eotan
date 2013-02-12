@@ -39,7 +39,7 @@ _make_connection(W wOperation,
     ID myself;
 
     if (get_tid(&myself)) {
-	return (EP_PERM);
+	return (EPERM);
     }
 
     req->msg_length = sizeof(struct posix_request);
@@ -49,7 +49,7 @@ _make_connection(W wOperation,
     rsize = cal_por(PORT_FS, 0xffffffff, req, sizeof(struct posix_request));
 
     if (rsize < 0) {
-	return (EP_PERM);
+	return (EPERM);
     }
 
     return (E_OK);

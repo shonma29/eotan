@@ -69,7 +69,7 @@ static W control_device(ID device, struct posix_request *preq)
     rlength = cal_por(send_port, 0xffffffff, &packet, sizeof(packet.req));
     if (rlength < 0) {
 	dbg_printf("cannot call port. %d\n", rlength);	/* */
-	return (EP_NODEV);
+	return (ENODEV);
     }
 
     return (packet.res.body.ctl_res.errinfo);
@@ -86,13 +86,13 @@ W psc_fcntl_f(RDVNO rdvno, struct posix_request * req)
     errno = proc_get_file(req->procid, req->param.par_fcntl.fileid, &fp);
     if (errno) {
 	put_response(rdvno, errno, -1, 0);
-	return (FAIL);
+	return (FALSE);
     } else if (fp == 0) {
-	put_response(rdvno, EP_INVAL, -1, 0);
-	return (FAIL);
+	put_response(rdvno, EINVAL, -1, 0);
+	return (FALSE);
     } else if (fp->f_inode == 0) {
-	put_response(rdvno, EP_INVAL, -1, 0);
-	return (FAIL);
+	put_response(rdvno, EINVAL, -1, 0);
+	return (FALSE);
     }
 
     if (fp->f_inode->i_mode & S_IFCHR) {
@@ -105,16 +105,16 @@ W psc_fcntl_f(RDVNO rdvno, struct posix_request * req)
 	errno = control_device(device, req);
 	if (errno) {
 	    put_response(rdvno, errno, errno, 0);
-	    return (FAIL);
+	    return (FALSE);
 	} else {
-	    put_response(rdvno, EP_OK, errno, 0);
-	    return (SUCCESS);
+	    put_response(rdvno, EOK, errno, 0);
+	    return (TRUE);
 	}
     } else {
 	/* とりあえず、サポートしていないというエラーで返す
 	 */
-	put_response(rdvno, EP_NOSUP, 0, 0);
+	put_response(rdvno, ENOSUP, 0, 0);
     }
 
-    return (FAIL);
+    return (FALSE);
 }

@@ -88,6 +88,8 @@ Version 2, June 1991
 #include "fs.h"
 
 
+static void banner(void);
+
 /*
  * POSIX 環境マネージャのメインルーチン
  *
@@ -109,10 +111,10 @@ int main(void)
     struct posix_request request;
     W res;
 
-    if (init_port() == FAIL) {
+    if (init_port() == FALSE) {
 	dbg_printf("Cannot allocate port.\n");
 	ext_tsk();
-	return FAIL;
+	return FALSE;
     }
     init_malloc(VADDR_HEAP);
 
@@ -143,7 +145,7 @@ int main(void)
 	if ((request.operation < 0)
 	    || (request.operation > NR_POSIX_SYSCALL)) {
 	    /* リクエスト要求にあるオペレーションは、サポートしていない */
-	    error_response((RDVNO)rdvno, EP_NOSUP);
+	    error_response((RDVNO)rdvno, ENOSUP);
 	} else {
 #ifdef DEBUG
 	  if ((request.operation != PSC_WRITE) &&
@@ -165,7 +167,7 @@ int main(void)
 }
 
 
-void banner(void)
+static void banner(void)
 {
     ID taskid;
 #ifdef notdef

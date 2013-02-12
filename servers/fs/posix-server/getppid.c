@@ -30,10 +30,10 @@ psc_getppid_f (RDVNO rdvno, struct posix_request *req)
   if (err)
     {
       put_response (rdvno, err, -1, 0);
-      return (FAIL);
+      return (FALSE);
     }
   
-  put_response (rdvno, EP_OK, ppid, 0);
-  return (SUCCESS);
+  put_response (rdvno, EOK, ppid, 0);
+  return (TRUE);
 }  
 

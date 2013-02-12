@@ -8,11 +8,11 @@
 */
 
 #include <services.h>
+#include <sys/syscall.h>
 #include "core.h"
 #include "lowlib.h"
 #include "thread.h"
 #include "func.h"
-#include "../servers/fs/fs.h"
 
 ER posix_kill_proc(ID pid)
 {

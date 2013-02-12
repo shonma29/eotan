@@ -208,6 +208,6 @@ struct posix_syscall	syscall_table[] =
 };
 
 static W psc_noaction_f(RDVNO rdvno, struct posix_request *req) {
-	put_response(rdvno, EP_NOSUP, 0, 0);
-	return FAIL;
+	put_response(rdvno, ENOSUP, 0, 0);
+	return FALSE;
 }

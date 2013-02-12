@@ -36,11 +36,11 @@ W psc_umount_f(RDVNO rdvno, struct posix_request *req)
     if (errno) {
 	/* mount 先/special file のパス名のコピーエラー */
 	if (errno == E_PAR) {
-	    put_response(rdvno, EP_INVAL, -1, 0);
+	    put_response(rdvno, EINVAL, -1, 0);
 	} else {
-	    put_response(rdvno, EP_FAULT, -1, 0);
+	    put_response(rdvno, EFAULT, -1, 0);
 	}
-	return (FAIL);
+	return (FALSE);
     }
 
     /* アンマウントポイントのオープン */
@@ -48,7 +48,7 @@ W psc_umount_f(RDVNO rdvno, struct posix_request *req)
 	errno = proc_get_cwd(req->procid, &startip);
 	if (errno) {
 	    put_response(rdvno, errno, -1, 0);
-	    return (FAIL);
+	    return (FALSE);
 	}
     } else {
 	startip = rootfile;
@@ -57,26 +57,26 @@ W psc_umount_f(RDVNO rdvno, struct posix_request *req)
     errno = proc_get_euid(req->procid, &(acc.uid));
     if (errno) {
 	put_response(rdvno, errno, -1, 0);
-	return (FAIL);
+	return (FALSE);
     }
     if (acc.uid != SU_UID) {
-	put_response(rdvno, EP_ACCESS, -1, 0);
-	return (FAIL);
+	put_response(rdvno, EACCESS, -1, 0);
+	return (FALSE);
     }
 
     errno = proc_get_egid(req->procid, &(acc.gid));
     if (errno) {
 	put_response(rdvno, errno, -1, 0);
-	return (FAIL);
+	return (FALSE);
     }
 
     errno = fs_open_file(dirname, O_RDWR, 0, &acc, startip, &umpoint);
     if (errno) {
 	put_response(rdvno, errno, -1, 0);
-	return (FAIL);
+	return (FALSE);
     }
 
-    errno = EP_OK;
+    errno = EOK;
     switch (umpoint->i_mode & S_IFMT) {
     case S_IFDIR:
 	device = umpoint->i_device;
@@ -85,15 +85,15 @@ W psc_umount_f(RDVNO rdvno, struct posix_request *req)
 	device = umpoint->i_dev;
 	break;
     case S_IFREG:
-        errno = EP_NOTDIR;
+        errno = ENOTDIR;
 	break;
       default:
-	errno = EP_INVAL;
+	errno = EINVAL;
 	break;
     }
 
     fs_close_file(umpoint);
-    if (errno == EP_OK) {
+    if (errno == EOK) {
 	errno = umount_fs(device);
     }
     if (errno) {
@@ -101,8 +101,8 @@ W psc_umount_f(RDVNO rdvno, struct posix_request *req)
         dbg_printf("[PM] umount errno = %d\n", errno);
 #endif
 	put_response(rdvno, errno, -1, 0);
-	return (FAIL);
+	return (FALSE);
     }
-    put_response(rdvno, EP_OK, 0, 0);
-    return (SUCCESS);
+    put_response(rdvno, EOK, 0, 0);
+    return (TRUE);
 }

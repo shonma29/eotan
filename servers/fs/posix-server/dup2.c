@@ -41,7 +41,7 @@ psc_dup2_f (RDVNO rdvno, struct posix_request *req)
   if (errno)
     {
       put_response (rdvno, errno, -1, 0);
-      return (FAIL);
+      return (FALSE);
     }
 
 
@@ -50,21 +50,21 @@ psc_dup2_f (RDVNO rdvno, struct posix_request *req)
       /* 複製するファイル記述子の番号がおかしい。
        * (ファイルをオープンしていない)
        */
-      put_response (rdvno, EP_BADF, -1, 0);
-      return (FAIL);
+      put_response (rdvno, EBADF, -1, 0);
+      return (FALSE);
     }
 
   errno = proc_get_file (req->procid, req->param.par_dup2.fileid2, &fp2);
   if (errno) {
     put_response (rdvno, errno, -1, 0);
-    return (FAIL);
+    return (FALSE);
   }
   if (fp2->f_inode != NULL) {
     /* 既に open されている file id だった */
     errno = fs_close_file (fp2->f_inode);
     if (errno) {
       put_response (rdvno, errno, -1, 0);
-      return (FAIL);
+      return (FALSE);
     }
     fp2->f_inode = NULL;
   }
@@ -74,9 +74,9 @@ psc_dup2_f (RDVNO rdvno, struct posix_request *req)
   if (errno)
     {
       put_response (rdvno, errno, -1, 0);
-      return (FAIL);
+      return (FALSE);
     }
 
-  put_response (rdvno, EP_OK, req->param.par_dup2.fileid2, 0);
-  return (SUCCESS);
+  put_response (rdvno, EOK, req->param.par_dup2.fileid2, 0);
+  return (TRUE);
 }  

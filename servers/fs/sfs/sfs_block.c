@@ -199,7 +199,7 @@ W sfs_free_block(W fd, struct fs * fsp, W blockno)
 
     if (blockno < fsp->fs_private.sfs_fs.sfs_datablock) {
 	printk("[SFS] sfs_free_block: illegal block # %d\n", blockno);
-	return (EP_INVAL);
+	return (EINVAL);
     }
 #if 0
     else if (blockno == 43936) {
@@ -245,7 +245,7 @@ W sfs_free_block(W fd, struct fs * fsp, W blockno)
        return (EP_IO);
        }
      */
-    return (EP_OK);
+    return (EOK);
 }
 
 W sfs_free_indirect(W fd, struct fs * fsp, struct sfs_inode * ip,
@@ -321,7 +321,7 @@ W sfs_free_indirect(W fd, struct fs * fsp, struct sfs_inode * ip,
 	}
 	ip->sfs_i_indirect[i] = 0;
     }
-    return (EP_OK);
+    return (EOK);
 }
 
 W sfs_free_dindirect(W fd, struct fs * fsp, struct sfs_inode * ip,
@@ -336,7 +336,7 @@ W sfs_free_dindirect(W fd, struct fs * fsp, struct sfs_inode * ip,
 #endif
 
     if (ip->sfs_i_dindirect[inblock] <= 0) {
-	return (EP_OK);
+	return (EOK);
     }
 #ifdef notdef
     sfs_read_block(fd, ip->sfs_i_dindirect[inblock], fsp->fs_blksize,
@@ -412,7 +412,7 @@ W sfs_free_dindirect(W fd, struct fs * fsp, struct sfs_inode * ip,
 #endif
     } else
 	sfs_put_cache(cn1, 0);
-    return (EP_OK);
+    return (EOK);
 }
 
 W sfs_free_all_dindirect(W fd, struct fs * fsp,
@@ -428,7 +428,7 @@ W sfs_free_all_dindirect(W fd, struct fs * fsp,
 	    ip->sfs_i_dindirect[i] = 0;
 	}
     }
-    return (EP_OK);
+    return (EOK);
 }
 
 

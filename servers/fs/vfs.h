@@ -99,8 +99,6 @@ Version 2, June 1991
 
 #define FS_SFS		1
 
-#ifdef KERNEL
-
 #define FS_MOUNTROOT(fsp,device,rootfs,rootfile)	(fsp->fs_mountroot)(device, rootfs, rootfile)
 
 #define FS_MOUNT(fsp,device,rootfs,rootfile)	(fsp->fs_mount)(device, rootfs, rootfile)
@@ -246,9 +244,6 @@ struct access_info {
     W gid;
 };
 
-#endif				/* KERNEL */
-
-
 /* statfs システムコール用
  */
 struct statfs {
@@ -274,9 +269,6 @@ struct special_file {
 
 extern struct special_file special_file_table[];
 
-
-
-#ifdef KERNEL
 
 /* filesystem.c */
 extern W init_fs(void);
@@ -329,7 +321,5 @@ extern W do_df();
 extern struct fs fs_buf[], *free_fs, *rootfs;
 extern struct inode inode_buf[], *free_inode, *rootfile;
 extern struct file *file_buf, *free_file;
-
-#endif
 
 #endif				/* __FS_VFS_H__ */

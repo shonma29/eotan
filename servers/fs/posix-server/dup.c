@@ -42,7 +42,7 @@ psc_dup_f (RDVNO rdvno, struct posix_request *req)
   if (errno)
     {
       put_response (rdvno, errno, -1, 0);
-      return (FAIL);
+      return (FALSE);
     }
 
 
@@ -50,15 +50,15 @@ psc_dup_f (RDVNO rdvno, struct posix_request *req)
     {
       /* 複製するファイル記述子の番号がおかしかった
        */
-      put_response (rdvno, EP_BADF, -1, 0);
-      return (FAIL);
+      put_response (rdvno, EBADF, -1, 0);
+      return (FALSE);
     }
 
   errno = proc_alloc_fileid (req->procid, &newfileid);
   if (errno)
     {
       put_response (rdvno, errno, -1, 0);
-      return (FAIL);
+      return (FALSE);
     }
 
   fp->f_inode->i_refcount++;
@@ -66,9 +66,9 @@ psc_dup_f (RDVNO rdvno, struct posix_request *req)
   if (errno)
     {
       put_response (rdvno, errno, -1, 0);
-      return (FAIL);
+      return (FALSE);
     }
 
-  put_response (rdvno, EP_OK, newfileid, 0);
-  return (SUCCESS);
+  put_response (rdvno, EOK, newfileid, 0);
+  return (TRUE);
 }  

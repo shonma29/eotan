@@ -37,7 +37,7 @@ psc_exit_f (RDVNO rdvno, struct posix_request *req)
   mypid = req->procid;
   errno = proc_get_procp(mypid, &myprocp);
   if (errno) {
-    put_response (rdvno, EP_SRCH, 0, 0);
+    put_response (rdvno, ESRCH, 0, 0);
     /* メッセージの呼び出し元にエラーを返しても処理できないが，
        タスクは exd_tsk で終了する */
     return errno;
@@ -47,7 +47,7 @@ psc_exit_f (RDVNO rdvno, struct posix_request *req)
 
   errno = proc_get_procp(myprocp->proc_ppid, &procp);
   if (errno) {
-    put_response (rdvno, EP_SRCH, 0, 0);
+    put_response (rdvno, ESRCH, 0, 0);
     /* メッセージの呼び出し元にエラーを返しても処理できないが，
        タスクは exd_tsk で終了する */
     return errno;
@@ -60,7 +60,7 @@ psc_exit_f (RDVNO rdvno, struct posix_request *req)
     procp->proc_status = PS_RUN;
     preq.operation = PSC_WAITPID;
     exst = (myprocp->proc_exst << 8);
-    put_response (procp->proc_wait_rdvno, EP_OK, mypid, exst);
+    put_response (procp->proc_wait_rdvno, EOK, mypid, exst);
 
     /* エントリーの開放 */
     proc_exit(mypid);
@@ -92,6 +92,6 @@ psc_exit_f (RDVNO rdvno, struct posix_request *req)
   vdel_reg(tskid, STACK_REGION); /* stack */
 #endif
 
-  put_response (rdvno, EP_OK, 0, 0);
-  return (SUCCESS);
+  put_response (rdvno, EOK, 0, 0);
+  return (TRUE);
 }  

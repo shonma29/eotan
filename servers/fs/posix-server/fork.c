@@ -37,7 +37,7 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
     {
       printk ("posix: invalid process id (%d)\n", req->procid);
       put_response (rdvno, errno, -1, 0);
-      return (FAIL);
+      return (FALSE);
     }
 
 #ifdef DEBUG
@@ -48,9 +48,9 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
   if (errno)
     {
       put_response (rdvno, errno, -1, 0);
-      return (FAIL);
+      return (FALSE);
     }
 
-  put_response (rdvno, EP_OK, childid, 0);	/* 親プロセスに対して応答 */
-  return (SUCCESS);
+  put_response (rdvno, EOK, childid, 0);	/* 親プロセスに対して応答 */
+  return (TRUE);
 }  

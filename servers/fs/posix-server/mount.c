@@ -57,11 +57,11 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
     if (errno) {
 	/* デバイスファイルのパス名のコピーエラー */
 	if (errno == E_PAR)
-	    put_response(rdvno, EP_INVAL, -1, 0);
+	    put_response(rdvno, EINVAL, -1, 0);
 	else
-	    put_response(rdvno, EP_FAULT, -1, 0);
+	    put_response(rdvno, EFAULT, -1, 0);
 
-	return (FAIL);
+	return (FALSE);
     }
     errno = vget_reg(req->caller,
 		     req->param.par_mount.dirname,
@@ -70,11 +70,11 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
     if (errno) {
 	/* mount 先のパス名のコピーエラー */
 	if (errno == E_PAR) {
-	    put_response(rdvno, EP_INVAL, -1, 0);
+	    put_response(rdvno, EINVAL, -1, 0);
 	} else {
-	    put_response(rdvno, EP_FAULT, -1, 0);
+	    put_response(rdvno, EFAULT, -1, 0);
 	}
-	return (FAIL);
+	return (FALSE);
     }
 
     errno = vget_reg(req->caller,
@@ -83,11 +83,11 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
     if (errno) {
 	/* ファイルシステムタイプのコピーエラー */
 	if (errno == E_PAR)
-	    put_response(rdvno, EP_INVAL, -1, 0);
+	    put_response(rdvno, EINVAL, -1, 0);
 	else
-	    put_response(rdvno, EP_FAULT, -1, 0);
+	    put_response(rdvno, EFAULT, -1, 0);
 
-	return (FAIL);
+	return (FALSE);
     }
 
     /* デバイスのオープン */
@@ -95,7 +95,7 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
 	errno = proc_get_cwd(req->procid, &startip);
 	if (errno) {
 	    put_response(rdvno, errno, -1, 0);
-	    return (FAIL);
+	    return (FALSE);
 	}
     } else {
 	startip = rootfile;
@@ -104,29 +104,29 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
     errno = proc_get_euid(req->procid, &(acc.uid));
     if (errno) {
 	put_response(rdvno, errno, -1, 0);
-	return (FAIL);
+	return (FALSE);
     }
     if (acc.uid != SU_UID) {
-      put_response(rdvno, EP_ACCESS, -1, 0);
-      return (FAIL);
+      put_response(rdvno, EACCESS, -1, 0);
+      return (FALSE);
     }
 
     errno = proc_get_egid(req->procid, &(acc.gid));
     if (errno) {
 	put_response(rdvno, errno, -1, 0);
-	return (FAIL);
+	return (FALSE);
     }
     errno = fs_open_file(devname, O_RDWR, 0, &acc, startip, &device);
     if (errno) {
 	put_response(rdvno, errno, -1, 0);
-	return (FAIL);
+	return (FALSE);
     }
 
     /* block device かどうかのチェック */
     if ((device->i_mode & S_IFMT) != S_IFBLK) {
 	fs_close_file(device);
-	put_response(rdvno, EP_INVAL, -1, 0);
-	return (FAIL);
+	put_response(rdvno, EINVAL, -1, 0);
+	return (FALSE);
     }
 
     /* マウントポイントのオープン */
@@ -135,7 +135,7 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
 	if (errno) {
 	    fs_close_file(device);
 	    put_response(rdvno, errno, -1, 0);
-	    return (FAIL);
+	    return (FALSE);
 	}
     } else {
 	startip = rootfile;
@@ -145,38 +145,38 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
     if (errno) {
 	put_response(rdvno, errno, -1, 0);
 	fs_close_file(device);
-	return (FAIL);
+	return (FALSE);
     }
 
     if (mountpoint->i_refcount > 1) {
-	put_response(rdvno, EP_BUSY, -1, 0);
+	put_response(rdvno, EBUSY, -1, 0);
 	fs_close_file(device);
 	fs_close_file(mountpoint);
-	return (FAIL);
+	return (FALSE);
     }
 
     if ((mountpoint->i_mode & S_IFMT) != S_IFDIR) {
-	put_response(rdvno, EP_NOTDIR, -1, 0);
+	put_response(rdvno, ENOTDIR, -1, 0);
 	fs_close_file(device);
 	fs_close_file(mountpoint);
-	return (FAIL);
+	return (FALSE);
     }
 
     errno =
 	mount_fs(device, mountpoint, req->param.par_mount.option, fstype);
 
-    if (errno == EP_OK) {
-	put_response(rdvno, EP_OK, 0, 0);
+    if (errno == EOK) {
+	put_response(rdvno, EOK, 0, 0);
 	fs_close_file(device);
 #ifdef notdef
 	/* マウントポイントは，umount されるまで使用される */
 	fs_close_file(mountpoint);
 #endif
-	return (SUCCESS);
+	return (TRUE);
     }
 
     put_response(rdvno, errno, -1, 0);
     fs_close_file(device);
     fs_close_file(mountpoint);
-    return (FAIL);
+    return (FALSE);
 }

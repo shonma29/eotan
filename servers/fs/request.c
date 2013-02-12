@@ -51,11 +51,11 @@ Version 2, June 1991
  *
  * 処理
  *	もし、すでにメッセージポートが初期化されていた場合には
- * 	何もしない。その場合には、SUCCESS が返る。
+ * 	何もしない。その場合には、TRUE が返る。
  *
  * 返り値
- *	SUCCESS	処理が成功
- *	FAIL	処理が失敗
+ *	TRUE	処理が成功
+ *	FALSE	処理が失敗
  *
  */
 W init_port(void)
@@ -69,10 +69,10 @@ W init_port(void)
     /* ポートを作成する */
     if (cre_por(PORT_FS, &arg)) {
 	/* ポートが作成できなかった */
-	return (FAIL);
+	return (FALSE);
     }
 
-    return (SUCCESS);		/* ポートが作成できた */
+    return (TRUE);		/* ポートが作成できた */
 }
 
 
@@ -109,7 +109,7 @@ put_response(RDVNO rdvno, W errno, W status, W ret1)
 
     /* 要求元に送信する */
     syserr = rpl_rdv(rdvno, &res, sizeof(res));
-    return (EP_OK);
+    return (EOK);
 }
 
 

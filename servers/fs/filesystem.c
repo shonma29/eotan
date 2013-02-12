@@ -241,7 +241,7 @@ W init_fs(void)
     dbg_printf("special file table size is %d\n", special_file_table_entry);
 #endif
 
-    return (SUCCESS);
+    return (TRUE);
 }
 
 
@@ -270,7 +270,7 @@ W init_special_file()
 	}
     }
 
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -296,7 +296,7 @@ W get_device_info(UW major_minor, ID * port, UW * dd)
 		    dbg_printf("Cannot access special file(%s).\n",
 			       special_file_table[i].name);
 #endif
-		    return (EP_NODEV);
+		    return (ENODEV);
 		}
 		special_file_table[i].port = p;
 	    }
@@ -309,10 +309,10 @@ W get_device_info(UW major_minor, ID * port, UW * dd)
 	    /* IDE driver ではパーティションの区別に利用する */
 	    *dd = major_minor & 0x0000FFFF;
 #endif
-	    return (EP_OK);
+	    return (EOK);
 	}
     }
-    return (EP_NODEV);
+    return (ENODEV);
 }
 
 /* file discriptor 0, 1, 2 の設定
@@ -326,7 +326,7 @@ W open_special_dev(struct proc * procp)
     procp->proc_open_file[0].f_offset = 0;
     procp->proc_open_file[0].f_omode = O_RDWR;
     if (ip == NULL) {
-	return (EP_NOMEM);
+	return (ENOMEM);
     }
     ip->i_mode = S_IFCHR;
     ip->i_dev = special_file_table[1].major_minor;
@@ -341,7 +341,7 @@ W open_special_dev(struct proc * procp)
     procp->proc_open_file[1].f_offset = 0;
     procp->proc_open_file[1].f_omode = O_RDWR;
     if (ip == NULL) {
-	return (EP_NOMEM);
+	return (ENOMEM);
     }
     ip->i_mode = S_IFCHR;
     ip->i_dev = special_file_table[0].major_minor;
@@ -356,7 +356,7 @@ W open_special_dev(struct proc * procp)
     procp->proc_open_file[2].f_offset = 0;
     procp->proc_open_file[2].f_omode = O_RDWR;
     if (ip == NULL) {
-	return (EP_NOMEM);
+	return (ENOMEM);
     }
     ip->i_mode = S_IFCHR;
     ip->i_dev = special_file_table[0].major_minor;
@@ -366,7 +366,7 @@ W open_special_dev(struct proc * procp)
     ip->i_size_blk = 0;
     fs_register_inode(ip);
 
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -416,7 +416,7 @@ W mount_root(ID device, W fstype, W option)
 #endif
     if ((fstype < 0) || (fstype > MAXFS)) {
 	dbg_printf("ERROR: mount_root fstype error %d\n", fstype);
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     rootfile = alloc_inode();
@@ -489,21 +489,21 @@ mount_fs(struct inode * deviceip,
 	    break;
     }
     if (fs_num > MAXFS) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
     /* 既に mount されていないかどうかのチェック */
     device = deviceip->i_dev;
     newfs = rootfs;
     do {
 	if (newfs->fs_device == device) {
-	    return (EP_BUSY);
+	    return (EBUSY);
 	}
 	newfs = newfs->fs_next;
     } while (newfs != rootfs);
 
     newfs = alloc_fs();
     if (newfs == NULL) {
-	return (EP_NOMEM);
+	return (ENOMEM);
     }
 
     newip = alloc_inode();
@@ -543,7 +543,7 @@ mount_fs(struct inode * deviceip,
 
     fs_register_inode(newip);
 
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -565,14 +565,14 @@ W umount_fs(UW device)
     while (fsp != rootfs);
     if (fsp == rootfs) {
 	/* 見付からなかったか，root file system だった場合 */
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     if (fsp->rootdir->i_refcount > 1) {
 #ifdef notdef
       printk("[PM] dir busy: refcount %d\n", fsp->rootdir->i_refcount);
 #endif
-	return (EP_BUSY);
+	return (EBUSY);
     }
 
     ip = fsp->fs_ilist;
@@ -585,7 +585,7 @@ W umount_fs(UW device)
 	     ip->i_index, ip->i_refcount,
 	     ip->i_next->i_index, ip->i_next->i_refcount);
 #endif
-	return (EP_BUSY);
+	return (EBUSY);
     }
 
     /* ファイルシステム情報を解放する */
@@ -606,7 +606,7 @@ W umount_fs(UW device)
     fsp->fs_next->fs_prev = fsp->fs_prev;
     dealloc_fs(fsp);
 
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -627,18 +627,18 @@ fs_open_file(B * path,
 	dbg_printf("fs_open_file: File creation mode.\n");
 #endif
 	errno = fs_lookup(startip, path, O_RDONLY, mode, acc, newip);
-	if (errno == EP_NOENT) {
+	if (errno == ENOENT) {
 #ifdef FMDEBUG
 	    dbg_printf("fs_open_file: call fs_create_file(%s)\n", path);
 #endif
 	    errno = fs_create_file(startip, path, oflag, mode, acc, newip);
 	    return (errno);
-	} else if (errno == EP_OK) {
+	} else if (errno == EOK) {
 #ifdef FMDEBUG
 	    dbg_printf("fs_open_file: File already exists.\n");
 #endif
 	    dealloc_inode(*newip);	/* fs_close() で行う処理はこれだけ */
-	    /*      return (EP_EXIST); */
+	    /*      return (EEXIST); */
 	    /* 後で mode と acc を確かめながら再度 open する */
 	} else {
 	    return (errno);
@@ -663,7 +663,7 @@ fs_open_file(B * path,
     if (oflag & O_TRUNC) {
       (*newip)->i_size = 0;
     }
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -708,7 +708,7 @@ fs_create_file(struct inode * startip,
 
     if ((parent_ip->i_mode & S_IFMT) != S_IFDIR) {
 	fs_close_file(parent_ip);
-	return (EP_NOTDIR);
+	return (ENOTDIR);
     }
 
     errno = FILE_CREATE(parent_ip,
@@ -717,7 +717,7 @@ fs_create_file(struct inode * startip,
     if (errno) {
 	return (errno);
     }
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -774,14 +774,14 @@ fs_lookup(struct inode * startip,
 #ifdef notdef
 	dbg_printf("fs_lookup: startip address is NULL\n");
 #endif
-	return (EP_NODEV);
+	return (ENODEV);
     }
 
     tmpip = startip;
     if ((path[0] == '/') && (path[1] == '\0')) {
 	startip->i_refcount++;
 	*newip = startip;
-	return (EP_OK);
+	return (EOK);
     } else if (*path == '/') {
 	path++;
     }
@@ -856,7 +856,7 @@ fs_lookup(struct inode * startip,
 	}
     }
 
-    return (EP_NAMETOOLONG);
+    return (ENAMETOOLONG);
 }
 
 /* fs_read_file -
@@ -876,7 +876,7 @@ W fs_read_file(struct inode * ip, W start, B * buf, W length, W * rlength)
 	return (errno);
     }
 
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -903,7 +903,7 @@ W fs_write_file(struct inode * ip, W start, B * buf, W length, W * rlength)
 	if ((ip->i_dev & BLOCK_DEVICE_MASK) != 0) {
 	    /* ブロック・デバイスだった */
 	    if (ip->i_size <= start) {
-		return (EP_NOSPC);
+		return (ENOSPC);
 	    } else if (ip->i_size <= (start + length)) {
 		length = ip->i_size - start;
 	    }
@@ -917,7 +917,7 @@ W fs_write_file(struct inode * ip, W start, B * buf, W length, W * rlength)
 	return (errno);
     }
 
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -966,7 +966,7 @@ fs_remove_file(struct inode * startip, B * path, struct access_info * acc)
     if (errno) {
 	return (errno);
     }
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -1010,7 +1010,7 @@ W fs_remove_dir(struct inode * startip, B * path, struct access_info * acc)
     if (errno) {
 	return (errno);
     }
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -1031,7 +1031,7 @@ W fs_sync_file(struct inode * ip)
  */
 W fs_convert_path(struct inode * ip, B * buf, W length)
 {
-    return (EP_NOSUP);
+    return (ENOSUP);
 }
 
 
@@ -1055,10 +1055,10 @@ W fs_statfs(ID device, struct statfs * result)
 	    result->f_bavail = p->fs_allblock;
 	    result->f_files = p->fs_allinode;
 	    result->f_free = p->fs_freeinode;
-	    return (EP_OK);
+	    return (EOK);
 	}
     }
-    return (EP_NODEV);
+    return (ENODEV);
 }
 
 /*
@@ -1074,10 +1074,10 @@ W fs_make_dir(struct inode * startip,
     W errno;
 
     errno = fs_lookup(startip, path, O_RDONLY, mode, acc, newip);
-    if (errno == EP_OK) {
+    if (errno == EOK) {
 	dealloc_inode(*newip);	/* fs_close() で行う処理はこれだけ */
-	return (EP_EXIST);
-    } else if (errno != EP_NOENT) {
+	return (EEXIST);
+    } else if (errno != ENOENT) {
 	return (errno);
     }
 
@@ -1108,7 +1108,7 @@ W fs_make_dir(struct inode * startip,
 
     if ((parent_ip->i_mode & S_IFMT) != S_IFDIR) {
 	fs_close_file(parent_ip);
-	return (EP_NOTDIR);
+	return (ENOTDIR);
     }
 
     errno = DIR_CREATE(parent_ip, &path[parent_length], mode, acc, newip);
@@ -1117,7 +1117,7 @@ W fs_make_dir(struct inode * startip,
     if (errno) {
 	return (errno);
     }
-    return (EP_OK);
+    return (EOK);
 }
 
 /*
@@ -1131,7 +1131,7 @@ W fs_getdents(struct inode * ip, ID caller, W offset,
     errno = GET_DENTS(ip, caller, offset, buf, length, rsize, fsize);
     if (errno)
 	return (errno);
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -1166,7 +1166,7 @@ fs_link_file(W procid, B * src, W srclen, B * dst, W dstlen,
     /* リンク元がディレクトリならエラー */
     if ((srcip->i_mode & S_IFMT) == S_IFDIR) {
 	fs_close_file(srcip);
-	return (EP_ISDIR);
+	return (EISDIR);
     }
 
     /* リンク先の親ディレクトリの i-node を get */
@@ -1208,7 +1208,7 @@ fs_link_file(W procid, B * src, W srclen, B * dst, W dstlen,
     if (srcip->i_fs != parent_ip->i_fs) {
 	fs_close_file(parent_ip);
 	fs_close_file(srcip);
-	return (EP_XDEV);
+	return (EXDEV);
     }
 
     /* 各ファイルシステムの link 関数を呼び出す */
@@ -1219,7 +1219,7 @@ fs_link_file(W procid, B * src, W srclen, B * dst, W dstlen,
     if (errno) {
 	return (errno);
     }
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -1280,7 +1280,7 @@ W dealloc_inode(struct inode * ip)
 	dbg_printf("[PM] dealloc_inode index = %d\n", ip->i_index);
 #endif
     }
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -1328,7 +1328,7 @@ W fs_register_inode(struct inode * ip)
 	register_list->i_prev = ip;
     }
 
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -1365,8 +1365,8 @@ W permit(struct inode * ip, struct access_info * acc, UW bits)
 	       acc->uid, mode, perm_bits);
 #endif
     if ((perm_bits | bits) != perm_bits)
-	return (EP_ACCESS);
-    return (EP_OK);
+	return (EACCESS);
+    return (EOK);
 }
 
 /* do_df()
@@ -1388,5 +1388,5 @@ W do_df()
 	       (fsp->mountpoint == NULL ? 1 : fsp->mountpoint->i_index));
 	fsp = fsp->fs_next;
     } while (fsp != rootfs);
-    return (EP_OK);
+    return (EOK);
 }

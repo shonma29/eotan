@@ -33,7 +33,7 @@
 
 
 #DEBUG=-DEXEC_DEBUG -DDEBUG
-IDENT=$(DEBUG) -DKERNEL
+IDENT=$(DEBUG)
 INC=-I.. -I../../../include -I../../../kernel
 CFLAGS=-O2 -fno-builtin -Wall -Werror $(INC) $(IDENT)
 CC=gcc

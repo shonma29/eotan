@@ -33,7 +33,7 @@ psc_umask_f (RDVNO rdvno, struct posix_request *req)
   if (errno)
     {
       put_response (rdvno, errno, -1, 0);
-      return (FAIL);
+      return (FALSE);
     }
   
   /* 新しい umask の値を設定する
@@ -42,9 +42,9 @@ psc_umask_f (RDVNO rdvno, struct posix_request *req)
   if (errno)
     {
       put_response (rdvno, errno, -1, 0);
-      return (FAIL);
+      return (FALSE);
     }
 
-  put_response (rdvno, EP_OK, old_umask, 0);
-  return (SUCCESS);
+  put_response (rdvno, EOK, old_umask, 0);
+  return (TRUE);
 }  

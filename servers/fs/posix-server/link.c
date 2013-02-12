@@ -30,22 +30,22 @@ W psc_link_f(RDVNO rdvno, struct posix_request *req)
     if (errno) {
 	/* パス名のコピーエラー */
 	if (errno == E_PAR)
-	    put_response(rdvno, EP_INVAL, -1, 0);
+	    put_response(rdvno, EINVAL, -1, 0);
 	else
-	    put_response(rdvno, EP_FAULT, -1, 0);
+	    put_response(rdvno, EFAULT, -1, 0);
 
-	return (FAIL);
+	return (FALSE);
     }
     errno = vget_reg(req->caller, req->param.par_link.dst,
 		     req->param.par_link.dstlen + 1, dst);
     if (errno) {
 	/* パス名のコピーエラー */
 	if (errno == E_PAR)
-	    put_response(rdvno, EP_INVAL, -1, 0);
+	    put_response(rdvno, EINVAL, -1, 0);
 	else
-	    put_response(rdvno, EP_FAULT, -1, 0);
+	    put_response(rdvno, EFAULT, -1, 0);
 
-	return (FAIL);
+	return (FALSE);
     }
 
     /* プロセスのユーザ ID とグループ ID の
@@ -56,20 +56,20 @@ W psc_link_f(RDVNO rdvno, struct posix_request *req)
     errno = proc_get_euid(req->procid, &(acc.uid));
     if (errno) {
 	put_response(rdvno, errno, 0, 0);
-	return (FAIL);
+	return (FALSE);
     }
     errno = proc_get_egid(req->procid, &(acc.gid));
     if (errno) {
 	put_response(rdvno, errno, 0, 0);
-	return (FAIL);
+	return (FALSE);
     }
 
     errno = fs_link_file(req->procid, src, req->param.par_link.srclen,
 			 dst, req->param.par_link.dstlen, &acc);
     if (errno) {
 	put_response(rdvno, errno, 0, 0);
-	return (FAIL);
+	return (FALSE);
     }
-    put_response(rdvno, EP_OK, 0, 0);
-    return (SUCCESS);
+    put_response(rdvno, EOK, 0, 0);
+    return (TRUE);
 }

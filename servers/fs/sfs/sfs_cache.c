@@ -309,5 +309,5 @@ W sfs_sync_cache(W fd, W umflag)
 	    }
 	}
     }
-    return (EP_OK);
+    return (EOK);
 }

@@ -25,9 +25,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <itron/types.h>
-#include <itron/struct.h>
+#include <itron/syscall.h>
 #include <mpu/call_kernel.h>
-#include <api.h>
 
 ER acre_flg(T_CFLG *pk_cflg) {
 	return ncall(SYS_ACRE_FLG, pk_cflg);

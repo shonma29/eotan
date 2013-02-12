@@ -176,7 +176,7 @@ W proc_set_info(struct posix_request * req)
 #endif
 
     if ((procid < 0) || (procid >= MAX_PROCESS)) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     /* プロセスの情報を設定する
@@ -189,7 +189,7 @@ W proc_set_info(struct posix_request * req)
     }
 
     if (procp->proc_status == PS_DORMANT) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     procinfo = &(req->param.par_misc.arg.set_procinfo);
@@ -231,7 +231,7 @@ W proc_set_info(struct posix_request * req)
 
     /* file discriptor 0, 1, 2 の設定 */
     error = open_special_dev(procp);
-    if (error != EP_OK) {
+    if (error != EOK) {
 	dbg_printf("[PM] can't open special files\n");
 	return (error);
     }
@@ -246,7 +246,7 @@ W proc_set_info(struct posix_request * req)
     dbg_printf("    umask:      %d\n", procinfo->proc_umask);
 #endif
 
-    return (EP_OK);
+    return (EOK);
 }
 
 /* proc_enter_posix - POSIX プロセスに登録する
@@ -293,7 +293,7 @@ W proc_enter_posix(struct posix_request * req)
 		     sizeof(struct lowlib_data), &lowlib_data);
     if (errno)
 	return errno;
-    return (EP_OK);
+    return (EOK);
 }
 
 /* proc_destroy_memory - プロセスのもつすべてのメモリ資源を解放する
@@ -304,7 +304,7 @@ W proc_destroy_memory(W procid)
     ER errno;
 
     if ((procid < 0) || (procid >= MAX_PROCESS)) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
     errno = destroy_proc_memory(&proc_table[procid], 1);
     return (errno);
@@ -320,7 +320,7 @@ W proc_exit(W procid)
     void sfs_close_device();
 
     if ((procid < 0) || (procid >= MAX_PROCESS)) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     /* プロセス情報の初期化 */
@@ -355,7 +355,7 @@ W proc_exit(W procid)
     tail_proc->proc_next = &proc_table[procid];
     tail_proc = &proc_table[procid];
 
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -395,11 +395,11 @@ W proc_dump(struct posix_request * req)
 W proc_get_procp(W procid, struct proc ** procp)
 {
     if ((procid < 0) || (procid >= MAX_PROCESS)) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     *procp = &proc_table[procid];
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -407,11 +407,11 @@ W proc_get_procp(W procid, struct proc ** procp)
 W proc_get_pid(W procid, W * pid)
 {
     if ((procid < 0) || (procid >= MAX_PROCESS)) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     *pid = proc_table[procid].proc_pid;
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -419,11 +419,11 @@ W proc_get_pid(W procid, W * pid)
 W proc_get_ppid(W procid, W * ppid)
 {
     if ((procid < 0) || (procid >= MAX_PROCESS)) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     *ppid = proc_table[procid].proc_ppid;
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -431,44 +431,44 @@ W proc_get_ppid(W procid, W * ppid)
 W proc_get_uid(W procid, W * uid)
 {
     if ((procid < 0) || (procid >= MAX_PROCESS)) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     *uid = proc_table[procid].proc_uid;
-    return (EP_OK);
+    return (EOK);
 }
 
 
 W proc_get_gid(W procid, W * gid)
 {
     if ((procid < 0) || (procid >= MAX_PROCESS)) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     *gid = proc_table[procid].proc_gid;
-    return (EP_OK);
+    return (EOK);
 }
 
 
 W proc_set_gid(W procid, W gid)
 {
     if ((procid < 0) || (procid >= MAX_PROCESS)) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     proc_table[procid].proc_gid = gid;
-    return (EP_OK);
+    return (EOK);
 }
 
 
 W proc_get_euid(W procid, W * uid)
 {
     if ((procid < 0) || (procid >= MAX_PROCESS)) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     *uid = proc_table[procid].proc_euid;
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -476,11 +476,11 @@ W proc_get_euid(W procid, W * uid)
 W proc_set_euid(W procid, W uid)
 {
     if ((procid < 0) || (procid >= MAX_PROCESS)) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     proc_table[procid].proc_euid = uid;
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -488,11 +488,11 @@ W proc_set_euid(W procid, W uid)
 W proc_get_egid(W procid, W * gid)
 {
     if ((procid < 0) || (procid >= MAX_PROCESS)) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     *gid = proc_table[procid].proc_egid;
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -500,11 +500,11 @@ W proc_get_egid(W procid, W * gid)
 W proc_set_egid(W procid, W gid)
 {
     if ((procid < 0) || (procid >= MAX_PROCESS)) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     proc_table[procid].proc_egid = gid;
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -513,7 +513,7 @@ W proc_alloc_fileid(W procid, W * retval)
     W i;
 
     if ((procid < 0) || (procid >= MAX_PROCESS)) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     for (i = 0; i < MAX_OPEN; i++) {
@@ -521,25 +521,25 @@ W proc_alloc_fileid(W procid, W * retval)
 	    *retval = i;
 	    memset((B*)&(proc_table[procid].proc_open_file[i]), 0,
 		  sizeof(struct file));
-	    return (EP_OK);
+	    return (EOK);
 	}
     }
-    return (EP_NOMEM);
+    return (ENOMEM);
 }
 
 
 W proc_set_file(W procid, W fileid, W flag, struct inode * ip)
 {
     if ((procid < 0) || (procid >= MAX_PROCESS)) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     if ((fileid < 0) || (fileid >= MAX_OPEN)) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     if (proc_table[procid].proc_open_file[fileid].f_inode != NULL) {
-	return (EP_BADF);
+	return (EBADF);
     }
 
     proc_table[procid].proc_open_file[fileid].f_inode = ip;
@@ -549,73 +549,73 @@ W proc_set_file(W procid, W fileid, W flag, struct inode * ip)
 	proc_table[procid].proc_open_file[fileid].f_offset = 0;
     }
     proc_table[procid].proc_open_file[fileid].f_omode = flag & 0x03;
-    return (EP_OK);
+    return (EOK);
 }
 
 
 W proc_get_file(W procid, W fileid, struct file ** fp)
 {
     if ((procid < 0) || (procid >= MAX_PROCESS)) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     if ((fileid < 0) || (fileid >= MAX_OPEN)) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     *fp = &(proc_table[procid].proc_open_file[fileid]);
-    return (EP_OK);
+    return (EOK);
 }
 
 
 W proc_get_cwd(W procid, struct inode ** cwd)
 {
     if ((procid < 0) || (procid >= MAX_PROCESS)) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     *cwd = proc_table[procid].proc_workdir;
     if (*cwd == NULL) {
-	return (EP_SRCH);
+	return (ESRCH);
     }
 
-    return (EP_OK);
+    return (EOK);
 }
 
 W proc_set_cwd(W procid, struct inode * cwd)
 {
     if ((procid < 0) || (procid >= MAX_PROCESS)) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     if (cwd == (struct inode *) 0) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     proc_table[procid].proc_workdir = cwd;
-    return (EP_OK);
+    return (EOK);
 }
 
 
 W proc_set_umask(W procid, W umask)
 {
     if ((procid < 0) || (procid >= MAX_PROCESS)) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     proc_table[procid].proc_umask = umask;
-    return (EP_OK);
+    return (EOK);
 }
 
 
 W proc_get_umask(W procid, W * umask)
 {
     if ((procid < 0) || (procid >= MAX_PROCESS)) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     *umask = proc_table[procid].proc_umask;
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -638,14 +638,14 @@ struct vm_tree *proc_get_vmtree(W procid)
 W proc_alloc_proc(struct proc ** procp)
 {
     if (free_proc == NULL) {
-	return (EP_NOMEM);
+	return (ENOMEM);
     }
 
     *procp = free_proc;
     free_proc = (*procp)->proc_next;
     (*procp)->proc_next = NULL;
 /*  memset((void *)*procp, 0, sizeof(struct proc)); */
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -667,17 +667,17 @@ proc_renew_task(W procid, FP main_funcp, FP signal_funcp,
 
 
     if ((procid < 0) || (procid >= MAX_PROCESS)) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     procp = &proc_table[procid];
     errno = ter_tsk(procp->proc_maintask);
     if (errno) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
     errno = ter_tsk(procp->proc_signal_handler);
     if (errno) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     pk_ctsk.exinf = 0;
@@ -687,7 +687,7 @@ proc_renew_task(W procid, FP main_funcp, FP signal_funcp,
     pk_ctsk.addrmap = NULL;
     errno = vcre_tsk(&pk_ctsk, &rid);
     if (errno) {
-	return (EP_NOMEM);
+	return (ENOMEM);
     }
     *new_main_task = rid;
     procp->proc_maintask = rid;
@@ -699,12 +699,12 @@ proc_renew_task(W procid, FP main_funcp, FP signal_funcp,
     pk_ctsk.addrmap = NULL;
     errno = vcre_tsk(&pk_ctsk, &rid);
     if (errno) {
-	return (EP_NOMEM);
+	return (ENOMEM);
     }
     *new_signal_task = rid;
     procp->proc_signal_handler = rid;
 
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -723,7 +723,7 @@ W proc_vm_dump(struct posix_request * req)
 
 
     if ((req->procid < 0) || (req->procid >= MAX_PROCESS)) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
     procp = &proc_table[req->param.par_misc.arg.procid];
     taskid = procp->proc_maintask;
@@ -735,7 +735,7 @@ W proc_vm_dump(struct posix_request * req)
 #ifdef DEBUG
 	printk("proc is dormant.\n");
 #endif
-	return (EP_NOENT);
+	return (ENOENT);
     }
 #ifdef DEBUG
     printk("proc_vm_dump(): procp = 0x%x\n", procp);
@@ -771,7 +771,7 @@ W proc_vm_dump(struct posix_request * req)
 	}
     }
 
-    return (EP_OK);
+    return (EOK);
 }
 
 W do_ps()
@@ -786,5 +786,5 @@ W do_ps()
 		   proc_table[i].proc_name);
 	}
     }
-    return (EP_OK);
+    return (EOK);
 }

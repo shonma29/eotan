@@ -115,8 +115,6 @@ struct vm_page
 };
 
 
-#ifdef KERNEL
-
 /* memory.c */
 extern ER			init_memory (void);
 extern W			alloc_memory (W procid, UW start, UW size, UW access);
@@ -134,8 +132,5 @@ extern struct vm_page		*alloc_vm_page (struct vm_tree *treep, struct vm_director
 extern struct vm_directory	*alloc_vm_directory (struct vm_tree *treep, UW addr);
 extern W			destroy_vmtree (struct proc *procp, struct vm_tree *treep, W unmap);
 extern W			setup_vmtree (struct proc *procp, ID taskid, UW access, FP handler, UW start, UW size);
-
-#endif /* KERNEL */
-
 
 #endif /* __FS_MM_H__ */

@@ -17,6 +17,7 @@ Version 2, June 1991
 
 #include <errno.h>
 #include <time.h>
+#include <fs.h>
 #include "posix.h"
 
 

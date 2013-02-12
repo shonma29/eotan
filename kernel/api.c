@@ -179,7 +179,6 @@ Version 2, June 1991
 #include "core.h"
 #include "func.h"
 #include "lowlib.h"
-#include "api.h"
 #include "sync.h"
 #include "boot.h"
 #include "mpu/interrupt.h"

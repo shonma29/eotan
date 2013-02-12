@@ -148,7 +148,7 @@ W sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 #ifdef FMDEBUG
 	printk("Cannot read from device.\n");
 #endif
-	return (EP_IO);
+	return (EIO);
     }
 #ifdef FMDEBUG
     dbg_printf("rootfsp = 0x%x\n", rootfsp);
@@ -156,7 +156,7 @@ W sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 
     if (sfs_sb.sfs_magic != SFS_MAGIC) {
 	printk("ERROR: mount: magic number %x\n", sfs_sb.sfs_magic);
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     rootfsp->fs_typeid = FS_SFS;
@@ -201,7 +201,7 @@ W sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
     dbg_printf("size:  %d bytes\n", rootfile->i_size);
 #endif
 
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -226,7 +226,7 @@ W sfs_umount(struct fs * rootfsp)
 {
     /* super block 情報の sync とキャッシュ・データの無効化 */
     sfs_syncfs(rootfsp, 1);
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -235,7 +235,7 @@ W sfs_umount(struct fs * rootfsp)
  */
 W sfs_statfs()
 {
-    return (EP_NOSUP);
+    return (ENOSUP);
 }
 
 
@@ -273,7 +273,7 @@ W sfs_syncfs(struct fs * fsp, W umflag)
     if (errno) {
 	return (errno);
     }
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -282,7 +282,7 @@ W sfs_syncfs(struct fs * fsp, W umflag)
  */
 W sfs_get_inode()
 {
-    return (EP_NOSUP);
+    return (ENOSUP);
 }
 
 
@@ -291,5 +291,5 @@ W sfs_get_inode()
  */
 W sfs_put_inode()
 {
-    return (EP_NOSUP);
+    return (ENOSUP);
 }

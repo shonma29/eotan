@@ -49,11 +49,11 @@ W psc_exec_f(RDVNO rdvno, struct posix_request *req)
     if (errno) {
 	/* パス名のコピーエラー */
 	if (errno == E_PAR)
-	    put_response(rdvno, EP_INVAL, -1, 0);
+	    put_response(rdvno, EINVAL, -1, 0);
 	else
-	    put_response(rdvno, EP_FAULT, -1, 0);
+	    put_response(rdvno, EFAULT, -1, 0);
 
-	return (FAIL);
+	return (FALSE);
     }
 #ifdef EXEC_DEBUG
     printk("exec: pathname is %s\n", pathname);
@@ -69,7 +69,7 @@ W psc_exec_f(RDVNO rdvno, struct posix_request *req)
 	    /* exit が実行されることは無いので，ここで開放する */
 	    proc_exit(req->procid);
 	}
-	return (FAIL);
+	return (FALSE);
     }
 
     /* プロセスに属するタスクを切り換える。
@@ -80,5 +80,5 @@ W psc_exec_f(RDVNO rdvno, struct posix_request *req)
     /* exec システムコールは、成功すると元のプロセスは消えるので、
      * レスポンスを返さない
      */
-    return (SUCCESS);
+    return (TRUE);
 }

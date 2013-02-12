@@ -48,9 +48,9 @@ Version 2, June 1991
  */
 
 
+#include <itron/types.h>
+#include <itron/syscall.h>
 #include <mpu/call_kernel.h>
-#include <core.h>
-#include <api.h>
 
 /*
  * 

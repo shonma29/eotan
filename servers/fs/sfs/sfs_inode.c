@@ -262,7 +262,7 @@ W sfs_write_inode(W fd, struct fs * fsp, struct sfs_inode * ip)
 						      ip->sfs_i_index),
 				 MAX_BODY_SIZE, &rlength);
 	if (errno) {
-	    return (EP_IO);
+	    return (EIO);
 	}
 
 	tmp += MAX_BODY_SIZE;
@@ -274,7 +274,7 @@ W sfs_write_inode(W fd, struct fs * fsp, struct sfs_inode * ip)
 				 &rlength);
 
 	if (errno) {
-	    return (EP_IO);
+	    return (EIO);
 	}
     } else {
 #ifdef notdef
@@ -284,7 +284,7 @@ W sfs_write_inode(W fd, struct fs * fsp, struct sfs_inode * ip)
 						      ip->sfs_i_index),
 				 sizeof(struct sfs_inode), &rlength);
 	if (errno) {
-	    return (EP_IO);
+	    return (EIO);
 	}
 #else
 	sfs_get_cache(fd,
@@ -298,7 +298,7 @@ W sfs_write_inode(W fd, struct fs * fsp, struct sfs_inode * ip)
 #endif
     }
 
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -324,7 +324,7 @@ W sfs_free_inode(struct fs * fsp, struct inode *ip)
 			     sfs_get_inode_offset(fsp, inode_index),
 			     sizeof(struct sfs_inode), &rlength);
     if (errno) {
-	return (EP_IO);
+	return (EIO);
     }
 #else
     sfs_get_cache(fsp->fs_device,
@@ -342,5 +342,5 @@ W sfs_free_inode(struct fs * fsp, struct inode *ip)
 	fsp->fs_isearch = inode_index;
     /* ここで fs の sync を行う必要があるか? */
     sfs_syncfs(fsp, 0);
-    return (EP_OK);
+    return (EOK);
 }

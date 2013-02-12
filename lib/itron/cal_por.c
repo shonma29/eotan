@@ -25,10 +25,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <itron/types.h>
+#include <itron/syscall.h>
 #include <itron/rendezvous.h>
 #include <itron/errno.h>
 #include <mpu/call_kernel.h>
-#include <api.h>
 
 ER_UINT cal_por(ID porid, RDVPTN calptn, VP msg, UINT cmsgsz) {
 	return (calptn == 0xffffffff)? 

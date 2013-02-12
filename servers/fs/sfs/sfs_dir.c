@@ -139,14 +139,14 @@ W sfs_getdents(struct inode *ip, ID caller, W offset,
   dent.d_ino = ip->i_index;
   nentry = sfs_read_dir (ip, 0, NULL);
   s = sizeof(struct sfs_dir);
-  if (offset >= nentry*s) return(EP_OK);
+  if (offset >= nentry*s) return(EOK);
   {
     struct sfs_dir dirp[nentry]; /* GCC の拡張機能を使っている */
     errno = sfs_read_dir (ip, nentry, dirp);
     if (errno) return(errno);
     for (i = offset/s; i < nentry; i++) {
       len = sizeof(struct dirent)+strlen(dirp[i].sfs_d_name);
-      if ((*rsize) + len >= length) return(EP_OK);
+      if ((*rsize) + len >= length) return(EOK);
       dent.d_reclen = len;
       dent.d_off = i*s;
       strncpy2(dent.d_name, dirp[i].sfs_d_name, SFS_MAXNAMELEN+1);
@@ -156,5 +156,5 @@ W sfs_getdents(struct inode *ip, ID caller, W offset,
       *fsize += s;
     }
   }
-  return(EP_OK);
+  return(EOK);
 }

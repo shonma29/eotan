@@ -30,9 +30,9 @@ psc_getegid_f (RDVNO rdvno, struct posix_request *req)
   if (err)
     {
       put_response (rdvno, err, -1, 0);
-      return (FAIL);
+      return (FALSE);
     }
   
-  put_response (rdvno, EP_OK, egid, 0);
-  return (SUCCESS);
+  put_response (rdvno, EOK, egid, 0);
+  return (TRUE);
 }  

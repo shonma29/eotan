@@ -37,14 +37,14 @@ W psc_chdir_f(RDVNO rdvno, struct posix_request *req)
 
     if (vget_reg(req->caller, req->param.par_chmod.path,
 		 req->param.par_chmod.pathlen + 1, path)) {
-	put_response(rdvno, EP_INVAL, -1, 0);
-	return (FAIL);
+	put_response(rdvno, EINVAL, -1, 0);
+	return (FALSE);
     }
 
     err = proc_get_cwd(req->procid, &oldip);
     if (err) {
 	put_response(rdvno, err, -1, 0);
-	return (FAIL);
+	return (FALSE);
     }
 
     if (*path == '/') {
@@ -53,8 +53,8 @@ W psc_chdir_f(RDVNO rdvno, struct posix_request *req)
     } else {
 #ifdef notdef
 	if (proc_get_cwd(req->procid, &startip)) {
-	    put_response(rdvno, EP_INVAL, -1, 0);
-	    return (FAIL);
+	    put_response(rdvno, EINVAL, -1, 0);
+	    return (FALSE);
 	}
 #else
 	startip = oldip;
@@ -63,19 +63,19 @@ W psc_chdir_f(RDVNO rdvno, struct posix_request *req)
 
 
     if (proc_get_euid(req->procid, &acc.uid)) {
-	put_response(rdvno, EP_INVAL, -1, 0);
-	return (FAIL);
+	put_response(rdvno, EINVAL, -1, 0);
+	return (FALSE);
     }
 
     if (proc_get_egid(req->procid, &acc.gid)) {
-	put_response(rdvno, EP_INVAL, -1, 0);
-	return (FAIL);
+	put_response(rdvno, EINVAL, -1, 0);
+	return (FALSE);
     }
 
     err = fs_lookup(startip, path, O_RDONLY, 0, &acc, &ipp);
     if (err) {
 	put_response(rdvno, err, -1, 0);
-	return (FAIL);
+	return (FALSE);
     }
 
     if ((ipp->i_mode & S_IFMT) != S_IFDIR) {
@@ -84,23 +84,23 @@ W psc_chdir_f(RDVNO rdvno, struct posix_request *req)
 	 * 
 	 */
 	fs_close_file(ipp);
-	put_response(rdvno, EP_NOTDIR, -1, 0);
-	return (FAIL);
+	put_response(rdvno, ENOTDIR, -1, 0);
+	return (FALSE);
     }
 
     err = permit(ipp, &acc, X_OK);
     if (err) {
 	put_response(rdvno, err, -1, 0);
-	return (FAIL);
+	return (FALSE);
     }
 
     err = proc_set_cwd(req->procid, ipp);
     if (err) {
 	put_response(rdvno, err, -1, 0);
-	return (FAIL);
+	return (FALSE);
     }
 
     dealloc_inode(oldip);
-    put_response(rdvno, EP_OK, 0, 0);
-    return (SUCCESS);
+    put_response(rdvno, EOK, 0, 0);
+    return (TRUE);
 }

@@ -25,9 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <itron/types.h>
+#include <itron/syscall.h>
 #include <itron/rendezvous.h>
 #include <mpu/call_kernel.h>
-#include <api.h>
 
 ER del_por(ID porid) {
 	return ncall(SYS_DEL_POR, porid);

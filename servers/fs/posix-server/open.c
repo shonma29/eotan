@@ -50,8 +50,8 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
     errno = proc_alloc_fileid(req->procid, &fileid);
     if (errno) {
 	/* メモリ取得エラー */
-	put_response(rdvno, EP_NOMEM, -1, 0);
-	return (FAIL);
+	put_response(rdvno, ENOMEM, -1, 0);
+	return (FALSE);
     }
 
     /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。
@@ -61,11 +61,11 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
     if (errno) {
 	/* パス名のコピーエラー */
 	if (errno == E_PAR)
-	    put_response(rdvno, EP_INVAL, -1, 0);
+	    put_response(rdvno, EINVAL, -1, 0);
 	else
-	    put_response(rdvno, EP_FAULT, -1, 0);
+	    put_response(rdvno, EFAULT, -1, 0);
 
-	return (FAIL);
+	return (FALSE);
     }
 #ifdef notdef
     dbg_printf("psc_open_f: open file path len = %d [%s]\n",
@@ -75,7 +75,7 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
 	errno = proc_get_cwd(req->procid, &startip);
 	if (errno) {
 	    put_response(rdvno, errno, -1, 0);
-	    return (FAIL);
+	    return (FALSE);
 	}
     } else {
 	startip = rootfile;
@@ -83,19 +83,19 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
     errno = proc_get_euid(req->procid, &(acc.uid));
     if (errno) {
 	put_response(rdvno, errno, -1, 0);
-	return (FAIL);
+	return (FALSE);
     }
 
     errno = proc_get_egid(req->procid, &(acc.gid));
     if (errno) {
 	put_response(rdvno, errno, -1, 0);
-	return (FAIL);
+	return (FALSE);
     }
 
     errno = proc_get_umask(req->procid, &umask);
     if (errno) {
 	put_response(rdvno, errno, -1, 0);
-	return (FAIL);
+	return (FALSE);
     }
 
     errno = fs_open_file(pathname,
@@ -108,7 +108,7 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
 #endif
 	/* ファイルがオープンできない */
 	put_response(rdvno, errno, -1, 0);
-	return (FAIL);
+	return (FALSE);
     }
 
     if ((newip->i_mode & S_IFMT) == S_IFDIR) {
@@ -125,29 +125,29 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
 	 */
 #ifdef notdef
 	if (proc_get_uid(req->procid, &uid)) {
-	    put_response(rdvno, EP_INVAL, -1, 0);
-	    return (FAIL);
+	    put_response(rdvno, EINVAL, -1, 0);
+	    return (FALSE);
 	}
 	if (proc_get_euid(req->procid, &euid)) {
-	    put_response(rdvno, EP_INVAL, -1, 0);
-	    return (FAIL);
+	    put_response(rdvno, EINVAL, -1, 0);
+	    return (FALSE);
 	}
 	if ((uid != 0) && (euid != 0)) {
 	    fs_close_file(newip);
-	    put_response(rdvno, EP_ISDIR, -1, 0);
-	    return (FAIL);
+	    put_response(rdvno, EISDIR, -1, 0);
+	    return (FALSE);
 	}
 #else
 	if (acc.uid != SU_UID) {
 	    fs_close_file(newip);
-	    put_response(rdvno, EP_ACCESS, -1, 0);
-	    return (FAIL);
+	    put_response(rdvno, EACCESS, -1, 0);
+	    return (FALSE);
 	}
 #endif
 	if (req->param.par_open.oflag != O_RDONLY) {
 	    fs_close_file(newip);
-	    put_response(rdvno, EP_ISDIR, -1, 0);
-	    return (FAIL);
+	    put_response(rdvno, EISDIR, -1, 0);
+	    return (FALSE);
 	}
     } else if (newip->i_mode & S_IFCHR) {
 	/* スペシャルファイルだった */
@@ -158,18 +158,18 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
 	}
 	if (errno != E_OK) {
 	    fs_close_file(newip);
-	    put_response(rdvno, EP_ACCESS, -1, 0);
-	    return (FAIL);
+	    put_response(rdvno, EACCESS, -1, 0);
+	    return (FALSE);
 	}
     }
 
     if (proc_set_file(req->procid, fileid,
 		      req->param.par_open.oflag, newip)) {
 	fs_close_file(newip);
-	put_response(rdvno, EP_INVAL, -1, 0);
-	return (FAIL);
+	put_response(rdvno, EINVAL, -1, 0);
+	return (FALSE);
     }
 
-    put_response(rdvno, EP_OK, fileid, 0);
-    return (SUCCESS);
+    put_response(rdvno, EOK, fileid, 0);
+    return (TRUE);
 }

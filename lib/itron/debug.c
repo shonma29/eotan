@@ -15,9 +15,9 @@ Version 2, June 1991
  */
 #include <stdarg.h>
 #include <string.h>
+#include <itron/types.h>
+#include <itron/syscall.h>
 #include <mpu/call_kernel.h>
-#include <core.h>
-#include <api.h>
 #include "../libserv/libserv.h"
 
 static void dbg_putchar(B ch)

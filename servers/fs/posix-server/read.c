@@ -59,24 +59,24 @@ W psc_read_f(RDVNO rdvno, struct posix_request *req)
     errno = proc_get_file(req->procid, req->param.par_read.fileid, &fp);
     if (errno) {
 	put_response(rdvno, errno, -1, 0);
-	return (FAIL);
+	return (FALSE);
     } else if (fp == 0) {
-	put_response(rdvno, EP_INVAL, -1, 0);
-	return (FAIL);
+	put_response(rdvno, EINVAL, -1, 0);
+	return (FALSE);
     } else if (fp->f_inode == 0) {
-	put_response(rdvno, EP_INVAL, -1, 0);
-	return (FAIL);
+	put_response(rdvno, EINVAL, -1, 0);
+	return (FALSE);
     }
 
     if (fp->f_omode == O_WRONLY) {
-	put_response(rdvno, EP_BADF, -1, 0);
-	return (FAIL);
+	put_response(rdvno, EBADF, -1, 0);
+	return (FALSE);
     }
 
     if (fp->f_flag & F_PIPE) {
 	/* パイプの読み書き */
-	put_response(rdvno, EP_NOSUP, -1, 0);
-	return (FAIL);
+	put_response(rdvno, ENOSUP, -1, 0);
+	return (FALSE);
     }
 
     if (fp->f_inode->i_mode & S_IFCHR) {
@@ -89,7 +89,7 @@ W psc_read_f(RDVNO rdvno, struct posix_request *req)
 	} else {
 	    /* ブロックデバイスだった */
 	    if (fp->f_offset >= fp->f_inode->i_size) {
-		errno = EP_OK;
+		errno = EOK;
 		req->param.par_read.length = 0;
 	    }
 	}
@@ -117,12 +117,12 @@ W psc_read_f(RDVNO rdvno, struct posix_request *req)
 	}
 	if (errno) {
 	    put_response(rdvno, errno, -1, 0);
-	    return (FAIL);
+	    return (FALSE);
 	}
 
 	fp->f_offset += i;
-	put_response(rdvno, EP_OK, i, 0);
-	return (SUCCESS);
+	put_response(rdvno, EOK, i, 0);
+	return (TRUE);
     }
 #ifdef DEBUG
     printk
@@ -132,8 +132,8 @@ W psc_read_f(RDVNO rdvno, struct posix_request *req)
 #endif
 
     if (fp->f_offset >= fp->f_inode->i_size) {
-	put_response(rdvno, EP_OK, 0, 0);
-	return (SUCCESS);
+	put_response(rdvno, EOK, 0, 0);
+	return (TRUE);
     }
     for (i = 0, rest_length = req->param.par_read.length;
 	 rest_length > 0; rest_length -= rlength, i += rlength) {
@@ -155,9 +155,9 @@ W psc_read_f(RDVNO rdvno, struct posix_request *req)
     }
     if (errno) {
 	put_response(rdvno, errno, -1, 0);
-	return (FAIL);
+	return (FALSE);
     }
     fp->f_offset += i;
-    put_response(rdvno, EP_OK, i, 0);
-    return (SUCCESS);
+    put_response(rdvno, EOK, i, 0);
+    return (TRUE);
 }

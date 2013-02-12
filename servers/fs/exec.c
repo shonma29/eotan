@@ -263,7 +263,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     if (errno)
 	return errno;
 
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -297,31 +297,31 @@ read_exec_header(struct inode *ip,
 	(elfp->e_ident[2] != 'L') || (elfp->e_ident[3] != 'F')) {
 	/* ELF フォーマットのファイルではなかった
 	 */
-	return (EP_NOEXEC);
+	return (ENOEXEC);
     }
 
     if (elfp->e_type != ET_EXEC) {
 	/* 実行ファイルではなかった
 	 */
-	return (EP_NOEXEC);
+	return (ENOEXEC);
     }
 
     if (elfp->e_machine != EM_386) {
 	/* ELF ファイルの対応マシン種類が違った
 	 */
-	return (EP_NOEXEC);
+	return (ENOEXEC);
     }
 
     if (elfp->e_version < 1) {
 	/* ELF ファイルのバージョンが不正
 	 */
-	return (EP_NOEXEC);
+	return (ENOEXEC);
     }
 
     if (sizeof(Elf32_Phdr) != elfp->e_phentsize) {
 	/* プログラムヘッダのサイズが定義と違っている
 	 */
-	return (EP_NOEXEC);
+	return (ENOEXEC);
     }
 
     errno =
@@ -330,7 +330,7 @@ read_exec_header(struct inode *ip,
     if (errno) {
 	return (errno);
     } else if (rlength != elfp->e_phentsize * elfp->e_phnum) {
-	return (EP_NOEXEC);
+	return (ENOEXEC);
     }
 
     memset((VP)text, 0, sizeof(Elf32_Phdr));
@@ -357,7 +357,7 @@ read_exec_header(struct inode *ip,
 	}
     }
 
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -406,7 +406,7 @@ load_text(W procid, struct inode *ip, Elf32_Phdr *text, ID task)
 #ifdef EXEC_DEBUG
 	    dbg_printf("ERROR: fs_read_file\n");
 #endif
-	    return (EP_NOMEM);
+	    return (ENOMEM);
 	}
 
 	errno = vput_reg(task, (B *) vaddr, read_size, buf);
@@ -415,11 +415,11 @@ load_text(W procid, struct inode *ip, Elf32_Phdr *text, ID task)
 	    dbg_printf("ERROR: vput_reg %d %d %x %d %x\n", errno,
 		   task, vaddr, read_size, buf);
 #endif
-	    return (EP_NOMEM);
+	    return (ENOMEM);
 	}
     }
 
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -467,7 +467,7 @@ load_data(W procid, struct inode *ip, Elf32_Phdr *data, ID task)
 #ifdef EXEC_DEBUG
 	    dbg_printf("ERROR: fs_read_file\n");
 #endif
-	    return (EP_NOMEM);
+	    return (ENOMEM);
 	}
 
 	errno = vput_reg(task, (B *) vaddr, read_size, buf);
@@ -475,9 +475,9 @@ load_data(W procid, struct inode *ip, Elf32_Phdr *data, ID task)
 #ifdef EXEC_DEBUG
 	    dbg_printf("ERROR: vput_reg\n");
 #endif
-	    return (EP_NOMEM);
+	    return (ENOMEM);
 	}
     }
 
-    return (EP_OK);
+    return (EOK);
 }

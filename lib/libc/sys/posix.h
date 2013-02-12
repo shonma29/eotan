@@ -19,9 +19,8 @@ Version 2, June 1991
 #include <itron/errno.h>
 #include <itron/types.h>
 #include <itron/syscall.h>
+#include <sys/syscall.h>
 #include <lowlib.h>
-#include "../../../servers/fs/api.h"
-#include "../../../servers/fs/fs.h"
 
 extern struct lowlib_data *lowlib_data;
 

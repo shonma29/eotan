@@ -30,8 +30,8 @@ W psc_chown_f(RDVNO rdvno, struct posix_request *req)
 
     if (vget_reg(req->caller, req->param.par_chown.path,
 		 req->param.par_chown.pathlen + 1, path)) {
-	put_response(rdvno, EP_INVAL, -1, 0);
-	return (FAIL);
+	put_response(rdvno, EINVAL, -1, 0);
+	return (FALSE);
     }
 
     if (*path == '/') {
@@ -39,25 +39,25 @@ W psc_chown_f(RDVNO rdvno, struct posix_request *req)
 	startip = rootfile;
     } else {
 	if (proc_get_cwd(req->procid, &startip)) {
-	    put_response(rdvno, EP_INVAL, -1, 0);
-	    return (FAIL);
+	    put_response(rdvno, EINVAL, -1, 0);
+	    return (FALSE);
 	}
     }
 
     if (proc_get_euid(req->procid, &acc.uid)) {
-	put_response(rdvno, EP_INVAL, -1, 0);
-	return (FAIL);
+	put_response(rdvno, EINVAL, -1, 0);
+	return (FALSE);
     }
 
     if (proc_get_egid(req->procid, &acc.gid)) {
-	put_response(rdvno, EP_INVAL, -1, 0);
-	return (FAIL);
+	put_response(rdvno, EINVAL, -1, 0);
+	return (FALSE);
     }
 
     err = fs_lookup(startip, path, O_RDWR, 0, &acc, &ipp);
     if (err) {
-	put_response(rdvno, EP_NOENT, -1, 0);
-	return (FAIL);
+	put_response(rdvno, ENOENT, -1, 0);
+	return (FALSE);
     }
 
     ipp->i_uid = req->param.par_chown.uid;
@@ -67,12 +67,12 @@ W psc_chown_f(RDVNO rdvno, struct posix_request *req)
 
     /* fs_close_file で行う処理 */
     if (fs_sync_file(ipp)) {
-	put_response(rdvno, EP_INVAL, -1, 0);
+	put_response(rdvno, EINVAL, -1, 0);
 	dealloc_inode(ipp);
-	return (FAIL);
+	return (FALSE);
     }
 
     dealloc_inode(ipp);
-    put_response(rdvno, EP_OK, 0, 0);
-    return (SUCCESS);
+    put_response(rdvno, EOK, 0, 0);
+    return (TRUE);
 }

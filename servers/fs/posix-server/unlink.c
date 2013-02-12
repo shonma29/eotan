@@ -55,11 +55,11 @@ psc_unlink_f (RDVNO rdvno, struct posix_request *req)
     {
       /* パス名のコピーエラー */
       if (errno == E_PAR)
-	put_response (rdvno, EP_INVAL, 0, 0);
+	put_response (rdvno, EINVAL, 0, 0);
       else
-	put_response (rdvno, EP_FAULT, 0, 0);
+	put_response (rdvno, EFAULT, 0, 0);
 	
-      return (FAIL);
+      return (FALSE);
     }
 
 
@@ -78,7 +78,7 @@ psc_unlink_f (RDVNO rdvno, struct posix_request *req)
       if (errno)
 	{
 	  put_response (rdvno, errno, 0, 0);
-	  return (FAIL);
+	  return (FALSE);
 	}
     }
   else
@@ -96,13 +96,13 @@ psc_unlink_f (RDVNO rdvno, struct posix_request *req)
   if (errno)
     {
       put_response (rdvno, errno, 0, 0);
-      return (FAIL);
+      return (FALSE);
     }
   errno = proc_get_egid (req->procid, &(acc.gid));
   if (errno)
     {
       put_response (rdvno, errno, 0, 0);
-      return (FAIL);
+      return (FALSE);
     }
 
   errno = fs_remove_file (startip,
@@ -112,9 +112,9 @@ psc_unlink_f (RDVNO rdvno, struct posix_request *req)
     {
       /* ファイルがオープンできない */
       put_response (rdvno, errno, 0, 0);
-      return (FAIL);
+      return (FALSE);
     }
   
-  put_response (rdvno, EP_OK, 0, 0);
-  return (SUCCESS);
+  put_response (rdvno, EOK, 0, 0);
+  return (TRUE);
 } 

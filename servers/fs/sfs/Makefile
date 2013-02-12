@@ -9,7 +9,7 @@
 
 ROOT=../../..
 INC=-I$(ROOT)/include -I$(ROOT)/kernel -I$(ROOT)/lib/libserv
-IDENT=-DKERNEL # -DDEBUG
+#IDENT=-DDEBUG
 CFLAGS=-O2 -Wall -Werror -fno-builtin -Wall $(INC) $(IDENT)
 CC=gcc
 

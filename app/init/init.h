@@ -40,7 +40,7 @@ Version 2, June 1991
 #define STDERR	2
 
 
-struct file
+struct _file
 {
   ID	device;
   W	count;
@@ -49,7 +49,7 @@ struct file
   UB	buf[BUFSIZE];
 };
 
-typedef struct file	FILE;
+typedef struct _file	FILE;
 
 extern FILE	__file_table__[];
 

@@ -101,7 +101,7 @@ W create_vm_tree(struct proc *proc, UW access, UW start, UW size)
 
     treep = (struct vm_tree *) malloc(sizeof(struct vm_tree));
     if (treep == NULL) {
-	return (EP_NOMEM);
+	return (ENOMEM);
     }
 
     treep->access = access;
@@ -128,11 +128,11 @@ W create_vm_tree(struct proc *proc, UW access, UW start, UW size)
 	printk("create_vm_tree: errno = %d, file= %s line = %d\n", errno,
 	       __FILE__, __LINE__);	/* */
 #endif
-	return (EP_INVAL);
+	return (EINVAL);
     }
 #endif
 
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -162,7 +162,7 @@ W grow_vm(struct proc * procp, UW addr, UW access)
 						       MAX_PAGE_ENTRY *
 						       PAGE_SIZE);
 	if (vmdir == NULL) {
-	    return (EP_NOMEM);
+	    return (ENOMEM);
 	}
 	treep->directory_table[dirent] = vmdir;
     }
@@ -178,26 +178,26 @@ W grow_vm(struct proc * procp, UW addr, UW access)
 #endif
 						  access);
 	if (vmpage == NULL) {
-	    return (EP_NOMEM);
+	    return (ENOMEM);
 	}
 	vmdir->page_table[pageent] = vmpage;
     }
 #ifdef notdef
     if (VM_ALLOCED_MASK(vmpage->access)) {
 	/* すでに物理メモリが割り当て済み */
-	return (EP_INVAL);
+	return (EINVAL);
     }
 #endif
     /* 仮想メモリ領域に物理メモリを割り付ける
      */
     errno = vmap_reg(procp->proc_maintask, (VP) addr, PAGE_SIZE, ACC_USER);
     if (errno) {
-	return (EP_PERM);
+	return (EPERM);
     }
 #ifdef notdef
     vmpage->access |= VM_ALLOCED;
 #endif
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -223,20 +223,20 @@ W shorten_vm(struct proc * procp, UW addr)
 
     vmdir = treep->directory_table[dirent];
     if (vmdir == NULL) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
     vmpage = vmdir->page_table[pageent];
     if (vmpage == NULL) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 #ifdef notdef
     if (!VM_ALLOCED_MASK(vmpage->access)) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 #endif
     errno = vunm_reg(procp->proc_maintask, (VP) (vmpage->addr), PAGE_SIZE);
     if (errno) {
-	return (EP_INVAL);
+	return (EINVAL);
     }
 #ifdef notdef
     vmpage->access = (vmpage->access & ~VM_ALLOCED);
@@ -245,7 +245,7 @@ W shorten_vm(struct proc * procp, UW addr)
     vmdir->page_table[pageent] = NULL;
     free(vmpage);
 
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -312,7 +312,7 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 		    printk("duplicate_tree: empty dest_dirp %d\n",
 			   dir_index);
 #endif
-		    return (EP_NOMEM);
+		    return (ENOMEM);
 		}
 		destination->directory_table[dir_index] = dest_dirp;
 #ifdef notdef
@@ -325,7 +325,7 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 #ifdef VMDEBUG
 		printk("duplicate_tree: non null dest_dirp\n");
 #endif
-		return (EP_INVAL);
+		return (EINVAL);
 	    }
 
 
@@ -352,7 +352,7 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 #ifdef VMDEBUG
 			    printk("duplicate_tree: empty pagep\n");
 #endif
-			    return (EP_NOMEM);
+			    return (ENOMEM);
 			}
 #ifdef VMDEBUG
 			printk("allocate new page information: 0x%x\n", dest_pagep);	/* */
@@ -399,7 +399,7 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 #ifdef VMDEBUG
 			printk("duplicate_tree: non empty page\n");
 #endif
-			return (EP_INVAL);
+			return (EINVAL);
 		    }
 
 		    /* 送り側プロセスのメモリ中の情報を取り出す
@@ -460,7 +460,7 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
     }				/* プロセスの各ページディレクトリのチェックのループの最後 */
 
 
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -560,7 +560,7 @@ W destroy_vmtree(struct proc * procp, struct vm_tree * treep, W unmap)
     /*  vmtree の root の開放 */
     free(treep);
 
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -588,7 +588,7 @@ setup_vmtree(struct proc * procp, ID taskid, UW access, FP handler,
     if (treep == NULL) {
 	treep = malloc(sizeof(struct vm_tree));
 	if (treep == NULL) {
-	    return (EP_NOMEM);
+	    return (ENOMEM);
 	}
 	memset((VP)treep, 0, sizeof(struct vm_tree));
 	treep->access = access;
@@ -610,7 +610,7 @@ setup_vmtree(struct proc * procp, ID taskid, UW access, FP handler,
 		    /* ディレクトリエントリを確保していないので、メモリをアロケートする */
 		    dirp = malloc(sizeof(struct vm_directory));
 		    if (dirp == NULL) {
-			return (EP_NOMEM);
+			return (ENOMEM);
 		    }
 		    memset((VP)dirp, 0, sizeof(struct vm_directory));
 		    dirp->access = access;
@@ -627,7 +627,7 @@ setup_vmtree(struct proc * procp, ID taskid, UW access, FP handler,
 		    pagep = malloc(sizeof(struct vm_page));
 		    if (pagep == NULL) {
 			/* メモリ不足 */
-			return (EP_NOMEM);
+			return (ENOMEM);
 		    }
 		    memset((VP)pagep, 0, sizeof(struct vm_page));
 		    dirp->page_table[page_index] = pagep;
@@ -641,9 +641,9 @@ setup_vmtree(struct proc * procp, ID taskid, UW access, FP handler,
 
 	    addr += PAGE_SIZE;
 	    if (addr >= end)
-		return (EP_OK);
+		return (EOK);
 	}
     }
 
-    return (EP_OK);
+    return (EOK);
 }

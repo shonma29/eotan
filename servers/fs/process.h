@@ -165,9 +165,6 @@ struct proc
 };
 
 
-
-#ifdef KERNEL
-
 /* process.c */
 
 extern struct proc	proc_table[MAX_PROCESS];
@@ -213,7 +210,5 @@ extern W		proc_duplicate (struct proc *source, struct proc *destination);
 
 /* filesystem.c */
 extern W		open_special_dev(struct proc *procp);
-
-#endif
 
 #endif /* __FS_PROCESS_H__ */

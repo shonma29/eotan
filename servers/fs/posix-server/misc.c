@@ -75,7 +75,7 @@ W psc_misc_f(RDVNO rdvno, struct posix_request *req)
 
     put_response(rdvno, err, err ? -1 : 0, 0);
     if (err)
-	return (FAIL);
+	return (FALSE);
     else
-	return (SUCCESS);
+	return (TRUE);
 }

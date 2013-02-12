@@ -48,9 +48,11 @@ Version 2, June 1991
  */
 
 
+#include <itron/types.h>
+#include <itron/syscall.h>
+#include <itron/errno.h>
 #include <mpu/call_kernel.h>
-#include <core.h>
-#include <api.h>
+#include <config.h>
 
 ER
 vnew_reg (ID	id, 	/* task ID */

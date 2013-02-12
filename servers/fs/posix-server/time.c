@@ -47,7 +47,7 @@ UW get_system_time(UW * usec)
 W psc_time_f(RDVNO rdvno, struct posix_request * req)
 {
     UW clock, usec;
-    ER errno = EP_OK;
+    ER errno = EOK;
     struct timeval tv;
     struct timezone tz;
 
@@ -64,7 +64,7 @@ W psc_time_f(RDVNO rdvno, struct posix_request * req)
 			 &tv);
 	if (errno) {
 	    put_response(rdvno, errno, -1, 0);
-	    return (FAIL);
+	    return (FALSE);
 	}
 
     }
@@ -74,10 +74,10 @@ W psc_time_f(RDVNO rdvno, struct posix_request * req)
 			 &tz);
 	if (errno) {
 	    put_response(rdvno, errno, -1, 0);
-	    return (FAIL);
+	    return (FALSE);
 	}
     }
 
-    put_response(rdvno, EP_OK, 0, 0);
-    return (SUCCESS);
+    put_response(rdvno, EOK, 0, 0);
+    return (TRUE);
 }

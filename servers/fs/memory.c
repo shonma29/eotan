@@ -54,11 +54,11 @@ W setup_vm_proc(struct proc * procp)
     errno =
 	create_vm_tree(procp, (VM_READ | VM_WRITE | VM_USER | VM_SHARE),
 		       LOW_USER_ADDR, USER_MEM_SIZE);
-    if (errno != EP_OK) {
+    if (errno != EOK) {
 	return (errno);
     }
 
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -87,7 +87,7 @@ W alloc_memory(W procid, UW start, UW size, UW access)
 	}
     }
 
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -109,7 +109,7 @@ W free_memory(W procid, UW start, UW size)
 	}
     }
 
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -140,12 +140,12 @@ W destroy_proc_memory(struct proc * procp, W unmap)
     }
 
     procp->vm_tree = NULL;
-    return (EP_OK);
+    return (EOK);
 }
 
 
 
 W vm_page_fault_handler()
 {
-    return (EP_NOSUP);
+    return (ENOSUP);
 }

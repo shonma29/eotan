@@ -35,8 +35,8 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
   if (errno)
     {
       /* メモリ取得エラー */
-      put_response (rdvno, EP_NOMEM, -1, 0);
-      return (FAIL);
+      put_response (rdvno, ENOMEM, -1, 0);
+      return (FALSE);
     }
 
   errno = vget_reg (req->caller, req->param.par_mkdir.path,
@@ -45,11 +45,11 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
     {
       /* パス名のコピーエラー */
       if (errno == E_PAR)
-	put_response (rdvno, EP_INVAL, -1, 0);
+	put_response (rdvno, EINVAL, -1, 0);
       else
-	put_response (rdvno, EP_FAULT, -1, 0);
+	put_response (rdvno, EFAULT, -1, 0);
 	
-      return (FAIL);
+      return (FALSE);
     }
 
   if (*pathname != '/')
@@ -58,7 +58,7 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
       if (errno)
 	{
 	  put_response (rdvno, errno, -1, 0);
-	  return (FAIL);
+	  return (FALSE);
 	}
     }
   else
@@ -69,21 +69,21 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
   if (errno)
     {
       put_response (rdvno, errno, -1, 0);
-      return (FAIL);
+      return (FALSE);
     }
 
   errno = proc_get_gid (req->procid, &(acc.gid));
   if (errno)
     {
       put_response (rdvno, errno, -1, 0);
-      return (FAIL);
+      return (FALSE);
     }
 
   errno = proc_get_umask (req->procid, &umask);
   if (errno)
     {
       put_response (rdvno, errno, -1, 0);
-      return (FAIL);
+      return (FALSE);
     }
 
   errno = fs_make_dir (startip, pathname,
@@ -94,10 +94,10 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
     {
       /* ファイルがオープンできない */
       put_response (rdvno, errno, -1, 0);
-      return (FAIL);
+      return (FALSE);
     }
   
   fs_close_file (newip);
-  put_response (rdvno, EP_OK, 0, 0);
-  return (SUCCESS);
+  put_response (rdvno, EOK, 0, 0);
+  return (TRUE);
 }  

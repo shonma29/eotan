@@ -34,12 +34,12 @@ W psc_close_f(RDVNO rdvno, struct posix_request *req)
     err = proc_get_file(req->procid, req->param.par_close.fileid, &fp);
     if (err) {
 	put_response(rdvno, err, -1, 0);
-	return (FAIL);
+	return (FALSE);
     }
 
     if (fp->f_inode == NULL) {
-	put_response(rdvno, EP_BADF, -1, 0);
-	return (FAIL);
+	put_response(rdvno, EBADF, -1, 0);
+	return (FALSE);
     }
 
     if (fp->f_inode->i_mode & S_IFCHR) {
@@ -51,10 +51,10 @@ W psc_close_f(RDVNO rdvno, struct posix_request *req)
     err = fs_close_file(fp->f_inode);
     if (err) {
 	put_response(rdvno, err, -1, 0);
-	return (FAIL);
+	return (FALSE);
     }
 
     fp->f_inode = NULL;
-    put_response(rdvno, EP_OK, 0, 0);
-    return (SUCCESS);
+    put_response(rdvno, EOK, 0, 0);
+    return (TRUE);
 }

@@ -139,7 +139,7 @@ W proc_fork(struct proc *parent, W * childid, ID main_task, ID signal_task)
 
     strncpy2(newproc->proc_name, parent->proc_name, PROC_NAME_LEN);
 
-    return (EP_OK);
+    return (EOK);
 }
 
 
@@ -233,5 +233,5 @@ W proc_duplicate(struct proc * source, struct proc * destination)
     /* copy of umask */
     destination->proc_umask = source->proc_umask;
 
-    return (EP_OK);
+    return (EOK);
 }

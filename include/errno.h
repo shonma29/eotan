@@ -65,8 +65,11 @@ Version 2, June 1991
 #define ESRCH		36	/* No such process */
 #define EXDEV		37	/* Improper link */
 
+/* others */
+#define EOK		(0)	/* 成功         */
+#define ENOSUP		(100)	/* not support  */
+
 
 extern int	errno;
-
 
 #endif /* __ERRNO_H__ */

@@ -42,8 +42,8 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
     errno = proc_alloc_fileid(req->procid, &fileid);
     if (errno) {
 	/* メモリ取得エラー */
-	put_response(rdvno, EP_NOMEM, -1, 0);
-	return (FAIL);
+	put_response(rdvno, ENOMEM, -1, 0);
+	return (FALSE);
     }
     memset(pathname, 0, req->param.par_access.pathlen + 1);
 
@@ -55,11 +55,11 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
     if (errno) {
 	/* パス名のコピーエラー */
 	if (errno == E_PAR)
-	    put_response(rdvno, EP_INVAL, -1, 0);
+	    put_response(rdvno, EINVAL, -1, 0);
 	else
-	    put_response(rdvno, EP_FAULT, -1, 0);
+	    put_response(rdvno, EFAULT, -1, 0);
 
-	return (FAIL);
+	return (FALSE);
     }
 #ifdef notdef
     printf("psc_access_f: open file path = %s\n", pathname);
@@ -68,7 +68,7 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
 	errno = proc_get_cwd(req->procid, &startip);
 	if (errno) {
 	    put_response(rdvno, errno, -1, 0);
-	    return (FAIL);
+	    return (FALSE);
 	}
     } else {
 	startip = rootfile;
@@ -76,18 +76,18 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
     errno = proc_get_uid(req->procid, &(acc.uid));
     if (errno) {
 	put_response(rdvno, errno, -1, 0);
-	return (FAIL);
+	return (FALSE);
     }
     errno = proc_get_euid(req->procid, &euid);
     if (errno) {
 	put_response(rdvno, errno, -1, 0);
-	return (FAIL);
+	return (FALSE);
     }
 
     errno = proc_get_gid(req->procid, &(acc.gid));
     if (errno) {
 	put_response(rdvno, errno, -1, 0);
-	return (FAIL);
+	return (FALSE);
     }
 
     errno = fs_open_file(pathname,
@@ -99,7 +99,7 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
 #endif
 	/* ファイルがオープンできない */
 	put_response(rdvno, errno, -1, 0);
-	return (FAIL);
+	return (FALSE);
     }
 
     accmode = req->param.par_access.accflag;
@@ -113,19 +113,19 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
     errno = fs_close_file(newip);
     if (errno) {
 	put_response(rdvno, errno, -1, 0);
-	return (FAIL);
+	return (FALSE);
     }
 
     /* アクセス権限のチェック */
     if ((acc.uid == 0) || (euid == 0)) {
 	/* root ユーザの場合には、無条件で成功とする */
-	put_response(rdvno, EP_OK, 0, 0);
-	return (SUCCESS);
+	put_response(rdvno, EOK, 0, 0);
+	return (TRUE);
     } else if ((newip->i_mode & accmode) == 0) {
-	put_response(rdvno, EP_ACCESS, -1, 0);
-	return (FAIL);
+	put_response(rdvno, EACCESS, -1, 0);
+	return (FALSE);
     }
 
-    put_response(rdvno, EP_OK, 0, 0);
-    return (SUCCESS);
+    put_response(rdvno, EOK, 0, 0);
+    return (TRUE);
 }

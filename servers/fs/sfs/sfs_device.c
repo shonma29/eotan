@@ -45,7 +45,7 @@ W sfs_write_device(ID device, B * buf, W start, W length, W * rlength)
     }
 
     if (length > MAX_BODY_SIZE) {	/* Kludge!! */
-	return (EP_INVAL);
+	return (EINVAL);
     }
 
     packet.req.header.msgtyp = DEV_WRI;
@@ -56,7 +56,7 @@ W sfs_write_device(ID device, B * buf, W start, W length, W * rlength)
     rsize = cal_por(send_port, 0xffffffff, &packet, sizeof(packet.req));
     if (rsize < 0) {
 	dbg_printf("cal_por error = %d\n", rsize);	/* */
-	return (EP_NODEV);
+	return (ENODEV);
     }
 
     *rlength = packet.res.body.wri_res.a_size;
@@ -134,7 +134,7 @@ W sfs_open_device(ID device, W * rsize)
     rlength = cal_por(send_port, 0xffffffff, &packet, sizeof(packet.req));
     if (rlength < 0) {
 	dbg_printf("cal_por error = %d\n", rsize);	/* */
-	return (EP_NODEV);
+	return (ENODEV);
     }
 
     *rsize = packet.res.body.opn_res.size;
@@ -163,7 +163,7 @@ W sfs_close_device(ID device)
     rsize = cal_por(send_port, 0xffffffff, &packet, sizeof(packet.req));
     if (rsize < 0) {
 	dbg_printf("cal_por error = %d\n", rsize);	/* */
-	return (EP_NODEV);
+	return (ENODEV);
     }
 
     return (packet.res.body.opn_res.errinfo);

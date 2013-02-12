@@ -13,9 +13,9 @@ Version 2, June 1991
  * $Id: sys_task.c,v 1.4 2000/04/03 14:37:35 naniwa Exp $
  */
 
+#include <itron/types.h>
+#include <itron/syscall.h>
 #include <mpu/call_kernel.h>
-#include <core.h>
-#include <api.h>
 
 
 /* cre_tsk  --- タスクの生成
