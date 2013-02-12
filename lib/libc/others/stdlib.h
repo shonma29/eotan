@@ -32,20 +32,12 @@ Version 2, June 1991
 #endif
 
 
-/*
- * SCSI デバイスの ID 2、パーティション 1 を root にする
- */
-#define ROOT_DEV	"driver.scsi"
-#define ROOT_PART	((0x2 << 7) | 1)
-#define ROOT_TYPE	"dosfs"
-
-
 #define STDIN	0
 #define STDOUT	1
 #define STDERR	2
 
 
-struct file
+struct _file
 {
   ID	device;
   W	count;
@@ -54,7 +46,7 @@ struct file
   UB	buf[BUFSIZE];
 };
 
-typedef struct file	FILE;
+typedef struct _file	FILE;
 
 extern FILE	__file_table__[];
 
@@ -68,9 +60,10 @@ extern W        fflush(FILE *port);
 extern W	putc (W ch, FILE *port);
 extern W	fputs (B *line, FILE *port);
 extern W	puts (B *line);
-extern W	readchar (ID port);
-extern W 	writechar (ID port, UB *buf, W count);
 extern W	printf (B *fmt,...);
 extern W	fprintf (FILE *port, B *fmt,...);
+extern W isprint (W ch);
+extern W isspace (W ch);
+extern W isdigit (W ch);
 
 #endif /* __STDLIB_H__ */

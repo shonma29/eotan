@@ -28,7 +28,7 @@ AS=as
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-OBJS= main.o device.o posix_if.o lowlib.o stdlib.o
+OBJS= main.o device.o posix_if.o lowlib.o
 
 all: init
 
@@ -41,8 +41,6 @@ main.o: init.h main.c
 device.o: init.h device.c
 
 lowlib.o: lowlib.c
-
-stdlib.o: stdlib.c
 
 tags:
 	etags ../*/*.[hcs]

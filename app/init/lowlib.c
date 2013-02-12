@@ -201,56 +201,33 @@ char rcsid[] = "$Id: command.c,v 1.17 2000/01/28 10:28:07 monaka Exp $";
  */
 #include <itron/syscall.h>
 #include <lowlib.h>
+#include "../../lib/libserv/libserv.h"
 #include "init.h"
 
 
 
-ER lowlib_load(B * name)
+ER lowlib_load(ID myself, B * name)
 {
-    ID my;
     ER errno;
-    struct lowlib_data lowlib_data;
+    struct lowlib_data *lowlib_data = LOWLIB_DATA;
     struct lod_low_args {
     	ID task;
     	B *name;
     } args;
 
-    printf("loading lowlib: %s\n", name);
+    dbg_printf("loading lowlib: %s\n", name);
 
-    if (get_tid(&my)) {
-	printf("lowlib_load: cannot get my taskid.\n");
-	return E_SYS;
-    }
-
-    args.task = my;
+    args.task = myself;
     args.name = name;
     errno = vsys_msc(3, &args);
     if (errno) {
-	printf("lowlib_load: cannot load lowlib. errno = %d\n", errno);
+	dbg_printf("lowlib_load: cannot load lowlib. errno = %d\n", errno);
 	return E_SYS;
     }
 
-    /* lowlib が使用するプロセス毎に情報を記憶する領域に情報を設定
-     */
-    errno =
-	vget_reg(my, LOWLIB_DATA, sizeof(struct lowlib_data),
-		 &lowlib_data);
-    if (errno) {
-	printf("lowlib_load: cannot read lowlib data.\n");
-	return E_SYS;
-    }
-
-    lowlib_data.main_task = my;
-    lowlib_data.signal_task = my;
-    lowlib_data.my_pid = 0;
-
-    errno =
-	vput_reg(my, LOWLIB_DATA, sizeof(struct lowlib_data),
-		 &lowlib_data);
-    if (errno) {
-	printf("lowlib_load: cannot write lowlib data.\n");
-	return E_SYS;
-    }
+    lowlib_data->main_task = myself;
+    lowlib_data->signal_task = myself;
+    lowlib_data->my_pid = 0;
 
     return E_OK;
 }

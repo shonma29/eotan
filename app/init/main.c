@@ -100,15 +100,12 @@ Version 2, June 1991
 #include <itron/errno.h>
 #include <lowlib.h>
 #include "../../servers/keyboard/keyboard.h"
-#include "posix_if.h"
-#include "init-stdlib.h"
 #include "init.h"
 
 
 /*
  * 入出力を行う。
  */
-extern void lowlib_load (B *name);
 static void exec(char *);
 static void banner(void);
 static W read_line_edit(B * line, W length);
@@ -123,23 +120,23 @@ int main(int ac, B ** av)
     ER errno;
     ID myself;
 
+    banner();
+
     get_tid(&myself);
     chg_pri(myself, USER_LEVEL);
 
     init_device();
 
-    banner();
-
     errno = vsys_inf(1, 0, &rootfs);
     if (errno == E_OK) {
-	errno = posix_init(rootfs);
+	errno = posix_init(myself, rootfs);
     }
 
     if (errno != E_OK) {
     	return -1;
     }
 
-    lowlib_load("lowlib.posix");
+    lowlib_load(myself, "lowlib.posix");
     strcpy((LOWLIB_DATA)->dpath, "/");
     (LOWLIB_DATA)->dpath_len = 1;
 
@@ -205,7 +202,7 @@ static void exec(char *str)
 
 static void banner(void)
 {
-    printf("init version %d.%d\n", MAJOR_VERSION, MINOR_VERSION);
+    dbg_printf("init version %d.%d\n", MAJOR_VERSION, MINOR_VERSION);
 }
 
 static W read_line_edit(B * line, W length)
@@ -215,8 +212,11 @@ static W read_line_edit(B * line, W length)
 
     for (i = 0; i < length - 1;) {
 	ch = getc(stdin);
-	if ((ch == C('m')) || (ch == C('j')))
+	if ((ch == C('m')) || (ch == C('j'))) {
+	    putc(ch, stdout);
+	    fflush(stdout);
 	    break;
+	}
 	else if (ch == '\b') {
 	    if (i > 0) {
 		--i;
@@ -224,6 +224,8 @@ static W read_line_edit(B * line, W length)
 		printf("\b");
 	    }
 	} else if (isprint(ch)) {
+	    putc(ch, stdout);
+	    fflush(stdout);
 	    line[i++] = ch;
 	}
     }

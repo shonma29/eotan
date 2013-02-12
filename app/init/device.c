@@ -51,66 +51,11 @@ FILE __file_table__[NFILE];
 
 void init_device(void)
 {
-    ID console;
-    ID keyboard;
-    ER result;
-    W dev_desc;
-
     InitFileTable();
 
-    result = open_device(KEYBOARD_DRIVER, &keyboard, &dev_desc);
-    if (result != E_OK || dev_desc != STDIN) {
-	dbg_printf("Init: Cannot open keyboard device.\n");
-	ext_tsk();
-	/* DO NOT REACHED */
-    }
-
-    result = open_device(CONSOLE_DRIVER, &console, &dev_desc);
-    if (result != E_OK || dev_desc != STDOUT) {
-	dbg_printf("Init: Cannot open console device.\n");
-	ext_tsk();
-	/* DO NOT REACHED */
-    }
-
-    __file_table__[STDERR].device = console;
-    __file_table__[STDERR].count = 0;
-    __file_table__[STDERR].length = 0;
-    __file_table__[STDERR].bufsize = BUFSIZE;
-}
-
-
-ER open_device(B * dev_name, ID * id, W * dev_desc)
-{
-    for (*dev_desc = 0;
-	 (*dev_desc < NFILE) && (__file_table__[*dev_desc].device != -1);
-	 (*dev_desc)++) {
-	/* do nothing */
-    }
-
-    /* out of file table. */
-    if (*dev_desc == NFILE) {
-	dbg_printf("init: File table exhaust.");
-	return (E_NOMEM);
-    }
-
-    if (find_port(dev_name, id) != E_PORT_OK) {
-	dbg_printf("init: Port not found.");
-	return (E_OBJ);
-    }
-
-    __file_table__[*dev_desc].device = *id;
-    __file_table__[*dev_desc].count = 0;
-    __file_table__[*dev_desc].length = 0;
-    __file_table__[*dev_desc].bufsize = BUFSIZE;
-
-    return (E_OK);
-}
-
-ER close_device(W dev_desc)
-{
-    __file_table__[dev_desc].device = -1;
-
-    return (E_OK);
+    __file_table__[STDIN].device = 0;
+    __file_table__[STDOUT].device = 1;
+    __file_table__[STDERR].device = 1;
 }
 
 static void InitFileTable(void)

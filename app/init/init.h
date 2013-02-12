@@ -15,55 +15,13 @@ Version 2, June 1991
 
 #include <itron/types.h>
 #include <itron/errno.h>
+#include "../../lib/libc/others/stdlib.h"
 
 #define MAJOR_VERSION	1
 #define MINOR_VERSION	1
 
-
-#define BUFSIZE		1024
-#define MAXFILENAME	255
-#define NFILE		10
-#define MAXFSNAME	8
-#define MAXDIRENTRY	100
-
-
-/*
- * SCSI デバイスの ID 2、パーティション 1 を root にする
- */
-#define ROOT_DEV	"driver.scsi"
-#define ROOT_PART	((0x2 << 7) | 1)
-#define ROOT_TYPE	"dosfs"
-
-
-#define STDIN	0
-#define STDOUT	1
-#define STDERR	2
-
-
-struct _file
-{
-  ID	device;
-  W	count;
-  W	length;
-  W	bufsize;
-  UB	buf[BUFSIZE];
-};
-
-typedef struct _file	FILE;
-
-extern FILE	__file_table__[];
-
-#define stdin	(&__file_table__[0])
-#define stdout	(&__file_table__[1])
-#define stderr	(&__file_table__[2])
-
-
-
 extern void init_device(void);
-extern ER open_device(B * dev_name, ID * id, W * dev_desc);
-
-extern W	getc (FILE *port);
-extern W	printf (B *fmt, ...);
-
+extern W posix_init (ID myself, W root_device);
+extern ER lowlib_load (ID myself, B *name);
 
 #endif /* __INIT_H__ */

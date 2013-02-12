@@ -93,26 +93,20 @@ Version 2, June 1991
 #include "../../servers/fs/mm.h"
 #include "init.h"
 
-static ID myself;
-
 static W posix_mountroot(W root_device);
 
 /*
  *
  */
-W posix_init(W root_device)
+W posix_init(ID myself, W root_device)
 {
     ER error;
     struct posix_request req;
     struct posix_response res;
     INT rsize;
 
-    if (get_tid(&myself) != E_OK) {
-	printf("Can not get own taskid.\n");
-	return (E_SYS);
-    }
 #ifdef DEBUG
-    printf("init: pinit, send port = %d\n", PORT_FS);
+    dbg_printf("init: pinit, send port = %d\n", PORT_FS);
 #endif
 
     /* ROOT ファイルシステムの設定
@@ -159,12 +153,12 @@ static W posix_mountroot(W root_device)
     req.param.par_mountroot.option = 0;
     rsize = cal_por(PORT_FS, 0xffffffff, &req, sizeof(req));
     if (rsize < 0) {
-	printf("cal_por error = %d\n", rsize);
+	dbg_printf("cal_por error = %d\n", rsize);
     }
     else if (res->errno) {
-	printf("mountroot error = %d\n", (int) res->errno);
+	dbg_printf("mountroot error = %d\n", (int) res->errno);
     } else {
-	printf("mountroot success.\n");
+	dbg_printf("mountroot success.\n");
     }
 
     return (E_OK);
