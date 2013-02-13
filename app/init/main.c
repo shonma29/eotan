@@ -136,7 +136,7 @@ int main(int ac, B ** av)
     	return -1;
     }
 
-    lowlib_load(myself, "lowlib.posix");
+    lowlib_load(myself);
     strcpy((LOWLIB_DATA)->dpath, "/");
     (LOWLIB_DATA)->dpath_len = 1;
 
@@ -213,8 +213,7 @@ static W read_line_edit(B * line, W length)
     for (i = 0; i < length - 1;) {
 	ch = getc(stdin);
 	if ((ch == C('m')) || (ch == C('j'))) {
-	    putc(ch, stdout);
-	    fflush(stdout);
+	    putchar(ch);
 	    break;
 	}
 	else if (ch == '\b') {
@@ -224,8 +223,7 @@ static W read_line_edit(B * line, W length)
 		printf("\b");
 	    }
 	} else if (isprint(ch)) {
-	    putc(ch, stdout);
-	    fflush(stdout);
+	    putchar(ch);
 	    line[i++] = ch;
 	}
     }

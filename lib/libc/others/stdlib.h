@@ -15,22 +15,9 @@ Version 2, June 1991
 #define __STDLIB_H__	1
 
 #include <itron/types.h>
-#include <itron/errno.h>
-#include <config.h>
-#include "../../../servers/fs/sfs/sfs_fs.h"
-
-#define putchar(ch)	putc (ch, stdout)
 
 #define BUFSIZE		1024
-#define MAXFILENAME	255
 #define NFILE		10
-#define MAXFSNAME	8
-#define MAXDIRENTRY	100
-
-#ifndef ROUNDUP
-#define ROUNDUP(x,align)	(((((int)x) + ((align) - 1))/(align))*(align))
-#endif
-
 
 #define STDIN	0
 #define STDOUT	1
@@ -58,6 +45,7 @@ extern FILE	__file_table__[];
 extern W	getc (FILE *port);
 extern W        fflush(FILE *port);
 extern W	putc (W ch, FILE *port);
+extern W	putchar (W ch);
 extern W	fputs (B *line, FILE *port);
 extern W	puts (B *line);
 extern W	printf (B *fmt,...);

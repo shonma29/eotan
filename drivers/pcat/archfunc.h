@@ -15,10 +15,6 @@ Version 2, June 1991
 
 #include <itron/types.h>
 
-/* console.c */
-extern void simple_init_console(void);
-extern void putchar(char ch);	/* １文字出力                   */
-
 /* keyboard.c */
 extern ER	init_keyboard (void);
 extern void system_reset(void);

@@ -276,3 +276,13 @@ readchar (ID port)
   read(port, buf, 1);
   return(buf[0]);
 }
+
+W
+putchar (W ch)
+{
+  W result = putc(ch, stdout);
+
+  fflush(stdout);
+
+  return result;
+}

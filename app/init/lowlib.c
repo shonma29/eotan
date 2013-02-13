@@ -206,22 +206,18 @@ char rcsid[] = "$Id: command.c,v 1.17 2000/01/28 10:28:07 monaka Exp $";
 
 
 
-ER lowlib_load(ID myself, B * name)
+ER lowlib_load(ID myself)
 {
     ER errno;
     struct lowlib_data *lowlib_data = LOWLIB_DATA;
     struct lod_low_args {
     	ID task;
-    	B *name;
     } args;
 
-    dbg_printf("loading lowlib: %s\n", name);
-
     args.task = myself;
-    args.name = name;
     errno = vsys_msc(3, &args);
     if (errno) {
-	dbg_printf("lowlib_load: cannot load lowlib. errno = %d\n", errno);
+	dbg_printf("vsys_msc: cannot load lowlib. errno = %d\n", errno);
 	return E_SYS;
     }
 

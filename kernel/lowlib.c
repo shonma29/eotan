@@ -34,7 +34,6 @@ ER load_lowlib(VP * argp)
 {
     struct a {
 	ID task;
-	B *name;
     } *args = (struct a *) argp;
 
     T_TCB *tskp;
@@ -44,9 +43,6 @@ ER load_lowlib(VP * argp)
 
     if (args->task < 0) {
 	return (E_ID);
-    }
-    if (args->name == NULL) {
-	return (E_PAR);
     }
 
     tskp = get_thread_ptr(args->task);
