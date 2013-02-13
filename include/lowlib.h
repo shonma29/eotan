@@ -13,10 +13,10 @@ Version 2, June 1991
 
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/h/lowlib.h,v 1.5 2000/01/29 16:19:43 naniwa Exp $ */
 
-#ifndef __CORE_LOWLIB_H__
-#define __CORE_LOWLIB_H__	1
+#ifndef __LOWLIB_H__
+#define __LOWLIB_H__	1
 
-#include "boot.h"
+#include <itron/types.h>
 
 #define MAX_DPATH 255
 
@@ -26,17 +26,7 @@ struct lowlib_data
 
   ID	main_task;	/* ユーザプログラムのコードを実行するタスク */
   ID	signal_task;	/* シグナルの受信処理を行うタスク */
-  ID	fifo_task;	/* パイプを使うときに使用するタスク */
-  ID	alarm_task;	/* alarm システムコール用のタスク(POSIX 環境用) */
   
-  FP	start_func;	/* プロセスのスタート番地 */
-
-  ID	efile;		/* 実行ファイルを指しているメッセージポート 
-			 * コード部のページインのときに使用する。
-			 */
-
-  W	errno;		/* エラー番号記録用 */
-
   B	dpath[MAX_DPATH+1]; /* カレントディレクトリ名 */
   W	dpath_len;	/* ディレクトリ名の長さ */
 
@@ -44,7 +34,4 @@ struct lowlib_data
 
 #define LOWLIB_DATA		((struct lowlib_data *)(0x7fff0000))
 
-
-extern ER			load_lowlib (VP *argp);
-
-#endif /* __CORE_LOWLIB_H__ */
+#endif /* __LOWLIB_H__ */

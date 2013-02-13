@@ -174,11 +174,11 @@ Version 2, June 1991
  *
  */
 
+#include <lowlib.h>
 #include <mpu/io.h>
 #include <itron/rendezvous.h>
 #include "core.h"
 #include "func.h"
-#include "lowlib.h"
 #include "sync.h"
 #include "boot.h"
 #include "mpu/interrupt.h"

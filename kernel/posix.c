@@ -7,10 +7,10 @@
 
 */
 
+#include <lowlib.h>
 #include <services.h>
 #include <sys/syscall.h>
 #include "core.h"
-#include "lowlib.h"
 #include "thread.h"
 #include "func.h"
 

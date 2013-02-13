@@ -54,12 +54,12 @@ Version 2, June 1991
  *
  */
 
+#include <lowlib.h>
 #include <mpu/io.h>
 #include "core.h"
 #include "version.h"
 #include "thread.h"
 #include "func.h"
-#include "lowlib.h"
 #include "misc.h"
 #include "memory.h"
 #include "boot.h"

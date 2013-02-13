@@ -17,7 +17,6 @@ Version 2, June 1991
 
 #include <errno.h>
 #include <itron/types.h>
-#include <lowlib.h>
 #include "posix.h"
 #include "../libserv/libserv.h"
 

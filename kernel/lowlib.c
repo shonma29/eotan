@@ -18,12 +18,12 @@ Version 2, June 1991
 
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/common/lowlib.c,v 1.8 2000/02/06 09:10:52 naniwa Exp $ */
 
+#include <lowlib.h>
 #include <string.h>
 #include <itron/types.h>
 #include <itron/errno.h>
 #include "thread.h"
 #include "func.h"
-#include "lowlib.h"
 #include "mpu/mpufunc.h"
 
 
