@@ -34,12 +34,21 @@ LDFLAGS = --oformat binary
 AR = ar
 
 INCLUDES = -I ../../include
-OBJS = vnprintf.o memcpy.o memset.o \
-	strlen.o strcpy.o strncpy.o strcat.o strncat.o \
-	strcmp.o strncmp.o \
-	list.o heap.o \
-	slab.o aatree.o \
-	stack.o
+OBJS = stdio/vnprintf.o \
+	string/memcpy.o \
+	string/memset.o \
+	string/strlen.o \
+	string/strcpy.o \
+	string/strncpy.o \
+	string/strcat.o \
+	string/strncat.o \
+	string/strcmp.o \
+	string/strncmp.o \
+	set/list.o \
+	set/heap.o \
+	set/slab.o \
+	set/aatree.o \
+	set/stack.o
 
 .c.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
@@ -50,4 +59,7 @@ $(TARGET): $(OBJS)
 	$(AR) rv $@ $?
 
 clean:
-	rm -f $(TARGET) *.o
+	rm -f $(TARGET) stdio/*.o
+	rm -f $(TARGET) string/*.o
+	rm -f $(TARGET) set/*.o
+

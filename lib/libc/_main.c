@@ -55,9 +55,11 @@ Version 2, June 1991
 #include <unistd.h>
 #include "others/stdlib.h"
 
+FILE __file_table__[NFILE];
+
 extern W main(W argc, B * argv[], B * envp[]);
 
-void init_device();
+static void init_device(void);
 
 W _main(W argc, B * argv[], B * envp[])
 {
@@ -70,36 +72,18 @@ W _main(W argc, B * argv[], B * envp[])
     return result;
 }
 
-static void InitFileTable(void);
-
-FILE __file_table__[NFILE];
-
-void init_device(void)
-{
-    InitFileTable();
-    __file_table__[STDIN].device = 0;
-    __file_table__[STDIN].count = 0;
-    __file_table__[STDIN].length = 0;
-    __file_table__[STDIN].bufsize = BUFSIZE;
-    __file_table__[STDOUT].device = 1;
-    __file_table__[STDOUT].count = 0;
-    __file_table__[STDOUT].length = 0;
-    __file_table__[STDOUT].bufsize = BUFSIZE;
-    __file_table__[STDERR].device = 1;
-    __file_table__[STDERR].count = 0;
-    __file_table__[STDERR].length = 0;
-    __file_table__[STDERR].bufsize = BUFSIZE;
-}
-
-static void InitFileTable(void)
+static void init_device(void)
 {
     int i;
 
     /* initialize __file_table__[] */
     for (i = 0; i < NFILE; i++) {
-	__file_table__[i].device = -1;
 	__file_table__[i].count = 0;
 	__file_table__[i].length = 0;
 	__file_table__[i].bufsize = BUFSIZE;
     }
+
+    __file_table__[STDIN].device = 0;
+    __file_table__[STDOUT].device = 1;
+    __file_table__[STDERR].device = 1;
 }

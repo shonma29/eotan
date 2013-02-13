@@ -22,7 +22,15 @@ AS=as
 OTHEROBJS= others/atoi.o others/stdlib.o _main.o \
 	others/binary.o malloc/malloc.o
 
-STRINGOBJS = string/strcat.o string/strcmp.o string/strcpy.o string/strlen.o
+STRINGOBJS = string/memcpy.o \
+	string/memset.o \
+	string/strlen.o \
+	string/strcpy.o \
+	string/strncpy.o \
+	string/strcat.o \
+	string/strncat.o \
+	string/strcmp.o \
+	string/strncmp.o
 
 OBJS=   sys/call_fs.o \
 	sys/access.o \

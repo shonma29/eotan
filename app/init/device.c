@@ -37,36 +37,23 @@ Version 2, June 1991
  *
  */
 
-#include <device.h>
-#include "../../lib/libserv/libserv.h"
-#include "../../lib/libserv/port.h"
-#include "../../servers/console/console.h"
-#include "../../servers/keyboard/keyboard.h"
 #include "init.h"
-
-static void InitFileTable(void);
 
 FILE __file_table__[NFILE];
 
 
 void init_device(void)
 {
-    InitFileTable();
-
-    __file_table__[STDIN].device = 0;
-    __file_table__[STDOUT].device = 1;
-    __file_table__[STDERR].device = 1;
-}
-
-static void InitFileTable(void)
-{
     int i;
 
     /* initialize __file_table__[] */
     for (i = 0; i < NFILE; i++) {
-	__file_table__[i].device = -1;
 	__file_table__[i].count = 0;
 	__file_table__[i].length = 0;
 	__file_table__[i].bufsize = BUFSIZE;
     }
+
+    __file_table__[STDIN].device = 0;
+    __file_table__[STDOUT].device = 1;
+    __file_table__[STDERR].device = 1;
 }
