@@ -10,18 +10,11 @@ IDENT=-DAUTO_START $(DEBUG)
 
 LD=ld
 AS=as
-#CFLAGS=-Os -fno-builtin -I. -Impu -Iarch -I$(INC) -Wall -Werror $(IDENT)
 CFLAGS=-Os -fno-builtin -I. -I$(INC) -Wall -Werror $(IDENT)
 CC=gcc
 MKDEPEND=$(CC) -M
 STARTADDR=0x80020000
 ENTRY=startup
-
-#%.o: %.c
-#	$(CC) $(CFLAGS) -c $< -o $@
-
-#%.o: %.S
-#	$(CC) $(CFLAGS) -c $< -o $@
 
 OBJS= \
 	error.o \
@@ -65,4 +58,3 @@ clean:
 	${MAKE} -C ../lib/nano-c clean
 	${MAKE} -C mpu clean
 	${MAKE} -C arch clean
-	${MAKE} -C ../servers clean

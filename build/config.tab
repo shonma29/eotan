@@ -100,7 +100,8 @@
 ../servers/fd/fd765a		0x80120000	0x120000	driver	driver.fd
 ../servers/ide/ide		0x80130000	0x130000	driver  driver.ide
 ../servers/psaux/psaux           0x80140000      0x140000        driver  driver.psaux
-../servers/dumb/dumb           0x80150000      0x150000        driver  driver.dumb
+#../servers/dumb/dumb           0x80150000      0x150000        driver  driver.dumb
+../servers/ramdisk/ramdisk     0x80160000      0x160000        driver  driver.ramdisk
 
 #
 # Network

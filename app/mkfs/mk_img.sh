@@ -5,12 +5,8 @@
 rm -f posix_fd.img
 ./mksfs posix_fd.img 2880 512 12
 ./statfs posix_fd.img mkdir /system
-./statfs posix_fd.img write /system/ramdisk ../../servers/ramdisk/ramdisk
-./statfs posix_fd.img chmod 755 /system/ramdisk
 ./statfs posix_fd.img mkdir /dev
 ./statfs posix_fd.img mknod /dev/console	0x00000000
-./statfs posix_fd.img mknod /dev/win1	0x00000001
-./statfs posix_fd.img mknod /dev/win2	0x00000002
 ./statfs posix_fd.img mknod /dev/keyboard	0x00010000
 ./statfs posix_fd.img mknod /dev/psaux	0x00020000
 ./statfs posix_fd.img mknod /dev/fd		0x80000000

@@ -24,12 +24,54 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#ifndef __RAMDISK_H__
-#define __RAMDISK_H__ 1
+#include <errno.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include "cunit.h"
 
-#define MYNAME "driver.ramdisk"
+#define BUF_SIZE (512)
+#define MAX_SEEK (BUF_SIZE * 2 * 256)
 
-#define BLOCK_SIZE (512)
-#define BLOCK_NUM (2 * 256)
+static char buf1[BUF_SIZE];
+static char buf2[BUF_SIZE];
 
-#endif
+char *testrd() {
+	int fd = open("/dev/rd", O_RDWR);
+	int i;
+
+	assert_ne("open", -1, fd);
+
+	for (i = 0; i < sizeof(buf1); i++) {
+		buf1[i] = (i + 1) % 256;
+		buf2[i] = 0;
+	}
+/*
+	assert_eq("lseek", MAX_SEEK - 1, lseek(fd, MAX_SEEK - 1, SEEK_SET));
+	assert_eq("write", -1, write(fd, buf1, 2));
+	assert_eq("write", 1, write(fd, buf1, 1));
+	assert_eq("write", -1, write(fd, buf1, 1));
+	assert_eq("lseek", MAX_SEEK - 1, lseek(fd, MAX_SEEK - 1, SEEK_SET));
+	assert_eq("read", -1, read(fd, buf2, 2));
+	assert_eq("read", 1, read(fd, buf2, 1));
+	assert_eq("read", -1, read(fd, buf2, 1));
+*/
+	assert_eq("lseek", 0, lseek(fd, 0, SEEK_SET));
+	assert_eq("write", sizeof(buf1), write(fd, buf1, sizeof(buf1)));
+	assert_eq("lseek", 0, lseek(fd, 0, SEEK_SET));
+	assert_eq("read", sizeof(buf2), read(fd, buf2, sizeof(buf2)));
+	for (i = 0; i < sizeof(buf1); i++) {
+		assert_eq("cmp", buf1[i], buf2[i]);
+	}
+
+	assert_eq("close", 0, close(fd));
+
+	return NULL;
+}
+
+int main(int argc, char **argv)
+{
+	test(testrd);
+
+	return 0;
+}

@@ -41,6 +41,7 @@ clean:
 	${MAKE} -C ../servers/fd clean
 	${MAKE} -C ../servers/ide clean
 	${MAKE} -C ../servers/psaux clean
+	${MAKE} -C ../servers/dumb clean
 	${MAKE} -C ../servers/port-manager clean
 
 $(SERVERS):

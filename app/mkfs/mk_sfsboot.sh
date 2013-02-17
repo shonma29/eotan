@@ -7,12 +7,8 @@ cp -f ../../sfsboot/1st/1stboot sfsboot.bin
 ./statfs sfsboot.bin mkdir /system
 ./statfs sfsboot.bin write /system/2ndboot ../../sfsboot/2nd/2ndboot
 ./statfs sfsboot.bin write /system/kern ../../build/kern.bin
-./statfs sfsboot.bin write /system/ramdisk ../../servers/ramdisk/ramdisk
-./statfs sfsboot.bin chmod 755 /system/ramdisk
 ./statfs sfsboot.bin mkdir /dev
 ./statfs sfsboot.bin mknod /dev/console	0x00000000
-./statfs sfsboot.bin mknod /dev/win1	0x00000001
-./statfs sfsboot.bin mknod /dev/win2	0x00000002
 ./statfs sfsboot.bin mknod /dev/keyboard	0x00010000
 ./statfs sfsboot.bin mknod /dev/psaux	0x00020000
 ./statfs sfsboot.bin mknod /dev/fd		0x80000000

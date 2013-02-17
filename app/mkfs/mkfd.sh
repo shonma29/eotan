@@ -2,8 +2,6 @@
 ./mksfs /dev/fd0 2880 512 12
 ./statfs /dev/fd0 mkdir /dev
 ./statfs /dev/fd0 mknod /dev/console	0x00000000
-./statfs /dev/fd0 mknod /dev/win1	0x00000001
-./statfs /dev/fd0 mknod /dev/win2	0x00000002
 ./statfs /dev/fd0 mknod /dev/keyboard	0x00010000
 ./statfs /dev/fd0 mknod /dev/psaux	0x00020000
 ./statfs /dev/fd0 mknod /dev/fd		0x80000000

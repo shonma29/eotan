@@ -8,12 +8,8 @@ all: clean
 	rm -f ${TARGET}
 	${MKFS}/mksfs ${TARGET} 2880 512 12
 	${MKFS}/statfs ${TARGET} mkdir /system
-	${MKFS}/statfs ${TARGET} write /system/ramdisk servers/ramdisk/ramdisk
-	${MKFS}/statfs ${TARGET} chmod 755 /system/ramdisk
 	${MKFS}/statfs ${TARGET} mkdir /dev
 	${MKFS}/statfs ${TARGET} mknod /dev/console	0x00000000
-	${MKFS}/statfs ${TARGET} mknod /dev/win1	0x00000001
-	${MKFS}/statfs ${TARGET} mknod /dev/win2	0x00000002
 	${MKFS}/statfs ${TARGET} mknod /dev/keyboard	0x00010000
 	${MKFS}/statfs ${TARGET} mknod /dev/psaux	0x00020000
 	${MKFS}/statfs ${TARGET} mknod /dev/fd		0x80000000

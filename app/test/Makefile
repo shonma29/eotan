@@ -25,7 +25,7 @@ AS=as
 
 OBJS= test.o
 
-all: test psauxtst2 porttest lowtest cat
+all: test psauxtst2 porttest lowtest rdtest cat
 
 test: test.o $(LIBS) $(KERNLIBS)
 	$(LD) -Bstatic -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) test.o $(LIBS) $(KERNLIBS)
@@ -38,6 +38,9 @@ porttest: porttest.o $(LIBS) $(KERNLIBS)
 
 lowtest: lowtest.o $(LIBS) $(KERNLIBS)
 	$(LD) -Bstatic -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) lowtest.o $(LIBS) $(KERNLIBS)
+
+rdtest: rdtest.o $(LIBS) $(KERNLIBS)
+	$(LD) -Bstatic -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) rdtest.o $(LIBS) $(KERNLIBS)
 
 cat: cat.o $(LIBS) $(KERNLIBS)
 	$(LD) -Bstatic -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) cat.o $(LIBS) $(KERNLIBS)
@@ -54,4 +57,5 @@ clean:
 	rm -f psauxtst2
 	rm -f porttest
 	rm -f lowtest
+	rm -f rdtest
 	rm -f cat

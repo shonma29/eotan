@@ -1,38 +1,46 @@
-# $Revision: 1.8 $
+# This is free and unencumbered software released into the public domain.
 #
+# Anyone is free to copy, modify, publish, use, compile, sell, or
+# distribute this software, either in source code form or as a compiled
+# binary, for any purpose, commercial or non-commercial, and by any
+# means.
 #
-
-IDENT=-DI386 $(DEBUG)
-
+# In jurisdictions that recognize copyright laws, the author or authors
+# of this software dedicate any and all copyright interest in the
+# software to the public domain. We make this dedication for the benefit
+# of the public at large and to the detriment of our heirs and
+# successors. We intend this dedication to be an overt act of
+# relinquishment in perpetuity of all present and future rights to this
+# software under copyright law.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE.
+#
+# For more information, please refer to <http://unlicense.org/>
 ROOT=../..
-CFLAGS=-O2 -Wall -Werror -I. -I$(ROOT)/include -I$(ROOT)/kernel -fno-builtin $(IDENT)
-CC=gcc
-AS=as
-MKDEPEND=$(CC) -M
-STARTADDR=0x00001000
+TARGET = ramdisk
+CFLAGS = -fno-builtin -O6 -Wall -Werror -I. -I$(ROOT)/include
+LIB = $(ROOT)/lib/libserv.a $(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a
+
+START=0x80160000
 ENTRY=start
-LIBS=$(ROOT)/lib/libserv.a $(ROOT)/lib/libc.a \
-	$(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a
-LD=ld
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+OBJS = main.o
 
-OBJS= main.o
+.c.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
 
-all: ramdisk
+all: $(TARGET)
 
-ramdisk: $(OBJS) $(SRCS) $(LIBS) Makefile
-	$(LD) -static -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) $(LIBS)
-
-tags:
-	etags ../*/*.[hcs]
-
-depend:
-	$(MKDEPEND) -x c $(SRCS) > .depend
+$(TARGET): $(OBJS)
+	$(LD) -static -o $@ -e $(ENTRY) -Ttext=$(START) $(OBJS) $(LIB)
+	strip -s -R .comment -R .note -R .note.ABI-tag $@
 
 clean:
-	rm -f $(OBJS) ramdisk
+	rm -f $(TARGET) $(OBJS)
 
-
-main.o: ramdisk.h
