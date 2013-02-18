@@ -38,46 +38,13 @@ INC=-I.. -I../../../include -I../../../kernel
 CFLAGS=-O2 -fno-builtin -Wall -Werror $(INC) $(IDENT)
 CC=gcc
 
-OBJS =	access.o \
-	brk.o \
-	chdir.o \
-	chmod.o \
-	chown.o \
-	close.o \
-	dup.o \
-	dup2.o \
-	exec.o \
-	exit.o \
-	fcntl.o \
-	fork.o \
-	getdents.o \
-	getegid.o \
-	geteuid.o \
-	getgid.o \
-	getpid.o \
-	getppid.o \
-	getuid.o \
-	kill.o \
-	link.o \
-	lseek.o \
+OBJS =	stat.o \
+	process.o \
+	permission.o \
+	file.o \
+	directory.o \
 	misc.o \
-	mkdir.o \
-	mount.o \
-	mountroot.o \
-	open.o \
-	read.o \
-	rmdir.o \
-	setgid.o \
-	setuid.o \
-	fstat.o \
-	statfs.o \
-	time.o \
-	umask.o \
-	umount.o \
-	unlink.o \
-	utime.o \
-	waitpid.o \
-	write.o
+	mount.o
 
 
 all: libposix-server.a
