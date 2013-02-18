@@ -13,7 +13,6 @@ Version 2, June 1991
 
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_close.c,v 1.1 1997/08/31 13:25:19 night Exp $  */
 
-#include <errno.h>
 #include "posix.h"
 
 
@@ -23,25 +22,11 @@ Version 2, June 1991
 int
 close (int fd)
 {
-  ER			error;
   struct posix_request	req;
-  struct posix_response *res = (struct posix_response*)&req;
 
   req.param.par_close.fileid = fd;
 
-  error = _make_connection(PSC_CLOSE, &req);
-  if (error != E_OK)
-    {
-      /* What should I do? */
-    }
-
-  else if (res->errno)
-    {
-      errno = res->errno;
-      return (-1);
-    }
-
-  return (res->status);
+  return _call_fs(PSC_CLOSE, &req);
 }
 
 

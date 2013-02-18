@@ -33,7 +33,7 @@ STRINGOBJS = string/memcpy.o \
 	string/strcmp.o \
 	string/strncmp.o
 
-OBJS=   sys/call_fs.o \
+OBJS=   sys/_call_fs.o \
 	sys/access.o \
 	sys/brk.o \
 	sys/chdir.o \

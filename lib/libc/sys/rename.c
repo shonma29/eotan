@@ -25,9 +25,7 @@ Version 2, June 1991
 int rename(char *src, char *dst)
 {
     int errno;
-#if 0
-    return (call_lowlib(PSC_RENAME, strlen(src), src, strlen(dst), dst));
-#endif
+
     errno = link(src, dst);
     if (errno)
 	return (errno);

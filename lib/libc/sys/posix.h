@@ -25,5 +25,6 @@ Version 2, June 1991
 extern struct lowlib_data *lowlib_data;
 
 extern ER _make_connection(W wOperation, struct posix_request *req);
+extern W _call_fs(W wOperation, struct posix_request *req);
 
 #endif

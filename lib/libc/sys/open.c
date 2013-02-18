@@ -13,7 +13,6 @@ Version 2, June 1991
 
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_open.c,v 1.3 1999/03/15 08:36:44 monaka Exp $  */
 
-#include <errno.h>
 #include <fcntl.h>
 #include <string.h>
 #include "posix.h"
@@ -25,9 +24,7 @@ Version 2, June 1991
 int
 open (char *path, int oflag, ...)
 {
-    ER error;
     struct posix_request req;
-    struct posix_response *res = (struct posix_response*)&req;
 
     req.param.par_open.pathlen = strlen (path);
     req.param.par_open.path = path;
@@ -40,17 +37,5 @@ open (char *path, int oflag, ...)
       req.param.par_open.mode = va_arg(args, int);	/* no use except oflag includes o_creat */
     }
 
-    error = _make_connection(PSC_OPEN, &req);
-
-    if (error != E_OK) {
-	/* What should I do? */
-	return (error);
-    } else if (res->errno) {
-	errno = res->errno;
-	return (-1);
-    }
-
-    return (res->status);
+    return _call_fs(PSC_OPEN, &req);
 }
-
-

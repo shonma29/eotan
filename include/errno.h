@@ -68,6 +68,7 @@ Version 2, June 1991
 /* others */
 #define EOK		(0)	/* 成功         */
 #define ENOSUP		(100)	/* not support  */
+#define ESVC (101) /* service call error */
 
 
 extern int	errno;

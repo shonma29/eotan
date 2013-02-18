@@ -54,3 +54,25 @@ _make_connection(W wOperation,
 
     return (E_OK);
 }
+
+W
+_call_fs(W wOperation, struct posix_request *req)
+{
+  struct posix_response *res = (struct posix_response*)req;
+  ER error = _make_connection(wOperation, req);
+
+  if (error != E_OK)
+    {
+      /* What should I do? */
+      errno = ESVC;
+      return (-1);
+    }
+
+  else if (res->errno)
+    {
+      errno = res->errno;
+      return (-1);
+    }
+
+  return (res->status);
+}

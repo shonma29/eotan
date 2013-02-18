@@ -13,7 +13,6 @@ Version 2, June 1991
 
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_exec.c,v 1.2 1999/11/10 10:39:07 naniwa Exp $  */
 
-#include <errno.h>
 #include <string.h>
 #include "posix.h"
 
@@ -45,9 +44,7 @@ execve(char *name, char *argv[], char *envp[])
     char buf[stsize], *strp;
     int bufc;
     void **vp;
-    ER error;
     struct posix_request req;
-    struct posix_response *res = (struct posix_response*)&req;
 
     vp = (void *) buf;
     bufc = (argc + envc + 2) * 4;
@@ -70,15 +67,6 @@ execve(char *name, char *argv[], char *envp[])
     req.param.par_execve.stackp = buf;
     req.param.par_execve.stsize = stsize;
 
-    error = _make_connection(PSC_EXEC, &req);
-    if (error != E_OK) {
-	/* What should I do? */
-        return (error);
-    } else if (res->errno) {
-	errno = res->errno;
-	return (-1);
-    }
-
-    return (res->status);
+    return _call_fs(PSC_EXEC, &req);
   }
 }
