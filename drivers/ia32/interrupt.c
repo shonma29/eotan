@@ -108,6 +108,7 @@ W init_interrupt(void)
 
     set_idt(35, KERNEL_CSEG, (int) int35_handler, INTERRUPT_DESC, 0);
     set_idt(37, KERNEL_CSEG, (int) int37_handler, INTERRUPT_DESC, 0);
+    set_idt(INT_KEYBOARD, KERNEL_CSEG, (int) int33_handler, INTERRUPT_DESC, 0);
     set_idt(INT_FD, KERNEL_CSEG, (int) int38_handler, INTERRUPT_DESC, 0);
 
     set_idt(44, KERNEL_CSEG, (int)int44_handler, INTERRUPT_DESC, 0);
@@ -126,6 +127,7 @@ W init_interrupt(void)
     SET_OFFSET_GATE(cg, (W) syscall_handler);
     set_gdt(SVC_GATE/sizeof(GEN_DESC), (GEN_DESC *) &cg);
 
+    reset_intr_mask(1);
     reset_intr_mask(3);
     reset_intr_mask(9);
 #if 0

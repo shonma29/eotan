@@ -849,25 +849,9 @@ static ER if_misc(VP argp)
 	falldown();
 	/* NOT REACHED */
 
-    case 2:
-	/* reset */
-        system_reset();
-	/* NOT REACHED */
-	break;
-
     case 3:
 	/* load lowlib */
 	return (load_lowlib(args->arg));
-	break;
-
-    case 6:
-	/* print_thread_list */
-	print_thread_list();
-	break;
-
-    case 7:
-	/* pmemstat */
-	pmemstat();
 	break;
     }
 

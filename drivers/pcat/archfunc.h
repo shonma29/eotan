@@ -15,10 +15,6 @@ Version 2, June 1991
 
 #include <itron/types.h>
 
-/* keyboard.c */
-extern ER	init_keyboard (void);
-extern void system_reset(void);
-
 /* timer.c */
 extern void start_interval(void);
 extern void intr_interval(void);
@@ -30,8 +26,5 @@ extern W left_time(void (*func) (VP), VP arg);
 
 /* rtc.c */
 extern int rtc_get_time(void);
-
-/* devconfig.c */
-extern void device_initialize(void);
 
 #endif /* __PCAT_ARCH_H__ */

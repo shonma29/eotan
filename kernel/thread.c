@@ -132,52 +132,10 @@ T_TCB *run_task;		/* 現在、走行中のタスク */
 static T_TCB *task;
 static T_TCB task_buffer[MAX_TSKID - MIN_TSKID + 1];
 
-static void print_list(void);
 static T_TCB *getTaskParent(const list_t *p);
 
 static T_TCB *getTaskParent(const list_t *p) {
 	return (T_TCB*)((ptr_t)p - offsetof(T_TCB, ready));
-}
-
-void print_thread_list(void)
-{
-    enter_critical();
-    print_list();
-    leave_critical();
-}
-
-static void print_list(void)
-{
-    int i;
-
-    for (i = 1; i < MAX_TSKID; i++) {
-	switch (task[i].tskstat) {
-	case TTS_RUN:
-	    printk("%d (%d)  <RUN>           0x%x\n", i,
-		   task[i].tsklevel, MPU_PC(&(task[i])));
-	    break;
-	case TTS_RDY:
-	    printk("%d (%d)  <RDY>           0x%x\n", i,
-		   task[i].tsklevel, MPU_PC(&(task[i])));
-	    break;
-	case TTS_WAI:
-	    printk("%d (%d)  <WAIT>          0x%x\n", i,
-		   task[i].tsklevel, MPU_PC(&(task[i])));
-	    break;
-	case TTS_SUS:
-	    printk("%d (%d)  <SUSPEND>       0x%x\n", i,
-		   task[i].tsklevel, MPU_PC(&(task[i])));
-	    break;
-	case TTS_WAS:
-	    printk("%d (%d)  <WAIT-SUSPEND>  0x%x\n", i,
-		   task[i].tsklevel, MPU_PC(&(task[i])));
-	    break;
-	case TTS_DMT:
-	    printk("%d (%d)  <DORMANT>       0x%x\n", i,
-		   task[i].tsklevel, MPU_PC(&(task[i])));
-	    break;
-	}
-    }
 }
 
 /* thread_initialize --- タスク管理の初期化

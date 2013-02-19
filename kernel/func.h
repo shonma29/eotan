@@ -41,7 +41,6 @@ extern void init_memory(void);
 extern void pmem_init(void);
 extern void *palloc(size_t size);
 extern void pfree(void *p, size_t size);
-extern void pmemstat(void);
 extern UW pmemfree(void);
 
 /* thread.c */
@@ -59,7 +58,6 @@ extern ER thread_get_id(ID * p_tskid);
 extern ER thread_suspend(ID taskid);
 extern ER thread_resume(ID taskid);
 extern ER thread_change_priority(ID tskid, PRI tskpri);
-extern void print_thread_list(void);
 extern T_TCB *get_thread_ptr(ID tskid);
 
 /* posix.c */

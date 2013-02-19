@@ -139,8 +139,6 @@ ER main(void)
 	falldown();
     }
 
-    device_initialize();
-
     /* TRMTBL の初期化 */
     trmtbl_num = 0;
     trmtbl_top = 0;

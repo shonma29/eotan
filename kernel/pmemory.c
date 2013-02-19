@@ -343,19 +343,6 @@ void pfree(void *p, size_t size)
     return;
 }
 
-void pmemstat(void)
-{
-#ifdef notdef
-    W i, count = 0;
-
-    for (i = 0; i < memory_map_size; i++) {
-	if (memory_map[i] == MEM_FREE)
-	    ++count;
-    }
-#endif
-    printk("SIZE %d FREE %d\n", memory_map_size * BITS, free_mem);
-}
-
 UW pmemfree(void)
 {
     return (free_mem);
