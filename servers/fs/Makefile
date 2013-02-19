@@ -20,8 +20,7 @@ DEBUG=#-DEXEC_DEBUG
 IDENT=$(DEBUG)
 ROOT=../..
 INC=-I$(ROOT)/include -I$(ROOT)/kernel
-CFLAGS=-O2 -fno-builtin -Wall -Werror $(INC) $(IDENT)
-CC=gcc
+CFLAGS=-O2 -Wall -Werror $(INC) $(IDENT)
 
 ENTRY=startup
 STARTADDR=0x00001000

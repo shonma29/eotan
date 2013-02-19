@@ -7,10 +7,8 @@ TARGET =	port-manager
 LOAD_POINT =	0x00010000
 ENTRY =		_main
 
-LD=ld
-CC=gcc
 INC=-I../../include -I../../kernel
-CFLAGS=$(INC) -O2 -Wall -Werror -fno-builtin
+CFLAGS=$(INC) -O2 -Wall -Werror
 
 
 OBJS=port-manager.o database.o

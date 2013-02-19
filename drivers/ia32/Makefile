@@ -24,14 +24,9 @@
 # For more information, please refer to <http://unlicense.org/>
 
 TARGET = libmpu.a
-MAKE = gmake
-CC = cc
-CFLAGS = -Wall -Werror -Os -fno-builtin
-AS = as
+CFLAGS = -Wall -Werror -Os
 ASFLAGS = 
-LD = ld
 LDFLAGS = --oformat binary
-AR = ar
 
 INCLUDES = -I . -I ../../kernel -I ../../include
 OBJS = fpu.o gdt.o interrupt.o reset_intr_mask.o tss.o virtual_mem.o \

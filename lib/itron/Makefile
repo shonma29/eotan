@@ -3,8 +3,7 @@
 #
 
 # -DDEBUG
-CFLAGS=-O2 -Wall -Werror -fno-builtin -I../../include -I../../kernel
-CC=gcc
+CFLAGS=-O2 -Wall -Werror -I../../include -I../../kernel
 
 OBJS=	task.o vcre_tsk.o debug.o dbg_puts.o \
 	interrupt.o \

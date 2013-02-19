@@ -8,10 +8,7 @@ INC=../include
 #DEBUG=-DTSKSW_DEBUG
 IDENT=-DAUTO_START $(DEBUG)
 
-LD=ld
-AS=as
-CFLAGS=-Os -fno-builtin -I. -I$(INC) -Wall -Werror $(IDENT)
-CC=gcc
+CFLAGS=-Os -I. -I$(INC) -Wall -Werror $(IDENT)
 MKDEPEND=$(CC) -M
 STARTADDR=0x80020000
 ENTRY=startup

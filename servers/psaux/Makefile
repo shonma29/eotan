@@ -1,14 +1,12 @@
 
-IDENT=-DI386 $(DEBUG)
+IDENT=$(DEBUG)
 
 ROOT=../..
 
-CFLAGS=-O2 -Wall -Werror -I. -I$(ROOT)/include -I$(ROOT)/kernel -I$(ROOT)/lib/libserv -fno-builtin $(IDENT) $(DEBUG)
+CFLAGS=-O2 -Wall -Werror -I. -I$(ROOT)/include -I$(ROOT)/kernel -I$(ROOT)/lib/libserv $(IDENT)
 
-CC=gcc
 LIBS=$(ROOT)/lib/libserv.a $(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a \
 	$(ROOT)/kernel/mpu/libmpu.a
-LD=ld
 
 STARTADDR=0x80140000
 ENTRY=start

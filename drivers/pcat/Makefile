@@ -24,14 +24,9 @@
 # For more information, please refer to <http://unlicense.org/>
 
 TARGET = libarch.a
-MAKE = gmake
-CC = cc
-CFLAGS = -Wall -Werror -Os -fno-builtin
-AS = as
+CFLAGS = -Wall -Werror -Os
 ASFLAGS = 
-LD = ld
 LDFLAGS = --oformat binary
-AR = ar
 
 INCLUDES = -I . -I ../../kernel -I ../../include
 OBJS = console.o devconfig.o keyboard.o timer.o rtc.o

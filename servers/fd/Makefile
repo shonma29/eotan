@@ -4,19 +4,16 @@
 
 # -DFDDEBUG	... FDC のデバッグ用マクロ
 #DEBUG= -DFDDEBUG
-IDENT=-DI386 $(DEBUG)
+IDENT=$(DEBUG)
 
 
 ROOT=../..
-CFLAGS=-O -Wall -Werror -I. -I$(ROOT)/include -I$(ROOT)/kernel -I$(ROOT)/lib/libserv -fno-builtin $(IDENT)
-CC=gcc
-AS=as
+CFLAGS=-O -Wall -Werror -I. -I$(ROOT)/include -I$(ROOT)/kernel -I$(ROOT)/lib/libserv $(IDENT)
 MKDEPEND=$(CC) -M
 STARTADDR=0x80120000
 ENTRY=start
 LIBS=$(ROOT)/lib/libserv.a $(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a \
 	$(ROOT)/kernel/mpu/libmpu.a
-LD=ld
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@

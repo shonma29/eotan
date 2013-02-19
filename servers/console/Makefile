@@ -2,19 +2,16 @@
 #
 #
 
-IDENT=-DI386
+IDENT=
 DEBUG=
 
 ROOT=../..
 CFLAGS= -Wall -Werror -I. -I$(ROOT)/include -I$(ROOT)/kernel -I$(ROOT)/lib/libserv $(IDENT)
-OFLAGS= -O2 -fno-builtin $(CFLAGS)
-CC=gcc
-AS=as
+OFLAGS= -O2 $(CFLAGS)
 MKDEPEND=$(CC) -M
 STARTADDR=0x80100000
 ENTRY=start
 LIBS=$(ROOT)/lib/libserv.a $(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a
-LD=ld
 
 %.o: %.c
 	$(CC) $(OFLAGS) -c $< -o $@

@@ -2,27 +2,20 @@
 #
 #
 
-IDENT=-DI386
+IDENT=
 DEBUG=
 
-CPP=/lib/cpp
 ROOT=../..
 COMMON=$(ROOT)/include
 CFLAGS=-O -Wall -Werror -I. -I$(ROOT)/kernel -I$(ROOT)/lib/libserv -I$(COMMON) \
-       -fno-builtin $(IDENT)
-CC=gcc
-AS=/usr/bin/as
+       $(IDENT)
 MKDEPEND=$(CC) -M
 STARTADDR=0x80110000
 ENTRY=start
 LIBS=$(ROOT)/lib/libserv.a $(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a
-LD=ld
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
-
-%.o: %.s
-	$(CPP) $(ASFLAGS) $*.s | $(AS) -o $*.o
 
 OBJS= main.o interrupt.o misc.o
 

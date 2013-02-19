@@ -3,8 +3,7 @@
 #
 
 # -DDEBUG
-CFLAGS=-O2 -Wall -Werror -fno-builtin -I../../include -I../../kernel -I../../servers
-CC=gcc
+CFLAGS=-O2 -Wall -Werror -I../../include -I../../kernel -I../../servers
 
 OBJS= strncpy2.o malloc.o \
 	port_manager.o

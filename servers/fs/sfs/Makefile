@@ -10,8 +10,7 @@
 ROOT=../../..
 INC=-I$(ROOT)/include -I$(ROOT)/kernel -I$(ROOT)/lib/libserv
 #IDENT=-DDEBUG
-CFLAGS=-O2 -Wall -Werror -fno-builtin -Wall $(INC) $(IDENT)
-CC=gcc
+CFLAGS=-O2 -Wall -Werror -Wall $(INC) $(IDENT)
 
 OBJS=sfs_fs.o sfs_block.o sfs_file.o sfs_dir.o sfs_inode.o sfs_device.o \
 	sfs_cache.o

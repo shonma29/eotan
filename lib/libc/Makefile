@@ -6,13 +6,10 @@ IDENT=
 DEBUG=
 
 ROOT=../..
-CFLAGS=-O2 -Wall -Werror -fno-builtin -I. -I$(ROOT)/include \
+CFLAGS=-O2 -Wall -Werror -I. -I$(ROOT)/include \
 		-I$(ROOT)/kernel \
 		-I$(ROOT)/servers/fs $(IDENT)
-CC=gcc
 MKDEPEND=$(CC) -M
-LD=ld
-AS=as
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
