@@ -303,13 +303,13 @@ extern W    	write_fd();	/* 書き込み		*/
 extern W    	control_fd();	/* コントロール		*/
 extern W    	change_fd();	/* アクセスモード切り替え */
 extern W    	status_fd();	/* ステータス		*/
-extern W	intr_flag;
+extern volatile W	intr_flag;
 extern struct spec	*fd_data[];
 
 /* fdc.c */
 extern void    	intr_fd();	/* 割り込みハンドラ	*/
 extern void	reset_intr_mask ();
-extern W	wait_int (W *flag);
+extern W	wait_int (volatile W *flag);
 extern W	write_fdc (UW value);
 extern W	read_fdc (void);
 extern W	ready_check (void);

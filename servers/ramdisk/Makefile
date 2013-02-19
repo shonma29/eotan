@@ -24,7 +24,7 @@
 # For more information, please refer to <http://unlicense.org/>
 ROOT=../..
 TARGET = ramdisk
-CFLAGS = -O6 -Wall -Werror -I. -I$(ROOT)/include
+CFLAGS = -O2 -Wall -Werror -I. -I$(ROOT)/include
 LIB = $(ROOT)/lib/libserv.a $(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a
 
 START=0x80160000

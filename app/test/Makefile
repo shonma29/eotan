@@ -11,14 +11,13 @@ IDENT=
 DEBUG=
 
 ROOT=../..
-CFLAGS=-O2 -Wall -Werror -I. -I$(ROOT)/include -I$(ROOT)/kernel -I$(ROOT)/lib/libc/others $(IDENT)
-CC=gcc
+CFLAGS=-O3 -Wall -Werror -I. -I$(ROOT)/include -I$(ROOT)/kernel \
+		-I$(ROOT)/lib/libc/others $(IDENT)
 MKDEPEND=$(CC) -M
 STARTADDR=0x00001000
 ENTRY=_main
-KERNLIBS=$(ROOT)/lib/libc.a $(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a $(ROOT)/lib/libserv.a
-LD=ld
-AS=as
+KERNLIBS=$(ROOT)/lib/libc.a $(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a \
+		$(ROOT)/lib/libserv.a
 
 .o.c:
 	$(CC) $(CFLAGS) -c $< -o $@

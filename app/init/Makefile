@@ -7,23 +7,16 @@
 #
 #
 
-# -D DOS
-# -D USE_LOWLIB		POSIX マネージャを呼び出すとき、lowlib を使用する。
-#
 IDENT=
 DEBUG=
 
 ROOT=../..
-CFLAGS=-O2 -Wall -Werror -I. -I$(ROOT)/include $(IDENT)
-CC=gcc
+CFLAGS=-O3 -Wall -Werror -I. -I$(ROOT)/include $(IDENT)
 MKDEPEND=$(CC) -M
 STARTADDR=0x00001000
 ENTRY=main
 KERNLIBS= $(ROOT)/lib/libserv.a $(ROOT)/lib/libc.a \
-	$(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a
-
-LD=ld
-AS=as
+		$(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@

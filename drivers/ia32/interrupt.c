@@ -37,7 +37,7 @@ typedef struct intr_handler_t {
  *	割り込み処理の大域変数
  *
  */
-W on_interrupt = 0;
+volatile W on_interrupt = 0;
 BOOL delayed_dispatch = FALSE;
 
 /*
@@ -435,18 +435,6 @@ void fault(UW intn, UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 #endif
     leave_critical();
     for (;;);
-}
-
-/**************************************************************************
- *
- */
-W wait_int(W * flag)
-{
-    while (*flag == FALSE);
-    enter_critical();
-    *flag = FALSE;
-    leave_critical();
-    return (*flag);
 }
 
 /*************************************************************************

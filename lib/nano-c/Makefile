@@ -24,14 +24,9 @@
 # For more information, please refer to <http://unlicense.org/>
 
 TARGET = ../libnc.a
-MAKE = gmake
-CC = cc
-CFLAGS = -Wall -Werror -Os
-AS = as
+CFLAGS = -Wall -Werror -O2
 ASFLAGS = 
-LD = ld
 LDFLAGS = --oformat binary
-AR = ar
 
 INCLUDES = -I ../../include
 OBJS = stdio/vnprintf.o \

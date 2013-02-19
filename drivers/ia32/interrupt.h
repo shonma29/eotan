@@ -50,7 +50,7 @@ struct idt_t
 (desc.offset0 = x & 0xffff);		\
   (desc.offset1 = x >> 16 & 0xffff);
 
-extern W	on_interrupt;
+extern volatile W	on_interrupt;
 extern BOOL	delayed_dispatch;
 
 extern W	init_interrupt (void);
@@ -62,7 +62,6 @@ extern void	page_fault (UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 extern void	fault(UW intn, UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 	   UW ecx, UW eax, UW es, UW ds,
 	   UW errcode, UW eip, UW cs, UW eflags);
-extern W	wait_int (W *);
 extern void	set_idt (UW, UW, UW, UW, UW);
 extern void	protect_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 		   UW ecx, UW eax, UW es, UW ds,

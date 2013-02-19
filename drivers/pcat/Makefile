@@ -24,7 +24,7 @@
 # For more information, please refer to <http://unlicense.org/>
 
 TARGET = libarch.a
-CFLAGS = -Wall -Werror -Os
+CFLAGS = -Wall -Werror -O2
 ASFLAGS = 
 LDFLAGS = --oformat binary
 

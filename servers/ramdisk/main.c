@@ -33,11 +33,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <itron/rendezvous.h>
 #include "../../lib/libserv/libserv.h"
 #include "../../lib/libserv/port.h"
-
-#define MYNAME "driver.ramdisk"
-
-#define BLOCK_SIZE (512)
-#define BLOCK_NUM (2 * 256)
+#include "ramdisk.h"
 
 static UB buf[BLOCK_NUM * BLOCK_SIZE];
 

@@ -362,7 +362,10 @@ W control_keyboard(RDVNO rdvno, devmsg_t * packet)
 	return (E_OK);
 
     case KEYBOARD_CHANGEMODE:
-        driver_mode = ((W *) req->param)[0];
+	{
+	    W *p = (W*)(req->param);
+	    driver_mode = *p;
+	}
 #ifdef notdef
 	dbg_printf("[KEYBOARD] respond_ctrl new keyboard mode %d\n",
 		driver_mode);
@@ -389,7 +392,7 @@ W control_keyboard(RDVNO rdvno, devmsg_t * packet)
 	return (E_OK);
 
     case KEYBOARD_GETMODE:
-        vput_reg(packet->req.header.tskid, (VP)(((W *) req->param)[0]),
+        vput_reg(packet->req.header.tskid, (VP)(req->param),
                 sizeof(W),
                 &driver_mode);
         respond_ctrl(rdvno, packet, req->dd, E_OK);

@@ -8,7 +8,8 @@ IDENT=$(DEBUG)
 
 
 ROOT=../..
-CFLAGS=-O -Wall -Werror -I. -I$(ROOT)/include -I$(ROOT)/kernel -I$(ROOT)/lib/libserv $(IDENT)
+CFLAGS=-O2 -Wall -Werror -I. -I$(ROOT)/include -I$(ROOT)/kernel \
+		-I$(ROOT)/lib/libserv $(IDENT)
 MKDEPEND=$(CC) -M
 STARTADDR=0x80120000
 ENTRY=start

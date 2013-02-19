@@ -7,8 +7,8 @@ DEBUG=
 
 ROOT=../..
 COMMON=$(ROOT)/include
-CFLAGS=-O -Wall -Werror -I. -I$(ROOT)/kernel -I$(ROOT)/lib/libserv -I$(COMMON) \
-       $(IDENT)
+CFLAGS=-O2 -Wall -Werror -I. -I$(ROOT)/kernel -I$(ROOT)/lib/libserv \
+		-I$(COMMON) $(IDENT)
 MKDEPEND=$(CC) -M
 STARTADDR=0x80110000
 ENTRY=start

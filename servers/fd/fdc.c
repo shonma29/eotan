@@ -31,7 +31,7 @@ struct status fd_status;
 static int motor_goal = 0;
 static int motor_status = 0;
 
-extern W wait_int_with_timeout(W * flag, W timeout);
+extern W wait_int_with_timeout(volatile W * flag, W timeout);
 
 /*
  *	FDC を制御するための LOW-LEVEL な関数
@@ -647,7 +647,7 @@ W put_data(W drive, W head, W cylinder, W sector, B * buff)
  * 割り込みハンドラと同期をとるための関数
  *
  */
-W wait_int(W * flag)
+W wait_int(volatile W * flag)
 {
     while (*flag == FALSE);
     dis_int();
@@ -661,7 +661,7 @@ W wait_int(W * flag)
  * 割り込みハンドラと同期をとるための関数
  *
  */
-W wait_int_with_timeout(W * flag, W timeout)
+W wait_int_with_timeout(volatile W * flag, W timeout)
 {
     W i;
 

@@ -168,7 +168,7 @@ Version 2, June 1991
  *
  */
 struct spec *fd_data[MAXFD];
-W intr_flag;
+volatile W intr_flag;
 
 
 /*********************************************************************

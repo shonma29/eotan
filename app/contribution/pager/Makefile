@@ -7,29 +7,20 @@
 #
 #
 
-# -D DOS
-# -D USE_LOWLIB		POSIX マネージャを呼び出すとき、lowlib を使用する。
-#
-#IDENT=-DI386 -DUSE_LOWLIB
+#IDENT=
 #DEBUG=
 
-CPP=/lib/cpp
 ROOT=../../..
-CFLAGS=-O -Wall -Werror -I. -I$(ROOT)/include -I$(ROOT)/kernel -I$(ROOT)/lib/libc/others $(IDENT)
-CC=gcc
+CFLAGS=-O3 -Wall -Werror -I. -I$(ROOT)/include -I$(ROOT)/kernel \
+		-I$(ROOT)/lib/libc/others $(IDENT)
 
 STARTADDR=0x00001000
 ENTRY=_main
 LIBS=$(ROOT)/lib/libc.a
 KERNLIBS=$(ROOT)/lib/libitron.a
-LD=ld
-AS=as
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
-
-%.o: %.s
-	$(CPP) $(ASFLAGS) $*.s | $(AS) -o $*.o
 
 OBJS= pager.o
 IOBJS= 
