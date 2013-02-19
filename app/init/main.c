@@ -99,7 +99,8 @@ Version 2, June 1991
 #include <itron/syscall.h>
 #include <itron/errno.h>
 #include <lowlib.h>
-#include "../../servers/keyboard/keyboard.h"
+#include "../../kernel/config.h"
+#include "../../lib/libserv/libserv.h"
 #include "init.h"
 
 
@@ -212,7 +213,7 @@ static W read_line_edit(B * line, W length)
 
     for (i = 0; i < length - 1;) {
 	ch = getc(stdin);
-	if ((ch == C('m')) || (ch == C('j'))) {
+	if ((ch == '\n') || (ch == '\r')) {
 	    putchar(ch);
 	    break;
 	}
