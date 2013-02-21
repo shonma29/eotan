@@ -4,7 +4,7 @@ CFLAGS=-O2 -Wall -Werror -I. -I$(ROOT)/include -I$(ROOT)/kernel
 
 LIBS=$(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a
 
-STARTADDR=0x80150000
+STARTADDR=0x80360000
 ENTRY=start
 
 %.o: %.c

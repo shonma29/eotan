@@ -82,7 +82,7 @@ int main(const int argc, const char **argv)
     for (i = 0; i < modules.nmodule; i++) {
 	fprintf(stderr,
 		"%02d: %-20.20s type = %d, vaddr = 0x%08x, paddr = 0x%08x, file size = %6d\n",
-		i, modules.entry[i].mod_info.name,
+		i, modules.entry[i].fname,
 		modules.entry[i].mod_info.type,
 		modules.entry[i].mod_info.vaddr,
 		modules.entry[i].mod_info.paddr,
@@ -180,8 +180,6 @@ static void pass0(ModuleTable *modules, const char *config)
 	    fprintf(stderr, "Unknown module type: %s in %d\n", type, i);
 	    exit(ERR_FORMAT);
 	}
-	strncpy(mod->mod_info.name, mod_name,
-		MAX_MODULE_NAME);
 
 	/* get file size */
 	if (stat(mod->fname, &buf)) {

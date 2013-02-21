@@ -25,7 +25,8 @@ enum module_type
   kernel	= 0,
   user		= 1,
   server      	= 2,
-  driver	= 3
+  driver	= 3,
+  initrd	= 4
 };
 
 
@@ -50,7 +51,6 @@ struct module_info
   unsigned int		paddr;	/* 実アドレス	*/
   unsigned int		entry;
   enum module_type	type;
-  char		name[MAX_MODULE_NAME];
 };
 
 struct machine_info
@@ -59,6 +59,8 @@ struct machine_info
   unsigned int	real_mem;
   unsigned int	base_mem;
   unsigned int	rootfs;
+  unsigned int initrd_start;
+  unsigned int initrd_size;
 };
 
 struct boot_header

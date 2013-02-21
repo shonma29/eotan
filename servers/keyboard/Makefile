@@ -10,7 +10,7 @@ COMMON=$(ROOT)/include
 CFLAGS=-O2 -Wall -Werror -I. -I$(ROOT)/kernel -I$(ROOT)/lib/libserv \
 		-I$(COMMON) $(IDENT)
 MKDEPEND=$(CC) -M
-STARTADDR=0x80110000
+STARTADDR=0x80320000
 ENTRY=start
 LIBS=$(ROOT)/lib/libserv.a $(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a
 

@@ -26,8 +26,6 @@ static int load_module (struct sfs_inode *ip, int offset,
     return E_SYS;
   }
 
-  boot_printf ("[%s]\n",info->name);
-
   info->entry = eHdr->e_entry;
   info->mem_length = 0;
   pHdr = (Elf32_Phdr*)(&tmp[eHdr->e_phoff]);

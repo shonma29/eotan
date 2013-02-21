@@ -25,7 +25,7 @@ Version 2, June 1991
 
 #define MIN_MEMORY_SIZE		(16 * 1024 * 1024) /* メモリは最小 16 M */
 
-#define MAX_PAGEENT	(1024 * (2 + 16)) /* 最大 16 M 分のページエントリ */
+#define MAX_PAGEENT	(4 * 1024) /* 最大 16 M 分のページエントリ */
 #define MAX_DIRENT	1024
 
 #define BASE_MEM	(1024 * 1024)	/* for IBM PC/AT */

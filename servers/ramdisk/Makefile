@@ -27,7 +27,7 @@ TARGET = ramdisk
 CFLAGS = -O2 -Wall -Werror -I. -I$(ROOT)/include
 LIB = $(ROOT)/lib/libserv.a $(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a
 
-START=0x80160000
+START=0x80370000
 ENTRY=start
 
 OBJS = main.o

@@ -22,7 +22,7 @@ OBJ16 = start16.o
 
 TOOLS = build_boot2
 
-START_ADDR = 0x380000
+START_ADDR = 0x9000
 
 COMMON = ../../include
 ITRON = ../../kernel

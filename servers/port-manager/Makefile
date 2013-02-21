@@ -4,7 +4,7 @@
 #
 
 TARGET =	port-manager
-LOAD_POINT =	0x00010000
+LOAD_POINT =	0x00300000
 ENTRY =		_main
 
 INC=-I../../include -I../../kernel

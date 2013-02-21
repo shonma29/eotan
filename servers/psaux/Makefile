@@ -8,7 +8,7 @@ CFLAGS=-O2 -Wall -Werror -I. -I$(ROOT)/include -I$(ROOT)/kernel -I$(ROOT)/lib/li
 LIBS=$(ROOT)/lib/libserv.a $(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a \
 	$(ROOT)/kernel/mpu/libmpu.a
 
-STARTADDR=0x80140000
+STARTADDR=0x80350000
 ENTRY=start
 
 %.o: %.c

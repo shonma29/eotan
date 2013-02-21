@@ -4,7 +4,7 @@
 ; 各セレクター値を設定し、9000hにロードされている,mode32を
 ; MODE32_ADDRにコピーし、実行を_mainに移す。
 
-MODE32_ADDR	equ 380000h
+MODE32_ADDR	equ 9000h
 MODE32_SIZE	equ 8ffch
 
 	section .text
@@ -19,12 +19,6 @@ start32:
 	mov	fs, eax
 	mov	gs, eax
 	lss	esp, [stack_ptr] 	; ss,spの設定
-
-	mov	esi, 9000h		; mode32をMODE32_ADDRに移動
-	mov	edi, MODE32_ADDR	;
-	mov	ecx, [MODE32_SIZE]	; 
-	rep				; 
-	movsb
 
 	xor	eax, eax
 	push	eax

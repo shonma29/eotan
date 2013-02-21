@@ -84,24 +84,24 @@
 #
 
 #  file name			virtual addr	physical addr	type    name
-../kernel/core.bin	0x80020000	0x020000	kernel  kernel
+../kernel/core.bin	0x80100000	0x100000	kernel  kernel
 
 #
 # Server
 #
-../servers/port-manager/port-manager 0x00010000	0x080000	kernel port-manager
 ../servers/fs/fs	0x00001000	0x200000	user	fs
+../servers/port-manager/port-manager 0x00300000	0x300000	kernel port-manager
 
 #
 #  Driver(s)
 #
-../servers/console/console	0x80100000	0x100000	driver	driver.console
-../servers/keyboard/keyboard	0x80110000	0x110000	driver  driver.keyboard
-../servers/fd/fd765a		0x80120000	0x120000	driver	driver.fd
-../servers/ide/ide		0x80130000	0x130000	driver  driver.ide
-../servers/psaux/psaux           0x80140000      0x140000        driver  driver.psaux
-#../servers/dumb/dumb           0x80150000      0x150000        driver  driver.dumb
-../servers/ramdisk/ramdisk     0x80160000      0x160000        driver  driver.ramdisk
+../servers/console/console	0x80310000	0x310000	driver	driver.console
+../servers/keyboard/keyboard	0x80320000	0x320000	driver  driver.keyboard
+../servers/fd/fd765a		0x80330000	0x330000	driver	driver.fd
+../servers/ide/ide		0x80340000	0x340000	driver  driver.ide
+../servers/psaux/psaux           0x80350000      0x350000        driver  driver.psaux
+#../servers/dumb/dumb           0x80360000      0x360000        driver  driver.dumb
+../servers/ramdisk/ramdisk     0x80370000      0x370000        driver  driver.ramdisk
 
 #
 # Network
@@ -110,5 +110,5 @@
 #
 # System initialize program
 #
-../app/init/init			0x00001000	0x300000	user	init
+../app/init/init			0x00001000	0x400000	user	init
 

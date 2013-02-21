@@ -5,10 +5,10 @@ export LD = ld
 #DEBUG = -DDEBUG
 export LINUX_INCLUDE = -I../../usr/include
 
-TARGET = sfsboot_img 1st_fd_img 2nd_fd_img 3rd_fd_img
+TARGET = sfsboot_img 1st_fd_img 2nd_fd_img 3rd_fd_img initrd_img
 TARGET1 = tool
 
-all: kern tool applications boot ${TARGET}
+all: tool kern applications boot ${TARGET}
 
 kern:
 	${MAKE} -C build
@@ -32,6 +32,9 @@ applications:
 3rd_fd_img:
 	${MAKE} -f build/posix.mk
 
+initrd_img:
+	${MAKE} -f build/initrd.mk
+
 sfsboot_img:
 	${MAKE} -f build/sfsboot.mk
 
@@ -41,6 +44,6 @@ clean:
 	${MAKE} -C app/mkfs clean
 	${MAKE} -C app/test clean
 	${MAKE} -C app/contribution clean
-	rm -f 1st_fd.img 2nd_fd.img 3rd_fd.img
+	rm -f 1st_fd.img 2nd_fd.img 3rd_fd.img initrd.img
 	rm -f sfsboot.img
 
