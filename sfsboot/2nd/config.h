@@ -30,18 +30,6 @@ Version 2, June 1991
 
 #define BASE_MEM	(1024 * 1024)	/* for IBM PC/AT */
 
-#define MALLOC_SIZE	(1024 * 100)	/* 100K バイトを malloc 用に使 */
-					/* う */
-
 #define BOOT_PATH	"/system/kern"
-
-#define TIMER0_WRITE	0x40
-#define TIMER0_READ	0x40
-#define TIMER_CONTROL	0x43
-#define TIMER_FREQ	1193182L
-#define BTRON_OFFSET	473353200L
-
-extern struct file_system	root_fs;
-extern struct file		root;
 
 #endif /* __CONFIG_H__ */

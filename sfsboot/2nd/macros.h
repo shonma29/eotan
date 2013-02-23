@@ -16,7 +16,6 @@ Version 2, June 1991
 #define __MACROS_H__	1
 
 #define ROUNDUP(x,align)	((((x) + ((align) - 1)) / (align)) * (align))
-#define TABLE_SIZE(table)	(sizeof(table) / sizeof(table[0]))
 
 
 #define ISDIGIT(x)	((x >= '0') && (x <= '9'))

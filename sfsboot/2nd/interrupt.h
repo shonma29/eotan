@@ -44,9 +44,7 @@ extern void	open_interrupt (void);
 extern void	ignore_handler (void);
 extern void     ignore_interrupt_master (void);
 extern void     ignore_interrupt_slave (void);
-extern void	intr_keyboard (void);
 extern void     intr_fd();
-extern void	intr_ide ();
 
 extern int      wait_int (volatile int *flag);
 

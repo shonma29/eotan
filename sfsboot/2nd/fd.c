@@ -7,7 +7,6 @@
 #include "fdc.h"
 #include "dma.h"
 #include "errno.h"
-#include "file.h"
 #include "asm.h"
 
 #define ON	1

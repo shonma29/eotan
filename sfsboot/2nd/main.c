@@ -3,13 +3,11 @@
 #include "types.h"
 #include "errno.h"
 #include "config.h"
-#include "location.h"
 #include "memory.h"
 #include "console.h"
 #include "macros.h"
 #include "dma.h"
 #include "fd.h"
-#include "file.h"
 #include "vram.h"
 #include "page.h"
 #include "interrupt.h"
@@ -17,15 +15,7 @@
 #include "sfs.h"
 #include "asm.h"
 
-#include "main.h"
-
-int read_single_module (int start_block, void *paddr, struct module_info *info);
-
 static void banner(void);
-
-struct file_system	root_fs;
-struct file		root;
-struct file		cwd;
 
 /******************************************************************************
  *

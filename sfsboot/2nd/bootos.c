@@ -1,10 +1,12 @@
+#include "errno.h"
 #include "sfs.h"
 #include "boot.h"
 #include "config.h"
-#include "file.h"
 #include "memory.h"
 #include <sys/types.h>
 #include <elf.h>
+
+#define BLOCK_SIZE      1024
 
 #define ALIGN(x,al)	((((int)x) + (al) - 1) & ~(al - 1))
 #define PAGESIZE	4096

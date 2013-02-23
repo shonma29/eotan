@@ -1,6 +1,5 @@
 #include "types.h"
 #include "config.h"
-#include "location.h"
 #include "errno.h"
 #include "page.h"
 #include "lib.h"
