@@ -1,6 +1,5 @@
 #include "bootos.h"
 #include "lib.h"
-#include "types.h"
 #include "memory.h"
 #include "console.h"
 #include "fd.h"

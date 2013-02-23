@@ -1,10 +1,7 @@
 #include "console.h"
 #include "vram.h"
-#include "keycode.h"
 #include "asm.h"
-#include "types.h"
 #include "errno.h"
-#include "macros.h"
 
 static int cur_x; 
 static int cur_y;

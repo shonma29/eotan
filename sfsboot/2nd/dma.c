@@ -50,7 +50,7 @@ Version 2, June 1991
  * 
  */
 
-#include "types.h"
+#include <itron/types.h>
 #include "errno.h"
 #include "asm.h"
 #include "dma.h"
@@ -71,10 +71,10 @@ init_dma (void)
 int
 setup_dma (void *addr, int mode, int length, int mask)
 {
-  UWORD32 p;
+  UW p;
   
   length -= 1;
-  p = (UWORD32)addr;
+  p = (UW)addr;
 #ifdef DMADEBUG
   boot_printf ("setup_dma: mode = 0x%x, addr = 0x%x, length = %d, mask = 0x%x\n",
 	  mode, addr, length, mask);

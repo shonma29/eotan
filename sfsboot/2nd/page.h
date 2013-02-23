@@ -16,6 +16,8 @@ Version 2, June 1991
 #ifndef __PAGE_H__
 #define __PAGE_H__	1
 
+#include <itron/types.h>
+
 #define PAGE_SIZE	4096
 
 #define PAGE_PRESENT	1
@@ -51,7 +53,7 @@ struct page_table_entry
 
 
 void	init_vm (void);
-int	map_vm (ULONG raddr, ULONG vaddr, ULONG size);
+int	map_vm (UW raddr, UW vaddr, UW size);
 struct page_table_entry *get_page_entry (unsigned long addr);
 
 

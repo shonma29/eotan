@@ -1,4 +1,4 @@
-#include "types.h"
+#include <itron/types.h>
 #include "config.h"
 #include "errno.h"
 #include "page.h"
@@ -9,11 +9,11 @@ struct page_directory_entry *page_dir;
 struct page_table_entry *page_entry;
 
 static void init_dir_ent(struct page_directory_entry *dir,
-			 ULONG page_addr, ULONG entry);
+			 UW page_addr, UW entry);
 
 static void init_page_ent(struct page_table_entry *page,
-			  ULONG paddr,
-			  ULONG entry, ULONG vaddr, ULONG mode);
+			  UW paddr,
+			  UW entry, UW vaddr, UW mode);
 
 
 /**************************************************************************
@@ -49,7 +49,7 @@ void init_vm(void)
 /***************************************************************************
  * get_page_entry ---
  */
-struct page_table_entry *get_page_entry(ULONG addr)
+struct page_table_entry *get_page_entry(UW addr)
 {
     int dir_entry;
     int page_entry;
@@ -67,7 +67,7 @@ struct page_table_entry *get_page_entry(ULONG addr)
  */
 static void
 init_dir_ent(struct page_directory_entry *dir,
-	     ULONG page_addr, ULONG entry)
+	     UW page_addr, UW entry)
 {
     int i;
 
@@ -89,7 +89,7 @@ init_dir_ent(struct page_directory_entry *dir,
  */
 static void
 init_page_ent(struct page_table_entry *page,
-	      ULONG paddr, ULONG entry, ULONG vaddr, ULONG mode)
+	      UW paddr, UW entry, UW vaddr, UW mode)
 {
     int i;
 

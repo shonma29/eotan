@@ -8,12 +8,9 @@
  */
 
 #include <itron/types.h>
-#include "types.h"
 #include "asm.h"
 #include "interrupt.h"
 #include "lib.h"
-
-UWORD ticks;
 
 /****************************************************************************
  * init_8259A ---
@@ -60,9 +57,6 @@ interrupt(int intn)
     default:
       /* error!! */
       boot_printf("unknown interrupt from %d\n", intn);
-      break;
-    case 32:
-      ++ticks;
       break;
 
     case INT_FD:

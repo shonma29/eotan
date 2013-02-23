@@ -88,7 +88,6 @@ static int multi_boot (struct sfs_inode *ip, int rootfs)
   struct boot_header	*info;
   void  	(*entry)();
   int		errno;
-  extern UWORD	ticks;
 
   boot_printf ("Multiple module boot.\n");
   info = (struct boot_header *)MODULE_TABLE;

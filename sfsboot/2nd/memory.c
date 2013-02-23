@@ -1,11 +1,12 @@
-#include "types.h"
+#include <itron/types.h>
+#include "lib.h"
 #include "config.h"
 #include "memory.h"
 #include "asm.h"
 
 #undef USE_BIOS_CALL
 
-UWORD32	base_mem, ext_mem, real_mem;
+UW	base_mem, ext_mem, real_mem;
 
 /**************************************************************************
  * init_memory

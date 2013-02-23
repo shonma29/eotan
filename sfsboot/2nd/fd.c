@@ -1,5 +1,4 @@
 #include <itron/types.h>
-#include "types.h"
 #include "lib.h"
 #include "interrupt.h"
 #include "idt.h"
@@ -17,17 +16,17 @@
 
 struct spec
 {
-  UWORD32 srt;
-  UWORD32 hut;
-  UWORD32 hlt;
-  UWORD32 nd;
+  UW srt;
+  UW hut;
+  UW hlt;
+  UW nd;
 };
 
 struct status
 {
-  BYTE status_reg;
-  BYTE status_data[8];
-  WORD32 motor;
+  UB status_reg;
+  UB status_data[8];
+  W motor;
 };
 
 struct status		fd_status;
@@ -46,7 +45,7 @@ static BOOL recalibrate_flag;
 * on_motor 
 */
 int
-on_motor (BYTE drive)
+on_motor (UB drive)
 {
   int motor_bit, running;
 
@@ -71,7 +70,7 @@ on_motor (BYTE drive)
  * stop_motor
  */
 int
-stop_motor (BYTE drive)
+stop_motor (UB drive)
 {
   motor_goal = 0;
   if (motor_goal != motor_status) {
@@ -113,7 +112,7 @@ write_fdc (int value)
 }
 
 BOOL
-write_commands(int n, BYTE* buff)
+write_commands(int n, UB* buff)
 {
   int  count;
   int  status;
@@ -167,9 +166,9 @@ fd_reset (void)
  */
 
 int
-fd_specify (UWORD32 srt, UWORD32 hut, UWORD32 hlt, UWORD32 nd)
+fd_specify (UW srt, UW hut, UW hlt, UW nd)
 {
-  BYTE cbuff[3];
+  UB cbuff[3];
 
   cbuff[0] = FDC_SPECIFY;
   cbuff[1] = ((srt << 4) | (hut & 0x0f)) & 0xff;
@@ -185,9 +184,9 @@ fd_specify (UWORD32 srt, UWORD32 hut, UWORD32 hlt, UWORD32 nd)
  */
 
 int
-fd_recalibrate (BYTE drive)
+fd_recalibrate (UB drive)
 {
-  BYTE cbuff[2];
+  UB cbuff[2];
   
   intr_flag = FALSE;	                        /* 割り込み待ち */
 
@@ -206,10 +205,10 @@ fd_recalibrate (BYTE drive)
  */
 
 int
-fd_seek (BYTE drive, int head, int cylinder, int motor)
+fd_seek (UB drive, int head, int cylinder, int motor)
 {
   int	result;
-  BYTE cbuff[3];
+  UB cbuff[3];
 
   if(recalibrate_flag == FALSE) {               /* 初回の一度だけリキャリブレートする */
     fd_recalibrate(drive);
@@ -246,7 +245,7 @@ fdc_isense (void)
 {
   int	result_nr = 0;
   int	status;
-  BYTE  cbuff[1];
+  UB  cbuff[1];
 
   cbuff[0] = FDC_SENSE;
   write_commands(1, cbuff);
@@ -302,10 +301,10 @@ fdc_sense (void)
  * cylinder, head, sector で示される位置から 1 セクター buff に読み込む
  */
 int
-fd_read_sector(BYTE drive, int cylinder, int head, int sector, BYTE* buff)
+fd_read_sector(UB drive, int cylinder, int head, int sector, UB* buff)
 {
   int i;
-  BYTE cbuff[9];
+  UB cbuff[9];
   int s;
 
   for(i = 0; i < MAX_RETRY; i++) {
@@ -354,7 +353,7 @@ fd_read_sector(BYTE drive, int cylinder, int head, int sector, BYTE* buff)
  * blockno で示される位置から length ブロック buff に読み込む 
  */
 int
-fd_read (int drive, int part, int blockno, BYTE *buff, int length)
+fd_read (int drive, int part, int blockno, UB *buff, int length)
 {
   /* part はダミー */
 

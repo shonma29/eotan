@@ -40,8 +40,6 @@ Version 2, June 1991
 #ifndef __ERRNO_H__
 #define __ERRNO_H__	1
 
-#include "types.h"
-
 #define E_OK		(0)	/* 正常終了 */
 
 #define E_ADR		(-1)
@@ -92,9 +90,4 @@ Version 2, June 1991
 #define E_NOMDA		(-46)
 #define E_IO		(-47)
 
-typedef	UWORD32		ERRNO;
-
 #endif /* __ERRNO_H__ */
-
-
-
