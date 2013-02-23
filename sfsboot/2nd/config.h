@@ -20,9 +20,6 @@ Version 2, June 1991
 
 #include "../../kernel/boot.h"
 
-#define MAJOR_VER	0
-#define MINOR_VER	2
-
 #define MIN_MEMORY_SIZE		(16 * 1024 * 1024) /* メモリは最小 16 M */
 
 #define MAX_PAGEENT	(4 * 1024) /* 最大 16 M 分のページエントリ */

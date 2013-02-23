@@ -89,9 +89,9 @@ stop_motor (BYTE drive)
 void
 intr_fd (void)
 {
-  clear_int();
+  dis_int();
   intr_flag = TRUE;
-  set_int();
+  ena_int();
 }
 
 /************************************************************************
@@ -342,7 +342,7 @@ fd_read_sector(BYTE drive, int cylinder, int head, int sector, BYTE* buff)
     if (s  != 1) 
       continue;
     
-    bcopy((void*)FD_DMA_BUFF, buff, HD_LENGTH);
+    memcpy(buff, (void*)FD_DMA_BUFF, HD_LENGTH);
     return TRUE;                                                /* 正常終了 */ 
   }
 

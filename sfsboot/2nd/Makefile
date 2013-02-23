@@ -1,3 +1,4 @@
+ROOT = ../../
 GSTRIP = /usr/bin/strip
 RM = /bin/rm
 
@@ -16,7 +17,7 @@ OBJ32 = main.o console.o memory.o  \
 	idt.o interrupt.o cinterrupt.o fd.o \
 	dma.o page.o paging.o lib.o sfs.o \
 	bootos.o elf.o
-LIBS =
+LIBS = $(ROOT)/lib/libnc.a
 
 OBJ16 = start16.o
 

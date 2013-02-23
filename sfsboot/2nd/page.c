@@ -24,9 +24,9 @@ void init_vm(void)
 {
     page_dir = (struct page_directory_entry *) PAGE_DIR_ADDR;
     page_entry = (struct page_table_entry *) PAGE_ENTRY_ADDR;
-    bzero((char *) page_dir,
+    memset((char *) page_dir, 0,
 	  MAX_DIRENT * sizeof(struct page_directory_entry));
-    bzero((char *) page_entry,
+    memset((char *) page_entry, 0,
 	  MAX_PAGEENT * sizeof(struct page_table_entry));
 
 #if 0

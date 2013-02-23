@@ -61,7 +61,7 @@ main (int argc, char **argv)
     exit(1);
   }
 
-  bzero(init_buf, INIT_SIZE);
+  memset(init_buf, 0, INIT_SIZE);
   init_size = read(fd_init, init_buf, INIT_SIZE); 
   if(init_size == -1) {
     fprintf(stderr, "cannot read %s for init\n", argv[1]);

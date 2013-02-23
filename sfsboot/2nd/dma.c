@@ -79,22 +79,17 @@ setup_dma (void *addr, int mode, int length, int mask)
   boot_printf ("setup_dma: mode = 0x%x, addr = 0x%x, length = %d, mask = 0x%x\n",
 	  mode, addr, length, mask);
 #endif
-  clear_int();
+  dis_int();
   outb (DMA_WRITE_SINGLE_MASK, 0x06);
 
   outb (DMA_CLEAR_BYTE, 0);		/* DMAC のリセット */
-#if 1
   outb (DMA_WRITE_MODE, mode|2);
-#else
-  outb (DMA_WRITE_MODE, mode);
-  outb (DMA_CLEAR_BYTE, mode);
-#endif
   outb (DMA_CHANNEL2_ADDR, p & 0xff);
   outb (DMA_CHANNEL2_ADDR, (p >> 8) & 0xff);
   outb (DMA_CHANNEL2_BANK, (p >> 16) & 0x0f);
   outb (DMA_CHANNEL2_COUNT, (length) & 0xff);
   outb (DMA_CHANNEL2_COUNT, ((length) >> 8) & 0xff);
-  set_int();
+  ena_int();
   outb (DMA_WRITE_SINGLE_MASK, mask);
 
   return E_OK;

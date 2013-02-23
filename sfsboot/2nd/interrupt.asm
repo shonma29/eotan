@@ -38,7 +38,7 @@
 %endmacro	
 
 	
-	global	open_interrupt, clear_int, set_int
+	global	open_interrupt
 	global	ignore_handler
 	global	int32_handler, int33_handler,                int35_handler
 	global	int36_handler, int37_handler, int38_handler, int39_handler
@@ -162,11 +162,3 @@ int46_handler:
 int47_handler:
 	int8259slave_handler 47
 
-;-----------------------------------------------------------
-clear_int:			; 割り込み禁止
-	cli
-	ret
-
-set_int:			; 割り込み許可
-	sti
-	ret

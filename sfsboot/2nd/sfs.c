@@ -53,7 +53,7 @@ mount_sfs(int dev)
   if(read_dev(1, 1, block_buff) == -1)
     return -1;
 
-  bcopy((char*)block_buff, (char*)&super_block, sizeof(struct sfs_superblock));
+  memcpy((char*)&super_block, (char*)block_buff, sizeof(struct sfs_superblock));
 
   if(super_block.sfs_magic != SFS_MAGIC)           /* マジックナンバーのチェック */
     return -1;
@@ -84,7 +84,7 @@ read_inode(int inodeno, struct sfs_inode* inode)
     return -1;
 
   offset = offset % SFS_BLOCK_SIZE;                 /* ブロック内でのi-nodeのオフセット */ 
-  bcopy(block_buff + offset, (char*)inode, sizeof(struct sfs_inode));
+  memcpy((char*)inode, block_buff + offset, sizeof(struct sfs_inode));
   return 0;
 }
 
@@ -153,7 +153,7 @@ read_file(struct sfs_inode* inode, int start , int size, char* buff)
       return -1;
     offset = start % SFS_BLOCK_SIZE;
     copysize = (((SFS_BLOCK_SIZE - offset) > size) ? size : (SFS_BLOCK_SIZE - offset));
-    bcopy(&block_buff[offset], buff, copysize);
+    memcpy(buff, &block_buff[offset], copysize);
 
     buff = buff + copysize;
     start = start + copysize;
@@ -214,7 +214,7 @@ lookup_file(char* path, struct sfs_inode* inode)
 
 
   if(strcmp(path, "/") == 0) {
-    bcopy((char*)&parent_inode, (char*)inode, sizeof(struct sfs_inode));
+    memcpy((char*)inode, (char*)&parent_inode, sizeof(struct sfs_inode));
     return 0;
   }
 
@@ -240,7 +240,7 @@ lookup_file(char* path, struct sfs_inode* inode)
     if(lookup_file_local(name, &parent_inode, inode) == -1) 
       return -1; 
     
-    bcopy((char*)inode, (char*)&parent_inode, sizeof(struct sfs_inode));
+    memcpy((char*)&parent_inode, (char*)inode, sizeof(struct sfs_inode));
   }
   
   return 0;

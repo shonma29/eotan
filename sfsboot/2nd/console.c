@@ -11,8 +11,11 @@ static int cur_y;
 static int attrib;
 static short* text_vram;
 
-static void write_vram(int x, int y, int ch, int attr);
+static void write_cr ();
+static void set_cursor(int sx, int sy);
+static void get_cursor(int *gx,int *gy);
 static void scroll_up(void);
+static void write_vram(int x, int y, int ch, int attr);
 static void console_clear (void);
 
 /************************************************************************
@@ -39,7 +42,7 @@ init_console (void)
  * 改行
  */
 
-void
+static void
 write_cr ()
 {
   cur_x = 0;
@@ -51,24 +54,6 @@ write_cr ()
   }
 
   set_cursor(cur_x, cur_y);
-}
-
-/***********************************************************************
- * タブ
- */
-
-void
-write_tab ()
-{
-  int	tmp;
-  if (cur_x < MAX_WIDTH) {
-    tmp = ROUNDUP (cur_x + 1, 8) - 1;
-    while (cur_x < tmp) {
-      write_vram (cur_x, cur_y, ' ', 0x07);
-      cur_x++;
-    }
-    set_cursor(cur_x, cur_y);
-  }
 }
 
 /***********************************************************************
@@ -106,24 +91,24 @@ putchar (int ch)
 * テキストVRAM等、ハードウェアへの操作
 */
 
-void 
+static void 
 set_cursor(int sx, int sy)
 {
   int addr;
 
-  clear_int();
+  dis_int();
   addr = MAX_WIDTH * sy + sx;
   outb (GDC_ADDR, 0x0e);
   outb (GDC_DATA, (addr >> 8));
   outb (GDC_ADDR, 0x0f);
   outb (GDC_DATA, addr);
-  set_int();    
+  ena_int();    
 }
 /***********************************************************
  * 現在のカーソル位置を返す
  */
 
-void 
+static void 
 get_cursor(int *gx,int *gy)
 {
   *gx = cur_x;
@@ -134,7 +119,7 @@ get_cursor(int *gx,int *gy)
  * 一行スクロールアップ
  */
 
-void
+static void
 scroll_up ()
 {
   int i;
@@ -150,7 +135,7 @@ scroll_up ()
  * 指定されたtext_vramの位置に、文字と属性を書き込む
  */
 
-void
+static void
 write_vram (int x, int y, int ch, int attr)
 {
   ch = (attr << 8) | (ch & 0x00ff);
@@ -161,16 +146,10 @@ write_vram (int x, int y, int ch, int attr)
  * 画面消去
  */
 
-void
+static void
 console_clear (void)
 {
   int i;
   for(i = 0; i < (MAX_HEIGHT * MAX_WIDTH); i++)
     text_vram[i] = 0x0720;
 }
-
-
-
-
-
-

@@ -17,8 +17,4 @@ Version 2, June 1991
 
 #define ROUNDUP(x,align)	((((x) + ((align) - 1)) / (align)) * (align))
 
-
-#define ISDIGIT(x)	((x >= '0') && (x <= '9'))
-
-
 #endif /* __MACROS_H__ */

@@ -41,12 +41,12 @@ init_8259A(void)
 void
 reset_intr_mask(int intn)
 {
-  clear_int();
+  dis_int();
   if(intn < 8)
     outb(MASTER_8259A_DATA, inb (MASTER_8259A_DATA) & ~(1 << intn));
   else
     outb(SLAVE_8259A_DATA, inb (SLAVE_8259A_DATA) & ~(1 << (intn - 8)));
-  set_int();
+  ena_int();
 }    
 
 /***************************************************************************
@@ -89,11 +89,11 @@ fault(int intn)
 int
 wait_int (volatile int *flag)
 {
-  set_int();
+  ena_int();
   while(*flag == FALSE);
-  clear_int();
+  dis_int();
   *flag = FALSE;
-  set_int();
+  ena_int();
   return (*flag);
 }
 
