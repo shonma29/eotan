@@ -23,6 +23,8 @@ extern int string_to_number (char *s, int base);
 extern void bcopy (const char *src, char *dest, int length);
 extern void bzero (char *src, int length);
 
+extern void busywait(int x);
+
 #endif
 
 

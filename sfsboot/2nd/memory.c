@@ -42,13 +42,3 @@ init_memory (void)
   boot_printf ("Real Memory = %d K bytes\n", real_mem / 1024);
 }
 
-void msize(char *argv[])
-{
-  if (argv[1] == NULL) {
-    boot_printf ("usage: msize momory_size\n");
-    boot_printf ("       Momory_size should be given as MB.\n");
-    return;
-  }
-  real_mem = atoi(argv[1])*1024*1024;
-  boot_printf ("Real Memory = %d K bytes\n", real_mem / 1024);
-}

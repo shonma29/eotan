@@ -79,7 +79,7 @@ static int load_module (struct sfs_inode *ip, int offset,
 }
 
 
-int multi_boot (struct sfs_inode *ip, int rootfs)
+static int multi_boot (struct sfs_inode *ip, int rootfs)
 {
   int		i;
   int		offset;
@@ -131,3 +131,45 @@ int multi_boot (struct sfs_inode *ip, int rootfs)
 
   return E_OK;
 }
+
+int
+boot_btron (int no)
+{
+  int devid = 0;
+  struct sfs_inode	os_ip;
+  char			buf[BLOCK_SIZE];
+  char			*btron_os = BOOT_PATH;
+  
+  devid = 0x000000 | (no << 8);
+
+  boot_printf ("devid = 0x%x (device = %d, partition = %d)\n", 
+	       devid, (devid >> 8) & 0xff, (devid+1) & 0xff);
+
+  if(mount_sfs(devid) == -1) {
+    boot_printf("mount failure\n");
+    return (E_PAR);
+  }
+ 
+  if(lookup_file(btron_os, &os_ip) == -1) {
+    boot_printf ("cannot find OS (\"%s\")\n", btron_os);
+    return (E_SYS);
+  }
+
+  if(read_file (&os_ip, 0, 2, buf) == -1) {
+    boot_printf ("cannot read OS file.\n");
+    return (E_SYS);
+  }
+
+  if (buf[0] == 0x01) {
+    boot_printf ("read multiple module.\n");
+    multi_boot(&os_ip, devid);
+    boot_printf ("boot end\n");
+  }
+  else {
+    boot_printf ("Unknown file type (0x%x)\n", buf[0]);
+    return (E_SYS);
+  }
+
+  return (E_OK);
+}
+

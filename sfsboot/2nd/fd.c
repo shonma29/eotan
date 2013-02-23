@@ -9,7 +9,6 @@
 #include "errno.h"
 #include "file.h"
 #include "asm.h"
-#include "date.h"
 
 #define ON	1
 #define OFF	0

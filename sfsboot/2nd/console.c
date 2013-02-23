@@ -1,6 +1,5 @@
 #include "console.h"
 #include "vram.h"
-#include "keyboard.h"
 #include "keycode.h"
 #include "asm.h"
 #include "types.h"
@@ -102,68 +101,6 @@ putchar (int ch)
 
   return E_OK;
 }
-
-/***************************************************************************
- * キーボードから一文字読み込む
- */
-
-int
-getchar (void)
-{
-  int   ch;
-  
-  ch = read_keyboard ();
-  putchar (ch);
-  return (ch);
-}
-
-/***************************************************************************
- * キーボードから一文字読み込む。エコーバック無し
- */
-
-int getch(void)
-{
-  int ch;
-  ch = read_keyboard ();
-  return ch;
-}
-
-/***************************************************************************
- * 文字列を、CRが入力されるまでキーボードから読む
- */
-
-char *
-gets (char *line)
-{
-  int   ch;
-  char  *p;
-  int   len;
-  
-  p = line;
-  len = 0;
-  ch = getch ();
-  while (ch != '\n')
-    {
-      if(ch == DEL){
-        if(len>0){
-	  cur_x = cur_x - 1;
-          write_vram(cur_x, cur_y, ' ', 0x07);
-          set_cursor(cur_x, cur_y);
-          p--;
-          len--;
-        }
-      }else{
-        *p++ = ch;
-        len++;
-        putchar(ch);
-      }
-      ch = getch ();
-    }
-  *p = '\0';
-  putchar('\n');
-  return (line);
-}
-
 
 /************************************************************
 * テキストVRAM等、ハードウェアへの操作

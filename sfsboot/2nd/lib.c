@@ -454,3 +454,14 @@ bzero (char *src, int length)
     }
 }
 
+void
+busywait(int x)
+{
+  int i,j;
+  int	tmp;
+
+  for (i = 0; i < x; i++)
+     for (j = 0; j < 100; j++)
+       tmp = j;
+}
+

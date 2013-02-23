@@ -7,15 +7,15 @@ RM = /bin/rm
 	nasm -f elf $<
 
 
-CSRC=main.c console.c keyboard.c memory.c \
-     date.c idt.c cinterrupt.c fd.c \
-     dma.c page.c lib.c ide.c \
-     evaluate.c bootos.c time.c elf.c
+CSRC=main.c console.c memory.c \
+     idt.c cinterrupt.c fd.c \
+     dma.c page.c lib.c \
+     bootos.c elf.c
 
-OBJ32 = main.o console.o keyboard.o memory.o  \
-	date.o idt.o interrupt.o cinterrupt.o fd.o \
-	dma.o page.o paging.o lib.o ide.o sfs.o \
-	evaluate.o bootos.o time.o elf.o
+OBJ32 = main.o console.o memory.o  \
+	idt.o interrupt.o cinterrupt.o fd.o \
+	dma.o page.o paging.o lib.o sfs.o \
+	bootos.o elf.o
 LIBS =
 
 OBJ16 = start16.o

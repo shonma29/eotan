@@ -65,19 +65,8 @@ interrupt(int intn)
       ++ticks;
       break;
 
-    case INT_KEYBOARD:
-      intr_keyboard();
-      break;
-
     case INT_FD:
       intr_fd();
-      break;
-
-    case INT_IDE:
-      intr_ide();
-      break;
-    case INT_IDE2:
-      intr_ide();
       break;
     }
 }

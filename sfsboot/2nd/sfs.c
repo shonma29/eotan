@@ -9,7 +9,6 @@ char block_buff[SFS_BLOCK_SIZE];
 struct sfs_indirect indirect_block_buff;
 
 extern int fd_read();
-extern int ide_read_block_1k();
  
 
 /*********************************************************************
@@ -33,8 +32,6 @@ read_dev(int start, int blockn, char* buff)
 
   if(device == 0)
     device_read_func = fd_read;
-  else
-    device_read_func = ide_read_block_1k;  
 
   if((*device_read_func)(drive, partition, start, buff, blockn) == -1)
     return -1;
