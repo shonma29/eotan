@@ -37,7 +37,7 @@ OBJS = console.o timer.o rtc.o
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(AR) rv $@ $?
+	$(AR) rsv $@ $?
 
 clean:
-	rm -f $(TARGET) *.o
+	rm -f $(TARGET) $(OBJS)

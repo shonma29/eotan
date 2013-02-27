@@ -51,10 +51,7 @@ OBJS = stdio/vnprintf.o \
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(AR) rv $@ $?
+	$(AR) rsv $@ $?
 
 clean:
-	rm -f $(TARGET) stdio/*.o
-	rm -f $(TARGET) string/*.o
-	rm -f $(TARGET) set/*.o
-
+	rm -f $(TARGET) $(OBJS)

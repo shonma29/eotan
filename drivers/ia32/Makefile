@@ -38,7 +38,7 @@ OBJS = fpu.o gdt.o interrupt.o reset_intr_mask.o tss.o virtual_mem.o \
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(AR) rv $@ $?
+	$(AR) rsv $@ $?
 
 clean:
-	rm -f $(TARGET) *.o
+	rm -f $(TARGET) $(OBJS)
