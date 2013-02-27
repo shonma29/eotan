@@ -23,35 +23,11 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = ../libnc.a
-CFLAGS = -Wall -Werror -O2
-ASFLAGS = 
-LDFLAGS = --oformat binary
+TARGET = $(WD).a
 
-INCLUDES = -I ../../include
-OBJS = stdio/vnprintf.o \
-	string/memcpy.o \
-	string/memset.o \
-	string/strlen.o \
-	string/strcpy.o \
-	string/strncpy.o \
-	string/strcat.o \
-	string/strncat.o \
-	string/strcmp.o \
-	string/strncmp.o \
-	set/list.o \
-	set/heap.o \
-	set/slab.o \
-	set/aatree.o \
-	set/stack.o
+include Makefile.in
 
-.c.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
-
-all: $(TARGET)
+CFLAGS += -I kernel
 
 $(TARGET): $(OBJS)
 	$(AR) rsv $@ $?
-
-clean:
-	rm -f $(TARGET) $(OBJS)

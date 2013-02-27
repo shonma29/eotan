@@ -10,18 +10,20 @@ CC=gcc
 
 KERNEL=core
 SERVERS=console keyboard fd ide psaux port-manager fs ramdisk dumb
-KERNLIB=libserv nano-c itron
-USERLIBS=posix_libc
 USERAPP=init
 
 
-PROGRAMS=$(KERNLIB) $(USERLIBS) $(KERNEL) \
-		$(SERVERS) $(USERAPP)
+PROGRAMS=core.bin $(SERVERS) $(USERAPP)
 
-all: $(PROGRAMS) kern.bin 
+all: $(PROGRAMS) kern.bin
 
 kern.bin: build config.tab
 	./build config.tab $@
+
+core.bin:
+	$(MAKE) -C ../kernel/mpu
+	$(MAKE) -C ../kernel/arch
+	$(MAKE) -C ../kernel
 
 build: $(BUILDSRC)
 	$(CC) $(CFLAGS) -o $@ build.c
@@ -30,10 +32,6 @@ clean:
 	rm -f build build.o kern.bin
 	${MAKE} -C ../kernel clean
 	${MAKE} -C ../app/init clean
-	${MAKE} -C ../lib/libserv clean
-	${MAKE} -C ../lib/itron clean
-	${MAKE} -C ../lib/nano-c clean
-	${MAKE} -C ../lib/libc clean
 	${MAKE} -C ../servers/fs clean
 	${MAKE} -C ../servers/ramdisk clean
 	${MAKE} -C ../servers/console clean
@@ -49,18 +47,6 @@ $(SERVERS):
 
 core:
 	${MAKE} -C ../kernel
-
-libserv:
-	${MAKE} -C ../lib/libserv
-
-itron:
-	${MAKE} -C ../lib/itron
-
-nano-c:
-	${MAKE} -C ../lib/nano-c
-
-posix_libc:
-	${MAKE} -C ../lib/libc
 
 init:
 	${MAKE} -C ../app/init

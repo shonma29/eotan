@@ -23,37 +23,14 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = ../libitron.a
-CFLAGS = -Wall -Werror -O2
-ASFLAGS = 
-LDFLAGS = --oformat binary
+LIBS = lib/libitron.a lib/libc.a lib/libnc.a lib/libserv.a
 
-INCLUDES = -I ../../include -I ../../kernel
-OBJS = task.o \
-	vcre_tsk.o \
-	debug.o \
-	dbg_puts.o \
-	interrupt.o \
-	virtual.o \
-	vnew_reg.o \
-	misc.o \
-	eventflag.o \
-	time.o \
-	acre_flg.o \
-	cre_por.o \
-	acre_por.o \
-	del_por.o \
-	cal_por.o \
-	acp_por.o \
-	rpl_rdv.o
+all: $(LIBS)
 
-.c.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
-
-all: $(TARGET)
-
-$(TARGET): $(OBJS)
-	$(AR) rsv $@ $?
+$(LIBS):
+	$(MAKE) -f $(@:.a=)/Makefile WD=$(@:.a=)
 
 clean:
-	rm -f $(TARGET) $(OBJS)
+	$(SHELL) -ec 'for L in $(LIBS:.a=); do \
+		$(MAKE) -f $$L/Makefile WD=$$L clean; \
+		done'

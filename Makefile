@@ -8,7 +8,10 @@ export LINUX_INCLUDE = -I../../usr/include
 TARGET = sfsboot_img initrd_img
 TARGET1 = tool
 
-all: tool kern applications boot ${TARGET}
+all: tool libs kern applications boot ${TARGET}
+
+libs:
+	${MAKE} -f libs.mk
 
 kern:
 	${MAKE} -C build
@@ -32,6 +35,7 @@ sfsboot_img:
 clean:
 	${MAKE} -C sfsboot clean
 	${MAKE} -C build clean
+	${MAKE} -f libs.mk clean
 	${MAKE} -C app/mkfs clean
 	${MAKE} -C app/test clean
 	${MAKE} -C app/contribution clean

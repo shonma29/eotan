@@ -23,21 +23,11 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = ../libserv.a
-CFLAGS = -Wall -Werror -O2
-ASFLAGS = 
-LDFLAGS = --oformat binary
+TARGET = $(WD).a
 
-INCLUDES = -I . -I ../../include -I ../../kernel
-OBJS = strncpy2.o malloc.o port_manager.o \
+include Makefile.in
 
-.c.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
-
-all: $(TARGET)
+CFLAGS += -I kernel
 
 $(TARGET): $(OBJS)
 	$(AR) rsv $@ $?
-
-clean:
-	rm -f $(TARGET) $(OBJS)

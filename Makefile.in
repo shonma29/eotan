@@ -23,17 +23,25 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = $(WD).a
+CFLAGS = -Wall -Werror -O2 -I $(WD) -I include
+#ASFLAGS = 
+#LDFLAGS = --oformat binary
 
-CSRCS = $(wildcard $(WD)/malloc/*.c)
-CSRCS += $(wildcard $(WD)/others/*.c)
-CSRCS += $(wildcard $(WD)/string/*.c)
-CSRCS += $(wildcard $(WD)/sys/*.c)
-SSRCS += $(wildcard $(WD)/sys/*.s)
+CSRCS += $(wildcard $(WD)/*.c)
+SSRCS += $(wildcard $(WD)/*.s)
+OBJS = $(patsubst %.c, %.o, $(CSRCS))
+OBJS += $(patsubst %.s, %.o, $(SSRCS))
 
-include Makefile.in
+%.d: %.c
+	$(SHELL) -ec '$(CC) -MM $(CFLAGS) $< \
+		| sed "s/\($(subst /, \/, $*)\)\.o[ :]*/\1.o $(subst /,\/,$@) : /g" \
+		> $@; \
+		[ -s $@ ] || rm -f $@'
 
-CFLAGS += -I kernel -I servers/fs
+all: $(TARGET)
 
-$(TARGET): $(OBJS)
-	$(AR) rsv $@ $?
+include $(CSRCS:.c=.d)
+
+.PHONY: clean
+clean:
+	$(RM) $(TARGET) $(OBJS) $(CSRCS:.c=.d)

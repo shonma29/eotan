@@ -25,15 +25,11 @@
 
 TARGET = $(WD).a
 
-CSRCS = $(wildcard $(WD)/malloc/*.c)
-CSRCS += $(wildcard $(WD)/others/*.c)
+CSRCS = $(wildcard $(WD)/stdio/*.c)
 CSRCS += $(wildcard $(WD)/string/*.c)
-CSRCS += $(wildcard $(WD)/sys/*.c)
-SSRCS += $(wildcard $(WD)/sys/*.s)
+CSRCS += $(wildcard $(WD)/set/*.c)
 
 include Makefile.in
-
-CFLAGS += -I kernel -I servers/fs
 
 $(TARGET): $(OBJS)
 	$(AR) rsv $@ $?
