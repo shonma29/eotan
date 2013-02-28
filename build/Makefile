@@ -21,8 +21,6 @@ kern.bin: build config.tab
 	./build config.tab $@
 
 core.bin:
-	$(MAKE) -C ../kernel/mpu
-	$(MAKE) -C ../kernel/arch
 	$(MAKE) -C ../kernel
 
 build: $(BUILDSRC)

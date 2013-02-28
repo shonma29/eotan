@@ -23,21 +23,11 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = libarch.a
-CFLAGS = -Wall -Werror -O2
-ASFLAGS = 
-LDFLAGS = --oformat binary
+TARGET = $(WD)/libarch.a
 
-INCLUDES = -I . -I ../../kernel -I ../../include
-OBJS = console.o timer.o rtc.o
+include Makefile.in
 
-.c.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
-
-all: $(TARGET)
+CFLAGS += -I kernel
 
 $(TARGET): $(OBJS)
 	$(AR) rsv $@ $?
-
-clean:
-	rm -f $(TARGET) $(OBJS)

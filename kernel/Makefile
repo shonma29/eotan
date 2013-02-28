@@ -39,15 +39,7 @@ core.bin: $(OBJS) mpu/libmpu.a arch/libarch.a
 version.h: version.sh
 	./version.sh > version.h
 
-mpu/libmpu.a:
-	${MAKE} -C mpu
-
-arch/libarch.a:
-	${MAKE} -C arch
-
 clean:
 	rm -f $(OBJS)
 	rm -f version.h
 	rm -f core.bin
-	${MAKE} -C mpu clean
-	${MAKE} -C arch clean

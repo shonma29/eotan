@@ -23,22 +23,13 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = libmpu.a
-CFLAGS = -Wall -Werror -O2
-ASFLAGS = 
-LDFLAGS = --oformat binary
+TARGET = $(WD)/libmpu.a
 
-INCLUDES = -I . -I ../../kernel -I ../../include
-OBJS = fpu.o gdt.o interrupt.o reset_intr_mask.o tss.o virtual_mem.o \
-	handler.o locore.o startup.o context.o
+include Makefile.in
 
-.c.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
-
-all: $(TARGET)
+CFLAGS += -I kernel
+SSSRCS = $(wildcard $(WD)/*.S)
+OBJS += $(patsubst %.S, %.o, $(SSSRCS))
 
 $(TARGET): $(OBJS)
 	$(AR) rsv $@ $?
-
-clean:
-	rm -f $(TARGET) $(OBJS)

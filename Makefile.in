@@ -27,10 +27,13 @@ CFLAGS = -Wall -Werror -O2 -I $(WD) -I include
 #ASFLAGS = 
 #LDFLAGS = --oformat binary
 
-CSRCS += $(wildcard $(WD)/*.c)
+CSRCS = $(wildcard $(WD)/*.c)
 SSRCS += $(wildcard $(WD)/*.s)
 OBJS = $(patsubst %.c, %.o, $(CSRCS))
 OBJS += $(patsubst %.s, %.o, $(SSRCS))
+
+%.o: %.S
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 %.d: %.c
 	$(SHELL) -ec '$(CC) -MM $(CFLAGS) $< \
@@ -40,7 +43,7 @@ OBJS += $(patsubst %.s, %.o, $(SSRCS))
 
 all: $(TARGET)
 
-include $(CSRCS:.c=.d)
+-include $(CSRCS:.c=.d)
 
 .PHONY: clean
 clean:

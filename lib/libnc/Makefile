@@ -25,11 +25,11 @@
 
 TARGET = $(WD).a
 
-CSRCS = $(wildcard $(WD)/stdio/*.c)
+include Makefile.in
+
+CSRCS += $(wildcard $(WD)/stdio/*.c)
 CSRCS += $(wildcard $(WD)/string/*.c)
 CSRCS += $(wildcard $(WD)/set/*.c)
-
-include Makefile.in
 
 $(TARGET): $(OBJS)
 	$(AR) rsv $@ $?
