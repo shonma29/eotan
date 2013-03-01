@@ -8,27 +8,22 @@ BUILDSRC=build.c $(INC)/boot.h
 CFLAGS=$(DEBUG) -Wall -Werror -I$(INC)
 CC=gcc
 
-KERNEL=core
 SERVERS=console keyboard fd ide psaux port-manager fs ramdisk dumb
 USERAPP=init
 
 
-PROGRAMS=core.bin $(SERVERS) $(USERAPP)
+PROGRAMS=$(SERVERS) $(USERAPP)
 
 all: $(PROGRAMS) kern.bin
 
 kern.bin: build config.tab
 	./build config.tab $@
 
-core.bin:
-	$(MAKE) -C ../kernel
-
 build: $(BUILDSRC)
 	$(CC) $(CFLAGS) -o $@ build.c
 
 clean:
 	rm -f build build.o kern.bin
-	${MAKE} -C ../kernel clean
 	${MAKE} -C ../app/init clean
 	${MAKE} -C ../servers/fs clean
 	${MAKE} -C ../servers/ramdisk clean
@@ -42,9 +37,6 @@ clean:
 
 $(SERVERS):
 	${MAKE} -C ../servers/$@
-
-core:
-	${MAKE} -C ../kernel
 
 init:
 	${MAKE} -C ../app/init

@@ -1,45 +1,40 @@
-
-# $Revision: 1.14 $
+# This is free and unencumbered software released into the public domain.
 #
+# Anyone is free to copy, modify, publish, use, compile, sell, or
+# distribute this software, either in source code form or as a compiled
+# binary, for any purpose, commercial or non-commercial, and by any
+# means.
 #
-INC=../include
+# In jurisdictions that recognize copyright laws, the author or authors
+# of this software dedicate any and all copyright interest in the
+# software to the public domain. We make this dedication for the benefit
+# of the public at large and to the detriment of our heirs and
+# successors. We intend this dedication to be an overt act of
+# relinquishment in perpetuity of all present and future rights to this
+# software under copyright law.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE.
+#
+# For more information, please refer to <http://unlicense.org/>
 
+TARGET = kernel/version.h kernel/core.bin
 
-#DEBUG=-DTSKSW_DEBUG
-IDENT=-DAUTO_START $(DEBUG)
+include Makefile.in
 
-CFLAGS=-O2 -I. -I$(INC) -Wall -Werror $(IDENT)
-MKDEPEND=$(CC) -M
-STARTADDR=0x80100000
-ENTRY=startup
+CFLAGS += -DAUTO_START
+ENTRY_ADDR = 0x80100000
+ENTRY_FUNC = startup
 
-OBJS= \
-	error.o \
-	main.o \
-	pmemory.o \
-	printk.o \
-	api.o \
-	thread.o \
-	time.o \
-	flag.o \
-	lowlib.o \
-	posix.o \
-	ready.o \
-	sync.o \
-	rendezvous.o
+kernel/version.h: kernel/version.sh
+	$< > $@
 
-all: version.h core.bin
-
-core.bin: $(OBJS) mpu/libmpu.a arch/libarch.a
-	$(LD) -static -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) \
-		mpu/startup.o $(OBJS) \
-		mpu/libmpu.a arch/libarch.a ../lib/libnc.a 
-	strip -s -R .comment -R .note -R .note.ABI-tag $@
-
-version.h: version.sh
-	./version.sh > version.h
-
-clean:
-	rm -f $(OBJS)
-	rm -f version.h
-	rm -f core.bin
+kernel/core.bin: $(OBJS) \
+		kernel/mpu/libmpu.a kernel/arch/libarch.a lib/libnc.a
+	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
+	$(STRIP) $@

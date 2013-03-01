@@ -26,6 +26,7 @@
 CFLAGS = -Wall -Werror -O2 -I $(WD) -I include
 #ASFLAGS = 
 #LDFLAGS = --oformat binary
+STRIP = strip -s -R .comment -R .note -R .note.ABI-tag
 
 CSRCS = $(wildcard $(WD)/*.c)
 SSRCS += $(wildcard $(WD)/*.s)
