@@ -23,15 +23,14 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = $(WD)/port-manager
+SERVERS = console dumb fd765a ide keyboard port-manager psaux ramdisk
 
-include Makefile.in
+all: $(SERVERS)
 
-CFLAGS += -I kernel -I libserv
-ENTRY_ADDR = 0x00300000
-ENTRY_FUNC = _main
+$(SERVERS):
+	$(MAKE) -f servers/$@/Makefile WD=servers/$@
 
-$(TARGET): $(OBJS) \
-		lib/libserv.a lib/libitron.a lib/libnc.a
-	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
-	$(STRIP) $@
+clean:
+	$(SHELL) -ec 'for L in $(SERVERS); do \
+		$(MAKE) -f servers/$$L/Makefile WD=servers/$$L clean; \
+		done'

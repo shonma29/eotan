@@ -14,6 +14,7 @@ libs:
 
 kern:
 	${MAKE} -f kernel/Makefile WD=kernel
+	${MAKE} -f servers.mk
 	${MAKE} -C build
 
 tool:
@@ -37,6 +38,7 @@ clean:
 	${MAKE} -C build clean
 	${MAKE} -f kernel/Makefile WD=kernel clean
 	${MAKE} -f libs.mk clean
+	${MAKE} -f servers.mk clean
 	${MAKE} -C app/mkfs clean
 	${MAKE} -C app/test clean
 	${MAKE} -C app/contribution clean

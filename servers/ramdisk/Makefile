@@ -22,25 +22,15 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 # For more information, please refer to <http://unlicense.org/>
-ROOT=../..
-TARGET = ramdisk
-CFLAGS = -O2 -Wall -Werror -I. -I$(ROOT)/include
-LIB = $(ROOT)/lib/libserv.a $(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a
 
-START=0x80370000
-ENTRY=start
+TARGET = $(WD)/ramdisk
 
-OBJS = main.o
+include Makefile.in
 
-.c.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
+ENTRY_ADDR = 0x80370000
+ENTRY_FUNC = start
 
-all: $(TARGET)
-
-$(TARGET): $(OBJS)
-	$(LD) -static -o $@ -e $(ENTRY) -Ttext=$(START) $(OBJS) $(LIB)
-	strip -s -R .comment -R .note -R .note.ABI-tag $@
-
-clean:
-	rm -f $(TARGET) $(OBJS)
-
+$(TARGET): $(OBJS) \
+		lib/libserv.a lib/libitron.a lib/libnc.a
+	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
+	$(STRIP) $@

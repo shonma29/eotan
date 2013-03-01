@@ -64,8 +64,8 @@ Version 2, June 1991
 
 #include <device.h>
 #include <itron/rendezvous.h>
-#include "../libserv/libserv.h"
-#include "../libserv/port.h"
+#include "../../lib/libserv/libserv.h"
+#include "../../lib/libserv/port.h"
 #include "keyboard.h"
 #include "key_type.h"
 

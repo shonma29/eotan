@@ -38,7 +38,7 @@ Version 2, June 1991
  *
  *
  */
-#include "../libserv/libserv.h"
+#include "../../lib/libserv/libserv.h"
 #include "keyboard.h"
 
 #define MAX_LIST	1024

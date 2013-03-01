@@ -97,7 +97,7 @@
 #
 ../servers/console/console	0x80310000	0x310000	driver	driver.console
 ../servers/keyboard/keyboard	0x80320000	0x320000	driver  driver.keyboard
-../servers/fd/fd765a		0x80330000	0x330000	driver	driver.fd
+../servers/fd765a/fd765a		0x80330000	0x330000	driver	driver.fd
 ../servers/ide/ide		0x80340000	0x340000	driver  driver.ide
 ../servers/psaux/psaux           0x80350000      0x350000        driver  driver.psaux
 #../servers/dumb/dumb           0x80360000      0x360000        driver  driver.dumb
