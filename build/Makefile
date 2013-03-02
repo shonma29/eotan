@@ -9,10 +9,9 @@ CFLAGS=$(DEBUG) -Wall -Werror -I$(INC)
 CC=gcc
 
 SERVERS=fs
-USERAPP=init
 
 
-PROGRAMS=$(SERVERS) $(USERAPP)
+PROGRAMS=$(SERVERS)
 
 all: $(PROGRAMS) kern.bin
 
@@ -24,12 +23,7 @@ build: $(BUILDSRC)
 
 clean:
 	rm -f build build.o kern.bin
-	${MAKE} -C ../app/init clean
 	${MAKE} -C ../servers/fs clean
 
 $(SERVERS):
 	${MAKE} -C ../servers/$@
-
-init:
-	${MAKE} -C ../app/init
-

@@ -1,60 +1,39 @@
-# $Revision: 1.4 $
+# This is free and unencumbered software released into the public domain.
 #
+# Anyone is free to copy, modify, publish, use, compile, sell, or
+# distribute this software, either in source code form or as a compiled
+# binary, for any purpose, commercial or non-commercial, and by any
+# means.
 #
-
+# In jurisdictions that recognize copyright laws, the author or authors
+# of this software dedicate any and all copyright interest in the
+# software to the public domain. We make this dedication for the benefit
+# of the public at large and to the detriment of our heirs and
+# successors. We intend this dedication to be an overt act of
+# relinquishment in perpetuity of all present and future rights to this
+# software under copyright law.
 #
-# コンパイルフラグ一覧
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE.
 #
-#
+# For more information, please refer to <http://unlicense.org/>
 
-IDENT=
-DEBUG=
+TARGET = $(WD)/test $(WD)/psauxtst2 $(WD)/porttest $(WD)/lowtest $(WD)/rdtest \
+		$(WD)/cat
 
-ROOT=../..
-CFLAGS=-O3 -Wall -Werror -I. -I$(ROOT)/include -I$(ROOT)/kernel \
-		-I$(ROOT)/lib/libc/others $(IDENT)
-MKDEPEND=$(CC) -M
-STARTADDR=0x00001000
-ENTRY=_main
-KERNLIBS=$(ROOT)/lib/libc.a $(ROOT)/lib/libitron.a $(ROOT)/lib/libnc.a \
-		$(ROOT)/lib/libserv.a
+include Makefile.in
 
-.o.c:
-	$(CC) $(CFLAGS) -c $< -o $@
+CFLAGS += -I kernel -I lib/libc/others
+ENTRY_ADDR = 0x00001000
+ENTRY_FUNC = _main
 
-OBJS= test.o
-
-all: test psauxtst2 porttest lowtest rdtest cat
-
-test: test.o $(LIBS) $(KERNLIBS)
-	$(LD) -Bstatic -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) test.o $(LIBS) $(KERNLIBS)
-
-psauxtst2: psauxtst2.o $(LIBS) $(KERNLIBS)
-	$(LD) -Bstatic -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) psauxtst2.o $(LIBS) $(KERNLIBS)
-
-porttest: porttest.o $(LIBS) $(KERNLIBS)
-	$(LD) -Bstatic -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) porttest.o $(LIBS) $(KERNLIBS)
-
-lowtest: lowtest.o $(LIBS) $(KERNLIBS)
-	$(LD) -Bstatic -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) lowtest.o $(LIBS) $(KERNLIBS)
-
-rdtest: rdtest.o $(LIBS) $(KERNLIBS)
-	$(LD) -Bstatic -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) rdtest.o $(LIBS) $(KERNLIBS)
-
-cat: cat.o $(LIBS) $(KERNLIBS)
-	$(LD) -Bstatic -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) cat.o $(LIBS) $(KERNLIBS)
-
-tags:
-	etags ../*/*.[hcs]
-
-depend:
-	$(MKDEPEND) -x c $(SRCS) > .depend
-
-clean:
-	rm -f test
-	rm -f *.o
-	rm -f psauxtst2
-	rm -f porttest
-	rm -f lowtest
-	rm -f rdtest
-	rm -f cat
+$(TARGET): $(OBJS) \
+		lib/libc.a lib/libitron.a lib/libnc.a lib/libserv.a
+	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $(@).o \
+		lib/libc.a lib/libitron.a lib/libnc.a lib/libserv.a
+	$(STRIP) $@
