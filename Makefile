@@ -19,7 +19,7 @@ kern:
 	${MAKE} -C build
 
 tool:
-	${MAKE} -C app/mkfs
+	${MAKE} -f app/mkfs/Makefile WD=app/mkfs
 
 boot:
 	${MAKE} -C sfsboot
@@ -40,7 +40,7 @@ clean:
 	${MAKE} -f kernel/Makefile WD=kernel clean
 	${MAKE} -f libs.mk clean
 	${MAKE} -f servers.mk clean
-	${MAKE} -C app/mkfs clean
+	${MAKE} -f app/mkfs/Makefile WD=app/mkfs clean
 	${MAKE} -f app/init/Makefile WD=app/init clean
 	${MAKE} -f app/test/Makefile WD=app/test clean
 	${MAKE} -f app/contribution/pager/Makefile WD=app/contribution/pager clean
