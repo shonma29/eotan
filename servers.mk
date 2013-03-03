@@ -23,7 +23,7 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-SERVERS = console dumb fd765a ide keyboard port-manager psaux ramdisk
+SERVERS = console dumb fd765a fs ide keyboard port-manager psaux ramdisk
 
 all: $(SERVERS)
 

@@ -8,12 +8,7 @@ BUILDSRC=build.c $(INC)/boot.h
 CFLAGS=$(DEBUG) -Wall -Werror -I$(INC)
 CC=gcc
 
-SERVERS=fs
-
-
-PROGRAMS=$(SERVERS)
-
-all: $(PROGRAMS) kern.bin
+all: kern.bin
 
 kern.bin: build config.tab
 	./build config.tab $@
@@ -23,7 +18,3 @@ build: $(BUILDSRC)
 
 clean:
 	rm -f build build.o kern.bin
-	${MAKE} -C ../servers/fs clean
-
-$(SERVERS):
-	${MAKE} -C ../servers/$@

@@ -1,61 +1,39 @@
+# This is free and unencumbered software released into the public domain.
 #
-# B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
-# 
-# GNU GENERAL PUBLIC LICENSE
-# Version 2, June 1991
-# 
-# (C) B-Free Project.
-# (C) 2001, Tomohide Naniwa
+# Anyone is free to copy, modify, publish, use, compile, sell, or
+# distribute this software, either in source code form or as a compiled
+# binary, for any purpose, commercial or non-commercial, and by any
+# means.
 #
-
-# デバッグ用 Define
+# In jurisdictions that recognize copyright laws, the author or authors
+# of this software dedicate any and all copyright interest in the
+# software to the public domain. We make this dedication for the benefit
+# of the public at large and to the detriment of our heirs and
+# successors. We intend this dedication to be an overt act of
+# relinquishment in perpetuity of all present and future rights to this
+# software under copyright law.
 #
-# VMDEBUG	仮想記憶関連
-# MMDEBUG	メモリ管理関連
-# PMDEBUG	プロセス管理関連
-# FMDEBUG	ファイル管理関連
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE.
 #
-#DEBUG=-DFMDEBUG -DEXEC_DEBUG -DDEBUG -DFKDEBUG
-DEBUG=#-DEXEC_DEBUG
-IDENT=$(DEBUG)
-ROOT=../..
-INC=-I$(ROOT)/include -I$(ROOT)/kernel
-CFLAGS=-O2 -Wall -Werror $(INC) $(IDENT)
+# For more information, please refer to <http://unlicense.org/>
 
-ENTRY=startup
-STARTADDR=0x00001000
+TARGET = $(WD)/fs
 
+include Makefile.in
 
-OBJS=startup.o main.o request.o filesystem.o memory.o process.o \
-	api.o vmtree.o exec.o fork.o
-SRCS=main.c request.c filesystem.c memory.c process.c \
-	api.c vmtree.c exec.c fork.c
+CFLAGS += -I kernel -I lib/libserv
+ENTRY_ADDR = 0x00001000
+ENTRY_FUNC = startup
+CSRCS += $(wildcard $(WD)/sfs/*.c)
+CSRCS += $(wildcard $(WD)/posix-server/*.c)
 
-KERNLIB=../../lib/libserv.a ../../lib/libitron.a \
-	../../lib/libnc.a
-LIBS=sfs/libsfs.a posix-server/libposix-server.a $(KERNLIB)
-
-all:
-	${MAKE} -C sfs
-	${MAKE} -C posix-server
-	${MAKE} fs
-
-fs:	$(OBJS) $(LIBS)
-	$(LD) -static -o $@ -e $(ENTRY) -Ttext=$(STARTADDR) $(OBJS) $(LIBS)
-	strip -s -R .comment -R .note -R .note.ABI-tag $@
-	size $@
-
-clean:
-	rm -f $(OBJS) fs
-	${MAKE} -C sfs clean
-	${MAKE} -C posix-server clean
-
-depend:
-	cc -M $(CFLAGS) $(SRCS) > .depend
-
-
-
-########################################
-
--include .depend
-
+$(TARGET): $(OBJS) \
+		lib/libserv.a lib/libitron.a lib/libnc.a
+	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
+	$(STRIP) $@
