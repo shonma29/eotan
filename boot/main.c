@@ -27,6 +27,9 @@ For more information, please refer to <http://unlicense.org/>
 #include <cga.h>
 #include <stdarg.h>
 #include <string.h>
+#include "boot.h"
+
+#define INT_LEN (4)
 
 #define BIOS_CURSOR_COL 0x0450
 #define BIOS_CURSOR_ROW 0x0451
@@ -34,18 +37,35 @@ For more information, please refer to <http://unlicense.org/>
 
 static CGA_Console *cns;
 
+static void console_initialize();
 static int printk(const char *fmt, ...);
 
 void _main()
+{
+	ModuleHeader *h = (ModuleHeader*)MODULES_ADDR;
+
+	console_initialize();
+
+	for (; h->type != end;) {
+		unsigned int k;
+
+		printk("%d %d %d %d\n",
+				h->type, h->length, h->bytes, h->zBytes);
+		k = (unsigned int)h + sizeof(*h) + h->length;
+		h = (ModuleHeader*)k;
+	}
+
+	for(;;);
+}
+
+static void console_initialize()
 {
 	unsigned char *x = (unsigned char*)BIOS_CURSOR_COL;
 	unsigned char *y = (unsigned char*)BIOS_CURSOR_ROW;
 
 	cns = getConsole((const unsigned short*)CGA_VRAM_ADDR);
 	cns->locate(*x, *y);
-	printk("boot\n");
-
-	for(;;);
+	printk("Starter has woken up.\n");
 }
 
 static int printk(const char *fmt, ...)

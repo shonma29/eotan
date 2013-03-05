@@ -34,7 +34,12 @@ LDFLAGS = --oformat binary
 LIB = ../libc/
 TOOL=./
 
-OBJS = boot.bin starter.bin
+STARTER_SIZE = 8192
+BLK_SIZE = 512
+BOOT_ADDR = 0x7c00
+STARTER_ADDR = 0x8000
+
+OBJS = boot.bin kern.bin
 
 all: pad append $(TARGET)
 
@@ -43,20 +48,20 @@ $(TARGET): $(OBJS)
 	$(TOOL)pad $@ 1474560
 
 boot.bin: boot.o
-	$(LD) $(LDFLAGS) -L$(LIB) -Ttext 0x7c00 -o $@ $^
+	$(LD) $(LDFLAGS) -L$(LIB) -Ttext $(BOOT_ADDR) -o $@ $^
 
 boot.o: boot.s starter.inc
 
-starter.inc: starter.bin
-	echo -n ".set STARTUP_SECTORS, " > $@
-	echo "(`ls -l starter.bin | sed -e 's/ \{1,\}/ /g' | cut -f5 -d ' '` + 511 ) / 512" | bc >> $@
+starter.inc: kern.bin
+	echo -n ".set STARTER_SECTORS, " > $@
+	echo "(`wc -c < kern.bin` + $(BLK_SIZE) - 1) / $(BLK_SIZE)" | bc >> $@
 
 starter.bin: starter.o main.o ../kernel/arch/libarch.a ../lib/libnc.a
-	$(LD) $(LDFLAGS) -Ttext 0x8000 -L$(LIB) -o $@ $^
-	$(TOOL)pad $@ 512
+	$(LD) $(LDFLAGS) -Ttext $(STARTER_ADDR) -L$(LIB) -o $@ \
+		starter.o main.o ../kernel/arch/libarch.a ../lib/libnc.a
+	$(TOOL)pad $@ $(STARTER_SIZE) 
 
 main.o: main.c
-console.o: console.c
 
 $(TOOL)pad: $(TOOL)pad.c
 	$(CC) -o $@ $^
@@ -64,8 +69,14 @@ $(TOOL)pad: $(TOOL)pad.c
 $(TOOL)append: $(TOOL)append.c
 	$(CC) -o $@ $^
 
-kern.bin:
-	$(RM) $@
+kern.bin: starter.bin ../kernel/core.bin ../servers/fs/fs \
+		../servers/port-manager/port-manager \
+		../servers/console/console ../servers/keyboard/keyboard \
+		../servers/psaux/psaux ../servers/ramdisk/ramdisk \
+		../servers/fd765a/fd765a ../servers/ide/ide \
+		../app/init/init ../initrd.img
+	[ `wc -c < starter.bin` -le $(STARTER_SIZE) ]
+	cp starter.bin $@
 	$(TOOL)append 1 ../kernel/core.bin 4 >> $@
 	$(TOOL)append 3 ../servers/fs/fs 4 >> $@
 	$(TOOL)append 2 ../servers/port-manager/port-manager 4 >> $@
@@ -79,7 +90,7 @@ kern.bin:
 	$(TOOL)append 4 ../initrd.img 4 >> $@
 	$(TOOL)append 0 >> $@
 
-.PHONY: clean kern.bin
+.PHONY: clean
 clean:
 	$(RM) -f $(TARGET) *.bin *.o *.inc
 	$(RM) -f pad append

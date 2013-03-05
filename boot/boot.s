@@ -345,7 +345,7 @@ dec_eos:
  * @since 1.0
  */
 left_sectors:
-	.word STARTUP_SECTORS
+	.word STARTER_SECTORS
 track_offset:
 	.word 1
 dma_offset:

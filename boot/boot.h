@@ -27,6 +27,8 @@ For more information, please refer to <http://unlicense.org/>
 #ifndef __BOOT_H__
 #define __BOOT_H__ 1
 
+#define MODULES_ADDR 0x0000a000
+
 enum ModuleType
 {
 	end = 0,
