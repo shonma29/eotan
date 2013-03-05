@@ -24,14 +24,18 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "cga.h"
-#include "stdarg.h"
-#include "string.h"
+#include <cga.h>
+#include <stdarg.h>
+#include <string.h>
+
+#define CGA_VRAM_ADDR 0x800b8000
 
 static CGA_Console *cns;
 
 void kernlog_initialize() {
-	cns = getConsole();
+	cns = getConsole((const unsigned short*)CGA_VRAM_ADDR);
+	cns->locate(0, 0);
+	cns->cls();
 }
 
 int printk(const unsigned char *format, ...) {

@@ -1,5 +1,3 @@
-#ifndef _CGA_H_
-#define _CGA_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,21 +24,35 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <cga.h>
+#include <stdarg.h>
+#include <string.h>
 
-#define CGA_COLUMNS (80)
-#define CGA_ROWS (25)
-#define CGA_COLORS (16)
-#define CGA_TAB_COLUMNS (8)
-#define CGA_DEFAULT_COLOR (15)
+#define BIOS_CURSOR_COL 0x0450
+#define BIOS_CURSOR_ROW 0x0451
+#define CGA_VRAM_ADDR 0x000b8000
 
-typedef struct _CGA_Console {
-	void (*cls)(void);
-	int (*locate)(const int x, const int y);
-	int (*color)(const int color);
-	void (*putc)(const unsigned char ch);
-	int (*rollup)(const int lines);
-} CGA_Console;
+static CGA_Console *cns;
 
-extern CGA_Console *getConsole(const unsigned short *base);
+static int printk(const char *fmt, ...);
 
-#endif
+void _main()
+{
+	unsigned char *x = (unsigned char*)BIOS_CURSOR_COL;
+	unsigned char *y = (unsigned char*)BIOS_CURSOR_ROW;
+
+	cns = getConsole((const unsigned short*)CGA_VRAM_ADDR);
+	cns->locate(*x, *y);
+	printk("boot\n");
+
+	for(;;);
+}
+
+static int printk(const char *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	return vnprintf((void*)(cns->putc), (char*)fmt, ap);
+};
+

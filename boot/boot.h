@@ -1,5 +1,3 @@
-#ifndef _CGA_H_
-#define _CGA_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,21 +24,24 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#ifndef __BOOT_H__
+#define __BOOT_H__ 1
 
-#define CGA_COLUMNS (80)
-#define CGA_ROWS (25)
-#define CGA_COLORS (16)
-#define CGA_TAB_COLUMNS (8)
-#define CGA_DEFAULT_COLOR (15)
+enum ModuleType
+{
+	end = 0,
+	kernel = 1,
+	server = 2,
+	user = 3,
+	initrd = 4
+};
 
-typedef struct _CGA_Console {
-	void (*cls)(void);
-	int (*locate)(const int x, const int y);
-	int (*color)(const int color);
-	void (*putc)(const unsigned char ch);
-	int (*rollup)(const int lines);
-} CGA_Console;
-
-extern CGA_Console *getConsole(const unsigned short *base);
+typedef struct _ModuleHeader
+{
+	enum ModuleType type;
+	size_t length;
+	size_t bytes;
+	size_t zBytes;
+} ModuleHeader;
 
 #endif

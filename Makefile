@@ -9,6 +9,7 @@ TARGET = sfsboot_img initrd_img
 
 all: tool libs kern applications boot ${TARGET}
 
+.PHONY: tool libs kern applications boot
 libs:
 	${MAKE} -f libs.mk
 

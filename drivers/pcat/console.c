@@ -27,8 +27,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <cga.h>
 #include <mpu/io.h>
 
-#define CGA_VRAM_ADDR (0x800b8000)
-
 #define PORT_CRTC 0x03d4
 #define CRTC_CURSOR_HIGH 0x0e
 #define CRTC_CURSOR_LOW 0x0f
@@ -54,12 +52,13 @@ static struct _screen {
 	int y;
 	int color;
 	unsigned short *p;
+	unsigned short *base;
 } _s;
 
 
-CGA_Console *getConsole(void) {
+CGA_Console *getConsole(const unsigned short *base) {
 	_s.color = CGA_DEFAULT_COLOR;
-	_cls();
+	_s.base = (unsigned short*)base;
 
 	return &_cns;
 }
@@ -69,7 +68,7 @@ static unsigned short _combine_chr(int color, unsigned char ch) {
 }
 
 static void _cls(void) {
-	unsigned short *p = (unsigned short*)CGA_VRAM_ADDR;
+	unsigned short *p = _s.base;
 	unsigned int i;
 	unsigned short c = _combine_chr(_s.color, ' ');
 
@@ -88,7 +87,7 @@ static int _locate(const int x, const int y) {
 
 	_s.x = x;
 	_s.y = y;
-	_s.p = ((unsigned short*)CGA_VRAM_ADDR) + y * CGA_COLUMNS + x;
+	_s.p = _s.base + y * CGA_COLUMNS + x;
 	_cursor();
 
 	return True;
@@ -162,9 +161,8 @@ static void _newline(void) {
 	else	_s.y++;
 
 	_s.x = 0;
-	_s.p = ((unsigned short*)CGA_VRAM_ADDR) + _s.y * CGA_COLUMNS;
+	_s.p = _s.base + _s.y * CGA_COLUMNS;
 }
-
 static void _cursor() {
 	unsigned int pos = _s.y * CGA_COLUMNS + _s.x;
 
@@ -173,7 +171,7 @@ static void _cursor() {
 }
 
 static int _rollup(const int lines) {
-	unsigned short *w = (unsigned short*)CGA_VRAM_ADDR;
+	unsigned short *w = _s.base;
 	unsigned short *r = w + lines * CGA_COLUMNS;
 	unsigned int i;
 	unsigned short space = _combine_chr(_s.color, ' ');
@@ -186,7 +184,7 @@ static int _rollup(const int lines) {
 
 	if ((_s.y -= lines) < 0) {
 		_s.y = _s.x = 0;
-		_s.p = (unsigned short*)CGA_VRAM_ADDR;
+		_s.p = _s.base;
 	}
 	else	_s.p -= lines * CGA_COLUMNS;
 
