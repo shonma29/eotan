@@ -19,13 +19,11 @@ Version 2, June 1991
 #define __CONFIG_H__	1
 
 #include "../../kernel/boot.h"
+#include "../../kernel/config.h"
+#include "../../kernel/mpu/mpu.h"
 
-#define MIN_MEMORY_SIZE		(16 * 1024 * 1024) /* メモリは最小 16 M */
-
-#define MAX_PAGEENT	(4 * 1024) /* 最大 16 M 分のページエントリ */
-#define MAX_DIRENT	1024
-
-#define BASE_MEM	(1024 * 1024)	/* for IBM PC/AT */
+#define MAX_PAGEENT	(MIN_MEMORY_SIZE / I386_PAGESIZE)
+#define MAX_DIRENT	(I386_PAGESIZE / sizeof(I386_DIRECTORY_ENTRY))
 
 #define BOOT_PATH	"/system/kern"
 

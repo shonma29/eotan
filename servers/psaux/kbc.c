@@ -125,7 +125,7 @@ psaux_interrupt()
  */
 
 void
-init_interrupt()
+psaux_interrupt_initialize()
 {
   T_DINT	pk_dint;
   ER		errno;

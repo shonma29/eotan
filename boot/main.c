@@ -46,6 +46,12 @@ void _main()
 
 	console_initialize();
 
+// initialize pic
+// initialize idt
+// get memory size
+// initialize page table
+// enable page table
+// put modules
 	for (; h->type != end;) {
 		unsigned int k;
 
@@ -54,6 +60,8 @@ void _main()
 		k = (unsigned int)h + sizeof(*h) + h->length;
 		h = (ModuleHeader*)k;
 	}
+// enable interrupt?
+// jump kernel (virtual memory address)
 
 	for(;;);
 }

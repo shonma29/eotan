@@ -8,16 +8,8 @@
 #ifndef __INTERRUPT_H__
 #define __INTERRUPT_H__		1
 
-#define MASTER_8259A_COM	0x20
-#define MASTER_8259A_DATA	0x21
+#include "../../kernel/arch/arch.h"
 
-#define SLAVE_8259A_COM		0xa0
-#define SLAVE_8259A_DATA	0xa1
-
-#define INT_KEYBOARD		33
-#define	INT_FD			38		/* 1M type */
-#define	INT_IDE			46		/* IDE HD */
-#define	INT_IDE2		47		/* IDE HD */
 
 extern void     int32_handler (void);
 extern void	int33_handler (void);   /* keyboard */ 
@@ -48,7 +40,7 @@ extern void     intr_fd();
 
 extern int      wait_int (volatile int *flag);
 
-void reset_intr_mask(int intn);
+extern void reset_intr_mask(int intn);
 
 #endif /* __INTERRUPT_H__ */
 

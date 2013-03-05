@@ -46,26 +46,9 @@ Version 2, June 1991
 #define QUANTUM		(40/CLOCK)	/* 40 ms */
 #define HALT_WHEN_IDLE	1	/* IDLE 時に CPU を Halt で停止する */
 
-/* メッセージバッファ管理関係 */
-#define MIN_MSGBUF		(1)
-#define MAX_MSGBUF		(256)
-#define NMSGBUF			(MAX_MSGBUF - MIN_MSGBUF + 1)
-#define MAX_MSGENTRY		(1000)
-/*
- * 自由に使えるメッセージバッファの最小の ID と最大の ID
- */
-#define MIN_USERMBFID		(100)
-#define MAX_USERMBFID		MAX_MSGBUF
-
 /* メモリ管理関係 */
-#define MAX_MEMPOOL	(100)
-
-#define MAX_FREEMEM_ENTRY	(1000)	/* フリーメモリを管理するためのテーブル */
-#define MAX_MEMORY_POOL		(100)
-#define MIN_MEMORY_SIZE		(16 * 1024 * 1024) /* メモリは最小 16 M */
-#define MAX_MEMORY_SIZE		(128 * 1024 * 1024) /* メモリは最大 128 M */
-
-#define SYSTEM_MEMORY_POOL	(0)	/* システムメモリプールの ID */
+#define MIN_MEMORY_SIZE		(8 * 1024 * 1024) /* メモリは最小 8 M */
+#define MAX_MEMORY_SIZE		(2048UL * 1024UL * 1024UL) /* メモリは最大 1 G */
 
 #define MAX_REGION		(5)	/* 各タスクに存在できる REGION の数 */
 #define KERNEL_REGION		0
@@ -74,19 +57,11 @@ Version 2, June 1991
 #define HEAP_REGION		3
 #define STACK_REGION		4
 
-/* IO 管理関係 */
-#define MAX_DEVICE_NAME		(16)	/* デバイス名の最大長 (16 バイト) */
-#define MIN_DEVID		(0)
-#define MAX_DEVID		(19)
-#define MAX_DEVICE		(MAX_DEVID - MIN_DEVID + 1)	/* デバイスの最大数 */
-
-
 /* インターバルタイマ */
 #define MAX_TIMER	(500)
 
 
 /* 時間管理 */
-#define MAX_CYCLIC		(50)	/* 周期起動ハンドラの最大数 */
 #define MAX_ALARM		(50)	/* アラームハンドラの最大数 */
 
 #define FDC_ALARM		(0)

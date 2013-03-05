@@ -1,4 +1,5 @@
 #include <itron/types.h>
+#include "../../kernel/arch/arch.h"
 #include "lib.h"
 #include "config.h"
 #include "memory.h"
@@ -37,8 +38,8 @@ init_memory (void)
   ext_mem = ((int)p - 0x100000);
 #endif
 
-  base_mem = BASE_MEM;
-  real_mem = ext_mem + BASE_MEM;
+  base_mem = RESERVED_MEMORY;
+  real_mem = ext_mem + RESERVED_MEMORY;
   boot_printf ("Real Memory = %d K bytes\n", real_mem / 1024);
 }
 

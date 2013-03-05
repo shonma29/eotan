@@ -63,7 +63,7 @@ Version 2, June 1991
 #define MAX_PAGE_ENTRY		1024
 
 #define LOW_USER_ADDR		0
-#define USER_MEM_SIZE		0x40000000
+#define USER_MEM_SIZE		0x80000000UL
 
 
 

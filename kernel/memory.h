@@ -19,9 +19,7 @@ Version 2, June 1991
 
 #include "config.h"
 
-#define MAX_MEM			(MAX_MEMORY_SIZE)
-
-#define MAX_MEMORY_MAP_SIZE		(MAX_MEM / PAGE_SIZE)
+#define MAX_MEMORY_MAP_SIZE		(MAX_MEMORY_SIZE / PAGE_SIZE)
 
 
 #define  MEM_FREE	(0x00)

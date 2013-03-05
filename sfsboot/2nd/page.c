@@ -1,17 +1,18 @@
 #include <itron/types.h>
+#include "../../kernel/mpu/mpu.h"
 #include "config.h"
 #include "errno.h"
 #include "page.h"
 #include "lib.h"
 #include "memory.h"
 
-struct page_directory_entry *page_dir;
-struct page_table_entry *page_entry;
+I386_DIRECTORY_ENTRY *page_dir;
+I386_PAGE_ENTRY *page_entry;
 
-static void init_dir_ent(struct page_directory_entry *dir,
+static void init_dir_ent(I386_DIRECTORY_ENTRY *dir,
 			 UW page_addr, UW entry);
 
-static void init_page_ent(struct page_table_entry *page,
+static void init_page_ent(I386_PAGE_ENTRY *page,
 			  UW paddr,
 			  UW entry, UW vaddr, UW mode);
 
@@ -22,51 +23,44 @@ static void init_page_ent(struct page_table_entry *page,
  */
 void init_vm(void)
 {
-    page_dir = (struct page_directory_entry *) PAGE_DIR_ADDR;
-    page_entry = (struct page_table_entry *) PAGE_ENTRY_ADDR;
+    page_dir = (I386_DIRECTORY_ENTRY *) PAGE_DIR_ADDR;
+    page_entry = (I386_PAGE_ENTRY *) PAGE_ENTRY_ADDR;
     memset((char *) page_dir, 0,
-	  MAX_DIRENT * sizeof(struct page_directory_entry));
+	  MAX_DIRENT * sizeof(I386_DIRECTORY_ENTRY));
     memset((char *) page_entry, 0,
-	  MAX_PAGEENT * sizeof(struct page_table_entry));
+	  MAX_PAGEENT * sizeof(I386_PAGE_ENTRY));
 
-#if 0
-    init_dir_ent(page_dir, PAGE_ENTRY_ADDR, 1);
-    init_dir_ent(&page_dir[512], PAGE_ENTRY_ADDR + PAGE_SIZE * 2, 4);
-    init_page_ent(page_entry, 0x0, 1024 * 2, 0, 0);
-    init_page_ent(&page_entry[2048], 0x0, 1024 * 2, 0x80000000, 0);
-#else
     init_dir_ent(page_dir, PAGE_ENTRY_ADDR,
-		 (MIN_MEMORY_SIZE * sizeof(struct page_directory_entry)) /
+		 (MIN_MEMORY_SIZE * sizeof(I386_DIRECTORY_ENTRY)) /
 		 DIR_SIZE);
     init_dir_ent(&page_dir[512], PAGE_ENTRY_ADDR,
-		 (MIN_MEMORY_SIZE * sizeof(struct page_directory_entry)) /
+		 (MIN_MEMORY_SIZE * sizeof(I386_DIRECTORY_ENTRY)) /
 		 DIR_SIZE);
     init_page_ent(page_entry, 0x0, MIN_MEMORY_SIZE / PAGE_SIZE, 0x80000000,
 		  0);
-#endif
 }
 
 /***************************************************************************
  * get_page_entry ---
  */
-struct page_table_entry *get_page_entry(UW addr)
+I386_PAGE_ENTRY *get_page_entry(UW addr)
 {
     int dir_entry;
     int page_entry;
-    struct page_table_entry *pent;
+    I386_PAGE_ENTRY *pent;
 
     dir_entry = (addr >> 22) & 0x3ff;
     page_entry = (addr >> 12) & 0x3ff;
     pent =
-	(struct page_table_entry *) (page_dir[dir_entry].frame_addr << 12);
-    return ((struct page_table_entry *) &pent[page_entry]);
+	(I386_PAGE_ENTRY *) (page_dir[dir_entry].frame_addr << 12);
+    return ((I386_PAGE_ENTRY *) &pent[page_entry]);
 }
 
 /***************************************************************************
  *
  */
 static void
-init_dir_ent(struct page_directory_entry *dir,
+init_dir_ent(I386_DIRECTORY_ENTRY *dir,
 	     UW page_addr, UW entry)
 {
     int i;
@@ -88,7 +82,7 @@ init_dir_ent(struct page_directory_entry *dir,
  *
  */
 static void
-init_page_ent(struct page_table_entry *page,
+init_page_ent(I386_PAGE_ENTRY *page,
 	      UW paddr, UW entry, UW vaddr, UW mode)
 {
     int i;

@@ -34,29 +34,11 @@ Version 2, June 1991
 #ifndef __IDT_H__
 #define __IDT_H__	1
 
-struct idt_t
-{
-  int	offset0:16;
-  int	selector:16;
-  int	zero:8;
-  int	type:4;
-  int	dt0:1;
-  int	dpl:2;
-  int	p:1;
-  int	offset1:16;
-};
-
-#define GET_OFFSET_IDT(desc)		\
-  (desc.offset0 | desc.offset1 << 16);
-
-#define SET_OFFSET_IDT(desc,x)		\
-(desc.offset0 = x & 0xffff);		\
-  (desc.offset1 = x >> 16 & 0xffff);
+#include "../../kernel/mpu/interrupt.h"
 
 #define IDT_TABLE_ADDR	0x2000
 
 #define	TRAP_DESC	0xf
-#define INTERRUPT_DESC	0xe
 
 
 void	init_idt (void);

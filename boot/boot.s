@@ -36,9 +36,6 @@ For more information, please refer to <http://unlicense.org/>
 
 .include "starter.inc"
 
-.set IPL_SEGMENT, 0x07c0
-.set BOOT_SEGMENT, 0x0800
-.set BOOT_ADDRESS, 0x8000
 .set BIOS_MEMORY_KB, 32
 
 .set TRACK_NUM, 18
@@ -63,7 +60,7 @@ _start:
 	call putsn
 
 	/* initialize */
-	movw $BOOT_SEGMENT, %ax
+	movw $STARTER_SEGMENT, %ax
 	movw %ax, %es
 	movw $left_sectors, %di
 
@@ -169,7 +166,7 @@ done:
 	call stop_motor
 	movw $eol, %ax
 	call puts
-	jmp BOOT_ADDRESS
+	jmp STARTER_ADDRESS
 
 read_error:
 	call puth

@@ -37,6 +37,7 @@ TOOL=./
 STARTER_SIZE = 8192
 BLK_SIZE = 512
 BOOT_ADDR = 0x7c00
+STARTER_SEG = 0x0800
 STARTER_ADDR = 0x8000
 
 OBJS = boot.bin kern.bin
@@ -53,7 +54,9 @@ boot.bin: boot.o
 boot.o: boot.s starter.inc
 
 starter.inc: kern.bin
-	echo -n ".set STARTER_SECTORS, " > $@
+	echo ".set STARTER_SEGMENT, $(STARTER_SEG)" > $@
+	echo ".set STARTER_ADDRESS, $(STARTER_ADDR)" >> $@
+	echo -n ".set STARTER_SECTORS, " >> $@
 	echo "(`wc -c < kern.bin` + $(BLK_SIZE) - 1) / $(BLK_SIZE)" | bc >> $@
 
 starter.bin: starter.o main.o ../kernel/arch/libarch.a ../lib/libnc.a

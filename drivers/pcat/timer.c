@@ -21,6 +21,7 @@ Version 2, June 1991
 #include "func.h"
 #include "sync.h"
 #include "../../kernel/mpu/interrupt.h"
+#include "../../kernel/mpu/mpufunc.h"
 
 #define TIMER0_WRITE	0x40
 #define TIMER0_READ	0x40

@@ -76,7 +76,7 @@ init_driver (void)
   init_buffer();
 
   /* 割り込みハンドラの登録  */
-  init_interrupt();
+  psaux_interrupt_initialize();
   reset_intr_mask(PSAUX_IRQ); 
 
   /* キーボードコントローラ初期化 */

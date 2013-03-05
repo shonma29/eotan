@@ -35,7 +35,7 @@ extern W kbc_wr_command(B command);
 extern W kbc_wr_data(B data);
 extern B kbc_rd_data(void);
 extern void psaux_interrupt();
-extern void init_interrupt();
+extern void psaux_interrupt_initialize();
 extern W psaux_data_in(B* val);
 extern W psaux_data_out(B data);
 

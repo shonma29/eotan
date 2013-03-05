@@ -49,9 +49,6 @@ Version 2, June 1991
 #define MAX_KERNEL	(0xFFFFFFFFUL)
 #define KERNEL_SIZE	(MAX_KERNEL - MIN_KERNEL)
 
-#define MEM_SIZE		(0x100000)	/* 拡張メモリは 1M バイト */
-#define MEMORY_POOL_BASE	(0x80010000UL)	/* システムメモリとして管理する領域のベース */
-
 /* マネージャータスクのヒープ領域の推奨値 */
 #define VADDR_HEAP	(0x10000000L)
 #define STD_HEAP_SIZE	(0x3FFFFFFFL)
