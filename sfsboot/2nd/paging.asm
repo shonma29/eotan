@@ -1,6 +1,4 @@
-IDT		equ 2000h
-PAGE_DIR_ADDR	equ 3000h
-PAGE_ENTRY_ADDR equ 4000h
+PAGE_DIR_ADDR	equ 2000h
 PAGE_FLAG	equ 80000000h
 
 	section .text

@@ -31,10 +31,6 @@ start32:
 	align	4
 
 stack_ptr:				; MODE32_ADDRを変更時は注意
-	dd	0400000h
+	dd	0800000h
 	dw	10h
- 
 
-
-
-					

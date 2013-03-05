@@ -15,7 +15,7 @@ Version 2, June 1991
 #define _MPU_CONFIG_H_	1
 
 #define GDT_ADDR	(0x80001000UL)
-#define IDT_ADDR	(0x80002000UL)
+#define IDT_ADDR	(0x80001800UL)
 #define MAX_GDT		(255)	/* GDT の最大のインデックス */
 #define MAX_IDT		(255)	/* IDT の最大のインデックス */
 
@@ -27,8 +27,8 @@ Version 2, June 1991
 #define USER_SSEG	(0x0028)	/* ユーザのスタックセグメント */
 #define SVC_GATE	(0x0030)	/* システムコール用ゲート */
 
-#define PAGE_DIR_ADDR	(0x3000)	/* 仮想ページディレクトリテーブル */
-#define PAGE_ENTRY_ADDR	(0x4000)	/* 仮想ページテーブル */
+#define PAGE_DIR_ADDR	(0x2000)	/* 仮想ページディレクトリテーブル */
+#define PAGE_ENTRY_ADDR	(0x3000)	/* 仮想ページテーブル */
 
 #define KERNEL_DPL	0
 #define USER_DPL	3

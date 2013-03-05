@@ -36,7 +36,7 @@ Version 2, June 1991
 
 #include "../../kernel/mpu/interrupt.h"
 
-#define IDT_TABLE_ADDR	0x2000
+#define IDT_TABLE_ADDR	0x1800
 
 #define	TRAP_DESC	0xf
 

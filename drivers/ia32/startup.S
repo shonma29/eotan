@@ -5,7 +5,7 @@
  */
 
 #define GDT_ADDR	0x80001000
-#define IDT_ADDR	0x80002000
+#define IDT_ADDR	0x80001800
 
 .globl		startup
 

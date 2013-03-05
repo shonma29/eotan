@@ -5,7 +5,7 @@
 ;  start32にジャンプする。
 
 GDT	equ	01000h
-IDT	equ	02000h
+IDT	equ	01800h
 
 START_ADDR	equ	8000h	; startがロードされるアドレス
 START32_ADDR	equ 	8f00h	; start32がロードされるアドレス。変更時は、

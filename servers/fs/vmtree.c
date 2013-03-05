@@ -420,7 +420,7 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 #ifdef notdef
 		    if (
 			((dir_index * MAX_PAGE_ENTRY * PAGE_SIZE) +
-			 (page_index << PAGE_SHIFT)) < 0x3000) {
+			 (page_index << PAGE_SHIFT)) < PAGE_DIR_ADDR) {
 			W i, j;
 
 			printk
