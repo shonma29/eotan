@@ -31,8 +31,6 @@
 .globl  int17_handler
 .globl  int32_handler
 .globl  int33_handler
-.globl	int35_handler
-.globl  int37_handler
 .globl  int38_handler
 .globl  int44_handler
 .globl	int46_handler
@@ -366,57 +364,6 @@ int33_handler:
 		popl	%ds
 		iret
 
-/**************************************************************************
- * int35_handler --- INT0
- *
- *	no work.
- */
-int35_handler:
-		cli
-		pushl	%ds
-		pushl	%es
-		pushal
-		movw	$0x10, %ax
-		movw	%ax,%ds
-		movw	%ax,%es
-		pushl	$35
-		call	interrupt
-		popl	%eax
-		movb	$0x20, %al	# set EOI
-		movw	MASTER_8259A_COM, %dx
-		cli
-		outb	%al, %dx
-		popal
-		popl	%es
-		popl	%ds
-		iret
-
-
-/**************************************************************************
- * int37_handler --- INT1
- *
- *	no work.
- */
-int37_handler:
-		cli
-		pushl	%ds
-		pushl	%es
-		pushal
-		movw	$0x10, %ax
-		movw	%ax,%ds
-		movw	%ax,%es
-		pushl	$37
-		call	interrupt
-		popl	%eax
-		movb	$0x20, %al	# set EOI
-		movw	MASTER_8259A_COM, %dx
-		cli
-		outb	%al, %dx
-		popal
-		popl	%es
-		popl	%ds
-		iret
-	
 /**************************************************************************
  * int38_handler --- floppy disk
  *

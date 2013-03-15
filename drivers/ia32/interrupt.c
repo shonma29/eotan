@@ -99,8 +99,6 @@ W init_interrupt(void)
     set_idt(16, KERNEL_CSEG, (int) int16_handler, FAULT_DESC, 0);
     set_idt(17, KERNEL_CSEG, (int) int16_handler, FAULT_DESC, 0);
 
-    set_idt(35, KERNEL_CSEG, (int) int35_handler, INTERRUPT_DESC, 0);
-    set_idt(37, KERNEL_CSEG, (int) int37_handler, INTERRUPT_DESC, 0);
     set_idt(INT_KEYBOARD, KERNEL_CSEG, (int) int33_handler, INTERRUPT_DESC, 0);
     set_idt(INT_FD, KERNEL_CSEG, (int) int38_handler, INTERRUPT_DESC, 0);
 
