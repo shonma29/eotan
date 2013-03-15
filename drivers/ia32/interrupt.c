@@ -96,15 +96,8 @@ W init_interrupt(void)
     set_idt(INT_STACK_SEG, KERNEL_CSEG, (W) int12_handler, FAULT_DESC, 0);
     set_idt(INT_PROTECTION, KERNEL_CSEG, (W) int13_handler, FAULT_DESC, 0);
     set_idt(INT_PAGE_FAULT, KERNEL_CSEG, (W) int14_handler, FAULT_DESC, 0);
-#if 0
-    /* 将来のインテルプロセッサのために予約されている */
-    set_idt(15, KERNEL_CSEG, (int) int15_handler, INTERRUPT_DESC, 0);
-#endif
     set_idt(16, KERNEL_CSEG, (int) int16_handler, FAULT_DESC, 0);
     set_idt(17, KERNEL_CSEG, (int) int16_handler, FAULT_DESC, 0);
-#if 0
-    set_idt(18, KERNEL_CSEG, (int)int18_handler, INTERRUPT_DESC, 0);
-#endif
 
     set_idt(35, KERNEL_CSEG, (int) int35_handler, INTERRUPT_DESC, 0);
     set_idt(37, KERNEL_CSEG, (int) int37_handler, INTERRUPT_DESC, 0);
@@ -113,10 +106,6 @@ W init_interrupt(void)
 
     set_idt(44, KERNEL_CSEG, (int)int44_handler, INTERRUPT_DESC, 0);
     set_idt(46, KERNEL_CSEG, (int) int46_handler, INTERRUPT_DESC, 0);	/* IDE 0 */
-
-#ifdef notdef
-    set_idt(47, KERNEL_CSEG, (int) int47_handler, INTERRUPT_DESC, 0);
-#endif
 
     /* システムコール用割込みルーチン */
     memset((VP)&cg, 0, sizeof(GATE_DESC));
@@ -130,11 +119,6 @@ W init_interrupt(void)
     reset_intr_mask(1);
     reset_intr_mask(3);
     reset_intr_mask(9);
-#if 0
-    reset_intr_mask(5);
-    reset_intr_mask(6);
-    reset_intr_mask(12);
-#endif
 
     for (i = 0; i < 128; i++) {
 	intr_table[i].attr = 0;
@@ -143,9 +127,6 @@ W init_interrupt(void)
 
     intr_table[INT_KEYBOARD].attr = 0;
     intr_table[INT_FD].attr = 0;
-#ifdef notdef
-    intr_table[INT_HD].attr = 0;
-#endif
     on_interrupt = 0;
     delayed_dispatch = FALSE;
     return (E_OK);
@@ -200,15 +181,6 @@ void interrupt(W intn)
 	    (intr_table[INT_FD].func) ();
 	}
 	break;
-
-#ifdef notdef
-    case INT_HD:
-	printk("interrupt: int HD\n");	/* */
-	if (intr_table[INT_HD].func != 0) {
-	    (intr_table[INT_HD].func) ();
-	}
-	break;
-#endif
     }
 
     /* 割込みの禁止フラグの OFF */

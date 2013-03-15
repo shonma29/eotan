@@ -11,12 +11,12 @@ RM = /bin/rm
 CSRC=main.c console.c memory.c \
      idt.c cinterrupt.c fd.c \
      dma.c page.c lib.c \
-     bootos.c elf.c
+     bootos.c
 
 OBJ32 = main.o console.o memory.o  \
 	idt.o interrupt.o cinterrupt.o fd.o \
 	dma.o page.o paging.o lib.o sfs.o \
-	bootos.o elf.o
+	bootos.o
 LIBS = $(ROOT)/lib/libnc.a
 
 OBJ16 = start16.o
