@@ -120,4 +120,15 @@ extern void set_thread1_start(T_TCB *taskp);
 extern void set_page_table(T_TCB *taskp, UW p);
 extern void set_sp(T_TCB *taskp, UW p);
 
+/* gate.c */
+extern void idt_initialize(void);
+extern void idt_set(UB no, UH selector, W (*handler)(void),
+		UB type, UB dpl);
+extern void idt_abort(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
+		UW ecx, UW eax, UW es, UW ds,
+		UW eip, UW cs, UW eflags);
+
+/* abort.s */
+extern W abort_handler(void);
+
 #endif /* _IA32_MPU_H_ */

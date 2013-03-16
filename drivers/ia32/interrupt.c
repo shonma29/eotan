@@ -24,6 +24,7 @@ Version 2, June 1991
 #include "func.h"
 #include "sync.h"
 #include "mpufunc.h"
+#include "gate.h"
 
 /* T_INTR_HANDLER	割り込みハンドラ定義
  *
@@ -84,26 +85,26 @@ W init_interrupt(void)
     outb(MASTER_8259A_DATA, 0xfb);	/* 1111 1011 */
     outb(SLAVE_8259A_DATA, 0xff);	/* 1111 1111 */
 
-    set_idt(1, KERNEL_CSEG, (int) int1_handler, INTERRUPT_DESC, 0);
-    set_idt(2, KERNEL_CSEG, (int) int2_handler, INTERRUPT_DESC, 0);
-    set_idt(3, KERNEL_CSEG, (int) int3_handler, INTERRUPT_DESC, 0);
-    set_idt(4, KERNEL_CSEG, (int) int4_handler, INTERRUPT_DESC, 0);
-    set_idt(5, KERNEL_CSEG, (int) int5_handler, INTERRUPT_DESC, 0);
-    set_idt(INT_INVALID_OPCODE, KERNEL_CSEG, (W) int6_handler, FAULT_DESC, 0);
-    set_idt(INT_DOUBLE_FAULT, KERNEL_CSEG, (W) int8_handler, FAULT_DESC, 0);
-    set_idt(INT_TSS_FAULT, KERNEL_CSEG, (W) int10_handler, FAULT_DESC, 0);
-    set_idt(INT_INVALID_SEG, KERNEL_CSEG, (W) int11_handler, FAULT_DESC, 0);
-    set_idt(INT_STACK_SEG, KERNEL_CSEG, (W) int12_handler, FAULT_DESC, 0);
-    set_idt(INT_PROTECTION, KERNEL_CSEG, (W) int13_handler, FAULT_DESC, 0);
-    set_idt(INT_PAGE_FAULT, KERNEL_CSEG, (W) int14_handler, FAULT_DESC, 0);
-    set_idt(16, KERNEL_CSEG, (int) int16_handler, FAULT_DESC, 0);
-    set_idt(17, KERNEL_CSEG, (int) int16_handler, FAULT_DESC, 0);
+    idt_set(1, kern_code, int1_handler, interruptGate32, dpl_kern);
+    idt_set(2, kern_code, int2_handler, interruptGate32, dpl_kern);
+    idt_set(3, kern_code, int3_handler, interruptGate32, dpl_kern);
+    idt_set(4, kern_code, int4_handler, interruptGate32, dpl_kern);
+    idt_set(5, kern_code, int5_handler, interruptGate32, dpl_kern);
+    idt_set(INT_INVALID_OPCODE, kern_code, int6_handler, trapGate32, dpl_kern);
+    idt_set(INT_DOUBLE_FAULT, kern_code, int8_handler, trapGate32, dpl_kern);
+    idt_set(INT_TSS_FAULT, kern_code, int10_handler, trapGate32, dpl_kern);
+    idt_set(INT_INVALID_SEG, kern_code, int11_handler, trapGate32, dpl_kern);
+    idt_set(INT_STACK_SEG, kern_code, int12_handler, trapGate32, dpl_kern);
+    idt_set(INT_PROTECTION, kern_code, int13_handler, trapGate32, dpl_kern);
+    idt_set(INT_PAGE_FAULT, kern_code, int14_handler, trapGate32, dpl_kern);
+    idt_set(16, kern_code, int16_handler, trapGate32, dpl_kern);
+    idt_set(17, kern_code, int17_handler, trapGate32, dpl_kern);
 
-    set_idt(INT_KEYBOARD, KERNEL_CSEG, (int) int33_handler, INTERRUPT_DESC, 0);
-    set_idt(INT_FD, KERNEL_CSEG, (int) int38_handler, INTERRUPT_DESC, 0);
+    idt_set(INT_KEYBOARD, kern_code, int33_handler, interruptGate32, dpl_kern);
+    idt_set(INT_FD, kern_code, int38_handler, interruptGate32, dpl_kern);
 
-    set_idt(44, KERNEL_CSEG, (int)int44_handler, INTERRUPT_DESC, 0);
-    set_idt(46, KERNEL_CSEG, (int) int46_handler, INTERRUPT_DESC, 0);	/* IDE 0 */
+    idt_set(44, kern_code, int44_handler, interruptGate32, dpl_kern);
+    idt_set(46, kern_code, int46_handler, interruptGate32, dpl_kern);	/* IDE 0 */
 
     /* システムコール用割込みルーチン */
     memset((VP)&cg, 0, sizeof(GATE_DESC));
@@ -407,44 +408,6 @@ void fault(UW intn, UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
     for (;;);
 }
 
-/*************************************************************************
- * set_idt --- IDT のエントリをセットする。
- *
- * 引数：	entry
- *		selector
- *		offset
- *		type
- *		dpl
- *
- * 返値：	なし
- *
- * 処理：	IDT テーブルのエントリをセットする。
- *
- */
-void set_idt(UW entry, UW selector, UW offset, UW type, UW dpl)
-{
-    struct idt_t *table;
-#if 0
-    UW *tmp;
-#endif
-
-    table = (struct idt_t *) IDT_ADDR;
-    SET_OFFSET_IDT(table[entry], offset);
-    table[entry].p = 1;
-    table[entry].selector = selector;
-    table[entry].dpl = dpl;
-    table[entry].type = type;
-    table[entry].dt0 = 0;
-    table[entry].zero = 0;
-#ifdef IDT_DEBUG
-    printk("set_idt: entry = %d, selector = %d, type = %d\n",
-	   entry, selector, type);
-    tmp = (unsigned int *) &table[entry];
-    printk("idt[%d] = 0x%x, 0x%x\n", entry, tmp[0], tmp[1]);
-#endif				/* IDT_DEBUG */
-}
-
-
 
 /*************************************************************************
  * protect_fault --- 

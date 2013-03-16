@@ -2,7 +2,7 @@
 
 int main(int argc, char *argv[])
 {
-  int i;
+  int i, j;
 
   printf("argc = %d\n", argc);
   for(i = 0; i < argc; ++i) {
@@ -18,6 +18,9 @@ int main(int argc, char *argv[])
   for(i = 0; i < 100000000; ++i) ;
   printf("loop end\n");
 #endif
+
+  j = 0;
+  printf("div %d\n", i / j);
 
   return 0;
 }

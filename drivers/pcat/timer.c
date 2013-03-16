@@ -68,7 +68,7 @@ void start_interval(void)
     printk("start interval\n");
     /* timer
      */
-    set_idt(32, 0x08, (int) int32_handler, INTERRUPT_DESC, 0);
+    idt_set(32, KERNEL_CSEG, int32_handler, INTERRUPT_DESC, KERNEL_DPL);
     reset_intr_mask(0);
 
     enter_critical();
