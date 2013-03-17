@@ -47,35 +47,3 @@ set_gdt (int index, GEN_DESC *desc)
   memcpy(&p[index], desc, sizeof(GEN_DESC));
   return (E_OK);
 }
-
-
-/* get_gdt --- 指定した GDT のエントリのディスクリプタを取り出す。
- *
- * 引数：
- *	int	index	値を取り出するGDTのエントリを指すエントリ
- *
- * 返り値：
- *	引数で指定されたGDTのエントリへのポインタ。
- *
- */
-GEN_DESC *
-get_gdt (int index)
-{
-  GEN_DESC	*p;
-
-#if 0
-  printk ("get_gdt = %d\n", index);	/* */
-#endif
-  if ((index <= 0) || (index > MAX_GDT))
-    {
-      return (NULL);	/* パラメータがおかしい */
-    }
-
-  p = (GEN_DESC *)GDT_ADDR;
-  return (&p[index + TSS_BASE]);
-}
-
-
-
-
-

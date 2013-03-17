@@ -24,7 +24,6 @@ Version 2, June 1991
 extern void print_task_desc(TASK_DESC * desc);
 #endif
 extern void create_context(T_TCB * task);
-extern void init_task_state_segment(W index, T_CONTEXT * tss);
 
 /* virtual_memory.c */
 extern ADDR_MAP dup_vmap_table(ADDR_MAP dest);
@@ -44,7 +43,6 @@ extern void adjust_vm(UW max_mem);
 
 /* gdt.c */
 extern ER set_gdt(int index, GEN_DESC * desc);
-extern GEN_DESC *get_gdt(int index);
 
 /* interrupt.c */
 extern volatile W	on_interrupt;
@@ -97,7 +95,6 @@ extern void	start_interval (void);
 /* locore.S */
 extern void resume(UW);
 extern void load_task_register(UW);
-extern W get_cr0();
 extern W get_cr2();
 extern W get_cr3();
 

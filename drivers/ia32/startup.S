@@ -25,20 +25,13 @@ startup:
 
 		finit	/* initialize FPU */
 
-		pushl	$0
-		pushl	$0
-		pushl	$0
 		cld
 
 		call	main			/* Go C world. */
 
 .align 4
 stack_ptr:
-#if 0
-		.long	0x00070000	/* offset */
-#else
-		.long	0x0009FFF0	/* offset */
-#endif
+		.long	0x80008000	/* offset */
 		.word	0x10		/*8 selector */
 			
 .align 4
@@ -57,8 +50,6 @@ idt_ptr:
 	0x0020			4	application data (DPL = 3)
 	0x0028			5	application stack (DPL = 3)
 	0x0030			6	ITRON call gate (DPL = 3)
-	0x0038			7	POSIX call gate (DPL = 3)
-	0x0040			8	BTRON call gate (DPL = 3)
 	0x0048...0x03F8   9...127	unused
 	0x0400		      128	unused
 	0x0408		129...256	TSS (DPL = 0)

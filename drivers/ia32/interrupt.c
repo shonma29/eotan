@@ -302,7 +302,7 @@ void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 	    return;
 	}
 	else {
-	  printk("[ITRON] page_fault_handler cause error\n");
+	  printk("[KERN] page_fault_handler cause error\n");
 	}
     }
 
@@ -459,7 +459,7 @@ void protect_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 	    return;
 	}
 	else {
-	  printk("[ITRON] page_fault_handler cause error\n");
+	  printk("[KERN] page_fault_handler cause error\n");
 	}
     }
 

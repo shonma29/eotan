@@ -28,6 +28,10 @@ Version 2, June 1991
 #include "func.h"
 #include "mpufunc.h"
 
+static void
+init_task_state_segment (W index, T_CONTEXT *tss);
+
+
 /* creat_context コンテキスト情報を新しく作成する。
  *
  */
@@ -53,7 +57,7 @@ create_context (T_TCB *task)
  *	
  *
  */
-void
+static void
 init_task_state_segment (W index, T_CONTEXT *tss)
 {
   TASK_DESC *task_desc;
