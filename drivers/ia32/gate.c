@@ -30,22 +30,21 @@ For more information, please refer to <http://unlicense.org/>
 #include "gate.h"
 #include "mpufunc.h"
 
-void idt_initialize(void);
-void idt_set(UB no, UH selector, W (*handler)(void),
-		UB type, UB dpl);
-void idt_abort(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		UW ecx, UW eax, UW es, UW ds,
-		UW eip, UW cs, UW eflags);
-
 
 void idt_initialize(void)
 {
 	UW i;
+	GateDescriptor desc;
+	GateDescriptor *p = (GateDescriptor*)IDT_ADDR;
+
+	desc.offsetLow = 0;
+	desc.selector = kern_code;
+	desc.copyCount = 0;
+	desc.attr = (dpl_kern << 5) | interruptGate32;
+	desc.offsetHigh = 0;
 
 	for (i = 0; i <= MAX_IDT; i++)
-		idt_set(i, kern_code, abort_handler,
-				interruptGate32, dpl_kern);
-	//TODO set NOT PRESENT
+		*p++ = desc;
 }
 
 void idt_set(UB no, UH selector, W (*handler)(void),
@@ -63,15 +62,34 @@ void idt_set(UB no, UH selector, W (*handler)(void),
 }
 
 void idt_abort(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		UW ecx, UW eax, UW es, UW ds,
+		UW ecx, UW eax, UW es, UW ds, UW no,
 		UW eip, UW cs, UW eflags)
 {
-	printk("abort. task=%d\n"
+	printk("abort(%d). task=%d\n"
 		" cs=%x eip=%x eflags=%x\n"
 		" ds=%x es=%x\n"
 		" eax=%x ebx=%x ecx=%x edx=%x\n"
 		" edi=%x esi=%x ebp=%x esp=%x\n",
-			run_task->tskid, cs, eip, eflags, ds, es,
+			no, run_task->tskid, cs, eip, eflags, ds, es,
 			eax, ebx, ecx, edx, edi, esi, ebp, esp);
 	//TODO stop the thread
+	halt();
+	for (;;);
 }
+
+void idt_abort_with_error(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
+		UW ecx, UW eax, UW es, UW ds, UW no,
+		UW err, UW eip, UW cs, UW eflags)
+{
+	printk("abort(%d). task=%d\n"
+		" cs=%x eip=%x eflags=%x\n"
+		" ds=%x es=%x error=%x\n"
+		" eax=%x ebx=%x ecx=%x edx=%x\n"
+		" edi=%x esi=%x ebp=%x esp=%x\n",
+			no, run_task->tskid, cs, eip, eflags, ds, es,
+			err, eax, ebx, ecx, edx, edi, esi, ebp, esp);
+	//TODO stop the thread
+	halt();
+	for (;;);
+}
+

@@ -85,20 +85,38 @@ W init_interrupt(void)
     outb(MASTER_8259A_DATA, 0xfb);	/* 1111 1011 */
     outb(SLAVE_8259A_DATA, 0xff);	/* 1111 1111 */
 
-    idt_set(1, kern_code, int1_handler, interruptGate32, dpl_kern);
-    idt_set(2, kern_code, int2_handler, interruptGate32, dpl_kern);
-    idt_set(3, kern_code, int3_handler, interruptGate32, dpl_kern);
-    idt_set(4, kern_code, int4_handler, interruptGate32, dpl_kern);
-    idt_set(5, kern_code, int5_handler, interruptGate32, dpl_kern);
-    idt_set(INT_INVALID_OPCODE, kern_code, int6_handler, trapGate32, dpl_kern);
-    idt_set(INT_DOUBLE_FAULT, kern_code, int8_handler, trapGate32, dpl_kern);
-    idt_set(INT_TSS_FAULT, kern_code, int10_handler, trapGate32, dpl_kern);
-    idt_set(INT_INVALID_SEG, kern_code, int11_handler, trapGate32, dpl_kern);
-    idt_set(INT_STACK_SEG, kern_code, int12_handler, trapGate32, dpl_kern);
-    idt_set(INT_PROTECTION, kern_code, int13_handler, trapGate32, dpl_kern);
-    idt_set(INT_PAGE_FAULT, kern_code, int14_handler, trapGate32, dpl_kern);
-    idt_set(16, kern_code, int16_handler, trapGate32, dpl_kern);
-    idt_set(17, kern_code, int17_handler, trapGate32, dpl_kern);
+    idt_set(0, kern_code, handle0, interruptGate32, dpl_kern);
+    idt_set(1, kern_code, handle1, interruptGate32, dpl_kern);
+    idt_set(2, kern_code, handle2, interruptGate32, dpl_kern);
+    idt_set(3, kern_code, handle3, interruptGate32, dpl_kern);
+    idt_set(4, kern_code, handle4, interruptGate32, dpl_kern);
+    idt_set(5, kern_code, handle5, interruptGate32, dpl_kern);
+    idt_set(INT_INVALID_OPCODE, kern_code, handle6, interruptGate32, dpl_kern);
+    idt_set(7, kern_code, handle7, interruptGate32, dpl_kern);
+    idt_set(INT_DOUBLE_FAULT, kern_code, handle8, interruptGate32, dpl_kern);
+    idt_set(9, kern_code, handle9, interruptGate32, dpl_kern);
+    idt_set(INT_TSS_FAULT, kern_code, handle10, interruptGate32, dpl_kern);
+    idt_set(INT_INVALID_SEG, kern_code, handle11, interruptGate32, dpl_kern);
+    idt_set(INT_STACK_SEG, kern_code, handle12, interruptGate32, dpl_kern);
+    idt_set(INT_PROTECTION, kern_code, handle13, interruptGate32, dpl_kern);
+    idt_set(INT_PAGE_FAULT, kern_code, handle14, interruptGate32, dpl_kern);
+    idt_set(15, kern_code, handle15, interruptGate32, dpl_kern);
+    idt_set(16, kern_code, handle16, interruptGate32, dpl_kern);
+    idt_set(17, kern_code, handle17, interruptGate32, dpl_kern);
+    idt_set(18, kern_code, handle18, interruptGate32, dpl_kern);
+    idt_set(19, kern_code, handle19, interruptGate32, dpl_kern);
+    idt_set(20, kern_code, handle20, interruptGate32, dpl_kern);
+    idt_set(21, kern_code, handle21, interruptGate32, dpl_kern);
+    idt_set(22, kern_code, handle22, interruptGate32, dpl_kern);
+    idt_set(23, kern_code, handle23, interruptGate32, dpl_kern);
+    idt_set(24, kern_code, handle24, interruptGate32, dpl_kern);
+    idt_set(25, kern_code, handle25, interruptGate32, dpl_kern);
+    idt_set(26, kern_code, handle26, interruptGate32, dpl_kern);
+    idt_set(27, kern_code, handle27, interruptGate32, dpl_kern);
+    idt_set(28, kern_code, handle28, interruptGate32, dpl_kern);
+    idt_set(29, kern_code, handle29, interruptGate32, dpl_kern);
+    idt_set(30, kern_code, handle30, interruptGate32, dpl_kern);
+    idt_set(31, kern_code, handle31, interruptGate32, dpl_kern);
 
     idt_set(INT_KEYBOARD, kern_code, int33_handler, interruptGate32, dpl_kern);
     idt_set(INT_FD, kern_code, int38_handler, interruptGate32, dpl_kern);
@@ -234,7 +252,7 @@ ER set_interrupt_entry(W intno, FP func, ATR attr)
  *
  */
 void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		UW ecx, UW eax, UW es, UW ds,
+		UW ecx, UW eax, UW es, UW ds, UW no,
 		UW errcode, UW eip, UW cs, W eflags)
 {
     W result;
@@ -349,65 +367,6 @@ void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 
     for (;;);
 }
-
-/*************************************************************************
- * fault ---
- *
- * 引数：
- *
- * 返値：
- *
- * 処理：
- *
- */
-void fault(UW intn, UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-	   UW ecx, UW eax, UW es, UW ds,
-	   UW errcode, UW eip, UW cs, UW eflags)
-{
-    if (intn == 1) {
-	leave_critical();
-	printk("\nFAULT: Interrupt Number is %d ", intn);
-	printk("PID = %d eflags = 0x%x\n", run_task->tskid, eflags);
-	return;
-    }
-
-    enter_critical();
-    printk("\nFAULT: Interrupt Number is %d.\n", intn);
-    printk("PID = %d\n", run_task->tskid);
-    printk("run_task->state.state = %d\n", run_task->tskstat);
-/*  printk ("tss selector      = %d\n", run_task->tss_selector); */
-    printk("run_task->context.backlink = 0%x\n",
-	   run_task->mpu.context.backlink);
-    printk("run_task->context.cs  = 0x%x\n", run_task->mpu.context.cs);
-    printk("run_task->context.ds  = 0x%x\n", run_task->mpu.context.ds);
-    printk("run_task->context.ss  = 0x%x\n", run_task->mpu.context.ss);
-    printk("run_task->context.eip = 0x%x\n", run_task->mpu.context.eip);
-    printk("run_task->context.esp = 0x%x\n", run_task->mpu.context.esp);
-    printk("context addr = %d (0x%x)\n", run_task, run_task);
-    printk("ss0 = 0x%x/ss1 = 0x%x/ss2 = 0x%x\n",
-	   run_task->mpu.context.ss0,
-	   run_task->mpu.context.ss1, run_task->mpu.context.ss2);
-    printk("esp0 = 0x%x/esp1 = 0x%x/esp2 = 0x%x\n",
-	   run_task->mpu.context.esp0,
-	   run_task->mpu.context.esp1, run_task->mpu.context.esp2);
-
-    printk("current stack segment = 0x%x\n", run_task->mpu.context.ss);
-    printk("stack pointer = 0x%x\n", run_task->mpu.context.esp);
-    printk("initial stack pointer = 0x%x\n", run_task->initial_stack);
-    printk("error code = 0x%x\n", errcode);
-    printk("fault addr = 0x%x\n", get_cr2());
-    printk("       eip = 0x%x\n", eip);
-    printk("        cs = 0x%x\n", cs);
-    printk("    eflags = 0x%x\n", eflags);
-    printk("       esp = 0x%x\n", esp);
-    printk("       cr3 = 0x%x\n", get_cr3());
-#if 0
-    printk("        ss = 0x%x\n", ss);
-#endif
-    leave_critical();
-    for (;;);
-}
-
 
 /*************************************************************************
  * protect_fault --- 
@@ -420,7 +379,7 @@ void fault(UW intn, UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
  *
  */
 void protect_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		   UW ecx, UW eax, UW es, UW ds,
+		   UW ecx, UW eax, UW es, UW ds, UW no,
 		   UW errcode, UW eip, UW cs, UW eflags)
 {
     W result; 

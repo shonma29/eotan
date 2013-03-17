@@ -52,40 +52,16 @@ extern W	init_interrupt (void);
 extern void	reset_intr_mask (W);
 extern void	interrupt (W);
 extern void	page_fault (UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		UW ecx, UW eax, UW es, UW ds,
+		UW ecx, UW eax, UW es, UW ds, UW no,
 		UW errcode, UW eip, UW cs, W eflags);
-extern void	fault(UW intn, UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-	   UW ecx, UW eax, UW es, UW ds,
-	   UW errcode, UW eip, UW cs, UW eflags);
 extern void	set_idt (UW, UW, UW, UW, UW);
 extern void	protect_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		   UW ecx, UW eax, UW es, UW ds,
+		   UW ecx, UW eax, UW es, UW ds, UW no,
 		   UW errcode, UW eip, UW cs, UW eflags);
 extern ER  	set_interrupt_entry (W intno, FP func, ATR attr);
-extern W	int1_handler (void);
-extern W	int2_handler (void);
-extern W	int3_handler (void);
-extern W	int4_handler (void);
-extern W	int5_handler (void);
-extern W	int6_handler (void);
-extern W	int8_handler (void);
-extern W	int10_handler (void);
-extern W	int11_handler (void);
-extern W	int12_handler (void);
-extern W	int13_handler (void);
-extern W	int14_handler (void);
-extern W	int15_handler (void);
-extern W	int16_handler (void);
-extern W	int17_handler (void);
-extern W	int18_handler (void);
 extern W	int32_handler (void);
 extern W	int33_handler (void);
-extern W	int35_handler (void);
-extern W	int37_handler (void);
 extern W	int38_handler (void);	/* floppy disk */
-extern W	int41_handler (void);	/* SCSI HD */
-extern W	int42_handler (void);
-extern W	int43_handler (void);
 extern W        int44_handler (void);   /* psaux */
 extern W	int46_handler (void);
 extern W	syscall_handler(void);
@@ -122,10 +98,44 @@ extern void idt_initialize(void);
 extern void idt_set(UB no, UH selector, W (*handler)(void),
 		UB type, UB dpl);
 extern void idt_abort(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		UW ecx, UW eax, UW es, UW ds,
+		UW ecx, UW eax, UW es, UW ds, UW no,
 		UW eip, UW cs, UW eflags);
+extern void idt_abort_with_error(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
+		UW ecx, UW eax, UW es, UW ds, UW no,
+		UW err, UW eip, UW cs, UW eflags);
 
 /* abort.s */
-extern W abort_handler(void);
+extern W handle0(void);
+extern W handle1(void);
+extern W handle2(void);
+extern W handle3(void);
+extern W handle4(void);
+extern W handle5(void);
+extern W handle6(void);
+extern W handle7(void);
+extern W handle8(void);
+extern W handle9(void);
+extern W handle10(void);
+extern W handle11(void);
+extern W handle12(void);
+extern W handle13(void);
+extern W handle14(void);
+extern W handle15(void);
+extern W handle16(void);
+extern W handle17(void);
+extern W handle18(void);
+extern W handle19(void);
+extern W handle20(void);
+extern W handle21(void);
+extern W handle22(void);
+extern W handle23(void);
+extern W handle24(void);
+extern W handle25(void);
+extern W handle26(void);
+extern W handle27(void);
+extern W handle28(void);
+extern W handle29(void);
+extern W handle30(void);
+extern W handle31(void);
 
 #endif /* _IA32_MPU_H_ */
