@@ -34,6 +34,12 @@ For more information, please refer to <http://unlicense.org/>
 
 .global _start
 
+.set SELECTOR_CODE, 0x08
+.set SELECTOR_DATA, 0x10
+.set SELECTOR_STACK, 0x18
+
+.set STACK_ADDR, 0x00008000
+
 /**
  * start on segment 0x0800.
  * @since 1.0
@@ -93,19 +99,16 @@ _start:
 
 	/* go to protect mode */
 	movl %cr0, %eax
-	orl $1, %eax
+	orb $1, %al
 	movl %eax, %cr0
 	jmp flush_op
 
 flush_op:
-	movw $0x10, %ax
+	movw $SELECTOR_DATA, %ax
 	movw %ax, %ds
 	movw %ax, %es
-	movw $0x18, %ax
-	movw %ax, %ss
-	movl $0x00008000, %eax
-	movl %eax, %esp
-	ljmp $0x08, $_main
+	lssl stack_ptr, %esp
+	ljmp $SELECTOR_CODE, $_main
 
 error_vesa:
 	movw $message_vesa_error, %ax
@@ -163,13 +166,18 @@ puts_entry:
  
 
 	.align 2
+stack_ptr:
+	.long STACK_ADDR
+	.word SELECTOR_STACK
+
 gdt_ptr:
 	.word 4*8-1
 	.long gdt_table
 
+	.align 8
 gdt_table:
 	/* 0x00: null */
-	.byte 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+	.byte 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xc0, 0x00
 	/* 0x08: kernel code */
 	.byte 0xff, 0xff, 0x00, 0x00, 0x00, 0x9a, 0xcf, 0x00
 	/* 0x10: kernel data */

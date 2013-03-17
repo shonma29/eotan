@@ -95,5 +95,5 @@ kern.bin: starter.bin ../kernel/core.bin ../servers/fs/fs \
 
 .PHONY: clean
 clean:
-	$(RM) -f $(TARGET) *.bin *.o *.inc
-	$(RM) -f pad append
+	$(RM) $(TARGET) *.bin *.o *.inc
+	$(RM) pad append
