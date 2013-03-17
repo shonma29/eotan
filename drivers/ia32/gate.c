@@ -25,10 +25,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
+#include <string.h>
 #include <core.h>
 #include <func.h>
 #include "gate.h"
 #include "mpufunc.h"
+
+static void gdt_set_segment(UH selector, UW base, UW limit, UB type, UB dpl);
+static void gate_set(GateDescriptor *p,
+		UH selector, W (*handler)(void), UB attr);
 
 
 void idt_initialize(void)
@@ -47,18 +52,12 @@ void idt_initialize(void)
 		*p++ = desc;
 }
 
-void idt_set(UB no, UH selector, W (*handler)(void),
-		UB type, UB dpl)
+void idt_set(UB no, UH selector, W (*handler)(void), UB type, UB dpl)
 {
 	GateDescriptor *p = (GateDescriptor*)IDT_ADDR;
 
-	p = &(p[no]);
-
-	p->offsetLow = ((UW)handler) & 0xffff;
-	p->selector = selector;
-	p->copyCount = 0;
-	p->attr = ATTR_PRESENT | (dpl << 5) | type;
-	p->offsetHigh = (((UW)handler) >> 16) & 0xffff;
+	//TODO error check
+	gate_set(&(p[no]), selector, handler, ATTR_PRESENT | (dpl << 5) | type);
 }
 
 void idt_abort(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
@@ -93,3 +92,46 @@ void idt_abort_with_error(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 	for (;;);
 }
 
+static void gate_set(GateDescriptor *p,
+		UH selector, W (*handler)(void), UB attr)
+{
+	//TODO error check
+	p->offsetLow = ((UW)handler) & 0xffff;
+	p->selector = selector;
+	p->copyCount = 0;
+	p->attr = attr;
+	p->offsetHigh = (((UW)handler) >> 16) & 0xffff;
+}
+
+void gdt_initialize(void)
+{
+	SegmentDescriptor *p = (SegmentDescriptor*)GDT_ADDR;
+
+	/* segments */
+	memset(p, 0, sizeof(SegmentDescriptor));
+	gdt_set_segment(kern_code, 0, 0xfffff, segmentCode, dpl_kern);
+	gdt_set_segment(kern_data, 0, 0xfffff, segmentData, dpl_kern);
+	gdt_set_segment(user_code, 0, 0x7fff0, segmentCode, dpl_user);
+	gdt_set_segment(user_data, 0, 0x7fff0, segmentData, dpl_user);
+	gdt_set_segment(user_stack, 0, 0x3ffff, segmentStack, dpl_user);
+
+	/* call gate for service call */
+	gate_set((GateDescriptor*)(&(p[call_service >> 3])),
+			kern_code, syscall_handler,
+			ATTR_PRESENT | (dpl_user << 5) | callGate32);
+}
+
+static void gdt_set_segment(UH selector, UW base, UW limit, UB type, UB dpl)
+{
+	SegmentDescriptor *p = (SegmentDescriptor*)GDT_ADDR;
+
+	//TODO error check
+	p = &(p[selector >> 3]);
+
+	p->limitLow = limit & 0xffff;
+	p->baseLow = base & 0xffff;
+	p->baseMiddle = (base >> 16) & 0xff;
+	p->type = ATTR_PRESENT | (dpl << 5) | type;
+	p->limitHigh = ATTR_G_PAGE | ATTR_DB_32 | ((limit >> 16) & 0xf);
+	p->baseHigh = (base >> 24) & 0xff;
+}

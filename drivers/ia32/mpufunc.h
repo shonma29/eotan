@@ -103,6 +103,7 @@ extern void idt_abort(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 extern void idt_abort_with_error(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 		UW ecx, UW eax, UW es, UW ds, UW no,
 		UW err, UW eip, UW cs, UW eflags);
+void gdt_initialize(void);
 
 /* abort.s */
 extern W handle0(void);

@@ -29,7 +29,9 @@ For more information, please refer to <http://unlicense.org/>
 
 #include "core.h"
 
-#define ATTR_DATA 0x10
+#define ATTR_G_PAGE 0x80
+#define ATTR_DB_32 0x40
+
 #define ATTR_PRESENT 0x80
 
 enum {
@@ -67,6 +69,12 @@ enum GateType {
 	trapGate32 = 15
 };
 
+enum SegmentType {
+	segmentData = 0x12,
+	segmentStack = 0x16,
+	segmentCode = 0x1a
+};
+
 typedef struct {
 	UH offsetLow;
 	UH selector;
@@ -74,5 +82,14 @@ typedef struct {
 	UB attr;
 	UH offsetHigh;
 } GateDescriptor;
+
+typedef struct {
+	UH limitLow;
+	UH baseLow;
+	UB baseMiddle;
+	UB type;
+	UB limitHigh;
+	UB baseHigh;
+} SegmentDescriptor;
 
 #endif

@@ -65,7 +65,6 @@ struct intr_entry intr_table[128];
 W init_interrupt(void)
 {
     W i;
-    GATE_DESC cg;
 
     printk("init_interrupt\n");
     /* 8259 の初期化 */
@@ -123,15 +122,6 @@ W init_interrupt(void)
 
     idt_set(44, kern_code, int44_handler, interruptGate32, dpl_kern);
     idt_set(46, kern_code, int46_handler, interruptGate32, dpl_kern);	/* IDE 0 */
-
-    /* システムコール用割込みルーチン */
-    memset((VP)&cg, 0, sizeof(GATE_DESC));
-    cg.type = TYPE_GATE;
-    cg.dpl = USER_DPL;
-    cg.present = 1;
-    cg.selector = KERNEL_CSEG;
-    SET_OFFSET_GATE(cg, (W) syscall_handler);
-    set_gdt(SVC_GATE/sizeof(GEN_DESC), (GEN_DESC *) &cg);
 
     reset_intr_mask(1);
     reset_intr_mask(3);

@@ -283,6 +283,7 @@ static ER initialize(void)
     struct boot_header *info; 
 
     kernlog_initialize();	/* コンソールに文字を出力できるようにする */
+    gdt_initialize();
     idt_initialize();
     init_interrupt();
 #ifdef DEBUG
