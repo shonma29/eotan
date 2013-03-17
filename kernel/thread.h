@@ -18,7 +18,9 @@ Version 2, June 1991
 #define __CORE_TASK_H__	1
 
 #include <set/list.h>
-#include "core.h"
+#include <core.h>
+#include "config.h"
+#include "region.h"
 #include "wait.h"
 
 #define KERNEL_TASK	(1)

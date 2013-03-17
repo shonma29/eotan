@@ -65,7 +65,9 @@ Version 2, June 1991
 
 #include <string.h>
 #include <core.h>
+#include <mpu/config.h>
 #include <misc.h>
+#include "../../kernel/region.h"
 #include "libserv.h"
 
 #define MEMORY_CLICK		(PAGE_SIZE * 10)

@@ -111,8 +111,9 @@ Version 2, June 1991
  *
  */
 
+#include <core.h>
 #include <string.h>
-#include "core.h"
+#include <mpu/config.h>
 #include "func.h"
 #include "misc.h"
 #include "ready.h"

@@ -153,7 +153,8 @@ Version 2, June 1991
  */
 
 #include <string.h>
-#include "core.h"
+#include <core.h>
+#include <mpu/config.h>
 #include "misc.h"
 #include "func.h"
 #include "thread.h"

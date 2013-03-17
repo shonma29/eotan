@@ -50,17 +50,19 @@ get_cr3:
  * 処理：	ltr を実行する。
  *
  */
+#if 0
 string1:
 		.ascii "load_task_register: arg = 0x%x\n"
+#endif
 		.align 2
 load_task_register:
 		pushl	%ebp
 		movl	%esp,%ebp
-/*
+#if 0
 		pushl	8(%ebp)
 		pushl	$string1
 		call	printf
-*/
+#endif
 		movl	8(%ebp),%eax
 		ltr	%ax
 		leave
@@ -78,8 +80,10 @@ load_task_register:
  *		その結果プロセスを切り換える。
  *
  */
+#if 0
 LC0:
 		.ascii "resume: arg = 0x%x\n"
+#endif
 		.align 2
 offset:		.long	0x0000
 selector:	.word	0x0000

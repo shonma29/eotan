@@ -122,8 +122,9 @@ Version 2, June 1991
 
 #include <fcntl.h>
 #include <string.h>
-#include "fs.h"
 #include <lowlib.h>
+#include <mpu/config.h>
+#include "fs.h"
 
 struct proc proc_table[MAX_PROCESS];
 struct proc *free_proc, *tail_proc;

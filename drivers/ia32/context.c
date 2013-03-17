@@ -11,8 +11,9 @@ Version 2, June 1991
 
 */
 
+#include <core.h>
+#include <mpu/config.h>
 #include <lowlib.h>
-#include "core.h"
 #include "func.h"
 #include "misc.h"
 #include "sync.h"

@@ -65,7 +65,7 @@ Version 2, June 1991
 #define __KEYBOARD_H__	1
 
 
-#include "../../kernel/core.h"
+#include <core.h>
 #include "../fs/fs.h"
 
 #define KEYBOARD_DRIVER	"driver.keyboard"

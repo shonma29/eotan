@@ -66,6 +66,7 @@ Version 2, June 1991
 #include <string.h>
 #include <unistd.h>
 #include <core.h>
+#include <mpu/config.h>
 #include <misc.h>
 #include "../../libserv/libserv.h"
 

@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #include <string.h>
 #include <core.h>
+#include <mpu/config.h>
 #include <func.h>
 #include "gate.h"
 #include "mpufunc.h"

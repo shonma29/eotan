@@ -1,4 +1,5 @@
 #include <itron/types.h>
+#include <mpu/config.h>
 #include "../../kernel/mpu/mpu.h"
 #include "config.h"
 #include "errno.h"

@@ -16,7 +16,7 @@ Version 2, June 1991
 #include <string.h>
 #include <sys/stat.h>
 #include <elf.h>
-#include <boot.h>	/* module_info 構造体の参照のため */
+#include "boot.h"	/* module_info 構造体の参照のため */
 
 #define	MAX_LINE	1000
 #define BLOCKSIZE	1024

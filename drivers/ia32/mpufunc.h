@@ -53,11 +53,11 @@ extern void	reset_intr_mask (W);
 extern void	interrupt (W);
 extern void	page_fault (UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 		UW ecx, UW eax, UW es, UW ds, UW no,
-		UW errcode, UW eip, UW cs, W eflags);
+		UW err, UW eip, UW cs, W eflags);
 extern void	set_idt (UW, UW, UW, UW, UW);
 extern void	protect_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 		   UW ecx, UW eax, UW es, UW ds, UW no,
-		   UW errcode, UW eip, UW cs, UW eflags);
+		   UW err, UW eip, UW cs, UW eflags);
 extern ER  	set_interrupt_entry (W intno, FP func, ATR attr);
 extern W	int32_handler (void);
 extern W	int33_handler (void);

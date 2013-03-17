@@ -21,9 +21,6 @@ Version 2, June 1991
 #include <itron/struct.h>
 #include <itron/syscall.h>
 #include <itron/errno.h>
-#include "config.h"
-#include "mpu/mpu.h"
-#include "region.h"
 
 #endif /* _CORE_CORE_H_ */
 

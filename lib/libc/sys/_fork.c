@@ -18,6 +18,7 @@ Version 2, June 1991
 #include <errno.h>
 #include <string.h>
 #include <mpu/io.h>
+#include <mpu/config.h>
 #include <fs.h>
 #include "posix.h"
 

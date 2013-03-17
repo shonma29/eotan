@@ -22,8 +22,6 @@ Version 2, June 1991
 #ifndef _CORE_CONFIG_H_
 #define _CORE_CONFIG_H_	1
 
-#include "mpu/mpuconfig.h"
-
 /* タスク管理関係 */
 #define MAX_TSKID	(128)	/* 最大のタスク ID 数   */
 #define MIN_TSKID	(1)	/* 最小のタスク ID 数   */

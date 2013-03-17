@@ -84,6 +84,7 @@ Version 2, June 1991
  */
 
 #include <string.h>
+#include <mpu/config.h>
 #include "fs.h"
 
 

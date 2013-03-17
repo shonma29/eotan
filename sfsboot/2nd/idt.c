@@ -5,6 +5,7 @@
 *                                                最終変更 2000/3/5  
 */
 
+#include <mpu/config.h>
 #include "errno.h"
 #include "../../kernel/config.h"
 #include "idt.h"

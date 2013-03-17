@@ -16,11 +16,12 @@ Version 2, June 1991
  */
 
 
+#include <core.h>
+#include <mpu/config.h>
 #include <mpu/io.h>
 #include <set/list.h>
 #include <set/slab.h>
 #include <set/tree.h>
-#include "core.h"
 #include "memory.h"
 #include "func.h"
 #include "flag.h"

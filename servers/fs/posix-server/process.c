@@ -15,6 +15,7 @@ Version 2, June 1991
  *
  */
 
+#include <mpu/config.h>
 #include "thread.h"
 #include "fs.h"
 

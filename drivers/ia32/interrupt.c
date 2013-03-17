@@ -15,9 +15,10 @@ Version 2, June 1991
  *
  */
 
+#include <core.h>
 #include <string.h>
+#include <mpu/config.h>
 #include <mpu/io.h>
-#include "core.h"
 #include "../../kernel/arch/arch.h"
 #include "interrupt.h"
 #include "thread.h"
@@ -155,11 +156,6 @@ void interrupt(W intn)
     on_interrupt++;
     delayed_dispatch = FALSE;
 
-#ifdef notdef
-    if ((intn != INT_TIMER) && (intn != INT_KEYBOARD))	/* */
-	printk("Interrupt!! %d\n", intn);	/* */
-#endif
-
     switch (intn) {
     default:
 	if (intr_table[intn].func) {
@@ -176,9 +172,6 @@ void interrupt(W intn)
 
     case INT_KEYBOARD:
 	if (intr_table[INT_KEYBOARD].func != 0) {
-#if 0
-	    printk("%d[%d]", intn, run_task->tskid);
-#endif
 	    (intr_table[INT_KEYBOARD].func) ();
 	}
 	break;
@@ -243,7 +236,7 @@ ER set_interrupt_entry(W intno, FP func, ATR attr)
  */
 void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 		UW ecx, UW eax, UW es, UW ds, UW no,
-		UW errcode, UW eip, UW cs, W eflags)
+		UW err, UW eip, UW cs, W eflags)
 {
     W result;
     UW addr;
@@ -257,18 +250,6 @@ void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
       if (regp->permission &&
 	  (((UW) regp->start_addr <= addr) &&
 	   (addr <= ((UW) regp->start_addr + regp->max_size)))) {
-#if 1 /*def DEBUG*/
-	printk("STACK PAGE FAULT (try to allocate page %x).\n", addr);
-	printk("current PID= %d (0x%x)\n", run_task->tskid, run_task->tskid);
-#ifdef notdef
-	printk("current stack segment = 0x%x\n", run_task->context.ss);
-	printk("       esp = 0x%x (0x%x)\n", esp, run_task->context.esp);
-#endif
-	printk("error code = 0x%x\n", errcode);
-	printk("       eip = 0x%x\n", eip);
-	printk("        cs = 0x%x ds = 0x%x\n", cs, ds);
-	printk("    eflags = 0x%x\n", eflags);
-#endif
 	result = region_map(run_task->tskid, (VP) addr, PAGE_SIZE, ACC_USER);
 	if (result == E_OK) {
 	  /* ページフォルト処理に成功した */
@@ -277,81 +258,26 @@ void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 	}
       }
 
-#if 1 /*def DEBUG*/
-      printk("PAGE FAULT (memory fault).\n");
-      printk("current PID= %d (0x%x)\n", run_task->tskid, run_task->tskid);
-#if 0
-      printk("ss0 = 0x%x/ss1 = 0x%x/ss2 = 0x%x\n",
-	     run_task->context.ss0,
-	     run_task->context.ss1, run_task->context.ss2);
-      printk("esp0 = 0x%x/esp1 = 0x%x/esp2 = 0x%x\n",
-	     run_task->context.esp0,
-	     run_task->context.esp1, run_task->context.esp2);
-#endif
-      printk("fault addr = 0x%x\n", get_cr2());
-      printk("current stack segment = 0x%x\n", run_task->mpu.context.ss);
-      printk("       esp = 0x%x (0x%x)\n", esp, run_task->mpu.context.esp);
-      printk("error code = 0x%x\n", errcode);
-      printk("       eip = 0x%x\n", eip);
-      printk("        cs = 0x%x ds = 0x%x\n", cs, ds);
-      printk("    eflags = 0x%x\n", eflags);
-#endif
-	/* ページフォルト時の処理ハンドラが指定してあった */
-	/* ページフォルトハンドラの引数は以下のとおり
+      /* ページフォルト時の処理ハンドラが指定してあった */
+      /* ページフォルトハンドラの引数は以下のとおり
 
-	 * ページフォルトが発生したアドレス
-	 * 実行している EIP
-	 * ページフォルト処理の result code
-	 */
-	result = (run_task->page_fault_handler) (get_cr2(), eip);
-	if (result == E_OK) {
-	    /* ページフォルト処理に成功した */
-	    --on_interrupt;
-	    return;
-	}
-	else {
-	  printk("[KERN] page_fault_handler cause error\n");
-	}
+       * ページフォルトが発生したアドレス
+       * 実行している EIP
+       * ページフォルト処理の result code
+       */
+      result = (run_task->page_fault_handler) (get_cr2(), eip);
+      if (result == E_OK) {
+	/* ページフォルト処理に成功した */
+	--on_interrupt;
+	return;
+      }
+      else {
+	printk("[KERN] page_fault_handler cause error\n");
+      }
     }
 
-#if 0
-    on_interrupt = TRUE;
-#endif
-    printk("KERNEL PAGE FAULT (memory fault).\n");
-    printk("current PID= %d (0x%x)\n", run_task->tskid, run_task->tskid);
-    printk("context addr = %d (0x%x)\n", run_task, run_task);
-    printk("ss0 = 0x%x/ss1 = 0x%x/ss2 = 0x%x\n",
-	   run_task->mpu.context.ss0,
-	   run_task->mpu.context.ss1, run_task->mpu.context.ss2);
-    printk("esp0 = 0x%x/esp1 = 0x%x/esp2 = 0x%x\n",
-	   run_task->mpu.context.esp0,
-	   run_task->mpu.context.esp1, run_task->mpu.context.esp2);
-
-    printk("current stack segment = 0x%x\n", run_task->mpu.context.ss);
-    printk("stack pointer = 0x%x\n", run_task->mpu.context.esp);
-    printk("initial stack pointer = 0x%x\n", run_task->initial_stack);
-    printk("fault addr = 0x%x\n", get_cr2());
-    printk("       esp = 0x%x (0x%x)\n", esp, run_task->mpu.context.esp);
-    printk("       cr3 = 0x%x (0x%x)\n", get_cr3(), run_task->mpu.context.cr3);
-    printk("error code = 0x%x\n", errcode);
-    printk("       eip = 0x%x\n", eip);
-    printk("        cs = 0x%x\n", cs);
-    printk("    eflags = 0x%x\n", eflags);
-#ifdef notdef
-    printk("        ss = 0x%x\n", ss);
-#endif
-
-#ifdef notdef
-    {
-	int i;
-	unsigned char *p;
-
-	p = (unsigned char *) eip;
-	for (i = 0; i < 100; i++) {
-	    printk("0x%x ", p[i]);
-	}
-    }
-#endif
+    idt_abort_with_error(edi, esi, ebp, esp, ebx, edx,
+		ecx, eax, es, ds, no, err, eip, cs, eflags);
 
     --on_interrupt;
 
@@ -370,30 +296,12 @@ void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
  */
 void protect_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 		   UW ecx, UW eax, UW es, UW ds, UW no,
-		   UW errcode, UW eip, UW cs, UW eflags)
+		   UW err, UW eip, UW cs, UW eflags)
 {
     W result; 
 
     ++on_interrupt;
     if (run_task->page_fault_handler) {
-#if 1 /*def DEBUG*/
-      printk("PROTECT/STACK FAULT (memory fault).\n");
-      printk("current PID= %d (0x%x)\n", run_task->tskid, run_task->tskid);
-#if 0
-      printk("ss0 = 0x%x/ss1 = 0x%x/ss2 = 0x%x\n",
-	     run_task->context.ss0,
-	     run_task->context.ss1, run_task->context.ss2);
-      printk("esp0 = 0x%x/esp1 = 0x%x/esp2 = 0x%x\n",
-	     run_task->context.esp0,
-	     run_task->context.esp1, run_task->context.esp2);
-      printk("current stack segment = 0x%x\n", run_task->context.ss);
-#endif
-      printk("       esp = 0x%x (0x%x)\n", esp, run_task->mpu.context.esp);
-      printk("error code = 0x%x\n", errcode);
-      printk("       eip = 0x%x\n", eip);
-      printk("        cs = 0x%x ds = 0x%x\n", cs, ds);
-      printk("    eflags = 0x%x\n", eflags);
-#endif
 	/* ページフォルト時の処理ハンドラが指定してあった */
 	/* ページフォルトハンドラの引数は以下のとおり
 
@@ -412,32 +320,6 @@ void protect_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 	}
     }
 
-    printk("******* KERNEL PROTECT/STACK FAULT: interrupt 13/12. ******\n");
-    printk("PID = %d\n", run_task->tskid);
-    printk("EIP = 0x%x ESP = 0x%x\n", eip, esp);
-    printk("ERROR CODE = 0x%x eflags = 0x%x\n", errcode, eflags);
-    printk("cs = 0x%x\n", cs);
-    printk("run_task->state.state = %d\n", run_task->tskstat);
-#if 0
-    printk ("tss selector      = %d, 0x%x\n",
-	  run_task->tss_selector, run_task->tss_selector);
-    printk("STACK TOP: 0x%x\n", &(run_task->stackptr[run_task->stksz]));
-    printk("STACK BASE: 0x%x\n", run_task->stackptr);
-    printk("run_task->context.backlink  = 0x%x\n",
-	   run_task->context.backlink);
-    printk("run_task->context.ldtr  = 0x%x\n", run_task->context.ldtr);
-    printk("run_task->context.cr3  = 0x%x\n", run_task->context.cr3);
-    printk("run_task->context.eflags  = 0x%x\n", run_task->context.eflags);
-    printk("run_task->context.cs  = 0x%x\n", run_task->context.cs);
-    printk("run_task->context.ds  = 0x%x\n", run_task->context.ds);
-    printk("run_task->context.ss  = 0x%x\n", run_task->context.ss);
-#ifdef notdef
-    printk("run_task->context.es  = 0x%x\n", run_task->context.es);
-    printk("run_task->context.fs  = 0x%x\n", run_task->context.fs);
-    printk("run_task->context.gs  = 0x%x\n", run_task->context.gs);
-#endif				/* notdef */
-    printk("run_task->context.eip = 0x%x\n", run_task->context.eip);
-    printk("run_task->context.esp = 0x%x\n", run_task->context.esp);
-#endif
-    for (;;);
+    idt_abort_with_error(edi, esi, ebp, esp, ebx, edx,
+		ecx, eax, es, ds, no, err, eip, cs, eflags);
 }

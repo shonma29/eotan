@@ -23,7 +23,7 @@ Version 2, June 1991
 #include <errno.h>
 #include <unistd.h>
 #include <itron/rendezvous.h>
-#include "../../kernel/core.h"
+#include <core.h>
 #include "../../kernel/misc.h"
 #include "../console/console.h"
 #include "../port-manager/port-manager.h"
