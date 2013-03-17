@@ -45,6 +45,7 @@ void idt_initialize(void)
 	for (i = 0; i <= MAX_IDT; i++)
 		idt_set(i, kern_code, abort_handler,
 				interruptGate32, dpl_kern);
+	//TODO set NOT PRESENT
 }
 
 void idt_set(UB no, UH selector, W (*handler)(void),
@@ -57,7 +58,7 @@ void idt_set(UB no, UH selector, W (*handler)(void),
 	p->offsetLow = ((UW)handler) & 0xffff;
 	p->selector = selector;
 	p->copyCount = 0;
-	p->attr = ATTR_EXISTS | (dpl << 5) | type;
+	p->attr = ATTR_PRESENT | (dpl << 5) | type;
 	p->offsetHigh = (((UW)handler) >> 16) & 0xffff;
 }
 

@@ -47,6 +47,12 @@ For more information, please refer to <http://unlicense.org/>
  * @since 1.0
  */
 _start:
+	xorw %ax, %ax
+	movw %ax, %ds
+	movw %ax, %ss
+	movw $0x7c00, %ax
+	movw %ax, %sp
+
 	/* print message */
 	movw $message_product, %ax
 	call putsn

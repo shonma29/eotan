@@ -29,8 +29,8 @@ For more information, please refer to <http://unlicense.org/>
 
 #include "core.h"
 
-#define ATTR_SEGMENT 0x10
-#define ATTR_EXISTS 0x80
+#define ATTR_DATA 0x10
+#define ATTR_PRESENT 0x80
 
 enum {
 	kern_code = 0x08,
