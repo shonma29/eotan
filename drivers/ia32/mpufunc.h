@@ -71,8 +71,6 @@ extern void	start_interval (void);
 /* locore.S */
 extern void resume(UW);
 extern void load_task_register(UW);
-extern W get_cr2();
-extern W get_cr3();
 
 /* fpu.c */
 extern void fpu_save(T_TCB * taskp);

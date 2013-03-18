@@ -140,16 +140,6 @@ ER main(void)
 	falldown();
     }
 
-    /* TRMTBL の初期化 */
-    trmtbl_num = 0;
-    trmtbl_top = 0;
-
-    do_timer = 0;
-
-#ifdef AUTO_START
-    run_init_program();
-#endif
-
     for (;;) {			/* Idle タスクとなる。 */
 #ifdef HALT_WHEN_IDLE
         do_halt = 1;
@@ -281,8 +271,6 @@ static void run_init_program(void)
  */
 static ER initialize(void)
 {
-    struct boot_header *info; 
-
     kernlog_initialize();	/* コンソールに文字を出力できるようにする */
     gdt_initialize();
     idt_initialize();
@@ -304,9 +292,14 @@ static ER initialize(void)
     thread_initialize1();
 
     timer_initialize();		/* インターバルタイマ機能の初期化 */
-    info = (struct boot_header *) MODULE_TABLE;
     time_initialize(rtc_get_time());		/* 時間管理機能の初期化 */
     start_interval();		/* インターバルタイマの起動       */
+
+    do_timer = 0;
+
+#ifdef AUTO_START
+    run_init_program();
+#endif
 
     return (E_OK);
 }

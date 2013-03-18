@@ -244,7 +244,7 @@ void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 
     ++on_interrupt;
     if (run_task->page_fault_handler) {
-      addr = get_cr2();
+      addr = (UW)fault_get_addr();
       /* フォルトを起こしたアドレスがスタック領域にあればページを割り当てる */
       regp = &run_task->regions[STACK_REGION];
       if (regp->permission &&
@@ -266,7 +266,7 @@ void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
        * 実行している EIP
        * ページフォルト処理の result code
        */
-      result = (run_task->page_fault_handler) (get_cr2(), eip);
+      result = (run_task->page_fault_handler) ((UW)fault_get_addr(), eip);
       if (result == E_OK) {
 	/* ページフォルト処理に成功した */
 	--on_interrupt;
@@ -310,7 +310,7 @@ void protect_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 	 * 実行している EIP
 	 * ページフォルト処理の result code
 	 */
-	result = (run_task->page_fault_handler) (get_cr2(), eip);
+	result = (run_task->page_fault_handler) ((UW)fault_get_addr(), eip);
 	if (result == E_OK) {
 	    /* ページフォルト処理に成功した */
 	    --on_interrupt;
