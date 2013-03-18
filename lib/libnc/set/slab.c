@@ -32,7 +32,7 @@ static slab_block_t *slab_add_block(slab_t *slab) {
 
 	if (slab->block_num >= slab->max_block)	return NULL;
 
-	block = (slab_block_t*)slab->palloc(slab->block_size);
+	block = (slab_block_t*)slab->palloc(1);
 
 	if (block) {
 		size_t i;
