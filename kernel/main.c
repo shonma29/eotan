@@ -287,6 +287,7 @@ static ER initialize(void)
     gdt_initialize();
     idt_initialize();
     init_interrupt();
+    paging_initialize();
 #ifdef DEBUG
     printk("initialize: start\n");
 #endif

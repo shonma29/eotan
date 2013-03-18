@@ -139,4 +139,13 @@ extern W handle29(void);
 extern W handle30(void);
 extern W handle31(void);
 
+/* paging.s */
+extern void *fault_get_addr(void);
+extern void paging_set_directory(void *dir);
+extern void paging_start(void);
+extern void tlb_flush(void);
+
+/* memory.c */
+extern void paging_initialize(void);
+
 #endif /* _IA32_MPU_H_ */

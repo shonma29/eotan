@@ -27,38 +27,38 @@ For more information, please refer to <http://unlicense.org/>
 
 .text
 
-.globl  handle0
-.globl  handle1
-.globl  handle2
-.globl  handle3
-.globl  handle4
-.globl  handle5
-.globl  handle6
-.globl  handle7
-.globl  handle8
-.globl  handle9
-.globl  handle10
-.globl  handle11
-.globl  handle12
-.globl  handle13
-.globl  handle14
-.globl  handle15
-.globl  handle16
-.globl  handle17
-.globl  handle18
-.globl  handle19
-.globl  handle20
-.globl  handle21
-.globl  handle22
-.globl  handle23
-.globl  handle24
-.globl  handle25
-.globl  handle26
-.globl  handle27
-.globl  handle28
-.globl  handle29
-.globl  handle30
-.globl  handle31
+.globl handle0
+.globl handle1
+.globl handle2
+.globl handle3
+.globl handle4
+.globl handle5
+.globl handle6
+.globl handle7
+.globl handle8
+.globl handle9
+.globl handle10
+.globl handle11
+.globl handle12
+.globl handle13
+.globl handle14
+.globl handle15
+.globl handle16
+.globl handle17
+.globl handle18
+.globl handle19
+.globl handle20
+.globl handle21
+.globl handle22
+.globl handle23
+.globl handle24
+.globl handle25
+.globl handle26
+.globl handle27
+.globl handle28
+.globl handle29
+.globl handle30
+.globl handle31
 
 
 /* division error (fault) */
