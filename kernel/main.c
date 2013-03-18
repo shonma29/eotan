@@ -273,6 +273,7 @@ static ER initialize(void)
 {
     kernlog_initialize();	/* コンソールに文字を出力できるようにする */
     gdt_initialize();
+    api_initialize();
     idt_initialize();
     init_interrupt();
     paging_initialize();

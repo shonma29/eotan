@@ -99,4 +99,7 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz);
 /* lowlib.c */
 extern ER			load_lowlib (VP *argp);
 
+/* api.c */
+extern void api_initialize(void);
+
 #endif				/* __CORE_FUNC_H__ */

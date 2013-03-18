@@ -250,7 +250,7 @@ abort_handler:
 	movw $0x10, %ax
 	movw %ax,%ds
 	movw %ax,%es
-	call idt_abort
+	call fault
 	popal
 	popl %es
 	popl %ds
@@ -264,7 +264,7 @@ abort_with_error_handler:
 	movw $0x10, %ax
 	movw %ax,%ds
 	movw %ax,%es
-	call idt_abort_with_error
+	call fault_with_error
 	popal
 	popl %es
 	popl %ds

@@ -16,6 +16,7 @@ Version 2, June 1991
 
 #include <itron/types.h>
 #include "../../kernel/thread.h"
+#include "gate.h"
 
 #define halt() asm("hlt")
 
@@ -95,13 +96,17 @@ extern void set_sp(T_TCB *taskp, UW p);
 extern void idt_initialize(void);
 extern void idt_set(UB no, UH selector, W (*handler)(void),
 		UB type, UB dpl);
-extern void idt_abort(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
+extern void gate_set(GateDescriptor *p,
+		UH selector, W (*handler)(void), UB attr);
+extern void gdt_initialize(void);
+
+/* fault.c */
+extern void fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 		UW ecx, UW eax, UW es, UW ds, UW no,
 		UW eip, UW cs, UW eflags);
-extern void idt_abort_with_error(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
+extern void fault_with_error(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 		UW ecx, UW eax, UW es, UW ds, UW no,
 		UW err, UW eip, UW cs, UW eflags);
-void gdt_initialize(void);
 
 /* abort.s */
 extern W handle0(void);

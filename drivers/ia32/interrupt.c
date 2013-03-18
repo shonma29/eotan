@@ -277,7 +277,7 @@ void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
       }
     }
 
-    idt_abort_with_error(edi, esi, ebp, esp, ebx, edx,
+    fault_with_error(edi, esi, ebp, esp, ebx, edx,
 		ecx, eax, es, ds, no, err, eip, cs, eflags);
 
     --on_interrupt;
@@ -321,6 +321,6 @@ void protect_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 	}
     }
 
-    idt_abort_with_error(edi, esi, ebp, esp, ebx, edx,
+    fault_with_error(edi, esi, ebp, esp, ebx, edx,
 		ecx, eax, es, ds, no, err, eip, cs, eflags);
 }

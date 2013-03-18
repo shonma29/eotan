@@ -175,6 +175,7 @@ Version 2, June 1991
  */
 
 #include <lowlib.h>
+#include <mpu/config.h>
 #include <mpu/io.h>
 #include <itron/rendezvous.h>
 #include "core.h"
@@ -963,4 +964,13 @@ static ER if_port_reply(VP argp)
     } *args = argp;
 
     return port_reply(args->rdvno, args->msg, args->rmsgsz);
+}
+
+void api_initialize(void)
+{
+	SegmentDescriptor *p = (SegmentDescriptor*)GDT_ADDR;
+
+	gate_set((GateDescriptor*)(&(p[call_service >> 3])),
+			kern_code, syscall_handler,
+			ATTR_PRESENT | (dpl_user << 5) | callGate32);
 }

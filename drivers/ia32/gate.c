@@ -28,13 +28,10 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 #include <core.h>
 #include <mpu/config.h>
-#include <func.h>
 #include "gate.h"
 #include "mpufunc.h"
 
 static void gdt_set_segment(UH selector, UW base, UW limit, UB type, UB dpl);
-static void gate_set(GateDescriptor *p,
-		UH selector, W (*handler)(void), UB attr);
 
 
 void idt_initialize(void)
@@ -61,39 +58,7 @@ void idt_set(UB no, UH selector, W (*handler)(void), UB type, UB dpl)
 	gate_set(&(p[no]), selector, handler, ATTR_PRESENT | (dpl << 5) | type);
 }
 
-void idt_abort(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		UW ecx, UW eax, UW es, UW ds, UW no,
-		UW eip, UW cs, UW eflags)
-{
-	printk("abort(%d). task=%d\n"
-		" cs=%x eip=%x eflags=%x\n"
-		" ds=%x es=%x\n"
-		" eax=%x ebx=%x ecx=%x edx=%x\n"
-		" edi=%x esi=%x ebp=%x esp=%x\n",
-			no, run_task->tskid, cs, eip, eflags, ds, es,
-			eax, ebx, ecx, edx, edi, esi, ebp, esp);
-	//TODO stop the thread
-	halt();
-	for (;;);
-}
-
-void idt_abort_with_error(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		UW ecx, UW eax, UW es, UW ds, UW no,
-		UW err, UW eip, UW cs, UW eflags)
-{
-	printk("abort(%d). task=%d\n"
-		" cs=%x eip=%x eflags=%x\n"
-		" ds=%x es=%x error=%x\n"
-		" eax=%x ebx=%x ecx=%x edx=%x\n"
-		" edi=%x esi=%x ebp=%x esp=%x\n",
-			no, run_task->tskid, cs, eip, eflags, ds, es,
-			err, eax, ebx, ecx, edx, edi, esi, ebp, esp);
-	//TODO stop the thread
-	halt();
-	for (;;);
-}
-
-static void gate_set(GateDescriptor *p,
+void gate_set(GateDescriptor *p,
 		UH selector, W (*handler)(void), UB attr)
 {
 	//TODO error check
@@ -115,11 +80,6 @@ void gdt_initialize(void)
 	gdt_set_segment(user_code, 0, 0x7fff0, segmentCode, dpl_user);
 	gdt_set_segment(user_data, 0, 0x7fff0, segmentData, dpl_user);
 	gdt_set_segment(user_stack, 0, 0x3ffff, segmentStack, dpl_user);
-
-	/* call gate for service call */
-	gate_set((GateDescriptor*)(&(p[call_service >> 3])),
-			kern_code, syscall_handler,
-			ATTR_PRESENT | (dpl_user << 5) | callGate32);
 }
 
 static void gdt_set_segment(UH selector, UW base, UW limit, UB type, UB dpl)
