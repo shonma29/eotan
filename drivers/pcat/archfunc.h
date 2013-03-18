@@ -22,7 +22,6 @@ extern void timer_initialize(void);
 extern void set_timer(W time, void (*func) (VP), VP argp);
 extern ER unset_timer(void (*func) (VP), VP arg);
 extern void check_timer(void);
-extern W left_time(void (*func) (VP), VP arg);
 
 /* rtc.c */
 extern int rtc_get_time(void);

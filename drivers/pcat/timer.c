@@ -43,10 +43,8 @@ static struct timer_list {
 
 static struct timer_list *free_timer;
 static struct timer_list *time_list;
-static unsigned long free_run;	/* 今の所初期化する予定なし */
 
 
-static void write_vram(W, W, W, W);
 
 
 /*************************************************************************
@@ -62,42 +60,19 @@ static void write_vram(W, W, W, W);
  */
 void start_interval(void)
 {
-#if 0
-    W i;
-#endif
-
-    printk("start interval\n");
+    printk("[KERN] start interval\n");
     /* timer
      */
     idt_set(32, KERNEL_CSEG, int32_handler, INTERRUPT_DESC, KERNEL_DPL);
     reset_intr_mask(0);
 
     enter_critical();
-#ifdef notdef
-    outb(TIMER_CONTROL, 0x34);
-    outb(TIMER0_WRITE, 11930 & 0xff);
-    outb(TIMER0_WRITE, (11930 >> 8) & 0xff);
-#else
     outb(TIMER_CONTROL, 0x36);	/* MODE 3 */
     outb(TIMER0_WRITE, (TIMER_FREQ/TICKS) & 0xff);
     outb(TIMER0_WRITE, ((TIMER_FREQ/TICKS) >> 8) & 0xff);
-#endif
     leave_critical();
-
-    write_vram(78, 0, 'x', 0);
 }
 
-#ifdef notdef
-outb(W addr, unsigned char data)
-{
-    if ((addr == 0x40) || (addr == 0x43)) {
-	printk("Warning!! outb (0x%x) output!! (data is %d)\n", addr,
-	       data);
-	return;
-    }
-    outb2(addr, data);
-}
-#endif
 
 
 /*************************************************************************
@@ -132,10 +107,6 @@ void intr_interval(void)
 	if (--run_task->quantum == 0) {
 	    run_task->quantum = QUANTUM;
 	    rot_rdq(TPRI_RUN);
-#ifdef notdef
-	    /* rot_rdq 内部でも呼び出される */
-	    thread_switch();
-#endif
 	}
     }
 
@@ -151,7 +122,7 @@ void intr_interval(void)
 }
 
 /*************************************************************************
- * init_timer
+ * timer_initialize
  *
  * 引数：
  *
@@ -163,11 +134,8 @@ void intr_interval(void)
 void timer_initialize(void)
 {
     W i;
-#if 0
-    static struct timer_list banhei = { NULL, 0, 0, NULL };
-#endif
 
-    printk("** init_timer **\n");
+    printk("[KERN] initialize timer\n");
     enter_critical();
     for (i = 0; i <= MAX_TIMER - 2; i++) {
 	timer[i].next = &timer[i + 1];
@@ -199,7 +167,7 @@ void set_timer(W time, void (*func) (VP), VP argp)
     enter_critical();
     p = free_timer;
     if (p == NULL) {
-	printk("timer entry empty.\n");
+	printk("[KERN] timer entry empty.\n");
 	leave_critical();
 	return;
     }
@@ -306,13 +274,7 @@ void check_timer(void)
 {
     struct timer_list *p, *q;
 
-#ifdef notdef
-    enter_critical();
-#endif
     if (time_list == NULL) {
-#ifdef notdef
-	leave_critical();
-#endif
 	return;
     }
 
@@ -327,42 +289,4 @@ void check_timer(void)
 	time_list = q;
 	leave_critical();
     }
-}
-
-#define TEXT_VRAM_ADDR	0x800B8000	/* TEXT VRAM のアドレス         */
-#define CURSOR_POS(x,y)		(x + y * 80)
-
-static void write_vram(W x, W y, W ch, W attr)
-{
-    H *addr;
-#if 0
-    H *attr_addr;
-#endif
-
-    addr = (H *) TEXT_VRAM_ADDR;
-    ch = ch | (addr[CURSOR_POS(x, y)] & 0xff00);
-    addr[CURSOR_POS(x, y)] = ch;
-}
-
-/* left_time()
- */
-
-W left_time(void (*func) (VP), VP arg)
-{
-    struct timer_list *point;
-    W time;
-
-    time = 0;
-    for (point = time_list; point != NULL; point = point->next) {
-	time += point->time;
-	if ((point->func == func) && (point->argp == arg)) {
-	    break;
-	}
-    }
-    return (time);
-}
-
-UW get_free_run(void)
-{
-    return free_run;
 }

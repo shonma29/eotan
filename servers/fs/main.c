@@ -113,7 +113,7 @@ int main(void)
     W res;
 
     if (init_port() == FALSE) {
-	dbg_printf("Cannot allocate port.\n");
+	dbg_printf("[FS] Cannot allocate port.\n");
 	ext_tsk();
 	return FALSE;
     }

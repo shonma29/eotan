@@ -156,7 +156,7 @@ W init_keyboard(void)
     recvport = acre_por(&pk_cpor);
 
     if (recvport <= 0) {
-	dbg_printf("[KEYBOARD] acre_por error = \n", recvport);
+	dbg_printf("[KEYBOARD] acre_por error = %d\n", recvport);
 	ext_tsk();
 	/* メッセージバッファ生成に失敗 */
     }

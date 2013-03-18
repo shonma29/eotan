@@ -292,7 +292,7 @@ static void init_fd_driver(void)
     recvport = acre_por(&pk_cpor);
 
     if (recvport <= 0) {
-	dbg_printf("[FD] cre_por error = %d\n", recvport);
+	dbg_printf("[FD] acre_por error = %d\n", recvport);
 	ext_tsk();
 	/* メッセージバッファ生成に失敗 */
     }

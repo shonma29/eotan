@@ -14,13 +14,13 @@ Version 2, June 1991
  *
  */
 
-#ifndef _CORE_CORE_H_
-#define _CORE_CORE_H_	1
+#ifndef _CORE_H_
+#define _CORE_H_	1
 
 #include <itron/types.h>
 #include <itron/struct.h>
 #include <itron/syscall.h>
 #include <itron/errno.h>
 
-#endif /* _CORE_CORE_H_ */
+#endif /* _CORE_H_ */
 

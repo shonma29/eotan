@@ -30,7 +30,7 @@ Version 2, June 1991
 #define MIN_PRIORITY	(0)	/* 最小のプライオリティ */
 #define MAX_PRIORITY	(31)	/* 最大のプライオリティ */
 
-#define MIN_USERTASKID	(21)
+#define MIN_USERTASKID	(1)
 #define MAX_USERTASKID	MAX_TSKID
 
 #define MAX_SUSPEND_NEST	(10)	/* サスペンドのネストのオーバーフロー */
