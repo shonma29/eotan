@@ -67,7 +67,7 @@ W init_interrupt(void)
 {
     W i;
 
-    printk("init_interrupt\n");
+    printk("[KERN] init_interrupt\n");
     /* 8259 の初期化 */
     /* init master 8259A */
     outb(MASTER_8259A_COM, 0x11);	/* ICW1 */
@@ -162,7 +162,7 @@ void interrupt(W intn)
 	    (intr_table[intn].func) ();
 	} else {
 	    /* error!! */
-	    printk("unknown interrupt from %d\n", intn);
+	    printk("[KERN] unknown interrupt from %d\n", intn);
 	}
 	break;
 
@@ -218,7 +218,7 @@ ER set_interrupt_entry(W intno, FP func, ATR attr)
 	return (E_OBJ);
     }
 
-    printk("set_interrupt_entry = %d, func = 0x%x\n", intno, func);
+    printk("[KERN] set_interrupt_entry = %d, func = 0x%x\n", intno, func);
     intr_table[intno].attr = attr;
     intr_table[intno].func = func;
     return (E_OK);

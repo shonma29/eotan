@@ -158,9 +158,9 @@ static void __putc(const unsigned char ch) {
 
 static void _newline(void) {
 	if (_s.y >= (CGA_ROWS - 1))	_rollup(1);
-	else	_s.y++;
 
 	_s.x = 0;
+	_s.y++;
 	_s.p = _s.base + _s.y * CGA_COLUMNS;
 }
 static void _cursor() {
@@ -187,8 +187,6 @@ static int _rollup(const int lines) {
 		_s.p = _s.base;
 	}
 	else	_s.p -= lines * CGA_COLUMNS;
-
-	_cursor();
 
 	return True;
 }
