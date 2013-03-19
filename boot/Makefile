@@ -23,7 +23,7 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = boot.iso
+TARGET = ../boot.iso
 MAKE = gmake
 CC = cc
 CFLAGS = -Wall -Werror -O2 -I ../include
@@ -44,11 +44,10 @@ OBJS = boot.bin kern.bin
 
 all: pad append $(TARGET)
 
-$(TARGET): build/boot.img
-	mkisofs -R -b boot.img -o $(TARGET) build
+$(TARGET): ../build/boot.img
+	mkisofs -R -b boot.img -o $(TARGET) ../build
 
-build/boot.img: $(OBJS)
-	mkdir -p build
+../build/boot.img: $(OBJS)
 	cat $(OBJS) > $@
 	$(TOOL)pad $@ 1474560
 
@@ -99,5 +98,5 @@ kern.bin: starter.bin ../kernel/core.bin ../servers/fs/fs \
 
 .PHONY: clean
 clean:
-	$(RM) $(TARGET) build/*.img *.bin *.o *.inc
+	$(RM) $(TARGET) ../build/*.img *.bin *.o *.inc
 	$(RM) pad append

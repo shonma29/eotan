@@ -29,7 +29,7 @@ applications:
 	${MAKE} -f app/contribution/pager/Makefile WD=app/contribution/pager
 
 initrd_img:
-	${MAKE} -f build/initrd.mk
+	${MAKE} -f initrd.mk
 
 clean:
 	${MAKE} -C boot clean
