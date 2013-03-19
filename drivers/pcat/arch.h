@@ -27,7 +27,6 @@ Version 2, June 1991
 
 #define INT_TIMER		32
 #define INT_KEYBOARD		33
-#define	INT_FD			38		/* 1M type */
 
 #define RESERVED_MEMORY		(1024 * 1024)
 

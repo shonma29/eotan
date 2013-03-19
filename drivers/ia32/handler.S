@@ -81,34 +81,6 @@ int33_handler:
 		iret
 
 /**************************************************************************
- * int38_handler --- floppy disk
- *
- *	no work.
- */
-int38_handler:
-		pushl	%ds
-		pushl	%es
-		pushal
-		movw	$0x10, %ax
-		movw	%ax,%ds
-		movw	%ax,%es
-
-		inb	MASTER_8259A_DATA, %al
-		orb	$0x40, %al
-		outb	%al, MASTER_8259A_DATA
-		movb	$0x20, %al
-		outb	%al, MASTER_8259A_COM
-		sti
-
-		pushl	$38
-		call	interrupt
-		popl	%eax
-		popal
-		popl	%es
-		popl	%ds
-		iret
-
-/**************************************************************************
  * int44_handler --- IRQ 12 (PSAUX)
  *
  *      no work.

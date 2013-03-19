@@ -81,7 +81,7 @@ kern.bin: starter.bin ../kernel/core.bin ../servers/fs/fs \
 		../servers/port-manager/port-manager \
 		../servers/console/console ../servers/keyboard/keyboard \
 		../servers/psaux/psaux ../servers/ramdisk/ramdisk \
-		../servers/fd765a/fd765a ../servers/ide/ide \
+		../servers/ide/ide \
 		../app/init/init ../initrd.img
 	[ `wc -c < starter.bin` -le $(STARTER_SIZE) ]
 	cp starter.bin $@
@@ -92,7 +92,6 @@ kern.bin: starter.bin ../kernel/core.bin ../servers/fs/fs \
 	$(TOOL)append 2 ../servers/keyboard/keyboard 4 >> $@
 	$(TOOL)append 2 ../servers/psaux/psaux 4 >> $@
 	$(TOOL)append 2 ../servers/ramdisk/ramdisk 4 >> $@
-	$(TOOL)append 2 ../servers/fd765a/fd765a 4 >> $@
 	$(TOOL)append 2 ../servers/ide/ide 4 >> $@
 	$(TOOL)append 3 ../app/init/init 4 >> $@
 	$(TOOL)append 4 ../initrd.img 4 >> $@

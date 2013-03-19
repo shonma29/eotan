@@ -187,7 +187,6 @@ struct special_file special_file_table[] = {
     {0x00020000, "driver.psaux", 0, 0x00000000, 0},	/* psaux driver */
 
 /* ブロック型デバイス */
-    {0x80000000, "driver.fd", 0, 0x00000000, 0},
     {0x80010000, "driver.ide", 0, 0x00000000, 0},	/* 0 番目の IDE デバイスの全体 */
     {0x80010001, "driver.ide", 0, 0x00000001, 0},	/* 0 番目の IDE デバイスのパーティション 1 */
     {0x80010002, "driver.ide", 0, 0x00000002, 0},	/* 0 番目の IDE デバイスのパーティション 2 */

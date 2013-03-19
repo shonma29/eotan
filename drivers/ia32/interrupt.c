@@ -119,7 +119,6 @@ W init_interrupt(void)
     idt_set(31, kern_code, handle31, interruptGate32, dpl_kern);
 
     idt_set(INT_KEYBOARD, kern_code, int33_handler, interruptGate32, dpl_kern);
-    idt_set(INT_FD, kern_code, int38_handler, interruptGate32, dpl_kern);
 
     idt_set(44, kern_code, int44_handler, interruptGate32, dpl_kern);
     idt_set(46, kern_code, int46_handler, interruptGate32, dpl_kern);	/* IDE 0 */
@@ -134,7 +133,6 @@ W init_interrupt(void)
     }
 
     intr_table[INT_KEYBOARD].attr = 0;
-    intr_table[INT_FD].attr = 0;
     on_interrupt = 0;
     delayed_dispatch = FALSE;
     return (E_OK);
@@ -173,12 +171,6 @@ void interrupt(W intn)
     case INT_KEYBOARD:
 	if (intr_table[INT_KEYBOARD].func != 0) {
 	    (intr_table[INT_KEYBOARD].func) ();
-	}
-	break;
-
-    case INT_FD:
-	if (intr_table[INT_FD].func != 0) {
-	    (intr_table[INT_FD].func) ();
 	}
 	break;
     }
