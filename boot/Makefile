@@ -23,7 +23,7 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = boot.img
+TARGET = boot.iso
 MAKE = gmake
 CC = cc
 CFLAGS = -Wall -Werror -O2 -I ../include
@@ -44,7 +44,10 @@ OBJS = boot.bin kern.bin
 
 all: pad append $(TARGET)
 
-$(TARGET): $(OBJS)
+$(TARGET): build/boot.img
+	mkisofs -R -b boot.img -o $(TARGET) build
+
+build/boot.img: $(OBJS)
 	cat $(OBJS) > $@
 	$(TOOL)pad $@ 1474560
 
@@ -61,7 +64,8 @@ starter.inc: kern.bin
 
 starter.bin: starter.o main.o ../kernel/arch/libarch.a ../lib/libnc.a
 	$(LD) $(LDFLAGS) -Ttext $(STARTER_ADDR) -L$(LIB) -o $@ \
-		starter.o main.o ../kernel/arch/libarch.a ../lib/libnc.a
+		starter.o main.o ../kernel/mpu/libmpu.a \
+		../kernel/arch/libarch.a ../lib/libnc.a
 	$(TOOL)pad $@ $(STARTER_SIZE) 
 
 main.o: main.c
@@ -95,5 +99,5 @@ kern.bin: starter.bin ../kernel/core.bin ../servers/fs/fs \
 
 .PHONY: clean
 clean:
-	$(RM) $(TARGET) *.bin *.o *.inc
+	$(RM) $(TARGET) build/*.img *.bin *.o *.inc
 	$(RM) pad append
