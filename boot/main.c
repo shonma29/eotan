@@ -25,9 +25,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <cga.h>
+#include <elf.h>
 #include <stdarg.h>
 #include <string.h>
-#include "boot.h"
+#include <boot/modules.h>
+#include "../kernel/mpu/mpufunc.h"
+
+#define ERR_OK (0)
+#define ERR_FORMAT (1)
 
 #define INT_LEN (4)
 
@@ -35,32 +40,35 @@ For more information, please refer to <http://unlicense.org/>
 #define BIOS_CURSOR_ROW 0x0451
 #define CGA_VRAM_ADDR 0x000b8000
 
+extern int isValidModule(Elf32_Ehdr *eHdr);
+
 static CGA_Console *cns;
 
 static void console_initialize();
 static int printk(const char *fmt, ...);
+static int putModule(const ModuleHeader *h);
 
-void _main()
+
+void _main(void)
 {
 	ModuleHeader *h = (ModuleHeader*)MODULES_ADDR;
 
 	console_initialize();
+	gdt_initialize();
+	idt_initialize();	
+	paging_initialize();
 
-// initialize pic
-// initialize idt
 // get memory size
-// initialize page table
-// enable page table
 // put modules
 	for (; h->type != end;) {
 		unsigned int k;
 
 		printk("%d %d %d %d\n",
 				h->type, h->length, h->bytes, h->zBytes);
+		putModule(h);
 		k = (unsigned int)h + sizeof(*h) + h->length;
 		h = (ModuleHeader*)k;
 	}
-// enable interrupt?
 // jump kernel (virtual memory address)
 
 	for(;;);
@@ -84,3 +92,34 @@ static int printk(const char *fmt, ...)
 	return vnprintf((void*)(cns->putc), (char*)fmt, ap);
 };
 
+static int putModule(const ModuleHeader *h)
+{
+	Elf32_Ehdr *eHdr;
+	Elf32_Phdr *pHdr;
+	UB *p;
+	size_t i;
+
+	switch (h->type) {
+	case kernel:
+	case server:
+	case user:
+		break;
+
+	default:
+		return ERR_FORMAT;
+	}
+
+	eHdr = (Elf32_Ehdr*)&(h[1]);
+
+	if (!isValidModule(eHdr))	return ERR_FORMAT;
+
+	p = (UB*)eHdr;
+	pHdr = (Elf32_Phdr*)&(p[eHdr->e_phoff]);
+
+	for (i = 0; i < eHdr->e_phnum; pHdr++, i++) {
+		printk("t=%d v=%p p=%p, fsz=%d, msz=%d\n",
+				pHdr->p_type, pHdr->p_vaddr, pHdr->p_paddr, pHdr->p_filesz, pHdr->p_memsz);
+	}
+
+	return ERR_OK;
+}

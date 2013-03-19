@@ -28,7 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <errno.h>
-#include "boot.h"
+#include "../include/boot/modules.h"
 
 #define ERR_OK (0)
 #define ERR_ARG (1)
