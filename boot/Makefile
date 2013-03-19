@@ -48,6 +48,7 @@ $(TARGET): build/boot.img
 	mkisofs -R -b boot.img -o $(TARGET) build
 
 build/boot.img: $(OBJS)
+	mkdir -p build
 	cat $(OBJS) > $@
 	$(TOOL)pad $@ 1474560
 
