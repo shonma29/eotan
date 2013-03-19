@@ -46,7 +46,7 @@ static CGA_Console *cns;
 
 static void console_initialize();
 static int printk(const char *fmt, ...);
-static int putModule(const ModuleHeader *h);
+static int kick(const ModuleHeader *h);
 
 
 void _main(void)
@@ -54,22 +54,24 @@ void _main(void)
 	ModuleHeader *h = (ModuleHeader*)MODULES_ADDR;
 
 	console_initialize();
+	paging_initialize();
 	gdt_initialize();
 	idt_initialize();	
-	paging_initialize();
 
 // get memory size
 // put modules
 	for (; h->type != end;) {
-		unsigned int k;
+		unsigned int addr;
 
 		printk("%d %d %d %d\n",
 				h->type, h->length, h->bytes, h->zBytes);
-		putModule(h);
-		k = (unsigned int)h + sizeof(*h) + h->length;
-		h = (ModuleHeader*)k;
+
+		if (h->type == kernel)
+			kick(h);
+
+		addr = (unsigned int)h + sizeof(*h) + h->length;
+		h = (ModuleHeader*)addr;
 	}
-// jump kernel (virtual memory address)
 
 	for(;;);
 }
@@ -92,24 +94,13 @@ static int printk(const char *fmt, ...)
 	return vnprintf((void*)(cns->putc), (char*)fmt, ap);
 };
 
-static int putModule(const ModuleHeader *h)
+static int kick(const ModuleHeader *h)
 {
-	Elf32_Ehdr *eHdr;
+	Elf32_Ehdr *eHdr = (Elf32_Ehdr*)&(h[1]);
 	Elf32_Phdr *pHdr;
 	UB *p;
 	size_t i;
-
-	switch (h->type) {
-	case kernel:
-	case server:
-	case user:
-		break;
-
-	default:
-		return ERR_FORMAT;
-	}
-
-	eHdr = (Elf32_Ehdr*)&(h[1]);
+	void (*entry)(void);
 
 	if (!isValidModule(eHdr))	return ERR_FORMAT;
 
@@ -117,9 +108,24 @@ static int putModule(const ModuleHeader *h)
 	pHdr = (Elf32_Phdr*)&(p[eHdr->e_phoff]);
 
 	for (i = 0; i < eHdr->e_phnum; pHdr++, i++) {
-		printk("t=%d v=%p p=%p, fsz=%d, msz=%d\n",
-				pHdr->p_type, pHdr->p_vaddr, pHdr->p_paddr, pHdr->p_filesz, pHdr->p_memsz);
+		unsigned char *w;
+		unsigned char *r;
+
+		printk("t=%d o=%p v=%p p=%p, fsz=%d, msz=%d\n",
+				pHdr->p_type, pHdr->p_offset, pHdr->p_vaddr,
+				pHdr->p_paddr, pHdr->p_filesz, pHdr->p_memsz);
+
+		if (pHdr->p_type != PT_LOAD)
+			continue;
+
+		w = (unsigned char*)(pHdr->p_vaddr);
+		r = (unsigned char*)eHdr + pHdr->p_offset;
+		memcpy(w, r, pHdr->p_filesz);
+		memset(w + pHdr->p_filesz, 0, pHdr->p_memsz - pHdr->p_filesz);
 	}
+
+	entry = (void*)(eHdr->e_entry);
+	entry();
 
 	return ERR_OK;
 }

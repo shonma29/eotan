@@ -40,7 +40,7 @@ typedef UW PTE;
 #define NUM_OF_INITIAL_DIR (MIN_MEMORY_SIZE / PAGE_SIZE / PTE_PER_PAGE)
 
 // MIN_KERNEL should be a multiple of 4 MB.
-#define OFFSET_KERN (MIN_KERNEL / PAGE_SIZE)
+#define OFFSET_KERN (MIN_KERNEL / PAGE_SIZE / PTE_PER_PAGE)
 
 static void set_initial_directories(void);
 static UB *set_initial_pages(PTE *p, UB *addr);

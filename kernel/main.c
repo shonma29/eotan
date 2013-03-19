@@ -66,6 +66,7 @@ Version 2, June 1991
 #include "boot.h"
 #include "mpu/interrupt.h"
 #include "mpu/mpufunc.h"
+#include "arch/arch.h"
 #include "arch/archfunc.h"
 
 static ER initialize(void);
@@ -271,6 +272,13 @@ static void run_init_program(void)
  */
 static ER initialize(void)
 {
+    struct boot_header *info = (struct boot_header *)MODULE_TABLE;
+
+    info->machine.base_mem = RESERVED_MEMORY;
+    info->machine.ext_mem = MIN_MEMORY_SIZE - RESERVED_MEMORY;
+    info->machine.real_mem = MIN_MEMORY_SIZE;
+    info->machine.rootfs = 0x80000000;
+
     kernlog_initialize();	/* コンソールに文字を出力できるようにする */
     gdt_initialize();
     api_initialize();
