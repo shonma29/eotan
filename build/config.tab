@@ -89,8 +89,8 @@
 #
 # Server
 #
-../servers/fs/fs	0x00001000	0x200000	user	fs
-../servers/port-manager/port-manager 0x00300000	0x300000	kernel port-manager
+../servers/fs/fs	0x80200000	0x200000	driver	fs
+../servers/port-manager/port-manager 0x80300000	0x300000	driver port-manager
 
 #
 #  Driver(s)

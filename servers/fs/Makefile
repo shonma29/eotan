@@ -28,7 +28,7 @@ TARGET = $(WD)/fs
 include Makefile.in
 
 CFLAGS += -I kernel -I lib/libserv
-ENTRY_ADDR = 0x00001000
+ENTRY_ADDR = 0x80200000
 ENTRY_FUNC = startup
 CSRCS += $(wildcard $(WD)/sfs/*.c)
 CSRCS += $(wildcard $(WD)/posix-server/*.c)

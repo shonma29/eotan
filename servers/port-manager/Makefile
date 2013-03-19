@@ -28,7 +28,7 @@ TARGET = $(WD)/port-manager
 include Makefile.in
 
 CFLAGS += -I kernel -I libserv
-ENTRY_ADDR = 0x00300000
+ENTRY_ADDR = 0x80300000
 ENTRY_FUNC = _main
 
 $(TARGET): $(OBJS) \
