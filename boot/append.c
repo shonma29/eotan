@@ -51,7 +51,7 @@ int main(int argc, char **argv)
 	case 2:
 		type = atoi(argv[1]);
 
-		if (type == end)	return appendEnd(stdout);
+		if (type == mod_end)	return appendEnd(stdout);
 
 		break;
 
@@ -59,10 +59,10 @@ int main(int argc, char **argv)
 		type = atoi(argv[1]);
 
 		switch (type) {
-		case kernel:
-		case server:
-		case user:
-		case initrd:
+		case mod_kernel:
+		case mod_server:
+		case mod_user:
+		case mod_initrd:
 			return append(stdout, type, argv[2], atoi(argv[3]));
 
 		default:
@@ -164,7 +164,7 @@ static int pad(FILE *out, size_t size)
 
 static int appendEnd(FILE *out)
 {
-	ModuleHeader h = { end, 0, 0, 0 };
+	ModuleHeader h = { mod_end, 0, 0, 0 };
 
 	if (fwrite(&h, 1, sizeof(h), out) != sizeof(h)) {
 		fprintf(stderr, "write error(%d)\n", errno);

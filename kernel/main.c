@@ -70,10 +70,6 @@ Version 2, June 1991
 #include "arch/archfunc.h"
 
 static ER initialize(void);
-#ifdef AUTO_START
-static void run(W entry);
-static void run_init_program(void);
-#endif
 static void banner(void);
 
 /* 外部変数の宣言 */
@@ -190,83 +186,6 @@ ER main(void)
     return E_OK;
 }
 
-#ifdef AUTO_START
-static void run(W entry)
-{
-    W i;
-    struct boot_header *info;
-    struct module_info *modulep;
-    ID rid;
-    T_CTSK pktsk;
-    T_TCB *new_taskp;
-
-    info = (struct boot_header *) MODULE_TABLE;
-    if ((entry < 1) || (entry >= info->count)) {
-	printk("module is overflow. (info->count = %d, entry = %d)\n",
-	       info->count, entry);
-	return;
-    }
-    modulep = info->modules;
-    pktsk.tskatr = TA_HLNG;
-    pktsk.itskpri = KERNEL_LEVEL;
-    pktsk.stksz = KERNEL_STACK_SIZE;
-    pktsk.addrmap = NULL;
-    pktsk.startaddr = (FP) modulep[entry].entry;
-    if (new_task(&pktsk, &rid, FALSE) != E_OK) {
-	printk("Can not make new task.\n");
-	return;
-    }
-#ifdef DEBUG
-    printk("Task id = %d, eip = 0x%x\n", rid, modulep[entry].entry);
-#endif
-    new_taskp = get_thread_ptr(rid);
-    if (new_taskp == NULL) {
-	printk("new task is NULL.\n");
-	return;
-    }
-
-    /* 生成したタスクの仮想メモリにモジュールをマッピング */
-    /* ただしドライバの場合には、マッピングしない */
-    if (modulep[entry].type == driver) {
-#ifdef DEBUG
-	printk("This module is driver. not mapped\n");
-#endif
-    } else {
-	for (i = 0;
-	     i < PAGES(modulep[entry].mem_length);
-	     i++) {
-	    if (vmap
-		(new_taskp, modulep[entry].vaddr + i * PAGE_SIZE,
-		 modulep[entry].paddr + i * PAGE_SIZE,
-		 ACC_USER) == FALSE) {
-		printk
-		    ("Cannot memory map: virtual addr: 0x%x, phisical addr = 0x%x\n",
-		     modulep[entry].vaddr + i * PAGE_SIZE,
-		     modulep[entry].paddr + i * PAGE_SIZE);
-	    }
-	}
-
-	if (modulep[entry].type == user){
-	    set_autorun_context(new_taskp);
-	}
-    }
-    thread_start(rid, 0);
-    thread_switch();
-}
-
-static void run_init_program(void)
-{
-    struct boot_header *info;
-    W i;
-
-    info = (struct boot_header *) MODULE_TABLE;
-    for (i = 1; i < info->count; i++) {
-	run(i);
-    }
-}
-#endif
-
-
 /* initialize --- 初期化を行う。
  *
  */
@@ -280,11 +199,11 @@ static ER initialize(void)
     info->machine.rootfs = 0x80000000;
 
     kernlog_initialize();	/* コンソールに文字を出力できるようにする */
+    paging_initialize();
     gdt_initialize();
     api_initialize();
     idt_initialize();
     init_interrupt();
-    paging_initialize();
 #ifdef DEBUG
     printk("initialize: start\n");
 #endif

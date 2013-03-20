@@ -85,7 +85,7 @@ kern.bin: starter.bin ../kernel/core.bin ../servers/fs/fs \
 	[ `wc -c < starter.bin` -le $(STARTER_SIZE) ]
 	cp starter.bin $@
 	$(TOOL)append 1 ../kernel/core.bin 4 >> $@
-	$(TOOL)append 3 ../servers/fs/fs 4 >> $@
+	$(TOOL)append 2 ../servers/fs/fs 4 >> $@
 	$(TOOL)append 2 ../servers/port-manager/port-manager 4 >> $@
 	$(TOOL)append 2 ../servers/console/console 4 >> $@
 	$(TOOL)append 2 ../servers/keyboard/keyboard 4 >> $@

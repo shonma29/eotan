@@ -31,9 +31,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <boot/modules.h>
 #include "../kernel/mpu/mpufunc.h"
 
-#define ERR_OK (0)
-#define ERR_FORMAT (1)
-
 #define INT_LEN (4)
 
 #define BIOS_CURSOR_COL 0x0450
@@ -45,8 +42,8 @@ extern int isValidModule(Elf32_Ehdr *eHdr);
 static CGA_Console *cns;
 
 static void console_initialize();
-static int printk(const char *fmt, ...);
-static int kick(const ModuleHeader *h);
+static W printk(const B *fmt, ...);
+static ER kick(const ModuleHeader *h);
 
 
 void _main(void)
@@ -59,15 +56,16 @@ void _main(void)
 	idt_initialize();	
 
 // get memory size
-// put modules
-	for (; h->type != end;) {
-		unsigned int addr;
+	while (h->type != mod_end) {
+		UW addr;
 
 		printk("%d %d %d %d\n",
 				h->type, h->length, h->bytes, h->zBytes);
 
-		if (h->type == kernel)
+		if (h->type == mod_kernel) {
 			kick(h);
+			break;
+		}
 
 		addr = (unsigned int)h + sizeof(*h) + h->length;
 		h = (ModuleHeader*)addr;
@@ -78,15 +76,15 @@ void _main(void)
 
 static void console_initialize()
 {
-	unsigned char *x = (unsigned char*)BIOS_CURSOR_COL;
-	unsigned char *y = (unsigned char*)BIOS_CURSOR_ROW;
+	UB *x = (UB*)BIOS_CURSOR_COL;
+	UB *y = (UB*)BIOS_CURSOR_ROW;
 
-	cns = getConsole((const unsigned short*)CGA_VRAM_ADDR);
+	cns = getConsole((const UH*)CGA_VRAM_ADDR);
 	cns->locate(*x, *y);
 	printk("Starter has woken up.\n");
 }
 
-static int printk(const char *fmt, ...)
+static W printk(const B *fmt, ...)
 {
 	va_list ap;
 
@@ -94,7 +92,7 @@ static int printk(const char *fmt, ...)
 	return vnprintf((void*)(cns->putc), (char*)fmt, ap);
 };
 
-static int kick(const ModuleHeader *h)
+static ER kick(const ModuleHeader *h)
 {
 	Elf32_Ehdr *eHdr = (Elf32_Ehdr*)&(h[1]);
 	Elf32_Phdr *pHdr;
@@ -102,14 +100,17 @@ static int kick(const ModuleHeader *h)
 	size_t i;
 	void (*entry)(void);
 
-	if (!isValidModule(eHdr))	return ERR_FORMAT;
+	if (!isValidModule(eHdr)) {
+		printk("bad module\n");
+		return E_PAR;
+	}
 
 	p = (UB*)eHdr;
 	pHdr = (Elf32_Phdr*)&(p[eHdr->e_phoff]);
 
 	for (i = 0; i < eHdr->e_phnum; pHdr++, i++) {
-		unsigned char *w;
-		unsigned char *r;
+		UB *w;
+		UB *r;
 
 		printk("t=%d o=%p v=%p p=%p, fsz=%d, msz=%d\n",
 				pHdr->p_type, pHdr->p_offset, pHdr->p_vaddr,
@@ -127,5 +128,5 @@ static int kick(const ModuleHeader *h)
 	entry = (void*)(eHdr->e_entry);
 	entry();
 
-	return ERR_OK;
+	return E_OK;
 }

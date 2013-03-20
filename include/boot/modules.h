@@ -31,11 +31,11 @@ For more information, please refer to <http://unlicense.org/>
 
 enum ModuleType
 {
-	end = 0,
-	kernel = 1,
-	server = 2,
-	user = 3,
-	initrd = 4
+	mod_end = 0,
+	mod_kernel = 1,
+	mod_server = 2,
+	mod_user = 3,
+	mod_initrd = 4
 };
 
 typedef struct _ModuleHeader

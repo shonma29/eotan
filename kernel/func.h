@@ -102,4 +102,7 @@ extern ER			load_lowlib (VP *argp);
 /* api.c */
 extern void api_initialize(void);
 
+/* modules.c */
+extern void run_init_program(void);
+
 #endif				/* __CORE_FUNC_H__ */

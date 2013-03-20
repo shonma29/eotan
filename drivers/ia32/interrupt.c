@@ -269,6 +269,7 @@ void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
       }
     }
 
+    printk("page fault=%p\n", fault_get_addr());
     fault_with_error(edi, esi, ebp, esp, ebx, edx,
 		ecx, eax, es, ds, no, err, eip, cs, eflags);
 

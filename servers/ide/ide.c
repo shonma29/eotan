@@ -221,6 +221,7 @@ static int init_ide_driver(void)
 
     initialized = 0;
     if (init_ide() != E_OK) {
+	dbg_printf("[IDE] error on initialize\n");
 	return E_SYS;
     }
 
