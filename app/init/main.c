@@ -99,6 +99,7 @@ Version 2, June 1991
 #include <itron/syscall.h>
 #include <itron/errno.h>
 #include <lowlib.h>
+#include "../../kernel/boot.h"
 #include "../../kernel/config.h"
 #include "../../lib/libserv/libserv.h"
 #include "init.h"
@@ -117,7 +118,7 @@ static W read_line_edit(B * line, W length);
 int main(int ac, B ** av)
 {
     static B line[100];
-    UW rootfs;
+    struct machine_info info;
     ER errno;
     ID myself;
 
@@ -128,9 +129,10 @@ int main(int ac, B ** av)
 
     init_device();
 
-    errno = vsys_inf(1, 0, &rootfs);
+    errno = vsys_inf(1, 0, &info);
     if (errno == E_OK) {
-	errno = posix_init(myself, rootfs);
+	dbg_printf("rootfs=%x\n", info.rootfs);
+	errno = posix_init(myself, info.rootfs);
     }
 
     if (errno != E_OK) {

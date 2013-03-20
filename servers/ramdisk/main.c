@@ -24,13 +24,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <core.h>
 #include <device.h>
 #include <string.h>
-#include <itron/errno.h>
-#include <itron/struct.h>
-#include <itron/syscall.h>
-#include <itron/types.h>
 #include <itron/rendezvous.h>
+#include "../../kernel/boot.h"
 #include "../../lib/libserv/libserv.h"
 #include "../../lib/libserv/port.h"
 #include "ramdisk.h"
@@ -168,6 +166,7 @@ static ER_ID initialize(void)
 			sizeof(DDEV_REQ),
 			sizeof(DDEV_RES)
 	};
+	struct machine_info info;
 
 	port = acre_por(&pk_cpor);
 	if (port < 0) {
@@ -182,6 +181,15 @@ static ER_ID initialize(void)
 		del_por(port);
 
 		return E_SYS;
+	}
+
+	if (!vsys_inf(1, 0, &info)) {
+		if ((info.initrd_size > 0)
+				&& (info.initrd_size <= sizeof(buf))) {
+			dbg_printf("[RAMDISK] initrd_start=%p initrd_size=%x\n",
+					info.initrd_start, info.initrd_size);
+			memcpy(buf, (UB*)(info.initrd_start), info.initrd_size);
+		}
 	}
 
 	return port;

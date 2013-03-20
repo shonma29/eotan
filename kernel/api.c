@@ -794,7 +794,7 @@ if_get_system_info(VP argp)
       W sub;
       VP buf;
     } *args = argp;
-  W		  *rootfs;
+  struct machine_info *out;
   struct machine_info	*info;
   
 
@@ -802,10 +802,9 @@ if_get_system_info(VP argp)
     {
       
     case ROOTFS_INFO:
-      rootfs = (W *)args->buf;
+      out = (struct machine_info *)args->buf;
       info = (struct machine_info*)(MODULE_TABLE | 0x80000000);
-      *rootfs = info->rootfs;
-      printk ("get_system_info: rootfs_info: rootfs = 0x%x\n", info->rootfs);	/* */
+      *out = *info;
       return (E_OK);
 
     default:

@@ -85,6 +85,7 @@ kern.bin: starter.bin ../kernel/core.bin ../servers/fs/fs \
 	[ `wc -c < starter.bin` -le $(STARTER_SIZE) ]
 	cp starter.bin $@
 	$(TOOL)append 1 ../kernel/core.bin 4 >> $@
+	$(TOOL)append 4 ../initrd.img 4 >> $@
 	$(TOOL)append 2 ../servers/fs/fs 4 >> $@
 	$(TOOL)append 2 ../servers/port-manager/port-manager 4 >> $@
 	$(TOOL)append 2 ../servers/console/console 4 >> $@
@@ -93,7 +94,6 @@ kern.bin: starter.bin ../kernel/core.bin ../servers/fs/fs \
 	$(TOOL)append 2 ../servers/ramdisk/ramdisk 4 >> $@
 	$(TOOL)append 2 ../servers/ide/ide 4 >> $@
 	$(TOOL)append 3 ../app/init/init 4 >> $@
-	$(TOOL)append 4 ../initrd.img 4 >> $@
 	$(TOOL)append 0 >> $@
 
 .PHONY: clean

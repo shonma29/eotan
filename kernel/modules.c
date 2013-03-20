@@ -41,6 +41,7 @@ static size_t dup(UB **to, Elf32_Ehdr *eHdr);
 static ER run(const UW type, const Elf32_Ehdr *eHdr, UB *to,
 		const size_t size);
 static ER map(const ID tskId, UB *to, UB *from, const size_t size);
+static void set_initrd(ModuleHeader *h);
 
 
 void run_init_program(void)
@@ -62,6 +63,10 @@ void run_init_program(void)
 				run(h->type, eHdr, to, size);
 			break;
 
+		case mod_initrd:
+			set_initrd(h);
+			break;
+
 		default:
 			break;
 		}
@@ -69,6 +74,7 @@ void run_init_program(void)
 		addr = (UW)h + sizeof(*h) + h->length;
 		h = (ModuleHeader*)addr;
 	}
+	//TODO release memory of modules
 }
 
 static size_t dup(UB **to, Elf32_Ehdr *eHdr)
@@ -175,3 +181,11 @@ static ER map(const ID tskId, UB *to, UB *from, const size_t size)
 	return E_OK;
 }
 
+static void set_initrd(ModuleHeader *h)
+{
+	struct machine_info *info = (struct machine_info*)MODULE_TABLE;
+
+	info->rootfs = 0x80020000;
+	info->initrd_start = MIN_KERNEL + (UW)&(h[1]);
+	info->initrd_size = h->bytes;
+}

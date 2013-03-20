@@ -197,6 +197,8 @@ static ER initialize(void)
     info->ext_mem = MIN_MEMORY_SIZE - RESERVED_MEMORY;
     info->real_mem = MIN_MEMORY_SIZE;
     info->rootfs = 0x80000000;
+    info->initrd_start = 0;
+    info->initrd_size = 0;
 
     kernlog_initialize();	/* コンソールに文字を出力できるようにする */
     paging_initialize();
@@ -245,5 +247,9 @@ static void banner(void)
     printk("extend memory = %d Kbytes\n", info->ext_mem / 1024);
     printk("real memory = %d Kbytes\n", info->real_mem / 1024);
     printk("root fs = %x\n", info->rootfs);
+#if 0
+    printk("initrd start = %p size = %x\n",
+    		info->initrd_start, info->initrd_size);
+#endif
 }
 
