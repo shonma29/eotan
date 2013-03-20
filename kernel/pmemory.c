@@ -96,12 +96,12 @@ static void release_memory(UW paddr, UW length)
 void pmem_init(void)
 {
     W i, j;
-    struct boot_header *boot_info;
+    struct machine_info *boot_info;
 
-    boot_info = (struct boot_header *) MODULE_TABLE;
-    physmem_max = boot_info->machine.real_mem;
-    base_mem = boot_info->machine.base_mem;
-    ext_mem = boot_info->machine.ext_mem;
+    boot_info = (struct machine_info*) MODULE_TABLE;
+    physmem_max = boot_info->real_mem;
+    base_mem = boot_info->base_mem;
+    ext_mem = boot_info->ext_mem;
 
     memory_map_size = physmem_max / PAGE_SIZE;
     if (memory_map_size > MAX_MEMORY_MAP_SIZE) {
@@ -136,13 +136,20 @@ void pmem_init(void)
 #if 0
     printk("release: ");
 #endif
+#if 1
+{
+	extern unsigned char end;
+	release_memory(0x0020000,
+		       VTOR((unsigned int) (&end) - 0x80020000));
+}
+#else
     if (boot_info->count == 0) {
 	extern unsigned char end;
 
-/* #ifdef DEBUG */
+#ifdef DEBUG
 	printk("release_memory: 0x%x, 0x%x\n",
 	       0x00020000, VTOR((unsigned int) (&end) - 0x80020000));
-/* #endif */
+#endif
 	release_memory(0x0020000,
 		       VTOR((unsigned int) (&end) - 0x80020000));
     } else {
@@ -159,7 +166,7 @@ void pmem_init(void)
 #endif
 	}
     }
-
+#endif
     free_mem = 0;
     bit_free = 0;
     byte_free = 0;

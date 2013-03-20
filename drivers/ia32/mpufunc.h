@@ -42,9 +42,6 @@ extern ER region_put(ID id, VP start, UW size, VP buf);
 extern ER region_get_status(ID id, ID rid, VP stat);
 extern void adjust_vm(UW max_mem);
 
-/* gdt.c */
-extern ER set_gdt(int index, GEN_DESC * desc);
-
 /* interrupt.c */
 extern volatile W	on_interrupt;
 extern BOOL	delayed_dispatch;

@@ -119,28 +119,6 @@ typedef struct {
 
 /**************************************************************
  *
- *	ディスクリプタ(一般形)
- *
- */
-typedef struct
-{
-  UH	limit0:16;	/*  104 */
-  UH	base0:16;	/* タスクベース 0..15		*/
-  UH	base1:8;	/* タスクベース 16..23		*/
-  UH	type:4;
-  UH 	zero0:1;	/* 未使用 (0)			*/
-  UH	dpl:2;		/* ディスクリプタ		*/
-  UH	present:1;	/* ディスクリプタ present bit	*/
-  UH	limit1:4;
-  UH	zero1:2;	/* 未使用 (0)			*/
-  UH	d:1;
-  UH	g:1;		/* 粒度 (1 = 4K バイト単位)	*/
-  UH	base2:8;	/* タスクベース 24..31		*/
-} GEN_DESC;
-
-
-/**************************************************************
- *
  *	タスクディスクリプタ
  *
  */
@@ -169,32 +147,6 @@ typedef struct
 #define SET_TSS_LIMIT(x,limit)	{\
    (x).limit0 = limit & 0x0000ffff; \
    (x).limit1 = limit >> 16 & 0x0f; }
-
-/**************************************************************
- *
- *	ゲート・ディスクリプタ
- *
- */
-typedef struct
-{
-  UH	offset0:16;	/* オフセット 0..15		*/
-  UH	selector:16;	/* セレクタ			*/
-  UH	count:5;	/* コピーカウント		*/
-  UH 	zero0:3;	/* 未使用 (0)			*/
-  UH	type:4;
-  UH	system:1;	/* システムオブジェクト (0)	*/
-  UH	dpl:2;		/* 特権レベル			*/
-  UH	present:1;	/* ディスクリプタ present bit	*/
-  UH	offset1:16;	/* オフセット 16..31		*/
-} GATE_DESC;
-
-#define GET_OFFSET_GATE(desc)		\
-  (desc.offset0 | (desc.offset1 << 16));
-
-#define SET_OFFSET_GATE(desc,x)		\
-(desc.offset0 = x & 0xffff);		\
-  (desc.offset1 = (x >> 16) & 0xffff);
-
 
 #define STACK_DIR	SMALL
 #define MAXINT		(0x7fffffff)

@@ -21,7 +21,6 @@ Version 2, June 1991
 #define __IA32_INTERRUPT_H__	1
 
 #define INTERRUPT_DESC	0x0e
-#define FAULT_DESC	0x0f
 
 #define INT_INVALID_OPCODE	6
 #define INT_DOUBLE_FAULT	8
@@ -30,25 +29,6 @@ Version 2, June 1991
 #define INT_STACK_SEG		12
 #define INT_PROTECTION		13
 #define INT_PAGE_FAULT		14
-
-struct idt_t
-{
-  int	offset0:16;
-  int	selector:16;
-  int	zero:8;
-  int	type:4;
-  int	dt0:1;
-  int	dpl:2;
-  int	p:1;
-  int	offset1:16;
-};
-
-#define GET_OFFSET_IDT(desc)		\
-  (desc.offset0 | desc.offset1 << 16);
-
-#define SET_OFFSET_IDT(desc,x)		\
-(desc.offset0 = x & 0xffff);		\
-  (desc.offset1 = x >> 16 & 0xffff);
 
 #endif /* __IA32_INTERRUPT_H__ */
 

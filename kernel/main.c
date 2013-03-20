@@ -191,12 +191,12 @@ ER main(void)
  */
 static ER initialize(void)
 {
-    struct boot_header *info = (struct boot_header *)MODULE_TABLE;
+    struct machine_info *info = (struct machine_info*)MODULE_TABLE;
 
-    info->machine.base_mem = RESERVED_MEMORY;
-    info->machine.ext_mem = MIN_MEMORY_SIZE - RESERVED_MEMORY;
-    info->machine.real_mem = MIN_MEMORY_SIZE;
-    info->machine.rootfs = 0x80000000;
+    info->base_mem = RESERVED_MEMORY;
+    info->ext_mem = MIN_MEMORY_SIZE - RESERVED_MEMORY;
+    info->real_mem = MIN_MEMORY_SIZE;
+    info->rootfs = 0x80000000;
 
     kernlog_initialize();	/* コンソールに文字を出力できるようにする */
     paging_initialize();
@@ -237,13 +237,13 @@ static ER initialize(void)
  */
 static void banner(void)
 {
-    struct boot_header *info = (struct boot_header *) MODULE_TABLE;
+    struct machine_info *info = (struct machine_info*) MODULE_TABLE;
 
     printk("kernel %s for %s/%s\n",
 	KERN_VERSION, KERN_ARCH, KERN_MPU);
-    printk("base memory = %d Kbytes\n", info->machine.base_mem / 1024);
-    printk("extend memory = %d Kbytes\n", info->machine.ext_mem / 1024);
-    printk("real memory = %d Kbytes\n", info->machine.real_mem / 1024);
-    printk("root fs = %x\n", info->machine.rootfs);
+    printk("base memory = %d Kbytes\n", info->base_mem / 1024);
+    printk("extend memory = %d Kbytes\n", info->ext_mem / 1024);
+    printk("real memory = %d Kbytes\n", info->real_mem / 1024);
+    printk("root fs = %x\n", info->rootfs);
 }
 
