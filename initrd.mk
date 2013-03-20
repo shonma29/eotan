@@ -23,7 +23,7 @@ all: clean
 	${MKFS}/statfs ${TARGET} mknod /dev/ide9	0x80010009
 	${MKFS}/statfs ${TARGET} mknod /dev/rd	0x80020000
 	${MKFS}/statfs ${TARGET} dir /dev
-	${MKFS}/statfs ${TARGET} write /initrd.mk build/initrd.mk
+	${MKFS}/statfs ${TARGET} write /initrd.mk initrd.mk
 	(cd app/test && ./inst_app.sh ${TARGET})
 	(cd app/contribution && ./inst_app.sh ${TARGET})
 

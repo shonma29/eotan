@@ -42,7 +42,7 @@ char *testfile() {
 	char buf2[1];
 	struct utimbuf sb;
 
-	fd = open("/config.tab", O_RDWR);
+	fd = open("/initrd.mk", O_RDWR);
 	assert_ne("open[0]", -1, fd);
 
 	assert_eq("fstat", 0, fstat(fd, &st));
@@ -78,14 +78,14 @@ char *testfile() {
 
 	assert_eq("close[0]", 0, close(fd));
 
-	assert_eq("chown[0]", 0, chown("/config.tab", 147, 258));
-	assert_eq("chmod[0]", 0, chmod("/config.tab", S_IXGRP | S_IROTH | S_IWOTH));
+	assert_eq("chown[0]", 0, chown("/initrd.mk", 147, 258));
+	assert_eq("chmod[0]", 0, chmod("/initrd.mk", S_IXGRP | S_IROTH | S_IWOTH));
 
 	sb.actime = 25;
 	sb.modtime = 7081;
-	assert_eq("utime[0]", 0, utime("/config.tab", &sb));
+	assert_eq("utime[0]", 0, utime("/initrd.mk", &sb));
 
-	fd = open("/config.tab", O_RDONLY);
+	fd = open("/initrd.mk", O_RDONLY);
 	assert_ne("open[1]", -1, fd);
 
 	assert_eq("fstat[1]", 0, fstat(fd, &st2));
@@ -108,7 +108,7 @@ char *testfile() {
 	assert_eq("close[0]", 0, close(fd));
 
 	assert_eq("access[0]", 0,
-			access("/config.tab", R_OK | W_OK));
+			access("/initrd.mk", R_OK | W_OK));
 
 	assert_eq("umask[0]", 022, umask(006));
 	fd = open("/mtest", O_CREAT | O_WRONLY, 0666);

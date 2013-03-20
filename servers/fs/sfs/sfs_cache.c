@@ -28,7 +28,8 @@ Version 2, June 1991
 
 #define HASH_SIZE	30
 #ifdef USE_MALLOC
-static int CACHE_SIZE = 2048;
+//static int CACHE_SIZE = 2048;
+static int CACHE_SIZE = 256;
 #else
 #define CACHE_SIZE  (200)
 #endif

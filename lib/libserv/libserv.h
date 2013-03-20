@@ -27,5 +27,6 @@ extern ER	init_malloc (UW free_memory_erea);
 extern VP	malloc (UW size);
 extern VP	calloc (UW size, UW nentry);
 extern void	free (VP addr);
+extern void print_freelist(void);
 
 #endif /* __LIBKERN_LIBKERNEL_H__ */

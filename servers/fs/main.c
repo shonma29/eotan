@@ -88,6 +88,7 @@ Version 2, June 1991
 #include <mpu/config.h>
 #include "fs.h"
 
+#define HEAP_ADDR 0x80280000
 
 static void banner(void);
 
@@ -117,7 +118,8 @@ int main(void)
 	ext_tsk();
 	return FALSE;
     }
-    init_malloc(VADDR_HEAP);
+//    init_malloc(VADDR_HEAP);
+    init_malloc(HEAP_ADDR);
 
     /* 各機能単位での初期化
      */
