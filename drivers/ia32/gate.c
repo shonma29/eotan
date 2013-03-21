@@ -48,6 +48,8 @@ void idt_initialize(void)
 
 	for (i = 0; i <= MAX_IDT; i++)
 		*p++ = desc;
+
+	idt_load();
 }
 
 void idt_set(UB no, UH selector, W (*handler)(void), UB type, UB dpl)
@@ -74,12 +76,14 @@ void gdt_initialize(void)
 	SegmentDescriptor *p = (SegmentDescriptor*)GDT_ADDR;
 
 	/* segments */
-	memset(p, 0, sizeof(SegmentDescriptor));
+	memset(p, 0, (MAX_GDT + 1) * sizeof(SegmentDescriptor));
 	gdt_set_segment(kern_code, 0, 0xfffff, segmentCode, dpl_kern);
 	gdt_set_segment(kern_data, 0, 0xfffff, segmentData, dpl_kern);
 	gdt_set_segment(user_code, 0, 0x7fff0, segmentCode, dpl_user);
 	gdt_set_segment(user_data, 0, 0x7fff0, segmentData, dpl_user);
 	gdt_set_segment(user_stack, 0, 0x3ffff, segmentStack, dpl_user);
+
+	gdt_load();
 }
 
 static void gdt_set_segment(UH selector, UW base, UW limit, UB type, UB dpl)

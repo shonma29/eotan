@@ -201,10 +201,11 @@ static ER initialize(void)
     info->initrd_size = 0;
 
     kernlog_initialize();	/* コンソールに文字を出力できるようにする */
-    paging_initialize();
-    gdt_initialize();
+//    paging_initialize();
+//    gdt_initialize();
     api_initialize();
-    idt_initialize();
+//    idt_initialize();
+    fpu_initialize();
     init_interrupt();
 #ifdef DEBUG
     printk("initialize: start\n");

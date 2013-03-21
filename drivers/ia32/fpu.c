@@ -19,6 +19,11 @@ Version 2, June 1991
 #include "thread.h"
 #include "sync.h"
 
+void fpu_initialize(void)
+{
+  __asm__("finit");
+}
+
 void fpu_save(T_TCB *taskp)
 {
   __asm__("fsave %0" : "=m" (taskp->mpu.fpu_context));

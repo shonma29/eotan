@@ -165,16 +165,17 @@ puts_entry:
 	ret
  
 
-	.align 2
+.data
+.align 2
 stack_ptr:
 	.long STACK_ADDR
 	.word SELECTOR_STACK
 
 gdt_ptr:
-	.word 4*8-1
+	.word 4 * 8 - 1
 	.long gdt_table
 
-	.align 8
+.align 8
 gdt_table:
 	/* 0x00: null */
 	.byte 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xc0, 0x00

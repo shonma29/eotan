@@ -70,6 +70,7 @@ extern void resume(UW);
 extern void load_task_register(UW);
 
 /* fpu.c */
+extern void fpu_initialize(void);
 extern void fpu_save(T_TCB * taskp);
 extern void fpu_restore(T_TCB * taskp);
 extern void fpu_start(T_TCB * taskp);
@@ -103,6 +104,10 @@ extern void fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 extern void fault_with_error(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 		UW ecx, UW eax, UW es, UW ds, UW no,
 		UW err, UW eip, UW cs, UW eflags);
+
+/* gate_loader.s */
+extern void gdt_load(void);
+extern void idt_load(void);
 
 /* abort.s */
 extern W handle0(void);
