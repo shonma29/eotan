@@ -210,7 +210,6 @@ static ER initialize(void)
     printk("initialize: start\n");
 #endif
     pmem_init();		/* 物理メモリ管理機能の初期化           */
-    adjust_vm(physmem_max);
     banner();			/* 立ち上げメッセージ出力               */
     flag_initialize();		/* イベントフラグ管理機能の初期化       */
     port_initialize();

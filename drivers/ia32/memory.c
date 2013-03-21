@@ -68,6 +68,11 @@ static void set_initial_directories(void)
 		addr = set_initial_pages(p, addr);
 		p += PTE_PER_PAGE;
 	}
+
+	for (; i < PTE_PER_PAGE / 2; i++) {
+		dir[i] = 0;
+		dir[OFFSET_KERN + i] = 0;
+	}
 }
 
 static UB *set_initial_pages(PTE *p, UB *addr)

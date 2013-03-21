@@ -40,7 +40,6 @@ extern ER region_duplicate(ID src, ID dst, ID rid);
 extern ER region_get(ID id, VP start, UW size, VP buf);
 extern ER region_put(ID id, VP start, UW size, VP buf);
 extern ER region_get_status(ID id, ID rid, VP stat);
-extern void adjust_vm(UW max_mem);
 
 /* interrupt.c */
 extern volatile W	on_interrupt;
