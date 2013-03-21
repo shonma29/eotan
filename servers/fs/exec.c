@@ -256,7 +256,8 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 #endif
     fs_close_file(ip);
 
-    strncpy2(procp->proc_name, pathname, PROC_NAME_LEN);
+    strncpy(procp->proc_name, pathname, PROC_NAME_LEN - 1);
+    procp->proc_name[PROC_NAME_LEN - 1] = '\0';
 
 #ifdef notdef
     dbg_printf("[PM] exec return %d\n", errno);

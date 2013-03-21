@@ -16,9 +16,9 @@ Version 2, June 1991
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_getcwd.c,v 1.1 1997/08/31 13:25:20 night Exp $  */
 
 #include <errno.h>
+#include <string.h>
 #include <itron/types.h>
 #include "posix.h"
-#include "../libserv/libserv.h"
 
 
 /* getcwd 
@@ -33,7 +33,8 @@ getcwd (char *buf, int size)
 	errno = ERANGE;
 	return (NULL);
     }
-    strncpy2(buf, lowlib_data->dpath, size);
+    strncpy(buf, lowlib_data->dpath, size - 1);
+    buf[size - 1] = '\0';
     errno = EOK;
     return (buf);
 }

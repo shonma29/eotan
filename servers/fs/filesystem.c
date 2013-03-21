@@ -682,7 +682,8 @@ fs_create_file(struct inode * startip,
 
     for (parent_length = strlen(path); parent_length >= 0; parent_length--) {
 	if (path[parent_length] == '/') {
-	    strncpy2(parent_path, path, MAX_NAMELEN);
+	    strncpy(parent_path, path, MAX_NAMELEN - 1);
+	    parent_path[MAX_NAMELEN - 1] = '\0';
 	    parent_path[parent_length] = '\0';
 	    break;
 	}
@@ -937,7 +938,8 @@ fs_remove_file(struct inode * startip, B * path, struct access_info * acc)
 
     for (parent_length = strlen(path); parent_length >= 0; parent_length--) {
 	if (path[parent_length] == '/') {
-	    strncpy2(parent_path, path, MAX_NAMELEN);
+	    strncpy(parent_path, path, MAX_NAMELEN - 1);
+	    parent_path[MAX_NAMELEN - 1] = '\0';
 	    parent_path[parent_length] = '\0';
 	    break;
 	}
@@ -981,7 +983,8 @@ W fs_remove_dir(struct inode * startip, B * path, struct access_info * acc)
 
     for (parent_length = strlen(path); parent_length >= 0; parent_length--) {
 	if (path[parent_length] == '/') {
-	    strncpy2(parent_path, path, MAX_NAMELEN);
+	    strncpy(parent_path, path, MAX_NAMELEN - 1);
+	    parent_path[MAX_NAMELEN - 1] = '\0';
 	    parent_path[parent_length] = '\0';
 	    break;
 	}
@@ -1082,7 +1085,8 @@ W fs_make_dir(struct inode * startip,
 
     for (parent_length = strlen(path); parent_length >= 0; parent_length--) {
 	if (path[parent_length] == '/') {
-	    strncpy2(parent_path, path, MAX_NAMELEN);
+	    strncpy(parent_path, path, MAX_NAMELEN - 1);
+	    parent_path[MAX_NAMELEN - 1] = '\0';
 	    parent_path[parent_length] = '\0';
 	    break;
 	}
@@ -1180,7 +1184,8 @@ fs_link_file(W procid, B * src, W srclen, B * dst, W dstlen,
 
     for (parent_length = dstlen; parent_length >= 0; parent_length--) {
 	if (dst[parent_length] == '/') {
-	    strncpy2(parent_path, dst, MAX_NAMELEN);
+	    strncpy(parent_path, dst, MAX_NAMELEN - 1);
+	    parent_path[MAX_NAMELEN - 1] = '\0';
 	    parent_path[parent_length] = '\0';
 	    break;
 	}

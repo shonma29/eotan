@@ -115,7 +115,6 @@ Version 2, June 1991
 #include <fcntl.h>
 #include "../fs.h"
 #include "../vfs.h"
-#include "../../../lib/libserv/libserv.h"
 #include "sfs_func.h"
 
 #ifndef MIN
@@ -141,7 +140,6 @@ sfs_i_lookup(struct inode *parent,
     ID device;
     W nentry;
     W i;
-    extern void strncpy2(B *, B *, W);
 #ifdef FMDEBUG
     dbg_printf("sfs_i_lookup: start. fname = %s\n", fname);	/* */
 #endif
@@ -280,7 +278,8 @@ sfs_i_create(struct inode * parent,
     /* ディレクトリのエントリを作成 */
     dirent.sfs_d_index = newip->i_index;
     /* 表示文字長を SFS_MAXNAMELEN にするため．後に pad があるので大丈夫 */
-    strncpy2(dirent.sfs_d_name, fname, SFS_MAXNAMELEN + 1);
+    strncpy(dirent.sfs_d_name, fname, SFS_MAXNAMELEN);
+    dirent.pad[0] = '\0';
 
     /* ディレクトリにエントリを追加 */
     dirnentry = sfs_read_dir(parent, 0, NULL);
@@ -625,7 +624,8 @@ W sfs_i_link(struct inode * parent, char *fname, struct inode * srcip,
     /* ディレクトリのエントリを作成 */
     dirent.sfs_d_index = srcip->i_index;
     /* 表示文字長を SFS_MAXNAMELEN にするため．後に pad があるので大丈夫 */
-    strncpy2(dirent.sfs_d_name, fname, SFS_MAXNAMELEN + 1);
+    strncpy(dirent.sfs_d_name, fname, SFS_MAXNAMELEN);
+    dirent.pad[0] = '\0';
 
     /* ディレクトリにエントリを追加 */
     dirnentry = sfs_read_dir(parent, 0, NULL);
@@ -700,8 +700,9 @@ sfs_i_unlink(struct inode * parent, char *fname, struct access_info * acc)
 	while (i < nentry) {
 	    buf[i].sfs_d_index = buf[i + 1].sfs_d_index;
 	    /* 表示文字長を SFS_MAXNAMELEN にするため．後に pad があるので大丈夫 */
-	    strncpy2(buf[i].sfs_d_name, buf[i + 1].sfs_d_name,
-		    SFS_MAXNAMELEN + 1);
+	    strncpy(buf[i].sfs_d_name, buf[i + 1].sfs_d_name,
+		    SFS_MAXNAMELEN);
+	    buf[i].pad[0] = '\0';
 	    i++;
 	}
 	i = parent->i_size - sizeof(struct sfs_dir);
@@ -859,7 +860,8 @@ sfs_i_mkdir(struct inode * parent,
     /* ディレクトリのエントリを作成 */
     dirent.sfs_d_index = newip->i_index;
     /* 表示文字長を SFS_MAXNAMELEN にするため．後に pad があるので大丈夫 */
-    strncpy2(dirent.sfs_d_name, fname, SFS_MAXNAMELEN + 1);
+    strncpy(dirent.sfs_d_name, fname, SFS_MAXNAMELEN);
+    dirent.pad[0] = '\0';
 
     /* ディレクトリにエントリを追加 */
     parent->i_link += 1;
@@ -931,8 +933,9 @@ W sfs_i_rmdir(struct inode * parent, char *fname, struct access_info * acc)
 	while (i < nentry) {
 	    buf[i].sfs_d_index = buf[i + 1].sfs_d_index;
 	    /* 表示文字長を SFS_MAXNAMELEN にするため．後に pad があるので大丈夫 */
-	    strncpy2(buf[i].sfs_d_name, buf[i + 1].sfs_d_name,
-		    SFS_MAXNAMELEN + 1);
+	    strncpy(buf[i].sfs_d_name, buf[i + 1].sfs_d_name,
+		    SFS_MAXNAMELEN);
+	    buf[i].pad[0] = '\0';
 	    i++;
 	}
 	i = parent->i_size - sizeof(struct sfs_dir);

@@ -48,10 +48,12 @@ chdir (char *path)
 
     /* lowlib_data->dpath の更新 */
     if (path[0] == '/') {
-	strncpy2(lowlib_data->dpath, path, MAX_DPATH + 1);
+	strncpy(lowlib_data->dpath, path, MAX_DPATH);
+	lowlib_data->dpath[MAX_DPATH] = '\0';
 	lowlib_data->dpath_len = len;
     } else {
-	strncpy2(buf, path, MAX_DPATH + 1);
+	strncpy(buf, path, MAX_DPATH);
+	buf[MAX_DPATH] = '\0';
 	top = src = buf;
 	len = lowlib_data->dpath_len;
 	dst = lowlib_data->dpath + len;

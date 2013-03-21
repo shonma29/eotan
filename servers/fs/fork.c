@@ -69,8 +69,9 @@ Version 2, June 1991
  *
  */
 
-#include "fs.h"
 #include <lowlib.h>
+#include <string.h>
+#include "fs.h"
 
 
 
@@ -129,13 +130,15 @@ W proc_fork(struct proc *parent, W * childid, ID main_task, ID signal_task)
     /*  lowlib_data.signal_task = signal_task; */
     lowlib_data.my_pid = *childid;
 
-    strncpy2(lowlib_data.dpath, lowlib_par.dpath, lowlib_par.dpath_len + 1);
+    strncpy(lowlib_data.dpath, lowlib_par.dpath, lowlib_par.dpath_len);
+    lowlib_data.dpath[lowlib_par.dpath_len] = '\0';
     lowlib_data.dpath_len = lowlib_par.dpath_len;
 
     errno = vput_reg(main_task, LOWLIB_DATA,
 		     sizeof(struct lowlib_data), &lowlib_data);
 
-    strncpy2(newproc->proc_name, parent->proc_name, PROC_NAME_LEN);
+    strncpy(newproc->proc_name, parent->proc_name, PROC_NAME_LEN - 1);
+    newproc->proc_name[PROC_NAME_LEN - 1] = '\0';
 
     return (EOK);
 }

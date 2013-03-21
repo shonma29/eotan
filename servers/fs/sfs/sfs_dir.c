@@ -51,11 +51,10 @@ Version 2, June 1991
  *
  */
 
+#include <string.h>
 #include "../fs.h"
 #include "sfs_fs.h"
 #include "sfs_func.h"
-
-extern int strlen(B *);
 
 
 /* ディレクトリに関係する処理
@@ -128,7 +127,7 @@ W sfs_getdents(struct inode *ip, ID caller, W offset,
 	       VP buf, UW length, W *rsize, W *fsize)
 {
   W nentry, i, s, errno, len;
-  struct sfs_dirnet {
+  struct sfs_dirent {
     long		d_ino;
     unsigned long	d_off;
     unsigned short	d_reclen;
@@ -149,7 +148,8 @@ W sfs_getdents(struct inode *ip, ID caller, W offset,
       if ((*rsize) + len >= length) return(EOK);
       dent.d_reclen = len;
       dent.d_off = i*s;
-      strncpy2(dent.d_name, dirp[i].sfs_d_name, SFS_MAXNAMELEN+1);
+      strncpy(dent.d_name, dirp[i].sfs_d_name, SFS_MAXNAMELEN);
+      dent.d_name[SFS_MAXNAMELEN] = '\0';
       errno = vput_reg(caller, buf+(*rsize), len, &dent);
       if (errno) return(errno);
       *rsize += len;
