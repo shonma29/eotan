@@ -1,35 +1,69 @@
 /*
+This is free and unencumbered software released into the public domain.
 
-B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
 
-GNU GENERAL PUBLIC LICENSE
-Version 2, June 1991
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
 
-(C) B-Free Project.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
 
-(C) 2002, Tomohide Naniwa
-
+For more information, please refer to <http://unlicense.org/>
 */
-/* interrupt.h
- *
- *
- * Discription
- *
- */
+#ifndef __INTERRUPT_H__
+#define __INTERRUPT_H__ 1
 
-#ifndef __IA32_INTERRUPT_H__
-#define __IA32_INTERRUPT_H__	1
+enum ExternalInterrupts {
+	int_division_error = 0,
+	int_debugger = 1,
+	int_nmi = 2,
+	int_break_point = 3,
+	int_overflow = 4,
+	int_out_of_bound = 5,
+	int_invalid_operation_code = 6,
+	int_no_coprocessor = 7,
+	int_double_fault = 8,
+	int_coprocessor_segment_overrun = 9,
+	int_invalid_tss = 10,
+	int_no_segment = 11,
+	int_stack_segment_fault = 12,
+	int_protection = 13,
+	int_page_fault = 14,
+	int_reserved_15 = 15,
+	int_math_fault = 16,
+	int_alignment_check = 17,
+	int_machine_check = 18,
+	int_simd = 19,
+	int_reserved_20 = 20,
+	int_reserved_21 = 21,
+	int_reserved_22 = 22,
+	int_reserved_23 = 23,
+	int_reserved_24 = 24,
+	int_reserved_25 = 25,
+	int_reserved_26 = 26,
+	int_reserved_27 = 27,
+	int_reserved_28 = 28,
+	int_reserved_29 = 29,
+	int_reserved_30 = 30,
+	int_reserved_31 = 31
+};
 
-#define INTERRUPT_DESC	0x0e
+#define MIN_USER_INTERRUPT 0x21
+#define MAX_USER_INTERRUPT 0xff
+#define NUM_OF_INTERRUPTS (MAX_USER_INTERRUPT + 1)
 
-#define INT_INVALID_OPCODE	6
-#define INT_DOUBLE_FAULT	8
-#define INT_TSS_FAULT		10
-#define INT_INVALID_SEG		11
-#define INT_STACK_SEG		12
-#define INT_PROTECTION		13
-#define INT_PAGE_FAULT		14
-
-#endif /* __IA32_INTERRUPT_H__ */
-
-
+#endif

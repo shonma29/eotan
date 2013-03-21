@@ -21,6 +21,7 @@ Version 2, June 1991
 #include "thread.h"
 #include "func.h"
 #include "sync.h"
+#include "arch.h"
 #include "../../kernel/mpu/interrupt.h"
 #include "../../kernel/mpu/mpufunc.h"
 
@@ -63,7 +64,7 @@ void start_interval(void)
     printk("[KERN] start interval\n");
     /* timer
      */
-    idt_set(32, KERNEL_CSEG, int32_handler, INTERRUPT_DESC, KERNEL_DPL);
+    idt_set(INT_TIMER, kern_code, int32_handler, interruptGate32, dpl_kern);
     reset_intr_mask(0);
 
     enter_critical();
