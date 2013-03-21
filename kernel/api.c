@@ -184,7 +184,6 @@ Version 2, June 1991
 #include "boot.h"
 #include "mpu/interrupt.h"
 #include "mpu/mpufunc.h"
-#include "arch/archfunc.h"
 
 #define SVC_IF(x,n)	if_ ## x
 #define SVC_UNDEFINED		nodef

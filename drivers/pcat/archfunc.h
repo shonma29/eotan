@@ -15,15 +15,10 @@ Version 2, June 1991
 
 #include <itron/types.h>
 
-/* timer.c */
-extern void start_interval(void);
-extern void intr_interval(void);
-extern void timer_initialize(void);
-extern void set_timer(W time, void (*func) (VP), VP argp);
-extern ER unset_timer(void (*func) (VP), VP arg);
-extern void check_timer(void);
-
 /* rtc.c */
 extern int rtc_get_time(void);
+
+/* 8254.c */
+extern ER pit_initialize(const UW freq);
 
 #endif /* __PCAT_ARCH_H__ */

@@ -62,8 +62,6 @@ extern W	int38_handler (void);	/* floppy disk */
 extern W        int44_handler (void);   /* psaux */
 extern W	int46_handler (void);
 extern W	syscall_handler(void);
-extern void	intr_interval (void);
-extern void	start_interval (void);
 
 /* locore.S */
 extern void resume(UW);
