@@ -19,7 +19,9 @@ Version 2, June 1991
 #include <string.h>
 #include <mpu/config.h>
 #include <mpu/io.h>
+#include "../../kernel/arch/8259a.h"
 #include "../../kernel/arch/arch.h"
+#include "../../kernel/arch/archfunc.h"
 #include "interrupt.h"
 #include "thread.h"
 #include "func.h"
@@ -68,22 +70,7 @@ W init_interrupt(void)
     W i;
 
     printk("[KERN] init_interrupt\n");
-    /* 8259 の初期化 */
-    /* init master 8259A */
-    outb(MASTER_8259A_COM, 0x11);	/* ICW1 */
-    outb(MASTER_8259A_DATA, 0x20);	/* ICW2 */
-    outb(MASTER_8259A_DATA, 0x04);	/* ICW3 */
-    outb(MASTER_8259A_DATA, 0x01);	/* ICW4 */
-
-    /* init slave 8259A */
-    outb(SLAVE_8259A_COM, 0x11);	/* ICW1 */
-    outb(SLAVE_8259A_DATA, 0x28);	/* ICW2 */
-    outb(SLAVE_8259A_DATA, 0x02);	/* ICW3 */
-    outb(SLAVE_8259A_DATA, 0x01);	/* ICW4 */
-
-/* set mask */
-    outb(MASTER_8259A_DATA, 0xfb);	/* 1111 1011 */
-    outb(SLAVE_8259A_DATA, 0xff);	/* 1111 1111 */
+    pic_initialize();
 
     idt_set(int_division_error, kern_code, handle0, interruptGate32, dpl_kern);
     idt_set(int_debugger, kern_code, handle1, interruptGate32, dpl_kern);
@@ -118,21 +105,19 @@ W init_interrupt(void)
     idt_set(int_reserved_30, kern_code, handle30, interruptGate32, dpl_kern);
     idt_set(int_reserved_31, kern_code, handle31, interruptGate32, dpl_kern);
 
-    idt_set(INT_KEYBOARD, kern_code, int33_handler, interruptGate32, dpl_kern);
+    idt_set(PIC_IR_VECTOR(ir_keyboard), kern_code, int33_handler, interruptGate32, dpl_kern);
 
     idt_set(44, kern_code, int44_handler, interruptGate32, dpl_kern);
     idt_set(46, kern_code, int46_handler, interruptGate32, dpl_kern);	/* IDE 0 */
 
-    reset_intr_mask(1);
-    reset_intr_mask(3);
-    reset_intr_mask(9);
+    pic_reset_mask(ir_keyboard);
 
     for (i = 0; i < 128; i++) {
 	intr_table[i].attr = 0;
 	intr_table[i].func = 0;
     }
 
-    intr_table[INT_KEYBOARD].attr = 0;
+    intr_table[PIC_IR_VECTOR(ir_keyboard)].attr = 0;
     on_interrupt = 0;
     delayed_dispatch = FALSE;
     return (E_OK);
@@ -164,13 +149,13 @@ void interrupt(W intn)
 	}
 	break;
 
-    case INT_TIMER:
+    case PIC_IR_VECTOR(ir_pit):
 	intr_interval();
 	break;
 
-    case INT_KEYBOARD:
-	if (intr_table[INT_KEYBOARD].func != 0) {
-	    (intr_table[INT_KEYBOARD].func) ();
+    case PIC_IR_VECTOR(ir_keyboard):
+	if (intr_table[PIC_IR_VECTOR(ir_keyboard)].func != 0) {
+	    (intr_table[PIC_IR_VECTOR(ir_keyboard)].func) ();
 	}
 	break;
     }

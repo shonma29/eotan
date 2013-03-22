@@ -15,7 +15,8 @@
 #include <device.h>
 #include <itron/rendezvous.h>
 #include <mpu/io.h>
-#include <mpu/mpufunc.h>
+#include <arch/archfunc.h>
+#include <arch/8259a.h>
 #include "../../lib/libserv/libserv.h"
 #include "../../lib/libserv/port.h"
 #include "psaux.h"
@@ -77,7 +78,7 @@ init_driver (void)
 
   /* 割り込みハンドラの登録  */
   psaux_interrupt_initialize();
-  reset_intr_mask(PSAUX_IRQ); 
+  pic_reset_mask(ir_mouse); 
 
   /* キーボードコントローラ初期化 */
   dis_int();

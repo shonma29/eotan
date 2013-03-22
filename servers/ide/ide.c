@@ -77,7 +77,8 @@ Version 2, June 1991
 #include <string.h>
 #include <itron/rendezvous.h>
 #include <mpu/io.h>
-#include <mpu/mpufunc.h>
+#include <arch/8259a.h>
+#include <arch/archfunc.h>
 #include "../../lib/libserv/libserv.h"
 #include "../../lib/libserv/port.h"
 #include "ide.h"
@@ -945,7 +946,7 @@ void intr_ide(void)
 {
     dis_int();
     ide_intr_flag = TRUE;
-    reset_intr_mask(IDE0_INTR_MASK);
+    pic_reset_mask(ir_ide_primary);
     ena_int();
 }
 

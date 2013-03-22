@@ -46,7 +46,6 @@ extern volatile W	on_interrupt;
 extern BOOL	delayed_dispatch;
 
 extern W	init_interrupt (void);
-extern void	reset_intr_mask (W);
 extern void	interrupt (W);
 extern void	page_fault (UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 		UW ecx, UW eax, UW es, UW ds, UW no,
@@ -72,9 +71,6 @@ extern void fpu_initialize(void);
 extern void fpu_save(T_TCB * taskp);
 extern void fpu_restore(T_TCB * taskp);
 extern void fpu_start(T_TCB * taskp);
-
-/* reset_intr_mask.c */
-extern void reset_intr_mask(W intn);
 
 /* context.c */
 extern ER make_task_context(T_TCB * task, T_CTSK * pk_ctsk);

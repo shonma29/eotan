@@ -26,46 +26,26 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <mpu/io.h>
-#include "../../kernel/sync.h"
-#include "../../kernel/mpu/gate.h"
-#include "../../kernel/mpu/mpufunc.h"
-#include "arch.h"
-#include "archfunc.h"
-#include "8254.h"
+#include "sync.h"
 #include "8259a.h"
 
-static void pit_set(const UH n);
 
-
-ER pit_initialize(const UW freq)
+void pic_reset_mask(const UB ir)
 {
-	UW half;
-	UW n;
+	UH port;
+	UB intNo = ir;
+	UB mask;
 
-	if ((freq < PIT_MIN_FREQ)
-			|| (freq > PIT_MAX_FREQ))
-		return E_PAR;
+	if (ir < 8) {
+		port = pic_master2;
+	} else {
+		port = pic_slave2;
+		intNo -= 8;
+	}
 
-	half = (freq << (8 - 1)) * 3;
-	n = ((PIT_CLOCK_MUL3 << 8) + half) / (half << 1) + 1;
+	mask = ~PIC_IR_BIT(intNo);
 
 	enter_critical();
-	idt_set(PIC_IR_VECTOR(ir_pit), kern_code, int32_handler,
-			interruptGate32, dpl_kern);
-	pit_set(n);
-	pic_reset_mask(ir_pit);
+	outb(port, mask & inb(port));
 	leave_critical();
-
-	return E_OK;
-}
-
-static void pit_set(const UH n)
-{
-	outb(pit_std_control,
-			PIT_SELECT_CNT0
-			| PIT_ACCESS_WORD
-			| PIT_MODE_RATE
-			| PIT_COUNT_BINARY);
-	outb(pit_std_counter0, n & 0xff);
-	outb(pit_std_counter0, (n >> 8) & 0xff);
 }
