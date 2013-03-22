@@ -27,6 +27,9 @@ For more information, please refer to <http://unlicense.org/>
 #ifndef __MODULES_H__
 #define __MODULES_H__ 1
 
+#define MEMORY_INFO_END 0x00007000
+#define MEMORY_INFO_ADDR 0x00007004
+
 #define MODULES_ADDR 0x0000a000
 
 enum ModuleType
@@ -45,5 +48,14 @@ typedef struct _ModuleHeader
 	size_t bytes;
 	size_t zBytes;
 } ModuleHeader;
+
+typedef struct
+{
+	unsigned int baseLow;
+	unsigned int baseHigh;
+	unsigned int sizeLow;
+	unsigned int sizeHigh;
+	unsigned int type;
+} MemoryInfo;
 
 #endif

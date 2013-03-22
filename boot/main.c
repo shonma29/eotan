@@ -49,17 +49,26 @@ static ER kick(const ModuleHeader *h);
 void _main(void)
 {
 	ModuleHeader *h = (ModuleHeader*)MODULES_ADDR;
+	UW max = *((UW*)MEMORY_INFO_END);
+	MemoryInfo *p = (MemoryInfo*)MEMORY_INFO_ADDR;
 
 	console_initialize();
+
 	paging_initialize();
 	gdt_initialize();
 	idt_initialize();	
 
-// get memory size
+	/* memory map */
+	for (; (UW)p < max; p ++) {
+		printk("memory type=%x base=%x %x size=%x %x\n",
+		p->type,
+		p->baseHigh, p->baseLow, p->sizeHigh, p->sizeLow);
+	}
+
 	while (h->type != mod_end) {
 		UW addr;
 
-		printk("%d %d %d %d\n",
+		printk("module type=%x length=%x bytes=%x zBytes=%x\n",
 				h->type, h->length, h->bytes, h->zBytes);
 
 		if (h->type == mod_kernel) {

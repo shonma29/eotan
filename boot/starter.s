@@ -39,6 +39,7 @@ For more information, please refer to <http://unlicense.org/>
 .set SELECTOR_STACK, 0x18
 
 .set STACK_ADDR, 0x00008000
+.set MEMORY_INFO_ADDR, 0x7000
 
 /**
  * start on segment 0x0800.
@@ -74,7 +75,26 @@ _start:
 	cmpw $0x004f, %ax
 	jne error_vesa
 */
-	/*TODO get memory map */
+	/* get memory map */
+	xorl %ebx, %ebx
+	xorw %ax, %ax
+	movw %ax, %es
+	movw $MEMORY_INFO_ADDR + 4, %ax
+	movw %ax, %di
+memory_loop:
+	movl $20, %ecx
+	movl $0x534d4150, %edx
+	movl $0x0000e820, %eax
+	int $0x15
+	jc error_memory
+
+	addw $20, %di
+	test %ebx, %ebx
+	jnz memory_loop
+
+	xorl %eax, %eax
+	movl %di, %ax
+	movl %eax, MEMORY_INFO_ADDR
 
 	/* enable A20 */
 	call a20_wait
@@ -112,6 +132,10 @@ flush_op:
 
 error_vesa:
 	movw $message_vesa_error, %ax
+	jmp die
+
+error_memory:
+	movw $message_memory_error, %ax
 	jmp die
 
 /**
@@ -188,5 +212,8 @@ gdt_table:
 
 message_vesa_error:
 	.asciz "cannot use VESA"
+
+message_memory_error:
+	.asciz "cannot get memory map"
 
 .org 256, 0
