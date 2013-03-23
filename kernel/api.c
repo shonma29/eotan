@@ -794,16 +794,13 @@ if_get_system_info(VP argp)
       VP buf;
     } *args = argp;
   struct machine_info *out;
-  struct machine_info	*info;
-  
 
   switch (args->func)
     {
       
     case ROOTFS_INFO:
       out = (struct machine_info *)args->buf;
-      info = (struct machine_info*)(MODULE_TABLE | 0x80000000);
-      *out = *info;
+      *out = machineInfo;
       return (E_OK);
 
     default:

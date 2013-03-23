@@ -24,13 +24,6 @@ Version 2, June 1991
 
 #define  MEM_FREE	(0x00)
 #define  MEM_USE	(0x01)
-#define  MEM_MAP	(0x02)
-
-extern unsigned int	physmem_max;	/* 物理メモリの最大量 (base_mem + ext_mem) */
-extern unsigned int	base_mem;	/* 下位にあるメモリのサイズ  */
-					/* (PC9801 の場合 640K) */
-extern unsigned int	ext_mem;	/* 拡張メモリのサイズ */
-
 
 #endif /* __CORE_MEMORY_H__ */
 

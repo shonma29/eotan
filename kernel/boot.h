@@ -16,8 +16,6 @@ Version 2, June 1991
 #ifndef __CORE_BOOT_H__
 #define __CORE_BOOT_H__	1
 
-#define MODULE_TABLE	(0x00000800)
-
 struct machine_info
 {
   unsigned int	ext_mem;
@@ -27,5 +25,7 @@ struct machine_info
   unsigned int initrd_start;
   unsigned int initrd_size;
 };
+
+extern struct machine_info machineInfo;
 
 #endif /*__CORE_BOOT_H__*/

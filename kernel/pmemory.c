@@ -35,9 +35,6 @@ Version 2, June 1991
 #define BITS	8
 static UB memory_map[MAX_MEMORY_MAP_SIZE / BITS];
 
-unsigned int physmem_max;	/* 物理メモリの最大量 (base_mem + ext_mem) */
-unsigned int base_mem;		/* 下位にあるメモリのサイズ (PC9801 の場合 640K) */
-unsigned int ext_mem;		/* 拡張メモリのサイズ */
 static UW free_mem = 0;
 
 static UW memory_map_size;
@@ -96,14 +93,8 @@ static void release_memory(UW paddr, UW length)
 void pmem_init(void)
 {
     W i, j;
-    struct machine_info *boot_info;
 
-    boot_info = (struct machine_info*) MODULE_TABLE;
-    physmem_max = boot_info->real_mem;
-    base_mem = boot_info->base_mem;
-    ext_mem = boot_info->ext_mem;
-
-    memory_map_size = physmem_max / PAGE_SIZE;
+    memory_map_size = machineInfo.real_mem / PAGE_SIZE;
     if (memory_map_size > MAX_MEMORY_MAP_SIZE) {
 	memory_map_size = MAX_MEMORY_MAP_SIZE;
     }
@@ -188,8 +179,8 @@ void pmem_init(void)
     leave_serialize();
 
 #ifdef notdef
-    printk("physmem = %d, base_mem = %d, ext_mem = %d\n", physmem_max,
-	   base_mem, ext_mem);
+    printk("physmem = %d, base_mem = %d, ext_mem = %d\n", machineInfo.real_mem,
+	   machineInfo.base_mem, machineInfo.ext_mem);
     printk("memory_map = %d(%d), free_mem = %d\n",
 	   memory_map_size * BITS, memory_map_size, free_mem);
 #endif

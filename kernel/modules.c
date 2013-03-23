@@ -183,9 +183,7 @@ static ER map(const ID tskId, UB *to, UB *from, const size_t size)
 
 static void set_initrd(ModuleHeader *h)
 {
-	struct machine_info *info = (struct machine_info*)MODULE_TABLE;
-
-	info->rootfs = 0x80020000;
-	info->initrd_start = MIN_KERNEL + (UW)&(h[1]);
-	info->initrd_size = h->bytes;
+	machineInfo.rootfs = 0x80020000;
+	machineInfo.initrd_start = MIN_KERNEL + (UW)&(h[1]);
+	machineInfo.initrd_size = h->bytes;
 }

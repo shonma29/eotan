@@ -75,6 +75,8 @@ static void banner(void);
 /* 外部変数の宣言 */
 extern W do_timer;
 
+struct machine_info machineInfo;
+
 /* 強制終了するタスクのテーブル */
 #define TRMTBL_SIZE 10
 static int trmtbl_num = 0;
@@ -191,14 +193,12 @@ ER main(void)
  */
 static ER initialize(void)
 {
-    struct machine_info *info = (struct machine_info*)MODULE_TABLE;
-
-    info->base_mem = RESERVED_MEMORY;
-    info->ext_mem = MIN_MEMORY_SIZE - RESERVED_MEMORY;
-    info->real_mem = MIN_MEMORY_SIZE;
-    info->rootfs = 0x80000000;
-    info->initrd_start = 0;
-    info->initrd_size = 0;
+    machineInfo.base_mem = RESERVED_MEMORY;
+    machineInfo.ext_mem = MIN_MEMORY_SIZE - RESERVED_MEMORY;
+    machineInfo.real_mem = MIN_MEMORY_SIZE;
+    machineInfo.rootfs = 0x80000000;
+    machineInfo.initrd_start = 0;
+    machineInfo.initrd_size = 0;
 
     kernlog_initialize();	/* コンソールに文字を出力できるようにする */
 //    paging_initialize();
@@ -239,17 +239,15 @@ static ER initialize(void)
  */
 static void banner(void)
 {
-    struct machine_info *info = (struct machine_info*) MODULE_TABLE;
-
     printk("kernel %s for %s/%s\n",
 	KERN_VERSION, KERN_ARCH, KERN_MPU);
-    printk("base memory = %d Kbytes\n", info->base_mem / 1024);
-    printk("extend memory = %d Kbytes\n", info->ext_mem / 1024);
-    printk("real memory = %d Kbytes\n", info->real_mem / 1024);
-    printk("root fs = %x\n", info->rootfs);
+    printk("base memory = %d Kbytes\n", machineInfo.base_mem / 1024);
+    printk("extend memory = %d Kbytes\n", machineInfo.ext_mem / 1024);
+    printk("real memory = %d Kbytes\n", machineInfo.real_mem / 1024);
+    printk("root fs = %x\n", machineInfo.rootfs);
 #if 0
     printk("initrd start = %p size = %x\n",
-    		info->initrd_start, info->initrd_size);
+    		machineInfo.initrd_start, machineInfo.initrd_size);
 #endif
 }
 
