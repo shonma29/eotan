@@ -43,17 +43,17 @@ paging_set_directory:
 	ret
 
 paging_start:
+	movl %cr4, %eax
+	/* set PSE, PGE */
+	orb $0x90, %al
+	movl %eax, %cr4
+
 	movl %cr0, %eax
 	/* set PG, AM, WP */
 	orl $0x80050000, %eax
 	/* clear CD, NW */
 	andl $0x9fffffff, %eax
 	movl %eax, %cr0
-
-	movl %cr4, %eax
-	/* set PSE, PGE */
-	orb $0x90, %al
-	movl %eax, %cr4
 
 tlb_flush:
 	movl %cr3, %eax

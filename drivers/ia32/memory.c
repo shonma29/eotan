@@ -33,6 +33,9 @@ For more information, please refer to <http://unlicense.org/>
 typedef UW PTE;
 
 #define ATTR_INITIAL (PAGE_WRITABLE | PAGE_PRESENT)
+#ifdef USE_BIG_PAGE
+#define ATTR_KERN (PAGE_BIG | PAGE_WRITABLE | PAGE_PRESENT)
+#endif
 
 #define PTE_PER_PAGE (PAGE_SIZE / sizeof(PTE))
 
@@ -45,6 +48,10 @@ typedef UW PTE;
 static void set_initial_directories(void);
 static UB *set_initial_pages(PTE *p, UB *addr);
 static PTE calc_pte(const void *addr, const UW attr);
+#ifdef USE_BIG_PAGE
+static void set_initial_kern_directories(void);
+static PTE calc_kern_pte(const void *addr);
+#endif
 
 
 void paging_initialize(void)
@@ -92,3 +99,27 @@ static PTE calc_pte(const void *addr, const UW attr)
 	return (PTE)((((UW)addr) & PAGE_ADDR_MASK) | attr);
 }
 
+#ifdef USE_BIG_PAGE
+static void set_initial_kern_directories(void)
+{
+	size_t i;
+	PTE *dir = (PTE*)PAGE_DIR_ADDR;
+	UB *addr = (UB*)0;
+
+	for (i = 0; i < NUM_OF_INITIAL_DIR; i++) {
+		dir[i] = calc_kern_pte(addr);
+		dir[OFFSET_KERN + i] = calc_kern_pte(addr);
+		addr += PAGE_SIZE * PTE_PER_PAGE;
+	}
+
+	for (; i < PTE_PER_PAGE / 2; i++) {
+		dir[i] = 0;
+		dir[OFFSET_KERN + i] = 0;
+	}
+}
+
+static PTE calc_kern_pte(const void *addr)
+{
+	return (PTE)((((UW)addr) & PAGE_BIG_ADDR_MASK) | ATTR_KERN);
+}
+#endif
