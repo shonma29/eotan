@@ -682,7 +682,7 @@ proc_renew_task(W procid, FP main_funcp, FP signal_funcp,
     pk_ctsk.exinf = 0;
     pk_ctsk.startaddr = main_funcp;
     pk_ctsk.itskpri = POSIX_TASK_LEVEL;
-    pk_ctsk.stksz = PAGE_SIZE * 2;
+    pk_ctsk.stksz = POSIX_STACK_SIZE;
     pk_ctsk.addrmap = NULL;
     errno = vcre_tsk(&pk_ctsk, &rid);
     if (errno) {
@@ -694,7 +694,7 @@ proc_renew_task(W procid, FP main_funcp, FP signal_funcp,
     pk_ctsk.exinf = 0;
     pk_ctsk.startaddr = signal_funcp;
     pk_ctsk.itskpri = POSIX_TASK_LEVEL;
-    pk_ctsk.stksz = PAGE_SIZE * 2;
+    pk_ctsk.stksz = POSIX_STACK_SIZE;
     pk_ctsk.addrmap = NULL;
     errno = vcre_tsk(&pk_ctsk, &rid);
     if (errno) {

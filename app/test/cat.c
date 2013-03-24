@@ -37,7 +37,7 @@ For more information, please refer to <http://unlicense.org/>
 #define DELIMITER ": "
 #define NEWLINE "\n"
 
-#define SIZE_BUF 8192
+#define SIZE_BUF 2048
 
 #define OK (0)
 #define NG (1)

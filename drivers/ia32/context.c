@@ -19,7 +19,7 @@ Version 2, June 1991
 #include "sync.h"
 #include "mpu/mpufunc.h"
 
-static ER make_task_stack(T_TCB * task, W size, VP * sp);
+static ER make_task_stack(T_TCB * task, VP * sp);
 static void make_local_stack(T_TCB * tsk, W size, W acc);
 
 
@@ -35,13 +35,17 @@ ER make_task_context(T_TCB * task, T_CTSK * pk_ctsk)
     VP sp;
     ER err;
 
-    err = make_task_stack(task, pk_ctsk->stksz, &sp);
+    if (pk_ctsk->stksz > PAGE_SIZE) {
+	return E_PAR;
+    }
+
+    err = make_task_stack(task, &sp);
     if (err != E_OK) {
 	return (err);
     }
 
     /* スタック情報の登録 */
-    task->stksz0 = task->stksz = pk_ctsk->stksz;
+    task->stksz0 = task->stksz = PAGE_SIZE;
     task->stackptr0 = task->stackptr = (B *) sp;
 
     /* レジスタ類をすべて初期化する:
@@ -87,10 +91,10 @@ ER make_task_context(T_TCB * task, T_CTSK * pk_ctsk)
  * カーネルモードで使用するタスク用スタックを生成する。
  *
  */
-static ER make_task_stack(T_TCB * task, W size, VP * sp)
+static ER make_task_stack(T_TCB * task, VP * sp)
 {
     /* スタックポインタは 0x80000000 の仮想アドレスでアクセスする必要がある。 */
-    (*sp) = (VP*)((UW)palloc(PAGES(size)) | 0x80000000);
+    (*sp) = (VP*)((UW)palloc(1) | 0x80000000);
 #ifdef TSKSW_DEBUG
     printk("sp = 0x%x\n", *sp);
 #endif

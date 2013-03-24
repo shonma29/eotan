@@ -33,8 +33,8 @@ Version 2, June 1991
 #define KERNEL_DPL	0
 #define USER_DPL	3
 
-#define KERNEL_STACK_SIZE	(PAGE_SIZE * 10)
-#define POSIX_STACK_SIZE	(PAGE_SIZE * 10)
+#define KERNEL_STACK_SIZE	(PAGE_SIZE * 1)
+#define POSIX_STACK_SIZE	(PAGE_SIZE * 1)
 
 /* メモリ管理関係 */
 #ifndef PAGE_SIZE
