@@ -92,7 +92,7 @@ void slab_destroy(slab_t *slab) {
 
 	for (p = list_dequeue(q); p; p = list_dequeue(q)) {
 		slab->pfree((void*)((ptr_t)p - offsetof(slab_block_t, blocks)),
-				slab->block_size);
+				1);
 	}
 }
 
@@ -136,7 +136,7 @@ void slab_free(slab_t *slab, void *p) {
 		slab->empty_num--;
 		list_remove(&(block->blocks));
 		slab->block_num--;
-		slab->pfree(block, slab->block_size);
+		slab->pfree(block, 1);
 	}
 
 	else	list_enqueue(&(block->entries), &(((slab_entry_t*)p)->entries));
