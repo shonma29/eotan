@@ -966,6 +966,6 @@ void api_initialize(void)
 	SegmentDescriptor *p = (SegmentDescriptor*)GDT_ADDR;
 
 	gate_set((GateDescriptor*)(&(p[call_service >> 3])),
-			kern_code, syscall_handler,
+			kern_code, service_handler,
 			ATTR_PRESENT | (dpl_user << 5) | callGate32);
 }

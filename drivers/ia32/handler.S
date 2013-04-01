@@ -17,10 +17,8 @@
 
 .globl  int32_handler
 .globl  int33_handler
-.globl  int38_handler
 .globl  int44_handler
 .globl	int46_handler
-.globl	syscall_handler
 
 .text
 
@@ -146,52 +144,4 @@ int46_out:	outb	%al, SLAVE_8259A_COM
 		popl	%es
 		popl	%ds
 		iret
-
-/**************************************************************************
- * int64_handler --- system call.
- *
- *	システムコール割り込みの処理。
- *	そのため、他の割り込みと異なり、EOI などの処理を行わない。
- *
- *
- *	システムコール処理では次のことを「仮定」している。
- *	1) システムコール番号は、レジスタ eax に収められている。
- *	2) 同じくシステムコールへの引数の先頭番地は、レジスタ ebx に
- *	   収められている。
- *	3) システムコールからの返り値は、レジスタ eax に収められる。
- *	   (ユーザプロセスはこのことを「知って」いることを仮定している)
- *
- */
-syscall_handler:
-		pushl	%ds
-		pushl	%es
-	
-		pushl   %ebx
-		pushl   %ecx
-		pushl	%edx
-		pushl	%esi
-		pushl	%edi
-/*		pushal */
-		pushl 	%ebp
-		movl	%esp,%ebp
-		pushl	%edx	/* 引数の先頭番地 */
-		pushl	%eax	/* システムコール番号 */
-	
-		movw	$0x10, %ax
-		movw	%ax,%ds 
-		movw	%ax,%es
-
-		call 	syscall
-	
-		leave
-/*		popal		 */
-		popl	%edi
-		popl	%esi
-		popl	%edx
-		popl    %ecx
-		popl    %ebx
-
-		popl	%es
-		popl	%ds
-		lret
 

@@ -60,7 +60,6 @@ extern W	int33_handler (void);
 extern W	int38_handler (void);	/* floppy disk */
 extern W        int44_handler (void);   /* psaux */
 extern W	int46_handler (void);
-extern W	syscall_handler(void);
 
 /* locore.S */
 extern void resume(UW);
@@ -136,6 +135,7 @@ extern W handle28(void);
 extern W handle29(void);
 extern W handle30(void);
 extern W handle31(void);
+extern W service_handler(void);
 
 /* paging.s */
 extern void *fault_get_addr(void);

@@ -27,6 +27,8 @@ For more information, please refer to <http://unlicense.org/>
 
 .text
 
+.set SELECTOR_KERN_DATA, 0x10
+
 .globl handle0
 .globl handle1
 .globl handle2
@@ -59,6 +61,7 @@ For more information, please refer to <http://unlicense.org/>
 .globl handle29
 .globl handle30
 .globl handle31
+.globl service_handler
 
 
 /* division error (fault) */
@@ -127,7 +130,7 @@ handle12:
 	pushl %ds
 	pushl %es
 	pushal
-	movw $0x10, %ax
+	movw $SELECTOR_KERN_DATA, %ax
 	movw %ax,%ds
 	movw %ax,%es
 	call protect_fault
@@ -148,7 +151,7 @@ handle14:
 	pushl %ds
 	pushl %es
 	pushal
-	movw $0x10, %ax
+	movw $SELECTOR_KERN_DATA, %ax
 	movw %ax,%ds
 	movw %ax,%es
 	call page_fault
@@ -247,7 +250,7 @@ abort_handler:
 	pushl %ds
 	pushl %es
 	pushal
-	movw $0x10, %ax
+	movw $SELECTOR_KERN_DATA, %ax
 	movw %ax,%ds
 	movw %ax,%es
 	call fault
@@ -261,7 +264,7 @@ abort_with_error_handler:
 	pushl %ds
 	pushl %es
 	pushal
-	movw $0x10, %ax
+	movw $SELECTOR_KERN_DATA, %ax
 	movw %ax,%ds
 	movw %ax,%es
 	call fault_with_error
@@ -270,3 +273,17 @@ abort_with_error_handler:
 	popl %ds
 	addl $8, %esp
 	iret
+
+service_handler:
+	pushl %ds
+	pushl %es
+	pushl %edx
+	pushl %eax
+	movw $SELECTOR_KERN_DATA, %ax
+	movw %ax,%ds
+	movw %ax,%es
+	call syscall
+	addl $8, %esp
+	popl %es
+	popl %ds
+	lret
