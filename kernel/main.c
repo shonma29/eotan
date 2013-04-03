@@ -193,9 +193,6 @@ ER main(void)
  */
 static ER initialize(void)
 {
-    machineInfo.base_mem = RESERVED_MEMORY;
-    machineInfo.ext_mem = MIN_MEMORY_SIZE - RESERVED_MEMORY;
-    machineInfo.real_mem = MIN_MEMORY_SIZE;
     machineInfo.rootfs = 0x80000000;
     machineInfo.initrd_start = 0;
     machineInfo.initrd_size = 0;
@@ -237,9 +234,6 @@ static void banner(void)
 {
     printk("kernel %s for %s/%s\n",
 	KERN_VERSION, KERN_ARCH, KERN_MPU);
-    printk("base memory = %d Kbytes\n", machineInfo.base_mem / 1024);
-    printk("extend memory = %d Kbytes\n", machineInfo.ext_mem / 1024);
-    printk("real memory = %d Kbytes\n", machineInfo.real_mem / 1024);
     printk("root fs = %x\n", machineInfo.rootfs);
 #if 0
     printk("initrd start = %p size = %x\n",

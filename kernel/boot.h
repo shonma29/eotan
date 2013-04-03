@@ -18,9 +18,6 @@ Version 2, June 1991
 
 struct machine_info
 {
-  unsigned int	ext_mem;
-  unsigned int	real_mem;
-  unsigned int	base_mem;
   unsigned int	rootfs;
   unsigned int initrd_start;
   unsigned int initrd_size;
