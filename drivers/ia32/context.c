@@ -94,7 +94,7 @@ ER make_task_context(T_TCB * task, T_CTSK * pk_ctsk)
 static ER make_task_stack(T_TCB * task, VP * sp)
 {
     /* スタックポインタは 0x80000000 の仮想アドレスでアクセスする必要がある。 */
-    (*sp) = (VP*)((UW)palloc(1) | 0x80000000);
+    (*sp) = (VP*)((UW)palloc(1) | MIN_KERNEL);
 #ifdef TSKSW_DEBUG
     printk("sp = 0x%x\n", *sp);
 #endif

@@ -1,5 +1,5 @@
-#ifndef _LIMITS_H_
-#define _LIMITS_H_
+#ifndef _CORE_MEMORY_MAP_H_
+#define _CORE_MEMORY_MAP_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,27 +26,28 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <core.h>
+#include <stddef.h>
 
-#define CHAR_BIT 8
-#define INT_BIT 32
-#define MB_LEN_MAX 6
+#define MEMORY_MAP_ADDR 0x80180000
+#define MAX_PAGES (1024 * 1024 / 2)
 
-#define CHAR_MAX 0x7f
-#define CHAR_MIN (-0x7f - 1)
-#define SCHAR_MAX 0x7f
-#define SCHAR_MIN (-0x7f - 1)
-#define UCHAR_MAX 0xffU
+#define MAP_USE (0)
+#define MAP_FULL_USE (0x00000000)
 
-#define SHRT_MAX 0x7fff
-#define SHRT_MIN (-0x7fff - 1)
-#define USHRT_MAX 0xffffU
+#define MAP_FREE (1)
+#define MAP_FULL_FREE (0xffffffff)
 
-#define INT_MAX 0x7fffffff
-#define INT_MIN (-0x7fffffff - 1)
-#define UINT_MAX 0xffffffffU
+#define BITS_MASK ((1 << MPU_LOG_INT) - 1)
 
-#define LONG_MAX 0x7fffffffL
-#define LONG_MIN (-0x7fffffffL - 1)
-#define ULONG_MAX 0xffffffffUL
+typedef struct {
+	size_t left_pages;
+	UW last_block;
+	size_t max_blocks;
+	size_t max_pages;
+	UW map[0];
+} MemoryMap;
+
+extern void memory_initialize(void);
 
 #endif

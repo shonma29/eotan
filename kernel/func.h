@@ -36,13 +36,6 @@ extern int printk(char *format, ...);
 /* error.c */
 extern void falldown();
 
-/* pmemory.c */
-extern void init_memory(void);
-extern void pmem_init(void);
-extern void *palloc(size_t size);
-extern void pfree(void *p, size_t size);
-extern UW pmemfree(void);
-
 /* thread.c */
 extern void thread_initialize(void);
 extern void thread_initialize1(void);
@@ -107,5 +100,10 @@ extern void api_initialize(void);
 
 /* modules.c */
 extern void run_init_program(void);
+
+/* palloc.c */
+extern void *palloc(size_t size);
+extern void pfree(void *addr, size_t size);
+extern UW pmemfree(void);
 
 #endif				/* __CORE_FUNC_H__ */

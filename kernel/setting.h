@@ -27,6 +27,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
+#define KERN_STACK_ADDR 0x80008000
+
 #define MIN_MANUAL_ID (1)
 #define MAX_MANUAL_ID (49151)
 #define MIN_AUTO_ID (49152)

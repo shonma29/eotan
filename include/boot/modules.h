@@ -27,10 +27,12 @@ For more information, please refer to <http://unlicense.org/>
 #ifndef __MODULES_H__
 #define __MODULES_H__ 1
 
-#define MEMORY_INFO_END 0x00007000
-#define MEMORY_INFO_ADDR 0x00007004
+#define MEMORY_INFO_END 0x00006000
+#define MEMORY_INFO_ADDR 0x00006004
 
-#define MODULES_ADDR 0x0000a000
+#define MEMORY_PRESENT (1)
+
+#define MODULES_ADDR 0x0000c000
 
 enum ModuleType
 {

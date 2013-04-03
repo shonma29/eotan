@@ -37,7 +37,7 @@ For more information, please refer to <http://unlicense.org/>
 
 extern int isValidModule(Elf32_Ehdr *eHdr);
 
-static size_t dup(UB **to, Elf32_Ehdr *eHdr);
+static size_t dupModule(UB **to, Elf32_Ehdr *eHdr);
 static ER run(const UW type, const Elf32_Ehdr *eHdr, UB *to,
 		const size_t size);
 static ER map(const ID tskId, UB *to, UB *from, const size_t size);
@@ -52,13 +52,17 @@ void run_init_program(void)
 		Elf32_Ehdr *eHdr;
 		UW addr;
 		UB *to = NULL;
-		size_t size;
+		size_t size = 0;
 
 		switch (h->type) {
 		case mod_server:
+			eHdr = (Elf32_Ehdr*)&(h[1]);
+			run(h->type, eHdr, to, size);
+			break;
+
 		case mod_user:
 			eHdr = (Elf32_Ehdr*)&(h[1]);
-			size = dup(&to, eHdr);
+			size = dupModule(&to, eHdr);
 			if (size)
 				run(h->type, eHdr, to, size);
 			break;
@@ -77,7 +81,7 @@ void run_init_program(void)
 	//TODO release memory of modules
 }
 
-static size_t dup(UB **to, Elf32_Ehdr *eHdr)
+static size_t dupModule(UB **to, Elf32_Ehdr *eHdr)
 {
 	Elf32_Phdr *pHdr;
 	UB *p;
@@ -118,6 +122,10 @@ static size_t dup(UB **to, Elf32_Ehdr *eHdr)
 				pHdr->p_memsz - pHdr->p_filesz);
 		size = pHdr->p_vaddr - (UW)(*to) + pHdr->p_memsz;
 	}
+
+	//TODO palloc
+	//TODO set PTE
+	//TODO flush TLB
 
 	return size;
 }

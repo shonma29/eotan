@@ -201,16 +201,12 @@ static ER initialize(void)
     machineInfo.initrd_size = 0;
 
     kernlog_initialize();	/* コンソールに文字を出力できるようにする */
-//    paging_initialize();
-//    gdt_initialize();
     api_initialize();
-//    idt_initialize();
     fpu_initialize();
     init_interrupt();
 #ifdef DEBUG
     printk("initialize: start\n");
 #endif
-    pmem_init();		/* 物理メモリ管理機能の初期化           */
     banner();			/* 立ち上げメッセージ出力               */
     flag_initialize();		/* イベントフラグ管理機能の初期化       */
     port_initialize();

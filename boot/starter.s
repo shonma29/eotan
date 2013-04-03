@@ -39,7 +39,7 @@ For more information, please refer to <http://unlicense.org/>
 .set SELECTOR_STACK, 0x18
 
 .set STACK_ADDR, 0x00008000
-.set MEMORY_INFO_ADDR, 0x7000
+.set MEMORY_INFO_ADDR, 0x6000
 
 /**
  * start on segment 0x0800.
@@ -93,7 +93,7 @@ memory_loop:
 	jnz memory_loop
 
 	xorl %eax, %eax
-	movl %di, %ax
+	movw %di, %ax
 	movl %eax, MEMORY_INFO_ADDR
 
 	/* enable A20 */

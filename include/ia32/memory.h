@@ -1,3 +1,5 @@
+#ifndef _MEMORY_H_
+#define _MEMORY_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,70 +26,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <cga.h>
-#include <elf.h>
-#include <stdarg.h>
-#include <string.h>
-#include <boot/modules.h>
-#include "../kernel/memory_map.h"
-#include "../kernel/mpu/mpufunc.h"
 
-#define BIOS_CURSOR_COL 0x0450
-#define BIOS_CURSOR_ROW 0x0451
-#define CGA_VRAM_ADDR 0x000b8000
+#define MPU_MAX_PAGE (1024 * 1024)
 
-static CGA_Console *cns;
+#define MPU_LOG_INT (5)
 
-static void console_initialize();
-W printk(const B *fmt, ...);
-static void kick(const ModuleHeader *h);
-
-
-void _main(void)
-{
-	console_initialize();
-
-	paging_initialize();
-	gdt_initialize();
-	idt_initialize();	
-	memory_initialize();
-
-	kick((ModuleHeader*)MODULES_ADDR);
-	for (;;);
-}
-
-static void console_initialize()
-{
-	UB *x = (UB*)BIOS_CURSOR_COL;
-	UB *y = (UB*)BIOS_CURSOR_ROW;
-
-	cns = getConsole((const UH*)CGA_VRAM_ADDR);
-	cns->locate(*x, *y);
-	printk("Starter has woken up.\n");
-}
-
-W printk(const B *fmt, ...)
-{
-	va_list ap;
-
-	va_start(ap, fmt);
-	return vnprintf((void*)(cns->putc), (char*)fmt, ap);
-};
-
-static void kick(const ModuleHeader *h)
-{
-	while (h->type != mod_end) {
-		UW addr;
-
-		if (h->type == mod_kernel) {
-			Elf32_Ehdr *eHdr = (Elf32_Ehdr*)&(h[1]);
-			void (*entry)(void) = (void*)(eHdr->e_entry);
-
-			entry();
-			break;
-		}
-
-		addr = (unsigned int)h + sizeof(*h) + h->length;
-		h = (ModuleHeader*)addr;
-	}
-}
+#endif
