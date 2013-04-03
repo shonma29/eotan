@@ -93,7 +93,7 @@ static void pzero(UW *p)
 {
 	size_t i;
 
-	for (i = 0; i < (PAGE_SIZE >> MPU_LOG_INT); i++)
+	for (i = 0; i < PAGE_SIZE / sizeof(UW); i++)
 		p[i] = 0;
 }
 
