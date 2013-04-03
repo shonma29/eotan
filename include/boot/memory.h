@@ -1,5 +1,3 @@
-#ifndef _CORE_MEMORY_MAP_H_
-#define _CORE_MEMORY_MAP_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,25 +24,21 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <stddef.h>
+#ifndef __BOOT_MEMORY_H__
+#define __BOOT_MEMORY_H__ 1
 
-#define MAP_USE (0)
-#define MAP_FULL_USE (0x00000000)
+#define MEMORY_INFO_END 0x00006000
+#define MEMORY_INFO_ADDR 0x00006004
 
-#define MAP_FREE (1)
-#define MAP_FULL_FREE (0xffffffff)
+#define MEMORY_PRESENT (1)
 
-#define BITS_MASK ((1 << MPU_LOG_INT) - 1)
-
-typedef struct {
-	size_t left_pages;
-	UW last_block;
-	size_t max_blocks;
-	size_t max_pages;
-	UW map[0];
-} MemoryMap;
-
-extern void memory_initialize(void);
+typedef struct
+{
+	unsigned int baseLow;
+	unsigned int baseHigh;
+	unsigned int sizeLow;
+	unsigned int sizeHigh;
+	unsigned int type;
+} MemoryInfo;
 
 #endif

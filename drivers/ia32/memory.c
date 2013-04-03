@@ -27,20 +27,15 @@ For more information, please refer to <http://unlicense.org/>
 
 #include <core.h>
 #include <mpu/config.h>
+#include <mpu/memory.h>
+#include <setting.h>
 #include "mpufunc.h"
 #include "paging.h"
-
-typedef UW PTE;
 
 #define ATTR_INITIAL (PAGE_WRITABLE | PAGE_PRESENT)
 #ifdef USE_BIG_PAGE
 #define ATTR_KERN (PAGE_BIG | PAGE_WRITABLE | PAGE_PRESENT)
 #endif
-
-#define PTE_PER_PAGE (PAGE_SIZE / sizeof(PTE))
-
-// MIN_MEMORY_SIZE should be a multiple of 4 MB.
-#define NUM_OF_INITIAL_DIR (MIN_MEMORY_SIZE / PAGE_SIZE / PTE_PER_PAGE)
 
 // MIN_KERNEL should be a multiple of 4 MB.
 #define OFFSET_KERN (MIN_KERNEL / PAGE_SIZE / PTE_PER_PAGE)

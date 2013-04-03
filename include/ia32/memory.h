@@ -26,9 +26,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <mpu/config.h>
 
 #define MPU_MAX_PAGE (1024 * 1024)
 
 #define MPU_LOG_INT (5)
+
+typedef UW PTE;
+
+#define PTE_PER_PAGE (PAGE_SIZE / sizeof(PTE))
 
 #endif

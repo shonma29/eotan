@@ -24,13 +24,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#ifndef __MODULES_H__
-#define __MODULES_H__ 1
-
-#define MEMORY_INFO_END 0x00006000
-#define MEMORY_INFO_ADDR 0x00006004
-
-#define MEMORY_PRESENT (1)
+#ifndef __BOOT_MODULES_H__
+#define __BOOT_MODULES_H__ 1
 
 #define MODULES_ADDR 0x0000c000
 
@@ -50,14 +45,5 @@ typedef struct _ModuleHeader
 	size_t bytes;
 	size_t zBytes;
 } ModuleHeader;
-
-typedef struct
-{
-	unsigned int baseLow;
-	unsigned int baseHigh;
-	unsigned int sizeLow;
-	unsigned int sizeHigh;
-	unsigned int type;
-} MemoryInfo;
 
 #endif

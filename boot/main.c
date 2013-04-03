@@ -29,8 +29,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdarg.h>
 #include <string.h>
 #include <boot/modules.h>
-#include "../kernel/memory_map.h"
-#include "../kernel/mpu/mpufunc.h"
+#include <memory_map.h>
+#include <mpu/mpufunc.h>
 
 #define BIOS_CURSOR_COL 0x0450
 #define BIOS_CURSOR_ROW 0x0451

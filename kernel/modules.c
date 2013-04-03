@@ -40,7 +40,7 @@ extern int isValidModule(Elf32_Ehdr *eHdr);
 static size_t dupModule(UB **to, Elf32_Ehdr *eHdr);
 static ER run(const UW type, const Elf32_Ehdr *eHdr, UB *to,
 		const size_t size);
-static ER map(const ID tskId, UB *to, UB *from, const size_t size);
+static ER map(const ID tskId, UB *to, UB *from, const size_t pages);
 static void set_initrd(ModuleHeader *h);
 
 
@@ -153,7 +153,7 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr, UB *to,
 
 	if (type == mod_user) {
 		err = map(tskId, to, to + USER_ADDR,
-				(size + PAGE_SIZE - 1) / PAGE_SIZE);
+				(size + PAGE_SIZE - 1) >> PAGE_SHIFT);
 	}
 
 	if (!err) {
@@ -164,7 +164,7 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr, UB *to,
 	return err;
 }
 
-static ER map(const ID tskId, UB *to, UB *from, const size_t size)
+static ER map(const ID tskId, UB *to, UB *from, const size_t pages)
 {
 	T_TCB *p = get_thread_ptr(tskId);
 	UW i;
@@ -174,7 +174,7 @@ static ER map(const ID tskId, UB *to, UB *from, const size_t size)
 		return E_SYS;
 	}
 
-	for (i = 0; i < size; i++) {
+	for (i = 0; i < pages; i++) {
 		if (!vmap(p, (UW)to, (UW)from, ACC_USER)) {
 			printk("[KERN] vmap error(%p, %p)\n", to, from);
 			return E_SYS;

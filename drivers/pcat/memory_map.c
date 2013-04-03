@@ -28,35 +28,18 @@ For more information, please refer to <http://unlicense.org/>
 #include <elf.h>
 #include <limits.h>
 #include <string.h>
+#include <boot/memory.h>
 #include <boot/modules.h>
 #include <mpu/config.h>
 #include <mpu/memory.h>
-#include <config.h>
 #include <memory_map.h>
 #include <setting.h>
-#include <mpu/paging.h>
 
 typedef unsigned long long UD;
 
 #define PAGE_OFFSET_MASK (4096ULL - 1ULL)
 #define PAGE_ADDRESS_MASK ~(4096ULL - 1ULL);
 #define OVER_INT 0x100000000ULL
-#define PAGE_SHIFT (12)
-
-typedef UW PTE;
-
-#define ATTR_INITIAL (PAGE_WRITABLE | PAGE_PRESENT)
-#ifdef USE_BIG_PAGE
-#define ATTR_KERN (PAGE_BIG | PAGE_WRITABLE | PAGE_PRESENT)
-#endif
-
-#define PTE_PER_PAGE (PAGE_SIZE / sizeof(PTE))
-
-/* MIN_MEMORY_SIZE should be a multiple of 4 MB. */
-#define NUM_OF_INITIAL_DIR (MIN_MEMORY_SIZE / PAGE_SIZE / PTE_PER_PAGE)
-
-/* MIN_KERNEL should be a multiple of 4 MB. */
-#define OFFSET_KERN (MIN_KERNEL / PAGE_SIZE / PTE_PER_PAGE)
 
 static MemoryMap *mm = (MemoryMap*)MEMORY_MAP_ADDR;
 
@@ -87,9 +70,6 @@ static inline size_t pages(size_t bytes)
 
 void memory_initialize(void)
 {
-//	size_t i;
-//	PTE *dir = (PTE*)PAGE_DIR_ADDR;
-
 	/* create memory map */
 	map_initialize(pages(getLastPresentAddress()));
 	setAbsentPages();
@@ -99,8 +79,7 @@ void memory_initialize(void)
 	/* keep page directory */
 	map_set_use((void*)PAGE_DIR_ADDR, 1);
 	/* keep PTE */
-	map_set_use((void*)PAGE_ENTRY_ADDR,
-			MIN_MEMORY_SIZE / PAGE_SIZE / PTE_PER_PAGE);
+	map_set_use((void*)PAGE_ENTRY_ADDR, NUM_OF_INITIAL_DIR);
 	/* keep memory information */
 	map_set_use((void*)MEMORY_INFO_END, 1);
 	/* keep kernel stack */
@@ -112,16 +91,6 @@ void memory_initialize(void)
 	/* keep memory map */
 	map_set_use(kern_v2p((void*)mm),
 			pages(mm->max_blocks * sizeof(UW) + sizeof(*mm)));
-
-	/* release low memory from page directory */
-//	for (i = 0; i < NUM_OF_INITIAL_DIR; i++)
-//		dir[i] = 0;
-
-	// create PTE
-	// set high memory to page directory and PTE
-	// flush tlb
-
-//TOOD	release modules (including initrd)
 #ifdef DEBUG
 	map_print();
 #endif
