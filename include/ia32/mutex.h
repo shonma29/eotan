@@ -1,5 +1,5 @@
 #ifndef _IA32_MUTEX_H_
-#define _IA32_MUTEX_H_ 1
+#define _IA32_MUTEX_H_
 /*
 This is free and unencumbered software released into the public domain.
 

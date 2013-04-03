@@ -1,5 +1,5 @@
-#ifndef _MEMORY_H_
-#define _MEMORY_H_
+#ifndef _IA32_MEMORY_H_
+#define _IA32_MEMORY_H_
 /*
 This is free and unencumbered software released into the public domain.
 

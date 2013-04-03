@@ -1,5 +1,5 @@
-#ifndef _LIBKERN_CALL_SYSCALL_H_
-#define _LIBKERN_CALL_SYSCALL_H_ 1
+#ifndef _IA32_CALL_SYSCALL_H_
+#define _IA32_CALL_SYSCALL_H_
 /*
 This is free and unencumbered software released into the public domain.
 

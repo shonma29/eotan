@@ -1,5 +1,5 @@
-#ifndef _LIMITS_H_
-#define _LIMITS_H_
+#ifndef _IA32_LIMITS_H_
+#define _IA32_LIMITS_H_
 /*
 This is free and unencumbered software released into the public domain.
 

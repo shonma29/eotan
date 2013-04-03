@@ -11,8 +11,8 @@ Version 2, June 1991
 
 */
 
-#ifndef _MPU_CONFIG_H_
-#define _MPU_CONFIG_H_	1
+#ifndef _IA32_CONFIG_H_
+#define _IA32_CONFIG_H_
 
 #define GDT_ADDR	(0x80001000UL)
 #define IDT_ADDR	(0x80001800UL)
