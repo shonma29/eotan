@@ -146,4 +146,7 @@ extern void tlb_flush(void);
 /* memory.c */
 extern void paging_initialize(void);
 
+/* cleaner.c */
+void paging_clean(void);
+
 #endif /* _IA32_MPU_H_ */

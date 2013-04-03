@@ -58,16 +58,6 @@ static void *setModules(void);
 static size_t dupModule(UB **to, Elf32_Ehdr *eHdr);
 
 
-static inline void *kern_v2p(void *addr)
-{
-	return (void*)((UW)addr & 0x7fffffff);
-}
-
-static inline size_t pages(size_t bytes)
-{
-	return (bytes + PAGE_SIZE - 1) >> PAGE_SHIFT;
-}
-
 void memory_initialize(void)
 {
 	/* create memory map */

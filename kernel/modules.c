@@ -30,10 +30,11 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 #include <boot/modules.h>
 #include <mpu/config.h>
+#include <mpu/memory.h>
 #include "func.h"
 #include "mpu/mpufunc.h"
 
-#define USER_ADDR 0x00400000
+#define USER_ADDR 0x80400000
 
 extern int isValidModule(Elf32_Ehdr *eHdr);
 
@@ -42,11 +43,12 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr, UB *to,
 		const size_t size);
 static ER map(const ID tskId, UB *to, UB *from, const size_t pages);
 static void set_initrd(ModuleHeader *h);
+static void release(const void *head, const void *end);
 
 
 void run_init_program(void)
 {
-	ModuleHeader *h = (ModuleHeader*)MODULES_ADDR;
+	ModuleHeader *h = (ModuleHeader*)(MODULES_ADDR | MIN_KERNEL);
 
 	while (h->type != mod_end) {
 		Elf32_Ehdr *eHdr;
@@ -78,7 +80,9 @@ void run_init_program(void)
 		addr = (UW)h + sizeof(*h) + h->length;
 		h = (ModuleHeader*)addr;
 	}
-	//TODO release memory of modules
+
+	release((void*)MODULES_ADDR,
+			kern_v2p((void*)((UW)h + sizeof(*h))));
 }
 
 static size_t dupModule(UB **to, Elf32_Ehdr *eHdr)
@@ -89,7 +93,7 @@ static size_t dupModule(UB **to, Elf32_Ehdr *eHdr)
 	size_t size = 0;
 
 	if (!isValidModule(eHdr)) {
-		printk("bad module\n");
+		printk("[KERN] bad module\n");
 		return 0;
 	}
 
@@ -192,6 +196,20 @@ static ER map(const ID tskId, UB *to, UB *from, const size_t pages)
 static void set_initrd(ModuleHeader *h)
 {
 	machineInfo.rootfs = 0x80020000;
-	machineInfo.initrd_start = MIN_KERNEL + (UW)&(h[1]);
+	machineInfo.initrd_start = (UW)&(h[1]);
 	machineInfo.initrd_size = h->bytes;
+}
+
+static void release(const void *head, const void *end)
+{
+	UW addr = (UW)head & ~((1 << PAGE_SHIFT) - 1);
+	UW max = pages((UW)end - addr);
+	size_t i;
+
+	printk("[KERN] release addr=%p max=%d\n", addr, max);
+
+	for (i = 0; i < max; i++) {
+		pfree((void*)addr, 1);
+		addr += PAGE_SIZE;
+	}
 }

@@ -1,5 +1,3 @@
-#ifndef _MEMORY_H_
-#define _MEMORY_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,25 +24,23 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <core.h>
 #include <stddef.h>
-#include <mpu/config.h>
+#include <mpu/memory.h>
+#include <mpu/mpufunc.h>
+#include <setting.h>
 
-#define MPU_MAX_PAGE (1024 * 1024)
 
-#define MPU_LOG_INT (5)
-
-typedef UW PTE;
-
-#define PTE_PER_PAGE (PAGE_SIZE / sizeof(PTE))
-
-static inline void *kern_v2p(void *addr)
+void paging_clean(void)
 {
-	return (void*)((unsigned int)addr & 0x7fffffff);
-}
+	size_t i;
+	PTE *dir = (PTE*)PAGE_DIR_ADDR;
 
-static inline size_t pages(size_t bytes)
-{
-	return (bytes + PAGE_SIZE - 1) >> PAGE_SHIFT;
-}
+	/* release low memory from page directory */
+	for (i = 0; i < NUM_OF_INITIAL_DIR; i++)
+		dir[i] = 0;
 
-#endif
+	// set high memory to page directory and PTE
+
+	tlb_flush();
+}
