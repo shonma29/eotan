@@ -20,7 +20,6 @@ Version 2, June 1991
 #include <mpu/config.h>
 #include <mpu/io.h>
 #include "../../kernel/arch/8259a.h"
-#include "../../kernel/arch/arch.h"
 #include "../../kernel/arch/archfunc.h"
 #include "interrupt.h"
 #include "thread.h"

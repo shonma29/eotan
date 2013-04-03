@@ -66,7 +66,6 @@ Version 2, June 1991
 #include "boot.h"
 #include "mpu/interrupt.h"
 #include "mpu/mpufunc.h"
-#include "arch/arch.h"
 #include "arch/archfunc.h"
 
 static ER initialize(void);

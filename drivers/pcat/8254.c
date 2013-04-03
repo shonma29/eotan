@@ -29,7 +29,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../kernel/sync.h"
 #include "../../kernel/mpu/gate.h"
 #include "../../kernel/mpu/mpufunc.h"
-#include "arch.h"
 #include "archfunc.h"
 #include "8254.h"
 #include "8259a.h"
