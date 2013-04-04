@@ -28,19 +28,70 @@ For more information, please refer to <http://unlicense.org/>
 #include <stddef.h>
 #include <mpu/memory.h>
 #include <mpu/mpufunc.h>
+#include <func.h>
+#include <memory_map.h>
+#include <paging.h>
 #include <setting.h>
+
+#define ATTR_INITIAL (PAGE_WRITABLE | PAGE_PRESENT)
+#define OFFSET_KERN (MIN_KERNEL / PAGE_SIZE / PTE_PER_PAGE)
+
+static void extend(void);
+static PTE calc_pte(const void *addr, const UW attr);
 
 
 void paging_clean(void)
 {
 	size_t i;
-	PTE *dir = (PTE*)PAGE_DIR_ADDR;
+	PTE *dir = (PTE*)(PAGE_DIR_ADDR | MIN_KERNEL);
 
 	/* release low memory from page directory */
 	for (i = 0; i < NUM_OF_INITIAL_DIR; i++)
 		dir[i] = 0;
 
 	// set high memory to page directory and PTE
+	extend();
 
 	tlb_flush();
 }
+
+static void extend(void)
+{
+	MemoryMap *mm = (MemoryMap*)MEMORY_MAP_ADDR;
+	PTE *dir = (PTE*)(PAGE_DIR_ADDR | MIN_KERNEL);
+	UB *addr = (UB*)MIN_MEMORY_SIZE;
+	size_t i;
+	size_t max = (mm->max_pages + PTE_PER_PAGE - 1) / PTE_PER_PAGE;
+	size_t left = mm->max_pages - NUM_OF_INITIAL_DIR * PTE_PER_PAGE;
+
+	printk("[KERN]extend addr=%p max=%x left=%x\n", addr, max, left);
+
+	for (i = NUM_OF_INITIAL_DIR; i < max; i++) {
+		size_t j;
+		PTE *p = palloc(1);
+
+		if (!p) {
+			printk("[KERN] no memory for PTE");
+			break;
+		}
+
+		for (j = 0; left && (j < PTE_PER_PAGE); j++) {
+			p[j] = calc_pte(addr, ATTR_INITIAL);
+			addr += PAGE_SIZE;
+			left--;
+		}
+
+		for (; j < PTE_PER_PAGE; j++) {
+			p[j] = 0;
+			addr += PAGE_SIZE;
+		}
+
+		dir[OFFSET_KERN + i] = calc_pte(p, ATTR_INITIAL);
+	}
+}
+
+static PTE calc_pte(const void *addr, const UW attr)
+{
+	return (PTE)((((UW)addr) & PAGE_ADDR_MASK) | attr);
+}
+
