@@ -26,6 +26,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <mpu/config.h>
+#include <mpu/memory.h>
 
 #define PAGE_ADDR_MASK 0xfffff000
 #define PAGE_BIG_ADDR_MASK 0xffc00000
@@ -42,4 +44,18 @@ For more information, please refer to <http://unlicense.org/>
 #define PAGE_WRITABLE 0x02
 #define PAGE_PRESENT 0x1
 
+#define ATTR_INITIAL (PAGE_WRITABLE | PAGE_PRESENT)
+#ifdef USE_BIG_PAGE
+#define ATTR_KERN (PAGE_BIG | PAGE_WRITABLE | PAGE_PRESENT)
 #endif
+
+// MIN_KERNEL should be a multiple of 4 MB.
+#define OFFSET_KERN (MIN_KERNEL / PAGE_SIZE / PTE_PER_PAGE)
+
+static inline PTE calc_pte(const void *addr, const UW attr)
+{
+	return (PTE)((((UW)addr) & PAGE_ADDR_MASK) | attr);
+}
+
+#endif
+

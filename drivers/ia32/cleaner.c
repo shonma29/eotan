@@ -30,14 +30,10 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/mpufunc.h>
 #include <func.h>
 #include <memory_map.h>
-#include <paging.h>
 #include <setting.h>
-
-#define ATTR_INITIAL (PAGE_WRITABLE | PAGE_PRESENT)
-#define OFFSET_KERN (MIN_KERNEL / PAGE_SIZE / PTE_PER_PAGE)
+#include "paging.h"
 
 static void extend(void);
-static PTE calc_pte(const void *addr, const UW attr);
 
 
 void paging_clean(void)
@@ -89,9 +85,3 @@ static void extend(void)
 		dir[OFFSET_KERN + i] = calc_pte(p, ATTR_INITIAL);
 	}
 }
-
-static PTE calc_pte(const void *addr, const UW attr)
-{
-	return (PTE)((((UW)addr) & PAGE_ADDR_MASK) | attr);
-}
-

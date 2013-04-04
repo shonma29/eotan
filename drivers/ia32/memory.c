@@ -32,17 +32,8 @@ For more information, please refer to <http://unlicense.org/>
 #include "mpufunc.h"
 #include "paging.h"
 
-#define ATTR_INITIAL (PAGE_WRITABLE | PAGE_PRESENT)
-#ifdef USE_BIG_PAGE
-#define ATTR_KERN (PAGE_BIG | PAGE_WRITABLE | PAGE_PRESENT)
-#endif
-
-// MIN_KERNEL should be a multiple of 4 MB.
-#define OFFSET_KERN (MIN_KERNEL / PAGE_SIZE / PTE_PER_PAGE)
-
 static void set_initial_directories(void);
 static UB *set_initial_pages(PTE *p, UB *addr);
-static PTE calc_pte(const void *addr, const UW attr);
 #ifdef USE_BIG_PAGE
 static void set_initial_kern_directories(void);
 static PTE calc_kern_pte(const void *addr);
@@ -87,11 +78,6 @@ static UB *set_initial_pages(PTE *p, UB *addr)
 	}
 
 	return addr;
-}
-
-static PTE calc_pte(const void *addr, const UW attr)
-{
-	return (PTE)((((UW)addr) & PAGE_ADDR_MASK) | attr);
 }
 
 #ifdef USE_BIG_PAGE
