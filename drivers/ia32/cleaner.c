@@ -60,7 +60,7 @@ static void extend(void)
 	size_t max = (mm->max_pages + PTE_PER_PAGE - 1) / PTE_PER_PAGE;
 	size_t left = mm->max_pages - NUM_OF_INITIAL_DIR * PTE_PER_PAGE;
 
-	printk("[KERN]extend addr=%p max=%x left=%x\n", addr, max, left);
+	printk("[KERN] extend addr=%p max=%x left=%x\n", addr, max, left);
 
 	for (i = NUM_OF_INITIAL_DIR; i < max; i++) {
 		size_t j;

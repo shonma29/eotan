@@ -155,9 +155,11 @@ Version 2, June 1991
 #include <string.h>
 #include <core.h>
 #include <mpu/config.h>
-#include "misc.h"
-#include "func.h"
-#include "thread.h"
+#include <mpu/memory.h>
+#include <misc.h>
+#include <func.h>
+#include <thread.h>
+#include "mpufunc.h"
 
 static I386_PAGE_ENTRY *alloc_pagetable(W);
 
@@ -278,6 +280,9 @@ BOOL vmap(T_TCB * task, UW vpage, UW ppage, W accmode)
     I386_PAGE_ENTRY *pageent, *pp;
     UW dirindex;
     UW pageindex;
+
+    if (vpage >= MIN_KERNEL)
+	return TRUE;
 
 #ifdef DEBUG
     printk("[%d] vmap: 0x%x -> 0x%x\n", task->tskid, ppage, vpage);
@@ -450,10 +455,7 @@ static I386_PAGE_ENTRY *alloc_pagetable(W accmode)
 UW vtor(ID tskid, UW addr)
 {
     T_TCB *taskp;
-    I386_DIRECTORY_ENTRY *dirent;
-    I386_PAGE_ENTRY *pageent;
-    UW dirindex;
-    UW pageindex;
+    UW result;
 
     taskp = (T_TCB *) get_thread_ptr(tskid);
     if (taskp->tskstat == TTS_NON)
@@ -461,26 +463,10 @@ UW vtor(ID tskid, UW addr)
 	return (UW)(NULL);
     }
 
-    dirent = (I386_DIRECTORY_ENTRY *) taskp->mpu.context.cr3;
-    dirent = (I386_DIRECTORY_ENTRY*)(RTOV((UW) dirent));
-    dirindex = (addr & DIR_MASK) >> DIR_SHIFT;
-    pageindex = (addr & PAGE_MASK) >> PAGE_SHIFT;
-    if (dirent[dirindex].present != 1) {
-	return (UW)(NULL);
-    }
+    result = (UW)getPageAddress((PTE*)kern_p2v((void*)(taskp->mpu.context.cr3)),
+	    (void*)addr);
 
-    pageent =
-	(I386_PAGE_ENTRY *) (dirent[dirindex].frame_addr << PAGE_SHIFT);
-    pageent = (I386_PAGE_ENTRY*)(RTOV((UW) pageent));
-    if (pageent[pageindex].present != 1) {
-	return (UW)(NULL);
-    }
-
-    /* page の境界でなく，アドレスそのものを返す． */
-    /* RTOV を通すことで，カーネルから直接アクセスすることが可能になる */
-    return (RTOV
-	    ((pageent[pageindex].frame_addr << PAGE_SHIFT) +
-	     (addr & OFFSET_MASK)));
+    return result? (result | getOffset((void*)addr)):result;
 }
 
 
@@ -897,58 +883,21 @@ ER region_put(ID id, VP start, UW size, VP buf)
      * buf    リージョンに書き込むデータ
      */
 {
-    UW offset;
-    UW align_start;
-    UW align_end;
-    VP paddr;
-    UW copysize;
-    UW bufoffset;
-    UW p;
-    UW delta_start, delta_end;
+    T_TCB *th;
 
-
-    if (id < 0 || id > MAX_TSKID)
-	return (E_PAR);
-    if (size < 0)
-	return (E_PAR);
-    else if (size == 0)
+    if (size == 0)
 	return (E_OK);
     if (buf == NULL)
 	return (E_PAR);
 
-    align_start = CUTDOWN(start, PAGE_SIZE);
-    align_end = ROUNDUP(start + size, PAGE_SIZE);
+    th = get_thread_ptr(id);
+    if (!th)
+	return E_PAR;
 
-    bufoffset = 0;
-    for (p = align_start; p < align_end; p += PAGE_SIZE) {
-	paddr = (VP) vtor(id, p);	/* 物理メモリアドレスの取得 */
-	if (paddr == NULL) {
-	    return (E_PAR);
-	}
+    if (th->tskstat == TTS_NON)
+	return E_PAR;
 
-	if (p == align_start) {
-	    offset = (UW) paddr + ((UW) start - align_start);
-	    delta_start = (UW) start - align_start;
-	} else {
-	    offset = (UW) paddr;
-	    delta_start = 0;
-	}
-
-	if ((p + PAGE_SIZE) >= align_end) {
-	    delta_end = align_end - p;
-	} else {
-	    delta_end = PAGE_SIZE;
-	}
-
-	copysize = delta_end - delta_start;
-	if (copysize > size)
-	    copysize = size;
-	memcpy((VP)offset, &((B*)buf)[bufoffset], copysize);
-	bufoffset += copysize;
-	size -= copysize;
-    }
-
-    return (E_OK);
+    return vmemcpy(th, start, buf, size);
 }
 
 /*

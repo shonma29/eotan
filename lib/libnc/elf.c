@@ -28,7 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <elf.h>
 
 
-int isValidModule(Elf32_Ehdr *eHdr) {
+int isValidModule(const Elf32_Ehdr *eHdr) {
 	return (eHdr->e_ident[EI_MAG0] == ELFMAG0)
 			&& (eHdr->e_ident[EI_MAG1] == ELFMAG1)
 			&& (eHdr->e_ident[EI_MAG2] == ELFMAG2)

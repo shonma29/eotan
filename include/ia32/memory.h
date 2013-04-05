@@ -37,6 +37,42 @@ typedef UW PTE;
 
 #define PTE_PER_PAGE (PAGE_SIZE / sizeof(PTE))
 
+#define PAGE_ADDR_MASK 0xfffff000
+#define BITS_PAGE (10)
+#define MASK_PAGE ((1 << BITS_PAGE) - 1)
+#define BITS_OFFSET (12)
+#define MASK_OFFSET ((1 << BITS_OFFSET) - 1)
+
+static inline void *roundDown(void *addr)
+{
+	return (void*)((UW)addr & PAGE_ADDR_MASK);
+}
+
+static inline void *roundUp(void *addr)
+{
+	return (void*)(((UW)addr + PAGE_SIZE - 1) & PAGE_ADDR_MASK);
+}
+
+static inline UW getDirectoryOffset(const void *addr)
+{
+	return (UW)addr >> (BITS_PAGE + BITS_OFFSET);
+}
+
+static inline UW getPageOffset(const void *addr)
+{
+	return ((UW)addr >> BITS_OFFSET) & MASK_PAGE;
+}
+
+static inline UW getOffset(const void *addr)
+{
+	return (UW)addr & MASK_OFFSET;
+}
+
+static inline void *kern_p2v(const void *addr)
+{
+	return (void*)((UW)addr | MIN_KERNEL);
+}
+
 static inline void *kern_v2p(void *addr)
 {
 	return (void*)((unsigned int)addr & 0x7fffffff);

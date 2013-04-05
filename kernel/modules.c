@@ -27,21 +27,22 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <elf.h>
 #include <stddef.h>
-#include <string.h>
 #include <boot/modules.h>
-#include <mpu/config.h>
 #include <mpu/memory.h>
 #include "func.h"
+#include "thread.h"
 #include "mpu/mpufunc.h"
 
-#define USER_ADDR 0x80400000
+static inline PTE *getPageDirectory(const T_TCB *th)
+{
+	return (PTE*)(th->mpu.context.cr3);
+}
 
-extern int isValidModule(Elf32_Ehdr *eHdr);
+extern int isValidModule(const Elf32_Ehdr *eHdr);
 
-static size_t dupModule(UB **to, Elf32_Ehdr *eHdr);
-static ER run(const UW type, const Elf32_Ehdr *eHdr, UB *to,
-		const size_t size);
-static ER map(const ID tskId, UB *to, UB *from, const size_t pages);
+static ER run(const UW type, const Elf32_Ehdr *eHdr);
+static ER dupModule(T_TCB *th, const Elf32_Ehdr *eHdr);
+static ER alloc(T_TCB *th, UB **allocated, UB *start, const size_t len);
 static void set_initrd(ModuleHeader *h);
 static void release(const void *head, const void *end);
 
@@ -53,20 +54,12 @@ void run_init_program(void)
 	while (h->type != mod_end) {
 		Elf32_Ehdr *eHdr;
 		UW addr;
-		UB *to = NULL;
-		size_t size = 0;
 
 		switch (h->type) {
 		case mod_server:
-			eHdr = (Elf32_Ehdr*)&(h[1]);
-			run(h->type, eHdr, to, size);
-			break;
-
 		case mod_user:
 			eHdr = (Elf32_Ehdr*)&(h[1]);
-			size = dupModule(&to, eHdr);
-			if (size)
-				run(h->type, eHdr, to, size);
+			run(h->type, eHdr);
 			break;
 
 		case mod_initrd:
@@ -85,58 +78,7 @@ void run_init_program(void)
 			kern_v2p((void*)((UW)h + sizeof(*h))));
 }
 
-static size_t dupModule(UB **to, Elf32_Ehdr *eHdr)
-{
-	Elf32_Phdr *pHdr;
-	UB *p;
-	size_t i;
-	size_t size = 0;
-
-	if (!isValidModule(eHdr)) {
-		printk("[KERN] bad module\n");
-		return 0;
-	}
-
-	p = (UB*)eHdr;
-	pHdr = (Elf32_Phdr*)&(p[eHdr->e_phoff]);
-
-	for (i = 0; i < eHdr->e_phnum; pHdr++, i++) {
-		UB *w;
-		UB *r;
-#ifdef DEBUG
-		printk("t=%d o=%p v=%p p=%p"
-				", f=%d, m=%d\n",
-				pHdr->p_type, pHdr->p_offset,
-				pHdr->p_vaddr, pHdr->p_paddr,
-				pHdr->p_filesz, pHdr->p_memsz);
-#endif
-		if (pHdr->p_type != PT_LOAD)
-			continue;
-
-		w = (UB*)(pHdr->p_vaddr);
-		if (i == 0)
-			*to = w;
-
-		if ((UW)w < MIN_KERNEL)
-			w += USER_ADDR;
-
-		r = (UB*)eHdr + pHdr->p_offset;
-		memcpy(w, r, pHdr->p_filesz);
-		memset(w + pHdr->p_filesz, 0,
-				pHdr->p_memsz - pHdr->p_filesz);
-		size = pHdr->p_vaddr - (UW)(*to) + pHdr->p_memsz;
-	}
-
-	//TODO palloc
-	//TODO set PTE
-	//TODO flush TLB
-
-	return size;
-}
-
-
-static ER run(const UW type, const Elf32_Ehdr *eHdr, UB *to,
-		const size_t size)
+static ER run(const UW type, const Elf32_Ehdr *eHdr)
 {
 	ER err;
 	ID tskId;
@@ -156,8 +98,19 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr, UB *to,
 	}
 
 	if (type == mod_user) {
-		err = map(tskId, to, to + USER_ADDR,
-				(size + PAGE_SIZE - 1) >> PAGE_SHIFT);
+		T_TCB *th = get_thread_ptr(tskId);
+
+		if (!th) {
+			//TODO really happen?
+			printk("[KERN] task(%d) not found\n", tskId);
+			return E_SYS;
+		}
+
+		err = dupModule(th, eHdr);
+
+		//TODO rollback on error;
+		if (!err)
+			set_autorun_context(th);
 	}
 
 	if (!err) {
@@ -168,27 +121,68 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr, UB *to,
 	return err;
 }
 
-static ER map(const ID tskId, UB *to, UB *from, const size_t pages)
+static ER dupModule(T_TCB *th, const Elf32_Ehdr *eHdr)
 {
-	T_TCB *p = get_thread_ptr(tskId);
-	UW i;
+	Elf32_Phdr *pHdr;
+	size_t i;
+	UB *allocated = NULL;
 
-	if (!p) {
-		printk("[KERN] task(%d) not found\n", tskId);
+	if (!isValidModule(eHdr)) {
+		printk("[KERN] bad module\n");
 		return E_SYS;
 	}
 
-	for (i = 0; i < pages; i++) {
-		if (!vmap(p, (UW)to, (UW)from, ACC_USER)) {
-			printk("[KERN] vmap error(%p, %p)\n", to, from);
-			return E_SYS;
-		}
+	pHdr = (Elf32_Phdr*)&(((UB*)eHdr)[eHdr->e_phoff]);
 
-		from += PAGE_SIZE;
-		to += PAGE_SIZE;
+	for (i = 0; i < eHdr->e_phnum; pHdr++, i++) {
+		UB *w;
+		ER err;
+#ifdef DEBUG
+		printk("t=%d o=%p v=%p p=%p"
+				", f=%d, m=%d\n",
+				pHdr->p_type, pHdr->p_offset,
+				pHdr->p_vaddr, pHdr->p_paddr,
+				pHdr->p_filesz, pHdr->p_memsz);
+#endif
+		if (pHdr->p_type != PT_LOAD)
+			continue;
+
+		w = (UB*)(pHdr->p_vaddr);
+
+		err = alloc(th, &allocated, w, pHdr->p_memsz);
+		if (err)
+			return err;
+
+		/* pages gotten by palloc are zero cleared */
+		vmemcpy(th, w, (UB*)eHdr + pHdr->p_offset,
+				pHdr->p_filesz);
 	}
 
-	set_autorun_context(p);
+	return E_OK;
+}
+
+static ER alloc(T_TCB *th, UB **allocated, UB *start, const size_t len)
+{
+	UB *last = roundDown(*allocated);
+	UB *end = roundUp(start + len);
+
+	start = last? last:roundDown(start);
+
+	for (; (UW)start < (UW)end; start += PAGE_SIZE) {
+		void *p = palloc(1);
+
+		if (!p) {
+			printk("[KERN] no memory for user\n");
+			return E_NOMEM;
+		}
+
+		if (!vmap(th, (UW)start, (UW)p, ACC_USER)) {
+			printk("[KERN] vmap error(%p, %p)\n", start, p);
+			return E_SYS;
+		}
+	}
+
+	*allocated = end;
 
 	return E_OK;
 }

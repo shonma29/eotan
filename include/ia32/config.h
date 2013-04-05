@@ -37,9 +37,7 @@ Version 2, June 1991
 #define POSIX_STACK_SIZE	(PAGE_SIZE * 1)
 
 /* メモリ管理関係 */
-#ifndef PAGE_SIZE
-#define PAGE_SIZE	I386_PAGESIZE
-#endif
+#define PAGE_SIZE	4096
 #define PAGE_SHIFT	(12)
 #define DIR_SHIFT	(22)
 #define PAGE_MASK	(0x003FF000L)

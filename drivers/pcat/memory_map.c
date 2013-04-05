@@ -43,7 +43,7 @@ typedef unsigned long long UD;
 
 static MemoryMap *mm = (MemoryMap*)MEMORY_MAP_ADDR;
 
-extern int isValidModule(Elf32_Ehdr *eHdr);
+extern int isValidModule(const Elf32_Ehdr *eHdr);
 extern W printk(const B *fmt, ...);
 
 static ER map_initialize(const size_t pages);
@@ -324,6 +324,7 @@ static size_t dupModule(UB **to, Elf32_Ehdr *eHdr)
 			*to = w;
 
 		r = (UB*)eHdr + pHdr->p_offset;
+		//TODO fill a gap with zero
 		memcpy(w, r, pHdr->p_filesz);
 		memset(w + pHdr->p_filesz, 0, pHdr->p_memsz - pHdr->p_filesz);
 		size = pHdr->p_vaddr - (UW)(*to) + pHdr->p_memsz;

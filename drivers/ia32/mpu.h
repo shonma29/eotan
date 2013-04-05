@@ -26,8 +26,6 @@ Version 2, June 1991
 
 #define I386	1
 
-#define I386_PAGESIZE	4096
-
 #define MPU_PC(taskp) ((taskp)->mpu.context.eip)
 #define MPU_PAGE_TABLE(taskp) ((taskp)->mpu.context.cr3)
 

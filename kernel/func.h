@@ -19,6 +19,7 @@ Version 2, June 1991
 
 
 #include <itron/rendezvous.h>
+#include <mpu/memory.h>
 #include "core.h"
 #include "boot.h"
 #include "thread.h"

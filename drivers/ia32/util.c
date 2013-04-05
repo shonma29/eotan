@@ -1,5 +1,3 @@
-#ifndef __MPU_PAGING_H__
-#define __MPU_PAGING_H__ 1
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,34 +24,77 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <mpu/config.h>
+#include <core.h>
+#include <stddef.h>
+#include <string.h>
 #include <mpu/memory.h>
+#include <thread.h>
+#include "paging.h"
+#include "mpufunc.h"
 
-#define PAGE_BIG_ADDR_MASK 0xffc00000
-
-#define PAGE_BIG_PAT 0x1000
-#define PAGE_GLOBAL 0x0100
-#define PAGE_BIG 0x80
-#define PAGE_PAT 0x80
-#define PAGE_DIRTY 0x40
-#define PAGE_ACCESS 0x20
-#define PAGE_CACHE_DISABLED 0x10
-#define PAGE_WRITE_THROUGH 0x08
-#define PAGE_USER 0x04
-#define PAGE_WRITABLE 0x02
-#define PAGE_PRESENT 0x1
-
-#define ATTR_INITIAL (PAGE_WRITABLE | PAGE_PRESENT)
-#ifdef USE_BIG_PAGE
-#define ATTR_KERN (PAGE_BIG | PAGE_WRITABLE | PAGE_PRESENT)
-#endif
-
-// MIN_KERNEL should be a multiple of 4 MB.
-#define OFFSET_KERN (MIN_KERNEL / PAGE_SIZE / PTE_PER_PAGE)
-
-static inline PTE calc_pte(const void *addr, const UW attr)
+static inline PTE *getPageDirectory(const T_TCB *th)
 {
-	return (PTE)((((UW)addr) & PAGE_ADDR_MASK) | attr);
+	return (PTE*)(th->mpu.context.cr3);
 }
 
-#endif
+
+ER vmemcpy(const T_TCB *th, const void *to, const void *from,
+		const size_t bytes)
+{
+	PTE *dir = (PTE*)kern_p2v(getPageDirectory(th));
+	UB *w = (UB*)to;
+	UB *r = (UB*)from;
+	size_t left = bytes;
+	size_t offset = getOffset(w);
+
+	if (offset) {
+		void *p = getPageAddress(dir, w);
+		size_t len;
+	
+		if (!p)
+			return E_PAR;
+
+		len = PAGE_SIZE - offset;
+		if (len > left)
+			len = left;
+
+		memcpy(p + offset, r, len);
+		w += len;
+		r += len;
+		left -= len;
+	}
+
+	while (left) {
+		void *p = getPageAddress(dir, w);
+		size_t len;
+	
+		if (!p)
+			return E_PAR;
+
+		len = PAGE_SIZE;
+		if (len > left)
+			len = left;
+
+		memcpy(p, r, len);
+		w += len;
+		r += len;
+		left -= len;
+	}
+
+	return E_OK;
+}
+
+void *getPageAddress(const PTE *dir, const void *addr)
+{
+	PTE pte = dir[getDirectoryOffset(addr)];
+
+	if (pte & PAGE_PRESENT) {
+		PTE *table = (PTE*)kern_p2v((void*)(pte & PAGE_ADDR_MASK));
+
+		pte = table[getPageOffset(addr)];
+		if (pte & PAGE_PRESENT)
+			return kern_p2v((void*)(pte & PAGE_ADDR_MASK));
+	}
+
+	return NULL;
+}

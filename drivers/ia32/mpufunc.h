@@ -15,6 +15,7 @@ Version 2, June 1991
 #define _IA32_MPUFUNC_H_	1
 
 #include <itron/types.h>
+#include <mpu/memory.h>
 #include "../../kernel/thread.h"
 #include "gate.h"
 
@@ -148,5 +149,10 @@ extern void paging_initialize(void);
 
 /* cleaner.c */
 void paging_clean(void);
+
+/* util.c */
+extern ER vmemcpy(const T_TCB *th, const void *to, const void *from,
+		const size_t bytes);
+extern void *getPageAddress(const PTE *dir, const void *addr);
 
 #endif /* _IA32_MPU_H_ */
