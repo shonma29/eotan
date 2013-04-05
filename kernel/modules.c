@@ -33,11 +33,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "thread.h"
 #include "mpu/mpufunc.h"
 
-static inline PTE *getPageDirectory(const T_TCB *th)
-{
-	return (PTE*)(th->mpu.context.cr3);
-}
-
 extern int isValidModule(const Elf32_Ehdr *eHdr);
 
 static ER run(const UW type, const Elf32_Ehdr *eHdr);
@@ -52,14 +47,10 @@ void run_init_program(void)
 	ModuleHeader *h = (ModuleHeader*)(MODULES_ADDR | MIN_KERNEL);
 
 	while (h->type != mod_end) {
-		Elf32_Ehdr *eHdr;
-		UW addr;
-
 		switch (h->type) {
 		case mod_server:
 		case mod_user:
-			eHdr = (Elf32_Ehdr*)&(h[1]);
-			run(h->type, eHdr);
+			run(h->type, (Elf32_Ehdr*)&(h[1]));
 			break;
 
 		case mod_initrd:
@@ -70,8 +61,7 @@ void run_init_program(void)
 			break;
 		}
 
-		addr = (UW)h + sizeof(*h) + h->length;
-		h = (ModuleHeader*)addr;
+		h = (ModuleHeader*)((UW)h + sizeof(*h) + h->length);
 	}
 
 	release((void*)MODULES_ADDR,
