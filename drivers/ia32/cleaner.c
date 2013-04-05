@@ -82,6 +82,6 @@ static void extend(void)
 			addr += PAGE_SIZE;
 		}
 
-		dir[OFFSET_KERN + i] = calc_pte(p, ATTR_INITIAL);
+		dir[OFFSET_KERN + i] = calc_pte(kern_v2p(p), ATTR_INITIAL);
 	}
 }
