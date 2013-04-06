@@ -197,7 +197,7 @@ static ER initialize(void)
     machineInfo.initrd_size = 0;
 
     kernlog_initialize();	/* コンソールに文字を出力できるようにする */
-    paging_clean();
+    paging_reset();
     api_initialize();
     fpu_initialize();
     init_interrupt();

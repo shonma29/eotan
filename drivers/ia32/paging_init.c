@@ -24,7 +24,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-
 #include <core.h>
 #include <mpu/config.h>
 #include <mpu/memory.h>
@@ -33,11 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "paging.h"
 
 static void set_initial_directories(void);
-static UB *set_initial_pages(PTE *p, UB *addr);
-#ifdef USE_BIG_PAGE
-static void set_initial_kern_directories(void);
 static PTE calc_kern_pte(const void *addr);
-#endif
 
 
 void paging_initialize(void)
@@ -48,40 +43,6 @@ void paging_initialize(void)
 }
 
 static void set_initial_directories(void)
-{
-	size_t i;
-	PTE *dir = (PTE*)PAGE_DIR_ADDR;
-	PTE *p = (PTE*)PAGE_ENTRY_ADDR;
-	UB *addr = (UB*)0;
-
-	for (i = 0; i < NUM_OF_INITIAL_DIR; i++) {
-		dir[i] = calc_pte(p, ATTR_INITIAL);
-		dir[OFFSET_KERN + i] =
-				calc_pte(MIN_KERNEL + p, ATTR_INITIAL);
-		addr = set_initial_pages(p, addr);
-		p += PTE_PER_PAGE;
-	}
-
-	for (; i < PTE_PER_PAGE / 2; i++) {
-		dir[i] = 0;
-		dir[OFFSET_KERN + i] = 0;
-	}
-}
-
-static UB *set_initial_pages(PTE *p, UB *addr)
-{
-	size_t i;
-
-	for (i = 0; i < PTE_PER_PAGE; i++) {
-		p[i] = calc_pte(addr, ATTR_INITIAL);
-		addr += PAGE_SIZE;
-	}
-
-	return addr;
-}
-
-#ifdef USE_BIG_PAGE
-static void set_initial_kern_directories(void)
 {
 	size_t i;
 	PTE *dir = (PTE*)PAGE_DIR_ADDR;
@@ -101,6 +62,5 @@ static void set_initial_kern_directories(void)
 
 static PTE calc_kern_pte(const void *addr)
 {
-	return (PTE)((((UW)addr) & PAGE_BIG_ADDR_MASK) | ATTR_KERN);
+	return (PTE)((((UW)addr) & PAGE_BIG_ADDR_MASK) | ATTR_BIG);
 }
-#endif

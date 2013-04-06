@@ -33,36 +33,19 @@ For more information, please refer to <http://unlicense.org/>
 #include <setting.h>
 #include "paging.h"
 
-static void extend(void);
 
-
-void paging_clean(void)
-{
-	size_t i;
-	PTE *dir = (PTE*)(PAGE_DIR_ADDR | MIN_KERNEL);
-
-	/* release low memory from page directory */
-	for (i = 0; i < NUM_OF_INITIAL_DIR; i++)
-		dir[i] = 0;
-
-	// set high memory to page directory and PTE
-	extend();
-
-	tlb_flush();
-}
-
-static void extend(void)
+void paging_reset(void)
 {
 	MemoryMap *mm = (MemoryMap*)MEMORY_MAP_ADDR;
-	PTE *dir = (PTE*)(PAGE_DIR_ADDR | MIN_KERNEL);
-	UB *addr = (UB*)MIN_MEMORY_SIZE;
+	PTE *dir = (PTE*)kern_p2v((void*)PAGE_DIR_ADDR);
+	UB *addr = (UB*)0;
 	size_t i;
 	size_t max = (mm->max_pages + PTE_PER_PAGE - 1) / PTE_PER_PAGE;
-	size_t left = mm->max_pages - NUM_OF_INITIAL_DIR * PTE_PER_PAGE;
+	size_t left = mm->max_pages;
 
-	printk("[KERN] extend addr=%p max=%x left=%x\n", addr, max, left);
+	printk("[KERN] reset addr=%p max=%x left=%x\n", addr, max, left);
 
-	for (i = NUM_OF_INITIAL_DIR; i < max; i++) {
+	for (i = 0; i < max; i++) {
 		size_t j;
 		PTE *p = palloc(1);
 
@@ -84,4 +67,6 @@ static void extend(void)
 
 		dir[OFFSET_KERN + i] = calc_pte(kern_v2p(p), ATTR_INITIAL);
 	}
+
+	tlb_flush();
 }

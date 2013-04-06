@@ -68,8 +68,6 @@ void memory_initialize(void)
 	map_set_use(kern_v2p((void*)GDT_ADDR), 1);
 	/* keep page directory */
 	map_set_use((void*)PAGE_DIR_ADDR, 1);
-	/* keep PTE */
-	map_set_use((void*)PAGE_ENTRY_ADDR, NUM_OF_INITIAL_DIR);
 	/* keep memory information */
 	map_set_use((void*)MEMORY_INFO_END, 1);
 	/* keep kernel stack */

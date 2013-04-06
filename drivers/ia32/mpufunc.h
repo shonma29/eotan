@@ -144,11 +144,11 @@ extern void paging_set_directory(void *dir);
 extern void paging_start(void);
 extern void tlb_flush(void);
 
-/* memory.c */
+/* paging_init.c */
 extern void paging_initialize(void);
 
-/* cleaner.c */
-void paging_clean(void);
+/* paging_reset.c */
+void paging_reset(void);
 
 /* util.c */
 extern ER vmemcpy(const T_TCB *th, const void *to, const void *from,
