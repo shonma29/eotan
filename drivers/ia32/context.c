@@ -134,7 +134,7 @@ static void make_local_stack(T_TCB * tsk, W size, W acc)
     err = region_map(tsk->tskid, (VP) tsk->stackptr, size, acc);
 
     if (err != E_OK) {
-	printk("[KERN] can't allocate stack\n");
+	printk("can't allocate stack\n");
     }
 }
 
@@ -234,7 +234,7 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
     /* これに対応するには palloc で割り当てたメモリに stack frame を作成し */
     /* vput_reg する */
     if (stsize >= PAGE_SIZE) {
-	printk("[KERN] WARNING vset_ctx: stack size is too large\n");
+	printk("WARNING vset_ctx: stack size is too large\n");
     }
 
     stbase = tsk->initial_stack - ROUNDUP(stsize, sizeof(VP));

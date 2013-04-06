@@ -43,14 +43,14 @@ void paging_reset(void)
 	size_t max = (mm->max_pages + PTE_PER_PAGE - 1) / PTE_PER_PAGE;
 	size_t left = mm->max_pages;
 
-	printk("[KERN] reset addr=%p max=%x left=%x\n", addr, max, left);
+	printk("reset addr=%p max=%x left=%x\n", addr, max, left);
 
 	for (i = 0; i < max; i++) {
 		size_t j;
 		PTE *p = palloc(1);
 
 		if (!p) {
-			printk("[KERN] no memory for PTE");
+			printk("no memory for PTE");
 			break;
 		}
 

@@ -197,6 +197,8 @@ static ER initialize(void)
     machineInfo.initrd_size = 0;
 
     kernlog_initialize();	/* コンソールに文字を出力できるようにする */
+    banner();			/* 立ち上げメッセージ出力               */
+
     paging_reset();
     api_initialize();
     fpu_initialize();
@@ -204,7 +206,6 @@ static ER initialize(void)
 #ifdef DEBUG
     printk("initialize: start\n");
 #endif
-    banner();			/* 立ち上げメッセージ出力               */
     flag_initialize();		/* イベントフラグ管理機能の初期化       */
     port_initialize();
     thread_initialize();		/* タスク管理機能の初期化 */
@@ -235,9 +236,5 @@ static void banner(void)
     printk("kernel %s for %s/%s\n",
 	KERN_VERSION, KERN_ARCH, KERN_MPU);
     printk("root fs = %x\n", machineInfo.rootfs);
-#if 0
-    printk("initrd start = %p size = %x\n",
-    		machineInfo.initrd_start, machineInfo.initrd_size);
-#endif
 }
 

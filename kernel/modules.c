@@ -83,7 +83,7 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr)
 
 	err = new_task(&pk_ctsk, &tskId, FALSE);
 	if (err) {
-		printk("[KERN] new_task error(%d)\n", err);
+		printk("new_task error(%d)\n", err);
 		return err;
 	}
 
@@ -92,7 +92,7 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr)
 
 		if (!th) {
 			//TODO really happen?
-			printk("[KERN] task(%d) not found\n", tskId);
+			printk("task(%d) not found\n", tskId);
 			return E_SYS;
 		}
 
@@ -118,7 +118,7 @@ static ER dupModule(T_TCB *th, const Elf32_Ehdr *eHdr)
 	UB *allocated = NULL;
 
 	if (!isValidModule(eHdr)) {
-		printk("[KERN] bad module\n");
+		printk("bad module\n");
 		return E_SYS;
 	}
 
@@ -162,12 +162,12 @@ static ER alloc(T_TCB *th, UB **allocated, UB *start, const size_t len)
 		void *p = palloc(1);
 
 		if (!p) {
-			printk("[KERN] no memory for user\n");
+			printk("no memory for user\n");
 			return E_NOMEM;
 		}
 
 		if (!vmap(th, (UW)start, (UW)p, ACC_USER)) {
-			printk("[KERN] vmap error(%p, %p)\n", start, p);
+			printk("vmap error(%p, %p)\n", start, p);
 			return E_SYS;
 		}
 	}
@@ -190,7 +190,7 @@ static void release(const void *head, const void *end)
 	UW max = pages((UW)end - addr);
 	size_t i;
 
-	printk("[KERN] release addr=%p max=%d\n", addr, max);
+	printk("release addr=%p max=%d\n", addr, max);
 
 	for (i = 0; i < max; i++) {
 		pfree((void*)addr, 1);

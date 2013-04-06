@@ -235,7 +235,7 @@ void timer_initialize(void)
 {
     W i;
 
-    printk("[KERN] initialize timer\n");
+    printk("initialize timer\n");
     enter_critical();
     for (i = 0; i <= MAX_TIMER - 2; i++) {
 	timer[i].next = &timer[i + 1];
@@ -267,7 +267,7 @@ static void set_timer(W time, void (*func) (VP), VP argp)
     enter_critical();
     p = free_timer;
     if (p == NULL) {
-	printk("[KERN] timer entry empty.\n");
+	printk("timer entry empty.\n");
 	leave_critical();
 	return;
     }

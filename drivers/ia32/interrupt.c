@@ -68,7 +68,7 @@ W init_interrupt(void)
 {
     W i;
 
-    printk("[KERN] init_interrupt\n");
+    printk("init_interrupt\n");
     pic_initialize();
 
     idt_set(int_division_error, kern_code, handle0, interruptGate32, dpl_kern);
@@ -144,7 +144,7 @@ void interrupt(W intn)
 	    (intr_table[intn].func) ();
 	} else {
 	    /* error!! */
-	    printk("[KERN] unknown interrupt from %d\n", intn);
+	    printk("unknown interrupt from %d\n", intn);
 	}
 	break;
 
@@ -194,7 +194,7 @@ ER set_interrupt_entry(W intno, FP func, ATR attr)
 	return (E_OBJ);
     }
 
-    printk("[KERN] set_interrupt_entry = %d, func = 0x%x\n", intno, func);
+    printk("set_interrupt_entry = %d, func = 0x%x\n", intno, func);
     intr_table[intno].attr = attr;
     intr_table[intno].func = func;
     return (E_OK);
@@ -249,7 +249,7 @@ void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 	return;
       }
       else {
-	printk("[KERN] page_fault_handler cause error\n");
+	printk("page_fault_handler cause error\n");
       }
     }
 
@@ -294,7 +294,7 @@ void protect_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 	    return;
 	}
 	else {
-	  printk("[KERN] page_fault_handler cause error\n");
+	  printk("page_fault_handler cause error\n");
 	}
     }
 
