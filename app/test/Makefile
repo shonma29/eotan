@@ -23,7 +23,7 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = $(WD)/test $(WD)/psauxtst2 $(WD)/porttest $(WD)/lowtest $(WD)/rdtest \
+TARGET = $(WD)/test $(WD)/porttest $(WD)/lowtest $(WD)/rdtest \
 		$(WD)/cat
 
 include Makefile.in

@@ -17,8 +17,6 @@
 
 .globl  int32_handler
 .globl  int33_handler
-.globl  int44_handler
-.globl	int46_handler
 
 .text
 
@@ -77,71 +75,3 @@ int33_handler:
 		popl	%es
 		popl	%ds
 		iret
-
-/**************************************************************************
- * int44_handler --- IRQ 12 (PSAUX)
- *
- *      no work.
- */
-int44_handler:
-                cli
-		pushl	%ds
-		pushl	%es
-                pushal
-		movw	$0x10, %ax
-		movw	%ax,%ds
-		movw	%ax,%es
-/* original by Mr. Murata */
-                movb    $0x20, %al      # set EOI
-                movw    SLAVE_8259A_COM, %dx
-                outb    %al, %dx
-                movb    $0x0b, %al
-                outb    %al, %dx
-                inb     %dx, %al
-                test    %al, %al
-                jnz     int_44_l1
-                movb    $0x20, %al
-                movw    MASTER_8259A_COM, %dx
-                outb    %al, %dx
-int_44_l1:
-                sti
-                pushl   $44
-                call    interrupt       
-                popl    %eax
-                popal
-		popl	%es
-		popl	%ds
-                iret
-
-
-/**************************************************************************
- * int46_handler --- IDE 0
- *
- *	no work.
- */
-int46_handler:
-		cli
-		pushl	%ds
-		pushl	%es
-		pushal
-		movw	$0x10, %ax
-		movw	%ax,%ds
-		movw	%ax,%es
-
-		inb	SLAVE_8259A_DATA, %al
-		orb	$0x40, %al
-		outb	%al, SLAVE_8259A_DATA
-		movb	$0x20, %al
-		outb	%al, MASTER_8259A_COM
-		jmp	int46_out	# delay
-int46_out:	outb	%al, SLAVE_8259A_COM
-		sti
-
-		pushl	$46
-		call	interrupt
-		popl	%eax
-		popal
-		popl	%es
-		popl	%ds
-		iret
-

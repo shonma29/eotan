@@ -106,9 +106,6 @@ W init_interrupt(void)
 
     idt_set(PIC_IR_VECTOR(ir_keyboard), kern_code, int33_handler, interruptGate32, dpl_kern);
 
-    idt_set(44, kern_code, int44_handler, interruptGate32, dpl_kern);
-    idt_set(46, kern_code, int46_handler, interruptGate32, dpl_kern);	/* IDE 0 */
-
     pic_reset_mask(ir_keyboard);
 
     for (i = 0; i < 128; i++) {
