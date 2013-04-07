@@ -5,11 +5,11 @@ export LD = ld
 #DEBUG = -DDEBUG
 export LINUX_INCLUDE = -I../../usr/include
 
-TARGET = boot/boot.iso
+TARGET = starter/boot.iso
 
-all: tool libs kern applications boot initrd_img ${TARGET}
+all: tool libs kern applications starter initrd_img ${TARGET}
 
-.PHONY: tool libs kern applications boot
+.PHONY: tool libs kern applications starter
 libs:
 	${MAKE} -f libs.mk
 
@@ -21,8 +21,8 @@ kern:
 tool:
 	${MAKE} -f app/mkfs/Makefile WD=app/mkfs
 
-boot/boot.iso:
-	${MAKE} -C boot
+starter/boot.iso:
+	${MAKE} -C starter
 
 applications:
 	${MAKE} -f app/test/Makefile WD=app/test
@@ -32,7 +32,7 @@ initrd_img:
 	${MAKE} -f initrd.mk
 
 clean:
-	${MAKE} -C boot clean
+	${MAKE} -C starter clean
 	${MAKE} -f kernel/Makefile WD=kernel clean
 	${MAKE} -f libs.mk clean
 	${MAKE} -f servers.mk clean
