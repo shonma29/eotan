@@ -89,13 +89,14 @@ static struct alloc_entry_t alloc_list;
 static struct alloc_entry_t *free_list;
 static struct alloc_entry_t *pivot;
 
+static ER init(void);
 static VP get_system_memory(UW size);
 
 
 /* malloc 機構の初期化: libc 版では引数は無視する．
  *
  */
-ER init_malloc(UW free_memory_erea)
+static ER init(void)
 {
     struct alloc_entry_t *p;
 
@@ -125,12 +126,12 @@ ER init_malloc(UW free_memory_erea)
 
 #ifdef notdef
     dbg_printf
-	("init_malloc: alloc_list = 0x%x, alloc_list.next = 0x%x, alloc_list.before = 0x%x\n",
+	("init: alloc_list = 0x%x, alloc_list.next = 0x%x, alloc_list.before = 0x%x\n",
 	 &alloc_list, alloc_list.next, alloc_list.before);
     dbg_printf
-	("init_malloc: alloc_list.next->next = 0x%x, alloc_list.next->before = 0x%x\n",
+	("init: alloc_list.next->next = 0x%x, alloc_list.next->before = 0x%x\n",
 	 alloc_list.next->next, alloc_list.next->before);
-    dbg_printf("init_malloc: p = 0x%x, p->next = 0x%x, p->before = 0x%x\n",
+    dbg_printf("init: p = 0x%x, p->next = 0x%x, p->before = 0x%x\n",
 	       p, p->next, p->before);
 #endif
     return (E_OK);
@@ -145,7 +146,7 @@ VP malloc(UW size)
     extern void free(VP addr);
 
     if (last_page == 0) {
-      init_malloc(0);
+      init();
     }
     if (size <= 0) {
 	return (NULL);

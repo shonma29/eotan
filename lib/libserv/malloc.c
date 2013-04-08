@@ -67,15 +67,12 @@ Version 2, June 1991
 #include <core.h>
 #include <mpu/config.h>
 #include <misc.h>
+#include "../../kernel/config.h"
 #include "../../kernel/region.h"
 #include "libserv.h"
 
-#define MEMORY_CLICK		(PAGE_SIZE * 10)
-#define MALLOC_SIZE		(1024 * 1024 * 10)	/* 10MB */
+#define MEMORY_CLICK		(PAGE_SIZE * 16)
 
-
-extern B _end;
-UW last_page, start_page;
 
 struct alloc_entry_t {
     struct alloc_entry_t *next;
@@ -85,6 +82,7 @@ struct alloc_entry_t {
 };
 
 
+static UW last_page, start_page;
 static struct alloc_entry_t alloc_list;
 static struct alloc_entry_t *free_list;
 static struct alloc_entry_t *pivot;
@@ -95,26 +93,22 @@ static VP get_system_memory(UW size);
 /* malloc 機構の初期化
  *
  */
-ER init_malloc(UW free_memory_erea)
+ER init_malloc(UW free_memory_erea, UW max)
 {
-    ID mytid, rid;
+    ID mytid;
     struct alloc_entry_t *p;
     ER err;
+    UW pages = (max + PAGE_SIZE - 1) / PAGE_SIZE;
 
-
-    if (free_memory_erea) {
-	last_page = free_memory_erea;
-    } else {
-	last_page = (UW) & _end;
-    }
+    last_page = free_memory_erea;
     start_page = last_page = ROUNDUP(last_page, PAGE_SIZE);
 
     err = get_tid(&mytid);
     if (err != E_OK) {
 	return (err);
     }
-    err = vnew_reg(mytid, (VP) last_page, MALLOC_SIZE, MALLOC_SIZE,
-		   VPROT_READ | VPROT_READ | VPROT_USER, NULL, &rid);
+    err = vcre_reg(mytid, HEAP_REGION, (VP) last_page, pages, pages,
+		   VPROT_READ | VPROT_READ | VPROT_USER, NULL);
     if (err) {
 	return (err);
     }

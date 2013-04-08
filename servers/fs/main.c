@@ -89,6 +89,7 @@ Version 2, June 1991
 #include "fs.h"
 
 #define HEAP_ADDR 0x80280000
+#define MAX_HEAP (512 * 1024)
 
 static void banner(void);
 
@@ -118,8 +119,8 @@ int main(void)
 	ext_tsk();
 	return FALSE;
     }
-//    init_malloc(VADDR_HEAP);
-    init_malloc(HEAP_ADDR);
+
+    init_malloc(HEAP_ADDR, MAX_HEAP);
 
     /* 各機能単位での初期化
      */
@@ -173,24 +174,10 @@ int main(void)
 static void banner(void)
 {
     ID taskid;
-#ifdef notdef
-    W pid, low, hi;
-    static B num[] = "0123456789";
-    static B buf[3];
-#endif
 
     dbg_printf("[FS] started.");
     if (get_tid(&taskid) == E_OK) {
-#ifdef notdef
-	low = pid % 10;
-	hi = pid / 10;
-	buf[0] = num[hi];
-	buf[1] = num[low];
-	buf[2] = '\0';
-	dbg_printf("(TASK ID = %d  / PID = %s)", taskid, buf);
-#else
 	dbg_printf("(TASK ID = %d)", taskid);
-#endif
     }
     dbg_printf("\n");
 }

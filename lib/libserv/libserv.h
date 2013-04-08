@@ -19,15 +19,12 @@ Version 2, June 1991
 /* vcre_tsk.c */
 ER vcre_tsk (T_CTSK *pk_ctsk, ID *rid);
 
-/* vnew_reg.c */
-ER vnew_reg (ID id, VP start, W min, W max, UW perm, FP handle, ID *rid);
-
 /* sys_debug.c */
 extern W dbg_puts(B *msg);
 extern W dbg_printf(B *format, ...);
 
 /* malloc.c */
-extern ER	init_malloc (UW free_memory_erea);
+extern ER	init_malloc (UW free_memory_erea, UW max);
 extern VP	malloc (UW size);
 extern VP	calloc (UW size, UW nentry);
 extern void	free (VP addr);

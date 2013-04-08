@@ -222,9 +222,6 @@ W proc_set_info(struct posix_request * req)
     /* heap */
     vcre_reg(tskid, HEAP_REGION,
 	     0, 0, 0x7fffffff, procinfo->proc_access, NULL);
-#if 0
-    vnew_reg(tskid, 0, PAGE_SIZE, 0x7fffffff, procinfo->proc_access, NULL, &rid);	/* stack */
-#endif
 
     /* 仮想テーブルの生成 */
     setup_vmtree(&(proc_table[procid]), procinfo->proc_maintask,
