@@ -1,6 +1,3 @@
-#ifndef _SERVICES_H_
-#define _SERVICES_H_
-
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,11 +24,26 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <core.h>
+#include <services.h>
+#include <string.h>
+#include "../../servers/fs/api.h"
 
-#define PORT_MM 1
-#define PORT_FS 2
-#define PORT_NET 3
-#define PORT_WINDOW 4
-#define PORT_SYSLOG 5
 
-#endif
+ER bind_device(UB *name, ID port)
+{
+	ER_UINT err;
+	struct posix_request req;
+	struct posix_response *res = (struct posix_response *)&req;
+
+	if (strlen((char*)name) >= MAX_DEVICE_NAME)
+		return E_PAR;
+
+	req.msg_length = sizeof(req);
+	req.operation = PSC_BIND_DEVICE;
+	strcpy((char*)req.param.par_bind_device.name, (char*)name);
+	req.param.par_bind_device.port = port;
+	err = cal_por(PORT_FS, 0xffffffff, &req, sizeof(req));
+
+	return (err < 0)? err:(res->errno? E_SYS:E_OK);
+}

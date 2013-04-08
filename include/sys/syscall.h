@@ -23,7 +23,7 @@ Version 2, June 1991
 
 #include <itron/types.h>
 
-#define NR_POSIX_SYSCALL	42
+#define NR_POSIX_SYSCALL	43
 
 /* =================== POSIX システムコール番号の定義 =============== */
 #define PSC_NOACTION     0
@@ -73,6 +73,8 @@ Version 2, June 1991
 #define PSC_MISC         39
 
 #define PSC_DUP2         40	/* 不要? */
+
+#define PSC_BIND_DEVICE (41)
 
 /* MISC 
  */
@@ -533,6 +535,13 @@ struct psc_misc
     } arg;
 };
 
+#define MAX_DEVICE_NAME (31)
+struct psc_bind_device
+{
+  UB name[MAX_DEVICE_NAME + 1];
+  ID port;
+};
+
 /* =========================== 構造体定義 =========================== */
 
 
@@ -585,6 +594,7 @@ struct posix_request
     struct psc_statfs		par_statfs;
     struct psc_misc		par_misc;
     struct psc_getdents		par_getdents;
+    struct psc_bind_device par_bind_device;
   } param;
 };
 

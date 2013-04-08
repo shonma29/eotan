@@ -112,7 +112,7 @@ Version 2, June 1991
 #include <itron/syscall.h>
 #include <itron/rendezvous.h>
 #include "../../lib/libserv/libserv.h"
-#include "../../lib/libserv/port.h"
+#include "../../lib/libserv/bind.h"
 #include "console.h"
 #include "cga.h"
 
@@ -213,9 +213,9 @@ static W init_console(void)
 	/* メッセージバッファ生成に失敗 */
     }
 
-    error = regist_port((port_name*)CONSOLE_DRIVER, recvport);
+    error = bind_device((UB*)CONSOLE_DRIVER, recvport);
     if (error != E_OK) {
-	dbg_printf("[CONSOLE] cannot regist port. error = %d\n", error);
+	dbg_printf("[CONSOLE] bind error = %d\n", error);
 	return E_SYS;
     }
     initialized = 1;

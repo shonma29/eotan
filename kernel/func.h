@@ -24,8 +24,6 @@ Version 2, June 1991
 #include "boot.h"
 #include "thread.h"
 
-#include "../servers/port-manager/port-manager.h"
-
 /* main.c */
 extern ER main(void);
 extern ER add_trmtbl(ID, ID, ID);

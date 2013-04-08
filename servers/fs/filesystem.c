@@ -152,8 +152,8 @@ Version 2, June 1991
 
 #include <fcntl.h>
 #include <string.h>
-#include "../../lib/libserv/port.h"
 #include "fs.h"
+#include "devfs.h"
 
 struct fs_entry {
     B *fsname;
@@ -233,50 +233,15 @@ W init_fs(void)
     free_fs = &fs_buf[0];
 
 #ifdef notdef
-    /* 必要になったときに個別に内容を更新するので，初期化は不要 */
-    init_special_file();
-#endif
-#ifdef notdef
     dbg_printf("special file table size is %d\n", special_file_table_entry);
 #endif
 
     return (TRUE);
 }
 
-
-/* special_file_table のエントリを埋める
- */
-W init_special_file()
-{
-    W i;
-    ER error;
-    ID port;
-
-    for (i = 0; i < special_file_table_entry; i++) {
-#ifdef DEBUG
-	dbg_printf("find port: %s\n", special_file_table[i].name);
-#endif
-	error = find_port(special_file_table[i].name, &port);
-	if (error) {
-	    dbg_printf("Cannot access special file(%s).\n",
-		       special_file_table[i].name);
-	} else {
-#ifdef DEBUG
-	    dbg_printf("find: driver %s use port %d.\n",
-		       special_file_table[i].name, port);	/* */
-#endif
-	    special_file_table[i].port = port;
-	}
-    }
-
-    return (EOK);
-}
-
-
 W get_device_info(UW major_minor, ID * port, UW * dd)
 {
     UW i;
-    ER errno;
     ID p;
 
     for (i = 0; i < special_file_table_entry; i++) {
@@ -289,8 +254,8 @@ W get_device_info(UW major_minor, ID * port, UW * dd)
 	{
 
 	    if (special_file_table[i].port <= 0) {
-		errno = find_port(special_file_table[i].name, &p);
-		if (errno) {
+		p = device_find((UB*)(special_file_table[i].name));
+		if (!p) {
 #ifdef FMDEBUG
 		    dbg_printf("Cannot access special file(%s).\n",
 			       special_file_table[i].name);

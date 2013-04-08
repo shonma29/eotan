@@ -87,6 +87,7 @@ Version 2, June 1991
 
 #include <mpu/config.h>
 #include "fs.h"
+#include "devfs.h"
 
 #define HEAP_ADDR 0x80280000
 #define MAX_HEAP (512 * 1024)
@@ -121,6 +122,12 @@ int main(void)
     }
 
     init_malloc(HEAP_ADDR, MAX_HEAP);
+
+    if (!device_init()) {
+	dbg_printf("[FS] Cannot create hash.\n");
+	ext_tsk();
+	return FALSE;
+    }
 
     /* 各機能単位での初期化
      */

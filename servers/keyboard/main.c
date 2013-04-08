@@ -65,7 +65,7 @@ Version 2, June 1991
 #include <device.h>
 #include <itron/rendezvous.h>
 #include "../../lib/libserv/libserv.h"
-#include "../../lib/libserv/port.h"
+#include "../../lib/libserv/bind.h"
 #include "keyboard.h"
 #include "key_type.h"
 
@@ -161,9 +161,9 @@ W init_keyboard(void)
 	/* メッセージバッファ生成に失敗 */
     }
 
-    error = regist_port((port_name*)KEYBOARD_DRIVER, recvport);
+    error = bind_device((UB*)KEYBOARD_DRIVER, recvport);
     if (error != E_OK) {
-	dbg_printf("[KEYBOARD] cannot regist port. error = %d\n", error);
+	dbg_printf("[KEYBOARD] bind error = %d\n", error);
 	ext_tsk();
     }
 

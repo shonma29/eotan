@@ -39,6 +39,7 @@ extern int strncmp(const char *s1, const char *s2, size_t size);
 
 extern void *memcpy(void *dest, const void *src, size_t n);
 extern void *memset(void *s, int c, size_t n);
+extern int memcmp(const void *b1, const void *b2, size_t len);
 
 extern int vnprintf(void (*out)(char), char *format, va_list ap);
 

@@ -30,7 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <itron/rendezvous.h>
 #include "../../kernel/boot.h"
 #include "../../lib/libserv/libserv.h"
-#include "../../lib/libserv/port.h"
+#include "../../lib/libserv/bind.h"
 #include "ramdisk.h"
 
 static UB buf[BLOCK_NUM * BLOCK_SIZE];
@@ -160,7 +160,7 @@ static ER accept(const ID port)
 static ER_ID initialize(void)
 {
 	ER_ID port;
-	PORT_MANAGER_ERROR result;
+	W result;
 	T_CPOR pk_cpor = {
 			TA_TFIFO,
 			sizeof(DDEV_REQ),
@@ -175,9 +175,9 @@ static ER_ID initialize(void)
 		return port;
 	}
 
-	result = regist_port((port_name*)MYNAME, port);
+	result = bind_device((UB*)MYNAME, port);
 	if (result) {
-		dbg_printf("[RAMDISK] regist_port error=%d\n", result);
+		dbg_printf("[RAMDISK] bind error=%d\n", result);
 		del_por(port);
 
 		return E_SYS;

@@ -26,7 +26,6 @@ Version 2, June 1991
 #include <core.h>
 #include "../../kernel/misc.h"
 #include "../console/console.h"
-#include "../port-manager/port-manager.h"
 
 /* =========================== マクロ定義 =========================== */
 

@@ -1,6 +1,5 @@
-#ifndef _SERVICES_H_
-#define _SERVICES_H_
-
+#ifndef _LIBSERV_BIND_H_
+#define _LIBSERV_BIND_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,11 +26,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <core.h>
 
-#define PORT_MM 1
-#define PORT_FS 2
-#define PORT_NET 3
-#define PORT_WINDOW 4
-#define PORT_SYSLOG 5
+extern ER bind_device(UB *name, ID port);
 
 #endif

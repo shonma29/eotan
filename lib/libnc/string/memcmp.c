@@ -1,6 +1,3 @@
-#ifndef _SERVICES_H_
-#define _SERVICES_H_
-
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,11 +24,18 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <string.h>
 
-#define PORT_MM 1
-#define PORT_FS 2
-#define PORT_NET 3
-#define PORT_WINDOW 4
-#define PORT_SYSLOG 5
+int memcmp(const void *b1, const void *b2, size_t len) {
+	unsigned char *p1 = (unsigned char*)b1;
+	unsigned char *p2 = (unsigned char*)b2;
+	size_t i;
 
-#endif
+	for (i = 0; i < len; i++) {
+		int diff = p1[i] - p2[i];
+
+		if (diff)	return diff;
+	}
+
+	return 0;
+}

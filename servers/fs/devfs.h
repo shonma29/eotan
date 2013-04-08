@@ -1,6 +1,5 @@
-#ifndef _SERVICES_H_
-#define _SERVICES_H_
-
+#ifndef _FS_DEVFS_H_
+#define _FS_DEVFS_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,11 +26,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <core.h>
 
-#define PORT_MM 1
-#define PORT_FS 2
-#define PORT_NET 3
-#define PORT_WINDOW 4
-#define PORT_SYSLOG 5
+#define MAX_DEVICE (32)
+
+extern int device_init(void);
+extern ID device_find(const UB *name);
 
 #endif

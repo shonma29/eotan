@@ -1,6 +1,5 @@
-#ifndef _SERVICES_H_
-#define _SERVICES_H_
-
+#ifndef _SET_HASH_H_
+#define _SET_HASH_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,11 +26,35 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stddef.h>
+#include <set/list.h>
 
-#define PORT_MM 1
-#define PORT_FS 2
-#define PORT_NET 3
-#define PORT_WINDOW 4
-#define PORT_SYSLOG 5
+typedef struct {
+	list_t list;
+	void *key;
+	void *value;
+} hash_entry_t;
+
+typedef struct {
+	unsigned int (*calc)(const void *key, const size_t size);
+	int (*cmp)(const void *a, const void *b);
+	size_t size;
+	size_t num;
+	size_t max;
+	size_t tupple_size;
+	hash_entry_t *entries;
+	list_t free;
+	list_t tbl[];
+} hash_t;
+
+hash_t *hash_create(const size_t max,
+		unsigned int (*calc)(const void *key, const size_t size),
+		int (*cmp)(const void *a, const void *b));
+void hash_destroy(hash_t *h);
+void hash_clear(hash_t *h);
+void *hash_get(hash_t *h, const void *key);
+void *hash_put(hash_t *h, const void *key, const void *value);
+void *hash_remove(hash_t *h, const void *key);
+size_t hash_size(const hash_t *h);
 
 #endif

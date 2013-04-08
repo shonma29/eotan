@@ -23,7 +23,7 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-SERVERS = console dumb fs keyboard port-manager ramdisk
+SERVERS = console dumb fs keyboard ramdisk
 
 all: $(SERVERS)
 
