@@ -36,7 +36,7 @@ ER bind_device(UB *name, ID port)
 	struct posix_request req;
 	struct posix_response *res = (struct posix_response *)&req;
 
-	if (strlen((char*)name) >= MAX_DEVICE_NAME)
+	if (strlen((char*)name) > MAX_DEVICE_NAME)
 		return E_PAR;
 
 	req.msg_length = sizeof(req);

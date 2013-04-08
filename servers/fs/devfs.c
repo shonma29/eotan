@@ -34,7 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "fs.h"
 
 static hash_t *hash;
-static UB table[MAX_DEVICE][MAX_DEVICE_NAME];
+static UB table[MAX_DEVICE][MAX_DEVICE_NAME + 1];
 static size_t num_device;
 
 static unsigned int calc_hash(const void *key, const size_t size);
