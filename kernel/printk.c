@@ -24,23 +24,37 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <cga.h>
+#include <core.h>
 #include <stdarg.h>
 #include <string.h>
+#include <set/ring.h>
+#include "setting.h"
+#include "sync.h"
 
-#define CGA_VRAM_ADDR 0x800b8000
+static UB buf[RING_MAX_LEN + 1];
+static size_t len;
 
-static CGA_Console *cns;
+static void _putc(char ch);
 
-void kernlog_initialize() {
-	cns = getConsole((const unsigned short*)CGA_VRAM_ADDR);
-	cns->locate(0, 0);
-	cns->cls();
-}
 
-int printk(const unsigned char *format, ...) {
+int printk(const char *format, ...) {
 	va_list ap;
 
 	va_start(ap, format);
-	return vnprintf((void*)(cns->putc), (char*)format, ap);
+
+	enter_critical();
+	len = 0;
+	vnprintf(_putc, (char*)format, ap);
+	ring_put((ring_t*)KERNEL_LOG_ADDR, buf, len);
+	leave_critical();
+
+	return len;
+}
+
+static void _putc(char ch)
+{
+	if (len >= RING_MAX_LEN)
+		return;
+
+	buf[len++] = ch;
 }

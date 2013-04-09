@@ -29,8 +29,7 @@ extern ER main(void);
 extern ER add_trmtbl(ID, ID, ID);
 
 /* printk.c */
-extern void kernlog_initialize();
-extern int printk(char *format, ...);
+extern int printk(const char *format, ...);
 
 /* error.c */
 extern void falldown();

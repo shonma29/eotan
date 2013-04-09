@@ -1,5 +1,5 @@
-#ifndef _CORE_SETTING_H_
-#define _CORE_SETTING_H_
+#ifndef _SET_RING_H_
+#define _SET_RING_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,23 +26,31 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <mpu/memory.h>
-#include <config.h>
+#include <stddef.h>
 
-#define KERN_STACK_ADDR 0x80008000
-#define MEMORY_MAP_ADDR 0x80180000
+#define RING_MAX_LEN 1024
 
-#define KERNEL_LOG_ADDR 0x80003000
-#define KERNEL_LOG_SIZE (16 * 1024)
+#define RING_OK (0)
+#define RING_EMPTY (-1)
+#define RING_FULL (-2)
+#define RING_TOO_LONG (-3)
 
-#define MAX_PAGES (1024 * 1024 / 2)
+typedef unsigned int ring_pos_t;
+typedef unsigned int counter_t;
+typedef unsigned char ring_chr_t;
 
-// MIN_MEMORY_SIZE should be a multiple of 4 MB.
-#define NUM_OF_INITIAL_DIR (MIN_MEMORY_SIZE / PAGE_SIZE / PTE_PER_PAGE)
+typedef struct
+{
+	ring_pos_t read;
+	ring_pos_t write;
+	counter_t cycle;
+	size_t left;
+	size_t max;
+	ring_chr_t buf[0];
+} ring_t;
 
-#define MIN_MANUAL_ID (1)
-#define MAX_MANUAL_ID (49151)
-#define MIN_AUTO_ID (49152)
-#define MAX_AUTO_ID (65535)
+extern ring_t *ring_create(void *buf, size_t size);
+extern int ring_get(ring_t *r, ring_chr_t *buf);
+extern int ring_put(ring_t *r, const ring_chr_t *buf, const size_t len);
 
 #endif

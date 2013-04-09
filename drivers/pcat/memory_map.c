@@ -68,8 +68,8 @@ void memory_initialize(void)
 	map_set_use(kern_v2p((void*)GDT_ADDR), 1);
 	/* keep page directory */
 	map_set_use((void*)PAGE_DIR_ADDR, 1);
-	/* keep memory information */
-	map_set_use((void*)MEMORY_INFO_END, 1);
+	/* keep kernel log */
+	map_set_use(kern_v2p((void*)KERNEL_LOG_ADDR), pages(KERNEL_LOG_SIZE));
 	/* keep kernel stack */
 	map_set_use(kern_v2p((void*)(KERN_STACK_ADDR - PAGE_SIZE)), 1);
 	/* keep modules */

@@ -196,7 +196,6 @@ static ER initialize(void)
     machineInfo.initrd_start = 0;
     machineInfo.initrd_size = 0;
 
-    kernlog_initialize();	/* コンソールに文字を出力できるようにする */
     banner();			/* 立ち上げメッセージ出力               */
 
     paging_reset();

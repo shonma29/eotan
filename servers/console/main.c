@@ -111,8 +111,8 @@ Version 2, June 1991
 #include <itron/errno.h>
 #include <itron/syscall.h>
 #include <itron/rendezvous.h>
-#include "../../lib/libserv/libserv.h"
-#include "../../lib/libserv/bind.h"
+#include <libserv.h>
+#include <bind.h>
 #include "console.h"
 #include "cga.h"
 

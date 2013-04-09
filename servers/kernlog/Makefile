@@ -23,12 +23,12 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = $(WD)/console
+TARGET = $(WD)/kernlog
 
 include Makefile.in
 
 CFLAGS += -I kernel -I lib/libserv
-ENTRY_ADDR = 0x80310000
+ENTRY_ADDR = 0x80300000
 ENTRY_FUNC = start
 
 $(TARGET): $(OBJS) \

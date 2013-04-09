@@ -24,7 +24,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <cga.h>
 #include <elf.h>
 #include <stdarg.h>
 #include <string.h>
@@ -32,11 +31,27 @@ For more information, please refer to <http://unlicense.org/>
 #include <memory_map.h>
 #include <mpu/mpufunc.h>
 
+#define USE_VESA
+
+#ifdef USE_VESA
+#include <set/ring.h>
+#include <setting.h>
+#else
+#include <cga.h>
+#endif
+
+#ifdef USE_VESA
+static UB buf[RING_MAX_LEN + 1];
+static size_t len;
+
+static void _putc(char ch);
+#else
 #define BIOS_CURSOR_COL 0x0450
 #define BIOS_CURSOR_ROW 0x0451
 #define CGA_VRAM_ADDR 0x000b8000
 
 static CGA_Console *cns;
+#endif
 
 static void console_initialize();
 W printk(const B *fmt, ...);
@@ -56,6 +71,32 @@ void _main(void)
 	for (;;);
 }
 
+#ifdef USE_VESA
+static void _putc(char ch)
+{
+	if (len >= RING_MAX_LEN)
+		return;
+
+	buf[len++] = ch;
+}
+
+static void console_initialize()
+{
+	ring_create(kern_v2p((void*)KERNEL_LOG_ADDR), KERNEL_LOG_SIZE);
+}
+
+W printk(const B *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	len = 0;
+	vnprintf(_putc, (char*)fmt, ap);
+	ring_put((ring_t*)KERNEL_LOG_ADDR, buf, len);
+
+	return len;
+};
+#else
 static void console_initialize()
 {
 	UB *x = (UB*)BIOS_CURSOR_COL;
@@ -73,6 +114,7 @@ W printk(const B *fmt, ...)
 	va_start(ap, fmt);
 	return vnprintf((void*)(cns->putc), (char*)fmt, ap);
 };
+#endif
 
 static void kick(const ModuleHeader *h)
 {
