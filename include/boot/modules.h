@@ -1,3 +1,5 @@
+#ifndef __BOOT_MODULES_H__
+#define __BOOT_MODULES_H__
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,9 +26,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#ifndef __BOOT_MODULES_H__
-#define __BOOT_MODULES_H__ 1
-
 #define MODULES_ADDR 0x0000c000
 
 enum ModuleType

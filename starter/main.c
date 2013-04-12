@@ -34,6 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 #define USE_VESA
 
 #ifdef USE_VESA
+#include <boot/vesa.h>
 #include <set/ring.h>
 #include <setting.h>
 #else
@@ -60,12 +61,22 @@ static void kick(const ModuleHeader *h);
 
 void _main(void)
 {
+VesaInfo *v = (VesaInfo*)VESA_INFO_ADDR;
+
 	console_initialize();
 
 	paging_initialize();
 	gdt_initialize();
 	idt_initialize();	
 	memory_initialize();
+
+	printk("VESA mode=%x fb=%p width=%d height=%d bpl=%d bpp=%d\n",
+			v->mode_attr, v->buffer_addr, v->width, v->height,
+			v->bytes_per_line, v->bits_per_pixel);
+	printk("VESA mm=%d, red=%d,%d green=%d,%d blue=%d,%d dcm=%d\n",
+		v->memory_model, v->red_position, v->red_size, 
+		v->green_position, v->green_size, 
+		v->blue_position, v->blue_size, v->direct_color_mode);
 
 	kick((ModuleHeader*)MODULES_ADDR);
 	for (;;);

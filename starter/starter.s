@@ -40,6 +40,7 @@ For more information, please refer to <http://unlicense.org/>
 
 .set STACK_ADDR, 0x00008000
 .set MEMORY_INFO_ADDR, 0x6000
+.set VESA_INFO_ADDR, 0x6c00
 
 /**
  * start on segment 0x0800.
@@ -51,12 +52,15 @@ _start:
 	/* check if supports VESA */
 	xorw %ax, %ax
 	movw %ax, %es
-	movw $0x7000, %di
+	movw $VESA_INFO_ADDR, %di
 	movw $0x4f00, %ax
 	int $0x10
 
 	cmpw $0x004f, %ax
 	jne error_vesa
+
+	cmpw $0x0200, VESA_INFO_ADDR + 4
+	jb error_vesa
 
 	/* check if supports VGA 24bit color */
 	movw $0x4f01, %ax
@@ -156,6 +160,7 @@ a20_wait:
  * @since 1.0
  */
 die:
+	call puts
 	cli
 eternal:
 	hlt
