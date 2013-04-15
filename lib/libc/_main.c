@@ -59,12 +59,12 @@ FILE __file_table__[NFILE];
 
 extern W main(W argc, B * argv[], B * envp[]);
 
-static void init_device(void);
+void libc_init_device(void);
 
 W _main(W argc, B * argv[], B * envp[])
 {
     int result;
-    init_device();
+    libc_init_device();
 
     result = main(argc, argv, envp);
     _exit(result);
@@ -72,7 +72,7 @@ W _main(W argc, B * argv[], B * envp[])
     return result;
 }
 
-static void init_device(void)
+void libc_init_device(void)
 {
     int i;
 

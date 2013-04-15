@@ -20,7 +20,7 @@ Version 2, June 1991
 #define MAJOR_VERSION	1
 #define MINOR_VERSION	1
 
-extern void init_device(void);
+extern void libc_init_device(void);
 extern W posix_init (ID myself, W root_device);
 extern ER lowlib_load (ID myself);
 

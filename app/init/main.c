@@ -127,7 +127,7 @@ int main(int ac, B ** av)
     get_tid(&myself);
     chg_pri(myself, USER_LEVEL);
 
-    init_device();
+    libc_init_device();
 
     errno = vsys_inf(1, 0, &info);
     if (errno == E_OK) {
