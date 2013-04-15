@@ -93,75 +93,105 @@ Version 2, June 1991
  *
  *
  */
+#include <string.h>
 #include <unistd.h>
-#include <itron/syscall.h>
-#include <itron/errno.h>
-#include "../../kernel/boot.h"
-#include "../../kernel/config.h"
-#include "../../lib/libserv/libserv.h"
-#include "init.h"
-
+#include "../../lib/libc/others/stdlib.h"
 
 /*
  * 入出力を行う。
  */
-static void banner(void);
-static ER init(void);
+static void exec(char *);
+static int read_line_edit(char * line, int length);
 
 /*
  *
  */
-int main(void)
+int main(int ac, char ** av)
 {
-    static B *argv[] = { "shell", NULL };
-
-    banner();
-
-    if (init()) {
-	return -1;
-    }
+    static char line[100];
 
     for (;;) {
-	int pid = fork();
-
-	if (pid == 0) {
-		execve(argv[0], argv, NULL);
-	}
-
-	else if (pid == -1) {
-	    dbg_printf("[INIT] fork error\n");
-	    break;
-	}
-
-	else {
-	    pid = waitpid(-1, &pid, 0);
-	}
+	printf ("# ");
+	read_line_edit(line, sizeof(line));
+	exec(line);
     }
 
     return(0);
 }
 
-static void banner(void)
+static void exec(char *str)
 {
-    dbg_printf("init version %d.%d\n", MAJOR_VERSION, MINOR_VERSION);
-}
+    int pid, res;
+    int i, flg, argc, len = strlen(str);
 
-static ER init(void)
-{
-    struct machine_info info;
-    ER errno;
-    ID myself;
+    for (i = 0, flg = 0, argc = 0; i < len; i++) {
+	if (isspace(str[i])) {
+	    flg = 0;
+	    continue;
+	}
 
-    get_tid(&myself);
-    chg_pri(myself, USER_LEVEL);
-
-    libc_init_device();
-
-    errno = vsys_inf(1, 0, &info);
-    if (errno == E_OK) {
-	dbg_printf("rootfs=%x\n", info.rootfs);
-	errno = posix_init(myself, info.rootfs);
+	if (flg == 0) {
+	    flg = 1;
+	    ++argc;
+	}
     }
 
-    return errno;
+    if (!argc)	return;
+
+    if ((res = fork()) == 0) {
+	char *argv[argc + 1];
+
+	for (i = 0, flg = 0, argc = 0; i < len; i++) {
+	    if (isspace(str[i])) {
+		str[i] = 0;
+		flg = 0;
+		continue;
+	    }
+
+	    if (flg == 0) {
+		flg = 1;
+		argv[argc] = &(str[i]);
+		++argc;
+	    }
+	}
+
+	argv[argc] = 0;
+	execve(argv[0], argv, NULL);
+
+	_exit(1);
+    }
+    else if (res == -1) {
+	printf("fork error\n");
+    }
+    else {
+	printf("[SHELL] waiting pid=%d ...\n", res);
+	pid = waitpid(-1, &res, 0);
+	printf("[SHELL] child process exited pid=%d stat=%d\n", pid, res);
+    }
+}
+
+static int read_line_edit(char * line, int length)
+{
+    int i;
+    int ch;
+
+    for (i = 0; i < length - 1;) {
+	ch = getc(stdin);
+	if ((ch == '\n') || (ch == '\r')) {
+	    putchar(ch);
+	    break;
+	}
+	else if (ch == '\b') {
+	    if (i > 0) {
+		--i;
+		line[i] = 0;
+		printf("\b");
+	    }
+	} else if (isprint(ch)) {
+	    putchar(ch);
+	    line[i++] = ch;
+	}
+    }
+    line[i] = '\0';
+    return (i);
 }

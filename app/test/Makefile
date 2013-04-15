@@ -24,7 +24,7 @@
 # For more information, please refer to <http://unlicense.org/>
 
 TARGET = $(WD)/test $(WD)/porttest $(WD)/lowtest $(WD)/rdtest \
-		$(WD)/cat $(WD)/dmesg
+		$(WD)/cat $(WD)/dmesg $(WD)/shell
 
 include Makefile.in
 

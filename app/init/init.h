@@ -14,8 +14,6 @@ Version 2, June 1991
 #define __INIT_H__	1
 
 #include <itron/types.h>
-#include <itron/errno.h>
-#include "../../lib/libc/others/stdlib.h"
 
 #define MAJOR_VERSION	1
 #define MINOR_VERSION	1

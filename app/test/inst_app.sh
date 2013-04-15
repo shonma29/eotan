@@ -15,5 +15,7 @@ ${MKFS}/statfs ${ROOT}/$1 write /cat cat
 ${MKFS}/statfs ${ROOT}/$1 chmod 777 /cat
 ${MKFS}/statfs ${ROOT}/$1 write /dmesg dmesg
 ${MKFS}/statfs ${ROOT}/$1 chmod 777 /dmesg
+${MKFS}/statfs ${ROOT}/$1 write /shell shell
+${MKFS}/statfs ${ROOT}/$1 chmod 777 /shell
 ${MKFS}/statfs ${ROOT}/$1 dir / 
 
