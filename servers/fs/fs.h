@@ -25,7 +25,6 @@ Version 2, June 1991
 #include <itron/rendezvous.h>
 #include <core.h>
 #include "../../kernel/misc.h"
-#include "../console/console.h"
 
 /* =========================== マクロ定義 =========================== */
 

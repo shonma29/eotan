@@ -23,7 +23,7 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-SERVERS = console dumb fs kernlog keyboard ramdisk
+SERVERS = dumb fs kernlog keyboard ramdisk hmi
 
 all: $(SERVERS)
 

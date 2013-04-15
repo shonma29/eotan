@@ -77,7 +77,7 @@ $(TOOL)append: $(TOOL)append.c
 	$(CC) -o $@ $^
 
 kern.bin: starter.bin ../kernel/core.bin ../servers/fs/fs \
-		../servers/console/console ../servers/keyboard/keyboard \
+		../servers/hmi/hmi ../servers/keyboard/keyboard \
 		../servers/ramdisk/ramdisk \
 		../app/init/init ../initrd.img
 	[ `wc -c < starter.bin` -le $(STARTER_SIZE) ]
@@ -86,7 +86,7 @@ kern.bin: starter.bin ../kernel/core.bin ../servers/fs/fs \
 	$(TOOL)append 4 ../initrd.img 4 >> $@
 	$(TOOL)append 2 ../servers/fs/fs 4 >> $@
 	$(TOOL)append 2 ../servers/kernlog/kernlog 4 >> $@
-	$(TOOL)append 2 ../servers/console/console 4 >> $@
+	$(TOOL)append 2 ../servers/hmi/hmi 4 >> $@
 	$(TOOL)append 2 ../servers/keyboard/keyboard 4 >> $@
 	$(TOOL)append 2 ../servers/ramdisk/ramdisk 4 >> $@
 	$(TOOL)append 3 ../app/init/init 4 >> $@

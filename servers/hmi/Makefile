@@ -23,15 +23,15 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = $(WD)/console
+TARGET = $(WD)/hmi
 
 include Makefile.in
 
-CFLAGS += -I kernel -I lib/libserv
+CFLAGS += -I lib/libserv
 ENTRY_ADDR = 0x80310000
 ENTRY_FUNC = start
 
 $(TARGET): $(OBJS) \
-		lib/libserv.a lib/libitron.a lib/libnc.a
+		lib/libserv.a lib/libitron.a lib/libnc.a kernel/arch/libarch.a
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
 	$(STRIP) $@
