@@ -131,6 +131,8 @@ struct proc *free_proc, *tail_proc;
 struct proc *run_proc = NULL;
 
 
+static W set_lowlib(ID pid, ID task);
+
 
 /* init_process
  *
@@ -244,48 +246,31 @@ W proc_set_info(struct posix_request * req)
     dbg_printf("    umask:      %d\n", procinfo->proc_umask);
 #endif
 
+    set_lowlib(procid, tskid);
+
     return (EOK);
 }
 
-/* proc_enter_posix - POSIX プロセスに登録する
- *
- */
-W proc_enter_posix(struct posix_request * req)
+static W set_lowlib(ID pid, ID tskid)
 {
-    struct proc *newproc;
     W errno;
     struct lowlib_data lowlib_data;
     struct lod_low_args {
     	ID task;
     } args;
 
-    /* 新しくプロセス構造体を確保する
-     */
-    errno = proc_alloc_proc(&newproc);
-    if (errno)
-	return (errno);
-
-    newproc->proc_maintask = req->caller;
-    newproc->proc_signal_handler = 0;
-    newproc->proc_status = PS_RUN;
-    newproc->proc_ppid = 0;
-    newproc->proc_uid = 0;
-    newproc->proc_gid = 0;
-    newproc->proc_euid = 0;
-    newproc->proc_egid = 0;
-    newproc->proc_umask = 022;
-    newproc->proc_workdir = NULL;
-
-    args.task = req->caller;
+    args.task = tskid;
     vsys_msc(3, &args);
-    errno = vget_reg(req->caller, LOWLIB_DATA,
+    errno = vget_reg(tskid, LOWLIB_DATA,
 		     sizeof(struct lowlib_data), &lowlib_data);
     if (errno)
 	return errno;
-    lowlib_data.main_task = req->caller;
+    lowlib_data.main_task = tskid;
     /*  lowlib_data.signal_task = signal_task; */
-    lowlib_data.my_pid = newproc->proc_pid;
-    errno = vput_reg(req->caller, LOWLIB_DATA,
+    lowlib_data.my_pid = pid;
+    strcpy(lowlib_data.dpath, "/");
+    lowlib_data.dpath_len = 1;
+    errno = vput_reg(tskid, LOWLIB_DATA,
 		     sizeof(struct lowlib_data), &lowlib_data);
     if (errno)
 	return errno;

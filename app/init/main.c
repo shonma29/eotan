@@ -98,7 +98,6 @@ Version 2, June 1991
 #include <unistd.h>
 #include <itron/syscall.h>
 #include <itron/errno.h>
-#include <lowlib.h>
 #include "../../kernel/boot.h"
 #include "../../kernel/config.h"
 #include "../../lib/libserv/libserv.h"
@@ -138,10 +137,6 @@ int main(int ac, B ** av)
     if (errno != E_OK) {
     	return -1;
     }
-
-    lowlib_load(myself);
-    strcpy((LOWLIB_DATA)->dpath, "/");
-    (LOWLIB_DATA)->dpath_len = 1;
 
     for (;;) {
 	printf ("# ");

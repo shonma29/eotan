@@ -61,10 +61,6 @@ W psc_misc_f(RDVNO rdvno, struct posix_request *req)
 	    sfs_purge_cache();
 	    break;
 
-	case M_ENTER_POSIX:
-	    err = proc_enter_posix(req);
-	    break;
-
 	case M_DO_PS:
 	    err = do_ps();
 	    break;
