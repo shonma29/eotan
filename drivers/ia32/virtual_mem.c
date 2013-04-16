@@ -746,17 +746,15 @@ ER region_unmap(ID id, VP start, UW size)
  * のタスクは影響を受けない。
  *
  */
-ER region_duplicate(ID src, ID dst, ID rid)
+ER region_duplicate(ID src, ID dst)
     /* src    複製するリージョンをもつタスク
      * dst    リージョンの複製先のタスク
-     * rid    region number
      */
 {
     T_TCB *taskp, *dstp;
-    UW counter;
 
 #ifdef DEBUG
-    printk("region_duplicate %d %d %d\n", src, dst, rid);
+    printk("region_duplicate %d %d\n", src, dst);
 #endif
     taskp = (T_TCB *) get_thread_ptr(src);
     if (taskp->tskstat == TTS_NON) {
@@ -767,16 +765,9 @@ ER region_duplicate(ID src, ID dst, ID rid)
 	return (E_PAR);
     }
 
-    if (taskp->regions[rid].permission == 0)
-	return (E_ID);
-
-    for (counter = 0; counter < MAX_REGION; ++counter) {
-	if (dstp->regions[counter].permission == 0)
-	    break;
-    }
-    if (counter == MAX_REGION)
-	return (E_NOMEM);
-    dstp->regions[counter] = taskp->regions[rid];
+    dstp->regions[TEXT_REGION] = taskp->regions[TEXT_REGION];
+    dstp->regions[DATA_REGION] = taskp->regions[DATA_REGION];
+    dstp->regions[HEAP_REGION] = taskp->regions[HEAP_REGION];
     return (E_OK);
 }
 

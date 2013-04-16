@@ -37,7 +37,7 @@ extern ER region_create(ID id, ID rid, VP start, W min, W max, UW perm, FP handl
 extern ER region_destroy(ID id, ID rid);
 extern ER region_map(ID id, VP start, UW size, W accmode);
 extern ER region_unmap(ID id, VP start, UW size);
-extern ER region_duplicate(ID src, ID dst, ID rid);
+extern ER region_duplicate(ID src, ID dst);
 extern ER region_get(ID id, VP start, UW size, VP buf);
 extern ER region_put(ID id, VP start, UW size, VP buf);
 extern ER region_get_status(ID id, ID rid, VP stat);

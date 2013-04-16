@@ -43,7 +43,7 @@ extern ER	wai_flg (UINT *p_flgptn, ID flgid, UINT waiptn, UINT wfmode);
 /* --------------------------------------------------------- */
 extern ER vcre_reg (ID id, ID rid, VP start, W min, W max, UW perm, FP handle);
 extern ER vdel_reg (ID id, ID rid);
-extern ER vdup_reg (ID src, ID dst, ID rid);
+extern ER vdup_reg (ID src, ID dst);
 extern ER vsts_reg (ID id, ID rid, VP stat);
 extern ER vmap_reg (ID id, VP start, UW size, W accmode);
 extern ER vunm_reg (ID id, VP addr, UW size);

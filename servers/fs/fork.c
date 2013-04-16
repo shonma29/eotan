@@ -168,15 +168,9 @@ W proc_duplicate(struct proc * source, struct proc * destination)
 
     /* region のコピー */
     /* text */
-    vdup_reg(source->proc_maintask, destination->proc_maintask, TEXT_REGION);
     /* data+bss */
-    vdup_reg(source->proc_maintask, destination->proc_maintask, DATA_REGION);
     /* heap */
-    vdup_reg(source->proc_maintask, destination->proc_maintask, HEAP_REGION);
-#ifdef notdef
-    /* stack */
-    vdup_reg(source->proc_maintask, destination->proc_maintask, STACK_REGION);
-#endif
+    vdup_reg(source->proc_maintask, destination->proc_maintask);
 
     /* 仮想空間の生成 */
     errno = setup_vm_proc(destination);

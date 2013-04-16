@@ -148,9 +148,9 @@ ER vget_phs (ID id, VP addr, UW *paddr)
 
 /*
  */
-ER vdup_reg (ID src, ID dst, ID rid)
+ER vdup_reg (ID src, ID dst)
 {
-  return ncall(SVC_REGION_DUPLICATE, src, dst, rid);
+  return ncall(SVC_REGION_DUPLICATE, src, dst);
 }
 
 /*

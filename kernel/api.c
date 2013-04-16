@@ -298,7 +298,7 @@ static ER (*syscall_table[])(VP argp) =
   SVC_IF (region_destroy, 2),	/*   25 */
   SVC_IF (region_map, 3),	/*   26 */
   SVC_IF (region_unmap, 3),	/*   27 */
-  SVC_IF (region_duplicate, 3),	/*   28 */
+  SVC_IF (region_duplicate, 2),	/*   28 */
   SVC_IF (region_put, 4),	/*   29 */
   SVC_IF (region_get, 4),	/*   30 */
   SVC_IF (region_get_status, 3),	/*   31 */
@@ -661,10 +661,9 @@ static ER if_region_duplicate(VP argp)
     struct {
 	ID src;
 	ID dst;
-	ID rid;
     } *args = argp;
 
-    return region_duplicate(args->src, args->dst, args->rid);
+    return region_duplicate(args->src, args->dst);
 }
 
 /*
