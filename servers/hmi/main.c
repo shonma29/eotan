@@ -186,7 +186,7 @@ static ER_ID initialize(void)
 		return port;
 	}
 
-	result = bind_device((UB*)MYNAME, port);
+	result = bind_device(MYDEVID, (UB*)MYNAME, port);
 	if (result) {
 		dbg_printf("[HMI] bind error=%d\n", result);
 		del_por(port);

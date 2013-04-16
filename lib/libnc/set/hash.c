@@ -28,6 +28,9 @@ For more information, please refer to <http://unlicense.org/>
 #include <stddef.h>
 #include <set/hash.h>
 
+#define HASH_OK (0)
+#define HASH_ERR (1)
+
 #define HASH_MIN_BITS (5)
 #define HASH_MAX_BITS (20)
 
@@ -154,13 +157,13 @@ void *hash_get(hash_t *h, const void *key) {
 	return ((hash_entry_t*)p)->value;
 }
 
-void *hash_put(hash_t *h, const void *key, const void *value) {
+int hash_put(hash_t *h, const void *key, const void *value) {
 	list_t *head = get_head(h, key);
 	list_t *p = find_entry(head, key, h->cmp);
 
 	if (!p) {
 		p = list_pick(&(h->free));
-		if (!p)	return NULL;
+		if (!p)	return HASH_ERR;
 
 		h->num++;
 		list_push(head, p);
@@ -169,20 +172,20 @@ void *hash_put(hash_t *h, const void *key, const void *value) {
 	(((hash_entry_t*)p)->key = (void*)key);
 	(((hash_entry_t*)p)->value = (void*)value);
 
-	return (void*)key;
+	return HASH_OK;
 }
 
-void *hash_remove(hash_t *h, const void *key) {
+int hash_remove(hash_t *h, const void *key) {
 	list_t *p = find_entry(get_head(h, key), key, h->cmp);
 
-	if (!p)	return NULL;
+	if (!p)	return HASH_ERR;
 
 	h->num--;
 	list_remove(p);
 	((hash_entry_t*)p)->key = NULL;
 	((hash_entry_t*)p)->value = NULL;
 
-	return (void*)key;
+	return HASH_OK;
 }
 
 size_t hash_size(const hash_t *h) {

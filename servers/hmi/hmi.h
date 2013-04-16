@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-#define MYNAME "driver.console"
+#define MYNAME "console"
+#define MYDEVID 0x00000000
 
 #endif

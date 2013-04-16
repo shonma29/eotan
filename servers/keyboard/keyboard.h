@@ -68,7 +68,8 @@ Version 2, June 1991
 #include <core.h>
 #include "../fs/fs.h"
 
-#define KEYBOARD_DRIVER	"driver.keyboard"
+#define KEYBOARD_DRIVER	"keyboard"
+#define MYDEVID 0x00010000
 
 #define KEYBOARD_INT		33
 

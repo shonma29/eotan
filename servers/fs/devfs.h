@@ -27,10 +27,17 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <sys/syscall.h>
 
 #define MAX_DEVICE (32)
 
+typedef struct {
+	UW id;
+	B name[MAX_DEVICE_NAME + 1];
+	ID port;
+} device_info_t;
+
 extern int device_init(void);
-extern ID device_find(const UB *name);
+extern device_info_t *device_find(const UW id);
 
 #endif

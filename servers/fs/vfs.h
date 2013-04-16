@@ -256,18 +256,6 @@ struct statfs {
     W f_free;
 };
 
-
-struct special_file {
-    UW major_minor;		/* スペシャルファイルのメジャー/マイナー番号 */
-    /* 最上位ビットが 0 の場合はキャラクタ型 */
-    /* 最上位ビットが 1 の場合はブロック型 */
-    B name[MAX_MODULE_NAME];	/* デバイスドライバの登録名 */
-    ID port;			/* デバイスドライバへのポート */
-    UW dd;			/* デバイスの機器番号およびパーティション番号 */
-     ER(*handle) ();		/* 特別の処理(ネームドパイプなど) をするときのハンドラ */
-};
-
-extern struct special_file special_file_table[];
 
 
 /* filesystem.c */

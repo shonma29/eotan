@@ -171,38 +171,6 @@ struct inode inode_buf[MAX_INODE], *free_inode = NULL, *rootfile = NULL;
 static int use_count = 0;
 #endif
 
-
-/* スペシャルファイルとデバイスドライバとの対応を取るためのテーブル
- *
- * POSIX 環境では、スペシャルファイルはメジャー番号とマイナー番号で識別している。
- * B-Free OS では、デバイスドライバは識別名とポート番号、そして dd で区別しているので、
- * このような対応表が必要になる。
- */
-
-struct special_file special_file_table[] = {
-/* キャラクタデバイス */
-/* major/minor        name         port      dd         handler */
-    {0x00000000, "driver.console", 0, 0x00000000, 0},
-    {0x00010000, "driver.keyboard", 0, 0x00000000, 0},
-    {0x00020000, "driver.psaux", 0, 0x00000000, 0},	/* psaux driver */
-
-/* ブロック型デバイス */
-    {0x80010000, "driver.ide", 0, 0x00000000, 0},	/* 0 番目の IDE デバイスの全体 */
-    {0x80010001, "driver.ide", 0, 0x00000001, 0},	/* 0 番目の IDE デバイスのパーティション 1 */
-    {0x80010002, "driver.ide", 0, 0x00000002, 0},	/* 0 番目の IDE デバイスのパーティション 2 */
-    {0x80010003, "driver.ide", 0, 0x00000003, 0},	/* 0 番目の IDE デバイスのパーティション 3 */
-    {0x80010004, "driver.ide", 0, 0x00000004, 0},	/* 0 番目の IDE デバイスのパーティション 4 */
-    {0x80010005, "driver.ide", 0, 0x00000005, 0},	/* 0 番目の IDE デバイスのパーティション 5 (拡張パーティション) */
-    {0x80010006, "driver.ide", 0, 0x00000006, 0},	/* 0 番目の IDE デバイスのパーティション 6 (拡張パーティション) */
-    {0x80010007, "driver.ide", 0, 0x00000007, 0},	/* 0 番目の IDE デバイスのパーティション 7 (拡張パーティション) */
-    {0x80010008, "driver.ide", 0, 0x00000008, 0},	/* 0 番目の IDE デバイスのパーティション 8 (拡張パーティション) */
-    {0x80010009, "driver.ide", 0, 0x00000009, 0},	/* 0 番目の IDE デバイスのパーティション 9 (拡張パーティション) */
-    {0x80020000, "driver.ramdisk", 0, 0x00000000, 0}	/* RAMDISK */
-};
-
-UW special_file_table_entry =
-    sizeof(special_file_table)/sizeof(struct special_file);
-
 static W mode_map[] = { R_OK, W_OK, R_OK | W_OK };
 
 
@@ -232,50 +200,19 @@ W init_fs(void)
     fs_buf[MAX_MOUNT - 1].fs_next = NULL;
     free_fs = &fs_buf[0];
 
-#ifdef notdef
-    dbg_printf("special file table size is %d\n", special_file_table_entry);
-#endif
-
     return (TRUE);
 }
 
 W get_device_info(UW major_minor, ID * port, UW * dd)
 {
-    UW i;
-    ID p;
+    device_info_t *p = device_find(major_minor);
 
-    for (i = 0; i < special_file_table_entry; i++) {
-#ifdef notdef
-	if (special_file_table[i].major_minor == major_minor)
-#else
-	if ((special_file_table[i].major_minor & 0xFFFF0000) ==
-	    (major_minor & 0xFFFF0000))	/* major 番号のみで比較する */
-#endif
-	{
-
-	    if (special_file_table[i].port <= 0) {
-		p = device_find((UB*)(special_file_table[i].name));
-		if (!p) {
-#ifdef FMDEBUG
-		    dbg_printf("Cannot access special file(%s).\n",
-			       special_file_table[i].name);
-#endif
-		    return (ENODEV);
-		}
-		special_file_table[i].port = p;
-	    }
-
-	    *port = special_file_table[i].port;
-#ifdef notdef
-	    *dd = special_file_table[i].dd;
-#else
-	    /* minor 番号が dd に対応する． */
-	    /* IDE driver ではパーティションの区別に利用する */
-	    *dd = major_minor & 0x0000FFFF;
-#endif
-	    return (EOK);
-	}
+    if (p) {
+	*port = p->port;
+	*dd = major_minor & 0x0000FFFF;
+	return (EOK);
     }
+
     return (ENODEV);
 }
 
@@ -284,51 +221,58 @@ W get_device_info(UW major_minor, ID * port, UW * dd)
 W open_special_dev(struct proc * procp)
 {
     struct inode *ip;
+    device_info_t *p;
 
-    /* 標準入力の設定 */
-    procp->proc_open_file[0].f_inode = ip = alloc_inode();
-    procp->proc_open_file[0].f_offset = 0;
-    procp->proc_open_file[0].f_omode = O_RDWR;
-    if (ip == NULL) {
-	return (ENOMEM);
+    p = device_find(0x00010000);
+    if (p) {
+	/* 標準入力の設定 */
+	procp->proc_open_file[0].f_inode = ip = alloc_inode();
+	procp->proc_open_file[0].f_offset = 0;
+	procp->proc_open_file[0].f_omode = O_RDWR;
+	if (ip == NULL) {
+	    return (ENOMEM);
+	}
+	ip->i_mode = S_IFCHR;
+	ip->i_dev = p->id;
+	ip->i_fs = rootfs;
+	ip->i_index = -1;
+	ip->i_size = 0;
+	ip->i_size_blk = 0;
+	fs_register_inode(ip);
     }
-    ip->i_mode = S_IFCHR;
-    ip->i_dev = special_file_table[1].major_minor;
-    ip->i_fs = rootfs;
-    ip->i_index = -1;
-    ip->i_size = 0;
-    ip->i_size_blk = 0;
-    fs_register_inode(ip);
 
-    /* 標準出力の設定 */
-    procp->proc_open_file[1].f_inode = ip = alloc_inode();
-    procp->proc_open_file[1].f_offset = 0;
-    procp->proc_open_file[1].f_omode = O_RDWR;
-    if (ip == NULL) {
-	return (ENOMEM);
-    }
-    ip->i_mode = S_IFCHR;
-    ip->i_dev = special_file_table[0].major_minor;
-    ip->i_fs = rootfs;
-    ip->i_index = -2;
-    ip->i_size = 0;
-    ip->i_size_blk = 0;
-    fs_register_inode(ip);
+    p = device_find(0x00000000);
+    if (p) {
+	/* 標準出力の設定 */
+	procp->proc_open_file[1].f_inode = ip = alloc_inode();
+	procp->proc_open_file[1].f_offset = 0;
+	procp->proc_open_file[1].f_omode = O_RDWR;
+	if (ip == NULL) {
+	    return (ENOMEM);
+	}
+	ip->i_mode = S_IFCHR;
+	ip->i_dev = p->id;
+	ip->i_fs = rootfs;
+	ip->i_index = -2;
+	ip->i_size = 0;
+	ip->i_size_blk = 0;
+	fs_register_inode(ip);
 
-    /* 標準エラー出力の設定 */
-    procp->proc_open_file[2].f_inode = ip = alloc_inode();
-    procp->proc_open_file[2].f_offset = 0;
-    procp->proc_open_file[2].f_omode = O_RDWR;
-    if (ip == NULL) {
-	return (ENOMEM);
+	/* 標準エラー出力の設定 */
+	procp->proc_open_file[2].f_inode = ip = alloc_inode();
+	procp->proc_open_file[2].f_offset = 0;
+	procp->proc_open_file[2].f_omode = O_RDWR;
+	if (ip == NULL) {
+	    return (ENOMEM);
+	}
+	ip->i_mode = S_IFCHR;
+	ip->i_dev = p->id;
+	ip->i_fs = rootfs;
+	ip->i_index = -3;
+	ip->i_size = 0;
+	ip->i_size_blk = 0;
+	fs_register_inode(ip);
     }
-    ip->i_mode = S_IFCHR;
-    ip->i_dev = special_file_table[0].major_minor;
-    ip->i_fs = rootfs;
-    ip->i_index = -3;
-    ip->i_size = 0;
-    ip->i_size_blk = 0;
-    fs_register_inode(ip);
 
     return (EOK);
 }

@@ -30,7 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../servers/fs/api.h"
 
 
-ER bind_device(UB *name, ID port)
+ER bind_device(UW id, UB *name, ID port)
 {
 	ER_UINT err;
 	struct posix_request req;
@@ -41,6 +41,7 @@ ER bind_device(UB *name, ID port)
 
 	req.msg_length = sizeof(req);
 	req.operation = PSC_BIND_DEVICE;
+	req.param.par_bind_device.id = id;
 	strcpy((char*)req.param.par_bind_device.name, (char*)name);
 	req.param.par_bind_device.port = port;
 	err = cal_por(PORT_FS, 0xffffffff, &req, sizeof(req));

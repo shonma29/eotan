@@ -34,7 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "fs.h"
 
 static hash_t *hash;
-static UB table[MAX_DEVICE][MAX_DEVICE_NAME + 1];
+static device_info_t table[MAX_DEVICE];
 static size_t num_device;
 
 static unsigned int calc_hash(const void *key, const size_t size);
@@ -51,25 +51,20 @@ int device_init(void)
 
 static unsigned int calc_hash(const void *key, const size_t size)
 {
-	unsigned char *p;
-	int v = 0;
-
-	for (p = (unsigned char*)key; *p; p++) {
-		v <<= 8;
-		v |= *p;
-		v %= size;
-	}
-
-	return v;
+	return (UW)key % size;
 }
 
 static int compare(const void *a, const void *b)
 {
-	return strcmp(a, b);
+	UW x = (UW)a;
+	UW y = (UW)b;
+
+	return (x == y)? 0:((x < y)? (-1):1);
 }
 
 W psc_bind_device_f(RDVNO rdvno, struct posix_request *req)
 {
+	UW id = req->param.par_bind_device.id;
 	UB *name = req->param.par_bind_device.name;
 	ID port = req->param.par_bind_device.port;
 
@@ -79,23 +74,25 @@ W psc_bind_device_f(RDVNO rdvno, struct posix_request *req)
 		return FALSE;
 	}
 
-	dbg_printf("[FS] bind(%s, %d)\n", name, port);
-	strcpy((void*)(table[num_device]), (void*)name);
+	dbg_printf("[FS] bind(%x, %s, %d)\n", id, name, port);
+	table[num_device].id = id;
+	strcpy((char*)(table[num_device].name), (char*)name);
+	table[num_device].port = port;
 
-	if (hash_put(hash, table[num_device], (void*)port)) {
+	if (hash_put(hash, (void*)id, (void*)&(table[num_device]))) {
+		put_response(rdvno, EPERM, -1, 0);
+
+		return FALSE;
+
+	} else {
 		num_device++;
 		put_response(rdvno, EOK, 0, 0);
 
 		return TRUE;
-
-	} else {
-		put_response(rdvno, EPERM, -1, 0);
-
-		return FALSE;
 	}
 }
 
-ID device_find(const UB *name)
+device_info_t *device_find(const UW devid)
 {
-	return (ID)(hash_get(hash, name));
+	return (device_info_t*)(hash_get(hash, (void*)devid));
 }

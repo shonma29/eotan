@@ -537,6 +537,7 @@ struct psc_misc
 #define MAX_DEVICE_NAME (31)
 struct psc_bind_device
 {
+  UW id;
   UB name[MAX_DEVICE_NAME + 1];
   ID port;
 };

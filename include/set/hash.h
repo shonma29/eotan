@@ -53,8 +53,8 @@ hash_t *hash_create(const size_t max,
 void hash_destroy(hash_t *h);
 void hash_clear(hash_t *h);
 void *hash_get(hash_t *h, const void *key);
-void *hash_put(hash_t *h, const void *key, const void *value);
-void *hash_remove(hash_t *h, const void *key);
+int hash_put(hash_t *h, const void *key, const void *value);
+int hash_remove(hash_t *h, const void *key);
 size_t hash_size(const hash_t *h);
 
 #endif
