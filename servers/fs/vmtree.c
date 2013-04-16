@@ -249,8 +249,6 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
     struct vm_tree *source;
     struct vm_tree *destination;
     static B page_buf[PAGE_SIZE];
-    UW addr;
-
 
     source = source_proc->vm_tree;
     destination = dest_proc->vm_tree;
@@ -366,15 +364,6 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 			if (errno) {
 #ifdef VMDEBUG
 			    printk("cannot vmap_reg: errno = %d\n", errno);
-#endif
-			    return (errno);
-			}
-
-			errno = vget_phs(dest_proc->proc_maintask,
-					 (VP) dest_pagep->addr, &addr);
-			if (errno) {
-#ifdef VMDEBUG
-			    printk("cannot vget_phs: errno = %d\n", errno);
 #endif
 			    return (errno);
 			}
