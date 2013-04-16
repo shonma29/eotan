@@ -666,9 +666,9 @@ proc_renew_task(W procid, FP main_funcp, FP signal_funcp,
     pk_ctsk.itskpri = POSIX_TASK_LEVEL;
     pk_ctsk.stksz = POSIX_STACK_SIZE;
     pk_ctsk.addrmap = NULL;
-    errno = vcre_tsk(&pk_ctsk, &rid);
-    if (errno) {
-	return (ENOMEM);
+    rid = acre_tsk(&pk_ctsk);
+    if (rid < 0) {
+	return rid;
     }
     *new_main_task = rid;
     procp->proc_maintask = rid;
@@ -678,9 +678,9 @@ proc_renew_task(W procid, FP main_funcp, FP signal_funcp,
     pk_ctsk.itskpri = POSIX_TASK_LEVEL;
     pk_ctsk.stksz = POSIX_STACK_SIZE;
     pk_ctsk.addrmap = NULL;
-    errno = vcre_tsk(&pk_ctsk, &rid);
-    if (errno) {
-	return (ENOMEM);
+    rid = acre_tsk(&pk_ctsk);
+    if (rid < 0) {
+	return rid;
     }
     *new_signal_task = rid;
     procp->proc_signal_handler = rid;

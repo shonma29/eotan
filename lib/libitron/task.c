@@ -25,10 +25,10 @@ Version 2, June 1991
  * 返り値：
  *
  */
-ER
-cre_tsk (ID tskid, T_CTSK *pk_ctsk)
+ER_ID
+acre_tsk (T_CTSK *pk_ctsk)
 {
-  return ncall(SVC_THREAD_CREATE, tskid, pk_ctsk);
+  return ncall(SVC_THREAD_CREATE, pk_ctsk);
 }
 
 

@@ -190,7 +190,7 @@ Version 2, June 1991
 
 static ER	nodef (VP argp);
 
-static ER	if_thread_create(void *argp);
+static ER	if_thread_create_auto(void *argp);
 static ER	if_thread_destroy(void *argp);
 static ER	if_thread_start(void *argp);
 static ER	if_thread_end(void *argp);
@@ -250,7 +250,7 @@ static ER (*syscall_table[])(VP argp) =
   SVC_UNDEFINED,		/*    0 */
 
   /* タスク管理システムコール */
-  SVC_IF (thread_create, 2),	/*    1 */
+  SVC_IF (thread_create_auto, 1),	/*    1 */
   SVC_IF (thread_destroy, 1),	/*    2 */
   SVC_IF (thread_start, 2),	/*    3 */
   SVC_IF (thread_end, 0),     /*    4 */
@@ -370,10 +370,9 @@ nodef (VP argp)
  * タスク関係システムコール                                                *
  * ----------------------------------------------------------------------- */
 
-/* if_thread_create --- タスクの生成
+/* if_thread_create_auto --- タスクの生成
  *
- * 引数: tskid 		生成するタスクのID
- *	 pk_ctsk	生成するタスクの属性情報
+ * 引数: pk_ctsk	生成するタスクの属性情報
  *			tskatr		タスク属性
  *			startaddr	タスク起動アドレス
  *			itskpri		タスク起動時優先度
@@ -381,14 +380,13 @@ nodef (VP argp)
  *			addrmap		アドレスマップ
  *	
  */
-static ER if_thread_create(VP argp)
+static ER if_thread_create_auto(VP argp)
 {
     struct {
-	ID tskid;
 	T_CTSK *tskpkt;
     } *args = argp;
 
-    return (thread_create(args->tskid, args->tskpkt));
+    return (thread_create_auto(args->tskpkt));
 }
 
 /* if_thread_destroy --- 指定したタスクを削除

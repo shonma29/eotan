@@ -792,7 +792,7 @@ ER thread_resume(ID taskid)
  *	し、new_task は、タスク ID を自動的に割りあてる。
  *
  */
-ER new_task(T_CTSK * pk_ctsk, ID * rid)
+ER_ID thread_create_auto(T_CTSK * pk_ctsk)
 {
     ID i;
     ER err;
@@ -800,11 +800,10 @@ ER new_task(T_CTSK * pk_ctsk, ID * rid)
     for (i = MIN_USERTASKID; i <= MAX_USERTASKID; i++) {
 	err = thread_create(i, pk_ctsk);
 	if (err == E_OK) {
-	    *rid = i;
-	    return (E_OK);
+	    return i;
 	}
     }
-    return (E_NOMEM);
+    return (E_NOID);
 }
 
 

@@ -54,9 +54,9 @@ _fork (int esp, int ebp, int ebx, int ecx, int edx, int esi, int edi)
     task_info.startaddr = (void*)fork_entry;
     task_info.itskpri = POSIX_TASK_LEVEL;
     task_info.stksz = POSIX_STACK_SIZE;
-    error = vcre_tsk(&task_info, &child_main);
-    if (error != E_OK)
-	return (error);
+    child_main = acre_tsk(&task_info);
+    if (child_main < 0)
+	return (child_main);
 
     /* 子プロセスの signal task の生成 */
     /* 現時点では生成しない */

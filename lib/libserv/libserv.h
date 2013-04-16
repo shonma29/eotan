@@ -14,10 +14,6 @@ Version 2, June 1991
 */
 /* @(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/kernlib/libkernel.h,v 1.1 1999/04/18 17:48:33 monaka Exp $ */
 #include <itron/types.h>
-#include <itron/struct.h>
-
-/* vcre_tsk.c */
-ER vcre_tsk (T_CTSK *pk_ctsk, ID *rid);
 
 /* sys_debug.c */
 extern W dbg_puts(B *msg);

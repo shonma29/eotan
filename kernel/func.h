@@ -50,7 +50,7 @@ extern ER thread_suspend(ID taskid);
 extern ER thread_resume(ID taskid);
 extern ER thread_change_priority(ID tskid, PRI tskpri);
 extern ER rot_rdq(PRI tskpri);
-extern ER new_task(T_CTSK * pk_ctsk, ID * rid);
+extern ER_ID thread_create_auto(T_CTSK * pk_ctsk);
 extern T_TCB *get_thread_ptr(ID tskid);
 
 /* posix.c */
