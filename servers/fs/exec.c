@@ -159,18 +159,6 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     vdel_reg(main_task, STACK_REGION);	/* stack */
 #endif
 
-#if 0 /* never use */
-    /* 新しいタスクを生成する
-     */
-    /* 既存のタスクのイメージを変更することとし、タスクの生成は止める */
-    errno = proc_renew_task(procid, req->param.par_execve.start_main,
-			    req->param.par_execve.start_signal,
-			    &main_task, &signal_task);
-    if (errno) {
-	fs_close_file(ip);
-	return (errno);
-    }
-#endif
 #ifdef notdef
     dbg_printf("[PM] setup vm proc\n");
 #endif

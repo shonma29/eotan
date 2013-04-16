@@ -188,7 +188,6 @@ extern W		proc_set_file (W procid, W fileid, W flag, struct inode *ip);
 extern W		proc_get_cwd (W procid, struct inode **cwd);
 extern W		proc_set_umask (W procid, W umask);
 extern W		proc_get_umask (W procid, W *umask);
-extern W		proc_renew_task (W procid, FP main_funcp, FP signal_funcp, ID *new_main_task, ID *new_signal_task);
 extern W		proc_dump (struct posix_request *req);
 extern W		proc_get_procp (W procid, struct proc **procp);
 extern W		proc_destroy_memory (W procid);

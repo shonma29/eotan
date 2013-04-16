@@ -630,65 +630,6 @@ W proc_alloc_proc(struct proc ** procp)
 }
 
 
-/* proc_renew_task - プロセスに所属するタスクをひとつ生成する。
- *
- * 機能：	既存のプロセスに所属しているタスクを終了し、
- *		新しく生成したタスクに切り換える。
- *
- *
- */
-W
-proc_renew_task(W procid, FP main_funcp, FP signal_funcp,
-		ID * new_main_task, ID * new_signal_task)
-{
-    ER errno;
-    struct proc *procp;
-    T_CTSK pk_ctsk;
-    ID rid;
-
-
-    if ((procid < 0) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
-    }
-
-    procp = &proc_table[procid];
-    errno = ter_tsk(procp->proc_maintask);
-    if (errno) {
-	return (EINVAL);
-    }
-    errno = ter_tsk(procp->proc_signal_handler);
-    if (errno) {
-	return (EINVAL);
-    }
-
-    pk_ctsk.exinf = 0;
-    pk_ctsk.startaddr = main_funcp;
-    pk_ctsk.itskpri = POSIX_TASK_LEVEL;
-    pk_ctsk.stksz = POSIX_STACK_SIZE;
-    pk_ctsk.addrmap = NULL;
-    rid = acre_tsk(&pk_ctsk);
-    if (rid < 0) {
-	return rid;
-    }
-    *new_main_task = rid;
-    procp->proc_maintask = rid;
-
-    pk_ctsk.exinf = 0;
-    pk_ctsk.startaddr = signal_funcp;
-    pk_ctsk.itskpri = POSIX_TASK_LEVEL;
-    pk_ctsk.stksz = POSIX_STACK_SIZE;
-    pk_ctsk.addrmap = NULL;
-    rid = acre_tsk(&pk_ctsk);
-    if (rid < 0) {
-	return rid;
-    }
-    *new_signal_task = rid;
-    procp->proc_signal_handler = rid;
-
-    return (EOK);
-}
-
-
 W proc_vm_dump(struct posix_request * req)
 {
     struct proc *procp;
