@@ -24,11 +24,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <itron/types.h>
-#include <itron/syscall.h>
+#include <core.h>
 #include <mpu/call_kernel.h>
+#include <nerve/svcno.h>
+
 
 ER acre_flg(T_CFLG *pk_cflg) {
-	return ncall(SYS_ACRE_FLG, pk_cflg);
+	return ncall(SVC_FLAG_CREATE_AUTO, pk_cflg);
 }
 

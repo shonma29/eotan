@@ -24,11 +24,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <itron/types.h>
-#include <itron/syscall.h>
+#include <core.h>
 #include <itron/rendezvous.h>
 #include <mpu/call_kernel.h>
+#include <nerve/svcno.h>
+
 
 ER_ID acre_por(T_CPOR *pk_cpor) {
-	return ncall(SYS_ACRE_POR, pk_cpor);
+	return ncall(SVC_PORT_CREATE_AUTO, pk_cpor);
 }

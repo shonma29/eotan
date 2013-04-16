@@ -33,6 +33,7 @@ Version 2, June 1991
 #include <itron/types.h>
 #include <itron/syscall.h>
 #include <mpu/call_kernel.h>
+#include <nerve/svcno.h>
 
 
 /*
@@ -41,5 +42,5 @@ Version 2, June 1991
 ER
 def_int (W intno, T_DINT *pk_dint)
 {
-  return ncall(SYS_DEF_INT, intno, pk_dint);
+  return ncall(SVC_INTERRUPT_BIND, intno, pk_dint);
 }

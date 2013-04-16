@@ -48,6 +48,7 @@ Version 2, June 1991
 #include <itron/syscall.h>
 #include <itron/errno.h>
 #include <mpu/call_kernel.h>
+#include <nerve/svcno.h>
 
 
 /* vsys_msc
@@ -56,7 +57,7 @@ Version 2, June 1991
 ER
 vsys_msc (W cmd, VP argp)
 {
-  return ncall(SYS_VSYS_MSC, cmd, argp);
+  return ncall(SVC_MISC, cmd, argp);
 }
 
 /* vsys_inf
@@ -65,14 +66,14 @@ vsys_msc (W cmd, VP argp)
 ER
 vsys_inf (W func, W sub, VP argp)
 {
-  return ncall(SYS_VSYS_INF, func, sub, argp);
+  return ncall(SVC_GET_SYSTEM_INFO, func, sub, argp);
 }
 
 /* vcpy_stk */
 ER
 vcpy_stk (ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi , W edi, ID dst)
 {
-  return ncall(SYS_VCPY_STK, src, esp, ebp,
+  return ncall(SVC_MPU_COPY_STACK, src, esp, ebp,
 			ebx, ecx, edx, esi , edi, dst);
 }
 
@@ -80,7 +81,7 @@ vcpy_stk (ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi , W edi, ID dst)
 ER
 vset_ctx (ID tid, W eip, B *stackp, W stsize)
 {
-  return ncall(SYS_VSET_CTX, tid, eip, stackp, stsize);
+  return ncall(SVC_MPU_SET_CONTEXT, tid, eip, stackp, stsize);
 }
 
 /* vuse_fpu */
@@ -88,7 +89,7 @@ ER
 vuse_fpu (ID tid)
 {
 /*TODO fix bug of vuse_fpu
-  return ncall(SYS_VUSE_FPU, tid);
+  return ncall(SVC_MPU_USE_FLOAT, tid);
 */
   return E_NOSPT;
 }

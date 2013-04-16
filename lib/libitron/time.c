@@ -17,13 +17,14 @@ Version 2, June 1991
 #include <itron/types.h>
 #include <itron/syscall.h>
 #include <mpu/call_kernel.h>
+#include <nerve/svcno.h>
 
 /*
  * システムクロック設定
  */
 ER set_tim(SYSTIME *pk_tim)
 {
-  return ncall(SYS_SET_TIM, pk_tim);
+  return ncall(SVC_TIME_SET, pk_tim);
 }
 
 /*
@@ -31,7 +32,7 @@ ER set_tim(SYSTIME *pk_tim)
  */
 ER get_tim(SYSTIME *pk_tim)
 {
-  return ncall(SYS_GET_TIM, pk_tim);
+  return ncall(SVC_TIME_GET, pk_tim);
 }
 
 /*
@@ -40,7 +41,7 @@ ER get_tim(SYSTIME *pk_tim)
 
 ER dly_tsk(DLYTIME dlytim)
 {
-  return ncall(SYS_DLY_TSK, dlytim);
+  return ncall(SVC_THREAD_DELAY, dlytim);
 }
 
 /*
@@ -49,5 +50,5 @@ ER dly_tsk(DLYTIME dlytim)
 
 ER def_alm(HNO almo, T_DALM *pk_dalm)
 {
-  return ncall(SYS_DEF_ALM, almo, pk_dalm);
+  return ncall(SVC_ALARM_CREATE, almo, pk_dalm);
 }

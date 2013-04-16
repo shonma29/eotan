@@ -51,6 +51,7 @@ Version 2, June 1991
 #include <itron/types.h>
 #include <itron/syscall.h>
 #include <mpu/call_kernel.h>
+#include <nerve/svcno.h>
 
 /*
  * 
@@ -65,7 +66,7 @@ vcre_reg (ID	id, 	/* task ID */
 	  FP	handle)	/* リージョン内でページフォールトが発生したと */
 			/* きの処理の指定 */
 {
-  return ncall(SYS_VCRE_REG, id, rid, start, min, max, perm, handle);
+  return ncall(SVC_REGION_CREATE, id, rid, start, min, max, perm, handle);
 }
 
 /* vdel_reg - リージョンの破棄
@@ -74,7 +75,7 @@ vcre_reg (ID	id, 	/* task ID */
 ER
 vdel_reg (ID taskid, ID rid)
 {
-  return ncall(SYS_VDEL_REG, taskid, rid);
+  return ncall(SVC_REGION_DESTROY, taskid, rid);
 }
 
 /*
@@ -88,7 +89,7 @@ vunm_reg (ID id, VP start, UW size)
       * size      アンマップする仮想メモリ領域の大きさ(バイト単位)
       */
 {
-  return ncall(SYS_VUNM_REG, id, start, size);
+  return ncall(SVC_REGION_UNMAP, id, start, size);
 }
 
 
@@ -103,7 +104,7 @@ vmap_reg (ID id, VP start, UW size, W accmode)
       * size      マップする仮想メモリ領域の大きさ(バイト単位)
       */
 {
-  return ncall(SYS_VMAP_REG, id, start, size, accmode);
+  return ncall(SVC_REGION_MAP, id, start, size, accmode);
 }
 
 
@@ -119,7 +120,7 @@ vget_reg (ID id, VP start, UW size, VP buf)
       * buf    リージョンから読み込んだデータを収めるバッファ
       */
 {
-  return ncall(SYS_VGET_REG, id, start, size, buf);
+  return ncall(SVC_REGION_GET, id, start, size, buf);
 }
 
 /*
@@ -134,7 +135,7 @@ vput_reg (ID id, VP start, UW size, VP buf)
       * buf    リージョンに書き込むデータを収めるバッファ
       */
 {
-  return ncall(SYS_VPUT_REG, id, start, size, buf);
+  return ncall(SVC_REGION_PUT, id, start, size, buf);
 }
 
 
@@ -142,19 +143,19 @@ vput_reg (ID id, VP start, UW size, VP buf)
  */
 ER vget_phs (ID id, VP addr, UW *paddr)
 {
-  return ncall(SYS_VGET_PHS, id, addr, paddr);
+  return ncall(SVC_GET_PHYSICAL_ADDRESS, id, addr, paddr);
 }
 
 /*
  */
 ER vdup_reg (ID src, ID dst, ID rid)
 {
-  return ncall(SYS_VDUP_REG, src, dst, rid);
+  return ncall(SVC_REGION_DUPLICATE, src, dst, rid);
 }
 
 /*
  */
 ER vsts_reg (ID id, ID rid, VP stat)
 {
-  return ncall(SYS_VSTS_REG, id, rid, stat);
+  return ncall(SVC_REGION_GET_STATUS, id, rid, stat);
 }

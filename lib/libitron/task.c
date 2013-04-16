@@ -16,7 +16,7 @@ Version 2, June 1991
 #include <itron/types.h>
 #include <itron/syscall.h>
 #include <mpu/call_kernel.h>
-
+#include <nerve/svcno.h>
 
 /* cre_tsk  --- タスクの生成
  *
@@ -28,7 +28,7 @@ Version 2, June 1991
 ER
 cre_tsk (ID tskid, T_CTSK *pk_ctsk)
 {
-  return ncall(SYS_CRE_TSK, tskid, pk_ctsk);
+  return ncall(SVC_THREAD_CREATE, tskid, pk_ctsk);
 }
 
 
@@ -37,7 +37,7 @@ cre_tsk (ID tskid, T_CTSK *pk_ctsk)
 void
 ext_tsk (void)
 {
-  ncall(SYS_EXT_TSK);
+  ncall(SVC_THREAD_END);
 }
 
 /* exd_tsk  --- 自タスク終了と削除
@@ -45,7 +45,7 @@ ext_tsk (void)
 void
 exd_tsk (void)
 {
-  ncall(SYS_EXD_TSK);
+  ncall(SVC_THREAD_END_AND_DESTROY);
 }
 
 /* chg_pri  --- プライオリティの変更
@@ -53,7 +53,7 @@ exd_tsk (void)
 ER
 chg_pri (ID tskid, PRI tskpri)
 {
-  return ncall(SYS_CHG_PRI, tskid, tskpri);
+  return ncall(SVC_THREAD_CHANGE_PRIORITY, tskid, tskpri);
 }
 
 /* rel_wai --- 待ち状態の解除
@@ -61,7 +61,7 @@ chg_pri (ID tskid, PRI tskpri)
 ER
 rel_wai (ID taskid)
 {
-  return ncall(SYS_REL_WAI, taskid);
+  return ncall(SVC_THREAD_RELEASE, taskid);
 }
 
 /* get_tid  --- 自タスクのタスク ID 参照
@@ -69,7 +69,7 @@ rel_wai (ID taskid)
 ER
 get_tid (ID *rid)
 {
-  return ncall(SYS_GET_TID, rid);
+  return ncall(SVC_THREAD_GET_ID, rid);
 }
 
 /* rsm_tsk  --- 強制待ち状態のタスクから待ち状態を解除
@@ -77,7 +77,7 @@ get_tid (ID *rid)
 ER
 rsm_tsk (ID taskid)
 {
-  return ncall(SYS_RSM_TSK, taskid);
+  return ncall(SVC_THREAD_RESUME, taskid);
 }
 
 /* sta_tsk  --- タスクの起動
@@ -85,7 +85,7 @@ rsm_tsk (ID taskid)
 ER
 sta_tsk (ID taskid, INT stacd)
 {
-  return ncall(SYS_STA_TSK, taskid, stacd);
+  return ncall(SVC_THREAD_START, taskid, stacd);
 }
 
 /* sus_tsk  --- 指定したタスクを強制待ち状態に移行
@@ -93,7 +93,7 @@ sta_tsk (ID taskid, INT stacd)
 ER
 sus_tsk (ID taskid)
 {
-  return ncall(SYS_SUS_TSK, taskid);
+  return ncall(SVC_THREAD_SUSPEND, taskid);
 }
 
 /* ter_tsk  --- 他タスク強制終了
@@ -101,7 +101,7 @@ sus_tsk (ID taskid)
 ER
 ter_tsk (ID tskid)
 {
-  return ncall(SYS_TER_TSK, tskid);
+  return ncall(SVC_THREAD_TERMINATE, tskid);
 }
 
 /* del_tsk --- 他タスク削除
@@ -109,5 +109,5 @@ ter_tsk (ID tskid)
 ER
 del_tsk (ID tskid)
 {
-  return ncall(SYS_DEL_TSK, tskid);
+  return ncall(SVC_THREAD_DESTROY, tskid);
 }

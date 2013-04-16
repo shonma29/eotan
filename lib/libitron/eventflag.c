@@ -40,28 +40,29 @@ Version 2, June 1991
 #include <itron/types.h>
 #include <itron/syscall.h>
 #include <mpu/call_kernel.h>
+#include <nerve/svcno.h>
 
 
 ER
 del_flg (ID flgid)
 {
-  return ncall(SYS_DEL_FLG, flgid);
+  return ncall(SVC_FLAG_DESTROY, flgid);
 }
 
 ER
 set_flg (ID flgid, UINT setptn)
 {
-  return ncall(SYS_SET_FLG, flgid, setptn);
+  return ncall(SVC_FLAG_SET, flgid, setptn);
 }
 
 ER
 clr_flg (ID flgid, UINT clrptn)
 {
-  return ncall(SYS_CLR_FLG, flgid, clrptn);
+  return ncall(SVC_FLAG_CLEAR, flgid, clrptn);
 }
 
 ER
 wai_flg (UINT *flgptn, ID flgid, UINT waiptn, UINT wfmode)
 {
-  return ncall(SYS_WAI_FLG, flgptn, flgid, waiptn, wfmode);
+  return ncall(SVC_FLAG_WAIT, flgptn, flgid, waiptn, wfmode);
 }

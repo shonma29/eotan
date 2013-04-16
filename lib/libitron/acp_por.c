@@ -24,14 +24,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <itron/types.h>
-#include <itron/syscall.h>
+#include <core.h>
 #include <itron/rendezvous.h>
 #include <itron/errno.h>
 #include <mpu/call_kernel.h>
+#include <nerve/svcno.h>
+
 
 ER_UINT acp_por(ID porid, RDVPTN acpptn, RDVNO *p_rdvno, VP msg) {
 	return (acpptn == 0xffffffff)? 
-			ncall(SYS_ACP_POR, porid, acpptn, p_rdvno, msg)
+			ncall(SVC_PORT_ACCEPT, porid, acpptn, p_rdvno, msg)
 					:E_NOSPT;
 }
