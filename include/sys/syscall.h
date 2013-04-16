@@ -62,19 +62,18 @@ Version 2, June 1991
 #define PSC_BRK		 32
 #define PSC_GETDENTS	 33
 #define PSC_MOUNT        34
-#define PSC_MOUNTROOT    35
-#define PSC_STATFS       36
-#define PSC_UMOUNT       37
+#define PSC_STATFS       35
+#define PSC_UMOUNT       36
 
 /* =================== SIGNAL 関係 =============== */
-#define PSC_KILL         38
+#define PSC_KILL         37
 
 /* =================== miserous system calls  =============== */
-#define PSC_MISC         39
+#define PSC_MISC         38
 
-#define PSC_DUP2         40	/* 不要? */
+#define PSC_DUP2         39	/* 不要? */
 
-#define PSC_BIND_DEVICE (41)
+#define PSC_BIND_DEVICE (40)
 
 /* MISC 
  */
@@ -458,17 +457,6 @@ struct psc_umount
 };
 
 
-/* psc_mountroot -
- *
- */
-struct psc_mountroot
-{
-  ID	device;
-  W	fstype;
-  W	option;
-};
-
-
 /* psc_statfs -
  *
  */
@@ -590,7 +578,6 @@ struct posix_request
     struct psc_write 		par_write;
     struct psc_mount		par_mount;
     struct psc_umount		par_umount;
-    struct psc_mountroot	par_mountroot;
     struct psc_statfs		par_statfs;
     struct psc_misc		par_misc;
     struct psc_getdents		par_getdents;

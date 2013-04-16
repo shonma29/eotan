@@ -180,6 +180,7 @@ static ER alloc(T_TCB *th, UB **allocated, UB *start, const size_t len)
 static void set_initrd(ModuleHeader *h)
 {
 	machineInfo.rootfs = 0x80020000;
+	machineInfo.fstype = 1;
 	machineInfo.initrd_start = (UW)&(h[1]);
 	machineInfo.initrd_size = h->bytes;
 }

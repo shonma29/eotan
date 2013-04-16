@@ -19,6 +19,6 @@ Version 2, June 1991
 #define MINOR_VERSION	1
 
 extern void libc_init_device(void);
-extern W posix_init (ID myself, W root_device);
+extern W posix_init (ID myself);
 
 #endif /* __INIT_H__ */

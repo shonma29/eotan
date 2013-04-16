@@ -28,11 +28,13 @@ For more information, please refer to <http://unlicense.org/>
 #include <stddef.h>
 #include <string.h>
 #include <set/hash.h>
+#include "../../kernel/boot.h"
 #include "../../lib/libserv/libserv.h"
 #include "devfs.h"
 #include "api.h"
 #include "fs.h"
 
+static struct machine_info boot_info;
 static hash_t *hash;
 static device_info_t table[MAX_DEVICE];
 static size_t num_device;
@@ -43,10 +45,22 @@ static int compare(const void *a, const void *b);
 
 int device_init(void)
 {
+	ER err = vsys_inf(1, 0, &boot_info);
+
+	if (err) {
+		dbg_printf("[FS] vsys_inf error=%d\n", err);
+		return FALSE;
+	}
+
 	num_device = 0;
 	hash = hash_create(MAX_DEVICE, calc_hash, compare);
 
-	return hash? TRUE:FALSE;
+	if (!hash) {
+		dbg_printf("[FS] cannot create hash\n");
+		return FALSE;
+	}
+
+	return TRUE;
 }
 
 static unsigned int calc_hash(const void *key, const size_t size)
@@ -87,6 +101,16 @@ W psc_bind_device_f(RDVNO rdvno, struct posix_request *req)
 	} else {
 		num_device++;
 		put_response(rdvno, EOK, 0, 0);
+
+		if (id == boot_info.rootfs) {
+			if (mount_root(id, boot_info.fstype, 0)) {
+				dbg_printf("[FS] mount_root(%x, %d) failed\n",
+						id, boot_info.fstype);
+			} else {
+				dbg_printf("[FS] mount_root(%x, %d) succeeded\n",
+						id, boot_info.fstype);
+			}
+		}
 
 		return TRUE;
 	}

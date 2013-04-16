@@ -193,6 +193,7 @@ ER main(void)
 static ER initialize(void)
 {
     machineInfo.rootfs = 0x80000000;
+    machineInfo.fstype = 1;
     machineInfo.initrd_start = 0;
     machineInfo.initrd_size = 0;
 
@@ -234,6 +235,5 @@ static void banner(void)
 {
     printk("kernel %s for %s/%s\n",
 	KERN_VERSION, KERN_ARCH, KERN_MPU);
-    printk("root fs = %x\n", machineInfo.rootfs);
 }
 

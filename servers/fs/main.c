@@ -124,7 +124,6 @@ int main(void)
     init_malloc(HEAP_ADDR, MAX_HEAP);
 
     if (!device_init()) {
-	dbg_printf("[FS] Cannot create hash.\n");
 	ext_tsk();
 	return FALSE;
     }

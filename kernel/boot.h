@@ -19,6 +19,7 @@ Version 2, June 1991
 struct machine_info
 {
   unsigned int	rootfs;
+  int fstype;
   unsigned int initrd_start;
   unsigned int initrd_size;
 };

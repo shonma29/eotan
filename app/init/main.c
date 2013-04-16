@@ -96,7 +96,6 @@ Version 2, June 1991
 #include <unistd.h>
 #include <itron/syscall.h>
 #include <itron/errno.h>
-#include "../../kernel/boot.h"
 #include "../../kernel/config.h"
 #include "../../lib/libserv/libserv.h"
 #include "init.h"
@@ -148,8 +147,6 @@ static void banner(void)
 
 static ER init(void)
 {
-    struct machine_info info;
-    ER errno;
     ID myself;
 
     get_tid(&myself);
@@ -157,11 +154,5 @@ static ER init(void)
 
     libc_init_device();
 
-    errno = vsys_inf(1, 0, &info);
-    if (errno == E_OK) {
-	dbg_printf("rootfs=%x\n", info.rootfs);
-	errno = posix_init(myself, info.rootfs);
-    }
-
-    return errno;
+    return posix_init(myself);
 }

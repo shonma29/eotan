@@ -91,14 +91,12 @@ Version 2, June 1991
 #include "../../servers/fs/fs.h"
 #include "../../servers/fs/mm.h"
 
-static W posix_mountroot(W root_device);
 
 /*
  *
  */
-W posix_init(ID myself, W root_device)
+W posix_init(ID myself)
 {
-    ER error;
     struct posix_request req;
     struct posix_response res;
     INT rsize;
@@ -106,13 +104,6 @@ W posix_init(ID myself, W root_device)
 #ifdef DEBUG
     dbg_printf("init: pinit, send port = %d\n", PORT_FS);
 #endif
-
-    /* ROOT ファイルシステムの設定
-     */
-    error = posix_mountroot(root_device);
-    if (error) {
-	return (E_SYS);
-    }
 
     /* init プロセスの情報の設定
      */
@@ -133,31 +124,6 @@ W posix_init(ID myself, W root_device)
     req.param.par_misc.arg.set_procinfo.proc_access =
 	VM_READ | VM_WRITE | VM_EXEC;
     rsize = cal_por(PORT_FS, 0xffffffff, &req, sizeof(req));
-
-    return (E_OK);
-}
-
-
-static W posix_mountroot(W root_device)
-{
-    struct posix_request req;
-    struct posix_response *res = (struct posix_response *)&req;
-    INT rsize;
-
-    req.msg_length = sizeof(req);
-    req.operation = PSC_MOUNTROOT;
-    req.param.par_mountroot.device = root_device;
-    req.param.par_mountroot.fstype = 1;
-    req.param.par_mountroot.option = 0;
-    rsize = cal_por(PORT_FS, 0xffffffff, &req, sizeof(req));
-    if (rsize < 0) {
-	dbg_printf("cal_por error = %d\n", rsize);
-    }
-    else if (res->errno) {
-	dbg_printf("mountroot error = %d\n", (int) res->errno);
-    } else {
-	dbg_printf("mountroot success.\n");
-    }
 
     return (E_OK);
 }

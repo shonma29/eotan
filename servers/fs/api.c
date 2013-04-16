@@ -199,7 +199,6 @@ struct posix_syscall	syscall_table[] =
   { s("brk",		PSC_BRK)		psc_brk_f },
   { s("getdents",		PSC_GETDENTS)		psc_getdents_f },
   { s("mount",		PSC_MOUNT)		psc_mount_f },
-  { s("mountroot",	PSC_MOUNTROOT)		psc_mountroot_f },
   { s("statfs",		PSC_STATFS)		psc_statfs_f },
   { s("umount",		PSC_UMOUNT)		psc_umount_f },
   { s("kill",		PSC_KILL)		psc_kill_f },

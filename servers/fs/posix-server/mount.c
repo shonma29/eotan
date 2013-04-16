@@ -181,33 +181,6 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
     return (FALSE);
 }
 
-W
-psc_mountroot_f (RDVNO rdvno, struct posix_request *req)
-{
-  W	err;
-
-#ifdef notdef
-  printf ("mountroot: start (device = %d )\n", req->param.par_mountroot.device);
-#endif  
-  err = mount_root (req->param.par_mountroot.device, 
-		    req->param.par_mountroot.fstype,
-		    req->param.par_mountroot.option);
-#ifdef notdef
-  printf ("mountroot: called mount_root(), err = %d\n", err);
-#endif  
-
-  if (err)
-    {
-      put_response (rdvno, err, -1, 0);
-      return (FALSE);
-    }
-  else
-    {
-      put_response (rdvno, err, 0, 0);
-    }
-  return (TRUE);
-}
-
 W psc_umount_f(RDVNO rdvno, struct posix_request *req)
 {
     W errno;
