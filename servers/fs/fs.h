@@ -39,8 +39,6 @@ Version 2, June 1991
 #define MAX_SIGNAL	32
 #define MAX_PROCESS	100
 
-#define POSIX_TASK_LEVEL	USER_LEVEL
-
 /* macros for waitpid */
 #define WNOHANG		1	/* 子プロセスの終了を待たない */
 #define WUNTRACED	2	/* ジョブ制御用:未実装 */

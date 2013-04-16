@@ -34,7 +34,7 @@ Version 2, June 1991
 #define USER_DPL	3
 
 #define KERNEL_STACK_SIZE	(PAGE_SIZE * 1)
-#define POSIX_STACK_SIZE	(PAGE_SIZE * 1)
+#define USER_STACK_SIZE	(PAGE_SIZE * 1)
 
 /* メモリ管理関係 */
 #define PAGE_SIZE	4096

@@ -52,8 +52,8 @@ _fork (int esp, int ebp, int ebx, int ecx, int edx, int esi, int edi)
     memset(&task_info, 0, sizeof(task_info));
     task_info.tskatr = TA_HLNG;
     task_info.startaddr = (void*)fork_entry;
-    task_info.itskpri = POSIX_TASK_LEVEL;
-    task_info.stksz = POSIX_STACK_SIZE;
+    task_info.itskpri = USER_LEVEL;
+    task_info.stksz = USER_STACK_SIZE;
     child_main = acre_tsk(&task_info);
     if (child_main < 0)
 	return (child_main);

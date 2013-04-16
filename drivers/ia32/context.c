@@ -157,7 +157,7 @@ ER mpu_copy_stack(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi, W edi, ID ds
     dst_tsk = get_thread_ptr(dst);
 
     /* dst task に新しいスタックポインタを割り付ける */
-    make_local_stack(dst_tsk, POSIX_STACK_SIZE, ACC_USER);
+    make_local_stack(dst_tsk, USER_STACK_SIZE, ACC_USER);
 
     size = ((UW) src_tsk->stackptr) + src_tsk->stksz - ebp;
     dstp = ((UW) dst_tsk->stackptr) + dst_tsk->stksz - size;
