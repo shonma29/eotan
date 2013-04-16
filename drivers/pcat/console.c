@@ -123,8 +123,15 @@ static void _putc(const unsigned char ch) {
 	case '\t':
 		{
 			int len = CGA_TAB_COLUMNS - _s.x % CGA_TAB_COLUMNS;
+			int i;
 
-			for(; len > 0; len--)	__putc(' ');
+			for (i = 0; i < len; i++)	__putc(' ');
+
+			if (_s.x + len >= CGA_COLUMNS)	_newline();
+			else {
+				_s.x += len;
+				_s.p += len;
+			}
 		}
 		break;
 
