@@ -163,7 +163,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     dbg_printf("[PM] setup vm proc\n");
 #endif
     /* 仮想空間の生成 */
-    errno = setup_vm_proc(procp);
+    errno = create_vm_tree(procp);
 
 #ifdef notdef
     dbg_printf("[PM] load text\n");

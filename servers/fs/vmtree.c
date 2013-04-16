@@ -86,28 +86,29 @@ Version 2, June 1991
 #include <string.h>
 #include <mpu/config.h>
 #include "fs.h"
+
+#define VM_DEFAULT_ACCESS (VM_READ | VM_WRITE | VM_USER | VM_SHARE)
+#define VM_DEFAULT_START (LOW_USER_ADDR)
+#define VM_DEFAULT_SIZE (USER_MEM_SIZE)
 
 
 
 /* create_vm_tree - 新しくプロセスの仮想メモリツリーを作成する
  *
  */
-W create_vm_tree(struct proc *proc, UW access, UW start, UW size)
+W create_vm_tree(struct proc *proc)
 {
     struct vm_tree *treep;
     W i;
-#if 0
-    ER errno;
-#endif
 
     treep = (struct vm_tree *) malloc(sizeof(struct vm_tree));
     if (treep == NULL) {
 	return (ENOMEM);
     }
 
-    treep->access = access;
-    treep->start = start;
-    treep->size = size;
+    treep->access = VM_DEFAULT_ACCESS;
+    treep->start = VM_DEFAULT_START;
+    treep->size = VM_DEFAULT_SIZE;
     treep->vm_handler = (FP) NULL;
 
     for (i = 0; i < MAX_DIR_ENTRY; i++) {
@@ -115,23 +116,6 @@ W create_vm_tree(struct proc *proc, UW access, UW start, UW size)
     }
 
     proc->vm_tree = treep;
-
-#if 0
-#ifdef VMDEBUG
-    printk
-	("create_vm_tree: call vcre_reg (procid = %d, start = %x, size = %x, access = %x\n",
-	 proc->proc_maintask, (UW) start, (UW) size, size, access);	/* */
-#endif
-    errno = vcre_reg(proc->proc_maintask, (void *) start,
-		     size, size, access, NULL);
-    if (errno) {
-#ifdef VMDEBUG
-	printk("create_vm_tree: errno = %d, file= %s line = %d\n", errno,
-	       __FILE__, __LINE__);	/* */
-#endif
-	return (EINVAL);
-    }
-#endif
 
     return (EOK);
 }

@@ -118,13 +118,11 @@ struct vm_page
 /* memory.c */
 extern ER			init_memory (void);
 extern W			alloc_memory (W procid, UW start, UW size, UW access);
-extern W			setup_vm_proc (struct proc *procp);
-extern W			duplicate_memory (struct proc *source, struct proc *destination);
 extern W			free_memory (W procid, UW start, UW size);
 extern W			destroy_proc_memory (struct proc *procp, W unmap);
 
 /* vmtree.c */
-extern W			create_vm_tree (struct proc *proc, UW access, UW start, UW size);
+extern W			create_vm_tree (struct proc *proc);
 extern W			grow_vm (struct proc *procp, UW addr, UW access);
 extern W			shorten_vm (struct proc *procp, UW addr);
 extern W			duplicate_tree (struct proc *source_proc, struct proc *dest_proc);

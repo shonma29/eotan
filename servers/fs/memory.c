@@ -44,26 +44,6 @@ ER init_memory(void)
 
 
 
-/* setup_vm_proc - プロセスの仮想メモリ情報の初期化 
- *
- *
- */
-W setup_vm_proc(struct proc * procp)
-{
-    W errno;
-
-    errno =
-	create_vm_tree(procp, (VM_READ | VM_WRITE | VM_USER | VM_SHARE),
-		       LOW_USER_ADDR, USER_MEM_SIZE);
-    if (errno != EOK) {
-	return (errno);
-    }
-
-    return (EOK);
-}
-
-
-
 /* alloc_memory - プロセスに対して任意の仮想メモリを割り当てる。
  *
  * 引数：
@@ -112,20 +92,6 @@ W free_memory(W procid, UW start, UW size)
 
     return (EOK);
 }
-
-
-/* duplicate_memory - 仮想空間のデータをすべてコピーする
- *
- *
- */
-W duplicate_memory(struct proc * source, struct proc * destination)
-{
-    W errno;
-
-    errno = duplicate_tree(source, destination);
-    return (errno);
-}
-
 
 
 /* destroy_proc_memory - プロセスのもつすべてのメモリを解放する

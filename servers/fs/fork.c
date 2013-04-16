@@ -173,7 +173,7 @@ W proc_duplicate(struct proc * source, struct proc * destination)
     vdup_reg(source->proc_maintask, destination->proc_maintask);
 
     /* 仮想空間の生成 */
-    errno = setup_vm_proc(destination);
+    errno = create_vm_tree(destination);
     if (errno) {
 	/* 仮想空間の生成に失敗した
 	 */
@@ -188,11 +188,11 @@ W proc_duplicate(struct proc * source, struct proc * destination)
 	 source, source->vm_tree);
 #endif
     /* プロセスのもつ仮想空間の情報をコピーする */
-    errno = duplicate_memory(source, destination);
+    errno = duplicate_tree(source, destination);
     if (errno) {
 	/* データのコピーに失敗した */
 #ifdef FKDEBUG
-	printk("cannot duplicate memory\n");	/* */
+	printk("cannot duplicate tree\n");	/* */
 #endif
 	return (errno);
     }
@@ -206,11 +206,6 @@ W proc_duplicate(struct proc * source, struct proc * destination)
 	if (source->proc_open_file[index].f_inode != NULL) {
 	    destination->proc_open_file[index] =
 		source->proc_open_file[index];
-#ifdef notdef
-	    bcopy(&(source->proc_open_file[index]),
-		  &(destination->proc_open_file[index]),
-		  sizeof(struct file));
-#endif
 	    destination->proc_open_file[index].f_inode->i_refcount++;
 	}
     }
