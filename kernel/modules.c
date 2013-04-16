@@ -81,7 +81,7 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr)
 		NULL
 	};
 
-	err = new_task(&pk_ctsk, &tskId, FALSE);
+	err = new_task(&pk_ctsk, &tskId);
 	if (err) {
 		printk("new_task error(%d)\n", err);
 		return err;

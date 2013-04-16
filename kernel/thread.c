@@ -776,12 +776,11 @@ ER thread_resume(ID taskid)
  * 引数：
  *	pk_ctsk	生成するタスクの属性情報
  *		tskatr		タスク属性
- *		startaddr	タスク起動アドレス (run_flag == TRUE のとき)
+ *		startaddr	タスク起動アドレス
  *		itskpri		タスク起動時優先度
  *		stksz		スタックサイズ
  *		addrmap		アドレスマップ
  *	rid	生成したタスクの ID (返り値)
- *	run_flag  生成したタスクを実行する
  *
  * 返り値：
  *	エラー番号
@@ -793,7 +792,7 @@ ER thread_resume(ID taskid)
  *	し、new_task は、タスク ID を自動的に割りあてる。
  *
  */
-ER new_task(T_CTSK * pk_ctsk, ID * rid, BOOL run_flag)
+ER new_task(T_CTSK * pk_ctsk, ID * rid)
 {
     ID i;
     ER err;
@@ -802,8 +801,6 @@ ER new_task(T_CTSK * pk_ctsk, ID * rid, BOOL run_flag)
 	err = thread_create(i, pk_ctsk);
 	if (err == E_OK) {
 	    *rid = i;
-	    if (run_flag == TRUE)
-		thread_start(i, 0);
 	    return (E_OK);
 	}
     }
