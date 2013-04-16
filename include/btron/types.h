@@ -33,16 +33,16 @@ For more information, please refer to <http://unlicense.org/>
  */
 typedef char B;
 typedef short H;
-typedef int W;
+typedef long W;
 typedef long long D;
 typedef unsigned char UB;
 typedef unsigned short UH;
-typedef unsigned int UW;
+typedef unsigned long UW;
 typedef unsigned long long UD;
 
 typedef char VB;
 typedef short VH;
-typedef int VW;
+typedef long VW;
 typedef long long VD;
 
 typedef void *VP;
@@ -51,12 +51,12 @@ typedef void (*FP)();
 /* forbid optimization */
 typedef volatile char _B;
 typedef volatile short _H;
-typedef volatile int _W;
+typedef volatile long _W;
 typedef volatile long long _D;
 
 typedef volatile unsigned char _UB;
 typedef volatile unsigned short _UH;
-typedef volatile unsigned int _UW;
+typedef volatile unsigned long _UW;
 typedef volatile unsigned long long _UD;
 typedef volatile void _void;
 
@@ -74,7 +74,7 @@ typedef volatile void _void;
  */
 typedef float FLOAT;
 typedef double DOUBLE;
-typedef int BOOL;
+typedef long BOOL;
 typedef W (*FUNCP)();
 
 /**
