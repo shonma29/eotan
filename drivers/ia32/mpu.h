@@ -146,13 +146,8 @@ typedef struct
    (x).limit0 = limit & 0x0000ffff; \
    (x).limit1 = limit >> 16 & 0x0f; }
 
-#define STACK_DIR	SMALL
-#define MAXINT		(0x7fffffff)
-
 #define TYPE_TSS	9
 #define TSS_BASE	128		/* TSS の GDT 上での位置 */
-
-#define TYPE_GATE	12
 
 #define ACC_KERNEL	0
 #define ACC_USER	1

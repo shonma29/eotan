@@ -48,8 +48,6 @@ struct region_t
   W	min_size;
   W	max_size;
   UW	permission;
-
-  FP	handle;
 };
 
 typedef struct region_t	T_REGION;

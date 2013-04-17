@@ -62,11 +62,9 @@ vcre_reg (ID	id, 	/* task ID */
 	  VP	start,	/* リージョンの開始アドレス */
 	  W	min,	/* リージョンの最小(初期)サイズ */
 	  W	max,	/* リージョンの最大サイズ */
-	  UW	perm,	/* リージョンのパーミッション */
-	  FP	handle)	/* リージョン内でページフォールトが発生したと */
-			/* きの処理の指定 */
+	  UW	perm)	/* リージョンのパーミッション */
 {
-  return ncall(SVC_REGION_CREATE, id, rid, start, min, max, perm, handle);
+  return ncall(SVC_REGION_CREATE, id, rid, start, min, max, perm);
 }
 
 /* vdel_reg - リージョンの破棄

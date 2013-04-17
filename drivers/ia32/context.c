@@ -125,7 +125,7 @@ static void make_local_stack(T_TCB * tsk, W size, W acc)
 #define VM_USER		0x00010000
     region_create(tsk->tskid, STACK_REGION,
 	     (VP) VADDR_STACK_HEAD, STD_STACK_SIZE, STD_STACK_SIZE,
-	     (VM_READ | VM_WRITE | VM_USER), NULL);
+	     (VM_READ | VM_WRITE | VM_USER));
 
     /* 物理メモリの割り当て */
     tsk->stackptr = (VP) (VADDR_STACK_TAIL - size);

@@ -488,15 +488,14 @@ ER region_create(ID id,		/* task ID */
 	    VP start,		/* リージョンの開始アドレス */
 	    W min,		/* リージョンの最小(初期)サイズ */
 	    W max,		/* リージョンの最大サイズ */
-	    UW perm,		/* リージョンのパーミッション */
-	    FP handle)
+	    UW perm)		/* リージョンのパーミッション */
 {				/* リージョン内でページフォールトが発生したと */
     /* きの処理の指定 */
     T_TCB *taskp;
     T_REGION *regp;
 #ifdef DEBUG
     printk("region_create %d %d %x %x %x %x %x\n", id, rid, start, min, max,
-	   perm, handle);
+	   perm);
 #endif
 
     /*
@@ -541,13 +540,11 @@ ER region_create(ID id,		/* task ID */
      *    min_size        ページサイズで切り上げる
      *    max_size        ページサイズで切り上げる
      *    permission      そのまま
-     *    handle          そのまま
      */
     regp->start_addr = (VP) CUTDOWN(start, PAGE_SIZE);
     regp->min_size = ROUNDUP(min, PAGE_SIZE);
     regp->max_size = ROUNDUP(max, PAGE_SIZE);
     regp->permission = perm;
-    regp->handle = handle;
 
     /*
      * 処理は正常に終了した。
@@ -937,6 +934,5 @@ ER region_get_status(ID id, ID rid, VP stat)
     regp->min_size = taskp->regions[rid].min_size;
     regp->max_size = taskp->regions[rid].max_size;
     regp->permission = taskp->regions[rid].permission;
-    regp->handle = taskp->regions[rid].handle;
     return (E_OK);
 }

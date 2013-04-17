@@ -49,7 +49,6 @@ typedef struct t_tcb {
     W tsklevel;			/* タスクの優先順位             */
     W tsklevel0;		/* タスクの優先順位(初期化時の値) */
     /* 終了したタスクが再度起動するときにはこの値が使われる。     */
-    ATR tskatr;			/* タスク属性                   */
     H tskstat;			/* タスクの状態                 */
 
     /* タスクの待ち状態用の要素 */
@@ -73,11 +72,6 @@ typedef struct t_tcb {
     T_REGION regions[MAX_REGION];	/* タスクに結びついて */
     /* いる REGION のテーブル */
 
-
-    T_TSI interrupt[MAX_MODULE];	/* タスク固有の割り込 */
-    /* み処理関数テーブル */
-    W n_interrupt;
-
      W(*page_fault_handler) (W, W);	/* ページフォルト時の処理用関数 */
 
     UW initial_stack;
@@ -85,8 +79,5 @@ typedef struct t_tcb {
 
 
 extern T_TCB *run_task;		/* 現在、走行中のタスク */
-
-#define GET_TSKWAIT(tcb)	(tcb.tskwait)
-
 
 #endif				/* __CORE_TASK_H__ */

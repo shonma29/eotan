@@ -41,8 +41,6 @@ Version 2, June 1991
  *
  */
 
-#define MAX_MODULE_NAME	40
-
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>

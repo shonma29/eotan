@@ -290,7 +290,7 @@ static ER (*syscall_table[])(VP argp) =
   SVC_IF (kernlog, 1),	/*   23 */
 
   /* 仮想メモリ管理システムコール */	
-  SVC_IF (region_create, 7),	/*   24 */
+  SVC_IF (region_create, 6),	/*   24 */
   SVC_IF (region_destroy, 2),	/*   25 */
   SVC_IF (region_map, 3),	/*   26 */
   SVC_IF (region_unmap, 3),	/*   27 */
@@ -589,11 +589,10 @@ static ER if_region_create(VP argp)
 	W min;
 	W max;
 	UW perm;
-	FP handle;
     } *args = argp;
 
     return region_create(args->id, args->rid, args->start, args->min,
-		    args->max, args->perm, args->handle);
+		    args->max, args->perm);
 }
 
 /*

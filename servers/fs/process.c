@@ -217,13 +217,13 @@ W proc_set_info(struct posix_request * req)
     /* region の生成 */
     /* text */
     vcre_reg(tskid, TEXT_REGION,
-	     0, 0x7fffffff, 0x7fffffff, procinfo->proc_access, NULL);
+	     0, 0x7fffffff, 0x7fffffff, procinfo->proc_access);
     /* data+bss */
     vcre_reg(tskid, DATA_REGION,
-	     0, 0x7fffffff, 0x7fffffff, procinfo->proc_access, NULL);
+	     0, 0x7fffffff, 0x7fffffff, procinfo->proc_access);
     /* heap */
     vcre_reg(tskid, HEAP_REGION,
-	     0, 0, 0x7fffffff, procinfo->proc_access, NULL);
+	     0, 0, 0x7fffffff, procinfo->proc_access);
 
     /* 仮想テーブルの生成 */
     setup_vmtree(&(proc_table[procid]), procinfo->proc_maintask,

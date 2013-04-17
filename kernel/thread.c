@@ -797,7 +797,7 @@ ER_ID thread_create_auto(T_CTSK * pk_ctsk)
     ID i;
     ER err;
 
-    for (i = MIN_USERTASKID; i <= MAX_USERTASKID; i++) {
+    for (i = MIN_TSKID; i <= MAX_TSKID; i++) {
 	err = thread_create(i, pk_ctsk);
 	if (err == E_OK) {
 	    return i;

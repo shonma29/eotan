@@ -33,7 +33,7 @@ extern ER release_vmap(ADDR_MAP dest);
 extern BOOL vmap(T_TCB * task, UW vpage, UW ppage, W accmode);
 extern ER vunmap(T_TCB * task, UW vpage);
 extern UW vtor(ID tskid, UW addr);
-extern ER region_create(ID id, ID rid, VP start, W min, W max, UW perm, FP handle);
+extern ER region_create(ID id, ID rid, VP start, W min, W max, UW perm);
 extern ER region_destroy(ID id, ID rid);
 extern ER region_map(ID id, VP start, UW size, W accmode);
 extern ER region_unmap(ID id, VP start, UW size);

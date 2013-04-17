@@ -108,7 +108,7 @@ ER init_malloc(UW free_memory_erea, UW max)
 	return (err);
     }
     err = vcre_reg(mytid, HEAP_REGION, (VP) last_page, pages, pages,
-		   VPROT_READ | VPROT_READ | VPROT_USER, NULL);
+		   VPROT_READ | VPROT_READ | VPROT_USER);
     if (err) {
 	return (err);
     }

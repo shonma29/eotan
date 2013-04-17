@@ -55,8 +55,6 @@
  */
 
 
-#define MAX_MODULE_NAME	40
-
 #ifndef EOTA
 #include <stdio.h>
 #include <unistd.h>

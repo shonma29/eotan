@@ -18,9 +18,9 @@ Version 2, June 1991
 #define __CORE_FUNC_H__	1
 
 
+#include <core.h>
 #include <itron/rendezvous.h>
 #include <mpu/memory.h>
-#include "core.h"
 #include "boot.h"
 #include "thread.h"
 
@@ -55,15 +55,6 @@ extern T_TCB *get_thread_ptr(ID tskid);
 
 /* posix.c */
 extern ER posix_kill_proc(ID pid);
-
-/* message.c */
-extern ER queue_initialize(void);
-extern ER queue_create(ID id, T_CMBF * pk_cmbf);
-extern ER_ID queue_create_auto(T_CMBF * pk_cmbf);
-extern ER queue_destroy(ID id);
-extern ER message_send(ID id, INT size, VP msg);
-extern ER message_send_nowait(ID id, INT size, VP msg);
-extern ER message_receive(VP msg, INT * size, ID id);
 
 /* flag.c */
 extern ER flag_initialize(void);

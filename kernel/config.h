@@ -30,9 +30,6 @@ Version 2, June 1991
 #define MIN_PRIORITY	(0)	/* 最小のプライオリティ */
 #define MAX_PRIORITY	(31)	/* 最大のプライオリティ */
 
-#define MIN_USERTASKID	(1)
-#define MAX_USERTASKID	MAX_TSKID
-
 #define MAX_SUSPEND_NEST	(10)	/* サスペンドのネストのオーバーフロー */
 
 #define KERNEL_LEVEL	(2)
@@ -48,12 +45,11 @@ Version 2, June 1991
 #define MIN_MEMORY_SIZE		(8 * 1024 * 1024) /* メモリは最小 8 M */
 #define MAX_MEMORY_SIZE		(2048UL * 1024UL * 1024UL) /* メモリは最大 2 G */
 
-#define MAX_REGION		(5)	/* 各タスクに存在できる REGION の数 */
-#define KERNEL_REGION		0
-#define TEXT_REGION		1
-#define DATA_REGION		2
-#define HEAP_REGION		3
-#define STACK_REGION		4
+#define MAX_REGION		(4)	/* 各タスクに存在できる REGION の数 */
+#define TEXT_REGION		0
+#define DATA_REGION		1
+#define HEAP_REGION		2
+#define STACK_REGION		3
 
 /* インターバルタイマ */
 #define MAX_TIMER	(500)
@@ -61,10 +57,5 @@ Version 2, June 1991
 
 /* 時間管理 */
 #define MAX_ALARM		(50)	/* アラームハンドラの最大数 */
-
-#define FDC_ALARM		(0)
-
-#define MAX_MODULE_NAME	(40)
-#define MAX_MODULE	(20)
 
 #endif				/* _CORE_CONFIG_H_ */

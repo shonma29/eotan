@@ -183,7 +183,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     /* 残りの region の作成 */
     errno = vcre_reg(req->caller, HEAP_REGION,
 		     (VP) VADDR_HEAP, 0, STD_HEAP_SIZE,
-	     VM_READ | VM_WRITE | VM_USER, NULL);	/* heap */
+	     VM_READ | VM_WRITE | VM_USER);	/* heap */
 #ifdef DEBUG
     if (errno) {
       dbg_printf("[EXEC]: vcre_reg return %d\n", errno);
@@ -359,7 +359,7 @@ load_text(W procid, struct inode *ip, Elf32_Phdr *text, ID task)
 		PAGE_SIZE);
     /* text region の設定 */
     vcre_reg(task, TEXT_REGION, (VP) start, size, size,
-	     VM_READ | VM_EXEC | VM_USER, NULL);
+	     VM_READ | VM_EXEC | VM_USER);
 
     errno = alloc_memory(procid, start, size, VM_READ | VM_EXEC);
     if (errno) {
@@ -421,7 +421,7 @@ load_data(W procid, struct inode *ip, Elf32_Phdr *data, ID task)
 		PAGE_SIZE);
     /* data+bss region の設定 */
     vcre_reg(task, DATA_REGION, (VP) start, size, size,
-	     VM_READ | VM_WRITE | VM_USER, NULL);	/* data+bss */
+	     VM_READ | VM_WRITE | VM_USER);	/* data+bss */
     errno = alloc_memory(procid, start, size, VM_READ | VM_WRITE);
     if (errno) {
 #ifdef EXEC_DEBUG
