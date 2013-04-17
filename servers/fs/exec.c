@@ -81,9 +81,6 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     Elf32_Ehdr elf_header;
     Elf32_Phdr text, data;
     ID main_task;
-#if 0
-    ID signal_task;
-#endif
     struct proc *procp;
 
 #ifdef notdef
@@ -154,10 +151,6 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     vdel_reg(main_task, TEXT_REGION);	/* text */
     vdel_reg(main_task, DATA_REGION);	/* data+bss */
     vdel_reg(main_task, HEAP_REGION);	/* heap */
-#ifdef notdef
-    /* stack 領域は fork で生成した region を使い続ける */
-    vdel_reg(main_task, STACK_REGION);	/* stack */
-#endif
 
 #ifdef notdef
     dbg_printf("[PM] setup vm proc\n");
@@ -203,14 +196,6 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 		 errno, reg.start_addr, reg.min_size, reg.max_size);
     }
 #endif
-
-#if 0
-    /* stack の region は fork から呼ばれる vcpy_stk で実行される */
-    vcre_reg(req->caller, STACK_REGION,
-	     (VP) VADDR_STACK_HEAD, STD_STACK_SIZE, STD_STACK_SIZE,
-	     VM_READ | VM_WRITE | VM_USER, NULL);	/* stack */
-#endif
-
 #if 0
     {
 	int stsize = req->param.par_execve.stsize, i;

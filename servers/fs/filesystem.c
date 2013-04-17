@@ -836,11 +836,7 @@ W fs_write_file(struct inode * ip, W start, B * buf, W length, W * rlength)
 W
 fs_remove_file(struct inode * startip, B * path, struct access_info * acc)
 {
-#ifdef USE_ALLCOA
-    char *parent_path;
-#else
     char parent_path[MAX_NAMELEN];
-#endif
     struct inode *parent_ip;
     W parent_length;
     W errno;

@@ -155,33 +155,21 @@ W grow_vm(struct proc * procp, UW addr, UW access)
     vmpage = vmdir->page_table[pageent];
     if (vmpage == NULL) {
 	vmpage = (struct vm_page *) alloc_vm_page(treep, vmdir,
-#if 0
-						  dirent * MAX_PAGE_ENTRY *
-						  PAGE_SIZE,
-#else
 						  addr,
-#endif
 						  access);
 	if (vmpage == NULL) {
 	    return (ENOMEM);
 	}
 	vmdir->page_table[pageent] = vmpage;
     }
-#ifdef notdef
-    if (VM_ALLOCED_MASK(vmpage->access)) {
-	/* すでに物理メモリが割り当て済み */
-	return (EINVAL);
-    }
-#endif
+
     /* 仮想メモリ領域に物理メモリを割り付ける
      */
     errno = vmap_reg(procp->proc_maintask, (VP) addr, PAGE_SIZE, ACC_USER);
     if (errno) {
 	return (EPERM);
     }
-#ifdef notdef
-    vmpage->access |= VM_ALLOCED;
-#endif
+
     return (EOK);
 }
 
@@ -202,9 +190,6 @@ W shorten_vm(struct proc * procp, UW addr)
     dirent = addr / (MAX_PAGE_ENTRY * PAGE_SIZE);
     /* page table のインデックス */
     pageent = (addr >> PAGE_SHIFT) % MAX_PAGE_ENTRY;
-#if 0
-    pageent = addr % (MAX_PAGE_ENTRY * PAGE_SIZE);
-#endif
 
     vmdir = treep->directory_table[dirent];
     if (vmdir == NULL) {
@@ -214,18 +199,11 @@ W shorten_vm(struct proc * procp, UW addr)
     if (vmpage == NULL) {
 	return (EINVAL);
     }
-#ifdef notdef
-    if (!VM_ALLOCED_MASK(vmpage->access)) {
-	return (EINVAL);
-    }
-#endif
     errno = vunm_reg(procp->proc_maintask, (VP) (vmpage->addr), PAGE_SIZE);
     if (errno) {
 	return (EINVAL);
     }
-#ifdef notdef
-    vmpage->access = (vmpage->access & ~VM_ALLOCED);
-#endif
+
     /* 使わなくなった page table のエントリーは free する */
     vmdir->page_table[pageent] = NULL;
     free(vmpage);
@@ -298,10 +276,6 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 		    return (ENOMEM);
 		}
 		destination->directory_table[dir_index] = dest_dirp;
-#ifdef notdef
-/* source の情報をコピーする *//* XXX BUG XXX */
-		*dest_dirp = *dirp;
-#endif
 	    } else {
 		/* すでに受けがわページディレクトリが使用されている
 		 */
@@ -358,9 +332,6 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 			    vmap_reg(dest_proc->proc_maintask,
 				     (VP) dest_pagep->addr, PAGE_SIZE,
 				     ACC_USER);
-#ifdef notdef
-			dest_pagep->access |= VM_ALLOCED;
-#endif
 			if (errno) {
 #ifdef VMDEBUG
 			    printk("cannot vmap_reg: errno = %d\n", errno);
@@ -522,15 +493,6 @@ W destroy_vmtree(struct proc * procp, struct vm_tree * treep, W unmap)
 	}
     }
 
-#if 0
-    /* リージョン情報を解放する */
-    if (unmap) {
-	errno = vdel_reg(procp->proc_maintask, LOW_USER_ADDR);
-	if (errno) {
-	    return (errno);
-	}
-    }
-#endif
     /*  vmtree の root の開放 */
     free(treep);
 
