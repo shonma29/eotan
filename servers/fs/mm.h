@@ -89,7 +89,6 @@ struct vm_tree
   UW				access;			/* アクセス権の情報 */
   UW				start;
   UW				size;
-  FP				vm_handler;	/* ページフォールト時のハンドラ */
   struct vm_directory		*directory_table[MAX_DIR_ENTRY];
 };
 
@@ -129,6 +128,6 @@ extern W			duplicate_tree (struct proc *source_proc, struct proc *dest_proc);
 extern struct vm_page		*alloc_vm_page (struct vm_tree *treep, struct vm_directory *dirp, UW addr, UW access);
 extern struct vm_directory	*alloc_vm_directory (struct vm_tree *treep, UW addr);
 extern W			destroy_vmtree (struct proc *procp, struct vm_tree *treep, W unmap);
-extern W			setup_vmtree (struct proc *procp, ID taskid, UW access, FP handler, UW start, UW size);
+extern W			setup_vmtree (struct proc *procp, ID taskid, UW access, UW start, UW size);
 
 #endif /* __FS_MM_H__ */

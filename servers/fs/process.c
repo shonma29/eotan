@@ -227,7 +227,7 @@ W proc_set_info(struct posix_request * req)
 
     /* 仮想テーブルの生成 */
     setup_vmtree(&(proc_table[procid]), procinfo->proc_maintask,
-		 procinfo->proc_access, 0, 0, 0x3fffffff);
+		 procinfo->proc_access, 0, 0x3fffffff);
 
     /* file discriptor 0, 1, 2 の設定 */
     error = open_special_dev(procp);

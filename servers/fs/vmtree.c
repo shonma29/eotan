@@ -109,7 +109,6 @@ W create_vm_tree(struct proc *proc)
     treep->access = VM_DEFAULT_ACCESS;
     treep->start = VM_DEFAULT_START;
     treep->size = VM_DEFAULT_SIZE;
-    treep->vm_handler = (FP) NULL;
 
     for (i = 0; i < MAX_DIR_ENTRY; i++) {
 	treep->directory_table[i] = NULL;
@@ -504,7 +503,7 @@ W destroy_vmtree(struct proc * procp, struct vm_tree * treep, W unmap)
  *
  */
 W
-setup_vmtree(struct proc * procp, ID taskid, UW access, FP handler,
+setup_vmtree(struct proc * procp, ID taskid, UW access,
 	     UW start, UW size)
 {
     struct vm_tree *treep;
@@ -528,7 +527,6 @@ setup_vmtree(struct proc * procp, ID taskid, UW access, FP handler,
 	}
 	memset((VP)treep, 0, sizeof(struct vm_tree));
 	treep->access = access;
-	treep->vm_handler = handler;
 	procp->vm_tree = treep;
     }
 
