@@ -196,7 +196,6 @@ static ER	if_thread_start(void *argp);
 static ER	if_thread_end(void *argp);
 static ER	if_thread_end_and_destroy(void *argp);
 static ER	if_thread_terminate(void *argp);
-static ER	if_thread_change_priority(void *argp);
 static ER	if_thread_release(void *argp);
 static ER	if_thread_get_id(void *argp);
 static ER	if_thread_suspend(void *argp);
@@ -255,7 +254,6 @@ static ER (*syscall_table[])(VP argp) =
   SVC_IF (thread_end, 0),     /*    4 */
   SVC_IF (thread_end_and_destroy, 0),     /*    5 */
   SVC_IF (thread_terminate, 1),     /*    6 */
-  SVC_IF (thread_change_priority, 2),	/*    7 */
   SVC_IF (thread_release, 1),	/*    8 */
   SVC_IF (thread_get_id, 1),	/*    9 */
 
@@ -450,16 +448,6 @@ static ER if_thread_terminate(VP argp)
     return (thread_terminate(args->tskid));
 }
 
-
-static ER if_thread_change_priority(VP argp)
-{
-    struct {
-	ID tskid;
-	PRI tskpri;
-    } *args = argp;
-
-    return (thread_change_priority(args->tskid, args->tskpri));
-}
 
 static ER if_thread_release(VP argp)
 {

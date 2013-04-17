@@ -48,14 +48,6 @@ exd_tsk (void)
   ncall(SVC_THREAD_END_AND_DESTROY);
 }
 
-/* chg_pri  --- プライオリティの変更
-*/
-ER
-chg_pri (ID tskid, PRI tskpri)
-{
-  return ncall(SVC_THREAD_CHANGE_PRIORITY, tskid, tskpri);
-}
-
 /* rel_wai --- 待ち状態の解除
  */
 ER

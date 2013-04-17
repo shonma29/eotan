@@ -83,7 +83,7 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr)
 
 	tskId = thread_create_auto(&pk_ctsk);
 	if (tskId < 0) {
-		printk("new_task error(%d)\n", tskId);
+		printk("thread_create_auto error(%d)\n", tskId);
 		return tskId;
 	}
 
@@ -99,8 +99,10 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr)
 		err = dupModule(th, eHdr);
 
 		//TODO rollback on error;
-		if (!err)
+		if (!err) {
 			set_autorun_context(th);
+			thread_change_priority(tskId, USER_LEVEL);
+		}
 	}
 
 	if (!err) {

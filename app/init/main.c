@@ -95,8 +95,6 @@ Version 2, June 1991
  */
 #include <unistd.h>
 #include <itron/syscall.h>
-#include <itron/errno.h>
-#include "../../kernel/config.h"
 #include "../../lib/libserv/libserv.h"
 #include "init.h"
 
@@ -150,7 +148,6 @@ static ER init(void)
     ID myself;
 
     get_tid(&myself);
-    chg_pri(myself, USER_LEVEL);
 
     libc_init_device();
 

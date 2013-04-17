@@ -16,7 +16,6 @@ extern ER	sta_tsk (ID tskid, INT stacd);
 extern void	ext_tsk (void);
 extern void	exd_tsk (void);
 extern ER	ter_tsk (ID tskid);
-extern ER	chg_pri (ID tskid, PRI tskpri);
 extern ER	rel_wai (ID tskid);
 extern ER	get_tid (ID *p_tskid);
 
