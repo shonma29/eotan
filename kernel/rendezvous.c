@@ -398,6 +398,7 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 	node = tree_get(&rdv_tree, rdvno);
 	if (!node) {
 		leave_serialize();
+		tree_remove(&rdv_tree, rdvno);
 		return E_OBJ;
 	}
 
@@ -407,6 +408,7 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 		printk("port_reply[%d] rmsgsz %d > %d\n",
 				rdvno, rmsgsz, r->maxrmsz);
 		leave_serialize();
+		tree_remove(&rdv_tree, rdvno);
 		return E_PAR;
 	}
 
@@ -420,6 +422,7 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 					rdvno, tp->tskid,
 					tp->wait.detail.por.msg, rmsgsz, msg);
 			leave_serialize();
+			tree_remove(&rdv_tree, rdvno);
 			return E_PAR;
 		}
 

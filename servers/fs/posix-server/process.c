@@ -126,10 +126,7 @@ W psc_exec_f(RDVNO rdvno, struct posix_request *req)
      * すなわち、古いタスクを終了し、新しいタスクを生成する。
      */
 
-
-    /* exec システムコールは、成功すると元のプロセスは消えるので、
-     * レスポンスを返さない
-     */
+    put_response(rdvno, EOK, 0, 0);
     return (TRUE);
 }
 
