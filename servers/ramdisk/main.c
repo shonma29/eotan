@@ -40,6 +40,7 @@ static ER_UINT read(UB *outbuf, const UW start, const UW size);
 static ER_UINT write(UB *inbuf, const UW start, const UW size);
 static UW execute(devmsg_t *message);
 static ER accept(const ID port);
+static void load_initrd(void);
 static ER_ID initialize(void);
 
 
@@ -157,6 +158,27 @@ static ER accept(const ID port)
 	return result;
 }
 
+static void load_initrd(void)
+{
+	struct machine_info info;
+	ER err = vsys_inf(1, 0, &info);
+
+	if (err) {
+		dbg_printf("[RAMDISK] vsys_inf error=%x\n", err);
+
+	} else if (info.initrd_size > 0) {
+		if (info.initrd_size <= sizeof(buf)) {
+			dbg_printf("[RAMDISK] initrd_start=%p initrd_size=%x\n",
+					info.initrd_start, info.initrd_size);
+			memcpy(buf, (UB*)(info.initrd_start), info.initrd_size);
+
+		} else {
+			dbg_printf("[RAMDISK] initrd too large %x\n",
+				info.initrd_size);
+		}
+	}
+}
+
 static ER_ID initialize(void)
 {
 	ER_ID port;
@@ -166,7 +188,8 @@ static ER_ID initialize(void)
 			sizeof(DDEV_REQ),
 			sizeof(DDEV_RES)
 	};
-	struct machine_info info;
+
+	load_initrd();
 
 	port = acre_por(&pk_cpor);
 	if (port < 0) {
@@ -181,15 +204,6 @@ static ER_ID initialize(void)
 		del_por(port);
 
 		return E_SYS;
-	}
-
-	if (!vsys_inf(1, 0, &info)) {
-		if ((info.initrd_size > 0)
-				&& (info.initrd_size <= sizeof(buf))) {
-			dbg_printf("[RAMDISK] initrd_start=%p initrd_size=%x\n",
-					info.initrd_start, info.initrd_size);
-			memcpy(buf, (UB*)(info.initrd_start), info.initrd_size);
-		}
 	}
 
 	return port;
