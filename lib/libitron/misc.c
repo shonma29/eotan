@@ -79,8 +79,5 @@ vset_ctx (ID tid, W eip, B *stackp, W stsize)
 ER
 vuse_fpu (ID tid)
 {
-/*TODO fix bug of vuse_fpu
   return ncall(SVC_MPU_USE_FLOAT, tid);
-*/
-  return E_NOSPT;
 }

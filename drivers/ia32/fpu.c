@@ -26,11 +26,13 @@ void fpu_initialize(void)
 
 void fpu_save(T_TCB *taskp)
 {
+  __asm__("clts");
   __asm__("fsave %0" : "=m" (taskp->mpu.fpu_context));
 }
 
 void fpu_restore(T_TCB *taskp)
 {
+  __asm__("clts");
   __asm__("frstor %0" : "=m" (taskp->mpu.fpu_context));
 }
 
@@ -38,6 +40,7 @@ void fpu_start(T_TCB *taskp)
 {
   if (taskp->mpu.use_fpu) return;
   enter_critical();
+  __asm__("clts");
   if (run_task == taskp) {
     __asm__("finit");
     __asm__("fsave %0" : "=m" (taskp->mpu.fpu_context));
