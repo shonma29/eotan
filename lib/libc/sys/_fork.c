@@ -16,6 +16,7 @@ Version 2, June 1991
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_fork.c,v 1.3 1999/11/10 10:39:32 naniwa Exp $  */
 
 #include <errno.h>
+#include <local.h>
 #include <string.h>
 #include <mpu/io.h>
 #include <mpu/config.h>
@@ -40,7 +41,7 @@ _fork (int esp, int ebp, int ebx, int ecx, int edx, int esi, int edi)
     struct posix_response *res = (struct posix_response*)&req;
     ID child_main;
     ID child_signal;
-    ID myself;
+    thread_local_t *local_data = (thread_local_t*)LOCAL_ADDR;
     T_CTSK task_info;
 
     /* 子プロセスのタスク生成
@@ -84,13 +85,12 @@ _fork (int esp, int ebp, int ebx, int ecx, int edx, int esi, int edi)
     }
 
     /* stack のコピー */
-    get_tid(&myself);
-    vcpy_stk(myself, esp, ebp,
+    vcpy_stk(local_data->thread_id, esp, ebp,
 	     ebx, ecx, edx, esi, edi,
 	     child_main);
 
     /* FPU を有効にする */
-    vuse_fpu(myself);
+    vuse_fpu(local_data->thread_id);
 
     /* 子プロセスを有効にする */
     sta_tsk(child_main, 0);

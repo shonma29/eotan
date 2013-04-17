@@ -16,13 +16,13 @@ Version 2, June 1991
 #ifndef __POSIX_H__
 
 #include <unistd.h>
+#include <local.h>
 #include <itron/errno.h>
 #include <itron/types.h>
 #include <itron/syscall.h>
 #include <sys/syscall.h>
-#include <lowlib.h>
 
-extern struct lowlib_data *lowlib_data;
+extern thread_local_t *local_data;
 
 extern ER _make_connection(W wOperation, struct posix_request *req);
 extern W _call_fs(W wOperation, struct posix_request *req);

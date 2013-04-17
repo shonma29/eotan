@@ -69,7 +69,7 @@ Version 2, June 1991
  *
  */
 
-#include <lowlib.h>
+#include <local.h>
 #include <string.h>
 #include "fs.h"
 
@@ -85,7 +85,7 @@ W proc_fork(struct proc *parent, W * childid, ID main_task, ID signal_task)
     W errno;
 /*   ID		main_task, signal_task;
  */
-    struct lowlib_data lowlib_data, lowlib_par;
+    thread_local_t local_data, local_par;
 
 #ifdef FKDEBUG
     printk
@@ -117,32 +117,31 @@ W proc_fork(struct proc *parent, W * childid, ID main_task, ID signal_task)
 
     newproc->proc_status = PS_RUN;
     newproc->proc_ppid = parent->proc_pid;
-    errno = vmap_reg(main_task, LOWLIB_DATA, sizeof(struct lowlib_data),
+    errno = vmap_reg(main_task, (thread_local_t*)LOCAL_ADDR, sizeof(thread_local_t),
     		ACC_USER);
     if (errno)
 	return errno;
 
-    errno = vget_reg(main_task, LOWLIB_DATA,
-		     sizeof(struct lowlib_data), &lowlib_data);
+    errno = vget_reg(main_task, (thread_local_t*)LOCAL_ADDR,
+		     sizeof(thread_local_t), &local_data);
     if (errno)
 	return errno;
 
-    errno = vget_reg(parent->proc_maintask, LOWLIB_DATA,
-		     sizeof(struct lowlib_data), &lowlib_par);
+    errno = vget_reg(parent->proc_maintask, (thread_local_t*)LOCAL_ADDR,
+		     sizeof(thread_local_t), &local_par);
     if (errno)
 	return errno;
 
-    memset(&lowlib_data, 0, sizeof(lowlib_data));
-    lowlib_data.main_task = main_task;
-    /*  lowlib_data.signal_task = signal_task; */
-    lowlib_data.my_pid = *childid;
+    memset(&local_data, 0, sizeof(local_data));
+    local_data.thread_id = main_task;
+    local_data.process_id = *childid;
 
-    strncpy(lowlib_data.dpath, lowlib_par.dpath, lowlib_par.dpath_len);
-    lowlib_data.dpath[lowlib_par.dpath_len] = '\0';
-    lowlib_data.dpath_len = lowlib_par.dpath_len;
+    strncpy((B*)local_data.cwd, (B*)local_par.cwd, local_par.cwd_length);
+    local_data.cwd[local_par.cwd_length] = '\0';
+    local_data.cwd_length = local_par.cwd_length;
 
-    errno = vput_reg(main_task, LOWLIB_DATA,
-		     sizeof(struct lowlib_data), &lowlib_data);
+    errno = vput_reg(main_task, (thread_local_t*)LOCAL_ADDR,
+		     sizeof(thread_local_t), &local_data);
     if (errno)
 	return errno;
 

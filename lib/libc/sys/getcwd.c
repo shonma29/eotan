@@ -27,13 +27,13 @@ Version 2, June 1991
 char *
 getcwd (char *buf, int size)
 {
-    struct lowlib_data	*lowlib_data = (struct lowlib_data *)LOWLIB_DATA;
+    thread_local_t *local_data = (thread_local_t*)LOCAL_ADDR;
 
-    if (lowlib_data->dpath_len > size) {
+    if (local_data->cwd_length > size) {
 	errno = ERANGE;
 	return (NULL);
     }
-    strncpy(buf, lowlib_data->dpath, size - 1);
+    strncpy(buf, (B*)(local_data->cwd), size - 1);
     buf[size - 1] = '\0';
     errno = EOK;
     return (buf);

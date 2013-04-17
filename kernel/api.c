@@ -174,7 +174,6 @@ Version 2, June 1991
  *
  */
 
-#include <lowlib.h>
 #include <mpu/config.h>
 #include <mpu/io.h>
 #include <itron/rendezvous.h>

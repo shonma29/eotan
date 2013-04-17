@@ -121,8 +121,8 @@ Version 2, June 1991
  */
 
 #include <fcntl.h>
+#include <local.h>
 #include <string.h>
-#include <lowlib.h>
 #include <mpu/config.h>
 #include "fs.h"
 
@@ -131,7 +131,7 @@ struct proc *free_proc, *tail_proc;
 struct proc *run_proc = NULL;
 
 
-static W set_lowlib(ID pid, ID task);
+static W set_local(ID pid, ID task);
 
 
 /* init_process
@@ -246,35 +246,34 @@ W proc_set_info(struct posix_request * req)
     dbg_printf("    umask:      %d\n", procinfo->proc_umask);
 #endif
 
-    set_lowlib(procid, tskid);
+    set_local(procid, tskid);
 
     return (EOK);
 }
 
-static W set_lowlib(ID pid, ID tskid)
+static W set_local(ID pid, ID tskid)
 {
     W errno;
-    struct lowlib_data lowlib_data;
+    thread_local_t local_data;
 
-    errno = vmap_reg(tskid, LOWLIB_DATA, sizeof(struct lowlib_data),
+    errno = vmap_reg(tskid, (thread_local_t*)LOCAL_ADDR, sizeof(thread_local_t),
     		ACC_USER);
     if (errno)
 	return errno;
 
-    errno = vget_reg(tskid, LOWLIB_DATA,
-		     sizeof(struct lowlib_data), &lowlib_data);
+    errno = vget_reg(tskid, (thread_local_t*)LOCAL_ADDR,
+		     sizeof(thread_local_t), &local_data);
     if (errno)
 	return errno;
 
-    memset(&lowlib_data, 0, sizeof(lowlib_data));
-    lowlib_data.main_task = tskid;
-    /*  lowlib_data.signal_task = signal_task; */
-    lowlib_data.my_pid = pid;
-    strcpy(lowlib_data.dpath, "/");
-    lowlib_data.dpath_len = 1;
+    memset(&local_data, 0, sizeof(local_data));
+    local_data.thread_id = tskid;
+    local_data.process_id = pid;
+    strcpy((B*)local_data.cwd, "/");
+    local_data.cwd_length = 1;
 
-    errno = vput_reg(tskid, LOWLIB_DATA,
-		     sizeof(struct lowlib_data), &lowlib_data);
+    errno = vput_reg(tskid, (thread_local_t*)LOCAL_ADDR,
+		     sizeof(thread_local_t), &local_data);
     if (errno)
 	return errno;
     return (EOK);

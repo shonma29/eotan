@@ -87,7 +87,6 @@ ID waitflag;			/* キーボードからキー入力を待つ時に */
 				/* 使用するイベントフラグの ID */
 W driver_mode;
 ID local_recv = 0;
-ID my_tskid;
 
 
 /*
@@ -177,8 +176,6 @@ W init_keyboard(void)
     driver_mode = WAITMODE | ENAEOFMODE;
 
     initialized = 1;
-
-    get_tid(&my_tskid);
 
     return E_OK;
 }

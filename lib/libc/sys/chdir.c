@@ -26,11 +26,11 @@ Version 2, June 1991
 int
 chdir (char *path)
 {
-    struct lowlib_data	*lowlib_data = (struct lowlib_data *)LOWLIB_DATA;
+    thread_local_t *local_data = (thread_local_t*)LOCAL_ADDR;
     ER error;
     struct posix_request req;
     struct posix_response *res = (struct posix_response*)&req;
-    char buf[MAX_DPATH + 1], *src, *top, *dst;
+    char buf[MAX_CWD + 1], *src, *top, *dst;
     int len = strlen(path), l2, flag = 0;
 
     req.param.par_chdir.path = path;
@@ -48,15 +48,15 @@ chdir (char *path)
 
     /* lowlib_data->dpath の更新 */
     if (path[0] == '/') {
-	strncpy(lowlib_data->dpath, path, MAX_DPATH);
-	lowlib_data->dpath[MAX_DPATH] = '\0';
-	lowlib_data->dpath_len = len;
+	strncpy((B*)(local_data->cwd), path, MAX_CWD);
+	local_data->cwd[MAX_CWD] = '\0';
+	local_data->cwd_length = len;
     } else {
-	strncpy(buf, path, MAX_DPATH);
-	buf[MAX_DPATH] = '\0';
+	strncpy(buf, path, MAX_CWD);
+	buf[MAX_CWD] = '\0';
 	top = src = buf;
-	len = lowlib_data->dpath_len;
-	dst = lowlib_data->dpath + len;
+	len = local_data->cwd_length;
+	dst = (B*)(local_data->cwd + len);
 	while (*top) {
 	    while (*src != '/' && *src)
 		++src;
@@ -76,8 +76,8 @@ chdir (char *path)
 		}
 	    } else if (strcmp(top, ".")) {
 		l2 = strlen(top);
-		if (len + l2 >= MAX_DPATH) {
-		    l2 = MAX_DPATH - len - 1;
+		if (len + l2 >= MAX_CWD) {
+		    l2 = MAX_CWD - len - 1;
 		    flag = 1;
 		}
 		if (len != 1) {
@@ -93,7 +93,7 @@ chdir (char *path)
 	    }
 	    top = src;
 	}
-	lowlib_data->dpath_len = len;
+	local_data->cwd_length = len;
     }
 
     return (res->status);

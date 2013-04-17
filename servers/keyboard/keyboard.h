@@ -106,8 +106,6 @@ extern ID	waitflag;	/* キーボードからキー入力を待つ時に */
 extern W	driver_mode;
 extern W	send_msg;
 
-extern ID	my_tskid;
-
 /* main.c */
 extern W    	init_keyboard(void);	/* 初期化		*/
 extern W    	open_keyboard();	/* オープン		*/

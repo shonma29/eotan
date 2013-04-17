@@ -57,7 +57,6 @@ Version 2, June 1991
 #include <core.h>
 #include <mpu/config.h>
 #include <mpu/io.h>
-#include <lowlib.h>
 #include "version.h"
 #include "thread.h"
 #include "func.h"

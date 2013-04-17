@@ -25,6 +25,7 @@ Version 2, June 1991
  *
  */
 #include <errno.h>
+#include <local.h>
 #include <services.h>
 #include <itron/rendezvous.h>
 #include "posix.h"
@@ -34,18 +35,13 @@ ER
 _make_connection(W wOperation,
 		 struct posix_request *req)
 {
-    struct lowlib_data	*lowlib_data = (struct lowlib_data *)LOWLIB_DATA;
+    thread_local_t *local_data = (thread_local_t*)LOCAL_ADDR;
     W rsize;
-    ID myself;
-
-    if (get_tid(&myself)) {
-	return (EPERM);
-    }
 
     req->msg_length = sizeof(struct posix_request);
     req->operation = wOperation;
-    req->procid = lowlib_data->my_pid;
-    req->caller = myself;
+    req->procid = local_data->process_id;
+    req->caller = local_data->thread_id;
     rsize = cal_por(PORT_FS, 0xffffffff, req, sizeof(struct posix_request));
 
     if (rsize < 0) {

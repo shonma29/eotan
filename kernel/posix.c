@@ -7,7 +7,6 @@
 
 */
 
-#include <lowlib.h>
 #include <services.h>
 #include <sys/syscall.h>
 #include "core.h"

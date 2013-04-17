@@ -12,8 +12,8 @@ Version 2, June 1991
 */
 
 #include <core.h>
+#include <local.h>
 #include <mpu/config.h>
-#include <lowlib.h>
 #include "func.h"
 #include "misc.h"
 #include "sync.h"
@@ -207,9 +207,11 @@ ER mpu_copy_stack(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi, W edi, ID ds
 /* default page fault handler */
 W pf_handler(W cr2, W eip)
 {
+    thread_local_t *local = (thread_local_t*)LOCAL_ADDR;
+
     /* KERNEL_TASK への登録 */
     /* type = POSIX, id = pid */
-    add_trmtbl(0, run_task->tskid, (LOWLIB_DATA)->my_pid);
+    add_trmtbl(0, run_task->tskid, local->process_id);
     /* KERNEL_TASK の優先度変更 */
     thread_change_priority(KERNEL_TASK, MID_LEVEL);
     return (E_OK);
