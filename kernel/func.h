@@ -92,9 +92,6 @@ ER_UINT port_call(ID porid, RDVPTN calptn, VP msg, UINT cmsgsz);
 ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg);
 ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz);
 
-/* lowlib.c */
-extern ER			load_lowlib (VP *argp);
-
 /* api.c */
 extern void api_initialize(void);
 

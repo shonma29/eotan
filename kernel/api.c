@@ -230,7 +230,6 @@ static ER	if_region_get_status(void *argp);
 static ER	if_get_physical_address(void *argp);
 
 /* その他のシステムコール */
-static ER	if_misc(void *argp);
 static ER	if_mpu_copy_stack(void *argp);
 static ER	if_mpu_set_context(void *argp);
 static ER	if_mpu_use_float(void *argp);
@@ -305,7 +304,6 @@ static ER (*syscall_table[])(VP argp) =
   SVC_IF (get_physical_address, 3),	/*   32 */
 
   /* その他のシステムコール */
-  SVC_IF (misc, 2),	/*   33 */
   SVC_IF (mpu_copy_stack, 4),	/*   34 */
   SVC_IF (mpu_set_context, 4),	/*   35 */
   SVC_IF (mpu_use_float, 1),	/*   36 */
@@ -816,39 +814,6 @@ if_kernlog(VP args)
   
   printk ("%s", arg->msg);
   return (E_OK);
-}
-
-/* if_misc - miscellaneous function
- *
- */
-static ER if_misc(VP argp)
-{
-    struct {
-	W cmd;
-	VP arg;
-    } *args = argp;
-
-#ifdef notdef
-    printk("misc: cmd = %d\n", args->cmd);
-#endif
-
-    switch (args->cmd) {
-    default:
-	return (E_ID);
-
-    case 1:
-	/* fall down */
-	printk(args->arg);
-	falldown();
-	/* NOT REACHED */
-
-    case 3:
-	/* load lowlib */
-	return (load_lowlib(args->arg));
-	break;
-    }
-
-    return (E_OK);
 }
 
 /* if_mpu_copy_stack - copy task stack 

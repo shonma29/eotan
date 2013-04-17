@@ -86,9 +86,6 @@ W proc_fork(struct proc *parent, W * childid, ID main_task, ID signal_task)
 /*   ID		main_task, signal_task;
  */
     struct lowlib_data lowlib_data, lowlib_par;
-    struct lod_low_args {
-    	ID task;
-    } args;
 
 #ifdef FKDEBUG
     printk
@@ -120,12 +117,22 @@ W proc_fork(struct proc *parent, W * childid, ID main_task, ID signal_task)
 
     newproc->proc_status = PS_RUN;
     newproc->proc_ppid = parent->proc_pid;
-    args.task = main_task;
-    vsys_msc(3, &args);
+    errno = vmap_reg(main_task, LOWLIB_DATA, sizeof(struct lowlib_data),
+    		ACC_USER);
+    if (errno)
+	return errno;
+
     errno = vget_reg(main_task, LOWLIB_DATA,
 		     sizeof(struct lowlib_data), &lowlib_data);
+    if (errno)
+	return errno;
+
     errno = vget_reg(parent->proc_maintask, LOWLIB_DATA,
 		     sizeof(struct lowlib_data), &lowlib_par);
+    if (errno)
+	return errno;
+
+    memset(&lowlib_data, 0, sizeof(lowlib_data));
     lowlib_data.main_task = main_task;
     /*  lowlib_data.signal_task = signal_task; */
     lowlib_data.my_pid = *childid;
@@ -136,6 +143,8 @@ W proc_fork(struct proc *parent, W * childid, ID main_task, ID signal_task)
 
     errno = vput_reg(main_task, LOWLIB_DATA,
 		     sizeof(struct lowlib_data), &lowlib_data);
+    if (errno)
+	return errno;
 
     strncpy(newproc->proc_name, parent->proc_name, PROC_NAME_LEN - 1);
     newproc->proc_name[PROC_NAME_LEN - 1] = '\0';

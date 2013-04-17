@@ -51,15 +51,6 @@ Version 2, June 1991
 #include <nerve/svcno.h>
 
 
-/* vsys_msc
- *
- */
-ER
-vsys_msc (W cmd, VP argp)
-{
-  return ncall(SVC_MISC, cmd, argp);
-}
-
 /* vsys_inf
  *
  */

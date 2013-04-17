@@ -255,21 +255,24 @@ static W set_lowlib(ID pid, ID tskid)
 {
     W errno;
     struct lowlib_data lowlib_data;
-    struct lod_low_args {
-    	ID task;
-    } args;
 
-    args.task = tskid;
-    vsys_msc(3, &args);
+    errno = vmap_reg(tskid, LOWLIB_DATA, sizeof(struct lowlib_data),
+    		ACC_USER);
+    if (errno)
+	return errno;
+
     errno = vget_reg(tskid, LOWLIB_DATA,
 		     sizeof(struct lowlib_data), &lowlib_data);
     if (errno)
 	return errno;
+
+    memset(&lowlib_data, 0, sizeof(lowlib_data));
     lowlib_data.main_task = tskid;
     /*  lowlib_data.signal_task = signal_task; */
     lowlib_data.my_pid = pid;
     strcpy(lowlib_data.dpath, "/");
     lowlib_data.dpath_len = 1;
+
     errno = vput_reg(tskid, LOWLIB_DATA,
 		     sizeof(struct lowlib_data), &lowlib_data);
     if (errno)
