@@ -25,17 +25,6 @@ Version 2, June 1991
 
 #define KERNEL_TASK	(1)
 
-/* task_spec_interrupt - タスク固有割り込み処理関数
- *
- *	この構造体には、タスク固有の割り込み処理関数を登録する。
- *	(LOWLIB のソフトウェア割り込み登録に使用する)
- */
-typedef struct task_spec_interrupt {
-    W intr_no;
-     ER(*intr_func) (W, VP);
-} T_TSI;
-
-
 /* t_tcb --- タスク構造体
  *
  *	この構造体には、タスクの固有情報が含まれる。
