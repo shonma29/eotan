@@ -31,8 +31,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/memory.h>
 #include "func.h"
 
-extern int isValidModule(const Elf32_Ehdr *eHdr);
-
 static ER run(const UW type, const Elf32_Ehdr *eHdr);
 static void set_initrd(ModuleHeader *h);
 static void release(const void *head, const void *end);
