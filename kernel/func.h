@@ -79,7 +79,7 @@ ER port_initialize(void);
 ER port_create(ID porid, T_CPOR *pk_cpor);
 ER_ID port_create_auto(T_CPOR *pk_cpor);
 ER port_destroy(ID porid);
-ER_UINT port_call(ID porid, RDVPTN calptn, VP msg, UINT cmsgsz);
+ER_UINT port_call(ID porid, VP msg, UINT cmsgsz);
 ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg);
 ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz);
 

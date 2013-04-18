@@ -869,7 +869,7 @@ static ER_UINT if_port_call(VP argp)
 	UINT cmsgsz;
     } *args = argp;
 
-    return port_call(args->porid, args->calptn, args->msg, args->cmsgsz);
+    return port_call(args->porid, args->msg, args->cmsgsz);
 }
 
 static ER_UINT if_port_accept(VP argp)

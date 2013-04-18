@@ -251,7 +251,7 @@ ER port_destroy(ID porid)
 	return result;
 }
 
-ER_UINT port_call(ID porid, RDVPTN calptn, VP msg, UINT cmsgsz)
+ER_UINT port_call(ID porid, VP msg, UINT cmsgsz)
 {
 	port_t *p;
 	node_t *node;
