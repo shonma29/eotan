@@ -77,7 +77,6 @@ extern ER make_task_context(T_TCB * task, T_CTSK * pk_ctsk);
 extern ER mpu_copy_stack(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi, W edi, ID dst);
 extern ER mpu_set_context(ID tid, W eip, B * stackp, W stsize);
 extern ER mpu_use_float(ID tid);
-extern void set_autorun_context(T_TCB *taskp);
 extern void set_thread1_context(T_TCB *taskp);
 extern void set_thread1_start(T_TCB *taskp);
 extern void set_page_table(T_TCB *taskp, UW p);

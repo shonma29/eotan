@@ -319,21 +319,6 @@ ER mpu_use_float(ID tid)
     return (E_OK);
 }
 
-void set_autorun_context(T_TCB *taskp) {
-   /* 固有のスタックを用意 */
-   make_local_stack(taskp, KERNEL_STACK_SIZE, ACC_USER);
-   taskp->mpu.context.esp = taskp->initial_stack;
-   taskp->mpu.context.ebp = taskp->initial_stack;
-
-   /* セレクタの設定 */
-   taskp->mpu.context.cs = USER_CSEG | USER_DPL;
-   taskp->mpu.context.ds = USER_DSEG;
-   taskp->mpu.context.es = USER_DSEG;
-   taskp->mpu.context.fs = USER_DSEG;
-   taskp->mpu.context.gs = USER_DSEG;
-   taskp->mpu.context.ss = USER_SSEG | USER_DPL;
-}
-
 void set_thread1_context(T_TCB *taskp) {
     /* タスク 1 のコンテキスト情報を初期化する                    */
     /* これらの情報は、次にタスク1がカレントタスクになった時に    */
