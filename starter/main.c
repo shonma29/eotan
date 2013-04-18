@@ -47,9 +47,6 @@ static size_t len;
 
 static void _putc(char ch);
 #else
-#define BIOS_CURSOR_COL 0x0450
-#define BIOS_CURSOR_ROW 0x0451
-#define CGA_VRAM_ADDR 0x000b8000
 
 static CGA_Console *cns;
 #endif

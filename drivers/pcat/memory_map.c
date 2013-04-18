@@ -64,18 +64,22 @@ void memory_initialize(void)
 	map_initialize(pages(getLastPresentAddress()));
 	setAbsentPages();
 
+	/* keep realmode interrupt vector, BIOS workarea */
+	map_set_use(0, 1);
 	/* keep GDT, IDT */
 	map_set_use(kern_v2p((void*)GDT_ADDR), 1);
 	/* keep page directory */
 	map_set_use((void*)PAGE_DIR_ADDR, 1);
-	/* keep kernel log */
-	map_set_use(kern_v2p((void*)KERNEL_LOG_ADDR), pages(KERNEL_LOG_SIZE));
+	/* keep boot infomation */
+	map_set_use((void*)BOOT_INFO_ADDR, 1);
 	/* keep kernel stack */
-	map_set_use(kern_v2p((void*)(KERN_STACK_ADDR - PAGE_SIZE)), 1);
+	map_set_use(kern_v2p((void*)(KERN_STACK_ADDR - PAGE_SIZE)), 4);
 	/* keep modules */
 	map_set_use((void*)MODULES_ADDR,
 			pages((UW)setModules() - MODULES_ADDR));
 
+	/* keep kernel log */
+	map_set_use(kern_v2p((void*)KERNEL_LOG_ADDR), pages(KERNEL_LOG_SIZE));
 	/* keep memory map */
 	map_set_use(kern_v2p((void*)mm),
 			pages(mm->max_blocks * sizeof(UW) + sizeof(*mm)));

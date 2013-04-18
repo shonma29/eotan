@@ -26,8 +26,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#define MEMORY_INFO_END 0x00006000
-#define MEMORY_INFO_ADDR 0x00006004
+#define MEMORY_INFO_END 0x00003000
+#define MEMORY_INFO_ADDR 0x00003004
 
 #define MEMORY_PRESENT (1)
 

@@ -26,7 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#define VESA_INFO_ADDR 0x00006c00
+#define VESA_INFO_ADDR 0x00003c00
 
 typedef struct
 {

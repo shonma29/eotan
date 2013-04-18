@@ -96,6 +96,8 @@ static void set_initrd(ModuleHeader *h)
 	machineInfo.initrd_size = h->bytes;
 }
 
+//TODO wait for init starting
+//TODO release others (BIOS workarea, kernel stack, ...)
 static void release(const void *head, const void *end)
 {
 	UW addr = (UW)head & ~((1 << PAGE_SHIFT) - 1);

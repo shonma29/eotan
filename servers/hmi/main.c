@@ -30,11 +30,10 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 #include <boot/vesa.h>
 #include <itron/rendezvous.h>
+#include <mpu/memory.h>
 #include <bind.h>
 #include <libserv.h>
 #include "hmi.h"
-
-#define VRAM_ADDR 0x800b8000
 
 #define MAX_WINDOW (16)
 
@@ -175,7 +174,7 @@ static ER_ID initialize(void)
 			sizeof(DDEV_RES)
 	};
 
-	cns = getConsole((const UH*)VRAM_ADDR);
+	cns = getConsole((const UH*)kern_p2v((void*)CGA_VRAM_ADDR));
 	cns->cls();
 	cns->locate(0, 0);
 

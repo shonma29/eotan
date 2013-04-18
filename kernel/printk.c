@@ -35,7 +35,6 @@ For more information, please refer to <http://unlicense.org/>
 
 #if DEBUG
 #include <cga.h>
-#define CGA_VRAM_ADDR 0x800b8000
 
 static CGA_Console *cns;
 static int initialized;
@@ -54,7 +53,7 @@ int printk(const char *format, ...) {
 #if DEBUG
 	if (!initialized){
 		initialized = 1;
-		cns = getConsole((const UH*)CGA_VRAM_ADDR);
+		cns = getConsole((const UH*)kern_p2v((void*)CGA_VRAM_ADDR));
 		cns->cls();
 		cns->locate(0, 0);
 	}

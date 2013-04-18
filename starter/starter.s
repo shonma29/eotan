@@ -39,8 +39,8 @@ For more information, please refer to <http://unlicense.org/>
 .set SELECTOR_STACK, 0x18
 
 .set STACK_ADDR, 0x00008000
-.set MEMORY_INFO_ADDR, 0x6000
-.set VESA_INFO_ADDR, 0x6c00
+.set MEMORY_INFO_ADDR, 0x3000
+.set VESA_INFO_ADDR, 0x3c00
 
 /**
  * start on segment 0x0800.

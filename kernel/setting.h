@@ -29,10 +29,12 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/memory.h>
 #include <config.h>
 
+#define BOOT_INFO_ADDR 0x80003000
+#define SYSTEM_INFO_ADDR 0x80003e00
 #define KERN_STACK_ADDR 0x80008000
 #define MEMORY_MAP_ADDR 0x80180000
 
-#define KERNEL_LOG_ADDR 0x80003000
+#define KERNEL_LOG_ADDR 0x80170000
 #define KERNEL_LOG_SIZE (16 * 1024)
 
 #define MAX_PAGES (1024 * 1024 / 2)
