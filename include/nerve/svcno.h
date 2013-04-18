@@ -63,12 +63,11 @@ For more information, please refer to <http://unlicense.org/>
 #define SVC_GET_PHYSICAL_ADDRESS (31)
 #define SVC_MPU_COPY_STACK (32)
 #define SVC_MPU_SET_CONTEXT (33)
-#define SVC_MPU_USE_FLOAT (34)
-#define SVC_PORT_CREATE (35)
-#define SVC_PORT_CREATE_AUTO (36)
-#define SVC_PORT_DESTROY (37)
-#define SVC_PORT_CALL (38)
-#define SVC_PORT_ACCEPT (39)
-#define SVC_PORT_REPLY (40)
+#define SVC_PORT_CREATE (34)
+#define SVC_PORT_CREATE_AUTO (35)
+#define SVC_PORT_DESTROY (36)
+#define SVC_PORT_CALL (37)
+#define SVC_PORT_ACCEPT (38)
+#define SVC_PORT_REPLY (39)
 
 #endif

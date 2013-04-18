@@ -84,7 +84,6 @@ W exec_init(ID process_id, char *pathname)
 		del_tsk(req.caller);
 	}
 
-	vuse_fpu(req.caller);
 	sta_tsk(req.caller, 0);
 
 	dbg_printf("[MM] exec_init(%d, %s)\n", process_id, pathname);

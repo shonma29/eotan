@@ -233,6 +233,7 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
     if (tid & INIT_THREAD_ID_FLAG) {
 	tid &= INIT_THREAD_ID_MASK;
 	make_local_stack(tsk, USER_STACK_SIZE, ACC_USER);
+        fpu_start(tsk);
     }
 
     enter_critical();
@@ -304,18 +305,6 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
 
     list_remove(&(tsk->wait.waiting));
     release(tsk);
-    return (E_OK);
-}
-
-/* mpu_use_float */
-ER mpu_use_float(ID tid)
-{
-    T_TCB *taskp = get_thread_ptr(tid);
-
-    if (!taskp) {
-	return (E_ID);
-    }
-    fpu_start(taskp);
     return (E_OK);
 }
 

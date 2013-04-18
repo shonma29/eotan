@@ -74,10 +74,3 @@ vset_ctx (ID tid, W eip, B *stackp, W stsize)
 {
   return ncall(SVC_MPU_SET_CONTEXT, tid, eip, stackp, stsize);
 }
-
-/* vuse_fpu */
-ER
-vuse_fpu (ID tid)
-{
-  return ncall(SVC_MPU_USE_FLOAT, tid);
-}

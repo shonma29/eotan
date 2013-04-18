@@ -230,7 +230,6 @@ static ER	if_get_physical_address(void *argp);
 /* その他のシステムコール */
 static ER	if_mpu_copy_stack(void *argp);
 static ER	if_mpu_set_context(void *argp);
-static ER	if_mpu_use_float(void *argp);
 
 static ER if_port_create(void *argp);
 static ER_ID if_port_create_auto(void *argp);
@@ -253,22 +252,22 @@ static ER (*syscall_table[])(VP argp) =
   SVC_IF (thread_end, 0),     /*    4 */
   SVC_IF (thread_end_and_destroy, 0),     /*    5 */
   SVC_IF (thread_terminate, 1),     /*    6 */
-  SVC_IF (thread_release, 1),	/*    8 */
-  SVC_IF (thread_get_id, 1),	/*    9 */
+  SVC_IF (thread_release, 1),	/*    7 */
+  SVC_IF (thread_get_id, 1),	/*    8 */
 
   /* タスク附属同期機能 */
-  SVC_IF (thread_suspend, 1),    	/*   10 */
-  SVC_IF (thread_resume, 1),	/*   11 */
+  SVC_IF (thread_suspend, 1),    	/*   9 */
+  SVC_IF (thread_resume, 1),	/*   10 */
 
   /* 同期・通信機構 */
   /* セマフォ */
 
   /* イベントフラグ */
-  SVC_IF (flag_create_auto, 1),	/*   12 */
-  SVC_IF (flag_destroy, 1),	/*   13 */
-  SVC_IF (flag_set, 2),	/*   14 */
-  SVC_IF (flag_clear, 2),     /*   15 */
-  SVC_IF (flag_wait, 4),	/*   16 */
+  SVC_IF (flag_create_auto, 1),	/*   11 */
+  SVC_IF (flag_destroy, 1),	/*   12 */
+  SVC_IF (flag_set, 2),	/*   13 */
+  SVC_IF (flag_clear, 2),     /*   14 */
+  SVC_IF (flag_wait, 4),	/*   15 */
 
   /* メッセージバッファ */
 
@@ -279,38 +278,37 @@ static ER (*syscall_table[])(VP argp) =
   /* システム管理 */
 
   /* 時間管理機能 */
-  SVC_IF (time_set, 1),	/*   17 */
-  SVC_IF (time_get, 1),	/*   18 */
-  SVC_IF (thread_delay, 1),	/*   19 */
-  SVC_IF (alarm_create, 2),	/*   20 */
+  SVC_IF (time_set, 1),	/*   16 */
+  SVC_IF (time_get, 1),	/*   17 */
+  SVC_IF (thread_delay, 1),	/*   18 */
+  SVC_IF (alarm_create, 2),	/*   19 */
 
-  SVC_IF (interrupt_bind, 2),	/*   21 */
+  SVC_IF (interrupt_bind, 2),	/*   20 */
 
-  SVC_IF (get_system_info, 3),	/*   22 */
-  SVC_IF (kernlog, 1),	/*   23 */
+  SVC_IF (get_system_info, 3),	/*   21 */
+  SVC_IF (kernlog, 1),	/*   22 */
 
   /* 仮想メモリ管理システムコール */	
-  SVC_IF (region_create, 6),	/*   24 */
-  SVC_IF (region_destroy, 2),	/*   25 */
-  SVC_IF (region_map, 3),	/*   26 */
-  SVC_IF (region_unmap, 3),	/*   27 */
-  SVC_IF (region_duplicate, 2),	/*   28 */
-  SVC_IF (region_put, 4),	/*   29 */
-  SVC_IF (region_get, 4),	/*   30 */
-  SVC_IF (region_get_status, 3),	/*   31 */
-  SVC_IF (get_physical_address, 3),	/*   32 */
+  SVC_IF (region_create, 6),	/*   23 */
+  SVC_IF (region_destroy, 2),	/*   24 */
+  SVC_IF (region_map, 3),	/*   25 */
+  SVC_IF (region_unmap, 3),	/*   26 */
+  SVC_IF (region_duplicate, 2),	/*   27 */
+  SVC_IF (region_put, 4),	/*   28 */
+  SVC_IF (region_get, 4),	/*   29 */
+  SVC_IF (region_get_status, 3),	/*   30 */
+  SVC_IF (get_physical_address, 3),	/*   31 */
 
   /* その他のシステムコール */
-  SVC_IF (mpu_copy_stack, 4),	/*   34 */
-  SVC_IF (mpu_set_context, 4),	/*   35 */
-  SVC_IF (mpu_use_float, 1),	/*   36 */
+  SVC_IF (mpu_copy_stack, 4),	/*   32 */
+  SVC_IF (mpu_set_context, 4),	/*   33 */
 
-  SVC_IF (port_create, 2),	/*   37 */
-  SVC_IF (port_create_auto, 1),	/*   38 */
-  SVC_IF (port_destroy, 1),	/*   39 */
-  SVC_IF (port_call, 4),	/*   40 */
-  SVC_IF (port_accept, 4),	/*   41 */
-  SVC_IF (port_reply, 3),	/*   42 */
+  SVC_IF (port_create, 2),	/*   34 */
+  SVC_IF (port_create_auto, 1),	/*   35 */
+  SVC_IF (port_destroy, 1),	/*   36 */
+  SVC_IF (port_call, 4),	/*   37 */
+  SVC_IF (port_accept, 4),	/*   38 */
+  SVC_IF (port_reply, 3),	/*   39 */
 };
 
 #define NSYSCALL (sizeof (syscall_table) / sizeof (syscall_table[0]))
@@ -832,18 +830,6 @@ static ER if_mpu_set_context(VP argp)
     } *args = argp;
 
     return mpu_set_context(args->tid, args->eip, args->stackp, args->stsize);
-}
-
-/* if_mpu_use_float - use FPU
- *
- */
-static ER if_mpu_use_float(VP argp)
-{
-    struct {
-	ID tid;
-    } *args = argp;
-
-    return mpu_use_float(args->tid);
 }
 
 static ER if_port_create(VP argp)

@@ -89,9 +89,6 @@ _fork (int esp, int ebp, int ebx, int ecx, int edx, int esi, int edi)
 	     ebx, ecx, edx, esi, edi,
 	     child_main);
 
-    /* FPU を有効にする */
-    vuse_fpu(local_data->thread_id);
-
     /* 子プロセスを有効にする */
     sta_tsk(child_main, 0);
     return (res->status);

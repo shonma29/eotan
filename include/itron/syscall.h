@@ -64,6 +64,5 @@ extern ER def_alm(HNO almo, T_DALM *pk_dalm);
 extern ER vsys_inf (W func, W sub, VP argp);
 extern ER vcpy_stk(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi , W edi, ID dst);
 extern ER vset_ctx (ID tid, W eip, B *stackp, W stsize);
-extern ER vuse_fpu (ID tid);
 
 #endif /*__ITRON_SYSCALL_H__*/
