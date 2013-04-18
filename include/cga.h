@@ -33,6 +33,10 @@ For more information, please refer to <http://unlicense.org/>
 #define CGA_TAB_COLUMNS (8)
 #define CGA_DEFAULT_COLOR (15)
 
+#define BIOS_CURSOR_COL 0x0450
+#define BIOS_CURSOR_ROW 0x0451
+#define CGA_VRAM_ADDR 0x000b8000
+
 typedef struct _CGA_Console {
 	void (*cls)(void);
 	int (*locate)(const int x, const int y);

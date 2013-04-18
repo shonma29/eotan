@@ -21,6 +21,7 @@ tool:
 	${MAKE} -f app/mkfs/Makefile WD=app/mkfs
 
 starter/boot.iso:
+	mkdir -p build
 	${MAKE} -C starter
 
 applications:
