@@ -12,6 +12,7 @@ Version 2, June 1991
 */
 
 #include <core.h>
+#include <boot/init.h>
 #include <local.h>
 #include <mpu/config.h>
 #include "func.h"
@@ -220,13 +221,18 @@ W pf_handler(W cr2, W eip)
 /* mpu_set_context */
 ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
 {
-    T_TCB *tsk = get_thread_ptr(tid);
+    T_TCB *tsk = get_thread_ptr(tid & INIT_THREAD_ID_MASK);
     UW stbase;
     W err, argc;
     char **ap, **bp, **esp;
 
     if (!tsk) {
 	return (E_ID);
+    }
+
+    if (tid & INIT_THREAD_ID_FLAG) {
+	tid &= INIT_THREAD_ID_MASK;
+	make_local_stack(tsk, USER_STACK_SIZE, ACC_USER);
     }
 
     enter_critical();

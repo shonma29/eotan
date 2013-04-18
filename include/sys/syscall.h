@@ -77,7 +77,6 @@ Version 2, June 1991
 
 /* MISC 
  */
-#define M_SET_PROCINFO	1
 #define M_PROC_DUMP	2
 #define M_VM_DUMP	3
 #define M_PRINT_FLIST	4
@@ -486,29 +485,7 @@ struct psc_brk
   VP end_adr;
 };
 
-/*
- *
- */
-
-struct procinfo
-{
-  ID			proc_maintask;
-  ID			proc_signal_handler;
-
-  W			proc_uid;
-  W			proc_gid;
-  W			proc_euid;
-  W			proc_egid;
-
-  W			proc_umask;
-
-  UW			proc_pid;		/* my process ID */
-  UW			proc_ppid;		/* parent process ID */
-
-  UW			proc_access;
-};
-
-/* psc_set_procinfo
+/* psc_misc
  *
  */
 struct psc_misc
@@ -517,7 +494,6 @@ struct psc_misc
   W		length;
   union
     {
-      struct procinfo	set_procinfo;
       W			procid;
     } arg;
 };

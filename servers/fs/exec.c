@@ -57,6 +57,7 @@ Version 2, June 1991
 #include <elf.h>
 #include <fcntl.h>
 #include <string.h>
+#include <boot/init.h>
 #include <mpu/config.h>
 #include "fs.h"
 
@@ -220,7 +221,8 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 	       req->param.par_execve.stsize);
 #endif
     /* タスクの context.eip を elf_header.e_entry に設定する */
-    errno = vset_ctx(req->caller, elf_header.e_entry,
+    errno = vset_ctx(procid? req->caller:(INIT_THREAD_ID_FLAG | req->caller),
+		     elf_header.e_entry,
 		     req->param.par_execve.stackp,
 		     req->param.par_execve.stsize);
 

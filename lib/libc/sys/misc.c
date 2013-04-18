@@ -26,13 +26,7 @@ misc (int cmd, int len, void *argp)
 
   req.param.par_misc.cmd = cmd;
   req.param.par_misc.length = len;
-
-  if (cmd == M_SET_PROCINFO) {
-    req.param.par_misc.arg.set_procinfo = *((struct procinfo*)argp);
-  }
-  else {
-    req.param.par_misc.arg.procid = (W)argp;
-  }
+  req.param.par_misc.arg.procid = (W)argp;
 
   return _call_fs(PSC_MISC, &req);
 }

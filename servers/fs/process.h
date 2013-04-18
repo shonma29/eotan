@@ -170,7 +170,7 @@ struct proc
 extern struct proc	proc_table[MAX_PROCESS];
 
 extern W		init_process (void);
-extern W		proc_set_info (struct posix_request *req);
+extern W set_local(ID pid, ID tskid);
 extern W		proc_get_uid (W procid, W *uid);
 extern W		proc_get_euid (W procid, W *uid);
 extern W		proc_set_euid (W procid, W uid);

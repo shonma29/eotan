@@ -131,8 +131,6 @@ struct proc *free_proc, *tail_proc;
 struct proc *run_proc = NULL;
 
 
-static W set_local(ID pid, ID task);
-
 
 /* init_process
  *
@@ -160,98 +158,7 @@ W init_process(void)
     return (E_OK);
 }
 
-
-
-/* プロセスの情報を強制的に設定する
- *
- */
-W proc_set_info(struct posix_request * req)
-{
-    struct procinfo *procinfo;
-    UW procid;
-    struct proc *procp;
-    W error;
-    ID tskid;
-
-    procid = req->procid;
-#ifdef DEBUG
-    dbg_printf("Posix:proc: proc_set_info. procid = %d\n", procid);
-#endif
-
-    if ((procid < 0) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
-    }
-
-    /* プロセスの情報を設定する
-     * 今のところ設定する情報の内容はチェックしていないが、
-     * 本来は、チェックすべき
-     */
-    error = proc_get_procp(procid, &procp);
-    if (error) {
-	return (error);
-    }
-
-    if (procp->proc_status == PS_DORMANT) {
-	return (EINVAL);
-    }
-
-    procinfo = &(req->param.par_misc.arg.set_procinfo);
-    procp->proc_maintask = tskid = procinfo->proc_maintask;
-    procp->proc_signal_handler = procinfo->proc_signal_handler;
-    procp->proc_uid = procinfo->proc_uid;
-    procp->proc_gid = procinfo->proc_gid;
-    procp->proc_euid = procinfo->proc_euid;
-    procp->proc_egid = procinfo->proc_egid;
-    procp->proc_umask = procinfo->proc_umask;
-    procp->proc_status = PS_RUN;
-
-    /* 作業ディレクトリを '/' ディレクトリに設定する。
-     * (本システムコール実行後に chdir システムコールで任意のディレクトリに移動できる)
-     */
-    procp->proc_workdir = rootfile;	/* XXX */
-    rootfile->i_refcount++;
-
-    procp->proc_pid = procinfo->proc_pid;
-    procp->proc_ppid = procinfo->proc_ppid;
-
-    /* region の生成 */
-    /* text */
-    vcre_reg(tskid, TEXT_REGION,
-	     0, 0x7fffffff, 0x7fffffff, procinfo->proc_access);
-    /* data+bss */
-    vcre_reg(tskid, DATA_REGION,
-	     0, 0x7fffffff, 0x7fffffff, procinfo->proc_access);
-    /* heap */
-    vcre_reg(tskid, HEAP_REGION,
-	     0, 0, 0x7fffffff, procinfo->proc_access);
-
-    /* 仮想テーブルの生成 */
-    setup_vmtree(&(proc_table[procid]), procinfo->proc_maintask,
-		 procinfo->proc_access, 0, 0x3fffffff);
-
-    /* file discriptor 0, 1, 2 の設定 */
-    error = open_special_dev(procp);
-    if (error != EOK) {
-	dbg_printf("[PM] can't open special files\n");
-	return (error);
-    }
-#ifdef notdef
-    dbg_printf("process information:\n");
-    dbg_printf("    process ID: %d\n", procid);
-    dbg_printf("    main task:  %d\n", procinfo->proc_maintask);
-    dbg_printf("    uid:        %d\n", procinfo->proc_uid);
-    dbg_printf("    gid:        %d\n", procinfo->proc_gid);
-    dbg_printf("    euid:       %d\n", procinfo->proc_euid);
-    dbg_printf("    egid:       %d\n", procinfo->proc_egid);
-    dbg_printf("    umask:      %d\n", procinfo->proc_umask);
-#endif
-
-    set_local(procid, tskid);
-
-    return (EOK);
-}
-
-static W set_local(ID pid, ID tskid)
+W set_local(ID pid, ID tskid)
 {
     W errno;
     thread_local_t local_data;
@@ -350,7 +257,7 @@ W proc_dump(struct posix_request * req)
     struct vm_directory *vm_dir;
     struct vm_page *vm_page;
 
-    procid = req->param.par_misc.arg.set_procinfo.proc_pid;
+    procid = req->param.par_misc.arg.procid;
     procp = &proc_table[procid];
 
     printk("posix: proc %d dump\n", (int) procid);

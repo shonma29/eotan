@@ -36,10 +36,6 @@ W psc_misc_f(RDVNO rdvno, struct posix_request *req)
 #endif
 
     switch (req->param.par_misc.cmd) {
-    case M_SET_PROCINFO:
-	err = proc_set_info(req);
-	break;
-
     case M_PROC_DUMP:
 	err = proc_dump(req);
 	break;

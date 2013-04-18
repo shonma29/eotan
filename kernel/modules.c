@@ -30,14 +30,10 @@ For more information, please refer to <http://unlicense.org/>
 #include <boot/modules.h>
 #include <mpu/memory.h>
 #include "func.h"
-#include "thread.h"
-#include "mpu/mpufunc.h"
 
 extern int isValidModule(const Elf32_Ehdr *eHdr);
 
 static ER run(const UW type, const Elf32_Ehdr *eHdr);
-static ER dupModule(T_TCB *th, const Elf32_Ehdr *eHdr);
-static ER alloc(T_TCB *th, UB **allocated, UB *start, const size_t len);
 static void set_initrd(ModuleHeader *h);
 static void release(const void *head, const void *end);
 
@@ -49,7 +45,6 @@ void run_init_program(void)
 	while (h->type != mod_end) {
 		switch (h->type) {
 		case mod_server:
-		case mod_user:
 			run(h->type, (Elf32_Ehdr*)&(h[1]));
 			break;
 
@@ -87,96 +82,12 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr)
 		return tskId;
 	}
 
-	if (type == mod_user) {
-		T_TCB *th = get_thread_ptr(tskId);
-
-		if (!th) {
-			//TODO really happen?
-			printk("task(%d) not found\n", tskId);
-			return E_SYS;
-		}
-
-		err = dupModule(th, eHdr);
-
-		//TODO rollback on error;
-		if (!err) {
-			set_autorun_context(th);
-			thread_change_priority(tskId, USER_LEVEL);
-		}
-	}
-
 	if (!err) {
 		thread_start(tskId, 0);
 		thread_switch();
 	}
 
 	return err;
-}
-
-static ER dupModule(T_TCB *th, const Elf32_Ehdr *eHdr)
-{
-	Elf32_Phdr *pHdr;
-	size_t i;
-	UB *allocated = NULL;
-
-	if (!isValidModule(eHdr)) {
-		printk("bad module\n");
-		return E_SYS;
-	}
-
-	pHdr = (Elf32_Phdr*)&(((UB*)eHdr)[eHdr->e_phoff]);
-
-	for (i = 0; i < eHdr->e_phnum; pHdr++, i++) {
-		UB *w;
-		ER err;
-#ifdef DEBUG
-		printk("t=%d o=%p v=%p p=%p"
-				", f=%d, m=%d\n",
-				pHdr->p_type, pHdr->p_offset,
-				pHdr->p_vaddr, pHdr->p_paddr,
-				pHdr->p_filesz, pHdr->p_memsz);
-#endif
-		if (pHdr->p_type != PT_LOAD)
-			continue;
-
-		w = (UB*)(pHdr->p_vaddr);
-
-		err = alloc(th, &allocated, w, pHdr->p_memsz);
-		if (err)
-			return err;
-
-		/* pages gotten by palloc are zero cleared */
-		vmemcpy(th, w, (UB*)eHdr + pHdr->p_offset,
-				pHdr->p_filesz);
-	}
-
-	return E_OK;
-}
-
-static ER alloc(T_TCB *th, UB **allocated, UB *start, const size_t len)
-{
-	UB *last = roundDown(*allocated);
-	UB *end = roundUp(start + len);
-
-	start = last? last:roundDown(start);
-
-	for (; (UW)start < (UW)end; start += PAGE_SIZE) {
-		void *p = palloc(1);
-
-		if (!p) {
-			printk("no memory for user\n");
-			return E_NOMEM;
-		}
-
-		if (!vmap(th, (UW)start, (UW)p, ACC_USER)) {
-			printk("vmap error(%p, %p)\n", start, p);
-			return E_SYS;
-		}
-	}
-
-	*allocated = end;
-
-	return E_OK;
 }
 
 static void set_initrd(ModuleHeader *h)

@@ -1,3 +1,5 @@
+#ifndef _BOOT_INIT_H_
+#define _BOOT_INIT_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,57 +26,19 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <stdarg.h>
-#include <string.h>
-#include <set/ring.h>
-#include "setting.h"
-#include "sync.h"
 
-#define DEBUG 0
+#define INIT_PATH_NAME "/shell"
 
-#if DEBUG
-#include <cga.h>
-#define CGA_VRAM_ADDR 0x800b8000
+#define INIT_PID (0)
+#define INIT_PPID (0)
+#define INIT_UID (0)
+#define INIT_GID (0)
+#define INIT_EUID (0)
+#define INIT_EGID (0)
+#define INIT_UMASK (022)
+#define INIT_ACCESS (VM_READ | VM_WRITE | VM_EXEC)
 
-static CGA_Console *cns;
-static int initialized;
+#define INIT_THREAD_ID_FLAG 0x80000000
+#define INIT_THREAD_ID_MASK ~(INIT_THREAD_ID_FLAG)
+
 #endif
-
-static UB buf[RING_MAX_LEN + 1];
-static size_t len;
-
-static void _putc(char ch);
-
-
-int printk(const char *format, ...) {
-	va_list ap;
-
-	va_start(ap, format);
-#if DEBUG
-	if (!initialized){
-		initialized = 1;
-		cns = getConsole((const UH*)CGA_VRAM_ADDR);
-		cns->cls();
-		cns->locate(0, 0);
-	}
-#endif
-	enter_critical();
-	len = 0;
-	vnprintf(_putc, (char*)format, ap);
-	ring_put((ring_t*)KERNEL_LOG_ADDR, buf, len);
-	leave_critical();
-
-	return len;
-}
-
-static void _putc(char ch)
-{
-#if DEBUG
-	cns->putc(ch);
-#endif
-	if (len >= RING_MAX_LEN)
-		return;
-
-	buf[len++] = ch;
-}

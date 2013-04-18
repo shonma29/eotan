@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <errno.h>
 #include <stddef.h>
 #include <string.h>
+#include <boot/init.h>
 #include <set/hash.h>
 #include "../../kernel/boot.h"
 #include "../../lib/libserv/libserv.h"
@@ -109,6 +110,7 @@ W psc_bind_device_f(RDVNO rdvno, struct posix_request *req)
 			} else {
 				dbg_printf("[FS] mount_root(%x, %d) succeeded\n",
 						id, boot_info.fstype);
+				exec_init(INIT_PID, INIT_PATH_NAME);
 			}
 		}
 
