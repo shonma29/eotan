@@ -41,6 +41,7 @@ For more information, please refer to <http://unlicense.org/>
 .set STACK_ADDR, 0x00008000
 .set MEMORY_INFO_ADDR, 0x3000
 .set VESA_INFO_ADDR, 0x3c00
+.set VESA_MODE, 0x0112
 
 /**
  * start on segment 0x0800.
@@ -64,7 +65,7 @@ _start:
 
 	/* check if supports VGA 24bit color */
 	movw $0x4f01, %ax
-	movw $0x0112, %cx
+	movw $VESA_MODE, %cx
 	int $0x10
 
 	cmpw $0x004f, %ax
@@ -73,7 +74,7 @@ _start:
 	/* enter VESA */
 /*
 	movw $0x4f02, %ax
-	movw $0x0112, %bx
+	movw $VESA_MODE, %bx
 	int $0x10
 
 	cmpw $0x004f, %ax

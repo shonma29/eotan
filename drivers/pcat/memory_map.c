@@ -181,7 +181,9 @@ static UW getLastPresentAddress(void)
 	UW max = *((UW*)MEMORY_INFO_END);
 	MemoryInfo *p = (MemoryInfo*)MEMORY_INFO_ADDR;
 	UW prevEnd = 0;
-
+#ifdef USE_VESA
+	VesaInfo *v = (VesaInfo*)VESA_INFO_ADDR;
+#endif
 	for (; (UW)p < max; p ++) {
 		size_t len;
 		UW addr;
@@ -193,11 +195,15 @@ static UW getLastPresentAddress(void)
 		if (p->type != MEMORY_PRESENT)
 			continue;
 
+		addr = p->baseLow;
+#ifdef USE_VESA
+		if (addr == v->buffer_addr)
+			continue;
+#endif
 		len = getMemoryRange(p);
 		if (!len)
 			continue;
 
-		addr = p->baseLow;
 		prevEnd = addr + len * PAGE_SIZE;
 	}
 

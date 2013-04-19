@@ -31,27 +31,23 @@ For more information, please refer to <http://unlicense.org/>
 #include <boot/vesa.h>
 #include <memory_map.h>
 #include <mpu/mpufunc.h>
-
-#define USE_VESA
-
-#ifdef USE_VESA
 #include <set/ring.h>
 #include <setting.h>
-#else
+
+#ifndef USE_VESA
 #include <cga.h>
 #endif
 
-#ifdef USE_VESA
 static UB buf[RING_MAX_LEN + 1];
 static size_t len;
 
-static void _putc(char ch);
-#else
-
+#ifndef USE_VESA
 static CGA_Console *cns;
-#endif
 
 static void console_initialize();
+#endif
+
+static void _putc(char ch);
 W printk(const B *fmt, ...);
 static void kick(const ModuleHeader *h);
 
@@ -60,7 +56,11 @@ void _main(void)
 {
 	VesaInfo *v = (VesaInfo*)VESA_INFO_ADDR;
 
+	ring_create(kern_v2p((void*)KERNEL_LOG_ADDR), KERNEL_LOG_SIZE);
+#ifndef USE_VESA
 	console_initialize();
+#endif
+	printk("Starter has woken up.\n");
 
 	paging_initialize();
 	gdt_initialize();
@@ -79,18 +79,24 @@ void _main(void)
 	for (;;);
 }
 
-#ifdef USE_VESA
-static void _putc(char ch)
-{
-	if (len >= RING_MAX_LEN)
-		return;
-
-	buf[len++] = ch;
-}
-
+#ifndef USE_VESA
 static void console_initialize()
 {
-	ring_create(kern_v2p((void*)KERNEL_LOG_ADDR), KERNEL_LOG_SIZE);
+	UB *x = (UB*)BIOS_CURSOR_COL;
+	UB *y = (UB*)BIOS_CURSOR_ROW;
+
+	cns = getConsole((const UH*)CGA_VRAM_ADDR);
+	cns->locate(*x, *y);
+}
+#endif
+
+static void _putc(char ch)
+{
+#ifndef USE_VESA
+	cns->putc(ch);
+#endif
+	if (len < RING_MAX_LEN)
+		buf[len++] = ch;
 }
 
 W printk(const B *fmt, ...)
@@ -104,25 +110,6 @@ W printk(const B *fmt, ...)
 
 	return len;
 };
-#else
-static void console_initialize()
-{
-	UB *x = (UB*)BIOS_CURSOR_COL;
-	UB *y = (UB*)BIOS_CURSOR_ROW;
-
-	cns = getConsole((const UH*)CGA_VRAM_ADDR);
-	cns->locate(*x, *y);
-	printk("Starter has woken up.\n");
-}
-
-W printk(const B *fmt, ...)
-{
-	va_list ap;
-
-	va_start(ap, fmt);
-	return vnprintf((void*)(cns->putc), (char*)fmt, ap);
-};
-#endif
 
 static void kick(const ModuleHeader *h)
 {

@@ -33,6 +33,12 @@ For more information, please refer to <http://unlicense.org/>
 #include <setting.h>
 #include "paging.h"
 
+#ifdef USE_VESA
+#include <boot/vesa.h>
+
+static void set_frame_buffer(PTE *dir);
+#endif
+
 
 void paging_reset(void)
 {
@@ -69,4 +75,47 @@ void paging_reset(void)
 	}
 
 	tlb_flush();
+#ifdef USE_VESA
+	set_frame_buffer(dir);
+#endif
 }
+
+#ifdef USE_VESA
+static void set_frame_buffer(PTE *dir)
+{
+	VesaInfo *v = (VesaInfo*)kern_p2v((void*)VESA_INFO_ADDR);
+	UW start = v->buffer_addr >> BITS_OFFSET;
+	UW last = v->buffer_addr + v->bytes_per_line * v->height;
+	size_t i;
+
+	last = (last >> BITS_OFFSET) + ((last & MASK_OFFSET)? 1:0);
+	printk("VESA start=%x last=%x\n", start, last);
+
+	for (i = start >> BITS_PAGE;
+			i < (last >> BITS_PAGE) + ((last & MASK_PAGE)? 1:0);
+			i++) {
+		if (!(dir[i] & PAGE_PRESENT)) {
+			UB *p = (UB*)palloc(1);
+
+			/* memset(p, 0, PAGE_SIZE); */
+			dir[i] = calc_pte(kern_v2p(p), ATTR_INITIAL);
+		}
+	}
+
+	for (i = start; i < last; i++) {
+		size_t offset_dir = i >> BITS_PAGE;
+		size_t offset_page = i & MASK_PAGE;
+		PTE *entry = (PTE*)kern_p2v((void*)(dir[offset_dir]
+				& (~MASK_OFFSET)));
+/*
+		if (entry[offset_page] & PAGE_PRESENT) {
+			//TODO release page
+		}
+*/
+		entry[offset_page] = calc_pte((void*)(i << BITS_OFFSET),
+				ATTR_INITIAL);
+	}
+
+	tlb_flush();
+}
+#endif

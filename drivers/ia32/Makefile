@@ -27,7 +27,7 @@ TARGET = $(WD)/libmpu.a
 
 include Makefile.in
 
-CFLAGS += -I kernel
+CFLAGS += -I kernel #-DUSE_VESA
 SSSRCS = $(wildcard $(WD)/*.S)
 OBJS += $(patsubst %.S, %.o, $(SSSRCS))
 
