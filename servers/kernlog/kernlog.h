@@ -27,4 +27,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
+#define DESC_KERNLOG (0)
+#define DESC_SYSLOG (1)
+
+#define SYSLOG_SIZE (32 * 1024)
+
 #endif

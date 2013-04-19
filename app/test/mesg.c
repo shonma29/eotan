@@ -1,4 +1,4 @@
-/*
+#/*
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -24,28 +24,85 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
 #include <device.h>
 #include <services.h>
 #include <string.h>
+#include <unistd.h>
+#include <itron/types.h>
 #include <itron/rendezvous.h>
+#include "../../lib/libc/others/stdlib.h"
 #include "../../servers/kernlog/kernlog.h"
 
+#undef FORCE_NEWLINE
 
-ER dbg_puts(B *msg)
-{
-	devmsg_t packet;
-	size_t len = strlen(msg);
+#define MYNAME "mesg"
 
-	packet.req.header.msgtyp = DEV_WRI;
-	packet.req.body.wri_req.dd = DESC_SYSLOG;
-	packet.req.body.wri_req.start = 0;
-	packet.req.body.wri_req.size = len;
-	memcpy(packet.req.body.wri_req.dt, msg, len);
+#define MSG_PORT "port error"
+#define MSG_BUF "buffer error"
+#define DELIMITER ": "
+#define NEWLINE "\n"
 
-	return cal_por(PORT_SYSLOG, 0xffffffff, &packet,
-			sizeof(packet.req.header)
-			+ sizeof(packet.req.body.wri_req)
-			- sizeof(packet.req.body.wri_req.dt)
-			+ len);
+#define OK (0)
+#define NG (1)
+
+static void pute(char *str);
+static void puterror(char *message);
+static int exec(int out);
+
+static void pute(char *str) {
+	write(STDERR, str, strlen(str));
+}
+
+static void puterror(char *message) {
+	pute(MYNAME);
+	pute(DELIMITER);
+	pute(message);
+	pute(NEWLINE);
+}
+
+static int exec(int out) {
+	devmsg_t pk;
+	ER_UINT size;
+	UB buf[DEV_BUF_SIZE + 2];
+
+	pk.req.header.msgtyp = DEV_REA;
+/*
+	pk.req.header.tskid = 0;
+*/
+	pk.req.body.rea_req.dd = DESC_SYSLOG;
+	pk.req.body.rea_req.start = 0;
+	pk.req.body.rea_req.size = DEV_BUF_SIZE;
+
+	size = cal_por(PORT_SYSLOG, 0xffffffff, &pk, sizeof(pk.req));
+
+	if (size < 0) {
+		puterror(MSG_PORT);
+		return NG;
+	}
+
+	if (pk.res.body.rea_res.errcd < 0) {
+		puterror(MSG_BUF);
+		return NG;
+	}
+
+	size = pk.res.body.rea_res.a_size;
+	if (!size)
+		return NG;
+
+	memcpy(buf, pk.res.body.rea_res.dt, size);
+
+#ifdef FORCE_NEWLINE
+	if (buf[size - 1] != '\n')
+		buf[size++] = '\n';
+#endif
+	buf[size] = '\0';
+	write(out, (char*)buf, size);
+
+	return OK;
+}
+
+int main(int argc, char **argv) {
+	while (!exec(STDOUT));
+
+	return OK;
 }

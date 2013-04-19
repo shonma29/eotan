@@ -36,9 +36,11 @@ For more information, please refer to <http://unlicense.org/>
 #include "kernlog.h"
 
 static ring_t *klog = (ring_t*)KERNEL_LOG_ADDR;
+static UB buf[SYSLOG_SIZE];
 
 static ER check_param(const UW start, const UW size);
-static ER_UINT read(UB *outbuf, const UW start, const UW size);
+static ER_UINT read(UB *outbuf, const UW dd, const UW start, const UW size);
+static ER_UINT write(const UW dd, UB *inbuf, const UW start, const UW size);
 static UW execute(devmsg_t *message);
 static ER accept(const ID port);
 static ER_ID initialize(void);
@@ -49,23 +51,57 @@ static ER check_param(const UW start, const UW size)
 	if (start)	return E_PAR;
 
 	if (size > DEV_BUF_SIZE)	return E_PAR;
-	if (size != RING_MAX_LEN)	return E_PAR;
 
 	return E_OK;
 }
 
-static ER_UINT read(UB *outbuf, const UW start, const UW size)
+static ER_UINT read(UB *outbuf, const UW dd, const UW start, const UW size)
 {
 	ER result = check_param(start, size);
 
 	if (result)	return result;
+	if (size != RING_MAX_LEN)	return E_PAR;
 
-	enter_critical();
-	result = ring_get(klog, outbuf);
-	leave_critical();
+	switch (dd) {
+	case DESC_KERNLOG:
+		enter_critical();
+		result = ring_get(klog, outbuf);
+		leave_critical();
+		break;
+
+	case DESC_SYSLOG:
+		result = ring_get((ring_t*)buf, outbuf);
+		break;
+
+	default:
+		return E_PAR;
+	}
 
 	if (result == RING_EMPTY)
 		return 0;
+
+	if (result < 0)
+		return E_SYS;
+
+	return result;
+}
+
+static ER_UINT write(const UW dd, UB *inbuf, const UW start, const UW size)
+{
+	ER result = check_param(start, size);
+
+	if (result)	return result;
+	if (size > RING_MAX_LEN)	return E_PAR;
+
+	switch (dd) {
+	case DESC_SYSLOG:
+		break;
+
+	default:
+		return E_PAR;
+	}
+
+	result = ring_put((ring_t*)buf, inbuf, size);
 
 	if (result < 0)
 		return E_SYS;
@@ -98,6 +134,7 @@ static UW execute(devmsg_t *message)
 
 	case DEV_REA:
 		result = read(res->body.rea_res.dt,
+				req->body.rea_req.dd,
 				req->body.rea_req.start,
 				req->body.rea_req.size);
 		res->body.rea_res.dd = req->body.rea_req.dd;
@@ -111,10 +148,14 @@ static UW execute(devmsg_t *message)
 		break;
 
 	case DEV_WRI:
+		result = write(req->body.wri_req.dd,
+				req->body.wri_req.dt,
+				req->body.wri_req.start,
+				req->body.wri_req.size);
 		res->body.wri_res.dd = req->body.wri_req.dd;
-		res->body.wri_res.errcd = E_NOSPT;
+		res->body.wri_res.errcd = (result >= 0)? E_OK:result;
 		res->body.wri_res.errinfo = 0;
-		res->body.wri_res.a_size = 0;
+		res->body.wri_res.a_size = (result >= 0)? result:0;
 		size = sizeof(res->body.wri_res);
 		break;
 
@@ -141,13 +182,13 @@ static ER accept(const ID port)
 
 	size = acp_por(port, 0xffffffff, &rdvno, &(message.req));
 	if (size < 0) {
-		dbg_printf("[KERNLOG] acp_por error=%d\n", size);
+		/*dbg_printf("[KERNLOG] acp_por error=%d\n", size);*/
 		return size;
 	}
 
 	result = rpl_rdv(rdvno, &(message.res), execute(&message));
 	if (result) {
-		dbg_printf("[KERNLOG] rpl_rdv error=%d\n", result);
+		/*dbg_printf("[KERNLOG] rpl_rdv error=%d\n", result);*/
 	}
 
 	return result;
@@ -162,9 +203,11 @@ static ER_ID initialize(void)
 			sizeof(DDEV_RES)
 	};
 
+	ring_create(buf, sizeof(buf));
+
 	err = cre_por(PORT_SYSLOG, &pk_cpor);
 	if (err) {
-		dbg_printf("[KERNLOG] cre_por error=%d\n", err);
+		/*dbg_printf("[KERNLOG] cre_por error=%d\n", err);*/
 
 		return err;
 	}
@@ -177,12 +220,12 @@ void start(void)
 	ER_ID port = initialize();
 
 	if (port >= 0) {
-		dbg_printf("[KERNLOG] start port=%d\n", port);
+		/*dbg_printf("[KERNLOG] start port=%d\n", port);*/
 
 		while (accept(port) == E_OK);
 
 		del_por(port);
-		dbg_printf("[KERNLOG] end\n");
+		/*dbg_printf("[KERNLOG] end\n");*/
 	}
 
 	exd_tsk();

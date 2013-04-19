@@ -31,6 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <itron/types.h>
 #include <itron/rendezvous.h>
 #include "../../lib/libc/others/stdlib.h"
+#include "../../servers/kernlog/kernlog.h"
 
 #undef FORCE_NEWLINE
 
@@ -67,8 +68,8 @@ static int exec(int out) {
 	pk.req.header.msgtyp = DEV_REA;
 /*
 	pk.req.header.tskid = 0;
-	pk.req.body.rea_req.dd = 0;
 */
+	pk.req.body.rea_req.dd = DESC_KERNLOG;
 	pk.req.body.rea_req.start = 0;
 	pk.req.body.rea_req.size = DEV_BUF_SIZE;
 

@@ -214,7 +214,6 @@ static ER	if_alarm_create(void *argp);
 static ER	if_interrupt_bind(void *argp);
 
 static ER	if_get_system_info(void *argp);
-static ER	if_kernlog(void *args);
 
 /* 仮想メモリ管理用システムコール */
 static ER	if_region_create(void *argp);
@@ -286,29 +285,28 @@ static ER (*syscall_table[])(VP argp) =
   SVC_IF (interrupt_bind, 2),	/*   20 */
 
   SVC_IF (get_system_info, 3),	/*   21 */
-  SVC_IF (kernlog, 1),	/*   22 */
 
   /* 仮想メモリ管理システムコール */	
-  SVC_IF (region_create, 6),	/*   23 */
-  SVC_IF (region_destroy, 2),	/*   24 */
-  SVC_IF (region_map, 3),	/*   25 */
-  SVC_IF (region_unmap, 3),	/*   26 */
-  SVC_IF (region_duplicate, 2),	/*   27 */
-  SVC_IF (region_put, 4),	/*   28 */
-  SVC_IF (region_get, 4),	/*   29 */
-  SVC_IF (region_get_status, 3),	/*   30 */
-  SVC_IF (get_physical_address, 3),	/*   31 */
+  SVC_IF (region_create, 6),	/*   22 */
+  SVC_IF (region_destroy, 2),	/*   23 */
+  SVC_IF (region_map, 3),	/*   24 */
+  SVC_IF (region_unmap, 3),	/*   25 */
+  SVC_IF (region_duplicate, 2),	/*   26 */
+  SVC_IF (region_put, 4),	/*   27 */
+  SVC_IF (region_get, 4),	/*   28 */
+  SVC_IF (region_get_status, 3),	/*   29 */
+  SVC_IF (get_physical_address, 3),	/*   30 */
 
   /* その他のシステムコール */
-  SVC_IF (mpu_copy_stack, 4),	/*   32 */
-  SVC_IF (mpu_set_context, 4),	/*   33 */
+  SVC_IF (mpu_copy_stack, 4),	/*   31 */
+  SVC_IF (mpu_set_context, 4),	/*   32 */
 
-  SVC_IF (port_create, 2),	/*   34 */
-  SVC_IF (port_create_auto, 1),	/*   35 */
-  SVC_IF (port_destroy, 1),	/*   36 */
-  SVC_IF (port_call, 4),	/*   37 */
-  SVC_IF (port_accept, 4),	/*   38 */
-  SVC_IF (port_reply, 3),	/*   39 */
+  SVC_IF (port_create, 2),	/*   33 */
+  SVC_IF (port_create_auto, 1),	/*   34 */
+  SVC_IF (port_destroy, 1),	/*   35 */
+  SVC_IF (port_call, 4),	/*   36 */
+  SVC_IF (port_accept, 4),	/*   37 */
+  SVC_IF (port_reply, 3),	/*   38 */
 };
 
 #define NSYSCALL (sizeof (syscall_table) / sizeof (syscall_table[0]))
@@ -787,18 +785,6 @@ if_get_system_info(VP argp)
       return (E_PAR);
     }
 
-}
-
-static ER
-if_kernlog(VP args)
-{
-  struct a
-    {
-      B *msg;
-    } *arg = (struct a *)args;
-  
-  printk ("%s", arg->msg);
-  return (E_OK);
 }
 
 /* if_mpu_copy_stack - copy task stack 
