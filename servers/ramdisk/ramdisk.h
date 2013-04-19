@@ -28,7 +28,6 @@ For more information, please refer to <http://unlicense.org/>
 #define __RAMDISK_H__ 1
 
 #define MYNAME "ramdisk"
-#define MYDEVID 0x80020000
 
 #define BLOCK_SIZE (512)
 #define BLOCK_NUM (2 * 256)

@@ -174,13 +174,13 @@ Version 2, June 1991
  *
  */
 
+#include <core.h>
+#include <global.h>
 #include <mpu/config.h>
 #include <mpu/io.h>
 #include <itron/rendezvous.h>
-#include "core.h"
 #include "func.h"
 #include "sync.h"
-#include "boot.h"
 #include "mpu/interrupt.h"
 #include "mpu/mpufunc.h"
 
@@ -772,14 +772,15 @@ if_get_system_info(VP argp)
       W sub;
       VP buf;
     } *args = argp;
-  struct machine_info *out;
+  system_info_t *out;
+  system_info_t *in = (system_info_t*)SYSTEM_INFO_ADDR;
 
   switch (args->func)
     {
       
     case ROOTFS_INFO:
-      out = (struct machine_info *)args->buf;
-      *out = machineInfo;
+      out = (system_info_t*)args->buf;
+      *out = *in;
       return (E_OK);
 
     default:

@@ -1,5 +1,5 @@
-#ifndef _CORE_SETTING_H_
-#define _CORE_SETTING_H_
+#ifndef _MAJOR_H_
+#define _MAJOR_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,26 +26,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <mpu/memory.h>
-#include <config.h>
+#include <core.h>
 
-#define BOOT_INFO_ADDR 0x80003000
-#define MEMORY_MAP_ADDR 0x80180000
+#define DEVICE_MAJOR_CONSOLE 0x0000
+#define DEVICE_MAJOR_KEYBOARD 0x0001
+#define DEVICE_MAJOR_ATA 0x8001
+#define DEVICE_MAJOR_RAMDISK 0x8002
 
-#define KERN_STACK_ADDR 0x80008000
-#define KERN_STACK_SIZE (16 * 1024)
-
-#define KERNEL_LOG_ADDR 0x80170000
-#define KERNEL_LOG_SIZE (16 * 1024)
-
-#define MAX_PAGES (1024 * 1024 / 2)
-
-// MIN_MEMORY_SIZE should be a multiple of 4 MB.
-#define NUM_OF_INITIAL_DIR (MIN_MEMORY_SIZE / PAGE_SIZE / PTE_PER_PAGE)
-
-#define MIN_MANUAL_ID (1)
-#define MAX_MANUAL_ID (49151)
-#define MIN_AUTO_ID (49152)
-#define MAX_AUTO_ID (65535)
+static inline ID get_device_id(const UH major, const UH minor)
+{
+	return (ID)(((UW)major << 16) | (UW)minor);
+}
 
 #endif

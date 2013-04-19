@@ -55,6 +55,9 @@ Version 2, June 1991
  */
 
 #include <core.h>
+#include <fstype.h>
+#include <global.h>
+#include <major.h>
 #include <mpu/config.h>
 #include <mpu/io.h>
 #include "version.h"
@@ -62,7 +65,6 @@ Version 2, June 1991
 #include "func.h"
 #include "misc.h"
 #include "memory.h"
-#include "boot.h"
 #include "mpu/interrupt.h"
 #include "mpu/mpufunc.h"
 #include "arch/archfunc.h"
@@ -72,8 +74,6 @@ static void banner(void);
 
 /* 外部変数の宣言 */
 extern W do_timer;
-
-struct machine_info machineInfo;
 
 /* 強制終了するタスクのテーブル */
 #define TRMTBL_SIZE 10
@@ -191,10 +191,12 @@ ER main(void)
  */
 static ER initialize(void)
 {
-    machineInfo.rootfs = 0x80000000;
-    machineInfo.fstype = 1;
-    machineInfo.initrd_start = 0;
-    machineInfo.initrd_size = 0;
+    system_info_t *sysinfo = (system_info_t *)SYSTEM_INFO_ADDR;
+
+    sysinfo->root.device = get_device_id(DEVICE_MAJOR_ATA, 0);
+    sysinfo->root.fstype = FS_SFS;
+    sysinfo->initrd.start = 0;
+    sysinfo->initrd.size = 0;
 
     banner();			/* 立ち上げメッセージ出力               */
 

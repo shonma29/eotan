@@ -28,13 +28,13 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdarg.h>
 #include <string.h>
 #include <boot/modules.h>
+#include <boot/vesa.h>
 #include <memory_map.h>
 #include <mpu/mpufunc.h>
 
 #define USE_VESA
 
 #ifdef USE_VESA
-#include <boot/vesa.h>
 #include <set/ring.h>
 #include <setting.h>
 #else
@@ -58,7 +58,7 @@ static void kick(const ModuleHeader *h);
 
 void _main(void)
 {
-VesaInfo *v = (VesaInfo*)VESA_INFO_ADDR;
+	VesaInfo *v = (VesaInfo*)VESA_INFO_ADDR;
 
 	console_initialize();
 

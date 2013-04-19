@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <cga.h>
 #include <device.h>
+#include <major.h>
 #include <string.h>
 #include <boot/vesa.h>
 #include <itron/rendezvous.h>
@@ -185,7 +186,8 @@ static ER_ID initialize(void)
 		return port;
 	}
 
-	result = bind_device(MYDEVID, (UB*)MYNAME, port);
+	result = bind_device(get_device_id(DEVICE_MAJOR_CONSOLE, 0),
+			(UB*)MYNAME, port);
 	if (result) {
 		dbg_printf("[HMI] bind error=%d\n", result);
 		del_por(port);

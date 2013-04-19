@@ -25,17 +25,17 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
+#include <global.h>
 #include <stddef.h>
 #include <string.h>
 #include <boot/init.h>
 #include <set/hash.h>
-#include "../../kernel/boot.h"
 #include "../../lib/libserv/libserv.h"
 #include "devfs.h"
 #include "api.h"
 #include "fs.h"
 
-static struct machine_info boot_info;
+static system_info_t sysinfo;
 static hash_t *hash;
 static device_info_t table[MAX_DEVICE];
 static size_t num_device;
@@ -46,7 +46,7 @@ static int compare(const void *a, const void *b);
 
 int device_init(void)
 {
-	ER err = vsys_inf(1, 0, &boot_info);
+	ER err = vsys_inf(1, 0, &sysinfo);
 
 	if (err) {
 		dbg_printf("[FS] vsys_inf error=%d\n", err);
@@ -103,13 +103,13 @@ W psc_bind_device_f(RDVNO rdvno, struct posix_request *req)
 		num_device++;
 		put_response(rdvno, EOK, 0, 0);
 
-		if (id == boot_info.rootfs) {
-			if (mount_root(id, boot_info.fstype, 0)) {
+		if (id == sysinfo.root.device) {
+			if (mount_root(id, sysinfo.root.fstype, 0)) {
 				dbg_printf("[FS] mount_root(%x, %d) failed\n",
-						id, boot_info.fstype);
+						id, sysinfo.root.fstype);
 			} else {
 				dbg_printf("[FS] mount_root(%x, %d) succeeded\n",
-						id, boot_info.fstype);
+						id, sysinfo.root.fstype);
 				exec_init(INIT_PID, INIT_PATH_NAME);
 			}
 		}

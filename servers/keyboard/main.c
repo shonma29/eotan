@@ -63,6 +63,7 @@ Version 2, June 1991
 **********************************************************************/
 
 #include <device.h>
+#include <major.h>
 #include <itron/rendezvous.h>
 #include "../../lib/libserv/libserv.h"
 #include "../../lib/libserv/bind.h"
@@ -160,7 +161,8 @@ W init_keyboard(void)
 	/* メッセージバッファ生成に失敗 */
     }
 
-    error = bind_device(MYDEVID, (UB*)KEYBOARD_DRIVER, recvport);
+    error = bind_device(get_device_id(DEVICE_MAJOR_KEYBOARD, 0),
+	    (UB*)KEYBOARD_DRIVER, recvport);
     if (error != E_OK) {
 	dbg_printf("[KEYBOARD] bind error = %d\n", error);
 	ext_tsk();

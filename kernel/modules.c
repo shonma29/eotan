@@ -26,6 +26,9 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <elf.h>
+#include <fstype.h>
+#include <global.h>
+#include <major.h>
 #include <stddef.h>
 #include <boot/modules.h>
 #include <mpu/memory.h>
@@ -90,10 +93,12 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr)
 
 static void set_initrd(ModuleHeader *h)
 {
-	machineInfo.rootfs = 0x80020000;
-	machineInfo.fstype = 1;
-	machineInfo.initrd_start = (UW)&(h[1]);
-	machineInfo.initrd_size = h->bytes;
+	system_info_t *sysinfo = (system_info_t*)SYSTEM_INFO_ADDR;
+
+	sysinfo->root.device = get_device_id(DEVICE_MAJOR_RAMDISK, 0);
+	sysinfo->root.fstype = FS_SFS;
+	sysinfo->initrd.start = &(h[1]);
+	sysinfo->initrd.size = h->bytes;
 }
 
 //TODO wait for init starting

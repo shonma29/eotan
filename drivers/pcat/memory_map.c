@@ -71,9 +71,10 @@ void memory_initialize(void)
 	/* keep page directory */
 	map_set_use((void*)PAGE_DIR_ADDR, 1);
 	/* keep boot infomation */
-	map_set_use((void*)BOOT_INFO_ADDR, 1);
+	map_set_use(kern_v2p((void*)BOOT_INFO_ADDR), 1);
 	/* keep kernel stack */
-	map_set_use(kern_v2p((void*)(KERN_STACK_ADDR - PAGE_SIZE)), 4);
+	map_set_use(kern_v2p((void*)(KERN_STACK_ADDR - KERN_STACK_SIZE)),
+			pages(KERN_STACK_SIZE));
 	/* keep modules */
 	map_set_use((void*)MODULES_ADDR,
 			pages((UW)setModules() - MODULES_ADDR));
@@ -275,9 +276,9 @@ static void *setModules(void)
 		case mod_kernel:
 		case mod_server:
 			eHdr = (Elf32_Ehdr*)&(h[1]);
-			size = pages(dupModule(&to, eHdr));
+			size = dupModule(&to, eHdr);
 			if (size)
-				map_set_use(kern_v2p((void*)to), size);
+				map_set_use(kern_v2p((void*)to), pages(size));
 			break;
 
 		case mod_user:

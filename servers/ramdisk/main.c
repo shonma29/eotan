@@ -26,9 +26,10 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <device.h>
+#include <global.h>
+#include <major.h>
 #include <string.h>
 #include <itron/rendezvous.h>
-#include "../../kernel/boot.h"
 #include "../../lib/libserv/libserv.h"
 #include "../../lib/libserv/bind.h"
 #include "ramdisk.h"
@@ -160,21 +161,21 @@ static ER accept(const ID port)
 
 static void load_initrd(void)
 {
-	struct machine_info info;
+	system_info_t info;
 	ER err = vsys_inf(1, 0, &info);
 
 	if (err) {
 		dbg_printf("[RAMDISK] vsys_inf error=%x\n", err);
 
-	} else if (info.initrd_size > 0) {
-		if (info.initrd_size <= sizeof(buf)) {
-			dbg_printf("[RAMDISK] initrd_start=%p initrd_size=%x\n",
-					info.initrd_start, info.initrd_size);
-			memcpy(buf, (UB*)(info.initrd_start), info.initrd_size);
+	} else if (info.initrd.size > 0) {
+		if (info.initrd.size <= sizeof(buf)) {
+			dbg_printf("[RAMDISK] initrd start=%p size=%x\n",
+					info.initrd.start, info.initrd.size);
+			memcpy(buf, info.initrd.start, info.initrd.size);
 
 		} else {
 			dbg_printf("[RAMDISK] initrd too large %x\n",
-				info.initrd_size);
+				info.initrd.size);
 		}
 	}
 }
@@ -198,7 +199,8 @@ static ER_ID initialize(void)
 		return port;
 	}
 
-	result = bind_device(MYDEVID, (UB*)MYNAME, port);
+	result = bind_device(get_device_id(DEVICE_MAJOR_RAMDISK, 0),
+			(UB*)MYNAME, port);
 	if (result) {
 		dbg_printf("[RAMDISK] bind error=%d\n", result);
 		del_por(port);
