@@ -641,7 +641,7 @@ ER region_map(ID id, VP start, UW size, W accmode)
 	}
     }
 
-    size = PAGES(size);
+    size = pages(size);
     start = (VP)(CUTDOWN(start, PAGE_SIZE));
     if (pmemfree() < size)
 	return (E_NOMEM);

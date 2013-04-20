@@ -22,6 +22,4 @@ Version 2, June 1991
 #define ROUNDUP(x,align)	((((int)x) + (align) - 1) & ~((align) - 1))
 #define CUTDOWN(x,align)	((((int)x) & ~((align) - 1)))
 
-#define PAGES(x)		(ROUNDUP(x, PAGE_SIZE) >> PAGE_SHIFT)
-
 #endif /* __CORE_MISC_H__ */

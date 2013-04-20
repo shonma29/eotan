@@ -396,7 +396,7 @@ ER thread_destroy(ID tskid)
     release_vmap((ADDR_MAP) MPU_PAGE_TABLE(&(task[tskid])));
 
     /* kernel 領域の stack を開放する */
-    pfree((VP) kern_v2p(task[tskid].stackptr0), PAGES(task[tskid].stksz0));
+    pfree((VP) kern_v2p(task[tskid].stackptr0), pages(task[tskid].stksz0));
 
     task[tskid].tskstat = TTS_NON;
     return (E_OK);
@@ -510,7 +510,7 @@ void thread_end_and_destroy(void)
     release_vmap((ADDR_MAP) MPU_PAGE_TABLE(run_task));
 
     /* kernel 領域の stack を開放する */
-    pfree((VP) kern_v2p(run_task->stackptr0), PAGES(run_task->stksz0));
+    pfree((VP) kern_v2p(run_task->stackptr0), pages(run_task->stksz0));
 
     enter_critical();
     run_task->tskstat = TTS_NON;

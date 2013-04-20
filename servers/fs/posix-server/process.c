@@ -15,7 +15,9 @@ Version 2, June 1991
  *
  */
 
+#include <core.h>
 #include <mpu/config.h>
+#include <mpu/memory.h>
 #include "thread.h"
 #include "fs.h"
 
@@ -57,7 +59,7 @@ W psc_brk_f(RDVNO rdvno, struct posix_request *req)
     } else if (start < req->param.par_brk.end_adr) {
 	/* region を拡大 */
 	size = req->param.par_brk.end_adr - start;
-	for (i = 0; i < PAGES(size); ++i) {
+	for (i = 0; i < pages(size); ++i) {
 	    err = grow_vm(myprocp, (UW) start + (i << PAGE_SHIFT),
 			  VM_READ | VM_WRITE | VM_USER);
 	    if (err)
