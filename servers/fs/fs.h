@@ -24,7 +24,6 @@ Version 2, June 1991
 #include <unistd.h>
 #include <itron/rendezvous.h>
 #include <core.h>
-#include "../../kernel/misc.h"
 
 /* =========================== マクロ定義 =========================== */
 

@@ -63,7 +63,6 @@ Version 2, June 1991
 #include "version.h"
 #include "thread.h"
 #include "func.h"
-#include "misc.h"
 #include "memory.h"
 #include "mpu/interrupt.h"
 #include "mpu/mpufunc.h"

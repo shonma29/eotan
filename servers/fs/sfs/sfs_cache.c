@@ -21,6 +21,7 @@ Version 2, June 1991
 
 #include <string.h>
 #include <mpu/config.h>
+#include <mpu/memory.h>
 #include "../fs.h"
 #include "sfs_func.h"
 
@@ -75,7 +76,7 @@ void sfs_purge_cache(void)
 void sfs_init_cache(void)
 {
 #ifdef USE_MALLOC
-    CACHE_SIZE = ROUNDUP(CACHE_SIZE * sizeof(SFS_BLOCK_CACHE), PAGE_SIZE)
+    CACHE_SIZE = pageRoundUp(CACHE_SIZE * sizeof(SFS_BLOCK_CACHE))
 	- 12;
     /* 12 は ITRON/kernlib/malloc.c の alloc_entry_t から来ている */
     CACHE_SIZE /= sizeof(SFS_BLOCK_CACHE);

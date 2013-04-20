@@ -26,6 +26,7 @@ Version 2, June 1991
 #include <fcntl.h>
 #include <string.h>
 #include <utime.h>
+#include <mpu/memory.h>
 #include "fs.h"
 
 W psc_access_f(RDVNO rdvno, struct posix_request *req)
@@ -281,7 +282,7 @@ W psc_fstat_f(RDVNO rdvno, struct posix_request *req)
     else {
       st.st_blksize = fp->f_inode->i_fs->fs_blksize;
     }
-    st.st_blocks = ROUNDUP(st.st_size, st.st_blksize) / st.st_blksize;
+    st.st_blocks = roundUp(st.st_size, st.st_blksize) / st.st_blksize;
     st.st_atime = fp->f_inode->i_atime;
     st.st_mtime = fp->f_inode->i_mtime;
     st.st_ctime = fp->f_inode->i_ctime;

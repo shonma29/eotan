@@ -66,7 +66,7 @@ Version 2, June 1991
 #include <string.h>
 #include <core.h>
 #include <mpu/config.h>
-#include <misc.h>
+#include <mpu/memory.h>
 #include "../../kernel/config.h"
 #include "../../kernel/region.h"
 #include "libserv.h"
@@ -101,7 +101,7 @@ ER init_malloc(UW free_memory_erea, UW max)
     UW pages = (max + PAGE_SIZE - 1) / PAGE_SIZE;
 
     last_page = free_memory_erea;
-    start_page = last_page = ROUNDUP(last_page, PAGE_SIZE);
+    start_page = last_page = pageRoundUp(last_page);
 
     err = get_tid(&mytid);
     if (err != E_OK) {
@@ -194,7 +194,7 @@ VP malloc(UW size)
     } while (p != pivot);
 
     /* 要求を満たす空きエリアが無かったので，新たにメモリを割り当てる */
-    alloc_size = ROUNDUP(size + sizeof(struct alloc_entry_t), PAGE_SIZE);
+    alloc_size = pageRoundUp(size + sizeof(struct alloc_entry_t));
     alloc_size = (MEMORY_CLICK < alloc_size) ? alloc_size : MEMORY_CLICK;
 
     newmem = (struct alloc_entry_t *) get_system_memory(alloc_size);

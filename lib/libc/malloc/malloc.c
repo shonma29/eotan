@@ -67,7 +67,7 @@ Version 2, June 1991
 #include <unistd.h>
 #include <core.h>
 #include <mpu/config.h>
-#include <misc.h>
+#include <mpu/memory.h>
 #include "../../libserv/libserv.h"
 
 
@@ -186,7 +186,7 @@ VP malloc(UW size)
     } while (p != pivot);
 
     /* 要求を満たす空きエリアが無かったので，新たにメモリを割り当てる */
-    alloc_size = ROUNDUP(size + sizeof(struct alloc_entry_t), PAGE_SIZE);
+    alloc_size = pageRoundUp(size + sizeof(struct alloc_entry_t));
     alloc_size = (MEMORY_CLICK < alloc_size) ? alloc_size : MEMORY_CLICK;
 
     newmem = (struct alloc_entry_t *) get_system_memory(alloc_size);

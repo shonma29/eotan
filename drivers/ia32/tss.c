@@ -25,7 +25,6 @@ Version 2, June 1991
 #include <core.h>
 #include <mpu/config.h>
 #include "thread.h"
-#include "misc.h"
 #include "func.h"
 #include "mpufunc.h"
 

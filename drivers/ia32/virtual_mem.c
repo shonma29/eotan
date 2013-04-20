@@ -156,7 +156,6 @@ Version 2, June 1991
 #include <core.h>
 #include <mpu/config.h>
 #include <mpu/memory.h>
-#include <misc.h>
 #include <func.h>
 #include <thread.h>
 #include "mpufunc.h"
@@ -541,9 +540,9 @@ ER region_create(ID id,		/* task ID */
      *    max_size        ページサイズで切り上げる
      *    permission      そのまま
      */
-    regp->start_addr = (VP) CUTDOWN(start, PAGE_SIZE);
-    regp->min_size = ROUNDUP(min, PAGE_SIZE);
-    regp->max_size = ROUNDUP(max, PAGE_SIZE);
+    regp->start_addr = (VP) pageRoundDown((UW)start);
+    regp->min_size = pageRoundUp(min);
+    regp->max_size = pageRoundUp(max);
     regp->permission = perm;
 
     /*
@@ -642,7 +641,7 @@ ER region_map(ID id, VP start, UW size, W accmode)
     }
 
     size = pages(size);
-    start = (VP)(CUTDOWN(start, PAGE_SIZE));
+    start = (VP)pageRoundDown((UW)start);
     if (pmemfree() < size)
 	return (E_NOMEM);
     res = E_OK;
@@ -713,8 +712,8 @@ ER region_unmap(ID id, VP start, UW size)
 	}
     }
 
-    size = ROUNDUP(size, PAGE_SIZE);
-    start = (VP)(CUTDOWN(start, PAGE_SIZE));
+    size = pageRoundUp(size);
+    start = (VP)pageRoundDown((UW)start);
     for (counter = 0; counter < (size >> PAGE_SHIFT); counter++) {
 	if (vunmap(taskp, ((UW) start + (counter << PAGE_SHIFT))) == FALSE) {
 	    return (E_SYS);
@@ -811,8 +810,8 @@ ER region_get(ID id, VP start, UW size, VP buf)
     if (buf == NULL)
 	return (E_PAR);
 
-    align_start = CUTDOWN(start, PAGE_SIZE);
-    align_end = ROUNDUP(start + size, PAGE_SIZE);
+    align_start = pageRoundDown((UW)start);
+    align_end = pageRoundUp((UW)start + size);
 
     bufoffset = 0;
 

@@ -59,6 +59,7 @@ Version 2, June 1991
 #include <string.h>
 #include <boot/init.h>
 #include <mpu/config.h>
+#include <mpu/memory.h>
 #include "fs.h"
 
 static W read_exec_header(struct inode *ip, Elf32_Ehdr *elfp,
@@ -354,11 +355,10 @@ load_text(W procid, struct inode *ip, Elf32_Phdr *text, ID task)
     static B buf[PAGE_SIZE];
     UW start, size;
 
-    start = CUTDOWN(text->p_vaddr, PAGE_SIZE);
+    start = pageRoundDown(text->p_vaddr);
     size =
-	ROUNDUP(text->p_memsz +
-		(text->p_vaddr - CUTDOWN(text->p_vaddr, PAGE_SIZE)),
-		PAGE_SIZE);
+	pageRoundUp(text->p_memsz +
+		(text->p_vaddr - pageRoundDown(text->p_vaddr)));
     /* text region の設定 */
     vcre_reg(task, TEXT_REGION, (VP) start, size, size,
 	     VM_READ | VM_EXEC | VM_USER);
@@ -416,11 +416,10 @@ load_data(W procid, struct inode *ip, Elf32_Phdr *data, ID task)
     static B buf[PAGE_SIZE];
     UW start, size;
 
-    start = CUTDOWN(data->p_vaddr, PAGE_SIZE);
+    start = pageRoundDown(data->p_vaddr);
     size =
-	ROUNDUP(data->p_memsz +
-		(data->p_vaddr - CUTDOWN(data->p_vaddr, PAGE_SIZE)),
-		PAGE_SIZE);
+	pageRoundUp(data->p_memsz +
+		(data->p_vaddr - pageRoundDown(data->p_vaddr)));
     /* data+bss region の設定 */
     vcre_reg(task, DATA_REGION, (VP) start, size, size,
 	     VM_READ | VM_WRITE | VM_USER);	/* data+bss */

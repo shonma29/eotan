@@ -116,7 +116,6 @@ Version 2, June 1991
 #include <mpu/config.h>
 #include <mpu/memory.h>
 #include "func.h"
-#include "misc.h"
 #include "ready.h"
 #include "sync.h"
 #include "thread.h"

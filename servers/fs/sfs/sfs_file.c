@@ -113,6 +113,7 @@ Version 2, June 1991
 
 #include <string.h>
 #include <fcntl.h>
+#include <mpu/memory.h>
 #include "../fs.h"
 #include "../vfs.h"
 #include "sfs_func.h"
@@ -493,7 +494,7 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
         UW clock = get_system_time(NULL);
 	ip->i_size = filesize;
 	ip->i_size_blk =
-	    ROUNDUP(filesize, fsp->fs_blksize) / fsp->fs_blksize;
+	    roundUp(filesize, fsp->fs_blksize) / fsp->fs_blksize;
 	ip->i_mtime = clock;
 	ip->i_ctime = clock;
 	ip->i_dirty = 1;
@@ -535,7 +536,7 @@ W sfs_i_truncate(struct inode * ip, W newsize)
     fd = ip->i_device;
     fsp = ip->i_fs;
     sfs_ip = &(ip->i_private.sfs_inode);
-    nblock = ROUNDUP(newsize, fsp->fs_blksize) / fsp->fs_blksize;
+    nblock = roundUp(newsize, fsp->fs_blksize) / fsp->fs_blksize;
     if (nblock < sfs_ip->sfs_i_size_blk) {
 	/* 余分なブロックを開放 */
 	blockno = nblock;

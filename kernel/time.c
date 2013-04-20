@@ -31,7 +31,6 @@ Version 2, June 1991
 
 #include <core.h>
 #include <string.h>
-#include "misc.h"
 #include "thread.h"
 #include "func.h"
 #include "sync.h"

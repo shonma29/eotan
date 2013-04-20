@@ -16,7 +16,6 @@ Version 2, June 1991
 #include <local.h>
 #include <mpu/config.h>
 #include "func.h"
-#include "misc.h"
 #include "sync.h"
 #include "mpu/mpufunc.h"
 
@@ -246,7 +245,8 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
 	printk("WARNING vset_ctx: stack size is too large\n");
     }
 
-    stbase = tsk->initial_stack - ROUNDUP(stsize, sizeof(VP));
+    stbase = tsk->initial_stack
+	    - roundUp(stsize, sizeof(VP));
     esp = (char **) stbase;
     ap = bp = (char **) vtor(tsk->tskid, stbase);
 
