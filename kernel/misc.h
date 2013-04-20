@@ -24,10 +24,4 @@ Version 2, June 1991
 
 #define PAGES(x)		(ROUNDUP(x, PAGE_SIZE) >> PAGE_SHIFT)
 
-
-/* rtov --- 実メモリアドレスを仮想メモリアドレスに変換する。
- */
-#define RTOV(real)	((real)  | 0x80000000UL)
-#define VTOR(vaddr)	((vaddr) & 0x7FFFFFFFL)
-
 #endif /* __CORE_MISC_H__ */

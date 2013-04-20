@@ -75,7 +75,7 @@ static inline void *kern_p2v(const void *addr)
 
 static inline void *kern_v2p(void *addr)
 {
-	return (void*)((unsigned int)addr & 0x7fffffff);
+	return (void*)((UW)addr & (~MIN_KERNEL));
 }
 
 static inline size_t pages(size_t bytes)

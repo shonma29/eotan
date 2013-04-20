@@ -114,6 +114,7 @@ Version 2, June 1991
 #include <core.h>
 #include <string.h>
 #include <mpu/config.h>
+#include <mpu/memory.h>
 #include "func.h"
 #include "misc.h"
 #include "ready.h"
@@ -354,7 +355,7 @@ ER thread_create(ID tskid, T_CTSK * pk_ctsk)
 	set_page_table(newtask, (UW) (pk_ctsk->addrmap));
     } else {
 	set_page_table(newtask,
-		VTOR((UW) dup_vmap_table((ADDR_MAP) MPU_PAGE_TABLE(run_task))));
+		(UW)kern_v2p(dup_vmap_table((ADDR_MAP) MPU_PAGE_TABLE(run_task))));
     }
 
     /* タスクのリージョンテーブルを初期化
@@ -395,7 +396,7 @@ ER thread_destroy(ID tskid)
     release_vmap((ADDR_MAP) MPU_PAGE_TABLE(&(task[tskid])));
 
     /* kernel 領域の stack を開放する */
-    pfree((VP) VTOR((UW) task[tskid].stackptr0), PAGES(task[tskid].stksz0));
+    pfree((VP) kern_v2p(task[tskid].stackptr0), PAGES(task[tskid].stksz0));
 
     task[tskid].tskstat = TTS_NON;
     return (E_OK);
@@ -509,7 +510,7 @@ void thread_end_and_destroy(void)
     release_vmap((ADDR_MAP) MPU_PAGE_TABLE(run_task));
 
     /* kernel 領域の stack を開放する */
-    pfree((VP) VTOR((UW) run_task->stackptr0), PAGES(run_task->stksz0));
+    pfree((VP) kern_v2p(run_task->stackptr0), PAGES(run_task->stksz0));
 
     enter_critical();
     run_task->tskstat = TTS_NON;

@@ -175,7 +175,7 @@ ADDR_MAP dup_vmap_table(ADDR_MAP dest)
     int i;
     I386_PAGE_ENTRY *p;
 
-    dest = (ADDR_MAP)((UW) RTOV((UW) dest));
+    dest = (ADDR_MAP)((UW) kern_p2v(dest));
     newp = (ADDR_MAP) (palloc(1));	/* ページディレクトリのアロケート */
     memset((VP)newp, 0, PAGE_SIZE);
 
@@ -192,16 +192,16 @@ ADDR_MAP dup_vmap_table(ADDR_MAP dest)
 
 #ifdef DEBUG
 	    printk
-		("dup_vmap_table: (VP)RTOV(dest[i].frame_addr << PAGE_SHIFT) = 0x%x,"
+		("dup_vmap_table: (VP)kern_p2v(dest[i].frame_addr << PAGE_SHIFT) = 0x%x,"
 		 "(VP)p = 0x%x, PAGE_SIZE = %d\n",
-		 (VP) RTOV(dest[i].frame_addr << PAGE_SHIFT), p,
+		 (VP) kern_p2v(dest[i].frame_addr << PAGE_SHIFT), p,
 		 PAGE_SIZE);
 #endif
 	    {
 		int j;
 		char *q, *r;
 
-		q = (VP) RTOV(dest[i].frame_addr << PAGE_SHIFT);
+		q = (VP) kern_p2v((void*)(dest[i].frame_addr << PAGE_SHIFT));
 		r = (char *) p;
 		for (j = 0; j < PAGE_SIZE; j++) {
 #ifdef notdef
@@ -213,9 +213,9 @@ ADDR_MAP dup_vmap_table(ADDR_MAP dest)
 
 #ifdef DEBUG
 	    printk("dup_vmap_table: [%d]copy 0x%x -> 0x%x\n",
-		   i, (VP) RTOV(dest[i].frame_addr << PAGE_SHIFT), (VP) p);
+		   i, (VP) kern_p2v(dest[i].frame_addr << PAGE_SHIFT), (VP) p);
 #endif
-	    newp[i].frame_addr = VTOR((UW) p) >> PAGE_SHIFT;
+	    newp[i].frame_addr = (UW)kern_v2p(p) >> PAGE_SHIFT;
 	}
     }
 #if 0
@@ -234,26 +234,26 @@ extern ER release_vmap(ADDR_MAP dest)
     W i, j;
     UW ppage;
 
-    dest = (ADDR_MAP) RTOV((UW) dest);
+    dest = (ADDR_MAP) kern_p2v(dest);
     for (i = 0; i < ADDR_MAP_SIZE; i++) {
 	if (dest[i].present) {
 	    p = (I386_PAGE_ENTRY *) (dest[i].frame_addr << PAGE_SHIFT);
 	    if ((UW) p <= KERNEL_SIZE) {
-		p = (I386_PAGE_ENTRY*)(RTOV((UW) p));
+		p = (I386_PAGE_ENTRY*)(kern_p2v(p));
 	    }
 	    if (i < ADDR_MAP_SIZE / 2) {
 		for (j = 0; j < PAGE_SIZE / sizeof(I386_PAGE_ENTRY); j++) {
 		    if (p[j].present) {
-			ppage = VTOR(p[j].frame_addr << PAGE_SHIFT);
+			ppage = (UW)kern_v2p((void*)(p[j].frame_addr << PAGE_SHIFT));
 			pfree((VP) ppage, 1);
 		    }
 		}
 	    }
-	    p = (I386_PAGE_ENTRY*)(VTOR((UW) p));
+	    p = (I386_PAGE_ENTRY*)(kern_v2p(p));
 	    pfree((VP) p, 1);
 	}
     }
-    dest = (ADDR_MAP) VTOR((UW) dest);
+    dest = (ADDR_MAP) kern_v2p(dest);
     pfree((VP) dest, 1);
 
     return E_OK;
@@ -289,7 +289,7 @@ BOOL vmap(T_TCB * task, UW vpage, UW ppage, W accmode)
 #endif				/* DEBUG */
 /*  task->context.cr3 &= 0x7fffffff; */
     dirent = (I386_DIRECTORY_ENTRY *) (task->mpu.context.cr3);
-    dirent = (I386_DIRECTORY_ENTRY*)(RTOV((UW) dirent));
+    dirent = (I386_DIRECTORY_ENTRY*)(kern_p2v(dirent));
     dirindex = vpage & DIR_MASK;
     dirindex = dirindex >> DIR_SHIFT;
     pageindex = (vpage & PAGE_MASK) >> PAGE_SHIFT;
@@ -311,7 +311,7 @@ BOOL vmap(T_TCB * task, UW vpage, UW ppage, W accmode)
 #endif				/* DEBUG */
 	/*      dirent[dirindex].frame_addr = ((UW)pageent & 0x0fffffff) >> PAGE_SHIFT; */
 	dp = &dirent[dirindex];
-	dp->frame_addr = VTOR((UW) pageent) >> PAGE_SHIFT;
+	dp->frame_addr = (UW)kern_v2p(pageent) >> PAGE_SHIFT;
 	dp->present = 1;
 	dp->read_write = 1;
 	dp->u_and_s = ((accmode & ACC_USER) ? 1 : 0);
@@ -330,7 +330,7 @@ BOOL vmap(T_TCB * task, UW vpage, UW ppage, W accmode)
     }
 
     if ((UW) pageent <= KERNEL_SIZE) {
-	pageent = (I386_PAGE_ENTRY*)(RTOV((UW) pageent));
+	pageent = (I386_PAGE_ENTRY*)(kern_p2v(pageent));
     }
 
     if (pageent[pageindex].present == 1) {
@@ -339,7 +339,7 @@ BOOL vmap(T_TCB * task, UW vpage, UW ppage, W accmode)
 	/*    return(FALSE); */
     }
     pp = &pageent[pageindex];
-    pp->frame_addr = VTOR(ppage) >> PAGE_SHIFT;
+    pp->frame_addr = (UW)kern_v2p((void*)ppage) >> PAGE_SHIFT;
     pp->present = 1;
     pp->read_write = 1;
     pp->u_and_s = ((accmode & ACC_USER) ? 1 : 0);
@@ -371,7 +371,7 @@ ER vunmap(T_TCB * task, UW vpage)
 /*    ER errno;*/
 
     dirent = (I386_DIRECTORY_ENTRY *) (task->mpu.context.cr3);
-    dirent = (I386_DIRECTORY_ENTRY*)(RTOV((UW) dirent));
+    dirent = (I386_DIRECTORY_ENTRY*)(kern_p2v(dirent));
     dirindex = vpage & DIR_MASK;
     dirindex = dirindex >> DIR_SHIFT;
     pageindex = (vpage & PAGE_MASK) >> PAGE_SHIFT;
@@ -396,10 +396,10 @@ ER vunmap(T_TCB * task, UW vpage)
     }
 
     if ((UW) pageent <= KERNEL_SIZE) {
-	pageent = (I386_PAGE_ENTRY*)(RTOV((UW) pageent));
+	pageent = (I386_PAGE_ENTRY*)(kern_p2v(pageent));
     }
 
-    ppage = VTOR(pageent[pageindex].frame_addr << PAGE_SHIFT);
+    ppage = (UW)kern_v2p((void*)(pageent[pageindex].frame_addr << PAGE_SHIFT));
     /*TODO handle error */
     /*
     errno = pfree((VP) ppage, 1);
@@ -653,8 +653,8 @@ ER region_map(ID id, VP start, UW size, W accmode)
 	    break;
 	}
 	if (vmap(taskp, ((UW) start + (counter << PAGE_SHIFT)),
-		 (UW) VTOR((UW) pmem), accmode) == FALSE) {
-	    pfree((VP) VTOR((UW) pmem), 1);
+		 (UW) kern_v2p(pmem), accmode) == FALSE) {
+	    pfree((VP) kern_v2p(pmem), 1);
 	    res = E_SYS;
 	    break;
 	}
