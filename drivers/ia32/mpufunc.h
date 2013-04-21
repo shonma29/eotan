@@ -19,8 +19,6 @@ Version 2, June 1991
 #include "../../kernel/thread.h"
 #include "gate.h"
 
-#define halt() asm("hlt")
-
 /* tss.c */
 #ifdef TSKSW_DEBUG
 extern void print_task_desc(TASK_DESC * desc);

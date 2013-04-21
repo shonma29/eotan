@@ -88,4 +88,9 @@ static inline void ena_int(void) {
 			"sti\n\t");
 }
 
+static inline void halt(void) {
+	__asm__ __volatile__ ( \
+			"hlt\n\t");
+}
+
 #endif
