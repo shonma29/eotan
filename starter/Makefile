@@ -62,10 +62,11 @@ starter.inc: kern.bin
 	echo -n ".set STARTER_SECTORS, " >> $@
 	echo "(`wc -c < kern.bin` + $(BLK_SIZE) - 1) / $(BLK_SIZE)" | bc >> $@
 
-starter.bin: starter.o main.o ../kernel/arch/libarch.a ../lib/libnc.a
+starter.bin: starter.o main.o ../kernel/arch/libarch.a \
+		../kernel/mpu/libmpu.a ../lib/libnc.a
 	$(LD) $(LDFLAGS) -Ttext $(STARTER_ADDR) -L$(LIB) -o $@ \
-		starter.o main.o ../kernel/mpu/libmpu.a \
-		../kernel/arch/libarch.a ../lib/libnc.a
+		starter.o main.o ../kernel/arch/libarch.a \
+		../kernel/mpu/libmpu.a ../lib/libnc.a
 	$(TOOL)pad $@ $(STARTER_SIZE) 
 
 main.o: main.c

@@ -153,4 +153,7 @@ extern ER vmemcpy(const T_TCB *th, const void *to, const void *from,
 		const size_t bytes);
 extern void *getPageAddress(const PTE *dir, const void *addr);
 
+/* panic.c */
+extern void panic(char *msg);
+
 #endif /* _IA32_MPU_H_ */

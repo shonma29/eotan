@@ -34,6 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/memory.h>
 #include <memory_map.h>
 #include <setting.h>
+#include <mpu/mpufunc.h>
 
 typedef unsigned long long UD;
 
@@ -44,7 +45,7 @@ typedef unsigned long long UD;
 static MemoryMap *mm = (MemoryMap*)MEMORY_MAP_ADDR;
 
 extern int isValidModule(const Elf32_Ehdr *eHdr);
-extern W printk(const B *fmt, ...);
+extern int printk(const char *format, ...);
 
 static ER map_initialize(const size_t pages);
 static ER map_set_use(const void *addr, const size_t pages);
@@ -307,10 +308,8 @@ static size_t dupModule(UB **to, Elf32_Ehdr *eHdr)
 	size_t i;
 	size_t size = 0;
 
-	if (!isValidModule(eHdr)) {
-		printk("bad ELF\n");
-		for (;;);
-	}
+	if (!isValidModule(eHdr))
+		panic("bad ELF");
 
 	p = (UB*)eHdr;
 	pHdr = (Elf32_Phdr*)&(p[eHdr->e_phoff]);

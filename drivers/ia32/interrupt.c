@@ -256,7 +256,7 @@ void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 
     --on_interrupt;
 
-    for (;;);
+    panic("page fault");
 }
 
 /*************************************************************************

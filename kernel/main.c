@@ -133,7 +133,7 @@ ER main(void)
 
     if (initialize() != E_OK) {
 	printk("main: cannot initialize.\n");
-	falldown();
+	panic("initialize");
     }
 
     for (;;) {			/* Idle タスクとなる。 */
@@ -179,8 +179,7 @@ ER main(void)
 
 	thread_switch();
     }
-    printk("falldown.");
-    falldown();
+
 /* not return */
     return E_OK;
 }

@@ -42,8 +42,7 @@ void fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 			no, run_task->tskid, cs, eip, eflags, ds, es,
 			eax, ebx, ecx, edx, edi, esi, ebp, esp);
 	//TODO stop the thread
-	halt();
-	for (;;);
+	panic("fault");
 }
 
 void fault_with_error(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
@@ -58,6 +57,5 @@ void fault_with_error(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 			no, run_task->tskid, cs, eip, eflags, ds, es,
 			err, eax, ebx, ecx, edx, edi, esi, ebp, esp);
 	//TODO stop the thread
-	halt();
-	for (;;);
+	panic("fault_with_error");
 }

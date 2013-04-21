@@ -265,7 +265,7 @@ ER thread_switch(void)
 	    || (MPU_PC(next) == 0)) {
 	printk("thread_switch: panic next(%d) stat=%d, eip=%x\n",
 		next->tskid, next->tskstat, MPU_PC(next));
-	falldown();
+	panic("scheduler");
     }
 
     if (run_task->mpu.use_fpu)
