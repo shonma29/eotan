@@ -1,43 +1,69 @@
-export MAKE = gmake
-export CC = gcc
-export AS = as
-export LD = ld
-#DEBUG = -DDEBUG
-export LINUX_INCLUDE = -I../../usr/include
+# This is free and unencumbered software released into the public domain.
+#
+# Anyone is free to copy, modify, publish, use, compile, sell, or
+# distribute this software, either in source code form or as a compiled
+# binary, for any purpose, commercial or non-commercial, and by any
+# means.
+#
+# In jurisdictions that recognize copyright laws, the author or authors
+# of this software dedicate any and all copyright interest in the
+# software to the public domain. We make this dedication for the benefit
+# of the public at large and to the detriment of our heirs and
+# successors. We intend this dedication to be an overt act of
+# relinquishment in perpetuity of all present and future rights to this
+# software under copyright law.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE.
+#
+# For more information, please refer to <http://unlicense.org/>
 
-TARGET = starter/boot.iso
+TARGET = boot.iso
 
-all: tool libs kern applications starter initrd_img ${TARGET}
+.PHONY: tools libs kern core servers apps test contrib initrd starter
 
-.PHONY: tool libs kern applications starter
+all: tools libs kern apps initrd starter
+
+tools:
+	$(MAKE) -f app/mkfs/Makefile WD=app/mkfs
+
 libs:
-	${MAKE} -f libs.mk
+	$(MAKE) -f lib/Makefile
 
-kern:
-	${MAKE} -f kernel/Makefile WD=kernel
-	${MAKE} -f servers.mk
+kern: core servers
 
-tool:
-	${MAKE} -f app/mkfs/Makefile WD=app/mkfs
+core:
+	$(MAKE) -f kernel/Makefile WD=kernel
 
-starter/boot.iso:
+servers:
+	$(MAKE) -f servers/Makefile
+
+apps: test contrib
+
+test:
+	$(MAKE) -f app/test/Makefile WD=app/test
+
+contrib:
+	$(MAKE) -f app/contribution/pager/Makefile WD=app/contribution/pager
+
+starter:
 	mkdir -p build
-	${MAKE} -C starter
+	$(MAKE) -C starter
 
-applications:
-	${MAKE} -f app/test/Makefile WD=app/test
-	${MAKE} -f app/contribution/pager/Makefile WD=app/contribution/pager
-
-initrd_img:
-	${MAKE} -f initrd.mk
+initrd:
+	$(MAKE) -f initrd.mk
 
 clean:
-	${MAKE} -C starter clean
-	${MAKE} -f kernel/Makefile WD=kernel clean
-	${MAKE} -f libs.mk clean
-	${MAKE} -f servers.mk clean
-	${MAKE} -f app/mkfs/Makefile WD=app/mkfs clean
-	${MAKE} -f app/test/Makefile WD=app/test clean
-	${MAKE} -f app/contribution/pager/Makefile WD=app/contribution/pager clean
-	rm -f initrd.img
-
+	$(MAKE) -f app/mkfs/Makefile WD=app/mkfs clean
+	$(MAKE) -f lib/Makefile clean
+	$(MAKE) -f kernel/Makefile WD=kernel clean
+	$(MAKE) -f servers/Makefile clean
+	$(MAKE) -f app/test/Makefile WD=app/test clean
+	$(MAKE) -f app/contribution/pager/Makefile WD=app/contribution/pager clean
+	$(RM) initrd.img
+	$(MAKE) -C starter clean
