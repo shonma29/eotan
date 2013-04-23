@@ -1,5 +1,5 @@
-#ifndef _CGA_H_
-#define _CGA_H_
+#ifndef _CONSOLE_H_
+#define _CONSOLE_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,17 +26,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <console.h>
 
-#define CGA_COLUMNS (80)
-#define CGA_ROWS (25)
-#define CGA_COLORS (16)
-#define CGA_DEFAULT_COLOR (15)
+#define CONSOLE_TAB_COLUMNS (8)
 
-#define BIOS_CURSOR_COL 0x0450
-#define BIOS_CURSOR_ROW 0x0451
-#define CGA_VRAM_ADDR 0x000b8000
-
-extern Console *getConsole(const unsigned short *base);
+typedef struct {
+	void (*cls)(void);
+	int (*locate)(const int x, const int y);
+	int (*color)(const int color);
+	void (*putc)(const unsigned char ch);
+	int (*rollup)(const int lines);
+} Console;
 
 #endif

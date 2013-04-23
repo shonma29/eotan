@@ -25,16 +25,18 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <cga.h>
+#include <console.h>
 #include <device.h>
 #include <major.h>
 #include <string.h>
-#include <boot/vesa.h>
 #include <itron/rendezvous.h>
 #include <mpu/memory.h>
 #include <bind.h>
 #include <libserv.h>
 #include "hmi.h"
+
+#ifdef USE_VESA
+#include <boot/vesa.h>
 
 #define MAX_WINDOW (16)
 
@@ -55,7 +57,11 @@ typedef struct {
 } window_t;
 
 //static window_t window[MAX_WINDOW];
-static CGA_Console *cns;
+#else
+#include <cga.h>
+#endif
+
+static Console *cns;
 
 static ER check_param(const UW start, const UW size);
 static ER_UINT write(UB *inbuf, const UW start, const UW size);
@@ -175,7 +181,11 @@ static ER_ID initialize(void)
 			sizeof(DDEV_RES)
 	};
 
+#ifdef USE_VESA
+	cns = getConsole();
+#else
 	cns = getConsole((const UH*)kern_p2v((void*)CGA_VRAM_ADDR));
+#endif
 	cns->cls();
 	cns->locate(0, 0);
 

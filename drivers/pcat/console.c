@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <cga.h>
+#include <console.h>
 #include <mpu/io.h>
 
 #define PORT_CRTC 0x03d4
@@ -43,7 +44,7 @@ static void _newline(void);
 static void _cursor(void);
 static int _rollup(const int lines);
 
-static CGA_Console _cns = {
+static Console _cns = {
 	_cls, _locate, _color, _putc, _rollup
 };
 
@@ -56,7 +57,7 @@ static struct _screen {
 } _s;
 
 
-CGA_Console *getConsole(const unsigned short *base) {
+Console *getConsole(const unsigned short *base) {
 	_s.color = CGA_DEFAULT_COLOR;
 	_s.base = (unsigned short*)base;
 
@@ -122,7 +123,8 @@ static void _putc(const unsigned char ch) {
 
 	case '\t':
 		{
-			int len = CGA_TAB_COLUMNS - _s.x % CGA_TAB_COLUMNS;
+			int len = CONSOLE_TAB_COLUMNS
+					- (_s.x % CONSOLE_TAB_COLUMNS);
 			int i;
 
 			for (i = 0; i < len; i++)	__putc(' ');
@@ -170,6 +172,7 @@ static void _newline(void) {
 	_s.y++;
 	_s.p = _s.base + _s.y * CGA_COLUMNS;
 }
+
 static void _cursor() {
 	unsigned int pos = _s.y * CGA_COLUMNS + _s.x;
 

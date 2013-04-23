@@ -36,13 +36,14 @@ For more information, please refer to <http://unlicense.org/>
 
 #ifndef USE_VESA
 #include <cga.h>
+#include <console.h>
 #endif
 
 static UB buf[RING_MAX_LEN + 1];
 static size_t len;
 
 #ifndef USE_VESA
-static CGA_Console *cns;
+static Console *cns;
 
 static void console_initialize();
 #endif
