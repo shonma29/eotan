@@ -26,7 +26,7 @@ static void dbg_putchar(B ch)
 
     buf[0] = ch & 0x000000ff;
     buf[1] = '\0';
-    dbg_puts(buf);
+    syslog(buf);
 }
 
 W dbg_printf(B *format, ...) {

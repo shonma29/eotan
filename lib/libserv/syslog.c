@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../servers/kernlog/kernlog.h"
 
 
-ER dbg_puts(B *msg)
+ER syslog(B *msg)
 {
 	devmsg_t packet;
 	size_t len = strlen(msg);

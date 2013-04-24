@@ -15,8 +15,10 @@ Version 2, June 1991
 /* @(#) $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/ITRON/kernlib/libkernel.h,v 1.1 1999/04/18 17:48:33 monaka Exp $ */
 #include <itron/types.h>
 
-/* sys_debug.c */
-extern W dbg_puts(B *msg);
+/* syslog.c */
+extern W syslog(B *msg);
+
+/* debug.c */
 extern W dbg_printf(B *format, ...);
 
 /* malloc.c */

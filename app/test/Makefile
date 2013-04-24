@@ -33,7 +33,7 @@ ENTRY_ADDR = 0x00001000
 ENTRY_FUNC = _main
 
 $(TARGET): $(OBJS) \
-		lib/libc.a lib/libitron.a lib/libnc.a lib/libserv.a
+		lib/libc.a lib/libserv.a lib/libitron.a lib/libnc.a
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $(@).o \
-		lib/libc.a lib/libitron.a lib/libnc.a lib/libserv.a
+		lib/libc.a lib/libserv.a lib/libitron.a lib/libnc.a
 	$(STRIP) $@
