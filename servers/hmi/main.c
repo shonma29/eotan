@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <console.h>
 #include <device.h>
+#include <kcall.h>
 #include <major.h>
 #include <string.h>
 #include <itron/rendezvous.h>
@@ -62,6 +63,7 @@ typedef struct {
 #endif
 
 static Console *cns;
+static kcall_t kcall;
 
 static ER check_param(const UW start, const UW size);
 static ER_UINT write(UB *inbuf, const UW start, const UW size);
@@ -157,13 +159,15 @@ static ER accept(const ID port)
 	ER_UINT size;
 	ER result;
 
-	size = acp_por(port, 0xffffffff, &rdvno, &(message.req));
+//	size = acp_por(port, 0xffffffff, &rdvno, &(message.req));
+	size = kcall.port_accept(port, &rdvno, &(message.req));
 	if (size < 0) {
 		dbg_printf("[HMI] acp_por error=%d\n", size);
 		return size;
 	}
 
-	result = rpl_rdv(rdvno, &(message.res), execute(&message));
+//	result = rpl_rdv(rdvno, &(message.res), execute(&message));
+	result = kcall.port_reply(rdvno, &(message.res), execute(&message));
 	if (result) {
 		dbg_printf("[HMI] rpl_rdv error=%d\n", result);
 	}
@@ -181,6 +185,8 @@ static ER_ID initialize(void)
 			sizeof(DDEV_RES)
 	};
 
+	memcpy(&kcall, (kcall_t*)KCALL_ADDR, sizeof(kcall));
+
 #ifdef USE_VESA
 	cns = getConsole();
 #else
@@ -189,7 +195,8 @@ static ER_ID initialize(void)
 	cns->cls();
 	cns->locate(0, 0);
 
-	port = acre_por(&pk_cpor);
+//	port = acre_por(&pk_cpor);
+	port = kcall.port_create_auto(&pk_cpor);
 	if (port < 0) {
 		dbg_printf("[HMI] acre_por error=%d\n", port);
 
@@ -200,7 +207,8 @@ static ER_ID initialize(void)
 			(UB*)MYNAME, port);
 	if (result) {
 		dbg_printf("[HMI] bind error=%d\n", result);
-		del_por(port);
+//		del_por(port);
+		kcall.port_destroy(port);
 
 		return E_SYS;
 	}
@@ -217,7 +225,8 @@ void start(void)
 
 		while (accept(port) == E_OK);
 
-		del_por(port);
+//		del_por(port);
+		kcall.port_destroy(port);
 		dbg_printf("[HMI] end\n");
 	}
 

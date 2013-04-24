@@ -208,6 +208,7 @@ static ER initialize(void)
     flag_initialize();		/* イベントフラグ管理機能の初期化       */
     port_initialize();
     thread_initialize();		/* タスク管理機能の初期化 */
+    kcall_initialize();
 
     /* 1番目のタスクを初期化する。そしてそのタスクを以後の処
      * 理で使用する。
