@@ -46,7 +46,7 @@ static int compare(const void *a, const void *b);
 
 int device_init(void)
 {
-	ER err = vsys_inf(1, 0, &sysinfo);
+	ER err = vsys_inf(&sysinfo);
 
 	if (err) {
 		dbg_printf("[FS] vsys_inf error=%d\n", err);

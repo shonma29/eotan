@@ -55,9 +55,9 @@ Version 2, June 1991
  *
  */
 ER
-vsys_inf (W func, W sub, VP argp)
+vsys_inf (VP buf)
 {
-  return ncall(SVC_GET_SYSTEM_INFO, func, sub, argp);
+  return ncall(SVC_GET_SYSTEM_INFO, buf);
 }
 
 /* vcpy_stk */

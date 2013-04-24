@@ -162,7 +162,7 @@ static ER accept(const ID port)
 static void load_initrd(void)
 {
 	system_info_t info;
-	ER err = vsys_inf(1, 0, &info);
+	ER err = vsys_inf(&info);
 
 	if (err) {
 		dbg_printf("[RAMDISK] vsys_inf error=%x\n", err);
