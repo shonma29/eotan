@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <device.h>
 #include <kcall.h>
 #include <major.h>
+#include <stddef.h>
 #include <string.h>
 #include <itron/rendezvous.h>
 #include <mpu/memory.h>
@@ -60,6 +61,8 @@ typedef struct {
 //static window_t window[MAX_WINDOW];
 
 extern Console *getConsole(void);
+extern void put(const unsigned int start, const size_t size,
+		const unsigned char *buf);
 #else
 #include <cga.h>
 #endif
@@ -68,7 +71,8 @@ static Console *cns;
 static kcall_t kcall;
 
 static ER check_param(const UW start, const UW size);
-static ER_UINT write(UB *inbuf, const UW start, const UW size);
+static ER_UINT write(const UW dd, const UW start, const UW size,
+		const UB *inbuf);
 static UW execute(devmsg_t *message);
 static ER accept(const ID port);
 static ER_ID initialize(void);
@@ -84,14 +88,20 @@ static ER check_param(const UW start, const UW size)
 	return E_OK;
 }
 
-static ER_UINT write(UB *inbuf, const UW start, const UW size) {
+static ER_UINT write(const UW dd, const UW start, const UW size,
+		const UB *inbuf)
+{
 	ER_UINT result = check_param(start, size);
 	size_t i;
 
 	if (result)	return result;
 
-	for (i = 0; i < size; i++)
-		cns->putc(inbuf[i]);
+	if (dd)
+		put(start, size, inbuf);
+	else {
+		for (i = 0; i < size; i++)
+			cns->putc(inbuf[i]);
+	}
 
 	return size;
 }
@@ -130,9 +140,10 @@ static UW execute(devmsg_t *message)
 		break;
 
 	case DEV_WRI:
-		result = write(req->body.wri_req.dt,
+		result = write(req->body.wri_req.dd,
 				req->body.wri_req.start,
-				req->body.wri_req.size);
+				req->body.wri_req.size,
+				req->body.wri_req.dt);
 		res->body.wri_res.dd = req->body.wri_req.dd;
 		res->body.wri_res.errcd = (result >= 0)? E_OK:result;
 		res->body.wri_res.errinfo = 0;

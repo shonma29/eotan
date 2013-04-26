@@ -364,3 +364,13 @@ static void _copy_left(unsigned int x1, unsigned int y1,
 		line += _s.bpl;
 	}
 }
+
+void put(const unsigned int start, const size_t size,
+		const unsigned char *buf)
+{
+	unsigned char *w = (unsigned char*)(_s.base) + start;
+	size_t i;
+
+	for (i = 0; i < size; i++)
+		w[i] = buf[i];
+}

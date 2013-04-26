@@ -19,5 +19,8 @@ ${MKFS}/statfs ${ROOT}/$1 write /mesg mesg
 ${MKFS}/statfs ${ROOT}/$1 chmod 777 /mesg
 ${MKFS}/statfs ${ROOT}/$1 write /shell shell
 ${MKFS}/statfs ${ROOT}/$1 chmod 777 /shell
+${MKFS}/statfs ${ROOT}/$1 write /p6l p6l
+${MKFS}/statfs ${ROOT}/$1 chmod 777 /p6l
+${MKFS}/statfs ${ROOT}/$1 write /bees.p6 bees.p6
 ${MKFS}/statfs ${ROOT}/$1 dir / 
 
