@@ -27,7 +27,7 @@ TARGET = $(WD)/libarch.a
 
 include Makefile.in
 
-CFLAGS += -I kernel
+CFLAGS += -I kernel -DUSE_VESA
 
 $(TARGET): $(OBJS)
 	$(AR) rsv $@ $?

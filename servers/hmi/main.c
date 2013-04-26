@@ -58,6 +58,8 @@ typedef struct {
 } window_t;
 
 //static window_t window[MAX_WINDOW];
+
+extern Console *getConsole(void);
 #else
 #include <cga.h>
 #endif

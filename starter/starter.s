@@ -72,14 +72,13 @@ _start:
 	jne error_vesa
 
 	/* enter VESA */
-/*
 	movw $0x4f02, %ax
 	movw $VESA_MODE, %bx
 	int $0x10
 
 	cmpw $0x004f, %ax
 	jne error_vesa
-*/
+
 	/* get memory map */
 	xorl %ebx, %ebx
 	xorw %ax, %ax

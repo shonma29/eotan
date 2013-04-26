@@ -29,6 +29,9 @@ For more information, please refer to <http://unlicense.org/>
 #include <limits.h>
 #include <string.h>
 #include <boot/memory.h>
+#ifdef USE_VESA
+#include <boot/vesa.h>
+#endif
 #include <boot/modules.h>
 #include <mpu/config.h>
 #include <mpu/memory.h>

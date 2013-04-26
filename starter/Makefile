@@ -26,7 +26,7 @@
 TARGET = ../boot.iso
 MAKE = gmake
 CC = cc
-CFLAGS = -Wall -Werror -O2 -I ../include -I ../kernel #-DUSE_VESA
+CFLAGS = -Wall -Werror -O2 -I ../include -I ../kernel -DUSE_VESA
 AS = as
 ASFLAGS = 
 LD = ld
