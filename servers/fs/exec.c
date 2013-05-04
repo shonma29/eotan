@@ -60,6 +60,7 @@ Version 2, June 1991
 #include <boot/init.h>
 #include <mpu/config.h>
 #include <mpu/memory.h>
+#include <region.h>
 #include "fs.h"
 
 static W read_exec_header(struct inode *ip, Elf32_Ehdr *elfp,

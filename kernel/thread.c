@@ -113,6 +113,7 @@ Version 2, June 1991
 
 #include <core.h>
 #include <string.h>
+#include <vm.h>
 #include <mpu/config.h>
 #include <mpu/memory.h>
 #include "func.h"
@@ -365,8 +366,7 @@ ER thread_create(ID tskid, T_CTSK * pk_ctsk)
     newtask->regions[0].start_addr = (VP) MIN_KERNEL;
     newtask->regions[0].min_size = KERNEL_SIZE;
     newtask->regions[0].max_size = KERNEL_SIZE;
-    newtask->regions[0].permission =
-	VPROT_READ | VPROT_WRITE | VPROT_KERNEL;
+    newtask->regions[0].permission = VM_READ | VM_WRITE;
 
     return (E_OK);
 }

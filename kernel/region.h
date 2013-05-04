@@ -38,6 +38,11 @@ Version 2, June 1991
 
 #include <itron/types.h>
 
+#define MAX_REGION		(4)	/* 各タスクに存在できる REGION の数 */
+#define TEXT_REGION		0
+#define DATA_REGION		1
+#define HEAP_REGION		2
+#define STACK_REGION		3
 
 /*
  *
@@ -51,13 +56,6 @@ struct region_t
 };
 
 typedef struct region_t	T_REGION;
-
-
-#define	VPROT_READ	(0x00000001)
-#define VPROT_WRITE	(0x00000002)
-#define VPROT_EXEC	(0x00000004)
-#define VPROT_KERNEL	(0x00000000)
-#define VPROT_USER	(0x00010000)
 
 
 #endif /* __CORE_REGION_H__ */

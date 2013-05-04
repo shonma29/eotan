@@ -45,12 +45,6 @@ Version 2, June 1991
 #define MIN_MEMORY_SIZE		(8 * 1024 * 1024) /* メモリは最小 8 M */
 #define MAX_MEMORY_SIZE		(2048UL * 1024UL * 1024UL) /* メモリは最大 2 G */
 
-#define MAX_REGION		(4)	/* 各タスクに存在できる REGION の数 */
-#define TEXT_REGION		0
-#define DATA_REGION		1
-#define HEAP_REGION		2
-#define STACK_REGION		3
-
 /* インターバルタイマ */
 #define MAX_TIMER	(500)
 
