@@ -92,6 +92,8 @@ Version 2, June 1991
  *
  */
 
+#include <core.h>
+#include <itron/dataqueue.h>
 #include <mpu/io.h>
 #include "../../lib/libserv/libserv.h"
 #include "keyboard.h"
@@ -118,8 +120,8 @@ Version 2, June 1991
 
 
 
-UW shiftkey_code;
-UW capskey;
+static UW shiftkey_code;
+static UW capskey;
 
 static void keyboard_interrupt();
 
@@ -156,12 +158,6 @@ static void keyboard_interrupt()
     W ch;
 
     key_code = inb(KEY_DATA);
-
-    if (driver_mode & RAWMODE) {
-	put_entry(key_code);
-	set_flg(waitflag, ONKEYS);
-	return;
-    }
 
     switch (key_code) {
     case 0xf1:
@@ -230,8 +226,7 @@ static void keyboard_interrupt()
 
     /* イベントをバッファに溜める
      */
-    put_entry(ch);
-    set_flg(waitflag, ONKEYS);
+    snd_dtq(dtqid, ch);
 
 #ifdef notdef
     /*

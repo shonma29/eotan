@@ -53,14 +53,6 @@ extern T_TCB *get_thread_ptr(ID tskid);
 /* posix.c */
 extern ER posix_kill_proc(ID pid);
 
-/* flag.c */
-extern ER flag_initialize(void);
-extern ER_ID flag_create_auto(T_CFLG * pk_flg);
-extern ER flag_destroy(ID flgid);
-extern ER flag_set(ID flgid, UINT setptn);
-extern ER flag_clear(ID flgid, UINT clrptn);
-extern ER flag_wait(UINT * flgptn, ID flgid, UINT waiptn, UINT wfmode);
-
 /* time.c */
 extern void time_initialize(UW seconds);
 extern ER time_set(SYSTIME *pk_tim);

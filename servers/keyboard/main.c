@@ -64,6 +64,7 @@ Version 2, June 1991
 
 #include <device.h>
 #include <major.h>
+#include <itron/dataqueue.h>
 #include <itron/rendezvous.h>
 #include "../../lib/libserv/libserv.h"
 #include "../../lib/libserv/bind.h"
@@ -76,18 +77,23 @@ Version 2, June 1991
  */
 static void main_loop();
 static void doit(RDVNO rdvno, devmsg_t * packet);
-W send_dbg_msg();
 
 /*********************************************************************
  *	 大域変数群の宣言
  *
  */
-ID recvport;
-W initialized = 0;
-ID waitflag;			/* キーボードからキー入力を待つ時に */
-				/* 使用するイベントフラグの ID */
-W driver_mode;
-ID local_recv = 0;
+static ID recvport;
+static W initialized = 0;
+ID dtqid;			/* キーボードからキー入力を待つ時に */
+				/* 使用するdata queueの ID */
+static W driver_mode;
+
+static W    	init_keyboard(void);	/* 初期化		*/
+static W    	open_keyboard();	/* オープン		*/
+static W  	close_keyboard();	/* クローズ		*/
+static W    	read_keyboard();	/* 読み込み		*/
+static W    	write_keyboard();	/* 書き込み		*/
+static W    	control_keyboard();	/* コントロール		*/
 
 
 /*
@@ -144,11 +150,11 @@ static void main_loop()
  *
  * o 要求受けつけ用のメッセージバッファ ID をポートマネージャに登録
  */
-W init_keyboard(void)
+static W init_keyboard(void)
 {
     ER error;
     T_CPOR pk_cpor = { TA_TFIFO, sizeof(DDEV_REQ), sizeof(DDEV_RES) };
-    T_CFLG pk_cflg = { NULL, TA_WSGL, 0 };
+    T_CDTQ pk_cdtq = { TA_TFIFO, 1024 - 1, NULL };
 
     /*
      * 要求受けつけ用のポートを初期化する。
@@ -169,11 +175,10 @@ W init_keyboard(void)
     }
 
     init_keyboard_interrupt();	/* 割り込みハンドラの登録 */
-    init_keybuffer();		/* キーボードバッファの初期化 */
 
     /* キー入力を待つ時に使用するイベントフラグの初期化 */
-    waitflag = acre_flg(&pk_cflg);
-    dbg_printf("[KEYBOARD] eventflag = %d\n", waitflag);	/* */
+    dtqid = acre_dtq(&pk_cdtq);
+    dbg_printf("[KEYBOARD] dtq = %d\n", dtqid);	/* */
 
     driver_mode = WAITMODE | ENAEOFMODE;
 
@@ -227,7 +232,7 @@ static void doit(RDVNO rdvno, devmsg_t * packet)
  * 処理：	E_OK をメッセージの送り手に返す。
  *
  */
-W open_keyboard(RDVNO rdvno, devmsg_t * packet)
+static W open_keyboard(RDVNO rdvno, devmsg_t * packet)
 {
     DDEV_OPN_REQ * req = &(packet->req.body.opn_req);
     DDEV_OPN_RES * res = &(packet->res.body.opn_res);
@@ -252,7 +257,7 @@ W open_keyboard(RDVNO rdvno, devmsg_t * packet)
  * 処理：	キーボードはクローズの処理ではなにもしない。
  *
  */
-W close_keyboard(RDVNO rdvno, devmsg_t * packet)
+static W close_keyboard(RDVNO rdvno, devmsg_t * packet)
 {
     DDEV_CLS_REQ * req = &(packet->req.body.cls_req);
     DDEV_CLS_RES * res = &(packet->res.body.cls_res);
@@ -275,7 +280,7 @@ W close_keyboard(RDVNO rdvno, devmsg_t * packet)
  * 処理：	メッセージの送り手に読み込んだ文字列を返す。
  *
  */
-W read_keyboard(RDVNO rdvno, devmsg_t * packet)
+static W read_keyboard(RDVNO rdvno, devmsg_t * packet)
 {
     DDEV_REA_REQ * req = &(packet->req.body.rea_req);
     DDEV_REA_RES * res = &(packet->res.body.rea_res);
@@ -284,7 +289,11 @@ W read_keyboard(RDVNO rdvno, devmsg_t * packet)
 
     res->dd = req->dd;
     for (i = 0; i < req->size; i++) {
-	res->dt[i] = read_key(driver_mode);
+    	VP_INT k;
+
+    	if (rcv_dtq(dtqid, &k))
+    		continue;
+	res->dt[i] = k;
     }
     if ((driver_mode & ENAEOFMODE) && (req->size == 1) &&
 	(res->dt[0] == C('d'))) {
@@ -316,7 +325,7 @@ W read_keyboard(RDVNO rdvno, devmsg_t * packet)
  * 処理：	write は、キーボードでは行わない。
  *
  */
-W write_keyboard(RDVNO rdvno, devmsg_t * packet)
+static W write_keyboard(RDVNO rdvno, devmsg_t * packet)
 {
     DDEV_WRI_REQ * req = &(packet->req.body.wri_req);
     DDEV_WRI_RES * res = &(packet->res.body.wri_res);
@@ -350,14 +359,13 @@ static void respond_ctrl(RDVNO rdvno, devmsg_t * packet, W dd, ER errno)
     rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
 }
 
-W control_keyboard(RDVNO rdvno, devmsg_t * packet)
+static W control_keyboard(RDVNO rdvno, devmsg_t * packet)
 {
     DDEV_CTL_REQ * req = &(packet->req.body.ctl_req);
 
     switch (req->cmd) {
     case KEYBOARD_CLEAR:
-	clear_keybuffer();
-	respond_ctrl(rdvno, packet, req->dd, E_OK);
+	respond_ctrl(rdvno, packet, req->dd, E_NOSPT);
 	return (E_OK);
 
     case KEYBOARD_CHANGEMODE:

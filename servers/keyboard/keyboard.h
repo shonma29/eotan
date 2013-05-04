@@ -88,40 +88,14 @@ Version 2, June 1991
 /* 文字をコントロールキーに変換する */
 #define C(x)		(x & 0x1f)
 
-#define	NOKEYS	0
-#define ONKEYS	1		/* キーが入力している */
-
 /* keydevice mode */
 #define WAITMODE	0x0001
 #define ENAEOFMODE	0x0002
-#define RAWMODE		0x0004
 
-extern W keyboard_select;
-
-extern ID	recvport;
-extern W	initialized;
-extern ID	waitflag;	/* キーボードからキー入力を待つ時に */
-				/* 使用するイベントフラグの ID */
-extern W	driver_mode;
-extern W	send_msg;
-
-/* main.c */
-extern W    	init_keyboard(void);	/* 初期化		*/
-extern W    	open_keyboard();	/* オープン		*/
-extern W  	close_keyboard();	/* クローズ		*/
-extern W    	read_keyboard();	/* 読み込み		*/
-extern W    	write_keyboard();	/* 書き込み		*/
-extern W    	control_keyboard();	/* コントロール		*/
-extern W	send_switch_msg();
-extern W	relay_keyboard ();
+extern ID	dtqid;	/* キーボードからキー入力を待つ時に */
+				/* 使用するdata queueの ID */
 
 /* interrupt.c */
 extern void init_keyboard_interrupt();
-
-/* misc.c */
-extern void init_keybuffer(void);
-extern void clear_keybuffer();
-extern void put_entry(W keycode);
-extern W read_key(W mode);
 
 #endif /* __KEYBOARD_H__ */

@@ -34,7 +34,6 @@ For more information, please refer to <http://unlicense.org/>
 typedef enum {
 	wait_none,
 	wait_dly,
-	wait_evf,
 	wait_que,
 	wait_por,
 	wait_rdv,
@@ -48,11 +47,6 @@ typedef struct {
 	ID obj_id;
 	ER result;
 	union {
-		struct {
-			UINT waiptn;
-			UINT wfmode;
-			UINT flgptn;
-		} evf;
 		struct {
 			VP_INT data;
 		} que;

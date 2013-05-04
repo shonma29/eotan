@@ -200,11 +200,6 @@ static ER	if_thread_release(void *argp);
 static ER	if_thread_get_id(void *argp);
 static ER	if_thread_suspend(void *argp);
 static ER	if_thread_resume(void *argp);
-static ER	if_flag_create_auto(void *argp);
-static ER	if_flag_destroy(void *argp);
-static ER	if_flag_set(void *argp);
-static ER	if_flag_clear(void *argp);
-static ER	if_flag_wait(void *argp);
 
 /* 時間管理用システムコール */
 static ER	if_time_set(void *argp);
@@ -263,50 +258,43 @@ static ER (*syscall_table[])(VP argp) =
   SVC_IF (thread_suspend, 1),    	/*   9 */
   SVC_IF (thread_resume, 1),	/*   10 */
 
-  /* イベントフラグ */
-  SVC_IF (flag_create_auto, 1),	/*   11 */
-  SVC_IF (flag_destroy, 1),	/*   12 */
-  SVC_IF (flag_set, 2),	/*   13 */
-  SVC_IF (flag_clear, 2),     /*   14 */
-  SVC_IF (flag_wait, 4),	/*   15 */
-
   /* 時間管理機能 */
-  SVC_IF (time_set, 1),	/*   16 */
-  SVC_IF (time_get, 1),	/*   17 */
-  SVC_IF (thread_delay, 1),	/*   18 */
-  SVC_IF (alarm_create, 2),	/*   19 */
+  SVC_IF (time_set, 1),	/*   11 */
+  SVC_IF (time_get, 1),	/*   12 */
+  SVC_IF (thread_delay, 1),	/*   13 */
+  SVC_IF (alarm_create, 2),	/*   14 */
 
   /* 割りこみ管理 */
-  SVC_IF (interrupt_bind, 2),	/*   20 */
+  SVC_IF (interrupt_bind, 2),	/*   15 */
 
   /* システム管理 */
-  SVC_IF (get_system_info, 3),	/*   21 */
+  SVC_IF (get_system_info, 3),	/*   16 */
 
   /* 仮想メモリ管理システムコール */	
-  SVC_IF (region_create, 6),	/*   22 */
-  SVC_IF (region_destroy, 2),	/*   23 */
-  SVC_IF (region_map, 3),	/*   24 */
-  SVC_IF (region_unmap, 3),	/*   25 */
-  SVC_IF (region_duplicate, 2),	/*   26 */
-  SVC_IF (region_put, 4),	/*   27 */
-  SVC_IF (region_get, 4),	/*   28 */
-  SVC_IF (region_get_status, 3),	/*   29 */
-  SVC_IF (get_physical_address, 3),	/*   30 */
+  SVC_IF (region_create, 6),	/*   17 */
+  SVC_IF (region_destroy, 2),	/*   18 */
+  SVC_IF (region_map, 3),	/*   19 */
+  SVC_IF (region_unmap, 3),	/*   20 */
+  SVC_IF (region_duplicate, 2),	/*   21 */
+  SVC_IF (region_put, 4),	/*   22 */
+  SVC_IF (region_get, 4),	/*   23 */
+  SVC_IF (region_get_status, 3),	/*   24 */
+  SVC_IF (get_physical_address, 3),	/*   25 */
 
   /* その他のシステムコール */
-  SVC_IF (mpu_copy_stack, 4),	/*   31 */
-  SVC_IF (mpu_set_context, 4),	/*   32 */
+  SVC_IF (mpu_copy_stack, 4),	/*   26 */
+  SVC_IF (mpu_set_context, 4),	/*   27 */
 
-  SVC_IF (port_create, 2),	/*   33 */
-  SVC_IF (port_create_auto, 1),	/*   34 */
-  SVC_IF (port_destroy, 1),	/*   35 */
-  SVC_IF (port_call, 4),	/*   36 */
-  SVC_IF (port_accept, 4),	/*   37 */
-  SVC_IF (port_reply, 3),	/*   38 */
-  SVC_IF (queue_create_auto, 1),	/*   39 */
-  SVC_IF (queue_destroy, 1),	/*   40 */
-  SVC_IF (queue_send, 2),	/*   41 */
-  SVC_IF (queue_receive, 2),	/*   42 */
+  SVC_IF (port_create, 2),	/*   28 */
+  SVC_IF (port_create_auto, 1),	/*   29 */
+  SVC_IF (port_destroy, 1),	/*   30 */
+  SVC_IF (port_call, 4),	/*   31 */
+  SVC_IF (port_accept, 4),	/*   32 */
+  SVC_IF (port_reply, 3),	/*   33 */
+  SVC_IF (queue_create_auto, 1),	/*   34 */
+  SVC_IF (queue_destroy, 1),	/*   35 */
+  SVC_IF (queue_send, 2),	/*   36 */
+  SVC_IF (queue_receive, 2),	/*   37 */
 };
 
 #define NSYSCALL (sizeof (syscall_table) / sizeof (syscall_table[0]))
@@ -486,60 +474,6 @@ static ER if_thread_resume(VP argp)
     return (thread_resume(args->taskid));
 }
 
-
-/* ----------------------------------------------------------------------- *
- * タスク間通信システムコール                                              *
- * ----------------------------------------------------------------------- */
-static ER if_flag_create_auto(VP argp)
-{
-    struct {
-	T_CFLG *pk_cflg;
-    } *args = argp;
-
-    return (flag_create_auto(args->pk_cflg));
-}
-
-static ER if_flag_destroy(VP argp)
-{
-    struct {
-	ID flgid;
-    } *args = argp;
-
-    return (flag_destroy(args->flgid));
-}
-
-static ER if_flag_set(VP argp)
-{
-    struct {
-	ID flgid;
-	UINT setptn;
-    } *args = argp;
-
-    return (flag_set(args->flgid, args->setptn));
-}
-
-static ER if_flag_clear(VP argp)
-{
-    struct {
-	ID flgid;
-	UINT clrptn;
-    } *args = argp;
-
-    return (flag_clear(args->flgid, args->clrptn));
-}
-
-static ER if_flag_wait(VP argp)
-{
-    struct {
-	UINT *p_flgptn;
-	ID flgid;
-	UINT waiptn;
-	UINT wfmode;
-    } *args = argp;
-
-    return (flag_wait
-	    (args->p_flgptn, args->flgid, args->waiptn, args->wfmode));
-}
 
 /*
  * 割り込みハンドラを定義する。

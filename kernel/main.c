@@ -205,7 +205,7 @@ static ER initialize(void)
 #ifdef DEBUG
     printk("initialize: start\n");
 #endif
-    flag_initialize();		/* イベントフラグ管理機能の初期化       */
+    queue_initialize();
     port_initialize();
     thread_initialize();		/* タスク管理機能の初期化 */
     kcall_initialize();
