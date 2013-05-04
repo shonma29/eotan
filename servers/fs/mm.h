@@ -39,33 +39,7 @@ Version 2, June 1991
 #ifndef __FS_MM_H__
 #define __FS_MM_H__	1
 
-
-/* virtual memory permission. */
-
-#define VM_READ		0x00000001
-#define VM_WRITE	0x00000002
-#define VM_EXEC		0x00000004
-#define VM_USER		0x00010000
-#define VM_SHARE	0x00000100
-
-#define VM_ALLOCED	0x01000000
-
-
-#define VM_READ_MASK(x)		((x) & VM_READ)
-#define VM_WRITE_MASK(x)	((x) & VM_WRITE)
-#define VM_EXEC_MASK(x)		((x) & VM_EXEC)
-#define VM_USER_MASK(x)		((x) & VM_USER)
-#define VM_SHARE_MASK(x)	((x) & VM_SHARE)
-#define VM_ALLOCED_MASK(x)	((x) & VM_ALLOCED)
-
-
-#define MAX_DIR_ENTRY		1024
-#define MAX_PAGE_ENTRY		1024
-
-#define LOW_USER_ADDR		0
-#define USER_MEM_SIZE		0x80000000UL
-
-
+#include <vm.h>
 
 /* 仮想メモリ - 実メモリの対を管理するツリー
  *
