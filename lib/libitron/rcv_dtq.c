@@ -1,6 +1,3 @@
-#ifndef _ITRON_RENDEZVOUH_H_
-#define _ITRON_RENDEZVOUH_H_
-
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,36 +24,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <itron/types.h>
-
-typedef int ER_UINT;
-
-typedef unsigned int RDVPTN;
-typedef int RDVNO;
-
-#define TBIT_RDVPTN 32
-
-typedef struct t_cpor {
-	ATR poratr;
-	UINT maxcmsz;
-	UINT maxrmsz;
-} T_CPOR;
-
-typedef struct t_rpor {
-	ID ctskid;
-	ID atskid;
-} T_RPOR;
-
-typedef struct t_rrdv {
-	ID wtskid;
-} T_RRDV;
+#include <core.h>
+#include <itron/dataqueue.h>
+#include <mpu/call_kernel.h>
+#include <nerve/svcno.h>
 
 
-extern ER cre_por(ID porid, T_CPOR *pk_cpor);
-extern ER_ID acre_por(T_CPOR *pk_cpor);
-extern ER del_por(ID porid);
-extern ER_UINT cal_por(ID porid, RDVPTN calptn, VP msg, UINT cmsgsz);
-extern ER_UINT acp_por(ID porid, RDVPTN acpptn, RDVNO *p_rdvno, VP msg);
-extern ER rpl_rdv(RDVNO rdvno, VP msg, UINT rmsgsz);
-
-#endif
+ER rcv_dtq(ID dtqid, VP_INT *p_data) {
+	return ncall(SVC_QUEUE_RECEIVE, dtqid, p_data);
+}

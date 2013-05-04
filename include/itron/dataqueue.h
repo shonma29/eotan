@@ -1,5 +1,5 @@
-#ifndef _ITRON_RENDEZVOUH_H_
-#define _ITRON_RENDEZVOUH_H_
+#ifndef _ITRON_DATAQUEUE_H_
+#define _ITRON_DATAQUEUE_H_
 
 /*
 This is free and unencumbered software released into the public domain.
@@ -29,34 +29,20 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <itron/types.h>
 
-typedef int ER_UINT;
+typedef unsigned int VP_INT;
 
-typedef unsigned int RDVPTN;
-typedef int RDVNO;
-
-#define TBIT_RDVPTN 32
-
-typedef struct t_cpor {
-	ATR poratr;
-	UINT maxcmsz;
-	UINT maxrmsz;
-} T_CPOR;
-
-typedef struct t_rpor {
-	ID ctskid;
-	ID atskid;
-} T_RPOR;
-
-typedef struct t_rrdv {
-	ID wtskid;
-} T_RRDV;
+typedef struct t_cdtq {
+	ATR dtqatr;
+	UINT dtqcnt;
+	VP dtq;
+} T_CDTQ;
 
 
-extern ER cre_por(ID porid, T_CPOR *pk_cpor);
-extern ER_ID acre_por(T_CPOR *pk_cpor);
-extern ER del_por(ID porid);
-extern ER_UINT cal_por(ID porid, RDVPTN calptn, VP msg, UINT cmsgsz);
-extern ER_UINT acp_por(ID porid, RDVPTN acpptn, RDVNO *p_rdvno, VP msg);
-extern ER rpl_rdv(RDVNO rdvno, VP msg, UINT rmsgsz);
+extern ER cre_dtq(ID dtqid, T_CDTQ *pk_cdtq);
+extern ER_ID acre_dtq(T_CDTQ *pk_cdtq);
+extern ER del_dtq(ID dtqid);
+extern ER snd_dtq(ID dtqid, VP_INT data);
+extern ER psnd_dtq(ID dtqid, VP_INT data);
+extern ER rcv_dtq(ID dtqid, VP_INT *p_data);
 
 #endif

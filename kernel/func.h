@@ -19,6 +19,7 @@ Version 2, June 1991
 
 
 #include <core.h>
+#include <itron/dataqueue.h>
 #include <itron/rendezvous.h>
 #include <mpu/memory.h>
 #include "thread.h"
@@ -29,9 +30,6 @@ extern ER add_trmtbl(ID, ID, ID);
 
 /* printk.c */
 extern int printk(const char *format, ...);
-
-/* error.c */
-extern void falldown();
 
 /* thread.c */
 extern void thread_initialize(void);
@@ -82,6 +80,13 @@ ER_UINT port_call(ID porid, VP msg, UINT cmsgsz);
 ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg);
 ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz);
 
+/* queue.c */
+ER queue_initialize(void);
+ER_ID queue_create_auto(T_CDTQ *pk_cdtq);
+ER queue_destroy(ID dtqid);
+ER queue_send(ID dtqid, VP_INT data);
+ER queue_receive(ID dtqid, VP_INT *p_data);
+
 /* api.c */
 extern void api_initialize(void);
 
@@ -92,5 +97,8 @@ extern void run_init_program(void);
 extern void *palloc(size_t size);
 extern void pfree(void *addr, size_t size);
 extern UW pmemfree(void);
+
+/* kcall.c */
+extern void kcall_initialize(void);
 
 #endif				/* __CORE_FUNC_H__ */

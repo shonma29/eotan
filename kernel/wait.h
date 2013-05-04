@@ -26,15 +26,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <core.h>
 #include <set/list.h>
-#include <itron/types.h>
+#include <itron/dataqueue.h>
 #include <itron/rendezvous.h>
 
 typedef enum {
 	wait_none,
 	wait_dly,
 	wait_evf,
-	wait_msg,
+	wait_que,
 	wait_por,
 	wait_rdv,
 	wait_alm
@@ -53,9 +54,8 @@ typedef struct {
 			UINT flgptn;
 		} evf;
 		struct {
-			UINT size;
-			VP msg;
-		} msg;
+			VP_INT data;
+		} que;
 		struct {
 			UINT size;
 			VP msg;

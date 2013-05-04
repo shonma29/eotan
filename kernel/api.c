@@ -178,6 +178,7 @@ Version 2, June 1991
 #include <global.h>
 #include <mpu/config.h>
 #include <mpu/io.h>
+#include <itron/dataqueue.h>
 #include <itron/rendezvous.h>
 #include "func.h"
 #include "sync.h"
@@ -237,6 +238,10 @@ static ER_UINT if_port_call(void *argp);
 static ER_UINT if_port_accept(void *argp);
 static ER if_port_reply(void *argp);
 
+static ER_ID if_queue_create_auto(void *argp);
+static ER if_queue_destroy(void *argp);
+static ER if_queue_send(void *argp);
+static ER if_queue_receive(void *argp);
 
 /* システムコールテーブル
  */  
@@ -258,9 +263,6 @@ static ER (*syscall_table[])(VP argp) =
   SVC_IF (thread_suspend, 1),    	/*   9 */
   SVC_IF (thread_resume, 1),	/*   10 */
 
-  /* 同期・通信機構 */
-  /* セマフォ */
-
   /* イベントフラグ */
   SVC_IF (flag_create_auto, 1),	/*   11 */
   SVC_IF (flag_destroy, 1),	/*   12 */
@@ -268,22 +270,16 @@ static ER (*syscall_table[])(VP argp) =
   SVC_IF (flag_clear, 2),     /*   14 */
   SVC_IF (flag_wait, 4),	/*   15 */
 
-  /* メッセージバッファ */
-
-  /* 割りこみ管理 */
-
-  /* メモリ管理 */
-
-  /* システム管理 */
-
   /* 時間管理機能 */
   SVC_IF (time_set, 1),	/*   16 */
   SVC_IF (time_get, 1),	/*   17 */
   SVC_IF (thread_delay, 1),	/*   18 */
   SVC_IF (alarm_create, 2),	/*   19 */
 
+  /* 割りこみ管理 */
   SVC_IF (interrupt_bind, 2),	/*   20 */
 
+  /* システム管理 */
   SVC_IF (get_system_info, 3),	/*   21 */
 
   /* 仮想メモリ管理システムコール */	
@@ -307,6 +303,10 @@ static ER (*syscall_table[])(VP argp) =
   SVC_IF (port_call, 4),	/*   36 */
   SVC_IF (port_accept, 4),	/*   37 */
   SVC_IF (port_reply, 3),	/*   38 */
+  SVC_IF (queue_create_auto, 1),	/*   39 */
+  SVC_IF (queue_destroy, 1),	/*   40 */
+  SVC_IF (queue_send, 2),	/*   41 */
+  SVC_IF (queue_receive, 2),	/*   42 */
 };
 
 #define NSYSCALL (sizeof (syscall_table) / sizeof (syscall_table[0]))
@@ -766,25 +766,14 @@ if_get_system_info(VP argp)
 {
   struct 
     {
-      W func;
-      W sub;
       VP buf;
     } *args = argp;
   system_info_t *out;
   system_info_t *in = (system_info_t*)SYSTEM_INFO_ADDR;
 
-  switch (args->func)
-    {
-      
-    case ROOTFS_INFO:
-      out = (system_info_t*)args->buf;
-      *out = *in;
-      return (E_OK);
-
-    default:
-      return (E_PAR);
-    }
-
+  out = (system_info_t*)args->buf;
+  *out = *in;
+  return (E_OK);
 }
 
 /* if_mpu_copy_stack - copy task stack 
@@ -880,6 +869,44 @@ static ER if_port_reply(VP argp)
     } *args = argp;
 
     return port_reply(args->rdvno, args->msg, args->rmsgsz);
+}
+
+static ER_ID if_queue_create_auto(VP argp)
+{
+    struct {
+	T_CDTQ *pk_cdtq;
+    } *args = argp;
+
+    return queue_create_auto(args->pk_cdtq);
+}
+
+static ER if_queue_destroy(VP argp)
+{
+    struct {
+	ID dtqid;
+    } *args = argp;
+
+    return queue_destroy(args->dtqid);
+}
+
+static ER if_queue_send(VP argp)
+{
+    struct {
+	ID dtqid;
+	VP_INT data;
+    } *args = argp;
+
+    return queue_send(args->dtqid, args->data);
+}
+
+static ER if_queue_receive(VP argp)
+{
+    struct {
+	ID dtqid;
+	VP_INT *p_data;
+    } *args = argp;
+
+    return queue_receive(args->dtqid, args->p_data);
 }
 
 void api_initialize(void)
