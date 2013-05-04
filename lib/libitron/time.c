@@ -43,12 +43,3 @@ ER dly_tsk(DLYTIME dlytim)
 {
   return ncall(SVC_THREAD_DELAY, dlytim);
 }
-
-/*
- * アラームハンドラ定義
- */
-
-ER def_alm(HNO almo, T_DALM *pk_dalm)
-{
-  return ncall(SVC_ALARM_CREATE, almo, pk_dalm);
-}

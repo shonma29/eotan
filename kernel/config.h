@@ -54,8 +54,4 @@ Version 2, June 1991
 /* インターバルタイマ */
 #define MAX_TIMER	(500)
 
-
-/* 時間管理 */
-#define MAX_ALARM		(50)	/* アラームハンドラの最大数 */
-
 #endif				/* _CORE_CONFIG_H_ */

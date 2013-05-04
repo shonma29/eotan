@@ -49,8 +49,6 @@ static struct timer_list {
 /* 大域変数の宣言 */
 W do_timer = 0;
 
-static T_DALM almtable[MAX_ALARM];
-
 SYSTIME system_time;
 #define MS 1000
 
@@ -66,8 +64,6 @@ void time_initialize(UW seconds)
   SYSTIME time;
   UW TH, TM, TL;
   
-  memset(almtable, 0, sizeof(T_DALM)*MAX_ALARM);
-
   TH = 0;
   TM = (seconds >> 16) * MS;
   TL = (seconds & 0x0FFFF) * MS;
@@ -130,48 +126,6 @@ ER thread_delay(DLYTIME dlytim)
   unset_timer ((void (*)(VP))dly_func, run_task);
   return (run_task->wait.result);
 }
-
-/*
- * アラームハンドラ定義
- */
-
-ER alarm_create(HNO almno, T_DALM *pk_dalm)
-{
-  if (almno < 0) return(E_PAR);
-  else if (almno >= MAX_ALARM) return(E_PAR);
-  if (pk_dalm == NULL) return (E_PAR);
-  if (pk_dalm == (T_DALM *) NADR) {
-    if (almtable[almno].almhdr != NULL) {
-      unset_timer((void (*)(VP))almtable[almno].almhdr, almtable[almno].exinf);
-    }
-    memset(&(almtable[almno]), 0, sizeof(T_DALM));
-  }
-  else {
-    if (pk_dalm->tmmode == TTM_ABS) {
-      return(E_NOSPT);
-    }
-    if (pk_dalm->almtim.utime > 0) {
-      return(E_NOSPT);
-    }
-    if (almtable[almno].almhdr != NULL) {
-      unset_timer((void (*)(VP))almtable[almno].almhdr, almtable[almno].exinf);
-    }
-
-    almtable[almno].exinf = pk_dalm->exinf;
-    almtable[almno].almhdr = pk_dalm->almhdr;
-    almtable[almno].almatr = pk_dalm->almatr;
-    almtable[almno].tmmode = pk_dalm->tmmode;
-    memcpy(&(almtable[almno].almtim), &(pk_dalm->almtim), sizeof(ALMTIME));
-    set_timer(pk_dalm->almtim.ltime, (void (*)(VP))pk_dalm->almhdr,
-	      pk_dalm->exinf);
-  }
-  return(E_OK);
-}
-
-
-
-
-
 
 
 /*************************************************************************

@@ -58,7 +58,6 @@ extern void time_initialize(UW seconds);
 extern ER time_set(SYSTIME *pk_tim);
 extern ER time_get(SYSTIME *pk_tim);
 extern ER thread_delay(DLYTIME dlytim);
-extern ER alarm_create(HNO almno, T_DALM *pk_dalm);
 extern void intr_interval(void);
 extern void timer_initialize(void);
 extern void check_timer(void);

@@ -205,7 +205,6 @@ static ER	if_thread_resume(void *argp);
 static ER	if_time_set(void *argp);
 static ER	if_time_get(void *argp);
 static ER	if_thread_delay(void *argp);
-static ER	if_alarm_create(void *argp);
 
 static ER	if_interrupt_bind(void *argp);
 
@@ -262,39 +261,38 @@ static ER (*syscall_table[])(VP argp) =
   SVC_IF (time_set, 1),	/*   11 */
   SVC_IF (time_get, 1),	/*   12 */
   SVC_IF (thread_delay, 1),	/*   13 */
-  SVC_IF (alarm_create, 2),	/*   14 */
 
   /* 割りこみ管理 */
-  SVC_IF (interrupt_bind, 2),	/*   15 */
+  SVC_IF (interrupt_bind, 2),	/*   14 */
 
   /* システム管理 */
-  SVC_IF (get_system_info, 3),	/*   16 */
+  SVC_IF (get_system_info, 3),	/*   15 */
 
   /* 仮想メモリ管理システムコール */	
-  SVC_IF (region_create, 6),	/*   17 */
-  SVC_IF (region_destroy, 2),	/*   18 */
-  SVC_IF (region_map, 3),	/*   19 */
-  SVC_IF (region_unmap, 3),	/*   20 */
-  SVC_IF (region_duplicate, 2),	/*   21 */
-  SVC_IF (region_put, 4),	/*   22 */
-  SVC_IF (region_get, 4),	/*   23 */
-  SVC_IF (region_get_status, 3),	/*   24 */
-  SVC_IF (get_physical_address, 3),	/*   25 */
+  SVC_IF (region_create, 6),	/*   16 */
+  SVC_IF (region_destroy, 2),	/*   17 */
+  SVC_IF (region_map, 3),	/*   18 */
+  SVC_IF (region_unmap, 3),	/*   19 */
+  SVC_IF (region_duplicate, 2),	/*   20 */
+  SVC_IF (region_put, 4),	/*   21 */
+  SVC_IF (region_get, 4),	/*   22 */
+  SVC_IF (region_get_status, 3),	/*   23 */
+  SVC_IF (get_physical_address, 3),	/*   24 */
 
   /* その他のシステムコール */
-  SVC_IF (mpu_copy_stack, 4),	/*   26 */
-  SVC_IF (mpu_set_context, 4),	/*   27 */
+  SVC_IF (mpu_copy_stack, 4),	/*   25 */
+  SVC_IF (mpu_set_context, 4),	/*   26 */
 
-  SVC_IF (port_create, 2),	/*   28 */
-  SVC_IF (port_create_auto, 1),	/*   29 */
-  SVC_IF (port_destroy, 1),	/*   30 */
-  SVC_IF (port_call, 4),	/*   31 */
-  SVC_IF (port_accept, 4),	/*   32 */
-  SVC_IF (port_reply, 3),	/*   33 */
-  SVC_IF (queue_create_auto, 1),	/*   34 */
-  SVC_IF (queue_destroy, 1),	/*   35 */
-  SVC_IF (queue_send, 2),	/*   36 */
-  SVC_IF (queue_receive, 2),	/*   37 */
+  SVC_IF (port_create, 2),	/*   27 */
+  SVC_IF (port_create_auto, 1),	/*   28 */
+  SVC_IF (port_destroy, 1),	/*   29 */
+  SVC_IF (port_call, 4),	/*   30 */
+  SVC_IF (port_accept, 4),	/*   31 */
+  SVC_IF (port_reply, 3),	/*   32 */
+  SVC_IF (queue_create_auto, 1),	/*   33 */
+  SVC_IF (queue_destroy, 1),	/*   34 */
+  SVC_IF (queue_send, 2),	/*   35 */
+  SVC_IF (queue_receive, 2),	/*   36 */
 };
 
 #define NSYSCALL (sizeof (syscall_table) / sizeof (syscall_table[0]))
@@ -677,16 +675,6 @@ static ER if_thread_delay(VP argp)
     } *args = argp;
 
     return (thread_delay(args->dlytim));
-}
-
-static ER if_alarm_create(VP argp)
-{
-    struct {
-	HNO almo;
-	T_DALM *pk_dalm;
-    } *args = argp;
-
-    return (alarm_create(args->almo, args->pk_dalm));
 }
 
 /*

@@ -36,8 +36,7 @@ typedef enum {
 	wait_dly,
 	wait_que,
 	wait_por,
-	wait_rdv,
-	wait_alm
+	wait_rdv
 } wait_type_e;
 
 typedef struct {
