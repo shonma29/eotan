@@ -120,7 +120,7 @@ char *testfile() {
 			st.st_mode);
 	assert_eq("umask[0-4]", 0, close(fd));
 
-	assert_eq("fcntl[0]", -1, fcntl(1, 0x10000, 1));
+	assert_eq("fcntl[0]", 0, fcntl(1, 0x10000, 1));
 
 	return NULL;
 }
@@ -153,8 +153,8 @@ char *testdir() {
 
 	assert_eq("getcwd[0]", 0, strcmp("/", getcwd(buf, sizeof(buf))));
 
-	assert_eq("chdir", 0, chdir("system"));
-	assert_eq("getcwd[1]", 0, strcmp("/system", getcwd(buf, sizeof(buf))));
+	assert_eq("chdir", 0, chdir("dev"));
+	assert_eq("getcwd[1]", 0, strcmp("/dev", getcwd(buf, sizeof(buf))));
 /*
 	assert_eq("mkdir[0]", 0,
 			mkdir("hoge", S_IRGRP | S_IROTH | S_IWOTH));
