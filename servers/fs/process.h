@@ -192,7 +192,9 @@ extern W		proc_dump (struct posix_request *req);
 extern W		proc_get_procp (W procid, struct proc **procp);
 extern W		proc_destroy_memory (W procid);
 extern W		proc_exit (W procid);
+#if 0
 extern W		proc_vm_dump (struct posix_request *req);
+#endif
 extern struct vm_tree	*proc_get_vmtree (W procid);
 extern W		proc_alloc_proc (struct proc **procp);
 extern W 		do_ps();

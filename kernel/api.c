@@ -210,17 +210,6 @@ static ER	if_interrupt_bind(void *argp);
 
 static ER	if_get_system_info(void *argp);
 
-/* 仮想メモリ管理用システムコール */
-static ER	if_region_create(void *argp);
-static ER	if_region_destroy(void *argp);
-static ER	if_region_map(void *argp);
-static ER	if_region_unmap(void *argp);
-static ER	if_region_duplicate(void *argp);
-static ER	if_region_put(void *argp);
-static ER	if_region_get(void *argp);
-static ER	if_region_get_status(void *argp);
-static ER	if_get_physical_address(void *argp);
-
 /* その他のシステムコール */
 static ER	if_mpu_copy_stack(void *argp);
 static ER	if_mpu_set_context(void *argp);
@@ -268,31 +257,20 @@ static ER (*syscall_table[])(VP argp) =
   /* システム管理 */
   SVC_IF (get_system_info, 3),	/*   15 */
 
-  /* 仮想メモリ管理システムコール */	
-  SVC_IF (region_create, 6),	/*   16 */
-  SVC_IF (region_destroy, 2),	/*   17 */
-  SVC_IF (region_map, 3),	/*   18 */
-  SVC_IF (region_unmap, 3),	/*   19 */
-  SVC_IF (region_duplicate, 2),	/*   20 */
-  SVC_IF (region_put, 4),	/*   21 */
-  SVC_IF (region_get, 4),	/*   22 */
-  SVC_IF (region_get_status, 3),	/*   23 */
-  SVC_IF (get_physical_address, 3),	/*   24 */
-
   /* その他のシステムコール */
-  SVC_IF (mpu_copy_stack, 4),	/*   25 */
-  SVC_IF (mpu_set_context, 4),	/*   26 */
+  SVC_IF (mpu_copy_stack, 4),	/*   17 */
+  SVC_IF (mpu_set_context, 4),	/*   18 */
 
-  SVC_IF (port_create, 2),	/*   27 */
-  SVC_IF (port_create_auto, 1),	/*   28 */
-  SVC_IF (port_destroy, 1),	/*   29 */
-  SVC_IF (port_call, 4),	/*   30 */
-  SVC_IF (port_accept, 4),	/*   31 */
-  SVC_IF (port_reply, 3),	/*   32 */
-  SVC_IF (queue_create_auto, 1),	/*   33 */
-  SVC_IF (queue_destroy, 1),	/*   34 */
-  SVC_IF (queue_send, 2),	/*   35 */
-  SVC_IF (queue_receive, 2),	/*   36 */
+  SVC_IF (port_create, 2),	/*   19 */
+  SVC_IF (port_create_auto, 1),	/*   20 */
+  SVC_IF (port_destroy, 1),	/*   21 */
+  SVC_IF (port_call, 4),	/*   22 */
+  SVC_IF (port_accept, 4),	/*   23 */
+  SVC_IF (port_reply, 3),	/*   24 */
+  SVC_IF (queue_create_auto, 1),	/*   25 */
+  SVC_IF (queue_destroy, 1),	/*   26 */
+  SVC_IF (queue_send, 2),	/*   27 */
+  SVC_IF (queue_receive, 2),	/*   28 */
 };
 
 #define NSYSCALL (sizeof (syscall_table) / sizeof (syscall_table[0]))
@@ -501,151 +479,6 @@ static ER if_interrupt_bind(VP argp)
     return (E_OK);
 }
 
-/*
- * 仮想メモリ管理の関数群 
- */
-
-/*
- *
- */
-static ER if_region_create(VP argp)
-{
-    struct {
-	ID id;
-	ID rid;
-	VP start;
-	W min;
-	W max;
-	UW perm;
-    } *args = argp;
-
-    return region_create(args->id, args->rid, args->start, args->min,
-		    args->max, args->perm);
-}
-
-/*
- *
- */
-static ER if_region_destroy(VP argp)
-{
-    struct {
-	ID id;
-	ID rid;
-    } *args = argp;
-
-    return region_destroy(args->id, args->rid);
-}
-
-/*
- *
- */
-static ER if_region_map(VP argp)
-{
-    struct {
-	ID id;
-	VP start;
-	W size;
-	W accmode;
-    } *args = argp;
-
-    return region_map(args->id, args->start, args->size, args->accmode);
-}
-
-/*
- *
- */
-static ER if_region_unmap(VP argp)
-{
-    struct {
-	ID id;
-	VP addr;
-	W size;
-    } *args = argp;
-
-    return region_unmap(args->id, args->addr, args->size);
-}
-
-/*
- *
- */
-static ER if_region_duplicate(VP argp)
-{
-    struct {
-	ID src;
-	ID dst;
-    } *args = argp;
-
-    return region_duplicate(args->src, args->dst);
-}
-
-/*
- *
- */
-static ER if_region_put(VP argp)
-{
-    struct {
-	ID id;
-	VP start;
-	W size;
-	VP buf;
-    } *args = argp;
-
-    return region_put(args->id, args->start, args->size, args->buf);
-}
-
-/*
- *
- */
-static ER if_region_get(VP argp)
-{
-    struct {
-	ID id;
-	VP start;
-	W size;
-	VP buf;
-    } *args = argp;
-
-
-    return region_get(args->id, args->start, args->size, args->buf);
-}
-
-/*
- *
- */
-static ER if_region_get_status(VP argp)
-{
-    struct {
-	ID id;
-	ID rid;
-	VP stat;
-    } *args = argp;
-
-    return region_get_status(args->id, args->rid, args->stat);
-}
-
-
-
-/*
- *
- */
-static ER if_get_physical_address(VP argp)
-{
-    struct {
-	ID id;
-	VP addr;
-	UW *paddr;
-    } *args = argp;
-    UW physical_addr;
-
-    physical_addr = vtor(args->id, (UW) args->addr);
-    if (physical_addr == NULL) {
-	return (E_OBJ);
-    }
-    *(args->paddr) = physical_addr;
-    return (E_OK);
-}
-
-
 /*
  * 時間管理の関数群 
  */

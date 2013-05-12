@@ -24,6 +24,7 @@ Version 2, June 1991
  */
 
 #include <fcntl.h>
+#include <kcall.h>
 #include "fs.h"
 
 /* psc_mount_f - ファイルシステムをマウントする
@@ -50,8 +51,9 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
     struct inode *startip;
     struct inode *mountpoint, *device;
     struct access_info acc;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    errno = vget_reg(req->caller,
+    errno = kcall->region_get(req->caller,
 		     req->param.par_mount.devname,
 		     req->param.par_mount.devnamelen + 1, devname);
     if (errno) {
@@ -63,7 +65,7 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
 
 	return (FALSE);
     }
-    errno = vget_reg(req->caller,
+    errno = kcall->region_get(req->caller,
 		     req->param.par_mount.dirname,
 		     req->param.par_mount.dirnamelen + 1, dirname);
 
@@ -77,7 +79,7 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
 	return (FALSE);
     }
 
-    errno = vget_reg(req->caller,
+    errno = kcall->region_get(req->caller,
 		     req->param.par_mount.fstype,
 		     req->param.par_mount.fstypelen + 1, fstype);
     if (errno) {
@@ -189,8 +191,9 @@ W psc_umount_f(RDVNO rdvno, struct posix_request *req)
     struct inode *startip;
     struct inode *umpoint;
     struct access_info acc;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    errno = vget_reg(req->caller,
+    errno = kcall->region_get(req->caller,
 		     req->param.par_umount.dirname,
 		     req->param.par_umount.dirnamelen + 1, dirname);
 

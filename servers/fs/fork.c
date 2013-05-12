@@ -69,6 +69,7 @@ Version 2, June 1991
  *
  */
 
+#include <kcall.h>
 #include <local.h>
 #include <string.h>
 #include "fs.h"
@@ -86,6 +87,7 @@ W proc_fork(struct proc *parent, W * childid, ID main_task, ID signal_task)
 /*   ID		main_task, signal_task;
  */
     thread_local_t local_data, local_par;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 #ifdef FKDEBUG
     printk
@@ -117,17 +119,17 @@ W proc_fork(struct proc *parent, W * childid, ID main_task, ID signal_task)
 
     newproc->proc_status = PS_RUN;
     newproc->proc_ppid = parent->proc_pid;
-    errno = vmap_reg(main_task, (thread_local_t*)LOCAL_ADDR, sizeof(thread_local_t),
+    errno = kcall->region_map(main_task, (thread_local_t*)LOCAL_ADDR, sizeof(thread_local_t),
     		ACC_USER);
     if (errno)
 	return errno;
 
-    errno = vget_reg(main_task, (thread_local_t*)LOCAL_ADDR,
+    errno = kcall->region_get(main_task, (thread_local_t*)LOCAL_ADDR,
 		     sizeof(thread_local_t), &local_data);
     if (errno)
 	return errno;
 
-    errno = vget_reg(parent->proc_maintask, (thread_local_t*)LOCAL_ADDR,
+    errno = kcall->region_get(parent->proc_maintask, (thread_local_t*)LOCAL_ADDR,
 		     sizeof(thread_local_t), &local_par);
     if (errno)
 	return errno;
@@ -140,7 +142,7 @@ W proc_fork(struct proc *parent, W * childid, ID main_task, ID signal_task)
     local_data.cwd[local_par.cwd_length] = '\0';
     local_data.cwd_length = local_par.cwd_length;
 
-    errno = vput_reg(main_task, (thread_local_t*)LOCAL_ADDR,
+    errno = kcall->region_put(main_task, (thread_local_t*)LOCAL_ADDR,
 		     sizeof(thread_local_t), &local_data);
     if (errno)
 	return errno;
@@ -163,7 +165,7 @@ W proc_duplicate(struct proc * source, struct proc * destination)
 {
     W errno;
     W index;
-
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     /* プロセスの仮想空間のコピー
 
@@ -178,7 +180,7 @@ W proc_duplicate(struct proc * source, struct proc * destination)
     /* text */
     /* data+bss */
     /* heap */
-    vdup_reg(source->proc_maintask, destination->proc_maintask);
+    kcall->region_duplicate(source->proc_maintask, destination->proc_maintask);
 
     /* 仮想空間の生成 */
     errno = create_vm_tree(destination);

@@ -56,6 +56,7 @@ Version 2, June 1991
 
 #include <elf.h>
 #include <fcntl.h>
+#include <kcall.h>
 #include <string.h>
 #include <boot/init.h>
 #include <mpu/config.h>
@@ -85,6 +86,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     Elf32_Phdr text, data;
     ID main_task;
     struct proc *procp;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 #ifdef notdef
     printk("[PM] exec_program: path = \"%s\"\n", pathname);	/* */
@@ -151,9 +153,9 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 #endif
     /* region の解放 */
     main_task = procp->proc_maintask;
-    vdel_reg(main_task, TEXT_REGION);	/* text */
-    vdel_reg(main_task, DATA_REGION);	/* data+bss */
-    vdel_reg(main_task, HEAP_REGION);	/* heap */
+    kcall->region_destroy(main_task, TEXT_REGION);	/* text */
+    kcall->region_destroy(main_task, DATA_REGION);	/* data+bss */
+    kcall->region_destroy(main_task, HEAP_REGION);	/* heap */
 
 #ifdef notdef
     dbg_printf("[PM] setup vm proc\n");
@@ -184,7 +186,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     }
 
     /* 残りの region の作成 */
-    errno = vcre_reg(req->caller, HEAP_REGION,
+    errno = kcall->region_create(req->caller, HEAP_REGION,
 		     (VP) VADDR_HEAP, 0, STD_HEAP_SIZE,
 	     VM_READ | VM_WRITE | VM_USER);	/* heap */
 #ifdef DEBUG
@@ -355,13 +357,14 @@ load_text(W procid, struct inode *ip, Elf32_Phdr *text, ID task)
     W vaddr;
     static B buf[PAGE_SIZE];
     UW start, size;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     start = pageRoundDown(text->p_vaddr);
     size =
 	pageRoundUp(text->p_memsz +
 		(text->p_vaddr - pageRoundDown(text->p_vaddr)));
     /* text region の設定 */
-    vcre_reg(task, TEXT_REGION, (VP) start, size, size,
+    kcall->region_create(task, TEXT_REGION, (VP) start, size, size,
 	     VM_READ | VM_EXEC | VM_USER);
 
     errno = alloc_memory(procid, start, size, VM_READ | VM_EXEC);
@@ -387,7 +390,7 @@ load_text(W procid, struct inode *ip, Elf32_Phdr *text, ID task)
 	    return (ENOMEM);
 	}
 
-	errno = vput_reg(task, (B *) vaddr, read_size, buf);
+	errno = kcall->region_put(task, (B *) vaddr, read_size, buf);
 	if (errno) {
 #ifdef EXEC_DEBUG
 	    dbg_printf("ERROR: vput_reg %d %d %x %d %x\n", errno,
@@ -416,13 +419,14 @@ load_data(W procid, struct inode *ip, Elf32_Phdr *data, ID task)
     W vaddr;
     static B buf[PAGE_SIZE];
     UW start, size;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     start = pageRoundDown(data->p_vaddr);
     size =
 	pageRoundUp(data->p_memsz +
 		(data->p_vaddr - pageRoundDown(data->p_vaddr)));
     /* data+bss region の設定 */
-    vcre_reg(task, DATA_REGION, (VP) start, size, size,
+    kcall->region_create(task, DATA_REGION, (VP) start, size, size,
 	     VM_READ | VM_WRITE | VM_USER);	/* data+bss */
     errno = alloc_memory(procid, start, size, VM_READ | VM_WRITE);
     if (errno) {
@@ -447,7 +451,7 @@ load_data(W procid, struct inode *ip, Elf32_Phdr *data, ID task)
 	    return (ENOMEM);
 	}
 
-	errno = vput_reg(task, (B *) vaddr, read_size, buf);
+	errno = kcall->region_put(task, (B *) vaddr, read_size, buf);
 	if (errno) {
 #ifdef EXEC_DEBUG
 	    dbg_printf("ERROR: vput_reg\n");

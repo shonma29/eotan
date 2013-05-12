@@ -16,6 +16,7 @@ Version 2, June 1991
  */
 
 #include <core.h>
+#include <kcall.h>
 #include <mpu/config.h>
 #include <mpu/memory.h>
 #include "thread.h"
@@ -28,13 +29,14 @@ W psc_brk_f(RDVNO rdvno, struct posix_request *req)
     T_REGION reg;
     VP start;
     UW size;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     mypid = req->procid;
     err = proc_get_procp(mypid, &myprocp);
     if (err)
 	return err;
 
-    err = vsts_reg(req->caller, HEAP_REGION, (VP) & reg);
+    err = kcall->region_get_status(req->caller, HEAP_REGION, (VP) & reg);
 #ifdef DEBUG
     dbg_printf("[PM] err = %d id %d, sa %x, min %x, max %x, ea %x\n",
 	       req->caller,
@@ -89,6 +91,7 @@ W psc_exec_f(RDVNO rdvno, struct posix_request *req)
 {
     B pathname[MAX_NAMELEN];
     W errno;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 #ifdef EXEC_DEBUG
     printk("[PM] exec: start\n");
@@ -96,7 +99,7 @@ W psc_exec_f(RDVNO rdvno, struct posix_request *req)
 
     /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。
      */
-    errno = vget_reg(req->caller, req->param.par_execve.name,
+    errno = kcall->region_get(req->caller, req->param.par_execve.name,
 		     req->param.par_execve.pathlen + 1, pathname);
     if (errno) {
 	/* パス名のコピーエラー */
@@ -143,6 +146,7 @@ psc_exit_f (RDVNO rdvno, struct posix_request *req)
   W i;
   ER errno;
   ID tskid;
+  kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
   mypid = req->procid;
   errno = proc_get_procp(mypid, &myprocp);
@@ -195,11 +199,11 @@ psc_exit_f (RDVNO rdvno, struct posix_request *req)
 
   /* region の開放, 実際には必要無いだろう */
   tskid = req->caller,
-  vdel_reg(tskid, TEXT_REGION); /* text */
-  vdel_reg(tskid, DATA_REGION); /* data+bss */
-  vdel_reg(tskid, HEAP_REGION); /* heap */
+  kcall->region_destroy(tskid, TEXT_REGION); /* text */
+  kcall->region_destroy(tskid, DATA_REGION); /* data+bss */
+  kcall->region_destroy(tskid, HEAP_REGION); /* heap */
 #ifdef notdef
-  vdel_reg(tskid, STACK_REGION); /* stack */
+  kcall->region_destroy(tskid, STACK_REGION); /* stack */
 #endif
 
   put_response (rdvno, EOK, 0, 0);

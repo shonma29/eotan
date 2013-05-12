@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <kcall.h>
 #include <string.h>
 #include <boot/init.h>
 #include <mpu/config.h>
@@ -100,6 +101,7 @@ static W create_init(ID process_id, ID thread_id)
 {
 	struct proc *p;
 	W err;
+	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	dbg_printf("[MM] create_init(%d, %d)\n", process_id, thread_id);
 
@@ -135,11 +137,11 @@ static W create_init(ID process_id, ID thread_id)
 		return err;
 	}
 
-	vcre_reg(thread_id, TEXT_REGION, 0,
+	kcall->region_create(thread_id, TEXT_REGION, 0,
 			0x7fffffff, 0x7fffffff, INIT_ACCESS);
-	vcre_reg(thread_id, DATA_REGION, 0,
+	kcall->region_create(thread_id, DATA_REGION, 0,
 			0x7fffffff, 0x7fffffff, INIT_ACCESS);
-	vcre_reg(thread_id, HEAP_REGION, 0,
+	kcall->region_create(thread_id, HEAP_REGION, 0,
 			0, 0x7fffffff, INIT_ACCESS);
 	err = create_vm_tree(p);
 	if (err)

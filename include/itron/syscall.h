@@ -22,33 +22,10 @@ extern ER	get_tid (ID *p_tskid);
 extern ER	sus_tsk (ID taskid);
 extern ER	rsm_tsk (ID taskid);
 
-extern ER def_int(W intno, T_DINT *pk_dint);
-
-/* --------------------------------------------------------- */
-/* イベントフラグ用関数                                      */
-/* --------------------------------------------------------- */
-extern ER_ID	acre_flg (T_CFLG *pk_cflg);
-extern ER	del_flg (ID flgid);
-extern ER	set_flg (ID flgid, UINT setptn);
-extern ER	clr_flg (ID flgid, UINT clrptn);
-extern ER	wai_flg (UINT *p_flgptn, ID flgid, UINT waiptn, UINT wfmode);
-
 /* --------------------------------------------------------- */
 /* Interrupt                                                 */
 /* --------------------------------------------------------- */
-
-/* --------------------------------------------------------- */
-/* Memory                                                    */
-/* --------------------------------------------------------- */
-extern ER vcre_reg (ID id, ID rid, VP start, W min, W max, UW perm);
-extern ER vdel_reg (ID id, ID rid);
-extern ER vdup_reg (ID src, ID dst);
-extern ER vsts_reg (ID id, ID rid, VP stat);
-extern ER vmap_reg (ID id, VP start, UW size, W accmode);
-extern ER vunm_reg (ID id, VP addr, UW size);
-extern ER vget_reg (ID id, VP start, UW size, VP buf);
-extern ER vput_reg (ID id, VP start, UW size, VP buf);
-extern ER vget_phs (ID id, VP addr, UW *paddr);
+extern ER def_int(W intno, T_DINT *pk_dint);
 
 /* --------------------------------------------------------- */
 /* 時間管理                                                    */
@@ -56,7 +33,6 @@ extern ER vget_phs (ID id, VP addr, UW *paddr);
 extern ER set_tim(SYSTIME *pk_tim);
 extern ER get_tim(SYSTIME *pk_tim);
 extern ER dly_tsk(DLYTIME dlytim);
-extern ER def_alm(HNO almo, T_DALM *pk_dalm);
 
 /* --------------------------------------------------------- */
 /* MISC                                                      */

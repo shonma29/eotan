@@ -20,6 +20,7 @@ Version 2, June 1991
  *
  */
 
+#include <kcall.h>
 #include "fs.h"
 
 #define MS 1000
@@ -39,11 +40,11 @@ W psc_misc_f(RDVNO rdvno, struct posix_request *req)
     case M_PROC_DUMP:
 	err = proc_dump(req);
 	break;
-
+#if 0
     case M_VM_DUMP:
 	err = proc_vm_dump(req);
 	break;
-
+#endif
     case M_PRINT_FLIST:
 	/* malloc の空きリストの表示 */
 	print_freelist();
@@ -98,6 +99,7 @@ W psc_time_f(RDVNO rdvno, struct posix_request * req)
     ER errno = EOK;
     struct timeval tv;
     struct timezone tz;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     clock = get_system_time(&usec);
 
@@ -107,7 +109,7 @@ W psc_time_f(RDVNO rdvno, struct posix_request * req)
     tz.tz_dsttime = 0;
 
     if (req->param.par_time.tv != NULL) {
-	errno = vput_reg(req->caller,
+	errno = kcall->region_put(req->caller,
 			 req->param.par_time.tv, sizeof(struct timeval),
 			 &tv);
 	if (errno) {
@@ -117,7 +119,7 @@ W psc_time_f(RDVNO rdvno, struct posix_request * req)
 
     }
     if (req->param.par_time.tz == NULL) {
-	errno = vput_reg(req->caller,
+	errno = kcall->region_put(req->caller,
 			 req->param.par_time.tz, sizeof(struct timezone),
 			 &tz);
 	if (errno) {

@@ -25,6 +25,7 @@ Version 2, June 1991
 
 #include <device.h>
 #include <fcntl.h>
+#include <kcall.h>
 #include <string.h>
 #include "fs.h"
 
@@ -179,6 +180,7 @@ static W control_device(ID device, struct posix_request *preq)
     ID send_port;
     UW dd;
     ER_UINT rlength;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     errno = get_device_info(device, &send_port, &dd);
     if (errno) {
@@ -198,7 +200,7 @@ static W control_device(ID device, struct posix_request *preq)
 	*p = (W) preq->param.par_fcntl.arg;
 	packet.req.body.ctl_req.len = sizeof(W);
     } else {
-	errno = vget_reg(preq->caller, preq->param.par_fcntl.arg,
+	errno = kcall->region_get(preq->caller, preq->param.par_fcntl.arg,
 			 packet.req.body.ctl_req.len,
 			 packet.req.body.ctl_req.param);
 	if (errno) {
@@ -323,6 +325,7 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
     struct access_info acc;
     W umask;
     W rsize;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     errno = proc_alloc_fileid(req->procid, &fileid);
     if (errno) {
@@ -333,7 +336,7 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
 
     /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。
      */
-    errno = vget_reg(req->caller, req->param.par_open.path,
+    errno = kcall->region_get(req->caller, req->param.par_open.path,
 		     req->param.par_open.pathlen + 1, pathname);
     if (errno) {
 	/* パス名のコピーエラー */
@@ -461,6 +464,7 @@ W psc_read_f(RDVNO rdvno, struct posix_request *req)
     W rest_length;
     W i, len;
     static B buf[MAX_BODY_SIZE];
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     errno = proc_get_file(req->procid, req->param.par_read.fileid, &fp);
     if (errno) {
@@ -514,7 +518,7 @@ W psc_read_f(RDVNO rdvno, struct posix_request *req)
 		break;
 
 	    /* 呼び出したプロセスのバッファへの書き込み */
-	    errno = vput_reg(req->caller, req->param.par_read.buf + i,
+	    errno = kcall->region_put(req->caller, req->param.par_read.buf + i,
 			rlength, buf);
 	    if (errno || (rlength < len)) {
 		i += rlength;
@@ -552,7 +556,7 @@ W psc_read_f(RDVNO rdvno, struct posix_request *req)
 	}
 
 	/* 呼び出したプロセスのバッファへの書き込み */
-	errno = vput_reg(req->caller, req->param.par_read.buf + i,
+	errno = kcall->region_put(req->caller, req->param.par_read.buf + i,
 			 rlength, buf);
 	if (errno || (rlength < len)) {
 	    i += rlength;
@@ -579,6 +583,7 @@ W psc_write_f(RDVNO rdvno, struct posix_request *req)
 #ifdef DEBUG
     W j;
 #endif
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     errno = proc_get_file(req->procid, req->param.par_write.fileid, &fp);
     if (errno) {
@@ -639,7 +644,7 @@ W psc_write_f(RDVNO rdvno, struct posix_request *req)
 #endif
 	len = rest_length > MAX_BODY_SIZE ? MAX_BODY_SIZE : rest_length;
 	errno =
-	    vget_reg(req->caller, req->param.par_write.buf + i, len, buf);
+	    kcall->region_get(req->caller, req->param.par_write.buf + i, len, buf);
 	if (errno)
 	    break;
 #ifdef DEBUG

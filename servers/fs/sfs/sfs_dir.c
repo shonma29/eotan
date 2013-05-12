@@ -51,6 +51,7 @@ Version 2, June 1991
  *
  */
 
+#include <kcall.h>
 #include <string.h>
 #include "../fs.h"
 #include "sfs_fs.h"
@@ -133,6 +134,7 @@ W sfs_getdents(struct inode *ip, ID caller, W offset,
     unsigned short	d_reclen;
     char		d_name[SFS_MAXNAMELEN+1];
   } dent;
+  kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
   *rsize = 0; *fsize = 0;
   dent.d_ino = ip->i_index;
@@ -150,7 +152,7 @@ W sfs_getdents(struct inode *ip, ID caller, W offset,
       dent.d_off = i*s;
       strncpy(dent.d_name, dirp[i].sfs_d_name, SFS_MAXNAMELEN);
       dent.d_name[SFS_MAXNAMELEN] = '\0';
-      errno = vput_reg(caller, buf+(*rsize), len, &dent);
+      errno = kcall->region_put(caller, buf+(*rsize), len, &dent);
       if (errno) return(errno);
       *rsize += len;
       *fsize += s;

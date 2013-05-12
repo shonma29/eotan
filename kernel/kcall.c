@@ -28,10 +28,20 @@ For more information, please refer to <http://unlicense.org/>
 #include <kcall.h>
 #include <itron/rendezvous.h>
 #include "func.h"
+#include "mpu/mpufunc.h"
 
 void kcall_initialize(void)
 {
 	kcall_t *p = (kcall_t*)KCALL_ADDR;
+
+	p->region_create = region_create;
+	p->region_destroy = region_destroy;
+	p->region_map = region_map;
+	p->region_unmap = region_unmap;
+	p->region_duplicate = region_duplicate;
+	p->region_get = region_get;
+	p->region_put = region_put;
+	p->region_get_status = region_get_status;
 
 	p->port_create = port_create;
 	p->port_create_auto = port_create_auto;

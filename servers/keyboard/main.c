@@ -63,6 +63,7 @@ Version 2, June 1991
 **********************************************************************/
 
 #include <device.h>
+#include <kcall.h>
 #include <major.h>
 #include <itron/dataqueue.h>
 #include <itron/rendezvous.h>
@@ -362,6 +363,7 @@ static void respond_ctrl(RDVNO rdvno, devmsg_t * packet, W dd, ER errno)
 static W control_keyboard(RDVNO rdvno, devmsg_t * packet)
 {
     DDEV_CTL_REQ * req = &(packet->req.body.ctl_req);
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     switch (req->cmd) {
     case KEYBOARD_CLEAR:
@@ -399,7 +401,7 @@ static W control_keyboard(RDVNO rdvno, devmsg_t * packet)
 	return (E_OK);
 
     case KEYBOARD_GETMODE:
-        vput_reg(packet->req.header.tskid, (VP)(req->param),
+        kcall->region_put(packet->req.header.tskid, (VP)(req->param),
                 sizeof(W),
                 &driver_mode);
         respond_ctrl(rdvno, packet, req->dd, E_OK);

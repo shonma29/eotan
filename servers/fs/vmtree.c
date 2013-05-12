@@ -83,6 +83,7 @@ Version 2, June 1991
  *
  */
 
+#include <kcall.h>
 #include <string.h>
 #include <mpu/config.h>
 #include "fs.h"
@@ -132,7 +133,7 @@ W grow_vm(struct proc * procp, UW addr, UW access)
     struct vm_page *vmpage;
     ER errno;
     struct vm_tree *treep;
-
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     treep = procp->vm_tree;
     dirent = addr / (MAX_PAGE_ENTRY * PAGE_SIZE);	/* directory table のインデックス */
@@ -164,7 +165,7 @@ W grow_vm(struct proc * procp, UW addr, UW access)
 
     /* 仮想メモリ領域に物理メモリを割り付ける
      */
-    errno = vmap_reg(procp->proc_maintask, (VP) addr, PAGE_SIZE, ACC_USER);
+    errno = kcall->region_map(procp->proc_maintask, (VP) addr, PAGE_SIZE, ACC_USER);
     if (errno) {
 	return (EPERM);
     }
@@ -184,6 +185,7 @@ W shorten_vm(struct proc * procp, UW addr)
     struct vm_page *vmpage;
     ER errno;
     struct vm_tree *treep;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     treep = procp->vm_tree;
     dirent = addr / (MAX_PAGE_ENTRY * PAGE_SIZE);
@@ -198,7 +200,7 @@ W shorten_vm(struct proc * procp, UW addr)
     if (vmpage == NULL) {
 	return (EINVAL);
     }
-    errno = vunm_reg(procp->proc_maintask, (VP) (vmpage->addr), PAGE_SIZE);
+    errno = kcall->region_unmap(procp->proc_maintask, (VP) (vmpage->addr), PAGE_SIZE);
     if (errno) {
 	return (EINVAL);
     }
@@ -226,6 +228,7 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
     struct vm_tree *source;
     struct vm_tree *destination;
     static B page_buf[PAGE_SIZE];
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     source = source_proc->vm_tree;
     destination = dest_proc->vm_tree;
@@ -328,7 +331,7 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 			    (dir_index * MAX_PAGE_ENTRY * PAGE_SIZE) +
 			    (page_index << PAGE_SHIFT);
 			errno =
-			    vmap_reg(dest_proc->proc_maintask,
+			    kcall->region_map(dest_proc->proc_maintask,
 				     (VP) dest_pagep->addr, PAGE_SIZE,
 				     ACC_USER);
 			if (errno) {
@@ -348,7 +351,7 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 
 		    /* 送り側プロセスのメモリ中の情報を取り出す
 		     */
-		    errno = vget_reg(source_proc->proc_maintask,
+		    errno = kcall->region_get(source_proc->proc_maintask,
 				     (VP) dest_pagep->addr,
 				     PAGE_SIZE, (VP) page_buf);
 		    if (errno) {
@@ -389,7 +392,7 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 
 		    /* 受け側プロセスのメモリに取り出した情報を送る
 		     */
-		    errno = vput_reg(dest_proc->proc_maintask,
+		    errno = kcall->region_put(dest_proc->proc_maintask,
 				     (VP) dest_pagep->addr,
 				     PAGE_SIZE, (VP) page_buf);
 		    if (errno) {
@@ -465,6 +468,7 @@ W destroy_vmtree(struct proc * procp, struct vm_tree * treep, W unmap)
     struct vm_directory *dirp;
     struct vm_page *pagep;
     ER errno;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     for (dir_index = 0; dir_index < MAX_DIR_ENTRY; dir_index++) {
 	dirp = treep->directory_table[dir_index];
@@ -477,7 +481,7 @@ W destroy_vmtree(struct proc * procp, struct vm_tree * treep, W unmap)
 			/* swap 情報を解放 */
 		    }
 		    if (unmap) {
-			errno = vunm_reg(procp->proc_maintask,
+			errno = kcall->region_unmap(procp->proc_maintask,
 					 (VP) (pagep->addr), PAGE_SIZE);
 			if (errno) {
 			    return (errno);

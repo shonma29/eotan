@@ -121,6 +121,7 @@ Version 2, June 1991
  */
 
 #include <fcntl.h>
+#include <kcall.h>
 #include <local.h>
 #include <string.h>
 #include <mpu/config.h>
@@ -162,14 +163,10 @@ W set_local(ID pid, ID tskid)
 {
     W errno;
     thread_local_t local_data;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    errno = vmap_reg(tskid, (thread_local_t*)LOCAL_ADDR, sizeof(thread_local_t),
+    errno = kcall->region_map(tskid, (thread_local_t*)LOCAL_ADDR, sizeof(thread_local_t),
     		ACC_USER);
-    if (errno)
-	return errno;
-
-    errno = vget_reg(tskid, (thread_local_t*)LOCAL_ADDR,
-		     sizeof(thread_local_t), &local_data);
     if (errno)
 	return errno;
 
@@ -179,7 +176,7 @@ W set_local(ID pid, ID tskid)
     strcpy((B*)local_data.cwd, "/");
     local_data.cwd_length = 1;
 
-    errno = vput_reg(tskid, (thread_local_t*)LOCAL_ADDR,
+    errno = kcall->region_put(tskid, (thread_local_t*)LOCAL_ADDR,
 		     sizeof(thread_local_t), &local_data);
     if (errno)
 	return errno;
@@ -538,7 +535,7 @@ W proc_alloc_proc(struct proc ** procp)
     return (EOK);
 }
 
-
+#if 0
 W proc_vm_dump(struct posix_request * req)
 {
     struct proc *procp;
@@ -604,6 +601,7 @@ W proc_vm_dump(struct posix_request * req)
 
     return (EOK);
 }
+#endif
 
 W do_ps()
 {

@@ -65,6 +65,7 @@ Version 2, June 1991
 
 #include <string.h>
 #include <core.h>
+#include <kcall.h>
 #include <vm.h>
 #include <mpu/config.h>
 #include <mpu/memory.h>
@@ -100,6 +101,7 @@ ER init_malloc(UW free_memory_erea, UW max)
     struct alloc_entry_t *p;
     ER err;
     UW pages = (max + PAGE_SIZE - 1) / PAGE_SIZE;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     last_page = free_memory_erea;
     start_page = last_page = pageRoundUp(last_page);
@@ -108,7 +110,7 @@ ER init_malloc(UW free_memory_erea, UW max)
     if (err != E_OK) {
 	return (err);
     }
-    err = vcre_reg(mytid, HEAP_REGION, (VP) last_page, pages, pages,
+    err = kcall->region_create(mytid, HEAP_REGION, (VP) last_page, pages, pages,
 		   VM_READ | VM_READ | VM_USER);
     if (err) {
 	return (err);
@@ -332,6 +334,7 @@ static VP get_system_memory(UW size)
     ID mytid;
     VP rp;
     ER errno;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     if (get_tid(&mytid) != E_OK) {
 	return (NULL);
@@ -340,7 +343,7 @@ static VP get_system_memory(UW size)
     dbg_printf("get_system_memory: id = %d, start = 0x%x, size = %d\n",
 	       mytid, last_page, size);
 #endif
-    errno = vmap_reg(mytid, (VP) last_page, size, ACC_USER);
+    errno = kcall->region_map(mytid, (VP) last_page, size, ACC_USER);
     if (errno) {
 #ifdef notdef
 	dbg_printf("get_system_memory: can't vmap_reg %d\n", errno);

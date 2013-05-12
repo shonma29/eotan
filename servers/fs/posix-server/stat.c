@@ -24,6 +24,7 @@ Version 2, June 1991
  */
 
 #include <fcntl.h>
+#include <kcall.h>
 #include <string.h>
 #include <utime.h>
 #include <mpu/memory.h>
@@ -39,8 +40,7 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
     struct access_info acc;
     W euid;
     W accmode;
-
-
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     errno = proc_alloc_fileid(req->procid, &fileid);
     if (errno) {
@@ -53,7 +53,7 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
     /* パス名をユーザプロセスから POSIX サーバにコピーする。
      */
     errno =
-	vget_reg(req->caller, req->param.par_access.path,
+	kcall->region_get(req->caller, req->param.par_access.path,
 		 req->param.par_access.pathlen, pathname);
     if (errno) {
 	/* パス名のコピーエラー */
@@ -140,8 +140,9 @@ W psc_chmod_f(RDVNO rdvno, struct posix_request *req)
     struct inode *ipp;
     struct access_info acc;
     W err;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    if (vget_reg(req->caller, req->param.par_chmod.path,
+    if (kcall->region_get(req->caller, req->param.par_chmod.path,
 		 req->param.par_chmod.pathlen + 1, path)) {
 	put_response(rdvno, EINVAL, -1, 0);
 	return (FALSE);
@@ -195,8 +196,9 @@ W psc_chown_f(RDVNO rdvno, struct posix_request *req)
     struct inode *ipp;
     struct access_info acc;
     W err;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    if (vget_reg(req->caller, req->param.par_chown.path,
+    if (kcall->region_get(req->caller, req->param.par_chown.path,
 		 req->param.par_chown.pathlen + 1, path)) {
 	put_response(rdvno, EINVAL, -1, 0);
 	return (FALSE);
@@ -252,6 +254,7 @@ W psc_fstat_f(RDVNO rdvno, struct posix_request *req)
     struct file *fp;
     W errno;
     struct stat st;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     errno = proc_get_file(req->procid, req->param.par_fstat.fileid, &fp);
     if (errno) {
@@ -288,7 +291,7 @@ W psc_fstat_f(RDVNO rdvno, struct posix_request *req)
     st.st_ctime = fp->f_inode->i_ctime;
 
     errno =
-	vput_reg(req->caller, req->param.par_fstat.st, sizeof(struct stat),
+	kcall->region_put(req->caller, req->param.par_fstat.st, sizeof(struct stat),
 		 &st);
     if (errno) {
 	put_response(rdvno, EINVAL, 0, 0);
@@ -305,6 +308,7 @@ psc_statfs_f (RDVNO rdvno, struct posix_request *req)
 {
   struct statfs	result;
   ER		errno;
+  kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
   errno = fs_statfs (req->param.par_statfs.device, &result);
   if (errno)
@@ -318,7 +322,7 @@ psc_statfs_f (RDVNO rdvno, struct posix_request *req)
   printf ("result.f_blksize = 0x%x\n", result.f_bsize);
 #endif
   
-  errno = vput_reg (req->caller, req->param.par_statfs.fsp, sizeof (struct statfs), &result);
+  errno = kcall->region_put(req->caller, req->param.par_statfs.fsp, sizeof (struct statfs), &result);
   if (errno)
     {
       put_response (rdvno, EFAULT, -1, 0);
@@ -336,8 +340,9 @@ W psc_utime_f(RDVNO rdvno, struct posix_request *req)
     struct inode *startip;
     struct inode *ipp;
     struct access_info acc;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    errno = vget_reg(req->caller, req->param.par_utime.path,
+    errno = kcall->region_get(req->caller, req->param.par_utime.path,
 		     req->param.par_utime.pathlen + 1, pathname);
     if (errno) {
 	/* パス名のコピーエラー */
@@ -349,7 +354,7 @@ W psc_utime_f(RDVNO rdvno, struct posix_request *req)
 	return (FALSE);
     }
 
-    errno = vget_reg(req->caller, req->param.par_utime.buf,
+    errno = kcall->region_get(req->caller, req->param.par_utime.buf,
 		     sizeof(struct utimbuf), &tb);
     if (errno) {
 	if (errno == E_PAR)

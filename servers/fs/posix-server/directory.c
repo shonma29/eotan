@@ -18,6 +18,7 @@ Version 2, June 1991
  *
  */
 
+#include <kcall.h>
 #include "fs.h"
 
 W psc_getdents_f(RDVNO rdvno, struct posix_request *req)
@@ -71,8 +72,9 @@ W psc_link_f(RDVNO rdvno, struct posix_request *req)
     B src[MAX_NAMELEN], dst[MAX_NAMELEN];
     struct access_info acc;
     W errno;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    errno = vget_reg(req->caller, req->param.par_link.src,
+    errno = kcall->region_get(req->caller, req->param.par_link.src,
 		     req->param.par_link.srclen + 1, src);
     if (errno) {
 	/* パス名のコピーエラー */
@@ -83,7 +85,7 @@ W psc_link_f(RDVNO rdvno, struct posix_request *req)
 
 	return (FALSE);
     }
-    errno = vget_reg(req->caller, req->param.par_link.dst,
+    errno = kcall->region_get(req->caller, req->param.par_link.dst,
 		     req->param.par_link.dstlen + 1, dst);
     if (errno) {
 	/* パス名のコピーエラー */
@@ -131,6 +133,7 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
   struct inode	*newip;
   struct access_info	acc;
   W		umask;
+  kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
   errno = proc_alloc_fileid (req->procid, &fileid);
   if (errno)
@@ -140,7 +143,7 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
       return (FALSE);
     }
 
-  errno = vget_reg (req->caller, req->param.par_mkdir.path,
+  errno = kcall->region_get(req->caller, req->param.par_mkdir.path,
 		    req->param.par_mkdir.pathlen + 1, pathname);
   if (errno)
     {
@@ -212,8 +215,9 @@ psc_rmdir_f (RDVNO rdvno, struct posix_request *req)
   W		errno;
   struct inode	*startip;
   struct access_info	acc;
+  kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-  errno = vget_reg (req->caller, req->param.par_rmdir.path,
+  errno = kcall->region_get(req->caller, req->param.par_rmdir.path,
 		    req->param.par_rmdir.pathlen + 1, pathname);
   if (errno)
     {
@@ -282,14 +286,14 @@ psc_unlink_f (RDVNO rdvno, struct posix_request *req)
   W			errno;
   struct inode		*startip;
   struct access_info	acc;
-
+  kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
   /* パス名を呼び出し元のプロセス(タスク)から
    * 取り出す。
    * 呼び出し元のタスク ID は、メッセージパラメータの
    * 中に入っている。
    */
-  errno = vget_reg (req->caller,
+  errno = kcall->region_get(req->caller,
 		    req->param.par_unlink.path,
 		    req->param.par_unlink.pathlen + 1,
 		    pathname);
