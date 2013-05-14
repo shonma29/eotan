@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <itron/dataqueue.h>
 #include <itron/rendezvous.h>
 
 #define KCALL_ADDR 0x80003f00
@@ -46,6 +47,10 @@ typedef struct {
 	ER_UINT (*port_call)(ID porid, VP msg, UINT cmsgsz);
 	ER_UINT (*port_accept)(ID porid, RDVNO *p_rdvno, VP msg);
 	ER (*port_reply)(RDVNO rdvno, VP msg, UINT rmsgsz);
+	ER_ID (*queue_create_auto)(T_CDTQ *pk_cdtq);
+	ER (*queue_destroy)(ID dtqid);
+	ER (*queue_send)(ID dtqid, VP_INT data);
+	ER (*queue_receive)(ID dtqid, VP_INT *p_data);
 } kcall_t;
 
 #endif

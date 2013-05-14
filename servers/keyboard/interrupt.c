@@ -93,6 +93,7 @@ Version 2, June 1991
  */
 
 #include <core.h>
+#include <kcall.h>
 #include <itron/dataqueue.h>
 #include <mpu/io.h>
 #include "../../lib/libserv/libserv.h"
@@ -156,6 +157,7 @@ static void keyboard_interrupt()
 {
     W key_code;
     W ch;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     key_code = inb(KEY_DATA);
 
@@ -226,7 +228,7 @@ static void keyboard_interrupt()
 
     /* イベントをバッファに溜める
      */
-    snd_dtq(dtqid, ch);
+    kcall->queue_send(dtqid, ch);
 
 #ifdef notdef
     /*

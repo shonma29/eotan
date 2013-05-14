@@ -53,9 +53,5 @@ For more information, please refer to <http://unlicense.org/>
 #define SVC_PORT_CALL (21)
 #define SVC_PORT_ACCEPT (22)
 #define SVC_PORT_REPLY (23)
-#define SVC_QUEUE_CREATE_AUTO (24)
-#define SVC_QUEUE_DESTROY (25)
-#define SVC_QUEUE_SEND (26)
-#define SVC_QUEUE_RECEIVE (27)
 
 #endif

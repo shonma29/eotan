@@ -178,7 +178,6 @@ Version 2, June 1991
 #include <global.h>
 #include <mpu/config.h>
 #include <mpu/io.h>
-#include <itron/dataqueue.h>
 #include <itron/rendezvous.h>
 #include "func.h"
 #include "sync.h"
@@ -221,10 +220,6 @@ static ER_UINT if_port_call(void *argp);
 static ER_UINT if_port_accept(void *argp);
 static ER if_port_reply(void *argp);
 
-static ER_ID if_queue_create_auto(void *argp);
-static ER if_queue_destroy(void *argp);
-static ER if_queue_send(void *argp);
-static ER if_queue_receive(void *argp);
 
 /* システムコールテーブル
  */  
@@ -267,10 +262,6 @@ static ER (*syscall_table[])(VP argp) =
   SVC_IF (port_call, 4),	/*   22 */
   SVC_IF (port_accept, 4),	/*   23 */
   SVC_IF (port_reply, 3),	/*   24 */
-  SVC_IF (queue_create_auto, 1),	/*   25 */
-  SVC_IF (queue_destroy, 1),	/*   26 */
-  SVC_IF (queue_send, 2),	/*   27 */
-  SVC_IF (queue_receive, 2),	/*   28 */
 };
 
 #define NSYSCALL (sizeof (syscall_table) / sizeof (syscall_table[0]))
@@ -624,44 +615,6 @@ static ER if_port_reply(VP argp)
     } *args = argp;
 
     return port_reply(args->rdvno, args->msg, args->rmsgsz);
-}
-
-static ER_ID if_queue_create_auto(VP argp)
-{
-    struct {
-	T_CDTQ *pk_cdtq;
-    } *args = argp;
-
-    return queue_create_auto(args->pk_cdtq);
-}
-
-static ER if_queue_destroy(VP argp)
-{
-    struct {
-	ID dtqid;
-    } *args = argp;
-
-    return queue_destroy(args->dtqid);
-}
-
-static ER if_queue_send(VP argp)
-{
-    struct {
-	ID dtqid;
-	VP_INT data;
-    } *args = argp;
-
-    return queue_send(args->dtqid, args->data);
-}
-
-static ER if_queue_receive(VP argp)
-{
-    struct {
-	ID dtqid;
-	VP_INT *p_data;
-    } *args = argp;
-
-    return queue_receive(args->dtqid, args->p_data);
 }
 
 void api_initialize(void)

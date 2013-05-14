@@ -49,4 +49,8 @@ void kcall_initialize(void)
 	p->port_call = port_call;
 	p->port_accept = port_accept;
 	p->port_reply = port_reply;
+	p->queue_create_auto = queue_create_auto;
+	p->queue_destroy = queue_destroy;
+	p->queue_send = queue_send;
+	p->queue_receive = queue_receive;
 }

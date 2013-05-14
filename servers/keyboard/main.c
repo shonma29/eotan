@@ -156,6 +156,7 @@ static W init_keyboard(void)
     ER error;
     T_CPOR pk_cpor = { TA_TFIFO, sizeof(DDEV_REQ), sizeof(DDEV_RES) };
     T_CDTQ pk_cdtq = { TA_TFIFO, 1024 - 1, NULL };
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     /*
      * 要求受けつけ用のポートを初期化する。
@@ -178,7 +179,7 @@ static W init_keyboard(void)
     init_keyboard_interrupt();	/* 割り込みハンドラの登録 */
 
     /* キー入力を待つ時に使用するイベントフラグの初期化 */
-    dtqid = acre_dtq(&pk_cdtq);
+    dtqid = kcall->queue_create_auto(&pk_cdtq);
     dbg_printf("[KEYBOARD] dtq = %d\n", dtqid);	/* */
 
     driver_mode = WAITMODE | ENAEOFMODE;
@@ -287,12 +288,13 @@ static W read_keyboard(RDVNO rdvno, devmsg_t * packet)
     DDEV_REA_RES * res = &(packet->res.body.rea_res);
     W i;
     ER error;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     res->dd = req->dd;
     for (i = 0; i < req->size; i++) {
     	VP_INT k;
 
-    	if (rcv_dtq(dtqid, &k))
+    	if (kcall->queue_receive(dtqid, &k))
     		continue;
 	res->dt[i] = k;
     }
