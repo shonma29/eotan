@@ -19,7 +19,6 @@ Version 2, June 1991
 #include <local.h>
 #include <itron/errno.h>
 #include <itron/types.h>
-#include <itron/syscall.h>
 #include <sys/syscall.h>
 
 extern thread_local_t *local_data;
