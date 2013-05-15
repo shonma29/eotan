@@ -529,14 +529,11 @@ static ER if_mpu_copy_stack(VP argp)
 {
     struct {
 	ID src;
-	W esp; W ebp;
-        W ebx; W ecx; W edx; W esi; W edi;
+	W esp;
 	ID dst;
     } *args = argp;
 
-    return mpu_copy_stack(args->src, args->esp, args->ebp,
-		    args->ebx, args->ecx, args->edx,
-		    args->esi, args->edi, args->dst);
+    return mpu_copy_stack(args->src, args->esp, args->dst);
 }
 
 /* if_vset_cxt - set task context

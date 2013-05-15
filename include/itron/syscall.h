@@ -38,7 +38,7 @@ extern ER dly_tsk(DLYTIME dlytim);
 /* MISC                                                      */
 /* --------------------------------------------------------- */
 extern ER vsys_inf(VP buf);
-extern ER vcpy_stk(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi , W edi, ID dst);
+extern ER vcpy_stk(ID src, W esp, ID dst);
 extern ER vset_ctx (ID tid, W eip, B *stackp, W stsize);
 
 #endif /*__ITRON_SYSCALL_H__*/

@@ -138,7 +138,7 @@ static void make_local_stack(T_TCB * tsk, W size, W acc)
 /*
  * mpu_copy_stack
  */
-ER mpu_copy_stack(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi, W edi, ID dst)
+ER mpu_copy_stack(ID src, W esp, ID dst)
 {
     T_TCB *src_tsk, *dst_tsk;
     UW srcp, dstp;
@@ -155,10 +155,6 @@ ER mpu_copy_stack(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi, W edi, ID ds
 
     /* dst task に新しいスタックポインタを割り付ける */
     make_local_stack(dst_tsk, USER_STACK_SIZE, ACC_USER);
-
-    size = ((UW) src_tsk->stackptr) + src_tsk->stksz - ebp;
-    dstp = ((UW) dst_tsk->stackptr) + dst_tsk->stksz - size;
-    dst_tsk->mpu.context.ebp = dstp;
 
     size = ((UW) src_tsk->stackptr) + src_tsk->stksz - esp;
     dstp = ((UW) dst_tsk->stackptr) + dst_tsk->stksz - size;
@@ -178,13 +174,6 @@ ER mpu_copy_stack(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi, W edi, ID ds
       dstp -= size;
       region_put(dst, (VP) dstp, size, (VP) vtor(src_tsk->tskid, srcp));
     }
-
-    /* レジスタのコピー */
-    dst_tsk->mpu.context.ebx = ebx;
-    dst_tsk->mpu.context.ecx = ecx;
-    dst_tsk->mpu.context.edx = edx;
-    dst_tsk->mpu.context.esi = esi;
-    dst_tsk->mpu.context.edi = edi;
 
     /* セレクタの設定 */
     dst_tsk->mpu.context.cs = USER_CSEG | USER_DPL;

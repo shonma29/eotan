@@ -81,9 +81,7 @@ _fork (int esp, int ebp, int ebx, int ecx, int edx, int esi, int edi)
     }
 
     /* stack のコピー */
-    vcpy_stk(local_data->thread_id, esp, ebp,
-	     ebx, ecx, edx, esi, edi,
-	     child_main);
+    vcpy_stk(local_data->thread_id, esp, child_main);
 
     /* 子プロセスを有効にする */
     sta_tsk(child_main, 0);

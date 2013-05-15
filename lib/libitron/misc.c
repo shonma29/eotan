@@ -62,10 +62,9 @@ vsys_inf (VP buf)
 
 /* vcpy_stk */
 ER
-vcpy_stk (ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi , W edi, ID dst)
+vcpy_stk (ID src, W esp, ID dst)
 {
-  return ncall(SVC_MPU_COPY_STACK, src, esp, ebp,
-			ebx, ecx, edx, esi , edi, dst);
+  return ncall(SVC_MPU_COPY_STACK, src, esp, dst);
 }
 
 /* vset_cxt */
