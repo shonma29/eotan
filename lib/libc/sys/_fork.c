@@ -30,7 +30,7 @@ extern int _fork_entry();
  *
  */
 int
-_fork (int esp, int ebp, int ebx, int ecx, int edx, int esi, int edi)
+_fork (int esp, int ebp, int ecx, int edx, int esi, int edi)
 {
     ER error;
     struct posix_request req;

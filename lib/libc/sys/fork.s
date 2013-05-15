@@ -20,10 +20,9 @@ fork:
 	pushl	%esi
 	pushl	%edx
 	pushl	%ecx
-	pushl	%ebx
 	pushl	%ebp
 	movl	%esp,%eax
 	pushl	%eax
 	call	_fork
-	addl	$28,%esp
+	addl	$24,%esp
 	ret

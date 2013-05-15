@@ -30,7 +30,6 @@ For more information, please refer to <http://unlicense.org/>
 
 _fork_entry:
 	popl %ebp
-	popl %ebx
 	popl %ecx
 	popl %edx
 	popl %esi
