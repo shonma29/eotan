@@ -24,11 +24,7 @@ Version 2, June 1991
 #include "posix.h"
 
 /* fork 用エントリールーチン */
-static int fork_entry()
-{
-    ena_int();
-    return (0);
-}
+extern int _fork_entry();
 
 /* fork 
  *
@@ -52,7 +48,7 @@ _fork (int esp, int ebp, int ebx, int ecx, int edx, int esi, int edi)
     /* 子プロセスの main task の生成 */
     memset(&task_info, 0, sizeof(task_info));
     task_info.tskatr = TA_HLNG;
-    task_info.startaddr = (void*)fork_entry;
+    task_info.startaddr = (void*)_fork_entry;
     task_info.itskpri = USER_LEVEL;
     task_info.stksz = USER_STACK_SIZE;
     child_main = acre_tsk(&task_info);

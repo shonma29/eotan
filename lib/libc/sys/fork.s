@@ -16,13 +16,13 @@ Version 2, June 1991
 .globl fork
 
 fork:
-	movl	%esp,%eax
 	pushl	%edi
 	pushl	%esi
 	pushl	%edx
 	pushl	%ecx
 	pushl	%ebx
 	pushl	%ebp
+	movl	%esp,%eax
 	pushl	%eax
 	call	_fork
 	addl	$28,%esp
