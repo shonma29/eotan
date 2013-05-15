@@ -14,6 +14,7 @@ Version 2, June 1991
 #include <core.h>
 #include <boot/init.h>
 #include <local.h>
+#include <vm.h>
 #include <mpu/config.h>
 #include "func.h"
 #include "sync.h"
@@ -119,10 +120,6 @@ static void make_local_stack(T_TCB * tsk, W size, W acc)
     tsk->mpu.context.esp0 = tsk->initial_stack;
 
     /* stack region の作成 number は 4 で固定 */
-    /* VM_READ, VM_WRITE, VM_USER) is originally defined in posix_mm.h */
-#define VM_READ		0x00000001
-#define VM_WRITE	0x00000002
-#define VM_USER		0x00010000
     region_create(tsk->tskid, STACK_REGION,
 	     (VP) VADDR_STACK_HEAD, STD_STACK_SIZE, STD_STACK_SIZE,
 	     (VM_READ | VM_WRITE | VM_USER));
