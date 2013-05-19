@@ -42,6 +42,7 @@ Version 2, June 1991
  * 最初の登録
  *
  */
+#include <kcall.h>
 #include <services.h>
 #include <itron/rendezvous.h>
 #include "fs.h"
@@ -61,13 +62,14 @@ Version 2, June 1991
 W init_port(void)
 {
     T_CPOR arg;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     arg.poratr = TA_TFIFO;
     arg.maxcmsz = sizeof(struct posix_request);
     arg.maxrmsz = sizeof(struct posix_response);
 
     /* ポートを作成する */
-    if (cre_por(PORT_FS, &arg)) {
+    if (kcall->port_create(PORT_FS, &arg)) {
 	/* ポートが作成できなかった */
 	return (FALSE);
     }
@@ -83,8 +85,9 @@ W get_request(struct posix_request * req)
 {
     ER_UINT size;
     RDVNO rdvno;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    size = acp_por(PORT_FS, 0xffffffff, &rdvno, req);
+    size = kcall->port_accept(PORT_FS, &rdvno, req);
     if (size < 0) {
 	dbg_printf("[FS] get_request: acp_por error %d\n", size);
 	return size;
@@ -101,6 +104,7 @@ put_response(RDVNO rdvno, W errno, W status, W ret1)
 {
     static struct posix_response res;
     ER syserr;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     res.msg_length = sizeof(res);
     res.errno = errno;
@@ -108,7 +112,7 @@ put_response(RDVNO rdvno, W errno, W status, W ret1)
     res.ret1 = ret1;
 
     /* 要求元に送信する */
-    syserr = rpl_rdv(rdvno, &res, sizeof(res));
+    syserr = kcall->port_reply(rdvno, &res, sizeof(res));
     return (EOK);
 }
 

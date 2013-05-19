@@ -120,6 +120,8 @@ void start()
 
 static void main_loop()
 {
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
+
     /*
      * 要求受信 - 処理のループ
      */
@@ -129,7 +131,7 @@ static void main_loop()
 	RDVNO rdvno;
 
 	/* 要求の受信 */
-	rsize = acp_por(recvport, 0xffffffff, &rdvno, &packet);
+	rsize = kcall->port_accept(recvport, &rdvno, &packet);
 
 	if (rsize >= 0) {
 	    /* 正常ケース */
@@ -161,7 +163,7 @@ static W init_keyboard(void)
     /*
      * 要求受けつけ用のポートを初期化する。
      */
-    recvport = acre_por(&pk_cpor);
+    recvport = kcall->port_create_auto(&pk_cpor);
 
     if (recvport <= 0) {
 	dbg_printf("[KEYBOARD] acre_por error = %d\n", recvport);
@@ -238,12 +240,13 @@ static W open_keyboard(RDVNO rdvno, devmsg_t * packet)
 {
     DDEV_OPN_REQ * req = &(packet->req.body.opn_req);
     DDEV_OPN_RES * res = &(packet->res.body.opn_res);
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     res->dd = req->dd;
     res->size = 0;
     res->errcd = E_OK;
     res->errinfo = E_OK;
-    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
+    kcall->port_reply(rdvno, packet, sizeof(DDEV_RES));
     return (E_OK);
 }
 
@@ -263,11 +266,12 @@ static W close_keyboard(RDVNO rdvno, devmsg_t * packet)
 {
     DDEV_CLS_REQ * req = &(packet->req.body.cls_req);
     DDEV_CLS_RES * res = &(packet->res.body.cls_res);
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     res->dd = req->dd;
     res->errcd = E_OK;
     res->errinfo = E_OK;
-    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
+    kcall->port_reply(rdvno, packet, sizeof(DDEV_RES));
     return (E_OK);
 }
 
@@ -310,7 +314,7 @@ static W read_keyboard(RDVNO rdvno, devmsg_t * packet)
 #if 0
     dbg_printf("[KEYBOARD] reply to caller\n");
 #endif
-    error = rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
+    error = kcall->port_reply(rdvno, packet, sizeof(DDEV_RES));
     if (error) {
 	dbg_printf("[KEYBOARD] read_keyboard rpl_rdv(%d) = %d\n", rdvno, error);
     }
@@ -332,11 +336,12 @@ static W write_keyboard(RDVNO rdvno, devmsg_t * packet)
 {
     DDEV_WRI_REQ * req = &(packet->req.body.wri_req);
     DDEV_WRI_RES * res = &(packet->res.body.wri_res);
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     res->dd = req->dd;
     res->errcd = E_NOSPT;
     res->errinfo = E_NOSPT;
-    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
+    kcall->port_reply(rdvno, packet, sizeof(DDEV_RES));
     return (E_NOSPT);
 }
 
@@ -355,11 +360,12 @@ static W write_keyboard(RDVNO rdvno, devmsg_t * packet)
 static void respond_ctrl(RDVNO rdvno, devmsg_t * packet, W dd, ER errno)
 {
     DDEV_CTL_RES * res = &(packet->res.body.ctl_res);
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     res->dd = dd;
     res->errcd = errno;
     res->errinfo = errno;
-    rpl_rdv(rdvno, packet, sizeof(DDEV_RES));
+    kcall->port_reply(rdvno, packet, sizeof(DDEV_RES));
 }
 
 static W control_keyboard(RDVNO rdvno, devmsg_t * packet)

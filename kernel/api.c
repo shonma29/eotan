@@ -175,13 +175,9 @@ Version 2, June 1991
  */
 
 #include <core.h>
-#include <global.h>
 #include <mpu/config.h>
-#include <mpu/io.h>
 #include <itron/rendezvous.h>
 #include "func.h"
-#include "sync.h"
-#include "mpu/interrupt.h"
 #include "mpu/mpufunc.h"
 
 #define SVC_IF(x,n)	if_ ## x
@@ -194,12 +190,7 @@ static ER	if_thread_end_and_destroy(void *argp);
 /* 時間管理用システムコール */
 static ER	if_thread_delay(void *argp);
 
-static ER if_port_create(void *argp);
-static ER_ID if_port_create_auto(void *argp);
-static ER if_port_destroy(void *argp);
 static ER_UINT if_port_call(void *argp);
-static ER_UINT if_port_accept(void *argp);
-static ER if_port_reply(void *argp);
 
 
 /* システムコールテーブル
@@ -214,12 +205,7 @@ static ER (*syscall_table[])(VP argp) =
   /* 時間管理機能 */
   SVC_IF (thread_delay, 1),	/*   2 */
 
-  SVC_IF (port_create, 2),	/*   3 */
-  SVC_IF (port_create_auto, 1),	/*   4 */
-  SVC_IF (port_destroy, 1),	/*   5 */
-  SVC_IF (port_call, 4),	/*   6 */
-  SVC_IF (port_accept, 4),	/*   7 */
-  SVC_IF (port_reply, 3),	/*   8 */
+  SVC_IF (port_call, 4),	/*   3 */
 };
 
 #define NSYSCALL (sizeof (syscall_table) / sizeof (syscall_table[0]))
@@ -297,34 +283,6 @@ static ER if_thread_delay(VP argp)
     return (thread_delay(args->dlytim));
 }
 
-static ER if_port_create(VP argp)
-{
-    struct {
-	ID porid;
-	T_CPOR *pk_cpor;
-    } *args = argp;
-
-    return port_create(args->porid, args->pk_cpor);
-}
-
-static ER_ID if_port_create_auto(VP argp)
-{
-    struct {
-	T_CPOR *pk_cpor;
-    } *args = argp;
-
-    return port_create_auto(args->pk_cpor);
-}
-
-static ER if_port_destroy(VP argp)
-{
-    struct {
-	ID porid;
-    } *args = argp;
-
-    return port_destroy(args->porid);
-}
-
 static ER_UINT if_port_call(VP argp)
 {
     struct {
@@ -335,29 +293,6 @@ static ER_UINT if_port_call(VP argp)
     } *args = argp;
 
     return port_call(args->porid, args->msg, args->cmsgsz);
-}
-
-static ER_UINT if_port_accept(VP argp)
-{
-    struct {
-	ID porid;
-	RDVPTN calptn;
-	RDVNO *p_rdvno;
-	VP msg;
-    } *args = argp;
-
-    return port_accept(args->porid, args->p_rdvno, args->msg);
-}
-
-static ER if_port_reply(VP argp)
-{
-    struct {
-	RDVNO rdvno;
-	VP msg;
-	UINT rmsgsz;
-    } *args = argp;
-
-    return port_reply(args->rdvno, args->msg, args->rmsgsz);
 }
 
 void api_initialize(void)

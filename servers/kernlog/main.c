@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <device.h>
+#include <kcall.h>
 #include <services.h>
 #include <string.h>
 #include <itron/rendezvous.h>
@@ -179,14 +180,15 @@ static ER accept(const ID port)
 	RDVNO rdvno;
 	ER_UINT size;
 	ER result;
+	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-	size = acp_por(port, 0xffffffff, &rdvno, &(message.req));
+	size = kcall->port_accept(port, &rdvno, &(message.req));
 	if (size < 0) {
 		/*dbg_printf("[KERNLOG] acp_por error=%d\n", size);*/
 		return size;
 	}
 
-	result = rpl_rdv(rdvno, &(message.res), execute(&message));
+	result = kcall->port_reply(rdvno, &(message.res), execute(&message));
 	if (result) {
 		/*dbg_printf("[KERNLOG] rpl_rdv error=%d\n", result);*/
 	}
@@ -202,10 +204,11 @@ static ER_ID initialize(void)
 			sizeof(DDEV_REQ),
 			sizeof(DDEV_RES)
 	};
+	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	ring_create(buf, sizeof(buf));
 
-	err = cre_por(PORT_SYSLOG, &pk_cpor);
+	err = kcall->port_create(PORT_SYSLOG, &pk_cpor);
 	if (err) {
 		/*dbg_printf("[KERNLOG] cre_por error=%d\n", err);*/
 
@@ -218,13 +221,14 @@ static ER_ID initialize(void)
 void start(void)
 {
 	ER_ID port = initialize();
+	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	if (port >= 0) {
 		/*dbg_printf("[KERNLOG] start port=%d\n", port);*/
 
 		while (accept(port) == E_OK);
 
-		del_por(port);
+		kcall->port_destroy(port);
 		/*dbg_printf("[KERNLOG] end\n");*/
 	}
 

@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <device.h>
 #include <global.h>
+#include <kcall.h>
 #include <major.h>
 #include <string.h>
 #include <itron/rendezvous.h>
@@ -144,14 +145,15 @@ static ER accept(const ID port)
 	RDVNO rdvno;
 	ER_UINT size;
 	ER result;
+	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-	size = acp_por(port, 0xffffffff, &rdvno, &(message.req));
+	size = kcall->port_accept(port, &rdvno, &(message.req));
 	if (size < 0) {
 		dbg_printf("[RAMDISK] acp_por error=%d\n", size);
 		return size;
 	}
 
-	result = rpl_rdv(rdvno, &(message.res), execute(&message));
+	result = kcall->port_reply(rdvno, &(message.res), execute(&message));
 	if (result) {
 		dbg_printf("[RAMDISK] rpl_rdv error=%d\n", result);
 	}
@@ -185,10 +187,11 @@ static ER_ID initialize(void)
 			sizeof(DDEV_REQ),
 			sizeof(DDEV_RES)
 	};
+	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	load_initrd();
 
-	port = acre_por(&pk_cpor);
+	port = kcall->port_create_auto(&pk_cpor);
 	if (port < 0) {
 		dbg_printf("[RAMDISK] acre_por error=%d\n", port);
 
@@ -199,7 +202,7 @@ static ER_ID initialize(void)
 			(UB*)MYNAME, port);
 	if (result) {
 		dbg_printf("[RAMDISK] bind error=%d\n", result);
-		del_por(port);
+		kcall->port_destroy(port);
 
 		return E_SYS;
 	}
@@ -210,13 +213,14 @@ static ER_ID initialize(void)
 void start(void)
 {
 	ER_ID port = initialize();
+	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	if (port >= 0) {
 		dbg_printf("[RAMDISK] start port=%d\n", port);
 
 		while (accept(port) == E_OK);
 
-		del_por(port);
+		kcall->port_destroy(port);
 		dbg_printf("[RAMDISK] end\n");
 	}
 

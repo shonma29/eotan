@@ -24,11 +24,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <itron/types.h>
-#include <itron/struct.h>
-#include <itron/syscall.h>
+#include <core.h>
+#include <kcall.h>
 #include <itron/rendezvous.h>
-#include <itron/errno.h>
 #include "../../lib/libserv/libserv.h"
 
 #define BUFSIZ 16
@@ -49,31 +47,32 @@ static int test_cre_por(void)
 {
 	T_CPOR pk_cpor = { TA_TFIFO, BUFSIZ, BUFSIZ };
 	ID dupport;
+	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-	port = cre_por(0, &pk_cpor);
+	port = kcall->port_create(0, &pk_cpor);
 	dbg_printf("[DUMB] test_cre_por_1 result = %d\n", port);
 	if (port != E_ID)	return 0;
 
-	port = cre_por(MIN_AUTO_PORT, &pk_cpor);
+	port = kcall->port_create(MIN_AUTO_PORT, &pk_cpor);
 	dbg_printf("[DUMB] test_cre_por_2 result = %d\n", port);
 	if (port != E_ID)	return 0;
 
-	port = cre_por(STATIC_PORT, 0);
+	port = kcall->port_create(STATIC_PORT, 0);
 	dbg_printf("[DUMB] test_cre_por_3 result = %d\n", port);
 	if (port != E_PAR)	return 0;
 
 	pk_cpor.poratr = TA_TPRI;
-	port = cre_por(STATIC_PORT, &pk_cpor);
+	port = kcall->port_create(STATIC_PORT, &pk_cpor);
 	dbg_printf("[DUMB] test_cre_por_4 result = %d\n", port);
 	if (port != E_RSATR)	return 0;
 
 	pk_cpor.poratr = TA_TFIFO;
-	port = cre_por(STATIC_PORT, &pk_cpor);
+	port = kcall->port_create(STATIC_PORT, &pk_cpor);
 	dbg_printf("[DUMB] test_cre_por_5 result  = %d\n", port);
 	if (port != E_OK)	return 0;
 	port = STATIC_PORT;
 
-	dupport = cre_por(STATIC_PORT, &pk_cpor);
+	dupport = kcall->port_create(STATIC_PORT, &pk_cpor);
 	dbg_printf("[DUMB] test_cre_por_6 result = %d\n", dupport);
 	if (dupport != E_OBJ)	return 0;
 
@@ -84,18 +83,19 @@ static int test_cre_por(void)
 static int test_acre_por(void)
 {
 	T_CPOR pk_cpor = { TA_TFIFO, BUFSIZ, BUFSIZ };
+	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-	port = acre_por(0);
+	port = kcall->port_create_auto(0);
 	dbg_printf("[DUMB] test_acre_por_1 port = %d\n", port);
 	if (port != E_PAR)	return 0;
 
 	pk_cpor.poratr = TA_TPRI;
-	port = acre_por(&pk_cpor);
+	port = kcall->port_create_auto(&pk_cpor);
 	dbg_printf("[DUMB] test_acre_por_2 port = %d\n", port);
 	if (port != E_RSATR)	return 0;
 
 	pk_cpor.poratr = TA_TFIFO;
-	port = acre_por(&pk_cpor);
+	port = kcall->port_create_auto(&pk_cpor);
 	dbg_printf("[DUMB] test_acre_por_3 port = %d\n", port);
 	if (port <= 0)	return 0;
 
@@ -109,24 +109,25 @@ static int test_acp_por(void)
 	ER_UINT size;
 	INT i;
 	ER result;
+	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-	size = acp_por(port, 1, &rdvno, buf);
+/*	size = kcall->port_accept(port, 1, &rdvno, buf);
 	dbg_printf("[DUMB] test_acp_por_1 size = %d\n", size);
 	if (size != E_NOSPT)	return 0;
 
-	size = acp_por(0, 0xffffffff, &rdvno, buf);
+	size = kcall->port_accept(0, 0xffffffff, &rdvno, buf);
 	dbg_printf("[DUMB] test_acp_por_2 size = %d\n", size);
 	if (size != E_NOEXS)	return 0;
-
+*/
 	for (;;) {
 /*
-		size = acp_por(port, 0xffffffff, &rdvno, 0);
+		size = kcall->port_accept(port, &rdvno, 0);
 		dbg_printf("[DUMB] test_acp_por_3 rdvno = %d, size = %d\n",
 				rdvno, size);
 		if (size != E_PAR)	return 0;
 */
 		dbg_printf("[DUMB] test_acp_por_4 port = %d\n", port);
-		size = acp_por(port, 0xffffffff, &rdvno, buf);
+		size = kcall->port_accept(port, &rdvno, buf);
 		dbg_printf("[DUMB] test_acp_por_4 rdvno = %d, size = %d\n",
 				rdvno, size);
 
@@ -141,19 +142,19 @@ static int test_acp_por(void)
 		buf[2] = 'm';
 		buf[3] = 'b';
 
-		result = rpl_rdv(0, buf, 4);
+		result = kcall->port_reply(0, buf, 4);
 		dbg_printf("[DUMB] test_rpl_rdv_1 result = %d\n", result);
 		if (result != E_OBJ)	return 0;
 
-		result = rpl_rdv(rdvno, buf, 17);
+		result = kcall->port_reply(rdvno, buf, 17);
 		dbg_printf("[DUMB] test_rpl_rdv_2 result = %d\n", result);
 		if (result != E_PAR)	return 0;
 
-		result = rpl_rdv(rdvno, 0, 4);
+		result = kcall->port_reply(rdvno, 0, 4);
 		dbg_printf("[DUMB] test_rpl_rdv_3 result = %d\n", result);
 		if (result != E_PAR)	return 0;
 
-		result = rpl_rdv(rdvno, buf, 4);
+		result = kcall->port_reply(rdvno, buf, 4);
 		dbg_printf("[DUMB] test_rpl_rdv_4 result = %d\n", result);
 		if (result != E_OK)	return 0;
 
@@ -166,16 +167,17 @@ static int test_acp_por(void)
 static int test_del_por(void)
 {
 	ER result;
+	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-	result = del_por(0);
+	result = kcall->port_destroy(0);
 	dbg_printf("[DUMB] test_del_por_1 result = %d\n", result);
 	if (result != E_NOEXS)	return 0;
 
-	result = del_por(port);
+	result = kcall->port_destroy(port);
 	dbg_printf("[DUMB] test_del_por_2 result = %d\n", result);
 	if (result != E_OK)	return 0;
 
-	result = del_por(port);
+	result = kcall->port_destroy(port);
 	dbg_printf("[DUMB] test_del_por_3 result = %d\n", result);
 	if (result != E_NOEXS)	return 0;
 
