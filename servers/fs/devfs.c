@@ -35,7 +35,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "api.h"
 #include "fs.h"
 
-static system_info_t sysinfo;
+static system_info_t *sysinfo = (system_info_t*)SYSTEM_INFO_ADDR;
 static hash_t *hash;
 static device_info_t table[MAX_DEVICE];
 static size_t num_device;
@@ -46,13 +46,6 @@ static int compare(const void *a, const void *b);
 
 int device_init(void)
 {
-	ER err = vsys_inf(&sysinfo);
-
-	if (err) {
-		dbg_printf("[FS] vsys_inf error=%d\n", err);
-		return FALSE;
-	}
-
 	num_device = 0;
 	hash = hash_create(MAX_DEVICE, calc_hash, compare);
 
@@ -103,13 +96,13 @@ W psc_bind_device_f(RDVNO rdvno, struct posix_request *req)
 		num_device++;
 		put_response(rdvno, EOK, 0, 0);
 
-		if (id == sysinfo.root.device) {
-			if (mount_root(id, sysinfo.root.fstype, 0)) {
+		if (id == sysinfo->root.device) {
+			if (mount_root(id, sysinfo->root.fstype, 0)) {
 				dbg_printf("[FS] mount_root(%x, %d) failed\n",
-						id, sysinfo.root.fstype);
+						id, sysinfo->root.fstype);
 			} else {
 				dbg_printf("[FS] mount_root(%x, %d) succeeded\n",
-						id, sysinfo.root.fstype);
+						id, sysinfo->root.fstype);
 				exec_init(INIT_PID, INIT_PATH_NAME);
 			}
 		}

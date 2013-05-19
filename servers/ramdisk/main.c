@@ -161,21 +161,17 @@ static ER accept(const ID port)
 
 static void load_initrd(void)
 {
-	system_info_t info;
-	ER err = vsys_inf(&info);
+	system_info_t *info = (system_info_t*)SYSTEM_INFO_ADDR;
 
-	if (err) {
-		dbg_printf("[RAMDISK] vsys_inf error=%x\n", err);
-
-	} else if (info.initrd.size > 0) {
-		if (info.initrd.size <= sizeof(buf)) {
+	if (info->initrd.size > 0) {
+		if (info->initrd.size <= sizeof(buf)) {
 			dbg_printf("[RAMDISK] initrd start=%p size=%x\n",
-					info.initrd.start, info.initrd.size);
-			memcpy(buf, info.initrd.start, info.initrd.size);
+					info->initrd.start, info->initrd.size);
+			memcpy(buf, info->initrd.start, info->initrd.size);
 
 		} else {
 			dbg_printf("[RAMDISK] initrd too large %x\n",
-				info.initrd.size);
+				info->initrd.size);
 		}
 	}
 }

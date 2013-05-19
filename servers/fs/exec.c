@@ -225,7 +225,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 	       req->param.par_execve.stsize);
 #endif
     /* タスクの context.eip を elf_header.e_entry に設定する */
-    errno = vset_ctx(procid? req->caller:(INIT_THREAD_ID_FLAG | req->caller),
+    errno = kcall->mpu_set_context(procid? req->caller:(INIT_THREAD_ID_FLAG | req->caller),
 		     elf_header.e_entry,
 		     req->param.par_execve.stackp,
 		     req->param.par_execve.stsize);

@@ -258,7 +258,7 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
       return (FALSE);
     }
 
-  vcpy_stk(req->caller, (W)(req->param.par_fork.sp), main_thread_id);
+  kcall->mpu_copy_stack(req->caller, (W)(req->param.par_fork.sp), main_thread_id);
   kcall->thread_start(main_thread_id, 0);
 
   put_response (rdvno, EOK, childid, 0);	/* 親プロセスに対して応答 */

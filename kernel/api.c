@@ -199,12 +199,6 @@ static ER	if_thread_delay(void *argp);
 
 static ER	if_interrupt_bind(void *argp);
 
-static ER	if_get_system_info(void *argp);
-
-/* その他のシステムコール */
-static ER	if_mpu_copy_stack(void *argp);
-static ER	if_mpu_set_context(void *argp);
-
 static ER if_port_create(void *argp);
 static ER_ID if_port_create_auto(void *argp);
 static ER if_port_destroy(void *argp);
@@ -231,19 +225,12 @@ static ER (*syscall_table[])(VP argp) =
   /* 割りこみ管理 */
   SVC_IF (interrupt_bind, 2),	/*   6 */
 
-  /* システム管理 */
-  SVC_IF (get_system_info, 3),	/*   7 */
-
-  /* その他のシステムコール */
-  SVC_IF (mpu_copy_stack, 4),	/*   8 */
-  SVC_IF (mpu_set_context, 4),	/*   9 */
-
-  SVC_IF (port_create, 2),	/*   10 */
-  SVC_IF (port_create_auto, 1),	/*   11 */
-  SVC_IF (port_destroy, 1),	/*   12 */
-  SVC_IF (port_call, 4),	/*   13 */
-  SVC_IF (port_accept, 4),	/*   14 */
-  SVC_IF (port_reply, 3),	/*   15 */
+  SVC_IF (port_create, 2),	/*   7 */
+  SVC_IF (port_create_auto, 1),	/*   8 */
+  SVC_IF (port_destroy, 1),	/*   9 */
+  SVC_IF (port_call, 4),	/*   10 */
+  SVC_IF (port_accept, 4),	/*   11 */
+  SVC_IF (port_reply, 3),	/*   12 */
 };
 
 #define NSYSCALL (sizeof (syscall_table) / sizeof (syscall_table[0]))
@@ -379,56 +366,6 @@ static ER if_thread_delay(VP argp)
     } *args = argp;
 
     return (thread_delay(args->dlytim));
-}
-
-/*
- * その他の関数群 
- */
-/*
- *
- */
-static ER
-if_get_system_info(VP argp)
-{
-  struct 
-    {
-      VP buf;
-    } *args = argp;
-  system_info_t *out;
-  system_info_t *in = (system_info_t*)SYSTEM_INFO_ADDR;
-
-  out = (system_info_t*)args->buf;
-  *out = *in;
-  return (E_OK);
-}
-
-/* if_mpu_copy_stack - copy task stack 
- *
- */
-static ER if_mpu_copy_stack(VP argp)
-{
-    struct {
-	ID src;
-	W esp;
-	ID dst;
-    } *args = argp;
-
-    return mpu_copy_stack(args->src, args->esp, args->dst);
-}
-
-/* if_vset_cxt - set task context
- *
- */
-static ER if_mpu_set_context(VP argp)
-{
-    struct {
-	ID tid;
-	W eip;
-	B *stackp;
-	W stsize;
-    } *args = argp;
-
-    return mpu_set_context(args->tid, args->eip, args->stackp, args->stsize);
 }
 
 static ER if_port_create(VP argp)
