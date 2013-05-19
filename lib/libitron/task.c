@@ -18,28 +18,6 @@ Version 2, June 1991
 #include <mpu/call_kernel.h>
 #include <nerve/svcno.h>
 
-/* cre_tsk  --- タスクの生成
- *
- * 引数：
- *
- * 返り値：
- *
- */
-ER_ID
-acre_tsk (T_CTSK *pk_ctsk)
-{
-  return ncall(SVC_THREAD_CREATE, pk_ctsk);
-}
-
-
-/* ext_tsk  --- 自タスク終了
-*/
-void
-ext_tsk (void)
-{
-  ncall(SVC_THREAD_END);
-}
-
 /* exd_tsk  --- 自タスク終了と削除
 */
 void
@@ -48,58 +26,10 @@ exd_tsk (void)
   ncall(SVC_THREAD_END_AND_DESTROY);
 }
 
-/* rel_wai --- 待ち状態の解除
- */
-ER
-rel_wai (ID taskid)
-{
-  return ncall(SVC_THREAD_RELEASE, taskid);
-}
-
 /* get_tid  --- 自タスクのタスク ID 参照
 */
 ER
 get_tid (ID *rid)
 {
   return ncall(SVC_THREAD_GET_ID, rid);
-}
-
-/* rsm_tsk  --- 強制待ち状態のタスクから待ち状態を解除
-*/
-ER
-rsm_tsk (ID taskid)
-{
-  return ncall(SVC_THREAD_RESUME, taskid);
-}
-
-/* sta_tsk  --- タスクの起動
-*/
-ER
-sta_tsk (ID taskid, INT stacd)
-{
-  return ncall(SVC_THREAD_START, taskid, stacd);
-}
-
-/* sus_tsk  --- 指定したタスクを強制待ち状態に移行
-*/
-ER
-sus_tsk (ID taskid)
-{
-  return ncall(SVC_THREAD_SUSPEND, taskid);
-}
-
-/* ter_tsk  --- 他タスク強制終了
-*/
-ER
-ter_tsk (ID tskid)
-{
-  return ncall(SVC_THREAD_TERMINATE, tskid);
-}
-
-/* del_tsk --- 他タスク削除
- */
-ER
-del_tsk (ID tskid)
-{
-  return ncall(SVC_THREAD_DESTROY, tskid);
 }

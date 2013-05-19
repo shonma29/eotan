@@ -33,6 +33,14 @@ For more information, please refer to <http://unlicense.org/>
 #define KCALL_ADDR 0x80003f00
 
 typedef struct {
+	ER_ID (*thread_create_auto)(T_CTSK *pk_ctsk);
+	ER (*thread_destroy)(ID tskid);
+	ER (*thread_start)(ID tskid, INT stacd);
+	void (*thread_end)(void);
+	ER (*thread_terminate)(ID tskid);
+	ER (*thread_release)(ID tskid);
+	ER (*thread_suspend)(ID taskid);
+	ER (*thread_resume)(ID taskid);
 	ER (*region_create)(ID id, ID rid, VP start, W min, W max, UW perm);
 	ER (*region_destroy)(ID id, ID rid);
 	ER (*region_map)(ID id, VP start, UW size, W accmode);

@@ -56,6 +56,7 @@ W exec_init(ID process_id, char *pathname)
 	};
 	W err;
 	init_arg_t *p;
+	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	req.param.par_execve.stsize = sizeof(*p) * 3
 			+ strlen(pathname) + 1;
@@ -69,7 +70,7 @@ W exec_init(ID process_id, char *pathname)
 	strcpy(p->buf, pathname);
 	req.param.par_execve.stackp = (VP)p;
 
-	req.caller = acre_tsk(&pk_ctsk);
+	req.caller = kcall->thread_create_auto(&pk_ctsk);
 	if (req.caller < 0) {
 		free(p);
 		return ESVC;
@@ -83,10 +84,10 @@ W exec_init(ID process_id, char *pathname)
 
 	if (err) {
 		//TODO destroy vmtree and process
-		del_tsk(req.caller);
+		kcall->thread_destroy(req.caller);
 	}
 
-	sta_tsk(req.caller, 0);
+	kcall->thread_start(req.caller, 0);
 
 	dbg_printf("[MM] exec_init(%d, %s)\n", process_id, pathname);
 

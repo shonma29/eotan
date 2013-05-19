@@ -34,6 +34,15 @@ void kcall_initialize(void)
 {
 	kcall_t *p = (kcall_t*)KCALL_ADDR;
 
+	p->thread_create_auto = thread_create_auto;
+	p->thread_destroy = thread_destroy;
+	p->thread_start = thread_start;
+	p->thread_end = thread_end;
+	p->thread_terminate = thread_terminate;
+	p->thread_release = thread_release;
+	p->thread_suspend = thread_suspend;
+	p->thread_resume = thread_resume;
+
 	p->region_create = region_create;
 	p->region_destroy = region_destroy;
 	p->region_map = region_map;

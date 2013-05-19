@@ -85,6 +85,7 @@ Version 2, June 1991
  *
  */
 
+#include <kcall.h>
 #include <mpu/config.h>
 #include "fs.h"
 #include "devfs.h"
@@ -114,17 +115,18 @@ int main(void)
 {
     struct posix_request request;
     W res;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     if (init_port() == FALSE) {
 	dbg_printf("[FS] Cannot allocate port.\n");
-	ext_tsk();
+	kcall->thread_end();
 	return FALSE;
     }
 
     init_malloc(HEAP_ADDR, MAX_HEAP);
 
     if (!device_init()) {
-	ext_tsk();
+	kcall->thread_end();
 	return FALSE;
     }
 

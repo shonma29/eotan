@@ -165,7 +165,7 @@ static W init_keyboard(void)
 
     if (recvport <= 0) {
 	dbg_printf("[KEYBOARD] acre_por error = %d\n", recvport);
-	ext_tsk();
+	kcall->thread_end();
 	/* メッセージバッファ生成に失敗 */
     }
 
@@ -173,7 +173,7 @@ static W init_keyboard(void)
 	    (UB*)KEYBOARD_DRIVER, recvport);
     if (error != E_OK) {
 	dbg_printf("[KEYBOARD] bind error = %d\n", error);
-	ext_tsk();
+	kcall->thread_end();
     }
 
     init_keyboard_interrupt();	/* 割り込みハンドラの登録 */

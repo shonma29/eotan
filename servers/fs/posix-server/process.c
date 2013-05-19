@@ -228,6 +228,7 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
      NULL,
      user_mode
   };
+  kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
   errno = proc_get_procp (req->procid, &procp);		/* 親プロセスの情報の取りだし */
   if (errno)
@@ -241,7 +242,7 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
   printk ("psc_fork_f(): proc = 0x%x, proc->vm_tree = 0x%x\n", procp, procp->vm_tree);
 #endif
 
-  main_thread_id = acre_tsk(&task_info);
+  main_thread_id = kcall->thread_create_auto(&task_info);
   if (main_thread_id < 0)
     {
       printk ("posix: acre_tsk error (%d)\n", main_thread_id);
@@ -252,13 +253,13 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
   errno = proc_fork (procp, &childid, main_thread_id, 0);
   if (errno)
     {
-      del_tsk(main_thread_id);
+      kcall->thread_destroy(main_thread_id);
       put_response (rdvno, errno, -1, 0);
       return (FALSE);
     }
 
   vcpy_stk(req->caller, (W)(req->param.par_fork.sp), main_thread_id);
-  sta_tsk(main_thread_id, 0);
+  kcall->thread_start(main_thread_id, 0);
 
   put_response (rdvno, EOK, childid, 0);	/* 親プロセスに対して応答 */
   return (TRUE);
@@ -271,6 +272,7 @@ W psc_kill_f(RDVNO rdvno, struct posix_request *req)
     W mypid, wpid, exst;
     W i;
     ER errno;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     /* req->caller が task 1 の場合は，返事のメッセージを送らない */
 
@@ -323,8 +325,8 @@ W psc_kill_f(RDVNO rdvno, struct posix_request *req)
     destroy_proc_memory(myprocp, 0);
 
     /* メインタスクの強制終了 */
-    ter_tsk(myprocp->proc_maintask);
-    del_tsk(myprocp->proc_maintask);
+    kcall->thread_terminate(myprocp->proc_maintask);
+    kcall->thread_destroy(myprocp->proc_maintask);
 
     if ((req->caller != KERNEL_TASK) &&
 	(req->caller != myprocp->proc_maintask)) {

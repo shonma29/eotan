@@ -189,16 +189,8 @@ Version 2, June 1991
 
 static ER	nodef (VP argp);
 
-static ER	if_thread_create_auto(void *argp);
-static ER	if_thread_destroy(void *argp);
-static ER	if_thread_start(void *argp);
-static ER	if_thread_end(void *argp);
 static ER	if_thread_end_and_destroy(void *argp);
-static ER	if_thread_terminate(void *argp);
-static ER	if_thread_release(void *argp);
 static ER	if_thread_get_id(void *argp);
-static ER	if_thread_suspend(void *argp);
-static ER	if_thread_resume(void *argp);
 
 /* 時間管理用システムコール */
 static ER	if_time_set(void *argp);
@@ -228,40 +220,30 @@ static ER (*syscall_table[])(VP argp) =
   SVC_UNDEFINED,		/*    0 */
 
   /* タスク管理システムコール */
-  SVC_IF (thread_create_auto, 1),	/*    1 */
-  SVC_IF (thread_destroy, 1),	/*    2 */
-  SVC_IF (thread_start, 2),	/*    3 */
-  SVC_IF (thread_end, 0),     /*    4 */
-  SVC_IF (thread_end_and_destroy, 0),     /*    5 */
-  SVC_IF (thread_terminate, 1),     /*    6 */
-  SVC_IF (thread_release, 1),	/*    7 */
-  SVC_IF (thread_get_id, 1),	/*    8 */
-
-  /* タスク附属同期機能 */
-  SVC_IF (thread_suspend, 1),    	/*   9 */
-  SVC_IF (thread_resume, 1),	/*   10 */
+  SVC_IF (thread_end_and_destroy, 0),     /*    1 */
+  SVC_IF (thread_get_id, 1),	/*    2 */
 
   /* 時間管理機能 */
-  SVC_IF (time_set, 1),	/*   11 */
-  SVC_IF (time_get, 1),	/*   12 */
-  SVC_IF (thread_delay, 1),	/*   13 */
+  SVC_IF (time_set, 1),	/*   3 */
+  SVC_IF (time_get, 1),	/*   4 */
+  SVC_IF (thread_delay, 1),	/*   5 */
 
   /* 割りこみ管理 */
-  SVC_IF (interrupt_bind, 2),	/*   14 */
+  SVC_IF (interrupt_bind, 2),	/*   6 */
 
   /* システム管理 */
-  SVC_IF (get_system_info, 3),	/*   15 */
+  SVC_IF (get_system_info, 3),	/*   7 */
 
   /* その他のシステムコール */
-  SVC_IF (mpu_copy_stack, 4),	/*   17 */
-  SVC_IF (mpu_set_context, 4),	/*   18 */
+  SVC_IF (mpu_copy_stack, 4),	/*   8 */
+  SVC_IF (mpu_set_context, 4),	/*   9 */
 
-  SVC_IF (port_create, 2),	/*   19 */
-  SVC_IF (port_create_auto, 1),	/*   20 */
-  SVC_IF (port_destroy, 1),	/*   21 */
-  SVC_IF (port_call, 4),	/*   22 */
-  SVC_IF (port_accept, 4),	/*   23 */
-  SVC_IF (port_reply, 3),	/*   24 */
+  SVC_IF (port_create, 2),	/*   10 */
+  SVC_IF (port_create_auto, 1),	/*   11 */
+  SVC_IF (port_destroy, 1),	/*   12 */
+  SVC_IF (port_call, 4),	/*   13 */
+  SVC_IF (port_accept, 4),	/*   14 */
+  SVC_IF (port_reply, 3),	/*   15 */
 };
 
 #define NSYSCALL (sizeof (syscall_table) / sizeof (syscall_table[0]))
@@ -316,65 +298,6 @@ nodef (VP argp)
  * タスク関係システムコール                                                *
  * ----------------------------------------------------------------------- */
 
-/* if_thread_create_auto --- タスクの生成
- *
- * 引数: pk_ctsk	生成するタスクの属性情報
- *			tskatr		タスク属性
- *			startaddr	タスク起動アドレス
- *			itskpri		タスク起動時優先度
- *			stksz		スタックサイズ
- *			addrmap		アドレスマップ
- *	
- */
-static ER if_thread_create_auto(VP argp)
-{
-    struct {
-	T_CTSK *tskpkt;
-    } *args = argp;
-
-    return (thread_create_auto(args->tskpkt));
-}
-
-/* if_thread_destroy --- 指定したタスクを削除
- *
- * 引数：tskid	削除するタスクの ID
- *
- */
-static ER if_thread_destroy(VP argp)
-{
-    struct {
-	ID tskid;
-    } *args = argp;
-
-    return (thread_destroy(args->tskid));
-}
-
-
-/* if_thread_start --- タスクの状態を取り出す
- *
- * 引数：tskid	状態を取り出すタスの ID
- *	 stacd  状態を取り出す領域
- *
- */
-static ER if_thread_start(VP argp)
-{
-    struct {
-	ID tskid;
-	INT stacd;
-    } *args = argp;
-
-    return (thread_start(args->tskid, args->stacd));
-}
-
-/* if_thread_end --- 自タスクを終了する
- *
- */
-static ER if_thread_end(VP argp)
-{
-    thread_end();
-    return (E_OK);		/* 本当は、返り値はないが... */
-}
-
 /* if_exd_tsk --- 自タスクを終了して、資源を解放する。
  *
  */
@@ -382,30 +305,6 @@ static ER if_thread_end_and_destroy(VP argp)
 {
     thread_end_and_destroy();
     return (E_OK);		/* 本当は、返り値はないが... */
-}
-
-/* if_thread_terminate --- 指定したタスクを終了する
- *
- * 引数：tskid	終了するタスクの ID
- *
- */
-static ER if_thread_terminate(VP argp)
-{
-    struct {
-	ID tskid;
-    } *args = argp;
-
-    return (thread_terminate(args->tskid));
-}
-
-
-static ER if_thread_release(VP argp)
-{
-    struct {
-	ID tskid;
-    } *args = argp;
-
-    return (thread_release(args->tskid));
 }
 
 static ER if_thread_get_id(VP argp)
@@ -420,25 +319,6 @@ static ER if_thread_get_id(VP argp)
     if (err == E_OK)
 	err = region_put(run_task->tskid, args->p_tskid, sizeof(ID), &rid);
     return (err);
-}
-
-static ER if_thread_suspend(VP argp)
-{
-    struct {
-	ID taskid;
-    } *args = argp;
-
-    return (thread_suspend(args->taskid));
-}
-
-
-static ER if_thread_resume(VP argp)
-{
-    struct {
-	ID taskid;
-    } *args = argp;
-
-    return (thread_resume(args->taskid));
 }
 
 
