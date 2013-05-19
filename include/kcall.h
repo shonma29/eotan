@@ -39,8 +39,12 @@ typedef struct {
 	void (*thread_end)(void);
 	ER (*thread_terminate)(ID tskid);
 	ER (*thread_release)(ID tskid);
+	ER (*thread_get_id)(ID *p_tskid);
 	ER (*thread_suspend)(ID taskid);
 	ER (*thread_resume)(ID taskid);
+	ER (*time_get)(SYSTIME *pk_tim);
+	ER (*time_set)(SYSTIME *pk_tim);
+	ER (*interrupt_bind)(W intno, T_DINT *pk_dint);
 	ER (*region_create)(ID id, ID rid, VP start, W min, W max, UW perm);
 	ER (*region_destroy)(ID id, ID rid);
 	ER (*region_map)(ID id, VP start, UW size, W accmode);

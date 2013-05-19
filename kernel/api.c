@@ -190,14 +190,9 @@ Version 2, June 1991
 static ER	nodef (VP argp);
 
 static ER	if_thread_end_and_destroy(void *argp);
-static ER	if_thread_get_id(void *argp);
 
 /* 時間管理用システムコール */
-static ER	if_time_set(void *argp);
-static ER	if_time_get(void *argp);
 static ER	if_thread_delay(void *argp);
-
-static ER	if_interrupt_bind(void *argp);
 
 static ER if_port_create(void *argp);
 static ER_ID if_port_create_auto(void *argp);
@@ -215,22 +210,16 @@ static ER (*syscall_table[])(VP argp) =
 
   /* タスク管理システムコール */
   SVC_IF (thread_end_and_destroy, 0),     /*    1 */
-  SVC_IF (thread_get_id, 1),	/*    2 */
 
   /* 時間管理機能 */
-  SVC_IF (time_set, 1),	/*   3 */
-  SVC_IF (time_get, 1),	/*   4 */
-  SVC_IF (thread_delay, 1),	/*   5 */
+  SVC_IF (thread_delay, 1),	/*   2 */
 
-  /* 割りこみ管理 */
-  SVC_IF (interrupt_bind, 2),	/*   6 */
-
-  SVC_IF (port_create, 2),	/*   7 */
-  SVC_IF (port_create_auto, 1),	/*   8 */
-  SVC_IF (port_destroy, 1),	/*   9 */
-  SVC_IF (port_call, 4),	/*   10 */
-  SVC_IF (port_accept, 4),	/*   11 */
-  SVC_IF (port_reply, 3),	/*   12 */
+  SVC_IF (port_create, 2),	/*   3 */
+  SVC_IF (port_create_auto, 1),	/*   4 */
+  SVC_IF (port_destroy, 1),	/*   5 */
+  SVC_IF (port_call, 4),	/*   6 */
+  SVC_IF (port_accept, 4),	/*   7 */
+  SVC_IF (port_reply, 3),	/*   8 */
 };
 
 #define NSYSCALL (sizeof (syscall_table) / sizeof (syscall_table[0]))
@@ -294,70 +283,10 @@ static ER if_thread_end_and_destroy(VP argp)
     return (E_OK);		/* 本当は、返り値はないが... */
 }
 
-static ER if_thread_get_id(VP argp)
-{
-    struct {
-	ID *p_tskid;
-    } *args = argp;
-    ID rid;
-    ER err;
-
-    err = thread_get_id(&rid);
-    if (err == E_OK)
-	err = region_put(run_task->tskid, args->p_tskid, sizeof(ID), &rid);
-    return (err);
-}
-
-
-/*
- * 割り込みハンドラを定義する。
- *
- * この関数では、今のところ CPU レベル 0/トラップ 形式の割り込みとして
- * ハンドラを設定している。
- *
- */
-static ER if_interrupt_bind(VP argp)
-{
-    struct a {
-	UINT dintno;
-	T_DINT *pk_dint;
-    } *args = (struct a *) argp;
-
-    if ((args->dintno < 0) || (args->dintno > 128)) {
-	return (E_PAR);
-    }
-#ifdef notdef
-    printk("if_interrupt_bind: dintno = %d(0x%x), inthdr = 0x%x, intatr = %d\n",
-	   args->dintno,
-	   args->dintno, args->pk_dint->inthdr, args->pk_dint->intatr);
-#endif
-
-    set_interrupt_entry(args->dintno,
-			args->pk_dint->inthdr, args->pk_dint->intatr);
-    return (E_OK);
-}
 
 /*
  * 時間管理の関数群 
  */
-
-static ER if_time_set(VP argp)
-{
-    struct {
-	SYSTIME *pk_tim;
-    } *args = argp;
-
-    return (time_set(args->pk_tim));
-}
-
-static ER if_time_get(VP argp)
-{
-    struct {
-	SYSTIME *pk_tim;
-    } *args = argp;
-
-    return (time_get(args->pk_tim));
-}
 
 static ER if_thread_delay(VP argp)
 {

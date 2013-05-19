@@ -76,8 +76,9 @@ UW get_system_time(UW * usec)
 {
     UW clock, i;
     SYSTIME time;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    get_tim(&time);
+    kcall->time_get(&time);
 
 #ifdef notdef
     dbg_printf("systime.utime = %d, systime.ltime = %d\n",

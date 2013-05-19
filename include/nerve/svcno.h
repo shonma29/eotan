@@ -31,16 +31,12 @@ For more information, please refer to <http://unlicense.org/>
  * service call no
  */
 #define SVC_THREAD_END_AND_DESTROY (1)
-#define SVC_THREAD_GET_ID (2)
-#define SVC_TIME_SET (3)
-#define SVC_TIME_GET (4)
-#define SVC_THREAD_DELAY (5)
-#define SVC_INTERRUPT_BIND (6)
-#define SVC_PORT_CREATE (7)
-#define SVC_PORT_CREATE_AUTO (8)
-#define SVC_PORT_DESTROY (9)
-#define SVC_PORT_CALL (10)
-#define SVC_PORT_ACCEPT (11)
-#define SVC_PORT_REPLY (12)
+#define SVC_THREAD_DELAY (2)
+#define SVC_PORT_CREATE (3)
+#define SVC_PORT_CREATE_AUTO (4)
+#define SVC_PORT_DESTROY (5)
+#define SVC_PORT_CALL (6)
+#define SVC_PORT_ACCEPT (7)
+#define SVC_PORT_REPLY (8)
 
 #endif

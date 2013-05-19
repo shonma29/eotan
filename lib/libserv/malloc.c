@@ -106,7 +106,7 @@ ER init_malloc(UW free_memory_erea, UW max)
     last_page = free_memory_erea;
     start_page = last_page = pageRoundUp(last_page);
 
-    err = get_tid(&mytid);
+    err = kcall->thread_get_id(&mytid);
     if (err != E_OK) {
 	return (err);
     }
@@ -336,7 +336,7 @@ static VP get_system_memory(UW size)
     ER errno;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    if (get_tid(&mytid) != E_OK) {
+    if (kcall->thread_get_id(&mytid) != E_OK) {
 	return (NULL);
     }
 #ifdef notdef

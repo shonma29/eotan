@@ -20,22 +20,6 @@ Version 2, June 1991
 #include <nerve/svcno.h>
 
 /*
- * システムクロック設定
- */
-ER set_tim(SYSTIME *pk_tim)
-{
-  return ncall(SVC_TIME_SET, pk_tim);
-}
-
-/*
- * システムクロック参照
- */
-ER get_tim(SYSTIME *pk_tim)
-{
-  return ncall(SVC_TIME_GET, pk_tim);
-}
-
-/*
  * タスク遅延
  */
 

@@ -181,11 +181,5 @@ int main(void)
 
 static void banner(void)
 {
-    ID taskid;
-
-    dbg_printf("[FS] started.");
-    if (get_tid(&taskid) == E_OK) {
-	dbg_printf("(TASK ID = %d)", taskid);
-    }
-    dbg_printf("\n");
+    dbg_printf("[FS] started.\n");
 }

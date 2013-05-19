@@ -135,10 +135,11 @@ void init_keyboard_interrupt()
 {
     T_DINT pk_dint;
     ER errno;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     pk_dint.intatr = ATR_INTR;
     pk_dint.inthdr = (void (*)()) keyboard_interrupt;
-    errno = def_int(KEYBOARD_INT, &pk_dint);
+    errno = kcall->interrupt_bind(KEYBOARD_INT, &pk_dint);
     if (errno != E_OK) {
 	dbg_printf("keyboard: %d\n", errno);
     }

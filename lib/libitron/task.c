@@ -25,11 +25,3 @@ exd_tsk (void)
 {
   ncall(SVC_THREAD_END_AND_DESTROY);
 }
-
-/* get_tid  --- 自タスクのタスク ID 参照
-*/
-ER
-get_tid (ID *rid)
-{
-  return ncall(SVC_THREAD_GET_ID, rid);
-}

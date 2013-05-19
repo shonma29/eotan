@@ -52,7 +52,7 @@ struct intr_entry {
     FP func;
 };
 
-struct intr_entry intr_table[128];
+struct intr_entry intr_table[MAX_IDT + 1];
 
 
 
@@ -108,7 +108,7 @@ W init_interrupt(void)
 
     pic_reset_mask(ir_keyboard);
 
-    for (i = 0; i < 128; i++) {
+    for (i = 0; i < sizeof(intr_table) / sizeof(intr_table[0]); i++) {
 	intr_table[i].attr = 0;
 	intr_table[i].func = 0;
     }
@@ -185,15 +185,19 @@ void interrupt(W intn)
  *
  * 登録するときには、直接 IDT の値は変更せず、intr_table[] に登録する。
  */
-ER set_interrupt_entry(W intno, FP func, ATR attr)
+ER interrupt_bind(W intno, T_DINT *pk_dint)
 {
+    if ((intno < 0) || (intno >= sizeof(intr_table) / sizeof(intr_table[0]))) {
+	return (E_PAR);
+    }
+
     if (intr_table[intno].attr == -1) {
 	return (E_OBJ);
     }
 
-    printk("set_interrupt_entry = %d, func = 0x%x\n", intno, func);
-    intr_table[intno].attr = attr;
-    intr_table[intno].func = func;
+    printk("set_interrupt_entry = %d, func = 0x%x\n", intno, pk_dint->inthdr);
+    intr_table[intno].attr = pk_dint->intatr;
+    intr_table[intno].func = pk_dint->inthdr;
     return (E_OK);
 }
 
