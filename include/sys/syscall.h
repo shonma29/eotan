@@ -205,8 +205,8 @@ struct psc_fcntl
  */
 struct psc_fork
 {
-  ID	main_task;
-  ID	signal_task;
+  VP sp;
+  FP entry;
 };
 
 

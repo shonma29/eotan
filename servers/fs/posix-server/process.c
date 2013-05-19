@@ -218,6 +218,16 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
   struct proc *procp;
   W	       errno;
   W	       childid;
+  ID main_thread_id;
+  T_CTSK task_info = {
+     NULL,
+     TA_HLNG,
+     req->param.par_fork.entry,
+     USER_LEVEL,
+     USER_STACK_SIZE,
+     NULL,
+     user_mode
+  };
 
   errno = proc_get_procp (req->procid, &procp);		/* 親プロセスの情報の取りだし */
   if (errno)
@@ -231,12 +241,24 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
   printk ("psc_fork_f(): proc = 0x%x, proc->vm_tree = 0x%x\n", procp, procp->vm_tree);
 #endif
 
-  errno = proc_fork (procp, &childid, req->param.par_fork.main_task, req->param.par_fork.signal_task);
-  if (errno)
+  main_thread_id = acre_tsk(&task_info);
+  if (main_thread_id < 0)
     {
+      printk ("posix: acre_tsk error (%d)\n", main_thread_id);
       put_response (rdvno, errno, -1, 0);
       return (FALSE);
     }
+
+  errno = proc_fork (procp, &childid, main_thread_id, 0);
+  if (errno)
+    {
+      del_tsk(main_thread_id);
+      put_response (rdvno, errno, -1, 0);
+      return (FALSE);
+    }
+
+  vcpy_stk(req->caller, (W)(req->param.par_fork.sp), main_thread_id);
+  sta_tsk(main_thread_id, 0);
 
   put_response (rdvno, EOK, childid, 0);	/* 親プロセスに対して応答 */
   return (TRUE);
