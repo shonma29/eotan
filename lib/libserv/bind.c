@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <kcall.h>
 #include <services.h>
 #include <string.h>
 #include "../../servers/fs/api.h"
@@ -35,6 +36,7 @@ ER bind_device(UW id, UB *name, ID port)
 	ER_UINT err;
 	struct posix_request req;
 	struct posix_response *res = (struct posix_response *)&req;
+	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	if (strlen((char*)name) > MAX_DEVICE_NAME)
 		return E_PAR;
@@ -44,7 +46,7 @@ ER bind_device(UW id, UB *name, ID port)
 	req.param.par_bind_device.id = id;
 	strcpy((char*)req.param.par_bind_device.name, (char*)name);
 	req.param.par_bind_device.port = port;
-	err = cal_por(PORT_FS, 0xffffffff, &req, sizeof(req));
+	err = kcall->port_call(PORT_FS, &req, sizeof(req));
 
 	return (err < 0)? err:(res->errno? E_SYS:E_OK);
 }

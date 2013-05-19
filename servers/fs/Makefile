@@ -34,6 +34,6 @@ CSRCS += $(wildcard $(WD)/sfs/*.c)
 CSRCS += $(wildcard $(WD)/posix-server/*.c)
 
 $(TARGET): $(OBJS) \
-		lib/libserv.a lib/libitron.a lib/libnc.a
+		lib/libserv.a lib/libnc.a
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
 	$(STRIP) $@

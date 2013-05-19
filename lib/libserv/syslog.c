@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <device.h>
+#include <kcall.h>
 #include <services.h>
 #include <string.h>
 #include <itron/rendezvous.h>
@@ -36,6 +37,7 @@ ER syslog(B *msg)
 {
 	devmsg_t packet;
 	size_t len = strlen(msg);
+	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	packet.req.header.msgtyp = DEV_WRI;
 	packet.req.body.wri_req.dd = DESC_SYSLOG;
@@ -43,7 +45,7 @@ ER syslog(B *msg)
 	packet.req.body.wri_req.size = len;
 	memcpy(packet.req.body.wri_req.dt, msg, len);
 
-	return cal_por(PORT_SYSLOG, 0xffffffff, &packet,
+	return kcall->port_call(PORT_SYSLOG, &packet,
 			sizeof(packet.req.header)
 			+ sizeof(packet.req.body.wri_req)
 			- sizeof(packet.req.body.wri_req.dt)

@@ -209,7 +209,7 @@ static W control_device(ID device, struct posix_request *preq)
 	}
     }
 
-    rlength = cal_por(send_port, 0xffffffff, &packet, sizeof(packet.req));
+    rlength = kcall->port_call(send_port, &packet, sizeof(packet.req));
     if (rlength < 0) {
 	dbg_printf("cannot call port. %d\n", rlength);	/* */
 	return (ENODEV);

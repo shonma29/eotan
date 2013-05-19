@@ -187,6 +187,8 @@ static int test_del_por(void)
 
 void start(void)
 {
+	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
+
 	dbg_printf("[DUMB] start\n");
 
 	if (test_acre_por())	test_acp_por();
@@ -195,6 +197,5 @@ void start(void)
 
 	dbg_printf("[DUMB] exit\n");
 
-	exd_tsk();
+	kcall->thread_end_and_destroy();
 }
-

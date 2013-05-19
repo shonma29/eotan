@@ -224,5 +224,5 @@ void start(void)
 		dbg_printf("[RAMDISK] end\n");
 	}
 
-	exd_tsk();
+	kcall->thread_end_and_destroy();
 }

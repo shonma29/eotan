@@ -37,6 +37,7 @@ typedef struct {
 	ER (*thread_destroy)(ID tskid);
 	ER (*thread_start)(ID tskid, INT stacd);
 	void (*thread_end)(void);
+	void (*thread_end_and_destroy)(void);
 	ER (*thread_terminate)(ID tskid);
 	ER (*thread_release)(ID tskid);
 	ER (*thread_get_id)(ID *p_tskid);

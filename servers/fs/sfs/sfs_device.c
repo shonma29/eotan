@@ -16,6 +16,7 @@ Version 2, June 1991
  *
  */
 
+#include <kcall.h>
 #include <string.h>
 #include <device.h>
 #include <itron/rendezvous.h>
@@ -38,6 +39,7 @@ W sfs_write_device(ID device, B * buf, W start, W length, W * rlength)
     ID send_port;
     UW dd;
     ER_UINT rsize;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     errno = get_device_info(device, &send_port, &dd);
     if (errno) {
@@ -53,7 +55,7 @@ W sfs_write_device(ID device, B * buf, W start, W length, W * rlength)
     packet.req.body.wri_req.start = start;
     packet.req.body.wri_req.size = length;
     memcpy(packet.req.body.wri_req.dt, buf, length);
-    rsize = cal_por(send_port, 0xffffffff, &packet, sizeof(packet.req));
+    rsize = kcall->port_call(send_port, &packet, sizeof(packet.req));
     if (rsize < 0) {
 	dbg_printf("cal_por error = %d\n", rsize);	/* */
 	return (ENODEV);
@@ -75,6 +77,7 @@ W sfs_read_device(ID device, B * buf, W start, W length, W * rlength)
     ER_UINT rsize;
     ID send_port;
     UW dd;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     errno = get_device_info(device, &send_port, &dd);
     if (errno) {
@@ -92,7 +95,7 @@ W sfs_read_device(ID device, B * buf, W start, W length, W * rlength)
 	packet.req.body.rea_req.start = start + (length - rest_length);
 	packet.req.body.rea_req.size
 	    = (BLOCK_SIZE > rest_length) ? rest_length : BLOCK_SIZE;
-	rsize = cal_por(send_port, 0xffffffff, &packet, sizeof(packet.req));
+	rsize = kcall->port_call(send_port, &packet, sizeof(packet.req));
 	if (rsize < 0) {
 	    dbg_printf("cal_por error = %d\n", rsize);	/* */
 	    return (errno);
@@ -123,6 +126,7 @@ W sfs_open_device(ID device, W * rsize)
     ID send_port;
     UW dd;
     ER_UINT rlength;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     errno = get_device_info(device, &send_port, &dd);
     if (errno) {
@@ -131,7 +135,7 @@ W sfs_open_device(ID device, W * rsize)
 
     packet.req.header.msgtyp = DEV_OPN;
     packet.req.body.opn_req.dd = dd;
-    rlength = cal_por(send_port, 0xffffffff, &packet, sizeof(packet.req));
+    rlength = kcall->port_call(send_port, &packet, sizeof(packet.req));
     if (rlength < 0) {
 	dbg_printf("cal_por error = %d\n", rsize);	/* */
 	return (ENODEV);
@@ -152,6 +156,7 @@ W sfs_close_device(ID device)
     ID send_port;
     UW dd;
     ER_UINT rsize;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     errno = get_device_info(device, &send_port, &dd);
     if (errno) {
@@ -160,7 +165,7 @@ W sfs_close_device(ID device)
 
     packet.req.header.msgtyp = DEV_CLS;
     packet.req.body.cls_req.dd = dd;
-    rsize = cal_por(send_port, 0xffffffff, &packet, sizeof(packet.req));
+    rsize = kcall->port_call(send_port, &packet, sizeof(packet.req));
     if (rsize < 0) {
 	dbg_printf("cal_por error = %d\n", rsize);	/* */
 	return (ENODEV);

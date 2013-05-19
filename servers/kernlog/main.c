@@ -232,5 +232,5 @@ void start(void)
 		/*dbg_printf("[KERNLOG] end\n");*/
 	}
 
-	exd_tsk();
+	kcall->thread_end_and_destroy();
 }

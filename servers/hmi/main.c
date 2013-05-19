@@ -243,5 +243,5 @@ void start(void)
 		dbg_printf("[HMI] end\n");
 	}
 
-	exd_tsk();
+	kcall.thread_end_and_destroy();
 }
