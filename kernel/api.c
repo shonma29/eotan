@@ -185,8 +185,6 @@ Version 2, June 1991
 
 static ER	nodef (VP argp);
 
-static ER	if_thread_end_and_destroy(void *argp);
-
 /* 時間管理用システムコール */
 static ER	if_thread_delay(void *argp);
 
@@ -199,13 +197,10 @@ static ER (*syscall_table[])(VP argp) =
 {
   SVC_UNDEFINED,		/*    0 */
 
-  /* タスク管理システムコール */
-  SVC_IF (thread_end_and_destroy, 0),     /*    1 */
-
   /* 時間管理機能 */
-  SVC_IF (thread_delay, 1),	/*   2 */
+  SVC_IF (thread_delay, 1),	/*   1 */
 
-  SVC_IF (port_call, 4),	/*   3 */
+  SVC_IF (port_call, 4),	/*   2 */
 };
 
 #define NSYSCALL (sizeof (syscall_table) / sizeof (syscall_table[0]))
@@ -253,20 +248,6 @@ static ER
 nodef (VP argp)
 {
   return (E_NOSPT);
-}
-
-
-/* ----------------------------------------------------------------------- *
- * タスク関係システムコール                                                *
- * ----------------------------------------------------------------------- */
-
-/* if_exd_tsk --- 自タスクを終了して、資源を解放する。
- *
- */
-static ER if_thread_end_and_destroy(VP argp)
-{
-    thread_end_and_destroy();
-    return (E_OK);		/* 本当は、返り値はないが... */
 }
 
 

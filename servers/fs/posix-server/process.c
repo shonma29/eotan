@@ -206,6 +206,9 @@ psc_exit_f (RDVNO rdvno, struct posix_request *req)
   kcall->region_destroy(tskid, STACK_REGION); /* stack */
 #endif
 
+  kcall->thread_terminate(tskid);
+  kcall->thread_destroy(tskid);
+
   put_response (rdvno, EOK, 0, 0);
   return (TRUE);
 }  

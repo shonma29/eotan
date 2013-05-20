@@ -28,7 +28,4 @@ _exit (int status)
 
   req.param.par_exit.evalue = status;
   _make_connection(PSC_EXIT, &req);
-
-  /* 自タスクを終了 */
-  exd_tsk ();
 }
