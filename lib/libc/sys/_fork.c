@@ -30,7 +30,7 @@ _fork (int esp, int ebp, int ecx, int edx, int esi, int edi)
     ER error;
     struct posix_request req;
     struct posix_response *res = (struct posix_response*)&req;
-    thread_local_t *local_data = (thread_local_t*)LOCAL_ADDR;
+    thread_local_t *local_data = _get_local();
 
     /* POSIX manager の呼び出し 
 

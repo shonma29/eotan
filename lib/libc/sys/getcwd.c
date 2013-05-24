@@ -27,7 +27,7 @@ Version 2, June 1991
 char *
 getcwd (char *buf, int size)
 {
-    thread_local_t *local_data = (thread_local_t*)LOCAL_ADDR;
+    thread_local_t *local_data = _get_local();
 
     if (local_data->cwd_length > size) {
 	local_data->error_no = ERANGE;

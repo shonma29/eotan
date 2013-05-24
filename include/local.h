@@ -41,6 +41,11 @@ typedef struct {
 	UB cwd[MAX_CWD + 1];
 } thread_local_t;
 
+static inline thread_local_t *_get_local(void)
+{
+	return (thread_local_t*)LOCAL_ADDR;
+}
+
 static inline int _get_local_errno(void)
 {
 	thread_local_t *local = (thread_local_t*)LOCAL_ADDR;

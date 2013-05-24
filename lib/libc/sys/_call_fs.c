@@ -35,7 +35,7 @@ ER
 _make_connection(W wOperation,
 		 struct posix_request *req)
 {
-    thread_local_t *local_data = (thread_local_t*)LOCAL_ADDR;
+    thread_local_t *local_data = _get_local();
     W rsize;
 
     req->msg_length = sizeof(struct posix_request);
@@ -56,7 +56,7 @@ _call_fs(W wOperation, struct posix_request *req)
 {
   struct posix_response *res = (struct posix_response*)req;
   ER error = _make_connection(wOperation, req);
-  thread_local_t *local_data = (thread_local_t*)LOCAL_ADDR;
+  thread_local_t *local_data = _get_local();
 
   if (error != E_OK)
     {

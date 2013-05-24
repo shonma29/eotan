@@ -26,7 +26,7 @@ Version 2, June 1991
 int
 chdir (char *path)
 {
-    thread_local_t *local_data = (thread_local_t*)LOCAL_ADDR;
+    thread_local_t *local_data = _get_local();
     ER error;
     struct posix_request req;
     struct posix_response *res = (struct posix_response*)&req;
