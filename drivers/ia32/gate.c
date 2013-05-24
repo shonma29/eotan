@@ -79,9 +79,8 @@ void gdt_initialize(void)
 	memset(p, 0, (MAX_GDT + 1) * sizeof(SegmentDescriptor));
 	gdt_set_segment(kern_code, 0, 0xfffff, segmentCode, dpl_kern);
 	gdt_set_segment(kern_data, 0, 0xfffff, segmentData, dpl_kern);
-	gdt_set_segment(user_code, 0, 0x7fff0, segmentCode, dpl_user);
-	gdt_set_segment(user_data, 0, 0x7fff0, segmentData, dpl_user);
-	gdt_set_segment(user_stack, 0, 0x3ffff, segmentStack, dpl_user);
+	gdt_set_segment(user_code, 0, 0x7ffff, segmentCode, dpl_user);
+	gdt_set_segment(user_data, 0, 0x7ffff, segmentData, dpl_user);
 
 	gdt_load();
 }

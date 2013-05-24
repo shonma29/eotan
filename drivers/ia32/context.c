@@ -55,13 +55,13 @@ ER make_task_context(T_TCB * task, T_CTSK * pk_ctsk)
      *   2) タスクのスタートアドレス
      *   3) カーネルスタックのアドレス
      */
-    task->mpu.context.cs = KERNEL_CSEG;
-    task->mpu.context.ds = KERNEL_DSEG;
-    task->mpu.context.es = KERNEL_DSEG;
-    task->mpu.context.fs = KERNEL_DSEG;
-    task->mpu.context.gs = KERNEL_DSEG;
-    task->mpu.context.ss = KERNEL_DSEG;
-    task->mpu.context.ss0 = KERNEL_DSEG;
+    task->mpu.context.cs = kern_code;
+    task->mpu.context.ds = kern_data;
+    task->mpu.context.es = kern_data;
+    task->mpu.context.fs = kern_data;
+    task->mpu.context.gs = kern_data;
+    task->mpu.context.ss = kern_data;
+    task->mpu.context.ss0 = kern_data;
     task->mpu.context.esp = (UW) ((sp + pk_ctsk->stksz));
     task->mpu.context.ebp = (UW) ((sp + pk_ctsk->stksz));
     task->initial_stack = task->mpu.context.esp;
@@ -176,12 +176,12 @@ ER mpu_copy_stack(ID src, W esp, ID dst)
     }
 
     /* セレクタの設定 */
-    dst_tsk->mpu.context.cs = USER_CSEG | USER_DPL;
-    dst_tsk->mpu.context.ds = USER_DSEG;
-    dst_tsk->mpu.context.es = USER_DSEG;
-    dst_tsk->mpu.context.fs = USER_DSEG;
-    dst_tsk->mpu.context.gs = USER_DSEG;
-    dst_tsk->mpu.context.ss = USER_SSEG | USER_DPL;
+    dst_tsk->mpu.context.cs = user_code | USER_DPL;
+    dst_tsk->mpu.context.ds = user_data;
+    dst_tsk->mpu.context.es = user_data;
+    dst_tsk->mpu.context.fs = user_data;
+    dst_tsk->mpu.context.gs = user_data;
+    dst_tsk->mpu.context.ss = user_data | USER_DPL;
 
     /* FPU 情報のコピー */
     dst_tsk->mpu.use_fpu = src_tsk->mpu.use_fpu;
@@ -273,12 +273,12 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
     tsk->mpu.context.t = 0;
 
     /* セレクタの設定 */
-    tsk->mpu.context.cs = USER_CSEG | USER_DPL;
-    tsk->mpu.context.ds = USER_DSEG;
-    tsk->mpu.context.es = USER_DSEG;
-    tsk->mpu.context.fs = USER_DSEG;
-    tsk->mpu.context.gs = USER_DSEG;
-    tsk->mpu.context.ss = USER_SSEG | USER_DPL;
+    tsk->mpu.context.cs = user_code | USER_DPL;
+    tsk->mpu.context.ds = user_data;
+    tsk->mpu.context.es = user_data;
+    tsk->mpu.context.fs = user_data;
+    tsk->mpu.context.gs = user_data;
+    tsk->mpu.context.ss = user_data | USER_DPL;
 
     /* タスクの初期化 */
 
@@ -299,13 +299,13 @@ void set_thread1_context(T_TCB *taskp) {
     /* これらの情報は、次にタスク1がカレントタスクになった時に    */
     /* 使用する                                                   */
     taskp->mpu.context.cr3 = (UW) PAGE_DIR_ADDR;
-    taskp->mpu.context.cs = KERNEL_CSEG;
-    taskp->mpu.context.ds = KERNEL_DSEG;
-    taskp->mpu.context.es = KERNEL_DSEG;
-    taskp->mpu.context.fs = KERNEL_DSEG;
-    taskp->mpu.context.gs = KERNEL_DSEG;
-    taskp->mpu.context.ss = KERNEL_DSEG;
-    taskp->mpu.context.ss0 = KERNEL_DSEG;
+    taskp->mpu.context.cs = kern_code;
+    taskp->mpu.context.ds = kern_data;
+    taskp->mpu.context.es = kern_data;
+    taskp->mpu.context.fs = kern_data;
+    taskp->mpu.context.gs = kern_data;
+    taskp->mpu.context.ss = kern_data;
+    taskp->mpu.context.ss0 = kern_data;
     taskp->mpu.context.eflags = EFLAG_IBIT | EFLAG_IOPL3;
 }
 

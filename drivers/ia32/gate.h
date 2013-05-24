@@ -39,7 +39,6 @@ enum {
 	kern_data = 0x10,
 	user_code = 0x18,
 	user_data = 0x20,
-	user_stack = 0x28,
 	call_service = 0x30
 } Selector;
 

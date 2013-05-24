@@ -20,12 +20,6 @@ Version 2, June 1991
 #define MAX_IDT		(127)	/* IDT の最大のインデックス */
 
 #define TASK_DESC_MIN	TSS_BASE
-#define KERNEL_CSEG	(0x0008)	/* カーネルのコードセグメント */
-#define KERNEL_DSEG	(0x0010)	/* カーネルのデータセグメント */
-#define USER_CSEG	(0x0018)	/* ユーザのコードセグメント */
-#define USER_DSEG	(0x0020)	/* ユーザのデータセグメント */
-#define USER_SSEG	(0x0028)	/* ユーザのスタックセグメント */
-#define SVC_GATE	(0x0030)	/* システムコール用ゲート */
 
 #define PAGE_DIR_ADDR	(0x2000)	/* 仮想ページディレクトリテーブル */
 
