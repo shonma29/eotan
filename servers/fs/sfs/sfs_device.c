@@ -35,15 +35,15 @@ Version 2, June 1991
 W sfs_write_device(ID device, B * buf, W start, W length, W * rlength)
 {
     devmsg_t packet;
-    W errno;
+    W error_no;
     ID send_port;
     UW dd;
     ER_UINT rsize;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    errno = get_device_info(device, &send_port, &dd);
-    if (errno) {
-	return (errno);
+    error_no = get_device_info(device, &send_port, &dd);
+    if (error_no) {
+	return (error_no);
     }
 
     if (length > MAX_BODY_SIZE) {	/* Kludge!! */
@@ -72,16 +72,16 @@ W sfs_write_device(ID device, B * buf, W start, W length, W * rlength)
 W sfs_read_device(ID device, B * buf, W start, W length, W * rlength)
 {
     devmsg_t packet;
-    W errno;
+    W error_no;
     W rest_length;
     ER_UINT rsize;
     ID send_port;
     UW dd;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    errno = get_device_info(device, &send_port, &dd);
-    if (errno) {
-	return (errno);
+    error_no = get_device_info(device, &send_port, &dd);
+    if (error_no) {
+	return (error_no);
     }
 
 #ifdef notdef
@@ -98,7 +98,7 @@ W sfs_read_device(ID device, B * buf, W start, W length, W * rlength)
 	rsize = kcall->port_call(send_port, &packet, sizeof(packet.req));
 	if (rsize < 0) {
 	    dbg_printf("cal_por error = %d\n", rsize);	/* */
-	    return (errno);
+	    return (error_no);
 	}
 
 	if (packet.res.body.rea_res.errinfo != E_OK) {
@@ -122,15 +122,15 @@ W sfs_read_device(ID device, B * buf, W start, W length, W * rlength)
 W sfs_open_device(ID device, W * rsize)
 {
     devmsg_t packet;
-    W errno;
+    W error_no;
     ID send_port;
     UW dd;
     ER_UINT rlength;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    errno = get_device_info(device, &send_port, &dd);
-    if (errno) {
-	return (errno);
+    error_no = get_device_info(device, &send_port, &dd);
+    if (error_no) {
+	return (error_no);
     }
 
     packet.req.header.msgtyp = DEV_OPN;
@@ -152,15 +152,15 @@ W sfs_open_device(ID device, W * rsize)
 W sfs_close_device(ID device)
 {
     devmsg_t packet;
-    W errno;
+    W error_no;
     ID send_port;
     UW dd;
     ER_UINT rsize;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    errno = get_device_info(device, &send_port, &dd);
-    if (errno) {
-	return (errno);
+    error_no = get_device_info(device, &send_port, &dd);
+    if (error_no) {
+	return (error_no);
     }
 
     packet.req.header.msgtyp = DEV_CLS;

@@ -48,5 +48,5 @@ ER bind_device(UW id, UB *name, ID port)
 	req.param.par_bind_device.port = port;
 	err = kcall->port_call(PORT_FS, &req, sizeof(req));
 
-	return (err < 0)? err:(res->errno? E_SYS:E_OK);
+	return (err < 0)? err:(res->error_no? E_SYS:E_OK);
 }

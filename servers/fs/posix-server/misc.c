@@ -97,7 +97,7 @@ UW get_system_time(UW * usec)
 W psc_time_f(RDVNO rdvno, struct posix_request * req)
 {
     UW clock, usec;
-    ER errno = EOK;
+    ER error_no = EOK;
     struct timeval tv;
     struct timezone tz;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
@@ -110,21 +110,21 @@ W psc_time_f(RDVNO rdvno, struct posix_request * req)
     tz.tz_dsttime = 0;
 
     if (req->param.par_time.tv != NULL) {
-	errno = kcall->region_put(req->caller,
+	error_no = kcall->region_put(req->caller,
 			 req->param.par_time.tv, sizeof(struct timeval),
 			 &tv);
-	if (errno) {
-	    put_response(rdvno, errno, -1, 0);
+	if (error_no) {
+	    put_response(rdvno, error_no, -1, 0);
 	    return (FALSE);
 	}
 
     }
     if (req->param.par_time.tz == NULL) {
-	errno = kcall->region_put(req->caller,
+	error_no = kcall->region_put(req->caller,
 			 req->param.par_time.tz, sizeof(struct timezone),
 			 &tz);
-	if (errno) {
-	    put_response(rdvno, errno, -1, 0);
+	if (error_no) {
+	    put_response(rdvno, error_no, -1, 0);
 	    return (FALSE);
 	}
     }

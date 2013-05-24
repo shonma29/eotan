@@ -90,7 +90,7 @@ W psc_brk_f(RDVNO rdvno, struct posix_request *req)
 W psc_exec_f(RDVNO rdvno, struct posix_request *req)
 {
     B pathname[MAX_NAMELEN];
-    W errno;
+    W error_no;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 #ifdef EXEC_DEBUG
@@ -99,11 +99,11 @@ W psc_exec_f(RDVNO rdvno, struct posix_request *req)
 
     /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。
      */
-    errno = kcall->region_get(req->caller, req->param.par_execve.name,
+    error_no = kcall->region_get(req->caller, req->param.par_execve.name,
 		     req->param.par_execve.pathlen + 1, pathname);
-    if (errno) {
+    if (error_no) {
 	/* パス名のコピーエラー */
-	if (errno == E_PAR)
+	if (error_no == E_PAR)
 	    put_response(rdvno, EINVAL, -1, 0);
 	else
 	    put_response(rdvno, EFAULT, -1, 0);
@@ -113,12 +113,12 @@ W psc_exec_f(RDVNO rdvno, struct posix_request *req)
 #ifdef EXEC_DEBUG
     printk("exec: pathname is %s\n", pathname);
 #endif
-    errno = exec_program(req, req->procid, pathname);
-    if (errno) {
+    error_no = exec_program(req, req->procid, pathname);
+    if (error_no) {
 	if (proc_get_vmtree(req->procid) != NULL) {
 	    /* 呼び出しを行ったプロセスがまだ生き残っていた場合 */
 	    /*エラーメッセージを返す */
-	    put_response(rdvno, errno, -1, 0);
+	    put_response(rdvno, error_no, -1, 0);
 	} else {
 	    /* 既にプロセスの仮想メモリが開放されている場合 */
 	    /* exit が実行されることは無いので，ここで開放する */
@@ -144,27 +144,27 @@ psc_exit_f (RDVNO rdvno, struct posix_request *req)
   struct posix_request preq;
   W mypid, wpid, exst;
   W i;
-  ER errno;
+  ER error_no;
   ID tskid;
   kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
   mypid = req->procid;
-  errno = proc_get_procp(mypid, &myprocp);
-  if (errno) {
+  error_no = proc_get_procp(mypid, &myprocp);
+  if (error_no) {
     put_response (rdvno, ESRCH, 0, 0);
     /* メッセージの呼び出し元にエラーを返しても処理できないが，
        タスクは exd_tsk で終了する */
-    return errno;
+    return error_no;
   }
 
   myprocp->proc_exst = req->param.par_exit.evalue;
 
-  errno = proc_get_procp(myprocp->proc_ppid, &procp);
-  if (errno) {
+  error_no = proc_get_procp(myprocp->proc_ppid, &procp);
+  if (error_no) {
     put_response (rdvno, ESRCH, 0, 0);
     /* メッセージの呼び出し元にエラーを返しても処理できないが，
        タスクは exd_tsk で終了する */
-    return errno;
+    return error_no;
   }
 
   wpid = procp->proc_wpid;
@@ -219,7 +219,7 @@ W
 psc_fork_f (RDVNO rdvno, struct posix_request *req)
 {
   struct proc *procp;
-  W	       errno;
+  W	       error_no;
   W	       childid;
   ID main_thread_id;
   T_CTSK task_info = {
@@ -233,11 +233,11 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
   };
   kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-  errno = proc_get_procp (req->procid, &procp);		/* 親プロセスの情報の取りだし */
-  if (errno)
+  error_no = proc_get_procp (req->procid, &procp);		/* 親プロセスの情報の取りだし */
+  if (error_no)
     {
       printk ("posix: invalid process id (%d)\n", req->procid);
-      put_response (rdvno, errno, -1, 0);
+      put_response (rdvno, error_no, -1, 0);
       return (FALSE);
     }
 
@@ -249,15 +249,15 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
   if (main_thread_id < 0)
     {
       printk ("posix: acre_tsk error (%d)\n", main_thread_id);
-      put_response (rdvno, errno, -1, 0);
+      put_response (rdvno, error_no, -1, 0);
       return (FALSE);
     }
 
-  errno = proc_fork (procp, &childid, main_thread_id, 0);
-  if (errno)
+  error_no = proc_fork (procp, &childid, main_thread_id, 0);
+  if (error_no)
     {
       kcall->thread_destroy(main_thread_id);
-      put_response (rdvno, errno, -1, 0);
+      put_response (rdvno, error_no, -1, 0);
       return (FALSE);
     }
 
@@ -274,24 +274,24 @@ W psc_kill_f(RDVNO rdvno, struct posix_request *req)
     struct posix_request preq;
     W mypid, wpid, exst;
     W i;
-    ER errno;
+    ER error_no;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     /* req->caller が task 1 の場合は，返事のメッセージを送らない */
 
     mypid = req->param.par_kill.pid;
-    errno = proc_get_procp(mypid, &myprocp);
-    if (errno) {
-	return errno;
+    error_no = proc_get_procp(mypid, &myprocp);
+    if (error_no) {
+	return error_no;
 	if (req->caller != KERNEL_TASK) {
 	    put_response(rdvno, ESRCH, 0, 0);
 	}
     }
     myprocp->proc_exst = (-1);	/* 強制終了時のステータスは (-1) で良いか? */
 
-    errno = proc_get_procp(myprocp->proc_ppid, &procp);
-    if (errno) {
-	return errno;
+    error_no = proc_get_procp(myprocp->proc_ppid, &procp);
+    if (error_no) {
+	return error_no;
 	if (req->caller != KERNEL_TASK) {
 	    put_response(rdvno, ESRCH, 0, 0);
 	}

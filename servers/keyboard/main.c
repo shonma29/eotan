@@ -357,14 +357,14 @@ static W write_keyboard(RDVNO rdvno, devmsg_t * packet)
  *
  */
 
-static void respond_ctrl(RDVNO rdvno, devmsg_t * packet, W dd, ER errno)
+static void respond_ctrl(RDVNO rdvno, devmsg_t * packet, W dd, ER error_no)
 {
     DDEV_CTL_RES * res = &(packet->res.body.ctl_res);
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     res->dd = dd;
-    res->errcd = errno;
-    res->errinfo = errno;
+    res->errcd = error_no;
+    res->errinfo = error_no;
     kcall->port_reply(rdvno, packet, sizeof(DDEV_RES));
 }
 

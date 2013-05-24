@@ -139,12 +139,12 @@ W sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 {
     struct sfs_superblock sfs_sb;
     W rlength;
-    W errno;
+    W error_no;
 
-    errno =
+    error_no =
 	sfs_read_device(device, (B *) & sfs_sb, 512,
 			sizeof(struct sfs_superblock), &rlength);
-    if (errno) {
+    if (error_no) {
 #ifdef FMDEBUG
 	printk("Cannot read from device.\n");
 #endif
@@ -184,14 +184,14 @@ W sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 #endif
 
     rootfile->i_ops = (struct iops *) &sfs_iops;
-    errno = sfs_read_inode(rootfsp, 1, rootfile);
+    error_no = sfs_read_inode(rootfsp, 1, rootfile);
     /* root file の読み込み、inode = 1 が root file */
 
-    if (errno) {
+    if (error_no) {
 #ifdef FMDEBUG
-	printk("sfs_mount: error = %d\n", errno);
+	printk("sfs_mount: error = %d\n", error_no);
 #endif
-	return (errno);
+	return (error_no);
     }
 #ifdef FMDEBUG
     dbg_printf("root file inode:\n");
@@ -244,7 +244,7 @@ W sfs_statfs()
  */
 W sfs_syncfs(struct fs * fsp, W umflag)
 {
-    W errno;
+    W error_no;
     W rsize;
     struct sfs_superblock *sb;
 
@@ -254,24 +254,24 @@ W sfs_syncfs(struct fs * fsp, W umflag)
 	fsp->fs_private.sfs_fs.sfs_isearch = fsp->fs_isearch;
 	fsp->fs_private.sfs_fs.sfs_bsearch = fsp->fs_bsearch;
 	sb = &(fsp->fs_private.sfs_fs);
-	errno =
+	error_no =
 	    sfs_write_device(fsp->fs_device, (B *) sb,
 			     1 * sb->sfs_blocksize,
 			     sizeof(struct sfs_superblock), &rsize);
-	if (errno) {
-	    return (errno);
+	if (error_no) {
+	    return (error_no);
 	}
 	fsp->fs_dirty = 0;
     }
 #ifdef notdef
-    errno = sfs_sync_bitmap(fsp->fs_device);
-    if (errno) {
-	return (errno);
+    error_no = sfs_sync_bitmap(fsp->fs_device);
+    if (error_no) {
+	return (error_no);
     }
 #endif
-    errno = sfs_sync_cache(fsp->fs_device, umflag);
-    if (errno) {
-	return (errno);
+    error_no = sfs_sync_cache(fsp->fs_device, umflag);
+    if (error_no) {
+	return (error_no);
     }
     return (EOK);
 }

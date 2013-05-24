@@ -30,12 +30,12 @@ getcwd (char *buf, int size)
     thread_local_t *local_data = (thread_local_t*)LOCAL_ADDR;
 
     if (local_data->cwd_length > size) {
-	errno = ERANGE;
+	local_data->error_no = ERANGE;
 	return (NULL);
     }
     strncpy(buf, (B*)(local_data->cwd), size - 1);
     buf[size - 1] = '\0';
-    errno = EOK;
+    local_data->error_no = EOK;
     return (buf);
 }
 

@@ -41,8 +41,8 @@ chdir (char *path)
 	/* What should I do? */
     }
 
-    else if (res->errno) {
-	errno = res->errno;
+    else if (res->error_no) {
+	local_data->error_no = res->error_no;
 	return (-1);
     }
 

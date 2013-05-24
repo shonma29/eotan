@@ -131,7 +131,7 @@ W grow_vm(struct proc * procp, UW addr, UW access)
     UW pageent;
     struct vm_directory *vmdir;
     struct vm_page *vmpage;
-    ER errno;
+    ER error_no;
     struct vm_tree *treep;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
@@ -165,8 +165,8 @@ W grow_vm(struct proc * procp, UW addr, UW access)
 
     /* 仮想メモリ領域に物理メモリを割り付ける
      */
-    errno = kcall->region_map(procp->proc_maintask, (VP) addr, PAGE_SIZE, ACC_USER);
-    if (errno) {
+    error_no = kcall->region_map(procp->proc_maintask, (VP) addr, PAGE_SIZE, ACC_USER);
+    if (error_no) {
 	return (EPERM);
     }
 
@@ -183,7 +183,7 @@ W shorten_vm(struct proc * procp, UW addr)
     UW pageent;
     struct vm_directory *vmdir;
     struct vm_page *vmpage;
-    ER errno;
+    ER error_no;
     struct vm_tree *treep;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
@@ -200,8 +200,8 @@ W shorten_vm(struct proc * procp, UW addr)
     if (vmpage == NULL) {
 	return (EINVAL);
     }
-    errno = kcall->region_unmap(procp->proc_maintask, (VP) (vmpage->addr), PAGE_SIZE);
-    if (errno) {
+    error_no = kcall->region_unmap(procp->proc_maintask, (VP) (vmpage->addr), PAGE_SIZE);
+    if (error_no) {
 	return (EINVAL);
     }
 
@@ -224,7 +224,7 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
     W page_index;
     struct vm_directory *dirp, *dest_dirp;
     struct vm_page *pagep, *dest_pagep;
-    ER errno;
+    ER error_no;
     struct vm_tree *source;
     struct vm_tree *destination;
     static B page_buf[PAGE_SIZE];
@@ -330,15 +330,15 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 			dest_pagep->addr =
 			    (dir_index * MAX_PAGE_ENTRY * PAGE_SIZE) +
 			    (page_index << PAGE_SHIFT);
-			errno =
+			error_no =
 			    kcall->region_map(dest_proc->proc_maintask,
 				     (VP) dest_pagep->addr, PAGE_SIZE,
 				     ACC_USER);
-			if (errno) {
+			if (error_no) {
 #ifdef VMDEBUG
-			    printk("cannot vmap_reg: errno = %d\n", errno);
+			    printk("cannot vmap_reg: errno = %d\n", error_no);
 #endif
-			    return (errno);
+			    return (error_no);
 			}
 		    } else {
 			/* すでに受けがわページが使用されている
@@ -351,18 +351,18 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 
 		    /* 送り側プロセスのメモリ中の情報を取り出す
 		     */
-		    errno = kcall->region_get(source_proc->proc_maintask,
+		    error_no = kcall->region_get(source_proc->proc_maintask,
 				     (VP) dest_pagep->addr,
 				     PAGE_SIZE, (VP) page_buf);
-		    if (errno) {
+		    if (error_no) {
 #ifdef VMDEBUG
-			printk("vget_reg: errno = %d\n", errno);
+			printk("vget_reg: errno = %d\n", error_no);
 			printk
 			    ("          task = %d, addr = %x, buf = %x\n",
 			     source_proc->proc_maintask, dest_pagep->addr,
 			     (VP) page_buf);
 #endif
-			return (errno);
+			return (error_no);
 		    }
 #ifdef notdef
 		    if (
@@ -392,14 +392,14 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 
 		    /* 受け側プロセスのメモリに取り出した情報を送る
 		     */
-		    errno = kcall->region_put(dest_proc->proc_maintask,
+		    error_no = kcall->region_put(dest_proc->proc_maintask,
 				     (VP) dest_pagep->addr,
 				     PAGE_SIZE, (VP) page_buf);
-		    if (errno) {
+		    if (error_no) {
 #ifdef VMDEBUG
-			printk("vput_reg: errno = %d\n", errno);
+			printk("vput_reg: errno = %d\n", error_no);
 #endif
-			return (errno);
+			return (error_no);
 		    }
 		}
 	    }			/* ディレクトリの各ページのチェックのループの最後 */
@@ -467,7 +467,7 @@ W destroy_vmtree(struct proc * procp, struct vm_tree * treep, W unmap)
     W page_index;
     struct vm_directory *dirp;
     struct vm_page *pagep;
-    ER errno;
+    ER error_no;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     for (dir_index = 0; dir_index < MAX_DIR_ENTRY; dir_index++) {
@@ -481,10 +481,10 @@ W destroy_vmtree(struct proc * procp, struct vm_tree * treep, W unmap)
 			/* swap 情報を解放 */
 		    }
 		    if (unmap) {
-			errno = kcall->region_unmap(procp->proc_maintask,
+			error_no = kcall->region_unmap(procp->proc_maintask,
 					 (VP) (pagep->addr), PAGE_SIZE);
-			if (errno) {
-			    return (errno);
+			if (error_no) {
+			    return (error_no);
 			}
 		    }
 		    /* ページを開放 */

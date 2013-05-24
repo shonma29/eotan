@@ -161,14 +161,14 @@ W init_process(void)
 
 W set_local(ID pid, ID tskid)
 {
-    W errno;
+    W error_no;
     thread_local_t local_data;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    errno = kcall->region_map(tskid, (thread_local_t*)LOCAL_ADDR, sizeof(thread_local_t),
+    error_no = kcall->region_map(tskid, (thread_local_t*)LOCAL_ADDR, sizeof(thread_local_t),
     		ACC_USER);
-    if (errno)
-	return errno;
+    if (error_no)
+	return error_no;
 
     memset(&local_data, 0, sizeof(local_data));
     local_data.thread_id = tskid;
@@ -176,10 +176,10 @@ W set_local(ID pid, ID tskid)
     strcpy((B*)local_data.cwd, "/");
     local_data.cwd_length = 1;
 
-    errno = kcall->region_put(tskid, (thread_local_t*)LOCAL_ADDR,
+    error_no = kcall->region_put(tskid, (thread_local_t*)LOCAL_ADDR,
 		     sizeof(thread_local_t), &local_data);
-    if (errno)
-	return errno;
+    if (error_no)
+	return error_no;
     return (EOK);
 }
 
@@ -188,13 +188,13 @@ W set_local(ID pid, ID tskid)
  */
 W proc_destroy_memory(W procid)
 {
-    ER errno;
+    ER error_no;
 
     if ((procid < 0) || (procid >= MAX_PROCESS)) {
 	return (EINVAL);
     }
-    errno = destroy_proc_memory(&proc_table[procid], 1);
-    return (errno);
+    error_no = destroy_proc_memory(&proc_table[procid], 1);
+    return (error_no);
 }
 
 

@@ -80,7 +80,7 @@ static W load_data(W procid, struct inode *ip, Elf32_Phdr *data,
 W exec_program(struct posix_request *req, W procid, B * pathname)
 {
     struct inode *ip;
-    W errno;
+    W error_no;
     struct access_info acc;
     Elf32_Ehdr elf_header;
     Elf32_Phdr text, data;
@@ -93,9 +93,9 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 #endif
 
     /* プロセスの情報の取りだし */
-    errno = proc_get_procp(procid, &procp);
-    if (errno) {
-	return (errno);
+    error_no = proc_get_procp(procid, &procp);
+    if (error_no) {
+	return (error_no);
     }
 
     /* 対象となるプログラムファイルをオープンする */
@@ -105,48 +105,48 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 #ifdef notdef
 	dbg_printf("[PM] exec_program: call fs_open_file ()\n");	/* */
 #endif
-	errno = fs_open_file(pathname, O_RDONLY, 0, &acc, rootfile, &ip);
+	error_no = fs_open_file(pathname, O_RDONLY, 0, &acc, rootfile, &ip);
     } else {
 	struct inode *startip;
 
-	errno = proc_get_cwd(procid, &startip);
-	if (errno) {
-	    return (errno);
+	error_no = proc_get_cwd(procid, &startip);
+	if (error_no) {
+	    return (error_no);
 	}
-	errno = fs_open_file(pathname, O_RDONLY, 0, &acc, startip, &ip);
+	error_no = fs_open_file(pathname, O_RDONLY, 0, &acc, startip, &ip);
     }
-    if (errno) {
+    if (error_no) {
 #ifdef EXEC_DEBUG
 	dbg_printf("[PM] Cannot open file. -> return from exec_program().\n");
 #endif
-	return (errno);
+	return (error_no);
     }
 
     /* 実行許可のチェック */
-    errno = permit(ip, &acc, X_OK);
-    if (errno) {
+    error_no = permit(ip, &acc, X_OK);
+    if (error_no) {
 #ifdef EXEC_DEBUG
 	dbg_printf("[PM] Permission denied. -> return from exec_program().\n");
 #endif
-	return (errno);
+	return (error_no);
     }
 #ifdef notdef
     dbg_printf("[PM] read exec header\n");
 #endif
-    errno = read_exec_header(ip, &elf_header, &text, &data);
-    if (errno) {
+    error_no = read_exec_header(ip, &elf_header, &text, &data);
+    if (error_no) {
 	fs_close_file(ip);
-	return (errno);
+	return (error_no);
     }
 #ifdef notdef
     dbg_printf("[PM] destroy\n");	/* */
 #endif
     /* 呼び出し元プロセスのすべての(仮想)メモリを解放する
      */
-    errno = proc_destroy_memory(procid);
-    if (errno) {
+    error_no = proc_destroy_memory(procid);
+    if (error_no) {
 	fs_close_file(ip);
-	return (errno);
+	return (error_no);
     }
 #ifdef notdef
     dbg_printf("[PM] vdel_reg\n");	/* */
@@ -161,17 +161,17 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     dbg_printf("[PM] setup vm proc\n");
 #endif
     /* 仮想空間の生成 */
-    errno = create_vm_tree(procp);
+    error_no = create_vm_tree(procp);
 
 #ifdef notdef
     dbg_printf("[PM] load text\n");
 #endif
     /* テキスト領域をメモリに入れる
      */
-    errno = load_text(procid, ip, &text, req->caller);
-    if (errno) {
+    error_no = load_text(procid, ip, &text, req->caller);
+    if (error_no) {
 	fs_close_file(ip);
-	return (errno);
+	return (error_no);
     }
 
     /* データ領域をメモリに入れる
@@ -179,26 +179,26 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 #ifdef notdef
     dbg_printf("[PM] load data\n");
 #endif
-    errno = load_data(procid, ip, &data, req->caller);
-    if (errno) {
+    error_no = load_data(procid, ip, &data, req->caller);
+    if (error_no) {
 	fs_close_file(ip);
-	return (errno);
+	return (error_no);
     }
 
     /* 残りの region の作成 */
-    errno = kcall->region_create(req->caller, HEAP_REGION,
+    error_no = kcall->region_create(req->caller, HEAP_REGION,
 		     (VP) VADDR_HEAP, 0, STD_HEAP_SIZE,
 	     VM_READ | VM_WRITE | VM_USER);	/* heap */
 #ifdef DEBUG
-    if (errno) {
-      dbg_printf("[EXEC]: vcre_reg return %d\n", errno);
+    if (error_no) {
+      dbg_printf("[EXEC]: vcre_reg return %d\n", error_no);
     }
     {
       T_REGION reg;
 
-      errno = vsts_reg(req->caller, HEAP_REGION, (VP) & reg);
+      error_no = vsts_reg(req->caller, HEAP_REGION, (VP) & reg);
       dbg_printf("[EXEC] err = %d sa %x, min %x, max %x\n",
-		 errno, reg.start_addr, reg.min_size, reg.max_size);
+		 error_no, reg.start_addr, reg.min_size, reg.max_size);
     }
 #endif
 #if 0
@@ -207,7 +207,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 	char buf[stsize];
 	int *bufp;
 
-	errno = vget_reg(req->caller, req->param.par_execve.stackp,
+	error_no = vget_reg(req->caller, req->param.par_execve.stackp,
 			 stsize, buf);
 	for (bufp = (int *) buf; *bufp != 0; ++bufp) {
 	    dbg_printf("%x %s\n", *bufp, &buf[*bufp]);
@@ -225,7 +225,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 	       req->param.par_execve.stsize);
 #endif
     /* タスクの context.eip を elf_header.e_entry に設定する */
-    errno = kcall->mpu_set_context(procid? req->caller:(INIT_THREAD_ID_FLAG | req->caller),
+    error_no = kcall->mpu_set_context(procid? req->caller:(INIT_THREAD_ID_FLAG | req->caller),
 		     elf_header.e_entry,
 		     req->param.par_execve.stackp,
 		     req->param.par_execve.stsize);
@@ -239,10 +239,10 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     procp->proc_name[PROC_NAME_LEN - 1] = '\0';
 
 #ifdef notdef
-    dbg_printf("[PM] exec return %d\n", errno);
+    dbg_printf("[PM] exec return %d\n", error_no);
 #endif
-    if (errno)
-	return errno;
+    if (error_no)
+	return error_no;
 
     return (EOK);
 }
@@ -258,17 +258,17 @@ read_exec_header(struct inode *ip,
 		 Elf32_Ehdr *elfp,
 		 Elf32_Phdr *text, Elf32_Phdr *data)
 {
-    W errno;
+    W error_no;
     W rlength;
     Elf32_Phdr ph_table[10];
     W ph_index;
 
 
-    errno =
+    error_no =
 	fs_read_file(ip, 0, (B *) elfp, sizeof(Elf32_Ehdr),
 		     &rlength);
-    if (errno) {
-	return (errno);
+    if (error_no) {
+	return (error_no);
     }
 
     /* マジックナンバのチェック
@@ -305,11 +305,11 @@ read_exec_header(struct inode *ip,
 	return (ENOEXEC);
     }
 
-    errno =
+    error_no =
 	fs_read_file(ip, elfp->e_phoff, (B *) ph_table,
 		     elfp->e_phentsize * elfp->e_phnum, &rlength);
-    if (errno) {
-	return (errno);
+    if (error_no) {
+	return (error_no);
     } else if (rlength != elfp->e_phentsize * elfp->e_phnum) {
 	return (ENOEXEC);
     }
@@ -350,7 +350,7 @@ read_exec_header(struct inode *ip,
 static W
 load_text(W procid, struct inode *ip, Elf32_Phdr *text, ID task)
 {
-    W errno;
+    W error_no;
     W rest_length;
     W offset;
     W read_size;
@@ -367,33 +367,33 @@ load_text(W procid, struct inode *ip, Elf32_Phdr *text, ID task)
     kcall->region_create(task, TEXT_REGION, (VP) start, size, size,
 	     VM_READ | VM_EXEC | VM_USER);
 
-    errno = alloc_memory(procid, start, size, VM_READ | VM_EXEC);
-    if (errno) {
+    error_no = alloc_memory(procid, start, size, VM_READ | VM_EXEC);
+    if (error_no) {
 #ifdef EXEC_DEBUG
 	dbg_printf("ERROR: alloc memory\n");
 #endif
-	return (errno);
+	return (error_no);
     }
 
     for (rest_length = text->p_filesz, offset = text->p_offset, vaddr =
 	 text->p_vaddr; rest_length > 0;
 	 rest_length -= PAGE_SIZE, vaddr += PAGE_SIZE, offset += read_size) {
-	errno =
+	error_no =
 	    fs_read_file(ip, offset, buf,
 			 (PAGE_SIZE <
 			  rest_length) ? PAGE_SIZE : rest_length,
 			 &read_size);
-	if (errno) {
+	if (error_no) {
 #ifdef EXEC_DEBUG
 	    dbg_printf("ERROR: fs_read_file\n");
 #endif
 	    return (ENOMEM);
 	}
 
-	errno = kcall->region_put(task, (B *) vaddr, read_size, buf);
-	if (errno) {
+	error_no = kcall->region_put(task, (B *) vaddr, read_size, buf);
+	if (error_no) {
 #ifdef EXEC_DEBUG
-	    dbg_printf("ERROR: vput_reg %d %d %x %d %x\n", errno,
+	    dbg_printf("ERROR: vput_reg %d %d %x %d %x\n", error_no,
 		   task, vaddr, read_size, buf);
 #endif
 	    return (ENOMEM);
@@ -412,7 +412,7 @@ load_text(W procid, struct inode *ip, Elf32_Phdr *text, ID task)
 static W
 load_data(W procid, struct inode *ip, Elf32_Phdr *data, ID task)
 {
-    W errno;
+    W error_no;
     W rest_length;
     W offset;
     W read_size;
@@ -428,31 +428,31 @@ load_data(W procid, struct inode *ip, Elf32_Phdr *data, ID task)
     /* data+bss region の設定 */
     kcall->region_create(task, DATA_REGION, (VP) start, size, size,
 	     VM_READ | VM_WRITE | VM_USER);	/* data+bss */
-    errno = alloc_memory(procid, start, size, VM_READ | VM_WRITE);
-    if (errno) {
+    error_no = alloc_memory(procid, start, size, VM_READ | VM_WRITE);
+    if (error_no) {
 #ifdef EXEC_DEBUG
 	dbg_printf("ERROR: alloc memory\n");
 #endif
-	return (errno);
+	return (error_no);
     }
 
     for (rest_length = data->p_filesz, offset = data->p_offset, vaddr =
 	 data->p_vaddr; rest_length > 0;
 	 rest_length -= PAGE_SIZE, vaddr += PAGE_SIZE, offset += read_size) {
-	errno =
+	error_no =
 	    fs_read_file(ip, offset, buf,
 			 (PAGE_SIZE <
 			  rest_length) ? PAGE_SIZE : rest_length,
 			 &read_size);
-	if (errno) {
+	if (error_no) {
 #ifdef EXEC_DEBUG
 	    dbg_printf("ERROR: fs_read_file\n");
 #endif
 	    return (ENOMEM);
 	}
 
-	errno = kcall->region_put(task, (B *) vaddr, read_size, buf);
-	if (errno) {
+	error_no = kcall->region_put(task, (B *) vaddr, read_size, buf);
+	if (error_no) {
 #ifdef EXEC_DEBUG
 	    dbg_printf("ERROR: vput_reg\n");
 #endif

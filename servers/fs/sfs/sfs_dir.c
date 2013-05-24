@@ -75,7 +75,7 @@ sfs_read_dir (struct inode *parentp,
 	      struct sfs_dir *dirp)
 {
   W	size;
-  W	errno;
+  W	error_no;
   W	rsize;
 
 #ifdef FMDEBUG
@@ -91,10 +91,10 @@ sfs_read_dir (struct inode *parentp,
           nentry * sizeof (struct sfs_dir) :
 	  parentp->i_size;
 
-  errno = sfs_i_read (parentp, 0, (char *)dirp, size, &rsize);
-  if (errno)
+  error_no = sfs_i_read (parentp, 0, (char *)dirp, size, &rsize);
+  if (error_no)
     {
-      return (errno);
+      return (error_no);
     }
   return (0);
 }
@@ -108,15 +108,15 @@ sfs_write_dir (struct inode *parentp,
 	      W nentry,
 	      struct sfs_dir *dirp)
 {
-  W	errno;
+  W	error_no;
   W	rsize;
 
   /* 親ディレクトリの netnry 目から後に dirp の内容を追加 */
-  errno = sfs_i_write (parentp, nentry*sizeof(struct sfs_dir), (char *)dirp,
+  error_no = sfs_i_write (parentp, nentry*sizeof(struct sfs_dir), (char *)dirp,
 		       sizeof(struct sfs_dir), &rsize);
-  if (errno)
+  if (error_no)
     {
-      return (errno);
+      return (error_no);
     }
   return (0);
 }
@@ -127,7 +127,7 @@ sfs_write_dir (struct inode *parentp,
 W sfs_getdents(struct inode *ip, ID caller, W offset,
 	       VP buf, UW length, W *rsize, W *fsize)
 {
-  W nentry, i, s, errno, len;
+  W nentry, i, s, error_no, len;
   struct sfs_dirent {
     long		d_ino;
     unsigned long	d_off;
@@ -143,8 +143,8 @@ W sfs_getdents(struct inode *ip, ID caller, W offset,
   if (offset >= nentry*s) return(EOK);
   {
     struct sfs_dir dirp[nentry]; /* GCC の拡張機能を使っている */
-    errno = sfs_read_dir (ip, nentry, dirp);
-    if (errno) return(errno);
+    error_no = sfs_read_dir (ip, nentry, dirp);
+    if (error_no) return(error_no);
     for (i = offset/s; i < nentry; i++) {
       len = sizeof(struct dirent)+strlen(dirp[i].sfs_d_name);
       if ((*rsize) + len >= length) return(EOK);
@@ -152,8 +152,8 @@ W sfs_getdents(struct inode *ip, ID caller, W offset,
       dent.d_off = i*s;
       strncpy(dent.d_name, dirp[i].sfs_d_name, SFS_MAXNAMELEN);
       dent.d_name[SFS_MAXNAMELEN] = '\0';
-      errno = kcall->region_put(caller, buf+(*rsize), len, &dent);
-      if (errno) return(errno);
+      error_no = kcall->region_put(caller, buf+(*rsize), len, &dent);
+      if (error_no) return(error_no);
       *rsize += len;
       *fsize += s;
     }

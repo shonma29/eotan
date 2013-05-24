@@ -566,7 +566,7 @@ struct posix_request
 struct posix_response
 {
   W	msg_length;		/* メッセージの長さ	*/
-  W	errno;			/* エラー番号 */
+  W	error_no;			/* エラー番号 */
   W	status;			/* ステータス(リターン値) */
 
   W	ret1;			/* サブに使用するリターン値 */

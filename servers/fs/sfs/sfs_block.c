@@ -77,7 +77,7 @@ Version 2, June 1991
 W sfs_read_block(ID device, W blockno, W blocksize, B * buf)
 {
     W rsize;
-    W errno;
+    W error_no;
 
 #ifdef FMDEBUG
     printk
@@ -85,11 +85,11 @@ W sfs_read_block(ID device, W blockno, W blocksize, B * buf)
 	 device, blockno, blocksize, buf);
 #endif
 
-    errno =
+    error_no =
 	sfs_read_device(device, buf, blockno * blocksize, blocksize,
 			&rsize);
-    if (errno) {
-	return (errno);
+    if (error_no) {
+	return (error_no);
     }
 
     return (rsize);
@@ -101,14 +101,14 @@ W sfs_read_block(ID device, W blockno, W blocksize, B * buf)
  */
 W sfs_write_block(ID device, W blockno, W blocksize, B * buf)
 {
-    W errno;
+    W error_no;
     W rsize;
 
-    errno =
+    error_no =
 	sfs_write_device(device, buf, blockno * blocksize, blocksize,
 			 &rsize);
-    if (errno) {
-	return (errno);
+    if (error_no) {
+	return (error_no);
     }
 
     return (rsize);
@@ -127,7 +127,7 @@ W sfs_alloc_block(W fd, struct fs * fsp)
 #endif
     W free_block;
     unsigned char mask;
-    W errno;
+    W error_no;
     W cn;
 
     if (fsp->fs_freeblock <= 0) {
@@ -167,8 +167,8 @@ W sfs_alloc_block(W fd, struct fs * fsp)
 			fsp->fs_bsearch = free_block;
 			fsp->fs_dirty = 1;
 			/* ここで fs を sync する必要があるか? */
-			errno = sfs_syncfs(fsp, 0);
-			if (errno) {
+			error_no = sfs_syncfs(fsp, 0);
+			if (error_no) {
 			    return (-1);
 			}
 			return (free_block);
@@ -192,7 +192,7 @@ W sfs_free_block(W fd, struct fs * fsp, W blockno)
     int s;
 #ifdef notdef
     int *dirty;
-    W errno;
+    W error_no;
 #endif
     B *buf;
     W cn;
@@ -209,8 +209,8 @@ W sfs_free_block(W fd, struct fs * fsp, W blockno)
 
     s = blockno / (8 * fsp->fs_blksize);
 #ifdef notdef
-    errno = sfs_alloc_bitmap(fd, s, &buf, &dirty);
-    if (errno) {
+    error_no = sfs_alloc_bitmap(fd, s, &buf, &dirty);
+    if (error_no) {
 	return (EP_IO);
     }
 #else
@@ -239,8 +239,8 @@ W sfs_free_block(W fd, struct fs * fsp, W blockno)
     if (fsp->fs_bsearch >= blockno && blockno > 0)
 	fsp->fs_bsearch = blockno - 1;
     /* ここで fs は sync しない 
-       errno = sfs_syncfs(fsp, 0);
-       if (errno)
+       error_no = sfs_syncfs(fsp, 0);
+       if (error_no)
        {
        return (EP_IO);
        }

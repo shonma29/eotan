@@ -100,14 +100,14 @@ W get_request(struct posix_request * req)
  *
  */
 W
-put_response(RDVNO rdvno, W errno, W status, W ret1)
+put_response(RDVNO rdvno, W error_no, W status, W ret1)
 {
     static struct posix_response res;
     ER syserr;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     res.msg_length = sizeof(res);
-    res.errno = errno;
+    res.error_no = error_no;
     res.status = status;
     res.ret1 = ret1;
 
@@ -120,8 +120,8 @@ put_response(RDVNO rdvno, W errno, W status, W ret1)
 /* エラーになったことをリクエストの送り元に返す
  *
  */
-W error_response(RDVNO rdvno, W errno)
+W error_response(RDVNO rdvno, W error_no)
 {
     /* 要求元に送信する */
-    return (put_response(rdvno, errno, 0, 0));
+    return (put_response(rdvno, error_no, 0, 0));
 }

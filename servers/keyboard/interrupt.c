@@ -134,14 +134,14 @@ static void keyboard_interrupt();
 void init_keyboard_interrupt()
 {
     T_DINT pk_dint;
-    ER errno;
+    ER error_no;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     pk_dint.intatr = ATR_INTR;
     pk_dint.inthdr = (void (*)()) keyboard_interrupt;
-    errno = kcall->interrupt_bind(KEYBOARD_INT, &pk_dint);
-    if (errno != E_OK) {
-	dbg_printf("keyboard: %d\n", errno);
+    error_no = kcall->interrupt_bind(KEYBOARD_INT, &pk_dint);
+    if (error_no != E_OK) {
+	dbg_printf("keyboard: %d\n", error_no);
     }
     shiftkey_code = NORMAL;
 }

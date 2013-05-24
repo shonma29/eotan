@@ -528,20 +528,20 @@ fs_open_file(B * path,
 	     struct access_info * acc,
 	     struct inode * startip, struct inode ** newip)
 {
-    W errno;
+    W error_no;
 
     if (oflag & O_CREAT) {
 #ifdef FMDEBUG
 	dbg_printf("fs_open_file: File creation mode.\n");
 #endif
-	errno = fs_lookup(startip, path, O_RDONLY, mode, acc, newip);
-	if (errno == ENOENT) {
+	error_no = fs_lookup(startip, path, O_RDONLY, mode, acc, newip);
+	if (error_no == ENOENT) {
 #ifdef FMDEBUG
 	    dbg_printf("fs_open_file: call fs_create_file(%s)\n", path);
 #endif
-	    errno = fs_create_file(startip, path, oflag, mode, acc, newip);
-	    return (errno);
-	} else if (errno == EOK) {
+	    error_no = fs_create_file(startip, path, oflag, mode, acc, newip);
+	    return (error_no);
+	} else if (error_no == EOK) {
 #ifdef FMDEBUG
 	    dbg_printf("fs_open_file: File already exists.\n");
 #endif
@@ -549,7 +549,7 @@ fs_open_file(B * path,
 	    /*      return (EEXIST); */
 	    /* 後で mode と acc を確かめながら再度 open する */
 	} else {
-	    return (errno);
+	    return (error_no);
 	}
     }
 #ifdef FMDEBUG
@@ -560,12 +560,12 @@ fs_open_file(B * path,
 	 startip, path, oflag, mode);
 #endif
 
-    errno = fs_lookup(startip, path, oflag, mode, acc, newip);
-    if (errno) {
+    error_no = fs_lookup(startip, path, oflag, mode, acc, newip);
+    if (error_no) {
 #ifdef FMDEBUG
 	dbg_printf("[PM] Cannot lookup -> return from fs_open_file ().\n");
 #endif
-	return (errno);
+	return (error_no);
     }
 
     if (oflag & O_TRUNC) {
@@ -587,7 +587,7 @@ fs_create_file(struct inode * startip,
     char parent_path[MAX_NAMELEN];
     struct inode *parent_ip;
     W parent_length;
-    W errno;
+    W error_no;
 
     for (parent_length = strlen(path); parent_length >= 0; parent_length--) {
 	if (path[parent_length] == '/') {
@@ -607,10 +607,10 @@ fs_create_file(struct inode * startip,
 	parent_ip->i_refcount++;
 	parent_length = 1;
     } else {
-	errno = fs_lookup(startip, parent_path, O_WRONLY,
+	error_no = fs_lookup(startip, parent_path, O_WRONLY,
 			  mode, acc, &parent_ip);
-	if (errno) {
-	    return (errno);
+	if (error_no) {
+	    return (error_no);
 	}
 	parent_length += 1;
     }
@@ -620,11 +620,11 @@ fs_create_file(struct inode * startip,
 	return (ENOTDIR);
     }
 
-    errno = FILE_CREATE(parent_ip,
+    error_no = FILE_CREATE(parent_ip,
 			&path[parent_length], oflag, mode, acc, newip);
     fs_close_file(parent_ip);
-    if (errno) {
-	return (errno);
+    if (error_no) {
+	return (error_no);
     }
     return (EOK);
 }
@@ -636,22 +636,22 @@ fs_create_file(struct inode * startip,
  */
 W fs_close_file(struct inode * ip)
 {
-    W errno;
+    W error_no;
 
     /* 普通は inode を deallocate するときに書き出すのではないか? */
     if (ip->i_dirty) {
-	errno = fs_sync_file(ip);
-	if (errno) {
-	    return (errno);
+	error_no = fs_sync_file(ip);
+	if (error_no) {
+	    return (error_no);
 	}
     }
 
-    errno = dealloc_inode(ip);
-    if (errno) {
-	return (errno);
+    error_no = dealloc_inode(ip);
+    if (error_no) {
+	return (error_no);
     }
 
-    return (errno);
+    return (error_no);
 }
 
 
@@ -673,7 +673,7 @@ fs_lookup(struct inode * startip,
     struct fs *fsp;
     int len;
     char part[MAX_NAMELEN];
-    W errno;
+    W error_no;
 
 #ifdef FMDEBUG
     dbg_printf("[PM] fs_lookup(): start (path = \"%s\")\n", path);
@@ -706,10 +706,10 @@ fs_lookup(struct inode * startip,
 	int i;
 
 	/* ディレクトリの実行許可のチェック */
-	errno = permit(tmpip, acc, X_OK);
-	if (errno) {
+	error_no = permit(tmpip, acc, X_OK);
+	if (error_no) {
 	    dealloc_inode(tmpip);
-	    return (errno);
+	    return (error_no);
 	}
 
 	for (i = 0; i < MAX_NAMELEN; i++) {
@@ -719,13 +719,13 @@ fs_lookup(struct inode * startip,
 		dbg_printf("[PM] lookup of part: \"%s\"\n", part);
 		dbg_printf("file_lookup():1 %d\n", __LINE__);
 #endif
-		errno = FILE_LOOKUP(tmpip, part, oflag, mode, acc, newip);
-		if (errno) {
+		error_no = FILE_LOOKUP(tmpip, part, oflag, mode, acc, newip);
+		if (error_no) {
 #ifdef notdef
 		    dbg_printf("[PM] fs_lookup: not entry.\n");
 #endif
 		    dealloc_inode(tmpip);
-		    return (errno);
+		    return (error_no);
 		}
 		/* ファイルシステムの root directory にいる場合 */
 		if ((tmpip == *newip) && (!strcmp("..", part))) {
@@ -737,7 +737,7 @@ fs_lookup(struct inode * startip,
 			    dealloc_inode(tmpip);
 			    tmpip = fsp->mountpoint;
 			    tmpip->i_refcount++;
-			    errno =
+			    error_no =
 				FILE_LOOKUP(tmpip, part, oflag, mode, acc,
 					    newip);
 			    break;
@@ -751,10 +751,10 @@ fs_lookup(struct inode * startip,
 		 */
 		if (*path == '\0') {
 		    /* ディレクトリの許可のチェック */
-		    errno = permit(*newip, acc, mode_map[oflag & 0x03]);
-		    if (errno)
+		    error_no = permit(*newip, acc, mode_map[oflag & 0x03]);
+		    if (error_no)
 			dealloc_inode(*newip);
-		    return (errno);
+		    return (error_no);
 		}
 		path++;
 		tmpip = *newip;
@@ -778,11 +778,11 @@ fs_lookup(struct inode * startip,
  */
 W fs_read_file(struct inode * ip, W start, B * buf, W length, W * rlength)
 {
-    W errno;
+    W error_no;
 
-    errno = FILE_READ(ip, start, buf, length, rlength);
-    if (errno) {
-	return (errno);
+    error_no = FILE_READ(ip, start, buf, length, rlength);
+    if (error_no) {
+	return (error_no);
     }
 
     return (EOK);
@@ -801,7 +801,7 @@ W fs_read_file(struct inode * ip, W start, B * buf, W length, W * rlength)
 W fs_write_file(struct inode * ip, W start, B * buf, W length, W * rlength)
 {
     ID device;
-    W errno;
+    W error_no;
     extern W sfs_write_device(ID, B *, W, W, W *);
 
     if (ip->i_mode & S_IFCHR) {
@@ -817,13 +817,13 @@ W fs_write_file(struct inode * ip, W start, B * buf, W length, W * rlength)
 		length = ip->i_size - start;
 	    }
 	}
-	errno = sfs_write_device(device, buf, start, length, rlength);
-	return (errno);
+	error_no = sfs_write_device(device, buf, start, length, rlength);
+	return (error_no);
     }
 
-    errno = FILE_WRITE(ip, start, buf, length, rlength);
-    if (errno) {
-	return (errno);
+    error_no = FILE_WRITE(ip, start, buf, length, rlength);
+    if (error_no) {
+	return (error_no);
     }
 
     return (EOK);
@@ -839,7 +839,7 @@ fs_remove_file(struct inode * startip, B * path, struct access_info * acc)
     char parent_path[MAX_NAMELEN];
     struct inode *parent_ip;
     W parent_length;
-    W errno;
+    W error_no;
 
     for (parent_length = strlen(path); parent_length >= 0; parent_length--) {
 	if (path[parent_length] == '/') {
@@ -859,18 +859,18 @@ fs_remove_file(struct inode * startip, B * path, struct access_info * acc)
 	parent_ip->i_refcount++;
 	parent_length = 1;
     } else {
-	errno =
+	error_no =
 	    fs_lookup(startip, parent_path, O_RDWR, 0, acc, &parent_ip);
-	if (errno) {
-	    return (errno);
+	if (error_no) {
+	    return (error_no);
 	}
 	parent_length += 1;
     }
 
-    errno = FILE_UNLINK(parent_ip, &path[parent_length], acc);
+    error_no = FILE_UNLINK(parent_ip, &path[parent_length], acc);
     fs_close_file(parent_ip);
-    if (errno) {
-	return (errno);
+    if (error_no) {
+	return (error_no);
     }
     return (EOK);
 }
@@ -884,7 +884,7 @@ W fs_remove_dir(struct inode * startip, B * path, struct access_info * acc)
     char parent_path[MAX_NAMELEN];
     struct inode *parent_ip;
     W parent_length;
-    W errno;
+    W error_no;
 
     for (parent_length = strlen(path); parent_length >= 0; parent_length--) {
 	if (path[parent_length] == '/') {
@@ -904,18 +904,18 @@ W fs_remove_dir(struct inode * startip, B * path, struct access_info * acc)
 	parent_ip->i_refcount++;
 	parent_length = 1;
     } else {
-	errno =
+	error_no =
 	    fs_lookup(startip, parent_path, O_RDWR, 0, acc, &parent_ip);
-	if (errno) {
-	    return (errno);
+	if (error_no) {
+	    return (error_no);
 	}
 	parent_length += 1;
     }
 
-    errno = DIR_UNLINK(parent_ip, &path[parent_length], acc);
+    error_no = DIR_UNLINK(parent_ip, &path[parent_length], acc);
     fs_close_file(parent_ip);
-    if (errno) {
-	return (errno);
+    if (error_no) {
+	return (error_no);
     }
     return (EOK);
 }
@@ -926,10 +926,10 @@ W fs_remove_dir(struct inode * startip, B * path, struct access_info * acc)
  */
 W fs_sync_file(struct inode * ip)
 {
-    W errno;
+    W error_no;
 
-    errno = FILE_SYNC(ip, 0);
-    return (errno);
+    error_no = FILE_SYNC(ip, 0);
+    return (error_no);
 }
 
 
@@ -978,14 +978,14 @@ W fs_make_dir(struct inode * startip,
     char parent_path[MAX_NAMELEN];
     struct inode *parent_ip;
     W parent_length;
-    W errno;
+    W error_no;
 
-    errno = fs_lookup(startip, path, O_RDONLY, mode, acc, newip);
-    if (errno == EOK) {
+    error_no = fs_lookup(startip, path, O_RDONLY, mode, acc, newip);
+    if (error_no == EOK) {
 	dealloc_inode(*newip);	/* fs_close() で行う処理はこれだけ */
 	return (EEXIST);
-    } else if (errno != ENOENT) {
-	return (errno);
+    } else if (error_no != ENOENT) {
+	return (error_no);
     }
 
     for (parent_length = strlen(path); parent_length >= 0; parent_length--) {
@@ -1006,10 +1006,10 @@ W fs_make_dir(struct inode * startip,
 	parent_ip->i_refcount++;
 	parent_length = 1;
     } else {
-	errno = fs_lookup(startip, parent_path, O_WRONLY,
+	error_no = fs_lookup(startip, parent_path, O_WRONLY,
 			  mode, acc, &parent_ip);
-	if (errno) {
-	    return (errno);
+	if (error_no) {
+	    return (error_no);
 	}
 	parent_length += 1;
     }
@@ -1019,11 +1019,11 @@ W fs_make_dir(struct inode * startip,
 	return (ENOTDIR);
     }
 
-    errno = DIR_CREATE(parent_ip, &path[parent_length], mode, acc, newip);
+    error_no = DIR_CREATE(parent_ip, &path[parent_length], mode, acc, newip);
 
     fs_close_file(parent_ip);
-    if (errno) {
-	return (errno);
+    if (error_no) {
+	return (error_no);
     }
     return (EOK);
 }
@@ -1034,11 +1034,11 @@ W fs_make_dir(struct inode * startip,
 W fs_getdents(struct inode * ip, ID caller, W offset,
 	      VP buf, UW length, W * rsize, W * fsize)
 {
-    W errno;
+    W error_no;
 
-    errno = GET_DENTS(ip, caller, offset, buf, length, rsize, fsize);
-    if (errno)
-	return (errno);
+    error_no = GET_DENTS(ip, caller, offset, buf, length, rsize, fsize);
+    if (error_no)
+	return (error_no);
     return (EOK);
 }
 
@@ -1054,21 +1054,21 @@ fs_link_file(W procid, B * src, W srclen, B * dst, W dstlen,
     struct inode *startip;
     struct inode *srcip, *parent_ip;
     W parent_length;
-    W errno;
+    W error_no;
 
     /* リンク元の i-node を get 無ければエラー */
     if (*src != '/') {
-	errno = proc_get_cwd(procid, &startip);
-	if (errno) {
-	    return (errno);
+	error_no = proc_get_cwd(procid, &startip);
+	if (error_no) {
+	    return (error_no);
 	}
     } else {
 	startip = rootfile;
     }
 
-    errno = fs_lookup(startip, src, O_RDONLY, 0, acc, &srcip);
-    if (errno) {
-	return (errno);
+    error_no = fs_lookup(startip, src, O_RDONLY, 0, acc, &srcip);
+    if (error_no) {
+	return (error_no);
     }
 
     /* リンク元がディレクトリならエラー */
@@ -1079,9 +1079,9 @@ fs_link_file(W procid, B * src, W srclen, B * dst, W dstlen,
 
     /* リンク先の親ディレクトリの i-node を get */
     if (*dst != '/') {
-	errno = proc_get_cwd(procid, &startip);
-	if (errno) {
-	    return (errno);
+	error_no = proc_get_cwd(procid, &startip);
+	if (error_no) {
+	    return (error_no);
 	}
     } else {
 	startip = rootfile;
@@ -1105,10 +1105,10 @@ fs_link_file(W procid, B * src, W srclen, B * dst, W dstlen,
 	parent_ip->i_refcount++;
 	parent_length = 1;
     } else {
-	errno =
+	error_no =
 	    fs_lookup(startip, parent_path, O_RDWR, 0, acc, &parent_ip);
-	if (errno) {
-	    return (errno);
+	if (error_no) {
+	    return (error_no);
 	}
 	parent_length += 1;
     }
@@ -1121,12 +1121,12 @@ fs_link_file(W procid, B * src, W srclen, B * dst, W dstlen,
     }
 
     /* 各ファイルシステムの link 関数を呼び出す */
-    errno = FILE_LINK(parent_ip, &dst[parent_length], srcip, acc);
+    error_no = FILE_LINK(parent_ip, &dst[parent_length], srcip, acc);
 
     fs_close_file(parent_ip);
     fs_close_file(srcip);
-    if (errno) {
-	return (errno);
+    if (error_no) {
+	return (error_no);
     }
     return (EOK);
 }

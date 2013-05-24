@@ -83,7 +83,7 @@ Version 2, June 1991
 W proc_fork(struct proc *parent, W * childid, ID main_task, ID signal_task)
 {
     struct proc *newproc;
-    W errno;
+    W error_no;
 /*   ID		main_task, signal_task;
  */
     thread_local_t local_data, local_par;
@@ -97,9 +97,9 @@ W proc_fork(struct proc *parent, W * childid, ID main_task, ID signal_task)
 
     /* 新しくプロセス構造体を確保する
      */
-    errno = proc_alloc_proc(&newproc);
-    if (errno) {
-	return (errno);
+    error_no = proc_alloc_proc(&newproc);
+    if (error_no) {
+	return (error_no);
     }
     *childid = newproc->proc_pid;
     newproc->proc_maintask = main_task;
@@ -111,28 +111,28 @@ W proc_fork(struct proc *parent, W * childid, ID main_task, ID signal_task)
     printk("fork(): parent = 0x%x, parent->vm_tree = 0x%x\n", parent, parent->vm_tree);	/* */
     printk("fork(): child = 0x%x, child->vm_tree = 0x%x\n", newproc, newproc->vm_tree);	/* */
 #endif
-    errno = proc_duplicate(parent, newproc);
-    if (errno) {
+    error_no = proc_duplicate(parent, newproc);
+    if (error_no) {
 	destroy_proc_memory(newproc, 0);
-	return (errno);
+	return (error_no);
     }
 
     newproc->proc_status = PS_RUN;
     newproc->proc_ppid = parent->proc_pid;
-    errno = kcall->region_map(main_task, (thread_local_t*)LOCAL_ADDR, sizeof(thread_local_t),
+    error_no = kcall->region_map(main_task, (thread_local_t*)LOCAL_ADDR, sizeof(thread_local_t),
     		ACC_USER);
-    if (errno)
-	return errno;
+    if (error_no)
+	return error_no;
 
-    errno = kcall->region_get(main_task, (thread_local_t*)LOCAL_ADDR,
+    error_no = kcall->region_get(main_task, (thread_local_t*)LOCAL_ADDR,
 		     sizeof(thread_local_t), &local_data);
-    if (errno)
-	return errno;
+    if (error_no)
+	return error_no;
 
-    errno = kcall->region_get(parent->proc_maintask, (thread_local_t*)LOCAL_ADDR,
+    error_no = kcall->region_get(parent->proc_maintask, (thread_local_t*)LOCAL_ADDR,
 		     sizeof(thread_local_t), &local_par);
-    if (errno)
-	return errno;
+    if (error_no)
+	return error_no;
 
     memset(&local_data, 0, sizeof(local_data));
     local_data.thread_id = main_task;
@@ -142,10 +142,10 @@ W proc_fork(struct proc *parent, W * childid, ID main_task, ID signal_task)
     local_data.cwd[local_par.cwd_length] = '\0';
     local_data.cwd_length = local_par.cwd_length;
 
-    errno = kcall->region_put(main_task, (thread_local_t*)LOCAL_ADDR,
+    error_no = kcall->region_put(main_task, (thread_local_t*)LOCAL_ADDR,
 		     sizeof(thread_local_t), &local_data);
-    if (errno)
-	return errno;
+    if (error_no)
+	return error_no;
 
     strncpy(newproc->proc_name, parent->proc_name, PROC_NAME_LEN - 1);
     newproc->proc_name[PROC_NAME_LEN - 1] = '\0';
@@ -163,7 +163,7 @@ W proc_fork(struct proc *parent, W * childid, ID main_task, ID signal_task)
  */
 W proc_duplicate(struct proc * source, struct proc * destination)
 {
-    W errno;
+    W error_no;
     W index;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
@@ -183,14 +183,14 @@ W proc_duplicate(struct proc * source, struct proc * destination)
     kcall->region_duplicate(source->proc_maintask, destination->proc_maintask);
 
     /* 仮想空間の生成 */
-    errno = create_vm_tree(destination);
-    if (errno) {
+    error_no = create_vm_tree(destination);
+    if (error_no) {
 	/* 仮想空間の生成に失敗した
 	 */
 #ifdef FKDEBUG
 	printk("cannot create virtual memory space.\n");	/* */
 #endif
-	return (errno);
+	return (error_no);
     }
 #ifdef FKDEBUG
     printk
@@ -198,13 +198,13 @@ W proc_duplicate(struct proc * source, struct proc * destination)
 	 source, source->vm_tree);
 #endif
     /* プロセスのもつ仮想空間の情報をコピーする */
-    errno = duplicate_tree(source, destination);
-    if (errno) {
+    error_no = duplicate_tree(source, destination);
+    if (error_no) {
 	/* データのコピーに失敗した */
 #ifdef FKDEBUG
 	printk("cannot duplicate tree\n");	/* */
 #endif
-	return (errno);
+	return (error_no);
     }
 #ifdef FKDEBUG
     printk("fork: proc_duplicate: (%s file, %d line)\n", __FILE__, __LINE__);	/* */

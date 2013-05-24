@@ -215,25 +215,25 @@ W
 psc_setgid_f (RDVNO rdvno, struct posix_request *req)
 {
   W	uid;
-  W	errno;
+  W	error_no;
 
-  errno = proc_get_euid (req->procid, &uid);
-  if (errno)
+  error_no = proc_get_euid (req->procid, &uid);
+  if (error_no)
     {
-      put_response (rdvno, errno, 0, -1);
+      put_response (rdvno, error_no, 0, -1);
       return (FALSE);
     }
 
   if (uid != 0)
     {
-      put_response (rdvno, EPERM, errno, -1);
+      put_response (rdvno, EPERM, error_no, -1);
       return (FALSE);
     }
 
-  errno = proc_set_egid (req->procid, req->param.par_setgid.gid);
-  if (errno)
+  error_no = proc_set_egid (req->procid, req->param.par_setgid.gid);
+  if (error_no)
     {
-      put_response (rdvno, errno, 0, -1);
+      put_response (rdvno, error_no, 0, -1);
       return (FALSE);
     }
 
@@ -245,25 +245,25 @@ W
 psc_setuid_f (RDVNO rdvno, struct posix_request *req)
 {
   W	uid;
-  W	errno;
+  W	error_no;
 
-  errno = proc_get_euid (req->procid, &uid);
-  if (errno)
+  error_no = proc_get_euid (req->procid, &uid);
+  if (error_no)
     {
-      put_response (rdvno, errno, 0, -1);
+      put_response (rdvno, error_no, 0, -1);
       return (FALSE);
     }
 
   if (uid != 0)
     {
-      put_response (rdvno, EPERM, errno, -1);
+      put_response (rdvno, EPERM, error_no, -1);
       return (FALSE);
     }
 
-  errno = proc_set_euid (req->procid, req->param.par_setuid.uid);
-  if (errno)
+  error_no = proc_set_euid (req->procid, req->param.par_setuid.uid);
+  if (error_no)
     {
-      put_response (rdvno, errno, 0, -1);
+      put_response (rdvno, error_no, 0, -1);
       return (FALSE);
     }
 
@@ -276,26 +276,26 @@ psc_setuid_f (RDVNO rdvno, struct posix_request *req)
 W
 psc_umask_f (RDVNO rdvno, struct posix_request *req)
 {
-  W	errno;
+  W	error_no;
   W	old_umask;
 
 
   /* 古い umask の値を取り出す。
    * (システムコールの返り値として使用する)
    */
-  errno = proc_get_umask (req->procid, &old_umask);
-  if (errno)
+  error_no = proc_get_umask (req->procid, &old_umask);
+  if (error_no)
     {
-      put_response (rdvno, errno, -1, 0);
+      put_response (rdvno, error_no, -1, 0);
       return (FALSE);
     }
   
   /* 新しい umask の値を設定する
    */
-  errno = proc_set_umask (req->procid, req->param.par_umask.umask);
-  if (errno)
+  error_no = proc_set_umask (req->procid, req->param.par_umask.umask);
+  if (error_no)
     {
-      put_response (rdvno, errno, -1, 0);
+      put_response (rdvno, error_no, -1, 0);
       return (FALSE);
     }
 

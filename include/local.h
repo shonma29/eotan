@@ -36,8 +36,16 @@ For more information, please refer to <http://unlicense.org/>
 typedef struct {
 	ID thread_id;
 	ID process_id;
+	W error_no;
 	size_t cwd_length;
 	UB cwd[MAX_CWD + 1];
 } thread_local_t;
+
+static inline int _get_local_errno(void)
+{
+	thread_local_t *local = (thread_local_t*)LOCAL_ADDR;
+
+	return local->error_no;
+}
 
 #endif

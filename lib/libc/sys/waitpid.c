@@ -27,6 +27,7 @@ waitpid (pid_t pid, int *status, int option)
     ER error;
     struct posix_request req;
     struct posix_response *res = (struct posix_response*)&req;
+    thread_local_t *local_data = (thread_local_t*)LOCAL_ADDR;
 
     req.param.par_waitpid.pid = pid;
     req.param.par_waitpid.statloc = (W*)status;
@@ -36,8 +37,8 @@ waitpid (pid_t pid, int *status, int option)
     if (error != E_OK) {
 	/* What should I do? */
     }
-    else if (res->errno) {
-	errno = res->errno;
+    else if (res->error_no) {
+	local_data->error_no = res->error_no;
 	return (-1);
     }
 

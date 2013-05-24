@@ -292,18 +292,18 @@ W sfs_sync_cache(W fd, W umflag)
 {
     int i;
     SFS_BLOCK_CACHE *cp;
-    W errno;
+    W error_no;
 
     for (i = 0; i < CACHE_SIZE; ++i) {
 	cp = &cache_data[i];
 	if (cp->fd == fd) {
 	    if (cp->dirty) {
-		errno =
+		error_no =
 		    sfs_write_block(fd, cp->blockno, SFS_BLOCK_SIZE,
 				    cp->buf);
-		if (errno < 0) {
+		if (error_no < 0) {
 		    printk("[SFS] sync_cache write error\n");
-		    return (errno);
+		    return (error_no);
 		}
 		cp->dirty = 0;
 	    }

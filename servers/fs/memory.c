@@ -56,15 +56,15 @@ ER init_memory(void)
 W alloc_memory(W procid, UW start, UW size, UW access)
 {
     W i;
-    W errno;
+    W error_no;
     struct proc *procp;
 
 
-    errno = proc_get_procp(procid, &procp);
+    error_no = proc_get_procp(procid, &procp);
     for (i = 0; i < (size >> PAGE_SHIFT); i++) {
-	errno = grow_vm(procp, start + (i << PAGE_SHIFT), access);
-	if (errno) {
-	    return (errno);
+	error_no = grow_vm(procp, start + (i << PAGE_SHIFT), access);
+	if (error_no) {
+	    return (error_no);
 	}
     }
 
@@ -78,15 +78,15 @@ W alloc_memory(W procid, UW start, UW size, UW access)
 W free_memory(W procid, UW start, UW size)
 {
     W i;
-    W errno;
+    W error_no;
     struct proc *procp;
 
 
-    errno = proc_get_procp(procid, &procp);
+    error_no = proc_get_procp(procid, &procp);
     for (i = 0; i < (size >> PAGE_SHIFT); i++) {
-	errno = shorten_vm(procp, start + (i << PAGE_SHIFT));
-	if (errno) {
-	    return (errno);
+	error_no = shorten_vm(procp, start + (i << PAGE_SHIFT));
+	if (error_no) {
+	    return (error_no);
 	}
     }
 
@@ -99,11 +99,11 @@ W free_memory(W procid, UW start, UW size)
  */
 W destroy_proc_memory(struct proc * procp, W unmap)
 {
-    W errno;
+    W error_no;
 
-    errno = destroy_vmtree(procp, procp->vm_tree, unmap);
-    if (errno) {
-	return (errno);
+    error_no = destroy_vmtree(procp, procp->vm_tree, unmap);
+    if (error_no) {
+	return (error_no);
     }
 
     procp->vm_tree = NULL;

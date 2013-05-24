@@ -109,7 +109,7 @@ W sfs_read_inode(struct fs *fsp, W ino, struct inode *ip)
 {
     W offset;
 #ifdef notdef
-    W errno;
+    W error_no;
     W rsize;
 #endif
     ID fd;
@@ -124,11 +124,11 @@ W sfs_read_inode(struct fs *fsp, W ino, struct inode *ip)
 	 ino, offset, sizeof(struct sfs_inode));
 #endif
 #ifdef notdef
-    errno =
+    error_no =
 	sfs_read_device(fd, (B *) & (ip->i_private.sfs_inode), offset,
 			sizeof(struct sfs_inode), &rsize);
-    if (errno) {
-	return (errno);
+    if (error_no) {
+	return (error_no);
     }
 #else
     sfs_get_cache(fd, offset / SFS_BLOCK_SIZE, &cn, &buf);
@@ -179,7 +179,7 @@ W sfs_alloc_inode(ID fd, struct fs * fsp)
     W offset;
 #ifdef notdef
     struct sfs_inode ipbuf;
-    W errno;
+    W error_no;
     W rsize;
 #else
     struct sfs_inode *ipbufp;
@@ -193,9 +193,9 @@ W sfs_alloc_inode(ID fd, struct fs * fsp)
     offset = sfs_get_inode_offset(fsp, fsp->fs_isearch);
     for (i = fsp->fs_isearch; i <= fsp->fs_allinode; i++) {
 #ifdef notdef
-	errno = sfs_read_device(fd, (B *) & ipbuf, offset,
+	error_no = sfs_read_device(fd, (B *) & ipbuf, offset,
 				sizeof(struct sfs_inode), &rsize);
-	if (errno) {
+	if (error_no) {
 	    return (0);
 	}
 #else
@@ -247,7 +247,7 @@ W sfs_alloc_inode(ID fd, struct fs * fsp)
  */
 W sfs_write_inode(W fd, struct fs * fsp, struct sfs_inode * ip)
 {
-    W errno;
+    W error_no;
     W rlength;
     W cn;
     B *buf;
@@ -256,34 +256,34 @@ W sfs_write_inode(W fd, struct fs * fsp, struct sfs_inode * ip)
 	B *tmp;
 
 	tmp = (B *) ip;
-	errno = sfs_write_device(fd,
+	error_no = sfs_write_device(fd,
 				 tmp,
 				 sfs_get_inode_offset(fsp,
 						      ip->sfs_i_index),
 				 MAX_BODY_SIZE, &rlength);
-	if (errno) {
+	if (error_no) {
 	    return (EIO);
 	}
 
 	tmp += MAX_BODY_SIZE;
-	errno = sfs_write_device(fd,
+	error_no = sfs_write_device(fd,
 				 tmp,
 				 sfs_get_inode_offset(fsp, ip->sfs_i_index)
 				 + MAX_BODY_SIZE,
 				 sizeof(struct sfs_inode) - MAX_BODY_SIZE,
 				 &rlength);
 
-	if (errno) {
+	if (error_no) {
 	    return (EIO);
 	}
     } else {
 #ifdef notdef
-	errno = sfs_write_device(fd,
+	error_no = sfs_write_device(fd,
 				 (B *) ip,
 				 sfs_get_inode_offset(fsp,
 						      ip->sfs_i_index),
 				 sizeof(struct sfs_inode), &rlength);
-	if (errno) {
+	if (error_no) {
 	    return (EIO);
 	}
 #else
@@ -310,7 +310,7 @@ W sfs_free_inode(struct fs * fsp, struct inode *ip)
     W inode_index;
 #ifdef notdef
     struct sfs_inode ipbuf;
-    W rlength, errno;
+    W rlength, error_no;
 #else
     W cn;
     B *buf;
@@ -319,11 +319,11 @@ W sfs_free_inode(struct fs * fsp, struct inode *ip)
     inode_index = ip->i_index;
 #ifdef notdef
     memset((B*)&ipbuf, 0, sizeof(struct sfs_inode));
-    errno = sfs_write_device(fsp->fs_device,
+    error_no = sfs_write_device(fsp->fs_device,
 			     (B *) & ipbuf,
 			     sfs_get_inode_offset(fsp, inode_index),
 			     sizeof(struct sfs_inode), &rlength);
-    if (errno) {
+    if (error_no) {
 	return (EIO);
     }
 #else

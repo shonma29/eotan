@@ -23,14 +23,14 @@ Version 2, June 1991
 
 W psc_getdents_f(RDVNO rdvno, struct posix_request *req)
 {
-    W errno;
+    W error_no;
     struct file *fp;
     W len, flen;
 
-    errno =
+    error_no =
 	proc_get_file(req->procid, req->param.par_getdents.fileid, &fp);
-    if (errno) {
-	put_response(rdvno, errno, -1, 0);
+    if (error_no) {
+	put_response(rdvno, error_no, -1, 0);
 	return (FALSE);
     } else if (fp == 0) {
 	put_response(rdvno, EINVAL, -1, 0);
@@ -54,12 +54,12 @@ W psc_getdents_f(RDVNO rdvno, struct posix_request *req)
 	return (FALSE);
     }
 
-    errno = fs_getdents(fp->f_inode, req->caller, fp->f_offset,
+    error_no = fs_getdents(fp->f_inode, req->caller, fp->f_offset,
 			req->param.par_getdents.buf,
 			req->param.par_getdents.length, &len, &flen);
 
-    if (errno) {
-	put_response(rdvno, errno, -1, 0);
+    if (error_no) {
+	put_response(rdvno, error_no, -1, 0);
     }
 
     fp->f_offset += flen;
@@ -71,25 +71,25 @@ W psc_link_f(RDVNO rdvno, struct posix_request *req)
 {
     B src[MAX_NAMELEN], dst[MAX_NAMELEN];
     struct access_info acc;
-    W errno;
+    W error_no;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    errno = kcall->region_get(req->caller, req->param.par_link.src,
+    error_no = kcall->region_get(req->caller, req->param.par_link.src,
 		     req->param.par_link.srclen + 1, src);
-    if (errno) {
+    if (error_no) {
 	/* パス名のコピーエラー */
-	if (errno == E_PAR)
+	if (error_no == E_PAR)
 	    put_response(rdvno, EINVAL, -1, 0);
 	else
 	    put_response(rdvno, EFAULT, -1, 0);
 
 	return (FALSE);
     }
-    errno = kcall->region_get(req->caller, req->param.par_link.dst,
+    error_no = kcall->region_get(req->caller, req->param.par_link.dst,
 		     req->param.par_link.dstlen + 1, dst);
-    if (errno) {
+    if (error_no) {
 	/* パス名のコピーエラー */
-	if (errno == E_PAR)
+	if (error_no == E_PAR)
 	    put_response(rdvno, EINVAL, -1, 0);
 	else
 	    put_response(rdvno, EFAULT, -1, 0);
@@ -102,21 +102,21 @@ W psc_link_f(RDVNO rdvno, struct posix_request *req)
      * この情報に基づいて、ファイルを削除できるかどうかを
      * 決定する。
      */
-    errno = proc_get_euid(req->procid, &(acc.uid));
-    if (errno) {
-	put_response(rdvno, errno, 0, 0);
+    error_no = proc_get_euid(req->procid, &(acc.uid));
+    if (error_no) {
+	put_response(rdvno, error_no, 0, 0);
 	return (FALSE);
     }
-    errno = proc_get_egid(req->procid, &(acc.gid));
-    if (errno) {
-	put_response(rdvno, errno, 0, 0);
+    error_no = proc_get_egid(req->procid, &(acc.gid));
+    if (error_no) {
+	put_response(rdvno, error_no, 0, 0);
 	return (FALSE);
     }
 
-    errno = fs_link_file(req->procid, src, req->param.par_link.srclen,
+    error_no = fs_link_file(req->procid, src, req->param.par_link.srclen,
 			 dst, req->param.par_link.dstlen, &acc);
-    if (errno) {
-	put_response(rdvno, errno, 0, 0);
+    if (error_no) {
+	put_response(rdvno, error_no, 0, 0);
 	return (FALSE);
     }
     put_response(rdvno, EOK, 0, 0);
@@ -128,27 +128,27 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
 {
   B		pathname[MAX_NAMELEN];
   W		fileid;
-  W		errno;
+  W		error_no;
   struct inode	*startip;
   struct inode	*newip;
   struct access_info	acc;
   W		umask;
   kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-  errno = proc_alloc_fileid (req->procid, &fileid);
-  if (errno)
+  error_no = proc_alloc_fileid (req->procid, &fileid);
+  if (error_no)
     {
       /* メモリ取得エラー */
       put_response (rdvno, ENOMEM, -1, 0);
       return (FALSE);
     }
 
-  errno = kcall->region_get(req->caller, req->param.par_mkdir.path,
+  error_no = kcall->region_get(req->caller, req->param.par_mkdir.path,
 		    req->param.par_mkdir.pathlen + 1, pathname);
-  if (errno)
+  if (error_no)
     {
       /* パス名のコピーエラー */
-      if (errno == E_PAR)
+      if (error_no == E_PAR)
 	put_response (rdvno, EINVAL, -1, 0);
       else
 	put_response (rdvno, EFAULT, -1, 0);
@@ -158,10 +158,10 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
 
   if (*pathname != '/')
     {
-      errno = proc_get_cwd (req->procid, &startip);
-      if (errno)
+      error_no = proc_get_cwd (req->procid, &startip);
+      if (error_no)
 	{
-	  put_response (rdvno, errno, -1, 0);
+	  put_response (rdvno, error_no, -1, 0);
 	  return (FALSE);
 	}
     }
@@ -169,35 +169,35 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
     {
       startip = rootfile;
     }
-  errno = proc_get_uid (req->procid, &(acc.uid));
-  if (errno)
+  error_no = proc_get_uid (req->procid, &(acc.uid));
+  if (error_no)
     {
-      put_response (rdvno, errno, -1, 0);
+      put_response (rdvno, error_no, -1, 0);
       return (FALSE);
     }
 
-  errno = proc_get_gid (req->procid, &(acc.gid));
-  if (errno)
+  error_no = proc_get_gid (req->procid, &(acc.gid));
+  if (error_no)
     {
-      put_response (rdvno, errno, -1, 0);
+      put_response (rdvno, error_no, -1, 0);
       return (FALSE);
     }
 
-  errno = proc_get_umask (req->procid, &umask);
-  if (errno)
+  error_no = proc_get_umask (req->procid, &umask);
+  if (error_no)
     {
-      put_response (rdvno, errno, -1, 0);
+      put_response (rdvno, error_no, -1, 0);
       return (FALSE);
     }
 
-  errno = fs_make_dir (startip, pathname,
+  error_no = fs_make_dir (startip, pathname,
 		       (req->param.par_mkdir.mode & (~umask)),
 		       &acc,
 		       &newip);
-  if (errno)
+  if (error_no)
     {
       /* ファイルがオープンできない */
-      put_response (rdvno, errno, -1, 0);
+      put_response (rdvno, error_no, -1, 0);
       return (FALSE);
     }
   
@@ -212,17 +212,17 @@ W
 psc_rmdir_f (RDVNO rdvno, struct posix_request *req)
 {
   B		pathname[MAX_NAMELEN];
-  W		errno;
+  W		error_no;
   struct inode	*startip;
   struct access_info	acc;
   kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-  errno = kcall->region_get(req->caller, req->param.par_rmdir.path,
+  error_no = kcall->region_get(req->caller, req->param.par_rmdir.path,
 		    req->param.par_rmdir.pathlen + 1, pathname);
-  if (errno)
+  if (error_no)
     {
       /* パス名のコピーエラー */
-      if (errno == E_PAR)
+      if (error_no == E_PAR)
 	put_response (rdvno, EINVAL, -1, 0);
       else
 	put_response (rdvno, EFAULT, -1, 0);
@@ -233,10 +233,10 @@ psc_rmdir_f (RDVNO rdvno, struct posix_request *req)
 
   if (*pathname != '/')
     {
-      errno = proc_get_cwd (req->procid, &startip);
-      if (errno)
+      error_no = proc_get_cwd (req->procid, &startip);
+      if (error_no)
 	{
-	  put_response (rdvno, errno, -1, 0);
+	  put_response (rdvno, error_no, -1, 0);
 	  return (FALSE);
 	}
     }
@@ -244,27 +244,27 @@ psc_rmdir_f (RDVNO rdvno, struct posix_request *req)
     {
       startip = rootfile;
     }
-  errno = proc_get_euid (req->procid, &(acc.uid));
-  if (errno)
+  error_no = proc_get_euid (req->procid, &(acc.uid));
+  if (error_no)
     {
-      put_response (rdvno, errno, -1, 0);
+      put_response (rdvno, error_no, -1, 0);
       return (FALSE);
     }
 
-  errno = proc_get_egid (req->procid, &(acc.gid));
-  if (errno)
+  error_no = proc_get_egid (req->procid, &(acc.gid));
+  if (error_no)
     {
-      put_response (rdvno, errno, -1, 0);
+      put_response (rdvno, error_no, -1, 0);
       return (FALSE);
     }
 
-  errno = fs_remove_dir (startip,
+  error_no = fs_remove_dir (startip,
 			 pathname,
 			 &acc);
-  if (errno)
+  if (error_no)
     {
       /* ファイルがオープンできない */
-      put_response (rdvno, errno, -1, 0);
+      put_response (rdvno, error_no, -1, 0);
       return (FALSE);
     }
   
@@ -283,7 +283,7 @@ W
 psc_unlink_f (RDVNO rdvno, struct posix_request *req)
 {
   B			pathname[MAX_NAMELEN];
-  W			errno;
+  W			error_no;
   struct inode		*startip;
   struct access_info	acc;
   kcall_t *kcall = (kcall_t*)KCALL_ADDR;
@@ -293,14 +293,14 @@ psc_unlink_f (RDVNO rdvno, struct posix_request *req)
    * 呼び出し元のタスク ID は、メッセージパラメータの
    * 中に入っている。
    */
-  errno = kcall->region_get(req->caller,
+  error_no = kcall->region_get(req->caller,
 		    req->param.par_unlink.path,
 		    req->param.par_unlink.pathlen + 1,
 		    pathname);
-  if (errno)
+  if (error_no)
     {
       /* パス名のコピーエラー */
-      if (errno == E_PAR)
+      if (error_no == E_PAR)
 	put_response (rdvno, EINVAL, 0, 0);
       else
 	put_response (rdvno, EFAULT, 0, 0);
@@ -320,10 +320,10 @@ psc_unlink_f (RDVNO rdvno, struct posix_request *req)
    */
   if (*pathname != '/')
     {
-      errno = proc_get_cwd (req->procid, &startip);
-      if (errno)
+      error_no = proc_get_cwd (req->procid, &startip);
+      if (error_no)
 	{
-	  put_response (rdvno, errno, 0, 0);
+	  put_response (rdvno, error_no, 0, 0);
 	  return (FALSE);
 	}
     }
@@ -338,26 +338,26 @@ psc_unlink_f (RDVNO rdvno, struct posix_request *req)
    * この情報に基づいて、ファイルを削除できるかどうかを
    * 決定する。
    */
-  errno = proc_get_euid (req->procid, &(acc.uid));
-  if (errno)
+  error_no = proc_get_euid (req->procid, &(acc.uid));
+  if (error_no)
     {
-      put_response (rdvno, errno, 0, 0);
+      put_response (rdvno, error_no, 0, 0);
       return (FALSE);
     }
-  errno = proc_get_egid (req->procid, &(acc.gid));
-  if (errno)
+  error_no = proc_get_egid (req->procid, &(acc.gid));
+  if (error_no)
     {
-      put_response (rdvno, errno, 0, 0);
+      put_response (rdvno, error_no, 0, 0);
       return (FALSE);
     }
 
-  errno = fs_remove_file (startip,
+  error_no = fs_remove_file (startip,
 			  pathname,
 			  &acc);
-  if (errno)
+  if (error_no)
     {
       /* ファイルがオープンできない */
-      put_response (rdvno, errno, 0, 0);
+      put_response (rdvno, error_no, 0, 0);
       return (FALSE);
     }
   

@@ -30,6 +30,7 @@ _fork (int esp, int ebp, int ecx, int edx, int esi, int edi)
     ER error;
     struct posix_request req;
     struct posix_response *res = (struct posix_response*)&req;
+    thread_local_t *local_data = (thread_local_t*)LOCAL_ADDR;
 
     /* POSIX manager の呼び出し 
 
@@ -41,10 +42,10 @@ _fork (int esp, int ebp, int ecx, int edx, int esi, int edi)
     error = _make_connection(PSC_FORK, &req);
     if (error != E_OK) {
 	/* What should I do? */
-	errno = error;
+	local_data->error_no = error;
 	return (-1);
-    } else if (res->errno) {
-	errno = res->errno;
+    } else if (res->error_no) {
+	local_data->error_no = res->error_no;
 	return (-1);
     }
 

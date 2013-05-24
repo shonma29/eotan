@@ -34,7 +34,7 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
 {
     B pathname[MAX_NAMELEN];
     W fileid;
-    W errno;
+    W error_no;
     struct inode *startip;
     struct inode *newip;
     struct access_info acc;
@@ -42,8 +42,8 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
     W accmode;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    errno = proc_alloc_fileid(req->procid, &fileid);
-    if (errno) {
+    error_no = proc_alloc_fileid(req->procid, &fileid);
+    if (error_no) {
 	/* メモリ取得エラー */
 	put_response(rdvno, ENOMEM, -1, 0);
 	return (FALSE);
@@ -52,12 +52,12 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
 
     /* パス名をユーザプロセスから POSIX サーバにコピーする。
      */
-    errno =
+    error_no =
 	kcall->region_get(req->caller, req->param.par_access.path,
 		 req->param.par_access.pathlen, pathname);
-    if (errno) {
+    if (error_no) {
 	/* パス名のコピーエラー */
-	if (errno == E_PAR)
+	if (error_no == E_PAR)
 	    put_response(rdvno, EINVAL, -1, 0);
 	else
 	    put_response(rdvno, EFAULT, -1, 0);
@@ -68,40 +68,40 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
     printf("psc_access_f: open file path = %s\n", pathname);
 #endif
     if (*pathname != '/') {
-	errno = proc_get_cwd(req->procid, &startip);
-	if (errno) {
-	    put_response(rdvno, errno, -1, 0);
+	error_no = proc_get_cwd(req->procid, &startip);
+	if (error_no) {
+	    put_response(rdvno, error_no, -1, 0);
 	    return (FALSE);
 	}
     } else {
 	startip = rootfile;
     }
-    errno = proc_get_uid(req->procid, &(acc.uid));
-    if (errno) {
-	put_response(rdvno, errno, -1, 0);
+    error_no = proc_get_uid(req->procid, &(acc.uid));
+    if (error_no) {
+	put_response(rdvno, error_no, -1, 0);
 	return (FALSE);
     }
-    errno = proc_get_euid(req->procid, &euid);
-    if (errno) {
-	put_response(rdvno, errno, -1, 0);
-	return (FALSE);
-    }
-
-    errno = proc_get_gid(req->procid, &(acc.gid));
-    if (errno) {
-	put_response(rdvno, errno, -1, 0);
+    error_no = proc_get_euid(req->procid, &euid);
+    if (error_no) {
+	put_response(rdvno, error_no, -1, 0);
 	return (FALSE);
     }
 
-    errno = fs_open_file(pathname,
+    error_no = proc_get_gid(req->procid, &(acc.gid));
+    if (error_no) {
+	put_response(rdvno, error_no, -1, 0);
+	return (FALSE);
+    }
+
+    error_no = fs_open_file(pathname,
 			 req->param.par_open.oflag,
 			 req->param.par_open.mode, &acc, startip, &newip);
-    if (errno) {
+    if (error_no) {
 #ifdef notdef
 	printf("open systemcall: Not found entry.\n");
 #endif
 	/* ファイルがオープンできない */
-	put_response(rdvno, errno, -1, 0);
+	put_response(rdvno, error_no, -1, 0);
 	return (FALSE);
     }
 
@@ -113,9 +113,9 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
 	accmode |= (req->param.par_access.accflag << 3);
     }
 
-    errno = fs_close_file(newip);
-    if (errno) {
-	put_response(rdvno, errno, -1, 0);
+    error_no = fs_close_file(newip);
+    if (error_no) {
+	put_response(rdvno, error_no, -1, 0);
 	return (FALSE);
     }
 
@@ -252,13 +252,13 @@ W psc_chown_f(RDVNO rdvno, struct posix_request *req)
 W psc_fstat_f(RDVNO rdvno, struct posix_request *req)
 {
     struct file *fp;
-    W errno;
+    W error_no;
     struct stat st;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    errno = proc_get_file(req->procid, req->param.par_fstat.fileid, &fp);
-    if (errno) {
-	put_response(rdvno, errno, -1, 0);
+    error_no = proc_get_file(req->procid, req->param.par_fstat.fileid, &fp);
+    if (error_no) {
+	put_response(rdvno, error_no, -1, 0);
 	return (FALSE);
     }
 
@@ -290,10 +290,10 @@ W psc_fstat_f(RDVNO rdvno, struct posix_request *req)
     st.st_mtime = fp->f_inode->i_mtime;
     st.st_ctime = fp->f_inode->i_ctime;
 
-    errno =
+    error_no =
 	kcall->region_put(req->caller, req->param.par_fstat.st, sizeof(struct stat),
 		 &st);
-    if (errno) {
+    if (error_no) {
 	put_response(rdvno, EINVAL, 0, 0);
 	return (FALSE);
     }
@@ -307,13 +307,13 @@ W
 psc_statfs_f (RDVNO rdvno, struct posix_request *req)
 {
   struct statfs	result;
-  ER		errno;
+  ER		error_no;
   kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-  errno = fs_statfs (req->param.par_statfs.device, &result);
-  if (errno)
+  error_no = fs_statfs (req->param.par_statfs.device, &result);
+  if (error_no)
     {
-      put_response (rdvno, errno, -1, 0);    
+      put_response (rdvno, error_no, -1, 0);    
       return (FALSE);
     }
 
@@ -322,8 +322,8 @@ psc_statfs_f (RDVNO rdvno, struct posix_request *req)
   printf ("result.f_blksize = 0x%x\n", result.f_bsize);
 #endif
   
-  errno = kcall->region_put(req->caller, req->param.par_statfs.fsp, sizeof (struct statfs), &result);
-  if (errno)
+  error_no = kcall->region_put(req->caller, req->param.par_statfs.fsp, sizeof (struct statfs), &result);
+  if (error_no)
     {
       put_response (rdvno, EFAULT, -1, 0);
       return (FALSE);
@@ -335,18 +335,18 @@ psc_statfs_f (RDVNO rdvno, struct posix_request *req)
 W psc_utime_f(RDVNO rdvno, struct posix_request *req)
 {
     B pathname[MAX_NAMELEN];
-    ER errno = EOK;
+    ER error_no = EOK;
     struct utimbuf tb;
     struct inode *startip;
     struct inode *ipp;
     struct access_info acc;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    errno = kcall->region_get(req->caller, req->param.par_utime.path,
+    error_no = kcall->region_get(req->caller, req->param.par_utime.path,
 		     req->param.par_utime.pathlen + 1, pathname);
-    if (errno) {
+    if (error_no) {
 	/* パス名のコピーエラー */
-	if (errno == E_PAR)
+	if (error_no == E_PAR)
 	    put_response(rdvno, EINVAL, -1, 0);
 	else
 	    put_response(rdvno, EFAULT, -1, 0);
@@ -354,10 +354,10 @@ W psc_utime_f(RDVNO rdvno, struct posix_request *req)
 	return (FALSE);
     }
 
-    errno = kcall->region_get(req->caller, req->param.par_utime.buf,
+    error_no = kcall->region_get(req->caller, req->param.par_utime.buf,
 		     sizeof(struct utimbuf), &tb);
-    if (errno) {
-	if (errno == E_PAR)
+    if (error_no) {
+	if (error_no == E_PAR)
 	    put_response(rdvno, EINVAL, -1, 0);
 	else
 	    put_response(rdvno, EFAULT, -1, 0);
@@ -366,28 +366,28 @@ W psc_utime_f(RDVNO rdvno, struct posix_request *req)
     }
 
     if (*pathname != '/') {
-	errno = proc_get_cwd(req->procid, &startip);
-	if (errno) {
-	    put_response(rdvno, errno, -1, 0);
+	error_no = proc_get_cwd(req->procid, &startip);
+	if (error_no) {
+	    put_response(rdvno, error_no, -1, 0);
 	    return (FALSE);
 	}
     } else {
 	startip = rootfile;
     }
-    errno = proc_get_euid(req->procid, &(acc.uid));
-    if (errno) {
-	put_response(rdvno, errno, -1, 0);
+    error_no = proc_get_euid(req->procid, &(acc.uid));
+    if (error_no) {
+	put_response(rdvno, error_no, -1, 0);
 	return (FALSE);
     }
 
-    errno = proc_get_egid(req->procid, &(acc.gid));
-    if (errno) {
-	put_response(rdvno, errno, -1, 0);
+    error_no = proc_get_egid(req->procid, &(acc.gid));
+    if (error_no) {
+	put_response(rdvno, error_no, -1, 0);
 	return (FALSE);
     }
 
-    errno = fs_lookup(startip, pathname, O_RDWR, 0, &acc, &ipp);
-    if (errno) {
+    error_no = fs_lookup(startip, pathname, O_RDWR, 0, &acc, &ipp);
+    if (error_no) {
 	put_response(rdvno, ENOENT, -1, 0);
 	return (FALSE);
     }

@@ -23,6 +23,7 @@ Version 2, June 1991
 #ifndef __ERRNO_H__
 #define __ERRNO_H__	1
 
+#include <local.h>
 
 /*
  * POSIX で定義している error 番号
@@ -71,6 +72,6 @@ Version 2, June 1991
 #define ESVC (101) /* service call error */
 
 
-extern int	errno;
+#define errno _get_local_errno()
 
 #endif /* __ERRNO_H__ */
