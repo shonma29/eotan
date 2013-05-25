@@ -1,5 +1,5 @@
-#ifndef _IA32_CALL_SYSCALL_H_
-#define _IA32_CALL_SYSCALL_H_
+#ifndef _MPU_LIMITS_H_
+#define _MPU_LIMITS_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,20 +27,26 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-static inline int ncall(int no, ...) {
-	int result;
+#define CHAR_BIT 8
+#define INT_BIT 32
+#define MB_LEN_MAX 6
 
-	__asm__ __volatile__ ( \
-		"movl %1, %%eax\n\t" \
-		"leal 8(%%ebp), %%ecx\n\t" \
-		"movl 4(%%ebp), %%edx\n\t" \
-		"popl %%ebp\n\t" \
-		"sysenter\n\t" \
-		:"=a"(result) \
-		:"n"(no)  \
-		:"%ecx", "%edx");
+#define CHAR_MAX 0x7f
+#define CHAR_MIN (-0x7f - 1)
+#define SCHAR_MAX 0x7f
+#define SCHAR_MIN (-0x7f - 1)
+#define UCHAR_MAX 0xffU
 
-	return result;
-}
+#define SHRT_MAX 0x7fff
+#define SHRT_MIN (-0x7fff - 1)
+#define USHRT_MAX 0xffffU
+
+#define INT_MAX 0x7fffffff
+#define INT_MIN (-0x7fffffff - 1)
+#define UINT_MAX 0xffffffffU
+
+#define LONG_MAX 0x7fffffffL
+#define LONG_MIN (-0x7fffffffL - 1)
+#define ULONG_MAX 0xffffffffUL
 
 #endif

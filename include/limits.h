@@ -1,1 +1,1 @@
-ia32/limits.h
+i686/limits.h

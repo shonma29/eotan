@@ -1,5 +1,5 @@
-#ifndef _IA32_MEMORY_H_
-#define _IA32_MEMORY_H_
+#ifndef _MPU_IO_H_
+#define _MPU_IO_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,67 +26,71 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <itron/types.h>
-#include <stddef.h>
-#include <mpu/config.h>
 
-#define MPU_MAX_PAGE (1024 * 1024)
-
-#define MPU_LOG_INT (5)
-
-typedef UW PTE;
-
-#define PTE_PER_PAGE (PAGE_SIZE / sizeof(PTE))
-
-#define PAGE_ADDR_MASK 0xfffff000
-#define BITS_PAGE (10)
-#define MASK_PAGE ((1 << BITS_PAGE) - 1)
-#define BITS_OFFSET (12)
-#define MASK_OFFSET ((1 << BITS_OFFSET) - 1)
-
-static inline UW pageRoundDown(const UW value)
-{
-	return value & PAGE_ADDR_MASK;
+static inline void outb(unsigned short port, unsigned char v) {
+	__asm__ __volatile__ ( \
+			"outb %b0, %w1\n\t" \
+			: \
+			:"a"(v), "d"(port));
 }
 
-static inline UW roundUp(const UW value, const UW ceil)
-{
-	return (value + (ceil - 1)) & (~(ceil - 1));
+static inline void outw(unsigned short port, unsigned short v) {
+	__asm__ __volatile__ ( \
+			"outw %w0, %w1\n\t" \
+			: \
+			:"a"(v), "d"(port));
 }
 
-static inline UW pageRoundUp(const UW value)
-{
-	return (value + PAGE_SIZE - 1) & PAGE_ADDR_MASK;
+static inline void outl(unsigned short port, unsigned int v) {
+	__asm__ __volatile__ ( \
+			"outl %0, %w1\n\t" \
+			: \
+			:"a"(v), "d"(port));
 }
 
-static inline UW getDirectoryOffset(const void *addr)
-{
-	return (UW)addr >> (BITS_PAGE + BITS_OFFSET);
+static inline unsigned char inb(unsigned short port) {
+	unsigned char v;
+
+	__asm__ __volatile__ ( \
+			"inb %w1, %b0\n\t" \
+			:"=a"(v) \
+			:"d"(port));
+	return v;
 }
 
-static inline UW getPageOffset(const void *addr)
-{
-	return ((UW)addr >> BITS_OFFSET) & MASK_PAGE;
+static inline unsigned short inw(unsigned short port) {
+	unsigned short v;
+
+	__asm__ __volatile__ ( \
+			"inw %w1, %w0\n\t" \
+			:"=a"(v) \
+			:"d"(port));
+	return v;
 }
 
-static inline UW getOffset(const void *addr)
-{
-	return (UW)addr & MASK_OFFSET;
+static inline unsigned int inl(unsigned short port) {
+	unsigned int v;
+
+	__asm__ __volatile__ ( \
+			"inl %w1, %0\n\t" \
+			:"=a"(v) \
+			:"d"(port));
+	return v;
 }
 
-static inline void *kern_p2v(const void *addr)
-{
-	return (void*)((UW)addr | MIN_KERNEL);
+static inline void dis_int(void) {
+	__asm__ __volatile__ ( \
+			"cli\n\t");
 }
 
-static inline void *kern_v2p(const void *addr)
-{
-	return (void*)((UW)addr & (~MIN_KERNEL));
+static inline void ena_int(void) {
+	__asm__ __volatile__ ( \
+			"sti\n\t");
 }
 
-static inline size_t pages(const size_t bytes)
-{
-	return (bytes + PAGE_SIZE - 1) >> PAGE_SHIFT;
+static inline void halt(void) {
+	__asm__ __volatile__ ( \
+			"hlt\n\t");
 }
 
 #endif

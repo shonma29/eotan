@@ -1,5 +1,5 @@
-#ifndef _IA32_MUTEX_H_
-#define _IA32_MUTEX_H_
+#ifndef _MPU_CALL_SYSCALL_H_
+#define _MPU_CALL_SYSCALL_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,40 +27,20 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-static inline int mutex_get(volatile char *mtx) {
-	char v;
+static inline int ncall(int no, ...) {
+	int result;
 
 	__asm__ __volatile__ ( \
-			"movb $1, %b0\n\t" \
-			"xchgb %b0, (%1)\n\t" \
-			:"=q"(v) \
-			:"r"(mtx));
-	return v;
-}
+		"movl %1, %%eax\n\t" \
+		"leal 8(%%ebp), %%ecx\n\t" \
+		"movl 4(%%ebp), %%edx\n\t" \
+		"popl %%ebp\n\t" \
+		"sysenter\n\t" \
+		:"=a"(result) \
+		:"n"(no)  \
+		:"%ecx", "%edx");
 
-static inline void mutex_release(volatile char *mtx) {
-	__asm__ __volatile__ ( \
-			"xorb %%al, %%al\n\t" \
-			"xchgb %%al, (%0)\n\t" \
-			: \
-			:"r"(mtx) \
-			:"%al");
-}
-
-static inline int cas64(char *p,
-		unsigned int old_high, unsigned int old_low,
-		unsigned int new_high, unsigned int new_low) {
-	char eq;
-
-	__asm__ __volatile__ ( \
-			"lock\n\t" \
-			"cmpxchg8b %1\n\t" \
-			"setz %0\n\t" \
-			:"=q"(eq) \
-			:"m"(*p), "d"(old_high), "a"(old_low),
-					"c"(new_high), "b"(new_low) \
-			:"memory");
-	return (int)eq;
+	return result;
 }
 
 #endif

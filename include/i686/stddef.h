@@ -1,5 +1,5 @@
-#ifndef _IA32_LIMITS_H_
-#define _IA32_LIMITS_H_
+#ifndef _MPU_STDDEF_H_
+#define _MPU_STDDEF_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,26 +27,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-#define CHAR_BIT 8
-#define INT_BIT 32
-#define MB_LEN_MAX 6
+typedef unsigned int ptr_t;
 
-#define CHAR_MAX 0x7f
-#define CHAR_MIN (-0x7f - 1)
-#define SCHAR_MAX 0x7f
-#define SCHAR_MIN (-0x7f - 1)
-#define UCHAR_MAX 0xffU
+typedef int ptrdiff_t;
+typedef unsigned int size_t;
+typedef unsigned int wchar_t;
 
-#define SHRT_MAX 0x7fff
-#define SHRT_MIN (-0x7fff - 1)
-#define USHRT_MAX 0xffffU
+#ifndef NULL
+#define NULL ((void*)0)
+#endif
 
-#define INT_MAX 0x7fffffff
-#define INT_MIN (-0x7fffffff - 1)
-#define UINT_MAX 0xffffffffU
-
-#define LONG_MAX 0x7fffffffL
-#define LONG_MIN (-0x7fffffffL - 1)
-#define ULONG_MAX 0xffffffffUL
+#define offsetof(type, member) (size_t)&(((type*)0)->member)
 
 #endif

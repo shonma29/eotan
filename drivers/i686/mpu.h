@@ -18,8 +18,8 @@ Version 2, June 1991
 
 */
 
-#ifndef _IA32_MPU_H_
-#define _IA32_MPU_H_	1
+#ifndef _MPU_MPU_H_
+#define _MPU_MPU_H_	1
 
 #include <itron/types.h>
 #include "fpu.h"
@@ -157,4 +157,4 @@ typedef struct
 
 #define ADDR_MAP_SIZE	1024
 
-#endif /* _IA32_MPU_H_ */
+#endif /* _MPU_MPU_H_ */

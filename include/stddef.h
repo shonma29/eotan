@@ -1,1 +1,1 @@
-ia32/stddef.h
+i686/stddef.h

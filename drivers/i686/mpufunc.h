@@ -11,8 +11,8 @@ Version 2, June 1991
 
 */
 
-#ifndef _IA32_MPUFUNC_H_
-#define _IA32_MPUFUNC_H_	1
+#ifndef _MPU_MPUFUNC_H_
+#define _MPU_MPUFUNC_H_	1
 
 #include <itron/types.h>
 #include <itron/struct.h>
@@ -156,4 +156,4 @@ extern void *getPageAddress(const PTE *dir, const void *addr);
 /* panic.c */
 extern void panic(char *msg);
 
-#endif /* _IA32_MPU_H_ */
+#endif /* _MPU_MPU_H_ */

@@ -1,5 +1,5 @@
-#ifndef _IA32_IO_H_
-#define _IA32_IO_H_
+#ifndef _MPU_MUTEX_H_
+#define _MPU_MUTEX_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,70 +27,40 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-static inline void outb(unsigned short port, unsigned char v) {
-	__asm__ __volatile__ ( \
-			"outb %b0, %w1\n\t" \
-			: \
-			:"a"(v), "d"(port));
-}
-
-static inline void outw(unsigned short port, unsigned short v) {
-	__asm__ __volatile__ ( \
-			"outw %w0, %w1\n\t" \
-			: \
-			:"a"(v), "d"(port));
-}
-
-static inline void outl(unsigned short port, unsigned int v) {
-	__asm__ __volatile__ ( \
-			"outl %0, %w1\n\t" \
-			: \
-			:"a"(v), "d"(port));
-}
-
-static inline unsigned char inb(unsigned short port) {
-	unsigned char v;
+static inline int mutex_get(volatile char *mtx) {
+	char v;
 
 	__asm__ __volatile__ ( \
-			"inb %w1, %b0\n\t" \
-			:"=a"(v) \
-			:"d"(port));
+			"movb $1, %b0\n\t" \
+			"xchgb %b0, (%1)\n\t" \
+			:"=q"(v) \
+			:"r"(mtx));
 	return v;
 }
 
-static inline unsigned short inw(unsigned short port) {
-	unsigned short v;
-
+static inline void mutex_release(volatile char *mtx) {
 	__asm__ __volatile__ ( \
-			"inw %w1, %w0\n\t" \
-			:"=a"(v) \
-			:"d"(port));
-	return v;
+			"xorb %%al, %%al\n\t" \
+			"xchgb %%al, (%0)\n\t" \
+			: \
+			:"r"(mtx) \
+			:"%al");
 }
 
-static inline unsigned int inl(unsigned short port) {
-	unsigned int v;
+static inline int cas64(char *p,
+		unsigned int old_high, unsigned int old_low,
+		unsigned int new_high, unsigned int new_low) {
+	char eq;
 
 	__asm__ __volatile__ ( \
-			"inl %w1, %0\n\t" \
-			:"=a"(v) \
-			:"d"(port));
-	return v;
-}
-
-static inline void dis_int(void) {
-	__asm__ __volatile__ ( \
-			"cli\n\t");
-}
-
-static inline void ena_int(void) {
-	__asm__ __volatile__ ( \
-			"sti\n\t");
-}
-
-static inline void halt(void) {
-	__asm__ __volatile__ ( \
-			"hlt\n\t");
+			"lock\n\t" \
+			"cmpxchg8b %1\n\t" \
+			"setz %0\n\t" \
+			:"=q"(eq) \
+			:"m"(*p), "d"(old_high), "a"(old_low),
+					"c"(new_high), "b"(new_low) \
+			:"memory");
+	return (int)eq;
 }
 
 #endif

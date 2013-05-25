@@ -1,5 +1,5 @@
-#ifndef _IA32_STDDEF_H_
-#define _IA32_STDDEF_H_
+#ifndef __MPU_INTERRUPT_H__
+#define __MPU_INTERRUPT_H__ 1
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,16 +27,43 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-typedef unsigned int ptr_t;
+enum ExternalInterrupts {
+	int_division_error = 0,
+	int_debugger = 1,
+	int_nmi = 2,
+	int_break_point = 3,
+	int_overflow = 4,
+	int_out_of_bound = 5,
+	int_invalid_operation_code = 6,
+	int_no_coprocessor = 7,
+	int_double_fault = 8,
+	int_coprocessor_segment_overrun = 9,
+	int_invalid_tss = 10,
+	int_no_segment = 11,
+	int_stack_segment_fault = 12,
+	int_protection = 13,
+	int_page_fault = 14,
+	int_reserved_15 = 15,
+	int_math_fault = 16,
+	int_alignment_check = 17,
+	int_machine_check = 18,
+	int_simd = 19,
+	int_reserved_20 = 20,
+	int_reserved_21 = 21,
+	int_reserved_22 = 22,
+	int_reserved_23 = 23,
+	int_reserved_24 = 24,
+	int_reserved_25 = 25,
+	int_reserved_26 = 26,
+	int_reserved_27 = 27,
+	int_reserved_28 = 28,
+	int_reserved_29 = 29,
+	int_reserved_30 = 30,
+	int_reserved_31 = 31
+};
 
-typedef int ptrdiff_t;
-typedef unsigned int size_t;
-typedef unsigned int wchar_t;
-
-#ifndef NULL
-#define NULL ((void*)0)
-#endif
-
-#define offsetof(type, member) (size_t)&(((type*)0)->member)
+#define MIN_USER_INTERRUPT 0x21
+#define MAX_USER_INTERRUPT 0xff
+#define NUM_OF_INTERRUPTS (MAX_USER_INTERRUPT + 1)
 
 #endif
