@@ -128,14 +128,11 @@ handle11:
 handle12:
 	pushl $12
 	pushl %ds
-	pushl %es
 	pushal
 	movw $SELECTOR_KERN_DATA, %ax
 	movw %ax,%ds
-	movw %ax,%es
 	call protect_fault
 	popal
-	popl %es
 	popl %ds
 	addl $8, %esp
 	iret
@@ -149,14 +146,11 @@ handle13:
 handle14:
 	pushl $14
 	pushl %ds
-	pushl %es
 	pushal
 	movw $SELECTOR_KERN_DATA, %ax
 	movw %ax,%ds
-	movw %ax,%es
 	call page_fault
 	popal
-	popl %es
 	popl %ds
 	addl $8, %esp
 	iret
@@ -248,42 +242,36 @@ handle31:
 
 abort_handler:
 	pushl %ds
-	pushl %es
 	pushal
 	movw $SELECTOR_KERN_DATA, %ax
 	movw %ax,%ds
-	movw %ax,%es
 	call fault
 	popal
-	popl %es
 	popl %ds
 	addl $4, %esp
 	iret
 
 abort_with_error_handler:
 	pushl %ds
-	pushl %es
 	pushal
 	movw $SELECTOR_KERN_DATA, %ax
 	movw %ax,%ds
-	movw %ax,%es
 	call fault_with_error
 	popal
-	popl %es
 	popl %ds
 	addl $8, %esp
 	iret
 
 service_handler:
 	pushl %ds
-	pushl %es
 	pushl %edx
+	pushl %ecx
 	pushl %eax
 	movw $SELECTOR_KERN_DATA, %ax
 	movw %ax,%ds
-	movw %ax,%es
 	call syscall
-	addl $8, %esp
-	popl %es
+	addl $4, %esp
+	popl %ecx
+	popl %edx
 	popl %ds
-	lret
+	sysexit

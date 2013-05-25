@@ -28,11 +28,9 @@
  */
 int32_handler:
 		pushl	%ds
-		pushl	%es
 		pushal
 		movw	$0x10, %ax
 		movw	%ax,%ds
-		movw	%ax,%es
 
 		inb	MASTER_8259A_DATA, %al
 		orb	$1, %al
@@ -45,7 +43,6 @@ int32_handler:
 		call	interrupt
 		popl	%eax
 		popal
-		popl	%es
 		popl	%ds
 		iret
 
@@ -55,11 +52,9 @@ int32_handler:
  */
 int33_handler:
 		pushl	%ds
-		pushl	%es
 		pushal
 		movw	$0x10, %ax
 		movw	%ax,%ds
-		movw	%ax,%es
 
 		inb	MASTER_8259A_DATA, %al
 		orb	$2, %al
@@ -72,6 +67,5 @@ int33_handler:
 		call	interrupt
 		popl	%eax
 		popal
-		popl	%es
 		popl	%ds
 		iret

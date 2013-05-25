@@ -130,7 +130,6 @@ memory_loop:
 flush_op:
 	movw $SELECTOR_DATA, %ax
 	movw %ax, %ds
-	movw %ax, %es
 	lssl stack_ptr, %esp
 	ljmp $SELECTOR_CODE, $_main
 

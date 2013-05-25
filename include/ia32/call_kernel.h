@@ -32,11 +32,13 @@ static inline int ncall(int no, ...) {
 
 	__asm__ __volatile__ ( \
 		"movl %1, %%eax\n\t" \
-		"leal 8(%%ebp), %%edx\n\t" \
-		"lcall $0x30,$0\n\t" \
+		"leal 8(%%ebp), %%ecx\n\t" \
+		"movl 4(%%ebp), %%edx\n\t" \
+		"popl %%ebp\n\t" \
+		"sysenter\n\t" \
 		:"=a"(result) \
 		:"n"(no)  \
-		:"%edx");
+		:"%ecx", "%edx");
 
 	return result;
 }

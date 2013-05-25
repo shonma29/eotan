@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <mpu/config.h>
 #include "gate.h"
+#include "msr.h"
 #include "mpufunc.h"
 
 static void gdt_set_segment(UH selector, UW base, UW limit, UB type, UB dpl);
@@ -79,10 +80,12 @@ void gdt_initialize(void)
 	memset(p, 0, (MAX_GDT + 1) * sizeof(SegmentDescriptor));
 	gdt_set_segment(kern_code, 0, 0xfffff, segmentCode, dpl_kern);
 	gdt_set_segment(kern_data, 0, 0xfffff, segmentData, dpl_kern);
-	gdt_set_segment(user_code, 0, 0x7ffff, segmentCode, dpl_user);
-	gdt_set_segment(user_data, 0, 0x7ffff, segmentData, dpl_user);
+	gdt_set_segment(user_code, 0, 0xfffff, segmentCode, dpl_user);
+	gdt_set_segment(user_data, 0, 0xfffff, segmentData, dpl_user);
 
 	gdt_load();
+
+	msr_write(sysenter_cs_msr, kern_code);
 }
 
 static void gdt_set_segment(UH selector, UW base, UW limit, UB type, UB dpl)

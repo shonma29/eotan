@@ -19,6 +19,7 @@ Version 2, June 1991
 #include "func.h"
 #include "sync.h"
 #include "mpu/mpufunc.h"
+#include "mpu/msr.h"
 
 static ER allocate_kernel_stack(T_TCB * task, VP * sp);
 static void create_stack(T_TCB * tsk, W size, W acc);
@@ -277,7 +278,8 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
     return (E_OK);
 }
 
-void set_kthread_registers(T_TCB *taskp) {
+void set_kthread_registers(T_TCB *taskp)
+{
     taskp->mpu.context.cs = kern_code;
     taskp->mpu.context.ds = kern_data;
     taskp->mpu.context.es = kern_data;
@@ -288,7 +290,8 @@ void set_kthread_registers(T_TCB *taskp) {
     taskp->mpu.context.eflags = EFLAG_IBIT | EFLAG_IOPL3;
 }
 
-static void set_user_registers(T_TCB *taskp) {
+static void set_user_registers(T_TCB *taskp)
+{
     taskp->mpu.context.cs = user_code | USER_DPL;
     taskp->mpu.context.ds = user_data;
     taskp->mpu.context.es = user_data;
@@ -297,7 +300,8 @@ static void set_user_registers(T_TCB *taskp) {
     taskp->mpu.context.ss = user_data | USER_DPL;
 }
 
-void start_thread1(T_TCB *taskp) {
+void start_thread1(T_TCB *taskp)
+{
     /* セレクタをセット */
     create_tss(taskp);
 
@@ -305,10 +309,17 @@ void start_thread1(T_TCB *taskp) {
     load_task_register((taskp->tskid + TSS_BASE) << 3);
 }
 
-void set_page_table(T_TCB *taskp, UW p) {
+void set_page_table(T_TCB *taskp, UW p)
+{
     taskp->mpu.context.cr3 = p;
 }
 
-void set_sp(T_TCB *taskp, UW p) {
+void set_sp(T_TCB *taskp, UW p)
+{
     taskp->mpu.context.esp -= p;
+}
+
+void prepare_kernel_sp(T_TCB *taskp)
+{
+    msr_write(sysenter_esp_msr, taskp->mpu.context.esp0);
 }

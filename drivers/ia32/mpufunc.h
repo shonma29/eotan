@@ -79,6 +79,7 @@ extern void set_kthread_registers(T_TCB *taskp);
 extern void start_thread1(T_TCB *taskp);
 extern void set_page_table(T_TCB *taskp, UW p);
 extern void set_sp(T_TCB *taskp, UW p);
+extern void prepare_kernel_sp(T_TCB *taskp);
 
 /* gate.c */
 extern void idt_initialize(void);

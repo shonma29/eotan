@@ -278,6 +278,8 @@ ER thread_switch(void)
 
     delayed_dispatch = FALSE;
 
+    prepare_kernel_sp(next);
+
 /* resume を呼び出す。resume の引数は、TSS へのセレクタ */
 #ifdef TSKSW_DEBUG
     printk("resume (0x%x)\n", ((next->tskid + TSS_BASE) << 3) & 0xfff8);

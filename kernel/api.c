@@ -179,6 +179,7 @@ Version 2, June 1991
 #include <itron/rendezvous.h>
 #include "func.h"
 #include "mpu/mpufunc.h"
+#include "mpu/msr.h"
 
 #define SVC_IF(x,n)	if_ ## x
 #define SVC_UNDEFINED		nodef
@@ -278,9 +279,5 @@ static ER_UINT if_port_call(VP argp)
 
 void api_initialize(void)
 {
-	SegmentDescriptor *p = (SegmentDescriptor*)GDT_ADDR;
-
-	gate_set((GateDescriptor*)(&(p[call_service >> 3])),
-			kern_code, service_handler,
-			ATTR_PRESENT | (dpl_user << 5) | callGate32);
+	msr_write(sysenter_eip_msr, (UW)service_handler);
 }
