@@ -36,10 +36,11 @@ init_task_state_segment (W index, T_CONTEXT *tss);
  *
  */
 void
-create_context (T_TCB *task)
+create_tss (T_TCB *task)
 {
   T_CONTEXT	*tss;
 
+  task->mpu.tss_selector = ((TSS_BASE + task->tskid) << 3) & 0xfff8;
   tss = &(task->mpu.context);
   init_task_state_segment (task->tskid, tss);
 }

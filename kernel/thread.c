@@ -195,13 +195,14 @@ void thread_initialize1(void)
     task[KERNEL_TASK].tskid = KERNEL_TASK;
     list_initialize(&(task[KERNEL_TASK].wait.waiting));
 
-    set_thread1_context(&(task[KERNEL_TASK]));
+    set_page_table(&(task[KERNEL_TASK]), (UW)PAGE_DIR_ADDR);
+    set_kthread_registers(&(task[KERNEL_TASK]));
 
     /* 現タスクはタスク1である。 */
     run_task = &(task[KERNEL_TASK]);
     ready_enqueue(run_task->tsklevel, &(run_task->ready));
 
-    set_thread1_start(&(task[KERNEL_TASK]));
+    start_thread1(&(task[KERNEL_TASK]));
 }
 
 
@@ -343,7 +344,7 @@ ER thread_create(ID tskid, T_CTSK * pk_ctsk)
     newtask->tsklevel0 = pk_ctsk->itskpri;
     list_initialize(&(newtask->wait.waiting));
 
-    if (make_task_context(newtask, pk_ctsk) != E_OK) {
+    if (create_context(newtask, pk_ctsk) != E_OK) {
 	return (E_NOMEM);
     }
 

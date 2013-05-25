@@ -24,7 +24,7 @@ Version 2, June 1991
 #ifdef TSKSW_DEBUG
 extern void print_task_desc(TASK_DESC * desc);
 #endif
-extern void create_context(T_TCB * task);
+extern void create_tss(T_TCB * task);
 
 /* virtual_memory.c */
 extern ADDR_MAP dup_vmap_table(ADDR_MAP dest);
@@ -72,11 +72,11 @@ extern void fpu_restore(T_TCB * taskp);
 extern void fpu_start(T_TCB * taskp);
 
 /* context.c */
-extern ER make_task_context(T_TCB * task, T_CTSK * pk_ctsk);
+extern ER create_context(T_TCB * task, T_CTSK * pk_ctsk);
 extern ER mpu_copy_stack(ID src, W esp, ID dst);
 extern ER mpu_set_context(ID tid, W eip, B * stackp, W stsize);
-extern void set_thread1_context(T_TCB *taskp);
-extern void set_thread1_start(T_TCB *taskp);
+extern void set_kthread_registers(T_TCB *taskp);
+extern void start_thread1(T_TCB *taskp);
 extern void set_page_table(T_TCB *taskp, UW p);
 extern void set_sp(T_TCB *taskp, UW p);
 
