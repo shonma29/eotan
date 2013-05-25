@@ -29,9 +29,8 @@ For more information, please refer to <http://unlicense.org/>
 .globl _fork_entry
 
 _fork_entry:
+	popl %ebx
 	popl %ebp
-	popl %ecx
-	popl %edx
 	popl %esi
 	popl %edi
 	xorl %eax, %eax

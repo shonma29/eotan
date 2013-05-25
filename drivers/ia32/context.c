@@ -88,7 +88,7 @@ ER create_context(T_TCB * task, T_CTSK * pk_ctsk)
 static ER allocate_kernel_stack(T_TCB * task, VP * sp)
 {
     /* スタックポインタは 0x80000000 の仮想アドレスでアクセスする必要がある。 */
-    (*sp) = (VP*)((UW)palloc(1) | MIN_KERNEL);
+    (*sp) = kern_p2v(palloc(1));
 #ifdef TSKSW_DEBUG
     printk("sp = 0x%x\n", *sp);
 #endif

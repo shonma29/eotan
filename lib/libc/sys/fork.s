@@ -18,11 +18,10 @@ Version 2, June 1991
 fork:
 	pushl	%edi
 	pushl	%esi
-	pushl	%edx
-	pushl	%ecx
 	pushl	%ebp
+	pushl	%ebx
 	movl	%esp,%eax
 	pushl	%eax
 	call	_fork
-	addl	$24,%esp
+	addl	$20,%esp
 	ret
