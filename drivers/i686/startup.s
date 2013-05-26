@@ -38,6 +38,9 @@ For more information, please refer to <http://unlicense.org/>
 startup:
 	movw $SELECTOR_KERN_DATA, %ax
 	movw %ax, %ds
+	movw %ax, %es
+	movw %ax, %fs
+	movw %ax, %gs
 	lssl stack_ptr, %esp
 
 	ljmp $SELECTOR_KERN_CODE, $main
