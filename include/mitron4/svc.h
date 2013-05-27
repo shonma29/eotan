@@ -28,6 +28,29 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <mitron4/types.h>
 
+/**
+ * task synchronization
+ */
 extern ER dly_tsk(RELTIM dlytim);
+
+/**
+ * data queue
+ */
+extern ER cre_dtq(ID dtqid, T_CDTQ *pk_cdtq);
+extern ER_ID acre_dtq(T_CDTQ *pk_cdtq);
+extern ER del_dtq(ID dtqid);
+extern ER snd_dtq(ID dtqid, VP_INT data);
+extern ER psnd_dtq(ID dtqid, VP_INT data);
+extern ER rcv_dtq(ID dtqid, VP_INT *p_data);
+
+/**
+ * rendezvous
+ */
+extern ER cre_por(ID porid, T_CPOR *pk_cpor);
+extern ER_ID acre_por(T_CPOR *pk_cpor);
+extern ER del_por(ID porid);
+extern ER_UINT cal_por(ID porid, RDVPTN calptn, VP msg, UINT cmsgsz);
+extern ER_UINT acp_por(ID porid, RDVPTN acpptn, RDVNO *p_rdvno, VP msg);
+extern ER rpl_rdv(RDVNO rdvno, VP msg, UINT rmsgsz);
 
 #endif

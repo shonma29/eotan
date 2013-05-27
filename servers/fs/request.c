@@ -44,7 +44,7 @@ Version 2, June 1991
  */
 #include <kcall.h>
 #include <services.h>
-#include <core/rendezvous.h>
+#include <core.h>
 #include "fs.h"
 
 

@@ -46,11 +46,12 @@ W exec_init(ID process_id, char *pathname)
 {
 	struct posix_request req;
 	T_CTSK pk_ctsk = {
-		NULL,
 		TA_HLNG,
+		NULL,
 		dummy,
 		USER_LEVEL,
-		USER_STACK_SIZE
+		USER_STACK_SIZE,
+		NULL
 	};
 	W err;
 	init_arg_t *p;

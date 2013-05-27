@@ -326,6 +326,10 @@ ER thread_create(ID tskid, T_CTSK * pk_ctsk)
     T_TCB *newtask;
     W i;
 
+    if (pk_ctsk->tskatr != TA_HLNG) {
+	return (E_NOSPT);
+    }
+
 /* タスク ID の範囲チェック */
     if ((tskid < MIN_TSKID) || (tskid > MAX_TSKID)) {
 	return (E_ID);

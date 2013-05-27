@@ -27,7 +27,7 @@ Version 2, June 1991
 #include <errno.h>
 #include <local.h>
 #include <services.h>
-#include <core/rendezvous.h>
+#include <core.h>
 #include "posix.h"
 
 

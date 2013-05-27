@@ -69,11 +69,12 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr)
 	ER err;
 	ID tskId;
 	T_CTSK pk_ctsk = {
-		NULL,
 		TA_HLNG,
+		NULL,
 		(FP)(eHdr->e_entry),
 		KERNEL_LEVEL,
-		KERNEL_STACK_SIZE
+		KERNEL_STACK_SIZE,
+		NULL
 	};
 
 	tskId = thread_create_auto(&pk_ctsk);

@@ -223,11 +223,12 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
   W	       childid;
   ID main_thread_id;
   T_CTSK task_info = {
-     NULL,
      TA_HLNG,
+     NULL,
      req->param.par_fork.entry,
      USER_LEVEL,
-     USER_STACK_SIZE
+     USER_STACK_SIZE,
+     NULL
   };
   kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 

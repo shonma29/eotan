@@ -28,6 +28,9 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <mitron4/types.h>
 
+/**
+ * task management
+ */
 typedef struct t_ctsk {
 	ATR tskatr;
 	VP_INT exinf;
@@ -37,6 +40,36 @@ typedef struct t_ctsk {
 	VP stk;
 } T_CTSK;
 
+/**
+ * data queue
+ */
+typedef struct t_cdtq {
+	ATR dtqatr;
+	UINT dtqcnt;
+	VP dtq;
+} T_CDTQ;
+
+/**
+ * rendezvous
+ */
+typedef struct t_cpor {
+	ATR poratr;
+	UINT maxcmsz;
+	UINT maxrmsz;
+} T_CPOR;
+
+typedef struct t_rpor {
+	ID ctskid;
+	ID atskid;
+} T_RPOR;
+
+typedef struct t_rrdv {
+	ID wtskid;
+} T_RRDV;
+
+/**
+ * interrupt
+ */
 typedef struct t_dinh {
 	ATR inhatr;
 	FP inthdr;

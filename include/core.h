@@ -31,7 +31,5 @@ For more information, please refer to <http://unlicense.org/>
 #include <core/errno.h>
 #include <core/packets.h>
 #include <core/svc.h>
-#include <core/dataqueue.h>
-#include <core/rendezvous.h>
 
 #endif

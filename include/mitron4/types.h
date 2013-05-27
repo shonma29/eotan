@@ -77,6 +77,11 @@ typedef long ER_BOOL;
 typedef long ER_ID;
 typedef long ER_UINT;
 
+typedef unsigned int RDVPTN;
+typedef int RDVNO;
+
+#define TBIT_RDVPTN 32
+
 /**
  * common constants
  */
