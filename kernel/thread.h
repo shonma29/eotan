@@ -36,6 +36,7 @@ typedef struct t_tcb {
     list_t ready;
 
     W tskid;			/* タスク ID                    */
+    W domain_id;
     W tsklevel;			/* タスクの優先順位             */
     W tsklevel0;		/* タスクの優先順位(初期化時の値) */
     /* 終了したタスクが再度起動するときにはこの値が使われる。     */

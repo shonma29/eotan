@@ -81,9 +81,8 @@ Version 2, June 1991
  *
  *
  */
-W proc_fork(struct proc *parent, W * childid, ID main_task, ID signal_task)
+W proc_fork(struct proc *parent, struct proc *child, ID main_task, ID signal_task)
 {
-    struct proc *newproc;
     W error_no;
 /*   ID		main_task, signal_task;
  */
@@ -96,48 +95,47 @@ W proc_fork(struct proc *parent, W * childid, ID main_task, ID signal_task)
 	 __FILE__, __LINE__, parent, parent->vm_tree);	/* */
 #endif
 
-    /* 新しくプロセス構造体を確保する
-     */
-    error_no = proc_alloc_proc(&newproc);
-    if (error_no) {
-	return (error_no);
-    }
-    *childid = newproc->proc_pid;
-    newproc->proc_maintask = main_task;
-    newproc->proc_signal_handler = signal_task;
+    child->proc_maintask = main_task;
+    child->proc_signal_handler = signal_task;
 
     /* プロセス情報のコピー */
     /* 管理情報 (プロセスおよびファイル)の更新 */
 #ifdef FKDEBUG
     printk("fork(): parent = 0x%x, parent->vm_tree = 0x%x\n", parent, parent->vm_tree);	/* */
-    printk("fork(): child = 0x%x, child->vm_tree = 0x%x\n", newproc, newproc->vm_tree);	/* */
+    printk("fork(): child = 0x%x, child->vm_tree = 0x%x\n", child, child->vm_tree);	/* */
 #endif
-    error_no = proc_duplicate(parent, newproc);
+    error_no = proc_duplicate(parent, child);
     if (error_no) {
-	destroy_proc_memory(newproc, 0);
+	destroy_proc_memory(child, 0);
 	return (error_no);
     }
 
-    newproc->proc_status = PS_RUN;
-    newproc->proc_ppid = parent->proc_pid;
+    child->proc_status = PS_RUN;
+    child->proc_ppid = parent->proc_pid;
     error_no = kcall->region_map(main_task, (thread_local_t*)LOCAL_ADDR, sizeof(thread_local_t),
     		ACC_USER);
-    if (error_no)
+    if (error_no) {
+	destroy_proc_memory(child, 0);
 	return error_no;
+    }
 
     error_no = kcall->region_get(main_task, (thread_local_t*)LOCAL_ADDR,
 		     sizeof(thread_local_t), &local_data);
-    if (error_no)
+    if (error_no) {
+	destroy_proc_memory(child, 0);
 	return error_no;
+    }
 
     error_no = kcall->region_get(parent->proc_maintask, (thread_local_t*)LOCAL_ADDR,
 		     sizeof(thread_local_t), &local_par);
-    if (error_no)
+    if (error_no) {
+	destroy_proc_memory(child, 0);
 	return error_no;
+    }
 
     memset(&local_data, 0, sizeof(local_data));
     local_data.thread_id = main_task;
-    local_data.process_id = *childid;
+    local_data.process_id = child->proc_pid;
 
     strncpy((B*)local_data.cwd, (B*)local_par.cwd, local_par.cwd_length);
     local_data.cwd[local_par.cwd_length] = '\0';
@@ -145,11 +143,13 @@ W proc_fork(struct proc *parent, W * childid, ID main_task, ID signal_task)
 
     error_no = kcall->region_put(main_task, (thread_local_t*)LOCAL_ADDR,
 		     sizeof(thread_local_t), &local_data);
-    if (error_no)
+    if (error_no) {
+	destroy_proc_memory(child, 0);
 	return error_no;
+    }
 
-    strncpy(newproc->proc_name, parent->proc_name, PROC_NAME_LEN - 1);
-    newproc->proc_name[PROC_NAME_LEN - 1] = '\0';
+    strncpy(child->proc_name, parent->proc_name, PROC_NAME_LEN - 1);
+    child->proc_name[PROC_NAME_LEN - 1] = '\0';
 
     return (EOK);
 }

@@ -17,6 +17,7 @@ Version 2, June 1991
 
 #include <core.h>
 #include <kcall.h>
+#include <boot/init.h>
 #include <mpu/config.h>
 #include <mpu/memory.h>
 #include "thread.h"
@@ -185,11 +186,11 @@ psc_exit_f (RDVNO rdvno, struct posix_request *req)
   }
 
   /* 子プロセスの親を INIT に変更 */
-  for(i = 1; i < MAX_PROCESS; ++i) {
+  for(i = INIT_PID + 1; i < MAX_PROCESS; ++i) {
     proc_get_procp(i, &procp);
     if (procp->proc_status == PS_DORMANT) continue;
     if (procp->proc_ppid != mypid) continue;
-    procp->proc_ppid = 0; /* INIT プロセスの pid は 0 */
+    procp->proc_ppid = INIT_PID; /* INIT プロセスの pid は 0 */
     
     /* 子プロセスが ZOMBIE で INIT が wait していれば クリアする? */
   }
@@ -220,7 +221,6 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
 {
   struct proc *procp;
   W	       error_no;
-  W	       childid;
   ID main_thread_id;
   T_CTSK task_info = {
      TA_HLNG,
@@ -230,6 +230,7 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
      USER_STACK_SIZE,
      NULL
   };
+  struct proc *child;
   kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
   error_no = proc_get_procp (req->procid, &procp);		/* 親プロセスの情報の取りだし */
@@ -244,17 +245,28 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
   printk ("psc_fork_f(): proc = 0x%x, proc->vm_tree = 0x%x\n", procp, procp->vm_tree);
 #endif
 
-  main_thread_id = kcall->thread_create_auto(&task_info);
-  if (main_thread_id < 0)
+  error_no = proc_alloc_proc(&child);
+  if (error_no)
     {
-      printk ("posix: acre_tsk error (%d)\n", main_thread_id);
+      printk ("posix: cannot allocate process\n");
       put_response (rdvno, error_no, -1, 0);
       return (FALSE);
     }
 
-  error_no = proc_fork (procp, &childid, main_thread_id, 0);
+  task_info.exinf = child->proc_pid;
+  main_thread_id = kcall->thread_create_auto(&task_info);
+  if (main_thread_id < 0)
+    {
+      printk ("posix: acre_tsk error (%d)\n", main_thread_id);
+      proc_dealloc_proc(child->proc_pid);
+      put_response (rdvno, error_no, -1, 0);
+      return (FALSE);
+    }
+
+  error_no = proc_fork (procp, child, main_thread_id, 0);
   if (error_no)
     {
+      proc_dealloc_proc(child->proc_pid);
       kcall->thread_destroy(main_thread_id);
       put_response (rdvno, error_no, -1, 0);
       return (FALSE);
@@ -263,7 +275,7 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
   kcall->mpu_copy_stack(req->caller, (W)(req->param.par_fork.sp), main_thread_id);
   kcall->thread_start(main_thread_id, 0);
 
-  put_response (rdvno, EOK, childid, 0);	/* 親プロセスに対して応答 */
+  put_response (rdvno, EOK, child->proc_pid, 0);	/* 親プロセスに対して応答 */
   return (TRUE);
 }  
 
@@ -312,13 +324,13 @@ W psc_kill_f(RDVNO rdvno, struct posix_request *req)
     }
 
     /* 子プロセスの親を INIT に変更 */
-    for (i = 1; i < MAX_PROCESS; ++i) {
+    for (i = INIT_PID + 1; i < MAX_PROCESS; ++i) {
 	proc_get_procp(i, &procp);
 	if (procp->proc_status == PS_DORMANT)
 	    continue;
 	if (procp->proc_ppid != mypid)
 	    continue;
-	procp->proc_ppid = 0;	/* INIT プロセスの pid は 0 */
+	procp->proc_ppid = INIT_PID;	/* INIT プロセスの pid は 0 */
 
 	/* 子プロセスが ZOMBIE で INIT が wait していれば クリアする? */
     }
@@ -350,7 +362,7 @@ psc_waitpid_f (RDVNO rdvno, struct posix_request *req)
 
   /* プロセステーブルを走査して子プロセスを調査 */
   children = 0;
-  for(i = 1; i < MAX_PROCESS; ++i) {
+  for(i = INIT_PID + 1; i < MAX_PROCESS; ++i) {
     proc_get_procp(i, &procp);
     if (procp->proc_status == PS_DORMANT) continue;
     if (procp->proc_ppid == mypid) {

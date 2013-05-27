@@ -33,6 +33,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <boot/modules.h>
 #include <mpu/memory.h>
 #include "func.h"
+#include "setting.h"
 
 static ER run(const UW type, const Elf32_Ehdr *eHdr);
 static void set_initrd(ModuleHeader *h);
@@ -70,7 +71,7 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr)
 	ID tskId;
 	T_CTSK pk_ctsk = {
 		TA_HLNG,
-		NULL,
+		KERNEL_DOMAIN_ID,
 		(FP)(eHdr->e_entry),
 		KERNEL_LEVEL,
 		KERNEL_STACK_SIZE,

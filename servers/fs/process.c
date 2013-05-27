@@ -124,13 +124,13 @@ Version 2, June 1991
 #include <kcall.h>
 #include <local.h>
 #include <string.h>
+#include <boot/init.h>
 #include <mpu/config.h>
 #include "fs.h"
 #include "../../kernel/mpu/mpu.h"
 
 struct proc proc_table[MAX_PROCESS];
-struct proc *free_proc, *tail_proc;
-struct proc *run_proc = NULL;
+static struct proc *free_proc, *tail_proc;
 
 
 
@@ -141,22 +141,22 @@ W init_process(void)
 {
     W i;
 
-    for (i = 0; i < MAX_PROCESS - 1; i++) {
+    for (i = 0; i < MAX_PROCESS; i++) {
 	memset((B*)&proc_table[i], 0, sizeof(struct proc));
+/* if set explicitly
 	proc_table[i].proc_status = PS_DORMANT;
+*/
 	proc_table[i].proc_next = &proc_table[i + 1];
 	proc_table[i].proc_pid = i;
     }
-    memset((B*)&proc_table[i], 0, sizeof(struct proc));
-    proc_table[i].proc_status = PS_DORMANT;
+    i--;
     proc_table[i].proc_next = NULL;
-    proc_table[i].proc_pid = i;
 
-    free_proc = &proc_table[1];
+    free_proc = &proc_table[INIT_PID + 1];
     tail_proc = &proc_table[i];
 
-    proc_table[0].proc_status = PS_SLEEP;	/* プロセス 0 については、最初に確保しておく */
-    proc_table[0].proc_next = NULL;
+    proc_table[INIT_PID].proc_status = PS_SLEEP;	/* プロセス 0 については、最初に確保しておく */
+    proc_table[INIT_PID].proc_next = NULL;
     return (E_OK);
 }
 
@@ -191,7 +191,7 @@ W proc_destroy_memory(W procid)
 {
     ER error_no;
 
-    if ((procid < 0) || (procid >= MAX_PROCESS)) {
+    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
 	return (EINVAL);
     }
     error_no = destroy_proc_memory(&proc_table[procid], 1);
@@ -207,7 +207,7 @@ W proc_exit(W procid)
     struct proc *procp;
     void sfs_close_device();
 
-    if ((procid < 0) || (procid >= MAX_PROCESS)) {
+    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
 	return (EINVAL);
     }
 
@@ -239,9 +239,7 @@ W proc_exit(W procid)
 	}
     }
 
-    /* フリー・プロセス・リストの最後に登録 */
-    tail_proc->proc_next = &proc_table[procid];
-    tail_proc = &proc_table[procid];
+    proc_dealloc_proc(procid);
 
     return (EOK);
 }
@@ -282,7 +280,7 @@ W proc_dump(struct posix_request * req)
 
 W proc_get_procp(W procid, struct proc ** procp)
 {
-    if ((procid < 0) || (procid >= MAX_PROCESS)) {
+    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
 	return (EINVAL);
     }
 
@@ -294,7 +292,7 @@ W proc_get_procp(W procid, struct proc ** procp)
 
 W proc_get_pid(W procid, W * pid)
 {
-    if ((procid < 0) || (procid >= MAX_PROCESS)) {
+    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
 	return (EINVAL);
     }
 
@@ -306,7 +304,7 @@ W proc_get_pid(W procid, W * pid)
 
 W proc_get_ppid(W procid, W * ppid)
 {
-    if ((procid < 0) || (procid >= MAX_PROCESS)) {
+    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
 	return (EINVAL);
     }
 
@@ -318,7 +316,7 @@ W proc_get_ppid(W procid, W * ppid)
 
 W proc_get_uid(W procid, W * uid)
 {
-    if ((procid < 0) || (procid >= MAX_PROCESS)) {
+    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
 	return (EINVAL);
     }
 
@@ -329,7 +327,7 @@ W proc_get_uid(W procid, W * uid)
 
 W proc_get_gid(W procid, W * gid)
 {
-    if ((procid < 0) || (procid >= MAX_PROCESS)) {
+    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
 	return (EINVAL);
     }
 
@@ -340,7 +338,7 @@ W proc_get_gid(W procid, W * gid)
 
 W proc_set_gid(W procid, W gid)
 {
-    if ((procid < 0) || (procid >= MAX_PROCESS)) {
+    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
 	return (EINVAL);
     }
 
@@ -351,7 +349,7 @@ W proc_set_gid(W procid, W gid)
 
 W proc_get_euid(W procid, W * uid)
 {
-    if ((procid < 0) || (procid >= MAX_PROCESS)) {
+    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
 	return (EINVAL);
     }
 
@@ -363,7 +361,7 @@ W proc_get_euid(W procid, W * uid)
 
 W proc_set_euid(W procid, W uid)
 {
-    if ((procid < 0) || (procid >= MAX_PROCESS)) {
+    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
 	return (EINVAL);
     }
 
@@ -375,7 +373,7 @@ W proc_set_euid(W procid, W uid)
 
 W proc_get_egid(W procid, W * gid)
 {
-    if ((procid < 0) || (procid >= MAX_PROCESS)) {
+    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
 	return (EINVAL);
     }
 
@@ -387,7 +385,7 @@ W proc_get_egid(W procid, W * gid)
 
 W proc_set_egid(W procid, W gid)
 {
-    if ((procid < 0) || (procid >= MAX_PROCESS)) {
+    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
 	return (EINVAL);
     }
 
@@ -400,7 +398,7 @@ W proc_alloc_fileid(W procid, W * retval)
 {
     W i;
 
-    if ((procid < 0) || (procid >= MAX_PROCESS)) {
+    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
 	return (EINVAL);
     }
 
@@ -418,7 +416,7 @@ W proc_alloc_fileid(W procid, W * retval)
 
 W proc_set_file(W procid, W fileid, W flag, struct inode * ip)
 {
-    if ((procid < 0) || (procid >= MAX_PROCESS)) {
+    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
 	return (EINVAL);
     }
 
@@ -443,7 +441,7 @@ W proc_set_file(W procid, W fileid, W flag, struct inode * ip)
 
 W proc_get_file(W procid, W fileid, struct file ** fp)
 {
-    if ((procid < 0) || (procid >= MAX_PROCESS)) {
+    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
 	return (EINVAL);
     }
 
@@ -458,7 +456,7 @@ W proc_get_file(W procid, W fileid, struct file ** fp)
 
 W proc_get_cwd(W procid, struct inode ** cwd)
 {
-    if ((procid < 0) || (procid >= MAX_PROCESS)) {
+    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
 	return (EINVAL);
     }
 
@@ -472,7 +470,7 @@ W proc_get_cwd(W procid, struct inode ** cwd)
 
 W proc_set_cwd(W procid, struct inode * cwd)
 {
-    if ((procid < 0) || (procid >= MAX_PROCESS)) {
+    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
 	return (EINVAL);
     }
 
@@ -487,7 +485,7 @@ W proc_set_cwd(W procid, struct inode * cwd)
 
 W proc_set_umask(W procid, W umask)
 {
-    if ((procid < 0) || (procid >= MAX_PROCESS)) {
+    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
 	return (EINVAL);
     }
 
@@ -498,7 +496,7 @@ W proc_set_umask(W procid, W umask)
 
 W proc_get_umask(W procid, W * umask)
 {
-    if ((procid < 0) || (procid >= MAX_PROCESS)) {
+    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
 	return (EINVAL);
     }
 
@@ -509,7 +507,7 @@ W proc_get_umask(W procid, W * umask)
 
 struct vm_tree *proc_get_vmtree(W procid)
 {
-    if ((procid < 0) || (procid >= MAX_PROCESS)) {
+    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
 	return (NULL);
     }
 
@@ -525,15 +523,40 @@ struct vm_tree *proc_get_vmtree(W procid)
  */
 W proc_alloc_proc(struct proc ** procp)
 {
+    W pid;
+
     if (free_proc == NULL) {
 	return (ENOMEM);
     }
 
     *procp = free_proc;
     free_proc = (*procp)->proc_next;
+    if (free_proc == NULL) {
+	tail_proc = NULL;
+    }
+
+    pid = (*procp)->proc_pid;
+    memset((B*)(*procp), 0, sizeof(struct proc));
+/* if set explicitly
+    (*procp)->proc_status = PS_DORMANT;
     (*procp)->proc_next = NULL;
-/*  memset((void *)*procp, 0, sizeof(struct proc)); */
+*/
+    (*procp)->proc_pid = pid;
+
     return (EOK);
+}
+
+void proc_dealloc_proc(W procid)
+{
+    proc_table[procid].proc_status = PS_DORMANT;
+    proc_table[procid].proc_next = NULL;
+
+    /* フリー・プロセス・リストの最後に登録 */
+    if (tail_proc) {
+	tail_proc->proc_next = &proc_table[procid];
+    }
+
+    tail_proc = &proc_table[procid];
 }
 
 #if 0
@@ -551,7 +574,7 @@ W proc_vm_dump(struct posix_request * req)
     ID taskid;
 
 
-    if ((req->procid < 0) || (req->procid >= MAX_PROCESS)) {
+    if ((req->procid < INIT_PID) || (req->procid >= MAX_PROCESS)) {
 	return (EINVAL);
     }
     procp = &proc_table[req->param.par_misc.arg.procid];
@@ -608,7 +631,7 @@ W do_ps()
 {
     int i;
 
-    for (i = 0; i < MAX_PROCESS; ++i) {
+    for (i = INIT_PID; i < MAX_PROCESS; ++i) {
 	if (proc_table[i].proc_status != PS_DORMANT) {
 	    printk("pid = %d status = %d taskid = %d [%s]\n",
 		   proc_table[i].proc_pid, proc_table[i].proc_status,

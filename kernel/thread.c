@@ -118,6 +118,7 @@ Version 2, June 1991
 #include <mpu/memory.h>
 #include "func.h"
 #include "ready.h"
+#include "setting.h"
 #include "sync.h"
 #include "thread.h"
 #include "mpu/interrupt.h"
@@ -187,6 +188,7 @@ void thread_initialize1(void)
 {
     /* タスク 1 の情報を初期化する。 */
     memset(&task[KERNEL_TASK], 0, sizeof(T_TCB));	/* zero clear */
+    task[KERNEL_TASK].domain_id = KERNEL_DOMAIN_ID;
     /* タスク状態：走行状態にセット */
     task[KERNEL_TASK].tskstat = TTS_RUN;
     /* タスクレベルは、31(最低位)にセット */
@@ -344,6 +346,7 @@ ER thread_create(ID tskid, T_CTSK * pk_ctsk)
 /* タスク生成 */
 
     newtask->tskid = tskid;
+    newtask->domain_id = pk_ctsk->exinf;
     newtask->tskstat = TTS_DMT;
     newtask->tsklevel = pk_ctsk->itskpri;
     newtask->tsklevel0 = pk_ctsk->itskpri;

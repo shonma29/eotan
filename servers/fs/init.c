@@ -47,7 +47,7 @@ W exec_init(ID process_id, char *pathname)
 	struct posix_request req;
 	T_CTSK pk_ctsk = {
 		TA_HLNG,
-		NULL,
+		process_id,
 		dummy,
 		USER_LEVEL,
 		USER_STACK_SIZE,
@@ -105,7 +105,7 @@ static W create_init(ID process_id, ID thread_id)
 
 	dbg_printf("[MM] create_init(%d, %d)\n", process_id, thread_id);
 
-	if ((process_id < 0)
+	if ((process_id < INIT_PID)
 			|| (process_id >= MAX_PROCESS))
 		return EINVAL;
 
@@ -116,6 +116,11 @@ static W create_init(ID process_id, ID thread_id)
 	if (p->proc_status == PS_DORMANT)
 		return EINVAL;
 
+	memset(p, 0, sizeof(*p));
+/* if set explicitly
+	p->proc_status = PS_DORMANT;
+	p->proc_next = NULL;
+*/
 	p->proc_maintask = thread_id;
 	p->proc_signal_handler = 0;
 	p->proc_uid = INIT_UID;

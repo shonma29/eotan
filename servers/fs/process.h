@@ -109,11 +109,11 @@ struct file
 
 enum proc_status
 {
-  PS_DORMANT,		/* 未生成状態 */
-  PS_SLEEP,		/* sleep 状態 */
-  PS_WAIT,		/* wait 状態 */
-  PS_RUN,		/* run 状態 */
-  PS_ZOMBIE		/* zombie 状態 */
+  PS_DORMANT = 0,		/* 未生成状態 */
+  PS_SLEEP = 1,		/* sleep 状態 */
+  PS_WAIT = 2,		/* wait 状態 */
+  PS_RUN = 3,		/* run 状態 */
+  PS_ZOMBIE = 4		/* zombie 状態 */
 };
 
 struct proc
@@ -197,6 +197,7 @@ extern W		proc_vm_dump (struct posix_request *req);
 #endif
 extern struct vm_tree	*proc_get_vmtree (W procid);
 extern W		proc_alloc_proc (struct proc **procp);
+extern void proc_dealloc_proc(W procid);
 extern W 		do_ps();
 
 
@@ -205,7 +206,7 @@ extern W		exec_program (struct posix_request *req, W procid, B *pathname);
 
 
 /* fork.c */
-extern W		proc_fork (struct proc *parent, W *childid, ID main_task, ID signal_task);
+extern W		proc_fork (struct proc *parent, struct proc *child, ID main_task, ID signal_task);
 extern W		proc_duplicate (struct proc *source, struct proc *destination);
 
 /* filesystem.c */
