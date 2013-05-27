@@ -157,4 +157,7 @@ extern void panic(char *msg);
 /* switch.s */
 extern void tr_set(const UW selector);
 
+/* ncontext.c */
+extern void tss_set_kernel_sp(const VP addr);
+
 #endif /* _MPU_MPU_H_ */

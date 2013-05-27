@@ -1,5 +1,5 @@
-#ifndef __MPU_GATE_H__
-#define __MPU_GATE_H__ 1
+#ifndef __MPU_TSS_H__
+#define __MPU_TSS_H__ 1
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,69 +27,45 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-#include "core.h"
-
-#define ATTR_G_PAGE 0x80
-#define ATTR_DB_32 0x40
-
-#define ATTR_PRESENT 0x80
-
-enum {
-	kern_code = 0x08,
-	kern_data = 0x10,
-	user_code = 0x18,
-	user_data = 0x20,
-	dummy_tss = 0x28
-} Selector;
-
-enum {
-	dpl_kern = 0,
-/*	dpl_driver = 1,*/
-	dpl_server = 2,
-	dpl_user = 3
-} Dpl;
-
-enum GateType {
-/*	reserved0 = 0,*/
-	tss16 = 1,
-	ldt = 2,
-	busyTss16 = 3,
-	callGate16 = 4,
-	taskGate = 5,
-	interruptGate16 = 6,
-	trapGate16 = 7,
-/*	reserved8 = 8,*/
-	tss32 = 9,
-/*	reserved10 = 10,*/
-	busyTss32 = 11,
-	callGate32 = 12,
-	reserved13 = 13,
-	interruptGate32 = 14,
-	trapGate32 = 15
-};
-
-enum SegmentType {
-	segmentTss = 0x09,
-	segmentData = 0x12,
-	segmentStack = 0x16,
-	segmentCode = 0x1a
-};
-
 typedef struct {
-	UH offsetLow;
-	UH selector;
-	UB copyCount;
-	UB attr;
-	UH offsetHigh;
-} GateDescriptor;
-
-typedef struct {
-	UH limitLow;
-	UH baseLow;
-	UB baseMiddle;
-	UB type;
-	UB limitHigh;
-	UB baseHigh;
-} SegmentDescriptor;
+	unsigned short back;
+	unsigned short pad1;
+	unsigned long esp0;
+	unsigned short ss0;
+	unsigned short pad2;
+	unsigned long esp1;
+	unsigned short ss1;
+	unsigned short pad3;
+	unsigned long esp2;
+	unsigned short ss2;
+	unsigned short pad4;
+	unsigned long cr3;
+	unsigned long eip;
+	unsigned long eflags;
+	unsigned long eax;
+	unsigned long ecx;
+	unsigned long edx;
+	unsigned long ebx;
+	unsigned long esp;
+	unsigned long ebp;
+	unsigned long esi;
+	unsigned long edi;
+	unsigned short es;
+	unsigned short pad5;
+	unsigned short cs;
+	unsigned short pad6;
+	unsigned short ss;
+	unsigned short pad7;
+	unsigned short ds;
+	unsigned short pad8;
+	unsigned short fs;
+	unsigned short pad9;
+	unsigned short gs;
+	unsigned short pad10;
+	unsigned short ldt;
+	unsigned short pad11;
+	unsigned short t;
+	unsigned short iomap;
+} tss_t;
 
 #endif

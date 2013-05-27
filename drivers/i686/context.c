@@ -322,4 +322,5 @@ void set_sp(T_TCB *taskp, UW p)
 void prepare_kernel_sp(T_TCB *taskp)
 {
     msr_write(sysenter_esp_msr, taskp->mpu.context.esp0);
+    tss_set_kernel_sp((VP)(taskp->mpu.context.esp0));
 }

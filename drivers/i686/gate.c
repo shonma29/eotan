@@ -28,11 +28,15 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 #include <core.h>
 #include <mpu/config.h>
+#include <mpu/setting.h>
 #include "gate.h"
 #include "msr.h"
 #include "mpufunc.h"
+#include "tss.h"
 
-static void gdt_set_segment(UH selector, UW base, UW limit, UB type, UB dpl);
+static void gdt_set_segment(const UH selector,
+		const UW base, const UW limit,
+		const UB type, const UB dpl, const UB option);
 
 
 void idt_initialize(void)
@@ -75,20 +79,32 @@ void gate_set(GateDescriptor *p,
 void gdt_initialize(void)
 {
 	SegmentDescriptor *p = (SegmentDescriptor*)GDT_ADDR;
+	tss_t *tss = (tss_t*)kern_v2p((VP)TSS_ADDR);
 
 	/* segments */
 	memset(p, 0, (MAX_GDT + 1) * sizeof(SegmentDescriptor));
-	gdt_set_segment(kern_code, 0, 0xfffff, segmentCode, dpl_kern);
-	gdt_set_segment(kern_data, 0, 0xfffff, segmentData, dpl_kern);
-	gdt_set_segment(user_code, 0, 0xfffff, segmentCode, dpl_user);
-	gdt_set_segment(user_data, 0, 0xfffff, segmentData, dpl_user);
+	gdt_set_segment(kern_code, 0, 0xfffff,
+			segmentCode, dpl_kern, ATTR_G_PAGE | ATTR_DB_32);
+	gdt_set_segment(kern_data, 0, 0xfffff,
+			segmentData, dpl_kern, ATTR_G_PAGE | ATTR_DB_32);
+	gdt_set_segment(user_code, 0, 0xfffff,
+			segmentCode, dpl_user, ATTR_G_PAGE | ATTR_DB_32);
+	gdt_set_segment(user_data, 0, 0xfffff,
+			segmentData, dpl_user, ATTR_G_PAGE | ATTR_DB_32);
+
+	memset(tss, 0, sizeof(*tss));
+	tss->ss0 = kern_data;
+	gdt_set_segment(dummy_tss, (UW)tss, sizeof(*tss),
+			segmentTss, dpl_kern, 0);
 
 	gdt_load();
 
 	msr_write(sysenter_cs_msr, kern_code);
 }
 
-static void gdt_set_segment(UH selector, UW base, UW limit, UB type, UB dpl)
+static void gdt_set_segment(const UH selector,
+		const UW base, const UW limit,
+		const UB type, const UB dpl, const UB option)
 {
 	SegmentDescriptor *p = (SegmentDescriptor*)GDT_ADDR;
 
@@ -99,6 +115,6 @@ static void gdt_set_segment(UH selector, UW base, UW limit, UB type, UB dpl)
 	p->baseLow = base & 0xffff;
 	p->baseMiddle = (base >> 16) & 0xff;
 	p->type = ATTR_PRESENT | (dpl << 5) | type;
-	p->limitHigh = ATTR_G_PAGE | ATTR_DB_32 | ((limit >> 16) & 0xf);
+	p->limitHigh = option | ((limit >> 16) & 0xf);
 	p->baseHigh = (base >> 24) & 0xff;
 }
