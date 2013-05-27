@@ -62,7 +62,6 @@ extern W	int46_handler (void);
 
 /* locore.S */
 extern void resume(UW);
-extern void load_task_register(UW);
 
 /* fpu.c */
 extern void fpu_initialize(void);
@@ -154,5 +153,8 @@ extern void *getPageAddress(const PTE *dir, const void *addr);
 
 /* panic.c */
 extern void panic(char *msg);
+
+/* switch.s */
+extern void tr_set(const UW selector);
 
 #endif /* _MPU_MPU_H_ */

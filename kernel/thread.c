@@ -286,6 +286,7 @@ ER thread_switch(void)
 #ifdef TSKSW_DEBUG
     printk("resume (0x%x)\n", ((next->tskid + TSS_BASE) << 3) & 0xfff8);
 #endif
+    tlb_flush();
     resume((UW) (next->tskid + TSS_BASE) << 3);
 
     /* 正常に終了した：次のタスクスイッチの時にここに戻る */

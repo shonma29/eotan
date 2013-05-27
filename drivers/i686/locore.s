@@ -7,29 +7,8 @@
 
 .text
 
-.globl		load_task_register
 .globl		resume
 
-/*************************************************************************
- * load_task_register --- タスクセグメントレジスタのロード
- *
- * 引数：	ローディングするタスクセグメントレジスタへのセレクタ
- *
- * 返値：	なし
- *
- * 処理：	ltr を実行する。
- *
- */
-		.align 2
-load_task_register:
-		pushl	%ebp
-		movl	%esp,%ebp
-		movl	8(%ebp),%eax
-		ltr	%ax
-		leave
-		ret
-
-
 /*************************************************************************
  * resume --- 引数で指定したプロセスに切り換える。
  *
@@ -51,8 +30,6 @@ resume:
 		movl	%esp, %ebp
 		movl	8(%ebp), %eax		/* original is 8(%ebp) */
 		movw	%ax, (selector)
-		movl	%cr3, %eax	/* TLB キャッシュをフラッシュする */
-		movl	%eax, %cr3
 		lea	offset, %eax		/* */
 
 /*

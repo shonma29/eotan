@@ -306,7 +306,7 @@ void start_thread1(T_TCB *taskp)
     create_tss(taskp);
 
     /* タスクレジスタの値を設定する. */
-    load_task_register((taskp->tskid + TSS_BASE) << 3);
+    tr_set((taskp->tskid + TSS_BASE) << 3);
 }
 
 void set_page_table(T_TCB *taskp, UW p)
