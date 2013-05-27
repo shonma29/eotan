@@ -227,9 +227,7 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
      TA_HLNG,
      req->param.par_fork.entry,
      USER_LEVEL,
-     USER_STACK_SIZE,
-     NULL,
-     user_mode
+     USER_STACK_SIZE
   };
   kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 

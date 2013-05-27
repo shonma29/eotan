@@ -153,7 +153,7 @@ void thread_initialize(void)
     /* TCB テーブルの作成と GDT への登録。
      */
     for (i = 0; i < NTASK; i++) {
-	task_buffer[i].tskstat = TTS_NON;
+	task_buffer[i].tskstat = TSK_NONE;
 	list_initialize(&(task_buffer[i].ready));
     }
 
@@ -314,7 +314,6 @@ ER thread_switch(void)
  *			startaddr	タスク起動アドレス
  *			itskpri		タスク起動時優先度
  *			stksz		スタックサイズ
- *			addrmap		アドレスマップ
  *
  * 返り値：	エラー番号
  *		E_OK	正常終了
@@ -332,7 +331,7 @@ ER thread_create(ID tskid, T_CTSK * pk_ctsk)
 	return (E_ID);
     }
 /* 同一 ID のタスクが存在しているかどうかのチェック */
-    if (task[tskid].tskstat != TTS_NON) {
+    if (task[tskid].tskstat != TSK_NONE) {
 	return (E_OBJ);
     }
 
@@ -350,16 +349,8 @@ ER thread_create(ID tskid, T_CTSK * pk_ctsk)
 	return (E_NOMEM);
     }
 
-    /* 仮想メモリのマッピングテーブルを引数 pk_ctsk の指定したマップに
-     * 変更する。
-     * 指定がないときには、カレントプロセスと同じマップとなる。
-     */
-    if (pk_ctsk->addrmap != NULL) {
-	set_page_table(newtask, (UW) (pk_ctsk->addrmap));
-    } else {
-	set_page_table(newtask,
-		(UW)kern_v2p(dup_vmap_table((ADDR_MAP) MPU_PAGE_TABLE(run_task))));
-    }
+    set_page_table(newtask,
+	    (UW)kern_v2p(dup_vmap_table((ADDR_MAP) MPU_PAGE_TABLE(run_task))));
 
     /* タスクのリージョンテーブルを初期化
      */
@@ -389,7 +380,7 @@ ER thread_destroy(ID tskid)
     if ((tskid < MIN_TSKID) || (tskid > MAX_TSKID)) {
 	return (E_ID);
     }
-    if (task[tskid].tskstat == TTS_NON) {
+    if (task[tskid].tskstat == TSK_NONE) {
 	return (E_NOEXS);
     } else if (task[tskid].tskstat != TTS_DMT) {
 	return (E_OBJ);
@@ -400,7 +391,7 @@ ER thread_destroy(ID tskid)
     /* kernel 領域の stack を開放する */
     pfree((VP) kern_v2p(task[tskid].stackptr0), pages(task[tskid].stksz0));
 
-    task[tskid].tskstat = TTS_NON;
+    task[tskid].tskstat = TSK_NONE;
     return (E_OK);
 }
 
@@ -417,7 +408,7 @@ ER thread_destroy(ID tskid)
  *	E_OK	正常終了
  *
  */
-ER thread_start(ID tskid, INT stacd)
+ER thread_start(ID tskid, VP_INT stacd)
 {
     register int index;
 
@@ -427,7 +418,7 @@ ER thread_start(ID tskid, INT stacd)
     if ((tskid < MIN_TSKID) || (tskid > MAX_TSKID)) {
 	return (E_ID);
     }
-    if (task[tskid].tskstat == TTS_NON) {
+    if (task[tskid].tskstat == TSK_NONE) {
 	return (E_NOEXS);
     }
     if (task[tskid].tskstat != TTS_DMT) {
@@ -485,7 +476,7 @@ void thread_end(void)
 /******************************************************************************
  * thread_end_and_destroy --- 自タスク終了と削除
  *
- * run_task につながれているタスクを TTS_NON 状態へ移動する。
+ * run_task につながれているタスクを TSK_NONE 状態へ移動する。
  * メモリ資源などは返却しないが、マッピングされたメモリについては、解
  * 放する。
  * 
@@ -507,7 +498,7 @@ void thread_end(void)
  */
 void thread_end_and_destroy(void)
 {
-    /* 現在のタスクを TTS_NON 状態にし、選択したタスクを次に走らせるようにする。 */
+    /* 現在のタスクを TSK_NONE 状態にし、選択したタスクを次に走らせるようにする。 */
     /* マッピングテーブルを解放する */
     release_vmap((ADDR_MAP) MPU_PAGE_TABLE(run_task));
 
@@ -515,7 +506,7 @@ void thread_end_and_destroy(void)
     pfree((VP) kern_v2p(run_task->stackptr0), pages(run_task->stksz0));
 
     enter_critical();
-    run_task->tskstat = TTS_NON;
+    run_task->tskstat = TSK_NONE;
     list_remove(&(run_task->ready));
     thread_switch();
 }
@@ -554,7 +545,7 @@ ER thread_terminate(ID tskid)
 	task[tskid].tskstat = TTS_DMT;
 	leave_critical();
 	break;
-    case TTS_NON:
+    case TSK_NONE:
 	return (E_NOEXS);
     default:
 	return (E_OBJ);
@@ -573,7 +564,7 @@ ER thread_change_priority(ID tskid, PRI tskpri)
 	return (E_ID);
     }
     switch (task[tskid].tskstat) {
-    case TTS_NON:
+    case TSK_NONE:
 	return (E_NOEXS);
 
     case TTS_RDY:
@@ -598,7 +589,7 @@ ER thread_change_priority(ID tskid, PRI tskpri)
  */
 ER rot_rdq(PRI tskpri)
 {
-    if (tskpri == TPRI_RUN)
+    if (tskpri == TPRI_SELF)
 	tskpri = run_task->tsklevel;
     if ((tskpri < MIN_PRIORITY) || (tskpri > MAX_PRIORITY)) {
 	return (E_PAR);
@@ -626,7 +617,7 @@ ER thread_release(ID tskid)
 
     taskp = &task[tskid];
     switch (taskp->tskstat) {
-    case TTS_NON:
+    case TSK_NONE:
 	return (E_NOEXS);
 
     case TTS_WAI:
@@ -658,7 +649,7 @@ ER thread_get_id(ID * p_tskid)
  * thread_suspend --- 指定したタスクを強制待ち状態に移行
  *
  * 引数：
- *	taskid --- suspend するタスクの ID
+ *	tskid --- suspend するタスクの ID
  *
  * 返り値：
  *
@@ -666,20 +657,20 @@ ER thread_get_id(ID * p_tskid)
  * 機能：
  *
  */
-ER thread_suspend(ID taskid)
+ER thread_suspend(ID tskid)
 {
     T_TCB *taskp;
 
-    if ((taskid < MIN_TSKID) || (taskid > MAX_TSKID)) {
+    if ((tskid < MIN_TSKID) || (tskid > MAX_TSKID)) {
 	return (E_ID);
     }
 
-    if (&task[taskid] == run_task) {
+    if (&task[tskid] == run_task) {
 	return (E_OBJ);
     }
 
     enter_critical();
-    taskp = &task[taskid];
+    taskp = &task[tskid];
     taskp->wait.sus_cnt++;
     switch (taskp->tskstat) {
     case TTS_RDY:
@@ -699,7 +690,7 @@ ER thread_suspend(ID taskid)
 	taskp->tskstat = TTS_WAS;
 	break;
 
-    case TTS_NON:
+    case TSK_NONE:
 	leave_critical();
 	return (E_NOEXS);
 	/* DO NOT REACHED */
@@ -717,7 +708,7 @@ ER thread_suspend(ID taskid)
  * thread_resume --- 強制待ち状態のタスクから待ち状態を解除
  *
  * 引数：
- *	taskid --- suspend しているタスクの ID
+ *	tskid --- suspend しているタスクの ID
  *
  *
  * 返り値：
@@ -725,8 +716,8 @@ ER thread_suspend(ID taskid)
  *	
  * E_OK     システムコールは正常に終了した
  * E_ID     タスク ID が不正
- * E_NOEXS  タスクが存在しない(TTS_NON 状態)
- * E_OBJ    タスクの状態が不正(TTS_SUS, TTS_WAS, TTS_NON 以外)
+ * E_NOEXS  タスクが存在しない(TSK_NONE 状態)
+ * E_OBJ    タスクの状態が不正(TTS_SUS, TTS_WAS, TSK_NONE 以外)
  *
  *
  * 機能：
@@ -735,16 +726,16 @@ ER thread_suspend(ID taskid)
  *	待ち状態は多重になることがあるが、このシステムコールは、ひとつだけ待ち
  *	を解除する。
  */
-ER thread_resume(ID taskid)
+ER thread_resume(ID tskid)
 {
     T_TCB *taskp;
 
-    if ((taskid < MIN_TSKID) || (taskid > MAX_TSKID)) {
+    if ((tskid < MIN_TSKID) || (tskid > MAX_TSKID)) {
 	return (E_ID);
     }
 
     enter_critical();
-    taskp = &task[taskid];
+    taskp = &task[tskid];
     switch (taskp->tskstat) {
     case TTS_SUS:
 	taskp->wait.sus_cnt--;
@@ -761,7 +752,7 @@ ER thread_resume(ID taskid)
 	}
 	break;
 
-    case TTS_NON:
+    case TSK_NONE:
 	leave_critical();
 	return (E_NOEXS);
 

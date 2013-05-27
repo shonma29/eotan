@@ -66,7 +66,7 @@ int putline(UW start, UW size, UB *buf)
 
 	err = cal_por(49152, 0xffffffff, &msg, sizeof(msg.req));
 	if (err < 0)
-		printf("cal_por error %d\n", err);
+		printf("cal_por error %d\n", (int)err);
 	return err;
 }
 

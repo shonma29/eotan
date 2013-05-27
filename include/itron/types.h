@@ -1,67 +1,101 @@
-/*
-
-B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
-
-GNU GENERAL PUBLIC LICENSE
-Version 2, June 1991
-
-(C) B-Free Project.
-
-*/
-/* This is part of the BTRON/386
-   Define ANSI C.
-
-
-
-   This file defienition BASIC types for BTRON/386.
-
- */
-
 #ifndef _ITRON_TYPES_H_
-#define _ITRON_TYPES_H_	1
+#define _ITRON_TYPES_H_
+/*
+This is free and unencumbered software released into the public domain.
 
-typedef char		B;	/* 符号付き8ビット整数 */
-typedef short		H;
-typedef long		W;
-typedef unsigned char	UB;
-typedef unsigned short	UH;
-typedef unsigned long	UW;
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
 
-typedef long		VW;
-typedef short		VH;
-typedef char		VB;
-typedef void		*VP;
-typedef void		(*FP)(void);
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
 
-typedef int		INT;
-typedef unsigned int	UINT;
+For more information, please refer to <http://unlicense.org/>
+*/
 
-typedef enum { FALSE=0, TRUE=1 } BOOL;
+/**
+ * common data types
+ */
+typedef char B;
+typedef short H;
+typedef long W;
+typedef long long D;
+typedef unsigned char UB;
+typedef unsigned short UH;
+typedef unsigned long UW;
+typedef unsigned long long UD;
 
-typedef short		FN;
-typedef int		ID;
-typedef int		BOOL_ID;
-typedef int		HNO;
-typedef int		RNO;
-typedef int		NODE;
-typedef unsigned int	ATR;
-typedef int		ER;
-typedef int		ER_ID;
-typedef int		PRI;
-typedef int		TMO;
+typedef char VB;
+typedef short VH;
+typedef long VW;
+typedef long long VD;
 
-typedef UH		TC;
-/*typedef TCODE		*TPTR;*/
+typedef void *VP;
+typedef void (*FP)();
 
+typedef int INT;
+typedef unsigned int UINT;
+
+typedef enum {
+	TRUE = 1,
+	FALSE = 0
+} BOOL;
+
+typedef long FN;
+typedef long ER;
+typedef long ID;
+typedef unsigned long ATR;
+typedef unsigned long STAT;
+typedef unsigned long MODE;
+typedef long PRI;
+typedef unsigned long SIZE;
+
+typedef long TMO;
+typedef unsigned long RELTIM;
+typedef struct {
+	H utime;
+	UW ltime;
+} SYSTIM;
+
+typedef int VP_INT;
+
+typedef long ER_BOOL;
+typedef long ER_ID;
+typedef long ER_UINT;
+
+/**
+ * common constants
+ */
 #ifndef NULL
-#define NULL		(0)
-#endif
-#ifndef SNULL
-#define SNULL		((B)0)
-#endif
-#ifndef TNULL
-#define TNULL		((TC)0)
+#define NULL (0)
 #endif
 
-#endif /* _ITRON_TYPES_H_ */
+#define E_OK (0)
+
+/**
+ * object attribute
+ */
+#define TA_NULL (0)
+
+/**
+ * timeout parameters
+ */
+#define TMO_POL (0)
+#define TMO_FEVR (-1)
+#define TMO_NBLK (-2)
+
+#endif

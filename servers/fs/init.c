@@ -50,9 +50,7 @@ W exec_init(ID process_id, char *pathname)
 		TA_HLNG,
 		dummy,
 		USER_LEVEL,
-		USER_STACK_SIZE,
-		NULL,
-		user_mode
+		USER_STACK_SIZE
 	};
 	W err;
 	init_arg_t *p;

@@ -26,7 +26,8 @@ Version 2, June 1991
 #include <mpu/config.h>
 #include "thread.h"
 #include "func.h"
-#include "mpufunc.h"
+#include "mpu/mpu.h"
+#include "mpu/mpufunc.h"
 
 static void
 init_task_state_segment (W index, T_CONTEXT *tss);

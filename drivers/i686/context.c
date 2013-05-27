@@ -61,7 +61,7 @@ ER create_context(T_TCB * task, T_CTSK * pk_ctsk)
     task->mpu.context.esp = (UW) ((sp + pk_ctsk->stksz));
     task->mpu.context.ebp = (UW) ((sp + pk_ctsk->stksz));
     task->initial_stack = task->mpu.context.esp;
-    task->mpu.context.eip = (UW) pk_ctsk->startaddr;
+    task->mpu.context.eip = (UW) pk_ctsk->task;
 #ifdef TSKSW_DEBUG
     printk("(UW)pk_ctsk->startaddr = 0x%x\n", (UW) pk_ctsk->startaddr);
 #endif

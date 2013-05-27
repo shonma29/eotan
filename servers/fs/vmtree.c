@@ -87,6 +87,7 @@ Version 2, June 1991
 #include <string.h>
 #include <mpu/config.h>
 #include "fs.h"
+#include "../../kernel/mpu/mpu.h"
 
 #define VM_DEFAULT_ACCESS (VM_READ | VM_WRITE | VM_USER | VM_SHARE)
 #define VM_DEFAULT_START (LOW_USER_ADDR)

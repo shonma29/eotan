@@ -123,7 +123,7 @@ static ER rm_trmtbl()
  * main --- メイン関数
  *
  */
-ER main(void)
+int main(void)
 {
     ID type, tskid, id;
     ER errno = E_OK;

@@ -259,7 +259,7 @@ nodef (VP argp)
 static ER if_thread_delay(VP argp)
 {
     struct {
-	DLYTIME dlytim;
+	RELTIM dlytim;
     } *args = argp;
 
     return (thread_delay(args->dlytim));

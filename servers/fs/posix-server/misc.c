@@ -75,7 +75,7 @@ W psc_misc_f(RDVNO rdvno, struct posix_request *req)
 UW get_system_time(UW * usec)
 {
     UW clock, i;
-    SYSTIME time;
+    SYSTIM time;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     kcall->time_get(&time);

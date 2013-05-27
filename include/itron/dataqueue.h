@@ -1,6 +1,5 @@
 #ifndef _ITRON_DATAQUEUE_H_
 #define _ITRON_DATAQUEUE_H_
-
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -28,8 +27,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <itron/types.h>
-
-typedef unsigned int VP_INT;
 
 typedef struct t_cdtq {
 	ATR dtqatr;

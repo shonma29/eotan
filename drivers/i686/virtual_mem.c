@@ -457,7 +457,7 @@ UW vtor(ID tskid, UW addr)
     UW result;
 
     taskp = (T_TCB *) get_thread_ptr(tskid);
-    if (taskp->tskstat == TTS_NON)
+    if (taskp->tskstat == TSK_NONE)
     {
 	return (UW)(NULL);
     }
@@ -621,7 +621,7 @@ ER region_map(ID id, VP start, UW size, W accmode)
     UW newsize;
 
     taskp = (T_TCB *) get_thread_ptr(id);
-    if (taskp->tskstat == TTS_NON)
+    if (taskp->tskstat == TSK_NONE)
     {
 #ifdef DEBUG
 	printk("region_map: taskp->tskstat = %d\n", taskp->tskstat);	/* */
@@ -697,7 +697,7 @@ ER region_unmap(ID id, VP start, UW size)
     UW newsize;
 
     taskp = (T_TCB *) get_thread_ptr(id);
-    if (taskp->tskstat == TTS_NON) {
+    if (taskp->tskstat == TSK_NONE) {
 	return (E_PAR);
     }
 
@@ -753,11 +753,11 @@ ER region_duplicate(ID src, ID dst)
     printk("region_duplicate %d %d\n", src, dst);
 #endif
     taskp = (T_TCB *) get_thread_ptr(src);
-    if (taskp->tskstat == TTS_NON) {
+    if (taskp->tskstat == TSK_NONE) {
 	return (E_PAR);
     }
     dstp = (T_TCB *) get_thread_ptr(dst);
-    if (dstp->tskstat == TTS_NON) {
+    if (dstp->tskstat == TSK_NONE) {
 	return (E_PAR);
     }
 
@@ -881,7 +881,7 @@ ER region_put(ID id, VP start, UW size, VP buf)
     if (!th)
 	return E_PAR;
 
-    if (th->tskstat == TTS_NON)
+    if (th->tskstat == TSK_NONE)
 	return E_PAR;
 
     return vmemcpy(th, start, buf, size);

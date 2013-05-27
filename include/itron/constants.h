@@ -1,3 +1,5 @@
+#ifndef _ITRON_CONSTANTS_H_
+#define _ITRON_CONSTANTS_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,49 +26,41 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stdlib.h>
 #include <itron/types.h>
-#include <itron/rendezvous.h>
-#include <itron/errno.h>
 
-#define TEST_PORT 49157
+/**
+ * object attributes
+ */
+#define TA_HLNG 0x00
+#define TA_ASM 0x01
 
-int main(int argc, char **argv)
+#define TA_TFIFO 0x00
+#define TA_TPRI 0x01
+
+/**
+ * object status
+ */
+#define TTS_RUN 0x01
+#define TTS_RDY 0x02
+#define TTS_WAI 0x04
+#define TTS_SUS 0x08
+#define TTS_WAS 0x0c
+#define TTS_DMT 0x10
+
+/**
+ * others
+ */
+#define TSK_SELF (0)
+#define TSK_NONE (0)
+
+#define TPRI_SELF (0)
+#define TPRI_INI (0)
+
+
+typedef struct
 {
-	unsigned char buf[8];
-	ER_UINT size;
+  H	utime;
+  UW	ltime;
+} systime_t;
 
-	printf("Hello World!\n");
-
-	buf[0] = 'H';
-	buf[1] = 'e';
-	buf[2] = 'l';
-	buf[3] = 'l';
-	buf[4] = 'o';
-
-	size = cal_por(TEST_PORT, 1, buf, 5);
-	printf("test_cal_por_1: result=%d\n", (int)size);
-	if (size != E_NOSPT)	return -1;
-
-	size = cal_por(0, 0xffffffff, buf, 5);
-	printf("test_cal_por_2: result=%d\n", (int)size);
-	if (size != E_NOEXS)	return -1;
-
-	size = cal_por(TEST_PORT, 0xffffffff, buf, 33);
-	printf("test_cal_por_3: result=%d\n", (int)size);
-	if (size != E_PAR)	return -1;
-
-	size = cal_por(TEST_PORT, 0xffffffff, 0, 5);
-	printf("test_cal_por_4: result=%d\n", (int)size);
-	if (size != E_PAR)	return -1;
-
-	size = cal_por(TEST_PORT, 0xffffffff, buf, 5);
-	printf("test_cal_por_5: result=%d\n", (int)size);
-	if (size != 4)	return -1;
-
-	buf[size] = 0;
-	printf("buf=%s\n", buf);
-
-	printf("success\n");
-	return 0;
-}
+#endif

@@ -73,8 +73,7 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr)
 		TA_HLNG,
 		(FP)(eHdr->e_entry),
 		KERNEL_LEVEL,
-		KERNEL_STACK_SIZE,
-		NULL
+		KERNEL_STACK_SIZE
 	};
 
 	tskId = thread_create_auto(&pk_ctsk);

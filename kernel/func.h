@@ -25,7 +25,7 @@ Version 2, June 1991
 #include "thread.h"
 
 /* main.c */
-extern ER main(void);
+extern int main(void);
 extern ER add_trmtbl(ID, ID, ID);
 
 /* printk.c */
@@ -36,15 +36,15 @@ extern void thread_initialize(void);
 extern void thread_initialize1(void);
 extern ER thread_switch(void);
 extern ER thread_create(ID tskid, T_CTSK * pk_ctsk);
-extern ER thread_start(ID tskid, INT stacd);
+extern ER thread_start(ID tskid, VP_INT stacd);
 extern ER thread_destroy(ID tskid);
 extern void thread_end(void);
 extern void thread_end_and_destroy(void);
 extern ER thread_terminate(ID tskid);
 extern ER thread_release(ID tskid);
 extern ER thread_get_id(ID * p_tskid);
-extern ER thread_suspend(ID taskid);
-extern ER thread_resume(ID taskid);
+extern ER thread_suspend(ID tskid);
+extern ER thread_resume(ID tskid);
 extern ER thread_change_priority(ID tskid, PRI tskpri);
 extern ER rot_rdq(PRI tskpri);
 extern ER_ID thread_create_auto(T_CTSK * pk_ctsk);
@@ -55,28 +55,28 @@ extern ER posix_kill_proc(ID pid);
 
 /* time.c */
 extern void time_initialize(UW seconds);
-extern ER time_set(SYSTIME *pk_tim);
-extern ER time_get(SYSTIME *pk_tim);
-extern ER thread_delay(DLYTIME dlytim);
+extern ER time_set(SYSTIM *pk_systim);
+extern ER time_get(SYSTIM *pk_systim);
+extern ER thread_delay(RELTIM dlytim);
 extern void intr_interval(void);
 extern void timer_initialize(void);
 extern void check_timer(void);
 
 /* rendezvous.c */
-ER port_initialize(void);
-ER port_create(ID porid, T_CPOR *pk_cpor);
-ER_ID port_create_auto(T_CPOR *pk_cpor);
-ER port_destroy(ID porid);
-ER_UINT port_call(ID porid, VP msg, UINT cmsgsz);
-ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg);
-ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz);
+extern ER port_initialize(void);
+extern ER port_create(ID porid, T_CPOR *pk_cpor);
+extern ER_ID port_create_auto(T_CPOR *pk_cpor);
+extern ER port_destroy(ID porid);
+extern ER_UINT port_call(ID porid, VP msg, UINT cmsgsz);
+extern ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg);
+extern ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz);
 
 /* queue.c */
-ER queue_initialize(void);
-ER_ID queue_create_auto(T_CDTQ *pk_cdtq);
-ER queue_destroy(ID dtqid);
-ER queue_send(ID dtqid, VP_INT data);
-ER queue_receive(ID dtqid, VP_INT *p_data);
+extern ER queue_initialize(void);
+extern ER_ID queue_create_auto(T_CDTQ *pk_cdtq);
+extern ER queue_destroy(ID dtqid);
+extern ER queue_send(ID dtqid, VP_INT data);
+extern ER queue_receive(ID dtqid, VP_INT *p_data);
 
 /* api.c */
 extern void api_initialize(void);

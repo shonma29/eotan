@@ -14,8 +14,7 @@ Version 2, June 1991
 #ifndef _MPU_MPUFUNC_H_
 #define _MPU_MPUFUNC_H_	1
 
-#include <itron/types.h>
-#include <itron/struct.h>
+#include <core.h>
 #include <mpu/memory.h>
 #include "../../kernel/thread.h"
 #include "gate.h"
@@ -54,7 +53,7 @@ extern void	set_idt (UW, UW, UW, UW, UW);
 extern void	protect_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 		   UW ecx, UW eax, UW es, UW ds, UW no,
 		   UW err, UW eip, UW cs, UW eflags);
-extern ER  	interrupt_bind (W intno, T_DINT *pk_dint);
+extern ER  	interrupt_bind (W inhno, T_DINH *pk_dinh);
 extern W	int32_handler (void);
 extern W	int33_handler (void);
 extern W	int38_handler (void);	/* floppy disk */

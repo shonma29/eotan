@@ -22,6 +22,7 @@ Version 2, June 1991
 #include "config.h"
 #include "region.h"
 #include "wait.h"
+#include "mpu/mpu.h"
 
 #define KERNEL_TASK	(1)
 

@@ -14,7 +14,7 @@ Version 2, June 1991
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_exit.c,v 1.3 2000/02/16 08:14:50 naniwa Exp $  */
 
 #include <errno.h>
-#include <itron/syscall.h>
+#include <core.h>
 #include "posix.h"
 
 

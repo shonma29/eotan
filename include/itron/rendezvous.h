@@ -1,6 +1,5 @@
 #ifndef _ITRON_RENDEZVOUH_H_
 #define _ITRON_RENDEZVOUH_H_
-
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -28,8 +27,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <itron/types.h>
-
-typedef int ER_UINT;
 
 typedef unsigned int RDVPTN;
 typedef int RDVNO;

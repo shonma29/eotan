@@ -15,8 +15,7 @@ Version 2, June 1991
  */
 #include <stdarg.h>
 #include <string.h>
-#include <itron/types.h>
-#include <itron/syscall.h>
+#include <core.h>
 #include <mpu/call_kernel.h>
 #include "../libserv/libserv.h"
 

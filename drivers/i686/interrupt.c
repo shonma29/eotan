@@ -185,19 +185,19 @@ void interrupt(W intn)
  *
  * 登録するときには、直接 IDT の値は変更せず、intr_table[] に登録する。
  */
-ER interrupt_bind(W intno, T_DINT *pk_dint)
+ER interrupt_bind(W inhno, T_DINH *pk_dinh)
 {
-    if ((intno < 0) || (intno >= sizeof(intr_table) / sizeof(intr_table[0]))) {
+    if ((inhno < 0) || (inhno >= sizeof(intr_table) / sizeof(intr_table[0]))) {
 	return (E_PAR);
     }
 
-    if (intr_table[intno].attr == -1) {
+    if (intr_table[inhno].attr == -1) {
 	return (E_OBJ);
     }
 
-    printk("set_interrupt_entry = %d, func = 0x%x\n", intno, pk_dint->inthdr);
-    intr_table[intno].attr = pk_dint->intatr;
-    intr_table[intno].func = pk_dint->inthdr;
+    printk("set_interrupt_entry = %d, func = 0x%x\n", inhno, pk_dinh->inthdr);
+    intr_table[inhno].attr = pk_dinh->inhatr;
+    intr_table[inhno].func = pk_dinh->inthdr;
     return (E_OK);
 }
 

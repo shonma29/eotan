@@ -49,7 +49,7 @@ static struct timer_list {
 /* 大域変数の宣言 */
 W do_timer = 0;
 
-SYSTIME system_time;
+SYSTIM system_time;
 #define MS 1000
 
 static struct timer_list *free_timer;
@@ -61,7 +61,7 @@ static ER unset_timer(void (*func) (VP), VP arg);
 
 void time_initialize(UW seconds)
 {
-  SYSTIME time;
+  SYSTIM time;
   UW TH, TM, TL;
   
   TH = 0;
@@ -76,26 +76,26 @@ void time_initialize(UW seconds)
 /*
  * システムクロック設定
  */
-ER time_set(SYSTIME *pk_tim)
+ER time_set(SYSTIM *pk_systim)
 {
-  if (pk_tim == NULL) {
+  if (pk_systim == NULL) {
     return (E_PAR);
   }
-  system_time.utime = pk_tim->utime;
-  system_time.ltime = pk_tim->ltime;
+  system_time.utime = pk_systim->utime;
+  system_time.ltime = pk_systim->ltime;
   return (E_OK);
 }
 
 /*
  * システムクロック参照
  */
-ER time_get(SYSTIME *pk_tim)
+ER time_get(SYSTIM *pk_systim)
 {
-  if (pk_tim == NULL) {
+  if (pk_systim == NULL) {
     return (E_PAR);
   }
-  pk_tim->utime = system_time.utime;
-  pk_tim->ltime = system_time.ltime;
+  pk_systim->utime = system_time.utime;
+  pk_systim->ltime = system_time.ltime;
   return (E_OK);
 }
 
@@ -116,7 +116,7 @@ dly_func (VP p)
   release(taskp);
 }
 
-ER thread_delay(DLYTIME dlytim)
+ER thread_delay(RELTIM dlytim)
 {
   if (dlytim < 0) return(E_PAR);
   else if (! dlytim) return(E_OK);
@@ -140,7 +140,7 @@ ER thread_delay(DLYTIME dlytim)
  */
 void intr_interval(void)
 {
-    SYSTIME time;
+    SYSTIM time;
     UW TH, TM, TL;
 
     run_task->total++;
@@ -159,7 +159,7 @@ void intr_interval(void)
     if ((run_task->quantum) > 0 && (run_task->tsklevel >= USER_LEVEL)) {
 	if (--run_task->quantum == 0) {
 	    run_task->quantum = QUANTUM;
-	    rot_rdq(TPRI_RUN);
+	    rot_rdq(TPRI_SELF);
 	}
     }
 

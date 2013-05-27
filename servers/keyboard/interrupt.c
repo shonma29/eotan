@@ -133,13 +133,13 @@ static void keyboard_interrupt();
  */
 void init_keyboard_interrupt()
 {
-    T_DINT pk_dint;
+    T_DINH pk_dinh;
     ER error_no;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    pk_dint.intatr = ATR_INTR;
-    pk_dint.inthdr = (void (*)()) keyboard_interrupt;
-    error_no = kcall->interrupt_bind(KEYBOARD_INT, &pk_dint);
+    pk_dinh.inhatr = TA_HLNG;
+    pk_dinh.inthdr = (void (*)()) keyboard_interrupt;
+    error_no = kcall->interrupt_bind(KEYBOARD_INT, &pk_dinh);
     if (error_no != E_OK) {
 	dbg_printf("keyboard: %d\n", error_no);
     }

@@ -39,8 +39,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <setting.h>
 #include <mpu/mpufunc.h>
 
-typedef unsigned long long UD;
-
 #define PAGE_OFFSET_MASK (4096ULL - 1ULL)
 #define PAGE_ADDRESS_MASK ~(4096ULL - 1ULL);
 #define OVER_INT 0x100000000ULL

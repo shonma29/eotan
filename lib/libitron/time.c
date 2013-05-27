@@ -14,8 +14,7 @@ Version 2, June 1991
  * sys_time.c -- 時間管理関係のシステムコール
  */
 
-#include <itron/types.h>
-#include <itron/syscall.h>
+#include <core.h>
 #include <mpu/call_kernel.h>
 #include <nerve/svcno.h>
 
@@ -23,7 +22,7 @@ Version 2, June 1991
  * タスク遅延
  */
 
-ER dly_tsk(DLYTIME dlytim)
+ER dly_tsk(RELTIM dlytim)
 {
   return ncall(SVC_THREAD_DELAY, dlytim);
 }
