@@ -64,7 +64,7 @@ Version 2, June 1991
 #ifndef __KERNLIB_DEVICE_H__
 #define __KERNLIB_DEVICE_H__	1
 
-#include "itron/types.h"
+#include <core/types.h>
 
 #define DEV_BUF_SIZE (1024)
 

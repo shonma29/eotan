@@ -19,8 +19,6 @@ Version 2, June 1991
 
 
 #include <core.h>
-#include <itron/dataqueue.h>
-#include <itron/rendezvous.h>
 #include <mpu/memory.h>
 #include "thread.h"
 

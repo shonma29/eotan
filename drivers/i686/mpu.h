@@ -21,7 +21,7 @@ Version 2, June 1991
 #ifndef _MPU_MPU_H_
 #define _MPU_MPU_H_	1
 
-#include <itron/types.h>
+#include <core.h>
 #include "fpu.h"
 
 #define I386	1

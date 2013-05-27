@@ -21,8 +21,7 @@ Version 2, June 1991
 #ifndef __FS_API_H__
 #define __FS_API_H__	1
 
-#include <itron/types.h>
-#include <itron/rendezvous.h>
+#include <core.h>
 #include <sys/syscall.h>
 
 struct posix_syscall

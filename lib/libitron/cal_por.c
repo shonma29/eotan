@@ -25,8 +25,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <itron/rendezvous.h>
-#include <itron/errno.h>
 #include <mpu/call_kernel.h>
 #include <nerve/svcno.h>
 

@@ -30,7 +30,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <itron/rendezvous.h>
 
 #define BUF_SIZE (341*3)
 

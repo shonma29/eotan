@@ -16,7 +16,7 @@ Version 2, June 1991
 #ifndef _MPU_FPU_H_
 #define _MPU_FPU_H_	1
 
-#include <itron/types.h>
+#include <core.h>
 
 typedef int FPU_CONTEXT[28];
 

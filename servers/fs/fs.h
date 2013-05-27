@@ -22,7 +22,6 @@ Version 2, June 1991
 
 #include <errno.h>
 #include <unistd.h>
-#include <itron/rendezvous.h>
 #include <core.h>
 
 /* =========================== マクロ定義 =========================== */

@@ -36,7 +36,7 @@ Version 2, June 1991
 #ifndef __CORE_REGION_H__
 #define __CORE_REGION_H__	1
 
-#include <itron/types.h>
+#include <core.h>
 
 #define MAX_REGION		(4)	/* 各タスクに存在できる REGION の数 */
 #define TEXT_REGION		0

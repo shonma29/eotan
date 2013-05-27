@@ -26,7 +26,6 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <kcall.h>
-#include <itron/rendezvous.h>
 #include "func.h"
 #include "mpu/mpufunc.h"
 

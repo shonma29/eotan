@@ -30,7 +30,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <kcall.h>
 #include <major.h>
 #include <string.h>
-#include <itron/rendezvous.h>
 #include "../../lib/libserv/libserv.h"
 #include "../../lib/libserv/bind.h"
 #include "ramdisk.h"

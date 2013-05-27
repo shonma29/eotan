@@ -1,5 +1,5 @@
-#ifndef _ITRON_CONSTANTS_H_
-#define _ITRON_CONSTANTS_H_
+#ifndef _MITRON4_TYPES_H_
+#define _MITRON4_TYPES_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,41 +26,76 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <itron/types.h>
 
 /**
- * object attributes
+ * common data types
  */
-#define TA_HLNG 0x00
-#define TA_ASM 0x01
+typedef char B;
+typedef short H;
+typedef long W;
+typedef long long D;
+typedef unsigned char UB;
+typedef unsigned short UH;
+typedef unsigned long UW;
+typedef unsigned long long UD;
 
-#define TA_TFIFO 0x00
-#define TA_TPRI 0x01
+typedef char VB;
+typedef short VH;
+typedef long VW;
+typedef long long VD;
+
+typedef void *VP;
+typedef void (*FP)();
+
+typedef int INT;
+typedef unsigned int UINT;
+
+typedef enum {
+	TRUE = 1,
+	FALSE = 0
+} BOOL;
+
+typedef long FN;
+typedef long ER;
+typedef long ID;
+typedef unsigned long ATR;
+typedef unsigned long STAT;
+typedef unsigned long MODE;
+typedef long PRI;
+typedef unsigned long SIZE;
+
+typedef long TMO;
+typedef unsigned long RELTIM;
+typedef struct {
+	H utime;
+	UW ltime;
+} SYSTIM;
+
+typedef int VP_INT;
+
+typedef long ER_BOOL;
+typedef long ER_ID;
+typedef long ER_UINT;
 
 /**
- * object status
+ * common constants
  */
-#define TTS_RUN 0x01
-#define TTS_RDY 0x02
-#define TTS_WAI 0x04
-#define TTS_SUS 0x08
-#define TTS_WAS 0x0c
-#define TTS_DMT 0x10
+#ifndef NULL
+#define NULL (0)
+#endif
+
+#define E_OK (0)
 
 /**
- * others
+ * object attribute
  */
-#define TSK_SELF (0)
-#define TSK_NONE (0)
+#define TA_NULL (0)
 
-#define TPRI_SELF (0)
-#define TPRI_INI (0)
-
-
-typedef struct
-{
-  H	utime;
-  UW	ltime;
-} systime_t;
+/**
+ * timeout parameters
+ */
+#define TMO_POL (0)
+#define TMO_FEVR (-1)
+#define TMO_NBLK (-2)
 
 #endif

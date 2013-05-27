@@ -26,7 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <itron/types.h>
+#include <core/types.h>
 #include <stddef.h>
 #include <mpu/config.h>
 

@@ -19,7 +19,7 @@ Version 2, June 1991
 #include <kcall.h>
 #include <string.h>
 #include <device.h>
-#include <itron/rendezvous.h>
+#include <core/rendezvous.h>
 #include "../fs.h"
 #include "sfs_func.h"
 

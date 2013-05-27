@@ -62,11 +62,10 @@ Version 2, June 1991
 
 **********************************************************************/
 
+#include <core.h>
 #include <device.h>
 #include <kcall.h>
 #include <major.h>
-#include <itron/dataqueue.h>
-#include <itron/rendezvous.h>
 #include "../../lib/libserv/libserv.h"
 #include "../../lib/libserv/bind.h"
 #include "keyboard.h"

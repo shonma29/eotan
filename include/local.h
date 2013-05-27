@@ -27,7 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stddef.h>
-#include <itron/types.h>
+#include <core/types.h>
 
 #define LOCAL_ADDR 0x7fff0000
 

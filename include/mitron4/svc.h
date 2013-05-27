@@ -1,5 +1,5 @@
-#ifndef _ITRON_DATAQUEUE_H_
-#define _ITRON_DATAQUEUE_H_
+#ifndef _MITRON4_SVC_H_
+#define _MITRON4_SVC_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,20 +26,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <itron/types.h>
+#include <mitron4/types.h>
 
-typedef struct t_cdtq {
-	ATR dtqatr;
-	UINT dtqcnt;
-	VP dtq;
-} T_CDTQ;
-
-
-extern ER cre_dtq(ID dtqid, T_CDTQ *pk_cdtq);
-extern ER_ID acre_dtq(T_CDTQ *pk_cdtq);
-extern ER del_dtq(ID dtqid);
-extern ER snd_dtq(ID dtqid, VP_INT data);
-extern ER psnd_dtq(ID dtqid, VP_INT data);
-extern ER rcv_dtq(ID dtqid, VP_INT *p_data);
+extern ER dly_tsk(RELTIM dlytim);
 
 #endif

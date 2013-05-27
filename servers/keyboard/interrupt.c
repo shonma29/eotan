@@ -94,7 +94,6 @@ Version 2, June 1991
 
 #include <core.h>
 #include <kcall.h>
-#include <itron/dataqueue.h>
 #include <mpu/io.h>
 #include "../../lib/libserv/libserv.h"
 #include "keyboard.h"

@@ -1,5 +1,5 @@
-#ifndef _ITRON_SVC_H_
-#define _ITRON_SVC_H_
+#ifndef _MITRON4_CONSTANTS_H_
+#define _MITRON4_CONSTANTS_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,8 +26,41 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <itron/types.h>
+#include <mitron4/types.h>
 
-extern ER dly_tsk(RELTIM dlytim);
+/**
+ * object attributes
+ */
+#define TA_HLNG 0x00
+#define TA_ASM 0x01
+
+#define TA_TFIFO 0x00
+#define TA_TPRI 0x01
+
+/**
+ * object status
+ */
+#define TTS_RUN 0x01
+#define TTS_RDY 0x02
+#define TTS_WAI 0x04
+#define TTS_SUS 0x08
+#define TTS_WAS 0x0c
+#define TTS_DMT 0x10
+
+/**
+ * others
+ */
+#define TSK_SELF (0)
+#define TSK_NONE (0)
+
+#define TPRI_SELF (0)
+#define TPRI_INI (0)
+
+
+typedef struct
+{
+  H	utime;
+  UW	ltime;
+} systime_t;
 
 #endif

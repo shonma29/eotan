@@ -17,8 +17,8 @@ Version 2, June 1991
 
 #include <unistd.h>
 #include <local.h>
-#include <itron/errno.h>
-#include <itron/types.h>
+#include <core/errno.h>
+#include <core/types.h>
 #include <sys/syscall.h>
 
 extern thread_local_t *local_data;

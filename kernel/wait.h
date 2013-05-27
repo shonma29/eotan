@@ -28,8 +28,6 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <set/list.h>
-#include <itron/dataqueue.h>
-#include <itron/rendezvous.h>
 
 typedef enum {
 	wait_none,

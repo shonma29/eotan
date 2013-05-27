@@ -1,5 +1,5 @@
-#ifndef _ITRON_RENDEZVOUH_H_
-#define _ITRON_RENDEZVOUH_H_
+#ifndef _MITRON4_ERRNO_H_
+#define _MITRON4_ERRNO_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,34 +26,85 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <itron/types.h>
 
-typedef unsigned int RDVPTN;
-typedef int RDVNO;
+/**
+ * inner errors
+ */
+#define E_SYS (-5)
 
-#define TBIT_RDVPTN 32
+/**
+ * support errors
+ */
+#define E_NOSPT (-9)
+#define E_RSFN (-10)
+#define E_RSATR (-11)
 
-typedef struct t_cpor {
-	ATR poratr;
-	UINT maxcmsz;
-	UINT maxrmsz;
-} T_CPOR;
+/**
+ * parameter errors
+ */
+#define E_PAR (-17)
+#define E_ID (-18)
 
-typedef struct t_rpor {
-	ID ctskid;
-	ID atskid;
-} T_RPOR;
+/**
+ * context errors
+ */
+#define E_CTX (-25)
+#define E_MACV (-26)
+#define E_OACV (-27)
+#define E_ILUSE (-28)
 
-typedef struct t_rrdv {
-	ID wtskid;
-} T_RRDV;
+/**
+ * resource errors
+ */
+#define E_NOMEM (-33)
+#define E_NOID (-34)
+
+/**
+ * object status errors
+ */
+#define E_OBJ (-41)
+#define E_NOEXS (-42)
+#define E_QOVR (-43)
+
+/**
+ * release errors
+ */
+#define E_RLWAI (-49)
+#define E_TMOUT (-50)
+#define E_DLT (-51)
+#define E_CLS (-52)
+
+/**
+ * warnings
+ */
+#define E_WBLK (-57)
+#define E_BOVR (-58)
+
+/**
+ * reserved errors
+ */
+
+/**
+ * implement specific errors
+ */
 
 
-extern ER cre_por(ID porid, T_CPOR *pk_cpor);
-extern ER_ID acre_por(T_CPOR *pk_cpor);
-extern ER del_por(ID porid);
-extern ER_UINT cal_por(ID porid, RDVPTN calptn, VP msg, UINT cmsgsz);
-extern ER_UINT acp_por(ID porid, RDVPTN acpptn, RDVNO *p_rdvno, VP msg);
-extern ER rpl_rdv(RDVNO rdvno, VP msg, UINT rmsgsz);
+/**
+ * macros
+ */
+static inline ER ERCD(ER mercd, ER sercd)
+{
+	return (sercd << 8) | mercd;
+}
+
+static inline ER MERCD(ER ercd)
+{
+	return ercd & 0xff;
+}
+
+static inline ER SERCD(ER ercd)
+{
+	return ercd >> 8;
+}
 
 #endif

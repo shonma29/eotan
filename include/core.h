@@ -1,27 +1,37 @@
-/*
-
-B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
-
-GNU GENERAL PUBLIC LICENSE
-Version 2, June 1991
-
-(C) B-Free Project.
-
-(C) 2003, Tomohide Naniwa
-
-*/
-/* itron.h
- *
- */
-
 #ifndef _CORE_H_
-#define _CORE_H_	1
+#define _CORE_H_
+/*
+This is free and unencumbered software released into the public domain.
 
-#include <itron/types.h>
-#include <itron/constants.h>
-#include <itron/packets.h>
-#include <itron/svc.h>
-#include <itron/errno.h>
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
 
-#endif /* _CORE_H_ */
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <http://unlicense.org/>
+*/
+#include <core/types.h>
+#include <core/constants.h>
+#include <core/errno.h>
+#include <core/packets.h>
+#include <core/svc.h>
+#include <core/dataqueue.h>
+#include <core/rendezvous.h>
+
+#endif

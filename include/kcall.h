@@ -27,8 +27,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <itron/dataqueue.h>
-#include <itron/rendezvous.h>
 
 #define KCALL_ADDR 0x80003f00
 

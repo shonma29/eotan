@@ -14,7 +14,7 @@ Version 2, June 1991
 #ifndef __STDLIB_H__
 #define __STDLIB_H__	1
 
-#include <itron/types.h>
+#include <core/types.h>
 
 #define BUFSIZE		1024
 #define NFILE		10

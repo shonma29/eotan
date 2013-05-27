@@ -25,7 +25,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <itron/rendezvous.h>
 #include <mpu/config.h>
 #include <set/list.h>
 #include <set/tree.h>

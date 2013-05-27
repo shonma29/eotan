@@ -31,7 +31,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <major.h>
 #include <stddef.h>
 #include <string.h>
-#include <itron/rendezvous.h>
 #include <mpu/memory.h>
 #include <bind.h>
 #include <libserv.h>

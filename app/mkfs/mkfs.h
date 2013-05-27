@@ -17,7 +17,7 @@ Version 2, June 1991
 #ifndef EOTA
 #include <fcntl.h>
 #endif
-#include "../../include/itron/types.h"
+#include "../../include/core/types.h"
 #include "../../servers/fs/sfs/sfs_fs.h"
 
 

@@ -1,5 +1,5 @@
-#ifndef _ITRON_ERRNO_H_
-#define _ITRON_ERRNO_H_
+#ifndef _MITRON4_PACKETS_H_
+#define _MITRON4_PACKETS_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,85 +26,20 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <mitron4/types.h>
 
-/**
- * inner errors
- */
-#define E_SYS (-5)
+typedef struct t_ctsk {
+	ATR tskatr;
+	VP_INT exinf;
+	FP task;
+	PRI itskpri;
+	SIZE stksz;
+	VP stk;
+} T_CTSK;
 
-/**
- * support errors
- */
-#define E_NOSPT (-9)
-#define E_RSFN (-10)
-#define E_RSATR (-11)
-
-/**
- * parameter errors
- */
-#define E_PAR (-17)
-#define E_ID (-18)
-
-/**
- * context errors
- */
-#define E_CTX (-25)
-#define E_MACV (-26)
-#define E_OACV (-27)
-#define E_ILUSE (-28)
-
-/**
- * resource errors
- */
-#define E_NOMEM (-33)
-#define E_NOID (-34)
-
-/**
- * object status errors
- */
-#define E_OBJ (-41)
-#define E_NOEXS (-42)
-#define E_QOVR (-43)
-
-/**
- * release errors
- */
-#define E_RLWAI (-49)
-#define E_TMOUT (-50)
-#define E_DLT (-51)
-#define E_CLS (-52)
-
-/**
- * warnings
- */
-#define E_WBLK (-57)
-#define E_BOVR (-58)
-
-/**
- * reserved errors
- */
-
-/**
- * implement specific errors
- */
-
-
-/**
- * macros
- */
-static inline ER ERCD(ER mercd, ER sercd)
-{
-	return (sercd << 8) | mercd;
-}
-
-static inline ER MERCD(ER ercd)
-{
-	return ercd & 0xff;
-}
-
-static inline ER SERCD(ER ercd)
-{
-	return ercd >> 8;
-}
+typedef struct t_dinh {
+	ATR inhatr;
+	FP inthdr;
+} T_DINH;
 
 #endif

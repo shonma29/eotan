@@ -50,7 +50,7 @@ Version 2, June 1991
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <time.h>
-#include "../../include/itron/types.h"
+#include "../../include/core/types.h"
 #include "../../servers/fs/sfs/sfs_fs.h"
 
 #define BLOCKSIZE 512

@@ -24,12 +24,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <core.h>
 #include <device.h>
 #include <services.h>
 #include <string.h>
 #include <unistd.h>
-#include <itron/types.h>
-#include <itron/rendezvous.h>
 #include "../../lib/libc/others/stdlib.h"
 #include "../../servers/kernlog/kernlog.h"
 

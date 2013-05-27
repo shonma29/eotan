@@ -29,7 +29,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <kcall.h>
 #include <services.h>
 #include <string.h>
-#include <itron/rendezvous.h>
 #include <set/ring.h>
 #include <setting.h>
 #include <sync.h>

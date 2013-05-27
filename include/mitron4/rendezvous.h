@@ -1,5 +1,5 @@
-#ifndef _ITRON_TYPES_H_
-#define _ITRON_TYPES_H_
+#ifndef _MITRON4_RENDEZVOUH_H_
+#define _MITRON4_RENDEZVOUH_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,76 +26,34 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <mitron4/types.h>
 
-/**
- * common data types
- */
-typedef char B;
-typedef short H;
-typedef long W;
-typedef long long D;
-typedef unsigned char UB;
-typedef unsigned short UH;
-typedef unsigned long UW;
-typedef unsigned long long UD;
+typedef unsigned int RDVPTN;
+typedef int RDVNO;
 
-typedef char VB;
-typedef short VH;
-typedef long VW;
-typedef long long VD;
+#define TBIT_RDVPTN 32
 
-typedef void *VP;
-typedef void (*FP)();
+typedef struct t_cpor {
+	ATR poratr;
+	UINT maxcmsz;
+	UINT maxrmsz;
+} T_CPOR;
 
-typedef int INT;
-typedef unsigned int UINT;
+typedef struct t_rpor {
+	ID ctskid;
+	ID atskid;
+} T_RPOR;
 
-typedef enum {
-	TRUE = 1,
-	FALSE = 0
-} BOOL;
+typedef struct t_rrdv {
+	ID wtskid;
+} T_RRDV;
 
-typedef long FN;
-typedef long ER;
-typedef long ID;
-typedef unsigned long ATR;
-typedef unsigned long STAT;
-typedef unsigned long MODE;
-typedef long PRI;
-typedef unsigned long SIZE;
 
-typedef long TMO;
-typedef unsigned long RELTIM;
-typedef struct {
-	H utime;
-	UW ltime;
-} SYSTIM;
-
-typedef int VP_INT;
-
-typedef long ER_BOOL;
-typedef long ER_ID;
-typedef long ER_UINT;
-
-/**
- * common constants
- */
-#ifndef NULL
-#define NULL (0)
-#endif
-
-#define E_OK (0)
-
-/**
- * object attribute
- */
-#define TA_NULL (0)
-
-/**
- * timeout parameters
- */
-#define TMO_POL (0)
-#define TMO_FEVR (-1)
-#define TMO_NBLK (-2)
+extern ER cre_por(ID porid, T_CPOR *pk_cpor);
+extern ER_ID acre_por(T_CPOR *pk_cpor);
+extern ER del_por(ID porid);
+extern ER_UINT cal_por(ID porid, RDVPTN calptn, VP msg, UINT cmsgsz);
+extern ER_UINT acp_por(ID porid, RDVPTN acpptn, RDVNO *p_rdvno, VP msg);
+extern ER rpl_rdv(RDVNO rdvno, VP msg, UINT rmsgsz);
 
 #endif
