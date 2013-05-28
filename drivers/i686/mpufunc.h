@@ -76,8 +76,7 @@ extern ER mpu_set_context(ID tid, W eip, B * stackp, W stsize);
 extern void set_kthread_registers(T_TCB *taskp);
 extern void start_thread1(T_TCB *taskp);
 extern void set_page_table(T_TCB *taskp, UW p);
-extern void set_sp(T_TCB *taskp, UW p);
-extern void prepare_kernel_sp(T_TCB *taskp);
+extern void set_arg(T_TCB *taskp, const UW arg);
 
 /* gate.c */
 extern void idt_initialize(void);
@@ -156,8 +155,15 @@ extern void panic(char *msg);
 
 /* switch.s */
 extern void tr_set(const UW selector);
+extern void context_switch(void);
 
 /* ncontext.c */
-extern void tss_set_kernel_sp(const VP addr);
+extern VP *context_prev_sp;
+extern VP *context_next_sp;
+extern void context_initialize(void);
+extern void context_set_kernel_sp(const VP addr);
+extern VP_INT *context_create_kernel(VP_INT *sp, const UW eflags, const FP eip);
+extern VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
+		const VP esp);
 
 #endif /* _MPU_MPU_H_ */

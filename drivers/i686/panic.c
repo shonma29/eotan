@@ -29,7 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 
 void panic(char *msg)
 {
-	printk("shudown by %s\n", msg);
+	printk("shutdown by %s\n", msg);
 
 	enter_critical();
 	halt();

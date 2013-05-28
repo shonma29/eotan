@@ -27,6 +27,7 @@ Version 2, June 1991
 #define I386	1
 
 #define MPU_PC(taskp) ((taskp)->mpu.context.eip)
+#define MPU_KERNEL_SP(taskp) ((taskp)->mpu.context.esp0)
 #define MPU_PAGE_TABLE(taskp) ((taskp)->mpu.context.cr3)
 
 /***********************************************************************

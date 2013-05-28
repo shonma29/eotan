@@ -199,6 +199,7 @@ static ER initialize(void)
     banner();			/* 立ち上げメッセージ出力               */
 
     paging_reset();
+    context_initialize();
     api_initialize();
     fpu_initialize();
     init_interrupt();

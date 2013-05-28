@@ -26,11 +26,105 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <mpu/setting.h>
+#include "gate.h"
+#include "mpufunc.h"
+#include "msr.h"
 #include "tss.h"
 
-void tss_set_kernel_sp(const VP addr)
+VP *context_prev_sp;
+VP *context_next_sp;
+
+
+void context_initialize(void)
+{
+	tr_set(dummy_tss);
+}
+
+void context_set_kernel_sp(const VP addr)
 {
 	tss_t *tss = (tss_t*)TSS_ADDR;
 
 	tss->esp0 = (UW)addr;
+	msr_write(sysenter_esp_msr, (UW)addr);
+}
+
+VP_INT *context_create_kernel(VP_INT *sp, const UW eflags, const FP eip)
+{
+	VP_INT *esp0;
+
+	/* eflags */
+	*--sp = eflags;
+	/* cs */
+	*--sp = kern_code;
+	/* eip */
+	*--sp = (VP_INT)eip;
+	/* es */
+	*--sp = kern_data;
+	/* fs */
+	*--sp = kern_data;
+	/* gs */
+	*--sp = kern_data;
+	esp0 = sp;
+
+	/* eax */
+	*--sp = 0;
+	/* ecx */
+	*--sp = 0;
+	/* edx */
+	*--sp = 0;
+	/* ebx */
+	*--sp = 0;
+	/* kernel esp */
+	*--sp = (VP_INT)esp0;
+	/* ebp */
+	*--sp = 0;
+	/* esi */
+	*--sp = 0;
+	/* edi */
+	*--sp = 0;
+
+	return sp;
+}
+
+VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
+		const VP esp)
+{
+	VP_INT *esp0;
+
+	/* ss */
+	*--sp = user_data | dpl_user;
+	/* user esp */
+	*--sp = (VP_INT)esp;
+	/* eflags */
+	*--sp = eflags;
+	/* cs */
+	*--sp = user_code | dpl_user;
+	/* eip */
+	*--sp = (VP_INT)eip;
+	/* es */
+	*--sp = user_data;
+	/* fs */
+	*--sp = user_data;
+	/* gs */
+	*--sp = user_data;
+	esp0 = sp;
+
+	/* eax */
+	*--sp = 0;
+	/* ecx */
+	*--sp = 0;
+	/* edx */
+	*--sp = 0;
+	/* ebx */
+	*--sp = 0;
+	/* kernel esp */
+	*--sp = (VP_INT)esp0;
+	/* ebp */
+	*--sp = 0;
+	/* esi */
+	*--sp = 0;
+	/* edi */
+	*--sp = 0;
+
+	return sp;
 }

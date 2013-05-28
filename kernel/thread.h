@@ -52,6 +52,7 @@ typedef struct t_tcb {
 /* カーネル領域のスタック情報                   */
     W stksz0;			/* タスクの持つスタックのサイズ */
     B *stackptr0;		/* カーネルスタックの領域へのポインタ */
+    VP stacktop0;
 
 /* タスクの統計情報 */
     W total;			/* 総実行時間                   */

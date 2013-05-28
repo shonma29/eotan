@@ -122,7 +122,10 @@ Version 2, June 1991
 #include "sync.h"
 #include "thread.h"
 #include "mpu/interrupt.h"
+#include "mpu/mpu.h"
 #include "mpu/mpufunc.h"
+
+#define NOTSS 1
 
 /***************************************************************************
  *	タスク管理用の変数
@@ -198,8 +201,10 @@ void thread_initialize1(void)
     list_initialize(&(task[KERNEL_TASK].wait.waiting));
 
     set_page_table(&(task[KERNEL_TASK]), (UW)PAGE_DIR_ADDR);
+#if NOTSS
+#else
     set_kthread_registers(&(task[KERNEL_TASK]));
-
+#endif
     /* 現タスクはタスク1である。 */
     run_task = &(task[KERNEL_TASK]);
     ready_enqueue(run_task->tsklevel, &(run_task->ready));
@@ -265,8 +270,7 @@ ER thread_switch(void)
     printk("thread_switch: current(%d) -> next(%d)\n",
 	    run_task->tskid, next->tskid);
 #endif
-    if ((next->tskstat != TTS_RDY)
-	    || (MPU_PC(next) == 0)) {
+    if (next->tskstat != TTS_RDY) {
 	printk("thread_switch: panic next(%d) stat=%d, eip=%x\n",
 		next->tskid, next->tskstat, MPU_PC(next));
 	panic("scheduler");
@@ -275,20 +279,26 @@ ER thread_switch(void)
     if (run_task->mpu.use_fpu)
 	fpu_save(run_task);
 
+    context_prev_sp = &(run_task->stacktop0);
+    context_next_sp = &(next->stacktop0);
     run_task = next;
     run_task->tskstat = TTS_RUN;
 
     delayed_dispatch = FALSE;
 
-    prepare_kernel_sp(next);
+    context_set_kernel_sp((VP)MPU_KERNEL_SP(next));
 
 /* resume を呼び出す。resume の引数は、TSS へのセレクタ */
 #ifdef TSKSW_DEBUG
     printk("resume (0x%x)\n", ((next->tskid + TSS_BASE) << 3) & 0xfff8);
 #endif
     tlb_flush();
+#if NOTSS
+    paging_set_directory((VP)(next->mpu.context.cr3));
+    context_switch();
+#else
     resume((UW) (next->tskid + TSS_BASE) << 3);
-
+#endif
     /* 正常に終了した：次のタスクスイッチの時にここに戻る */
     if (run_task->mpu.use_fpu)
 	fpu_restore(run_task);
@@ -434,7 +444,7 @@ ER thread_start(ID tskid, VP_INT stacd)
     }
 
     if (stacd > 0) {
-	set_sp(&(task[tskid]), stacd);
+	set_arg(&(task[tskid]), stacd);
     }
     index = task[tskid].tsklevel;
     task[tskid].tskstat = TTS_RDY;

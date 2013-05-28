@@ -25,11 +25,33 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-.text
+.set SELECTOR_KERN_CODE, 0x08
 
 .globl tr_set
+.globl context_switch
 
+.text
 
 tr_set:
 	ltr 4(%esp)
 	ret
+
+context_switch:
+	movl (%esp), %eax
+	addl $4, %esp
+	pushfl
+	pushl %cs
+	pushl %eax
+	pushl %es
+	pushl %fs
+	pushl %gs
+	pushal
+	movl context_prev_sp, %eax
+	movl %esp, (%eax)
+	movl context_next_sp, %eax
+	movl (%eax), %esp
+	popal
+	popl %gs
+	popl %fs
+	popl %es
+	iret
