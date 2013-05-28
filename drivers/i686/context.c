@@ -20,14 +20,9 @@ Version 2, June 1991
 #include "sync.h"
 #include "mpu/mpufunc.h"
 
-#define NOTSS 1
-
 static ER allocate_kernel_stack(T_TCB * task, VP * sp);
 static void create_user_stack(T_TCB * tsk, W size, W acc);
-#if NOTSS
-#else
-static void set_user_registers(T_TCB *taskp);
-#endif
+
 
 /* タスク情報を生成する:
  *
@@ -60,10 +55,6 @@ ER create_context(T_TCB * task, T_CTSK * pk_ctsk)
      *   2) タスクのスタートアドレス
      *   3) カーネルスタックのアドレス
      */
-#if NOTSS
-#else
-    set_kthread_registers(task);
-#endif
     task->mpu.context.esp = (UW) ((sp + pk_ctsk->stksz));
     task->initial_stack = task->mpu.context.esp;
     task->mpu.context.eip = (UW) pk_ctsk->task;
@@ -83,16 +74,14 @@ ER create_context(T_TCB * task, T_CTSK * pk_ctsk)
        task->mpu.context.iobitmap = 0;
      */
     task->mpu.use_fpu = 0;		/* 初期状態では FPU は利用しない */
-#if NOTSS
+
     if (pk_ctsk->exinf == -1) {
 	task->stacktop0 = context_create_kernel(
 		(VP_INT*)(task->mpu.context.esp),
 		EFLAG_IBIT | EFLAG_IOPL3,
 		(FP)(task->mpu.context.eip));
     }
-#else
-    create_tss(task);	/* コンテキスト領域(TSS)のアドレスをGDTにセット */
-#endif
+
     return (E_OK);		/* set_task_registers (task, pk_ctsk->startaddr, sp)); */
 }
 
@@ -183,16 +172,13 @@ ER mpu_copy_stack(ID src, W esp, ID dst)
       dstp -= size;
       region_put(dst, (VP) dstp, size, (VP) vtor(src_tsk->tskid, srcp));
     }
-#if NOTSS
+
     dst_tsk->stacktop0 = context_create_user(
 	    (VP_INT*)(dst_tsk->mpu.context.esp0),
 	    EFLAG_IBIT | EFLAG_IOPL3,
 	    (FP)(dst_tsk->mpu.context.eip),
 	    (VP_INT*)(dst_tsk->mpu.context.esp));
-#else
-    /* セレクタの設定 */
-    set_user_registers(dst_tsk);
-#endif
+
     /* FPU 情報のコピー */
     dst_tsk->mpu.use_fpu = src_tsk->mpu.use_fpu;
 
@@ -268,34 +254,17 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
     --esp;
 
     tsk->mpu.context.esp = (UW) esp;
-#if NOTSS
-#else
-    tsk->mpu.context.ebp = (UW) esp;
-#endif
+
     /* レジスターの初期化 */
     tsk->mpu.context.eip = eip;
-#if NOTSS
-#else
-    tsk->mpu.context.eflags = EFLAG_IBIT | EFLAG_IOPL3;
-    tsk->mpu.context.eax = 0;
-    tsk->mpu.context.ebx = 0;
-    tsk->mpu.context.ecx = 0;
-    tsk->mpu.context.edx = 0;
-    tsk->mpu.context.esi = 0;
-    tsk->mpu.context.edi = 0;
-    tsk->mpu.context.t = 0;
 
-    /* セレクタの設定 */
-    set_user_registers(tsk);
-#endif
     /* タスクの初期化 */
-#if NOTSS
     tsk->stacktop0 = context_create_user(
 	    (VP_INT*)(tsk->mpu.context.esp0),
 	    EFLAG_IBIT | EFLAG_IOPL3,
 	    (FP)(tsk->mpu.context.eip),
 	    (VP_INT*)(tsk->mpu.context.esp));
-#endif
+
     /* page fault handler の登録 */
     tsk->page_fault_handler = pf_handler;
 
@@ -306,46 +275,6 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
     list_remove(&(tsk->wait.waiting));
     release(tsk);
     return (E_OK);
-}
-
-void set_kthread_registers(T_TCB *taskp)
-{
-#if NOTSS
-#else
-    taskp->mpu.context.cs = kern_code;
-    taskp->mpu.context.ds = kern_data;
-    taskp->mpu.context.es = kern_data;
-    taskp->mpu.context.fs = kern_data;
-    taskp->mpu.context.gs = kern_data;
-    taskp->mpu.context.ss = kern_data;
-    taskp->mpu.context.ss0 = kern_data;
-    taskp->mpu.context.eflags = EFLAG_IBIT | EFLAG_IOPL3;
-#endif
-}
-
-#if NOTSS
-#else
-static void set_user_registers(T_TCB *taskp)
-{
-    taskp->mpu.context.cs = user_code | USER_DPL;
-    taskp->mpu.context.ds = user_data;
-    taskp->mpu.context.es = user_data;
-    taskp->mpu.context.fs = user_data;
-    taskp->mpu.context.gs = user_data;
-    taskp->mpu.context.ss = user_data | USER_DPL;
-}
-#endif
-
-void start_thread1(T_TCB *taskp)
-{
-#if NOTSS
-#else
-    /* セレクタをセット */
-    create_tss(taskp);
-
-    /* タスクレジスタの値を設定する. */
-    tr_set((taskp->tskid + TSS_BASE) << 3);
-#endif
 }
 
 void set_page_table(T_TCB *taskp, UW p)

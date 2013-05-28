@@ -125,8 +125,6 @@ Version 2, June 1991
 #include "mpu/mpu.h"
 #include "mpu/mpufunc.h"
 
-#define NOTSS 1
-
 /***************************************************************************
  *	タスク管理用の変数
  *
@@ -201,15 +199,10 @@ void thread_initialize1(void)
     list_initialize(&(task[KERNEL_TASK].wait.waiting));
 
     set_page_table(&(task[KERNEL_TASK]), (UW)PAGE_DIR_ADDR);
-#if NOTSS
-#else
-    set_kthread_registers(&(task[KERNEL_TASK]));
-#endif
+
     /* 現タスクはタスク1である。 */
     run_task = &(task[KERNEL_TASK]);
     ready_enqueue(run_task->tsklevel, &(run_task->ready));
-
-    start_thread1(&(task[KERNEL_TASK]));
 }
 
 
@@ -287,18 +280,10 @@ ER thread_switch(void)
     delayed_dispatch = FALSE;
 
     context_set_kernel_sp((VP)MPU_KERNEL_SP(next));
-
-/* resume を呼び出す。resume の引数は、TSS へのセレクタ */
-#ifdef TSKSW_DEBUG
-    printk("resume (0x%x)\n", ((next->tskid + TSS_BASE) << 3) & 0xfff8);
-#endif
     tlb_flush();
-#if NOTSS
     paging_set_directory((VP)(next->mpu.context.cr3));
     context_switch();
-#else
-    resume((UW) (next->tskid + TSS_BASE) << 3);
-#endif
+
     /* 正常に終了した：次のタスクスイッチの時にここに戻る */
     if (run_task->mpu.use_fpu)
 	fpu_restore(run_task);
