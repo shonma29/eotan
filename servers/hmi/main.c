@@ -96,7 +96,11 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 	if (result)	return result;
 
 	if (dd)
+#ifdef USE_VESA
 		put(start, size, inbuf);
+#else
+		;
+#endif
 	else {
 		for (i = 0; i < size; i++)
 			cns->putc(inbuf[i]);

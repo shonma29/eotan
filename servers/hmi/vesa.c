@@ -1,3 +1,4 @@
+#ifdef USE_VESA
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -374,3 +375,4 @@ void put(const unsigned int start, const size_t size,
 	for (i = 0; i < size; i++)
 		w[i] = buf[i];
 }
+#endif

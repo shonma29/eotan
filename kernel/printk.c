@@ -36,7 +36,7 @@ For more information, please refer to <http://unlicense.org/>
 #if DEBUG
 #include <cga.h>
 
-static CGA_Console *cns;
+static Console *cns;
 static int initialized;
 #endif
 
