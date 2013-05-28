@@ -19,12 +19,7 @@ Version 2, June 1991
 #define MAX_GDT		(255)	/* GDT の最大のインデックス */
 #define MAX_IDT		(127)	/* IDT の最大のインデックス */
 
-#define TASK_DESC_MIN	TSS_BASE
-
 #define PAGE_DIR_ADDR	(0x2000)	/* 仮想ページディレクトリテーブル */
-
-#define KERNEL_DPL	0
-#define USER_DPL	3
 
 #define KERNEL_STACK_SIZE	(PAGE_SIZE * 1)
 #define USER_STACK_SIZE	(PAGE_SIZE * 1)

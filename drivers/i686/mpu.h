@@ -78,77 +78,17 @@ typedef struct
  */
 typedef struct 
 {
-  UW		backlink;
-  UW		esp0;
-  UW		ss0;
-  UW		esp1;
-  UW		ss1;
-  UW		esp2;
-  UW		ss2;
-
-  UW		cr3;
   UW		eip;
-  UW		eflags;
-  UW		eax;
-  UW		ecx;
-  UW		edx;
-  UW		ebx;
   UW		esp;
-  UW		ebp;
-  UW		esi;
-  UW		edi;
-  UW		es;
-  UW		cs;
-  UW		ss;
-  UW		ds;
-  UW		fs;
-  UW		gs;
-  UW		ldtr;
-  UH		t:1;
-  UH		zero:15;
-  UH		iobitmap;
+  UW		esp0;
+  UW		cr3;
 } T_CONTEXT;
 
 typedef struct {
   T_CONTEXT context;
-  UW tss_selector;
   H use_fpu;
   FPU_CONTEXT fpu_context;
 } T_MPU_CONTEXT;
-
-/**************************************************************
- *
- *	タスクディスクリプタ
- *
- */
-typedef struct
-{
-  UH	limit0:16;	/*  104 */
-  UH	base0:16;	/* タスクベース 0..15		*/
-  UH	base1:8;	/* タスクベース 16..23		*/
-  UH	type:4;
-  UH 	zero0:1;	/* 未使用 (0)			*/
-  UH	dpl:2;		/* ディスクリプタ		*/
-  UH	present:1;	/* ディスクリプタ present bit	*/
-  UH	limit1:4;
-  UH	zero1:2;	/* 未使用 (0)			*/
-  UH	d:1;
-  UH	g:1;		/* 粒度 (1 = 4K バイト単位)	*/
-  UH	base2:8;	/* タスクベース 24..31		*/
-} TASK_DESC;
-
-#define GET_TSS_ADDR(x)	((x).base0 | (x).base1 << 16 | (x).base2 << 24)
-#define GET_TSS_LIMIT(x)	((x).limit0 | (x).limit1 << 16)
-#define SET_TSS_ADDR(x,addr)	{ \
-   (x).base0 = (UH)((UW)(addr) & 0x00ffff); \
-   (x).base1 = (UH)((UW)(addr) >> 16 & 0x00ff); \
-   (x).base2 = (UH)((UW)(addr) >> 24 & 0x00ff); }
-#define SET_TSS_LIMIT(x,limit)	{\
-   (x).limit0 = limit & 0x0000ffff; \
-   (x).limit1 = limit >> 16 & 0x0f; }
-
-#define TYPE_TSS	9
-#define TSS_BASE	128		/* TSS の GDT 上での位置 */
 
 #define ACC_KERNEL	0
 #define ACC_USER	1

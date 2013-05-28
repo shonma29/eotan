@@ -59,20 +59,8 @@ ER create_context(T_TCB * task, T_CTSK * pk_ctsk)
     task->initial_stack = task->mpu.context.esp;
     task->mpu.context.eip = (UW) pk_ctsk->task;
 #ifdef TSKSW_DEBUG
-    printk("(UW)pk_ctsk->startaddr = 0x%x\n", (UW) pk_ctsk->startaddr);
+    printk("(UW)pk_ctsk->task = 0x%x\n", (UW) pk_ctsk->task);
 #endif
-    /* cre_tsk の中で bzero によって初期化される．
-       task->mpu.context.eax = 0;
-       task->mpu.context.ebx = 0;
-       task->mpu.context.ecx = 0;
-       task->mpu.context.edx = 0;
-       task->mpu.context.ebp = 0;
-       task->mpu.context.esi = 0;
-       task->mpu.context.edi = 0;
-       task->mpu.context.zero = 0;
-       task->mpu.context.t = 0;
-       task->mpu.context.iobitmap = 0;
-     */
     task->mpu.use_fpu = 0;		/* 初期状態では FPU は利用しない */
 
     if (pk_ctsk->exinf == -1) {

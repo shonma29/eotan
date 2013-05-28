@@ -280,8 +280,8 @@ ER thread_switch(void)
     delayed_dispatch = FALSE;
 
     context_set_kernel_sp((VP)MPU_KERNEL_SP(next));
-    tlb_flush();
-    paging_set_directory((VP)(next->mpu.context.cr3));
+    paging_set_directory((VP)MPU_PAGE_TABLE(next));
+    /* tlb_flush(); */
     context_switch();
 
     /* 正常に終了した：次のタスクスイッチの時にここに戻る */
