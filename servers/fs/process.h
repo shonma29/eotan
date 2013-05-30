@@ -152,15 +152,6 @@ struct proc
 						 * 仮想ページと物理ページ/スワップ情報を管理する
 						 */
 
-  UW			text_start_addr;
-  UW			text_length;
-
-  UW			data_start_addr;
-  UW			data_length;
-
-  UW			bss_start_addr;
-  UW			bss_length;
-
   char			proc_name[PROC_NAME_LEN];
 };
 
