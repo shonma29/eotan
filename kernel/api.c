@@ -225,9 +225,9 @@ syscall (UW sysno, W *arg_addr)
 
 /* システムコール番号のチェック 
  */
-  if ((sysno <= 0) || (sysno > NSYSCALL))
+  if (sysno >= NSYSCALL)
     {
-      return (E_OBJ);
+      return (E_NOSPT);
     }
 
   errno = (syscall_table[sysno])(arg_addr);

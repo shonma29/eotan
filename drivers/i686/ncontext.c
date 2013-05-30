@@ -58,6 +58,8 @@ VP_INT *context_create_kernel(VP_INT *sp, const UW eflags, const FP eip)
 	*--sp = kern_code;
 	/* eip */
 	*--sp = (VP_INT)eip;
+	/* ds */
+	*--sp = kern_data;
 	/* es */
 	*--sp = kern_data;
 	/* fs */
@@ -101,6 +103,8 @@ VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
 	*--sp = user_code | dpl_user;
 	/* eip */
 	*--sp = (VP_INT)eip;
+	/* ds */
+	*--sp = user_data;
 	/* es */
 	*--sp = user_data;
 	/* fs */

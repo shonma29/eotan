@@ -42,6 +42,7 @@ context_switch:
 	pushfl
 	pushl %cs
 	pushl %eax
+	pushl %ds
 	pushl %es
 	pushl %fs
 	pushl %gs
@@ -54,4 +55,5 @@ context_switch:
 	popl %gs
 	popl %fs
 	popl %es
+	popl %ds
 	iret

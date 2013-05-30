@@ -43,16 +43,12 @@ extern void	interrupt (W);
 extern void	page_fault (UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 		UW ecx, UW eax, UW es, UW ds, UW no,
 		UW err, UW eip, UW cs, W eflags);
-extern void	set_idt (UW, UW, UW, UW, UW);
 extern void	protect_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 		   UW ecx, UW eax, UW es, UW ds, UW no,
 		   UW err, UW eip, UW cs, UW eflags);
 extern ER  	interrupt_bind (W inhno, T_DINH *pk_dinh);
 extern W	int32_handler (void);
 extern W	int33_handler (void);
-extern W	int38_handler (void);	/* floppy disk */
-extern W        int44_handler (void);   /* psaux */
-extern W	int46_handler (void);
 
 /* fpu.c */
 extern void fpu_initialize(void);
