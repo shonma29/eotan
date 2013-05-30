@@ -26,17 +26,6 @@ Version 2, June 1991
 
 /* =========================== マクロ定義 =========================== */
 
-/* 各種制限値 */
-#define MAX_BODY_SIZE	1024
-#define MAX_LINE_LENGTH	512
-#define MAXFS		1
-#define MAX_MOUNT	5
-#define MAX_INODE	200
-#define MAX_OPEN	100
-#define MAX_NAMELEN	255
-#define MAX_SIGNAL	32
-#define MAX_PROCESS	100
-
 /* macros for waitpid */
 #define WNOHANG		1	/* 子プロセスの終了を待たない */
 #define WUNTRACED	2	/* ジョブ制御用:未実装 */

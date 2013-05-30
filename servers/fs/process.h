@@ -91,11 +91,10 @@ Version 2, June 1991
 #ifndef __FS_PROCESS_H__
 #define __FS_PROCESS_H__	1
 
+#include <fs/config.h>
 
 #define F_FILE		0x0001
 #define F_PIPE		0x0002
-
-#define PROC_NAME_LEN	35
 
 struct file
 {
