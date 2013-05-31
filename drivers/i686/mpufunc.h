@@ -60,7 +60,7 @@ extern void fpu_start(T_TCB * taskp);
 extern ER create_context(T_TCB * task, T_CTSK * pk_ctsk);
 extern ER mpu_copy_stack(ID src, W esp, ID dst);
 extern ER mpu_set_context(ID tid, W eip, B * stackp, W stsize);
-extern void set_page_table(T_TCB *taskp, UW p);
+extern void set_page_table(T_TCB *taskp, VP p);
 extern void set_arg(T_TCB *taskp, const UW arg);
 
 /* gate.c */

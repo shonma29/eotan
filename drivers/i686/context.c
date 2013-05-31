@@ -266,9 +266,9 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
     return (E_OK);
 }
 
-void set_page_table(T_TCB *taskp, UW p)
+void set_page_table(T_TCB *taskp, VP p)
 {
-    taskp->mpu.context.cr3 = p;
+    taskp->mpu.context.cr3 = (UW)p;
 }
 
 void set_arg(T_TCB *taskp, const UW arg)

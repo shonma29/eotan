@@ -198,7 +198,7 @@ void thread_initialize1(void)
     task[KERNEL_TASK].tskid = KERNEL_TASK;
     list_initialize(&(task[KERNEL_TASK].wait.waiting));
 
-    set_page_table(&(task[KERNEL_TASK]), (UW)PAGE_DIR_ADDR);
+    set_page_table(&(task[KERNEL_TASK]), (VP)PAGE_DIR_ADDR);
 
     /* 現タスクはタスク1である。 */
     run_task = &(task[KERNEL_TASK]);
@@ -352,8 +352,12 @@ ER thread_create(ID tskid, T_CTSK * pk_ctsk)
 	return (E_NOMEM);
     }
 
-    set_page_table(newtask,
-	    (UW)kern_v2p(dup_vmap_table((ADDR_MAP) MPU_PAGE_TABLE(run_task))));
+    if (newtask->domain_id == KERNEL_DOMAIN_ID) {
+	set_page_table(newtask, (VP)PAGE_DIR_ADDR);
+    } else {
+	set_page_table(newtask,
+		kern_v2p(dup_vmap_table((ADDR_MAP) MPU_PAGE_TABLE(run_task))));
+    }
 
     /* タスクのリージョンテーブルを初期化
      */
@@ -388,8 +392,11 @@ ER thread_destroy(ID tskid)
     } else if (task[tskid].tskstat != TTS_DMT) {
 	return (E_OBJ);
     }
-    /* マッピングテーブルを解放する */
-    release_vmap((ADDR_MAP) MPU_PAGE_TABLE(&(task[tskid])));
+
+    if (task[tskid].domain_id != KERNEL_DOMAIN_ID) {
+	/* マッピングテーブルを解放する */
+	release_vmap((ADDR_MAP) MPU_PAGE_TABLE(&(task[tskid])));
+    }
 
     /* kernel 領域の stack を開放する */
     pfree((VP) kern_v2p(task[tskid].stackptr0), pages(task[tskid].stksz0));
@@ -401,7 +408,7 @@ ER thread_destroy(ID tskid)
 /* thread_start --- タスクの起動
  * 
  * 引数tskidで指定したタスクを起動する。
- * 指定したタスクは、cre_tsk で生成されている必要がある。
+ * 指定したタスクは、thread_create で生成されている必要がある。
  *
  * 引数：
  *	tskid	起動するタスクの ID
@@ -502,8 +509,10 @@ void thread_end(void)
 void thread_end_and_destroy(void)
 {
     /* 現在のタスクを TSK_NONE 状態にし、選択したタスクを次に走らせるようにする。 */
-    /* マッピングテーブルを解放する */
-    release_vmap((ADDR_MAP) MPU_PAGE_TABLE(run_task));
+    if (run_task->domain_id != KERNEL_DOMAIN_ID) {
+	/* マッピングテーブルを解放する */
+	release_vmap((ADDR_MAP) MPU_PAGE_TABLE(run_task));
+    }
 
     /* kernel 領域の stack を開放する */
     pfree((VP) kern_v2p(run_task->stackptr0), pages(run_task->stksz0));
@@ -768,15 +777,14 @@ ER thread_resume(ID tskid)
 }
 
 /***********************************************************************
- * new_task --- 任意のタスク ID でのタスク生成
+ * thread_create_auto --- 任意のタスク ID でのタスク生成
  *
  * 引数：
  *	pk_ctsk	生成するタスクの属性情報
  *		tskatr		タスク属性
- *		startaddr	タスク起動アドレス
+ *		task		タスク起動アドレス
  *		itskpri		タスク起動時優先度
  *		stksz		スタックサイズ
- *		addrmap		アドレスマップ
  *	rid	生成したタスクの ID (返り値)
  *
  * 返り値：
@@ -784,9 +792,9 @@ ER thread_resume(ID tskid)
  *	E_OK	正常終了
  *
  * 機能：
- *	new_task は、新しいタスクを作成するという cre_tsk とほとんど
- *	同じ機能をもつ。ただし、cre_tsk がタスク ID を必要とするのに対
- *	し、new_task は、タスク ID を自動的に割りあてる。
+ *	thread_create_auto は、新しいタスクを作成するという thread_create とほとんど
+ *	同じ機能をもつ。ただし、thread_create がタスク ID を必要とするのに対
+ *	し、thread_create_auto は、タスク ID を自動的に割りあてる。
  *
  */
 ER_ID thread_create_auto(T_CTSK * pk_ctsk)
