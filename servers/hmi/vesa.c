@@ -305,64 +305,112 @@ static void _fill(const unsigned int x1, const unsigned int y1,
 		const unsigned int x2, const unsigned int y2,
 		const Color *color)
 {
-	unsigned char *line = (unsigned char*)(_s.base)
+	unsigned char *p = (unsigned char*)(_s.base)
 			+ y1 * _s.bpl
 			+ x1 * sizeof(Color);
 	Color c = *color;
-	size_t i;
+	Color buf[sizeof(unsigned int)];
+	unsigned int *rword = (unsigned int*)buf;
+	size_t i = x2 - x1;
+	size_t left = x1 % sizeof(unsigned int);
+	size_t right = x2 % sizeof(unsigned int);
+	size_t middle;
+	size_t skip = _s.bpl - i * sizeof(Color);
+
+	if (left)
+		left = sizeof(unsigned int) - left;
+
+	middle = (i - left - right) / sizeof(unsigned int);
+
+	for (i = 0; i < sizeof(unsigned int); i++)
+		buf[i] = c;
 
 	for (i = y1; i < y2; i++) {
-		unsigned char *p = line;
+		unsigned int *wword;
 		size_t j;
 
-		for (j = x1; j < x2; j++) {
+		for (j = left; j > 0; j--) {
 			*p++ = c.b;
 			*p++ = c.g;
 			*p++ = c.r;
 		}
 
-		line += _s.bpl;
+		wword = (unsigned int*)p;
+		for (j = middle; j > 0; j--) {
+			*wword++ = rword[0];
+			*wword++ = rword[1];
+			*wword++ = rword[2];
+		}
+
+		p = (unsigned char*)wword;
+		for (j = right; j > 0; j--) {
+			*p++ = c.b;
+			*p++ = c.g;
+			*p++ = c.r;
+		}
+
+		p += skip;
 	}
 }
 
 static void _copy_up(unsigned int x1, unsigned int y1,
 		unsigned int x2, unsigned int y2, unsigned int height)
 {
-	unsigned char *line = (unsigned char*)(_s.base);
-	size_t offset = height * _s.bpl;
-	size_t len = (x2 - x1) * sizeof(Color);
-	size_t i;
+	unsigned char *w = (unsigned char*)(_s.base);
+	unsigned char *r = w + height * _s.bpl;
+	size_t i = (x2 - x1) * sizeof(Color);
+	size_t left = x1 % sizeof(unsigned int);
+	size_t right = x2 % sizeof(unsigned int);
+	size_t middle;
+	size_t skip = _s.bpl - i;
+
+	if (left)
+		left = sizeof(unsigned int) - left;
+
+	middle = (i - left - right) / sizeof(unsigned int);
 
 	for (i = y2 - y1; i > 0; i--) {
-		unsigned char *w = line;
-		unsigned char *r = line + offset;
+		unsigned int *wword;
+		unsigned int *rword;
 		size_t j;
 
-		for (j = len; j > 0; j--)
+		for (j = left; j > 0; j--)
 			*w++ = *r++;
 
-		line += _s.bpl;
+		wword = (unsigned int*)w;
+		rword = (unsigned int*)r;
+		for (j = middle; j > 0; j--)
+			*wword++ = *rword++;
+
+		w = (unsigned char*)wword;
+		r = (unsigned char*)rword;
+		for (j = right; j > 0; j--)
+			*w++ = *r++;
+
+		w += skip;
+		r += skip;
 	}
 }
 
 static void _copy_left(unsigned int x1, unsigned int y1,
 		unsigned int x2, unsigned int y2, unsigned int width)
 {
-	unsigned char *line = (unsigned char*)(_s.base)
+	unsigned char *r = (unsigned char*)(_s.base)
 			+ y1 * _s.bpl
 			+ x1 * sizeof(Color);
+	unsigned char *w = r - width * sizeof(Color);
 	size_t len = (x2 - x1) * sizeof(Color);
 	size_t i;
+	size_t skip = _s.bpl - len;
 
 	for (i = y2 - y1; i > 0; i--) {
-		unsigned char *w = line - width * sizeof(Color);
-		unsigned char *r = line;
 		size_t j;
 
 		for(j = len; j > 0; j--)
 			*w++ = *r++;
 
-		line += _s.bpl;
+		w += skip;
+		r += skip;
 	}
 }
 
