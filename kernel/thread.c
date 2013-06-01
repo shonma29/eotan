@@ -280,8 +280,7 @@ ER thread_switch(void)
     delayed_dispatch = FALSE;
 
     context_set_kernel_sp((VP)MPU_KERNEL_SP(next));
-    paging_set_directory((VP)MPU_PAGE_TABLE(next));
-    /* tlb_flush(); */
+    context_switch_page_table(next);
     context_switch();
 
     /* 正常に終了した：次のタスクスイッチの時にここに戻る */
@@ -508,8 +507,12 @@ void thread_end(void)
  */
 void thread_end_and_destroy(void)
 {
+    enter_critical();
+
     /* 現在のタスクを TSK_NONE 状態にし、選択したタスクを次に走らせるようにする。 */
     if (run_task->domain_id != KERNEL_DOMAIN_ID) {
+	context_reset_page_table();
+
 	/* マッピングテーブルを解放する */
 	release_vmap((ADDR_MAP) MPU_PAGE_TABLE(run_task));
     }
@@ -517,7 +520,6 @@ void thread_end_and_destroy(void)
     /* kernel 領域の stack を開放する */
     pfree((VP) kern_v2p(run_task->stackptr0), pages(run_task->stksz0));
 
-    enter_critical();
     run_task->tskstat = TSK_NONE;
     list_remove(&(run_task->ready));
     thread_switch();

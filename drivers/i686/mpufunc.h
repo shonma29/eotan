@@ -22,8 +22,6 @@ Version 2, June 1991
 /* virtual_memory.c */
 extern ADDR_MAP dup_vmap_table(ADDR_MAP dest);
 extern ER release_vmap(ADDR_MAP dest);
-extern BOOL vmap(T_TCB * task, UW vpage, UW ppage, W accmode);
-extern ER vunmap(T_TCB * task, UW vpage);
 extern UW vtor(ID tskid, UW addr);
 extern ER region_create(ID id, ID rid, VP start, W min, W max, UW perm);
 extern ER region_destroy(ID id, ID rid);
@@ -122,7 +120,8 @@ extern W service_handler(void);
 extern void *fault_get_addr(void);
 extern void paging_set_directory(void *dir);
 extern void paging_start(void);
-extern void tlb_flush(void);
+extern void tlb_flush_all(void);
+extern void tlb_flush(VP addr);
 
 /* paging_init.c */
 extern void paging_initialize(void);
@@ -150,5 +149,8 @@ extern void context_set_kernel_sp(const VP addr);
 extern VP_INT *context_create_kernel(VP_INT *sp, const UW eflags, const FP eip);
 extern VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
 		const VP esp);
+extern void context_switch_page_table(T_TCB *next);
+extern void context_reset_page_table();
+extern void context_reset_page_cache(const T_TCB *task, const VP addr);
 
 #endif /* _MPU_MPU_H_ */

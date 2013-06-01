@@ -74,7 +74,7 @@ void paging_reset(void)
 		dir[OFFSET_KERN + i] = calc_pte(kern_v2p(p), ATTR_INITIAL);
 	}
 
-	tlb_flush();
+	tlb_flush_all();
 #ifdef USE_VESA
 	set_frame_buffer(dir);
 #endif
@@ -116,6 +116,6 @@ static void set_frame_buffer(PTE *dir)
 				ATTR_INITIAL);
 	}
 
-	tlb_flush();
+	tlb_flush_all();
 }
 #endif

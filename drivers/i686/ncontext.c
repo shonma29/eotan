@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <mpu/setting.h>
+#include <setting.h>
 #include "gate.h"
 #include "mpufunc.h"
 #include "msr.h"
@@ -33,7 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 
 VP *context_prev_sp;
 VP *context_next_sp;
-
+static W current_domain_id = KERNEL_DOMAIN_ID;
 
 void context_initialize(void)
 {
@@ -131,4 +132,27 @@ VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
 	*--sp = 0;
 
 	return sp;
+}
+
+void context_switch_page_table(T_TCB *next)
+{
+	if ((next->domain_id != KERNEL_DOMAIN_ID)
+			&& (next->domain_id != current_domain_id)) {
+		paging_set_directory((VP)MPU_PAGE_TABLE(next));
+		current_domain_id = next->domain_id;
+	}
+}
+
+void context_reset_page_table()
+{
+	paging_set_directory((VP)PAGE_DIR_ADDR);
+	current_domain_id = KERNEL_DOMAIN_ID;
+}
+
+void context_reset_page_cache(const T_TCB *task, const VP addr)
+{
+	if ((task->domain_id == KERNEL_DOMAIN_ID)
+			|| (task->domain_id == current_domain_id)) {
+		tlb_flush(addr);
+	}
 }

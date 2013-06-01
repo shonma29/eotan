@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 .globl fault_get_addr
 .globl paging_set_directory
 .globl paging_start
+.globl tlb_flush_all
 .globl tlb_flush
 
 
@@ -55,7 +56,11 @@ paging_start:
 	andl $0x9ffffffb, %eax
 	movl %eax, %cr0
 
-tlb_flush:
+tlb_flush_all:
 	movl %cr3, %eax
 	movl %eax, %cr3
+	ret
+
+tlb_flush:
+	invlpg 4(%esp)
 	ret

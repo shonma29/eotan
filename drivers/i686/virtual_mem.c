@@ -160,6 +160,8 @@ Version 2, June 1991
 #include <thread.h>
 #include "mpufunc.h"
 
+static BOOL vmap(T_TCB * task, UW vpage, UW ppage, W accmode);
+static ER vunmap(T_TCB * task, UW vpage);
 static I386_PAGE_ENTRY *alloc_pagetable(W);
 
 
@@ -227,7 +229,7 @@ ADDR_MAP dup_vmap_table(ADDR_MAP dest)
  * release_vmap --- 指定したアドレスマップテーブルをすべて解放する。
  *
  */
-extern ER release_vmap(ADDR_MAP dest)
+ER release_vmap(ADDR_MAP dest)
 {
     I386_PAGE_ENTRY *p;
     W i, j;
@@ -273,7 +275,7 @@ extern ER release_vmap(ADDR_MAP dest)
  * 処理：	引数で指定された仮想メモリを物理メモリに割り当てる
  *
  */
-BOOL vmap(T_TCB * task, UW vpage, UW ppage, W accmode)
+static BOOL vmap(T_TCB * task, UW vpage, UW ppage, W accmode)
 {
     I386_DIRECTORY_ENTRY *dirent, *dp;
     I386_PAGE_ENTRY *pageent, *pp;
@@ -352,6 +354,8 @@ BOOL vmap(T_TCB * task, UW vpage, UW ppage, W accmode)
     printk("pageindex = %d, frame = 0x%x\n", pageindex,
 	   pageent[pageindex].frame_addr);
 #endif				/* DEBUG */
+    context_reset_page_cache(task, (VP)vpage);
+
     return (TRUE);
 }
 
@@ -360,7 +364,7 @@ BOOL vmap(T_TCB * task, UW vpage, UW ppage, W accmode)
  * 引数:	virtual	仮想メモリアドレス
  *
  */
-ER vunmap(T_TCB * task, UW vpage)
+static ER vunmap(T_TCB * task, UW vpage)
 {
     I386_DIRECTORY_ENTRY *dirent;
     I386_PAGE_ENTRY *pageent;
@@ -407,6 +411,7 @@ ER vunmap(T_TCB * task, UW vpage)
     */
     pfree((VP) ppage, 1);
     pageent[pageindex].present = 0;
+    context_reset_page_cache(task, (VP)vpage);
     return (TRUE);
 }
 

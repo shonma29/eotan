@@ -231,7 +231,7 @@ void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 	if (result == E_OK) {
 	  /* ページフォルト処理に成功した */
 	  --on_interrupt;
-	  tlb_flush();
+	  tlb_flush_all();
 	  return;
 	}
       }
