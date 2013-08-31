@@ -450,16 +450,10 @@ read_file(int fd,
     B *blockbuf;
     int copysize;
     int offset;
-    int retsize;
-    char *bufp;
 
     if (start + size > ip->sfs_i_size) {
 	size = ip->sfs_i_size - start;
     }
-
-    retsize = size;
-
-    bufp = buf;
 
 /*  fprintf (stderr, "read_file: offset = %d, size = %d\n", start, size); */
     blockbuf = (B *) alloca(sb->sfs_blocksize);

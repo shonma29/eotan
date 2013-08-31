@@ -67,7 +67,6 @@ void run_init_program(void)
 
 static ER run(const UW type, const Elf32_Ehdr *eHdr)
 {
-	ER err;
 	ID tskId;
 	T_CTSK pk_ctsk = {
 		TA_HLNG,
@@ -84,12 +83,10 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr)
 		return tskId;
 	}
 
-	if (!err) {
-		thread_start(tskId, 0);
-		thread_switch();
-	}
+	thread_start(tskId, 0);
+	thread_switch();
 
-	return err;
+	return E_OK;
 }
 
 static void set_initrd(ModuleHeader *h)

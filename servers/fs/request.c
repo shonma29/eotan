@@ -113,7 +113,7 @@ put_response(RDVNO rdvno, W error_no, W status, W ret1)
 
     /* 要求元に送信する */
     syserr = kcall->port_reply(rdvno, &res, sizeof(res));
-    return (EOK);
+    return syserr? ESVC:EOK;
 }
 
 

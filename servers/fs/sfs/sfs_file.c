@@ -138,15 +138,11 @@ sfs_i_lookup(struct inode *parent,
 	     W mode, struct access_info *acc, struct inode **retip)
 {
     W error_no;
-    ID device;
     W nentry;
     W i;
 #ifdef FMDEBUG
     dbg_printf("sfs_i_lookup: start. fname = %s\n", fname);	/* */
 #endif
-
-    device = parent->i_device;
-
 #ifdef notdef
     if (strcmp(fname, "/") == 0) {
 	*retip = parent;
@@ -310,7 +306,6 @@ W sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
 #endif
     W copysize;
     W offset;
-    B *bufp;
     ID fd;
     struct fs *fsp;
     W bn;
@@ -333,7 +328,6 @@ W sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
 	length = 0;
 
     *rlength = length;
-    bufp = buf;
 
     while (length > 0) {
 #ifdef FMDEBUG

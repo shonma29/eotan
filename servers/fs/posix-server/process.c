@@ -142,7 +142,6 @@ W
 psc_exit_f (RDVNO rdvno, struct posix_request *req)
 {
   struct proc *myprocp, *procp;
-  struct posix_request preq;
   W mypid, wpid, exst;
   W i;
   ER error_no;
@@ -173,7 +172,6 @@ psc_exit_f (RDVNO rdvno, struct posix_request *req)
       (wpid == -1 || wpid == mypid || -wpid == myprocp->proc_pgid)) {
     /* 親プロセスが自分を WAIT していればメッセージ送信 */
     procp->proc_status = PS_RUN;
-    preq.operation = PSC_WAITPID;
     exst = (myprocp->proc_exst << 8);
     put_response (procp->proc_wait_rdvno, EOK, mypid, exst);
 
@@ -282,7 +280,6 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
 W psc_kill_f(RDVNO rdvno, struct posix_request *req)
 {
     struct proc *myprocp, *procp;
-    struct posix_request preq;
     W mypid, wpid, exst;
     W i;
     ER error_no;
@@ -312,7 +309,6 @@ W psc_kill_f(RDVNO rdvno, struct posix_request *req)
 	(wpid == -1 || wpid == mypid || -wpid == myprocp->proc_pgid)) {
 	/* 親プロセスが自分を WAIT していればメッセージ送信 */
 	procp->proc_status = PS_RUN;
-	preq.operation = PSC_WAITPID;
 	exst = (myprocp->proc_exst << 8);
 	put_response(rdvno, EOK, mypid, exst);
 

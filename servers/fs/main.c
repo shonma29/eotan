@@ -114,7 +114,6 @@ static void banner(void);
 int main(void)
 {
     struct posix_request request;
-    W res;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     if (init_port() == FALSE) {
@@ -166,7 +165,7 @@ int main(void)
 		   syscall_table[request.operation].name);
 #endif
 
-	    res = (*syscall_table[request.operation].syscall) ((RDVNO)rdvno, &request);
+	    (*syscall_table[request.operation].syscall) ((RDVNO)rdvno, &request);
 #ifdef DEBUG
 	    if ((request.operation != PSC_WRITE) &&
 		(request.operation != PSC_READ))

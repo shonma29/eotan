@@ -50,7 +50,7 @@ extern int close(int fd);
 extern int dup(int fd);
 extern int dup2(int fd, int fd2);
 extern int execve(char *name, char *argv[], char *envp[]);
-extern void _exit(int status);
+extern void _exit(int status) __attribute__ ((noreturn));
 extern int fcntl(int fileid, int cmd, ...);
 extern int fork();
 extern int fstat(int fd, struct stat *st);

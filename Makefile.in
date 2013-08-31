@@ -23,7 +23,7 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-CFLAGS = -Wall -Werror -O2 -I $(WD) -I include
+CFLAGS = -Wall -Werror -O2 -I $(WD) -I include -fno-stack-protector
 #ASFLAGS = 
 #LDFLAGS = --oformat binary
 STRIP = strip -s -R .comment -R .note -R .note.ABI-tag

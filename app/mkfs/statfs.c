@@ -1030,15 +1030,10 @@ int read_file(int fd,
     B *blockbuf;
     int copysize;
     int offset;
-    int retsize;
-    char *bufp;
 
     if (start + size > ip->sfs_i_size) {
 	size = ip->sfs_i_size - start;
     }
-    retsize = size;
-
-    bufp = buf;
 
 /*  fprintf (stderr, "read_file: offset = %d, size = %d\n", start, size); */
     blockbuf = (B *) alloca(sb->sfs_blocksize);
@@ -1197,19 +1192,13 @@ int locallookup_file(int fd,
     int nentry;
     struct sfs_dir *dirp;
     int i;
-    int err;
 
     nentry = read_dir(fd, sb, parent, 0, NULL);
     dirp = alloca(sizeof(struct sfs_dir) * nentry);
     read_dir(fd, sb, parent, nentry, dirp);
     for (i = 0; i < nentry; i++) {
 	if (strcmp(name, dirp[i].sfs_d_name) == 0) {
-	    err = read_inode(fd, sb, dirp[i].sfs_d_index, ip);
-#ifdef ntodef
-	    if (err) {
-		return (err);
-	    }
-#endif
+	    read_inode(fd, sb, dirp[i].sfs_d_index, ip);
 	    return (0);
 	}
     }
