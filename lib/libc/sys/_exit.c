@@ -21,8 +21,6 @@ Version 2, June 1991
 /* _exit 
  *
  */
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
 void
 _exit (int status)
 {
@@ -32,4 +30,3 @@ _exit (int status)
   _make_connection(PSC_EXIT, &req);
   for (;;);
 }
-#pragma GCC diagnostic pop
