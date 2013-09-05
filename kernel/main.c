@@ -196,13 +196,13 @@ static ER initialize(void)
     sysinfo->initrd.start = 0;
     sysinfo->initrd.size = 0;
 
+    pic_initialize();
     banner();			/* 立ち上げメッセージ出力               */
 
     paging_reset();
     context_initialize();
     api_initialize();
     fpu_initialize();
-    init_interrupt();
 #ifdef DEBUG
     printk("initialize: start\n");
 #endif
@@ -219,6 +219,7 @@ static ER initialize(void)
     timer_initialize();		/* インターバルタイマ機能の初期化 */
     time_initialize(rtc_get_time());		/* 時間管理機能の初期化 */
     pit_initialize(TICKS);		/* インターバルタイマの起動       */
+    init_interrupt();
 
     do_timer = 0;
 

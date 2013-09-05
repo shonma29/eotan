@@ -48,7 +48,6 @@ BOOL delayed_dispatch = FALSE;
  * def_int システムコールで登録するときに使用する。
  */
 struct intr_entry {
-    ATR attr;
     FP func;
 };
 
@@ -69,7 +68,6 @@ W init_interrupt(void)
     W i;
 
     printk("init_interrupt\n");
-    pic_initialize();
 
     idt_set(int_division_error, kern_code, handle0, interruptGate32, dpl_kern);
     idt_set(int_debugger, kern_code, handle1, interruptGate32, dpl_kern);
@@ -106,16 +104,15 @@ W init_interrupt(void)
 
     idt_set(PIC_IR_VECTOR(ir_keyboard), kern_code, int33_handler, interruptGate32, dpl_kern);
 
-    pic_reset_mask(ir_keyboard);
-
     for (i = 0; i < sizeof(intr_table) / sizeof(intr_table[0]); i++) {
-	intr_table[i].attr = 0;
-	intr_table[i].func = 0;
+	intr_table[i].func = NULL;
     }
 
-    intr_table[PIC_IR_VECTOR(ir_keyboard)].attr = 0;
     on_interrupt = 0;
     delayed_dispatch = FALSE;
+
+    pic_reset_mask(ir_keyboard);
+
     return (E_OK);
 }
 
@@ -191,13 +188,17 @@ ER interrupt_bind(W inhno, T_DINH *pk_dinh)
 	return (E_PAR);
     }
 
-    if (intr_table[inhno].attr == -1) {
+    if (pk_dinh->inhatr != TA_HLNG) {
+	return (E_PAR);
+    }
+
+    if (intr_table[inhno].func) {
 	return (E_OBJ);
     }
 
     printk("set_interrupt_entry = %d, func = 0x%x\n", inhno, pk_dinh->inthdr);
-    intr_table[inhno].attr = pk_dinh->inhatr;
     intr_table[inhno].func = pk_dinh->inthdr;
+
     return (E_OK);
 }
 
