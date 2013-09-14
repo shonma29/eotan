@@ -64,6 +64,7 @@ Version 2, June 1991
 #include "thread.h"
 #include "func.h"
 #include "memory.h"
+#include "setting.h"
 #include "mpu/interrupt.h"
 #include "mpu/mpufunc.h"
 #include "arch/archfunc.h"

@@ -184,7 +184,7 @@ W pf_handler(W cr2, W eip)
     /* type = POSIX, id = pid */
     add_trmtbl(0, run_task->tskid, local->process_id);
     /* KERNEL_TASK の優先度変更 */
-    thread_change_priority(KERNEL_TASK, MID_LEVEL);
+    thread_change_priority(KERNEL_TASK, pri_dispatcher);
     return (E_OK);
 }
 

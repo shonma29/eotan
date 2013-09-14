@@ -33,6 +33,7 @@ Version 2, June 1991
 #include <string.h>
 #include "thread.h"
 #include "func.h"
+#include "setting.h"
 #include "sync.h"
 
 static struct timer_list {
@@ -156,7 +157,7 @@ void intr_interval(void)
     time.utime = TH + (TM >> 16);
     time_set(&time);
 
-    if ((run_task->quantum) > 0 && (run_task->tsklevel >= USER_LEVEL)) {
+    if ((run_task->quantum) > 0 && (run_task->tsklevel >= pri_user_foreground)) {
 	if (--run_task->quantum == 0) {
 	    run_task->quantum = QUANTUM;
 	    rot_rdq(TPRI_SELF);
@@ -168,7 +169,7 @@ void intr_interval(void)
 	if ((time_list->time <= 0) && (do_timer == 0)) {
 	    /* KERNEL_TASK で timer に設定されている関数を実行 */
 	    do_timer = 1;
-	    thread_change_priority(KERNEL_TASK, MIN_PRIORITY);
+	    thread_change_priority(KERNEL_TASK, pri_dispatcher);
 	    thread_switch();
 	}
     }

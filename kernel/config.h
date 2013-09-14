@@ -27,14 +27,7 @@ Version 2, June 1991
 #define MIN_TSKID	(1)	/* 最小のタスク ID 数   */
 #define NTASK		(MAX_TSKID - MIN_TSKID + 1)	/* タスク数     */
 
-#define MIN_PRIORITY	(0)	/* 最小のプライオリティ */
-#define MAX_PRIORITY	(31)	/* 最大のプライオリティ */
-
 #define MAX_SUSPEND_NEST	(10)	/* サスペンドのネストのオーバーフロー */
-
-#define KERNEL_LEVEL	(2)
-#define USER_LEVEL	(16)
-#define MID_LEVEL	(10)
 
 #define CLOCK		10		/* clock 周期 10 ms */
 #define TICKS		(1000/CLOCK)	/* 1 秒間の tick 数 */

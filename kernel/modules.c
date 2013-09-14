@@ -72,7 +72,7 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr)
 		TA_HLNG,
 		KERNEL_DOMAIN_ID,
 		(FP)(eHdr->e_entry),
-		KERNEL_LEVEL,
+		pri_server_middle,
 		KERNEL_STACK_SIZE,
 		NULL
 	};

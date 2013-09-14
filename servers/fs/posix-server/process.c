@@ -17,6 +17,7 @@ Version 2, June 1991
 
 #include <core.h>
 #include <kcall.h>
+#include <setting.h>
 #include <boot/init.h>
 #include <mpu/config.h>
 #include <mpu/memory.h>
@@ -224,7 +225,7 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
      TA_HLNG,
      NULL,
      req->param.par_fork.entry,
-     USER_LEVEL,
+     pri_user_foreground,
      USER_STACK_SIZE,
      NULL
   };

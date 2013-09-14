@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <boot/init.h>
 #include <mpu/config.h>
 #include <region.h>
+#include <setting.h>
 #include "fs.h"
 
 typedef struct {
@@ -49,7 +50,7 @@ W exec_init(ID process_id, char *pathname)
 		TA_HLNG,
 		process_id,
 		dummy,
-		USER_LEVEL,
+		pri_user_foreground,
 		USER_STACK_SIZE,
 		NULL
 	};
