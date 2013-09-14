@@ -188,14 +188,6 @@ ER interrupt_bind(W inhno, T_DINH *pk_dinh)
 	return (E_PAR);
     }
 
-    if (pk_dinh->inhatr != TA_HLNG) {
-	return (E_PAR);
-    }
-
-    if (intr_table[inhno].func) {
-	return (E_OBJ);
-    }
-
     printk("set_interrupt_entry = %d, func = 0x%x\n", inhno, pk_dinh->inthdr);
     intr_table[inhno].func = pk_dinh->inthdr;
 

@@ -136,7 +136,6 @@ void init_keyboard_interrupt()
     ER error_no;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    pk_dinh.inhatr = TA_HLNG;
     pk_dinh.inthdr = (void (*)()) keyboard_interrupt;
     error_no = kcall->interrupt_bind(KEYBOARD_INT, &pk_dinh);
     if (error_no != E_OK) {
