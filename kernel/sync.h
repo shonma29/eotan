@@ -29,20 +29,13 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/io.h>
 #include "func.h"
 
-#ifndef TRUE
-#define TRUE 1
-#endif
-#ifndef FALSE
-#define FALSE 0
-#endif
-
 extern int dispatchable;
 
 #define enter_serialize() (dispatchable = FALSE)
 #define leave_serialize() (dispatchable = TRUE)
 
-#define enter_critical() dis_int()
-#define leave_critical() ena_int()
+#define enter_critical() di()
+#define leave_critical() ei()
 
 extern void wait(T_TCB *task);
 extern void release(T_TCB *task);

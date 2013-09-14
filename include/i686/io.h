@@ -78,12 +78,12 @@ static inline unsigned int inl(unsigned short port) {
 	return v;
 }
 
-static inline void dis_int(void) {
+static inline void di(void) {
 	__asm__ __volatile__ ( \
 			"cli\n\t");
 }
 
-static inline void ena_int(void) {
+static inline void ei(void) {
 	__asm__ __volatile__ ( \
 			"sti\n\t");
 }
