@@ -32,28 +32,32 @@ For more information, please refer to <http://unlicense.org/>
 #define QUEUE_EMPTY (-1)
 #define QUEUE_MEMORY (-2)
 
-typedef struct _lf_pointer_t {
-	struct _lf_node_t *ptr;
+typedef struct _lfq_pointer_t {
+	struct _lfq_node_t *ptr;
 	unsigned int count;
-} lf_pointer_t;
+} lfq_pointer_t;
 
-typedef struct _lf_node_t {
-	lf_pointer_t next;
+typedef struct _lfq_node_t {
+	lfq_pointer_t next;
 	char value[0];
-} lf_node_t;
+} lfq_node_t;
 
-typedef struct _lf_queue_t {
-	lf_pointer_t head;
-	lf_pointer_t tail;
-	lf_stack_t *stack;
+typedef struct _lfq_t {
+	lfq_pointer_t head;
+	lfq_pointer_t tail;
+	lfs_t *stack;
 	size_t size;
-} lf_queue_t;
+} lfq_t;
 
 
-extern size_t queue_node_size(size_t size);
-extern int queue_initialize(lf_queue_t *q, lf_stack_t *stack, size_t size);
+static inline size_t lfq_node_size(size_t size)
+{
+	return size + sizeof(lfq_node_t) - sizeof(lfs_entry_t);
+}
 
-extern int queue_enqueue(volatile lf_queue_t *q, void *value);
-extern int queue_dequeue(void *value, volatile lf_queue_t *q);
+extern int lfq_initialize(lfq_t *q, lfs_t *stack, size_t size);
+
+extern int lfq_enqueue(volatile lfq_t *q, void *value);
+extern int lfq_dequeue(void *value, volatile lfq_t *q);
 
 #endif

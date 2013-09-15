@@ -31,64 +31,64 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/lf_queue.h>
 
 typedef struct {
-	lf_pointer_t next;
+	lfq_pointer_t next;
 	unsigned int value;
 } node_t;
 
 int main(int argc, char **argv)
 {
-	char buf[stack_buf_size(queue_node_size(4), 4)];
-	lf_node_t *x;
-	lf_queue_t q;
-	lf_stack_t s;
+	char buf[lfs_buf_size(lfq_node_size(4), 4)];
+	lfq_node_t *x;
+	lfq_t q;
+	lfs_t s;
 	int r;
 	int y;
 
-	stack_initialize(&s, buf, queue_node_size(4), 4);
-	queue_initialize(&q, &s, 4);
+	lfs_initialize(&s, buf, lfq_node_size(4), 4);
+	lfq_initialize(&q, &s, 4);
 
 	// init
 	printf("init[0]=%p, %p, %p\n", &q, &s, &buf[0]);
 
 	// empty
 	y = 0;
-	r = queue_dequeue(&y, &q);
+	r = lfq_dequeue(&y, &q);
 	printf("deq[0]=%x, %x\n", r, y);
 
 	// enq 1
 	y = 1;
-	r = queue_enqueue(&q, &y);
+	r = lfq_enqueue(&q, &y);
 	printf("enq[1]=%x, %x\n", r, y);
 
 	// deq 1
 	y = 2;
-	r = queue_dequeue(&y, &q);
+	r = lfq_dequeue(&y, &q);
 	printf("deq[1]=%x, %x\n", r, y);
 
 	y = 3;
-	r = queue_dequeue(&y, &q);
+	r = lfq_dequeue(&y, &q);
 	printf("deq[1]=%x, %x\n", r, y);
 
 	// enq 2
 	y = 4;
-	r = queue_enqueue(&q, &y);
+	r = lfq_enqueue(&q, &y);
 	printf("enq[2]=%x, %x\n", r, y);
 
 	y = 5;
-	r = queue_enqueue(&q, &y);
+	r = lfq_enqueue(&q, &y);
 	printf("enq[2]=%x, %x\n", r, y);
 
 	// deq 2
 	y = 6;
-	r = queue_dequeue(&y, &q);
+	r = lfq_dequeue(&y, &q);
 	printf("deq[2]=%x, %x\n", r, y);
 
 	y = 7;
-	r = queue_dequeue(&y, &q);
+	r = lfq_dequeue(&y, &q);
 	printf("deq[2]=%x, %x\n", r, y);
 
 	y = 8;
-	r = queue_dequeue(&y, &q);
+	r = lfq_dequeue(&y, &q);
 	printf("deq[2]=%x, %x\n", r, y);
 
 	return 0;

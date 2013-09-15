@@ -28,43 +28,52 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include "stddef.h"
 
-typedef struct _lf_stack_entry_t {
-	struct _lf_stack_entry_t *next;
+typedef struct _lfs_entry_t {
+	struct _lfs_entry_t *next;
 	char buf[0];
-} lf_stack_entry_t;
+} lfs_entry_t;
 
-typedef struct _lf_stack_head_t {
-	lf_stack_entry_t *next;
+typedef struct _lfs_head_t {
+	lfs_entry_t *next;
 	size_t count;
-} lf_stack_head_t;
+} lfs_head_t;
 
-typedef struct _lf_stack_t {
-	lf_stack_head_t head;
+typedef struct _lfs_t {
+	lfs_head_t head;
 	size_t entry_size;
-} lf_stack_t;
+} lfs_t;
 
 
-static inline lf_stack_entry_t *stack_next(lf_stack_entry_t *entry)
+static inline lfs_entry_t *lfs_next(lfs_entry_t *entry)
 {
 	return entry->next;
 }
 
-static inline void *stack_buf(lf_stack_entry_t *entry)
+static inline void *lfs_buf(lfs_entry_t *entry)
 {
 	return (void*)(entry->buf);
 }
 
-static inline int stack_is_empty(lf_stack_t *stack)
+static inline int lfs_is_empty(lfs_t *stack)
 {
 	return !(stack->head.next);
 }
 
-extern size_t stack_entry_size(size_t size);
-extern size_t stack_buf_size(size_t size, size_t entry_num);
-extern void stack_initialize(lf_stack_t *stack, void *buf,
+static inline size_t lfs_entry_size(size_t size)
+{
+	return (size + sizeof(lfs_entry_t) + sizeof(ptr_t) - 1)
+			& ~(sizeof(ptr_t) - 1);
+}
+
+static inline size_t lfs_buf_size(size_t size, size_t entry_num)
+{
+	return lfs_entry_size(size) * entry_num;
+}
+
+extern void lfs_initialize(lfs_t *stack, void *buf,
 	size_t size, size_t entry_num);
 
-extern void stack_push(volatile lf_stack_t *stack, void *p);
-extern void *stack_pop(volatile lf_stack_t *stack);
+extern void lfs_push(volatile lfs_t *stack, void *p);
+extern void *lfs_pop(volatile lfs_t *stack);
 
 #endif

@@ -31,14 +31,14 @@ For more information, please refer to <http://unlicense.org/>
 
 int main(int argc, char **argv)
 {
-	char buf[stack_buf_size(16, 4)];
-	lf_stack_t s;
+	char buf[lfs_buf_size(16, 4)];
+	lfs_t s;
 	void *p;
 	void *x[4];
 int i;
 	// init
 	printf("init buf=%p, size=%d\n", buf, sizeof(buf) / sizeof(char));
-	stack_initialize(&s, buf, 16, 4);
+	lfs_initialize(&s, buf, 16, 4);
 printf("%p\n", s.head.next);
 for (i = 0; i < 4; i++) {
 	char *q = &buf[i * 20];
@@ -46,24 +46,24 @@ for (i = 0; i < 4; i++) {
 	printf("%x\n", *r);
 }
 	// empty
-	p = stack_pop(&s);
+	p = lfs_pop(&s);
 	printf("pop[0]=%p\n", p);
 	x[0] = p;
-	p = stack_pop(&s);
+	p = lfs_pop(&s);
 	printf("pop[0]=%p\n", p);
 	x[1] = p;
-	p = stack_pop(&s);
+	p = lfs_pop(&s);
 	printf("pop[0]=%p\n", p);
 	x[2] = p;
-	p = stack_pop(&s);
+	p = lfs_pop(&s);
 	printf("pop[0]=%p\n", p);
 	x[3] = p;
-	p = stack_pop(&s);
+	p = lfs_pop(&s);
 	printf("pop[0]=%p\n", p);
 
 	// inner
-	printf("next[0]=%p\n", stack_next(x[0]));
-	printf("buf[0]=%p\n", stack_buf(x[0]));
+	printf("next[0]=%p\n", lfs_next(x[0]));
+	printf("buf[0]=%p\n", lfs_buf(x[0]));
 
 	// push
 	buf[0] = 1;
@@ -71,31 +71,31 @@ for (i = 0; i < 4; i++) {
 	buf[2] = 3;
 	buf[3] = 4;
 	buf[4] = 5;
-	stack_push(&s, x[0]);
-	p = stack_pop(&s);
+	lfs_push(&s, x[0]);
+	p = lfs_pop(&s);
 	printf("pop[1]=%p\n", p);
-	p = stack_pop(&s);
+	p = lfs_pop(&s);
 	printf("pop[1]=%p\n", p);
 
-	printf("next[1]=%p\n", stack_next(x[0]));
-	printf("buf[1]=%p\n", stack_buf(x[0]));
+	printf("next[1]=%p\n", lfs_next(x[0]));
+	printf("buf[1]=%p\n", lfs_buf(x[0]));
 	printf("%x, %x, %x, %x, %x\n",
 		buf[0], buf[1], buf[2], buf[3], buf[4]);
 
 	// push 2
-	stack_push(&s, x[0]);
-	stack_push(&s, x[1]);
-	stack_push(&s, x[2]);
-	stack_push(&s, x[3]);
-	p = stack_pop(&s);
+	lfs_push(&s, x[0]);
+	lfs_push(&s, x[1]);
+	lfs_push(&s, x[2]);
+	lfs_push(&s, x[3]);
+	p = lfs_pop(&s);
 	printf("pop[2]=%p\n", p);
-	p = stack_pop(&s);
+	p = lfs_pop(&s);
 	printf("pop[2]=%p\n", p);
-	p = stack_pop(&s);
+	p = lfs_pop(&s);
 	printf("pop[2]=%p\n", p);
-	p = stack_pop(&s);
+	p = lfs_pop(&s);
 	printf("pop[2]=%p\n", p);
-	p = stack_pop(&s);
+	p = lfs_pop(&s);
 	printf("pop[2]=%p\n", p);
 
 	return 0;

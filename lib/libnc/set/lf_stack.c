@@ -29,30 +29,19 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/lf_stack.h>
 
 
-size_t stack_entry_size(size_t size)
-{
-	return (size + sizeof(lf_stack_entry_t) + sizeof(ptr_t) - 1)
-			& ~(sizeof(ptr_t) - 1);
-}
-
-size_t stack_buf_size(size_t size, size_t entry_num)
-{
-	return stack_entry_size(size) * entry_num;
-}
-
-void stack_initialize(lf_stack_t *stack, void *buf,
+void lfs_initialize(lfs_t *stack, void *buf,
 		size_t size, size_t entry_num)
 {
 	size_t i;
-	lf_stack_entry_t *p = (lf_stack_entry_t*)buf;
+	lfs_entry_t *p = (lfs_entry_t*)buf;
 
 	stack->head.next = p;
-	stack->entry_size = stack_entry_size(size);
+	stack->entry_size = lfs_entry_size(size);
 
 	for (i = 0; i < entry_num - 1; i++) {
 		char *q = (char*)p;
-		lf_stack_entry_t *next =
-				(lf_stack_entry_t*)(q + stack->entry_size);
+		lfs_entry_t *next =
+				(lfs_entry_t*)(q + stack->entry_size);
 
 		p->next = next;
 		p = next;
@@ -61,15 +50,15 @@ void stack_initialize(lf_stack_t *stack, void *buf,
 	p->next = NULL;
 }
 
-void stack_push(volatile lf_stack_t *stack, void *p)
+void lfs_push(volatile lfs_t *stack, void *p)
 {
-	lf_stack_entry_t *entry = (lf_stack_entry_t*)p;
-	lf_stack_head_t newhead;
+	lfs_entry_t *entry = (lfs_entry_t*)p;
+	lfs_head_t newhead;
 
 	newhead.next = entry;
 
 	for (;;) {
-		lf_stack_head_t oldhead = stack->head;
+		lfs_head_t oldhead = stack->head;
 
 		if ((oldhead.next == stack->head.next)
 				&& (oldhead.count == stack->head.count)) {
@@ -87,10 +76,10 @@ void stack_push(volatile lf_stack_t *stack, void *p)
 	}
 }
 
-void *stack_pop(volatile lf_stack_t *stack) {
+void *lfs_pop(volatile lfs_t *stack) {
 	for (;;) {
-		lf_stack_head_t oldhead = stack->head;
-		lf_stack_head_t newhead;
+		lfs_head_t oldhead = stack->head;
+		lfs_head_t newhead;
 
 		if ((oldhead.next == stack->head.next)
 				&& (oldhead.count == stack->head.count)) {

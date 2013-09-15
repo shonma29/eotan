@@ -30,14 +30,10 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/lf_queue.h>
 #include <set/lf_stack.h>
 
-size_t queue_node_size(size_t size)
-{
-	return size + sizeof(lf_node_t) - sizeof(lf_stack_entry_t);
-}
 
-int queue_initialize(lf_queue_t *q, lf_stack_t *stack, size_t size)
+int lfq_initialize(lfq_t *q, lfs_t *stack, size_t size)
 {
-	lf_node_t *node = (lf_node_t*)stack_pop(stack);
+	lfq_node_t *node = (lfq_node_t*)lfs_pop(stack);
 
 	if (!node)
 		return QUEUE_MEMORY;
@@ -50,9 +46,9 @@ int queue_initialize(lf_queue_t *q, lf_stack_t *stack, size_t size)
 	return QUEUE_OK;
 }
 
-int queue_enqueue(volatile lf_queue_t *q, void *value)
+int lfq_enqueue(volatile lfq_t *q, void *value)
 {
-	lf_node_t *node = (lf_node_t*)stack_pop(q->stack);
+	lfq_node_t *node = (lfq_node_t*)lfs_pop(q->stack);
 
 	if (!node)
 		return QUEUE_MEMORY;
@@ -61,8 +57,8 @@ int queue_enqueue(volatile lf_queue_t *q, void *value)
 	memcpy(node->value, (char*)value, q->size);
 
 	for (;;) {
-		lf_pointer_t tail = q->tail;
-		lf_pointer_t next = tail.ptr->next;
+		lfq_pointer_t tail = q->tail;
+		lfq_pointer_t next = tail.ptr->next;
 
 		if ((tail.ptr == q->tail.ptr)
 				&& (tail.count == q->tail.count)) {
@@ -88,12 +84,12 @@ int queue_enqueue(volatile lf_queue_t *q, void *value)
 	}
 }
 
-int queue_dequeue(void *value, volatile lf_queue_t *q)
+int lfq_dequeue(void *value, volatile lfq_t *q)
 {
 	for (;;) {
-		lf_pointer_t head = q->head;
-		lf_pointer_t tail = q->tail;
-		lf_pointer_t next = head.ptr->next;
+		lfq_pointer_t head = q->head;
+		lfq_pointer_t tail = q->tail;
+		lfq_pointer_t next = head.ptr->next;
 
 		if ((head.ptr == q->head.ptr)
 				&& (head.count == q->head.count)) {
@@ -114,7 +110,7 @@ int queue_dequeue(void *value, volatile lf_queue_t *q)
 						(unsigned int)head.ptr,
 						head.count + 1,
 						(unsigned int)next.ptr)) {
-					stack_push(q->stack, head.ptr);
+					lfs_push(q->stack, head.ptr);
 					return QUEUE_OK;
 				}
 			}
