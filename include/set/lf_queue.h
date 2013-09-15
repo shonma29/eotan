@@ -1,5 +1,5 @@
-#ifndef _MPU_MUTEX_H_
-#define _MPU_MUTEX_H_
+#ifndef SET_LF_QUEUE_H
+#define SET_LF_QUEUE_H
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,39 +26,34 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <set/lf_stack.h>
 
-static inline int mutex_get(volatile char *mtx) {
-	char v;
+#define QUEUE_OK (0)
+#define QUEUE_EMPTY (-1)
+#define QUEUE_MEMORY (-2)
 
-	__asm__ __volatile__ ( \
-			"movb $1, %b0\n\t" \
-			"xchgb %b0, (%1)\n\t" \
-			:"=q"(v), "+m"(mtx));
-	return v;
-}
+typedef struct _lf_pointer_t {
+	struct _lf_node_t *ptr;
+	unsigned int count;
+} lf_pointer_t;
 
-static inline void mutex_release(volatile char *mtx) {
-	__asm__ __volatile__ ( \
-			"xorb %%al, %%al\n\t" \
-			"xchgb %%al, (%0)\n\t" \
-			:"+m"(mtx) \
-			: \
-			:"%al");
-}
+typedef struct _lf_node_t {
+	lf_pointer_t next;
+	char value[0];
+} lf_node_t;
 
-static inline int cas64(char *p,
-		unsigned int old_high, unsigned int old_low,
-		unsigned int new_high, unsigned int new_low) {
-	char eq;
+typedef struct _lf_queue_t {
+	lf_pointer_t head;
+	lf_pointer_t tail;
+	lf_stack_t *stack;
+	size_t size;
+} lf_queue_t;
 
-	__asm__ __volatile__ ( \
-			"lock cmpxchg8b %1\n\t" \
-			"setz %0\n\t" \
-			:"=q"(eq), "+m"(*p) \
-			:"d"(old_high), "a"(old_low), \
-					"c"(new_high), "b"(new_low) \
-			:);
-	return (int)eq;
-}
+
+extern size_t queue_node_size(size_t size);
+extern int queue_initialize(lf_queue_t *q, lf_stack_t *stack, size_t size);
+
+extern int queue_enqueue(volatile lf_queue_t *q, void *value);
+extern int queue_dequeue(void *value, volatile lf_queue_t *q);
 
 #endif

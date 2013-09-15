@@ -1,5 +1,5 @@
-#ifndef SET_STACK_H
-#define SET_STACK_H
+#ifndef SET_LF_STACK_H
+#define SET_LF_STACK_H
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -28,36 +28,43 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include "stddef.h"
 
-typedef struct _stack_entry_t {
-	struct _stack_entry_t *next;
-} stack_entry_t;
+typedef struct _lf_stack_entry_t {
+	struct _lf_stack_entry_t *next;
+	char buf[0];
+} lf_stack_entry_t;
 
-typedef struct _stack_head_t {
-	stack_entry_t *next;
+typedef struct _lf_stack_head_t {
+	lf_stack_entry_t *next;
 	size_t count;
-} stack_head_t;
+} lf_stack_head_t;
 
-typedef struct _stack_t {
-	stack_head_t head;
-	void *buf;
-} stack_t;
+typedef struct _lf_stack_t {
+	lf_stack_head_t head;
+	size_t entry_size;
+} lf_stack_t;
 
 
-static inline void *stack_next(stack_entry_t *entry) {
+static inline lf_stack_entry_t *stack_next(lf_stack_entry_t *entry)
+{
 	return entry->next;
 }
 
-static inline int stack_is_empty(stack_t *guard) {
-	return !(guard->head.next);
+static inline void *stack_buf(lf_stack_entry_t *entry)
+{
+	return (void*)(entry->buf);
+}
+
+static inline int stack_is_empty(lf_stack_t *stack)
+{
+	return !(stack->head.next);
 }
 
 extern size_t stack_entry_size(size_t size);
-extern size_t stack_buf_size(size_t entry_size, size_t entry_num);
+extern size_t stack_buf_size(size_t size, size_t entry_num);
+extern void stack_initialize(lf_stack_t *stack, void *buf,
+	size_t size, size_t entry_num);
 
-extern void stack_initialize(stack_t *guard, void *buf,
-	size_t entry_size, size_t entry_num);
-
-extern void stack_push(stack_t *guard, void *p);
-extern void *stack_pop(stack_t *guard);
+extern void stack_push(volatile lf_stack_t *stack, void *p);
+extern void *stack_pop(volatile lf_stack_t *stack);
 
 #endif

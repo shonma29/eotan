@@ -1,5 +1,3 @@
-#ifndef _MPU_MUTEX_H_
-#define _MPU_MUTEX_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,39 +24,73 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#if 0
+#include <stdio.h>
+#include <stddef.h>
+#include <set/lf_stack.h>
+#include <set/lf_queue.h>
 
-static inline int mutex_get(volatile char *mtx) {
-	char v;
+typedef struct {
+	lf_pointer_t next;
+	unsigned int value;
+} node_t;
 
-	__asm__ __volatile__ ( \
-			"movb $1, %b0\n\t" \
-			"xchgb %b0, (%1)\n\t" \
-			:"=q"(v), "+m"(mtx));
-	return v;
+int main(int argc, char **argv)
+{
+	char buf[stack_buf_size(queue_node_size(4), 4)];
+	lf_node_t *x;
+	lf_queue_t q;
+	lf_stack_t s;
+	int r;
+	int y;
+
+	stack_initialize(&s, buf, queue_node_size(4), 4);
+	queue_initialize(&q, &s, 4);
+
+	// init
+	printf("init[0]=%p, %p, %p\n", &q, &s, &buf[0]);
+
+	// empty
+	y = 0;
+	r = queue_dequeue(&y, &q);
+	printf("deq[0]=%x, %x\n", r, y);
+
+	// enq 1
+	y = 1;
+	r = queue_enqueue(&q, &y);
+	printf("enq[1]=%x, %x\n", r, y);
+
+	// deq 1
+	y = 2;
+	r = queue_dequeue(&y, &q);
+	printf("deq[1]=%x, %x\n", r, y);
+
+	y = 3;
+	r = queue_dequeue(&y, &q);
+	printf("deq[1]=%x, %x\n", r, y);
+
+	// enq 2
+	y = 4;
+	r = queue_enqueue(&q, &y);
+	printf("enq[2]=%x, %x\n", r, y);
+
+	y = 5;
+	r = queue_enqueue(&q, &y);
+	printf("enq[2]=%x, %x\n", r, y);
+
+	// deq 2
+	y = 6;
+	r = queue_dequeue(&y, &q);
+	printf("deq[2]=%x, %x\n", r, y);
+
+	y = 7;
+	r = queue_dequeue(&y, &q);
+	printf("deq[2]=%x, %x\n", r, y);
+
+	y = 8;
+	r = queue_dequeue(&y, &q);
+	printf("deq[2]=%x, %x\n", r, y);
+
+	return 0;
 }
-
-static inline void mutex_release(volatile char *mtx) {
-	__asm__ __volatile__ ( \
-			"xorb %%al, %%al\n\t" \
-			"xchgb %%al, (%0)\n\t" \
-			:"+m"(mtx) \
-			: \
-			:"%al");
-}
-
-static inline int cas64(char *p,
-		unsigned int old_high, unsigned int old_low,
-		unsigned int new_high, unsigned int new_low) {
-	char eq;
-
-	__asm__ __volatile__ ( \
-			"lock cmpxchg8b %1\n\t" \
-			"setz %0\n\t" \
-			:"=q"(eq), "+m"(*p) \
-			:"d"(old_high), "a"(old_low), \
-					"c"(new_high), "b"(new_low) \
-			:);
-	return (int)eq;
-}
-
 #endif
