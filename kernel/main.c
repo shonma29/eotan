@@ -202,9 +202,7 @@ static ER initialize(void)
 
     do_timer = 0;
 
-#ifdef AUTO_START
     run_init_program();
-#endif
 
     return (E_OK);
 }

@@ -27,7 +27,6 @@ TARGET = kernel/version.h kernel/core.bin
 
 include Makefile.in
 
-CFLAGS += -DAUTO_START
 ENTRY_ADDR = 0x80100000
 ENTRY_FUNC = startup
 
