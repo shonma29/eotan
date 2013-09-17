@@ -128,9 +128,7 @@ int main(void)
 {
     ID type, tskid, id;
     ER errno = E_OK;
-#ifdef HALT_WHEN_IDLE
-    int do_halt;
-#endif
+    BOOL do_halt;
 
     if (initialize() != E_OK) {
 	printk("main: cannot initialize.\n");
@@ -138,25 +136,19 @@ int main(void)
     }
 
     for (;;) {			/* Idle タスクとなる。 */
-#ifdef HALT_WHEN_IDLE
-        do_halt = 1;
-#endif
+        do_halt = TRUE;
 
 	if (do_timer) {
 	    /* timer に定義されている関数の実行 */
 	    check_timer();
 	    do_timer = 0;
-#ifdef HALT_WHEN_IDLE
-	    do_halt = 0;
-#endif
+	    do_halt = FALSE;
 	    thread_change_priority(KERNEL_TASK, MAX_PRIORITY);
 	}
 
 	/* タスクの強制終了処理 */
 	if (trmtbl_num != 0) {
-#ifdef HALT_WHEN_IDLE
-	  do_halt = 0;
-#endif
+	  do_halt = FALSE;
 	  pick_trmtbl(&type, &tskid, &id);
 	  switch(type) {
 	  case 0: /* POSIX */
@@ -174,9 +166,7 @@ int main(void)
 	  }
 	}
 
-#if defined(HALT_WHEN_IDLE)
 	if (do_halt) halt();
-#endif
 
 	thread_switch();
     }

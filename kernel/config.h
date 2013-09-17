@@ -32,7 +32,6 @@ Version 2, June 1991
 #define CLOCK		10		/* clock 周期 10 ms */
 #define TICKS		(1000/CLOCK)	/* 1 秒間の tick 数 */
 #define QUANTUM		(40/CLOCK)	/* 40 ms */
-#define HALT_WHEN_IDLE	1	/* IDLE 時に CPU を Halt で停止する */
 
 /* メモリ管理関係 */
 #define MIN_MEMORY_SIZE		(8 * 1024 * 1024) /* メモリは最小 8 M */
