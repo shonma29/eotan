@@ -80,32 +80,26 @@ extern W do_timer;
 static int trmtbl_num = 0;
 static int trmtbl_top = 0;
 static struct TRMTBL {
-  ID type; /* POSIX = 0, BTRON = 1 */
-  ID tskid; /* task id */
   ID id; /* pid/??? */
 } trmtbl[TRMTBL_SIZE];
 
-ER add_trmtbl(ID type, ID tskid, ID id)
+ER add_trmtbl(ID id)
 {
   int pos;
   if (trmtbl_num == TRMTBL_SIZE) {
     return(E_NOMEM);
   }
   pos = (trmtbl_top+trmtbl_num) % TRMTBL_SIZE;
-  trmtbl[pos].type = type;
-  trmtbl[pos].tskid = tskid;
   trmtbl[pos].id = id;
   ++trmtbl_num;
   return(E_OK);
 }
 
-static ER pick_trmtbl(ID *type, ID *tskid, ID *id)
+static ER pick_trmtbl(ID *id)
 {
   if (trmtbl_num == 0) {
     return(E_NOMEM);
   }
-  *type = trmtbl[trmtbl_top].type;
-  *tskid = trmtbl[trmtbl_top].tskid;
   *id = trmtbl[trmtbl_top].id;
   return(E_OK);
 }
@@ -126,8 +120,6 @@ static ER rm_trmtbl()
  */
 int main(void)
 {
-    ID type, tskid, id;
-    ER errno = E_OK;
     BOOL do_halt;
 
     if (initialize() != E_OK) {
@@ -148,16 +140,12 @@ int main(void)
 
 	/* タスクの強制終了処理 */
 	if (trmtbl_num != 0) {
+	  ID id;
+
 	  do_halt = FALSE;
-	  pick_trmtbl(&type, &tskid, &id);
-	  switch(type) {
-	  case 0: /* POSIX */
-	    errno = posix_kill_proc(id);
-	    break;
-	  case 1: /* BTRON */
-	    break;
-	  }
-	  if (errno == E_OK) {
+	  pick_trmtbl(&id);
+
+	  if (posix_kill_proc(id) == E_OK) {
 	    rm_trmtbl();
 	    if (trmtbl_num == 0) {
 	      /* 強制終了するタスクが無くなったので，優先度を最低に */

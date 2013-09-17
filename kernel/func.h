@@ -24,7 +24,7 @@ Version 2, June 1991
 
 /* main.c */
 extern int main(void);
-extern ER add_trmtbl(ID, ID, ID);
+extern ER add_trmtbl(ID id);
 
 /* printk.c */
 extern int printk(const char *format, ...);

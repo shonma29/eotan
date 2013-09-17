@@ -181,8 +181,8 @@ W pf_handler(W cr2, W eip)
     thread_local_t *local = (thread_local_t*)LOCAL_ADDR;
 
     /* KERNEL_TASK への登録 */
-    /* type = POSIX, id = pid */
-    add_trmtbl(0, run_task->tskid, local->process_id);
+    /* id = pid */
+    add_trmtbl(local->process_id);
     /* KERNEL_TASK の優先度変更 */
     thread_change_priority(KERNEL_TASK, pri_dispatcher);
     return (E_OK);
