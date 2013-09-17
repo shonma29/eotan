@@ -59,18 +59,15 @@ static inline int lfs_is_empty(lfs_t *stack)
 	return !(stack->head.next);
 }
 
-static inline size_t lfs_entry_size(size_t size)
-{
-	return (size + sizeof(lfs_entry_t) + sizeof(ptr_t) - 1)
-			& ~(sizeof(ptr_t) - 1);
-}
+#define lfs_entry_size(size) \
+	((size + sizeof(lfs_entry_t) + sizeof(ptr_t) - 1) \
+			& ~(sizeof(ptr_t) - 1))
 
-static inline size_t lfs_buf_size(size_t size, size_t entry_num)
-{
-	return lfs_entry_size(size) * entry_num;
-}
+#define lfs_buf_size(size, entry_num) \
+	(lfs_entry_size(size) * entry_num)
 
-extern void lfs_initialize(lfs_t *stack, void *buf,
+
+extern void lfs_initialize(volatile lfs_t *stack, void *buf,
 	size_t size, size_t entry_num);
 
 extern void lfs_push(volatile lfs_t *stack, void *p);

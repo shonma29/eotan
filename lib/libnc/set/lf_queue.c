@@ -31,16 +31,19 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/lf_stack.h>
 
 
-int lfq_initialize(lfq_t *q, lfs_t *stack, size_t size)
+int lfq_initialize(volatile lfq_t *q, void *buf, size_t size, size_t node_num)
 {
-	lfq_node_t *node = (lfq_node_t*)lfs_pop(stack);
+	lfq_node_t *node;
+
+	lfs_initialize(&(q->stack), buf,
+			lfq_node_size(size) - sizeof(lfs_entry_t), node_num);
+	node = (lfq_node_t*)lfs_pop(&(q->stack));
 
 	if (!node)
 		return QUEUE_MEMORY;
 
 	node->next.ptr = NULL;
 	q->tail.ptr = q->head.ptr = node;
-	q->stack = stack;
 	q->size = size;
 
 	return QUEUE_OK;
@@ -48,7 +51,7 @@ int lfq_initialize(lfq_t *q, lfs_t *stack, size_t size)
 
 int lfq_enqueue(volatile lfq_t *q, void *value)
 {
-	lfq_node_t *node = (lfq_node_t*)lfs_pop(q->stack);
+	lfq_node_t *node = (lfq_node_t*)lfs_pop(&(q->stack));
 
 	if (!node)
 		return QUEUE_MEMORY;
@@ -110,7 +113,7 @@ int lfq_dequeue(void *value, volatile lfq_t *q)
 						(unsigned int)head.ptr,
 						head.count + 1,
 						(unsigned int)next.ptr)) {
-					lfs_push(q->stack, head.ptr);
+					lfs_push(&(q->stack), head.ptr);
 					return QUEUE_OK;
 				}
 			}

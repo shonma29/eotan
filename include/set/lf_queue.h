@@ -45,17 +45,20 @@ typedef struct _lfq_node_t {
 typedef struct _lfq_t {
 	lfq_pointer_t head;
 	lfq_pointer_t tail;
-	lfs_t *stack;
+	lfs_t stack;
 	size_t size;
 } lfq_t;
 
 
-static inline size_t lfq_node_size(size_t size)
-{
-	return size + sizeof(lfq_node_t) - sizeof(lfs_entry_t);
-}
+#define lfq_node_size(size) \
+	(size + sizeof(lfq_node_t))
 
-extern int lfq_initialize(lfq_t *q, lfs_t *stack, size_t size);
+#define lfq_buf_size(size, entry_num) \
+	(lfq_node_size(size) * entry_num)
+
+
+extern int lfq_initialize(volatile lfq_t *q, void *buf,
+		size_t size, size_t node_num);
 
 extern int lfq_enqueue(volatile lfq_t *q, void *value);
 extern int lfq_dequeue(void *value, volatile lfq_t *q);

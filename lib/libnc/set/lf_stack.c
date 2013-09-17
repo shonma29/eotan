@@ -29,7 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/lf_stack.h>
 
 
-void lfs_initialize(lfs_t *stack, void *buf,
+void lfs_initialize(volatile lfs_t *stack, void *buf,
 		size_t size, size_t entry_num)
 {
 	size_t i;

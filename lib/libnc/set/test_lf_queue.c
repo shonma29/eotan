@@ -37,18 +37,16 @@ typedef struct {
 
 int main(int argc, char **argv)
 {
-	char buf[lfs_buf_size(lfq_node_size(4), 4)];
+	char buf[lfq_buf_size(4, 4)];
 	lfq_node_t *x;
 	lfq_t q;
-	lfs_t s;
 	int r;
 	int y;
 
-	lfs_initialize(&s, buf, lfq_node_size(4), 4);
-	lfq_initialize(&q, &s, 4);
+	lfq_initialize(&q, buf, 4, 4);
 
 	// init
-	printf("init[0]=%p, %p, %p\n", &q, &s, &buf[0]);
+	printf("init[0]=%p, %p, %d\n", &q, &buf[0], sizeof(buf));
 
 	// empty
 	y = 0;
