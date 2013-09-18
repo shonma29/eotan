@@ -265,13 +265,13 @@ abort_with_error_handler:
 service_handler:
 	pushl %ds
 	pushl %edx
-	pushl %ecx
 	pushl %eax
+	pushl %ecx
 	movw $SELECTOR_KERN_DATA, %ax
 	movw %ax,%ds
 	call syscall
-	addl $4, %esp
 	popl %ecx
+	addl $4, %esp
 	popl %edx
 	popl %ds
 	sysexit

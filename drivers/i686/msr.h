@@ -36,6 +36,15 @@ enum {
 } msr_registers;
 
 
-extern void msr_write(UW addr, UW value);
+static inline void msr_write(UW addr, UW value)
+{
+	__asm__ __volatile__ (\
+			"xorl %%edx, %%edx\n\t" \
+			"wrmsr\n\t" \
+			: \
+			:"c"(addr), "a"(value) \
+			:"edx" \
+	);
+}
 
 #endif

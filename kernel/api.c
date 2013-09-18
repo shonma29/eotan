@@ -215,11 +215,11 @@ static ER (*syscall_table[])(VP argp) =
  *	分ける。
  *
  *	引数:
- *		sysno		システムコール番号
  *		arg_addr	ユーザスタックの top の番地
+ *		sysno		システムコール番号
  */
 W
-syscall (UW sysno, W *arg_addr)
+syscall (W *arg_addr, UW sysno)
 {
   W	errno;
 
@@ -227,7 +227,7 @@ syscall (UW sysno, W *arg_addr)
  */
   if (sysno >= NSYSCALL)
     {
-      return (E_NOSPT);
+      sysno = 0;
     }
 
   errno = (syscall_table[sysno])(arg_addr);
