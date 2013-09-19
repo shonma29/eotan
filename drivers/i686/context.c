@@ -257,8 +257,6 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
     /* page fault handler の登録 */
     tsk->page_fault_handler = pf_handler;
 
-    /* quantum の設定 */
-    tsk->quantum = QUANTUM;
     leave_critical();
 
     list_remove(&(tsk->wait.waiting));

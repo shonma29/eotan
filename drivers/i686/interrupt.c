@@ -28,14 +28,6 @@ Version 2, June 1991
 #include "mpufunc.h"
 #include "gate.h"
 
-/* T_INTR_HANDLER	割り込みハンドラ定義
- *
- */
-typedef struct intr_handler_t {
-    W masklevel;
-    void (*handler) (VP sp);
-} T_INTR_HANDLER;
-
 /*
  *	割り込み処理の大域変数
  *
@@ -47,11 +39,7 @@ BOOL delayed_dispatch = FALSE;
  * 割り込みハンドラテーブル
  * def_int システムコールで登録するときに使用する。
  */
-struct intr_entry {
-    FP func;
-};
-
-struct intr_entry intr_table[MAX_IDT + 1];
+FP intr_table[MAX_IDT + 1];
 
 
 
@@ -105,7 +93,7 @@ W init_interrupt(void)
     idt_set(PIC_IR_VECTOR(ir_keyboard), kern_code, int33_handler, interruptGate32, dpl_kern);
 
     for (i = 0; i < sizeof(intr_table) / sizeof(intr_table[0]); i++) {
-	intr_table[i].func = NULL;
+	intr_table[i] = NULL;
     }
 
     on_interrupt = 0;
@@ -134,8 +122,8 @@ void interrupt(W intn)
 
     switch (intn) {
     default:
-	if (intr_table[intn].func) {
-	    (intr_table[intn].func) ();
+	if (intr_table[intn]) {
+	    (intr_table[intn]) ();
 	} else {
 	    /* error!! */
 	    printk("unknown interrupt from %d\n", intn);
@@ -144,12 +132,6 @@ void interrupt(W intn)
 
     case PIC_IR_VECTOR(ir_pit):
 	intr_interval();
-	break;
-
-    case PIC_IR_VECTOR(ir_keyboard):
-	if (intr_table[PIC_IR_VECTOR(ir_keyboard)].func != 0) {
-	    (intr_table[PIC_IR_VECTOR(ir_keyboard)].func) ();
-	}
 	break;
     }
 
@@ -189,7 +171,7 @@ ER interrupt_bind(W inhno, T_DINH *pk_dinh)
     }
 
     printk("set_interrupt_entry = %d, func = 0x%x\n", inhno, pk_dinh->inthdr);
-    intr_table[inhno].func = pk_dinh->inthdr;
+    intr_table[inhno] = pk_dinh->inthdr;
 
     return (E_OK);
 }

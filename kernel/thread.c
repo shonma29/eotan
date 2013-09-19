@@ -441,6 +441,8 @@ ER thread_start(ID tskid, VP_INT stacd)
     task[tskid].tskstat = TTS_RDY;
     task[tskid].wait.sus_cnt = 0;
     task[tskid].total = 0;
+    task[tskid].quantum = QUANTUM;
+
     enter_critical();
     ready_enqueue(index, &(task[tskid].ready));
     leave_critical();
