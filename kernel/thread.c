@@ -318,7 +318,7 @@ ER thread_switch(void)
  *		E_OBJ	同一のタスクが存在している
  *
  */
-ER thread_create(ID tskid, T_CTSK * pk_ctsk)
+static ER thread_create(ID tskid, T_CTSK * pk_ctsk)
 {
     T_TCB *newtask;
     W i;
