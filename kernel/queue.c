@@ -279,16 +279,7 @@ ER queue_send(ID dtqid, VP_INT data)
 	if (receiver) {
 		T_TCB *tp = getTaskParent(receiver);
 
-		if (region_put(tp->tskid, (VP)(tp->wait.detail.que.data),
-				sizeof(data), &data)) {
-			printk("queue_send[%d] region_put(%d, %p, %d, %p) error\n",
-					dtqid, tp->tskid,
-					tp->wait.detail.que.data,
-					sizeof(data), data);
-			leave_serialize();
-			return E_SYS;
-		}
-
+		tp->wait.detail.que.data = data;
 		list_remove(receiver);
 		release(tp);
 
@@ -342,10 +333,13 @@ ER queue_receive(ID dtqid, VP_INT *p_data)
 	}
 
 	list_enqueue(&(q->receiver), &(run_task->wait.waiting));
-	run_task->wait.detail.que.data = (VP_INT)p_data;
 	run_task->wait.type = wait_que;
 	leave_serialize();
 
 	wait(run_task);
+
+	if (run_task->wait.result == E_OK)
+		*p_data = run_task->wait.detail.que.data;
+
 	return run_task->wait.result;
 }
