@@ -62,7 +62,6 @@ static VP_INT dequeue(queue_t *q);
 static queue_t *get_queue(const ID dtqid);
 static list_t *release_sender(VP_INT *d, queue_t *q);
 static void clear(queue_t *p, const T_CDTQ *pk_cdtq);
-static node_t *find_empty_key(tree_t *tree, int *hand);
 static void release_all(list_t *waiting);
 
 
@@ -159,28 +158,6 @@ static void clear(queue_t *p, const T_CDTQ *pk_cdtq) {
 	p->read = 0;
 	p->write = 0;
 	p->left = p->dtqcnt;
-}
-
-static node_t *find_empty_key(tree_t *tree, int *hand) {
-	int key;
-
-	for (key = *hand + 1; key <= MAX_AUTO_ID; key++) {
-/*int max = (tree == &(queue_tree))? 49156:MAX_AUTO_ID;
-	for (key = *hand + 1; key <= max; key++) {*/
-		if (!tree_get(tree, key)) {
-			*hand = key;
-			return tree_put(tree, key);
-		}
-	}
-/* TODO test */
-	for (key = MIN_AUTO_ID; key < *hand; key++) {
-		if (!tree_get(tree, key)) {
-			*hand = key;
-			return tree_put(tree, key);
-		}
-	}
-
-	return NULL;
 }
 
 ER_ID queue_create_auto(T_CDTQ *pk_cdtq)

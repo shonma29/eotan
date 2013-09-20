@@ -63,7 +63,6 @@ static inline port_t *getAcceptorParent(const list_t *p);
 static inline rendezvous_t *getRdvParent(const node_t *p);
 static inline T_TCB *getTaskParent(const list_t *p);
 static void clear(port_t *p, const T_CPOR *pk_cpor);
-static node_t *find_empty_key(tree_t *tree, int *hand);
 static void release_all(list_t *waiting);
 
 
@@ -160,28 +159,6 @@ ER port_create(ID porid, T_CPOR *pk_cpor)
 	leave_serialize();
 
 	return result;
-}
-
-static node_t *find_empty_key(tree_t *tree, int *hand) {
-	int key;
-
-	for (key = *hand + 1; key <= MAX_AUTO_ID; key++) {
-/*int max = (tree == &(port_tree))? 49156:MAX_AUTO_ID;
-	for (key = *hand + 1; key <= max; key++) {*/
-		if (!tree_get(tree, key)) {
-			*hand = key;
-			return tree_put(tree, key);
-		}
-	}
-/* TODO test */
-	for (key = MIN_AUTO_ID; key < *hand; key++) {
-		if (!tree_get(tree, key)) {
-			*hand = key;
-			return tree_put(tree, key);
-		}
-	}
-
-	return NULL;
 }
 
 ER_ID port_create_auto(T_CPOR *pk_cpor)

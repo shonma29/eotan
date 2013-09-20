@@ -19,6 +19,7 @@ Version 2, June 1991
 
 
 #include <core.h>
+#include <set/tree.h>
 #include <mpu/memory.h>
 #include "thread.h"
 
@@ -88,5 +89,8 @@ extern UW pmemfree(void);
 
 /* kcall.c */
 extern void kcall_initialize(void);
+
+/* tree_utils.c */
+extern node_t *find_empty_key(tree_t *tree, int *hand);
 
 #endif				/* __CORE_FUNC_H__ */
