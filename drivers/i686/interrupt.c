@@ -133,6 +133,12 @@ void interrupt(W intn)
     case PIC_IR_VECTOR(ir_pit):
 	intr_interval();
 	break;
+
+    case PIC_IR_VECTOR(ir_keyboard):
+	if (intr_table[PIC_IR_VECTOR(ir_keyboard)]) {
+	    (intr_table[PIC_IR_VECTOR(ir_keyboard)]) ();
+	}
+	break;
     }
 
     /* 割込みの禁止フラグの OFF */
