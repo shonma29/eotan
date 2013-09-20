@@ -136,9 +136,9 @@ T_TCB *run_task;		/* 現在、走行中のタスク */
 static T_TCB *task;
 static T_TCB task_buffer[MAX_TSKID - MIN_TSKID + 1];
 
-static T_TCB *getTaskParent(const list_t *p);
+static inline T_TCB *getTaskParent(const list_t *p);
 
-static T_TCB *getTaskParent(const list_t *p) {
+static inline T_TCB *getTaskParent(const list_t *p) {
 	return (T_TCB*)((ptr_t)p - offsetof(T_TCB, ready));
 }
 
