@@ -134,7 +134,7 @@ ER mpu_copy_stack(ID src, W esp, ID dst)
     src_tsk = get_thread_ptr(src);
 
     if (!src_tsk) {
-	return (E_ID);
+	return (E_NOEXS);
     }
 
     enter_critical();
@@ -184,7 +184,7 @@ W pf_handler(W cr2, W eip)
     /* id = pid */
     add_trmtbl(local->process_id);
     /* KERNEL_TASK の優先度変更 */
-    thread_change_priority(KERNEL_TASK, pri_dispatcher);
+    thread_change_priority(kernel_task_id, pri_dispatcher);
     return (E_OK);
 }
 
@@ -197,7 +197,7 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
     char **ap, **bp, **esp;
 
     if (!tsk) {
-	return (E_ID);
+	return (E_NOEXS);
     }
 
     if (tid & INIT_THREAD_ID_FLAG) {

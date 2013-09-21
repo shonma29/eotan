@@ -291,19 +291,15 @@ W psc_kill_f(RDVNO rdvno, struct posix_request *req)
     mypid = req->param.par_kill.pid;
     error_no = proc_get_procp(mypid, &myprocp);
     if (error_no) {
-	return error_no;
-	if (req->caller != KERNEL_TASK) {
-	    put_response(rdvno, ESRCH, 0, 0);
-	}
+	put_response(rdvno, ESRCH, -1, 0);
+	return FALSE;
     }
     myprocp->proc_exst = (-1);	/* 強制終了時のステータスは (-1) で良いか? */
 
     error_no = proc_get_procp(myprocp->proc_ppid, &procp);
     if (error_no) {
-	return error_no;
-	if (req->caller != KERNEL_TASK) {
-	    put_response(rdvno, ESRCH, 0, 0);
-	}
+	put_response(rdvno, ESRCH, -1, 0);
+	return FALSE;
     }
     wpid = procp->proc_wpid;
     if (procp->proc_status == PS_WAIT &&
@@ -339,8 +335,7 @@ W psc_kill_f(RDVNO rdvno, struct posix_request *req)
     kcall->thread_terminate(myprocp->proc_maintask);
     kcall->thread_destroy(myprocp->proc_maintask);
 
-    if ((req->caller != KERNEL_TASK) &&
-	(req->caller != myprocp->proc_maintask)) {
+    if (req->caller != myprocp->proc_maintask) {
 	put_response(rdvno, EOK, 0, 0);
     }
     return (TRUE);

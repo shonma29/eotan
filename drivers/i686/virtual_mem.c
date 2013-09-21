@@ -462,7 +462,7 @@ UW vtor(ID tskid, UW addr)
     UW result;
 
     taskp = (T_TCB *) get_thread_ptr(tskid);
-    if (taskp->tskstat == TSK_NONE)
+    if (!taskp)
     {
 	return (UW)(NULL);
     }
@@ -532,7 +532,7 @@ ER region_create(ID id,		/* task ID */
     if (rid < 0 || rid >= MAX_REGION)
 	return (E_PAR);
     if (taskp->regions[rid].permission != 0) {
-	return (E_ID);
+	return (E_OBJ);
     }
     regp = &(taskp->regions[rid]);
 
@@ -626,7 +626,7 @@ ER region_map(ID id, VP start, UW size, W accmode)
     UW newsize;
 
     taskp = (T_TCB *) get_thread_ptr(id);
-    if (taskp->tskstat == TSK_NONE)
+    if (!taskp)
     {
 #ifdef DEBUG
 	printk("region_map: taskp->tskstat = %d\n", taskp->tskstat);	/* */
@@ -702,7 +702,7 @@ ER region_unmap(ID id, VP start, UW size)
     UW newsize;
 
     taskp = (T_TCB *) get_thread_ptr(id);
-    if (taskp->tskstat == TSK_NONE) {
+    if (!taskp) {
 	return (E_PAR);
     }
 
@@ -758,11 +758,11 @@ ER region_duplicate(ID src, ID dst)
     printk("region_duplicate %d %d\n", src, dst);
 #endif
     taskp = (T_TCB *) get_thread_ptr(src);
-    if (taskp->tskstat == TSK_NONE) {
+    if (!taskp) {
 	return (E_PAR);
     }
     dstp = (T_TCB *) get_thread_ptr(dst);
-    if (dstp->tskstat == TSK_NONE) {
+    if (!dstp) {
 	return (E_PAR);
     }
 
@@ -784,7 +784,7 @@ ER region_duplicate(ID src, ID dst)
  * 以下のエラー番号が返る。
  *
  *	E_OK     成功  
- *	E_ID     リージョンをもつタスク
+ *	E_NOEXS  リージョンをもつタスクは存在しない
  *	E_NOSPT  本システムコールは、未サポート機能である
  *
  */
@@ -863,7 +863,7 @@ ER region_get(ID id, VP start, UW size, VP buf)
  * 以下のエラー番号が返る。
  *
  *	E_OK     リージョンへの書き込みに成功  
- *	E_ID     引数 id に対応したタスクは存在しない
+ *	E_NOEXS  引数 id に対応したタスクは存在しない
  *	E_NOSPT  本システムコールは、未サポート機能である
  *
  */
@@ -884,10 +884,7 @@ ER region_put(ID id, VP start, UW size, VP buf)
 
     th = get_thread_ptr(id);
     if (!th)
-	return E_PAR;
-
-    if (th->tskstat == TSK_NONE)
-	return E_PAR;
+	return E_NOEXS;
 
     return vmemcpy(th, start, buf, size);
 }
@@ -906,7 +903,7 @@ ER region_put(ID id, VP start, UW size, VP buf)
  * 以下のエラー番号が返る。
  *
  *	E_OK     リージョンの情報の取得に成功  
- *	E_ID     引数 id で指定したタスクは存在しない
+ *	E_NOEXS  引数 id で指定したタスクは存在しない
  *	E_NOSPT  本システムコールは、未サポート機能である
  *
  */
@@ -924,15 +921,15 @@ ER region_get_status(ID id, ID rid, VP stat)
     if (taskp == NULL) {
 	/*
 	 * 引数で指定した ID をもつタスクは存在していない。
-	 * E_OBJ を返す。
+	 * E_NOEXS を返す。
 	 */
-	return (E_OBJ);
+	return (E_NOEXS);
     }
 
     if (rid < 0 || rid >= MAX_REGION)
 	return (E_PAR);
     if (taskp->regions[rid].permission == 0)
-	return (E_ID);
+	return (E_OBJ);
 
     regp->start_addr = taskp->regions[rid].start_addr;
     regp->min_size = taskp->regions[rid].min_size;

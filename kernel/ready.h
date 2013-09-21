@@ -30,7 +30,6 @@ For more information, please refer to <http://unlicense.org/>
 
 extern void ready_initialize();
 extern void ready_enqueue(const int pri, list_t *src);
-extern void ready_push(const int pri, list_t *src);
 extern void ready_rotate(const int pri);
 extern list_t *ready_dequeue();
 

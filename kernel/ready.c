@@ -49,13 +49,6 @@ void ready_enqueue(const int pri, list_t *src) {
 	list_enqueue(dest, src);
 }
 
-void ready_push(const int pri, list_t *src) {
-	list_t *dest = &(ready_task[pri]);
-
-	if (list_is_empty(dest))	heap_enqueue(&heap, pri);
-	list_push(dest, src);
-}
-
 void ready_rotate(const int pri) {
 	list_t *head = list_dequeue(&(ready_task[pri]));
 

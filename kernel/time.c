@@ -169,7 +169,7 @@ void intr_interval(void)
 	if ((time_list->time <= 0) && (do_timer == 0)) {
 	    /* KERNEL_TASK で timer に設定されている関数を実行 */
 	    do_timer = 1;
-	    thread_change_priority(KERNEL_TASK, pri_dispatcher);
+	    thread_change_priority(kernel_task_id, pri_dispatcher);
 	    thread_switch();
 	}
     }

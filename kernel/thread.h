@@ -18,13 +18,12 @@ Version 2, June 1991
 #define __CORE_TASK_H__	1
 
 #include <set/list.h>
+#include <set/tree.h>
 #include <core.h>
 #include "config.h"
 #include "region.h"
 #include "wait.h"
 #include "mpu/mpu.h"
-
-#define KERNEL_TASK	(1)
 
 /* t_tcb --- タスク構造体
  *
@@ -33,6 +32,7 @@ Version 2, June 1991
  *
  */
 typedef struct t_tcb {
+    node_t node;
     list_t ready;
 
     W tskid;			/* タスク ID                    */
@@ -71,5 +71,6 @@ typedef struct t_tcb {
 
 
 extern T_TCB *run_task;		/* 現在、走行中のタスク */
+extern ID kernel_task_id;
 
 #endif				/* __CORE_TASK_H__ */

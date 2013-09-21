@@ -23,10 +23,6 @@ Version 2, June 1991
 #define _CORE_CONFIG_H_	1
 
 /* タスク管理関係 */
-#define MAX_TSKID	(128)	/* 最大のタスク ID 数   */
-#define MIN_TSKID	(1)	/* 最小のタスク ID 数   */
-#define NTASK		(MAX_TSKID - MIN_TSKID + 1)	/* タスク数     */
-
 #define MAX_SUSPEND_NEST	(10)	/* サスペンドのネストのオーバーフロー */
 
 #define CLOCK		10		/* clock 周期 10 ms */

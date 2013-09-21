@@ -72,6 +72,8 @@ Version 2, June 1991
 static ER initialize(void);
 static void banner(void);
 
+ID kernel_task_id = 0;
+
 /* 外部変数の宣言 */
 extern W do_timer;
 
@@ -135,7 +137,7 @@ int main(void)
 	    check_timer();
 	    do_timer = 0;
 	    do_halt = FALSE;
-	    thread_change_priority(KERNEL_TASK, MAX_PRIORITY);
+	    thread_change_priority(kernel_task_id, MAX_PRIORITY);
 	}
 
 	/* タスクの強制終了処理 */
@@ -149,7 +151,7 @@ int main(void)
 	    rm_trmtbl();
 	    if (trmtbl_num == 0) {
 	      /* 強制終了するタスクが無くなったので，優先度を最低に */
-	      thread_change_priority(KERNEL_TASK, MAX_PRIORITY);
+	      thread_change_priority(kernel_task_id, MAX_PRIORITY);
 	    }
 	  }
 	}
@@ -193,7 +195,7 @@ static ER initialize(void)
     /* 1番目のタスクを初期化する。そしてそのタスクを以後の処
      * 理で使用する。
      */
-    thread_initialize1();
+    kernel_task_id = thread_initialize1();
 
     timer_initialize();		/* インターバルタイマ機能の初期化 */
     time_initialize(rtc_get_time());		/* 時間管理機能の初期化 */

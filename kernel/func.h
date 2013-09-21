@@ -31,22 +31,15 @@ extern ER add_trmtbl(ID id);
 extern int printk(const char *format, ...);
 
 /* thread.c */
-extern void thread_initialize(void);
-extern void thread_initialize1(void);
 extern ER thread_switch(void);
 extern ER thread_start(ID tskid, VP_INT stacd);
-extern ER thread_destroy(ID tskid);
 extern void thread_end(void);
-extern void thread_end_and_destroy(void);
-extern ER thread_terminate(ID tskid);
 extern ER thread_release(ID tskid);
 extern ER thread_get_id(ID * p_tskid);
 extern ER thread_suspend(ID tskid);
 extern ER thread_resume(ID tskid);
 extern ER thread_change_priority(ID tskid, PRI tskpri);
 extern ER rot_rdq(PRI tskpri);
-extern ER_ID thread_create_auto(T_CTSK * pk_ctsk);
-extern T_TCB *get_thread_ptr(ID tskid);
 
 /* posix.c */
 extern ER posix_kill_proc(ID pid);
@@ -92,5 +85,14 @@ extern void kcall_initialize(void);
 
 /* tree_utils.c */
 extern node_t *find_empty_key(tree_t *tree, int *hand);
+
+/* nthread.c */
+extern ER thread_initialize(void);
+extern T_TCB *get_thread_ptr(ID tskid);
+extern ER_ID thread_initialize1(void);
+extern ER_ID thread_create_auto(T_CTSK * pk_ctsk);
+extern ER thread_destroy(ID tskid);
+extern void thread_end_and_destroy(void);
+extern ER thread_terminate(ID tskid);
 
 #endif				/* __CORE_FUNC_H__ */
