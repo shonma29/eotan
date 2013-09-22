@@ -249,11 +249,10 @@ ER thread_terminate(ID tskid)
 			break;
 
 		case TTS_WAI:
-		case TTS_SUS:
 		case TTS_WAS:
 			if (th->wait.type)
 				list_remove(&(th->wait.waiting));
-
+		case TTS_SUS:
 			th->tskstat = TTS_DMT;
 			result = E_OK;
 			break;
