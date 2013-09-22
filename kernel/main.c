@@ -105,7 +105,7 @@ int main(void)
 	}
 
 	/* タスクの強制終了処理 */
-	if (lfq_dequeue(&id, &kqueue) == QUEUE_OK) {
+	if (lfq_dequeue(&kqueue, &id) == QUEUE_OK) {
 	    posix_kill_proc(id);
 
 	} else if (run_task->tsklevel != MAX_PRIORITY) {

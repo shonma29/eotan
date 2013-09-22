@@ -61,6 +61,6 @@ extern int lfq_initialize(volatile lfq_t *q, void *buf,
 		size_t size, size_t node_num);
 
 extern int lfq_enqueue(volatile lfq_t *q, void *value);
-extern int lfq_dequeue(void *value, volatile lfq_t *q);
+extern int lfq_dequeue(volatile lfq_t *q, void *value);
 
 #endif

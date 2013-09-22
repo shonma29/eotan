@@ -50,7 +50,7 @@ int main(int argc, char **argv)
 
 	// empty
 	y = 0;
-	r = lfq_dequeue(&y, &q);
+	r = lfq_dequeue(&q, &y);
 	printf("deq[0]=%x, %x\n", r, y);
 
 	// enq 1
@@ -60,11 +60,11 @@ int main(int argc, char **argv)
 
 	// deq 1
 	y = 2;
-	r = lfq_dequeue(&y, &q);
+	r = lfq_dequeue(&q, &y);
 	printf("deq[1]=%x, %x\n", r, y);
 
 	y = 3;
-	r = lfq_dequeue(&y, &q);
+	r = lfq_dequeue(&q, &y);
 	printf("deq[1]=%x, %x\n", r, y);
 
 	// enq 2
@@ -78,15 +78,15 @@ int main(int argc, char **argv)
 
 	// deq 2
 	y = 6;
-	r = lfq_dequeue(&y, &q);
+	r = lfq_dequeue(&q, &y);
 	printf("deq[2]=%x, %x\n", r, y);
 
 	y = 7;
-	r = lfq_dequeue(&y, &q);
+	r = lfq_dequeue(&q, &y);
 	printf("deq[2]=%x, %x\n", r, y);
 
 	y = 8;
-	r = lfq_dequeue(&y, &q);
+	r = lfq_dequeue(&q, &y);
 	printf("deq[2]=%x, %x\n", r, y);
 
 	return 0;

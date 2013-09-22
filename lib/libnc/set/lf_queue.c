@@ -87,7 +87,7 @@ int lfq_enqueue(volatile lfq_t *q, void *value)
 	}
 }
 
-int lfq_dequeue(void *value, volatile lfq_t *q)
+int lfq_dequeue(volatile lfq_t *q, void *value)
 {
 	for (;;) {
 		lfq_pointer_t head = q->head;
