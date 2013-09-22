@@ -257,8 +257,6 @@ ER thread_change_priority(ID tskid, PRI tskpri)
 	leave_critical();
 	break;
 
-	break;
-
     default:
 	return (E_OBJ);
     }

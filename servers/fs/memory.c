@@ -33,17 +33,6 @@ Version 2, June 1991
 #include "fs.h"
 
 
-
-/* init_filesystem
- *
- */
-ER init_memory(void)
-{
-    return (E_OK);
-}
-
-
-
 /* alloc_memory - プロセスに対して任意の仮想メモリを割り当てる。
  *
  * 引数：
@@ -108,11 +97,4 @@ W destroy_proc_memory(struct proc * procp, W unmap)
 
     procp->vm_tree = NULL;
     return (EOK);
-}
-
-
-
-W vm_page_fault_handler()
-{
-    return (ENOSUP);
 }

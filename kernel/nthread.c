@@ -150,8 +150,6 @@ ER_ID thread_create_auto(T_CTSK *pk_ctsk)
 
 	if (pk_ctsk->tskatr & TA_ASM)
 		return E_RSATR;
-	if (pk_ctsk->tskatr != TA_HLNG)
-		return E_RSATR;
 
 	enter_serialize();
 	do {

@@ -133,7 +133,6 @@ int main(void)
      */
     init_fs();
     init_process();
-    init_memory();
 
     banner();
 

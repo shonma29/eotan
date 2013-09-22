@@ -429,8 +429,6 @@ struct vm_page *alloc_vm_page(struct vm_tree *treep,
     pagep->access = access;
     pagep->addr = addr;
     pagep->directory = dirp;
-    pagep->swap_file = NULL;
-    pagep->swap_page = -1;
     return (pagep);
 }
 
@@ -478,9 +476,6 @@ W destroy_vmtree(struct proc * procp, struct vm_tree * treep, W unmap)
 		pagep = dirp->page_table[page_index];
 		if (pagep) {
 		    /* ページの情報をパージする */
-		    if (pagep->swap_file) {
-			/* swap 情報を解放 */
-		    }
 		    if (unmap) {
 			error_no = kcall->region_unmap(procp->proc_maintask,
 					 (VP) (pagep->addr), PAGE_SIZE);

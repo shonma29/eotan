@@ -82,14 +82,10 @@ struct vm_page
   UW				access;			/* アクセス権の情報 */
   struct vm_directory		*directory;
   UW				addr;
-
-  struct inode			*swap_file;
-  W				swap_page;
 };
 
 
 /* memory.c */
-extern ER			init_memory (void);
 extern W			alloc_memory (W procid, UW start, UW size, UW access);
 extern W			free_memory (W procid, UW start, UW size);
 extern W			destroy_proc_memory (struct proc *procp, W unmap);
