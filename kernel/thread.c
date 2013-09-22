@@ -349,7 +349,6 @@ ER thread_suspend(ID tskid)
 	return (E_OBJ);
     }
 
-    taskp->wait.sus_cnt++;
     switch (taskp->tskstat) {
     case TTS_RDY:
 	list_remove(&(taskp->queue));
@@ -357,12 +356,8 @@ ER thread_suspend(ID tskid)
 	break;
 
     case TTS_SUS:
-	if (taskp->wait.sus_cnt > MAX_SUSPEND_NEST) {
-	    taskp->wait.sus_cnt = MAX_SUSPEND_NEST;
-	    leave_critical();
-	    return (E_QOVR);
-	}
-	break;
+	leave_critical();
+	return (E_QOVR);
 
     case TTS_WAI:
 	taskp->tskstat = TTS_WAS;
@@ -412,18 +407,12 @@ ER thread_resume(ID tskid)
 
     switch (taskp->tskstat) {
     case TTS_SUS:
-	taskp->wait.sus_cnt--;
-	if (taskp->wait.sus_cnt <= 0) {
-	    taskp->tskstat = TTS_RDY;
-	    ready_enqueue(taskp->tsklevel, &(taskp->queue));
-	}
+	taskp->tskstat = TTS_RDY;
+	ready_enqueue(taskp->tsklevel, &(taskp->queue));
 	break;
 
     case TTS_WAS:
-	taskp->wait.sus_cnt--;
-	if (taskp->wait.sus_cnt <= 0) {
-	    taskp->tskstat = TTS_WAI;
-	}
+	taskp->tskstat = TTS_WAI;
 	break;
 
     default:

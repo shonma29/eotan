@@ -229,7 +229,6 @@ ER thread_start(ID tskid)
 		}
 
 		th->tskstat = TTS_RDY;
-		th->wait.sus_cnt = 0;
 		th->total = 0;
 		th->quantum = QUANTUM;
 //TODO fix context_create_kernel

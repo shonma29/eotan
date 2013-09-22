@@ -38,7 +38,6 @@ typedef enum {
 } wait_type_e;
 
 typedef struct {
-	W sus_cnt;
 	wait_type_e type;
 	list_t waiting;
 	ER result;
