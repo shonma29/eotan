@@ -60,6 +60,7 @@ Version 2, June 1991
 #include <major.h>
 #include <mpu/config.h>
 #include <mpu/io.h>
+#include <set/lf_queue.h>
 #include "version.h"
 #include "thread.h"
 #include "func.h"
@@ -79,42 +80,9 @@ extern W do_timer;
 
 /* 強制終了するタスクのテーブル */
 #define TRMTBL_SIZE 10
-static int trmtbl_num = 0;
-static int trmtbl_top = 0;
-static struct TRMTBL {
-  ID id; /* pid/??? */
-} trmtbl[TRMTBL_SIZE];
+static char kqbuf[lfq_buf_size(sizeof(ID), TRMTBL_SIZE)];
+volatile lfq_t kqueue;
 
-ER add_trmtbl(ID id)
-{
-  int pos;
-  if (trmtbl_num == TRMTBL_SIZE) {
-    return(E_NOMEM);
-  }
-  pos = (trmtbl_top+trmtbl_num) % TRMTBL_SIZE;
-  trmtbl[pos].id = id;
-  ++trmtbl_num;
-  return(E_OK);
-}
-
-static ER pick_trmtbl(ID *id)
-{
-  if (trmtbl_num == 0) {
-    return(E_NOMEM);
-  }
-  *id = trmtbl[trmtbl_top].id;
-  return(E_OK);
-}
-
-static ER rm_trmtbl()
-{
-  if (trmtbl_num == 0) {
-    return(E_NOMEM);
-  }
-  trmtbl_top = (trmtbl_top+1) % TRMTBL_SIZE;
-  --trmtbl_num;
-  return(E_OK);
-}
 
 /*******************************************************************
  * main --- メイン関数
@@ -122,41 +90,29 @@ static ER rm_trmtbl()
  */
 int main(void)
 {
-    BOOL do_halt;
-
     if (initialize() != E_OK) {
 	printk("main: cannot initialize.\n");
 	panic("initialize");
     }
 
     for (;;) {			/* Idle タスクとなる。 */
-        do_halt = TRUE;
+	ID id;
 
 	if (do_timer) {
 	    /* timer に定義されている関数の実行 */
 	    check_timer();
 	    do_timer = 0;
-	    do_halt = FALSE;
-	    thread_change_priority(kernel_task_id, MAX_PRIORITY);
 	}
 
 	/* タスクの強制終了処理 */
-	if (trmtbl_num != 0) {
-	  ID id;
+	if (lfq_dequeue(&id, &kqueue) == QUEUE_OK) {
+	    posix_kill_proc(id);
 
-	  do_halt = FALSE;
-	  pick_trmtbl(&id);
+	} else if (run_task->tsklevel != MAX_PRIORITY) {
+	    thread_change_priority(kernel_task_id, MAX_PRIORITY);
 
-	  if (posix_kill_proc(id) == E_OK) {
-	    rm_trmtbl();
-	    if (trmtbl_num == 0) {
-	      /* 強制終了するタスクが無くなったので，優先度を最低に */
-	      thread_change_priority(kernel_task_id, MAX_PRIORITY);
-	    }
-	  }
-	}
-
-	if (do_halt) halt();
+	} else
+	    halt();
 
 	thread_switch();
     }
@@ -196,6 +152,7 @@ static ER initialize(void)
      * 理で使用する。
      */
     kernel_task_id = thread_initialize1();
+    lfq_initialize(&kqueue, kqbuf, sizeof(ID), TRMTBL_SIZE);
 
     timer_initialize();		/* インターバルタイマ機能の初期化 */
     time_initialize(rtc_get_time());		/* 時間管理機能の初期化 */

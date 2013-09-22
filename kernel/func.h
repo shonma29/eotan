@@ -19,13 +19,14 @@ Version 2, June 1991
 
 
 #include <core.h>
+#include <set/lf_queue.h>
 #include <set/tree.h>
 #include <mpu/memory.h>
 #include "thread.h"
 
 /* main.c */
+extern volatile lfq_t kqueue;
 extern int main(void);
-extern ER add_trmtbl(ID id);
 
 /* printk.c */
 extern int printk(const char *format, ...);

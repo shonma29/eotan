@@ -182,7 +182,8 @@ W pf_handler(W cr2, W eip)
 
     /* KERNEL_TASK への登録 */
     /* id = pid */
-    add_trmtbl(local->process_id);
+    if (lfq_enqueue(&kqueue, &(local->process_id)) != QUEUE_OK)
+    	panic("full kqueue");
     /* KERNEL_TASK の優先度変更 */
     thread_change_priority(kernel_task_id, pri_dispatcher);
     return (E_OK);
