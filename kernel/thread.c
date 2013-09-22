@@ -136,7 +136,7 @@ T_TCB *run_task;		/* 現在、走行中のタスク */
 static inline T_TCB *getTaskParent(const list_t *p);
 
 static inline T_TCB *getTaskParent(const list_t *p) {
-	return (T_TCB*)((ptr_t)p - offsetof(T_TCB, ready));
+	return (T_TCB*)((ptr_t)p - offsetof(T_TCB, queue));
 }
 
 /* thread_switch --- タスク切り換え
@@ -187,7 +187,7 @@ ER thread_switch(void)
 	return (E_OK);
     }
 
-    else if (!list_is_empty(&(run_task->ready))) {
+    else if (!list_is_empty(&(run_task->queue))) {
 	run_task->tskstat = TTS_RDY;
     }
 
@@ -251,9 +251,9 @@ ER thread_change_priority(ID tskid, PRI tskpri)
     case TTS_RDY:
     case TTS_RUN:
 	enter_critical();
-	list_remove(&(taskp->ready));
+	list_remove(&(taskp->queue));
 	taskp->tsklevel = tskpri;
-	ready_enqueue(taskp->tsklevel, &(taskp->ready));
+	ready_enqueue(taskp->tsklevel, &(taskp->queue));
 	leave_critical();
 	break;
 
@@ -352,7 +352,7 @@ ER thread_suspend(ID tskid)
     taskp->wait.sus_cnt++;
     switch (taskp->tskstat) {
     case TTS_RDY:
-	list_remove(&(taskp->ready));
+	list_remove(&(taskp->queue));
 	taskp->tskstat = TTS_SUS;
 	break;
 
@@ -415,7 +415,7 @@ ER thread_resume(ID tskid)
 	taskp->wait.sus_cnt--;
 	if (taskp->wait.sus_cnt <= 0) {
 	    taskp->tskstat = TTS_RDY;
-	    ready_enqueue(taskp->tsklevel, &(taskp->ready));
+	    ready_enqueue(taskp->tsklevel, &(taskp->queue));
 	}
 	break;
 

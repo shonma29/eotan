@@ -34,7 +34,7 @@ int dispatchable = TRUE;
 void wait(T_TCB *task) {
 	task->wait.result = E_OK;
 	task->tskstat = TTS_WAI;
-	list_remove(&(task->ready));
+	list_remove(&(task->queue));
 	thread_switch();
 }
 
@@ -44,6 +44,6 @@ void release(T_TCB *task) {
 
 	if (!task->tskstat) {
 	    task->tskstat = TTS_RDY;
-	    ready_enqueue(task->tsklevel, &(task->ready));
+	    ready_enqueue(task->tsklevel, &(task->queue));
 	}
 }

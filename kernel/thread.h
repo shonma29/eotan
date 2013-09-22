@@ -33,7 +33,7 @@ Version 2, June 1991
  */
 typedef struct t_tcb {
     node_t node;
-    list_t ready;
+    list_t queue;
 
     W tskid;			/* タスク ID                    */
     ID domain_id;
