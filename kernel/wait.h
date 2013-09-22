@@ -41,7 +41,6 @@ typedef struct {
 	W sus_cnt;
 	wait_type_e type;
 	list_t waiting;
-	ID obj_id;
 	ER result;
 	union {
 		struct {
