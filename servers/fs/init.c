@@ -48,11 +48,12 @@ W exec_init(ID process_id, char *pathname)
 	struct posix_request req;
 	T_CTSK pk_ctsk = {
 		TA_HLNG,
-		process_id,
+		NULL,
 		dummy,
 		pri_user_foreground,
 		USER_STACK_SIZE,
-		NULL
+		NULL,
+		process_id
 	};
 	W err;
 	init_arg_t *p;
@@ -87,7 +88,7 @@ W exec_init(ID process_id, char *pathname)
 		kcall->thread_destroy(req.caller);
 	}
 
-	kcall->thread_start(req.caller, 0);
+	kcall->thread_start(req.caller);
 
 	dbg_printf("[MM] exec_init(%d, %s)\n", process_id, pathname);
 

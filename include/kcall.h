@@ -33,7 +33,7 @@ For more information, please refer to <http://unlicense.org/>
 typedef struct {
 	ER_ID (*thread_create_auto)(T_CTSK *pk_ctsk);
 	ER (*thread_destroy)(ID tskid);
-	ER (*thread_start)(ID tskid, VP_INT stacd);
+	ER (*thread_start)(ID tskid);
 	void (*thread_end)(void);
 	void (*thread_end_and_destroy)(void);
 	ER (*thread_terminate)(ID tskid);

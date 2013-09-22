@@ -33,8 +33,6 @@ extern int printk(const char *format, ...);
 
 /* thread.c */
 extern ER thread_switch(void);
-extern ER thread_start(ID tskid, VP_INT stacd);
-extern void thread_end(void);
 extern ER thread_release(ID tskid);
 extern ER thread_get_id(ID * p_tskid);
 extern ER thread_suspend(ID tskid);
@@ -93,6 +91,8 @@ extern T_TCB *get_thread_ptr(ID tskid);
 extern ER_ID thread_initialize1(void);
 extern ER_ID thread_create_auto(T_CTSK * pk_ctsk);
 extern ER thread_destroy(ID tskid);
+extern ER thread_start(ID tskid);
+extern void thread_end(void);
 extern void thread_end_and_destroy(void);
 extern ER thread_terminate(ID tskid);
 

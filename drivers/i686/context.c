@@ -64,7 +64,7 @@ ER create_context(T_TCB * task, T_CTSK * pk_ctsk)
 #endif
     task->mpu.use_fpu = 0;		/* 初期状態では FPU は利用しない */
 
-    if (pk_ctsk->exinf == KERNEL_DOMAIN_ID) {
+    if (pk_ctsk->domain_id == KERNEL_DOMAIN_ID) {
 	task->stacktop0 = context_create_kernel(
 		(VP_INT*)(task->mpu.context.esp),
 		EFLAG_IBIT | EFLAG_IOPL3,

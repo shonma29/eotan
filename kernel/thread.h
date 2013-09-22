@@ -36,7 +36,7 @@ typedef struct t_tcb {
     list_t ready;
 
     W tskid;			/* タスク ID                    */
-    W domain_id;
+    ID domain_id;
     W tsklevel;			/* タスクの優先順位             */
     W tsklevel0;		/* タスクの優先順位(初期化時の値) */
     /* 終了したタスクが再度起動するときにはこの値が使われる。     */
@@ -67,6 +67,7 @@ typedef struct t_tcb {
      W(*page_fault_handler) (W, W);	/* ページフォルト時の処理用関数 */
 
     UW initial_stack;
+    VP_INT exinf;
 } T_TCB;
 
 

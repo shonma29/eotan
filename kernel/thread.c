@@ -231,85 +231,6 @@ ER thread_switch(void)
  *
  */
 
-/* thread_start --- タスクの起動
- * 
- * 引数tskidで指定したタスクを起動する。
- * 指定したタスクは、thread_create で生成されている必要がある。
- *
- * 引数：
- *	tskid	起動するタスクの ID
- *	stacd	タスク起動コード
- *
- * 戻り値：
- *	E_OK	正常終了
- *
- */
-ER thread_start(ID tskid, VP_INT stacd)
-{
-    register int index;
-    T_TCB *taskp = get_thread_ptr(tskid);
-
-#ifdef TSKSW_DEBUG
-    printk("sta_tsk: start\n");
-#endif
-    if (!taskp) {
-	return (E_NOEXS);
-    }
-    if (taskp->tskstat != TTS_DMT) {
-	return (E_OBJ);
-    }
-
-    if (stacd > 0) {
-	set_arg(taskp, stacd);
-    }
-    index = taskp->tsklevel;
-    taskp->tskstat = TTS_RDY;
-    taskp->wait.sus_cnt = 0;
-    taskp->total = 0;
-    taskp->quantum = QUANTUM;
-
-    enter_critical();
-    ready_enqueue(index, &(taskp->ready));
-    leave_critical();
-#ifdef TSKSW_DEBUG
-    printk("sta_tsk: task level = %d\n", index);
-#endif
-    return (E_OK);
-}
-
-/******************************************************************************
- * thread_end --- 自タスク終了
- *
- * run_task につながれているタスクを TTS_DMT 状態へ移動する。
- * メモリ資源などは返却しない。
- * 
- * 引数：	なし
- *
- * 返り値：	なし
- *
- * ！		このシステムコールを実行したあとは、もとのコンテキスト
- *		には戻らない。
- *
- * 処理内容：
- *	この関数では、ready タスクキューにつながれているタスクのうち、
- *	最も優先度の高いものを選択し、次に実行するタスクとする。
- *	(選択するタスクがないということはない。--- 必ず走行している 
- *	idle タスクがあるため)
- *	switch_task() では、今走行してるタスクをreadyタスクキューに入
- *	れる。しかし、ext_tsk() では、元のタスクは終了するため、ready
- *	タスクキューには入れず、状態をTTS_DMTにする。
- */
-void thread_end(void)
-{
-    /* 現在のタスクを TTS_DMT 状態にし、選択したタスクを次に走らせるよう */
-    /* にする。                                                          */
-    enter_critical();
-    run_task->tskstat = TTS_DMT;
-    list_remove(&(run_task->ready));
-    thread_switch();
-}
-
-
 /* thread_change_priority --- プライオリティの変更
  *
  */

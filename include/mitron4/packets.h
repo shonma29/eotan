@@ -38,6 +38,7 @@ typedef struct t_ctsk {
 	PRI itskpri;
 	SIZE stksz;
 	VP stk;
+	ID domain_id;
 } T_CTSK;
 
 /**

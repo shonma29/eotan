@@ -70,11 +70,12 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr)
 	ID tskId;
 	T_CTSK pk_ctsk = {
 		TA_HLNG,
-		KERNEL_DOMAIN_ID,
+		NULL,
 		(FP)(eHdr->e_entry),
 		pri_server_middle,
 		KERNEL_STACK_SIZE,
-		NULL
+		NULL,
+		KERNEL_DOMAIN_ID
 	};
 
 	tskId = thread_create_auto(&pk_ctsk);
@@ -83,7 +84,7 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr)
 		return tskId;
 	}
 
-	thread_start(tskId, 0);
+	thread_start(tskId);
 	thread_switch();
 
 	return E_OK;

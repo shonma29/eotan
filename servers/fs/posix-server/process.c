@@ -228,7 +228,8 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
      req->param.par_fork.entry,
      pri_user_foreground,
      USER_STACK_SIZE,
-     NULL
+     NULL,
+     0
   };
   struct proc *child;
   kcall_t *kcall = (kcall_t*)KCALL_ADDR;
@@ -253,7 +254,7 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
       return (FALSE);
     }
 
-  task_info.exinf = child->proc_pid;
+  task_info.domain_id = child->proc_pid;
   main_thread_id = kcall->thread_create_auto(&task_info);
   if (main_thread_id < 0)
     {
@@ -273,7 +274,7 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
     }
 
   kcall->mpu_copy_stack(req->caller, (W)(req->param.par_fork.sp), main_thread_id);
-  kcall->thread_start(main_thread_id, 0);
+  kcall->thread_start(main_thread_id);
 
   put_response (rdvno, EOK, child->proc_pid, 0);	/* 親プロセスに対して応答 */
   return (TRUE);
