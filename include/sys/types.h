@@ -39,4 +39,7 @@ typedef int off_t;
 typedef unsigned int blksize_t;
 typedef int blkcnt_t;
 
+typedef long long int time_t;
+typedef int suseconds_t;
+
 #endif

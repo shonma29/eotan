@@ -93,19 +93,6 @@ Version 2, June 1991
 
 #include <fs/config.h>
 
-#define F_FILE		0x0001
-#define F_PIPE		0x0002
-
-struct file
-{
-  struct proc		*f_procp;
-  struct inode		*f_inode;
-  W			f_flag;
-  W			f_offset;	/* current offset */
-  W			f_omode;
-};
-
-
 enum proc_status
 {
   PS_DORMANT = 0,		/* 未生成状態 */

@@ -57,9 +57,9 @@ char *testfile() {
 	printf("fstat: size=%d\n", st.st_size);
 	printf("fstat: blksize=%d\n", st.st_blksize);
 	printf("fstat: blocks=%d\n", st.st_blocks);
-	printf("fstat: atime=%d\n", st.st_atime);
-	printf("fstat: mtime=%d\n", st.st_mtime);
-	printf("fstat: ctime=%d\n", st.st_ctime);
+	printf("fstat: atime=%lld\n", st.st_atime);
+	printf("fstat: mtime=%lld\n", st.st_mtime);
+	printf("fstat: ctime=%lld\n", st.st_ctime);
 
 	assert_eq("read[0]", 1, read(fd, buf, 1));
 	assert_eq("read[0] buf[0]", 0x23, buf[0]);
@@ -196,7 +196,7 @@ char *testmm() {
 	printf("uname = %s\n", name.machine);
 
 	printf("time = %d\n", time(&t));
-	printf("time = %d\n", t);
+	printf("time = %lld\n", t);
 
 	printf("uid = %d\n", getuid());
 	printf("euid = %d\n", geteuid());

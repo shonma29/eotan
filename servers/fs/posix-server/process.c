@@ -21,6 +21,7 @@ Version 2, June 1991
 #include <boot/init.h>
 #include <mpu/config.h>
 #include <mpu/memory.h>
+#include <sys/wait.h>
 #include "thread.h"
 #include "fs.h"
 

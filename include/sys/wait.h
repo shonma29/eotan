@@ -1,5 +1,5 @@
-#ifndef _TIME_H_
-#define _TIME_H_
+#ifndef _SYS_WAIT_H_
+#define _SYS_WAIT_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,6 +26,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <sys/time.h>
+#define WNOHANG 0x00000001
+#define WUNTRACED 0x00000002
 
 #endif
+
