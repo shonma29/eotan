@@ -30,9 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 
 /* 8259a.c */
 extern void pic_initialize(void);
-
-/* 8259a_reset_mask.c */
-extern void pic_reset_mask(const UB ir);
+extern ER pic_reset_mask(const UB ir);
 
 /* rtc.c */
 extern int rtc_get_time(void);

@@ -20,7 +20,6 @@ Version 2, June 1991
 #include <mpu/config.h>
 #include <mpu/io.h>
 #include "../../kernel/arch/8259a.h"
-#include "../../kernel/arch/archfunc.h"
 #include "interrupt.h"
 #include "thread.h"
 #include "func.h"
@@ -99,8 +98,6 @@ W init_interrupt(void)
     on_interrupt = 0;
     delayed_dispatch = FALSE;
 
-    pic_reset_mask(ir_keyboard);
-
     return (E_OK);
 }
 
@@ -142,7 +139,7 @@ void interrupt(W intn)
     }
 
     /* 割込みの禁止フラグの OFF */
-    if (intn > 40) {	/* slave */
+    if (intn >= 40) {	/* slave */
       mask = ~(1 << (intn - 40));
       asm("cli");
       asm("inb $0xA1, %al");

@@ -24,8 +24,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <core.h>
 #include <mpu/io.h>
+#include "sync.h"
 #include "8259a.h"
+
+static UH ports[] = {
+	pic_master2, pic_slave2
+};
 
 
 void pic_initialize(void)
@@ -46,3 +52,22 @@ void pic_initialize(void)
 	outb(pic_master2, ~PIC_IR_BIT(ir_cascade & PIC_INT_NO_MASK));
 	outb(pic_slave2, ~0);
 }
+
+ER pic_reset_mask(const UB ir)
+{
+	UH port;
+	UB mask;
+
+	if (ir >= 16)
+		return E_PAR;
+
+	port = ports[ir >> 3];
+	mask = ~PIC_IR_BIT(ir & 7);
+
+	enter_critical();
+	outb(port, mask & inb(port));
+	leave_critical();
+
+	return E_OK;
+}
+

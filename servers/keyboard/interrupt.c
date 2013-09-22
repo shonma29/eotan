@@ -95,6 +95,7 @@ Version 2, June 1991
 #include <core.h>
 #include <kcall.h>
 #include <mpu/io.h>
+#include "../../kernel/arch/8259a.h"
 #include "../../lib/libserv/libserv.h"
 #include "keyboard.h"
 #include "key_def.h"
@@ -139,8 +140,14 @@ void init_keyboard_interrupt()
     pk_dinh.inthdr = (void (*)()) keyboard_interrupt;
     error_no = kcall->interrupt_bind(KEYBOARD_INT, &pk_dinh);
     if (error_no != E_OK) {
-	dbg_printf("keyboard: %d\n", error_no);
+	dbg_printf("keyboard: interrupt_bind failed %d\n", error_no);
     }
+
+    error_no = kcall->interrupt_enable(ir_keyboard);
+    if (error_no != E_OK) {
+	dbg_printf("keyboard: interrupt_enable failed %d\n", error_no);
+    }
+
     shiftkey_code = NORMAL;
 }
 

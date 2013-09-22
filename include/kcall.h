@@ -44,6 +44,7 @@ typedef struct {
 	ER (*time_get)(SYSTIM *p_systim);
 	ER (*time_set)(SYSTIM *p_systim);
 	ER (*interrupt_bind)(W inhno, T_DINH *pk_dinh);
+	ER (*interrupt_enable)(const UB ir);
 	ER (*region_create)(ID id, ID rid, VP start, W min, W max, UW perm);
 	ER (*region_destroy)(ID id, ID rid);
 	ER (*region_map)(ID id, VP start, UW size, W accmode);

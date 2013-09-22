@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <kcall.h>
 #include "func.h"
+#include "arch/archfunc.h"
 #include "mpu/mpufunc.h"
 
 void kcall_initialize(void)
@@ -46,6 +47,7 @@ void kcall_initialize(void)
 	p->time_get = time_get;
 	p->time_set = time_set;
 	p->interrupt_bind = interrupt_bind;
+	p->interrupt_enable = pic_reset_mask;
 
 	p->region_create = region_create;
 	p->region_destroy = region_destroy;
