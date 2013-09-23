@@ -90,7 +90,6 @@ Version 2, June 1991
 #define __FS_VFS_H__	1
 
 #include <sys/file.h>
-#include "../../kernel/config.h"
 
 #define SU_UID		0
 

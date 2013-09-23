@@ -156,7 +156,7 @@ static ER initialize(void)
 
     timer_initialize();		/* インターバルタイマ機能の初期化 */
     time_initialize(rtc_get_time());		/* 時間管理機能の初期化 */
-    pit_initialize(TICKS);		/* インターバルタイマの起動       */
+    pit_initialize(TIME_TICKS);		/* インターバルタイマの起動       */
     init_interrupt();
 
     do_timer = 0;
