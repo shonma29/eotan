@@ -32,7 +32,8 @@ static list_t ready_task[MAX_PRIORITY + 1];
 static int buf[MAX_PRIORITY + 1];
 static heap_t heap;
 
-void ready_initialize() {
+void ready_initialize()
+{
 	int i;
 
 	for (i = MIN_PRIORITY; i <= MAX_PRIORITY; i++) {
@@ -42,14 +43,16 @@ void ready_initialize() {
 	heap_initialize(&heap, MAX_PRIORITY + 1, buf);
 }
 
-void ready_enqueue(const int pri, list_t *src) {
+void ready_enqueue(const int pri, list_t *src)
+{
 	list_t *dest = &(ready_task[pri]);
 
 	if (list_is_empty(dest))	heap_enqueue(&heap, pri);
 	list_enqueue(dest, src);
 }
 
-void ready_rotate(const int pri) {
+void ready_rotate(const int pri)
+{
 	list_t *head = list_dequeue(&(ready_task[pri]));
 
 	if (head) {
@@ -57,7 +60,8 @@ void ready_rotate(const int pri) {
 	}
 }
 
-list_t *ready_dequeue() {
+list_t *ready_dequeue()
+{
 	for (;; heap_dequeue(&heap)) {
 		list_t *q;
 		int pri = heap_head(&heap);
