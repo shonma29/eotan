@@ -131,12 +131,12 @@ Version 2, June 1991
  *
  */
 
-T_TCB *run_task;		/* 現在、走行中のタスク */
+thread_t *run_task;		/* 現在、走行中のタスク */
 
-static inline T_TCB *getTaskParent(const list_t *p);
+static inline thread_t *getTaskParent(const list_t *p);
 
-static inline T_TCB *getTaskParent(const list_t *p) {
-	return (T_TCB*)((ptr_t)p - offsetof(T_TCB, queue));
+static inline thread_t *getTaskParent(const list_t *p) {
+	return (thread_t*)((ptr_t)p - offsetof(thread_t, queue));
 }
 
 /* thread_switch --- タスク切り換え
@@ -152,7 +152,7 @@ static inline T_TCB *getTaskParent(const list_t *p) {
  */
 ER thread_switch(void)
 {
-    T_TCB *next;
+    thread_t *next;
     list_t *q;
 
     enter_critical();
@@ -188,27 +188,27 @@ ER thread_switch(void)
     }
 
     else if (!list_is_empty(&(run_task->queue))) {
-	run_task->tskstat = TTS_RDY;
+	run_task->status = TTS_RDY;
     }
 
     /* 選択したタスクを run_task にする */
 #ifdef TSKSW_DEBUG
     printk("thread_switch: current(%d) -> next(%d)\n",
-	    run_task->tskid, next->tskid);
+	    run_task->id, next->id);
 #endif
-    if (next->tskstat != TTS_RDY) {
+    if (next->status != TTS_RDY) {
 	printk("thread_switch: panic next(%d) stat=%d, eip=%x\n",
-		next->tskid, next->tskstat, MPU_PC(next));
+		next->id, next->status, MPU_PC(next));
 	panic("scheduler");
     }
 
     if (run_task->mpu.use_fpu)
 	fpu_save(run_task);
 
-    context_prev_sp = &(run_task->stacktop0);
-    context_next_sp = &(next->stacktop0);
+    context_prev_sp = &(run_task->kstack_top);
+    context_next_sp = &(next->kstack_top);
     run_task = next;
-    run_task->tskstat = TTS_RUN;
+    run_task->status = TTS_RUN;
 
     delayed_dispatch = FALSE;
 
@@ -236,10 +236,10 @@ ER thread_switch(void)
  */
 ER thread_change_priority(ID tskid, PRI tskpri)
 {
-    T_TCB *taskp;
+    thread_t *taskp;
 
     if (tskid == TSK_SELF)
-	tskid = run_task->tskid;
+	tskid = run_task->id;
 
     taskp = get_thread_ptr(tskid);
 
@@ -247,13 +247,13 @@ ER thread_change_priority(ID tskid, PRI tskpri)
 	return (E_NOEXS);
     }
 
-    switch (taskp->tskstat) {
+    switch (taskp->status) {
     case TTS_RDY:
     case TTS_RUN:
 	enter_critical();
 	list_remove(&(taskp->queue));
-	taskp->tsklevel = tskpri;
-	ready_enqueue(taskp->tsklevel, &(taskp->queue));
+	taskp->priority = tskpri;
+	ready_enqueue(taskp->priority, &(taskp->queue));
 	leave_critical();
 	break;
 
@@ -269,7 +269,7 @@ ER thread_change_priority(ID tskid, PRI tskpri)
 ER rot_rdq(PRI tskpri)
 {
     if (tskpri == TPRI_SELF)
-	tskpri = run_task->tsklevel;
+	tskpri = run_task->priority;
     if ((tskpri < MIN_PRIORITY) || (tskpri > MAX_PRIORITY)) {
 	return (E_PAR);
     }
@@ -288,13 +288,13 @@ ER rot_rdq(PRI tskpri)
  */
 ER thread_release(ID tskid)
 {
-    T_TCB *taskp = get_thread_ptr(tskid);
+    thread_t *taskp = get_thread_ptr(tskid);
 
     if (!taskp) {
 	return (E_NOEXS);
     }
 
-    switch (taskp->tskstat) {
+    switch (taskp->status) {
     case TTS_WAI:
 	enter_critical();
 	list_remove(&(taskp->wait.waiting));
@@ -316,7 +316,7 @@ ER thread_release(ID tskid)
  */
 ER thread_get_id(ID * p_tskid)
 {
-    *p_tskid = run_task->tskid;
+    *p_tskid = run_task->id;
     return (E_OK);
 }
 
@@ -334,7 +334,7 @@ ER thread_get_id(ID * p_tskid)
  */
 ER thread_suspend(ID tskid)
 {
-    T_TCB *taskp;
+    thread_t *taskp;
 
     enter_critical();
     taskp = get_thread_ptr(tskid);
@@ -349,10 +349,10 @@ ER thread_suspend(ID tskid)
 	return (E_OBJ);
     }
 
-    switch (taskp->tskstat) {
+    switch (taskp->status) {
     case TTS_RDY:
 	list_remove(&(taskp->queue));
-	taskp->tskstat = TTS_SUS;
+	taskp->status = TTS_SUS;
 	break;
 
     case TTS_SUS:
@@ -360,7 +360,7 @@ ER thread_suspend(ID tskid)
 	return (E_QOVR);
 
     case TTS_WAI:
-	taskp->tskstat = TTS_WAS;
+	taskp->status = TTS_WAS;
 	break;
 
     default:
@@ -395,7 +395,7 @@ ER thread_suspend(ID tskid)
  */
 ER thread_resume(ID tskid)
 {
-    T_TCB *taskp;
+    thread_t *taskp;
 
     enter_critical();
     taskp = get_thread_ptr(tskid);
@@ -405,14 +405,14 @@ ER thread_resume(ID tskid)
 	return (E_NOEXS);
     }
 
-    switch (taskp->tskstat) {
+    switch (taskp->status) {
     case TTS_SUS:
-	taskp->tskstat = TTS_RDY;
-	ready_enqueue(taskp->tsklevel, &(taskp->queue));
+	taskp->status = TTS_RDY;
+	ready_enqueue(taskp->priority, &(taskp->queue));
 	break;
 
     case TTS_WAS:
-	taskp->tskstat = TTS_WAI;
+	taskp->status = TTS_WAI;
 	break;
 
     default:

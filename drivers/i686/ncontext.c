@@ -134,12 +134,12 @@ VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
 	return sp;
 }
 
-void context_switch_page_table(T_TCB *next)
+void context_switch_page_table(thread_t *next)
 {
-	if ((next->domain_id != KERNEL_DOMAIN_ID)
-			&& (next->domain_id != current_domain_id)) {
+	if ((next->attr.domain_id != KERNEL_DOMAIN_ID)
+			&& (next->attr.domain_id != current_domain_id)) {
 		paging_set_directory((VP)MPU_PAGE_TABLE(next));
-		current_domain_id = next->domain_id;
+		current_domain_id = next->attr.domain_id;
 	}
 }
 
@@ -149,10 +149,10 @@ void context_reset_page_table()
 	current_domain_id = KERNEL_DOMAIN_ID;
 }
 
-void context_reset_page_cache(const T_TCB *task, const VP addr)
+void context_reset_page_cache(const thread_t *task, const VP addr)
 {
-	if ((task->domain_id == KERNEL_DOMAIN_ID)
-			|| (task->domain_id == current_domain_id)) {
+	if ((task->attr.domain_id == KERNEL_DOMAIN_ID)
+			|| (task->attr.domain_id == current_domain_id)) {
 		tlb_flush(addr);
 	}
 }

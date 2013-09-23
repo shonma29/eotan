@@ -108,7 +108,7 @@ int main(void)
 	if (lfq_dequeue(&kqueue, &id) == QUEUE_OK) {
 	    posix_kill_proc(id);
 
-	} else if (run_task->tsklevel != MAX_PRIORITY) {
+	} else if (run_task->priority != MAX_PRIORITY) {
 	    thread_change_priority(kernel_task_id, MAX_PRIORITY);
 
 	} else

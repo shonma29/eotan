@@ -31,19 +31,19 @@ For more information, please refer to <http://unlicense.org/>
 
 int dispatchable = TRUE;
 
-void wait(T_TCB *task) {
+void wait(thread_t *task) {
 	task->wait.result = E_OK;
-	task->tskstat = TTS_WAI;
+	task->status = TTS_WAI;
 	list_remove(&(task->queue));
 	thread_switch();
 }
 
-void release(T_TCB *task) {
+void release(thread_t *task) {
 	task->wait.type = wait_none;
-	task->tskstat &= ~TTS_WAI;
+	task->status &= ~TTS_WAI;
 
-	if (!task->tskstat) {
-	    task->tskstat = TTS_RDY;
-	    ready_enqueue(task->tsklevel, &(task->queue));
+	if (!task->status) {
+	    task->status = TTS_RDY;
+	    ready_enqueue(task->priority, &(task->queue));
 	}
 }

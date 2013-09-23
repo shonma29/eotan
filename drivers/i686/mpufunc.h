@@ -50,16 +50,16 @@ extern W	int33_handler (void);
 
 /* fpu.c */
 extern void fpu_initialize(void);
-extern void fpu_save(T_TCB * taskp);
-extern void fpu_restore(T_TCB * taskp);
-extern void fpu_start(T_TCB * taskp);
+extern void fpu_save(thread_t * taskp);
+extern void fpu_restore(thread_t * taskp);
+extern void fpu_start(thread_t * taskp);
 
 /* context.c */
-extern ER create_context(T_TCB * task, T_CTSK * pk_ctsk);
+extern ER create_context(thread_t * task, T_CTSK * pk_ctsk);
 extern ER mpu_copy_stack(ID src, W esp, ID dst);
 extern ER mpu_set_context(ID tid, W eip, B * stackp, W stsize);
-extern void set_page_table(T_TCB *taskp, VP p);
-extern void set_arg(T_TCB *taskp, const UW arg);
+extern void set_page_table(thread_t *taskp, VP p);
+extern void set_arg(thread_t *taskp, const UW arg);
 
 /* gate.c */
 extern void idt_initialize(void);
@@ -130,7 +130,7 @@ extern void paging_initialize(void);
 void paging_reset(void);
 
 /* util.c */
-extern ER vmemcpy(const T_TCB *th, const void *to, const void *from,
+extern ER vmemcpy(const thread_t *th, const void *to, const void *from,
 		const size_t bytes);
 extern void *getPageAddress(const PTE *dir, const void *addr);
 
@@ -149,8 +149,8 @@ extern void context_set_kernel_sp(const VP addr);
 extern VP_INT *context_create_kernel(VP_INT *sp, const UW eflags, const FP eip);
 extern VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
 		const VP esp);
-extern void context_switch_page_table(T_TCB *next);
+extern void context_switch_page_table(thread_t *next);
 extern void context_reset_page_table();
-extern void context_reset_page_cache(const T_TCB *task, const VP addr);
+extern void context_reset_page_cache(const thread_t *task, const VP addr);
 
 #endif /* _MPU_MPU_H_ */

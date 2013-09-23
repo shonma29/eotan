@@ -39,7 +39,7 @@ void fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 		" ds=%x es=%x\n"
 		" eax=%x ebx=%x ecx=%x edx=%x\n"
 		" edi=%x esi=%x ebp=%x esp=%x\n",
-			no, run_task->tskid, cs, eip, eflags, ds, es,
+			no, run_task->id, cs, eip, eflags, ds, es,
 			eax, ebx, ecx, edx, edi, esi, ebp, esp);
 	//TODO stop the thread
 	panic("fault");
@@ -54,7 +54,7 @@ void fault_with_error(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 		" ds=%x es=%x error=%x\n"
 		" eax=%x ebx=%x ecx=%x edx=%x\n"
 		" edi=%x esi=%x ebp=%x esp=%x\n",
-			no, run_task->tskid, cs, eip, eflags, ds, es,
+			no, run_task->id, cs, eip, eflags, ds, es,
 			err, eax, ebx, ecx, edx, edi, esi, ebp, esp);
 	//TODO stop the thread
 	panic("fault_with_error");

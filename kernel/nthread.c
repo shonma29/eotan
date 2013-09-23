@@ -41,21 +41,21 @@ static slab_t thread_slab;
 static tree_t thread_tree;
 static int thread_hand;
 
-static inline T_TCB *getThreadParent(const node_t *p);
-static ER setup(T_TCB *th, T_CTSK *pk_ctsk, int tskid);
-static void release_resources(T_TCB *th);
+static inline thread_t *getThreadParent(const node_t *p);
+static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid);
+static void release_resources(thread_t *th);
 
-static inline T_TCB *getThreadParent(const node_t *p) {
-	return (T_TCB*)((ptr_t)p - offsetof(T_TCB, node));
+static inline thread_t *getThreadParent(const node_t *p) {
+	return (thread_t*)((ptr_t)p - offsetof(thread_t, node));
 }
 
 ER thread_initialize(void)
 {
-	thread_slab.unit_size = sizeof(T_TCB);
+	thread_slab.unit_size = sizeof(thread_t);
 	thread_slab.block_size = PAGE_SIZE;
 	thread_slab.min_block = 1;
 	thread_slab.max_block = tree_max_block(65536, PAGE_SIZE,
-			sizeof(T_TCB));
+			sizeof(thread_t));
 	thread_slab.palloc = palloc;
 	thread_slab.pfree = pfree;
 	slab_create(&thread_slab);
@@ -68,7 +68,7 @@ ER thread_initialize(void)
 	return E_OK;
 }
 
-T_TCB *get_thread_ptr(ID tskid)
+thread_t *get_thread_ptr(ID tskid)
 {
 	node_t *node = tree_get(&thread_tree, tskid);
 
@@ -81,7 +81,7 @@ ER_ID thread_initialize1(void)
 
 	enter_serialize();
 	do {
-		T_TCB *th;
+		thread_t *th;
 		node_t *node = find_empty_key(&thread_tree, &thread_hand);
 		if (!node) {
 			result = E_NOID;
@@ -92,16 +92,16 @@ ER_ID thread_initialize1(void)
 		memset(&(th->queue), 0, sizeof(*th) - sizeof(node_t));
 
 		list_initialize(&(th->queue));
-		th->tskid = node->key;
-		th->domain_id = KERNEL_DOMAIN_ID;
-		th->tsklevel = th->tsklevel0 = MAX_PRIORITY;
-		th->tskstat = TTS_RUN;
+		th->id = node->key;
+		th->attr.domain_id = KERNEL_DOMAIN_ID;
+		th->priority = th->attr.priority = MAX_PRIORITY;
+		th->status = TTS_RUN;
 		list_initialize(&(th->wait.waiting));
 
 		set_page_table(th, (VP)PAGE_DIR_ADDR);
 
 		run_task = th;
-		ready_enqueue(th->tsklevel, &(th->queue));
+		ready_enqueue(th->priority, &(th->queue));
 		result = node->key;
 
 	} while (FALSE);
@@ -110,7 +110,7 @@ ER_ID thread_initialize1(void)
 	return result;
 }
 
-static ER setup(T_TCB *th, T_CTSK *pk_ctsk, int tskid)
+static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid)
 {
 	ER result;
 	W i;
@@ -118,18 +118,18 @@ static ER setup(T_TCB *th, T_CTSK *pk_ctsk, int tskid)
 	memset(&(th->queue), 0, sizeof(*th) - sizeof(node_t));
 
 	list_initialize(&(th->queue));
-	th->tskid = tskid;
-	th->domain_id = pk_ctsk->domain_id;
-	th->tsklevel = th->tsklevel0 = pk_ctsk->itskpri;
-	th->tskstat = TTS_DMT;
+	th->id = tskid;
+	th->attr.domain_id = pk_ctsk->domain_id;
+	th->priority = th->attr.priority = pk_ctsk->itskpri;
+	th->status = TTS_DMT;
 	list_initialize(&(th->wait.waiting));
-	th->exinf = pk_ctsk->exinf;
+	th->attr.arg = pk_ctsk->exinf;
 
 	result = create_context(th, pk_ctsk);
 	if (result != E_OK)
 		return result;
 
-	set_page_table(th, (th->domain_id == KERNEL_DOMAIN_ID)?
+	set_page_table(th, (th->attr.domain_id == KERNEL_DOMAIN_ID)?
 			(VP)PAGE_DIR_ADDR
 			:kern_v2p(dup_vmap_table((ADDR_MAP)MPU_PAGE_TABLE(run_task))));
 
@@ -172,12 +172,12 @@ ER_ID thread_create_auto(T_CTSK *pk_ctsk)
 	return result;
 }
 
-static void release_resources(T_TCB *th)
+static void release_resources(thread_t *th)
 {
-	if (th->domain_id != KERNEL_DOMAIN_ID)
+	if (th->attr.domain_id != KERNEL_DOMAIN_ID)
 		release_vmap((ADDR_MAP)MPU_PAGE_TABLE(th));
 
-	pfree((VP)kern_v2p(th->stackptr0), pages(th->stksz0));
+	pfree((VP)kern_v2p(th->attr.kstack.addr), pages(th->attr.kstack.length));
 }
 
 ER thread_destroy(ID tskid)
@@ -186,14 +186,14 @@ ER thread_destroy(ID tskid)
 
 	enter_serialize();
 	do {
-		T_TCB *th = get_thread_ptr(tskid);
+		thread_t *th = get_thread_ptr(tskid);
 
 		if (!th) {
 			result = E_NOEXS;
 			break;
 		}
 
-		if (th->tskstat != TTS_DMT)
+		if (th->status != TTS_DMT)
 			return E_OBJ;
 
 		tree_remove(&thread_tree, tskid);
@@ -212,10 +212,10 @@ ER thread_start(ID tskid)
 
 	enter_serialize();
 	do {
-		T_TCB *th;
+		thread_t *th;
 
 		if (tskid == TSK_SELF)
-			tskid = run_task->tskid;
+			tskid = run_task->id;
 
 		th = get_thread_ptr(tskid);
 		if (!th) {
@@ -223,18 +223,18 @@ ER thread_start(ID tskid)
 			break;
 		}
 
-		if (th->tskstat != TTS_DMT) {
+		if (th->status != TTS_DMT) {
 			result = E_QOVR;
 			break;
 		}
 
-		th->tskstat = TTS_RDY;
-		th->total = 0;
-		th->quantum = QUANTUM;
+		th->status = TTS_RDY;
+		th->time.total = 0;
+		th->time.left = QUANTUM;
 //TODO fix context_create_kernel
-//		set_arg(th, th->exinf);
+//		set_arg(th, th->attr.arg);
 
-		ready_enqueue(th->tsklevel, &(th->queue));
+		ready_enqueue(th->priority, &(th->queue));
 		result = E_OK;
 		leave_serialize();
 		thread_switch();
@@ -249,7 +249,7 @@ void thread_end(void)
 {
 	enter_serialize();
 	list_remove(&(run_task->queue));
-	run_task->tskstat = TTS_DMT;
+	run_task->status = TTS_DMT;
 	leave_serialize();
 
 	thread_switch();
@@ -257,15 +257,15 @@ void thread_end(void)
 
 void thread_end_and_destroy(void)
 {
-	T_TCB *th;
+	thread_t *th;
 
 	enter_serialize();
 	th = run_task;
 
-	tree_remove(&thread_tree, th->tskid);
+	tree_remove(&thread_tree, th->id);
 	list_remove(&(th->queue));
 
-	if (th->domain_id != KERNEL_DOMAIN_ID)
+	if (th->attr.domain_id != KERNEL_DOMAIN_ID)
 		context_reset_page_table();
 
 	release_resources(th);
@@ -280,21 +280,21 @@ ER thread_terminate(ID tskid)
 
 	enter_serialize();
 	do {
-		T_TCB *th = get_thread_ptr(tskid);
+		thread_t *th = get_thread_ptr(tskid);
 
 		if (!th) {
 			result = E_NOEXS;
 			break;
 		}
 
-		switch (th->tskstat) {
+		switch (th->status) {
 		case TTS_RUN:
 			result = E_ILUSE;
 			break;
 
 		case TTS_RDY:
 			list_remove(&(th->queue));
-			th->tskstat = TTS_DMT;
+			th->status = TTS_DMT;
 			result = E_OK;
 			break;
 
@@ -303,7 +303,7 @@ ER thread_terminate(ID tskid)
 			if (th->wait.type)
 				list_remove(&(th->wait.waiting));
 		case TTS_SUS:
-			th->tskstat = TTS_DMT;
+			th->status = TTS_DMT;
 			result = E_OK;
 			break;
 

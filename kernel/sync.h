@@ -37,7 +37,7 @@ extern int dispatchable;
 #define enter_critical() di()
 #define leave_critical() ei()
 
-extern void wait(T_TCB *task);
-extern void release(T_TCB *task);
+extern void wait(thread_t *task);
+extern void release(thread_t *task);
 
 #endif

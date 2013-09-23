@@ -24,17 +24,17 @@ void fpu_initialize(void)
   __asm__("finit");
 }
 
-void fpu_save(T_TCB *taskp)
+void fpu_save(thread_t *taskp)
 {
   __asm__("fsave %0" : "=m" (taskp->mpu.fpu_context));
 }
 
-void fpu_restore(T_TCB *taskp)
+void fpu_restore(thread_t *taskp)
 {
   __asm__("frstor %0" : "=m" (taskp->mpu.fpu_context));
 }
 
-void fpu_start(T_TCB *taskp)
+void fpu_start(thread_t *taskp)
 {
   if (taskp->mpu.use_fpu) return;
   enter_critical();

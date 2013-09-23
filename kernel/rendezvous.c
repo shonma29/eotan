@@ -61,7 +61,7 @@ static inline port_t *getPortParent(const node_t *p);
 static inline port_t *getCallerParent(const list_t *p);
 static inline port_t *getAcceptorParent(const list_t *p);
 static inline rendezvous_t *getRdvParent(const node_t *p);
-static inline T_TCB *getTaskParent(const list_t *p);
+static inline thread_t *getTaskParent(const list_t *p);
 static void clear(port_t *p, const T_CPOR *pk_cpor);
 static void release_all(list_t *waiting);
 
@@ -82,8 +82,8 @@ static inline rendezvous_t *getRdvParent(const node_t *p) {
 	return (rendezvous_t*)((ptr_t)p - offsetof(rendezvous_t, node));
 }
 
-static inline T_TCB *getTaskParent(const list_t *p) {
-	return (T_TCB*)((ptr_t)p - offsetof(T_TCB, wait.waiting));
+static inline thread_t *getTaskParent(const list_t *p) {
+	return (thread_t*)((ptr_t)p - offsetof(thread_t, wait.waiting));
 }
 
 ER port_initialize(void)
@@ -191,7 +191,7 @@ static void release_all(list_t *waiting) {
 	list_t *q;
 
 	while ((q = list_dequeue(waiting)) != NULL) {
-		T_TCB *p = getTaskParent(q);
+		thread_t *p = getTaskParent(q);
 
 		p->wait.result = E_DLT;
 		release(p);
@@ -251,11 +251,11 @@ ER_UINT port_call(ID porid, VP msg, UINT cmsgsz)
 
 	q = list_head(&(p->acceptor));
 	if (q) {
-		T_TCB *tp = getTaskParent(q);
+		thread_t *tp = getTaskParent(q);
 		rendezvous_t *r;
-		if (region_put(tp->tskid, tp->wait.detail.por.msg, cmsgsz, msg)) {
+		if (region_put(tp->id, tp->wait.detail.por.msg, cmsgsz, msg)) {
 			printk("port_call[%d] region_put(%d, %p, %d, %p) error\n",
-					porid, tp->tskid,
+					porid, tp->id,
 					tp->wait.detail.por.msg, cmsgsz, msg);
 			leave_serialize();
 			return E_PAR;
@@ -321,13 +321,13 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 
 	q = list_head(&(p->caller));
 	if (q) {
-		T_TCB *tp = getTaskParent(q);
+		thread_t *tp = getTaskParent(q);
 
 		result = tp->wait.detail.por.size;
 
-		if (region_get(tp->tskid, tp->wait.detail.por.msg, result, msg)) {
+		if (region_get(tp->id, tp->wait.detail.por.msg, result, msg)) {
 			printk("port_accept[%d] region_get(%d, %p, %d, %p) error\n",
-					porid, tp->tskid,
+					porid, tp->id,
 					tp->wait.detail.por.msg, result, msg);
 /* TODO release rendezvous */
 			leave_serialize();
@@ -390,12 +390,12 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 
 	q = list_head(&(r->caller));
 	if (q) {
-		T_TCB *tp = getTaskParent(q);
+		thread_t *tp = getTaskParent(q);
 
-		if (region_put(tp->tskid, tp->wait.detail.por.msg,
+		if (region_put(tp->id, tp->wait.detail.por.msg,
 				rmsgsz, msg)) {
 			printk("port_reply[%d] region_put(%d, %p, %d, %p) error\n",
-					rdvno, tp->tskid,
+					rdvno, tp->id,
 					tp->wait.detail.por.msg, rmsgsz, msg);
 			leave_serialize();
 			tree_remove(&rdv_tree, rdvno);

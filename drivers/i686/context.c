@@ -21,8 +21,8 @@ Version 2, June 1991
 #include "sync.h"
 #include "mpu/mpufunc.h"
 
-static ER allocate_kernel_stack(T_TCB * task, VP * sp);
-static void create_user_stack(T_TCB * tsk, W size, W acc);
+static ER allocate_kernel_stack(thread_t * task, VP * sp);
+static void create_user_stack(thread_t * tsk, W size, W acc);
 
 
 /* タスク情報を生成する:
@@ -32,7 +32,7 @@ static void create_user_stack(T_TCB * tsk, W size, W acc);
  *		stack_size	タスクのスタックサイズ
  *
  */
-ER create_context(T_TCB * task, T_CTSK * pk_ctsk)
+ER create_context(thread_t * task, T_CTSK * pk_ctsk)
 {
     VP sp;
     ER err;
@@ -47,8 +47,8 @@ ER create_context(T_TCB * task, T_CTSK * pk_ctsk)
     }
 
     /* スタック情報の登録 */
-    task->stksz0 = task->stksz = PAGE_SIZE;
-    task->stackptr0 = task->stackptr = (B *) sp;
+    task->attr.kstack.length = task->attr.ustack.length = PAGE_SIZE;
+    task->attr.kstack.addr = task->attr.ustack.addr = (B *) sp;
 
     /* レジスタ類をすべて初期化する:
      * reset_registers()  は、以下の引数を必要とする：
@@ -57,7 +57,7 @@ ER create_context(T_TCB * task, T_CTSK * pk_ctsk)
      *   3) カーネルスタックのアドレス
      */
     task->mpu.context.esp = (UW) ((sp + pk_ctsk->stksz));
-    task->initial_stack = task->mpu.context.esp;
+    task->ustack_top = (VP)task->mpu.context.esp;
     task->mpu.context.eip = (UW) pk_ctsk->task;
 #ifdef TSKSW_DEBUG
     printk("(UW)pk_ctsk->task = 0x%x\n", (UW) pk_ctsk->task);
@@ -65,7 +65,7 @@ ER create_context(T_TCB * task, T_CTSK * pk_ctsk)
     task->mpu.use_fpu = 0;		/* 初期状態では FPU は利用しない */
 
     if (pk_ctsk->domain_id == KERNEL_DOMAIN_ID) {
-	task->stacktop0 = context_create_kernel(
+	task->kstack_top = context_create_kernel(
 		(VP_INT*)(task->mpu.context.esp),
 		EFLAG_IBIT | EFLAG_IOPL3,
 		(FP)(task->mpu.context.eip));
@@ -79,7 +79,7 @@ ER create_context(T_TCB * task, T_CTSK * pk_ctsk)
  * カーネルモードで使用するタスク用スタックを生成する。
  *
  */
-static ER allocate_kernel_stack(T_TCB * task, VP * sp)
+static ER allocate_kernel_stack(thread_t * task, VP * sp)
 {
     /* スタックポインタは 0x80000000 の仮想アドレスでアクセスする必要がある。 */
     (*sp) = kern_p2v(palloc(1));
@@ -99,23 +99,23 @@ static ER allocate_kernel_stack(T_TCB * task, VP * sp)
 /*
  * create_user_stack
  */
-static void create_user_stack(T_TCB * tsk, W size, W acc)
+static void create_user_stack(thread_t * tsk, W size, W acc)
 {
     W err;
 
     /* task の kernel stack 領域を特権レベル 0 のスタックに設定 */
-    tsk->mpu.context.esp0 = tsk->initial_stack;
+    tsk->mpu.context.esp0 = (UW)tsk->ustack_top;
 
     /* stack region の作成 number は 4 で固定 */
-    region_create(tsk->tskid, STACK_REGION,
+    region_create(tsk->id, STACK_REGION,
 	     (VP) VADDR_STACK_HEAD, STD_STACK_SIZE, STD_STACK_SIZE,
 	     (VM_READ | VM_WRITE | VM_USER));
 
     /* 物理メモリの割り当て */
-    tsk->stackptr = (VP) (VADDR_STACK_TAIL - size);
-    tsk->stksz = size;
-    tsk->initial_stack = VADDR_STACK_TAIL;
-    err = region_map(tsk->tskid, (VP) tsk->stackptr, size, acc);
+    tsk->attr.ustack.addr = (VP) (VADDR_STACK_TAIL - size);
+    tsk->attr.ustack.length = size;
+    tsk->ustack_top = (VP)VADDR_STACK_TAIL;
+    err = region_map(tsk->id, (VP) tsk->attr.ustack.addr, size, acc);
 
     if (err != E_OK) {
 	printk("can't allocate stack\n");
@@ -127,7 +127,7 @@ static void create_user_stack(T_TCB * tsk, W size, W acc)
  */
 ER mpu_copy_stack(ID src, W esp, ID dst)
 {
-    T_TCB *src_tsk, *dst_tsk;
+    thread_t *src_tsk, *dst_tsk;
     UW srcp, dstp;
     UW size;
 
@@ -143,26 +143,26 @@ ER mpu_copy_stack(ID src, W esp, ID dst)
     /* dst task に新しいスタックポインタを割り付ける */
     create_user_stack(dst_tsk, USER_STACK_SIZE, ACC_USER);
 
-    size = ((UW) src_tsk->stackptr) + src_tsk->stksz - esp;
-    dstp = ((UW) dst_tsk->stackptr) + dst_tsk->stksz - size;
+    size = ((UW) src_tsk->attr.ustack.addr) + src_tsk->attr.ustack.length - esp;
+    dstp = ((UW) dst_tsk->attr.ustack.addr) + dst_tsk->attr.ustack.length - size;
     dst_tsk->mpu.context.esp = dstp;
 
     /* src task のスタックの内容を dst task にコピー */
-    srcp = (UW) src_tsk->initial_stack;
-    dstp = (UW) dst_tsk->initial_stack;
+    srcp = (UW) src_tsk->ustack_top;
+    dstp = (UW) dst_tsk->ustack_top;
     while(size >= PAGE_SIZE) {
       srcp -= PAGE_SIZE;
       dstp -= PAGE_SIZE;
-      region_put(dst, (VP) dstp, PAGE_SIZE, (VP) vtor(src_tsk->tskid, srcp));
+      region_put(dst, (VP) dstp, PAGE_SIZE, (VP) vtor(src_tsk->id, srcp));
       size -= PAGE_SIZE;
     }
     if (size > 0) {
       srcp -= size;
       dstp -= size;
-      region_put(dst, (VP) dstp, size, (VP) vtor(src_tsk->tskid, srcp));
+      region_put(dst, (VP) dstp, size, (VP) vtor(src_tsk->id, srcp));
     }
 
-    dst_tsk->stacktop0 = context_create_user(
+    dst_tsk->kstack_top = context_create_user(
 	    (VP_INT*)(dst_tsk->mpu.context.esp0),
 	    EFLAG_IBIT | EFLAG_IOPL3,
 	    (FP)(dst_tsk->mpu.context.eip),
@@ -192,7 +192,7 @@ W pf_handler(W cr2, W eip)
 /* mpu_set_context */
 ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
 {
-    T_TCB *tsk = get_thread_ptr(tid & INIT_THREAD_ID_MASK);
+    thread_t *tsk = get_thread_ptr(tid & INIT_THREAD_ID_MASK);
     UW stbase;
     W err, argc;
     char **ap, **bp, **esp;
@@ -217,10 +217,10 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
 	printk("WARNING vset_ctx: stack size is too large\n");
     }
 
-    stbase = tsk->initial_stack
+    stbase = (UW)tsk->ustack_top
 	    - roundUp(stsize, sizeof(VP));
     esp = (char **) stbase;
-    ap = bp = (char **) vtor(tsk->tskid, stbase);
+    ap = bp = (char **) vtor(tsk->id, stbase);
 
     err = region_get(tid, stackp, stsize, (VP) ap);
     if (err)
@@ -249,14 +249,14 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
     tsk->mpu.context.eip = eip;
 
     /* タスクの初期化 */
-    tsk->stacktop0 = context_create_user(
+    tsk->kstack_top = context_create_user(
 	    (VP_INT*)(tsk->mpu.context.esp0),
 	    EFLAG_IBIT | EFLAG_IOPL3,
 	    (FP)(tsk->mpu.context.eip),
 	    (VP_INT*)(tsk->mpu.context.esp));
 
     /* page fault handler の登録 */
-    tsk->page_fault_handler = pf_handler;
+    tsk->handler = pf_handler;
 
     leave_critical();
 
@@ -265,12 +265,12 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
     return (E_OK);
 }
 
-void set_page_table(T_TCB *taskp, VP p)
+void set_page_table(thread_t *taskp, VP p)
 {
     taskp->mpu.context.cr3 = (UW)p;
 }
 
-void set_arg(T_TCB *taskp, const UW arg)
+void set_arg(thread_t *taskp, const UW arg)
 {
     UW *sp = (UW*)(taskp->mpu.context.esp);
 

@@ -32,13 +32,13 @@ For more information, please refer to <http://unlicense.org/>
 #include "paging.h"
 #include "mpufunc.h"
 
-static inline PTE *getPageDirectory(const T_TCB *th)
+static inline PTE *getPageDirectory(const thread_t *th)
 {
 	return (PTE*)(th->mpu.context.cr3);
 }
 
 
-ER vmemcpy(const T_TCB *th, const void *to, const void *from,
+ER vmemcpy(const thread_t *th, const void *to, const void *from,
 		const size_t bytes)
 {
 	PTE *dir = (PTE*)kern_p2v(getPageDirectory(th));

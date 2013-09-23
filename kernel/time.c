@@ -107,10 +107,10 @@ ER time_get(SYSTIM *pk_systim)
 static void
 dly_func (VP p)
 {
-  T_TCB *taskp;
+  thread_t *taskp;
 
   enter_serialize();
-  taskp = (T_TCB *)p;
+  taskp = (thread_t *)p;
   taskp->wait.result = E_OK;
   leave_serialize();
 
@@ -144,7 +144,7 @@ void intr_interval(void)
     SYSTIM time;
     UW TH, TM, TL;
 
-    run_task->total++;
+    run_task->time.total++;
 
     /* システム時間の増加 */
     time_get(&time);
@@ -157,9 +157,9 @@ void intr_interval(void)
     time.utime = TH + (TM >> 16);
     time_set(&time);
 
-    if ((run_task->quantum) > 0 && (run_task->tsklevel >= pri_user_foreground)) {
-	if (--run_task->quantum == 0) {
-	    run_task->quantum = QUANTUM;
+    if ((run_task->time.left) > 0 && (run_task->priority >= pri_user_foreground)) {
+	if (--run_task->time.left == 0) {
+	    run_task->time.left = QUANTUM;
 	    rot_rdq(TPRI_SELF);
 	}
     }

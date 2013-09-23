@@ -25,6 +25,7 @@ Version 2, June 1991
 #include "thread.h"
 
 /* main.c */
+extern ID kernel_task_id;
 extern volatile lfq_t kqueue;
 extern int main(void);
 
@@ -32,6 +33,7 @@ extern int main(void);
 extern int printk(const char *format, ...);
 
 /* thread.c */
+extern thread_t *run_task;		/* 現在、走行中のタスク */
 extern ER thread_switch(void);
 extern ER thread_release(ID tskid);
 extern ER thread_get_id(ID * p_tskid);
@@ -87,7 +89,7 @@ extern node_t *find_empty_key(tree_t *tree, int *hand);
 
 /* nthread.c */
 extern ER thread_initialize(void);
-extern T_TCB *get_thread_ptr(ID tskid);
+extern thread_t *get_thread_ptr(ID tskid);
 extern ER_ID thread_initialize1(void);
 extern ER_ID thread_create_auto(T_CTSK * pk_ctsk);
 extern ER thread_destroy(ID tskid);

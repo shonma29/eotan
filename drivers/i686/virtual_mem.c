@@ -160,8 +160,8 @@ Version 2, June 1991
 #include <thread.h>
 #include "mpufunc.h"
 
-static BOOL vmap(T_TCB * task, UW vpage, UW ppage, W accmode);
-static ER vunmap(T_TCB * task, UW vpage);
+static BOOL vmap(thread_t * task, UW vpage, UW ppage, W accmode);
+static ER vunmap(thread_t * task, UW vpage);
 static I386_PAGE_ENTRY *alloc_pagetable(W);
 
 
@@ -275,7 +275,7 @@ ER release_vmap(ADDR_MAP dest)
  * 処理：	引数で指定された仮想メモリを物理メモリに割り当てる
  *
  */
-static BOOL vmap(T_TCB * task, UW vpage, UW ppage, W accmode)
+static BOOL vmap(thread_t * task, UW vpage, UW ppage, W accmode)
 {
     I386_DIRECTORY_ENTRY *dirent, *dp;
     I386_PAGE_ENTRY *pageent, *pp;
@@ -364,7 +364,7 @@ static BOOL vmap(T_TCB * task, UW vpage, UW ppage, W accmode)
  * 引数:	virtual	仮想メモリアドレス
  *
  */
-static ER vunmap(T_TCB * task, UW vpage)
+static ER vunmap(thread_t * task, UW vpage)
 {
     I386_DIRECTORY_ENTRY *dirent;
     I386_PAGE_ENTRY *pageent;
@@ -458,10 +458,10 @@ static I386_PAGE_ENTRY *alloc_pagetable(W accmode)
  */
 UW vtor(ID tskid, UW addr)
 {
-    T_TCB *taskp;
+    thread_t *taskp;
     UW result;
 
-    taskp = (T_TCB *) get_thread_ptr(tskid);
+    taskp = (thread_t *) get_thread_ptr(tskid);
     if (!taskp)
     {
 	return (UW)(NULL);
@@ -495,7 +495,7 @@ ER region_create(ID id,		/* task ID */
 	    UW perm)		/* リージョンのパーミッション */
 {				/* リージョン内でページフォールトが発生したと */
     /* きの処理の指定 */
-    T_TCB *taskp;
+    thread_t *taskp;
     T_REGION *regp;
 #ifdef DEBUG
     printk("region_create %d %d %x %x %x %x %x\n", id, rid, start, min, max,
@@ -569,7 +569,7 @@ ER region_create(ID id,		/* task ID */
  */
 ER region_destroy(ID id, ID rid)
 {
-    T_TCB *taskp;
+    thread_t *taskp;
 
 #ifdef DEBUG
     printk("region_destroy %d %d\n", id, rid);
@@ -618,14 +618,14 @@ ER region_map(ID id, VP start, UW size, W accmode)
      *           (ACC_KERNEL = 0, ACC_USER = 1)
      */
 {
-    T_TCB *taskp;
+    thread_t *taskp;
     UW counter, i;
     VP pmem;
     ER res;
     T_REGION *regp;
     UW newsize;
 
-    taskp = (T_TCB *) get_thread_ptr(id);
+    taskp = (thread_t *) get_thread_ptr(id);
     if (!taskp)
     {
 #ifdef DEBUG
@@ -696,12 +696,12 @@ ER region_map(ID id, VP start, UW size, W accmode)
  */
 ER region_unmap(ID id, VP start, UW size)
 {
-    T_TCB *taskp;
+    thread_t *taskp;
     UW counter;
     T_REGION *regp;
     UW newsize;
 
-    taskp = (T_TCB *) get_thread_ptr(id);
+    taskp = (thread_t *) get_thread_ptr(id);
     if (!taskp) {
 	return (E_PAR);
     }
@@ -752,16 +752,16 @@ ER region_duplicate(ID src, ID dst)
      * dst    リージョンの複製先のタスク
      */
 {
-    T_TCB *taskp, *dstp;
+    thread_t *taskp, *dstp;
 
 #ifdef DEBUG
     printk("region_duplicate %d %d\n", src, dst);
 #endif
-    taskp = (T_TCB *) get_thread_ptr(src);
+    taskp = (thread_t *) get_thread_ptr(src);
     if (!taskp) {
 	return (E_PAR);
     }
-    dstp = (T_TCB *) get_thread_ptr(dst);
+    dstp = (thread_t *) get_thread_ptr(dst);
     if (!dstp) {
 	return (E_PAR);
     }
@@ -875,7 +875,7 @@ ER region_put(ID id, VP start, UW size, VP buf)
      * buf    リージョンに書き込むデータ
      */
 {
-    T_TCB *th;
+    thread_t *th;
 
     if (size == 0)
 	return (E_OK);
@@ -915,7 +915,7 @@ ER region_get_status(ID id, ID rid, VP stat)
      */
 {
     T_REGION *regp = stat;
-    T_TCB *taskp;
+    thread_t *taskp;
 
     taskp = get_thread_ptr(id);
     if (taskp == NULL) {

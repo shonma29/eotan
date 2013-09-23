@@ -54,7 +54,7 @@ static int queue_hand;
 static inline queue_t *getQueueParent(const node_t *p);
 static inline queue_t *getSenderParent(const list_t *p);
 static inline queue_t *getReceiverParent(const list_t *p);
-static inline T_TCB *getTaskParent(const list_t *p);
+static inline thread_t *getTaskParent(const list_t *p);
 static inline int is_full(queue_t *q);
 static inline int is_empty(queue_t *q);
 static void enqueue(queue_t *q, VP_INT data);
@@ -77,8 +77,8 @@ static inline queue_t *getReceiverParent(const list_t *p) {
 	return (queue_t*)((ptr_t)p - offsetof(queue_t, receiver));
 }
 
-static inline T_TCB *getTaskParent(const list_t *p) {
-	return (T_TCB*)((ptr_t)p - offsetof(T_TCB, wait.waiting));
+static inline thread_t *getTaskParent(const list_t *p) {
+	return (thread_t*)((ptr_t)p - offsetof(thread_t, wait.waiting));
 }
 
 static inline int is_full(queue_t *q)
@@ -122,7 +122,7 @@ static list_t *release_sender(VP_INT *d, queue_t *q)
 	list_t *sender = list_head(&(q->sender));
 
 	if (sender) {
-		T_TCB *tp = getTaskParent(sender);
+		thread_t *tp = getTaskParent(sender);
 
 		*d = tp->wait.detail.que.data;
 		list_remove(sender);
@@ -205,7 +205,7 @@ static void release_all(list_t *waiting) {
 	list_t *q;
 
 	while ((q = list_dequeue(waiting)) != NULL) {
-		T_TCB *p = getTaskParent(q);
+		thread_t *p = getTaskParent(q);
 
 		p->wait.result = E_DLT;
 		release(p);
@@ -254,7 +254,7 @@ ER queue_send(ID dtqid, VP_INT data)
 
 	receiver = list_head(&(q->receiver));
 	if (receiver) {
-		T_TCB *tp = getTaskParent(receiver);
+		thread_t *tp = getTaskParent(receiver);
 
 		tp->wait.detail.que.data = data;
 		list_remove(receiver);
