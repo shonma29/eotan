@@ -69,7 +69,6 @@ Version 2, June 1991
 #include "../../lib/libserv/libserv.h"
 #include "../../lib/libserv/bind.h"
 #include "keyboard.h"
-#include "key_type.h"
 
 /*********************************************************************
  *	 局所変数群の宣言
