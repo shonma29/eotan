@@ -137,10 +137,10 @@ int main(void)
     banner();
 
     for (;;) {
-    	W rdvno = get_request(&request);
+    	RDVNO rdvno;
 
 	/* 次の要求メッセージを待つ */
-	if (rdvno < 0) {
+	if (get_request(&request, &rdvno) < 0) {
 	    /* リクエスト取得に失敗した */
 #ifdef DEBUG
 	    dbg_printf("Cannot get request.\n");

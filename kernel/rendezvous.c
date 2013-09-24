@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <core/options.h>
 #include <mpu/config.h>
 #include <set/list.h>
 #include <set/tree.h>
@@ -253,6 +254,8 @@ ER_UINT port_call(ID porid, VP msg, UINT cmsgsz)
 	if (q) {
 		thread_t *tp = getTaskParent(q);
 		rendezvous_t *r;
+		int rdvno;
+
 		if (region_put(tp->id, tp->wait.detail.por.msg, cmsgsz, msg)) {
 			printk("port_call[%d] region_put(%d, %p, %d, %p) error\n",
 					porid, tp->id,
@@ -264,12 +267,15 @@ ER_UINT port_call(ID porid, VP msg, UINT cmsgsz)
 		list_remove(q);
 		tp->wait.detail.por.size = cmsgsz;
 
-		node = tree_get(&rdv_tree, tp->wait.detail.por.rdvno);
+		rdvno = tp->wait.detail.por.rdvno;
+		node = tree_get(&rdv_tree, rdvno);
+		rdvno = get_rdvno(run_task->id, rdvno);
+		tp->wait.detail.por.rdvno = rdvno;
 		r = getRdvParent(node);
 
 		list_enqueue(&(r->caller), &(run_task->wait.waiting));
 		run_task->wait.detail.por.msg = msg;
-		run_task->wait.detail.por.rdvno = tp->wait.detail.por.rdvno;
+		run_task->wait.detail.por.rdvno = rdvno;
 		run_task->wait.type = wait_rdv;
 		release(tp);
 	}
@@ -317,7 +323,6 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 	r = getRdvParent(node);
 	list_initialize(&(r->caller));
 	r->maxrmsz = p->maxrmsz;
-	*p_rdvno = rdvno;
 
 	q = list_head(&(p->caller));
 	if (q) {
@@ -329,7 +334,7 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 			printk("port_accept[%d] region_get(%d, %p, %d, %p) error\n",
 					porid, tp->id,
 					tp->wait.detail.por.msg, result, msg);
-/* TODO release rendezvous */
+			tree_remove(&rdv_tree, rdvno);
 			leave_serialize();
 			return E_PAR;
 /* TODO test */
@@ -337,7 +342,7 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 
 		list_remove(q);
 		list_enqueue(&(r->caller), &(tp->wait.waiting));
-		tp->wait.detail.por.rdvno = rdvno;
+		*p_rdvno = tp->wait.detail.por.rdvno = get_rdvno(tp->id, rdvno);
 		tp->wait.type = wait_rdv;
 /* TODO test */
 	}
@@ -354,8 +359,10 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 		if (run_task->wait.result) {
 			result = run_task->wait.result;
 			tree_remove(&rdv_tree, rdvno);
+		} else {
+			result = run_task->wait.detail.por.size;
+			*p_rdvno = run_task->wait.detail.por.rdvno;
 		}
-		else	result = run_task->wait.detail.por.size;
 /* TODO test */
 	}
 
@@ -369,8 +376,10 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 	node_t *node;
 	list_t *q;
 	ER result;
+
 /* TODO validate msg */
 	enter_serialize();
+	rdvno = get_rdv_seq(rdvno);
 	node = tree_get(&rdv_tree, rdvno);
 	if (!node) {
 		leave_serialize();
@@ -416,4 +425,3 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 	thread_switch();
 	return result;
 }
-

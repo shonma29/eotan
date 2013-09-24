@@ -40,7 +40,7 @@ Version 2, June 1991
 
 /* request.c */
 extern W init_port(void);
-extern W get_request(struct posix_request *req);
+extern W get_request(struct posix_request *req, RDVNO *rdvno);
 extern W put_response(RDVNO rdvno, W error_no, W status, W ret1);
 extern W error_response(RDVNO rdvno, W error_no);
 

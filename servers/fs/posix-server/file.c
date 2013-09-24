@@ -188,7 +188,6 @@ static W control_device(ID device, struct posix_request *preq)
     }
 
     packet.req.header.msgtyp = DEV_CTL;
-    packet.req.header.tskid = preq->caller;
     packet.req.body.ctl_req.dd = dd;
     packet.req.body.ctl_req.cmd = (preq->param.par_fcntl.cmd >> 16)
 	    & 0x0FFFF;
