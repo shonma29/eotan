@@ -76,10 +76,8 @@ extern int setgid(int gid);
 extern int setuid(int uid);
 extern int usleep(int usecond);
 extern int sleep(int second);
-/*
 extern int gettimeofday(struct timeval *tv, struct timezone *tz);
-*/
-extern int time(time_t *tm);
+extern time_t time(time_t *tm);
 extern mode_t umask(mode_t mask);
 extern int umount(char *special_file);
 extern int uname(struct utsname *name);

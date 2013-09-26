@@ -36,7 +36,7 @@ int gettimeofday(struct timeval *tv, struct timezone * tz)
 /* time 
  *
  */
-int time(time_t * tm)
+time_t time(time_t * tm)
 {
     struct timeval tv;
     struct timezone tz;

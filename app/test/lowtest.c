@@ -57,9 +57,15 @@ char *testfile() {
 	printf("fstat: size=%d\n", st.st_size);
 	printf("fstat: blksize=%d\n", st.st_blksize);
 	printf("fstat: blocks=%d\n", st.st_blocks);
-	printf("fstat: atime=%lld\n", st.st_atime);
-	printf("fstat: mtime=%lld\n", st.st_mtime);
-	printf("fstat: ctime=%lld\n", st.st_ctime);
+	printf("fstat: atime=%d, %d\n",
+		(int)((long long int)st.st_atime >> 32),
+		(int)((long long int)st.st_atime & 0xffffffff));
+	printf("fstat: mtime=%d, %d\n",
+		(int)((long long int)st.st_mtime >> 32),
+		(int)((long long int)st.st_mtime & 0xffffffff));
+	printf("fstat: ctime=%d, %d\n",
+		(int)((long long int)st.st_ctime >> 32),
+		(int)((long long int)st.st_ctime & 0xffffffff));
 
 	assert_eq("read[0]", 1, read(fd, buf, 1));
 	assert_eq("read[0] buf[0]", 0x23, buf[0]);
@@ -172,7 +178,8 @@ char *testdir() {
 char *testmm() {
 	struct utsname name;
 	int pid;
-	time_t t;
+	time_t t1;
+	time_t t2;
 	char *buf;
 	int i;
 
@@ -195,8 +202,13 @@ char *testmm() {
 	printf("uname = %s\n", name.version);
 	printf("uname = %s\n", name.machine);
 
-	printf("time = %d\n", time(&t));
-	printf("time = %lld\n", t);
+	t2 = time(&t1);
+	printf("time = %d, %d\n",
+		(int)((long long int)t1 >> 32),
+		(int)((long long int)t1 & 0xffffffff));
+	printf("time = %d, %d\n",
+		(int)((long long int)t2 >> 32),
+		(int)((long long int)t2 & 0xffffffff));
 
 	printf("uid = %d\n", getuid());
 	printf("euid = %d\n", geteuid());
