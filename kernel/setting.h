@@ -27,7 +27,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <mpu/memory.h>
-#include <config.h>
 
 #define BOOT_INFO_ADDR 0x80003000
 #define MEMORY_MAP_ADDR 0x80180000
@@ -40,8 +39,10 @@ For more information, please refer to <http://unlicense.org/>
 
 #define MAX_PAGES (1024 * 1024 / 2)
 
-// MIN_MEMORY_SIZE should be a multiple of 4 MB.
-#define NUM_OF_INITIAL_DIR (MIN_MEMORY_SIZE / PAGE_SIZE / PTE_PER_PAGE)
+// MIN_MEMORY_MB should be a multiple of 4 MB.
+#define MIN_MEMORY_MB (8)
+#define NUM_OF_INITIAL_DIR \
+		((MIN_MEMORY_MB * 1024 * 1024) / PAGE_SIZE / PTE_PER_PAGE)
 
 #define MIN_MANUAL_ID (1)
 #define MAX_MANUAL_ID (49151)
@@ -63,5 +64,13 @@ typedef enum {
 	pri_user_foreground = 6,
 	pri_user_background = 7
 } system_priority_e;
+
+/* ticks per second */
+#define TIME_TICKS (100)
+
+/* available ticks for user threads */
+#define TIME_QUANTUM (10)
+
+#define MAX_TIME_HANDLER (100)
 
 #endif

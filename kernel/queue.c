@@ -201,7 +201,8 @@ ER_ID queue_create_auto(T_CDTQ *pk_cdtq)
 	return result;
 }
 
-static void release_all(list_t *waiting) {
+static void release_all(list_t *waiting)
+{
 	list_t *q;
 
 	while ((q = list_dequeue(waiting)) != NULL) {

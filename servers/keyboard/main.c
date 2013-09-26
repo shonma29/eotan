@@ -66,10 +66,10 @@ Version 2, June 1991
 #include <device.h>
 #include <kcall.h>
 #include <major.h>
+#include <core/options.h>
 #include "../../lib/libserv/libserv.h"
 #include "../../lib/libserv/bind.h"
 #include "keyboard.h"
-#include "key_type.h"
 
 /*********************************************************************
  *	 局所変数群の宣言
@@ -408,7 +408,8 @@ static W control_keyboard(RDVNO rdvno, devmsg_t * packet)
 	return (E_OK);
 
     case KEYBOARD_GETMODE:
-        kcall->region_put(packet->req.header.tskid, (VP)(req->param),
+        //TODO this tid is caller's one. Relay servers must not use.
+        kcall->region_put(get_rdv_tid(rdvno), (VP)(req->param),
                 sizeof(W),
                 &driver_mode);
         respond_ctrl(rdvno, packet, req->dd, E_OK);

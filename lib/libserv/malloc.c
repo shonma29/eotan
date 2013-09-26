@@ -69,7 +69,6 @@ Version 2, June 1991
 #include <vm.h>
 #include <mpu/config.h>
 #include <mpu/memory.h>
-#include "../../kernel/config.h"
 #include "../../kernel/region.h"
 #include "../../kernel/mpu/mpu.h"
 #include "libserv.h"

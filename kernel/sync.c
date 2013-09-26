@@ -31,14 +31,16 @@ For more information, please refer to <http://unlicense.org/>
 
 int dispatchable = TRUE;
 
-void wait(thread_t *task) {
+void wait(thread_t *task)
+{
 	task->wait.result = E_OK;
 	task->status = TTS_WAI;
 	list_remove(&(task->queue));
 	thread_switch();
 }
 
-void release(thread_t *task) {
+void release(thread_t *task)
+{
 	task->wait.type = wait_none;
 	task->status &= ~TTS_WAI;
 

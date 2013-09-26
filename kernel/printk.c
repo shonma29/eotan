@@ -46,7 +46,8 @@ static size_t len;
 static void _putc(char ch);
 
 
-int printk(const char *format, ...) {
+int printk(const char *format, ...)
+{
 	va_list ap;
 
 	va_start(ap, format);

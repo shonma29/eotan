@@ -81,18 +81,16 @@ W init_port(void)
 /* get_request - リクエストを受信する
  *
  */
-W get_request(struct posix_request * req)
+W get_request(struct posix_request * req, RDVNO *rdvno)
 {
     ER_UINT size;
-    RDVNO rdvno;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    size = kcall->port_accept(PORT_FS, &rdvno, req);
+    size = kcall->port_accept(PORT_FS, rdvno, req);
     if (size < 0) {
 	dbg_printf("[FS] get_request: acp_por error %d\n", size);
-	return size;
     }
-    return rdvno;
+    return size;
 }
 
 

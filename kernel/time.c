@@ -36,12 +36,14 @@ Version 2, June 1991
 #include "setting.h"
 #include "sync.h"
 
+#define CLOCK (1000 / TIME_TICKS)
+
 static struct timer_list {
     struct timer_list *next;
     W time;
     void (*func) (VP);
     VP argp;
-} timer[MAX_TIMER];
+} timer[MAX_TIME_HANDLER];
 
 /* 
  * 変数宣言
@@ -159,7 +161,7 @@ void intr_interval(void)
 
     if ((run_task->time.left) > 0 && (run_task->priority >= pri_user_foreground)) {
 	if (--run_task->time.left == 0) {
-	    run_task->time.left = QUANTUM;
+	    run_task->time.left = TIME_QUANTUM;
 	    rot_rdq(TPRI_SELF);
 	}
     }
@@ -191,10 +193,10 @@ void timer_initialize(void)
 
     printk("initialize timer\n");
     enter_critical();
-    for (i = 0; i <= MAX_TIMER - 2; i++) {
+    for (i = 0; i <= MAX_TIME_HANDLER - 2; i++) {
 	timer[i].next = &timer[i + 1];
     }
-    timer[MAX_TIMER - 1].next = NULL;
+    timer[MAX_TIME_HANDLER - 1].next = NULL;
     free_timer = timer;
     time_list = NULL;
     leave_critical();

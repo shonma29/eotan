@@ -56,7 +56,6 @@ int putline(UW start, UW size, UB *buf)
 	ER_UINT err;
 
 	msg.req.header.msgtyp = DEV_WRI;
-	msg.req.header.tskid = 0;
 	msg.req.body.wri_req.dd = 1;
 	msg.req.body.wri_req.start = start;
 	msg.req.body.wri_req.size = size;

@@ -1,73 +1,68 @@
+#ifndef _MPU_MPUFUNC_H__
+#define _MPU_MPUFUNC_H__
 /*
+This is free and unencumbered software released into the public domain.
 
-B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
 
-GNU GENERAL PUBLIC LICENSE
-Version 2, June 1991
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
 
-(C) B-Free Project.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
 
-(C) 2002, Tomohide Naniwa
-
+For more information, please refer to <http://unlicense.org/>
 */
-
-#ifndef _MPU_MPUFUNC_H_
-#define _MPU_MPUFUNC_H_	1
-
 #include <core.h>
-#include <mpu/memory.h>
-#include "../../kernel/thread.h"
+#include <thread.h>
 #include "gate.h"
-
-/* virtual_memory.c */
-extern ADDR_MAP dup_vmap_table(ADDR_MAP dest);
-extern ER release_vmap(ADDR_MAP dest);
-extern UW vtor(ID tskid, UW addr);
-extern ER region_create(ID id, ID rid, VP start, W min, W max, UW perm);
-extern ER region_destroy(ID id, ID rid);
-extern ER region_map(ID id, VP start, UW size, W accmode);
-extern ER region_unmap(ID id, VP start, UW size);
-extern ER region_duplicate(ID src, ID dst);
-extern ER region_get(ID id, VP start, UW size, VP buf);
-extern ER region_put(ID id, VP start, UW size, VP buf);
-extern ER region_get_status(ID id, ID rid, VP stat);
-
-/* interrupt.c */
-extern volatile W	on_interrupt;
-extern BOOL	delayed_dispatch;
-
-extern W	init_interrupt (void);
-extern void	interrupt (W);
-extern void	page_fault (UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		UW ecx, UW eax, UW es, UW ds, UW no,
-		UW err, UW eip, UW cs, W eflags);
-extern void	protect_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		   UW ecx, UW eax, UW es, UW ds, UW no,
-		   UW err, UW eip, UW cs, UW eflags);
-extern ER  	interrupt_bind (W inhno, T_DINH *pk_dinh);
-extern W	int32_handler (void);
-extern W	int33_handler (void);
-
-/* fpu.c */
-extern void fpu_initialize(void);
-extern void fpu_save(thread_t * taskp);
-extern void fpu_restore(thread_t * taskp);
-extern void fpu_start(thread_t * taskp);
+#include "paging.h"
 
 /* context.c */
 extern ER create_context(thread_t * task, T_CTSK * pk_ctsk);
 extern ER mpu_copy_stack(ID src, W esp, ID dst);
 extern ER mpu_set_context(ID tid, W eip, B * stackp, W stsize);
-extern void set_page_table(thread_t *taskp, VP p);
+extern W pf_handler(W cr2, W eip);
 extern void set_arg(thread_t *taskp, const UW arg);
+extern void set_page_table(thread_t *taskp, VP p);
 
-/* gate.c */
-extern void idt_initialize(void);
-extern void idt_set(UB no, UH selector, W (*handler)(void),
-		UB type, UB dpl);
-extern void gate_set(GateDescriptor *p,
-		UH selector, W (*handler)(void), UB attr);
-extern void gdt_initialize(void);
+/* ncontext.c */
+extern VP *context_prev_sp;
+extern VP *context_next_sp;
+extern VP_INT *context_create_kernel(VP_INT *sp, const UW eflags, const FP eip);
+extern VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
+		const VP esp);
+extern void context_initialize(void);
+extern void context_reset_page_cache(const thread_t *task, const VP addr);
+extern void context_reset_page_table();
+extern void context_set_kernel_sp(const VP addr);
+extern void context_switch_page_table(thread_t *next);
+
+/* virtual_mem.c */
+extern ADDR_MAP dup_vmap_table(ADDR_MAP dest);
+extern ER region_create(ID id, ID rid, VP start, W min, W max, UW perm);
+extern ER region_destroy(ID id, ID rid);
+extern ER region_duplicate(ID src, ID dst);
+extern ER region_get(ID id, VP start, UW size, VP buf);
+extern ER region_get_status(ID id, ID rid, VP stat);
+extern ER region_map(ID id, VP start, UW size, W accmode);
+extern ER region_put(ID id, VP start, UW size, VP buf);
+extern ER region_unmap(ID id, VP start, UW size);
+extern ER release_vmap(ADDR_MAP dest);
+extern UW vtor(ID tskid, UW addr);
 
 /* fault.c */
 extern void fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
@@ -77,9 +72,45 @@ extern void fault_with_error(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 		UW ecx, UW eax, UW es, UW ds, UW no,
 		UW err, UW eip, UW cs, UW eflags);
 
-/* gate_loader.s */
-extern void gdt_load(void);
-extern void idt_load(void);
+/* fpu.c */
+extern void fpu_initialize(void);
+extern void fpu_restore(thread_t *taskp);
+extern void fpu_save(thread_t *taskp);
+extern void fpu_start(thread_t *taskp);
+
+/* gate.c */
+extern void gate_set(GateDescriptor *p,
+		UH selector, W (*handler)(void), UB attr);
+extern void gdt_initialize(void);
+extern void idt_initialize(void);
+extern void idt_set(UB no, UH selector, W (*handler)(void), UB type, UB dpl);
+
+/* interrupt.c */
+extern volatile W on_interrupt;
+extern BOOL delayed_dispatch;
+extern W init_interrupt(void);
+extern void interrupt(W intn);
+extern ER interrupt_bind(W inhno, T_DINH *pk_dinh);
+extern void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
+		UW ecx, UW eax, UW es, UW ds, UW no,
+		UW err, UW eip, UW cs, W eflags);
+extern void protect_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
+		   UW ecx, UW eax, UW es, UW ds, UW no,
+		   UW err, UW eip, UW cs, UW eflags);
+
+/* paging_init.c */
+extern void paging_initialize(void);
+
+/* paging_reset.c */
+extern void paging_reset(void);
+
+/* panic.c */
+extern void panic(char *msg);
+
+/* util.c */
+extern void *getPageAddress(const PTE *dir, const void *addr);
+extern ER vmemcpy(const thread_t *th, const void *to, const void *from,
+		const size_t bytes);
 
 /* abort.s */
 extern W handle0(void);
@@ -116,6 +147,14 @@ extern W handle30(void);
 extern W handle31(void);
 extern W service_handler(void);
 
+/* handler.S */
+extern W int32_handler(void);
+extern W int33_handler(void);
+
+/* gate_loader.s */
+extern void gdt_load(void);
+extern void idt_load(void);
+
 /* paging.s */
 extern void *fault_get_addr(void);
 extern void paging_set_directory(void *dir);
@@ -123,34 +162,8 @@ extern void paging_start(void);
 extern void tlb_flush_all(void);
 extern void tlb_flush(VP addr);
 
-/* paging_init.c */
-extern void paging_initialize(void);
-
-/* paging_reset.c */
-void paging_reset(void);
-
-/* util.c */
-extern ER vmemcpy(const thread_t *th, const void *to, const void *from,
-		const size_t bytes);
-extern void *getPageAddress(const PTE *dir, const void *addr);
-
-/* panic.c */
-extern void panic(char *msg);
-
 /* switch.s */
 extern void tr_set(const UW selector);
 extern void context_switch(void);
 
-/* ncontext.c */
-extern VP *context_prev_sp;
-extern VP *context_next_sp;
-extern void context_initialize(void);
-extern void context_set_kernel_sp(const VP addr);
-extern VP_INT *context_create_kernel(VP_INT *sp, const UW eflags, const FP eip);
-extern VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
-		const VP esp);
-extern void context_switch_page_table(thread_t *next);
-extern void context_reset_page_table();
-extern void context_reset_page_cache(const thread_t *task, const VP addr);
-
-#endif /* _MPU_MPU_H_ */
+#endif

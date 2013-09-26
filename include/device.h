@@ -73,7 +73,6 @@ Version 2, June 1991
  */
 typedef struct {
   W	msgtyp;		/* メッセージ識別番号				*/
-  ID	tskid;		/* メッセージを送信したタスク			*/
 } SVC_REQ;
 
 /*

@@ -1,3 +1,5 @@
+#ifndef _MITRON4_OPTIONS_H_
+#define _MITRON4_OPTIONS_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,52 +26,21 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <set/list.h>
-#include <set/heap.h>
-#include "setting.h"
+#include <mitron4/types.h>
 
-static list_t ready_task[MAX_PRIORITY + 1];
-static int buf[MAX_PRIORITY + 1];
-static heap_t heap;
-
-void ready_initialize()
+static inline ID get_rdv_tid(RDVNO rdvno)
 {
-	int i;
-
-	for (i = MIN_PRIORITY; i <= MAX_PRIORITY; i++) {
-		list_initialize(&(ready_task[i]));
-	}
-
-	heap_initialize(&heap, MAX_PRIORITY + 1, buf);
+	return (ID)((UW)rdvno >> 16);
 }
 
-void ready_enqueue(const int pri, list_t *src)
+static inline W get_rdv_seq(RDVNO rdvno)
 {
-	list_t *dest = &(ready_task[pri]);
-
-	if (list_is_empty(dest))	heap_enqueue(&heap, pri);
-	list_enqueue(dest, src);
+	return (W)((UW)rdvno & 0xffff);
 }
 
-void ready_rotate(const int pri)
+static inline RDVNO get_rdvno(ID tid, W seq)
 {
-	list_t *head = list_dequeue(&(ready_task[pri]));
-
-	if (head) {
-		list_enqueue(&(ready_task[pri]), head);
-	}
+	return (RDVNO)((UW)tid << 16 | (UW)seq);
 }
 
-list_t *ready_dequeue()
-{
-	for (;; heap_dequeue(&heap)) {
-		list_t *q;
-		int pri = heap_head(&heap);
-
-		if (pri == HEAP_EMPTY)	return NULL;
-
-		q = list_head(&(ready_task[pri]));
-
-		if (q)	return q;
-	}
-}
+#endif

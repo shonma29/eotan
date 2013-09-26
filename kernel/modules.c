@@ -37,7 +37,7 @@ For more information, please refer to <http://unlicense.org/>
 
 static ER run(const UW type, const Elf32_Ehdr *eHdr);
 static void set_initrd(ModuleHeader *h);
-static void release(const void *head, const void *end);
+static void release_others(const void *head, const void *end);
 
 
 void run_init_program(void)
@@ -61,7 +61,7 @@ void run_init_program(void)
 		h = (ModuleHeader*)((UW)h + sizeof(*h) + h->length);
 	}
 
-	release((void*)MODULES_ADDR,
+	release_others((void*)MODULES_ADDR,
 			kern_v2p((void*)((UW)h + sizeof(*h))));
 }
 
@@ -102,7 +102,7 @@ static void set_initrd(ModuleHeader *h)
 
 //TODO wait for init starting
 //TODO release others (BIOS workarea, kernel stack, ...)
-static void release(const void *head, const void *end)
+static void release_others(const void *head, const void *end)
 {
 	UW addr = (UW)head & ~((1 << PAGE_SHIFT) - 1);
 	UW max = pages((UW)end - addr);

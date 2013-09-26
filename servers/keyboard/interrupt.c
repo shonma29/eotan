@@ -99,7 +99,6 @@ Version 2, June 1991
 #include "../../lib/libserv/libserv.h"
 #include "keyboard.h"
 #include "key_def.h"
-#include "key_type.h"
 
 #define NORMAL_CODE	0
 #define SHIFT_CODE	1

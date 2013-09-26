@@ -230,7 +230,7 @@ ER thread_start(ID tskid)
 
 		th->status = TTS_RDY;
 		th->time.total = 0;
-		th->time.left = QUANTUM;
+		th->time.left = TIME_QUANTUM;
 //TODO fix context_create_kernel
 //		set_arg(th, th->attr.arg);
 
