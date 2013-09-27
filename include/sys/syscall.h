@@ -52,28 +52,27 @@ Version 2, June 1991
 #define PSC_RMDIR        23
 #define PSC_SETGID       24
 #define PSC_SETUID       25
-#define PSC_TIME         26
-#define PSC_UMASK        27
-#define PSC_UNLINK       28
-#define PSC_UTIME        29
-#define PSC_WAITPID      30
-#define PSC_WRITE        31
+#define PSC_UMASK        26
+#define PSC_UNLINK       27
+#define PSC_UTIME        28
+#define PSC_WAITPID      29
+#define PSC_WRITE        30
 
-#define PSC_BRK		 32
-#define PSC_GETDENTS	 33
-#define PSC_MOUNT        34
-#define PSC_STATFS       35
-#define PSC_UMOUNT       36
+#define PSC_BRK		 31
+#define PSC_GETDENTS	 32
+#define PSC_MOUNT        33
+#define PSC_STATFS       34
+#define PSC_UMOUNT       35
 
 /* =================== SIGNAL 関係 =============== */
-#define PSC_KILL         37
+#define PSC_KILL         36
 
 /* =================== miserous system calls  =============== */
-#define PSC_MISC         38
+#define PSC_MISC         37
 
-#define PSC_DUP2         39	/* 不要? */
+#define PSC_DUP2         38	/* 不要? */
 
-#define PSC_BIND_DEVICE (40)
+#define PSC_BIND_DEVICE (39)
 
 /* MISC 
  */
@@ -366,16 +365,6 @@ struct psc_fstat
 };
 
 
-/* psc_time - 実態は gettimeofday
- *
- */
-struct psc_time
-{
-  VP tv;
-  VP tz;
-};
-
-
 /* psc_umask -
  *
  */
@@ -546,7 +535,6 @@ struct posix_request
     struct psc_setgid		par_setgid;
     struct psc_setuid		par_setuid;
     struct psc_fstat  		par_fstat;
-    struct psc_time  		par_time;
     struct psc_umask 		par_umask;
     struct psc_unlink     	par_unlink;
     struct psc_utime 		par_utime;

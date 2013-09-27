@@ -113,10 +113,13 @@ extern ER queue_send(ID dtqid, VP_INT data);
 extern void check_timer(void);
 extern void intr_interval(void);
 extern ER thread_delay(RELTIM dlytim);
+extern void timer_initialize(void);
+
+/* ntime.c */
 extern ER time_get(SYSTIM *pk_systim);
 extern void time_initialize(UW seconds);
 extern ER time_set(SYSTIM *pk_systim);
-extern void timer_initialize(void);
+extern void time_tick(void);
 
 #endif
 

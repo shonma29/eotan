@@ -1,5 +1,3 @@
-#ifndef _MITRON4_TYPES_H_
-#define _MITRON4_TYPES_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,81 +24,29 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <sys/time.h>
 
-/**
- * common data types
- */
-typedef char B;
-typedef short H;
-typedef long W;
-typedef long long D;
-typedef unsigned char UB;
-typedef unsigned short UH;
-typedef unsigned long UW;
-typedef unsigned long long UD;
 
-typedef char VB;
-typedef short VH;
-typedef long VW;
-typedef long long VD;
+void timespec_add(struct timespec *dest, const struct timespec *operand)
+{
+	dest->tv_sec += operand->tv_sec;
+	dest->tv_nsec += operand->tv_nsec - TIMESPEC_OFFSET_NSEC;
 
-typedef void *VP;
-typedef void (*FP)();
+	if (dest->tv_nsec < 0) {
+		dest->tv_sec++;
+		dest->tv_nsec = (int)((dest->tv_nsec & 0x7fffffff)
+				+ TIMESPEC_OFFSET_NSEC);
+	}
+}
 
-typedef long INT;
-typedef unsigned long UINT;
+int timespec_after(const struct timespec *t1, const struct timespec *t2)
+{
+	time_t diff = t1->tv_sec - t2->tv_sec;
 
-typedef enum {
-	TRUE = 1,
-	FALSE = 0
-} BOOL;
-
-typedef long FN;
-typedef long ER;
-typedef long ID;
-typedef unsigned long ATR;
-typedef unsigned long STAT;
-typedef unsigned long MODE;
-typedef long PRI;
-typedef unsigned long SIZE;
-
-typedef long TMO;
-typedef unsigned long RELTIM;
-typedef struct {
-	D sec;
-	W nsec;
-} SYSTIM;
-
-typedef int VP_INT;
-
-typedef long ER_BOOL;
-typedef long ER_ID;
-typedef long ER_UINT;
-
-typedef unsigned int RDVPTN;
-typedef int RDVNO;
-
-#define TBIT_RDVPTN 32
-
-/**
- * common constants
- */
-#ifndef NULL
-#define NULL (0)
-#endif
-
-#define E_OK (0)
-
-/**
- * object attribute
- */
-#define TA_NULL (0)
-
-/**
- * timeout parameters
- */
-#define TMO_POL (0)
-#define TMO_FEVR (-1)
-#define TMO_NBLK (-2)
-
-#endif
+	if (diff < 0)
+		return 0;
+	else if (diff > 0)
+		return 1;
+	else
+		return t1->tv_nsec >= t2->tv_nsec;
+}

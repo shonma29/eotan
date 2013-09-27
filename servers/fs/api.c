@@ -190,7 +190,6 @@ struct posix_syscall	syscall_table[] =
   { s("rmdir",		PSC_RMDIR)		psc_rmdir_f },
   { s("setgid",		PSC_SETGID)		psc_setgid_f },
   { s("setuid",		PSC_SETUID)		psc_setuid_f },
-  { s("time",		PSC_TIME)		psc_time_f },
   { s("umask",		PSC_UMASK)		psc_umask_f },
   { s("unlink",		PSC_UNLINK)		psc_unlink_f },
   { s("utime",		PSC_UTIME)		psc_utime_f },

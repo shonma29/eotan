@@ -1,5 +1,3 @@
-#ifndef _MITRON4_TYPES_H_
-#define _MITRON4_TYPES_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,81 +24,55 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <core.h>
+#include <errno.h>
+#include <kcall.h>
+#include <mm.h>
+#include <core/options.h>
+#include <sys/time.h>
+#include "interface.h"
 
-/**
- * common data types
- */
-typedef char B;
-typedef short H;
-typedef long W;
-typedef long long D;
-typedef unsigned char UB;
-typedef unsigned short UH;
-typedef unsigned long UW;
-typedef unsigned long long UD;
+static int get_timespec(struct timespec *tspec)
+{
+	SYSTIM time;
+	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-typedef char VB;
-typedef short VH;
-typedef long VW;
-typedef long long VD;
+	if (kcall->time_get(&time))
+		return FALSE;
 
-typedef void *VP;
-typedef void (*FP)();
+	tspec->tv_sec = time.sec;
+	tspec->tv_nsec = time.nsec;
 
-typedef long INT;
-typedef unsigned long UINT;
+	return TRUE;
+}
 
-typedef enum {
-	TRUE = 1,
-	FALSE = 0
-} BOOL;
+int mm_time(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+{
+	do {
+		struct timespec tspec;
+		kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-typedef long FN;
-typedef long ER;
-typedef long ID;
-typedef unsigned long ATR;
-typedef unsigned long STAT;
-typedef unsigned long MODE;
-typedef long PRI;
-typedef unsigned long SIZE;
+		if (!args->arg1) {
+			reply->error_no = EFAULT;
+			break;
+		}
 
-typedef long TMO;
-typedef unsigned long RELTIM;
-typedef struct {
-	D sec;
-	W nsec;
-} SYSTIM;
+		if (!get_timespec(&tspec)) {
+			reply->error_no = ESVC;
+			break;
+		}
 
-typedef int VP_INT;
+		if (kcall->region_put(get_rdv_tid(rdvno),
+				(void*)(args->arg1), sizeof(tspec), &tspec)) {
+			reply->error_no = EFAULT;
+			break;
+		}
 
-typedef long ER_BOOL;
-typedef long ER_ID;
-typedef long ER_UINT;
+		reply->error_no = EOK;
+		reply->result = 0;
+		return reply_success;
+	} while (FALSE);
 
-typedef unsigned int RDVPTN;
-typedef int RDVNO;
-
-#define TBIT_RDVPTN 32
-
-/**
- * common constants
- */
-#ifndef NULL
-#define NULL (0)
-#endif
-
-#define E_OK (0)
-
-/**
- * object attribute
- */
-#define TA_NULL (0)
-
-/**
- * timeout parameters
- */
-#define TMO_POL (0)
-#define TMO_FEVR (-1)
-#define TMO_NBLK (-2)
-
-#endif
+	reply->result = -1;
+	return reply_failure;
+}

@@ -19,7 +19,7 @@ Version 2, June 1991
 #include <core.h>
 #include "posix.h"
 
-#define CLOCK (1000 / TIME_TICKS)
+#define CLOCK (1000 * 1000 / TIME_TICKS)
 
 
 /* usleep --- システムコールの動作は usleep とする．
@@ -49,5 +49,5 @@ usleep (int usecond)
 int
 sleep (int second)
 {
-  return usleep(second * 1000);
+  return usleep(second * 1000 * 1000);
 }

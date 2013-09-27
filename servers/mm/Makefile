@@ -23,14 +23,16 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-SERVERS = dumb fs kernlog keyboard ramdisk hmi mm
+TARGET = $(WD)/mm
 
-all: $(SERVERS)
+include Makefile.in
 
-$(SERVERS):
-	$(MAKE) -f servers/$@/Makefile WD=servers/$@
+CFLAGS += -I kernel
+ENTRY_ADDR = 0x803c0000
+ENTRY_FUNC = start
 
-clean:
-	$(SHELL) -ec 'for L in $(SERVERS); do \
-		$(MAKE) -f servers/$$L/Makefile WD=servers/$$L clean; \
-		done'
+$(TARGET): $(OBJS) \
+		lib/libserv.a lib/libnc.a
+	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
+	$(STRIP) $@
+

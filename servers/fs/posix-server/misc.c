@@ -72,63 +72,12 @@ W psc_misc_f(RDVNO rdvno, struct posix_request *req)
 
 /* gettimeofday として動作する */
 
-UW get_system_time(UW * usec)
+UW get_system_time(void)
 {
-    UW clock, i;
     SYSTIM time;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     kcall->time_get(&time);
 
-#ifdef notdef
-    dbg_printf("systime.utime = %d, systime.ltime = %d\n",
-	       time.utime, time.ltime);
-#endif
-    clock = time.ltime / MS;
-    i = (time.utime % MS) << 16;
-    clock += (i / MS) << 16;
-    clock += ((i % MS) << 16) / MS;
-    if (usec != NULL) {
-	*usec = (time.ltime % MS) / 10;
-    }
-    return clock;
-}
-
-W psc_time_f(RDVNO rdvno, struct posix_request * req)
-{
-    UW clock, usec;
-    ER error_no = EOK;
-    struct timeval tv;
-    struct timezone tz;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
-
-    clock = get_system_time(&usec);
-
-    tv.tv_sec = clock;
-    tv.tv_usec = usec;
-    tz.tz_minuteswest = -9 * 60;
-    tz.tz_dsttime = 0;
-
-    if (req->param.par_time.tv != NULL) {
-	error_no = kcall->region_put(req->caller,
-			 req->param.par_time.tv, sizeof(struct timeval),
-			 &tv);
-	if (error_no) {
-	    put_response(rdvno, error_no, -1, 0);
-	    return (FALSE);
-	}
-
-    }
-    if (req->param.par_time.tz == NULL) {
-	error_no = kcall->region_put(req->caller,
-			 req->param.par_time.tz, sizeof(struct timezone),
-			 &tz);
-	if (error_no) {
-	    put_response(rdvno, error_no, -1, 0);
-	    return (FALSE);
-	}
-    }
-
-    put_response(rdvno, EOK, 0, 0);
-    return (TRUE);
+    return (UW)((unsigned long long)time.sec & 0xffffffff);
 }

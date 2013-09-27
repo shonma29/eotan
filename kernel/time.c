@@ -31,12 +31,11 @@ Version 2, June 1991
 
 #include <core.h>
 #include <string.h>
+#include <sys/time.h>
 #include "thread.h"
 #include "func.h"
 #include "setting.h"
 #include "sync.h"
-
-#define CLOCK (1000 / TIME_TICKS)
 
 static struct timer_list {
     struct timer_list *next;
@@ -52,55 +51,12 @@ static struct timer_list {
 /* 大域変数の宣言 */
 W do_timer = 0;
 
-SYSTIM system_time;
-#define MS 1000
-
 static struct timer_list *free_timer;
 static struct timer_list *time_list;
 
 static void set_timer(W time, void (*func) (VP), VP argp);
 static ER unset_timer(void (*func) (VP), VP arg);
 
-
-void time_initialize(UW seconds)
-{
-  SYSTIM time;
-  UW TH, TM, TL;
-  
-  TH = 0;
-  TM = (seconds >> 16) * MS;
-  TL = (seconds & 0x0FFFF) * MS;
-  TM += TL >> 16;
-  time.ltime = ((TM & 0x0FFFF) << 16) + (TL & 0x0FFFF);
-  time.utime = TH + (TM >> 16);
-  time_set(&time);
-}
-
-/*
- * システムクロック設定
- */
-ER time_set(SYSTIM *pk_systim)
-{
-  if (pk_systim == NULL) {
-    return (E_PAR);
-  }
-  system_time.utime = pk_systim->utime;
-  system_time.ltime = pk_systim->ltime;
-  return (E_OK);
-}
-
-/*
- * システムクロック参照
- */
-ER time_get(SYSTIM *pk_systim)
-{
-  if (pk_systim == NULL) {
-    return (E_PAR);
-  }
-  pk_systim->utime = system_time.utime;
-  pk_systim->ltime = system_time.ltime;
-  return (E_OK);
-}
 
 /*
  * タスク遅延
@@ -143,21 +99,10 @@ ER thread_delay(RELTIM dlytim)
  */
 void intr_interval(void)
 {
-    SYSTIM time;
-    UW TH, TM, TL;
-
     run_task->time.total++;
 
     /* システム時間の増加 */
-    time_get(&time);
-    TH = time.utime;
-    TM = time.ltime >> 16;
-    TL = time.ltime & 0x0FFFF;
-    TL += CLOCK;
-    TM += TL >> 16;
-    time.ltime = ((TM & 0x0FFFF) << 16) + (TL & 0x0FFFF);
-    time.utime = TH + (TM >> 16);
-    time_set(&time);
+    time_tick();
 
     if ((run_task->time.left) > 0 && (run_task->priority >= pri_user_foreground)) {
 	if (--run_task->time.left == 0) {

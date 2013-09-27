@@ -252,7 +252,7 @@ sfs_i_create(struct inode * parent,
     }
 
     /* 設定 */
-    clock = get_system_time(NULL);
+    clock = get_system_time();
     newip->i_fs = parent->i_fs;
     newip->i_device = parent->i_device;
     newip->i_ops = parent->i_ops;
@@ -362,7 +362,7 @@ W sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
 	length -= copysize;
     }
 #ifdef UPDATE_ATIME
-    ip->i_atime = get_system_time(NULL);
+    ip->i_atime = get_system_time();
     ip->i_dirty = 1;
 #endif
     return (EOK);
@@ -485,7 +485,7 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
      * サイズを更新して inode を書き込む。
      */
     if (filesize > ip->i_size) {
-        UW clock = get_system_time(NULL);
+        UW clock = get_system_time();
 	ip->i_size = filesize;
 	ip->i_size_blk =
 	    roundUp(filesize, fsp->fs_blksize) / fsp->fs_blksize;
@@ -581,7 +581,7 @@ W sfs_i_truncate(struct inode * ip, W newsize)
 
     ip->i_size = newsize;
     ip->i_size_blk = nblock;
-    clock = get_system_time(NULL);
+    clock = get_system_time();
     ip->i_mtime = clock;
     ip->i_ctime = clock;
     ip->i_dirty = 1;
@@ -631,7 +631,7 @@ W sfs_i_link(struct inode * parent, char *fname, struct inode * srcip,
 
     /* inode 情報の更新 */
     srcip->i_link += 1;
-    srcip->i_ctime = get_system_time(NULL);
+    srcip->i_ctime = get_system_time();
     srcip->i_dirty = 1;
 
     /* 本来は inode の deallocate のところで行う処理のはず */
@@ -706,7 +706,7 @@ sfs_i_unlink(struct inode * parent, char *fname, struct access_info * acc)
 	sfs_i_truncate(parent, i);
 
 	ip->i_link--;
-	ip->i_ctime = get_system_time(NULL);
+	ip->i_ctime = get_system_time();
 	ip->i_dirty = 1;
 	if (ip->i_link <= 0) {
 	    sfs_i_truncate(ip, 0);
@@ -825,7 +825,7 @@ sfs_i_mkdir(struct inode * parent,
     }
 
     /* 設定 */
-    clock = get_system_time(NULL);
+    clock = get_system_time();
     newip->i_fs = parent->i_fs;
     newip->i_device = parent->i_device;
     newip->i_ops = parent->i_ops;
@@ -939,7 +939,7 @@ W sfs_i_rmdir(struct inode * parent, char *fname, struct access_info * acc)
 	sfs_i_truncate(parent, i);
 
 	ip->i_link--;
-	clock = get_system_time(NULL);
+	clock = get_system_time();
 	ip->i_ctime = clock;
 	ip->i_dirty = 1;
 	if (ip->i_link <= 1) {

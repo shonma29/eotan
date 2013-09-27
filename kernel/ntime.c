@@ -1,5 +1,3 @@
-#ifndef _MITRON4_TYPES_H_
-#define _MITRON4_TYPES_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,81 +24,58 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <core.h>
+#include <sys/time.h>
+#include "func.h"
+#include "setting.h"
 
-/**
- * common data types
- */
-typedef char B;
-typedef short H;
-typedef long W;
-typedef long long D;
-typedef unsigned char UB;
-typedef unsigned short UH;
-typedef unsigned long UW;
-typedef unsigned long long UD;
+#define TICK (1000 * 1000 * 1000 / TIME_TICKS)
 
-typedef char VB;
-typedef short VH;
-typedef long VW;
-typedef long long VD;
+static struct timespec system_time;
 
-typedef void *VP;
-typedef void (*FP)();
 
-typedef long INT;
-typedef unsigned long UINT;
+void time_initialize(UW seconds)
+{
+	time_t sec = seconds;
+	long nsec = 0;
 
-typedef enum {
-	TRUE = 1,
-	FALSE = 0
-} BOOL;
+	timespec_set(&system_time, &sec, &nsec);
+}
 
-typedef long FN;
-typedef long ER;
-typedef long ID;
-typedef unsigned long ATR;
-typedef unsigned long STAT;
-typedef unsigned long MODE;
-typedef long PRI;
-typedef unsigned long SIZE;
+ER time_set(SYSTIM *pk_systim)
+{
+	if (!pk_systim)
+		return E_PAR;
 
-typedef long TMO;
-typedef unsigned long RELTIM;
-typedef struct {
-	D sec;
-	W nsec;
-} SYSTIM;
+	timespec_set(&system_time, &(pk_systim->sec), &(pk_systim->nsec));
 
-typedef int VP_INT;
+	return E_OK;
+}
 
-typedef long ER_BOOL;
-typedef long ER_ID;
-typedef long ER_UINT;
+ER time_get(SYSTIM *pk_systim)
+{
+	struct timespec t1;
+	struct timespec t2;
 
-typedef unsigned int RDVPTN;
-typedef int RDVNO;
+	if (!pk_systim)
+		return E_PAR;
 
-#define TBIT_RDVPTN 32
+	do {
+		t1 = system_time;
+		t2 = system_time;
+	} while (!timespec_equals(&t1, &t2));
 
-/**
- * common constants
- */
-#ifndef NULL
-#define NULL (0)
-#endif
+	timespec_get_sec(&(pk_systim->sec), &t1);
+	timespec_get_nsec(&(pk_systim->nsec), &t1);
 
-#define E_OK (0)
+	return E_OK;
+}
 
-/**
- * object attribute
- */
-#define TA_NULL (0)
+void time_tick(void)
+{
+	struct timespec add = {
+		0, TICK
+	};
 
-/**
- * timeout parameters
- */
-#define TMO_POL (0)
-#define TMO_FEVR (-1)
-#define TMO_NBLK (-2)
-
-#endif
+	timespec_add(&system_time, &add);
+}

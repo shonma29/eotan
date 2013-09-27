@@ -28,6 +28,15 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <sys/types.h>
 
+#define TIMESPEC_OFFSET_NSEC (0x7fffffff - (1000 * 1000 * 1000) + 1)
+
+typedef int clockid_t;
+
+struct timespec {
+	time_t tv_sec;
+	long tv_nsec;
+};
+
 struct timeval {
 	time_t tv_sec;
 	suseconds_t tv_usec;
@@ -37,5 +46,33 @@ struct timezone {
 	int tz_minuteswest;
 	int tz_dsttime;
 };
+
+
+static inline void timespec_set(struct timespec *t,
+		const long long *sec, const long *nsec)
+{
+	t->tv_sec = *sec;
+	t->tv_nsec = *nsec + TIMESPEC_OFFSET_NSEC;
+}
+
+static inline void timespec_get_sec(long long *sec, const struct timespec *t)
+{
+	*sec = t->tv_sec;
+}
+
+static inline void timespec_get_nsec(long *nsec, const struct timespec *t)
+{
+	*nsec = t->tv_nsec - TIMESPEC_OFFSET_NSEC;
+}
+
+static inline int timespec_equals(const struct timespec *t1,
+		const struct timespec *t2)
+{
+	return ((t1->tv_sec == t2->tv_sec)
+			&& (t1->tv_nsec == t2->tv_nsec));
+}
+
+extern void timespec_add(struct timespec *dest, const struct timespec *operand);
+extern int timespec_after(const struct timespec *t1, const struct timespec *t2);
 
 #endif

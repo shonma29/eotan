@@ -28,4 +28,8 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <sys/time.h>
 
+#define CLOCK_REALTIME (0)
+
+extern time_t time(time_t *t);
+
 #endif

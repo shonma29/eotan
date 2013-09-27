@@ -44,6 +44,6 @@ extern W get_request(struct posix_request *req, RDVNO *rdvno);
 extern W put_response(RDVNO rdvno, W error_no, W status, W ret1);
 extern W error_response(RDVNO rdvno, W error_no);
 
-extern UW get_system_time(UW *usec);
+extern UW get_system_time(void);
 
 #endif				/* __FS_H__ */

@@ -1,5 +1,3 @@
-#ifndef _MITRON4_TYPES_H_
-#define _MITRON4_TYPES_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,81 +24,28 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <core.h>
+#include <errno.h>
+#include <local.h>
+#include <mm.h>
+#include <services.h>
+#include <time.h>
 
-/**
- * common data types
- */
-typedef char B;
-typedef short H;
-typedef long W;
-typedef long long D;
-typedef unsigned char UB;
-typedef unsigned short UH;
-typedef unsigned long UW;
-typedef unsigned long long UD;
+time_t time(time_t *t)
+{
+	thread_local_t *local = _get_local();
+	mm_args_t args;
+	mm_reply_t *reply = (mm_reply_t*)&args;
+	ER_UINT size;
+	time_t time = -1;
 
-typedef char VB;
-typedef short VH;
-typedef long VW;
-typedef long long VD;
+	args.syscall_no = mm_syscall_time;
+	args.arg1 = (long int)&time;
+	size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
+	local->error_no = (size == sizeof(*reply))? (reply->error_no):ESVC;
 
-typedef void *VP;
-typedef void (*FP)();
+	if (t)
+		*t = time;
 
-typedef long INT;
-typedef unsigned long UINT;
-
-typedef enum {
-	TRUE = 1,
-	FALSE = 0
-} BOOL;
-
-typedef long FN;
-typedef long ER;
-typedef long ID;
-typedef unsigned long ATR;
-typedef unsigned long STAT;
-typedef unsigned long MODE;
-typedef long PRI;
-typedef unsigned long SIZE;
-
-typedef long TMO;
-typedef unsigned long RELTIM;
-typedef struct {
-	D sec;
-	W nsec;
-} SYSTIM;
-
-typedef int VP_INT;
-
-typedef long ER_BOOL;
-typedef long ER_ID;
-typedef long ER_UINT;
-
-typedef unsigned int RDVPTN;
-typedef int RDVNO;
-
-#define TBIT_RDVPTN 32
-
-/**
- * common constants
- */
-#ifndef NULL
-#define NULL (0)
-#endif
-
-#define E_OK (0)
-
-/**
- * object attribute
- */
-#define TA_NULL (0)
-
-/**
- * timeout parameters
- */
-#define TMO_POL (0)
-#define TMO_FEVR (-1)
-#define TMO_NBLK (-2)
-
-#endif
+	return time;
+}

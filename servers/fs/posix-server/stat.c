@@ -174,7 +174,7 @@ W psc_chmod_f(RDVNO rdvno, struct posix_request *req)
     }
 
     ipp->i_mode = (ipp->i_mode & S_IFMT) | req->param.par_chmod.mode;
-    ipp->i_ctime = get_system_time(NULL);
+    ipp->i_ctime = get_system_time();
     ipp->i_dirty = 1;
 
     /* fs_close_file で行う処理 */
@@ -232,7 +232,7 @@ W psc_chown_f(RDVNO rdvno, struct posix_request *req)
 
     ipp->i_uid = req->param.par_chown.uid;
     ipp->i_gid = req->param.par_chown.gid;
-    ipp->i_ctime = get_system_time(NULL);
+    ipp->i_ctime = get_system_time();
     ipp->i_dirty = 1;
 
     /* fs_close_file で行う処理 */
