@@ -27,10 +27,10 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/io.h>
 #include "sync.h"
 
-#define EPOCH_DAYS (719161)
+#define EPOCH_DAYS (719163)
 
 static unsigned char _read(const unsigned short port);
-static int _get_time(void);
+static void _get_time(time_t *seconds);
 
 
 static unsigned char _read(const unsigned short port) {
@@ -43,28 +43,34 @@ static unsigned char _read(const unsigned short port) {
 	return n;
 }
 
-static int _get_time(void) {
+static void _get_time(time_t *seconds) {
 	int year = _read(0x32) * 100 + _read(0x09);
-	int days = 365 * year + year / 4 - year / 100 + year / 400
-			+ 306 * (_read(0x08) + 1) / 10 + _read(0x07) - 428
-			- EPOCH_DAYS;
+	int month = _read(0x08);
 
-	return ((days * 24 + _read(0x04)) * 60
-			+ _read(0x02)) * 60
-					+ _read(0x00);
+	if (month <= 2) {
+		year--;
+		month += 12;
+	}
+
+	*seconds = 365LL * year + year / 4 - year / 100 + year / 400
+			+ 306 * (month + 1) / 10 + _read(0x07) - 428
+			- EPOCH_DAYS;
+	*seconds *= 24LL * 60LL * 60LL;
+	*seconds += (time_t)((_read(0x04)) * 60 + _read(0x02)) * 60
+			+ _read(0x00);
 }
 
-int rtc_get_time(void)
+void rtc_get_time(time_t *seconds)
 {
-	int t1;
-	int t2;
+	time_t t1;
+	time_t t2;
 
 	do {
 		enter_critical();
-		t1 = _get_time();
-		t2 = _get_time();
+		_get_time(&t1);
+		_get_time(&t2);
 		leave_critical();
 	} while (t1 != t2);
 
-	return t1;
+	*seconds = t1;
 }

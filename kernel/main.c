@@ -126,6 +126,7 @@ int main(void)
  */
 static ER initialize(void)
 {
+    time_t seconds;
     system_info_t *sysinfo = (system_info_t *)SYSTEM_INFO_ADDR;
 
     sysinfo->root.device = get_device_id(DEVICE_MAJOR_ATA, 0);
@@ -155,7 +156,8 @@ static ER initialize(void)
     lfq_initialize(&kqueue, kqbuf, sizeof(ID), TRMTBL_SIZE);
 
     timer_initialize();		/* インターバルタイマ機能の初期化 */
-    time_initialize(rtc_get_time());		/* 時間管理機能の初期化 */
+    rtc_get_time(&seconds);
+    time_initialize(&seconds);		/* 時間管理機能の初期化 */
     pit_initialize(TIME_TICKS);		/* インターバルタイマの起動       */
     init_interrupt();
 

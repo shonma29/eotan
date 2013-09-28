@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/lf_queue.h>
 #include <set/list.h>
 #include <set/tree.h>
+#include <sys/time.h>
 #include "thread.h"
 
 
@@ -117,9 +118,8 @@ extern void timer_initialize(void);
 
 /* ntime.c */
 extern ER time_get(SYSTIM *pk_systim);
-extern void time_initialize(UW seconds);
+extern void time_initialize(time_t *seconds);
 extern ER time_set(SYSTIM *pk_systim);
 extern void time_tick(void);
 
 #endif
-

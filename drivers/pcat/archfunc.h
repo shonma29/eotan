@@ -33,7 +33,7 @@ extern void pic_initialize(void);
 extern ER pic_reset_mask(const UB ir);
 
 /* rtc.c */
-extern int rtc_get_time(void);
+extern void rtc_get_time(time_t *seconds);
 
 /* 8254.c */
 extern ER pit_initialize(const UW freq);

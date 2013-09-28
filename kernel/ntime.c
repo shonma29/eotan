@@ -34,12 +34,11 @@ For more information, please refer to <http://unlicense.org/>
 static struct timespec system_time;
 
 
-void time_initialize(UW seconds)
+void time_initialize(time_t *seconds)
 {
-	time_t sec = seconds;
 	long nsec = 0;
 
-	timespec_set(&system_time, &sec, &nsec);
+	timespec_set(&system_time, seconds, &nsec);
 }
 
 ER time_set(SYSTIM *pk_systim)
