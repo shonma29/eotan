@@ -35,6 +35,6 @@ typedef enum {
 	reply_wait = 2
 } mm_reply_type_e;
 
-extern int mm_time(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
+extern int mm_clock_gettime(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 
 #endif

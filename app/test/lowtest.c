@@ -180,6 +180,7 @@ char *testmm() {
 	int pid;
 	time_t t1;
 	time_t t2;
+	struct timespec ts;
 	char *buf;
 	int i;
 
@@ -209,6 +210,12 @@ char *testmm() {
 	printf("time = %d, %d\n",
 		(int)((long long int)t2 >> 32),
 		(int)((long long int)t2 & 0xffffffff));
+	assert_eq("clock_gettime[0]", 0, clock_gettime(CLOCK_REALTIME, &ts));
+	printf("time = %d, %d, %x\n",
+		(int)((long long int)(ts.tv_sec) >> 32),
+		(int)((long long int)(ts.tv_sec) & 0xffffffff),
+		(int)(ts.tv_nsec));
+	assert_eq("clock_gettime[1]", -1, clock_gettime(CLOCK_MONOTONIC, &ts));
 
 	printf("uid = %d\n", getuid());
 	printf("euid = %d\n", geteuid());

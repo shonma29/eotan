@@ -42,7 +42,7 @@ typedef struct {
 } mm_reply_t;
 
 typedef enum {
-	mm_syscall_time = 0
+	mm_syscall_clock_gettime = 0
 } mm_syscall_e;
 
 #endif

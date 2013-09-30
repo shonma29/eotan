@@ -29,7 +29,9 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/time.h>
 
 #define CLOCK_REALTIME (0)
+#define CLOCK_MONOTONIC (1)
 
 extern time_t time(time_t *t);
+extern int clock_gettime(clockid_t clkid, struct timespec *tp);
 
 #endif

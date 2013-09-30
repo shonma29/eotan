@@ -46,6 +46,7 @@ ER time_set(SYSTIM *pk_systim)
 	if (!pk_systim)
 		return E_PAR;
 
+//TODO check like time_get, or disable interrupt
 	timespec_set(&system_time, &(pk_systim->sec), &(pk_systim->nsec));
 
 	return E_OK;

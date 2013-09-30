@@ -30,7 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 void timespec_add(struct timespec *dest, const struct timespec *operand)
 {
 	dest->tv_sec += operand->tv_sec;
-	dest->tv_nsec += operand->tv_nsec - TIMESPEC_OFFSET_NSEC;
+	dest->tv_nsec += operand->tv_nsec;
 
 	if (dest->tv_nsec < 0) {
 		dest->tv_sec++;

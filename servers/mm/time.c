@@ -29,8 +29,9 @@ For more information, please refer to <http://unlicense.org/>
 #include <kcall.h>
 #include <mm.h>
 #include <core/options.h>
-#include <sys/time.h>
+#include <time.h>
 #include "interface.h"
+
 
 static int get_timespec(struct timespec *tspec)
 {
@@ -46,13 +47,18 @@ static int get_timespec(struct timespec *tspec)
 	return TRUE;
 }
 
-int mm_time(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+int mm_clock_gettime(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
 		struct timespec tspec;
 		kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-		if (!args->arg1) {
+		if (args->arg1 != CLOCK_REALTIME) {
+			reply->error_no = EINVAL;
+			break;
+		}
+
+		if (!args->arg2) {
 			reply->error_no = EFAULT;
 			break;
 		}
@@ -63,7 +69,7 @@ int mm_time(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		}
 
 		if (kcall->region_put(get_rdv_tid(rdvno),
-				(void*)(args->arg1), sizeof(tspec), &tspec)) {
+				(void*)(args->arg2), sizeof(tspec), &tspec)) {
 			reply->error_no = EFAULT;
 			break;
 		}

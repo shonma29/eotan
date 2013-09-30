@@ -31,17 +31,24 @@ For more information, please refer to <http://unlicense.org/>
 #include <services.h>
 #include <time.h>
 
-time_t time(time_t *t)
+int clock_gettime(clockid_t clk_id, struct timespec *tp)
 {
-	struct timespec tspec;
-	int result = clock_gettime(CLOCK_REALTIME, &tspec);
+	thread_local_t *local = _get_local();
+	mm_args_t args;
+	mm_reply_t *reply = (mm_reply_t*)&args;
+	ER_UINT size;
 
-	if (result == 0) {
-		if (t)
-			*t = tspec.tv_sec;
+	args.syscall_no = mm_syscall_clock_gettime;
+	args.arg1 = (long int)clk_id;
+	args.arg2 = (long int)tp;
+	size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
 
-		return tspec.tv_sec;
+	if (size == sizeof(*reply)) {
+		local->error_no = reply->error_no;
+		return reply->result;
 
-	} else
+	} else {
+		local->error_no = ESVC;
 		return -1;
+	}
 }

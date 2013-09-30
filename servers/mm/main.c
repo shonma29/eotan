@@ -35,7 +35,7 @@ For more information, please refer to <http://unlicense.org/>
 static kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 static int (*funcs[])(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args) = {
-	mm_time
+	mm_clock_gettime
 };
 
 #define BUFSIZ (sizeof(mm_args_t))
