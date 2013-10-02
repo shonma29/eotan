@@ -231,32 +231,6 @@ ER thread_switch(void)
  *
  */
 
-/*
- * thread_release --- 待ち状態の解除
- */
-ER thread_release(ID tskid)
-{
-    thread_t *taskp = get_thread_ptr(tskid);
-
-    if (!taskp) {
-	return (E_NOEXS);
-    }
-
-    switch (taskp->status) {
-    case TTS_WAI:
-	enter_critical();
-	list_remove(&(taskp->wait.waiting));
-	taskp->wait.result = E_RLWAI;
-	leave_critical();
-	release(taskp);
-	break;
-
-    default:
-	return (E_OBJ);
-    }
-    return (E_OK);
-}
-
 /***********************************************************************************
  * thread_get_id --- 自タスクのタスク ID 参照
  *
@@ -265,108 +239,5 @@ ER thread_release(ID tskid)
 ER thread_get_id(ID * p_tskid)
 {
     *p_tskid = run_task->id;
-    return (E_OK);
-}
-
-/*****************************************************************************
- * thread_suspend --- 指定したタスクを強制待ち状態に移行
- *
- * 引数：
- *	tskid --- suspend するタスクの ID
- *
- * 返り値：
- *
- *
- * 機能：
- *
- */
-ER thread_suspend(ID tskid)
-{
-    thread_t *taskp;
-
-    enter_critical();
-    taskp = get_thread_ptr(tskid);
-
-    if (!taskp) {
-    	leave_critical();
-	return (E_NOEXS);
-    }
-
-    if (taskp == run_task) {
-    	leave_critical();
-	return (E_OBJ);
-    }
-
-    switch (taskp->status) {
-    case TTS_RDY:
-	list_remove(&(taskp->queue));
-	taskp->status = TTS_SUS;
-	break;
-
-    case TTS_SUS:
-	leave_critical();
-	return (E_QOVR);
-
-    case TTS_WAI:
-	taskp->status = TTS_WAS;
-	break;
-
-    default:
-	leave_critical();
-	return (E_OBJ);
-	/* DO NOT REACHED */
-    }
-    leave_critical();
-    return (E_OK);
-}
-
-/******************************************************************************************
- * thread_resume --- 強制待ち状態のタスクから待ち状態を解除
- *
- * 引数：
- *	tskid --- suspend しているタスクの ID
- *
- *
- * 返り値：
- *	次のエラー番号が返る
- *	
- * E_OK     システムコールは正常に終了した
- * E_NOEXS  タスクが存在しない
- * E_OBJ    タスクの状態が不正(TTS_SUS, TTS_WAS 以外)
- *
- *
- * 機能：
- *	待ち状態にあるタスクを待ち状態から強制的に解除する。
- *
- *	待ち状態は多重になることがあるが、このシステムコールは、ひとつだけ待ち
- *	を解除する。
- */
-ER thread_resume(ID tskid)
-{
-    thread_t *taskp;
-
-    enter_critical();
-    taskp = get_thread_ptr(tskid);
-
-    if (!taskp) {
-    	leave_critical();
-	return (E_NOEXS);
-    }
-
-    switch (taskp->status) {
-    case TTS_SUS:
-	taskp->status = TTS_RDY;
-	ready_enqueue(taskp->priority, &(taskp->queue));
-	break;
-
-    case TTS_WAS:
-	taskp->status = TTS_WAI;
-	break;
-
-    default:
-	leave_critical();
-	return (E_OBJ);
-    }
-    leave_critical();
     return (E_OK);
 }

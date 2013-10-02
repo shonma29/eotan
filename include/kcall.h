@@ -37,10 +37,7 @@ typedef struct {
 	void (*thread_end)(void);
 	void (*thread_end_and_destroy)(void);
 	ER (*thread_terminate)(ID tskid);
-	ER (*thread_release)(ID tskid);
 	ER (*thread_get_id)(ID *p_tskid);
-	ER (*thread_suspend)(ID tskid);
-	ER (*thread_resume)(ID tskid);
 	ER (*time_get)(SYSTIM *p_systim);
 	ER (*time_set)(SYSTIM *p_systim);
 	ER (*interrupt_bind)(W inhno, T_DINH *pk_dinh);

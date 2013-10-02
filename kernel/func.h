@@ -65,9 +65,6 @@ extern node_t *find_empty_key(tree_t *tree, int *hand);
 /* thread.c */
 extern thread_t *run_task;
 extern ER thread_get_id(ID * p_tskid);
-extern ER thread_release(ID tskid);
-extern ER thread_resume(ID tskid);
-extern ER thread_suspend(ID tskid);
 extern ER thread_switch(void);
 
 /* nthread.c */

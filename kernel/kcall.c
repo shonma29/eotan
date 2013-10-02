@@ -40,10 +40,7 @@ void kcall_initialize(void)
 	p->thread_end = thread_end;
 	p->thread_end_and_destroy = thread_end_and_destroy;
 	p->thread_terminate = thread_terminate;
-	p->thread_release = thread_release;
 	p->thread_get_id = thread_get_id;
-	p->thread_suspend = thread_suspend;
-	p->thread_resume = thread_resume;
 	p->time_get = time_get;
 	p->time_set = time_set;
 	p->interrupt_bind = interrupt_bind;
