@@ -34,8 +34,10 @@ Version 2, June 1991
 #include <sys/time.h>
 #include "thread.h"
 #include "func.h"
+#include "ready.h"
 #include "setting.h"
 #include "sync.h"
+#include "mpu/mpufunc.h"
 
 static struct timer_list {
     struct timer_list *next;
@@ -107,7 +109,8 @@ void intr_interval(void)
     if ((run_task->time.left) > 0 && (run_task->priority >= pri_user_foreground)) {
 	if (--run_task->time.left == 0) {
 	    run_task->time.left = TIME_QUANTUM;
-	    rot_rdq(TPRI_SELF);
+	    ready_rotate(run_task->priority);
+	    delayed_dispatch = TRUE;
 	}
     }
 
@@ -117,7 +120,7 @@ void intr_interval(void)
 	    /* KERNEL_TASK で timer に設定されている関数を実行 */
 	    do_timer = TRUE;
 	    thread_start(delay_thread_id);
-	    thread_switch();
+	    delayed_dispatch = TRUE;
 	}
     }
 }

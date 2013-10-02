@@ -231,58 +231,6 @@ ER thread_switch(void)
  *
  */
 
-/* thread_change_priority --- プライオリティの変更
- *
- */
-ER thread_change_priority(ID tskid, PRI tskpri)
-{
-    thread_t *taskp;
-
-    if (tskid == TSK_SELF)
-	tskid = run_task->id;
-
-    taskp = get_thread_ptr(tskid);
-
-    if (!taskp) {
-	return (E_NOEXS);
-    }
-
-    switch (taskp->status) {
-    case TTS_RDY:
-    case TTS_RUN:
-	enter_critical();
-	list_remove(&(taskp->queue));
-	taskp->priority = tskpri;
-	ready_enqueue(taskp->priority, &(taskp->queue));
-	leave_critical();
-	break;
-
-    default:
-	return (E_OBJ);
-    }
-    return (E_OK);
-}
-
-/* rot_rdq --- 同一プライオリティでのタスクの順序を変更する
- *
- */
-ER rot_rdq(PRI tskpri)
-{
-    if (tskpri == TPRI_SELF)
-	tskpri = run_task->priority;
-    if ((tskpri < MIN_PRIORITY) || (tskpri > MAX_PRIORITY)) {
-	return (E_PAR);
-    }
-
-    enter_critical();
-    ready_rotate(tskpri);
-    leave_critical();
-
-    /* タスクスイッチによる実行権の放棄: 必要無いのかも */
-    thread_switch();
-    return (E_OK);
-}
-
 /*
  * thread_release --- 待ち状態の解除
  */

@@ -62,20 +62,8 @@ extern ER posix_kill_proc(ID pid);
 /* tree_utils.c */
 extern node_t *find_empty_key(tree_t *tree, int *hand);
 
-/* ready.c */
-extern list_t *ready_dequeue();
-extern void ready_enqueue(const int pri, list_t *src);
-extern void ready_initialize();
-extern void ready_rotate(const int pri);
-
-/* sync.c */
-extern void release(thread_t *task);
-extern void wait(thread_t *task);
-
 /* thread.c */
 extern thread_t *run_task;
-extern ER rot_rdq(PRI tskpri);
-extern ER thread_change_priority(ID tskid, PRI tskpri);
 extern ER thread_get_id(ID * p_tskid);
 extern ER thread_release(ID tskid);
 extern ER thread_resume(ID tskid);
