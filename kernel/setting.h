@@ -51,19 +51,19 @@ For more information, please refer to <http://unlicense.org/>
 
 #define KERNEL_DOMAIN_ID (-1)
 
-#define MIN_PRIORITY (0)
-#define MAX_PRIORITY (7)
-
 typedef enum {
-	pri_super = 0,
-	pri_dispatcher = 1,
-	pri_mutex = 2,
-	pri_server_high = 3,
-	pri_server_middle = 4,
-	pri_server_low = 5,
-	pri_user_foreground = 6,
-	pri_user_background = 7
+	pri_dispatcher = 0,
+	pri_mutex = 1,
+	pri_server_high = 2,
+	pri_server_middle = 3,
+	pri_server_low = 4,
+	pri_user_foreground = 5,
+	pri_user_background = 6,
+	pri_idle = 7
 } system_priority_e;
+
+#define MIN_PRIORITY (pri_dispatcher)
+#define MAX_PRIORITY (pri_idle)
 
 /* ticks per second */
 #define TIME_TICKS (100)

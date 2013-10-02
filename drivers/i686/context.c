@@ -184,8 +184,8 @@ W pf_handler(W cr2, W eip)
     /* id = pid */
     if (lfq_enqueue(&kqueue, &(local->process_id)) != QUEUE_OK)
     	panic("full kqueue");
-    /* KERNEL_TASK の優先度変更 */
-    thread_change_priority(kernel_task_id, pri_dispatcher);
+
+    thread_start(delay_thread_id);
     return (E_OK);
 }
 

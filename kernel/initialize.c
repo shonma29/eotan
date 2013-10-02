@@ -53,78 +53,23 @@ Version 2, June 1991
  *
  *
  */
-
 #include <core.h>
 #include <fstype.h>
 #include <global.h>
-#include <major.h>
-#include <mpu/config.h>
-#include <mpu/io.h>
-#include <set/lf_queue.h>
-#include "version.h"
-#include "thread.h"
 #include "func.h"
-#include "memory.h"
+#include <major.h>
 #include "setting.h"
-#include "mpu/interrupt.h"
-#include "mpu/mpufunc.h"
+#include "version.h"
 #include "arch/archfunc.h"
+#include "mpu/mpufunc.h"
 
-static ER initialize(void);
 static void banner(void);
 
-ID kernel_task_id = 0;
-
-/* 外部変数の宣言 */
-extern W do_timer;
-
-/* 強制終了するタスクのテーブル */
-#define TRMTBL_SIZE 10
-static char kqbuf[lfq_buf_size(sizeof(ID), TRMTBL_SIZE)];
-volatile lfq_t kqueue;
-
-
-/*******************************************************************
- * main --- メイン関数
- *
- */
-int main(void)
-{
-    if (initialize() != E_OK) {
-	printk("main: cannot initialize.\n");
-	panic("initialize");
-    }
-
-    for (;;) {			/* Idle タスクとなる。 */
-	ID id;
-
-	if (do_timer) {
-	    /* timer に定義されている関数の実行 */
-	    check_timer();
-	    do_timer = 0;
-	}
-
-	/* タスクの強制終了処理 */
-	if (lfq_dequeue(&kqueue, &id) == QUEUE_OK) {
-	    posix_kill_proc(id);
-
-	} else if (run_task->priority != MAX_PRIORITY) {
-	    thread_change_priority(kernel_task_id, MAX_PRIORITY);
-
-	} else
-	    halt();
-
-	thread_switch();
-    }
-
-/* not return */
-    return E_OK;
-}
 
 /* initialize --- 初期化を行う。
  *
  */
-static ER initialize(void)
+ER core_initialize(void)
 {
     time_t seconds;
     system_info_t *sysinfo = (system_info_t *)SYSTEM_INFO_ADDR;
@@ -152,16 +97,14 @@ static ER initialize(void)
     /* 1番目のタスクを初期化する。そしてそのタスクを以後の処
      * 理で使用する。
      */
-    kernel_task_id = thread_initialize1();
-    lfq_initialize(&kqueue, kqbuf, sizeof(ID), TRMTBL_SIZE);
+    idle_initialize();
+    delay_thread_id = delay_thread.attach();
 
     timer_initialize();		/* インターバルタイマ機能の初期化 */
     rtc_get_time(&seconds);
     time_initialize(&seconds);		/* 時間管理機能の初期化 */
     pit_initialize(TIME_TICKS);		/* インターバルタイマの起動       */
     init_interrupt();
-
-    do_timer = 0;
 
     run_init_program();
 

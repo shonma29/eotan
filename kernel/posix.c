@@ -22,7 +22,7 @@ ER posix_kill_proc(ID pid)
   req.msg_length = sizeof (struct posix_request);
   req.operation = PSC_KILL;
   req.procid = pid;
-  req.caller = kernel_task_id; /* KERNEL_TASK で実行 */
+  req.caller = delay_thread_id; /* KERNEL_TASK で実行 */
 
   rsize = port_call(PORT_FS, &req, sizeof (struct posix_request));
   return(rsize);

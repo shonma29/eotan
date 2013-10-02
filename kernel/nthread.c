@@ -75,7 +75,7 @@ thread_t *get_thread_ptr(ID tskid)
 	return node? getThreadParent(node):NULL;
 }
 
-ER_ID thread_initialize1(void)
+ER_ID idle_initialize(void)
 {
 	ER_ID result;
 
@@ -120,17 +120,19 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid)
 	list_initialize(&(th->queue));
 	th->id = tskid;
 	th->attr.domain_id = pk_ctsk->domain_id;
-	th->priority = th->attr.priority = pk_ctsk->itskpri;
+	th->attr.priority = pk_ctsk->itskpri;
 	th->status = TTS_DMT;
 	list_initialize(&(th->wait.waiting));
 	th->attr.arg = pk_ctsk->exinf;
 
 	result = create_context(th, pk_ctsk);
 	if (result != E_OK)
+//TOOD release node
 		return result;
 
 	set_page_table(th, (th->attr.domain_id == KERNEL_DOMAIN_ID)?
 			(VP)PAGE_DIR_ADDR
+//TODO create user page table in mm
 			:kern_v2p(dup_vmap_table((ADDR_MAP)MPU_PAGE_TABLE(run_task))));
 
 	for (i = 0; i < MAX_REGION; i++)
@@ -231,6 +233,7 @@ ER thread_start(ID tskid)
 		th->status = TTS_RDY;
 		th->time.total = 0;
 		th->time.left = TIME_QUANTUM;
+		th->priority = th->attr.priority;
 //TODO fix context_create_kernel
 //		set_arg(th, th->attr.arg);
 

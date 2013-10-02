@@ -24,31 +24,68 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <core.h>
+#include <kthread.h>
+#include <mpu/config.h>
+#include <mpu/io.h>
+#include <set/lf_queue.h>
+#include "func.h"
+#include "setting.h"
+#include "mpu/mpufunc.h"
 
-.text
+#define KQUEUE_SIZE 1024
 
-.globl startup
+static char kqbuf[lfq_buf_size(sizeof(ID), KQUEUE_SIZE)];
+volatile lfq_t kqueue;
+ID delay_thread_id = 0;
 
-.set SELECTOR_KERN_CODE, 0x08
-.set SELECTOR_KERN_DATA, 0x10
+static ER_ID attach(void);
+static void process(void);
+static void detach(void);
 
-.set KERN_STACK_ADDR, 0x80008000
-
-
-startup:
-	movw $SELECTOR_KERN_DATA, %ax
-	movw %ax, %ds
-	movw %ax, %es
-	movw %ax, %fs
-	movw %ax, %gs
-	lssl stack_ptr, %esp
-
-	ljmp $SELECTOR_KERN_CODE, $start
+kthread_t delay_thread = { attach, process, detach };
 
 
-.data
-.align 2
+static ER_ID attach(void)
+{
+	T_CTSK pk_ctsk = {
+		TA_HLNG, 0, process, pri_dispatcher,
+		PAGE_SIZE, NULL, KERNEL_DOMAIN_ID
+	};
 
-stack_ptr:
-	.long KERN_STACK_ADDR
-	.word SELECTOR_KERN_DATA
+	lfq_initialize(&kqueue, kqbuf, sizeof(ID), KQUEUE_SIZE);
+
+	return thread_create_auto(&pk_ctsk);
+}
+
+static void process(void)
+{
+	for (;;) {
+		ID id;
+
+		if (do_timer) {
+			check_timer();
+			do_timer = FALSE;
+		}
+
+		if (lfq_dequeue(&kqueue, &id) != QUEUE_OK)
+			break;
+
+		posix_kill_proc(id);
+	}
+
+	thread_end();
+}
+
+static void detach(void)
+{
+}
+
+void start(void)
+{
+	if (core_initialize())
+		panic("failed to initialize");
+
+	for (;;)
+		halt();
+}

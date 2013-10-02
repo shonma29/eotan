@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <kthread.h>
 #include <set/lf_queue.h>
 #include <set/list.h>
 #include <set/tree.h>
@@ -34,10 +35,8 @@ For more information, please refer to <http://unlicense.org/>
 #include "thread.h"
 
 
-/* main.c */
-extern ID kernel_task_id;
-extern volatile lfq_t kqueue;
-extern int main(void);
+/* initialize.c */
+extern ER core_initialize(void);
 
 /* api.c */
 extern void api_initialize(void);
@@ -85,12 +84,12 @@ extern ER thread_switch(void);
 
 /* nthread.c */
 extern thread_t *get_thread_ptr(ID tskid);
+extern ER_ID idle_initialize(void);
 extern ER_ID thread_create_auto(T_CTSK *pk_ctsk);
 extern ER thread_destroy(ID tskid);
 extern void thread_end(void);
 extern void thread_end_and_destroy(void);
 extern ER thread_initialize(void);
-extern ER_ID thread_initialize1(void);
 extern ER thread_start(ID tskid);
 extern ER thread_terminate(ID tskid);
 
@@ -111,6 +110,7 @@ extern ER queue_receive(ID dtqid, VP_INT *p_data);
 extern ER queue_send(ID dtqid, VP_INT data);
 
 /* time.c */
+extern BOOL do_timer;
 extern void check_timer(void);
 extern void intr_interval(void);
 extern ER thread_delay(RELTIM dlytim);
@@ -121,5 +121,11 @@ extern ER time_get(SYSTIM *pk_systim);
 extern void time_initialize(time_t *seconds);
 extern ER time_set(SYSTIM *pk_systim);
 extern void time_tick(void);
+
+/* delay.c */
+extern volatile lfq_t kqueue;
+extern kthread_t delay_thread;
+extern ID delay_thread_id;
+extern void start(void);
 
 #endif

@@ -1,3 +1,5 @@
+#ifndef _KTHREAD_H_
+#define _KTHREAD_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,31 +26,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <core.h>
 
-.text
+typedef struct {
+	ER_ID (*attach)(void);
+	void (*process)(void);
+	void (*detach)(void);
+} kthread_t;
 
-.globl startup
-
-.set SELECTOR_KERN_CODE, 0x08
-.set SELECTOR_KERN_DATA, 0x10
-
-.set KERN_STACK_ADDR, 0x80008000
-
-
-startup:
-	movw $SELECTOR_KERN_DATA, %ax
-	movw %ax, %ds
-	movw %ax, %es
-	movw %ax, %fs
-	movw %ax, %gs
-	lssl stack_ptr, %esp
-
-	ljmp $SELECTOR_KERN_CODE, $start
-
-
-.data
-.align 2
-
-stack_ptr:
-	.long KERN_STACK_ADDR
-	.word SELECTOR_KERN_DATA
+#endif

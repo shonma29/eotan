@@ -49,7 +49,7 @@ static struct timer_list {
  */
 
 /* 大域変数の宣言 */
-W do_timer = 0;
+BOOL do_timer = FALSE;
 
 static struct timer_list *free_timer;
 static struct timer_list *time_list;
@@ -113,10 +113,10 @@ void intr_interval(void)
 
     if (time_list != NULL) {
 	(time_list->time)--;
-	if ((time_list->time <= 0) && (do_timer == 0)) {
+	if ((time_list->time <= 0) && (do_timer == FALSE)) {
 	    /* KERNEL_TASK で timer に設定されている関数を実行 */
-	    do_timer = 1;
-	    thread_change_priority(kernel_task_id, pri_dispatcher);
+	    do_timer = TRUE;
+	    thread_start(delay_thread_id);
 	    thread_switch();
 	}
     }
