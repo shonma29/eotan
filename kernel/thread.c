@@ -205,14 +205,14 @@ ER thread_switch(void)
     if (run_task->mpu.use_fpu)
 	fpu_save(run_task);
 
-    context_prev_sp = &(run_task->attr.kstack_top);
-    context_next_sp = &(next->attr.kstack_top);
+    context_prev_sp = &(MPU_KERNEL_SP(run_task));
+    context_next_sp = &(MPU_KERNEL_SP(next));
     run_task = next;
     run_task->status = TTS_RUN;
 
     delayed_dispatch = FALSE;
 
-    context_set_kernel_sp((VP)MPU_KERNEL_SP(next));
+    context_set_kernel_sp(next->attr.kstack_top);
     context_switch_page_table(next);
     context_switch();
 

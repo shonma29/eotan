@@ -77,8 +77,8 @@ typedef struct
  */
 typedef struct 
 {
-  UW		esp0;
-  UW		cr3;
+  VP		esp0;
+  VP		cr3;
 } T_CONTEXT;
 
 typedef struct {

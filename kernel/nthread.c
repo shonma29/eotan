@@ -131,12 +131,6 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid)
 	th->attr.kstack_top = th->attr.kstack.addr + pk_ctsk->stksz;
 	th->attr.entry = pk_ctsk->task;
 
-	if (th->attr.domain_id == KERNEL_DOMAIN_ID)
-		th->attr.kstack_top = context_create_kernel(
-				th->attr.kstack_top,
-				EFLAG_IBIT | EFLAG_IOPL3,
-				th->attr.entry);
-
 	create_context(th);
 	set_page_table(th, (th->attr.domain_id == KERNEL_DOMAIN_ID)?
 			(VP)PAGE_DIR_ADDR

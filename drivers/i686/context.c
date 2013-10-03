@@ -24,17 +24,6 @@ Version 2, June 1991
 static void create_user_stack(thread_t * tsk, W size, W acc);
 
 
-/* タスク情報を生成する:
- *
- *	引数：
- *		task		タスクのTCB領域へのポインタ
- *
- */
-void create_context(thread_t * task)
-{
-    task->mpu.use_fpu = 0;		/* 初期状態では FPU は利用しない */
-}
-
 /*
  * create_user_stack
  */
@@ -42,10 +31,7 @@ static void create_user_stack(thread_t * tsk, W size, W acc)
 {
     W err;
 
-    /* task の kernel stack 領域を特権レベル 0 のスタックに設定 */
-    tsk->mpu.context.esp0 = (UW)tsk->attr.kstack_top;
-
-    /* stack region の作成 number は 4 で固定 */
+    /* stack region の作成 number は 3 で固定 */
     region_create(thread_id(tsk), STACK_REGION,
 	     (VP) VADDR_STACK_HEAD, STD_STACK_SIZE, STD_STACK_SIZE,
 	     (VM_READ | VM_WRITE | VM_USER));
@@ -101,8 +87,8 @@ ER mpu_copy_stack(ID src, W esp, ID dst)
       region_put(dst, (VP) dstp, size, (VP) vtor(thread_id(src_tsk), srcp));
     }
 
-    dst_tsk->attr.kstack_top = context_create_user(
-	    (VP_INT*)(dst_tsk->mpu.context.esp0),
+    dst_tsk->mpu.context.esp0 = context_create_user(
+	    dst_tsk->attr.kstack_top,
 	    EFLAG_IBIT | EFLAG_IOPL3,
 	    dst_tsk->attr.entry,
 	    (VP)ustack_top);
@@ -186,8 +172,8 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
     tsk->attr.entry = (FP)eip;
 
     /* タスクの初期化 */
-    tsk->attr.kstack_top = context_create_user(
-	    (VP_INT*)(tsk->mpu.context.esp0),
+    tsk->mpu.context.esp0 = context_create_user(
+	    tsk->attr.kstack_top,
 	    EFLAG_IBIT | EFLAG_IOPL3,
 	    tsk->attr.entry,
 	    (VP)esp);
@@ -204,13 +190,13 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
 
 void set_page_table(thread_t *taskp, VP p)
 {
-    taskp->mpu.context.cr3 = (UW)p;
+    taskp->mpu.context.cr3 = p;
 }
 
 void set_arg(thread_t *taskp, const UW arg)
 {
-    UW *sp = (UW*)(taskp->mpu.context.esp0);
+    UW *sp = taskp->mpu.context.esp0;
 
     *--sp = arg;
-    taskp->mpu.context.esp0 = (UW)sp;
+    taskp->mpu.context.esp0 = sp;
 }

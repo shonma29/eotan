@@ -156,3 +156,18 @@ void context_reset_page_cache(const thread_t *task, const VP addr)
 		tlb_flush(addr);
 	}
 }
+
+void create_context(thread_t *th)
+{
+	if (th->attr.domain_id == KERNEL_DOMAIN_ID) {
+		th->mpu.context.esp0 = context_create_kernel(
+				th->attr.kstack_top,
+				EFLAG_IBIT | EFLAG_IOPL3,
+				th->attr.entry);
+		th->mpu.use_fpu = FALSE;
+
+	} else {
+		th->mpu.context.esp0 = th->attr.kstack_top;
+		th->mpu.use_fpu = TRUE;
+	}
+}

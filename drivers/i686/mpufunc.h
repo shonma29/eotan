@@ -32,7 +32,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "paging.h"
 
 /* context.c */
-extern void create_context(thread_t * task);
 extern ER mpu_copy_stack(ID src, W esp, ID dst);
 extern ER mpu_set_context(ID tid, W eip, B * stackp, W stsize);
 extern W pf_handler(W cr2, W eip);
@@ -42,6 +41,7 @@ extern void set_page_table(thread_t *taskp, VP p);
 /* ncontext.c */
 extern VP *context_prev_sp;
 extern VP *context_next_sp;
+extern void create_context(thread_t *th);
 extern VP_INT *context_create_kernel(VP_INT *sp, const UW eflags, const FP eip);
 extern VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
 		const VP esp);
