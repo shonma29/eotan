@@ -44,15 +44,10 @@ typedef struct {
 	STAT status;
 	wait_reason_t wait;
 	T_MPU_CONTEXT mpu;
-//TODO is needed?
-	VP ustack_top;
-//TODO is needed?
-	VP kstack_top;
 	struct {
 		UW total;
 		UW left;
 	} time;
-	ID id;
 	PRI priority;
 	W (*handler)(W cr2, W eip);
 //TODO move to domain
@@ -61,9 +56,17 @@ typedef struct {
 		VP_INT arg;
 		PRI priority;
 		ID domain_id;
-		fragment_t ustack;
 		fragment_t kstack;
+		VP kstack_top;
+		fragment_t ustack;
+		VP ustack_top;
+		FP entry;
 	} attr;
 } thread_t;
+
+static inline ID thread_id(thread_t *th)
+{
+	return (ID)(th->node.key);
+}
 
 #endif

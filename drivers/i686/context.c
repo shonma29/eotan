@@ -57,18 +57,18 @@ ER create_context(thread_t * task, T_CTSK * pk_ctsk)
      *   3) カーネルスタックのアドレス
      */
     task->mpu.context.esp = (UW) ((sp + pk_ctsk->stksz));
-    task->ustack_top = (VP)task->mpu.context.esp;
-    task->mpu.context.eip = (UW) pk_ctsk->task;
+    task->attr.ustack_top = (VP)task->mpu.context.esp;
+    task->attr.entry = pk_ctsk->task;
 #ifdef TSKSW_DEBUG
     printk("(UW)pk_ctsk->task = 0x%x\n", (UW) pk_ctsk->task);
 #endif
     task->mpu.use_fpu = 0;		/* 初期状態では FPU は利用しない */
 
     if (pk_ctsk->domain_id == KERNEL_DOMAIN_ID) {
-	task->kstack_top = context_create_kernel(
+	task->attr.kstack_top = context_create_kernel(
 		(VP_INT*)(task->mpu.context.esp),
 		EFLAG_IBIT | EFLAG_IOPL3,
-		(FP)(task->mpu.context.eip));
+		task->attr.entry);
     }
 
     return (E_OK);		/* set_task_registers (task, pk_ctsk->startaddr, sp)); */
@@ -104,18 +104,18 @@ static void create_user_stack(thread_t * tsk, W size, W acc)
     W err;
 
     /* task の kernel stack 領域を特権レベル 0 のスタックに設定 */
-    tsk->mpu.context.esp0 = (UW)tsk->ustack_top;
+    tsk->mpu.context.esp0 = (UW)tsk->attr.ustack_top;
 
     /* stack region の作成 number は 4 で固定 */
-    region_create(tsk->id, STACK_REGION,
+    region_create(thread_id(tsk), STACK_REGION,
 	     (VP) VADDR_STACK_HEAD, STD_STACK_SIZE, STD_STACK_SIZE,
 	     (VM_READ | VM_WRITE | VM_USER));
 
     /* 物理メモリの割り当て */
     tsk->attr.ustack.addr = (VP) (VADDR_STACK_TAIL - size);
     tsk->attr.ustack.length = size;
-    tsk->ustack_top = (VP)VADDR_STACK_TAIL;
-    err = region_map(tsk->id, (VP) tsk->attr.ustack.addr, size, acc);
+    tsk->attr.ustack_top = (VP)VADDR_STACK_TAIL;
+    err = region_map(thread_id(tsk), (VP) tsk->attr.ustack.addr, size, acc);
 
     if (err != E_OK) {
 	printk("can't allocate stack\n");
@@ -148,24 +148,24 @@ ER mpu_copy_stack(ID src, W esp, ID dst)
     dst_tsk->mpu.context.esp = dstp;
 
     /* src task のスタックの内容を dst task にコピー */
-    srcp = (UW) src_tsk->ustack_top;
-    dstp = (UW) dst_tsk->ustack_top;
+    srcp = (UW) src_tsk->attr.ustack_top;
+    dstp = (UW) dst_tsk->attr.ustack_top;
     while(size >= PAGE_SIZE) {
       srcp -= PAGE_SIZE;
       dstp -= PAGE_SIZE;
-      region_put(dst, (VP) dstp, PAGE_SIZE, (VP) vtor(src_tsk->id, srcp));
+      region_put(dst, (VP) dstp, PAGE_SIZE, (VP) vtor(thread_id(src_tsk), srcp));
       size -= PAGE_SIZE;
     }
     if (size > 0) {
       srcp -= size;
       dstp -= size;
-      region_put(dst, (VP) dstp, size, (VP) vtor(src_tsk->id, srcp));
+      region_put(dst, (VP) dstp, size, (VP) vtor(thread_id(src_tsk), srcp));
     }
 
-    dst_tsk->kstack_top = context_create_user(
+    dst_tsk->attr.kstack_top = context_create_user(
 	    (VP_INT*)(dst_tsk->mpu.context.esp0),
 	    EFLAG_IBIT | EFLAG_IOPL3,
-	    (FP)(dst_tsk->mpu.context.eip),
+	    dst_tsk->attr.entry,
 	    (VP_INT*)(dst_tsk->mpu.context.esp));
 
     /* FPU 情報のコピー */
@@ -217,10 +217,10 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
 	printk("WARNING vset_ctx: stack size is too large\n");
     }
 
-    stbase = (UW)tsk->ustack_top
+    stbase = (UW)tsk->attr.ustack_top
 	    - roundUp(stsize, sizeof(VP));
     esp = (char **) stbase;
-    ap = bp = (char **) vtor(tsk->id, stbase);
+    ap = bp = (char **) vtor(thread_id(tsk), stbase);
 
     err = region_get(tid, stackp, stsize, (VP) ap);
     if (err)
@@ -246,13 +246,13 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
     tsk->mpu.context.esp = (UW) esp;
 
     /* レジスターの初期化 */
-    tsk->mpu.context.eip = eip;
+    tsk->attr.entry = (FP)eip;
 
     /* タスクの初期化 */
-    tsk->kstack_top = context_create_user(
+    tsk->attr.kstack_top = context_create_user(
 	    (VP_INT*)(tsk->mpu.context.esp0),
 	    EFLAG_IBIT | EFLAG_IOPL3,
-	    (FP)(tsk->mpu.context.eip),
+	    tsk->attr.entry,
 	    (VP_INT*)(tsk->mpu.context.esp));
 
     /* page fault handler の登録 */

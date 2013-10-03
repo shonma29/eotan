@@ -92,7 +92,6 @@ ER_ID idle_initialize(void)
 		memset(&(th->queue), 0, sizeof(*th) - sizeof(node_t));
 
 		list_initialize(&(th->queue));
-		th->id = node->key;
 		th->attr.domain_id = KERNEL_DOMAIN_ID;
 		th->priority = th->attr.priority = MAX_PRIORITY;
 		th->status = TTS_RUN;
@@ -118,7 +117,6 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid)
 	memset(&(th->queue), 0, sizeof(*th) - sizeof(node_t));
 
 	list_initialize(&(th->queue));
-	th->id = tskid;
 	th->attr.domain_id = pk_ctsk->domain_id;
 	th->attr.priority = pk_ctsk->itskpri;
 	th->status = TTS_DMT;
@@ -217,7 +215,7 @@ ER thread_start(ID tskid)
 		thread_t *th;
 
 		if (tskid == TSK_SELF)
-			tskid = run_task->id;
+			tskid = thread_id(run_task);
 
 		th = get_thread_ptr(tskid);
 		if (!th) {
@@ -265,7 +263,7 @@ void thread_end_and_destroy(void)
 	enter_serialize();
 	th = run_task;
 
-	tree_remove(&thread_tree, th->id);
+	tree_remove(&thread_tree, thread_id(th));
 	list_remove(&(th->queue));
 
 	if (th->attr.domain_id != KERNEL_DOMAIN_ID)

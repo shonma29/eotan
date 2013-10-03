@@ -256,9 +256,9 @@ ER_UINT port_call(ID porid, VP msg, UINT cmsgsz)
 		rendezvous_t *r;
 		int rdvno;
 
-		if (region_put(tp->id, tp->wait.detail.por.msg, cmsgsz, msg)) {
+		if (region_put(thread_id(tp), tp->wait.detail.por.msg, cmsgsz, msg)) {
 			printk("port_call[%d] region_put(%d, %p, %d, %p) error\n",
-					porid, tp->id,
+					porid, thread_id(tp),
 					tp->wait.detail.por.msg, cmsgsz, msg);
 			leave_serialize();
 			return E_PAR;
@@ -269,7 +269,7 @@ ER_UINT port_call(ID porid, VP msg, UINT cmsgsz)
 
 		rdvno = tp->wait.detail.por.rdvno;
 		node = tree_get(&rdv_tree, rdvno);
-		rdvno = get_rdvno(run_task->id, rdvno);
+		rdvno = get_rdvno(thread_id(run_task), rdvno);
 		tp->wait.detail.por.rdvno = rdvno;
 		r = getRdvParent(node);
 
@@ -330,9 +330,9 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 
 		result = tp->wait.detail.por.size;
 
-		if (region_get(tp->id, tp->wait.detail.por.msg, result, msg)) {
+		if (region_get(thread_id(tp), tp->wait.detail.por.msg, result, msg)) {
 			printk("port_accept[%d] region_get(%d, %p, %d, %p) error\n",
-					porid, tp->id,
+					porid, thread_id(tp),
 					tp->wait.detail.por.msg, result, msg);
 			tree_remove(&rdv_tree, rdvno);
 			leave_serialize();
@@ -342,7 +342,7 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 
 		list_remove(q);
 		list_enqueue(&(r->caller), &(tp->wait.waiting));
-		*p_rdvno = tp->wait.detail.por.rdvno = get_rdvno(tp->id, rdvno);
+		*p_rdvno = tp->wait.detail.por.rdvno = get_rdvno(thread_id(tp), rdvno);
 		tp->wait.type = wait_rdv;
 /* TODO test */
 	}
@@ -401,10 +401,10 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 	if (q) {
 		thread_t *tp = getTaskParent(q);
 
-		if (region_put(tp->id, tp->wait.detail.por.msg,
+		if (region_put(thread_id(tp), tp->wait.detail.por.msg,
 				rmsgsz, msg)) {
 			printk("port_reply[%d] region_put(%d, %p, %d, %p) error\n",
-					rdvno, tp->id,
+					rdvno, thread_id(tp),
 					tp->wait.detail.por.msg, rmsgsz, msg);
 			leave_serialize();
 			tree_remove(&rdv_tree, rdvno);

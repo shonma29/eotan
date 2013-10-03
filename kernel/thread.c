@@ -198,15 +198,15 @@ ER thread_switch(void)
 #endif
     if (next->status != TTS_RDY) {
 	printk("thread_switch: panic next(%d) stat=%d, eip=%x\n",
-		next->id, next->status, MPU_PC(next));
+		thread_id(next), next->status, next->attr.entry);
 	panic("scheduler");
     }
 
     if (run_task->mpu.use_fpu)
 	fpu_save(run_task);
 
-    context_prev_sp = &(run_task->kstack_top);
-    context_next_sp = &(next->kstack_top);
+    context_prev_sp = &(run_task->attr.kstack_top);
+    context_next_sp = &(next->attr.kstack_top);
     run_task = next;
     run_task->status = TTS_RUN;
 
@@ -238,6 +238,6 @@ ER thread_switch(void)
  */
 ER thread_get_id(ID * p_tskid)
 {
-    *p_tskid = run_task->id;
+    *p_tskid = thread_id(run_task);
     return (E_OK);
 }
