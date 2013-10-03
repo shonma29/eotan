@@ -50,7 +50,7 @@ static ER_ID attach(void)
 {
 	T_CTSK pk_ctsk = {
 		TA_HLNG, 0, process, pri_dispatcher,
-		PAGE_SIZE, NULL, KERNEL_DOMAIN_ID
+		KERNEL_STACK_SIZE, NULL, KERNEL_DOMAIN_ID
 	};
 
 	lfq_initialize(&kqueue, kqbuf, sizeof(ID), KQUEUE_SIZE);

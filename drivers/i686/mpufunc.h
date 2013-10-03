@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "paging.h"
 
 /* context.c */
-extern ER create_context(thread_t * task, T_CTSK * pk_ctsk);
+extern void create_context(thread_t * task);
 extern ER mpu_copy_stack(ID src, W esp, ID dst);
 extern ER mpu_set_context(ID tid, W eip, B * stackp, W stsize);
 extern W pf_handler(W cr2, W eip);

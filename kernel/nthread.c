@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <string.h>
 #include <vm.h>
+#include <mpu/config.h>
 #include <set/list.h>
 #include <set/tree.h>
 #include "func.h"
@@ -111,8 +112,11 @@ ER_ID idle_initialize(void)
 
 static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid)
 {
-	ER result;
 	W i;
+	void *p = palloc(1);
+
+	if (!p)
+		return E_NOMEM;
 
 	memset(&(th->queue), 0, sizeof(*th) - sizeof(node_t));
 
@@ -122,12 +126,18 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid)
 	th->status = TTS_DMT;
 	list_initialize(&(th->wait.waiting));
 	th->attr.arg = pk_ctsk->exinf;
+	th->attr.kstack.addr = kern_p2v(p);
+	th->attr.kstack.length = KERNEL_STACK_SIZE;
+	th->attr.kstack_top = th->attr.kstack.addr + pk_ctsk->stksz;
+	th->attr.entry = pk_ctsk->task;
 
-	result = create_context(th, pk_ctsk);
-	if (result != E_OK)
-//TOOD release node
-		return result;
+	if (th->attr.domain_id == KERNEL_DOMAIN_ID)
+		th->attr.kstack_top = context_create_kernel(
+				th->attr.kstack_top,
+				EFLAG_IBIT | EFLAG_IOPL3,
+				th->attr.entry);
 
+	create_context(th);
 	set_page_table(th, (th->attr.domain_id == KERNEL_DOMAIN_ID)?
 			(VP)PAGE_DIR_ADDR
 //TODO create user page table in mm
@@ -151,9 +161,13 @@ ER_ID thread_create_auto(T_CTSK *pk_ctsk)
 	if (pk_ctsk->tskatr & TA_ASM)
 		return E_RSATR;
 
+	if (pk_ctsk->stksz > KERNEL_STACK_SIZE)
+		return E_PAR;
+
 	enter_serialize();
 	do {
 		node_t *node = find_empty_key(&thread_tree, &thread_hand);
+
 		if (!node) {
 			result = E_NOID;
 			break;
@@ -163,8 +177,9 @@ ER_ID thread_create_auto(T_CTSK *pk_ctsk)
 		if (result) {
 			tree_remove(&thread_tree, node->key);
 			break;
-		} else
-			result = node->key;
+		}
+
+		result = node->key;
 
 	} while (FALSE);
 	leave_serialize();

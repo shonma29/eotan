@@ -21,7 +21,6 @@ Version 2, June 1991
 #include "sync.h"
 #include "mpu/mpufunc.h"
 
-static ER allocate_kernel_stack(thread_t * task, VP * sp);
 static void create_user_stack(thread_t * tsk, W size, W acc);
 
 
@@ -29,71 +28,11 @@ static void create_user_stack(thread_t * tsk, W size, W acc);
  *
  *	引数：
  *		task		タスクのTCB領域へのポインタ
- *		stack_size	タスクのスタックサイズ
  *
  */
-ER create_context(thread_t * task, T_CTSK * pk_ctsk)
+void create_context(thread_t * task)
 {
-    VP sp;
-    ER err;
-
-    if (pk_ctsk->stksz > PAGE_SIZE) {
-	return E_PAR;
-    }
-
-    err = allocate_kernel_stack(task, &sp);
-    if (err != E_OK) {
-	return (err);
-    }
-
-    /* スタック情報の登録 */
-    task->attr.kstack.length = task->attr.ustack.length = PAGE_SIZE;
-    task->attr.kstack.addr = task->attr.ustack.addr = (B *) sp;
-
-    /* レジスタ類をすべて初期化する:
-     * reset_registers()  は、以下の引数を必要とする：
-     *   1) TCB 領域へのポインタ
-     *   2) タスクのスタートアドレス
-     *   3) カーネルスタックのアドレス
-     */
-    task->mpu.context.esp = (UW) ((sp + pk_ctsk->stksz));
-    task->attr.ustack_top = (VP)task->mpu.context.esp;
-    task->attr.entry = pk_ctsk->task;
-#ifdef TSKSW_DEBUG
-    printk("(UW)pk_ctsk->task = 0x%x\n", (UW) pk_ctsk->task);
-#endif
     task->mpu.use_fpu = 0;		/* 初期状態では FPU は利用しない */
-
-    if (pk_ctsk->domain_id == KERNEL_DOMAIN_ID) {
-	task->attr.kstack_top = context_create_kernel(
-		(VP_INT*)(task->mpu.context.esp),
-		EFLAG_IBIT | EFLAG_IOPL3,
-		task->attr.entry);
-    }
-
-    return (E_OK);		/* set_task_registers (task, pk_ctsk->startaddr, sp)); */
-}
-
-/* allocate_kernel_stack --- タスクスタックを生成する。
- *
- * カーネルモードで使用するタスク用スタックを生成する。
- *
- */
-static ER allocate_kernel_stack(thread_t * task, VP * sp)
-{
-    /* スタックポインタは 0x80000000 の仮想アドレスでアクセスする必要がある。 */
-    (*sp) = kern_p2v(palloc(1));
-#ifdef TSKSW_DEBUG
-    printk("sp = 0x%x\n", *sp);
-#endif
-    if (*sp == (VP) NULL) {
-#ifdef TSKSW_DEBUG
-	printk("allocate_kernel_stack: palloc fail.\n");
-#endif
-	return (E_NOMEM);
-    }
-
-    return (E_OK);
 }
 
 /*
@@ -104,7 +43,7 @@ static void create_user_stack(thread_t * tsk, W size, W acc)
     W err;
 
     /* task の kernel stack 領域を特権レベル 0 のスタックに設定 */
-    tsk->mpu.context.esp0 = (UW)tsk->attr.ustack_top;
+    tsk->mpu.context.esp0 = (UW)tsk->attr.kstack_top;
 
     /* stack region の作成 number は 4 で固定 */
     region_create(thread_id(tsk), STACK_REGION,
@@ -130,6 +69,7 @@ ER mpu_copy_stack(ID src, W esp, ID dst)
     thread_t *src_tsk, *dst_tsk;
     UW srcp, dstp;
     UW size;
+    UW ustack_top;
 
     src_tsk = get_thread_ptr(src);
 
@@ -144,8 +84,7 @@ ER mpu_copy_stack(ID src, W esp, ID dst)
     create_user_stack(dst_tsk, USER_STACK_SIZE, ACC_USER);
 
     size = ((UW) src_tsk->attr.ustack.addr) + src_tsk->attr.ustack.length - esp;
-    dstp = ((UW) dst_tsk->attr.ustack.addr) + dst_tsk->attr.ustack.length - size;
-    dst_tsk->mpu.context.esp = dstp;
+    ustack_top = ((UW) dst_tsk->attr.ustack.addr) + dst_tsk->attr.ustack.length - size;
 
     /* src task のスタックの内容を dst task にコピー */
     srcp = (UW) src_tsk->attr.ustack_top;
@@ -166,7 +105,7 @@ ER mpu_copy_stack(ID src, W esp, ID dst)
 	    (VP_INT*)(dst_tsk->mpu.context.esp0),
 	    EFLAG_IBIT | EFLAG_IOPL3,
 	    dst_tsk->attr.entry,
-	    (VP_INT*)(dst_tsk->mpu.context.esp));
+	    (VP)ustack_top);
 
     /* FPU 情報のコピー */
     dst_tsk->mpu.use_fpu = src_tsk->mpu.use_fpu;
@@ -243,8 +182,6 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
     *--bp = NULL;
     --esp;
 
-    tsk->mpu.context.esp = (UW) esp;
-
     /* レジスターの初期化 */
     tsk->attr.entry = (FP)eip;
 
@@ -253,7 +190,7 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
 	    (VP_INT*)(tsk->mpu.context.esp0),
 	    EFLAG_IBIT | EFLAG_IOPL3,
 	    tsk->attr.entry,
-	    (VP_INT*)(tsk->mpu.context.esp));
+	    (VP)esp);
 
     /* page fault handler の登録 */
     tsk->handler = pf_handler;
@@ -272,8 +209,8 @@ void set_page_table(thread_t *taskp, VP p)
 
 void set_arg(thread_t *taskp, const UW arg)
 {
-    UW *sp = (UW*)(taskp->mpu.context.esp);
+    UW *sp = (UW*)(taskp->mpu.context.esp0);
 
     *--sp = arg;
-    taskp->mpu.context.esp = (UW)sp;
+    taskp->mpu.context.esp0 = (UW)sp;
 }
