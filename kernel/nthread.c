@@ -131,7 +131,7 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid)
 	th->attr.kstack_top = th->attr.kstack.addr + pk_ctsk->stksz;
 	th->attr.entry = pk_ctsk->task;
 
-	create_context(th);
+	MPU_KERNEL_SP(th) = th->attr.kstack_top;	
 	set_page_table(th, (th->attr.domain_id == KERNEL_DOMAIN_ID)?
 			(VP)PAGE_DIR_ADDR
 //TODO create user page table in mm
@@ -243,6 +243,7 @@ ER thread_start(ID tskid)
 		th->priority = th->attr.priority;
 //TODO fix context_create_kernel
 //		set_arg(th, th->attr.arg);
+		create_context(th);
 
 		ready_enqueue(th->priority, &(th->queue));
 		result = E_OK;

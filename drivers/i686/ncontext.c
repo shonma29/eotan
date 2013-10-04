@@ -166,8 +166,6 @@ void create_context(thread_t *th)
 				th->attr.entry);
 		th->mpu.use_fpu = FALSE;
 
-	} else {
-		th->mpu.context.esp0 = th->attr.kstack_top;
+	} else
 		th->mpu.use_fpu = TRUE;
-	}
 }
