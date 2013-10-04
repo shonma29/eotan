@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <stddef.h>
 
 #define KCALL_ADDR 0x80003f00
 
@@ -42,6 +43,8 @@ typedef struct {
 	ER (*time_set)(SYSTIM *p_systim);
 	ER (*interrupt_bind)(W inhno, T_DINH *pk_dinh);
 	ER (*interrupt_enable)(const UB ir);
+	void *(*palloc)(size_t size);
+	void (*pfree)(void *addr, size_t size);
 	ER (*region_create)(ID id, ID rid, VP start, W min, W max, UW perm);
 	ER (*region_destroy)(ID id, ID rid);
 	ER (*region_map)(ID id, VP start, UW size, W accmode);

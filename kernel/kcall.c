@@ -45,6 +45,8 @@ void kcall_initialize(void)
 	p->time_set = time_set;
 	p->interrupt_bind = interrupt_bind;
 	p->interrupt_enable = pic_reset_mask;
+	p->palloc = palloc;
+	p->pfree = pfree;
 
 	p->region_create = region_create;
 	p->region_destroy = region_destroy;
