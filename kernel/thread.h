@@ -34,11 +34,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "mpu/mpu.h"
 
 typedef struct {
-	VP addr;
-	SIZE length;
-} fragment_t;
-
-typedef struct {
 	node_t node;
 	list_t queue;
 	STAT status;
@@ -56,10 +51,8 @@ typedef struct {
 		VP_INT arg;
 		PRI priority;
 		ID domain_id;
-		fragment_t kstack;
-		VP kstack_top;
-		fragment_t ustack;
-		VP ustack_top;
+		VP kstack_tail;
+		VP ustack_tail;
 		FP entry;
 	} attr;
 } thread_t;

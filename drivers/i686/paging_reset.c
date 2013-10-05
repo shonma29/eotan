@@ -53,7 +53,7 @@ void paging_reset(void)
 
 	for (i = 0; i < max; i++) {
 		size_t j;
-		PTE *p = palloc(1);
+		PTE *p = palloc();
 
 		if (!p) {
 			printk("no memory for PTE");
@@ -95,7 +95,7 @@ static void set_frame_buffer(PTE *dir)
 			i < (last >> BITS_PAGE) + ((last & MASK_PAGE)? 1:0);
 			i++) {
 		if (!(dir[i] & PAGE_PRESENT)) {
-			UB *p = (UB*)palloc(1);
+			UB *p = (UB*)palloc();
 
 			/* memset(p, 0, PAGE_SIZE); */
 			dir[i] = calc_pte(kern_v2p(p), ATTR_INITIAL);

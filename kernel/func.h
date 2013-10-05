@@ -49,8 +49,8 @@ extern void run_init_program(void);
 extern void kcall_initialize(void);
 
 /* palloc.c */
-extern void *palloc(size_t size);
-extern void pfree(void *addr, size_t size);
+extern void *palloc(void);
+extern void pfree(void *addr);
 extern UW pmemfree(void);
 
 /* printk.c */

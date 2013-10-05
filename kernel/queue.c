@@ -175,7 +175,7 @@ ER_ID queue_create_auto(T_CDTQ *pk_cdtq)
 		node_t *node;
 
 		if (pk_cdtq->dtqcnt) {
-			dtq = (UINT*)palloc(1);
+			dtq = (UINT*)palloc();
 			if (!dtq) {
 				result =  E_NOMEM;
 				break;
@@ -187,7 +187,7 @@ ER_ID queue_create_auto(T_CDTQ *pk_cdtq)
 		if (!node) {
 			result = E_NOID;
 			if (dtq)
-				pfree(dtq, 1);
+				pfree(dtq);
 			break;
 		}
 
@@ -230,7 +230,7 @@ ER queue_destroy(ID dtqid)
 		release_all(&(q->receiver));
 		release_all(&(q->sender));
 		if (q->dtq)
-			pfree(q->dtq, 1);
+			pfree(q->dtq);
 		tree_remove(&queue_tree, dtqid);
 		result = E_OK;
 

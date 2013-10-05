@@ -37,10 +37,8 @@ static void create_user_stack(thread_t * tsk, W size, W acc)
 	     (VM_READ | VM_WRITE | VM_USER));
 
     /* 物理メモリの割り当て */
-    tsk->attr.ustack.addr = (VP) (VADDR_STACK_TAIL - size);
-    tsk->attr.ustack.length = size;
-    tsk->attr.ustack_top = (VP)VADDR_STACK_TAIL;
-    err = region_map(thread_id(tsk), (VP) tsk->attr.ustack.addr, size, acc);
+    tsk->attr.ustack_tail = (VP)VADDR_STACK_TAIL;
+    err = region_map(thread_id(tsk), (VP) (VADDR_STACK_TAIL - size), size, acc);
 
     if (err != E_OK) {
 	printk("can't allocate stack\n");
@@ -53,9 +51,8 @@ static void create_user_stack(thread_t * tsk, W size, W acc)
 ER mpu_copy_stack(ID src, W esp, ID dst)
 {
     thread_t *src_tsk, *dst_tsk;
-    UW srcp, dstp;
+    UW dstp;
     UW size;
-    UW ustack_top;
 
     src_tsk = get_thread_ptr(src);
 
@@ -69,29 +66,17 @@ ER mpu_copy_stack(ID src, W esp, ID dst)
     /* dst task に新しいスタックポインタを割り付ける */
     create_user_stack(dst_tsk, USER_STACK_SIZE, ACC_USER);
 
-    size = ((UW) src_tsk->attr.ustack.addr) + src_tsk->attr.ustack.length - esp;
-    ustack_top = ((UW) dst_tsk->attr.ustack.addr) + dst_tsk->attr.ustack.length - size;
+    size = ((UW) src_tsk->attr.ustack_tail) - esp;
 
     /* src task のスタックの内容を dst task にコピー */
-    srcp = (UW) src_tsk->attr.ustack_top;
-    dstp = (UW) dst_tsk->attr.ustack_top;
-    while(size >= PAGE_SIZE) {
-      srcp -= PAGE_SIZE;
-      dstp -= PAGE_SIZE;
-      region_put(dst, (VP) dstp, PAGE_SIZE, (VP) vtor(thread_id(src_tsk), srcp));
-      size -= PAGE_SIZE;
-    }
-    if (size > 0) {
-      srcp -= size;
-      dstp -= size;
-      region_put(dst, (VP) dstp, size, (VP) vtor(thread_id(src_tsk), srcp));
-    }
+    dstp = (UW) dst_tsk->attr.ustack_tail - size;
+    region_put(dst, (VP) dstp, size, (VP) vtor(thread_id(src_tsk), esp));
 
     dst_tsk->mpu.context.esp0 = context_create_user(
-	    dst_tsk->attr.kstack_top,
+	    dst_tsk->attr.kstack_tail,
 	    EFLAG_IBIT | EFLAG_IOPL3,
 	    dst_tsk->attr.entry,
-	    (VP)ustack_top);
+	    (VP)dstp);
 
     /* FPU 情報のコピー */
     dst_tsk->mpu.use_fpu = src_tsk->mpu.use_fpu;
@@ -142,7 +127,7 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
 	printk("WARNING vset_ctx: stack size is too large\n");
     }
 
-    stbase = (UW)tsk->attr.ustack_top
+    stbase = (UW)tsk->attr.ustack_tail
 	    - roundUp(stsize, sizeof(VP));
     esp = (char **) stbase;
     ap = bp = (char **) vtor(thread_id(tsk), stbase);
@@ -173,7 +158,7 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
 
     /* タスクの初期化 */
     tsk->mpu.context.esp0 = context_create_user(
-	    tsk->attr.kstack_top,
+	    tsk->attr.kstack_tail,
 	    EFLAG_IBIT | EFLAG_IOPL3,
 	    tsk->attr.entry,
 	    (VP)esp);

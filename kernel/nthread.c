@@ -113,7 +113,7 @@ ER_ID idle_initialize(void)
 static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid)
 {
 	W i;
-	void *p = palloc(1);
+	void *p = palloc();
 
 	if (!p)
 		return E_NOMEM;
@@ -126,12 +126,10 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid)
 	th->status = TTS_DMT;
 	list_initialize(&(th->wait.waiting));
 	th->attr.arg = pk_ctsk->exinf;
-	th->attr.kstack.addr = kern_p2v(p);
-	th->attr.kstack.length = KERNEL_STACK_SIZE;
-	th->attr.kstack_top = th->attr.kstack.addr + pk_ctsk->stksz;
+	th->attr.kstack_tail = (char*)kern_p2v(p) + pk_ctsk->stksz;
 	th->attr.entry = pk_ctsk->task;
 
-	MPU_KERNEL_SP(th) = th->attr.kstack_top;	
+	MPU_KERNEL_SP(th) = th->attr.kstack_tail;	
 	set_page_table(th, (th->attr.domain_id == KERNEL_DOMAIN_ID)?
 			(VP)PAGE_DIR_ADDR
 //TODO create user page table in mm
@@ -155,7 +153,7 @@ ER_ID thread_create_auto(T_CTSK *pk_ctsk)
 	if (pk_ctsk->tskatr & TA_ASM)
 		return E_RSATR;
 
-	if (pk_ctsk->stksz > KERNEL_STACK_SIZE)
+	if (pk_ctsk->stksz != KERNEL_STACK_SIZE)
 		return E_PAR;
 
 	enter_serialize();
@@ -186,7 +184,7 @@ static void release_resources(thread_t *th)
 	if (th->attr.domain_id != KERNEL_DOMAIN_ID)
 		release_vmap((ADDR_MAP)MPU_PAGE_TABLE(th));
 
-	pfree((VP)kern_v2p(th->attr.kstack.addr), pages(th->attr.kstack.length));
+	pfree((VP)kern_v2p((char*)(th->attr.kstack_tail)) - KERNEL_STACK_SIZE);
 }
 
 ER thread_destroy(ID tskid)

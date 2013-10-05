@@ -111,7 +111,7 @@ static void release_others(const void *head, const void *end)
 	printk("release addr=%p max=%d\n", addr, max);
 
 	for (i = 0; i < max; i++) {
-		pfree((void*)addr, 1);
+		pfree((void*)addr);
 		addr += PAGE_SIZE;
 	}
 }

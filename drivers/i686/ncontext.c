@@ -161,7 +161,7 @@ void create_context(thread_t *th)
 {
 	if (th->attr.domain_id == KERNEL_DOMAIN_ID) {
 		th->mpu.context.esp0 = context_create_kernel(
-				th->attr.kstack_top,
+				th->attr.kstack_tail,
 				EFLAG_IBIT | EFLAG_IOPL3,
 				th->attr.entry);
 		th->mpu.use_fpu = FALSE;

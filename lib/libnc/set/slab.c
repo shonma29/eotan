@@ -32,7 +32,7 @@ static slab_block_t *slab_add_block(slab_t *slab) {
 
 	if (slab->block_num >= slab->max_block)	return NULL;
 
-	block = (slab_block_t*)slab->palloc(1);
+	block = (slab_block_t*)slab->palloc();
 
 	if (block) {
 		size_t i;
@@ -91,8 +91,7 @@ void slab_destroy(slab_t *slab) {
 	list_t *p;
 
 	for (p = list_dequeue(q); p; p = list_dequeue(q)) {
-		slab->pfree((void*)((ptr_t)p - offsetof(slab_block_t, blocks)),
-				1);
+		slab->pfree((void*)((ptr_t)p - offsetof(slab_block_t, blocks)));
 	}
 }
 
@@ -136,7 +135,7 @@ void slab_free(slab_t *slab, void *p) {
 		slab->empty_num--;
 		list_remove(&(block->blocks));
 		slab->block_num--;
-		slab->pfree(block, 1);
+		slab->pfree(block);
 	}
 
 	else	list_enqueue(&(block->entries), &(((slab_entry_t*)p)->entries));

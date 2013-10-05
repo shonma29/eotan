@@ -177,7 +177,7 @@ ADDR_MAP dup_vmap_table(ADDR_MAP dest)
     I386_PAGE_ENTRY *p;
 
     dest = (ADDR_MAP)((UW) kern_p2v(dest));
-    newp = (ADDR_MAP) (palloc(1));	/* ページディレクトリのアロケート */
+    newp = (ADDR_MAP) (palloc());	/* ページディレクトリのアロケート */
     memset((VP)newp, 0, PAGE_SIZE);
 
 
@@ -189,7 +189,7 @@ ADDR_MAP dup_vmap_table(ADDR_MAP dest)
 #if 0
 	    printk("dir[%d] ", i);
 #endif
-	    p = (I386_PAGE_ENTRY *) (palloc(1));
+	    p = (I386_PAGE_ENTRY *) (palloc());
 
 #ifdef DEBUG
 	    printk
@@ -246,16 +246,16 @@ ER release_vmap(ADDR_MAP dest)
 		for (j = 0; j < PAGE_SIZE / sizeof(I386_PAGE_ENTRY); j++) {
 		    if (p[j].present) {
 			ppage = (UW)kern_v2p((void*)(p[j].frame_addr << PAGE_SHIFT));
-			pfree((VP) ppage, 1);
+			pfree((VP) ppage);
 		    }
 		}
 	    }
 	    p = (I386_PAGE_ENTRY*)(kern_v2p(p));
-	    pfree((VP) p, 1);
+	    pfree((VP) p);
 	}
     }
     dest = (ADDR_MAP) kern_v2p(dest);
-    pfree((VP) dest, 1);
+    pfree((VP) dest);
 
     return E_OK;
 }
@@ -405,11 +405,11 @@ static ER vunmap(thread_t * task, UW vpage)
     ppage = (UW)kern_v2p((void*)(pageent[pageindex].frame_addr << PAGE_SHIFT));
     /*TODO handle error */
     /*
-    errno = pfree((VP) ppage, 1);
+    errno = pfree((VP) ppage);
     if (errno)
 	return (FALSE);
     */
-    pfree((VP) ppage, 1);
+    pfree((VP) ppage);
     pageent[pageindex].present = 0;
     context_reset_page_cache(task, (VP)vpage);
     return (TRUE);
@@ -432,7 +432,7 @@ static I386_PAGE_ENTRY *alloc_pagetable(W accmode)
     I386_PAGE_ENTRY *newp, *pp;
     W i;
 
-    newp = (I386_PAGE_ENTRY *) palloc(1);
+    newp = (I386_PAGE_ENTRY *) palloc();
     if (newp == NULL) {
 	return (NULL);
     }
@@ -651,14 +651,14 @@ ER region_map(ID id, VP start, UW size, W accmode)
 	return (E_NOMEM);
     res = E_OK;
     for (counter = 0; counter < size; counter++) {
-	pmem = palloc(1);
+	pmem = palloc();
 	if (pmem == NULL) {
 	    res = E_NOMEM;
 	    break;
 	}
 	if (vmap(taskp, ((UW) start + (counter << PAGE_SHIFT)),
 		 (UW) kern_v2p(pmem), accmode) == FALSE) {
-	    pfree((VP) kern_v2p(pmem), 1);
+	    pfree((VP) kern_v2p(pmem));
 	    res = E_SYS;
 	    break;
 	}

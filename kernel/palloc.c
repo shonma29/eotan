@@ -40,7 +40,7 @@ static W find_bit(const UW d);
 static void pzero(UW *p);
 
 
-void *palloc(size_t size)
+void *palloc(void)
 {
 	size_t i;
 
@@ -97,7 +97,7 @@ static void pzero(UW *p)
 		p[i] = 0;
 }
 
-void pfree(void *addr, size_t size)
+void pfree(void *addr)
 {
 	size_t i = (size_t)addr >> (PAGE_SHIFT + MPU_LOG_INT);
 	UW bit;

@@ -36,8 +36,8 @@ typedef struct _slab_t {
 	size_t block_size;
 	size_t min_block;
 	size_t max_block;
-	void *(*palloc)(size_t size);
-	void (*pfree)(void *p, size_t size);
+	void *(*palloc)(void);
+	void (*pfree)(void *p);
 	size_t entries_per_block;
 	ptr_t mask;
 	size_t offset;

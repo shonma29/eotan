@@ -212,7 +212,7 @@ ER thread_switch(void)
 
     delayed_dispatch = FALSE;
 
-    context_set_kernel_sp(next->attr.kstack_top);
+    context_set_kernel_sp(next->attr.kstack_tail);
     context_switch_page_table(next);
     context_switch();
 
