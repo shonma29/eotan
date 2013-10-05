@@ -143,7 +143,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 #endif
     /* 呼び出し元プロセスのすべての(仮想)メモリを解放する
      */
-    error_no = proc_destroy_memory(procid);
+    error_no = destroy_proc_memory(procp, 1);
     if (error_no) {
 	fs_close_file(ip);
 	return (error_no);

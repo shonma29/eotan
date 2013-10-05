@@ -78,7 +78,6 @@ struct vm_page
 
 /* memory.c */
 extern W			alloc_memory (W procid, UW start, UW size, UW access);
-extern W			free_memory (W procid, UW start, UW size);
 extern W			destroy_proc_memory (struct proc *procp, W unmap);
 
 /* vmtree.c */

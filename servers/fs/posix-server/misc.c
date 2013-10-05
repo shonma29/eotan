@@ -37,25 +37,8 @@ W psc_misc_f(RDVNO rdvno, struct posix_request *req)
 #endif
 
     switch (req->param.par_misc.cmd) {
-    case M_PROC_DUMP:
-	err = proc_dump(req);
-	break;
-#if 0
-    case M_VM_DUMP:
-	err = proc_vm_dump(req);
-	break;
-#endif
-    case M_PRINT_FLIST:
-	/* malloc の空きリストの表示 */
-	print_freelist();
-	break;
-
     case M_PURGE_CACHE:
 	sfs_purge_cache();
-	break;
-
-    case M_DO_PS:
-	err = do_ps();
 	break;
 
     case M_DO_DF:

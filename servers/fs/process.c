@@ -184,21 +184,6 @@ W set_local(ID pid, ID tskid)
     return (EOK);
 }
 
-/* proc_destroy_memory - プロセスのもつすべてのメモリ資源を解放する
- *
- */
-W proc_destroy_memory(W procid)
-{
-    ER error_no;
-
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
-    }
-    error_no = destroy_proc_memory(&proc_table[procid], 1);
-    return (error_no);
-}
-
-
 /* プロセスを終了する
  */
 W proc_exit(W procid)
@@ -243,39 +228,6 @@ W proc_exit(W procid)
 
     return (EOK);
 }
-
-
-W proc_dump(struct posix_request * req)
-{
-    UW procid;
-    struct proc *procp;
-    W i, j;
-    struct vm_directory *vm_dir;
-    struct vm_page *vm_page;
-
-    procid = req->param.par_misc.arg.procid;
-    procp = &proc_table[procid];
-
-    printk("posix: proc %d dump\n", (int) procid);
-    printk("uid: %d\n", (int) procp->proc_uid);
-    printk("gid: %d\n", (int) procp->proc_gid);
-    printk("ppid: %d\n", (int) procp->proc_ppid);
-    printk("vmtree: 0x%x\n", (int) procp->vm_tree);
-    for (i = 0; i < MAX_DIR_ENTRY; i++) {
-	vm_dir = procp->vm_tree->directory_table[i];
-	if (vm_dir) {
-	    for (j = 0; j < 8; j++) {
-		vm_page = vm_dir->page_table[j];
-		printk("%d.%d: paddr = 0x%x   ", i, j,
-		       vm_page ? vm_page->addr : 0);
-	    }
-	    printk("\n");
-	}
-    }
-
-    return (E_OK);
-}
-
 
 
 W proc_get_procp(W procid, struct proc ** procp)
@@ -557,87 +509,4 @@ void proc_dealloc_proc(W procid)
     }
 
     tail_proc = &proc_table[procid];
-}
-
-#if 0
-W proc_vm_dump(struct posix_request * req)
-{
-    struct proc *procp;
-    struct vm_tree *treep;
-    W dir_index;
-    W page_index;
-    struct vm_directory *dirp;
-    struct vm_page *pagep;
-    UW paddr;
-    ER error;
-    UW addr = 0;
-    ID taskid;
-
-
-    if ((req->procid < INIT_PID) || (req->procid >= MAX_PROCESS)) {
-	return (EINVAL);
-    }
-    procp = &proc_table[req->param.par_misc.arg.procid];
-    taskid = procp->proc_maintask;
-
-#ifdef DEBUG
-    printk("procid: %d\n", req->procid);
-#endif
-    if (procp->proc_status == PS_DORMANT) {
-#ifdef DEBUG
-	printk("proc is dormant.\n");
-#endif
-	return (ENOENT);
-    }
-#ifdef DEBUG
-    printk("proc_vm_dump(): procp = 0x%x\n", procp);
-#endif
-
-    treep = procp->vm_tree;
-    for (dir_index = 0; dir_index < (MAX_DIR_ENTRY / 2); dir_index++) {
-	dirp = treep->directory_table[dir_index];
-
-	if (dirp) {
-#ifdef DEBUG
-	    printk("dir[%d], vmtree = 0x%x:\n", dir_index, treep);	/* */
-#endif
-	    for (page_index = 0; page_index < MAX_PAGE_ENTRY; page_index++) {
-		/* 物理メモリアドレスを取得 */
-		error = vget_phs(taskid, (VP) addr, &paddr);
-
-		pagep = dirp->page_table[page_index];
-		if (pagep) {
-#ifdef DEBUG
-		    printk("vm_dump: map (vaddr = 0x%x, paddr = 0x%x)\n",
-			   addr, pagep->addr);
-#endif
-		} else if (error == E_OK) {
-#ifdef DEBUG
-		    printk
-			("vm_dump: ?? vm_tree information invalid. map (vaddr = 0x%x, paddr = 0x%x)\n",
-			 addr, paddr);
-#endif
-		}
-		addr += PAGE_SIZE;
-	    }
-	}
-    }
-
-    return (EOK);
-}
-#endif
-
-W do_ps()
-{
-    int i;
-
-    for (i = INIT_PID; i < MAX_PROCESS; ++i) {
-	if (proc_table[i].proc_status != PS_DORMANT) {
-	    printk("pid = %d status = %d taskid = %d [%s]\n",
-		   proc_table[i].proc_pid, proc_table[i].proc_status,
-		   proc_table[i].proc_maintask,
-		   proc_table[i].proc_name);
-	}
-    }
-    return (EOK);
 }

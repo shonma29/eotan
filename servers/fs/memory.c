@@ -61,28 +61,6 @@ W alloc_memory(W procid, UW start, UW size, UW access)
 }
 
 
-/* free_memory - 仮想メモリを解放する
- *
- */
-W free_memory(W procid, UW start, UW size)
-{
-    W i;
-    W error_no;
-    struct proc *procp;
-
-
-    error_no = proc_get_procp(procid, &procp);
-    for (i = 0; i < (size >> PAGE_SHIFT); i++) {
-	error_no = shorten_vm(procp, start + (i << PAGE_SHIFT));
-	if (error_no) {
-	    return (error_no);
-	}
-    }
-
-    return (EOK);
-}
-
-
 /* destroy_proc_memory - プロセスのもつすべてのメモリを解放する
  *
  */

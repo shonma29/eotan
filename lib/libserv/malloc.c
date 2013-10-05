@@ -354,19 +354,3 @@ static VP get_system_memory(UW size)
     last_page += size;
     return (rp);
 }
-
-void print_freelist(void)
-{
-    struct alloc_entry_t *p;
-    int i;
-
-    for (i = 0, p = pivot;; p = p->next, i++) {
-	dbg_printf
-	    ("[%d]: 0x%x, next = 0x%x, before = 0x%x, size = %d (0x%x)\n",
-	     i, p, p->next, p->before, p->size, p->size);
-	if (p->next == pivot)
-	    break;
-	else if (i >= 15)
-	    break;
-    }
-}

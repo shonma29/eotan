@@ -76,11 +76,7 @@ Version 2, June 1991
 
 /* MISC 
  */
-#define M_PROC_DUMP	2
-#define M_VM_DUMP	3
-#define M_PRINT_FLIST	4
 #define M_PURGE_CACHE	5
-#define M_DO_PS		7
 #define M_DO_DF		8
 
 /* =============== 各システムコール用の 構造体定義 ================== */
