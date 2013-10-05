@@ -60,27 +60,18 @@ Version 2, June 1991
  */
 struct vm_tree
 {
-  UW				access;			/* アクセス権の情報 */
-  UW				start;
-  UW				size;
   struct vm_directory		*directory_table[MAX_DIR_ENTRY];
 };
 
 
 struct vm_directory
 {
-  UW				access;			/* アクセス権の情報 */
-  struct vm_tree		*tree_top;
-  UW				start;
-  UW				size;
   struct vm_page		*page_table[MAX_PAGE_ENTRY];
 };
 
 
 struct vm_page
 {
-  UW				access;			/* アクセス権の情報 */
-  struct vm_directory		*directory;
   UW				addr;
 };
 

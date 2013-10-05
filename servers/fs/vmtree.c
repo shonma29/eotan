@@ -108,10 +108,6 @@ W create_vm_tree(struct proc *proc)
 	return (ENOMEM);
     }
 
-    treep->access = VM_DEFAULT_ACCESS;
-    treep->start = VM_DEFAULT_START;
-    treep->size = VM_DEFAULT_SIZE;
-
     for (i = 0; i < MAX_DIR_ENTRY; i++) {
 	treep->directory_table[i] = NULL;
     }
@@ -307,7 +303,7 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 			dest_pagep =
 			    (struct vm_page *) alloc_vm_page(destination,
 							     dest_dirp, 0,
-							     pagep->access);
+							     VM_DEFAULT_ACCESS);
 			if (dest_pagep == NULL) {
 #ifdef VMDEBUG
 			    printk("duplicate_tree: empty pagep\n");
@@ -426,9 +422,7 @@ struct vm_page *alloc_vm_page(struct vm_tree *treep,
 	return (NULL);
     }
 
-    pagep->access = access;
     pagep->addr = addr;
-    pagep->directory = dirp;
     return (pagep);
 }
 
@@ -445,10 +439,6 @@ struct vm_directory *alloc_vm_directory(struct vm_tree *treep, UW addr)
     }
 
     memset((VP)dirp, 0, sizeof(struct vm_directory));
-    dirp->access = treep->access;
-    dirp->tree_top = treep;
-    dirp->start = addr;
-    dirp->size = MAX_PAGE_ENTRY * PAGE_SIZE;
     for (i = 0; i < MAX_PAGE_ENTRY; i++) {
 	dirp->page_table[i] = NULL;
     }
