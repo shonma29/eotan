@@ -132,8 +132,8 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid)
 	MPU_KERNEL_SP(th) = th->attr.kstack_tail;	
 	set_page_table(th, (th->attr.domain_id == KERNEL_DOMAIN_ID)?
 			(VP)PAGE_DIR_ADDR
-//TODO create user page table in mm
-			:kern_v2p(dup_vmap_table((ADDR_MAP)MPU_PAGE_TABLE(run_task))));
+			//TODO null check
+			:kern_v2p(copy_kernel_page_table((PTE*)PAGE_DIR_ADDR)));
 
 	for (i = 0; i < MAX_REGION; i++)
 		th->regions[i].permission = 0;
@@ -182,7 +182,7 @@ ER_ID thread_create_auto(T_CTSK *pk_ctsk)
 static void release_resources(thread_t *th)
 {
 	if (th->attr.domain_id != KERNEL_DOMAIN_ID)
-		release_vmap((ADDR_MAP)MPU_PAGE_TABLE(th));
+		release_user_pages((PTE*)MPU_PAGE_TABLE(th));
 
 	pfree((VP)kern_v2p((char*)(th->attr.kstack_tail)) - KERNEL_STACK_SIZE);
 }

@@ -54,4 +54,9 @@ static inline PTE calc_pte(const void *addr, const UW attr)
 	return (PTE)((((UW)addr) & PAGE_ADDR_MASK) | attr);
 }
 
+static inline BOOL is_present(PTE pte)
+{
+	return (pte & PAGE_PRESENT);
+}
+
 #endif

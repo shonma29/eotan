@@ -31,6 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <thread.h>
 #include "paging.h"
 #include "mpufunc.h"
+#include "func.h"
 
 static inline PTE *getPageDirectory(const thread_t *th)
 {
@@ -97,4 +98,59 @@ void *getPageAddress(const PTE *dir, const void *addr)
 	}
 
 	return NULL;
+}
+
+T_REGION *find_region(const thread_t *th, const void *addr)
+{
+	size_t i;
+
+	for (i = 0; i < MAX_REGION; i++) {
+		T_REGION *r = (T_REGION*)&(th->regions[i]);
+
+		if (!(r->permission))
+			continue;
+		if ((UW)addr < (UW)(r->start_addr))
+			continue;
+		if ((UW)addr < (UW)(r->start_addr) + r->max_size)
+			return r;
+	}
+
+	return NULL;
+}
+
+PTE *copy_kernel_page_table(const PTE *src)
+{
+	char *directory = (char*)palloc();
+
+	if (directory) {
+		size_t n = (size_t)getDirectoryOffset((void*)MIN_KERNEL)
+				* sizeof(PTE);
+
+		memset(directory, 0, n);
+		memcpy(directory + n, (char*)kern_p2v(src) + n, PAGE_SIZE - n);
+	}
+
+	return (PTE*)directory;
+}
+
+void release_user_pages(PTE *directory)
+{
+	PTE *vdir = (PTE*)kern_p2v(directory);
+	size_t n = (size_t)getDirectoryOffset((void*)MIN_KERNEL);
+	size_t i;
+
+	for (i = 0; i < n; i++)
+		if (is_present(vdir[i])) {
+			PTE *p = (PTE*)(vdir[i] & PAGE_ADDR_MASK);
+			PTE *vp = (PTE*)(kern_p2v(p));
+			size_t j;
+
+			for (j = 0; j < PTE_PER_PAGE; j++)
+				if (is_present(vp[j]))
+					pfree((void*)(vp[j] & PAGE_ADDR_MASK));
+
+			pfree(p);
+		}
+
+	pfree(directory);
 }

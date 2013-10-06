@@ -165,101 +165,6 @@ static ER vunmap(thread_t * task, UW vpage);
 static I386_PAGE_ENTRY *alloc_pagetable(W);
 
 
-/* dup_vmap_table --- 指定された仮想メモリのマッピングテーブルを
- *		      コピーする。
- *		      マップテーブル自体は新しく作成する。
- *
- */
-ADDR_MAP dup_vmap_table(ADDR_MAP dest)
-{
-    ADDR_MAP newp;
-    int i;
-    I386_PAGE_ENTRY *p;
-
-    dest = (ADDR_MAP)((UW) kern_p2v(dest));
-    newp = (ADDR_MAP) (palloc());	/* ページディレクトリのアロケート */
-    memset((VP)newp, 0, PAGE_SIZE);
-
-
-/* 1998/Feb/23 */
-    for (i = ADDR_MAP_SIZE / 2; i < ADDR_MAP_SIZE; i++) {
-	newp[i] = dest[i];	/* ページディレクトリを１エントリずつコピー */
-	if (newp[i].present) {
-	    /* エントリがマッピングされているならば、コピーする。 */
-#if 0
-	    printk("dir[%d] ", i);
-#endif
-	    p = (I386_PAGE_ENTRY *) (palloc());
-
-#ifdef DEBUG
-	    printk
-		("dup_vmap_table: (VP)kern_p2v(dest[i].frame_addr << PAGE_SHIFT) = 0x%x,"
-		 "(VP)p = 0x%x, PAGE_SIZE = %d\n",
-		 (VP) kern_p2v(dest[i].frame_addr << PAGE_SHIFT), p,
-		 PAGE_SIZE);
-#endif
-	    {
-		int j;
-		char *q, *r;
-
-		q = (VP) kern_p2v((void*)(dest[i].frame_addr << PAGE_SHIFT));
-		r = (char *) p;
-		for (j = 0; j < PAGE_SIZE; j++) {
-#ifdef notdef
-		    printk("copy source = 0x%x, dest = 0x%x\n", q, r);
-#endif
-		    *r++ = *q++;
-		}
-	    }
-
-#ifdef DEBUG
-	    printk("dup_vmap_table: [%d]copy 0x%x -> 0x%x\n",
-		   i, (VP) kern_p2v(dest[i].frame_addr << PAGE_SHIFT), (VP) p);
-#endif
-	    newp[i].frame_addr = (UW)kern_v2p(p) >> PAGE_SHIFT;
-	}
-    }
-#if 0
-    printk("\n");
-#endif
-    return (newp);
-}
-
-/***********************************************************************
- * release_vmap --- 指定したアドレスマップテーブルをすべて解放する。
- *
- */
-ER release_vmap(ADDR_MAP dest)
-{
-    I386_PAGE_ENTRY *p;
-    W i, j;
-    UW ppage;
-
-    dest = (ADDR_MAP) kern_p2v(dest);
-    for (i = 0; i < ADDR_MAP_SIZE; i++) {
-	if (dest[i].present) {
-	    p = (I386_PAGE_ENTRY *) (dest[i].frame_addr << PAGE_SHIFT);
-	    if ((UW) p <= KERNEL_SIZE) {
-		p = (I386_PAGE_ENTRY*)(kern_p2v(p));
-	    }
-	    if (i < ADDR_MAP_SIZE / 2) {
-		for (j = 0; j < PAGE_SIZE / sizeof(I386_PAGE_ENTRY); j++) {
-		    if (p[j].present) {
-			ppage = (UW)kern_v2p((void*)(p[j].frame_addr << PAGE_SHIFT));
-			pfree((VP) ppage);
-		    }
-		}
-	    }
-	    p = (I386_PAGE_ENTRY*)(kern_v2p(p));
-	    pfree((VP) p);
-	}
-    }
-    dest = (ADDR_MAP) kern_v2p(dest);
-    pfree((VP) dest);
-
-    return E_OK;
-}
-
 
 /*************************************************************************
  * vmap --- 仮想メモリのマッピング
@@ -634,17 +539,7 @@ ER region_map(ID id, VP start, UW size, W accmode)
 	return (E_PAR);
     }
 
-    regp = NULL;
-    for (counter = 0; counter < MAX_REGION; counter++) {
-	if ((taskp->regions[counter].permission != 0) &&
-	    ((UW) taskp->regions[counter].start_addr <= (UW) start) &&
-	    ((UW) start < ((UW) taskp->regions[counter].start_addr +
-			   taskp->regions[counter].max_size))) {
-	    regp = &(taskp->regions[counter]);
-	    break;
-	}
-    }
-
+    regp = find_region(taskp, start);
     size = pages(size);
     start = (VP)pageRoundDown((UW)start);
     if (pmemfree() < size)
@@ -706,17 +601,7 @@ ER region_unmap(ID id, VP start, UW size)
 	return (E_PAR);
     }
 
-    regp = NULL;
-    for (counter = 0; counter < MAX_REGION; counter++) {
-	if ((taskp->regions[counter].permission != 0) &&
-	    ((UW) taskp->regions[counter].start_addr <= (UW) start) &&
-	    ((UW) start < ((UW) taskp->regions[counter].start_addr +
-			   taskp->regions[counter].max_size))) {
-	    regp = &(taskp->regions[counter]);
-	    break;
-	}
-    }
-
+    regp = find_region(taskp, start);
     size = pageRoundUp(size);
     start = (VP)pageRoundDown((UW)start);
     for (counter = 0; counter < (size >> PAGE_SHIFT); counter++) {

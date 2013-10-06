@@ -52,7 +52,6 @@ extern void context_set_kernel_sp(const VP addr);
 extern void context_switch_page_table(thread_t *next);
 
 /* virtual_mem.c */
-extern ADDR_MAP dup_vmap_table(ADDR_MAP dest);
 extern ER region_create(ID id, ID rid, VP start, W min, W max, UW perm);
 extern ER region_destroy(ID id, ID rid);
 extern ER region_duplicate(ID src, ID dst);
@@ -61,7 +60,6 @@ extern ER region_get_status(ID id, ID rid, VP stat);
 extern ER region_map(ID id, VP start, UW size, W accmode);
 extern ER region_put(ID id, VP start, UW size, VP buf);
 extern ER region_unmap(ID id, VP start, UW size);
-extern ER release_vmap(ADDR_MAP dest);
 extern UW vtor(ID tskid, UW addr);
 
 /* fault.c */
@@ -111,6 +109,9 @@ extern void panic(char *msg);
 extern void *getPageAddress(const PTE *dir, const void *addr);
 extern ER vmemcpy(const thread_t *th, const void *to, const void *from,
 		const size_t bytes);
+extern T_REGION *find_region(const thread_t *th, const void *addr);
+extern PTE *copy_kernel_page_table(const PTE *src);
+extern void release_user_pages(PTE *directory);
 
 /* abort.s */
 extern W handle0(void);
