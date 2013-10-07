@@ -162,7 +162,6 @@ Version 2, June 1991
 
 static BOOL vmap(thread_t * task, UW vpage, UW ppage, W accmode);
 static ER vunmap(thread_t * task, UW vpage);
-static I386_PAGE_ENTRY *alloc_pagetable(W);
 
 
 
@@ -193,7 +192,6 @@ static BOOL vmap(thread_t * task, UW vpage, UW ppage, W accmode)
 #ifdef DEBUG
     printk("[%d] vmap: 0x%x -> 0x%x\n", task->tskid, ppage, vpage);
 #endif				/* DEBUG */
-/*  task->context.cr3 &= 0x7fffffff; */
     dirent = (I386_DIRECTORY_ENTRY *) (task->mpu.context.cr3);
     dirent = (I386_DIRECTORY_ENTRY*)(kern_p2v(dirent));
     dirindex = vpage & DIR_MASK;
@@ -207,7 +205,7 @@ static BOOL vmap(thread_t * task, UW vpage, UW ppage, W accmode)
 	/* ページディレクトリのエントリは空だった。
 	 * 新しくページディレクトリのエントリを埋める。
 	 */
-	pageent = (I386_PAGE_ENTRY *) alloc_pagetable(accmode);
+	pageent = (I386_PAGE_ENTRY *) palloc();
 	if (pageent == NULL) {
 	    return (FALSE);
 	}
@@ -215,7 +213,6 @@ static BOOL vmap(thread_t * task, UW vpage, UW ppage, W accmode)
 	printk("dir alloc(newp). frame = 0x%x ",
 	       ((UW) pageent & 0x0fffffff) >> PAGE_SHIFT);
 #endif				/* DEBUG */
-	/*      dirent[dirindex].frame_addr = ((UW)pageent & 0x0fffffff) >> PAGE_SHIFT; */
 	dp = &dirent[dirindex];
 	dp->frame_addr = (UW)kern_v2p(pageent) >> PAGE_SHIFT;
 	dp->present = 1;
@@ -276,20 +273,12 @@ static ER vunmap(thread_t * task, UW vpage)
     UW dirindex;
     UW pageindex;
     UW ppage;
-/*    ER errno;*/
 
     dirent = (I386_DIRECTORY_ENTRY *) (task->mpu.context.cr3);
     dirent = (I386_DIRECTORY_ENTRY*)(kern_p2v(dirent));
     dirindex = vpage & DIR_MASK;
     dirindex = dirindex >> DIR_SHIFT;
     pageindex = (vpage & PAGE_MASK) >> PAGE_SHIFT;
-
-/*
-  dirindex = vpage / (PAGE_SIZE * PAGE_SIZE);
-*/
-/*
-  pageindex = (vpage % (PAGE_SIZE * PAGE_SIZE * PAGE_SIZE));
-*/
 
 #ifdef DEBUG
     printk("dirindex = %d, pageindex = %d\n", dirindex, pageindex);
@@ -309,53 +298,12 @@ static ER vunmap(thread_t * task, UW vpage)
 
     ppage = (UW)kern_v2p((void*)(pageent[pageindex].frame_addr << PAGE_SHIFT));
     /*TODO handle error */
-    /*
-    errno = pfree((VP) ppage);
-    if (errno)
-	return (FALSE);
-    */
     pfree((VP) ppage);
     pageent[pageindex].present = 0;
     context_reset_page_cache(task, (VP)vpage);
     return (TRUE);
 }
 
-
-
-/*************************************************************************
- * alloc_pagetable --- ページテーブルエントリの作成
- *
- * 引数：
- *
- * 返値：
- *
- * 処理：
- *
- */
-static I386_PAGE_ENTRY *alloc_pagetable(W accmode)
-{
-    I386_PAGE_ENTRY *newp, *pp;
-    W i;
-
-    newp = (I386_PAGE_ENTRY *) palloc();
-    if (newp == NULL) {
-	return (NULL);
-    }
-    memset(newp, 0, PAGE_SIZE);
-    for (i = 0, pp = newp; i < PAGE_SIZE / sizeof(I386_PAGE_ENTRY);
-	 ++i, ++pp) {
-	pp->present = 0;
-	pp->read_write = 1;
-	pp->u_and_s = ((accmode & ACC_USER) ? 1 : 0);
-	pp->zero2 = 0;
-	pp->access = 0;
-	pp->dirty = 0;
-	pp->user = 0;
-	pp->zero1 = 0;
-	pp->frame_addr = 0;
-    }
-    return (newp);
-}
 
 
 /* vtor - 仮想メモリアドレスをカーネルから直接アクセス可能なアドレスに変換する
