@@ -45,6 +45,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #define ATTR_INITIAL (PAGE_WRITABLE | PAGE_PRESENT)
 #define ATTR_BIG (PAGE_BIG | PAGE_WRITABLE | PAGE_PRESENT)
+#define ATTR_USER (PAGE_USER | PAGE_WRITABLE | PAGE_PRESENT)
 
 // MIN_KERNEL should be a multiple of 4 MB.
 #define OFFSET_KERN (MIN_KERNEL / PAGE_SIZE / PTE_PER_PAGE)

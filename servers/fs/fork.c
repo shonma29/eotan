@@ -75,6 +75,7 @@ Version 2, June 1991
 #include "fs.h"
 #include "../../kernel/mpu/mpu.h"
 
+static W proc_duplicate(struct proc * source, struct proc * destination);
 
 
 /* fork - プロセスの fork を行う
@@ -162,7 +163,7 @@ W proc_fork(struct proc *parent, struct proc *child, ID main_task, ID signal_tas
  *	(タスクの実行開始アドレスは、Lowlib 中の fork 用関数に設定されている)
  *
  */
-W proc_duplicate(struct proc * source, struct proc * destination)
+static W proc_duplicate(struct proc * source, struct proc * destination)
 {
     W error_no;
     W index;

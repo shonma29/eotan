@@ -606,7 +606,11 @@ ER region_duplicate(ID src, ID dst)
     dstp->regions[TEXT_REGION] = taskp->regions[TEXT_REGION];
     dstp->regions[DATA_REGION] = taskp->regions[DATA_REGION];
     dstp->regions[HEAP_REGION] = taskp->regions[HEAP_REGION];
-    return (E_OK);
+    return copy_user_pages(MPU_PAGE_TABLE(dstp), MPU_PAGE_TABLE(taskp),
+	    (pageRoundUp(dstp->regions[TEXT_REGION].min_size) >> BITS_OFFSET)
+	    + (pageRoundUp(dstp->regions[DATA_REGION].min_size) >> BITS_OFFSET)
+	    + (pageRoundUp(dstp->regions[HEAP_REGION].min_size) >> BITS_OFFSET)
+    );
 }
 
 /*

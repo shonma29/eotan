@@ -112,6 +112,7 @@ extern ER vmemcpy(const thread_t *th, const void *to, const void *from,
 extern T_REGION *find_region(const thread_t *th, const void *addr);
 extern PTE *copy_kernel_page_table(const PTE *src);
 extern void release_user_pages(PTE *directory);
+extern ER copy_user_pages(PTE *dest, const PTE *src, size_t cnt);
 
 /* abort.s */
 extern W handle0(void);

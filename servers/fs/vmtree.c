@@ -221,11 +221,8 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
     W page_index;
     struct vm_directory *dirp, *dest_dirp;
     struct vm_page *pagep, *dest_pagep;
-    ER error_no;
     struct vm_tree *source;
     struct vm_tree *destination;
-    static B page_buf[PAGE_SIZE];
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     source = source_proc->vm_tree;
     destination = dest_proc->vm_tree;
@@ -327,16 +324,6 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 			dest_pagep->addr =
 			    (dir_index * MAX_PAGE_ENTRY * PAGE_SIZE) +
 			    (page_index << PAGE_SHIFT);
-			error_no =
-			    kcall->region_map(dest_proc->proc_maintask,
-				     (VP) dest_pagep->addr, PAGE_SIZE,
-				     ACC_USER);
-			if (error_no) {
-#ifdef VMDEBUG
-			    printk("cannot vmap_reg: errno = %d\n", error_no);
-#endif
-			    return (error_no);
-			}
 		    } else {
 			/* すでに受けがわページが使用されている
 			 */
@@ -344,22 +331,6 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 			printk("duplicate_tree: non empty page\n");
 #endif
 			return (EINVAL);
-		    }
-
-		    /* 送り側プロセスのメモリ中の情報を取り出す
-		     */
-		    error_no = kcall->region_get(source_proc->proc_maintask,
-				     (VP) dest_pagep->addr,
-				     PAGE_SIZE, (VP) page_buf);
-		    if (error_no) {
-#ifdef VMDEBUG
-			printk("vget_reg: errno = %d\n", error_no);
-			printk
-			    ("          task = %d, addr = %x, buf = %x\n",
-			     source_proc->proc_maintask, dest_pagep->addr,
-			     (VP) page_buf);
-#endif
-			return (error_no);
 		    }
 #ifdef notdef
 		    if (
@@ -386,18 +357,6 @@ W duplicate_tree(struct proc * source_proc, struct proc * dest_proc)
 			}
 		    }
 #endif
-
-		    /* 受け側プロセスのメモリに取り出した情報を送る
-		     */
-		    error_no = kcall->region_put(dest_proc->proc_maintask,
-				     (VP) dest_pagep->addr,
-				     PAGE_SIZE, (VP) page_buf);
-		    if (error_no) {
-#ifdef VMDEBUG
-			printk("vput_reg: errno = %d\n", error_no);
-#endif
-			return (error_no);
-		    }
 		}
 	    }			/* ディレクトリの各ページのチェックのループの最後 */
 	}
