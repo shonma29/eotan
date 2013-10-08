@@ -143,10 +143,6 @@ static W create_init(ID process_id, ID thread_id)
 		return err;
 	}
 
-	err = create_vm_tree(p);
-	if (err)
-		return err;
-
 	set_local(process_id, thread_id);
 
 	return EOK;

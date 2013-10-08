@@ -59,13 +59,3 @@ W alloc_memory(W procid, UW start, UW size, UW access)
 
     return (EOK);
 }
-
-
-/* destroy_proc_memory - プロセスのもつすべてのメモリを解放する
- *
- */
-void destroy_proc_memory(struct proc * procp)
-{
-    destroy_vmtree(procp->vm_tree);
-    procp->vm_tree = NULL;
-}

@@ -41,53 +41,12 @@ Version 2, June 1991
 
 #include <vm.h>
 
-/* 仮想メモリ - 実メモリの対を管理するツリー
- *
- * 仮想メモリのツリーは、次のような形となる:
- *
- *	vm_tree	 - vm_directory[0] - vm_page[0]
- *		   		     vm_page[1]
- *		   		     vm_page[2]
- *		   		     vm_page[3]
- *					.
- *					.
- *
- *		 + vm_directory[1] - vm_page[0]
- *					.
- *					.
- *					.
- *				
- */
-struct vm_tree
-{
-  struct vm_directory		*directory_table[MAX_DIR_ENTRY];
-};
-
-
-struct vm_directory
-{
-  struct vm_page		*page_table[MAX_PAGE_ENTRY];
-};
-
-
-struct vm_page
-{
-  UW				addr;
-};
-
-
 /* memory.c */
 extern W			alloc_memory (W procid, UW start, UW size, UW access);
-extern void			destroy_proc_memory (struct proc *procp);
 
 /* vmtree.c */
-extern W			create_vm_tree (struct proc *proc);
 extern W			grow_vm (struct proc *procp, UW addr, UW access);
 extern W			shorten_vm (struct proc *procp, UW addr);
-extern W			duplicate_tree (struct proc *source_proc, struct proc *dest_proc);
-extern struct vm_page		*alloc_vm_page (struct vm_tree *treep, struct vm_directory *dirp, UW addr, UW access);
-extern struct vm_directory	*alloc_vm_directory (struct vm_tree *treep, UW addr);
-extern void			destroy_vmtree (struct vm_tree *treep);
 
 /* init.c */
 extern W exec_init(ID process_id, char *pathname);

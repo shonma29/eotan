@@ -195,9 +195,6 @@ psc_exit_f (RDVNO rdvno, struct posix_request *req)
     /* 子プロセスが ZOMBIE で INIT が wait していれば クリアする? */
   }
 
-  /* POSIX の vmtree のみを開放．仮想メモリーは exd_tsk で開放 */
-  destroy_proc_memory (myprocp);
-
   tskid = req->caller,
   kcall->thread_terminate(tskid);
   kcall->thread_destroy(tskid);
@@ -321,9 +318,6 @@ W psc_kill_f(RDVNO rdvno, struct posix_request *req)
 
 	/* 子プロセスが ZOMBIE で INIT が wait していれば クリアする? */
     }
-
-    /* POSIX の vmtree のみを開放．仮想メモリーは del_tsk で開放 */
-    destroy_proc_memory(myprocp);
 
     /* メインタスクの強制終了 */
     kcall->thread_terminate(myprocp->proc_maintask);

@@ -138,12 +138,6 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 	fs_close_file(ip);
 	return (error_no);
     }
-#ifdef notdef
-    dbg_printf("[PM] destroy\n");	/* */
-#endif
-    /* 呼び出し元プロセスのすべての(仮想)メモリを解放する
-     */
-    destroy_proc_memory(procp);
 
 #ifdef notdef
     dbg_printf("[PM] vdel_reg\n");	/* */
@@ -152,17 +146,11 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     main_task = procp->proc_maintask;
     kcall->region_destroy(main_task);
 
-#ifdef notdef
-    dbg_printf("[PM] setup vm proc\n");
-#endif
-    /* 仮想空間の生成 */
-    error_no = create_vm_tree(procp);
-
+    /* テキスト領域をメモリに入れる
+     */
 #ifdef notdef
     dbg_printf("[PM] load text\n");
 #endif
-    /* テキスト領域をメモリに入れる
-     */
     error_no = load_text(procid, ip, &text, req->caller);
     if (error_no) {
 	fs_close_file(ip);
