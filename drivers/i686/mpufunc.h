@@ -53,7 +53,7 @@ extern void context_switch_page_table(thread_t *next);
 
 /* virtual_mem.c */
 extern ER region_create(ID id, ID rid, VP start, W min, W max, UW perm);
-extern ER region_destroy(ID id, ID rid);
+extern ER region_destroy(ID id);
 extern ER region_duplicate(ID src, ID dst);
 extern ER region_get(ID id, VP start, UW size, VP buf);
 extern ER region_get_status(ID id, ID rid, VP stat);

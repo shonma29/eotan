@@ -46,7 +46,7 @@ typedef struct {
 	void *(*palloc)(void);
 	void (*pfree)(void *addr);
 	ER (*region_create)(ID id, ID rid, VP start, W min, W max, UW perm);
-	ER (*region_destroy)(ID id, ID rid);
+	ER (*region_destroy)(ID id);
 	ER (*region_map)(ID id, VP start, UW size, W accmode);
 	ER (*region_unmap)(ID id, VP start, UW size);
 	ER (*region_duplicate)(ID src, ID dst);

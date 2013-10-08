@@ -78,7 +78,7 @@ struct vm_page
 
 /* memory.c */
 extern W			alloc_memory (W procid, UW start, UW size, UW access);
-extern W			destroy_proc_memory (struct proc *procp, W unmap);
+extern void			destroy_proc_memory (struct proc *procp);
 
 /* vmtree.c */
 extern W			create_vm_tree (struct proc *proc);
@@ -87,7 +87,7 @@ extern W			shorten_vm (struct proc *procp, UW addr);
 extern W			duplicate_tree (struct proc *source_proc, struct proc *dest_proc);
 extern struct vm_page		*alloc_vm_page (struct vm_tree *treep, struct vm_directory *dirp, UW addr, UW access);
 extern struct vm_directory	*alloc_vm_directory (struct vm_tree *treep, UW addr);
-extern W			destroy_vmtree (struct proc *procp, struct vm_tree *treep, W unmap);
+extern void			destroy_vmtree (struct vm_tree *treep);
 
 /* init.c */
 extern W exec_init(ID process_id, char *pathname);

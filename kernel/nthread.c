@@ -112,7 +112,6 @@ ER_ID idle_initialize(void)
 
 static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid)
 {
-	W i;
 	void *p = palloc();
 
 	if (!p)
@@ -134,14 +133,6 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid)
 			(VP)PAGE_DIR_ADDR
 			//TODO null check
 			:kern_v2p(copy_kernel_page_table((PTE*)PAGE_DIR_ADDR)));
-
-	for (i = 0; i < MAX_REGION; i++)
-		th->regions[i].permission = 0;
-
-	th->regions[0].start_addr = (VP)MIN_KERNEL;
-	th->regions[0].min_size = KERNEL_SIZE;
-	th->regions[0].max_size = KERNEL_SIZE;
-	th->regions[0].permission = VM_READ | VM_WRITE;
 
 	return E_OK;
 }

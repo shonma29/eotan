@@ -106,7 +106,7 @@ W proc_fork(struct proc *parent, struct proc *child, ID main_task, ID signal_tas
 #endif
     error_no = proc_duplicate(parent, child);
     if (error_no) {
-	destroy_proc_memory(child, 0);
+	destroy_proc_memory(child);
 	return (error_no);
     }
 
@@ -115,21 +115,21 @@ W proc_fork(struct proc *parent, struct proc *child, ID main_task, ID signal_tas
     error_no = kcall->region_map(main_task, (thread_local_t*)LOCAL_ADDR, sizeof(thread_local_t),
     		ACC_USER);
     if (error_no) {
-	destroy_proc_memory(child, 0);
+	destroy_proc_memory(child);
 	return error_no;
     }
 
     error_no = kcall->region_get(main_task, (thread_local_t*)LOCAL_ADDR,
 		     sizeof(thread_local_t), &local_data);
     if (error_no) {
-	destroy_proc_memory(child, 0);
+	destroy_proc_memory(child);
 	return error_no;
     }
 
     error_no = kcall->region_get(parent->proc_maintask, (thread_local_t*)LOCAL_ADDR,
 		     sizeof(thread_local_t), &local_par);
     if (error_no) {
-	destroy_proc_memory(child, 0);
+	destroy_proc_memory(child);
 	return error_no;
     }
 
@@ -144,7 +144,7 @@ W proc_fork(struct proc *parent, struct proc *child, ID main_task, ID signal_tas
     error_no = kcall->region_put(main_task, (thread_local_t*)LOCAL_ADDR,
 		     sizeof(thread_local_t), &local_data);
     if (error_no) {
-	destroy_proc_memory(child, 0);
+	destroy_proc_memory(child);
 	return error_no;
     }
 

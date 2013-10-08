@@ -420,12 +420,13 @@ ER region_create(ID id,		/* task ID */
  * システムコール内で判断する。
  *
  */
-ER region_destroy(ID id, ID rid)
+ER region_destroy(ID id)
 {
     thread_t *taskp;
+    ID rid;
 
 #ifdef DEBUG
-    printk("region_destroy %d %d\n", id, rid);
+    printk("region_destroy %d\n", id);
 #endif
     taskp = get_thread_ptr(id);
     if (taskp == NULL) {
@@ -435,9 +436,12 @@ ER region_destroy(ID id, ID rid)
 	 */
 	return (E_OBJ);
     }
-    if (rid < 0 || rid >= MAX_REGION)
-	return (E_PAR);
-    taskp->regions[rid].permission = 0;
+    for (rid = TEXT_REGION; rid <= HEAP_REGION; rid++) {
+    	region_unmap(id, taskp->regions[rid].start_addr,
+		taskp->regions[rid].min_size);
+	taskp->regions[rid].permission = 0;
+    }
+
     return (E_OK);
 }
 

@@ -143,19 +143,14 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 #endif
     /* 呼び出し元プロセスのすべての(仮想)メモリを解放する
      */
-    error_no = destroy_proc_memory(procp, 1);
-    if (error_no) {
-	fs_close_file(ip);
-	return (error_no);
-    }
+    destroy_proc_memory(procp);
+
 #ifdef notdef
     dbg_printf("[PM] vdel_reg\n");	/* */
 #endif
     /* region の解放 */
     main_task = procp->proc_maintask;
-    kcall->region_destroy(main_task, TEXT_REGION);	/* text */
-    kcall->region_destroy(main_task, DATA_REGION);	/* data+bss */
-    kcall->region_destroy(main_task, HEAP_REGION);	/* heap */
+    kcall->region_destroy(main_task);
 
 #ifdef notdef
     dbg_printf("[PM] setup vm proc\n");

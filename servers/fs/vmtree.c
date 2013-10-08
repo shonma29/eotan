@@ -450,14 +450,12 @@ struct vm_directory *alloc_vm_directory(struct vm_tree *treep, UW addr)
  *
  *
  */
-W destroy_vmtree(struct proc * procp, struct vm_tree * treep, W unmap)
+void destroy_vmtree(struct vm_tree * treep)
 {
     W dir_index;
     W page_index;
     struct vm_directory *dirp;
     struct vm_page *pagep;
-    ER error_no;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     for (dir_index = 0; dir_index < MAX_DIR_ENTRY; dir_index++) {
 	dirp = treep->directory_table[dir_index];
@@ -465,14 +463,6 @@ W destroy_vmtree(struct proc * procp, struct vm_tree * treep, W unmap)
 	    for (page_index = 0; page_index < MAX_PAGE_ENTRY; page_index++) {
 		pagep = dirp->page_table[page_index];
 		if (pagep) {
-		    /* ページの情報をパージする */
-		    if (unmap) {
-			error_no = kcall->region_unmap(procp->proc_maintask,
-					 (VP) (pagep->addr), PAGE_SIZE);
-			if (error_no) {
-			    return (error_no);
-			}
-		    }
 		    /* ページを開放 */
 		    free(pagep);
 		}
@@ -484,6 +474,4 @@ W destroy_vmtree(struct proc * procp, struct vm_tree * treep, W unmap)
 
     /*  vmtree の root の開放 */
     free(treep);
-
-    return (EOK);
 }

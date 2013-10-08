@@ -196,17 +196,9 @@ psc_exit_f (RDVNO rdvno, struct posix_request *req)
   }
 
   /* POSIX の vmtree のみを開放．仮想メモリーは exd_tsk で開放 */
-  destroy_proc_memory (myprocp, 0);
+  destroy_proc_memory (myprocp);
 
-  /* region の開放, 実際には必要無いだろう */
   tskid = req->caller,
-  kcall->region_destroy(tskid, TEXT_REGION); /* text */
-  kcall->region_destroy(tskid, DATA_REGION); /* data+bss */
-  kcall->region_destroy(tskid, HEAP_REGION); /* heap */
-#ifdef notdef
-  kcall->region_destroy(tskid, STACK_REGION); /* stack */
-#endif
-
   kcall->thread_terminate(tskid);
   kcall->thread_destroy(tskid);
 
@@ -331,7 +323,7 @@ W psc_kill_f(RDVNO rdvno, struct posix_request *req)
     }
 
     /* POSIX の vmtree のみを開放．仮想メモリーは del_tsk で開放 */
-    destroy_proc_memory(myprocp, 0);
+    destroy_proc_memory(myprocp);
 
     /* メインタスクの強制終了 */
     kcall->thread_terminate(myprocp->proc_maintask);
