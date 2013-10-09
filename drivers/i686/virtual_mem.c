@@ -160,6 +160,38 @@ Version 2, June 1991
 #include <thread.h>
 #include "mpufunc.h"
 
+/***********************************************************************
+ *	directory table entry.
+ */
+typedef struct
+{
+  UW	present:1;
+  UW	read_write:1;
+  UW	u_and_s:1;
+  UW	zero2:2;
+  UW	access:1;		/* アクセスチェック用ビット */
+  UW	dirty:1;		/* 書き込みチェック用ビット */
+  UW	zero1:2;
+  UW	user:3;
+  UW	frame_addr:20;
+} I386_DIRECTORY_ENTRY;
+
+/***********************************************************************
+ *	page table entry.
+ */
+typedef struct
+{
+  UW	present:1;
+  UW	read_write:1;
+  UW	u_and_s:1;
+  UW	zero2:2;
+  UW	access:1;
+  UW	dirty:1;
+  UW	zero1:2;
+  UW	user:3;
+  UW	frame_addr:20;
+} I386_PAGE_ENTRY;
+
 static BOOL vmap(thread_t * task, UW vpage, UW ppage, W accmode);
 static ER vunmap(thread_t * task, UW vpage);
 
