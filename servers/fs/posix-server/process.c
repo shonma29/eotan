@@ -18,6 +18,7 @@ Version 2, June 1991
 #include <core.h>
 #include <kcall.h>
 #include <setting.h>
+#include <vm.h>
 #include <boot/init.h>
 #include <mpu/config.h>
 #include <mpu/memory.h>

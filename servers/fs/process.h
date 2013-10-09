@@ -181,4 +181,14 @@ extern W		proc_fork (struct proc *parent, struct proc *child, ID main_task, ID s
 /* filesystem.c */
 extern W		open_special_dev(struct proc *procp);
 
+/* memory.c */
+extern W			alloc_memory (W procid, UW start, UW size, UW access);
+
+/* vmtree.c */
+extern W			grow_vm (struct proc *procp, UW addr, UW access);
+extern W			shorten_vm (struct proc *procp, UW addr);
+
+/* init.c */
+extern W exec_init(ID process_id, char *pathname);
+
 #endif /* __FS_PROCESS_H__ */

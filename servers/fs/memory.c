@@ -29,7 +29,9 @@ Version 2, June 1991
  *
  */
 
+#include <kcall.h>
 #include <mpu/config.h>
+#include <mpu/mpu.h>
 #include "fs.h"
 
 
@@ -59,3 +61,39 @@ W alloc_memory(W procid, UW start, UW size, UW access)
 
     return (EOK);
 }
+
+/* grow_vm - 新しく仮想ページに物理メモリを割り当てる
+ *
+ */
+W grow_vm(struct proc * procp, UW addr, UW access)
+{
+    ER error_no;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
+
+    /* 仮想メモリ領域に物理メモリを割り付ける
+     */
+    error_no = kcall->region_map(procp->proc_maintask, (VP) addr, PAGE_SIZE, ACC_USER);
+    if (error_no) {
+	return (EPERM);
+    }
+
+    return (EOK);
+}
+
+
+/* shorten_vm - 仮想ページを解放する
+ *
+ */
+W shorten_vm(struct proc * procp, UW addr)
+{
+    ER error_no;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
+
+    error_no = kcall->region_unmap(procp->proc_maintask, (VP) addr, PAGE_SIZE);
+    if (error_no) {
+	return (EINVAL);
+    }
+
+    return (EOK);
+}
+

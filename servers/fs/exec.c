@@ -58,6 +58,7 @@ Version 2, June 1991
 #include <fcntl.h>
 #include <kcall.h>
 #include <string.h>
+#include <vm.h>
 #include <boot/init.h>
 #include <mpu/config.h>
 #include <mpu/memory.h>
