@@ -97,7 +97,7 @@ static VP get_system_memory(UW size);
  */
 ER init_malloc(UW free_memory_erea, UW max)
 {
-    ID mytid;
+    ER_ID mytid;
     struct alloc_entry_t *p;
     ER err;
     UW pages = (max + PAGE_SIZE - 1) / PAGE_SIZE;
@@ -106,9 +106,9 @@ ER init_malloc(UW free_memory_erea, UW max)
     last_page = free_memory_erea;
     start_page = last_page = pageRoundUp(last_page);
 
-    err = kcall->thread_get_id(&mytid);
-    if (err != E_OK) {
-	return (err);
+    mytid = kcall->thread_get_id();
+    if (mytid < 0) {
+	return (mytid);
     }
     err = kcall->region_create(mytid, HEAP_REGION, (VP) last_page, pages, pages,
 		   VM_READ | VM_READ | VM_USER);
@@ -331,12 +331,13 @@ void free(VP addr)
 
 static VP get_system_memory(UW size)
 {
-    ID mytid;
+    ER_ID mytid;
     VP rp;
     ER errno;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    if (kcall->thread_get_id(&mytid) != E_OK) {
+    mytid = kcall->thread_get_id();
+    if (mytid < 0) {
 	return (NULL);
     }
 #ifdef notdef

@@ -27,6 +27,9 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/list.h>
 #include <set/heap.h>
 #include "setting.h"
+#include "thread.h"
+
+thread_t *running;
 
 static list_t ready_task[MAX_PRIORITY + 1];
 static int buf[MAX_PRIORITY + 1];

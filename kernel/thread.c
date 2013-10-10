@@ -1,243 +1,323 @@
 /*
+This is free and unencumbered software released into the public domain.
 
-B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
 
-GNU GENERAL PUBLIC LICENSE
-Version 2, June 1991
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
 
-(C) B-Free Project.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
 
-(C) 2001-2002, Tomohide Naniwa
-
+For more information, please refer to <http://unlicense.org/>
 */
-/* task.c $Revision: 1.16 $
- *
- * タスク管理を行う。
- *
- *
- * 外部関数リスト
- *
- *	init_task ()		--- タスク管理データの初期化
- *	init_task1 ()		--- システム管理タスクの生成と起動
- *	cre_tsk ()		--- タスクの生成
- *	new_task ()		--- 任意のタスク ID でのタスク生成
- *
- * 大域変数
- *	run_task		--- 現在走行中のタスク
- *
- * 内部関数 (static)
- *
- *	make_task_context ()	--- タスク情報を作成する。
- *
- * 内部変数 (static)
- *
- *	task
- *	task_buffer
- *	ready_task
- *	dispatch_flag		ディスパッチするかどうかのフラグ
- */
-/*
- * $Log: task.c,v $
- * Revision 1.16  2000/04/23 02:18:41  naniwa
- * fix rel_wai
- *
- * Revision 1.15  2000/04/03 14:34:47  naniwa
- * to call timer handler in task
- *
- * Revision 1.14  2000/02/27 15:30:50  naniwa
- * to work as multi task OS
- *
- * Revision 1.13  2000/02/06 09:10:56  naniwa
- * minor fix
- *
- * Revision 1.12  2000/01/26 08:29:14  naniwa
- * minor fix
- *
- * Revision 1.11  1999/11/19 10:13:06  naniwa
- * fixed usage of add/del_tcb_list
- *
- * Revision 1.10  1999/11/10 10:29:08  naniwa
- * to support execve, etc
- *
- * Revision 1.9  1999/07/30 08:18:32  naniwa
- * add vcpy_stk()
- *
- * Revision 1.8  1999/07/09 08:19:50  naniwa
- * supported del_tsk
- *
- * Revision 1.7  1999/04/12 13:29:27  monaka
- * printf() is renamed to printk().
- *
- * Revision 1.6  1999/03/16 13:02:54  monaka
- * Modifies for source cleaning. Most of these are for avoid gcc's -Wall message.
- *
- * Revision 1.5  1998/02/24 14:08:26  night
- * sta_tsk() の変更。
- * sta_tsk() の第2引数 stacd が 0 よりも大きい時には、
- * スタックのトップアドレスを stacd の値分小さくする
- * するようにした。
- *
- * Revision 1.4  1997/10/11 16:21:41  night
- * こまごました修正
- *
- * Revision 1.3  1997/07/02 13:25:05  night
- * sta_tsk 実行時のデバッグ文を削除
- *
- * Revision 1.2  1997/03/25 13:30:47  night
- * 関数のプロトタイプ宣言の追加および引数の不整合の修正
- *
- * Revision 1.1  1996/07/22  13:39:15  night
- * IBM PC 版 ITRON の最初の登録
- *
- * Revision 1.13  1995/10/01  12:58:37  night
- * 関数 wup_tsk() の中で wakeup するタスクの情報のアドレスのチェックを追
- * 加。
- *
- * Revision 1.12  1995/09/21  15:51:12  night
- * ソースファイルの先頭に Copyright notice 情報を追加。
- *
- * Revision 1.11  1995/09/17  16:57:07  night
- * task_switch() 呼び出し時の処理の変更。
- * カレントタスクより優先順位が高いタスクがいない場合タスクスイッチを行わ
- * なかったが、優先順位の低いタスクへも切りかえるように変更した。
- *
- * Revision 1.10  1995/09/14  04:32:05  night
- * タスク状態を表示する関数 (print_list()) の変更。
- * 表示内容にタスクレベルを追加。
- *
- * Revision 1.9  1995/08/26  02:15:23  night
- * RCS の Log マクロの追加。
- *
- *
- */
-
 #include <core.h>
 #include <string.h>
 #include <vm.h>
 #include <mpu/config.h>
-#include <mpu/memory.h>
+#include <set/list.h>
+#include <set/tree.h>
 #include "func.h"
 #include "ready.h"
 #include "setting.h"
 #include "sync.h"
 #include "thread.h"
-#include "mpu/interrupt.h"
 #include "mpu/mpu.h"
 #include "mpu/mpufunc.h"
 
-/***************************************************************************
- *	タスク管理用の変数
- *
- *
- */
+static slab_t thread_slab;
+static tree_t thread_tree;
+static int thread_hand;
 
-thread_t *run_task;		/* 現在、走行中のタスク */
+static inline thread_t *getThreadParent(const node_t *p);
+static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid);
+static void release_resources(thread_t *th);
 
-static inline thread_t *getTaskParent(const list_t *p);
-
-static inline thread_t *getTaskParent(const list_t *p) {
-	return (thread_t*)((ptr_t)p - offsetof(thread_t, queue));
+static inline thread_t *getThreadParent(const node_t *p) {
+	return (thread_t*)((ptr_t)p - offsetof(thread_t, node));
 }
 
-/* thread_switch --- タスク切り換え
- *
- * 返値：	エラー番号
- *
- * 処理：	ready_task の中で、一番優先順位の高いタスクをカレント
- *		タスクにする。
- *		実際のタスク切り換えは、resume () によっておこなう
- *		そのため、この関数の中での処理は、run_tsk 変数と
- *		ready_task[] の更新を行うのが主となる。
- *		
- */
-ER thread_switch(void)
+ER thread_initialize(void)
 {
-    thread_t *next;
-    list_t *q;
+	thread_slab.unit_size = sizeof(thread_t);
+	thread_slab.block_size = PAGE_SIZE;
+	thread_slab.min_block = 1;
+	thread_slab.max_block = tree_max_block(65536, PAGE_SIZE,
+			sizeof(thread_t));
+	thread_slab.palloc = palloc;
+	thread_slab.pfree = pfree;
+	slab_create(&thread_slab);
 
-    enter_critical();
-#ifdef TSKSW_DEBUG
-    printk("thread_switch(): start\n");
-#endif
+	tree_create(&thread_tree, &thread_slab);
+	thread_hand = MIN_AUTO_ID - 1;
 
-    if (on_interrupt) {
-	delayed_dispatch = TRUE;
-	leave_critical();
-	return (E_OK);
-    }
+	ready_initialize();
 
-    if (!dispatchable) {
-	leave_critical();
-	return (E_CTX);
-    }
-
-    q = ready_dequeue();
-
-    if (!q) {
-	printk("thread_switch(): error = E_NOEXS\n");	/* */
-	leave_critical();
-	return (E_NOEXS);
-    }
-
-    next = getTaskParent(q);
-
-    /* 選択したタスクが、現タスクならば、何もしないで戻る */
-    if (run_task == next) {
-	leave_critical();
-	return (E_OK);
-    }
-
-    else if (!list_is_empty(&(run_task->queue))) {
-	run_task->status = TTS_RDY;
-    }
-
-    /* 選択したタスクを run_task にする */
-#ifdef TSKSW_DEBUG
-    printk("thread_switch: current(%d) -> next(%d)\n",
-	    run_task->id, next->id);
-#endif
-    if (next->status != TTS_RDY) {
-	printk("thread_switch: panic next(%d) stat=%d, eip=%x\n",
-		thread_id(next), next->status, next->attr.entry);
-	panic("scheduler");
-    }
-
-    if (run_task->mpu.use_fpu)
-	fpu_save(run_task);
-
-    context_prev_sp = &(MPU_KERNEL_SP(run_task));
-    context_next_sp = &(MPU_KERNEL_SP(next));
-    run_task = next;
-    run_task->status = TTS_RUN;
-
-    delayed_dispatch = FALSE;
-
-    context_set_kernel_sp(next->attr.kstack_tail);
-    context_switch_page_table(next);
-    context_switch();
-
-    /* 正常に終了した：次のタスクスイッチの時にここに戻る */
-    if (run_task->mpu.use_fpu)
-	fpu_restore(run_task);
-
-    return (E_OK);
+	return E_OK;
 }
 
-/*****************************************************************************
- *
- *		S Y S T E M   C A L L  
- *				  for  T A S K.
- *
- *
- */
-
-/***********************************************************************************
- * thread_get_id --- 自タスクのタスク ID 参照
- *
- *
- */
-ER thread_get_id(ID * p_tskid)
+thread_t *get_thread_ptr(ID tskid)
 {
-    *p_tskid = thread_id(run_task);
-    return (E_OK);
+	node_t *node = tree_get(&thread_tree, tskid);
+
+	return node? getThreadParent(node):NULL;
+}
+
+ER_ID idle_initialize(void)
+{
+	ER_ID result;
+
+	enter_serialize();
+	do {
+		thread_t *th;
+		node_t *node = find_empty_key(&thread_tree, &thread_hand);
+		if (!node) {
+			result = E_NOID;
+			break;
+		}
+
+		th = getThreadParent(node);
+		memset(&(th->queue), 0, sizeof(*th) - sizeof(node_t));
+
+		list_initialize(&(th->queue));
+		th->attr.domain_id = KERNEL_DOMAIN_ID;
+		th->priority = th->attr.priority = MAX_PRIORITY;
+		th->status = TTS_RUN;
+		list_initialize(&(th->wait.waiting));
+
+		set_page_table(th, (VP)PAGE_DIR_ADDR);
+
+		running = th;
+		ready_enqueue(th->priority, &(th->queue));
+		result = node->key;
+
+	} while (FALSE);
+	leave_serialize();
+
+	return result;
+}
+
+static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid)
+{
+	void *p = palloc();
+
+	if (!p)
+		return E_NOMEM;
+
+	memset(&(th->queue), 0, sizeof(*th) - sizeof(node_t));
+
+	list_initialize(&(th->queue));
+	th->attr.domain_id = pk_ctsk->domain_id;
+	th->attr.priority = pk_ctsk->itskpri;
+	th->status = TTS_DMT;
+	list_initialize(&(th->wait.waiting));
+	th->attr.arg = pk_ctsk->exinf;
+	th->attr.kstack_tail = (char*)kern_p2v(p) + pk_ctsk->stksz;
+	th->attr.entry = pk_ctsk->task;
+
+	MPU_KERNEL_SP(th) = th->attr.kstack_tail;	
+	set_page_table(th, (th->attr.domain_id == KERNEL_DOMAIN_ID)?
+			(VP)PAGE_DIR_ADDR
+			//TODO null check
+			:kern_v2p(copy_kernel_page_table((PTE*)PAGE_DIR_ADDR)));
+
+	return E_OK;
+}
+
+ER_ID thread_create_auto(T_CTSK *pk_ctsk)
+{
+	ER_ID result;
+
+	if (pk_ctsk->tskatr & TA_ASM)
+		return E_RSATR;
+
+	if (pk_ctsk->stksz != KERNEL_STACK_SIZE)
+		return E_PAR;
+
+	enter_serialize();
+	do {
+		node_t *node = find_empty_key(&thread_tree, &thread_hand);
+
+		if (!node) {
+			result = E_NOID;
+			break;
+		}
+
+		result = setup(getThreadParent(node), pk_ctsk, node->key);
+		if (result) {
+			tree_remove(&thread_tree, node->key);
+			break;
+		}
+
+		result = node->key;
+
+	} while (FALSE);
+	leave_serialize();
+
+	return result;
+}
+
+static void release_resources(thread_t *th)
+{
+	if (th->attr.domain_id != KERNEL_DOMAIN_ID)
+		release_user_pages((PTE*)MPU_PAGE_TABLE(th));
+
+	pfree((VP)kern_v2p((char*)(th->attr.kstack_tail)) - KERNEL_STACK_SIZE);
+}
+
+ER thread_destroy(ID tskid)
+{
+	ER result;
+
+	enter_serialize();
+	do {
+		thread_t *th = get_thread_ptr(tskid);
+
+		if (!th) {
+			result = E_NOEXS;
+			break;
+		}
+
+		if (th->status != TTS_DMT)
+			return E_OBJ;
+
+		tree_remove(&thread_tree, tskid);
+		release_resources(th);
+		result = E_OK;
+
+	} while (FALSE);
+	leave_serialize();
+
+	return result;
+}
+
+ER thread_start(ID tskid)
+{
+	ER result;
+
+	enter_serialize();
+	do {
+		thread_t *th;
+
+		if (tskid == TSK_SELF)
+			tskid = thread_id(running);
+
+		th = get_thread_ptr(tskid);
+		if (!th) {
+			result = E_NOEXS;
+			break;
+		}
+
+		if (th->status != TTS_DMT) {
+			result = E_QOVR;
+			break;
+		}
+
+		th->status = TTS_RDY;
+		th->time.total = 0;
+		th->time.left = TIME_QUANTUM;
+		th->priority = th->attr.priority;
+//TODO fix context_create_kernel
+//		set_arg(th, th->attr.arg);
+		create_context(th);
+
+		ready_enqueue(th->priority, &(th->queue));
+		result = E_OK;
+		leave_serialize();
+		thread_switch();
+
+	} while (FALSE);
+	leave_serialize();
+
+	return result;
+}
+
+void thread_end(void)
+{
+	enter_serialize();
+	list_remove(&(running->queue));
+	running->status = TTS_DMT;
+	leave_serialize();
+
+	thread_switch();
+}
+
+void thread_end_and_destroy(void)
+{
+	thread_t *th;
+
+	enter_serialize();
+	th = running;
+
+	tree_remove(&thread_tree, thread_id(th));
+	list_remove(&(th->queue));
+
+	if (th->attr.domain_id != KERNEL_DOMAIN_ID)
+		context_reset_page_table();
+
+	release_resources(th);
+	leave_serialize();
+
+	thread_switch();
+}
+
+ER thread_terminate(ID tskid)
+{
+	ER result;
+
+	enter_serialize();
+	do {
+		thread_t *th = get_thread_ptr(tskid);
+
+		if (!th) {
+			result = E_NOEXS;
+			break;
+		}
+
+		switch (th->status) {
+		case TTS_RUN:
+			result = E_ILUSE;
+			break;
+
+		case TTS_RDY:
+			list_remove(&(th->queue));
+			th->status = TTS_DMT;
+			result = E_OK;
+			break;
+
+		case TTS_WAI:
+		case TTS_WAS:
+			if (th->wait.type)
+				list_remove(&(th->wait.waiting));
+		case TTS_SUS:
+			th->status = TTS_DMT;
+			result = E_OK;
+			break;
+
+		default:
+			result = E_OBJ;
+			break;
+		}
+	} while (FALSE);
+	leave_serialize();
+
+	return result;
+}
+
+ER_ID thread_get_id(void)
+{
+	return thread_id(running);
 }

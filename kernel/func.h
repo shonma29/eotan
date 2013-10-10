@@ -62,12 +62,10 @@ extern ER posix_kill_proc(ID pid);
 /* tree_utils.c */
 extern node_t *find_empty_key(tree_t *tree, int *hand);
 
-/* thread.c */
-extern thread_t *run_task;
-extern ER thread_get_id(ID * p_tskid);
+/* dispatcher.c */
 extern ER thread_switch(void);
 
-/* nthread.c */
+/* thread.c */
 extern thread_t *get_thread_ptr(ID tskid);
 extern ER_ID idle_initialize(void);
 extern ER_ID thread_create_auto(T_CTSK *pk_ctsk);
@@ -77,6 +75,7 @@ extern void thread_end_and_destroy(void);
 extern ER thread_initialize(void);
 extern ER thread_start(ID tskid);
 extern ER thread_terminate(ID tskid);
+extern ER_ID thread_get_id(void);
 
 /* rendezvous.c */
 extern ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg);

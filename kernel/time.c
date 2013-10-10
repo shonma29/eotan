@@ -81,11 +81,11 @@ ER thread_delay(RELTIM dlytim)
 {
   if (dlytim < 0) return(E_PAR);
   else if (! dlytim) return(E_OK);
-  set_timer (dlytim, (void (*)(VP))dly_func, run_task);
-  run_task->wait.type = wait_dly;
-  wait(run_task);
-  unset_timer ((void (*)(VP))dly_func, run_task);
-  return (run_task->wait.result);
+  set_timer (dlytim, (void (*)(VP))dly_func, running);
+  running->wait.type = wait_dly;
+  wait(running);
+  unset_timer ((void (*)(VP))dly_func, running);
+  return (running->wait.result);
 }
 
 
@@ -101,15 +101,15 @@ ER thread_delay(RELTIM dlytim)
  */
 void intr_interval(void)
 {
-    run_task->time.total++;
+    running->time.total++;
 
     /* システム時間の増加 */
     time_tick();
 
-    if ((run_task->time.left) > 0 && (run_task->priority >= pri_user_foreground)) {
-	if (--run_task->time.left == 0) {
-	    run_task->time.left = TIME_QUANTUM;
-	    ready_rotate(run_task->priority);
+    if ((running->time.left) > 0 && (running->priority >= pri_user_foreground)) {
+	if (--running->time.left == 0) {
+	    running->time.left = TIME_QUANTUM;
+	    ready_rotate(running->priority);
 	    delayed_dispatch = TRUE;
 	}
     }

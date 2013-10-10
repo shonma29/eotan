@@ -23,6 +23,7 @@ Version 2, June 1991
 #include "interrupt.h"
 #include "thread.h"
 #include "func.h"
+#include "ready.h"
 #include "sync.h"
 #include "mpufunc.h"
 #include "gate.h"
@@ -198,14 +199,14 @@ void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
     T_REGION *regp;
 
     ++on_interrupt;
-    if (run_task->handler) {
+    if (running->handler) {
       addr = (UW)fault_get_addr();
       /* フォルトを起こしたアドレスがスタック領域にあればページを割り当てる */
-      regp = &run_task->regions[STACK_REGION];
+      regp = &running->regions[STACK_REGION];
       if (regp->permission &&
 	  (((UW) regp->start_addr <= addr) &&
 	   (addr <= ((UW) regp->start_addr + regp->max_size)))) {
-	result = region_map(thread_id(run_task), (VP) addr, PAGE_SIZE, ACC_USER);
+	result = region_map(thread_id(running), (VP) addr, PAGE_SIZE, ACC_USER);
 	if (result == E_OK) {
 	  /* ページフォルト処理に成功した */
 	  --on_interrupt;
@@ -221,7 +222,7 @@ void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
        * 実行している EIP
        * ページフォルト処理の result code
        */
-      result = (run_task->handler) ((UW)fault_get_addr(), eip);
+      result = (running->handler) ((UW)fault_get_addr(), eip);
       if (result == E_OK) {
 	/* ページフォルト処理に成功した */
 	--on_interrupt;
@@ -258,7 +259,7 @@ void protect_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
     W result; 
 
     ++on_interrupt;
-    if (run_task->handler) {
+    if (running->handler) {
 	/* ページフォルト時の処理ハンドラが指定してあった */
 	/* ページフォルトハンドラの引数は以下のとおり
 
@@ -266,7 +267,7 @@ void protect_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 	 * 実行している EIP
 	 * ページフォルト処理の result code
 	 */
-	result = (run_task->handler) ((UW)fault_get_addr(), eip);
+	result = (running->handler) ((UW)fault_get_addr(), eip);
 	if (result == E_OK) {
 	    /* ページフォルト処理に成功した */
 	    --on_interrupt;

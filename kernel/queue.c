@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/list.h>
 #include <set/tree.h>
 #include "func.h"
+#include "ready.h"
 #include "sync.h"
 #include "setting.h"
 #include "thread.h"
@@ -262,13 +263,13 @@ ER queue_send(ID dtqid, VP_INT data)
 		release(tp);
 
 	} else if (is_full(q)) {
-		list_enqueue(&(q->sender), &(run_task->wait.waiting));
-		run_task->wait.detail.que.data = data;
-		run_task->wait.type = wait_que;
+		list_enqueue(&(q->sender), &(running->wait.waiting));
+		running->wait.detail.que.data = data;
+		running->wait.type = wait_que;
 
 		leave_serialize();
-		wait(run_task);
-		return run_task->wait.result;
+		wait(running);
+		return running->wait.result;
 
 	} else
 		enqueue(q, data);
@@ -310,14 +311,14 @@ ER queue_receive(ID dtqid, VP_INT *p_data)
 		}
 	}
 
-	list_enqueue(&(q->receiver), &(run_task->wait.waiting));
-	run_task->wait.type = wait_que;
+	list_enqueue(&(q->receiver), &(running->wait.waiting));
+	running->wait.type = wait_que;
 	leave_serialize();
 
-	wait(run_task);
+	wait(running);
 
-	if (run_task->wait.result == E_OK)
-		*p_data = run_task->wait.detail.que.data;
+	if (running->wait.result == E_OK)
+		*p_data = running->wait.detail.que.data;
 
-	return run_task->wait.result;
+	return running->wait.result;
 }

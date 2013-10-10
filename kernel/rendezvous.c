@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/list.h>
 #include <set/tree.h>
 #include "func.h"
+#include "ready.h"
 #include "sync.h"
 #include "setting.h"
 #include "thread.h"
@@ -269,29 +270,29 @@ ER_UINT port_call(ID porid, VP msg, UINT cmsgsz)
 
 		rdvno = tp->wait.detail.por.rdvno;
 		node = tree_get(&rdv_tree, rdvno);
-		rdvno = get_rdvno(thread_id(run_task), rdvno);
+		rdvno = get_rdvno(thread_id(running), rdvno);
 		tp->wait.detail.por.rdvno = rdvno;
 		r = getRdvParent(node);
 
-		list_enqueue(&(r->caller), &(run_task->wait.waiting));
-		run_task->wait.detail.por.msg = msg;
-		run_task->wait.detail.por.rdvno = rdvno;
-		run_task->wait.type = wait_rdv;
+		list_enqueue(&(r->caller), &(running->wait.waiting));
+		running->wait.detail.por.msg = msg;
+		running->wait.detail.por.rdvno = rdvno;
+		running->wait.type = wait_rdv;
 		release(tp);
 	}
 	else {
-		list_enqueue(&(p->caller), &(run_task->wait.waiting));
-		run_task->wait.detail.por.size = cmsgsz;
-		run_task->wait.detail.por.msg = msg;
-		run_task->wait.type = wait_por;
+		list_enqueue(&(p->caller), &(running->wait.waiting));
+		running->wait.detail.por.size = cmsgsz;
+		running->wait.detail.por.msg = msg;
+		running->wait.type = wait_por;
 /* TODO test */
 	}
 
 	leave_serialize();
 
-	wait(run_task);
-	return (run_task->wait.result)?
-			run_task->wait.result:run_task->wait.detail.por.size;
+	wait(running);
+	return (running->wait.result)?
+			running->wait.result:running->wait.detail.por.size;
 }
 
 ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
@@ -347,21 +348,21 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 /* TODO test */
 	}
 	else {
-		list_enqueue(&(p->acceptor), &(run_task->wait.waiting));
-		run_task->wait.detail.por.msg = msg;
-		run_task->wait.detail.por.rdvno = rdvno;
-		run_task->wait.type = wait_por;
+		list_enqueue(&(p->acceptor), &(running->wait.waiting));
+		running->wait.detail.por.msg = msg;
+		running->wait.detail.por.rdvno = rdvno;
+		running->wait.type = wait_por;
 		leave_serialize();
 
-		wait(run_task);
+		wait(running);
 
 		enter_serialize();
-		if (run_task->wait.result) {
-			result = run_task->wait.result;
+		if (running->wait.result) {
+			result = running->wait.result;
 			tree_remove(&rdv_tree, rdvno);
 		} else {
-			result = run_task->wait.detail.por.size;
-			*p_rdvno = run_task->wait.detail.por.rdvno;
+			result = running->wait.detail.por.size;
+			*p_rdvno = running->wait.detail.por.rdvno;
 		}
 /* TODO test */
 	}
