@@ -238,8 +238,6 @@ ER thread_start(ID tskid)
 		th->time.total = 0;
 		th->time.left = TIME_QUANTUM;
 		th->priority = th->attr.priority;
-//TODO fix context_create_kernel
-//		set_arg(th, th->attr.arg);
 		create_context(th);
 		result = E_OK;
 

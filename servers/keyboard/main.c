@@ -102,7 +102,7 @@ static W    	control_keyboard();	/* コントロール		*/
  * この関数は、デバイスドライバ立ち上げ時に一回だけ実行する。
  *
  */
-void start()
+void start(VP_INT exinf)
 {
     /* 
      * 要求受信用のポートの作成

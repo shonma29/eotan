@@ -177,11 +177,3 @@ void set_page_table(thread_t *taskp, VP p)
 {
     taskp->mpu.context.cr3 = p;
 }
-
-void set_arg(thread_t *taskp, const UW arg)
-{
-    UW *sp = taskp->mpu.context.esp0;
-
-    *--sp = arg;
-    taskp->mpu.context.esp0 = sp;
-}

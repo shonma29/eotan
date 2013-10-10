@@ -92,7 +92,7 @@ static void doit(void)
 	}
 }
 
-void start(void)
+void start(VP_INT exinf)
 {
 	ER error = init();
 

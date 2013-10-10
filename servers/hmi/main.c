@@ -232,7 +232,7 @@ static ER_ID initialize(void)
 	return port;
 }
 
-void start(void)
+void start(VP_INT exinf)
 {
 	ER_ID port = initialize();
 

@@ -184,7 +184,7 @@ static int test_del_por(void)
 	return 1;
 }
 
-void start(void)
+void start(VP_INT exinf)
 {
 	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 

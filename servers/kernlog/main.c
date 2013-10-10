@@ -217,7 +217,7 @@ static ER_ID initialize(void)
 	return PORT_SYSLOG;
 }
 
-void start(void)
+void start(VP_INT exinf)
 {
 	ER_ID port = initialize();
 	kcall_t *kcall = (kcall_t*)KCALL_ADDR;

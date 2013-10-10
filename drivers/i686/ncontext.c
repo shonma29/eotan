@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <mpu/setting.h>
 #include <setting.h>
+#include <func.h>
 #include "gate.h"
 #include "mpufunc.h"
 #include "msr.h"
@@ -160,8 +161,12 @@ void context_reset_page_cache(const thread_t *task, const VP addr)
 void create_context(thread_t *th)
 {
 	if (th->attr.domain_id == KERNEL_DOMAIN_ID) {
+		VP_INT *sp = th->attr.kstack_tail;
+
+		*--sp = th->attr.arg;
+		*--sp = (INT)thread_end;
 		th->mpu.context.esp0 = context_create_kernel(
-				th->attr.kstack_tail,
+				sp,
 				EFLAG_IBIT | EFLAG_IOPL3,
 				th->attr.entry);
 		th->mpu.use_fpu = FALSE;

@@ -81,7 +81,7 @@ static void detach(void)
 {
 }
 
-void start(void)
+void kern_start(void)
 {
 	if (core_initialize())
 		panic("failed to initialize");

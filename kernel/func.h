@@ -110,6 +110,6 @@ extern void time_tick(void);
 extern volatile lfq_t kqueue;
 extern kthread_t delay_thread;
 extern ID delay_thread_id;
-extern void start(void);
+extern void kern_start(void);
 
 #endif
