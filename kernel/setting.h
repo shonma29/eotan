@@ -73,4 +73,6 @@ typedef enum {
 
 #define MAX_TIME_HANDLER (100)
 
+#define MAX_ACTIVATE_COUNT (1)
+
 #endif

@@ -44,8 +44,9 @@ typedef struct {
 		UW left;
 	} time;
 	PRI priority;
-	W (*handler)(W cr2, W eip);
+	UINT activate_count;
 //TODO move to domain
+	W (*handler)(W cr2, W eip);
 	T_REGION regions[MAX_REGION];
 	struct {
 		VP_INT arg;

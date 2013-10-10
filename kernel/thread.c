@@ -93,12 +93,12 @@ ER_ID idle_initialize(void)
 		memset(&(th->queue), 0, sizeof(*th) - sizeof(node_t));
 
 		list_initialize(&(th->queue));
-		th->attr.domain_id = KERNEL_DOMAIN_ID;
-		th->priority = th->attr.priority = MAX_PRIORITY;
 		th->status = TTS_RUN;
 		list_initialize(&(th->wait.waiting));
-
 		set_page_table(th, (VP)PAGE_DIR_ADDR);
+		th->priority = th->attr.priority = MAX_PRIORITY;
+		//th->activate_count = 0;
+		th->attr.domain_id = KERNEL_DOMAIN_ID;
 
 		running = th;
 		ready_enqueue(th->priority, &(th->queue));
@@ -120,10 +120,12 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid)
 	memset(&(th->queue), 0, sizeof(*th) - sizeof(node_t));
 
 	list_initialize(&(th->queue));
-	th->attr.domain_id = pk_ctsk->domain_id;
-	th->attr.priority = pk_ctsk->itskpri;
 	th->status = TTS_DMT;
 	list_initialize(&(th->wait.waiting));
+	//th->activate_count = 0;
+
+	th->attr.domain_id = pk_ctsk->domain_id;
+	th->attr.priority = pk_ctsk->itskpri;
 	th->attr.arg = pk_ctsk->exinf;
 	th->attr.kstack_tail = (char*)kern_p2v(p) + pk_ctsk->stksz;
 	th->attr.entry = pk_ctsk->task;
@@ -222,20 +224,30 @@ ER thread_start(ID tskid)
 		}
 
 		if (th->status != TTS_DMT) {
-			result = E_QOVR;
+			if (th->activate_count >= MAX_ACTIVATE_COUNT) {
+				result = E_QOVR;
+
+			} else {
+				th->activate_count++;
+				result = E_OK;
+			}
+
 			break;
 		}
 
-		th->status = TTS_RDY;
 		th->time.total = 0;
 		th->time.left = TIME_QUANTUM;
 		th->priority = th->attr.priority;
 //TODO fix context_create_kernel
 //		set_arg(th, th->attr.arg);
 		create_context(th);
-
-		ready_enqueue(th->priority, &(th->queue));
 		result = E_OK;
+
+		if (th->activate_count > 0)
+			th->activate_count--;
+
+		th->status = TTS_RDY;
+		ready_enqueue(th->priority, &(th->queue));
 		leave_serialize();
 		thread_switch();
 
@@ -250,6 +262,11 @@ void thread_end(void)
 	enter_serialize();
 	list_remove(&(running->queue));
 	running->status = TTS_DMT;
+
+	if (running->activate_count > 0) {
+		//TODO enqueue for activation
+	}
+
 	leave_serialize();
 
 	thread_switch();
