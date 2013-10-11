@@ -83,9 +83,16 @@ ER_ID idle_initialize(void)
 	enter_serialize();
 	do {
 		thread_t *th;
-		node_t *node = find_empty_key(&thread_tree, &thread_hand);
+		node_t *node;
+
+		if (tree_get(&thread_tree, TSK_NONE)) {
+			result = E_OBJ;
+			break;
+		}
+
+		node = tree_put(&thread_tree, TSK_NONE);
 		if (!node) {
-			result = E_NOID;
+			result = E_NOMEM;
 			break;
 		}
 

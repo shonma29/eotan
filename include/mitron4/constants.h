@@ -51,6 +51,7 @@ For more information, please refer to <http://unlicense.org/>
  * others
  */
 #define TSK_SELF (0)
+#define TSK_NONE (0)
 
 #define TPRI_SELF (0)
 #define TPRI_INI (0)
