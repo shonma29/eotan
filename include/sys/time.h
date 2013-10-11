@@ -37,16 +37,6 @@ struct timespec {
 	long tv_nsec;
 };
 
-struct timeval {
-	time_t tv_sec;
-	suseconds_t tv_usec;
-};
-
-struct timezone {
-	int tz_minuteswest;
-	int tz_dsttime;
-};
-
 
 static inline void timespec_set(struct timespec *t,
 		const long long *sec, const long *nsec)
