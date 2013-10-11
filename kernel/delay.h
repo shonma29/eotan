@@ -1,5 +1,5 @@
-#ifndef _KTHREAD_H_
-#define _KTHREAD_H_
+#ifndef _CORE_DELAY_H_
+#define _CORE_DELAY_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,12 +26,18 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
+typdef enum {
+	delay_handle = 0,
+	delay_page_fault = 1,
+	delay_send = 2,
+	delay_activate = 3,
+	delay_pfree = 4
+} delay_action_e;
 
 typedef struct {
-	ER_ID (*attach)(void);
-	void (*process)(VP_INT exinf);
-	void (*detach)(void);
-} kthread_t;
+	delay_action_e action;
+	int arg1;
+	int arg2;
+} delay_param_t;
 
 #endif
