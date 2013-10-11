@@ -40,7 +40,7 @@ volatile lfq_t kqueue;
 ID delay_thread_id = 0;
 
 static ER_ID attach(void);
-static void process(void);
+static void process(VP_INT exinf);
 static void detach(void);
 
 kthread_t delay_thread = { attach, process, detach };
@@ -58,7 +58,7 @@ static ER_ID attach(void)
 	return thread_create_auto(&pk_ctsk);
 }
 
-static void process(void)
+static void process(VP_INT exinf)
 {
 	for (;;) {
 		ID id;
