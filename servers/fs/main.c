@@ -118,14 +118,14 @@ int main(void)
 
     if (init_port() == FALSE) {
 	dbg_printf("[FS] Cannot allocate port.\n");
-	kcall->thread_end();
+	kcall->thread_end_and_destroy();
 	return FALSE;
     }
 
     init_malloc(HEAP_ADDR, MAX_HEAP);
 
     if (!device_init()) {
-	kcall->thread_end();
+	kcall->thread_end_and_destroy();
 	return FALSE;
     }
 
