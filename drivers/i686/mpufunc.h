@@ -35,7 +35,6 @@ For more information, please refer to <http://unlicense.org/>
 extern ER mpu_copy_stack(ID src, W esp, ID dst);
 extern ER mpu_set_context(ID tid, W eip, B * stackp, W stsize);
 extern W pf_handler(W cr2, W eip);
-extern void set_page_table(thread_t *taskp, VP p);
 
 /* ncontext.c */
 extern VP *context_prev_sp;

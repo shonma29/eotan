@@ -102,7 +102,7 @@ ER_ID idle_initialize(void)
 		list_initialize(&(th->queue));
 		th->status = TTS_RUN;
 		list_initialize(&(th->wait.waiting));
-		set_page_table(th, (VP)PAGE_DIR_ADDR);
+		MPU_PAGE_TABLE(th) = (VP)PAGE_DIR_ADDR;
 		th->priority = th->attr.priority = MAX_PRIORITY;
 		//th->activate_count = 0;
 		th->attr.domain_id = KERNEL_DOMAIN_ID;
@@ -138,10 +138,10 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid)
 	th->attr.entry = pk_ctsk->task;
 
 	MPU_KERNEL_SP(th) = th->attr.kstack_tail;	
-	set_page_table(th, (th->attr.domain_id == KERNEL_DOMAIN_ID)?
+	MPU_PAGE_TABLE(th) = (th->attr.domain_id == KERNEL_DOMAIN_ID)?
 			(VP)PAGE_DIR_ADDR
 			//TODO null check
-			:kern_v2p(copy_kernel_page_table((PTE*)PAGE_DIR_ADDR)));
+			:kern_v2p(copy_kernel_page_table((PTE*)PAGE_DIR_ADDR));
 
 	return E_OK;
 }

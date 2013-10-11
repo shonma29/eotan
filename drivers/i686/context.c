@@ -172,8 +172,3 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
     release(tsk);
     return (E_OK);
 }
-
-void set_page_table(thread_t *taskp, VP p)
-{
-    taskp->mpu.context.cr3 = p;
-}
