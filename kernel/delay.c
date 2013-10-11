@@ -73,8 +73,6 @@ static void process(void)
 
 		posix_kill_proc(id);
 	}
-
-	thread_end();
 }
 
 static void detach(void)
