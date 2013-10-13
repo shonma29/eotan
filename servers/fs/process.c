@@ -127,6 +127,7 @@ Version 2, June 1991
 #include <boot/init.h>
 #include <mpu/config.h>
 #include "fs.h"
+#include "../../lib/libserv/libmm.h"
 #include "../../kernel/mpu/mpu.h"
 
 struct proc proc_table[MAX_PROCESS];
@@ -166,7 +167,7 @@ W set_local(ID pid, ID tskid)
     thread_local_t local_data;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    error_no = kcall->region_map(tskid, (thread_local_t*)LOCAL_ADDR, sizeof(thread_local_t),
+    error_no = vmap(tskid, (thread_local_t*)LOCAL_ADDR, sizeof(thread_local_t),
     		ACC_USER);
     if (error_no)
 	return error_no;

@@ -32,6 +32,7 @@ Version 2, June 1991
 #include <kcall.h>
 #include <mpu/config.h>
 #include <mpu/mpu.h>
+#include "../../lib/libserv/libmm.h"
 #include "fs.h"
 
 
@@ -68,11 +69,10 @@ W alloc_memory(W procid, UW start, UW size, UW access)
 W grow_vm(struct proc * procp, UW addr, UW access)
 {
     ER error_no;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     /* 仮想メモリ領域に物理メモリを割り付ける
      */
-    error_no = kcall->region_map(procp->proc_maintask, (VP) addr, PAGE_SIZE, ACC_USER);
+    error_no = vmap(procp->proc_maintask, (VP) addr, PAGE_SIZE, ACC_USER);
     if (error_no) {
 	return (EPERM);
     }
@@ -87,13 +87,11 @@ W grow_vm(struct proc * procp, UW addr, UW access)
 W shorten_vm(struct proc * procp, UW addr)
 {
     ER error_no;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    error_no = kcall->region_unmap(procp->proc_maintask, (VP) addr, PAGE_SIZE);
+    error_no = vunmap(procp->proc_maintask, (VP) addr, PAGE_SIZE);
     if (error_no) {
 	return (EINVAL);
     }
 
     return (EOK);
 }
-

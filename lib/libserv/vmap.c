@@ -1,5 +1,3 @@
-#ifndef _INTERFACE_H_
-#define _INTERFACE_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,22 +25,33 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <errno.h>
+#include <kcall.h>
+#include <local.h>
 #include <mm.h>
+#include <services.h>
 
-typedef enum {
-	reply_success = 0,
-	reply_failure = 1,
-	reply_wait = 2
-} mm_reply_type_e;
+int vmap(ID id, VP start, UW size, W accmode)
+{
+//	thread_local_t *local = _get_local();
+	mm_args_t args;
+	mm_reply_t *reply = (mm_reply_t*)&args;
+	ER_UINT reply_size;
+	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-extern int mm_clock_gettime(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_process_destroy(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_process_copy_stack(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_vmstatus(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
+	args.syscall_no = mm_syscall_vmap;
+	args.arg1 = (long int)id;
+	args.arg2 = (long int)start;
+	args.arg3 = (long int)size;
+	args.arg4 = (long int)accmode;
+	reply_size = kcall->port_call(PORT_MM, &args, sizeof(args));
 
-#endif
+	if (reply_size == sizeof(*reply)) {
+//		local->error_no = reply->error_no;
+		return reply->result;
+
+	} else {
+//		local->error_no = ESVC;
+		return -1;
+	}
+}

@@ -35,7 +35,15 @@ For more information, please refer to <http://unlicense.org/>
 static kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 static int (*funcs[])(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args) = {
-	mm_clock_gettime
+	mm_clock_gettime,
+	mm_process_create,
+	mm_process_destroy,
+	mm_process_duplicate,
+	mm_process_copy_stack,
+	mm_process_set_context,
+	mm_vmap,
+	mm_vunmap,
+	mm_vmstatus
 };
 
 #define BUFSIZ (sizeof(mm_args_t))

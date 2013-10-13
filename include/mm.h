@@ -42,7 +42,15 @@ typedef struct {
 } mm_reply_t;
 
 typedef enum {
-	mm_syscall_clock_gettime = 0
+	mm_syscall_clock_gettime = 0,
+	mm_syscall_process_create = 1,
+	mm_syscall_process_destroy = 2,
+	mm_syscall_process_duplicate = 3,
+	mm_syscall_process_copy_stack = 4,
+	mm_syscall_process_set_context = 5,
+	mm_syscall_vmap = 6,
+	mm_syscall_vunmap = 7,
+	mm_syscall_vmstatus = 8
 } mm_syscall_e;
 
 #endif

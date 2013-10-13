@@ -18,12 +18,13 @@ Version 2, June 1991
 #include <core.h>
 #include <kcall.h>
 #include <setting.h>
+#include <thread.h>
 #include <vm.h>
 #include <boot/init.h>
 #include <mpu/config.h>
 #include <mpu/memory.h>
 #include <sys/wait.h>
-#include "thread.h"
+#include "../../../lib/libserv/libmm.h"
 #include "fs.h"
 
 W psc_brk_f(RDVNO rdvno, struct posix_request *req)
@@ -33,14 +34,13 @@ W psc_brk_f(RDVNO rdvno, struct posix_request *req)
     T_REGION reg;
     VP start;
     UW size;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     mypid = req->procid;
     err = proc_get_procp(mypid, &myprocp);
     if (err)
 	return err;
 
-    err = kcall->region_get_status(req->caller, HEAP_REGION, (VP) & reg);
+    err = vmstatus(req->caller, HEAP_REGION, (VP) & reg);
 #ifdef DEBUG
     dbg_printf("[PM] err = %d id %d, sa %x, min %x, max %x, ea %x\n",
 	       req->caller,
@@ -263,7 +263,7 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
       return (FALSE);
     }
 
-  kcall->mpu_copy_stack(req->caller, (W)(req->param.par_fork.sp), main_thread_id);
+  process_copy_stack(req->caller, (W)(req->param.par_fork.sp), main_thread_id);
   kcall->thread_start(main_thread_id);
 
   put_response (rdvno, EOK, child->proc_pid, 0);	/* 親プロセスに対して応答 */

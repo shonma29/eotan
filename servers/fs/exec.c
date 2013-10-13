@@ -63,6 +63,7 @@ Version 2, June 1991
 #include <mpu/config.h>
 #include <mpu/memory.h>
 #include <region.h>
+#include "../../lib/libserv/libmm.h"
 #include "fs.h"
 
 static W read_exec_header(struct inode *ip, Elf32_Ehdr *elfp,
@@ -145,7 +146,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 #endif
     /* region の解放 */
     main_task = procp->proc_maintask;
-    kcall->region_destroy(main_task);
+    process_destroy(main_task);
 
     /* テキスト領域をメモリに入れる
      */
@@ -170,9 +171,8 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     }
 
     /* 残りの region の作成 */
-    error_no = kcall->region_create(req->caller, HEAP_REGION,
-		     (VP) VADDR_HEAP, 0, STD_HEAP_SIZE,
-	     VM_READ | VM_WRITE | VM_USER);	/* heap */
+    error_no = process_create(req->caller, HEAP_REGION,
+		     (VP) VADDR_HEAP, 0, STD_HEAP_SIZE);	/* heap */
 #ifdef DEBUG
     if (error_no) {
       dbg_printf("[EXEC]: vcre_reg return %d\n", error_no);
@@ -348,8 +348,7 @@ load_text(W procid, struct inode *ip, Elf32_Phdr *text, ID task)
 	pageRoundUp(text->p_memsz +
 		(text->p_vaddr - pageRoundDown(text->p_vaddr)));
     /* text region の設定 */
-    kcall->region_create(task, TEXT_REGION, (VP) start, size, size,
-	     VM_READ | VM_EXEC | VM_USER);
+    process_create(task, TEXT_REGION, (VP) start, size, size);
 
     error_no = alloc_memory(procid, start, size, VM_READ | VM_EXEC);
     if (error_no) {
@@ -410,8 +409,7 @@ load_data(W procid, struct inode *ip, Elf32_Phdr *data, ID task)
 	pageRoundUp(data->p_memsz +
 		(data->p_vaddr - pageRoundDown(data->p_vaddr)));
     /* data+bss region の設定 */
-    kcall->region_create(task, DATA_REGION, (VP) start, size, size,
-	     VM_READ | VM_WRITE | VM_USER);	/* data+bss */
+    process_create(task, DATA_REGION, (VP) start, size, size);	/* data+bss */
     error_no = alloc_memory(procid, start, size, VM_READ | VM_WRITE);
     if (error_no) {
 #ifdef EXEC_DEBUG

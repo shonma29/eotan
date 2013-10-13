@@ -73,6 +73,7 @@ Version 2, June 1991
 #include <local.h>
 #include <string.h>
 #include "fs.h"
+#include "../../lib/libserv/libmm.h"
 #include "../../kernel/mpu/mpu.h"
 
 static W proc_duplicate(struct proc * source, struct proc * destination);
@@ -112,7 +113,7 @@ W proc_fork(struct proc *parent, struct proc *child, ID main_task, ID signal_tas
 
     child->proc_status = PS_RUN;
     child->proc_ppid = parent->proc_pid;
-    error_no = kcall->region_map(main_task, (thread_local_t*)LOCAL_ADDR, sizeof(thread_local_t),
+    error_no = vmap(main_task, (thread_local_t*)LOCAL_ADDR, sizeof(thread_local_t),
     		ACC_USER);
     if (error_no) {
 	return error_no;
@@ -161,7 +162,6 @@ W proc_fork(struct proc *parent, struct proc *child, ID main_task, ID signal_tas
 static W proc_duplicate(struct proc * source, struct proc * destination)
 {
     W index;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     /* プロセスの仮想空間のコピー
 
@@ -176,7 +176,7 @@ static W proc_duplicate(struct proc * source, struct proc * destination)
     /* text */
     /* data+bss */
     /* heap */
-    kcall->region_duplicate(source->proc_maintask, destination->proc_maintask);
+    process_duplicate(source->proc_maintask, destination->proc_maintask);
 
     /* オープンファイルの情報のコピー
      */

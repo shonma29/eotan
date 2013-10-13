@@ -1,5 +1,5 @@
-#ifndef _INTERFACE_H_
-#define _INTERFACE_H_
+#ifndef _MM_SEGMENT_H_
+#define _MM_SEGMENT_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,23 +26,32 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <mm.h>
+#include <stddef.h>
 
 typedef enum {
-	reply_success = 0,
-	reply_failure = 1,
-	reply_wait = 2
-} mm_reply_type_e;
+	attr_readable = 1,
+	attr_writable = 2,
+	attr_executable = 4,
+	attr_expandable = 8,
+	attr_backward = 16,
+	attr_shared = 32
+} mm_segment_attr_e;
 
-extern int mm_clock_gettime(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_process_destroy(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_process_copy_stack(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_vmstatus(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
+typedef enum {
+	type_code = attr_readable | attr_executable,
+	type_data = attr_readable | attr_writable,
+	type_heap = attr_readable | attr_writable | attr_expandable,
+	type_stack = attr_readable | attr_writable | attr_expandable
+			| attr_backward,
+	type_share = attr_readable | attr_writable | attr_shared
+} mm_segment_type_e;
+
+typedef struct {
+	void *addr;
+	size_t len;
+	size_t max;
+	unsigned int attr;
+//	int owner;
+} mm_segment_t;
 
 #endif

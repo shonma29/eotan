@@ -71,6 +71,7 @@ Version 2, June 1991
 #include <mpu/memory.h>
 #include "../../kernel/region.h"
 #include "../../kernel/mpu/mpu.h"
+#include "libmm.h"
 #include "libserv.h"
 
 #define MEMORY_CLICK		(PAGE_SIZE * 16)
@@ -110,8 +111,7 @@ ER init_malloc(UW free_memory_erea, UW max)
     if (mytid < 0) {
 	return (mytid);
     }
-    err = kcall->region_create(mytid, HEAP_REGION, (VP) last_page, pages, pages,
-		   VM_READ | VM_READ | VM_USER);
+    err = process_create(mytid, HEAP_REGION, (VP) last_page, pages, pages);
     if (err) {
 	return (err);
     }
@@ -344,7 +344,7 @@ static VP get_system_memory(UW size)
     dbg_printf("get_system_memory: id = %d, start = 0x%x, size = %d\n",
 	       mytid, last_page, size);
 #endif
-    errno = kcall->region_map(mytid, (VP) last_page, size, ACC_USER);
+    errno = vmap(mytid, (VP) last_page, size, ACC_USER);
     if (errno) {
 #ifdef notdef
 	dbg_printf("get_system_memory: can't vmap_reg %d\n", errno);

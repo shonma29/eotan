@@ -1,5 +1,5 @@
-#ifndef _INTERFACE_H_
-#define _INTERFACE_H_
+#ifndef _LIBSERV_LIBMM_H_
+#define _LIBSERV_LIBMM_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,22 +27,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <mm.h>
 
-typedef enum {
-	reply_success = 0,
-	reply_failure = 1,
-	reply_wait = 2
-} mm_reply_type_e;
-
-extern int mm_clock_gettime(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_process_destroy(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_process_copy_stack(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_vmstatus(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
+extern int process_create(ID id, ID rid, VP start, W min, W max);
+extern int process_destroy(ID id);
+extern int process_duplicate(ID src, ID dst);
+extern int process_copy_stack(ID src, W esp, ID dst);
+extern int process_set_context(ID tid, W eip, B *stackp, W stsize);
+extern int vmap(ID id, VP start, UW size, W accmode);
+extern int vunmap(ID id, VP start, UW size);
+extern int vmstatus(ID id, ID rid, VP stat);
 
 #endif
