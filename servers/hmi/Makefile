@@ -27,7 +27,7 @@ TARGET = $(WD)/hmi
 
 include Makefile.in
 
-CFLAGS += -I lib/libserv -DUSE_VESA
+CFLAGS += -I lib/libserv
 ENTRY_ADDR = 0x80310000
 ENTRY_FUNC = start
 
