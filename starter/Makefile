@@ -86,11 +86,11 @@ kern.bin: starter.bin ../kernel/core.bin ../servers/fs/fs \
 	$(TOOL)append 1 ../kernel/core.bin 4 >> $@
 	$(TOOL)append 4 ../initrd.img 4 >> $@
 	$(TOOL)append 2 ../servers/kernlog/kernlog 4 >> $@
+	$(TOOL)append 2 ../servers/mm/mm 4 >> $@
 	$(TOOL)append 2 ../servers/fs/fs 4 >> $@
 	$(TOOL)append 2 ../servers/hmi/hmi 4 >> $@
 	$(TOOL)append 2 ../servers/keyboard/keyboard 4 >> $@
 	$(TOOL)append 2 ../servers/ramdisk/ramdisk 4 >> $@
-	$(TOOL)append 2 ../servers/mm/mm 4 >> $@
 	$(TOOL)append 0 >> $@
 
 .PHONY: clean
