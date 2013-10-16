@@ -100,11 +100,11 @@ ER core_initialize(void)
     idle_initialize();
     delay_thread_id = delay_thread.attach();
 
+    init_interrupt();
     timer_initialize();		/* インターバルタイマ機能の初期化 */
     rtc_get_time(&seconds);
     time_initialize(&seconds);		/* 時間管理機能の初期化 */
     pit_initialize(TIME_TICKS);		/* インターバルタイマの起動       */
-    init_interrupt();
 
     run_init_program();
 

@@ -33,13 +33,12 @@ Version 2, June 1991
  *
  */
 volatile W on_interrupt = 0;
-BOOL delayed_dispatch = FALSE;
 
 /*
  * 割り込みハンドラテーブル
  * def_int システムコールで登録するときに使用する。
  */
-FP intr_table[MAX_IDT + 1];
+static FP intr_table[MAX_IDT + 1];
 
 
 
@@ -97,7 +96,6 @@ W init_interrupt(void)
     }
 
     on_interrupt = 0;
-    delayed_dispatch = FALSE;
 
     return (E_OK);
 }
@@ -112,53 +110,24 @@ W init_interrupt(void)
  * 処理：	外部割り込みが発生したときの処理を行う。
  *
  */
-static int mask;
 void interrupt(W intn)
 {
     on_interrupt++;
-    delayed_dispatch = FALSE;
 
     switch (intn) {
     default:
 	if (intr_table[intn]) {
 	    (intr_table[intn]) ();
 	} else {
-	    /* error!! */
-	    printk("unknown interrupt from %d\n", intn);
+	    printk("unknown interrupt %d\n", intn);
 	}
 	break;
-
-    case PIC_IR_VECTOR(ir_pit):
-	intr_interval();
-	break;
-
-    case PIC_IR_VECTOR(ir_keyboard):
-	if (intr_table[PIC_IR_VECTOR(ir_keyboard)]) {
-	    (intr_table[PIC_IR_VECTOR(ir_keyboard)]) ();
-	}
-	break;
-    }
-
-    /* 割込みの禁止フラグの OFF */
-    if (intn >= 40) {	/* slave */
-      mask = ~(1 << (intn - 40));
-      asm("cli");
-      asm("inb $0xA1, %al");
-      asm("andb mask, %al");
-      asm("outb %al, $0xA1");
-    } else {		/* master */
-      mask = ~(1 << (intn - 32));
-      asm("cli");
-      asm("inb $0x21, %al");
-      asm("andb mask, %al");
-      asm("outb %al, $0x21");
     }
 
     enter_critical();
     --on_interrupt;
-    leave_critical();
 
-    if (delayed_dispatch && (on_interrupt == 0)) {
+    if (on_interrupt == 0) {
 	thread_switch();
     }
 }

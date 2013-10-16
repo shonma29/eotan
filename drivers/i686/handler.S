@@ -32,16 +32,14 @@ int32_handler:
 		movw	$0x10, %ax
 		movw	%ax,%ds
 
-		inb	MASTER_8259A_DATA, %al
-		orb	$1, %al
-		outb	%al, MASTER_8259A_DATA
-		movb	$0x20, %al
+		pushl	$32
+		call	interrupt
+		addl	$4, %esp
+
+		movb	$0x60, %al
 		outb	%al, MASTER_8259A_COM
 		sti
 
-		pushl	$32
-		call	interrupt
-		popl	%eax
 		popal
 		popl	%ds
 		iret
@@ -56,16 +54,14 @@ int33_handler:
 		movw	$0x10, %ax
 		movw	%ax,%ds
 
-		inb	MASTER_8259A_DATA, %al
-		orb	$2, %al
-		outb	%al, MASTER_8259A_DATA
-		movb	$0x20, %al
+		pushl	$33
+		call	interrupt
+		addl	$4, %esp
+
+		movb	$0x61, %al
 		outb	%al, MASTER_8259A_COM
 		sti
 
-		pushl	$33
-		call	interrupt
-		popl	%eax
 		popal
 		popl	%ds
 		iret

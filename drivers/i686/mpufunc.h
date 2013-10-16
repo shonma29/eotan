@@ -83,7 +83,6 @@ extern void idt_set(UB no, UH selector, W (*handler)(void), UB type, UB dpl);
 
 /* interrupt.c */
 extern volatile W on_interrupt;
-extern BOOL delayed_dispatch;
 extern W init_interrupt(void);
 extern void interrupt(W intn);
 extern ER interrupt_bind(W inhno, T_DINH *pk_dinh);

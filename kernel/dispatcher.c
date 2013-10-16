@@ -138,7 +138,6 @@ ER thread_switch(void)
 #endif
 
     if (on_interrupt) {
-	delayed_dispatch = TRUE;
 	leave_critical();
 	return (E_OK);
     }
@@ -186,8 +185,6 @@ ER thread_switch(void)
     context_next_sp = &(MPU_KERNEL_SP(next));
     running = next;
     running->status = TTS_RUN;
-
-    delayed_dispatch = FALSE;
 
     context_set_kernel_sp(next->attr.kstack_tail);
     context_switch_page_table(next);

@@ -110,7 +110,6 @@ void intr_interval(void)
 	if (--running->time.left == 0) {
 	    running->time.left = TIME_QUANTUM;
 	    ready_rotate(running->priority);
-	    delayed_dispatch = TRUE;
 	}
     }
 
@@ -120,7 +119,6 @@ void intr_interval(void)
 	    /* KERNEL_TASK で timer に設定されている関数を実行 */
 	    do_timer = TRUE;
 	    thread_start(delay_thread_id);
-	    delayed_dispatch = TRUE;
 	}
     }
 }
