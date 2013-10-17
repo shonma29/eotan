@@ -50,10 +50,14 @@ typedef void (*FP)();
 typedef long INT;
 typedef unsigned long UINT;
 
-typedef enum {
-	TRUE = 1,
-	FALSE = 0
-} BOOL;
+typedef long BOOL;
+
+#ifndef TRUE
+#define TRUE (1)
+#endif
+#ifndef FALSE
+#define FALSE (0)
+#endif
 
 typedef long FN;
 typedef long ER;

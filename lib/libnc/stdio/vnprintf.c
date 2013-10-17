@@ -25,16 +25,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stdarg.h>
+#include <sys/types.h>
 
 #define MAX_INT_COLUMN (10)
 #define MAX_INT_BITS (32)
-
-#ifndef TRUE
-#define TRUE 1
-#endif
-#ifndef FALSE
-#define FALSE 0
-#endif
 
 typedef struct _State {
 	int (*handler)(struct _State*);

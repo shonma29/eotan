@@ -25,11 +25,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <set/tree.h>
+#include <sys/types.h>
 
 static node_t nil_node = { 0, 0, &nil_node, &nil_node };
 
 #define NIL (&nil_node)
 #define IS_NIL(p) ((p) == &nil_node)
+
+static int _walk(node_t *node, int (*callback)(node_t *node));
 
 
 static node_t *node_create(tree_t *tree, const int key) {
@@ -197,4 +200,38 @@ node_t *tree_put(tree_t *tree, const int key) {
 
 void tree_remove(tree_t *tree, const int key) {
 	tree->root = node_remove(tree, tree->root, key);
+}
+
+node_t *tree_first(const tree_t *tree)
+{
+	node_t *node = tree->root;
+
+	if (IS_NIL(node))
+		return NULL;
+
+	while (!IS_NIL(node->left))
+		node = node->left;
+
+	return node;
+}
+
+void tree_walk(const tree_t *tree, int (*callback)(node_t *node))
+{
+	_walk(tree->root, callback);
+}
+
+static int _walk(node_t *node, int (*callback)(node_t *node))
+{
+	if (!IS_NIL(node)) {
+		if (_walk(node->left, callback))
+			return TRUE;
+
+		if (callback(node))
+			return TRUE;
+
+		if (_walk(node->right, callback))
+			return TRUE;
+	}
+
+	return FALSE;
 }

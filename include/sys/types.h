@@ -42,4 +42,13 @@ typedef int blkcnt_t;
 typedef long long time_t;
 typedef int suseconds_t;
 
+typedef int boolean_t;
+
+#ifndef TRUE
+#define TRUE (1)
+#endif
+#ifndef FALSE
+#define FALSE (0)
+#endif
+
 #endif

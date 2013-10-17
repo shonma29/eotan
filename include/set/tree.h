@@ -52,5 +52,7 @@ extern size_t tree_size(tree_t *tree);
 extern node_t *tree_get(tree_t *tree, const int key);
 extern node_t *tree_put(tree_t *tree, const int key);
 extern void tree_remove(tree_t *tree, const int key);
+extern node_t *tree_first(const tree_t *tree);
+extern void tree_walk(const tree_t *tree, int (*callback)(node_t *node));
 
 #endif
