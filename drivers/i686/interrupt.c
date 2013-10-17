@@ -89,7 +89,7 @@ W init_interrupt(void)
     idt_set(int_reserved_30, kern_code, handle30, interruptGate32, dpl_kern);
     idt_set(int_reserved_31, kern_code, handle31, interruptGate32, dpl_kern);
 
-    idt_set(PIC_IR_VECTOR(ir_keyboard), kern_code, int33_handler, interruptGate32, dpl_kern);
+    idt_set(PIC_IR_VECTOR(ir_keyboard), kern_code, handle33, interruptGate32, dpl_kern);
 
     for (i = 0; i < sizeof(intr_table) / sizeof(intr_table[0]); i++) {
 	intr_table[i] = NULL;
@@ -103,25 +103,23 @@ W init_interrupt(void)
 /*************************************************************************
  * interrupt --- 外部割り込みの処理
  *
- * 引数：	intn	割り込み番号
+ * 引数：	no	割り込み番号
  *
  * 返値：	なし
  *
  * 処理：	外部割り込みが発生したときの処理を行う。
  *
  */
-void interrupt(W intn)
+void interrupt(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
+		UW ecx, UW eax, UW ds, UW no,
+		UW eip, UW cs, W eflags)
 {
     on_interrupt++;
 
-    switch (intn) {
-    default:
-	if (intr_table[intn]) {
-	    (intr_table[intn]) ();
-	} else {
-	    printk("unknown interrupt %d\n", intn);
-	}
-	break;
+    if (intr_table[no]) {
+	(intr_table[no]) ();
+    } else {
+	printk("unknown interrupt %d\n", no);
     }
 
     enter_critical();
@@ -160,7 +158,7 @@ ER interrupt_bind(W inhno, T_DINH *pk_dinh)
  *
  */
 void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		UW ecx, UW eax, UW es, UW ds, UW no,
+		UW ecx, UW eax, UW ds, UW no,
 		UW err, UW eip, UW cs, W eflags)
 {
     W result;
@@ -204,7 +202,7 @@ void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 
     printk("page fault=%p\n", fault_get_addr());
     fault_with_error(edi, esi, ebp, esp, ebx, edx,
-		ecx, eax, es, ds, no, err, eip, cs, eflags);
+		ecx, eax, ds, no, err, eip, cs, eflags);
 
     --on_interrupt;
 
@@ -222,7 +220,7 @@ void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
  *
  */
 void protect_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		   UW ecx, UW eax, UW es, UW ds, UW no,
+		   UW ecx, UW eax, UW ds, UW no,
 		   UW err, UW eip, UW cs, UW eflags)
 {
     W result; 
@@ -248,5 +246,5 @@ void protect_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
     }
 
     fault_with_error(edi, esi, ebp, esp, ebx, edx,
-		ecx, eax, es, ds, no, err, eip, cs, eflags);
+		ecx, eax, ds, no, err, eip, cs, eflags);
 }

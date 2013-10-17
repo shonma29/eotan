@@ -53,7 +53,7 @@ ER pit_initialize(const UW freq)
 	n = ((PIT_CLOCK_MUL3 << 8) + half) / (half << 1) + 1;
 
 	enter_critical();
-	idt_set(PIC_IR_VECTOR(ir_pit), kern_code, int32_handler,
+	idt_set(PIC_IR_VECTOR(ir_pit), kern_code, handle32,
 			interruptGate32, dpl_kern);
 	interrupt_bind(PIC_IR_VECTOR(ir_pit), &pk_dinh);
 	pit_set(n);

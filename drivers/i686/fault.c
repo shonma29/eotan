@@ -32,30 +32,28 @@ For more information, please refer to <http://unlicense.org/>
 
 
 void fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		UW ecx, UW eax, UW es, UW ds, UW no,
+		UW ecx, UW eax, UW ds, UW no,
 		UW eip, UW cs, UW eflags)
 {
 	printk("abort(%d). task=%d\n"
-		" cs=%x eip=%x eflags=%x\n"
-		" ds=%x es=%x\n"
+		" cs=%x eip=%x eflags=%x ds=%x\n"
 		" eax=%x ebx=%x ecx=%x edx=%x\n"
 		" edi=%x esi=%x ebp=%x esp=%x\n",
-			no, thread_id(running), cs, eip, eflags, ds, es,
+			no, thread_id(running), cs, eip, eflags, ds,
 			eax, ebx, ecx, edx, edi, esi, ebp, esp);
 	//TODO stop the thread
 	panic("fault");
 }
 
 void fault_with_error(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		UW ecx, UW eax, UW es, UW ds, UW no,
+		UW ecx, UW eax, UW ds, UW no,
 		UW err, UW eip, UW cs, UW eflags)
 {
 	printk("abort(%d). task=%d\n"
-		" cs=%x eip=%x eflags=%x\n"
-		" ds=%x es=%x error=%x\n"
+		" cs=%x eip=%x eflags=%x ds=%x error=%x\n"
 		" eax=%x ebx=%x ecx=%x edx=%x\n"
 		" edi=%x esi=%x ebp=%x esp=%x\n",
-			no, thread_id(running), cs, eip, eflags, ds, es,
+			no, thread_id(running), cs, eip, eflags, ds,
 			err, eax, ebx, ecx, edx, edi, esi, ebp, esp);
 	//TODO stop the thread
 	panic("fault_with_error");

@@ -62,10 +62,10 @@ extern UW vtor(ID tskid, UW addr);
 
 /* fault.c */
 extern void fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		UW ecx, UW eax, UW es, UW ds, UW no,
+		UW ecx, UW eax, UW ds, UW no,
 		UW eip, UW cs, UW eflags);
 extern void fault_with_error(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		UW ecx, UW eax, UW es, UW ds, UW no,
+		UW ecx, UW eax, UW ds, UW no,
 		UW err, UW eip, UW cs, UW eflags);
 
 /* fpu.c */
@@ -84,13 +84,15 @@ extern void idt_set(UB no, UH selector, W (*handler)(void), UB type, UB dpl);
 /* interrupt.c */
 extern volatile W on_interrupt;
 extern W init_interrupt(void);
-extern void interrupt(W intn);
+extern void interrupt(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
+		UW ecx, UW eax, UW ds, UW no,
+		UW eip, UW cs, W eflags);
 extern ER interrupt_bind(W inhno, T_DINH *pk_dinh);
 extern void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		UW ecx, UW eax, UW es, UW ds, UW no,
+		UW ecx, UW eax, UW ds, UW no,
 		UW err, UW eip, UW cs, W eflags);
 extern void protect_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		   UW ecx, UW eax, UW es, UW ds, UW no,
+		   UW ecx, UW eax, UW ds, UW no,
 		   UW err, UW eip, UW cs, UW eflags);
 
 /* paging_init.c */
@@ -144,11 +146,9 @@ extern W handle28(void);
 extern W handle29(void);
 extern W handle30(void);
 extern W handle31(void);
+extern W handle32(void);
+extern W handle33(void);
 extern W service_handler(void);
-
-/* handler.S */
-extern W int32_handler(void);
-extern W int33_handler(void);
 
 /* gate_loader.s */
 extern void gdt_load(void);

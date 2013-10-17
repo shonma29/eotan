@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 .text
 
 .set SELECTOR_KERN_DATA, 0x10
+.set PIC_MASTER1, 0x0020
 
 .globl handle0
 .globl handle1
@@ -61,6 +62,8 @@ For more information, please refer to <http://unlicense.org/>
 .globl handle29
 .globl handle30
 .globl handle31
+.globl handle32
+.globl handle33
 .globl service_handler
 
 
@@ -240,6 +243,16 @@ handle31:
 	pushl $31
 	jmp abort_handler
 
+/* timer */
+handle32:
+	pushl $32
+	jmp interrupt_handler
+
+/* keyboard */
+handle33:
+	pushl $33
+	jmp interrupt_handler
+
 abort_handler:
 	pushl %ds
 	pushal
@@ -260,6 +273,23 @@ abort_with_error_handler:
 	popal
 	popl %ds
 	addl $8, %esp
+	iret
+
+interrupt_handler:
+	pushl %ds
+	pushal
+	movw $SELECTOR_KERN_DATA, %ax
+	movw %ax,%ds
+	call interrupt
+
+	//TODO callee set EOI
+	movl 36(%esp), %eax
+	addb $0x40, %al
+	outb %al, $PIC_MASTER1
+
+	popal
+	popl %ds
+	addl $4, %esp
 	iret
 
 service_handler:
