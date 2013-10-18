@@ -26,6 +26,8 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <mpu/io.h>
+#include "../../kernel/mpu/mpufunc.h"
+#include "handler.h"
 #include "sync.h"
 #include "8259a.h"
 
@@ -51,6 +53,8 @@ void pic_initialize(void)
 	/* set defaut mask */
 	outb(pic_master2, ~PIC_IR_BIT(ir_cascade & PIC_INT_NO_MASK));
 	outb(pic_slave2, ~0);
+
+	idt_set(PIC_IR_VECTOR(ir_keyboard), handle33);
 }
 
 ER pic_reset_mask(const UB ir)

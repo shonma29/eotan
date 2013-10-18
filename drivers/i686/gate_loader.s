@@ -30,8 +30,8 @@ For more information, please refer to <http://unlicense.org/>
 .globl gdt_load
 .globl idt_load
 
-.set MAX_GDT, 255
-.set MAX_IDT, 255
+.set MAX_GDT, 5
+.set MAX_IDT, 47
 
 .set GDT_ADDR, 0x80001000
 .set IDT_ADDR, 0x80001800

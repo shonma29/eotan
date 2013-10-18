@@ -28,7 +28,6 @@ For more information, please refer to <http://unlicense.org/>
 .text
 
 .set SELECTOR_KERN_DATA, 0x10
-.set PIC_MASTER1, 0x0020
 
 .globl handle0
 .globl handle1
@@ -62,8 +61,6 @@ For more information, please refer to <http://unlicense.org/>
 .globl handle29
 .globl handle30
 .globl handle31
-.globl handle32
-.globl handle33
 .globl service_handler
 
 
@@ -130,15 +127,7 @@ handle11:
 /* stack_segment_fault (fault with error code) */
 handle12:
 	pushl $12
-	pushl %ds
-	pushal
-	movw $SELECTOR_KERN_DATA, %ax
-	movw %ax,%ds
-	call protect_fault
-	popal
-	popl %ds
-	addl $8, %esp
-	iret
+	jmp abort_with_error_handler
 
 /* protection (fault with error code) */
 handle13:
@@ -148,15 +137,7 @@ handle13:
 /* page_fault (fault with special error code) */
 handle14:
 	pushl $14
-	pushl %ds
-	pushal
-	movw $SELECTOR_KERN_DATA, %ax
-	movw %ax,%ds
-	call page_fault
-	popal
-	popl %ds
-	addl $8, %esp
-	iret
+	jmp abort_with_error_handler
 
 /* reserved */
 handle15:
@@ -243,22 +224,18 @@ handle31:
 	pushl $31
 	jmp abort_handler
 
-/* timer */
-handle32:
-	pushl $32
-	jmp interrupt_handler
-
-/* keyboard */
-handle33:
-	pushl $33
-	jmp interrupt_handler
-
 abort_handler:
 	pushl %ds
 	pushal
 	movw $SELECTOR_KERN_DATA, %ax
 	movw %ax,%ds
-	call fault
+	call interrupt
+
+	testl %eax, %eax
+	jnz end_abort
+	call thread_switch
+
+end_abort:
 	popal
 	popl %ds
 	addl $4, %esp
@@ -269,27 +246,16 @@ abort_with_error_handler:
 	pushal
 	movw $SELECTOR_KERN_DATA, %ax
 	movw %ax,%ds
-	call fault_with_error
+	call interrupt
+
+	testl %eax, %eax
+	jnz end_abort_with_error
+	call thread_switch
+
+end_abort_with_error:
 	popal
 	popl %ds
 	addl $8, %esp
-	iret
-
-interrupt_handler:
-	pushl %ds
-	pushal
-	movw $SELECTOR_KERN_DATA, %ax
-	movw %ax,%ds
-	call interrupt
-
-	//TODO callee set EOI
-	movl 36(%esp), %eax
-	addb $0x40, %al
-	outb %al, $PIC_MASTER1
-
-	popal
-	popl %ds
-	addl $4, %esp
 	iret
 
 service_handler:

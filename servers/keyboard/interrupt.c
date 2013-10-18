@@ -123,7 +123,7 @@ Version 2, June 1991
 static UW shiftkey_code;
 static UW capskey;
 
-static void keyboard_interrupt();
+static ER keyboard_interrupt(void);
 
 
 /*
@@ -158,7 +158,7 @@ static W get_keycode(int cont, int num)
  * キーボード割り込みのハンドラ
  *
  */
-static void keyboard_interrupt()
+static ER keyboard_interrupt()
 {
     W key_code;
     W ch;
@@ -169,45 +169,45 @@ static void keyboard_interrupt()
     switch (key_code) {
     case 0xf1:
 	capskey = NORMAL;
-	return;
+	return E_OK;
 
     case 0x2a:
     case 0x36:
 	shiftkey_code |= SHIFT_DOWN;
-	return;
+	return E_OK;
 
     case 0x3a:
 	if (capskey == CAPS_DOWN)
 	    capskey = NORMAL;
 	else
 	    capskey = CAPS_DOWN;
-	return;
+	return E_OK;
 
     case 0x38:
 	shiftkey_code |= ALT_DOWN;
-	return;
+	return E_OK;
 
     case 0x1d:
 	shiftkey_code |= CONTROL_DOWN;
-	return;
+	return E_OK;
 
     case 0xb8:
 	shiftkey_code &= ~ALT_DOWN;
-	return;
+	return E_OK;
 
     case 0x9d:
 	shiftkey_code &= ~CONTROL_DOWN;
-	return;
+	return E_OK;
 
     case 0xaa:
     case 0xb6:
 	shiftkey_code &= ~SHIFT_DOWN;
-	return;
+	return E_OK;
     }
 
     /* もし、キーを離したところならば、無視する */
     if (ISBREAK(key_code))
-	return;
+	return E_OK;
 
     /* マトリックステーブルから、キーコードを取り出す。
      */
@@ -229,7 +229,7 @@ static void keyboard_interrupt()
 #endif
 
     if (ch == NULL)
-	return;
+	return E_OK;
 
     /* イベントをバッファに溜める
      */
@@ -241,4 +241,6 @@ static void keyboard_interrupt()
      */
     dbg_printf("<%x>", key_code);
 #endif
+
+    return E_OK;
 }

@@ -34,7 +34,8 @@ For more information, please refer to <http://unlicense.org/>
 /* context.c */
 extern ER mpu_copy_stack(ID src, W esp, ID dst);
 extern ER mpu_set_context(ID tid, W eip, B * stackp, W stsize);
-extern W pf_handler(W cr2, W eip);
+extern ER context_page_fault_handler(void);
+extern ER context_mpu_handler(void);
 
 /* ncontext.c */
 extern VP *context_prev_sp;
@@ -76,24 +77,19 @@ extern void fpu_start(thread_t *taskp);
 
 /* gate.c */
 extern void gate_set(GateDescriptor *p,
-		UH selector, W (*handler)(void), UB attr);
+		UH selector, void (*handler)(void), UB attr);
 extern void gdt_initialize(void);
 extern void idt_initialize(void);
-extern void idt_set(UB no, UH selector, W (*handler)(void), UB type, UB dpl);
+extern void idt_set(UB no, void (*handler)(void));
 
 /* interrupt.c */
-extern volatile W on_interrupt;
-extern W init_interrupt(void);
-extern void interrupt(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		UW ecx, UW eax, UW ds, UW no,
-		UW eip, UW cs, W eflags);
-extern ER interrupt_bind(W inhno, T_DINH *pk_dinh);
-extern void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		UW ecx, UW eax, UW ds, UW no,
-		UW err, UW eip, UW cs, W eflags);
-extern void protect_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		   UW ecx, UW eax, UW ds, UW no,
-		   UW err, UW eip, UW cs, UW eflags);
+extern volatile UINT interrupt_nest;
+extern ER interrupt_initialize(void);
+extern W interrupt(const UW edi, const UW esi, const UW ebp, const UW esp,
+		const UW ebx, const UW edx, const UW ecx, const UW eax,
+		const UW ds, const UW no, const UW err, const UW eip,
+		const UW cs, const W eflags);
+ER interrupt_bind(const INHNO inhno, const T_DINH *pk_dinh);
 
 /* paging_init.c */
 extern void paging_initialize(void);
@@ -113,42 +109,8 @@ extern PTE *copy_kernel_page_table(const PTE *src);
 extern void release_user_pages(PTE *directory);
 extern ER copy_user_pages(PTE *dest, const PTE *src, size_t cnt);
 
-/* abort.s */
-extern W handle0(void);
-extern W handle1(void);
-extern W handle2(void);
-extern W handle3(void);
-extern W handle4(void);
-extern W handle5(void);
-extern W handle6(void);
-extern W handle7(void);
-extern W handle8(void);
-extern W handle9(void);
-extern W handle10(void);
-extern W handle11(void);
-extern W handle12(void);
-extern W handle13(void);
-extern W handle14(void);
-extern W handle15(void);
-extern W handle16(void);
-extern W handle17(void);
-extern W handle18(void);
-extern W handle19(void);
-extern W handle20(void);
-extern W handle21(void);
-extern W handle22(void);
-extern W handle23(void);
-extern W handle24(void);
-extern W handle25(void);
-extern W handle26(void);
-extern W handle27(void);
-extern W handle28(void);
-extern W handle29(void);
-extern W handle30(void);
-extern W handle31(void);
-extern W handle32(void);
-extern W handle33(void);
-extern W service_handler(void);
+/* handler.s */
+extern void service_handler(void);
 
 /* gate_loader.s */
 extern void gdt_load(void);

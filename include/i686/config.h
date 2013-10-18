@@ -16,8 +16,8 @@ Version 2, June 1991
 
 #define GDT_ADDR	(0x80001000UL)
 #define IDT_ADDR	(0x80001800UL)
-#define MAX_GDT		(255)	/* GDT の最大のインデックス */
-#define MAX_IDT		(127)	/* IDT の最大のインデックス */
+#define MAX_GDT		(5)	/* GDT の最大のインデックス */
+#define MAX_IDT		(47)	/* IDT の最大のインデックス */
 
 #define PAGE_DIR_ADDR	(0x2000)	/* 仮想ページディレクトリテーブル */
 

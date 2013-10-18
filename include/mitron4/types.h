@@ -75,14 +75,16 @@ typedef struct {
 	W nsec;
 } SYSTIM;
 
-typedef int VP_INT;
+typedef unsigned long INHNO;
+
+typedef long VP_INT;
 
 typedef long ER_BOOL;
 typedef long ER_ID;
 typedef long ER_UINT;
 
-typedef unsigned int RDVPTN;
-typedef int RDVNO;
+typedef unsigned long RDVPTN;
+typedef long RDVNO;
 
 #define TBIT_RDVPTN 32
 

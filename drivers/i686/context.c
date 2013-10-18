@@ -17,11 +17,14 @@ Version 2, June 1991
 #include <vm.h>
 #include <mpu/config.h>
 #include "func.h"
+#include "ready.h"
 #include "setting.h"
 #include "sync.h"
+#include "mpu/interrupt.h"
 #include "mpu/mpufunc.h"
 
 static void create_user_stack(thread_t * tsk, W size, W acc);
+static void kill(void);
 
 
 /*
@@ -85,8 +88,7 @@ ER mpu_copy_stack(ID src, W esp, ID dst)
     return (E_OK);
 }
 
-/* default page fault handler */
-W pf_handler(W cr2, W eip)
+static void kill(void)
 {
     thread_local_t *local = (thread_local_t*)LOCAL_ADDR;
 
@@ -96,6 +98,45 @@ W pf_handler(W cr2, W eip)
     	panic("full kqueue");
 
     thread_start(delay_thread_id);
+}
+
+/* default page fault handler */
+ER context_page_fault_handler(void)
+{
+    UW addr;
+    T_REGION *regp;
+
+    if (running->attr.domain_id == KERNEL_DOMAIN_ID) {
+    	return (E_SYS);
+    }
+
+    addr = (UW)fault_get_addr();
+    regp = &running->regions[STACK_REGION];
+
+    /* フォルトを起こしたアドレスがスタック領域にあればページを割り当てる */
+    if (regp->permission &&
+	    (((UW) regp->start_addr <= addr) &&
+	    (addr <= ((UW) regp->start_addr + regp->max_size)))) {
+	ER result = region_map(thread_id(running), (VP) addr, PAGE_SIZE, ACC_USER);
+
+	if (result == E_OK) {
+	    /* ページフォルト処理に成功した */
+	    tlb_flush_all();
+	    return (E_OK);
+	}
+    }
+
+    kill();
+    return (E_OK);
+}
+
+ER context_mpu_handler(void)
+{
+    if (running->attr.domain_id == KERNEL_DOMAIN_ID) {
+    	return (E_SYS);
+    }
+
+    kill();
     return (E_OK);
 }
 
@@ -162,9 +203,6 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
 	    EFLAG_IBIT | EFLAG_IOPL3,
 	    tsk->attr.entry,
 	    (VP)esp);
-
-    /* page fault handler の登録 */
-    tsk->handler = pf_handler;
 
     leave_critical();
 

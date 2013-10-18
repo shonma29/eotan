@@ -24,51 +24,44 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <mpu/io.h>
-#include "../../kernel/sync.h"
-#include "../../kernel/mpu/mpufunc.h"
-#include "archfunc.h"
-#include "handler.h"
-#include "8254.h"
-#include "8259a.h"
 
-static void pit_set(const UH n);
+.text
+
+.set SELECTOR_KERN_DATA, 0x10
+.set PIC_MASTER1, 0x0020
+
+.globl handle32
+.globl handle33
 
 
-ER pit_initialize(const UW freq)
-{
-	UW half;
-	UW n;
-	T_DINH pk_dinh = {
-		TA_HLNG,
-		(FP)intr_interval
-	};
+/* timer */
+handle32:
+	pushl $32
+	jmp interrupt_handler
 
-	if ((freq < PIT_MIN_FREQ)
-			|| (freq > PIT_MAX_FREQ))
-		return E_PAR;
+/* keyboard */
+handle33:
+	pushl $33
+	jmp interrupt_handler
 
-	half = (freq << (8 - 1)) * 3;
-	n = ((PIT_CLOCK_MUL3 << 8) + half) / (half << 1) + 1;
+interrupt_handler:
+	pushl %ds
+	pushal
+	movw $SELECTOR_KERN_DATA, %ax
+	movw %ax,%ds
+	call interrupt
 
-	enter_critical();
-	idt_set(PIC_IR_VECTOR(ir_pit), handle32);
-	interrupt_bind(PIC_IR_VECTOR(ir_pit), &pk_dinh);
-	pit_set(n);
-	pic_reset_mask(ir_pit);
-	leave_critical();
+	movl %eax, %edx
+	movl 36(%esp), %eax
+	addb $0x40, %al
+	outb %al, $PIC_MASTER1
 
-	return E_OK;
-}
+	testl %edx, %edx
+	jnz end_interrupt
+	call thread_switch
 
-static void pit_set(const UH n)
-{
-	outb(pit_std_control,
-			PIT_SELECT_CNT0
-			| PIT_ACCESS_WORD
-			| PIT_MODE_RATE
-			| PIT_COUNT_BINARY);
-	outb(pit_std_counter0, n & 0xff);
-	outb(pit_std_counter0, (n >> 8) & 0xff);
-}
+end_interrupt:
+	popal
+	popl %ds
+	addl $4, %esp
+	iret

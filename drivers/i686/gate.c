@@ -57,16 +57,17 @@ void idt_initialize(void)
 	idt_load();
 }
 
-void idt_set(UB no, UH selector, W (*handler)(void), UB type, UB dpl)
+void idt_set(UB no, void (*handler)(void))
 {
 	GateDescriptor *p = (GateDescriptor*)IDT_ADDR;
 
 	//TODO error check
-	gate_set(&(p[no]), selector, handler, ATTR_PRESENT | (dpl << 5) | type);
+	gate_set(&(p[no]), kern_code, handler,
+			ATTR_PRESENT | (dpl_kern << 5) | interruptGate32);
 }
 
 void gate_set(GateDescriptor *p,
-		UH selector, W (*handler)(void), UB attr)
+		UH selector, void (*handler)(void), UB attr)
 {
 	//TODO error check
 	p->offsetLow = ((UW)handler) & 0xffff;

@@ -1,35 +1,32 @@
 /*
+This is free and unencumbered software released into the public domain.
 
-B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
 
-GNU GENERAL PUBLIC LICENSE
-Version 2, June 1991
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
 
-(C) B-Free Project.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
 
-(C) 2002, Tomohide Naniwa
-
+For more information, please refer to <http://unlicense.org/>
 */
-/*
- * 時間管理機能
- */
-/*
- * $Log: time.c,v $
- * Revision 1.4  2000/04/03 14:34:48  naniwa
- * to call timer handler in task
- *
- * Revision 1.3  2000/02/27 15:30:51  naniwa
- * to work as multi task OS
- *
- * Revision 1.2  2000/02/06 09:10:58  naniwa
- * minor fix
- *
- * Revision 1.1  1999/11/14 14:53:38  naniwa
- * add time management function
- *
- */
-
 #include <core.h>
+#include <set/list.h>
+#include <set/tree.h>
 #include <string.h>
 #include <sys/time.h>
 #include "thread.h"
@@ -39,6 +36,18 @@ Version 2, June 1991
 #include "sync.h"
 #include "mpu/mpufunc.h"
 
+#if 0
+typedef struct {
+	node_t node;
+	struct timespec t;
+	list_t wait;
+	FP handler;
+} timer_t;
+
+static slab_t timer_slab;
+static tree_t timer_tree;
+static int timer_hand;
+#endif
 static struct timer_list {
     struct timer_list *next;
     W time;
@@ -99,7 +108,7 @@ ER thread_delay(RELTIM dlytim)
  * 処理：	インターバルタイマの割り込み処理を行う。
  *
  */
-void intr_interval(void)
+ER intr_interval(void)
 {
     running->time.total++;
 
@@ -121,6 +130,8 @@ void intr_interval(void)
 	    thread_start(delay_thread_id);
 	}
     }
+
+    return (E_OK);
 }
 
 /*************************************************************************

@@ -96,7 +96,7 @@ extern ER queue_send(ID dtqid, VP_INT data);
 /* time.c */
 extern BOOL do_timer;
 extern void check_timer(void);
-extern void intr_interval(void);
+extern ER intr_interval(void);
 extern ER thread_delay(RELTIM dlytim);
 extern void timer_initialize(void);
 

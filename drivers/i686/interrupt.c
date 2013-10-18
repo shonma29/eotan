@@ -1,250 +1,92 @@
 /*
+This is free and unencumbered software released into the public domain.
 
-B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
 
-GNU GENERAL PUBLIC LICENSE
-Version 2, June 1991
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
 
-(C) B-Free Project.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
 
-(C) 2001-2002, Tomohide Naniwa
-
+For more information, please refer to <http://unlicense.org/>
 */
-/* fault.c
- *
- *
- */
-
 #include <core.h>
-#include <string.h>
 #include <mpu/config.h>
-#include <mpu/io.h>
-#include "../../kernel/arch/8259a.h"
-#include "interrupt.h"
-#include "thread.h"
-#include "func.h"
-#include "ready.h"
 #include "sync.h"
-#include "mpufunc.h"
-#include "gate.h"
+#include "mpu/handler.h"
+#include "mpu/interrupt.h"
+#include "mpu/mpufunc.h"
 
-/*
- *	割り込み処理の大域変数
- *
- */
-volatile W on_interrupt = 0;
+volatile UINT interrupt_nest = 0;
+static ER (*isr[MAX_IDT + 1])(void);
 
-/*
- * 割り込みハンドラテーブル
- * def_int システムコールで登録するときに使用する。
- */
-static FP intr_table[MAX_IDT + 1];
-
+static ER dummy_handler(void);
 
 
-/**************************************************************************
- * init_interrupt --- 割り込み機能の初期化を行う。
- *
- * 引数：なし
- *
- * 返値：エラー番号
- *
- */
-W init_interrupt(void)
+static ER dummy_handler(void)
 {
-    W i;
-
-    printk("init_interrupt\n");
-
-    idt_set(int_division_error, kern_code, handle0, interruptGate32, dpl_kern);
-    idt_set(int_debugger, kern_code, handle1, interruptGate32, dpl_kern);
-    idt_set(int_nmi, kern_code, handle2, interruptGate32, dpl_kern);
-    idt_set(int_break_point, kern_code, handle3, interruptGate32, dpl_kern);
-    idt_set(int_overflow, kern_code, handle4, interruptGate32, dpl_kern);
-    idt_set(int_out_of_bound, kern_code, handle5, interruptGate32, dpl_kern);
-    idt_set(int_invalid_operation_code, kern_code, handle6, interruptGate32, dpl_kern);
-    idt_set(int_no_coprocessor, kern_code, handle7, interruptGate32, dpl_kern);
-    idt_set(int_double_fault, kern_code, handle8, interruptGate32, dpl_kern);
-    idt_set(int_coprocessor_segment_overrun, kern_code, handle9, interruptGate32, dpl_kern);
-    idt_set(int_invalid_tss, kern_code, handle10, interruptGate32, dpl_kern);
-    idt_set(int_no_segment, kern_code, handle11, interruptGate32, dpl_kern);
-    idt_set(int_stack_segment_fault, kern_code, handle12, interruptGate32, dpl_kern);
-    idt_set(int_protection, kern_code, handle13, interruptGate32, dpl_kern);
-    idt_set(int_page_fault, kern_code, handle14, interruptGate32, dpl_kern);
-    idt_set(int_reserved_15, kern_code, handle15, interruptGate32, dpl_kern);
-    idt_set(int_math_fault, kern_code, handle16, interruptGate32, dpl_kern);
-    idt_set(int_alignment_check, kern_code, handle17, interruptGate32, dpl_kern);
-    idt_set(int_machine_check, kern_code, handle18, interruptGate32, dpl_kern);
-    idt_set(int_simd, kern_code, handle19, interruptGate32, dpl_kern);
-    idt_set(int_reserved_20, kern_code, handle20, interruptGate32, dpl_kern);
-    idt_set(int_reserved_21, kern_code, handle21, interruptGate32, dpl_kern);
-    idt_set(int_reserved_22, kern_code, handle22, interruptGate32, dpl_kern);
-    idt_set(int_reserved_23, kern_code, handle23, interruptGate32, dpl_kern);
-    idt_set(int_reserved_24, kern_code, handle24, interruptGate32, dpl_kern);
-    idt_set(int_reserved_25, kern_code, handle25, interruptGate32, dpl_kern);
-    idt_set(int_reserved_26, kern_code, handle26, interruptGate32, dpl_kern);
-    idt_set(int_reserved_27, kern_code, handle27, interruptGate32, dpl_kern);
-    idt_set(int_reserved_28, kern_code, handle28, interruptGate32, dpl_kern);
-    idt_set(int_reserved_29, kern_code, handle29, interruptGate32, dpl_kern);
-    idt_set(int_reserved_30, kern_code, handle30, interruptGate32, dpl_kern);
-    idt_set(int_reserved_31, kern_code, handle31, interruptGate32, dpl_kern);
-
-    idt_set(PIC_IR_VECTOR(ir_keyboard), kern_code, handle33, interruptGate32, dpl_kern);
-
-    for (i = 0; i < sizeof(intr_table) / sizeof(intr_table[0]); i++) {
-	intr_table[i] = NULL;
-    }
-
-    on_interrupt = 0;
-
-    return (E_OK);
+	return E_SYS;
 }
 
-/*************************************************************************
- * interrupt --- 外部割り込みの処理
- *
- * 引数：	no	割り込み番号
- *
- * 返値：	なし
- *
- * 処理：	外部割り込みが発生したときの処理を行う。
- *
- */
-void interrupt(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		UW ecx, UW eax, UW ds, UW no,
-		UW eip, UW cs, W eflags)
+ER interrupt_initialize(void)
 {
-    on_interrupt++;
+	size_t i;
 
-    if (intr_table[no]) {
-	(intr_table[no]) ();
-    } else {
-	printk("unknown interrupt %d\n", no);
-    }
+	printk("interrupt_initialize\n");
 
-    enter_critical();
-    --on_interrupt;
-
-    if (on_interrupt == 0) {
-	thread_switch();
-    }
-}
-
-/*
- * def_int システムコールによって、割り込みハンドラを登録する。
- *
- * 登録するときには、直接 IDT の値は変更せず、intr_table[] に登録する。
- */
-ER interrupt_bind(W inhno, T_DINH *pk_dinh)
-{
-    if ((inhno < 0) || (inhno >= sizeof(intr_table) / sizeof(intr_table[0]))) {
-	return (E_PAR);
-    }
-
-    printk("set_interrupt_entry = %d, func = 0x%x\n", inhno, pk_dinh->inthdr);
-    intr_table[inhno] = pk_dinh->inthdr;
-
-    return (E_OK);
-}
-
-/*************************************************************************
- * page_fault
- *
- * 引数： 
- *
- * 返値：
- *
- * 処理：
- *
- */
-void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		UW ecx, UW eax, UW ds, UW no,
-		UW err, UW eip, UW cs, W eflags)
-{
-    W result;
-    UW addr;
-    T_REGION *regp;
-
-    ++on_interrupt;
-    if (running->handler) {
-      addr = (UW)fault_get_addr();
-      /* フォルトを起こしたアドレスがスタック領域にあればページを割り当てる */
-      regp = &running->regions[STACK_REGION];
-      if (regp->permission &&
-	  (((UW) regp->start_addr <= addr) &&
-	   (addr <= ((UW) regp->start_addr + regp->max_size)))) {
-	result = region_map(thread_id(running), (VP) addr, PAGE_SIZE, ACC_USER);
-	if (result == E_OK) {
-	  /* ページフォルト処理に成功した */
-	  --on_interrupt;
-	  tlb_flush_all();
-	  return;
+	// MPU exceptions
+	for (i = 0; i < sizeof(handlers) / sizeof(handlers[0]); i++) {
+		isr[i] = context_mpu_handler;
+		idt_set(i, handlers[i]);
 	}
-      }
 
-      /* ページフォルト時の処理ハンドラが指定してあった */
-      /* ページフォルトハンドラの引数は以下のとおり
+	isr[int_page_fault] = context_page_fault_handler;
 
-       * ページフォルトが発生したアドレス
-       * 実行している EIP
-       * ページフォルト処理の result code
-       */
-      result = (running->handler) ((UW)fault_get_addr(), eip);
-      if (result == E_OK) {
-	/* ページフォルト処理に成功した */
-	--on_interrupt;
-	return;
-      }
-      else {
-	printk("page_fault_handler cause error\n");
-      }
-    }
+	// hardware interruptions
+	for (; i < sizeof(isr) / sizeof(isr[0]); i++)
+		isr[i] = dummy_handler;
 
-    printk("page fault=%p\n", fault_get_addr());
-    fault_with_error(edi, esi, ebp, esp, ebx, edx,
-		ecx, eax, ds, no, err, eip, cs, eflags);
-
-    --on_interrupt;
-
-    panic("page fault");
+	return E_OK;
 }
 
-/*************************************************************************
- * protect_fault --- 
- *
- * 引数：
- *
- * 返値：
- *
- * 処理：
- *
- */
-void protect_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		   UW ecx, UW eax, UW ds, UW no,
-		   UW err, UW eip, UW cs, UW eflags)
+ER interrupt_bind(const INHNO inhno, const T_DINH *pk_dinh)
 {
-    W result; 
+	if (inhno >= sizeof(isr) / sizeof(isr[0]))
+		return E_PAR;
 
-    ++on_interrupt;
-    if (running->handler) {
-	/* ページフォルト時の処理ハンドラが指定してあった */
-	/* ページフォルトハンドラの引数は以下のとおり
+	printk("interrupt_bind[%d] 0x%x\n", inhno, pk_dinh->inthdr);
+	isr[inhno] = (pk_dinh->inthdr)?
+			((ER (*)(void))(pk_dinh->inthdr)):dummy_handler;
 
-	 * ページフォルトが発生したアドレス
-	 * 実行している EIP
-	 * ページフォルト処理の result code
-	 */
-	result = (running->handler) ((UW)fault_get_addr(), eip);
-	if (result == E_OK) {
-	    /* ページフォルト処理に成功した */
-	    --on_interrupt;
-	    return;
-	}
-	else {
-	  printk("page_fault_handler cause error\n");
-	}
-    }
+	return E_OK;
+}
 
-    fault_with_error(edi, esi, ebp, esp, ebx, edx,
-		ecx, eax, ds, no, err, eip, cs, eflags);
+W interrupt(const UW edi, const UW esi, const UW ebp, const UW esp,
+		const UW ebx, const UW edx, const UW ecx, const UW eax,
+		const UW ds, const UW no, const UW err, const UW eip,
+		const UW cs, const W eflags)
+{
+	interrupt_nest++;
+
+	if ((isr[no])())
+		//TODO call fault when no error code
+		fault_with_error(edi, esi, ebp, esp, ebx, edx,
+				ecx, eax, ds, no, err, eip, cs, eflags);
+
+	enter_critical();
+	return --interrupt_nest;
 }

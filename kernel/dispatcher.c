@@ -137,7 +137,7 @@ ER thread_switch(void)
     printk("thread_switch(): start\n");
 #endif
 
-    if (on_interrupt) {
+    if (interrupt_nest) {
 	leave_critical();
 	return (E_OK);
     }
