@@ -39,14 +39,14 @@ void timespec_add(struct timespec *dest, const struct timespec *operand)
 	}
 }
 
-int timespec_after(const struct timespec *t1, const struct timespec *t2)
+int timespec_compare(const struct timespec *t1, const struct timespec *t2)
 {
 	time_t diff = t1->tv_sec - t2->tv_sec;
 
 	if (diff < 0)
-		return 0;
+		return -1;
 	else if (diff > 0)
 		return 1;
 	else
-		return t1->tv_nsec >= t2->tv_nsec;
+		return t1->tv_nsec - t2->tv_nsec;
 }

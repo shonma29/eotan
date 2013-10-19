@@ -43,6 +43,10 @@ typedef struct {
 	ER result;
 	union {
 		struct {
+			FP callback;
+			VP_INT arg;
+		} dly;
+		struct {
 			VP_INT data;
 		} que;
 		struct {

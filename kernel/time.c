@@ -25,281 +25,215 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <set/list.h>
-#include <set/tree.h>
-#include <string.h>
 #include <sys/time.h>
-#include "thread.h"
 #include "func.h"
 #include "ready.h"
 #include "setting.h"
 #include "sync.h"
-#include "mpu/mpufunc.h"
 
-#if 0
+#define TICK (1000 * 1000 * 1000 / TIME_TICKS)
+
 typedef struct {
 	node_t node;
-	struct timespec t;
-	list_t wait;
-	FP handler;
+	struct timespec ts;
+	list_t threads;
 } timer_t;
 
+static struct timespec system_time;
 static slab_t timer_slab;
 static tree_t timer_tree;
-static int timer_hand;
-#endif
-static struct timer_list {
-    struct timer_list *next;
-    W time;
-    void (*func) (VP);
-    VP argp;
-} timer[MAX_TIME_HANDLER];
 
-/* 
- * 変数宣言
- */
-
-/* 大域変数の宣言 */
-BOOL do_timer = FALSE;
-
-static struct timer_list *free_timer;
-static struct timer_list *time_list;
-
-static void set_timer(W time, void (*func) (VP), VP argp);
-static ER unset_timer(void (*func) (VP), VP arg);
+static inline timer_t *getTimerParent(const node_t *p);
+static inline thread_t *getThreadParent(const list_t *p);
+static ER add_timer(RELTIM time, thread_t *th);
 
 
-/*
- * タスク遅延
- */
+static inline timer_t *getTimerParent(const node_t *p) {
+	return (timer_t*)((ptr_t)p - offsetof(timer_t, node));
+}
 
-static void
-dly_func (VP p)
+static inline thread_t *getThreadParent(const list_t *p) {
+	return (thread_t*)((ptr_t)p - offsetof(thread_t, wait.waiting));
+}
+
+void time_initialize(time_t *seconds)
 {
-  thread_t *taskp;
+	long nsec = 0;
 
-  enter_serialize();
-  taskp = (thread_t *)p;
-  taskp->wait.result = E_OK;
-  leave_serialize();
+	timespec_set(&system_time, seconds, &nsec);
+}
 
-  release(taskp);
+ER time_set(SYSTIM *pk_systim)
+{
+	if (!pk_systim)
+		return E_PAR;
+
+//TODO check like time_get, or disable interrupt
+	timespec_set(&system_time, &(pk_systim->sec), &(pk_systim->nsec));
+
+	return E_OK;
+}
+
+ER time_get(SYSTIM *pk_systim)
+{
+	struct timespec t1;
+	struct timespec t2;
+
+	if (!pk_systim)
+		return E_PAR;
+
+	do {
+		t1 = system_time;
+		t2 = system_time;
+	} while (!timespec_equals(&t1, &t2));
+
+	timespec_get_sec(&(pk_systim->sec), &t1);
+	timespec_get_nsec(&(pk_systim->nsec), &t1);
+
+	return E_OK;
+}
+
+void time_get_raw(struct timespec *ts)
+{
+	struct timespec t2;
+
+	do {
+		*ts = system_time;
+		t2 = system_time;
+	} while (!timespec_equals(ts, &t2));
+}
+
+void time_tick(void)
+{
+	struct timespec add = {
+		0, TICK
+	};
+
+	timespec_add(&system_time, &add);
+}
+
+static int compare(const int a, const int b)
+{
+	struct timespec *t1 = (struct timespec*)&(((timer_t*)a)->ts);
+	struct timespec *t2 = (struct timespec*)&(((timer_t*)b)->ts);
+
+	return timespec_compare(t1, t2);
+}
+
+void timer_initialize(void)
+{
+	timer_slab.unit_size = sizeof(timer_t);
+	timer_slab.block_size = PAGE_SIZE;
+	timer_slab.min_block = 1;
+	timer_slab.max_block = tree_max_block(65536, PAGE_SIZE,
+			sizeof(timer_t));
+	timer_slab.palloc = palloc;
+	timer_slab.pfree = pfree;
+	slab_create(&timer_slab);
+
+	tree_create(&timer_tree, &timer_slab, compare);
+}
+
+static void resume(thread_t *th)
+{
+	list_remove(&(th->wait.waiting));
+	release(th);
 }
 
 ER thread_delay(RELTIM dlytim)
 {
-  if (dlytim < 0) return(E_PAR);
-  else if (! dlytim) return(E_OK);
-  set_timer (dlytim, (void (*)(VP))dly_func, running);
-  running->wait.type = wait_dly;
-  wait(running);
-  unset_timer ((void (*)(VP))dly_func, running);
-  return (running->wait.result);
+	ER result;
+
+	if (dlytim < 0)
+		return E_PAR;
+
+	else if (!dlytim)
+		return E_OK;
+
+	result = add_timer(dlytim, running);
+	if (result)
+		return result;
+
+	running->wait.type = wait_dly;
+	running->wait.detail.dly.callback = (FP)resume;
+	running->wait.detail.dly.arg = (VP_INT)running;
+	wait(running);
+
+	return running->wait.result;
 }
-
 
-/*************************************************************************
- * intr_interval --- 
- *
- * 引数：	なし
- *
- * 返値：	なし
- *
- * 処理：	インターバルタイマの割り込み処理を行う。
- *
- */
-ER intr_interval(void)
+static ER add_timer(RELTIM time, thread_t *th)
 {
-    running->time.total++;
+	node_t *p;
+	timer_t *t;
+	timer_t entry;
+	struct timespec add;
 
-    /* システム時間の増加 */
-    time_tick();
+	if (time <= 0)
+		return E_PAR;
 
-    if ((running->time.left) > 0 && (running->priority >= pri_user_foreground)) {
-	if (--running->time.left == 0) {
-	    running->time.left = TIME_QUANTUM;
-	    ready_rotate(running->priority);
-	}
-    }
+	add.tv_sec = time / (1000 * 1000);
+	add.tv_nsec = time % (1000 * 1000);
+	entry.node.key = (int)&t;
+	time_get_raw(&(entry.ts));
 
-    if (time_list != NULL) {
-	(time_list->time)--;
-	if ((time_list->time <= 0) && (do_timer == FALSE)) {
-	    /* KERNEL_TASK で timer に設定されている関数を実行 */
-	    do_timer = TRUE;
-	    thread_start(delay_thread_id);
-	}
-    }
-
-    return (E_OK);
-}
-
-/*************************************************************************
- * timer_initialize
- *
- * 引数：
- *
- * 返値：
- *
- * 処理：
- *
- */
-void timer_initialize(void)
-{
-    W i;
-
-    printk("initialize timer\n");
-    enter_critical();
-    for (i = 0; i <= MAX_TIME_HANDLER - 2; i++) {
-	timer[i].next = &timer[i + 1];
-    }
-    timer[MAX_TIME_HANDLER - 1].next = NULL;
-    free_timer = timer;
-    time_list = NULL;
-    leave_critical();
-}
-
-/*************************************************************************
- * set_timer 
- *
- * 引数：
- *
- * 返値：
- *
- * 処理：
- *
- */
-static void set_timer(W time, void (*func) (VP), VP argp)
-{
-    struct timer_list *p, *q, *r;
-    W total;
-
-    if ((func == NULL) || (time <= 0)) {
-	return;
-    }
-    enter_critical();
-    p = free_timer;
-    if (p == NULL) {
-	printk("timer entry empty.\n");
-	leave_critical();
-	return;
-    }
-    free_timer = free_timer->next;
-    leave_critical();
-    p->time = time;
-    p->func = (void (*)(VP)) func;
-    p->argp = argp;
-    p->next = NULL;
-
-    enter_critical();
-    if (time_list == NULL) {
-	time_list = p;
-	leave_critical();
-	return;
-    }
-
-    total = time_list->time;
-    if (total > p->time) {
-	time_list->time -= p->time;
-	p->next = time_list;
-	time_list = p;
-	leave_critical();
-	return;
-    }
-
-    for (q = time_list, r = q->next; r != NULL; q = q->next, r = r->next) {
-	if ((total + r->time) > p->time)
-	    break;
-	total += r->time;
-    }
-
-    p->time = p->time - total;
-    p->next = r;
-    q->next = p;
-    if (r != NULL)
-	r->time -= p->time;
-    leave_critical();
-}
-
-/*************************************************************************
- * unset_timer --- タイマー待ち行列から、引数で指定した条件に合うエントリ
- *		   を削除する。
- *
- * 引数：
- *	func	
- *	arg
- *
- * 返値：
- *     エラー番号
- *
- * 処理：
- *	タイマーリストをチェックし、待ち時間のすぎたエントリがあれば、
- *	エントリにセットされた関数を呼び出す。
- *
- *
- */
-static ER unset_timer(void (*func) (VP), VP arg)
-{
-    struct timer_list *point, *before;
-
-    enter_critical();
-    before = NULL;
-    for (point = time_list; point != NULL; point = point->next) {
-	if ((point->func == func) && (point->argp == arg)) {
-	    break;
-	}
-	before = point;
-    }
-    if (point == NULL) {
-	leave_critical();
-	return (E_PAR);
-    }
-
-    if (point->next) {
-	point->next->time += point->time;
-    }
-    if (before == NULL) {
-	time_list = point->next;
-    } else {
-	before->next = point->next;
-    }
-    point->next = free_timer;
-    free_timer = point;
-    leave_critical();
-    return (E_OK);
-}
-
-/*************************************************************************
- * check_timer
- *
- * 引数：
- *	なし
- *
- * 返値：
- *	なし
- *
- * 処理：
- *	タイマーリストをチェックし、待ち時間のすぎたエントリがあれば、
- *	エントリにセットされた関数を呼び出す。
- *
- */
-void check_timer(void)
-{
-    struct timer_list *p, *q;
-
-    if (time_list == NULL) {
-	return;
-    }
-
-    for (p = time_list; (p != NULL) && (p->time <= 0L); p = q) {
-	(p->func) (p->argp);
-	q = p->next;
-	if (q != NULL)
-	    q->time += time_list->time;
-	p->next = free_timer;
 	enter_critical();
-	free_timer = p;
-	time_list = q;
+	p = tree_get(&timer_tree, (int)&entry);
+	if (!p) {
+		p = tree_put(&timer_tree, (int)&entry);
+		if (!p) {
+			leave_critical();
+			return E_NOMEM;
+		}
+
+		p->key = (int)p;
+		t = getTimerParent(p);
+		t->ts = entry.ts;
+		list_initialize(&(t->threads));
+	}
+	else
+		t = getTimerParent(p);
+
+	list_enqueue(&(t->threads), &(th->wait.waiting));
 	leave_critical();
-    }
+
+	return E_OK;
 }
+
+ER timer_service(void)
+{
+	struct timespec now;
+	node_t *p;
+
+	time_tick();
+	running->time.total++;
+
+	if (running->attr.domain_id != KERNEL_DOMAIN_ID)
+		if (!(--(running->time.left))) {
+			running->time.left = TIME_QUANTUM;
+			ready_rotate(running->priority);
+		}
+
+	time_get_raw(&now);
+
+	while ((p = tree_first(&timer_tree))) {
+		timer_t *t = getTimerParent(p);
+		list_t *w;
+
+		if (timespec_compare(&now, &(t->ts)) < 0)
+			break;
+
+		while ((w = list_dequeue(&(t->threads)))) {
+			thread_t *th = getThreadParent(w);
+			void (*f)(thread_t*) =
+					(void (*)(thread_t*))(th->wait.detail.dly.callback);
+
+			f((thread_t*)(th->wait.detail.dly.arg));
+		}
+
+		tree_remove(&timer_tree, (int)p);
+	}
+
+	return E_OK;
+}
+

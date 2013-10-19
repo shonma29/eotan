@@ -42,7 +42,7 @@ ER pit_initialize(const UW freq)
 	UW n;
 	T_DINH pk_dinh = {
 		TA_HLNG,
-		(FP)intr_interval
+		(FP)timer_service
 	};
 
 	if ((freq < PIT_MIN_FREQ)

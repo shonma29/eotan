@@ -63,11 +63,6 @@ static void process(VP_INT exinf)
 	for (;;) {
 		ID id;
 
-		if (do_timer) {
-			check_timer();
-			do_timer = FALSE;
-		}
-
 		if (lfq_dequeue(&kqueue, &id) != QUEUE_OK)
 			break;
 

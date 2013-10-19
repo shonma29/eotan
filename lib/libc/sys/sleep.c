@@ -19,8 +19,6 @@ Version 2, June 1991
 #include <core.h>
 #include "posix.h"
 
-#define CLOCK (1000 * 1000 / TIME_TICKS)
-
 
 /* usleep --- システムコールの動作は usleep とする．
  *
@@ -34,9 +32,6 @@ usleep (int usecond)
   else if (usecond == 0) {
     return E_OK;
   }
-
-  /* CLOCK への ROUNDUP */
-  usecond = (usecond +  CLOCK - 1) / CLOCK;
 
   dly_tsk(usecond);
 

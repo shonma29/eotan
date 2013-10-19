@@ -94,17 +94,14 @@ extern ER queue_receive(ID dtqid, VP_INT *p_data);
 extern ER queue_send(ID dtqid, VP_INT data);
 
 /* time.c */
-extern BOOL do_timer;
-extern void check_timer(void);
-extern ER intr_interval(void);
-extern ER thread_delay(RELTIM dlytim);
-extern void timer_initialize(void);
-
-/* ntime.c */
 extern ER time_get(SYSTIM *pk_systim);
+extern void time_get_raw(struct timespec *ts);
 extern void time_initialize(time_t *seconds);
 extern ER time_set(SYSTIM *pk_systim);
 extern void time_tick(void);
+extern ER thread_delay(RELTIM dlytim);
+extern void timer_initialize(void);
+extern ER timer_service(void);
 
 /* delay.c */
 extern volatile lfq_t kqueue;

@@ -63,6 +63,7 @@ static inline int timespec_equals(const struct timespec *t1,
 }
 
 extern void timespec_add(struct timespec *dest, const struct timespec *operand);
-extern int timespec_after(const struct timespec *t1, const struct timespec *t2);
+extern int timespec_compare(const struct timespec *t1,
+		const struct timespec *t2);
 
 #endif
