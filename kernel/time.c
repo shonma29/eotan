@@ -176,6 +176,7 @@ static ER add_timer(RELTIM time, thread_t *th)
 	add.tv_nsec = time % (1000 * 1000);
 	entry.node.key = (int)&t;
 	time_get_raw(&(entry.ts));
+	timespec_add(&(entry.ts), &add);
 
 	enter_critical();
 	p = tree_get(&timer_tree, (int)&entry);
@@ -236,4 +237,3 @@ ER timer_service(void)
 
 	return E_OK;
 }
-
