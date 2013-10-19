@@ -32,10 +32,12 @@ static node_t nil_node = { 0, 0, &nil_node, &nil_node };
 #define NIL (&nil_node)
 #define IS_NIL(p) ((p) == &nil_node)
 
+static int compare_int(const int a, const int b);
 static int _walk(node_t *node, int (*callback)(node_t *node));
 
 
-static node_t *node_create(tree_t *tree, const int key) {
+static node_t *node_create(tree_t *tree, const int key)
+{
 	node_t *node = slab_alloc(tree->slab);
 
 	if (node) {
@@ -49,12 +51,14 @@ static node_t *node_create(tree_t *tree, const int key) {
 	return node;
 }
 
-static void node_destroy(tree_t *tree, node_t *node) {
+static void node_destroy(tree_t *tree, node_t *node)
+{
 	slab_free(tree->slab, node);
 	tree->node_num--;
 }
 
-static node_t *node_skew(node_t *p) {
+static node_t *node_skew(node_t *p)
+{
 	if (p->left->level == p->level) {
 		node_t *tmp = p;
 
@@ -66,7 +70,8 @@ static node_t *node_skew(node_t *p) {
 	return p;
 }
 
-static node_t *node_split(node_t *p) {
+static node_t *node_split(node_t *p)
+{
 	if (p->right->right->level == p->level) {
 		node_t *tmp = p;
 
@@ -79,22 +84,11 @@ static node_t *node_split(node_t *p) {
 	return p;
 }
 
-static node_t *node_get(node_t *p, const int key) {
-	while (!IS_NIL(p)) {
-		int d = key - p->key;
-
-		if (d == 0)	return p;
-
-		p = (d < 0)? p->left:p->right;
-	}
-
-	return NULL;
-}
-
-static node_t *node_put(tree_t *tree, node_t *p, node_t *child) {
+static node_t *node_put(tree_t *tree, node_t *p, node_t *child)
+{
 	if (IS_NIL(p))	p = child;
 	else {
-		int d = child->key - p->key;
+		int d = tree->compare(child->key, p->key);
 
 		if (d == 0) {
 			node_destroy(tree, p);
@@ -110,7 +104,8 @@ static node_t *node_put(tree_t *tree, node_t *p, node_t *child) {
 	return p;
 }
 
-static node_t *node_rebalance(node_t *p) {
+static node_t *node_rebalance(node_t *p)
+{
 	if ((p->left->level < (p->level - 1))
 			|| (p->right->level < (p->level - 1))) {
 		if (p->right->level > --p->level)	{
@@ -127,7 +122,8 @@ static node_t *node_rebalance(node_t *p) {
 	return p;
 }
 
-static node_t *node_remove_swap(tree_t *tree, node_t *p, node_t **to) {
+static node_t *node_remove_swap(tree_t *tree, node_t *p, node_t **to)
+{
 	if (IS_NIL(p->left)) {
 		node_t *q = p->right;
 
@@ -142,9 +138,10 @@ static node_t *node_remove_swap(tree_t *tree, node_t *p, node_t **to) {
 	return  node_rebalance(p);
 }
 
-static node_t *node_remove(tree_t *tree, node_t *p, const int key) {
+static node_t *node_remove(tree_t *tree, node_t *p, const int key)
+{
 	if (!IS_NIL(p)) {
-		int d = key - p->key;
+		int d = tree->compare(key, p->key);
 
 		if (d == 0) {
 			if (IS_NIL(p->left)) {
@@ -176,29 +173,51 @@ static node_t *node_remove(tree_t *tree, node_t *p, const int key) {
 	return p;
 }
 
-void tree_create(tree_t *tree, slab_t *slab) {
+static int compare_int(const int a, const int b)
+{
+	return a - b;
+}
+
+void tree_create(tree_t *tree, slab_t *slab,
+		int (*compare)(const int a, const int b))
+{
+	tree->compare = compare? compare:compare_int;
 	tree->node_num = 0;
 	tree->root = NIL;
 	tree->slab = slab;
 }
 
-size_t tree_size(tree_t *tree) {
+size_t tree_size(tree_t *tree)
+{
 	return tree->node_num;
 }
 
-node_t *tree_get(tree_t *tree, const int key) {
-	return node_get(tree->root, key);
+node_t *tree_get(tree_t *tree, const int key)
+{
+	node_t *p = tree->root;
+
+	while (!IS_NIL(p)) {
+		int d = tree->compare(key, p->key);
+
+		if (d == 0)	return p;
+
+		p = (d < 0)? p->left:p->right;
+	}
+
+	return NULL;
 }
 
-node_t *tree_put(tree_t *tree, const int key) {
-	node_t *p= node_create(tree, key);
+node_t *tree_put(tree_t *tree, const int key)
+{
+	node_t *p = node_create(tree, key);
 
 	if (p)	tree->root = node_put(tree, tree->root, p);
 
 	return p;
 }
 
-void tree_remove(tree_t *tree, const int key) {
+void tree_remove(tree_t *tree, const int key)
+{
 	tree->root = node_remove(tree, tree->root, key);
 }
 

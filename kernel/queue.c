@@ -144,7 +144,7 @@ ER queue_initialize(void)
 	queue_slab.pfree = pfree;
 	slab_create(&queue_slab);
 
-	tree_create(&queue_tree, &queue_slab);
+	tree_create(&queue_tree, &queue_slab, NULL);
 	queue_hand = MIN_AUTO_ID - 1;
 
 	return E_OK;

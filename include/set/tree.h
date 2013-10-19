@@ -37,6 +37,7 @@ typedef struct _node_t {
 } node_t;
 
 typedef struct _tree_t {
+	int (*compare)(const int a, const int b);
 	size_t node_num;
 	node_t *root;
 	slab_t *slab;
@@ -47,7 +48,8 @@ typedef struct _tree_t {
 				/ (sizeof(node_t) + (unit_size))))
 
 
-extern void tree_create(tree_t *tree, slab_t *slab);
+extern void tree_create(tree_t *tree, slab_t *slab,
+		int (*compare)(const int a, const int b));
 extern size_t tree_size(tree_t *tree);
 extern node_t *tree_get(tree_t *tree, const int key);
 extern node_t *tree_put(tree_t *tree, const int key);

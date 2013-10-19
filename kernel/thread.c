@@ -61,7 +61,7 @@ ER thread_initialize(void)
 	thread_slab.pfree = pfree;
 	slab_create(&thread_slab);
 
-	tree_create(&thread_tree, &thread_slab);
+	tree_create(&thread_tree, &thread_slab, NULL);
 	thread_hand = MIN_AUTO_ID - 1;
 
 	ready_initialize();

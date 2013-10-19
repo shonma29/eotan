@@ -99,7 +99,7 @@ ER port_initialize(void)
 	port_slab.pfree = pfree;
 	slab_create(&port_slab);
 
-	tree_create(&port_tree, &port_slab);
+	tree_create(&port_tree, &port_slab, NULL);
 	port_hand = MIN_AUTO_ID - 1;
 
 	rdv_slab.unit_size = sizeof(rendezvous_t);
@@ -111,7 +111,7 @@ ER port_initialize(void)
 	rdv_slab.pfree = pfree;
 	slab_create(&rdv_slab);
 
-	tree_create(&rdv_tree, &rdv_slab);
+	tree_create(&rdv_tree, &rdv_slab, NULL);
 	rdv_hand = MIN_AUTO_ID - 1;
 
 	return E_OK;
