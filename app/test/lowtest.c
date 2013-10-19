@@ -217,6 +217,13 @@ char *testmm() {
 		(int)(ts.tv_nsec));
 	assert_eq("clock_gettime[1]", -1, clock_gettime(CLOCK_MONOTONIC, &ts));
 
+	sleep(2);
+	clock_gettime(CLOCK_REALTIME, &ts);
+	printf("time = %d, %d, %x\n",
+		(int)((long long int)(ts.tv_sec) >> 32),
+		(int)((long long int)(ts.tv_sec) & 0xffffffff),
+		(int)(ts.tv_nsec));
+
 	printf("uid = %d\n", getuid());
 	printf("euid = %d\n", geteuid());
 	printf("gid = %d\n", getgid());
