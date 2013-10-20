@@ -34,7 +34,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/unistd.h>
-#include <sys/utsname.h>
 
 #define STDIN_FILENO (0)
 #define STDOUT_FILENO (1)
@@ -79,7 +78,6 @@ extern int sleep(int second);
 extern int clock_gettime(clockid_t clk_id, struct timespec *tp);
 extern mode_t umask(mode_t mask);
 extern int umount(char *special_file);
-extern int uname(struct utsname *name);
 extern int unlink(char *path);
 extern int utime(char *path, struct utimbuf *buf);
 extern int waitpid(pid_t pid, int *status, int option);

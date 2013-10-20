@@ -37,4 +37,6 @@ struct utsname {
 	char machine[LEN_SYSNAME];
 };
 
+extern int uname(struct utsname *name);
+
 #endif

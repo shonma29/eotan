@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 #include <unistd.h>
 #include <utime.h>
+#include <sys/utsname.h>
 #include "cunit.h"
 
 extern void *malloc(size_t);
