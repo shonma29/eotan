@@ -56,9 +56,6 @@ extern UW pmemfree(void);
 /* printk.c */
 extern int printk(const char *format, ...);
 
-/* posix.c */
-extern ER posix_kill_proc(ID pid);
-
 /* tree_utils.c */
 extern node_t *find_empty_key(tree_t *tree, int *hand);
 

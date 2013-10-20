@@ -28,7 +28,9 @@ For more information, please refer to <http://unlicense.org/>
 #include <kthread.h>
 #include <mpu/config.h>
 #include <mpu/io.h>
+#include <services.h>
 #include <set/lf_queue.h>
+#include <sys/syscall.h>
 #include "func.h"
 #include "setting.h"
 #include "mpu/mpufunc.h"
@@ -42,6 +44,7 @@ ID delay_thread_id = 0;
 static ER_ID attach(void);
 static void process(VP_INT exinf);
 static void detach(void);
+static ER kill(const int pid);
 
 kthread_t delay_thread = { attach, process, detach };
 
@@ -66,7 +69,7 @@ static void process(VP_INT exinf)
 		if (lfq_dequeue(&kqueue, &id) != QUEUE_OK)
 			break;
 
-		posix_kill_proc(id);
+		kill(id);
 	}
 }
 
@@ -81,4 +84,19 @@ void kern_start(void)
 
 	for (;;)
 		halt();
+}
+
+ER kill(const int pid)
+{
+	ER_UINT rsize;
+	struct posix_request req;
+
+	req.caller = thread_get_id();
+	req.procid = KERNEL_DOMAIN_ID;
+	req.msg_length = sizeof(struct posix_request);
+	req.operation = PSC_KILL;
+	req.param.par_kill.pid = pid;
+
+	rsize = port_call(PORT_FS, &req, sizeof(struct posix_request));
+	return (rsize < 0)? rsize:E_OK;
 }
