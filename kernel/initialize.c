@@ -102,6 +102,7 @@ ER core_initialize(void)
 
     interrupt_initialize();
     timer_initialize();		/* インターバルタイマ機能の初期化 */
+    kbc_initialize();
     rtc_get_time(&seconds);
     time_initialize(&seconds);		/* 時間管理機能の初期化 */
     pit_initialize(TIME_TICKS);		/* インターバルタイマの起動       */

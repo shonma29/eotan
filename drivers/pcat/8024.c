@@ -1,5 +1,3 @@
-#ifndef __PCAT_ARCHFUNC_H__
-#define __PCAT_ARCHFUNC_H__	1
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,19 +25,39 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <sys/types.h>
+#include <mpu/io.h>
+#include "8024.h"
+#include "archfunc.h"
+#include "keyboard.h"
 
-/* 8259a.c */
-extern void pic_initialize(void);
-extern ER pic_reset_mask(const UB ir);
+static void kbc_wait_to_write(void);
+static void kbc_wait_to_read(void);
 
-/* rtc.c */
-extern void rtc_get_time(time_t *seconds);
 
-/* 8254.c */
-extern ER pit_initialize(const UW freq);
+ER kbc_initialize(void)
+{
+	/* initialize KBC */
+	outb(KBC_PORT_CMD, KBC_WRITE_CMD);
+	kbc_wait_to_write();
+	outb(KBC_PORT_DATA,
+			KBC_CMD_TYPE
+			| KBC_CMD_DISABLE_AUX
+			| KBC_CMD_INTERRUPT_KBD);
 
-/* 8024.c */
-extern ER kbc_initialize(void);
+	/* reset keyboard */
+	kbc_wait_to_write();
+	outb(KBC_PORT_DATA, KBD_RESET);
+	kbc_wait_to_read();
 
-#endif
+	return (inb(KBC_PORT_DATA) == KBD_ACK)? E_OK:E_SYS;
+}
+
+static void kbc_wait_to_write(void)
+{
+	while (inb(KBC_PORT_CMD) & (KBC_STATUS_IBF | KBC_STATUS_OBF));
+}
+
+static void kbc_wait_to_read(void)
+{
+	while (!(inb(KBC_PORT_CMD) & KBC_STATUS_OBF));
+}

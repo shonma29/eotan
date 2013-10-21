@@ -1,5 +1,5 @@
-#ifndef __PCAT_ARCHFUNC_H__
-#define __PCAT_ARCHFUNC_H__	1
+#ifndef __PCAT_KEYBOARD_H__
+#define __PCAT_KEYBOARD_H__ 1
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,20 +26,31 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <sys/types.h>
 
-/* 8259a.c */
-extern void pic_initialize(void);
-extern ER pic_reset_mask(const UB ir);
+/* reset */
+#define KBD_ACK 0xfa
+#define KBD_BAT_OK 0xaa
+#define KBD_BAT_NG 0xfc
+#define KBD_BREAK_PREFIX 0xf0
+#define KBD_ECHO 0xee
+#define KBD_OVERRUN1 0x00
+#define KBD_OVERRUN2 0xff
+#define KBD_RESEND 0xfe
+#define KBD_DEFAULT 0xf5
 
-/* rtc.c */
-extern void rtc_get_time(time_t *seconds);
-
-/* 8254.c */
-extern ER pit_initialize(const UW freq);
-
-/* 8024.c */
-extern ER kbc_initialize(void);
+/* commands */
+#define KBD_ENABLE 0xf4
+#define KBD_READ_ID 0xf2
+#define KBD_RESET 0xff
+#define KBD_SET_ALL_TYPEMATIC 0xf7
+#define KBD_SET_ALL_MAKE_BREAK 0xf8
+#define KBD_SET_ALL_MAKE 0xf9
+#define KBD_SET_ALL_TYPEMATIC_MAKE_BREAK 0xfa
+#define KBD_SET_DEFAULT 0xf6
+#define KBD_SET_KEY_TYPEMATIC 0xfb
+#define KBD_SET_KEY_MAKE_BREAK 0xfc
+#define KBD_SET_KEY_MAKE 0xfd
+#define KBD_SET_LED 0xed
+#define KBD_SET_DELAY 0xf3
 
 #endif

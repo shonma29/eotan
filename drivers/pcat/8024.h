@@ -1,5 +1,5 @@
-#ifndef __PCAT_ARCHFUNC_H__
-#define __PCAT_ARCHFUNC_H__	1
+#ifndef __PCAT_8024_H__
+#define __PCAT_8024_H__ 1
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,20 +26,44 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <sys/types.h>
 
-/* 8259a.c */
-extern void pic_initialize(void);
-extern ER pic_reset_mask(const UB ir);
+/* ports */
+#define KBC_PORT_CMD 0x0064
+#define KBC_PORT_DATA 0x0060
 
-/* rtc.c */
-extern void rtc_get_time(time_t *seconds);
+/* status */
+#define KBC_STATUS_F1 0x08
+#define KBC_STATUS_IBF 0x02
+#define KBC_STATUS_OBF 0x01
 
-/* 8254.c */
-extern ER pit_initialize(const UW freq);
+/* commands */
+#define KBC_READ_CMD 0x20
+#define KBC_READ_RAM 0x21
+#define KBC_WRITE_CMD 0x60
+#define KBC_WRITE_RAM 0x61
+#define KBC_DISABLE_AUX 0xa7
+#define KBC_ENABLE_AUX 0xa8
+#define KBC_TEST_AUX 0xa9
+#define KBC_TEST_SELF 0xaa
+#define KBC_TEST_KBD 0xab
+#define KBC_DISABLE_KBD 0xad
+#define KBC_ENABLE_KBD 0xae
+#define KBC_READ_IN_PORT 0xc0
+#define KBC_POLL_IN_PORT_LOW 0xc1
+#define KBC_POLL_IN_PORT_HIGH 0xc2
+#define KBC_READ_OUT_PORT 0xd0
+#define KBC_WRITE_OUT_PORT 0xd1
+#define KBC_WRITE_KBD_BUF 0xd2
+#define KBC_WRITE_AUX_BUF 0xd3
+#define KBC_WRITE_AUX 0xd4
+#define KBC_READ_TEST_PIN 0xe0
+#define KBC_PULSE 0xf0
 
-/* 8024.c */
-extern ER kbc_initialize(void);
+/* KBC command parameter */
+#define KBC_CMD_TYPE 0x40
+#define KBC_CMD_DISABLE_AUX 0x20
+#define KBC_CMD_DISABLE_KBD 0x10
+#define KBC_CMD_INTERRUPT_AUX 0x02
+#define KBC_CMD_INTERRUPT_KBD 0x01
 
 #endif
