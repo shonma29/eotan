@@ -103,7 +103,6 @@ Version 2, June 1991
 #define NORMAL_CODE	0
 #define SHIFT_CODE	1
 #define CONTROL_CODE	2
-#define ALT_CODE	3
 
 /*******************************************************************************
  *	シフトキーの状態を表すマクロ定数
@@ -167,10 +166,6 @@ static ER keyboard_interrupt()
     key_code = inb(KEY_DATA);
 
     switch (key_code) {
-    case 0xf1:
-	capskey = NORMAL;
-	return E_OK;
-
     case 0x2a:
     case 0x36:
 	shiftkey_code |= SHIFT_DOWN;
@@ -219,7 +214,7 @@ static ER keyboard_interrupt()
 	else
 	    ch = get_keycode(SHIFT_CODE, key_code);
     } else if (shiftkey_code & SHIFT_DOWN)
-	ch = get_keycode(SHIFT_DOWN, key_code);
+	ch = get_keycode(SHIFT_CODE, key_code);
     else
 	ch = get_keycode(NORMAL_CODE, key_code);
 
