@@ -33,9 +33,6 @@ SSRCS += $(wildcard $(WD)/*.s)
 OBJS = $(patsubst %.c, %.o, $(CSRCS))
 OBJS += $(patsubst %.s, %.o, $(SSRCS))
 
-%.o: %.S
-	$(CC) $(CFLAGS) -c -o $@ $<
-
 #%.d: %.c
 #	$(SHELL) -ec '$(CC) -MM $(CFLAGS) $< \
 #		| sed "s/\($(subst /, \/, $*)\)\.o[ :]*/\1.o $(subst /,\/,$@) : /g" \

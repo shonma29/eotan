@@ -23,10 +23,8 @@ Version 2, June 1991
 #include <kcall.h>
 #include "fs.h"
 
-#define MS 1000
-
 extern void sfs_purge_cache();
-extern void print_freelist();
+
 
 W psc_misc_f(RDVNO rdvno, struct posix_request *req)
 {
