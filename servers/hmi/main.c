@@ -34,7 +34,9 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/memory.h>
 #include <bind.h>
 #include <libserv.h>
+#include "../../kernel/setting.h"
 #include "hmi.h"
+#include "keyboard.h"
 
 #ifdef USE_VESA
 #include <boot/vesa.h>
@@ -235,9 +237,27 @@ static ER_ID initialize(void)
 void start(VP_INT exinf)
 {
 	ER_ID port = initialize();
+	T_CTSK pk = {
+		TA_HLNG,
+		NULL,
+		(FP)keyboard_accept,
+		pri_server_middle,
+		KERNEL_STACK_SIZE,
+		NULL,
+		KERNEL_DOMAIN_ID
+	};
 
 	if (port >= 0) {
 		dbg_printf("[HMI] start port=%d\n", port);
+
+		if (keyboard_initialize() == E_OK) {
+			ER_ID t2 = kcall.thread_create_auto(&pk);
+
+			dbg_printf("[HMI]keyboard=%d\n", t2);
+
+			if (t2 > 0)
+				kcall.thread_start(t2);
+		}
 
 		while (accept(port) == E_OK);
 
