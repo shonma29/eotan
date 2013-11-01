@@ -78,3 +78,18 @@ static void _putc(char ch)
 
 	buf[len++] = ch;
 }
+
+void putsk(const char *str)
+{
+	char ch;
+
+	for (; (ch = *str); str++) {
+#if DEBUG
+		cns->putc(ch);
+#endif
+		if (len >= RING_MAX_LEN)
+			return;
+
+		buf[len++] = ch;
+	}
+}

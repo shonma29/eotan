@@ -64,6 +64,7 @@ typedef struct {
 	ER (*queue_destroy)(ID dtqid);
 	ER (*queue_send)(ID dtqid, VP_INT data);
 	ER (*queue_receive)(ID dtqid, VP_INT *p_data);
+	void (*puts)(const char *str);
 } kcall_t;
 
 #endif

@@ -55,6 +55,7 @@ extern UW pmemfree(void);
 
 /* printk.c */
 extern int printk(const char *format, ...);
+extern void putsk(const char *str);
 
 /* tree_utils.c */
 extern node_t *find_empty_key(tree_t *tree, int *hand);
