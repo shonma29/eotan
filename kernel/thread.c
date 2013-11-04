@@ -102,10 +102,19 @@ ER_ID idle_initialize(void)
 		list_initialize(&(th->queue));
 		th->status = TTS_RUN;
 		list_initialize(&(th->wait.waiting));
-		MPU_PAGE_TABLE(th) = (VP)PAGE_DIR_ADDR;
-		th->priority = th->attr.priority = MAX_PRIORITY;
+		//th->time.total = 0;
+		//th->time.left = TIME_QUANTUM;
 		//th->activate_count = 0;
+
 		th->attr.domain_id = KERNEL_DOMAIN_ID;
+		th->priority = th->attr.priority = MAX_PRIORITY;
+		//th->attr.arg = NULL;
+		//th->attr.kstack_tail = (void*)KERN_STACK_ADDR;
+		//th->attr.entry = kern_start;
+
+		/* kthread don't need to set tss */
+		//MPU_KERNEL_SP(th) = th->attr.kstack_tail;	
+		MPU_PAGE_TABLE(th) = (VP)PAGE_DIR_ADDR;
 
 		running = th;
 		ready_enqueue(th->priority, &(th->queue));
