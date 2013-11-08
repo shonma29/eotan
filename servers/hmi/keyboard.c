@@ -229,7 +229,6 @@ static UW execute(devmsg_t *message)
 		res->body.opn_res.errcd = E_OK;
 		res->body.opn_res.errinfo = 0;
 		size = sizeof(res->body.opn_res);
-kcall->puts("res opn\n");
 		break;
 
 	case DEV_CLS:
@@ -237,7 +236,6 @@ kcall->puts("res opn\n");
 		res->body.cls_res.errcd = E_OK;
 		res->body.cls_res.errinfo = 0;
 		size = sizeof(res->body.cls_res);
-kcall->puts("res cls\n");
 		break;
 
 	case DEV_REA:
@@ -251,7 +249,6 @@ kcall->puts("res cls\n");
 		size = sizeof(res->body.rea_res)
 				- sizeof(res->body.rea_res.dt)
 				+ (res->body.rea_res.a_size);
-kcall->puts("res rea\n");
 		break;
 
 	case DEV_WRI:
@@ -260,7 +257,6 @@ kcall->puts("res rea\n");
 		res->body.wri_res.errinfo = 0;
 		res->body.wri_res.a_size = 0;
 		size = sizeof(res->body.wri_res);
-kcall->puts("res wri\n");
 		break;
 
 	case DEV_CTL:
@@ -268,7 +264,6 @@ kcall->puts("res wri\n");
 		res->body.ctl_res.errcd = E_NOSPT;
 		res->body.ctl_res.errinfo = 0;
 		size = sizeof(res->body.ctl_res);
-kcall->puts("res ctl\n");
 		break;
 
 	default:
@@ -290,16 +285,13 @@ void keyboard_accept(void)
 				&(message.req));
 		if (size < 0) {
 			dbg_printf("[keyboard] acp_por error=%d\n", size);
-kcall->puts("acp err\n");
 			break;
 		}
-kcall->puts("ex\n");
 
 		result = kcall->port_reply(rdvno, &(message.res),
 				execute(&message));
 		if (result) {
 			dbg_printf("[keyboard] rpl_rdv error=%d\n", result);
-kcall->puts("rpl err\n");
 			break;
 		}
 	}
