@@ -83,13 +83,18 @@ void putsk(const char *str)
 {
 	char ch;
 
-	for (; (ch = *str); str++) {
+	enter_critical();
+
+	for (len = 0; (ch = *str); str++) {
 #if DEBUG
 		cns->putc(ch);
 #endif
 		if (len >= RING_MAX_LEN)
-			return;
+			continue;
 
 		buf[len++] = ch;
 	}
+
+	ring_put((ring_t*)KERNEL_LOG_ADDR, buf, len);
+	leave_critical();
 }
