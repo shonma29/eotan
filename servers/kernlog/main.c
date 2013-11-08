@@ -29,16 +29,17 @@ For more information, please refer to <http://unlicense.org/>
 #include <kcall.h>
 #include <services.h>
 #include <string.h>
+#include <set/lf_queue.h>
 #include <set/ring.h>
 #include <setting.h>
 #include <sync.h>
 #include <libserv.h>
 #include "kernlog.h"
 
-static ring_t *klog = (ring_t*)KERNEL_LOG_ADDR;
 static UB buf[SYSLOG_SIZE];
 
 static ER check_param(const UW start, const UW size);
+static size_t lfcopy(UB *outbuf, volatile lfq_t* q, const UW size);
 static size_t rcopy(UB *outbuf, ring_t *r, const UW size);
 static ER_UINT read(UB *outbuf, const UW dd, const UW start, const UW size);
 static ER_UINT write(const UW dd, UB *inbuf, const UW start, const UW size);
@@ -54,6 +55,22 @@ static ER check_param(const UW start, const UW size)
 	if (size > DEV_BUF_SIZE)	return E_PAR;
 
 	return E_OK;
+}
+
+static size_t lfcopy(UB *outbuf, volatile lfq_t* q, const UW size)
+{
+	size_t left;
+
+	for (left = size; left > 0; left--) {
+		int w;
+
+		if (lfq_dequeue(q, &w) != QUEUE_OK)
+			break;
+
+		*outbuf++ = (UB)(w & 0xff);
+	}
+
+	return size - left;
 }
 
 static size_t rcopy(UB *outbuf, ring_t *r, const UW size)
@@ -84,10 +101,7 @@ static ER_UINT read(UB *outbuf, const UW dd, const UW start, const UW size)
 
 	switch (dd) {
 	case DESC_KERNLOG:
-		enter_critical();
-		result = rcopy(outbuf, klog, size);
-		leave_critical();
-		return result;
+		return lfcopy(outbuf, (volatile lfq_t*)KERNEL_LOG_ADDR, size);
 
 	case DESC_SYSLOG:
 		return rcopy(outbuf, (ring_t*)buf, size);

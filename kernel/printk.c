@@ -40,13 +40,10 @@ static Console *cns;
 static int initialized;
 #endif
 
-static UB buf[RING_MAX_LEN + 1];
-static size_t len;
-
 static void _putc(char ch);
 
 
-int printk(const char *format, ...)
+void printk(const char *format, ...)
 {
 	va_list ap;
 
@@ -59,42 +56,26 @@ int printk(const char *format, ...)
 		cns->locate(0, 0);
 	}
 #endif
-	enter_critical();
-	len = 0;
 	vnprintf(_putc, (char*)format, ap);
-	ring_put((ring_t*)KERNEL_LOG_ADDR, buf, len);
-	leave_critical();
-
-	return len;
 }
 
 static void _putc(char ch)
 {
+	int w = ch;
 #if DEBUG
 	cns->putc(ch);
 #endif
-	if (len >= RING_MAX_LEN)
-		return;
+	while (lfq_enqueue((volatile lfq_t*)KERNEL_LOG_ADDR, &w) != QUEUE_OK) {
+		int trash;
 
-	buf[len++] = ch;
+		lfq_dequeue((volatile lfq_t*)KERNEL_LOG_ADDR, &trash);
+	}
 }
 
 void putsk(const char *str)
 {
 	char ch;
 
-	enter_critical();
-
-	for (len = 0; (ch = *str); str++) {
-#if DEBUG
-		cns->putc(ch);
-#endif
-		if (len >= RING_MAX_LEN)
-			continue;
-
-		buf[len++] = ch;
-	}
-
-	ring_put((ring_t*)KERNEL_LOG_ADDR, buf, len);
-	leave_critical();
+	for (; (ch = *str); str++)
+		_putc(ch);
 }

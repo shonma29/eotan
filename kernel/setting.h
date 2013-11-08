@@ -35,7 +35,7 @@ For more information, please refer to <http://unlicense.org/>
 #define KERN_STACK_SIZE (16 * 1024)
 
 #define KERNEL_LOG_ADDR 0x80170000
-#define KERNEL_LOG_SIZE (16 * 1024)
+#define KERNEL_LOG_SIZE (64 * 1024)
 
 #define MAX_PAGES (1024 * 1024 / 2)
 

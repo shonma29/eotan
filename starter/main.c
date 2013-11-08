@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <boot/vesa.h>
 #include <memory_map.h>
 #include <mpu/mpufunc.h>
-#include <set/ring.h>
+#include <set/lf_queue.h>
 #include <setting.h>
 
 #ifndef USE_VESA
@@ -39,8 +39,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <console.h>
 #endif
 
-static UB buf[RING_MAX_LEN + 1];
-static size_t len;
+#define KERNLOG_UNITS ((KERNEL_LOG_SIZE - sizeof(lfq_t)) \
+		/ lfq_node_size(sizeof(int)))
 
 #ifndef USE_VESA
 static Console *cns;
@@ -49,7 +49,7 @@ static void console_initialize();
 #endif
 
 static void _putc(char ch);
-W printk(const B *fmt, ...);
+void printk(const B *fmt, ...);
 static void kick(const ModuleHeader *h);
 
 
@@ -57,13 +57,16 @@ void _main(void)
 {
 	VesaInfo *v = (VesaInfo*)VESA_INFO_ADDR;
 
-	ring_create(kern_v2p((void*)KERNEL_LOG_ADDR), KERNEL_LOG_SIZE);
 #ifndef USE_VESA
 	console_initialize();
 #endif
+	paging_initialize();
+	lfq_initialize((volatile lfq_t*)KERNEL_LOG_ADDR,
+			(void*)((unsigned int)KERNEL_LOG_ADDR + sizeof(lfq_t)),
+			sizeof(int),
+			KERNLOG_UNITS);
 	printk("Starter has woken up.\n");
 
-	paging_initialize();
 	gdt_initialize();
 	idt_initialize();	
 	memory_initialize();
@@ -93,23 +96,23 @@ static void console_initialize()
 
 static void _putc(char ch)
 {
+	int w = ch;
 #ifndef USE_VESA
 	cns->putc(ch);
 #endif
-	if (len < RING_MAX_LEN)
-		buf[len++] = ch;
+	while (lfq_enqueue((volatile lfq_t*)KERNEL_LOG_ADDR, &w) != QUEUE_OK) {
+		int trash;
+
+		lfq_dequeue((volatile lfq_t*)KERNEL_LOG_ADDR, &trash);
+	}
 }
 
-W printk(const B *fmt, ...)
+void printk(const B *fmt, ...)
 {
 	va_list ap;
 
 	va_start(ap, fmt);
-	len = 0;
 	vnprintf(_putc, (char*)fmt, ap);
-	ring_put((ring_t*)KERNEL_LOG_ADDR, buf, len);
-
-	return len;
 };
 
 static void kick(const ModuleHeader *h)
