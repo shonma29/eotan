@@ -39,6 +39,7 @@ static ring_t *klog = (ring_t*)KERNEL_LOG_ADDR;
 static UB buf[SYSLOG_SIZE];
 
 static ER check_param(const UW start, const UW size);
+static size_t rcopy(UB *outbuf, ring_t *r, const UW size);
 static ER_UINT read(UB *outbuf, const UW dd, const UW start, const UW size);
 static ER_UINT write(const UW dd, UB *inbuf, const UW start, const UW size);
 static UW execute(devmsg_t *message);
@@ -55,6 +56,25 @@ static ER check_param(const UW start, const UW size)
 	return E_OK;
 }
 
+static size_t rcopy(UB *outbuf, ring_t *r, const UW size)
+{
+	size_t left = size;
+
+	while (left > 0) {
+		int len = ring_peak_len(r);
+
+		if ((len < 0)
+				|| (left < len))
+			break;
+
+		left -= len;
+		ring_get(r, outbuf);
+		outbuf += len;
+	}
+
+	return size - left;
+}
+
 static ER_UINT read(UB *outbuf, const UW dd, const UW start, const UW size)
 {
 	ER result = check_param(start, size);
@@ -65,25 +85,16 @@ static ER_UINT read(UB *outbuf, const UW dd, const UW start, const UW size)
 	switch (dd) {
 	case DESC_KERNLOG:
 		enter_critical();
-		result = ring_get(klog, outbuf);
+		result = rcopy(outbuf, klog, size);
 		leave_critical();
-		break;
+		return result;
 
 	case DESC_SYSLOG:
-		result = ring_get((ring_t*)buf, outbuf);
-		break;
+		return rcopy(outbuf, (ring_t*)buf, size);
 
 	default:
 		return E_PAR;
 	}
-
-	if (result == RING_EMPTY)
-		return 0;
-
-	if (result < 0)
-		return E_SYS;
-
-	return result;
 }
 
 static ER_UINT write(const UW dd, UB *inbuf, const UW start, const UW size)

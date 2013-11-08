@@ -50,6 +50,7 @@ typedef struct
 } ring_t;
 
 extern ring_t *ring_create(void *buf, size_t size);
+extern int ring_peak_len(ring_t *r);
 extern int ring_get(ring_t *r, ring_chr_t *buf);
 extern int ring_put(ring_t *r, const ring_chr_t *buf, const size_t len);
 

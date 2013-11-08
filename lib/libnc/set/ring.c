@@ -73,6 +73,18 @@ ring_t *ring_create(void *buf, size_t size) {
 	return r;
 }
 
+int ring_peak_len(ring_t *r)
+{
+	int *p;
+
+	if (r->write == r->read)
+		return RING_EMPTY;
+
+	p = (int*)(r->buf + r->read);
+
+	return *p;
+}
+
 int ring_get(ring_t *r, ring_chr_t *buf)
 {
 	size_t len;
