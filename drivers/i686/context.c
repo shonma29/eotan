@@ -16,6 +16,7 @@ Version 2, June 1991
 #include <local.h>
 #include <vm.h>
 #include <mpu/config.h>
+#include "delay.h"
 #include "func.h"
 #include "ready.h"
 #include "setting.h"
@@ -91,10 +92,14 @@ ER mpu_copy_stack(ID src, W esp, ID dst)
 static void kill(void)
 {
     thread_local_t *local = (thread_local_t*)LOCAL_ADDR;
+    delay_param_t param;
 
-    /* KERNEL_TASK への登録 */
+    /* DELAY_TASK への登録 */
+    param.action = delay_page_fault;
     /* id = pid */
-    if (lfq_enqueue(&kqueue, &(local->process_id)) != QUEUE_OK)
+    param.arg1 = (int)(local->process_id);
+
+    if (lfq_enqueue(&kqueue, &param) != QUEUE_OK)
     	panic("full kqueue");
 
     thread_start(delay_thread_id);

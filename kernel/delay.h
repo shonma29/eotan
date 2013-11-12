@@ -26,8 +26,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-typdef enum {
-	delay_handle = 0,
+typedef enum {
+	delay_raise = 0,
 	delay_page_fault = 1,
 	delay_send = 2,
 	delay_activate = 3,

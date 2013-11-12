@@ -31,13 +31,14 @@ For more information, please refer to <http://unlicense.org/>
 #include <services.h>
 #include <set/lf_queue.h>
 #include <sys/syscall.h>
+#include "delay.h"
 #include "func.h"
 #include "setting.h"
 #include "mpu/mpufunc.h"
 
 #define KQUEUE_SIZE 1024
 
-static char kqbuf[lfq_buf_size(sizeof(ID), KQUEUE_SIZE)];
+static char kqbuf[lfq_buf_size(sizeof(delay_param_t), KQUEUE_SIZE)];
 volatile lfq_t kqueue;
 ID delay_thread_id = 0;
 
@@ -45,6 +46,7 @@ static ER_ID attach(void);
 static void process(VP_INT exinf);
 static void detach(void);
 static ER kill(const int pid);
+static void raise(list_t *w);
 
 kthread_t delay_thread = { attach, process, detach };
 
@@ -56,7 +58,7 @@ static ER_ID attach(void)
 		KERNEL_STACK_SIZE, NULL, KERNEL_DOMAIN_ID
 	};
 
-	lfq_initialize(&kqueue, kqbuf, sizeof(ID), KQUEUE_SIZE);
+	lfq_initialize(&kqueue, kqbuf, sizeof(delay_param_t), KQUEUE_SIZE);
 
 	return thread_create_auto(&pk_ctsk);
 }
@@ -64,12 +66,23 @@ static ER_ID attach(void)
 static void process(VP_INT exinf)
 {
 	for (;;) {
-		ID id;
+		delay_param_t param;
 
-		if (lfq_dequeue(&kqueue, &id) != QUEUE_OK)
+		if (lfq_dequeue(&kqueue, &param) != QUEUE_OK)
 			break;
 
-		kill(id);
+		switch (param.action) {
+		case delay_raise:
+			raise((list_t*)(param.arg1));
+			break;
+
+		case delay_page_fault:
+			kill((ID)(param.arg1));
+			break;
+
+		default:
+			break;		
+		}
 	}
 }
 
@@ -86,7 +99,7 @@ void kern_start(void)
 		halt();
 }
 
-ER kill(const int pid)
+static ER kill(const int pid)
 {
 	ER_UINT rsize;
 	struct posix_request req;
@@ -99,4 +112,19 @@ ER kill(const int pid)
 
 	rsize = port_call(PORT_FS, &req, sizeof(struct posix_request));
 	return (rsize < 0)? rsize:E_OK;
+}
+
+static void raise(list_t *w)
+{
+	list_t guard;
+
+	list_insert(w, &guard);
+
+	while ((w = list_dequeue(&guard))) {
+		thread_t *th = getThreadWaiting(w);
+		void (*f)(thread_t*) =
+				(void (*)(thread_t*))(th->wait.detail.dly.callback);
+
+		f(th);
+	}
 }

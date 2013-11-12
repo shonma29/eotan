@@ -26,10 +26,12 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <sys/time.h>
+#include "delay.h"
 #include "func.h"
 #include "ready.h"
 #include "setting.h"
 #include "sync.h"
+#include "mpu/mpufunc.h"
 
 #define TICK (1000 * 1000 * 1000 / TIME_TICKS)
 
@@ -44,16 +46,11 @@ static slab_t timer_slab;
 static tree_t timer_tree;
 
 static inline timer_t *getTimerParent(const node_t *p);
-static inline thread_t *getThreadParent(const list_t *p);
 static ER add_timer(RELTIM time, thread_t *th);
 
 
 static inline timer_t *getTimerParent(const node_t *p) {
 	return (timer_t*)((ptr_t)p - offsetof(timer_t, node));
-}
-
-static inline thread_t *getThreadParent(const list_t *p) {
-	return (thread_t*)((ptr_t)p - offsetof(thread_t, wait.waiting));
 }
 
 void time_initialize(time_t *seconds)
@@ -156,7 +153,6 @@ ER thread_delay(RELTIM dlytim)
 
 	running->wait.type = wait_dly;
 	running->wait.detail.dly.callback = (FP)resume;
-	running->wait.detail.dly.arg = (VP_INT)running;
 	wait(running);
 
 	return running->wait.result;
@@ -219,18 +215,25 @@ ER timer_service(void)
 
 	while ((p = tree_first(&timer_tree))) {
 		timer_t *t = getTimerParent(p);
-		list_t *w;
 
 		if (timespec_compare(&now, &(t->ts)) < 0)
 			break;
 
-		while ((w = list_dequeue(&(t->threads)))) {
-			thread_t *th = getThreadParent(w);
-			void (*f)(thread_t*) =
-					(void (*)(thread_t*))(th->wait.detail.dly.callback);
+		if (!list_is_empty(&(t->threads))) {
+			list_t *w = list_next(&(t->threads));
+			delay_param_t param;
 
-			f((thread_t*)(th->wait.detail.dly.arg));
-		}
+			list_remove(&(t->threads));
+
+			param.action = delay_raise;
+			param.arg1 = (int)w;
+
+			if (lfq_enqueue(&kqueue, &param) != QUEUE_OK)
+	    			panic("full kqueue");
+
+			//TODO prevent other handlers from releasing threads
+			thread_start(delay_thread_id);
+    		}
 
 		tree_remove(&timer_tree, (int)p);
 	}
