@@ -50,6 +50,7 @@ For more information, please refer to <http://unlicense.org/>
 #define RWIN 0x80
 #define MASK_WIN (LWIN | RWIN)
 #define CAPS 0x100
+#define BREAK 0x200
 
 #define SCAN_BREAK 0x80
 
@@ -105,83 +106,84 @@ static ER keyboard_interrupt()
 		break;
 	}
 
-	if (is_break(b)) {
-		b = scan2key[state][strip_break(b)];
-		switch (b) {
-		case 30:
-			modifiers &= ~CAPS;
-			return E_OK;
-		case 44:
-			modifiers &= ~LSHIFT;
-			return E_OK;
-		case 57:
-			modifiers &= ~RSHIFT;
-			return E_OK;
-		case 58:
-			modifiers &= ~LCTRL;
-			return E_OK;
-		case 60:
-			modifiers &= ~LALT;
-			return E_OK;
-		case 62:
-			modifiers &= ~RALT;
-			return E_OK;
-		case 64:
-			modifiers &= ~RCTRL;
-			return E_OK;
-		default:
-			return E_OK;
-		}
+	kcall->queue_send(keyboard_queue_id,
+			is_break(b)?
+				(BREAK | scan2key[state][strip_break(b)])
+				:scan2key[state][b]);
+
+	return E_OK;
+}
+
+static unsigned int get_modifier(int b)
+{
+	switch (b) {
+	case 30:
+		b = CAPS;
+		break;
+	case 44:
+		b = LSHIFT;
+		break;
+	case 57:
+		b = RSHIFT;
+		break;
+	case 58:
+		b = LCTRL;
+		break;
+	case 60:
+		b = LALT;
+		break;
+	case 62:
+		b = RALT;
+		break;
+	case 64:
+		b = RCTRL;
+		break;
+	default:
+		b = 0;
+		break;
 	}
 
-	b = scan2key[state][b];
-	switch (b) {
-	case 0:
-		return E_OK;
-	case 30:
-		modifiers |= CAPS;
-		return E_OK;
-	case 44:
-		modifiers |= LSHIFT;
-		return E_OK;
-	case 57:
-		modifiers |= RSHIFT;
-		return E_OK;
-	case 58:
-		modifiers |= LCTRL;
-		return E_OK;
-	case 60:
-		modifiers |= LALT;
-		return E_OK;
-	case 62:
-		modifiers |= RALT;
-		return E_OK;
-	case 64:
-		modifiers |= RCTRL;
-		return E_OK;
-	default:
-		break;
+	return b;
+}
+
+static int get_char(int b)
+{
+	int m;
+
+	if (b == 0)
+		return -1;
+
+	if (b & BREAK) {
+		m = get_modifier(b & ~BREAK);
+		if (m)
+			modifiers &= ~m;
+
+		return -1;
+	}
+
+	m = get_modifier(b);
+	if (m) {
+		modifiers |= m;
+		return -1;
 	}
 
 	if (modifiers & MASK_CTRL) {
 		b = key2char[key_ctrl][b];
 		if (b == 255)
-			return E_OK;
+			return -1;
 
 	} else if (is_shift(modifiers)) {
 		b = key2char[key_shift][b];
 		if (!b)
-			return E_OK;
+			return -1;
 
 	} else {
 		b = key2char[key_base][b];
 		if (!b)
-			return E_OK;
+			return -1;
 	}
 
-	kcall->queue_send(keyboard_queue_id, b);
-
-	return E_OK;
+	return b;
 }
 
 static void kbc_wait_to_read(void)
@@ -209,7 +211,9 @@ static ER_UINT read(const UW start, const UW size, UB *outbuf)
 		VP_INT d;
 
 		kcall->queue_receive(keyboard_queue_id, &d);
-		outbuf[i] = (UB)(d & 0xff);
+		d = get_char(d);
+		if (d >= 0)
+			outbuf[i] = (UB)(d & 0xff);
 	}
 
 	return size;
