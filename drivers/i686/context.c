@@ -13,6 +13,7 @@ Version 2, June 1991
 
 #include <core.h>
 #include <boot/init.h>
+#include <global.h>
 #include <local.h>
 #include <vm.h>
 #include <mpu/config.h>
@@ -91,6 +92,7 @@ ER mpu_copy_stack(ID src, W esp, ID dst)
 
 static void kill(void)
 {
+    system_info_t *info = (system_info_t*)SYSTEM_INFO_ADDR;
     thread_local_t *local = (thread_local_t*)LOCAL_ADDR;
     delay_param_t param;
 
@@ -99,10 +101,11 @@ static void kill(void)
     /* id = pid */
     param.arg1 = (int)(local->process_id);
 
-    if (lfq_enqueue(&kqueue, &param) != QUEUE_OK)
+    if (lfq_enqueue(&(info->kqueue),
+    		&param) != QUEUE_OK)
     	panic("full kqueue");
 
-    thread_start(delay_thread_id);
+    thread_start(info->delay_thread_id);
 }
 
 /* default page fault handler */

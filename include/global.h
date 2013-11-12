@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <time.h>
 #include <stddef.h>
+#include <set/lf_queue.h>
 
 #define SYSTEM_INFO_ADDR 0x80003e00
 
@@ -46,6 +47,8 @@ typedef struct {
 	time_t epoch;
 	mount_node_t root;
 	memory_range_t initrd;
+	volatile lfq_t kqueue;
+	ID delay_thread_id;
 } system_info_t;
 
 #endif

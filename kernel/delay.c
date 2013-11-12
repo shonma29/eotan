@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <global.h>
 #include <kthread.h>
 #include <mpu/config.h>
 #include <mpu/io.h>
@@ -39,8 +40,6 @@ For more information, please refer to <http://unlicense.org/>
 #define KQUEUE_SIZE 1024
 
 static char kqbuf[lfq_buf_size(sizeof(delay_param_t), KQUEUE_SIZE)];
-volatile lfq_t kqueue;
-ID delay_thread_id = 0;
 
 static ER_ID attach(void);
 static void process(VP_INT exinf);
@@ -58,7 +57,8 @@ static ER_ID attach(void)
 		KERNEL_STACK_SIZE, NULL, KERNEL_DOMAIN_ID
 	};
 
-	lfq_initialize(&kqueue, kqbuf, sizeof(delay_param_t), KQUEUE_SIZE);
+	lfq_initialize(&(((system_info_t*)SYSTEM_INFO_ADDR)->kqueue),
+			kqbuf, sizeof(delay_param_t), KQUEUE_SIZE);
 
 	return thread_create_auto(&pk_ctsk);
 }
@@ -68,7 +68,8 @@ static void process(VP_INT exinf)
 	for (;;) {
 		delay_param_t param;
 
-		if (lfq_dequeue(&kqueue, &param) != QUEUE_OK)
+		if (lfq_dequeue(&(((system_info_t*)SYSTEM_INFO_ADDR)->kqueue),
+				&param) != QUEUE_OK)
 			break;
 
 		switch (param.action) {

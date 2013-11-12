@@ -78,6 +78,7 @@ ER core_initialize(void)
     sysinfo->root.fstype = FS_SFS;
     sysinfo->initrd.start = 0;
     sysinfo->initrd.size = 0;
+    sysinfo->delay_thread_id = TSK_NONE;
 
     pic_initialize();
     banner();			/* 立ち上げメッセージ出力               */
@@ -98,7 +99,7 @@ ER core_initialize(void)
      * 理で使用する。
      */
     idle_initialize();
-    delay_thread_id = delay_thread.attach();
+    sysinfo->delay_thread_id = delay_thread.attach();
 
     interrupt_initialize();
     timer_initialize();		/* インターバルタイマ機能の初期化 */
