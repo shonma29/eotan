@@ -39,6 +39,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #define KQUEUE_SIZE 1024
 
+volatile int delay_start = FALSE;
 static char kqbuf[lfq_buf_size(sizeof(delay_param_t), KQUEUE_SIZE)];
 
 static ER_ID attach(void);
@@ -79,6 +80,11 @@ static void process(VP_INT exinf)
 
 		case delay_page_fault:
 			kill((ID)(param.arg1));
+			break;
+
+		case delay_send:
+			queue_send_nowait((ID)(param.arg1),
+					(VP_INT)(param.arg2));
 			break;
 
 		default:

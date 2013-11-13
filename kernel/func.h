@@ -90,6 +90,7 @@ extern ER queue_destroy(ID dtqid);
 extern ER queue_initialize(void);
 extern ER queue_receive(ID dtqid, VP_INT *p_data);
 extern ER queue_send(ID dtqid, VP_INT data);
+extern ER queue_send_nowait(ID dtqid, VP_INT data);
 
 /* time.c */
 extern ER time_get(SYSTIM *pk_systim);
@@ -102,9 +103,8 @@ extern void timer_initialize(void);
 extern ER timer_service(void);
 
 /* delay.c */
-extern volatile lfq_t kqueue;
+extern volatile int delay_start;
 extern kthread_t delay_thread;
-extern ID delay_thread_id;
 extern void kern_start(void);
 
 #endif

@@ -105,7 +105,7 @@ static void kill(void)
     		&param) != QUEUE_OK)
     	panic("full kqueue");
 
-    thread_start(info->delay_thread_id);
+    delay_start = TRUE;
 }
 
 /* default page fault handler */

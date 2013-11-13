@@ -91,6 +91,7 @@ Version 2, June 1991
  */
 
 #include <core.h>
+#include <global.h>
 #include <string.h>
 #include <vm.h>
 #include <mpu/config.h>
@@ -145,6 +146,11 @@ ER thread_switch(void)
     if (!dispatchable) {
 	leave_critical();
 	return (E_CTX);
+    }
+
+    if (delay_start) {
+	thread_start(((system_info_t*)SYSTEM_INFO_ADDR)->delay_thread_id);
+    	delay_start = FALSE;
     }
 
     q = ready_dequeue();

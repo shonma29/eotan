@@ -235,7 +235,7 @@ ER timer_service(void)
 	    			panic("full kqueue");
 
 			//TODO prevent other handlers from releasing threads
-			thread_start(info->delay_thread_id);
+			delay_start = TRUE;
     		}
 
 		tree_remove(&timer_tree, (int)p);
