@@ -32,6 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/list.h>
 #include <set/tree.h>
 #include <sys/time.h>
+#include "delay.h"
 #include "thread.h"
 
 
@@ -47,6 +48,7 @@ extern void run_init_program(void);
 
 /* icall.c */
 extern void icall_initialize(void);
+extern ER kq_enqueue(delay_param_t *param);
 
 /* kcall.c */
 extern void kcall_initialize(void);

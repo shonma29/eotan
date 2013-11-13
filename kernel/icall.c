@@ -32,7 +32,6 @@ For more information, please refer to <http://unlicense.org/>
 
 static ER delayed_thread_start(ID thread_id);
 static ER delayed_queue_send_nowait(ID queue_id, VP_INT data);
-static ER enqueue(delay_param_t *param);
 
 
 void icall_initialize(void)
@@ -52,7 +51,7 @@ static ER delayed_thread_start(ID thread_id)
 	param.action = delay_start;
 	param.arg1 = (int)thread_id;
 
-	return enqueue(&param);
+	return kq_enqueue(&param);
 }
 
 static ER delayed_queue_send_nowait(ID queue_id, VP_INT data)
@@ -63,10 +62,10 @@ static ER delayed_queue_send_nowait(ID queue_id, VP_INT data)
 	param.arg1 = (int)queue_id;
 	param.arg2 = (int)data;
 
-	return enqueue(&param);
+	return kq_enqueue(&param);
 }
 
-static ER enqueue(delay_param_t *param)
+ER kq_enqueue(delay_param_t *param)
 {
 	system_info_t *info = (system_info_t*)SYSTEM_INFO_ADDR;
 

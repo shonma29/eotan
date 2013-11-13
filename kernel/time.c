@@ -25,7 +25,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <global.h>
 #include <sys/time.h>
 #include "delay.h"
 #include "func.h"
@@ -223,19 +222,14 @@ ER timer_service(void)
 		if (!list_is_empty(&(t->threads))) {
 			list_t *w = list_next(&(t->threads));
 			delay_param_t param;
-			system_info_t *info = (system_info_t*)SYSTEM_INFO_ADDR;
 
 			list_remove(&(t->threads));
 
 			param.action = delay_raise;
 			param.arg1 = (int)w;
 
-			if (lfq_enqueue(&(info->kqueue),
-					&param) != QUEUE_OK)
-	    			panic("full kqueue");
-
-			//TODO prevent other handlers from releasing threads
-			delay_start = TRUE;
+			if (kq_enqueue(&param))
+				panic("full kqueue");
     		}
 
 		tree_remove(&timer_tree, (int)p);
