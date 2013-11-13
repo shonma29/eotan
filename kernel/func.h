@@ -92,8 +92,7 @@ extern ER_ID queue_create_auto(T_CDTQ *pk_cdtq);
 extern ER queue_destroy(ID dtqid);
 extern ER queue_initialize(void);
 extern ER queue_receive(ID dtqid, VP_INT *p_data);
-extern ER queue_send(ID dtqid, VP_INT data);
-extern ER queue_send_nowait(ID dtqid, VP_INT data);
+extern ER queue_send(ID dtqid, VP_INT data, TMO tmout);
 
 /* time.c */
 extern ER time_get(SYSTIM *pk_systim);

@@ -83,8 +83,8 @@ static void process(VP_INT exinf)
 			break;
 
 		case delay_send:
-			queue_send_nowait((ID)(param.arg1),
-					(VP_INT)(param.arg2));
+			queue_send((ID)(param.arg1),
+					(VP_INT)(param.arg2), TMO_POL);
 			break;
 
 		case delay_activate:

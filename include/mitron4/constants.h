@@ -56,6 +56,9 @@ For more information, please refer to <http://unlicense.org/>
 #define TPRI_SELF (0)
 #define TPRI_INI (0)
 
+#define TMO_POL (0)
+#define TMO_FEVR (-1)
+
 
 typedef struct
 {

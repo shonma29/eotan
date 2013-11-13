@@ -242,10 +242,14 @@ ER queue_destroy(ID dtqid)
 	return result;
 }
 
-ER queue_send(ID dtqid, VP_INT data)
+ER queue_send(ID dtqid, VP_INT data, TMO tmout)
 {
 	queue_t *q;
 	list_t *receiver;
+
+	if ((tmout > 0)
+			|| (tmout < TMO_FEVR))
+		return E_PAR;
 
 	enter_serialize();
 	q = get_queue(dtqid);
@@ -263,6 +267,11 @@ ER queue_send(ID dtqid, VP_INT data)
 		release(tp);
 
 	} else if (is_full(q)) {
+		if (tmout == TMO_POL) {
+			leave_serialize();
+			return E_TMOUT;
+		}
+
 		list_enqueue(&(q->sender), &(running->wait.waiting));
 		running->wait.detail.que.data = data;
 		running->wait.type = wait_que;
@@ -270,37 +279,6 @@ ER queue_send(ID dtqid, VP_INT data)
 		leave_serialize();
 		wait(running);
 		return running->wait.result;
-
-	} else
-		enqueue(q, data);
-
-	leave_serialize();
-	return E_OK;
-}
-
-ER queue_send_nowait(ID dtqid, VP_INT data)
-{
-	queue_t *q;
-	list_t *receiver;
-
-	enter_serialize();
-	q = get_queue(dtqid);
-	if (!q) {
-		leave_serialize();
-		return E_NOEXS;
-	}
-
-	receiver = list_head(&(q->receiver));
-	if (receiver) {
-		thread_t *tp = getTaskParent(receiver);
-
-		tp->wait.detail.que.data = data;
-		list_remove(receiver);
-		release(tp);
-
-	} else if (is_full(q)) {
-		leave_serialize();
-		return E_TMOUT;
 
 	} else
 		enqueue(q, data);

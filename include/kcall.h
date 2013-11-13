@@ -62,7 +62,7 @@ typedef struct {
 	ER (*port_reply)(RDVNO rdvno, VP msg, UINT rmsgsz);
 	ER_ID (*queue_create_auto)(T_CDTQ *pk_cdtq);
 	ER (*queue_destroy)(ID dtqid);
-	ER (*queue_send)(ID dtqid, VP_INT data);
+	ER (*queue_send)(ID dtqid, VP_INT data, TMO tmout);
 	ER (*queue_receive)(ID dtqid, VP_INT *p_data);
 	void (*puts)(const char *str);
 } kcall_t;
