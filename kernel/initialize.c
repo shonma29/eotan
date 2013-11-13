@@ -93,6 +93,7 @@ ER core_initialize(void)
     queue_initialize();
     port_initialize();
     thread_initialize();		/* タスク管理機能の初期化 */
+    icall_initialize();
     kcall_initialize();
 
     /* 1番目のタスクを初期化する。そしてそのタスクを以後の処

@@ -45,6 +45,9 @@ extern W syscall (W *arg_addr, UW sysno);
 /* modules.c */
 extern void run_init_program(void);
 
+/* icall.c */
+extern void icall_initialize(void);
+
 /* kcall.c */
 extern void kcall_initialize(void);
 

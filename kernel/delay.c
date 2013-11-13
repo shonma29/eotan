@@ -87,6 +87,10 @@ static void process(VP_INT exinf)
 					(VP_INT)(param.arg2));
 			break;
 
+		case delay_activate:
+			thread_start((ID)(param.arg1));
+			break;
+
 		default:
 			break;		
 		}
