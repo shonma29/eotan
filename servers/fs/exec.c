@@ -88,8 +88,6 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     Elf32_Phdr text, data;
     ID main_task;
     struct proc *procp;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
-
 #ifdef notdef
     printk("[PM] exec_program: path = \"%s\"\n", pathname);	/* */
 #endif
@@ -209,7 +207,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 	       req->param.par_execve.stsize);
 #endif
     /* タスクの context.eip を elf_header.e_entry に設定する */
-    error_no = kcall->mpu_set_context(procid? req->caller:(INIT_THREAD_ID_FLAG | req->caller),
+    error_no = process_set_context(procid? req->caller:(INIT_THREAD_ID_FLAG | req->caller),
 		     elf_header.e_entry,
 		     req->param.par_execve.stackp,
 		     req->param.par_execve.stsize);
