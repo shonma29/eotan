@@ -34,12 +34,20 @@ For more information, please refer to <http://unlicense.org/>
 #include "mpufunc.h"
 #include "tss.h"
 
+static void idt_initialize(void);
+static void gdt_initialize(void);
 static void gdt_set_segment(const UH selector,
 		const UW base, const UW limit,
 		const UB type, const UB dpl, const UB option);
 
 
-void idt_initialize(void)
+void mpu_initialize(void)
+{
+	gdt_initialize();
+	idt_initialize();
+}
+
+static void idt_initialize(void)
 {
 	UW i;
 	GateDescriptor desc;
@@ -57,27 +65,7 @@ void idt_initialize(void)
 	idt_load();
 }
 
-void idt_set(UB no, void (*handler)(void))
-{
-	GateDescriptor *p = (GateDescriptor*)IDT_ADDR;
-
-	//TODO error check
-	gate_set(&(p[no]), kern_code, handler,
-			ATTR_PRESENT | (dpl_kern << 5) | interruptGate32);
-}
-
-void gate_set(GateDescriptor *p,
-		UH selector, void (*handler)(void), UB attr)
-{
-	//TODO error check
-	p->offsetLow = ((UW)handler) & 0xffff;
-	p->selector = selector;
-	p->copyCount = 0;
-	p->attr = attr;
-	p->offsetHigh = (((UW)handler) >> 16) & 0xffff;
-}
-
-void gdt_initialize(void)
+static void gdt_initialize(void)
 {
 	SegmentDescriptor *p = (SegmentDescriptor*)GDT_ADDR;
 	tss_t *tss = (tss_t*)kern_v2p((VP)TSS_ADDR);

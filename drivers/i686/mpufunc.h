@@ -76,10 +76,7 @@ extern void fpu_save(thread_t *taskp);
 extern void fpu_start(thread_t *taskp);
 
 /* gate.c */
-extern void gate_set(GateDescriptor *p,
-		UH selector, void (*handler)(void), UB attr);
-extern void gdt_initialize(void);
-extern void idt_initialize(void);
+extern void mpu_initialize(void);
 extern void idt_set(UB no, void (*handler)(void));
 
 /* interrupt.c */

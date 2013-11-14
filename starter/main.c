@@ -67,8 +67,7 @@ void _main(void)
 			KERNLOG_UNITS);
 	printk("Starter has woken up.\n");
 
-	gdt_initialize();
-	idt_initialize();	
+	mpu_initialize();
 	memory_initialize();
 
 	printk("VESA mode=%x fb=%p width=%d height=%d bpl=%d bpp=%d\n",
