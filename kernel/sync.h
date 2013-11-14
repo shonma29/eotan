@@ -39,5 +39,6 @@ extern int dispatchable;
 
 extern void wait(thread_t *task);
 extern void release(thread_t *task);
+extern void release_all(list_t *waiting);
 
 #endif

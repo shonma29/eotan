@@ -63,9 +63,7 @@ static inline port_t *getPortParent(const node_t *p);
 static inline port_t *getCallerParent(const list_t *p);
 static inline port_t *getAcceptorParent(const list_t *p);
 static inline rendezvous_t *getRdvParent(const node_t *p);
-static inline thread_t *getTaskParent(const list_t *p);
 static void clear(port_t *p, const T_CPOR *pk_cpor);
-static void release_all(list_t *waiting);
 
 
 static inline port_t *getPortParent(const node_t *p) {
@@ -82,10 +80,6 @@ static inline port_t *getAcceptorParent(const list_t *p) {
 
 static inline rendezvous_t *getRdvParent(const node_t *p) {
 	return (rendezvous_t*)((ptr_t)p - offsetof(rendezvous_t, node));
-}
-
-static inline thread_t *getTaskParent(const list_t *p) {
-	return (thread_t*)((ptr_t)p - offsetof(thread_t, wait.waiting));
 }
 
 ER port_initialize(void)
@@ -189,18 +183,6 @@ ER_ID port_create_auto(T_CPOR *pk_cpor)
 	return result;
 }
 
-static void release_all(list_t *waiting) {
-	list_t *q;
-
-	while ((q = list_dequeue(waiting)) != NULL) {
-		thread_t *p = getTaskParent(q);
-
-		p->wait.result = E_DLT;
-		release(p);
-/* TODO test */
-	}
-}
-
 ER port_destroy(ID porid)
 {
 	ER result;
@@ -253,7 +235,7 @@ ER_UINT port_call(ID porid, VP msg, UINT cmsgsz)
 
 	q = list_head(&(p->acceptor));
 	if (q) {
-		thread_t *tp = getTaskParent(q);
+		thread_t *tp = getThreadWaiting(q);
 		rendezvous_t *r;
 		int rdvno;
 
@@ -327,7 +309,7 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 
 	q = list_head(&(p->caller));
 	if (q) {
-		thread_t *tp = getTaskParent(q);
+		thread_t *tp = getThreadWaiting(q);
 
 		result = tp->wait.detail.por.size;
 
@@ -400,7 +382,7 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 
 	q = list_head(&(r->caller));
 	if (q) {
-		thread_t *tp = getTaskParent(q);
+		thread_t *tp = getThreadWaiting(q);
 
 		if (region_put(thread_id(tp), tp->wait.detail.por.msg,
 				rmsgsz, msg)) {

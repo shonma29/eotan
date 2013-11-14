@@ -55,7 +55,6 @@ static int queue_hand;
 static inline queue_t *getQueueParent(const node_t *p);
 static inline queue_t *getSenderParent(const list_t *p);
 static inline queue_t *getReceiverParent(const list_t *p);
-static inline thread_t *getTaskParent(const list_t *p);
 static inline int is_full(queue_t *q);
 static inline int is_empty(queue_t *q);
 static void enqueue(queue_t *q, VP_INT data);
@@ -63,7 +62,6 @@ static VP_INT dequeue(queue_t *q);
 static queue_t *get_queue(const ID dtqid);
 static list_t *release_sender(VP_INT *d, queue_t *q);
 static void clear(queue_t *p, const T_CDTQ *pk_cdtq);
-static void release_all(list_t *waiting);
 
 
 static inline queue_t *getQueueParent(const node_t *p) {
@@ -76,10 +74,6 @@ static inline queue_t *getSenderParent(const list_t *p) {
 
 static inline queue_t *getReceiverParent(const list_t *p) {
 	return (queue_t*)((ptr_t)p - offsetof(queue_t, receiver));
-}
-
-static inline thread_t *getTaskParent(const list_t *p) {
-	return (thread_t*)((ptr_t)p - offsetof(thread_t, wait.waiting));
 }
 
 static inline int is_full(queue_t *q)
@@ -123,7 +117,7 @@ static list_t *release_sender(VP_INT *d, queue_t *q)
 	list_t *sender = list_head(&(q->sender));
 
 	if (sender) {
-		thread_t *tp = getTaskParent(sender);
+		thread_t *tp = getThreadWaiting(sender);
 
 		*d = tp->wait.detail.que.data;
 		list_remove(sender);
@@ -202,19 +196,6 @@ ER_ID queue_create_auto(T_CDTQ *pk_cdtq)
 	return result;
 }
 
-static void release_all(list_t *waiting)
-{
-	list_t *q;
-
-	while ((q = list_dequeue(waiting)) != NULL) {
-		thread_t *p = getTaskParent(q);
-
-		p->wait.result = E_DLT;
-		release(p);
-/* TODO test */
-	}
-}
-
 ER queue_destroy(ID dtqid)
 {
 	ER result;
@@ -260,7 +241,7 @@ ER queue_send(ID dtqid, VP_INT data, TMO tmout)
 
 	receiver = list_head(&(q->receiver));
 	if (receiver) {
-		thread_t *tp = getTaskParent(receiver);
+		thread_t *tp = getThreadWaiting(receiver);
 
 		tp->wait.detail.que.data = data;
 		list_remove(receiver);

@@ -49,3 +49,15 @@ void release(thread_t *task)
 	    ready_enqueue(task->priority, &(task->queue));
 	}
 }
+
+void release_all(list_t *waiting) {
+	list_t *q;
+
+	while ((q = list_dequeue(waiting)) != NULL) {
+		thread_t *p = getThreadWaiting(q);
+
+		p->wait.result = E_DLT;
+		release(p);
+/* TODO test */
+	}
+}
