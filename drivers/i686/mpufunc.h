@@ -73,7 +73,6 @@ extern void fault_with_error(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 extern void fpu_initialize(void);
 extern void fpu_restore(thread_t *taskp);
 extern void fpu_save(thread_t *taskp);
-extern void fpu_start(thread_t *taskp);
 
 /* gate.c */
 extern void mpu_initialize(void);

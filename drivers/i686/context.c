@@ -158,7 +158,10 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
     if (tid & INIT_THREAD_ID_FLAG) {
 	tid &= INIT_THREAD_ID_MASK;
 	create_user_stack(tsk, USER_STACK_SIZE, ACC_USER);
-        fpu_start(tsk);
+	enter_critical();
+	fpu_save(tsk);
+	tsk->mpu.use_fpu = 1;
+	leave_critical();
     }
 
     enter_critical();
