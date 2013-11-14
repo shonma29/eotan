@@ -80,7 +80,6 @@ ER core_initialize(void)
     sysinfo->initrd.size = 0;
     sysinfo->delay_thread_id = TSK_NONE;
 
-    pic_initialize();
     banner();			/* 立ち上げメッセージ出力               */
 
     paging_reset();
@@ -102,9 +101,9 @@ ER core_initialize(void)
     idle_initialize();
     sysinfo->delay_thread_id = delay_thread.attach();
 
+    pic_initialize();
     interrupt_initialize();
     timer_initialize();		/* インターバルタイマ機能の初期化 */
-    kbc_initialize();
     rtc_get_time(&seconds);
     time_initialize(&seconds);		/* 時間管理機能の初期化 */
     pit_initialize(TIME_TICKS);		/* インターバルタイマの起動       */

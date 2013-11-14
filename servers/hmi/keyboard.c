@@ -31,10 +31,11 @@ For more information, please refer to <http://unlicense.org/>
 #include <major.h>
 #include <core/packets.h>
 #include <mpu/io.h>
-#include "../../drivers/pcat/8024.h"
-#include "../../drivers/pcat/8259a.h"
-#include "../../drivers/pcat/scan2key.h"
-#include "../../drivers/pcat/key2char.h"
+#include "../../kernel/arch/8024.h"
+#include "../../kernel/arch/8259a.h"
+#include "../../kernel/arch/archfunc.h"
+#include "../../kernel/arch/scan2key.h"
+#include "../../kernel/arch/key2char.h"
 #include "../../lib/libserv/bind.h"
 #include "../../lib/libserv/libserv.h"
 
@@ -62,26 +63,24 @@ static kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 static ID keyboard_queue_id;
 static ID keyboard_port_id;
 
-static unsigned char is_break(const unsigned char b)
+
+static inline unsigned char is_break(const unsigned char b)
 {
 	return SCAN_BREAK & b;
 }
 
-static unsigned char strip_break(const unsigned char b)
+static inline unsigned char strip_break(const unsigned char b)
 {
 	return (~SCAN_BREAK) & b;
 }
 
-static int is_shift(const unsigned short m)
+static inline int is_shift(const unsigned short m)
 {
 	int shift = (m & MASK_SHIFT)? 1:0;
 	int caps = (m & CAPS)? 1:0;
 
 	return shift ^ caps;
 }
-
-static void kbc_wait_to_read(void);
-
 
 static ER keyboard_interrupt()
 {
@@ -186,11 +185,6 @@ static int get_char(int b)
 	}
 
 	return b;
-}
-
-static void kbc_wait_to_read(void)
-{
-	while (!(inb(KBC_PORT_CMD) & KBC_STATUS_OBF));
 }
 
 static ER check_param(const UW start, const UW size)
@@ -320,6 +314,8 @@ ER keyboard_initialize(void)
 		TA_HLNG,
 		(FP)keyboard_interrupt
 	};
+
+	kbc_initialize();
 
 	keyboard_queue_id = kcall->queue_create_auto(&pk_cdtq);
 	if (keyboard_queue_id < 0) {

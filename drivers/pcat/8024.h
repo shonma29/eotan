@@ -26,6 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <mpu/io.h>
 
 /* ports */
 #define KBC_PORT_CMD 0x0064
@@ -65,5 +66,15 @@ For more information, please refer to <http://unlicense.org/>
 #define KBC_CMD_DISABLE_KBD 0x10
 #define KBC_CMD_INTERRUPT_AUX 0x02
 #define KBC_CMD_INTERRUPT_KBD 0x01
+
+static inline void kbc_wait_to_write(void)
+{
+	while (inb(KBC_PORT_CMD) & (KBC_STATUS_IBF | KBC_STATUS_OBF));
+}
+
+static inline void kbc_wait_to_read(void)
+{
+	while (!(inb(KBC_PORT_CMD) & KBC_STATUS_OBF));
+}
 
 #endif

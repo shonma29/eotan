@@ -30,9 +30,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "archfunc.h"
 #include "keyboard.h"
 
-static void kbc_wait_to_write(void);
-static void kbc_wait_to_read(void);
-
 
 ER kbc_initialize(void)
 {
@@ -50,14 +47,4 @@ ER kbc_initialize(void)
 	kbc_wait_to_read();
 
 	return (inb(KBC_PORT_DATA) == KBD_ACK)? E_OK:E_SYS;
-}
-
-static void kbc_wait_to_write(void)
-{
-	while (inb(KBC_PORT_CMD) & (KBC_STATUS_IBF | KBC_STATUS_OBF));
-}
-
-static void kbc_wait_to_read(void)
-{
-	while (!(inb(KBC_PORT_CMD) & KBC_STATUS_OBF));
 }
