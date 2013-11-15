@@ -22,6 +22,7 @@ Version 2, June 1991
 #include "setting.h"
 #include "sync.h"
 #include "mpu/interrupt.h"
+#include "mpu/mpu.h"
 #include "mpu/mpufunc.h"
 
 static void create_user_stack(thread_t * tsk, W size, W acc);
@@ -76,14 +77,11 @@ ER mpu_copy_stack(ID src, W esp, ID dst)
     dstp = (UW) dst_tsk->attr.ustack_tail - size;
     region_put(dst, (VP) dstp, size, (VP) vtor(thread_id(src_tsk), esp));
 
-    dst_tsk->mpu.context.esp0 = context_create_user(
+    dst_tsk->mpu.esp0 = context_create_user(
 	    dst_tsk->attr.kstack_tail,
 	    EFLAG_IBIT | EFLAG_IOPL3,
 	    dst_tsk->attr.entry,
 	    (VP)dstp);
-
-    /* FPU 情報のコピー */
-    dst_tsk->mpu.use_fpu = src_tsk->mpu.use_fpu;
 
     leave_critical();
     return (E_OK);
@@ -158,10 +156,6 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
     if (tid & INIT_THREAD_ID_FLAG) {
 	tid &= INIT_THREAD_ID_MASK;
 	create_user_stack(tsk, USER_STACK_SIZE, ACC_USER);
-	enter_critical();
-	fpu_save(tsk);
-	tsk->mpu.use_fpu = 1;
-	leave_critical();
     }
 
     enter_critical();
@@ -204,7 +198,7 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
     tsk->attr.entry = (FP)eip;
 
     /* タスクの初期化 */
-    tsk->mpu.context.esp0 = context_create_user(
+    tsk->mpu.esp0 = context_create_user(
 	    tsk->attr.kstack_tail,
 	    EFLAG_IBIT | EFLAG_IOPL3,
 	    tsk->attr.entry,

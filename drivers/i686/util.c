@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/memory.h>
 #include <thread.h>
 #include "paging.h"
+#include "mpu.h"
 #include "mpufunc.h"
 #include "func.h"
 

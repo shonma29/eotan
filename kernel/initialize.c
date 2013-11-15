@@ -85,7 +85,6 @@ ER core_initialize(void)
     paging_reset();
     context_initialize();
     api_initialize();
-    fpu_initialize();
 #ifdef DEBUG
     printk("initialize: start\n");
 #endif

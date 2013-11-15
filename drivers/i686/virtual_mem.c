@@ -158,6 +158,7 @@ Version 2, June 1991
 #include <mpu/memory.h>
 #include <func.h>
 #include <thread.h>
+#include "mpu.h"
 #include "mpufunc.h"
 
 /***********************************************************************
@@ -224,7 +225,7 @@ static BOOL vmap(thread_t * task, UW vpage, UW ppage, W accmode)
 #ifdef DEBUG
     printk("[%d] vmap: 0x%x -> 0x%x\n", task->tskid, ppage, vpage);
 #endif				/* DEBUG */
-    dirent = (I386_DIRECTORY_ENTRY *) (task->mpu.context.cr3);
+    dirent = (I386_DIRECTORY_ENTRY *) (task->mpu.cr3);
     dirent = (I386_DIRECTORY_ENTRY*)(kern_p2v(dirent));
     dirindex = vpage & DIR_MASK;
     dirindex = dirindex >> DIR_SHIFT;
@@ -306,7 +307,7 @@ static ER vunmap(thread_t * task, UW vpage)
     UW pageindex;
     UW ppage;
 
-    dirent = (I386_DIRECTORY_ENTRY *) (task->mpu.context.cr3);
+    dirent = (I386_DIRECTORY_ENTRY *) (task->mpu.cr3);
     dirent = (I386_DIRECTORY_ENTRY*)(kern_p2v(dirent));
     dirindex = vpage & DIR_MASK;
     dirindex = dirindex >> DIR_SHIFT;
@@ -352,7 +353,7 @@ UW vtor(ID tskid, UW addr)
 	return (UW)(NULL);
     }
 
-    result = (UW)getPageAddress((PTE*)kern_p2v((void*)(taskp->mpu.context.cr3)),
+    result = (UW)getPageAddress((PTE*)kern_p2v((void*)(taskp->mpu.cr3)),
 	    (void*)addr);
 
     return result? (result | getOffset((void*)addr)):result;

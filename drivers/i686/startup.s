@@ -42,6 +42,7 @@ startup:
 	movw %ax, %fs
 	movw %ax, %gs
 	lssl stack_ptr, %esp
+	finit
 
 	ljmp $SELECTOR_KERN_CODE, $kern_start
 

@@ -184,8 +184,8 @@ ER thread_switch(void)
 	panic("scheduler");
     }
 
-    if (running->mpu.use_fpu)
-	fpu_save(running);
+    if (running->attr.domain_id != KERNEL_DOMAIN_ID)
+	fpu_save(&running);
 
     context_prev_sp = &(MPU_KERNEL_SP(running));
     context_next_sp = &(MPU_KERNEL_SP(next));
@@ -197,8 +197,8 @@ ER thread_switch(void)
     context_switch();
 
     /* 正常に終了した：次のタスクスイッチの時にここに戻る */
-    if (running->mpu.use_fpu)
-	fpu_restore(running);
+    if (running->attr.domain_id != KERNEL_DOMAIN_ID)
+	fpu_restore(&running);
 
     return (E_OK);
 }

@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <setting.h>
 #include <func.h>
 #include "gate.h"
+#include "mpu.h"
 #include "mpufunc.h"
 #include "msr.h"
 #include "tss.h"
@@ -165,12 +166,9 @@ void create_context(thread_t *th)
 
 		*--sp = th->attr.arg;
 		*--sp = (INT)thread_end;
-		th->mpu.context.esp0 = context_create_kernel(
+		th->mpu.esp0 = context_create_kernel(
 				sp,
 				EFLAG_IBIT | EFLAG_IOPL3,
 				th->attr.entry);
-		th->mpu.use_fpu = FALSE;
-
-	} else
-		th->mpu.use_fpu = TRUE;
+	}
 }

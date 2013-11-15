@@ -22,26 +22,9 @@ Version 2, June 1991
 #define _MPU_MPU_H_	1
 
 #include <core.h>
-#include "fpu.h"
 
-#define MPU_KERNEL_SP(taskp) ((taskp)->mpu.context.esp0)
-#define MPU_PAGE_TABLE(taskp) ((taskp)->mpu.context.cr3)
-
-/****************************************************************************
- * T_CONTEXT --- Task State Segment
- *
- */
-typedef struct 
-{
-  VP		esp0;
-  VP		cr3;
-} T_CONTEXT;
-
-typedef struct {
-  T_CONTEXT context;
-  H use_fpu;
-  FPU_CONTEXT fpu_context;
-} T_MPU_CONTEXT;
+#define MPU_KERNEL_SP(taskp) ((taskp)->mpu.esp0)
+#define MPU_PAGE_TABLE(taskp) ((taskp)->mpu.cr3)
 
 #define ACC_KERNEL	0
 #define ACC_USER	1

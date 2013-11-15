@@ -69,11 +69,6 @@ extern void fault_with_error(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 		UW ecx, UW eax, UW ds, UW no,
 		UW err, UW eip, UW cs, UW eflags);
 
-/* fpu.c */
-extern void fpu_initialize(void);
-extern void fpu_restore(thread_t *taskp);
-extern void fpu_save(thread_t *taskp);
-
 /* gate.c */
 extern void mpu_initialize(void);
 extern void idt_set(UB no, void (*handler)(void));
@@ -122,5 +117,19 @@ extern void tlb_flush(VP addr);
 /* switch.s */
 extern void tr_set(const UW selector);
 extern void context_switch(void);
+
+static inline void fpu_save(thread_t **th)
+{
+	__asm__ __volatile__ ( \
+			"fsave %0\n\t" \
+			:"=m" ((*th)->mpu.fpu_state));
+}
+
+static inline void fpu_restore(thread_t **th)
+{
+	__asm__ __volatile__ ( \
+			"frstor %0\n\t" \
+			:"=m" ((*th)->mpu.fpu_state));
+}
 
 #endif

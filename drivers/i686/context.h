@@ -1,5 +1,5 @@
-#ifndef _CORE_THREAD_H_
-#define _CORE_THREAD_H_
+#ifndef _MPU_CONTEXT_H_
+#define _MPU_CONTEXT_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,44 +26,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <set/list.h>
-#include <set/tree.h>
-#include "region.h"
-#include "wait.h"
-#include "mpu/context.h"
+#include <mpu/memory.h>
 
-typedef struct {
-	node_t node;
-	list_t queue;
-	STAT status;
-	wait_reason_t wait;
-	mpu_context_t mpu;
-	struct {
-		UW total;
-		UW left;
-	} time;
-	PRI priority;
-	UINT activate_count;
-//TODO move to domain
-	T_REGION regions[MAX_REGION];
-	struct {
-		VP_INT arg;
-		PRI priority;
-		ID domain_id;
-		VP kstack_tail;
-		VP ustack_tail;
-		FP entry;
-	} attr;
-} thread_t;
-
-static inline ID thread_id(thread_t *th)
+typedef struct
 {
-	return (ID)(th->node.key);
-}
-
-static inline thread_t *getThreadWaiting(const list_t *p) {
-	return (thread_t*)((ptr_t)p - offsetof(thread_t, wait.waiting));
-}
+	void *esp0;
+	PTE *cr3;
+	char fpu_state[108];
+} mpu_context_t;
 
 #endif
