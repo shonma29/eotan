@@ -53,8 +53,6 @@ static tree_t queue_tree;
 static int queue_hand;
 
 static inline queue_t *getQueueParent(const node_t *p);
-static inline queue_t *getSenderParent(const list_t *p);
-static inline queue_t *getReceiverParent(const list_t *p);
 static inline int is_full(queue_t *q);
 static inline int is_empty(queue_t *q);
 static void enqueue(queue_t *q, VP_INT data);
@@ -66,14 +64,6 @@ static void clear(queue_t *p, const T_CDTQ *pk_cdtq);
 
 static inline queue_t *getQueueParent(const node_t *p) {
 	return (queue_t*)((ptr_t)p - offsetof(queue_t, node));
-}
-
-static inline queue_t *getSenderParent(const list_t *p) {
-	return (queue_t*)((ptr_t)p - offsetof(queue_t, sender));
-}
-
-static inline queue_t *getReceiverParent(const list_t *p) {
-	return (queue_t*)((ptr_t)p - offsetof(queue_t, receiver));
 }
 
 static inline int is_full(queue_t *q)

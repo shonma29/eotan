@@ -60,22 +60,12 @@ static tree_t rdv_tree;
 static int rdv_hand;
 
 static inline port_t *getPortParent(const node_t *p);
-static inline port_t *getCallerParent(const list_t *p);
-static inline port_t *getAcceptorParent(const list_t *p);
 static inline rendezvous_t *getRdvParent(const node_t *p);
 static void clear(port_t *p, const T_CPOR *pk_cpor);
 
 
 static inline port_t *getPortParent(const node_t *p) {
 	return (port_t*)((ptr_t)p - offsetof(port_t, node));
-}
-
-static inline port_t *getCallerParent(const list_t *p) {
-	return (port_t*)((ptr_t)p - offsetof(port_t, caller));
-}
-
-static inline port_t *getAcceptorParent(const list_t *p) {
-	return (port_t*)((ptr_t)p - offsetof(port_t, acceptor));
 }
 
 static inline rendezvous_t *getRdvParent(const node_t *p) {
