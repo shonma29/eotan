@@ -23,18 +23,9 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-LIBS = lib/libitron.a lib/libc.a lib/libnc.a lib/libserv.a lib/libmath.a
-KLIBS = kernel/mpu/libmpu.a kernel/arch/libarch.a
+TARGET = $(WD).a
 
-all: $(LIBS) $(KLIBS)
+include Makefile.in
 
-$(LIBS):
-	$(MAKE) -f $(@:.a=)/Makefile WD=$(@:.a=)
-
-$(KLIBS):
-	$(MAKE) -f $(dir $(@))/Makefile WD=$(dir $(@))
-
-clean:
-	$(SHELL) -ec 'for L in $(basename $(LIBS)) $(dir $(KLIBS)); do \
-		$(MAKE) -f $$L/Makefile WD=$$L clean; \
-		done'
+$(TARGET): $(OBJS)
+	$(AR) rsv $@ $?
