@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/setting.h>
 #include <setting.h>
 #include <func.h>
+#include "eflags.h"
 #include "gate.h"
 #include "mpu.h"
 #include "mpufunc.h"
@@ -168,7 +169,7 @@ void create_context(thread_t *th)
 		*--sp = (INT)thread_end;
 		th->mpu.esp0 = context_create_kernel(
 				sp,
-				EFLAG_IBIT | EFLAG_IOPL3,
+				EFLAGS_INTERRUPT_ENABLE | EFLAGS_IOPL_3,
 				th->attr.entry);
 	}
 }

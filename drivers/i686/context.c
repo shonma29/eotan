@@ -21,6 +21,7 @@ Version 2, June 1991
 #include "ready.h"
 #include "setting.h"
 #include "sync.h"
+#include "mpu/eflags.h"
 #include "mpu/interrupt.h"
 #include "mpu/mpu.h"
 #include "mpu/mpufunc.h"
@@ -79,7 +80,7 @@ ER mpu_copy_stack(ID src, W esp, ID dst)
 
     dst_tsk->mpu.esp0 = context_create_user(
 	    dst_tsk->attr.kstack_tail,
-	    EFLAG_IBIT | EFLAG_IOPL3,
+	    EFLAGS_INTERRUPT_ENABLE | EFLAGS_IOPL_3,
 	    dst_tsk->attr.entry,
 	    (VP)dstp);
 
@@ -200,7 +201,7 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
     /* タスクの初期化 */
     tsk->mpu.esp0 = context_create_user(
 	    tsk->attr.kstack_tail,
-	    EFLAG_IBIT | EFLAG_IOPL3,
+	    EFLAGS_INTERRUPT_ENABLE | EFLAGS_IOPL_3,
 	    tsk->attr.entry,
 	    (VP)esp);
 

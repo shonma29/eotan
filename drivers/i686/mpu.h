@@ -29,7 +29,4 @@ Version 2, June 1991
 #define ACC_KERNEL	0
 #define ACC_USER	1
 
-#define EFLAG_IBIT	0x0200
-#define EFLAG_IOPL3	0x3000
-
 #endif /* _MPU_MPU_H_ */
