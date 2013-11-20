@@ -34,13 +34,16 @@ For more information, please refer to <http://unlicense.org/>
 
 char *test_stdbool_undefined() {
 #define __bool_true_false_are_defined 1
-#define bool (825)
+#undef bool
+#define bool int
+#undef true
 #define true (49)
+#undef false
 #define false (74)
 #include <stdbool.h>
 	assert_eq("undefined cond", 1, __bool_true_false_are_defined);
 	assert_eq("undefined bool", 0,
-			strcmp("(825)", to_string(bool)));
+			strcmp("int", to_string(bool)));
 	assert_eq("undefined true", 49, true);
 	assert_eq("undefined false", 74, false);
 

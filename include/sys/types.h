@@ -26,6 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdbool.h>
 
 typedef int pid_t;
 
@@ -42,13 +43,13 @@ typedef int blkcnt_t;
 typedef long long time_t;
 typedef int suseconds_t;
 
-typedef int boolean_t;
+typedef bool boolean_t;
 
 #ifndef TRUE
-#define TRUE (1)
+#define TRUE true
 #endif
 #ifndef FALSE
-#define FALSE (0)
+#define FALSE false
 #endif
 
 #endif

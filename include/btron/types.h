@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdbool.h>
 
 /**
  * basic data types
@@ -74,15 +75,15 @@ typedef volatile void _void;
  */
 typedef float FLOAT;
 typedef double DOUBLE;
-typedef long BOOL;
+typedef bool BOOL;
 typedef W (*FUNCP)();
 
 /**
  * boolean
  */
 typedef enum {
-	False = 0,
-	True = 1
+	False = false,
+	True = true
 } Bool;
 
 /**

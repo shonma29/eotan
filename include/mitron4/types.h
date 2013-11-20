@@ -26,6 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdbool.h>
 
 /**
  * common data types
@@ -50,13 +51,13 @@ typedef void (*FP)();
 typedef long INT;
 typedef unsigned long UINT;
 
-typedef long BOOL;
+typedef bool BOOL;
 
 #ifndef TRUE
-#define TRUE (1)
+#define TRUE true
 #endif
 #ifndef FALSE
-#define FALSE (0)
+#define FALSE false
 #endif
 
 typedef long FN;
