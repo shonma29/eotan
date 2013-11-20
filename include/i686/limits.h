@@ -49,4 +49,8 @@ For more information, please refer to <http://unlicense.org/>
 #define LONG_MIN (-0x7fffffffL - 1)
 #define ULONG_MAX 0xffffffffUL
 
+#define LLONG_MAX 0x7fffffffffffffffLL
+#define LLONG_MIN (-0x7fffffffffffffffLL - 1)
+#define ULLONG_MAX 0xffffffffffffffffULL
+
 #endif
