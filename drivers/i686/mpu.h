@@ -26,7 +26,4 @@ Version 2, June 1991
 #define MPU_KERNEL_SP(taskp) ((taskp)->mpu.esp0)
 #define MPU_PAGE_TABLE(taskp) ((taskp)->mpu.cr3)
 
-#define ACC_KERNEL	0
-#define ACC_USER	1
-
 #endif /* _MPU_MPU_H_ */

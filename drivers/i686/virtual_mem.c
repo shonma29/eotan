@@ -250,7 +250,7 @@ static BOOL vmap(thread_t * task, UW vpage, UW ppage, W accmode)
 	dp->frame_addr = (UW)kern_v2p(pageent) >> PAGE_SHIFT;
 	dp->present = 1;
 	dp->read_write = 1;
-	dp->u_and_s = ((accmode & ACC_USER) ? 1 : 0);
+	dp->u_and_s = accmode;
 	dp->zero2 = 0;
 	dp->access = 0;
 	dp->dirty = 0;
@@ -278,7 +278,7 @@ static BOOL vmap(thread_t * task, UW vpage, UW ppage, W accmode)
     pp->frame_addr = (UW)kern_v2p((void*)ppage) >> PAGE_SHIFT;
     pp->present = 1;
     pp->read_write = 1;
-    pp->u_and_s = ((accmode & ACC_USER) ? 1 : 0);
+    pp->u_and_s = accmode;
     pp->zero2 = 0;
     pp->access = 0;
     pp->dirty = 0;

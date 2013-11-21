@@ -70,7 +70,7 @@ ER mpu_copy_stack(ID src, W esp, ID dst)
     dst_tsk = get_thread_ptr(dst);
 
     /* dst task に新しいスタックポインタを割り付ける */
-    create_user_stack(dst_tsk, USER_STACK_SIZE, ACC_USER);
+    create_user_stack(dst_tsk, USER_STACK_SIZE, true);
 
     size = ((UW) src_tsk->attr.ustack_tail) - esp;
 
@@ -119,7 +119,7 @@ ER context_page_fault_handler(void)
     if (regp->permission &&
 	    (((UW) regp->start_addr <= addr) &&
 	    (addr <= ((UW) regp->start_addr + regp->max_size)))) {
-	ER result = region_map(thread_id(running), (VP) addr, PAGE_SIZE, ACC_USER);
+	ER result = region_map(thread_id(running), (VP) addr, PAGE_SIZE, true);
 
 	if (result == E_OK) {
 	    /* ページフォルト処理に成功した */
@@ -156,7 +156,7 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
 
     if (tid & INIT_THREAD_ID_FLAG) {
 	tid &= INIT_THREAD_ID_MASK;
-	create_user_stack(tsk, USER_STACK_SIZE, ACC_USER);
+	create_user_stack(tsk, USER_STACK_SIZE, true);
     }
 
     enter_critical();

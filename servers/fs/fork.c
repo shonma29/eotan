@@ -114,7 +114,7 @@ W proc_fork(struct proc *parent, struct proc *child, ID main_task, ID signal_tas
     child->proc_status = PS_RUN;
     child->proc_ppid = parent->proc_pid;
     error_no = vmap(main_task, (thread_local_t*)LOCAL_ADDR, sizeof(thread_local_t),
-    		ACC_USER);
+    		true);
     if (error_no) {
 	return error_no;
     }

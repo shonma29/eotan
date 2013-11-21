@@ -344,7 +344,7 @@ static VP get_system_memory(UW size)
     dbg_printf("get_system_memory: id = %d, start = 0x%x, size = %d\n",
 	       mytid, last_page, size);
 #endif
-    errno = vmap(mytid, (VP) last_page, size, ACC_USER);
+    errno = vmap(mytid, (VP) last_page, size, false);
     if (errno) {
 #ifdef notdef
 	dbg_printf("get_system_memory: can't vmap_reg %d\n", errno);
