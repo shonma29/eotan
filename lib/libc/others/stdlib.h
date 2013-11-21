@@ -50,8 +50,5 @@ extern W	fputs (B *line, FILE *port);
 extern W	puts (B *line);
 extern W	printf (B *fmt,...);
 extern W	fprintf (FILE *port, B *fmt,...);
-extern W isprint (W ch);
-extern W isspace (W ch);
-extern W isdigit (W ch);
 
 #endif /* __STDLIB_H__ */
