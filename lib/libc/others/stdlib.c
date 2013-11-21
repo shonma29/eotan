@@ -227,38 +227,6 @@ writechar (ID port, UB *buf, W length)
   return length;
 }
 
-
-W
-isprint (W ch)
-{
-  if ((ch < 0x20) || (ch >= 0x7f))
-    {
-      return (FALSE);
-    }
-  return (TRUE);
-}
-
-W
-isspace (W ch)
-{
-  if ((ch == ' ') || (ch == '\t') || (ch == '\n'))
-    return (TRUE);
-  return (FALSE);
-}
-
-W
-isdigit (W ch)
-{
-  ch -= '0';
-
-  if (ch < 0 || ch > 9)
-    {
-      return FALSE;
-    }
-
-  return TRUE;
-}
-
 W
 getc (FILE *port)
 {

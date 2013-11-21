@@ -27,6 +27,7 @@ TARGET = $(WD).a
 
 include Makefile.in
 
+CSRCS += $(wildcard $(WD)/ctype/*.c)
 CSRCS += $(wildcard $(WD)/stdio/*.c)
 CSRCS += $(wildcard $(WD)/string/*.c)
 CSRCS += $(wildcard $(WD)/set/*.c)
