@@ -192,8 +192,7 @@ ER thread_switch(void)
     running = next;
     running->status = TTS_RUN;
 
-    context_set_kernel_sp(next->attr.kstack_tail);
-    context_switch_page_table(next);
+    context_switch_domain(next);
     context_switch();
 
     /* 正常に終了した：次のタスクスイッチの時にここに戻る */

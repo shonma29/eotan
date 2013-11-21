@@ -47,8 +47,7 @@ extern VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
 extern void context_initialize(void);
 extern void context_reset_page_cache(const thread_t *task, const VP addr);
 extern void context_reset_page_table();
-extern void context_set_kernel_sp(const VP addr);
-extern void context_switch_page_table(thread_t *next);
+extern void context_switch_domain(thread_t *next);
 
 /* virtual_mem.c */
 extern ER region_create(ID id, ID rid, VP start, W min, W max, UW perm);

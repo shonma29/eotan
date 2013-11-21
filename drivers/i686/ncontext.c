@@ -39,12 +39,15 @@ VP *context_prev_sp;
 VP *context_next_sp;
 static W current_domain_id = KERNEL_DOMAIN_ID;
 
+static void context_set_kernel_sp(const VP addr);
+
+
 void context_initialize(void)
 {
 	tr_set(dummy_tss);
 }
 
-void context_set_kernel_sp(const VP addr)
+static void context_set_kernel_sp(const VP addr)
 {
 	tss_t *tss = (tss_t*)TSS_ADDR;
 
@@ -137,12 +140,13 @@ VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
 	return sp;
 }
 
-void context_switch_page_table(thread_t *next)
+void context_switch_domain(thread_t *next)
 {
 	if ((next->attr.domain_id != KERNEL_DOMAIN_ID)
 			&& (next->attr.domain_id != current_domain_id)) {
 		paging_set_directory((VP)MPU_PAGE_TABLE(next));
 		current_domain_id = next->attr.domain_id;
+		context_set_kernel_sp(next->attr.kstack_tail);
 	}
 }
 
