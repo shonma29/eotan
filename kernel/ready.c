@@ -35,6 +35,13 @@ static list_t ready_task[MAX_PRIORITY + 1];
 static int buf[MAX_PRIORITY + 1];
 static heap_t heap;
 
+static inline thread_t *getThread(const list_t *p);
+
+
+static inline thread_t *getThread(const list_t *p) {
+	return (thread_t*)((ptr_t)p - offsetof(thread_t, queue));
+}
+
 void ready_initialize()
 {
 	int i;
@@ -63,7 +70,7 @@ void ready_rotate(const int pri)
 	}
 }
 
-list_t *ready_dequeue()
+thread_t *ready_dequeue()
 {
 	for (;; heap_dequeue(&heap)) {
 		list_t *q;
@@ -73,6 +80,6 @@ list_t *ready_dequeue()
 
 		q = list_head(&(ready_task[pri]));
 
-		if (q)	return q;
+		if (q)	return getThread(q);
 	}
 }

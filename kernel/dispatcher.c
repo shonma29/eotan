@@ -105,18 +105,6 @@ Version 2, June 1991
 #include "mpu/mpu.h"
 #include "mpu/mpufunc.h"
 
-/***************************************************************************
- *	タスク管理用の変数
- *
- *
- */
-
-static inline thread_t *getTaskParent(const list_t *p);
-
-static inline thread_t *getTaskParent(const list_t *p) {
-	return (thread_t*)((ptr_t)p - offsetof(thread_t, queue));
-}
-
 /* thread_switch --- タスク切り換え
  *
  * 返値：	エラー番号
@@ -131,7 +119,6 @@ static inline thread_t *getTaskParent(const list_t *p) {
 ER thread_switch(void)
 {
     thread_t *next;
-    list_t *q;
 
     enter_critical();
 #ifdef TSKSW_DEBUG
@@ -153,15 +140,13 @@ ER thread_switch(void)
     	delay_start = FALSE;
     }
 
-    q = ready_dequeue();
+    next = ready_dequeue();
 
-    if (!q) {
+    if (!next) {
 	printk("thread_switch(): error = E_NOEXS\n");	/* */
 	leave_critical();
 	return (E_NOEXS);
     }
-
-    next = getTaskParent(q);
 
     /* 選択したタスクが、現タスクならば、何もしないで戻る */
     if (running == next) {
