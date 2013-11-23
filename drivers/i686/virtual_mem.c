@@ -159,7 +159,6 @@ Version 2, June 1991
 #include <mpu/memory.h>
 #include <func.h>
 #include <thread.h>
-#include "mpu.h"
 #include "mpufunc.h"
 
 /***********************************************************************
@@ -640,7 +639,7 @@ ER region_duplicate(ID src, ID dst)
     dstp->segments[seg_code] = taskp->segments[seg_code];
     dstp->segments[seg_data] = taskp->segments[seg_data];
     dstp->segments[seg_heap] = taskp->segments[seg_heap];
-    return copy_user_pages(MPU_PAGE_TABLE(dstp), MPU_PAGE_TABLE(taskp),
+    return copy_user_pages(dstp->mpu.cr3, taskp->mpu.cr3,
 	    (pageRoundUp(dstp->segments[seg_code].len) >> BITS_OFFSET)
 	    + (pageRoundUp(dstp->segments[seg_data].len) >> BITS_OFFSET)
 	    + (pageRoundUp(dstp->segments[seg_heap].len) >> BITS_OFFSET)

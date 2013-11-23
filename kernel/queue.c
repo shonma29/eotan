@@ -32,7 +32,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "sync.h"
 #include "setting.h"
 #include "thread.h"
-#include "mpu/mpu.h"
 #include "mpu/mpufunc.h"
 
 #define MAX_DTQCNT (1024 - 1)

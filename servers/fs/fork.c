@@ -74,7 +74,6 @@ Version 2, June 1991
 #include <string.h>
 #include "fs.h"
 #include "../../lib/libserv/libmm.h"
-#include "../../kernel/mpu/mpu.h"
 
 static W proc_duplicate(struct proc * source, struct proc * destination);
 

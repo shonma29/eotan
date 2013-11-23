@@ -35,4 +35,14 @@ typedef struct
 	char fpu_state[108];
 } mpu_context_t;
 
+static inline void context_set_kernel_sp(mpu_context_t *ctx, const void *addr)
+{
+	ctx->esp0 = (void*)addr;
+}
+
+static inline void context_set_page_table(mpu_context_t *ctx, const void *addr)
+{
+	ctx->cr3 = (PTE*)addr;
+}
+
 #endif

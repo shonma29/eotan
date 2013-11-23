@@ -24,7 +24,6 @@ Version 2, June 1991
 #include "sync.h"
 #include "mpu/eflags.h"
 #include "mpu/interrupt.h"
-#include "mpu/mpu.h"
 #include "mpu/mpufunc.h"
 
 static void create_user_stack(thread_t * tsk, W size, W acc);

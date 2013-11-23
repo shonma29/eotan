@@ -128,7 +128,6 @@ Version 2, June 1991
 #include <mpu/config.h>
 #include "fs.h"
 #include "../../lib/libserv/libmm.h"
-#include "../../kernel/mpu/mpu.h"
 
 struct proc proc_table[MAX_PROCESS];
 static struct proc *free_proc, *tail_proc;

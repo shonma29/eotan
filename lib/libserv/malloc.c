@@ -70,7 +70,6 @@ Version 2, June 1991
 #include <mm/segment.h>
 #include <mpu/config.h>
 #include <mpu/memory.h>
-#include "../../kernel/mpu/mpu.h"
 #include "libmm.h"
 #include "libserv.h"
 

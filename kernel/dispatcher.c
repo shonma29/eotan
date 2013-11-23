@@ -102,7 +102,6 @@ Version 2, June 1991
 #include "sync.h"
 #include "thread.h"
 #include "mpu/interrupt.h"
-#include "mpu/mpu.h"
 #include "mpu/mpufunc.h"
 
 /* thread_switch --- タスク切り換え
@@ -172,8 +171,8 @@ ER thread_switch(void)
     if (running->attr.domain_id != KERNEL_DOMAIN_ID)
 	fpu_save(&running);
 
-    context_prev_sp = &(MPU_KERNEL_SP(running));
-    context_next_sp = &(MPU_KERNEL_SP(next));
+    context_prev_sp = &(running->mpu.esp0);
+    context_next_sp = &(next->mpu.esp0);
     running = next;
     running->status = TTS_RUN;
 

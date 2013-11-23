@@ -29,16 +29,19 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 #include <mm/segment.h>
 #include <mpu/memory.h>
+#include <setting.h>
 #include <thread.h>
 #include "paging.h"
-#include "mpu.h"
 #include "mpufunc.h"
 #include "func.h"
+
+static void release_user_pages(PTE *directory);
+
 
 ER vmemcpy(const thread_t *th, const void *to, const void *from,
 		const size_t bytes)
 {
-	PTE *dir = (PTE*)kern_p2v(MPU_PAGE_TABLE(th));
+	PTE *dir = (PTE*)kern_p2v(th->mpu.cr3);
 	UB *w = (UB*)to;
 	UB *r = (UB*)from;
 	size_t left = bytes;
@@ -129,7 +132,7 @@ PTE *copy_kernel_page_table(const PTE *src)
 	return (PTE*)kern_v2p(directory);
 }
 
-void release_user_pages(PTE *directory)
+static void release_user_pages(PTE *directory)
 {
 	PTE *vdir = (PTE*)kern_p2v(directory);
 	size_t n = (size_t)getDirectoryOffset((void*)MIN_KERNEL);
@@ -209,4 +212,12 @@ ER copy_user_pages(PTE *dest, const PTE *src, size_t cnt)
 	}
 
 	return E_OK;
+}
+
+void release_memory(thread_t *th)
+{
+	if (th->attr.domain_id != KERNEL_DOMAIN_ID)
+		release_user_pages(th->mpu.cr3);
+
+	pfree((VP)kern_v2p((char*)(th->attr.kstack_tail)) - KERNEL_STACK_SIZE);
 }

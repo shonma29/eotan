@@ -35,7 +35,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "setting.h"
 #include "sync.h"
 #include "thread.h"
-#include "mpu/mpu.h"
 #include "mpu/mpufunc.h"
 
 static slab_t thread_slab;
@@ -113,8 +112,8 @@ ER_ID idle_initialize(void)
 		//th->attr.entry = kern_start;
 
 		/* kthread don't need to set tss */
-		//MPU_KERNEL_SP(th) = th->attr.kstack_tail;	
-		MPU_PAGE_TABLE(th) = (VP)PAGE_DIR_ADDR;
+		//context_set_kernel_sp(&(th->mpu), th->attr.kstack_tail);
+		context_set_page_table(&(th->mpu), (VP)PAGE_DIR_ADDR);
 
 		running = th;
 		ready_enqueue(th->priority, &(th->queue));
@@ -146,11 +145,12 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid)
 	th->attr.kstack_tail = (char*)kern_p2v(p) + pk_ctsk->stksz;
 	th->attr.entry = pk_ctsk->task;
 
-	MPU_KERNEL_SP(th) = th->attr.kstack_tail;	
-	MPU_PAGE_TABLE(th) = (th->attr.domain_id == KERNEL_DOMAIN_ID)?
-			(VP)PAGE_DIR_ADDR
-			//TODO null check
-			:kern_v2p(copy_kernel_page_table((PTE*)PAGE_DIR_ADDR));
+	context_set_kernel_sp(&(th->mpu), th->attr.kstack_tail);
+	context_set_page_table(&(th->mpu),
+			(th->attr.domain_id == KERNEL_DOMAIN_ID)?
+					(VP)PAGE_DIR_ADDR
+					//TODO null check
+					:kern_v2p(copy_kernel_page_table((PTE*)PAGE_DIR_ADDR)));
 
 	return E_OK;
 }
@@ -190,10 +190,7 @@ ER_ID thread_create_auto(T_CTSK *pk_ctsk)
 
 static void release_resources(thread_t *th)
 {
-	if (th->attr.domain_id != KERNEL_DOMAIN_ID)
-		release_user_pages((PTE*)MPU_PAGE_TABLE(th));
-
-	pfree((VP)kern_v2p((char*)(th->attr.kstack_tail)) - KERNEL_STACK_SIZE);
+	release_memory(th);
 }
 
 ER thread_destroy(ID tskid)

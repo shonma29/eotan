@@ -31,7 +31,6 @@ Version 2, June 1991
 
 #include <kcall.h>
 #include <mpu/config.h>
-#include <mpu/mpu.h>
 #include "../../lib/libserv/libmm.h"
 #include "fs.h"
 

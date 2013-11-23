@@ -30,7 +30,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <func.h>
 #include "eflags.h"
 #include "gate.h"
-#include "mpu.h"
 #include "mpufunc.h"
 #include "msr.h"
 #include "tss.h"
@@ -39,7 +38,7 @@ VP *context_prev_sp;
 VP *context_next_sp;
 static W current_domain_id = KERNEL_DOMAIN_ID;
 
-static void context_set_kernel_sp(const VP addr);
+static void api_set_kernel_sp(const VP addr);
 
 
 void context_initialize(void)
@@ -47,7 +46,7 @@ void context_initialize(void)
 	tr_set(dummy_tss);
 }
 
-static void context_set_kernel_sp(const VP addr)
+static void api_set_kernel_sp(const VP addr)
 {
 	tss_t *tss = (tss_t*)TSS_ADDR;
 
@@ -144,9 +143,9 @@ void context_switch_domain(thread_t *next)
 {
 	if ((next->attr.domain_id != KERNEL_DOMAIN_ID)
 			&& (next->attr.domain_id != current_domain_id)) {
-		paging_set_directory((VP)MPU_PAGE_TABLE(next));
+		paging_set_directory(next->mpu.cr3);
 		current_domain_id = next->attr.domain_id;
-		context_set_kernel_sp(next->attr.kstack_tail);
+		api_set_kernel_sp(next->attr.kstack_tail);
 	}
 }
 
