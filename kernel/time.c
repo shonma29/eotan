@@ -31,6 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "ready.h"
 #include "setting.h"
 #include "sync.h"
+#include "arch/archfunc.h"
 #include "mpu/mpufunc.h"
 
 #define TICK (1000 * 1000 * 1000 / TIME_TICKS)
@@ -46,6 +47,7 @@ static slab_t timer_slab;
 static tree_t timer_tree;
 
 static inline timer_t *getTimerParent(const node_t *p);
+static void time_initialize(void);
 static ER add_timer(RELTIM time, thread_t *th);
 
 
@@ -53,11 +55,13 @@ static inline timer_t *getTimerParent(const node_t *p) {
 	return (timer_t*)((ptr_t)p - offsetof(timer_t, node));
 }
 
-void time_initialize(time_t *seconds)
+static void time_initialize(void)
 {
 	long nsec = 0;
+	time_t seconds;
 
-	timespec_set(&system_time, seconds, &nsec);
+	rtc_get_time(&seconds);
+	timespec_set(&system_time, &seconds, &nsec);
 }
 
 ER time_set(SYSTIM *pk_systim)
@@ -129,6 +133,9 @@ void timer_initialize(void)
 	slab_create(&timer_slab);
 
 	tree_create(&timer_tree, &timer_slab, compare);
+
+	time_initialize();
+	pit_initialize(TIME_TICKS);
 }
 
 static void resume(thread_t *th)

@@ -71,7 +71,6 @@ static void banner(void);
  */
 ER core_initialize(void)
 {
-    time_t seconds;
     system_info_t *sysinfo = (system_info_t *)SYSTEM_INFO_ADDR;
 
     sysinfo->root.device = get_device_id(DEVICE_MAJOR_ATA, 0);
@@ -103,9 +102,6 @@ ER core_initialize(void)
     pic_initialize();
     interrupt_initialize();
     timer_initialize();		/* インターバルタイマ機能の初期化 */
-    rtc_get_time(&seconds);
-    time_initialize(&seconds);		/* 時間管理機能の初期化 */
-    pit_initialize(TIME_TICKS);		/* インターバルタイマの起動       */
 
     run_init_program();
 
