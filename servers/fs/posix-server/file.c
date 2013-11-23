@@ -25,8 +25,8 @@ Version 2, June 1991
 
 #include <device.h>
 #include <fcntl.h>
-#include <kcall.h>
 #include <string.h>
+#include <nerve/kcall.h>
 #include "fs.h"
 
 extern W sfs_open_device(ID device, W * rsize);

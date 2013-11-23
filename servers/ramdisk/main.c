@@ -26,10 +26,10 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <device.h>
-#include <global.h>
-#include <kcall.h>
 #include <major.h>
 #include <string.h>
+#include <nerve/global.h>
+#include <nerve/kcall.h>
 #include "../../lib/libserv/libserv.h"
 #include "../../lib/libserv/bind.h"
 #include "ramdisk.h"

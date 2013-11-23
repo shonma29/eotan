@@ -24,7 +24,7 @@ Version 2, June 1991
  */
 
 #include <fcntl.h>
-#include <kcall.h>
+#include <nerve/kcall.h>
 #include "fs.h"
 
 W psc_chdir_f(RDVNO rdvno, struct posix_request *req)

@@ -42,9 +42,9 @@ Version 2, June 1991
  * 最初の登録
  *
  */
-#include <kcall.h>
-#include <services.h>
 #include <core.h>
+#include <services.h>
+#include <nerve/kcall.h>
 #include "fs.h"
 
 

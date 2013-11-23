@@ -20,7 +20,7 @@ Version 2, June 1991
  *
  */
 
-#include <kcall.h>
+#include <nerve/kcall.h>
 #include "fs.h"
 
 extern void sfs_purge_cache();

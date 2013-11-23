@@ -27,12 +27,12 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <console.h>
 #include <device.h>
-#include <kcall.h>
 #include <major.h>
 #include <stddef.h>
 #include <string.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
+#include <nerve/kcall.h>
 #include <bind.h>
 #include <libserv.h>
 #include "hmi.h"

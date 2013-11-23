@@ -1,5 +1,5 @@
-#ifndef _KCALL_H_
-#define _KCALL_H_
+#ifndef _NERVE_KCALL_H_
+#define _NERVE_KCALL_H_
 /*
 This is free and unencumbered software released into the public domain.
 

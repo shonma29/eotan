@@ -25,12 +25,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <global.h>
 #include <kthread.h>
 #include <mpu/config.h>
 #include <mpu/io.h>
-#include <nerve/config.h>
 #include <services.h>
+#include <nerve/config.h>
+#include <nerve/global.h>
 #include <set/lf_queue.h>
 #include <sys/syscall.h>
 #include "delay.h"

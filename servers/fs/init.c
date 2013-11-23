@@ -24,11 +24,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <kcall.h>
+#include <core.h>
 #include <string.h>
 #include <boot/init.h>
 #include <mpu/config.h>
 #include <nerve/config.h>
+#include <nerve/kcall.h>
 #include "fs.h"
 
 typedef struct {

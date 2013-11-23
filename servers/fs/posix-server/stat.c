@@ -24,10 +24,10 @@ Version 2, June 1991
  */
 
 #include <fcntl.h>
-#include <kcall.h>
 #include <string.h>
 #include <utime.h>
 #include <mpu/memory.h>
+#include <nerve/kcall.h>
 #include "fs.h"
 
 W psc_access_f(RDVNO rdvno, struct posix_request *req)

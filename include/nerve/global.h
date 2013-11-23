@@ -1,5 +1,5 @@
-#ifndef _ICALL_H_
-#define _ICALL_H_
+#ifndef _NERVE_GLOBAL_H_
+#define _NERVE_GLOBAL_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,15 +27,28 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <time.h>
 #include <stddef.h>
+#include <set/lf_queue.h>
 
-#define ICALL_ADDR 0x80003fc0
+#define SYSTEM_INFO_ADDR 0x80003e00
 
 typedef struct {
-	ER (*thread_start)(ID tskid);
-	ER_ID (*thread_get_id)(void);
-	ER (*queue_send_nowait)(ID dtqid, VP_INT data);
-	void (*puts)(const char *str);
-} icall_t;
+	ID device;
+	W fstype;
+} mount_node_t;
+
+typedef struct {
+	VP start;
+	size_t size;
+} memory_range_t;
+
+typedef struct {
+	time_t epoch;
+	mount_node_t root;
+	memory_range_t initrd;
+	volatile lfq_t kqueue;
+	ID delay_thread_id;
+} system_info_t;
 
 #endif

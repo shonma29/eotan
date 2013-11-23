@@ -26,10 +26,11 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <errno.h>
-#include <kcall.h>
 #include <local.h>
 #include <mm.h>
 #include <services.h>
+#include <nerve/kcall.h>
+
 
 int process_duplicate(ID src, ID dst)
 {

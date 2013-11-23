@@ -18,7 +18,7 @@ Version 2, June 1991
  *
  */
 
-#include <kcall.h>
+#include <nerve/kcall.h>
 #include "fs.h"
 
 W psc_getdents_f(RDVNO rdvno, struct posix_request *req)

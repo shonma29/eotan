@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <kcall.h>
+#include <nerve/kcall.h>
 #include "../../lib/libserv/libserv.h"
 
 #define BUFSIZ 16

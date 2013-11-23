@@ -16,7 +16,6 @@ Version 2, June 1991
  */
 
 #include <core.h>
-#include <kcall.h>
 #include <thread.h>
 #include <vm.h>
 #include <mm/segment.h>
@@ -24,6 +23,7 @@ Version 2, June 1991
 #include <mpu/config.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
+#include <nerve/kcall.h>
 #include <sys/wait.h>
 #include "../../../lib/libserv/libmm.h"
 #include "fs.h"

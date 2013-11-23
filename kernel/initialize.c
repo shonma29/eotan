@@ -54,8 +54,8 @@ Version 2, June 1991
  *
  */
 #include <core.h>
-#include <global.h>
 #include <nerve/config.h>
+#include <nerve/global.h>
 #include "func.h"
 #include "version.h"
 #include "arch/archfunc.h"

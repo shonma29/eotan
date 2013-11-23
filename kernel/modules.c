@@ -27,12 +27,12 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <elf.h>
 #include <fstype.h>
-#include <global.h>
 #include <major.h>
 #include <stddef.h>
 #include <boot/modules.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
+#include <nerve/global.h>
 #include "func.h"
 
 static ER run(const UW type, const Elf32_Ehdr *eHdr);

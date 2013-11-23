@@ -25,11 +25,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <icall.h>
 #include <fstype.h>
-#include <global.h>
-#include <kcall.h>
 #include <major.h>
+#include <nerve/global.h>
+#include <nerve/icall.h>
+#include <nerve/kcall.h>
 #include "delay.h"
 #include "func.h"
 #include "arch/archfunc.h"

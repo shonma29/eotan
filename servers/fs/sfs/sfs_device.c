@@ -16,10 +16,10 @@ Version 2, June 1991
  *
  */
 
-#include <kcall.h>
 #include <string.h>
 #include <device.h>
 #include <core.h>
+#include <nerve/kcall.h>
 #include "../fs.h"
 #include "sfs_func.h"
 

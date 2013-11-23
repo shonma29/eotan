@@ -26,9 +26,9 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <device.h>
-#include <kcall.h>
 #include <services.h>
 #include <string.h>
+#include <nerve/kcall.h>
 #include "../../servers/kernlog/kernlog.h"
 
 

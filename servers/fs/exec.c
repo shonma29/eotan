@@ -56,13 +56,13 @@ Version 2, June 1991
 
 #include <elf.h>
 #include <fcntl.h>
-#include <kcall.h>
 #include <string.h>
 #include <vm.h>
 #include <mm/segment.h>
 #include <boot/init.h>
 #include <mpu/config.h>
 #include <mpu/memory.h>
+#include <nerve/kcall.h>
 #include "../../lib/libserv/libmm.h"
 #include "fs.h"
 

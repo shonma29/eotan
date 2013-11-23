@@ -65,11 +65,11 @@ Version 2, June 1991
 
 #include <string.h>
 #include <core.h>
-#include <kcall.h>
 #include <vm.h>
 #include <mm/segment.h>
 #include <mpu/config.h>
 #include <mpu/memory.h>
+#include <nerve/kcall.h>
 #include "libmm.h"
 #include "libserv.h"
 

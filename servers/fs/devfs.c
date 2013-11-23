@@ -25,10 +25,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
-#include <global.h>
 #include <stddef.h>
 #include <string.h>
 #include <boot/init.h>
+#include <nerve/global.h>
 #include <set/hash.h>
 #include "../../lib/libserv/libserv.h"
 #include "devfs.h"

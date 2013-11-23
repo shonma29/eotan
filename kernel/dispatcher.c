@@ -91,12 +91,12 @@ Version 2, June 1991
  */
 
 #include <core.h>
-#include <global.h>
 #include <string.h>
 #include <vm.h>
 #include <mpu/config.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
+#include <nerve/global.h>
 #include "func.h"
 #include "ready.h"
 #include "sync.h"
