@@ -31,7 +31,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "mpu/interrupt.h"
 #include "mpu/mpufunc.h"
 
-volatile UINT interrupt_nest = 0;
 static ER (*isr[MAX_IDT + 1])(void);
 
 static ER dummy_handler(void);
@@ -80,7 +79,7 @@ W interrupt(const UW edi, const UW esi, const UW ebp, const UW esp,
 		const UW ds, const UW no, const UW err, const UW eip,
 		const UW cs, const W eflags)
 {
-	interrupt_nest++;
+	sync_blocking++;
 
 	if ((isr[no])())
 		//TODO call fault when no error code
@@ -88,5 +87,5 @@ W interrupt(const UW edi, const UW esi, const UW ebp, const UW esp,
 				ecx, eax, ds, no, err, eip, cs, eflags);
 
 	enter_critical();
-	return --interrupt_nest;
+	return --sync_blocking;
 }

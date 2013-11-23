@@ -33,6 +33,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/tree.h>
 #include <sys/time.h>
 #include "delay.h"
+#include "sync.h"
 #include "thread.h"
 
 
@@ -62,7 +63,13 @@ extern void putsk(const char *str);
 extern node_t *find_empty_key(tree_t *tree, int *hand);
 
 /* dispatcher.c */
-extern ER thread_switch(void);
+extern void thread_switch(void);
+
+static inline void dispatch(void)
+{
+	if (!sync_blocking)
+		thread_switch();
+}
 
 /* thread.c */
 extern thread_t *get_thread_ptr(ID tskid);

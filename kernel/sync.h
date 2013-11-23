@@ -26,13 +26,19 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdint.h>
+
+#define SYNC_FORBID_DISPATCH 0x00010000
+
+extern volatile uint_fast32_t sync_blocking;
+
 #include <mpu/io.h>
+#include <set/list.h>
 #include "func.h"
+#include "thread.h"
 
-extern int dispatchable;
-
-#define enter_serialize() (dispatchable = FALSE)
-#define leave_serialize() (dispatchable = TRUE)
+#define enter_serialize() (sync_blocking |= SYNC_FORBID_DISPATCH)
+#define leave_serialize() (sync_blocking &= ~SYNC_FORBID_DISPATCH)
 
 #define enter_critical() di()
 #define leave_critical() ei()

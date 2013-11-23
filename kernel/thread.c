@@ -260,7 +260,7 @@ ER thread_start(ID tskid)
 		th->status = TTS_RDY;
 		ready_enqueue(th->priority, &(th->queue));
 		leave_serialize();
-		thread_switch();
+		dispatch();
 
 	} while (FALSE);
 	leave_serialize();
@@ -280,7 +280,7 @@ void thread_end(void)
 
 	leave_serialize();
 
-	thread_switch();
+	dispatch();
 }
 
 void thread_end_and_destroy(void)
@@ -299,7 +299,7 @@ void thread_end_and_destroy(void)
 	release_resources(th);
 	leave_serialize();
 
-	thread_switch();
+	dispatch();
 }
 
 ER thread_terminate(ID tskid)

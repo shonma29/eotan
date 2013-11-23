@@ -74,7 +74,6 @@ extern void mpu_initialize(void);
 extern void idt_set(UB no, void (*handler)(void));
 
 /* interrupt.c */
-extern volatile UINT interrupt_nest;
 extern ER interrupt_initialize(void);
 extern W interrupt(const UW edi, const UW esi, const UW ebp, const UW esp,
 		const UW ebx, const UW edx, const UW ecx, const UW eax,

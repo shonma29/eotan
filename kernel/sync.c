@@ -29,14 +29,15 @@ For more information, please refer to <http://unlicense.org/>
 #include "thread.h"
 #include "ready.h"
 
-int dispatchable = TRUE;
+volatile uint_fast32_t sync_blocking = SYNC_FORBID_DISPATCH;
+
 
 void wait(thread_t *task)
 {
 	task->wait.result = E_OK;
 	task->status = TTS_WAI;
 	list_remove(&(task->queue));
-	thread_switch();
+	dispatch();
 }
 
 void release(thread_t *task)

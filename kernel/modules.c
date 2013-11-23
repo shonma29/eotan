@@ -85,7 +85,7 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr)
 	}
 
 	thread_start(tskId);
-	thread_switch();
+	dispatch();
 
 	return E_OK;
 }

@@ -115,7 +115,7 @@ Version 2, June 1991
  *		ready_task[] の更新を行うのが主となる。
  *		
  */
-ER thread_switch(void)
+void thread_switch(void)
 {
     thread_t *next;
 
@@ -123,16 +123,6 @@ ER thread_switch(void)
 #ifdef TSKSW_DEBUG
     printk("thread_switch(): start\n");
 #endif
-
-    if (interrupt_nest) {
-	leave_critical();
-	return (E_OK);
-    }
-
-    if (!dispatchable) {
-	leave_critical();
-	return (E_CTX);
-    }
 
     if (delay_start) {
 	thread_start(((system_info_t*)SYSTEM_INFO_ADDR)->delay_thread_id);
@@ -144,13 +134,13 @@ ER thread_switch(void)
     if (!next) {
 	printk("thread_switch(): error = E_NOEXS\n");	/* */
 	leave_critical();
-	return (E_NOEXS);
+	return;
     }
 
     /* 選択したタスクが、現タスクならば、何もしないで戻る */
     if (running == next) {
 	leave_critical();
-	return (E_OK);
+	return;
     }
 
     else if (!list_is_empty(&(running->queue))) {
@@ -182,6 +172,4 @@ ER thread_switch(void)
     /* 正常に終了した：次のタスクスイッチの時にここに戻る */
     if (running->attr.domain_id != KERNEL_DOMAIN_ID)
 	fpu_restore(&running);
-
-    return (E_OK);
 }

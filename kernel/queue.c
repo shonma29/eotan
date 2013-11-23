@@ -208,7 +208,7 @@ ER queue_destroy(ID dtqid)
 	} while (FALSE);
 	leave_serialize();
 
-	thread_switch();
+	dispatch();
 	return result;
 }
 

@@ -196,7 +196,7 @@ ER port_destroy(ID porid)
 	} while (FALSE);
 	leave_serialize();
 
-	thread_switch();
+	dispatch();
 	return result;
 }
 
@@ -394,6 +394,6 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 	tree_remove(&rdv_tree, rdvno);
 	leave_serialize();
 
-	thread_switch();
+	dispatch();
 	return result;
 }
