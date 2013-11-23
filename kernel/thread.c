@@ -28,11 +28,11 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 #include <vm.h>
 #include <mpu/config.h>
+#include <nerve/config.h>
 #include <set/list.h>
 #include <set/tree.h>
 #include "func.h"
 #include "ready.h"
-#include "setting.h"
 #include "sync.h"
 #include "thread.h"
 #include "mpu/mpufunc.h"

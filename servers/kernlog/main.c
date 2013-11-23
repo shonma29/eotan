@@ -29,9 +29,9 @@ For more information, please refer to <http://unlicense.org/>
 #include <kcall.h>
 #include <services.h>
 #include <string.h>
+#include <nerve/config.h>
 #include <set/lf_queue.h>
 #include <set/ring.h>
-#include <setting.h>
 #include <sync.h>
 #include <libserv.h>
 #include "kernlog.h"

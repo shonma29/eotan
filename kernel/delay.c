@@ -29,12 +29,12 @@ For more information, please refer to <http://unlicense.org/>
 #include <kthread.h>
 #include <mpu/config.h>
 #include <mpu/io.h>
+#include <nerve/config.h>
 #include <services.h>
 #include <set/lf_queue.h>
 #include <sys/syscall.h>
 #include "delay.h"
 #include "func.h"
-#include "setting.h"
 #include "mpu/mpufunc.h"
 
 #define KQUEUE_SIZE 1024

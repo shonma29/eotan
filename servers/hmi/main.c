@@ -32,9 +32,9 @@ For more information, please refer to <http://unlicense.org/>
 #include <stddef.h>
 #include <string.h>
 #include <mpu/memory.h>
+#include <nerve/config.h>
 #include <bind.h>
 #include <libserv.h>
-#include "../../kernel/setting.h"
 #include "hmi.h"
 #include "keyboard.h"
 

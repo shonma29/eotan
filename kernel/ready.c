@@ -24,9 +24,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <nerve/config.h>
 #include <set/list.h>
 #include <set/heap.h>
-#include "setting.h"
 #include "thread.h"
 
 thread_t *running;

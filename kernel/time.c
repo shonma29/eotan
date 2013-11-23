@@ -25,11 +25,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <nerve/config.h>
 #include <sys/time.h>
 #include "delay.h"
 #include "func.h"
 #include "ready.h"
-#include "setting.h"
 #include "sync.h"
 #include "arch/archfunc.h"
 #include "mpu/mpufunc.h"

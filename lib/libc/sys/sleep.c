@@ -15,7 +15,7 @@ Version 2, June 1991
 
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_sleep.c,v 1.1 1997/08/31 13:25:27 night Exp $  */
 
-#include <setting.h>
+#include <nerve/config.h>
 #include <core.h>
 #include "posix.h"
 

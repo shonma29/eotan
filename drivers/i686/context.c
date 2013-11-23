@@ -17,10 +17,10 @@ Version 2, June 1991
 #include <vm.h>
 #include <mm/segment.h>
 #include <mpu/config.h>
+#include <nerve/config.h>
 #include "delay.h"
 #include "func.h"
 #include "ready.h"
-#include "setting.h"
 #include "sync.h"
 #include "mpu/eflags.h"
 #include "mpu/interrupt.h"

@@ -29,9 +29,9 @@ For more information, please refer to <http://unlicense.org/>
 #include <stddef.h>
 #include <mpu/config.h>
 #include <mpu/memory.h>
+#include <nerve/config.h>
 #include "func.h"
 #include "memory_map.h"
-#include "setting.h"
 #include "sync.h"
 
 static MemoryMap *mm = (MemoryMap*)MEMORY_MAP_ADDR;

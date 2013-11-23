@@ -28,7 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 #include <boot/init.h>
 #include <mpu/config.h>
-#include <setting.h>
+#include <nerve/config.h>
 #include "fs.h"
 
 typedef struct {

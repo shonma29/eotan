@@ -24,8 +24,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <nerve/config.h>
 #include <set/tree.h>
-#include "setting.h"
 
 
 node_t *find_empty_key(tree_t *tree, int *hand)

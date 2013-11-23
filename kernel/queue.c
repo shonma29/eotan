@@ -25,12 +25,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <nerve/config.h>
 #include <set/list.h>
 #include <set/tree.h>
 #include "func.h"
 #include "ready.h"
 #include "sync.h"
-#include "setting.h"
 #include "thread.h"
 #include "mpu/mpufunc.h"
 

@@ -26,7 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <mpu/setting.h>
-#include <setting.h>
+#include <nerve/config.h>
 #include <func.h>
 #include "eflags.h"
 #include "gate.h"

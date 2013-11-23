@@ -96,9 +96,9 @@ Version 2, June 1991
 #include <vm.h>
 #include <mpu/config.h>
 #include <mpu/memory.h>
+#include <nerve/config.h>
 #include "func.h"
 #include "ready.h"
-#include "setting.h"
 #include "sync.h"
 #include "thread.h"
 #include "mpu/interrupt.h"

@@ -55,8 +55,8 @@ Version 2, June 1991
  */
 #include <core.h>
 #include <global.h>
+#include <nerve/config.h>
 #include "func.h"
-#include "setting.h"
 #include "version.h"
 #include "arch/archfunc.h"
 #include "mpu/mpufunc.h"

@@ -29,7 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 #include <mm/segment.h>
 #include <mpu/memory.h>
-#include <setting.h>
+#include <nerve/config.h>
 #include <thread.h>
 #include "paging.h"
 #include "mpufunc.h"

@@ -35,8 +35,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <boot/modules.h>
 #include <mpu/config.h>
 #include <mpu/memory.h>
+#include <nerve/config.h>
 #include <memory_map.h>
-#include <setting.h>
 #include <mpu/mpufunc.h>
 
 #define PAGE_OFFSET_MASK (4096ULL - 1ULL)

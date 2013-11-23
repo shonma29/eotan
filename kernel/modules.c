@@ -32,8 +32,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <stddef.h>
 #include <boot/modules.h>
 #include <mpu/memory.h>
+#include <nerve/config.h>
 #include "func.h"
-#include "setting.h"
 
 static ER run(const UW type, const Elf32_Ehdr *eHdr);
 static void set_initrd(ModuleHeader *h);

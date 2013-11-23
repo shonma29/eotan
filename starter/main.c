@@ -31,8 +31,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <boot/vesa.h>
 #include <memory_map.h>
 #include <mpu/mpufunc.h>
+#include <nerve/config.h>
 #include <set/lf_queue.h>
-#include <setting.h>
 
 #ifndef USE_VESA
 #include <cga.h>

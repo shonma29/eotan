@@ -17,13 +17,13 @@ Version 2, June 1991
 
 #include <core.h>
 #include <kcall.h>
-#include <setting.h>
 #include <thread.h>
 #include <vm.h>
 #include <mm/segment.h>
 #include <boot/init.h>
 #include <mpu/config.h>
 #include <mpu/memory.h>
+#include <nerve/config.h>
 #include <sys/wait.h>
 #include "../../../lib/libserv/libmm.h"
 #include "fs.h"

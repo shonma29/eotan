@@ -27,8 +27,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <stdarg.h>
 #include <string.h>
+#include <nerve/config.h>
 #include <set/ring.h>
-#include "setting.h"
 #include "sync.h"
 
 #define DEBUG 0
