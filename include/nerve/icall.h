@@ -27,9 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <stddef.h>
-
-#define ICALL_ADDR 0x80003fc0
+#include <nerve/config.h>
 
 typedef struct {
 	ER (*thread_start)(ID tskid);

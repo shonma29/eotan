@@ -27,9 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <stddef.h>
-
-#define KCALL_ADDR 0x80003f00
+#include <nerve/config.h>
 
 typedef struct {
 	ER_ID (*thread_create_auto)(T_CTSK *pk_ctsk);

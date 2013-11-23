@@ -37,6 +37,9 @@ For more information, please refer to <http://unlicense.org/>
 #define KERNEL_LOG_ADDR 0x80170000
 #define KERNEL_LOG_SIZE (64 * 1024)
 
+#define KCALL_ADDR 0x80003f00
+#define ICALL_ADDR 0x80003fc0
+
 #define MAX_PAGES (1024 * 1024 / 2)
 
 // MIN_MEMORY_MB should be a multiple of 4 MB.
