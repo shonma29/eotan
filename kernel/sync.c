@@ -24,7 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-
+#include "func.h"
 #include "sync.h"
 #include "thread.h"
 #include "ready.h"

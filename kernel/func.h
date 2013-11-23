@@ -67,7 +67,9 @@ extern void thread_switch(void);
 
 static inline void dispatch(void)
 {
-	if (!sync_blocking)
+	if (sync_blocking)
+		leave_critical();
+	else
 		thread_switch();
 }
 

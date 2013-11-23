@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 #include <nerve/config.h>
 #include <set/ring.h>
+#include "func.h"
 #include "sync.h"
 
 #define DEBUG 0

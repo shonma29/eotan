@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <mpu/config.h>
+#include "func.h"
 #include "sync.h"
 #include "mpu/handler.h"
 #include "mpu/interrupt.h"

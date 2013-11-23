@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/io.h>
 #include "../../kernel/sync.h"
 #include "../../kernel/mpu/mpufunc.h"
+#include "func.h"
 #include "archfunc.h"
 #include "handler.h"
 #include "8254.h"
