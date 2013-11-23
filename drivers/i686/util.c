@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <stddef.h>
 #include <string.h>
+#include <mm/segment.h>
 #include <mpu/memory.h>
 #include <thread.h>
 #include "paging.h"
@@ -95,18 +96,18 @@ void *getPageAddress(const PTE *dir, const void *addr)
 	return NULL;
 }
 
-T_REGION *find_region(const thread_t *th, const void *addr)
+mm_segment_t *find_region(const thread_t *th, const void *addr)
 {
 	size_t i;
 
-	for (i = 0; i < MAX_REGION; i++) {
-		T_REGION *r = (T_REGION*)&(th->regions[i]);
+	for (i = 0; i <= seg_stack; i++) {
+		mm_segment_t *r = (mm_segment_t*)&(th->segments[i]);
 
-		if (!(r->permission))
+		if (!(r->attr))
 			continue;
-		if ((UW)addr < (UW)(r->start_addr))
+		if ((UW)addr < (UW)(r->addr))
 			continue;
-		if ((UW)addr < (UW)(r->start_addr) + r->max_size)
+		if ((UW)addr < (UW)(r->addr) + r->max)
 			return r;
 	}
 

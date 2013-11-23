@@ -28,7 +28,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 #include <boot/init.h>
 #include <mpu/config.h>
-#include <region.h>
 #include <setting.h>
 #include "fs.h"
 

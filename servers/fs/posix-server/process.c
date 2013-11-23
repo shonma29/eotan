@@ -20,6 +20,7 @@ Version 2, June 1991
 #include <setting.h>
 #include <thread.h>
 #include <vm.h>
+#include <mm/segment.h>
 #include <boot/init.h>
 #include <mpu/config.h>
 #include <mpu/memory.h>
@@ -31,7 +32,7 @@ W psc_brk_f(RDVNO rdvno, struct posix_request *req)
 {
     struct proc *myprocp;
     W err, mypid, i;
-    T_REGION reg;
+    mm_segment_t reg;
     VP start;
     UW size;
 
@@ -40,7 +41,7 @@ W psc_brk_f(RDVNO rdvno, struct posix_request *req)
     if (err)
 	return err;
 
-    err = vmstatus(req->caller, HEAP_REGION, (VP) & reg);
+    err = vmstatus(req->caller, seg_heap, (VP) & reg);
 #ifdef DEBUG
     dbg_printf("[PM] err = %d id %d, sa %x, min %x, max %x, ea %x\n",
 	       req->caller,
@@ -53,7 +54,7 @@ W psc_brk_f(RDVNO rdvno, struct posix_request *req)
     }
 
     err = EOK;
-    start = reg.start_addr + reg.min_size;
+    start = reg.addr + reg.len;
     if (start > req->param.par_brk.end_adr) {
 	/* region を縮小 */
 	size = start - req->param.par_brk.end_adr;

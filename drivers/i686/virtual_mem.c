@@ -154,6 +154,7 @@ Version 2, June 1991
 
 #include <string.h>
 #include <core.h>
+#include <mm/segment.h>
 #include <mpu/config.h>
 #include <mpu/memory.h>
 #include <func.h>
@@ -382,7 +383,7 @@ ER region_create(ID id,		/* task ID */
 {				/* リージョン内でページフォールトが発生したと */
     /* きの処理の指定 */
     thread_t *taskp;
-    T_REGION *regp;
+    mm_segment_t *regp;
 #ifdef DEBUG
     printk("region_create %d %d %x %x %x %x %x\n", id, rid, start, min, max,
 	   perm);
@@ -415,12 +416,12 @@ ER region_create(ID id,		/* task ID */
 	return (E_OBJ);
     }
 
-    if (rid < 0 || rid >= MAX_REGION)
+    if (rid < 0 || rid > seg_stack)
 	return (E_PAR);
-    if (taskp->regions[rid].permission != 0) {
+    if (taskp->segments[rid].attr != attr_nil) {
 	return (E_OBJ);
     }
-    regp = &(taskp->regions[rid]);
+    regp = &(taskp->segments[rid]);
 
     /*
      * リージョン情報の設定。
@@ -431,10 +432,10 @@ ER region_create(ID id,		/* task ID */
      *    max_size        ページサイズで切り上げる
      *    permission      そのまま
      */
-    regp->start_addr = (VP) pageRoundDown((UW)start);
-    regp->min_size = pageRoundUp(min);
-    regp->max_size = pageRoundUp(max);
-    regp->permission = perm;
+    regp->addr = (VP) pageRoundDown((UW)start);
+    regp->len = pageRoundUp(min);
+    regp->max = pageRoundUp(max);
+    regp->attr = perm;
 
     /*
      * 処理は正常に終了した。
@@ -469,10 +470,10 @@ ER region_destroy(ID id)
 	 */
 	return (E_OBJ);
     }
-    for (rid = TEXT_REGION; rid <= HEAP_REGION; rid++) {
-    	region_unmap(id, taskp->regions[rid].start_addr,
-		taskp->regions[rid].min_size);
-	taskp->regions[rid].permission = 0;
+    for (rid = seg_code; rid <= seg_heap; rid++) {
+    	region_unmap(id, taskp->segments[rid].addr,
+		taskp->segments[rid].len);
+	taskp->segments[rid].attr = attr_nil;
     }
 
     return (E_OK);
@@ -512,7 +513,7 @@ ER region_map(ID id, VP start, UW size, W accmode)
     UW counter, i;
     VP pmem;
     ER res;
-    T_REGION *regp;
+    mm_segment_t *regp;
     UW newsize;
 
     taskp = (thread_t *) get_thread_ptr(id);
@@ -549,18 +550,18 @@ ER region_map(ID id, VP start, UW size, W accmode)
 	}
     } else {
 	if (regp) {
-	    if (((UW) start) + (size << PAGE_SHIFT) > (UW) regp->start_addr) {
+	    if (((UW) start) + (size << PAGE_SHIFT) > (UW) regp->addr) {
 		newsize =
-		    (UW) start + (size << PAGE_SHIFT) - (UW) regp->start_addr;
-		if (newsize > regp->min_size) {
+		    (UW) start + (size << PAGE_SHIFT) - (UW) regp->addr;
+		if (newsize > regp->len) {
 #ifdef DEBUG
 		    printk
 			("region_map: new region size %x:%x->%x  (%x %x)\n",
 			 regp->start_addr, regp->min_size, newsize, start,
 			 size);
 #endif
-		    regp->min_size = newsize;
-		    if (regp->min_size > regp->max_size) {
+		    regp->len = newsize;
+		    if (regp->len > regp->max) {
 			printk
 			    ("[WARNING] region_map: min_size exceeds max_size\n");
 		    }
@@ -578,7 +579,7 @@ ER region_unmap(ID id, VP start, UW size)
 {
     thread_t *taskp;
     UW counter;
-    T_REGION *regp;
+    mm_segment_t *regp;
     UW newsize;
 
     taskp = (thread_t *) get_thread_ptr(id);
@@ -596,10 +597,10 @@ ER region_unmap(ID id, VP start, UW size)
     }
 
     if (regp) {
-	if (start >= regp->start_addr) {
-	    newsize = (UW) (start - regp->start_addr);
-	    if (newsize + size == regp->min_size) {
-		regp->min_size = newsize;
+	if (start >= regp->addr) {
+	    newsize = (UW) (start - regp->addr);
+	    if (newsize + size == regp->len) {
+		regp->len = newsize;
 #ifdef DEBUG
 		printk("region_unmap: new region size %x\n", newsize);
 #endif
@@ -636,13 +637,13 @@ ER region_duplicate(ID src, ID dst)
 	return (E_PAR);
     }
 
-    dstp->regions[TEXT_REGION] = taskp->regions[TEXT_REGION];
-    dstp->regions[DATA_REGION] = taskp->regions[DATA_REGION];
-    dstp->regions[HEAP_REGION] = taskp->regions[HEAP_REGION];
+    dstp->segments[seg_code] = taskp->segments[seg_code];
+    dstp->segments[seg_data] = taskp->segments[seg_data];
+    dstp->segments[seg_heap] = taskp->segments[seg_heap];
     return copy_user_pages(MPU_PAGE_TABLE(dstp), MPU_PAGE_TABLE(taskp),
-	    (pageRoundUp(dstp->regions[TEXT_REGION].min_size) >> BITS_OFFSET)
-	    + (pageRoundUp(dstp->regions[DATA_REGION].min_size) >> BITS_OFFSET)
-	    + (pageRoundUp(dstp->regions[HEAP_REGION].min_size) >> BITS_OFFSET)
+	    (pageRoundUp(dstp->segments[seg_code].len) >> BITS_OFFSET)
+	    + (pageRoundUp(dstp->segments[seg_data].len) >> BITS_OFFSET)
+	    + (pageRoundUp(dstp->segments[seg_heap].len) >> BITS_OFFSET)
     );
 }
 
@@ -788,7 +789,7 @@ ER region_get_status(ID id, ID rid, VP stat)
      * stat   リージョン情報が入る(リージョン情報の詳細は未決定である) 
      */
 {
-    T_REGION *regp = stat;
+    mm_segment_t *regp = stat;
     thread_t *taskp;
 
     taskp = get_thread_ptr(id);
@@ -800,14 +801,11 @@ ER region_get_status(ID id, ID rid, VP stat)
 	return (E_NOEXS);
     }
 
-    if (rid < 0 || rid >= MAX_REGION)
+    if (rid < 0 || rid > seg_stack)
 	return (E_PAR);
-    if (taskp->regions[rid].permission == 0)
+    if (taskp->segments[rid].attr == attr_nil)
 	return (E_OBJ);
 
-    regp->start_addr = taskp->regions[rid].start_addr;
-    regp->min_size = taskp->regions[rid].min_size;
-    regp->max_size = taskp->regions[rid].max_size;
-    regp->permission = taskp->regions[rid].permission;
+    *regp = taskp->segments[rid];
     return (E_OK);
 }

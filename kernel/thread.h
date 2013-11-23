@@ -27,9 +27,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <mm/segment.h>
 #include <set/list.h>
 #include <set/tree.h>
-#include "region.h"
 #include "wait.h"
 #include "mpu/context.h"
 
@@ -46,7 +46,7 @@ typedef struct {
 	PRI priority;
 	UINT activate_count;
 //TODO move to domain
-	T_REGION regions[MAX_REGION];
+	mm_segment_t segments[seg_stack + 1];
 	struct {
 		VP_INT arg;
 		PRI priority;

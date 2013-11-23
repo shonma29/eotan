@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <thread.h>
+#include <mm/segment.h>
 #include "gate.h"
 #include "paging.h"
 
@@ -94,7 +95,7 @@ extern void panic(char *msg);
 extern void *getPageAddress(const PTE *dir, const void *addr);
 extern ER vmemcpy(const thread_t *th, const void *to, const void *from,
 		const size_t bytes);
-extern T_REGION *find_region(const thread_t *th, const void *addr);
+extern mm_segment_t *find_region(const thread_t *th, const void *addr);
 extern PTE *copy_kernel_page_table(const PTE *src);
 extern void release_user_pages(PTE *directory);
 extern ER copy_user_pages(PTE *dest, const PTE *src, size_t cnt);

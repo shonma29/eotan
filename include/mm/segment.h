@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <stddef.h>
 
 typedef enum {
+	attr_nil = 0,
 	attr_readable = 1,
 	attr_writable = 2,
 	attr_executable = 4,
@@ -45,6 +46,13 @@ typedef enum {
 			| attr_backward,
 	type_share = attr_readable | attr_writable | attr_shared
 } mm_segment_type_e;
+
+typedef enum {
+	seg_code = 0,
+	seg_data = 1,
+	seg_heap = 2,
+	seg_stack = 3
+} mm_segment_no_e;
 
 typedef struct {
 	void *addr;

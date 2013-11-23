@@ -67,9 +67,9 @@ Version 2, June 1991
 #include <core.h>
 #include <kcall.h>
 #include <vm.h>
+#include <mm/segment.h>
 #include <mpu/config.h>
 #include <mpu/memory.h>
-#include "../../kernel/region.h"
 #include "../../kernel/mpu/mpu.h"
 #include "libmm.h"
 #include "libserv.h"
@@ -111,7 +111,7 @@ ER init_malloc(UW free_memory_erea, UW max)
     if (mytid < 0) {
 	return (mytid);
     }
-    err = process_create(mytid, HEAP_REGION, (VP) last_page, pages, pages);
+    err = process_create(mytid, seg_heap, (VP) last_page, pages, pages);
     if (err) {
 	return (err);
     }

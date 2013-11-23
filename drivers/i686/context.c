@@ -15,6 +15,7 @@ Version 2, June 1991
 #include <boot/init.h>
 #include <local.h>
 #include <vm.h>
+#include <mm/segment.h>
 #include <mpu/config.h>
 #include "delay.h"
 #include "func.h"
@@ -38,7 +39,7 @@ static void create_user_stack(thread_t * tsk, W size, W acc)
     W err;
 
     /* stack region の作成 number は 3 で固定 */
-    region_create(thread_id(tsk), STACK_REGION,
+    region_create(thread_id(tsk), seg_stack,
 	     (VP) VADDR_STACK_HEAD, STD_STACK_SIZE, STD_STACK_SIZE,
 	     (VM_READ | VM_WRITE | VM_USER));
 
@@ -106,19 +107,19 @@ static void kill(void)
 ER context_page_fault_handler(void)
 {
     UW addr;
-    T_REGION *regp;
+    mm_segment_t *regp;
 
     if (running->attr.domain_id == KERNEL_DOMAIN_ID) {
     	return (E_SYS);
     }
 
     addr = (UW)fault_get_addr();
-    regp = &running->regions[STACK_REGION];
+    regp = &running->segments[seg_stack];
 
     /* フォルトを起こしたアドレスがスタック領域にあればページを割り当てる */
-    if (regp->permission &&
-	    (((UW) regp->start_addr <= addr) &&
-	    (addr <= ((UW) regp->start_addr + regp->max_size)))) {
+    if (regp->attr &&
+	    (((UW) regp->addr <= addr) &&
+	    (addr <= ((UW) regp->addr + regp->max)))) {
 	ER result = region_map(thread_id(running), (VP) addr, PAGE_SIZE, true);
 
 	if (result == E_OK) {
