@@ -54,10 +54,8 @@ Version 2, June 1991
  *
  */
 #include <core.h>
-#include <fstype.h>
 #include <global.h>
 #include "func.h"
-#include <major.h>
 #include "setting.h"
 #include "version.h"
 #include "arch/archfunc.h"
@@ -73,25 +71,15 @@ ER core_initialize(void)
 {
     system_info_t *sysinfo = (system_info_t *)SYSTEM_INFO_ADDR;
 
-    sysinfo->root.device = get_device_id(DEVICE_MAJOR_ATA, 0);
-    sysinfo->root.fstype = FS_SFS;
-    sysinfo->initrd.start = 0;
-    sysinfo->initrd.size = 0;
-    sysinfo->delay_thread_id = TSK_NONE;
-
     banner();			/* 立ち上げメッセージ出力               */
 
     paging_reset();
     context_initialize();
-    api_initialize();
-#ifdef DEBUG
-    printk("initialize: start\n");
-#endif
+
+    global_initialize();
     queue_initialize();
     port_initialize();
     thread_initialize();		/* タスク管理機能の初期化 */
-    icall_initialize();
-    kcall_initialize();
 
     /* 1番目のタスクを初期化する。そしてそのタスクを以後の処
      * 理で使用する。

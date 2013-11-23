@@ -40,18 +40,14 @@ For more information, please refer to <http://unlicense.org/>
 extern ER core_initialize(void);
 
 /* api.c */
-extern void api_initialize(void);
 extern W syscall (W *arg_addr, UW sysno);
 
 /* modules.c */
 extern void run_init_program(void);
 
-/* icall.c */
-extern void icall_initialize(void);
+/* global.c */
+extern void global_initialize(void);
 extern ER kq_enqueue(delay_param_t *param);
-
-/* kcall.c */
-extern void kcall_initialize(void);
 
 /* palloc.c */
 extern void *palloc(void);

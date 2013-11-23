@@ -26,15 +26,77 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <icall.h>
+#include <fstype.h>
 #include <global.h>
+#include <kcall.h>
+#include <major.h>
 #include "delay.h"
 #include "func.h"
+#include "arch/archfunc.h"
+#include "mpu/mpufunc.h"
 
+static void kcall_initialize(void);
+static void icall_initialize(void);
 static ER delayed_thread_start(ID thread_id);
 static ER delayed_queue_send_nowait(ID queue_id, VP_INT data);
 
 
-void icall_initialize(void)
+void global_initialize(void)
+{
+	system_info_t *sysinfo = (system_info_t *)SYSTEM_INFO_ADDR;
+
+	sysinfo->root.device = get_device_id(DEVICE_MAJOR_ATA, 0);
+	sysinfo->root.fstype = FS_SFS;
+	sysinfo->initrd.start = 0;
+	sysinfo->initrd.size = 0;
+	sysinfo->delay_thread_id = TSK_NONE;
+
+	kcall_initialize();
+	icall_initialize();
+}
+
+static void kcall_initialize(void)
+{
+	kcall_t *p = (kcall_t*)KCALL_ADDR;
+
+	p->thread_create_auto = thread_create_auto;
+	p->thread_destroy = thread_destroy;
+	p->thread_start = thread_start;
+	p->thread_end_and_destroy = thread_end_and_destroy;
+	p->thread_terminate = thread_terminate;
+	p->thread_get_id = thread_get_id;
+	p->time_get = time_get;
+	p->time_set = time_set;
+	p->interrupt_bind = interrupt_bind;
+	p->interrupt_enable = pic_reset_mask;
+	p->palloc = palloc;
+	p->pfree = pfree;
+	p->puts = putsk;
+
+	p->region_create = region_create;
+	p->region_destroy = region_destroy;
+	p->region_map = region_map;
+	p->region_unmap = region_unmap;
+	p->region_duplicate = region_duplicate;
+	p->region_get = region_get;
+	p->region_put = region_put;
+	p->region_get_status = region_get_status;
+	p->mpu_copy_stack = mpu_copy_stack;
+	p->mpu_set_context = mpu_set_context;
+
+	p->port_create = port_create;
+	p->port_create_auto = port_create_auto;
+	p->port_destroy = port_destroy;
+	p->port_call = port_call;
+	p->port_accept = port_accept;
+	p->port_reply = port_reply;
+	p->queue_create_auto = queue_create_auto;
+	p->queue_destroy = queue_destroy;
+	p->queue_send = queue_send;
+	p->queue_receive = queue_receive;
+}
+
+static void icall_initialize(void)
 {
 	icall_t *p = (icall_t*)ICALL_ADDR;
 

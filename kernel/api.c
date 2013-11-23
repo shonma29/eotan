@@ -275,8 +275,3 @@ static ER_UINT if_port_call(VP argp)
 
     return port_call(args->porid, args->msg, args->cmsgsz);
 }
-
-void api_initialize(void)
-{
-	msr_write(sysenter_eip_msr, (UW)service_handler);
-}
