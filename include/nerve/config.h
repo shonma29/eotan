@@ -1,5 +1,5 @@
-#ifndef _CORE_SETTING_H_
-#define _CORE_SETTING_H_
+#ifndef _NERVE_CONFIG_H_
+#define _NERVE_CONFIG_H_
 /*
 This is free and unencumbered software released into the public domain.
 
