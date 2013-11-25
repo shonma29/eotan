@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/setting.h>
 #include <nerve/config.h>
 #include <func.h>
+#include "context.h"
 #include "eflags.h"
 #include "gate.h"
 #include "mpufunc.h"

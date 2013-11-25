@@ -114,7 +114,6 @@ extern void tlb_flush_all(void);
 extern void tlb_flush(VP addr);
 
 /* switch.s */
-extern void tr_set(const UW selector);
 extern void context_switch(void);
 
 static inline void fpu_save(thread_t **th)

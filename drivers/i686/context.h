@@ -45,4 +45,12 @@ static inline void context_set_page_table(mpu_context_t *ctx, const void *addr)
 	ctx->cr3 = (PTE*)addr;
 }
 
+static inline void tr_set(const unsigned short selector)
+{
+	__asm__ __volatile__ ( \
+			"ltr %w0\n\t" \
+			: \
+			:"r"(selector));
+}
+
 #endif
