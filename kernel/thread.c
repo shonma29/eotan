@@ -147,7 +147,7 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid)
 
 	context_set_kernel_sp(&(th->mpu), th->attr.kstack_tail);
 	context_set_page_table(&(th->mpu),
-			(th->attr.domain_id == KERNEL_DOMAIN_ID)?
+			is_kthread(th)?
 					(VP)PAGE_DIR_ADDR
 					//TODO null check
 					:kern_v2p(copy_kernel_page_table((PTE*)PAGE_DIR_ADDR)));
@@ -293,7 +293,7 @@ void thread_end_and_destroy(void)
 	tree_remove(&thread_tree, thread_id(th));
 	list_remove(&(th->queue));
 
-	if (th->attr.domain_id != KERNEL_DOMAIN_ID)
+	if (!is_kthread(th))
 		context_reset_page_table();
 
 	release_resources(th);

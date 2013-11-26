@@ -39,8 +39,6 @@ extern ER context_page_fault_handler(void);
 extern ER context_mpu_handler(void);
 
 /* ncontext.c */
-extern VP *context_prev_sp;
-extern VP *context_next_sp;
 extern void create_context(thread_t *th);
 extern VP_INT *context_create_kernel(VP_INT *sp, const UW eflags, const FP eip);
 extern VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
@@ -48,7 +46,7 @@ extern VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
 extern void context_initialize(void);
 extern void context_reset_page_cache(const thread_t *task, const VP addr);
 extern void context_reset_page_table();
-extern void context_switch_domain(thread_t *next);
+extern void context_switch(thread_t *prev, thread_t *next);
 
 /* virtual_mem.c */
 extern ER region_create(ID id, ID rid, VP start, W min, W max, UW perm);
@@ -112,9 +110,6 @@ extern void paging_set_directory(void *dir);
 extern void paging_start(void);
 extern void tlb_flush_all(void);
 extern void tlb_flush(VP addr);
-
-/* switch.s */
-extern void context_switch(void);
 
 static inline void fpu_save(thread_t **th)
 {

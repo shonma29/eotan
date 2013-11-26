@@ -216,7 +216,7 @@ ER copy_user_pages(PTE *dest, const PTE *src, size_t cnt)
 
 void release_memory(thread_t *th)
 {
-	if (th->attr.domain_id != KERNEL_DOMAIN_ID)
+	if (!is_kthread(th))
 		release_user_pages(th->mpu.cr3);
 
 	pfree((VP)kern_v2p((char*)(th->attr.kstack_tail)) - KERNEL_STACK_SIZE);

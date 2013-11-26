@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <kthread.h>
+#include <nerve/config.h>
 #include <set/lf_queue.h>
 #include <set/list.h>
 #include <set/tree.h>
@@ -84,6 +85,11 @@ extern ER thread_initialize(void);
 extern ER thread_start(ID tskid);
 extern ER thread_terminate(ID tskid);
 extern ER_ID thread_get_id(void);
+
+static inline int is_kthread(const thread_t *th)
+{
+	return th->attr.domain_id == KERNEL_DOMAIN_ID;
+}
 
 /* rendezvous.c */
 extern ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg);

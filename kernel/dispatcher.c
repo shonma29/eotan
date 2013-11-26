@@ -101,7 +101,6 @@ Version 2, June 1991
 #include "ready.h"
 #include "sync.h"
 #include "thread.h"
-#include "mpu/interrupt.h"
 #include "mpu/mpufunc.h"
 
 /* thread_switch --- タスク切り換え
@@ -118,6 +117,7 @@ Version 2, June 1991
 void thread_switch(void)
 {
     thread_t *next;
+    thread_t *prev;
 
     enter_critical();
 #ifdef TSKSW_DEBUG
@@ -158,18 +158,9 @@ void thread_switch(void)
 	panic("scheduler");
     }
 
-    if (running->attr.domain_id != KERNEL_DOMAIN_ID)
-	fpu_save(&running);
-
-    context_prev_sp = &(running->mpu.esp0);
-    context_next_sp = &(next->mpu.esp0);
+    prev = running;
     running = next;
     running->status = TTS_RUN;
 
-    context_switch_domain(next);
-    context_switch();
-
-    /* 正常に終了した：次のタスクスイッチの時にここに戻る */
-    if (running->attr.domain_id != KERNEL_DOMAIN_ID)
-	fpu_restore(&running);
+    context_switch(prev, next);
 }

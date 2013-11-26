@@ -108,7 +108,7 @@ ER context_page_fault_handler(void)
     UW addr;
     mm_segment_t *regp;
 
-    if (running->attr.domain_id == KERNEL_DOMAIN_ID) {
+    if (is_kthread(running)) {
     	return (E_SYS);
     }
 
@@ -134,7 +134,7 @@ ER context_page_fault_handler(void)
 
 ER context_mpu_handler(void)
 {
-    if (running->attr.domain_id == KERNEL_DOMAIN_ID) {
+    if (is_kthread(running)) {
     	return (E_SYS);
     }
 

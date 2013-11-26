@@ -35,8 +35,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "msr.h"
 #include "tss.h"
 
-VP *context_prev_sp;
-VP *context_next_sp;
 static W current_domain_id = KERNEL_DOMAIN_ID;
 
 static void api_set_kernel_sp(const VP addr);
@@ -141,14 +139,22 @@ VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
 	return sp;
 }
 
-void context_switch_domain(thread_t *next)
+void context_switch(thread_t *prev, thread_t *next)
 {
-	if ((next->attr.domain_id != KERNEL_DOMAIN_ID)
-			&& (next->attr.domain_id != current_domain_id)) {
-		paging_set_directory(next->mpu.cr3);
-		current_domain_id = next->attr.domain_id;
-		api_set_kernel_sp(next->attr.kstack_tail);
+	if (!is_kthread(next)) {
+		if (next->attr.domain_id != current_domain_id) {
+			paging_set_directory(next->mpu.cr3);
+			current_domain_id = next->attr.domain_id;
+			api_set_kernel_sp(next->attr.kstack_tail);
+		}
+
+		fpu_save(&prev);
 	}
+
+	stack_switch_wrapper(&(prev->mpu.esp0), &(next->mpu.esp0));
+
+	if (!is_kthread(prev))
+		fpu_restore(&prev);
 }
 
 void context_reset_page_table()
@@ -159,7 +165,7 @@ void context_reset_page_table()
 
 void context_reset_page_cache(const thread_t *task, const VP addr)
 {
-	if ((task->attr.domain_id == KERNEL_DOMAIN_ID)
+	if (is_kthread(task)
 			|| (task->attr.domain_id == current_domain_id)) {
 		tlb_flush(addr);
 	}
@@ -167,7 +173,7 @@ void context_reset_page_cache(const thread_t *task, const VP addr)
 
 void create_context(thread_t *th)
 {
-	if (th->attr.domain_id == KERNEL_DOMAIN_ID) {
+	if (is_kthread(th)) {
 		VP_INT *sp = th->attr.kstack_tail;
 
 		*--sp = th->attr.arg;

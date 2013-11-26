@@ -25,11 +25,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-.globl context_switch
+.globl stack_switch
 
 .text
 
-context_switch:
+stack_switch:
 	popl %eax
 	pushfl
 	pushl %cs
@@ -39,10 +39,8 @@ context_switch:
 	pushl %fs
 	pushl %gs
 	pushal
-	movl context_prev_sp, %eax
-	movl %esp, (%eax)
-	movl context_next_sp, %eax
-	movl (%eax), %esp
+	movl %esp, (%ecx)
+	movl (%edx), %esp
 	popal
 	popl %gs
 	popl %fs

@@ -212,7 +212,7 @@ ER timer_service(void)
 	time_tick();
 	running->time.total++;
 
-	if (running->attr.domain_id != KERNEL_DOMAIN_ID)
+	if (!is_kthread(running))
 		if (!(--(running->time.left))) {
 			running->time.left = TIME_QUANTUM;
 			ready_rotate(running->priority);
