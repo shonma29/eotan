@@ -64,11 +64,7 @@ interrupt_master:
 	outb %al, $PIC_MASTER1
 
 ret_interrupt:
-	testl %edx, %edx
-	jnz end_interrupt
 	call dispatch
-
-end_interrupt:
 	popal
 	popl %ds
 	addl $4, %esp

@@ -73,7 +73,7 @@ extern void idt_set(UB no, void (*handler)(void));
 
 /* interrupt.c */
 extern ER interrupt_initialize(void);
-extern W interrupt(const UW edi, const UW esi, const UW ebp, const UW esp,
+extern void interrupt(const UW edi, const UW esi, const UW ebp, const UW esp,
 		const UW ebx, const UW edx, const UW ecx, const UW eax,
 		const UW ds, const UW no, const UW err, const UW eip,
 		const UW cs, const W eflags);

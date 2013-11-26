@@ -230,12 +230,7 @@ abort_handler:
 	movw $SELECTOR_KERN_DATA, %ax
 	movw %ax,%ds
 	call interrupt
-
-	testl %eax, %eax
-	jnz end_abort
 	call dispatch
-
-end_abort:
 	popal
 	popl %ds
 	addl $4, %esp
@@ -247,12 +242,7 @@ abort_with_error_handler:
 	movw $SELECTOR_KERN_DATA, %ax
 	movw %ax,%ds
 	call interrupt
-
-	testl %eax, %eax
-	jnz end_abort_with_error
 	call dispatch
-
-end_abort_with_error:
 	popal
 	popl %ds
 	addl $8, %esp

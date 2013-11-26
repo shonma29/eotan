@@ -75,7 +75,7 @@ ER interrupt_bind(const INHNO inhno, const T_DINH *pk_dinh)
 	return E_OK;
 }
 
-W interrupt(const UW edi, const UW esi, const UW ebp, const UW esp,
+void interrupt(const UW edi, const UW esi, const UW ebp, const UW esp,
 		const UW ebx, const UW edx, const UW ecx, const UW eax,
 		const UW ds, const UW no, const UW err, const UW eip,
 		const UW cs, const W eflags)
@@ -87,6 +87,6 @@ W interrupt(const UW edi, const UW esi, const UW ebp, const UW esp,
 		fault_with_error(edi, esi, ebp, esp, ebx, edx,
 				ecx, eax, ds, no, err, eip, cs, eflags);
 
+	--sync_blocking;
 	enter_critical();
-	return --sync_blocking;
 }
