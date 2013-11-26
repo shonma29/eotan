@@ -30,5 +30,6 @@ For more information, please refer to <http://unlicense.org/>
 /* handler.s */
 extern void handle32(void);
 extern void handle33(void);
+extern void handle44(void);
 
 #endif

@@ -24,10 +24,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <nerve/global.h>
 #include <nerve/config.h>
 #include <set/list.h>
 #include <set/heap.h>
+#include "func.h"
 #include "thread.h"
+#include "mpu/mpufunc.h"
 
 thread_t *running;
 
@@ -36,6 +39,7 @@ static int buf[MAX_PRIORITY + 1];
 static heap_t heap;
 
 static inline thread_t *getThread(const list_t *p);
+static thread_t *ready_dequeue();
 
 
 static inline thread_t *getThread(const list_t *p) {
@@ -70,7 +74,7 @@ void ready_rotate(const int pri)
 	}
 }
 
-thread_t *ready_dequeue()
+static thread_t *ready_dequeue()
 {
 	for (;; heap_dequeue(&heap)) {
 		list_t *q;
@@ -82,4 +86,37 @@ thread_t *ready_dequeue()
 
 		if (q)	return getThread(q);
 	}
+}
+
+void dispatch(void)
+{
+	enter_critical();
+
+	if (sync_blocking) {
+		leave_critical();
+		return;
+	}
+
+	if (delay_start) {
+		delay_start = false;
+		thread_start(((system_info_t*)SYSTEM_INFO_ADDR)->delay_thread_id);
+	}
+
+	do {
+		thread_t *p = running;
+		thread_t *q = ready_dequeue();
+
+		if (q == p) {
+			leave_critical();
+			break;
+		}
+
+		if (p->status == TTS_RUN)
+			p->status = TTS_RDY;
+
+		q->status = TTS_RUN;
+		running = q;
+
+		context_switch(p, q);
+	} while (false);
 }

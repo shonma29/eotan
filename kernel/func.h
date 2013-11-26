@@ -63,17 +63,6 @@ extern void putsk(const char *str);
 /* tree_utils.c */
 extern node_t *find_empty_key(tree_t *tree, int *hand);
 
-/* dispatcher.c */
-extern void thread_switch(void);
-
-static inline void dispatch(void)
-{
-	if (sync_blocking)
-		leave_critical();
-	else
-		thread_switch();
-}
-
 /* thread.c */
 extern thread_t *get_thread_ptr(ID tskid);
 extern ER_ID idle_initialize(void);

@@ -34,6 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/config.h>
 #include <nerve/global.h>
 #include "func.h"
+#include "ready.h"
 
 static ER run(const UW type, const Elf32_Ehdr *eHdr);
 static void set_initrd(ModuleHeader *h);

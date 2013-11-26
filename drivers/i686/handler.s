@@ -233,7 +233,7 @@ abort_handler:
 
 	testl %eax, %eax
 	jnz end_abort
-	call thread_switch
+	call dispatch
 
 end_abort:
 	popal
@@ -250,7 +250,7 @@ abort_with_error_handler:
 
 	testl %eax, %eax
 	jnz end_abort_with_error
-	call thread_switch
+	call dispatch
 
 end_abort_with_error:
 	popal

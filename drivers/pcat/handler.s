@@ -29,22 +29,29 @@ For more information, please refer to <http://unlicense.org/>
 
 .set SELECTOR_KERN_DATA, 0x10
 .set PIC_MASTER1, 0x0020
+.set PIC_SLAVE1, 0x00a0
 
 .globl handle32
 .globl handle33
+.globl handle44
 
 
 /* timer */
 handle32:
 	pushl $32
-	jmp interrupt_handler
+	jmp interrupt_master
 
 /* keyboard */
 handle33:
 	pushl $33
-	jmp interrupt_handler
+	jmp interrupt_master
 
-interrupt_handler:
+/* psaux */
+handle44:
+	pushl $44
+	jmp interrupt_slave
+
+interrupt_master:
 	pushl %ds
 	pushal
 	movw $SELECTOR_KERN_DATA, %ax
@@ -53,15 +60,31 @@ interrupt_handler:
 
 	movl %eax, %edx
 	movl 36(%esp), %eax
-	addb $0x40, %al
+	orb $0x60, %al
 	outb %al, $PIC_MASTER1
 
+ret_interrupt:
 	testl %edx, %edx
 	jnz end_interrupt
-	call thread_switch
+	call dispatch
 
 end_interrupt:
 	popal
 	popl %ds
 	addl $4, %esp
 	iret
+
+interrupt_slave:
+	pushl %ds
+	pushal
+	movw $SELECTOR_KERN_DATA, %ax
+	movw %ax,%ds
+	call interrupt
+
+	movl %eax, %edx
+	movl 36(%esp), %eax
+	xorb $0x48, %al
+	outb %al, $PIC_SLAVE1
+	movb $0x62, %al
+	outb %al, $PIC_MASTER1
+	jmp ret_interrupt

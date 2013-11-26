@@ -34,6 +34,6 @@ extern thread_t *running;
 extern void ready_initialize();
 extern void ready_enqueue(const int pri, list_t *src);
 extern void ready_rotate(const int pri);
-extern thread_t *ready_dequeue();
+extern void dispatch(void);
 
 #endif
