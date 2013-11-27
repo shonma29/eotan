@@ -177,7 +177,6 @@ char *testdir() {
 }
 
 char *testmm() {
-	struct utsname name;
 	int pid;
 	time_t t1;
 	time_t t2;
@@ -196,13 +195,6 @@ char *testmm() {
 				getpid(), getppid());
 		waitpid(-1, &pid, 0);
 	}
-
-	assert_eq("uname", 0, uname(&name));
-	printf("uname = %s\n", name.sysname);
-	printf("uname = %s\n", name.nodename);
-	printf("uname = %s\n", name.release);
-	printf("uname = %s\n", name.version);
-	printf("uname = %s\n", name.machine);
 
 	t2 = time(&t1);
 	printf("time = %d, %d\n",
