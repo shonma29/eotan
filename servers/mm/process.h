@@ -28,14 +28,27 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <mm/segment.h>
 #include <mpu/memory.h>
+#include <set/list.h>
+#include <set/tree.h>
 
 typedef struct {
+	node_t node;
+	int process_id;
+	mm_segment_t stack;
+	list_t brothers;
 } mm_thread_t;
 
 typedef struct {
-	mm_segment_t *segments;
-	mm_thread_t *threads;
+	node_t node;
+	struct {
+		mm_segment_t code;
+		mm_segment_t data;
+		mm_segment_t heap;
+	} segments;
 	PTE *directory;
+	list_t threads;
 } mm_process_t;
+
+extern void process_initialize(void);
 
 #endif

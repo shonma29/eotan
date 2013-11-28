@@ -27,9 +27,11 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <string.h>
 #include <boot/init.h>
+#include <mm/segment.h>
 #include <mpu/config.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
+#include "../../lib/libserv/libmm.h"
 #include "fs.h"
 
 typedef struct {
@@ -137,14 +139,16 @@ static W create_init(ID process_id, ID thread_id)
 	p->proc_pid = process_id;
 	p->proc_ppid = INIT_PPID;
 
+	process_create(thread_id, seg_code, 0, 0, 0);
+	process_create(thread_id, seg_heap, 0, 0, 0);
+	process_create(thread_id, seg_data, 0, 0, 0);
+	set_local(process_id, thread_id);
+
 	err = open_special_dev(p);
 	if (err) {
 		dbg_printf("[MM] can't open special files\n");
 		return err;
 	}
 
-	set_local(process_id, thread_id);
-
 	return EOK;
 }
-

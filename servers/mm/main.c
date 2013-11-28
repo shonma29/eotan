@@ -31,6 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 #include "../../lib/libserv/libserv.h"
 #include "interface.h"
+#include "process.h"
 
 static kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
@@ -53,6 +54,8 @@ static int (*funcs[])(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args) = {
 static ER init(void)
 {
 	T_CPOR pk_cpor = { TA_TFIFO, BUFSIZ, BUFSIZ };
+
+	process_initialize();
 
 	return kcall->port_create(PORT_MM, &pk_cpor);
 }
