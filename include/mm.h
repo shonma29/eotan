@@ -50,7 +50,8 @@ typedef enum {
 	mm_syscall_process_set_context = 5,
 	mm_syscall_vmap = 6,
 	mm_syscall_vunmap = 7,
-	mm_syscall_vmstatus = 8
+	mm_syscall_vmstatus = 8,
+	mm_syscall_thread_create = 9
 } mm_syscall_e;
 
 #endif

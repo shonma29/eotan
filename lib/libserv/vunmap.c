@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 
 
-int vunmap(ID id, VP start, UW size)
+int vunmap(ID pid, VP addr, UW len)
 {
 //	thread_local_t *local = _get_local();
 	mm_args_t args;
@@ -41,9 +41,9 @@ int vunmap(ID id, VP start, UW size)
 	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	args.syscall_no = mm_syscall_vunmap;
-	args.arg1 = (long int)id;
-	args.arg2 = (long int)start;
-	args.arg3 = (long int)size;
+	args.arg1 = (long int)pid;
+	args.arg2 = (long int)addr;
+	args.arg3 = (long int)len;
 	reply_size = kcall->port_call(PORT_MM, &args, sizeof(args));
 
 	if (reply_size == sizeof(*reply)) {

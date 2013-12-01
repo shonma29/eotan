@@ -46,7 +46,9 @@ static slab_t thread_slab;
 static tree_t thread_tree;
 
 static mm_process_t *get_process(const ID pid);
-//static mm_thread_t *get_thread(const ID tid);
+static mm_thread_t *get_thread(const ID tid);
+static void process_clear(mm_process_t *p);
+static void thread_clear(mm_thread_t *th, mm_process_t *p);
 
 static mm_process_t *get_process(const ID pid)
 {
@@ -54,14 +56,36 @@ static mm_process_t *get_process(const ID pid)
 
 	return node? (mm_process_t*)getParent(mm_process_t, node):NULL;
 }
-/*
+
 static mm_thread_t *get_thread(const ID tid)
 {
 	node_t *node = tree_get(&thread_tree, tid);
 
 	return node? (mm_thread_t*)getParent(mm_thread_t, node):NULL;
 }
+/*
+static mm_thread_t *getMyThread(list_t *brothers)
+{
+	return (mm_thread_t*)getParent(mm_thread_t, brothers);
+}
 */
+static void process_clear(mm_process_t *p)
+{
+	p->segments.code.attr = attr_nil;
+	p->segments.data.attr = attr_nil;
+	p->segments.heap.attr = attr_nil;
+	p->directory = NULL;
+	list_initialize(&(p->threads));
+}
+
+static void thread_clear(mm_thread_t *th, mm_process_t *p)
+{
+	th->process_id = p->node.key;
+	th->stack.attr = attr_nil;
+	list_initialize(&(th->brothers));
+	list_append(&(p->threads), &(th->brothers));
+}
+
 void process_initialize(void)
 {
 	/* initialize process table */
@@ -92,9 +116,13 @@ void process_initialize(void)
 int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
+//		list_t *list;
 		mm_process_t *p = get_process((ID)args->arg1 & INIT_THREAD_ID_MASK);
 
 		if (!p) {
+//			reply->error_no = ESRCH;
+//			break;
+
 			p = (mm_process_t*)tree_put(&process_tree,
 					(ID)args->arg1);
 
@@ -102,12 +130,22 @@ int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 				reply->error_no = ENOMEM;
 				break;
 			}
+
+			process_clear(p);
+
 		}
+
+//		list = list_head(&(p->threads));
+//		if (!list) {
+//			reply->error_no = ESRCH;
+//			break;
+//		}
 
 		//TODO text VM_READ | VM_EXEC | VM_USER
 		//TODO data VM_READ | VM_WRITE | VM_USER
 		//TODO heap VM_READ | VM_WRITE | VM_USER
-		if (kcall->region_create((ID)(args->arg1), (ID)(args->arg2),
+//		if (kcall->region_create(getMyThread(list)->node.key, (ID)(args->arg2),
+		if (kcall->region_create(p->node.key, (ID)(args->arg2),
 				(VP)(args->arg3), (W)(args->arg4),
 				(W)(args->arg5),
 				VM_READ | VM_WRITE | VM_USER)) {
@@ -127,6 +165,7 @@ int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_process_destroy(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
+//		list_t *list;
 		mm_process_t *p = get_process((ID)args->arg1 & INIT_THREAD_ID_MASK);
 
 		if (!p) {
@@ -134,7 +173,14 @@ int mm_process_destroy(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-		if (kcall->region_destroy((ID)(args->arg1))) {
+//		list = list_head(&(p->threads));
+//		if (!list) {
+//			reply->error_no = ESRCH;
+//			break;
+//		}
+
+//		if (kcall->region_destroy(getMyThread(list)->node.key)) {
+		if (kcall->region_destroy(p->node.key)) {
 			reply->error_no = EFAULT;
 			break;
 		}
@@ -168,6 +214,8 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 				reply->error_no = ENOMEM;
 				break;
 			}
+
+			process_clear(dest);
 		}
 
 		if (kcall->region_duplicate((ID)(args->arg1), (ID)(args->arg2))) {
@@ -187,15 +235,15 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_process_copy_stack(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
-		mm_process_t *dest;
-		mm_process_t *src = get_process((ID)args->arg1 & INIT_THREAD_ID_MASK);
+		mm_thread_t *dest;
+		mm_thread_t *src = get_thread((ID)args->arg1 & INIT_THREAD_ID_MASK);
 
 		if (!src) {
 			reply->error_no = ESRCH;
 			break;
 		}
 
-		dest = get_process((ID)args->arg3 & INIT_THREAD_ID_MASK);
+		dest = get_thread((ID)args->arg3 & INIT_THREAD_ID_MASK);
 		if (!dest) {
 			reply->error_no = ESRCH;
 			break;
@@ -219,9 +267,9 @@ int mm_process_copy_stack(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
-		mm_process_t *p = get_process((ID)args->arg1 & INIT_THREAD_ID_MASK);
+		mm_thread_t *th = get_thread((ID)args->arg1 & INIT_THREAD_ID_MASK);
 
-		if (!p) {
+		if (!th) {
 			reply->error_no = ESRCH;
 			break;
 		}
@@ -309,6 +357,62 @@ int mm_vmstatus(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 
 		reply->error_no = EOK;
 		reply->result = 0;
+		return reply_success;
+	} while (FALSE);
+
+	reply->result = -1;
+	return reply_failure;
+}
+
+int mm_thread_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+{
+	do {
+		T_CTSK pk_ctsk = {
+			TA_HLNG,
+			NULL,
+			NULL,
+			pri_user_foreground,
+			USER_STACK_SIZE,
+			NULL,
+			0
+		};
+		ER_ID result;
+		mm_thread_t *th;
+		mm_process_t *p = get_process((ID)args->arg1 & INIT_THREAD_ID_MASK);
+
+		if (!p) {
+			p = (mm_process_t*)tree_put(&process_tree,
+					(ID)args->arg1);
+
+			if (!p) {
+				reply->error_no = ENOMEM;
+				break;
+			}
+
+			process_clear(p);
+		}
+
+		pk_ctsk.task = (FP)(args->arg2);
+		pk_ctsk.domain_id = (ID)(args->arg1);
+
+		result = kcall->thread_create_auto(&pk_ctsk);
+		if (result < 0) {
+			reply->error_no = ESVC;
+			break;
+		}
+
+		reply->error_no = EOK;
+		reply->result = result;
+
+		//TODO check duplicated thread_id
+		th = (mm_thread_t*)tree_put(&thread_tree, result);
+		if (!th) {
+			kcall->thread_destroy(result);
+			reply->error_no = ENOMEM;
+			break;
+		}
+
+		thread_clear(th, p);
 		return reply_success;
 	} while (FALSE);
 

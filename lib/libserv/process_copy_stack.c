@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 
 
-int process_copy_stack(ID src, W esp, ID dst)
+int process_copy_stack(ID src_thread, W esp, ID dest_thread)
 {
 //	thread_local_t *local = _get_local();
 	mm_args_t args;
@@ -41,9 +41,9 @@ int process_copy_stack(ID src, W esp, ID dst)
 	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	args.syscall_no = mm_syscall_process_copy_stack;
-	args.arg1 = (long int)src;
+	args.arg1 = (long int)src_thread;
 	args.arg2 = (long int)esp;
-	args.arg3 = (long int)dst;
+	args.arg3 = (long int)dest_thread;
 	reply_size = kcall->port_call(PORT_MM, &args, sizeof(args));
 
 	if (reply_size == sizeof(*reply)) {

@@ -29,10 +29,11 @@ For more information, please refer to <http://unlicense.org/>
 #include <local.h>
 #include <mm.h>
 #include <services.h>
+#include <mm/segment.h>
 #include <nerve/kcall.h>
 
 
-int vmstatus(ID id, ID rid, VP stat)
+int vmstatus(ID pid, ID segment_no, mm_segment_t *segment)
 {
 //	thread_local_t *local = _get_local();
 	mm_args_t args;
@@ -41,9 +42,9 @@ int vmstatus(ID id, ID rid, VP stat)
 	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	args.syscall_no = mm_syscall_vmstatus;
-	args.arg1 = (long int)id;
-	args.arg2 = (long int)rid;
-	args.arg3 = (long int)stat;
+	args.arg1 = (long int)pid;
+	args.arg2 = (long int)segment_no;
+	args.arg3 = (long int)segment;
 	reply_size = kcall->port_call(PORT_MM, &args, sizeof(args));
 
 	if (reply_size == sizeof(*reply)) {

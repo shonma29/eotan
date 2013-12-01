@@ -48,15 +48,6 @@ static W create_init(ID process_id, ID thread_id);
 W exec_init(ID process_id, char *pathname)
 {
 	struct posix_request req;
-	T_CTSK pk_ctsk = {
-		TA_HLNG,
-		NULL,
-		dummy,
-		pri_user_foreground,
-		USER_STACK_SIZE,
-		NULL,
-		process_id
-	};
 	W err;
 	init_arg_t *p;
 	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
@@ -73,7 +64,7 @@ W exec_init(ID process_id, char *pathname)
 	strcpy(p->buf, pathname);
 	req.param.par_execve.stackp = (VP)p;
 
-	req.caller = kcall->thread_create_auto(&pk_ctsk);
+	req.caller = thread_create(process_id, &dummy);
 	if (req.caller < 0) {
 		free(p);
 		return ESVC;
@@ -139,6 +130,9 @@ static W create_init(ID process_id, ID thread_id)
 	p->proc_pid = process_id;
 	p->proc_ppid = INIT_PPID;
 
+//	process_create(process_id, seg_code, 0, 0, 0);
+//	process_create(process_id, seg_heap, 0, 0, 0);
+//	process_create(process_id, seg_data, 0, 0, 0);
 	process_create(thread_id, seg_code, 0, 0, 0);
 	process_create(thread_id, seg_heap, 0, 0, 0);
 	process_create(thread_id, seg_data, 0, 0, 0);

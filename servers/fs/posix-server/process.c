@@ -213,15 +213,6 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
   struct proc *procp;
   W	       error_no;
   ID main_thread_id;
-  T_CTSK task_info = {
-     TA_HLNG,
-     NULL,
-     req->param.par_fork.entry,
-     pri_user_foreground,
-     USER_STACK_SIZE,
-     NULL,
-     0
-  };
   struct proc *child;
   kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
@@ -245,8 +236,7 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
       return (FALSE);
     }
 
-  task_info.domain_id = child->proc_pid;
-  main_thread_id = kcall->thread_create_auto(&task_info);
+  main_thread_id = thread_create(child->proc_pid, req->param.par_fork.entry);
   if (main_thread_id < 0)
     {
       printk ("posix: acre_tsk error (%d)\n", main_thread_id);

@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 
 
-int process_duplicate(ID src, ID dst)
+int process_duplicate(ID src_process, ID dest_process)
 {
 //	thread_local_t *local = _get_local();
 	mm_args_t args;
@@ -41,8 +41,8 @@ int process_duplicate(ID src, ID dst)
 	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	args.syscall_no = mm_syscall_process_duplicate;
-	args.arg1 = (long int)src;
-	args.arg2 = (long int)dst;
+	args.arg1 = (long int)src_process;
+	args.arg2 = (long int)dest_process;
 	reply_size = kcall->port_call(PORT_MM, &args, sizeof(args));
 
 	if (reply_size == sizeof(*reply)) {
