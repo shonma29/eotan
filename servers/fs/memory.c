@@ -71,7 +71,7 @@ W grow_vm(struct proc * procp, UW addr, UW access)
 
     /* 仮想メモリ領域に物理メモリを割り付ける
      */
-    error_no = vmap(procp->proc_maintask, (VP) addr, PAGE_SIZE, true);
+    error_no = vmap(procp->proc_pid, (VP) addr, PAGE_SIZE, true);
     if (error_no) {
 	return (EPERM);
     }
@@ -87,7 +87,7 @@ W shorten_vm(struct proc * procp, UW addr)
 {
     ER error_no;
 
-    error_no = vunmap(procp->proc_maintask, (VP) addr, PAGE_SIZE);
+    error_no = vunmap(procp->proc_pid, (VP) addr, PAGE_SIZE);
     if (error_no) {
 	return (EINVAL);
     }

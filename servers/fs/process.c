@@ -166,7 +166,7 @@ W set_local(ID pid, ID tskid)
     thread_local_t local_data;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    error_no = vmap(tskid, (thread_local_t*)LOCAL_ADDR, sizeof(thread_local_t),
+    error_no = vmap(pid, (thread_local_t*)LOCAL_ADDR, sizeof(thread_local_t),
     		true);
     if (error_no)
 	return error_no;

@@ -112,8 +112,8 @@ W proc_fork(struct proc *parent, struct proc *child, ID main_task, ID signal_tas
 
     child->proc_status = PS_RUN;
     child->proc_ppid = parent->proc_pid;
-    error_no = vmap(main_task, (thread_local_t*)LOCAL_ADDR, sizeof(thread_local_t),
-    		true);
+    error_no = vmap(child->proc_pid, (thread_local_t*)LOCAL_ADDR,
+		sizeof(thread_local_t), true);
     if (error_no) {
 	return error_no;
     }
@@ -175,7 +175,7 @@ static W proc_duplicate(struct proc * source, struct proc * destination)
     /* text */
     /* data+bss */
     /* heap */
-    process_duplicate(source->proc_maintask, destination->proc_maintask);
+    process_duplicate(source->proc_pid, destination->proc_pid);
 
     /* オープンファイルの情報のコピー
      */

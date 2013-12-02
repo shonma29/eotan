@@ -122,8 +122,6 @@ int main(void)
 	return FALSE;
     }
 
-    init_malloc(HEAP_ADDR, MAX_HEAP);
-
     if (!device_init()) {
 	kcall->thread_end_and_destroy();
 	return FALSE;

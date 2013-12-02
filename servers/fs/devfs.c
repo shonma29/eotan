@@ -28,7 +28,9 @@ For more information, please refer to <http://unlicense.org/>
 #include <stddef.h>
 #include <string.h>
 #include <boot/init.h>
+#include <mpu/config.h>
 #include <nerve/global.h>
+#include <nerve/kcall.h>
 #include <set/hash.h>
 #include "../../lib/libserv/libserv.h"
 #include "devfs.h"
@@ -40,9 +42,28 @@ static hash_t *hash;
 static device_info_t table[MAX_DEVICE];
 static size_t num_device;
 
+void *malloc(size_t size);
+void free(void *p);
 static unsigned int calc_hash(const void *key, const size_t size);
 static int compare(const void *a, const void *b);
 
+
+void *malloc(size_t size)
+{
+	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
+
+	if (size > PAGE_SIZE)
+		return NULL;
+
+	return kcall->palloc();
+}
+
+void free(void *p)
+{
+	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
+
+	kcall->pfree(p);
+}
 
 int device_init(void)
 {

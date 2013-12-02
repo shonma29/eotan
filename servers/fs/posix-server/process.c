@@ -41,7 +41,7 @@ W psc_brk_f(RDVNO rdvno, struct posix_request *req)
     if (err)
 	return err;
 
-    err = vmstatus(req->caller, seg_heap, (VP) & reg);
+    err = vmstatus(mypid, seg_heap, (VP) & reg);
 #ifdef DEBUG
     dbg_printf("[PM] err = %d id %d, sa %x, min %x, max %x, ea %x\n",
 	       req->caller,

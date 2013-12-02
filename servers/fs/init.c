@@ -41,6 +41,8 @@ typedef struct {
 	char buf[0];
 } init_arg_t;
 
+static char buf[sizeof(init_arg_t) * 3 + MAX_NAMELEN + 1];
+
 static void dummy(void);
 static W create_init(ID process_id, ID thread_id);
 
@@ -54,10 +56,10 @@ W exec_init(ID process_id, char *pathname)
 
 	req.param.par_execve.stsize = sizeof(*p) * 3
 			+ strlen(pathname) + 1;
-	p = malloc(req.param.par_execve.stsize);
-	if (!p)
+	if (req.param.par_execve.stsize > sizeof(buf))
 		return ENOMEM;
 
+	p = (init_arg_t*)buf;
 	p->arg0 = p->buf;
 	p->arg1 = NULL;
 	p->env0 = NULL;
@@ -66,15 +68,12 @@ W exec_init(ID process_id, char *pathname)
 
 	req.caller = thread_create(process_id, &dummy);
 	if (req.caller < 0) {
-		free(p);
 		return ESVC;
 	}
 
 	err = create_init(process_id, req.caller);
 	if (!err)
 		err = exec_program(&req, process_id, pathname);
-
-	free(p);
 
 	if (err) {
 		//TODO destroy vmtree and process
@@ -130,12 +129,9 @@ static W create_init(ID process_id, ID thread_id)
 	p->proc_pid = process_id;
 	p->proc_ppid = INIT_PPID;
 
-//	process_create(process_id, seg_code, 0, 0, 0);
-//	process_create(process_id, seg_heap, 0, 0, 0);
-//	process_create(process_id, seg_data, 0, 0, 0);
-	process_create(thread_id, seg_code, 0, 0, 0);
-	process_create(thread_id, seg_heap, 0, 0, 0);
-	process_create(thread_id, seg_data, 0, 0, 0);
+	process_create(process_id, seg_code, 0, 0, 0);
+	process_create(process_id, seg_heap, 0, 0, 0);
+	process_create(process_id, seg_data, 0, 0, 0);
 	set_local(process_id, thread_id);
 
 	err = open_special_dev(p);

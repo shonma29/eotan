@@ -47,6 +47,7 @@ static tree_t thread_tree;
 
 static mm_process_t *get_process(const ID pid);
 static mm_thread_t *get_thread(const ID tid);
+static mm_thread_t *getMyThread(list_t *brothers);
 static void process_clear(mm_process_t *p);
 static void thread_clear(mm_thread_t *th, mm_process_t *p);
 
@@ -63,12 +64,12 @@ static mm_thread_t *get_thread(const ID tid)
 
 	return node? (mm_thread_t*)getParent(mm_thread_t, node):NULL;
 }
-/*
-static mm_thread_t *getMyThread(list_t *brothers)
+
+static mm_thread_t *getMyThread(list_t *p)
 {
-	return (mm_thread_t*)getParent(mm_thread_t, brothers);
+	return (mm_thread_t*)((ptr_t)p - offsetof(mm_thread_t, brothers));
 }
-*/
+
 static void process_clear(mm_process_t *p)
 {
 	p->segments.code.attr = attr_nil;
@@ -116,38 +117,26 @@ void process_initialize(void)
 int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
-//		list_t *list;
+		list_t *list;
 		mm_process_t *p = get_process((ID)args->arg1 & INIT_THREAD_ID_MASK);
 
 		if (!p) {
-//			reply->error_no = ESRCH;
-//			break;
-
-			p = (mm_process_t*)tree_put(&process_tree,
-					(ID)args->arg1);
-
-			if (!p) {
-				reply->error_no = ENOMEM;
-				break;
-			}
-
-			process_clear(p);
-
+			reply->error_no = ESRCH;
+			break;
 		}
 
-//		list = list_head(&(p->threads));
-//		if (!list) {
-//			reply->error_no = ESRCH;
-//			break;
-//		}
+		list = list_head(&(p->threads));
+		if (!list) {
+			reply->error_no = ESRCH;
+			break;
+		}
 
 		//TODO text VM_READ | VM_EXEC | VM_USER
 		//TODO data VM_READ | VM_WRITE | VM_USER
 		//TODO heap VM_READ | VM_WRITE | VM_USER
-//		if (kcall->region_create(getMyThread(list)->node.key, (ID)(args->arg2),
-		if (kcall->region_create(p->node.key, (ID)(args->arg2),
-				(VP)(args->arg3), (W)(args->arg4),
-				(W)(args->arg5),
+		if (kcall->region_create(getMyThread(list)->node.key,
+				(ID)(args->arg2), (VP)(args->arg3),
+				(W)(args->arg4), (W)(args->arg5),
 				VM_READ | VM_WRITE | VM_USER)) {
 			reply->error_no = EFAULT;
 			break;
@@ -165,7 +154,7 @@ int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_process_destroy(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
-//		list_t *list;
+		list_t *list;
 		mm_process_t *p = get_process((ID)args->arg1 & INIT_THREAD_ID_MASK);
 
 		if (!p) {
@@ -173,14 +162,13 @@ int mm_process_destroy(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-//		list = list_head(&(p->threads));
-//		if (!list) {
-//			reply->error_no = ESRCH;
-//			break;
-//		}
+		list = list_head(&(p->threads));
+		if (!list) {
+			reply->error_no = ESRCH;
+			break;
+		}
 
-//		if (kcall->region_destroy(getMyThread(list)->node.key)) {
-		if (kcall->region_destroy(p->node.key)) {
+		if (kcall->region_destroy(getMyThread(list)->node.key)) {
 			reply->error_no = EFAULT;
 			break;
 		}
@@ -197,10 +185,18 @@ int mm_process_destroy(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
+		list_t *list_src;
+		list_t *list_dest;
 		mm_process_t *dest;
 		mm_process_t *src = get_process((ID)args->arg1 & INIT_THREAD_ID_MASK);
 
 		if (!src) {
+			reply->error_no = ESRCH;
+			break;
+		}
+
+		list_src = list_head(&(src->threads));
+		if (!list_src) {
 			reply->error_no = ESRCH;
 			break;
 		}
@@ -218,7 +214,14 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			process_clear(dest);
 		}
 
-		if (kcall->region_duplicate((ID)(args->arg1), (ID)(args->arg2))) {
+		list_dest = list_head(&(dest->threads));
+		if (!list_dest) {
+			reply->error_no = ESRCH;
+			break;
+		}
+
+		if (kcall->region_duplicate((ID)(getMyThread(list_src)->node.key),
+				(ID)(getMyThread(list_dest)->node.key))) {
 			reply->error_no = EFAULT;
 			break;
 		}
@@ -292,6 +295,7 @@ int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
+		list_t *list;
 		mm_process_t *p = get_process((ID)args->arg1 & INIT_THREAD_ID_MASK);
 
 		if (!p) {
@@ -299,8 +303,15 @@ int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-		if (kcall->region_map((ID)(args->arg1), (VP)(args->arg2),
-				(UW)(args->arg3), (W)(args->arg4))) {
+		list = list_head(&(p->threads));
+		if (!list) {
+			reply->error_no = ESRCH;
+			break;
+		}
+
+		if (kcall->region_map((ID)(getMyThread(list)->node.key),
+				(VP)(args->arg2), (UW)(args->arg3),
+				(W)(args->arg4))) {
 			reply->error_no = ESVC;
 			break;
 		}
@@ -317,6 +328,7 @@ int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
+		list_t *list;
 		mm_process_t *p = get_process((ID)args->arg1 & INIT_THREAD_ID_MASK);
 
 		if (!p) {
@@ -324,8 +336,14 @@ int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-		if (kcall->region_unmap((ID)(args->arg1), (VP)(args->arg2),
-				(UW)(args->arg3))) {
+		list = list_head(&(p->threads));
+		if (!list) {
+			reply->error_no = ESRCH;
+			break;
+		}
+
+		if (kcall->region_unmap((ID)(getMyThread(list)->node.key),
+				(VP)(args->arg2), (UW)(args->arg3))) {
 			reply->error_no = ESVC;
 			break;
 		}
@@ -342,6 +360,7 @@ int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_vmstatus(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
+		list_t *list;
 		mm_process_t *p = get_process((ID)args->arg1 & INIT_THREAD_ID_MASK);
 
 		if (!p) {
@@ -349,8 +368,14 @@ int mm_vmstatus(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-		if (kcall->region_get_status((ID)(args->arg1), (ID)(args->arg2),
-				(VP)(args->arg3))) {
+		list = list_head(&(p->threads));
+		if (!list) {
+			reply->error_no = ESRCH;
+			break;
+		}
+
+		if (kcall->region_get_status((ID)(getMyThread(list)->node.key),
+				(ID)(args->arg2), (VP)(args->arg3))) {
 			reply->error_no = EFAULT;
 			break;
 		}

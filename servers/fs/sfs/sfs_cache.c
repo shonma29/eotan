@@ -25,7 +25,7 @@ Version 2, June 1991
 #include "../fs.h"
 #include "sfs_func.h"
 
-#define USE_MALLOC
+#undef USE_MALLOC
 
 #define HASH_SIZE	30
 #ifdef USE_MALLOC

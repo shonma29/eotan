@@ -397,7 +397,7 @@ ER region_create(ID id,		/* task ID */
 */
     if (min < 0)
 	return (E_PAR);
-    if (max <= 0)
+    if (max < 0)
 	return (E_PAR);
     if (min > max)
 	return (E_PAR);

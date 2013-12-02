@@ -144,8 +144,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 #endif
     /* region の解放 */
     main_task = procp->proc_maintask;
-//    if (process_destroy(procid)) {
-    if (process_destroy(main_task)) {
+    if (process_destroy(procid)) {
 	dbg_printf("[FS] process_destroy failed\n");
     }
 
@@ -172,8 +171,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     }
 
     /* 残りの region の作成 */
-//    error_no = process_create(procid, seg_heap,
-    error_no = process_create(req->caller, seg_heap,
+    error_no = process_create(procid, seg_heap,
 		     (VP) VADDR_HEAP, 0, STD_HEAP_SIZE);	/* heap */
 #ifdef DEBUG
     if (error_no) {
@@ -350,8 +348,7 @@ load_text(W procid, struct inode *ip, Elf32_Phdr *text, ID task)
 	pageRoundUp(text->p_memsz +
 		(text->p_vaddr - pageRoundDown(text->p_vaddr)));
     /* text region の設定 */
-//    process_create(procid, seg_code, (VP) start, size, size);
-    process_create(task, seg_code, (VP) start, size, size);
+    process_create(procid, seg_code, (VP) start, size, size);
 
     error_no = alloc_memory(procid, start, size, VM_READ | VM_EXEC);
     if (error_no) {
@@ -412,8 +409,7 @@ load_data(W procid, struct inode *ip, Elf32_Phdr *data, ID task)
 	pageRoundUp(data->p_memsz +
 		(data->p_vaddr - pageRoundDown(data->p_vaddr)));
     /* data+bss region の設定 */
-//    process_create(procid, seg_data, (VP) start, size, size);	/* data+bss */
-    process_create(task, seg_data, (VP) start, size, size);	/* data+bss */
+    process_create(procid, seg_data, (VP) start, size, size);	/* data+bss */
     error_no = alloc_memory(procid, start, size, VM_READ | VM_WRITE);
     if (error_no) {
 #ifdef EXEC_DEBUG

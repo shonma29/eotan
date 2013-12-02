@@ -21,10 +21,4 @@ extern W syslog(B *msg);
 /* debug.c */
 extern W dbg_printf(B *format, ...);
 
-/* malloc.c */
-extern ER	init_malloc (UW free_memory_erea, UW max);
-extern VP	malloc (UW size);
-extern VP	calloc (UW size, UW nentry);
-extern void	free (VP addr);
-
 #endif /* __LIBKERN_LIBKERNEL_H__ */
