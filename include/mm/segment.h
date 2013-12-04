@@ -47,13 +47,6 @@ typedef enum {
 	type_share = attr_readable | attr_writable | attr_shared
 } mm_segment_type_e;
 
-typedef enum {
-	seg_code = 0,
-	seg_data = 1,
-	seg_heap = 2,
-	seg_stack = 3
-} mm_segment_no_e;
-
 typedef struct {
 	void *addr;
 	size_t len;

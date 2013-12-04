@@ -32,7 +32,6 @@ W psc_brk_f(RDVNO rdvno, struct posix_request *req)
 {
     struct proc *myprocp;
     W err, mypid, i;
-    mm_segment_t reg;
     VP start;
     UW size;
 
@@ -41,20 +40,20 @@ W psc_brk_f(RDVNO rdvno, struct posix_request *req)
     if (err)
 	return err;
 
-    err = vmstatus(mypid, seg_heap, (VP) & reg);
+    err = vmstatus(mypid);
 #ifdef DEBUG
     dbg_printf("[PM] err = %d id %d, sa %x, min %x, max %x, ea %x\n",
 	       req->caller,
 	   err, reg.start_addr, reg.min_size, reg.max_size,
 	   req->param.par_brk.end_adr);
 #endif
-    if (err) {
+    if (err == -1) {
 	put_response(rdvno, err, -1, 0);
 	return (FALSE);
     }
 
+    start = (VP)err;
     err = EOK;
-    start = reg.addr + reg.len;
     if (start > req->param.par_brk.end_adr) {
 	/* region を縮小 */
 	size = start - req->param.par_brk.end_adr;

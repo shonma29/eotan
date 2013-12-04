@@ -49,11 +49,8 @@ extern void context_reset_page_table();
 extern void context_switch(thread_t *prev, thread_t *next);
 
 /* virtual_mem.c */
-extern ER region_create(ID id, ID rid, VP start, W min, W max, UW perm);
-extern ER region_destroy(ID id);
 extern ER region_duplicate(ID src, ID dst);
 extern ER region_get(ID id, VP start, UW size, VP buf);
-extern ER region_get_status(ID id, ID rid, VP stat);
 extern ER region_map(ID id, VP start, UW size, W accmode);
 extern ER region_put(ID id, VP start, UW size, VP buf);
 extern ER region_unmap(ID id, VP start, UW size);
@@ -92,7 +89,6 @@ extern void panic(char *msg);
 extern void *getPageAddress(const PTE *dir, const void *addr);
 extern ER vmemcpy(const thread_t *th, const void *to, const void *from,
 		const size_t bytes);
-extern mm_segment_t *find_region(const thread_t *th, const void *addr);
 extern PTE *copy_kernel_page_table(const PTE *src);
 extern ER copy_user_pages(PTE *dest, const PTE *src, size_t cnt);
 extern void release_memory(thread_t *th);

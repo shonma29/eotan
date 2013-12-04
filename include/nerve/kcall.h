@@ -42,14 +42,11 @@ typedef struct {
 	ER (*interrupt_enable)(const UB ir);
 	void *(*palloc)(void);
 	void (*pfree)(void *addr);
-	ER (*region_create)(ID id, ID rid, VP start, W min, W max, UW perm);
-	ER (*region_destroy)(ID id);
 	ER (*region_map)(ID id, VP start, UW size, W accmode);
 	ER (*region_unmap)(ID id, VP start, UW size);
 	ER (*region_duplicate)(ID src, ID dst);
 	ER (*region_get)(ID id, VP start, UW size, VP buf);
 	ER (*region_put)(ID id, VP start, UW size, VP buf);
-	ER (*region_get_status)(ID id, ID rid, VP stat);
 	ER (*mpu_copy_stack)(ID src, W esp, ID dst);
 	ER (*mpu_set_context)(ID tid, W eip, B *stackp, W stsize);
 	ER (*port_create)(ID porid, T_CPOR *pk_cpor);

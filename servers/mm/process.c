@@ -72,8 +72,6 @@ static mm_thread_t *getMyThread(list_t *p)
 
 static void process_clear(mm_process_t *p)
 {
-	p->segments.code.attr = attr_nil;
-	p->segments.data.attr = attr_nil;
 	p->segments.heap.attr = attr_nil;
 	p->directory = NULL;
 	list_initialize(&(p->threads));
@@ -117,30 +115,17 @@ void process_initialize(void)
 int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
-		list_t *list;
-		mm_process_t *p = get_process((ID)args->arg1 & INIT_THREAD_ID_MASK);
+		mm_process_t *p = get_process((ID)args->arg1);
 
 		if (!p) {
 			reply->error_no = ESRCH;
 			break;
 		}
 
-		list = list_head(&(p->threads));
-		if (!list) {
-			reply->error_no = ESRCH;
-			break;
-		}
-
-		//TODO text VM_READ | VM_EXEC | VM_USER
-		//TODO data VM_READ | VM_WRITE | VM_USER
-		//TODO heap VM_READ | VM_WRITE | VM_USER
-		if (kcall->region_create(getMyThread(list)->node.key,
-				(ID)(args->arg2), (VP)(args->arg3),
-				(W)(args->arg4), (W)(args->arg5),
-				VM_READ | VM_WRITE | VM_USER)) {
-			reply->error_no = EFAULT;
-			break;
-		}
+		p->segments.heap.addr = (void*)(pageRoundDown(args->arg2));
+		p->segments.heap.len = (size_t)(pageRoundUp(args->arg3));
+		p->segments.heap.max = (size_t)(pageRoundUp(args->arg4));
+		p->segments.heap.attr = type_heap;
 
 		reply->error_no = EOK;
 		reply->result = 0;
@@ -155,7 +140,7 @@ int mm_process_destroy(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
 		list_t *list;
-		mm_process_t *p = get_process((ID)args->arg1 & INIT_THREAD_ID_MASK);
+		mm_process_t *p = get_process((ID)args->arg1);
 
 		if (!p) {
 			reply->error_no = ESRCH;
@@ -168,10 +153,16 @@ int mm_process_destroy(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-		if (kcall->region_destroy(getMyThread(list)->node.key)) {
+		if (kcall->region_unmap(getMyThread(list)->node.key,
+				//TODO this address is adhoc. fix region_unmap
+				(VP)0x1000,
+				(size_t)(p->segments.heap.addr)
+						+  p->segments.heap.len)) {
 			reply->error_no = EFAULT;
 			break;
 		}
+
+		p->segments.heap.attr = attr_nil;
 
 		reply->error_no = EOK;
 		reply->result = 0;
@@ -188,7 +179,7 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		list_t *list_src;
 		list_t *list_dest;
 		mm_process_t *dest;
-		mm_process_t *src = get_process((ID)args->arg1 & INIT_THREAD_ID_MASK);
+		mm_process_t *src = get_process((ID)args->arg1);
 
 		if (!src) {
 			reply->error_no = ESRCH;
@@ -201,17 +192,10 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-		dest = get_process((ID)args->arg2 & INIT_THREAD_ID_MASK);
+		dest = get_process((ID)args->arg2);
 		if (!dest) {
-			dest = (mm_process_t*)tree_put(&process_tree,
-					(ID)args->arg2);
-
-			if (!dest) {
-				reply->error_no = ENOMEM;
-				break;
-			}
-
-			process_clear(dest);
+			reply->error_no = ESRCH;
+			break;
 		}
 
 		list_dest = list_head(&(dest->threads));
@@ -226,6 +210,8 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
+		dest->segments.heap = src->segments.heap;
+
 		reply->error_no = EOK;
 		reply->result = 0;
 		return reply_success;
@@ -239,14 +225,14 @@ int mm_process_copy_stack(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
 		mm_thread_t *dest;
-		mm_thread_t *src = get_thread((ID)args->arg1 & INIT_THREAD_ID_MASK);
+		mm_thread_t *src = get_thread((ID)args->arg1);
 
 		if (!src) {
 			reply->error_no = ESRCH;
 			break;
 		}
 
-		dest = get_thread((ID)args->arg3 & INIT_THREAD_ID_MASK);
+		dest = get_thread((ID)args->arg3);
 		if (!dest) {
 			reply->error_no = ESRCH;
 			break;
@@ -295,8 +281,10 @@ int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
+		size_t currentEnd;
+		size_t newEnd;
 		list_t *list;
-		mm_process_t *p = get_process((ID)args->arg1 & INIT_THREAD_ID_MASK);
+		mm_process_t *p = get_process((ID)args->arg1);
 
 		if (!p) {
 			reply->error_no = ESRCH;
@@ -316,6 +304,13 @@ int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
+		currentEnd = (size_t)(p->segments.heap.addr)
+				+ p->segments.heap.len;
+		newEnd = (size_t)(args->arg2) + (size_t)(args->arg3);
+		if (currentEnd == (size_t)(args->arg2))
+			p->segments.heap.len = newEnd
+					- (size_t)(p->segments.heap.addr);
+
 		reply->error_no = EOK;
 		reply->result = 0;
 		return reply_success;
@@ -328,8 +323,10 @@ int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
+		size_t currentEnd;
+		size_t newEnd;
 		list_t *list;
-		mm_process_t *p = get_process((ID)args->arg1 & INIT_THREAD_ID_MASK);
+		mm_process_t *p = get_process((ID)args->arg1);
 
 		if (!p) {
 			reply->error_no = ESRCH;
@@ -348,6 +345,13 @@ int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
+		currentEnd = (size_t)(p->segments.heap.addr)
+				+ p->segments.heap.len;
+		newEnd = (size_t)(args->arg2) + (size_t)(args->arg3);
+		if (currentEnd == newEnd)
+			p->segments.heap.len = (size_t)(args->arg2)
+					- (size_t)(p->segments.heap.addr);
+
 		reply->error_no = EOK;
 		reply->result = 0;
 		return reply_success;
@@ -360,28 +364,16 @@ int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_vmstatus(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
-		list_t *list;
-		mm_process_t *p = get_process((ID)args->arg1 & INIT_THREAD_ID_MASK);
+		mm_process_t *p = get_process((ID)args->arg1);
 
 		if (!p) {
 			reply->error_no = ESRCH;
 			break;
 		}
 
-		list = list_head(&(p->threads));
-		if (!list) {
-			reply->error_no = ESRCH;
-			break;
-		}
-
-		if (kcall->region_get_status((ID)(getMyThread(list)->node.key),
-				(ID)(args->arg2), (VP)(args->arg3))) {
-			reply->error_no = EFAULT;
-			break;
-		}
-
 		reply->error_no = EOK;
-		reply->result = 0;
+		reply->result = (int)((size_t)(p->segments.heap.addr)
+				+ p->segments.heap.len);
 		return reply_success;
 	} while (FALSE);
 
@@ -403,7 +395,7 @@ int mm_thread_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		};
 		ER_ID result;
 		mm_thread_t *th;
-		mm_process_t *p = get_process((ID)args->arg1 & INIT_THREAD_ID_MASK);
+		mm_process_t *p = get_process((ID)args->arg1);
 
 		if (!p) {
 			p = (mm_process_t*)tree_put(&process_tree,

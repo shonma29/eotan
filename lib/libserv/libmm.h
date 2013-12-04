@@ -29,14 +29,14 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <mm/segment.h>
 
-extern int process_create(ID pid, ID segment_no, VP addr, W len, W max);
+extern int process_create(ID pid, VP addr, W len, W max);
 extern int process_destroy(ID pid);
 extern int process_duplicate(ID src_process, ID dest_process);
 extern int process_copy_stack(ID src_thread, W esp, ID dest_thread);
 extern int process_set_context(ID tid, W eip, B *stack, W stacksz);
 extern int vmap(ID pid, VP addr, UW len, W attr);
 extern int vunmap(ID pid, VP addr, UW len);
-extern int vmstatus(ID pid, ID segment_no, mm_segment_t *segment);
+extern int vmstatus(ID pid);
 extern ER_ID thread_create(ID pid, FP entry);
 
 #endif

@@ -129,9 +129,7 @@ static W create_init(ID process_id, ID thread_id)
 	p->proc_pid = process_id;
 	p->proc_ppid = INIT_PPID;
 
-	process_create(process_id, seg_code, 0, 0, 0);
-	process_create(process_id, seg_heap, 0, 0, 0);
-	process_create(process_id, seg_data, 0, 0, 0);
+	process_create(process_id, 0, 0, 0);
 	set_local(process_id, thread_id);
 
 	err = open_special_dev(p);

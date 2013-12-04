@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 
 
-int process_create(ID pid, ID segment_no, VP addr, W len, W max)
+int process_create(ID pid, VP addr, W len, W max)
 {
 //	thread_local_t *local = _get_local();
 	mm_args_t args;
@@ -42,10 +42,9 @@ int process_create(ID pid, ID segment_no, VP addr, W len, W max)
 
 	args.syscall_no = mm_syscall_process_create;
 	args.arg1 = (long int)pid;
-	args.arg2 = (long int)segment_no;
-	args.arg3 = (long int)addr;
-	args.arg4 = (long int)len;
-	args.arg5 = (long int)max;
+	args.arg2 = (long int)addr;
+	args.arg3 = (long int)len;
+	args.arg4 = (long int)max;
 	reply_size = kcall->port_call(PORT_MM, &args, sizeof(args));
 
 	if (reply_size == sizeof(*reply)) {

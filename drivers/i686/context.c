@@ -37,10 +37,10 @@ static void create_user_stack(thread_t * tsk, W size, W acc)
 {
     W err;
 
-    /* stack region の作成 number は 3 で固定 */
-    region_create(thread_id(tsk), seg_stack,
-	     (VP) VADDR_STACK_HEAD, STD_STACK_SIZE, STD_STACK_SIZE,
-	     (VM_READ | VM_WRITE | VM_USER));
+    tsk->ustack.addr = (VP) pageRoundDown(VADDR_STACK_HEAD);
+    tsk->ustack.len = pageRoundUp(STD_STACK_SIZE);
+    tsk->ustack.max = pageRoundUp(STD_STACK_SIZE);
+    tsk->ustack.attr = VM_READ | VM_WRITE | VM_USER;
 
     /* 物理メモリの割り当て */
     tsk->attr.ustack_tail = (VP)VADDR_STACK_TAIL;
@@ -106,19 +106,17 @@ static void kill(void)
 ER context_page_fault_handler(void)
 {
     UW addr;
-    mm_segment_t *regp;
 
     if (is_kthread(running)) {
     	return (E_SYS);
     }
 
     addr = (UW)fault_get_addr();
-    regp = &running->segments[seg_stack];
 
     /* フォルトを起こしたアドレスがスタック領域にあればページを割り当てる */
-    if (regp->attr &&
-	    (((UW) regp->addr <= addr) &&
-	    (addr <= ((UW) regp->addr + regp->max)))) {
+    if (running->ustack.attr &&
+	    (((UW) running->ustack.addr <= addr) &&
+	    (addr <= ((UW) running->ustack.addr + running->ustack.max)))) {
 	ER result = region_map(thread_id(running), (VP) addr, PAGE_SIZE, true);
 
 	if (result == E_OK) {

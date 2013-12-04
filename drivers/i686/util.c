@@ -99,24 +99,6 @@ void *getPageAddress(const PTE *dir, const void *addr)
 	return NULL;
 }
 
-mm_segment_t *find_region(const thread_t *th, const void *addr)
-{
-	size_t i;
-
-	for (i = 0; i <= seg_stack; i++) {
-		mm_segment_t *r = (mm_segment_t*)&(th->segments[i]);
-
-		if (!(r->attr))
-			continue;
-		if ((UW)addr < (UW)(r->addr))
-			continue;
-		if ((UW)addr < (UW)(r->addr) + r->max)
-			return r;
-	}
-
-	return NULL;
-}
-
 PTE *copy_kernel_page_table(const PTE *src)
 {
 	char *directory = (char*)palloc();

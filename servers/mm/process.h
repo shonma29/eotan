@@ -41,8 +41,6 @@ typedef struct {
 typedef struct {
 	node_t node;
 	struct {
-		mm_segment_t code;
-		mm_segment_t data;
 		mm_segment_t heap;
 	} segments;
 	PTE *directory;

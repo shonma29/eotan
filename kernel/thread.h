@@ -45,8 +45,7 @@ typedef struct {
 	} time;
 	PRI priority;
 	UINT activate_count;
-//TODO move to domain
-	mm_segment_t segments[seg_stack + 1];
+	mm_segment_t ustack;
 	struct {
 		VP_INT arg;
 		PRI priority;

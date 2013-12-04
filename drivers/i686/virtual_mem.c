@@ -329,6 +329,10 @@ static ER vunmap(thread_t * task, UW vpage)
 	pageent = (I386_PAGE_ENTRY*)(kern_p2v(pageent));
     }
 
+    if (pageent[pageindex].present != 1) {
+	return (FALSE);
+    }
+
     ppage = (UW)kern_v2p((void*)(pageent[pageindex].frame_addr << PAGE_SHIFT));
     /*TODO handle error */
     pfree((VP) ppage);
@@ -357,125 +361,6 @@ UW vtor(ID tskid, UW addr)
 	    (void*)addr);
 
     return result? (result | getOffset((void*)addr)):result;
-}
-
-
-
-/*
- * リージョンの作成
- *
- * 各タスクは、リージョンの配列をもっている。
- * その中で使っていないエントリを選び、引数で指定した情報を入れる。
- *
- * この関数の中では、物理メモリをマッピングするような処理はしない。
- * 単に新しいリージョンをひとつ割り当てるだけである。
- * もし、リージョンを生成したときに物理メモリを割り当てたいときには、
- * region_create を実行したあとに region_map を実行する必要がある。
- *
- */
-ER region_create(ID id,		/* task ID */
-	    ID rid,		/* region number */
-	    VP start,		/* リージョンの開始アドレス */
-	    W min,		/* リージョンの最小(初期)サイズ */
-	    W max,		/* リージョンの最大サイズ */
-	    UW perm)		/* リージョンのパーミッション */
-{				/* リージョン内でページフォールトが発生したと */
-    /* きの処理の指定 */
-    thread_t *taskp;
-    mm_segment_t *regp;
-#ifdef DEBUG
-    printk("region_create %d %d %x %x %x %x %x\n", id, rid, start, min, max,
-	   perm);
-#endif
-
-    /*
-     * 引数のチェックを行う。
-     * もし引数の値がおかしい場合には、E_PAR のエラー番号を返す。
-     */
-/*
-  if (start <= 0)	return (E_PAR);
-*/
-    if (min < 0)
-	return (E_PAR);
-    if (max < 0)
-	return (E_PAR);
-    if (min > max)
-	return (E_PAR);
-
-    /*
-     * タスク ID から該当するタスクのコンテキストへの
-     * ポインタを取り出す。
-     */
-    taskp = get_thread_ptr(id);
-    if (taskp == NULL) {
-	/*
-	 * 引数で指定した ID をもつタスクは存在していない。
-	 * E_OBJ を返す。
-	 */
-	return (E_OBJ);
-    }
-
-    if (rid < 0 || rid > seg_stack)
-	return (E_PAR);
-    if (taskp->segments[rid].attr != attr_nil) {
-	return (E_OBJ);
-    }
-    regp = &(taskp->segments[rid]);
-
-    /*
-     * リージョン情報の設定。
-     * リージョンエントリへは、引数の値をそのまま入れずに以下のような処
-     * 理を行う。
-     *    start           ページサイズで切り捨てる
-     *    min_size        ページサイズで切り上げる
-     *    max_size        ページサイズで切り上げる
-     *    permission      そのまま
-     */
-    regp->addr = (VP) pageRoundDown((UW)start);
-    regp->len = pageRoundUp(min);
-    regp->max = pageRoundUp(max);
-    regp->attr = perm;
-
-    /*
-     * 処理は正常に終了した。
-     */
-    return (E_OK);
-}
-
-/*
- * リージョンの破棄
- *
- * 引数 start で指定したアドレス領域を管理するリージョンを削除する。 
- * 削除したリージョンに含まれる領域中のデータは破棄する。
- *
- * start の値で指定したアドレスは、リージョンの先頭アドレスである必要
- * はない。リージョン内のアドレスならば、どのリージョンを指定したかを
- * システムコール内で判断する。
- *
- */
-ER region_destroy(ID id)
-{
-    thread_t *taskp;
-    ID rid;
-
-#ifdef DEBUG
-    printk("region_destroy %d\n", id);
-#endif
-    taskp = get_thread_ptr(id);
-    if (taskp == NULL) {
-	/*
-	 * 引数で指定した ID をもつタスクは存在していない。
-	 * E_OBJ を返す。
-	 */
-	return (E_OBJ);
-    }
-    for (rid = seg_code; rid <= seg_heap; rid++) {
-    	region_unmap(id, taskp->segments[rid].addr,
-		taskp->segments[rid].len);
-	taskp->segments[rid].attr = attr_nil;
-    }
-
-    return (E_OK);
 }
 
 /*
@@ -512,8 +397,6 @@ ER region_map(ID id, VP start, UW size, W accmode)
     UW counter, i;
     VP pmem;
     ER res;
-    mm_segment_t *regp;
-    UW newsize;
 
     taskp = (thread_t *) get_thread_ptr(id);
     if (!taskp)
@@ -524,7 +407,6 @@ ER region_map(ID id, VP start, UW size, W accmode)
 	return (E_PAR);
     }
 
-    regp = find_region(taskp, start);
     size = pages(size);
     start = (VP)pageRoundDown((UW)start);
     if (pmemfree() < size)
@@ -547,26 +429,6 @@ ER region_map(ID id, VP start, UW size, W accmode)
 	for (i = 0; i < counter; ++i) {
 	    vunmap(taskp, (UW) start + (i << PAGE_SHIFT));
 	}
-    } else {
-	if (regp) {
-	    if (((UW) start) + (size << PAGE_SHIFT) > (UW) regp->addr) {
-		newsize =
-		    (UW) start + (size << PAGE_SHIFT) - (UW) regp->addr;
-		if (newsize > regp->len) {
-#ifdef DEBUG
-		    printk
-			("region_map: new region size %x:%x->%x  (%x %x)\n",
-			 regp->start_addr, regp->min_size, newsize, start,
-			 size);
-#endif
-		    regp->len = newsize;
-		    if (regp->len > regp->max) {
-			printk
-			    ("[WARNING] region_map: min_size exceeds max_size\n");
-		    }
-		}
-	    }
-	}
     }
     return (res);
 }
@@ -578,34 +440,21 @@ ER region_unmap(ID id, VP start, UW size)
 {
     thread_t *taskp;
     UW counter;
-    mm_segment_t *regp;
-    UW newsize;
 
     taskp = (thread_t *) get_thread_ptr(id);
     if (!taskp) {
 	return (E_PAR);
     }
 
-    regp = find_region(taskp, start);
     size = pageRoundUp(size);
     start = (VP)pageRoundDown((UW)start);
+
     for (counter = 0; counter < (size >> PAGE_SHIFT); counter++) {
 	if (vunmap(taskp, ((UW) start + (counter << PAGE_SHIFT))) == FALSE) {
 	    return (E_SYS);
 	}
     }
 
-    if (regp) {
-	if (start >= regp->addr) {
-	    newsize = (UW) (start - regp->addr);
-	    if (newsize + size == regp->len) {
-		regp->len = newsize;
-#ifdef DEBUG
-		printk("region_unmap: new region size %x\n", newsize);
-#endif
-	    }
-	}
-    }
     return (E_OK);
 }
 
@@ -636,14 +485,9 @@ ER region_duplicate(ID src, ID dst)
 	return (E_PAR);
     }
 
-    dstp->segments[seg_code] = taskp->segments[seg_code];
-    dstp->segments[seg_data] = taskp->segments[seg_data];
-    dstp->segments[seg_heap] = taskp->segments[seg_heap];
     return copy_user_pages(dstp->mpu.cr3, taskp->mpu.cr3,
-	    (pageRoundUp(dstp->segments[seg_code].len) >> BITS_OFFSET)
-	    + (pageRoundUp(dstp->segments[seg_data].len) >> BITS_OFFSET)
-	    + (pageRoundUp(dstp->segments[seg_heap].len) >> BITS_OFFSET)
-    );
+//TODO this address is adhoc. fix
+	    pageRoundUp(0x80000000) >> BITS_OFFSET);
 }
 
 /*
@@ -761,50 +605,4 @@ ER region_put(ID id, VP start, UW size, VP buf)
 	return E_NOEXS;
 
     return vmemcpy(th, start, buf, size);
-}
-
-/*
- * リージョンの情報を取得する。
- *
- * リージョン情報としては次のものが考えられる。
- *
- *	リージョンの先頭仮想アドレス
- *	リージョンのサイズ
- *	プロテクト情報
- * 
- * 返り値
- *
- * 以下のエラー番号が返る。
- *
- *	E_OK     リージョンの情報の取得に成功  
- *	E_NOEXS  引数 id で指定したタスクは存在しない
- *	E_NOSPT  本システムコールは、未サポート機能である
- *
- */
-ER region_get_status(ID id, ID rid, VP stat)
-    /*
-     * id     リージョンをもつタスク
-     * rid    region number
-     * stat   リージョン情報が入る(リージョン情報の詳細は未決定である) 
-     */
-{
-    mm_segment_t *regp = stat;
-    thread_t *taskp;
-
-    taskp = get_thread_ptr(id);
-    if (taskp == NULL) {
-	/*
-	 * 引数で指定した ID をもつタスクは存在していない。
-	 * E_NOEXS を返す。
-	 */
-	return (E_NOEXS);
-    }
-
-    if (rid < 0 || rid > seg_stack)
-	return (E_PAR);
-    if (taskp->segments[rid].attr == attr_nil)
-	return (E_OBJ);
-
-    *regp = taskp->segments[rid];
-    return (E_OK);
 }
