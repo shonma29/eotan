@@ -22,7 +22,6 @@ Version 2, June 1991
 #define PAGE_DIR_ADDR	(0x2000)	/* 仮想ページディレクトリテーブル */
 
 #define KERNEL_STACK_SIZE	(PAGE_SIZE * 1)
-#define USER_STACK_SIZE	(PAGE_SIZE * 1)
 
 /* メモリ管理関係 */
 #define PAGE_SIZE	4096
@@ -38,9 +37,5 @@ Version 2, June 1991
 /* マネージャータスクのヒープ領域の推奨値 */
 #define VADDR_HEAP	(0x10000000L)
 #define STD_HEAP_SIZE	(0x3FFFFFFFL)
-
-#define STD_STACK_SIZE	 (0x3FF00000L)
-#define VADDR_STACK_TAIL (0x7FF00000L)
-#define VADDR_STACK_HEAD (VADDR_STACK_TAIL - STD_STACK_SIZE)
 
 #endif				/* _CORE_CONFIG_H_ */

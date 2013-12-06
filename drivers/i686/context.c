@@ -26,25 +26,27 @@ Version 2, June 1991
 #include "mpu/interrupt.h"
 #include "mpu/mpufunc.h"
 
-static void create_user_stack(thread_t * tsk, W size, W acc);
+static void create_user_stack(thread_t * tsk);
 static void kill(void);
 
 
 /*
  * create_user_stack
  */
-static void create_user_stack(thread_t * tsk, W size, W acc)
+static void create_user_stack(thread_t * tsk)
 {
     W err;
 
-    tsk->ustack.addr = (VP) pageRoundDown(VADDR_STACK_HEAD);
-    tsk->ustack.len = pageRoundUp(STD_STACK_SIZE);
-    tsk->ustack.max = pageRoundUp(STD_STACK_SIZE);
-    tsk->ustack.attr = VM_READ | VM_WRITE | VM_USER;
+    tsk->ustack.addr = (VP) pageRoundDown(LOCAL_ADDR - USER_STACK_MAX_SIZE);
+    tsk->ustack.len = pageRoundUp(USER_STACK_INITIAL_SIZE);
+    tsk->ustack.max = pageRoundUp(USER_STACK_MAX_SIZE - PAGE_SIZE);
+    tsk->ustack.attr = type_stack;
 
     /* 物理メモリの割り当て */
-    tsk->attr.ustack_tail = (VP)VADDR_STACK_TAIL;
-    err = region_map(thread_id(tsk), (VP) (VADDR_STACK_TAIL - size), size, acc);
+    tsk->attr.ustack_tail = (VP)((UW)(tsk->ustack.addr) + tsk->ustack.max);
+    err = region_map(thread_id(tsk),
+    	    (VP)((UW)(tsk->attr.ustack_tail) - tsk->ustack.len),
+	    tsk->ustack.len, true);
 
     if (err != E_OK) {
 	printk("can't allocate stack\n");
@@ -70,7 +72,7 @@ ER mpu_copy_stack(ID src, W esp, ID dst)
     dst_tsk = get_thread_ptr(dst);
 
     /* dst task に新しいスタックポインタを割り付ける */
-    create_user_stack(dst_tsk, USER_STACK_SIZE, true);
+    create_user_stack(dst_tsk);
 
     size = ((UW) src_tsk->attr.ustack_tail) - esp;
 
@@ -154,7 +156,7 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
 
     if (tid & INIT_THREAD_ID_FLAG) {
 	tid &= INIT_THREAD_ID_MASK;
-	create_user_stack(tsk, USER_STACK_SIZE, true);
+	create_user_stack(tsk);
     }
 
     enter_critical();

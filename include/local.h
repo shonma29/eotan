@@ -29,9 +29,9 @@ For more information, please refer to <http://unlicense.org/>
 #include <stddef.h>
 #include <core/types.h>
 
-#define LOCAL_ADDR 0x7fff0000
+#define LOCAL_ADDR 0x7fffd000
 
-#define MAX_CWD (255)
+#define MAX_CWD (1023)
 
 typedef struct {
 	ID thread_id;
