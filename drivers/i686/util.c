@@ -143,13 +143,18 @@ ER copy_user_pages(PTE *dest, const PTE *src, size_t cnt)
 	size_t n = (size_t)getDirectoryOffset((void*)MIN_KERNEL);
 	size_t i;
 
-	for (i = 0; i < n; i++) {
+	for (i = 0; (i < n) && (cnt > 0); i++) {
 		PTE *srcp = (PTE*)(srcdir[i]);
 		PTE *destp;
 		size_t j;
 
-		if (!is_present((PTE)srcp))
+		if (!is_present((PTE)srcp)) {
+			if (cnt <= PTE_PER_PAGE)
+				break;
+
+			cnt -= PTE_PER_PAGE;
 			continue;
+		}
 
 		destp = (PTE*)(destdir[i]);
 		if (is_present((PTE)destp))
@@ -166,7 +171,7 @@ ER copy_user_pages(PTE *dest, const PTE *src, size_t cnt)
 		srcp = (PTE*)(kern_p2v((PTE*)((PTE)srcp & PAGE_ADDR_MASK)));
 		destp = (PTE*)(kern_p2v(destp));
 
-		for (j = 0; j < PTE_PER_PAGE; j++) {
+		for (j = 0; (j < PTE_PER_PAGE) && (cnt > 0); cnt--, j++) {
 			char *p;
 
 			if (!is_present(srcp[j]))
@@ -187,9 +192,6 @@ ER copy_user_pages(PTE *dest, const PTE *src, size_t cnt)
 			memcpy(kern_p2v(p),
 					kern_p2v((char*)(srcp[j] & PAGE_ADDR_MASK)),
 					PAGE_SIZE);
-
-			if (!--cnt)
-				return E_OK;
 		}
 	}
 

@@ -36,6 +36,5 @@ Version 2, June 1991
 
 /* マネージャータスクのヒープ領域の推奨値 */
 #define VADDR_HEAP	(0x10000000L)
-#define STD_HEAP_SIZE	(0x3FFFFFFFL)
 
 #endif				/* _CORE_CONFIG_H_ */

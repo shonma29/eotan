@@ -62,6 +62,7 @@ Version 2, June 1991
 #include <boot/init.h>
 #include <mpu/config.h>
 #include <mpu/memory.h>
+#include <nerve/config.h>
 #include <nerve/kcall.h>
 #include "../../lib/libserv/libmm.h"
 #include "fs.h"
@@ -171,7 +172,8 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     }
 
     /* heap */
-    error_no = process_create(procid, (VP) VADDR_HEAP, 0, STD_HEAP_SIZE);
+    error_no = process_create(procid, (VP) VADDR_HEAP, 0,
+	    USER_HEAP_MAX_ADDR - VADDR_HEAP);
 #ifdef DEBUG
     if (error_no) {
       dbg_printf("[EXEC]: vcre_reg return %d\n", error_no);

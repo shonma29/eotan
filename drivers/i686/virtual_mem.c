@@ -487,7 +487,7 @@ ER region_duplicate(ID src, ID dst)
 
     return copy_user_pages(dstp->mpu.cr3, taskp->mpu.cr3,
 //TODO this address is adhoc. fix
-	    pageRoundUp(0x80000000) >> BITS_OFFSET);
+	    pageRoundUp(USER_HEAP_MAX_ADDR) >> BITS_OFFSET);
 }
 
 /*
