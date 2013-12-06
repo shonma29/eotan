@@ -31,9 +31,8 @@ Version 2, June 1991
 W psc_brk_f(RDVNO rdvno, struct posix_request *req)
 {
     struct proc *myprocp;
-    W err, mypid, i;
+    W err, mypid;
     VP start;
-    UW size;
 
     mypid = req->procid;
     err = proc_get_procp(mypid, &myprocp);
@@ -56,21 +55,11 @@ W psc_brk_f(RDVNO rdvno, struct posix_request *req)
     err = EOK;
     if (start > req->param.par_brk.end_adr) {
 	/* region を縮小 */
-	size = start - req->param.par_brk.end_adr;
-	for (i = 1; i <= (size >> PAGE_SHIFT); ++i) {
-	    err = shorten_vm(myprocp, (UW) start - (i << PAGE_SHIFT));
-	    if (err)
-		break;
-	}
+	err = vunmap(mypid, (VP)(req->param.par_brk.end_adr),
+		req->param.par_brk.end_adr - start);
     } else if (start < req->param.par_brk.end_adr) {
 	/* region を拡大 */
-	size = req->param.par_brk.end_adr - start;
-	for (i = 0; i < pages(size); ++i) {
-	    err = grow_vm(myprocp, (UW) start + (i << PAGE_SHIFT),
-			  VM_READ | VM_WRITE | VM_USER);
-	    if (err)
-		break;
-	}
+	err = vmap(mypid, start, req->param.par_brk.end_adr - start, true);
     }
 
     if (err) {

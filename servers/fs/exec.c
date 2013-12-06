@@ -347,12 +347,11 @@ load_text(W procid, struct inode *ip, Elf32_Phdr *text, ID task)
 	pageRoundUp(text->p_memsz +
 		(text->p_vaddr - pageRoundDown(text->p_vaddr)));
 
-    error_no = alloc_memory(procid, start, size, VM_READ | VM_EXEC);
-    if (error_no) {
+    if (vmap(procid, (VP)start, size, true)) {
 #ifdef EXEC_DEBUG
 	dbg_printf("ERROR: alloc memory\n");
 #endif
-	return (error_no);
+	return (EPERM);
     }
 
     for (rest_length = text->p_filesz, offset = text->p_offset, vaddr =
@@ -406,12 +405,11 @@ load_data(W procid, struct inode *ip, Elf32_Phdr *data, ID task)
 	pageRoundUp(data->p_memsz +
 		(data->p_vaddr - pageRoundDown(data->p_vaddr)));
 
-    error_no = alloc_memory(procid, start, size, VM_READ | VM_WRITE);
-    if (error_no) {
+    if (vmap(procid, (VP)start, size, true)) {
 #ifdef EXEC_DEBUG
 	dbg_printf("ERROR: alloc memory\n");
 #endif
-	return (error_no);
+	return (EPERM);
     }
 
     for (rest_length = data->p_filesz, offset = data->p_offset, vaddr =
