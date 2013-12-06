@@ -100,7 +100,7 @@ static ER init(void)
 {
     struct alloc_entry_t *p;
 
-    start_page = last_page = VADDR_HEAP;
+    start_page = last_page = (UW)sbrk(0);
 
     alloc_list.size = 0;
     p = (struct alloc_entry_t *) get_system_memory(MEMORY_CLICK);
@@ -320,16 +320,15 @@ void free(VP addr)
 
 static VP get_system_memory(UW size)
 {
-    VP rp;
-    int errno;
+    int errno = (int)sbrk(size);
 
-    errno = brk((VP) (last_page+size));
-    if (errno == 0) {
-      rp = (VP) last_page;
-      last_page += size;
-      return (rp);
+    if (errno == -1) {
+      return(NULL);
     }
     else {
-      return(NULL);
+      VP rp = (VP) last_page;
+
+      last_page += size;
+      return (rp);
     }
 }

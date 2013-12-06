@@ -58,21 +58,20 @@ Version 2, June 1991
 #define PSC_WAITPID      29
 #define PSC_WRITE        30
 
-#define PSC_BRK		 31
-#define PSC_GETDENTS	 32
-#define PSC_MOUNT        33
-#define PSC_STATFS       34
-#define PSC_UMOUNT       35
+#define PSC_GETDENTS	 31
+#define PSC_MOUNT        32
+#define PSC_STATFS       33
+#define PSC_UMOUNT       34
 
 /* =================== SIGNAL 関係 =============== */
-#define PSC_KILL         36
+#define PSC_KILL         35
 
 /* =================== miserous system calls  =============== */
-#define PSC_MISC         37
+#define PSC_MISC         36
 
-#define PSC_DUP2         38	/* 不要? */
+#define PSC_DUP2         37	/* 不要? */
 
-#define PSC_BIND_DEVICE (39)
+#define PSC_BIND_DEVICE (38)
 
 /* MISC 
  */
@@ -461,15 +460,6 @@ struct psc_getdents
   UW length;
 };
 
-/* psc_brk -
- *
- */
-
-struct psc_brk
-{
-  VP end_adr;
-};
-
 /* psc_misc
  *
  */
@@ -504,7 +494,6 @@ struct posix_request
 
   union {
     struct psc_access		par_access;
-    struct psc_brk		par_brk;
     struct psc_chdir		par_chdir;
     struct psc_chmod		par_chmod;
     struct psc_chown		par_chown;

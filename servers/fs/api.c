@@ -195,7 +195,6 @@ struct posix_syscall	syscall_table[] =
   { s("utime",		PSC_UTIME)		psc_utime_f },
   { s("waitpid",		PSC_WAITPID)		psc_waitpid_f },
   { s("write",		PSC_WRITE)		psc_write_f },
-  { s("brk",		PSC_BRK)		psc_brk_f },
   { s("getdents",		PSC_GETDENTS)		psc_getdents_f },
   { s("mount",		PSC_MOUNT)		psc_mount_f },
   { s("statfs",		PSC_STATFS)		psc_statfs_f },

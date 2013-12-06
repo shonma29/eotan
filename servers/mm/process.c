@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <errno.h>
 #include <mm.h>
+#include <stdint.h>
 #include <vm.h>
 #include <boot/init.h>
 #include <core/options.h>
@@ -361,9 +362,14 @@ int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	return reply_failure;
 }
 
-int mm_vmstatus(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+int mm_sbrk(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
+kcall->puts("sbrk\n");
 	do {
+		mm_segment_t *s;
+		intptr_t diff;
+		uintptr_t end;
+		list_t *list;
 		mm_process_t *p = get_process((ID)args->arg1);
 
 		if (!p) {
@@ -371,9 +377,50 @@ int mm_vmstatus(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
+		list = list_head(&(p->threads));
+		if (!list) {
+			reply->error_no = ESRCH;
+			break;
+		}
+
+		s = &(p->segments.heap);
+		end = (uintptr_t)(s->addr) + s->len;
+		diff = (intptr_t)(args->arg2);
+		if (diff > 0) {
+			diff = pageRoundUp(diff);
+			if (s->max - s->len < diff) {
+				reply->error_no = ENOMEM;
+				break;
+			}
+
+			if (kcall->region_map((ID)(getMyThread(list)->node.key),
+					(VP)end, diff, true)) {
+				reply->error_no = ENOMEM;
+				break;
+			}
+
+			s->len += diff;
+			end += diff;
+
+		} else if (diff < 0) {
+			diff = pageRoundUp(-diff);
+			if (s->len < diff) {
+				reply->error_no = ENOMEM;
+				break;
+			}
+
+			if (kcall->region_unmap((ID)(getMyThread(list)->node.key),
+					(VP)(end - diff), diff)) {
+				reply->error_no = ENOMEM;
+				break;
+			}
+
+			s->len -= diff;
+			end -= diff;
+		}
+
 		reply->error_no = EOK;
-		reply->result = (int)((size_t)(p->segments.heap.addr)
-				+ p->segments.heap.len);
+		reply->result = (int)end;
 		return reply_success;
 	} while (FALSE);
 

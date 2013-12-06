@@ -29,28 +29,27 @@ For more information, please refer to <http://unlicense.org/>
 #include <local.h>
 #include <mm.h>
 #include <services.h>
-#include <mm/segment.h>
-#include <nerve/kcall.h>
+#include <stdint.h>
 
 
-int vmstatus(ID pid)
+void *sbrk(intptr_t increment)
 {
-//	thread_local_t *local = _get_local();
+	thread_local_t *local = _get_local();
 	mm_args_t args;
 	mm_reply_t *reply = (mm_reply_t*)&args;
 	ER_UINT reply_size;
-	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-	args.syscall_no = mm_syscall_vmstatus;
-	args.arg1 = (long int)pid;
-	reply_size = kcall->port_call(PORT_MM, &args, sizeof(args));
+	args.syscall_no = mm_syscall_sbrk;
+	args.arg1 = (long int)(local->process_id);
+	args.arg2 = (long int)increment;
+	reply_size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
 
 	if (reply_size == sizeof(*reply)) {
-//		local->error_no = reply->error_no;
-		return reply->result;
+		local->error_no = reply->error_no;
+		return (void*)(reply->result);
 
 	} else {
-//		local->error_no = ESVC;
-		return -1;
+		local->error_no = ESVC;
+		return (void*)(-1);
 	}
 }

@@ -28,56 +28,6 @@ Version 2, June 1991
 #include "../../../lib/libserv/libmm.h"
 #include "fs.h"
 
-W psc_brk_f(RDVNO rdvno, struct posix_request *req)
-{
-    struct proc *myprocp;
-    W err, mypid;
-    VP start;
-
-    mypid = req->procid;
-    err = proc_get_procp(mypid, &myprocp);
-    if (err)
-	return err;
-
-    err = vmstatus(mypid);
-#ifdef DEBUG
-    dbg_printf("[PM] err = %d id %d, sa %x, min %x, max %x, ea %x\n",
-	       req->caller,
-	   err, reg.start_addr, reg.min_size, reg.max_size,
-	   req->param.par_brk.end_adr);
-#endif
-    if (err == -1) {
-	put_response(rdvno, err, -1, 0);
-	return (FALSE);
-    }
-
-    start = (VP)err;
-    err = EOK;
-    if (start > req->param.par_brk.end_adr) {
-	/* region を縮小 */
-	err = vunmap(mypid, (VP)(req->param.par_brk.end_adr),
-		req->param.par_brk.end_adr - start);
-    } else if (start < req->param.par_brk.end_adr) {
-	/* region を拡大 */
-	err = vmap(mypid, start, req->param.par_brk.end_adr - start, true);
-    }
-
-    if (err) {
-	put_response(rdvno, err, -1, 0);
-	return (FALSE);
-    }
-
-#ifdef DEBUG
-    /* for debug */
-    vsts_reg(req->caller, HEAP_REGION, (VP) & reg);
-    dbg_printf("[PM] after brk sa %x, min %x, max %x\n",
-	   reg.start_addr, reg.min_size, reg.max_size);
-#endif
-
-    put_response(rdvno, EOK, 0, 0);
-    return (TRUE);
-}
-
 /* psc_exec_f - 指定されたプログラムファイルをメモリ中に読み込む
  */
 W psc_exec_f(RDVNO rdvno, struct posix_request *req)

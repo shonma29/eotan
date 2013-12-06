@@ -44,7 +44,7 @@ static int (*funcs[])(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args) = {
 	mm_process_set_context,
 	mm_vmap,
 	mm_vunmap,
-	mm_vmstatus,
+	mm_sbrk,
 	mm_thread_create
 };
 

@@ -36,7 +36,6 @@ extern int process_copy_stack(ID src_thread, W esp, ID dest_thread);
 extern int process_set_context(ID tid, W eip, B *stack, W stacksz);
 extern int vmap(ID pid, VP addr, UW len, W attr);
 extern int vunmap(ID pid, VP addr, UW len);
-extern int vmstatus(ID pid);
 extern ER_ID thread_create(ID pid, FP entry);
 
 #endif

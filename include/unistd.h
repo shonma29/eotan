@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 
 #include <stddef.h>
+#include <stdint.h>
 #include <time.h>
 #include <utime.h>
 #include <sys/dirent.h>
@@ -42,7 +43,7 @@ For more information, please refer to <http://unlicense.org/>
 
 extern int chdir(char *path);
 extern int access(char *path, int mode);
-extern int brk(void *endds);
+extern void *sbrk(intptr_t increment);
 extern int chmod(char *path, mode_t mode);
 extern int chown(char *path, uid_t owner, gid_t group);
 extern int close(int fd);
