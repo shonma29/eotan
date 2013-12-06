@@ -19,11 +19,13 @@ Version 2, June 1991
 #include <core.h>
 #include "posix.h"
 
+static int usleep (int usecond);
+
 
 /* usleep --- システムコールの動作は usleep とする．
  *
  */
-int
+static int
 usleep (int usecond)
 {
   if (usecond < 0) {

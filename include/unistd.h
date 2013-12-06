@@ -73,7 +73,6 @@ extern int read(int fd, void *buf, int size);
 extern int rmdir(char *path);
 extern int setgid(int gid);
 extern int setuid(int uid);
-extern int usleep(int usecond);
 extern int sleep(int second);
 extern int clock_gettime(clockid_t clk_id, struct timespec *tp);
 extern mode_t umask(mode_t mask);
