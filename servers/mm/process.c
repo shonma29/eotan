@@ -364,7 +364,6 @@ int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 
 int mm_sbrk(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
-kcall->puts("sbrk\n");
 	do {
 		mm_segment_t *s;
 		intptr_t diff;
@@ -483,3 +482,5 @@ int mm_thread_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	reply->result = -1;
 	return reply_failure;
 }
+//TODO delete thread
+//TODO delete process
