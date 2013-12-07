@@ -73,28 +73,10 @@ static inline rendezvous_t *getRdvParent(const node_t *p) {
 
 ER port_initialize(void)
 {
-	port_slab.unit_size = sizeof(port_t);
-	port_slab.block_size = PAGE_SIZE;
-	port_slab.min_block = 1;
-	port_slab.max_block = tree_max_block(65536, PAGE_SIZE,
-			sizeof(port_t));
-	port_slab.palloc = palloc;
-	port_slab.pfree = pfree;
-	slab_create(&port_slab);
-
-	tree_create(&port_tree, &port_slab, NULL);
+	create_tree(&port_tree, &port_slab, sizeof(port_t), NULL);
 	port_hand = MIN_AUTO_ID - 1;
 
-	rdv_slab.unit_size = sizeof(rendezvous_t);
-	rdv_slab.block_size = PAGE_SIZE;
-	rdv_slab.min_block = 1;
-	rdv_slab.max_block = tree_max_block(65536, PAGE_SIZE,
-			sizeof(rendezvous_t));
-	rdv_slab.palloc = palloc;
-	rdv_slab.pfree = pfree;
-	slab_create(&rdv_slab);
-
-	tree_create(&rdv_tree, &rdv_slab, NULL);
+	create_tree(&rdv_tree, &rdv_slab, sizeof(rendezvous_t), NULL);
 	rdv_hand = MIN_AUTO_ID - 1;
 
 	return E_OK;

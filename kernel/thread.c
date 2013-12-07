@@ -51,16 +51,7 @@ static inline thread_t *getThreadParent(const node_t *p) {
 
 ER thread_initialize(void)
 {
-	thread_slab.unit_size = sizeof(thread_t);
-	thread_slab.block_size = PAGE_SIZE;
-	thread_slab.min_block = 1;
-	thread_slab.max_block = tree_max_block(65536, PAGE_SIZE,
-			sizeof(thread_t));
-	thread_slab.palloc = palloc;
-	thread_slab.pfree = pfree;
-	slab_create(&thread_slab);
-
-	tree_create(&thread_tree, &thread_slab, NULL);
+	create_tree(&thread_tree, &thread_slab, sizeof(thread_t), NULL);
 	thread_hand = MIN_AUTO_ID - 1;
 
 	ready_initialize();
@@ -105,7 +96,7 @@ ER_ID idle_initialize(void)
 		//th->time.left = TIME_QUANTUM;
 		//th->activate_count = 0;
 
-		th->attr.domain_id = KERNEL_DOMAIN_ID;
+		th->attr.page_table = NULL;
 		th->priority = th->attr.priority = MAX_PRIORITY;
 		//th->attr.arg = NULL;
 		//th->attr.kstack_tail = (void*)KERN_STACK_ADDR;
@@ -139,7 +130,7 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid)
 	list_initialize(&(th->wait.waiting));
 	//th->activate_count = 0;
 
-	th->attr.domain_id = pk_ctsk->domain_id;
+	th->attr.page_table = pk_ctsk->page_table;
 	th->attr.priority = pk_ctsk->itskpri;
 	th->attr.arg = pk_ctsk->exinf;
 	th->attr.kstack_tail = (char*)kern_p2v(p) + pk_ctsk->stksz;

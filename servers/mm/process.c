@@ -456,7 +456,8 @@ int mm_thread_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		}
 
 		pk_ctsk.task = (FP)(args->arg2);
-		pk_ctsk.domain_id = (ID)(args->arg1);
+		//TODO allocate page table
+		pk_ctsk.page_table = (VP)(args->arg2 + 1);
 
 		result = kcall->thread_create_auto(&pk_ctsk);
 		if (result < 0) {

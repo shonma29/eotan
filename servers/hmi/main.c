@@ -244,7 +244,7 @@ void start(VP_INT exinf)
 		pri_server_middle,
 		KERNEL_STACK_SIZE,
 		NULL,
-		KERNEL_DOMAIN_ID
+		NULL
 	};
 
 	if (port >= 0) {

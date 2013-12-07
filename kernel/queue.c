@@ -118,16 +118,7 @@ static list_t *release_sender(VP_INT *d, queue_t *q)
 
 ER queue_initialize(void)
 {
-	queue_slab.unit_size = sizeof(queue_t);
-	queue_slab.block_size = PAGE_SIZE;
-	queue_slab.min_block = 1;
-	queue_slab.max_block = tree_max_block(65536, PAGE_SIZE,
-			sizeof(queue_t));
-	queue_slab.palloc = palloc;
-	queue_slab.pfree = pfree;
-	slab_create(&queue_slab);
-
-	tree_create(&queue_tree, &queue_slab, NULL);
+	create_tree(&queue_tree, &queue_slab, sizeof(queue_t), NULL);
 	queue_hand = MIN_AUTO_ID - 1;
 
 	return E_OK;

@@ -35,7 +35,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "msr.h"
 #include "tss.h"
 
-static W current_domain_id = KERNEL_DOMAIN_ID;
+static VP current_page_table = NULL;
 
 static void api_set_kernel_sp(const VP addr);
 
@@ -142,9 +142,9 @@ VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
 void context_switch(thread_t *prev, thread_t *next)
 {
 	if (!is_kthread(next)) {
-		if (next->attr.domain_id != current_domain_id) {
+		if (next->attr.page_table != current_page_table) {
 			paging_set_directory(next->mpu.cr3);
-			current_domain_id = next->attr.domain_id;
+			current_page_table = next->attr.page_table;
 			api_set_kernel_sp(next->attr.kstack_tail);
 		}
 
@@ -160,13 +160,13 @@ void context_switch(thread_t *prev, thread_t *next)
 void context_reset_page_table()
 {
 	paging_set_directory((VP)PAGE_DIR_ADDR);
-	current_domain_id = KERNEL_DOMAIN_ID;
+	current_page_table = NULL;
 }
 
 void context_reset_page_cache(const thread_t *task, const VP addr)
 {
 	if (is_kthread(task)
-			|| (task->attr.domain_id == current_domain_id)) {
+			|| (task->attr.page_table == current_page_table)) {
 		tlb_flush(addr);
 	}
 }

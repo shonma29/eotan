@@ -61,6 +61,8 @@ extern void printk(const char *format, ...);
 extern void putsk(const char *str);
 
 /* tree_utils.c */
+extern void create_tree(tree_t *tree, slab_t *slab, size_t entry_size,
+		int (*compare)(const int a, const int b));
 extern node_t *find_empty_key(tree_t *tree, int *hand);
 
 /* thread.c */
@@ -77,7 +79,7 @@ extern ER_ID thread_get_id(void);
 
 static inline int is_kthread(const thread_t *th)
 {
-	return th->attr.domain_id == KERNEL_DOMAIN_ID;
+	return th->attr.page_table == NULL;
 }
 
 /* rendezvous.c */

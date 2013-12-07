@@ -55,7 +55,7 @@ static ER_ID attach(void)
 {
 	T_CTSK pk_ctsk = {
 		TA_HLNG, 0, process, pri_dispatcher,
-		KERNEL_STACK_SIZE, NULL, KERNEL_DOMAIN_ID
+		KERNEL_STACK_SIZE, NULL, NULL
 	};
 
 	lfq_initialize(&(((system_info_t*)SYSTEM_INFO_ADDR)->kqueue),
@@ -116,7 +116,8 @@ static ER kill(const int pid)
 	struct posix_request req;
 
 	req.caller = thread_get_id();
-	req.procid = KERNEL_DOMAIN_ID;
+	//TODO define special process id
+	req.procid = -1;
 	req.msg_length = sizeof(struct posix_request);
 	req.operation = PSC_KILL;
 	req.param.par_kill.pid = pid;

@@ -123,17 +123,7 @@ static int compare(const int a, const int b)
 
 void timer_initialize(void)
 {
-	timer_slab.unit_size = sizeof(timer_t);
-	timer_slab.block_size = PAGE_SIZE;
-	timer_slab.min_block = 1;
-	timer_slab.max_block = tree_max_block(65536, PAGE_SIZE,
-			sizeof(timer_t));
-	timer_slab.palloc = palloc;
-	timer_slab.pfree = pfree;
-	slab_create(&timer_slab);
-
-	tree_create(&timer_tree, &timer_slab, compare);
-
+	create_tree(&timer_tree, &timer_slab, sizeof(timer_t), compare);
 	time_initialize();
 	pit_initialize(TIME_TICKS);
 }

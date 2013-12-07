@@ -26,7 +26,23 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <nerve/config.h>
 #include <set/tree.h>
+#include "func.h"
 
+
+void create_tree(tree_t *tree, slab_t *slab, size_t entry_size,
+		int (*compare)(const int a, const int b))
+{
+	slab->unit_size = entry_size;
+	slab->block_size = PAGE_SIZE;
+	slab->min_block = 1;
+	slab->max_block = tree_max_block(65536, PAGE_SIZE,
+			entry_size);
+	slab->palloc = palloc;
+	slab->pfree = pfree;
+	slab_create(slab);
+
+	tree_create(tree, slab, compare);
+}
 
 node_t *find_empty_key(tree_t *tree, int *hand)
 {

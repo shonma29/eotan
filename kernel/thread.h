@@ -49,7 +49,7 @@ typedef struct {
 	struct {
 		VP_INT arg;
 		PRI priority;
-		ID domain_id;
+		VP page_table;
 		VP kstack_tail;
 		VP ustack_tail;
 		FP entry;

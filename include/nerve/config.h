@@ -57,8 +57,6 @@ For more information, please refer to <http://unlicense.org/>
 #define MIN_AUTO_ID (49152)
 #define MAX_AUTO_ID (65535)
 
-#define KERNEL_DOMAIN_ID (-1)
-
 typedef enum {
 	pri_dispatcher = 0,
 	pri_mutex = 1,

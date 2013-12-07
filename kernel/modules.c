@@ -76,7 +76,7 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr)
 		pri_server_middle,
 		KERNEL_STACK_SIZE,
 		NULL,
-		KERNEL_DOMAIN_ID
+		NULL
 	};
 
 	tskId = thread_create_auto(&pk_ctsk);
