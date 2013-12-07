@@ -73,7 +73,7 @@ static W read_exec_header(struct inode *ip, Elf32_Ehdr *elfp,
 static W load_text(W procid, struct inode *ip, Elf32_Phdr *text,
 		   ID task);
 static W load_data(W procid, struct inode *ip, Elf32_Phdr *data,
-		   ID task);
+		   ID task, void **last);
 
 
 
@@ -89,6 +89,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     Elf32_Phdr text, data;
     ID main_task;
     struct proc *procp;
+    void *last;
 #ifdef notdef
     printk("[PM] exec_program: path = \"%s\"\n", pathname);	/* */
 #endif
@@ -165,15 +166,16 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 #ifdef notdef
     dbg_printf("[PM] load data\n");
 #endif
-    error_no = load_data(procid, ip, &data, req->caller);
+    error_no = load_data(procid, ip, &data, req->caller, &last);
     if (error_no) {
 	fs_close_file(ip);
 	return (error_no);
     }
 
     /* heap */
-    error_no = process_create(procid, (VP) VADDR_HEAP, 0,
-	    USER_HEAP_MAX_ADDR - VADDR_HEAP);
+    error_no = process_create(procid, last, 0,
+	    USER_HEAP_MAX_ADDR - (UW)last);
+
 #ifdef DEBUG
     if (error_no) {
       dbg_printf("[EXEC]: vcre_reg return %d\n", error_no);
@@ -391,7 +393,7 @@ load_text(W procid, struct inode *ip, Elf32_Phdr *text, ID task)
  *
  */
 static W
-load_data(W procid, struct inode *ip, Elf32_Phdr *data, ID task)
+load_data(W procid, struct inode *ip, Elf32_Phdr *data, ID task, void **last)
 {
     W error_no;
     W rest_length;
@@ -406,6 +408,7 @@ load_data(W procid, struct inode *ip, Elf32_Phdr *data, ID task)
     size =
 	pageRoundUp(data->p_memsz +
 		(data->p_vaddr - pageRoundDown(data->p_vaddr)));
+    *last = (VP)(start + size);
 
     if (vmap(procid, (VP)start, size, true)) {
 #ifdef EXEC_DEBUG

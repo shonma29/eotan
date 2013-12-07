@@ -34,7 +34,4 @@ Version 2, June 1991
 #define MAX_KERNEL	(0xFFFFFFFFUL)
 #define KERNEL_SIZE	(MAX_KERNEL - MIN_KERNEL)
 
-/* マネージャータスクのヒープ領域の推奨値 */
-#define VADDR_HEAP	(0x10000000L)
-
 #endif				/* _CORE_CONFIG_H_ */
