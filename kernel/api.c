@@ -176,11 +176,6 @@ Version 2, June 1991
 
 #include <core.h>
 #include "func.h"
-#include "mpu/mpufunc.h"
-#include "mpu/msr.h"
-
-#define SVC_IF(x,n)	if_ ## x
-#define SVC_UNDEFINED		nodef
 
 static ER	nodef (VP argp);
 
@@ -194,12 +189,12 @@ static ER_UINT if_port_call(void *argp);
  */  
 static ER (*syscall_table[])(VP argp) =
 {
-  SVC_UNDEFINED,		/*    0 */
+  nodef,		/*    0 */
 
   /* 時間管理機能 */
-  SVC_IF (thread_delay, 1),	/*   1 */
+  if_thread_delay,	/*   1 */
 
-  SVC_IF (port_call, 4),	/*   2 */
+  if_port_call,	/*   2 */
 };
 
 #define NSYSCALL (sizeof (syscall_table) / sizeof (syscall_table[0]))

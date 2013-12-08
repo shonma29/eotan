@@ -17,7 +17,6 @@ Version 2, June 1991
 
 #include <core.h>
 #include <thread.h>
-#include <vm.h>
 #include <mm/segment.h>
 #include <boot/init.h>
 #include <mpu/memory.h>

@@ -26,7 +26,6 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <string.h>
-#include <vm.h>
 #include <nerve/config.h>
 #include <set/list.h>
 #include <set/tree.h>

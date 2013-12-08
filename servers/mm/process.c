@@ -28,7 +28,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <errno.h>
 #include <mm.h>
 #include <stdint.h>
-#include <vm.h>
 #include <boot/init.h>
 #include <core/options.h>
 #include <mm/segment.h>
