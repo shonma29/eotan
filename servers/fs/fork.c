@@ -85,8 +85,6 @@ static W proc_duplicate(struct proc * source, struct proc * destination);
 W proc_fork(struct proc *parent, struct proc *child, ID main_task, ID signal_task)
 {
     W error_no;
-/*   ID		main_task, signal_task;
- */
     thread_local_t local_data, local_par;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
@@ -114,12 +112,6 @@ W proc_fork(struct proc *parent, struct proc *child, ID main_task, ID signal_tas
     child->proc_ppid = parent->proc_pid;
     error_no = vmap(child->proc_pid, (thread_local_t*)LOCAL_ADDR,
 		sizeof(thread_local_t), true);
-    if (error_no) {
-	return error_no;
-    }
-
-    error_no = kcall->region_get(main_task, (thread_local_t*)LOCAL_ADDR,
-		     sizeof(thread_local_t), &local_data);
     if (error_no) {
 	return error_no;
     }
