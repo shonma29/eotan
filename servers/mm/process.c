@@ -36,6 +36,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/tree.h>
 #include "interface.h"
 #include "process.h"
+#include "../../kernel/mpu/mpufunc.h"
 
 #define getParent(type, p) ((ptr_t)p - offsetof(type, node))
 
@@ -176,18 +177,10 @@ int mm_process_destroy(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
-		list_t *list_src;
-		list_t *list_dest;
 		mm_process_t *dest;
 		mm_process_t *src = get_process((ID)args->arg1);
 
 		if (!src) {
-			reply->error_no = ESRCH;
-			break;
-		}
-
-		list_src = list_head(&(src->threads));
-		if (!list_src) {
 			reply->error_no = ESRCH;
 			break;
 		}
@@ -198,14 +191,10 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-		list_dest = list_head(&(dest->threads));
-		if (!list_dest) {
-			reply->error_no = ESRCH;
-			break;
-		}
-
-		if (kcall->region_duplicate((ID)(getMyThread(list_src)->node.key),
-				(ID)(getMyThread(list_dest)->node.key))) {
+		if (copy_user_pages(dest->directory, src->directory,
+				pageRoundUp((UW)(src->segments.heap.addr)
+						+ src->segments.heap.len)
+						>> BITS_OFFSET)) {
 			reply->error_no = EFAULT;
 			break;
 		}
@@ -455,8 +444,9 @@ int mm_thread_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		}
 
 		pk_ctsk.task = (FP)(args->arg2);
-		//TODO allocate page table
-		pk_ctsk.page_table = (VP)(args->arg2 + 1);
+		//TODO check NULL
+		p->directory = copy_kernel_page_table();
+		pk_ctsk.page_table = p->directory;
 
 		result = kcall->thread_create_auto(&pk_ctsk);
 		if (result < 0) {

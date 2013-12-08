@@ -44,7 +44,6 @@ typedef struct {
 	void (*pfree)(void *addr);
 	ER (*region_map)(ID id, VP start, UW size, W accmode);
 	ER (*region_unmap)(ID id, VP start, UW size);
-	ER (*region_duplicate)(ID src, ID dst);
 	ER (*region_get)(ID id, VP start, UW size, VP buf);
 	ER (*region_put)(ID id, VP start, UW size, VP buf);
 	ER (*mpu_copy_stack)(ID src, W esp, ID dst);

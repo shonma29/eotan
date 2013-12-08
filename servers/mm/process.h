@@ -43,7 +43,7 @@ typedef struct {
 	struct {
 		mm_segment_t heap;
 	} segments;
-	PTE *directory;
+	void *directory;
 	list_t threads;
 } mm_process_t;
 

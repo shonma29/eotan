@@ -28,45 +28,29 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
+#include <nerve/kcall.h>
 #include "paging.h"
 #include "func.h"
 
+static kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-PTE *copy_kernel_page_table(const PTE *src)
+
+PTE *copy_kernel_page_table(void)
 {
-	char *directory = (char*)palloc();
+	char *directory = (char*)(kcall->palloc());
 
 	if (directory) {
 		size_t n = (size_t)getDirectoryOffset((void*)SUPERVISOR_START)
 				* sizeof(PTE);
 
 		memset(directory, 0, n);
-		memcpy(directory + n, (char*)kern_p2v(src) + n, PAGE_SIZE - n);
+		memcpy(directory + n,
+				(char*)kern_p2v((void*)KTHREAD_DIR_ADDR) + n,
+				PAGE_SIZE - n);
+		directory = (char*)kern_v2p(directory);
 	}
 
-	return (PTE*)kern_v2p(directory);
-}
-
-void release_user_pages(PTE *directory)
-{
-	PTE *vdir = (PTE*)kern_p2v(directory);
-	size_t n = (size_t)getDirectoryOffset((void*)SUPERVISOR_START);
-	size_t i;
-
-	for (i = 0; i < n; i++)
-		if (is_present(vdir[i])) {
-			PTE *p = (PTE*)(vdir[i] & PAGE_ADDR_MASK);
-			PTE *vp = (PTE*)(kern_p2v(p));
-			size_t j;
-
-			for (j = 0; j < PTE_PER_PAGE; j++)
-				if (is_present(vp[j]))
-					pfree((void*)(vp[j] & PAGE_ADDR_MASK));
-
-			pfree(p);
-		}
-
-	pfree(directory);
+	return (PTE*)directory;
 }
 
 ER copy_user_pages(PTE *dest, const PTE *src, size_t cnt)
@@ -94,7 +78,7 @@ ER copy_user_pages(PTE *dest, const PTE *src, size_t cnt)
 			destp = (PTE*)((PTE)destp & PAGE_ADDR_MASK);
 
 		else {
-			destp = (PTE*)kern_v2p(palloc());
+			destp = (PTE*)kern_v2p(kcall->palloc());
 			if (!destp)
 				return E_NOMEM;
 
@@ -115,7 +99,7 @@ ER copy_user_pages(PTE *dest, const PTE *src, size_t cnt)
 				p = (char*)((PTE)p & PAGE_ADDR_MASK);
 
 			else {
-				p = (char*)kern_v2p(palloc());
+				p = (char*)kern_v2p(kcall->palloc());
 				if (!p)
 					return E_NOMEM;
 

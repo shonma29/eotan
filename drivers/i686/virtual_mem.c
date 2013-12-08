@@ -456,38 +456,6 @@ ER region_unmap(ID id, VP start, UW size)
 }
 
 /*
- * 指定したタスクのもつリージョンを複製する。
- *
- * 複製したリージョンは、全く別のものとして扱われる。
- * src, dst のどちらかのタスクがリージョンの領域を変更しても、もう片方
- * のタスクは影響を受けない。
- *
- */
-ER region_duplicate(ID src, ID dst)
-    /* src    複製するリージョンをもつタスク
-     * dst    リージョンの複製先のタスク
-     */
-{
-    thread_t *taskp, *dstp;
-
-#ifdef DEBUG
-    printk("region_duplicate %d %d\n", src, dst);
-#endif
-    taskp = (thread_t *) get_thread_ptr(src);
-    if (!taskp) {
-	return (E_PAR);
-    }
-    dstp = (thread_t *) get_thread_ptr(dst);
-    if (!dstp) {
-	return (E_PAR);
-    }
-
-    return copy_user_pages(dstp->mpu.cr3, taskp->mpu.cr3,
-//TODO this address is adhoc. fix
-	    pageRoundUp(USER_HEAP_MAX_ADDR) >> BITS_OFFSET);
-}
-
-/*
  * リージョンからの読み込み
  *
  * 任意のタスクの仮想メモリ領域からデータを読み込む。

@@ -139,7 +139,7 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid)
 			is_kthread(th)?
 					(VP)KTHREAD_DIR_ADDR
 					//TODO null check
-					:kern_v2p(copy_kernel_page_table((PTE*)KTHREAD_DIR_ADDR)));
+					:th->attr.page_table);
 
 	return E_OK;
 }

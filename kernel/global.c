@@ -75,7 +75,6 @@ static void kcall_initialize(void)
 
 	p->region_map = region_map;
 	p->region_unmap = region_unmap;
-	p->region_duplicate = region_duplicate;
 	p->region_get = region_get;
 	p->region_put = region_put;
 	p->mpu_copy_stack = mpu_copy_stack;
