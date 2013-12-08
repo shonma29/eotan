@@ -25,14 +25,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <mpu/config.h>
+#include <mpu/desc.h>
 #include "func.h"
 #include "sync.h"
 #include "mpu/handler.h"
 #include "mpu/interrupt.h"
 #include "mpu/mpufunc.h"
 
-static ER (*isr[MAX_IDT + 1])(void);
+static ER (*isr[IDT_MAX_ENTRY])(void);
 
 static ER dummy_handler(void);
 

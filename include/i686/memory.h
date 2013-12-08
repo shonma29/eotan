@@ -28,8 +28,8 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core/types.h>
 #include <stddef.h>
-#include <mpu/config.h>
 
+#define PAGE_SIZE (4096)
 #define MPU_MAX_PAGE (1024 * 1024)
 
 #define MPU_LOG_INT (5)
@@ -43,6 +43,8 @@ typedef UW PTE;
 #define MASK_PAGE ((1 << BITS_PAGE) - 1)
 #define BITS_OFFSET (12)
 #define MASK_OFFSET ((1 << BITS_OFFSET) - 1)
+
+#define SUPERVISOR_START 0x80000000
 
 static inline UW pageRoundDown(const UW value)
 {
@@ -76,17 +78,17 @@ static inline UW getOffset(const void *addr)
 
 static inline void *kern_p2v(const void *addr)
 {
-	return (void*)((UW)addr | MIN_KERNEL);
+	return (void*)((UW)addr | SUPERVISOR_START);
 }
 
 static inline void *kern_v2p(const void *addr)
 {
-	return (void*)((UW)addr & (~MIN_KERNEL));
+	return (void*)((UW)addr & (~SUPERVISOR_START));
 }
 
 static inline size_t pages(const size_t bytes)
 {
-	return (bytes + PAGE_SIZE - 1) >> PAGE_SHIFT;
+	return (bytes + PAGE_SIZE - 1) >> BITS_OFFSET;
 }
 
 #endif

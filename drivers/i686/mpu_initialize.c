@@ -27,7 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #include <string.h>
 #include <core.h>
-#include <mpu/config.h>
+#include <mpu/desc.h>
 #include <mpu/setting.h>
 #include "gate.h"
 #include "msr.h"
@@ -59,7 +59,7 @@ static void idt_initialize(void)
 	desc.attr = (dpl_kern << 5) | interruptGate32;
 	desc.offsetHigh = 0;
 
-	for (i = 0; i <= MAX_IDT; i++)
+	for (i = 0; i < IDT_MAX_ENTRY; i++)
 		*p++ = desc;
 
 	idt_load();
@@ -71,7 +71,7 @@ static void gdt_initialize(void)
 	tss_t *tss = (tss_t*)kern_v2p((VP)TSS_ADDR);
 
 	/* segments */
-	memset(p, 0, (MAX_GDT + 1) * sizeof(SegmentDescriptor));
+	memset(p, 0, GDT_MAX_ENTRY * sizeof(SegmentDescriptor));
 	gdt_set_segment(kern_code, 0, 0xfffff,
 			segmentCode, dpl_kern, ATTR_G_PAGE | ATTR_DB_32);
 	gdt_set_segment(kern_data, 0, 0xfffff,

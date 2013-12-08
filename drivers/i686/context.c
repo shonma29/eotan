@@ -16,7 +16,6 @@ Version 2, June 1991
 #include <local.h>
 #include <vm.h>
 #include <mm/segment.h>
-#include <mpu/config.h>
 #include <nerve/config.h>
 #include "delay.h"
 #include "func.h"

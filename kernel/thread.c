@@ -27,7 +27,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <string.h>
 #include <vm.h>
-#include <mpu/config.h>
 #include <nerve/config.h>
 #include <set/list.h>
 #include <set/tree.h>
@@ -99,12 +98,12 @@ ER_ID idle_initialize(void)
 		th->attr.page_table = NULL;
 		th->priority = th->attr.priority = MAX_PRIORITY;
 		//th->attr.arg = NULL;
-		//th->attr.kstack_tail = (void*)KERN_STACK_ADDR;
+		//th->attr.kstack_tail = (void*)CORE_STACK_ADDR;
 		//th->attr.entry = kern_start;
 
 		/* kthread don't need to set tss */
 		//context_set_kernel_sp(&(th->mpu), th->attr.kstack_tail);
-		context_set_page_table(&(th->mpu), (VP)PAGE_DIR_ADDR);
+		context_set_page_table(&(th->mpu), (VP)KTHREAD_DIR_ADDR);
 
 		running = th;
 		ready_enqueue(th->priority, &(th->queue));
@@ -139,9 +138,9 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid)
 	context_set_kernel_sp(&(th->mpu), th->attr.kstack_tail);
 	context_set_page_table(&(th->mpu),
 			is_kthread(th)?
-					(VP)PAGE_DIR_ADDR
+					(VP)KTHREAD_DIR_ADDR
 					//TODO null check
-					:kern_v2p(copy_kernel_page_table((PTE*)PAGE_DIR_ADDR)));
+					:kern_v2p(copy_kernel_page_table((PTE*)KTHREAD_DIR_ADDR)));
 
 	return E_OK;
 }
@@ -153,7 +152,7 @@ ER_ID thread_create_auto(T_CTSK *pk_ctsk)
 	if (pk_ctsk->tskatr & TA_ASM)
 		return E_RSATR;
 
-	if (pk_ctsk->stksz != KERNEL_STACK_SIZE)
+	if (pk_ctsk->stksz != KTHREAD_STACK_SIZE)
 		return E_PAR;
 
 	enter_serialize();

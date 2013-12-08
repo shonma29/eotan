@@ -43,7 +43,7 @@ static void set_frame_buffer(PTE *dir);
 void paging_reset(void)
 {
 	MemoryMap *mm = (MemoryMap*)MEMORY_MAP_ADDR;
-	PTE *dir = (PTE*)kern_p2v((void*)PAGE_DIR_ADDR);
+	PTE *dir = (PTE*)kern_p2v((void*)KTHREAD_DIR_ADDR);
 	UB *addr = (UB*)0;
 	size_t i;
 	size_t max = (mm->max_pages + PTE_PER_PAGE - 1) / PTE_PER_PAGE;

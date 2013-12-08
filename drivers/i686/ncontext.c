@@ -159,7 +159,7 @@ void context_switch(thread_t *prev, thread_t *next)
 
 void context_reset_page_table()
 {
-	paging_set_directory((VP)PAGE_DIR_ADDR);
+	paging_set_directory((VP)KTHREAD_DIR_ADDR);
 	current_page_table = NULL;
 }
 

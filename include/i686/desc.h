@@ -1,3 +1,5 @@
+#ifndef _MPU_DESC_H_
+#define _MPU_DESC_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -25,34 +27,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-.text
+#define GDT_ADDR 0x80001000
+#define GDT_MAX_ENTRY (6)
 
-.globl gdt_load
-.globl idt_load
+#define IDT_ADDR 0x80001800
+#define IDT_MAX_ENTRY (48)
 
-.set GDT_MAX_ENTRY, 6
-.set IDT_MAX_ENTRY, 48
-
-.set GDT_ADDR, 0x80001000
-.set IDT_ADDR, 0x80001800
-
-
-gdt_load:
-	lgdt gdt_ptr
-	ret
-
-idt_load:
-	lidt idt_ptr
-	ret
-
-
-.data
-.align 2
-
-gdt_ptr:
-	.word GDT_MAX_ENTRY * 8 - 1
-	.long GDT_ADDR
-
-idt_ptr:
-	.word IDT_MAX_ENTRY * 8 - 1
-	.long IDT_ADDR
+#endif

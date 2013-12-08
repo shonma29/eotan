@@ -27,15 +27,10 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <stddef.h>
 #include <string.h>
-#include <mm/segment.h>
 #include <mpu/memory.h>
-#include <nerve/config.h>
 #include <thread.h>
-#include "paging.h"
 #include "mpufunc.h"
 #include "func.h"
-
-static void release_user_pages(PTE *directory);
 
 
 ER vmemcpy(const thread_t *th, const void *to, const void *from,
@@ -99,109 +94,7 @@ void *getPageAddress(const PTE *dir, const void *addr)
 	return NULL;
 }
 
-PTE *copy_kernel_page_table(const PTE *src)
-{
-	char *directory = (char*)palloc();
-
-	if (directory) {
-		size_t n = (size_t)getDirectoryOffset((void*)MIN_KERNEL)
-				* sizeof(PTE);
-
-		memset(directory, 0, n);
-		memcpy(directory + n, (char*)kern_p2v(src) + n, PAGE_SIZE - n);
-	}
-
-	return (PTE*)kern_v2p(directory);
-}
-
-static void release_user_pages(PTE *directory)
-{
-	PTE *vdir = (PTE*)kern_p2v(directory);
-	size_t n = (size_t)getDirectoryOffset((void*)MIN_KERNEL);
-	size_t i;
-
-	for (i = 0; i < n; i++)
-		if (is_present(vdir[i])) {
-			PTE *p = (PTE*)(vdir[i] & PAGE_ADDR_MASK);
-			PTE *vp = (PTE*)(kern_p2v(p));
-			size_t j;
-
-			for (j = 0; j < PTE_PER_PAGE; j++)
-				if (is_present(vp[j]))
-					pfree((void*)(vp[j] & PAGE_ADDR_MASK));
-
-			pfree(p);
-		}
-
-	pfree(directory);
-}
-
-ER copy_user_pages(PTE *dest, const PTE *src, size_t cnt)
-{
-	PTE *srcdir = (PTE*)kern_p2v(src);
-	PTE *destdir = (PTE*)kern_p2v(dest);
-	size_t n = (size_t)getDirectoryOffset((void*)MIN_KERNEL);
-	size_t i;
-
-	for (i = 0; (i < n) && (cnt > 0); i++) {
-		PTE *srcp = (PTE*)(srcdir[i]);
-		PTE *destp;
-		size_t j;
-
-		if (!is_present((PTE)srcp)) {
-			if (cnt <= PTE_PER_PAGE)
-				break;
-
-			cnt -= PTE_PER_PAGE;
-			continue;
-		}
-
-		destp = (PTE*)(destdir[i]);
-		if (is_present((PTE)destp))
-			destp = (PTE*)((PTE)destp & PAGE_ADDR_MASK);
-
-		else {
-			destp = (PTE*)kern_v2p(palloc());
-			if (!destp)
-				return E_NOMEM;
-
-			destdir[i] = calc_pte(destp, ATTR_USER);
-		}
-
-		srcp = (PTE*)(kern_p2v((PTE*)((PTE)srcp & PAGE_ADDR_MASK)));
-		destp = (PTE*)(kern_p2v(destp));
-
-		for (j = 0; (j < PTE_PER_PAGE) && (cnt > 0); cnt--, j++) {
-			char *p;
-
-			if (!is_present(srcp[j]))
-				continue;
-
-			p = (char*)(destp[j]);
-			if (is_present((PTE)p))
-				p = (char*)((PTE)p & PAGE_ADDR_MASK);
-
-			else {
-				p = (char*)kern_v2p(palloc());
-				if (!p)
-					return E_NOMEM;
-
-				destp[j] = calc_pte(p, ATTR_USER);
-			}
-
-			memcpy(kern_p2v(p),
-					kern_p2v((char*)(srcp[j] & PAGE_ADDR_MASK)),
-					PAGE_SIZE);
-		}
-	}
-
-	return E_OK;
-}
-
 void release_memory(thread_t *th)
 {
-	if (!is_kthread(th))
-		release_user_pages(th->mpu.cr3);
-
-	pfree((VP)kern_v2p((char*)(th->attr.kstack_tail)) - KERNEL_STACK_SIZE);
+	pfree((VP)kern_v2p((char*)(th->attr.kstack_tail)) - KTHREAD_STACK_SIZE);
 }

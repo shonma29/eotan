@@ -242,7 +242,7 @@ void start(VP_INT exinf)
 		NULL,
 		(FP)keyboard_accept,
 		pri_server_middle,
-		KERNEL_STACK_SIZE,
+		KTHREAD_STACK_SIZE,
 		NULL,
 		NULL
 	};

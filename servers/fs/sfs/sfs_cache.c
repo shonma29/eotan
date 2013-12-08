@@ -20,7 +20,6 @@ Version 2, June 1991
  */
 
 #include <string.h>
-#include <mpu/config.h>
 #include <mpu/memory.h>
 #include "../fs.h"
 #include "sfs_func.h"

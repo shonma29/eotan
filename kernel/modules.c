@@ -43,7 +43,7 @@ static void release_others(const void *head, const void *end);
 
 void run_init_program(void)
 {
-	ModuleHeader *h = (ModuleHeader*)(MODULES_ADDR | MIN_KERNEL);
+	ModuleHeader *h = (ModuleHeader*)(kern_p2v((void*)MODULES_ADDR));
 
 	while (h->type != mod_end) {
 		switch (h->type) {
@@ -74,7 +74,7 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr)
 		NULL,
 		(FP)(eHdr->e_entry),
 		pri_server_middle,
-		KERNEL_STACK_SIZE,
+		KTHREAD_STACK_SIZE,
 		NULL,
 		NULL
 	};
@@ -105,7 +105,7 @@ static void set_initrd(ModuleHeader *h)
 //TODO release others (BIOS workarea, kernel stack, ...)
 static void release_others(const void *head, const void *end)
 {
-	UW addr = (UW)head & ~((1 << PAGE_SHIFT) - 1);
+	UW addr = (UW)head & ~((1 << BITS_OFFSET) - 1);
 	UW max = pages((UW)end - addr);
 	size_t i;
 

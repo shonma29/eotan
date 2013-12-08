@@ -31,8 +31,11 @@ For more information, please refer to <http://unlicense.org/>
 #define BOOT_INFO_ADDR 0x80003000
 #define MEMORY_MAP_ADDR 0x80180000
 
-#define KERN_STACK_ADDR 0x80008000
-#define KERN_STACK_SIZE (16 * 1024)
+#define CORE_STACK_ADDR 0x80008000
+#define CORE_STACK_SIZE (16 * 1024)
+
+#define KTHREAD_DIR_ADDR 0x00002000
+#define KTHREAD_STACK_SIZE (4 * 1024)
 
 #define USER_STACK_INITIAL_SIZE (16 * 1024)
 #define USER_STACK_MAX_SIZE (1 * 1024 * 1024)

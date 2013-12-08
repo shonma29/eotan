@@ -155,7 +155,6 @@ Version 2, June 1991
 #include <string.h>
 #include <core.h>
 #include <mm/segment.h>
-#include <mpu/config.h>
 #include <mpu/memory.h>
 #include <func.h>
 #include <thread.h>
@@ -219,7 +218,7 @@ static BOOL vmap(thread_t * task, UW vpage, UW ppage, W accmode)
     UW dirindex;
     UW pageindex;
 
-    if (vpage >= MIN_KERNEL)
+    if (vpage >= SUPERVISOR_START)
 	return TRUE;
 
 #ifdef DEBUG
@@ -227,9 +226,8 @@ static BOOL vmap(thread_t * task, UW vpage, UW ppage, W accmode)
 #endif				/* DEBUG */
     dirent = (I386_DIRECTORY_ENTRY *) (task->mpu.cr3);
     dirent = (I386_DIRECTORY_ENTRY*)(kern_p2v(dirent));
-    dirindex = vpage & DIR_MASK;
-    dirindex = dirindex >> DIR_SHIFT;
-    pageindex = (vpage & PAGE_MASK) >> PAGE_SHIFT;
+    dirindex = (vpage >> (BITS_PAGE + BITS_OFFSET)) & MASK_PAGE;
+    pageindex = (vpage >> BITS_OFFSET) & MASK_PAGE;
 
 #ifdef DEBUG
     printk("dirindex = %d, pageindex = %d\n", dirindex, pageindex);
@@ -244,10 +242,10 @@ static BOOL vmap(thread_t * task, UW vpage, UW ppage, W accmode)
 	}
 #ifdef DEBUG
 	printk("dir alloc(newp). frame = 0x%x ",
-	       ((UW) pageent & 0x0fffffff) >> PAGE_SHIFT);
+	       ((UW) pageent & 0x0fffffff) >> BITS_OFFSET);
 #endif				/* DEBUG */
 	dp = &dirent[dirindex];
-	dp->frame_addr = (UW)kern_v2p(pageent) >> PAGE_SHIFT;
+	dp->frame_addr = (UW)kern_v2p(pageent) >> BITS_OFFSET;
 	dp->present = 1;
 	dp->read_write = 1;
 	dp->u_and_s = accmode;
@@ -258,14 +256,14 @@ static BOOL vmap(thread_t * task, UW vpage, UW ppage, W accmode)
 	dp->zero1 = 0;
     } else {
 	pageent =
-	    (I386_PAGE_ENTRY *) (dirent[dirindex].frame_addr << PAGE_SHIFT);
+	    (I386_PAGE_ENTRY *) (dirent[dirindex].frame_addr << BITS_OFFSET);
 #ifdef DEBUG
 	printk("dir alloc(old). frame = 0x%x ",
 	       dirent[dirindex].frame_addr);
 #endif				/* DEBUG */
     }
 
-    if ((UW) pageent <= KERNEL_SIZE) {
+    if ((UW) pageent < SUPERVISOR_START) {
 	pageent = (I386_PAGE_ENTRY*)(kern_p2v(pageent));
     }
 
@@ -275,7 +273,7 @@ static BOOL vmap(thread_t * task, UW vpage, UW ppage, W accmode)
 	/*    return(FALSE); */
     }
     pp = &pageent[pageindex];
-    pp->frame_addr = (UW)kern_v2p((void*)ppage) >> PAGE_SHIFT;
+    pp->frame_addr = (UW)kern_v2p((void*)ppage) >> BITS_OFFSET;
     pp->present = 1;
     pp->read_write = 1;
     pp->u_and_s = accmode;
@@ -309,9 +307,8 @@ static ER vunmap(thread_t * task, UW vpage)
 
     dirent = (I386_DIRECTORY_ENTRY *) (task->mpu.cr3);
     dirent = (I386_DIRECTORY_ENTRY*)(kern_p2v(dirent));
-    dirindex = vpage & DIR_MASK;
-    dirindex = dirindex >> DIR_SHIFT;
-    pageindex = (vpage & PAGE_MASK) >> PAGE_SHIFT;
+    dirindex = (vpage >> (BITS_PAGE + BITS_OFFSET)) & MASK_PAGE;
+    pageindex = (vpage >> BITS_OFFSET) & MASK_PAGE;
 
 #ifdef DEBUG
     printk("dirindex = %d, pageindex = %d\n", dirindex, pageindex);
@@ -322,10 +319,10 @@ static ER vunmap(thread_t * task, UW vpage)
 	return (FALSE);
     } else {
 	pageent =
-	    (I386_PAGE_ENTRY *) (dirent[dirindex].frame_addr << PAGE_SHIFT);
+	    (I386_PAGE_ENTRY *) (dirent[dirindex].frame_addr << BITS_OFFSET);
     }
 
-    if ((UW) pageent <= KERNEL_SIZE) {
+    if ((UW) pageent < SUPERVISOR_START) {
 	pageent = (I386_PAGE_ENTRY*)(kern_p2v(pageent));
     }
 
@@ -333,7 +330,7 @@ static ER vunmap(thread_t * task, UW vpage)
 	return (FALSE);
     }
 
-    ppage = (UW)kern_v2p((void*)(pageent[pageindex].frame_addr << PAGE_SHIFT));
+    ppage = (UW)kern_v2p((void*)(pageent[pageindex].frame_addr << BITS_OFFSET));
     /*TODO handle error */
     pfree((VP) ppage);
     pageent[pageindex].present = 0;
@@ -406,7 +403,7 @@ ER region_map(ID id, VP start, UW size, W accmode)
 #endif
 	return (E_PAR);
     }
-
+printk("region_map: %d %p %x %x\n", id, start, size, accmode);
     size = pages(size);
     start = (VP)pageRoundDown((UW)start);
     if (pmemfree() < size)
@@ -418,7 +415,7 @@ ER region_map(ID id, VP start, UW size, W accmode)
 	    res = E_NOMEM;
 	    break;
 	}
-	if (vmap(taskp, ((UW) start + (counter << PAGE_SHIFT)),
+	if (vmap(taskp, ((UW) start + (counter << BITS_OFFSET)),
 		 (UW) kern_v2p(pmem), accmode) == FALSE) {
 	    pfree((VP) kern_v2p(pmem));
 	    res = E_SYS;
@@ -427,7 +424,7 @@ ER region_map(ID id, VP start, UW size, W accmode)
     }
     if (res != E_OK) {
 	for (i = 0; i < counter; ++i) {
-	    vunmap(taskp, (UW) start + (i << PAGE_SHIFT));
+	    vunmap(taskp, (UW) start + (i << BITS_OFFSET));
 	}
     }
     return (res);
@@ -449,8 +446,8 @@ ER region_unmap(ID id, VP start, UW size)
     size = pageRoundUp(size);
     start = (VP)pageRoundDown((UW)start);
 
-    for (counter = 0; counter < (size >> PAGE_SHIFT); counter++) {
-	if (vunmap(taskp, ((UW) start + (counter << PAGE_SHIFT))) == FALSE) {
+    for (counter = 0; counter < (size >> BITS_OFFSET); counter++) {
+	if (vunmap(taskp, ((UW) start + (counter << BITS_OFFSET))) == FALSE) {
 	    return (E_SYS);
 	}
     }

@@ -175,7 +175,6 @@ Version 2, June 1991
  */
 
 #include <core.h>
-#include <mpu/config.h>
 #include "func.h"
 #include "mpu/mpufunc.h"
 #include "mpu/msr.h"

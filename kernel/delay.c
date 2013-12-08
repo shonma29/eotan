@@ -26,7 +26,6 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <kthread.h>
-#include <mpu/config.h>
 #include <mpu/io.h>
 #include <services.h>
 #include <nerve/config.h>
@@ -55,7 +54,7 @@ static ER_ID attach(void)
 {
 	T_CTSK pk_ctsk = {
 		TA_HLNG, 0, process, pri_dispatcher,
-		KERNEL_STACK_SIZE, NULL, NULL
+		KTHREAD_STACK_SIZE, NULL, NULL
 	};
 
 	lfq_initialize(&(((system_info_t*)SYSTEM_INFO_ADDR)->kqueue),

@@ -33,14 +33,14 @@ For more information, please refer to <http://unlicense.org/>
 #include <boot/vesa.h>
 #endif
 #include <boot/modules.h>
-#include <mpu/config.h>
+#include <mpu/desc.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
 #include <memory_map.h>
 #include <mpu/mpufunc.h>
 
-#define PAGE_OFFSET_MASK (4096ULL - 1ULL)
-#define PAGE_ADDRESS_MASK ~(4096ULL - 1ULL);
+#define DPAGE_OFFSET_MASK (4096ULL - 1ULL)
+#define DPAGE_ADDR_MASK ~(4096ULL - 1ULL);
 #define OVER_INT 0x100000000ULL
 
 static MemoryMap *mm = (MemoryMap*)MEMORY_MAP_ADDR;
@@ -71,12 +71,12 @@ void memory_initialize(void)
 	/* keep GDT, IDT */
 	map_set_use(kern_v2p((void*)GDT_ADDR), 1);
 	/* keep page directory */
-	map_set_use((void*)PAGE_DIR_ADDR, 1);
+	map_set_use((void*)KTHREAD_DIR_ADDR, 1);
 	/* keep boot infomation */
 	map_set_use(kern_v2p((void*)BOOT_INFO_ADDR), 1);
 	/* keep kernel stack */
-	map_set_use(kern_v2p((void*)(KERN_STACK_ADDR - KERN_STACK_SIZE)),
-			pages(KERN_STACK_SIZE));
+	map_set_use(kern_v2p((void*)(CORE_STACK_ADDR - CORE_STACK_SIZE)),
+			pages(CORE_STACK_SIZE));
 	/* keep modules */
 	map_set_use((void*)MODULES_ADDR,
 			pages((UW)setModules() - MODULES_ADDR));
@@ -127,7 +127,7 @@ static ER map_set_use(const void *addr, const size_t pages)
 	if (!pages)
 		return E_PAR;
 
-	i = (UW)addr >> PAGE_SHIFT;
+	i = (UW)addr >> BITS_OFFSET;
 	if (i >= mm->max_pages)
 		return E_PAR;
 
@@ -249,10 +249,10 @@ static UW getMemoryRange(MemoryInfo *p)
 
 	base = ((UD)(p->baseHigh) << 32) | (UD)(p->baseLow);
 	size = ((UD)(p->sizeHigh) << 32) | (UD)(p->sizeLow);
-	end = ((UD)base + (UD)size) & PAGE_ADDRESS_MASK;
+	end = ((UD)base + (UD)size) & DPAGE_ADDR_MASK;
 
-	if ((UD)base & PAGE_OFFSET_MASK)
-		base = (UD)base & PAGE_ADDRESS_MASK;
+	if ((UD)base & DPAGE_OFFSET_MASK)
+		base = (UD)base & DPAGE_ADDR_MASK;
 
 	if (base > end)
 		return 0;
@@ -263,7 +263,7 @@ static UW getMemoryRange(MemoryInfo *p)
 
 	p->baseLow = (UD)base & 0xffffffff;
 
-	return (((UD)diff + PAGE_SIZE - 1) >> PAGE_SHIFT) & 0xffffffff;
+	return (((UD)diff + PAGE_SIZE - 1) >> BITS_OFFSET) & 0xffffffff;
 }
 
 static void *setModules(void)

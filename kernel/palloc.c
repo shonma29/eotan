@@ -27,7 +27,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <limits.h>
 #include <stddef.h>
-#include <mpu/config.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
 #include "func.h"
@@ -59,9 +58,9 @@ void *palloc(void)
 				leave_serialize();
 
 				addr = ((i << MPU_LOG_INT) | bit)
-						<< PAGE_SHIFT;
+						<< BITS_OFFSET;
 				//TODO why here?
-				addr |= MIN_KERNEL;
+				addr = (UW)kern_p2v((void*)addr);
 				//TODO why here?
 				pzero((UW*)addr);
 
@@ -99,7 +98,7 @@ static void pzero(UW *p)
 
 void pfree(void *addr)
 {
-	size_t i = (size_t)addr >> (PAGE_SHIFT + MPU_LOG_INT);
+	size_t i = (size_t)addr >> (BITS_OFFSET + MPU_LOG_INT);
 	UW bit;
 
 	if (i >= mm->max_blocks) {
@@ -107,7 +106,7 @@ void pfree(void *addr)
 		return;// E_PAR;
 	}
 
-	bit = 1 << (((UW)addr >> PAGE_SHIFT) & BITS_MASK);
+	bit = 1 << (((UW)addr >> BITS_OFFSET) & BITS_MASK);
 
 	enter_serialize();
 	if (mm->map[i] & bit) {

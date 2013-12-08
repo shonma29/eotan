@@ -435,7 +435,7 @@ int mm_thread_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			NULL,
 			NULL,
 			pri_user_foreground,
-			KERNEL_STACK_SIZE,
+			KTHREAD_STACK_SIZE,
 			NULL,
 			0
 		};

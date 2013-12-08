@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <mpu/config.h>
+#include <mpu/desc.h>
 #include "gate.h"
 #include "mpufunc.h"
 

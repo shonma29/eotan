@@ -20,7 +20,6 @@ Version 2, June 1991
 #include <vm.h>
 #include <mm/segment.h>
 #include <boot/init.h>
-#include <mpu/config.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>

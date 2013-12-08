@@ -89,7 +89,10 @@ extern void panic(char *msg);
 extern void *getPageAddress(const PTE *dir, const void *addr);
 extern ER vmemcpy(const thread_t *th, const void *to, const void *from,
 		const size_t bytes);
+
+/* memory.c */
 extern PTE *copy_kernel_page_table(const PTE *src);
+extern void release_user_pages(PTE *directory);
 extern ER copy_user_pages(PTE *dest, const PTE *src, size_t cnt);
 extern void release_memory(thread_t *th);
 

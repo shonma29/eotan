@@ -28,7 +28,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <stddef.h>
 #include <string.h>
 #include <boot/init.h>
-#include <mpu/config.h>
 #include <nerve/global.h>
 #include <nerve/kcall.h>
 #include <set/hash.h>

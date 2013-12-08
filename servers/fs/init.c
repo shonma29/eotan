@@ -28,7 +28,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 #include <boot/init.h>
 #include <mm/segment.h>
-#include <mpu/config.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
 #include "../../lib/libserv/libmm.h"

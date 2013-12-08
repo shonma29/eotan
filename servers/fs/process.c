@@ -124,7 +124,6 @@ Version 2, June 1991
 #include <local.h>
 #include <string.h>
 #include <boot/init.h>
-#include <mpu/config.h>
 #include <nerve/kcall.h>
 #include "fs.h"
 #include "../../lib/libserv/libmm.h"

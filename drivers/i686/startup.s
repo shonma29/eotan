@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 .set SELECTOR_KERN_CODE, 0x08
 .set SELECTOR_KERN_DATA, 0x10
 
-.set KERN_STACK_ADDR, 0x80008000
+.set CORE_STACK_ADDR, 0x80008000
 
 
 startup:
@@ -51,5 +51,5 @@ startup:
 .align 2
 
 stack_ptr:
-	.long KERN_STACK_ADDR
+	.long CORE_STACK_ADDR
 	.word SELECTOR_KERN_DATA
