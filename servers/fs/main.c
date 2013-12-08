@@ -111,7 +111,7 @@ static void banner(void);
  *
  *   要求の受けつけから処理がおわるまでは他の要求は受け付けない。
  */
-int main(void)
+void start(VP_INT exinf)
 {
     struct posix_request request;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
@@ -119,12 +119,12 @@ int main(void)
     if (init_port() == FALSE) {
 	dbg_printf("[FS] Cannot allocate port.\n");
 	kcall->thread_end_and_destroy();
-	return FALSE;
+	return;
     }
 
     if (!device_init()) {
 	kcall->thread_end_and_destroy();
-	return FALSE;
+	return;
     }
 
     /* 各機能単位での初期化

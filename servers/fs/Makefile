@@ -29,7 +29,7 @@ include Makefile.in
 
 CFLAGS += -I kernel -I lib/libserv
 ENTRY_ADDR = 0x80200000
-ENTRY_FUNC = startup
+ENTRY_FUNC = start
 CSRCS += $(wildcard $(WD)/sfs/*.c)
 CSRCS += $(wildcard $(WD)/posix-server/*.c)
 
