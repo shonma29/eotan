@@ -116,6 +116,9 @@ void process_initialize(void)
 int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
+		size_t start;
+		size_t end;
+		list_t *list;
 		mm_process_t *p = get_process((ID)args->arg1);
 
 		if (!p) {
@@ -123,9 +126,24 @@ int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-		p->segments.heap.addr = (void*)(pageRoundDown(args->arg2));
-		p->segments.heap.len = (size_t)(pageRoundUp(args->arg3));
-		p->segments.heap.max = (size_t)(pageRoundUp(args->arg4));
+		list = list_head(&(p->threads));
+		if (!list) {
+			reply->error_no = ESRCH;
+			break;
+		}
+
+		start = pageRoundDown(args->arg2);
+		end = pageRoundUp((size_t)(args->arg2) + (size_t)(args->arg3));
+
+		if (kcall->region_map((ID)(getMyThread(list)->node.key),
+				(VP)start, end - start, true)) {
+			reply->error_no = ESVC;
+			break;
+		}
+
+		p->segments.heap.addr = (void*)end;
+		p->segments.heap.len = 0;
+		p->segments.heap.max = pageRoundUp(args->arg4) - end;
 		p->segments.heap.attr = type_heap;
 
 		reply->error_no = EOK;
@@ -163,6 +181,9 @@ int mm_process_destroy(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
+		p->segments.heap.addr = NULL;
+		p->segments.heap.len = 0;
+		p->segments.heap.max = 0;
 		p->segments.heap.attr = attr_nil;
 
 		reply->error_no = EOK;

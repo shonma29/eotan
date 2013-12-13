@@ -29,7 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <mm/segment.h>
 
-extern int process_create(ID pid, VP addr, W len, W max);
+extern int process_create(ID pid, VP addr, size_t initial_len, VP heap_end);
 extern int process_destroy(ID pid);
 extern int process_duplicate(ID src_process, ID dest_process);
 extern int process_copy_stack(ID src_thread, W esp, ID dest_thread);

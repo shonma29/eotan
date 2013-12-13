@@ -71,7 +71,7 @@ static W read_exec_header(struct inode *ip, Elf32_Ehdr *elfp,
 static W load_text(W procid, struct inode *ip, Elf32_Phdr *text,
 		   ID task);
 static W load_data(W procid, struct inode *ip, Elf32_Phdr *data,
-		   ID task, void **last);
+		   ID task);
 
 
 
@@ -87,7 +87,6 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     Elf32_Phdr text, data;
     ID main_task;
     struct proc *procp;
-    void *last;
 #ifdef notdef
     printk("[PM] exec_program: path = \"%s\"\n", pathname);	/* */
 #endif
@@ -148,6 +147,27 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 	dbg_printf("[FS] process_destroy failed\n");
     }
 
+    error_no = process_create(procid, (VP)(text.p_vaddr),
+	    (size_t)(data.p_vaddr) + data.p_memsz - (UW)(text.p_vaddr),
+	    (VP)USER_HEAP_MAX_ADDR);
+    if (error_no) {
+	fs_close_file(ip);
+	return (error_no);
+    }
+
+#ifdef DEBUG
+    if (error_no) {
+      dbg_printf("[EXEC]: vcre_reg return %d\n", error_no);
+    }
+    {
+      mm_segment_t reg;
+
+      error_no = vsts_reg(req->caller, seg_heap, (VP) & reg);
+      dbg_printf("[EXEC] err = %d sa %x, min %x, max %x\n",
+		 error_no, reg.addr, reg.len, reg.max);
+    }
+#endif
+
     /* テキスト領域をメモリに入れる
      */
 #ifdef notdef
@@ -164,28 +184,12 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 #ifdef notdef
     dbg_printf("[PM] load data\n");
 #endif
-    error_no = load_data(procid, ip, &data, req->caller, &last);
+    error_no = load_data(procid, ip, &data, req->caller);
     if (error_no) {
 	fs_close_file(ip);
 	return (error_no);
     }
 
-    /* heap */
-    error_no = process_create(procid, last, 0,
-	    USER_HEAP_MAX_ADDR - (UW)last);
-
-#ifdef DEBUG
-    if (error_no) {
-      dbg_printf("[EXEC]: vcre_reg return %d\n", error_no);
-    }
-    {
-      mm_segment_t reg;
-
-      error_no = vsts_reg(req->caller, seg_heap, (VP) & reg);
-      dbg_printf("[EXEC] err = %d sa %x, min %x, max %x\n",
-		 error_no, reg.addr, reg.len, reg.max);
-    }
-#endif
 #if 0
     {
 	int stsize = req->param.par_execve.stsize, i;
@@ -349,13 +353,6 @@ load_text(W procid, struct inode *ip, Elf32_Phdr *text, ID task)
 	pageRoundUp(text->p_memsz +
 		(text->p_vaddr - pageRoundDown(text->p_vaddr)));
 
-    if (vmap(procid, (VP)start, size, true)) {
-#ifdef EXEC_DEBUG
-	dbg_printf("ERROR: alloc memory\n");
-#endif
-	return (EPERM);
-    }
-
     for (rest_length = text->p_filesz, offset = text->p_offset, vaddr =
 	 text->p_vaddr; rest_length > 0;
 	 rest_length -= PAGE_SIZE, vaddr += PAGE_SIZE, offset += read_size) {
@@ -391,7 +388,7 @@ load_text(W procid, struct inode *ip, Elf32_Phdr *text, ID task)
  *
  */
 static W
-load_data(W procid, struct inode *ip, Elf32_Phdr *data, ID task, void **last)
+load_data(W procid, struct inode *ip, Elf32_Phdr *data, ID task)
 {
     W error_no;
     W rest_length;
@@ -406,14 +403,6 @@ load_data(W procid, struct inode *ip, Elf32_Phdr *data, ID task, void **last)
     size =
 	pageRoundUp(data->p_memsz +
 		(data->p_vaddr - pageRoundDown(data->p_vaddr)));
-    *last = (VP)(start + size);
-
-    if (vmap(procid, (VP)start, size, true)) {
-#ifdef EXEC_DEBUG
-	dbg_printf("ERROR: alloc memory\n");
-#endif
-	return (EPERM);
-    }
 
     for (rest_length = data->p_filesz, offset = data->p_offset, vaddr =
 	 data->p_vaddr; rest_length > 0;
