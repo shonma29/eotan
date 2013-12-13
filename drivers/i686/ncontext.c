@@ -163,12 +163,10 @@ void context_reset_page_table()
 	current_page_table = NULL;
 }
 
-void context_reset_page_cache(const thread_t *task, const VP addr)
+void context_reset_page_cache(const VP page_table, const VP addr)
 {
-	if (is_kthread(task)
-			|| (task->attr.page_table == current_page_table)) {
+	if (page_table == current_page_table)
 		tlb_flush(addr);
-	}
 }
 
 void create_context(thread_t *th)

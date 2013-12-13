@@ -42,7 +42,7 @@ static void create_user_stack(thread_t * tsk)
 
     /* 物理メモリの割り当て */
     tsk->attr.ustack_tail = (VP)((UW)(tsk->ustack.addr) + tsk->ustack.max);
-    err = region_map(thread_id(tsk),
+    err = region_map(tsk->attr.page_table,
     	    (VP)((UW)(tsk->attr.ustack_tail) - tsk->ustack.len),
 	    tsk->ustack.len, true);
 
@@ -66,8 +66,12 @@ ER mpu_copy_stack(ID src, W esp, ID dst)
 	return (E_NOEXS);
     }
 
-    enter_critical();
     dst_tsk = get_thread_ptr(dst);
+    if (!dst_tsk) {
+	return (E_NOEXS);
+    }
+
+    enter_critical();
 
     /* dst task に新しいスタックポインタを割り付ける */
     create_user_stack(dst_tsk);
@@ -117,7 +121,7 @@ ER context_page_fault_handler(void)
     if (running->ustack.attr &&
 	    (((UW) running->ustack.addr <= addr) &&
 	    (addr <= ((UW) running->ustack.addr + running->ustack.max)))) {
-	ER result = region_map(thread_id(running), (VP) addr, PAGE_SIZE, true);
+	ER result = region_map(running->attr.page_table, (VP) addr, PAGE_SIZE, true);
 
 	if (result == E_OK) {
 	    /* ページフォルト処理に成功した */

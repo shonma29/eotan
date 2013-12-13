@@ -48,7 +48,9 @@ static tree_t thread_tree;
 
 static mm_process_t *get_process(const ID pid);
 static mm_thread_t *get_thread(const ID tid);
+#if 0
 static mm_thread_t *getMyThread(list_t *brothers);
+#endif
 static void process_clear(mm_process_t *p);
 static void thread_clear(mm_thread_t *th, mm_process_t *p);
 
@@ -65,12 +67,12 @@ static mm_thread_t *get_thread(const ID tid)
 
 	return node? (mm_thread_t*)getParent(mm_thread_t, node):NULL;
 }
-
+#if 0
 static mm_thread_t *getMyThread(list_t *p)
 {
 	return (mm_thread_t*)((ptr_t)p - offsetof(mm_thread_t, brothers));
 }
-
+#endif
 static void process_clear(mm_process_t *p)
 {
 	p->segments.heap.attr = attr_nil;
@@ -118,7 +120,6 @@ int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	do {
 		size_t start;
 		size_t end;
-		list_t *list;
 		mm_process_t *p = get_process((ID)args->arg1);
 
 		if (!p) {
@@ -126,16 +127,10 @@ int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-		list = list_head(&(p->threads));
-		if (!list) {
-			reply->error_no = ESRCH;
-			break;
-		}
-
 		start = pageRoundDown(args->arg2);
 		end = pageRoundUp((size_t)(args->arg2) + (size_t)(args->arg3));
 
-		if (kcall->region_map((ID)(getMyThread(list)->node.key),
+		if (kcall->region_map(p->directory,
 				(VP)start, end - start, true)) {
 			reply->error_no = ESVC;
 			break;
@@ -158,7 +153,6 @@ int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_process_destroy(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
-		list_t *list;
 		mm_process_t *p = get_process((ID)args->arg1);
 
 		if (!p) {
@@ -166,13 +160,7 @@ int mm_process_destroy(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-		list = list_head(&(p->threads));
-		if (!list) {
-			reply->error_no = ESRCH;
-			break;
-		}
-
-		if (kcall->region_unmap(getMyThread(list)->node.key,
+		if (kcall->region_unmap(p->directory,
 				//TODO this address is adhoc. fix region_unmap
 				(VP)0x1000,
 				(size_t)(p->segments.heap.addr)
@@ -293,7 +281,6 @@ int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	do {
 		size_t currentEnd;
 		size_t newEnd;
-		list_t *list;
 		mm_process_t *p = get_process((ID)args->arg1);
 
 		if (!p) {
@@ -301,13 +288,7 @@ int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-		list = list_head(&(p->threads));
-		if (!list) {
-			reply->error_no = ESRCH;
-			break;
-		}
-
-		if (kcall->region_map((ID)(getMyThread(list)->node.key),
+		if (kcall->region_map(p->directory,
 				(VP)(args->arg2), (UW)(args->arg3),
 				(W)(args->arg4))) {
 			reply->error_no = ESVC;
@@ -335,7 +316,6 @@ int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	do {
 		size_t currentEnd;
 		size_t newEnd;
-		list_t *list;
 		mm_process_t *p = get_process((ID)args->arg1);
 
 		if (!p) {
@@ -343,13 +323,7 @@ int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-		list = list_head(&(p->threads));
-		if (!list) {
-			reply->error_no = ESRCH;
-			break;
-		}
-
-		if (kcall->region_unmap((ID)(getMyThread(list)->node.key),
+		if (kcall->region_unmap(p->directory,
 				(VP)(args->arg2), (UW)(args->arg3))) {
 			reply->error_no = ESVC;
 			break;
@@ -377,16 +351,9 @@ int mm_sbrk(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		mm_segment_t *s;
 		intptr_t diff;
 		uintptr_t end;
-		list_t *list;
 		mm_process_t *p = get_process((ID)args->arg1);
 
 		if (!p) {
-			reply->error_no = ESRCH;
-			break;
-		}
-
-		list = list_head(&(p->threads));
-		if (!list) {
 			reply->error_no = ESRCH;
 			break;
 		}
@@ -401,7 +368,7 @@ int mm_sbrk(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 				break;
 			}
 
-			if (kcall->region_map((ID)(getMyThread(list)->node.key),
+			if (kcall->region_map(p->directory,
 					(VP)end, diff, true)) {
 				reply->error_no = ENOMEM;
 				break;
@@ -417,7 +384,7 @@ int mm_sbrk(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 				break;
 			}
 
-			if (kcall->region_unmap((ID)(getMyThread(list)->node.key),
+			if (kcall->region_unmap(p->directory,
 					(VP)(end - diff), diff)) {
 				reply->error_no = ENOMEM;
 				break;

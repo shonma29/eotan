@@ -44,15 +44,15 @@ extern VP_INT *context_create_kernel(VP_INT *sp, const UW eflags, const FP eip);
 extern VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
 		const VP esp);
 extern void context_initialize(void);
-extern void context_reset_page_cache(const thread_t *task, const VP addr);
+extern void context_reset_page_cache(const VP page_table, const VP addr);
 extern void context_reset_page_table();
 extern void context_switch(thread_t *prev, thread_t *next);
 
 /* virtual_mem.c */
 extern ER region_get(ID id, VP start, UW size, VP buf);
-extern ER region_map(ID id, VP start, UW size, W accmode);
+extern ER region_map(VP page_table, VP start, UW size, W accmode);
 extern ER region_put(ID id, VP start, UW size, VP buf);
-extern ER region_unmap(ID id, VP start, UW size);
+extern ER region_unmap(VP page_table, VP start, UW size);
 extern UW vtor(ID tskid, UW addr);
 
 /* fault.c */

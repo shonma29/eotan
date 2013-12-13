@@ -192,15 +192,15 @@ typedef struct
   UW	frame_addr:20;
 } I386_PAGE_ENTRY;
 
-static BOOL vmap(thread_t * task, UW vpage, UW ppage, W accmode);
-static ER vunmap(thread_t * task, UW vpage);
+static BOOL vmap(VP page_table, UW vpage, UW ppage, W accmode);
+static ER vunmap(VP page_table, UW vpage);
 
 
 
 /*************************************************************************
  * vmap --- 仮想メモリのマッピング
  *
- * 引数：	task	マッピングの対象となるタスク
+ * 引数：	page_table	仮想メモリマップ
  *		vpage	仮想メモリアドレス
  *		ppage	物理メモリアドレス
  *		accmode	アクセス権 (0 = kernel, 1 = user)
@@ -211,7 +211,7 @@ static ER vunmap(thread_t * task, UW vpage);
  * 処理：	引数で指定された仮想メモリを物理メモリに割り当てる
  *
  */
-static BOOL vmap(thread_t * task, UW vpage, UW ppage, W accmode)
+static BOOL vmap(VP page_table, UW vpage, UW ppage, W accmode)
 {
     I386_DIRECTORY_ENTRY *dirent, *dp;
     I386_PAGE_ENTRY *pageent, *pp;
@@ -222,9 +222,9 @@ static BOOL vmap(thread_t * task, UW vpage, UW ppage, W accmode)
 	return TRUE;
 
 #ifdef DEBUG
-    printk("[%d] vmap: 0x%x -> 0x%x\n", task->tskid, ppage, vpage);
+    printk("[%x] vmap: 0x%x -> 0x%x\n", page_table, ppage, vpage);
 #endif				/* DEBUG */
-    dirent = (I386_DIRECTORY_ENTRY *) (task->mpu.cr3);
+    dirent = (I386_DIRECTORY_ENTRY *) (page_table);
     dirent = (I386_DIRECTORY_ENTRY*)(kern_p2v(dirent));
     dirindex = (vpage >> (BITS_PAGE + BITS_OFFSET)) & MASK_PAGE;
     pageindex = (vpage >> BITS_OFFSET) & MASK_PAGE;
@@ -287,7 +287,7 @@ static BOOL vmap(thread_t * task, UW vpage, UW ppage, W accmode)
     printk("pageindex = %d, frame = 0x%x\n", pageindex,
 	   pageent[pageindex].frame_addr);
 #endif				/* DEBUG */
-    context_reset_page_cache(task, (VP)vpage);
+    context_reset_page_cache(page_table, (VP)vpage);
 
     return (TRUE);
 }
@@ -297,7 +297,7 @@ static BOOL vmap(thread_t * task, UW vpage, UW ppage, W accmode)
  * 引数:	virtual	仮想メモリアドレス
  *
  */
-static ER vunmap(thread_t * task, UW vpage)
+static ER vunmap(VP page_table, UW vpage)
 {
     I386_DIRECTORY_ENTRY *dirent;
     I386_PAGE_ENTRY *pageent;
@@ -305,7 +305,7 @@ static ER vunmap(thread_t * task, UW vpage)
     UW pageindex;
     UW ppage;
 
-    dirent = (I386_DIRECTORY_ENTRY *) (task->mpu.cr3);
+    dirent = (I386_DIRECTORY_ENTRY *) (page_table);
     dirent = (I386_DIRECTORY_ENTRY*)(kern_p2v(dirent));
     dirindex = (vpage >> (BITS_PAGE + BITS_OFFSET)) & MASK_PAGE;
     pageindex = (vpage >> BITS_OFFSET) & MASK_PAGE;
@@ -334,7 +334,7 @@ static ER vunmap(thread_t * task, UW vpage)
     /*TODO handle error */
     pfree((VP) ppage);
     pageent[pageindex].present = 0;
-    context_reset_page_cache(task, (VP)vpage);
+    context_reset_page_cache(page_table, (VP)vpage);
     return (TRUE);
 }
 
@@ -381,29 +381,20 @@ UW vtor(ID tskid, UW addr)
  *	E_PAR	 引数がおかしい
  *
  */
-ER region_map(ID id, VP start, UW size, W accmode)
+ER region_map(VP page_table, VP start, UW size, W accmode)
     /* 
-     * id        タスク ID
+     * page_table        仮想メモリマップ
      * start     マップする仮想メモリ領域の先頭アドレス
      * size      マップする仮想メモリ領域の大きさ(バイト単位)
      * accmode   マップする仮想メモリ領域のアクセス権を指定
      *           (ACC_KERNEL = 0, ACC_USER = 1)
      */
 {
-    thread_t *taskp;
     UW counter, i;
     VP pmem;
     ER res;
 
-    taskp = (thread_t *) get_thread_ptr(id);
-    if (!taskp)
-    {
-#ifdef DEBUG
-	printk("region_map: taskp->tskstat = %d\n", taskp->tskstat);	/* */
-#endif
-	return (E_PAR);
-    }
-printk("region_map: %d %p %x %x\n", id, start, size, accmode);
+printk("region_map: %x %p %x %x\n", page_table, start, size, accmode);
     size = pages(size);
     start = (VP)pageRoundDown((UW)start);
     if (pmemfree() < size)
@@ -415,7 +406,7 @@ printk("region_map: %d %p %x %x\n", id, start, size, accmode);
 	    res = E_NOMEM;
 	    break;
 	}
-	if (vmap(taskp, ((UW) start + (counter << BITS_OFFSET)),
+	if (vmap(page_table, ((UW) start + (counter << BITS_OFFSET)),
 		 (UW) kern_v2p(pmem), accmode) == FALSE) {
 	    pfree((VP) kern_v2p(pmem));
 	    res = E_SYS;
@@ -424,7 +415,7 @@ printk("region_map: %d %p %x %x\n", id, start, size, accmode);
     }
     if (res != E_OK) {
 	for (i = 0; i < counter; ++i) {
-	    vunmap(taskp, (UW) start + (i << BITS_OFFSET));
+	    vunmap(page_table, (UW) start + (i << BITS_OFFSET));
 	}
     }
     return (res);
@@ -433,21 +424,15 @@ printk("region_map: %d %p %x %x\n", id, start, size, accmode);
 /*
  *
  */
-ER region_unmap(ID id, VP start, UW size)
+ER region_unmap(VP page_table, VP start, UW size)
 {
-    thread_t *taskp;
     UW counter;
-
-    taskp = (thread_t *) get_thread_ptr(id);
-    if (!taskp) {
-	return (E_PAR);
-    }
 
     size = pageRoundUp(size);
     start = (VP)pageRoundDown((UW)start);
 
     for (counter = 0; counter < (size >> BITS_OFFSET); counter++) {
-	if (vunmap(taskp, ((UW) start + (counter << BITS_OFFSET))) == FALSE) {
+	if (vunmap(page_table, ((UW) start + (counter << BITS_OFFSET))) == FALSE) {
 	    return (E_SYS);
 	}
     }
