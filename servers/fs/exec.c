@@ -85,7 +85,6 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     struct access_info acc;
     Elf32_Ehdr elf_header;
     Elf32_Phdr text, data;
-    ID main_task;
     struct proc *procp;
 #ifdef notdef
     printk("[PM] exec_program: path = \"%s\"\n", pathname);	/* */
@@ -142,7 +141,6 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     dbg_printf("[PM] vdel_reg\n");	/* */
 #endif
     /* region の解放 */
-    main_task = procp->proc_maintask;
     if (process_destroy(procid)) {
 	dbg_printf("[FS] process_destroy failed\n");
     }

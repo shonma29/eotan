@@ -164,11 +164,11 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
     enter_critical();
 
     /* stack frame の作成． */
-    /* stack のサイズが PAGE_SIZE (4KB) を越えると問題が発生する可能性あり */
+    /* stack のサイズが USER_STACK_INITIAL_SIZE を越えると問題が発生する可能性あり */
     /* これに対応するには palloc で割り当てたメモリに stack frame を作成し */
     /* vput_reg する */
-    if (stsize >= PAGE_SIZE) {
-	printk("WARNING vset_ctx: stack size is too large\n");
+    if (stsize >= USER_STACK_INITIAL_SIZE) {
+	printk("WARNING mpu_set_context: stack size is too large\n");
     }
 
     stbase = (UW)tsk->attr.ustack_tail
@@ -209,7 +209,5 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
 
     leave_critical();
 
-    list_remove(&(tsk->wait.waiting));
-    release(tsk);
     return (E_OK);
 }

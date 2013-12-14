@@ -317,8 +317,11 @@ ER thread_terminate(ID tskid)
 
 		case TTS_WAI:
 		case TTS_WAS:
-			if (th->wait.type)
+			if (th->wait.type) {
+				th->wait.type = wait_none;
 				list_remove(&(th->wait.waiting));
+			}
+
 		case TTS_SUS:
 			th->status = TTS_DMT;
 			result = E_OK;

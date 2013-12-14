@@ -71,6 +71,8 @@ W psc_exec_f(RDVNO rdvno, struct posix_request *req)
     /* プロセスに属するタスクを切り換える。
      * すなわち、古いタスクを終了し、新しいタスクを生成する。
      */
+    kcall->thread_terminate(req->caller);
+    kcall->thread_start(req->caller);
 
     put_response(rdvno, EOK, 0, 0);
     return (TRUE);
