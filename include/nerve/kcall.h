@@ -35,7 +35,6 @@ typedef struct {
 	ER (*thread_start)(ID tskid);
 	void (*thread_end_and_destroy)(void);
 	ER (*thread_terminate)(ID tskid);
-	ER_ID (*thread_get_id)(void);
 	ER (*time_get)(SYSTIM *p_systim);
 	ER (*time_set)(SYSTIM *p_systim);
 	ER (*interrupt_bind)(const INHNO inhno, const T_DINH *pk_dinh);
