@@ -31,6 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <boot/init.h>
 #include <core/options.h>
 #include <mm/segment.h>
+#include <nerve/config.h>
 #include <nerve/kcall.h>
 #include <set/list.h>
 #include <set/tree.h>
@@ -130,8 +131,8 @@ int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		start = pageRoundDown(args->arg2);
 		end = pageRoundUp((size_t)(args->arg2) + (size_t)(args->arg3));
 
-		if (kcall->region_map(p->directory,
-				(VP)start, end - start, true)) {
+		if (map_user_pages(p->directory,
+				(VP)start, pages(end - start))) {
 			reply->error_no = ESVC;
 			break;
 		}
@@ -160,11 +161,11 @@ int mm_process_destroy(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-		if (kcall->region_unmap(p->directory,
+		if (unmap_user_pages(p->directory,
 				//TODO this address is adhoc. fix region_unmap
 				(VP)0x1000,
-				(size_t)(p->segments.heap.addr)
-						+  p->segments.heap.len)) {
+				pages((size_t)(p->segments.heap.addr)
+						+  p->segments.heap.len))) {
 			reply->error_no = EFAULT;
 			break;
 		}
@@ -288,9 +289,8 @@ int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-		if (kcall->region_map(p->directory,
-				(VP)(args->arg2), (UW)(args->arg3),
-				(W)(args->arg4))) {
+		if (map_user_pages(p->directory,
+				(VP)(args->arg2), pages((UW)(args->arg3)))) {
 			reply->error_no = ESVC;
 			break;
 		}
@@ -323,8 +323,8 @@ int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-		if (kcall->region_unmap(p->directory,
-				(VP)(args->arg2), (UW)(args->arg3))) {
+		if (unmap_user_pages(p->directory,
+				(VP)(args->arg2), pages((UW)(args->arg3)))) {
 			reply->error_no = ESVC;
 			break;
 		}
@@ -368,8 +368,8 @@ int mm_sbrk(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 				break;
 			}
 
-			if (kcall->region_map(p->directory,
-					(VP)end, diff, true)) {
+			if (map_user_pages(p->directory,
+					(VP)end, pages(diff))) {
 				reply->error_no = ENOMEM;
 				break;
 			}
@@ -384,8 +384,8 @@ int mm_sbrk(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 				break;
 			}
 
-			if (kcall->region_unmap(p->directory,
-					(VP)(end - diff), diff)) {
+			if (unmap_user_pages(p->directory,
+					(VP)(end - diff), pages(diff))) {
 				reply->error_no = ENOMEM;
 				break;
 			}
@@ -438,6 +438,13 @@ int mm_thread_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 
 		result = kcall->thread_create_auto(&pk_ctsk);
 		if (result < 0) {
+			reply->error_no = ESVC;
+			break;
+		}
+
+		if (map_user_pages(p->directory,
+				(VP)pageRoundDown(LOCAL_ADDR - USER_STACK_INITIAL_SIZE - PAGE_SIZE),
+				pages(pageRoundUp(USER_STACK_INITIAL_SIZE)))) {
 			reply->error_no = ESVC;
 			break;
 		}

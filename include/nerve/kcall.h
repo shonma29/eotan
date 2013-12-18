@@ -41,8 +41,6 @@ typedef struct {
 	ER (*interrupt_enable)(const UB ir);
 	void *(*palloc)(void);
 	void (*pfree)(void *addr);
-	ER (*region_map)(VP page_table, VP start, UW size, W accmode);
-	ER (*region_unmap)(VP page_table, VP start, UW size);
 	ER (*region_get)(ID id, VP start, UW size, VP buf);
 	ER (*region_put)(ID id, VP start, UW size, VP buf);
 	ER (*mpu_copy_stack)(ID src, W esp, ID dst);

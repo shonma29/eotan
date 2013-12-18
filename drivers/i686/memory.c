@@ -60,16 +60,19 @@ ER copy_user_pages(PTE *dest, const PTE *src, size_t cnt)
 	size_t n = (size_t)getDirectoryOffset((void*)SUPERVISOR_START);
 	size_t i;
 
-	for (i = 0; (i < n) && (cnt > 0); i++) {
+	if (n > cnt)
+		n = cnt;
+
+	for (i = 0; n > 0; i++) {
 		PTE *srcp = (PTE*)(srcdir[i]);
 		PTE *destp;
 		size_t j;
 
 		if (!is_present((PTE)srcp)) {
-			if (cnt <= PTE_PER_PAGE)
+			if (n <= PTE_PER_PAGE)
 				break;
 
-			cnt -= PTE_PER_PAGE;
+			n -= PTE_PER_PAGE;
 			continue;
 		}
 
@@ -88,7 +91,7 @@ ER copy_user_pages(PTE *dest, const PTE *src, size_t cnt)
 		srcp = (PTE*)(kern_p2v((PTE*)((PTE)srcp & PAGE_ADDR_MASK)));
 		destp = (PTE*)(kern_p2v(destp));
 
-		for (j = 0; (j < PTE_PER_PAGE) && (cnt > 0); cnt--, j++) {
+		for (j = 0; (j < PTE_PER_PAGE) && (n > 0); n--, j++) {
 			char *p;
 
 			if (!is_present(srcp[j]))
@@ -110,6 +113,102 @@ ER copy_user_pages(PTE *dest, const PTE *src, size_t cnt)
 					kern_p2v((char*)(srcp[j] & PAGE_ADDR_MASK)),
 					PAGE_SIZE);
 		}
+	}
+
+	return E_OK;
+}
+
+ER map_user_pages(PTE *dir, VP addr, size_t cnt)
+{
+	size_t n = (size_t)getDirectoryOffset((void*)SUPERVISOR_START);
+	size_t i = (((unsigned int)addr) >> (BITS_PAGE + BITS_OFFSET)) & MASK_PAGE;
+	size_t j = (((unsigned int)addr) >> BITS_OFFSET) & MASK_PAGE;
+
+//TODO check range
+	dir = (PTE*)kern_p2v(dir);
+
+	if (n > cnt)
+		n = cnt;
+
+	for (; n > 0; j = 0, i++) {
+		PTE *page = (PTE*)(dir[i]);
+
+		if (is_present((PTE)page))
+//TODO check permission
+			page = (PTE*)((PTE)page & PAGE_ADDR_MASK);
+
+		else {
+//TODO check null
+			page = (PTE*)kern_v2p(kcall->palloc());
+			if (!page)
+				return E_NOMEM;
+
+			dir[i] = calc_pte(page, ATTR_USER);
+		}
+
+		page = (PTE*)(kern_p2v(page));
+
+		for (; (j < PTE_PER_PAGE) && (n > 0); n--, j++) {
+			char *p;
+
+			p = (char*)(page[j]);
+			if (is_present((PTE)p)) {
+//TODO check permission
+				p = (char*)((PTE)p & PAGE_ADDR_MASK);
+//				memset(kern_p2v(p), 0, PAGE_SIZE);
+
+			} else {
+//TODO check null
+				p = (char*)kern_v2p(kcall->palloc());
+				if (!p)
+					return E_NOMEM;
+
+				page[j] = calc_pte(p, ATTR_USER);
+//TODO reset page cache
+			}
+		}
+	}
+//TODO rollback when error
+	return E_OK;
+}
+
+ER unmap_user_pages(PTE *dir, VP addr, size_t cnt)
+{
+	size_t n = (size_t)getDirectoryOffset((void*)SUPERVISOR_START);
+	size_t i = (((unsigned int)addr) >> (BITS_PAGE + BITS_OFFSET)) & MASK_PAGE;
+	size_t j = (((unsigned int)addr) >> BITS_OFFSET) & MASK_PAGE;
+
+//TODO check range
+	dir = (PTE*)kern_p2v(dir);
+
+	if (n > cnt)
+		n = cnt;
+
+	for (; n > 0; j = 0, i++) {
+		PTE *page = (PTE*)(dir[i]);
+
+		if (!is_present((PTE)page)) {
+			if (n <= PTE_PER_PAGE)
+				break;
+
+			n -= PTE_PER_PAGE;
+			continue;
+		}
+
+		page = (PTE*)((PTE)page & PAGE_ADDR_MASK);
+		page = (PTE*)(kern_p2v(page));
+
+		for (; (j < PTE_PER_PAGE) && (n > 0); n--, j++) {
+			char *p = (char*)(page[j]);
+
+			if (is_present((PTE)p)) {
+				p = (char*)((PTE)p & PAGE_ADDR_MASK);
+				kcall->pfree(p);
+				page[j] = 0;
+//TODO reset page cache
+			}
+		}
+//TODO release upper page table
 	}
 
 	return E_OK;

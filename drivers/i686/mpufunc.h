@@ -52,7 +52,6 @@ extern void context_switch(thread_t *prev, thread_t *next);
 extern ER region_get(ID id, VP start, UW size, VP buf);
 extern ER region_map(VP page_table, VP start, UW size, W accmode);
 extern ER region_put(ID id, VP start, UW size, VP buf);
-extern ER region_unmap(VP page_table, VP start, UW size);
 extern UW vtor(ID tskid, UW addr);
 
 /* fault.c */
@@ -93,6 +92,8 @@ extern void release_memory(thread_t *th);
 /* memory.c */
 extern PTE *copy_kernel_page_table(void);
 extern ER copy_user_pages(PTE *dest, const PTE *src, size_t cnt);
+extern ER map_user_pages(PTE *dir, VP addr, size_t cnt);
+extern ER unmap_user_pages(PTE *dir, VP addr, size_t cnt);
 
 /* handler.s */
 extern void service_handler(void);

@@ -33,8 +33,6 @@ static void kill(void);
  */
 static void create_user_stack(thread_t * tsk)
 {
-    W err;
-
     tsk->ustack.addr = (VP) pageRoundDown(LOCAL_ADDR - USER_STACK_MAX_SIZE);
     tsk->ustack.len = pageRoundUp(USER_STACK_INITIAL_SIZE);
     tsk->ustack.max = pageRoundUp(USER_STACK_MAX_SIZE - PAGE_SIZE);
@@ -42,13 +40,6 @@ static void create_user_stack(thread_t * tsk)
 
     /* 物理メモリの割り当て */
     tsk->attr.ustack_tail = (VP)((UW)(tsk->ustack.addr) + tsk->ustack.max);
-    err = region_map(tsk->attr.page_table,
-    	    (VP)((UW)(tsk->attr.ustack_tail) - tsk->ustack.len),
-	    tsk->ustack.len, true);
-
-    if (err != E_OK) {
-	printk("can't allocate stack\n");
-    }
 }
 
 /*

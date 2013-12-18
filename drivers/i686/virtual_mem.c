@@ -160,186 +160,7 @@ Version 2, June 1991
 #include <thread.h>
 #include "mpufunc.h"
 
-/***********************************************************************
- *	directory table entry.
- */
-typedef struct
-{
-  UW	present:1;
-  UW	read_write:1;
-  UW	u_and_s:1;
-  UW	zero2:2;
-  UW	access:1;		/* アクセスチェック用ビット */
-  UW	dirty:1;		/* 書き込みチェック用ビット */
-  UW	zero1:2;
-  UW	user:3;
-  UW	frame_addr:20;
-} I386_DIRECTORY_ENTRY;
-
-/***********************************************************************
- *	page table entry.
- */
-typedef struct
-{
-  UW	present:1;
-  UW	read_write:1;
-  UW	u_and_s:1;
-  UW	zero2:2;
-  UW	access:1;
-  UW	dirty:1;
-  UW	zero1:2;
-  UW	user:3;
-  UW	frame_addr:20;
-} I386_PAGE_ENTRY;
-
-static BOOL vmap(VP page_table, UW vpage, UW ppage, W accmode);
-static ER vunmap(VP page_table, UW vpage);
 
-
-
-/*************************************************************************
- * vmap --- 仮想メモリのマッピング
- *
- * 引数：	page_table	仮想メモリマップ
- *		vpage	仮想メモリアドレス
- *		ppage	物理メモリアドレス
- *		accmode	アクセス権 (0 = kernel, 1 = user)
- *
- * 返値：	TRUE	成功
- *		FALSE	失敗
- *
- * 処理：	引数で指定された仮想メモリを物理メモリに割り当てる
- *
- */
-static BOOL vmap(VP page_table, UW vpage, UW ppage, W accmode)
-{
-    I386_DIRECTORY_ENTRY *dirent, *dp;
-    I386_PAGE_ENTRY *pageent, *pp;
-    UW dirindex;
-    UW pageindex;
-
-    if (vpage >= SUPERVISOR_START)
-	return TRUE;
-
-#ifdef DEBUG
-    printk("[%x] vmap: 0x%x -> 0x%x\n", page_table, ppage, vpage);
-#endif				/* DEBUG */
-    dirent = (I386_DIRECTORY_ENTRY *) (page_table);
-    dirent = (I386_DIRECTORY_ENTRY*)(kern_p2v(dirent));
-    dirindex = (vpage >> (BITS_PAGE + BITS_OFFSET)) & MASK_PAGE;
-    pageindex = (vpage >> BITS_OFFSET) & MASK_PAGE;
-
-#ifdef DEBUG
-    printk("dirindex = %d, pageindex = %d\n", dirindex, pageindex);
-#endif				/* DEBUG */
-    if (dirent[dirindex].present != 1) {
-	/* ページディレクトリのエントリは空だった。
-	 * 新しくページディレクトリのエントリを埋める。
-	 */
-	pageent = (I386_PAGE_ENTRY *) palloc();
-	if (pageent == NULL) {
-	    return (FALSE);
-	}
-#ifdef DEBUG
-	printk("dir alloc(newp). frame = 0x%x ",
-	       ((UW) pageent & 0x0fffffff) >> BITS_OFFSET);
-#endif				/* DEBUG */
-	dp = &dirent[dirindex];
-	dp->frame_addr = (UW)kern_v2p(pageent) >> BITS_OFFSET;
-	dp->present = 1;
-	dp->read_write = 1;
-	dp->u_and_s = accmode;
-	dp->zero2 = 0;
-	dp->access = 0;
-	dp->dirty = 0;
-	dp->user = accmode;
-	dp->zero1 = 0;
-    } else {
-	pageent =
-	    (I386_PAGE_ENTRY *) (dirent[dirindex].frame_addr << BITS_OFFSET);
-#ifdef DEBUG
-	printk("dir alloc(old). frame = 0x%x ",
-	       dirent[dirindex].frame_addr);
-#endif				/* DEBUG */
-    }
-
-    if ((UW) pageent < SUPERVISOR_START) {
-	pageent = (I386_PAGE_ENTRY*)(kern_p2v(pageent));
-    }
-
-    if (pageent[pageindex].present == 1) {
-	/* 既にページが map されていた */
-	printk("vmap: vpage %x has already mapped\n", vpage);
-	/*    return(FALSE); */
-    }
-    pp = &pageent[pageindex];
-    pp->frame_addr = (UW)kern_v2p((void*)ppage) >> BITS_OFFSET;
-    pp->present = 1;
-    pp->read_write = 1;
-    pp->u_and_s = accmode;
-    pp->zero2 = 0;
-    pp->access = 0;
-    pp->dirty = 0;
-    pp->zero1 = 0;
-    pp->user = 0;
-
-#ifdef DEBUG
-    printk("pageindex = %d, frame = 0x%x\n", pageindex,
-	   pageent[pageindex].frame_addr);
-#endif				/* DEBUG */
-    context_reset_page_cache(page_table, (VP)vpage);
-
-    return (TRUE);
-}
-
-/* 仮想メモリのアンマップ
- *
- * 引数:	virtual	仮想メモリアドレス
- *
- */
-static ER vunmap(VP page_table, UW vpage)
-{
-    I386_DIRECTORY_ENTRY *dirent;
-    I386_PAGE_ENTRY *pageent;
-    UW dirindex;
-    UW pageindex;
-    UW ppage;
-
-    dirent = (I386_DIRECTORY_ENTRY *) (page_table);
-    dirent = (I386_DIRECTORY_ENTRY*)(kern_p2v(dirent));
-    dirindex = (vpage >> (BITS_PAGE + BITS_OFFSET)) & MASK_PAGE;
-    pageindex = (vpage >> BITS_OFFSET) & MASK_PAGE;
-
-#ifdef DEBUG
-    printk("dirindex = %d, pageindex = %d\n", dirindex, pageindex);
-#endif				/* DEBUG */
-    if (dirent[dirindex].present != 1) {
-	/* ページディレクトリのエントリは空だった。
-	 */
-	return (FALSE);
-    } else {
-	pageent =
-	    (I386_PAGE_ENTRY *) (dirent[dirindex].frame_addr << BITS_OFFSET);
-    }
-
-    if ((UW) pageent < SUPERVISOR_START) {
-	pageent = (I386_PAGE_ENTRY*)(kern_p2v(pageent));
-    }
-
-    if (pageent[pageindex].present != 1) {
-	return (FALSE);
-    }
-
-    ppage = (UW)kern_v2p((void*)(pageent[pageindex].frame_addr << BITS_OFFSET));
-    /*TODO handle error */
-    pfree((VP) ppage);
-    pageent[pageindex].present = 0;
-    context_reset_page_cache(page_table, (VP)vpage);
-    return (TRUE);
-}
-
-
-
 /* vtor - 仮想メモリアドレスをカーネルから直接アクセス可能なアドレスに変換する
  *
  */
@@ -390,8 +211,6 @@ ER region_map(VP page_table, VP start, UW size, W accmode)
      *           (ACC_KERNEL = 0, ACC_USER = 1)
      */
 {
-    UW counter, i;
-    VP pmem;
     ER res;
 
 printk("region_map: %x %p %x %x\n", page_table, start, size, accmode);
@@ -399,45 +218,11 @@ printk("region_map: %x %p %x %x\n", page_table, start, size, accmode);
     start = (VP)pageRoundDown((UW)start);
     if (pmemfree() < size)
 	return (E_NOMEM);
-    res = E_OK;
-    for (counter = 0; counter < size; counter++) {
-	pmem = palloc();
-	if (pmem == NULL) {
-	    res = E_NOMEM;
-	    break;
-	}
-	if (vmap(page_table, ((UW) start + (counter << BITS_OFFSET)),
-		 (UW) kern_v2p(pmem), accmode) == FALSE) {
-	    pfree((VP) kern_v2p(pmem));
-	    res = E_SYS;
-	    break;
-	}
-    }
+    res = map_user_pages(page_table, start, size);
     if (res != E_OK) {
-	for (i = 0; i < counter; ++i) {
-	    vunmap(page_table, (UW) start + (i << BITS_OFFSET));
-	}
+	unmap_user_pages(page_table, start, size);
     }
     return (res);
-}
-
-/*
- *
- */
-ER region_unmap(VP page_table, VP start, UW size)
-{
-    UW counter;
-
-    size = pageRoundUp(size);
-    start = (VP)pageRoundDown((UW)start);
-
-    for (counter = 0; counter < (size >> BITS_OFFSET); counter++) {
-	if (vunmap(page_table, ((UW) start + (counter << BITS_OFFSET))) == FALSE) {
-	    return (E_SYS);
-	}
-    }
-
-    return (E_OK);
 }
 
 /*
