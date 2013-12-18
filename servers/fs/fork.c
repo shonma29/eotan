@@ -82,20 +82,15 @@ static W proc_duplicate(struct proc * source, struct proc * destination);
  *
  *
  */
-W proc_fork(struct proc *parent, struct proc *child, ID main_task, ID signal_task)
+W proc_fork(struct proc *parent, struct proc *child)
 {
     W error_no;
-    thread_local_t local_data, local_par;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 #ifdef FKDEBUG
     printk
 	("fork: call alloc_proc: (%s file, %d line), parent = 0x%x, parent->vm_tree = 0x%x\n",
 	 __FILE__, __LINE__, parent, parent->vm_tree);	/* */
 #endif
-
-    child->proc_maintask = main_task;
-    child->proc_signal_handler = signal_task;
 
     /* プロセス情報のコピー */
     /* 管理情報 (プロセスおよびファイル)の更新 */
@@ -110,39 +105,42 @@ W proc_fork(struct proc *parent, struct proc *child, ID main_task, ID signal_tas
 
     child->proc_status = PS_RUN;
     child->proc_ppid = parent->proc_pid;
-    error_no = vmap(child->proc_pid, (thread_local_t*)LOCAL_ADDR,
-		sizeof(thread_local_t), true);
-    if (error_no) {
-	return error_no;
-    }
-
-    error_no = kcall->region_get(parent->proc_maintask, (thread_local_t*)LOCAL_ADDR,
-		     sizeof(thread_local_t), &local_par);
-    if (error_no) {
-	return error_no;
-    }
-
-    memset(&local_data, 0, sizeof(local_data));
-    local_data.thread_id = main_task;
-    local_data.process_id = child->proc_pid;
-
-    strncpy((B*)local_data.cwd, (B*)local_par.cwd, local_par.cwd_length);
-    local_data.cwd[local_par.cwd_length] = '\0';
-    local_data.cwd_length = local_par.cwd_length;
-
-    error_no = kcall->region_put(main_task, (thread_local_t*)LOCAL_ADDR,
-		     sizeof(thread_local_t), &local_data);
-    if (error_no) {
-	return error_no;
-    }
-
     strncpy(child->proc_name, parent->proc_name, PROC_NAME_LEN - 1);
     child->proc_name[PROC_NAME_LEN - 1] = '\0';
 
     return (EOK);
 }
 
+W copy_local(struct proc *parent, struct proc *child)
+{
+    thread_local_t local_data;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
+    W error_no = vmap(child->proc_pid, (thread_local_t*)LOCAL_ADDR,
+		sizeof(thread_local_t), true);
 
+    if (error_no) {
+	return error_no;
+    }
+
+    error_no = kcall->region_get(parent->proc_maintask, (thread_local_t*)LOCAL_ADDR,
+		     sizeof(thread_local_t), &local_data);
+    if (error_no) {
+//TODO release local
+	return error_no;
+    }
+
+    local_data.thread_id = child->proc_maintask;
+    local_data.process_id = child->proc_pid;
+
+    error_no = kcall->region_put(child->proc_maintask, (thread_local_t*)LOCAL_ADDR,
+		     sizeof(thread_local_t), &local_data);
+    if (error_no) {
+//TODO release local
+	return error_no;
+    }
+
+    return (EOK);
+}
 
 /* proc_duplicate - プロセス情報のコピー
  *

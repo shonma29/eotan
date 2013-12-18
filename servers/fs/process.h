@@ -176,7 +176,8 @@ extern void proc_dealloc_proc(W procid);
 extern W		exec_program (struct posix_request *req, W procid, B *pathname);
 
 /* fork.c */
-extern W		proc_fork (struct proc *parent, struct proc *child, ID main_task, ID signal_task);
+extern W		proc_fork (struct proc *parent, struct proc *child);
+extern W copy_local(struct proc * parent, struct proc * child);
 
 /* filesystem.c */
 extern W		open_special_dev(struct proc *procp);

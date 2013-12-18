@@ -43,7 +43,7 @@ typedef struct {
 static char buf[sizeof(init_arg_t) * 3 + MAX_NAMELEN + 1];
 
 static void dummy(void);
-static W create_init(ID process_id, ID thread_id);
+static W create_init(ID process_id);
 
 
 W exec_init(ID process_id, char *pathname)
@@ -51,6 +51,7 @@ W exec_init(ID process_id, char *pathname)
 	struct posix_request req;
 	W err;
 	init_arg_t *p;
+	struct proc *proc;
 	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	req.param.par_execve.stsize = sizeof(*p) * 3
@@ -70,15 +71,21 @@ W exec_init(ID process_id, char *pathname)
 		return ESVC;
 	}
 
-	err = create_init(process_id, req.caller);
+	err = create_init(process_id);
 	if (!err)
 		err = exec_program(&req, process_id, pathname);
+
+	if (!err)
+		err = proc_get_procp(process_id, &proc);
 
 	if (err) {
 		//TODO destroy vmtree and process
 		kcall->thread_destroy(req.caller);
+		return err;
 	}
 
+	proc->proc_maintask = req.caller;
+	set_local(process_id, req.caller);
 	kcall->thread_start(req.caller);
 
 	dbg_printf("[MM] exec_init(%d, %s)\n", process_id, pathname);
@@ -90,12 +97,12 @@ static void dummy(void)
 {
 }
 
-static W create_init(ID process_id, ID thread_id)
+static W create_init(ID process_id)
 {
 	struct proc *p;
 	W err;
 
-	dbg_printf("[MM] create_init(%d, %d)\n", process_id, thread_id);
+	dbg_printf("[MM] create_init(%d)\n", process_id);
 
 	if ((process_id < INIT_PID)
 			|| (process_id >= MAX_PROCESS))
@@ -113,7 +120,6 @@ static W create_init(ID process_id, ID thread_id)
 	p->proc_status = PS_DORMANT;
 	p->proc_next = NULL;
 */
-	p->proc_maintask = thread_id;
 	p->proc_signal_handler = 0;
 	p->proc_uid = INIT_UID;
 	p->proc_gid = INIT_GID;
@@ -129,7 +135,6 @@ static W create_init(ID process_id, ID thread_id)
 	p->proc_ppid = INIT_PPID;
 
 	process_create(process_id, 0, 0, 0);
-	set_local(process_id, thread_id);
 
 	err = open_special_dev(p);
 	if (err) {

@@ -183,13 +183,25 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
       return (FALSE);
     }
 
-  error_no = proc_fork (procp, child, main_thread_id, 0);
+  error_no = proc_fork (procp, child);
   if (error_no)
     {
       proc_dealloc_proc(child->proc_pid);
       kcall->thread_destroy(main_thread_id);
       put_response (rdvno, error_no, -1, 0);
       return (FALSE);
+    }
+
+  child->proc_maintask = main_thread_id;
+  child->proc_signal_handler = 0;
+
+  error_no = copy_local(procp, child);
+  if (error_no)
+    {
+      proc_dealloc_proc(child->proc_pid);
+      kcall->thread_destroy(main_thread_id);
+//TODO destroy process
+      put_response (rdvno, error_no, -1, 0);
     }
 
   process_copy_stack(req->caller, (W)(req->param.par_fork.sp), main_thread_id);
