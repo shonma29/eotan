@@ -48,12 +48,6 @@ extern void context_reset_page_cache(const VP page_table, const VP addr);
 extern void context_reset_page_table();
 extern void context_switch(thread_t *prev, thread_t *next);
 
-/* virtual_mem.c */
-extern ER region_get(ID id, VP start, UW size, VP buf);
-extern ER region_map(VP page_table, VP start, UW size, W accmode);
-extern ER region_put(ID id, VP start, UW size, VP buf);
-extern UW vtor(thread_t *taskp, UW addr);
-
 /* fault.c */
 extern void fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 		UW ecx, UW eax, UW ds, UW no,

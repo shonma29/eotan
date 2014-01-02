@@ -41,8 +41,10 @@ typedef struct {
 	ER (*interrupt_enable)(const UB ir);
 	void *(*palloc)(void);
 	void (*pfree)(void *addr);
-	ER (*region_get)(ID id, VP start, UW size, VP buf);
-	ER (*region_put)(ID id, VP start, UW size, VP buf);
+	ER (*region_get)(const ID id, const void *from, const size_t size,
+			void *to);
+	ER (*region_put)(const ID id, void *to, const size_t size,
+			const void *from);
 	ER (*mpu_copy_stack)(ID src, W esp, ID dst);
 	ER (*mpu_set_context)(ID tid, W eip, B *stackp, W stsize);
 	ER (*port_create)(ID porid, T_CPOR *pk_cpor);

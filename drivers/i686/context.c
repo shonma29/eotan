@@ -14,18 +14,23 @@ Version 2, June 1991
 #include <core.h>
 #include <boot/init.h>
 #include <local.h>
+#include <string.h>
 #include <mm/segment.h>
+#include <mpu/memory.h>
 #include <nerve/config.h>
-#include "delay.h"
-#include "func.h"
-#include "ready.h"
-#include "sync.h"
-#include "mpu/eflags.h"
-#include "mpu/interrupt.h"
-#include "mpu/mpufunc.h"
+#include <delay.h>
+#include <func.h>
+#include <ready.h>
+#include <sync.h>
+#include <thread.h>
+#include "eflags.h"
+#include "interrupt.h"
+#include "mpufunc.h"
 
 static void create_user_stack(thread_t * tsk);
 static void kill(void);
+static UW vtor(thread_t *taskp, UW addr);
+static ER region_map(VP page_table, VP start, UW size, W accmode);
 
 
 /*
@@ -71,7 +76,7 @@ ER mpu_copy_stack(ID src, W esp, ID dst)
 
     /* src task のスタックの内容を dst task にコピー */
     dstp = (UW) dst_tsk->attr.ustack_tail - size;
-    region_put(dst, (VP) dstp, size, (VP) vtor(src_tsk, esp));
+    vmemcpy(dst_tsk, (VP) dstp, (VP) vtor(src_tsk, esp), size);
 
     dst_tsk->mpu.esp0 = context_create_user(
 	    dst_tsk->attr.kstack_tail,
@@ -141,18 +146,10 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
     thread_t *tsk = get_thread_ptr(tid & INIT_THREAD_ID_MASK);
     UW stbase;
     W err, argc;
-    char **ap, **bp, **esp;
+    char **ap, **bp;
 
-    if (!tsk) {
+    if (!tsk)
 	return (E_NOEXS);
-    }
-
-    if (tid & INIT_THREAD_ID_FLAG) {
-	tid &= INIT_THREAD_ID_MASK;
-	create_user_stack(tsk);
-    }
-
-    enter_critical();
 
     /* stack frame の作成． */
     /* stack のサイズが USER_STACK_INITIAL_SIZE を越えると問題が発生する可能性あり */
@@ -160,33 +157,33 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
     /* vput_reg する */
     if (stsize >= USER_STACK_INITIAL_SIZE) {
 	printk("WARNING mpu_set_context: stack size is too large\n");
+	return (E_PAR);
     }
 
-    stbase = (UW)tsk->attr.ustack_tail
-	    - roundUp(stsize, sizeof(VP));
-    esp = (char **) stbase;
-    ap = bp = (char **) vtor(tsk, stbase);
+    enter_critical();
 
-    err = region_get(tid, stackp, stsize, (VP) ap);
-    if (err)
+    if (tid & INIT_THREAD_ID_FLAG) {
+	tid &= INIT_THREAD_ID_MASK;
+	create_user_stack(tsk);
+    }
+
+    stbase = (UW)tsk->attr.ustack_tail - roundUp(stsize, sizeof(VP));
+    ap = bp = (char**)vtor(tsk, stbase);
+
+    err = vmemcpy2(tsk, (VP)ap, stackp, stsize);
+    if (err) {
+	leave_critical();
 	return err;
-
-    for (argc = 0; *ap != 0; ++ap, ++argc) {
-	*ap = (char *) ((UW) * ap + stbase);
     }
-    ++ap;
-    *--bp = (char *) (stbase + sizeof(VP) * (argc+1));
-    --esp;
 
-    for (; *ap != 0; ++ap) {
-	*ap = (char *) ((UW) * ap + stbase);
-    }
-    *--bp = (char *) stbase;
-    --esp;
-    *--bp = (char *) argc;
-    --esp;
-    *--bp = NULL;
-    --esp;
+    for (argc = 0; *ap; argc++, ap++)
+	*ap = (char*)((UW)*ap + stbase);
+    for (ap++; *ap; ap++)
+	*ap = (char*)((UW)*ap + stbase);
+
+    *--bp = (char*)(stbase + sizeof(VP) * (argc + 1));
+    *--bp = (char*)stbase;
+    *--bp = (char*)argc;
 
     /* レジスターの初期化 */
     tsk->attr.entry = (FP)eip;
@@ -196,9 +193,64 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
 	    tsk->attr.kstack_tail,
 	    EFLAGS_INTERRUPT_ENABLE | EFLAGS_IOPL_3,
 	    tsk->attr.entry,
-	    (VP)esp);
+	    (VP)(stbase - sizeof(int) * 4));
 
     leave_critical();
 
     return (E_OK);
+}
+
+/* vtor - 仮想メモリアドレスをカーネルから直接アクセス可能なアドレスに変換する
+ *
+ */
+static UW vtor(thread_t *taskp, UW addr)
+{
+    UW result = (UW)getPageAddress((PTE*)kern_p2v((void*)(taskp->mpu.cr3)),
+	    (void*)addr);
+
+    return result? (result | getOffset((void*)addr)):result;
+}
+
+/*
+ * リージョン内の仮想ページへ物理メモリを割り付ける。
+ *
+ * 引数で指定したアドレス領域に物理メモリを割り付ける。
+ *
+ * 複数のページに相当するサイズが指定された場合、全てのページがマップ
+ * 可能のときのみ物理メモリを割り付ける。その他の場合は割り付けない。
+ *
+ * マップする物理メモリのアドレスは指定できない。中心核が仮想メモリに
+ * 割り付ける物理メモリを適当に割り振る。
+ *
+ *
+ * 返り値
+ *
+ * 以下のエラー番号が返る。
+ *	E_OK     リージョンのマップに成功  
+ *	E_NOMEM  (物理)メモリが不足している
+ *	E_NOSPT  本システムコールは、未サポート機能である。
+ *	E_PAR	 引数がおかしい
+ *
+ */
+static ER region_map(VP page_table, VP start, UW size, W accmode)
+    /* 
+     * page_table        仮想メモリマップ
+     * start     マップする仮想メモリ領域の先頭アドレス
+     * size      マップする仮想メモリ領域の大きさ(バイト単位)
+     * accmode   マップする仮想メモリ領域のアクセス権を指定
+     *           (ACC_KERNEL = 0, ACC_USER = 1)
+     */
+{
+    ER res;
+
+printk("region_map: %x %p %x %x\n", page_table, start, size, accmode);
+    size = pages(size);
+    start = (VP)pageRoundDown((UW)start);
+    if (pmemfree() < size)
+	return (E_NOMEM);
+    res = map_user_pages(page_table, start, size);
+    if (res != E_OK) {
+	unmap_user_pages(page_table, start, size);
+    }
+    return (res);
 }

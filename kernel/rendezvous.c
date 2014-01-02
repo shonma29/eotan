@@ -209,10 +209,10 @@ ER_UINT port_call(ID porid, VP msg, UINT cmsgsz)
 		rendezvous_t *r;
 		int rdvno;
 
-		if (region_put(thread_id(tp), tp->wait.detail.por.msg, cmsgsz, msg)) {
-			printk("port_call[%d] region_put(%d, %p, %d, %p) error\n",
+		if (vmemcpy(tp, tp->wait.detail.por.msg, msg, cmsgsz)) {
+			printk("port_call[%d] vmemcpy(%d, %p, %p, %d) error\n",
 					porid, thread_id(tp),
-					tp->wait.detail.por.msg, cmsgsz, msg);
+					tp->wait.detail.por.msg, msg, cmsgsz);
 			leave_serialize();
 			return E_PAR;
 		}
@@ -283,10 +283,10 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 
 		result = tp->wait.detail.por.size;
 
-		if (region_get(thread_id(tp), tp->wait.detail.por.msg, result, msg)) {
-			printk("port_accept[%d] region_get(%d, %p, %d, %p) error\n",
-					porid, thread_id(tp),
-					tp->wait.detail.por.msg, result, msg);
+		if (vmemcpy2(tp, msg, tp->wait.detail.por.msg, result)) {
+			printk("port_accept[%d] vmemcpy2(%d, %p, %p, %d) error\n",
+					porid, thread_id(tp), msg,
+					tp->wait.detail.por.msg, result);
 			tree_remove(&rdv_tree, rdvno);
 			leave_serialize();
 			return E_PAR;
@@ -354,11 +354,10 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 	if (q) {
 		thread_t *tp = getThreadWaiting(q);
 
-		if (region_put(thread_id(tp), tp->wait.detail.por.msg,
-				rmsgsz, msg)) {
-			printk("port_reply[%d] region_put(%d, %p, %d, %p) error\n",
+		if (vmemcpy(tp, tp->wait.detail.por.msg, msg, rmsgsz)) {
+			printk("port_reply[%d] vmemcpy(%d, %p, %p, %d) error\n",
 					rdvno, thread_id(tp),
-					tp->wait.detail.por.msg, rmsgsz, msg);
+					tp->wait.detail.por.msg, msg, rmsgsz);
 			leave_serialize();
 			tree_remove(&rdv_tree, rdvno);
 			return E_PAR;

@@ -39,6 +39,10 @@ static void kcall_initialize(void);
 static void icall_initialize(void);
 static ER delayed_thread_start(ID thread_id);
 static ER delayed_queue_send_nowait(ID queue_id, VP_INT data);
+static ER region_get(const ID id, const void *from, const size_t size,
+		void *to);
+static ER region_put(const ID id, void *to, const size_t size,
+		const void *from);
 
 
 void global_initialize(void)
@@ -130,4 +134,18 @@ ER kq_enqueue(delay_param_t *param)
 	delay_start = TRUE;
 
 	return E_OK;
+}
+
+static ER region_get(const ID id, const void *from, const size_t size, void *to)
+{
+	thread_t *th = get_thread_ptr(id);
+
+	return th? vmemcpy2(th, to, from, size):E_NOEXS;
+}
+
+static ER region_put(const ID id, void *to, const size_t size, const void *from)
+{
+	thread_t *th = get_thread_ptr(id);
+
+	return th? vmemcpy(th, to, from, size):E_NOEXS;
 }
