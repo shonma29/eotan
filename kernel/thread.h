@@ -52,6 +52,7 @@ typedef struct {
 		VP page_table;
 		VP kstack_tail;
 		VP ustack_tail;
+		VP ustack_top;
 		FP entry;
 	} attr;
 } thread_t;

@@ -140,12 +140,12 @@ static ER region_get(const ID id, const void *from, const size_t size, void *to)
 {
 	thread_t *th = get_thread_ptr(id);
 
-	return th? vmemcpy2(th, to, from, size):E_NOEXS;
+	return th? copy_from(th, to, from, size):E_NOEXS;
 }
 
 static ER region_put(const ID id, void *to, const size_t size, const void *from)
 {
 	thread_t *th = get_thread_ptr(id);
 
-	return th? vmemcpy(th, to, from, size):E_NOEXS;
+	return th? copy_to(th, to, from, size):E_NOEXS;
 }

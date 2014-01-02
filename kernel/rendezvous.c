@@ -209,8 +209,8 @@ ER_UINT port_call(ID porid, VP msg, UINT cmsgsz)
 		rendezvous_t *r;
 		int rdvno;
 
-		if (vmemcpy(tp, tp->wait.detail.por.msg, msg, cmsgsz)) {
-			printk("port_call[%d] vmemcpy(%d, %p, %p, %d) error\n",
+		if (copy_to(tp, tp->wait.detail.por.msg, msg, cmsgsz)) {
+			printk("port_call[%d] copy_to(%d, %p, %p, %d) error\n",
 					porid, thread_id(tp),
 					tp->wait.detail.por.msg, msg, cmsgsz);
 			leave_serialize();
@@ -283,8 +283,8 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 
 		result = tp->wait.detail.por.size;
 
-		if (vmemcpy2(tp, msg, tp->wait.detail.por.msg, result)) {
-			printk("port_accept[%d] vmemcpy2(%d, %p, %p, %d) error\n",
+		if (copy_from(tp, msg, tp->wait.detail.por.msg, result)) {
+			printk("port_accept[%d] copy_from(%d, %p, %p, %d) error\n",
 					porid, thread_id(tp), msg,
 					tp->wait.detail.por.msg, result);
 			tree_remove(&rdv_tree, rdvno);
@@ -354,8 +354,8 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 	if (q) {
 		thread_t *tp = getThreadWaiting(q);
 
-		if (vmemcpy(tp, tp->wait.detail.por.msg, msg, rmsgsz)) {
-			printk("port_reply[%d] vmemcpy(%d, %p, %p, %d) error\n",
+		if (copy_to(tp, tp->wait.detail.por.msg, msg, rmsgsz)) {
+			printk("port_reply[%d] copy_to(%d, %p, %p, %d) error\n",
 					rdvno, thread_id(tp),
 					tp->wait.detail.por.msg, msg, rmsgsz);
 			leave_serialize();

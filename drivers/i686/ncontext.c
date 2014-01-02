@@ -38,6 +38,9 @@ For more information, please refer to <http://unlicense.org/>
 static VP current_page_table = NULL;
 
 static void api_set_kernel_sp(const VP addr);
+static VP_INT *context_create_kernel(VP_INT *sp, const UW eflags, const FP eip);
+static VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
+		const VP esp);
 
 
 void context_initialize(void)
@@ -55,7 +58,7 @@ static void api_set_kernel_sp(const VP addr)
 	msr_write(sysenter_esp_msr, (UW)addr);
 }
 
-VP_INT *context_create_kernel(VP_INT *sp, const UW eflags, const FP eip)
+static VP_INT *context_create_kernel(VP_INT *sp, const UW eflags, const FP eip)
 {
 	VP_INT *esp0;
 
@@ -95,7 +98,7 @@ VP_INT *context_create_kernel(VP_INT *sp, const UW eflags, const FP eip)
 	return sp;
 }
 
-VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
+static VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
 		const VP esp)
 {
 	VP_INT *esp0;
@@ -172,14 +175,19 @@ void context_reset_page_cache(const VP page_table, const VP addr)
 
 void create_context(thread_t *th)
 {
-	if (is_kthread(th)) {
-		VP_INT *sp = th->attr.kstack_tail;
+	VP_INT *sp = th->attr.kstack_tail;
 
+	if (is_kthread(th)) {
 		*--sp = th->attr.arg;
 		*--sp = (INT)thread_end;
 		th->mpu.esp0 = context_create_kernel(
 				sp,
 				EFLAGS_INTERRUPT_ENABLE | EFLAGS_IOPL_3,
 				th->attr.entry);
-	}
+	} else
+		th->mpu.esp0 = context_create_user(
+				th->attr.kstack_tail,
+				EFLAGS_INTERRUPT_ENABLE | EFLAGS_IOPL_3,
+				th->attr.entry,
+				th->attr.ustack_top);
 }

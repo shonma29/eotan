@@ -40,9 +40,6 @@ extern ER context_mpu_handler(void);
 
 /* ncontext.c */
 extern void create_context(thread_t *th);
-extern VP_INT *context_create_kernel(VP_INT *sp, const UW eflags, const FP eip);
-extern VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
-		const VP esp);
 extern void context_initialize(void);
 extern void context_reset_page_cache(const VP page_table, const VP addr);
 extern void context_reset_page_table();
@@ -79,9 +76,9 @@ extern void panic(char *msg);
 
 /* util.c */
 extern void *getPageAddress(const PTE *dir, const void *addr);
-extern ER vmemcpy(const thread_t *th, const void *to, const void *from,
+extern ER copy_to(const thread_t *th, const void *to, const void *from,
 		const size_t bytes);
-extern ER vmemcpy2(const thread_t *th, const void *to, const void *from,
+extern ER copy_from(const thread_t *th, const void *to, const void *from,
 		const size_t bytes);
 
 /* memory.c */

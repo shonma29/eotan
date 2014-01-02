@@ -14,7 +14,6 @@ Version 2, June 1991
 #include <core.h>
 #include <boot/init.h>
 #include <local.h>
-#include <string.h>
 #include <mm/segment.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
@@ -43,7 +42,6 @@ static void create_user_stack(thread_t * tsk)
     tsk->ustack.max = pageRoundUp(USER_STACK_MAX_SIZE - PAGE_SIZE);
     tsk->ustack.attr = type_stack;
 
-    /* 物理メモリの割り当て */
     tsk->attr.ustack_tail = (VP)((UW)(tsk->ustack.addr) + tsk->ustack.max);
 }
 
@@ -53,7 +51,6 @@ static void create_user_stack(thread_t * tsk)
 ER mpu_copy_stack(ID src, W esp, ID dst)
 {
     thread_t *src_tsk, *dst_tsk;
-    UW dstp;
     UW size;
 
     src_tsk = get_thread_ptr(src);
@@ -75,14 +72,8 @@ ER mpu_copy_stack(ID src, W esp, ID dst)
     size = ((UW) src_tsk->attr.ustack_tail) - esp;
 
     /* src task のスタックの内容を dst task にコピー */
-    dstp = (UW) dst_tsk->attr.ustack_tail - size;
-    vmemcpy(dst_tsk, (VP) dstp, (VP) vtor(src_tsk, esp), size);
-
-    dst_tsk->mpu.esp0 = context_create_user(
-	    dst_tsk->attr.kstack_tail,
-	    EFLAGS_INTERRUPT_ENABLE | EFLAGS_IOPL_3,
-	    dst_tsk->attr.entry,
-	    (VP)dstp);
+    dst_tsk->attr.ustack_top = (VP)((UW) dst_tsk->attr.ustack_tail - size);
+    copy_to(dst_tsk, dst_tsk->attr.ustack_top, (VP) vtor(src_tsk, esp), size);
 
     leave_critical();
     return (E_OK);
@@ -170,7 +161,7 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
     stbase = (UW)tsk->attr.ustack_tail - roundUp(stsize, sizeof(VP));
     ap = bp = (char**)vtor(tsk, stbase);
 
-    err = vmemcpy2(tsk, (VP)ap, stackp, stsize);
+    err = copy_from(tsk, (VP)ap, stackp, stsize);
     if (err) {
 	leave_critical();
 	return err;
@@ -184,16 +175,10 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
     *--bp = (char*)(stbase + sizeof(VP) * (argc + 1));
     *--bp = (char*)stbase;
     *--bp = (char*)argc;
+    tsk->attr.ustack_top = (VP)(stbase - sizeof(int) * 4);
 
     /* レジスターの初期化 */
     tsk->attr.entry = (FP)eip;
-
-    /* タスクの初期化 */
-    tsk->mpu.esp0 = context_create_user(
-	    tsk->attr.kstack_tail,
-	    EFLAGS_INTERRUPT_ENABLE | EFLAGS_IOPL_3,
-	    tsk->attr.entry,
-	    (VP)(stbase - sizeof(int) * 4));
 
     leave_critical();
 

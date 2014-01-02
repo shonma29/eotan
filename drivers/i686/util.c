@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "mpufunc.h"
 
 
-ER vmemcpy(const thread_t *th, const void *to, const void *from,
+ER copy_to(const thread_t *th, const void *to, const void *from,
 		const size_t bytes)
 {
 	PTE *dir = (PTE*)kern_p2v(th->mpu.cr3);
@@ -78,7 +78,7 @@ ER vmemcpy(const thread_t *th, const void *to, const void *from,
 	return E_OK;
 }
 
-ER vmemcpy2(const thread_t *th, const void *to, const void *from,
+ER copy_from(const thread_t *th, const void *to, const void *from,
 		const size_t bytes)
 {
 	PTE *dir = (PTE*)kern_p2v(th->mpu.cr3);

@@ -413,7 +413,7 @@ int mm_thread_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			pri_user_foreground,
 			KTHREAD_STACK_SIZE,
 			NULL,
-			0
+			NULL
 		};
 		ER_ID result;
 		mm_thread_t *th;
