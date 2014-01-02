@@ -52,6 +52,8 @@ kthread_t delay_thread = { attach, process, detach };
 
 static ER_ID attach(void)
 {
+	system_info_t *info = (system_info_t*)SYSTEM_INFO_ADDR;
+
 	T_CTSK pk_ctsk = {
 		TA_HLNG, 0, process, pri_dispatcher,
 		KTHREAD_STACK_SIZE, NULL, NULL
@@ -59,8 +61,7 @@ static ER_ID attach(void)
 
 	lfq_initialize(&(((system_info_t*)SYSTEM_INFO_ADDR)->kqueue),
 			kqbuf, sizeof(delay_param_t), KQUEUE_SIZE);
-
-	return thread_create_auto(&pk_ctsk);
+	return info->delay_thread_id = thread_create_auto(&pk_ctsk);
 }
 
 static void process(VP_INT exinf)
@@ -102,8 +103,16 @@ static void detach(void)
 
 void kern_start(void)
 {
+	context_initialize();
+	global_initialize();
+	port_initialize();
+	queue_initialize();
+	thread_initialize();
+
 	if (core_initialize())
 		panic("failed to initialize");
+
+	run_init_program();
 
 	for (;;)
 		halt();

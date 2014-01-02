@@ -54,8 +54,6 @@ Version 2, June 1991
  *
  */
 #include <core.h>
-#include <nerve/config.h>
-#include <nerve/global.h>
 #include "func.h"
 #include "version.h"
 #include "arch/archfunc.h"
@@ -69,29 +67,12 @@ static void banner(void);
  */
 ER core_initialize(void)
 {
-    system_info_t *sysinfo = (system_info_t *)SYSTEM_INFO_ADDR;
-
     banner();			/* 立ち上げメッセージ出力               */
 
-    paging_reset();
-    context_initialize();
-
-    global_initialize();
-    queue_initialize();
-    port_initialize();
-    thread_initialize();		/* タスク管理機能の初期化 */
-
-    /* 1番目のタスクを初期化する。そしてそのタスクを以後の処
-     * 理で使用する。
-     */
-    idle_initialize();
-    sysinfo->delay_thread_id = delay_thread.attach();
-
+    delay_thread.attach();
     pic_initialize();
     interrupt_initialize();
     timer_initialize();		/* インターバルタイマ機能の初期化 */
-
-    run_init_program();
 
     return (E_OK);
 }

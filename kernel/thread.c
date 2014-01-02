@@ -40,6 +40,7 @@ static tree_t thread_tree;
 static int thread_hand;
 
 static inline thread_t *getThreadParent(const node_t *p);
+static ER_ID idle_initialize(void);
 static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid);
 static void release_resources(thread_t *th);
 
@@ -53,6 +54,7 @@ ER thread_initialize(void)
 	thread_hand = MIN_AUTO_ID - 1;
 
 	ready_initialize();
+	idle_initialize();
 
 	return E_OK;
 }
@@ -64,7 +66,7 @@ thread_t *get_thread_ptr(ID tskid)
 	return node? getThreadParent(node):NULL;
 }
 
-ER_ID idle_initialize(void)
+static ER_ID idle_initialize(void)
 {
 	ER_ID result;
 

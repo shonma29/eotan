@@ -67,7 +67,6 @@ extern node_t *find_empty_key(tree_t *tree, int *hand);
 
 /* thread.c */
 extern thread_t *get_thread_ptr(ID tskid);
-extern ER_ID idle_initialize(void);
 extern ER_ID thread_create_auto(T_CTSK *pk_ctsk);
 extern ER thread_destroy(ID tskid);
 extern void thread_end(void);

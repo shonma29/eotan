@@ -42,6 +42,7 @@ static void api_set_kernel_sp(const VP addr);
 
 void context_initialize(void)
 {
+	paging_reset();
 	tr_set(dummy_tss);
 	msr_write(sysenter_eip_msr, (UW)service_handler);
 }
