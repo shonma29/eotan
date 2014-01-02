@@ -179,7 +179,7 @@ ER_ID thread_create_auto(T_CTSK *pk_ctsk)
 
 static void release_resources(thread_t *th)
 {
-	release_memory(th);
+	pfree((VP)kern_v2p((char*)(th->attr.kstack_tail)) - KTHREAD_STACK_SIZE);
 }
 
 ER thread_destroy(ID tskid)

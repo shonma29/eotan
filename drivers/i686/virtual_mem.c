@@ -154,7 +154,6 @@ Version 2, June 1991
 
 #include <string.h>
 #include <core.h>
-#include <mm/segment.h>
 #include <mpu/memory.h>
 #include <func.h>
 #include <thread.h>
@@ -164,18 +163,9 @@ Version 2, June 1991
 /* vtor - 仮想メモリアドレスをカーネルから直接アクセス可能なアドレスに変換する
  *
  */
-UW vtor(ID tskid, UW addr)
+UW vtor(thread_t *taskp, UW addr)
 {
-    thread_t *taskp;
-    UW result;
-
-    taskp = (thread_t *) get_thread_ptr(tskid);
-    if (!taskp)
-    {
-	return (UW)(NULL);
-    }
-
-    result = (UW)getPageAddress((PTE*)kern_p2v((void*)(taskp->mpu.cr3)),
+    UW result = (UW)getPageAddress((PTE*)kern_p2v((void*)(taskp->mpu.cr3)),
 	    (void*)addr);
 
     return result? (result | getOffset((void*)addr)):result;
@@ -249,15 +239,7 @@ ER region_get(ID id, VP start, UW size, VP buf)
      * buf    リージョンから読み込んだデータを収めるバッファ
      */
 {
-    UW offset;
-    UW align_start;
-    UW align_end;
-    UW paddr;
-    UW copysize;
-    UW bufoffset;
-    UW p;
-    UW delta_start, delta_end;
-
+    thread_t *taskp;
 
     if (id < 0)
 	return (E_PAR);
@@ -268,40 +250,11 @@ ER region_get(ID id, VP start, UW size, VP buf)
     if (buf == NULL)
 	return (E_PAR);
 
-    align_start = pageRoundDown((UW)start);
-    align_end = pageRoundUp((UW)start + size);
+    taskp = (thread_t *) get_thread_ptr(id);
+    if (!taskp)
+	return (E_NOEXS);
 
-    bufoffset = 0;
-
-    for (p = align_start; p < align_end; p += PAGE_SIZE) {
-	paddr = (UW) vtor(id, p);	/* 物理メモリアドレスの取得 */
-	if (paddr == (UW)NULL) {
-	    return (E_PAR);
-	}
-
-	if (p == align_start) {
-	    offset = (UW) paddr + ((UW) start - align_start);
-	    delta_start = (UW) start - align_start;
-	} else {
-	    offset = (UW) paddr;
-	    delta_start = 0;
-	}
-
-	if ((p + PAGE_SIZE) >= align_end) {
-	    delta_end = align_end - p;
-	} else {
-	    delta_end = PAGE_SIZE;
-	}
-
-	copysize = delta_end - delta_start;
-	if (copysize > size)
-	    copysize = size;
-	memcpy(&((B*)buf)[bufoffset], (VP)offset, copysize);
-	bufoffset += copysize;
-	size -= copysize;
-    }
-
-    return (E_OK);
+    return vmemcpy2(taskp, buf, start, size);
 }
 
 /*

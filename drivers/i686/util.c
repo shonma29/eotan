@@ -30,7 +30,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/memory.h>
 #include <thread.h>
 #include "mpufunc.h"
-#include "func.h"
 
 
 ER vmemcpy(const thread_t *th, const void *to, const void *from,
@@ -79,6 +78,52 @@ ER vmemcpy(const thread_t *th, const void *to, const void *from,
 	return E_OK;
 }
 
+ER vmemcpy2(const thread_t *th, const void *to, const void *from,
+		const size_t bytes)
+{
+	PTE *dir = (PTE*)kern_p2v(th->mpu.cr3);
+	UB *w = (UB*)to;
+	UB *r = (UB*)from;
+	size_t left = bytes;
+	size_t offset = getOffset(r);
+
+	if (offset) {
+		void *p = getPageAddress(dir, r);
+		size_t len;
+	
+		if (!p)
+			return E_PAR;
+
+		len = PAGE_SIZE - offset;
+		if (len > left)
+			len = left;
+
+		memcpy(w, p + offset, len);
+		w += len;
+		r += len;
+		left -= len;
+	}
+
+	while (left) {
+		void *p = getPageAddress(dir, r);
+		size_t len;
+	
+		if (!p)
+			return E_PAR;
+
+		len = PAGE_SIZE;
+		if (len > left)
+			len = left;
+
+		memcpy(w, p, len);
+		w += len;
+		r += len;
+		left -= len;
+	}
+
+	return E_OK;
+}
+
 void *getPageAddress(const PTE *dir, const void *addr)
 {
 	PTE pte = dir[getDirectoryOffset(addr)];
@@ -92,9 +137,4 @@ void *getPageAddress(const PTE *dir, const void *addr)
 	}
 
 	return NULL;
-}
-
-void release_memory(thread_t *th)
-{
-	pfree((VP)kern_v2p((char*)(th->attr.kstack_tail)) - KTHREAD_STACK_SIZE);
 }

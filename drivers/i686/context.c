@@ -71,7 +71,7 @@ ER mpu_copy_stack(ID src, W esp, ID dst)
 
     /* src task のスタックの内容を dst task にコピー */
     dstp = (UW) dst_tsk->attr.ustack_tail - size;
-    region_put(dst, (VP) dstp, size, (VP) vtor(thread_id(src_tsk), esp));
+    region_put(dst, (VP) dstp, size, (VP) vtor(src_tsk, esp));
 
     dst_tsk->mpu.esp0 = context_create_user(
 	    dst_tsk->attr.kstack_tail,
@@ -165,7 +165,7 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
     stbase = (UW)tsk->attr.ustack_tail
 	    - roundUp(stsize, sizeof(VP));
     esp = (char **) stbase;
-    ap = bp = (char **) vtor(thread_id(tsk), stbase);
+    ap = bp = (char **) vtor(tsk, stbase);
 
     err = region_get(tid, stackp, stsize, (VP) ap);
     if (err)

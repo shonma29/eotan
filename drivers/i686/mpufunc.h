@@ -52,7 +52,7 @@ extern void context_switch(thread_t *prev, thread_t *next);
 extern ER region_get(ID id, VP start, UW size, VP buf);
 extern ER region_map(VP page_table, VP start, UW size, W accmode);
 extern ER region_put(ID id, VP start, UW size, VP buf);
-extern UW vtor(ID tskid, UW addr);
+extern UW vtor(thread_t *taskp, UW addr);
 
 /* fault.c */
 extern void fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
@@ -87,7 +87,8 @@ extern void panic(char *msg);
 extern void *getPageAddress(const PTE *dir, const void *addr);
 extern ER vmemcpy(const thread_t *th, const void *to, const void *from,
 		const size_t bytes);
-extern void release_memory(thread_t *th);
+extern ER vmemcpy2(const thread_t *th, const void *to, const void *from,
+		const size_t bytes);
 
 /* memory.c */
 extern PTE *copy_kernel_page_table(void);
