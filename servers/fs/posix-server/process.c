@@ -174,20 +174,19 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
       return (FALSE);
     }
 
-  main_thread_id = thread_create(child->proc_pid, req->param.par_fork.entry);
-  if (main_thread_id < 0)
+  error_no = proc_fork (procp, child);
+  if (error_no)
     {
-      printk ("posix: acre_tsk error (%d)\n", main_thread_id);
       proc_dealloc_proc(child->proc_pid);
       put_response (rdvno, error_no, -1, 0);
       return (FALSE);
     }
 
-  error_no = proc_fork (procp, child);
-  if (error_no)
+  main_thread_id = thread_create(child->proc_pid, req->param.par_fork.entry);
+  if (main_thread_id < 0)
     {
+      printk ("posix: acre_tsk error (%d)\n", main_thread_id);
       proc_dealloc_proc(child->proc_pid);
-      kcall->thread_destroy(main_thread_id);
       put_response (rdvno, error_no, -1, 0);
       return (FALSE);
     }

@@ -75,12 +75,12 @@ extern void paging_reset(void);
 /* panic.c */
 extern void panic(char *msg);
 
-/* util.c */
+/* address.c */
 extern void *getPageAddress(const PTE *dir, const void *addr);
+
+/* util.c */
 extern ER copy_to(thread_t *th, void *to, const void *from, const size_t bytes);
 extern ER copy_from(thread_t *th, void *to, const void *from,
-		const size_t bytes);
-extern ER move_stack(const PTE *page_table, void *to, const void *from,
 		const size_t bytes);
 
 /* memory.c */
@@ -88,6 +88,8 @@ extern PTE *copy_kernel_page_table(void);
 extern ER copy_user_pages(PTE *dest, const PTE *src, size_t cnt);
 extern ER map_user_pages(PTE *dir, VP addr, size_t cnt);
 extern ER unmap_user_pages(PTE *dir, VP addr, size_t cnt);
+extern ER move_stack(const PTE *page_table, void *to, const void *from,
+		const size_t bytes);
 
 /* handler.s */
 extern void service_handler(void);

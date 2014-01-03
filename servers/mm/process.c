@@ -77,7 +77,12 @@ static mm_thread_t *getMyThread(list_t *p)
 static void process_clear(mm_process_t *p)
 {
 	p->segments.heap.attr = attr_nil;
-	p->directory = NULL;
+
+	if (p->directory) {
+		kcall->pfree(p->directory);
+		p->directory = NULL;
+	}
+
 	list_initialize(&(p->threads));
 }
 
@@ -123,9 +128,20 @@ int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		size_t end;
 		mm_process_t *p = get_process((ID)args->arg1);
 
+		//TODO check duplicated process_id
 		if (!p) {
-			reply->error_no = ESRCH;
-			break;
+			p = (mm_process_t*)tree_put(&process_tree,
+					(ID)args->arg1);
+
+			if (!p) {
+				reply->error_no = ENOMEM;
+				break;
+			}
+
+			process_clear(p);
+
+			//TODO check NULL
+			p->directory = copy_kernel_page_table();
 		}
 
 		start = pageRoundDown(args->arg2);
@@ -175,6 +191,8 @@ int mm_process_destroy(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		p->segments.heap.max = 0;
 		p->segments.heap.attr = attr_nil;
 
+//		kcall->pfree(p->directory);
+
 		reply->error_no = EOK;
 		reply->result = 0;
 		return reply_success;
@@ -196,9 +214,20 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		}
 
 		dest = get_process((ID)args->arg2);
+		//TODO check duplicated process_id
 		if (!dest) {
-			reply->error_no = ESRCH;
-			break;
+			dest = (mm_process_t*)tree_put(&process_tree,
+					(ID)args->arg2);
+
+			if (!dest) {
+				reply->error_no = ENOMEM;
+				break;
+			}
+
+			process_clear(dest);
+
+			//TODO check NULL
+			dest->directory = copy_kernel_page_table();
 		}
 
 		if (copy_user_pages(dest->directory, src->directory,
@@ -436,20 +465,11 @@ int mm_thread_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		mm_process_t *p = get_process((ID)args->arg1);
 
 		if (!p) {
-			p = (mm_process_t*)tree_put(&process_tree,
-					(ID)args->arg1);
-
-			if (!p) {
-				reply->error_no = ENOMEM;
-				break;
-			}
-
-			process_clear(p);
+			reply->error_no = ESRCH;
+			break;
 		}
 
 		pk_ctsk.task = (FP)(args->arg2);
-		//TODO check NULL
-		p->directory = copy_kernel_page_table();
 		pk_ctsk.page_table = p->directory;
 
 		result = kcall->thread_create_auto(&pk_ctsk);

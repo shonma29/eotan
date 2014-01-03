@@ -61,17 +61,21 @@ W exec_init(ID process_id, char *pathname)
 
 	p = (init_arg_t*)buf;
 	p->arg0 = p->buf;
+//TODO stack argc, argv, envp
 	p->arg1 = NULL;
 	p->env0 = NULL;
 	strcpy(p->buf, pathname);
 	req.param.par_execve.stackp = (VP)p;
 
-	req.caller = thread_create(process_id, &dummy);
-	if (req.caller < 0) {
-		return ESVC;
+	err = create_init(process_id);
+	if (!err) {
+		req.caller = thread_create(process_id, &dummy);
+		if (req.caller < 0) {
+			//TODO destroy vmtree and process
+			return ESVC;
+		}
 	}
 
-	err = create_init(process_id);
 	if (!err)
 		err = exec_program(&req, process_id, pathname);
 

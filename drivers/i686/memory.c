@@ -29,10 +29,13 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/memory.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
-#include "paging.h"
 #include "func.h"
+#include "mpufunc.h"
+#include "paging.h"
 
 static kcall_t *kcall = (kcall_t*)KCALL_ADDR;
+
+static void memrcpy(char *to, const char *from, const size_t bytes);
 
 
 PTE *copy_kernel_page_table(void)
@@ -212,6 +215,57 @@ ER unmap_user_pages(PTE *dir, VP addr, size_t cnt)
 			}
 		}
 //TODO release upper page table
+	}
+
+	return E_OK;
+}
+
+static void memrcpy(char *to, const char *from, const size_t bytes)
+{
+	char *w = to;
+	char *r = (char*)from;
+	size_t len;
+
+	for (len = bytes; len; len--)
+		*--w = *--r;
+}
+
+ER move_stack(const PTE *page_table, void *to, const void *from,
+		const size_t bytes)
+{
+	PTE *dir = (PTE*)kern_p2v(page_table);
+	size_t left = bytes;
+	size_t roffset = getOffset((void*)((UW)from + left));
+	size_t woffset = PAGE_SIZE - roffset;
+	void *q = getPageAddress(dir, (void*)((UW)from + left - 1));
+
+	if (!q)
+		return E_PAR;
+
+	while (left) {
+		void *p = getPageAddress(dir, (void*)((UW)to + left - 1));
+
+		if (!p)
+			return E_PAR;
+
+		if (roffset) {
+			size_t len = (roffset > left)? left:roffset;
+
+			memrcpy(p + PAGE_SIZE, q + roffset, len);
+			left -= len;
+			if (!left)
+				break;
+		}
+
+		q = getPageAddress(dir, (void*)((UW)from + left - 1));
+		if (q) {
+			size_t len = (woffset > left)? left:woffset;
+
+			memrcpy(p + woffset, q + PAGE_SIZE, len);
+			left -= len;
+		}
+		else
+			return E_PAR;
 	}
 
 	return E_OK;

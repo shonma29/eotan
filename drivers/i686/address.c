@@ -25,66 +25,22 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <string.h>
+#include <stddef.h>
 #include <mpu/memory.h>
-#include <thread.h>
-#include "mpufunc.h"
+#include "paging.h"
 
 
-ER copy_to(thread_t *th, void *to, const void *from, const size_t bytes)
+void *getPageAddress(const PTE *dir, const void *addr)
 {
-	PTE *dir = (PTE*)kern_p2v(th->mpu.cr3);
-	UB *w = (UB*)to;
-	UB *r = (UB*)from;
-	size_t left = bytes;
-	size_t offset = getOffset(w);
+	PTE pte = dir[getDirectoryOffset(addr)];
 
-	while (left) {
-		void *p = getPageAddress(dir, w);
-		size_t len;
-	
-		if (!p)
-			return E_PAR;
+	if (pte & PAGE_PRESENT) {
+		PTE *table = (PTE*)kern_p2v((void*)(pte & PAGE_ADDR_MASK));
 
-		len = PAGE_SIZE - offset;
-		if (len > left)
-			len = left;
-
-		memcpy(p + offset, r, len);
-		offset = 0;
-		w += len;
-		r += len;
-		left -= len;
+		pte = table[getPageOffset(addr)];
+		if (pte & PAGE_PRESENT)
+			return kern_p2v((void*)(pte & PAGE_ADDR_MASK));
 	}
 
-	return E_OK;
-}
-
-ER copy_from(thread_t *th, void *to, const void *from, const size_t bytes)
-{
-	PTE *dir = (PTE*)kern_p2v(th->mpu.cr3);
-	UB *w = (UB*)to;
-	UB *r = (UB*)from;
-	size_t left = bytes;
-	size_t offset = getOffset(r);
-
-	while (left) {
-		void *p = getPageAddress(dir, r);
-		size_t len;
-	
-		if (!p)
-			return E_PAR;
-
-		len = PAGE_SIZE - offset;
-		if (len > left)
-			len = left;
-
-		memcpy(w, p + offset, len);
-		offset = 0;
-		w += len;
-		r += len;
-		left -= len;
-	}
-
-	return E_OK;
+	return NULL;
 }
