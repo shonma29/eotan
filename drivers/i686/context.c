@@ -136,8 +136,7 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
 {
     thread_t *tsk = get_thread_ptr(tid & INIT_THREAD_ID_MASK);
     UW stbase;
-    W err, argc;
-    char **ap, **bp;
+    W err;
 
     if (!tsk)
 	return (E_NOEXS);
@@ -158,23 +157,14 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
 	create_user_stack(tsk);
     }
 
-    stbase = (UW)tsk->attr.ustack_tail - roundUp(stsize, sizeof(VP));
-    ap = bp = (char**)vtor(tsk, stbase);
+    stbase = (UW)tsk->attr.ustack_tail - stsize;
     err = move_stack(tsk, (VP)stbase, stackp, stsize);
     if (err) {
 	leave_critical();
 	return err;
     }
 
-    for (argc = 0; *ap; argc++, ap++)
-	*ap = (char*)((UW)*ap + stbase);
-    for (ap++; *ap; ap++)
-	*ap = (char*)((UW)*ap + stbase);
-
-    *--bp = (char*)(stbase + sizeof(VP) * (argc + 1));
-    *--bp = (char*)stbase;
-    *--bp = (char*)argc;
-    tsk->attr.ustack_top = (VP)(stbase - sizeof(int) * 4);
+    tsk->attr.ustack_top = (VP)(stbase - sizeof(int));
 
     /* レジスターの初期化 */
     tsk->attr.entry = (FP)eip;
