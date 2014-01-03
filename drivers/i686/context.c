@@ -43,24 +43,6 @@ void create_user_stack(thread_t * tsk)
     tsk->attr.ustack_tail = (VP)((UW)(tsk->ustack.addr) + tsk->ustack.max);
 }
 
-/*
- * mpu_copy_stack
- */
-ER mpu_copy_stack(ID tid, W esp)
-{
-    thread_t *th = get_thread_ptr(tid);
-
-    if (!th)
-	return (E_NOEXS);
-
-    enter_critical();
-
-    th->attr.ustack_top = (VP)esp;
-
-    leave_critical();
-    return (E_OK);
-}
-
 static void kill(void)
 {
     thread_local_t *local = (thread_local_t*)LOCAL_ADDR;

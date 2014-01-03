@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 
 
-ER_ID thread_create(ID pid, FP entry)
+ER_ID thread_create(ID pid, FP entry, VP sp)
 {
 //	thread_local_t *local = _get_local();
 	mm_args_t args;
@@ -43,6 +43,7 @@ ER_ID thread_create(ID pid, FP entry)
 	args.syscall_no = mm_syscall_thread_create;
 	args.arg1 = (long int)pid;
 	args.arg2 = (long int)entry;
+	args.arg3 = (long int)sp;
 	reply_size = kcall->port_call(PORT_MM, &args, sizeof(args));
 
 	if (reply_size == sizeof(*reply)) {

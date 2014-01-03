@@ -39,7 +39,6 @@ extern int mm_clock_gettime(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_process_destroy(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_process_copy_stack(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);

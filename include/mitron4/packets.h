@@ -39,6 +39,7 @@ typedef struct t_ctsk {
 	SIZE stksz;
 	VP stk;
 	VP page_table;
+	VP ustack_top;
 } T_CTSK;
 
 /**

@@ -251,30 +251,6 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	return reply_failure;
 }
 
-int mm_process_copy_stack(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
-{
-	do {
-		mm_thread_t *th = get_thread((ID)args->arg1);
-
-		if (!th) {
-			reply->error_no = ESRCH;
-			break;
-		}
-
-		if (kcall->mpu_copy_stack((ID)(args->arg1), (W)(args->arg2))) {
-			reply->error_no = EFAULT;
-			break;
-		}
-
-		reply->error_no = EOK;
-		reply->result = 0;
-		return reply_success;
-	} while (FALSE);
-
-	reply->result = -1;
-	return reply_failure;
-}
-
 int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
@@ -458,6 +434,7 @@ int mm_thread_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			pri_user_foreground,
 			KTHREAD_STACK_SIZE,
 			NULL,
+			NULL,
 			NULL
 		};
 		ER_ID result;
@@ -471,6 +448,7 @@ int mm_thread_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 
 		pk_ctsk.task = (FP)(args->arg2);
 		pk_ctsk.page_table = p->directory;
+		pk_ctsk.ustack_top = (VP)(args->arg3);
 
 		result = kcall->thread_create_auto(&pk_ctsk);
 		if (result < 0) {

@@ -244,6 +244,7 @@ void start(VP_INT exinf)
 		pri_server_middle,
 		KTHREAD_STACK_SIZE,
 		NULL,
+		NULL,
 		NULL
 	};
 

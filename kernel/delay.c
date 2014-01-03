@@ -56,7 +56,7 @@ static ER_ID attach(void)
 
 	T_CTSK pk_ctsk = {
 		TA_HLNG, 0, process, pri_dispatcher,
-		KTHREAD_STACK_SIZE, NULL, NULL
+		KTHREAD_STACK_SIZE, NULL, NULL, NULL
 	};
 
 	lfq_initialize(&(((system_info_t*)SYSTEM_INFO_ADDR)->kqueue),

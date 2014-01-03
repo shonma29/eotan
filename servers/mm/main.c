@@ -40,7 +40,6 @@ static int (*funcs[])(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args) = {
 	mm_process_create,
 	mm_process_destroy,
 	mm_process_duplicate,
-	mm_process_copy_stack,
 	mm_process_set_context,
 	mm_vmap,
 	mm_vunmap,

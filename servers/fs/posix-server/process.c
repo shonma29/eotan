@@ -182,7 +182,8 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
       return (FALSE);
     }
 
-  main_thread_id = thread_create(child->proc_pid, req->param.par_fork.entry);
+  main_thread_id = thread_create(child->proc_pid, req->param.par_fork.entry,
+      (VP)(req->param.par_fork.sp));
   if (main_thread_id < 0)
     {
       printk ("posix: acre_tsk error (%d)\n", main_thread_id);
@@ -203,7 +204,6 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
       put_response (rdvno, error_no, -1, 0);
     }
 
-  process_copy_stack(main_thread_id, (W)(req->param.par_fork.sp));
   kcall->thread_start(main_thread_id);
 
   put_response (rdvno, EOK, child->proc_pid, 0);	/* 親プロセスに対して応答 */

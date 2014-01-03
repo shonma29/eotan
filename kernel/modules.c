@@ -76,6 +76,7 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr)
 		pri_server_middle,
 		KTHREAD_STACK_SIZE,
 		NULL,
+		NULL,
 		NULL
 	};
 

@@ -78,7 +78,6 @@ static void kcall_initialize(void)
 
 	p->region_get = region_get;
 	p->region_put = region_put;
-	p->mpu_copy_stack = mpu_copy_stack;
 	p->mpu_set_context = mpu_set_context;
 
 	p->port_create = port_create;

@@ -134,6 +134,7 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid)
 	th->attr.priority = pk_ctsk->itskpri;
 	th->attr.arg = pk_ctsk->exinf;
 	th->attr.kstack_tail = (char*)kern_p2v(p) + pk_ctsk->stksz;
+	th->attr.ustack_top = pk_ctsk->ustack_top;
 	th->attr.entry = pk_ctsk->task;
 
 	context_set_kernel_sp(&(th->mpu), th->attr.kstack_tail);
