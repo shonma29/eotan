@@ -39,6 +39,7 @@ execve(char *name, char *argv[], char *envp[])
   }
   else
     envc = 0;
+  stsize = (stsize + sizeof(int) - 1) & ~(sizeof(int) - 1);
   stsize += (argc + 1)*4 + (envc + 1)*4;
   {
     char buf[stsize], *strp;

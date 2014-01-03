@@ -31,9 +31,11 @@ For more information, please refer to <http://unlicense.org/>
 #include <thread.h>
 #include "mpufunc.h"
 
+#include <func.h>
+static void memrcpy(char *to, const char *from, const size_t bytes);
 
-ER copy_to(const thread_t *th, const void *to, const void *from,
-		const size_t bytes)
+
+ER copy_to(thread_t *th, void *to, const void *from, const size_t bytes)
 {
 	PTE *dir = (PTE*)kern_p2v(th->mpu.cr3);
 	UB *w = (UB*)to;
@@ -41,7 +43,7 @@ ER copy_to(const thread_t *th, const void *to, const void *from,
 	size_t left = bytes;
 	size_t offset = getOffset(w);
 
-	if (offset) {
+	while (left) {
 		void *p = getPageAddress(dir, w);
 		size_t len;
 	
@@ -53,23 +55,7 @@ ER copy_to(const thread_t *th, const void *to, const void *from,
 			len = left;
 
 		memcpy(p + offset, r, len);
-		w += len;
-		r += len;
-		left -= len;
-	}
-
-	while (left) {
-		void *p = getPageAddress(dir, w);
-		size_t len;
-	
-		if (!p)
-			return E_PAR;
-
-		len = PAGE_SIZE;
-		if (len > left)
-			len = left;
-
-		memcpy(p, r, len);
+		offset = 0;
 		w += len;
 		r += len;
 		left -= len;
@@ -78,8 +64,7 @@ ER copy_to(const thread_t *th, const void *to, const void *from,
 	return E_OK;
 }
 
-ER copy_from(const thread_t *th, const void *to, const void *from,
-		const size_t bytes)
+ER copy_from(thread_t *th, void *to, const void *from, const size_t bytes)
 {
 	PTE *dir = (PTE*)kern_p2v(th->mpu.cr3);
 	UB *w = (UB*)to;
@@ -87,7 +72,7 @@ ER copy_from(const thread_t *th, const void *to, const void *from,
 	size_t left = bytes;
 	size_t offset = getOffset(r);
 
-	if (offset) {
+	while (left) {
 		void *p = getPageAddress(dir, r);
 		size_t len;
 	
@@ -99,26 +84,60 @@ ER copy_from(const thread_t *th, const void *to, const void *from,
 			len = left;
 
 		memcpy(w, p + offset, len);
+		offset = 0;
 		w += len;
 		r += len;
 		left -= len;
 	}
 
+	return E_OK;
+}
+
+static void memrcpy(char *to, const char *from, const size_t bytes)
+{
+	char *w = to;
+	char *r = (char*)from;
+	size_t len;
+
+	for (len = bytes; len; len--)
+		*--w = *--r;
+}
+
+ER move_stack(thread_t *th, void *to, const void *from, const size_t bytes)
+{
+	PTE *dir = (PTE*)kern_p2v(th->mpu.cr3);
+	size_t left = bytes;
+	size_t roffset = getOffset((void*)((UW)from + left));
+	size_t woffset = PAGE_SIZE - roffset;
+	void *q = getPageAddress(dir, (void*)((UW)from + left - 1));
+
+	if (!q)
+		return E_PAR;
+
 	while (left) {
-		void *p = getPageAddress(dir, r);
-		size_t len;
-	
+		void *p = getPageAddress(dir, (void*)((UW)to + left - 1));
+
 		if (!p)
 			return E_PAR;
 
-		len = PAGE_SIZE;
-		if (len > left)
-			len = left;
+		if (roffset) {
+			size_t len = (roffset > left)? left:roffset;
 
-		memcpy(w, p, len);
-		w += len;
-		r += len;
-		left -= len;
+			memrcpy(p + PAGE_SIZE, q + roffset, len);
+			left -= len;
+			if (!left)
+				break;
+		}
+
+		q = getPageAddress(dir, (void*)((UW)from + left - 1));
+		if (q) {
+			size_t len = (woffset > left)? left:woffset;
+
+			memrcpy(p + woffset, q + PAGE_SIZE, len);
+			left -= len;
+		}
+		else
+			return E_PAR;
 	}
 
 	return E_OK;

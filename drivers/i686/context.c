@@ -160,8 +160,7 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
 
     stbase = (UW)tsk->attr.ustack_tail - roundUp(stsize, sizeof(VP));
     ap = bp = (char**)vtor(tsk, stbase);
-
-    err = copy_from(tsk, (VP)ap, stackp, stsize);
+    err = move_stack(tsk, (VP)stbase, stackp, stsize);
     if (err) {
 	leave_critical();
 	return err;

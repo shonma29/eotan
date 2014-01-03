@@ -76,9 +76,10 @@ extern void panic(char *msg);
 
 /* util.c */
 extern void *getPageAddress(const PTE *dir, const void *addr);
-extern ER copy_to(const thread_t *th, const void *to, const void *from,
+extern ER copy_to(thread_t *th, void *to, const void *from, const size_t bytes);
+extern ER copy_from(thread_t *th, void *to, const void *from,
 		const size_t bytes);
-extern ER copy_from(const thread_t *th, const void *to, const void *from,
+extern ER move_stack(thread_t *th, void *to, const void *from,
 		const size_t bytes);
 
 /* memory.c */
