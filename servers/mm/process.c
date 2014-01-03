@@ -255,6 +255,9 @@ int mm_process_copy_stack(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
+		size_t stack_size;
+		size_t stack_top;
+		mm_process_t *proc;
 		mm_thread_t *th = get_thread((ID)args->arg1 & INIT_THREAD_ID_MASK);
 
 		if (!th) {
@@ -262,8 +265,27 @@ int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
+		proc = get_process(th->process_id);
+		if (!proc) {
+			reply->error_no = ESRCH;
+			break;
+		}
+
+		stack_size = (size_t)(args->arg4);
+		if (stack_size > USER_STACK_INITIAL_SIZE) {
+			reply->error_no = E2BIG;
+			break;
+		}
+
+		stack_top = pageRoundDown(LOCAL_ADDR - PAGE_SIZE) - stack_size;
+		if (move_stack(proc->directory, (void*)stack_top,
+				(void*)(args->arg3), stack_size)) {
+			reply->error_no = EFAULT;
+			break;
+		}
+
 		if (kcall->mpu_set_context((ID)(args->arg1), (W)(args->arg2),
-				(B*)(args->arg3), (W)(args->arg4))) {
+				(W)(stack_top - sizeof(int)))) {
 			reply->error_no = EFAULT;
 			break;
 		}

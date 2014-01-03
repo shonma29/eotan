@@ -103,9 +103,10 @@ static void memrcpy(char *to, const char *from, const size_t bytes)
 		*--w = *--r;
 }
 
-ER move_stack(thread_t *th, void *to, const void *from, const size_t bytes)
+ER move_stack(const PTE *page_table, void *to, const void *from,
+		const size_t bytes)
 {
-	PTE *dir = (PTE*)kern_p2v(th->mpu.cr3);
+	PTE *dir = (PTE*)kern_p2v(page_table);
 	size_t left = bytes;
 	size_t roffset = getOffset((void*)((UW)from + left));
 	size_t woffset = PAGE_SIZE - roffset;

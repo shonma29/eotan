@@ -46,7 +46,7 @@ typedef struct {
 	ER (*region_put)(const ID id, void *to, const size_t size,
 			const void *from);
 	ER (*mpu_copy_stack)(ID src, W esp, ID dst);
-	ER (*mpu_set_context)(ID tid, W eip, B *stackp, W stsize);
+	ER (*mpu_set_context)(ID tid, W eip, W esp);
 	ER (*port_create)(ID porid, T_CPOR *pk_cpor);
 	ER_ID (*port_create_auto)(T_CPOR *pk_cpor);
 	ER (*port_destroy)(ID porid);

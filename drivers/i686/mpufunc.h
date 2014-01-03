@@ -34,7 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 
 /* context.c */
 extern ER mpu_copy_stack(ID src, W esp, ID dst);
-extern ER mpu_set_context(ID tid, W eip, B * stackp, W stsize);
+extern ER mpu_set_context(ID tid, W eip, W esp);
 extern ER context_page_fault_handler(void);
 extern ER context_mpu_handler(void);
 
@@ -79,7 +79,7 @@ extern void *getPageAddress(const PTE *dir, const void *addr);
 extern ER copy_to(thread_t *th, void *to, const void *from, const size_t bytes);
 extern ER copy_from(thread_t *th, void *to, const void *from,
 		const size_t bytes);
-extern ER move_stack(thread_t *th, void *to, const void *from,
+extern ER move_stack(const PTE *page_table, void *to, const void *from,
 		const size_t bytes);
 
 /* memory.c */

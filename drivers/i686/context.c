@@ -73,6 +73,7 @@ ER mpu_copy_stack(ID src, W esp, ID dst)
 
     /* src task のスタックの内容を dst task にコピー */
     dst_tsk->attr.ustack_top = (VP)((UW) dst_tsk->attr.ustack_tail - size);
+    //TODO copy user stack over 4KB
     copy_to(dst_tsk, dst_tsk->attr.ustack_top, (VP) vtor(src_tsk, esp), size);
 
     leave_critical();
@@ -132,23 +133,12 @@ ER context_mpu_handler(void)
 }
 
 /* mpu_set_context */
-ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
+ER mpu_set_context(ID tid, W eip, W esp)
 {
     thread_t *tsk = get_thread_ptr(tid & INIT_THREAD_ID_MASK);
-    UW stbase;
-    W err;
 
     if (!tsk)
 	return (E_NOEXS);
-
-    /* stack frame の作成． */
-    /* stack のサイズが USER_STACK_INITIAL_SIZE を越えると問題が発生する可能性あり */
-    /* これに対応するには palloc で割り当てたメモリに stack frame を作成し */
-    /* vput_reg する */
-    if (stsize >= USER_STACK_INITIAL_SIZE) {
-	printk("WARNING mpu_set_context: stack size is too large\n");
-	return (E_PAR);
-    }
 
     enter_critical();
 
@@ -157,14 +147,7 @@ ER mpu_set_context(ID tid, W eip, B * stackp, W stsize)
 	create_user_stack(tsk);
     }
 
-    stbase = (UW)tsk->attr.ustack_tail - stsize;
-    err = move_stack(tsk, (VP)stbase, stackp, stsize);
-    if (err) {
-	leave_critical();
-	return err;
-    }
-
-    tsk->attr.ustack_top = (VP)(stbase - sizeof(int));
+    tsk->attr.ustack_top = (VP)esp;
 
     /* レジスターの初期化 */
     tsk->attr.entry = (FP)eip;
