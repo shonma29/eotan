@@ -28,7 +28,6 @@ Version 2, June 1991
 
 static void create_user_stack(thread_t * tsk);
 static void kill(void);
-static UW vtor(thread_t *taskp, UW addr);
 static ER region_map(VP page_table, VP start, UW size, W accmode);
 
 
@@ -48,33 +47,19 @@ static void create_user_stack(thread_t * tsk)
 /*
  * mpu_copy_stack
  */
-ER mpu_copy_stack(ID src, W esp, ID dst)
+ER mpu_copy_stack(ID tid, W esp)
 {
-    thread_t *src_tsk, *dst_tsk;
-    UW size;
+    thread_t *th = get_thread_ptr(tid);
 
-    src_tsk = get_thread_ptr(src);
-
-    if (!src_tsk) {
+    if (!th)
 	return (E_NOEXS);
-    }
-
-    dst_tsk = get_thread_ptr(dst);
-    if (!dst_tsk) {
-	return (E_NOEXS);
-    }
 
     enter_critical();
 
     /* dst task に新しいスタックポインタを割り付ける */
-    create_user_stack(dst_tsk);
+    create_user_stack(th);
 
-    size = ((UW) src_tsk->attr.ustack_tail) - esp;
-
-    /* src task のスタックの内容を dst task にコピー */
-    dst_tsk->attr.ustack_top = (VP)((UW) dst_tsk->attr.ustack_tail - size);
-    //TODO copy user stack over 4KB
-    copy_to(dst_tsk, dst_tsk->attr.ustack_top, (VP) vtor(src_tsk, esp), size);
+    th->attr.ustack_top = (VP)esp;
 
     leave_critical();
     return (E_OK);
@@ -155,17 +140,6 @@ ER mpu_set_context(ID tid, W eip, W esp)
     leave_critical();
 
     return (E_OK);
-}
-
-/* vtor - 仮想メモリアドレスをカーネルから直接アクセス可能なアドレスに変換する
- *
- */
-static UW vtor(thread_t *taskp, UW addr)
-{
-    UW result = (UW)getPageAddress((PTE*)kern_p2v((void*)(taskp->mpu.cr3)),
-	    (void*)addr);
-
-    return result? (result | getOffset((void*)addr)):result;
 }
 
 /*

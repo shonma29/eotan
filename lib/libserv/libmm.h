@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 extern int process_create(ID pid, VP addr, size_t initial_len, VP heap_end);
 extern int process_destroy(ID pid);
 extern int process_duplicate(ID src_process, ID dest_process);
-extern int process_copy_stack(ID src_thread, W esp, ID dest_thread);
+extern int process_copy_stack(ID tid, W esp);
 extern int process_set_context(ID tid, W eip, B *stack, W stacksz);
 extern int vmap(ID pid, VP addr, UW len, W attr);
 extern int vunmap(ID pid, VP addr, UW len);

@@ -33,7 +33,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "paging.h"
 
 /* context.c */
-extern ER mpu_copy_stack(ID src, W esp, ID dst);
+extern ER mpu_copy_stack(ID tid, W esp);
 extern ER mpu_set_context(ID tid, W eip, W esp);
 extern ER context_page_fault_handler(void);
 extern ER context_mpu_handler(void);

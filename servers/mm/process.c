@@ -202,8 +202,10 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		}
 
 		if (copy_user_pages(dest->directory, src->directory,
-				pageRoundUp((UW)(src->segments.heap.addr)
-						+ src->segments.heap.len)
+//TODO copy only current stack
+				pageRoundUp(LOCAL_ADDR - PAGE_SIZE)
+//				pageRoundUp((UW)(src->segments.heap.addr)
+//						+ src->segments.heap.len)
 						>> BITS_OFFSET)) {
 			reply->error_no = EFAULT;
 			break;
@@ -223,22 +225,14 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_process_copy_stack(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
-		mm_thread_t *dest;
-		mm_thread_t *src = get_thread((ID)args->arg1);
+		mm_thread_t *th = get_thread((ID)args->arg1);
 
-		if (!src) {
+		if (!th) {
 			reply->error_no = ESRCH;
 			break;
 		}
 
-		dest = get_thread((ID)args->arg3);
-		if (!dest) {
-			reply->error_no = ESRCH;
-			break;
-		}
-
-		if (kcall->mpu_copy_stack((ID)(args->arg1), (W)(args->arg2),
-				(ID)(args->arg3))) {
+		if (kcall->mpu_copy_stack((ID)(args->arg1), (W)(args->arg2))) {
 			reply->error_no = EFAULT;
 			break;
 		}
