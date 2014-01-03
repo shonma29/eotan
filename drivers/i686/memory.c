@@ -57,7 +57,8 @@ ER copy_user_pages(PTE *dest, const PTE *src, size_t cnt)
 {
 	PTE *srcdir = (PTE*)kern_p2v(src);
 	PTE *destdir = (PTE*)kern_p2v(dest);
-	size_t n = (size_t)getDirectoryOffset((void*)SUPERVISOR_START);
+	size_t n = (size_t)getDirectoryOffset((void*)SUPERVISOR_START)
+			* PTE_PER_PAGE;
 	size_t i;
 
 	if (n > cnt)
@@ -120,7 +121,8 @@ ER copy_user_pages(PTE *dest, const PTE *src, size_t cnt)
 
 ER map_user_pages(PTE *dir, VP addr, size_t cnt)
 {
-	size_t n = (size_t)getDirectoryOffset((void*)SUPERVISOR_START);
+	size_t n = (size_t)getDirectoryOffset((void*)SUPERVISOR_START)
+			* PTE_PER_PAGE;
 	size_t i = (((unsigned int)addr) >> (BITS_PAGE + BITS_OFFSET)) & MASK_PAGE;
 	size_t j = (((unsigned int)addr) >> BITS_OFFSET) & MASK_PAGE;
 
@@ -174,7 +176,8 @@ ER map_user_pages(PTE *dir, VP addr, size_t cnt)
 
 ER unmap_user_pages(PTE *dir, VP addr, size_t cnt)
 {
-	size_t n = (size_t)getDirectoryOffset((void*)SUPERVISOR_START);
+	size_t n = (size_t)getDirectoryOffset((void*)SUPERVISOR_START)
+			* PTE_PER_PAGE;
 	size_t i = (((unsigned int)addr) >> (BITS_PAGE + BITS_OFFSET)) & MASK_PAGE;
 	size_t j = (((unsigned int)addr) >> BITS_OFFSET) & MASK_PAGE;
 
