@@ -142,6 +142,7 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid)
 					(VP)KTHREAD_DIR_ADDR
 					//TODO null check
 					:th->attr.page_table);
+	create_user_stack(th);
 
 	return E_OK;
 }

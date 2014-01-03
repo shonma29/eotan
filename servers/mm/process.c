@@ -252,7 +252,7 @@ int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		size_t stack_size;
 		size_t stack_top;
 		mm_process_t *proc;
-		mm_thread_t *th = get_thread((ID)args->arg1 & INIT_THREAD_ID_MASK);
+		mm_thread_t *th = get_thread((ID)args->arg1);
 
 		if (!th) {
 			reply->error_no = ESRCH;

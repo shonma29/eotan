@@ -37,7 +37,4 @@ For more information, please refer to <http://unlicense.org/>
 #define INIT_EGID (0)
 #define INIT_UMASK (022)
 
-#define INIT_THREAD_ID_FLAG 0x80000000
-#define INIT_THREAD_ID_MASK ~(INIT_THREAD_ID_FLAG)
-
 #endif

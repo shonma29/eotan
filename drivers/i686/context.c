@@ -26,7 +26,6 @@ Version 2, June 1991
 #include "interrupt.h"
 #include "mpufunc.h"
 
-static void create_user_stack(thread_t * tsk);
 static void kill(void);
 static ER region_map(VP page_table, VP start, UW size, W accmode);
 
@@ -34,7 +33,7 @@ static ER region_map(VP page_table, VP start, UW size, W accmode);
 /*
  * create_user_stack
  */
-static void create_user_stack(thread_t * tsk)
+void create_user_stack(thread_t * tsk)
 {
     tsk->ustack.addr = (VP) pageRoundDown(LOCAL_ADDR - USER_STACK_MAX_SIZE);
     tsk->ustack.len = pageRoundUp(USER_STACK_INITIAL_SIZE);
@@ -55,9 +54,6 @@ ER mpu_copy_stack(ID tid, W esp)
 	return (E_NOEXS);
 
     enter_critical();
-
-    /* dst task に新しいスタックポインタを割り付ける */
-    create_user_stack(th);
 
     th->attr.ustack_top = (VP)esp;
 
@@ -120,17 +116,12 @@ ER context_mpu_handler(void)
 /* mpu_set_context */
 ER mpu_set_context(ID tid, W eip, W esp)
 {
-    thread_t *tsk = get_thread_ptr(tid & INIT_THREAD_ID_MASK);
+    thread_t *tsk = get_thread_ptr(tid);
 
     if (!tsk)
 	return (E_NOEXS);
 
     enter_critical();
-
-    if (tid & INIT_THREAD_ID_FLAG) {
-	tid &= INIT_THREAD_ID_MASK;
-	create_user_stack(tsk);
-    }
 
     tsk->attr.ustack_top = (VP)esp;
 
