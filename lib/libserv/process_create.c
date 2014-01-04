@@ -52,7 +52,7 @@ int process_create(ID pid, VP addr, size_t initial_len, VP heap_end)
 		return reply->result;
 
 	} else {
-//		local->error_no = ESVC;
+//		local->error_no = ECONNREFUSED;
 		return -1;
 	}
 }

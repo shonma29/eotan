@@ -35,7 +35,6 @@ getcwd (char *buf, int size)
     }
     strncpy(buf, (B*)(local_data->cwd), size - 1);
     buf[size - 1] = '\0';
-    local_data->error_no = EOK;
     return (buf);
 }
 

@@ -72,7 +72,7 @@ W exec_init(ID process_id, char *pathname)
 		req.caller = thread_create(process_id, &dummy, NULL);
 		if (req.caller < 0) {
 			//TODO destroy vmtree and process
-			return ESVC;
+			return ECONNREFUSED;
 		}
 	}
 

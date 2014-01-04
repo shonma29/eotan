@@ -52,7 +52,7 @@ int vmap(ID pid, VP addr, UW len, W attr)
 		return reply->result;
 
 	} else {
-//		local->error_no = ESVC;
+//		local->error_no = ECONNREFUSED;
 		return -1;
 	}
 }

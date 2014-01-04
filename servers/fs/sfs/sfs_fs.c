@@ -235,7 +235,7 @@ W sfs_umount(struct fs * rootfsp)
  */
 W sfs_statfs()
 {
-    return (ENOSUP);
+    return (ENOTSUP);
 }
 
 
@@ -282,7 +282,7 @@ W sfs_syncfs(struct fs * fsp, W umflag)
  */
 W sfs_get_inode()
 {
-    return (ENOSUP);
+    return (ENOTSUP);
 }
 
 
@@ -291,5 +291,5 @@ W sfs_get_inode()
  */
 W sfs_put_inode()
 {
-    return (ENOSUP);
+    return (ENOTSUP);
 }

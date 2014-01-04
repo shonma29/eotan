@@ -45,7 +45,7 @@ _make_connection(W wOperation,
     rsize = cal_por(PORT_FS, 0xffffffff, req, sizeof(struct posix_request));
 
     if (rsize < 0) {
-	return (EPERM);
+	return (ECONNREFUSED);
     }
 
     return (E_OK);
@@ -60,8 +60,7 @@ _call_fs(W wOperation, struct posix_request *req)
 
   if (error != E_OK)
     {
-      /* What should I do? */
-      local_data->error_no = ESVC;
+      local_data->error_no = error;
       return (-1);
     }
 

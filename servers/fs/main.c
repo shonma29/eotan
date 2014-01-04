@@ -152,7 +152,7 @@ void start(VP_INT exinf)
 	if ((request.operation < 0)
 	    || (request.operation > NR_POSIX_SYSCALL)) {
 	    /* リクエスト要求にあるオペレーションは、サポートしていない */
-	    error_response((RDVNO)rdvno, ENOSUP);
+	    error_response((RDVNO)rdvno, ENOTSUP);
 	} else {
 #ifdef DEBUG
 	  if ((request.operation != PSC_WRITE) &&

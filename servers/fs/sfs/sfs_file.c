@@ -513,7 +513,7 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 
 W sfs_i_stat()
 {
-    return (ENOSUP);
+    return (ENOTSUP);
 }
 
 
@@ -720,31 +720,31 @@ sfs_i_unlink(struct inode * parent, char *fname, struct access_info * acc)
 
 W sfs_i_symlink()
 {
-    return (ENOSUP);
+    return (ENOTSUP);
 }
 
 
 W sfs_i_chmod()
 {
-    return (ENOSUP);
+    return (ENOTSUP);
 }
 
 
 W sfs_i_chown()
 {
-    return (ENOSUP);
+    return (ENOTSUP);
 }
 
 
 W sfs_i_chgrp()
 {
-    return (ENOSUP);
+    return (ENOTSUP);
 }
 
 
 W sfs_i_rename()
 {
-    return (ENOSUP);
+    return (ENOTSUP);
 }
 
 

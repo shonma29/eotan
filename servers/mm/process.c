@@ -149,7 +149,7 @@ int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 
 		if (map_user_pages(p->directory,
 				(VP)start, pages(end - start))) {
-			reply->error_no = ESVC;
+			reply->error_no = ENOMEM;
 			break;
 		}
 
@@ -312,7 +312,7 @@ int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 
 		if (map_user_pages(p->directory,
 				(VP)(args->arg2), pages((UW)(args->arg3)))) {
-			reply->error_no = ESVC;
+			reply->error_no = ENOMEM;
 			break;
 		}
 
@@ -346,7 +346,7 @@ int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 
 		if (unmap_user_pages(p->directory,
 				(VP)(args->arg2), pages((UW)(args->arg3)))) {
-			reply->error_no = ESVC;
+			reply->error_no = EACCES;
 			break;
 		}
 
@@ -452,14 +452,14 @@ int mm_thread_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 
 		result = kcall->thread_create_auto(&pk_ctsk);
 		if (result < 0) {
-			reply->error_no = ESVC;
+			reply->error_no = ECONNREFUSED;
 			break;
 		}
 
 		if (map_user_pages(p->directory,
 				(VP)pageRoundDown(LOCAL_ADDR - USER_STACK_INITIAL_SIZE - PAGE_SIZE),
 				pages(pageRoundUp(USER_STACK_INITIAL_SIZE)))) {
-			reply->error_no = ESVC;
+			reply->error_no = ENOMEM;
 			break;
 		}
 

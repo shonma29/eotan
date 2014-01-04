@@ -64,7 +64,7 @@ int mm_clock_gettime(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		}
 
 		if (!get_timespec(&tspec)) {
-			reply->error_no = ESVC;
+			reply->error_no = ECONNREFUSED;
 			break;
 		}
 

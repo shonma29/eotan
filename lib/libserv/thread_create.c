@@ -51,7 +51,7 @@ ER_ID thread_create(ID pid, FP entry, VP sp)
 		return reply->result;
 
 	} else {
-//		local->error_no = ESVC;
+//		local->error_no = ECONNREFUSED;
 		return -1;
 	}
 }

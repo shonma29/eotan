@@ -938,7 +938,7 @@ W fs_sync_file(struct inode * ip)
  */
 W fs_convert_path(struct inode * ip, B * buf, W length)
 {
-    return (ENOSUP);
+    return (ENOTSUP);
 }
 
 
@@ -1274,7 +1274,7 @@ W permit(struct inode * ip, struct access_info * acc, UW bits)
 	       acc->uid, mode, perm_bits);
 #endif
     if ((perm_bits | bits) != perm_bits)
-	return (EACCESS);
+	return (EACCES);
     return (EOK);
 }
 

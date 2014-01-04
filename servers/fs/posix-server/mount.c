@@ -109,7 +109,7 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
 	return (FALSE);
     }
     if (acc.uid != SU_UID) {
-      put_response(rdvno, EACCESS, -1, 0);
+      put_response(rdvno, EACCES, -1, 0);
       return (FALSE);
     }
 
@@ -224,7 +224,7 @@ W psc_umount_f(RDVNO rdvno, struct posix_request *req)
 	return (FALSE);
     }
     if (acc.uid != SU_UID) {
-	put_response(rdvno, EACCESS, -1, 0);
+	put_response(rdvno, EACCES, -1, 0);
 	return (FALSE);
     }
 

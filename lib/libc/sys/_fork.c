@@ -41,7 +41,6 @@ _fork (int esp, int ebx, int ebp, int esi, int edi)
 
     error = _make_connection(PSC_FORK, &req);
     if (error != E_OK) {
-	/* What should I do? */
 	local_data->error_no = error;
 	return (-1);
     } else if (res->error_no) {

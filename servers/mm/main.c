@@ -81,7 +81,7 @@ static void doit(void)
 
 		} else if (args.syscall_no > NUM_OF_FUNCS) {
 			reply.result = -1;
-			reply.error_no = ENOSUP;
+			reply.error_no = ENOTSUP;
 			result = reply_failure;
 
 		} else

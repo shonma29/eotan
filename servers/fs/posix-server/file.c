@@ -255,7 +255,7 @@ W psc_fcntl_f(RDVNO rdvno, struct posix_request * req)
     } else {
 	/* とりあえず、サポートしていないというエラーで返す
 	 */
-	put_response(rdvno, ENOSUP, 0, 0);
+	put_response(rdvno, ENOTSUP, 0, 0);
     }
 
     return (FALSE);
@@ -419,7 +419,7 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
 #else
 	if (acc.uid != SU_UID) {
 	    fs_close_file(newip);
-	    put_response(rdvno, EACCESS, -1, 0);
+	    put_response(rdvno, EACCES, -1, 0);
 	    return (FALSE);
 	}
 #endif
@@ -437,7 +437,7 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
 	}
 	if (error_no != E_OK) {
 	    fs_close_file(newip);
-	    put_response(rdvno, EACCESS, -1, 0);
+	    put_response(rdvno, EACCES, -1, 0);
 	    return (FALSE);
 	}
     }
@@ -484,7 +484,7 @@ W psc_read_f(RDVNO rdvno, struct posix_request *req)
 
     if (fp->f_flag & F_PIPE) {
 	/* パイプの読み書き */
-	put_response(rdvno, ENOSUP, -1, 0);
+	put_response(rdvno, ENOTSUP, -1, 0);
 	return (FALSE);
     }
 
@@ -603,7 +603,7 @@ W psc_write_f(RDVNO rdvno, struct posix_request *req)
 
     if (fp->f_flag & F_PIPE) {
 	/* パイプの読み書き */
-	put_response(rdvno, ENOSUP, -1, 0);
+	put_response(rdvno, ENOTSUP, -1, 0);
 	return (FALSE);
     }
 #ifdef debug

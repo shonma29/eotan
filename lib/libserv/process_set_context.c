@@ -52,7 +52,7 @@ int process_set_context(ID tid, W eip, B *stack, W stacksz)
 		return reply->result;
 
 	} else {
-//		local->error_no = ESVC;
+//		local->error_no = ECONNREFUSED;
 		return -1;
 	}
 }

@@ -125,7 +125,7 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
 	put_response(rdvno, EOK, 0, 0);
 	return (TRUE);
     } else if ((newip->i_mode & accmode) == 0) {
-	put_response(rdvno, EACCESS, -1, 0);
+	put_response(rdvno, EACCES, -1, 0);
 	return (FALSE);
     }
 
