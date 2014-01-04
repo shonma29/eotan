@@ -11,8 +11,8 @@ Version 2, June 1991
 
 */
 
-#ifndef __STDLIB_H__
-#define __STDLIB_H__	1
+#ifndef __STDIO_H__
+#define __STDIO_H__	1
 
 #include <core/types.h>
 

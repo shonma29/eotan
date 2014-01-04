@@ -27,7 +27,6 @@ TARGET = $(WD)/pager
 
 include Makefile.in
 
-CFLAGS += -I lib/libc/others
 ENTRY_ADDR = 0x00001000
 ENTRY_FUNC = _main
 
