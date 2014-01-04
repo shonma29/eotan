@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <fcntl.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -35,7 +36,9 @@ For more information, please refer to <http://unlicense.org/>
 extern void *malloc(size_t);
 extern void free(void*);
 
-char *testfile() {
+
+char *testfile()
+{
 	int fd;
 	struct stat st;
 	struct stat st2;
@@ -132,7 +135,8 @@ char *testfile() {
 	return NULL;
 }
 
-char *testdup() {
+char *testdup()
+{
 	int fd;
 	char buf[1];
 
@@ -151,7 +155,8 @@ char *testdup() {
 	return NULL;
 }
 
-char *testdir() {
+char *testdir()
+{
 /*
 	int fd;
 	struct stat st;
@@ -176,7 +181,8 @@ char *testdir() {
 	return NULL;
 }
 
-char *testmm() {
+char *testmm()
+{
 	int pid;
 	time_t t1;
 	time_t t2;
@@ -236,12 +242,27 @@ char *testmm() {
 	return NULL;
 }
 
+char *testothers()
+{
+	int i;
+
+	for (i = 0; i < 5; i++)
+		printf("%d\n", rand());
+
+	srand(1);
+	for (i = 0; i < 5; i++)
+		printf("%d\n", rand());
+
+	return NULL;
+}
+
 int main(int argc, char **argv)
 {
 	test(testfile);
 	test(testdup);
 	test(testdir);
 	test(testmm);
+	test(testothers);
 
 	return 0;
 }

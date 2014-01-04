@@ -27,7 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <device.h>
 #include <fcntl.h>
-#include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 

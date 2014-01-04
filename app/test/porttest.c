@@ -24,7 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stdlib.h>
+#include <stdio.h>
 #include <core.h>
 
 #define TEST_PORT 49157

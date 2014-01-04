@@ -27,9 +27,9 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <device.h>
 #include <services.h>
+#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include "../../lib/libc/others/stdlib.h"
 #include "../../servers/kernlog/kernlog.h"
 
 #undef FORCE_NEWLINE

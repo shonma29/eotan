@@ -52,7 +52,7 @@ Version 2, June 1991
  */
 
 #include <unistd.h>
-#include "stdlib.h"
+#include <stdio.h>
 
 static ER	vfprintf (FILE *port, B *fmt, VP arg0);
 static W writechar (ID port, UB *buf, W length);

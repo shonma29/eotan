@@ -24,54 +24,44 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <errno.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <unistd.h>
-#include "cunit.h"
+#include <stdint.h>
+#include <stdlib.h>
+#include <mpu/limits.h>
 
-#define BUF_SIZE (512)
-#define MAX_SEEK (BUF_SIZE * 2 * 256)
+static unsigned long x = 123456789;
+static unsigned long y = 362436069;
+static unsigned long z = 521288629;
+static unsigned long w = 88675123;
 
-static char buf1[BUF_SIZE];
-static char buf2[BUF_SIZE];
+static unsigned long rotate(const unsigned int v, const unsigned int n);
 
-char *testrd() {
-	int fd = open("/dev/rd", O_RDWR);
-	int i;
 
-	assert_ne("open", -1, fd);
+/**
+ * get rondom value by Xorshift algorithm (George Marsaglia).
+ */
+int rand(void)
+{
+	unsigned long t = x ^ (x << 11);
 
-	for (i = 0; i < sizeof(buf1); i++) {
-		buf1[i] = (i + 1) % 256;
-		buf2[i] = 0;
-	}
-/*
-	assert_eq("lseek", MAX_SEEK - 1, lseek(fd, MAX_SEEK - 1, SEEK_SET));
-	assert_eq("write", -1, write(fd, buf1, 2));
-	assert_eq("write", 1, write(fd, buf1, 1));
-	assert_eq("write", -1, write(fd, buf1, 1));
-	assert_eq("lseek", MAX_SEEK - 1, lseek(fd, MAX_SEEK - 1, SEEK_SET));
-	assert_eq("read", -1, read(fd, buf2, 2));
-	assert_eq("read", 1, read(fd, buf2, 1));
-	assert_eq("read", -1, read(fd, buf2, 1));
-*/
-	assert_eq("lseek", 0, lseek(fd, 0, SEEK_SET));
-	assert_eq("write", sizeof(buf1), write(fd, buf1, sizeof(buf1)));
-	assert_eq("lseek", 0, lseek(fd, 0, SEEK_SET));
-	assert_eq("read", sizeof(buf2), read(fd, buf2, sizeof(buf2)));
-	for (i = 0; i < sizeof(buf1); i++) {
-		assert_eq("cmp", buf1[i], buf2[i]);
-	}
+	x = y;
+	y = z;
+	z = w;
 
-	assert_eq("close", 0, close(fd));
-
-	return NULL;
+	return (int)((w = (w ^ (w >> 19)) ^ (t ^ (t >> 8))) & RAND_MAX);
 }
 
-int main(int argc, char **argv)
+static unsigned long rotate(const unsigned int v, const unsigned int n)
 {
-	test(testrd);
+	unsigned long lmask = (1 << n) - 1;
+	unsigned long rmask = (1 << (INT_BIT - n)) - 1;
 
-	return 0;
+	return ((v & lmask) << (INT_BIT - n)) | ((v >> n) & rmask);
+}
+
+void srand(unsigned int seed)
+{
+	x ^= seed;
+	y ^= rotate(seed, 4);
+	z ^= rotate(seed, 8);
+	w ^= rotate(seed, 12);
 }

@@ -53,7 +53,7 @@ Version 2, June 1991
  */
 
 #include <unistd.h>
-#include "others/stdlib.h"
+#include <stdio.h>
 
 FILE __file_table__[NFILE];
 
