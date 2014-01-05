@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <local.h>
+#include <stddef.h>
 #include <string.h>
 #include <boot/init.h>
 #include <mm/segment.h>
@@ -72,9 +73,9 @@ W exec_init(ID process_id, char *pathname)
 	offset = STACK_TAIL - req.param.par_execve.stsize;
 	p = (init_arg_t*)buf;
 	p->argc = 1;
-	p->argv = (char**)(sizeof(int) * 2 + offset);
-	p->envp = (char**)(sizeof(int) * 3 + offset);
-	p->arg0 = (char*)(sizeof(int) * 3 + offset);
+	p->argv = (char**)(offsetof(init_arg_t, arg0) + offset);
+	p->envp = (char**)(offsetof(init_arg_t, env0) + offset);
+	p->arg0 = (char*)(offsetof(init_arg_t, buf) + offset);
 	p->arg1 = NULL;
 	p->env0 = NULL;
 	strcpy(p->buf, pathname);
