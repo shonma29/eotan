@@ -57,20 +57,14 @@ Version 2, June 1991
 #include <elf.h>
 #include <fcntl.h>
 #include <string.h>
-#include <mm/segment.h>
-#include <boot/init.h>
-#include <mpu/memory.h>
-#include <nerve/config.h>
 #include <nerve/kcall.h>
 #include "../../lib/libserv/libmm.h"
 #include "fs.h"
 
-static W read_exec_header(struct inode *ip, Elf32_Ehdr *elfp,
+static W read_exec_header(struct inode *ip, Elf32_Addr *entry,
 			  Elf32_Phdr *text,
 			  Elf32_Phdr *data);
-static W load_text(W procid, struct inode *ip, Elf32_Phdr *text,
-		   ID task);
-static W load_data(W procid, struct inode *ip, Elf32_Phdr *data,
+static W load_segment(W procid, struct inode *ip, Elf32_Phdr *segment,
 		   ID task);
 
 
@@ -83,12 +77,8 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     struct inode *ip;
     W error_no;
     struct access_info acc;
-    Elf32_Ehdr elf_header;
-    Elf32_Phdr text, data;
+    Elf32_Addr entry;
     struct proc *procp;
-#ifdef notdef
-    printk("[PM] exec_program: path = \"%s\"\n", pathname);	/* */
-#endif
 
     /* プロセスの情報の取りだし */
     error_no = proc_get_procp(procid, &procp);
@@ -100,9 +90,6 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     proc_get_euid(procid, &(acc.uid));
     proc_get_egid(procid, &(acc.gid));
     if (pathname[0] == '/') {
-#ifdef notdef
-	dbg_printf("[PM] exec_program: call fs_open_file ()\n");	/* */
-#endif
 	error_no = fs_open_file(pathname, O_RDONLY, 0, &acc, rootfile, &ip);
     } else {
 	struct inode *startip;
@@ -114,124 +101,61 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 	error_no = fs_open_file(pathname, O_RDONLY, 0, &acc, startip, &ip);
     }
     if (error_no) {
-#ifdef EXEC_DEBUG
-	dbg_printf("[PM] Cannot open file. -> return from exec_program().\n");
-#endif
 	return (error_no);
     }
 
-    /* 実行許可のチェック */
-    error_no = permit(ip, &acc, X_OK);
-    if (error_no) {
-#ifdef EXEC_DEBUG
-	dbg_printf("[PM] Permission denied. -> return from exec_program().\n");
-#endif
-	return (error_no);
-    }
-#ifdef notdef
-    dbg_printf("[PM] read exec header\n");
-#endif
-    error_no = read_exec_header(ip, &elf_header, &text, &data);
-    if (error_no) {
-	fs_close_file(ip);
-	return (error_no);
-    }
+    do {
+	Elf32_Phdr text, data;
 
-#ifdef notdef
-    dbg_printf("[PM] vdel_reg\n");	/* */
-#endif
-    /* region の解放 */
-    if (process_destroy(procid)) {
-	dbg_printf("[FS] process_destroy failed\n");
-    }
+	/* 実行許可のチェック */
+	error_no = permit(ip, &acc, X_OK);
+	if (error_no)
+	    break;
 
-    error_no = process_create(procid, (VP)(text.p_vaddr),
-	    (size_t)(data.p_vaddr) + data.p_memsz - (UW)(text.p_vaddr),
-	    (VP)USER_HEAP_MAX_ADDR);
-    if (error_no) {
-	fs_close_file(ip);
-	return (error_no);
-    }
+	error_no = read_exec_header(ip, &entry, &text, &data);
+	if (error_no)
+	    break;
 
-#ifdef DEBUG
-    if (error_no) {
-      dbg_printf("[EXEC]: vcre_reg return %d\n", error_no);
-    }
-    {
-      mm_segment_t reg;
+	/* region の解放 */
+	error_no = process_destroy(procid);
+	if (error_no)
+	    break;
 
-      error_no = vsts_reg(req->caller, seg_heap, (VP) & reg);
-      dbg_printf("[EXEC] err = %d sa %x, min %x, max %x\n",
-		 error_no, reg.addr, reg.len, reg.max);
-    }
-#endif
-
-    /* テキスト領域をメモリに入れる
-     */
-#ifdef notdef
-    dbg_printf("[PM] load text\n");
-#endif
-    error_no = load_text(procid, ip, &text, req->caller);
-    if (error_no) {
-	fs_close_file(ip);
-	return (error_no);
-    }
-
-    /* データ領域をメモリに入れる
-     */
-#ifdef notdef
-    dbg_printf("[PM] load data\n");
-#endif
-    error_no = load_data(procid, ip, &data, req->caller);
-    if (error_no) {
-	fs_close_file(ip);
-	return (error_no);
-    }
-
-#if 0
-    {
-	int stsize = req->param.par_execve.stsize, i;
-	char buf[stsize];
-	int *bufp;
-
-	error_no = vget_reg(req->caller, req->param.par_execve.stackp,
-			 stsize, buf);
-	for (bufp = (int *) buf; *bufp != 0; ++bufp) {
-	    dbg_printf("%x %s\n", *bufp, &buf[*bufp]);
+	if (process_create(procid, (VP)(text.p_vaddr),
+		(size_t)(data.p_vaddr) + data.p_memsz - (UW)(text.p_vaddr),
+		(VP)USER_HEAP_MAX_ADDR)) {
+	    error_no = ENOMEM;
+	    break;
 	}
-	for (++bufp; *bufp != 0; ++bufp) {
-	    dbg_printf("%x %s\n", *bufp, &buf[*bufp]);
-	}
-    }
-#endif
 
-#ifdef notdef
-    dbg_printf("[PM] vset_ctx entry %x stackp %x stsize %d\n",
-	       elf_header.e_entry,
-	       req->param.par_execve.stackp,
-	       req->param.par_execve.stsize);
-#endif
-    /* タスクの context.eip を elf_header.e_entry に設定する */
-    error_no = process_set_context(req->caller,
-		     elf_header.e_entry,
-		     req->param.par_execve.stackp,
-		     req->param.par_execve.stsize);
+	/* テキスト領域をメモリに入れる
+	 */
+	error_no = load_segment(procid, ip, &text, req->caller);
+	if (error_no)
+	    break;
 
-#ifdef notdef
-    dbg_printf("[PM] close_file\n");
-#endif
+	/* データ領域をメモリに入れる
+	 */
+	error_no = load_segment(procid, ip, &data, req->caller);
+	if (error_no)
+	    break;
+
+    } while (false);
+
     fs_close_file(ip);
+
+    if (error_no) {
+	return (error_no);
+    }
 
     strncpy(procp->proc_name, pathname, PROC_NAME_LEN - 1);
     procp->proc_name[PROC_NAME_LEN - 1] = '\0';
 
-#ifdef notdef
-    dbg_printf("[PM] exec return %d\n", error_no);
-#endif
-    if (error_no)
-	return error_no;
-
-    return (EOK);
+    /* タスクの context.eip を elf_header.e_entry に設定する */
+    return process_set_context(req->caller,
+		     entry,
+		     req->param.par_execve.stackp,
+		     req->param.par_execve.stsize);
 }
 
 
@@ -242,68 +166,43 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
  */
 static W
 read_exec_header(struct inode *ip,
-		 Elf32_Ehdr *elfp,
+		 Elf32_Addr *entry,
 		 Elf32_Phdr *text, Elf32_Phdr *data)
 {
     W error_no;
     W rlength;
     Elf32_Phdr ph_table[10];
+    Elf32_Ehdr elf_header;
     W ph_index;
 
-
     error_no =
-	fs_read_file(ip, 0, (B *) elfp, sizeof(Elf32_Ehdr),
+	fs_read_file(ip, 0, (B *) &elf_header, sizeof(Elf32_Ehdr),
 		     &rlength);
     if (error_no) {
 	return (error_no);
     }
 
-    /* マジックナンバのチェック
-     */
-    if ((elfp->e_ident[0] != 0x7f) ||
-	(elfp->e_ident[1] != 'E') ||
-	(elfp->e_ident[2] != 'L') || (elfp->e_ident[3] != 'F')) {
-	/* ELF フォーマットのファイルではなかった
-	 */
+    if (!isValidModule(&elf_header))
 	return (ENOEXEC);
-    }
 
-    if (elfp->e_type != ET_EXEC) {
-	/* 実行ファイルではなかった
-	 */
-	return (ENOEXEC);
-    }
-
-    if (elfp->e_machine != EM_386) {
-	/* ELF ファイルの対応マシン種類が違った
-	 */
-	return (ENOEXEC);
-    }
-
-    if (elfp->e_version < 1) {
-	/* ELF ファイルのバージョンが不正
-	 */
-	return (ENOEXEC);
-    }
-
-    if (sizeof(Elf32_Phdr) != elfp->e_phentsize) {
+    if (sizeof(Elf32_Phdr) != elf_header.e_phentsize) {
 	/* プログラムヘッダのサイズが定義と違っている
 	 */
 	return (ENOEXEC);
     }
 
     error_no =
-	fs_read_file(ip, elfp->e_phoff, (B *) ph_table,
-		     elfp->e_phentsize * elfp->e_phnum, &rlength);
+	fs_read_file(ip, elf_header.e_phoff, (B *) ph_table,
+		     elf_header.e_phentsize * elf_header.e_phnum, &rlength);
     if (error_no) {
 	return (error_no);
-    } else if (rlength != elfp->e_phentsize * elfp->e_phnum) {
+    } else if (rlength != elf_header.e_phentsize * elf_header.e_phnum) {
 	return (ENOEXEC);
     }
 
     memset((VP)text, 0, sizeof(Elf32_Phdr));
     memset((VP)data, 0, sizeof(Elf32_Phdr));
-    for (ph_index = 0; ph_index < elfp->e_phnum; ph_index++) {
+    for (ph_index = 0; ph_index < elf_header.e_phnum; ph_index++) {
 	/* プログラムヘッダテーブルを順々に見ていき、各セクションのタイプによって
 	 * テキスト、データ、BSS の各情報の初期化を行う。
 	 */
@@ -325,17 +224,18 @@ read_exec_header(struct inode *ip,
 	}
     }
 
+    *entry = elf_header.e_entry;
     return (EOK);
 }
 
 
 
-/* テキスト領域をメモリ中にロードする。
+/* 領域をメモリ中にロードする。
  *
  *
  */
 static W
-load_text(W procid, struct inode *ip, Elf32_Phdr *text, ID task)
+load_segment(W procid, struct inode *ip, Elf32_Phdr *segment, ID task)
 {
     W error_no;
     W rest_length;
@@ -346,13 +246,13 @@ load_text(W procid, struct inode *ip, Elf32_Phdr *text, ID task)
     UW start, size;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    start = pageRoundDown(text->p_vaddr);
+    start = pageRoundDown(segment->p_vaddr);
     size =
-	pageRoundUp(text->p_memsz +
-		(text->p_vaddr - pageRoundDown(text->p_vaddr)));
+	pageRoundUp(segment->p_memsz +
+		(segment->p_vaddr - pageRoundDown(segment->p_vaddr)));
 
-    for (rest_length = text->p_filesz, offset = text->p_offset, vaddr =
-	 text->p_vaddr; rest_length > 0;
+    for (rest_length = segment->p_filesz, offset = segment->p_offset, vaddr =
+	 segment->p_vaddr; rest_length > 0;
 	 rest_length -= PAGE_SIZE, vaddr += PAGE_SIZE, offset += read_size) {
 	error_no =
 	    fs_read_file(ip, offset, buf,
@@ -360,68 +260,11 @@ load_text(W procid, struct inode *ip, Elf32_Phdr *text, ID task)
 			  rest_length) ? PAGE_SIZE : rest_length,
 			 &read_size);
 	if (error_no) {
-#ifdef EXEC_DEBUG
-	    dbg_printf("ERROR: fs_read_file\n");
-#endif
 	    return (ENOMEM);
 	}
 
 	error_no = kcall->region_put(task, (B *) vaddr, read_size, buf);
 	if (error_no) {
-#ifdef EXEC_DEBUG
-	    dbg_printf("ERROR: vput_reg %d %d %x %d %x\n", error_no,
-		   task, vaddr, read_size, buf);
-#endif
-	    return (ENOMEM);
-	}
-    }
-
-    return (EOK);
-}
-
-
-
-/* データ領域をメモリ中にロードする。
- *
- *
- */
-static W
-load_data(W procid, struct inode *ip, Elf32_Phdr *data, ID task)
-{
-    W error_no;
-    W rest_length;
-    W offset;
-    W read_size;
-    W vaddr;
-    static B buf[PAGE_SIZE];
-    UW start, size;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
-
-    start = pageRoundDown(data->p_vaddr);
-    size =
-	pageRoundUp(data->p_memsz +
-		(data->p_vaddr - pageRoundDown(data->p_vaddr)));
-
-    for (rest_length = data->p_filesz, offset = data->p_offset, vaddr =
-	 data->p_vaddr; rest_length > 0;
-	 rest_length -= PAGE_SIZE, vaddr += PAGE_SIZE, offset += read_size) {
-	error_no =
-	    fs_read_file(ip, offset, buf,
-			 (PAGE_SIZE <
-			  rest_length) ? PAGE_SIZE : rest_length,
-			 &read_size);
-	if (error_no) {
-#ifdef EXEC_DEBUG
-	    dbg_printf("ERROR: fs_read_file\n");
-#endif
-	    return (ENOMEM);
-	}
-
-	error_no = kcall->region_put(task, (B *) vaddr, read_size, buf);
-	if (error_no) {
-#ifdef EXEC_DEBUG
-	    dbg_printf("ERROR: vput_reg\n");
-#endif
 	    return (ENOMEM);
 	}
     }

@@ -168,4 +168,6 @@ typedef struct {
 	Elf32_Word sh_entsize;
 } Elf32_Shdr;
 
+extern int isValidModule(const Elf32_Ehdr *eHdr);
+
 #endif

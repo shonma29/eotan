@@ -45,7 +45,6 @@ For more information, please refer to <http://unlicense.org/>
 
 static MemoryMap *mm = (MemoryMap*)MEMORY_MAP_ADDR;
 
-extern int isValidModule(const Elf32_Ehdr *eHdr);
 extern int printk(const char *format, ...);
 
 static ER map_initialize(const size_t pages);

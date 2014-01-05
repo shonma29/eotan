@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <local.h>
 #include <string.h>
 #include <boot/init.h>
 #include <mm/segment.h>
@@ -33,14 +34,19 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../lib/libserv/libmm.h"
 #include "fs.h"
 
+#define STACK_TAIL (LOCAL_ADDR - PAGE_SIZE)
+
 typedef struct {
+	int argc;
+	char **argv;
+	char **envp;
 	char *arg0;
 	char *arg1;
 	char *env0;
 	char buf[0];
 } init_arg_t;
 
-static char buf[sizeof(init_arg_t) * 3 + MAX_NAMELEN + 1];
+static char buf[sizeof(init_arg_t) + MAX_NAMELEN + 1];
 
 static void dummy(void);
 static W create_init(ID process_id);
@@ -52,16 +58,23 @@ W exec_init(ID process_id, char *pathname)
 	W err;
 	init_arg_t *p;
 	struct proc *proc;
+	size_t offset;
 	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-	req.param.par_execve.stsize = sizeof(*p) * 3
+	req.param.par_execve.stsize = sizeof(init_arg_t)
 			+ strlen(pathname) + 1;
+	req.param.par_execve.stsize = (req.param.par_execve.stsize
+			+ sizeof(int) - 1)
+			& ~(sizeof(int) - 1);
 	if (req.param.par_execve.stsize > sizeof(buf))
 		return ENOMEM;
 
+	offset = STACK_TAIL - req.param.par_execve.stsize;
 	p = (init_arg_t*)buf;
-	p->arg0 = p->buf;
-//TODO stack argc, argv, envp
+	p->argc = 1;
+	p->argv = (char**)(sizeof(int) * 2 + offset);
+	p->envp = (char**)(sizeof(int) * 3 + offset);
+	p->arg0 = (char*)(sizeof(int) * 3 + offset);
 	p->arg1 = NULL;
 	p->env0 = NULL;
 	strcpy(p->buf, pathname);
