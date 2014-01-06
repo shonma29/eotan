@@ -49,7 +49,6 @@ typedef struct {
 
 static char buf[sizeof(init_arg_t) + MAX_NAMELEN + 1];
 
-static void dummy(void);
 static W create_init(ID process_id);
 
 
@@ -58,7 +57,6 @@ W exec_init(ID process_id, char *pathname)
 	struct posix_request req;
 	W err;
 	init_arg_t *p;
-	struct proc *proc;
 	size_t offset;
 	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
@@ -82,19 +80,8 @@ W exec_init(ID process_id, char *pathname)
 	req.param.par_execve.stackp = (VP)p;
 
 	err = create_init(process_id);
-	if (!err) {
-		req.caller = thread_create(process_id, &dummy, NULL);
-		if (req.caller < 0) {
-			//TODO destroy vmtree and process
-			return ECONNREFUSED;
-		}
-	}
-
 	if (!err)
 		err = exec_program(&req, process_id, pathname);
-
-	if (!err)
-		err = proc_get_procp(process_id, &proc);
 
 	if (err) {
 		//TODO destroy vmtree and process
@@ -102,17 +89,9 @@ W exec_init(ID process_id, char *pathname)
 		return err;
 	}
 
-	proc->proc_maintask = req.caller;
-	set_local(process_id, req.caller);
-	kcall->thread_start(req.caller);
-
 	dbg_printf("[MM] exec_init(%d, %s)\n", process_id, pathname);
 
 	return err;
-}
-
-static void dummy(void)
-{
 }
 
 static W create_init(ID process_id)

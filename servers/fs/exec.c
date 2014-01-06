@@ -57,6 +57,7 @@ Version 2, June 1991
 #include <elf.h>
 #include <fcntl.h>
 #include <string.h>
+#include <boot/init.h>
 #include <nerve/kcall.h>
 #include "../../lib/libserv/libmm.h"
 #include "fs.h"
@@ -79,6 +80,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     struct access_info acc;
     Elf32_Addr entry;
     struct proc *procp;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     /* プロセスの情報の取りだし */
     error_no = proc_get_procp(procid, &procp);
@@ -128,6 +130,31 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 	    break;
 	}
 
+	if (procid == INIT_PID) {
+//TODO unify to process_set_context
+		req->caller = thread_create(procid, (FP)entry,
+			req->param.par_execve.stackp);
+		if (req->caller < 0) {
+			error_no = ECONNREFUSED;
+			break;
+		}
+	} else {
+	    kcall->thread_terminate(req->caller);
+//TODO thread_delete
+	}
+
+	/* タスクの context.eip を elf_header.e_entry に設定する */
+//TODO change param thread_id to process_id
+	error_no = process_set_context(req->caller,
+		entry,
+		req->param.par_execve.stackp,
+		req->param.par_execve.stsize);
+
+	if (error_no)
+	    break;
+
+	procp->proc_maintask = req->caller;
+
 	/* テキスト領域をメモリに入れる
 	 */
 	error_no = load_segment(procid, ip, &text, req->caller);
@@ -148,14 +175,22 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 	return (error_no);
     }
 
+    if (procid == INIT_PID)
+	set_local(procid, req->caller);
+    else
+	error_no = kcall->region_put(req->caller,
+		&(((thread_local_t*)LOCAL_ADDR)->thread_id),
+		sizeof(req->caller), &(req->caller));
+
+    if (error_no) {
+	return (error_no);
+    }
+
     strncpy(procp->proc_name, pathname, PROC_NAME_LEN - 1);
     procp->proc_name[PROC_NAME_LEN - 1] = '\0';
 
-    /* タスクの context.eip を elf_header.e_entry に設定する */
-    return process_set_context(req->caller,
-		     entry,
-		     req->param.par_execve.stackp,
-		     req->param.par_execve.stsize);
+    kcall->thread_start(req->caller);
+    return E_OK;
 }
 
 

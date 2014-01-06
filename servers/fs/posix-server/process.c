@@ -56,6 +56,7 @@ W psc_exec_f(RDVNO rdvno, struct posix_request *req)
 #endif
     error_no = exec_program(req, req->procid, pathname);
     if (error_no) {
+//TODO check by another way
 	if (proc_get_vmtree(req->procid) != NULL) {
 	    /* 呼び出しを行ったプロセスがまだ生き残っていた場合 */
 	    /*エラーメッセージを返す */
@@ -67,13 +68,7 @@ W psc_exec_f(RDVNO rdvno, struct posix_request *req)
 	}
 	return (FALSE);
     }
-
-    /* プロセスに属するタスクを切り換える。
-     * すなわち、古いタスクを終了し、新しいタスクを生成する。
-     */
-    kcall->thread_terminate(req->caller);
-    kcall->thread_start(req->caller);
-
+//TODO check if rdvno will be disposed
     put_response(rdvno, EOK, 0, 0);
     return (TRUE);
 }
