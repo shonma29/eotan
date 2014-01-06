@@ -130,28 +130,16 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 	    break;
 	}
 
-	if (procid == INIT_PID) {
-//TODO unify to process_set_context
-		req->caller = thread_create(procid, (FP)entry,
-			req->param.par_execve.stackp);
-		if (req->caller < 0) {
-			error_no = ECONNREFUSED;
-			break;
-		}
-	} else {
-	    kcall->thread_terminate(req->caller);
-//TODO thread_delete
-	}
-
 	/* タスクの context.eip を elf_header.e_entry に設定する */
-//TODO change param thread_id to process_id
-	error_no = process_set_context(req->caller,
+	req->caller = process_set_context(procid,
 		entry,
 		req->param.par_execve.stackp,
 		req->param.par_execve.stsize);
 
-	if (error_no)
+	if (req->caller < 0) {
+	    error_no = ECONNREFUSED;
 	    break;
+	}
 
 	procp->proc_maintask = req->caller;
 
@@ -164,8 +152,6 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 	/* データ領域をメモリに入れる
 	 */
 	error_no = load_segment(procid, ip, &data, req->caller);
-	if (error_no)
-	    break;
 
     } while (false);
 

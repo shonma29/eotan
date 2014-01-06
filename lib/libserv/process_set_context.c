@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 
 
-int process_set_context(ID tid, W eip, B *stack, W stacksz)
+ER_ID process_set_context(ID pid, W eip, B *stack, W stacksz)
 {
 //	thread_local_t *local = _get_local();
 	mm_args_t args;
@@ -41,7 +41,7 @@ int process_set_context(ID tid, W eip, B *stack, W stacksz)
 	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	args.syscall_no = mm_syscall_process_set_context;
-	args.arg1 = (long int)tid;
+	args.arg1 = (long int)pid;
 	args.arg2 = (long int)eip;
 	args.arg3 = (long int)stack;
 	args.arg4 = (long int)stacksz;

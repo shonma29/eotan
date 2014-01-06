@@ -34,7 +34,6 @@ For more information, please refer to <http://unlicense.org/>
 
 /* context.c */
 extern void create_user_stack(thread_t * tsk);
-extern ER mpu_set_context(ID tid, W eip, W esp);
 extern ER context_page_fault_handler(void);
 extern ER context_mpu_handler(void);
 

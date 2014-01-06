@@ -48,12 +48,13 @@ static slab_t thread_slab;
 static tree_t thread_tree;
 
 static mm_process_t *get_process(const ID pid);
-static mm_thread_t *get_thread(const ID tid);
 #if 0
-static mm_thread_t *getMyThread(list_t *brothers);
+static mm_thread_t *get_thread(const ID tid);
 #endif
+static mm_thread_t *getMyThread(list_t *brothers);
 static void process_clear(mm_process_t *p);
 static void thread_clear(mm_thread_t *th, mm_process_t *p);
+static ER_ID create_thread(mm_process_t *p, FP entry, VP ustack_top);
 
 static mm_process_t *get_process(const ID pid)
 {
@@ -61,19 +62,19 @@ static mm_process_t *get_process(const ID pid)
 
 	return node? (mm_process_t*)getParent(mm_process_t, node):NULL;
 }
-
+#if 0
 static mm_thread_t *get_thread(const ID tid)
 {
 	node_t *node = tree_get(&thread_tree, tid);
 
 	return node? (mm_thread_t*)getParent(mm_thread_t, node):NULL;
 }
-#if 0
+#endif
 static mm_thread_t *getMyThread(list_t *p)
 {
 	return (mm_thread_t*)((ptr_t)p - offsetof(mm_thread_t, brothers));
 }
-#endif
+
 static void process_clear(mm_process_t *p)
 {
 	p->segments.heap.attr = attr_nil;
@@ -254,17 +255,12 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
+		ER_ID result;
 		size_t stack_size;
 		size_t stack_top;
-		mm_process_t *proc;
-		mm_thread_t *th = get_thread((ID)args->arg1);
+		mm_thread_t *th;
+		mm_process_t *proc = get_process((ID)args->arg1);
 
-		if (!th) {
-			reply->error_no = ESRCH;
-			break;
-		}
-
-		proc = get_process(th->process_id);
 		if (!proc) {
 			reply->error_no = ESRCH;
 			break;
@@ -276,21 +272,52 @@ int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
+		if (args->arg1 == INIT_PID) {
+			if (map_user_pages(proc->directory,
+					(VP)pageRoundDown(LOCAL_ADDR - USER_STACK_INITIAL_SIZE - PAGE_SIZE),
+					pages(pageRoundUp(USER_STACK_INITIAL_SIZE)))) {
+				reply->error_no = ENOMEM;
+				break;
+			}
+		}
+
+		while (!list_is_empty(&(proc->threads))) {
+			list_t *n = list_next(&(proc->threads));
+			mm_thread_t *th = getMyThread(n);
+
+			list_remove(n);
+			kcall->thread_terminate(th->node.key);
+			kcall->thread_destroy(th->node.key);
+			tree_remove(&thread_tree, th->node.key);
+		}
+
 		stack_top = pageRoundDown(LOCAL_ADDR - PAGE_SIZE) - stack_size;
+
 		if (move_stack(proc->directory, (void*)stack_top,
 				(void*)(args->arg3), stack_size)) {
 			reply->error_no = EFAULT;
 			break;
 		}
 
-		if (kcall->mpu_set_context((ID)(args->arg1), (W)(args->arg2),
-				(W)(stack_top - sizeof(int)))) {
-			reply->error_no = EFAULT;
+		result = create_thread(proc, (FP)(args->arg2),
+				(VP)(stack_top - sizeof(int)));
+		if (result < 0) {
+			reply->error_no = ECONNREFUSED;
+			break;
+		}
+
+		//TODO check duplicated thread_id
+		th = (mm_thread_t*)tree_put(&thread_tree, result);
+		if (th)
+			thread_clear(th, proc);
+		else {
+			kcall->thread_destroy(result);
+			reply->error_no = ENOMEM;
 			break;
 		}
 
 		reply->error_no = EOK;
-		reply->result = 0;
+		reply->result = result;
 		return reply_success;
 	} while (FALSE);
 
@@ -424,35 +451,31 @@ int mm_sbrk(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	return reply_failure;
 }
 
+static ER_ID create_thread(mm_process_t *p, FP entry, VP ustack_top)
+{
+	T_CTSK pk_ctsk = {
+		TA_HLNG,
+		NULL,
+		entry,
+		pri_user_foreground,
+		KTHREAD_STACK_SIZE,
+		NULL,
+		p->directory,
+		ustack_top
+	};
+
+	return kcall->thread_create_auto(&pk_ctsk);
+}
+
 int mm_thread_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
-		T_CTSK pk_ctsk = {
-			TA_HLNG,
-			NULL,
-			NULL,
-			pri_user_foreground,
-			KTHREAD_STACK_SIZE,
-			NULL,
-			NULL,
-			NULL
-		};
 		ER_ID result;
 		mm_thread_t *th;
 		mm_process_t *p = get_process((ID)args->arg1);
 
 		if (!p) {
 			reply->error_no = ESRCH;
-			break;
-		}
-
-		pk_ctsk.task = (FP)(args->arg2);
-		pk_ctsk.page_table = p->directory;
-		pk_ctsk.ustack_top = (VP)(args->arg3);
-
-		result = kcall->thread_create_auto(&pk_ctsk);
-		if (result < 0) {
-			reply->error_no = ECONNREFUSED;
 			break;
 		}
 
@@ -463,21 +486,28 @@ int mm_thread_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-		reply->error_no = EOK;
-		reply->result = result;
+		result = create_thread(p, (FP)(args->arg2), (VP)(args->arg3));
+		if (result < 0) {
+			reply->error_no = ECONNREFUSED;
+			break;
+		}
 
 		//TODO check duplicated thread_id
 		th = (mm_thread_t*)tree_put(&thread_tree, result);
-		if (!th) {
+		if (th)
+			thread_clear(th, p);
+		else {
 			kcall->thread_destroy(result);
 			reply->error_no = ENOMEM;
 			break;
 		}
 
-		thread_clear(th, p);
+		reply->error_no = EOK;
+		reply->result = result;
 		return reply_success;
 	} while (FALSE);
 
+//TODO unmap
 	reply->result = -1;
 	return reply_failure;
 }

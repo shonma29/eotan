@@ -94,26 +94,6 @@ ER context_mpu_handler(void)
     kill();
     return (E_OK);
 }
-
-/* mpu_set_context */
-ER mpu_set_context(ID tid, W eip, W esp)
-{
-    thread_t *tsk = get_thread_ptr(tid);
-
-    if (!tsk)
-	return (E_NOEXS);
-
-    enter_critical();
-
-    tsk->attr.ustack_top = (VP)esp;
-
-    /* レジスターの初期化 */
-    tsk->attr.entry = (FP)eip;
-
-    leave_critical();
-
-    return (E_OK);
-}
 
 /*
  * リージョン内の仮想ページへ物理メモリを割り付ける。
