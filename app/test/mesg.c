@@ -49,7 +49,7 @@ static void puterror(char *message);
 static int exec(int out);
 
 static void pute(char *str) {
-	write(STDERR, str, strlen(str));
+	write(STDERR_FILENO, str, strlen(str));
 }
 
 static void puterror(char *message) {
@@ -101,7 +101,7 @@ static int exec(int out) {
 }
 
 int main(int argc, char **argv) {
-	while (!exec(STDOUT));
+	while (!exec(STDOUT_FILENO));
 
 	return OK;
 }

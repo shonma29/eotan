@@ -83,7 +83,7 @@ static void libc_init_device(void)
 	__file_table__[i].bufsize = BUFSIZE;
     }
 
-    __file_table__[STDIN].device = 0;
-    __file_table__[STDOUT].device = 1;
-    __file_table__[STDERR].device = 1;
+    __file_table__[STDIN_FILENO].device = 0;
+    __file_table__[STDOUT_FILENO].device = 1;
+    __file_table__[STDERR_FILENO].device = 1;
 }

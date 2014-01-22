@@ -15,14 +15,10 @@ Version 2, June 1991
 #define __STDIO_H__	1
 
 #include <core/types.h>
+#include <nstdio.h>
 
 #define BUFSIZE		1024
 #define NFILE		10
-
-#define STDIN	0
-#define STDOUT	1
-#define STDERR	2
-
 
 struct _file
 {
@@ -37,9 +33,9 @@ typedef struct _file	FILE;
 
 extern FILE	__file_table__[];
 
-#define stdin	(&__file_table__[0])
-#define stdout	(&__file_table__[1])
-#define stderr	(&__file_table__[2])
+#define stdin	(&__file_table__[STDIN_FILENO])
+#define stdout	(&__file_table__[STDOUT_FILENO])
+#define stderr	(&__file_table__[STDERR_FILENO])
 
 
 extern W	getc (FILE *port);
@@ -51,4 +47,4 @@ extern W	puts (B *line);
 extern W	printf (B *fmt,...);
 extern W	fprintf (FILE *port, B *fmt,...);
 
-#endif /* __STDLIB_H__ */
+#endif /* __STDIO_H__ */
