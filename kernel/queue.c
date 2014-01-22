@@ -62,7 +62,7 @@ static void clear(queue_t *p, const T_CDTQ *pk_cdtq);
 
 
 static inline queue_t *getQueueParent(const node_t *p) {
-	return (queue_t*)((ptr_t)p - offsetof(queue_t, node));
+	return (queue_t*)((intptr_t)p - offsetof(queue_t, node));
 }
 
 static inline int is_full(queue_t *q)

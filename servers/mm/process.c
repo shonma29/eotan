@@ -39,7 +39,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "process.h"
 #include "../../kernel/mpu/mpufunc.h"
 
-#define getParent(type, p) ((ptr_t)p - offsetof(type, node))
+#define getParent(type, p) ((intptr_t)p - offsetof(type, node))
 
 static kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 static slab_t process_slab;
@@ -72,7 +72,7 @@ static mm_thread_t *get_thread(const ID tid)
 #endif
 static mm_thread_t *getMyThread(list_t *p)
 {
-	return (mm_thread_t*)((ptr_t)p - offsetof(mm_thread_t, brothers));
+	return (mm_thread_t*)((intptr_t)p - offsetof(mm_thread_t, brothers));
 }
 
 static void process_clear(mm_process_t *p)

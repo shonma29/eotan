@@ -43,7 +43,7 @@ static thread_t *ready_dequeue();
 
 
 static inline thread_t *getThread(const list_t *p) {
-	return (thread_t*)((ptr_t)p - offsetof(thread_t, queue));
+	return (thread_t*)((intptr_t)p - offsetof(thread_t, queue));
 }
 
 void ready_initialize()

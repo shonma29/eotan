@@ -52,7 +52,7 @@ static ER add_timer(RELTIM time, thread_t *th);
 
 
 static inline timer_t *getTimerParent(const node_t *p) {
-	return (timer_t*)((ptr_t)p - offsetof(timer_t, node));
+	return (timer_t*)((intptr_t)p - offsetof(timer_t, node));
 }
 
 static void time_initialize(void)

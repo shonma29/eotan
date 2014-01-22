@@ -27,8 +27,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-typedef unsigned int ptr_t;
-
 typedef int ptrdiff_t;
 typedef unsigned int size_t;
 typedef unsigned int wchar_t;

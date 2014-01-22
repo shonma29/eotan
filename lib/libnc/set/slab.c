@@ -36,7 +36,7 @@ static slab_block_t *slab_add_block(slab_t *slab) {
 
 	if (block) {
 		size_t i;
-		slab_entry_t *entry = (slab_entry_t*)((ptr_t)block
+		slab_entry_t *entry = (slab_entry_t*)((intptr_t)block
 				+ sizeof(slab_block_t)
 				+ slab->offset);
 
@@ -49,7 +49,7 @@ static slab_block_t *slab_add_block(slab_t *slab) {
 
 		for (i = 0; i < slab->entries_per_block; i++) {
 			list_enqueue(&(block->entries), &(entry->entries));
-			entry = (slab_entry_t*)((ptr_t)entry
+			entry = (slab_entry_t*)((intptr_t)entry
 					+ slab->unit_size);
 		}
 	}
@@ -91,7 +91,7 @@ void slab_destroy(slab_t *slab) {
 	list_t *p;
 
 	for (p = list_dequeue(q); p; p = list_dequeue(q)) {
-		slab->pfree((void*)((ptr_t)p - offsetof(slab_block_t, blocks)));
+		slab->pfree((void*)((intptr_t)p - offsetof(slab_block_t, blocks)));
 	}
 }
 
@@ -119,7 +119,7 @@ void *slab_alloc(slab_t *slab) {
 }
 
 void slab_free(slab_t *slab, void *p) {
-	slab_block_t *block = (slab_block_t*)(((ptr_t)p) & slab->mask);
+	slab_block_t *block = (slab_block_t*)(((intptr_t)p) & slab->mask);
 
 	if (!block->entry_num) {
 		list_enqueue(&(slab->empties), &(block->empties));

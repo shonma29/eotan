@@ -63,7 +63,7 @@ static inline ID thread_id(thread_t *th)
 }
 
 static inline thread_t *getThreadWaiting(const list_t *p) {
-	return (thread_t*)((ptr_t)p - offsetof(thread_t, wait.waiting));
+	return (thread_t*)((intptr_t)p - offsetof(thread_t, wait.waiting));
 }
 
 #endif

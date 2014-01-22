@@ -63,11 +63,11 @@ static void clear(port_t *p, const T_CPOR *pk_cpor);
 
 
 static inline port_t *getPortParent(const node_t *p) {
-	return (port_t*)((ptr_t)p - offsetof(port_t, node));
+	return (port_t*)((intptr_t)p - offsetof(port_t, node));
 }
 
 static inline rendezvous_t *getRdvParent(const node_t *p) {
-	return (rendezvous_t*)((ptr_t)p - offsetof(rendezvous_t, node));
+	return (rendezvous_t*)((intptr_t)p - offsetof(rendezvous_t, node));
 }
 
 ER port_initialize(void)

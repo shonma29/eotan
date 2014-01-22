@@ -45,7 +45,7 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid);
 static void release_resources(thread_t *th);
 
 static inline thread_t *getThreadParent(const node_t *p) {
-	return (thread_t*)((ptr_t)p - offsetof(thread_t, node));
+	return (thread_t*)((intptr_t)p - offsetof(thread_t, node));
 }
 
 ER thread_initialize(void)

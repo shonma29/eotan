@@ -26,7 +26,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "set/list.h"
+#include <stdint.h>
+#include <set/list.h>
 
 #define SLAB_OK 0
 #define SLAB_ERROR (-1)
@@ -39,7 +40,7 @@ typedef struct _slab_t {
 	void *(*palloc)(void);
 	void (*pfree)(void *p);
 	size_t entries_per_block;
-	ptr_t mask;
+	intptr_t mask;
 	size_t offset;
 	list_t empties;
 	size_t empty_num;

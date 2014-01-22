@@ -26,7 +26,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "stddef.h"
+#include <stddef.h>
+#include <stdint.h>
 
 typedef struct _lfs_entry_t {
 	struct _lfs_entry_t *next;
@@ -60,8 +61,8 @@ static inline int lfs_is_empty(lfs_t *stack)
 }
 
 #define lfs_entry_size(size) \
-	((size + sizeof(lfs_entry_t) + sizeof(ptr_t) - 1) \
-			& ~(sizeof(ptr_t) - 1))
+	((size + sizeof(lfs_entry_t) + sizeof(intptr_t) - 1) \
+			& ~(sizeof(intptr_t) - 1))
 
 #define lfs_buf_size(size, entry_num) \
 	(lfs_entry_size(size) * entry_num)
