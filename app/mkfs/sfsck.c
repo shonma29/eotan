@@ -333,7 +333,7 @@ void scan_block(int fd, struct sfs_superblock *sb, struct sfs_inode *ip)
     for (i = 0; i < block; ++i) {
 	index = get_block_num(fd, sb, ip, i);
 	if (index < sb->sfs_datablock) {
-	    printf("illegal block no %ld: %d-%d\n",
+	    printf("illegal block no %uld: %d-%d\n",
 		   ip->sfs_i_index, i, index);
 	}
 	bitmap_used[index]++;
@@ -342,7 +342,7 @@ void scan_block(int fd, struct sfs_superblock *sb, struct sfs_inode *ip)
     for (i = 0; i < SFS_INDIRECT_BLOCK_ENTRY; ++i) {
 	if (ip->sfs_i_indirect[i] > 0) {
 	    if (ip->sfs_i_indirect[i] < sb->sfs_datablock) {
-		printf("illegal indirect block inode %ld: %d-%ld\n",
+		printf("illegal indirect block inode %uld: %d-%uld\n",
 		       ip->sfs_i_index, i, ip->sfs_i_indirect[i]);
 	    }
 	    bitmap_used[ip->sfs_i_indirect[i]]++;
@@ -357,7 +357,7 @@ void scan_block(int fd, struct sfs_superblock *sb, struct sfs_inode *ip)
 		if (inbuf.sfs_in_block[j] > 0) {
 		    if (inbuf.sfs_in_block[j] < sb->sfs_datablock) {
 			printf
-			    ("illegal dindirect block inode %ld:%d-%ld\n",
+			    ("illegal dindirect block inode %uld:%d-%uld\n",
 			     ip->sfs_i_index, j, inbuf.sfs_in_block[j]);
 		    }
 		    bitmap_used[inbuf.sfs_in_block[j]]++;
@@ -381,19 +381,19 @@ void print_superblock(struct sfs_superblock *sb)
     fprintf(stderr, "FS type\t\tSFS\n");
     fprintf(stderr, "version\t\t%d.%d\n", sb->sfs_version_hi,
 	    sb->sfs_version_lo);
-    fprintf(stderr, "total size\t%ld\n",
+    fprintf(stderr, "total size\t%uld\n",
 	    sb->sfs_nblock * sb->sfs_blocksize);
-    fprintf(stderr, "size\t\t%ld\n",
+    fprintf(stderr, "size\t\t%uld\n",
 	    sb->sfs_freeblock * sb->sfs_blocksize);
-    fprintf(stderr, "mount count\t%ld\n", sb->sfs_mountcount);
+    fprintf(stderr, "mount count\t%uld\n", sb->sfs_mountcount);
     fprintf(stderr, "blocksize\t%d bytes\n", sb->sfs_blocksize);
-    fprintf(stderr, "block\t\t%ld block, %ld free\n", sb->sfs_nblock,
+    fprintf(stderr, "block\t\t%uld block, %uld free\n", sb->sfs_nblock,
 	    sb->sfs_freeblock);
-    fprintf(stderr, "bitmap\t\t%ld bytes\n",
+    fprintf(stderr, "bitmap\t\t%uld bytes\n",
 	    sb->sfs_bitmapsize * sb->sfs_blocksize);
-    fprintf(stderr, "inode\t\t%ld inode, %ld free\n", sb->sfs_ninode,
+    fprintf(stderr, "inode\t\t%uld inode, %uld free\n", sb->sfs_ninode,
 	    sb->sfs_freeinode);
-    fprintf(stderr, "isearch\t\t%ld, bsearch\t\t%ld\n", sb->sfs_isearch,
+    fprintf(stderr, "isearch\t\t%uld, bsearch\t\t%uld\n", sb->sfs_isearch,
 	    sb->sfs_bsearch);
 }
 

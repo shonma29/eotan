@@ -145,7 +145,7 @@ struct stat {
 int mount_fs(char *path, struct sfs_superblock *sb, struct sfs_inode *root, int mode);
 int lookup_file(int fd, struct sfs_superblock *sb, struct sfs_inode *cwd, char *path, struct sfs_inode *ip);
 int create_file(int fd, struct sfs_superblock *sb, struct sfs_inode *parent_dir, const char *name, int mode, struct sfs_inode *newinode);
-int read_file(int fd, struct sfs_superblock *sb, struct sfs_inode *ip, int start, int size, B * buf);
+int read_file(int fd, struct sfs_superblock *sb, struct sfs_inode *ip, int start, int size, char * buf);
 int write_inode(int fd, struct sfs_superblock *sb, struct sfs_inode *ip);
 int remove_file(int fd, struct sfs_superblock *sb, struct sfs_inode *dir, char *fname);
 void print_superblock(struct sfs_superblock *sb);
@@ -172,7 +172,7 @@ extern W read_dir(int fd, struct sfs_superblock *sb, struct sfs_inode *ip, int n
 extern W read_inode(int fd, struct sfs_superblock *sb, int ino, struct sfs_inode *ip);
 extern W read_rootdir(int fd, struct sfs_superblock *sb, struct sfs_dir **dirp, int *nentry);
 extern int write_file(int fd, struct sfs_superblock *sb, struct sfs_inode *ip,
-		      int start, int size, B * buf);
+		      int start, int size, char * buf);
 
 struct sfs_inode rootdir_buf;
 struct sfs_inode *rootdirp;
@@ -449,7 +449,9 @@ int f_dir(int fd, struct sfs_superblock *sb, char *path)
 	return (err);
     }
     if ((ip.sfs_i_perm & SFS_FMT_MSK) != SFS_FMT_DIR) {
-	fprintf(stderr, "%3ld  %4.4lo\t%4.4ld\t%4.4ld\t%-14s\t%ld bytes\n", ip.sfs_i_nlink, ip.sfs_i_perm, ip.sfs_i_uid, ip.sfs_i_gid, path, ip.sfs_i_size);
+	fprintf(stderr, "%3uld  %4.4ulo\t%4.4uld\t%4.4uld\t%-14s\t%uld bytes\n",
+		ip.sfs_i_nlink, ip.sfs_i_perm, ip.sfs_i_uid, ip.sfs_i_gid,
+		path, ip.sfs_i_size);
 	return (0);
     }
     nentry = read_dir(fd, sb, &ip, 0, NULL);
@@ -464,18 +466,18 @@ int f_dir(int fd, struct sfs_superblock *sb, char *path)
 
 	strcpy(name, path);
 	strcat(name, "/");
-	strcat(name, dirp[i].sfs_d_name);
+	strcat(name, (char*)(dirp[i].sfs_d_name));
 	err = lookup_file(fd, sb, rootdirp, name, &ip);
 	if (err) {
 	    fprintf(stderr, "err = %d\n", err);
 	    return (err);
 	}
 	if ((ip.sfs_i_perm & SFS_FMT_DEV) != 0) {
-	    fprintf(stderr, "%3ld  %4.4lo\t%4.4ld\t%4.4ld\t%-14s\t%08lx\n",
+	    fprintf(stderr, "%3uld  %4.4ulo\t%4.4uld\t%4.4uld\t%-14s\t%08ulx\n",
 	       ip.sfs_i_nlink, ip.sfs_i_perm, ip.sfs_i_uid, ip.sfs_i_gid,
 		    dirp[i].sfs_d_name, ip.sfs_i_direct[0]);
 	} else {
-	    fprintf(stderr, "%3ld  %4.4lo\t%4.4ld\t%4.4ld\t%-14s\t%ld bytes\n",
+	    fprintf(stderr, "%3uld  %4.4ulo\t%4.4uld\t%4.4uld\t%-14s\t%uld bytes\n",
 	       ip.sfs_i_nlink, ip.sfs_i_perm, ip.sfs_i_uid, ip.sfs_i_gid,
 		    dirp[i].sfs_d_name, ip.sfs_i_size);
 	}
@@ -536,7 +538,7 @@ int f_mkdir(int fd, struct sfs_superblock *sb, char *path)
     }
     dir[0].sfs_d_index = ip.sfs_i_index;
     dir[1].sfs_d_index = parent_ip.sfs_i_index;
-    err = write_file(fd, sb, &ip, 0, sizeof(dir), (B *) dir);
+    err = write_file(fd, sb, &ip, 0, sizeof(dir), (char *) dir);
     if (err) {
 	fprintf(stderr, "cannot write to directory.\n");
 	return (err);
@@ -773,14 +775,14 @@ void print_superblock(struct sfs_superblock *sb)
     fprintf(stderr, "*STATUS* \n\n");
     fprintf(stderr, "FS type\t\tSFS\n");
     fprintf(stderr, "version\t\t%d.%d\n", sb->sfs_version_hi, sb->sfs_version_lo);
-    fprintf(stderr, "total size\t%ld\n", sb->sfs_nblock * sb->sfs_blocksize);
-    fprintf(stderr, "size\t\t%ld\n", sb->sfs_freeblock * sb->sfs_blocksize);
-    fprintf(stderr, "mount count\t%ld\n", sb->sfs_mountcount);
+    fprintf(stderr, "total size\t%uld\n", sb->sfs_nblock * sb->sfs_blocksize);
+    fprintf(stderr, "size\t\t%uld\n", sb->sfs_freeblock * sb->sfs_blocksize);
+    fprintf(stderr, "mount count\t%uld\n", sb->sfs_mountcount);
     fprintf(stderr, "blocksize\t%d bytes\n", sb->sfs_blocksize);
-    fprintf(stderr, "block\t\t%ld block, %ld free\n", sb->sfs_nblock, sb->sfs_freeblock);
-    fprintf(stderr, "bitmap\t\t%ld bytes\n", sb->sfs_bitmapsize * sb->sfs_blocksize);
-    fprintf(stderr, "inode\t\t%ld inode, %ld free\n", sb->sfs_ninode, sb->sfs_freeinode);
-    fprintf(stderr, "isearch\t\t%ld, bsearch\t\t%ld\n", sb->sfs_isearch, sb->sfs_bsearch);
+    fprintf(stderr, "block\t\t%uld block, %uld free\n", sb->sfs_nblock, sb->sfs_freeblock);
+    fprintf(stderr, "bitmap\t\t%uld bytes\n", sb->sfs_bitmapsize * sb->sfs_blocksize);
+    fprintf(stderr, "inode\t\t%uld inode, %uld free\n", sb->sfs_ninode, sb->sfs_freeinode);
+    fprintf(stderr, "isearch\t\t%uld, bsearch\t\t%uld\n", sb->sfs_isearch, sb->sfs_bsearch);
 }
 
 
@@ -810,7 +812,7 @@ read_rootdir(int fd,
 	exit(0);
     }
     *nentry = ip.sfs_i_size / sizeof(struct sfs_dir);
-    read_file(fd, sb, &ip, 0, ip.sfs_i_size, (B *) dirp);
+    read_file(fd, sb, &ip, 0, ip.sfs_i_size, (char *) dirp);
     return (0);
 }
 
@@ -831,7 +833,7 @@ read_dir(int fd,
      nentry * sizeof(struct sfs_dir) :
      ip->sfs_i_size;
 
-    read_file(fd, sb, ip, 0, size, (B *) dirp);		/* エラーチェックが必要! */
+    read_file(fd, sb, ip, 0, size, (char *) dirp);		/* エラーチェックが必要! */
     return (0);
 }
 
@@ -958,7 +960,7 @@ int write_file(int fd,
 	       struct sfs_inode *ip,
 	       int start,
 	       int size,
-	       B * buf)
+	       char * buf)
 {
     B *blockbuf;
     int copysize;
@@ -1025,7 +1027,7 @@ int read_file(int fd,
 	      struct sfs_inode *ip,
 	      int start,
 	      int size,
-	      B * buf)
+	      char * buf)
 {
     B *blockbuf;
     int copysize;
@@ -1081,7 +1083,7 @@ int create_file(int fd,
 	    /* 削除したエントリがある */
 	    break;
 	}
-	if (strncmp(dirp[dir_index].sfs_d_name, name, SFS_MAXNAMELEN) == 0) {
+	if (strncmp((char *) (dirp[dir_index].sfs_d_name), name, SFS_MAXNAMELEN) == 0) {
 	    return (EEXIST);
 	}
     }
@@ -1115,7 +1117,7 @@ int create_file(int fd,
     /* 親ディレクトリの更新
      */
     newdir_entry.sfs_d_index = newinode->sfs_i_index;
-    strcpy(newdir_entry.sfs_d_name, name);
+    strcpy((char *) (newdir_entry.sfs_d_name), name);
     write_file(fd,
 	       sb,
 	       parent_dir,
@@ -1197,7 +1199,7 @@ int locallookup_file(int fd,
     dirp = alloca(sizeof(struct sfs_dir) * nentry);
     read_dir(fd, sb, parent, nentry, dirp);
     for (i = 0; i < nentry; i++) {
-	if (strcmp(name, dirp[i].sfs_d_name) == 0) {
+	if (strcmp(name, (char *) (dirp[i].sfs_d_name)) == 0) {
 	    read_inode(fd, sb, dirp[i].sfs_d_index, ip);
 	    return (0);
 	}
@@ -1354,7 +1356,7 @@ int remove_file(int fd,
 	return (EIO);
     }
     for (i = 0; i < nentry; i++) {
-	if (strcmp(fname, buf[i].sfs_d_name) == 0) {
+	if (strcmp(fname, (char *) (buf[i].sfs_d_name)) == 0) {
 	    inodeindex = buf[i].sfs_d_index;
 	    break;
 	}
@@ -1364,7 +1366,7 @@ int remove_file(int fd,
     }
     while (i < nentry) {
 	buf[i].sfs_d_index = buf[i + 1].sfs_d_index;
-	strcpy(buf[i].sfs_d_name, buf[i + 1].sfs_d_name);
+	strcpy((char * )(buf[i].sfs_d_name), (char *) (buf[i + 1].sfs_d_name));
 	i++;
     }
     dir->sfs_i_size -= sizeof(struct sfs_dir);

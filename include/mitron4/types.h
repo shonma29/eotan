@@ -27,29 +27,31 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 
 /**
  * common data types
  */
-typedef char B;
-typedef short H;
-typedef long W;
-typedef long long D;
-typedef unsigned char UB;
-typedef unsigned short UH;
-typedef unsigned long UW;
-typedef unsigned long long UD;
+typedef int8_t B;
+typedef int16_t H;
+typedef int32_t W;
+typedef int64_t D;
+typedef uint8_t UB;
+typedef uint16_t UH;
+typedef uint32_t UW;
+typedef uint64_t UD;
 
-typedef char VB;
-typedef short VH;
-typedef long VW;
-typedef long long VD;
+typedef int8_t VB;
+typedef int16_t VH;
+typedef int32_t VW;
+typedef int64_t VD;
 
 typedef void *VP;
 typedef void (*FP)();
 
-typedef long INT;
-typedef unsigned long UINT;
+typedef int_fast32_t INT;
+typedef uint_fast32_t UINT;
 
 typedef bool BOOL;
 
@@ -60,32 +62,32 @@ typedef bool BOOL;
 #define FALSE false
 #endif
 
-typedef long FN;
-typedef long ER;
-typedef long ID;
-typedef unsigned long ATR;
-typedef unsigned long STAT;
-typedef unsigned long MODE;
-typedef long PRI;
-typedef unsigned long SIZE;
+typedef int32_t FN;
+typedef int32_t ER;
+typedef int32_t ID;
+typedef uint32_t ATR;
+typedef uint32_t STAT;
+typedef uint32_t MODE;
+typedef int32_t PRI;
+typedef uint32_t SIZE;
 
-typedef long TMO;
-typedef unsigned long RELTIM;
+typedef int32_t TMO;
+typedef uint32_t RELTIM;
 typedef struct {
 	D sec;
 	W nsec;
 } SYSTIM;
 
-typedef unsigned long INHNO;
+typedef uint32_t INHNO;
 
-typedef long VP_INT;
+typedef int32_t VP_INT;
 
-typedef long ER_BOOL;
-typedef long ER_ID;
-typedef long ER_UINT;
+typedef int32_t ER_BOOL;
+typedef int32_t ER_ID;
+typedef int32_t ER_UINT;
 
-typedef unsigned long RDVPTN;
-typedef long RDVNO;
+typedef uint32_t RDVPTN;
+typedef int32_t RDVNO;
 
 #define TBIT_RDVPTN 32
 

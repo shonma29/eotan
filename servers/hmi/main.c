@@ -239,7 +239,7 @@ void start(VP_INT exinf)
 	ER_ID port = initialize();
 	T_CTSK pk = {
 		TA_HLNG,
-		NULL,
+		(VP_INT)NULL,
 		(FP)keyboard_accept,
 		pri_server_middle,
 		KTHREAD_STACK_SIZE,

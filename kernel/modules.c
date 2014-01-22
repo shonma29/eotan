@@ -71,7 +71,7 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr)
 	ID tskId;
 	T_CTSK pk_ctsk = {
 		TA_HLNG,
-		NULL,
+		(VP_INT)NULL,
 		(FP)(eHdr->e_entry),
 		pri_server_middle,
 		KTHREAD_STACK_SIZE,

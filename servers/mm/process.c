@@ -455,7 +455,7 @@ static ER_ID create_thread(mm_process_t *p, FP entry, VP ustack_top)
 {
 	T_CTSK pk_ctsk = {
 		TA_HLNG,
-		NULL,
+		(VP_INT)NULL,
 		entry,
 		pri_user_foreground,
 		KTHREAD_STACK_SIZE,
