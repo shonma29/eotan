@@ -23,7 +23,9 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-CFLAGS = -Wall -Werror -O2 -I $(WD) -I include -fno-stack-protector -DUSE_VESA
+CFLAGS = -Wall -Werror -O2 -std=gnu99 -fno-stack-protector \
+ -I $(WD) -I include \
+ -DUSE_VESA
 #ASFLAGS = 
 #LDFLAGS = --oformat binary
 STRIP = strip -s -R .comment -R .note -R .note.ABI-tag

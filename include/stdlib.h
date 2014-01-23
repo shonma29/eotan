@@ -29,10 +29,47 @@ For more information, please refer to <http://unlicense.org/>
 
 #define RAND_MAX 0x7fffffff
 
+typedef struct {
+	int quot;
+	int rem;
+} div_t;
+
+typedef struct {
+	long quot;
+	long rem;
+} ldiv_t;
+
+static inline int abs(int value)
+{
+	return (value < 0)? (-value):value;
+}
+
+static inline long labs(long value)
+{
+	return (value < 0)? (-value):value;
+}
+
+static inline div_t div(int numerator, int denominator)
+{
+	div_t x = {
+		x.quot = numerator / denominator,
+		x.rem = numerator % denominator
+	};
+
+	return x;
+}
+
+static inline ldiv_t ldiv(long numerator, long denominator)
+{
+	ldiv_t x = {
+		x.quot = numerator / denominator,
+		x.rem = numerator % denominator
+	};
+
+	return x;
+}
+
 extern int rand(void);
 extern void srand(unsigned int seed);
 
 #endif
-
-
-
