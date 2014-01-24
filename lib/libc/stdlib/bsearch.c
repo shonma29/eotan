@@ -1,5 +1,3 @@
-#ifndef _STRING_H_
-#define _STRING_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,27 +24,31 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "stdarg.h"
-#include "stddef.h"
+#include <stddef.h>
+#include <stdint.h>
+#include <stdlib.h>
 
-extern char *strchr(const char *s, int c);
-extern char *strrchr(const char *s, int c);
-extern size_t strlen(const char *s);
-extern char *strcpy(char *dest, const char *src);
-extern char *strncpy(char *dest, const char *src, size_t n);
-extern char *strcat(char *dest, const char *src);
-extern char *strncat(char *dest, const char *src, size_t n);
-extern int strcmp(const char *s1, const char *s2);
-extern int strncmp(const char *s1, const char *s2, size_t size);
-extern char *strpbrk(const char *s, const char *accept);
-extern size_t strspn(const char *s, const char *accept);
-extern size_t strcspn(const char *s, const char *reject);
 
-extern void *memchr(const void *s, int c, size_t n);
-extern void *memcpy(void *dest, const void *src, size_t n);
-extern void *memset(void *s, int c, size_t n);
-extern int memcmp(const void *b1, const void *b2, size_t len);
+void *bsearch(const void *key, const void *base, size_t nmemb,
+		size_t size, int (*compar)(const void *, const void *))
+{
+	int low;
+	int high;
 
-extern int vnprintf(void (*out)(char), char *format, va_list ap);
+	for (low = 0, high = nmemb - 1; low <= high;) {
+		int middle = low + (high - low) / 2;
+		void *p = (void*)((uintptr_t)base + size * middle);
+		int diff = compar(key, p);
 
-#endif
+		if (!diff)
+			return p;
+
+		else if (diff < 0)
+			high = middle - 1;
+
+		else
+			low = middle + 1;
+	}
+
+	return NULL;
+}

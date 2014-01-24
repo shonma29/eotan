@@ -69,6 +69,8 @@ static inline ldiv_t ldiv(long numerator, long denominator)
 	return x;
 }
 
+extern void *bsearch(const void *key, const void *base, size_t nmemb,
+		size_t size, int (*compar)(const void *, const void *))
 extern int rand(void);
 extern void srand(unsigned int seed);
 

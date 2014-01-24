@@ -1,5 +1,3 @@
-#ifndef _STRING_H_
-#define _STRING_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,27 +24,20 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "stdarg.h"
-#include "stddef.h"
+#include <string.h>
 
-extern char *strchr(const char *s, int c);
-extern char *strrchr(const char *s, int c);
-extern size_t strlen(const char *s);
-extern char *strcpy(char *dest, const char *src);
-extern char *strncpy(char *dest, const char *src, size_t n);
-extern char *strcat(char *dest, const char *src);
-extern char *strncat(char *dest, const char *src, size_t n);
-extern int strcmp(const char *s1, const char *s2);
-extern int strncmp(const char *s1, const char *s2, size_t size);
-extern char *strpbrk(const char *s, const char *accept);
-extern size_t strspn(const char *s, const char *accept);
-extern size_t strcspn(const char *s, const char *reject);
 
-extern void *memchr(const void *s, int c, size_t n);
-extern void *memcpy(void *dest, const void *src, size_t n);
-extern void *memset(void *s, int c, size_t n);
-extern int memcmp(const void *b1, const void *b2, size_t len);
+size_t strcspn(const char *s, const char *reject)
+{
+	unsigned char *p = (unsigned char*)s;
 
-extern int vnprintf(void (*out)(char), char *format, va_list ap);
+	for (; *p; p++)
+		if (!strchr(accept, *p))
+			break;
 
-#endif
+	for (; *p; p++)
+		if (strchr(accept, *p))
+			break;
+
+	return ((size_t)p - (size_t)s);
+}
