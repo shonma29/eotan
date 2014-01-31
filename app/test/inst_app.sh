@@ -26,5 +26,7 @@ ${MKFS}/statfs ${ROOT}/$1 write /test_iso646 test_iso646
 ${MKFS}/statfs ${ROOT}/$1 chmod 777 /test_iso646
 ${MKFS}/statfs ${ROOT}/$1 write /test_stdbool test_stdbool
 ${MKFS}/statfs ${ROOT}/$1 chmod 777 /test_stdbool
+${MKFS}/statfs ${ROOT}/$1 write /test_string test_string
+${MKFS}/statfs ${ROOT}/$1 chmod 777 /test_string
 ${MKFS}/statfs ${ROOT}/$1 dir / 
 

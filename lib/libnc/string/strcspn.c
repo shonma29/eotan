@@ -32,11 +32,7 @@ size_t strcspn(const char *s, const char *reject)
 	unsigned char *p = (unsigned char*)s;
 
 	for (; *p; p++)
-		if (!strchr(accept, *p))
-			break;
-
-	for (; *p; p++)
-		if (strchr(accept, *p))
+		if (strchr(reject, *p))
 			break;
 
 	return ((size_t)p - (size_t)s);
