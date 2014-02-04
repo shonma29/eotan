@@ -30,6 +30,140 @@ For more information, please refer to <http://unlicense.org/>
 #include "cunit.h"
 
 
+char *test_memmove() {
+	char buf[8];
+	char expect[sizeof(buf)];
+	size_t n;
+	char *p;
+	char *q;
+
+	/*
+	 * case 1) right separeted
+	 *  aaa
+	 *     bbb
+	 */
+	for (p = buf, n = sizeof(buf); n; n--)	*p++ = '\0';
+	buf[0] = 'a';
+	buf[1] = 'b';
+	buf[2] = 'c';
+	assert_eq("right separeted result", &(buf[3]),
+			memmove(&(buf[3]), &(buf[0]), 3));
+
+	for (q = expect, n = sizeof(expect); n; n--)	*q++ = '\0';
+	expect[0] = 'a';
+	expect[1] = 'b';
+	expect[2] = 'c';
+	expect[3] = 'a';
+	expect[4] = 'b';
+	expect[5] = 'c';
+	for (p = buf, q = expect, n = sizeof(buf); n; n--)
+		assert_eq("right separeted compare", *q++, *p++);
+
+	/*
+	 * case 2) right overlapped
+	 *  aaa
+	 *    bbb
+	 */
+	for (p = buf, n = sizeof(buf); n; n--)	*p++ = '\0';
+	buf[0] = 'a';
+	buf[1] = 'b';
+	buf[2] = 'c';
+	assert_eq("right overlapped result", &(buf[2]),
+			memmove(&(buf[2]), &(buf[0]), 3));
+
+	for (q = expect, n = sizeof(expect); n; n--)	*q++ = '\0';
+	expect[0] = 'a';
+	expect[1] = 'b';
+	expect[2] = 'a';
+	expect[3] = 'b';
+	expect[4] = 'c';
+	for (p = buf, q = expect, n = sizeof(buf); n; n--)
+		assert_eq("right overlapped compare", *q++, *p++);
+
+	/*
+	 * case 3) fully overlapped
+	 *  aaa
+	 *  bbb
+	 */
+	for (p = buf, n = sizeof(buf); n; n--)	*p++ = '\0';
+	buf[0] = 'a';
+	buf[1] = 'b';
+	buf[2] = 'c';
+	assert_eq("fully overlapped result", &(buf[0]),
+			memmove(&(buf[0]), &(buf[0]), 3));
+
+	for (q = expect, n = sizeof(expect); n; n--)	*q++ = '\0';
+	expect[0] = 'a';
+	expect[1] = 'b';
+	expect[2] = 'c';
+	for (p = buf, q = expect, n = sizeof(buf); n; n--)
+		assert_eq("fully overlapped compare", *q++, *p++);
+
+	/*
+	 * case 4) left overlapped
+	 *    aaa
+	 *  bbb
+	 */
+	for (p = buf, n = sizeof(buf); n; n--)	*p++ = '\0';
+	buf[2] = 'a';
+	buf[3] = 'b';
+	buf[4] = 'c';
+	assert_eq("left overlapped result", &(buf[0]),
+			memmove(&(buf[0]), &(buf[2]), 3));
+
+	for (q = expect, n = sizeof(expect); n; n--)	*q++ = '\0';
+	expect[0] = 'a';
+	expect[1] = 'b';
+	expect[2] = 'c';
+	expect[3] = 'b';
+	expect[4] = 'c';
+	for (p = buf, q = expect, n = sizeof(buf); n; n--)
+		assert_eq("left overlapped compare", *q++, *p++);
+
+	/*
+	 * case 5) left separeted
+	 *     aaa
+	 *  bbb
+	 */
+	for (p = buf, n = sizeof(buf); n; n--)	*p++ = '\0';
+	buf[3] = 'a';
+	buf[4] = 'b';
+	buf[5] = 'c';
+	assert_eq("left separeted result", &(buf[0]),
+			memmove(&(buf[0]), &(buf[3]), 3));
+
+	for (q = expect, n = sizeof(expect); n; n--)	*q++ = '\0';
+	expect[0] = 'a';
+	expect[1] = 'b';
+	expect[2] = 'c';
+	expect[3] = 'a';
+	expect[4] = 'b';
+	expect[5] = 'c';
+	for (p = buf, q = expect, n = sizeof(buf); n; n--)
+		assert_eq("left separeted compare", *q++, *p++);
+
+	/*
+	 * case 6) length zero
+	 *     aaa
+	 *  bbb
+	 */
+	for (p = buf, n = sizeof(buf); n; n--)	*p++ = '\0';
+	buf[3] = 'a';
+	buf[4] = 'b';
+	buf[5] = 'c';
+	assert_eq("length zero result", &(buf[0]),
+			memmove(&(buf[0]), &(buf[3]), 0));
+
+	for (q = expect, n = sizeof(expect); n; n--)	*q++ = '\0';
+	expect[3] = 'a';
+	expect[4] = 'b';
+	expect[5] = 'c';
+	for (p = buf, q = expect, n = sizeof(buf); n; n--)
+		assert_eq("length zero compare", *q++, *p++);
+
+	return NULL;
+}
+
 char *test_memchr() {
 	char *txt = "t\x80st";
 
@@ -107,10 +241,23 @@ char *test_strcspn() {
 	return NULL;
 }
 
+char *test_strstr() {
+	char *txt = "t\x80sthoget\x80st";
+
+	assert_eq("1st chr", &(txt[0]), strstr(txt, "t"));
+	assert_eq("2nd chr", &(txt[1]), strstr(txt, "\x80st"));
+	assert_eq("empty", NULL, strstr("", "t"));
+	assert_eq("not found (empty)", txt, strstr(txt, ""));
+	assert_eq("not found", NULL, strstr(txt, "XYZ"));
+
+	return NULL;
+}
+
 int main(int argc, char **argv)
 {
 extern char *strchr(const char *s, int c);
 	//test(test_memcpy);
+	test(test_memmove);
 	//test(test_memset);
 
 	//test(test_strlen);
@@ -133,6 +280,7 @@ extern char *strchr(const char *s, int c);
 	test(test_strcspn);
 
 	//test(test_strerror);
+	test(test_strstr);
 
 	return 0;
 }
