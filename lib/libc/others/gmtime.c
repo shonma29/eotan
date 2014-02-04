@@ -1,5 +1,3 @@
-#ifndef _TIME_H_
-#define _TIME_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,25 +24,72 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <sys/time.h>
+#include <stdbool.h>
+#include <time.h>
 
-#define CLOCK_REALTIME (0)
-#define CLOCK_MONOTONIC (1)
-
-struct tm {
-	int tm_sec;
-	int tm_min;
-	int tm_hour;
-	int tm_mday;
-	int tm_mon;
-	int tm_year;
-	int tm_wday;
-	int tm_yday;
-	int tm_isdst;
+static int days[] = {
+	0, 31, 61, 92, 122, 153,
+	184, 214, 245, 275, 306, 337
 };
 
-extern time_t time(time_t *t);
-extern int clock_gettime(clockid_t clkid, struct timespec *tp);
-extern struct tm *gmtime_(const time_t *timep);
+static struct tm t;
 
-#endif
+
+struct tm *gmtime_(const time_t *timep)
+{
+	time_t x = *timep;
+	time_t year;
+	int month;
+	int day;
+	int hour;
+	bool isLeap = false;
+
+	/* calculate time */
+	hour = x % (60 * 60 * 24);
+	x = x / (60 * 60 * 24);
+	t.tm_sec = hour % 60;
+	hour = hour / 60;
+	t.tm_min = hour % 60;
+	t.tm_hour = hour / 60;
+	t.tm_wday = (x + 4) % 7;
+
+	/* calculate year */
+	x += 719527 - (31 + 28);
+	year = x / 146097 * 400;
+	x %= 146097;
+	isLeap = (x == 146097 - 1);
+	year += x / 36524 * 100;
+	x %= 36524;
+	year += x / 1461 * 4;
+	x %= 1461;
+	year += x / 365;
+	day = x % 365;
+
+	if (!day) {
+		isLeap |= (x == 1461 - 1);
+
+		if (isLeap) {
+			year--;
+			day = 365;
+		}
+	}
+
+	/* calculate day of month */
+	for (month = 1; (month < 12) && (days[month] <= day); month++);
+	t.tm_mday = day - days[month - 1] + 1;
+
+	if (++month >= 12) {
+		day -= days[10];
+		month -= 12;
+		year++;
+	} else
+		day += ((year % 400)? ((year % 100)? (!(year % 4)):0):1)?
+				(31 + 29):(31 + 28);
+
+	t.tm_mon = month;
+	t.tm_year = year - 1900;
+	t.tm_yday = day;
+	t.tm_isdst = 0;
+
+	return &t;
+}
