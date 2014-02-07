@@ -253,6 +253,37 @@ char *test_strstr() {
 	return NULL;
 }
 
+char *test_strtok() {
+	char txt[256];
+
+	strcpy(txt, "t\x80sthoget\x80st");
+	assert_eq("skip chr start", &(txt[1]), strtok(txt, "t"));
+	assert_eq("skip chr end", 2, strlen(&(txt[1])));
+	assert_eq("next chr start", &(txt[4]), strtok(NULL, "\x80st"));
+	assert_eq("next chr end", 4, strlen(&(txt[4])));
+	assert_eq("tail", NULL, strtok(NULL, "\x80st"));
+	assert_eq("tail (2nd)", NULL, strtok(NULL, "\x80st"));
+
+	assert_eq("empty", NULL, strtok("", "t"));
+	assert_eq("empty (2nd)", NULL, strtok(NULL, "t"));
+
+	strcpy(txt, "t\x80sthoget\x80st");
+	assert_eq("full (empty delim)", txt, strtok(txt, ""));
+	assert_eq("full (empty delim, 2nd)", NULL, strtok(NULL, ""));
+	assert_eq("full (empty delim, 3rd)", NULL, strtok(NULL, ""));
+
+	strcpy(txt, "t\x80sthoget\x80st");
+	assert_eq("full (unmatch delim)", txt, strtok(txt, "XYZ"));
+	assert_eq("full (unmatch delim, 2nd)", NULL, strtok(NULL, "XYZ"));
+	assert_eq("full (unmatch delim, 3rd)", NULL, strtok(NULL, "XYZ"));
+
+	strcpy(txt, "t\x80sthoget\x80st");
+	assert_eq("not found", NULL, strtok(txt, "\x80sthoge"));
+	assert_eq("not found (2nd)", NULL, strtok(NULL, "\x80sthoge"));
+
+	return NULL;
+}
+
 int main(int argc, char **argv)
 {
 extern char *strchr(const char *s, int c);
@@ -281,6 +312,7 @@ extern char *strchr(const char *s, int c);
 
 	//test(test_strerror);
 	test(test_strstr);
+	test(test_strtok);
 
 	return 0;
 }
