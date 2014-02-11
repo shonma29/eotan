@@ -17,19 +17,7 @@ Version 2, June 1991
 #include <core/types.h>
 #include <nstdio.h>
 
-#define BUFSIZE		1024
 #define NFILE		10
-
-struct _file
-{
-  ID	device;
-  W	count;
-  W	length;
-  W	bufsize;
-  UB	buf[BUFSIZE];
-};
-
-typedef struct _file	FILE;
 
 extern FILE	__file_table__[];
 
@@ -38,9 +26,9 @@ extern FILE	__file_table__[];
 #define stderr	(&__file_table__[STDERR_FILENO])
 
 
-extern W	getc (FILE *port);
+extern W	fgetc (FILE *port);
 extern W        fflush(FILE *port);
-extern W	putc (W ch, FILE *port);
+extern W	fputc (W ch, FILE *port);
 extern W	putchar (W ch);
 extern W	fputs (B *line, FILE *port);
 extern W	puts (B *line);

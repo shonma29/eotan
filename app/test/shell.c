@@ -178,7 +178,7 @@ static int read_line_edit(char * line, int length)
     int ch;
 
     for (i = 0; i < length - 1;) {
-	ch = getc(stdin);
+	ch = fgetc(stdin);
 	if ((ch == '\n') || (ch == '\r')) {
 	    putchar(ch);
 	    break;

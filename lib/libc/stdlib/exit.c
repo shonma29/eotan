@@ -35,7 +35,7 @@ void exit(int status)
 
 	for (i = 0; i < NFILE; i++) {
 		fflush(&(__file_table__[i]));
-		close(__file_table__[i].device);
+		close(__file_table__[i].fd);
 	}
 
 	_exit(status);

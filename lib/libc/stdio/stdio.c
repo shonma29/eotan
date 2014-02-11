@@ -68,13 +68,13 @@ print_digit (FILE *port, UW d, UW base)
 
   if (d < base)
     {
-      putc (digit_table[d], port);
+      fputc (digit_table[d], port);
       len++;
     }
   else
     {
       len += print_digit (port, d / base, base);
-      putc (digit_table[d % base], port);
+      fputc (digit_table[d % base], port);
       len++;
     }
 
@@ -134,7 +134,7 @@ vfprintf (FILE *port, B *fmt, VP arg0)
 		  W *q = (W*)ap;
 
 		  *q = 0 - ((W)*ap);
-		  putc ('-', port);
+		  fputc ('-', port);
 		  len++;
 		}
 	      len += print_digit (port, (W)*ap, 10);
@@ -152,14 +152,14 @@ vfprintf (FILE *port, B *fmt, VP arg0)
 	      break;
 
 	    default:
-	      putc ('%', port);
+	      fputc ('%', port);
 	      len++;
 	      break;
 	    }
 	}
       else
 	{
-	  putc (*fmt, port);
+	  fputc (*fmt, port);
 	  len++;
 	}
     }
@@ -169,20 +169,20 @@ vfprintf (FILE *port, B *fmt, VP arg0)
 
 
 W
-putc (W ch, FILE *port)
+fputc (W ch, FILE *port)
 {
-  port->buf[port->count] = ch;
-  port->count++;
+  port->buf[port->pos] = ch;
+  port->pos++;
 
   if (ch == '\n')
     {
-      writechar (port->device, port->buf, port->count);
-      port->count = 0;
+      writechar (port->fd, port->buf, port->pos);
+      port->pos = 0;
     }
-  else if (port->count >= port->bufsize)
+  else if (port->pos >= port->len)
     {
-      writechar (port->device, port->buf, port->count);
-      port->count = 0;
+      writechar (port->fd, port->buf, port->pos);
+      port->pos = 0;
     }
 
   return (ch);
@@ -191,8 +191,8 @@ putc (W ch, FILE *port)
 W
 fflush (FILE *port)
 {
-  writechar (port->device, port->buf, port->count);
-  port->count = 0;
+  writechar (port->fd, port->buf, port->pos);
+  port->pos = 0;
 
   return 0;
 }
@@ -204,7 +204,7 @@ fputs (B *line, FILE *port)
 
   for (i = 0; line[i] != '\0'; i++)
     {
-      putc (line[i], port);
+      fputc (line[i], port);
     }
   return (i);
 }
@@ -214,7 +214,7 @@ puts (B *line)
 {
   W len = fputs (line, stdout);
 
-  putc ('\n', stdout);
+  fputc ('\n', stdout);
   fflush (stdout);
   return (len + 1);
 }
@@ -228,11 +228,11 @@ writechar (ID port, UB *buf, W length)
 }
 
 W
-getc (FILE *port)
+fgetc (FILE *port)
 {
   W ch;
 
-  ch = readchar (port->device);
+  ch = readchar (port->fd);
   return (ch);
 }
 
@@ -248,7 +248,7 @@ readchar (ID port)
 W
 putchar (W ch)
 {
-  W result = putc(ch, stdout);
+  W result = fputc(ch, stdout);
 
   fflush(stdout);
 

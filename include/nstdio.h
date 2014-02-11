@@ -27,8 +27,17 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
+#define BUFSIZ (8192)
+
 #define STDIN_FILENO (0)
 #define STDOUT_FILENO (1)
 #define STDERR_FILENO (2)
+
+typedef struct {
+	int fd;
+	unsigned long long int pos;
+	unsigned long long int len;
+	unsigned char buf[BUFSIZ];
+} FILE;
 
 #endif

@@ -79,12 +79,11 @@ static void libc_init_device(void)
 
     /* initialize __file_table__[] */
     for (i = 0; i < NFILE; i++) {
-	__file_table__[i].count = 0;
-	__file_table__[i].length = 0;
-	__file_table__[i].bufsize = BUFSIZE;
+	__file_table__[i].pos = 0;
+	__file_table__[i].len = BUFSIZ;
     }
 
-    __file_table__[STDIN_FILENO].device = 0;
-    __file_table__[STDOUT_FILENO].device = 1;
-    __file_table__[STDERR_FILENO].device = 1;
+    __file_table__[STDIN_FILENO].fd = 0;
+    __file_table__[STDOUT_FILENO].fd = 1;
+    __file_table__[STDERR_FILENO].fd = 1;
 }
