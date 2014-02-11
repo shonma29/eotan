@@ -21,12 +21,12 @@ Version 2, June 1991
  *
  */
 int
-unlink (char *path)
+unlink (const char *path)
 {
   struct posix_request	req;
 
   req.param.par_unlink.pathlen = strlen (path);
-  req.param.par_unlink.path = path;
+  req.param.par_unlink.path = (char*)path;
   
   return _call_fs(PSC_UNLINK, &req);
 }

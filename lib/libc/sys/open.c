@@ -22,12 +22,12 @@ Version 2, June 1991
  *
  */
 int
-open (char *path, int oflag, ...)
+open (const char *path, int oflag, ...)
 {
     struct posix_request req;
 
     req.param.par_open.pathlen = strlen (path);
-    req.param.par_open.path = path;
+    req.param.par_open.path = (char*)path;
     req.param.par_open.oflag = oflag;	/* o_rdonly | o_wronly | o_rdwr | o_creat */
 
     if (oflag & O_CREAT) {

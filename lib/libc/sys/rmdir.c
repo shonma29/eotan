@@ -21,12 +21,12 @@ Version 2, June 1991
  *
  */
 int
-rmdir (char *path)
+rmdir (const char *path)
 {
   struct posix_request	req;
 
   req.param.par_rmdir.pathlen = strlen (path);
-  req.param.par_rmdir.path = path;
+  req.param.par_rmdir.path = (char*)path;
 
   return _call_fs(PSC_RMDIR, &req);
 }
