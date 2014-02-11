@@ -95,6 +95,7 @@ Version 2, June 1991
  */
 #include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -159,7 +160,7 @@ static void exec(char *str)
 	argv[argc] = 0;
 	execve(argv[0], argv, NULL);
 
-	_exit(1);
+	exit(1);
     }
     else if (res == -1) {
 	printf("fork error\n");

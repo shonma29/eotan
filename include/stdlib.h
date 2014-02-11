@@ -30,6 +30,9 @@ For more information, please refer to <http://unlicense.org/>
 
 #define RAND_MAX 0x7fffffff
 
+#define EXIT_SUCCESS (0)
+#define EXIT_FAILURE (1)
+
 typedef struct {
 	int quot;
 	int rem;
@@ -74,5 +77,6 @@ extern void *bsearch(const void *key, const void *base, size_t nmemb,
 		size_t size, int (*compar)(const void *, const void *));
 extern int rand(void);
 extern void srand(unsigned int seed);
+extern void exit(int status);
 
 #endif

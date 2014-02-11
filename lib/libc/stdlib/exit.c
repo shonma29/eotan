@@ -1,5 +1,3 @@
-#ifndef _CUNIT_H_
-#define _CUNIT_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,22 +24,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
-#define __ITOA(n) #n
-#define _ITOA(n) __ITOA(n)
-#define _FAIL(msg) ("failed in " _ITOA(__LINE__) ". " msg)
 
-#define assert_t(msg, exp) {if (!(exp)) return _FAIL(msg);}
-#define assert_f(msg, exp) {if (exp) return _FAIL(msg);}
-#define assert_eq(msg, a, b) {if ((a) != (b)) return _FAIL(msg);}
-#define assert_ne(msg, a, b) {if ((a) == (b)) return _FAIL(msg);}
-
-#define test(q) { \
-	char *msg = q(); \
-	printf("%s %s.\n", #q, msg? msg:"OK"); \
-	if (msg) exit(1); \
+void exit(int status)
+{
+	_exit(status);
 }
-
-#endif

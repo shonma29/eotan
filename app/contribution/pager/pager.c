@@ -20,6 +20,7 @@
 
 #include    <fcntl.h>
 #include    <stdio.h>
+#include    <stdlib.h>
 #include    <unistd.h>
         
 int read_ln(int fd, char *buf, int  buf_len);
@@ -34,12 +35,12 @@ int main(int argc, char **argv)
   
   if ( argc < 2) {
     printf("Usage: %s file\n", argv[0]);
-    _exit(-1);
+    exit(EXIT_FAILURE);
   }
 
   if ((fd = open(argv[1], O_RDONLY)) < 0) {
     printf("%s\n", argv[1]);
-    _exit(-1);
+    _exit(EXIT_FAILURE);
   }
 
   while(1) {
@@ -69,9 +70,9 @@ void prompt()
   read(0, &c, 1);
   switch (c) {
   case 'q':
-    _exit(1);
+    _exit(EXIT_SUCCESS);
   case 'Q':
-    _exit(1);
+    _exit(EXIT_SUCCESS);
   default:
     break;
   }

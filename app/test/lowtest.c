@@ -194,7 +194,7 @@ char *testmm()
 	if (pid == 0) {
 		printf("child's pid = %d, ppid = %d\n",
 				getpid(), getppid());
-		_exit(0);
+		exit(EXIT_SUCCESS);
 	}
 	else {
 		printf("parent's pid = %d, ppid = %d\n",
