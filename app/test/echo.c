@@ -1,4 +1,4 @@
-/*
+#/*
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -24,19 +24,51 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 
 
-void exit(int status)
-{
+int main(int argc, char **argv) {
 	int i;
+	int out_count = 0;
+	bool print_newline = true;
 
-	for (i = 0; i < NFILE; i++) {
-		fflush(&(__file_table__[i]));
-		close(__file_table__[i].device);
+	// parse options
+	for (i = 1; i < argc; i++) {
+		char *p = argv[i];
+
+		// option
+		if (p[0] == '-') {
+			switch (p[1]) {
+			case 'n':
+				print_newline = false;
+				break;
+
+			default:
+				fprintf(stderr, "unknown option %s\n", p);
+				return EXIT_FAILURE;
+			}
+		}
 	}
 
-	_exit(status);
+	// parse arguments
+	for (i = 1; i < argc; i++) {
+		char *p = argv[i];
+
+		// option
+		if (p[0] == '-')
+			continue;
+
+		if (out_count > 0)
+			fputc(' ', stdout);
+
+		fputs(p, stdout);
+		out_count++;
+	}
+
+	if (print_newline)
+		fputc('\n', stdout);
+
+	return EXIT_SUCCESS;
 }

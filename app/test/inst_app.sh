@@ -13,6 +13,8 @@ ${MKFS}/statfs ${ROOT}/$1 write /rdtest rdtest
 ${MKFS}/statfs ${ROOT}/$1 chmod 777 /rdtest
 ${MKFS}/statfs ${ROOT}/$1 write /cat cat
 ${MKFS}/statfs ${ROOT}/$1 chmod 777 /cat
+${MKFS}/statfs ${ROOT}/$1 write /echo echo
+${MKFS}/statfs ${ROOT}/$1 chmod 777 /echo
 ${MKFS}/statfs ${ROOT}/$1 write /dmesg dmesg
 ${MKFS}/statfs ${ROOT}/$1 chmod 777 /dmesg
 ${MKFS}/statfs ${ROOT}/$1 write /mesg mesg

@@ -54,6 +54,7 @@ Version 2, June 1991
 
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 FILE __file_table__[NFILE];
 
@@ -67,7 +68,7 @@ W _main(W argc, B * argv[], B * envp[])
     libc_init_device();
 
     result = main(argc, argv, envp);
-    _exit(result);
+    exit(result);
 
     return result;
 }
