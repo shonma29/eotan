@@ -73,6 +73,7 @@ static int exec(int out, char *name) {
 
 		if (len < 0) {
 			puterror(name, MSG_READ);
+			break;
 		}
 
 		if (len == 0)	break;
