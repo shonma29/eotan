@@ -25,26 +25,30 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <fcntl.h>
+#include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/dirent.h>
 
-#define MYNAME "cat"
+#define MYNAME "ls"
 
 #define MSG_OPEN "No such file or directory"
 #define MSG_READ "failed to read"
 #define MSG_CLOSE "failed to close"
+#define MSG_STAT "failed to get status"
 #define DELIMITER ": "
 #define NEWLINE "\n"
 
-#define SIZE_BUF 2048
+#define SIZE_BUF 16348
 
-#define OK (0)
-#define NG (1)
+static char buf[SIZE_BUF];
 
 static void pute(char *str);
 static void puterror(char *name, char *message);
-static int exec(int out, char *name);
+static int exec(int out, char *name, int argc, int *out_count);
+
 
 static void pute(char *str) {
 	write(STDERR_FILENO, str, strlen(str));
@@ -59,44 +63,83 @@ static void puterror(char *name, char *message) {
 	pute(NEWLINE);
 }
 
-static int exec(int out, char *name) {
+static int exec(int out, char *name, int argc, int *out_count) {
+	struct stat stat;
+	int result = EXIT_SUCCESS;
 	int in = open(name, O_RDONLY);
 
 	if (in == -1) {
 		puterror(name, MSG_OPEN);
-		return NG;
+		return EXIT_FAILURE;
 	}
 
-	for (;;) {
-		char buf[SIZE_BUF];
-		int len = read(in, buf, sizeof(buf) / sizeof(char));
+	if (fstat(in, &stat)) {
+		close(in);
+		puterror(name, MSG_STAT);
+		return EXIT_FAILURE;
+	}
 
-		if (len < 0) {
-			puterror(name, MSG_READ);
-			break;
+	if (*out_count)
+		write(out, NEWLINE, 1);
+
+	if (stat.st_mode & S_IFDIR) {
+		if (argc > 2) {
+			write(out, name, strlen(name));
+			write(out, DELIMITER, strlen(DELIMITER));
+			write(out, NEWLINE, 1);
 		}
 
-		if (len == 0)	break;
+		for (;;) {
+			int len = getdents(in, buf,
+					sizeof(buf) / sizeof(struct dirent));
+			struct dirent *p;
 
-		write(out, buf, len);
+			if (len < 0) {
+				puterror(name, MSG_READ);
+				result = EXIT_FAILURE;
+				break;
+			}
+
+			if (len == 0)	break;
+
+			p = (struct dirent*)buf; 
+			while (len > 0) {
+				if (p->d_name[0] != '.') {
+					write(out, p->d_name, strlen(p->d_name));
+					write(out, NEWLINE, 1);
+				}
+
+				len -= p->d_reclen;
+				p = (struct dirent*)((size_t)p + p->d_reclen);
+			}
+		}
+	} else {
+		write(out, name, strlen(name));
+		write(out, NEWLINE, 1);
 	}
 
 	if (close(in)) {
 		puterror(name, MSG_CLOSE);
-		return NG;
+		result = EXIT_FAILURE;
 	}
 
-	return OK;
+	*out_count += 1;
+
+	return result;
 }
 
 int main(int argc, char **argv) {
 	int i;
-	int result = OK;
+	int result = EXIT_SUCCESS;
+	int out_count = 0;
 
-	for (i = 1; i < argc; i++) {
-		argv++;
-		result |= exec(STDOUT_FILENO, *argv);
-	}
+	if (argc == 1)
+		result |= exec(STDOUT_FILENO, ".", argc, &out_count);
+	else
+		for (i = 1; i < argc; i++) {
+			argv++;
+			result |= exec(STDOUT_FILENO, *argv, argc, &out_count);
+		}
 
 	return result;
 }

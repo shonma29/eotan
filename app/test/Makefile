@@ -25,7 +25,7 @@
 
 TARGET = $(WD)/test $(WD)/lowtest $(WD)/rdtest \
 		$(WD)/cat $(WD)/dmesg $(WD)/mesg $(WD)/shell $(WD)/p6l \
-		$(WD)/echo \
+		$(WD)/echo $(WD)/ls \
 		$(WD)/test_iso646 $(WD)/test_stdbool $(WD)/test_string
 
 include Makefile.in
