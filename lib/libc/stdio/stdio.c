@@ -56,7 +56,6 @@ Version 2, June 1991
 
 static ER	vfprintf (FILE *port, B *fmt, VP arg0);
 static W writechar (ID port, UB *buf, W length);
-static W readchar (ID port);
 
 
 
@@ -230,19 +229,10 @@ writechar (ID port, UB *buf, W length)
 W
 fgetc (FILE *port)
 {
-  W ch;
-
-  ch = readchar (port->fd);
-  return (ch);
-}
-
-
-static W
-readchar (ID port)
-{
   B buf[1];
-  read(port, buf, 1);
-  return(buf[0]);
+
+  read(port->fd, buf, 1);
+  return (W)(buf[0]);
 }
 
 W
