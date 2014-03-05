@@ -78,5 +78,7 @@ extern void *bsearch(const void *key, const void *base, size_t nmemb,
 extern int rand(void);
 extern void srand(unsigned int seed);
 extern void exit(int status);
+extern void *malloc(size_t);
+extern void free(void*);
 
 #endif
