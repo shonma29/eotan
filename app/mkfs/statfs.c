@@ -296,6 +296,7 @@ int main(int ac, char **av)
 	    err = (*cmdtable[i].funcp) (fd, &sb, av[3], av[4], av[5]);
 	    if (err) {
 		fprintf(stderr, "errno = %d\n", err);
+		exit(err);
 	    }
 	    exit(0);
 	}
@@ -359,7 +360,6 @@ int f_write_file(int fd, struct sfs_superblock *sb, char *path, char *src_file)
     int dfd;
     struct stat st;
     char *buf;
-
 
     dfd = open(src_file, O_RDONLY);
     if (dfd < 0) {
@@ -449,7 +449,7 @@ int f_dir(int fd, struct sfs_superblock *sb, char *path)
 	return (err);
     }
     if ((ip.sfs_i_perm & SFS_FMT_MSK) != SFS_FMT_DIR) {
-	fprintf(stderr, "%3uld  %4.4ulo\t%4.4uld\t%4.4uld\t%-14s\t%uld bytes\n",
+	fprintf(stderr, "%3u  %4.4o\t%4.4u\t%4.4u\t%-14s\t%u bytes\n",
 		ip.sfs_i_nlink, ip.sfs_i_perm, ip.sfs_i_uid, ip.sfs_i_gid,
 		path, ip.sfs_i_size);
 	return (0);
@@ -473,11 +473,11 @@ int f_dir(int fd, struct sfs_superblock *sb, char *path)
 	    return (err);
 	}
 	if ((ip.sfs_i_perm & SFS_FMT_DEV) != 0) {
-	    fprintf(stderr, "%3uld  %4.4ulo\t%4.4uld\t%4.4uld\t%-14s\t%08ulx\n",
+	    fprintf(stderr, "%3u  %4.4o\t%4.4u\t%4.4u\t%-14s\t%08x\n",
 	       ip.sfs_i_nlink, ip.sfs_i_perm, ip.sfs_i_uid, ip.sfs_i_gid,
 		    dirp[i].sfs_d_name, ip.sfs_i_direct[0]);
 	} else {
-	    fprintf(stderr, "%3uld  %4.4ulo\t%4.4uld\t%4.4uld\t%-14s\t%uld bytes\n",
+	    fprintf(stderr, "%3u  %4.4o\t%4.4u\t%4.4u\t%-14s\t%u bytes\n",
 	       ip.sfs_i_nlink, ip.sfs_i_perm, ip.sfs_i_uid, ip.sfs_i_gid,
 		    dirp[i].sfs_d_name, ip.sfs_i_size);
 	}
@@ -775,14 +775,14 @@ void print_superblock(struct sfs_superblock *sb)
     fprintf(stderr, "*STATUS* \n\n");
     fprintf(stderr, "FS type\t\tSFS\n");
     fprintf(stderr, "version\t\t%d.%d\n", sb->sfs_version_hi, sb->sfs_version_lo);
-    fprintf(stderr, "total size\t%uld\n", sb->sfs_nblock * sb->sfs_blocksize);
-    fprintf(stderr, "size\t\t%uld\n", sb->sfs_freeblock * sb->sfs_blocksize);
-    fprintf(stderr, "mount count\t%uld\n", sb->sfs_mountcount);
+    fprintf(stderr, "total size\t%u\n", sb->sfs_nblock * sb->sfs_blocksize);
+    fprintf(stderr, "size\t\t%u\n", sb->sfs_freeblock * sb->sfs_blocksize);
+    fprintf(stderr, "mount count\t%u\n", sb->sfs_mountcount);
     fprintf(stderr, "blocksize\t%d bytes\n", sb->sfs_blocksize);
-    fprintf(stderr, "block\t\t%uld block, %uld free\n", sb->sfs_nblock, sb->sfs_freeblock);
-    fprintf(stderr, "bitmap\t\t%uld bytes\n", sb->sfs_bitmapsize * sb->sfs_blocksize);
-    fprintf(stderr, "inode\t\t%uld inode, %uld free\n", sb->sfs_ninode, sb->sfs_freeinode);
-    fprintf(stderr, "isearch\t\t%uld, bsearch\t\t%uld\n", sb->sfs_isearch, sb->sfs_bsearch);
+    fprintf(stderr, "block\t\t%u block, %u free\n", sb->sfs_nblock, sb->sfs_freeblock);
+    fprintf(stderr, "bitmap\t\t%u bytes\n", sb->sfs_bitmapsize * sb->sfs_blocksize);
+    fprintf(stderr, "inode\t\t%u inode, %u free\n", sb->sfs_ninode, sb->sfs_freeinode);
+    fprintf(stderr, "isearch\t\t%u, bsearch\t\t%u\n", sb->sfs_isearch, sb->sfs_bsearch);
 }
 
 
@@ -804,12 +804,12 @@ read_rootdir(int fd,
 
     if (read_inode(fd, sb, 1, &ip) != 0) {
 	fprintf(stderr, "Cannot read rootdir.\n");
-	exit(0);
+	exit(1);
     }
     *dirp = (struct sfs_dir *) malloc(ip.sfs_i_size);
     if (*dirp == NULL) {
 	fprintf(stderr, "Memory over flow.\n");
-	exit(0);
+	exit(1);
     }
     *nentry = ip.sfs_i_size / sizeof(struct sfs_dir);
     read_file(fd, sb, &ip, 0, ip.sfs_i_size, (char *) dirp);
