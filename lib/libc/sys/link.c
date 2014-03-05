@@ -21,14 +21,14 @@ Version 2, June 1991
  *
  */
 int
-link (char *src, char *dst)
+link (const char *src, const char *dst)
 {
   struct posix_request	req;
 
   req.param.par_link.srclen = strlen (src);
-  req.param.par_link.src = src;
+  req.param.par_link.src = (char*)src;
   req.param.par_link.dstlen = strlen (dst);
-  req.param.par_link.dst = dst;
+  req.param.par_link.dst = (char*)dst;
 
   return _call_fs(PSC_LINK, &req);
 }

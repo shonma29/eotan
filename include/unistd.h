@@ -63,7 +63,7 @@ extern int getpid(void);
 extern int getppid(void);
 extern int getuid(void);
 extern int kill(int pid);
-extern int link(char *src, char *dst);
+extern int link(const char *src, const char *dst);
 extern int lseek(int fd, int offset, int mode);
 extern int misc(int cmd, int len, void *argp);
 extern int mkdir(char *path, mode_t mode);
