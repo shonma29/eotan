@@ -25,9 +25,9 @@
 
 TARGET = boot.iso
 
-.PHONY: tools libs kern core servers apps test contrib initrd starter
+.PHONY: tools libs kern core servers apps test contrib initrd starter data
 
-all: tools libs kern initrd apps starter
+all: tools libs kern initrd apps data starter
 
 tools:
 	$(MAKE) -f app/mkfs/Makefile WD=app/mkfs
@@ -51,8 +51,14 @@ test:
 contrib:
 	$(MAKE) -f app/contribution/pager/Makefile WD=app/contribution/pager
 
+data: initrd.mk bees.p6
+	for I in $^; do \
+		app/mkfs/statfs initrd.img write /$$I $$I; \
+		app/mkfs/statfs initrd.img chmod 777 /$$I; \
+	done
+
 starter:
-	(cd app/test && ./inst_app.sh initrd.img)
+	app/mkfs/statfs initrd.img dir /
 	mkdir -p build
 	$(MAKE) -C starter
 
