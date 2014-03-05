@@ -38,3 +38,5 @@ $(TARGET): $(OBJS) \
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $(@).o \
 		lib/libc.a lib/libserv.a lib/libitron.a lib/libnc.a
 	$(STRIP) $@
+	app/mkfs/statfs initrd.img write /$(@F) $@
+	app/mkfs/statfs initrd.img chmod 777 /$(@F)

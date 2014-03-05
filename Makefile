@@ -27,7 +27,7 @@ TARGET = boot.iso
 
 .PHONY: tools libs kern core servers apps test contrib initrd starter
 
-all: tools libs kern apps initrd starter
+all: tools libs kern initrd apps starter
 
 tools:
 	$(MAKE) -f app/mkfs/Makefile WD=app/mkfs
@@ -52,6 +52,7 @@ contrib:
 	$(MAKE) -f app/contribution/pager/Makefile WD=app/contribution/pager
 
 starter:
+	(cd app/test && ./inst_app.sh initrd.img)
 	mkdir -p build
 	$(MAKE) -C starter
 

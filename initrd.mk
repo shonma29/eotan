@@ -13,8 +13,6 @@ all: clean
 	${MKFS}/statfs ${TARGET} mknod /dev/rd	0x80020000
 	${MKFS}/statfs ${TARGET} dir /dev
 	${MKFS}/statfs ${TARGET} write /initrd.mk initrd.mk
-	(cd app/test && ./inst_app.sh ${TARGET})
-	(cd app/contribution && ./inst_app.sh ${TARGET})
 
 clean:
 	rm -f ${TARGET}
