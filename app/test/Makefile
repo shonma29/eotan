@@ -25,10 +25,12 @@
 
 TARGET = $(WD)/test $(WD)/lowtest $(WD)/rdtest \
 		$(WD)/cat $(WD)/dmesg $(WD)/mesg $(WD)/shell $(WD)/p6l \
-		$(WD)/echo $(WD)/ls \
+		$(WD)/echo $(WD)/ls $(WD)/pwd $(WD)/sleep \
 		$(WD)/test_iso646 $(WD)/test_stdbool $(WD)/test_string
 
 include Makefile.in
+
+CFLAGS += -fno-builtin
 
 ENTRY_ADDR = 0x00001000
 ENTRY_FUNC = _main

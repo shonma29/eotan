@@ -1,4 +1,4 @@
-#/*
+/*
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -24,48 +24,40 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+
+#define MAX_CWD (1024)
+#define MSG_MEMORY "memory exhausted\n"
 
 
 int main(int argc, char **argv) {
-	int i = 1;
-	int out_count = 0;
-	bool print_newline = true;
+	size_t size = MAX_CWD;
+	char *q = NULL;
 
-	//TODO omit if POSIX
-	// parse options
-	if (argc > 1) {
-		char *p = argv[1];
+	//TODO parse option -L (use environment variable PWD. BSD default)
+	//TODO parse option -P (get absolute path. POSIX default)
 
-		// option
-		if (p[0] == '-') {
-			switch (p[1]) {
-			case 'n':
-				print_newline = false;
-				i++;
-				break;
+	do {
+		char *p = (char*)malloc(size);
 
-			default:
-				break;
-			}
+		if (!p) {
+			fputs(MSG_MEMORY, stderr);
+			return EXIT_FAILURE;
 		}
-	}
 
-	// parse arguments
-	for (; i < argc; i++) {
-		char *p = argv[i];
+		q = getcwd(p, sizeof(size));
 
-		if (out_count > 0)
-			fputc(' ', stdout);
+		if (q) {
+			puts(q);
 
-		fputs(p, stdout);
-		out_count++;
-	}
+		} else
+			size *= 2;
 
-	if (print_newline)
-		fputc('\n', stdout);
+		free(p);
+
+	} while (!q);
 
 	return EXIT_SUCCESS;
 }

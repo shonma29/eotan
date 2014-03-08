@@ -1,4 +1,4 @@
-#/*
+/*
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -24,48 +24,53 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stdbool.h>
+#include <ctype.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#define MAX_QUOTIENT (UINT_MAX / 10)
+#define MAX_REMAINDER (UINT_MAX % 10)
+
+#define MSG_ARG "usage: sleep seconds\n"
 
 
 int main(int argc, char **argv) {
-	int i = 1;
-	int out_count = 0;
-	bool print_newline = true;
+	char *str = argv[1];
 
-	//TODO omit if POSIX
-	// parse options
-	if (argc > 1) {
-		char *p = argv[1];
+	//TODO check options
 
-		// option
-		if (p[0] == '-') {
-			switch (p[1]) {
-			case 'n':
-				print_newline = false;
-				i++;
-				break;
+	if (argc != 2)
+		;
 
-			default:
-				break;
+	else if (*str) {
+		unsigned int n = 0;
+
+		for (;; str++) {
+			unsigned int add;
+
+			if (!*str) {
+				sleep(n);
+				return EXIT_SUCCESS;
 			}
+
+			if (!isdigit(*str))
+				break;
+
+			if (n > MAX_QUOTIENT)
+				break;
+
+			add = *str - '0';
+			if ((n == MAX_QUOTIENT)
+					&& (add > MAX_REMAINDER))
+				break;
+
+			n = n * 10 + add;
 		}
 	}
 
-	// parse arguments
-	for (; i < argc; i++) {
-		char *p = argv[i];
-
-		if (out_count > 0)
-			fputc(' ', stdout);
-
-		fputs(p, stdout);
-		out_count++;
-	}
-
-	if (print_newline)
-		fputc('\n', stdout);
-
-	return EXIT_SUCCESS;
+	fputs(MSG_ARG, stderr);
+	return EXIT_FAILURE;
 }

@@ -43,6 +43,9 @@ For more information, please refer to <http://unlicense.org/>
 
 #define SIZE_BUF 16348
 
+#define OK (0)
+#define NG (1)
+
 static char buf[SIZE_BUF];
 
 static void pute(char *str);
@@ -65,18 +68,18 @@ static void puterror(char *name, char *message) {
 
 static int exec(int out, char *name, int argc, int *out_count) {
 	struct stat stat;
-	int result = EXIT_SUCCESS;
+	int result = OK;
 	int in = open(name, O_RDONLY);
 
 	if (in == -1) {
 		puterror(name, MSG_OPEN);
-		return EXIT_FAILURE;
+		return NG;
 	}
 
 	if (fstat(in, &stat)) {
 		close(in);
 		puterror(name, MSG_STAT);
-		return EXIT_FAILURE;
+		return NG;
 	}
 
 	if (*out_count)
@@ -96,7 +99,7 @@ static int exec(int out, char *name, int argc, int *out_count) {
 
 			if (len < 0) {
 				puterror(name, MSG_READ);
-				result = EXIT_FAILURE;
+				result = NG;
 				break;
 			}
 
@@ -120,7 +123,7 @@ static int exec(int out, char *name, int argc, int *out_count) {
 
 	if (close(in)) {
 		puterror(name, MSG_CLOSE);
-		result = EXIT_FAILURE;
+		result = NG;
 	}
 
 	*out_count += 1;
@@ -130,7 +133,7 @@ static int exec(int out, char *name, int argc, int *out_count) {
 
 int main(int argc, char **argv) {
 	int i;
-	int result = EXIT_SUCCESS;
+	int result = OK;
 	int out_count = 0;
 
 	if (argc == 1)
@@ -141,5 +144,5 @@ int main(int argc, char **argv) {
 			result |= exec(STDOUT_FILENO, *argv, argc, &out_count);
 		}
 
-	return result;
+	return result? EXIT_FAILURE:EXIT_SUCCESS;
 }
