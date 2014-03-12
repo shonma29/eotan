@@ -15,7 +15,7 @@ Version 2, June 1991
 
 #include <fcntl.h>
 #include <string.h>
-#include "posix.h"
+#include "sys.h"
 
 
 /* open 

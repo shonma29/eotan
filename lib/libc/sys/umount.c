@@ -8,7 +8,7 @@
 */
 
 #include <string.h>
-#include "posix.h"
+#include "sys.h"
 
 
 /* umount */

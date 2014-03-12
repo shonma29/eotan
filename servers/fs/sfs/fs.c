@@ -89,7 +89,7 @@ Version 2, June 1991
  */
 
 #include "../fs.h"
-#include "sfs_func.h"
+#include "func.h"
 
 
 

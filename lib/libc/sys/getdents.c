@@ -13,7 +13,7 @@ Version 2, June 1991
 
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_getdents.c,v 1.1 2000/06/01 08:43:45 naniwa Exp $  */
 
-#include "posix.h"
+#include "sys.h"
 
 
 /* getdents

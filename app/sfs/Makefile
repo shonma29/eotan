@@ -23,7 +23,7 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = $(WD)/mksfs $(WD)/statfs $(WD)/sfsck
+TARGET = $(WD)/mkfs $(WD)/statfs $(WD)/fsck
 
 include Makefile.in
 

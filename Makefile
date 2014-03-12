@@ -30,7 +30,7 @@ TARGET = boot.iso
 all: tools libs kern initrd apps data starter
 
 tools:
-	$(MAKE) -f app/mkfs/Makefile WD=app/mkfs
+	$(MAKE) -f app/sfs/Makefile WD=app/sfs
 
 libs:
 	$(MAKE) -f lib/Makefile
@@ -53,12 +53,12 @@ contrib:
 
 data: initrd.mk bees.p6
 	for I in $^; do \
-		app/mkfs/statfs initrd.img write /$$I $$I; \
-		app/mkfs/statfs initrd.img chmod 777 /$$I; \
+		app/sfs/statfs initrd.img write /$$I $$I; \
+		app/sfs/statfs initrd.img chmod 777 /$$I; \
 	done
 
 starter:
-	app/mkfs/statfs initrd.img dir /
+	app/sfs/statfs initrd.img dir /
 	mkdir -p build
 	$(MAKE) -C starter
 
@@ -66,7 +66,7 @@ initrd:
 	$(MAKE) -f initrd.mk
 
 clean:
-	$(MAKE) -f app/mkfs/Makefile WD=app/mkfs clean
+	$(MAKE) -f app/sfs/Makefile WD=app/sfs clean
 	$(MAKE) -f lib/Makefile clean
 	$(MAKE) -f kernel/Makefile WD=kernel clean
 	$(MAKE) -f servers/Makefile clean

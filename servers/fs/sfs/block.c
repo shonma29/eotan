@@ -58,7 +58,7 @@ Version 2, June 1991
 
 #include <string.h>
 #include "../fs.h"
-#include "sfs_func.h"
+#include "func.h"
 
 
 /* ブロックに関係している処理

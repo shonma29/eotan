@@ -52,8 +52,8 @@ Version 2, June 1991
  */
 
 
-#ifndef __SFS_FS_H__
-#define __SFS_FS_H__	1
+#ifndef __SFS_SFS_H__
+#define __SFS_SFS_H__	1
 
 #include "../../../include/core/types.h"
 
@@ -143,4 +143,4 @@ struct sfs_dir
 extern struct fsops	sfs_fsops;
 extern struct iops	sfs_iops;
 
-#endif /* __SFS_FS_H__ */
+#endif /* __SFS_SFS_H__ */

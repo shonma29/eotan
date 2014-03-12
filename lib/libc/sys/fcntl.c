@@ -14,7 +14,7 @@ Version 2, June 1991
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_fcntl.c,v 1.2 2000/01/29 16:23:08 naniwa Exp $  */
 
 #include <stdarg.h>
-#include "posix.h"
+#include "sys.h"
 
 
 /* fcntl 

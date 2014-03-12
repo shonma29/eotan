@@ -10,7 +10,7 @@ Version 2, June 1991
 (C) 2001-2003, Tomohide Naniwa
 
 */
-/* posix.h - POSIX 環境マネージャ用のヘッダファイル
+/* config.h - ファイルシステム設定用のヘッダファイル
  *
  *
  *

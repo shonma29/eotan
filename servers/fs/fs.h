@@ -10,7 +10,7 @@ Version 2, June 1991
 (C) 2001-2003, Tomohide Naniwa
 
 */
-/* posix.h - POSIX 環境マネージャ用のヘッダファイル
+/* fs.h - ファイルシステム用のヘッダファイル
  *
  *
  *
@@ -23,7 +23,7 @@ Version 2, June 1991
 #include <unistd.h>
 #include <core.h>
 #include "api.h"
-#include "sfs/sfs_fs.h"
+#include "sfs/sfs.h"
 #include "vfs.h"
 #include "process.h"
 #include "mm.h"

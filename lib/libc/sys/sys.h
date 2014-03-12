@@ -13,7 +13,7 @@ Version 2, June 1991
 /* $Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native.h,v 1.2 2000/06/01 08:43:10 naniwa Exp $ */
 
 
-#ifndef __POSIX_H__
+#ifndef __SYS_H__
 
 #include <unistd.h>
 #include <local.h>

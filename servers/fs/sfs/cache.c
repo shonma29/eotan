@@ -22,7 +22,7 @@ Version 2, June 1991
 #include <string.h>
 #include <mpu/memory.h>
 #include "../fs.h"
-#include "sfs_func.h"
+#include "func.h"
 
 #undef USE_MALLOC
 

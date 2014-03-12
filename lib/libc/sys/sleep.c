@@ -17,7 +17,7 @@ Version 2, June 1991
 
 #include <nerve/config.h>
 #include <core.h>
-#include "posix.h"
+#include "sys.h"
 
 static int usleep (int usecond);
 

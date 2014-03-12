@@ -16,7 +16,7 @@ Version 2, June 1991
 #include <string.h>
 #include <local.h>
 #include <nerve/config.h>
-#include "posix.h"
+#include "sys.h"
 
 #define STACK_TAIL (LOCAL_ADDR - PAGE_SIZE)
 

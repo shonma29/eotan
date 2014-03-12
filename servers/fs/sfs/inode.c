@@ -66,7 +66,7 @@ Version 2, June 1991
 
 #include <string.h>
 #include "../fs.h"
-#include "sfs_func.h"
+#include "func.h"
 
 #ifndef ROUNDUP
 #define ROUNDUP(x,align)	(((((int)x) + ((align) - 1))/(align))*(align))

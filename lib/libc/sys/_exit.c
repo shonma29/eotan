@@ -15,7 +15,7 @@ Version 2, June 1991
 
 #include <errno.h>
 #include <core.h>
-#include "posix.h"
+#include "sys.h"
 
 
 /* _exit 

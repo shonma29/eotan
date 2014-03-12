@@ -51,7 +51,7 @@ Version 2, June 1991
 #include <fcntl.h>
 #include <time.h>
 #include "../../include/core/types.h"
-#include "../../servers/fs/sfs/sfs_fs.h"
+#include "../../servers/fs/sfs/sfs.h"
 
 #define BLOCKSIZE 512
 

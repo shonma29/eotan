@@ -15,7 +15,7 @@ Version 2, June 1991
 
 #include <errno.h>
 #include <unistd.h>
-#include "posix.h"
+#include "sys.h"
 
 
 /* waitpid 

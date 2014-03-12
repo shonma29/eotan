@@ -21,7 +21,7 @@ Version 2, June 1991
 #include <core.h>
 #include <nerve/kcall.h>
 #include "../fs.h"
-#include "sfs_func.h"
+#include "func.h"
 
 
 #define BLOCK_SIZE	512

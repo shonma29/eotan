@@ -113,7 +113,7 @@
 #include <fcntl.h>
 #include <time.h>
 #include "../../include/core/types.h"
-#include "../../servers/fs/sfs/sfs_fs.h"
+#include "../../servers/fs/sfs/sfs.h"
 #ifdef EOTA
 struct stat {
     UW st_dev;

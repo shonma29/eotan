@@ -18,7 +18,7 @@ Version 2, June 1991
 #include <errno.h>
 #include <string.h>
 #include <core/types.h>
-#include "posix.h"
+#include "sys.h"
 
 
 /* getcwd 

@@ -18,7 +18,7 @@ Version 2, June 1991
 #include <fcntl.h>
 #endif
 #include "../../include/core/types.h"
-#include "../../servers/fs/sfs/sfs_fs.h"
+#include "../../servers/fs/sfs/sfs.h"
 
 
 #define ROUNDUP(x,align)	(((((int)x) + ((align) - 1))/(align))*(align))

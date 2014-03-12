@@ -116,7 +116,7 @@ Version 2, June 1991
 #include <mpu/memory.h>
 #include "../fs.h"
 #include "../vfs.h"
-#include "sfs_func.h"
+#include "func.h"
 
 #ifndef MIN
 #define MIN(x,y)		((x > y) ? y : x)
