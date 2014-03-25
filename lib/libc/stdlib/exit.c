@@ -33,9 +33,9 @@ void exit(int status)
 {
 	int i;
 
-	for (i = 0; i < NFILE; i++) {
-		fflush(&(__file_table__[i]));
-		close(__file_table__[i].fd);
+	for (i = 0; i < FOPEN_MAX; i++) {
+		fflush(&(__libc_files[i]));
+		close(__libc_files[i].fd);
 	}
 
 	_exit(status);

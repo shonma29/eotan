@@ -56,7 +56,7 @@ Version 2, June 1991
 #include <stdio.h>
 #include <stdlib.h>
 
-FILE __file_table__[NFILE];
+FILE __libc_files[FOPEN_MAX];
 
 extern W main(W argc, B * argv[], B * envp[]);
 
@@ -78,12 +78,13 @@ static void libc_init_device(void)
     int i;
 
     /* initialize __file_table__[] */
-    for (i = 0; i < NFILE; i++) {
-	__file_table__[i].pos = 0;
-	__file_table__[i].len = BUFSIZ;
+    for (i = 0; i < FOPEN_MAX; i++) {
+	__libc_files[i].pos = 0;
+	__libc_files[i].len = BUFSIZ;
+	__libc_files[i].eof = false;
     }
 
-    __file_table__[STDIN_FILENO].fd = 0;
-    __file_table__[STDOUT_FILENO].fd = 1;
-    __file_table__[STDERR_FILENO].fd = 1;
+    __libc_files[STDIN_FILENO].fd = 0;
+    __libc_files[STDOUT_FILENO].fd = 1;
+    __libc_files[STDERR_FILENO].fd = 1;
 }

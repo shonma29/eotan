@@ -26,8 +26,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdbool.h>
 
 #define BUFSIZ (8192)
+#define FOPEN_MAX (16)
 
 #define STDIN_FILENO (0)
 #define STDOUT_FILENO (1)
@@ -38,6 +40,13 @@ typedef struct {
 	unsigned long long int pos;
 	unsigned long long int len;
 	unsigned char buf[BUFSIZ];
+	bool eof;
 } FILE;
+
+extern FILE __libc_files[];
+
+#define stdin (&(__libc_files[STDIN_FILENO]))
+#define stdout (&(__libc_files[STDOUT_FILENO]))
+#define stderr (&(__libc_files[STDERR_FILENO]))
 
 #endif

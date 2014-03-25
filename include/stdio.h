@@ -17,15 +17,6 @@ Version 2, June 1991
 #include <core/types.h>
 #include <nstdio.h>
 
-#define NFILE		10
-
-extern FILE	__file_table__[];
-
-#define stdin	(&__file_table__[STDIN_FILENO])
-#define stdout	(&__file_table__[STDOUT_FILENO])
-#define stderr	(&__file_table__[STDERR_FILENO])
-
-
 extern W	fgetc (FILE *port);
 extern W        fflush(FILE *port);
 extern W	fputc (W ch, FILE *port);
