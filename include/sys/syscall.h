@@ -23,7 +23,7 @@ Version 2, June 1991
 
 #include <core/types.h>
 
-#define NR_POSIX_SYSCALL	43
+#define NR_POSIX_SYSCALL	33
 
 /* =================== POSIX システムコール番号の定義 =============== */
 #define PSC_NOACTION     0
@@ -50,23 +50,22 @@ Version 2, June 1991
 #define PSC_RMDIR        21
 #define PSC_UMASK        22
 #define PSC_UNLINK       23
-#define PSC_UTIME        24
-#define PSC_WAITPID      25
-#define PSC_WRITE        26
-#define PSC_GETDENTS	 27
-#define PSC_MOUNT        28
-#define PSC_STATFS       29
-#define PSC_UMOUNT       30
+#define PSC_WAITPID      24
+#define PSC_WRITE        25
+#define PSC_GETDENTS	 26
+#define PSC_MOUNT        27
+#define PSC_STATFS       28
+#define PSC_UMOUNT       29
 
 /* =================== SIGNAL 関係 =============== */
-#define PSC_KILL         31
+#define PSC_KILL         30
 
 /* =================== miserous system calls  =============== */
-#define PSC_MISC         32
+#define PSC_MISC         31
 
-#define PSC_DUP2         33	/* 不要? */
+#define PSC_DUP2         32	/* 不要? */
 
-#define PSC_BIND_DEVICE (34)
+#define PSC_BIND_DEVICE (33)
 
 /* MISC 
  */
@@ -339,17 +338,6 @@ struct psc_unlink
 };
 
 
-/* psc_utime -
- *
- */
-struct psc_utime
-{
-      W pathlen;
-      B *path;
-      struct utimbuf *buf;
-};
-
-
 /* psc_waitpid -
  *
  */
@@ -478,7 +466,6 @@ struct posix_request
     struct psc_fstat  		par_fstat;
     struct psc_umask 		par_umask;
     struct psc_unlink     	par_unlink;
-    struct psc_utime 		par_utime;
     struct psc_waitpid   	par_waitpid;
     struct psc_write 		par_write;
     struct psc_mount		par_mount;

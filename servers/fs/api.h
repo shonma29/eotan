@@ -62,7 +62,6 @@ extern W	psc_rmdir_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_fstat_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_umask_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_unlink_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_utime_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_waitpid_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_write_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_mount_f (RDVNO rdvno, struct posix_request *);
