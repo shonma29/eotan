@@ -40,7 +40,6 @@ extern struct posix_syscall	syscall_table[];
 extern W	psc_access_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_chdir_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_chmod_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_chown_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_close_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_dup_f (RDVNO rdvno, struct posix_request *);
 extern W	psc_dup2_f (RDVNO rdvno, struct posix_request *);

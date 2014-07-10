@@ -168,7 +168,6 @@ struct posix_syscall	syscall_table[] =
   { s("access",		PSC_ACCESS)		psc_access_f },
   { s("chdir",		PSC_CHDIR)		psc_chdir_f },
   { s("chmod",		PSC_CHMOD)		psc_chmod_f },
-  { s("chown",		PSC_CHOWN)		psc_chown_f },
   { s("close",		PSC_CLOSE)		psc_close_f },
   { s("dup",		PSC_DUP)		psc_dup_f },
   { s("exec",		PSC_EXEC)		psc_exec_f },

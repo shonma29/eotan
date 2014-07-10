@@ -86,15 +86,12 @@ char *testfile()
 
 	assert_eq("close[0]", 0, close(fd));
 
-	assert_eq("chown[0]", 0, chown("/initrd.mk", 147, 258));
 	assert_eq("chmod[0]", 0, chmod("/initrd.mk", S_IXGRP | S_IROTH | S_IWOTH));
 
 	fd = open("/initrd.mk", O_RDONLY);
 	assert_ne("open[1]", -1, fd);
 
 	assert_eq("fstat[1]", 0, fstat(fd, &st2));
-	assert_eq("chown[0-1]", 147, st2.st_uid);
-	assert_eq("chown[0-2]", 258, st2.st_gid);
 
 	printf("fstat: mode=%x\n", st2.st_mode);
 	assert_eq("chmod[0-1]",

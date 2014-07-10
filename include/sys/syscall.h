@@ -23,49 +23,48 @@ Version 2, June 1991
 
 #include <core/types.h>
 
-#define NR_POSIX_SYSCALL	33
+#define NR_POSIX_SYSCALL	32
 
 /* =================== POSIX システムコール番号の定義 =============== */
 #define PSC_NOACTION     0
 #define PSC_ACCESS       1
 #define PSC_CHDIR        2
 #define PSC_CHMOD        3
-#define PSC_CHOWN        4
-#define PSC_CLOSE        5
-#define PSC_DUP          6
-#define PSC_EXEC         7
-#define PSC_EXIT         8
-#define PSC_FCNTL        9
-#define PSC_FORK         10
-#define PSC_FSTAT	 11
-#define PSC_GETGID       12
-#define PSC_GETPID       13
-#define PSC_GETPPID      14
-#define PSC_GETUID       15
-#define PSC_LINK         16
-#define PSC_LSEEK        17
-#define PSC_MKDIR        18
-#define PSC_OPEN         19
-#define PSC_READ         20
-#define PSC_RMDIR        21
-#define PSC_UMASK        22
-#define PSC_UNLINK       23
-#define PSC_WAITPID      24
-#define PSC_WRITE        25
-#define PSC_GETDENTS	 26
-#define PSC_MOUNT        27
-#define PSC_STATFS       28
-#define PSC_UMOUNT       29
+#define PSC_CLOSE        4
+#define PSC_DUP          5
+#define PSC_EXEC         6
+#define PSC_EXIT         7
+#define PSC_FCNTL        8
+#define PSC_FORK         9
+#define PSC_FSTAT	 10
+#define PSC_GETGID       11
+#define PSC_GETPID       12
+#define PSC_GETPPID      13
+#define PSC_GETUID       14
+#define PSC_LINK         15
+#define PSC_LSEEK        16
+#define PSC_MKDIR        17
+#define PSC_OPEN         18
+#define PSC_READ         19
+#define PSC_RMDIR        20
+#define PSC_UMASK        21
+#define PSC_UNLINK       22
+#define PSC_WAITPID      23
+#define PSC_WRITE        24
+#define PSC_GETDENTS	 25
+#define PSC_MOUNT        26
+#define PSC_STATFS       27
+#define PSC_UMOUNT       28
 
 /* =================== SIGNAL 関係 =============== */
-#define PSC_KILL         30
+#define PSC_KILL         29
 
 /* =================== miserous system calls  =============== */
-#define PSC_MISC         31
+#define PSC_MISC         30
 
-#define PSC_DUP2         32	/* 不要? */
+#define PSC_DUP2         31	/* 不要? */
 
-#define PSC_BIND_DEVICE (33)
+#define PSC_BIND_DEVICE (32)
 
 /* MISC 
  */
@@ -103,18 +102,6 @@ struct psc_chmod
   W		pathlen;
   B		*path;
   W		mode;
-};
-
-
-/* psc_chown -
- *
- */
-struct psc_chown
-{
-  W		pathlen;
-  B		*path;
-  W		uid;
-  W		gid;
 };
 
 
@@ -444,7 +431,6 @@ struct posix_request
     struct psc_access		par_access;
     struct psc_chdir		par_chdir;
     struct psc_chmod		par_chmod;
-    struct psc_chown		par_chown;
     struct psc_close		par_close;
     struct psc_dup		par_dup;
     struct psc_dup2		par_dup2;
