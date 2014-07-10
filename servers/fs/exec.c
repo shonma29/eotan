@@ -62,6 +62,7 @@ Version 2, June 1991
 #include "../../lib/libserv/libmm.h"
 #include "fs.h"
 
+static W set_local(ID pid, ID tskid);
 static W read_exec_header(struct inode *ip, Elf32_Addr *entry,
 			  Elf32_Phdr *text,
 			  Elf32_Phdr *data);
@@ -89,8 +90,8 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     }
 
     /* 対象となるプログラムファイルをオープンする */
-    proc_get_euid(procid, &(acc.uid));
-    proc_get_egid(procid, &(acc.gid));
+    proc_get_uid(procid, &(acc.uid));
+    proc_get_gid(procid, &(acc.gid));
     if (pathname[0] == '/') {
 	error_no = fs_open_file(pathname, O_RDONLY, 0, &acc, rootfile, &ip);
     } else {
@@ -292,3 +293,28 @@ load_segment(W procid, struct inode *ip, Elf32_Phdr *segment, ID task)
 
     return (EOK);
 }
+
+static W set_local(ID pid, ID tskid)
+{
+    W error_no;
+    thread_local_t local_data;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
+
+    error_no = vmap(pid, (thread_local_t*)LOCAL_ADDR, sizeof(thread_local_t),
+    		true);
+    if (error_no)
+	return error_no;
+
+    memset(&local_data, 0, sizeof(local_data));
+    local_data.thread_id = tskid;
+    local_data.process_id = pid;
+    strcpy((B*)local_data.cwd, "/");
+    local_data.cwd_length = 1;
+
+    error_no = kcall->region_put(tskid, (thread_local_t*)LOCAL_ADDR,
+		     sizeof(thread_local_t), &local_data);
+    if (error_no)
+	return error_no;
+    return (EOK);
+}
+

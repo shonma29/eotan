@@ -64,12 +64,12 @@ W psc_chdir_f(RDVNO rdvno, struct posix_request *req)
     }
 
 
-    if (proc_get_euid(req->procid, &acc.uid)) {
+    if (proc_get_uid(req->procid, &acc.uid)) {
 	put_response(rdvno, EINVAL, -1, 0);
 	return (FALSE);
     }
 
-    if (proc_get_egid(req->procid, &acc.gid)) {
+    if (proc_get_gid(req->procid, &acc.gid)) {
 	put_response(rdvno, EINVAL, -1, 0);
 	return (FALSE);
     }
@@ -106,40 +106,6 @@ W psc_chdir_f(RDVNO rdvno, struct posix_request *req)
     put_response(rdvno, EOK, 0, 0);
     return (TRUE);
 }
-
-W
-psc_getegid_f (RDVNO rdvno, struct posix_request *req)
-{
-  W	err;
-  W	egid;
-
-  err = proc_get_egid (req->procid, &egid);
-  if (err)
-    {
-      put_response (rdvno, err, -1, 0);
-      return (FALSE);
-    }
-  
-  put_response (rdvno, EOK, egid, 0);
-  return (TRUE);
-}  
-
-W
-psc_geteuid_f (RDVNO rdvno, struct posix_request *req)
-{
-  W	err;
-  W	euid;
-
-  err = proc_get_euid (req->procid, &euid);
-  if (err)
-    {
-      put_response (rdvno, err, -1, 0);
-      return (FALSE);
-    }
-  
-  put_response (rdvno, EOK, euid, 0);
-  return (TRUE);
-}  
 
 W
 psc_getgid_f (RDVNO rdvno, struct posix_request *req)
@@ -206,68 +172,6 @@ psc_getuid_f (RDVNO rdvno, struct posix_request *req)
     }
   
   put_response (rdvno, EOK, uid, 0);
-  return (TRUE);
-}  
-
-/* psc_setgid_f - プロセスのグループ ID を設定する
- */
-W
-psc_setgid_f (RDVNO rdvno, struct posix_request *req)
-{
-  W	uid;
-  W	error_no;
-
-  error_no = proc_get_euid (req->procid, &uid);
-  if (error_no)
-    {
-      put_response (rdvno, error_no, 0, -1);
-      return (FALSE);
-    }
-
-  if (uid != 0)
-    {
-      put_response (rdvno, EPERM, error_no, -1);
-      return (FALSE);
-    }
-
-  error_no = proc_set_egid (req->procid, req->param.par_setgid.gid);
-  if (error_no)
-    {
-      put_response (rdvno, error_no, 0, -1);
-      return (FALSE);
-    }
-
-  put_response (rdvno, EOK, 0, 0);
-  return (TRUE);
-}  
-
-W
-psc_setuid_f (RDVNO rdvno, struct posix_request *req)
-{
-  W	uid;
-  W	error_no;
-
-  error_no = proc_get_euid (req->procid, &uid);
-  if (error_no)
-    {
-      put_response (rdvno, error_no, 0, -1);
-      return (FALSE);
-    }
-
-  if (uid != 0)
-    {
-      put_response (rdvno, EPERM, error_no, -1);
-      return (FALSE);
-    }
-
-  error_no = proc_set_euid (req->procid, req->param.par_setuid.uid);
-  if (error_no)
-    {
-      put_response (rdvno, error_no, 0, -1);
-      return (FALSE);
-    }
-
-  put_response (rdvno, EOK, 0, 0);
   return (TRUE);
 }  
 

@@ -102,12 +102,12 @@ W psc_link_f(RDVNO rdvno, struct posix_request *req)
      * この情報に基づいて、ファイルを削除できるかどうかを
      * 決定する。
      */
-    error_no = proc_get_euid(req->procid, &(acc.uid));
+    error_no = proc_get_uid(req->procid, &(acc.uid));
     if (error_no) {
 	put_response(rdvno, error_no, 0, 0);
 	return (FALSE);
     }
-    error_no = proc_get_egid(req->procid, &(acc.gid));
+    error_no = proc_get_gid(req->procid, &(acc.gid));
     if (error_no) {
 	put_response(rdvno, error_no, 0, 0);
 	return (FALSE);
@@ -244,14 +244,14 @@ psc_rmdir_f (RDVNO rdvno, struct posix_request *req)
     {
       startip = rootfile;
     }
-  error_no = proc_get_euid (req->procid, &(acc.uid));
+  error_no = proc_get_uid (req->procid, &(acc.uid));
   if (error_no)
     {
       put_response (rdvno, error_no, -1, 0);
       return (FALSE);
     }
 
-  error_no = proc_get_egid (req->procid, &(acc.gid));
+  error_no = proc_get_gid (req->procid, &(acc.gid));
   if (error_no)
     {
       put_response (rdvno, error_no, -1, 0);
@@ -338,13 +338,13 @@ psc_unlink_f (RDVNO rdvno, struct posix_request *req)
    * この情報に基づいて、ファイルを削除できるかどうかを
    * 決定する。
    */
-  error_no = proc_get_euid (req->procid, &(acc.uid));
+  error_no = proc_get_uid (req->procid, &(acc.uid));
   if (error_no)
     {
       put_response (rdvno, error_no, 0, 0);
       return (FALSE);
     }
-  error_no = proc_get_egid (req->procid, &(acc.gid));
+  error_no = proc_get_gid (req->procid, &(acc.gid));
   if (error_no)
     {
       put_response (rdvno, error_no, 0, 0);

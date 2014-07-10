@@ -38,40 +38,35 @@ Version 2, June 1991
 #define PSC_FCNTL        9
 #define PSC_FORK         10
 #define PSC_FSTAT	 11
-#define PSC_GETEGID      12
-#define PSC_GETEUID      13
-#define PSC_GETGID       14
-#define PSC_GETPID       15
-#define PSC_GETPPID      16
-#define PSC_GETUID       17
-#define PSC_LINK         18
-#define PSC_LSEEK        19
-#define PSC_MKDIR        20
-#define PSC_OPEN         21
-#define PSC_READ         22
-#define PSC_RMDIR        23
-#define PSC_SETGID       24
-#define PSC_SETUID       25
-#define PSC_UMASK        26
-#define PSC_UNLINK       27
-#define PSC_UTIME        28
-#define PSC_WAITPID      29
-#define PSC_WRITE        30
-
-#define PSC_GETDENTS	 31
-#define PSC_MOUNT        32
-#define PSC_STATFS       33
-#define PSC_UMOUNT       34
+#define PSC_GETGID       12
+#define PSC_GETPID       13
+#define PSC_GETPPID      14
+#define PSC_GETUID       15
+#define PSC_LINK         16
+#define PSC_LSEEK        17
+#define PSC_MKDIR        18
+#define PSC_OPEN         19
+#define PSC_READ         20
+#define PSC_RMDIR        21
+#define PSC_UMASK        22
+#define PSC_UNLINK       23
+#define PSC_UTIME        24
+#define PSC_WAITPID      25
+#define PSC_WRITE        26
+#define PSC_GETDENTS	 27
+#define PSC_MOUNT        28
+#define PSC_STATFS       29
+#define PSC_UMOUNT       30
 
 /* =================== SIGNAL 関係 =============== */
-#define PSC_KILL         35
+#define PSC_KILL         31
 
 /* =================== miserous system calls  =============== */
-#define PSC_MISC         36
+#define PSC_MISC         32
 
-#define PSC_DUP2         37	/* 不要? */
+#define PSC_DUP2         33	/* 不要? */
 
-#define PSC_BIND_DEVICE (38)
+#define PSC_BIND_DEVICE (34)
 
 /* MISC 
  */
@@ -205,23 +200,6 @@ struct psc_fork
 
 
 
-/* psc_getegid -
- *
- */
-struct psc_getegid
-{
-};
-
-
-/* psc_geteuid -
- *
- */
-struct psc_geteuid
-{
-  /* have no value */
-};
-
-
 /* psc_getgid -
  *
  */
@@ -329,24 +307,6 @@ struct psc_rmdir
 {
   W		pathlen;
   B		*path;
-};
-
-
-/* psc_setgid -
- *
- */
-struct psc_setgid
-{
-  UW		gid;
-};
-
-
-/* psc_setuid -
- *
- */
-struct psc_setuid
-{
-  UW		uid;
 };
 
 
@@ -504,8 +464,6 @@ struct posix_request
     struct psc_exit		par_exit;
     struct psc_fcntl		par_fcntl;
     struct psc_fork		par_fork;
-    struct psc_getegid		par_getegid;
-    struct psc_geteuid		par_geteuid;
     struct psc_getgid		par_getgid;
     struct psc_getpid		par_getpid;
     struct psc_getppid		par_getppid;
@@ -517,8 +475,6 @@ struct posix_request
     struct psc_open		par_open;
     struct psc_read		par_read;
     struct psc_rmdir		par_rmdir;
-    struct psc_setgid		par_setgid;
-    struct psc_setuid		par_setuid;
     struct psc_fstat  		par_fstat;
     struct psc_umask 		par_umask;
     struct psc_unlink     	par_unlink;

@@ -224,15 +224,7 @@ char *testmm()
 		(int)(ts.tv_nsec));
 
 	printf("uid = %d\n", getuid());
-	printf("euid = %d\n", geteuid());
 	printf("gid = %d\n", getgid());
-	printf("egid = %d\n", getegid());
-
-	assert_eq("setgid[0]", 0, setgid(345));
-	assert_eq("getegid[0]", 345, getegid());
-
-	assert_eq("setuid[0]", 0, setuid(682));
-	assert_eq("geteuid[0]", 682, geteuid());
 
 	buf = malloc(1024 * 1024);
 	assert_ne("brk", 0, buf);

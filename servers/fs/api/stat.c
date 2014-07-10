@@ -81,7 +81,7 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
 	put_response(rdvno, error_no, -1, 0);
 	return (FALSE);
     }
-    error_no = proc_get_euid(req->procid, &euid);
+    error_no = proc_get_uid(req->procid, &euid);
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
 	return (FALSE);
@@ -158,12 +158,12 @@ W psc_chmod_f(RDVNO rdvno, struct posix_request *req)
 	}
     }
 
-    if (proc_get_euid(req->procid, &acc.uid)) {
+    if (proc_get_uid(req->procid, &acc.uid)) {
 	put_response(rdvno, EINVAL, -1, 0);
 	return (FALSE);
     }
 
-    if (proc_get_egid(req->procid, &acc.gid)) {
+    if (proc_get_gid(req->procid, &acc.gid)) {
 	put_response(rdvno, EINVAL, -1, 0);
 	return (FALSE);
     }
@@ -214,12 +214,12 @@ W psc_chown_f(RDVNO rdvno, struct posix_request *req)
 	}
     }
 
-    if (proc_get_euid(req->procid, &acc.uid)) {
+    if (proc_get_uid(req->procid, &acc.uid)) {
 	put_response(rdvno, EINVAL, -1, 0);
 	return (FALSE);
     }
 
-    if (proc_get_egid(req->procid, &acc.gid)) {
+    if (proc_get_gid(req->procid, &acc.gid)) {
 	put_response(rdvno, EINVAL, -1, 0);
 	return (FALSE);
     }
@@ -374,13 +374,13 @@ W psc_utime_f(RDVNO rdvno, struct posix_request *req)
     } else {
 	startip = rootfile;
     }
-    error_no = proc_get_euid(req->procid, &(acc.uid));
+    error_no = proc_get_uid(req->procid, &(acc.uid));
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
 	return (FALSE);
     }
 
-    error_no = proc_get_egid(req->procid, &(acc.gid));
+    error_no = proc_get_gid(req->procid, &(acc.gid));
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
 	return (FALSE);

@@ -37,6 +37,9 @@ typedef struct {
 	ID thread_id;
 	ID process_id;
 	W error_no;
+	ID user_id;
+	ID group_id;
+	ID parent_process_id;
 	size_t cwd_length;
 	UB cwd[MAX_CWD + 1];
 } thread_local_t;

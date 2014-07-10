@@ -103,7 +103,7 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
 	startip = rootfile;
     }
 
-    error_no = proc_get_euid(req->procid, &(acc.uid));
+    error_no = proc_get_uid(req->procid, &(acc.uid));
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
 	return (FALSE);
@@ -113,7 +113,7 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
       return (FALSE);
     }
 
-    error_no = proc_get_egid(req->procid, &(acc.gid));
+    error_no = proc_get_gid(req->procid, &(acc.gid));
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
 	return (FALSE);
@@ -218,7 +218,7 @@ W psc_umount_f(RDVNO rdvno, struct posix_request *req)
 	startip = rootfile;
     }
 
-    error_no = proc_get_euid(req->procid, &(acc.uid));
+    error_no = proc_get_uid(req->procid, &(acc.uid));
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
 	return (FALSE);
@@ -228,7 +228,7 @@ W psc_umount_f(RDVNO rdvno, struct posix_request *req)
 	return (FALSE);
     }
 
-    error_no = proc_get_egid(req->procid, &(acc.gid));
+    error_no = proc_get_gid(req->procid, &(acc.gid));
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
 	return (FALSE);

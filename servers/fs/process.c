@@ -159,30 +159,6 @@ W init_process(void)
     return (E_OK);
 }
 
-W set_local(ID pid, ID tskid)
-{
-    W error_no;
-    thread_local_t local_data;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
-
-    error_no = vmap(pid, (thread_local_t*)LOCAL_ADDR, sizeof(thread_local_t),
-    		true);
-    if (error_no)
-	return error_no;
-
-    memset(&local_data, 0, sizeof(local_data));
-    local_data.thread_id = tskid;
-    local_data.process_id = pid;
-    strcpy((B*)local_data.cwd, "/");
-    local_data.cwd_length = 1;
-
-    error_no = kcall->region_put(tskid, (thread_local_t*)LOCAL_ADDR,
-		     sizeof(thread_local_t), &local_data);
-    if (error_no)
-	return error_no;
-    return (EOK);
-}
-
 /* プロセスを終了する
  */
 W proc_exit(W procid)
@@ -294,53 +270,6 @@ W proc_set_gid(W procid, W gid)
     }
 
     proc_table[procid].proc_gid = gid;
-    return (EOK);
-}
-
-
-W proc_get_euid(W procid, W * uid)
-{
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
-    }
-
-    *uid = proc_table[procid].proc_euid;
-    return (EOK);
-}
-
-
-
-W proc_set_euid(W procid, W uid)
-{
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
-    }
-
-    proc_table[procid].proc_euid = uid;
-    return (EOK);
-}
-
-
-
-W proc_get_egid(W procid, W * gid)
-{
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
-    }
-
-    *gid = proc_table[procid].proc_egid;
-    return (EOK);
-}
-
-
-
-W proc_set_egid(W procid, W gid)
-{
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
-    }
-
-    proc_table[procid].proc_egid = gid;
     return (EOK);
 }
 
