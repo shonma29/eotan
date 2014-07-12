@@ -51,10 +51,10 @@ Version 2, June 1991
  *
  */
 
-#include <unistd.h>
+#include <core/types.h>
 #include <stdio.h>
 
-static ER	vfprintf (FILE *port, B *fmt, VP arg0);
+static ER	vfprintf (FILE *port, const char *fmt, VP arg0);
 
 
 
@@ -84,8 +84,8 @@ print_digit (FILE *port, UW d, UW base)
 /*
  *
  */
-W
-printf (B *fmt,...)
+int
+printf (const char *fmt,...)
 {
   VP *arg0;
   ER err;
@@ -97,8 +97,8 @@ printf (B *fmt,...)
   return (err);
 }
 
-W
-fprintf (FILE *port, B *fmt,...)
+int
+fprintf (FILE *port, const char *fmt,...)
 {
   VP *arg0;
   ER err;
@@ -110,7 +110,7 @@ fprintf (FILE *port, B *fmt,...)
 }
 
 static ER
-vfprintf (FILE *port, B *fmt, VP arg0)
+vfprintf (FILE *port, const char *fmt, VP arg0)
 {
   VP *ap;
   W len = 0;
@@ -163,36 +163,4 @@ vfprintf (FILE *port, B *fmt, VP arg0)
     }
 
     return len;
-}
-
-W
-fputs (B *line, FILE *port)
-{
-  W i;
-
-  for (i = 0; line[i] != '\0'; i++)
-    {
-      fputc (line[i], port);
-    }
-  return (i);
-}
-
-W
-puts (B *line)
-{
-  W len = fputs (line, stdout);
-
-  fputc ('\n', stdout);
-  fflush (stdout);
-  return (len + 1);
-}
-
-W
-putchar (W ch)
-{
-  W result = fputc(ch, stdout);
-
-  fflush(stdout);
-
-  return result;
 }
