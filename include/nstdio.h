@@ -31,16 +31,28 @@ For more information, please refer to <http://unlicense.org/>
 #define BUFSIZ (8192)
 #define FOPEN_MAX (16)
 
+#define EOF (-1)
+#define __CHR_LF '\n'
+
 #define STDIN_FILENO (0)
 #define STDOUT_FILENO (1)
 #define STDERR_FILENO (2)
 
+#define __FILE_MODE_EOF (0x01)
+#define __FILE_MODE_READABLE (0x02)
+#define __FILE_MODE_WRITABLE (0x04)
+#define __FILE_MODE_APPEND (0x08)
+#define __FILE_MODE_BLOCK (0x10)
+#define __FILE_MODE_DIRTY (0x20)
+
 typedef struct {
+	unsigned int mode;
+	size_t pos;
+	size_t len;
 	int fd;
-	unsigned long long int pos;
-	unsigned long long int len;
+	size_t buf_size;
+	unsigned long long int seek_pos;
 	unsigned char buf[BUFSIZ];
-	bool eof;
 } FILE;
 
 extern FILE __libc_files[];
@@ -48,5 +60,39 @@ extern FILE __libc_files[];
 #define stdin (&(__libc_files[STDIN_FILENO]))
 #define stdout (&(__libc_files[STDOUT_FILENO]))
 #define stderr (&(__libc_files[STDERR_FILENO]))
+
+static inline int isEof(const FILE *stream)
+{
+	return stream->mode & __FILE_MODE_EOF;
+}
+
+static inline int isReadable(const FILE *stream)
+{
+	return stream->mode & __FILE_MODE_READABLE;
+}
+
+static inline int isWritable(const FILE *stream)
+{
+	return stream->mode & __FILE_MODE_WRITABLE;
+}
+
+static inline int isAppend(const FILE *stream)
+{
+	return stream->mode & __FILE_MODE_APPEND;
+}
+
+static inline int isBlock(const FILE *stream)
+{
+	return stream->mode & __FILE_MODE_BLOCK;
+}
+
+static inline int isDirty(const FILE *stream)
+{
+	return stream->mode & __FILE_MODE_DIRTY;
+}
+
+extern int fflush(FILE *);
+extern int fgetc(FILE *);
+extern int fputc(int, FILE *);
 
 #endif

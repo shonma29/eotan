@@ -25,46 +25,33 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 
-FILE __libc_files[FOPEN_MAX];
 
-extern int main(int argc, char *argv[], char *envp[]);
-static void __libc_initialize(void);
-
-
-int _main(int argc, char *argv[], char *envp[])
+int fgetc(FILE *stream)
 {
-	int exit_code;
+	//TODO set errno
+	if (isEof(stream))
+		return EOF;
 
-	__libc_initialize();
-	exit_code = main(argc, argv, envp);
-	exit(exit_code);
+	if (!isReadable(stream))
+		return EOF;
 
-	return exit_code;
-}
+	if (stream->pos >= stream->len) {
+		int len;
 
-static void __libc_initialize(void)
-{
-	int i;
-	FILE *p;
+		stream->pos = 0;
+		stream->seek_pos += stream->len;
+		len = read(stream->fd, stream->buf, stream->buf_size);
 
-	p = stdin;
-	p->mode = __FILE_MODE_READABLE;
-	p->pos = 0;
-	p->len = 0;
-	p->fd = STDIN_FILENO;
-	p->buf_size = 1;
-	p->seek_pos = 0;
+		if (len <= 0) {
+			stream->len = 0;
+			stream->mode |= __FILE_MODE_EOF;
+			return EOF;
 
-	for (i = STDOUT_FILENO; i <= STDERR_FILENO; i++) {
-		p = &(__libc_files[i]);
-		p->mode = __FILE_MODE_WRITABLE;
-		p->pos = 0;
-		p->len = 0;
-		p->fd = STDOUT_FILENO;
-		p->buf_size = 1;
-		p->seek_pos = 0;
+		} else
+			stream->len = len;
 	}
+
+	return (int)(stream->buf[stream->pos++]);
 }

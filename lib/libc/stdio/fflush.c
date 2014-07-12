@@ -25,46 +25,32 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 
-FILE __libc_files[FOPEN_MAX];
 
-extern int main(int argc, char *argv[], char *envp[]);
-static void __libc_initialize(void);
-
-
-int _main(int argc, char *argv[], char *envp[])
+int fflush(FILE *stream)
 {
-	int exit_code;
-
-	__libc_initialize();
-	exit_code = main(argc, argv, envp);
-	exit(exit_code);
-
-	return exit_code;
-}
-
-static void __libc_initialize(void)
-{
-	int i;
-	FILE *p;
-
-	p = stdin;
-	p->mode = __FILE_MODE_READABLE;
-	p->pos = 0;
-	p->len = 0;
-	p->fd = STDIN_FILENO;
-	p->buf_size = 1;
-	p->seek_pos = 0;
-
-	for (i = STDOUT_FILENO; i <= STDERR_FILENO; i++) {
-		p = &(__libc_files[i]);
-		p->mode = __FILE_MODE_WRITABLE;
-		p->pos = 0;
-		p->len = 0;
-		p->fd = STDOUT_FILENO;
-		p->buf_size = 1;
-		p->seek_pos = 0;
+	if (!stream) {
+		//TODO close all;
+		return 0;
 	}
+
+	if (isEof(stream))
+		return EOF;
+
+	if (isWritable(stream) && isDirty(stream)) {
+		//TODO APPEND mode
+		if (write(stream->fd, stream->buf, stream->len) == stream->len)
+			stream->mode &= ~__FILE_MODE_DIRTY;
+
+		else {
+			stream->mode |= __FILE_MODE_EOF;
+			return EOF;
+		}
+	}
+
+	if (isReadable(stream))
+		stream->len = stream->pos;
+
+	return 0;
 }

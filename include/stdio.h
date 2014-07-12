@@ -17,9 +17,6 @@ Version 2, June 1991
 #include <core/types.h>
 #include <nstdio.h>
 
-extern W	fgetc (FILE *port);
-extern W        fflush(FILE *port);
-extern W	fputc (W ch, FILE *port);
 extern W	putchar (W ch);
 extern W	fputs (B *line, FILE *port);
 extern W	puts (B *line);

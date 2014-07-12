@@ -55,7 +55,6 @@ Version 2, June 1991
 #include <stdio.h>
 
 static ER	vfprintf (FILE *port, B *fmt, VP arg0);
-static W writechar (ID port, UB *buf, W length);
 
 
 
@@ -166,36 +165,6 @@ vfprintf (FILE *port, B *fmt, VP arg0)
     return len;
 }
 
-
-W
-fputc (W ch, FILE *port)
-{
-  port->buf[port->pos] = ch;
-  port->pos++;
-
-  if (ch == '\n')
-    {
-      writechar (port->fd, port->buf, port->pos);
-      port->pos = 0;
-    }
-  else if (port->pos >= port->len)
-    {
-      writechar (port->fd, port->buf, port->pos);
-      port->pos = 0;
-    }
-
-  return (ch);
-}
-
-W
-fflush (FILE *port)
-{
-  writechar (port->fd, port->buf, port->pos);
-  port->pos = 0;
-
-  return 0;
-}
-
 W
 fputs (B *line, FILE *port)
 {
@@ -216,23 +185,6 @@ puts (B *line)
   fputc ('\n', stdout);
   fflush (stdout);
   return (len + 1);
-}
-
-static W
-writechar (ID port, UB *buf, W length)
-{
-  write(port, buf, length);
-
-  return length;
-}
-
-W
-fgetc (FILE *port)
-{
-  B buf[1];
-
-  read(port->fd, buf, 1);
-  return (W)(buf[0]);
 }
 
 W
