@@ -34,15 +34,10 @@ extern int main(int argc, char *argv[], char *envp[]);
 static void __libc_initialize(void);
 
 
-int _main(int argc, char *argv[], char *envp[])
+void _main(int argc, char *argv[], char *envp[])
 {
-	int exit_code;
-
 	__libc_initialize();
-	exit_code = main(argc, argv, envp);
-	exit(exit_code);
-
-	return exit_code;
+	exit(main(argc, argv, envp));
 }
 
 static void __libc_initialize(void)
