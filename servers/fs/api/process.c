@@ -126,6 +126,9 @@ psc_exit_f (RDVNO rdvno, struct posix_request *req)
     if (procp->proc_status == PS_DORMANT) continue;
     if (procp->proc_ppid != mypid) continue;
     procp->proc_ppid = INIT_PID; /* INIT プロセスの pid は 0 */
+    kcall->region_put(procp->proc_maintask,
+	     (pid_t*)(LOCAL_ADDR + offsetof(thread_local_t, parent_process_id)),
+	     sizeof(pid_t), &(procp->proc_ppid));
     
     /* 子プロセスが ZOMBIE で INIT が wait していれば クリアする? */
   }
@@ -251,6 +254,9 @@ W psc_kill_f(RDVNO rdvno, struct posix_request *req)
 	if (procp->proc_ppid != mypid)
 	    continue;
 	procp->proc_ppid = INIT_PID;	/* INIT プロセスの pid は 0 */
+	kcall->region_put(procp->proc_maintask,
+		(pid_t*)(LOCAL_ADDR + offsetof(thread_local_t, parent_process_id)),
+		sizeof(pid_t), &(procp->proc_ppid));
 
 	/* 子プロセスが ZOMBIE で INIT が wait していれば クリアする? */
     }

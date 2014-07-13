@@ -1,5 +1,3 @@
-#ifndef _LOCAL_H_
-#define _LOCAL_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,35 +24,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stddef.h>
-#include <core/types.h>
-#include <sys/types.h>
+#include "local.h"
+#include "sys/types.h"
 
-#define LOCAL_ADDR 0x7fffd000
 
-#define MAX_CWD (1023)
-
-typedef struct {
-	ID thread_id;
-	pid_t process_id;
-	W error_no;
-	uid_t user_id;
-	gid_t group_id;
-	pid_t parent_process_id;
-	size_t cwd_length;
-	UB cwd[MAX_CWD + 1];
-} thread_local_t;
-
-static inline thread_local_t *_get_local(void)
+pid_t getppid(void)
 {
-	return (thread_local_t*)LOCAL_ADDR;
+	thread_local_t *local = _get_local();
+
+	return local->parent_process_id;
 }
-
-static inline int _get_local_errno(void)
-{
-	thread_local_t *local = (thread_local_t*)LOCAL_ADDR;
-
-	return local->error_no;
-}
-
-#endif

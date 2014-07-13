@@ -186,6 +186,7 @@ char *testmm()
 		exit(EXIT_SUCCESS);
 	}
 	else {
+		sleep(1);
 		printf("parent's pid = %d, ppid = %d\n",
 				getpid(), getppid());
 		waitpid(-1, &pid, 0);

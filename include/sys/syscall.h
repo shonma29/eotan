@@ -37,34 +37,30 @@ Version 2, June 1991
 #define PSC_FCNTL        8
 #define PSC_FORK         9
 #define PSC_FSTAT	 10
-#define PSC_GETGID       11
-#define PSC_GETPID       12
-#define PSC_GETPPID      13
-#define PSC_GETUID       14
-#define PSC_LINK         15
-#define PSC_LSEEK        16
-#define PSC_MKDIR        17
-#define PSC_OPEN         18
-#define PSC_READ         19
-#define PSC_RMDIR        20
-#define PSC_UMASK        21
-#define PSC_UNLINK       22
-#define PSC_WAITPID      23
-#define PSC_WRITE        24
-#define PSC_GETDENTS	 25
-#define PSC_MOUNT        26
-#define PSC_STATFS       27
-#define PSC_UMOUNT       28
+#define PSC_LINK         11
+#define PSC_LSEEK        12
+#define PSC_MKDIR        13
+#define PSC_OPEN         14
+#define PSC_READ         15
+#define PSC_RMDIR        16
+#define PSC_UMASK        17
+#define PSC_UNLINK       18
+#define PSC_WAITPID      19
+#define PSC_WRITE        20
+#define PSC_GETDENTS	 21
+#define PSC_MOUNT        22
+#define PSC_STATFS       23
+#define PSC_UMOUNT       24
 
 /* =================== SIGNAL 関係 =============== */
-#define PSC_KILL         29
+#define PSC_KILL         25
 
 /* =================== miserous system calls  =============== */
-#define PSC_MISC         30
+#define PSC_MISC         26
 
-#define PSC_DUP2         31	/* 不要? */
+#define PSC_DUP2         27	/* 不要? */
 
-#define PSC_BIND_DEVICE (32)
+#define PSC_BIND_DEVICE (28)
 
 /* MISC 
  */
@@ -184,39 +180,6 @@ struct psc_fork
   FP entry;
 };
 
-
-
-/* psc_getgid -
- *
- */
-struct psc_getgid
-{
-  /* have no value */
-};
-
-
-/* psc_getpid -
- *
- */
-struct psc_getpid
-{
-};
-
-
-/* psc_getppid -
- *
- */
-struct psc_getppid
-{
-};
-
-
-/* psc_getuid -
- *
- */
-struct psc_getuid
-{
-};
 
 
 /* psc_kill -
@@ -438,10 +401,6 @@ struct posix_request
     struct psc_exit		par_exit;
     struct psc_fcntl		par_fcntl;
     struct psc_fork		par_fork;
-    struct psc_getgid		par_getgid;
-    struct psc_getpid		par_getpid;
-    struct psc_getppid		par_getppid;
-    struct psc_getuid		par_getuid;
     struct psc_kill		par_kill;
     struct psc_link		par_link;
     struct psc_lseek		par_lseek;
