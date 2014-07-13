@@ -37,12 +37,18 @@ For more information, please refer to <http://unlicense.org/>
 #include "sync.h"
 #include "thread.h"
 
+typedef struct {
+	VP_INT arg1;
+	VP_INT arg2;
+	VP_INT arg3;
+	VP_INT arg4;
+} svc_arg;
 
 /* initialize.c */
 extern ER core_initialize(void);
 
 /* api.c */
-extern W syscall (W *arg_addr, UW sysno);
+extern ER syscall(svc_arg *argp, UW svcno);
 
 /* modules.c */
 extern void run_init_program(void);
