@@ -23,7 +23,7 @@ Version 2, June 1991
 
 #include <core/types.h>
 
-#define NR_POSIX_SYSCALL	32
+#define NR_POSIX_SYSCALL	28
 
 /* =================== POSIX システムコール番号の定義 =============== */
 #define PSC_NOACTION     0
