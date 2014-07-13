@@ -203,13 +203,13 @@ static ER_UINT read(const UW start, const UW size, UB *outbuf)
 
 	if (result)	return result;
 
-	for (i = 0; i < size; i++) {
+	for (i = 0; i < size;) {
 		VP_INT d;
 
 		kcall->queue_receive(keyboard_queue_id, &d);
 		d = get_char(d);
 		if (d >= 0)
-			outbuf[i] = (UB)(d & 0xff);
+			outbuf[i++] = (UB)(d & 0xff);
 	}
 
 	return size;
