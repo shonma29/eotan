@@ -25,38 +25,28 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stdio.h>
-#include <unistd.h>
 
 
-int fgetc(FILE *stream)
+char *fgets(char *s, int size, FILE *stream)
 {
-	//TODO set errno
-	if (ferror(stream) || feof(stream))
-		return EOF;
+	int pos;
 
-	if (!isReadable(stream))
-		return EOF;
+	if (--size < 0)
+		return NULL;
 
-	if (stream->pos >= stream->len) {
-		int len;
+	for (pos = 0; pos < size;) {
+		int c = fgetc(stream);
 
-		stream->pos = 0;
-		stream->seek_pos += stream->len;
-		len = read(stream->fd, stream->buf, stream->buf_size);
+		if (c == EOF)
+			break;
 
-		if (len == 0) {
-			stream->len = 0;
-			stream->mode |= __FILE_MODE_EOF;
-			return EOF;
+		s[pos++] = c & 0xff;
 
-		} else if (len < 0) {
-			stream->len = 0;
-			stream->mode |= __FILE_MODE_ERROR;
-			return EOF;
-
-		} else
-			stream->len = len;
+		if (c == __CHR_LF)
+			break;
 	}
 
-	return (int)(stream->buf[stream->pos++]);
+	s[pos] = '\0';
+
+	return pos? s:NULL;
 }

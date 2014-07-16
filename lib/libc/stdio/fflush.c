@@ -35,7 +35,7 @@ int fflush(FILE *stream)
 		return 0;
 	}
 
-	if (isEof(stream))
+	if (ferror(stream))
 		return EOF;
 
 	if (isWritable(stream) && isDirty(stream)) {
@@ -44,7 +44,7 @@ int fflush(FILE *stream)
 			stream->mode &= ~__FILE_MODE_DIRTY;
 
 		else {
-			stream->mode |= __FILE_MODE_EOF;
+			stream->mode |= __FILE_MODE_ERROR;
 			return EOF;
 		}
 	}

@@ -30,7 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 int fputc(int c, FILE *stream)
 {
 	//TODO set errno
-	if (isEof(stream))
+	if (ferror(stream))
 		return EOF;
 
 	if (!isWritable(stream))
