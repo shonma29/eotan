@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #define DEVICE_MAJOR_CONSOLE 0x0000
 #define DEVICE_MAJOR_KEYBOARD 0x0001
+#define DEVICE_MAJOR_MOUSE 0x0002
 #define DEVICE_MAJOR_ATA 0x8001
 #define DEVICE_MAJOR_RAMDISK 0x8002
 

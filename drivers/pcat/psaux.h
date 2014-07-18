@@ -1,3 +1,5 @@
+#ifndef __PCAT_PSAUX_H__
+#define __PCAT_PSAUX_H__ 1
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,55 +26,29 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <mpu/io.h>
-#include "../../kernel/mpu/mpufunc.h"
-#include "handler.h"
-#include "sync.h"
-#include "8259a.h"
 
-static UH ports[] = {
-	pic_master2, pic_slave2
-};
+/* commands */
+#define AUX_RESET 0xff
+#define AUX_RESEND 0xfe
+#define AUX_SET_DEFAULT 0xf6
+#define AUX_DISABLE 0xf5
+#define AUX_ENABLE 0xf4
+#define AUX_SET_RATE 0xf3
+#define AUX_READ_TYPE 0xf2
+#define AUX_SET_REMOTE 0xf0
+#define AUX_SET_WRAP 0xee
+#define AUX_RESET_WRAP 0xec
+#define AUX_READ_DATA 0xeb
+#define AUX_SET_STREAM 0xea
+#define AUX_REQUEST_STATUS 0xe9
+#define AUX_SET_RESOLUTION 0xe8
+#define AUX_SET_SCALING 0xe7
+#define AUX_RESET_SCALING 0xe6
 
+/* result */
+#define AUX_ACK 0xfa
+#define AUX_RESULT_OK 0xaa
+#define AUX_RESULT_NG 0xfc
+#define AUX_RESULT_MOUSE 0x00
 
-void pic_initialize(void)
-{
-	/* initialize master */
-	outb(pic_master1, PIC_ICW1_BASE | PIC_ICW1_NEED_IC4);
-	outb(pic_master2, PIC_MASTER_VECTOR & PIC_VECTOR_MASK);
-	outb(pic_master2, 1 << PIC_CASCADE_NO);
-	outb(pic_master2, PIC_ICW4_8086);
-
-	/* initialize slave */
-	outb(pic_slave1, PIC_ICW1_BASE | PIC_ICW1_NEED_IC4);
-	outb(pic_slave2, PIC_SLAVE_VECTOR & PIC_VECTOR_MASK);
-	outb(pic_slave2, PIC_CASCADE_NO);
-	outb(pic_slave2, PIC_ICW4_8086);
-
-	/* set defaut mask */
-	outb(pic_master2, ~PIC_IR_BIT(ir_cascade & PIC_INT_NO_MASK));
-	outb(pic_slave2, ~0);
-
-	idt_set(PIC_IR_VECTOR(ir_keyboard), handle33);
-	idt_set(PIC_IR_VECTOR(ir_mouse), handle44);
-}
-
-ER pic_reset_mask(const UB ir)
-{
-	UH port;
-	UB mask;
-
-	if (ir >= 16)
-		return E_PAR;
-
-	port = ports[ir >> 3];
-	mask = ~PIC_IR_BIT(ir & 7);
-
-	enter_critical();
-	outb(port, mask & inb(port));
-	leave_critical();
-
-	return E_OK;
-}
-
+#endif

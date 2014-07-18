@@ -37,6 +37,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <libserv.h>
 #include "hmi.h"
 #include "keyboard.h"
+#include "mouse.h"
 
 #ifdef USE_VESA
 #include <boot/vesa.h>
@@ -255,6 +256,18 @@ void start(VP_INT exinf)
 			ER_ID t2 = kcall.thread_create_auto(&pk);
 
 			dbg_printf("[HMI]keyboard=%d\n", t2);
+
+			if (t2 > 0)
+				kcall.thread_start(t2);
+		}
+
+		if (mouse_initialize() == E_OK) {
+			ER_ID t2;
+
+			pk.task = (FP)mouse_accept;
+			t2 = kcall.thread_create_auto(&pk);
+
+			dbg_printf("[HMI]mouse=%d\n", t2);
 
 			if (t2 > 0)
 				kcall.thread_start(t2);

@@ -24,55 +24,30 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <mpu/io.h>
-#include "../../kernel/mpu/mpufunc.h"
-#include "handler.h"
-#include "sync.h"
-#include "8259a.h"
-
-static UH ports[] = {
-	pic_master2, pic_slave2
-};
+#include <fcntl.h>
+#include <stdio.h>
+#include <unistd.h>
 
 
-void pic_initialize(void)
+int main(int argc, char **argv)
 {
-	/* initialize master */
-	outb(pic_master1, PIC_ICW1_BASE | PIC_ICW1_NEED_IC4);
-	outb(pic_master2, PIC_MASTER_VECTOR & PIC_VECTOR_MASK);
-	outb(pic_master2, 1 << PIC_CASCADE_NO);
-	outb(pic_master2, PIC_ICW4_8086);
+	int fd = open("/dev/mouse", O_RDONLY);
 
-	/* initialize slave */
-	outb(pic_slave1, PIC_ICW1_BASE | PIC_ICW1_NEED_IC4);
-	outb(pic_slave2, PIC_SLAVE_VECTOR & PIC_VECTOR_MASK);
-	outb(pic_slave2, PIC_CASCADE_NO);
-	outb(pic_slave2, PIC_ICW4_8086);
+	if (fd >= 0) {
+		for (;;) {
+			int d;
+			int len = read(fd, &d, sizeof(d));
 
-	/* set defaut mask */
-	outb(pic_master2, ~PIC_IR_BIT(ir_cascade & PIC_INT_NO_MASK));
-	outb(pic_slave2, ~0);
+			if (len == sizeof(d))
+				printf("%x\n", d);
+			else {
+				printf("len=%x\n", len);
+				break;
+			}
+		}
 
-	idt_set(PIC_IR_VECTOR(ir_keyboard), handle33);
-	idt_set(PIC_IR_VECTOR(ir_mouse), handle44);
+		close(fd);
+	}
+
+	return 0;
 }
-
-ER pic_reset_mask(const UB ir)
-{
-	UH port;
-	UB mask;
-
-	if (ir >= 16)
-		return E_PAR;
-
-	port = ports[ir >> 3];
-	mask = ~PIC_IR_BIT(ir & 7);
-
-	enter_critical();
-	outb(port, mask & inb(port));
-	leave_critical();
-
-	return E_OK;
-}
-

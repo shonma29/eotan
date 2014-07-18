@@ -10,6 +10,7 @@ all: clean
 	${BIN}/statfs ${TARGET} mkdir /dev
 	${BIN}/statfs ${TARGET} mknod /dev/console	0x00000000
 	${BIN}/statfs ${TARGET} mknod /dev/keyboard	0x00010000
+	${BIN}/statfs ${TARGET} mknod /dev/mouse 0x00020000
 	${BIN}/statfs ${TARGET} mknod /dev/rd	0x80020000
 	${BIN}/statfs ${TARGET} dir /dev
 

@@ -489,13 +489,7 @@ W psc_read_f(RDVNO rdvno, struct posix_request *req)
     }
 
     if (fp->f_inode->i_mode & S_IFCHR) {
-	if ((fp->f_inode->i_dev & BLOCK_DEVICE_MASK) == 0) {
-	    /* スペシャルファイル（キャラクタデバイス）だった */
-	    if (req->param.par_read.length > 1) {
-		/* データの読み込みを 1 byte ずつに分割する */
-		req->param.par_read.length = 1;
-	    }
-	} else {
+	if ((fp->f_inode->i_dev & BLOCK_DEVICE_MASK)) {
 	    /* ブロックデバイスだった */
 	    if (fp->f_offset >= fp->f_inode->i_size) {
 		error_no = EOK;

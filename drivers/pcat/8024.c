@@ -29,6 +29,14 @@ For more information, please refer to <http://unlicense.org/>
 #include "8024.h"
 #include "archfunc.h"
 #include "keyboard.h"
+#include "psaux.h"
+#include "../../lib/libserv/libserv.h"
+
+static ER keyboard_initialize(void);
+static ER psaux_initialize(void);
+static UB _read(void);
+static BOOL isAck(void);
+static BOOL _writeAux(UB b);
 
 
 ER kbc_initialize(void)
@@ -38,13 +46,81 @@ ER kbc_initialize(void)
 	kbc_wait_to_write();
 	outb(KBC_PORT_DATA,
 			KBC_CMD_TYPE
-			| KBC_CMD_DISABLE_AUX
+			| KBC_CMD_INTERRUPT_AUX
 			| KBC_CMD_INTERRUPT_KBD);
+
+	//TODO check error
+	dbg_printf("keyboard=%d\n", keyboard_initialize());
+	//TODO check error
+	dbg_printf("psaux=%d\n", psaux_initialize());
+
+	return E_OK;
+}
+
+static ER keyboard_initialize(void)
+{
+	/* check keyboard interface */
+	outb(KBC_PORT_CMD, KBC_TEST_KBD);
+	if (_read())
+		return E_SYS;
 
 	/* reset keyboard */
 	kbc_wait_to_write();
 	outb(KBC_PORT_DATA, KBD_RESET);
+
+	return isAck()? E_OK:E_SYS;
+}
+
+static ER psaux_initialize(void)
+{
+	do {
+		/* disable psaux */
+		if (!_writeAux(AUX_DISABLE))
+			break;
+
+		/* check AUX interface */
+		outb(KBC_PORT_CMD, KBC_TEST_AUX);
+		if (_read())
+			break;
+
+		/* reset psaux */
+		if (!_writeAux(AUX_RESET))
+			break;
+
+		if (_read() != AUX_RESULT_OK)
+			break;
+
+		if (_read() != AUX_RESULT_MOUSE)
+			break;
+
+		/* enable psaux */
+		if (!_writeAux(AUX_SET_SCALING))
+			break;
+
+		if (!_writeAux(AUX_ENABLE))
+			break;
+
+		return E_OK;
+
+	} while (false);
+
+	return E_SYS;
+}
+
+static UB _read(void) {
 	kbc_wait_to_read();
 
-	return (inb(KBC_PORT_DATA) == KBD_ACK)? E_OK:E_SYS;
+	return inb(KBC_PORT_DATA);
+}
+
+static BOOL isAck(void) {
+	return _read() == AUX_ACK;
+}
+
+static BOOL _writeAux(UB b) {
+	outb(KBC_PORT_CMD, KBC_WRITE_AUX);
+	kbc_wait_to_write();
+	outb(KBC_PORT_DATA, b);
+
+	return isAck();
 }
