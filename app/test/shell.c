@@ -148,14 +148,18 @@ int main(int argc, char **argv, char **env)
 
 		for (pos = 0;;) {
 			char c = fgetc(stdin);
-//printf("[%d]", c);
+
 			putchar(c);
+
 			if (c == '\n') {
 				buf[pos] = '\0';
 				break;
-			}
-else if (!isprint(c))continue;
-			else {
+
+			} else if (c == 0x08) {
+				if (pos)
+					pos--;
+
+			} else {
 				buf[pos++] = c;
 
 				if (pos >= bufsize)
@@ -163,11 +167,13 @@ else if (!isprint(c))continue;
 			}
 		}
 
-		if (!strcmp(buf, "quit"))	break;
-
 		parse();
-		if (array[0])
-			execute(env);
+		if (array[0]) {
+			if (strcmp(array[0], "exit"))
+				execute(env);
+			else
+				break;
+		}
 	}
 
 	if (buf)
