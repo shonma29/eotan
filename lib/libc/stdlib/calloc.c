@@ -1,5 +1,3 @@
-#ifndef _STDLIB_H_
-#define _STDLIB_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,61 +24,26 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stddef.h>
+#include <errno.h>
+#include <local.h>
+#include <stdlib.h>
+#include <string.h>
 
-#define RAND_MAX 0x7fffffff
 
-#define EXIT_SUCCESS (0)
-#define EXIT_FAILURE (1)
-
-typedef struct {
-	int quot;
-	int rem;
-} div_t;
-
-typedef struct {
-	long quot;
-	long rem;
-} ldiv_t;
-
-static inline int abs(int value)
+void *calloc(size_t nmemb, size_t size)
 {
-	return (value < 0)? (-value):value;
+	size_t bytes = nmemb * size;
+	void *p;
+
+	if (bytes) {
+		p = malloc(bytes);
+		if (p)
+			memset(p, 0, bytes);
+		else {
+			((thread_local_t *)_get_local())->error_no = ENOMEM;
+		}
+	} else
+		p = NULL;
+
+	return p;
 }
-
-static inline long labs(long value)
-{
-	return (value < 0)? (-value):value;
-}
-
-static inline div_t div(int numerator, int denominator)
-{
-	div_t x = {
-		x.quot = numerator / denominator,
-		x.rem = numerator % denominator
-	};
-
-	return x;
-}
-
-static inline ldiv_t ldiv(long numerator, long denominator)
-{
-	ldiv_t x = {
-		x.quot = numerator / denominator,
-		x.rem = numerator % denominator
-	};
-
-	return x;
-}
-
-extern void *bsearch(const void *key, const void *base, size_t nmemb,
-		size_t size, int (*compar)(const void *, const void *));
-extern int rand(void);
-extern void srand(unsigned int seed);
-extern void exit(int status);
-extern void *malloc(size_t);
-extern void free(void*);
-extern void *calloc(size_t, size_t);
-extern void *realloc(void *, size_t);
-
-#endif

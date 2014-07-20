@@ -199,19 +199,6 @@ VP malloc(UW size)
 }
 
 
-VP calloc(UW size, UW nentry)
-{
-    VP rp;
-
-    rp = malloc(size * nentry);
-    if (rp) {
-	memset(rp, 0, size * nentry);
-    }
-
-    return (rp);
-}
-
-
 void free(VP addr)
 {
     struct alloc_entry_t *start_point;
