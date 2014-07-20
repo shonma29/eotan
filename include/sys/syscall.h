@@ -23,7 +23,7 @@ Version 2, June 1991
 
 #include <core/types.h>
 
-#define NR_POSIX_SYSCALL	28
+#define NR_POSIX_SYSCALL	27
 
 /* =================== POSIX システムコール番号の定義 =============== */
 #define PSC_NOACTION     0
@@ -56,16 +56,9 @@ Version 2, June 1991
 #define PSC_KILL         25
 
 /* =================== miserous system calls  =============== */
-#define PSC_MISC         26
+#define PSC_DUP2         26	/* 不要? */
 
-#define PSC_DUP2         27	/* 不要? */
-
-#define PSC_BIND_DEVICE (28)
-
-/* MISC 
- */
-#define M_PURGE_CACHE	5
-#define M_DO_DF		8
+#define PSC_BIND_DEVICE (27)
 
 /* =============== 各システムコール用の 構造体定義 ================== */
 
@@ -358,19 +351,6 @@ struct psc_getdents
   UW length;
 };
 
-/* psc_misc
- *
- */
-struct psc_misc
-{
-  W		cmd;
-  W		length;
-  union
-    {
-      W			procid;
-    } arg;
-};
-
 #define MAX_DEVICE_NAME (31)
 struct psc_bind_device
 {
@@ -416,7 +396,6 @@ struct posix_request
     struct psc_mount		par_mount;
     struct psc_umount		par_umount;
     struct psc_statfs		par_statfs;
-    struct psc_misc		par_misc;
     struct psc_getdents		par_getdents;
     struct psc_bind_device par_bind_device;
   } param;

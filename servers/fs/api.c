@@ -190,7 +190,6 @@ struct posix_syscall	syscall_table[] =
   { s("statfs",		PSC_STATFS)		psc_statfs_f },
   { s("umount",		PSC_UMOUNT)		psc_umount_f },
   { s("kill",		PSC_KILL)		psc_kill_f },
-  { s("misc",		PSC_MISC)		psc_misc_f },
   { s("dup2",		PSC_DUP2)		psc_dup2_f },
   { s("bind_device", PSC_BIND_DEVICE) psc_bind_device_f },
 };

@@ -1277,25 +1277,3 @@ W permit(struct inode * ip, struct access_info * acc, UW bits)
 	return (EACCES);
     return (EOK);
 }
-
-/* do_df()
- */
-
-W do_df()
-{
-    struct fs *fsp;
-    int rate;
-
-    fsp = rootfs;
-    do {
-        rate = 1024 / fsp->fs_blksize;
-	printk("device:%x kbytes = %d use = %d avail = %d Mounted on %d\n",
-	       fsp->fs_device,
-	       fsp->fs_allblock / rate,
-	       fsp->fs_usedblock / rate,
-	       fsp->fs_freeblock / rate,
-	       (fsp->mountpoint == NULL ? 1 : fsp->mountpoint->i_index));
-	fsp = fsp->fs_next;
-    } while (fsp != rootfs);
-    return (EOK);
-}

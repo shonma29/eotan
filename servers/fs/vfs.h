@@ -201,8 +201,6 @@ extern W fs_convert_path(struct inode *ip, B * buf, W length);
 
 extern W permit(struct inode *ip, struct access_info *acc, UW bits);
 
-extern W do_df();
-
 extern struct fs fs_buf[], *free_fs, *rootfs;
 extern struct inode inode_buf[], *free_inode, *rootfile;
 extern struct file *file_buf, *free_file;

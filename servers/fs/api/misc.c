@@ -21,38 +21,9 @@ Version 2, June 1991
  */
 
 #include <nerve/kcall.h>
-#include "fs.h"
 
-extern void sfs_purge_cache();
-
-
-W psc_misc_f(RDVNO rdvno, struct posix_request *req)
-{
-    ER err = 0;
-
-#ifdef notdef
-    printf("POSIX: misc systemcall.(cmd = %d)\n", req->param.par_misc.cmd);
-#endif
-
-    switch (req->param.par_misc.cmd) {
-    case M_PURGE_CACHE:
-	sfs_purge_cache();
-	break;
-
-    case M_DO_DF:
-	err = do_df();
-	break;
-    }
-
-    put_response(rdvno, err, err ? -1 : 0, 0);
-    if (err)
-	return (FALSE);
-    else
-	return (TRUE);
-}
 
 /* gettimeofday として動作する */
-
 UW get_system_time(void)
 {
     SYSTIM time;
