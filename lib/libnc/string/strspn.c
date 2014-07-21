@@ -29,7 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 
 size_t strspn(const char *s, const char *accept)
 {
-	unsigned char *p = (unsigned char*)accept;
+	unsigned char *p = (unsigned char*)s;
 
 	for (; *p; p++)
 		if (!strchr(accept, *p))
