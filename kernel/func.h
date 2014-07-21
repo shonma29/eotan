@@ -51,7 +51,7 @@ extern ER core_initialize(void);
 extern ER syscall(svc_arg *argp, UW svcno);
 
 /* modules.c */
-extern void run_init_program(void);
+extern void load_modules(void);
 
 /* global.c */
 extern void global_initialize(void);

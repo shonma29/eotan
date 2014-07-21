@@ -29,12 +29,6 @@ ARCH=`ls -l kernel/arch | sed -e 's/^.*\/\([^\/]\{1,\}\)$/\1/g'`
 MPU=`ls -l kernel/mpu | sed -e 's/^.*\/\([^\/]\{1,\}\)$/\1/g'`
 
 cat <<EOT
-#ifndef _KERNEL_VERSION_H_
-#define _KERNEL_VERSION_H_
+kernel ${LAST_TAG} (${MPU}/${ARCH})
 
-#define KERN_VERSION "${LAST_TAG}"
-#define KERN_ARCH "${ARCH}"
-#define KERN_MPU "${MPU}"
-
-#endif
 EOT

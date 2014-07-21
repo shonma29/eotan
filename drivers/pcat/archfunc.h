@@ -42,4 +42,6 @@ extern ER pit_initialize(const UW freq);
 /* 8024.c */
 extern ER kbc_initialize(void);
 
+#define arch_initialize pic_initialize
+
 #endif

@@ -51,10 +51,11 @@ test:
 contrib:
 	$(MAKE) -f app/contribution/pager/Makefile WD=app/contribution/pager
 
-data: initrd.mk bees.p6
+data: motd bees.p6
+	./motd.sh > motd
 	for I in $^; do \
 		app/sfs/statfs initrd.img write /$$I $$I; \
-		app/sfs/statfs initrd.img chmod 777 /$$I; \
+		app/sfs/statfs initrd.img chmod 664 /$$I; \
 	done
 
 starter:
@@ -72,5 +73,5 @@ clean:
 	$(MAKE) -f servers/Makefile clean
 	$(MAKE) -f app/test/Makefile WD=app/test clean
 	$(MAKE) -f app/contribution/pager/Makefile WD=app/contribution/pager clean
-	$(RM) initrd.img
+	$(RM) initrd.img motd
 	$(MAKE) -C starter clean

@@ -23,15 +23,12 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = kernel/version.h kernel/core.bin
+TARGET = kernel/core.bin
 
 include Makefile.in
 
 ENTRY_ADDR = 0x80100000
 ENTRY_FUNC = startup
-
-kernel/version.h: kernel/version.sh
-	$< > $@
 
 kernel/core.bin: $(OBJS) \
 		kernel/mpu/libmpu.a kernel/arch/libarch.a lib/libnc.a
