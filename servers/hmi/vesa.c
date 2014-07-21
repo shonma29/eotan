@@ -423,4 +423,15 @@ void put(const unsigned int start, const size_t size,
 	for (i = 0; i < size; i++)
 		w[i] = buf[i];
 }
+
+void pset(unsigned int x, unsigned int y, int color)
+{
+	unsigned char *r = (unsigned char*)(_s.base)
+			+ y * _s.bpl
+			+ x * sizeof(Color);
+
+	r[0] = color & 0xff;
+	r[1] = (color >> 8) & 0xff;
+	r[2] = (color >> 16) & 0xff;
+}
 #endif

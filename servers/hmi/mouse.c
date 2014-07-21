@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <device.h>
 #include <major.h>
+#include <boot/vesa.h>
 #include <core/packets.h>
 #include <mpu/io.h>
 #include <nerve/icall.h>
@@ -40,10 +41,13 @@ For more information, please refer to <http://unlicense.org/>
 static icall_t *icall = (icall_t*)ICALL_ADDR;
 static kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 static ID mouse_queue_id;
-static ID mouse_port_id;
+
+extern void pset(unsigned int x, unsigned int y, int color);
+
+static ER mouse_interrupt(void);
 
 
-static ER mouse_interrupt()
+static ER mouse_interrupt(void)
 {
 	unsigned char b1;
 	unsigned char b2;
@@ -58,129 +62,53 @@ static ER mouse_interrupt()
 	return E_OK;
 }
 
-static ER check_param(const UW start, const UW size)
+void mouse_accept(void)
 {
-//	if (start)	return E_PAR;
+	VesaInfo *v = (VesaInfo*)kern_p2v((void*)VESA_INFO_ADDR);
+	W width = v->width;
+	W height = v->height;
+	W x = 0;
+	W y = 0;
+	W buttons = 0;
 
-	if (size > DEV_BUF_SIZE)	return E_PAR;
-	else if (size < sizeof(W))	return E_PAR;
-
-	return E_OK;
-}
-
-static ER_UINT read(const UW start, const UW size, UB *outbuf)
-{
-	ER_UINT result = check_param(start, size);
-	size_t i;
-
-	if (result)	return result;
-
-	for (i = 0; i < size;) {
+	for (;;) {
+		int dx, dy;
 		W d;
 
 		kcall->queue_receive(mouse_queue_id, &d);
-		if (d >= 0) {
-			outbuf[i++] = (UB)(d & 0xff);
-			outbuf[i++] = (UB)((d >> 8) & 0xff);
-			outbuf[i++] = (UB)((d >> 16) & 0xff);
-			outbuf[i++] = (UB)((d >> 24) & 0xff);
-			break;
-		}
-	}
+		buttons = (UB)((d >> 16) & 0x07);
 
-	return i;
-}
+		dx = (UB)((d >> 8) & 0xff);
+		if (d & 0x100000)
+			dx |= 0xffffff00;
+		x += dx;
+		if (x < 0)
+			x = 0;
+		else if (x >= width)
+			x = width - 1;
 
-static UW execute(devmsg_t *message)
-{
-	DDEV_REQ *req = &(message->req);
-	DDEV_RES *res = &(message->res);
-	ER_UINT result;
-	UW size = 0;
-
-	switch (req->header.msgtyp) {
-	case DEV_OPN:
-		res->body.opn_res.dd = req->body.opn_req.dd;
-		res->body.opn_res.size = DEV_BUF_SIZE;
-		res->body.opn_res.errcd = E_OK;
-		res->body.opn_res.errinfo = 0;
-		size = sizeof(res->body.opn_res);
-		break;
-
-	case DEV_CLS:
-		res->body.cls_res.dd = req->body.cls_req.dd;
-		res->body.cls_res.errcd = E_OK;
-		res->body.cls_res.errinfo = 0;
-		size = sizeof(res->body.cls_res);
-		break;
-
-	case DEV_REA:
-		result = read(req->body.rea_req.start, req->body.rea_req.size,
-				res->body.rea_res.dt);
-		res->body.rea_res.dd = req->body.rea_req.dd;
-		res->body.rea_res.errcd = (result >= 0)? E_OK:result;
-		res->body.rea_res.errinfo = 0;
-		res->body.rea_res.split = 0;
-		res->body.rea_res.a_size = (result >= 0)? result:0;
-		size = sizeof(res->body.rea_res)
-				- sizeof(res->body.rea_res.dt)
-				+ (res->body.rea_res.a_size);
-		break;
-
-	case DEV_WRI:
-		res->body.wri_res.dd = req->body.wri_req.dd;
-		res->body.wri_res.errcd = E_NOSPT;
-		res->body.wri_res.errinfo = 0;
-		res->body.wri_res.a_size = 0;
-		size = sizeof(res->body.wri_res);
-		break;
-
-	case DEV_CTL:
-		res->body.ctl_res.dd = req->body.ctl_req.dd;
-		res->body.ctl_res.errcd = E_NOSPT;
-		res->body.ctl_res.errinfo = 0;
-		size = sizeof(res->body.ctl_res);
-		break;
-
-	default:
-		break;
-	}
-
-	return size + sizeof(res->header);
-}
-
-void mouse_accept(void)
-{
-	for (;;) {
-		devmsg_t message;
-		RDVNO rdvno;
-		ER_UINT size;
-		ER result;
-
-		size = kcall->port_accept(mouse_port_id, &rdvno,
-				&(message.req));
-		if (size < 0) {
-			dbg_printf("[mouse] acp_por error=%d\n", size);
-			break;
-		}
-
-		result = kcall->port_reply(rdvno, &(message.res),
-				execute(&message));
-		if (result) {
-			dbg_printf("[mouse] rpl_rdv error=%d\n", result);
-			break;
-		}
+		dy = (UB)(d & 0xff);
+		if (d & 0x200000)
+			dy |= 0xffffff00;
+		y -= dy;
+		if (y < 0)
+			y = 0;
+		else if (y >= height)
+			y = height - 1;
+#ifdef USE_VESA
+		if (buttons & 1)
+			pset(x, y, 0xff0000);
+		else if (buttons & 2)
+			pset(x, y, 0x00ff00);
+		else if (buttons & 4)
+			pset(x, y, 0xffff00);
+#endif
 	}
 }
 
 ER mouse_initialize(void)
 {
 	W result;
-	T_CPOR pk_cpor = {
-			TA_TFIFO,
-			sizeof(DDEV_REQ),
-			sizeof(DDEV_RES)
-	};
 	T_CDTQ pk_cdtq = {
 			TA_TFIFO,
 			1024 - 1,
@@ -212,20 +140,6 @@ ER mouse_initialize(void)
 		kcall->interrupt_bind(PIC_IR_VECTOR(ir_mouse), &pk_dinh);
 		kcall->queue_destroy(mouse_queue_id);
 		return result;
-	}
-
-	mouse_port_id = kcall->port_create_auto(&pk_cpor);
-	if (mouse_port_id < 0) {
-		dbg_printf("[mouse] acre_por error=%d\n", mouse_port_id);
-
-		return result;
-	}
-
-	result = bind_device(get_device_id(DEVICE_MAJOR_MOUSE, 0),
-			(UB*)("mouse"), mouse_port_id);
-	if (result) {
-		dbg_printf("[mouse] bind error=%d\n", result);
-		kcall->port_destroy(mouse_port_id);
 	}
 
 	return E_OK;
