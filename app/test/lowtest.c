@@ -44,7 +44,7 @@ char *testfile()
 	char buf[1];
 	char buf2[1];
 
-	fd = open("/initrd.mk", O_RDWR);
+	fd = open("/motd", O_RDWR);
 	assert_ne("open[0]", -1, fd);
 
 	assert_eq("fstat", 0, fstat(fd, &st));
@@ -70,10 +70,10 @@ char *testfile()
 		(int)((long long int)st.st_ctime & 0xffffffff));
 
 	assert_eq("read[0]", 1, read(fd, buf, 1));
-	assert_eq("read[0] buf[0]", 0x23, buf[0]);
+	assert_eq("read[0] buf[0]", 'k', buf[0]);
 
 	assert_eq("read[1]", 1, read(fd, buf, 1));
-	assert_eq("read[1] buf[0]", 0x20, buf[0]);
+	assert_eq("read[1] buf[0]", 'e', buf[0]);
 
 	assert_eq("lseek[1]", 1, lseek(fd, 1, SEEK_SET));
 	assert_eq("read[1-2]", 1, read(fd, buf2, 1));
@@ -81,14 +81,14 @@ char *testfile()
 	assert_eq("read[1-2] cmp", buf[0], buf2[0]);
 
 	assert_eq("lseek[1]", 1, lseek(fd, 1, SEEK_SET));
-	buf[0] = 0x41;
+	buf[0] = '@';
 	assert_eq("write[1]", 1, write(fd, buf, 1));
 
 	assert_eq("close[0]", 0, close(fd));
 
-	assert_eq("chmod[0]", 0, chmod("/initrd.mk", S_IXGRP | S_IROTH | S_IWOTH));
+	assert_eq("chmod[0]", 0, chmod("/motd", S_IXGRP | S_IROTH | S_IWOTH));
 
-	fd = open("/initrd.mk", O_RDONLY);
+	fd = open("/motd", O_RDONLY);
 	assert_ne("open[1]", -1, fd);
 
 	assert_eq("fstat[1]", 0, fstat(fd, &st2));
@@ -99,15 +99,15 @@ char *testfile()
 			st2.st_mode);
 
 	assert_eq("read[0]", 1, read(fd, buf, 1));
-	assert_eq("read[0] buf[0]", 0x23, buf[0]);
+	assert_eq("read[0] buf[0]", 'k', buf[0]);
 
 	assert_eq("read[1]", read(fd, buf, 1), 1);
-	assert_eq("read[1] buf[0]", 0x41, buf[0]);
+	assert_eq("read[1] buf[0]", '@', buf[0]);
 
 	assert_eq("close[0]", 0, close(fd));
 
 	assert_eq("access[0]", 0,
-			access("/initrd.mk", R_OK | W_OK));
+			access("/motd", R_OK | W_OK));
 
 	assert_eq("umask[0]", 022, umask(006));
 	fd = open("/mtest", O_CREAT | O_WRONLY, 0666);
