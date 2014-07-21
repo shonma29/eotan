@@ -41,7 +41,7 @@ static void set_initrd(ModuleHeader *h);
 static void release_others(const void *head, const void *end);
 
 
-void run_init_program(void)
+void load_modules(void)
 {
 	ModuleHeader *h = (ModuleHeader*)(kern_p2v((void*)MODULES_ADDR));
 

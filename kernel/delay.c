@@ -35,6 +35,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "delay.h"
 #include "func.h"
 #include "mpu/mpufunc.h"
+#include "arch/archfunc.h"
 
 #define KQUEUE_SIZE 1024
 
@@ -109,10 +110,12 @@ void kern_start(void)
 	queue_initialize();
 	thread_initialize();
 
-	if (core_initialize())
-		panic("failed to initialize");
+	delay_thread.attach();
+	arch_initialize();
+	interrupt_initialize();
+	timer_initialize();
 
-	run_init_program();
+	load_modules();
 
 	for (;;)
 		halt();
