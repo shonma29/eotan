@@ -1,166 +1,62 @@
 /*
+This is free and unencumbered software released into the public domain.
 
-B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
 
-GNU GENERAL PUBLIC LICENSE
-Version 2, June 1991
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
 
-(C) B-Free Project.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
 
+For more information, please refer to <http://unlicense.org/>
 */
-
-/* $Id: stdlib.c,v 1.6 2000/06/04 04:10:15 naniwa Exp $ */
-
-/*
- * $Log: stdlib.c,v $
- * Revision 1.6  2000/06/04 04:10:15  naniwa
- * to support octal
- *
- * Revision 1.5  2000/01/29 16:23:52  naniwa
- * to clean up
- *
- * Revision 1.4  2000/01/18 14:39:25  naniwa
- * to make independent of libkernel.a
- *
- * Revision 1.3  2000/01/15 15:25:16  naniwa
- * to use read/write systemcalls
- *
- * Revision 1.2  1999/11/10 10:44:37  naniwa
- * correction
- *
- * Revision 1.5  1999/05/10 02:57:17  naniwa
- * add fprintf() and modified to user vfprintf()
- *
- * Revision 1.4  1998/12/08 05:38:39  monaka
- * I init has been included the Mitten Scripting Language since this release.
- * But, it's just a first preview. So you can't use many convenience
- * features. Mitten works extension scripting environment like Tcl, Guile,
- * Windows Scripting Host, and so on. If you wished, you may connect your
- * function written in C to Mitten operator. If you wished, you may call
- * Mitten from C.
- *
- * Revision 1.3  1997/07/06 11:50:02  night
- * デバッグ文の引数指定がまちがっていたので、修正した。
- *
- * Revision 1.2  1997/04/24 15:38:06  night
- * printf() 関数の処理を kernlib の dbg_printf() と同様のものにした。
- *
- * Revision 1.1  1996/07/25  16:03:44  night
- * IBM PC 版への最初の登録
- *
- *
- */
-
-#include <core/types.h>
 #include <stdio.h>
 
-static ER	vfprintf (FILE *port, const char *fmt, VP arg0);
+extern int vnprintf2(int (*out)(const char, void*), void *env,
+		char *format, va_list ap);
 
 
-
-static W
-print_digit (FILE *port, UW d, UW base)
+int fprintf(FILE *stream, const char *format, ...)
 {
-  static B digit_table[] = "0123456789ABCDEF";
-  W len = 0;
+	va_list ap;
 
-  if (d < base)
-    {
-      fputc (digit_table[d], port);
-      len++;
-    }
-  else
-    {
-      len += print_digit (port, d / base, base);
-      fputc (digit_table[d % base], port);
-      len++;
-    }
-
-  return len;
+	va_start(ap, format);
+	return vnprintf2((int (*)(char, void*))fputc, stream,
+			(char*)format, ap);
 }
 
-#define INC(p,x)	(p = (VP)(((W)p) + sizeof (x *)))
-
-/*
- *
- */
-int
-printf (const char *fmt,...)
+int printf(const char *format, ...)
 {
-  VP *arg0;
-  ER err;
+	va_list ap;
 
-  arg0 = (VP *)&fmt;
-  INC (arg0, B *);
-  err = vfprintf (stdout, fmt, (VP)arg0);
-  fflush (stdout);
-  return (err);
+	va_start(ap, format);
+	return vnprintf2((int (*)(char, void*))fputc, stdout,
+			(char*)format, ap);
 }
 
-int
-fprintf (FILE *port, const char *fmt,...)
+int vfprintf(FILE *stream, const char *format, va_list ap)
 {
-  VP *arg0;
-  ER err;
-
-  arg0 = (VP *)&fmt;
-  INC (arg0, B *);
-  err = vfprintf (port, fmt, (VP)arg0);
-  return (err);
+	return vnprintf2((int (*)(char, void*))fputc, stream,
+			(char*)format, ap);
 }
 
-static ER
-vfprintf (FILE *port, const char *fmt, VP arg0)
+int vprintf(const char *format, va_list ap)
 {
-  VP *ap;
-  W len = 0;
-
-  for (ap = (VP *)arg0; *fmt != '\0'; fmt++)
-    {
-      if (*fmt == '%')
-	{
-	  switch (*++fmt)
-	    {
-	    case 's':
-	      len += fputs ((B*)(*ap), port);
-	      INC (ap, B *);
-	      break;
-
-	    case 'd':
-	      if ((W)*ap < 0)
-		{
-		  W *q = (W*)ap;
-
-		  *q = 0 - ((W)*ap);
-		  fputc ('-', port);
-		  len++;
-		}
-	      len += print_digit (port, (W)*ap, 10);
-	      INC (ap, W);
-	      break;
-
-	    case 'x':
-	      len += print_digit (port, (W)*ap, 16);
-	      INC (ap, W);
-	      break;
-
-	    case 'o':
-	      len += print_digit (port, (W)*ap, 8);
-	      INC (ap, W);
-	      break;
-
-	    default:
-	      fputc ('%', port);
-	      len++;
-	      break;
-	    }
-	}
-      else
-	{
-	  fputc (*fmt, port);
-	  len++;
-	}
-    }
-
-    return len;
+	return vnprintf2((int (*)(char, void*))fputc, stdout,
+			(char*)format, ap);
 }
+

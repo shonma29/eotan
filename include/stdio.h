@@ -26,6 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdarg.h>
 #include <stddef.h>
 
 typedef unsigned long long int fpos_t;
@@ -127,8 +128,10 @@ extern int putchar(int);
 extern int fputs(const char *, FILE *);
 extern int puts(const char *);
 
-extern int fprintf(FILE *, const char *, ...);
 extern int printf(const char *, ...);
+extern int fprintf(FILE *, const char *, ...);
+extern int vfprintf(FILE *, const char *, va_list);
+extern int vprintf(const char *, va_list);
 
 static inline int getc(FILE *stream)
 {
