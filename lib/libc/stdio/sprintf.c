@@ -25,37 +25,69 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stdio.h>
+#include <string.h>
 
-extern int vnprintf2(int (*)(const char, void*), void *, char *, va_list);
+typedef struct {
+	size_t len;
+	size_t max;
+	char *buf;
+} CharBuffer;
+
+static int _putc(const char, CharBuffer *);
 
 
-int fprintf(FILE *stream, const char *format, ...)
+int sprintf(char *str, const char *format, ...)
 {
+	CharBuffer buf = { 0, 0xffffffff, str };
+	int len;
 	va_list ap;
 
 	va_start(ap, format);
-	return vnprintf2((int (*)(char, void*))fputc, stream,
+	len = vnprintf2((int (*)(char, void*))_putc, &buf,
 			(char*)format, ap);
+	str[buf.len] = '\0';
+	return len;
 }
 
-int printf(const char *format, ...)
+int snprintf(char *str, size_t size, const char *format, ...)
 {
+	CharBuffer buf = { 0, size? (size - 1):0, str };
+	int len;
 	va_list ap;
 
 	va_start(ap, format);
-	return vnprintf2((int (*)(char, void*))fputc, stdout,
+	len = vnprintf2((int (*)(char, void*))_putc, &buf,
 			(char*)format, ap);
+	if (size)
+		str[buf.len] = '\0';
+	return len;
 }
 
-int vfprintf(FILE *stream, const char *format, va_list ap)
+int vsprintf(char *str, const char *format, va_list ap)
 {
-	return vnprintf2((int (*)(char, void*))fputc, stream,
+	CharBuffer buf = { 0, 0xffffffff, str };
+	int len = vnprintf2((int (*)(char, void*))_putc, &buf,
 			(char*)format, ap);
+
+	str[buf.len] = '\0';
+	return len;
 }
 
-int vprintf(const char *format, va_list ap)
+int vsnprintf(char *str, size_t size, const char *format, va_list ap)
 {
-	return vnprintf2((int (*)(char, void*))fputc, stdout,
+	CharBuffer buf = { 0, size? (size - 1):0, str };
+	int len = vnprintf2((int (*)(char, void*))_putc, &buf,
 			(char*)format, ap);
+
+	if (size)
+		str[buf.len] = '\0';
+	return len;
 }
 
+static int _putc(const char ch, CharBuffer *buf)
+{
+	if (buf->len < buf->max)
+		buf->buf[buf->len++] = ch;
+
+	return 0;
+}

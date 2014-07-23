@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../servers/kernlog/kernlog.h"
 
 
-ER syslog(B *msg)
+int syslog(const char *msg)
 {
 	devmsg_t packet;
 	size_t len = strlen(msg);

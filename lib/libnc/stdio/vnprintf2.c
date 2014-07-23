@@ -34,13 +34,14 @@ typedef struct _State {
 	int (*handler)(struct _State*);
 	char *format;
 	va_list ap;
-	void (*out)(const char);
+	int (*out)(const char, void *);
+	void *env;
 	int len;
 } State;
 
 static void _putchar(State *, const char);
 static void _puts(State *, const char *);
-static void _putd(State *, const int);
+static void _putd(State *, const int, const int);
 static void _puth(State *, const int);
 static int _immediate(State *);
 static int _format(State *);
@@ -49,8 +50,8 @@ static int _escape(State *);
 
 static void _putchar(State *s, const char c)
 {
-	s->len++;
-	s->out(c);
+	if (s->out(c, s->env) >= 0)
+		s->len++;
 }
 
 static void _puts(State *s, const char *str)
@@ -60,7 +61,7 @@ static void _puts(State *s, const char *str)
 	for (; (c = *str); str++)	_putchar(s, c);
 }
 
-static void _putd(State *s, const int v)
+static void _putd(State *s, const int v, const int radix)
 {
 	char buf[MAX_INT_COLUMN];
 	char *p = &buf[sizeof(buf) - 1];
@@ -72,9 +73,9 @@ static void _putd(State *s, const int v)
 	}
 
 	for (*p-- = '\0';; p--) {
-		*p = (x % 10) + '0';
+		*p = (x % radix) + '0';
 
-		if (!(x /= 10)) {
+		if (!(x /= radix)) {
 			_puts(s, p);
 			break;
 		}
@@ -125,7 +126,10 @@ static int _format(State *s)
 		_putchar(s, va_arg(s->ap, char));
 		break;
 	case 'd':
-		_putd(s, va_arg(s->ap, int));
+		_putd(s, va_arg(s->ap, int), 10);
+		break;
+	case 'o':
+		_putd(s, va_arg(s->ap, int), 8);
 		break;
 	case 'p':
 		_putchar(s, '0');
@@ -173,9 +177,9 @@ static int _escape(State *s)
 	return TRUE;
 }
 
-int vnprintf(void (*out)(char), char *format, va_list ap)
-{
-	State s = { _immediate, format, ap, out, 0 };
+int vnprintf2(int (*out)(const char, void*), void *env,
+		char *format, va_list ap) {
+	State s = { _immediate, format, ap, out, env, 0 };
 
 	while (s.handler(&s));
 

@@ -132,6 +132,10 @@ extern int printf(const char *, ...);
 extern int fprintf(FILE *, const char *, ...);
 extern int vfprintf(FILE *, const char *, va_list);
 extern int vprintf(const char *, va_list);
+extern int sprintf(char *, const char *, ...);
+extern int snprintf(char *, size_t, const char *, ...);
+extern int vsprintf(char *, const char *, va_list);
+extern int vsnprintf(char *, size_t, const char *, va_list);
 
 static inline int getc(FILE *stream)
 {

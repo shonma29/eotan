@@ -29,27 +29,28 @@ For more information, please refer to <http://unlicense.org/>
 #include "stdarg.h"
 #include "stddef.h"
 
-extern char *strchr(const char *s, int c);
-extern char *strrchr(const char *s, int c);
-extern size_t strlen(const char *s);
-extern char *strcpy(char *dest, const char *src);
-extern char *strncpy(char *dest, const char *src, size_t n);
-extern char *strcat(char *dest, const char *src);
-extern char *strncat(char *dest, const char *src, size_t n);
-extern int strcmp(const char *s1, const char *s2);
-extern int strncmp(const char *s1, const char *s2, size_t size);
-extern char *strpbrk(const char *s, const char *accept);
-extern size_t strspn(const char *s, const char *accept);
-extern size_t strcspn(const char *s, const char *reject);
-extern const char *strstr(const char *haystack, const char *needle);
-extern char *strtok(char *str, const char *delim);
+extern char *strchr(const char *, int);
+extern char *strrchr(const char *, int);
+extern size_t strlen(const char *);
+extern char *strcpy(char *, const char *);
+extern char *strncpy(char *, const char *, size_t);
+extern char *strcat(char *, const char *);
+extern char *strncat(char *, const char *, size_t);
+extern int strcmp(const char *, const char *);
+extern int strncmp(const char *, const char *, size_t);
+extern char *strpbrk(const char *, const char *);
+extern size_t strspn(const char *, const char *);
+extern size_t strcspn(const char *, const char *);
+extern const char *strstr(const char *, const char *);
+extern char *strtok(char *, const char *);
 
-extern void *memchr(const void *s, int c, size_t n);
-extern void *memcpy(void *dest, const void *src, size_t n);
-extern void *memmove(void *dest, const void *src, size_t n);
-extern void *memset(void *s, int c, size_t n);
-extern int memcmp(const void *b1, const void *b2, size_t len);
+extern void *memchr(const void *, int, size_t);
+extern void *memcpy(void *, const void *, size_t);
+extern void *memmove(void *, const void *, size_t);
+extern void *memset(void *, int, size_t);
+extern int memcmp(const void *, const void *, size_t);
 
-extern int vnprintf(void (*out)(char), char *format, va_list ap);
+extern int vnprintf(void (*)(char), char *, va_list);
+extern int vnprintf2(int (*)(const char, void*), void *, char *, va_list);
 
 #endif

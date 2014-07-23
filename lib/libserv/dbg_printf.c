@@ -1,5 +1,3 @@
-#ifndef _LIBSERV_H_
-#define _LIBSERV_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,8 +24,40 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdarg.h>
+#include <string.h>
+#include "../libserv/libserv.h"
 
-extern int syslog(const char *msg);
-extern int dbg_printf(const char *format, ...);
+#define MAX_BUF (80)
 
-#endif
+typedef struct {
+	size_t len;
+	char *buf;
+} CharBuffer;
+
+static int _putc(const char, CharBuffer *);
+
+
+int dbg_printf(const char *format, ...)
+{
+	char str[MAX_BUF];
+	CharBuffer buf = { 0, str };
+	int len;
+	va_list ap;
+
+	va_start(ap, format);
+	len = vnprintf2((int (*)(char, void*))_putc, &buf,
+			(char*)format, ap);
+	str[buf.len] = '\0';
+
+	syslog(str);
+	return len;
+}
+
+static int _putc(const char ch, CharBuffer *buf)
+{
+	if (buf->len < MAX_BUF - 1)
+		buf->buf[buf->len++] = ch;
+
+	return 0;
+}
