@@ -64,7 +64,8 @@ starter:
 	$(MAKE) -C starter
 
 initrd:
-	$(MAKE) -f initrd.mk
+	${RM} -f initrd.img
+	app/sfs/mkfs initrd.img 512 512 4
 
 clean:
 	$(MAKE) -f app/sfs/Makefile WD=app/sfs clean
