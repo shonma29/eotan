@@ -154,8 +154,8 @@ char *testdir()
 
 	assert_eq("getcwd[0]", 0, strcmp("/", getcwd(buf, sizeof(buf))));
 
-	assert_eq("chdir", 0, chdir("dev"));
-	assert_eq("getcwd[1]", 0, strcmp("/dev", getcwd(buf, sizeof(buf))));
+	assert_eq("chdir", 0, chdir("bin"));
+	assert_eq("getcwd[1]", 0, strcmp("/bin", getcwd(buf, sizeof(buf))));
 /*
 	assert_eq("mkdir[0]", 0,
 			mkdir("hoge", S_IRGRP | S_IROTH | S_IWOTH));

@@ -23,61 +23,20 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = boot.iso
+TARGET = $(WD)/cat $(WD)/shell \
+		$(WD)/echo $(WD)/ls $(WD)/pwd $(WD)/sleep
 
-.PHONY: tools libs kern core servers apps bin test contrib data starter initrd
+include Makefile.in
 
-all: tools libs kern initrd apps data starter
+CFLAGS += -fno-builtin
 
-tools:
-	$(MAKE) -f app/sfs/Makefile WD=app/sfs
+ENTRY_ADDR = 0x00001000
+ENTRY_FUNC = _main
 
-libs:
-	$(MAKE) -f lib/Makefile
-
-kern: core servers
-
-core:
-	$(MAKE) -f kernel/Makefile WD=kernel
-
-servers:
-	$(MAKE) -f servers/Makefile
-
-apps: bin test contrib
-
-bin:
-	app/sfs/statfs initrd.img mkdir /bin
-	$(MAKE) -f app/bin/Makefile WD=app/bin
-
-test:
-	$(MAKE) -f app/test/Makefile WD=app/test
-
-contrib:
-	$(MAKE) -f app/contribution/pager/Makefile WD=app/contribution/pager
-
-data: motd bees.p6
-	./motd.sh > motd
-	for I in $^; do \
-		app/sfs/statfs initrd.img write /$$I $$I; \
-		app/sfs/statfs initrd.img chmod 664 /$$I; \
-	done
-
-starter:
-	app/sfs/statfs initrd.img dir /
-	mkdir -p build
-	$(MAKE) -C starter
-
-initrd:
-	$(RM) initrd.img
-	app/sfs/mkfs initrd.img 512 512 4
-
-clean:
-	$(MAKE) -f app/sfs/Makefile WD=app/sfs clean
-	$(MAKE) -f lib/Makefile clean
-	$(MAKE) -f kernel/Makefile WD=kernel clean
-	$(MAKE) -f servers/Makefile clean
-	$(MAKE) -f app/bin/Makefile WD=app/bin clean
-	$(MAKE) -f app/test/Makefile WD=app/test clean
-	$(MAKE) -f app/contribution/pager/Makefile WD=app/contribution/pager clean
-	$(RM) initrd.img motd
-	$(MAKE) -C starter clean
+$(TARGET): $(OBJS) \
+		lib/libc.a lib/libserv.a lib/libitron.a lib/libnc.a
+	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $(@).o \
+		lib/libc.a lib/libserv.a lib/libitron.a lib/libnc.a
+	$(STRIP) $@
+	app/sfs/statfs initrd.img write /bin/$(@F) $@
+	app/sfs/statfs initrd.img chmod 777 /bin/$(@F)
