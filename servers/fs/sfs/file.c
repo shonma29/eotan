@@ -143,30 +143,16 @@ sfs_i_lookup(struct inode *parent,
 #ifdef FMDEBUG
     dbg_printf("sfs_i_lookup: start. fname = %s\n", fname);	/* */
 #endif
-#ifdef notdef
-    if (strcmp(fname, "/") == 0) {
-	*retip = parent;
-	return (EOK);
-    } else if (strcmp(fname, ".") == 0) {
-	*retip = parent;
-	return (EOK);
-    }
-#else
     if (strcmp(fname, ".") == 0) {
 	*retip = parent;
 	(*retip)->i_refcount++;
 	return (EOK);
     }
-#endif
 
     nentry = sfs_read_dir(parent, 0, NULL);
     {
-#ifdef notdef
-	struct sfs_dir dirp[sizeof(struct sfs_dir) * nentry];
-	/* GCC の拡張機能を使っている */
-#else
 	struct sfs_dir dirp[nentry];
-#endif
+
 	error_no = sfs_read_dir(parent, nentry, dirp);
 	for (i = 0; i < nentry; i++) {
 	    /* 表示文字長を SFS_MAXNAMELEN にするため．後に pad があるので大丈夫 */
@@ -301,9 +287,6 @@ sfs_i_create(struct inode * parent,
  */
 W sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
 {
-#ifdef notdef
-    B blockbuf[ip->i_fs->fs_private.sfs_fs.sfs_blocksize];	/* GCC の拡張機能を使っている */
-#endif
     W copysize;
     W offset;
     ID fd;
@@ -340,23 +323,17 @@ W sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
 	if (bn < 0) {
 	    return (EIO);
 	}
-#ifdef notdef
-	sfs_read_block(fd, bn, fsp->fs_blksize, blockbuf);
-#else
+
 	sfs_get_cache(fd, bn, &cn, &cbuf);
-#endif
 	offset = start % fsp->fs_blksize;
 	if (fsp->fs_blksize - offset < length) {
 	    copysize = fsp->fs_blksize - offset;
 	} else {
 	    copysize = length;
 	}
-#ifdef notdef
-	memcpy(buf, &blockbuf[offset], copysize);
-#else
+
 	memcpy(buf, &cbuf[offset], copysize);
 	sfs_put_cache(cn, 0);
-#endif
 	buf += copysize;
 	start += copysize;
 	length -= copysize;
@@ -371,9 +348,6 @@ W sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
 
 W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 {
-#ifdef notdef
-    B blockbuf[ip->i_fs->fs_private.sfs_fs.sfs_blocksize];	/* GCC の拡張機能を使っている */
-#endif
     int copysize;
     int offset;
     int retsize;
@@ -412,20 +386,12 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 /*
  *   ip->sfs_i_direct[start / fsp->fs_blksize] = alloc_block (fd, fsp);
  */
-#ifdef notdef
-	    bzero(blockbuf, fsp->fs_blksize);
-#else
 	    if (bn < 0) {
 		return (EIO);
 	    }
 	    sfs_get_cache(fd, bn, &cn, &cbuf);
-#endif
 	} else {
-#ifdef notdef
-	    sfs_read_block(fd, bn, fsp->fs_blksize, blockbuf);
-#else
 	    sfs_get_cache(fd, bn, &cn, &cbuf);
-#endif
 	}
 
 	/* 読み込んだブロックの内容を更新する
@@ -448,31 +414,11 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 	}
 #endif
 
-#ifdef notdef
-	memcpy(&blockbuf[offset], buf, copysize);
-#else
 	memcpy(&cbuf[offset], buf, copysize);
-#endif
-
-#ifdef notdef
-	dbg_printf("sfs write block: block number = %d\n",
-	       sfs_get_block_num(fd, fsp, &(ip->i_private.sfs_inode),
-				 start / fsp->fs_blksize));	/* */
-#endif
 
 	/* 更新したブロックを書き込む
 	 */
-#ifdef notdef
-	bn = sfs_get_block_num(fd, fsp, &(ip->i_private.sfs_inode),
-			       start / fsp->fs_blksize);
-	if (bn < 0) {
-	    return (EIO);
-	}
-	sfs_write_block(fd, bn, fsp->fs_blksize, blockbuf);
-#else
 	sfs_put_cache(cn, 1);
-#endif
-
 	buf += copysize;
 	start += copysize;
 	size -= copysize;
@@ -495,12 +441,7 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 	/* これは deallocate の中で処理するのが普通 */
 	sfs_i_sync(ip);
     }
-#ifdef notdef
-    else if (filesize < ip->i_size) {
-	/* FILE の切り詰めは O_TRUNC と関連して実行されるべき */
-	sfs_i_truncate(ip, filesize);
-    }
-#endif
+
     *rsize = retsize - size;
 
 #ifdef FMDEBUG
@@ -585,13 +526,7 @@ W sfs_i_truncate(struct inode * ip, W newsize)
     ip->i_mtime = clock;
     ip->i_ctime = clock;
     ip->i_dirty = 1;
-#ifdef notdef
-    /* これは deallocate の中で処理するのが普通 */
-    error_no = sfs_i_sync(ip);
-    if (error_no) {
-	return (error_no);
-    }
-#endif
+
     /* ここで fs を sync する必要があるか? */
     error_no = sfs_syncfs(fsp, 0);
     if (error_no) {
@@ -653,10 +588,6 @@ sfs_i_unlink(struct inode * parent, char *fname, struct access_info * acc)
 
     error_no = fs_lookup(parent, fname, O_RDWR, 0, acc, &ip);
     if (error_no) {
-#ifdef notdef
-	dbg_printf("[PM] sfs_i_unlink: can't unlink file %s(%d)\n", fname,
-	       error_no);
-#endif
 	return (error_no);
     }
     if ((ip->i_mode & S_IFMT) == S_IFDIR) {
@@ -765,9 +696,6 @@ W sfs_i_sync(struct inode * ip)
     ip->i_private.sfs_inode.sfs_i_perm = ip->i_mode;
     ip->i_private.sfs_inode.sfs_i_uid = ip->i_uid;
     ip->i_private.sfs_inode.sfs_i_gid = ip->i_gid;
-#ifdef notdef
-    ip->i_private.sfs_inode.sfs_i_dev = ip->i_dev;
-#endif
     ip->i_private.sfs_inode.sfs_i_atime = ip->i_atime;
     ip->i_private.sfs_inode.sfs_i_ctime = ip->i_ctime;
     ip->i_private.sfs_inode.sfs_i_mtime = ip->i_mtime;

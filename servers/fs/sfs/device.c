@@ -84,10 +84,6 @@ W sfs_read_device(ID device, B * buf, W start, W length, W * rlength)
 	return (error_no);
     }
 
-#ifdef notdef
-    printk("sfs_read_device: start = %d, size = %d\n", start, length);
-#endif				/* FMDEBUG */
-
     *rlength = 0;
     for (rest_length = length; rest_length > 0; rest_length -= BLOCK_SIZE) {
 	packet.req.header.msgtyp = DEV_REA;

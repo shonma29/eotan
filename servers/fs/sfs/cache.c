@@ -84,9 +84,6 @@ void sfs_init_cache(void)
 #endif
 
     sfs_purge_cache();
-#ifdef notdef
-    sfs_init_bitmap_cache();
-#endif
 }
 
 void sfs_get_cache(W fd, W blockno, W * cn, B ** ptr)
@@ -95,9 +92,6 @@ void sfs_get_cache(W fd, W blockno, W * cn, B ** ptr)
     SFS_BLOCK_CACHE *cp;
 
     if (blockno < 0) {
-#ifdef notdef
-	dbg_printf("[SFS] alloc cache %d %d\n", blockno, cache_head);
-#endif
 	*cn = -1;
 	*ptr = NULL;
 	return;
@@ -108,9 +102,6 @@ void sfs_get_cache(W fd, W blockno, W * cn, B ** ptr)
 	    break;
     }
     if (i < 0) {
-#ifdef notdef
-	dbg_printf("[SFS] alloc cache %d %d\n", blockno, cache_head);
-#endif
 	*cn = cache_head;
 	if (cache_head == -1) {
 	    printk("[SFS] WARNING: no free cache\n");
@@ -120,12 +111,6 @@ void sfs_get_cache(W fd, W blockno, W * cn, B ** ptr)
 
 	cp = &cache_data[cache_head];
 
-#ifdef notdef
-	dbg_printf
-	  ("[SFS] cache over write no=%x:%d to %x:%d, cn=%d/%d dirty = %d\n",
-	   cp->fd, cp->blockno, fd, blockno, cache_head, CACHE_SIZE,
-	   cp->dirty);
-#endif
 	if (cp->dirty) {
 	    sfs_write_block(cp->fd, cp->blockno, SFS_BLOCK_SIZE, cp->buf);
 	    cp->dirty = 0;
@@ -135,15 +120,7 @@ void sfs_get_cache(W fd, W blockno, W * cn, B ** ptr)
 	    /* 既に hash に登録されている場合 */
 	    int hn2;
 	    hn2 = (cp->blockno % HASH_SIZE) + 1;
-#ifdef notdef
-	    dbg_printf("[SFS] change %d: %x %d %x %d\n",
-		   cache_head, cp->fd, cp->blockno, fd, blockno);
-#endif
 	    if (cp->hash_prev == -1) {
-#ifdef notdef
-		if (cache_head != hash_table[hn2])
-		    printk("[SFS]: hash_head error\n");
-#endif
 		hash_table[hn2] = cp->hash_next;
 		if (cp->hash_next != -1) {
 		    cache_data[cp->hash_next].hash_prev = -1;
@@ -170,11 +147,6 @@ void sfs_get_cache(W fd, W blockno, W * cn, B ** ptr)
 	hash_table[hn] = cache_head;
 
 	/* remove from lru chain */
-#ifdef notdef
-	if (cache_head == cp->lru_next) {
-	    dbg_printf("[SFS] cache_head make loop!!\n");
-	}
-#endif
 	if (cache_head == cp->lru_next) {
 	    cache_head = -1;
 	} else {
@@ -185,10 +157,6 @@ void sfs_get_cache(W fd, W blockno, W * cn, B ** ptr)
 	cp->lru_prev = (-1);
 	cp->lru_next = (-1);
     } else {
-#ifdef notdef
-      dbg_printf("[SFS] find cache %x %d %d (%d)\n",
-	     fd, blockno, i, cache_data[i].dirty);
-#endif
 	*cn = i;
 	*ptr = cache_data[i].buf;
 	cp = &cache_data[i];
@@ -259,20 +227,13 @@ void sfs_put_cache(W cn, W dirty)
     if (dirty > 0) {
 	cp->dirty = dirty;
     } else if (dirty < 0) {
-#ifdef notdef
-	if (cp->dirty) {
-	    printk("[SFS] discard cache %d %d", cp->blockno, cn);
-	}
-#endif
 	cp->dirty = 0;
     }
 
     /* append to lru chain */
     if (cp->lru_next != -1) {
-#if 1
 	printk("[SFS] block already back!! %d next %d\n", cn,
 	       cp->lru_next);
-#endif
     } else {
 	if (cache_head == -1) {
 	    cache_head = cn;

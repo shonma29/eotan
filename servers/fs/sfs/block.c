@@ -122,9 +122,6 @@ W sfs_alloc_block(W fd, struct fs * fsp)
 {
     W i, j, k, s;
     B *buf;
-#ifdef notdef
-    int *dirty;
-#endif
     W free_block;
     unsigned char mask;
     W error_no;
@@ -136,13 +133,7 @@ W sfs_alloc_block(W fd, struct fs * fsp)
 
     s = (fsp->fs_bsearch - 1) / (8 * fsp->fs_blksize);
     for (i = s; i < fsp->fs_private.sfs_fs.sfs_bitmapsize; i++) {
-#ifdef notdef
-	if (sfs_alloc_bitmap(fd, i, &buf, &dirty) != E_OK) {
-	    return (-1);
-	}
-#else
 	sfs_get_cache(fd, i + 2, &cn, &buf);
-#endif
 	if (i == s)
 	    j = ((fsp->fs_bsearch - 1) / 8) % fsp->fs_blksize;
 	else
@@ -156,11 +147,7 @@ W sfs_alloc_block(W fd, struct fs * fsp)
 			    + (j * 8)
 			    + k;
 			buf[j] = buf[j] | mask;
-#ifdef notdef
-			*dirty = 1;	/* bitmap の変更通知 */
-#else
 			sfs_put_cache(cn, 1);
-#endif
 
 			fsp->fs_freeblock--;
 			fsp->fs_usedblock++;
@@ -190,10 +177,6 @@ W sfs_free_block(W fd, struct fs * fsp, W blockno)
 {
     W mask;
     int s;
-#ifdef notdef
-    int *dirty;
-    W error_no;
-#endif
     B *buf;
     W cn;
 
@@ -201,31 +184,15 @@ W sfs_free_block(W fd, struct fs * fsp, W blockno)
 	printk("[SFS] sfs_free_block: illegal block # %d\n", blockno);
 	return (EINVAL);
     }
-#if 0
-    else if (blockno == 43936) {
-	printk("[SFS] free block %d\n", blockno);
-    }
-#endif
 
     s = blockno / (8 * fsp->fs_blksize);
-#ifdef notdef
-    error_no = sfs_alloc_bitmap(fd, s, &buf, &dirty);
-    if (error_no) {
-	return (EP_IO);
-    }
-#else
     sfs_get_cache(fd, s + 2, &cn, &buf);
-#endif
     s = (blockno / 8) % fsp->fs_blksize;
 
     mask = 0x01;
     mask = mask << (blockno % 8);
     buf[s] = buf[s] & ((~mask) & 0xff);
-#ifdef notdef
-    *dirty = 1;
-#else
     sfs_put_cache(cn, 1);
-#endif
 
     /* キャッシュに残っているデータを無効にする */
     sfs_check_cache(fd, blockno, &cn);
@@ -252,71 +219,31 @@ W sfs_free_indirect(W fd, struct fs * fsp, struct sfs_inode * ip,
 		    int offset, int inblock)
 {
     int i, j;
-#ifdef notdef
-    struct sfs_indirect inbuf;
-#else
     W cn;
     struct sfs_indirect *inbufp;
-#endif
 
     if (offset != 0) {
-#ifdef notdef
-	sfs_read_block(fd, ip->sfs_i_indirect[inblock], fsp->fs_blksize,
-		       (B *) & inbuf);
-#else
 	sfs_get_cache(fd, ip->sfs_i_indirect[inblock], &cn,
 		      (B **) & inbufp);
-#endif
 	for (i = offset; i < SFS_INDIRECT_BLOCK; ++i) {
-#ifdef notdef
-	    if (inbuf.sfs_in_block[i] > 0) {
-		sfs_free_block(fd, fsp, inbuf.sfs_in_block[i]);
-		inbuf.sfs_in_block[i] = 0;
-	    }
-#else
 	    if (inbufp->sfs_in_block[i] > 0) {
 		sfs_free_block(fd, fsp, inbufp->sfs_in_block[i]);
 		inbufp->sfs_in_block[i] = 0;
 	    }
-#endif
 	}
-#ifdef notdef
-	sfs_write_block(fd, ip->sfs_i_indirect[inblock], fsp->fs_blksize,
-			(B *) & inbuf);
-#else
-	sfs_put_cache(cn, 1);
-#endif
 
+	sfs_put_cache(cn, 1);
 	++inblock;
     }
     for (i = inblock; i < SFS_INDIRECT_BLOCK_ENTRY; ++i) {
 	if (ip->sfs_i_indirect[i] > 0) {
-#ifdef notdef
-	    sfs_read_block(fd, ip->sfs_i_indirect[i], fsp->fs_blksize,
-			   (B *) & inbuf);
-#else
 	    sfs_get_cache(fd, ip->sfs_i_indirect[i], &cn, (B **) & inbufp);
-#endif
-#ifdef notdef
-	    for (j = 0; j < SFS_INDIRECT_BLOCK; ++j) {
-		if (inbuf.sfs_in_block[j] > 0)
-		    sfs_free_block(fd, fsp, inbuf.sfs_in_block[j]);
-	    }
-#else
 	    for (j = 0; j < SFS_INDIRECT_BLOCK; ++j) {
 		if (inbufp->sfs_in_block[j] > 0) {
-#if 0
-		    if (inbufp->sfs_in_block[j] <
-			fsp->fs_private.sfs_fs.sfs_datablock) {
-			printk("[SFS] data in indirect block %d %d %d\n",
-			       i, ip->sfs_i_indirect[i], j);
-		    }
-#endif
 		    sfs_free_block(fd, fsp, inbufp->sfs_in_block[j]);
 		}
 	    }
 	    sfs_put_cache(cn, 0);
-#endif
 	    sfs_free_block(fd, fsp, ip->sfs_i_indirect[i]);
 	}
 	ip->sfs_i_indirect[i] = 0;
@@ -328,70 +255,32 @@ W sfs_free_dindirect(W fd, struct fs * fsp, struct sfs_inode * ip,
 		     int offset, int dinblock, int inblock)
 {
     int i, j;
-#ifdef notdef
-    struct sfs_indirect inbuf, inbuf2;
-#else
     W cn1, cn2;
     struct sfs_indirect *inbufp, *inbufp2;
-#endif
 
     if (ip->sfs_i_dindirect[inblock] <= 0) {
 	return (EOK);
     }
-#ifdef notdef
-    sfs_read_block(fd, ip->sfs_i_dindirect[inblock], fsp->fs_blksize,
-		   (B *) & inbuf);
-#else
+
     sfs_get_cache(fd, ip->sfs_i_dindirect[inblock], &cn1, (B **) & inbufp);
-#endif
+
     if (offset != 0) {
-#ifdef notdef
-	sfs_read_block(fd, inbuf.sfs_in_block[dinblock], fsp->fs_blksize,
-		       (B *) & inbuf2);
-#else
 	sfs_get_cache(fd, inbufp->sfs_in_block[dinblock], &cn2,
 		      (B **) & inbufp2);
-#endif
 	for (i = offset; i < SFS_INDIRECT_BLOCK; ++i) {
-#ifdef notdef
-	    if (inbuf2.sfs_in_block[i] > 0) {
-		sfs_free_block(fd, fsp, inbuf2.sfs_in_block[i]);
-		inbuf2.sfs_in_block[i] = 0;
-	    }
-#else
 	    if (inbufp2->sfs_in_block[i] > 0) {
 		sfs_free_block(fd, fsp, inbufp2->sfs_in_block[i]);
 		inbufp2->sfs_in_block[i] = 0;
 	    }
-#endif
 	}
-#ifdef notdef
-	sfs_write_block(fd, inbuf.sfs_in_block[dinblock], fsp->fs_blksize,
-			(B *) & inbuf2);
-#else
+
 	sfs_put_cache(cn2, 1);
-#endif
 	++dinblock;
     }
     for (i = dinblock; i < SFS_INDIRECT_BLOCK; ++i) {
-#ifdef notdef
-	if (inbuf.sfs_in_block[i] > 0) {
-	    sfs_read_block(fd, inbuf.sfs_in_block[i], fsp->fs_blksize,
-			   (B *) & inbuf2);
-#else
 	if (inbufp->sfs_in_block[i] > 0) {
 	    sfs_get_cache(fd, inbufp->sfs_in_block[i], &cn2,
 			  (B **) & inbufp2);
-#endif
-#ifdef notdef
-	    for (j = 0; j < SFS_INDIRECT_BLOCK; ++j) {
-		if (inbuf2.sfs_in_block[j] > 0)
-		    sfs_free_block(fd, fsp, inbuf2.sfs_in_block[j]);
-	    }
-
-	    sfs_free_block(fd, fsp, inbuf.sfs_in_block[i]);
-	    inbuf.sfs_in_block[i] = 0;
-#else
 	    for (j = 0; j < SFS_INDIRECT_BLOCK; ++j) {
 		if (inbufp2->sfs_in_block[j] > 0)
 		    sfs_free_block(fd, fsp, inbufp2->sfs_in_block[j]);
@@ -400,16 +289,10 @@ W sfs_free_dindirect(W fd, struct fs * fsp, struct sfs_inode * ip,
 	    sfs_free_block(fd, fsp, inbufp->sfs_in_block[i]);
 	    inbufp->sfs_in_block[i] = 0;
 	    sfs_put_cache(cn2, 0);
-#endif
 	}
     }
     if (dinblock > 0) {
-#ifdef notdef
-	sfs_write_block(fd, ip->sfs_i_dindirect[inblock],
-			fsp->fs_blksize, (B *) & inbuf);
-#else
 	sfs_put_cache(cn1, 1);
-#endif
     } else
 	sfs_put_cache(cn1, 0);
     return (EOK);
@@ -472,12 +355,8 @@ sfs_get_indirect_block_num(W fd, struct fs * fsp, struct sfs_inode * ip,
 {
     W inblock;
     W inblock_offset;
-#ifdef notdef
-    struct sfs_indirect inbuf;
-#else
     W cn, bn;
     struct sfs_indirect *inbufp;
-#endif
 
     inblock = (blockno - SFS_DIRECT_BLOCK_ENTRY);
     inblock_offset = inblock % SFS_INDIRECT_BLOCK;
@@ -485,20 +364,11 @@ sfs_get_indirect_block_num(W fd, struct fs * fsp, struct sfs_inode * ip,
     if (ip->sfs_i_indirect[inblock] <= 0) {
 	return (-1);
     }
-#ifdef notdef
-    sfs_read_block(fd, ip->sfs_i_indirect[inblock], fsp->fs_blksize,
-		   (B *) & inbuf);
-#ifdef FMDEBUG
-    printk("get_ind: inblock = %d, offset = %d, blocknum = %d\n",
-	   inblock, inblock_offset, inbuf.sfs_in_block[inblock_offset]);
-#endif
-    return (inbuf.sfs_in_block[inblock_offset]);
-#else
+
     sfs_get_cache(fd, ip->sfs_i_indirect[inblock], &cn, (B **) & inbufp);
     bn = inbufp->sfs_in_block[inblock_offset];
     sfs_put_cache(cn, 0);
     return (bn);
-#endif
 }
 
 
@@ -509,13 +379,8 @@ sfs_get_dindirect_block_num(W fd, struct fs * fsp, struct sfs_inode * ip,
     W dinblock;
     W dinblock_offset;
     W inblock;
-#ifdef notdef
-    struct sfs_indirect inbuf;
-#else
     W cn, bn;
     struct sfs_indirect *inbufp;
-
-#endif
 
     blockno =
 	blockno - (SFS_DIRECT_BLOCK_ENTRY +
@@ -535,38 +400,18 @@ sfs_get_dindirect_block_num(W fd, struct fs * fsp, struct sfs_inode * ip,
     if (ip->sfs_i_dindirect[inblock] <= 0) {
 	return (-1);
     }
-#ifdef notdef
-    sfs_read_block(fd, ip->sfs_i_dindirect[inblock], fsp->fs_blksize,
-		   (B *) & inbuf);
-    if (inbuf.sfs_in_block[dinblock] <= 0) {
-	return (-1);
-    }
-#else
+
     sfs_get_cache(fd, ip->sfs_i_dindirect[inblock], &cn, (B **) & inbufp);
     bn = inbufp->sfs_in_block[dinblock];
     sfs_put_cache(cn, 0);
     if (bn <= 0) {
 	return (-1);
     }
-#endif
 
-#ifdef notdef
-    sfs_read_block(fd, inbuf.sfs_in_block[dinblock], fsp->fs_blksize,
-		   (B *) & inbuf);
-
-#ifdef FMDEBUG
-    printk
-	("get_ind: inblock = %d, dinblock = %d, offset = %d, blocknum = %d\n",
-	 inblock, dinblock, dinblock_offset,
-	 inbuf.sfs_in_block[dinblock_offset]);
-#endif
-    return (inbuf.sfs_in_block[dinblock_offset]);
-#else
     sfs_get_cache(fd, bn, &cn, (B **) & inbufp);
     bn = inbufp->sfs_in_block[dinblock_offset];
     sfs_put_cache(cn, 0);
     return (bn);
-#endif
 }
 
 
@@ -578,11 +423,10 @@ sfs_set_block_num(W fd,
     if (newblock < 0) {
 	return (-1);
     }
-#if 1
     else if (newblock < fsp->fs_private.sfs_fs.sfs_datablock) {
 	printk("[SFS] illegal newblock %d %d\b", blockno, newblock);
     }
-#endif
+
     if (blockno < (SFS_DIRECT_BLOCK_ENTRY)) {
 	/* 直接ブロックの範囲内
 	 */
@@ -620,12 +464,8 @@ sfs_set_indirect_block_num(W fd,
     W inblock;
     W inblock_offset;
     W newinblock;
-#ifdef notdef
-    struct sfs_indirect inbuf;
-#else
     W cn;
     struct sfs_indirect *inbufp;
-#endif
 
     inblock = (blockno - SFS_DIRECT_BLOCK_ENTRY);
     inblock_offset = inblock % SFS_INDIRECT_BLOCK;
@@ -633,30 +473,16 @@ sfs_set_indirect_block_num(W fd,
     if (ip->sfs_i_indirect[inblock] <= 0) {
 	newinblock = sfs_alloc_block(fd, fsp);
 	ip->sfs_i_indirect[inblock] = newinblock;
-#ifdef notdef
-	memset((B*)&inbuf, 0, sizeof(inbuf));
-#else
 	sfs_get_cache(fd, newinblock, &cn, (B **) & inbufp);
 	memset((B*)inbufp, 0, sizeof(struct sfs_indirect));
-#endif
     } else {
-#ifdef notdef
-	sfs_read_block(fd, ip->sfs_i_indirect[inblock], fsp->fs_blksize,
-		       (B *) & inbuf);
-#else
 	sfs_get_cache(fd, ip->sfs_i_indirect[inblock], &cn,
 		      (B **) & inbufp);
-#endif
     }
 
-#ifdef notdef
-    inbuf.sfs_in_block[inblock_offset] = newblock;
-    sfs_write_block(fd, ip->sfs_i_indirect[inblock], fsp->fs_blksize,
-		    (B *) & inbuf);
-#else
     inbufp->sfs_in_block[inblock_offset] = newblock;
     sfs_put_cache(cn, 1);
-#endif
+
     /* inode の書き込みは sfs_i_write() 以上の部分で行われるはず...
        sfs_write_inode (fd, fsp, ip);
      */
@@ -686,14 +512,9 @@ sfs_set_dindirect_block_num(W fd,
     W inblock;
     W newinblock;
     W newdinblock;
-#ifdef notdef
-    struct sfs_indirect inbuf;	/* 一番目の間接ブロックの情報 */
-    struct sfs_indirect dinbuf;	/* 二番目の間接ブロックの情報 */
-#else
     W cn1, cn2;
     struct sfs_indirect *inbufp;	/* 一番目の間接ブロックの情報 */
     struct sfs_indirect *dinbufp;	/* 二番目の間接ブロックの情報 */
-#endif
 
     blockno =
 	blockno - (SFS_DIRECT_BLOCK_ENTRY +
@@ -705,54 +526,18 @@ sfs_set_dindirect_block_num(W fd,
 	SFS_INDIRECT_BLOCK;
     dinblock_offset = blockno % SFS_INDIRECT_BLOCK;
 
-#ifdef notdef
-    memset((VP)&inbuf, 0, sizeof(inbuf));
-    memset((VP)&dinbuf, 0, sizeof(dinbuf));
-#endif
     if (ip->sfs_i_dindirect[inblock] <= 0) {
 	/* 一重目の間接ブロックの更新(アロケート)
 	 */
 	newinblock = sfs_alloc_block(fd, fsp);
 	ip->sfs_i_dindirect[inblock] = newinblock;
-#ifdef notdef
-	memset((B*)&inbuf, 0, sizeof(inbuf));
-#else
 	sfs_get_cache(fd, newinblock, &cn1, (B **) & inbufp);
 	memset((B*)inbufp, 0, sizeof(struct sfs_indirect));
-#endif
     } else {
-#ifdef notdef
-	sfs_read_block(fd, ip->sfs_i_dindirect[inblock], fsp->fs_blksize,
-		       (B *) & inbuf);
-#else
 	sfs_get_cache(fd, ip->sfs_i_dindirect[inblock], &cn1,
 		      (B **) & inbufp);
-#endif
     }
 
-#ifdef notdef
-    if (inbuf.sfs_in_block[dinblock] <= 0) {
-	/* 二番目の間接ブロックの更新
-	 * (アロケート)
-	 */
-	newdinblock = sfs_alloc_block(fd, fsp);
-	inbuf.sfs_in_block[dinblock] = newdinblock;
-	memset((B*)&dinbuf, 0, sizeof(dinbuf));
-    } else {
-	sfs_read_block(fd, inbuf.sfs_in_block[dinblock], fsp->fs_blksize,
-		       (B *) & dinbuf);
-    }
-
-    dinbuf.sfs_in_block[dinblock_offset] = newblock;
-
-    sfs_write_block(fd, ip->sfs_i_dindirect[inblock], fsp->fs_blksize,
-		    (B *) & inbuf);
-    sfs_write_block(fd, inbuf.sfs_in_block[dinblock], fsp->fs_blksize,
-		    (B *) & dinbuf);
-    /* inode の書き込みは sfs_i_write() 以上の部分で行われるはず...
-       sfs_write_inode (fd, fsp, ip);
-     */
-#else
     if (inbufp->sfs_in_block[dinblock] <= 0) {
 	/* 二番目の間接ブロックの更新
 	 * (アロケート)
@@ -771,6 +556,5 @@ sfs_set_dindirect_block_num(W fd,
     dinbufp->sfs_in_block[dinblock_offset] = newblock;
 
     sfs_put_cache(cn2, 1);
-#endif
     return (newblock);
 }

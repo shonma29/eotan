@@ -263,12 +263,7 @@ W sfs_syncfs(struct fs * fsp, W umflag)
 	}
 	fsp->fs_dirty = 0;
     }
-#ifdef notdef
-    error_no = sfs_sync_bitmap(fsp->fs_device);
-    if (error_no) {
-	return (error_no);
-    }
-#endif
+
     error_no = sfs_sync_cache(fsp->fs_device, umflag);
     if (error_no) {
 	return (error_no);

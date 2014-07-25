@@ -108,34 +108,16 @@ W sfs_get_inode_offset(struct fs *fsp, W ino)
 W sfs_read_inode(struct fs *fsp, W ino, struct inode *ip)
 {
     W offset;
-#ifdef notdef
-    W error_no;
-    W rsize;
-#endif
     ID fd;
     W cn;
     B *buf;
 
     fd = fsp->fs_device;
     offset = sfs_get_inode_offset(fsp, ino);
-#ifdef notdef
-    printk
-	("sfs_read_inode: inode number = %d, offset = %d byte, size = %d\n",
-	 ino, offset, sizeof(struct sfs_inode));
-#endif
-#ifdef notdef
-    error_no =
-	sfs_read_device(fd, (B *) & (ip->i_private.sfs_inode), offset,
-			sizeof(struct sfs_inode), &rsize);
-    if (error_no) {
-	return (error_no);
-    }
-#else
     sfs_get_cache(fd, offset / SFS_BLOCK_SIZE, &cn, &buf);
     memcpy((B*)&(ip->i_private.sfs_inode), buf,
 	  sizeof(struct sfs_inode));
     sfs_put_cache(cn, 0);
-#endif
 
     ip->i_index = ip->i_private.sfs_inode.sfs_i_index;
     ip->i_uid = ip->i_private.sfs_inode.sfs_i_uid;
@@ -150,9 +132,6 @@ W sfs_read_inode(struct fs *fsp, W ino, struct inode *ip)
     ip->i_ops = &sfs_iops;
     ip->i_refcount = 1;
     ip->i_lock = 0;
-#if 0
-    ip->i_prev = ip->i_next = NULL;
-#endif
     ip->i_fs = fsp;
     ip->i_device = fsp->fs_device;
     if (ip->i_mode & S_IFCHR) {
@@ -162,10 +141,7 @@ W sfs_read_inode(struct fs *fsp, W ino, struct inode *ip)
     else {
         ip->i_dev =  0;
     }
-#ifdef notdef
-    printk("sfs_read_inode: index = %d mode = %d size = %d\n",
-	   ip->i_index, ip->i_mode, ip->i_size);
-#endif
+
     return (0);
 }
 
@@ -177,14 +153,8 @@ W sfs_alloc_inode(ID fd, struct fs * fsp)
 {
     W i;
     W offset;
-#ifdef notdef
-    struct sfs_inode ipbuf;
-    W error_no;
-    W rsize;
-#else
     struct sfs_inode *ipbufp;
     W cn;
-#endif
 
     if (fsp->fs_freeinode <= 0) {
 	return (0);
@@ -192,35 +162,9 @@ W sfs_alloc_inode(ID fd, struct fs * fsp)
 
     offset = sfs_get_inode_offset(fsp, fsp->fs_isearch);
     for (i = fsp->fs_isearch; i <= fsp->fs_allinode; i++) {
-#ifdef notdef
-	error_no = sfs_read_device(fd, (B *) & ipbuf, offset,
-				sizeof(struct sfs_inode), &rsize);
-	if (error_no) {
-	    return (0);
-	}
-#else
 	sfs_get_cache(fd, offset / SFS_BLOCK_SIZE, &cn, (B **) & ipbufp);
-#endif
-
 
 	offset += sizeof(struct sfs_inode);
-#ifdef notdef
-	if (ipbuf.sfs_i_index != i) {
-	    memset((VP)&ipbuf, 0, sizeof(ipbuf));
-	    ipbuf.sfs_i_index = i;
-	    sfs_write_device(fd,
-			     (B *) & ipbuf,
-			     sfs_get_inode_offset(fsp, ipbuf.sfs_i_index),
-			     sizeof(ipbuf), &rsize);
-	    fsp->fs_freeinode--;
-	    fsp->fs_usedinode++;
-	    fsp->fs_isearch = (i + 1);
-	    fsp->fs_dirty = 1;
-	    /* ここで fs の sync を行う必要があるか? */
-	    sfs_syncfs(fsp, 0);
-	    return (i);
-	}
-#else
 	if (ipbufp->sfs_i_index != i) {
 	    memset((VP)ipbufp, 0, sizeof(struct sfs_inode));
 	    ipbufp->sfs_i_index = i;
@@ -235,7 +179,6 @@ W sfs_alloc_inode(ID fd, struct fs * fsp)
 	} else {
 	    sfs_put_cache(cn, 0);
 	}
-#endif
     }
 
     return (0);
@@ -277,16 +220,6 @@ W sfs_write_inode(W fd, struct fs * fsp, struct sfs_inode * ip)
 	    return (EIO);
 	}
     } else {
-#ifdef notdef
-	error_no = sfs_write_device(fd,
-				 (B *) ip,
-				 sfs_get_inode_offset(fsp,
-						      ip->sfs_i_index),
-				 sizeof(struct sfs_inode), &rlength);
-	if (error_no) {
-	    return (EIO);
-	}
-#else
 	sfs_get_cache(fd,
 		      sfs_get_inode_offset(fsp,
 					   ip->sfs_i_index) /
@@ -295,7 +228,6 @@ W sfs_write_inode(W fd, struct fs * fsp, struct sfs_inode * ip)
 	sfs_put_cache(cn, 1);
 	/* ここで fs の sync を行う必要があるか? */
 	sfs_syncfs(fsp, 0);
-#endif
     }
 
     return (EOK);
@@ -308,31 +240,15 @@ W sfs_write_inode(W fd, struct fs * fsp, struct sfs_inode * ip)
 W sfs_free_inode(struct fs * fsp, struct inode *ip)
 {
     W inode_index;
-#ifdef notdef
-    struct sfs_inode ipbuf;
-    W rlength, error_no;
-#else
     W cn;
     B *buf;
-#endif
 
     inode_index = ip->i_index;
-#ifdef notdef
-    memset((B*)&ipbuf, 0, sizeof(struct sfs_inode));
-    error_no = sfs_write_device(fsp->fs_device,
-			     (B *) & ipbuf,
-			     sfs_get_inode_offset(fsp, inode_index),
-			     sizeof(struct sfs_inode), &rlength);
-    if (error_no) {
-	return (EIO);
-    }
-#else
     sfs_get_cache(fsp->fs_device,
 		  sfs_get_inode_offset(fsp, inode_index) / SFS_BLOCK_SIZE,
 		  &cn, &buf);
     memset(buf, 0, sizeof(struct sfs_inode));
     sfs_put_cache(cn, 1);
-#endif
     ip->i_dirty = 0;
 
     fsp->fs_freeinode++;
