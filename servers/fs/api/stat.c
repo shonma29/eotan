@@ -64,9 +64,6 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
 
 	return (FALSE);
     }
-#ifdef notdef
-    printf("psc_access_f: open file path = %s\n", pathname);
-#endif
     if (*pathname != '/') {
 	error_no = proc_get_cwd(req->procid, &startip);
 	if (error_no) {
@@ -97,9 +94,6 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
 			 req->param.par_open.oflag,
 			 req->param.par_open.mode, &acc, startip, &newip);
     if (error_no) {
-#ifdef notdef
-	printf("open systemcall: Not found entry.\n");
-#endif
 	/* ファイルがオープンできない */
 	put_response(rdvno, error_no, -1, 0);
 	return (FALSE);
@@ -259,11 +253,6 @@ psc_statfs_f (RDVNO rdvno, struct posix_request *req)
       return (FALSE);
     }
 
-#ifdef notdef
-  printf ("result.f_type = 0x%x\n", result.f_type);
-  printf ("result.f_blksize = 0x%x\n", result.f_bsize);
-#endif
-  
   error_no = kcall->region_put(req->caller, req->param.par_statfs.fsp, sizeof (struct statfs), &result);
   if (error_no)
     {

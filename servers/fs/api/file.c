@@ -299,13 +299,6 @@ W psc_lseek_f(RDVNO rdvno, struct posix_request *req)
 	fp->f_offset = fp->f_inode->i_size;
       }
     }
-#ifdef notdef 
-    else if (fp->f_offset > fp->f_inode->i_size) {
-	/* デバイスドライバでない通常のファイルの場合 */
-	/* EOF を越えた読み書きはまだサポートされていない */
-	fp->f_offset = fp->f_inode->i_size;
-    }
-#endif
 
     put_response(rdvno, EOK, fp->f_offset, 0);
 
@@ -346,10 +339,6 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
 
 	return (FALSE);
     }
-#ifdef notdef
-    dbg_printf("psc_open_f: open file path len = %d [%s]\n",
-	       req->param.par_open.pathlen, pathname);
-#endif
     if (*pathname != '/') {
 	error_no = proc_get_cwd(req->procid, &startip);
 	if (error_no) {
@@ -382,19 +371,12 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
 			 req->param.par_open.mode & (~umask),
 			 &acc, startip, &newip);
     if (error_no) {
-#ifdef notdef
-	printf("open systemcall: Not found entry.\n");
-#endif
 	/* ファイルがオープンできない */
 	put_response(rdvno, error_no, -1, 0);
 	return (FALSE);
     }
 
     if ((newip->i_mode & S_IFMT) == S_IFDIR) {
-#ifdef notdef
-	W uid, euid;
-#endif
-
 	/* ファイルは、ディレクトリだった
 	 * エラーとする
 	 */
@@ -402,27 +384,12 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
 	/* root ユーザの場合には、
 	 * 成功でもよい
 	 */
-#ifdef notdef
-	if (proc_get_uid(req->procid, &uid)) {
-	    put_response(rdvno, EINVAL, -1, 0);
-	    return (FALSE);
-	}
-	if (proc_get_uid(req->procid, &euid)) {
-	    put_response(rdvno, EINVAL, -1, 0);
-	    return (FALSE);
-	}
-	if ((uid != 0) && (euid != 0)) {
-	    fs_close_file(newip);
-	    put_response(rdvno, EISDIR, -1, 0);
-	    return (FALSE);
-	}
-#else
 	if (acc.uid != SU_UID) {
 	    fs_close_file(newip);
 	    put_response(rdvno, EACCES, -1, 0);
 	    return (FALSE);
 	}
-#endif
+
 	if (req->param.par_open.oflag != O_RDONLY) {
 	    fs_close_file(newip);
 	    put_response(rdvno, EISDIR, -1, 0);
@@ -647,13 +614,7 @@ W psc_write_f(RDVNO rdvno, struct posix_request *req)
 	     ((rest_length > MAX_BODY_SIZE) ? MAX_BODY_SIZE : rest_length);
 	     j++) {
 	    char print_buffer[2];
-#if 0
-	    print_buffer[0] = buf[j];
-	    print_buffer[1] = '\0';
-	    printk("%s", print_buffer);
-#else
 	    printk("[%x]", buf[j]);
-#endif
 	}
 	printk("\n");
 #endif

@@ -109,13 +109,6 @@ static ER init(void)
 
     p->size = MEMORY_CLICK - sizeof(struct alloc_entry_t);
 
-#ifdef notdef
-    dbg_printf
-	("MEMORY_CLICK(%d) - sizeof (struct alloc_entry_t) (%d) = %d\n",
-	 MEMORY_CLICK, sizeof(struct alloc_entry_t),
-	 MEMORY_CLICK - sizeof(struct alloc_entry_t));
-#endif
-
     p->next = &alloc_list;
     p->before = &alloc_list;
     alloc_list.next = p;
@@ -123,16 +116,6 @@ static ER init(void)
     free_list = &alloc_list;
     pivot = &alloc_list;
 
-#ifdef notdef
-    dbg_printf
-	("init: alloc_list = 0x%x, alloc_list.next = 0x%x, alloc_list.before = 0x%x\n",
-	 &alloc_list, alloc_list.next, alloc_list.before);
-    dbg_printf
-	("init: alloc_list.next->next = 0x%x, alloc_list.next->before = 0x%x\n",
-	 alloc_list.next->next, alloc_list.next->before);
-    dbg_printf("init: p = 0x%x, p->next = 0x%x, p->before = 0x%x\n",
-	       p, p->next, p->before);
-#endif
     return (E_OK);
 }
 
@@ -154,17 +137,10 @@ VP malloc(UW size)
   retry:
     p = pivot;
     do {
-#ifdef notdef
-	dbg_printf("malloc: search freememory: 0x%x, size = %d\n", p,
-		   p->size);
-#endif
 	if (p->size == size) {
 	    pivot = p->next;
 	    p->before->next = p->next;
 	    p->next->before = p->before;
-#ifdef notdef
-	    dbg_printf("malloc: return 0x%x\n", p);
-#endif
 	    return (p->alloc_data);
 	} else if (p->size > (size + sizeof(struct alloc_entry_t))) {
 	    pivot = p->next;
@@ -173,12 +149,6 @@ VP malloc(UW size)
 		((UW) p + (p->size + sizeof(struct alloc_entry_t)));
 	    newmem->size = size;
 	    newmem->before = newmem->next = 0;
-#ifdef notdef
-	    dbg_printf
-		("malloc: return 0x%x(p = 0x%x), p->size = %d, p->size + sizeof (struct alloc_entry_t) = %d\n",
-		 &(p->alloc_data[p->size + sizeof(struct alloc_entry_t)]),
-		 p, p->size, p->size + sizeof(struct alloc_entry_t));
-#endif
 	    return (newmem->alloc_data);
 	}
 	p = p->next;
@@ -230,13 +200,6 @@ void free(VP addr)
 				  &alloc_list : pivot);
 
     for (p = start_point;; p = p->next) {
-#ifdef notdef
-	dbg_printf
-	    ("malloc: free: newentry = 0x%x, (p = 0x%x, p->size = %d, p->size + sizeof (struct alloc_entry_t) = %d, p->end = 0x%x, p->next = 0x%x)\n",
-	     newentry, p, p->size, p->size + sizeof(struct alloc_entry_t),
-	     (UW) p + p->size + sizeof(struct alloc_entry_t), p->next);
-#endif
-
 	/* フリーリストを先頭から辿り、リストに挿入するポイントを決める */
 	/* フリーリストはアドレス順になっており、p のアドレスが追加する */
 	/* 領域の最後よりも大きくなったら、その前に挿入する。 */
@@ -248,16 +211,6 @@ void free(VP addr)
 
 	    if (nextentry == (UW) newentry) {
 		/* 現在のエントリと隣り合っている */
-#ifdef notdef
-		dbg_printf
-		    ("p->size = %d, newentry->size = %d, p->size + newentry->size + sizeof (...) = %d(0x%x)\n",
-		     p->size, newentry->size,
-		     p->size + newentry->size +
-		     sizeof(struct alloc_entry_t),
-		     p->size + newentry->size +
-		     sizeof(struct alloc_entry_t));
-#endif
-
 		p->size += (newentry->size + sizeof(struct alloc_entry_t));
 		if (((UW) p + p->size + sizeof(struct alloc_entry_t)) ==
 		    (UW) p->next) {
@@ -297,10 +250,8 @@ void free(VP addr)
 	    break;
     }				/* for */
 
-#if 1
     /* 該当する部分がなかった */
     dbg_printf("[MALLOC] cannot found insert entry in free list.\n");
-#endif
 }
 
 

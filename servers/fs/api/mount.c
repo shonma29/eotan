@@ -170,10 +170,6 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
     if (error_no == EOK) {
 	put_response(rdvno, EOK, 0, 0);
 	fs_close_file(device);
-#ifdef notdef
-	/* マウントポイントは，umount されるまで使用される */
-	fs_close_file(mountpoint);
-#endif
 	return (TRUE);
     }
 
@@ -261,9 +257,6 @@ W psc_umount_f(RDVNO rdvno, struct posix_request *req)
 	error_no = umount_fs(device);
     }
     if (error_no) {
-#if 0
-        dbg_printf("[PM] umount errno = %d\n", error_no);
-#endif
 	put_response(rdvno, error_no, -1, 0);
 	return (FALSE);
     }

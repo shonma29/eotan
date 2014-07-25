@@ -167,10 +167,6 @@ struct fs_entry {
 
 struct fs fs_buf[MAX_MOUNT], *free_fs = NULL, *rootfs = NULL;
 struct inode inode_buf[MAX_INODE], *free_inode = NULL, *rootfile = NULL;
-#ifdef notdef
-static int use_count = 0;
-#endif
-
 static W mode_map[] = { R_OK, W_OK, R_OK | W_OK };
 
 
@@ -355,22 +351,6 @@ W mount_root(ID device, W fstype, W option)
 
     fs_register_inode(rootfile);
 
-#ifdef notdef
-    {
-	ID pid;
-	get_tid(&pid);
-	dbg_printf("rootfile = 0x%x, PID = %d\n", rootfile, pid);
-	dbg_printf("ROOT FS information:\n");
-	dbg_printf("typeid = %d(0x%x)\n", rootfs->fs_typeid,
-		   rootfs->fs_typeid);
-	dbg_printf("block size = %d\n", rootfs->fs_blksize);
-	dbg_printf("all block number = %d, free block number = %d\n",
-		   rootfs->fs_allblock, rootfs->fs_freeblock);
-	dbg_printf("all inode number = %d, free inode number = %d\n",
-		   rootfs->fs_allinode, rootfs->fs_freeinode);
-    }
-#endif
-
     return (E_OK);
 }
 
@@ -477,9 +457,6 @@ W umount_fs(UW device)
     }
 
     if (fsp->rootdir->i_refcount > 1) {
-#ifdef notdef
-      printk("[PM] dir busy: refcount %d\n", fsp->rootdir->i_refcount);
-#endif
 	return (EBUSY);
     }
 
@@ -488,11 +465,6 @@ W umount_fs(UW device)
 	/* マウントポイント以下のファイル/ディレクトリが使われている
 	 * BUSY のエラーで返す
 	 */
-#ifdef notdef
-      printk("[PM] file busy: inode %d(%d) %d(%d)\n",
-	     ip->i_index, ip->i_refcount,
-	     ip->i_next->i_index, ip->i_next->i_refcount);
-#endif
 	return (EBUSY);
     }
 
@@ -503,11 +475,10 @@ W umount_fs(UW device)
     fsp->mountpoint->coverfile = NULL;
     dealloc_inode(fsp->mountpoint);
     dealloc_inode(fsp->rootdir);
-#if 1
+
     /* 冗長 */
     fsp->mountpoint = NULL;
     fsp->rootdir = NULL;
-#endif
 
     /* FS list から除外 */
     fsp->fs_prev->fs_next = fsp->fs_next;
@@ -680,9 +651,6 @@ fs_lookup(struct inode * startip,
 #endif
 
     if (startip == NULL) {
-#ifdef notdef
-	dbg_printf("fs_lookup: startip address is NULL\n");
-#endif
 	return (ENODEV);
     }
 
@@ -715,15 +683,8 @@ fs_lookup(struct inode * startip,
 	for (i = 0; i < MAX_NAMELEN; i++) {
 	    if ((*path == '/') || (*path == '\0')) {
 		part[i] = '\0';
-#ifdef notdef
-		dbg_printf("[PM] lookup of part: \"%s\"\n", part);
-		dbg_printf("file_lookup():1 %d\n", __LINE__);
-#endif
 		error_no = FILE_LOOKUP(tmpip, part, oflag, mode, acc, newip);
 		if (error_no) {
-#ifdef notdef
-		    dbg_printf("[PM] fs_lookup: not entry.\n");
-#endif
 		    dealloc_inode(tmpip);
 		    return (error_no);
 		}
@@ -950,9 +911,6 @@ W fs_statfs(ID device, struct statfs * result)
 {
     struct fs *p;
 
-#ifdef notdef
-    dbg_printf("statfs: device = %d\n", device);
-#endif
     for (p = rootfs; p != 0; p = p->fs_next) {
 	if (p->fs_device == device) {
 	    result->f_type = p->fs_typeid;
@@ -1151,9 +1109,6 @@ struct inode *alloc_inode(void)
     memset((B*)p, 0, sizeof(struct inode));
     p->i_prev = p->i_next = p;
     p->i_refcount = 1;
-#ifdef notdef
-    dbg_printf("[PM] alloc_inode count = %d\n", ++use_count);
-#endif
     return (p);
 }
 
@@ -1169,9 +1124,6 @@ W dealloc_inode(struct inode * ip)
 	FILE_CLOSE(ip);
 	/* fs の register_list からの取り除き */
 	if (ip->i_next == ip) {
-#if 0
-	    dbg_printf("[PM] register_list become empty!!\n");
-#endif
 	    ip->i_fs->fs_ilist = NULL;
 	} else {
 	    if (ip->i_fs->fs_ilist == ip) {
@@ -1184,10 +1136,6 @@ W dealloc_inode(struct inode * ip)
 	ip->i_next = free_inode;
 	ip->i_prev = NULL;
 	free_inode = ip;
-#ifdef notdef
-	dbg_printf("[PM] dealloc_inode count = %d\n", --use_count);
-	dbg_printf("[PM] dealloc_inode index = %d\n", ip->i_index);
-#endif
     }
     return (EOK);
 }
@@ -1221,9 +1169,7 @@ struct inode *fs_check_inode(struct fs *fsp, W index)
 W fs_register_inode(struct inode * ip)
 {
     struct inode *register_list;
-#ifdef notdef
-    dbg_printf("[PM] register_inode index = %d\n", ip->i_index);
-#endif
+
     if (ip->i_fs->fs_ilist == NULL) {
 	ip->i_next = ip;
 	ip->i_prev = ip;
@@ -1269,10 +1215,7 @@ W permit(struct inode * ip, struct access_info * acc, UW bits)
 	    shift = 0;
 	perm_bits = (mode >> shift) & 0x03;
     }
-#ifdef notdef
-    dbg_printf("[PM] uid = %d, mode = %x, permit %x\n",
-	       acc->uid, mode, perm_bits);
-#endif
+
     if ((perm_bits | bits) != perm_bits)
 	return (EACCES);
     return (EOK);

@@ -53,14 +53,7 @@ W psc_chdir_f(RDVNO rdvno, struct posix_request *req)
 	/* 絶対パスによる指定 */
 	startip = rootfile;
     } else {
-#ifdef notdef
-	if (proc_get_cwd(req->procid, &startip)) {
-	    put_response(rdvno, EINVAL, -1, 0);
-	    return (FALSE);
-	}
-#else
 	startip = oldip;
-#endif
     }
 
 

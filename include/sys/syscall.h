@@ -129,18 +129,8 @@ struct psc_execve
 {
   UW		pathlen;
   B		*name;
-#if 0
-  B		(*argv)[];
-  B		(*envp)[];
-#else
   B		*stackp;
   W		stsize;
-#endif
-
-#if 0
-  FP		start_main;	/* メインタスク用のスタート関数 */
-  FP		start_signal;	/* シグナルタスク用のスタート関数 */
-#endif
 };
 
 
@@ -325,9 +315,6 @@ struct psc_umount
 {
   W	dirnamelen;
   B	*dirname;
-#ifdef notdef
-  W	option;
-#endif
 };
 
 
