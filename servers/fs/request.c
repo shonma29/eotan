@@ -104,7 +104,6 @@ put_response(RDVNO rdvno, W error_no, W status, W ret1)
     ER syserr;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    res.msg_length = sizeof(res);
     res.error_no = error_no;
     res.status = status;
     res.ret1 = ret1;

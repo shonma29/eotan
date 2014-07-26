@@ -38,7 +38,6 @@ _make_connection(W wOperation,
     thread_local_t *local_data = _get_local();
     W rsize;
 
-    req->msg_length = sizeof(struct posix_request);
     req->operation = wOperation;
     req->procid = local_data->process_id;
     req->caller = local_data->thread_id;

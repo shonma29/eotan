@@ -41,7 +41,6 @@ ER bind_device(UW id, UB *name, ID port)
 	if (strlen((char*)name) > MAX_DEVICE_NAME)
 		return E_PAR;
 
-	req.msg_length = sizeof(req);
 	req.operation = PSC_BIND_DEVICE;
 	req.param.par_bind_device.id = id;
 	strcpy((char*)req.param.par_bind_device.name, (char*)name);

@@ -354,7 +354,6 @@ struct posix_request
 {
   ID	caller;			/* 呼び出し元のタスク ID */
   ID	procid;			/* 呼び出し元のプロセス ID */
-  W	msg_length;		/* メッセージの長さ	*/
   W	operation;		/* 要求番号(システムコールに対応)	*/
 
   union {
@@ -392,10 +391,8 @@ struct posix_request
 
 struct posix_response
 {
-  W	msg_length;		/* メッセージの長さ	*/
   W	error_no;			/* エラー番号 */
   W	status;			/* ステータス(リターン値) */
-
   W	ret1;			/* サブに使用するリターン値 */
 };
 
