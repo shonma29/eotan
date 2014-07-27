@@ -24,6 +24,7 @@ Version 2, June 1991
  */
 
 #include <fcntl.h>
+#include <core/options.h>
 #include <nerve/kcall.h>
 #include "fs.h"
 
@@ -52,8 +53,9 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
     struct inode *mountpoint, *device;
     struct access_info acc;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
+    ID caller = get_rdv_tid(rdvno);
 
-    error_no = kcall->region_get(req->caller,
+    error_no = kcall->region_get(caller,
 		     req->param.par_mount.devname,
 		     req->param.par_mount.devnamelen + 1, devname);
     if (error_no) {
@@ -65,7 +67,7 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
 
 	return (FALSE);
     }
-    error_no = kcall->region_get(req->caller,
+    error_no = kcall->region_get(caller,
 		     req->param.par_mount.dirname,
 		     req->param.par_mount.dirnamelen + 1, dirname);
 
@@ -79,7 +81,7 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
 	return (FALSE);
     }
 
-    error_no = kcall->region_get(req->caller,
+    error_no = kcall->region_get(caller,
 		     req->param.par_mount.fstype,
 		     req->param.par_mount.fstypelen + 1, fstype);
     if (error_no) {
@@ -189,7 +191,7 @@ W psc_umount_f(RDVNO rdvno, struct posix_request *req)
     struct access_info acc;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    error_no = kcall->region_get(req->caller,
+    error_no = kcall->region_get(get_rdv_tid(rdvno),
 		     req->param.par_umount.dirname,
 		     req->param.par_umount.dirnamelen + 1, dirname);
 

@@ -126,7 +126,6 @@ static ER kill(const int pid)
 	ER_UINT rsize;
 	struct posix_request req;
 
-	req.caller = thread_get_id();
 	//TODO define special process id
 	req.procid = -1;
 	req.operation = PSC_KILL;

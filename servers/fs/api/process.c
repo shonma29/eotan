@@ -19,6 +19,7 @@ Version 2, June 1991
 #include <thread.h>
 #include <mm/segment.h>
 #include <boot/init.h>
+#include <core/options.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
@@ -40,7 +41,7 @@ W psc_exec_f(RDVNO rdvno, struct posix_request *req)
 
     /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。
      */
-    error_no = kcall->region_get(req->caller, req->param.par_execve.name,
+    error_no = kcall->region_get(get_rdv_tid(rdvno), req->param.par_execve.name,
 		     req->param.par_execve.pathlen + 1, pathname);
     if (error_no) {
 	/* パス名のコピーエラー */
@@ -133,7 +134,7 @@ psc_exit_f (RDVNO rdvno, struct posix_request *req)
     /* 子プロセスが ZOMBIE で INIT が wait していれば クリアする? */
   }
 
-  tskid = req->caller,
+  tskid = get_rdv_tid(rdvno);
   kcall->thread_terminate(tskid);
   kcall->thread_destroy(tskid);
 
@@ -265,7 +266,7 @@ W psc_kill_f(RDVNO rdvno, struct posix_request *req)
     kcall->thread_terminate(myprocp->proc_maintask);
     kcall->thread_destroy(myprocp->proc_maintask);
 
-    if (req->caller != myprocp->proc_maintask) {
+    if (get_rdv_tid(rdvno) != myprocp->proc_maintask) {
 	put_response(rdvno, EOK, 0, 0);
     }
     return (TRUE);

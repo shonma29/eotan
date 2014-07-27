@@ -24,6 +24,7 @@ Version 2, June 1991
  */
 
 #include <fcntl.h>
+#include <core/options.h>
 #include <nerve/kcall.h>
 #include "fs.h"
 
@@ -37,7 +38,7 @@ W psc_chdir_f(RDVNO rdvno, struct posix_request *req)
     W err;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    if (kcall->region_get(req->caller, req->param.par_chmod.path,
+    if (kcall->region_get(get_rdv_tid(rdvno), req->param.par_chmod.path,
 		 req->param.par_chmod.pathlen + 1, path)) {
 	put_response(rdvno, EINVAL, -1, 0);
 	return (FALSE);

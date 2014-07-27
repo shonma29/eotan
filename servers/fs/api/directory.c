@@ -18,6 +18,7 @@ Version 2, June 1991
  *
  */
 
+#include <core/options.h>
 #include <nerve/kcall.h>
 #include "fs.h"
 
@@ -54,7 +55,7 @@ W psc_getdents_f(RDVNO rdvno, struct posix_request *req)
 	return (FALSE);
     }
 
-    error_no = fs_getdents(fp->f_inode, req->caller, fp->f_offset,
+    error_no = fs_getdents(fp->f_inode, get_rdv_tid(rdvno), fp->f_offset,
 			req->param.par_getdents.buf,
 			req->param.par_getdents.length, &len, &flen);
 
@@ -73,8 +74,9 @@ W psc_link_f(RDVNO rdvno, struct posix_request *req)
     struct access_info acc;
     W error_no;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
+    ID caller = get_rdv_tid(rdvno);
 
-    error_no = kcall->region_get(req->caller, req->param.par_link.src,
+    error_no = kcall->region_get(caller, req->param.par_link.src,
 		     req->param.par_link.srclen + 1, src);
     if (error_no) {
 	/* パス名のコピーエラー */
@@ -85,7 +87,7 @@ W psc_link_f(RDVNO rdvno, struct posix_request *req)
 
 	return (FALSE);
     }
-    error_no = kcall->region_get(req->caller, req->param.par_link.dst,
+    error_no = kcall->region_get(caller, req->param.par_link.dst,
 		     req->param.par_link.dstlen + 1, dst);
     if (error_no) {
 	/* パス名のコピーエラー */
@@ -143,7 +145,7 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
       return (FALSE);
     }
 
-  error_no = kcall->region_get(req->caller, req->param.par_mkdir.path,
+  error_no = kcall->region_get(get_rdv_tid(rdvno), req->param.par_mkdir.path,
 		    req->param.par_mkdir.pathlen + 1, pathname);
   if (error_no)
     {
@@ -217,7 +219,7 @@ psc_rmdir_f (RDVNO rdvno, struct posix_request *req)
   struct access_info	acc;
   kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-  error_no = kcall->region_get(req->caller, req->param.par_rmdir.path,
+  error_no = kcall->region_get(get_rdv_tid(rdvno), req->param.par_rmdir.path,
 		    req->param.par_rmdir.pathlen + 1, pathname);
   if (error_no)
     {
@@ -293,7 +295,7 @@ psc_unlink_f (RDVNO rdvno, struct posix_request *req)
    * 呼び出し元のタスク ID は、メッセージパラメータの
    * 中に入っている。
    */
-  error_no = kcall->region_get(req->caller,
+  error_no = kcall->region_get(get_rdv_tid(rdvno),
 		    req->param.par_unlink.path,
 		    req->param.par_unlink.pathlen + 1,
 		    pathname);

@@ -40,7 +40,6 @@ _make_connection(W wOperation,
 
     req->operation = wOperation;
     req->procid = local_data->process_id;
-    req->caller = local_data->thread_id;
     rsize = cal_por(PORT_FS, 0xffffffff, req, sizeof(struct posix_request));
 
     if (rsize < 0) {

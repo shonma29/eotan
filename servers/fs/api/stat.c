@@ -26,6 +26,7 @@ Version 2, June 1991
 #include <fcntl.h>
 #include <string.h>
 #include <utime.h>
+#include <core/options.h>
 #include <mpu/memory.h>
 #include <nerve/kcall.h>
 #include "fs.h"
@@ -53,7 +54,7 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
     /* パス名をユーザプロセスから POSIX サーバにコピーする。
      */
     error_no =
-	kcall->region_get(req->caller, req->param.par_access.path,
+	kcall->region_get(get_rdv_tid(rdvno), req->param.par_access.path,
 		 req->param.par_access.pathlen, pathname);
     if (error_no) {
 	/* パス名のコピーエラー */
@@ -136,7 +137,7 @@ W psc_chmod_f(RDVNO rdvno, struct posix_request *req)
     W err;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    if (kcall->region_get(req->caller, req->param.par_chmod.path,
+    if (kcall->region_get(get_rdv_tid(rdvno), req->param.par_chmod.path,
 		 req->param.par_chmod.pathlen + 1, path)) {
 	put_response(rdvno, EINVAL, -1, 0);
 	return (FALSE);
@@ -227,7 +228,7 @@ W psc_fstat_f(RDVNO rdvno, struct posix_request *req)
     st.st_ctime = fp->f_inode->i_ctime;
 
     error_no =
-	kcall->region_put(req->caller, req->param.par_fstat.st, sizeof(struct stat),
+	kcall->region_put(get_rdv_tid(rdvno), req->param.par_fstat.st, sizeof(struct stat),
 		 &st);
     if (error_no) {
 	put_response(rdvno, EINVAL, 0, 0);
@@ -253,7 +254,7 @@ psc_statfs_f (RDVNO rdvno, struct posix_request *req)
       return (FALSE);
     }
 
-  error_no = kcall->region_put(req->caller, req->param.par_statfs.fsp, sizeof (struct statfs), &result);
+  error_no = kcall->region_put(get_rdv_tid(rdvno), req->param.par_statfs.fsp, sizeof (struct statfs), &result);
   if (error_no)
     {
       put_response (rdvno, EFAULT, -1, 0);

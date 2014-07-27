@@ -26,13 +26,14 @@ Version 2, June 1991
 #include <device.h>
 #include <fcntl.h>
 #include <string.h>
+#include <core/options.h>
 #include <nerve/kcall.h>
 #include "fs.h"
 
 extern W sfs_open_device(ID device, W * rsize);
 extern W sfs_read_device(ID device, B * buf, W start, W length, W * rlength);
 
-static W control_device(ID device, struct posix_request *preq);
+static W control_device(ID device, struct posix_request *preq, ID caller);
 
 W psc_close_f(RDVNO rdvno, struct posix_request *req)
 {
@@ -173,7 +174,7 @@ psc_dup2_f (RDVNO rdvno, struct posix_request *req)
 /* ctl_device - デバイスにコントロールメッセージを送る
  *
  */
-static W control_device(ID device, struct posix_request *preq)
+static W control_device(ID device, struct posix_request *preq, ID caller)
 {
     devmsg_t packet;
     W error_no;
@@ -199,7 +200,7 @@ static W control_device(ID device, struct posix_request *preq)
 	*p = (W) preq->param.par_fcntl.arg;
 	packet.req.body.ctl_req.len = sizeof(W);
     } else {
-	error_no = kcall->region_get(preq->caller, preq->param.par_fcntl.arg,
+	error_no = kcall->region_get(caller, preq->param.par_fcntl.arg,
 			 packet.req.body.ctl_req.len,
 			 packet.req.body.ctl_req.param);
 	if (error_no) {
@@ -244,7 +245,7 @@ W psc_fcntl_f(RDVNO rdvno, struct posix_request * req)
 
 	/* send message to the device.
 	 */
-	error_no = control_device(device, req);
+	error_no = control_device(device, req, get_rdv_tid(rdvno));
 	if (error_no) {
 	    put_response(rdvno, error_no, error_no, 0);
 	    return (FALSE);
@@ -328,7 +329,7 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
 
     /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。
      */
-    error_no = kcall->region_get(req->caller, req->param.par_open.path,
+    error_no = kcall->region_get(get_rdv_tid(rdvno), req->param.par_open.path,
 		     req->param.par_open.pathlen + 1, pathname);
     if (error_no) {
 	/* パス名のコピーエラー */
@@ -431,6 +432,7 @@ W psc_read_f(RDVNO rdvno, struct posix_request *req)
     W i, len;
     static B buf[MAX_BODY_SIZE];
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
+    ID caller = get_rdv_tid(rdvno);
 
     error_no = proc_get_file(req->procid, req->param.par_read.fileid, &fp);
     if (error_no) {
@@ -478,7 +480,7 @@ W psc_read_f(RDVNO rdvno, struct posix_request *req)
 		break;
 
 	    /* 呼び出したプロセスのバッファへの書き込み */
-	    error_no = kcall->region_put(req->caller, req->param.par_read.buf + i,
+	    error_no = kcall->region_put(caller, req->param.par_read.buf + i,
 			rlength, buf);
 	    if (error_no || (rlength < len)) {
 		i += rlength;
@@ -516,7 +518,7 @@ W psc_read_f(RDVNO rdvno, struct posix_request *req)
 	}
 
 	/* 呼び出したプロセスのバッファへの書き込み */
-	error_no = kcall->region_put(req->caller, req->param.par_read.buf + i,
+	error_no = kcall->region_put(caller, req->param.par_read.buf + i,
 			 rlength, buf);
 	if (error_no || (rlength < len)) {
 	    i += rlength;
@@ -604,7 +606,7 @@ W psc_write_f(RDVNO rdvno, struct posix_request *req)
 #endif
 	len = rest_length > MAX_BODY_SIZE ? MAX_BODY_SIZE : rest_length;
 	error_no =
-	    kcall->region_get(req->caller, req->param.par_write.buf + i, len, buf);
+	    kcall->region_get(get_rdv_tid(rdvno), req->param.par_write.buf + i, len, buf);
 	if (error_no)
 	    break;
 #ifdef DEBUG

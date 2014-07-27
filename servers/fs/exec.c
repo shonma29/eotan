@@ -82,6 +82,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     Elf32_Addr entry;
     struct proc *procp;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
+    ID caller;
 
     /* プロセスの情報の取りだし */
     error_no = proc_get_procp(procid, &procp);
@@ -132,27 +133,27 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 	}
 
 	/* タスクの context.eip を elf_header.e_entry に設定する */
-	req->caller = process_set_context(procid,
+	caller = process_set_context(procid,
 		entry,
 		req->param.par_execve.stackp,
 		req->param.par_execve.stsize);
 
-	if (req->caller < 0) {
+	if (caller < 0) {
 	    error_no = ECONNREFUSED;
 	    break;
 	}
 
-	procp->proc_maintask = req->caller;
+	procp->proc_maintask = caller;
 
 	/* テキスト領域をメモリに入れる
 	 */
-	error_no = load_segment(procid, ip, &text, req->caller);
+	error_no = load_segment(procid, ip, &text, caller);
 	if (error_no)
 	    break;
 
 	/* データ領域をメモリに入れる
 	 */
-	error_no = load_segment(procid, ip, &data, req->caller);
+	error_no = load_segment(procid, ip, &data, caller);
 
     } while (false);
 
@@ -163,11 +164,11 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     }
 
     if (procid == INIT_PID)
-	set_local(procid, req->caller);
+	set_local(procid, caller);
     else
-	error_no = kcall->region_put(req->caller,
+	error_no = kcall->region_put(caller,
 		&(((thread_local_t*)LOCAL_ADDR)->thread_id),
-		sizeof(req->caller), &(req->caller));
+		sizeof(caller), &(caller));
 
     if (error_no) {
 	return (error_no);
@@ -176,7 +177,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     strncpy(procp->proc_name, pathname, PROC_NAME_LEN - 1);
     procp->proc_name[PROC_NAME_LEN - 1] = '\0';
 
-    kcall->thread_start(req->caller);
+    kcall->thread_start(caller);
     return E_OK;
 }
 

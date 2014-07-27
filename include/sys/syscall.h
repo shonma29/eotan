@@ -352,7 +352,6 @@ struct psc_bind_device
 /* POSIX マネージャへの要求メッセージの構造体 */
 struct posix_request
 {
-  ID	caller;			/* 呼び出し元のタスク ID */
   ID	procid;			/* 呼び出し元のプロセス ID */
   W	operation;		/* 要求番号(システムコールに対応)	*/
 
