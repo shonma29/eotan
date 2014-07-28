@@ -169,10 +169,14 @@ int main(int argc, char **argv, char **env)
 
 		parse();
 		if (array[0]) {
-			if (strcmp(array[0], "exit"))
-				execute(env);
-			else
+			if (!strcmp(array[0], "cd")) {
+				if (chdir(array[1]? array[1]:"/"))
+					printf("chdir error=%d\n", errno);
+
+			} else if (!strcmp(array[0], "exit"))
 				break;
+			else
+				execute(env);
 		}
 	}
 

@@ -24,16 +24,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <local.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
-#define MAX_CWD (1024)
 #define MSG_MEMORY "memory exhausted\n"
 
 
 int main(int argc, char **argv) {
-	size_t size = MAX_CWD;
+	size_t size = MAX_CWD + 1;
 	char *q = NULL;
 
 	//TODO parse option -L (use environment variable PWD. BSD default)
@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
 			return EXIT_FAILURE;
 		}
 
-		q = getcwd(p, sizeof(size));
+		q = getcwd(p, size);
 
 		if (q) {
 			puts(q);
