@@ -104,7 +104,7 @@ void sfs_get_cache(W fd, W blockno, W * cn, B ** ptr)
     if (i < 0) {
 	*cn = cache_head;
 	if (cache_head == -1) {
-	    printk("[SFS] WARNING: no free cache\n");
+	    dbg_printf("sfs: WARNING: no free cache\n");
 	    *ptr = NULL;
 	    return;
 	}
@@ -219,7 +219,7 @@ void sfs_put_cache(W cn, W dirty)
     SFS_BLOCK_CACHE *cp;
 
     if (cn < 0) {
-	printk("[SFS] WARNING: negative cache number\n");
+	dbg_printf("sfs: WARNING: negative cache number\n");
 	return;
     }
 
@@ -232,7 +232,7 @@ void sfs_put_cache(W cn, W dirty)
 
     /* append to lru chain */
     if (cp->lru_next != -1) {
-	printk("[SFS] block already back!! %d next %d\n", cn,
+	dbg_printf("sfs: block already back!! %d next %d\n", cn,
 	       cp->lru_next);
     } else {
 	if (cache_head == -1) {
@@ -262,7 +262,7 @@ W sfs_sync_cache(W fd, W umflag)
 		    sfs_write_block(fd, cp->blockno, SFS_BLOCK_SIZE,
 				    cp->buf);
 		if (error_no < 0) {
-		    printk("[SFS] sync_cache write error\n");
+		    dbg_printf("sfs: sync_cache write error\n");
 		    return (error_no);
 		}
 		cp->dirty = 0;

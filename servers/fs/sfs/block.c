@@ -80,8 +80,8 @@ W sfs_read_block(ID device, W blockno, W blocksize, B * buf)
     W error_no;
 
 #ifdef FMDEBUG
-    printk
-	("sfs_read_block: device = %d, blockno = %d, blocksize = %d, buf = 0x%x\n",
+    dbg_printf
+	("sfs: sfs_read_block: device = %d, blockno = %d, blocksize = %d, buf = 0x%x\n",
 	 device, blockno, blocksize, buf);
 #endif
 
@@ -181,7 +181,7 @@ W sfs_free_block(W fd, struct fs * fsp, W blockno)
     W cn;
 
     if (blockno < fsp->fs_private.sfs_fs.sfs_datablock) {
-	printk("[SFS] sfs_free_block: illegal block # %d\n", blockno);
+	dbg_printf("sfs: sfs_free_block: illegal block # %d\n", blockno);
 	return (EINVAL);
     }
 
@@ -393,8 +393,8 @@ sfs_get_dindirect_block_num(W fd, struct fs * fsp, struct sfs_inode * ip,
     dinblock_offset = blockno % SFS_INDIRECT_BLOCK;
 
 #ifdef FMDEBUG
-    printk
-	("GET: blockno = %d, inblock = %d, dinblock = %d, dinblock_offset = %d\n",
+    dbg_printf
+	("sfs: GET: blockno = %d, inblock = %d, dinblock = %d, dinblock_offset = %d\n",
 	 blockno, inblock, dinblock, dinblock_offset);
 #endif
     if (ip->sfs_i_dindirect[inblock] <= 0) {
@@ -424,7 +424,7 @@ sfs_set_block_num(W fd,
 	return (-1);
     }
     else if (newblock < fsp->fs_private.sfs_fs.sfs_datablock) {
-	printk("[SFS] illegal newblock %d %d\b", blockno, newblock);
+	dbg_printf("sfs: illegal newblock %d %d\b", blockno, newblock);
     }
 
     if (blockno < (SFS_DIRECT_BLOCK_ENTRY)) {
@@ -489,8 +489,8 @@ sfs_set_indirect_block_num(W fd,
 
 #ifdef FMDEBUG
     if (blockno == 440)
-	printk
-	    ("set_ind: blockno = %d cache = %d inblock = %d, offset = %d, newblock = %d\n",
+	dbg_printf
+	    ("sfs: set_ind: blockno = %d cache = %d inblock = %d, offset = %d, newblock = %d\n",
 	     ip->sfs_i_indirect[inblock], cn, inblock, inblock_offset,
 	     newblock);
 #endif

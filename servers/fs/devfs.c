@@ -70,7 +70,7 @@ int device_init(void)
 	hash = hash_create(MAX_DEVICE, calc_hash, compare);
 
 	if (!hash) {
-		dbg_printf("[FS] cannot create hash\n");
+		dbg_printf("fs: cannot create hash\n");
 		return FALSE;
 	}
 
@@ -102,7 +102,7 @@ W psc_bind_device_f(RDVNO rdvno, struct posix_request *req)
 		return FALSE;
 	}
 
-	dbg_printf("[FS] bind(%x, %s, %d)\n", id, name, port);
+	dbg_printf("fs: bind(%x, %s, %d)\n", id, name, port);
 	table[num_device].id = id;
 	strcpy((char*)(table[num_device].name), (char*)name);
 	table[num_device].port = port;
@@ -118,10 +118,10 @@ W psc_bind_device_f(RDVNO rdvno, struct posix_request *req)
 
 		if (id == sysinfo->root.device) {
 			if (mount_root(id, sysinfo->root.fstype, 0)) {
-				dbg_printf("[FS] mount_root(%x, %d) failed\n",
+				dbg_printf("fs: mount_root(%x, %d) failed\n",
 						id, sysinfo->root.fstype);
 			} else {
-				dbg_printf("[FS] mount_root(%x, %d) succeeded\n",
+				dbg_printf("fs: mount_root(%x, %d) succeeded\n",
 						id, sysinfo->root.fstype);
 				exec_init(INIT_PID, INIT_PATH_NAME);
 			}

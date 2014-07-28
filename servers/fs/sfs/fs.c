@@ -146,16 +146,16 @@ W sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 			sizeof(struct sfs_superblock), &rlength);
     if (error_no) {
 #ifdef FMDEBUG
-	printk("Cannot read from device.\n");
+	dbg_printf("sfs: Cannot read from device.\n");
 #endif
 	return (EIO);
     }
 #ifdef FMDEBUG
-    dbg_printf("rootfsp = 0x%x\n", rootfsp);
+    dbg_printf("sfs: rootfsp = 0x%x\n", rootfsp);
 #endif
 
     if (sfs_sb.sfs_magic != SFS_MAGIC) {
-	printk("ERROR: mount: magic number %x\n", sfs_sb.sfs_magic);
+	dbg_printf("sfs: ERROR: mount: magic number %x\n", sfs_sb.sfs_magic);
 	return (EINVAL);
     }
 
@@ -175,10 +175,10 @@ W sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 #ifdef FMDEBUG
     /* ファイルシステム情報の出力 ; for FMDEBUG
      */
-    dbg_printf("sfs_sb: blocksize = %d\n", rootfsp->fs_blksize);
-    dbg_printf("sfs_sb: allblock  = %d\n", rootfsp->fs_allblock);
-    dbg_printf("sfs_sb: allinode  = %d\n", rootfsp->fs_allinode);
-    dbg_printf("sfs_sb: version  = %d.%d\n",
+    dbg_printf("sfs: sfs_sb: blocksize = %d\n", rootfsp->fs_blksize);
+    dbg_printf("sfs: sfs_sb: allblock  = %d\n", rootfsp->fs_allblock);
+    dbg_printf("sfs: sfs_sb: allinode  = %d\n", rootfsp->fs_allinode);
+    dbg_printf("sfs: sfs_sb: version  = %d.%d\n",
 	       rootfsp->fs_private.sfs_fs.sfs_version_hi,
 	       rootfsp->fs_private.sfs_fs.sfs_version_lo);
 #endif
@@ -189,16 +189,16 @@ W sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 
     if (error_no) {
 #ifdef FMDEBUG
-	printk("sfs_mount: error = %d\n", error_no);
+	dbg_printf("sfs: sfs_mount: error = %d\n", error_no);
 #endif
 	return (error_no);
     }
 #ifdef FMDEBUG
-    dbg_printf("root file inode:\n");
-    /* dbg_printf("  UID/GID: %d/%d\n", rootfile->i_uid, rootfile->i_gid); */
-    dbg_printf("device = %x, index: %d\n",
+    dbg_printf("sfs: root file inode:\n");
+    /* dbg_printf("sfs:  UID/GID: %d/%d\n", rootfile->i_uid, rootfile->i_gid); */
+    dbg_printf("sfs: device = %x, index: %d\n",
 	       rootfile->i_device, rootfile->i_index);
-    dbg_printf("size:  %d bytes\n", rootfile->i_size);
+    dbg_printf("sfs: size:  %d bytes\n", rootfile->i_size);
 #endif
 
     return (EOK);

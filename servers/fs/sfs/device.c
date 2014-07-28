@@ -57,7 +57,7 @@ W sfs_write_device(ID device, B * buf, W start, W length, W * rlength)
     memcpy(packet.req.body.wri_req.dt, buf, length);
     rsize = kcall->port_call(send_port, &packet, sizeof(packet.req));
     if (rsize < 0) {
-	dbg_printf("cal_por error = %d\n", rsize);	/* */
+	dbg_printf("sfs: cal_por error = %d\n", rsize);	/* */
 	return (ENODEV);
     }
 
@@ -93,12 +93,12 @@ W sfs_read_device(ID device, B * buf, W start, W length, W * rlength)
 	    = (BLOCK_SIZE > rest_length) ? rest_length : BLOCK_SIZE;
 	rsize = kcall->port_call(send_port, &packet, sizeof(packet.req));
 	if (rsize < 0) {
-	    dbg_printf("cal_por error = %d\n", rsize);	/* */
+	    dbg_printf("sfs: cal_por error = %d\n", rsize);	/* */
 	    return (error_no);
 	}
 
 	if (packet.res.body.rea_res.errinfo != E_OK) {
-	    dbg_printf("[FS] sfs_read_device errinfo = %d\n",
+	    dbg_printf("sfs: sfs_read_device errinfo = %d\n",
 		    packet.res.body.rea_res.errinfo);
 	    return (packet.res.body.rea_res.errinfo);
 	}
@@ -133,7 +133,7 @@ W sfs_open_device(ID device, W * rsize)
     packet.req.body.opn_req.dd = dd;
     rlength = kcall->port_call(send_port, &packet, sizeof(packet.req));
     if (rlength < 0) {
-	dbg_printf("cal_por error = %d\n", rsize);	/* */
+	dbg_printf("sfs: cal_por error = %d\n", rsize);	/* */
 	return (ENODEV);
     }
 
@@ -163,7 +163,7 @@ W sfs_close_device(ID device)
     packet.req.body.cls_req.dd = dd;
     rsize = kcall->port_call(send_port, &packet, sizeof(packet.req));
     if (rsize < 0) {
-	dbg_printf("cal_por error = %d\n", rsize);	/* */
+	dbg_printf("sfs: cal_por error = %d\n", rsize);	/* */
 	return (ENODEV);
     }
 

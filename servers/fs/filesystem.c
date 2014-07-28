@@ -369,7 +369,7 @@ mount_fs(struct inode * deviceip,
     W device, err;
 
 #ifdef FMDEBUG
-    dbg_printf("[PM] MOUNT: device = 0x%x, fstype = %s, option = %d\n",
+    dbg_printf("fs: MOUNT: device = 0x%x, fstype = %s, option = %d\n",
 	       deviceip->i_dev, fstype, option);
 #endif
     for (fs_num = 1; fs_num <= MAXFS; ++fs_num) {
@@ -534,7 +534,7 @@ fs_open_file(B * path,
     error_no = fs_lookup(startip, path, oflag, mode, acc, newip);
     if (error_no) {
 #ifdef FMDEBUG
-	dbg_printf("[PM] Cannot lookup -> return from fs_open_file ().\n");
+	dbg_printf("fs: Cannot lookup -> return from fs_open_file ().\n");
 #endif
 	return (error_no);
     }
@@ -647,7 +647,7 @@ fs_lookup(struct inode * startip,
     W error_no;
 
 #ifdef FMDEBUG
-    dbg_printf("[PM] fs_lookup(): start (path = \"%s\")\n", path);
+    dbg_printf("fs: fs_lookup(): start (path = \"%s\")\n", path);
 #endif
 
     if (startip == NULL) {

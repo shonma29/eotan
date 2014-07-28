@@ -497,8 +497,8 @@ W psc_read_f(RDVNO rdvno, struct posix_request *req)
 	return (TRUE);
     }
 #ifdef DEBUG
-    printk
-	("posix:read: inode = 0x%x, offset = %d, buf = 0x%x, length = %d\n",
+    dbg_printf
+	("fs: read: inode = 0x%x, offset = %d, buf = 0x%x, length = %d\n",
 	 fp->f_inode, fp->f_offset, req->param.par_read.buf,
 	 req->param.par_read.length);
 #endif
@@ -570,8 +570,8 @@ W psc_write_f(RDVNO rdvno, struct posix_request *req)
 	return (FALSE);
     }
 #ifdef debug
-    printk
-	("posix:write: inode = 0x%x, offset = %d, buf = 0x%x, length = %d\n",
+    dbg_printf
+	("fs: write: inode = 0x%x, offset = %d, buf = 0x%x, length = %d\n",
 	 fp->f_inode, fp->f_offset, req->param.par_write.buf,
 	 req->param.par_read.length);
 #endif
@@ -598,8 +598,8 @@ W psc_write_f(RDVNO rdvno, struct posix_request *req)
     for (i = 0, rest_length = req->param.par_write.length;
 	 rest_length > 0; rest_length -= rlength, i += rlength) {
 #ifdef DEBUG
-	printk
-	    ("vget_reg (caller = %d, src addr = 0x%x, size = %d, dst = 0x%x\n",
+	dbg_printf
+	    ("fs: vget_reg (caller = %d, src addr = 0x%x, size = %d, dst = 0x%x\n",
 	     req->caller, req->param.par_write.buf + i,
 	     rest_length > MAX_BODY_SIZE ? MAX_BODY_SIZE : rest_length,
 	     buf);
@@ -610,15 +610,15 @@ W psc_write_f(RDVNO rdvno, struct posix_request *req)
 	if (error_no)
 	    break;
 #ifdef DEBUG
-	printk("writedata length = %d\n", len);
+	dbg_printf("fs: writedata length = %d\n", len);
 	for (j = 0;
 	     j <
 	     ((rest_length > MAX_BODY_SIZE) ? MAX_BODY_SIZE : rest_length);
 	     j++) {
 	    char print_buffer[2];
-	    printk("[%x]", buf[j]);
+	    dbg_printf("fs: [%x]", buf[j]);
 	}
-	printk("\n");
+	dbg_printf("\n");
 #endif
 
 	error_no = fs_write_file(fp->f_inode,

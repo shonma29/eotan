@@ -79,7 +79,7 @@ sfs_read_dir (struct inode *parentp,
   W	rsize;
 
 #ifdef FMDEBUG
-  printk ("sfs_read_dir: start. parent = 0x%x, nentry = %d\n", parentp, nentry);
+  dbg_printf ("sfs: sfs_read_dir: start. parent = 0x%x, nentry = %d\n", parentp, nentry);
 #endif
 
   if ((nentry <= 0) || (dirp == NULL))

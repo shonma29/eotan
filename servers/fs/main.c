@@ -116,7 +116,7 @@ void start(VP_INT exinf)
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     if (init_port() == FALSE) {
-	dbg_printf("[FS] Cannot allocate port.\n");
+	dbg_printf("fs: Cannot allocate port.\n");
 	kcall->thread_end_and_destroy();
 	return;
     }
@@ -176,5 +176,5 @@ void start(VP_INT exinf)
 
 static void banner(void)
 {
-    dbg_printf("[FS] started.\n");
+    dbg_printf("fs: started.\n");
 }

@@ -88,7 +88,7 @@ W get_request(struct posix_request * req, RDVNO *rdvno)
 
     size = kcall->port_accept(PORT_FS, rdvno, req);
     if (size < 0) {
-	dbg_printf("[FS] get_request: acp_por error %d\n", size);
+	dbg_printf("fs: get_request: acp_por error %d\n", size);
     }
     return size;
 }

@@ -36,8 +36,6 @@ Version 2, June 1991
 #define F_FILE		0x0001
 #define F_PIPE		0x0002
 
-#define printk dbg_printf
-
 /* ===========================  関数定義  =========================== */
 
 /* request.c */

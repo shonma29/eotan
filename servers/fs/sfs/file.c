@@ -141,7 +141,7 @@ sfs_i_lookup(struct inode *parent,
     W nentry;
     W i;
 #ifdef FMDEBUG
-    dbg_printf("sfs_i_lookup: start. fname = %s\n", fname);	/* */
+    dbg_printf("sfs: sfs_i_lookup: start. fname = %s\n", fname);	/* */
 #endif
     if (strcmp(fname, ".") == 0) {
 	*retip = parent;
@@ -163,7 +163,7 @@ sfs_i_lookup(struct inode *parent,
 	}
 #ifdef FMDEBUG
 	dbg_printf
-	    ("sfs_i_lookup: called sfs_read_dir(). i = %d, nentry = %d\n",
+	    ("sfs: sfs_i_lookup: called sfs_read_dir(). i = %d, nentry = %d\n",
 	     i, nentry);
 #endif
 	if (i >= nentry) {
@@ -297,7 +297,7 @@ W sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
 
 #ifdef FMDEBUG
     dbg_printf
-	("sfs_i_read: start. ip = 0x%x, start = %d, length = %d, buf = 0x%x\n",
+	("sfs: sfs_i_read: start. ip = 0x%x, start = %d, length = %d, buf = 0x%x\n",
 	 ip, start, length, buf);
 #endif
 
@@ -314,7 +314,7 @@ W sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
 
     while (length > 0) {
 #ifdef FMDEBUG
-	dbg_printf("read block: %d\n",
+	dbg_printf("sfs: read block: %d\n",
 	       sfs_get_block_num(fd, fsp, &(ip->i_private.sfs_inode),
 				 start / fsp->fs_blksize));
 #endif
@@ -359,7 +359,7 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
     B *cbuf;
 
 #ifdef FMDEBUG
-    dbg_printf("sfs_i_write:(start = %d, size = %d)\n", start, size);	/* */
+    dbg_printf("sfs: sfs_i_write:(start = %d, size = %d)\n", start, size);	/* */
 #endif
 
     *rsize = 0;
@@ -370,7 +370,7 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 
     while (size > 0) {
 #ifdef FMDEBUG
-	dbg_printf("%s\n",
+	dbg_printf("sfs: %s\n",
 	       (sfs_get_block_num(fd, fsp, &(ip->i_private.sfs_inode),
 				  start / fsp->fs_blksize) <= 0) ?
 	       "allocate block" : "read block");
@@ -400,16 +400,16 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 	copysize = MIN(fsp->fs_blksize - offset, size);
 
 #ifdef FMDEBUG
-	dbg_printf("*** read block contents ***\n");
+	dbg_printf("sfs: *** read block contents ***\n");
 	{
 	    int i;
 	    char tmpbuf[2];
 
 	    tmpbuf[1] = '\0';
-	    dbg_printf("copy size: %d\n", copysize);
+	    dbg_printf("sfs: copy size: %d\n", copysize);
 	    for (i = 0; i < copysize; i++) {
 		tmpbuf[0] = blockbuf[i];
-		dbg_printf("%s", tmpbuf);
+		dbg_printf("sfs: %s", tmpbuf);
 	    }
 	}
 #endif
@@ -445,7 +445,7 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
     *rsize = retsize - size;
 
 #ifdef FMDEBUG
-    dbg_printf("write size: %d bytes\n", *rsize);
+    dbg_printf("sfs: write size: %d bytes\n", *rsize);
 #endif
 
     return (EOK);
@@ -684,7 +684,7 @@ W sfs_i_sync(struct inode * ip)
     W err;
 
 #ifdef FMDEBUG
-    dbg_printf("sfs_i_sync\n");
+    dbg_printf("sfs: sfs_i_sync\n");
 #endif
     ip->i_private.sfs_inode.sfs_i_index = ip->i_index;
     ip->i_private.sfs_inode.sfs_i_nlink = ip->i_link;
@@ -710,7 +710,7 @@ W sfs_i_sync(struct inode * ip)
     ip->i_dirty = 0;
 
 #ifdef FMDEBUG
-    dbg_printf("sfs_i_sync: done\n");
+    dbg_printf("sfs: sfs_i_sync: done\n");
 #endif
     return (EOK);
 }
@@ -812,7 +812,7 @@ W sfs_i_rmdir(struct inode * parent, char *fname, struct access_info * acc)
     error_no = fs_lookup(parent, fname, O_RDWR, 0, acc, &ip);
     if (error_no) {
 #ifdef FMDEBUG
-        printk("[PM] sfs_i_rmdir: can't remove directory %s(%d)\n", fname,
+        dbg_printf("sfs: sfs_i_rmdir: can't remove directory %s(%d)\n", fname,
 	     error_no);
 #endif
 	return (error_no);

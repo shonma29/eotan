@@ -36,7 +36,7 @@ W psc_exec_f(RDVNO rdvno, struct posix_request *req)
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 #ifdef EXEC_DEBUG
-    printk("[PM] exec: start\n");
+    dbg_printf("fs: exec: start\n");
 #endif
 
     /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。
@@ -53,7 +53,7 @@ W psc_exec_f(RDVNO rdvno, struct posix_request *req)
 	return (FALSE);
     }
 #ifdef EXEC_DEBUG
-    printk("exec: pathname is %s\n", pathname);
+    dbg_printf("fs: exec: pathname is %s\n", pathname);
 #endif
     error_no = exec_program(req, req->procid, pathname);
     if (error_no) {
@@ -156,19 +156,19 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
   error_no = proc_get_procp (req->procid, &procp);		/* 親プロセスの情報の取りだし */
   if (error_no)
     {
-      printk ("posix: invalid process id (%d)\n", req->procid);
+      dbg_printf ("fs: invalid process id (%d)\n", req->procid);
       put_response (rdvno, error_no, -1, 0);
       return (FALSE);
     }
 
 #ifdef DEBUG
-  printk ("psc_fork_f(): proc = 0x%x, proc->vm_tree = 0x%x\n", procp, procp->vm_tree);
+  dbg_print ("fs: psc_fork_f(): proc = 0x%x, proc->vm_tree = 0x%x\n", procp, procp->vm_tree);
 #endif
 
   error_no = proc_alloc_proc(&child);
   if (error_no)
     {
-      printk ("posix: cannot allocate process\n");
+      dbg_printf ("fs: cannot allocate process\n");
       put_response (rdvno, error_no, -1, 0);
       return (FALSE);
     }
@@ -185,7 +185,7 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
       (VP)(req->param.par_fork.sp));
   if (main_thread_id < 0)
     {
-      printk ("posix: acre_tsk error (%d)\n", main_thread_id);
+      dbg_printf ("fs: acre_tsk error (%d)\n", main_thread_id);
       proc_dealloc_proc(child->proc_pid);
       put_response (rdvno, error_no, -1, 0);
       return (FALSE);

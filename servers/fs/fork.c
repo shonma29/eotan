@@ -87,16 +87,16 @@ W proc_fork(struct proc *parent, struct proc *child)
     W error_no;
 
 #ifdef FKDEBUG
-    printk
-	("fork: call alloc_proc: (%s file, %d line), parent = 0x%x, parent->vm_tree = 0x%x\n",
+    dbg_printf
+	("fs: fork: call alloc_proc: (%s file, %d line), parent = 0x%x, parent->vm_tree = 0x%x\n",
 	 __FILE__, __LINE__, parent, parent->vm_tree);	/* */
 #endif
 
     /* プロセス情報のコピー */
     /* 管理情報 (プロセスおよびファイル)の更新 */
 #ifdef FKDEBUG
-    printk("fork(): parent = 0x%x, parent->vm_tree = 0x%x\n", parent, parent->vm_tree);	/* */
-    printk("fork(): child = 0x%x, child->vm_tree = 0x%x\n", child, child->vm_tree);	/* */
+    dbg_printf("fs: fork(): parent = 0x%x, parent->vm_tree = 0x%x\n", parent, parent->vm_tree);	/* */
+    dbg_printf("fs: fork(): child = 0x%x, child->vm_tree = 0x%x\n", child, child->vm_tree);	/* */
 #endif
     error_no = proc_duplicate(parent, child);
     if (error_no) {
@@ -161,7 +161,7 @@ static W proc_duplicate(struct proc * source, struct proc * destination)
      */
 
 #ifdef FKDEBUG
-    printk("fork: proc_duplicate: (%s file, %d line)\n", __FILE__, __LINE__);	/* */
+    dbg_printf("fs: fork: proc_duplicate: (%s file, %d line)\n", __FILE__, __LINE__);	/* */
 #endif
 
     /* region のコピー */
