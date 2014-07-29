@@ -58,15 +58,14 @@
 #ifndef EOTA
 #include <stdio.h>
 #include <unistd.h>
-#include <stdlib.h>
 #include <time.h>
 #include <string.h>
 #else
-#include <stdlib.h>
-#include <fcntl.h>
 #define perror printf
 #endif
-#include "mkfs.h"
+#include <stdlib.h>
+#include <fcntl.h>
+#include "sfs_utils.h"
 
 
 int nblock;

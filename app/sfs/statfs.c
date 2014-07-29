@@ -108,12 +108,10 @@
 #include <stdlib.h>
 #ifndef EOTA
 #include <sys/stat.h>
-#else
 #endif
 #include <fcntl.h>
 #include <time.h>
-#include "../../include/core/types.h"
-#include "../../servers/fs/sfs/sfs.h"
+#include "sfs_utils.h"
 #ifdef EOTA
 struct stat {
     UW st_dev;
@@ -132,15 +130,6 @@ struct stat {
 };
 
 #endif
-
-#define BLOCKSIZE 512
-
-#define RDONLY			1
-#define RDWR			2
-
-
-#define ROUNDUP(x,align)	(((((int)x) + ((align) - 1))/(align))*(align))
-#define MIN(x,y)		((x > y) ? y : x)
 
 int mount_fs(char *path, struct sfs_superblock *sb, struct sfs_inode *root, int mode);
 int lookup_file(int fd, struct sfs_superblock *sb, struct sfs_inode *cwd, char *path, struct sfs_inode *ip);

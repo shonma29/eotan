@@ -50,16 +50,7 @@ Version 2, June 1991
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <time.h>
-#include "../../include/core/types.h"
-#include "../../servers/fs/sfs/sfs.h"
-
-#define BLOCKSIZE 512
-
-#define RDONLY			1
-#define RDWR			2
-
-#define ROUNDUP(x,align)	(((((int)x) + ((align) - 1))/(align))*(align))
-#define MIN(x,y)		((x > y) ? y : x)
+#include "sfs_utils.h"
 
 /* Prototypes */
 int scan_inode(int fd, struct sfs_superblock *sb);

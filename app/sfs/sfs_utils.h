@@ -10,18 +10,21 @@ Version 2, June 1991
 (C) 2001, Tomohide Naniwa
 */
 
-#ifndef __MKFS_H__
-#define __MKFS_H__	1
+#ifndef __APP_SFS_UTILS_H__
+#define __APP_SFS_UTILS_H__	1
 
 
-#ifndef EOTA
-#include <fcntl.h>
-#endif
 #include "../../include/core/types.h"
 #include "../../servers/fs/sfs/sfs.h"
 
 
+#define BLOCKSIZE 512
+
+#define RDONLY			1
+#define RDWR			2
+
 #define ROUNDUP(x,align)	(((((int)x) + ((align) - 1))/(align))*(align))
+#define MIN(x,y)		((x > y) ? y : x)
 
 
 #endif /* __MKFS_H__ */
