@@ -52,9 +52,9 @@ Version 2, June 1991
  */
 
 #include <string.h>
+#include <fs/sfs.h>
 #include <nerve/kcall.h>
 #include "../fs.h"
-#include "sfs.h"
 #include "func.h"
 
 

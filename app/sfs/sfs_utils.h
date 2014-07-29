@@ -15,7 +15,7 @@ Version 2, June 1991
 
 
 #include "../../include/core/types.h"
-#include "../../servers/fs/sfs/sfs.h"
+#include "../../include/fs/sfs.h"
 
 
 #define BLOCKSIZE 512

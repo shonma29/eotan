@@ -18,6 +18,8 @@ Version 2, June 1991
 /* common definitions */
 #define SFS_BLOCK_SIZE 512
 
+extern struct iops	sfs_iops;
+
 
 /* sfs_block.c */
 extern W sfs_alloc_block (W fd, struct fs *fsp);
@@ -92,10 +94,4 @@ extern W sfs_statfs();
 extern W sfs_get_inode();
 extern W sfs_put_inode();
 
-/* sfs_bitmap.c */
-extern void sfs_init_bitmap_cache(void);
-extern W sfs_alloc_bitmap(W fd, W blockno, B **ptr, int **dirty);
-extern W sfs_sync_bitmap(W fd);
-
 #endif /* __SFS_FUNC_H__ */
-

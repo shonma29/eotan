@@ -22,8 +22,8 @@ Version 2, June 1991
 #include <errno.h>
 #include <unistd.h>
 #include <core.h>
+#include <fs/sfs.h>
 #include "api.h"
-#include "sfs/sfs.h"
 #include "vfs.h"
 #include "process.h"
 #include "mm.h"

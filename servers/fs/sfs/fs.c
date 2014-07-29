@@ -92,7 +92,6 @@ Version 2, June 1991
 #include "func.h"
 
 
-
 struct fsops sfs_fsops = {
     sfs_mount,
     sfs_mountroot,

@@ -155,6 +155,8 @@ Version 2, June 1991
 #include "fs.h"
 #include "devfs.h"
 
+extern struct fsops sfs_fsops;
+
 struct fs_entry {
     B *fsname;
     struct fsops *fsops;

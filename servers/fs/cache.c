@@ -106,7 +106,7 @@ void get_cache(W fd, W blockno, W * cn, B ** ptr)
     if (i < 0) {
 	*cn = cache_head;
 	if (cache_head == -1) {
-	    dbg_printf("sfs: WARNING: no free cache\n");
+	    dbg_printf("fs: WARNING: no free cache\n");
 	    *ptr = NULL;
 	    return;
 	}
@@ -221,7 +221,7 @@ void put_cache(W cn, W dirty)
     BLOCK_CACHE *cp;
 
     if (cn < 0) {
-	dbg_printf("sfs: WARNING: negative cache number\n");
+	dbg_printf("fs: WARNING: negative cache number\n");
 	return;
     }
 
@@ -234,7 +234,7 @@ void put_cache(W cn, W dirty)
 
     /* append to lru chain */
     if (cp->lru_next != -1) {
-	dbg_printf("sfs: block already back!! %d next %d\n", cn,
+	dbg_printf("fs: block already back!! %d next %d\n", cn,
 	       cp->lru_next);
     } else {
 	if (cache_head == -1) {
@@ -264,7 +264,7 @@ W sync_cache(W fd, W umflag)
 		    write_block(fd, cp->blockno, BLOCK_SIZE,
 				    cp->buf);
 		if (error_no < 0) {
-		    dbg_printf("sfs: sync_cache write error\n");
+		    dbg_printf("fs: sync_cache write error\n");
 		    return (error_no);
 		}
 		cp->dirty = 0;
@@ -287,7 +287,7 @@ static W read_block(ID device, W blockno, W blocksize, B * buf)
 
 #ifdef FMDEBUG
     dbg_printf
-	("sfs: read_block: device = %d, blockno = %d, blocksize = %d, buf = 0x%x\n",
+	("fs: read_block: device = %d, blockno = %d, blocksize = %d, buf = 0x%x\n",
 	 device, blockno, blocksize, buf);
 #endif
 

@@ -52,10 +52,10 @@ Version 2, June 1991
  */
 
 
-#ifndef __SFS_SFS_H__
-#define __SFS_SFS_H__	1
+#ifndef __FS_SFS_H__
+#define __FS_SFS_H__	1
 
-#include "../../../include/core/types.h"
+#include "../core/types.h"
 
 
 #define SFS_MAGIC			0x12345678
@@ -140,7 +140,4 @@ struct sfs_dir
   B	pad[2];			/* padding */
 };
 
-extern struct fsops	sfs_fsops;
-extern struct iops	sfs_iops;
-
-#endif /* __SFS_SFS_H__ */
+#endif /* __FS_SFS_H__ */
