@@ -763,7 +763,6 @@ W fs_write_file(struct inode * ip, W start, B * buf, W length, W * rlength)
 {
     ID device;
     W error_no;
-    extern W sfs_write_device(ID, B *, W, W, W *);
 
     if (ip->i_mode & S_IFCHR) {
 	/* スペシャルファイルだった */
@@ -778,7 +777,7 @@ W fs_write_file(struct inode * ip, W start, B * buf, W length, W * rlength)
 		length = ip->i_size - start;
 	    }
 	}
-	error_no = sfs_write_device(device, buf, start, length, rlength);
+	error_no = write_device(device, buf, start, length, rlength);
 	return (error_no);
     }
 

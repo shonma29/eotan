@@ -36,6 +36,8 @@ Version 2, June 1991
 #define F_FILE		0x0001
 #define F_PIPE		0x0002
 
+#define BLOCK_SIZE	512
+
 /* ===========================  関数定義  =========================== */
 
 /* request.c */
@@ -44,6 +46,20 @@ extern W get_request(struct posix_request *req, RDVNO *rdvno);
 extern W put_response(RDVNO rdvno, W error_no, W status, W ret1);
 extern W error_response(RDVNO rdvno, W error_no);
 
+/* misc.c */
 extern UW get_system_time(void);
+
+/* device.c */
+extern W open_device(ID device, W * rsize);
+extern W close_device(ID device);
+extern W read_device(ID device, B * buf, W start, W length, W * rlength);
+extern W write_device(ID device, B * buf, W start, W length, W * rlength);
+
+/* cache.c */
+extern void init_cache(void);
+extern void get_cache(W fd, W blockno, W *cn, B **ptr);
+extern void check_cache(W fd, W blockno, W *cn);
+extern void put_cache(W cn, W dirty);
+extern W sync_cache(W fd, W umflag);
 
 #endif				/* __FS_H__ */

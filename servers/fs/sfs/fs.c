@@ -142,7 +142,7 @@ W sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
     W error_no;
 
     error_no =
-	sfs_read_device(device, (B *) & sfs_sb, 512,
+	read_device(device, (B *) & sfs_sb, SFS_BLOCK_SIZE,
 			sizeof(struct sfs_superblock), &rlength);
     if (error_no) {
 #ifdef FMDEBUG
@@ -213,7 +213,7 @@ W sfs_mountroot(ID device, struct fs * rootfsp, struct inode * rootfile)
 #ifdef FMDEBUG
     dbg_printf("sfs: mountroot, device = %x\n", device);
 #endif
-    sfs_init_cache();
+    init_cache();
 
     return (sfs_mount(device, rootfsp, rootfile));
 }
@@ -255,7 +255,7 @@ W sfs_syncfs(struct fs * fsp, W umflag)
 	fsp->fs_private.sfs_fs.sfs_bsearch = fsp->fs_bsearch;
 	sb = &(fsp->fs_private.sfs_fs);
 	error_no =
-	    sfs_write_device(fsp->fs_device, (B *) sb,
+	    write_device(fsp->fs_device, (B *) sb,
 			     1 * sb->sfs_blocksize,
 			     sizeof(struct sfs_superblock), &rsize);
 	if (error_no) {
@@ -264,7 +264,7 @@ W sfs_syncfs(struct fs * fsp, W umflag)
 	fsp->fs_dirty = 0;
     }
 
-    error_no = sfs_sync_cache(fsp->fs_device, umflag);
+    error_no = sync_cache(fsp->fs_device, umflag);
     if (error_no) {
 	return (error_no);
     }

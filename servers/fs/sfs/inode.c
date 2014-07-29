@@ -114,10 +114,10 @@ W sfs_read_inode(struct fs *fsp, W ino, struct inode *ip)
 
     fd = fsp->fs_device;
     offset = sfs_get_inode_offset(fsp, ino);
-    sfs_get_cache(fd, offset / SFS_BLOCK_SIZE, &cn, &buf);
+    get_cache(fd, offset / SFS_BLOCK_SIZE, &cn, &buf);
     memcpy((B*)&(ip->i_private.sfs_inode), buf,
 	  sizeof(struct sfs_inode));
-    sfs_put_cache(cn, 0);
+    put_cache(cn, 0);
 
     ip->i_index = ip->i_private.sfs_inode.sfs_i_index;
     ip->i_uid = ip->i_private.sfs_inode.sfs_i_uid;
@@ -162,13 +162,13 @@ W sfs_alloc_inode(ID fd, struct fs * fsp)
 
     offset = sfs_get_inode_offset(fsp, fsp->fs_isearch);
     for (i = fsp->fs_isearch; i <= fsp->fs_allinode; i++) {
-	sfs_get_cache(fd, offset / SFS_BLOCK_SIZE, &cn, (B **) & ipbufp);
+	get_cache(fd, offset / SFS_BLOCK_SIZE, &cn, (B **) & ipbufp);
 
 	offset += sizeof(struct sfs_inode);
 	if (ipbufp->sfs_i_index != i) {
 	    memset((VP)ipbufp, 0, sizeof(struct sfs_inode));
 	    ipbufp->sfs_i_index = i;
-	    sfs_put_cache(cn, 1);
+	    put_cache(cn, 1);
 	    fsp->fs_freeinode--;
 	    fsp->fs_usedinode++;
 	    fsp->fs_isearch = (i + 1);
@@ -177,7 +177,7 @@ W sfs_alloc_inode(ID fd, struct fs * fsp)
 	    sfs_syncfs(fsp, 0);
 	    return (i);
 	} else {
-	    sfs_put_cache(cn, 0);
+	    put_cache(cn, 0);
 	}
     }
 
@@ -199,7 +199,7 @@ W sfs_write_inode(W fd, struct fs * fsp, struct sfs_inode * ip)
 	B *tmp;
 
 	tmp = (B *) ip;
-	error_no = sfs_write_device(fd,
+	error_no = write_device(fd,
 				 tmp,
 				 sfs_get_inode_offset(fsp,
 						      ip->sfs_i_index),
@@ -209,7 +209,7 @@ W sfs_write_inode(W fd, struct fs * fsp, struct sfs_inode * ip)
 	}
 
 	tmp += MAX_BODY_SIZE;
-	error_no = sfs_write_device(fd,
+	error_no = write_device(fd,
 				 tmp,
 				 sfs_get_inode_offset(fsp, ip->sfs_i_index)
 				 + MAX_BODY_SIZE,
@@ -220,12 +220,12 @@ W sfs_write_inode(W fd, struct fs * fsp, struct sfs_inode * ip)
 	    return (EIO);
 	}
     } else {
-	sfs_get_cache(fd,
+	get_cache(fd,
 		      sfs_get_inode_offset(fsp,
 					   ip->sfs_i_index) /
 		      SFS_BLOCK_SIZE, &cn, &buf);
 	memcpy(buf, (B*)ip, sizeof(struct sfs_inode));
-	sfs_put_cache(cn, 1);
+	put_cache(cn, 1);
 	/* ここで fs の sync を行う必要があるか? */
 	sfs_syncfs(fsp, 0);
     }
@@ -244,11 +244,11 @@ W sfs_free_inode(struct fs * fsp, struct inode *ip)
     B *buf;
 
     inode_index = ip->i_index;
-    sfs_get_cache(fsp->fs_device,
+    get_cache(fsp->fs_device,
 		  sfs_get_inode_offset(fsp, inode_index) / SFS_BLOCK_SIZE,
 		  &cn, &buf);
     memset(buf, 0, sizeof(struct sfs_inode));
-    sfs_put_cache(cn, 1);
+    put_cache(cn, 1);
     ip->i_dirty = 0;
 
     fsp->fs_freeinode++;

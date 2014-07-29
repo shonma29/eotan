@@ -165,7 +165,6 @@ W proc_exit(W procid)
 {
     int i;
     struct proc *procp;
-    void sfs_close_device();
 
     if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
 	return (EINVAL);
@@ -192,7 +191,7 @@ W proc_exit(W procid)
 	    if (procp->proc_open_file[i].f_inode->i_mode & S_IFCHR) {
 		/* スペシャルファイルだった */
 		/* デバイスに DEV_CLS メッセージを発信 */
-		sfs_close_device(procp->proc_open_file[i].f_inode->i_dev);
+		close_device(procp->proc_open_file[i].f_inode->i_dev);
 	    }
 	    fs_close_file(procp->proc_open_file[i].f_inode);
 	    procp->proc_open_file[i].f_inode = NULL;

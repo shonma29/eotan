@@ -30,16 +30,12 @@ Version 2, June 1991
 #include <nerve/kcall.h>
 #include "fs.h"
 
-extern W sfs_open_device(ID device, W * rsize);
-extern W sfs_read_device(ID device, B * buf, W start, W length, W * rlength);
-
 static W control_device(ID device, struct posix_request *preq, ID caller);
 
 W psc_close_f(RDVNO rdvno, struct posix_request *req)
 {
     struct file *fp;
     W err;
-    ER sfs_close_device();
 
     err = proc_get_file(req->procid, req->param.par_close.fileid, &fp);
     if (err) {
@@ -55,7 +51,7 @@ W psc_close_f(RDVNO rdvno, struct posix_request *req)
     if (fp->f_inode->i_mode & S_IFCHR) {
 	/* スペシャルファイルだった */
 	/* デバイスに DEV_CLS メッセージを発信 */
-	err = sfs_close_device(fp->f_inode->i_dev);
+	err = close_device(fp->f_inode->i_dev);
     }
 
     err = fs_close_file(fp->f_inode);
@@ -399,7 +395,7 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
     } else if (newip->i_mode & S_IFCHR) {
 	/* スペシャルファイルだった */
 	/* デバイスに DEV_OPN メッセージを発信 */
-	error_no = sfs_open_device(newip->i_dev, &rsize);
+	error_no = open_device(newip->i_dev, &rsize);
 	if (rsize >= 0) {
 	    newip->i_size = rsize;
 	}
@@ -474,7 +470,7 @@ W psc_read_f(RDVNO rdvno, struct posix_request *req)
 		rest_length >
 		MAX_BODY_SIZE ? MAX_BODY_SIZE : rest_length;
 	    error_no =
-		sfs_read_device(fp->f_inode->i_dev, buf,
+		read_device(fp->f_inode->i_dev, buf,
 				    fp->f_offset + i, len, &rlength);
 	    if (error_no)
 		break;

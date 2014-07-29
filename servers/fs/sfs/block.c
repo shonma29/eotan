@@ -63,57 +63,11 @@ Version 2, June 1991
 
 /* ブロックに関係している処理
  *
- * sfs_read_block()
- * sfs_write_block()
  * sfs_alloc_block()
  * sfs_get_block_num()
  * sfs_set_block_num()
  *
  */
-
-/* sfs_read_block - ブロックをひとつ読み込む
- *
- */
-W sfs_read_block(ID device, W blockno, W blocksize, B * buf)
-{
-    W rsize;
-    W error_no;
-
-#ifdef FMDEBUG
-    dbg_printf
-	("sfs: sfs_read_block: device = %d, blockno = %d, blocksize = %d, buf = 0x%x\n",
-	 device, blockno, blocksize, buf);
-#endif
-
-    error_no =
-	sfs_read_device(device, buf, blockno * blocksize, blocksize,
-			&rsize);
-    if (error_no) {
-	return (error_no);
-    }
-
-    return (rsize);
-}
-
-
-/* sfs_write_block - ブロックをひとつ書き込む
- *
- */
-W sfs_write_block(ID device, W blockno, W blocksize, B * buf)
-{
-    W error_no;
-    W rsize;
-
-    error_no =
-	sfs_write_device(device, buf, blockno * blocksize, blocksize,
-			 &rsize);
-    if (error_no) {
-	return (error_no);
-    }
-
-    return (rsize);
-}
-
 
 /* sfs_alloc_block - ブロックをひとつアロケートする
  *
@@ -133,7 +87,7 @@ W sfs_alloc_block(W fd, struct fs * fsp)
 
     s = (fsp->fs_bsearch - 1) / (8 * fsp->fs_blksize);
     for (i = s; i < fsp->fs_private.sfs_fs.sfs_bitmapsize; i++) {
-	sfs_get_cache(fd, i + 2, &cn, &buf);
+	get_cache(fd, i + 2, &cn, &buf);
 	if (i == s)
 	    j = ((fsp->fs_bsearch - 1) / 8) % fsp->fs_blksize;
 	else
@@ -147,7 +101,7 @@ W sfs_alloc_block(W fd, struct fs * fsp)
 			    + (j * 8)
 			    + k;
 			buf[j] = buf[j] | mask;
-			sfs_put_cache(cn, 1);
+			put_cache(cn, 1);
 
 			fsp->fs_freeblock--;
 			fsp->fs_usedblock++;
@@ -165,7 +119,7 @@ W sfs_alloc_block(W fd, struct fs * fsp)
 	    }
 	}
     }
-    sfs_put_cache(cn, 0);
+    put_cache(cn, 0);
     return (-1);
 }
 
@@ -186,18 +140,18 @@ W sfs_free_block(W fd, struct fs * fsp, W blockno)
     }
 
     s = blockno / (8 * fsp->fs_blksize);
-    sfs_get_cache(fd, s + 2, &cn, &buf);
+    get_cache(fd, s + 2, &cn, &buf);
     s = (blockno / 8) % fsp->fs_blksize;
 
     mask = 0x01;
     mask = mask << (blockno % 8);
     buf[s] = buf[s] & ((~mask) & 0xff);
-    sfs_put_cache(cn, 1);
+    put_cache(cn, 1);
 
     /* キャッシュに残っているデータを無効にする */
-    sfs_check_cache(fd, blockno, &cn);
+    check_cache(fd, blockno, &cn);
     if (cn > 0) {
-	sfs_put_cache(cn, -1);
+	put_cache(cn, -1);
     }
 
     fsp->fs_freeblock++;
@@ -223,7 +177,7 @@ W sfs_free_indirect(W fd, struct fs * fsp, struct sfs_inode * ip,
     struct sfs_indirect *inbufp;
 
     if (offset != 0) {
-	sfs_get_cache(fd, ip->sfs_i_indirect[inblock], &cn,
+	get_cache(fd, ip->sfs_i_indirect[inblock], &cn,
 		      (B **) & inbufp);
 	for (i = offset; i < SFS_INDIRECT_BLOCK; ++i) {
 	    if (inbufp->sfs_in_block[i] > 0) {
@@ -232,18 +186,18 @@ W sfs_free_indirect(W fd, struct fs * fsp, struct sfs_inode * ip,
 	    }
 	}
 
-	sfs_put_cache(cn, 1);
+	put_cache(cn, 1);
 	++inblock;
     }
     for (i = inblock; i < SFS_INDIRECT_BLOCK_ENTRY; ++i) {
 	if (ip->sfs_i_indirect[i] > 0) {
-	    sfs_get_cache(fd, ip->sfs_i_indirect[i], &cn, (B **) & inbufp);
+	    get_cache(fd, ip->sfs_i_indirect[i], &cn, (B **) & inbufp);
 	    for (j = 0; j < SFS_INDIRECT_BLOCK; ++j) {
 		if (inbufp->sfs_in_block[j] > 0) {
 		    sfs_free_block(fd, fsp, inbufp->sfs_in_block[j]);
 		}
 	    }
-	    sfs_put_cache(cn, 0);
+	    put_cache(cn, 0);
 	    sfs_free_block(fd, fsp, ip->sfs_i_indirect[i]);
 	}
 	ip->sfs_i_indirect[i] = 0;
@@ -262,10 +216,10 @@ W sfs_free_dindirect(W fd, struct fs * fsp, struct sfs_inode * ip,
 	return (EOK);
     }
 
-    sfs_get_cache(fd, ip->sfs_i_dindirect[inblock], &cn1, (B **) & inbufp);
+    get_cache(fd, ip->sfs_i_dindirect[inblock], &cn1, (B **) & inbufp);
 
     if (offset != 0) {
-	sfs_get_cache(fd, inbufp->sfs_in_block[dinblock], &cn2,
+	get_cache(fd, inbufp->sfs_in_block[dinblock], &cn2,
 		      (B **) & inbufp2);
 	for (i = offset; i < SFS_INDIRECT_BLOCK; ++i) {
 	    if (inbufp2->sfs_in_block[i] > 0) {
@@ -274,12 +228,12 @@ W sfs_free_dindirect(W fd, struct fs * fsp, struct sfs_inode * ip,
 	    }
 	}
 
-	sfs_put_cache(cn2, 1);
+	put_cache(cn2, 1);
 	++dinblock;
     }
     for (i = dinblock; i < SFS_INDIRECT_BLOCK; ++i) {
 	if (inbufp->sfs_in_block[i] > 0) {
-	    sfs_get_cache(fd, inbufp->sfs_in_block[i], &cn2,
+	    get_cache(fd, inbufp->sfs_in_block[i], &cn2,
 			  (B **) & inbufp2);
 	    for (j = 0; j < SFS_INDIRECT_BLOCK; ++j) {
 		if (inbufp2->sfs_in_block[j] > 0)
@@ -288,13 +242,13 @@ W sfs_free_dindirect(W fd, struct fs * fsp, struct sfs_inode * ip,
 
 	    sfs_free_block(fd, fsp, inbufp->sfs_in_block[i]);
 	    inbufp->sfs_in_block[i] = 0;
-	    sfs_put_cache(cn2, 0);
+	    put_cache(cn2, 0);
 	}
     }
     if (dinblock > 0) {
-	sfs_put_cache(cn1, 1);
+	put_cache(cn1, 1);
     } else
-	sfs_put_cache(cn1, 0);
+	put_cache(cn1, 0);
     return (EOK);
 }
 
@@ -365,9 +319,9 @@ sfs_get_indirect_block_num(W fd, struct fs * fsp, struct sfs_inode * ip,
 	return (-1);
     }
 
-    sfs_get_cache(fd, ip->sfs_i_indirect[inblock], &cn, (B **) & inbufp);
+    get_cache(fd, ip->sfs_i_indirect[inblock], &cn, (B **) & inbufp);
     bn = inbufp->sfs_in_block[inblock_offset];
-    sfs_put_cache(cn, 0);
+    put_cache(cn, 0);
     return (bn);
 }
 
@@ -401,16 +355,16 @@ sfs_get_dindirect_block_num(W fd, struct fs * fsp, struct sfs_inode * ip,
 	return (-1);
     }
 
-    sfs_get_cache(fd, ip->sfs_i_dindirect[inblock], &cn, (B **) & inbufp);
+    get_cache(fd, ip->sfs_i_dindirect[inblock], &cn, (B **) & inbufp);
     bn = inbufp->sfs_in_block[dinblock];
-    sfs_put_cache(cn, 0);
+    put_cache(cn, 0);
     if (bn <= 0) {
 	return (-1);
     }
 
-    sfs_get_cache(fd, bn, &cn, (B **) & inbufp);
+    get_cache(fd, bn, &cn, (B **) & inbufp);
     bn = inbufp->sfs_in_block[dinblock_offset];
-    sfs_put_cache(cn, 0);
+    put_cache(cn, 0);
     return (bn);
 }
 
@@ -473,15 +427,15 @@ sfs_set_indirect_block_num(W fd,
     if (ip->sfs_i_indirect[inblock] <= 0) {
 	newinblock = sfs_alloc_block(fd, fsp);
 	ip->sfs_i_indirect[inblock] = newinblock;
-	sfs_get_cache(fd, newinblock, &cn, (B **) & inbufp);
+	get_cache(fd, newinblock, &cn, (B **) & inbufp);
 	memset((B*)inbufp, 0, sizeof(struct sfs_indirect));
     } else {
-	sfs_get_cache(fd, ip->sfs_i_indirect[inblock], &cn,
+	get_cache(fd, ip->sfs_i_indirect[inblock], &cn,
 		      (B **) & inbufp);
     }
 
     inbufp->sfs_in_block[inblock_offset] = newblock;
-    sfs_put_cache(cn, 1);
+    put_cache(cn, 1);
 
     /* inode の書き込みは sfs_i_write() 以上の部分で行われるはず...
        sfs_write_inode (fd, fsp, ip);
@@ -531,10 +485,10 @@ sfs_set_dindirect_block_num(W fd,
 	 */
 	newinblock = sfs_alloc_block(fd, fsp);
 	ip->sfs_i_dindirect[inblock] = newinblock;
-	sfs_get_cache(fd, newinblock, &cn1, (B **) & inbufp);
+	get_cache(fd, newinblock, &cn1, (B **) & inbufp);
 	memset((B*)inbufp, 0, sizeof(struct sfs_indirect));
     } else {
-	sfs_get_cache(fd, ip->sfs_i_dindirect[inblock], &cn1,
+	get_cache(fd, ip->sfs_i_dindirect[inblock], &cn1,
 		      (B **) & inbufp);
     }
 
@@ -544,17 +498,17 @@ sfs_set_dindirect_block_num(W fd,
 	 */
 	newdinblock = sfs_alloc_block(fd, fsp);
 	inbufp->sfs_in_block[dinblock] = newdinblock;
-	sfs_put_cache(cn1, 1);
-	sfs_get_cache(fd, newdinblock, &cn2, (B **) & dinbufp);
+	put_cache(cn1, 1);
+	get_cache(fd, newdinblock, &cn2, (B **) & dinbufp);
 	memset((B*)dinbufp, 0, sizeof(struct sfs_indirect));
     } else {
-	sfs_put_cache(cn1, 0);
-	sfs_get_cache(fd, inbufp->sfs_in_block[dinblock], &cn2,
+	put_cache(cn1, 0);
+	get_cache(fd, inbufp->sfs_in_block[dinblock], &cn2,
 		      (B **) & dinbufp);
     }
 
     dinbufp->sfs_in_block[dinblock_offset] = newblock;
 
-    sfs_put_cache(cn2, 1);
+    put_cache(cn2, 1);
     return (newblock);
 }

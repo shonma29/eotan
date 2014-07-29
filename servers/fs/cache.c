@@ -10,7 +10,7 @@ Version 2, June 1991
 (C) 2001-2002, Tomohide Naniwa
 
 */
-/* sfs_cache.c - SFS の diskblock の cache を行う
+/* cache.c - FS の diskblock の cache を行う
  *
  * $Log: sfs_cache.c,v $
  * Revision 1.1  2000/07/02 04:13:18  naniwa
@@ -21,8 +21,7 @@ Version 2, June 1991
 
 #include <string.h>
 #include <mpu/memory.h>
-#include "../fs.h"
-#include "func.h"
+#include "fs.h"
 
 #undef USE_MALLOC
 
@@ -40,23 +39,26 @@ typedef struct {
     short int hash_next, hash_prev;
     W fd;
     W blockno;
-    B buf[SFS_BLOCK_SIZE];
-} SFS_BLOCK_CACHE;
+    B buf[BLOCK_SIZE];
+} BLOCK_CACHE;
 
 #ifdef USE_MALLOC
-static SFS_BLOCK_CACHE *cache_data;
+static BLOCK_CACHE *cache_data;
 #else
-static SFS_BLOCK_CACHE cache_data[CACHE_SIZE];
+static BLOCK_CACHE cache_data[CACHE_SIZE];
 #endif
 static short int cache_head;
 static short int hash_table[HASH_SIZE + 1];
 
-void sfs_purge_cache(void)
+static W read_block (ID device, W blockno, W blocksize, B *buf);
+static W write_block (ID device, W blockno, W blocksize, B *buf);
+
+void purge_cache(void)
 {
     int i;
 
     for (i = 0; i < CACHE_SIZE; ++i) {
-	memset((B*)(&cache_data[i]), 0, sizeof(SFS_BLOCK_CACHE));
+	memset((B*)(&cache_data[i]), 0, sizeof(BLOCK_CACHE));
 	cache_data[i].lru_next = i + 1;
 	cache_data[i].lru_prev = i - 1;
 	cache_data[i].hash_next = -1;
@@ -72,24 +74,24 @@ void sfs_purge_cache(void)
     hash_table[0] = 0;
 }
 
-void sfs_init_cache(void)
+void init_cache(void)
 {
 #ifdef USE_MALLOC
-    CACHE_SIZE = pageRoundUp(CACHE_SIZE * sizeof(SFS_BLOCK_CACHE))
+    CACHE_SIZE = pageRoundUp(CACHE_SIZE * sizeof(BLOCK_CACHE))
 	- 12;
     /* 12 は ITRON/kernlib/malloc.c の alloc_entry_t から来ている */
-    CACHE_SIZE /= sizeof(SFS_BLOCK_CACHE);
+    CACHE_SIZE /= sizeof(BLOCK_CACHE);
     cache_data =
-	(SFS_BLOCK_CACHE *) malloc(sizeof(SFS_BLOCK_CACHE) * (CACHE_SIZE));
+	(BLOCK_CACHE *) malloc(sizeof(BLOCK_CACHE) * (CACHE_SIZE));
 #endif
 
-    sfs_purge_cache();
+    purge_cache();
 }
 
-void sfs_get_cache(W fd, W blockno, W * cn, B ** ptr)
+void get_cache(W fd, W blockno, W * cn, B ** ptr)
 {
     int i, hn;
-    SFS_BLOCK_CACHE *cp;
+    BLOCK_CACHE *cp;
 
     if (blockno < 0) {
 	*cn = -1;
@@ -112,7 +114,7 @@ void sfs_get_cache(W fd, W blockno, W * cn, B ** ptr)
 	cp = &cache_data[cache_head];
 
 	if (cp->dirty) {
-	    sfs_write_block(cp->fd, cp->blockno, SFS_BLOCK_SIZE, cp->buf);
+	    write_block(cp->fd, cp->blockno, BLOCK_SIZE, cp->buf);
 	    cp->dirty = 0;
 	}
 	/* remove from hash chain */
@@ -132,9 +134,9 @@ void sfs_get_cache(W fd, W blockno, W * cn, B ** ptr)
 		}
 	    }
 	}
-	memset(cp->buf, 0, SFS_BLOCK_SIZE);
+	memset(cp->buf, 0, BLOCK_SIZE);
 
-	sfs_read_block(fd, blockno, SFS_BLOCK_SIZE, cp->buf);
+	read_block(fd, blockno, BLOCK_SIZE, cp->buf);
 	cp->fd = fd;
 	cp->blockno = blockno;
 	*ptr = cp->buf;
@@ -176,10 +178,10 @@ void sfs_get_cache(W fd, W blockno, W * cn, B ** ptr)
     }
 }
 
-void sfs_check_cache(W fd, W blockno, W * cn)
+void check_cache(W fd, W blockno, W * cn)
 {
     int i, hn;
-    SFS_BLOCK_CACHE *cp;
+    BLOCK_CACHE *cp;
 
     if (blockno < 0) {
 	*cn = -1;
@@ -214,9 +216,9 @@ void sfs_check_cache(W fd, W blockno, W * cn)
 /*
  * 引数の dirty が負の場合は cache の dirty flag を強制的に 0 にする．
  */
-void sfs_put_cache(W cn, W dirty)
+void put_cache(W cn, W dirty)
 {
-    SFS_BLOCK_CACHE *cp;
+    BLOCK_CACHE *cp;
 
     if (cn < 0) {
 	dbg_printf("sfs: WARNING: negative cache number\n");
@@ -248,10 +250,10 @@ void sfs_put_cache(W cn, W dirty)
     }
 }
 
-W sfs_sync_cache(W fd, W umflag)
+W sync_cache(W fd, W umflag)
 {
     int i;
-    SFS_BLOCK_CACHE *cp;
+    BLOCK_CACHE *cp;
     W error_no;
 
     for (i = 0; i < CACHE_SIZE; ++i) {
@@ -259,7 +261,7 @@ W sfs_sync_cache(W fd, W umflag)
 	if (cp->fd == fd) {
 	    if (cp->dirty) {
 		error_no =
-		    sfs_write_block(fd, cp->blockno, SFS_BLOCK_SIZE,
+		    write_block(fd, cp->blockno, BLOCK_SIZE,
 				    cp->buf);
 		if (error_no < 0) {
 		    dbg_printf("sfs: sync_cache write error\n");
@@ -273,4 +275,46 @@ W sfs_sync_cache(W fd, W umflag)
 	}
     }
     return (EOK);
+}
+
+/* read_block - ブロックをひとつ読み込む
+ *
+ */
+static W read_block(ID device, W blockno, W blocksize, B * buf)
+{
+    W rsize;
+    W error_no;
+
+#ifdef FMDEBUG
+    dbg_printf
+	("sfs: read_block: device = %d, blockno = %d, blocksize = %d, buf = 0x%x\n",
+	 device, blockno, blocksize, buf);
+#endif
+
+    error_no =
+	read_device(device, buf, blockno * blocksize, blocksize,
+			&rsize);
+    if (error_no) {
+	return (error_no);
+    }
+
+    return (rsize);
+}
+
+/* write_block - ブロックをひとつ書き込む
+ *
+ */
+static W write_block(ID device, W blockno, W blocksize, B * buf)
+{
+    W error_no;
+    W rsize;
+
+    error_no =
+	write_device(device, buf, blockno * blocksize, blocksize,
+			 &rsize);
+    if (error_no) {
+	return (error_no);
+    }
+
+    return (rsize);
 }

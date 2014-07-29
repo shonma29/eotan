@@ -20,8 +20,6 @@ Version 2, June 1991
 
 
 /* sfs_block.c */
-extern W sfs_read_block (ID device, W blockno, W blocksize, B *buf);
-extern W sfs_write_block (ID device, W blockno, W blocksize, B *buf);
 extern W sfs_alloc_block (W fd, struct fs *fsp);
 extern W sfs_get_block_num (W fd, struct fs *fsp,
 			    struct sfs_inode *ip, W blockno);
@@ -42,10 +40,6 @@ extern W sfs_free_dindirect(W fd, struct fs *fsp, struct sfs_inode *ip,
 			    int offset, int dinblock, int inblock);
 extern W sfs_free_all_dindirect(W fd, struct fs *fsp,
 				struct sfs_inode *ip, int inblock);
-
-/* sfs_device.c */
-extern W sfs_write_device (ID device, B *buf, W start, W length, W *rlength);
-extern W sfs_read_device (ID device, B *buf, W start, W length, W *rlength);
 
 /* sfs_dir.c */
 extern W sfs_read_dir (struct inode *ip, W nentry, struct sfs_dir *dirp);
@@ -102,13 +96,6 @@ extern W sfs_put_inode();
 extern void sfs_init_bitmap_cache(void);
 extern W sfs_alloc_bitmap(W fd, W blockno, B **ptr, int **dirty);
 extern W sfs_sync_bitmap(W fd);
-
-/* sfs_cache.c */
-extern void sfs_init_cache(void);
-extern void sfs_get_cache(W fd, W blockno, W *cn, B **ptr);
-extern void sfs_check_cache(W fd, W blockno, W *cn);
-extern void sfs_put_cache(W cn, W dirty);
-extern W sfs_sync_cache(W fd, W umflag);
 
 #endif /* __SFS_FUNC_H__ */
 

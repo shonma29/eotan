@@ -217,7 +217,7 @@ W psc_fstat_f(RDVNO rdvno, struct posix_request *req)
     st.st_rdev = fp->f_inode->i_dev;
     if (fp->f_inode->i_fs == NULL) {
       dbg_printf("fs: FSTAT: illegal i_fs\n");
-      st.st_blksize = 512;
+      st.st_blksize = BLOCK_SIZE;
     }
     else {
       st.st_blksize = fp->f_inode->i_fs->fs_blksize;

@@ -10,7 +10,7 @@ Version 2, June 1991
 (C) 2001, Tomohide Naniwa
 
 */
-/* sfs_device.c - SFS とデバイスドライバのやりとりを管理する。
+/* device.c - FS とデバイスドライバのやりとりを管理する。
  *
  *
  *
@@ -20,19 +20,14 @@ Version 2, June 1991
 #include <device.h>
 #include <core.h>
 #include <nerve/kcall.h>
-#include "../fs.h"
-#include "func.h"
+#include "fs.h"
 
 
-#define BLOCK_SIZE	512
 
-
-
-
-/* sfs_write_device - デバイスにデータを送る(そしてストレージに書き込む)
+/* write_device - デバイスにデータを送る(そしてストレージに書き込む)
  *
  */
-W sfs_write_device(ID device, B * buf, W start, W length, W * rlength)
+W write_device(ID device, B * buf, W start, W length, W * rlength)
 {
     devmsg_t packet;
     W error_no;
@@ -57,7 +52,7 @@ W sfs_write_device(ID device, B * buf, W start, W length, W * rlength)
     memcpy(packet.req.body.wri_req.dt, buf, length);
     rsize = kcall->port_call(send_port, &packet, sizeof(packet.req));
     if (rsize < 0) {
-	dbg_printf("sfs: cal_por error = %d\n", rsize);	/* */
+	dbg_printf("fs: cal_por error = %d\n", rsize);	/* */
 	return (ENODEV);
     }
 
@@ -66,10 +61,10 @@ W sfs_write_device(ID device, B * buf, W start, W length, W * rlength)
 }
 
 
-/* sfs_read_device - デバイスからデータを読み込む
+/* read_device - デバイスからデータを読み込む
  *
  */
-W sfs_read_device(ID device, B * buf, W start, W length, W * rlength)
+W read_device(ID device, B * buf, W start, W length, W * rlength)
 {
     devmsg_t packet;
     W error_no;
@@ -93,12 +88,12 @@ W sfs_read_device(ID device, B * buf, W start, W length, W * rlength)
 	    = (BLOCK_SIZE > rest_length) ? rest_length : BLOCK_SIZE;
 	rsize = kcall->port_call(send_port, &packet, sizeof(packet.req));
 	if (rsize < 0) {
-	    dbg_printf("sfs: cal_por error = %d\n", rsize);	/* */
+	    dbg_printf("fs: cal_por error = %d\n", rsize);	/* */
 	    return (error_no);
 	}
 
 	if (packet.res.body.rea_res.errinfo != E_OK) {
-	    dbg_printf("sfs: sfs_read_device errinfo = %d\n",
+	    dbg_printf("fs: read_device errinfo = %d\n",
 		    packet.res.body.rea_res.errinfo);
 	    return (packet.res.body.rea_res.errinfo);
 	}
@@ -111,11 +106,11 @@ W sfs_read_device(ID device, B * buf, W start, W length, W * rlength)
     return (E_OK);
 }
 
-/* sfs_open_device - デバイスに open メッセージを送る
+/* open_device - デバイスに open メッセージを送る
  *
  */
 
-W sfs_open_device(ID device, W * rsize)
+W open_device(ID device, W * rsize)
 {
     devmsg_t packet;
     W error_no;
@@ -133,7 +128,7 @@ W sfs_open_device(ID device, W * rsize)
     packet.req.body.opn_req.dd = dd;
     rlength = kcall->port_call(send_port, &packet, sizeof(packet.req));
     if (rlength < 0) {
-	dbg_printf("sfs: cal_por error = %d\n", rsize);	/* */
+	dbg_printf("fs: cal_por error = %d\n", rsize);	/* */
 	return (ENODEV);
     }
 
@@ -141,11 +136,11 @@ W sfs_open_device(ID device, W * rsize)
     return (packet.res.body.opn_res.errinfo);
 }
 
-/* sfs_close_device - デバイスに close メッセージを送る
+/* close_device - デバイスに close メッセージを送る
  *
  */
 
-W sfs_close_device(ID device)
+W close_device(ID device)
 {
     devmsg_t packet;
     W error_no;
@@ -163,7 +158,7 @@ W sfs_close_device(ID device)
     packet.req.body.cls_req.dd = dd;
     rsize = kcall->port_call(send_port, &packet, sizeof(packet.req));
     if (rsize < 0) {
-	dbg_printf("sfs: cal_por error = %d\n", rsize);	/* */
+	dbg_printf("fs: cal_por error = %d\n", rsize);	/* */
 	return (ENODEV);
     }
 
