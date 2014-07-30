@@ -22,7 +22,6 @@ Version 2, June 1991
 #include <errno.h>
 #include <unistd.h>
 #include <core.h>
-#include <fs/sfs.h>
 #include "api.h"
 #include "vfs.h"
 #include "process.h"
@@ -33,10 +32,7 @@ Version 2, June 1991
 
 #define EOK (0)
 
-#define F_FILE		0x0001
-#define F_PIPE		0x0002
-
-#define BLOCK_SIZE	512
+#define SU_UID		0
 
 /* ===========================  関数定義  =========================== */
 
