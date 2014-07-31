@@ -337,7 +337,8 @@ W mount_root(ID device, W fstype, W option)
     }
 
     fsp = fs_table[fstype].fsops;
-    err = FS_MOUNTROOT(fsp, device, rootfs, rootfile);
+    init_cache();
+    err = FS_MOUNT(fsp, device, rootfs, rootfile);
     if (err) {
 	return (err);
     }

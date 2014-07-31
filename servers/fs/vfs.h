@@ -104,19 +104,9 @@ Version 2, June 1991
 
 struct fsops {
     W(*fs_mount) ();
-    W(*fs_mountroot) ();
     W(*fs_umount) ();
-    W(*fs_statfs) ();
     W(*fs_syncfs) ();
-    W(*fs_read_inode) ();
-    W(*fs_write_inode) ();
-    W(*fs_read_super) ();
-    W(*fs_write_super) ();
-    W(*fs_get_inode) ();	/* open */
-    W(*fs_put_inode) ();	/* close */
 };
-
-#define FS_MOUNTROOT(fsp,device,rootfs,rootfile)	(fsp->fs_mountroot)(device, rootfs, rootfile)
 
 #define FS_MOUNT(fsp,device,rootfs,rootfile)	(fsp->fs_mount)(device, rootfs, rootfile)
 
@@ -128,22 +118,14 @@ struct iops {
     W(*i_close) ();
     W(*i_read) ();
     W(*i_write) ();
-    W(*i_stat) ();
     W(*i_truncate) ();
     W(*i_link) ();
     W(*i_unlink) ();
-    W(*i_symlink) ();		/* not used */
-    W(*i_chmod) ();
-    W(*i_chown) ();
-    W(*i_chgrp) ();
-    W(*i_rename) ();
     W(*i_sync) ();
     W(*i_mkdir) ();
     W(*i_rmdir) ();
     W(*i_getdents) ();
 };
-
-#define FILE_OPEN
 
 #define FILE_CLOSE(ip)	(ip->i_ops->i_close (ip))
 

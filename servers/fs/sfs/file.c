@@ -452,12 +452,6 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 }
 
 
-W sfs_i_stat()
-{
-    return (ENOTSUP);
-}
-
-
 W sfs_i_truncate(struct inode * ip, W newsize)
 {
     int nblock, blockno, inblock, offset, dinblock;
@@ -646,36 +640,6 @@ sfs_i_unlink(struct inode * parent, char *fname, struct access_info * acc)
     }
     fs_close_file(ip);
     return (EOK);
-}
-
-
-W sfs_i_symlink()
-{
-    return (ENOTSUP);
-}
-
-
-W sfs_i_chmod()
-{
-    return (ENOTSUP);
-}
-
-
-W sfs_i_chown()
-{
-    return (ENOTSUP);
-}
-
-
-W sfs_i_chgrp()
-{
-    return (ENOTSUP);
-}
-
-
-W sfs_i_rename()
-{
-    return (ENOTSUP);
 }
 
 

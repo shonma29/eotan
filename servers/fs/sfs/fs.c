@@ -94,16 +94,8 @@ Version 2, June 1991
 
 struct fsops sfs_fsops = {
     sfs_mount,
-    sfs_mountroot,
     sfs_umount,
-    sfs_statfs,
-    sfs_syncfs,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    sfs_get_inode,
-    sfs_put_inode,
+    sfs_syncfs
 };
 
 
@@ -113,15 +105,9 @@ struct iops sfs_iops = {
     sfs_i_close,
     sfs_i_read,
     sfs_i_write,
-    sfs_i_stat,
     sfs_i_truncate,
     sfs_i_link,
     sfs_i_unlink,
-    sfs_i_symlink,
-    sfs_i_chmod,
-    sfs_i_chown,
-    sfs_i_chgrp,
-    sfs_i_rename,
     sfs_i_sync,
     sfs_i_mkdir,
     sfs_i_rmdir,
@@ -204,20 +190,6 @@ W sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 }
 
 
-/* sfs_mountroot -
- *
- */
-W sfs_mountroot(ID device, struct fs * rootfsp, struct inode * rootfile)
-{
-#ifdef FMDEBUG
-    dbg_printf("sfs: mountroot, device = %x\n", device);
-#endif
-    init_cache();
-
-    return (sfs_mount(device, rootfsp, rootfile));
-}
-
-
 /* sfs_umount -
  *
  */
@@ -226,15 +198,6 @@ W sfs_umount(struct fs * rootfsp)
     /* super block 情報の sync とキャッシュ・データの無効化 */
     sfs_syncfs(rootfsp, 1);
     return (EOK);
-}
-
-
-/* sfs_statfs -
- *
- */
-W sfs_statfs()
-{
-    return (ENOTSUP);
 }
 
 
@@ -268,22 +231,4 @@ W sfs_syncfs(struct fs * fsp, W umflag)
 	return (error_no);
     }
     return (EOK);
-}
-
-
-/* sfs_get_inode -
- *
- */
-W sfs_get_inode()
-{
-    return (ENOTSUP);
-}
-
-
-/* sfs_put_inode -
- *
- */
-W sfs_put_inode()
-{
-    return (ENOTSUP);
 }

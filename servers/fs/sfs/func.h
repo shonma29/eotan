@@ -58,7 +58,6 @@ extern W	sfs_free_inode (struct fs *fsp, struct inode *ip);
 
 
 /* sfs_file.c */
-/* extern W	sfs_i_open (); */
 extern W	sfs_i_lookup (struct inode *parent, char *fname, W oflag,
 			      W mode, struct access_info *acc,
 			      struct inode **retip);
@@ -69,16 +68,10 @@ extern W	sfs_i_close ();
 extern W	sfs_i_read (struct inode *ip, W start, B *buf, W length, W *rlength);
 extern W	sfs_i_write (struct inode *ip, W start, B *buf, W size,
 			     W *rsize);
-extern W	sfs_i_stat ();
 extern W	sfs_i_truncate (struct inode *ip, W newsize);
 extern W	sfs_i_link ();
 extern W	sfs_i_unlink (struct inode *parent, char *fname,
 			      struct access_info *acc);
-extern W	sfs_i_symlink ();
-extern W	sfs_i_chmod ();
-extern W	sfs_i_chown ();
-extern W	sfs_i_chgrp ();
-extern W	sfs_i_rename ();
 extern W	sfs_i_sync (struct inode *ip);
 extern W	sfs_i_mkdir (struct inode *parent, char *fname, W mode,
 			     struct access_info *acc, struct inode **retip);
@@ -86,12 +79,8 @@ extern W	sfs_i_rmdir (struct inode *parent, char *fname,
 			     struct access_info *acc);
 
 /* sfs_fs.c */
-extern W sfs_mountroot (ID device, struct fs *rootfsp, struct inode *rootfile);
 extern W sfs_mount (ID device, struct fs *rootfsp, struct inode *rootfile);
 extern W sfs_syncfs (struct fs *fsp, W umflag);
 extern W sfs_umount(struct fs * rootfsp);
-extern W sfs_statfs();
-extern W sfs_get_inode();
-extern W sfs_put_inode();
 
 #endif /* __SFS_FUNC_H__ */
