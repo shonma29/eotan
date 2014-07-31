@@ -128,12 +128,7 @@ W sfs_getdents(struct inode *ip, ID caller, W offset,
 	       VP buf, UW length, W *rsize, W *fsize)
 {
   W nentry, i, s, error_no, len;
-  struct sfs_dirent {
-    long		d_ino;
-    unsigned long	d_off;
-    unsigned short	d_reclen;
-    char		d_name[SFS_MAXNAMELEN+1];
-  } dent;
+  struct dirent dent;
   kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
   *rsize = 0; *fsize = 0;
@@ -150,8 +145,8 @@ W sfs_getdents(struct inode *ip, ID caller, W offset,
       if ((*rsize) + len >= length) return(EOK);
       dent.d_reclen = len;
       dent.d_off = i*s;
-      strncpy(dent.d_name, dirp[i].sfs_d_name, SFS_MAXNAMELEN);
-      dent.d_name[SFS_MAXNAMELEN] = '\0';
+      strncpy(dent.d_name, dirp[i].sfs_d_name, MAX_NAME_LEN);
+      dent.d_name[MAX_NAME_LEN] = '\0';
       error_no = kcall->region_put(caller, buf+(*rsize), len, &dent);
       if (error_no) return(error_no);
       *rsize += len;

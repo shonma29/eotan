@@ -100,12 +100,9 @@ Version 2, June 1991
 
 /* file system types. */
 
-#define FS_SFS		1
-
 struct fsops {
     W(*fs_mount) ();
     W(*fs_umount) ();
-    W(*fs_syncfs) ();
 };
 
 #define FS_MOUNT(fsp,device,rootfs,rootfile)	(fsp->fs_mount)(device, rootfs, rootfile)
@@ -118,7 +115,6 @@ struct iops {
     W(*i_close) ();
     W(*i_read) ();
     W(*i_write) ();
-    W(*i_truncate) ();
     W(*i_link) ();
     W(*i_unlink) ();
     W(*i_sync) ();
@@ -294,8 +290,6 @@ extern W fs_convert_path(struct inode *ip, B * buf, W length);
 
 extern W permit(struct inode *ip, struct access_info *acc, UW bits);
 
-extern struct fs fs_buf[], *free_fs, *rootfs;
-extern struct inode inode_buf[], *free_inode, *rootfile;
-extern struct file *file_buf, *free_file;
+extern struct inode *rootfile;
 
 #endif				/* __FS_VFS_H__ */

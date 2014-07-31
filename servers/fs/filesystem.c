@@ -160,15 +160,18 @@ extern struct fsops sfs_fsops;
 struct fs_entry {
     B *fsname;
     struct fsops *fsops;
-} fs_table[MAXFS + 1] = {
+};
+
+static struct fs_entry fs_table[MAXFS + 1] = {
 
     {
     "null", NULL}, {
 "sfs", &sfs_fsops},};
 
 
-struct fs fs_buf[MAX_MOUNT], *free_fs = NULL, *rootfs = NULL;
-struct inode inode_buf[MAX_INODE], *free_inode = NULL, *rootfile = NULL;
+static struct fs fs_buf[MAX_MOUNT], *free_fs = NULL, *rootfs = NULL;
+static struct inode inode_buf[MAX_INODE], *free_inode = NULL;
+struct inode *rootfile = NULL;
 static W mode_map[] = { R_OK, W_OK, R_OK | W_OK };
 
 

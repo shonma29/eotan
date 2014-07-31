@@ -88,14 +88,14 @@ Version 2, June 1991
  *
  */
 
+#include <fstype.h>
 #include "../fs.h"
 #include "func.h"
 
 
 struct fsops sfs_fsops = {
     sfs_mount,
-    sfs_umount,
-    sfs_syncfs
+    sfs_umount
 };
 
 
@@ -105,7 +105,6 @@ struct iops sfs_iops = {
     sfs_i_close,
     sfs_i_read,
     sfs_i_write,
-    sfs_i_truncate,
     sfs_i_link,
     sfs_i_unlink,
     sfs_i_sync,

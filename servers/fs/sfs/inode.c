@@ -71,6 +71,8 @@ Version 2, June 1991
 #ifndef ROUNDUP
 #define ROUNDUP(x,align)	(((((int)x) + ((align) - 1))/(align))*(align))
 #endif
+
+static W	sfs_get_inode_offset (struct fs *fsp, W ino);
 
 
 
@@ -86,7 +88,7 @@ Version 2, June 1991
 /* get_inode_offset -
  *
  */
-W sfs_get_inode_offset(struct fs *fsp, W ino)
+static W sfs_get_inode_offset(struct fs *fsp, W ino)
 {
     W offset;
     W nblock;

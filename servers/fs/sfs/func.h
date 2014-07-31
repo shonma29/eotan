@@ -21,20 +21,12 @@ Version 2, June 1991
 extern struct iops	sfs_iops;
 
 
-/* sfs_block.c */
+/* block.c */
 extern W sfs_alloc_block (W fd, struct fs *fsp);
 extern W sfs_get_block_num (W fd, struct fs *fsp,
 			    struct sfs_inode *ip, W blockno);
-extern W sfs_get_indirect_block_num (W fd, struct fs *fsp,
-				     struct sfs_inode *ip, W blockno);
-extern W sfs_get_dindirect_block_num (W fd, struct fs *fsp,
-				      struct sfs_inode *ip, W blockno);
 extern W sfs_set_block_num (W fd, struct fs *fsp,
 	       struct sfs_inode *ip, W blockno, W newblock);
-extern W sfs_set_indirect_block_num (W fd, struct fs *fsp, 
-				     struct sfs_inode *ip, W blockno, W newblock);
-extern W sfs_set_dindirect_block_num (W fd, struct fs *fsp,
-				      struct sfs_inode *ip, W blockno, W newblock);
 extern W sfs_free_block (W fd, struct fs *fsp, W blockno);
 extern W sfs_free_indirect(W fd, struct fs *fsp, struct sfs_inode *ip,
 			   int offset, int inblock);
@@ -43,21 +35,20 @@ extern W sfs_free_dindirect(W fd, struct fs *fsp, struct sfs_inode *ip,
 extern W sfs_free_all_dindirect(W fd, struct fs *fsp,
 				struct sfs_inode *ip, int inblock);
 
-/* sfs_dir.c */
+/* dir.c */
 extern W sfs_read_dir (struct inode *ip, W nentry, struct sfs_dir *dirp);
 extern W sfs_write_dir (struct inode *parentp, W nentry, struct sfs_dir *dirp);
 extern W sfs_getdents (struct inode *ip, ID caller, W offset, VP buf,
 		       UW length, W *rsize, W *fsize);
 
-/* sfs_inode.c */
-extern W	sfs_get_inode_offset (struct fs *fsp, W ino);
+/* inode.c */
 extern W	sfs_read_inode (struct fs *fsp, W index, struct inode *ip);
 extern W	sfs_alloc_inode (ID fd, struct fs *fsp);
 extern W	sfs_write_inode (W fd, struct fs *fsp, struct sfs_inode *ip);
 extern W	sfs_free_inode (struct fs *fsp, struct inode *ip);
 
 
-/* sfs_file.c */
+/* file.c */
 extern W	sfs_i_lookup (struct inode *parent, char *fname, W oflag,
 			      W mode, struct access_info *acc,
 			      struct inode **retip);
@@ -78,7 +69,7 @@ extern W	sfs_i_mkdir (struct inode *parent, char *fname, W mode,
 extern W	sfs_i_rmdir (struct inode *parent, char *fname,
 			     struct access_info *acc);
 
-/* sfs_fs.c */
+/* fs.c */
 extern W sfs_mount (ID device, struct fs *rootfsp, struct inode *rootfile);
 extern W sfs_syncfs (struct fs *fsp, W umflag);
 extern W sfs_umount(struct fs * rootfsp);

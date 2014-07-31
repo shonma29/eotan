@@ -61,6 +61,15 @@ Version 2, June 1991
 #include "func.h"
 
 
+static W sfs_get_indirect_block_num (W fd, struct fs *fsp,
+				     struct sfs_inode *ip, W blockno);
+static W sfs_get_dindirect_block_num (W fd, struct fs *fsp,
+				      struct sfs_inode *ip, W blockno);
+static W sfs_set_indirect_block_num (W fd, struct fs *fsp, 
+				     struct sfs_inode *ip, W blockno, W newblock);
+static W sfs_set_dindirect_block_num (W fd, struct fs *fsp,
+				      struct sfs_inode *ip, W blockno, W newblock);
+
 /* ブロックに関係している処理
  *
  * sfs_alloc_block()
@@ -303,7 +312,7 @@ sfs_get_block_num(W fd, struct fs * fsp, struct sfs_inode * ip, W blockno)
 }
 
 
-W
+static W
 sfs_get_indirect_block_num(W fd, struct fs * fsp, struct sfs_inode * ip,
 			   W blockno)
 {
@@ -326,7 +335,7 @@ sfs_get_indirect_block_num(W fd, struct fs * fsp, struct sfs_inode * ip,
 }
 
 
-W
+static W
 sfs_get_dindirect_block_num(W fd, struct fs * fsp, struct sfs_inode * ip,
 			    W blockno)
 {
@@ -410,7 +419,7 @@ sfs_set_block_num(W fd,
 
 
 
-W
+static W
 sfs_set_indirect_block_num(W fd,
 			   struct fs * fsp,
 			   struct sfs_inode * ip, W blockno, W newblock)
@@ -456,7 +465,7 @@ sfs_set_indirect_block_num(W fd,
 /* sfs_set_dindirect_block_num - 
  *
  */
-W
+static W
 sfs_set_dindirect_block_num(W fd,
 			    struct fs * fsp,
 			    struct sfs_inode * ip, W blockno, W newblock)
