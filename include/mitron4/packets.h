@@ -60,15 +60,6 @@ typedef struct t_cpor {
 	UINT maxrmsz;
 } T_CPOR;
 
-typedef struct t_rpor {
-	ID ctskid;
-	ID atskid;
-} T_RPOR;
-
-typedef struct t_rrdv {
-	ID wtskid;
-} T_RRDV;
-
 /**
  * interrupt
  */
