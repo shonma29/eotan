@@ -38,7 +38,7 @@ static ER (*svc_entries[])(svc_arg *) = {
 
 ER syscall(svc_arg *argp, UW svcno)
 {
-	return (--svcno >= sizeof(svc_entries) / sizeof(svc_entries[0]))?
+	return (svcno >= sizeof(svc_entries) / sizeof(svc_entries[0]))?
 			E_NOSPT:(svc_entries[svcno](argp));
 }
 

@@ -30,7 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 /**
  * service call no
  */
-#define SVC_THREAD_DELAY (1)
-#define SVC_PORT_CALL (2)
+#define SVC_THREAD_DELAY (0)
+#define SVC_PORT_CALL (1)
 
 #endif
