@@ -28,7 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <services.h>
 #include <string.h>
 #include <nerve/kcall.h>
-#include "../../servers/fs/api.h"
+#include <sys/syscall.h>
 
 
 ER bind_device(UW id, UB *name, ID port)

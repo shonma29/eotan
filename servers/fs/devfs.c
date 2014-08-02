@@ -33,7 +33,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/hash.h>
 #include "../../lib/libserv/libserv.h"
 #include "devfs.h"
-#include "api.h"
 #include "fs.h"
 
 static system_info_t *sysinfo = (system_info_t*)SYSTEM_INFO_ADDR;

@@ -92,6 +92,7 @@ Version 2, June 1991
 #define __FS_PROCESS_H__	1
 
 #include <fs/config.h>
+#include <sys/syscall.h>
 
 enum proc_status
 {

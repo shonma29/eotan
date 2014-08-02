@@ -23,42 +23,39 @@ Version 2, June 1991
 
 #include <core/types.h>
 
-#define NR_POSIX_SYSCALL	27
-
 /* =================== POSIX システムコール番号の定義 =============== */
-#define PSC_NOACTION     0
-#define PSC_ACCESS       1
-#define PSC_CHDIR        2
-#define PSC_CHMOD        3
-#define PSC_CLOSE        4
-#define PSC_DUP          5
-#define PSC_EXEC         6
-#define PSC_EXIT         7
-#define PSC_FCNTL        8
-#define PSC_FORK         9
-#define PSC_FSTAT	 10
-#define PSC_LINK         11
-#define PSC_LSEEK        12
-#define PSC_MKDIR        13
-#define PSC_OPEN         14
-#define PSC_READ         15
-#define PSC_RMDIR        16
-#define PSC_UMASK        17
-#define PSC_UNLINK       18
-#define PSC_WAITPID      19
-#define PSC_WRITE        20
-#define PSC_GETDENTS	 21
-#define PSC_MOUNT        22
-#define PSC_STATFS       23
-#define PSC_UMOUNT       24
+#define PSC_ACCESS       0
+#define PSC_CHDIR        1
+#define PSC_CHMOD        2
+#define PSC_CLOSE        3
+#define PSC_DUP          4
+#define PSC_EXEC         5
+#define PSC_EXIT         6
+#define PSC_FCNTL        7
+#define PSC_FORK         8
+#define PSC_FSTAT	 9
+#define PSC_LINK         10
+#define PSC_LSEEK        11
+#define PSC_MKDIR        12
+#define PSC_OPEN         13
+#define PSC_READ         14
+#define PSC_RMDIR        15
+#define PSC_UMASK        16
+#define PSC_UNLINK       17
+#define PSC_WAITPID      18
+#define PSC_WRITE        19
+#define PSC_GETDENTS	 20
+#define PSC_MOUNT        21
+#define PSC_STATFS       22
+#define PSC_UMOUNT       23
 
 /* =================== SIGNAL 関係 =============== */
-#define PSC_KILL         25
+#define PSC_KILL         24
 
 /* =================== miserous system calls  =============== */
-#define PSC_DUP2         26	/* 不要? */
+#define PSC_DUP2         25	/* 不要? */
 
-#define PSC_BIND_DEVICE (27)
+#define PSC_BIND_DEVICE (26)
 
 /* =============== 各システムコール用の 構造体定義 ================== */
 
@@ -353,7 +350,7 @@ struct psc_bind_device
 struct posix_request
 {
   ID	procid;			/* 呼び出し元のプロセス ID */
-  W	operation;		/* 要求番号(システムコールに対応)	*/
+  UW	operation;		/* 要求番号(システムコールに対応)	*/
 
   union {
     struct psc_access		par_access;

@@ -22,10 +22,10 @@ Version 2, June 1991
 #include <errno.h>
 #include <unistd.h>
 #include <core.h>
-#include "api.h"
 #include "vfs.h"
 #include "process.h"
 #include "mm.h"
+#include "sys/syscall.h"
 #include "../../lib/libserv/libserv.h"
 
 /* =========================== マクロ定義 =========================== */

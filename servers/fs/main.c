@@ -86,11 +86,9 @@ Version 2, June 1991
  */
 
 #include <nerve/kcall.h>
+#include "api.h"
 #include "fs.h"
 #include "devfs.h"
-
-#define HEAP_ADDR 0x80280000
-#define MAX_HEAP (512 * 1024)
 
 static void banner(void);
 
@@ -149,8 +147,7 @@ void start(VP_INT exinf)
 #endif
 
 	/* 取得したリクエストを処理する */
-	if ((request.operation < 0)
-	    || (request.operation > NR_POSIX_SYSCALL)) {
+	if (request.operation >= sizeof(syscall_table) / sizeof(syscall_table[0])) {
 	    /* リクエスト要求にあるオペレーションは、サポートしていない */
 	    error_response((RDVNO)rdvno, ENOTSUP);
 	} else {
