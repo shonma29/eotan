@@ -43,7 +43,7 @@ typedef struct {
 	size_t max;
 	size_t tupple_size;
 	hash_entry_t *entries;
-	list_t free;
+	list_t spares;
 	list_t tbl[];
 } hash_t;
 

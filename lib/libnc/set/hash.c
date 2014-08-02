@@ -104,7 +104,7 @@ hash_t *hash_create(const size_t max,
 			h = NULL;
 		}
 		else {
-			init_list(&(h->free), h->entries, max);
+			init_list(&(h->spares), h->entries, max);
 			h->calc = calc;
 			h->cmp = cmp;
 			h->size = size;
@@ -125,7 +125,7 @@ void hash_destroy(hash_t *h) {
 
 void hash_clear(hash_t *h) {
 	h->num = 0;
-	init_list(&(h->free), h->entries, h->max);
+	init_list(&(h->spares), h->entries, h->max);
 	init_tbl(h->tbl, h->size);
 }
 
@@ -162,7 +162,7 @@ int hash_put(hash_t *h, const void *key, const void *value) {
 	list_t *p = find_entry(head, key, h->cmp);
 
 	if (!p) {
-		p = list_pick(&(h->free));
+		p = list_pick(&(h->spares));
 		if (!p)	return HASH_ERR;
 
 		h->num++;
