@@ -28,7 +28,7 @@ Version 2, June 1991
 #include <nerve/kcall.h>
 #include "fs.h"
 
-W psc_chdir_f(RDVNO rdvno, struct posix_request *req)
+void psc_chdir_f(RDVNO rdvno, struct posix_request *req)
 {
     struct inode *oldip;
     B path[MAX_NAMELEN];
@@ -41,13 +41,13 @@ W psc_chdir_f(RDVNO rdvno, struct posix_request *req)
     if (kcall->region_get(get_rdv_tid(rdvno), req->param.par_chmod.path,
 		 req->param.par_chmod.pathlen + 1, path)) {
 	put_response(rdvno, EINVAL, -1, 0);
-	return (FALSE);
+	return;
     }
 
     err = proc_get_cwd(req->procid, &oldip);
     if (err) {
 	put_response(rdvno, err, -1, 0);
-	return (FALSE);
+	return;
     }
 
     if (*path == '/') {
@@ -60,18 +60,18 @@ W psc_chdir_f(RDVNO rdvno, struct posix_request *req)
 
     if (proc_get_uid(req->procid, &acc.uid)) {
 	put_response(rdvno, EINVAL, -1, 0);
-	return (FALSE);
+	return;
     }
 
     if (proc_get_gid(req->procid, &acc.gid)) {
 	put_response(rdvno, EINVAL, -1, 0);
-	return (FALSE);
+	return;
     }
 
     err = fs_lookup(startip, path, O_RDONLY, 0, &acc, &ipp);
     if (err) {
 	put_response(rdvno, err, -1, 0);
-	return (FALSE);
+	return;
     }
 
     if ((ipp->i_mode & S_IFMT) != S_IFDIR) {
@@ -81,29 +81,28 @@ W psc_chdir_f(RDVNO rdvno, struct posix_request *req)
 	 */
 	fs_close_file(ipp);
 	put_response(rdvno, ENOTDIR, -1, 0);
-	return (FALSE);
+	return;
     }
 
     err = permit(ipp, &acc, X_OK);
     if (err) {
 	put_response(rdvno, err, -1, 0);
-	return (FALSE);
+	return;
     }
 
     err = proc_set_cwd(req->procid, ipp);
     if (err) {
 	put_response(rdvno, err, -1, 0);
-	return (FALSE);
+	return;
     }
 
     dealloc_inode(oldip);
     put_response(rdvno, EOK, 0, 0);
-    return (TRUE);
 }
 
 /* psc_umask_f - umask の設定
  */
-W
+void
 psc_umask_f (RDVNO rdvno, struct posix_request *req)
 {
   W	error_no;
@@ -117,7 +116,7 @@ psc_umask_f (RDVNO rdvno, struct posix_request *req)
   if (error_no)
     {
       put_response (rdvno, error_no, -1, 0);
-      return (FALSE);
+      return;
     }
   
   /* 新しい umask の値を設定する
@@ -126,9 +125,8 @@ psc_umask_f (RDVNO rdvno, struct posix_request *req)
   if (error_no)
     {
       put_response (rdvno, error_no, -1, 0);
-      return (FALSE);
+      return;
     }
 
   put_response (rdvno, EOK, old_umask, 0);
-  return (TRUE);
 }  

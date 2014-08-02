@@ -32,7 +32,7 @@ Version 2, June 1991
 
 static W control_device(ID device, struct posix_request *preq, ID caller);
 
-W psc_close_f(RDVNO rdvno, struct posix_request *req)
+void psc_close_f(RDVNO rdvno, struct posix_request *req)
 {
     struct file *fp;
     W err;
@@ -40,12 +40,12 @@ W psc_close_f(RDVNO rdvno, struct posix_request *req)
     err = proc_get_file(req->procid, req->param.par_close.fileid, &fp);
     if (err) {
 	put_response(rdvno, err, -1, 0);
-	return (FALSE);
+	return;
     }
 
     if (fp->f_inode == NULL) {
 	put_response(rdvno, EBADF, -1, 0);
-	return (FALSE);
+	return;
     }
 
     if (fp->f_inode->i_mode & S_IFCHR) {
@@ -57,17 +57,16 @@ W psc_close_f(RDVNO rdvno, struct posix_request *req)
     err = fs_close_file(fp->f_inode);
     if (err) {
 	put_response(rdvno, err, -1, 0);
-	return (FALSE);
+	return;
     }
 
     fp->f_inode = NULL;
     put_response(rdvno, EOK, 0, 0);
-    return (TRUE);
 }
 
 /* psc_dup_f - ファイル記述子の複製
  */
-W
+void
 psc_dup_f (RDVNO rdvno, struct posix_request *req)
 {
   W		error_no;
@@ -81,7 +80,7 @@ psc_dup_f (RDVNO rdvno, struct posix_request *req)
   if (error_no)
     {
       put_response (rdvno, error_no, -1, 0);
-      return (FALSE);
+      return;
     }
 
 
@@ -90,14 +89,14 @@ psc_dup_f (RDVNO rdvno, struct posix_request *req)
       /* 複製するファイル記述子の番号がおかしかった
        */
       put_response (rdvno, EBADF, -1, 0);
-      return (FALSE);
+      return;
     }
 
   error_no = proc_alloc_fileid (req->procid, &newfileid);
   if (error_no)
     {
       put_response (rdvno, error_no, -1, 0);
-      return (FALSE);
+      return;
     }
 
   fp->f_inode->i_refcount++;
@@ -105,16 +104,15 @@ psc_dup_f (RDVNO rdvno, struct posix_request *req)
   if (error_no)
     {
       put_response (rdvno, error_no, -1, 0);
-      return (FALSE);
+      return;
     }
 
   put_response (rdvno, EOK, newfileid, 0);
-  return (TRUE);
 }  
 
 /* psc_dup2_f -ファイル記述子の複製
  */
-W
+void
 psc_dup2_f (RDVNO rdvno, struct posix_request *req)
 {
   W		error_no;
@@ -127,7 +125,7 @@ psc_dup2_f (RDVNO rdvno, struct posix_request *req)
   if (error_no)
     {
       put_response (rdvno, error_no, -1, 0);
-      return (FALSE);
+      return;
     }
 
 
@@ -137,20 +135,20 @@ psc_dup2_f (RDVNO rdvno, struct posix_request *req)
        * (ファイルをオープンしていない)
        */
       put_response (rdvno, EBADF, -1, 0);
-      return (FALSE);
+      return;
     }
 
   error_no = proc_get_file (req->procid, req->param.par_dup2.fileid2, &fp2);
   if (error_no) {
     put_response (rdvno, error_no, -1, 0);
-    return (FALSE);
+    return;
   }
   if (fp2->f_inode != NULL) {
     /* 既に open されている file id だった */
     error_no = fs_close_file (fp2->f_inode);
     if (error_no) {
       put_response (rdvno, error_no, -1, 0);
-      return (FALSE);
+      return;
     }
     fp2->f_inode = NULL;
   }
@@ -160,11 +158,10 @@ psc_dup2_f (RDVNO rdvno, struct posix_request *req)
   if (error_no)
     {
       put_response (rdvno, error_no, -1, 0);
-      return (FALSE);
+      return;
     }
 
   put_response (rdvno, EOK, req->param.par_dup2.fileid2, 0);
-  return (TRUE);
 }  
 
 /* ctl_device - デバイスにコントロールメッセージを送る
@@ -216,7 +213,7 @@ static W control_device(ID device, struct posix_request *preq, ID caller)
 
 /* psc_fcntl_f - ファイルに対して特殊な操作を行う。
  */
-W psc_fcntl_f(RDVNO rdvno, struct posix_request * req)
+void psc_fcntl_f(RDVNO rdvno, struct posix_request * req)
 {
     W error_no;
     struct file *fp;
@@ -225,13 +222,13 @@ W psc_fcntl_f(RDVNO rdvno, struct posix_request * req)
     error_no = proc_get_file(req->procid, req->param.par_fcntl.fileid, &fp);
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
-	return (FALSE);
+	return;
     } else if (fp == 0) {
 	put_response(rdvno, EINVAL, -1, 0);
-	return (FALSE);
+	return;
     } else if (fp->f_inode == 0) {
 	put_response(rdvno, EINVAL, -1, 0);
-	return (FALSE);
+	return;
     }
 
     if (fp->f_inode->i_mode & S_IFCHR) {
@@ -244,21 +241,19 @@ W psc_fcntl_f(RDVNO rdvno, struct posix_request * req)
 	error_no = control_device(device, req, get_rdv_tid(rdvno));
 	if (error_no) {
 	    put_response(rdvno, error_no, error_no, 0);
-	    return (FALSE);
+	    return;
 	} else {
 	    put_response(rdvno, EOK, error_no, 0);
-	    return (TRUE);
+	    return;
 	}
     } else {
 	/* とりあえず、サポートしていないというエラーで返す
 	 */
 	put_response(rdvno, ENOTSUP, 0, 0);
     }
-
-    return (FALSE);
 }
 
-W psc_lseek_f(RDVNO rdvno, struct posix_request *req)
+void psc_lseek_f(RDVNO rdvno, struct posix_request *req)
 {
     struct file *fp;
     W error_no;
@@ -266,7 +261,7 @@ W psc_lseek_f(RDVNO rdvno, struct posix_request *req)
     error_no = proc_get_file(req->procid, req->param.par_lseek.fileid, &fp);
     if (error_no) {
 	put_response(rdvno, error_no, -1, error_no);
-	return (FALSE);
+	return;
     }
 
     switch (req->param.par_lseek.mode) {
@@ -284,7 +279,7 @@ W psc_lseek_f(RDVNO rdvno, struct posix_request *req)
 
     default:
 	put_response(rdvno, EINVAL, -1, 0);
-	return (FALSE);
+	return;
     }
 
     if (fp->f_offset < 0) {
@@ -298,13 +293,11 @@ W psc_lseek_f(RDVNO rdvno, struct posix_request *req)
     }
 
     put_response(rdvno, EOK, fp->f_offset, 0);
-
-    return (TRUE);
 }
 
 /* psc_open_f - ファイルのオープン
  */
-W psc_open_f(RDVNO rdvno, struct posix_request *req)
+void psc_open_f(RDVNO rdvno, struct posix_request *req)
 {
     B pathname[MAX_NAMELEN];
     W fileid;
@@ -320,7 +313,7 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
     if (error_no) {
 	/* メモリ取得エラー */
 	put_response(rdvno, ENOMEM, -1, 0);
-	return (FALSE);
+	return;
     }
 
     /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。
@@ -334,13 +327,13 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
 	else
 	    put_response(rdvno, EFAULT, -1, 0);
 
-	return (FALSE);
+	return;
     }
     if (*pathname != '/') {
 	error_no = proc_get_cwd(req->procid, &startip);
 	if (error_no) {
 	    put_response(rdvno, error_no, -1, 0);
-	    return (FALSE);
+	    return;
 	}
     } else {
 	startip = rootfile;
@@ -348,19 +341,19 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
     error_no = proc_get_uid(req->procid, &(acc.uid));
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
-	return (FALSE);
+	return;
     }
 
     error_no = proc_get_gid(req->procid, &(acc.gid));
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
-	return (FALSE);
+	return;
     }
 
     error_no = proc_get_umask(req->procid, &umask);
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
-	return (FALSE);
+	return;
     }
 
     error_no = fs_open_file(pathname,
@@ -370,7 +363,7 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
     if (error_no) {
 	/* ファイルがオープンできない */
 	put_response(rdvno, error_no, -1, 0);
-	return (FALSE);
+	return;
     }
 
     if ((newip->i_mode & S_IFMT) == S_IFDIR) {
@@ -384,13 +377,13 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
 	if (acc.uid != SU_UID) {
 	    fs_close_file(newip);
 	    put_response(rdvno, EACCES, -1, 0);
-	    return (FALSE);
+	    return;
 	}
 
 	if (req->param.par_open.oflag != O_RDONLY) {
 	    fs_close_file(newip);
 	    put_response(rdvno, EISDIR, -1, 0);
-	    return (FALSE);
+	    return;
 	}
     } else if (newip->i_mode & S_IFCHR) {
 	/* スペシャルファイルだった */
@@ -402,7 +395,7 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
 	if (error_no != E_OK) {
 	    fs_close_file(newip);
 	    put_response(rdvno, EACCES, -1, 0);
-	    return (FALSE);
+	    return;
 	}
     }
 
@@ -410,16 +403,15 @@ W psc_open_f(RDVNO rdvno, struct posix_request *req)
 		      req->param.par_open.oflag, newip)) {
 	fs_close_file(newip);
 	put_response(rdvno, EINVAL, -1, 0);
-	return (FALSE);
+	return;
     }
 
     put_response(rdvno, EOK, fileid, 0);
-    return (TRUE);
 }
 
 /* psc_read_f - ファイルからのデータの読み込み
  */
-W psc_read_f(RDVNO rdvno, struct posix_request *req)
+void psc_read_f(RDVNO rdvno, struct posix_request *req)
 {
     W error_no;
     struct file *fp;
@@ -433,24 +425,24 @@ W psc_read_f(RDVNO rdvno, struct posix_request *req)
     error_no = proc_get_file(req->procid, req->param.par_read.fileid, &fp);
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
-	return (FALSE);
+	return;
     } else if (fp == 0) {
 	put_response(rdvno, EINVAL, -1, 0);
-	return (FALSE);
+	return;
     } else if (fp->f_inode == 0) {
 	put_response(rdvno, EINVAL, -1, 0);
-	return (FALSE);
+	return;
     }
 
     if (fp->f_omode == O_WRONLY) {
 	put_response(rdvno, EBADF, -1, 0);
-	return (FALSE);
+	return;
     }
 
     if (fp->f_flag & F_PIPE) {
 	/* パイプの読み書き */
 	put_response(rdvno, ENOTSUP, -1, 0);
-	return (FALSE);
+	return;
     }
 
     if (fp->f_inode->i_mode & S_IFCHR) {
@@ -485,12 +477,12 @@ W psc_read_f(RDVNO rdvno, struct posix_request *req)
 	}
 	if (error_no) {
 	    put_response(rdvno, error_no, -1, 0);
-	    return (FALSE);
+	    return;
 	}
 
 	fp->f_offset += i;
 	put_response(rdvno, EOK, i, 0);
-	return (TRUE);
+	return;
     }
 #ifdef DEBUG
     dbg_printf
@@ -501,7 +493,7 @@ W psc_read_f(RDVNO rdvno, struct posix_request *req)
 
     if (fp->f_offset >= fp->f_inode->i_size) {
 	put_response(rdvno, EOK, 0, 0);
-	return (TRUE);
+	return;
     }
     for (i = 0, rest_length = req->param.par_read.length;
 	 rest_length > 0; rest_length -= rlength, i += rlength) {
@@ -523,14 +515,13 @@ W psc_read_f(RDVNO rdvno, struct posix_request *req)
     }
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
-	return (FALSE);
+	return;
     }
     fp->f_offset += i;
     put_response(rdvno, EOK, i, 0);
-    return (TRUE);
 }
 
-W psc_write_f(RDVNO rdvno, struct posix_request *req)
+void psc_write_f(RDVNO rdvno, struct posix_request *req)
 {
     W error_no;
     struct file *fp;
@@ -546,24 +537,24 @@ W psc_write_f(RDVNO rdvno, struct posix_request *req)
     error_no = proc_get_file(req->procid, req->param.par_write.fileid, &fp);
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
-	return (FALSE);
+	return;
     } else if (fp == 0) {
 	put_response(rdvno, EINVAL, -1, 0);
-	return (FALSE);
+	return;
     } else if (fp->f_inode == 0) {
 	put_response(rdvno, EINVAL, -1, 0);
-	return (FALSE);
+	return;
     }
 
     if (fp->f_omode == O_RDONLY) {
 	put_response(rdvno, EBADF, -1, 0);
-	return (FALSE);
+	return;
     }
 
     if (fp->f_flag & F_PIPE) {
 	/* パイプの読み書き */
 	put_response(rdvno, ENOTSUP, -1, 0);
-	return (FALSE);
+	return;
     }
 #ifdef debug
     dbg_printf
@@ -588,7 +579,7 @@ W psc_write_f(RDVNO rdvno, struct posix_request *req)
     }
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
-	return (FALSE);
+	return;
     }
 
     for (i = 0, rest_length = req->param.par_write.length;
@@ -627,10 +618,9 @@ W psc_write_f(RDVNO rdvno, struct posix_request *req)
 
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
-	return (FALSE);
+	return;
     }
 
     fp->f_offset += i;
     put_response(rdvno, EOK, i, 0);
-    return (TRUE);
 }

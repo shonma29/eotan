@@ -160,7 +160,7 @@ Version 2, June 1991
 #define s(q, v)
 #endif
 
-static W psc_noaction_f(RDVNO rdvno, struct posix_request *req);
+static void psc_noaction_f(RDVNO rdvno, struct posix_request *req);
 
 struct posix_syscall	syscall_table[] =
 {
@@ -194,7 +194,6 @@ struct posix_syscall	syscall_table[] =
   { s("bind_device", PSC_BIND_DEVICE) psc_bind_device_f },
 };
 
-static W psc_noaction_f(RDVNO rdvno, struct posix_request *req) {
+static void psc_noaction_f(RDVNO rdvno, struct posix_request *req) {
 	put_response(rdvno, ENOTSUP, 0, 0);
-	return FALSE;
 }

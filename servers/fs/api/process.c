@@ -29,7 +29,7 @@ Version 2, June 1991
 
 /* psc_exec_f - 指定されたプログラムファイルをメモリ中に読み込む
  */
-W psc_exec_f(RDVNO rdvno, struct posix_request *req)
+void psc_exec_f(RDVNO rdvno, struct posix_request *req)
 {
     B pathname[MAX_NAMELEN];
     W error_no;
@@ -50,7 +50,7 @@ W psc_exec_f(RDVNO rdvno, struct posix_request *req)
 	else
 	    put_response(rdvno, EFAULT, -1, 0);
 
-	return (FALSE);
+	return;
     }
 #ifdef EXEC_DEBUG
     dbg_printf("fs: exec: pathname is %s\n", pathname);
@@ -67,16 +67,15 @@ W psc_exec_f(RDVNO rdvno, struct posix_request *req)
 	    /* exit が実行されることは無いので，ここで開放する */
 	    proc_exit(req->procid);
 	}
-	return (FALSE);
+	return;
     }
 //TODO check if rdvno will be disposed
     put_response(rdvno, EOK, 0, 0);
-    return (TRUE);
 }
 
 /* psc_exit_f - プロセスを終了させる
  */
-W
+void
 psc_exit_f (RDVNO rdvno, struct posix_request *req)
 {
   struct proc *myprocp, *procp;
@@ -92,7 +91,7 @@ psc_exit_f (RDVNO rdvno, struct posix_request *req)
     put_response (rdvno, ESRCH, 0, 0);
     /* メッセージの呼び出し元にエラーを返しても処理できないが，
        タスクは exd_tsk で終了する */
-    return error_no;
+    return;
   }
 
   myprocp->proc_exst = req->param.par_exit.evalue;
@@ -102,7 +101,7 @@ psc_exit_f (RDVNO rdvno, struct posix_request *req)
     put_response (rdvno, ESRCH, 0, 0);
     /* メッセージの呼び出し元にエラーを返しても処理できないが，
        タスクは exd_tsk で終了する */
-    return error_no;
+    return;
   }
 
   wpid = procp->proc_wpid;
@@ -139,12 +138,11 @@ psc_exit_f (RDVNO rdvno, struct posix_request *req)
   kcall->thread_destroy(tskid);
 
   put_response (rdvno, EOK, 0, 0);
-  return (TRUE);
 }  
 
 /* psc_fork_f - 新しいプロセスを作成する
  */
-W
+void
 psc_fork_f (RDVNO rdvno, struct posix_request *req)
 {
   struct proc *procp;
@@ -158,7 +156,7 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
     {
       dbg_printf ("fs: invalid process id (%d)\n", req->procid);
       put_response (rdvno, error_no, -1, 0);
-      return (FALSE);
+      return;
     }
 
 #ifdef DEBUG
@@ -170,7 +168,7 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
     {
       dbg_printf ("fs: cannot allocate process\n");
       put_response (rdvno, error_no, -1, 0);
-      return (FALSE);
+      return;
     }
 
   error_no = proc_fork (procp, child);
@@ -178,7 +176,7 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
     {
       proc_dealloc_proc(child->proc_pid);
       put_response (rdvno, error_no, -1, 0);
-      return (FALSE);
+      return;
     }
 
   main_thread_id = thread_create(child->proc_pid, req->param.par_fork.entry,
@@ -188,7 +186,7 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
       dbg_printf ("fs: acre_tsk error (%d)\n", main_thread_id);
       proc_dealloc_proc(child->proc_pid);
       put_response (rdvno, error_no, -1, 0);
-      return (FALSE);
+      return;
     }
 
   child->proc_maintask = main_thread_id;
@@ -206,10 +204,9 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
   kcall->thread_start(main_thread_id);
 
   put_response (rdvno, EOK, child->proc_pid, 0);	/* 親プロセスに対して応答 */
-  return (TRUE);
 }  
 
-W psc_kill_f(RDVNO rdvno, struct posix_request *req)
+void psc_kill_f(RDVNO rdvno, struct posix_request *req)
 {
     struct proc *myprocp, *procp;
     W mypid, wpid, exst;
@@ -223,14 +220,14 @@ W psc_kill_f(RDVNO rdvno, struct posix_request *req)
     error_no = proc_get_procp(mypid, &myprocp);
     if (error_no) {
 	put_response(rdvno, ESRCH, -1, 0);
-	return FALSE;
+	return;
     }
     myprocp->proc_exst = (-1);	/* 強制終了時のステータスは (-1) で良いか? */
 
     error_no = proc_get_procp(myprocp->proc_ppid, &procp);
     if (error_no) {
 	put_response(rdvno, ESRCH, -1, 0);
-	return FALSE;
+	return;
     }
     wpid = procp->proc_wpid;
     if (procp->proc_status == PS_WAIT &&
@@ -269,10 +266,9 @@ W psc_kill_f(RDVNO rdvno, struct posix_request *req)
     if (get_rdv_tid(rdvno) != myprocp->proc_maintask) {
 	put_response(rdvno, EOK, 0, 0);
     }
-    return (TRUE);
 }
 
-W
+void
 psc_waitpid_f (RDVNO rdvno, struct posix_request *req)
 {
   W i;
@@ -304,7 +300,7 @@ psc_waitpid_f (RDVNO rdvno, struct posix_request *req)
 	/* 子プロセスのエントリーの開放 */
 	proc_exit(i);
 	
-	return(TRUE);
+	return;
       }
     }
   }
@@ -313,18 +309,16 @@ psc_waitpid_f (RDVNO rdvno, struct posix_request *req)
     if (req->param.par_waitpid.opts & WNOHANG) {
       /* 親に返事を送る必要がある */
       put_response (rdvno, EOK, 0, 0);
-      return (TRUE);
+      return;
     }
     /* 親プロセスの状態を変更し，返事を送らずにシステムコールを終了 */
     proc_get_procp(mypid, &procp);
     procp->proc_status = PS_WAIT;
     procp->proc_wpid = pid;
     procp->proc_wait_rdvno = rdvno;
-    return (TRUE);
   }
   else {
     /* エラーを返す */
     put_response (rdvno, ECHILD, 0, 0);
-    return (FALSE);
   }
 }  

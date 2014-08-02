@@ -43,7 +43,7 @@ Version 2, June 1991
  *	このシステムコールは、POSIX では定義されていない。
  *
  */
-W psc_mount_f(RDVNO rdvno, struct posix_request *req)
+void psc_mount_f(RDVNO rdvno, struct posix_request *req)
 {
     W error_no;
     B dirname[MAX_NAMELEN];
@@ -65,7 +65,7 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
 	else
 	    put_response(rdvno, EFAULT, -1, 0);
 
-	return (FALSE);
+	return;
     }
     error_no = kcall->region_get(caller,
 		     req->param.par_mount.dirname,
@@ -78,7 +78,7 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
 	} else {
 	    put_response(rdvno, EFAULT, -1, 0);
 	}
-	return (FALSE);
+	return;
     }
 
     error_no = kcall->region_get(caller,
@@ -91,7 +91,7 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
 	else
 	    put_response(rdvno, EFAULT, -1, 0);
 
-	return (FALSE);
+	return;
     }
 
     /* デバイスのオープン */
@@ -99,7 +99,7 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
 	error_no = proc_get_cwd(req->procid, &startip);
 	if (error_no) {
 	    put_response(rdvno, error_no, -1, 0);
-	    return (FALSE);
+	    return;
 	}
     } else {
 	startip = rootfile;
@@ -108,29 +108,29 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
     error_no = proc_get_uid(req->procid, &(acc.uid));
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
-	return (FALSE);
+	return;
     }
     if (acc.uid != SU_UID) {
       put_response(rdvno, EACCES, -1, 0);
-      return (FALSE);
+      return;
     }
 
     error_no = proc_get_gid(req->procid, &(acc.gid));
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
-	return (FALSE);
+	return;
     }
     error_no = fs_open_file(devname, O_RDWR, 0, &acc, startip, &device);
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
-	return (FALSE);
+	return;
     }
 
     /* block device かどうかのチェック */
     if ((device->i_mode & S_IFMT) != S_IFBLK) {
 	fs_close_file(device);
 	put_response(rdvno, EINVAL, -1, 0);
-	return (FALSE);
+	return;
     }
 
     /* マウントポイントのオープン */
@@ -139,7 +139,7 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
 	if (error_no) {
 	    fs_close_file(device);
 	    put_response(rdvno, error_no, -1, 0);
-	    return (FALSE);
+	    return;
 	}
     } else {
 	startip = rootfile;
@@ -149,21 +149,21 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
 	fs_close_file(device);
-	return (FALSE);
+	return;
     }
 
     if (mountpoint->i_refcount > 1) {
 	put_response(rdvno, EBUSY, -1, 0);
 	fs_close_file(device);
 	fs_close_file(mountpoint);
-	return (FALSE);
+	return;
     }
 
     if ((mountpoint->i_mode & S_IFMT) != S_IFDIR) {
 	put_response(rdvno, ENOTDIR, -1, 0);
 	fs_close_file(device);
 	fs_close_file(mountpoint);
-	return (FALSE);
+	return;
     }
 
     error_no =
@@ -172,16 +172,15 @@ W psc_mount_f(RDVNO rdvno, struct posix_request *req)
     if (error_no == EOK) {
 	put_response(rdvno, EOK, 0, 0);
 	fs_close_file(device);
-	return (TRUE);
+	return;
     }
 
     put_response(rdvno, error_no, -1, 0);
     fs_close_file(device);
     fs_close_file(mountpoint);
-    return (FALSE);
 }
 
-W psc_umount_f(RDVNO rdvno, struct posix_request *req)
+void psc_umount_f(RDVNO rdvno, struct posix_request *req)
 {
     W error_no;
     UW device = 0;
@@ -202,7 +201,7 @@ W psc_umount_f(RDVNO rdvno, struct posix_request *req)
 	} else {
 	    put_response(rdvno, EFAULT, -1, 0);
 	}
-	return (FALSE);
+	return;
     }
 
     /* アンマウントポイントのオープン */
@@ -210,7 +209,7 @@ W psc_umount_f(RDVNO rdvno, struct posix_request *req)
 	error_no = proc_get_cwd(req->procid, &startip);
 	if (error_no) {
 	    put_response(rdvno, error_no, -1, 0);
-	    return (FALSE);
+	    return;
 	}
     } else {
 	startip = rootfile;
@@ -219,23 +218,23 @@ W psc_umount_f(RDVNO rdvno, struct posix_request *req)
     error_no = proc_get_uid(req->procid, &(acc.uid));
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
-	return (FALSE);
+	return;
     }
     if (acc.uid != SU_UID) {
 	put_response(rdvno, EACCES, -1, 0);
-	return (FALSE);
+	return;
     }
 
     error_no = proc_get_gid(req->procid, &(acc.gid));
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
-	return (FALSE);
+	return;
     }
 
     error_no = fs_open_file(dirname, O_RDWR, 0, &acc, startip, &umpoint);
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
-	return (FALSE);
+	return;
     }
 
     error_no = EOK;
@@ -260,8 +259,7 @@ W psc_umount_f(RDVNO rdvno, struct posix_request *req)
     }
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
-	return (FALSE);
+	return;
     }
     put_response(rdvno, EOK, 0, 0);
-    return (TRUE);
 }

@@ -30,39 +30,39 @@ struct posix_syscall
   B	*name;
   W	callno;
 #endif
-  W	(*syscall)(RDVNO rdvno, struct posix_request *);
+  void	(*syscall)(RDVNO rdvno, struct posix_request *);
 };
 
 
 extern struct posix_syscall	syscall_table[];
 
 
-extern W	psc_access_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_chdir_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_chmod_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_close_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_dup_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_dup2_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_exec_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_exit_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_fcntl_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_fork_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_kill_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_link_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_lseek_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_mkdir_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_open_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_read_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_rmdir_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_fstat_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_umask_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_unlink_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_waitpid_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_write_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_mount_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_umount_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_statfs_f (RDVNO rdvno, struct posix_request *);
-extern W	psc_getdents_f (RDVNO rdvno, struct posix_request *);
-extern W psc_bind_device_f(RDVNO rdvno, struct posix_request *);
+extern void	psc_access_f (RDVNO rdvno, struct posix_request *);
+extern void	psc_chdir_f (RDVNO rdvno, struct posix_request *);
+extern void	psc_chmod_f (RDVNO rdvno, struct posix_request *);
+extern void	psc_close_f (RDVNO rdvno, struct posix_request *);
+extern void	psc_dup_f (RDVNO rdvno, struct posix_request *);
+extern void	psc_dup2_f (RDVNO rdvno, struct posix_request *);
+extern void	psc_exec_f (RDVNO rdvno, struct posix_request *);
+extern void	psc_exit_f (RDVNO rdvno, struct posix_request *);
+extern void	psc_fcntl_f (RDVNO rdvno, struct posix_request *);
+extern void	psc_fork_f (RDVNO rdvno, struct posix_request *);
+extern void	psc_kill_f (RDVNO rdvno, struct posix_request *);
+extern void	psc_link_f (RDVNO rdvno, struct posix_request *);
+extern void	psc_lseek_f (RDVNO rdvno, struct posix_request *);
+extern void	psc_mkdir_f (RDVNO rdvno, struct posix_request *);
+extern void	psc_open_f (RDVNO rdvno, struct posix_request *);
+extern void	psc_read_f (RDVNO rdvno, struct posix_request *);
+extern void	psc_rmdir_f (RDVNO rdvno, struct posix_request *);
+extern void	psc_fstat_f (RDVNO rdvno, struct posix_request *);
+extern void	psc_umask_f (RDVNO rdvno, struct posix_request *);
+extern void	psc_unlink_f (RDVNO rdvno, struct posix_request *);
+extern void	psc_waitpid_f (RDVNO rdvno, struct posix_request *);
+extern void	psc_write_f (RDVNO rdvno, struct posix_request *);
+extern void	psc_mount_f (RDVNO rdvno, struct posix_request *);
+extern void	psc_umount_f (RDVNO rdvno, struct posix_request *);
+extern void	psc_statfs_f (RDVNO rdvno, struct posix_request *);
+extern void	psc_getdents_f (RDVNO rdvno, struct posix_request *);
+extern void psc_bind_device_f(RDVNO rdvno, struct posix_request *);
 
 #endif /* #define __FS_API_H__ */

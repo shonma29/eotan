@@ -31,7 +31,7 @@ Version 2, June 1991
 #include <nerve/kcall.h>
 #include "fs.h"
 
-W psc_access_f(RDVNO rdvno, struct posix_request *req)
+void psc_access_f(RDVNO rdvno, struct posix_request *req)
 {
     B pathname[MAX_NAMELEN];
     W fileid;
@@ -47,7 +47,7 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
     if (error_no) {
 	/* メモリ取得エラー */
 	put_response(rdvno, ENOMEM, -1, 0);
-	return (FALSE);
+	return;
     }
     memset(pathname, 0, req->param.par_access.pathlen + 1);
 
@@ -63,13 +63,13 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
 	else
 	    put_response(rdvno, EFAULT, -1, 0);
 
-	return (FALSE);
+	return;
     }
     if (*pathname != '/') {
 	error_no = proc_get_cwd(req->procid, &startip);
 	if (error_no) {
 	    put_response(rdvno, error_no, -1, 0);
-	    return (FALSE);
+	    return;
 	}
     } else {
 	startip = rootfile;
@@ -77,18 +77,18 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
     error_no = proc_get_uid(req->procid, &(acc.uid));
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
-	return (FALSE);
+	return;
     }
     error_no = proc_get_uid(req->procid, &euid);
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
-	return (FALSE);
+	return;
     }
 
     error_no = proc_get_gid(req->procid, &(acc.gid));
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
-	return (FALSE);
+	return;
     }
 
     error_no = fs_open_file(pathname,
@@ -97,7 +97,7 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
     if (error_no) {
 	/* ファイルがオープンできない */
 	put_response(rdvno, error_no, -1, 0);
-	return (FALSE);
+	return;
     }
 
     accmode = req->param.par_access.accflag;
@@ -111,24 +111,23 @@ W psc_access_f(RDVNO rdvno, struct posix_request *req)
     error_no = fs_close_file(newip);
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
-	return (FALSE);
+	return;
     }
 
     /* アクセス権限のチェック */
     if ((acc.uid == 0) || (euid == 0)) {
 	/* root ユーザの場合には、無条件で成功とする */
 	put_response(rdvno, EOK, 0, 0);
-	return (TRUE);
+	return;
     } else if ((newip->i_mode & accmode) == 0) {
 	put_response(rdvno, EACCES, -1, 0);
-	return (FALSE);
+	return;
     }
 
     put_response(rdvno, EOK, 0, 0);
-    return (TRUE);
 }
 
-W psc_chmod_f(RDVNO rdvno, struct posix_request *req)
+void psc_chmod_f(RDVNO rdvno, struct posix_request *req)
 {
     B path[MAX_NAMELEN];
     struct inode *startip;
@@ -140,7 +139,7 @@ W psc_chmod_f(RDVNO rdvno, struct posix_request *req)
     if (kcall->region_get(get_rdv_tid(rdvno), req->param.par_chmod.path,
 		 req->param.par_chmod.pathlen + 1, path)) {
 	put_response(rdvno, EINVAL, -1, 0);
-	return (FALSE);
+	return;
     }
 
     if (*path == '/') {
@@ -149,23 +148,23 @@ W psc_chmod_f(RDVNO rdvno, struct posix_request *req)
     } else {
 	if (proc_get_cwd(req->procid, &startip)) {
 	    put_response(rdvno, EINVAL, -1, 0);
-	    return (FALSE);
+	    return;
 	}
     }
 
     if (proc_get_uid(req->procid, &acc.uid)) {
 	put_response(rdvno, EINVAL, -1, 0);
-	return (FALSE);
+	return;
     }
 
     if (proc_get_gid(req->procid, &acc.gid)) {
 	put_response(rdvno, EINVAL, -1, 0);
-	return (FALSE);
+	return;
     }
     err = fs_lookup(startip, path, O_RDWR, 0, &acc, &ipp);
     if (err) {
 	put_response(rdvno, ENOENT, -1, 0);
-	return (FALSE);
+	return;
     }
 
     ipp->i_mode = (ipp->i_mode & S_IFMT) | req->param.par_chmod.mode;
@@ -176,17 +175,16 @@ W psc_chmod_f(RDVNO rdvno, struct posix_request *req)
     if (fs_sync_file(ipp)) {
 	put_response(rdvno, EINVAL, -1, 0);
 	dealloc_inode(ipp);
-	return (FALSE);
+	return;
     }
 
     dealloc_inode(ipp);
     put_response(rdvno, EOK, 0, 0);
-    return (TRUE);
 }
 
 /* psc_fstat_f - ファイルの情報を返す
  */
-W psc_fstat_f(RDVNO rdvno, struct posix_request *req)
+void psc_fstat_f(RDVNO rdvno, struct posix_request *req)
 {
     struct file *fp;
     W error_no;
@@ -196,15 +194,15 @@ W psc_fstat_f(RDVNO rdvno, struct posix_request *req)
     error_no = proc_get_file(req->procid, req->param.par_fstat.fileid, &fp);
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
-	return (FALSE);
+	return;
     }
 
     if (fp == 0) {
 	put_response(rdvno, EINVAL, -1, 0);
-	return (FALSE);
+	return;
     } else if (fp->f_inode == 0) {
 	put_response(rdvno, EINVAL, -1, 0);
-	return (FALSE);
+	return;
     }
 
     st.st_dev = fp->f_inode->i_device;
@@ -232,15 +230,13 @@ W psc_fstat_f(RDVNO rdvno, struct posix_request *req)
 		 &st);
     if (error_no) {
 	put_response(rdvno, EINVAL, 0, 0);
-	return (FALSE);
+	return;
     }
 
     put_response(rdvno, EOK, 0, 0);
-
-    return (TRUE);
 }
 
-W
+void
 psc_statfs_f (RDVNO rdvno, struct posix_request *req)
 {
   struct statfs	result;
@@ -251,15 +247,14 @@ psc_statfs_f (RDVNO rdvno, struct posix_request *req)
   if (error_no)
     {
       put_response (rdvno, error_no, -1, 0);    
-      return (FALSE);
+      return;
     }
 
   error_no = kcall->region_put(get_rdv_tid(rdvno), req->param.par_statfs.fsp, sizeof (struct statfs), &result);
   if (error_no)
     {
       put_response (rdvno, EFAULT, -1, 0);
-      return (FALSE);
+      return;
     }
   put_response (rdvno, EOK, 0, 0);
-  return (TRUE);
 }

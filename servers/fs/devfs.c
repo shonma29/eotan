@@ -90,7 +90,7 @@ static int compare(const void *a, const void *b)
 	return (x == y)? 0:((x < y)? (-1):1);
 }
 
-W psc_bind_device_f(RDVNO rdvno, struct posix_request *req)
+void psc_bind_device_f(RDVNO rdvno, struct posix_request *req)
 {
 	UW id = req->param.par_bind_device.id;
 	UB *name = req->param.par_bind_device.name;
@@ -99,7 +99,7 @@ W psc_bind_device_f(RDVNO rdvno, struct posix_request *req)
 	if (!hash || num_device >= MAX_DEVICE) {
 		put_response(rdvno, ENOMEM, -1, 0);
 
-		return FALSE;
+		return;
 	}
 
 	dbg_printf("fs: bind(%x, %s, %d)\n", id, name, port);
@@ -109,8 +109,6 @@ W psc_bind_device_f(RDVNO rdvno, struct posix_request *req)
 
 	if (hash_put(hash, (void*)id, (void*)&(table[num_device]))) {
 		put_response(rdvno, EPERM, -1, 0);
-
-		return FALSE;
 
 	} else {
 		num_device++;
@@ -126,8 +124,6 @@ W psc_bind_device_f(RDVNO rdvno, struct posix_request *req)
 				exec_init(INIT_PID, INIT_PATH_NAME);
 			}
 		}
-
-		return TRUE;
 	}
 }
 

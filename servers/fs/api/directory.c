@@ -22,7 +22,7 @@ Version 2, June 1991
 #include <nerve/kcall.h>
 #include "fs.h"
 
-W psc_getdents_f(RDVNO rdvno, struct posix_request *req)
+void psc_getdents_f(RDVNO rdvno, struct posix_request *req)
 {
     W error_no;
     struct file *fp;
@@ -32,13 +32,13 @@ W psc_getdents_f(RDVNO rdvno, struct posix_request *req)
 	proc_get_file(req->procid, req->param.par_getdents.fileid, &fp);
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
-	return (FALSE);
+	return;
     } else if (fp == 0) {
 	put_response(rdvno, EINVAL, -1, 0);
-	return (FALSE);
+	return;
     } else if (fp->f_inode == 0) {
 	put_response(rdvno, EINVAL, -1, 0);
-	return (FALSE);
+	return;
     }
 
     /* 対象ファイルがパイプだったり、
@@ -47,12 +47,12 @@ W psc_getdents_f(RDVNO rdvno, struct posix_request *req)
     if (fp->f_flag & F_PIPE) {
 	/* パイプの読み書き */
 	put_response(rdvno, EINVAL, -1, 0);
-	return (FALSE);
+	return;
     }
 
     if ((fp->f_inode->i_mode & S_IFMT) != S_IFDIR) {
 	put_response(rdvno, EINVAL, -1, 0);
-	return (FALSE);
+	return;
     }
 
     error_no = fs_getdents(fp->f_inode, get_rdv_tid(rdvno), fp->f_offset,
@@ -65,10 +65,9 @@ W psc_getdents_f(RDVNO rdvno, struct posix_request *req)
 
     fp->f_offset += flen;
     put_response(rdvno, EOK, len, 0);
-    return (TRUE);
 }
 
-W psc_link_f(RDVNO rdvno, struct posix_request *req)
+void psc_link_f(RDVNO rdvno, struct posix_request *req)
 {
     B src[MAX_NAMELEN], dst[MAX_NAMELEN];
     struct access_info acc;
@@ -85,7 +84,7 @@ W psc_link_f(RDVNO rdvno, struct posix_request *req)
 	else
 	    put_response(rdvno, EFAULT, -1, 0);
 
-	return (FALSE);
+	return;
     }
     error_no = kcall->region_get(caller, req->param.par_link.dst,
 		     req->param.par_link.dstlen + 1, dst);
@@ -96,7 +95,7 @@ W psc_link_f(RDVNO rdvno, struct posix_request *req)
 	else
 	    put_response(rdvno, EFAULT, -1, 0);
 
-	return (FALSE);
+	return;
     }
 
     /* プロセスのユーザ ID とグループ ID の
@@ -107,25 +106,24 @@ W psc_link_f(RDVNO rdvno, struct posix_request *req)
     error_no = proc_get_uid(req->procid, &(acc.uid));
     if (error_no) {
 	put_response(rdvno, error_no, 0, 0);
-	return (FALSE);
+	return;
     }
     error_no = proc_get_gid(req->procid, &(acc.gid));
     if (error_no) {
 	put_response(rdvno, error_no, 0, 0);
-	return (FALSE);
+	return;
     }
 
     error_no = fs_link_file(req->procid, src, req->param.par_link.srclen,
 			 dst, req->param.par_link.dstlen, &acc);
     if (error_no) {
 	put_response(rdvno, error_no, 0, 0);
-	return (FALSE);
+	return;
     }
     put_response(rdvno, EOK, 0, 0);
-    return (TRUE);
 }
 
-W
+void
 psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
 {
   B		pathname[MAX_NAMELEN];
@@ -142,7 +140,7 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
     {
       /* メモリ取得エラー */
       put_response (rdvno, ENOMEM, -1, 0);
-      return (FALSE);
+      return;
     }
 
   error_no = kcall->region_get(get_rdv_tid(rdvno), req->param.par_mkdir.path,
@@ -155,7 +153,7 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
       else
 	put_response (rdvno, EFAULT, -1, 0);
 	
-      return (FALSE);
+      return;
     }
 
   if (*pathname != '/')
@@ -164,7 +162,7 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
       if (error_no)
 	{
 	  put_response (rdvno, error_no, -1, 0);
-	  return (FALSE);
+	  return;
 	}
     }
   else
@@ -175,21 +173,21 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
   if (error_no)
     {
       put_response (rdvno, error_no, -1, 0);
-      return (FALSE);
+      return;
     }
 
   error_no = proc_get_gid (req->procid, &(acc.gid));
   if (error_no)
     {
       put_response (rdvno, error_no, -1, 0);
-      return (FALSE);
+      return;
     }
 
   error_no = proc_get_umask (req->procid, &umask);
   if (error_no)
     {
       put_response (rdvno, error_no, -1, 0);
-      return (FALSE);
+      return;
     }
 
   error_no = fs_make_dir (startip, pathname,
@@ -200,17 +198,16 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
     {
       /* ファイルがオープンできない */
       put_response (rdvno, error_no, -1, 0);
-      return (FALSE);
+      return;
     }
   
   fs_close_file (newip);
   put_response (rdvno, EOK, 0, 0);
-  return (TRUE);
 }  
 
 /* psc_rmdir_f - ディレクトリを削除する
  */
-W
+void
 psc_rmdir_f (RDVNO rdvno, struct posix_request *req)
 {
   B		pathname[MAX_NAMELEN];
@@ -229,7 +226,7 @@ psc_rmdir_f (RDVNO rdvno, struct posix_request *req)
       else
 	put_response (rdvno, EFAULT, -1, 0);
 	
-      return (FALSE);
+      return;
     }
 
 
@@ -239,7 +236,7 @@ psc_rmdir_f (RDVNO rdvno, struct posix_request *req)
       if (error_no)
 	{
 	  put_response (rdvno, error_no, -1, 0);
-	  return (FALSE);
+	  return;
 	}
     }
   else
@@ -250,14 +247,14 @@ psc_rmdir_f (RDVNO rdvno, struct posix_request *req)
   if (error_no)
     {
       put_response (rdvno, error_no, -1, 0);
-      return (FALSE);
+      return;
     }
 
   error_no = proc_get_gid (req->procid, &(acc.gid));
   if (error_no)
     {
       put_response (rdvno, error_no, -1, 0);
-      return (FALSE);
+      return;
     }
 
   error_no = fs_remove_dir (startip,
@@ -267,11 +264,10 @@ psc_rmdir_f (RDVNO rdvno, struct posix_request *req)
     {
       /* ファイルがオープンできない */
       put_response (rdvno, error_no, -1, 0);
-      return (FALSE);
+      return;
     }
   
   put_response (rdvno, EOK, 0, 0);
-  return (TRUE);
 }  
 
 /* psc_unlink_f - ファイルを削除する
@@ -281,7 +277,7 @@ psc_rmdir_f (RDVNO rdvno, struct posix_request *req)
  *	req->param.par_unlink.pathlen	パス名の長さ
  *
  */
-W
+void
 psc_unlink_f (RDVNO rdvno, struct posix_request *req)
 {
   B			pathname[MAX_NAMELEN];
@@ -307,7 +303,7 @@ psc_unlink_f (RDVNO rdvno, struct posix_request *req)
       else
 	put_response (rdvno, EFAULT, 0, 0);
 	
-      return (FALSE);
+      return;
     }
 
 
@@ -326,7 +322,7 @@ psc_unlink_f (RDVNO rdvno, struct posix_request *req)
       if (error_no)
 	{
 	  put_response (rdvno, error_no, 0, 0);
-	  return (FALSE);
+	  return;
 	}
     }
   else
@@ -344,13 +340,13 @@ psc_unlink_f (RDVNO rdvno, struct posix_request *req)
   if (error_no)
     {
       put_response (rdvno, error_no, 0, 0);
-      return (FALSE);
+      return;
     }
   error_no = proc_get_gid (req->procid, &(acc.gid));
   if (error_no)
     {
       put_response (rdvno, error_no, 0, 0);
-      return (FALSE);
+      return;
     }
 
   error_no = fs_remove_file (startip,
@@ -360,9 +356,8 @@ psc_unlink_f (RDVNO rdvno, struct posix_request *req)
     {
       /* ファイルがオープンできない */
       put_response (rdvno, error_no, 0, 0);
-      return (FALSE);
+      return;
     }
   
   put_response (rdvno, EOK, 0, 0);
-  return (TRUE);
 } 
