@@ -108,17 +108,6 @@ char *testfile()
 
 	assert_eq("access[0]", 0,
 			access("/motd", R_OK | W_OK));
-
-	assert_eq("umask[0]", 022, umask(006));
-	fd = open("/mtest", O_CREAT | O_WRONLY, 0666);
-	assert_ne("umask[0-1]", -1, fd);
-	assert_eq("umask[0-2]", 0, fstat(fd, &st));
-	printf("fstat: mode=%x\n", st.st_mode);
-	assert_eq("umask[0-3]",
-			S_IFREG | S_IRGRP | S_IWGRP | S_IRUSR | S_IWUSR,
-			st.st_mode);
-	assert_eq("umask[0-4]", 0, close(fd));
-
 	assert_eq("fcntl[0]", 0, fcntl(1, 0x10000, 1));
 
 	return NULL;
@@ -146,17 +135,15 @@ char *testdup()
 
 char *testdir()
 {
-/*
 	int fd;
 	struct stat st;
-*/
 	char buf[1024];
 
 	assert_eq("getcwd[0]", 0, strcmp("/", getcwd(buf, sizeof(buf))));
 
 	assert_eq("chdir", 0, chdir("bin"));
 	assert_eq("getcwd[1]", 0, strcmp("/bin", getcwd(buf, sizeof(buf))));
-/*
+
 	assert_eq("mkdir[0]", 0,
 			mkdir("hoge", S_IRGRP | S_IROTH | S_IWOTH));
 	fd = open("hoge", O_RDONLY);
@@ -166,7 +153,28 @@ char *testdir()
 			S_IFDIR | S_IRGRP | S_IROTH | S_IWOTH,
 			st.st_mode);
 	assert_eq("mkdir-close[0]", 0, close(fd));
-*/
+
+	/* umask */
+	assert_eq("chmod", 0, chmod("hoge", 0705));
+	fd = open("hoge/mtestfile", O_CREAT | O_WRONLY, 0666);
+	assert_ne("umask[0-1]", -1, fd);
+	assert_eq("umask[0-2]", 0, fstat(fd, &st));
+	printf("fstat: mode=%x\n", st.st_mode);
+	assert_eq("umask[0-3]",
+			S_IFREG | S_IRUSR | S_IWUSR | S_IROTH,
+			st.st_mode);
+	assert_eq("umask[0-4]", 0, close(fd));
+
+	assert_eq("mkdir[1]", 0,
+			mkdir("hoge/mtestdir", 0777));
+	fd = open("hoge/mtestdir", O_RDONLY);
+	assert_ne("mkdir-open[1]", -1, fd);
+	assert_eq("mkdir-fstat[1]", 0, fstat(fd, &st));
+	assert_eq("mkdir-fstat[1-1]",
+			S_IFDIR | S_IRUSR | S_IWUSR | S_IXUSR | S_IROTH | S_IXOTH,
+			st.st_mode);
+	assert_eq("mkdir-close[1]", 0, close(fd));
+
 	return NULL;
 }
 

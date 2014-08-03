@@ -362,28 +362,6 @@ W proc_set_cwd(W procid, struct inode * cwd)
 }
 
 
-W proc_set_umask(W procid, W umask)
-{
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
-    }
-
-    proc_table[procid].proc_umask = umask;
-    return (EOK);
-}
-
-
-W proc_get_umask(W procid, W * umask)
-{
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
-    }
-
-    *umask = proc_table[procid].proc_umask;
-    return (EOK);
-}
-
-
 struct vm_tree *proc_get_vmtree(W procid)
 {
     if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {

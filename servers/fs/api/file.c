@@ -305,7 +305,6 @@ void psc_open_f(RDVNO rdvno, struct posix_request *req)
     struct inode *startip;
     struct inode *newip;
     struct access_info acc;
-    W umask;
     W rsize;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
@@ -350,15 +349,9 @@ void psc_open_f(RDVNO rdvno, struct posix_request *req)
 	return;
     }
 
-    error_no = proc_get_umask(req->procid, &umask);
-    if (error_no) {
-	put_response(rdvno, error_no, -1, 0);
-	return;
-    }
-
     error_no = fs_open_file(pathname,
 			 req->param.par_open.oflag,
-			 req->param.par_open.mode & (~umask),
+			 req->param.par_open.mode,
 			 &acc, startip, &newip);
     if (error_no) {
 	/* ファイルがオープンできない */

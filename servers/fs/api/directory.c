@@ -132,7 +132,6 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
   struct inode	*startip;
   struct inode	*newip;
   struct access_info	acc;
-  W		umask;
   kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
   error_no = proc_alloc_fileid (req->procid, &fileid);
@@ -183,15 +182,8 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
       return;
     }
 
-  error_no = proc_get_umask (req->procid, &umask);
-  if (error_no)
-    {
-      put_response (rdvno, error_no, -1, 0);
-      return;
-    }
-
   error_no = fs_make_dir (startip, pathname,
-		       (req->param.par_mkdir.mode & (~umask)),
+		       req->param.par_mkdir.mode,
 		       &acc,
 		       &newip);
   if (error_no)

@@ -115,8 +115,6 @@ struct proc
   W			proc_uid;
   W			proc_gid;
 
-  W			proc_umask;
-
   struct inode		*proc_workdir;
   struct file		proc_open_file[MAX_OPEN];
 
@@ -161,8 +159,6 @@ extern W		proc_set_cwd (W procid, struct inode *cwd);
 extern W		proc_get_file (W procid, W fileid, struct file **fp);
 extern W		proc_set_file (W procid, W fileid, W flag, struct inode *ip);
 extern W		proc_get_cwd (W procid, struct inode **cwd);
-extern W		proc_set_umask (W procid, W umask);
-extern W		proc_get_umask (W procid, W *umask);
 extern W		proc_get_procp (W procid, struct proc **procp);
 extern W		proc_exit (W procid);
 extern struct vm_tree	*proc_get_vmtree (W procid);

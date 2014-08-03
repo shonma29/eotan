@@ -39,22 +39,21 @@ Version 2, June 1991
 #define PSC_OPEN         12
 #define PSC_READ         13
 #define PSC_RMDIR        14
-#define PSC_UMASK        15
-#define PSC_UNLINK       16
-#define PSC_WAITPID      17
-#define PSC_WRITE        18
-#define PSC_GETDENTS	 19
-#define PSC_MOUNT        20
-#define PSC_STATFS       21
-#define PSC_UMOUNT       22
+#define PSC_UNLINK       15
+#define PSC_WAITPID      16
+#define PSC_WRITE        17
+#define PSC_GETDENTS	 18
+#define PSC_MOUNT        19
+#define PSC_STATFS       20
+#define PSC_UMOUNT       21
 
 /* =================== SIGNAL 関係 =============== */
-#define PSC_KILL         23
+#define PSC_KILL         22
 
 /* =================== miserous system calls  =============== */
-#define PSC_DUP2         24	/* 不要? */
+#define PSC_DUP2         23	/* 不要? */
 
-#define PSC_BIND_DEVICE (25)
+#define PSC_BIND_DEVICE (24)
 
 /* =============== 各システムコール用の 構造体定義 ================== */
 
@@ -237,15 +236,6 @@ struct psc_fstat
 };
 
 
-/* psc_umask -
- *
- */
-struct psc_umask
-{
-  W	umask;
-};
-
-
 /* psc_unlink -
  *
  */
@@ -358,7 +348,6 @@ struct posix_request
     struct psc_read		par_read;
     struct psc_rmdir		par_rmdir;
     struct psc_fstat  		par_fstat;
-    struct psc_umask 		par_umask;
     struct psc_unlink     	par_unlink;
     struct psc_waitpid   	par_waitpid;
     struct psc_write 		par_write;

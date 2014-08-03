@@ -51,7 +51,6 @@ extern void	psc_open_f (RDVNO rdvno, struct posix_request *);
 extern void	psc_read_f (RDVNO rdvno, struct posix_request *);
 extern void	psc_rmdir_f (RDVNO rdvno, struct posix_request *);
 extern void	psc_fstat_f (RDVNO rdvno, struct posix_request *);
-extern void	psc_umask_f (RDVNO rdvno, struct posix_request *);
 extern void	psc_unlink_f (RDVNO rdvno, struct posix_request *);
 extern void	psc_waitpid_f (RDVNO rdvno, struct posix_request *);
 extern void	psc_write_f (RDVNO rdvno, struct posix_request *);
@@ -85,7 +84,6 @@ static struct posix_syscall	syscall_table[] =
   { s("open",		PSC_OPEN)		psc_open_f },
   { s("read",		PSC_READ)		psc_read_f },
   { s("rmdir",		PSC_RMDIR)		psc_rmdir_f },
-  { s("umask",		PSC_UMASK)		psc_umask_f },
   { s("unlink",		PSC_UNLINK)		psc_unlink_f },
   { s("waitpid",		PSC_WAITPID)		psc_waitpid_f },
   { s("write",		PSC_WRITE)		psc_write_f },

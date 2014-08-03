@@ -597,6 +597,8 @@ fs_create_file(struct inode * startip,
 	return (ENOTDIR);
     }
 
+    mode &= parent_ip->i_mode
+	    & (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
     error_no = FILE_CREATE(parent_ip,
 			&path[parent_length], oflag, mode, acc, newip);
     fs_close_file(parent_ip);
@@ -982,6 +984,7 @@ W fs_make_dir(struct inode * startip,
 	return (ENOTDIR);
     }
 
+    mode &= parent_ip->i_mode & (S_IRWXU | S_IRWXG | S_IRWXO);
     error_no = DIR_CREATE(parent_ip, &path[parent_length], mode, acc, newip);
 
     fs_close_file(parent_ip);

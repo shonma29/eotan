@@ -99,34 +99,3 @@ void psc_chdir_f(RDVNO rdvno, struct posix_request *req)
     dealloc_inode(oldip);
     put_response(rdvno, EOK, 0, 0);
 }
-
-/* psc_umask_f - umask の設定
- */
-void
-psc_umask_f (RDVNO rdvno, struct posix_request *req)
-{
-  W	error_no;
-  W	old_umask;
-
-
-  /* 古い umask の値を取り出す。
-   * (システムコールの返り値として使用する)
-   */
-  error_no = proc_get_umask (req->procid, &old_umask);
-  if (error_no)
-    {
-      put_response (rdvno, error_no, -1, 0);
-      return;
-    }
-  
-  /* 新しい umask の値を設定する
-   */
-  error_no = proc_set_umask (req->procid, req->param.par_umask.umask);
-  if (error_no)
-    {
-      put_response (rdvno, error_no, -1, 0);
-      return;
-    }
-
-  put_response (rdvno, EOK, old_umask, 0);
-}  

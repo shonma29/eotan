@@ -188,8 +188,5 @@ static W proc_duplicate(struct proc * source, struct proc * destination)
     destination->proc_uid = source->proc_uid;
     destination->proc_gid = source->proc_gid;
 
-    /* copy of umask */
-    destination->proc_umask = source->proc_umask;
-
     return (EOK);
 }
