@@ -24,51 +24,39 @@ Version 2, June 1991
 #include <core/types.h>
 
 /* =================== POSIX システムコール番号の定義 =============== */
-#define PSC_ACCESS       0
-#define PSC_CHDIR        1
-#define PSC_CHMOD        2
-#define PSC_CLOSE        3
-#define PSC_DUP          4
-#define PSC_EXEC         5
-#define PSC_EXIT         6
-#define PSC_FCNTL        7
-#define PSC_FORK         8
-#define PSC_FSTAT	 9
-#define PSC_LINK         10
-#define PSC_LSEEK        11
-#define PSC_MKDIR        12
-#define PSC_OPEN         13
-#define PSC_READ         14
-#define PSC_RMDIR        15
-#define PSC_UMASK        16
-#define PSC_UNLINK       17
-#define PSC_WAITPID      18
-#define PSC_WRITE        19
-#define PSC_GETDENTS	 20
-#define PSC_MOUNT        21
-#define PSC_STATFS       22
-#define PSC_UMOUNT       23
+#define PSC_CHDIR        0
+#define PSC_CHMOD        1
+#define PSC_CLOSE        2
+#define PSC_DUP          3
+#define PSC_EXEC         4
+#define PSC_EXIT         5
+#define PSC_FCNTL        6
+#define PSC_FORK         7
+#define PSC_FSTAT	 8
+#define PSC_LINK         9
+#define PSC_LSEEK        10
+#define PSC_MKDIR        11
+#define PSC_OPEN         12
+#define PSC_READ         13
+#define PSC_RMDIR        14
+#define PSC_UMASK        15
+#define PSC_UNLINK       16
+#define PSC_WAITPID      17
+#define PSC_WRITE        18
+#define PSC_GETDENTS	 19
+#define PSC_MOUNT        20
+#define PSC_STATFS       21
+#define PSC_UMOUNT       22
 
 /* =================== SIGNAL 関係 =============== */
-#define PSC_KILL         24
+#define PSC_KILL         23
 
 /* =================== miserous system calls  =============== */
-#define PSC_DUP2         25	/* 不要? */
+#define PSC_DUP2         24	/* 不要? */
 
-#define PSC_BIND_DEVICE (26)
+#define PSC_BIND_DEVICE (25)
 
 /* =============== 各システムコール用の 構造体定義 ================== */
-
-/* psc_access -
- *
- */
-struct psc_access
-{
-  W		pathlen;
-  B		*path;
-  W		accflag;
-};
-
 
 /* psc_chdir -
  *
@@ -353,7 +341,6 @@ struct posix_request
   UW	operation;		/* 要求番号(システムコールに対応)	*/
 
   union {
-    struct psc_access		par_access;
     struct psc_chdir		par_chdir;
     struct psc_chmod		par_chmod;
     struct psc_close		par_close;

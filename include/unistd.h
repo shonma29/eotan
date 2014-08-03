@@ -42,7 +42,7 @@ For more information, please refer to <http://unlicense.org/>
 
 
 extern int chdir(char *path);
-extern int access(char *path, int mode);
+extern int access(const char *path, int mode);
 extern void *sbrk(intptr_t increment);
 extern int chmod(char *path, mode_t mode);
 extern int chown(char *path, uid_t owner, gid_t group);

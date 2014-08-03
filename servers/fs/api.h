@@ -34,7 +34,6 @@ struct posix_syscall
 };
 
 
-extern void	psc_access_f (RDVNO rdvno, struct posix_request *);
 extern void	psc_chdir_f (RDVNO rdvno, struct posix_request *);
 extern void	psc_chmod_f (RDVNO rdvno, struct posix_request *);
 extern void	psc_close_f (RDVNO rdvno, struct posix_request *);
@@ -71,7 +70,6 @@ extern void psc_bind_device_f(RDVNO rdvno, struct posix_request *);
 
 static struct posix_syscall	syscall_table[] =
 {
-  { s("access",		PSC_ACCESS)		psc_access_f },
   { s("chdir",		PSC_CHDIR)		psc_chdir_f },
   { s("chmod",		PSC_CHMOD)		psc_chmod_f },
   { s("close",		PSC_CLOSE)		psc_close_f },
