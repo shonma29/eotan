@@ -108,7 +108,7 @@ char *testfile()
 
 	assert_eq("access[0]", 0,
 			access("/motd", R_OK | W_OK));
-	assert_eq("fcntl[0]", 0, fcntl(1, 0x10000, 1));
+	assert_eq("fcntl[0]", -1, fcntl(1, 0x10000, 1));
 
 	return NULL;
 }

@@ -30,8 +30,6 @@ Version 2, June 1991
 #include <nerve/kcall.h>
 #include "fs.h"
 
-static W control_device(ID device, struct posix_request *preq, ID caller);
-
 void psc_close_f(RDVNO rdvno, struct posix_request *req)
 {
     struct file *fp;
@@ -164,60 +162,12 @@ psc_dup2_f (RDVNO rdvno, struct posix_request *req)
   put_response (rdvno, EOK, req->param.par_dup2.fileid2, 0);
 }  
 
-/* ctl_device - デバイスにコントロールメッセージを送る
- *
- */
-static W control_device(ID device, struct posix_request *preq, ID caller)
-{
-    devmsg_t packet;
-    W error_no;
-    ID send_port;
-    UW dd;
-    ER_UINT rlength;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
-
-    error_no = get_device_info(device, &send_port, &dd);
-    if (error_no) {
-	return (error_no);
-    }
-
-    packet.req.header.msgtyp = DEV_CTL;
-    packet.req.body.ctl_req.dd = dd;
-    packet.req.body.ctl_req.cmd = (preq->param.par_fcntl.cmd >> 16)
-	    & 0x0FFFF;
-    packet.req.body.ctl_req.len = preq->param.par_fcntl.cmd & 0x0FFFF;
-
-    if (packet.req.body.ctl_req.len == 0) {
-	W *p = (W*)(packet.req.body.ctl_req.param);
-	/* W に cast しているが、UB のまま代入したほうが良いかも */
-	*p = (W) preq->param.par_fcntl.arg;
-	packet.req.body.ctl_req.len = sizeof(W);
-    } else {
-	error_no = kcall->region_get(caller, preq->param.par_fcntl.arg,
-			 packet.req.body.ctl_req.len,
-			 packet.req.body.ctl_req.param);
-	if (error_no) {
-	    dbg_printf("fctl: vget_reg error\n");
-	    return (error_no);
-	}
-    }
-
-    rlength = kcall->port_call(send_port, &packet, sizeof(packet.req));
-    if (rlength < 0) {
-	dbg_printf("cannot call port. %d\n", rlength);	/* */
-	return (ENODEV);
-    }
-
-    return (packet.res.body.ctl_res.errinfo);
-}
-
 /* psc_fcntl_f - ファイルに対して特殊な操作を行う。
  */
 void psc_fcntl_f(RDVNO rdvno, struct posix_request * req)
 {
     W error_no;
     struct file *fp;
-    ID device;
 
     error_no = proc_get_file(req->procid, req->param.par_fcntl.fileid, &fp);
     if (error_no) {
@@ -231,26 +181,9 @@ void psc_fcntl_f(RDVNO rdvno, struct posix_request * req)
 	return;
     }
 
-    if (fp->f_inode->i_mode & S_IFCHR) {
-	/* スペシャルファイルだった
-	 */
-	device = fp->f_inode->i_dev;
-
-	/* send message to the device.
-	 */
-	error_no = control_device(device, req, get_rdv_tid(rdvno));
-	if (error_no) {
-	    put_response(rdvno, error_no, error_no, 0);
-	    return;
-	} else {
-	    put_response(rdvno, EOK, error_no, 0);
-	    return;
-	}
-    } else {
-	/* とりあえず、サポートしていないというエラーで返す
-	 */
-	put_response(rdvno, ENOTSUP, 0, 0);
-    }
+    /* とりあえず、サポートしていないというエラーで返す
+     */
+    put_response(rdvno, ENOTSUP, 0, 0);
 }
 
 void psc_lseek_f(RDVNO rdvno, struct posix_request *req)

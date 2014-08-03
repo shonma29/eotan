@@ -184,13 +184,6 @@ static UW execute(devmsg_t *message)
 		size = sizeof(res->body.wri_res);
 		break;
 
-	case DEV_CTL:
-		res->body.ctl_res.dd = req->body.ctl_req.dd;
-		res->body.ctl_res.errcd = E_NOSPT;
-		res->body.ctl_res.errinfo = 0;
-		size = sizeof(res->body.ctl_res);
-		break;
-
 	default:
 		break;
 	}

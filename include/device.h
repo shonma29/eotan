@@ -108,7 +108,6 @@ enum driver_command
  デバイスクローズ  DDEV_CLS_REQ DDEV_CLS_RES  
  読み込み          DDEV_REA_REQ DDEV_REA_RES  
  書き込み          DDEV_WRI_REQ DDEV_WRI_RES  
- デバイス制御      DDEV_CTL_REQ DDEV_CTL_RES  
  ------------------------------------------------------------
 
 */
@@ -206,27 +205,6 @@ typedef struct {
   UW	a_size;	/* 実際に書き込んだbyte数	*/
 } DDEV_WRI_RES;
 
-/* デバイス制御（デバイスドライバへ送るメッセージ）
- */
-typedef struct {
-  W dd;			/* デバイスドライバマネージャ管理情報	*/
-  			/* デバイスドライバはこの値を使用せず， */
-  			/* 応答メッセージの	*/
-			/* 先頭に登録する	*/
-  UW cmd;		/* 制御コード（デバイスドライバ依存）	*/
-  UW len;		/* パラメタのバイトサイズ	*/
-  UB param[0];		/* 	*/
-} DDEV_CTL_REQ;
-
-/* デバイス制御（デバイスドライバマネージャへの応答）
- */
-typedef struct {
-  W dd;			/* デバイスドライバマネージャ管理情報	*/
-  ER errcd;
-  W errinfo;		/* エラー詳細情報	*/
-  W res[0];
-} DDEV_CTL_RES;
-
 /*
  * ドライバマネージャとデバイスドライバとのやりとりに使用するメッセージパケット
  * kernlib/message.h で定義している SVC_REQ 形式が頭につく。
@@ -242,7 +220,6 @@ typedef struct DDEV_REQ
       DDEV_CLS_REQ	cls_req;
       DDEV_REA_REQ	rea_req;	
       DDEV_WRI_REQ	wri_req;
-      DDEV_CTL_REQ	ctl_req;
     } body;
 } DDEV_REQ;
 
@@ -261,7 +238,6 @@ typedef struct DDEV_RES
       DDEV_CLS_RES	cls_res;
       DDEV_REA_RES	rea_res;	
       DDEV_WRI_RES	wri_res;
-      DDEV_CTL_RES	ctl_res;
     } body;
 } DDEV_RES;
 
