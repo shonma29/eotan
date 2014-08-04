@@ -95,11 +95,7 @@ Version 2, June 1991
 
 struct fsops sfs_fsops = {
     sfs_mount,
-    sfs_umount
-};
-
-
-struct iops sfs_iops = {
+    sfs_umount,
     sfs_i_lookup,
     sfs_i_create,
     sfs_i_close,
@@ -167,7 +163,7 @@ W sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 	       rootfsp->fs_private.sfs_fs.sfs_version_lo);
 #endif
 
-    rootfile->i_ops = (struct iops *) &sfs_iops;
+    rootfile->i_ops = (struct fsops *) &sfs_fsops;
     error_no = sfs_read_inode(rootfsp, 1, rootfile);
     /* root file の読み込み、inode = 1 が root file */
 

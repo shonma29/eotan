@@ -103,9 +103,6 @@ Version 2, June 1991
 struct fsops {
     W(*mount) ();
     W(*umount) ();
-};
-
-struct iops {
     W(*lookup) ();
     W(*create) ();
     W(*close) ();
@@ -186,7 +183,7 @@ struct inode {
     struct fs *i_fs;
     UW i_device;
     UW i_lock;
-    struct iops *i_ops;
+    struct fsops *i_ops;
     W i_refcount;
     W i_dirty;		/* この Inode は変更されており、ファイル上に変更が */
 			/* 反映されていない */

@@ -18,7 +18,7 @@ Version 2, June 1991
 /* common definitions */
 #define SFS_BLOCK_SIZE 512
 
-extern struct iops	sfs_iops;
+extern struct fsops	sfs_fsops;
 
 
 /* block.c */

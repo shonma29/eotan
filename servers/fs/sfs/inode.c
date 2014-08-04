@@ -131,7 +131,7 @@ W sfs_read_inode(struct fs *fsp, W ino, struct inode *ip)
     ip->i_mtime = ip->i_private.sfs_inode.sfs_i_mtime;
     ip->i_mode = ip->i_private.sfs_inode.sfs_i_perm;
     ip->i_link = ip->i_private.sfs_inode.sfs_i_nlink;
-    ip->i_ops = &sfs_iops;
+    ip->i_ops = &sfs_fsops;
     ip->i_refcount = 1;
     ip->i_lock = 0;
     ip->i_fs = fsp;
