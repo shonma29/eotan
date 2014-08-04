@@ -106,7 +106,6 @@ static UW execute(devmsg_t *message)
 		res->body.rea_res.dd = req->body.rea_req.dd;
 		res->body.rea_res.errcd = (result >= 0)? E_OK:result;
 		res->body.rea_res.errinfo = 0;
-		res->body.rea_res.split = 0;
 		res->body.rea_res.a_size = (result >= 0)? result:0;
 		size = sizeof(res->body.rea_res)
 				- sizeof(res->body.rea_res.dt)
@@ -133,19 +132,20 @@ static UW execute(devmsg_t *message)
 
 static ER accept(const ID port)
 {
-	devmsg_t message;
+	devmsg_t *message;
 	RDVNO rdvno;
 	ER_UINT size;
 	ER result;
 	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-	size = kcall->port_accept(port, &rdvno, &(message.req));
+	size = kcall->port_accept(port, &rdvno, &message);
 	if (size < 0) {
 		dbg_printf("[RAMDISK] acp_por error=%d\n", size);
 		return size;
 	}
 
-	result = kcall->port_reply(rdvno, &(message.res), execute(&message));
+	execute(message);
+	result = kcall->port_reply(rdvno, &message, 0);
 	if (result) {
 		dbg_printf("[RAMDISK] rpl_rdv error=%d\n", result);
 	}

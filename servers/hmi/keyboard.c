@@ -38,6 +38,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../kernel/arch/key2char.h"
 #include "../../lib/libserv/bind.h"
 #include "../../lib/libserv/libserv.h"
+#include "keyboard.h"
 
 #define LSHIFT 0x01
 #define RSHIFT 0x02
@@ -244,7 +245,6 @@ static UW execute(devmsg_t *message)
 		res->body.rea_res.dd = req->body.rea_req.dd;
 		res->body.rea_res.errcd = (result >= 0)? E_OK:result;
 		res->body.rea_res.errinfo = 0;
-		res->body.rea_res.split = 0;
 		res->body.rea_res.a_size = (result >= 0)? result:0;
 		size = sizeof(res->body.rea_res)
 				- sizeof(res->body.rea_res.dt)
@@ -269,20 +269,20 @@ static UW execute(devmsg_t *message)
 void keyboard_accept(void)
 {
 	for (;;) {
-		devmsg_t message;
+		devmsg_t *message;
 		RDVNO rdvno;
 		ER_UINT size;
 		ER result;
 
 		size = kcall->port_accept(keyboard_port_id, &rdvno,
-				&(message.req));
+				&message);
 		if (size < 0) {
 			dbg_printf("[keyboard] acp_por error=%d\n", size);
 			break;
 		}
 
-		result = kcall->port_reply(rdvno, &(message.res),
-				execute(&message));
+		execute(message);
+		result = kcall->port_reply(rdvno, &message, 0);
 		if (result) {
 			dbg_printf("[keyboard] rpl_rdv error=%d\n", result);
 			break;
@@ -341,7 +341,7 @@ ER keyboard_initialize(void)
 	}
 
 	result = bind_device(get_device_id(DEVICE_MAJOR_KEYBOARD, 0),
-			(UB*)("keyboard"), keyboard_port_id);
+			(UB*)DEV_NAME_KEYBOARD, keyboard_port_id);
 	if (result) {
 		dbg_printf("[keyboard] bind error=%d\n", result);
 		kcall->port_destroy(keyboard_port_id);

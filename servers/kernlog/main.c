@@ -165,7 +165,6 @@ static UW execute(devmsg_t *message)
 		res->body.rea_res.dd = req->body.rea_req.dd;
 		res->body.rea_res.errcd = (result >= 0)? E_OK:result;
 		res->body.rea_res.errinfo = 0;
-		res->body.rea_res.split = 0;
 		res->body.rea_res.a_size = (result >= 0)? result:0;
 		size = sizeof(res->body.rea_res)
 				- sizeof(res->body.rea_res.dt)

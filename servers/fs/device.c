@@ -30,6 +30,7 @@ Version 2, June 1991
 W write_device(ID device, B * buf, W start, W length, W * rlength)
 {
     devmsg_t packet;
+    devmsg_t *p = &packet;
     W error_no;
     ID send_port;
     UW dd;
@@ -50,7 +51,7 @@ W write_device(ID device, B * buf, W start, W length, W * rlength)
     packet.req.body.wri_req.start = start;
     packet.req.body.wri_req.size = length;
     memcpy(packet.req.body.wri_req.dt, buf, length);
-    rsize = kcall->port_call(send_port, &packet, sizeof(packet.req));
+    rsize = kcall->port_call(send_port, &p, sizeof(p));
     if (rsize < 0) {
 	dbg_printf("fs: cal_por error = %d\n", rsize);	/* */
 	return (ENODEV);
@@ -67,6 +68,7 @@ W write_device(ID device, B * buf, W start, W length, W * rlength)
 W read_device(ID device, B * buf, W start, W length, W * rlength)
 {
     devmsg_t packet;
+    devmsg_t *p = &packet;
     W error_no;
     W rest_length;
     ER_UINT rsize;
@@ -86,7 +88,7 @@ W read_device(ID device, B * buf, W start, W length, W * rlength)
 	packet.req.body.rea_req.start = start + (length - rest_length);
 	packet.req.body.rea_req.size
 	    = (BLOCK_SIZE > rest_length) ? rest_length : BLOCK_SIZE;
-	rsize = kcall->port_call(send_port, &packet, sizeof(packet.req));
+	rsize = kcall->port_call(send_port, &p, sizeof(p));
 	if (rsize < 0) {
 	    dbg_printf("fs: cal_por error = %d\n", rsize);	/* */
 	    return (error_no);
@@ -113,6 +115,7 @@ W read_device(ID device, B * buf, W start, W length, W * rlength)
 W open_device(ID device, W * rsize)
 {
     devmsg_t packet;
+    devmsg_t *p = &packet;
     W error_no;
     ID send_port;
     UW dd;
@@ -126,7 +129,7 @@ W open_device(ID device, W * rsize)
 
     packet.req.header.msgtyp = DEV_OPN;
     packet.req.body.opn_req.dd = dd;
-    rlength = kcall->port_call(send_port, &packet, sizeof(packet.req));
+    rlength = kcall->port_call(send_port, &p, sizeof(p));
     if (rlength < 0) {
 	dbg_printf("fs: cal_por error = %d\n", rsize);	/* */
 	return (ENODEV);
@@ -143,6 +146,7 @@ W open_device(ID device, W * rsize)
 W close_device(ID device)
 {
     devmsg_t packet;
+    devmsg_t *p = &packet;
     W error_no;
     ID send_port;
     UW dd;
@@ -156,7 +160,7 @@ W close_device(ID device)
 
     packet.req.header.msgtyp = DEV_CLS;
     packet.req.body.cls_req.dd = dd;
-    rsize = kcall->port_call(send_port, &packet, sizeof(packet.req));
+    rsize = kcall->port_call(send_port, &p, sizeof(p));
     if (rsize < 0) {
 	dbg_printf("fs: cal_por error = %d\n", rsize);	/* */
 	return (ENODEV);

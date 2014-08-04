@@ -83,8 +83,7 @@ enum driver_command
   DEV_OPN,
   DEV_CLS,
   DEV_REA,
-  DEV_WRI,
-  DEV_CTL
+  DEV_WRI
 };
 
 /* =========================================================================
@@ -140,7 +139,6 @@ typedef struct {
   W dd;       /* デバイスドライバマネージャ管理情報 */
               /* デバイスドライバはこの値を使用せず，応答メッセージの */
               /* 先頭に登録する */
-  W eject;    /* イジェクト指定	*/
 } DDEV_CLS_REQ;
 
 /* デバイスクローズ（デバイスドライバマネージャへの応答）
@@ -173,7 +171,6 @@ typedef struct {
   W dd;        /* デバイスドライバマネージャ管理情報	*/
   ER errcd;
   W errinfo;   /* エラー詳細情報	*/
-  W split;     /* 分割情報	*/
   UW	a_size; /* 実際に読み込んだbyte数	*/
   UB dt[DEV_BUF_SIZE];     /* 読み込んだデータ	*/
 } DDEV_REA_RES;
@@ -245,11 +242,5 @@ typedef union _devmsg_t {
     DDEV_REQ req;
     DDEV_RES res;
 } devmsg_t;
-
-
-#define DEVID(id)	(id >> 16)
-#define UNIT(id)	((id >> 8) & 0xff)
-#define SUBUNIT(id)	(id & 0xff)
-#define MAKEDEVID(dev,unit,subunit)	((dev << 16) | (unit << 8) | subunit)
 
 #endif /* __KERNLIB_DEVICE_H__ */

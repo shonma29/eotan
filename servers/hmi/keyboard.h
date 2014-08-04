@@ -28,7 +28,9 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 
-extern void keyboard_accept(VP_INT exinf);
+#define DEV_NAME_KEYBOARD "kbd"
+
+extern void keyboard_accept(void);
 extern ER keyboard_initialize(void);
 
 #endif
