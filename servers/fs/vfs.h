@@ -101,56 +101,52 @@ Version 2, June 1991
 /* file system types. */
 
 struct fsops {
-    W(*fs_mount) ();
-    W(*fs_umount) ();
+    W(*mount) ();
+    W(*umount) ();
 };
-
-#define FS_MOUNT(fsp,device,rootfs,rootfile)	(fsp->fs_mount)(device, rootfs, rootfile)
-
-#define FS_UMOUNT(fsp, rootfs)	(fsp->fs_umount)(rootfs)
 
 struct iops {
-    W(*i_lookup) ();
-    W(*i_create) ();
-    W(*i_close) ();
-    W(*i_read) ();
-    W(*i_write) ();
-    W(*i_link) ();
-    W(*i_unlink) ();
-    W(*i_sync) ();
-    W(*i_mkdir) ();
-    W(*i_rmdir) ();
-    W(*i_getdents) ();
+    W(*lookup) ();
+    W(*create) ();
+    W(*close) ();
+    W(*read) ();
+    W(*write) ();
+    W(*link) ();
+    W(*unlink) ();
+    W(*sync) ();
+    W(*mkdir) ();
+    W(*rmdir) ();
+    W(*getdents) ();
 };
 
-#define FILE_CLOSE(ip)	(ip->i_ops->i_close (ip))
+#define FILE_CLOSE(ip)	(ip->i_ops->close (ip))
 
-#define FILE_SYNC(ip, umflag)	(ip->i_ops->i_sync (ip, umflag))
+#define FILE_SYNC(ip, umflag)	(ip->i_ops->sync (ip, umflag))
 
 #define FILE_LOOKUP(ip,part,oflag,mode,acc,tmpip)	\
-	(ip->i_ops->i_lookup)(ip,part,oflag,mode,acc,tmpip)
+	(ip->i_ops->lookup)(ip,part,oflag,mode,acc,tmpip)
 
-#define FILE_WRITE(ip,start,buf,length,rlength)	(ip->i_ops->i_write) (ip,start,buf,length,rlength)
+#define FILE_WRITE(ip,start,buf,length,rlength)	(ip->i_ops->write) (ip,start,buf,length,rlength)
 
-#define FILE_READ(ip,start,buf,length,rlength)	(ip->i_ops->i_read) (ip,start,buf,length,rlength)
+#define FILE_READ(ip,start,buf,length,rlength)	(ip->i_ops->read) (ip,start,buf,length,rlength)
 
 #define FILE_CREATE(ip,path,oflag,mode,acc,newip)	\
-	(ip->i_ops->i_create)(ip,path,oflag,mode,acc,newip)
+	(ip->i_ops->create)(ip,path,oflag,mode,acc,newip)
 
 #define FILE_UNLINK(ip,path,acc)	\
-	(ip->i_ops->i_unlink)(ip,path,acc)
+	(ip->i_ops->unlink)(ip,path,acc)
 
 #define FILE_LINK(ip,path,srcip,acc)	\
-	(ip->i_ops->i_link)(ip,path,srcip,acc)
+	(ip->i_ops->link)(ip,path,srcip,acc)
 
 #define DIR_CREATE(ip, path, mode, acc, newip) \
-	(ip->i_ops->i_mkdir)(ip, path, mode, acc, newip)
+	(ip->i_ops->mkdir)(ip, path, mode, acc, newip)
 
 #define DIR_UNLINK(ip,path,acc)\
-	(ip->i_ops->i_rmdir)(ip, path, acc)
+	(ip->i_ops->rmdir)(ip, path, acc)
 
 #define GET_DENTS(ip, caller, offset, buf, length, rsize, fsize) \
-	(ip->i_ops->i_getdents)(ip, caller, offset, buf, length, rsize, fsize)
+	(ip->i_ops->getdents)(ip, caller, offset, buf, length, rsize, fsize)
 
 struct fs {
     struct fs *fs_prev;

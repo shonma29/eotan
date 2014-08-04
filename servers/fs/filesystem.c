@@ -342,7 +342,7 @@ W mount_root(ID device, W fstype, W option)
 
     fsp = fs_table[fstype].fsops;
     init_cache();
-    err = FS_MOUNT(fsp, device, rootfs, rootfile);
+    err = fsp->mount(device, rootfs, rootfile);
     if (err) {
 	return (err);
     }
@@ -408,7 +408,7 @@ mount_fs(struct inode * deviceip,
 
     /* ファイルシステム情報の取り出し */
     fsp = fs_table[fs_num].fsops;
-    err = FS_MOUNT(fsp, device, newfs, newip);
+    err = fsp->mount(device, newfs, newip);
     if (err) {
 	dealloc_fs(newfs);
 
@@ -476,7 +476,7 @@ W umount_fs(UW device)
     }
 
     /* ファイルシステム情報を解放する */
-    FS_UMOUNT(fsp->fs_ops, fsp);
+    fsp->fs_ops->umount(fsp);
 
     /* マウントポイントを解放する */
     fsp->mountpoint->coverfile = NULL;
