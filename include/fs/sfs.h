@@ -69,14 +69,6 @@ Version 2, June 1991
 #define SFS_TINDIRECT_BLOCK_ENTRY 	1
 #define SFS_INDIRECT_BLOCK		128
 
-#define SFS_FMT_MSK	(0170000)
-#define SFS_FMT_REG	(0100000)
-#define SFS_FMT_DIR	(0040000)
-#define SFS_FMT_DEV	(0020000)
-#define SFS_FMT_CDEV	SFS_FMT_DEV
-#define SFS_FMT_BDEV	(0060000)
-
-
 struct sfs_superblock
 {
   UW	sfs_magic;

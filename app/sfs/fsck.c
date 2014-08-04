@@ -275,7 +275,7 @@ void scan_dirtree(int fd, struct sfs_superblock *sb, UW index)
     struct sfs_dir *buf;
 
     errno = read_inode(fd, sb, (int) index, &ip);
-    if ((ip.sfs_i_perm & SFS_FMT_MSK) == SFS_FMT_DIR) {
+    if ((ip.sfs_i_perm & S_IFMT) == S_IFDIR) {
 	nentry = read_dir(fd, sb, &ip, 0, NULL);
 	if (nentry < 0) {
 	    printf("No directory entory\n");
@@ -309,7 +309,7 @@ void bitmap_scan_inode(int fd, struct sfs_superblock *sb)
     for (i = 0; i < sb->sfs_ninode; ++i) {
 	if (inode[i] > 0) {
 	    errno = read_inode(fd, sb, i + 1, &ip);
-	    if ((ip.sfs_i_perm & SFS_FMT_DEV) == 0)
+	    if ((ip.sfs_i_perm & S_IFCHR) == 0)
 		scan_block(fd, sb, &ip);
 	}
     }
