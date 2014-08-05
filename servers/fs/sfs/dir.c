@@ -141,11 +141,11 @@ W sfs_getdents(struct inode *ip, ID caller, W offset,
     error_no = sfs_read_dir (ip, nentry, dirp);
     if (error_no) return(error_no);
     for (i = offset/s; i < nentry; i++) {
-      len = sizeof(struct dirent)+strlen(dirp[i].sfs_d_name);
+      len = sizeof(struct dirent)+strlen(dirp[i].d_name);
       if ((*rsize) + len >= length) return(EOK);
       dent.d_reclen = len;
       dent.d_off = i*s;
-      strncpy(dent.d_name, dirp[i].sfs_d_name, MAX_NAME_LEN);
+      strncpy(dent.d_name, dirp[i].d_name, MAX_NAME_LEN);
       dent.d_name[MAX_NAME_LEN] = '\0';
       error_no = kcall->region_put(caller, buf+(*rsize), len, &dent);
       if (error_no) return(error_no);

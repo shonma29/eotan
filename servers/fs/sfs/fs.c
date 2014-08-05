@@ -134,21 +134,21 @@ W sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
     dbg_printf("sfs: rootfsp = 0x%x\n", rootfsp);
 #endif
 
-    if (sfs_sb.sfs_magic != SFS_MAGIC) {
-	dbg_printf("sfs: ERROR: mount: magic number %x\n", sfs_sb.sfs_magic);
+    if (sfs_sb.magic != SFS_MAGIC) {
+	dbg_printf("sfs: ERROR: mount: magic number %x\n", sfs_sb.magic);
 	return (EINVAL);
     }
 
     rootfsp->fs_typeid = FS_SFS;
-    rootfsp->fs_blksize = sfs_sb.sfs_blocksize;
-    rootfsp->fs_allblock = sfs_sb.sfs_nblock;
-    rootfsp->fs_freeblock = sfs_sb.sfs_freeblock;
-    rootfsp->fs_usedblock = sfs_sb.sfs_nblock - sfs_sb.sfs_freeblock;
-    rootfsp->fs_allinode = sfs_sb.sfs_ninode;
-    rootfsp->fs_freeinode = sfs_sb.sfs_freeinode;
-    rootfsp->fs_usedinode = sfs_sb.sfs_ninode - sfs_sb.sfs_freeinode;
-    rootfsp->fs_isearch = sfs_sb.sfs_isearch;
-    rootfsp->fs_bsearch = sfs_sb.sfs_bsearch;
+    rootfsp->fs_blksize = sfs_sb.blocksize;
+    rootfsp->fs_allblock = sfs_sb.nblock;
+    rootfsp->fs_freeblock = sfs_sb.freeblock;
+    rootfsp->fs_usedblock = sfs_sb.nblock - sfs_sb.freeblock;
+    rootfsp->fs_allinode = sfs_sb.ninode;
+    rootfsp->fs_freeinode = sfs_sb.freeinode;
+    rootfsp->fs_usedinode = sfs_sb.ninode - sfs_sb.freeinode;
+    rootfsp->fs_isearch = sfs_sb.isearch;
+    rootfsp->fs_bsearch = sfs_sb.bsearch;
     rootfsp->fs_device = device;
     rootfsp->fs_private.sfs_fs = sfs_sb;
 
@@ -159,8 +159,8 @@ W sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
     dbg_printf("sfs: sfs_sb: allblock  = %d\n", rootfsp->fs_allblock);
     dbg_printf("sfs: sfs_sb: allinode  = %d\n", rootfsp->fs_allinode);
     dbg_printf("sfs: sfs_sb: version  = %d.%d\n",
-	       rootfsp->fs_private.sfs_fs.sfs_version_hi,
-	       rootfsp->fs_private.sfs_fs.sfs_version_lo);
+	       rootfsp->fs_private.sfs_fs.version_hi,
+	       rootfsp->fs_private.sfs_fs.version_lo);
 #endif
 
     rootfile->i_ops = (struct fsops *) &sfs_fsops;
@@ -206,14 +206,14 @@ W sfs_syncfs(struct fs * fsp, W umflag)
     struct sfs_superblock *sb;
 
     if (fsp->fs_dirty) {
-	fsp->fs_private.sfs_fs.sfs_freeblock = fsp->fs_freeblock;
-	fsp->fs_private.sfs_fs.sfs_freeinode = fsp->fs_freeinode;
-	fsp->fs_private.sfs_fs.sfs_isearch = fsp->fs_isearch;
-	fsp->fs_private.sfs_fs.sfs_bsearch = fsp->fs_bsearch;
+	fsp->fs_private.sfs_fs.freeblock = fsp->fs_freeblock;
+	fsp->fs_private.sfs_fs.freeinode = fsp->fs_freeinode;
+	fsp->fs_private.sfs_fs.isearch = fsp->fs_isearch;
+	fsp->fs_private.sfs_fs.bsearch = fsp->fs_bsearch;
 	sb = &(fsp->fs_private.sfs_fs);
 	error_no =
 	    write_device(fsp->fs_device, (B *) sb,
-			     1 * sb->sfs_blocksize,
+			     1 * sb->blocksize,
 			     sizeof(struct sfs_superblock), &rsize);
 	if (error_no) {
 	    return (error_no);

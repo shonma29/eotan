@@ -186,22 +186,22 @@ void write_superblock(int formatfd)
 
     struct sfs_superblock superblock;
 
-    superblock.sfs_magic = SFS_MAGIC;
-    superblock.sfs_version_hi = SFS_VERSION_HI;
-    superblock.sfs_version_lo = SFS_VERSION_LO;
-    superblock.sfs_mountcount = 0;
-    superblock.sfs_blocksize = blocksize;
-    superblock.sfs_nblock = nblock;
-    superblock.sfs_freeblock =
+    superblock.magic = SFS_MAGIC;
+    superblock.version_hi = SFS_VERSION_HI;
+    superblock.version_lo = SFS_VERSION_LO;
+    superblock.mountcount = 0;
+    superblock.blocksize = blocksize;
+    superblock.nblock = nblock;
+    superblock.freeblock =
 	nblock - (boot_block + super_block + bitmap_block + inode_block +
 		  2);
-    superblock.sfs_bitmapsize = bitmap_block;
-    superblock.sfs_ninode = inodecount;
-    superblock.sfs_freeinode = inodecount - 2;	/* root ディレクトリの分 */
-    superblock.sfs_datablock =
+    superblock.bitmapsize = bitmap_block;
+    superblock.ninode = inodecount;
+    superblock.freeinode = inodecount - 2;	/* root ディレクトリの分 */
+    superblock.datablock =
 	(boot_block + super_block + bitmap_block + inode_block);
-    superblock.sfs_isearch = 2;
-    superblock.sfs_bsearch = (boot_block + super_block + bitmap_block
+    superblock.isearch = 2;
+    superblock.bsearch = (boot_block + super_block + bitmap_block
 			      + inode_block + 2) - 1;
 
     lseek(formatfd, blocksize, 0);
@@ -283,12 +283,12 @@ void write_inode(int formatfd)
 	}
     }
 
-    lostfound.sfs_i_atime = rootdir.sfs_i_atime = time(NULL);
-    lostfound.sfs_i_mtime = rootdir.sfs_i_mtime = time(NULL);
-    lostfound.sfs_i_ctime = rootdir.sfs_i_ctime = time(NULL);
-    rootdir.sfs_i_direct[0] =
+    lostfound.i_atime = rootdir.i_atime = time(NULL);
+    lostfound.i_mtime = rootdir.i_mtime = time(NULL);
+    lostfound.i_ctime = rootdir.i_ctime = time(NULL);
+    rootdir.i_direct[0] =
 	(boot_block + super_block + bitmap_block + inode_block);
-    lostfound.sfs_i_direct[0] =
+    lostfound.i_direct[0] =
 	(boot_block + super_block + bitmap_block + inode_block) + 1;
 
     lseek(formatfd, blocksize * (boot_block + super_block + bitmap_block),

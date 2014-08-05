@@ -60,35 +60,35 @@ Version 2, June 1991
 
 #define SFS_MAGIC			0x12345678
 #define SFS_MAXNAMELEN			14
-#define SFS_VERSION_HI			1
+#define SFS_VERSION_HI			2
 #define SFS_VERSION_LO			1
-#define SFS_DIRECT_BLOCK_ENTRY		70
+#define SFS_DIRECT_BLOCK_ENTRY		(70 - 62)
 
-#define SFS_INDIRECT_BLOCK_ENTRY	20
-#define SFS_DINDIRECT_BLOCK_ENTRY 	26
-#define SFS_TINDIRECT_BLOCK_ENTRY 	1
+#define SFS_INDIRECT_BLOCK_ENTRY	(20 - 4)
+#define SFS_DINDIRECT_BLOCK_ENTRY 	(26 + 62 + 4 + 1)
+#define SFS_TINDIRECT_BLOCK_ENTRY 	(1 - 1)
 #define SFS_INDIRECT_BLOCK		128
 
 struct sfs_superblock
 {
-  UW	sfs_magic;
-  H	sfs_version_hi;
-  H	sfs_version_lo;
-  UW	sfs_mountcount;
-  H	sfs_blocksize;		/* ブロックサイズ */
+  UW	magic;
+  H	version_hi;
+  H	version_lo;
+  UW	mountcount;
+  H	blocksize;		/* ブロックサイズ */
 
-  UW	sfs_nblock;
-  UW	sfs_freeblock;
+  UW	nblock;
+  UW	freeblock;
 
-  UW	sfs_bitmapsize;
+  UW	bitmapsize;
 
-  UW	sfs_ninode;
-  UW	sfs_freeinode;
+  UW	ninode;
+  UW	freeinode;
 
-  UW	sfs_isearch;		/* この番号以下の inode は使用中 */
-  UW	sfs_bsearch;		/* この番号以下の block は使用中 */
+  UW	isearch;		/* この番号以下の inode は使用中 */
+  UW	bsearch;		/* この番号以下の block は使用中 */
 
-  UW	sfs_datablock;		/* データ領域の開始位置。
+  UW	datablock;		/* データ領域の開始位置。
 				 * inode は、スーパーブ
 				 * ロックの直後になるので、
 				 * 特に記録しない。*/
@@ -98,37 +98,37 @@ struct sfs_superblock
 
 struct sfs_inode
 {
-  UW	sfs_i_index;	/* SFS の場合、inode は 1 からはじまる */
-  UW	sfs_i_nlink;
-  UW	sfs_i_size;
-  UW	sfs_i_size_blk;
+  UW	i_index;	/* SFS の場合、inode は 1 からはじまる */
+  UW	i_nlink;
+  UW	i_size;
+  UW	i_size_blk;
   
-  UW	sfs_i_perm;
-  UW	sfs_i_uid;
-  UW	sfs_i_gid;
-  UW	sfs_i_dev;	/* not used */
+  UW	i_perm;
+  UW	i_uid;
+  UW	i_gid;
+  UW	i_dev;	/* not used */
 
-  UW	sfs_i_atime;
-  UW	sfs_i_ctime;
-  UW	sfs_i_mtime;
+  UW	i_atime;
+  UW	i_ctime;
+  UW	i_mtime;
 
-  UW	sfs_i_direct[SFS_DIRECT_BLOCK_ENTRY];
-  UW	sfs_i_indirect[SFS_INDIRECT_BLOCK_ENTRY];
-  UW	sfs_i_dindirect[SFS_DINDIRECT_BLOCK_ENTRY];
-  UW	sfs_i_tindirect[SFS_TINDIRECT_BLOCK_ENTRY]; /* reservation only */
+  UW	i_direct[SFS_DIRECT_BLOCK_ENTRY];
+  UW	i_indirect[SFS_INDIRECT_BLOCK_ENTRY];
+  UW	i_dindirect[SFS_DINDIRECT_BLOCK_ENTRY];
+  UW	i_tindirect[SFS_TINDIRECT_BLOCK_ENTRY]; /* reservation only */
 };
 
 
 struct sfs_indirect
 {
-  UW	sfs_in_block[SFS_INDIRECT_BLOCK];
+  UW	in_block[SFS_INDIRECT_BLOCK];
 };
 
 
 struct sfs_dir
 {
-  UW	sfs_d_index;		/* inode 番号 */
-  B	sfs_d_name[SFS_MAXNAMELEN];
+  UW	d_index;		/* inode 番号 */
+  B	d_name[SFS_MAXNAMELEN];
   B	pad[2];			/* padding */
 };
 

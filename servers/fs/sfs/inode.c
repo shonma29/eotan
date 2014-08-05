@@ -96,8 +96,8 @@ static W sfs_get_inode_offset(struct fs *fsp, W ino)
     struct sfs_superblock *sb;
 
     sb = &(fsp->fs_private.sfs_fs);
-    nblock = sb->sfs_nblock;
-    blocksize = sb->sfs_blocksize;
+    nblock = sb->nblock;
+    blocksize = sb->blocksize;
     offset = 1 + 1 + (ROUNDUP(nblock / 8, blocksize) / blocksize);
     offset *= blocksize;
     return (offset + ((ino - 1) * sizeof(struct sfs_inode)));
@@ -121,16 +121,16 @@ W sfs_read_inode(struct fs *fsp, W ino, struct inode *ip)
 	  sizeof(struct sfs_inode));
     put_cache(cn, 0);
 
-    ip->i_index = ip->i_private.sfs_inode.sfs_i_index;
-    ip->i_uid = ip->i_private.sfs_inode.sfs_i_uid;
-    ip->i_gid = ip->i_private.sfs_inode.sfs_i_gid;
-    ip->i_size = ip->i_private.sfs_inode.sfs_i_size;
-    ip->i_size_blk = ip->i_private.sfs_inode.sfs_i_size_blk;
-    ip->i_atime = ip->i_private.sfs_inode.sfs_i_atime;
-    ip->i_ctime = ip->i_private.sfs_inode.sfs_i_ctime;
-    ip->i_mtime = ip->i_private.sfs_inode.sfs_i_mtime;
-    ip->i_mode = ip->i_private.sfs_inode.sfs_i_perm;
-    ip->i_link = ip->i_private.sfs_inode.sfs_i_nlink;
+    ip->i_index = ip->i_private.sfs_inode.i_index;
+    ip->i_uid = ip->i_private.sfs_inode.i_uid;
+    ip->i_gid = ip->i_private.sfs_inode.i_gid;
+    ip->i_size = ip->i_private.sfs_inode.i_size;
+    ip->i_size_blk = ip->i_private.sfs_inode.i_size_blk;
+    ip->i_atime = ip->i_private.sfs_inode.i_atime;
+    ip->i_ctime = ip->i_private.sfs_inode.i_ctime;
+    ip->i_mtime = ip->i_private.sfs_inode.i_mtime;
+    ip->i_mode = ip->i_private.sfs_inode.i_perm;
+    ip->i_link = ip->i_private.sfs_inode.i_nlink;
     ip->i_ops = &sfs_fsops;
     ip->i_refcount = 1;
     ip->i_lock = 0;
@@ -138,7 +138,7 @@ W sfs_read_inode(struct fs *fsp, W ino, struct inode *ip)
     ip->i_device = fsp->fs_device;
     if (ip->i_mode & S_IFCHR) {
 	/* スペシャルファイルだった */
-	ip->i_dev = ip->i_private.sfs_inode.sfs_i_direct[0];
+	ip->i_dev = ip->i_private.sfs_inode.i_direct[0];
     }
     else {
         ip->i_dev =  0;
@@ -167,9 +167,9 @@ W sfs_alloc_inode(ID fd, struct fs * fsp)
 	get_cache(fd, offset / SFS_BLOCK_SIZE, &cn, (B **) & ipbufp);
 
 	offset += sizeof(struct sfs_inode);
-	if (ipbufp->sfs_i_index != i) {
+	if (ipbufp->i_index != i) {
 	    memset((VP)ipbufp, 0, sizeof(struct sfs_inode));
-	    ipbufp->sfs_i_index = i;
+	    ipbufp->i_index = i;
 	    put_cache(cn, 1);
 	    fsp->fs_freeinode--;
 	    fsp->fs_usedinode++;
@@ -204,7 +204,7 @@ W sfs_write_inode(W fd, struct fs * fsp, struct sfs_inode * ip)
 	error_no = write_device(fd,
 				 tmp,
 				 sfs_get_inode_offset(fsp,
-						      ip->sfs_i_index),
+						      ip->i_index),
 				 MAX_BODY_SIZE, &rlength);
 	if (error_no) {
 	    return (EIO);
@@ -213,7 +213,7 @@ W sfs_write_inode(W fd, struct fs * fsp, struct sfs_inode * ip)
 	tmp += MAX_BODY_SIZE;
 	error_no = write_device(fd,
 				 tmp,
-				 sfs_get_inode_offset(fsp, ip->sfs_i_index)
+				 sfs_get_inode_offset(fsp, ip->i_index)
 				 + MAX_BODY_SIZE,
 				 sizeof(struct sfs_inode) - MAX_BODY_SIZE,
 				 &rlength);
@@ -224,7 +224,7 @@ W sfs_write_inode(W fd, struct fs * fsp, struct sfs_inode * ip)
     } else {
 	get_cache(fd,
 		      sfs_get_inode_offset(fsp,
-					   ip->sfs_i_index) /
+					   ip->i_index) /
 		      SFS_BLOCK_SIZE, &cn, &buf);
 	memcpy(buf, (B*)ip, sizeof(struct sfs_inode));
 	put_cache(cn, 1);

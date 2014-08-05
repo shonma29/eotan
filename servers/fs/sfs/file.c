@@ -156,7 +156,7 @@ sfs_i_lookup(struct inode *parent,
 	error_no = sfs_read_dir(parent, nentry, dirp);
 	for (i = 0; i < nentry; i++) {
 	    /* 表示文字長を SFS_MAXNAMELEN にするため．後に pad があるので大丈夫 */
-	    if ((W) strncmp(fname, dirp[i].sfs_d_name, SFS_MAXNAMELEN + 1)
+	    if ((W) strncmp(fname, dirp[i].d_name, SFS_MAXNAMELEN + 1)
 		== 0) {
 		break;
 	    }
@@ -170,7 +170,7 @@ sfs_i_lookup(struct inode *parent,
 	    return (ENOENT);
 	}
 
-	*retip = fs_check_inode(parent->i_fs, dirp[i].sfs_d_index);
+	*retip = fs_check_inode(parent->i_fs, dirp[i].d_index);
 	if (*retip) {
 	    /* すでにオープンしていたファイルだった
 	     */
@@ -186,7 +186,7 @@ sfs_i_lookup(struct inode *parent,
 	    return (ENOMEM);
 	}
 
-	error_no = sfs_read_inode(parent->i_fs, dirp[i].sfs_d_index, *retip);
+	error_no = sfs_read_inode(parent->i_fs, dirp[i].d_index, *retip);
 	if (error_no) {
 	    return (error_no);
 	}
@@ -259,9 +259,9 @@ sfs_i_create(struct inode * parent,
     fs_register_inode(newip);
 
     /* ディレクトリのエントリを作成 */
-    dirent.sfs_d_index = newip->i_index;
+    dirent.d_index = newip->i_index;
     /* 表示文字長を SFS_MAXNAMELEN にするため．後に pad があるので大丈夫 */
-    strncpy(dirent.sfs_d_name, fname, SFS_MAXNAMELEN);
+    strncpy(dirent.d_name, fname, SFS_MAXNAMELEN);
     dirent.pad[0] = '\0';
 
     /* ディレクトリにエントリを追加 */
@@ -466,15 +466,15 @@ W sfs_i_truncate(struct inode * ip, W newsize)
     fsp = ip->i_fs;
     sfs_ip = &(ip->i_private.sfs_inode);
     nblock = roundUp(newsize, fsp->fs_blksize) / fsp->fs_blksize;
-    if (nblock < sfs_ip->sfs_i_size_blk) {
+    if (nblock < sfs_ip->i_size_blk) {
 	/* 余分なブロックを開放 */
 	blockno = nblock;
 	if (blockno < SFS_DIRECT_BLOCK_ENTRY) {
 	    /* 直接ブロックの範囲内 */
 	    for (i = blockno; i < SFS_DIRECT_BLOCK_ENTRY; ++i) {
-		if (sfs_ip->sfs_i_direct[i] > 0)
-		    sfs_free_block(fd, fsp, sfs_ip->sfs_i_direct[i]);
-		sfs_ip->sfs_i_direct[i] = 0;
+		if (sfs_ip->i_direct[i] > 0)
+		    sfs_free_block(fd, fsp, sfs_ip->i_direct[i]);
+		sfs_ip->i_direct[i] = 0;
 	    }
 	    sfs_free_indirect(fd, fsp, sfs_ip, 0, 0);
 	    sfs_free_all_dindirect(fd, fsp, sfs_ip, 0);
@@ -546,9 +546,9 @@ W sfs_i_link(struct inode * parent, char *fname, struct inode * srcip,
     }
 
     /* ディレクトリのエントリを作成 */
-    dirent.sfs_d_index = srcip->i_index;
+    dirent.d_index = srcip->i_index;
     /* 表示文字長を SFS_MAXNAMELEN にするため．後に pad があるので大丈夫 */
-    strncpy(dirent.sfs_d_name, fname, SFS_MAXNAMELEN);
+    strncpy(dirent.d_name, fname, SFS_MAXNAMELEN);
     dirent.pad[0] = '\0';
 
     /* ディレクトリにエントリを追加 */
@@ -608,7 +608,7 @@ sfs_i_unlink(struct inode * parent, char *fname, struct access_info * acc)
 
 	for (i = 0; i < nentry; i++) {
 	    /* 表示文字長を SFS_MAXNAMELEN にするため．後に pad があるので大丈夫 */
-	    if (strncmp(fname, buf[i].sfs_d_name, SFS_MAXNAMELEN + 1) == 0) {
+	    if (strncmp(fname, buf[i].d_name, SFS_MAXNAMELEN + 1) == 0) {
 		break;
 	    }
 	}
@@ -618,9 +618,9 @@ sfs_i_unlink(struct inode * parent, char *fname, struct access_info * acc)
 	}
 
 	while (i < nentry) {
-	    buf[i].sfs_d_index = buf[i + 1].sfs_d_index;
+	    buf[i].d_index = buf[i + 1].d_index;
 	    /* 表示文字長を SFS_MAXNAMELEN にするため．後に pad があるので大丈夫 */
-	    strncpy(buf[i].sfs_d_name, buf[i + 1].sfs_d_name,
+	    strncpy(buf[i].d_name, buf[i + 1].d_name,
 		    SFS_MAXNAMELEN);
 	    buf[i].pad[0] = '\0';
 	    i++;
@@ -650,19 +650,19 @@ W sfs_i_sync(struct inode * ip)
 #ifdef FMDEBUG
     dbg_printf("sfs: sfs_i_sync\n");
 #endif
-    ip->i_private.sfs_inode.sfs_i_index = ip->i_index;
-    ip->i_private.sfs_inode.sfs_i_nlink = ip->i_link;
-    if (ip->i_size < ip->i_private.sfs_inode.sfs_i_size) {
+    ip->i_private.sfs_inode.i_index = ip->i_index;
+    ip->i_private.sfs_inode.i_nlink = ip->i_link;
+    if (ip->i_size < ip->i_private.sfs_inode.i_size) {
       sfs_i_truncate(ip, ip->i_size);
     }
-    ip->i_private.sfs_inode.sfs_i_size = ip->i_size;
-    ip->i_private.sfs_inode.sfs_i_size_blk = ip->i_size_blk;
-    ip->i_private.sfs_inode.sfs_i_perm = ip->i_mode;
-    ip->i_private.sfs_inode.sfs_i_uid = ip->i_uid;
-    ip->i_private.sfs_inode.sfs_i_gid = ip->i_gid;
-    ip->i_private.sfs_inode.sfs_i_atime = ip->i_atime;
-    ip->i_private.sfs_inode.sfs_i_ctime = ip->i_ctime;
-    ip->i_private.sfs_inode.sfs_i_mtime = ip->i_mtime;
+    ip->i_private.sfs_inode.i_size = ip->i_size;
+    ip->i_private.sfs_inode.i_size_blk = ip->i_size_blk;
+    ip->i_private.sfs_inode.i_perm = ip->i_mode;
+    ip->i_private.sfs_inode.i_uid = ip->i_uid;
+    ip->i_private.sfs_inode.i_gid = ip->i_gid;
+    ip->i_private.sfs_inode.i_atime = ip->i_atime;
+    ip->i_private.sfs_inode.i_ctime = ip->i_ctime;
+    ip->i_private.sfs_inode.i_mtime = ip->i_mtime;
 
     if (ip->i_dirty) {
 	err = sfs_write_inode(ip->i_device, ip->i_fs,
@@ -737,17 +737,17 @@ sfs_i_mkdir(struct inode * parent,
 
     fs_register_inode(newip);
 
-    dir[0].sfs_d_index = i_index;
-    dir[1].sfs_d_index = parent->i_index;
+    dir[0].d_index = i_index;
+    dir[1].d_index = parent->i_index;
     error_no = sfs_i_write(newip, 0, (B *) dir, sizeof(dir), &rsize);
     if (error_no) {
 	return (error_no);
     }
 
     /* ディレクトリのエントリを作成 */
-    dirent.sfs_d_index = newip->i_index;
+    dirent.d_index = newip->i_index;
     /* 表示文字長を SFS_MAXNAMELEN にするため．後に pad があるので大丈夫 */
-    strncpy(dirent.sfs_d_name, fname, SFS_MAXNAMELEN);
+    strncpy(dirent.d_name, fname, SFS_MAXNAMELEN);
     dirent.pad[0] = '\0';
 
     /* ディレクトリにエントリを追加 */
@@ -808,7 +808,7 @@ W sfs_i_rmdir(struct inode * parent, char *fname, struct access_info * acc)
 
 	for (i = 0; i < nentry; i++) {
 	    /* 表示文字長を SFS_MAXNAMELEN にするため．後に pad があるので大丈夫 */
-	    if (strncmp(fname, buf[i].sfs_d_name, SFS_MAXNAMELEN + 1) == 0) {
+	    if (strncmp(fname, buf[i].d_name, SFS_MAXNAMELEN + 1) == 0) {
 		break;
 	    }
 	}
@@ -818,9 +818,9 @@ W sfs_i_rmdir(struct inode * parent, char *fname, struct access_info * acc)
 	}
 
 	while (i < nentry) {
-	    buf[i].sfs_d_index = buf[i + 1].sfs_d_index;
+	    buf[i].d_index = buf[i + 1].d_index;
 	    /* 表示文字長を SFS_MAXNAMELEN にするため．後に pad があるので大丈夫 */
-	    strncpy(buf[i].sfs_d_name, buf[i + 1].sfs_d_name,
+	    strncpy(buf[i].d_name, buf[i + 1].d_name,
 		    SFS_MAXNAMELEN);
 	    buf[i].pad[0] = '\0';
 	    i++;

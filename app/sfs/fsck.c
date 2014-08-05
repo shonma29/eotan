@@ -108,18 +108,18 @@ int main(int argc, char *argv[])
     }
     print_superblock(&sb);
 
-    inode = (int *) calloc(sb.sfs_ninode, sizeof(int));
+    inode = (int *) calloc(sb.ninode, sizeof(int));
     bitmap_disk =
-	(char *) calloc(sb.sfs_bitmapsize * sb.sfs_blocksize * 8,
+	(char *) calloc(sb.bitmapsize * sb.blocksize * 8,
 			sizeof(char));
     bitmap_used =
-	(char *) calloc(sb.sfs_bitmapsize * sb.sfs_blocksize * 8,
+	(char *) calloc(sb.bitmapsize * sb.blocksize * 8,
 			sizeof(char));
 
     printf("\nCheck of inode\n");
     i = scan_inode(fd, &sb);
     printf("counted used inode\t%d\n", i);
-    if (i != (sb.sfs_ninode - sb.sfs_freeinode)) {
+    if (i != (sb.ninode - sb.freeinode)) {
 	fprintf(stderr, "WARNING: File System Inconsistent!!\n");
 	free(inode);
 	free(bitmap_disk);
@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
     printf("\nCheck of bitmap block\n");
     i = scan_bitmap(fd, &sb);
     printf("counted used block\t%d\n", i);
-    if (i != (sb.sfs_nblock - sb.sfs_freeblock)) {
+    if (i != (sb.nblock - sb.freeblock)) {
 	fprintf(stderr, "WARNING: File System Inconsistent!!\n");
 	free(inode);
 	free(bitmap_disk);
@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
     printf("\nCheck of directory tree\n");
 #ifdef notdef
     printf("link count on i-node block\n");
-    for (i = 0; i < sb.sfs_ninode; ++i) {
+    for (i = 0; i < sb.ninode; ++i) {
 	printf("%2d", inode[i]);
     }
     printf("\n");
@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
 #ifdef notdef
     printf("difference bitween i-node block and dir tree\n");
 #endif
-    for (i = 0; i < sb.sfs_ninode; ++i) {
+    for (i = 0; i < sb.ninode; ++i) {
 #ifdef notdef
 	printf("%2d", inode[i]);
 #endif
@@ -170,9 +170,9 @@ int main(int argc, char *argv[])
     i = scan_inode(fd, &sb);
     bitmap_scan_inode(fd, &sb);
     for (i = 0;
-	 i < 2 + sb.sfs_bitmapsize
-	 + ROUNDUP(sizeof(struct sfs_inode), sb.sfs_blocksize)
-	 / sb.sfs_blocksize * sb.sfs_ninode; ++i) {
+	 i < 2 + sb.bitmapsize
+	 + ROUNDUP(sizeof(struct sfs_inode), sb.blocksize)
+	 / sb.blocksize * sb.ninode; ++i) {
 	bitmap_used[i] = 1;
     }
 #ifdef notdef
@@ -185,7 +185,7 @@ int main(int argc, char *argv[])
     }
     printf("\n");
 #endif
-    for (i = 0; i < sb.sfs_nblock; ++i) {
+    for (i = 0; i < sb.nblock; ++i) {
 	if (bitmap_used[i] > 1) {
 	    fprintf(stderr, "WARNING: File System Inconsistent!!\n");
 	    fprintf(stderr,
@@ -226,13 +226,13 @@ int scan_inode(int fd, struct sfs_superblock *sb)
     struct sfs_inode ip;
 
     count = 0;
-    for (i = 0; i < sb->sfs_ninode; ++i) {
+    for (i = 0; i < sb->ninode; ++i) {
 	errno = read_inode(fd, sb, i + 1, &ip);
 	if (errno)
 	    return (errno);
-	if (ip.sfs_i_index == (i + 1))
+	if (ip.i_index == (i + 1))
 	    ++count;
-	inode[i] = ip.sfs_i_nlink;
+	inode[i] = ip.i_nlink;
     }
     return (count);
 }
@@ -243,10 +243,10 @@ int scan_bitmap(int fd, struct sfs_superblock *sb)
     int i, j, blocksize, count, mask;
     int errno;
 
-    blocksize = sb->sfs_blocksize * sb->sfs_bitmapsize;
+    blocksize = sb->blocksize * sb->bitmapsize;
     buf = malloc(blocksize);
     memset(buf, 0, blocksize);
-    lseek(fd, sb->sfs_blocksize * 2, 0);
+    lseek(fd, sb->blocksize * 2, 0);
     errno = read(fd, buf, blocksize);
     if (errno < 0) {
 	perror("can't read bitmap block");
@@ -275,7 +275,7 @@ void scan_dirtree(int fd, struct sfs_superblock *sb, UW index)
     struct sfs_dir *buf;
 
     errno = read_inode(fd, sb, (int) index, &ip);
-    if ((ip.sfs_i_perm & S_IFMT) == S_IFDIR) {
+    if ((ip.i_perm & S_IFMT) == S_IFDIR) {
 	nentry = read_dir(fd, sb, &ip, 0, NULL);
 	if (nentry < 0) {
 	    printf("No directory entory\n");
@@ -292,11 +292,11 @@ void scan_dirtree(int fd, struct sfs_superblock *sb, UW index)
 	    exit(-1);
 	}
 	for (i = 0; i < 2; ++i) {
-	    inode[buf[i].sfs_d_index - 1] -= 1;
+	    inode[buf[i].d_index - 1] -= 1;
 	}
 	for (i = 2; i < nentry; ++i) {
-	    scan_dirtree(fd, sb, buf[i].sfs_d_index);
-	    inode[buf[i].sfs_d_index - 1] -= 1;
+	    scan_dirtree(fd, sb, buf[i].d_index);
+	    inode[buf[i].d_index - 1] -= 1;
 	}
     }
 }
@@ -306,10 +306,10 @@ void bitmap_scan_inode(int fd, struct sfs_superblock *sb)
     int i, errno;
     struct sfs_inode ip;
 
-    for (i = 0; i < sb->sfs_ninode; ++i) {
+    for (i = 0; i < sb->ninode; ++i) {
 	if (inode[i] > 0) {
 	    errno = read_inode(fd, sb, i + 1, &ip);
-	    if ((ip.sfs_i_perm & S_IFCHR) == 0)
+	    if ((ip.i_perm & S_IFCHR) == 0)
 		scan_block(fd, sb, &ip);
 	}
     }
@@ -320,41 +320,41 @@ void scan_block(int fd, struct sfs_superblock *sb, struct sfs_inode *ip)
     int i, j, block, index;
     struct sfs_indirect inbuf;
 
-    block = ROUNDUP(ip->sfs_i_size, sb->sfs_blocksize) / sb->sfs_blocksize;
+    block = ROUNDUP(ip->i_size, sb->blocksize) / sb->blocksize;
     for (i = 0; i < block; ++i) {
 	index = get_block_num(fd, sb, ip, i);
-	if (index < sb->sfs_datablock) {
+	if (index < sb->datablock) {
 	    printf("illegal block no %uld: %d-%d\n",
-		   ip->sfs_i_index, i, index);
+		   ip->i_index, i, index);
 	}
 	bitmap_used[index]++;
     }
     /* 1 重間接ブロックの処理 */
     for (i = 0; i < SFS_INDIRECT_BLOCK_ENTRY; ++i) {
-	if (ip->sfs_i_indirect[i] > 0) {
-	    if (ip->sfs_i_indirect[i] < sb->sfs_datablock) {
+	if (ip->i_indirect[i] > 0) {
+	    if (ip->i_indirect[i] < sb->datablock) {
 		printf("illegal indirect block inode %uld: %d-%uld\n",
-		       ip->sfs_i_index, i, ip->sfs_i_indirect[i]);
+		       ip->i_index, i, ip->i_indirect[i]);
 	    }
-	    bitmap_used[ip->sfs_i_indirect[i]]++;
+	    bitmap_used[ip->i_indirect[i]]++;
 	}
     }
     /* 2 重間接ブロックの処理 */
     for (i = 0; i < SFS_DINDIRECT_BLOCK_ENTRY; ++i) {
-	if (ip->sfs_i_dindirect[i] > 0) {
-	    read_block(fd, ip->sfs_i_dindirect[i],
-		       sb->sfs_blocksize, (B *) & inbuf);
+	if (ip->i_dindirect[i] > 0) {
+	    read_block(fd, ip->i_dindirect[i],
+		       sb->blocksize, (B *) & inbuf);
 	    for (j = 0; j < SFS_INDIRECT_BLOCK; ++j) {
-		if (inbuf.sfs_in_block[j] > 0) {
-		    if (inbuf.sfs_in_block[j] < sb->sfs_datablock) {
+		if (inbuf.in_block[j] > 0) {
+		    if (inbuf.in_block[j] < sb->datablock) {
 			printf
 			    ("illegal dindirect block inode %uld:%d-%uld\n",
-			     ip->sfs_i_index, j, inbuf.sfs_in_block[j]);
+			     ip->i_index, j, inbuf.in_block[j]);
 		    }
-		    bitmap_used[inbuf.sfs_in_block[j]]++;
+		    bitmap_used[inbuf.in_block[j]]++;
 		}
 	    }
-	    bitmap_used[ip->sfs_i_dindirect[i]]++;
+	    bitmap_used[ip->i_dindirect[i]]++;
 	}
     }
 }
@@ -363,29 +363,29 @@ void scan_block(int fd, struct sfs_superblock *sb, struct sfs_inode *ip)
 
 void print_superblock(struct sfs_superblock *sb)
 {
-    if (sb->sfs_magic != SFS_MAGIC) {
+    if (sb->magic != SFS_MAGIC) {
 	fprintf(stderr, "Invalid Magic ID\n");
 	exit(1);
     }
 
     fprintf(stderr, "*STATUS* \n\n");
     fprintf(stderr, "FS type\t\tSFS\n");
-    fprintf(stderr, "version\t\t%d.%d\n", sb->sfs_version_hi,
-	    sb->sfs_version_lo);
+    fprintf(stderr, "version\t\t%d.%d\n", sb->version_hi,
+	    sb->version_lo);
     fprintf(stderr, "total size\t%uld\n",
-	    sb->sfs_nblock * sb->sfs_blocksize);
+	    sb->nblock * sb->blocksize);
     fprintf(stderr, "size\t\t%uld\n",
-	    sb->sfs_freeblock * sb->sfs_blocksize);
-    fprintf(stderr, "mount count\t%uld\n", sb->sfs_mountcount);
-    fprintf(stderr, "blocksize\t%d bytes\n", sb->sfs_blocksize);
-    fprintf(stderr, "block\t\t%uld block, %uld free\n", sb->sfs_nblock,
-	    sb->sfs_freeblock);
+	    sb->freeblock * sb->blocksize);
+    fprintf(stderr, "mount count\t%uld\n", sb->mountcount);
+    fprintf(stderr, "blocksize\t%d bytes\n", sb->blocksize);
+    fprintf(stderr, "block\t\t%uld block, %uld free\n", sb->nblock,
+	    sb->freeblock);
     fprintf(stderr, "bitmap\t\t%uld bytes\n",
-	    sb->sfs_bitmapsize * sb->sfs_blocksize);
-    fprintf(stderr, "inode\t\t%uld inode, %uld free\n", sb->sfs_ninode,
-	    sb->sfs_freeinode);
-    fprintf(stderr, "isearch\t\t%uld, bsearch\t\t%uld\n", sb->sfs_isearch,
-	    sb->sfs_bsearch);
+	    sb->bitmapsize * sb->blocksize);
+    fprintf(stderr, "inode\t\t%uld inode, %uld free\n", sb->ninode,
+	    sb->freeinode);
+    fprintf(stderr, "isearch\t\t%uld, bsearch\t\t%uld\n", sb->isearch,
+	    sb->bsearch);
 }
 
 int get_inode_offset(struct sfs_superblock *sb, int ino)
@@ -394,8 +394,8 @@ int get_inode_offset(struct sfs_superblock *sb, int ino)
     int nblock;
     int blocksize;
 
-    nblock = sb->sfs_nblock;
-    blocksize = sb->sfs_blocksize;
+    nblock = sb->nblock;
+    blocksize = sb->blocksize;
     offset = 1 + 1 + (ROUNDUP(nblock / 8, blocksize) / blocksize);
     offset *= blocksize;
     return (offset + ((ino - 1) * sizeof(struct sfs_inode)));
@@ -424,10 +424,10 @@ read_dir(int fd,
     int size;
 
     if ((nentry <= 0) || (dirp == NULL)) {
-	return (ip->sfs_i_size / sizeof(struct sfs_dir));
+	return (ip->i_size / sizeof(struct sfs_dir));
     }
-    size = (nentry * sizeof(struct sfs_dir) <= ip->sfs_i_size) ?
-	nentry * sizeof(struct sfs_dir) : ip->sfs_i_size;
+    size = (nentry * sizeof(struct sfs_dir) <= ip->i_size) ?
+	nentry * sizeof(struct sfs_dir) : ip->i_size;
 
     read_file(fd, sb, ip, 0, size, (B *) dirp);	/* エラーチェックが必要! */
     return (0);
@@ -442,18 +442,18 @@ read_file(int fd,
     int copysize;
     int offset;
 
-    if (start + size > ip->sfs_i_size) {
-	size = ip->sfs_i_size - start;
+    if (start + size > ip->i_size) {
+	size = ip->i_size - start;
     }
 
 /*  fprintf (stderr, "read_file: offset = %d, size = %d\n", start, size); */
-    blockbuf = (B *) alloca(sb->sfs_blocksize);
+    blockbuf = (B *) alloca(sb->blocksize);
     while (size > 0) {
 	read_block(fd,
-		   get_block_num(fd, sb, ip, start / sb->sfs_blocksize),
-		   sb->sfs_blocksize, blockbuf);
-	offset = start % sb->sfs_blocksize;
-	copysize = MIN(sb->sfs_blocksize - offset, size);
+		   get_block_num(fd, sb, ip, start / sb->blocksize),
+		   sb->blocksize, blockbuf);
+	offset = start % sb->blocksize;
+	copysize = MIN(sb->blocksize - offset, size);
 	bcopy(&blockbuf[offset], buf, copysize);
 
 	buf += copysize;
@@ -483,7 +483,7 @@ get_block_num(int fd,
     if (blockno < SFS_DIRECT_BLOCK_ENTRY) {
 	/* 直接ブロックの範囲内
 	 */
-	return (ip->sfs_i_direct[blockno]);
+	return (ip->i_direct[blockno]);
     }
 	else if (blockno < (SFS_DIRECT_BLOCK_ENTRY
 			    +
@@ -519,17 +519,17 @@ get_indirect_block_num(int fd, struct sfs_superblock *sb,
     inblock = (blockno - SFS_DIRECT_BLOCK_ENTRY);
     inblock_offset = inblock % SFS_INDIRECT_BLOCK;
     inblock = inblock / SFS_INDIRECT_BLOCK;
-    if (ip->sfs_i_indirect[inblock] <= 0) {
+    if (ip->i_indirect[inblock] <= 0) {
 	return (0);
     }
 
-    read_block(fd, ip->sfs_i_indirect[inblock], sb->sfs_blocksize,
+    read_block(fd, ip->i_indirect[inblock], sb->blocksize,
 	       (B *) & inbuf);
 #ifdef notdef
     fprintf(stderr, "get_ind: inblock = %d, offset = %d, blocknum = %ld\n",
-	    inblock, inblock_offset, inbuf.sfs_in_block[inblock_offset]);
+	    inblock, inblock_offset, inbuf.in_block[inblock_offset]);
 #endif
-    return (inbuf.sfs_in_block[inblock_offset]);
+    return (inbuf.in_block[inblock_offset]);
 }
 
 int
@@ -556,24 +556,24 @@ get_dindirect_block_num(int fd, struct sfs_superblock *sb,
 	    "GET: blockno = %d, inblock = %d, dinblock = %d, dinblock_offset = %d\n",
 	    blockno, inblock, dinblock, dinblock_offset);
 #endif
-    if (ip->sfs_i_dindirect[inblock] <= 0) {
+    if (ip->i_dindirect[inblock] <= 0) {
 	return (0);
     }
 
-    read_block(fd, ip->sfs_i_dindirect[inblock], sb->sfs_blocksize,
+    read_block(fd, ip->i_dindirect[inblock], sb->blocksize,
 	       (B *) & inbuf);
-    if (inbuf.sfs_in_block[dinblock] <= 0) {
+    if (inbuf.in_block[dinblock] <= 0) {
 	return (0);
     }
 
-    read_block(fd, inbuf.sfs_in_block[dinblock], sb->sfs_blocksize,
+    read_block(fd, inbuf.in_block[dinblock], sb->blocksize,
 	       (B *) & inbuf);
 
 #ifdef notdef
     fprintf(stderr,
 	    "get_ind: inblock = %d, dinblock = %d, offset = %d, blocknum = %d\n",
 	    inblock, dinblock, dinblock_offset,
-	    inbuf.sfs_in_block[dinblock_offset]);
+	    inbuf.in_block[dinblock_offset]);
 #endif
-    return (inbuf.sfs_in_block[dinblock_offset]);
+    return (inbuf.in_block[dinblock_offset]);
 }
