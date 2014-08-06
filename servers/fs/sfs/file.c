@@ -241,7 +241,6 @@ sfs_i_create(struct inode * parent,
     clock = get_system_time();
     newip->i_fs = parent->i_fs;
     newip->i_device = parent->i_device;
-    newip->i_ops = parent->i_ops;
     newip->i_refcount = 1;
     newip->i_dirty = 1;
     newip->i_mode = mode | S_IFREG;
@@ -254,7 +253,7 @@ sfs_i_create(struct inode * parent,
     newip->i_atime = clock;
     newip->i_ctime = clock;
     newip->i_mtime = clock;
-    newip->i_size_blk = 0;
+    newip->i_nblock = 0;
 
     fs_register_inode(newip);
 
@@ -433,7 +432,7 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
     if (filesize > ip->i_size) {
         UW clock = get_system_time();
 	ip->i_size = filesize;
-	ip->i_size_blk =
+	ip->i_nblock =
 	    roundUp(filesize, fsp->blksize) / fsp->blksize;
 	ip->i_mtime = clock;
 	ip->i_ctime = clock;
@@ -466,7 +465,7 @@ W sfs_i_truncate(struct inode * ip, W newsize)
     fsp = ip->i_fs;
     sfs_ip = &(ip->i_private.sfs_inode);
     nblock = roundUp(newsize, fsp->blksize) / fsp->blksize;
-    if (nblock < sfs_ip->i_size_blk) {
+    if (nblock < sfs_ip->i_nblock) {
 	/* 余分なブロックを開放 */
 	blockno = nblock;
 	if (blockno < SFS_DIRECT_BLOCK_ENTRY) {
@@ -515,7 +514,7 @@ W sfs_i_truncate(struct inode * ip, W newsize)
     }
 
     ip->i_size = newsize;
-    ip->i_size_blk = nblock;
+    ip->i_nblock = nblock;
     clock = get_system_time();
     ip->i_mtime = clock;
     ip->i_ctime = clock;
@@ -656,7 +655,7 @@ W sfs_i_sync(struct inode * ip)
       sfs_i_truncate(ip, ip->i_size);
     }
     ip->i_private.sfs_inode.i_size = ip->i_size;
-    ip->i_private.sfs_inode.i_size_blk = ip->i_size_blk;
+    ip->i_private.sfs_inode.i_nblock = ip->i_nblock;
     ip->i_private.sfs_inode.i_mode = ip->i_mode;
     ip->i_private.sfs_inode.i_uid = ip->i_uid;
     ip->i_private.sfs_inode.i_gid = ip->i_gid;
@@ -720,7 +719,6 @@ sfs_i_mkdir(struct inode * parent,
     clock = get_system_time();
     newip->i_fs = parent->i_fs;
     newip->i_device = parent->i_device;
-    newip->i_ops = parent->i_ops;
     newip->i_refcount = 1;
     newip->i_dirty = 1;
     newip->i_mode = mode | S_IFDIR;
@@ -733,7 +731,7 @@ sfs_i_mkdir(struct inode * parent,
     newip->i_atime = clock;
     newip->i_ctime = clock;
     newip->i_mtime = clock;
-    newip->i_size_blk = 0;
+    newip->i_nblock = 0;
 
     fs_register_inode(newip);
 

@@ -239,7 +239,7 @@ W open_special_dev(struct proc * procp)
 	ip->i_fs = rootfs;
 	ip->i_index = -1;
 	ip->i_size = 0;
-	ip->i_size_blk = 0;
+	ip->i_nblock = 0;
 	fs_register_inode(ip);
     }
 
@@ -257,7 +257,7 @@ W open_special_dev(struct proc * procp)
 	ip->i_fs = rootfs;
 	ip->i_index = -2;
 	ip->i_size = 0;
-	ip->i_size_blk = 0;
+	ip->i_nblock = 0;
 	fs_register_inode(ip);
 
 	/* 標準エラー出力の設定 */
@@ -272,7 +272,7 @@ W open_special_dev(struct proc * procp)
 	ip->i_fs = rootfs;
 	ip->i_index = -3;
 	ip->i_size = 0;
-	ip->i_size_blk = 0;
+	ip->i_nblock = 0;
 	fs_register_inode(ip);
     }
 
@@ -350,7 +350,7 @@ W mount_root(ID device, W fstype, W option)
     rootfile->i_fs = rootfs;
     rootfs->rootdir = rootfile;
     rootfs->device = device;
-    rootfs->ops = fsp;
+    rootfs->ops = *fsp;
 
     /* FS List の設定 */
     rootfs->next = rootfs;
@@ -421,7 +421,7 @@ mount_fs(struct inode * deviceip,
     }
 
     /* ファイルシステムのリストへ登録 */
-    newfs->ops = fsp;
+    newfs->ops = *fsp;
     newfs->next = rootfs;
     newfs->prev = rootfs->prev;
     rootfs->prev->next = newfs;
@@ -476,7 +476,7 @@ W umount_fs(UW device)
     }
 
     /* ファイルシステム情報を解放する */
-    fsp->ops->umount(fsp);
+    fsp->ops.umount(fsp);
 
     /* マウントポイントを解放する */
     fsp->mountpoint->coverfile = NULL;
@@ -600,7 +600,7 @@ fs_create_file(struct inode * startip,
 
     mode &= parent_ip->i_mode
 	    & (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-    error_no = FILE_CREATE(parent_ip,
+    error_no = OPS(parent_ip).create(parent_ip,
 			&path[parent_length], oflag, mode, acc, newip);
     fs_close_file(parent_ip);
     if (error_no) {
@@ -692,7 +692,7 @@ fs_lookup(struct inode * startip,
 	for (i = 0; i < MAX_NAMELEN; i++) {
 	    if ((*path == '/') || (*path == '\0')) {
 		part[i] = '\0';
-		error_no = FILE_LOOKUP(tmpip, part, oflag, mode, acc, newip);
+		error_no = OPS(tmpip).lookup(tmpip, part, oflag, mode, acc, newip);
 		if (error_no) {
 		    dealloc_inode(tmpip);
 		    return (error_no);
@@ -708,7 +708,7 @@ fs_lookup(struct inode * startip,
 			    tmpip = fsp->mountpoint;
 			    tmpip->i_refcount++;
 			    error_no =
-				FILE_LOOKUP(tmpip, part, oflag, mode, acc,
+				OPS(tmpip).lookup(tmpip, part, oflag, mode, acc,
 					    newip);
 			    break;
 			}
@@ -750,7 +750,7 @@ W fs_read_file(struct inode * ip, W start, B * buf, W length, W * rlength)
 {
     W error_no;
 
-    error_no = FILE_READ(ip, start, buf, length, rlength);
+    error_no = OPS(ip).read(ip, start, buf, length, rlength);
     if (error_no) {
 	return (error_no);
     }
@@ -790,7 +790,7 @@ W fs_write_file(struct inode * ip, W start, B * buf, W length, W * rlength)
 	return (error_no);
     }
 
-    error_no = FILE_WRITE(ip, start, buf, length, rlength);
+    error_no = OPS(ip).write(ip, start, buf, length, rlength);
     if (error_no) {
 	return (error_no);
     }
@@ -836,7 +836,7 @@ fs_remove_file(struct inode * startip, B * path, struct access_info * acc)
 	parent_length += 1;
     }
 
-    error_no = FILE_UNLINK(parent_ip, &path[parent_length], acc);
+    error_no = OPS(parent_ip).unlink(parent_ip, &path[parent_length], acc);
     fs_close_file(parent_ip);
     if (error_no) {
 	return (error_no);
@@ -881,7 +881,7 @@ W fs_remove_dir(struct inode * startip, B * path, struct access_info * acc)
 	parent_length += 1;
     }
 
-    error_no = DIR_UNLINK(parent_ip, &path[parent_length], acc);
+    error_no = OPS(parent_ip).rmdir(parent_ip, &path[parent_length], acc);
     fs_close_file(parent_ip);
     if (error_no) {
 	return (error_no);
@@ -897,7 +897,7 @@ W fs_sync_file(struct inode * ip)
 {
     W error_no;
 
-    error_no = FILE_SYNC(ip, 0);
+    error_no = OPS(ip).sync(ip, 0);
     return (error_no);
 }
 
@@ -986,7 +986,7 @@ W fs_make_dir(struct inode * startip,
     }
 
     mode &= parent_ip->i_mode & (S_IRWXU | S_IRWXG | S_IRWXO);
-    error_no = DIR_CREATE(parent_ip, &path[parent_length], mode, acc, newip);
+    error_no = OPS(parent_ip).mkdir(parent_ip, &path[parent_length], mode, acc, newip);
 
     fs_close_file(parent_ip);
     if (error_no) {
@@ -1003,7 +1003,7 @@ W fs_getdents(struct inode * ip, ID caller, W offset,
 {
     W error_no;
 
-    error_no = GET_DENTS(ip, caller, offset, buf, length, rsize, fsize);
+    error_no = OPS(ip).getdents(ip, caller, offset, buf, length, rsize, fsize);
     if (error_no)
 	return (error_no);
     return (EOK);
@@ -1088,7 +1088,7 @@ fs_link_file(W procid, B * src, W srclen, B * dst, W dstlen,
     }
 
     /* 各ファイルシステムの link 関数を呼び出す */
-    error_no = FILE_LINK(parent_ip, &dst[parent_length], srcip, acc);
+    error_no = OPS(parent_ip).link(parent_ip, &dst[parent_length], srcip, acc);
 
     fs_close_file(parent_ip);
     fs_close_file(srcip);
@@ -1130,7 +1130,7 @@ W dealloc_inode(struct inode * ip)
 {
     ip->i_refcount--;
     if (ip->i_refcount <= 0) {
-	FILE_CLOSE(ip);
+	OPS(ip).close(ip);
 	/* fs の register_list からの取り除き */
 	if (ip->i_next == ip) {
 	    ip->i_fs->ilist = NULL;

@@ -1001,7 +1001,7 @@ int write_file(int fd,
      */
     if (filesize > ip->i_size) {
 	ip->i_size = filesize;
-	ip->i_size_blk = ROUNDUP(filesize, sb->blksize) / sb->blksize;
+	ip->i_nblock = ROUNDUP(filesize, sb->blksize) / sb->blksize;
 	write_inode(fd, sb, ip);
     } else {
 	truncate_file(fd, sb, ip, filesize);
@@ -1086,7 +1086,7 @@ int create_file(int fd,
     newinode->i_index = inode_index;
     newinode->i_nlink = 1;
     newinode->i_size = 0;
-    newinode->i_size_blk = 0;
+    newinode->i_nblock = 0;
     newinode->i_mode = mode | S_IFREG;
     newinode->i_uid = newinode->i_gid = 0;
     newinode->i_atime = newinode->i_mtime = newinode->i_ctime = time(NULL);
@@ -1246,7 +1246,7 @@ int truncate_file(int fd,
 	}
     }
     ip->i_size = newsize;
-    ip->i_size_blk = nblock;
+    ip->i_nblock = nblock;
     return (write_inode(fd, sb, ip));
 }
 

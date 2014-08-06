@@ -100,7 +100,7 @@ struct sfs_inode
   UW	i_index;	/* SFS の場合、inode は 1 からはじまる */
   UW	i_nlink;
   UW	i_size;
-  UW	i_size_blk;
+  UW	i_nblock;
 
   UW	i_mode;
   UW	i_uid;

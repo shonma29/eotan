@@ -116,46 +116,20 @@ struct fsops {
     W(*getdents) ();
 };
 
-#define FILE_CLOSE(ip)	(ip->i_ops->close (ip))
-
-#define FILE_SYNC(ip, umflag)	(ip->i_ops->sync (ip, umflag))
-
-#define FILE_LOOKUP(ip,part,oflag,mode,acc,tmpip)	\
-	(ip->i_ops->lookup)(ip,part,oflag,mode,acc,tmpip)
-
-#define FILE_WRITE(ip,start,buf,length,rlength)	(ip->i_ops->write) (ip,start,buf,length,rlength)
-
-#define FILE_READ(ip,start,buf,length,rlength)	(ip->i_ops->read) (ip,start,buf,length,rlength)
-
-#define FILE_CREATE(ip,path,oflag,mode,acc,newip)	\
-	(ip->i_ops->create)(ip,path,oflag,mode,acc,newip)
-
-#define FILE_UNLINK(ip,path,acc)	\
-	(ip->i_ops->unlink)(ip,path,acc)
-
-#define FILE_LINK(ip,path,srcip,acc)	\
-	(ip->i_ops->link)(ip,path,srcip,acc)
-
-#define DIR_CREATE(ip, path, mode, acc, newip) \
-	(ip->i_ops->mkdir)(ip, path, mode, acc, newip)
-
-#define DIR_UNLINK(ip,path,acc)\
-	(ip->i_ops->rmdir)(ip, path, acc)
-
-#define GET_DENTS(ip, caller, offset, buf, length, rsize, fsize) \
-	(ip->i_ops->getdents)(ip, caller, offset, buf, length, rsize, fsize)
+#define OPS(ip) ((ip)->i_fs->ops)
 
 struct fs {
     struct fs *prev;
     struct fs *next;
     W typeid;
-    struct fsops *ops;
+    struct fsops ops;
     UW device;
     struct inode *ilist;	/* 使用中の inode のリスト */
-    W blksize;
     struct inode *rootdir;
     struct inode *mountpoint;
     W dirty;
+
+    W blksize;
 
     W nblock;
     W freeblock;
@@ -177,7 +151,6 @@ struct inode {
     struct fs *i_fs;
     UW i_device;
     UW i_lock;
-    struct fsops *i_ops;
     W i_refcount;
     W i_dirty;		/* この Inode は変更されており、ファイル上に変更が */
 			/* 反映されていない */
@@ -196,7 +169,7 @@ struct inode {
     UW i_atime;
     UW i_ctime;
     UW i_mtime;
-    UW i_size_blk;
+    UW i_nblock;
 
     /* ここに各ファイルシステムの独自の情報が入る (union で... ) */
     union {
