@@ -766,7 +766,6 @@ void print_superblock(struct sfs_superblock *sb)
     fprintf(stderr, "version\t\t%d.%d\n", sb->version_hi, sb->version_lo);
     fprintf(stderr, "total size\t%u\n", sb->nblock * sb->blksize);
     fprintf(stderr, "size\t\t%u\n", sb->freeblock * sb->blksize);
-    fprintf(stderr, "mount count\t%u\n", sb->mountcount);
     fprintf(stderr, "blocksize\t%d bytes\n", sb->blksize);
     fprintf(stderr, "block\t\t%u block, %u free\n", sb->nblock, sb->freeblock);
     fprintf(stderr, "bitmap\t\t%u bytes\n", sb->bitmapsize * sb->blksize);

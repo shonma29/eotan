@@ -376,7 +376,6 @@ void print_superblock(struct sfs_superblock *sb)
 	    sb->nblock * sb->blksize);
     fprintf(stderr, "size\t\t%uld\n",
 	    sb->freeblock * sb->blksize);
-    fprintf(stderr, "mount count\t%uld\n", sb->mountcount);
     fprintf(stderr, "blocksize\t%d bytes\n", sb->blksize);
     fprintf(stderr, "block\t\t%uld block, %uld free\n", sb->nblock,
 	    sb->freeblock);
