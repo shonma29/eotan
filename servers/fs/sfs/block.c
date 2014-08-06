@@ -90,32 +90,32 @@ W sfs_alloc_block(W fd, struct fs * fsp)
     W error_no;
     W cn;
 
-    if (fsp->fs_freeblock <= 0) {
+    if (fsp->freeblock <= 0) {
 	return (-1);
     }
 
-    s = (fsp->fs_bsearch - 1) / (8 * fsp->fs_blksize);
-    for (i = s; i < fsp->fs_private.sfs_fs.bitmapsize; i++) {
+    s = (fsp->bsearch - 1) / (8 * fsp->blksize);
+    for (i = s; i < fsp->private.sfs_fs.bitmapsize; i++) {
 	get_cache(fd, i + 2, &cn, &buf);
 	if (i == s)
-	    j = ((fsp->fs_bsearch - 1) / 8) % fsp->fs_blksize;
+	    j = ((fsp->bsearch - 1) / 8) % fsp->blksize;
 	else
 	    j = 0;
-	for (; j < fsp->fs_blksize; j++) {
+	for (; j < fsp->blksize; j++) {
 	    if ((buf[j] & 0xff) != 0xff) {
 		mask = 1;
 		for (k = 0; k < 8; k++) {
 		    if ((mask & buf[j]) != mask) {
-			free_block = (i * fsp->fs_blksize * 8)
+			free_block = (i * fsp->blksize * 8)
 			    + (j * 8)
 			    + k;
 			buf[j] = buf[j] | mask;
 			put_cache(cn, 1);
 
-			fsp->fs_freeblock--;
-			fsp->fs_usedblock++;
-			fsp->fs_bsearch = free_block;
-			fsp->fs_dirty = 1;
+			fsp->freeblock--;
+			fsp->usedblock++;
+			fsp->bsearch = free_block;
+			fsp->dirty = 1;
 			/* ここで fs を sync する必要があるか? */
 			error_no = sfs_syncfs(fsp, 0);
 			if (error_no) {
@@ -143,14 +143,14 @@ W sfs_free_block(W fd, struct fs * fsp, W blockno)
     B *buf;
     W cn;
 
-    if (blockno < fsp->fs_private.sfs_fs.datablock) {
+    if (blockno < fsp->private.sfs_fs.datablock) {
 	dbg_printf("sfs: sfs_free_block: illegal block # %d\n", blockno);
 	return (EINVAL);
     }
 
-    s = blockno / (8 * fsp->fs_blksize);
+    s = blockno / (8 * fsp->blksize);
     get_cache(fd, s + 2, &cn, &buf);
-    s = (blockno / 8) % fsp->fs_blksize;
+    s = (blockno / 8) % fsp->blksize;
 
     mask = 0x01;
     mask = mask << (blockno % 8);
@@ -163,11 +163,11 @@ W sfs_free_block(W fd, struct fs * fsp, W blockno)
 	put_cache(cn, -1);
     }
 
-    fsp->fs_freeblock++;
-    fsp->fs_usedblock--;
-    fsp->fs_dirty = 1;
-    if (fsp->fs_bsearch >= blockno && blockno > 0)
-	fsp->fs_bsearch = blockno - 1;
+    fsp->freeblock++;
+    fsp->usedblock--;
+    fsp->dirty = 1;
+    if (fsp->bsearch >= blockno && blockno > 0)
+	fsp->bsearch = blockno - 1;
     /* ここで fs は sync しない 
        error_no = sfs_syncfs(fsp, 0);
        if (error_no)
@@ -386,7 +386,7 @@ sfs_set_block_num(W fd,
     if (newblock < 0) {
 	return (-1);
     }
-    else if (newblock < fsp->fs_private.sfs_fs.datablock) {
+    else if (newblock < fsp->private.sfs_fs.datablock) {
 	dbg_printf("sfs: illegal newblock %d %d\b", blockno, newblock);
     }
 

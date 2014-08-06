@@ -139,25 +139,25 @@ W sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 	return (EINVAL);
     }
 
-    rootfsp->fs_typeid = FS_SFS;
-    rootfsp->fs_blksize = sfs_sb.blocksize;
-    rootfsp->fs_allblock = sfs_sb.nblock;
-    rootfsp->fs_freeblock = sfs_sb.freeblock;
-    rootfsp->fs_usedblock = sfs_sb.nblock - sfs_sb.freeblock;
-    rootfsp->fs_allinode = sfs_sb.ninode;
-    rootfsp->fs_freeinode = sfs_sb.freeinode;
-    rootfsp->fs_usedinode = sfs_sb.ninode - sfs_sb.freeinode;
-    rootfsp->fs_isearch = sfs_sb.isearch;
-    rootfsp->fs_bsearch = sfs_sb.bsearch;
-    rootfsp->fs_device = device;
-    rootfsp->fs_private.sfs_fs = sfs_sb;
+    rootfsp->typeid = FS_SFS;
+    rootfsp->blksize = sfs_sb.blksize;
+    rootfsp->nblock = sfs_sb.nblock;
+    rootfsp->freeblock = sfs_sb.freeblock;
+    rootfsp->usedblock = sfs_sb.nblock - sfs_sb.freeblock;
+    rootfsp->ninode = sfs_sb.ninode;
+    rootfsp->freeinode = sfs_sb.freeinode;
+    rootfsp->usedinode = sfs_sb.ninode - sfs_sb.freeinode;
+    rootfsp->isearch = sfs_sb.isearch;
+    rootfsp->bsearch = sfs_sb.bsearch;
+    rootfsp->device = device;
+    rootfsp->private.sfs_fs = sfs_sb;
 
 #ifdef FMDEBUG
     /* ファイルシステム情報の出力 ; for FMDEBUG
      */
-    dbg_printf("sfs: sfs_sb: blocksize = %d\n", rootfsp->fs_blksize);
-    dbg_printf("sfs: sfs_sb: allblock  = %d\n", rootfsp->fs_allblock);
-    dbg_printf("sfs: sfs_sb: allinode  = %d\n", rootfsp->fs_allinode);
+    dbg_printf("sfs: sfs_sb: blocksize = %d\n", rootfsp->blksize);
+    dbg_printf("sfs: sfs_sb: allblock  = %d\n", rootfsp->allblock);
+    dbg_printf("sfs: sfs_sb: allinode  = %d\n", rootfsp->allinode);
     dbg_printf("sfs: sfs_sb: version  = %d.%d\n",
 	       rootfsp->fs_private.sfs_fs.version_hi,
 	       rootfsp->fs_private.sfs_fs.version_lo);
@@ -205,23 +205,23 @@ W sfs_syncfs(struct fs * fsp, W umflag)
     W rsize;
     struct sfs_superblock *sb;
 
-    if (fsp->fs_dirty) {
-	fsp->fs_private.sfs_fs.freeblock = fsp->fs_freeblock;
-	fsp->fs_private.sfs_fs.freeinode = fsp->fs_freeinode;
-	fsp->fs_private.sfs_fs.isearch = fsp->fs_isearch;
-	fsp->fs_private.sfs_fs.bsearch = fsp->fs_bsearch;
-	sb = &(fsp->fs_private.sfs_fs);
+    if (fsp->dirty) {
+	fsp->private.sfs_fs.freeblock = fsp->freeblock;
+	fsp->private.sfs_fs.freeinode = fsp->freeinode;
+	fsp->private.sfs_fs.isearch = fsp->isearch;
+	fsp->private.sfs_fs.bsearch = fsp->bsearch;
+	sb = &(fsp->private.sfs_fs);
 	error_no =
-	    write_device(fsp->fs_device, (B *) sb,
-			     1 * sb->blocksize,
+	    write_device(fsp->device, (B *) sb,
+			     1 * sb->blksize,
 			     sizeof(struct sfs_superblock), &rsize);
 	if (error_no) {
 	    return (error_no);
 	}
-	fsp->fs_dirty = 0;
+	fsp->dirty = 0;
     }
 
-    error_no = sync_cache(fsp->fs_device, umflag);
+    error_no = sync_cache(fsp->device, umflag);
     if (error_no) {
 	return (error_no);
     }

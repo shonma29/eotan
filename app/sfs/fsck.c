@@ -110,10 +110,10 @@ int main(int argc, char *argv[])
 
     inode = (int *) calloc(sb.ninode, sizeof(int));
     bitmap_disk =
-	(char *) calloc(sb.bitmapsize * sb.blocksize * 8,
+	(char *) calloc(sb.bitmapsize * sb.blksize * 8,
 			sizeof(char));
     bitmap_used =
-	(char *) calloc(sb.bitmapsize * sb.blocksize * 8,
+	(char *) calloc(sb.bitmapsize * sb.blksize * 8,
 			sizeof(char));
 
     printf("\nCheck of inode\n");
@@ -171,8 +171,8 @@ int main(int argc, char *argv[])
     bitmap_scan_inode(fd, &sb);
     for (i = 0;
 	 i < 2 + sb.bitmapsize
-	 + ROUNDUP(sizeof(struct sfs_inode), sb.blocksize)
-	 / sb.blocksize * sb.ninode; ++i) {
+	 + ROUNDUP(sizeof(struct sfs_inode), sb.blksize)
+	 / sb.blksize * sb.ninode; ++i) {
 	bitmap_used[i] = 1;
     }
 #ifdef notdef
@@ -243,10 +243,10 @@ int scan_bitmap(int fd, struct sfs_superblock *sb)
     int i, j, blocksize, count, mask;
     int errno;
 
-    blocksize = sb->blocksize * sb->bitmapsize;
+    blocksize = sb->blksize * sb->bitmapsize;
     buf = malloc(blocksize);
     memset(buf, 0, blocksize);
-    lseek(fd, sb->blocksize * 2, 0);
+    lseek(fd, sb->blksize * 2, 0);
     errno = read(fd, buf, blocksize);
     if (errno < 0) {
 	perror("can't read bitmap block");
@@ -320,7 +320,7 @@ void scan_block(int fd, struct sfs_superblock *sb, struct sfs_inode *ip)
     int i, j, block, index;
     struct sfs_indirect inbuf;
 
-    block = ROUNDUP(ip->i_size, sb->blocksize) / sb->blocksize;
+    block = ROUNDUP(ip->i_size, sb->blksize) / sb->blksize;
     for (i = 0; i < block; ++i) {
 	index = get_block_num(fd, sb, ip, i);
 	if (index < sb->datablock) {
@@ -343,7 +343,7 @@ void scan_block(int fd, struct sfs_superblock *sb, struct sfs_inode *ip)
     for (i = 0; i < SFS_DINDIRECT_BLOCK_ENTRY; ++i) {
 	if (ip->i_dindirect[i] > 0) {
 	    read_block(fd, ip->i_dindirect[i],
-		       sb->blocksize, (B *) & inbuf);
+		       sb->blksize, (B *) & inbuf);
 	    for (j = 0; j < SFS_INDIRECT_BLOCK; ++j) {
 		if (inbuf.in_block[j] > 0) {
 		    if (inbuf.in_block[j] < sb->datablock) {
@@ -373,15 +373,15 @@ void print_superblock(struct sfs_superblock *sb)
     fprintf(stderr, "version\t\t%d.%d\n", sb->version_hi,
 	    sb->version_lo);
     fprintf(stderr, "total size\t%uld\n",
-	    sb->nblock * sb->blocksize);
+	    sb->nblock * sb->blksize);
     fprintf(stderr, "size\t\t%uld\n",
-	    sb->freeblock * sb->blocksize);
+	    sb->freeblock * sb->blksize);
     fprintf(stderr, "mount count\t%uld\n", sb->mountcount);
-    fprintf(stderr, "blocksize\t%d bytes\n", sb->blocksize);
+    fprintf(stderr, "blocksize\t%d bytes\n", sb->blksize);
     fprintf(stderr, "block\t\t%uld block, %uld free\n", sb->nblock,
 	    sb->freeblock);
     fprintf(stderr, "bitmap\t\t%uld bytes\n",
-	    sb->bitmapsize * sb->blocksize);
+	    sb->bitmapsize * sb->blksize);
     fprintf(stderr, "inode\t\t%uld inode, %uld free\n", sb->ninode,
 	    sb->freeinode);
     fprintf(stderr, "isearch\t\t%uld, bsearch\t\t%uld\n", sb->isearch,
@@ -395,7 +395,7 @@ int get_inode_offset(struct sfs_superblock *sb, int ino)
     int blocksize;
 
     nblock = sb->nblock;
-    blocksize = sb->blocksize;
+    blocksize = sb->blksize;
     offset = 1 + 1 + (ROUNDUP(nblock / 8, blocksize) / blocksize);
     offset *= blocksize;
     return (offset + ((ino - 1) * sizeof(struct sfs_inode)));
@@ -447,13 +447,13 @@ read_file(int fd,
     }
 
 /*  fprintf (stderr, "read_file: offset = %d, size = %d\n", start, size); */
-    blockbuf = (B *) alloca(sb->blocksize);
+    blockbuf = (B *) alloca(sb->blksize);
     while (size > 0) {
 	read_block(fd,
-		   get_block_num(fd, sb, ip, start / sb->blocksize),
-		   sb->blocksize, blockbuf);
-	offset = start % sb->blocksize;
-	copysize = MIN(sb->blocksize - offset, size);
+		   get_block_num(fd, sb, ip, start / sb->blksize),
+		   sb->blksize, blockbuf);
+	offset = start % sb->blksize;
+	copysize = MIN(sb->blksize - offset, size);
 	bcopy(&blockbuf[offset], buf, copysize);
 
 	buf += copysize;
@@ -523,7 +523,7 @@ get_indirect_block_num(int fd, struct sfs_superblock *sb,
 	return (0);
     }
 
-    read_block(fd, ip->i_indirect[inblock], sb->blocksize,
+    read_block(fd, ip->i_indirect[inblock], sb->blksize,
 	       (B *) & inbuf);
 #ifdef notdef
     fprintf(stderr, "get_ind: inblock = %d, offset = %d, blocknum = %ld\n",
@@ -560,13 +560,13 @@ get_dindirect_block_num(int fd, struct sfs_superblock *sb,
 	return (0);
     }
 
-    read_block(fd, ip->i_dindirect[inblock], sb->blocksize,
+    read_block(fd, ip->i_dindirect[inblock], sb->blksize,
 	       (B *) & inbuf);
     if (inbuf.in_block[dinblock] <= 0) {
 	return (0);
     }
 
-    read_block(fd, inbuf.in_block[dinblock], sb->blocksize,
+    read_block(fd, inbuf.in_block[dinblock], sb->blksize,
 	       (B *) & inbuf);
 
 #ifdef notdef

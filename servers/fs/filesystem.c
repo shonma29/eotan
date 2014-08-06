@@ -197,9 +197,9 @@ W init_fs(void)
     free_inode = &inode_buf[0];
 
     for (i = 0; i < MAX_MOUNT - 1; i++) {
-	fs_buf[i].fs_next = &fs_buf[i + 1];
+	fs_buf[i].next = &fs_buf[i + 1];
     }
-    fs_buf[MAX_MOUNT - 1].fs_next = NULL;
+    fs_buf[MAX_MOUNT - 1].next = NULL;
     free_fs = &fs_buf[0];
 
     return (TRUE);
@@ -295,7 +295,7 @@ struct fs *alloc_fs(void)
     }
 
     p = free_fs;
-    free_fs = free_fs->fs_next;
+    free_fs = free_fs->next;
 
     memset((B*)p, 0, sizeof(struct fs));
     return (p);
@@ -307,8 +307,8 @@ void dealloc_fs(struct fs *fsp)
 	return;
     }
 
-    fsp->fs_prev = NULL;
-    fsp->fs_next = free_fs;
+    fsp->prev = NULL;
+    fsp->next = free_fs;
     free_fs = fsp;
 }
 
@@ -349,12 +349,12 @@ W mount_root(ID device, W fstype, W option)
 
     rootfile->i_fs = rootfs;
     rootfs->rootdir = rootfile;
-    rootfs->fs_device = device;
-    rootfs->fs_ops = fsp;
+    rootfs->device = device;
+    rootfs->ops = fsp;
 
     /* FS List の設定 */
-    rootfs->fs_next = rootfs;
-    rootfs->fs_prev = rootfs;
+    rootfs->next = rootfs;
+    rootfs->prev = rootfs;
 
     fs_register_inode(rootfile);
 
@@ -390,10 +390,10 @@ mount_fs(struct inode * deviceip,
     device = deviceip->i_dev;
     newfs = rootfs;
     do {
-	if (newfs->fs_device == device) {
+	if (newfs->device == device) {
 	    return (EBUSY);
 	}
-	newfs = newfs->fs_next;
+	newfs = newfs->next;
     } while (newfs != rootfs);
 
     newfs = alloc_fs();
@@ -421,16 +421,16 @@ mount_fs(struct inode * deviceip,
     }
 
     /* ファイルシステムのリストへ登録 */
-    newfs->fs_ops = fsp;
-    newfs->fs_next = rootfs;
-    newfs->fs_prev = rootfs->fs_prev;
-    rootfs->fs_prev->fs_next = newfs;
-    rootfs->fs_prev = newfs;
+    newfs->ops = fsp;
+    newfs->next = rootfs;
+    newfs->prev = rootfs->prev;
+    rootfs->prev->next = newfs;
+    rootfs->prev = newfs;
 
     /* mount されるファイルシステムの root ディレクトリの登録 */
     newip->i_fs = newfs;
     newfs->rootdir = newip;
-    newfs->fs_device = device;
+    newfs->device = device;
 
     /* mount point に coverfile を設定 */
     mountpoint->coverfile = newip;
@@ -453,9 +453,9 @@ W umount_fs(UW device)
     /* device から fsp を検索 */
     fsp = rootfs;
     do {
-	if (fsp->fs_device == device)
+	if (fsp->device == device)
 	    break;
-	fsp = fsp->fs_next;
+	fsp = fsp->next;
     }
     while (fsp != rootfs);
     if (fsp == rootfs) {
@@ -467,7 +467,7 @@ W umount_fs(UW device)
 	return (EBUSY);
     }
 
-    ip = fsp->fs_ilist;
+    ip = fsp->ilist;
     if (ip != ip->i_next) {
 	/* マウントポイント以下のファイル/ディレクトリが使われている
 	 * BUSY のエラーで返す
@@ -476,7 +476,7 @@ W umount_fs(UW device)
     }
 
     /* ファイルシステム情報を解放する */
-    fsp->fs_ops->umount(fsp);
+    fsp->ops->umount(fsp);
 
     /* マウントポイントを解放する */
     fsp->mountpoint->coverfile = NULL;
@@ -488,8 +488,8 @@ W umount_fs(UW device)
     fsp->rootdir = NULL;
 
     /* FS list から除外 */
-    fsp->fs_prev->fs_next = fsp->fs_next;
-    fsp->fs_next->fs_prev = fsp->fs_prev;
+    fsp->prev->next = fsp->next;
+    fsp->next->prev = fsp->prev;
     dealloc_fs(fsp);
 
     return (EOK);
@@ -712,7 +712,7 @@ fs_lookup(struct inode * startip,
 					    newip);
 			    break;
 			}
-			fsp = fsp->fs_next;
+			fsp = fsp->next;
 		    } while (fsp != rootfs);
 		}
 		dealloc_inode(tmpip);
@@ -919,15 +919,15 @@ W fs_statfs(ID device, struct statfs * result)
 {
     struct fs *p;
 
-    for (p = rootfs; p != 0; p = p->fs_next) {
-	if (p->fs_device == device) {
-	    result->f_type = p->fs_typeid;
-	    result->f_bsize = p->fs_blksize;
-	    result->f_blocks = p->fs_freeblock;
-	    result->f_bfree = p->fs_freeblock;
-	    result->f_bavail = p->fs_allblock;
-	    result->f_files = p->fs_allinode;
-	    result->f_free = p->fs_freeinode;
+    for (p = rootfs; p != 0; p = p->next) {
+	if (p->device == device) {
+	    result->f_type = p->typeid;
+	    result->f_bsize = p->blksize;
+	    result->f_blocks = p->freeblock;
+	    result->f_bfree = p->freeblock;
+	    result->f_bavail = p->nblock;
+	    result->f_files = p->ninode;
+	    result->f_free = p->freeinode;
 	    return (EOK);
 	}
     }
@@ -1133,10 +1133,10 @@ W dealloc_inode(struct inode * ip)
 	FILE_CLOSE(ip);
 	/* fs の register_list からの取り除き */
 	if (ip->i_next == ip) {
-	    ip->i_fs->fs_ilist = NULL;
+	    ip->i_fs->ilist = NULL;
 	} else {
-	    if (ip->i_fs->fs_ilist == ip) {
-		ip->i_fs->fs_ilist = ip->i_next;
+	    if (ip->i_fs->ilist == ip) {
+		ip->i_fs->ilist = ip->i_next;
 	    }
 	    ip->i_next->i_prev = ip->i_prev;
 	    ip->i_prev->i_next = ip->i_next;
@@ -1157,7 +1157,7 @@ struct inode *fs_check_inode(struct fs *fsp, W index)
 {
     struct inode *ip, *register_list;
 
-    register_list = fsp->fs_ilist;
+    register_list = fsp->ilist;
     if (register_list == NULL) {
 	return (NULL);
     }
@@ -1179,13 +1179,13 @@ W fs_register_inode(struct inode * ip)
 {
     struct inode *register_list;
 
-    if (ip->i_fs->fs_ilist == NULL) {
+    if (ip->i_fs->ilist == NULL) {
 	ip->i_next = ip;
 	ip->i_prev = ip;
-	ip->i_fs->fs_ilist = ip;
+	ip->i_fs->ilist = ip;
     } else {
 	/* Queue の最後に追加 */
-	register_list = ip->i_fs->fs_ilist;
+	register_list = ip->i_fs->ilist;
 	ip->i_prev = register_list->i_prev;
 	ip->i_next = register_list;
 	register_list->i_prev->i_next = ip;

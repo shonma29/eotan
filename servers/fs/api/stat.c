@@ -122,7 +122,7 @@ void psc_fstat_f(RDVNO rdvno, struct posix_request *req)
       st.st_blksize = BLOCK_SIZE;
     }
     else {
-      st.st_blksize = fp->f_inode->i_fs->fs_blksize;
+      st.st_blksize = fp->f_inode->i_fs->blksize;
     }
     st.st_blocks = roundUp(st.st_size, st.st_blksize) / st.st_blksize;
     st.st_atime = fp->f_inode->i_atime;

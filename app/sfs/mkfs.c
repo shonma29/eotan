@@ -188,7 +188,7 @@ void write_superblock(int formatfd)
     superblock.version_hi = SFS_VERSION_HI;
     superblock.version_lo = SFS_VERSION_LO;
     superblock.mountcount = 0;
-    superblock.blocksize = blocksize;
+    superblock.blksize = blocksize;
     superblock.nblock = nblock;
     superblock.freeblock =
 	nblock - (boot_block + super_block + bitmap_block + inode_block +

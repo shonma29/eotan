@@ -75,7 +75,7 @@ struct sfs_superblock
   H	version_hi;
   H	version_lo;
   UW	mountcount;
-  H	blocksize;		/* ブロックサイズ */
+  H	blksize;		/* ブロックサイズ */
 
   UW	nblock;
   UW	freeblock;

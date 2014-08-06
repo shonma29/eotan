@@ -146,35 +146,35 @@ struct fsops {
 	(ip->i_ops->getdents)(ip, caller, offset, buf, length, rsize, fsize)
 
 struct fs {
-    struct fs *fs_prev;
-    struct fs *fs_next;
-    W fs_magicid;
-    W fs_typeid;
-    W fs_refcount;
-    W fs_rflag;
-    struct fsops *fs_ops;
-    W fs_lock;
-    UW fs_device;
-    struct inode *fs_ilist;	/* 使用中の inode のリスト */
-    W fs_blksize;
+    struct fs *prev;
+    struct fs *next;
+    W magicid;
+    W typeid;
+    W refcount;
+    W rflag;
+    struct fsops *ops;
+    W lock;
+    UW device;
+    struct inode *ilist;	/* 使用中の inode のリスト */
+    W blksize;
     struct inode *rootdir;
     struct inode *mountpoint;
-    W fs_dirty;
+    W dirty;
 
-    W fs_allblock;
-    W fs_freeblock;
-    W fs_usedblock;
+    W nblock;
+    W freeblock;
+    W usedblock;
 
-    W fs_allinode;
-    W fs_freeinode;
-    W fs_usedinode;
+    W ninode;
+    W freeinode;
+    W usedinode;
 
-    UW fs_isearch;		/* この番号以下の inode は使用中 */
-    UW fs_bsearch;		/* この番号以下の block は使用中 */
+    UW isearch;		/* この番号以下の inode は使用中 */
+    UW bsearch;		/* この番号以下の block は使用中 */
 
     union {
 	struct sfs_superblock sfs_fs;
-    } fs_private;
+    } private;
 };
 
 struct inode {
