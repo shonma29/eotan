@@ -148,12 +148,8 @@ struct fsops {
 struct fs {
     struct fs *prev;
     struct fs *next;
-    W magicid;
     W typeid;
-    W refcount;
-    W rflag;
     struct fsops *ops;
-    W lock;
     UW device;
     struct inode *ilist;	/* 使用中の inode のリスト */
     W blksize;
@@ -163,11 +159,9 @@ struct fs {
 
     W nblock;
     W freeblock;
-    W usedblock;
 
     W ninode;
     W freeinode;
-    W usedinode;
 
     UW isearch;		/* この番号以下の inode は使用中 */
     UW bsearch;		/* この番号以下の block は使用中 */

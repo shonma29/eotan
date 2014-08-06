@@ -113,7 +113,6 @@ W sfs_alloc_block(W fd, struct fs * fsp)
 			put_cache(cn, 1);
 
 			fsp->freeblock--;
-			fsp->usedblock++;
 			fsp->bsearch = free_block;
 			fsp->dirty = 1;
 			/* ここで fs を sync する必要があるか? */
@@ -164,7 +163,6 @@ W sfs_free_block(W fd, struct fs * fsp, W blockno)
     }
 
     fsp->freeblock++;
-    fsp->usedblock--;
     fsp->dirty = 1;
     if (fsp->bsearch >= blockno && blockno > 0)
 	fsp->bsearch = blockno - 1;

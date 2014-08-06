@@ -172,7 +172,6 @@ W sfs_alloc_inode(ID fd, struct fs * fsp)
 	    ipbufp->i_index = i;
 	    put_cache(cn, 1);
 	    fsp->freeinode--;
-	    fsp->usedinode++;
 	    fsp->isearch = (i + 1);
 	    fsp->dirty = 1;
 	    /* ここで fs の sync を行う必要があるか? */
@@ -254,7 +253,6 @@ W sfs_free_inode(struct fs * fsp, struct inode *ip)
     ip->i_dirty = 0;
 
     fsp->freeinode++;
-    fsp->usedinode--;
     fsp->dirty = 1;
     if (fsp->isearch >= inode_index)
 	fsp->isearch = inode_index;

@@ -143,10 +143,8 @@ W sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
     rootfsp->blksize = sfs_sb.blksize;
     rootfsp->nblock = sfs_sb.nblock;
     rootfsp->freeblock = sfs_sb.freeblock;
-    rootfsp->usedblock = sfs_sb.nblock - sfs_sb.freeblock;
     rootfsp->ninode = sfs_sb.ninode;
     rootfsp->freeinode = sfs_sb.freeinode;
-    rootfsp->usedinode = sfs_sb.ninode - sfs_sb.freeinode;
     rootfsp->isearch = sfs_sb.isearch;
     rootfsp->bsearch = sfs_sb.bsearch;
     rootfsp->device = device;
