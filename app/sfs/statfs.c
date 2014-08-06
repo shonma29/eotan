@@ -437,9 +437,9 @@ int f_dir(int fd, struct sfs_superblock *sb, char *path)
 	fprintf(stderr, "cannot open file [%s]\n", path);
 	return (err);
     }
-    if ((ip.i_perm & S_IFMT) != S_IFDIR) {
+    if ((ip.i_mode & S_IFMT) != S_IFDIR) {
 	fprintf(stderr, "%3u  %4.4o\t%4.4u\t%4.4u\t%-14s\t%u bytes\n",
-		ip.i_nlink, ip.i_perm, ip.i_uid, ip.i_gid,
+		ip.i_nlink, ip.i_mode, ip.i_uid, ip.i_gid,
 		path, ip.i_size);
 	return (0);
     }
@@ -461,13 +461,13 @@ int f_dir(int fd, struct sfs_superblock *sb, char *path)
 	    fprintf(stderr, "err = %d\n", err);
 	    return (err);
 	}
-	if ((ip.i_perm & S_IFCHR) != 0) {
+	if ((ip.i_mode & S_IFCHR) != 0) {
 	    fprintf(stderr, "%3u  %4.4o\t%4.4u\t%4.4u\t%-14s\t%08x\n",
-	       ip.i_nlink, ip.i_perm, ip.i_uid, ip.i_gid,
+	       ip.i_nlink, ip.i_mode, ip.i_uid, ip.i_gid,
 		    dirp[i].d_name, ip.i_direct[0]);
 	} else {
 	    fprintf(stderr, "%3u  %4.4o\t%4.4u\t%4.4u\t%-14s\t%u bytes\n",
-	       ip.i_nlink, ip.i_perm, ip.i_uid, ip.i_gid,
+	       ip.i_nlink, ip.i_mode, ip.i_uid, ip.i_gid,
 		    dirp[i].d_name, ip.i_size);
 	}
     }
@@ -512,7 +512,7 @@ int f_mkdir(int fd, struct sfs_superblock *sb, char *path)
 	return (err);
     }
     ip.i_nlink = 2;
-    ip.i_perm = (ip.i_perm & ~S_IFMT) | (S_IFDIR);
+    ip.i_mode = (ip.i_mode & ~S_IFMT) | (S_IFDIR);
     err = write_inode(fd, sb, &ip);
     if (err) {
 	fprintf(stderr, "cannot write inode\n");
@@ -553,7 +553,7 @@ int f_rmdir(int fd, struct sfs_superblock *sb, char *path)
 	fprintf(stderr, "Cannot found entry [%s]\n", path);
 	return (err);
     }
-    if ((ip.i_perm & S_IFMT) != S_IFDIR) {
+    if ((ip.i_mode & S_IFMT) != S_IFDIR) {
 	fprintf(stderr, "Not directory\n");
 	return (ENOTDIR);
     }
@@ -627,7 +627,7 @@ int f_remove_file(int fd, struct sfs_superblock *sb, char *path)
 	fprintf(stderr, "Cannot found entry [%s]\n", path);
 	return (err);
     }
-    if ((parent_ip.i_perm & S_IFMT) == S_IFDIR) {
+    if ((parent_ip.i_mode & S_IFMT) == S_IFDIR) {
 	fprintf(stderr, "Is a directory\n");
 	return (EISDIR);
     }
@@ -682,7 +682,7 @@ int f_mknod(int fd, struct sfs_superblock *sb, char *path, char *num)
 	fprintf(stderr, "cannot create file [%s]\n", fname);
 	return (err);
     }
-    ip.i_perm = (ip.i_perm & ~S_IFMT) | (S_IFCHR);
+    ip.i_mode = (ip.i_mode & ~S_IFMT) | (S_IFCHR);
     if (strncmp(num, "0x", 2) == 0) {
 	sscanf(&num[2], "%x", &i);
     } else {
@@ -690,7 +690,7 @@ int f_mknod(int fd, struct sfs_superblock *sb, char *path, char *num)
     }
     ip.i_direct[0] = i;
     if ((i & 0x80000000) != 0) {
-	ip.i_perm |= (S_IFBLK);
+	ip.i_mode |= (S_IFBLK);
     }
     err = write_inode(fd, sb, &ip);
     if (err) {
@@ -712,7 +712,7 @@ int f_chmod(int fd, struct sfs_superblock *sb, char *num, char *path)
 	return (err);
     }
     sscanf(num, "%o", &i);
-    ip.i_perm = i | (ip.i_perm & S_IFMT);
+    ip.i_mode = i | (ip.i_mode & S_IFMT);
     err = write_inode(fd, sb, &ip);
     if (err) {
 	fprintf(stderr, "cannot write inode\n");
@@ -1088,7 +1088,7 @@ int create_file(int fd,
     newinode->i_nlink = 1;
     newinode->i_size = 0;
     newinode->i_size_blk = 0;
-    newinode->i_perm = mode | S_IFREG;
+    newinode->i_mode = mode | S_IFREG;
     newinode->i_uid = newinode->i_gid = 0;
     newinode->i_atime = newinode->i_mtime = newinode->i_ctime = time(NULL);
 #ifdef notdef
@@ -1367,7 +1367,7 @@ int remove_file(int fd,
     if (ip.i_nlink <= 0) {
 	truncate_file(fd, sb, &ip, 0);
 	free_inode(fd, sb, ip.i_index);
-    } else if ((ip.i_perm & S_IFMT) == S_IFDIR) {
+    } else if ((ip.i_mode & S_IFMT) == S_IFDIR) {
 	truncate_file(fd, sb, &ip, 0);
 	free_inode(fd, sb, ip.i_index);
 

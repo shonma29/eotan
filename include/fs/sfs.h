@@ -65,7 +65,7 @@ Version 2, June 1991
 #define SFS_DIRECT_BLOCK_ENTRY		(70 - 62)
 
 #define SFS_INDIRECT_BLOCK_ENTRY	(20 - 4)
-#define SFS_DINDIRECT_BLOCK_ENTRY 	(26 + 62 + 4 + 1)
+#define SFS_DINDIRECT_BLOCK_ENTRY 	(26 + 62 + 4 + 1 + 1)
 #define SFS_TINDIRECT_BLOCK_ENTRY 	(1 - 1)
 #define SFS_INDIRECT_BLOCK		128
 
@@ -102,11 +102,10 @@ struct sfs_inode
   UW	i_nlink;
   UW	i_size;
   UW	i_size_blk;
-  
-  UW	i_perm;
+
+  UW	i_mode;
   UW	i_uid;
   UW	i_gid;
-  UW	i_dev;	/* not used */
 
   UW	i_atime;
   UW	i_ctime;

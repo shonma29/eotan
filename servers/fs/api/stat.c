@@ -112,7 +112,7 @@ void psc_fstat_f(RDVNO rdvno, struct posix_request *req)
     st.st_dev = fp->f_inode->i_device;
     st.st_ino = fp->f_inode->i_index;
     st.st_mode = fp->f_inode->i_mode;
-    st.st_nlink = fp->f_inode->i_link;
+    st.st_nlink = fp->f_inode->i_nlink;
     st.st_size = fp->f_inode->i_size;
     st.st_uid = fp->f_inode->i_uid;
     st.st_gid = fp->f_inode->i_gid;

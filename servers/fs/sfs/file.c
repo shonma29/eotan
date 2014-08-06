@@ -245,7 +245,7 @@ sfs_i_create(struct inode * parent,
     newip->i_refcount = 1;
     newip->i_dirty = 1;
     newip->i_mode = mode | S_IFREG;
-    newip->i_link = 1;
+    newip->i_nlink = 1;
     newip->i_index = i_index;
     newip->i_uid = acc->uid;
     newip->i_gid = acc->gid;
@@ -559,7 +559,7 @@ W sfs_i_link(struct inode * parent, char *fname, struct inode * srcip,
     }
 
     /* inode 情報の更新 */
-    srcip->i_link += 1;
+    srcip->i_nlink += 1;
     srcip->i_ctime = get_system_time();
     srcip->i_dirty = 1;
 
@@ -590,7 +590,7 @@ sfs_i_unlink(struct inode * parent, char *fname, struct access_info * acc)
     }
 
     /* ファイルの名前の最後の１つで，使用中なら削除しない */
-    if ((ip->i_link == 1) && (ip->i_refcount >= 2)) {
+    if ((ip->i_nlink == 1) && (ip->i_refcount >= 2)) {
 	fs_close_file(ip);
 	return (EBUSY);
     }
@@ -630,10 +630,10 @@ sfs_i_unlink(struct inode * parent, char *fname, struct access_info * acc)
 	parent->i_dirty = 1;
 	sfs_i_truncate(parent, i);
 
-	ip->i_link--;
+	ip->i_nlink--;
 	ip->i_ctime = get_system_time();
 	ip->i_dirty = 1;
-	if (ip->i_link <= 0) {
+	if (ip->i_nlink <= 0) {
 	    sfs_i_truncate(ip, 0);
 	    sfs_free_inode(ip->i_fs, ip);
 	}
@@ -651,13 +651,13 @@ W sfs_i_sync(struct inode * ip)
     dbg_printf("sfs: sfs_i_sync\n");
 #endif
     ip->i_private.sfs_inode.i_index = ip->i_index;
-    ip->i_private.sfs_inode.i_nlink = ip->i_link;
+    ip->i_private.sfs_inode.i_nlink = ip->i_nlink;
     if (ip->i_size < ip->i_private.sfs_inode.i_size) {
       sfs_i_truncate(ip, ip->i_size);
     }
     ip->i_private.sfs_inode.i_size = ip->i_size;
     ip->i_private.sfs_inode.i_size_blk = ip->i_size_blk;
-    ip->i_private.sfs_inode.i_perm = ip->i_mode;
+    ip->i_private.sfs_inode.i_mode = ip->i_mode;
     ip->i_private.sfs_inode.i_uid = ip->i_uid;
     ip->i_private.sfs_inode.i_gid = ip->i_gid;
     ip->i_private.sfs_inode.i_atime = ip->i_atime;
@@ -724,7 +724,7 @@ sfs_i_mkdir(struct inode * parent,
     newip->i_refcount = 1;
     newip->i_dirty = 1;
     newip->i_mode = mode | S_IFDIR;
-    newip->i_link = 2;
+    newip->i_nlink = 2;
     newip->i_index = i_index;
     newip->i_uid = acc->uid;
     newip->i_gid = acc->gid;
@@ -751,7 +751,7 @@ sfs_i_mkdir(struct inode * parent,
     dirent.pad[0] = '\0';
 
     /* ディレクトリにエントリを追加 */
-    parent->i_link += 1;
+    parent->i_nlink += 1;
     dirnentry = sfs_read_dir(parent, 0, NULL);
     error_no = sfs_write_dir(parent, dirnentry, &dirent);
     if (error_no != EOK) {
@@ -830,15 +830,15 @@ W sfs_i_rmdir(struct inode * parent, char *fname, struct access_info * acc)
 	parent->i_dirty = 1;
 	sfs_i_truncate(parent, i);
 
-	ip->i_link--;
+	ip->i_nlink--;
 	clock = get_system_time();
 	ip->i_ctime = clock;
 	ip->i_dirty = 1;
-	if (ip->i_link <= 1) {
+	if (ip->i_nlink <= 1) {
 	    sfs_i_truncate(ip, 0);
 	    sfs_free_inode(ip->i_fs, ip);
 	}
-	parent->i_link -= 1;
+	parent->i_nlink -= 1;
 	parent->i_ctime = clock;
 	parent->i_dirty = 1;
     }

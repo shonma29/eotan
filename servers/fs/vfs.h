@@ -193,7 +193,7 @@ struct inode {
 
     /* in disk */
     UW i_mode;
-    UW i_link;
+    UW i_nlink;
     UW i_index;
     UW i_uid;
     UW i_gid;

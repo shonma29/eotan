@@ -94,10 +94,9 @@ struct sfs_inode rootdir = {
     3,				/* sfs_i_nlink */
     sizeof(rootentry),		/* sfs_i_size */
     1,				/* sfs_i_size_blk */
-    (S_IFDIR | 0777),	/* sfs_i_perm */
+    (S_IFDIR | 0777),	/* sfs_i_mode */
     0,				/* sfs_i_uid */
     0,				/* sfs_i_gid */
-    0,				/* sfs_i_dev (not used) */
     0,				/* sfs_i_atime (now time) */
     0,				/* sfs_i_ctime (now time) */
     0,				/* sfs_i_mtime (now time) */
@@ -114,10 +113,9 @@ struct sfs_inode lostfound = {
     2,				/* sfs_i_nlink */
     sizeof(lostfound_entry),	/* sfs_i_size */
     1,				/* sfs_i_size_blk */
-    (S_IFDIR | 0777),	/* sfs_i_perm */
+    (S_IFDIR | 0777),	/* sfs_i_mode */
     0,				/* sfs_i_uid */
     0,				/* sfs_i_gid */
-    0,				/* sfs_i_dev (not used) */
     0,				/* sfs_i_atime (now time) */
     0,				/* sfs_i_ctime (now time) */
     0,				/* sfs_i_mtime (now time) */
