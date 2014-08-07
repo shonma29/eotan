@@ -107,27 +107,12 @@ void psc_fstat_f(RDVNO rdvno, struct posix_request *req)
     } else if (fp->f_inode == 0) {
 	put_response(rdvno, EINVAL, -1, 0);
 	return;
+    } else if (fp->f_inode->i_fs == NULL) {
+	put_response(rdvno, EINVAL, -1, 0);
+	return;
     }
 
-    st.st_dev = fp->f_inode->i_device;
-    st.st_ino = fp->f_inode->i_index;
-    st.st_mode = fp->f_inode->i_mode;
-    st.st_nlink = fp->f_inode->i_nlink;
-    st.st_size = fp->f_inode->i_size;
-    st.st_uid = fp->f_inode->i_uid;
-    st.st_gid = fp->f_inode->i_gid;
-    st.st_rdev = fp->f_inode->i_dev;
-    if (fp->f_inode->i_fs == NULL) {
-      dbg_printf("fs: FSTAT: illegal i_fs\n");
-      st.st_blksize = BLOCK_SIZE;
-    }
-    else {
-      st.st_blksize = fp->f_inode->i_fs->blksize;
-    }
-    st.st_blocks = roundUp(st.st_size, st.st_blksize) / st.st_blksize;
-    st.st_atime = fp->f_inode->i_atime;
-    st.st_mtime = fp->f_inode->i_mtime;
-    st.st_ctime = fp->f_inode->i_ctime;
+    fp->f_inode->i_fs->ops.stat(fp->f_inode, &st);
 
     error_no =
 	kcall->region_put(get_rdv_tid(rdvno), req->param.par_fstat.st, sizeof(struct stat),

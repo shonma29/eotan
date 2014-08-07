@@ -318,15 +318,15 @@ W sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
 				 start / fsp->fs_blksize));
 #endif
 	bn = sfs_get_block_num(fd, fsp, &(ip->i_private.sfs_inode),
-			       start / fsp->blksize);
+			       start / fsp->private.sfs_fs.blksize);
 	if (bn < 0) {
 	    return (EIO);
 	}
 
 	get_cache(fd, bn, &cn, &cbuf);
-	offset = start % fsp->blksize;
-	if (fsp->blksize - offset < length) {
-	    copysize = fsp->blksize - offset;
+	offset = start % fsp->private.sfs_fs.blksize;
+	if (fsp->private.sfs_fs.blksize - offset < length) {
+	    copysize = fsp->private.sfs_fs.blksize - offset;
 	} else {
 	    copysize = length;
 	}
@@ -376,11 +376,11 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 #endif
 
 	if ((bn = sfs_get_block_num(fd, fsp, &(ip->i_private.sfs_inode),
-				    start / fsp->blksize)) <= 0) {
+				    start / fsp->private.sfs_fs.blksize)) <= 0) {
 	    /* ファイルサイズを越えて書き込む場合には、新しくブロックをアロケートする
 	     */
 	    bn = sfs_set_block_num(fd, fsp, &(ip->i_private.sfs_inode),
-				   start / fsp->blksize,
+				   start / fsp->private.sfs_fs.blksize,
 				   sfs_alloc_block(fd, fsp));
 /*
  *   ip->sfs_i_direct[start / fsp->blksize] = alloc_block (fd, fsp);
@@ -395,8 +395,8 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 
 	/* 読み込んだブロックの内容を更新する
 	 */
-	offset = start % fsp->blksize;
-	copysize = MIN(fsp->blksize - offset, size);
+	offset = start % fsp->private.sfs_fs.blksize;
+	copysize = MIN(fsp->private.sfs_fs.blksize - offset, size);
 
 #ifdef FMDEBUG
 	dbg_printf("sfs: *** read block contents ***\n");
@@ -433,7 +433,7 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
         UW clock = get_system_time();
 	ip->i_size = filesize;
 	ip->i_nblock =
-	    roundUp(filesize, fsp->blksize) / fsp->blksize;
+	    roundUp(filesize, fsp->private.sfs_fs.blksize) / fsp->private.sfs_fs.blksize;
 	ip->i_mtime = clock;
 	ip->i_ctime = clock;
 	ip->i_dirty = 1;
@@ -464,7 +464,7 @@ W sfs_i_truncate(struct inode * ip, W newsize)
     fd = ip->i_device;
     fsp = ip->i_fs;
     sfs_ip = &(ip->i_private.sfs_inode);
-    nblock = roundUp(newsize, fsp->blksize) / fsp->blksize;
+    nblock = roundUp(newsize, fsp->private.sfs_fs.blksize) / fsp->private.sfs_fs.blksize;
     if (nblock < sfs_ip->i_nblock) {
 	/* 余分なブロックを開放 */
 	blockno = nblock;

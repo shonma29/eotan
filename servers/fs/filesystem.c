@@ -921,14 +921,7 @@ W fs_statfs(ID device, struct statfs * result)
 
     for (p = rootfs; p != 0; p = p->next) {
 	if (p->device == device) {
-	    result->f_type = p->typeid;
-	    result->f_bsize = p->blksize;
-	    result->f_blocks = p->freeblock;
-	    result->f_bfree = p->freeblock;
-	    result->f_bavail = p->nblock;
-	    result->f_files = p->ninode;
-	    result->f_free = p->freeinode;
-	    return (EOK);
+	    return p->ops.statfs(p, result);
 	}
     }
     return (ENODEV);

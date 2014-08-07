@@ -93,9 +93,12 @@ Version 2, June 1991
 #include "func.h"
 
 
+static W sfs_statfs(struct fs *, struct statfs *);
+
 struct fsops sfs_fsops = {
     sfs_mount,
     sfs_umount,
+    sfs_statfs,
     sfs_i_lookup,
     sfs_i_create,
     sfs_i_close,
@@ -106,7 +109,8 @@ struct fsops sfs_fsops = {
     sfs_i_sync,
     sfs_i_mkdir,
     sfs_i_rmdir,
-    sfs_getdents
+    sfs_getdents,
+    sfs_stat
 };
 
 
@@ -140,13 +144,6 @@ W sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
     }
 
     rootfsp->typeid = FS_SFS;
-    rootfsp->blksize = sfs_sb.blksize;
-    rootfsp->nblock = sfs_sb.nblock;
-    rootfsp->freeblock = sfs_sb.freeblock;
-    rootfsp->ninode = sfs_sb.ninode;
-    rootfsp->freeinode = sfs_sb.freeinode;
-    rootfsp->isearch = sfs_sb.isearch;
-    rootfsp->bsearch = sfs_sb.bsearch;
     rootfsp->device = device;
     rootfsp->private.sfs_fs = sfs_sb;
 
@@ -203,10 +200,6 @@ W sfs_syncfs(struct fs * fsp, W umflag)
     struct sfs_superblock *sb;
 
     if (fsp->dirty) {
-	fsp->private.sfs_fs.freeblock = fsp->freeblock;
-	fsp->private.sfs_fs.freeinode = fsp->freeinode;
-	fsp->private.sfs_fs.isearch = fsp->isearch;
-	fsp->private.sfs_fs.bsearch = fsp->bsearch;
 	sb = &(fsp->private.sfs_fs);
 	error_no =
 	    write_device(fsp->device, (B *) sb,
@@ -222,5 +215,17 @@ W sfs_syncfs(struct fs * fsp, W umflag)
     if (error_no) {
 	return (error_no);
     }
+    return (EOK);
+}
+
+static W sfs_statfs(struct fs * fsp, struct statfs * result)
+{
+    result->f_type = fsp->typeid;
+    result->f_bsize = fsp->private.sfs_fs.blksize;
+    result->f_blocks = fsp->private.sfs_fs.freeblock;
+    result->f_bfree = fsp->private.sfs_fs.freeblock;
+    result->f_bavail = fsp->private.sfs_fs.nblock;
+    result->f_files = fsp->private.sfs_fs.ninode;
+    result->f_free = fsp->private.sfs_fs.freeinode;
     return (EOK);
 }

@@ -90,30 +90,30 @@ W sfs_alloc_block(W fd, struct fs * fsp)
     W error_no;
     W cn;
 
-    if (fsp->freeblock <= 0) {
+    if (fsp->private.sfs_fs.freeblock <= 0) {
 	return (-1);
     }
 
-    s = (fsp->bsearch - 1) / (8 * fsp->blksize);
+    s = (fsp->private.sfs_fs.bsearch - 1) / (8 * fsp->private.sfs_fs.blksize);
     for (i = s; i < fsp->private.sfs_fs.bitmapsize; i++) {
 	get_cache(fd, i + 2, &cn, &buf);
 	if (i == s)
-	    j = ((fsp->bsearch - 1) / 8) % fsp->blksize;
+	    j = ((fsp->private.sfs_fs.bsearch - 1) / 8) % fsp->private.sfs_fs.blksize;
 	else
 	    j = 0;
-	for (; j < fsp->blksize; j++) {
+	for (; j < fsp->private.sfs_fs.blksize; j++) {
 	    if ((buf[j] & 0xff) != 0xff) {
 		mask = 1;
 		for (k = 0; k < 8; k++) {
 		    if ((mask & buf[j]) != mask) {
-			free_block = (i * fsp->blksize * 8)
+			free_block = (i * fsp->private.sfs_fs.blksize * 8)
 			    + (j * 8)
 			    + k;
 			buf[j] = buf[j] | mask;
 			put_cache(cn, 1);
 
-			fsp->freeblock--;
-			fsp->bsearch = free_block;
+			fsp->private.sfs_fs.freeblock--;
+			fsp->private.sfs_fs.bsearch = free_block;
 			fsp->dirty = 1;
 			/* ここで fs を sync する必要があるか? */
 			error_no = sfs_syncfs(fsp, 0);
@@ -147,9 +147,9 @@ W sfs_free_block(W fd, struct fs * fsp, W blockno)
 	return (EINVAL);
     }
 
-    s = blockno / (8 * fsp->blksize);
+    s = blockno / (8 * fsp->private.sfs_fs.blksize);
     get_cache(fd, s + 2, &cn, &buf);
-    s = (blockno / 8) % fsp->blksize;
+    s = (blockno / 8) % fsp->private.sfs_fs.blksize;
 
     mask = 0x01;
     mask = mask << (blockno % 8);
@@ -162,10 +162,10 @@ W sfs_free_block(W fd, struct fs * fsp, W blockno)
 	put_cache(cn, -1);
     }
 
-    fsp->freeblock++;
+    fsp->private.sfs_fs.freeblock++;
     fsp->dirty = 1;
-    if (fsp->bsearch >= blockno && blockno > 0)
-	fsp->bsearch = blockno - 1;
+    if (fsp->private.sfs_fs.bsearch >= blockno && blockno > 0)
+	fsp->private.sfs_fs.bsearch = blockno - 1;
     /* ここで fs は sync しない 
        error_no = sfs_syncfs(fsp, 0);
        if (error_no)

@@ -103,6 +103,7 @@ Version 2, June 1991
 struct fsops {
     W(*mount) ();
     W(*umount) ();
+    W(*statfs) ();
     W(*lookup) ();
     W(*create) ();
     W(*close) ();
@@ -114,6 +115,7 @@ struct fsops {
     W(*mkdir) ();
     W(*rmdir) ();
     W(*getdents) ();
+    W(*stat) ();
 };
 
 #define OPS(ip) ((ip)->i_fs->ops)
@@ -128,18 +130,6 @@ struct fs {
     struct inode *rootdir;
     struct inode *mountpoint;
     W dirty;
-
-    W blksize;
-
-    W nblock;
-    W freeblock;
-
-    W ninode;
-    W freeinode;
-
-    UW isearch;		/* この番号以下の inode は使用中 */
-    UW bsearch;		/* この番号以下の block は使用中 */
-
     union {
 	struct sfs_superblock sfs_fs;
     } private;

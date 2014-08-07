@@ -157,12 +157,12 @@ W sfs_alloc_inode(ID fd, struct fs * fsp)
     struct sfs_inode *ipbufp;
     W cn;
 
-    if (fsp->freeinode <= 0) {
+    if (fsp->private.sfs_fs.freeinode <= 0) {
 	return (0);
     }
 
-    offset = sfs_get_inode_offset(fsp, fsp->isearch);
-    for (i = fsp->isearch; i <= fsp->ninode; i++) {
+    offset = sfs_get_inode_offset(fsp, fsp->private.sfs_fs.isearch);
+    for (i = fsp->private.sfs_fs.isearch; i <= fsp->private.sfs_fs.ninode; i++) {
 	get_cache(fd, offset / SFS_BLOCK_SIZE, &cn, (B **) & ipbufp);
 
 	offset += sizeof(struct sfs_inode);
@@ -170,8 +170,8 @@ W sfs_alloc_inode(ID fd, struct fs * fsp)
 	    memset((VP)ipbufp, 0, sizeof(struct sfs_inode));
 	    ipbufp->i_index = i;
 	    put_cache(cn, 1);
-	    fsp->freeinode--;
-	    fsp->isearch = (i + 1);
+	    fsp->private.sfs_fs.freeinode--;
+	    fsp->private.sfs_fs.isearch = (i + 1);
 	    fsp->dirty = 1;
 	    /* ここで fs の sync を行う必要があるか? */
 	    sfs_syncfs(fsp, 0);
@@ -251,11 +251,30 @@ W sfs_free_inode(struct fs * fsp, struct inode *ip)
     put_cache(cn, 1);
     ip->i_dirty = 0;
 
-    fsp->freeinode++;
+    fsp->private.sfs_fs.freeinode++;
     fsp->dirty = 1;
-    if (fsp->isearch >= inode_index)
-	fsp->isearch = inode_index;
+    if (fsp->private.sfs_fs.isearch >= inode_index)
+	fsp->private.sfs_fs.isearch = inode_index;
     /* ここで fs の sync を行う必要があるか? */
     sfs_syncfs(fsp, 0);
+    return (EOK);
+}
+
+W sfs_stat(struct inode *ip, struct stat *st)
+{
+    st->st_dev = ip->i_device;
+    st->st_ino = ip->i_index;
+    st->st_mode = ip->i_mode;
+    st->st_nlink = ip->i_nlink;
+    st->st_size = ip->i_size;
+    st->st_uid = ip->i_uid;
+    st->st_gid = ip->i_gid;
+    st->st_rdev = ip->i_dev;
+    st->st_blksize = ip->i_fs->private.sfs_fs.blksize;
+    st->st_blocks = ROUNDUP(st->st_size, st->st_blksize) / st->st_blksize;
+    st->st_atime = ip->i_atime;
+    st->st_mtime = ip->i_mtime;
+    st->st_ctime = ip->i_ctime;
+
     return (EOK);
 }
