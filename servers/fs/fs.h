@@ -23,7 +23,7 @@ Version 2, June 1991
 #include <unistd.h>
 #include <core.h>
 #include "vfs.h"
-#include "process.h"
+#include "procfs/process.h"
 #include "mm.h"
 #include "sys/syscall.h"
 #include "../../lib/libserv/libserv.h"

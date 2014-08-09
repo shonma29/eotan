@@ -7,411 +7,318 @@ Version 2, June 1991
 
 (C) B-Free Project.
 
-(C) 2001-2002, Tomohide Naniwa
+(C) 2001-2003, Tomohide Naniwa
 
 */
-/* process.c - POSIX 環境マネージャのプロセス管理処理部分
- *
- *
- *
- * $Log: process.c,v $
- * Revision 1.30  2000/06/23 09:18:13  naniwa
- * to support O_APPEND
- *
- * Revision 1.29  2000/05/06 03:52:27  naniwa
- * implement mkdir/rmdir, etc.
- *
- * Revision 1.28  2000/02/28 09:16:32  naniwa
- * minor fix
- *
- * Revision 1.27  2000/02/27 15:33:54  naniwa
- * to work as multi task OS
- *
- * Revision 1.26  2000/02/20 09:35:38  naniwa
- * minor fix
- *
- * Revision 1.25  2000/01/26 08:24:35  naniwa
- * to prevent memory leak
- *
- * Revision 1.24  2000/01/21 14:25:19  naniwa
- * to check fileid
- *
- * Revision 1.23  2000/01/18 14:41:08  naniwa
- * to close opend file at exit
- *
- * Revision 1.22  2000/01/15 15:29:30  naniwa
- * minor fix
- *
- * Revision 1.21  1999/07/23 14:39:03  naniwa
- * modified to implement exit
- *
- * Revision 1.20  1999/07/21 15:10:08  naniwa
- * modified to implement waitpid
- *
- * Revision 1.19  1999/03/24 04:52:10  monaka
- * Source file cleaning for avoid warnings.
- *
- * Revision 1.18  1999/03/24 03:54:46  monaka
- * printf() was renamed to printk().
- *
- * Revision 1.17  1999/03/21 14:47:12  monaka
- * Function proc_get_ppid added.
- *
- * Revision 1.16  1998/02/24 14:20:07  night
- * プロセステーブルを初期化するときに、プロセス 0 だけは、
- * 使用中として確保するように変更した。
- * (プロセス 0 は、init プログラムにて使用する)
- *
- * Revision 1.15  1998/02/23 14:49:20  night
- * proc_vm_dump 関数の追加。
- *
- * Revision 1.14  1998/02/16 14:26:49  night
- * proc_set_info() を実行するときにプロセスの状態をチェックしていた
- * 処理を削除した。
- * proc_set_info() で対象となるプロセスは、生成していない状態の場合も
- * あるので、チェックする必要はない。
- *
- * Revision 1.13  1997/10/24 13:59:50  night
- * 変数 free_proc、run_proc の追加。
- *
- * Revision 1.12  1997/10/23 14:32:33  night
- * exec システムコール関係の処理の更新
- *
- * Revision 1.11  1997/10/22 14:56:07  night
- * proc_set_gid () を作成した。
- *
- * Revision 1.10  1997/08/31 13:34:33  night
- * プロセス情報の設定時、work directory を強制的に rootfile の値に設定するように
- * した(以前は、NULL に設定していた)。
- * 以下の関数追加。
- *
- *  proc_set_euid (W procid, W uid)
- *  proc_set_egid (W procid, W gid)
- *
- * Revision 1.9  1997/07/07 12:17:41  night
- * proc_get_euid と proc_get_egid を追加。
- *
- * Revision 1.8  1997/05/12 14:31:51  night
- * misc システムコールに M_PROC_DUMP コマンドを追加。
- *
- * Revision 1.7  1997/05/08 15:11:30  night
- * プロセスの情報を設定する機能の追加。
- * (syscall misc の proc_set_info コマンド)
- *
- * Revision 1.6  1997/05/06 12:47:50  night
- * set_procinfo システムコールの追加。
- *
- * Revision 1.5  1996/11/20  12:12:28  night
- * proc_set_file() において、ファイル記述子で指定されたファイルインデック
- * スがすでに使われているかどうかのチェックを追加。
- *
- * Revision 1.4  1996/11/18  13:44:04  night
- * 関数 proc_get_file() を追加。
- *
- * Revision 1.3  1996/11/17  16:48:30  night
- * init_process() の中身を作成した。
- * proc_get_umask(), proc_set_umask() を作成した。
- *
- * Revision 1.2  1996/11/14  13:17:38  night
- * プロセス構造体の情報を取得する関数を追加。
- *
- * Revision 1.1  1996/11/05  15:13:46  night
- * 最初の登録
+/*
+ * $Log$
  *
  */
 
-#include <fcntl.h>
-#include <local.h>
-#include <string.h>
+#include <core.h>
+#include <thread.h>
+#include <mm/segment.h>
 #include <boot/init.h>
+#include <core/options.h>
+#include <mpu/memory.h>
+#include <nerve/config.h>
 #include <nerve/kcall.h>
-#include "fs.h"
+#include <sys/wait.h>
 #include "../../lib/libserv/libmm.h"
+#include "fs.h"
 
-struct proc proc_table[MAX_PROCESS];
-static struct proc *free_proc, *tail_proc;
-
-
-
-/* init_process
- *
+/* psc_exec_f - 指定されたプログラムファイルをメモリ中に読み込む
  */
-W init_process(void)
+void psc_exec_f(RDVNO rdvno, struct posix_request *req)
 {
-    W i;
+    B pathname[MAX_NAMELEN];
+    W error_no;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    for (i = 0; i < MAX_PROCESS; i++) {
-	memset((B*)&proc_table[i], 0, sizeof(struct proc));
-/* if set explicitly
-	proc_table[i].proc_status = PS_DORMANT;
-*/
-	proc_table[i].proc_next = &proc_table[i + 1];
-	proc_table[i].proc_pid = i;
+#ifdef EXEC_DEBUG
+    dbg_printf("fs: exec: start\n");
+#endif
+
+    /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。
+     */
+    error_no = kcall->region_get(get_rdv_tid(rdvno), req->param.par_execve.name,
+		     req->param.par_execve.pathlen + 1, pathname);
+    if (error_no) {
+	/* パス名のコピーエラー */
+	if (error_no == E_PAR)
+	    put_response(rdvno, EINVAL, -1, 0);
+	else
+	    put_response(rdvno, EFAULT, -1, 0);
+
+	return;
     }
-    i--;
-    proc_table[i].proc_next = NULL;
-
-    free_proc = &proc_table[INIT_PID + 1];
-    tail_proc = &proc_table[i];
-
-    proc_table[INIT_PID].proc_status = PS_SLEEP;	/* プロセス 0 については、最初に確保しておく */
-    proc_table[INIT_PID].proc_next = NULL;
-    return (E_OK);
+#ifdef EXEC_DEBUG
+    dbg_printf("fs: exec: pathname is %s\n", pathname);
+#endif
+    error_no = exec_program(req, req->procid, pathname);
+    if (error_no) {
+//TODO check by another way
+	if (proc_get_vmtree(req->procid) != NULL) {
+	    /* 呼び出しを行ったプロセスがまだ生き残っていた場合 */
+	    /*エラーメッセージを返す */
+	    put_response(rdvno, error_no, -1, 0);
+	} else {
+	    /* 既にプロセスの仮想メモリが開放されている場合 */
+	    /* exit が実行されることは無いので，ここで開放する */
+	    proc_exit(req->procid);
+	}
+	return;
+    }
+//TODO check if rdvno will be disposed
+    put_response(rdvno, EOK, 0, 0);
 }
 
-/* プロセスを終了する
+/* psc_exit_f - プロセスを終了させる
  */
-W proc_exit(W procid)
+void
+psc_exit_f (RDVNO rdvno, struct posix_request *req)
 {
-    int i;
-    struct proc *procp;
+  struct proc *myprocp, *procp;
+  W mypid, wpid, exst;
+  W i;
+  ER error_no;
+  ID tskid;
+  kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
-    }
+  mypid = req->procid;
+  error_no = proc_get_procp(mypid, &myprocp);
+  if (error_no) {
+    put_response (rdvno, ESRCH, 0, 0);
+    /* メッセージの呼び出し元にエラーを返しても処理できないが，
+       タスクは exd_tsk で終了する */
+    return;
+  }
 
-    /* プロセス情報の初期化 */
-    /* proc_pid == 0 でプロセスは未使用とはならない
-       proc_table[procid].proc_pid = 0;
-     */
-    proc_table[procid].proc_status = PS_DORMANT;
+  myprocp->proc_exst = req->param.par_exit.evalue;
 
-    /* プロセスの情報の解放
-     */
-    procp = &proc_table[procid];
-    /* working directory の開放 */
-    if (procp->proc_workdir != NULL) {
-	fs_close_file(procp->proc_workdir);
-	procp->proc_workdir = NULL;
-    }
+  error_no = proc_get_procp(myprocp->proc_ppid, &procp);
+  if (error_no) {
+    put_response (rdvno, ESRCH, 0, 0);
+    /* メッセージの呼び出し元にエラーを返しても処理できないが，
+       タスクは exd_tsk で終了する */
+    return;
+  }
 
-    /* open されているファイルの close */
-    for (i = 0; i < MAX_OPEN; ++i) {
-	if (procp->proc_open_file[i].f_inode != NULL) {
-	    if (procp->proc_open_file[i].f_inode->i_mode & S_IFCHR) {
-		/* スペシャルファイルだった */
-		/* デバイスに DEV_CLS メッセージを発信 */
-		close_device(procp->proc_open_file[i].f_inode->i_dev);
-	    }
-	    fs_close_file(procp->proc_open_file[i].f_inode);
-	    procp->proc_open_file[i].f_inode = NULL;
-	}
-    }
+  wpid = procp->proc_wpid;
+  if (procp->proc_status == PS_WAIT &&
+      (wpid == -1 || wpid == mypid || -wpid == myprocp->proc_pgid)) {
+    /* 親プロセスが自分を WAIT していればメッセージ送信 */
+    procp->proc_status = PS_RUN;
+    exst = (myprocp->proc_exst << 8);
+    put_response (procp->proc_wait_rdvno, EOK, mypid, exst);
 
-    proc_dealloc_proc(procid);
+    /* エントリーの開放 */
+    proc_exit(mypid);
+  }
+  else {
+    /* そうでなければ，ZOMBIE 状態に */
+    myprocp->proc_status = PS_ZOMBIE;
+  }
 
-    return (EOK);
-}
+  /* 子プロセスの親を INIT に変更 */
+  for(i = INIT_PID + 1; i < MAX_PROCESS; ++i) {
+    proc_get_procp(i, &procp);
+    if (procp->proc_status == PS_DORMANT) continue;
+    if (procp->proc_ppid != mypid) continue;
+    procp->proc_ppid = INIT_PID; /* INIT プロセスの pid は 0 */
+    kcall->region_put(procp->proc_maintask,
+	     (pid_t*)(LOCAL_ADDR + offsetof(thread_local_t, parent_process_id)),
+	     sizeof(pid_t), &(procp->proc_ppid));
+    
+    /* 子プロセスが ZOMBIE で INIT が wait していれば クリアする? */
+  }
 
+  tskid = get_rdv_tid(rdvno);
+  kcall->thread_terminate(tskid);
+  kcall->thread_destroy(tskid);
 
-W proc_get_procp(W procid, struct proc ** procp)
+  put_response (rdvno, EOK, 0, 0);
+}  
+
+/* psc_fork_f - 新しいプロセスを作成する
+ */
+void
+psc_fork_f (RDVNO rdvno, struct posix_request *req)
 {
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
+  struct proc *procp;
+  W	       error_no;
+  ID main_thread_id;
+  struct proc *child;
+  kcall_t *kcall = (kcall_t*)KCALL_ADDR;
+
+  error_no = proc_get_procp (req->procid, &procp);		/* 親プロセスの情報の取りだし */
+  if (error_no)
+    {
+      dbg_printf ("fs: invalid process id (%d)\n", req->procid);
+      put_response (rdvno, error_no, -1, 0);
+      return;
     }
 
-    *procp = &proc_table[procid];
-    return (EOK);
-}
+#ifdef DEBUG
+  dbg_print ("fs: psc_fork_f(): proc = 0x%x, proc->vm_tree = 0x%x\n", procp, procp->vm_tree);
+#endif
 
-
-
-W proc_get_pid(W procid, W * pid)
-{
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
+  error_no = proc_alloc_proc(&child);
+  if (error_no)
+    {
+      dbg_printf ("fs: cannot allocate process\n");
+      put_response (rdvno, error_no, -1, 0);
+      return;
     }
 
-    *pid = proc_table[procid].proc_pid;
-    return (EOK);
-}
-
-
-
-W proc_get_ppid(W procid, W * ppid)
-{
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
+  error_no = proc_fork (procp, child);
+  if (error_no)
+    {
+      proc_dealloc_proc(child->proc_pid);
+      put_response (rdvno, error_no, -1, 0);
+      return;
     }
 
-    *ppid = proc_table[procid].proc_ppid;
-    return (EOK);
-}
-
-
-
-W proc_get_uid(W procid, W * uid)
-{
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
+  main_thread_id = thread_create(child->proc_pid, req->param.par_fork.entry,
+      (VP)(req->param.par_fork.sp));
+  if (main_thread_id < 0)
+    {
+      dbg_printf ("fs: acre_tsk error (%d)\n", main_thread_id);
+      proc_dealloc_proc(child->proc_pid);
+      put_response (rdvno, error_no, -1, 0);
+      return;
     }
 
-    *uid = proc_table[procid].proc_uid;
-    return (EOK);
-}
+  child->proc_maintask = main_thread_id;
+  child->proc_signal_handler = 0;
 
-
-W proc_get_gid(W procid, W * gid)
-{
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
+  error_no = copy_local(procp, child);
+  if (error_no)
+    {
+      proc_dealloc_proc(child->proc_pid);
+      kcall->thread_destroy(main_thread_id);
+//TODO destroy process
+      put_response (rdvno, error_no, -1, 0);
     }
 
-    *gid = proc_table[procid].proc_gid;
-    return (EOK);
-}
+  kcall->thread_start(main_thread_id);
 
+  put_response (rdvno, EOK, child->proc_pid, 0);	/* 親プロセスに対して応答 */
+}  
 
-W proc_set_gid(W procid, W gid)
+void psc_kill_f(RDVNO rdvno, struct posix_request *req)
 {
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
-    }
-
-    proc_table[procid].proc_gid = gid;
-    return (EOK);
-}
-
-
-W proc_alloc_fileid(W procid, W * retval)
-{
+    struct proc *myprocp, *procp;
+    W mypid, wpid, exst;
     W i;
+    ER error_no;
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
+    /* req->caller が task 1 の場合は，返事のメッセージを送らない */
+
+    mypid = req->param.par_kill.pid;
+    error_no = proc_get_procp(mypid, &myprocp);
+    if (error_no) {
+	put_response(rdvno, ESRCH, -1, 0);
+	return;
     }
+    myprocp->proc_exst = (-1);	/* 強制終了時のステータスは (-1) で良いか? */
 
-    for (i = 0; i < MAX_OPEN; i++) {
-	if (proc_table[procid].proc_open_file[i].f_inode == NULL) {
-	    *retval = i;
-	    memset((B*)&(proc_table[procid].proc_open_file[i]), 0,
-		  sizeof(struct file));
-	    return (EOK);
-	}
+    error_no = proc_get_procp(myprocp->proc_ppid, &procp);
+    if (error_no) {
+	put_response(rdvno, ESRCH, -1, 0);
+	return;
     }
-    return (ENOMEM);
-}
+    wpid = procp->proc_wpid;
+    if (procp->proc_status == PS_WAIT &&
+	(wpid == -1 || wpid == mypid || -wpid == myprocp->proc_pgid)) {
+	/* 親プロセスが自分を WAIT していればメッセージ送信 */
+	procp->proc_status = PS_RUN;
+	exst = (myprocp->proc_exst << 8);
+	put_response(rdvno, EOK, mypid, exst);
 
-
-W proc_set_file(W procid, W fileid, W flag, struct inode * ip)
-{
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
-    }
-
-    if ((fileid < 0) || (fileid >= MAX_OPEN)) {
-	return (EINVAL);
-    }
-
-    if (proc_table[procid].proc_open_file[fileid].f_inode != NULL) {
-	return (EBADF);
-    }
-
-    proc_table[procid].proc_open_file[fileid].f_inode = ip;
-    if ((flag & O_APPEND) != 0) {
-	proc_table[procid].proc_open_file[fileid].f_offset = ip->i_size;
+	/* エントリーの開放 */
+	proc_exit(mypid);
     } else {
-	proc_table[procid].proc_open_file[fileid].f_offset = 0;
+	/* そうでなければ，ZOMBIE 状態に */
+	myprocp->proc_status = PS_ZOMBIE;
     }
-    proc_table[procid].proc_open_file[fileid].f_omode = flag & 0x03;
-    return (EOK);
+
+    /* 子プロセスの親を INIT に変更 */
+    for (i = INIT_PID + 1; i < MAX_PROCESS; ++i) {
+	proc_get_procp(i, &procp);
+	if (procp->proc_status == PS_DORMANT)
+	    continue;
+	if (procp->proc_ppid != mypid)
+	    continue;
+	procp->proc_ppid = INIT_PID;	/* INIT プロセスの pid は 0 */
+	kcall->region_put(procp->proc_maintask,
+		(pid_t*)(LOCAL_ADDR + offsetof(thread_local_t, parent_process_id)),
+		sizeof(pid_t), &(procp->proc_ppid));
+
+	/* 子プロセスが ZOMBIE で INIT が wait していれば クリアする? */
+    }
+
+    /* メインタスクの強制終了 */
+    kcall->thread_terminate(myprocp->proc_maintask);
+    kcall->thread_destroy(myprocp->proc_maintask);
+
+    if (get_rdv_tid(rdvno) != myprocp->proc_maintask) {
+	put_response(rdvno, EOK, 0, 0);
+    }
 }
 
-
-W proc_get_file(W procid, W fileid, struct file ** fp)
+void
+psc_waitpid_f (RDVNO rdvno, struct posix_request *req)
 {
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
+  W i;
+  W mypid, pid, children, exst;
+  struct proc *procp;
+
+  pid = req->param.par_waitpid.pid;
+  mypid = req->procid;
+  if (pid == 0) pid = (-proc_table[mypid].proc_pgid);
+
+  /* プロセステーブルを走査して子プロセスを調査 */
+  children = 0;
+  for(i = INIT_PID + 1; i < MAX_PROCESS; ++i) {
+    proc_get_procp(i, &procp);
+    if (procp->proc_status == PS_DORMANT) continue;
+    if (procp->proc_ppid == mypid) {
+      if (pid > 0 && pid != procp->proc_pid) continue;
+      if (pid < -1 && pid != -procp->proc_pgid) continue;
+      children++;
+      if (procp->proc_status == PS_ZOMBIE) {
+	/* 子プロセスの情報をクリアし，親プロセスに返事を送る */
+	exst = (procp->proc_exst << 8);
+	put_response (rdvno, EOK, i, exst);
+	
+	/* 親プロセスの状態変更 */
+	proc_get_procp(mypid, &procp);
+	procp->proc_status = PS_RUN;
+
+	/* 子プロセスのエントリーの開放 */
+	proc_exit(i);
+	
+	return;
+      }
     }
-
-    if ((fileid < 0) || (fileid >= MAX_OPEN)) {
-	return (EINVAL);
+  }
+  if (children > 0) {
+    /* 対応する子プロセスはあったが，まだ終了していなかった */
+    if (req->param.par_waitpid.opts & WNOHANG) {
+      /* 親に返事を送る必要がある */
+      put_response (rdvno, EOK, 0, 0);
+      return;
     }
-
-    *fp = &(proc_table[procid].proc_open_file[fileid]);
-    return (EOK);
-}
-
-
-W proc_get_cwd(W procid, struct inode ** cwd)
-{
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
-    }
-
-    *cwd = proc_table[procid].proc_workdir;
-    if (*cwd == NULL) {
-	return (ESRCH);
-    }
-
-    return (EOK);
-}
-
-W proc_set_cwd(W procid, struct inode * cwd)
-{
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
-    }
-
-    if (cwd == (struct inode *) 0) {
-	return (EINVAL);
-    }
-
-    proc_table[procid].proc_workdir = cwd;
-    return (EOK);
-}
-
-
-struct vm_tree *proc_get_vmtree(W procid)
-{
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (NULL);
-    }
-
-    return (proc_table[procid].vm_tree);
-}
-
-
-
-
-/* proc_new_proc - 新しいプロセスを生成する
- *
- *
- */
-W proc_alloc_proc(struct proc ** procp)
-{
-    W pid;
-
-    if (free_proc == NULL) {
-	return (ENOMEM);
-    }
-
-    *procp = free_proc;
-    free_proc = (*procp)->proc_next;
-    if (free_proc == NULL) {
-	tail_proc = NULL;
-    }
-
-    pid = (*procp)->proc_pid;
-    memset((B*)(*procp), 0, sizeof(struct proc));
-/* if set explicitly
-    (*procp)->proc_status = PS_DORMANT;
-    (*procp)->proc_next = NULL;
-*/
-    (*procp)->proc_pid = pid;
-
-    return (EOK);
-}
-
-void proc_dealloc_proc(W procid)
-{
-    proc_table[procid].proc_status = PS_DORMANT;
-    proc_table[procid].proc_next = NULL;
-
-    /* フリー・プロセス・リストの最後に登録 */
-    if (tail_proc) {
-	tail_proc->proc_next = &proc_table[procid];
-    }
-
-    tail_proc = &proc_table[procid];
-}
+    /* 親プロセスの状態を変更し，返事を送らずにシステムコールを終了 */
+    proc_get_procp(mypid, &procp);
+    procp->proc_status = PS_WAIT;
+    procp->proc_wpid = pid;
+    procp->proc_wait_rdvno = rdvno;
+  }
+  else {
+    /* エラーを返す */
+    put_response (rdvno, ECHILD, 0, 0);
+  }
+}  

@@ -88,7 +88,7 @@ Version 2, June 1991
 #include <nerve/kcall.h>
 #include "api.h"
 #include "fs.h"
-#include "devfs.h"
+#include "devfs/devfs.h"
 
 static void banner(void);
 

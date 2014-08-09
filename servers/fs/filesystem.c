@@ -154,7 +154,7 @@ Version 2, June 1991
 #include <major.h>
 #include <string.h>
 #include "fs.h"
-#include "devfs.h"
+#include "devfs/devfs.h"
 
 extern struct fsops sfs_fsops;
 

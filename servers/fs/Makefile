@@ -31,7 +31,8 @@ CFLAGS += -I kernel -I lib/libserv
 ENTRY_ADDR = 0x80200000
 ENTRY_FUNC = start
 CSRCS += $(wildcard $(WD)/sfs/*.c)
-CSRCS += $(wildcard $(WD)/api/*.c)
+CSRCS += $(wildcard $(WD)/devfs/*.c)
+CSRCS += $(wildcard $(WD)/procfs/*.c)
 
 $(TARGET): $(OBJS) \
 		lib/libserv.a lib/libnc.a
