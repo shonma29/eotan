@@ -110,7 +110,9 @@ struct fsops sfs_fsops = {
     sfs_i_mkdir,
     sfs_i_rmdir,
     sfs_getdents,
-    sfs_stat
+    sfs_stat,
+    sfs_wstat,
+    sfs_permit
 };
 
 

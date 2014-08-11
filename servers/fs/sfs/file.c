@@ -246,12 +246,12 @@ sfs_i_create(struct inode * parent,
     newip->i_mode = mode | S_IFREG;
     newip->i_private.sfs_inode.i_nlink = 1;
     newip->i_index = i_index;
-    newip->i_uid = acc->uid;
-    newip->i_gid = acc->gid;
+    newip->i_private.sfs_inode.i_uid = acc->uid;
+    newip->i_private.sfs_inode.i_gid = acc->gid;
     newip->i_dev = 0;
     newip->i_size = 0;
     newip->i_private.sfs_inode.i_atime = clock;
-    newip->i_ctime = clock;
+    newip->i_private.sfs_inode.i_ctime = clock;
     newip->i_private.sfs_inode.i_mtime = clock;
     newip->i_nblock = 0;
 
@@ -435,7 +435,7 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 	ip->i_nblock =
 	    roundUp(filesize, fsp->private.sfs_fs.blksize) / fsp->private.sfs_fs.blksize;
 	ip->i_private.sfs_inode.i_mtime = clock;
-	ip->i_ctime = clock;
+	ip->i_private.sfs_inode.i_ctime = clock;
 	ip->i_dirty = 1;
 	/* これは deallocate の中で処理するのが普通 */
 	sfs_i_sync(ip);
@@ -517,7 +517,7 @@ W sfs_i_truncate(struct inode * ip, W newsize)
     ip->i_nblock = nblock;
     clock = get_system_time();
     ip->i_private.sfs_inode.i_mtime = clock;
-    ip->i_ctime = clock;
+    ip->i_private.sfs_inode.i_ctime = clock;
     ip->i_dirty = 1;
 
     /* ここで fs を sync する必要があるか? */
@@ -559,7 +559,7 @@ W sfs_i_link(struct inode * parent, char *fname, struct inode * srcip,
 
     /* inode 情報の更新 */
     srcip->i_private.sfs_inode.i_nlink += 1;
-    srcip->i_ctime = get_system_time();
+    srcip->i_private.sfs_inode.i_ctime = get_system_time();
     srcip->i_dirty = 1;
 
     /* 本来は inode の deallocate のところで行う処理のはず */
@@ -630,7 +630,7 @@ sfs_i_unlink(struct inode * parent, char *fname, struct permission * acc)
 	sfs_i_truncate(parent, i);
 
 	ip->i_private.sfs_inode.i_nlink--;
-	ip->i_ctime = get_system_time();
+	ip->i_private.sfs_inode.i_ctime = get_system_time();
 	ip->i_dirty = 1;
 	if (ip->i_private.sfs_inode.i_nlink <= 0) {
 	    sfs_i_truncate(ip, 0);
@@ -656,9 +656,6 @@ W sfs_i_sync(struct inode * ip)
     ip->i_private.sfs_inode.i_size = ip->i_size;
     ip->i_private.sfs_inode.i_nblock = ip->i_nblock;
     ip->i_private.sfs_inode.i_mode = ip->i_mode;
-    ip->i_private.sfs_inode.i_uid = ip->i_uid;
-    ip->i_private.sfs_inode.i_gid = ip->i_gid;
-    ip->i_private.sfs_inode.i_ctime = ip->i_ctime;
 
     if (ip->i_dirty) {
 	err = sfs_write_inode(ip->i_device, ip->i_fs,
@@ -721,12 +718,12 @@ sfs_i_mkdir(struct inode * parent,
     newip->i_mode = mode | S_IFDIR;
     newip->i_private.sfs_inode.i_nlink = 2;
     newip->i_index = i_index;
-    newip->i_uid = acc->uid;
-    newip->i_gid = acc->gid;
+    newip->i_private.sfs_inode.i_uid = acc->uid;
+    newip->i_private.sfs_inode.i_gid = acc->gid;
     newip->i_dev = 0;
     newip->i_size = 0;
     newip->i_private.sfs_inode.i_atime = clock;
-    newip->i_ctime = clock;
+    newip->i_private.sfs_inode.i_ctime = clock;
     newip->i_private.sfs_inode.i_mtime = clock;
     newip->i_nblock = 0;
 
@@ -827,14 +824,14 @@ W sfs_i_rmdir(struct inode * parent, char *fname, struct permission * acc)
 
 	ip->i_private.sfs_inode.i_nlink--;
 	clock = get_system_time();
-	ip->i_ctime = clock;
+	ip->i_private.sfs_inode.i_ctime = clock;
 	ip->i_dirty = 1;
 	if (ip->i_private.sfs_inode.i_nlink <= 1) {
 	    sfs_i_truncate(ip, 0);
 	    sfs_free_inode(ip->i_fs, ip);
 	}
 	parent->i_private.sfs_inode.i_nlink -= 1;
-	parent->i_ctime = clock;
+	parent->i_private.sfs_inode.i_ctime = clock;
 	parent->i_dirty = 1;
     }
     fs_close_file(ip);

@@ -79,7 +79,7 @@ void psc_chdir_f(RDVNO rdvno, struct posix_request *req)
 	return;
     }
 
-    err = permit(ipp, &acc, X_OK);
+    err = OPS(ipp).permit(ipp, &acc, X_OK);
     if (err) {
 	put_response(rdvno, err, -1, 0);
 	return;

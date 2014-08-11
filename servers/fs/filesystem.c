@@ -683,7 +683,7 @@ fs_lookup(struct inode * startip,
 	int i;
 
 	/* ディレクトリの実行許可のチェック */
-	error_no = permit(tmpip, acc, X_OK);
+	error_no = OPS(tmpip).permit(tmpip, acc, X_OK);
 	if (error_no) {
 	    dealloc_inode(tmpip);
 	    return (error_no);
@@ -721,7 +721,7 @@ fs_lookup(struct inode * startip,
 		 */
 		if (*path == '\0') {
 		    /* ディレクトリの許可のチェック */
-		    error_no = permit(*newip, acc, mode_map[oflag & 0x03]);
+		    error_no = OPS(*newip).permit(*newip, acc, mode_map[oflag & 0x03]);
 		    if (error_no)
 			dealloc_inode(*newip);
 		    return (error_no);
@@ -1185,40 +1185,5 @@ W fs_register_inode(struct inode * ip)
 	register_list->i_prev = ip;
     }
 
-    return (EOK);
-}
-
-
-
-
-/*
- * permit -
- */
-
-W permit(struct inode * ip, struct permission * acc, UW bits)
-{
-    UW mode, perm_bits;
-    int shift;
-
-    mode = ip->i_mode;
-    if (acc->uid == SU_UID) {
-	if (((mode & S_IFMT) == S_IFDIR) ||
-	    (mode & (X_OK << 6 | X_OK << 3 | X_OK))) {
-	    perm_bits = R_OK | W_OK | X_OK;
-	} else {
-	    perm_bits = R_OK | W_OK;
-	}
-    } else {
-	if (acc->uid == ip->i_uid)
-	    shift = 6;
-	else if (acc->gid == ip->i_gid)
-	    shift = 3;
-	else
-	    shift = 0;
-	perm_bits = (mode >> shift) & 0x03;
-    }
-
-    if ((perm_bits | bits) != perm_bits)
-	return (EACCES);
     return (EOK);
 }

@@ -122,11 +122,8 @@ W sfs_read_inode(struct fs *fsp, W ino, struct inode *ip)
     put_cache(cn, 0);
 
     ip->i_index = ip->i_private.sfs_inode.i_index;
-    ip->i_uid = ip->i_private.sfs_inode.i_uid;
-    ip->i_gid = ip->i_private.sfs_inode.i_gid;
     ip->i_size = ip->i_private.sfs_inode.i_size;
     ip->i_nblock = ip->i_private.sfs_inode.i_nblock;
-    ip->i_ctime = ip->i_private.sfs_inode.i_ctime;
     ip->i_mode = ip->i_private.sfs_inode.i_mode;
     ip->i_refcount = 1;
     ip->i_lock = 0;
@@ -264,14 +261,53 @@ W sfs_stat(struct inode *ip, struct stat *st)
     st->st_mode = ip->i_mode;
     st->st_nlink = ip->i_private.sfs_inode.i_nlink;
     st->st_size = ip->i_size;
-    st->st_uid = ip->i_uid;
-    st->st_gid = ip->i_gid;
+    st->st_uid = ip->i_private.sfs_inode.i_uid;
+    st->st_gid = ip->i_private.sfs_inode.i_gid;
     st->st_rdev = ip->i_dev;
     st->st_blksize = ip->i_fs->private.sfs_fs.blksize;
     st->st_blocks = ROUNDUP(st->st_size, st->st_blksize) / st->st_blksize;
     st->st_atime = ip->i_private.sfs_inode.i_atime;
     st->st_mtime = ip->i_private.sfs_inode.i_mtime;
-    st->st_ctime = ip->i_ctime;
+    st->st_ctime = ip->i_private.sfs_inode.i_ctime;
 
+    return (EOK);
+}
+
+W sfs_wstat(struct inode *ip)
+{
+    ip->i_private.sfs_inode.i_ctime = get_system_time();
+
+    return (EOK);
+}
+
+/*
+ * permit -
+ */
+
+W sfs_permit(struct inode * ip, struct permission * acc, UW bits)
+{
+    UW mode, perm_bits;
+    int shift;
+
+    mode = ip->i_mode;
+    if (acc->uid == SU_UID) {
+	if (((mode & S_IFMT) == S_IFDIR) ||
+	    (mode & (X_OK << 6 | X_OK << 3 | X_OK))) {
+	    perm_bits = R_OK | W_OK | X_OK;
+	} else {
+	    perm_bits = R_OK | W_OK;
+	}
+    } else {
+	if (acc->uid == ip->i_private.sfs_inode.i_uid)
+	    shift = 6;
+	else if (acc->gid == ip->i_private.sfs_inode.i_gid)
+	    shift = 3;
+	else
+	    shift = 0;
+	perm_bits = (mode >> shift) & 0x03;
+    }
+
+    if ((perm_bits | bits) != perm_bits)
+	return (EACCES);
     return (EOK);
 }

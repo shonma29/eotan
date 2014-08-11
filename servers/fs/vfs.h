@@ -118,6 +118,8 @@ struct fsops {
     W(*rmdir) ();
     W(*getdents) ();
     W(*stat) ();
+    W(*wstat) ();
+    W(*permit) ();
 };
 
 #define OPS(ip) ((ip)->i_fs->ops)
@@ -153,11 +155,8 @@ struct inode {
     /* in disk */
     UW i_mode;
     UW i_index;
-    UW i_uid;
-    UW i_gid;
     UW i_dev;			/* if device file */
     UW i_size;
-    UW i_ctime;
     UW i_nblock;
 
     /* ここに各ファイルシステムの独自の情報が入る (union で... ) */
@@ -219,8 +218,6 @@ extern struct inode *fs_check_inode(struct fs *fsp, W index);
 extern W fs_register_inode(struct inode *ip);
 extern W init_special_file(void);
 extern W fs_convert_path(struct inode *ip, B * buf, W length);
-
-extern W permit(struct inode *ip, struct permission *acc, UW bits);
 
 extern struct inode *rootfile;
 

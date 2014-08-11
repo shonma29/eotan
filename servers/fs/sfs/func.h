@@ -47,7 +47,8 @@ extern W	sfs_alloc_inode (ID fd, struct fs *fsp);
 extern W	sfs_write_inode (W fd, struct fs *fsp, struct sfs_inode *ip);
 extern W	sfs_free_inode (struct fs *fsp, struct inode *ip);
 extern W sfs_stat(struct inode *, struct stat *);
-
+extern W sfs_wstat(struct inode *);
+extern W sfs_permit(struct inode *ip, struct permission *acc, UW bits);
 
 /* file.c */
 extern W	sfs_i_lookup (struct inode *parent, char *fname, W oflag,
