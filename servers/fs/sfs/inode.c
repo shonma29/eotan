@@ -126,11 +126,8 @@ W sfs_read_inode(struct fs *fsp, W ino, struct inode *ip)
     ip->i_gid = ip->i_private.sfs_inode.i_gid;
     ip->i_size = ip->i_private.sfs_inode.i_size;
     ip->i_nblock = ip->i_private.sfs_inode.i_nblock;
-    ip->i_atime = ip->i_private.sfs_inode.i_atime;
     ip->i_ctime = ip->i_private.sfs_inode.i_ctime;
-    ip->i_mtime = ip->i_private.sfs_inode.i_mtime;
     ip->i_mode = ip->i_private.sfs_inode.i_mode;
-    ip->i_nlink = ip->i_private.sfs_inode.i_nlink;
     ip->i_refcount = 1;
     ip->i_lock = 0;
     ip->i_fs = fsp;
@@ -265,15 +262,15 @@ W sfs_stat(struct inode *ip, struct stat *st)
     st->st_dev = ip->i_device;
     st->st_ino = ip->i_index;
     st->st_mode = ip->i_mode;
-    st->st_nlink = ip->i_nlink;
+    st->st_nlink = ip->i_private.sfs_inode.i_nlink;
     st->st_size = ip->i_size;
     st->st_uid = ip->i_uid;
     st->st_gid = ip->i_gid;
     st->st_rdev = ip->i_dev;
     st->st_blksize = ip->i_fs->private.sfs_fs.blksize;
     st->st_blocks = ROUNDUP(st->st_size, st->st_blksize) / st->st_blksize;
-    st->st_atime = ip->i_atime;
-    st->st_mtime = ip->i_mtime;
+    st->st_atime = ip->i_private.sfs_inode.i_atime;
+    st->st_mtime = ip->i_private.sfs_inode.i_mtime;
     st->st_ctime = ip->i_ctime;
 
     return (EOK);

@@ -152,15 +152,12 @@ struct inode {
 
     /* in disk */
     UW i_mode;
-    UW i_nlink;
     UW i_index;
     UW i_uid;
     UW i_gid;
     UW i_dev;			/* if device file */
     UW i_size;
-    UW i_atime;
     UW i_ctime;
-    UW i_mtime;
     UW i_nblock;
 
     /* ここに各ファイルシステムの独自の情報が入る (union で... ) */

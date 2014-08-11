@@ -244,15 +244,15 @@ sfs_i_create(struct inode * parent,
     newip->i_refcount = 1;
     newip->i_dirty = 1;
     newip->i_mode = mode | S_IFREG;
-    newip->i_nlink = 1;
+    newip->i_private.sfs_inode.i_nlink = 1;
     newip->i_index = i_index;
     newip->i_uid = acc->uid;
     newip->i_gid = acc->gid;
     newip->i_dev = 0;
     newip->i_size = 0;
-    newip->i_atime = clock;
+    newip->i_private.sfs_inode.i_atime = clock;
     newip->i_ctime = clock;
-    newip->i_mtime = clock;
+    newip->i_private.sfs_inode.i_mtime = clock;
     newip->i_nblock = 0;
 
     fs_register_inode(newip);
@@ -434,7 +434,7 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 	ip->i_size = filesize;
 	ip->i_nblock =
 	    roundUp(filesize, fsp->private.sfs_fs.blksize) / fsp->private.sfs_fs.blksize;
-	ip->i_mtime = clock;
+	ip->i_private.sfs_inode.i_mtime = clock;
 	ip->i_ctime = clock;
 	ip->i_dirty = 1;
 	/* これは deallocate の中で処理するのが普通 */
@@ -516,7 +516,7 @@ W sfs_i_truncate(struct inode * ip, W newsize)
     ip->i_size = newsize;
     ip->i_nblock = nblock;
     clock = get_system_time();
-    ip->i_mtime = clock;
+    ip->i_private.sfs_inode.i_mtime = clock;
     ip->i_ctime = clock;
     ip->i_dirty = 1;
 
@@ -558,7 +558,7 @@ W sfs_i_link(struct inode * parent, char *fname, struct inode * srcip,
     }
 
     /* inode 情報の更新 */
-    srcip->i_nlink += 1;
+    srcip->i_private.sfs_inode.i_nlink += 1;
     srcip->i_ctime = get_system_time();
     srcip->i_dirty = 1;
 
@@ -589,7 +589,7 @@ sfs_i_unlink(struct inode * parent, char *fname, struct permission * acc)
     }
 
     /* ファイルの名前の最後の１つで，使用中なら削除しない */
-    if ((ip->i_nlink == 1) && (ip->i_refcount >= 2)) {
+    if ((ip->i_private.sfs_inode.i_nlink == 1) && (ip->i_refcount >= 2)) {
 	fs_close_file(ip);
 	return (EBUSY);
     }
@@ -629,10 +629,10 @@ sfs_i_unlink(struct inode * parent, char *fname, struct permission * acc)
 	parent->i_dirty = 1;
 	sfs_i_truncate(parent, i);
 
-	ip->i_nlink--;
+	ip->i_private.sfs_inode.i_nlink--;
 	ip->i_ctime = get_system_time();
 	ip->i_dirty = 1;
-	if (ip->i_nlink <= 0) {
+	if (ip->i_private.sfs_inode.i_nlink <= 0) {
 	    sfs_i_truncate(ip, 0);
 	    sfs_free_inode(ip->i_fs, ip);
 	}
@@ -650,7 +650,6 @@ W sfs_i_sync(struct inode * ip)
     dbg_printf("sfs: sfs_i_sync\n");
 #endif
     ip->i_private.sfs_inode.i_index = ip->i_index;
-    ip->i_private.sfs_inode.i_nlink = ip->i_nlink;
     if (ip->i_size < ip->i_private.sfs_inode.i_size) {
       sfs_i_truncate(ip, ip->i_size);
     }
@@ -659,9 +658,7 @@ W sfs_i_sync(struct inode * ip)
     ip->i_private.sfs_inode.i_mode = ip->i_mode;
     ip->i_private.sfs_inode.i_uid = ip->i_uid;
     ip->i_private.sfs_inode.i_gid = ip->i_gid;
-    ip->i_private.sfs_inode.i_atime = ip->i_atime;
     ip->i_private.sfs_inode.i_ctime = ip->i_ctime;
-    ip->i_private.sfs_inode.i_mtime = ip->i_mtime;
 
     if (ip->i_dirty) {
 	err = sfs_write_inode(ip->i_device, ip->i_fs,
@@ -722,15 +719,15 @@ sfs_i_mkdir(struct inode * parent,
     newip->i_refcount = 1;
     newip->i_dirty = 1;
     newip->i_mode = mode | S_IFDIR;
-    newip->i_nlink = 2;
+    newip->i_private.sfs_inode.i_nlink = 2;
     newip->i_index = i_index;
     newip->i_uid = acc->uid;
     newip->i_gid = acc->gid;
     newip->i_dev = 0;
     newip->i_size = 0;
-    newip->i_atime = clock;
+    newip->i_private.sfs_inode.i_atime = clock;
     newip->i_ctime = clock;
-    newip->i_mtime = clock;
+    newip->i_private.sfs_inode.i_mtime = clock;
     newip->i_nblock = 0;
 
     fs_register_inode(newip);
@@ -749,7 +746,7 @@ sfs_i_mkdir(struct inode * parent,
     dirent.pad[0] = '\0';
 
     /* ディレクトリにエントリを追加 */
-    parent->i_nlink += 1;
+    parent->i_private.sfs_inode.i_nlink += 1;
     dirnentry = sfs_read_dir(parent, 0, NULL);
     error_no = sfs_write_dir(parent, dirnentry, &dirent);
     if (error_no != EOK) {
@@ -828,15 +825,15 @@ W sfs_i_rmdir(struct inode * parent, char *fname, struct permission * acc)
 	parent->i_dirty = 1;
 	sfs_i_truncate(parent, i);
 
-	ip->i_nlink--;
+	ip->i_private.sfs_inode.i_nlink--;
 	clock = get_system_time();
 	ip->i_ctime = clock;
 	ip->i_dirty = 1;
-	if (ip->i_nlink <= 1) {
+	if (ip->i_private.sfs_inode.i_nlink <= 1) {
 	    sfs_i_truncate(ip, 0);
 	    sfs_free_inode(ip->i_fs, ip);
 	}
-	parent->i_nlink -= 1;
+	parent->i_private.sfs_inode.i_nlink -= 1;
 	parent->i_ctime = clock;
 	parent->i_dirty = 1;
     }
