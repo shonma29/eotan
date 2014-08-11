@@ -78,7 +78,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 {
     struct inode *ip;
     W error_no;
-    struct access_info acc;
+    struct permission acc;
     Elf32_Addr entry;
     struct proc *procp;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
@@ -91,8 +91,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     }
 
     /* 対象となるプログラムファイルをオープンする */
-    proc_get_uid(procid, &(acc.uid));
-    proc_get_gid(procid, &(acc.gid));
+    proc_get_permission(procid, &acc);
     if (pathname[0] == '/') {
 	error_no = fs_open_file(pathname, O_RDONLY, 0, &acc, rootfile, &ip);
     } else {

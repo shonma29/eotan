@@ -240,35 +240,13 @@ W proc_get_ppid(W procid, W * ppid)
 
 
 
-W proc_get_uid(W procid, W * uid)
+W proc_get_permission(W procid, struct permission * p)
 {
     if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
 	return (EINVAL);
     }
 
-    *uid = proc_table[procid].proc_uid;
-    return (EOK);
-}
-
-
-W proc_get_gid(W procid, W * gid)
-{
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
-    }
-
-    *gid = proc_table[procid].proc_gid;
-    return (EOK);
-}
-
-
-W proc_set_gid(W procid, W gid)
-{
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
-    }
-
-    proc_table[procid].proc_gid = gid;
+    *p = proc_table[procid].permission;
     return (EOK);
 }
 

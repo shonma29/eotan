@@ -91,6 +91,7 @@ Version 2, June 1991
 
 #include <fs/sfs.h>
 #include <sys/statvfs.h>
+#include "types.h"
 
 #define F_FILE		0x0001
 #define F_PIPE		0x0002
@@ -176,11 +177,6 @@ struct file
   W			f_omode;
 };
 
-struct access_info {
-    W uid;
-    W gid;
-};
-
 
 
 /* filesystem.c */
@@ -191,13 +187,13 @@ extern W dealloc_inode(struct inode *);
 extern struct fs *alloc_fs(void);
 extern void dealloc_fs(struct fs *);
 
-extern W fs_open_file(B * path, W oflag, W mode, struct access_info *acc,
+extern W fs_open_file(B * path, W oflag, W mode, struct permission *acc,
 		      struct inode *startip, struct inode **newip);
 extern W fs_close_file(struct inode *ip);
 extern W fs_lookup(struct inode *startip, char *path, W oflag,
-		   W mode, struct access_info *acc, struct inode **newip);
+		   W mode, struct permission *acc, struct inode **newip);
 extern W fs_create_file(struct inode *startip, char *path, W oflag,
-			W mode, struct access_info *acc,
+			W mode, struct permission *acc,
 			struct inode **newip);
 extern W fs_sync_file(struct inode *ip);
 extern W fs_read_file(struct inode *ip, W start, B * buf, W length,
@@ -205,16 +201,16 @@ extern W fs_read_file(struct inode *ip, W start, B * buf, W length,
 extern W fs_write_file(struct inode *ip, W start, B * buf, W length,
 		       W * rlength);
 extern W fs_remove_file(struct inode *startip, B * path,
-			struct access_info *acc);
+			struct permission *acc);
 extern W fs_remove_dir(struct inode *startip, B * path,
-		       struct access_info *acc);
+		       struct permission *acc);
 extern W fs_statvfs(ID device, struct statvfs *result);
 extern W fs_getdents(struct inode *ip, ID caller, W offset,
 		     VP buf, UW length, W * rsize, W * fsize);
 extern W fs_link_file(W procid, B * src, W srclen, B * dst, W dstlen,
-		      struct access_info * acc);
+		      struct permission * acc);
 extern W fs_make_dir(struct inode * startip,
-		     char *path, W mode, struct access_info * acc,
+		     char *path, W mode, struct permission * acc,
 		     struct inode ** newip);
 
 extern W mount_root(ID device, W fstype, W option);
@@ -227,7 +223,7 @@ extern W fs_register_inode(struct inode *ip);
 extern W init_special_file(void);
 extern W fs_convert_path(struct inode *ip, B * buf, W length);
 
-extern W permit(struct inode *ip, struct access_info *acc, UW bits);
+extern W permit(struct inode *ip, struct permission *acc, UW bits);
 
 extern struct inode *rootfile;
 

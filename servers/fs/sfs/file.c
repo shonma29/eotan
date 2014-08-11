@@ -135,7 +135,7 @@ W
 sfs_i_lookup(struct inode *parent,
 	     char *fname,
 	     W oflag,
-	     W mode, struct access_info *acc, struct inode **retip)
+	     W mode, struct permission *acc, struct inode **retip)
 {
     W error_no;
     W nentry;
@@ -215,7 +215,7 @@ W
 sfs_i_create(struct inode * parent,
 	     char *fname,
 	     W oflag,
-	     W mode, struct access_info * acc, struct inode ** retip)
+	     W mode, struct permission * acc, struct inode ** retip)
 {
     struct inode *newip;
     W error_no;
@@ -530,7 +530,7 @@ W sfs_i_truncate(struct inode * ip, W newsize)
 
 
 W sfs_i_link(struct inode * parent, char *fname, struct inode * srcip,
-	     struct access_info * acc)
+	     struct permission * acc)
 {
     W error_no;
     struct sfs_dir dirent;
@@ -572,7 +572,7 @@ W sfs_i_link(struct inode * parent, char *fname, struct inode * srcip,
 
 
 W
-sfs_i_unlink(struct inode * parent, char *fname, struct access_info * acc)
+sfs_i_unlink(struct inode * parent, char *fname, struct permission * acc)
 {
     int nentry;
     int i;
@@ -688,7 +688,7 @@ W sfs_i_sync(struct inode * ip)
 W
 sfs_i_mkdir(struct inode * parent,
 	    char *fname,
-	    W mode, struct access_info * acc, struct inode ** retip)
+	    W mode, struct permission * acc, struct inode ** retip)
 {
     struct inode *newip;
     W error_no;
@@ -763,7 +763,7 @@ sfs_i_mkdir(struct inode * parent,
  * ディレクトリを削除する。
  *
  */
-W sfs_i_rmdir(struct inode * parent, char *fname, struct access_info * acc)
+W sfs_i_rmdir(struct inode * parent, char *fname, struct permission * acc)
 {
     int nentry;
     int i;

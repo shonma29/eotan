@@ -237,7 +237,7 @@ void psc_open_f(RDVNO rdvno, struct posix_request *req)
     W error_no;
     struct inode *startip;
     struct inode *newip;
-    struct access_info acc;
+    struct permission acc;
     W rsize;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
@@ -270,13 +270,7 @@ void psc_open_f(RDVNO rdvno, struct posix_request *req)
     } else {
 	startip = rootfile;
     }
-    error_no = proc_get_uid(req->procid, &(acc.uid));
-    if (error_no) {
-	put_response(rdvno, error_no, -1, 0);
-	return;
-    }
-
-    error_no = proc_get_gid(req->procid, &(acc.gid));
+    error_no = proc_get_permission(req->procid, &acc);
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
 	return;

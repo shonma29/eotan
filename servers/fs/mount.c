@@ -51,7 +51,7 @@ void psc_mount_f(RDVNO rdvno, struct posix_request *req)
     B fstype[MAX_NAMELEN];
     struct inode *startip;
     struct inode *mountpoint, *device;
-    struct access_info acc;
+    struct permission acc;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
     ID caller = get_rdv_tid(rdvno);
 
@@ -105,7 +105,7 @@ void psc_mount_f(RDVNO rdvno, struct posix_request *req)
 	startip = rootfile;
     }
 
-    error_no = proc_get_uid(req->procid, &(acc.uid));
+    error_no = proc_get_permission(req->procid, &acc);
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
 	return;
@@ -115,11 +115,6 @@ void psc_mount_f(RDVNO rdvno, struct posix_request *req)
       return;
     }
 
-    error_no = proc_get_gid(req->procid, &(acc.gid));
-    if (error_no) {
-	put_response(rdvno, error_no, -1, 0);
-	return;
-    }
     error_no = fs_open_file(devname, O_RDWR, 0, &acc, startip, &device);
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
@@ -187,7 +182,7 @@ void psc_umount_f(RDVNO rdvno, struct posix_request *req)
     B dirname[MAX_NAMELEN];
     struct inode *startip;
     struct inode *umpoint;
-    struct access_info acc;
+    struct permission acc;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     error_no = kcall->region_get(get_rdv_tid(rdvno),
@@ -215,19 +210,13 @@ void psc_umount_f(RDVNO rdvno, struct posix_request *req)
 	startip = rootfile;
     }
 
-    error_no = proc_get_uid(req->procid, &(acc.uid));
+    error_no = proc_get_permission(req->procid, &acc);
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
 	return;
     }
     if (acc.uid != SU_UID) {
 	put_response(rdvno, EACCES, -1, 0);
-	return;
-    }
-
-    error_no = proc_get_gid(req->procid, &(acc.gid));
-    if (error_no) {
-	put_response(rdvno, error_no, -1, 0);
 	return;
     }
 

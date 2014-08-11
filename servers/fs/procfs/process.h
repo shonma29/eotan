@@ -93,6 +93,7 @@ Version 2, June 1991
 
 #include <fs/config.h>
 #include <sys/syscall.h>
+#include "../types.h"
 
 enum proc_status
 {
@@ -112,8 +113,7 @@ struct proc
   ID			proc_maintask;		/* メインタスク */
   ID			proc_signal_handler;	/* シグナルハンドラタスク */
 
-  W			proc_uid;
-  W			proc_gid;
+  struct permission permission;
 
   struct inode		*proc_workdir;
   struct file		proc_open_file[MAX_OPEN];
@@ -144,15 +144,9 @@ struct proc
 extern struct proc	proc_table[MAX_PROCESS];
 
 extern W		init_process (void);
-extern W		proc_get_uid (W procid, W *uid);
-extern W		proc_get_euid (W procid, W *uid);
-extern W		proc_set_euid (W procid, W uid);
-extern W		proc_get_gid (W procid, W *gid);
-extern W		proc_get_egid (W procid, W *gid);
+extern W		proc_get_permission (W procid, struct permission *p);
 extern W		proc_get_pid (W procid, W *pid);
 extern W		proc_get_ppid (W procid, W *ppid);
-extern W		proc_set_egid (W procid, W gid);
-extern W		proc_set_gid (W procid, W gid);
 extern W		proc_alloc_fileid (W procid, W *retval);
 extern W		proc_get_cwd (W procid, struct inode **cwd);
 extern W		proc_set_cwd (W procid, struct inode *cwd);

@@ -131,8 +131,8 @@ W copy_local(struct proc *parent, struct proc *child)
 
     local_data.thread_id = child->proc_maintask;
     local_data.process_id = child->proc_pid;
-    local_data.user_id = child->proc_uid;
-    local_data.group_id = child->proc_gid;
+    local_data.user_id = child->permission.uid;
+    local_data.group_id = child->permission.gid;
     local_data.parent_process_id = child->proc_ppid;
 
     error_no = kcall->region_put(child->proc_maintask, (thread_local_t*)LOCAL_ADDR,
@@ -185,8 +185,7 @@ static W proc_duplicate(struct proc * source, struct proc * destination)
     destination->proc_workdir->i_refcount++;
 
     /* copy of uid/gid */
-    destination->proc_uid = source->proc_uid;
-    destination->proc_gid = source->proc_gid;
+    destination->permission = source->permission;
 
     return (EOK);
 }

@@ -70,7 +70,7 @@ void psc_getdents_f(RDVNO rdvno, struct posix_request *req)
 void psc_link_f(RDVNO rdvno, struct posix_request *req)
 {
     B src[MAX_NAMELEN], dst[MAX_NAMELEN];
-    struct access_info acc;
+    struct permission acc;
     W error_no;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
     ID caller = get_rdv_tid(rdvno);
@@ -103,12 +103,7 @@ void psc_link_f(RDVNO rdvno, struct posix_request *req)
      * この情報に基づいて、ファイルを削除できるかどうかを
      * 決定する。
      */
-    error_no = proc_get_uid(req->procid, &(acc.uid));
-    if (error_no) {
-	put_response(rdvno, error_no, 0, 0);
-	return;
-    }
-    error_no = proc_get_gid(req->procid, &(acc.gid));
+    error_no = proc_get_permission(req->procid, &acc);
     if (error_no) {
 	put_response(rdvno, error_no, 0, 0);
 	return;
@@ -131,7 +126,7 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
   W		error_no;
   struct inode	*startip;
   struct inode	*newip;
-  struct access_info	acc;
+  struct permission	acc;
   kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
   error_no = proc_alloc_fileid (req->procid, &fileid);
@@ -168,14 +163,7 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
     {
       startip = rootfile;
     }
-  error_no = proc_get_uid (req->procid, &(acc.uid));
-  if (error_no)
-    {
-      put_response (rdvno, error_no, -1, 0);
-      return;
-    }
-
-  error_no = proc_get_gid (req->procid, &(acc.gid));
+  error_no = proc_get_permission (req->procid, &acc);
   if (error_no)
     {
       put_response (rdvno, error_no, -1, 0);
@@ -205,7 +193,7 @@ psc_rmdir_f (RDVNO rdvno, struct posix_request *req)
   B		pathname[MAX_NAMELEN];
   W		error_no;
   struct inode	*startip;
-  struct access_info	acc;
+  struct permission	acc;
   kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
   error_no = kcall->region_get(get_rdv_tid(rdvno), req->param.par_rmdir.path,
@@ -235,14 +223,7 @@ psc_rmdir_f (RDVNO rdvno, struct posix_request *req)
     {
       startip = rootfile;
     }
-  error_no = proc_get_uid (req->procid, &(acc.uid));
-  if (error_no)
-    {
-      put_response (rdvno, error_no, -1, 0);
-      return;
-    }
-
-  error_no = proc_get_gid (req->procid, &(acc.gid));
+  error_no = proc_get_permission (req->procid, &acc);
   if (error_no)
     {
       put_response (rdvno, error_no, -1, 0);
@@ -275,7 +256,7 @@ psc_unlink_f (RDVNO rdvno, struct posix_request *req)
   B			pathname[MAX_NAMELEN];
   W			error_no;
   struct inode		*startip;
-  struct access_info	acc;
+  struct permission	acc;
   kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
   /* パス名を呼び出し元のプロセス(タスク)から
@@ -328,13 +309,7 @@ psc_unlink_f (RDVNO rdvno, struct posix_request *req)
    * この情報に基づいて、ファイルを削除できるかどうかを
    * 決定する。
    */
-  error_no = proc_get_uid (req->procid, &(acc.uid));
-  if (error_no)
-    {
-      put_response (rdvno, error_no, 0, 0);
-      return;
-    }
-  error_no = proc_get_gid (req->procid, &(acc.gid));
+  error_no = proc_get_permission (req->procid, &acc);
   if (error_no)
     {
       put_response (rdvno, error_no, 0, 0);

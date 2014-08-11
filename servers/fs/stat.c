@@ -36,7 +36,7 @@ void psc_chmod_f(RDVNO rdvno, struct posix_request *req)
     B path[MAX_NAMELEN];
     struct inode *startip;
     struct inode *ipp;
-    struct access_info acc;
+    struct permission acc;
     W err;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
@@ -56,15 +56,11 @@ void psc_chmod_f(RDVNO rdvno, struct posix_request *req)
 	}
     }
 
-    if (proc_get_uid(req->procid, &acc.uid)) {
+    if (proc_get_permission(req->procid, &acc)) {
 	put_response(rdvno, EINVAL, -1, 0);
 	return;
     }
 
-    if (proc_get_gid(req->procid, &acc.gid)) {
-	put_response(rdvno, EINVAL, -1, 0);
-	return;
-    }
     err = fs_lookup(startip, path, O_RDWR, 0, &acc, &ipp);
     if (err) {
 	put_response(rdvno, ENOENT, -1, 0);

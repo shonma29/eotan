@@ -114,8 +114,8 @@ static W create_init(ID process_id)
 	p->proc_next = NULL;
 */
 	p->proc_signal_handler = 0;
-	p->proc_uid = INIT_UID;
-	p->proc_gid = INIT_GID;
+	p->permission.uid = INIT_UID;
+	p->permission.gid = INIT_GID;
 	p->proc_status = PS_RUN;
 
 	p->proc_workdir = rootfile;

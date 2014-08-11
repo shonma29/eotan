@@ -503,7 +503,7 @@ W
 fs_open_file(B * path,
 	     W oflag,
 	     W mode,
-	     struct access_info * acc,
+	     struct permission * acc,
 	     struct inode * startip, struct inode ** newip)
 {
     W error_no;
@@ -560,7 +560,7 @@ W
 fs_create_file(struct inode * startip,
 	       char *path,
 	       W oflag,
-	       W mode, struct access_info * acc, struct inode ** newip)
+	       W mode, struct permission * acc, struct inode ** newip)
 {
     char parent_path[MAX_NAMELEN];
     struct inode *parent_ip;
@@ -647,7 +647,7 @@ W fs_close_file(struct inode * ip)
 W
 fs_lookup(struct inode * startip,
 	  char *path,
-	  W oflag, W mode, struct access_info * acc, struct inode ** newip)
+	  W oflag, W mode, struct permission * acc, struct inode ** newip)
 {
     struct inode *tmpip;
     struct fs *fsp;
@@ -803,7 +803,7 @@ W fs_write_file(struct inode * ip, W start, B * buf, W length, W * rlength)
  *
  */
 W
-fs_remove_file(struct inode * startip, B * path, struct access_info * acc)
+fs_remove_file(struct inode * startip, B * path, struct permission * acc)
 {
     char parent_path[MAX_NAMELEN];
     struct inode *parent_ip;
@@ -848,7 +848,7 @@ fs_remove_file(struct inode * startip, B * path, struct access_info * acc)
 /* fs_remove_dir -
  *
  */
-W fs_remove_dir(struct inode * startip, B * path, struct access_info * acc)
+W fs_remove_dir(struct inode * startip, B * path, struct permission * acc)
 {
     char parent_path[MAX_NAMELEN];
     struct inode *parent_ip;
@@ -932,7 +932,7 @@ W fs_statvfs(ID device, struct statvfs * result)
  */
 W fs_make_dir(struct inode * startip,
 	      char *path,
-	      W mode, struct access_info * acc, struct inode ** newip)
+	      W mode, struct permission * acc, struct inode ** newip)
 {
     char parent_path[MAX_NAMELEN];
     struct inode *parent_ip;
@@ -1008,7 +1008,7 @@ W fs_getdents(struct inode * ip, ID caller, W offset,
  */
 W
 fs_link_file(W procid, B * src, W srclen, B * dst, W dstlen,
-	     struct access_info * acc)
+	     struct permission * acc)
 {
     char parent_path[MAX_NAMELEN];
     struct inode *startip;
@@ -1195,7 +1195,7 @@ W fs_register_inode(struct inode * ip)
  * permit -
  */
 
-W permit(struct inode * ip, struct access_info * acc, UW bits)
+W permit(struct inode * ip, struct permission * acc, UW bits)
 {
     UW mode, perm_bits;
     int shift;
