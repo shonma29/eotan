@@ -93,12 +93,12 @@ Version 2, June 1991
 #include "func.h"
 
 
-static W sfs_statfs(struct fs *, struct statfs *);
+static W sfs_statvfs(struct fs *, struct statvfs *);
 
 struct fsops sfs_fsops = {
     sfs_mount,
     sfs_umount,
-    sfs_statfs,
+    sfs_statvfs,
     sfs_i_lookup,
     sfs_i_create,
     sfs_i_close,
@@ -218,14 +218,18 @@ W sfs_syncfs(struct fs * fsp, W umflag)
     return (EOK);
 }
 
-static W sfs_statfs(struct fs * fsp, struct statfs * result)
+static W sfs_statvfs(struct fs * fsp, struct statvfs * result)
 {
-    result->f_type = fsp->typeid;
     result->f_bsize = fsp->private.sfs_fs.blksize;
-    result->f_blocks = fsp->private.sfs_fs.freeblock;
+    result->f_frsize = fsp->private.sfs_fs.blksize;
+    result->f_blocks = fsp->private.sfs_fs.nblock;
     result->f_bfree = fsp->private.sfs_fs.freeblock;
     result->f_bavail = fsp->private.sfs_fs.nblock;
     result->f_files = fsp->private.sfs_fs.ninode;
-    result->f_free = fsp->private.sfs_fs.freeinode;
+    result->f_ffree = fsp->private.sfs_fs.freeinode;
+    result->f_favail = fsp->private.sfs_fs.ninode;
+    result->f_fsid = fsp->typeid;
+    result->f_flag = 0;
+    result->f_namemax = SFS_MAXNAMELEN;
     return (EOK);
 }

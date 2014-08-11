@@ -44,7 +44,7 @@ Version 2, June 1991
 #define PSC_WRITE        17
 #define PSC_GETDENTS	 18
 #define PSC_MOUNT        19
-#define PSC_STATFS       20
+#define PSC_STATVFS       20
 #define PSC_UMOUNT       21
 
 /* =================== SIGNAL 関係 =============== */
@@ -293,13 +293,13 @@ struct psc_umount
 };
 
 
-/* psc_statfs -
+/* psc_statvfs -
  *
  */
-struct psc_statfs
+struct psc_statvfs
 {
   ID		device;
-  struct statfs	*fsp;
+  struct statvfs	*fsp;
 };
 
 
@@ -353,7 +353,7 @@ struct posix_request
     struct psc_write 		par_write;
     struct psc_mount		par_mount;
     struct psc_umount		par_umount;
-    struct psc_statfs		par_statfs;
+    struct psc_statvfs		par_statvfs;
     struct psc_getdents		par_getdents;
     struct psc_bind_device par_bind_device;
   } param;

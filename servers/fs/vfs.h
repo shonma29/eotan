@@ -90,6 +90,7 @@ Version 2, June 1991
 #define __FS_VFS_H__	1
 
 #include <fs/sfs.h>
+#include <sys/statvfs.h>
 
 #define F_FILE		0x0001
 #define F_PIPE		0x0002
@@ -103,7 +104,7 @@ Version 2, June 1991
 struct fsops {
     W(*mount) ();
     W(*umount) ();
-    W(*statfs) ();
+    W(*statvfs) ();
     W(*lookup) ();
     W(*create) ();
     W(*close) ();
@@ -180,18 +181,6 @@ struct access_info {
     W gid;
 };
 
-/* statfs システムコール用
- */
-struct statfs {
-    W f_type;
-    W f_bsize;
-    W f_blocks;
-    W f_bfree;
-    W f_bavail;
-    W f_files;
-    W f_free;
-};
-
 
 
 /* filesystem.c */
@@ -219,7 +208,7 @@ extern W fs_remove_file(struct inode *startip, B * path,
 			struct access_info *acc);
 extern W fs_remove_dir(struct inode *startip, B * path,
 		       struct access_info *acc);
-extern W fs_statfs(ID device, struct statfs *result);
+extern W fs_statvfs(ID device, struct statvfs *result);
 extern W fs_getdents(struct inode *ip, ID caller, W offset,
 		     VP buf, UW length, W * rsize, W * fsize);
 extern W fs_link_file(W procid, B * src, W srclen, B * dst, W dstlen,

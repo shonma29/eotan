@@ -126,20 +126,20 @@ void psc_fstat_f(RDVNO rdvno, struct posix_request *req)
 }
 
 void
-psc_statfs_f (RDVNO rdvno, struct posix_request *req)
+psc_statvfs_f (RDVNO rdvno, struct posix_request *req)
 {
-  struct statfs	result;
+  struct statvfs	result;
   ER		error_no;
   kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-  error_no = fs_statfs (req->param.par_statfs.device, &result);
+  error_no = fs_statvfs (req->param.par_statvfs.device, &result);
   if (error_no)
     {
       put_response (rdvno, error_no, -1, 0);    
       return;
     }
 
-  error_no = kcall->region_put(get_rdv_tid(rdvno), req->param.par_statfs.fsp, sizeof (struct statfs), &result);
+  error_no = kcall->region_put(get_rdv_tid(rdvno), req->param.par_statvfs.fsp, sizeof (struct statvfs), &result);
   if (error_no)
     {
       put_response (rdvno, EFAULT, -1, 0);

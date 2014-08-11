@@ -912,16 +912,16 @@ W fs_convert_path(struct inode * ip, B * buf, W length)
 
 
 
-/* fs_statfs -
+/* fs_statvfs -
  *
  */
-W fs_statfs(ID device, struct statfs * result)
+W fs_statvfs(ID device, struct statvfs * result)
 {
     struct fs *p;
 
     for (p = rootfs; p != 0; p = p->next) {
 	if (p->device == device) {
-	    return p->ops.statfs(p, result);
+	    return p->ops.statvfs(p, result);
 	}
     }
     return (ENODEV);
