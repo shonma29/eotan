@@ -94,6 +94,7 @@ void psc_bind_device_f(RDVNO rdvno, struct posix_request *req)
 	UW id = req->param.par_bind_device.id;
 	UB *name = req->param.par_bind_device.name;
 	ID port = req->param.par_bind_device.port;
+	UW size = req->param.par_bind_device.size;
 
 	if (!hash || num_device >= MAX_DEVICE) {
 		put_response(rdvno, ENOMEM, -1, 0);
@@ -101,10 +102,11 @@ void psc_bind_device_f(RDVNO rdvno, struct posix_request *req)
 		return;
 	}
 
-	dbg_printf("fs: bind(%x, %s, %d)\n", id, name, port);
+	dbg_printf("fs: bind(%x, %s, %d, %d)\n", id, name, port, size);
 	table[num_device].id = id;
 	strcpy((char*)(table[num_device].name), (char*)name);
 	table[num_device].port = port;
+	table[num_device].size = size;
 
 	if (hash_put(hash, (void*)id, (void*)&(table[num_device]))) {
 		put_response(rdvno, EPERM, -1, 0);

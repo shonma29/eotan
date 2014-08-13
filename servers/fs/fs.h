@@ -46,8 +46,6 @@ extern W error_response(RDVNO rdvno, W error_no);
 extern UW get_system_time(void);
 
 /* device.c */
-extern W open_device(ID device, W * rsize);
-extern W close_device(ID device);
 extern W read_device(ID device, B * buf, W start, W length, W * rlength);
 extern W write_device(ID device, B * buf, W start, W length, W * rlength);
 

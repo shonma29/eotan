@@ -84,21 +84,6 @@ static UW execute(devmsg_t *message)
 	UW size = 0;
 
 	switch (req->header.msgtyp) {
-	case DEV_OPN:
-		res->body.opn_res.dd = req->body.opn_req.dd;
-		res->body.opn_res.size = sizeof(buf);
-		res->body.opn_res.errcd = E_OK;
-		res->body.opn_res.errinfo = 0;
-		size = sizeof(res->body.opn_res);
-		break;
-
-	case DEV_CLS:
-		res->body.cls_res.dd = req->body.cls_req.dd;
-		res->body.cls_res.errcd = E_OK;
-		res->body.cls_res.errinfo = 0;
-		size = sizeof(res->body.cls_res);
-		break;
-
 	case DEV_REA:
 		result = read(res->body.rea_res.dt,
 				req->body.rea_req.start,
@@ -191,7 +176,7 @@ static ER_ID initialize(void)
 	}
 
 	result = bind_device(get_device_id(DEVICE_MAJOR_RAMDISK, 0),
-			(UB*)MYNAME, port);
+			(UB*)MYNAME, port, sizeof(buf));
 	if (result) {
 		dbg_printf("[RAMDISK] bind error=%d\n", result);
 		kcall->port_destroy(port);

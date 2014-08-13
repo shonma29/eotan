@@ -46,12 +46,6 @@ void psc_close_f(RDVNO rdvno, struct posix_request *req)
 	return;
     }
 
-    if (fp->f_inode->i_mode & S_IFCHR) {
-	/* スペシャルファイルだった */
-	/* デバイスに DEV_CLS メッセージを発信 */
-	err = close_device(fp->f_inode->i_dev);
-    }
-
     err = fs_close_file(fp->f_inode);
     if (err) {
 	put_response(rdvno, err, -1, 0);
@@ -238,7 +232,6 @@ void psc_open_f(RDVNO rdvno, struct posix_request *req)
     struct inode *startip;
     struct inode *newip;
     struct permission acc;
-    W rsize;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     error_no = proc_alloc_fileid(req->procid, &fileid);
@@ -303,18 +296,6 @@ void psc_open_f(RDVNO rdvno, struct posix_request *req)
 	if (req->param.par_open.oflag != O_RDONLY) {
 	    fs_close_file(newip);
 	    put_response(rdvno, EISDIR, -1, 0);
-	    return;
-	}
-    } else if (newip->i_mode & S_IFCHR) {
-	/* スペシャルファイルだった */
-	/* デバイスに DEV_OPN メッセージを発信 */
-	error_no = open_device(newip->i_dev, &rsize);
-	if (rsize >= 0) {
-	    newip->i_size = rsize;
-	}
-	if (error_no != E_OK) {
-	    fs_close_file(newip);
-	    put_response(rdvno, EACCES, -1, 0);
 	    return;
 	}
     }

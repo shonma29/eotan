@@ -80,8 +80,6 @@ typedef struct {
  */
 enum driver_command
 {
-  DEV_OPN,
-  DEV_CLS,
   DEV_REA,
   DEV_WRI
 };
@@ -103,51 +101,11 @@ enum driver_command
                    要求(送信元) 返信(送信元)  
      処理              user        driver    
  ------------------------------------------------------------
- デバイスオープン  DDEV_OPN_REQ DDEV_OPN_RES  
- デバイスクローズ  DDEV_CLS_REQ DDEV_CLS_RES  
  読み込み          DDEV_REA_REQ DDEV_REA_RES  
  書き込み          DDEV_WRI_REQ DDEV_WRI_RES  
  ------------------------------------------------------------
 
 */
-
-/* デバイスオープン（デバイスドライバへ送るメッセージ）
- *
- *    ・デバイスドライバは必要が無ければ何の処理を行う必要もない。
- *
- */
-typedef struct {
-  W	dd;	/* デバイスドライバマネージャ管理情報 */
-  		/* デバイスドライバはこの値を使用せず，応答メッセージの */
-                /* 先頭に登録する */
-} DDEV_OPN_REQ;
-
-/* デバイスオープン（デバイスドライバマネージャへの応答）
- *
- */
-typedef struct {
-  W dd;		/* デバイスドライバマネージャ管理情報 */
-  UW size;
-  ER errcd;
-  W errinfo;    /* エラー詳細情報 */
-} DDEV_OPN_RES;
-
-/* デバイスクローズ（デバイスドライバへ送るメッセージ）
- *
- */
-typedef struct {
-  W dd;       /* デバイスドライバマネージャ管理情報 */
-              /* デバイスドライバはこの値を使用せず，応答メッセージの */
-              /* 先頭に登録する */
-} DDEV_CLS_REQ;
-
-/* デバイスクローズ（デバイスドライバマネージャへの応答）
- */
-typedef struct {
-  W dd;        /* デバイスドライバマネージャ管理情報	*/
-  ER errcd;
-  W errinfo;   /* エラー詳細情報	*/
-} DDEV_CLS_RES;
 
 /* デバイスからの読み込み（デバイスドライバへ送るメッセージ）
  */
@@ -213,8 +171,6 @@ typedef struct DDEV_REQ
 
   union 
     {
-      DDEV_OPN_REQ	opn_req;
-      DDEV_CLS_REQ	cls_req;
       DDEV_REA_REQ	rea_req;	
       DDEV_WRI_REQ	wri_req;
     } body;
@@ -231,8 +187,6 @@ typedef struct DDEV_RES
 
   union 
     {
-      DDEV_OPN_RES	opn_res;
-      DDEV_CLS_RES	cls_res;
       DDEV_REA_RES	rea_res;	
       DDEV_WRI_RES	wri_res;
     } body;

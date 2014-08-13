@@ -120,21 +120,6 @@ static UW execute(devmsg_t *message)
 	UW size = 0;
 
 	switch (req->header.msgtyp) {
-	case DEV_OPN:
-		res->body.opn_res.dd = req->body.opn_req.dd;
-		res->body.opn_res.size = DEV_BUF_SIZE;
-		res->body.opn_res.errcd = E_OK;
-		res->body.opn_res.errinfo = 0;
-		size = sizeof(res->body.opn_res);
-		break;
-
-	case DEV_CLS:
-		res->body.cls_res.dd = req->body.cls_req.dd;
-		res->body.cls_res.errcd = E_OK;
-		res->body.cls_res.errinfo = 0;
-		size = sizeof(res->body.cls_res);
-		break;
-
 	case DEV_REA:
 		res->body.rea_res.dd = req->body.rea_req.dd;
 		res->body.rea_res.errcd = E_NOSPT;
@@ -214,7 +199,7 @@ static ER_ID initialize(void)
 	}
 
 	result = bind_device(get_device_id(DEVICE_MAJOR_CONSOLE, 0),
-			(UB*)MYNAME, port);
+			(UB*)MYNAME, port, DEV_BUF_SIZE);
 	if (result) {
 		dbg_printf("[HMI] bind error=%d\n", result);
 //		del_por(port);

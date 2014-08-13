@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/syscall.h>
 
 
-ER bind_device(UW id, UB *name, ID port)
+ER bind_device(UW id, UB *name, ID port, UW size)
 {
 	ER_UINT err;
 	struct posix_request req;
@@ -45,6 +45,7 @@ ER bind_device(UW id, UB *name, ID port)
 	req.param.par_bind_device.id = id;
 	strcpy((char*)req.param.par_bind_device.name, (char*)name);
 	req.param.par_bind_device.port = port;
+	req.param.par_bind_device.size = size;
 	err = kcall->port_call(PORT_FS, &req, sizeof(req));
 
 	return (err < 0)? err:(res->error_no? E_SYS:E_OK);

@@ -142,21 +142,6 @@ static UW execute(devmsg_t *message)
 	UW size = 0;
 
 	switch (req->header.msgtyp) {
-	case DEV_OPN:
-		res->body.opn_res.dd = req->body.opn_req.dd;
-		res->body.opn_res.size = RING_MAX_LEN;
-		res->body.opn_res.errcd = E_OK;
-		res->body.opn_res.errinfo = 0;
-		size = sizeof(res->body.opn_res);
-		break;
-
-	case DEV_CLS:
-		res->body.cls_res.dd = req->body.cls_req.dd;
-		res->body.cls_res.errcd = E_OK;
-		res->body.cls_res.errinfo = 0;
-		size = sizeof(res->body.cls_res);
-		break;
-
 	case DEV_REA:
 		result = read(res->body.rea_res.dt,
 				req->body.rea_req.dd,

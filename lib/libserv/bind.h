@@ -28,6 +28,6 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 
-extern ER bind_device(UW id, UB *name, ID port);
+extern ER bind_device(UW id, UB *name, ID port, UW size);
 
 #endif

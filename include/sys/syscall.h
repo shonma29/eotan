@@ -319,6 +319,7 @@ struct psc_bind_device
   UW id;
   UB name[MAX_DEVICE_NAME + 1];
   ID port;
+  UW size;
 };
 
 /* =========================== 構造体定義 =========================== */

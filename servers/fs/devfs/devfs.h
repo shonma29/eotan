@@ -35,6 +35,7 @@ typedef struct {
 	UW id;
 	B name[MAX_DEVICE_NAME + 1];
 	ID port;
+	UW size;
 } device_info_t;
 
 extern int device_init(void);

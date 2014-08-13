@@ -238,7 +238,7 @@ W open_special_dev(struct proc * procp)
 	ip->i_dev = p->id;
 	ip->i_fs = rootfs;
 	ip->i_index = -1;
-	ip->i_size = 0;
+	ip->i_size = p->size;
 	ip->i_nblock = 0;
 	fs_register_inode(ip);
     }
@@ -256,7 +256,7 @@ W open_special_dev(struct proc * procp)
 	ip->i_dev = p->id;
 	ip->i_fs = rootfs;
 	ip->i_index = -2;
-	ip->i_size = 0;
+	ip->i_size = p->size;
 	ip->i_nblock = 0;
 	fs_register_inode(ip);
 
@@ -271,7 +271,7 @@ W open_special_dev(struct proc * procp)
 	ip->i_dev = p->id;
 	ip->i_fs = rootfs;
 	ip->i_index = -3;
-	ip->i_size = 0;
+	ip->i_size = p->size;
 	ip->i_nblock = 0;
 	fs_register_inode(ip);
     }

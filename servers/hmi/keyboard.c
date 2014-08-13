@@ -224,21 +224,6 @@ static UW execute(devmsg_t *message)
 	UW size = 0;
 
 	switch (req->header.msgtyp) {
-	case DEV_OPN:
-		res->body.opn_res.dd = req->body.opn_req.dd;
-		res->body.opn_res.size = DEV_BUF_SIZE;
-		res->body.opn_res.errcd = E_OK;
-		res->body.opn_res.errinfo = 0;
-		size = sizeof(res->body.opn_res);
-		break;
-
-	case DEV_CLS:
-		res->body.cls_res.dd = req->body.cls_req.dd;
-		res->body.cls_res.errcd = E_OK;
-		res->body.cls_res.errinfo = 0;
-		size = sizeof(res->body.cls_res);
-		break;
-
 	case DEV_REA:
 		result = read(req->body.rea_req.start, req->body.rea_req.size,
 				res->body.rea_res.dt);
@@ -341,7 +326,7 @@ ER keyboard_initialize(void)
 	}
 
 	result = bind_device(get_device_id(DEVICE_MAJOR_KEYBOARD, 0),
-			(UB*)DEV_NAME_KEYBOARD, keyboard_port_id);
+			(UB*)DEV_NAME_KEYBOARD, keyboard_port_id, DEV_BUF_SIZE);
 	if (result) {
 		dbg_printf("[keyboard] bind error=%d\n", result);
 		kcall->port_destroy(keyboard_port_id);
