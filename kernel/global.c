@@ -43,6 +43,8 @@ static ER region_get(const ID id, const void *from, const size_t size,
 		void *to);
 static ER region_put(const ID id, void *to, const size_t size,
 		const void *from);
+static ER_UINT region_copy(const ID id, const void *from, const size_t size,
+		void *to);
 
 
 void global_initialize(void)
@@ -78,6 +80,7 @@ static void kcall_initialize(void)
 
 	p->region_get = region_get;
 	p->region_put = region_put;
+	p->region_copy = region_copy;
 
 	p->port_create = port_create;
 	p->port_create_auto = port_create_auto;
@@ -146,4 +149,11 @@ static ER region_put(const ID id, void *to, const size_t size, const void *from)
 	thread_t *th = get_thread_ptr(id);
 
 	return th? copy_to(th, to, from, size):E_NOEXS;
+}
+
+static ER_UINT region_copy(const ID id, const void *from, const size_t size, void *to)
+{
+	thread_t *th = get_thread_ptr(id);
+
+	return th? ncpy_from(th, to, from, size):E_NOEXS;
 }

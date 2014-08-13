@@ -71,7 +71,6 @@ execve(char *name, char *argv[], char *envp[])
     }
     *vp++ = 0;
     
-    req.param.par_execve.pathlen = strlen(name);
     req.param.par_execve.name = name;
     req.param.par_execve.stackp = buf;
     req.param.par_execve.stsize = stsize;

@@ -62,7 +62,6 @@ Version 2, June 1991
  */
 struct psc_chdir
 {
-  W		pathlen;
   B		*path;
 };
 
@@ -72,7 +71,6 @@ struct psc_chdir
  */
 struct psc_chmod
 {
-  W		pathlen;
   B		*path;
   W		mode;
 };
@@ -111,7 +109,6 @@ struct psc_dup2
  */
 struct psc_execve
 {
-  UW		pathlen;
   B		*name;
   B		*stackp;
   W		stsize;
@@ -164,9 +161,7 @@ struct psc_kill
  */
 struct psc_link
 {
-      W srclen;
       B *src;
-      W dstlen;
       B *dst;
 };
 
@@ -187,7 +182,6 @@ struct psc_lseek
  */
 struct psc_mkdir
 {
-  W		pathlen;
   B		*path;
   W		mode;
 };
@@ -198,7 +192,6 @@ struct psc_mkdir
  */
 struct psc_open
 {
-  W		pathlen;
   B		*path;
   W		oflag;
   W		mode;	/* if oflag is O_CREATE */
@@ -221,7 +214,6 @@ struct psc_read
  */
 struct psc_rmdir
 {
-  W		pathlen;
   B		*path;
 };
 
@@ -241,7 +233,6 @@ struct psc_fstat
  */
 struct psc_unlink
 {
-  W		pathlen;
   B		*path;
 };
 
@@ -273,12 +264,9 @@ struct psc_write
  */
 struct psc_mount
 {
-  W	devnamelen;    		/* マウントするデバイス名の長さ */
   B	*devname;		/* マウントするデバイス名の長さ */
-  W	dirnamelen;		/* マウントするディレクトリ名の長さ */
   B	*dirname;		/* マウントするディレクトリ名 */
   W	option;			/* オプション */
-  W	fstypelen;
   B	*fstype;		/* ファイルシステムのタイプ */
 };
 
@@ -288,7 +276,6 @@ struct psc_mount
  */
 struct psc_umount
 {
-  W	dirnamelen;
   B	*dirname;
 };
 

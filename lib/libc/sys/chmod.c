@@ -13,7 +13,6 @@ Version 2, June 1991
 
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_chmod.c,v 1.1 1997/08/31 13:25:19 night Exp $  */
 
-#include <string.h>
 #include "sys.h"
 
 
@@ -25,7 +24,6 @@ chmod (char *path, mode_t mode)
 {
   struct posix_request	req;
 
-  req.param.par_chmod.pathlen = strlen (path);
   req.param.par_chmod.path = path;
   req.param.par_chmod.mode = mode;
 

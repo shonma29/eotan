@@ -31,19 +31,20 @@ Version 2, June 1991
 void psc_chdir_f(RDVNO rdvno, struct posix_request *req)
 {
     struct inode *oldip;
-    B path[MAX_NAMELEN];
+    B path[MAX_NAMELEN + 1];
     struct inode *startip;
     struct inode *ipp;
     struct permission acc;
     W err;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    if (kcall->region_get(get_rdv_tid(rdvno), req->param.par_chmod.path,
-		 req->param.par_chmod.pathlen + 1, path)) {
+    if (kcall->region_copy(get_rdv_tid(rdvno), req->param.par_chmod.path,
+		sizeof(path) - 1, path) < 0) {
 	put_response(rdvno, EINVAL, -1, 0);
 	return;
     }
 
+    path[MAX_NAMELEN] = '\0';
     err = proc_get_cwd(req->procid, &oldip);
     if (err) {
 	put_response(rdvno, err, -1, 0);

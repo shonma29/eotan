@@ -34,7 +34,6 @@ chdir (char *path)
     int len = strlen(path), l2, flag = 0;
 
     req.param.par_chdir.path = path;
-    req.param.par_chdir.pathlen = len;
 
     error = _make_connection(PSC_CHDIR, &req);
     if (error != E_OK) {

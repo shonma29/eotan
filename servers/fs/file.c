@@ -226,7 +226,7 @@ void psc_lseek_f(RDVNO rdvno, struct posix_request *req)
  */
 void psc_open_f(RDVNO rdvno, struct posix_request *req)
 {
-    B pathname[MAX_NAMELEN];
+    B pathname[MAX_NAMELEN + 1];
     W fileid;
     W error_no;
     struct inode *startip;
@@ -243,9 +243,9 @@ void psc_open_f(RDVNO rdvno, struct posix_request *req)
 
     /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。
      */
-    error_no = kcall->region_get(get_rdv_tid(rdvno), req->param.par_open.path,
-		     req->param.par_open.pathlen + 1, pathname);
-    if (error_no) {
+    error_no = kcall->region_copy(get_rdv_tid(rdvno), req->param.par_open.path,
+		     sizeof(pathname) - 1, pathname);
+    if (error_no < 0) {
 	/* パス名のコピーエラー */
 	if (error_no == E_PAR)
 	    put_response(rdvno, EINVAL, -1, 0);
@@ -254,6 +254,7 @@ void psc_open_f(RDVNO rdvno, struct posix_request *req)
 
 	return;
     }
+    pathname[MAX_NAMELEN] = '\0';
     if (*pathname != '/') {
 	error_no = proc_get_cwd(req->procid, &startip);
 	if (error_no) {

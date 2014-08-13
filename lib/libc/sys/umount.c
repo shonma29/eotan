@@ -7,7 +7,6 @@
 
 */
 
-#include <string.h>
 #include "sys.h"
 
 
@@ -17,7 +16,6 @@ umount (char *special_file)
 {
   struct posix_request	req;
 
-  req.param.par_umount.dirnamelen = strlen(special_file);
   req.param.par_umount.dirname = special_file;
 
   return _call_fs(PSC_UMOUNT, &req);

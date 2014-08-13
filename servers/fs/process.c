@@ -31,7 +31,7 @@ Version 2, June 1991
  */
 void psc_exec_f(RDVNO rdvno, struct posix_request *req)
 {
-    B pathname[MAX_NAMELEN];
+    B pathname[MAX_NAMELEN + 1];
     W error_no;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
@@ -41,9 +41,9 @@ void psc_exec_f(RDVNO rdvno, struct posix_request *req)
 
     /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。
      */
-    error_no = kcall->region_get(get_rdv_tid(rdvno), req->param.par_execve.name,
-		     req->param.par_execve.pathlen + 1, pathname);
-    if (error_no) {
+    error_no = kcall->region_copy(get_rdv_tid(rdvno), req->param.par_execve.name,
+		     sizeof(pathname) - 1, pathname);
+    if (error_no < 0) {
 	/* パス名のコピーエラー */
 	if (error_no == E_PAR)
 	    put_response(rdvno, EINVAL, -1, 0);
@@ -52,6 +52,7 @@ void psc_exec_f(RDVNO rdvno, struct posix_request *req)
 
 	return;
     }
+    pathname[MAX_NAMELEN] = '\0';
 #ifdef EXEC_DEBUG
     dbg_printf("fs: exec: pathname is %s\n", pathname);
 #endif

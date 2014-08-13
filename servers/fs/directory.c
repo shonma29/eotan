@@ -69,15 +69,15 @@ void psc_getdents_f(RDVNO rdvno, struct posix_request *req)
 
 void psc_link_f(RDVNO rdvno, struct posix_request *req)
 {
-    B src[MAX_NAMELEN], dst[MAX_NAMELEN];
+    B src[MAX_NAMELEN + 1], dst[MAX_NAMELEN + 1];
     struct permission acc;
     W error_no;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
     ID caller = get_rdv_tid(rdvno);
 
-    error_no = kcall->region_get(caller, req->param.par_link.src,
-		     req->param.par_link.srclen + 1, src);
-    if (error_no) {
+    error_no = kcall->region_copy(caller, req->param.par_link.src,
+		     sizeof(src) - 1, src);
+    if (error_no < 0) {
 	/* パス名のコピーエラー */
 	if (error_no == E_PAR)
 	    put_response(rdvno, EINVAL, -1, 0);
@@ -86,9 +86,10 @@ void psc_link_f(RDVNO rdvno, struct posix_request *req)
 
 	return;
     }
-    error_no = kcall->region_get(caller, req->param.par_link.dst,
-		     req->param.par_link.dstlen + 1, dst);
-    if (error_no) {
+    src[MAX_NAMELEN] = '\0';
+    error_no = kcall->region_copy(caller, req->param.par_link.dst,
+		     sizeof(dst) - 1, dst);
+    if (error_no < 0) {
 	/* パス名のコピーエラー */
 	if (error_no == E_PAR)
 	    put_response(rdvno, EINVAL, -1, 0);
@@ -97,6 +98,7 @@ void psc_link_f(RDVNO rdvno, struct posix_request *req)
 
 	return;
     }
+    dst[MAX_NAMELEN] = '\0';
 
     /* プロセスのユーザ ID とグループ ID の
      * 取り出し。
@@ -109,8 +111,7 @@ void psc_link_f(RDVNO rdvno, struct posix_request *req)
 	return;
     }
 
-    error_no = fs_link_file(req->procid, src, req->param.par_link.srclen,
-			 dst, req->param.par_link.dstlen, &acc);
+    error_no = fs_link_file(req->procid, src, dst, &acc);
     if (error_no) {
 	put_response(rdvno, error_no, 0, 0);
 	return;
@@ -121,7 +122,7 @@ void psc_link_f(RDVNO rdvno, struct posix_request *req)
 void
 psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
 {
-  B		pathname[MAX_NAMELEN];
+  B		pathname[MAX_NAMELEN + 1];
   W		fileid;
   W		error_no;
   struct inode	*startip;
@@ -137,9 +138,9 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
       return;
     }
 
-  error_no = kcall->region_get(get_rdv_tid(rdvno), req->param.par_mkdir.path,
-		    req->param.par_mkdir.pathlen + 1, pathname);
-  if (error_no)
+  error_no = kcall->region_copy(get_rdv_tid(rdvno), req->param.par_mkdir.path,
+		    sizeof(pathname) - 1, pathname);
+  if (error_no < 0)
     {
       /* パス名のコピーエラー */
       if (error_no == E_PAR)
@@ -149,6 +150,7 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
 	
       return;
     }
+  pathname[MAX_NAMELEN] = '\0';
 
   if (*pathname != '/')
     {
@@ -190,15 +192,15 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
 void
 psc_rmdir_f (RDVNO rdvno, struct posix_request *req)
 {
-  B		pathname[MAX_NAMELEN];
+  B		pathname[MAX_NAMELEN + 1];
   W		error_no;
   struct inode	*startip;
   struct permission	acc;
   kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-  error_no = kcall->region_get(get_rdv_tid(rdvno), req->param.par_rmdir.path,
-		    req->param.par_rmdir.pathlen + 1, pathname);
-  if (error_no)
+  error_no = kcall->region_copy(get_rdv_tid(rdvno), req->param.par_rmdir.path,
+		    sizeof(pathname) - 1, pathname);
+  if (error_no < 0)
     {
       /* パス名のコピーエラー */
       if (error_no == E_PAR)
@@ -208,6 +210,7 @@ psc_rmdir_f (RDVNO rdvno, struct posix_request *req)
 	
       return;
     }
+  pathname[MAX_NAMELEN] = '\0';
 
 
   if (*pathname != '/')
@@ -253,7 +256,7 @@ psc_rmdir_f (RDVNO rdvno, struct posix_request *req)
 void
 psc_unlink_f (RDVNO rdvno, struct posix_request *req)
 {
-  B			pathname[MAX_NAMELEN];
+  B			pathname[MAX_NAMELEN + 1];
   W			error_no;
   struct inode		*startip;
   struct permission	acc;
@@ -264,11 +267,11 @@ psc_unlink_f (RDVNO rdvno, struct posix_request *req)
    * 呼び出し元のタスク ID は、メッセージパラメータの
    * 中に入っている。
    */
-  error_no = kcall->region_get(get_rdv_tid(rdvno),
+  error_no = kcall->region_copy(get_rdv_tid(rdvno),
 		    req->param.par_unlink.path,
-		    req->param.par_unlink.pathlen + 1,
+		    sizeof(pathname) - 1,
 		    pathname);
-  if (error_no)
+  if (error_no < 0)
     {
       /* パス名のコピーエラー */
       if (error_no == E_PAR)
@@ -278,6 +281,7 @@ psc_unlink_f (RDVNO rdvno, struct posix_request *req)
 	
       return;
     }
+  pathname[MAX_NAMELEN] = '\0';
 
 
   /* ファイルが相対パスで指定されているかどうかを

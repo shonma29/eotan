@@ -13,7 +13,6 @@ Version 2, June 1991
 
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_link.c,v 1.1 1997/08/31 13:25:22 night Exp $  */
 
-#include <string.h>
 #include "sys.h"
 
 
@@ -25,9 +24,7 @@ link (const char *src, const char *dst)
 {
   struct posix_request	req;
 
-  req.param.par_link.srclen = strlen (src);
   req.param.par_link.src = (char*)src;
-  req.param.par_link.dstlen = strlen (dst);
   req.param.par_link.dst = (char*)dst;
 
   return _call_fs(PSC_LINK, &req);

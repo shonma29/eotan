@@ -14,7 +14,7 @@ Version 2, June 1991
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_open.c,v 1.3 1999/03/15 08:36:44 monaka Exp $  */
 
 #include <fcntl.h>
-#include <string.h>
+#include <stdarg.h>
 #include "sys.h"
 
 
@@ -26,7 +26,6 @@ open (const char *path, int oflag, ...)
 {
     struct posix_request req;
 
-    req.param.par_open.pathlen = strlen (path);
     req.param.par_open.path = (char*)path;
     req.param.par_open.oflag = oflag;	/* o_rdonly | o_wronly | o_rdwr | o_creat */
 

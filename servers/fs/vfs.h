@@ -203,8 +203,7 @@ extern W fs_remove_dir(struct inode *startip, B * path,
 extern W fs_statvfs(ID device, struct statvfs *result);
 extern W fs_getdents(struct inode *ip, ID caller, W offset,
 		     VP buf, UW length, W * rsize, W * fsize);
-extern W fs_link_file(W procid, B * src, W srclen, B * dst, W dstlen,
-		      struct permission * acc);
+extern W fs_link_file(W procid, B * src, B * dst, struct permission * acc);
 extern W fs_make_dir(struct inode * startip,
 		     char *path, W mode, struct permission * acc,
 		     struct inode ** newip);

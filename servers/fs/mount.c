@@ -46,19 +46,19 @@ Version 2, June 1991
 void psc_mount_f(RDVNO rdvno, struct posix_request *req)
 {
     W error_no;
-    B dirname[MAX_NAMELEN];
-    B devname[MAX_NAMELEN];
-    B fstype[MAX_NAMELEN];
+    B dirname[MAX_NAMELEN + 1];
+    B devname[MAX_NAMELEN + 1];
+    B fstype[MAX_NAMELEN + 1];
     struct inode *startip;
     struct inode *mountpoint, *device;
     struct permission acc;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
     ID caller = get_rdv_tid(rdvno);
 
-    error_no = kcall->region_get(caller,
+    error_no = kcall->region_copy(caller,
 		     req->param.par_mount.devname,
-		     req->param.par_mount.devnamelen + 1, devname);
-    if (error_no) {
+		     sizeof(devname) - 1, devname);
+    if (error_no < 0) {
 	/* デバイスファイルのパス名のコピーエラー */
 	if (error_no == E_PAR)
 	    put_response(rdvno, EINVAL, -1, 0);
@@ -67,11 +67,12 @@ void psc_mount_f(RDVNO rdvno, struct posix_request *req)
 
 	return;
     }
-    error_no = kcall->region_get(caller,
+    devname[MAX_NAMELEN] = '\0';
+    error_no = kcall->region_copy(caller,
 		     req->param.par_mount.dirname,
-		     req->param.par_mount.dirnamelen + 1, dirname);
+		     sizeof(dirname) - 1, dirname);
 
-    if (error_no) {
+    if (error_no < 0) {
 	/* mount 先のパス名のコピーエラー */
 	if (error_no == E_PAR) {
 	    put_response(rdvno, EINVAL, -1, 0);
@@ -80,11 +81,12 @@ void psc_mount_f(RDVNO rdvno, struct posix_request *req)
 	}
 	return;
     }
+    dirname[MAX_NAMELEN] = '\0';
 
-    error_no = kcall->region_get(caller,
+    error_no = kcall->region_copy(caller,
 		     req->param.par_mount.fstype,
-		     req->param.par_mount.fstypelen + 1, fstype);
-    if (error_no) {
+		     sizeof(fstype) - 1, fstype);
+    if (error_no < 0) {
 	/* ファイルシステムタイプのコピーエラー */
 	if (error_no == E_PAR)
 	    put_response(rdvno, EINVAL, -1, 0);
@@ -93,6 +95,7 @@ void psc_mount_f(RDVNO rdvno, struct posix_request *req)
 
 	return;
     }
+    fstype[MAX_NAMELEN] = '\0';
 
     /* デバイスのオープン */
     if (*devname != '/') {
@@ -179,17 +182,17 @@ void psc_umount_f(RDVNO rdvno, struct posix_request *req)
 {
     W error_no;
     UW device = 0;
-    B dirname[MAX_NAMELEN];
+    B dirname[MAX_NAMELEN + 1];
     struct inode *startip;
     struct inode *umpoint;
     struct permission acc;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    error_no = kcall->region_get(get_rdv_tid(rdvno),
+    error_no = kcall->region_copy(get_rdv_tid(rdvno),
 		     req->param.par_umount.dirname,
-		     req->param.par_umount.dirnamelen + 1, dirname);
+		     sizeof(dirname) - 1, dirname);
 
-    if (error_no) {
+    if (error_no < 0) {
 	/* mount 先/special file のパス名のコピーエラー */
 	if (error_no == E_PAR) {
 	    put_response(rdvno, EINVAL, -1, 0);
@@ -198,6 +201,7 @@ void psc_umount_f(RDVNO rdvno, struct posix_request *req)
 	}
 	return;
     }
+    dirname[MAX_NAMELEN] = '\0';
 
     /* アンマウントポイントのオープン */
     if (*dirname != '/') {

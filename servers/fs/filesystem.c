@@ -1007,8 +1007,7 @@ W fs_getdents(struct inode * ip, ID caller, W offset,
  *
  */
 W
-fs_link_file(W procid, B * src, W srclen, B * dst, W dstlen,
-	     struct permission * acc)
+fs_link_file(W procid, B * src, B * dst, struct permission * acc)
 {
     char parent_path[MAX_NAMELEN];
     struct inode *startip;
@@ -1047,7 +1046,7 @@ fs_link_file(W procid, B * src, W srclen, B * dst, W dstlen,
 	startip = rootfile;
     }
 
-    for (parent_length = dstlen; parent_length >= 0; parent_length--) {
+    for (parent_length = strlen(dst); parent_length >= 0; parent_length--) {
 	if (dst[parent_length] == '/') {
 	    strncpy(parent_path, dst, MAX_NAMELEN - 1);
 	    parent_path[MAX_NAMELEN - 1] = '\0';

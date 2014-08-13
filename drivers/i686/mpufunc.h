@@ -80,6 +80,8 @@ extern void *getPageAddress(const PTE *dir, const void *addr);
 extern ER copy_to(thread_t *th, void *to, const void *from, const size_t bytes);
 extern ER copy_from(thread_t *th, void *to, const void *from,
 		const size_t bytes);
+extern ER_UINT ncpy_from(thread_t *th, void *to, const void *from,
+		const size_t bytes);
 
 /* memory.c */
 extern PTE *copy_kernel_page_table(void);
