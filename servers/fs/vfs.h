@@ -96,8 +96,6 @@ Version 2, June 1991
 #define F_FILE		0x0001
 #define F_PIPE		0x0002
 
-#define BLOCK_SIZE	512
-
 #define BLOCK_DEVICE_MASK	(0x80000000UL)
 
 /* file system types. */

@@ -33,4 +33,6 @@ Version 2, June 1991
 
 #define PROC_NAME_LEN	35
 
+#define CACHE_BLOCK_SIZE	512
+
 #endif				/* __FS_CONFIG_H__ */

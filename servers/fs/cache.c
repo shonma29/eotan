@@ -39,7 +39,7 @@ typedef struct {
     short int hash_next, hash_prev;
     W fd;
     W blockno;
-    B buf[BLOCK_SIZE];
+    B buf[CACHE_BLOCK_SIZE];
 } BLOCK_CACHE;
 
 #ifdef USE_MALLOC
@@ -114,7 +114,7 @@ void get_cache(W fd, W blockno, W * cn, B ** ptr)
 	cp = &cache_data[cache_head];
 
 	if (cp->dirty) {
-	    write_block(cp->fd, cp->blockno, BLOCK_SIZE, cp->buf);
+	    write_block(cp->fd, cp->blockno, CACHE_BLOCK_SIZE, cp->buf);
 	    cp->dirty = 0;
 	}
 	/* remove from hash chain */
@@ -134,9 +134,9 @@ void get_cache(W fd, W blockno, W * cn, B ** ptr)
 		}
 	    }
 	}
-	memset(cp->buf, 0, BLOCK_SIZE);
+	memset(cp->buf, 0, CACHE_BLOCK_SIZE);
 
-	read_block(fd, blockno, BLOCK_SIZE, cp->buf);
+	read_block(fd, blockno, CACHE_BLOCK_SIZE, cp->buf);
 	cp->fd = fd;
 	cp->blockno = blockno;
 	*ptr = cp->buf;
@@ -261,7 +261,7 @@ W sync_cache(W fd, W umflag)
 	if (cp->fd == fd) {
 	    if (cp->dirty) {
 		error_no =
-		    write_block(fd, cp->blockno, BLOCK_SIZE,
+		    write_block(fd, cp->blockno, CACHE_BLOCK_SIZE,
 				    cp->buf);
 		if (error_no < 0) {
 		    dbg_printf("fs: sync_cache write error\n");
