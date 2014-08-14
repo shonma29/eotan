@@ -43,7 +43,7 @@ ER bind_device(UW id, UB *name, ID port, UW size)
 
 	req.operation = PSC_BIND_DEVICE;
 	req.param.par_bind_device.id = id;
-	strcpy((char*)req.param.par_bind_device.name, (char*)name);
+	req.param.par_bind_device.name = name;
 	req.param.par_bind_device.port = port;
 	req.param.par_bind_device.size = size;
 	err = kcall->port_call(PORT_FS, &req, sizeof(req));

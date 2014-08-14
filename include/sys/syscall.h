@@ -304,7 +304,7 @@ struct psc_getdents
 struct psc_bind_device
 {
   UW id;
-  UB name[MAX_DEVICE_NAME + 1];
+  UB *name;
   ID port;
   UW size;
 };
