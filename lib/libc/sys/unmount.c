@@ -27,12 +27,12 @@ For more information, please refer to <http://unlicense.org/>
 #include "sys.h"
 
 
-int kill(pid_t pid, int sig)
+int unmount(const char *dir, int flags)
 {
 	struct posix_request request;
 
-	request.args.arg1 = (W)pid;
-	request.args.arg2 = (W)sig;
+	request.args.arg1 = (W)dir;
+	request.args.arg2 = (W)flags;
 
-	return _call_fs(PSC_KILL, &request);
+	return _call_fs(PSC_UNMOUNT, &request);
 }

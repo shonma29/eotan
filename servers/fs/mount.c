@@ -31,11 +31,8 @@ Version 2, June 1991
 /* psc_mount_f - ファイルシステムをマウントする
  *
  * 引数:
- *	devnamelen	マウントするデバイス名の長さ
  *	devname		マウントするデバイス名
- *	dirnamelen	マウントするディレクトリ名の長さ
  *	dirname		マウントするディレクトリ名
- *	fstypelen	ファイルシステムのタイプ名の長さ
  *	fstype		ファイルシステムのタイプ名
  *	option		オプション
  *
@@ -56,7 +53,7 @@ void psc_mount_f(RDVNO rdvno, struct posix_request *req)
     ID caller = get_rdv_tid(rdvno);
 
     error_no = kcall->region_copy(caller,
-		     req->param.par_mount.devname,
+		     (UB*)(req->args.arg4),
 		     sizeof(devname) - 1, devname);
     if (error_no < 0) {
 	/* デバイスファイルのパス名のコピーエラー */
@@ -69,7 +66,7 @@ void psc_mount_f(RDVNO rdvno, struct posix_request *req)
     }
     devname[MAX_NAMELEN] = '\0';
     error_no = kcall->region_copy(caller,
-		     req->param.par_mount.dirname,
+		     (UB*)(req->args.arg2),
 		     sizeof(dirname) - 1, dirname);
 
     if (error_no < 0) {
@@ -84,7 +81,7 @@ void psc_mount_f(RDVNO rdvno, struct posix_request *req)
     dirname[MAX_NAMELEN] = '\0';
 
     error_no = kcall->region_copy(caller,
-		     req->param.par_mount.fstype,
+		     (UB*)(req->args.arg1),
 		     sizeof(fstype) - 1, fstype);
     if (error_no < 0) {
 	/* ファイルシステムタイプのコピーエラー */
@@ -165,7 +162,7 @@ void psc_mount_f(RDVNO rdvno, struct posix_request *req)
     }
 
     error_no =
-	mount_fs(device, mountpoint, req->param.par_mount.option, fstype);
+	mount_fs(device, mountpoint, req->args.arg3, fstype);
 
     if (error_no == EOK) {
 	put_response(rdvno, EOK, 0, 0);
@@ -178,7 +175,7 @@ void psc_mount_f(RDVNO rdvno, struct posix_request *req)
     fs_close_file(mountpoint);
 }
 
-void psc_umount_f(RDVNO rdvno, struct posix_request *req)
+void psc_unmount_f(RDVNO rdvno, struct posix_request *req)
 {
     W error_no;
     UW device = 0;
@@ -189,7 +186,7 @@ void psc_umount_f(RDVNO rdvno, struct posix_request *req)
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     error_no = kcall->region_copy(get_rdv_tid(rdvno),
-		     req->param.par_umount.dirname,
+		     (UB*)(req->args.arg1),
 		     sizeof(dirname) - 1, dirname);
 
     if (error_no < 0) {
@@ -248,7 +245,7 @@ void psc_umount_f(RDVNO rdvno, struct posix_request *req)
 
     fs_close_file(umpoint);
     if (error_no == EOK) {
-	error_no = umount_fs(device);
+	error_no = unmount_fs(device);
     }
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);

@@ -35,7 +35,7 @@ void psc_close_f(RDVNO rdvno, struct posix_request *req)
     struct file *fp;
     W err;
 
-    err = proc_get_file(req->procid, req->param.par_close.fileid, &fp);
+    err = proc_get_file(req->procid, req->args.arg1, &fp);
     if (err) {
 	put_response(rdvno, err, -1, 0);
 	return;
@@ -68,7 +68,7 @@ psc_dup_f (RDVNO rdvno, struct posix_request *req)
 
   /* プロセスからファイル構造体へのポインタを取り出す
    */
-  error_no = proc_get_file (req->procid, req->param.par_dup.fileid, &fp);
+  error_no = proc_get_file (req->procid, req->args.arg1, &fp);
   if (error_no)
     {
       put_response (rdvno, error_no, -1, 0);
@@ -113,7 +113,7 @@ psc_dup2_f (RDVNO rdvno, struct posix_request *req)
 
   /* プロセスからファイル構造体へのポインタを取り出す
    */
-  error_no = proc_get_file (req->procid, req->param.par_dup2.fileid1, &fp);
+  error_no = proc_get_file (req->procid, req->args.arg1, &fp);
   if (error_no)
     {
       put_response (rdvno, error_no, -1, 0);
@@ -130,7 +130,7 @@ psc_dup2_f (RDVNO rdvno, struct posix_request *req)
       return;
     }
 
-  error_no = proc_get_file (req->procid, req->param.par_dup2.fileid2, &fp2);
+  error_no = proc_get_file (req->procid, req->args.arg2, &fp2);
   if (error_no) {
     put_response (rdvno, error_no, -1, 0);
     return;
@@ -145,7 +145,7 @@ psc_dup2_f (RDVNO rdvno, struct posix_request *req)
     fp2->f_inode = NULL;
   }
   fp->f_inode->i_refcount++;
-  error_no = proc_set_file(req->procid, req->param.par_dup2.fileid2,
+  error_no = proc_set_file(req->procid, req->args.arg2,
 			fp->f_omode, fp->f_inode);
   if (error_no)
     {
@@ -153,7 +153,7 @@ psc_dup2_f (RDVNO rdvno, struct posix_request *req)
       return;
     }
 
-  put_response (rdvno, EOK, req->param.par_dup2.fileid2, 0);
+  put_response (rdvno, EOK, req->args.arg2, 0);
 }  
 
 /* psc_fcntl_f - ファイルに対して特殊な操作を行う。
@@ -184,24 +184,25 @@ void psc_lseek_f(RDVNO rdvno, struct posix_request *req)
 {
     struct file *fp;
     W error_no;
+    off_t *offp = (off_t*)&(req->args.arg2);
 
-    error_no = proc_get_file(req->procid, req->param.par_lseek.fileid, &fp);
+    error_no = proc_get_file(req->procid, req->args.arg1, &fp);
     if (error_no) {
 	put_response(rdvno, error_no, -1, error_no);
 	return;
     }
 
-    switch (req->param.par_lseek.mode) {
+    switch (req->args.arg4) {
     case SEEK_SET:
-	fp->f_offset = req->param.par_lseek.offset;
+	fp->f_offset = *offp;
 	break;
 
     case SEEK_CUR:
-	fp->f_offset += req->param.par_lseek.offset;
+	fp->f_offset += *offp;
 	break;
 
     case SEEK_END:
-	fp->f_offset = fp->f_inode->i_size + req->param.par_lseek.offset;
+	fp->f_offset = fp->f_inode->i_size + *offp;
 	break;
 
     default:
@@ -219,7 +220,7 @@ void psc_lseek_f(RDVNO rdvno, struct posix_request *req)
       }
     }
 
-    put_response(rdvno, EOK, fp->f_offset, 0);
+    put_response_long(rdvno, EOK, fp->f_offset);
 }
 
 /* psc_open_f - ファイルのオープン
@@ -324,7 +325,7 @@ void psc_read_f(RDVNO rdvno, struct posix_request *req)
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
     ID caller = get_rdv_tid(rdvno);
 
-    error_no = proc_get_file(req->procid, req->param.par_read.fileid, &fp);
+    error_no = proc_get_file(req->procid, req->args.arg1, &fp);
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
 	return;
@@ -352,11 +353,11 @@ void psc_read_f(RDVNO rdvno, struct posix_request *req)
 	    /* ブロックデバイスだった */
 	    if (fp->f_offset >= fp->f_inode->i_size) {
 		error_no = EOK;
-		req->param.par_read.length = 0;
+		req->args.arg3 = 0;
 	    }
 	}
 
-	rest_length = req->param.par_read.length;
+	rest_length = req->args.arg3;
 	for (i = 0; rest_length > 0;
 	    rest_length -= rlength, i += rlength) {
 	    /* MAX_BODY_SIZE 毎にバッファに読み込み */
@@ -370,7 +371,7 @@ void psc_read_f(RDVNO rdvno, struct posix_request *req)
 		break;
 
 	    /* 呼び出したプロセスのバッファへの書き込み */
-	    error_no = kcall->region_put(caller, req->param.par_read.buf + i,
+	    error_no = kcall->region_put(caller, (UB*)(req->args.arg2) + i,
 			rlength, buf);
 	    if (error_no || (rlength < len)) {
 		i += rlength;
@@ -389,15 +390,15 @@ void psc_read_f(RDVNO rdvno, struct posix_request *req)
 #ifdef DEBUG
     dbg_printf
 	("fs: read: inode = 0x%x, offset = %d, buf = 0x%x, length = %d\n",
-	 fp->f_inode, fp->f_offset, req->param.par_read.buf,
-	 req->param.par_read.length);
+	 fp->f_inode, fp->f_offset, req->args.arg2,
+	 req->args.arg3);
 #endif
 
     if (fp->f_offset >= fp->f_inode->i_size) {
 	put_response(rdvno, EOK, 0, 0);
 	return;
     }
-    for (i = 0, rest_length = req->param.par_read.length;
+    for (i = 0, rest_length = req->args.arg3;
 	 rest_length > 0; rest_length -= rlength, i += rlength) {
 	/* MAX_BODY_SIZE 毎にファイルに読み込み */
 	len = rest_length > MAX_BODY_SIZE ? MAX_BODY_SIZE : rest_length;
@@ -408,7 +409,7 @@ void psc_read_f(RDVNO rdvno, struct posix_request *req)
 	}
 
 	/* 呼び出したプロセスのバッファへの書き込み */
-	error_no = kcall->region_put(caller, req->param.par_read.buf + i,
+	error_no = kcall->region_put(caller, (UB*)(req->args.arg2) + i,
 			 rlength, buf);
 	if (error_no || (rlength < len)) {
 	    i += rlength;
@@ -436,7 +437,7 @@ void psc_write_f(RDVNO rdvno, struct posix_request *req)
 #endif
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    error_no = proc_get_file(req->procid, req->param.par_write.fileid, &fp);
+    error_no = proc_get_file(req->procid, req->args.arg1, &fp);
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
 	return;
@@ -461,8 +462,8 @@ void psc_write_f(RDVNO rdvno, struct posix_request *req)
 #ifdef debug
     dbg_printf
 	("fs: write: inode = 0x%x, offset = %d, buf = 0x%x, length = %d\n",
-	 fp->f_inode, fp->f_offset, req->param.par_write.buf,
-	 req->param.par_read.length);
+	 fp->f_inode, fp->f_offset, req->args.arg2,
+	 req->args.arg3);
 #endif
     if ((! (fp->f_inode->i_mode & S_IFCHR)) &&
 	(fp->f_offset > fp->f_inode->i_size)) {
@@ -484,18 +485,18 @@ void psc_write_f(RDVNO rdvno, struct posix_request *req)
 	return;
     }
 
-    for (i = 0, rest_length = req->param.par_write.length;
+    for (i = 0, rest_length = req->args.arg3;
 	 rest_length > 0; rest_length -= rlength, i += rlength) {
 #ifdef DEBUG
 	dbg_printf
 	    ("fs: vget_reg (caller = %d, src addr = 0x%x, size = %d, dst = 0x%x\n",
-	     req->caller, req->param.par_write.buf + i,
+	     req->caller, req->args.arg2 + i,
 	     rest_length > MAX_BODY_SIZE ? MAX_BODY_SIZE : rest_length,
 	     buf);
 #endif
 	len = rest_length > MAX_BODY_SIZE ? MAX_BODY_SIZE : rest_length;
 	error_no =
-	    kcall->region_get(get_rdv_tid(rdvno), req->param.par_write.buf + i, len, buf);
+	    kcall->region_get(get_rdv_tid(rdvno), (UB*)(req->args.arg2) + i, len, buf);
 	if (error_no)
 	    break;
 #ifdef DEBUG

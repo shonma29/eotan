@@ -22,6 +22,7 @@ Version 2, June 1991
 #define __SYS_SYSCALL_H__	1
 
 #include <core/types.h>
+#include <sys/packets.h>
 
 /* =================== POSIX システムコール番号の定義 =============== */
 #define PSC_CHDIR        0
@@ -44,8 +45,8 @@ Version 2, June 1991
 #define PSC_WRITE        17
 #define PSC_GETDENTS	 18
 #define PSC_MOUNT        19
-#define PSC_STATVFS       20
-#define PSC_UMOUNT       21
+#define PSC_STATVFS      20
+#define PSC_UNMOUNT      21
 
 /* =================== SIGNAL 関係 =============== */
 #define PSC_KILL         22
@@ -63,44 +64,6 @@ Version 2, June 1991
 struct psc_chdir
 {
   B		*path;
-};
-
-
-/* psc_chmod -
- *
- */
-struct psc_chmod
-{
-  B		*path;
-  W		mode;
-};
-
-
-/* psc_close -
- *
- */
-struct psc_close
-{
-  W		fileid;
-};
-
-
-/* psc_dup -
- *
- */
-struct psc_dup
-{
-  W		fileid;
-};
-
-
-/* psc_dup2 -
- *
- */
-struct psc_dup2
-{
-  W		fileid1;
-  W		fileid2;
 };
 
 
@@ -146,47 +109,6 @@ struct psc_fork
 
 
 
-/* psc_kill -
- *
- */
-struct psc_kill
-{
-  W		pid;
-  W		signal;
-};
-
-
-/* psc_link -
- *
- */
-struct psc_link
-{
-      B *src;
-      B *dst;
-};
-
-
-/* psc_lseek -
- *
- */
-struct psc_lseek
-{
-  W		fileid;
-  W		offset;
-  W		mode;
-};
-
-
-/* psc_mkdir -
- *
- */
-struct psc_mkdir
-{
-  B		*path;
-  W		mode;
-};
-
-
 /* psc_open -
  *
  */
@@ -195,45 +117,6 @@ struct psc_open
   B		*path;
   W		oflag;
   W		mode;	/* if oflag is O_CREATE */
-};
-
-
-/* psc_read -
- *
- */
-struct psc_read
-{
-  W	fileid;
-  B	*buf;
-  W	length;
-};
-
-
-/* psc_rmdir -
- *
- */
-struct psc_rmdir
-{
-  B		*path;
-};
-
-
-/* psc_fstat -
- *
- */
-struct psc_fstat
-{
-  W		fileid;
-  struct stat	*st;
-};
-
-
-/* psc_unlink -
- *
- */
-struct psc_unlink
-{
-  B		*path;
 };
 
 
@@ -248,38 +131,6 @@ struct psc_waitpid
 };
 
 
-/* psc_write -
- *
- */
-struct psc_write
-{
-  W	fileid;
-  B	*buf;
-  W	length;
-};
-
-
-/* psc_mount -
- *
- */
-struct psc_mount
-{
-  B	*devname;		/* マウントするデバイス名の長さ */
-  B	*dirname;		/* マウントするディレクトリ名 */
-  W	option;			/* オプション */
-  B	*fstype;		/* ファイルシステムのタイプ */
-};
-
-
-/* psc_umount -
- *
- */
-struct psc_umount
-{
-  B	*dirname;
-};
-
-
 /* psc_statvfs -
  *
  */
@@ -289,16 +140,6 @@ struct psc_statvfs
   struct statvfs	*fsp;
 };
 
-
-/* psc_getdents -
- *
- */
-struct psc_getdents
-{
-  UW fileid;
-  VP buf;
-  UW length;
-};
 
 #define MAX_DEVICE_NAME (31)
 struct psc_bind_device
@@ -317,32 +158,16 @@ struct posix_request
 {
   ID	procid;			/* 呼び出し元のプロセス ID */
   UW	operation;		/* 要求番号(システムコールに対応)	*/
-
+  struct psc_args args;
   union {
     struct psc_chdir		par_chdir;
-    struct psc_chmod		par_chmod;
-    struct psc_close		par_close;
-    struct psc_dup		par_dup;
-    struct psc_dup2		par_dup2;
     struct psc_execve		par_execve;
     struct psc_exit		par_exit;
     struct psc_fcntl		par_fcntl;
     struct psc_fork		par_fork;
-    struct psc_kill		par_kill;
-    struct psc_link		par_link;
-    struct psc_lseek		par_lseek;
-    struct psc_mkdir		par_mkdir;
     struct psc_open		par_open;
-    struct psc_read		par_read;
-    struct psc_rmdir		par_rmdir;
-    struct psc_fstat  		par_fstat;
-    struct psc_unlink     	par_unlink;
     struct psc_waitpid   	par_waitpid;
-    struct psc_write 		par_write;
-    struct psc_mount		par_mount;
-    struct psc_umount		par_umount;
     struct psc_statvfs		par_statvfs;
-    struct psc_getdents		par_getdents;
     struct psc_bind_device par_bind_device;
   } param;
 };

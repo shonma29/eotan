@@ -217,7 +217,7 @@ void psc_kill_f(RDVNO rdvno, struct posix_request *req)
 
     /* req->caller が task 1 の場合は，返事のメッセージを送らない */
 
-    mypid = req->param.par_kill.pid;
+    mypid = req->args.arg1;
     error_no = proc_get_procp(mypid, &myprocp);
     if (error_no) {
 	put_response(rdvno, ESRCH, -1, 0);

@@ -1,3 +1,5 @@
+#ifndef _SYS_PACKETS_H_
+#define _SYS_PACKETS_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,15 +26,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "sys.h"
+#include <core/types.h>
 
-
-int kill(pid_t pid, int sig)
+struct psc_args
 {
-	struct posix_request request;
+	W arg1;
+	W arg2;
+	W arg3;
+	W arg4;
+	W arg5;
+};
 
-	request.args.arg1 = (W)pid;
-	request.args.arg2 = (W)sig;
-
-	return _call_fs(PSC_KILL, &request);
-}
+#endif

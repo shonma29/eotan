@@ -1,25 +1,42 @@
 /*
+This is free and unencumbered software released into the public domain.
 
-  GNU GENERAL PUBLIC LICENSE
-  Version 2, June 1991
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
 
-  (C) 2002, Tomohide Naniwa
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <http://unlicense.org/>
 */
-
 #include "sys.h"
 
 
-/* mount */
-int
-mount (char *special_file, char *dir, int rwflag, char *fstype)
+int mount(const char *type, const char *dir, int flags, void *data,
+		size_t data_len)
 {
-  struct posix_request	req;
+	struct posix_request request;
 
-  req.param.par_mount.devname = special_file;
-  req.param.par_mount.dirname = dir;
-  req.param.par_mount.fstype = fstype;
-  req.param.par_mount.option = rwflag;
+	request.args.arg1 = (W)type;
+	request.args.arg2 = (W)dir;
+	request.args.arg3 = (W)flags;
+	request.args.arg4 = (W)data;
+	request.args.arg5 = (W)data_len;
 
-  return _call_fs(PSC_MOUNT, &req);
+	return _call_fs(PSC_MOUNT, &request);
 }

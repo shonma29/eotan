@@ -442,10 +442,10 @@ mount_fs(struct inode * deviceip,
 }
 
 
-/* umount_fs
+/* unmount_fs
  *
  */
-W umount_fs(UW device)
+W unmount_fs(UW device)
 {
     struct fs *fsp;
     struct inode *ip;
@@ -476,7 +476,7 @@ W umount_fs(UW device)
     }
 
     /* ファイルシステム情報を解放する */
-    fsp->ops.umount(fsp);
+    fsp->ops.unmount(fsp);
 
     /* マウントポイントを解放する */
     fsp->mountpoint->coverfile = NULL;

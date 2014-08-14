@@ -55,7 +55,7 @@ extern void	psc_unlink_f (RDVNO rdvno, struct posix_request *);
 extern void	psc_waitpid_f (RDVNO rdvno, struct posix_request *);
 extern void	psc_write_f (RDVNO rdvno, struct posix_request *);
 extern void	psc_mount_f (RDVNO rdvno, struct posix_request *);
-extern void	psc_umount_f (RDVNO rdvno, struct posix_request *);
+extern void	psc_unmount_f (RDVNO rdvno, struct posix_request *);
 extern void	psc_statvfs_f (RDVNO rdvno, struct posix_request *);
 extern void	psc_getdents_f (RDVNO rdvno, struct posix_request *);
 extern void psc_bind_device_f(RDVNO rdvno, struct posix_request *);
@@ -90,7 +90,7 @@ static struct posix_syscall	syscall_table[] =
   { s("getdents",		PSC_GETDENTS)		psc_getdents_f },
   { s("mount",		PSC_MOUNT)		psc_mount_f },
   { s("statvfs",		PSC_STATVFS)		psc_statvfs_f },
-  { s("umount",		PSC_UMOUNT)		psc_umount_f },
+  { s("unmount",		PSC_UNMOUNT)		psc_unmount_f },
   { s("kill",		PSC_KILL)		psc_kill_f },
   { s("dup2",		PSC_DUP2)		psc_dup2_f },
   { s("bind_device", PSC_BIND_DEVICE) psc_bind_device_f },

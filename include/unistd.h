@@ -26,7 +26,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-
 #include <stddef.h>
 #include <stdint.h>
 #include <time.h>
@@ -40,42 +39,30 @@ For more information, please refer to <http://unlicense.org/>
 #define STDOUT_FILENO (1)
 #define STDERR_FILENO (2)
 
-
-extern int chdir(char *path);
-extern int access(const char *path, int mode);
-extern void *sbrk(intptr_t increment);
-extern int chmod(char *path, mode_t mode);
-extern int chown(char *path, uid_t owner, gid_t group);
-extern int close(int fd);
-extern int dup(int fd);
-extern int dup2(int fd, int fd2);
+extern int chdir(char *);
+extern int access(const char *, int);
+extern void *sbrk(intptr_t);
+extern int close(int);
+extern int dup(int);
+extern int dup2(int, int);
 extern int execve(char *name, char *argv[], char *envp[]);
 extern void _exit(int status) __attribute__ ((noreturn));
 extern int fcntl(int fileid, int cmd, ...);
-extern int fork();
-extern int fstat(int fd, struct stat *st);
-extern int getdents(int fd, char *buf, size_t nbytes);
+extern int fork(void);
 extern char *getcwd(char *buf, int size);
 extern gid_t getgid(void);
 extern pid_t getpid(void);
 extern pid_t getppid(void);
 extern uid_t getuid(void);
-extern int kill(int pid);
-extern int link(const char *src, const char *dst);
-extern int lseek(int fd, int offset, int mode);
-extern int misc(int cmd, int len, void *argp);
-extern int mkdir(char *path, mode_t mode);
-extern int mntroot(int devnum);
-extern int mount(char *special_file, char *dir, int rwflag, char *fstype);
+extern int link(const char *, const char *);
+extern off_t lseek(int, off_t, int);
 extern int open(const char *path, int oflag, ...);
-extern int read(int fd, void *buf, int size);
-extern int rmdir(const char *path);
-extern int sleep(int second);
-extern int clock_gettime(clockid_t clk_id, struct timespec *tp);
-extern int umount(char *special_file);
-extern int unlink(const char *path);
-extern int utime(char *path, struct utimbuf *buf);
-extern int waitpid(pid_t pid, int *status, int option);
-extern int write(int fd, void *buf, int length);
+extern ssize_t read(int, void *, size_t);
+extern int rmdir(const char *);
+extern int sleep(int);
+extern int clock_gettime(clockid_t, struct timespec *);
+extern int unlink(const char *);
+extern int waitpid(pid_t, int *, int);
+extern size_t write(int, const void *, size_t);
 
 #endif

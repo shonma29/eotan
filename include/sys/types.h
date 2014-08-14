@@ -37,7 +37,7 @@ typedef unsigned int mode_t;
 typedef unsigned int nlink_t;
 typedef unsigned int uid_t;
 typedef unsigned int gid_t;
-typedef int off_t;
+typedef int64_t off_t;
 typedef unsigned int blksize_t;
 typedef int blkcnt_t;
 
@@ -55,5 +55,7 @@ typedef bool boolean_t;
 
 typedef uint64_t fsblkcnt_t;
 typedef uint64_t fsfilcnt_t;
+
+typedef int ssize_t;
 
 #endif

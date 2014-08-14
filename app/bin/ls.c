@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <dirent.h>
 #include <fcntl.h>
 #include <stdbool.h>
 #include <stdio.h>

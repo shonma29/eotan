@@ -38,7 +38,7 @@ void psc_chdir_f(RDVNO rdvno, struct posix_request *req)
     W err;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    if (kcall->region_copy(get_rdv_tid(rdvno), req->param.par_chmod.path,
+    if (kcall->region_copy(get_rdv_tid(rdvno), req->param.par_chdir.path,
 		sizeof(path) - 1, path) < 0) {
 	put_response(rdvno, EINVAL, -1, 0);
 	return;

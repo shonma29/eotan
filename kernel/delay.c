@@ -129,7 +129,8 @@ static ER kill(const int pid)
 	//TODO define special process id
 	req.procid = -1;
 	req.operation = PSC_KILL;
-	req.param.par_kill.pid = pid;
+	req.args.arg1 = (W)pid;
+	req.args.arg2 = 9;
 
 	rsize = port_call(PORT_FS, &req, sizeof(struct posix_request));
 	return (rsize < 0)? rsize:E_OK;

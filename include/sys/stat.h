@@ -26,7 +26,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-
 #include <sys/types.h>
 
 struct stat {
@@ -70,5 +69,9 @@ struct stat {
 #define S_IROTH (0004)
 #define S_IWOTH (0002)
 #define S_IXOTH (0001)
+
+extern int chmod(const char *, mode_t);
+extern int fstat(int, struct stat *);
+extern int mkdir(const char *, mode_t);
 
 #endif

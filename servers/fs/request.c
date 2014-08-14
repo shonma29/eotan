@@ -113,6 +113,21 @@ put_response(RDVNO rdvno, W error_no, W status, W ret1)
     return syserr? ECONNREFUSED:EOK;
 }
 
+W
+put_response_long(RDVNO rdvno, W error_no, D status)
+{
+    static struct posix_response res;
+    ER syserr;
+    D *dp = (D*)&(res.status);
+    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
+
+    res.error_no = error_no;
+    *dp = status;
+
+    /* 要求元に送信する */
+    syserr = kcall->port_reply(rdvno, &res, sizeof(res));
+    return syserr? ECONNREFUSED:EOK;
+}
 
 /* エラーになったことをリクエストの送り元に返す
  *

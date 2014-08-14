@@ -1,3 +1,5 @@
+#ifndef _SIGNAL_H_
+#define _SIGNAL_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,15 +26,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "sys.h"
+#include <sys/types.h>
 
+extern int kill(pid_t, int);
 
-int kill(pid_t pid, int sig)
-{
-	struct posix_request request;
-
-	request.args.arg1 = (W)pid;
-	request.args.arg2 = (W)sig;
-
-	return _call_fs(PSC_KILL, &request);
-}
+#endif

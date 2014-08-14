@@ -40,7 +40,7 @@ void psc_chmod_f(RDVNO rdvno, struct posix_request *req)
     W err;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    if (kcall->region_copy(get_rdv_tid(rdvno), req->param.par_chmod.path,
+    if (kcall->region_copy(get_rdv_tid(rdvno), (UB*)(req->args.arg1),
 		 sizeof(path) - 1, path) < 0) {
 	put_response(rdvno, EINVAL, -1, 0);
 	return;
@@ -68,7 +68,7 @@ void psc_chmod_f(RDVNO rdvno, struct posix_request *req)
 	return;
     }
 
-    ipp->i_mode = (ipp->i_mode & S_IFMT) | req->param.par_chmod.mode;
+    ipp->i_mode = (ipp->i_mode & S_IFMT) | req->args.arg2;
     OPS(ipp).wstat(ipp);
     ipp->i_dirty = 1;
 
@@ -92,7 +92,7 @@ void psc_fstat_f(RDVNO rdvno, struct posix_request *req)
     struct stat st;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    error_no = proc_get_file(req->procid, req->param.par_fstat.fileid, &fp);
+    error_no = proc_get_file(req->procid, req->args.arg1, &fp);
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
 	return;
@@ -112,7 +112,7 @@ void psc_fstat_f(RDVNO rdvno, struct posix_request *req)
     fp->f_inode->i_fs->ops.stat(fp->f_inode, &st);
 
     error_no =
-	kcall->region_put(get_rdv_tid(rdvno), req->param.par_fstat.st, sizeof(struct stat),
+	kcall->region_put(get_rdv_tid(rdvno), (UB*)(req->args.arg2), sizeof(struct stat),
 		 &st);
     if (error_no) {
 	put_response(rdvno, EINVAL, 0, 0);

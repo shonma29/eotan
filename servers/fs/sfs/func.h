@@ -74,6 +74,6 @@ extern W	sfs_i_rmdir (struct inode *parent, char *fname,
 /* fs.c */
 extern W sfs_mount (ID device, struct fs *rootfsp, struct inode *rootfile);
 extern W sfs_syncfs (struct fs *fsp, W umflag);
-extern W sfs_umount(struct fs * rootfsp);
+extern W sfs_unmount(struct fs * rootfsp);
 
 #endif /* __SFS_FUNC_H__ */

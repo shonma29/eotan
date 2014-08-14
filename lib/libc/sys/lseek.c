@@ -1,34 +1,57 @@
 /*
+This is free and unencumbered software released into the public domain.
 
-B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
 
-GNU GENERAL PUBLIC LICENSE
-Version 2, June 1991
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
 
-(C) B-Free Project.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
 
+For more information, please refer to <http://unlicense.org/>
 */
-/* POSIX Library misc function.
-*/
-
-/* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_lseek.c,v 1.1 1997/08/31 13:25:23 night Exp $  */
-
 #include "sys.h"
 
 
-/* lseek 
- *
- */
-int
-lseek (int fd, int offset, int mode)
+off_t lseek(int fildes, off_t offset, int whence)
 {
-  struct posix_request	req;
+	struct posix_request request;
+	struct posix_response *response;
+	thread_local_t *local = _get_local();
+	off_t *offp;
+	ER result;
 
-  req.param.par_lseek.fileid = fd;
-  req.param.par_lseek.offset = offset;
-  req.param.par_lseek.mode = mode;
+	request.args.arg1 = (W)fildes;
+	offp = (off_t*)&(request.args.arg2);
+	*offp = offset;
+	request.args.arg4= (W)whence;
 
-  return _call_fs(PSC_LSEEK, &req);
+	result = _make_connection(PSC_LSEEK, &request);
+	if (result) {
+		local->error_no = result;
+		return -1;
+	}
+
+	response = (struct posix_response*)&request;
+	if (response->error_no) {
+		local->error_no = response->error_no;
+		return -1;
+	}
+
+	offp = (off_t*)&(response->status);
+	return *offp;
 }
-
-

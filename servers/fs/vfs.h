@@ -104,7 +104,7 @@ Version 2, June 1991
 
 struct fsops {
     W(*mount) ();
-    W(*umount) ();
+    W(*unmount) ();
     W(*statvfs) ();
     W(*lookup) ();
     W(*create) ();
@@ -169,7 +169,7 @@ struct file
 {
   struct inode		*f_inode;
   W			f_flag;
-  W			f_offset;	/* current offset */
+  off_t			f_offset;	/* current offset */
   W			f_omode;
 };
 
@@ -211,7 +211,7 @@ extern W fs_make_dir(struct inode * startip,
 extern W mount_root(ID device, W fstype, W option);
 extern W mount_fs(struct inode *device, struct inode *mountpoint, W option,
 		  char *fstype);
-extern W umount_fs(UW device);
+extern W unmount_fs(UW device);
 
 extern struct inode *fs_check_inode(struct fs *fsp, W index);
 extern W fs_register_inode(struct inode *ip);

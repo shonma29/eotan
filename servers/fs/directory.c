@@ -29,7 +29,7 @@ void psc_getdents_f(RDVNO rdvno, struct posix_request *req)
     W len, flen;
 
     error_no =
-	proc_get_file(req->procid, req->param.par_getdents.fileid, &fp);
+	proc_get_file(req->procid, req->args.arg1, &fp);
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
 	return;
@@ -56,8 +56,8 @@ void psc_getdents_f(RDVNO rdvno, struct posix_request *req)
     }
 
     error_no = fs_getdents(fp->f_inode, get_rdv_tid(rdvno), fp->f_offset,
-			req->param.par_getdents.buf,
-			req->param.par_getdents.length, &len, &flen);
+			(UB*)(req->args.arg2),
+			req->args.arg3, &len, &flen);
 
     if (error_no) {
 	put_response(rdvno, error_no, -1, 0);
@@ -75,7 +75,7 @@ void psc_link_f(RDVNO rdvno, struct posix_request *req)
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
     ID caller = get_rdv_tid(rdvno);
 
-    error_no = kcall->region_copy(caller, req->param.par_link.src,
+    error_no = kcall->region_copy(caller, (UB*)(req->args.arg1),
 		     sizeof(src) - 1, src);
     if (error_no < 0) {
 	/* パス名のコピーエラー */
@@ -87,7 +87,7 @@ void psc_link_f(RDVNO rdvno, struct posix_request *req)
 	return;
     }
     src[MAX_NAMELEN] = '\0';
-    error_no = kcall->region_copy(caller, req->param.par_link.dst,
+    error_no = kcall->region_copy(caller, (UB*)(req->args.arg2),
 		     sizeof(dst) - 1, dst);
     if (error_no < 0) {
 	/* パス名のコピーエラー */
@@ -138,7 +138,7 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
       return;
     }
 
-  error_no = kcall->region_copy(get_rdv_tid(rdvno), req->param.par_mkdir.path,
+  error_no = kcall->region_copy(get_rdv_tid(rdvno), (UB*)(req->args.arg1),
 		    sizeof(pathname) - 1, pathname);
   if (error_no < 0)
     {
@@ -173,7 +173,7 @@ psc_mkdir_f (RDVNO rdvno, struct posix_request *req)
     }
 
   error_no = fs_make_dir (startip, pathname,
-		       req->param.par_mkdir.mode,
+		       req->args.arg2,
 		       &acc,
 		       &newip);
   if (error_no)
@@ -198,7 +198,7 @@ psc_rmdir_f (RDVNO rdvno, struct posix_request *req)
   struct permission	acc;
   kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-  error_no = kcall->region_copy(get_rdv_tid(rdvno), req->param.par_rmdir.path,
+  error_no = kcall->region_copy(get_rdv_tid(rdvno), (UB*)(req->args.arg1),
 		    sizeof(pathname) - 1, pathname);
   if (error_no < 0)
     {
@@ -268,7 +268,7 @@ psc_unlink_f (RDVNO rdvno, struct posix_request *req)
    * 中に入っている。
    */
   error_no = kcall->region_copy(get_rdv_tid(rdvno),
-		    req->param.par_unlink.path,
+		    (UB*)(req->args.arg1),
 		    sizeof(pathname) - 1,
 		    pathname);
   if (error_no < 0)

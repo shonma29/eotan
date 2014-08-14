@@ -43,6 +43,7 @@ char *testfile()
 	struct stat st2;
 	char buf[1];
 	char buf2[1];
+	off_t offset;
 
 	fd = open("/motd", O_RDWR);
 	assert_ne("open[0]", -1, fd);
@@ -75,7 +76,8 @@ char *testfile()
 	assert_eq("read[1]", 1, read(fd, buf, 1));
 	assert_eq("read[1] buf[0]", 'e', buf[0]);
 
-	assert_eq("lseek[1]", 1, lseek(fd, 1, SEEK_SET));
+	offset = lseek(fd, 1, SEEK_SET);
+	assert_t("lseek[1]", offset == 1LL);
 	assert_eq("read[1-2]", 1, read(fd, buf2, 1));
 	assert_eq("read[1-2] buf[0]", buf[0], buf2[0]);
 	assert_eq("read[1-2] cmp", buf[0], buf2[0]);
