@@ -191,7 +191,6 @@ psc_fork_f (RDVNO rdvno, struct posix_request *req)
     }
 
   child->proc_maintask = main_thread_id;
-  child->proc_signal_handler = 0;
 
   error_no = copy_local(procp, child);
   if (error_no)

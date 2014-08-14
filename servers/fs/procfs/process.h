@@ -111,7 +111,6 @@ struct proc
   enum proc_status	proc_status;		/* プロセスの状態を示す */
 
   ID			proc_maintask;		/* メインタスク */
-  ID			proc_signal_handler;	/* シグナルハンドラタスク */
 
   struct permission permission;
 
