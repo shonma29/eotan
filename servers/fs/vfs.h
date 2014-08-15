@@ -214,7 +214,6 @@ extern W unmount_fs(UW device);
 extern struct inode *fs_check_inode(struct fs *fsp, W index);
 extern W fs_register_inode(struct inode *ip);
 extern W init_special_file(void);
-extern W fs_convert_path(struct inode *ip, B * buf, W length);
 
 extern struct inode *rootfile;
 

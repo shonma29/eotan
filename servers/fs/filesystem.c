@@ -902,16 +902,6 @@ W fs_sync_file(struct inode * ip)
 }
 
 
-/* fs_convert_path -
- *
- */
-W fs_convert_path(struct inode * ip, B * buf, W length)
-{
-    return (ENOTSUP);
-}
-
-
-
 /* fs_statvfs -
  *
  */
