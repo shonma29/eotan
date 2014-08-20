@@ -114,6 +114,7 @@ Version 2, June 1991
 #include <string.h>
 #include <fcntl.h>
 #include <mpu/memory.h>
+#include <nerve/kcall.h>
 #include "../fs.h"
 #include "../vfs.h"
 #include "func.h"
@@ -222,7 +223,7 @@ sfs_i_create(struct inode * parent,
     struct sfs_dir dirent;
     W dirnentry;
     W i_index;
-    UW clock;
+    SYSTIM clock;
 
     /* 引数のチェック */
     newip = alloc_inode();
@@ -238,7 +239,7 @@ sfs_i_create(struct inode * parent,
     }
 
     /* 設定 */
-    clock = get_system_time();
+    ((kcall_t*)KCALL_ADDR)->time_get(&clock);
     newip->i_fs = parent->i_fs;
     newip->i_device = parent->i_device;
     newip->i_refcount = 1;
@@ -430,7 +431,9 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
      * サイズを更新して inode を書き込む。
      */
     if (filesize > ip->i_size) {
-        UW clock = get_system_time();
+        SYSTIM clock;
+
+        ((kcall_t*)KCALL_ADDR)->time_get(&clock);
 	ip->i_size = filesize;
 	ip->i_nblock =
 	    roundUp(filesize, fsp->private.sfs_fs.blksize) / fsp->private.sfs_fs.blksize;
@@ -459,7 +462,7 @@ W sfs_i_truncate(struct inode * ip, W newsize)
     W fd;
     struct fs *fsp;
     struct sfs_inode *sfs_ip;
-    UW clock;
+    SYSTIM clock;
 
     fd = ip->i_device;
     fsp = ip->i_fs;
@@ -515,7 +518,7 @@ W sfs_i_truncate(struct inode * ip, W newsize)
 
     ip->i_size = newsize;
     ip->i_nblock = nblock;
-    clock = get_system_time();
+    ((kcall_t*)KCALL_ADDR)->time_get(&clock);
     ip->i_private.sfs_inode.i_mtime = clock;
     ip->i_private.sfs_inode.i_ctime = clock;
     ip->i_dirty = 1;
@@ -559,7 +562,7 @@ W sfs_i_link(struct inode * parent, char *fname, struct inode * srcip,
 
     /* inode 情報の更新 */
     srcip->i_private.sfs_inode.i_nlink += 1;
-    srcip->i_private.sfs_inode.i_ctime = get_system_time();
+    ((kcall_t*)KCALL_ADDR)->time_get(&(srcip->i_private.sfs_inode.i_ctime));
     srcip->i_dirty = 1;
 
     /* 本来は inode の deallocate のところで行う処理のはず */
@@ -630,7 +633,7 @@ sfs_i_unlink(struct inode * parent, char *fname, struct permission * acc)
 	sfs_i_truncate(parent, i);
 
 	ip->i_private.sfs_inode.i_nlink--;
-	ip->i_private.sfs_inode.i_ctime = get_system_time();
+	((kcall_t*)KCALL_ADDR)->time_get(&(ip->i_private.sfs_inode.i_ctime));
 	ip->i_dirty = 1;
 	if (ip->i_private.sfs_inode.i_nlink <= 0) {
 	    sfs_i_truncate(ip, 0);
@@ -694,7 +697,7 @@ sfs_i_mkdir(struct inode * parent,
 	{0, "."},
 	{0, ".."}
     };
-    UW clock;
+    SYSTIM clock;
 
     /* 引数のチェック */
     newip = alloc_inode();
@@ -710,7 +713,7 @@ sfs_i_mkdir(struct inode * parent,
     }
 
     /* 設定 */
-    clock = get_system_time();
+    ((kcall_t*)KCALL_ADDR)->time_get(&clock);
     newip->i_fs = parent->i_fs;
     newip->i_device = parent->i_device;
     newip->i_refcount = 1;
@@ -763,7 +766,7 @@ W sfs_i_rmdir(struct inode * parent, char *fname, struct permission * acc)
     int i;
     struct inode *ip;
     W rsize, error_no;
-    UW clock;
+    SYSTIM clock;
 
     error_no = fs_lookup(parent, fname, O_RDWR, 0, acc, &ip);
     if (error_no) {
@@ -823,7 +826,7 @@ W sfs_i_rmdir(struct inode * parent, char *fname, struct permission * acc)
 	sfs_i_truncate(parent, i);
 
 	ip->i_private.sfs_inode.i_nlink--;
-	clock = get_system_time();
+	((kcall_t*)KCALL_ADDR)->time_get(&clock);
 	ip->i_private.sfs_inode.i_ctime = clock;
 	ip->i_dirty = 1;
 	if (ip->i_private.sfs_inode.i_nlink <= 1) {

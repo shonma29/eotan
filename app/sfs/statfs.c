@@ -1057,6 +1057,7 @@ int create_file(int fd,
     struct sfs_dir newdir_entry;
     int nentry;
     int dir_index;
+    time_t t;
 
     if (strlen(name) > SFS_MAXNAMELEN)
 	return (ENAMETOOLONG);
@@ -1089,7 +1090,13 @@ int create_file(int fd,
     newinode->i_nblock = 0;
     newinode->i_mode = mode | S_IFREG;
     newinode->i_uid = newinode->i_gid = 0;
-    newinode->i_atime = newinode->i_mtime = newinode->i_ctime = time(NULL);
+    t = time(NULL);
+    newinode->i_atime.sec = t;
+    newinode->i_atime.nsec = 0;
+    newinode->i_mtime.sec = t;
+    newinode->i_mtime.nsec = 0;
+    newinode->i_ctime.sec = t;
+    newinode->i_ctime.nsec = 0;
 #ifdef notdef
     bzero(newinode->i_direct, sizeof(newinode->i_direct));
     bzero(newinode->i_indirect, sizeof(newinode->i_indirect));

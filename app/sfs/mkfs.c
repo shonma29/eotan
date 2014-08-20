@@ -97,9 +97,9 @@ struct sfs_inode rootdir = {
     (S_IFDIR | 0777),	/* sfs_i_mode */
     0,				/* sfs_i_uid */
     0,				/* sfs_i_gid */
-    0,				/* sfs_i_atime (now time) */
-    0,				/* sfs_i_ctime (now time) */
-    0,				/* sfs_i_mtime (now time) */
+    {0, 0},				/* sfs_i_atime (now time) */
+    {0, 0},				/* sfs_i_ctime (now time) */
+    {0, 0},				/* sfs_i_mtime (now time) */
 };
 
 
@@ -116,9 +116,9 @@ struct sfs_inode lostfound = {
     (S_IFDIR | 0777),	/* sfs_i_mode */
     0,				/* sfs_i_uid */
     0,				/* sfs_i_gid */
-    0,				/* sfs_i_atime (now time) */
-    0,				/* sfs_i_ctime (now time) */
-    0,				/* sfs_i_mtime (now time) */
+    {0, 0},				/* sfs_i_atime (now time) */
+    {0, 0},				/* sfs_i_ctime (now time) */
+    {0, 0},				/* sfs_i_mtime (now time) */
 };
 
 void usage(void)
@@ -265,6 +265,7 @@ void write_inode(int formatfd)
     char *buf;
     int i;
     int error;
+    time_t t;
 
 #ifndef EOTA
     buf = alloca(blocksize);
@@ -280,9 +281,13 @@ void write_inode(int formatfd)
 	}
     }
 
-    lostfound.i_atime = rootdir.i_atime = time(NULL);
-    lostfound.i_mtime = rootdir.i_mtime = time(NULL);
-    lostfound.i_ctime = rootdir.i_ctime = time(NULL);
+    t = time(NULL);
+    lostfound.i_atime.sec = rootdir.i_atime.sec = t;
+    lostfound.i_atime.nsec = rootdir.i_atime.nsec = 0;
+    lostfound.i_mtime.sec = rootdir.i_mtime.sec = t;
+    lostfound.i_mtime.nsec = rootdir.i_mtime.nsec = 0;
+    lostfound.i_ctime.sec = rootdir.i_ctime.sec = t;
+    lostfound.i_ctime.nsec = rootdir.i_ctime.nsec = 0;
     rootdir.i_direct[0] =
 	(boot_block + super_block + bitmap_block + inode_block);
     lostfound.i_direct[0] =

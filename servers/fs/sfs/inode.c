@@ -65,6 +65,7 @@ Version 2, June 1991
  */
 
 #include <string.h>
+#include <nerve/kcall.h>
 #include "../fs.h"
 #include "func.h"
 
@@ -266,16 +267,16 @@ W sfs_stat(struct inode *ip, struct stat *st)
     st->st_rdev = ip->i_dev;
     st->st_blksize = ip->i_fs->private.sfs_fs.blksize;
     st->st_blocks = ROUNDUP(st->st_size, st->st_blksize) / st->st_blksize;
-    st->st_atime = ip->i_private.sfs_inode.i_atime;
-    st->st_mtime = ip->i_private.sfs_inode.i_mtime;
-    st->st_ctime = ip->i_private.sfs_inode.i_ctime;
+    st->st_atime = ip->i_private.sfs_inode.i_atime.sec;
+    st->st_mtime = ip->i_private.sfs_inode.i_mtime.sec;
+    st->st_ctime = ip->i_private.sfs_inode.i_ctime.sec;
 
     return (EOK);
 }
 
 W sfs_wstat(struct inode *ip)
 {
-    ip->i_private.sfs_inode.i_ctime = get_system_time();
+    ((kcall_t*)KCALL_ADDR)->time_get(&(ip->i_private.sfs_inode.i_ctime));
 
     return (EOK);
 }

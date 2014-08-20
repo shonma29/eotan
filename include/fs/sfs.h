@@ -65,7 +65,7 @@ Version 2, June 1991
 #define SFS_DIRECT_BLOCK_ENTRY		(70 - 62)
 
 #define SFS_INDIRECT_BLOCK_ENTRY	(20 - 4)
-#define SFS_DINDIRECT_BLOCK_ENTRY 	(26 + 62 + 4 + 1 + 1)
+#define SFS_DINDIRECT_BLOCK_ENTRY 	(26 + 62 + 4 + 1 + 1 - 6)
 #define SFS_TINDIRECT_BLOCK_ENTRY 	(1 - 1)
 #define SFS_INDIRECT_BLOCK		128
 
@@ -106,9 +106,9 @@ struct sfs_inode
   UW	i_uid;
   UW	i_gid;
 
-  UW	i_atime;
-  UW	i_ctime;
-  UW	i_mtime;
+  SYSTIM	i_atime;
+  SYSTIM	i_ctime;
+  SYSTIM	i_mtime;
 
   UW	i_direct[SFS_DIRECT_BLOCK_ENTRY];
   UW	i_indirect[SFS_INDIRECT_BLOCK_ENTRY];
