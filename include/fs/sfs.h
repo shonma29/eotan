@@ -62,6 +62,8 @@ Version 2, June 1991
 #define SFS_MAXNAMELEN			14
 #define SFS_VERSION_HI			2
 #define SFS_VERSION_LO			1
+#define SFS_BLOCK_SIZE 512
+
 #define SFS_DIRECT_BLOCK_ENTRY		(70 - 62)
 
 #define SFS_INDIRECT_BLOCK_ENTRY	(20 - 4)

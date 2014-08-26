@@ -15,11 +15,7 @@ Version 2, June 1991
 #ifndef __SFS_FUNC_H__
 #define __SFS_FUNC_H__	1
 
-/* common definitions */
-#define SFS_BLOCK_SIZE 512
-
 extern struct fsops	sfs_fsops;
-
 
 /* block.c */
 extern W sfs_alloc_block (W fd, struct fs *fsp);

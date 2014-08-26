@@ -254,7 +254,7 @@ int main(int ac, char **av)
 	usage();
 	return (0);
     }
-    fd = mount_fs(av[1], &sb, &rootdir_buf, RDWR);
+    fd = mount_fs(av[1], &sb, &rootdir_buf, O_RDWR);
     rootdirp = &rootdir_buf;
 
 #ifdef notdef
@@ -734,7 +734,7 @@ int mount_fs(char *path, struct sfs_superblock *sb, struct sfs_inode *root, int 
 {
     int fd;
 
-    if (mode == RDONLY) {
+    if (mode == O_RDONLY) {
 	fd = open(path, O_RDONLY);
     } else {
 	fd = open(path, O_RDWR);
@@ -744,7 +744,7 @@ int mount_fs(char *path, struct sfs_superblock *sb, struct sfs_inode *root, int 
 	fprintf(stderr, "Cannot open file.\n");
 	return (-1);
     }
-    if (lseek(fd, BLOCKSIZE, 0) < 0) {
+    if (lseek(fd, SFS_BLOCK_SIZE, 0) < 0) {
 	return (-1);
     }
     if (read(fd, sb, sizeof(struct sfs_superblock)) != sizeof(struct sfs_superblock)) {

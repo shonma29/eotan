@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 	return (-1);
     }
 
-    if (lseek(fd, BLOCKSIZE, 0) < 0) {
+    if (lseek(fd, SFS_BLOCK_SIZE, 0) < 0) {
 	return (-1);
     }
 

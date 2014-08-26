@@ -18,11 +18,6 @@ Version 2, June 1991
 #include "../../include/fs/sfs.h"
 
 
-#define BLOCKSIZE 512
-
-#define RDONLY			1
-#define RDWR			2
-
 #define ROUNDUP(x,align)	(((((int)x) + ((align) - 1))/(align))*(align))
 #define MIN(x,y)		((x > y) ? y : x)
 
