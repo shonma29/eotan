@@ -47,7 +47,7 @@ W write_device(ID device, B * buf, W start, W length, W * rlength)
     }
 
     packet.req.header.msgtyp = DEV_WRI;
-    packet.req.body.wri_req.dd = dd;
+    packet.req.header.dd = dd;
     packet.req.body.wri_req.start = start;
     packet.req.body.wri_req.size = length;
     memcpy(packet.req.body.wri_req.dt, buf, length);
@@ -84,7 +84,7 @@ W read_device(ID device, B * buf, W start, W length, W * rlength)
     *rlength = 0;
     for (rest_length = length; rest_length > 0;) {
 	packet.req.header.msgtyp = DEV_REA;
-	packet.req.body.rea_req.dd = dd;
+	packet.req.header.dd = dd;
 	packet.req.body.rea_req.start = start + (length - rest_length);
 	packet.req.body.rea_req.size
 	    = (sizeof(packet.res.body.rea_res.dt) > rest_length) ?

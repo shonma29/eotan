@@ -65,10 +65,7 @@ static int exec(int out) {
 	UB buf[DEV_BUF_SIZE + 2];
 
 	pk.req.header.msgtyp = DEV_REA;
-/*
-	pk.req.header.tskid = 0;
-*/
-	pk.req.body.rea_req.dd = DESC_KERNLOG;
+	pk.req.header.dd = DESC_KERNLOG;
 	pk.req.body.rea_req.start = 0;
 	pk.req.body.rea_req.size = DEV_BUF_SIZE;
 

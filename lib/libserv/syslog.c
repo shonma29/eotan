@@ -39,7 +39,7 @@ int syslog(const char *msg)
 	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	packet.req.header.msgtyp = DEV_WRI;
-	packet.req.body.wri_req.dd = DESC_SYSLOG;
+	packet.req.header.dd = DESC_SYSLOG;
 	packet.req.body.wri_req.start = 0;
 	packet.req.body.wri_req.size = len;
 	memcpy(packet.req.body.wri_req.dt, msg, len);

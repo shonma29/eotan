@@ -121,7 +121,6 @@ static UW execute(devmsg_t *message)
 
 	switch (req->header.msgtyp) {
 	case DEV_REA:
-		res->body.rea_res.dd = req->body.rea_req.dd;
 		res->body.rea_res.errcd = E_NOSPT;
 		res->body.rea_res.errinfo = 0;
 		res->body.rea_res.a_size = 0;
@@ -130,11 +129,10 @@ static UW execute(devmsg_t *message)
 		break;
 
 	case DEV_WRI:
-		result = write(req->body.wri_req.dd,
+		result = write(req->header.dd,
 				req->body.wri_req.start,
 				req->body.wri_req.size,
 				req->body.wri_req.dt);
-		res->body.wri_res.dd = req->body.wri_req.dd;
 		res->body.wri_res.errcd = (result >= 0)? E_OK:result;
 		res->body.wri_res.errinfo = 0;
 		res->body.wri_res.a_size = (result >= 0)? result:0;

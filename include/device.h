@@ -69,13 +69,6 @@ Version 2, June 1991
 #define DEV_BUF_SIZE (1024)
 
 /*
- * メッセージ
- */
-typedef struct {
-  W	msgtyp;		/* メッセージ識別番号				*/
-} SVC_REQ;
-
-/*
  * ドライバへ渡すコマンド一覧
  */
 enum driver_command
@@ -83,6 +76,14 @@ enum driver_command
   DEV_REA,
   DEV_WRI
 };
+
+/*
+ * メッセージ
+ */
+typedef struct {
+  enum driver_command	msgtyp;		/* メッセージ識別番号				*/
+  W dd;		/* デバイスドライバマネージャ管理情報	*/
+} SVC_REQ;
 
 /* =========================================================================
  デバイスドライバ関連のメッセージを定義する。
@@ -110,9 +111,6 @@ enum driver_command
 /* デバイスからの読み込み（デバイスドライバへ送るメッセージ）
  */
 typedef struct {
-  W dd;		/* デバイスドライバマネージャ管理情報	*/
-  		/* デバイスドライバはこの値を使用せず，応答メッセージの	*/
-                /* 先頭に登録する	*/
   UW	start;     /* デバイスの先頭からの位置(byte)	*/
   UW	size;      /* 書き込み量(byte) */
 } DDEV_REA_REQ;
@@ -126,7 +124,6 @@ typedef struct {
  *      両方を登録する。
  */
 typedef struct {
-  W dd;        /* デバイスドライバマネージャ管理情報	*/
   ER errcd;
   W errinfo;   /* エラー詳細情報	*/
   UW	a_size; /* 実際に読み込んだbyte数	*/
@@ -143,9 +140,6 @@ typedef struct {
  *   実現可能となります）
  */
 typedef struct {
-  W	dd;	/* デバイスドライバマネージャ管理情報	*/
-		/* デバイスドライバはこの値を使用せず，応答メッセージの	*/
-		/* 先頭に登録する	*/
   UW	start;		/* デバイスの先頭からの位置（byte）	*/
   UW	size;		/* 書き込み量（byte）	*/
   UB	dt[DEV_BUF_SIZE];	/* 書き込むデータ(最大)	*/
@@ -154,7 +148,6 @@ typedef struct {
 /* デバイスへの書き込み（デバイスドライバマネージャへの応答）
  */
 typedef struct {
-  W dd;		/* デバイスドライバマネージャ管理情報	*/
   ER errcd;
   W errinfo;	/* エラー詳細情報	*/
   UW	a_size;	/* 実際に書き込んだbyte数	*/

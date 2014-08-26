@@ -227,7 +227,6 @@ static UW execute(devmsg_t *message)
 	case DEV_REA:
 		result = read(req->body.rea_req.start, req->body.rea_req.size,
 				res->body.rea_res.dt);
-		res->body.rea_res.dd = req->body.rea_req.dd;
 		res->body.rea_res.errcd = (result >= 0)? E_OK:result;
 		res->body.rea_res.errinfo = 0;
 		res->body.rea_res.a_size = (result >= 0)? result:0;
@@ -237,7 +236,6 @@ static UW execute(devmsg_t *message)
 		break;
 
 	case DEV_WRI:
-		res->body.wri_res.dd = req->body.wri_req.dd;
 		res->body.wri_res.errcd = E_NOSPT;
 		res->body.wri_res.errinfo = 0;
 		res->body.wri_res.a_size = 0;
