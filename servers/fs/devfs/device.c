@@ -46,19 +46,19 @@ W write_device(ID device, B * buf, W start, W length, W * rlength)
 	return (EINVAL);
     }
 
-    packet.req.header.msgtyp = DEV_WRI;
-    packet.req.header.dd = dd;
-    packet.req.body.wri_req.start = start;
-    packet.req.body.wri_req.size = length;
-    memcpy(packet.req.body.wri_req.dt, buf, length);
+    packet.header.msgtyp = DEV_WRI;
+    packet.header.dd = dd;
+    packet.body.wri_req.start = start;
+    packet.body.wri_req.size = length;
+    memcpy(packet.body.wri_req.dt, buf, length);
     rsize = kcall->port_call(send_port, &p, sizeof(p));
     if (rsize < 0) {
 	dbg_printf("fs: cal_por error = %d\n", rsize);	/* */
 	return (ENODEV);
     }
 
-    *rlength = packet.res.body.wri_res.a_size;
-    return (packet.res.body.wri_res.errinfo);
+    *rlength = packet.body.wri_res.a_size;
+    return (packet.body.wri_res.errinfo);
 }
 
 
@@ -83,28 +83,28 @@ W read_device(ID device, B * buf, W start, W length, W * rlength)
 
     *rlength = 0;
     for (rest_length = length; rest_length > 0;) {
-	packet.req.header.msgtyp = DEV_REA;
-	packet.req.header.dd = dd;
-	packet.req.body.rea_req.start = start + (length - rest_length);
-	packet.req.body.rea_req.size
-	    = (sizeof(packet.res.body.rea_res.dt) > rest_length) ?
-		    rest_length : sizeof(packet.res.body.rea_res.dt);
+	packet.header.msgtyp = DEV_REA;
+	packet.header.dd = dd;
+	packet.body.rea_req.start = start + (length - rest_length);
+	packet.body.rea_req.size
+	    = (sizeof(packet.body.rea_res.dt) > rest_length) ?
+		    rest_length : sizeof(packet.body.rea_res.dt);
 	rsize = kcall->port_call(send_port, &p, sizeof(p));
 	if (rsize < 0) {
 	    dbg_printf("fs: cal_por error = %d\n", rsize);	/* */
 	    return (error_no);
 	}
 
-	if (packet.res.body.rea_res.errinfo != E_OK) {
+	if (packet.body.rea_res.errinfo != E_OK) {
 	    dbg_printf("fs: read_device errinfo = %d\n",
-		    packet.res.body.rea_res.errinfo);
-	    return (packet.res.body.rea_res.errinfo);
+		    packet.body.rea_res.errinfo);
+	    return (packet.body.rea_res.errinfo);
 	}
 
-	memcpy(&buf[length - rest_length], packet.res.body.rea_res.dt,
-	      packet.res.body.rea_res.a_size);
-	*rlength += packet.res.body.rea_res.a_size;
-	rest_length -= packet.res.body.rea_res.a_size;
+	memcpy(&buf[length - rest_length], packet.body.rea_res.dt,
+	      packet.body.rea_res.a_size);
+	*rlength += packet.body.rea_res.a_size;
+	rest_length -= packet.body.rea_res.a_size;
     }
 
     return (E_OK);

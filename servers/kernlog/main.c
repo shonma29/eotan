@@ -136,41 +136,39 @@ static ER_UINT write(const UW dd, UB *inbuf, const UW start, const UW size)
 
 static UW execute(devmsg_t *message)
 {
-	DDEV_REQ *req = &(message->req);
-	DDEV_RES *res = &(message->res);
 	ER_UINT result;
 	UW size = 0;
 
-	switch (req->header.msgtyp) {
+	switch (message->header.msgtyp) {
 	case DEV_REA:
-		result = read(res->body.rea_res.dt,
-				req->header.dd,
-				req->body.rea_req.start,
-				req->body.rea_req.size);
-		res->body.rea_res.errcd = (result >= 0)? E_OK:result;
-		res->body.rea_res.errinfo = 0;
-		res->body.rea_res.a_size = (result >= 0)? result:0;
-		size = sizeof(res->body.rea_res)
-				- sizeof(res->body.rea_res.dt)
-				+ (res->body.rea_res.a_size);
+		result = read(message->body.rea_res.dt,
+				message->header.dd,
+				message->body.rea_req.start,
+				message->body.rea_req.size);
+		message->body.rea_res.errcd = (result >= 0)? E_OK:result;
+		message->body.rea_res.errinfo = 0;
+		message->body.rea_res.a_size = (result >= 0)? result:0;
+		size = sizeof(message->body.rea_res)
+				- sizeof(message->body.rea_res.dt)
+				+ (message->body.rea_res.a_size);
 		break;
 
 	case DEV_WRI:
-		result = write(req->header.dd,
-				req->body.wri_req.dt,
-				req->body.wri_req.start,
-				req->body.wri_req.size);
-		res->body.wri_res.errcd = (result >= 0)? E_OK:result;
-		res->body.wri_res.errinfo = 0;
-		res->body.wri_res.a_size = (result >= 0)? result:0;
-		size = sizeof(res->body.wri_res);
+		result = write(message->header.dd,
+				message->body.wri_req.dt,
+				message->body.wri_req.start,
+				message->body.wri_req.size);
+		message->body.wri_res.errcd = (result >= 0)? E_OK:result;
+		message->body.wri_res.errinfo = 0;
+		message->body.wri_res.a_size = (result >= 0)? result:0;
+		size = sizeof(message->body.wri_res);
 		break;
 
 	default:
 		break;
 	}
 
-	return size + sizeof(res->header);
+	return size + sizeof(message->header);
 }
 
 static ER accept(const ID port)
@@ -181,13 +179,13 @@ static ER accept(const ID port)
 	ER result;
 	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-	size = kcall->port_accept(port, &rdvno, &(message.req));
+	size = kcall->port_accept(port, &rdvno, &message);
 	if (size < 0) {
 		/*dbg_printf("[KERNLOG] acp_por error=%d\n", size);*/
 		return size;
 	}
 
-	result = kcall->port_reply(rdvno, &(message.res), execute(&message));
+	result = kcall->port_reply(rdvno, &message, execute(&message));
 	if (result) {
 		/*dbg_printf("[KERNLOG] rpl_rdv error=%d\n", result);*/
 	}
@@ -200,8 +198,8 @@ static ER_ID initialize(void)
 	ER err;
 	T_CPOR pk_cpor = {
 			TA_TFIFO,
-			sizeof(DDEV_REQ),
-			sizeof(DDEV_RES)
+			sizeof(devmsg_t),
+			sizeof(devmsg_t)
 	};
 	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 

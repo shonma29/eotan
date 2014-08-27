@@ -64,28 +64,28 @@ static int exec(int out) {
 	ER_UINT size;
 	UB buf[DEV_BUF_SIZE + 2];
 
-	pk.req.header.msgtyp = DEV_REA;
-	pk.req.header.dd = DESC_KERNLOG;
-	pk.req.body.rea_req.start = 0;
-	pk.req.body.rea_req.size = DEV_BUF_SIZE;
+	pk.header.msgtyp = DEV_REA;
+	pk.header.dd = DESC_KERNLOG;
+	pk.body.rea_req.start = 0;
+	pk.body.rea_req.size = DEV_BUF_SIZE;
 
-	size = cal_por(PORT_SYSLOG, 0xffffffff, &pk, sizeof(pk.req));
+	size = cal_por(PORT_SYSLOG, 0xffffffff, &pk, sizeof(pk.header) + sizeof(pk.body.rea_req));
 
 	if (size < 0) {
 		puterror(MSG_PORT);
 		return NG;
 	}
 
-	if (pk.res.body.rea_res.errcd < 0) {
+	if (pk.body.rea_res.errcd < 0) {
 		puterror(MSG_BUF);
 		return NG;
 	}
 
-	size = pk.res.body.rea_res.a_size;
+	size = pk.body.rea_res.a_size;
 	if (!size)
 		return NG;
 
-	memcpy(buf, pk.res.body.rea_res.dt, size);
+	memcpy(buf, pk.body.rea_res.dt, size);
 
 #ifdef FORCE_NEWLINE
 	if (buf[size - 1] != '\n')

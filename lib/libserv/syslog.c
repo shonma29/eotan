@@ -38,15 +38,15 @@ int syslog(const char *msg)
 	size_t len = strlen(msg);
 	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-	packet.req.header.msgtyp = DEV_WRI;
-	packet.req.header.dd = DESC_SYSLOG;
-	packet.req.body.wri_req.start = 0;
-	packet.req.body.wri_req.size = len;
-	memcpy(packet.req.body.wri_req.dt, msg, len);
+	packet.header.msgtyp = DEV_WRI;
+	packet.header.dd = DESC_SYSLOG;
+	packet.body.wri_req.start = 0;
+	packet.body.wri_req.size = len;
+	memcpy(packet.body.wri_req.dt, msg, len);
 
 	return kcall->port_call(PORT_SYSLOG, &packet,
-			sizeof(packet.req.header)
-			+ sizeof(packet.req.body.wri_req)
-			- sizeof(packet.req.body.wri_req.dt)
+			sizeof(packet.header)
+			+ sizeof(packet.body.wri_req)
+			- sizeof(packet.body.wri_req.dt)
 			+ len);
 }

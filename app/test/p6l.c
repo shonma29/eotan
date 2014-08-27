@@ -55,14 +55,14 @@ int putline(UW start, UW size, UB *buf)
 	devmsg_t msg;
 	ER_UINT err;
 
-	msg.req.header.msgtyp = DEV_WRI;
-	msg.req.header.dd = 1;
-	msg.req.body.wri_req.start = start;
-	msg.req.body.wri_req.size = size;
+	msg.header.msgtyp = DEV_WRI;
+	msg.header.dd = 1;
+	msg.body.wri_req.start = start;
+	msg.body.wri_req.size = size;
 	swap(size);
-	memcpy(msg.req.body.wri_req.dt, buf, size);
+	memcpy(msg.body.wri_req.dt, buf, size);
 
-	err = cal_por(49152, 0xffffffff, &msg, sizeof(msg.req));
+	err = cal_por(49152, 0xffffffff, &msg, sizeof(msg.header) + sizeof(msg.body.wri_req));
 	if (err < 0)
 		printf("cal_por error %d\n", (int)err);
 	return err;

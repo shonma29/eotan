@@ -153,41 +153,15 @@ typedef struct {
   UW	a_size;	/* 実際に書き込んだbyte数	*/
 } DDEV_WRI_RES;
 
-/*
- * ドライバマネージャとデバイスドライバとのやりとりに使用するメッセージパケット
- * kernlib/message.h で定義している SVC_REQ 形式が頭につく。
- * 要求する時に使用する。
- */
-typedef struct DDEV_REQ
-{
+typedef struct _devmsg_t {
   SVC_REQ		header;		/* 汎用メッセージ */
-
   union 
     {
       DDEV_REA_REQ	rea_req;	
       DDEV_WRI_REQ	wri_req;
-    } body;
-} DDEV_REQ;
-
-/* 
- * ドライバマネージャとデバイスドライバとのやりとりに使用するメッセージパケット
- * kernlib/message.h で定義している SVC_REQ 形式が頭につく。
- * ドライバが返答する時に使用する。
- */
-typedef struct DDEV_RES
-{
-  SVC_REQ		header;		/* 汎用メッセージ */
-
-  union 
-    {
       DDEV_REA_RES	rea_res;	
       DDEV_WRI_RES	wri_res;
     } body;
-} DDEV_RES;
-
-typedef union _devmsg_t {
-    DDEV_REQ req;
-    DDEV_RES res;
 } devmsg_t;
 
 #endif /* __KERNLIB_DEVICE_H__ */

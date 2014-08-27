@@ -218,35 +218,33 @@ static ER_UINT read(const UW start, const UW size, UB *outbuf)
 
 static UW execute(devmsg_t *message)
 {
-	DDEV_REQ *req = &(message->req);
-	DDEV_RES *res = &(message->res);
 	ER_UINT result;
 	UW size = 0;
 
-	switch (req->header.msgtyp) {
+	switch (message->header.msgtyp) {
 	case DEV_REA:
-		result = read(req->body.rea_req.start, req->body.rea_req.size,
-				res->body.rea_res.dt);
-		res->body.rea_res.errcd = (result >= 0)? E_OK:result;
-		res->body.rea_res.errinfo = 0;
-		res->body.rea_res.a_size = (result >= 0)? result:0;
-		size = sizeof(res->body.rea_res)
-				- sizeof(res->body.rea_res.dt)
-				+ (res->body.rea_res.a_size);
+		result = read(message->body.rea_req.start, message->body.rea_req.size,
+				message->body.rea_res.dt);
+		message->body.rea_res.errcd = (result >= 0)? E_OK:result;
+		message->body.rea_res.errinfo = 0;
+		message->body.rea_res.a_size = (result >= 0)? result:0;
+		size = sizeof(message->body.rea_res)
+				- sizeof(message->body.rea_res.dt)
+				+ (message->body.rea_res.a_size);
 		break;
 
 	case DEV_WRI:
-		res->body.wri_res.errcd = E_NOSPT;
-		res->body.wri_res.errinfo = 0;
-		res->body.wri_res.a_size = 0;
-		size = sizeof(res->body.wri_res);
+		message->body.wri_res.errcd = E_NOSPT;
+		message->body.wri_res.errinfo = 0;
+		message->body.wri_res.a_size = 0;
+		size = sizeof(message->body.wri_res);
 		break;
 
 	default:
 		break;
 	}
 
-	return size + sizeof(res->header);
+	return size + sizeof(message->header);
 }
 
 void keyboard_accept(void)
@@ -278,8 +276,8 @@ ER keyboard_initialize(void)
 	W result;
 	T_CPOR pk_cpor = {
 			TA_TFIFO,
-			sizeof(DDEV_REQ),
-			sizeof(DDEV_RES)
+			sizeof(devmsg_t),
+			sizeof(devmsg_t)
 	};
 	T_CDTQ pk_cdtq = {
 			TA_TFIFO,

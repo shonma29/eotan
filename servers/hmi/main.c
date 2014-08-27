@@ -114,36 +114,34 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 
 static UW execute(devmsg_t *message)
 {
-	DDEV_REQ *req = &(message->req);
-	DDEV_RES *res = &(message->res);
 	ER_UINT result;
 	UW size = 0;
 
-	switch (req->header.msgtyp) {
+	switch (message->header.msgtyp) {
 	case DEV_REA:
-		res->body.rea_res.errcd = E_NOSPT;
-		res->body.rea_res.errinfo = 0;
-		res->body.rea_res.a_size = 0;
-		size = sizeof(res->body.rea_res)
-				- sizeof(res->body.rea_res.dt);
+		message->body.rea_res.errcd = E_NOSPT;
+		message->body.rea_res.errinfo = 0;
+		message->body.rea_res.a_size = 0;
+		size = sizeof(message->body.rea_res)
+				- sizeof(message->body.rea_res.dt);
 		break;
 
 	case DEV_WRI:
-		result = write(req->header.dd,
-				req->body.wri_req.start,
-				req->body.wri_req.size,
-				req->body.wri_req.dt);
-		res->body.wri_res.errcd = (result >= 0)? E_OK:result;
-		res->body.wri_res.errinfo = 0;
-		res->body.wri_res.a_size = (result >= 0)? result:0;
-		size = sizeof(res->body.wri_res);
+		result = write(message->header.dd,
+				message->body.wri_req.start,
+				message->body.wri_req.size,
+				message->body.wri_req.dt);
+		message->body.wri_res.errcd = (result >= 0)? E_OK:result;
+		message->body.wri_res.errinfo = 0;
+		message->body.wri_res.a_size = (result >= 0)? result:0;
+		size = sizeof(message->body.wri_res);
 		break;
 
 	default:
 		break;
 	}
 
-	return size + sizeof(res->header);
+	return size + sizeof(message->header);
 }
 
 static ER accept(const ID port)
@@ -174,8 +172,8 @@ static ER_ID initialize(void)
 	W result;
 	T_CPOR pk_cpor = {
 			TA_TFIFO,
-			sizeof(DDEV_REQ),
-			sizeof(DDEV_RES)
+			sizeof(devmsg_t),
+			sizeof(devmsg_t)
 	};
 
 	memcpy(&kcall, (kcall_t*)KCALL_ADDR, sizeof(kcall));
