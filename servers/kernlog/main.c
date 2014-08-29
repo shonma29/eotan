@@ -25,9 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <device.h>
 #include <services.h>
 #include <string.h>
+#include <syslog.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
 #include <set/lf_queue.h>
@@ -36,28 +36,26 @@ For more information, please refer to <http://unlicense.org/>
 #include <libserv.h>
 #include "kernlog.h"
 
-static UB buf[SYSLOG_SIZE];
+static unsigned char buf[SYSLOG_SIZE];
 
-static ER check_param(const UW start, const UW size);
-static size_t lfcopy(UB *outbuf, volatile lfq_t* q, const UW size);
-static size_t rcopy(UB *outbuf, ring_t *r, const UW size);
-static ER_UINT read(UB *outbuf, const UW dd, const UW start, const UW size);
-static ER_UINT write(const UW dd, UB *inbuf, const UW start, const UW size);
-static UW execute(devmsg_t *message);
-static ER accept(const ID port);
+static ER check_param(const size_t);
+static size_t lfcopy(unsigned char *, volatile lfq_t*, const size_t);
+static size_t rcopy(unsigned char *, ring_t *, const size_t);
+static ssize_t read(unsigned char *, const int, const size_t);
+static ssize_t write(unsigned char *, const size_t);
+static size_t execute(syslog_t *);
+static ER accept(const ID);
 static ER_ID initialize(void);
 
 
-static ER check_param(const UW start, const UW size)
+static ER check_param(const size_t size)
 {
-	if (start)	return E_PAR;
-
-	if (size > DEV_BUF_SIZE)	return E_PAR;
+	if (size > SYSLOG_MAX_LENGTH)	return E_PAR;
 
 	return E_OK;
 }
 
-static size_t lfcopy(UB *outbuf, volatile lfq_t* q, const UW size)
+static size_t lfcopy(unsigned char *outbuf, volatile lfq_t* q, const size_t size)
 {
 	size_t left;
 
@@ -73,7 +71,7 @@ static size_t lfcopy(UB *outbuf, volatile lfq_t* q, const UW size)
 	return size - left;
 }
 
-static size_t rcopy(UB *outbuf, ring_t *r, const UW size)
+static size_t rcopy(unsigned char *outbuf, ring_t *r, const size_t size)
 {
 	size_t left = size;
 
@@ -92,18 +90,18 @@ static size_t rcopy(UB *outbuf, ring_t *r, const UW size)
 	return size - left;
 }
 
-static ER_UINT read(UB *outbuf, const UW dd, const UW start, const UW size)
+static ssize_t read(unsigned char *outbuf, const int channel, const size_t size)
 {
-	ER result = check_param(start, size);
+	ER result = check_param(size);
 
 	if (result)	return result;
 	if (size != RING_MAX_LEN)	return E_PAR;
 
-	switch (dd) {
-	case DESC_KERNLOG:
+	switch (channel) {
+	case channel_kernlog:
 		return lfcopy(outbuf, (volatile lfq_t*)KERNEL_LOG_ADDR, size);
 
-	case DESC_SYSLOG:
+	case channel_syslog:
 		return rcopy(outbuf, (ring_t*)buf, size);
 
 	default:
@@ -111,20 +109,12 @@ static ER_UINT read(UB *outbuf, const UW dd, const UW start, const UW size)
 	}
 }
 
-static ER_UINT write(const UW dd, UB *inbuf, const UW start, const UW size)
+static ssize_t write(unsigned char *inbuf, const size_t size)
 {
-	ER result = check_param(start, size);
+	ER result = check_param(size);
 
 	if (result)	return result;
 	if (size > RING_MAX_LEN)	return E_PAR;
-
-	switch (dd) {
-	case DESC_SYSLOG:
-		break;
-
-	default:
-		return E_PAR;
-	}
 
 	result = ring_put((ring_t*)buf, inbuf, size);
 
@@ -134,46 +124,39 @@ static ER_UINT write(const UW dd, UB *inbuf, const UW start, const UW size)
 	return result;
 }
 
-static UW execute(devmsg_t *message)
+static size_t execute(syslog_t *message)
 {
-	ER_UINT result;
-	UW size = 0;
+	ssize_t result;
+	size_t size = 0;
 
-	switch (message->header.msgtyp) {
-	case DEV_REA:
-		result = read(message->body.rea_res.dt,
-				message->header.dd,
-				message->body.rea_req.start,
-				message->body.rea_req.size);
-		message->body.rea_res.errcd = (result >= 0)? E_OK:result;
-		message->body.rea_res.errinfo = 0;
-		message->body.rea_res.a_size = (result >= 0)? result:0;
-		size = sizeof(message->body.rea_res)
-				- sizeof(message->body.rea_res.dt)
-				+ (message->body.rea_res.a_size);
+	switch (message->Rread.operation) {
+	case operation_read:
+		result = read(message->Tread.data,
+				message->Rread.channel,
+				message->Rread.length);
+		message->Tread.length = result;
+		size = sizeof(message->Tread)
+				- sizeof(message->Tread.data)
+				+ (message->Tread.length);
 		break;
 
-	case DEV_WRI:
-		result = write(message->header.dd,
-				message->body.wri_req.dt,
-				message->body.wri_req.start,
-				message->body.wri_req.size);
-		message->body.wri_res.errcd = (result >= 0)? E_OK:result;
-		message->body.wri_res.errinfo = 0;
-		message->body.wri_res.a_size = (result >= 0)? result:0;
-		size = sizeof(message->body.wri_res);
+	case operation_write:
+		result = write(message->Rwrite.data,
+				message->Rwrite.length);
+		message->Twrite.length = result;
+		size = sizeof(message->Twrite);
 		break;
 
 	default:
 		break;
 	}
 
-	return size + sizeof(message->header);
+	return size;
 }
 
 static ER accept(const ID port)
 {
-	devmsg_t message;
+	syslog_t message;
 	RDVNO rdvno;
 	ER_UINT size;
 	ER result;
@@ -198,8 +181,8 @@ static ER_ID initialize(void)
 	ER err;
 	T_CPOR pk_cpor = {
 			TA_TFIFO,
-			sizeof(devmsg_t),
-			sizeof(devmsg_t)
+			sizeof(syslog_t),
+			sizeof(syslog_t)
 	};
 	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 

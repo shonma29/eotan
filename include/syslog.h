@@ -1,3 +1,5 @@
+#ifndef __SYSLOG_H__
+#define __SYSLOG_H__ 1
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,25 +26,38 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <services.h>
-#include <string.h>
-#include <syslog.h>
-#include <nerve/kcall.h>
+#include <sys/types.h>
 
+#define SYSLOG_MAX_LENGTH (1024)
 
-int syslog(const char *msg)
-{
-	syslog_t packet;
-	size_t len = strlen(msg);
-	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
+enum syslog_operation {
+	operation_read,
+	operation_write
+};
 
-	packet.Rwrite.operation = operation_write;
-	packet.Rwrite.length = len;
-	memcpy(packet.Rwrite.data, msg, len);
+enum syslog_channel {
+	channel_kernlog,
+	channel_syslog
+};
 
-	return kcall->port_call(PORT_SYSLOG, &packet,
-			sizeof(packet.Rwrite)
-			- sizeof(packet.Rwrite.data)
-			+ len);
-}
+typedef union {
+	struct {
+		enum syslog_operation operation;
+		enum syslog_channel channel;
+		size_t length;
+	} Rread;
+	struct {
+		ssize_t length;
+		unsigned char data[SYSLOG_MAX_LENGTH];
+	} Tread;
+	struct {
+		enum syslog_operation operation;
+		size_t length;
+		unsigned char data[SYSLOG_MAX_LENGTH];
+	} Rwrite;
+	struct {
+		ssize_t length;
+	} Twrite;
+} syslog_t;
+
+#endif

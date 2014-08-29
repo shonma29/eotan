@@ -25,12 +25,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <device.h>
 #include <services.h>
 #include <stdio.h>
 #include <string.h>
+#include <syslog.h>
 #include <unistd.h>
-#include "../../servers/kernlog/kernlog.h"
 
 #undef FORCE_NEWLINE
 
@@ -44,9 +43,10 @@ For more information, please refer to <http://unlicense.org/>
 #define OK (0)
 #define NG (1)
 
-static void pute(char *str);
-static void puterror(char *message);
-static int exec(int out);
+static void pute(char *);
+static void puterror(char *);
+static int exec(int);
+
 
 static void pute(char *str) {
 	write(STDERR_FILENO, str, strlen(str));
@@ -60,32 +60,31 @@ static void puterror(char *message) {
 }
 
 static int exec(int out) {
-	devmsg_t pk;
-	ER_UINT size;
-	UB buf[DEV_BUF_SIZE + 2];
+	syslog_t pk;
+	ssize_t size;
+	unsigned char buf[sizeof(pk.Tread.data) + 2];
 
-	pk.header.msgtyp = DEV_REA;
-	pk.header.dd = DESC_KERNLOG;
-	pk.body.rea_req.start = 0;
-	pk.body.rea_req.size = DEV_BUF_SIZE;
+	pk.Rread.operation = operation_read;
+	pk.Rread.channel = channel_kernlog;
+	pk.Rread.length = sizeof(pk.Tread.data);
 
-	size = cal_por(PORT_SYSLOG, 0xffffffff, &pk, sizeof(pk.header) + sizeof(pk.body.rea_req));
+	size = cal_por(PORT_SYSLOG, 0xffffffff, &pk, sizeof(pk.Rread));
 
 	if (size < 0) {
 		puterror(MSG_PORT);
 		return NG;
 	}
 
-	if (pk.body.rea_res.errcd < 0) {
+	size = pk.Tread.length;
+	if (size < 0) {
 		puterror(MSG_BUF);
 		return NG;
 	}
 
-	size = pk.body.rea_res.a_size;
 	if (!size)
 		return NG;
 
-	memcpy(buf, pk.body.rea_res.dt, size);
+	memcpy(buf, pk.Tread.data, size);
 
 #ifdef FORCE_NEWLINE
 	if (buf[size - 1] != '\n')
