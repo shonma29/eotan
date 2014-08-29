@@ -46,19 +46,19 @@ W write_device(ID device, B * buf, W start, W length, W * rlength)
 	return (EINVAL);
     }
 
-    packet.header.msgtyp = DEV_WRI;
-    packet.header.dd = dd;
-    packet.body.wri_req.start = start;
-    packet.body.wri_req.size = length;
-    packet.body.wri_req.dt = (UB*)buf;
+    packet.Rwrite.operation = operation_write;
+    packet.Rwrite.channel = dd;
+    packet.Rwrite.offset = start;
+    packet.Rwrite.length = length;
+    packet.Rwrite.data = (UB*)buf;
     rsize = kcall->port_call(send_port, &p, sizeof(p));
     if (rsize < 0) {
 	dbg_printf("fs: cal_por error = %d\n", rsize);	/* */
 	return (ENODEV);
     }
 
-    *rlength = packet.body.wri_res.a_size;
-    return (packet.body.wri_res.errinfo);
+    *rlength = (packet.Twrite.length > 0)? packet.Twrite.length:0;
+    return (packet.Twrite.length == length)? E_OK:E_SYS;
 }
 
 
@@ -83,27 +83,31 @@ W read_device(ID device, B * buf, W start, W length, W * rlength)
 
     *rlength = 0;
     for (rest_length = length; rest_length > 0;) {
-	packet.header.msgtyp = DEV_REA;
-	packet.header.dd = dd;
-	packet.body.rea_req.start = start + (length - rest_length);
-	packet.body.rea_req.size
+	packet.Rread.operation = operation_read;
+	packet.Rread.channel = dd;
+	packet.Rread.offset = start + (length - rest_length);
+	packet.Rread.length
 	    = (DEV_BUF_SIZE > rest_length) ?
 		    rest_length : DEV_BUF_SIZE;
-	packet.body.rea_req.dt = (UB*)(&buf[length - rest_length]);
+	packet.Rread.data = (UB*)(&buf[length - rest_length]);
 	rsize = kcall->port_call(send_port, &p, sizeof(p));
 	if (rsize < 0) {
 	    dbg_printf("fs: cal_por error = %d\n", rsize);	/* */
 	    return (error_no);
 	}
 
-	if (packet.body.rea_res.errinfo != E_OK) {
+	if (packet.Tread.length == 0) {
+	    break;
+        }
+
+	if (packet.Tread.length < 0) {
 	    dbg_printf("fs: read_device errinfo = %d\n",
-		    packet.body.rea_res.errinfo);
-	    return (packet.body.rea_res.errinfo);
+		    packet.Tread.length);
+	    return (packet.Tread.length);
 	}
 
-	*rlength += packet.body.rea_res.a_size;
-	rest_length -= packet.body.rea_res.a_size;
+	*rlength += packet.Tread.length;
+	rest_length -= packet.Tread.length;
     }
 
     return (E_OK);

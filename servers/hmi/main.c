@@ -117,30 +117,26 @@ static UW execute(devmsg_t *message)
 	ER_UINT result;
 	UW size = 0;
 
-	switch (message->header.msgtyp) {
-	case DEV_REA:
-		message->body.rea_res.errcd = E_NOSPT;
-		message->body.rea_res.errinfo = 0;
-		message->body.rea_res.a_size = 0;
-		size = sizeof(message->body.rea_res);
+	switch (message->Rread.operation) {
+	case operation_read:
+		message->Tread.length = E_NOSPT;
+		size = sizeof(message->Tread);
 		break;
 
-	case DEV_WRI:
-		result = write(message->header.dd,
-				message->body.wri_req.start,
-				message->body.wri_req.size,
-				message->body.wri_req.dt);
-		message->body.wri_res.errcd = (result >= 0)? E_OK:result;
-		message->body.wri_res.errinfo = 0;
-		message->body.wri_res.a_size = (result >= 0)? result:0;
-		size = sizeof(message->body.wri_res);
+	case operation_write:
+		result = write(message->Rwrite.channel,
+				message->Rwrite.offset,
+				message->Rwrite.length,
+				message->Rwrite.data);
+		message->Twrite.length = result;
+		size = sizeof(message->Twrite);
 		break;
 
 	default:
 		break;
 	}
 
-	return size + sizeof(message->header);
+	return size;
 }
 
 static ER accept(const ID port)

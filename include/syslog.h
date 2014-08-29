@@ -26,6 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stddef.h>
 #include <sys/types.h>
 
 #define SYSLOG_MAX_LENGTH (1024)

@@ -221,28 +221,24 @@ static UW execute(devmsg_t *message)
 	ER_UINT result;
 	UW size = 0;
 
-	switch (message->header.msgtyp) {
-	case DEV_REA:
-		result = read(message->body.rea_req.start, message->body.rea_req.size,
-				message->body.rea_req.dt);
-		message->body.rea_res.errcd = (result >= 0)? E_OK:result;
-		message->body.rea_res.errinfo = 0;
-		message->body.rea_res.a_size = (result >= 0)? result:0;
-		size = sizeof(message->body.rea_res);
+	switch (message->Rread.operation) {
+	case operation_read:
+		result = read(message->Rread.offset, message->Rread.length,
+				message->Rread.data);
+		message->Tread.length = result;
+		size = sizeof(message->Tread);
 		break;
 
-	case DEV_WRI:
-		message->body.wri_res.errcd = E_NOSPT;
-		message->body.wri_res.errinfo = 0;
-		message->body.wri_res.a_size = 0;
-		size = sizeof(message->body.wri_res);
+	case operation_write:
+		message->Twrite.length = E_NOSPT;
+		size = sizeof(message->Twrite);
 		break;
 
 	default:
 		break;
 	}
 
-	return size + sizeof(message->header);
+	return size;
 }
 
 void keyboard_accept(void)
