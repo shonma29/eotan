@@ -50,7 +50,7 @@ W write_device(ID device, B * buf, W start, W length, W * rlength)
     packet.header.dd = dd;
     packet.body.wri_req.start = start;
     packet.body.wri_req.size = length;
-    memcpy(packet.body.wri_req.dt, buf, length);
+    packet.body.wri_req.dt = (UB*)buf;
     rsize = kcall->port_call(send_port, &p, sizeof(p));
     if (rsize < 0) {
 	dbg_printf("fs: cal_por error = %d\n", rsize);	/* */
@@ -87,8 +87,9 @@ W read_device(ID device, B * buf, W start, W length, W * rlength)
 	packet.header.dd = dd;
 	packet.body.rea_req.start = start + (length - rest_length);
 	packet.body.rea_req.size
-	    = (sizeof(packet.body.rea_res.dt) > rest_length) ?
-		    rest_length : sizeof(packet.body.rea_res.dt);
+	    = (DEV_BUF_SIZE > rest_length) ?
+		    rest_length : DEV_BUF_SIZE;
+	packet.body.rea_req.dt = (UB*)(&buf[length - rest_length]);
 	rsize = kcall->port_call(send_port, &p, sizeof(p));
 	if (rsize < 0) {
 	    dbg_printf("fs: cal_por error = %d\n", rsize);	/* */
@@ -101,8 +102,6 @@ W read_device(ID device, B * buf, W start, W length, W * rlength)
 	    return (packet.body.rea_res.errinfo);
 	}
 
-	memcpy(&buf[length - rest_length], packet.body.rea_res.dt,
-	      packet.body.rea_res.a_size);
 	*rlength += packet.body.rea_res.a_size;
 	rest_length -= packet.body.rea_res.a_size;
     }

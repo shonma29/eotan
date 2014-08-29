@@ -113,6 +113,7 @@ typedef struct {
 typedef struct {
   UW	start;     /* デバイスの先頭からの位置(byte)	*/
   UW	size;      /* 書き込み量(byte) */
+  UB *dt;     /* 読み込んだデータ	*/
 } DDEV_REA_REQ;
 
 /* デバイスからの読み込み（デバイスドライバマネージャへの応答）
@@ -127,7 +128,6 @@ typedef struct {
   ER errcd;
   W errinfo;   /* エラー詳細情報	*/
   UW	a_size; /* 実際に読み込んだbyte数	*/
-  UB dt[DEV_BUF_SIZE];     /* 読み込んだデータ	*/
 } DDEV_REA_RES;
 
 /* デバイスへの書き込み（デバイスドライバへ送るメッセージ）
@@ -142,7 +142,7 @@ typedef struct {
 typedef struct {
   UW	start;		/* デバイスの先頭からの位置（byte）	*/
   UW	size;		/* 書き込み量（byte）	*/
-  UB	dt[DEV_BUF_SIZE];	/* 書き込むデータ(最大)	*/
+  UB	*dt;	/* 書き込むデータ(最大)	*/
 } DDEV_WRI_REQ;
 
 /* デバイスへの書き込み（デバイスドライバマネージャへの応答）

@@ -60,7 +60,7 @@ int putline(UW start, UW size, UB *buf)
 	msg.body.wri_req.start = start;
 	msg.body.wri_req.size = size;
 	swap(size);
-	memcpy(msg.body.wri_req.dt, buf, size);
+	msg.body.wri_req.dt = buf;
 
 	err = cal_por(49152, 0xffffffff, &msg, sizeof(msg.header) + sizeof(msg.body.wri_req));
 	if (err < 0)

@@ -122,8 +122,7 @@ static UW execute(devmsg_t *message)
 		message->body.rea_res.errcd = E_NOSPT;
 		message->body.rea_res.errinfo = 0;
 		message->body.rea_res.a_size = 0;
-		size = sizeof(message->body.rea_res)
-				- sizeof(message->body.rea_res.dt);
+		size = sizeof(message->body.rea_res);
 		break;
 
 	case DEV_WRI:

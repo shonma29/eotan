@@ -83,15 +83,13 @@ static UW execute(devmsg_t *message)
 
 	switch (message->header.msgtyp) {
 	case DEV_REA:
-		result = read(message->body.rea_res.dt,
+		result = read(message->body.rea_req.dt,
 				message->body.rea_req.start,
 				message->body.rea_req.size);
 		message->body.rea_res.errcd = (result >= 0)? E_OK:result;
 		message->body.rea_res.errinfo = 0;
 		message->body.rea_res.a_size = (result >= 0)? result:0;
-		size = sizeof(message->body.rea_res)
-				- sizeof(message->body.rea_res.dt)
-				+ (message->body.rea_res.a_size);
+		size = sizeof(message->body.rea_res);
 		break;
 
 	case DEV_WRI:
