@@ -180,16 +180,16 @@ W proc_exit(W procid)
      */
     procp = &proc_table[procid];
     /* working directory の開放 */
-    if (procp->proc_workdir != NULL) {
-	fs_close_file(procp->proc_workdir);
-	procp->proc_workdir = NULL;
+    if (procp->session.cwd != NULL) {
+	fs_close_file(procp->session.cwd);
+	procp->session.cwd = NULL;
     }
 
     /* open されているファイルの close */
     for (i = 0; i < MAX_OPEN; ++i) {
-	if (procp->proc_open_file[i].f_inode != NULL) {
-	    fs_close_file(procp->proc_open_file[i].f_inode);
-	    procp->proc_open_file[i].f_inode = NULL;
+	if (procp->session.files[i].f_inode != NULL) {
+	    fs_close_file(procp->session.files[i].f_inode);
+	    procp->session.files[i].f_inode = NULL;
 	}
     }
 
@@ -241,7 +241,7 @@ W proc_get_permission(W procid, struct permission * p)
 	return (EINVAL);
     }
 
-    *p = proc_table[procid].permission;
+    *p = proc_table[procid].session.permission;
     return (EOK);
 }
 
@@ -255,9 +255,9 @@ W proc_alloc_fileid(W procid, W * retval)
     }
 
     for (i = 0; i < MAX_OPEN; i++) {
-	if (proc_table[procid].proc_open_file[i].f_inode == NULL) {
+	if (proc_table[procid].session.files[i].f_inode == NULL) {
 	    *retval = i;
-	    memset((B*)&(proc_table[procid].proc_open_file[i]), 0,
+	    memset((B*)&(proc_table[procid].session.files[i]), 0,
 		  sizeof(struct file));
 	    return (EOK);
 	}
@@ -276,17 +276,17 @@ W proc_set_file(W procid, W fileid, W flag, struct inode * ip)
 	return (EINVAL);
     }
 
-    if (proc_table[procid].proc_open_file[fileid].f_inode != NULL) {
+    if (proc_table[procid].session.files[fileid].f_inode != NULL) {
 	return (EBADF);
     }
 
-    proc_table[procid].proc_open_file[fileid].f_inode = ip;
+    proc_table[procid].session.files[fileid].f_inode = ip;
     if ((flag & O_APPEND) != 0) {
-	proc_table[procid].proc_open_file[fileid].f_offset = ip->i_size;
+	proc_table[procid].session.files[fileid].f_offset = ip->i_size;
     } else {
-	proc_table[procid].proc_open_file[fileid].f_offset = 0;
+	proc_table[procid].session.files[fileid].f_offset = 0;
     }
-    proc_table[procid].proc_open_file[fileid].f_omode = flag & 0x03;
+    proc_table[procid].session.files[fileid].f_omode = flag & 0x03;
     return (EOK);
 }
 
@@ -301,7 +301,7 @@ W proc_get_file(W procid, W fileid, struct file ** fp)
 	return (EINVAL);
     }
 
-    *fp = &(proc_table[procid].proc_open_file[fileid]);
+    *fp = &(proc_table[procid].session.files[fileid]);
     return (EOK);
 }
 
@@ -312,7 +312,7 @@ W proc_get_cwd(W procid, struct inode ** cwd)
 	return (EINVAL);
     }
 
-    *cwd = proc_table[procid].proc_workdir;
+    *cwd = proc_table[procid].session.cwd;
     if (*cwd == NULL) {
 	return (ESRCH);
     }
@@ -330,7 +330,7 @@ W proc_set_cwd(W procid, struct inode * cwd)
 	return (EINVAL);
     }
 
-    proc_table[procid].proc_workdir = cwd;
+    proc_table[procid].session.cwd = cwd;
     return (EOK);
 }
 

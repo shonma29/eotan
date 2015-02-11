@@ -113,11 +113,11 @@ static W create_init(ID process_id)
 	p->proc_status = PS_DORMANT;
 	p->proc_next = NULL;
 */
-	p->permission.uid = INIT_UID;
-	p->permission.gid = INIT_GID;
+	p->session.permission.uid = INIT_UID;
+	p->session.permission.gid = INIT_GID;
 	p->proc_status = PS_RUN;
 
-	p->proc_workdir = rootfile;
+	p->session.cwd = rootfile;
 	rootfile->i_refcount++;
 
 	p->proc_pid = process_id;

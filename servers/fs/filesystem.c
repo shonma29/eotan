@@ -228,9 +228,9 @@ W open_special_dev(struct proc * procp)
     p = device_find(get_device_id(DEVICE_MAJOR_KEYBOARD, 0));
     if (p) {
 	/* 標準入力の設定 */
-	procp->proc_open_file[0].f_inode = ip = alloc_inode();
-	procp->proc_open_file[0].f_offset = 0;
-	procp->proc_open_file[0].f_omode = O_RDONLY;
+	procp->session.files[0].f_inode = ip = alloc_inode();
+	procp->session.files[0].f_offset = 0;
+	procp->session.files[0].f_omode = O_RDONLY;
 	if (ip == NULL) {
 	    return (ENOMEM);
 	}
@@ -246,9 +246,9 @@ W open_special_dev(struct proc * procp)
     p = device_find(get_device_id(DEVICE_MAJOR_CONSOLE, 0));
     if (p) {
 	/* 標準出力の設定 */
-	procp->proc_open_file[1].f_inode = ip = alloc_inode();
-	procp->proc_open_file[1].f_offset = 0;
-	procp->proc_open_file[1].f_omode = O_WRONLY;
+	procp->session.files[1].f_inode = ip = alloc_inode();
+	procp->session.files[1].f_offset = 0;
+	procp->session.files[1].f_omode = O_WRONLY;
 	if (ip == NULL) {
 	    return (ENOMEM);
 	}
@@ -261,9 +261,9 @@ W open_special_dev(struct proc * procp)
 	fs_register_inode(ip);
 
 	/* 標準エラー出力の設定 */
-	procp->proc_open_file[2].f_inode = ip = alloc_inode();
-	procp->proc_open_file[2].f_offset = 0;
-	procp->proc_open_file[2].f_omode = O_WRONLY;
+	procp->session.files[2].f_inode = ip = alloc_inode();
+	procp->session.files[2].f_offset = 0;
+	procp->session.files[2].f_omode = O_WRONLY;
 	if (ip == NULL) {
 	    return (ENOMEM);
 	}

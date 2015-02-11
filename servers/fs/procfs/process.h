@@ -93,7 +93,7 @@ Version 2, June 1991
 
 #include <fs/config.h>
 #include <sys/syscall.h>
-#include "../types.h"
+#include "../session.h"
 
 enum proc_status
 {
@@ -112,10 +112,7 @@ struct proc
 
   ID			proc_maintask;		/* メインタスク */
 
-  struct permission permission;
-
-  struct inode		*proc_workdir;
-  struct file		proc_open_file[MAX_OPEN];
+  session_t session;
 
   UW			proc_pid;		/* my process ID 
 						 * この値が 0 のときは、このエントリは、

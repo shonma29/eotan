@@ -131,8 +131,8 @@ W copy_local(struct proc *parent, struct proc *child)
 
     local_data.thread_id = child->proc_maintask;
     local_data.process_id = child->proc_pid;
-    local_data.user_id = child->permission.uid;
-    local_data.group_id = child->permission.gid;
+    local_data.user_id = child->session.permission.uid;
+    local_data.group_id = child->session.permission.gid;
     local_data.parent_process_id = child->proc_ppid;
 
     error_no = kcall->region_put(child->proc_maintask, (thread_local_t*)LOCAL_ADDR,
@@ -173,19 +173,19 @@ static W proc_duplicate(struct proc * source, struct proc * destination)
     /* オープンファイルの情報のコピー
      */
     for (index = 0; index < MAX_OPEN; index++) {
-	if (source->proc_open_file[index].f_inode != NULL) {
-	    destination->proc_open_file[index] =
-		source->proc_open_file[index];
-	    destination->proc_open_file[index].f_inode->i_refcount++;
+	if (source->session.files[index].f_inode != NULL) {
+	    destination->session.files[index] =
+		source->session.files[index];
+	    destination->session.files[index].f_inode->i_refcount++;
 	}
     }
 
     /* copy of working directory */
-    destination->proc_workdir = source->proc_workdir;
-    destination->proc_workdir->i_refcount++;
+    destination->session.cwd = source->session.cwd;
+    destination->session.cwd->i_refcount++;
 
     /* copy of uid/gid */
-    destination->permission = source->permission;
+    destination->session.permission = source->session.permission;
 
     return (EOK);
 }
