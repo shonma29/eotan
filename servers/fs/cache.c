@@ -40,25 +40,23 @@ typedef struct {
     W fd;
     W blockno;
     B buf[CACHE_BLOCK_SIZE];
-} BLOCK_CACHE;
+} block_cache_t;
 
 #ifdef USE_MALLOC
-static BLOCK_CACHE *cache_data;
+static block_cache_t *cache_data;
 #else
-static BLOCK_CACHE cache_data[CACHE_SIZE];
+static block_cache_t cache_data[CACHE_SIZE];
 #endif
 static short int cache_head;
 static short int hash_table[HASH_SIZE + 1];
 
-static W read_block (ID device, W blockno, W blocksize, B *buf);
-static W write_block (ID device, W blockno, W blocksize, B *buf);
 
 void purge_cache(void)
 {
     int i;
 
     for (i = 0; i < CACHE_SIZE; ++i) {
-	memset((B*)(&cache_data[i]), 0, sizeof(BLOCK_CACHE));
+	memset((B*)(&cache_data[i]), 0, sizeof(block_cache_t));
 	cache_data[i].lru_next = i + 1;
 	cache_data[i].lru_prev = i - 1;
 	cache_data[i].hash_next = -1;
@@ -77,12 +75,12 @@ void purge_cache(void)
 void init_cache(void)
 {
 #ifdef USE_MALLOC
-    CACHE_SIZE = pageRoundUp(CACHE_SIZE * sizeof(BLOCK_CACHE))
+    CACHE_SIZE = pageRoundUp(CACHE_SIZE * sizeof(block_cache_t))
 	- 12;
     /* 12 は ITRON/kernlib/malloc.c の alloc_entry_t から来ている */
-    CACHE_SIZE /= sizeof(BLOCK_CACHE);
+    CACHE_SIZE /= sizeof(block_cache_t);
     cache_data =
-	(BLOCK_CACHE *) malloc(sizeof(BLOCK_CACHE) * (CACHE_SIZE));
+	(block_cache_t *) malloc(sizeof(block_cache_t) * (CACHE_SIZE));
 #endif
 
     purge_cache();
@@ -91,7 +89,7 @@ void init_cache(void)
 void get_cache(W fd, W blockno, W * cn, B ** ptr)
 {
     int i, hn;
-    BLOCK_CACHE *cp;
+    block_cache_t *cp;
 
     if (blockno < 0) {
 	*cn = -1;
@@ -114,29 +112,49 @@ void get_cache(W fd, W blockno, W * cn, B ** ptr)
 	cp = &cache_data[cache_head];
 
 	if (cp->dirty) {
-	    write_block(cp->fd, cp->blockno, CACHE_BLOCK_SIZE, cp->buf);
+	    W rsize;
+
+	    if (write_device(cp->fd, cp->buf, cp->blockno * CACHE_BLOCK_SIZE,
+		    CACHE_BLOCK_SIZE, &rsize)) {
+		dbg_printf("fs: get_cache write error\n");
+		*cn = -1;
+		*ptr = NULL;
+		return;
+	    }
+
 	    cp->dirty = 0;
 	}
 	/* remove from hash chain */
 	if (cp->blockno >= 0) {
 	    /* 既に hash に登録されている場合 */
-	    int hn2;
-	    hn2 = (cp->blockno % HASH_SIZE) + 1;
 	    if (cp->hash_prev == -1) {
-		hash_table[hn2] = cp->hash_next;
-		if (cp->hash_next != -1) {
-		    cache_data[cp->hash_next].hash_prev = -1;
-		}
+		/* head of hash chain */
+		hash_table[(cp->blockno % HASH_SIZE) + 1] = cp->hash_next;
 	    } else {
 		cache_data[cp->hash_prev].hash_next = cp->hash_next;
-		if (cp->hash_next != -1) {
-		    cache_data[cp->hash_next].hash_prev = cp->hash_prev;
-		}
+	    }
+
+	    if (cp->hash_next != -1) {
+		/* not tail of hash chain */
+		cache_data[cp->hash_next].hash_prev = cp->hash_prev;
 	    }
 	}
 	memset(cp->buf, 0, CACHE_BLOCK_SIZE);
 
-	read_block(fd, blockno, CACHE_BLOCK_SIZE, cp->buf);
+	{
+		W rsize;
+
+		if (read_device(fd, cp->buf, blockno * CACHE_BLOCK_SIZE, CACHE_BLOCK_SIZE,
+			&rsize)) {
+		    dbg_printf("fs: get_cache read error\n");
+		    cp->fd = 0;
+		    cp->blockno = -1;
+		    *cn = -1;
+		    *ptr = NULL;
+		    return;
+		}
+	}
+
 	cp->fd = fd;
 	cp->blockno = blockno;
 	*ptr = cp->buf;
@@ -181,7 +199,7 @@ void get_cache(W fd, W blockno, W * cn, B ** ptr)
 void check_cache(W fd, W blockno, W * cn)
 {
     int i, hn;
-    BLOCK_CACHE *cp;
+    block_cache_t *cp;
 
     if (blockno < 0) {
 	*cn = -1;
@@ -218,7 +236,7 @@ void check_cache(W fd, W blockno, W * cn)
  */
 void put_cache(W cn, W dirty)
 {
-    BLOCK_CACHE *cp;
+    block_cache_t *cp;
 
     if (cn < 0) {
 	dbg_printf("fs: WARNING: negative cache number\n");
@@ -253,17 +271,19 @@ void put_cache(W cn, W dirty)
 W sync_cache(W fd, W umflag)
 {
     int i;
-    BLOCK_CACHE *cp;
+    block_cache_t *cp;
     W error_no;
 
     for (i = 0; i < CACHE_SIZE; ++i) {
 	cp = &cache_data[i];
 	if (cp->fd == fd) {
 	    if (cp->dirty) {
+		W rsize;
+
 		error_no =
-		    write_block(fd, cp->blockno, CACHE_BLOCK_SIZE,
-				    cp->buf);
-		if (error_no < 0) {
+		    write_device(fd, cp->buf, cp->blockno * CACHE_BLOCK_SIZE,
+			    CACHE_BLOCK_SIZE, &rsize);
+		if (error_no) {
 		    dbg_printf("fs: sync_cache write error\n");
 		    return (error_no);
 		}
@@ -275,46 +295,4 @@ W sync_cache(W fd, W umflag)
 	}
     }
     return (EOK);
-}
-
-/* read_block - ブロックをひとつ読み込む
- *
- */
-static W read_block(ID device, W blockno, W blocksize, B * buf)
-{
-    W rsize;
-    W error_no;
-
-#ifdef FMDEBUG
-    dbg_printf
-	("fs: read_block: device = %d, blockno = %d, blocksize = %d, buf = 0x%x\n",
-	 device, blockno, blocksize, buf);
-#endif
-
-    error_no =
-	read_device(device, buf, blockno * blocksize, blocksize,
-			&rsize);
-    if (error_no) {
-	return (error_no);
-    }
-
-    return (rsize);
-}
-
-/* write_block - ブロックをひとつ書き込む
- *
- */
-static W write_block(ID device, W blockno, W blocksize, B * buf)
-{
-    W error_no;
-    W rsize;
-
-    error_no =
-	write_device(device, buf, blockno * blocksize, blocksize,
-			 &rsize);
-    if (error_no) {
-	return (error_no);
-    }
-
-    return (rsize);
 }
