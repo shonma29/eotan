@@ -148,14 +148,14 @@ static ER accept(const ID port)
 
 	size = kcall.port_accept(port, &rdvno, &message);
 	if (size < 0) {
-		dbg_printf("[HMI] acp_por error=%d\n", size);
+		dbg_printf("hmi: acp_por error=%d\n", size);
 		return size;
 	}
 
 	execute(message);
 	result = kcall.port_reply(rdvno, &message, 0);
 	if (result) {
-		dbg_printf("[HMI] rpl_rdv error=%d\n", result);
+		dbg_printf("hmi: rpl_rdv error=%d\n", result);
 	}
 
 	return result;
@@ -184,7 +184,7 @@ static ER_ID initialize(void)
 //	port = acre_por(&pk_cpor);
 	port = kcall.port_create_auto(&pk_cpor);
 	if (port < 0) {
-		dbg_printf("[HMI] acre_por error=%d\n", port);
+		dbg_printf("hmi: acre_por error=%d\n", port);
 
 		return port;
 	}
@@ -192,7 +192,7 @@ static ER_ID initialize(void)
 	result = bind_device(get_device_id(DEVICE_MAJOR_CONSOLE, 0),
 			(UB*)MYNAME, port, DEV_BUF_SIZE);
 	if (result) {
-		dbg_printf("[HMI] bind error=%d\n", result);
+		dbg_printf("hmi: bind error=%d\n", result);
 //		del_por(port);
 		kcall.port_destroy(port);
 
@@ -217,12 +217,12 @@ void start(VP_INT exinf)
 	};
 
 	if (port >= 0) {
-		dbg_printf("[HMI] start port=%d\n", port);
+		dbg_printf("hmi: start port=%d\n", port);
 
 		if (keyboard_initialize() == E_OK) {
 			ER_ID t2 = kcall.thread_create_auto(&pk);
 
-			dbg_printf("[HMI]keyboard=%d\n", t2);
+			dbg_printf("hmi: keyboard=%d\n", t2);
 
 			if (t2 > 0)
 				kcall.thread_start(t2);
@@ -234,7 +234,7 @@ void start(VP_INT exinf)
 			pk.task = (FP)mouse_accept;
 			t2 = kcall.thread_create_auto(&pk);
 
-			dbg_printf("[HMI]mouse=%d\n", t2);
+			dbg_printf("hmi: mouse=%d\n", t2);
 
 			if (t2 > 0)
 				kcall.thread_start(t2);
@@ -244,7 +244,7 @@ void start(VP_INT exinf)
 
 //		del_por(port);
 		kcall.port_destroy(port);
-		dbg_printf("[HMI] end\n");
+		dbg_printf("hmi: end\n");
 	}
 
 	kcall.thread_end_and_destroy();

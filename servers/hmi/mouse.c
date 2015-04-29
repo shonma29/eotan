@@ -121,21 +121,21 @@ ER mouse_initialize(void)
 
 	mouse_queue_id = kcall->queue_create_auto(&pk_cdtq);
 	if (mouse_queue_id < 0) {
-		dbg_printf("[mouse] acre_dtq error=%d\n", mouse_queue_id);
+		dbg_printf("mouse: acre_dtq error=%d\n", mouse_queue_id);
 
 		return mouse_queue_id;
 	}
 
 	result = kcall->interrupt_bind(PIC_IR_VECTOR(ir_mouse), &pk_dinh);
 	if (result) {
-		dbg_printf("[mouse] interrupt_bind error=%d\n", result);
+		dbg_printf("mouse: interrupt_bind error=%d\n", result);
 		kcall->queue_destroy(mouse_queue_id);
 		return result;
 	}
 
 	result = kcall->interrupt_enable(ir_mouse);
 	if (result) {
-		dbg_printf("[mouse] interrupt_enable error=%d\n", result);
+		dbg_printf("mouse: interrupt_enable error=%d\n", result);
 		pk_dinh.inthdr = NULL;
 		kcall->interrupt_bind(PIC_IR_VECTOR(ir_mouse), &pk_dinh);
 		kcall->queue_destroy(mouse_queue_id);

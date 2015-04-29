@@ -162,7 +162,7 @@ void start(VP_INT exinf)
 #ifdef DEBUG
 	    if ((request.operation != PSC_WRITE) &&
 		(request.operation != PSC_READ))
-	      dbg_printf("posix: systemcall[%s] end %d.\n",
+	      dbg_printf("fs: systemcall[%s] end %d.\n",
 		     syscall_table[request.operation].name, res);
 #endif
 	}
@@ -173,5 +173,5 @@ void start(VP_INT exinf)
 
 static void banner(void)
 {
-    dbg_printf("fs: started.\n");
+    dbg_printf("fs: start\n");
 }

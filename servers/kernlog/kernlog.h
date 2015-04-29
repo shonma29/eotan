@@ -29,4 +29,6 @@ For more information, please refer to <http://unlicense.org/>
 
 #define SYSLOG_SIZE (32 * 1024)
 
+#define MYNAME kernlog
+
 #endif

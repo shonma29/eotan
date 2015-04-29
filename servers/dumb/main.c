@@ -31,6 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 #define BUFSIZ 16
 #define MIN_AUTO_PORT 49152
 #define STATIC_PORT 49151
+#define MYNAME "dumb"
 
 static ID port = 0;
 
@@ -49,30 +50,30 @@ static int test_cre_por(void)
 	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	port = kcall->port_create(0, &pk_cpor);
-	dbg_printf("[DUMB] test_cre_por_1 result = %d\n", port);
+	dbg_printf(MYNAME ": test_cre_por_1 result = %d\n", port);
 	if (port != E_ID)	return 0;
 
 	port = kcall->port_create(MIN_AUTO_PORT, &pk_cpor);
-	dbg_printf("[DUMB] test_cre_por_2 result = %d\n", port);
+	dbg_printf(MYNAME ": test_cre_por_2 result = %d\n", port);
 	if (port != E_ID)	return 0;
 
 	port = kcall->port_create(STATIC_PORT, 0);
-	dbg_printf("[DUMB] test_cre_por_3 result = %d\n", port);
+	dbg_printf(MYNAME ": test_cre_por_3 result = %d\n", port);
 	if (port != E_PAR)	return 0;
 
 	pk_cpor.poratr = TA_TPRI;
 	port = kcall->port_create(STATIC_PORT, &pk_cpor);
-	dbg_printf("[DUMB] test_cre_por_4 result = %d\n", port);
+	dbg_printf(MYNAME ": test_cre_por_4 result = %d\n", port);
 	if (port != E_RSATR)	return 0;
 
 	pk_cpor.poratr = TA_TFIFO;
 	port = kcall->port_create(STATIC_PORT, &pk_cpor);
-	dbg_printf("[DUMB] test_cre_por_5 result  = %d\n", port);
+	dbg_printf(MYNAME ": test_cre_por_5 result  = %d\n", port);
 	if (port != E_OK)	return 0;
 	port = STATIC_PORT;
 
 	dupport = kcall->port_create(STATIC_PORT, &pk_cpor);
-	dbg_printf("[DUMB] test_cre_por_6 result = %d\n", dupport);
+	dbg_printf(MYNAME ": test_cre_por_6 result = %d\n", dupport);
 	if (dupport != E_OBJ)	return 0;
 
 	return 1;
@@ -85,17 +86,17 @@ static int test_acre_por(void)
 	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	port = kcall->port_create_auto(0);
-	dbg_printf("[DUMB] test_acre_por_1 port = %d\n", port);
+	dbg_printf(MYNAME ": test_acre_por_1 port = %d\n", port);
 	if (port != E_PAR)	return 0;
 
 	pk_cpor.poratr = TA_TPRI;
 	port = kcall->port_create_auto(&pk_cpor);
-	dbg_printf("[DUMB] test_acre_por_2 port = %d\n", port);
+	dbg_printf(MYNAME ": test_acre_por_2 port = %d\n", port);
 	if (port != E_RSATR)	return 0;
 
 	pk_cpor.poratr = TA_TFIFO;
 	port = kcall->port_create_auto(&pk_cpor);
-	dbg_printf("[DUMB] test_acre_por_3 port = %d\n", port);
+	dbg_printf(MYNAME ": test_acre_por_3 port = %d\n", port);
 	if (port <= 0)	return 0;
 
 	return 1;
@@ -111,29 +112,29 @@ static int test_acp_por(void)
 	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 /*	size = kcall->port_accept(port, 1, &rdvno, buf);
-	dbg_printf("[DUMB] test_acp_por_1 size = %d\n", size);
+	dbg_printf(MYNAME ": test_acp_por_1 size = %d\n", size);
 	if (size != E_NOSPT)	return 0;
 
 	size = kcall->port_accept(0, 0xffffffff, &rdvno, buf);
-	dbg_printf("[DUMB] test_acp_por_2 size = %d\n", size);
+	dbg_printf(MYNAME ": test_acp_por_2 size = %d\n", size);
 	if (size != E_NOEXS)	return 0;
 */
 	for (;;) {
 /*
 		size = kcall->port_accept(port, &rdvno, 0);
-		dbg_printf("[DUMB] test_acp_por_3 rdvno = %d, size = %d\n",
+		dbg_printf(MYNAME ": test_acp_por_3 rdvno = %d, size = %d\n",
 				rdvno, size);
 		if (size != E_PAR)	return 0;
 */
-		dbg_printf("[DUMB] test_acp_por_4 port = %d\n", port);
+		dbg_printf(MYNAME ": test_acp_por_4 port = %d\n", port);
 		size = kcall->port_accept(port, &rdvno, buf);
-		dbg_printf("[DUMB] test_acp_por_4 rdvno = %d, size = %d\n",
+		dbg_printf(MYNAME ": test_acp_por_4 rdvno = %d, size = %d\n",
 				rdvno, size);
 
 		if (size < 0)	break;
 
 		for (i = 0; i < size; i++) {
-			dbg_printf("[DUMB] buf[%d] = %c\n", i, buf[i]);
+			dbg_printf(MYNAME ": buf[%d] = %c\n", i, buf[i]);
 		}
 
 		buf[0] = 'd';
@@ -142,19 +143,19 @@ static int test_acp_por(void)
 		buf[3] = 'b';
 
 		result = kcall->port_reply(0, buf, 4);
-		dbg_printf("[DUMB] test_rpl_rdv_1 result = %d\n", result);
+		dbg_printf(MYNAME ": test_rpl_rdv_1 result = %d\n", result);
 		if (result != E_OBJ)	return 0;
 
 		result = kcall->port_reply(rdvno, buf, 17);
-		dbg_printf("[DUMB] test_rpl_rdv_2 result = %d\n", result);
+		dbg_printf(MYNAME ": test_rpl_rdv_2 result = %d\n", result);
 		if (result != E_PAR)	return 0;
 
 		result = kcall->port_reply(rdvno, 0, 4);
-		dbg_printf("[DUMB] test_rpl_rdv_3 result = %d\n", result);
+		dbg_printf(MYNAME ": test_rpl_rdv_3 result = %d\n", result);
 		if (result != E_PAR)	return 0;
 
 		result = kcall->port_reply(rdvno, buf, 4);
-		dbg_printf("[DUMB] test_rpl_rdv_4 result = %d\n", result);
+		dbg_printf(MYNAME ": test_rpl_rdv_4 result = %d\n", result);
 		if (result != E_OK)	return 0;
 
 		break;
@@ -169,15 +170,15 @@ static int test_del_por(void)
 	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	result = kcall->port_destroy(0);
-	dbg_printf("[DUMB] test_del_por_1 result = %d\n", result);
+	dbg_printf(MYNAME ": test_del_por_1 result = %d\n", result);
 	if (result != E_NOEXS)	return 0;
 
 	result = kcall->port_destroy(port);
-	dbg_printf("[DUMB] test_del_por_2 result = %d\n", result);
+	dbg_printf(MYNAME ": test_del_por_2 result = %d\n", result);
 	if (result != E_OK)	return 0;
 
 	result = kcall->port_destroy(port);
-	dbg_printf("[DUMB] test_del_por_3 result = %d\n", result);
+	dbg_printf(MYNAME ": test_del_por_3 result = %d\n", result);
 	if (result != E_NOEXS)	return 0;
 
 	port = 0;
@@ -188,13 +189,13 @@ void start(VP_INT exinf)
 {
 	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-	dbg_printf("[DUMB] start\n");
+	dbg_printf(MYNAME ": start\n");
 
 	if (test_acre_por())	test_acp_por();
 
 	if (port > 0)	test_del_por();
 
-	dbg_printf("[DUMB] exit\n");
+	dbg_printf(MYNAME ": exit\n");
 
 	kcall->thread_end_and_destroy();
 }

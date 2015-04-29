@@ -115,14 +115,14 @@ static ER accept(const ID port)
 
 	size = kcall->port_accept(port, &rdvno, &message);
 	if (size < 0) {
-		dbg_printf("[RAMDISK] acp_por error=%d\n", size);
+		dbg_printf(MYNAME ": acp_por error=%d\n", size);
 		return size;
 	}
 
 	execute(message);
 	result = kcall->port_reply(rdvno, &message, 0);
 	if (result) {
-		dbg_printf("[RAMDISK] rpl_rdv error=%d\n", result);
+		dbg_printf(MYNAME ": rpl_rdv error=%d\n", result);
 	}
 
 	return result;
@@ -134,12 +134,12 @@ static void load_initrd(void)
 
 	if (info->initrd.size > 0) {
 		if (info->initrd.size <= sizeof(buf)) {
-			dbg_printf("[RAMDISK] initrd start=%p size=%x\n",
+			dbg_printf(MYNAME ": initrd start=%p size=%x\n",
 					info->initrd.start, info->initrd.size);
 			memcpy(buf, info->initrd.start, info->initrd.size);
 
 		} else {
-			dbg_printf("[RAMDISK] initrd too large %x\n",
+			dbg_printf(MYNAME ": initrd too large %x\n",
 				info->initrd.size);
 		}
 	}
@@ -160,7 +160,7 @@ static ER_ID initialize(void)
 
 	port = kcall->port_create_auto(&pk_cpor);
 	if (port < 0) {
-		dbg_printf("[RAMDISK] acre_por error=%d\n", port);
+		dbg_printf(MYNAME ": acre_por error=%d\n", port);
 
 		return port;
 	}
@@ -168,7 +168,7 @@ static ER_ID initialize(void)
 	result = bind_device(get_device_id(DEVICE_MAJOR_RAMDISK, 0),
 			(UB*)MYNAME, port, sizeof(buf));
 	if (result) {
-		dbg_printf("[RAMDISK] bind error=%d\n", result);
+		dbg_printf(MYNAME ": bind error=%d\n", result);
 		kcall->port_destroy(port);
 
 		return E_SYS;
@@ -183,12 +183,12 @@ void start(VP_INT exinf)
 	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	if (port >= 0) {
-		dbg_printf("[RAMDISK] start port=%d\n", port);
+		dbg_printf(MYNAME ": start port=%d\n", port);
 
 		while (accept(port) == E_OK);
 
 		kcall->port_destroy(port);
-		dbg_printf("[RAMDISK] end\n");
+		dbg_printf(MYNAME ": end\n");
 	}
 
 	kcall->thread_end_and_destroy();

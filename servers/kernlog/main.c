@@ -164,13 +164,13 @@ static ER accept(const ID port)
 
 	size = kcall->port_accept(port, &rdvno, &message);
 	if (size < 0) {
-		/*dbg_printf("[KERNLOG] acp_por error=%d\n", size);*/
+		/*dbg_printf(MYNAME ": acp_por error=%d\n", size);*/
 		return size;
 	}
 
 	result = kcall->port_reply(rdvno, &message, execute(&message));
 	if (result) {
-		/*dbg_printf("[KERNLOG] rpl_rdv error=%d\n", result);*/
+		/*dbg_printf(MYNAME ": rpl_rdv error=%d\n", result);*/
 	}
 
 	return result;
@@ -190,7 +190,7 @@ static ER_ID initialize(void)
 
 	err = kcall->port_create(PORT_SYSLOG, &pk_cpor);
 	if (err) {
-		/*dbg_printf("[KERNLOG] cre_por error=%d\n", err);*/
+		/*dbg_printf(MYNAME ": cre_por error=%d\n", err);*/
 
 		return err;
 	}
@@ -204,12 +204,12 @@ void start(VP_INT exinf)
 	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	if (port >= 0) {
-		/*dbg_printf("[KERNLOG] start port=%d\n", port);*/
+		/*dbg_printf(MYNAME ": start port=%d\n", port);*/
 
 		while (accept(port) == E_OK);
 
 		kcall->port_destroy(port);
-		/*dbg_printf("[KERNLOG] end\n");*/
+		/*dbg_printf(MYNAME ": end\n");*/
 	}
 
 	kcall->thread_end_and_destroy();

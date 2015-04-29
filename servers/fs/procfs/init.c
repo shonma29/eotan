@@ -95,7 +95,7 @@ static W create_init(ID process_id)
 	struct proc *p;
 	W err;
 
-	dbg_printf("[MM] create_init(%d)\n", process_id);
+	dbg_printf("fs: create_init(%d)\n", process_id);
 
 	if ((process_id < INIT_PID)
 			|| (process_id >= MAX_PROCESS))
@@ -127,7 +127,7 @@ static W create_init(ID process_id)
 
 	err = open_special_dev(p);
 	if (err) {
-		dbg_printf("[MM] can't open special files\n");
+		dbg_printf("fs: can't open special files\n");
 		return err;
 	}
 

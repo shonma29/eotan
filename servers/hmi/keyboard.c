@@ -252,14 +252,14 @@ void keyboard_accept(void)
 		size = kcall->port_accept(keyboard_port_id, &rdvno,
 				&message);
 		if (size < 0) {
-			dbg_printf("[keyboard] acp_por error=%d\n", size);
+			dbg_printf("keyboard: acp_por error=%d\n", size);
 			break;
 		}
 
 		execute(message);
 		result = kcall->port_reply(rdvno, &message, 0);
 		if (result) {
-			dbg_printf("[keyboard] rpl_rdv error=%d\n", result);
+			dbg_printf("keyboard: rpl_rdv error=%d\n", result);
 			break;
 		}
 	}
@@ -287,21 +287,21 @@ ER keyboard_initialize(void)
 
 	keyboard_queue_id = kcall->queue_create_auto(&pk_cdtq);
 	if (keyboard_queue_id < 0) {
-		dbg_printf("[keyboard] acre_dtq error=%d\n", keyboard_queue_id);
+		dbg_printf("keyboard: acre_dtq error=%d\n", keyboard_queue_id);
 
 		return keyboard_queue_id;
 	}
 
 	result = kcall->interrupt_bind(PIC_IR_VECTOR(ir_keyboard), &pk_dinh);
 	if (result) {
-		dbg_printf("[keyboard] interrupt_bind error=%d\n", result);
+		dbg_printf("keyboard: interrupt_bind error=%d\n", result);
 		kcall->queue_destroy(keyboard_queue_id);
 		return result;
 	}
 
 	result = kcall->interrupt_enable(ir_keyboard);
 	if (result) {
-		dbg_printf("[keyboard] interrupt_enable error=%d\n", result);
+		dbg_printf("keyboard: interrupt_enable error=%d\n", result);
 		pk_dinh.inthdr = NULL;
 		kcall->interrupt_bind(PIC_IR_VECTOR(ir_keyboard), &pk_dinh);
 		kcall->queue_destroy(keyboard_queue_id);
@@ -310,7 +310,7 @@ ER keyboard_initialize(void)
 
 	keyboard_port_id = kcall->port_create_auto(&pk_cpor);
 	if (keyboard_port_id < 0) {
-		dbg_printf("[keyboard] acre_por error=%d\n", keyboard_port_id);
+		dbg_printf("keyboard: acre_por error=%d\n", keyboard_port_id);
 
 		return result;
 	}
@@ -318,7 +318,7 @@ ER keyboard_initialize(void)
 	result = bind_device(get_device_id(DEVICE_MAJOR_KEYBOARD, 0),
 			(UB*)DEV_NAME_KEYBOARD, keyboard_port_id, DEV_BUF_SIZE);
 	if (result) {
-		dbg_printf("[keyboard] bind error=%d\n", result);
+		dbg_printf("keyboard: bind error=%d\n", result);
 		kcall->port_destroy(keyboard_port_id);
 	}
 
