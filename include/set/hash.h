@@ -41,7 +41,6 @@ typedef struct {
 	size_t size;
 	size_t num;
 	size_t max;
-	size_t tupple_size;
 	hash_entry_t *entries;
 	list_t spares;
 	list_t tbl[];

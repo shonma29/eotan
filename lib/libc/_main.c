@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <unistd.h>
 
 FILE __libc_files[FOPEN_MAX];
+char **environ;
 
 extern int main(int argc, char *argv[], char *envp[]);
 static void __libc_initialize(void);
@@ -36,6 +37,7 @@ static void __libc_initialize(void);
 
 void _main(int argc, char *argv[], char *envp[])
 {
+	environ = envp;
 	__libc_initialize();
 	exit(main(argc, argv, envp));
 }

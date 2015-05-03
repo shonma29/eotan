@@ -1,5 +1,3 @@
-#ifndef _UNISTD_H_
-#define _UNISTD_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,44 +25,31 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stddef.h>
-#include <stdint.h>
-#include <time.h>
-#include <utime.h>
-#include <sys/dirent.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/unistd.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
-#define STDIN_FILENO (0)
-#define STDOUT_FILENO (1)
-#define STDERR_FILENO (2)
 
-extern char **environ;
+char *getenv(const char *name)
+{
+	size_t len = strlen(name);
 
-extern int chdir(char *);
-extern int access(const char *, int);
-extern void *sbrk(intptr_t);
-extern int close(int);
-extern int dup(int);
-extern int dup2(int, int);
-extern int execve(char *name, char *argv[], char *envp[]);
-extern void _exit(int status) __attribute__ ((noreturn));
-extern int fcntl(int fileid, int cmd, ...);
-extern int fork(void);
-extern char *getcwd(char *buf, int size);
-extern gid_t getgid(void);
-extern pid_t getpid(void);
-extern pid_t getppid(void);
-extern uid_t getuid(void);
-extern int link(const char *, const char *);
-extern off_t lseek(int, off_t, int);
-extern int open(const char *path, int oflag, ...);
-extern ssize_t read(int, void *, size_t);
-extern int rmdir(const char *);
-extern int sleep(int);
-extern int clock_gettime(clockid_t, struct timespec *);
-extern int unlink(const char *);
-extern int waitpid(pid_t, int *, int);
-extern size_t write(int, const void *, size_t);
+	if (len && environ) {
+		char **envp;
 
-#endif
+		for (envp = environ; *envp; envp++) {
+			size_t i;
+			char *p = *envp;
+
+			for (i = 0; i < len; i++)
+				if (p[i] != name[i])
+					break;
+
+			if (i == len)
+				if (p[i] == '=')
+					return &(p[i + 1]);
+		}
+	}
+
+	return NULL;
+}

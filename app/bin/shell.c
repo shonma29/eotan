@@ -24,13 +24,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <ctype.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <errno.h>
-
-#include <ctype.h>
+#include <set/hash.h>
 
 #define ERR (-1)
 #define ERR_OK (0)
@@ -41,10 +41,19 @@ For more information, please refer to <http://unlicense.org/>
 #define DEFAULT_ARRAY_SIZE 16
 #define SHIFT_ARRAY_SIZE 1
 
+#define MAX_ENV (256)
+
 static size_t bufsize = DEFAULT_BUF_SIZE >> 1;
 static size_t arraysize = DEFAULT_ARRAY_SIZE >> 1;
 static char *buf = NULL;
 static char **array = NULL;
+
+static unsigned int env_calc_hash(const void *key, const size_t size);
+static int env_compare(const void *a, const void *b);
+static bool env_put(hash_t *hash, const char *envp);
+static void env_store(hash_t *hash);
+static char **env_expand(hash_t *hash);
+
 
 static void execute(char **env)
 {
@@ -136,8 +145,110 @@ static void parse()
 	array[pos] = NULL;
 }
 
+static unsigned int env_calc_hash(const void *key, const size_t size)
+{
+	unsigned int v = 0;
+	unsigned char *p;
+
+	for (p = (unsigned char*)key; *p && (*p != '='); p++)
+		v = ((v << CHAR_BIT) | *p) % size;
+
+	return v;
+}
+
+static int env_compare(const void *a, const void *b)
+{
+	unsigned char *x = (unsigned char*)a;
+	unsigned char *y = (unsigned char*)b;
+
+	for (; *x && (*x != '='); y++, x++)
+		if (*x != *y)
+			return 1;
+
+	return (!(*y) || (*y == '='))? 0:1;
+}
+
+static bool env_put(hash_t *hash, const char *env)
+{
+	char *p = hash_get(hash, env);
+
+	if (p) {
+		hash_remove(hash, p);
+		free(p);
+	}
+
+	p = strchr(env, '=');
+
+	if (!p)
+		return true;
+	if (p == env)
+		return false;
+	if (!p[1])
+		return true;
+
+	p = (char*)malloc(strlen(env));
+	if (!p) {
+		printf("no memory\n");
+		return false;
+	}
+
+	strcpy(p, env);
+
+	if (hash_put(hash, p, p)) {
+		free(p);
+		printf("no memory\n");
+		return false;
+	}
+
+	return true;
+}
+
+static void env_store(hash_t *hash)
+{
+	if (environ) {
+		char **envp;
+
+		for (envp = environ; *envp; envp++)
+			if (!env_put(hash, *envp))
+				break;
+	}
+}
+
+static char **env_expand(hash_t *hash)
+{
+	char **array = (char**)malloc((hash->num + 1) * sizeof(uintptr_t));
+
+	if (array) {
+		size_t i;
+		char **p = array;
+
+		for (i = 0; i < hash->size; i++) {
+			list_t *head = &(hash->tbl[i]);
+			list_t *entry;
+
+			for (entry = list_next(head);
+					!list_is_edge(head, entry);
+					entry = entry->next)
+				*p++ = ((hash_entry_t*)entry)->value;
+		}
+
+		*p = NULL;
+	}
+
+	return array;
+}
+
 int main(int argc, char **argv, char **env)
 {
+	hash_t *hash = hash_create(MAX_ENV, env_calc_hash, env_compare);
+
+	if (hash)
+		env_store(hash);
+	else {
+		printf("no memory\n");
+		return ERR_MEMORY;
+	}
+
 	get_buf();
 	get_array();
 
@@ -175,8 +286,24 @@ int main(int argc, char **argv, char **env)
 
 			} else if (!strcmp(array[0], "exit"))
 				break;
-			else
-				execute(env);
+
+			else if (!strcmp(array[0], "env")) {
+				if (environ) {
+					char **envp;
+
+					for (envp = environ; *envp; envp++)
+						printf("%s\n", *envp);
+				}
+
+			} else if (!strcmp(array[0], "export"))
+				env_put(hash, array[1]);
+
+			else {
+				char **envp = env_expand(hash);
+
+				execute(envp);
+				free(envp);
+			}
 		}
 	}
 

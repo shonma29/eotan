@@ -39,11 +39,6 @@ static size_t primes[] = {
 	8191, 16381, 32749, 65521, 131071, 262139, 524287, 1048573
 };
 
-static size_t tupples[] = {
-	64, 64, 128, 256, 512, 1024, 2048, 4096,
-	8192, 8192, 16384, 16384, 32768, 32768, 65536, 65536
-};
-
 extern void *malloc(const size_t size);
 extern void free(void *p);
 
@@ -110,7 +105,6 @@ hash_t *hash_create(const size_t max,
 			h->size = size;
 			h->num = 0;
 			h->max = max;
-			h->tupple_size = tupples[bits - HASH_MIN_BITS];
 			init_tbl(h->tbl, size);
 		}
 	}
@@ -184,6 +178,7 @@ int hash_remove(hash_t *h, const void *key) {
 	list_remove(p);
 	((hash_entry_t*)p)->key = NULL;
 	((hash_entry_t*)p)->value = NULL;
+	list_push(&(h->spares), p);
 
 	return HASH_OK;
 }
