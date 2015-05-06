@@ -41,7 +41,7 @@ For more information, please refer to <http://unlicense.org/>
 .set STACK_ADDR, 0x00008000
 .set MEMORY_INFO_ADDR, 0x3000
 .set VESA_INFO_ADDR, 0x3c00
-.set VESA_MODE, 0x0112
+.set VESA_MODE, 0x0118
 
 /**
  * start on segment 0x0800.
