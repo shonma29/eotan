@@ -30,117 +30,117 @@ Version 2, June 1991
 #include <mpu/memory.h>
 #include <nerve/kcall.h>
 #include "fs.h"
+#include "api.h"
 
-void psc_chmod_f(RDVNO rdvno, struct posix_request *req)
+void if_chmod(fs_request *req)
 {
-    B path[MAX_NAMELEN + 1];
     struct inode *startip;
     struct inode *ipp;
     struct permission acc;
     W err;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    if (kcall->region_copy(get_rdv_tid(rdvno), (UB*)(req->args.arg1),
-		 sizeof(path) - 1, path) < 0) {
-	put_response(rdvno, EINVAL, -1, 0);
+    if (kcall->region_copy(get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg1),
+		 sizeof(req->buf) - 1, req->buf) < 0) {
+	put_response(req->rdvno, EINVAL, -1, 0);
 	return;
     }
-    path[MAX_NAMELEN] = '\0';
+    req->buf[MAX_NAMELEN] = '\0';
 
-    if (*path == '/') {
+    if (req->buf[0] == '/') {
 	/* 絶対パスによる指定 */
 	startip = rootfile;
     } else {
-	if (proc_get_cwd(req->procid, &startip)) {
-	    put_response(rdvno, EINVAL, -1, 0);
+	if (proc_get_cwd(req->packet.procid, &startip)) {
+	    put_response(req->rdvno, EINVAL, -1, 0);
 	    return;
 	}
     }
 
-    if (proc_get_permission(req->procid, &acc)) {
-	put_response(rdvno, EINVAL, -1, 0);
+    if (proc_get_permission(req->packet.procid, &acc)) {
+	put_response(req->rdvno, EINVAL, -1, 0);
 	return;
     }
 
-    err = fs_lookup(startip, path, O_RDWR, 0, &acc, &ipp);
+    err = fs_lookup(startip, req->buf, O_RDWR, 0, &acc, &ipp);
     if (err) {
-	put_response(rdvno, ENOENT, -1, 0);
+	put_response(req->rdvno, ENOENT, -1, 0);
 	return;
     }
 
-    ipp->i_mode = (ipp->i_mode & S_IFMT) | req->args.arg2;
+    ipp->i_mode = (ipp->i_mode & S_IFMT) | req->packet.args.arg2;
     OPS(ipp).wstat(ipp);
     ipp->i_dirty = 1;
 
     /* fs_close_file で行う処理 */
     if (fs_sync_file(ipp)) {
-	put_response(rdvno, EINVAL, -1, 0);
+	put_response(req->rdvno, EINVAL, -1, 0);
 	dealloc_inode(ipp);
 	return;
     }
 
     dealloc_inode(ipp);
-    put_response(rdvno, EOK, 0, 0);
+    put_response(req->rdvno, EOK, 0, 0);
 }
 
-/* psc_fstat_f - ファイルの情報を返す
+/* if_fstat - ファイルの情報を返す
  */
-void psc_fstat_f(RDVNO rdvno, struct posix_request *req)
+void if_fstat(fs_request *req)
 {
     struct file *fp;
     W error_no;
     struct stat st;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    error_no = proc_get_file(req->procid, req->args.arg1, &fp);
+    error_no = proc_get_file(req->packet.procid, req->packet.args.arg1, &fp);
     if (error_no) {
-	put_response(rdvno, error_no, -1, 0);
+	put_response(req->rdvno, error_no, -1, 0);
 	return;
     }
 
     if (fp == 0) {
-	put_response(rdvno, EINVAL, -1, 0);
+	put_response(req->rdvno, EINVAL, -1, 0);
 	return;
     } else if (fp->f_inode == 0) {
-	put_response(rdvno, EINVAL, -1, 0);
+	put_response(req->rdvno, EINVAL, -1, 0);
 	return;
     } else if (fp->f_inode->i_fs == NULL) {
-	put_response(rdvno, EINVAL, -1, 0);
+	put_response(req->rdvno, EINVAL, -1, 0);
 	return;
     }
 
     fp->f_inode->i_fs->ops.stat(fp->f_inode, &st);
 
     error_no =
-	kcall->region_put(get_rdv_tid(rdvno), (UB*)(req->args.arg2), sizeof(struct stat),
+	kcall->region_put(get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg2), sizeof(struct stat),
 		 &st);
     if (error_no) {
-	put_response(rdvno, EINVAL, 0, 0);
+	put_response(req->rdvno, EINVAL, 0, 0);
 	return;
     }
 
-    put_response(rdvno, EOK, 0, 0);
+    put_response(req->rdvno, EOK, 0, 0);
 }
 
 void
-psc_statvfs_f (RDVNO rdvno, struct posix_request *req)
+if_statvfs (fs_request *req)
 {
   struct statvfs	result;
   ER		error_no;
   kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-  error_no = fs_statvfs (req->param.par_statvfs.device, &result);
+  error_no = fs_statvfs (req->packet.param.par_statvfs.device, &result);
   if (error_no)
     {
-      put_response (rdvno, error_no, -1, 0);    
+      put_response (req->rdvno, error_no, -1, 0);
       return;
     }
 
-  error_no = kcall->region_put(get_rdv_tid(rdvno), req->param.par_statvfs.fsp, sizeof (struct statvfs), &result);
+  error_no = kcall->region_put(get_rdv_tid(req->rdvno), req->packet.param.par_statvfs.fsp, sizeof (struct statvfs), &result);
   if (error_no)
     {
-      put_response (rdvno, EFAULT, -1, 0);
+      put_response (req->rdvno, EFAULT, -1, 0);
       return;
     }
-  put_response (rdvno, EOK, 0, 0);
+  put_response (req->rdvno, EOK, 0, 0);
 }
