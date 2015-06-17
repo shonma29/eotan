@@ -1,177 +1,99 @@
 /*
+This is free and unencumbered software released into the public domain.
 
-B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
 
-GNU GENERAL PUBLIC LICENSE
-Version 2, June 1991
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
 
-(C) B-Free Project.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
 
-(C) 2001-2002, Tomohide Naniwa
-
+For more information, please refer to <http://unlicense.org/>
 */
-
-/* posix.c - POSIX 環境マネージャ
- *
- *
- *
- * $Log: posix.c,v $
- * Revision 1.21  2000/04/03 14:32:33  naniwa
- * minor fix
- *
- * Revision 1.20  2000/02/19 03:02:14  naniwa
- * minor change on debug write
- *
- * Revision 1.19  2000/01/26 08:24:34  naniwa
- * to prevent memory leak
- *
- * Revision 1.18  1999/03/15 08:39:24  monaka
- * Some fixes for using dbg_printf().
- *
- * Revision 1.17  1997/10/24 13:58:14  night
- * 実行開始時に init_malloc () を呼び出すようにした。
- *
- * Revision 1.16  1997/09/21 13:34:11  night
- * ライブラリの malloc マクロを使用しないようにした。
- *
- * Revision 1.15  1997/08/31 13:30:57  night
- * デバッグ用出力の一部を #ifdef DEBUG ... #endif で新しく囲んだ。
- *
- * Revision 1.14  1997/07/06 11:56:41  night
- * malloc 機能の初期化指定を追加。
- *
- * Revision 1.13  1997/07/04 15:07:39  night
- * ・スペシャルファイル - デバイスドライバポートの対応表の関連処理の追加。
- * ・ファイルの読み込み処理の改訂。
- *
- * Revision 1.12  1997/07/03 14:24:30  night
- * mountroot/open 処理のバグを修正。
- *
- * Revision 1.11  1997/05/08 15:11:29  night
- * プロセスの情報を設定する機能の追加。
- * (syscall misc の proc_set_info コマンド)
- *
- * Revision 1.10  1997/04/28 15:28:18  night
- * デバッグ用の文を追加。
- *
- * Revision 1.9  1997/04/24 15:40:30  night
- * mountroot システムコールの実装を行った。
- *
- * Revision 1.8  1997/03/25 15:45:23  night
- * デバッグ用に追加した無限ループ文(初期化終了時に停止するようにしていた)を
- * 削除した。
- *
- * Revision 1.7  1997/03/25 13:34:53  night
- * ELF 形式の実行ファイルへの対応
- *
- * Revision 1.6  1996/11/20  12:09:54  night
- * rcsid の追加。
- *
- * Revision 1.5  1996/11/11  13:37:06  night
- * コメント追加
- *
- * Revision 1.4  1996/11/10  11:54:27  night
- * システムコール関数にリクエスト情報を渡すときに、ポインタ渡しでなければ
- * いけないところを実体を渡していた。
- *
- * Revision 1.3  1996/11/07  21:11:49  night
- * Version 番号を出力するときに最後に改行を出力するように変更した。
- *
- * Revision 1.2  1996/11/07  12:46:38  night
- * システムコール処理部を作成した。
- *
- * Revision 1.1  1996/11/05  15:13:45  night
- * 最初の登録
- *
- */
-
 #include <nerve/kcall.h>
 #include "api.h"
 #include "fs.h"
 #include "devfs/devfs.h"
 
-static void banner(void);
+static fs_request request;
+static kcall_t *kcall = (kcall_t*)KCALL_ADDR;
+static void (*syscall[])(fs_request*) = {
+	if_chdir,
+	if_chmod,
+	if_close,
+	if_dup,
+	if_exec,
+	if_exit,
+	if_fcntl,
+	if_fork,
+	if_fstat,
+	if_link,
+	if_lseek,
+	if_mkdir,
+	if_open,
+	if_read,
+	if_rmdir,
+	if_unlink,
+	if_waitpid,
+	if_write,
+	if_getdents,
+	if_mount,
+	if_statvfs,
+	if_unmount,
+	if_kill,
+	if_dup2,
+	if_bind_device,
+};
 
-/*
- * POSIX 環境マネージャのメインルーチン
- *
- * 次の処理を行う
- *
- * ・初期化
- *   ポートマネージャに要求受け付け用のポートを登録する
- *   ファイルシステム/プロセス/メモリの各処理の初期化を行う
- *
- * ・要求の受け付け
- *   要求の受け付けは、要求受け付けポートによって行う。
- *
- * ・要求の処理
- *
- *   要求の受けつけから処理がおわるまでは他の要求は受け付けない。
- */
-void start(VP_INT exinf)
+static int initialize(void);
+
+
+static int initialize(void)
 {
-    struct posix_request request;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
-
-    if (init_port() == FALSE) {
-	dbg_printf("fs: Cannot allocate port.\n");
-	kcall->thread_end_and_destroy();
-	return;
-    }
-
-    if (!device_init()) {
-	kcall->thread_end_and_destroy();
-	return;
-    }
-
-    /* 各機能単位での初期化
-     */
-    init_fs();
-    init_process();
-
-    banner();
-
-    for (;;) {
-    	RDVNO rdvno;
-
-	/* 次の要求メッセージを待つ */
-	if (get_request(&request, &rdvno) < 0) {
-	    /* リクエスト取得に失敗した */
-#ifdef DEBUG
-	    dbg_printf("Cannot get request.\n");
-#endif
-	    continue;
+	if (!init_port()) {
+		dbg_printf("fs: init_port failed\n");
+		return -1;
 	}
-#ifdef DEBUG
-	dbg_printf("OP = %d\n ", request.operation);
-#endif
 
-	/* 取得したリクエストを処理する */
-	if (request.operation >= sizeof(syscall_table) / sizeof(syscall_table[0])) {
-	    /* リクエスト要求にあるオペレーションは、サポートしていない */
-	    error_response((RDVNO)rdvno, ENOTSUP);
-	} else {
-#ifdef DEBUG
-	  if ((request.operation != PSC_WRITE) &&
-	      (request.operation != PSC_READ))
-	    dbg_printf("systemcall: %s\n",
-		   syscall_table[request.operation].name);
-#endif
+	if (!device_init())
+		return -1;
 
-	    (*syscall_table[request.operation].syscall) ((RDVNO)rdvno, &request);
-#ifdef DEBUG
-	    if ((request.operation != PSC_WRITE) &&
-		(request.operation != PSC_READ))
-	      dbg_printf("fs: systemcall[%s] end %d.\n",
-		     syscall_table[request.operation].name, res);
-#endif
-	}
-    }
-    /* ここには来ない */
+	init_fs();
+	init_process();
+	dbg_printf("fs: start\n");
+
+	return 0;
 }
 
-
-static void banner(void)
+void start(VP_INT exinf)
 {
-    dbg_printf("fs: start\n");
+	if (initialize()) {
+		kcall->thread_end_and_destroy();
+		return;
+	}
+
+	for (;;) {
+		if (get_request(&(request.packet), &(request.rdvno)) < 0)
+			continue;
+
+		if (request.packet.operation >= sizeof(syscall) / sizeof(syscall[0]))
+			error_response(request.rdvno, ENOTSUP);
+
+		else
+			syscall[request.packet.operation](&request);
+	}
 }

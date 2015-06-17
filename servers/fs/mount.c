@@ -27,8 +27,9 @@ Version 2, June 1991
 #include <core/options.h>
 #include <nerve/kcall.h>
 #include "fs.h"
+#include "api.h"
 
-/* psc_mount_f - ファイルシステムをマウントする
+/* if_mount - ファイルシステムをマウントする
  *
  * 引数:
  *	devname		マウントするデバイス名
@@ -40,55 +41,54 @@ Version 2, June 1991
  *	このシステムコールは、POSIX では定義されていない。
  *
  */
-void psc_mount_f(RDVNO rdvno, struct posix_request *req)
+void if_mount(fs_request *req)
 {
     W error_no;
-    B dirname[MAX_NAMELEN + 1];
     B devname[MAX_NAMELEN + 1];
     B fstype[MAX_NAMELEN + 1];
     struct inode *startip;
     struct inode *mountpoint, *device;
     struct permission acc;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
-    ID caller = get_rdv_tid(rdvno);
+    ID caller = get_rdv_tid(req->rdvno);
 
     error_no = kcall->region_copy(caller,
-		     (UB*)(req->args.arg4),
+		     (UB*)(req->packet.args.arg4),
 		     sizeof(devname) - 1, devname);
     if (error_no < 0) {
 	/* デバイスファイルのパス名のコピーエラー */
 	if (error_no == E_PAR)
-	    put_response(rdvno, EINVAL, -1, 0);
+	    put_response(req->rdvno, EINVAL, -1, 0);
 	else
-	    put_response(rdvno, EFAULT, -1, 0);
+	    put_response(req->rdvno, EFAULT, -1, 0);
 
 	return;
     }
     devname[MAX_NAMELEN] = '\0';
     error_no = kcall->region_copy(caller,
-		     (UB*)(req->args.arg2),
-		     sizeof(dirname) - 1, dirname);
+		     (UB*)(req->packet.args.arg2),
+		     sizeof(req->buf) - 1, req->buf);
 
     if (error_no < 0) {
 	/* mount 先のパス名のコピーエラー */
 	if (error_no == E_PAR) {
-	    put_response(rdvno, EINVAL, -1, 0);
+	    put_response(req->rdvno, EINVAL, -1, 0);
 	} else {
-	    put_response(rdvno, EFAULT, -1, 0);
+	    put_response(req->rdvno, EFAULT, -1, 0);
 	}
 	return;
     }
-    dirname[MAX_NAMELEN] = '\0';
+    req->buf[MAX_NAMELEN] = '\0';
 
     error_no = kcall->region_copy(caller,
-		     (UB*)(req->args.arg1),
+		     (UB*)(req->packet.args.arg1),
 		     sizeof(fstype) - 1, fstype);
     if (error_no < 0) {
 	/* ファイルシステムタイプのコピーエラー */
 	if (error_no == E_PAR)
-	    put_response(rdvno, EINVAL, -1, 0);
+	    put_response(req->rdvno, EINVAL, -1, 0);
 	else
-	    put_response(rdvno, EFAULT, -1, 0);
+	    put_response(req->rdvno, EFAULT, -1, 0);
 
 	return;
     }
@@ -96,134 +96,133 @@ void psc_mount_f(RDVNO rdvno, struct posix_request *req)
 
     /* デバイスのオープン */
     if (*devname != '/') {
-	error_no = proc_get_cwd(req->procid, &startip);
+	error_no = proc_get_cwd(req->packet.procid, &startip);
 	if (error_no) {
-	    put_response(rdvno, error_no, -1, 0);
+	    put_response(req->rdvno, error_no, -1, 0);
 	    return;
 	}
     } else {
 	startip = rootfile;
     }
 
-    error_no = proc_get_permission(req->procid, &acc);
+    error_no = proc_get_permission(req->packet.procid, &acc);
     if (error_no) {
-	put_response(rdvno, error_no, -1, 0);
+	put_response(req->rdvno, error_no, -1, 0);
 	return;
     }
     if (acc.uid != SU_UID) {
-      put_response(rdvno, EACCES, -1, 0);
+      put_response(req->rdvno, EACCES, -1, 0);
       return;
     }
 
     error_no = fs_open_file(devname, O_RDWR, 0, &acc, startip, &device);
     if (error_no) {
-	put_response(rdvno, error_no, -1, 0);
+	put_response(req->rdvno, error_no, -1, 0);
 	return;
     }
 
     /* block device かどうかのチェック */
     if ((device->i_mode & S_IFMT) != S_IFBLK) {
 	fs_close_file(device);
-	put_response(rdvno, EINVAL, -1, 0);
+	put_response(req->rdvno, EINVAL, -1, 0);
 	return;
     }
 
     /* マウントポイントのオープン */
-    if (*dirname != '/') {
-	error_no = proc_get_cwd(req->procid, &startip);
+    if (req->buf[0] != '/') {
+	error_no = proc_get_cwd(req->packet.procid, &startip);
 	if (error_no) {
 	    fs_close_file(device);
-	    put_response(rdvno, error_no, -1, 0);
+	    put_response(req->rdvno, error_no, -1, 0);
 	    return;
 	}
     } else {
 	startip = rootfile;
     }
 
-    error_no = fs_open_file(dirname, O_RDWR, 0, &acc, startip, &mountpoint);
+    error_no = fs_open_file(req->buf, O_RDWR, 0, &acc, startip, &mountpoint);
     if (error_no) {
-	put_response(rdvno, error_no, -1, 0);
+	put_response(req->rdvno, error_no, -1, 0);
 	fs_close_file(device);
 	return;
     }
 
     if (mountpoint->i_refcount > 1) {
-	put_response(rdvno, EBUSY, -1, 0);
+	put_response(req->rdvno, EBUSY, -1, 0);
 	fs_close_file(device);
 	fs_close_file(mountpoint);
 	return;
     }
 
     if ((mountpoint->i_mode & S_IFMT) != S_IFDIR) {
-	put_response(rdvno, ENOTDIR, -1, 0);
+	put_response(req->rdvno, ENOTDIR, -1, 0);
 	fs_close_file(device);
 	fs_close_file(mountpoint);
 	return;
     }
 
     error_no =
-	mount_fs(device, mountpoint, req->args.arg3, fstype);
+	mount_fs(device, mountpoint, req->packet.args.arg3, fstype);
 
     if (error_no == EOK) {
-	put_response(rdvno, EOK, 0, 0);
+	put_response(req->rdvno, EOK, 0, 0);
 	fs_close_file(device);
 	return;
     }
 
-    put_response(rdvno, error_no, -1, 0);
+    put_response(req->rdvno, error_no, -1, 0);
     fs_close_file(device);
     fs_close_file(mountpoint);
 }
 
-void psc_unmount_f(RDVNO rdvno, struct posix_request *req)
+void if_unmount(fs_request *req)
 {
     W error_no;
     UW device = 0;
-    B dirname[MAX_NAMELEN + 1];
     struct inode *startip;
     struct inode *umpoint;
     struct permission acc;
     kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
-    error_no = kcall->region_copy(get_rdv_tid(rdvno),
-		     (UB*)(req->args.arg1),
-		     sizeof(dirname) - 1, dirname);
+    error_no = kcall->region_copy(get_rdv_tid(req->rdvno),
+		     (UB*)(req->packet.args.arg1),
+		     sizeof(req->buf) - 1, req->buf);
 
     if (error_no < 0) {
 	/* mount 先/special file のパス名のコピーエラー */
 	if (error_no == E_PAR) {
-	    put_response(rdvno, EINVAL, -1, 0);
+	    put_response(req->rdvno, EINVAL, -1, 0);
 	} else {
-	    put_response(rdvno, EFAULT, -1, 0);
+	    put_response(req->rdvno, EFAULT, -1, 0);
 	}
 	return;
     }
-    dirname[MAX_NAMELEN] = '\0';
+    req->buf[MAX_NAMELEN] = '\0';
 
     /* アンマウントポイントのオープン */
-    if (*dirname != '/') {
-	error_no = proc_get_cwd(req->procid, &startip);
+    if (req->buf[0] != '/') {
+	error_no = proc_get_cwd(req->packet.procid, &startip);
 	if (error_no) {
-	    put_response(rdvno, error_no, -1, 0);
+	    put_response(req->rdvno, error_no, -1, 0);
 	    return;
 	}
     } else {
 	startip = rootfile;
     }
 
-    error_no = proc_get_permission(req->procid, &acc);
+    error_no = proc_get_permission(req->packet.procid, &acc);
     if (error_no) {
-	put_response(rdvno, error_no, -1, 0);
+	put_response(req->rdvno, error_no, -1, 0);
 	return;
     }
     if (acc.uid != SU_UID) {
-	put_response(rdvno, EACCES, -1, 0);
+	put_response(req->rdvno, EACCES, -1, 0);
 	return;
     }
 
-    error_no = fs_open_file(dirname, O_RDWR, 0, &acc, startip, &umpoint);
+    error_no = fs_open_file(req->buf, O_RDWR, 0, &acc, startip, &umpoint);
     if (error_no) {
-	put_response(rdvno, error_no, -1, 0);
+	put_response(req->rdvno, error_no, -1, 0);
 	return;
     }
 
@@ -248,8 +247,8 @@ void psc_unmount_f(RDVNO rdvno, struct posix_request *req)
 	error_no = unmount_fs(device);
     }
     if (error_no) {
-	put_response(rdvno, error_no, -1, 0);
+	put_response(req->rdvno, error_no, -1, 0);
 	return;
     }
-    put_response(rdvno, EOK, 0, 0);
+    put_response(req->rdvno, EOK, 0, 0);
 }

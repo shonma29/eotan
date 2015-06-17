@@ -34,6 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../lib/libserv/libserv.h"
 #include "devfs.h"
 #include "fs.h"
+#include "api.h"
 
 static system_info_t *sysinfo = (system_info_t*)SYSTEM_INFO_ADDR;
 static hash_t *hash;
@@ -89,15 +90,15 @@ static int compare(const void *a, const void *b)
 	return (x == y)? 0:((x < y)? (-1):1);
 }
 
-void psc_bind_device_f(RDVNO rdvno, struct posix_request *req)
+void if_bind_device(fs_request *req)
 {
-	UW id = req->param.par_bind_device.id;
-	UB *name = req->param.par_bind_device.name;
-	ID port = req->param.par_bind_device.port;
-	UW size = req->param.par_bind_device.size;
+	UW id = req->packet.param.par_bind_device.id;
+	UB *name = req->packet.param.par_bind_device.name;
+	ID port = req->packet.param.par_bind_device.port;
+	UW size = req->packet.param.par_bind_device.size;
 
 	if (!hash || num_device >= MAX_DEVICE) {
-		put_response(rdvno, ENOMEM, -1, 0);
+		put_response(req->rdvno, ENOMEM, -1, 0);
 
 		return;
 	}
@@ -109,11 +110,11 @@ void psc_bind_device_f(RDVNO rdvno, struct posix_request *req)
 	table[num_device].size = size;
 
 	if (hash_put(hash, (void*)id, (void*)&(table[num_device]))) {
-		put_response(rdvno, EPERM, -1, 0);
+		put_response(req->rdvno, EPERM, -1, 0);
 
 	} else {
 		num_device++;
-		put_response(rdvno, EOK, 0, 0);
+		put_response(req->rdvno, EOK, 0, 0);
 
 		if (id == sysinfo->root.device) {
 			if (mount_root(id, sysinfo->root.fstype, 0)) {

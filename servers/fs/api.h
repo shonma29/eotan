@@ -1,99 +1,65 @@
+#ifndef _FS_API_H_
+#define _FS_API_H_
 /*
+This is free and unencumbered software released into the public domain.
 
-B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
 
-GNU GENERAL PUBLIC LICENSE
-Version 2, June 1991
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
 
-(C) B-Free Project.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
 
-(C) 2001-2002, Tomohide Naniwa
-
+For more information, please refer to <http://unlicense.org/>
 */
-/* posix_syscall.h - POSIX 環境マネージャ用のヘッダファイル
- *		     (システムコール関連の定義)
- *
- * Note:
- *	PSC (and psc) = Posix System Call
- *
- */
-
-#ifndef __FS_API_H__
-#define __FS_API_H__	1
-
 #include <core.h>
+#include <fs/config.h>
 #include <sys/syscall.h>
 
-struct posix_syscall
-{
-#ifdef DEBUG
-  B	*name;
-  W	callno;
+typedef struct {
+	struct posix_request packet;
+	RDVNO rdvno;
+	B buf[MAX_NAMELEN + 1];
+} fs_request;
+
+extern void if_chdir(fs_request*);
+extern void if_chmod(fs_request*);
+extern void if_close(fs_request*);
+extern void if_dup(fs_request*);
+extern void if_dup2(fs_request*);
+extern void if_exec(fs_request*);
+extern void if_exit(fs_request*);
+extern void if_fcntl(fs_request*);
+extern void if_fork(fs_request*);
+extern void if_kill(fs_request*);
+extern void if_link(fs_request*);
+extern void if_lseek(fs_request*);
+extern void if_mkdir(fs_request*);
+extern void if_open(fs_request*);
+extern void if_read(fs_request*);
+extern void if_rmdir(fs_request*);
+extern void if_fstat(fs_request*);
+extern void if_unlink(fs_request*);
+extern void if_waitpid(fs_request*);
+extern void if_write(fs_request*);
+extern void if_mount(fs_request*);
+extern void if_unmount(fs_request*);
+extern void if_statvfs(fs_request*);
+extern void if_getdents(fs_request*);
+extern void if_bind_device(fs_request*);
+
 #endif
-  void	(*syscall)(RDVNO rdvno, struct posix_request *);
-};
-
-
-extern void	psc_chdir_f (RDVNO rdvno, struct posix_request *);
-extern void	psc_chmod_f (RDVNO rdvno, struct posix_request *);
-extern void	psc_close_f (RDVNO rdvno, struct posix_request *);
-extern void	psc_dup_f (RDVNO rdvno, struct posix_request *);
-extern void	psc_dup2_f (RDVNO rdvno, struct posix_request *);
-extern void	psc_exec_f (RDVNO rdvno, struct posix_request *);
-extern void	psc_exit_f (RDVNO rdvno, struct posix_request *);
-extern void	psc_fcntl_f (RDVNO rdvno, struct posix_request *);
-extern void	psc_fork_f (RDVNO rdvno, struct posix_request *);
-extern void	psc_kill_f (RDVNO rdvno, struct posix_request *);
-extern void	psc_link_f (RDVNO rdvno, struct posix_request *);
-extern void	psc_lseek_f (RDVNO rdvno, struct posix_request *);
-extern void	psc_mkdir_f (RDVNO rdvno, struct posix_request *);
-extern void	psc_open_f (RDVNO rdvno, struct posix_request *);
-extern void	psc_read_f (RDVNO rdvno, struct posix_request *);
-extern void	psc_rmdir_f (RDVNO rdvno, struct posix_request *);
-extern void	psc_fstat_f (RDVNO rdvno, struct posix_request *);
-extern void	psc_unlink_f (RDVNO rdvno, struct posix_request *);
-extern void	psc_waitpid_f (RDVNO rdvno, struct posix_request *);
-extern void	psc_write_f (RDVNO rdvno, struct posix_request *);
-extern void	psc_mount_f (RDVNO rdvno, struct posix_request *);
-extern void	psc_unmount_f (RDVNO rdvno, struct posix_request *);
-extern void	psc_statvfs_f (RDVNO rdvno, struct posix_request *);
-extern void	psc_getdents_f (RDVNO rdvno, struct posix_request *);
-extern void psc_bind_device_f(RDVNO rdvno, struct posix_request *);
-
-#ifdef DEBUG
-#define s(q, v) q,v,
-#else
-#define s(q, v)
-#endif
-
-
-static struct posix_syscall	syscall_table[] =
-{
-  { s("chdir",		PSC_CHDIR)		psc_chdir_f },
-  { s("chmod",		PSC_CHMOD)		psc_chmod_f },
-  { s("close",		PSC_CLOSE)		psc_close_f },
-  { s("dup",		PSC_DUP)		psc_dup_f },
-  { s("exec",		PSC_EXEC)		psc_exec_f },
-  { s("exit",		PSC_EXIT)		psc_exit_f },
-  { s("fcntl",		PSC_FCNTL)		psc_fcntl_f },
-  { s("fork",		PSC_FORK)		psc_fork_f },
-  { s("fstat",		PSC_FSTAT)		psc_fstat_f },
-  { s("link",		PSC_LINK)		psc_link_f },
-  { s("lseek",		PSC_LSEEK)		psc_lseek_f },
-  { s("mkdir",		PSC_MKDIR)		psc_mkdir_f },
-  { s("open",		PSC_OPEN)		psc_open_f },
-  { s("read",		PSC_READ)		psc_read_f },
-  { s("rmdir",		PSC_RMDIR)		psc_rmdir_f },
-  { s("unlink",		PSC_UNLINK)		psc_unlink_f },
-  { s("waitpid",		PSC_WAITPID)		psc_waitpid_f },
-  { s("write",		PSC_WRITE)		psc_write_f },
-  { s("getdents",		PSC_GETDENTS)		psc_getdents_f },
-  { s("mount",		PSC_MOUNT)		psc_mount_f },
-  { s("statvfs",		PSC_STATVFS)		psc_statvfs_f },
-  { s("unmount",		PSC_UNMOUNT)		psc_unmount_f },
-  { s("kill",		PSC_KILL)		psc_kill_f },
-  { s("dup2",		PSC_DUP2)		psc_dup2_f },
-  { s("bind_device", PSC_BIND_DEVICE) psc_bind_device_f },
-};
-
-#endif /* #define __FS_API_H__ */
