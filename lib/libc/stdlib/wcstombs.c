@@ -1,5 +1,3 @@
-#ifndef _MPU_STDDEF_H_
-#define _MPU_STDDEF_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,19 +24,81 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdlib.h>
+#include <string.h>
 
-typedef int ptrdiff_t;
-typedef unsigned int size_t;
+extern int _wctomb(unsigned char *, const wchar_t);
+static int count(wchar_t);
 
-#define __STDC_ISO_10646__
-#define MB_CUR_MAX (4)
 
-typedef unsigned int wchar_t;
+static int count(const wchar_t ch)
+{
+	if (ch <= 0x7f)
+		return 1;
+		
+	else if (ch <= 0x7ff)
+		return 2;
 
-#ifndef NULL
-#define NULL ((void*)0)
-#endif
+	else if (ch <= 0xffff)
+		return 3;
 
-#define offsetof(type, member) (size_t)&(((type*)0)->member)
+	else if (ch <= 0x10ffff)
+		return 4;
 
-#endif
+	else
+		return -1;
+}
+
+/**
+ * convert UTF-32 string to UTF-8 string.
+ */
+size_t wcstombs(char *restrict s, const wchar_t *restrict pwcs, size_t n)
+{
+	if (s) {
+		size_t left = n;
+
+		for (; *pwcs; pwcs++) {
+			int m;
+
+			if (left >= MB_CUR_MAX) {
+				m = _wctomb((unsigned char*)s, *pwcs);
+				if (m < 0)
+					return (size_t)m;
+
+			} else {
+				unsigned char buf[MB_CUR_MAX];
+
+				m = _wctomb(buf, *pwcs);
+				if (m < 0)
+					return (size_t)m;
+
+				if (left < m) {
+					memcpy(s, buf, left);
+					return n;
+				}
+
+				memcpy(s, buf, m);
+			}
+
+			left -= m;
+			s += m;
+		}
+
+		*s = '\0';
+		return (n - left);
+
+	} else {
+		size_t len = 0;
+
+		for (; *pwcs; pwcs++) {
+			int m = count(*pwcs);
+
+			if (m < 0)
+				return (size_t)m;
+
+			len += m;
+		}
+
+		return len;
+	}
+}

@@ -1,5 +1,3 @@
-#ifndef _MPU_STDDEF_H_
-#define _MPU_STDDEF_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,19 +24,66 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdlib.h>
 
-typedef int ptrdiff_t;
-typedef unsigned int size_t;
+extern wchar_t append_body(wchar_t, const unsigned char *, const size_t);
 
-#define __STDC_ISO_10646__
-#define MB_CUR_MAX (4)
 
-typedef unsigned int wchar_t;
+int _mblen(const unsigned char *r, size_t n)
+{
+	wchar_t ch = 0;
 
-#ifndef NULL
-#define NULL ((void*)0)
-#endif
+	if (!(r[0] >> 7)) {
+		ch = r[0];
+		return (ch? 1:0);
+	}
 
-#define offsetof(type, member) (size_t)&(((type*)0)->member)
+	if ((r[0] >> 5) == 0x6) {
+		if (n < 2)
+			return (-1);
 
-#endif
+		ch = append_body(r[0] & 0x1f, r, 1);
+		if (ch <= 0x7f)
+			return (-1);
+
+		return 2;
+	}
+
+	if ((r[0] >> 4) == 0xe) {
+		if (n < 3)
+			return (-1);
+
+		ch = append_body(r[0] & 0xf, r, 2);
+		if (ch <= 0x7ff)
+			return (-1);
+
+		return 3;
+	}
+
+	if ((r[0] >> 3) == 0x1e) {
+		if (n < 4)
+			return (-1);
+
+		ch = append_body(r[0] & 0x7, r, 3);
+		if ((ch <= 0xffff) || (ch > 0x10ffff))
+			return (-1);
+
+		return 4;
+	}
+
+	return (-1);
+}
+
+/**
+ * count UTF-8 character length.
+ */
+int mblen(const char *s, size_t n)
+{
+	if (!s)
+		return 0;
+
+	if (!n)
+		return 0;
+
+	return _mblen((unsigned char*)s, n);
+}

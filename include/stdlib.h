@@ -73,15 +73,20 @@ static inline ldiv_t ldiv(long numerator, long denominator)
 	return x;
 }
 
-extern void *bsearch(const void *key, const void *base, size_t nmemb,
-		size_t size, int (*compar)(const void *, const void *));
-extern char *getenv(const char*);
+extern void *bsearch(const void *, const void *, size_t,
+		size_t, int (*)(const void *, const void *));
+extern char *getenv(const char *);
 extern int rand(void);
-extern void srand(unsigned int seed);
-extern void exit(int status);
+extern void srand(unsigned int);
+extern void exit(int);
 extern void *malloc(size_t);
-extern void free(void*);
+extern void free(void *);
 extern void *calloc(size_t, size_t);
 extern void *realloc(void *, size_t);
+extern int mblen(const char *, size_t);
+extern size_t mbstowcs(wchar_t *restrict, const char *restrict, size_t);
+extern int mbtowc(wchar_t *restrict, const char *restrict, size_t);
+extern size_t wcstombs(char *restrict, const wchar_t *restrict, size_t);
+extern int wctomb(char *, wchar_t);
 
 #endif

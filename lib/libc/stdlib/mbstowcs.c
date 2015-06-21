@@ -1,5 +1,3 @@
-#ifndef _MPU_STDDEF_H_
-#define _MPU_STDDEF_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,19 +24,50 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdlib.h>
 
-typedef int ptrdiff_t;
-typedef unsigned int size_t;
+extern int _mbtowc(wchar_t *restrict pwc, const unsigned char *restrict,
+		size_t);
+extern int _mblen(const unsigned char *, size_t);
 
-#define __STDC_ISO_10646__
-#define MB_CUR_MAX (4)
 
-typedef unsigned int wchar_t;
+/**
+ * convert UTF-8 string to UTF-32 string.
+ */
+size_t mbstowcs(wchar_t *restrict pwcs, const char *restrict s, size_t n)
+{
+	size_t len = 0;
 
-#ifndef NULL
-#define NULL ((void*)0)
-#endif
+	if (pwcs) {
+		for (; len < n; len++) {
+			int m = _mbtowc(pwcs, (const unsigned char *restrict)s,
+					MB_CUR_MAX);
 
-#define offsetof(type, member) (size_t)&(((type*)0)->member)
+			if (m <= 0) {
+				if (m < 0)
+					return (size_t)(-1);
+				
+				break;
+			}
 
-#endif
+			pwcs++;
+			s += m;
+		}
+
+	} else {
+		for (; len < n; len++) {
+			int m = _mblen((unsigned char*)s, MB_CUR_MAX);
+
+			if (m <= 0) {
+				if (m < 0)
+					return (size_t)(-1);
+				
+				break;
+			}
+
+			s += m;
+		}
+	}
+
+	return len;
+}

@@ -1,5 +1,3 @@
-#ifndef _MPU_STDDEF_H_
-#define _MPU_STDDEF_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,19 +24,42 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdlib.h>
+#include <string.h>
 
-typedef int ptrdiff_t;
-typedef unsigned int size_t;
 
-#define __STDC_ISO_10646__
-#define MB_CUR_MAX (4)
+int _wctomb(unsigned char *dest, const wchar_t ch)
+{
+	if (ch <= 0x7f) {
+		*dest = (unsigned char)(ch & 0x7f);
+		return 1;
+		
+	} else if (ch <= 0x7ff) {
+		*dest++ = (unsigned char)(0xc0 | (ch >> 6));
+		*dest = (unsigned char)(0x80 | (ch & 0x3f));
+		return 2;
 
-typedef unsigned int wchar_t;
+	} else if (ch <= 0xffff) {
+		*dest++ = (unsigned char)(0xe0 | (ch >> 12));
+		*dest++ = (unsigned char)(0x80 | ((ch >> 6) & 0x3f));
+		*dest = (unsigned char)(0x80 | (ch & 0x3f));
+		return 3;
 
-#ifndef NULL
-#define NULL ((void*)0)
-#endif
+	} else if (ch <= 0x10ffff) {
+		*dest++ = (unsigned char)(0xf0 | (ch >> 18));
+		*dest++ = (unsigned char)(0x80 | ((ch >> 12) & 0x3f));
+		*dest++ = (unsigned char)(0x80 | ((ch >> 6) & 0x3f));
+		*dest = (unsigned char)(0x80 | (ch & 0x3f));
+		return 4;
 
-#define offsetof(type, member) (size_t)&(((type*)0)->member)
+	} else
+		return -1;
+}
 
-#endif
+/**
+ * convert UTF-32 character to UTF-8 character.
+ */
+int wctomb(char *s, wchar_t wchar)
+{
+	return s? _wctomb((unsigned char*)s, wchar):0;
+}

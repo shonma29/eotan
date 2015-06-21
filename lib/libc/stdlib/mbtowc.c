@@ -1,5 +1,3 @@
-#ifndef _MPU_STDDEF_H_
-#define _MPU_STDDEF_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,19 +24,85 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdlib.h>
 
-typedef int ptrdiff_t;
-typedef unsigned int size_t;
 
-#define __STDC_ISO_10646__
-#define MB_CUR_MAX (4)
+wchar_t append_body(wchar_t ch, const unsigned char *restrict p, const size_t n)
+{
+	size_t len;
 
-typedef unsigned int wchar_t;
+	for (len = n; len > 0; len--) {
+		if ((*++p >> 6) != 0x2)
+			return 0;
 
-#ifndef NULL
-#define NULL ((void*)0)
-#endif
+		ch = (ch << 6) | (*p & 0x3f);
+	}
 
-#define offsetof(type, member) (size_t)&(((type*)0)->member)
+	return ch;
+}
 
-#endif
+int _mbtowc(wchar_t *restrict w, const unsigned char *restrict r, size_t n)
+{
+	wchar_t ch = 0;
+
+	if (!(r[0] >> 7)) {
+		ch = r[0];
+		*w = ch;
+		return (ch? 1:0);
+	}
+
+	if ((r[0] >> 5) == 0x6) {
+		if (n < 2)
+			return (-1);
+
+		ch = append_body(r[0] & 0x1f, r, 1);
+		if (ch <= 0x7f)
+			return (-1);
+
+		*w = ch;
+		return 2;
+	}
+
+	if ((r[0] >> 4) == 0xe) {
+		if (n < 3)
+			return (-1);
+
+		ch = append_body(r[0] & 0xf, r, 2);
+		if (ch <= 0x7ff)
+			return (-1);
+
+		*w = ch;
+		return 3;
+	}
+
+	if ((r[0] >> 3) == 0x1e) {
+		if (n < 4)
+			return (-1);
+
+		ch = append_body(r[0] & 0x7, r, 3);
+		if ((ch <= 0xffff) || (ch > 0x10ffff))
+			return (-1);
+
+		*w = ch;
+		return 4;
+	}
+
+	return (-1);
+}
+
+/**
+ * convert UTF-8 character to UTF-32 character.
+ */
+int mbtowc(wchar_t *restrict pwc, const char *restrict s, size_t n)
+{
+	if (!pwc)
+		return mblen(s, n);
+	
+	if (!s)
+		return 0;
+
+	if (!n)
+		return 0;
+
+	return _mbtowc(pwc, (const unsigned char *restrict)s, n);
+}
