@@ -50,10 +50,10 @@ paging_start:
 	movl %eax, %cr4
 
 	movl %cr0, %eax
-	/* set PG, AM, WP, NE, MP */
-	orl $0x80050022, %eax
-	/* clear CD, NW, EM */
-	andl $0x9ffffffb, %eax
+	/* set PG, AM, WP, MP */
+	orl $0x80050002, %eax
+	/* clear CD, NW, TS, EM */
+	andl $0x9ffffff3, %eax
 	movl %eax, %cr0
 
 tlb_flush_all:
