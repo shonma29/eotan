@@ -38,7 +38,7 @@ struct timespec {
 };
 
 
-static inline void timespec_set(struct timespec *t,
+static inline void timespec_set(volatile struct timespec *t,
 		const long long *sec, const long *nsec)
 {
 	t->tv_sec = *sec;
@@ -62,7 +62,7 @@ static inline int timespec_equals(const struct timespec *t1,
 			&& (t1->tv_nsec == t2->tv_nsec));
 }
 
-extern void timespec_add(struct timespec *dest, const struct timespec *operand);
+extern void timespec_add(volatile struct timespec *dest, const struct timespec *operand);
 extern int timespec_compare(const struct timespec *t1,
 		const struct timespec *t2);
 

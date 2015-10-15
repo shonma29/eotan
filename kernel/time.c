@@ -42,12 +42,14 @@ typedef struct {
 	list_t threads;
 } timer_t;
 
-static struct timespec system_time;
+static volatile struct timespec system_time;
 static slab_t timer_slab;
 static tree_t timer_tree;
 
 static inline timer_t *getTimerParent(const node_t *p);
 static void time_initialize(void);
+static void time_get_raw(struct timespec *ts);
+static void time_tick(void);
 static ER add_timer(RELTIM time, thread_t *th);
 
 
@@ -77,24 +79,19 @@ ER time_set(SYSTIM *pk_systim)
 
 ER time_get(SYSTIM *pk_systim)
 {
-	struct timespec t1;
-	struct timespec t2;
+	struct timespec t;
 
 	if (!pk_systim)
 		return E_PAR;
 
-	do {
-		t1 = system_time;
-		t2 = system_time;
-	} while (!timespec_equals(&t1, &t2));
-
-	timespec_get_sec(&(pk_systim->sec), &t1);
-	timespec_get_nsec(&(pk_systim->nsec), &t1);
+	time_get_raw(&t);
+	timespec_get_sec(&(pk_systim->sec), &t);
+	timespec_get_nsec(&(pk_systim->nsec), &t);
 
 	return E_OK;
 }
 
-void time_get_raw(struct timespec *ts)
+static void time_get_raw(struct timespec *ts)
 {
 	struct timespec t2;
 
@@ -104,7 +101,7 @@ void time_get_raw(struct timespec *ts)
 	} while (!timespec_equals(ts, &t2));
 }
 
-void time_tick(void)
+static void time_tick(void)
 {
 	struct timespec add = {
 		0, TICK

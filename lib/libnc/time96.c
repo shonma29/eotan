@@ -27,7 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/time.h>
 
 
-void timespec_add(struct timespec *dest, const struct timespec *operand)
+void timespec_add(volatile struct timespec *dest, const struct timespec *operand)
 {
 	dest->tv_sec += operand->tv_sec;
 	dest->tv_nsec += operand->tv_nsec;
