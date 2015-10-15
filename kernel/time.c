@@ -50,7 +50,9 @@ static inline timer_t *getTimerParent(const node_t *p);
 static void time_initialize(void);
 static void time_get_raw(struct timespec *ts);
 static void time_tick(void);
-static ER add_timer(RELTIM time, thread_t *th);
+static int compare(const int a, const int b);
+static void wakeup(thread_t *th);
+static ER add_timer(const TMO usec, thread_t *th);
 
 
 static inline timer_t *getTimerParent(const node_t *p) {
@@ -125,45 +127,52 @@ void timer_initialize(void)
 	pit_initialize(TIME_TICKS);
 }
 
-static void resume(thread_t *th)
+static void wakeup(thread_t *th)
 {
+	th->wait.result = E_TMOUT;
 	list_remove(&(th->wait.waiting));
 	release(th);
 }
 
-ER thread_delay(RELTIM dlytim)
+ER thread_sleep(TMO tmout)
 {
-	ER result;
-
-	if (dlytim < 0)
+	if (tmout < TMO_FEVR)
 		return E_PAR;
 
-	else if (!dlytim)
+	if (running->wakeup_count > 0) {
+		running->wakeup_count--;
 		return E_OK;
+	}
 
-	result = add_timer(dlytim, running);
-	if (result)
-		return result;
+	if (tmout == TMO_POL)
+		return E_TMOUT;
 
-	running->wait.type = wait_dly;
-	running->wait.detail.dly.callback = (FP)resume;
+	else if (tmout > 0) {
+		ER result = add_timer(tmout, running);
+		if (result)
+			return result;
+
+		running->wait.detail.slp.callback = (FP)wakeup;
+	}
+
+	running->wait.type = wait_slp;
 	wait(running);
 
 	return running->wait.result;
 }
 
-static ER add_timer(RELTIM time, thread_t *th)
+static ER add_timer(const TMO usec, thread_t *th)
 {
 	node_t *p;
 	timer_t *t;
 	timer_t entry;
 	struct timespec add;
 
-	if (time <= 0)
+	if (usec <= 0)
 		return E_PAR;
 
-	add.tv_sec = time / (1000 * 1000);
-	add.tv_nsec = time % (1000 * 1000);
+	add.tv_sec = usec / (1000 * 1000);
+	add.tv_nsec = (usec % (1000 * 1000)) * 1000;
 	entry.node.key = (int)&t;
 	time_get_raw(&(entry.ts));
 	timespec_add(&(entry.ts), &add);
@@ -224,7 +233,7 @@ ER timer_service(void)
 
 			if (kq_enqueue(&param))
 				panic("full kqueue");
-    		}
+		}
 
 		tree_remove(&timer_tree, (int)p);
 	}

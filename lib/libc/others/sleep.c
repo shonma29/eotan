@@ -33,7 +33,7 @@ usleep (int usecond)
     return E_OK;
   }
 
-  dly_tsk(usecond);
+  tslp_tsk(usecond);
 
   return (E_OK);
 }

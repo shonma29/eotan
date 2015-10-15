@@ -145,7 +145,7 @@ static void raise(list_t *w)
 	while ((w = list_dequeue(&guard))) {
 		thread_t *th = getThreadWaiting(w);
 		void (*f)(thread_t*) =
-				(void (*)(thread_t*))(th->wait.detail.dly.callback);
+				(void (*)(thread_t*))(th->wait.detail.slp.callback);
 
 		f(th);
 	}

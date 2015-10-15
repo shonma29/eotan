@@ -55,4 +55,6 @@ For more information, please refer to <http://unlicense.org/>
 
 #define TPRI_SELF (0)
 
+#define TMAX_WUPCNT (1)
+
 #endif

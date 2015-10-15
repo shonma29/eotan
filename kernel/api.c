@@ -27,11 +27,11 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include "func.h"
 
-static ER _thread_delay(svc_arg *);
+static ER _thread_sleep(svc_arg *);
 static ER_UINT _port_call(svc_arg *);
 
 static ER (*svc_entries[])(svc_arg *) = {
-	_thread_delay,
+	_thread_sleep,
 	_port_call
 };
 
@@ -42,9 +42,9 @@ ER syscall(svc_arg *argp, UW svcno)
 			E_NOSPT:(svc_entries[svcno](argp));
 }
 
-static ER _thread_delay(svc_arg *argp)
+static ER _thread_sleep(svc_arg *argp)
 {
-	return thread_delay((RELTIM)(argp->arg1));
+	return thread_sleep((TMO)(argp->arg1));
 }
 
 static ER_UINT _port_call(svc_arg *argp)

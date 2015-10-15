@@ -106,7 +106,7 @@ extern ER queue_send(ID dtqid, VP_INT data, TMO tmout);
 /* time.c */
 extern ER time_get(SYSTIM *pk_systim);
 extern ER time_set(SYSTIM *pk_systim);
-extern ER thread_delay(RELTIM dlytim);
+extern ER thread_sleep(TMO tmout);
 extern void timer_initialize(void);
 extern ER timer_service(void);
 

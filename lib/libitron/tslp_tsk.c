@@ -29,6 +29,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/svcno.h>
 
 
-ER dly_tsk(RELTIM dlytim) {
-	return ncall(SVC_THREAD_DELAY, dlytim);
+ER tslp_tsk(TMO tmout) {
+	return ncall(SVC_THREAD_SLEEP, tmout);
 }

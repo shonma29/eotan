@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 
 typedef enum {
 	wait_none,
-	wait_dly,
+	wait_slp,
 	wait_que,
 	wait_por,
 	wait_rdv
@@ -45,7 +45,7 @@ typedef struct {
 		struct {
 			FP callback;
 			VP_INT arg;
-		} dly;
+		} slp;
 		struct {
 			VP_INT data;
 		} que;

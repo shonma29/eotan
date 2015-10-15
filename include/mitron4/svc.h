@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 /**
  * task synchronization
  */
-extern ER dly_tsk(RELTIM dlytim);
+extern ER tslp_tsk(TMO tmout);
 
 /**
  * data queue
