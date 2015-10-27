@@ -32,6 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 #include "delay.h"
 #include "func.h"
+#include "ready.h"
 #include "arch/archfunc.h"
 #include "mpu/mpufunc.h"
 
@@ -65,6 +66,7 @@ static void kcall_initialize(void)
 {
 	kcall_t *p = (kcall_t*)KCALL_ADDR;
 
+	p->dispatch = dispatch;
 	p->thread_create_auto = thread_create_auto;
 	p->thread_destroy = thread_destroy;
 	p->thread_start = thread_start;

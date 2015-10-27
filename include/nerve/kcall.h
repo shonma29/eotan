@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/config.h>
 
 typedef struct {
+	void (*dispatch)(void);
 	ER_ID (*thread_create_auto)(T_CTSK *pk_ctsk);
 	ER (*thread_destroy)(ID tskid);
 	ER (*thread_start)(ID tskid);
