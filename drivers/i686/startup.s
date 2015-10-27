@@ -41,10 +41,15 @@ startup:
 	movw %ax, %es
 	movw %ax, %fs
 	movw %ax, %gs
+	movl 4(%esp), %eax
 	lssl stack_ptr, %esp
 	finit
+	ljmp $SELECTOR_KERN_CODE, $enter_world
 
-	ljmp $SELECTOR_KERN_CODE, $kern_start
+.align 4
+enter_world:
+	call %eax
+	jmp kern_start
 
 
 .data

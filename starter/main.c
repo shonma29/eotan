@@ -42,13 +42,15 @@ For more information, please refer to <http://unlicense.org/>
 #define KERNLOG_UNITS ((KERNEL_LOG_SIZE - sizeof(lfq_t)) \
 		/ lfq_node_size(sizeof(int)))
 
+static void callback(void);
+
 #ifndef USE_VESA
 static Console *cns;
 
-static void console_initialize();
+static void console_initialize(void);
 #endif
 
-static void _putc(char ch);
+static void _putc(const char ch);
 void printk(const B *fmt, ...);
 static void kick(const ModuleHeader *h);
 
@@ -82,8 +84,13 @@ void _main(void)
 	for (;;);
 }
 
+static void callback(void)
+{
+	printk("Starter callback\n");
+}
+
 #ifndef USE_VESA
-static void console_initialize()
+static void console_initialize(void)
 {
 	UB *x = (UB*)BIOS_CURSOR_COL;
 	UB *y = (UB*)BIOS_CURSOR_ROW;
@@ -93,7 +100,7 @@ static void console_initialize()
 }
 #endif
 
-static void _putc(char ch)
+static void _putc(const char ch)
 {
 	int w = ch;
 #ifndef USE_VESA
@@ -121,9 +128,9 @@ static void kick(const ModuleHeader *h)
 
 		if (h->type == mod_kernel) {
 			Elf32_Ehdr *eHdr = (Elf32_Ehdr*)&(h[1]);
-			void (*entry)(void) = (void*)(eHdr->e_entry);
+			void (*entry)(void*) = (void*)(eHdr->e_entry);
 
-			entry();
+			entry(callback);
 			break;
 		}
 
