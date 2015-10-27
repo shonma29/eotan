@@ -206,13 +206,7 @@ ER timer_service(void)
 	node_t *p;
 
 	time_tick();
-	running->time.total++;
-
-	if (!is_kthread(running))
-		if (!(--(running->time.left))) {
-			running->time.left = TIME_QUANTUM;
-			ready_rotate(running->priority);
-		}
+	thread_tick();
 
 	time_get_raw(&now);
 

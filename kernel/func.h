@@ -81,6 +81,7 @@ extern ER thread_initialize(void);
 extern ER thread_start(ID tskid);
 extern ER thread_terminate(ID tskid);
 extern ER_ID thread_get_id(void);
+extern bool thread_tick(void);
 
 static inline int is_kthread(const thread_t *th)
 {
