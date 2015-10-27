@@ -80,13 +80,10 @@ void interrupt(const UW edi, const UW esi, const UW ebp, const UW esp,
 		const UW ds, const UW no, const UW err, const UW eip,
 		const UW cs, const W eflags)
 {
-	sync_blocking++;
-
 	if ((isr[no])())
 		//TODO call fault when no error code
 		fault_with_error(edi, esi, ebp, esp, ebx, edx,
 				ecx, eax, ds, no, err, eip, cs, eflags);
 
-	--sync_blocking;
 	enter_critical();
 }

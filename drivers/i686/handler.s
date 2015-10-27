@@ -229,8 +229,14 @@ abort_handler:
 	pushal
 	movw $SELECTOR_KERN_DATA, %ax
 	movw %ax,%ds
+	incl interrupt_nest
 	call interrupt
+	decl interrupt_nest
+	jnz skip_abort_dispatch;
+
 	call dispatch
+
+skip_abort_dispatch:
 	popal
 	popl %ds
 	addl $4, %esp
@@ -241,8 +247,14 @@ abort_with_error_handler:
 	pushal
 	movw $SELECTOR_KERN_DATA, %ax
 	movw %ax,%ds
+	incl interrupt_nest
 	call interrupt
+	decl interrupt_nest
+	jnz skip_abort_with_error_dispatch;
+
 	call dispatch
+
+skip_abort_with_error_dispatch:
 	popal
 	popl %ds
 	addl $8, %esp
@@ -261,3 +273,9 @@ service_handler:
 	popl %edx
 	popl %ds
 	sysexit
+
+.data
+.align 4
+
+interrupt_nest:
+	.long 0
