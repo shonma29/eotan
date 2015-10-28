@@ -92,6 +92,10 @@ static void process(VP_INT exinf)
 			thread_start((ID)(param.arg1));
 			break;
 
+		case delay_handle:
+			((void (*)(void))(param.arg1))();
+			break;
+
 		default:
 			break;		
 		}

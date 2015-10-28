@@ -31,7 +31,8 @@ typedef enum {
 	delay_page_fault = 1,
 	delay_send = 2,
 	delay_activate = 3,
-	delay_pfree = 4
+	delay_pfree = 4,
+	delay_handle = 5
 } delay_action_e;
 
 typedef struct {
