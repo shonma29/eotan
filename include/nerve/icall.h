@@ -33,7 +33,7 @@ typedef struct {
 	ER (*thread_start)(ID tskid);
 	ER_ID (*thread_get_id)(void);
 	ER (*queue_send_nowait)(ID dtqid, VP_INT data);
-	ER (*handle)(void (*)(void));
+	ER (*handle)(void (*)(const int));
 	void (*puts)(const char *str);
 } icall_t;
 

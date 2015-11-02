@@ -40,7 +40,7 @@ static void kcall_initialize(void);
 static void icall_initialize(void);
 static ER delayed_thread_start(ID thread_id);
 static ER delayed_queue_send_nowait(ID queue_id, VP_INT data);
-static ER delayed_handle(void (*callback)(void));
+static ER delayed_handle(void (*callback)(const int arg));
 static ER region_get(const ID id, const void *from, const size_t size,
 		void *to);
 static ER region_put(const ID id, void *to, const size_t size,
@@ -129,7 +129,7 @@ static ER delayed_queue_send_nowait(ID queue_id, VP_INT data)
 	return kq_enqueue(&param);
 }
 
-static ER delayed_handle(void (*callback)(void))
+static ER delayed_handle(void (*callback)(const int arg))
 {
 	delay_param_t param;
 

@@ -51,7 +51,7 @@ static void time_initialize(void);
 static void time_get_raw(struct timespec *ts);
 static void time_tick(void);
 static int compare(const int a, const int b);
-static void wakeup(thread_t *th);
+static void wakeup(list_t *w);
 static ER add_timer(const TMO usec, thread_t *th);
 
 
@@ -127,11 +127,19 @@ void timer_initialize(void)
 	pit_initialize(TIME_TICKS);
 }
 
-static void wakeup(thread_t *th)
+static void wakeup(list_t *w)
 {
-	th->wait.result = E_TMOUT;
-	list_remove(&(th->wait.waiting));
-	release(th);
+	list_t guard;
+
+	list_insert(w, &guard);
+
+	while ((w = list_dequeue(&guard))) {
+		thread_t *th = getThreadWaiting(w);
+
+		th->wait.result = E_TMOUT;
+		list_remove(&(th->wait.waiting));
+		release(th);
+	}
 }
 
 ER thread_sleep(TMO tmout)
@@ -151,8 +159,6 @@ ER thread_sleep(TMO tmout)
 		ER result = add_timer(tmout, running);
 		if (result)
 			return result;
-
-		running->wait.detail.slp.callback = (FP)wakeup;
 	}
 
 	running->wait.type = wait_slp;
@@ -222,8 +228,9 @@ ER timer_service(void)
 
 			list_remove(&(t->threads));
 
-			param.action = delay_raise;
-			param.arg1 = (int)w;
+			param.action = delay_handle;
+			param.arg1 = (int)wakeup;
+			param.arg2 = (int)w;
 
 			if (kq_enqueue(&param))
 				panic("full kqueue");

@@ -46,7 +46,6 @@ static ER_ID attach(void);
 static void process(VP_INT exinf);
 static void detach(void);
 static ER kill(const int pid);
-static void raise(list_t *w);
 
 kthread_t delay_thread = { attach, process, detach };
 
@@ -75,8 +74,9 @@ static void process(VP_INT exinf)
 			break;
 
 		switch (param.action) {
-		case delay_raise:
-			raise((list_t*)(param.arg1));
+		case delay_handle:
+			((void (*)(const int))(param.arg1))
+					((const int)(param.arg2));
 			break;
 
 		case delay_page_fault:
@@ -90,10 +90,6 @@ static void process(VP_INT exinf)
 
 		case delay_activate:
 			thread_start((ID)(param.arg1));
-			break;
-
-		case delay_handle:
-			((void (*)(void))(param.arg1))();
 			break;
 
 		default:
@@ -138,19 +134,4 @@ static ER kill(const int pid)
 
 	rsize = port_call(PORT_FS, &req, sizeof(struct posix_request));
 	return (rsize < 0)? rsize:E_OK;
-}
-
-static void raise(list_t *w)
-{
-	list_t guard;
-
-	list_insert(w, &guard);
-
-	while ((w = list_dequeue(&guard))) {
-		thread_t *th = getThreadWaiting(w);
-		void (*f)(thread_t*) =
-				(void (*)(thread_t*))(th->wait.detail.slp.callback);
-
-		f(th);
-	}
 }

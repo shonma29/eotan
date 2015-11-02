@@ -27,12 +27,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 typedef enum {
-	delay_raise = 0,
+	delay_handle = 0,
 	delay_page_fault = 1,
 	delay_send = 2,
-	delay_activate = 3,
-	delay_pfree = 4,
-	delay_handle = 5
+	delay_activate = 3
 } delay_action_e;
 
 typedef struct {
