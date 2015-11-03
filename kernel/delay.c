@@ -108,6 +108,7 @@ void kern_start(void)
 	global_initialize();
 	port_initialize();
 	queue_initialize();
+	mutex_initialize();
 	thread_initialize();
 
 	delay_thread.attach();

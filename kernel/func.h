@@ -104,6 +104,14 @@ extern ER queue_initialize(void);
 extern ER queue_receive(ID dtqid, VP_INT *p_data);
 extern ER queue_send(ID dtqid, VP_INT data, TMO tmout);
 
+/* mutex.c */
+extern ER_ID mutex_create_auto(T_CMTX *pk_cmtx);
+extern ER mutex_destroy(ID mtxid);
+extern ER mutex_initialize(void);
+extern ER mutex_lock(ID mtxid, TMO tmout);
+extern ER mutex_unlock(ID mtxid);
+extern void mutex_unlock_all(thread_t *th);
+
 /* time.c */
 extern ER time_get(SYSTIM *pk_systim);
 extern ER time_set(SYSTIM *pk_systim);

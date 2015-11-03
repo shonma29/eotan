@@ -38,6 +38,7 @@ typedef struct {
 	list_t queue;
 	STAT status;
 	wait_reason_t wait;
+	list_t locking;
 	mpu_context_t mpu;
 	struct {
 		UW total;

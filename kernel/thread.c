@@ -92,6 +92,7 @@ static ER_ID idle_initialize(void)
 		list_initialize(&(th->queue));
 		th->status = TTS_RUN;
 		list_initialize(&(th->wait.waiting));
+		list_initialize(&(th->locking));
 		//th->time.total = 0;
 		//th->time.left = TIME_QUANTUM;
 		//th->activate_count = 0;
@@ -129,6 +130,7 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid)
 	list_initialize(&(th->queue));
 	th->status = TTS_DMT;
 	list_initialize(&(th->wait.waiting));
+	list_initialize(&(th->locking));
 	//th->activate_count = 0;
 	//th->wakeup_count = 0;
 
@@ -269,6 +271,7 @@ void thread_end(void)
 	enter_serialize();
 	list_remove(&(running->queue));
 	running->status = TTS_DMT;
+	mutex_unlock_all(running);
 
 	if (running->activate_count > 0) {
 		//TODO enqueue for activation
@@ -288,6 +291,7 @@ void thread_end_and_destroy(void)
 
 	tree_remove(&thread_tree, thread_id(th));
 	list_remove(&(th->queue));
+	mutex_unlock_all(th);
 
 	if (!is_kthread(th))
 		context_reset_page_table();
@@ -319,6 +323,7 @@ ER thread_terminate(ID tskid)
 		case TTS_RDY:
 			list_remove(&(th->queue));
 			th->status = TTS_DMT;
+			mutex_unlock_all(th);
 			result = E_OK;
 			break;
 
@@ -331,6 +336,7 @@ ER thread_terminate(ID tskid)
 
 		case TTS_SUS:
 			th->status = TTS_DMT;
+			mutex_unlock_all(th);
 			result = E_OK;
 			break;
 

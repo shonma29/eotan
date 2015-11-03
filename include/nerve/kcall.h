@@ -58,6 +58,10 @@ typedef struct {
 	ER (*queue_destroy)(ID dtqid);
 	ER (*queue_send)(ID dtqid, VP_INT data, TMO tmout);
 	ER (*queue_receive)(ID dtqid, VP_INT *p_data);
+	ER_ID (*mutex_create_auto)(T_CMTX *pk_cmtx);
+	ER (*mutex_destroy)(ID mtxid);
+	ER (*mutex_lock)(ID mtxid, TMO tmout);
+	ER (*mutex_unlock)(ID mtxid);
 	void (*puts)(const char *str);
 } kcall_t;
 

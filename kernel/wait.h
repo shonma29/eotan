@@ -33,6 +33,7 @@ typedef enum {
 	wait_none,
 	wait_slp,
 	wait_que,
+	wait_mtx,
 	wait_por,
 	wait_rdv
 } wait_type_e;

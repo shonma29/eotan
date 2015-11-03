@@ -46,8 +46,8 @@ void release(thread_t *task)
 	task->status &= ~TTS_WAI;
 
 	if (!task->status) {
-	    task->status = TTS_RDY;
-	    ready_enqueue(task->priority, &(task->queue));
+		task->status = TTS_RDY;
+		ready_enqueue(task->priority, &(task->queue));
 	}
 }
 

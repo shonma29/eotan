@@ -52,6 +52,14 @@ typedef struct t_cdtq {
 } T_CDTQ;
 
 /**
+ * mutex
+ */
+typedef struct t_cmtx {
+	ATR mtxatr;
+	PRI ceilpri;
+} T_CMTX;
+
+/**
  * rendezvous
  */
 typedef struct t_cpor {

@@ -95,6 +95,10 @@ static void kcall_initialize(void)
 	p->queue_destroy = queue_destroy;
 	p->queue_send = queue_send;
 	p->queue_receive = queue_receive;
+	p->mutex_create_auto = mutex_create_auto;
+	p->mutex_destroy = mutex_destroy;
+	p->mutex_lock = mutex_lock;
+	p->mutex_unlock = mutex_unlock;
 }
 
 static void icall_initialize(void)
