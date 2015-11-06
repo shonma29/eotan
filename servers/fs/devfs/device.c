@@ -35,7 +35,6 @@ W write_device(ID device, B * buf, W start, W length, W * rlength)
     ID send_port;
     UW dd;
     ER_UINT rsize;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     error_no = get_device_info(device, &send_port, &dd);
     if (error_no) {
@@ -74,7 +73,6 @@ W read_device(ID device, B * buf, W start, W length, W * rlength)
     ER_UINT rsize;
     ID send_port;
     UW dd;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     error_no = get_device_info(device, &send_port, &dd);
     if (error_no) {

@@ -49,7 +49,6 @@ void if_mount(fs_request *req)
     struct inode *startip;
     struct inode *mountpoint, *device;
     struct permission acc;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
     ID caller = get_rdv_tid(req->rdvno);
 
     error_no = kcall->region_copy(caller,
@@ -182,7 +181,6 @@ void if_unmount(fs_request *req)
     struct inode *startip;
     struct inode *umpoint;
     struct permission acc;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     error_no = kcall->region_copy(get_rdv_tid(req->rdvno),
 		     (UB*)(req->packet.args.arg1),

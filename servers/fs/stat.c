@@ -38,7 +38,6 @@ void if_chmod(fs_request *req)
     struct inode *ipp;
     struct permission acc;
     W err;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     if (kcall->region_copy(get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg1),
 		 sizeof(req->buf) - 1, req->buf) < 0) {
@@ -90,7 +89,6 @@ void if_fstat(fs_request *req)
     struct file *fp;
     W error_no;
     struct stat st;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     error_no = proc_get_file(req->packet.procid, req->packet.args.arg1, &fp);
     if (error_no) {
@@ -127,7 +125,6 @@ if_statvfs (fs_request *req)
 {
   struct statvfs	result;
   ER		error_no;
-  kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
   error_no = fs_statvfs (req->packet.param.par_statvfs.device, &result);
   if (error_no)

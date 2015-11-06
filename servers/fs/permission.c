@@ -36,7 +36,6 @@ void if_chdir(fs_request *req)
     struct inode *ipp;
     struct permission acc;
     W err;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     if (kcall->region_copy(get_rdv_tid(req->rdvno), req->packet.param.par_chdir.path,
 		sizeof(req->buf) - 1, req->buf) < 0) {

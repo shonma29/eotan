@@ -38,7 +38,6 @@ int vmap(ID pid, VP addr, UW len, W attr)
 	mm_args_t args;
 	mm_reply_t *reply = (mm_reply_t*)&args;
 	ER_UINT reply_size;
-	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	args.syscall_no = mm_syscall_vmap;
 	args.arg1 = (long int)pid;

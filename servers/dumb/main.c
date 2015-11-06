@@ -47,7 +47,6 @@ static int test_cre_por(void)
 {
 	T_CPOR pk_cpor = { TA_TFIFO, BUFSIZ, BUFSIZ };
 	ID dupport;
-	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	port = kcall->port_create(0, &pk_cpor);
 	dbg_printf(MYNAME ": test_cre_por_1 result = %d\n", port);
@@ -83,7 +82,6 @@ static int test_cre_por(void)
 static int test_acre_por(void)
 {
 	T_CPOR pk_cpor = { TA_TFIFO, BUFSIZ, BUFSIZ };
-	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	port = kcall->port_create_auto(0);
 	dbg_printf(MYNAME ": test_acre_por_1 port = %d\n", port);
@@ -109,7 +107,6 @@ static int test_acp_por(void)
 	ER_UINT size;
 	INT i;
 	ER result;
-	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 /*	size = kcall->port_accept(port, 1, &rdvno, buf);
 	dbg_printf(MYNAME ": test_acp_por_1 size = %d\n", size);
@@ -167,7 +164,6 @@ static int test_acp_por(void)
 static int test_del_por(void)
 {
 	ER result;
-	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	result = kcall->port_destroy(0);
 	dbg_printf(MYNAME ": test_del_por_1 result = %d\n", result);
@@ -187,8 +183,6 @@ static int test_del_por(void)
 
 void start(VP_INT exinf)
 {
-	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
-
 	dbg_printf(MYNAME ": start\n");
 
 	if (test_acre_por())	test_acp_por();

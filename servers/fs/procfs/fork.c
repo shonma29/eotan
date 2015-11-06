@@ -114,7 +114,6 @@ W proc_fork(struct proc *parent, struct proc *child)
 W copy_local(struct proc *parent, struct proc *child)
 {
     thread_local_t local_data;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
     W error_no = vmap(child->proc_pid, (thread_local_t*)LOCAL_ADDR,
 		sizeof(thread_local_t), true);
 

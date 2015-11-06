@@ -62,7 +62,6 @@ Version 2, June 1991
 W init_port(void)
 {
     T_CPOR arg;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     arg.poratr = TA_TFIFO;
     arg.maxcmsz = sizeof(struct posix_request);
@@ -84,7 +83,6 @@ W init_port(void)
 W get_request(struct posix_request * req, RDVNO *rdvno)
 {
     ER_UINT size;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     size = kcall->port_accept(PORT_FS, rdvno, req);
     if (size < 0) {
@@ -102,7 +100,6 @@ put_response(RDVNO rdvno, W error_no, W status, W ret1)
 {
     static struct posix_response res;
     ER syserr;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     res.error_no = error_no;
     res.status = status;
@@ -119,7 +116,6 @@ put_response_long(RDVNO rdvno, W error_no, D status)
     static struct posix_response res;
     ER syserr;
     D *dp = (D*)&(res.status);
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     res.error_no = error_no;
     *dp = status;

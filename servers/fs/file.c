@@ -233,7 +233,6 @@ void if_open(fs_request *req)
     struct inode *startip;
     struct inode *newip;
     struct permission acc;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     error_no = proc_alloc_fileid(req->packet.procid, &fileid);
     if (error_no) {
@@ -321,7 +320,6 @@ void if_read(fs_request *req)
     W rlength;
     W rest_length;
     W i, len;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
     ID caller = get_rdv_tid(req->rdvno);
 
     error_no = proc_get_file(req->packet.procid, req->packet.args.arg1, &fp);
@@ -433,7 +431,6 @@ void if_write(fs_request *req)
 #ifdef DEBUG
     W j;
 #endif
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     error_no = proc_get_file(req->packet.procid, req->packet.args.arg1, &fp);
     if (error_no) {

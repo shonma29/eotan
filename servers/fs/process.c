@@ -33,7 +33,6 @@ Version 2, June 1991
 void if_exec(fs_request *req)
 {
     W error_no;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 #ifdef EXEC_DEBUG
     dbg_printf("fs: exec: start\n");
@@ -84,7 +83,6 @@ if_exit (fs_request *req)
   W i;
   ER error_no;
   ID tskid;
-  kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
   mypid = req->packet.procid;
   error_no = proc_get_procp(mypid, &myprocp);
@@ -150,7 +148,6 @@ if_fork (fs_request *req)
   W	       error_no;
   ID main_thread_id;
   struct proc *child;
-  kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
   error_no = proc_get_procp (req->packet.procid, &procp);		/* 親プロセスの情報の取りだし */
   if (error_no)
@@ -212,7 +209,6 @@ void if_kill(fs_request *req)
     W mypid, wpid, exst;
     W i;
     ER error_no;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     /* req->caller が task 1 の場合は，返事のメッセージを送らない */
 

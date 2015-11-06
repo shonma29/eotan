@@ -35,7 +35,6 @@ int syslog(const char *msg)
 {
 	syslog_t packet;
 	size_t len = strlen(msg);
-	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	packet.Rwrite.operation = operation_write;
 	packet.Rwrite.length = len;

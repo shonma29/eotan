@@ -73,7 +73,6 @@ void if_link(fs_request *req)
     B src[MAX_NAMELEN + 1];
     struct permission acc;
     W error_no;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
     ID caller = get_rdv_tid(req->rdvno);
 
     error_no = kcall->region_copy(caller, (UB*)(req->packet.args.arg1),
@@ -128,7 +127,6 @@ if_mkdir (fs_request *req)
   struct inode	*startip;
   struct inode	*newip;
   struct permission	acc;
-  kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
   error_no = proc_alloc_fileid (req->packet.procid, &fileid);
   if (error_no)
@@ -195,7 +193,6 @@ if_rmdir (fs_request *req)
   W		error_no;
   struct inode	*startip;
   struct permission	acc;
-  kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
   error_no = kcall->region_copy(get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg1),
 		    sizeof(req->buf) - 1, req->buf);
@@ -258,7 +255,6 @@ if_unlink (fs_request *req)
   W			error_no;
   struct inode		*startip;
   struct permission	acc;
-  kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
   /* パス名を呼び出し元のプロセス(タスク)から
    * 取り出す。

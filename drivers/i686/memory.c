@@ -33,8 +33,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "mpufunc.h"
 #include "paging.h"
 
-static kcall_t *kcall = (kcall_t*)KCALL_ADDR;
-
 static void memrcpy(char *to, const char *from, const size_t bytes);
 
 

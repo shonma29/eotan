@@ -65,4 +65,6 @@ typedef struct {
 	void (*puts)(const char *str);
 } kcall_t;
 
+#define kcall ((kcall_t*)KCALL_ADDR)
+
 #endif

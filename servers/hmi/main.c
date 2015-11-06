@@ -70,7 +70,6 @@ extern void put(const unsigned int start, const size_t size,
 #endif
 
 static Console *cns;
-static kcall_t kcall;
 
 static ER check_param(const UW start, const UW size);
 static ER_UINT write(const UW dd, const UW start, const UW size,
@@ -146,14 +145,14 @@ static ER accept(const ID port)
 	ER_UINT size;
 	ER result;
 
-	size = kcall.port_accept(port, &rdvno, &message);
+	size = kcall->port_accept(port, &rdvno, &message);
 	if (size < 0) {
 		dbg_printf("hmi: acp_por error=%d\n", size);
 		return size;
 	}
 
 	execute(message);
-	result = kcall.port_reply(rdvno, &message, 0);
+	result = kcall->port_reply(rdvno, &message, 0);
 	if (result) {
 		dbg_printf("hmi: rpl_rdv error=%d\n", result);
 	}
@@ -171,8 +170,6 @@ static ER_ID initialize(void)
 			sizeof(devmsg_t)
 	};
 
-	memcpy(&kcall, (kcall_t*)KCALL_ADDR, sizeof(kcall));
-
 #ifdef USE_VESA
 	cns = getConsole();
 #else
@@ -182,7 +179,7 @@ static ER_ID initialize(void)
 	cns->locate(0, 0);
 
 //	port = acre_por(&pk_cpor);
-	port = kcall.port_create_auto(&pk_cpor);
+	port = kcall->port_create_auto(&pk_cpor);
 	if (port < 0) {
 		dbg_printf("hmi: acre_por error=%d\n", port);
 
@@ -194,7 +191,7 @@ static ER_ID initialize(void)
 	if (result) {
 		dbg_printf("hmi: bind error=%d\n", result);
 //		del_por(port);
-		kcall.port_destroy(port);
+		kcall->port_destroy(port);
 
 		return E_SYS;
 	}
@@ -220,32 +217,32 @@ void start(VP_INT exinf)
 		dbg_printf("hmi: start port=%d\n", port);
 
 		if (keyboard_initialize() == E_OK) {
-			ER_ID t2 = kcall.thread_create_auto(&pk);
+			ER_ID t2 = kcall->thread_create_auto(&pk);
 
 			dbg_printf("hmi: keyboard=%d\n", t2);
 
 			if (t2 > 0)
-				kcall.thread_start(t2);
+				kcall->thread_start(t2);
 		}
 
 		if (mouse_initialize() == E_OK) {
 			ER_ID t2;
 
 			pk.task = (FP)mouse_accept;
-			t2 = kcall.thread_create_auto(&pk);
+			t2 = kcall->thread_create_auto(&pk);
 
 			dbg_printf("hmi: mouse=%d\n", t2);
 
 			if (t2 > 0)
-				kcall.thread_start(t2);
+				kcall->thread_start(t2);
 		}
 
 		while (accept(port) == E_OK);
 
 //		del_por(port);
-		kcall.port_destroy(port);
+		kcall->port_destroy(port);
 		dbg_printf("hmi: end\n");
 	}
 
-	kcall.thread_end_and_destroy();
+	kcall->thread_end_and_destroy();
 }

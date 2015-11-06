@@ -36,7 +36,6 @@ For more information, please refer to <http://unlicense.org/>
 static int get_timespec(struct timespec *tspec)
 {
 	SYSTIM time;
-	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	if (kcall->time_get(&time))
 		return FALSE;
@@ -51,7 +50,6 @@ int mm_clock_gettime(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
 		struct timespec tspec;
-		kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 		if (args->arg1 != CLOCK_REALTIME) {
 			reply->error_no = EINVAL;

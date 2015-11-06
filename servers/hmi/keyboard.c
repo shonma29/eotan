@@ -60,7 +60,6 @@ For more information, please refer to <http://unlicense.org/>
 static unsigned char state = scan_normal;
 static unsigned short modifiers = 0;
 static icall_t *icall = (icall_t*)ICALL_ADDR;
-static kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 static ID keyboard_queue_id;
 static ID keyboard_port_id;
 

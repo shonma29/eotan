@@ -30,7 +30,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "devfs/devfs.h"
 
 static fs_request request;
-static kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 static void (*syscall[])(fs_request*) = {
 	if_chdir,
 	if_chmod,

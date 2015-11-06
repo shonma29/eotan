@@ -129,7 +129,6 @@ W sfs_getdents(struct inode *ip, ID caller, W offset,
 {
   W nentry, i, s, error_no, len;
   struct dirent dent;
-  kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
   *rsize = 0; *fsize = 0;
   dent.d_ino = ip->i_index;

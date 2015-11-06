@@ -81,7 +81,6 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     struct permission acc;
     Elf32_Addr entry;
     struct proc *procp;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
     ID caller;
 
     /* プロセスの情報の取りだし */
@@ -266,7 +265,6 @@ load_segment(W procid, struct inode *ip, Elf32_Phdr *segment, ID task)
     W vaddr;
     static B buf[PAGE_SIZE];
     UW start, size;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     start = pageRoundDown(segment->p_vaddr);
     size =
@@ -298,7 +296,6 @@ static W set_local(ID pid, ID tskid)
 {
     W error_no;
     thread_local_t local_data;
-    kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
     error_no = vmap(pid, (thread_local_t*)LOCAL_ADDR, sizeof(thread_local_t),
     		true);

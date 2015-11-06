@@ -111,7 +111,6 @@ static ER accept(const ID port)
 	RDVNO rdvno;
 	ER_UINT size;
 	ER result;
-	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	size = kcall->port_accept(port, &rdvno, &message);
 	if (size < 0) {
@@ -154,7 +153,6 @@ static ER_ID initialize(void)
 			sizeof(devmsg_t),
 			sizeof(devmsg_t)
 	};
-	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	load_initrd();
 
@@ -180,7 +178,6 @@ static ER_ID initialize(void)
 void start(VP_INT exinf)
 {
 	ER_ID port = initialize();
-	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	if (port >= 0) {
 		dbg_printf(MYNAME ": start port=%d\n", port);

@@ -36,7 +36,6 @@ ER bind_device(UW id, UB *name, ID port, UW size)
 	ER_UINT err;
 	struct posix_request req;
 	struct posix_response *res = (struct posix_response *)&req;
-	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	if (strlen((char*)name) > MAX_DEVICE_NAME)
 		return E_PAR;

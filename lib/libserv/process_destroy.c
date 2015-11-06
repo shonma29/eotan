@@ -38,7 +38,6 @@ int process_destroy(ID pid)
 	mm_args_t args;
 	mm_reply_t *reply = (mm_reply_t*)&args;
 	ER_UINT reply_size;
-	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 
 	args.syscall_no = mm_syscall_process_destroy;
 	args.arg1 = (long int)pid;

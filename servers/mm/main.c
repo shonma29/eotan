@@ -33,8 +33,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "interface.h"
 #include "process.h"
 
-static kcall_t *kcall = (kcall_t*)KCALL_ADDR;
-
 static int (*funcs[])(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args) = {
 	mm_clock_gettime,
 	mm_process_create,

@@ -49,8 +49,6 @@ static int compare(const void *a, const void *b);
 
 void *malloc(size_t size)
 {
-	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
-
 	if (size > PAGE_SIZE)
 		return NULL;
 
@@ -59,8 +57,6 @@ void *malloc(size_t size)
 
 void free(void *p)
 {
-	kcall_t *kcall = (kcall_t*)KCALL_ADDR;
-
 	kcall->pfree(p);
 }
 

@@ -41,7 +41,6 @@ For more information, please refer to <http://unlicense.org/>
 
 #define getParent(type, p) ((intptr_t)p - offsetof(type, node))
 
-static kcall_t *kcall = (kcall_t*)KCALL_ADDR;
 static slab_t process_slab;
 static tree_t process_tree;
 static slab_t thread_slab;
