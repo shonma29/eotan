@@ -73,6 +73,7 @@ static void kcall_initialize(void)
 	p->thread_start = thread_start;
 	p->thread_end_and_destroy = thread_end_and_destroy;
 	p->thread_terminate = thread_terminate;
+	p->thread_sleep = thread_sleep;
 	p->time_get = time_get;
 	p->time_set = time_set;
 	p->interrupt_bind = interrupt_bind;

@@ -61,7 +61,6 @@ For more information, please refer to <http://unlicense.org/>
 .globl handle29
 .globl handle30
 .globl handle31
-.globl service_handler
 
 
 /* division error (fault) */
@@ -259,20 +258,6 @@ skip_abort_with_error_dispatch:
 	popl %ds
 	addl $8, %esp
 	iret
-
-service_handler:
-	pushl %ds
-	pushl %edx
-	pushl %eax
-	pushl %ecx
-	movw $SELECTOR_KERN_DATA, %ax
-	movw %ax,%ds
-	call syscall
-	popl %ecx
-	addl $4, %esp
-	popl %edx
-	popl %ds
-	sysexit
 
 .data
 .align 4

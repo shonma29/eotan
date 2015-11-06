@@ -25,7 +25,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include "func.h"
+#include <nerve/kcall.h>
+
+typedef struct {
+	VP_INT arg1;
+	VP_INT arg2;
+	VP_INT arg3;
+	VP_INT arg4;
+} svc_arg;
 
 static ER _thread_sleep(svc_arg *);
 static ER_UINT _port_call(svc_arg *);
@@ -44,10 +51,10 @@ ER syscall(svc_arg *argp, UW svcno)
 
 static ER _thread_sleep(svc_arg *argp)
 {
-	return thread_sleep((TMO)(argp->arg1));
+	return kcall->thread_sleep((TMO)(argp->arg1));
 }
 
 static ER_UINT _port_call(svc_arg *argp)
 {
-	return port_call((ID)(argp->arg1), (VP)(argp->arg3), (UINT)(argp->arg4));
+	return kcall->port_call((ID)(argp->arg1), (VP)(argp->arg3), (UINT)(argp->arg4));
 }

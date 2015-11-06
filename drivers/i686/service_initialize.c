@@ -24,77 +24,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <nerve/kcall.h>
-#include "api.h"
-#include "fs.h"
-#include "devfs/devfs.h"
-#include "../../kernel/mpu/mpufunc.h"
-
-static fs_request request;
-static void (*syscall[])(fs_request*) = {
-	if_chdir,
-	if_chmod,
-	if_close,
-	if_dup,
-	if_exec,
-	if_exit,
-	if_fcntl,
-	if_fork,
-	if_fstat,
-	if_link,
-	if_lseek,
-	if_mkdir,
-	if_open,
-	if_read,
-	if_rmdir,
-	if_unlink,
-	if_waitpid,
-	if_write,
-	if_getdents,
-	if_mount,
-	if_statvfs,
-	if_unmount,
-	if_kill,
-	if_dup2,
-	if_bind_device,
-};
-
-static int initialize(void);
+#include <core.h>
+#include "context.h"
+#include "mpufunc.h"
+#include "gate.h"
+#include "msr.h"
 
 
-static int initialize(void)
+void service_initialize(void)
 {
-	if (!init_port()) {
-		dbg_printf("fs: init_port failed\n");
-		return -1;
-	}
-
-	if (!device_init())
-		return -1;
-
-	init_fs();
-	init_process();
-	service_initialize();
-	dbg_printf("fs: start\n");
-
-	return 0;
-}
-
-void start(VP_INT exinf)
-{
-	if (initialize()) {
-		kcall->thread_end_and_destroy();
-		return;
-	}
-
-	for (;;) {
-		if (get_request(&(request.packet), &(request.rdvno)) < 0)
-			continue;
-
-		if (request.packet.operation >= sizeof(syscall) / sizeof(syscall[0]))
-			error_response(request.rdvno, ENOTSUP);
-
-		else
-			syscall[request.packet.operation](&request);
-	}
+	tr_set(dummy_tss);
+	msr_write(sysenter_eip_msr, (UW)service_handler);
 }

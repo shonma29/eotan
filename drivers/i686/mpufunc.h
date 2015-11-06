@@ -91,9 +91,6 @@ extern ER unmap_user_pages(PTE *dir, VP addr, size_t cnt);
 extern ER move_stack(const PTE *page_table, void *to, const void *from,
 		const size_t bytes);
 
-/* handler.s */
-extern void service_handler(void);
-
 /* gate_loader.s */
 extern void gdt_load(void);
 extern void idt_load(void);
@@ -104,6 +101,12 @@ extern void paging_set_directory(void *dir);
 extern void paging_start(void);
 extern void tlb_flush_all(void);
 extern void tlb_flush(VP addr);
+
+/* service_handler.s */
+extern void service_handler(void);
+
+/* service_initialize */
+extern void service_initialize(void);
 
 static inline void fpu_save(thread_t **th)
 {

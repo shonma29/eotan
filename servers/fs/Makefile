@@ -35,6 +35,6 @@ CSRCS += $(wildcard $(WD)/devfs/*.c)
 CSRCS += $(wildcard $(WD)/procfs/*.c)
 
 $(TARGET): $(OBJS) \
-		lib/libserv.a lib/libnc.a
+		lib/libserv.a lib/libnc.a kernel/mpu/libmpu.a
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
 	$(STRIP) $@

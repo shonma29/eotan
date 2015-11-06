@@ -46,8 +46,6 @@ static VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
 void context_initialize(void)
 {
 	paging_reset();
-	tr_set(dummy_tss);
-	msr_write(sysenter_eip_msr, (UW)service_handler);
 }
 
 static void api_set_kernel_sp(const VP addr)
