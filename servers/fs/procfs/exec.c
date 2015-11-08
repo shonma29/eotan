@@ -264,12 +264,6 @@ load_segment(W procid, struct inode *ip, Elf32_Phdr *segment, ID task)
     W read_size;
     W vaddr;
     static B buf[PAGE_SIZE];
-    UW start, size;
-
-    start = pageRoundDown(segment->p_vaddr);
-    size =
-	pageRoundUp(segment->p_memsz +
-		(segment->p_vaddr - pageRoundDown(segment->p_vaddr)));
 
     for (rest_length = segment->p_filesz, offset = segment->p_offset, vaddr =
 	 segment->p_vaddr; rest_length > 0;
