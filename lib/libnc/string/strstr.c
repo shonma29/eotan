@@ -29,7 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 
 
-const char *strstr(const char *haystack, const char *needle)
+char *strstr(const char *haystack, const char *needle)
 {
 	size_t skip[UCHAR_MAX + 1];
 	size_t keyLen = strlen(needle);
@@ -37,7 +37,7 @@ const char *strstr(const char *haystack, const char *needle)
 	int i;
 
 	if (keyLen == 0)
-		return haystack;
+		return (char*)haystack;
 
 	for (i = 0; i < sizeof(skip) / sizeof(skip[0]); i++)
 		skip[i] = keyLen + 1;
@@ -54,7 +54,7 @@ const char *strstr(const char *haystack, const char *needle)
 				break;
 
 		if (offset == keyLen)
-			return &(haystack[i]);
+			return (char*)&(haystack[i]);
 	}
 
 	return NULL;

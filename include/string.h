@@ -41,7 +41,7 @@ extern int strncmp(const char *, const char *, size_t);
 extern char *strpbrk(const char *, const char *);
 extern size_t strspn(const char *, const char *);
 extern size_t strcspn(const char *, const char *);
-extern const char *strstr(const char *, const char *);
+extern char *strstr(const char *, const char *);
 extern char *strtok(char *, const char *);
 
 extern void *memchr(const void *, int, size_t);
