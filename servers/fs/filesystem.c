@@ -163,7 +163,7 @@ struct fs_entry {
     struct fsops *fsops;
 };
 
-static struct fs_entry fs_table[MAXFS + 1] = {
+static struct fs_entry fs_table[] = {
 
     {
     "null", NULL}, {
@@ -324,7 +324,7 @@ W mount_root(ID device, W fstype, W option)
     dbg_printf("device = 0x%x, fstype = %d, option = %d\n",
 	       device, fstype, option);
 #endif
-    if ((fstype < 0) || (fstype > MAXFS)) {
+    if ((fstype < 0) || (fstype >= sizeof(fs_table) / sizeof(struct fs_entry))) {
 	dbg_printf("ERROR: mount_root fstype error %d\n", fstype);
 	return (EINVAL);
     }
@@ -379,11 +379,11 @@ mount_fs(struct inode * deviceip,
     dbg_printf("fs: MOUNT: device = 0x%x, fstype = %s, option = %d\n",
 	       deviceip->i_dev, fstype, option);
 #endif
-    for (fs_num = 1; fs_num <= MAXFS; ++fs_num) {
+    for (fs_num = 1; fs_num < sizeof(fs_table) / sizeof(struct fs_entry); ++fs_num) {
 	if (!strcmp(fstype, fs_table[fs_num].fsname))
 	    break;
     }
-    if (fs_num > MAXFS) {
+    if (fs_num >= sizeof(fs_table) / sizeof(struct fs_entry)) {
 	return (EINVAL);
     }
     /* 既に mount されていないかどうかのチェック */
