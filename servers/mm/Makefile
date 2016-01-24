@@ -32,8 +32,8 @@ ENTRY_ADDR = 0x803c0000
 ENTRY_FUNC = start
 
 $(TARGET): $(OBJS) \
+		kernel/mpu/libmpu.a \
 		lib/libserv.a lib/libnc.a
-	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^ \
-		kernel/mpu/libmpu.a
+	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
 	$(STRIP) $@
 
