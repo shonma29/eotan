@@ -152,7 +152,7 @@ char *testdir()
 	assert_ne("mkdir-open[0]", -1, fd);
 	assert_eq("mkdir-fstat[0]", 0, fstat(fd, &st));
 	assert_eq("mkdir-fstat[0-1]",
-			S_IFDIR | S_IRGRP | S_IROTH | S_IWOTH,
+			S_IFDIR | S_IRGRP | S_IROTH,
 			st.st_mode);
 	assert_eq("mkdir-close[0]", 0, close(fd));
 

@@ -35,4 +35,4 @@ $(TARGET): $(OBJS) \
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
 	$(STRIP) $@
 	app/sfs/statfs initrd.img write /$(@F) $@
-	app/sfs/statfs initrd.img chmod 777 /$(@F)
+	app/sfs/statfs initrd.img chmod 755 /$(@F)

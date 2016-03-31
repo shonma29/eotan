@@ -105,80 +105,48 @@
 #include <string.h>
 #include <malloc.h>
 #include <unistd.h>
-#include <stdlib.h>
-#ifndef EOTA
-#include <sys/stat.h>
-#endif
 #include <fcntl.h>
-#include <time.h>
 #include "sfs_utils.h"
-#ifdef EOTA
-struct stat {
-    UW st_dev;
-    UW st_ino;
-    UW st_mode;
-    UW st_nlink;
-    UW st_uid;
-    UW st_gid;
-    UW st_rdev;
-    UW st_size;
-    UW st_blksize;
-    UW st_blocks;
-    UW st_atime;
-    UW st_mtime;
-    UW st_ctime;
-};
 
-#endif
+static int mount_fs(char *, struct sfs_superblock *, struct sfs_inode *, int);
+static int lookup_file(int, struct sfs_superblock *, struct sfs_inode *, char *, struct sfs_inode *);
+static int create_file(int, struct sfs_superblock *, struct sfs_inode *, const char *, int, struct sfs_inode *);
+static int read_file(int, struct sfs_superblock *, struct sfs_inode *, int, int, char *);
+static int write_inode(int, struct sfs_superblock *, struct sfs_inode *);
+static int truncate_file(int, struct sfs_superblock *, struct sfs_inode *, int);
 
-int mount_fs(char *path, struct sfs_superblock *sb, struct sfs_inode *root, int mode);
-int lookup_file(int fd, struct sfs_superblock *sb, struct sfs_inode *cwd, char *path, struct sfs_inode *ip);
-int create_file(int fd, struct sfs_superblock *sb, struct sfs_inode *parent_dir, const char *name, int mode, struct sfs_inode *newinode);
-int read_file(int fd, struct sfs_superblock *sb, struct sfs_inode *ip, int start, int size, char * buf);
-int write_inode(int fd, struct sfs_superblock *sb, struct sfs_inode *ip);
-int remove_file(int fd, struct sfs_superblock *sb, struct sfs_inode *dir, char *fname);
-void print_superblock(struct sfs_superblock *sb);
-int truncate_file(int fd, struct sfs_superblock *sb, struct sfs_inode *ip, int newsize);
-
-int read_block(int fd, int blockno, int blocksize, B * buf);
-int write_block(int fd, int blockno, int blocksize, B * buf);
-int alloc_block(int fd, struct sfs_superblock *sb);
-int free_block(int fd, struct sfs_superblock *sb, int blockno);
-void free_indirect(int fd, struct sfs_superblock *sb, struct sfs_inode *ip, int offset, int inblock);
-void free_dindirect(int fd, struct sfs_superblock *sb, struct sfs_inode *ip, int offset, int dinblock, int inblock);
-void free_all_dindirect(int fd, struct sfs_superblock *sb, struct sfs_inode *ip, int inblock);
-int get_block_num(int fd, struct sfs_superblock *sb, struct sfs_inode *ip, int blockno);
-int get_indirect_block_num(int fd, struct sfs_superblock *sb, struct sfs_inode *ip, int blockno);
-int set_block_num(int fd, struct sfs_superblock *sb, struct sfs_inode *ip, int blockno, int newblock);
-int set_indirect_block_num(int fd, struct sfs_superblock *sb, struct sfs_inode *ip, int blockno, int newblock);
-int set_dindirect_block_num(int fd, struct sfs_superblock *sb, struct sfs_inode *ip, int blockno, int newblock);
-int locallookup_file(int fd, struct sfs_superblock *sb, struct sfs_inode *parent, struct sfs_inode *ip, char *name);
-int get_dindirect_block_num(int fd, struct sfs_superblock *sb, struct sfs_inode *ip, int blockno);
+static int read_block(int, int, int, B *);
+static int write_block(int, int, int, B *);
+static int alloc_block(int, struct sfs_superblock *);
+static int free_block(int, struct sfs_superblock *, int);
+static void free_indirect(int, struct sfs_superblock *, struct sfs_inode *, int, int);
+static void free_dindirect(int, struct sfs_superblock *, struct sfs_inode *, int, int, int);
+static void free_all_dindirect(int, struct sfs_superblock *, struct sfs_inode *, int);
+static int get_block_num(int, struct sfs_superblock *, struct sfs_inode *, int);
+static int get_indirect_block_num(int, struct sfs_superblock *, struct sfs_inode *, int);
+static int set_block_num(int, struct sfs_superblock *, struct sfs_inode *, int, int);
+static int set_indirect_block_num(int, struct sfs_superblock *, struct sfs_inode *, int, int);
+static int set_dindirect_block_num(int, struct sfs_superblock *, struct sfs_inode *, int, int);
+static int locallookup_file(int, struct sfs_superblock *, struct sfs_inode *, struct sfs_inode *, char *);
+static int get_dindirect_block_num(int, struct sfs_superblock *, struct sfs_inode *, int);
 
 
-extern W read_dir(int fd, struct sfs_superblock *sb, struct sfs_inode *ip, int nentry, struct sfs_dir *dirp);
+static W read_dir(int, struct sfs_superblock *, struct sfs_inode *, int, struct sfs_dir *);
 
-extern W read_inode(int fd, struct sfs_superblock *sb, int ino, struct sfs_inode *ip);
-extern W read_rootdir(int fd, struct sfs_superblock *sb, struct sfs_dir **dirp, int *nentry);
-extern int write_file(int fd, struct sfs_superblock *sb, struct sfs_inode *ip,
-		      int start, int size, char * buf);
+static W read_inode(int, struct sfs_superblock *, int, struct sfs_inode *);
+static int write_file(int, struct sfs_superblock *, struct sfs_inode *,
+		      int, int, char *);
 
-struct sfs_inode rootdir_buf;
-struct sfs_inode *rootdirp;
+static struct sfs_inode rootdir_buf;
+static struct sfs_inode *rootdirp;
 
-extern int f_create_file();
-extern int f_write_file();
-extern int f_read_file();
-extern int f_dir();
-extern int f_statfs();
-extern int f_mkdir();
-extern int f_rmdir();
-extern int f_remove_file();
-extern int f_truncate();
-extern int f_mknod();
-extern int f_chmod();
+static int f_create_file(int, struct sfs_superblock *, char *);
+static int f_write_file(int, struct sfs_superblock *, char *, char *);
+static int f_dir(int, struct sfs_superblock *, char *);
+static int f_mkdir(int, struct sfs_superblock *, char *);
+static int f_chmod(int, struct sfs_superblock *, char *, char *);
 
-struct cmd {
+static struct cmd {
     char *name;
     int options;
     int (*funcp) ();
@@ -186,34 +154,13 @@ struct cmd {
 
 {
     {
-	"create", 1, f_create_file
-    },
-    {
-	"rm", 1, f_remove_file
-    },
-    {
 	"write", 2, f_write_file
-    },
-    {
-	"read", 1, f_read_file
     },
     {
 	"dir", 1, f_dir
     },
     {
 	"mkdir", 1, f_mkdir
-    },
-    {
-	"rmdir", 1, f_rmdir
-    },
-    {
-	"statfs", 0, f_statfs
-    },
-    {
-	"trunc", 2, f_truncate
-    },
-    {
-	"mknod", 2, f_mknod
     },
     {
 	"chmod", 2, f_chmod
@@ -224,20 +171,13 @@ struct cmd {
 };
 
 
-void usage(void)
+static void usage(void)
 {
     fprintf(stderr, "usage: statfs device command args\n");
     fprintf(stderr, "Command:\n");
-    fprintf(stderr, "\tcreate file\n");
-    fprintf(stderr, "\trm file\n");
     fprintf(stderr, "\twrite to from\n");
-    fprintf(stderr, "\tread filename\n");
     fprintf(stderr, "\tdir directory\n");
     fprintf(stderr, "\tmkdir directory\n");
-    fprintf(stderr, "\trmdir directory\n");
-    fprintf(stderr, "\ttrunc\n");
-    fprintf(stderr, "\ttrunc file size\n");
-    fprintf(stderr, "\tmknod path maj/min_num\n");
     fprintf(stderr, "\tchmod mode path\n");
 }
 
@@ -247,9 +187,6 @@ int main(int ac, char **av)
     struct sfs_superblock sb;
     int i;
 
-#ifdef notdef
-    printf("%s\n", rcsid);
-#endif
     if (ac < 3) {
 	usage();
 	return (0);
@@ -257,25 +194,10 @@ int main(int ac, char **av)
     fd = mount_fs(av[1], &sb, &rootdir_buf, O_RDWR);
     rootdirp = &rootdir_buf;
 
-#ifdef notdef
-    print_superblock(&sb);
-    fprintf(stderr, "root dir: index = %d\n", rootdirp->sfs_i_index);
-
-    nentry = read_dir(fd, &sb, rootdirp, 0, NULL);
-    rootdir = alloca(sizeof(struct sfs_dir) * nentry);
-    read_dir(fd, &sb, rootdirp, nentry, rootdir);
-    for (i = 0; i < nentry; i++) {
-	fprintf(stderr, "rootdir[%d] inode = %d, name = %-14s\n", i, rootdir[i].sfs_d_index, rootdir[i].sfs_d_name);
-    }
-#endif
-
     for (i = 0; cmdtable[i].name != NULL; i++) {
 	int err;
 
 	if (strcmp(av[2], cmdtable[i].name) == 0) {
-#ifdef notdef
-	    printf("opt = %d %d\n", cmdtable[i].options, ac);
-#endif
 	    if ((cmdtable[i].options) + 3 != ac) {
 		fprintf(stderr, "command line option error\n");
 		fprintf(stderr, "-----------------\n");
@@ -304,7 +226,7 @@ int main(int ac, char **av)
 /* f_create_file
 
  */
-int f_create_file(int fd, struct sfs_superblock *sb, char *path)
+static int f_create_file(int fd, struct sfs_superblock *sb, char *path)
 {
     struct sfs_inode parent_ip, ip;
     int err;
@@ -342,7 +264,7 @@ int f_create_file(int fd, struct sfs_superblock *sb, char *path)
 /* f_write_file
 
  */
-int f_write_file(int fd, struct sfs_superblock *sb, char *path, char *src_file)
+static int f_write_file(int fd, struct sfs_superblock *sb, char *path, char *src_file)
 {
     struct sfs_inode ip;
     int err;
@@ -392,38 +314,7 @@ int f_write_file(int fd, struct sfs_superblock *sb, char *path, char *src_file)
 }
 
 
-int f_read_file(int fd, struct sfs_superblock *sb, char *path)
-{
-    struct sfs_inode ip;
-    int err;
-    char *buf;
-    int i, rsize;
-    int total;
-
-
-    err = lookup_file(fd, sb, rootdirp, path, &ip);
-    if (err) {
-	fprintf(stderr, "cannot open file [%s]\n", path);
-	return (err);
-    }
-    buf = alloca(sb->blksize);
-    rsize = ip.i_size;
-    total = 0;
-    for (i = 0; rsize > 0; i += sb->blksize) {
-	err = read_file(fd, sb, &ip, i, MIN(sb->blksize, rsize), buf);
-	if (err) {
-	    fprintf(stderr, "cannot read to file.\n");
-	    return (err);
-	}
-	fwrite(buf, MIN(sb->blksize, rsize), 1, stdout);
-	total += MIN(sb->blksize, rsize);
-	rsize -= sb->blksize;
-    }
-    return (0);
-}
-
-
-int f_dir(int fd, struct sfs_superblock *sb, char *path)
+static int f_dir(int fd, struct sfs_superblock *sb, char *path)
 {
     struct sfs_inode ip;
     int err;
@@ -475,7 +366,7 @@ int f_dir(int fd, struct sfs_superblock *sb, char *path)
 }
 
 
-int f_mkdir(int fd, struct sfs_superblock *sb, char *path)
+static int f_mkdir(int fd, struct sfs_superblock *sb, char *path)
 {
     struct sfs_inode parent_ip, ip;
     int err;
@@ -506,7 +397,8 @@ int f_mkdir(int fd, struct sfs_superblock *sb, char *path)
 	fprintf(stderr, "cannot lookup parent directory [%s]\n", pdirname);
 	return (err);
     }
-    err = create_file(fd, sb, &parent_ip, fname, 0777, &ip);
+    err = create_file(fd, sb, &parent_ip, fname,
+	    S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH, &ip);
     if (err) {
 	fprintf(stderr, "cannot create file [%s]\n", fname);
 	return (err);
@@ -536,171 +428,7 @@ int f_mkdir(int fd, struct sfs_superblock *sb, char *path)
 }
 
 
-int f_rmdir(int fd, struct sfs_superblock *sb, char *path)
-{
-    struct sfs_inode parent_ip, ip;
-    int err;
-    char *pdirname, *fname;
-    int i;
-
-    for (i = strlen(path); i > 0; i--) {
-	if (path[i] == '/')
-	    break;
-    }
-
-    err = lookup_file(fd, sb, rootdirp, path, &ip);
-    if (err) {
-	fprintf(stderr, "Cannot found entry [%s]\n", path);
-	return (err);
-    }
-    if ((ip.i_mode & S_IFMT) != S_IFDIR) {
-	fprintf(stderr, "Not directory\n");
-	return (ENOTDIR);
-    }
-    if (read_dir(fd, sb, &ip, 0, NULL) > 2) {
-	fprintf(stderr, "Directory not empty.\n");
-	return (EEXIST);
-    }
-    pdirname = alloca(i + 1);
-    strncpy(pdirname, path, i);
-    pdirname[i] = '\0';
-
-    fname = alloca(strlen(path) - i + 1);
-    strncpy(fname, &path[i + 1], strlen(path) - i);
-    fname[strlen(path) - i] = '\0';
-
-    err = lookup_file(fd, sb, rootdirp, pdirname, &parent_ip);
-    if (err) {
-	printf("cannot lookup parent directory [%s]\n", pdirname);
-	return (err);
-    }
-    err = remove_file(fd, sb, &parent_ip, fname);
-    if (err) {
-	fprintf(stderr, "cannot remove file [%s]\n", fname);
-	return (err);
-    }
-    return (0);
-}
-
-
-
-int f_statfs(int fd, struct sfs_superblock *sb)
-{
-    print_superblock(sb);
-    return (0);
-}
-
-
-int f_truncate(int fd, struct sfs_superblock *sb, char *path, char *newsize)
-{
-    struct sfs_inode ip;
-    int err;
-
-    err = lookup_file(fd, sb, rootdirp, path, &ip);
-    if (err) {
-	fprintf(stderr, "Cannot lookup file [%s]\n", path);
-	return (err);
-    }
-    err = truncate_file(fd, sb, &ip, atoi(newsize));
-    if (err) {
-	fprintf(stderr, "Cannot truncate file.\n");
-	return (err);
-    }
-    return (0);
-}
-
-
-int f_remove_file(int fd, struct sfs_superblock *sb, char *path)
-{
-    struct sfs_inode parent_ip;
-    int err;
-    char *pdirname, *fname;
-    int i;
-
-    for (i = strlen(path); i > 0; i--) {
-	if (path[i] == '/')
-	    break;
-    }
-
-    err = lookup_file(fd, sb, rootdirp, path, &parent_ip);
-    if (err) {
-	fprintf(stderr, "Cannot found entry [%s]\n", path);
-	return (err);
-    }
-    if ((parent_ip.i_mode & S_IFMT) == S_IFDIR) {
-	fprintf(stderr, "Is a directory\n");
-	return (EISDIR);
-    }
-    pdirname = alloca(i + 1);
-    strncpy(pdirname, path, i);
-    pdirname[i] = '\0';
-
-    fname = alloca(strlen(path) - i + 1);
-    strncpy(fname, &path[i + 1], strlen(path) - i);
-    fname[strlen(path) - i] = '\0';
-
-    err = lookup_file(fd, sb, rootdirp, pdirname, &parent_ip);
-    if (err) {
-	printf("cannot lookup parent directory\n");
-	return (err);
-    }
-    err = remove_file(fd, sb, &parent_ip, fname);
-    if (err) {
-	fprintf(stderr, "cannot remove file\n");
-	return (err);
-    }
-    return (0);
-}
-
-int f_mknod(int fd, struct sfs_superblock *sb, char *path, char *num)
-{
-    struct sfs_inode parent_ip, ip;
-    int err;
-    char *pdirname, *fname;
-    unsigned int i;
-
-    for (i = strlen(path); i > 0; i--) {
-	if (path[i] == '/')
-	    break;
-    }
-
-    pdirname = alloca(i + 1);
-    strncpy(pdirname, path, i);
-    pdirname[i] = '\0';
-
-    fname = alloca(strlen(path) - i + 1);
-    strncpy(fname, &path[i + 1], strlen(path) - i);
-    fname[strlen(path) - i] = '\0';
-
-    err = lookup_file(fd, sb, rootdirp, pdirname, &parent_ip);
-    if (err) {
-	printf("cannot lookup parent directory [%s]\n", pdirname);
-	return (err);
-    }
-    err = create_file(fd, sb, &parent_ip, fname, 0666, &ip);
-    if (err) {
-	fprintf(stderr, "cannot create file [%s]\n", fname);
-	return (err);
-    }
-    ip.i_mode = (ip.i_mode & ~S_IFMT) | (S_IFCHR);
-    if (strncmp(num, "0x", 2) == 0) {
-	sscanf(&num[2], "%x", &i);
-    } else {
-	sscanf(num, "%d", &i);
-    }
-    ip.i_direct[0] = i;
-    if ((i & 0x80000000) != 0) {
-	ip.i_mode |= (S_IFBLK);
-    }
-    err = write_inode(fd, sb, &ip);
-    if (err) {
-	fprintf(stderr, "cannot write inode\n");
-	return (err);
-    }
-    return (0);
-}
-
-int f_chmod(int fd, struct sfs_superblock *sb, char *num, char *path)
+static int f_chmod(int fd, struct sfs_superblock *sb, char *num, char *path)
 {
     struct sfs_inode ip;
     int err;
@@ -725,12 +453,11 @@ int f_chmod(int fd, struct sfs_superblock *sb, char *num, char *path)
 /* ファイルシステム全体に関係する処理
 
  * mount_fs()
- * print_superblock()
  *
  */
 
 
-int mount_fs(char *path, struct sfs_superblock *sb, struct sfs_inode *root, int mode)
+static int mount_fs(char *path, struct sfs_superblock *sb, struct sfs_inode *root, int mode)
 {
     int fd;
 
@@ -755,57 +482,7 @@ int mount_fs(char *path, struct sfs_superblock *sb, struct sfs_inode *root, int 
 }
 
 
-void print_superblock(struct sfs_superblock *sb)
-{
-    if (sb->magic != SFS_MAGIC) {
-	fprintf(stderr, "Invalid Magic ID\n");
-	exit(1);
-    }
-    fprintf(stderr, "*STATUS* \n\n");
-    fprintf(stderr, "FS type\t\tSFS\n");
-    fprintf(stderr, "version\t\t%d.%d\n", sb->version_hi, sb->version_lo);
-    fprintf(stderr, "total size\t%u\n", sb->nblock * sb->blksize);
-    fprintf(stderr, "size\t\t%u\n", sb->freeblock * sb->blksize);
-    fprintf(stderr, "blocksize\t%d bytes\n", sb->blksize);
-    fprintf(stderr, "block\t\t%u block, %u free\n", sb->nblock, sb->freeblock);
-    fprintf(stderr, "bitmap\t\t%u bytes\n", sb->bitmapsize * sb->blksize);
-    fprintf(stderr, "inode\t\t%u inode, %u free\n", sb->ninode, sb->freeinode);
-    fprintf(stderr, "isearch\t\t%u, bsearch\t\t%u\n", sb->isearch, sb->bsearch);
-}
-
-
-/* ディレクトリに関係する処理
-
- * read_rootdir()
- * read_dir()
- *
- */
-
-W
-read_rootdir(int fd,
-	     struct sfs_superblock *sb,
-	     struct sfs_dir **dirp,
-	     int *nentry)
-{
-    struct sfs_inode ip;
-
-
-    if (read_inode(fd, sb, 1, &ip) != 0) {
-	fprintf(stderr, "Cannot read rootdir.\n");
-	exit(1);
-    }
-    *dirp = (struct sfs_dir *) malloc(ip.i_size);
-    if (*dirp == NULL) {
-	fprintf(stderr, "Memory over flow.\n");
-	exit(1);
-    }
-    *nentry = ip.i_size / sizeof(struct sfs_dir);
-    read_file(fd, sb, &ip, 0, ip.i_size, (char *) dirp);
-    return (0);
-}
-
-
-W
+static W
 read_dir(int fd,
 	 struct sfs_superblock * sb,
 	 struct sfs_inode * ip,
@@ -847,7 +524,7 @@ int get_inode_offset(struct sfs_superblock *sb, int ino)
 }
 
 
-W
+static W
 read_inode(int fd, struct sfs_superblock *sb, int ino, struct sfs_inode *ip)
 {
     int offset;
@@ -921,7 +598,7 @@ int free_inode(int fd, struct sfs_superblock *sb, int inode_index)
 }
 
 
-int write_inode(int fd, struct sfs_superblock *sb, struct sfs_inode *ip)
+static int write_inode(int fd, struct sfs_superblock *sb, struct sfs_inode *ip)
 {
     lseek(fd, get_inode_offset(sb, ip->i_index), 0);
     if (write(fd, ip, sizeof(struct sfs_inode)) < sizeof(struct sfs_inode)) {
@@ -943,7 +620,7 @@ int write_inode(int fd, struct sfs_superblock *sb, struct sfs_inode *ip)
  * create_file()
  * lookup()
  */
-int write_file(int fd,
+static int write_file(int fd,
 	       struct sfs_superblock *sb,
 	       struct sfs_inode *ip,
 	       int start,
@@ -1010,7 +687,7 @@ int write_file(int fd,
 }
 
 
-int read_file(int fd,
+static int read_file(int fd,
 	      struct sfs_superblock *sb,
 	      struct sfs_inode *ip,
 	      int start,
@@ -1045,7 +722,7 @@ int read_file(int fd,
 
 
 
-int create_file(int fd,
+static int create_file(int fd,
 		struct sfs_superblock *sb,
 		struct sfs_inode *parent_dir,
 		const char *name,
@@ -1097,11 +774,6 @@ int create_file(int fd,
     newinode->i_mtime.nsec = 0;
     newinode->i_ctime.sec = t;
     newinode->i_ctime.nsec = 0;
-#ifdef notdef
-    bzero(newinode->i_direct, sizeof(newinode->i_direct));
-    bzero(newinode->i_indirect, sizeof(newinode->i_indirect));
-    bzero(newinode->i_dindirect, sizeof(newinode->i_dindirect));
-#endif
     write_inode(fd, sb, newinode);
 
     /* parent_dir のリンクカウントは増やさない．
@@ -1123,7 +795,7 @@ int create_file(int fd,
 }
 
 
-int lookup_file(int fd,
+static int lookup_file(int fd,
 		struct sfs_superblock *sb,
 		struct sfs_inode *cwd,
 		char *path,
@@ -1180,7 +852,7 @@ int lookup_file(int fd,
 }
 
 
-int locallookup_file(int fd,
+static int locallookup_file(int fd,
 		     struct sfs_superblock *sb,
 		     struct sfs_inode *parent,
 		     struct sfs_inode *ip,
@@ -1203,7 +875,7 @@ int locallookup_file(int fd,
 }
 
 
-int truncate_file(int fd,
+static int truncate_file(int fd,
 		  struct sfs_superblock *sb,
 		  struct sfs_inode *ip,
 		  int newsize)
@@ -1257,7 +929,7 @@ int truncate_file(int fd,
     return (write_inode(fd, sb, ip));
 }
 
-void free_indirect(int fd, struct sfs_superblock *sb, struct sfs_inode *ip,
+static void free_indirect(int fd, struct sfs_superblock *sb, struct sfs_inode *ip,
 		   int offset, int inblock)
 {
     int i;
@@ -1282,7 +954,7 @@ void free_indirect(int fd, struct sfs_superblock *sb, struct sfs_inode *ip,
     }
 }
 
-void free_dindirect(int fd, struct sfs_superblock *sb, struct sfs_inode *ip,
+static void free_dindirect(int fd, struct sfs_superblock *sb, struct sfs_inode *ip,
 		    int offset, int dinblock, int inblock)
 {
     int i;
@@ -1314,7 +986,7 @@ void free_dindirect(int fd, struct sfs_superblock *sb, struct sfs_inode *ip,
     }
 }
 
-void free_all_dindirect(int fd, struct sfs_superblock *sb,
+static void free_all_dindirect(int fd, struct sfs_superblock *sb,
 			struct sfs_inode *ip, int inblock)
 {
     int i;
@@ -1327,62 +999,6 @@ void free_all_dindirect(int fd, struct sfs_superblock *sb,
 	}
     }
 }
-
-int remove_file(int fd,
-		struct sfs_superblock *sb,
-		struct sfs_inode *dir,
-		char *fname)
-{
-    int nentry;
-    int i;
-    struct sfs_dir *buf;
-    int inodeindex;
-    struct sfs_inode ip;
-
-    nentry = read_dir(fd, sb, dir, 0, NULL);
-    if (nentry < 0) {
-	return (ENOENT);
-    }
-    buf = alloca(sizeof(struct sfs_dir) * nentry);
-    if (buf == NULL) {
-	return (ENOMEM);
-    }
-    if (read_dir(fd, sb, dir, nentry, buf) != 0) {
-	return (EIO);
-    }
-    for (i = 0; i < nentry; i++) {
-	if (strcmp(fname, (char *) (buf[i].d_name)) == 0) {
-	    inodeindex = buf[i].d_index;
-	    break;
-	}
-    }
-    if (i >= nentry) {
-	return (ENOENT);
-    }
-    while (i < nentry) {
-	buf[i].d_index = buf[i + 1].d_index;
-	strcpy((char * )(buf[i].d_name), (char *) (buf[i + 1].d_name));
-	i++;
-    }
-    dir->i_size -= sizeof(struct sfs_dir);
-    write_file(fd, sb, dir, 0, dir->i_size, (char *) buf);
-    truncate_file(fd, sb, dir, dir->i_size);
-
-    read_inode(fd, sb, inodeindex, &ip);
-    ip.i_nlink--;
-    if (ip.i_nlink <= 0) {
-	truncate_file(fd, sb, &ip, 0);
-	free_inode(fd, sb, ip.i_index);
-    } else if ((ip.i_mode & S_IFMT) == S_IFDIR) {
-	truncate_file(fd, sb, &ip, 0);
-	free_inode(fd, sb, ip.i_index);
-
-	/* 親ディレクトリの nlink の更新 */
-	dir->i_nlink--;
-	write_inode(fd, sb, dir);
-    }
-    return (0);
-}
 
 
 /* ブロックに関係している処理
@@ -1394,7 +1010,7 @@ int remove_file(int fd,
  * set_block_num()
  *
  */
-int read_block(int fd, int blockno, int blocksize, B * buf)
+static int read_block(int fd, int blockno, int blocksize, B * buf)
 {
     if (lseek(fd, blockno * blocksize, 0) < 0) {
 	return (0);
@@ -1406,7 +1022,7 @@ int read_block(int fd, int blockno, int blocksize, B * buf)
 }
 
 
-int write_block(int fd, int blockno, int blocksize, B * buf)
+static int write_block(int fd, int blockno, int blocksize, B * buf)
 {
     if (lseek(fd, blockno * blocksize, 0) < 0) {
 	return (0);
@@ -1417,7 +1033,7 @@ int write_block(int fd, int blockno, int blocksize, B * buf)
     return (blocksize);
 }
 
-int alloc_block(int fd, struct sfs_superblock *sb)
+static int alloc_block(int fd, struct sfs_superblock *sb)
 {
     int startoffset;
     int i, j, k, s;
@@ -1472,7 +1088,7 @@ int alloc_block(int fd, struct sfs_superblock *sb)
 }
 
 
-int free_block(int fd, struct sfs_superblock *sb, int blockno)
+static int free_block(int fd, struct sfs_superblock *sb, int blockno)
 {
     unsigned char block;
     int startoffset;
@@ -1496,7 +1112,7 @@ int free_block(int fd, struct sfs_superblock *sb, int blockno)
 }
 
 
-int get_block_num(int fd,
+static int get_block_num(int fd,
 		  struct sfs_superblock *sb,
 		  struct sfs_inode *ip,
 		  int blockno)
@@ -1521,7 +1137,7 @@ int get_block_num(int fd,
 }
 
 
-int get_indirect_block_num(int fd, struct sfs_superblock *sb, struct sfs_inode *ip, int blockno)
+static int get_indirect_block_num(int fd, struct sfs_superblock *sb, struct sfs_inode *ip, int blockno)
 {
     int inblock;
     int inblock_offset;
@@ -1534,14 +1150,10 @@ int get_indirect_block_num(int fd, struct sfs_superblock *sb, struct sfs_inode *
 	return (0);
     }
     read_block(fd, ip->i_indirect[inblock], sb->blksize, (B *) & inbuf);
-#ifdef notdef
-    fprintf(stderr, "get_ind: inblock = %d, offset = %d, blocknum = %d\n",
-	    inblock, inblock_offset, inbuf.in_block[inblock_offset]);
-#endif
     return (inbuf.in_block[inblock_offset]);
 }
 
-int get_dindirect_block_num(int fd, struct sfs_superblock *sb, struct sfs_inode *ip, int blockno)
+static int get_dindirect_block_num(int fd, struct sfs_superblock *sb, struct sfs_inode *ip, int blockno)
 {
     int dinblock;
     int dinblock_offset;
@@ -1554,10 +1166,6 @@ int get_dindirect_block_num(int fd, struct sfs_superblock *sb, struct sfs_inode 
     dinblock = (blockno % (SFS_DINDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK)) / SFS_INDIRECT_BLOCK;
     dinblock_offset = blockno % SFS_INDIRECT_BLOCK;
 
-#ifdef notdef
-    fprintf(stderr, "GET: blockno = %d, inblock = %d, dinblock = %d, dinblock_offset = %d\n",
-	    blockno, inblock, dinblock, dinblock_offset);
-#endif
     if (ip->i_dindirect[inblock] <= 0) {
 	return (0);
     }
@@ -1567,15 +1175,11 @@ int get_dindirect_block_num(int fd, struct sfs_superblock *sb, struct sfs_inode 
     }
     read_block(fd, inbuf.in_block[dinblock], sb->blksize, (B *) & inbuf);
 
-#ifdef notdef
-    fprintf(stderr, "get_ind: inblock = %d, dinblock = %d, offset = %d, blocknum = %d\n",
-	    inblock, dinblock, dinblock_offset, inbuf.in_block[dinblock_offset]);
-#endif
     return (inbuf.in_block[dinblock_offset]);
 }
 
 
-int set_block_num(int fd,
+static int set_block_num(int fd,
 		  struct sfs_superblock *sb,
 		  struct sfs_inode *ip,
 		  int blockno,
@@ -1606,7 +1210,7 @@ int set_block_num(int fd,
 
 
 
-int set_indirect_block_num(int fd,
+static int set_indirect_block_num(int fd,
 			   struct sfs_superblock *sb,
 			   struct sfs_inode *ip,
 			   int blockno,
@@ -1632,16 +1236,11 @@ int set_indirect_block_num(int fd,
     write_block(fd, ip->i_indirect[inblock], sb->blksize, (B *) & inbuf);
     write_inode(fd, sb, ip);
 
-#ifdef notdef
-    fprintf(stderr, "set_ind: inblock = %d, offset = %d, newblock = %d\n",
-	    inblock, inblock_offset, newblock);
-#endif
-
     return (inbuf.in_block[inblock_offset]);
 }
 
 
-int set_dindirect_block_num(int fd,
+static int set_dindirect_block_num(int fd,
 			    struct sfs_superblock *sb,
 			    struct sfs_inode *ip,
 			    int blockno, int newblock)

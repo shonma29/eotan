@@ -59,7 +59,7 @@ data: motd bees.p6
 	./motd.sh > motd
 	for I in $^; do \
 		app/sfs/statfs initrd.img write /$$I $$I; \
-		app/sfs/statfs initrd.img chmod 664 /$$I; \
+		app/sfs/statfs initrd.img chmod 644 /$$I; \
 	done
 
 starter:
@@ -69,7 +69,7 @@ starter:
 
 initrd:
 	$(RM) initrd.img
-	app/sfs/mkfs initrd.img 512 512 4
+	app/sfs/mkfs initrd.img 512 4
 
 clean:
 	$(MAKE) -f app/sfs/Makefile WD=app/sfs clean

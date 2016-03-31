@@ -55,46 +55,42 @@
  */
 
 
-#ifndef EOTA
 #include <stdio.h>
 #include <unistd.h>
 #include <time.h>
 #include <string.h>
-#else
-#define perror printf
-#endif
 #include <stdlib.h>
 #include <fcntl.h>
 #include "sfs_utils.h"
 
 
-int nblock;
-int blocksize;
-int inodecount;
-int boot_block;
-int super_block;
-int bitmap_block;
-int inode_block;
+static int nblock;
+static int blocksize;
+static int inodecount;
+static int boot_block;
+static int super_block;
+static int bitmap_block;
+static int inode_block;
 
-void write_superblock(int formatfd);
-void write_bitmap(int formatfd);
-void write_inode(int formatfd);
-void write_rootdir(int formatfd);
-void set_bit(char buf[], int index);
+static void write_superblock(int formatfd);
+static void write_bitmap(int formatfd);
+static void write_inode(int formatfd);
+static void write_rootdir(int formatfd);
+static void set_bit(char buf[], int index);
 
-struct sfs_dir rootentry[] = {
+static struct sfs_dir rootentry[] = {
     {1, "."},
     {1, ".."},
     {2, "lost+found"}
 };
 
 
-struct sfs_inode rootdir = {
+static struct sfs_inode rootdir = {
     1,				/* sfs_i_index */
     3,				/* sfs_i_nlink */
     sizeof(rootentry),		/* sfs_i_size */
     1,				/* sfs_i_size_blk */
-    (S_IFDIR | 0777),	/* sfs_i_mode */
+    (S_IFDIR | S_IRWXU | S_IRWXG | S_IRWXO),	/* sfs_i_mode */
     0,				/* sfs_i_uid */
     0,				/* sfs_i_gid */
     {0, 0},				/* sfs_i_atime (now time) */
@@ -103,17 +99,17 @@ struct sfs_inode rootdir = {
 };
 
 
-struct sfs_dir lostfound_entry[] = {
+static struct sfs_dir lostfound_entry[] = {
     {2, "."},
     {1, ".."}
 };
 
-struct sfs_inode lostfound = {
+static struct sfs_inode lostfound = {
     2,				/* sfs_i_index */
     2,				/* sfs_i_nlink */
     sizeof(lostfound_entry),	/* sfs_i_size */
     1,				/* sfs_i_size_blk */
-    (S_IFDIR | 0777),	/* sfs_i_mode */
+    (S_IFDIR | S_ISVTX | S_IRWXU),	/* sfs_i_mode */
     0,				/* sfs_i_uid */
     0,				/* sfs_i_gid */
     {0, 0},				/* sfs_i_atime (now time) */
@@ -121,9 +117,9 @@ struct sfs_inode lostfound = {
     {0, 0},				/* sfs_i_mtime (now time) */
 };
 
-void usage(void)
+static void usage(void)
 {
-    printf("usage: mkfs file nblock blocksize KB-per-inode\n");
+    printf("usage: mkfs file nblock KB-per-inode\n");
 }
 
 /* main -
@@ -134,14 +130,14 @@ int main(int ac, char **av)
     int formatfd;
     int kbpinode;
 
-    if (ac < 5) {
+    if (ac != 4) {
 	usage();
 	return (0);
     }
 
     nblock = atoi(av[2]);
-    blocksize = atoi(av[3]);
-    kbpinode = atoi(av[4]);
+    blocksize = SFS_BLOCK_SIZE;
+    kbpinode = atoi(av[3]);
 
     formatfd = open(av[1], O_RDWR | O_CREAT, 0666);
     if (formatfd < 0) {
@@ -150,7 +146,7 @@ int main(int ac, char **av)
     }
     if (kbpinode > 99) {
 	printf
-	    ("WARNING: The 4th argument has been changed to 'KB per inode' from 'number of inode'.\n");
+	    ("WARNING: The 3rd argument has been changed to 'KB per inode' from 'number of inode'.\n");
     }
     boot_block = 1;
     super_block = 1;
@@ -171,14 +167,10 @@ int main(int ac, char **av)
     write_rootdir(formatfd);
 
     close(formatfd);
-#ifndef EOTA
     exit(0);
-#else
-    _exit(0);
-#endif
 }
 
-void write_superblock(int formatfd)
+static void write_superblock(int formatfd)
 {
     int error;
 
@@ -209,42 +201,30 @@ void write_superblock(int formatfd)
 }
 
 
-void write_bitmap(int formatfd)
+static void write_bitmap(int formatfd)
 {
     char *buf;
     int i;
     int error;
 
-#ifndef EOTA
     buf = alloca(blocksize * bitmap_block);
     memset(buf, 0, blocksize * bitmap_block);
-#else
-    buf = malloc(blocksize * bitmap_block);
-    bzero(buf, blocksize * bitmap_block);
-#endif
-    lseek(formatfd, blocksize * (super_block + boot_block), 0);
-    for (i = 0; i < bitmap_block; i++) {
-	write(formatfd, buf, blocksize);
-    }
-    lseek(formatfd, blocksize * (super_block + boot_block), 0);
     for (i = 0;
 	 i < (boot_block + super_block + bitmap_block + inode_block + 2);
 	 i++) {
 	set_bit(buf, i);
     }
 
+    lseek(formatfd, blocksize * (super_block + boot_block), 0);
     error = write(formatfd, buf, blocksize * bitmap_block);
     if (error < 0) {
 	perror("Write error in write_bitmap().\n");
     }
-#ifdef EOTA
-    free(buf);
-#endif
 }
 
 
 
-void set_bit(char buf[], int index)
+static void set_bit(char buf[], int index)
 {
     int byte_offset;
     int bit_offset;
@@ -260,20 +240,15 @@ void set_bit(char buf[], int index)
 
 
 
-void write_inode(int formatfd)
+static void write_inode(int formatfd)
 {
     char *buf;
     int i;
     int error;
     time_t t;
 
-#ifndef EOTA
     buf = alloca(blocksize);
     memset(buf, 0, blocksize);
-#else
-    buf = malloc(blocksize);
-    bzero(buf, blocksize);
-#endif
     for (i = 0; i < inode_block; i++) {
 	error = write(formatfd, buf, blocksize);
 	if (error < 0) {
@@ -297,14 +272,11 @@ void write_inode(int formatfd)
 	  0);
     write(formatfd, &rootdir, sizeof(rootdir));
     write(formatfd, &lostfound, sizeof(lostfound));
-#ifdef EOTA
-    free(buf);
-#endif
 }
 
 
 
-void write_rootdir(int formatfd)
+static void write_rootdir(int formatfd)
 {
     lseek(formatfd,
 	  blocksize * (boot_block + super_block + bitmap_block +
