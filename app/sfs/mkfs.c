@@ -80,14 +80,13 @@ static void set_bit(char buf[], int index);
 
 static struct sfs_dir rootentry[] = {
     {1, "."},
-    {1, ".."},
-    {2, "lost+found"}
+    {1, ".."}
 };
 
 
 static struct sfs_inode rootdir = {
     1,				/* sfs_i_index */
-    3,				/* sfs_i_nlink */
+    2,				/* sfs_i_nlink */
     sizeof(rootentry),		/* sfs_i_size */
     1,				/* sfs_i_size_blk */
     (S_IFDIR | S_IRWXU | S_IRWXG | S_IRWXO),	/* sfs_i_mode */
@@ -98,24 +97,6 @@ static struct sfs_inode rootdir = {
     {0, 0},				/* sfs_i_mtime (now time) */
 };
 
-
-static struct sfs_dir lostfound_entry[] = {
-    {2, "."},
-    {1, ".."}
-};
-
-static struct sfs_inode lostfound = {
-    2,				/* sfs_i_index */
-    2,				/* sfs_i_nlink */
-    sizeof(lostfound_entry),	/* sfs_i_size */
-    1,				/* sfs_i_size_blk */
-    (S_IFDIR | S_ISVTX | S_IRWXU),	/* sfs_i_mode */
-    0,				/* sfs_i_uid */
-    0,				/* sfs_i_gid */
-    {0, 0},				/* sfs_i_atime (now time) */
-    {0, 0},				/* sfs_i_ctime (now time) */
-    {0, 0},				/* sfs_i_mtime (now time) */
-};
 
 static void usage(void)
 {
@@ -183,15 +164,15 @@ static void write_superblock(int formatfd)
     superblock.nblock = nblock;
     superblock.freeblock =
 	nblock - (boot_block + super_block + bitmap_block + inode_block +
-		  2);
+		  1);
     superblock.bitmapsize = bitmap_block;
     superblock.ninode = inodecount;
-    superblock.freeinode = inodecount - 2;	/* root ディレクトリの分 */
+    superblock.freeinode = inodecount - 1;	/* root ディレクトリの分 */
     superblock.datablock =
 	(boot_block + super_block + bitmap_block + inode_block);
-    superblock.isearch = 2;
+    superblock.isearch = 1;
     superblock.bsearch = (boot_block + super_block + bitmap_block
-			      + inode_block + 2) - 1;
+			      + inode_block + 1) - 1;
 
     lseek(formatfd, blocksize, 0);
     error = write(formatfd, &superblock, sizeof(superblock));
@@ -210,7 +191,7 @@ static void write_bitmap(int formatfd)
     buf = alloca(blocksize * bitmap_block);
     memset(buf, 0, blocksize * bitmap_block);
     for (i = 0;
-	 i < (boot_block + super_block + bitmap_block + inode_block + 2);
+	 i < (boot_block + super_block + bitmap_block + inode_block + 1);
 	 i++) {
 	set_bit(buf, i);
     }
@@ -257,21 +238,18 @@ static void write_inode(int formatfd)
     }
 
     t = time(NULL);
-    lostfound.i_atime.sec = rootdir.i_atime.sec = t;
-    lostfound.i_atime.nsec = rootdir.i_atime.nsec = 0;
-    lostfound.i_mtime.sec = rootdir.i_mtime.sec = t;
-    lostfound.i_mtime.nsec = rootdir.i_mtime.nsec = 0;
-    lostfound.i_ctime.sec = rootdir.i_ctime.sec = t;
-    lostfound.i_ctime.nsec = rootdir.i_ctime.nsec = 0;
+    rootdir.i_atime.sec = t;
+    rootdir.i_atime.nsec = 0;
+    rootdir.i_mtime.sec = t;
+    rootdir.i_mtime.nsec = 0;
+    rootdir.i_ctime.sec = t;
+    rootdir.i_ctime.nsec = 0;
     rootdir.i_direct[0] =
 	(boot_block + super_block + bitmap_block + inode_block);
-    lostfound.i_direct[0] =
-	(boot_block + super_block + bitmap_block + inode_block) + 1;
 
     lseek(formatfd, blocksize * (boot_block + super_block + bitmap_block),
 	  0);
     write(formatfd, &rootdir, sizeof(rootdir));
-    write(formatfd, &lostfound, sizeof(lostfound));
 }
 
 
@@ -282,9 +260,4 @@ static void write_rootdir(int formatfd)
 	  blocksize * (boot_block + super_block + bitmap_block +
 		       inode_block), 0);
     write(formatfd, rootentry, sizeof(rootentry));
-
-    lseek(formatfd,
-	  blocksize * (boot_block + super_block + bitmap_block +
-		       inode_block + 1), 0);
-    write(formatfd, lostfound_entry, sizeof(lostfound_entry));
 }

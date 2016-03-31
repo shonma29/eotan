@@ -70,6 +70,8 @@ starter:
 initrd:
 	$(RM) initrd.img
 	app/sfs/mkfs initrd.img 512 4
+	app/sfs/statfs initrd.img mkdir /lost+found
+	app/sfs/statfs initrd.img chmod 1700 /lost+found
 
 clean:
 	$(MAKE) -f app/sfs/Makefile WD=app/sfs clean
