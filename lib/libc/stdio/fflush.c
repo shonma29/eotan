@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <stdio.h>
 #include <unistd.h>
+#include "macros.h"
 
 
 int fflush(FILE *stream)

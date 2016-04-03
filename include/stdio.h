@@ -65,31 +65,6 @@ extern FILE __libc_files[];
 #define stdout (&(__libc_files[STDOUT_FILENO]))
 #define stderr (&(__libc_files[STDERR_FILENO]))
 
-static inline int isReadable(const FILE *stream)
-{
-	return stream->mode & __FILE_MODE_READABLE;
-}
-
-static inline int isWritable(const FILE *stream)
-{
-	return stream->mode & __FILE_MODE_WRITABLE;
-}
-
-static inline int isAppend(const FILE *stream)
-{
-	return stream->mode & __FILE_MODE_APPEND;
-}
-
-static inline int isBlock(const FILE *stream)
-{
-	return stream->mode & __FILE_MODE_BLOCK;
-}
-
-static inline int isDirty(const FILE *stream)
-{
-	return stream->mode & __FILE_MODE_DIRTY;
-}
-
 static inline int feof(FILE *stream)
 {
 	return stream->mode & __FILE_MODE_EOF;

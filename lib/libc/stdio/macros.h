@@ -1,3 +1,5 @@
+#ifndef _LIBC_STDIO_MACROS_H_
+#define _LIBC_STDIO_MACROS_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -25,39 +27,35 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stdio.h>
-#include <unistd.h>
-#include "macros.h"
 
-
-int fgetc(FILE *stream)
+static inline int isOpen(const FILE *stream)
 {
-	//TODO set errno
-	if (ferror(stream) || feof(stream))
-		return EOF;
-
-	if (!isReadable(stream))
-		return EOF;
-
-	if (stream->pos >= stream->len) {
-		int len;
-
-		stream->pos = 0;
-		stream->seek_pos += stream->len;
-		len = read(stream->fd, stream->buf, stream->buf_size);
-
-		if (len == 0) {
-			stream->len = 0;
-			stream->mode |= __FILE_MODE_EOF;
-			return EOF;
-
-		} else if (len < 0) {
-			stream->len = 0;
-			stream->mode |= __FILE_MODE_ERROR;
-			return EOF;
-
-		} else
-			stream->len = len;
-	}
-
-	return (int)(stream->buf[stream->pos++]);
+	return stream->mode & (__FILE_MODE_READABLE | __FILE_MODE_WRITABLE);
 }
+
+static inline int isReadable(const FILE *stream)
+{
+	return stream->mode & __FILE_MODE_READABLE;
+}
+
+static inline int isWritable(const FILE *stream)
+{
+	return stream->mode & __FILE_MODE_WRITABLE;
+}
+
+static inline int isAppend(const FILE *stream)
+{
+	return stream->mode & __FILE_MODE_APPEND;
+}
+
+static inline int isBlock(const FILE *stream)
+{
+	return stream->mode & __FILE_MODE_BLOCK;
+}
+
+static inline int isDirty(const FILE *stream)
+{
+	return stream->mode & __FILE_MODE_DIRTY;
+}
+
+#endif
