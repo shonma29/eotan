@@ -26,53 +26,27 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <fcntl.h>
 #include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
 #include <unistd.h>
 
-#define MYNAME "cat"
 
-#define MSG_OPEN "No such file or directory"
-#define MSG_READ "failed to read"
-#define MSG_CLOSE "failed to close"
-#define DELIMITER ": "
-#define NEWLINE "\n"
-
-#define SIZE_BUF 2048
-
-#define OK (0)
-#define NG (1)
-
-static void pute(char *str);
-static void puterror(char *name, char *message);
 static int exec(int out, char *name);
 
-static void pute(char *str) {
-	write(STDERR_FILENO, str, strlen(str));
-}
-
-static void puterror(char *name, char *message) {
-	pute(MYNAME);
-	pute(DELIMITER);
-	pute(name);
-	pute(DELIMITER);
-	pute(message);
-	pute(NEWLINE);
-}
 
 static int exec(int out, char *name) {
 	int in = open(name, O_RDONLY);
 
 	if (in == -1) {
-		puterror(name, MSG_OPEN);
-		return NG;
+		perror(name);
+		return EXIT_FAILURE;
 	}
 
 	for (;;) {
-		char buf[SIZE_BUF];
+		char buf[BUFSIZ];
 		int len = read(in, buf, sizeof(buf) / sizeof(char));
 
 		if (len < 0) {
-			puterror(name, MSG_READ);
+			perror(name);
 			break;
 		}
 
@@ -82,16 +56,16 @@ static int exec(int out, char *name) {
 	}
 
 	if (close(in)) {
-		puterror(name, MSG_CLOSE);
-		return NG;
+		perror(name);
+		return EXIT_FAILURE;
 	}
 
-	return OK;
+	return EXIT_SUCCESS;
 }
 
 int main(int argc, char **argv) {
 	int i;
-	int result = OK;
+	int result = EXIT_SUCCESS;
 
 	for (i = 1; i < argc; i++) {
 		argv++;

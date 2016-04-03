@@ -122,4 +122,6 @@ static inline int putc(int c, FILE *stream)
 	return fputc(c, stream);
 }
 
+extern void perror(const char *);
+
 #endif
