@@ -120,7 +120,7 @@ int main(int ac, char **av)
     blocksize = SFS_BLOCK_SIZE;
     kbpinode = atoi(av[3]);
 
-    formatfd = open(av[1], O_RDWR | O_CREAT, 0666);
+    formatfd = open(av[1], O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
     if (formatfd < 0) {
 	printf("Cannot open file or device (%s)\n", av[1]);
 	return (1);
@@ -133,7 +133,7 @@ int main(int ac, char **av)
     super_block = 1;
     bitmap_block = ROUNDUP(nblock / 8, blocksize) / blocksize;
     inodecount = (nblock - boot_block - super_block - bitmap_block) /
-	(kbpinode * 2 + ROUNDUP(sizeof(struct sfs_inode),
+	(kbpinode * 1024 / SFS_BLOCK_SIZE + ROUNDUP(sizeof(struct sfs_inode),
 				blocksize) / blocksize);
     inode_block =
 	ROUNDUP(inodecount * sizeof(struct sfs_inode),
