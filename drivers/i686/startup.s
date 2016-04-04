@@ -48,7 +48,7 @@ startup:
 
 .align 4
 enter_world:
-	call %eax
+	call *%eax
 	jmp kern_start
 
 

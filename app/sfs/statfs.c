@@ -106,6 +106,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <time.h>
+#include <sys/stat.h>
 #include "sfs_utils.h"
 
 static int mount_fs(char *, struct sfs_superblock *, struct sfs_inode *, int);
