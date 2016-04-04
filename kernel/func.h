@@ -32,10 +32,10 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/lf_queue.h>
 #include <set/list.h>
 #include <set/tree.h>
-#include <sys/time.h>
 #include "delay.h"
 #include "sync.h"
 #include "thread.h"
+#include "../lib/libserv/libserv.h"
 
 /* initialize.c */
 extern ER core_initialize(void);
@@ -103,8 +103,6 @@ extern ER mutex_unlock(ID mtxid);
 extern void mutex_unlock_all(thread_t *th);
 
 /* time.c */
-extern ER time_get(SYSTIM *pk_systim);
-extern ER time_set(SYSTIM *pk_systim);
 extern ER thread_sleep(TMO tmout);
 extern void timer_initialize(void);
 extern ER timer_service(void);

@@ -44,7 +44,7 @@ typedef struct {
 } memory_range_t;
 
 typedef struct {
-	time_t epoch;
+	volatile struct timespec system_time;
 	mount_node_t root;
 	memory_range_t initrd;
 	volatile lfq_t kqueue;

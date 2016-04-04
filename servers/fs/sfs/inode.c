@@ -65,7 +65,6 @@ Version 2, June 1991
  */
 
 #include <string.h>
-#include <nerve/kcall.h>
 #include "../fs.h"
 #include "func.h"
 
@@ -276,7 +275,7 @@ W sfs_stat(struct inode *ip, struct stat *st)
 
 W sfs_wstat(struct inode *ip)
 {
-    ((kcall_t*)KCALL_ADDR)->time_get(&(ip->i_private.sfs_inode.i_ctime));
+    time_get(&(ip->i_private.sfs_inode.i_ctime));
 
     return (EOK);
 }

@@ -31,13 +31,14 @@ For more information, please refer to <http://unlicense.org/>
 #include <core/options.h>
 #include <nerve/kcall.h>
 #include "interface.h"
+#include "../../lib/libserv/libserv.h"
 
 
 static int get_timespec(struct timespec *tspec)
 {
 	SYSTIM time;
 
-	if (kcall->time_get(&time))
+	if (time_get(&time))
 		return FALSE;
 
 	tspec->tv_sec = time.sec;

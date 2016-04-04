@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <mpu/io.h>
+#include <sys/types.h>
 #include "func.h"
 #include "sync.h"
 

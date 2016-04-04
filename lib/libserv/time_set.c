@@ -1,5 +1,3 @@
-#ifndef _LIBSERV_H_
-#define _LIBSERV_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,13 +25,21 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <nerve/global.h>
 #include <sys/time.h>
+#include "libserv.h"
 
-extern int syslog(const char *);
-extern int dbg_printf(const char *, ...);
 
-extern void time_get_raw(struct timespec *);
-extern ER time_get(SYSTIM *);
-extern ER time_set(SYSTIM *);
+ER time_set(SYSTIM *pk_systim)
+{
+	system_info_t *sysinfo = (system_info_t *)SYSTEM_INFO_ADDR;
 
-#endif
+	if (!pk_systim)
+		return E_PAR;
+
+//TODO check like time_get, or disable interrupt
+	timespec_set(&(sysinfo->system_time),
+			&(pk_systim->sec), &(pk_systim->nsec));
+
+	return E_OK;
+}

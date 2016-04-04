@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <nerve/config.h>
+#include <nerve/global.h>
 #include <sys/time.h>
 #include "delay.h"
 #include "func.h"
@@ -42,13 +43,13 @@ typedef struct {
 	list_t threads;
 } timer_t;
 
-static volatile struct timespec system_time;
+#define system_time (((system_info_t*)SYSTEM_INFO_ADDR)->system_time)
+
 static slab_t timer_slab;
 static tree_t timer_tree;
 
 static inline timer_t *getTimerParent(const node_t *p);
 static void time_initialize(void);
-static void time_get_raw(struct timespec *ts);
 static void time_tick(void);
 static int compare(const int a, const int b);
 static void wakeup(list_t *w);
@@ -66,41 +67,6 @@ static void time_initialize(void)
 
 	rtc_get_time(&seconds);
 	timespec_set(&system_time, &seconds, &nsec);
-}
-
-ER time_set(SYSTIM *pk_systim)
-{
-	if (!pk_systim)
-		return E_PAR;
-
-//TODO check like time_get, or disable interrupt
-	timespec_set(&system_time, &(pk_systim->sec), &(pk_systim->nsec));
-
-	return E_OK;
-}
-
-ER time_get(SYSTIM *pk_systim)
-{
-	struct timespec t;
-
-	if (!pk_systim)
-		return E_PAR;
-
-	time_get_raw(&t);
-	timespec_get_sec(&(pk_systim->sec), &t);
-	timespec_get_nsec(&(pk_systim->nsec), &t);
-
-	return E_OK;
-}
-
-static void time_get_raw(struct timespec *ts)
-{
-	struct timespec t2;
-
-	do {
-		*ts = system_time;
-		t2 = system_time;
-	} while (!timespec_equals(ts, &t2));
 }
 
 static void time_tick(void)

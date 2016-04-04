@@ -114,7 +114,6 @@ Version 2, June 1991
 #include <string.h>
 #include <fcntl.h>
 #include <mpu/memory.h>
-#include <nerve/kcall.h>
 #include "../fs.h"
 #include "../vfs.h"
 #include "func.h"
@@ -239,7 +238,7 @@ sfs_i_create(struct inode * parent,
     }
 
     /* 設定 */
-    ((kcall_t*)KCALL_ADDR)->time_get(&clock);
+    time_get(&clock);
     newip->i_fs = parent->i_fs;
     newip->i_device = parent->i_device;
     newip->i_refcount = 1;
@@ -433,7 +432,7 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
     if (filesize > ip->i_size) {
         SYSTIM clock;
 
-        ((kcall_t*)KCALL_ADDR)->time_get(&clock);
+        time_get(&clock);
 	ip->i_size = filesize;
 	ip->i_nblock =
 	    roundUp(filesize, fsp->private.sfs_fs.blksize) / fsp->private.sfs_fs.blksize;
@@ -518,7 +517,7 @@ W sfs_i_truncate(struct inode * ip, W newsize)
 
     ip->i_size = newsize;
     ip->i_nblock = nblock;
-    ((kcall_t*)KCALL_ADDR)->time_get(&clock);
+    time_get(&clock);
     ip->i_private.sfs_inode.i_mtime = clock;
     ip->i_private.sfs_inode.i_ctime = clock;
     ip->i_dirty = 1;
@@ -562,7 +561,7 @@ W sfs_i_link(struct inode * parent, char *fname, struct inode * srcip,
 
     /* inode 情報の更新 */
     srcip->i_private.sfs_inode.i_nlink += 1;
-    ((kcall_t*)KCALL_ADDR)->time_get(&(srcip->i_private.sfs_inode.i_ctime));
+    time_get(&(srcip->i_private.sfs_inode.i_ctime));
     srcip->i_dirty = 1;
 
     /* 本来は inode の deallocate のところで行う処理のはず */
@@ -633,7 +632,7 @@ sfs_i_unlink(struct inode * parent, char *fname, struct permission * acc)
 	sfs_i_truncate(parent, i);
 
 	ip->i_private.sfs_inode.i_nlink--;
-	((kcall_t*)KCALL_ADDR)->time_get(&(ip->i_private.sfs_inode.i_ctime));
+	time_get(&(ip->i_private.sfs_inode.i_ctime));
 	ip->i_dirty = 1;
 	if (ip->i_private.sfs_inode.i_nlink <= 0) {
 	    sfs_i_truncate(ip, 0);
@@ -713,7 +712,7 @@ sfs_i_mkdir(struct inode * parent,
     }
 
     /* 設定 */
-    ((kcall_t*)KCALL_ADDR)->time_get(&clock);
+    time_get(&clock);
     newip->i_fs = parent->i_fs;
     newip->i_device = parent->i_device;
     newip->i_refcount = 1;
@@ -826,7 +825,7 @@ W sfs_i_rmdir(struct inode * parent, char *fname, struct permission * acc)
 	sfs_i_truncate(parent, i);
 
 	ip->i_private.sfs_inode.i_nlink--;
-	((kcall_t*)KCALL_ADDR)->time_get(&clock);
+	time_get(&clock);
 	ip->i_private.sfs_inode.i_ctime = clock;
 	ip->i_dirty = 1;
 	if (ip->i_private.sfs_inode.i_nlink <= 1) {
