@@ -29,6 +29,7 @@ Version 2, June 1991
 #include <core/options.h>
 #include <mpu/memory.h>
 #include <nerve/kcall.h>
+#include <sys/stat.h>
 #include "fs.h"
 #include "api.h"
 

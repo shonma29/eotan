@@ -28,6 +28,7 @@ Version 2, June 1991
 #include <string.h>
 #include <core/options.h>
 #include <nerve/kcall.h>
+#include <sys/stat.h>
 #include "fs.h"
 #include "api.h"
 

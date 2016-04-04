@@ -28,7 +28,9 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
+#include <sys/stat.h>
 #include <sys/utsname.h>
 #include "cunit.h"
 

@@ -32,6 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 #include <unistd.h>
 #include <sys/dirent.h>
+#include <sys/stat.h>
 
 #define MYNAME "ls"
 

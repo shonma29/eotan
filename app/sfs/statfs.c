@@ -103,7 +103,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include "sfs_utils.h"

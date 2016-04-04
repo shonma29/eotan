@@ -153,6 +153,7 @@ Version 2, June 1991
 #include <fcntl.h>
 #include <major.h>
 #include <string.h>
+#include <sys/stat.h>
 #include "fs.h"
 #include "devfs/devfs.h"
 

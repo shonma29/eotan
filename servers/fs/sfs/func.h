@@ -15,6 +15,8 @@ Version 2, June 1991
 #ifndef __SFS_FUNC_H__
 #define __SFS_FUNC_H__	1
 
+#include <sys/stat.h>
+
 extern struct fsops	sfs_fsops;
 
 /* block.c */

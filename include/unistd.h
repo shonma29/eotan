@@ -28,10 +28,6 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <stddef.h>
 #include <stdint.h>
-#include <time.h>
-#include <utime.h>
-#include <sys/dirent.h>
-#include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/unistd.h>
 
@@ -62,7 +58,6 @@ extern int open(const char *path, int oflag, ...);
 extern ssize_t read(int, void *, size_t);
 extern int rmdir(const char *);
 extern int sleep(int);
-extern int clock_gettime(clockid_t, struct timespec *);
 extern int unlink(const char *);
 extern int waitpid(pid_t, int *, int);
 extern size_t write(int, const void *, size_t);

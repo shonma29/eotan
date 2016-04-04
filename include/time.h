@@ -48,8 +48,8 @@ static inline double difftime(time_t time1, time_t time0)
 	return (double)(time1 - time0);
 }
 
-extern time_t time(time_t *t);
-extern int clock_gettime(clockid_t clkid, struct timespec *tp);
-extern struct tm *gmtime_(const time_t *timep);
+extern time_t time(time_t *);
+extern int clock_gettime(clockid_t, struct timespec *);
+extern struct tm *gmtime(const time_t *);
 
 #endif
