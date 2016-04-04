@@ -23,11 +23,18 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-CFLAGS = -Wall -Werror -O2 -std=gnu99 -fno-stack-protector \
+ARCH = i686
+
+MAKE = gmake
+CC = gcc
+CFLAGS = -Wall -Werror -O2 -std=gnu99 \
+ -fno-stack-protector -fno-builtin \
  -I $(WD) -I include \
- -DUSE_VESA
-#ASFLAGS = 
-#LDFLAGS = --oformat binary
+ -DUSE_VESA \
+# -march=$(ARCH)
+AS = as
+#ASFLAGS = -march=$(ARCH)
+LD = ld
 STRIP = strip -s -R .comment -R .note -R .note.ABI-tag
 
 CSRCS = $(wildcard $(WD)/*.c)

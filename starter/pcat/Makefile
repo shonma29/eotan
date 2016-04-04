@@ -23,16 +23,13 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = ../../boot.iso
-MAKE = gmake
-CC = cc
-CFLAGS = -Wall -Werror -O2 -I ../../include -I ../../kernel
-AS = as
-ASFLAGS = 
-LD = ld
+TARGET = boot.iso
+
+include Makefile.in
+
+CFLAGS = -Wall -Werror -O2 -I include -I kernel
 LDFLAGS = --oformat binary
-LIB = ../../libc/
-TOOL=./
+LIB = libc
 
 STARTER_SIZE = 16384
 BLK_SIZE = 512
@@ -40,59 +37,54 @@ BOOT_ADDR = 0x7c00
 STARTER_SEG = 0x0800
 STARTER_ADDR = 0x8000
 
-OBJS = boot.bin kern.bin
+OBJS = build/boot.img $(WD)/pad $(WD)/append \
+	$(WD)/boot.bin $(WD)/boot.o $(WD)/starter.inc \
+	$(WD)/kern.bin \
+	$(WD)/starter.bin $(WD)/starter.o $(WD)/main.o
 
-all: pad append $(TARGET)
+$(TARGET): build/boot.img
+	mkisofs -R -b boot.img -o $(TARGET) build
 
-$(TARGET): ../../build/boot.img
-	mkisofs -R -b boot.img -o $(TARGET) ../../build
+build/boot.img: $(WD)/pad $(WD)/boot.bin $(WD)/kern.bin
+	cat $(WD)/boot.bin $(WD)/kern.bin > $@
+	$(WD)/pad $@ 1474560
 
-../../build/boot.img: $(OBJS)
-	cat $(OBJS) > $@
-	$(TOOL)pad $@ 1474560
-
-boot.bin: boot.o
+$(WD)/boot.bin: $(WD)/boot.o
 	$(LD) $(LDFLAGS) -L$(LIB) -Ttext $(BOOT_ADDR) -o $@ $^
 
-boot.o: boot.s starter.inc
+$(WD)/boot.o: $(WD)/boot.s $(WD)/starter.inc
 
-starter.inc: kern.bin
+$(WD)/starter.inc: $(WD)/kern.bin
 	echo ".set STARTER_SEGMENT, $(STARTER_SEG)" > $@
 	echo ".set STARTER_ADDRESS, $(STARTER_ADDR)" >> $@
 	echo -n ".set STARTER_SECTORS, " >> $@
-	echo "(`wc -c < kern.bin` + $(BLK_SIZE) - 1) / $(BLK_SIZE)" | bc >> $@
+	echo "(`wc -c < $(WD)/kern.bin` + $(BLK_SIZE) - 1) / $(BLK_SIZE)" | bc >> $@
 
-starter.bin: starter.o main.o ../../kernel/arch/libarch.a \
-		../../kernel/mpu/libmpu.a ../../lib/libnc.a
-	$(LD) $(LDFLAGS) -Ttext $(STARTER_ADDR) -L$(LIB) -o $@ \
-		starter.o main.o ../../kernel/arch/libarch.a \
-		../../kernel/mpu/libmpu.a ../../lib/libnc.a
-	$(TOOL)pad $@ $(STARTER_SIZE) 
+$(WD)/starter.bin: $(WD)/starter.o $(WD)/main.o kernel/arch/libarch.a \
+		kernel/mpu/libmpu.a lib/libnc.a
+	$(LD) $(LDFLAGS) -Ttext $(STARTER_ADDR) -L$(LIB) -o $@ $^
+	$(WD)/pad $@ $(STARTER_SIZE) 
 
-main.o: main.c
+$(WD)/main.o: $(WD)/main.c
 
-$(TOOL)pad: $(TOOL)pad.c
+$(WD)/pad: $(WD)/pad.c
 	$(CC) -o $@ $^
 
-$(TOOL)append: $(TOOL)append.c
+$(WD)/append: $(WD)/append.c
 	$(CC) -o $@ $^
 
-kern.bin: starter.bin ../../kernel/core.bin ../../servers/fs/fs \
-		../../servers/hmi/hmi \
-		../../servers/ramdisk/ramdisk \
-		../../initrd.img
-	[ `wc -c < starter.bin` -le $(STARTER_SIZE) ]
-	cp starter.bin $@
-	$(TOOL)append 1 ../../kernel/core.bin 4 >> $@
-	$(TOOL)append 4 ../../initrd.img 4 >> $@
-	$(TOOL)append 2 ../../servers/kernlog/kernlog 4 >> $@
-	$(TOOL)append 2 ../../servers/mm/mm 4 >> $@
-	$(TOOL)append 2 ../../servers/fs/fs 4 >> $@
-	$(TOOL)append 2 ../../servers/hmi/hmi 4 >> $@
-	$(TOOL)append 2 ../../servers/ramdisk/ramdisk 4 >> $@
-	$(TOOL)append 0 >> $@
-
-.PHONY: clean
-clean:
-	$(RM) $(TARGET) ../../build/*.img *.bin *.o *.inc
-	$(RM) pad append
+$(WD)/kern.bin: $(WD)/append \
+		$(WD)/starter.bin kernel/core.bin servers/fs/fs \
+		servers/hmi/hmi \
+		servers/ramdisk/ramdisk \
+		initrd.img
+	[ `wc -c < $(WD)/starter.bin` -le $(STARTER_SIZE) ]
+	cp $(WD)/starter.bin $@
+	$(WD)/append 1 kernel/core.bin 4 >> $@
+	$(WD)/append 4 initrd.img 4 >> $@
+	$(WD)/append 2 servers/kernlog/kernlog 4 >> $@
+	$(WD)/append 2 servers/mm/mm 4 >> $@
+	$(WD)/append 2 servers/fs/fs 4 >> $@
+	$(WD)/append 2 servers/hmi/hmi 4 >> $@
+	$(WD)/append 2 servers/ramdisk/ramdisk 4 >> $@
+	$(WD)/append 0 >> $@

@@ -27,7 +27,7 @@ TARGET = $(WD)/mkfs $(WD)/statfs
 
 include Makefile.in
 
-CFLAGS = -Wall -Werror
+CFLAGS = -Wall -Werror -O2
 
 $(TARGET): $(OBJS)
 	$(CC) -o $@ $(@).o
