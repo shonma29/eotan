@@ -96,7 +96,6 @@ static ER_ID idle_initialize(void)
 		//th->time.total = 0;
 		//th->time.left = TIME_QUANTUM;
 		//th->activate_count = 0;
-		//th->wakeup_count = 0;
 
 		th->attr.page_table = NULL;
 		th->priority = th->attr.priority = MAX_PRIORITY;
@@ -132,7 +131,6 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid)
 	list_initialize(&(th->wait.waiting));
 	list_initialize(&(th->locking));
 	//th->activate_count = 0;
-	//th->wakeup_count = 0;
 
 	th->attr.page_table = pk_ctsk->page_table;
 	th->attr.priority = pk_ctsk->itskpri;
@@ -248,7 +246,6 @@ ER thread_start(ID tskid)
 		th->time.total = 0;
 		th->time.left = TIME_QUANTUM;
 		th->priority = th->attr.priority;
-		th->wakeup_count = 0;
 		create_context(th);
 		result = E_OK;
 

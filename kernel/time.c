@@ -113,11 +113,6 @@ ER thread_sleep(TMO tmout)
 	if (tmout < TMO_FEVR)
 		return E_PAR;
 
-	if (running->wakeup_count > 0) {
-		running->wakeup_count--;
-		return E_OK;
-	}
-
 	if (tmout == TMO_POL)
 		return E_TMOUT;
 
