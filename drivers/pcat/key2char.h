@@ -1,5 +1,5 @@
-#ifndef __PCAT_KEY2CHAR_H__
-#define __PCAT_KEY2CHAR_H__ 1
+#ifndef __ARCH_KEY2CHAR_H__
+#define __ARCH_KEY2CHAR_H__ 1
 /*
 This is free and unencumbered software released into the public domain.
 

@@ -1,5 +1,5 @@
-#ifndef __PCAT_8024_H__
-#define __PCAT_8024_H__ 1
+#ifndef __ARCH_8024_H__
+#define __ARCH_8024_H__ 1
 /*
 This is free and unencumbered software released into the public domain.
 

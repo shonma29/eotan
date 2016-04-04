@@ -1,5 +1,5 @@
-#ifndef __PCAT_ARCHFUNC_H__
-#define __PCAT_ARCHFUNC_H__	1
+#ifndef __ARCH_ARCHFUNC_H__
+#define __ARCH_ARCHFUNC_H__	1
 /*
 This is free and unencumbered software released into the public domain.
 
