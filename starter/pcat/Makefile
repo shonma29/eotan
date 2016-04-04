@@ -23,15 +23,15 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = ../boot.iso
+TARGET = ../../boot.iso
 MAKE = gmake
 CC = cc
-CFLAGS = -Wall -Werror -O2 -I ../include -I ../kernel
+CFLAGS = -Wall -Werror -O2 -I ../../include -I ../../kernel
 AS = as
 ASFLAGS = 
 LD = ld
 LDFLAGS = --oformat binary
-LIB = ../libc/
+LIB = ../../libc/
 TOOL=./
 
 STARTER_SIZE = 16384
@@ -44,10 +44,10 @@ OBJS = boot.bin kern.bin
 
 all: pad append $(TARGET)
 
-$(TARGET): ../build/boot.img
-	mkisofs -R -b boot.img -o $(TARGET) ../build
+$(TARGET): ../../build/boot.img
+	mkisofs -R -b boot.img -o $(TARGET) ../../build
 
-../build/boot.img: $(OBJS)
+../../build/boot.img: $(OBJS)
 	cat $(OBJS) > $@
 	$(TOOL)pad $@ 1474560
 
@@ -62,11 +62,11 @@ starter.inc: kern.bin
 	echo -n ".set STARTER_SECTORS, " >> $@
 	echo "(`wc -c < kern.bin` + $(BLK_SIZE) - 1) / $(BLK_SIZE)" | bc >> $@
 
-starter.bin: starter.o main.o ../kernel/arch/libarch.a \
-		../kernel/mpu/libmpu.a ../lib/libnc.a
+starter.bin: starter.o main.o ../../kernel/arch/libarch.a \
+		../../kernel/mpu/libmpu.a ../../lib/libnc.a
 	$(LD) $(LDFLAGS) -Ttext $(STARTER_ADDR) -L$(LIB) -o $@ \
-		starter.o main.o ../kernel/arch/libarch.a \
-		../kernel/mpu/libmpu.a ../lib/libnc.a
+		starter.o main.o ../../kernel/arch/libarch.a \
+		../../kernel/mpu/libmpu.a ../../lib/libnc.a
 	$(TOOL)pad $@ $(STARTER_SIZE) 
 
 main.o: main.c
@@ -77,22 +77,22 @@ $(TOOL)pad: $(TOOL)pad.c
 $(TOOL)append: $(TOOL)append.c
 	$(CC) -o $@ $^
 
-kern.bin: starter.bin ../kernel/core.bin ../servers/fs/fs \
-		../servers/hmi/hmi \
-		../servers/ramdisk/ramdisk \
-		../initrd.img
+kern.bin: starter.bin ../../kernel/core.bin ../../servers/fs/fs \
+		../../servers/hmi/hmi \
+		../../servers/ramdisk/ramdisk \
+		../../initrd.img
 	[ `wc -c < starter.bin` -le $(STARTER_SIZE) ]
 	cp starter.bin $@
-	$(TOOL)append 1 ../kernel/core.bin 4 >> $@
-	$(TOOL)append 4 ../initrd.img 4 >> $@
-	$(TOOL)append 2 ../servers/kernlog/kernlog 4 >> $@
-	$(TOOL)append 2 ../servers/mm/mm 4 >> $@
-	$(TOOL)append 2 ../servers/fs/fs 4 >> $@
-	$(TOOL)append 2 ../servers/hmi/hmi 4 >> $@
-	$(TOOL)append 2 ../servers/ramdisk/ramdisk 4 >> $@
+	$(TOOL)append 1 ../../kernel/core.bin 4 >> $@
+	$(TOOL)append 4 ../../initrd.img 4 >> $@
+	$(TOOL)append 2 ../../servers/kernlog/kernlog 4 >> $@
+	$(TOOL)append 2 ../../servers/mm/mm 4 >> $@
+	$(TOOL)append 2 ../../servers/fs/fs 4 >> $@
+	$(TOOL)append 2 ../../servers/hmi/hmi 4 >> $@
+	$(TOOL)append 2 ../../servers/ramdisk/ramdisk 4 >> $@
 	$(TOOL)append 0 >> $@
 
 .PHONY: clean
 clean:
-	$(RM) $(TARGET) ../build/*.img *.bin *.o *.inc
+	$(RM) $(TARGET) ../../build/*.img *.bin *.o *.inc
 	$(RM) pad append

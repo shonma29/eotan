@@ -65,7 +65,7 @@ data: motd bees.p6
 starter:
 	app/sfs/statfs initrd.img dir /
 	mkdir -p build
-	$(MAKE) -C starter
+	$(MAKE) -C starter/arch
 
 initrd:
 	$(RM) initrd.img
@@ -82,4 +82,4 @@ clean:
 	$(MAKE) -f app/test/Makefile WD=app/test clean
 	$(MAKE) -f app/contribution/pager/Makefile WD=app/contribution/pager clean
 	$(RM) initrd.img motd
-	$(MAKE) -C starter clean
+	$(MAKE) -C starter/arch clean
