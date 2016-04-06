@@ -45,7 +45,7 @@ typedef struct {
 		UW left;
 	} time;
 	PRI priority;
-	UINT activate_count;
+	UINT wakeup_count;
 	mm_segment_t ustack;
 	struct {
 		VP_INT arg;

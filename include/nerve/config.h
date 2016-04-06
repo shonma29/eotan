@@ -80,6 +80,6 @@ typedef enum {
 /* available ticks for user threads */
 #define TIME_QUANTUM (10)
 
-#define MAX_ACTIVATE_COUNT (1)
+#define MAX_WAKEUP_COUNT (1)
 
 #endif

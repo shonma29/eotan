@@ -95,7 +95,7 @@ static ER_ID idle_initialize(void)
 		list_initialize(&(th->locking));
 		//th->time.total = 0;
 		//th->time.left = TIME_QUANTUM;
-		//th->activate_count = 0;
+		//th->wakeup_count = 0;
 
 		th->attr.page_table = NULL;
 		th->priority = th->attr.priority = MAX_PRIORITY;
@@ -130,7 +130,7 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid)
 	th->status = TTS_DMT;
 	list_initialize(&(th->wait.waiting));
 	list_initialize(&(th->locking));
-	//th->activate_count = 0;
+	//th->wakeup_count = 0;
 
 	th->attr.page_table = pk_ctsk->page_table;
 	th->attr.priority = pk_ctsk->itskpri;
@@ -232,25 +232,16 @@ ER thread_start(ID tskid)
 		}
 
 		if (th->status != TTS_DMT) {
-			if (th->activate_count >= MAX_ACTIVATE_COUNT) {
-				result = E_QOVR;
-
-			} else {
-				th->activate_count++;
-				result = E_OK;
-			}
-
+			result = E_QOVR;
 			break;
 		}
 
 		th->time.total = 0;
 		th->time.left = TIME_QUANTUM;
 		th->priority = th->attr.priority;
+		th->wakeup_count = 0;
 		create_context(th);
 		result = E_OK;
-
-		if (th->activate_count > 0)
-			th->activate_count--;
 
 		th->status = TTS_RDY;
 		ready_enqueue(th->priority, &(th->queue));
@@ -269,11 +260,6 @@ void thread_end(void)
 	list_remove(&(running->queue));
 	running->status = TTS_DMT;
 	mutex_unlock_all(running);
-
-	if (running->activate_count > 0) {
-		//TODO enqueue for activation
-	}
-
 	leave_serialize();
 
 	dispatch();
@@ -361,4 +347,70 @@ void thread_tick(void)
 			running->time.left = TIME_QUANTUM;
 			ready_rotate(running->priority);
 		}
+}
+
+ER thread_sleep(void)
+{
+	enter_serialize();
+
+	if (running->wakeup_count > 0) {
+		running->wakeup_count--;
+		leave_serialize();
+		return E_OK;
+
+	} else {
+		running->wait.type = wait_slp;
+		leave_serialize();
+		wait(running);
+		return running->wait.result;
+	}
+}
+
+ER thread_wakeup(ID tskid)
+{
+	ER result;
+
+	enter_serialize();
+	do {
+		thread_t *th;
+
+		if (tskid == TSK_SELF)
+			th = running;
+		else {
+			th = get_thread_ptr(tskid);
+			if (!th) {
+				result = E_NOEXS;
+				break;
+			}
+		}
+
+		switch (th->status) {
+		case TTS_DMT:
+			result = E_OBJ;
+			break;
+
+		case TTS_WAI:
+		case TTS_WAS:
+			if (th->wait.type == wait_slp) {
+				release(th);
+				result = E_OK;
+				break;
+			}
+
+		default:
+			if (th->wakeup_count >= MAX_WAKEUP_COUNT)
+				result = E_QOVR;
+
+			else {
+				th->wakeup_count++;
+				result = E_OK;
+			}
+
+			break;
+		}
+
+	} while (FALSE);
+	leave_serialize();
+
+	return result;
 }

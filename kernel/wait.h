@@ -31,6 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 
 typedef enum {
 	wait_none,
+	wait_slp,
 	wait_que,
 	wait_mtx,
 	wait_por,

@@ -41,56 +41,65 @@ For more information, please refer to <http://unlicense.org/>
 volatile int delay_start = FALSE;
 static char kqbuf[lfq_buf_size(sizeof(delay_param_t), KQUEUE_SIZE)];
 
-static ER_ID delay_init(void);
+static ER delay_init(void);
 static void delay_process(VP_INT exinf);
 static ER kill(const int pid);
 
 
-static ER_ID delay_init(void)
+static ER delay_init(void)
 {
+	ER_ID tid;
 	system_info_t *info = (system_info_t*)SYSTEM_INFO_ADDR;
-
 	T_CTSK pk_ctsk = {
 		TA_HLNG, 0, delay_process, pri_dispatcher,
 		KTHREAD_STACK_SIZE, NULL, NULL, NULL
 	};
 
-	lfq_initialize(&(((system_info_t*)SYSTEM_INFO_ADDR)->kqueue),
+	lfq_initialize(&(info->kqueue),
 			kqbuf, sizeof(delay_param_t), KQUEUE_SIZE);
-	return info->delay_thread_id = thread_create_auto(&pk_ctsk);
+	tid = thread_create_auto(&pk_ctsk);
+	if (tid >= 0) {
+		info->delay_thread_id = tid;
+		return thread_start(tid);
+	} else
+		return tid;
 }
 
 static void delay_process(VP_INT exinf)
 {
 	for (;;) {
-		delay_param_t param;
+		for (;;) {
+			delay_param_t param;
 
-		if (lfq_dequeue(&(((system_info_t*)SYSTEM_INFO_ADDR)->kqueue),
-				&param) != QUEUE_OK)
-			break;
+			if (lfq_dequeue(&(((system_info_t*)SYSTEM_INFO_ADDR)->kqueue),
+					&param) != QUEUE_OK)
+				break;
 
-		switch (param.action) {
-		case delay_handle:
-			((void (*)(const int))(param.arg1))
-					((const int)(param.arg2));
-			break;
+			switch (param.action) {
+			case delay_handle:
+				((void (*)(const int))(param.arg1))
+						((const int)(param.arg2));
+				break;
 
-		case delay_page_fault:
-			kill((ID)(param.arg1));
-			break;
+			case delay_page_fault:
+				kill((ID)(param.arg1));
+				break;
 
-		case delay_send:
-			queue_send((ID)(param.arg1),
-					(VP_INT)(param.arg2), TMO_POL);
-			break;
+			case delay_send:
+				queue_send((ID)(param.arg1),
+						(VP_INT)(param.arg2), TMO_POL);
+				break;
 
-		case delay_activate:
-			thread_start((ID)(param.arg1));
-			break;
+			case delay_activate:
+				thread_start((ID)(param.arg1));
+				break;
 
-		default:
-			break;		
+			default:
+				break;
+			}
 		}
+
+		thread_sleep();
 	}
 }
 
