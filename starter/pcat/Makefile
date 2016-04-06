@@ -74,17 +74,22 @@ $(WD)/append: $(WD)/append.c
 	$(CC) -o $@ $^
 
 $(WD)/kern.bin: $(WD)/append \
-		$(WD)/starter.bin kernel/core.bin servers/fs/fs \
+		$(WD)/starter.bin kernel/core.bin \
+		servers/kernlog/kernlog \
+		servers/timer/timer \
+		servers/mm/mm \
+		servers/fs/fs \
 		servers/hmi/hmi \
 		servers/ramdisk/ramdisk \
 		initrd.img
 	[ `wc -c < $(WD)/starter.bin` -le $(STARTER_SIZE) ]
 	cp $(WD)/starter.bin $@
 	$(WD)/append 1 kernel/core.bin 4 >> $@
-	$(WD)/append 4 initrd.img 4 >> $@
 	$(WD)/append 2 servers/kernlog/kernlog 4 >> $@
+	$(WD)/append 2 servers/timer/timer 4 >> $@
 	$(WD)/append 2 servers/mm/mm 4 >> $@
 	$(WD)/append 2 servers/fs/fs 4 >> $@
 	$(WD)/append 2 servers/hmi/hmi 4 >> $@
+	$(WD)/append 4 initrd.img 4 >> $@
 	$(WD)/append 2 servers/ramdisk/ramdisk 4 >> $@
 	$(WD)/append 0 >> $@

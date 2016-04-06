@@ -40,7 +40,7 @@ static void kcall_initialize(void);
 static void icall_initialize(void);
 static ER delayed_thread_start(ID thread_id);
 static ER delayed_queue_send_nowait(ID queue_id, VP_INT data);
-static ER delayed_handle(void (*callback)(const int arg));
+static ER delayed_handle(void (*callback)(const int arg), int arg);
 static ER region_get(const ID id, const void *from, const size_t size,
 		void *to);
 static ER region_put(const ID id, void *to, const size_t size,
@@ -73,7 +73,6 @@ static void kcall_initialize(void)
 	p->thread_start = thread_start;
 	p->thread_end_and_destroy = thread_end_and_destroy;
 	p->thread_terminate = thread_terminate;
-	p->thread_sleep = thread_sleep;
 	p->interrupt_bind = interrupt_bind;
 	p->interrupt_enable = pic_reset_mask;
 	p->palloc = palloc;
@@ -106,6 +105,7 @@ static void icall_initialize(void)
 
 	p->thread_start = delayed_thread_start;
 	p->thread_get_id = thread_get_id;
+	p-> thread_tick = thread_tick;
 	p->queue_send_nowait = delayed_queue_send_nowait;
 	p->handle = delayed_handle;
 	p->puts = putsk;
@@ -132,12 +132,13 @@ static ER delayed_queue_send_nowait(ID queue_id, VP_INT data)
 	return kq_enqueue(&param);
 }
 
-static ER delayed_handle(void (*callback)(const int arg))
+static ER delayed_handle(void (*callback)(const int arg), int arg)
 {
 	delay_param_t param;
 
 	param.action = delay_handle;
 	param.arg1 = (int)callback;
+	param.arg2 = arg;
 
 	return kq_enqueue(&param);
 }

@@ -52,7 +52,9 @@ int main(int argc, char **argv) {
 			unsigned int add;
 
 			if (!*str) {
-				sleep(n);
+				n = sleep(n);
+				if (n > 0)
+					printf("%d", n);
 				return EXIT_SUCCESS;
 			}
 

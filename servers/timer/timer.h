@@ -24,11 +24,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <mpu/call_kernel.h>
-#include <nerve/svcno.h>
+#ifndef __SERVER_TIMER_H__
+#define __SERVER_TIMER_H__
 
+#include <nerve/config.h>
 
-ER tslp_tsk(TMO tmout) {
-	return ncall(SVC_THREAD_SLEEP, tmout);
-}
+#define MYNAME "timer"
+
+#define TICK (1000 * 1000 * 1000 / TIME_TICKS)
+
+#define MAX_TIMER (65535)
+
+#endif

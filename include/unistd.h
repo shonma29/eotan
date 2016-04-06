@@ -57,7 +57,7 @@ extern off_t lseek(int, off_t, int);
 extern int open(const char *path, int oflag, ...);
 extern ssize_t read(int, void *, size_t);
 extern int rmdir(const char *);
-extern int sleep(int);
+extern unsigned int sleep(unsigned int);
 extern int unlink(const char *);
 extern int waitpid(pid_t, int *, int);
 extern size_t write(int, const void *, size_t);

@@ -1,48 +1,62 @@
 /*
+This is free and unencumbered software released into the public domain.
 
-B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
 
-GNU GENERAL PUBLIC LICENSE
-Version 2, June 1991
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
 
-(C) B-Free Project.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
 
-(C) 2002, Tomohide Naniwa
-
+For more information, please refer to <http://unlicense.org/>
 */
-/* POSIX Library misc function.
-*/
-
-/* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_sleep.c,v 1.1 1997/08/31 13:25:27 night Exp $  */
-
 #include <core.h>
+#include <errno.h>
+#include <local.h>
+#include <services.h>
+#include <sys/time.h>
 
-static int usleep (int usecond);
 
-
-/* usleep --- システムコールの動作は usleep とする．
- *
- */
-static int
-usleep (int usecond)
+unsigned int sleep(unsigned int second)
 {
-  if (usecond < 0) {
-    return(-1);
-  }
-  else if (usecond == 0) {
-    return E_OK;
-  }
+	thread_local_t *local = _get_local();
+	struct timespec t = { second, 0 };
+	ER_UINT reply_size = cal_por(PORT_TIMER, 0xffffffff, &t, sizeof(t));
 
-  tslp_tsk(usecond);
+	if (reply_size == sizeof(ER)) {
+		ER *result = (ER*)&t;
 
-  return (E_OK);
-}
+		switch (*result) {
+		case E_TMOUT:
+			return 0;
 
-/* sleep 
- *
- */
-int
-sleep (int second)
-{
-  return usleep(second * 1000 * 1000);
+		case E_PAR:
+			local->error_no = EINVAL;
+			return second;
+
+		case E_NOMEM:
+			local->error_no = ENOMEM;
+			return second;
+
+		default:
+			break;
+		}
+	}
+
+	local->error_no = ECONNREFUSED;
+	return second;
 }

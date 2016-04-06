@@ -114,7 +114,6 @@ void kern_start(void)
 	delay_thread.attach();
 	arch_initialize();
 	interrupt_initialize();
-	timer_initialize();
 
 	load_modules();
 

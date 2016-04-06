@@ -29,11 +29,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <mitron4/types.h>
 
 /**
- * task synchronization
- */
-extern ER tslp_tsk(TMO tmout);
-
-/**
  * data queue
  */
 extern ER cre_dtq(ID dtqid, T_CDTQ *pk_cdtq);

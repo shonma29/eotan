@@ -31,37 +31,33 @@ For more information, please refer to <http://unlicense.org/>
 
 typedef struct {
 	void (*dispatch)(void);
-	ER_ID (*thread_create_auto)(T_CTSK *pk_ctsk);
-	ER (*thread_destroy)(ID tskid);
-	ER (*thread_start)(ID tskid);
+	ER_ID (*thread_create_auto)(T_CTSK *);
+	ER (*thread_destroy)(ID);
+	ER (*thread_start)(ID);
 	void (*thread_end_and_destroy)(void);
-	ER (*thread_terminate)(ID tskid);
-	ER (*thread_sleep)(TMO tmout);
-	ER (*interrupt_bind)(const INHNO inhno, const T_DINH *pk_dinh);
-	ER (*interrupt_enable)(const UB ir);
+	ER (*thread_terminate)(ID);
+	ER (*interrupt_bind)(const INHNO, const T_DINH *);
+	ER (*interrupt_enable)(const UB);
 	void *(*palloc)(void);
-	void (*pfree)(void *addr);
-	ER (*region_get)(const ID id, const void *from, const size_t size,
-			void *to);
-	ER (*region_put)(const ID id, void *to, const size_t size,
-			const void *from);
-	ER_UINT (*region_copy)(const ID id, const void *from, const size_t size,
-			void *to);
-	ER (*port_create)(ID porid, T_CPOR *pk_cpor);
-	ER_ID (*port_create_auto)(T_CPOR *pk_cpor);
-	ER (*port_destroy)(ID porid);
-	ER_UINT (*port_call)(ID porid, VP msg, UINT cmsgsz);
-	ER_UINT (*port_accept)(ID porid, RDVNO *p_rdvno, VP msg);
-	ER (*port_reply)(RDVNO rdvno, VP msg, UINT rmsgsz);
-	ER_ID (*queue_create_auto)(T_CDTQ *pk_cdtq);
-	ER (*queue_destroy)(ID dtqid);
-	ER (*queue_send)(ID dtqid, VP_INT data, TMO tmout);
-	ER (*queue_receive)(ID dtqid, VP_INT *p_data);
-	ER_ID (*mutex_create_auto)(T_CMTX *pk_cmtx);
-	ER (*mutex_destroy)(ID mtxid);
-	ER (*mutex_lock)(ID mtxid, TMO tmout);
-	ER (*mutex_unlock)(ID mtxid);
-	void (*puts)(const char *str);
+	void (*pfree)(void *);
+	ER (*region_get)(const ID, const void *, const size_t, void *);
+	ER (*region_put)(const ID, void *, const size_t, const void *);
+	ER_UINT (*region_copy)(const ID, const void *, const size_t , void *);
+	ER (*port_create)(ID porid, T_CPOR *);
+	ER_ID (*port_create_auto)(T_CPOR *);
+	ER (*port_destroy)(ID);
+	ER_UINT (*port_call)(ID, VP, UINT);
+	ER_UINT (*port_accept)(ID, RDVNO *, VP);
+	ER (*port_reply)(RDVNO, VP, UINT);
+	ER_ID (*queue_create_auto)(T_CDTQ *);
+	ER (*queue_destroy)(ID);
+	ER (*queue_send)(ID, VP_INT, TMO);
+	ER (*queue_receive)(ID, VP_INT *);
+	ER_ID (*mutex_create_auto)(T_CMTX *);
+	ER (*mutex_destroy)(ID);
+	ER (*mutex_lock)(ID, TMO);
+	ER (*mutex_unlock)(ID);
+	void (*puts)(const char *);
 } kcall_t;
 
 #define kcall ((kcall_t*)KCALL_ADDR)

@@ -41,10 +41,6 @@ ER pit_initialize(const UW freq)
 {
 	UW half;
 	UW n;
-	T_DINH pk_dinh = {
-		TA_HLNG,
-		(FP)timer_service
-	};
 
 	if ((freq < PIT_MIN_FREQ)
 			|| (freq > PIT_MAX_FREQ))
@@ -54,10 +50,7 @@ ER pit_initialize(const UW freq)
 	n = ((PIT_CLOCK_MUL3 << 8) + half) / (half << 1) + 1;
 
 	enter_critical();
-	idt_set(PIC_IR_VECTOR(ir_pit), handle32);
-	interrupt_bind(PIC_IR_VECTOR(ir_pit), &pk_dinh);
 	pit_set(n);
-	pic_reset_mask(ir_pit);
 	leave_critical();
 
 	return E_OK;

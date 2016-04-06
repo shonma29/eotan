@@ -28,10 +28,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-#define PORT_MM 1
-#define PORT_FS 2
-#define PORT_NET 3
-#define PORT_WINDOW 4
+#define PORT_INTERRUPT 1
+#define PORT_TIMER 2
+#define PORT_MM 3
+#define PORT_FS 4
 #define PORT_SYSLOG 5
+#define PORT_NET 6
+#define PORT_WINDOW 7
 
 #endif

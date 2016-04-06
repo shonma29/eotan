@@ -352,7 +352,7 @@ ER_ID thread_get_id(void)
 	return thread_id(running);
 }
 
-bool thread_tick(void)
+void thread_tick(void)
 {
 	running->time.total++;
 
@@ -360,8 +360,5 @@ bool thread_tick(void)
 		if (!(--(running->time.left))) {
 			running->time.left = TIME_QUANTUM;
 			ready_rotate(running->priority);
-			return true;
 		}
-
-	return false;
 }

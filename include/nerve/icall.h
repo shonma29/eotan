@@ -30,11 +30,12 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/config.h>
 
 typedef struct {
-	ER (*thread_start)(ID tskid);
+	ER (*thread_start)(ID);
 	ER_ID (*thread_get_id)(void);
-	ER (*queue_send_nowait)(ID dtqid, VP_INT data);
-	ER (*handle)(void (*)(const int));
-	void (*puts)(const char *str);
+	void (*thread_tick)(void);
+	ER (*queue_send_nowait)(ID, VP_INT);
+	ER (*handle)(void (*)(const int), int);
+	void (*puts)(const char *);
 } icall_t;
 
 #endif

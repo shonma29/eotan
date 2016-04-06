@@ -34,11 +34,9 @@ typedef struct {
 	VP_INT arg4;
 } svc_arg;
 
-static ER _thread_sleep(svc_arg *);
 static ER_UINT _port_call(svc_arg *);
 
 static ER (*svc_entries[])(svc_arg *) = {
-	_thread_sleep,
 	_port_call
 };
 
@@ -47,11 +45,6 @@ ER syscall(svc_arg *argp, UW svcno)
 {
 	return (svcno >= sizeof(svc_entries) / sizeof(svc_entries[0]))?
 			E_NOSPT:(svc_entries[svcno](argp));
-}
-
-static ER _thread_sleep(svc_arg *argp)
-{
-	return kcall->thread_sleep((TMO)(argp->arg1));
 }
 
 static ER_UINT _port_call(svc_arg *argp)

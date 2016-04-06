@@ -35,10 +35,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "delay.h"
 #include "sync.h"
 #include "thread.h"
-#include "../lib/libserv/libserv.h"
-
-/* initialize.c */
-extern ER core_initialize(void);
 
 /* modules.c */
 extern void load_modules(void);
@@ -71,7 +67,7 @@ extern ER thread_initialize(void);
 extern ER thread_start(ID tskid);
 extern ER thread_terminate(ID tskid);
 extern ER_ID thread_get_id(void);
-extern bool thread_tick(void);
+extern void thread_tick(void);
 
 static inline int is_kthread(const thread_t *th)
 {
@@ -101,11 +97,6 @@ extern ER mutex_initialize(void);
 extern ER mutex_lock(ID mtxid, TMO tmout);
 extern ER mutex_unlock(ID mtxid);
 extern void mutex_unlock_all(thread_t *th);
-
-/* time.c */
-extern ER thread_sleep(TMO tmout);
-extern void timer_initialize(void);
-extern ER timer_service(void);
 
 /* delay.c */
 extern volatile int delay_start;

@@ -54,6 +54,7 @@ void pic_initialize(void)
 	outb(pic_master2, ~PIC_IR_BIT(ir_cascade & PIC_INT_NO_MASK));
 	outb(pic_slave2, ~0);
 
+	idt_set(PIC_IR_VECTOR(ir_pit), handle32);
 	idt_set(PIC_IR_VECTOR(ir_keyboard), handle33);
 	idt_set(PIC_IR_VECTOR(ir_mouse), handle44);
 }
