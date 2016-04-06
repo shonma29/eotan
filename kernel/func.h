@@ -27,7 +27,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <kthread.h>
 #include <nerve/config.h>
 #include <set/lf_queue.h>
 #include <set/list.h>
@@ -100,7 +99,6 @@ extern void mutex_unlock_all(thread_t *th);
 
 /* delay.c */
 extern volatile int delay_start;
-extern kthread_t delay_thread;
 extern void kern_start(void);
 
 #endif

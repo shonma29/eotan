@@ -25,7 +25,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <kthread.h>
 #include <mpu/io.h>
 #include <services.h>
 #include <nerve/config.h>
@@ -42,20 +41,17 @@ For more information, please refer to <http://unlicense.org/>
 volatile int delay_start = FALSE;
 static char kqbuf[lfq_buf_size(sizeof(delay_param_t), KQUEUE_SIZE)];
 
-static ER_ID attach(void);
-static void process(VP_INT exinf);
-static void detach(void);
+static ER_ID delay_init(void);
+static void delay_process(VP_INT exinf);
 static ER kill(const int pid);
 
-kthread_t delay_thread = { attach, process, detach };
 
-
-static ER_ID attach(void)
+static ER_ID delay_init(void)
 {
 	system_info_t *info = (system_info_t*)SYSTEM_INFO_ADDR;
 
 	T_CTSK pk_ctsk = {
-		TA_HLNG, 0, process, pri_dispatcher,
+		TA_HLNG, 0, delay_process, pri_dispatcher,
 		KTHREAD_STACK_SIZE, NULL, NULL, NULL
 	};
 
@@ -64,7 +60,7 @@ static ER_ID attach(void)
 	return info->delay_thread_id = thread_create_auto(&pk_ctsk);
 }
 
-static void process(VP_INT exinf)
+static void delay_process(VP_INT exinf)
 {
 	for (;;) {
 		delay_param_t param;
@@ -98,10 +94,6 @@ static void process(VP_INT exinf)
 	}
 }
 
-static void detach(void)
-{
-}
-
 void kern_start(void)
 {
 	context_initialize();
@@ -111,7 +103,7 @@ void kern_start(void)
 	mutex_initialize();
 	thread_initialize();
 
-	delay_thread.attach();
+	delay_init();
 	arch_initialize();
 	interrupt_initialize();
 
