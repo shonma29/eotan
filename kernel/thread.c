@@ -333,11 +333,6 @@ ER thread_terminate(ID tskid)
 	return result;
 }
 
-ER_ID thread_get_id(void)
-{
-	return thread_id(running);
-}
-
 void thread_tick(void)
 {
 	running->time.total++;

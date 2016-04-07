@@ -31,7 +31,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/lf_queue.h>
 #include <set/list.h>
 #include <set/tree.h>
-#include "delay.h"
 #include "sync.h"
 #include "thread.h"
 
@@ -64,7 +63,6 @@ extern void thread_end_and_destroy(void);
 extern ER thread_initialize(void);
 extern ER thread_start(ID tskid);
 extern ER thread_terminate(ID tskid);
-extern ER_ID thread_get_id(void);
 extern void thread_tick(void);
 extern ER thread_sleep(void);
 extern ER thread_wakeup(ID tskid);
@@ -98,8 +96,7 @@ extern ER mutex_lock(ID mtxid, TMO tmout);
 extern ER mutex_unlock(ID mtxid);
 extern void mutex_unlock_all(thread_t *th);
 
-/* delay.c */
-extern volatile int delay_start;
+/* start.c */
 extern void kern_start(void);
 
 #endif

@@ -27,13 +27,13 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <services.h>
 #include <nerve/config.h>
+#include <nerve/delay.h>
 #include <nerve/global.h>
 #include <nerve/icall.h>
 #include <nerve/kcall.h>
 #include <sys/time.h>
 #include <set/slab.h>
 #include <set/tree.h>
-#include <delay.h>
 #include <sync.h>
 #include <arch/8259a.h>
 #include <arch/archfunc.h>

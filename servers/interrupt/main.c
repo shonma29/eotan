@@ -25,9 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <delay.h>
 #include <services.h>
 #include <nerve/config.h>
+#include <nerve/delay.h>
 #include <nerve/global.h>
 #include <nerve/icall.h>
 #include <nerve/kcall.h>
