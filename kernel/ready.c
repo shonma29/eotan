@@ -97,9 +97,9 @@ void dispatch(void)
 		return;
 	}
 
-	if (delay_start) {
-		delay_start = false;
-		thread_wakeup(((system_info_t*)SYSTEM_INFO_ADDR)->delay_thread_id);
+	if (sysinfo->delay_thread_start) {
+		sysinfo->delay_thread_start = FALSE;
+		thread_wakeup(sysinfo->delay_thread_id);
 	}
 
 	do {

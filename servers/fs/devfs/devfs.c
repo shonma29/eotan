@@ -36,7 +36,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "fs.h"
 #include "api.h"
 
-static system_info_t *sysinfo = (system_info_t*)SYSTEM_INFO_ADDR;
 static hash_t *hash;
 static device_info_t table[MAX_DEVICE];
 static size_t num_device;

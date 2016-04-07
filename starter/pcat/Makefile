@@ -76,6 +76,7 @@ $(WD)/append: $(WD)/append.c
 $(WD)/kern.bin: $(WD)/append \
 		$(WD)/starter.bin kernel/core.bin \
 		servers/kernlog/kernlog \
+		servers/interrupt/interrupt \
 		servers/timer/timer \
 		servers/mm/mm \
 		servers/fs/fs \
@@ -86,6 +87,7 @@ $(WD)/kern.bin: $(WD)/append \
 	cp $(WD)/starter.bin $@
 	$(WD)/append 1 kernel/core.bin 4 >> $@
 	$(WD)/append 2 servers/kernlog/kernlog 4 >> $@
+	$(WD)/append 2 servers/interrupt/interrupt 4 >> $@
 	$(WD)/append 2 servers/timer/timer 4 >> $@
 	$(WD)/append 2 servers/mm/mm 4 >> $@
 	$(WD)/append 2 servers/fs/fs 4 >> $@

@@ -28,19 +28,13 @@ For more information, please refer to <http://unlicense.org/>
 #include <fstype.h>
 #include <major.h>
 #include <nerve/global.h>
-#include <nerve/icall.h>
 #include <nerve/kcall.h>
-#include "delay.h"
 #include "func.h"
 #include "ready.h"
 #include "arch/archfunc.h"
 #include "mpu/mpufunc.h"
 
 static void kcall_initialize(void);
-static void icall_initialize(void);
-static ER delayed_thread_start(ID thread_id);
-static ER delayed_queue_send_nowait(ID queue_id, VP_INT data);
-static ER delayed_handle(void (*callback)(const int arg), int arg);
 static ER region_get(const ID id, const void *from, const size_t size,
 		void *to);
 static ER region_put(const ID id, void *to, const size_t size,
@@ -51,16 +45,14 @@ static ER_UINT region_copy(const ID id, const void *from, const size_t size,
 
 void global_initialize(void)
 {
-	system_info_t *sysinfo = (system_info_t *)SYSTEM_INFO_ADDR;
-
 	sysinfo->root.device = get_device_id(DEVICE_MAJOR_ATA, 0);
 	sysinfo->root.fstype = FS_SFS;
 	sysinfo->initrd.start = 0;
 	sysinfo->initrd.size = 0;
+	sysinfo->delay_thread_start = FALSE;
 	sysinfo->delay_thread_id = TSK_NONE;
 
 	kcall_initialize();
-	icall_initialize();
 }
 
 static void kcall_initialize(void)
@@ -73,6 +65,8 @@ static void kcall_initialize(void)
 	p->thread_start = thread_start;
 	p->thread_end_and_destroy = thread_end_and_destroy;
 	p->thread_terminate = thread_terminate;
+	p->thread_tick = thread_tick;
+	p->thread_sleep = thread_sleep;
 	p->interrupt_bind = interrupt_bind;
 	p->interrupt_enable = pic_reset_mask;
 	p->palloc = palloc;
@@ -97,62 +91,6 @@ static void kcall_initialize(void)
 	p->mutex_destroy = mutex_destroy;
 	p->mutex_lock = mutex_lock;
 	p->mutex_unlock = mutex_unlock;
-}
-
-static void icall_initialize(void)
-{
-	icall_t *p = (icall_t*)ICALL_ADDR;
-
-	p->thread_start = delayed_thread_start;
-	p->thread_get_id = thread_get_id;
-	p-> thread_tick = thread_tick;
-	p->queue_send_nowait = delayed_queue_send_nowait;
-	p->handle = delayed_handle;
-	p->puts = putsk;
-}
-
-static ER delayed_thread_start(ID thread_id)
-{
-	delay_param_t param;
-
-	param.action = delay_start;
-	param.arg1 = (int)thread_id;
-
-	return kq_enqueue(&param);
-}
-
-static ER delayed_queue_send_nowait(ID queue_id, VP_INT data)
-{
-	delay_param_t param;
-
-	param.action = delay_send;
-	param.arg1 = (int)queue_id;
-	param.arg2 = (int)data;
-
-	return kq_enqueue(&param);
-}
-
-static ER delayed_handle(void (*callback)(const int arg), int arg)
-{
-	delay_param_t param;
-
-	param.action = delay_handle;
-	param.arg1 = (int)callback;
-	param.arg2 = arg;
-
-	return kq_enqueue(&param);
-}
-
-ER kq_enqueue(delay_param_t *param)
-{
-	system_info_t *info = (system_info_t*)SYSTEM_INFO_ADDR;
-
-	if (lfq_enqueue(&(info->kqueue), param) != QUEUE_OK)
-		return E_TMOUT;
-
-	delay_start = TRUE;
-
-	return E_OK;
 }
 
 static ER region_get(const ID id, const void *from, const size_t size, void *to)

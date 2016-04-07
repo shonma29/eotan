@@ -94,8 +94,6 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr)
 
 static void set_initrd(ModuleHeader *h)
 {
-	system_info_t *sysinfo = (system_info_t*)SYSTEM_INFO_ADDR;
-
 	sysinfo->root.device = get_device_id(DEVICE_MAJOR_RAMDISK, 0);
 	sysinfo->root.fstype = FS_SFS;
 	sysinfo->initrd.start = &(h[1]);

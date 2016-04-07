@@ -23,14 +23,17 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-SERVERS = kernlog interrupt timer mm fs hmi ramdisk dumb
+TARGET = $(WD)/interrupt
 
-all: $(SERVERS)
+include Makefile.in
 
-$(SERVERS):
-	$(MAKE) -f servers/$@/Makefile WD=servers/$@
+CFLAGS += -I kernel
 
-clean:
-	$(SHELL) -ec 'for L in $(SERVERS); do \
-		$(MAKE) -f servers/$$L/Makefile WD=servers/$$L clean; \
-		done'
+ENTRY_ADDR = 0x80340000
+ENTRY_FUNC = start
+
+$(TARGET): $(OBJS) \
+		kernel/mpu/libmpu.a kernel/arch/libarch.a \
+		lib/libserv.a lib/libnc.a
+	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
+	$(STRIP) $@

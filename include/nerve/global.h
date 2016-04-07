@@ -48,7 +48,10 @@ typedef struct {
 	mount_node_t root;
 	memory_range_t initrd;
 	volatile lfq_t kqueue;
+	volatile int delay_thread_start;
 	ID delay_thread_id;
 } system_info_t;
+
+#define sysinfo ((system_info_t*)SYSTEM_INFO_ADDR)
 
 #endif

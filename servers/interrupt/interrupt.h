@@ -24,20 +24,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <nerve/global.h>
-#include <sys/time.h>
-#include "libserv.h"
+#ifndef __SERVER_INTERRUPT_H__
+#define __SERVER_INTERRUPT_H__
 
+#define MYNAME "interrupt"
 
-ER time_set(SYSTIM *pk_systim)
-{
-	if (!pk_systim)
-		return E_PAR;
+#define KQUEUE_SIZE 1024
 
-//TODO check like time_get, or disable interrupt
-	timespec_set(&(sysinfo->system_time),
-			&(pk_systim->sec), &(pk_systim->nsec));
-
-	return E_OK;
-}
+#endif

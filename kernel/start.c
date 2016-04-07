@@ -24,20 +24,25 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <nerve/global.h>
-#include <sys/time.h>
-#include "libserv.h"
+#include "func.h"
+#include "arch/archfunc.h"
+#include "mpu/mpufunc.h"
 
 
-ER time_set(SYSTIM *pk_systim)
+void kern_start(void)
 {
-	if (!pk_systim)
-		return E_PAR;
+	context_initialize();
+	global_initialize();
+	port_initialize();
+	queue_initialize();
+	mutex_initialize();
+	thread_initialize();
 
-//TODO check like time_get, or disable interrupt
-	timespec_set(&(sysinfo->system_time),
-			&(pk_systim->sec), &(pk_systim->nsec));
+	arch_initialize();
+	interrupt_initialize();
 
-	return E_OK;
+	load_modules();
+
+	for (;;)
+		halt();
 }

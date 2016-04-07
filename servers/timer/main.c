@@ -41,7 +41,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "timer.h"
 
 #define system_time (((system_info_t*)SYSTEM_INFO_ADDR)->system_time)
-#define icall ((icall_t*)ICALL_ADDR)
 
 typedef struct {
 	node_t node;
@@ -125,7 +124,7 @@ static ER add_timer(const struct timespec *ts, const RDVNO rdvno)
 	timer_t *t;
 	timer_t entry;
 	sleeper_t *s;
-dbg_printf("add_timer %d.%d\n", ts->tv_sec, ts->tv_nsec);
+
 	if ((ts->tv_sec < 0) || (ts->tv_nsec < 0))
 		return E_PAR;
 
@@ -174,7 +173,7 @@ ER timer_service(void)
 	node_t *p;
 
 	time_tick();
-	icall->thread_tick();
+	kcall->thread_tick();
 
 	time_get_raw(&now);
 

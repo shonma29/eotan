@@ -31,11 +31,11 @@ For more information, please refer to <http://unlicense.org/>
 
 typedef struct {
 	ER (*thread_start)(ID);
-	ER_ID (*thread_get_id)(void);
-	void (*thread_tick)(void);
 	ER (*queue_send_nowait)(ID, VP_INT);
 	ER (*handle)(void (*)(const int), int);
-	void (*puts)(const char *);
+	ER (*kill)(int);
 } icall_t;
+
+#define icall ((icall_t*)ICALL_ADDR)
 
 #endif

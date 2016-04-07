@@ -36,6 +36,8 @@ typedef struct {
 	ER (*thread_start)(ID);
 	void (*thread_end_and_destroy)(void);
 	ER (*thread_terminate)(ID);
+	void (*thread_tick)(void);
+	ER (*thread_sleep)(void);
 	ER (*interrupt_bind)(const INHNO, const T_DINH *);
 	ER (*interrupt_enable)(const UB);
 	void *(*palloc)(void);

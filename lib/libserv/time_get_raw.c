@@ -32,7 +32,6 @@ For more information, please refer to <http://unlicense.org/>
 
 void time_get_raw(struct timespec *ts)
 {
-	system_info_t *sysinfo = (system_info_t *)SYSTEM_INFO_ADDR;
 	struct timespec t2;
 
 	do {

@@ -40,7 +40,6 @@ extern void load_modules(void);
 
 /* global.c */
 extern void global_initialize(void);
-extern ER kq_enqueue(delay_param_t *param);
 
 /* palloc.c */
 extern void *palloc(void);

@@ -38,7 +38,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../lib/libserv/bind.h"
 #include "../../lib/libserv/libserv.h"
 
-static icall_t *icall = (icall_t*)ICALL_ADDR;
 static ID mouse_queue_id;
 
 extern void pset(unsigned int x, unsigned int y, int color);

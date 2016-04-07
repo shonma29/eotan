@@ -17,7 +17,7 @@ Version 2, June 1991
 #include <mm/segment.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
-#include <delay.h>
+#include <nerve/icall.h>
 #include <func.h>
 #include <ready.h>
 #include <sync.h>
@@ -46,14 +46,9 @@ void create_user_stack(thread_t * tsk)
 static void kill(void)
 {
     thread_local_t *local = (thread_local_t*)LOCAL_ADDR;
-    delay_param_t param;
 
     /* DELAY_TASK への登録 */
-    param.action = delay_page_fault;
-    /* id = pid */
-    param.arg1 = (int)(local->process_id);
-
-    if (kq_enqueue(&param))
+    if (icall->kill((int)(local->process_id)))
     	panic("full kqueue");
 }
 
