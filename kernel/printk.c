@@ -41,7 +41,7 @@ static Console *cns;
 static int initialized;
 #endif
 
-static void _putc(char ch);
+static void _putc(const char ch);
 
 
 void printk(const char *format, ...)

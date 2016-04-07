@@ -51,7 +51,7 @@ static void console_initialize(void);
 #endif
 
 static void _putc(const char ch);
-void printk(const B *fmt, ...);
+void printk(const char *format, ...);
 static void kick(const ModuleHeader *h);
 
 
@@ -113,12 +113,12 @@ static void _putc(const char ch)
 	}
 }
 
-void printk(const B *fmt, ...)
+void printk(const char *format, ...)
 {
 	va_list ap;
 
-	va_start(ap, fmt);
-	vnprintf(_putc, (char*)fmt, ap);
+	va_start(ap, format);
+	vnprintf(_putc, (char*)format, ap);
 };
 
 static void kick(const ModuleHeader *h)
