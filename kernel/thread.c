@@ -201,8 +201,10 @@ ER thread_destroy(ID tskid)
 			break;
 		}
 
-		if (th->status != TTS_DMT)
-			return E_OBJ;
+		if (th->status != TTS_DMT) {
+			result = E_OBJ;
+			break;
+		}
 
 		tree_remove(&thread_tree, tskid);
 		release_resources(th);
@@ -227,11 +229,13 @@ ER thread_start(ID tskid)
 
 		th = get_thread_ptr(tskid);
 		if (!th) {
+			leave_serialize();
 			result = E_NOEXS;
 			break;
 		}
 
 		if (th->status != TTS_DMT) {
+			leave_serialize();
 			result = E_QOVR;
 			break;
 		}
@@ -249,7 +253,6 @@ ER thread_start(ID tskid)
 		dispatch();
 
 	} while (FALSE);
-	leave_serialize();
 
 	return result;
 }
