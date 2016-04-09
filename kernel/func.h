@@ -97,6 +97,6 @@ extern ER mutex_unlock(ID mtxid);
 extern void mutex_unlock_all(thread_t *th);
 
 /* start.c */
-extern void kern_start(void);
+extern void kern_start(void (*)(void));
 
 #endif

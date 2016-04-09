@@ -42,8 +42,6 @@ For more information, please refer to <http://unlicense.org/>
 #define KERNLOG_UNITS ((KERNEL_LOG_SIZE - sizeof(lfq_t)) \
 		/ lfq_node_size(sizeof(int)))
 
-static void callback(void);
-
 #ifndef USE_VESA
 static Console *cns;
 
@@ -82,11 +80,6 @@ void _main(void)
 
 	kick((ModuleHeader*)MODULES_ADDR);
 	for (;;);
-}
-
-static void callback(void)
-{
-	printk("Starter callback\n");
 }
 
 #ifndef USE_VESA
@@ -130,7 +123,7 @@ static void kick(const ModuleHeader *h)
 			Elf32_Ehdr *eHdr = (Elf32_Ehdr*)&(h[1]);
 			void (*entry)(void*) = (void*)(eHdr->e_entry);
 
-			entry(callback);
+			entry(NULL);
 			break;
 		}
 

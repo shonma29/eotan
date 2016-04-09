@@ -48,8 +48,8 @@ startup:
 
 .align 4
 enter_world:
-	call *%eax
-	jmp kern_start
+	pushl %eax
+	call kern_start
 
 
 .data

@@ -25,11 +25,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include "func.h"
+#include "ready.h"
 #include "arch/archfunc.h"
 #include "mpu/mpufunc.h"
 
 
-void kern_start(void)
+void kern_start(void (*callback)(void))
 {
 	context_initialize();
 	global_initialize();
@@ -41,6 +42,7 @@ void kern_start(void)
 	arch_initialize();
 	interrupt_initialize();
 
+	//callback();
 	load_modules();
 
 	for (;;)
