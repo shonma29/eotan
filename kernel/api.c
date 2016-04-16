@@ -34,6 +34,13 @@ For more information, please refer to <http://unlicense.org/>
 #include "arch/archfunc.h"
 #include "mpu/mpufunc.h"
 
+typedef struct {
+	VP_INT arg1;
+	VP_INT arg2;
+	VP_INT arg3;
+	VP_INT arg4;
+} svc_arg;
+
 static void kcall_initialize(void);
 static ER region_get(const ID id, const void *from, const size_t size,
 		void *to);
@@ -41,6 +48,11 @@ static ER region_put(const ID id, void *to, const size_t size,
 		const void *from);
 static ER_UINT region_copy(const ID id, const void *from, const size_t size,
 		void *to);
+static ER_UINT _port_call(svc_arg *);
+
+static ER (*svc_entries[])(svc_arg *) = {
+	_port_call
+};
 
 
 void global_initialize(void)
@@ -53,6 +65,7 @@ void global_initialize(void)
 	sysinfo->delay_thread_id = TSK_NONE;
 
 	kcall_initialize();
+	service_initialize();
 }
 
 static void kcall_initialize(void)
@@ -112,4 +125,15 @@ static ER_UINT region_copy(const ID id, const void *from, const size_t size, voi
 	thread_t *th = get_thread_ptr(id);
 
 	return th? ncpy_from(th, to, from, size):E_NOEXS;
+}
+
+ER syscall(svc_arg *argp, UW svcno)
+{
+	return (svcno >= sizeof(svc_entries) / sizeof(svc_entries[0]))?
+			E_NOSPT:(svc_entries[svcno](argp));
+}
+
+static ER_UINT _port_call(svc_arg *argp)
+{
+	return port_call((ID)(argp->arg1), (VP)(argp->arg3), (UINT)(argp->arg4));
 }

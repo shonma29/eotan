@@ -74,7 +74,6 @@ static int initialize(void)
 
 	init_fs();
 	init_process();
-	service_initialize();
 	dbg_printf("fs: start\n");
 
 	return 0;
