@@ -24,53 +24,21 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
 #include <device.h>
 #include <major.h>
-#include "devfs.h"
-#include "fs.h"
+#include "pts.h"
+
+static vdriver driver_mine = {
+	get_device_id(DEVICE_MAJOR_PTS, 0),
+	(unsigned char*)MYNAME,
+	DEV_BUF_SIZE,
+	detach,
+	read,
+	write
+};
 
 
-W write_device(ID device, B *buf, W start, W length, W *rlength)
+vdriver *attach(int exinf)
 {
-	int result;
-	device_info_t *info;
-
-	if ((start < 0) || (length < 0))
-		return EINVAL;
-
-	info = device_find(device);
-	if (!info)
-		return ENODEV;
-
-	if (!(info->driver))
-		return ENODEV;
-
-	result = info->driver->write((unsigned char*)buf, get_channel(device),
-			(off_t)start, (size_t)length);
-	*rlength = (result > 0)? result:0;
-
-	return (result == length)? E_OK:E_SYS;
-}
-
-W read_device(ID device, B *buf, W start, W length, W *rlength)
-{
-	int result;
-	device_info_t *info;
-
-	if ((start < 0) || (length < 0))
-		return EINVAL;
-
-	info = device_find(device);
-	if (!info)
-		return ENODEV;
-
-	if (!(info->driver))
-		return ENODEV;
-
-	result = info->driver->read((unsigned char*)buf, get_channel(device),
-			(off_t)start, (size_t)length);
-	*rlength = (result > 0)? result:0;
-
-	return (result == length)? E_OK:E_SYS;
+	return &driver_mine;
 }

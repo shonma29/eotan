@@ -24,53 +24,51 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
 #include <device.h>
-#include <major.h>
-#include "devfs.h"
-#include "fs.h"
+#include <stddef.h>
+#include <string.h>
+#include <sys/types.h>
+#include "ramdisk.h"
+
+unsigned char buf[BUF_SIZE];
+
+static int check_param(const off_t start, const size_t size);
 
 
-W write_device(ID device, B *buf, W start, W length, W *rlength)
+int detach(void)
 {
-	int result;
-	device_info_t *info;
-
-	if ((start < 0) || (length < 0))
-		return EINVAL;
-
-	info = device_find(device);
-	if (!info)
-		return ENODEV;
-
-	if (!(info->driver))
-		return ENODEV;
-
-	result = info->driver->write((unsigned char*)buf, get_channel(device),
-			(off_t)start, (size_t)length);
-	*rlength = (result > 0)? result:0;
-
-	return (result == length)? E_OK:E_SYS;
+	return 0;
 }
 
-W read_device(ID device, B *buf, W start, W length, W *rlength)
+int read(unsigned char *outbuf, const int channel,
+		const off_t start, const size_t size)
 {
-	int result;
-	device_info_t *info;
+	int result = check_param(start, size);
 
-	if ((start < 0) || (length < 0))
-		return EINVAL;
+	if (result)	return result;
 
-	info = device_find(device);
-	if (!info)
-		return ENODEV;
+	memcpy(outbuf, &(buf[start]), size);
 
-	if (!(info->driver))
-		return ENODEV;
+	return size;
+}
 
-	result = info->driver->read((unsigned char*)buf, get_channel(device),
-			(off_t)start, (size_t)length);
-	*rlength = (result > 0)? result:0;
+int write(unsigned char *inbuf, const int channel,
+		const off_t start, const size_t size) {
+	int result = check_param(start, size);
 
-	return (result == length)? E_OK:E_SYS;
+	if (result)	return result;
+
+	memcpy(&(buf[start]), inbuf, size);
+
+	return size;
+}
+
+static int check_param(const off_t start, const size_t size)
+{
+	if (start >= sizeof(buf))	return -1;
+	if ((start + size) > sizeof(buf))	return -1;
+
+	if (size > DEV_BUF_SIZE)	return -1;
+
+	return 0;
 }

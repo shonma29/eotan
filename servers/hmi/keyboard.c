@@ -26,7 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <device.h>
-#include <major.h>
+#include <services.h>
 #include <core/packets.h>
 #include <mpu/io.h>
 #include <nerve/icall.h>
@@ -36,7 +36,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../kernel/arch/archfunc.h"
 #include "../../kernel/arch/scan2key.h"
 #include "../../kernel/arch/key2char.h"
-#include "../../lib/libserv/bind.h"
 #include "../../lib/libserv/libserv.h"
 #include "keyboard.h"
 
@@ -60,7 +59,6 @@ For more information, please refer to <http://unlicense.org/>
 static unsigned char state = scan_normal;
 static unsigned short modifiers = 0;
 static ID keyboard_queue_id;
-static ID keyboard_port_id;
 
 
 static inline unsigned char is_break(const unsigned char b)
@@ -247,7 +245,7 @@ void keyboard_accept(void)
 		ER_UINT size;
 		ER result;
 
-		size = kcall->port_accept(keyboard_port_id, &rdvno,
+		size = kcall->port_accept(PORT_KEYBOARD, &rdvno,
 				&message);
 		if (size < 0) {
 			dbg_printf("keyboard: acp_por error=%d\n", size);
@@ -306,18 +304,11 @@ ER keyboard_initialize(void)
 		return result;
 	}
 
-	keyboard_port_id = kcall->port_create_auto(&pk_cpor);
-	if (keyboard_port_id < 0) {
-		dbg_printf("keyboard: acre_por error=%d\n", keyboard_port_id);
+	result = kcall->port_create(PORT_KEYBOARD, &pk_cpor);
+	if (result < 0) {
+		dbg_printf("keyboard: acre_por error=%d\n", result);
 
 		return result;
-	}
-
-	result = bind_device(get_device_id(DEVICE_MAJOR_KEYBOARD, 0),
-			(UB*)DEV_NAME_KEYBOARD, keyboard_port_id, DEV_BUF_SIZE);
-	if (result) {
-		dbg_printf("keyboard: bind error=%d\n", result);
-		kcall->port_destroy(keyboard_port_id);
 	}
 
 	return E_OK;

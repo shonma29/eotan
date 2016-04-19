@@ -281,6 +281,7 @@ static void *setModules(void)
 
 		switch (h->type) {
 		case mod_kernel:
+		case mod_driver:
 		case mod_server:
 			eHdr = (Elf32_Ehdr*)&(h[1]);
 			size = dupModule(&to, eHdr);

@@ -24,12 +24,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#ifndef __RAMDISK_H__
-#define __RAMDISK_H__ 1
+#ifndef __DRIVERS_PTS_H__
+#define __DRIVERS_PTS_H__
 
-#define MYNAME "ramdisk"
+#include <stdlib.h>
+#include <sys/types.h>
 
-#define BLOCK_SIZE (512)
-#define BLOCK_NUM (2 * 256)
+#define MYNAME "pts"
+
+extern int detach(void);
+extern int read(unsigned char *, const int, const off_t, const size_t);
+extern int write(unsigned char *, const int, const off_t, const size_t);
 
 #endif

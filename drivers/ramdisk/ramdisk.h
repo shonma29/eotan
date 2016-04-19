@@ -24,53 +24,22 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <device.h>
-#include <major.h>
-#include "devfs.h"
-#include "fs.h"
+#ifndef __DRIVERS_RAMDISK_H__
+#define __DRIVERS_RAMDISK_H__
 
+#include <stdlib.h>
+#include <sys/types.h>
 
-W write_device(ID device, B *buf, W start, W length, W *rlength)
-{
-	int result;
-	device_info_t *info;
+#define MYNAME "ramdisk"
 
-	if ((start < 0) || (length < 0))
-		return EINVAL;
+#define BLOCK_SIZE (512)
+#define BLOCK_NUM (2 * 256)
+#define BUF_SIZE (BLOCK_NUM * BLOCK_SIZE)
 
-	info = device_find(device);
-	if (!info)
-		return ENODEV;
+extern unsigned char buf[];
 
-	if (!(info->driver))
-		return ENODEV;
+extern int detach(void);
+extern int read(unsigned char *, const int, const off_t, const size_t);
+extern int write(unsigned char *, const int, const off_t, const size_t);
 
-	result = info->driver->write((unsigned char*)buf, get_channel(device),
-			(off_t)start, (size_t)length);
-	*rlength = (result > 0)? result:0;
-
-	return (result == length)? E_OK:E_SYS;
-}
-
-W read_device(ID device, B *buf, W start, W length, W *rlength)
-{
-	int result;
-	device_info_t *info;
-
-	if ((start < 0) || (length < 0))
-		return EINVAL;
-
-	info = device_find(device);
-	if (!info)
-		return ENODEV;
-
-	if (!(info->driver))
-		return ENODEV;
-
-	result = info->driver->read((unsigned char*)buf, get_channel(device),
-			(off_t)start, (size_t)length);
-	*rlength = (result > 0)? result:0;
-
-	return (result == length)? E_OK:E_SYS;
-}
+#endif

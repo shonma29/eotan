@@ -35,5 +35,7 @@ For more information, please refer to <http://unlicense.org/>
 #define PORT_SYSLOG 5
 #define PORT_NET 6
 #define PORT_WINDOW 7
+#define PORT_CONSOLE 8
+#define PORT_KEYBOARD 9
 
 #endif

@@ -59,4 +59,13 @@ typedef union {
 	} Twrite;
 } devmsg_t;
 
+typedef struct _vdriver {
+	unsigned int id;
+	unsigned char *name;
+	const size_t size;
+	int (*detach)(void);
+	int (*read)(unsigned char *, int, const off_t, const size_t);
+	int (*write)(unsigned char *, int, const off_t, const size_t);
+} vdriver;
+
 #endif

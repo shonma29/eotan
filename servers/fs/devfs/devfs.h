@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <device.h>
 #include <sys/syscall.h>
 
 #define MAX_DEVICE (32)
@@ -36,6 +37,7 @@ typedef struct {
 	B name[MAX_DEVICE_NAME + 1];
 	ID port;
 	UW size;
+	vdriver *driver;
 } device_info_t;
 
 extern int device_init(void);

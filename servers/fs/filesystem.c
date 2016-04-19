@@ -226,7 +226,7 @@ W open_special_dev(struct proc * procp)
     struct inode *ip;
     device_info_t *p;
 
-    p = device_find(get_device_id(DEVICE_MAJOR_KEYBOARD, 0));
+    p = device_find(get_device_id(DEVICE_MAJOR_PTS, 0));
     if (p) {
 	/* 標準入力の設定 */
 	procp->session.files[0].f_inode = ip = alloc_inode();
@@ -244,7 +244,7 @@ W open_special_dev(struct proc * procp)
 	fs_register_inode(ip);
     }
 
-    p = device_find(get_device_id(DEVICE_MAJOR_CONSOLE, 0));
+    p = device_find(get_device_id(DEVICE_MAJOR_PTS, 0));
     if (p) {
 	/* 標準出力の設定 */
 	procp->session.files[1].f_inode = ip = alloc_inode();

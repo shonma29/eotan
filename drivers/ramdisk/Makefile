@@ -23,14 +23,14 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-SERVERS = kernlog interrupt timer mm fs hmi dumb
+TARGET = $(WD)/ramdisk
 
-all: $(SERVERS)
+include Makefile.in
 
-$(SERVERS):
-	$(MAKE) -f servers/$@/Makefile WD=servers/$@
+ENTRY_ADDR = 0x80370000
+ENTRY_FUNC = attach
 
-clean:
-	$(SHELL) -ec 'for L in $(SERVERS); do \
-		$(MAKE) -f servers/$$L/Makefile WD=servers/$$L clean; \
-		done'
+$(TARGET): $(OBJS) \
+		lib/libserv.a lib/libnc.a
+	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
+	$(STRIP) $@

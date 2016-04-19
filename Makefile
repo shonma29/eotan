@@ -25,7 +25,8 @@
 
 TARGET = boot.iso
 
-.PHONY: tools libs kern core servers apps bin test contrib data starter initrd
+.PHONY: tools libs kern core drivers servers \
+	apps bin test contrib data starter initrd
 
 all: tools libs kern initrd apps data starter
 
@@ -35,10 +36,13 @@ tools:
 libs:
 	$(MAKE) -f lib/Makefile
 
-kern: core servers
+kern: core drivers servers
 
 core:
 	$(MAKE) -f kernel/Makefile WD=kernel
+
+drivers:
+	$(MAKE) -f drivers/Makefile
 
 servers:
 	$(MAKE) -f servers/Makefile
@@ -77,6 +81,7 @@ clean:
 	$(MAKE) -f app/sfs/Makefile WD=app/sfs clean
 	$(MAKE) -f lib/Makefile clean
 	$(MAKE) -f kernel/Makefile WD=kernel clean
+	$(MAKE) -f drivers/Makefile clean
 	$(MAKE) -f servers/Makefile clean
 	$(MAKE) -f app/bin/Makefile WD=app/bin clean
 	$(MAKE) -f app/test/Makefile WD=app/test clean

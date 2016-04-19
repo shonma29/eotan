@@ -81,17 +81,19 @@ $(WD)/kern.bin: $(WD)/append \
 		servers/mm/mm \
 		servers/fs/fs \
 		servers/hmi/hmi \
-		servers/ramdisk/ramdisk \
+		drivers/pts/pts \
+		drivers/ramdisk/ramdisk \
 		initrd.img
 	[ `wc -c < $(WD)/starter.bin` -le $(STARTER_SIZE) ]
 	cp $(WD)/starter.bin $@
 	$(WD)/append 1 kernel/core.bin 4 >> $@
-	$(WD)/append 2 servers/kernlog/kernlog 4 >> $@
-	$(WD)/append 2 servers/interrupt/interrupt 4 >> $@
-	$(WD)/append 2 servers/timer/timer 4 >> $@
-	$(WD)/append 2 servers/mm/mm 4 >> $@
-	$(WD)/append 2 servers/fs/fs 4 >> $@
-	$(WD)/append 2 servers/hmi/hmi 4 >> $@
-	$(WD)/append 4 initrd.img 4 >> $@
-	$(WD)/append 2 servers/ramdisk/ramdisk 4 >> $@
+	$(WD)/append 3 servers/kernlog/kernlog 4 >> $@
+	$(WD)/append 3 servers/interrupt/interrupt 4 >> $@
+	$(WD)/append 3 servers/timer/timer 4 >> $@
+	$(WD)/append 3 servers/mm/mm 4 >> $@
+	$(WD)/append 3 servers/hmi/hmi 4 >> $@
+	$(WD)/append 2 drivers/pts/pts 4 >> $@
+	$(WD)/append 5 initrd.img 4 >> $@
+	$(WD)/append 2 drivers/ramdisk/ramdisk 4 >> $@
+	$(WD)/append 3 servers/fs/fs 4 >> $@
 	$(WD)/append 0 >> $@

@@ -28,15 +28,12 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 
-#define DEVICE_MAJOR_CONSOLE 0x0000
-#define DEVICE_MAJOR_KEYBOARD 0x0001
+#define DEVICE_MAJOR_PTS 0x0001
 #define DEVICE_MAJOR_MOUSE 0x0002
 #define DEVICE_MAJOR_ATA 0x8001
 #define DEVICE_MAJOR_RAMDISK 0x8002
 
-static inline ID get_device_id(const UH major, const UH minor)
-{
-	return (ID)(((UW)major << 16) | (UW)minor);
-}
+#define get_device_id(major, minor) ((ID)(((UW)major << 16) | (UW)minor))
+#define get_channel(device_id) (device_id & 0xffff)
 
 #endif

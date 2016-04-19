@@ -60,6 +60,7 @@ int main(int argc, char **argv)
 
 		switch (type) {
 		case mod_kernel:
+		case mod_driver:
 		case mod_server:
 		case mod_user:
 		case mod_initrd:

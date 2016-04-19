@@ -24,53 +24,39 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
 #include <device.h>
 #include <major.h>
-#include "devfs.h"
-#include "fs.h"
+#include <string.h>
+#include <nerve/global.h>
+#include "../../lib/libserv/libserv.h"
+#include "ramdisk.h"
+
+static vdriver driver_mine = {
+	get_device_id(DEVICE_MAJOR_RAMDISK, 0),
+	(unsigned char*)MYNAME,
+	BUF_SIZE,
+	detach,
+	read,
+	write
+};
 
 
-W write_device(ID device, B *buf, W start, W length, W *rlength)
+vdriver *attach(int exinf)
 {
-	int result;
-	device_info_t *info;
+	system_info_t *info = (system_info_t*)SYSTEM_INFO_ADDR;
 
-	if ((start < 0) || (length < 0))
-		return EINVAL;
+	if (info->initrd.size > 0) {
+		if (info->initrd.size <= BUF_SIZE) {
+			dbg_printf(MYNAME ": initrd start=%p size=%x\n",
+					info->initrd.start, info->initrd.size);
+			memcpy(buf, info->initrd.start, info->initrd.size);
 
-	info = device_find(device);
-	if (!info)
-		return ENODEV;
+			return &driver_mine;
 
-	if (!(info->driver))
-		return ENODEV;
+		} else
+			dbg_printf(MYNAME ": initrd too large %x\n",
+				info->initrd.size);
+	}
 
-	result = info->driver->write((unsigned char*)buf, get_channel(device),
-			(off_t)start, (size_t)length);
-	*rlength = (result > 0)? result:0;
-
-	return (result == length)? E_OK:E_SYS;
-}
-
-W read_device(ID device, B *buf, W start, W length, W *rlength)
-{
-	int result;
-	device_info_t *info;
-
-	if ((start < 0) || (length < 0))
-		return EINVAL;
-
-	info = device_find(device);
-	if (!info)
-		return ENODEV;
-
-	if (!(info->driver))
-		return ENODEV;
-
-	result = info->driver->read((unsigned char*)buf, get_channel(device),
-			(off_t)start, (size_t)length);
-	*rlength = (result > 0)? result:0;
-
-	return (result == length)? E_OK:E_SYS;
+	return NULL;
 }

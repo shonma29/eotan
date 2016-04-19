@@ -24,6 +24,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <major.h>
+#include <boot/init.h>
+#include <nerve/global.h>
 #include <nerve/kcall.h>
 #include "api.h"
 #include "fs.h"
@@ -74,6 +77,21 @@ static int initialize(void)
 
 	init_fs();
 	init_process();
+
+	if (device_find(sysinfo->root.device)
+			&& device_find(get_device_id(DEVICE_MAJOR_PTS, 0))) {
+		if (mount_root(sysinfo->root.device, sysinfo->root.fstype, 0)) {
+			dbg_printf("fs: mount_root(%x, %d) failed\n",
+					sysinfo->root.device,
+					sysinfo->root.fstype);
+		} else {
+			dbg_printf("fs: mount_root(%x, %d) succeeded\n",
+					sysinfo->root.device,
+					sysinfo->root.fstype);
+			exec_init(INIT_PID, INIT_PATH_NAME);
+		}
+	}
+
 	dbg_printf("fs: start\n");
 
 	return 0;

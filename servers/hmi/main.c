@@ -27,13 +27,12 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <console.h>
 #include <device.h>
-#include <major.h>
+#include <services.h>
 #include <stddef.h>
 #include <string.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
-#include <bind.h>
 #include <libserv.h>
 #include "hmi.h"
 #include "keyboard.h"
@@ -75,8 +74,8 @@ static ER check_param(const UW start, const UW size);
 static ER_UINT write(const UW dd, const UW start, const UW size,
 		const UB *inbuf);
 static UW execute(devmsg_t *message);
-static ER accept(const ID port);
-static ER_ID initialize(void);
+static ER accept(void);
+static ER initialize(void);
 
 
 static ER check_param(const UW start, const UW size)
@@ -138,14 +137,14 @@ static UW execute(devmsg_t *message)
 	return size;
 }
 
-static ER accept(const ID port)
+static ER accept(void)
 {
 	devmsg_t *message;
 	RDVNO rdvno;
 	ER_UINT size;
 	ER result;
 
-	size = kcall->port_accept(port, &rdvno, &message);
+	size = kcall->port_accept(PORT_CONSOLE, &rdvno, &message);
 	if (size < 0) {
 		dbg_printf("hmi: acp_por error=%d\n", size);
 		return size;
@@ -160,9 +159,8 @@ static ER accept(const ID port)
 	return result;
 }
 
-static ER_ID initialize(void)
+static ER initialize(void)
 {
-	ER_ID port;
 	W result;
 	T_CPOR pk_cpor = {
 			TA_TFIFO,
@@ -178,30 +176,18 @@ static ER_ID initialize(void)
 	cns->cls();
 	cns->locate(0, 0);
 
-//	port = acre_por(&pk_cpor);
-	port = kcall->port_create_auto(&pk_cpor);
-	if (port < 0) {
-		dbg_printf("hmi: acre_por error=%d\n", port);
-
-		return port;
-	}
-
-	result = bind_device(get_device_id(DEVICE_MAJOR_CONSOLE, 0),
-			(UB*)MYNAME, port, DEV_BUF_SIZE);
+	result = kcall->port_create(PORT_CONSOLE, &pk_cpor);
 	if (result) {
-		dbg_printf("hmi: bind error=%d\n", result);
-//		del_por(port);
-		kcall->port_destroy(port);
+		dbg_printf("hmi: acre_por error=%d\n", result);
 
-		return E_SYS;
+		return result;
 	}
 
-	return port;
+	return E_OK;
 }
 
 void start(VP_INT exinf)
 {
-	ER_ID port = initialize();
 	T_CTSK pk = {
 		TA_HLNG,
 		(VP_INT)NULL,
@@ -213,8 +199,8 @@ void start(VP_INT exinf)
 		NULL
 	};
 
-	if (port >= 0) {
-		dbg_printf("hmi: start port=%d\n", port);
+	if (initialize() == E_OK) {
+		dbg_printf("hmi: start\n");
 
 		if (keyboard_initialize() == E_OK) {
 			ER_ID t2 = kcall->thread_create_auto(&pk);
@@ -237,10 +223,9 @@ void start(VP_INT exinf)
 				kcall->thread_start(t2);
 		}
 
-		while (accept(port) == E_OK);
+		while (accept() == E_OK);
 
-//		del_por(port);
-		kcall->port_destroy(port);
+		kcall->port_destroy(PORT_CONSOLE);
 		dbg_printf("hmi: end\n");
 	}
 

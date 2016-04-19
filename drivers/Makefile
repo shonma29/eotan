@@ -23,14 +23,14 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-SERVERS = kernlog interrupt timer mm fs hmi dumb
+SERVERS = pts ramdisk
 
 all: $(SERVERS)
 
 $(SERVERS):
-	$(MAKE) -f servers/$@/Makefile WD=servers/$@
+	$(MAKE) -f drivers/$@/Makefile WD=drivers/$@
 
 clean:
 	$(SHELL) -ec 'for L in $(SERVERS); do \
-		$(MAKE) -f servers/$$L/Makefile WD=servers/$$L clean; \
+		$(MAKE) -f drivers/$$L/Makefile WD=drivers/$$L clean; \
 		done'

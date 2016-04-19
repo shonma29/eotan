@@ -24,11 +24,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <device.h>
 #include <errno.h>
 #include <stddef.h>
 #include <string.h>
-#include <boot/init.h>
-#include <nerve/global.h>
 #include <nerve/kcall.h>
 #include <set/hash.h>
 #include "../../lib/libserv/libserv.h"
@@ -44,6 +43,11 @@ void *malloc(size_t size);
 void free(void *p);
 static unsigned int calc_hash(const void *key, const size_t size);
 static int compare(const void *a, const void *b);
+
+static vdriver *(*drivers[])(int) = {
+	(vdriver *(*)(int))(0x80400000),
+	(vdriver *(*)(int))(0x80370000)
+};
 
 
 void *malloc(size_t size)
@@ -61,12 +65,37 @@ void free(void *p)
 
 int device_init(void)
 {
+	int i;
+
 	num_device = 0;
 	hash = hash_create(MAX_DEVICE, calc_hash, compare);
 
 	if (!hash) {
 		dbg_printf("fs: cannot create hash\n");
 		return FALSE;
+	}
+
+	for (i = 0; i < sizeof(drivers) / sizeof(drivers[0]); i++) {
+		vdriver *p = drivers[i]((int)NULL);
+
+		if (p) {
+			table[num_device].id = p->id;
+			strcpy((char*)(table[num_device].name), (char*)(p->name));
+			table[num_device].port = 0;
+			table[num_device].size = p->size;
+			table[num_device].driver = p;
+
+			if (hash_put(hash, (void*)(p->id),
+					(void*)&(table[num_device]))) {
+				dbg_printf("devfs: attach failure(%x, %s, %d, %x)\n",
+						p->id, p->name, p->size, p);
+
+			} else {
+				num_device++;
+				dbg_printf("devfs: attach success(%x, %s, %d, %x)\n",
+						p->id, p->name, p->size, p);
+			}
+		}
 	}
 
 	return TRUE;
@@ -103,6 +132,7 @@ void if_bind_device(fs_request *req)
 	strcpy((char*)(table[num_device].name), (char*)name);
 	table[num_device].port = port;
 	table[num_device].size = size;
+	table[num_device].driver = NULL;
 
 	if (hash_put(hash, (void*)id, (void*)&(table[num_device]))) {
 		put_response(req->rdvno, EPERM, -1, 0);
@@ -110,17 +140,6 @@ void if_bind_device(fs_request *req)
 	} else {
 		num_device++;
 		put_response(req->rdvno, EOK, 0, 0);
-
-		if (id == sysinfo->root.device) {
-			if (mount_root(id, sysinfo->root.fstype, 0)) {
-				dbg_printf("fs: mount_root(%x, %d) failed\n",
-						id, sysinfo->root.fstype);
-			} else {
-				dbg_printf("fs: mount_root(%x, %d) succeeded\n",
-						id, sysinfo->root.fstype);
-				exec_init(INIT_PID, INIT_PATH_NAME);
-			}
-		}
 	}
 }
 

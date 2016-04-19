@@ -32,9 +32,10 @@ enum ModuleType
 {
 	mod_end = 0,
 	mod_kernel = 1,
-	mod_server = 2,
-	mod_user = 3,
-	mod_initrd = 4
+	mod_driver = 2,
+	mod_server = 3,
+	mod_user = 4,
+	mod_initrd = 5
 };
 
 typedef struct _ModuleHeader

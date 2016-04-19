@@ -23,12 +23,12 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = $(WD)/ramdisk
+TARGET = $(WD)/pts
 
 include Makefile.in
 
-ENTRY_ADDR = 0x80370000
-ENTRY_FUNC = start
+ENTRY_ADDR = 0x80400000
+ENTRY_FUNC = attach
 
 $(TARGET): $(OBJS) \
 		lib/libserv.a lib/libnc.a
