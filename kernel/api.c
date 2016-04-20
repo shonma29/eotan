@@ -84,7 +84,7 @@ static void kcall_initialize(void)
 	p->interrupt_enable = pic_reset_mask;
 	p->palloc = palloc;
 	p->pfree = pfree;
-	p->puts = putsk;
+	p->printk = printk;
 
 	p->region_get = region_get;
 	p->region_put = region_put;

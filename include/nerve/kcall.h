@@ -59,7 +59,7 @@ typedef struct {
 	ER (*mutex_destroy)(ID);
 	ER (*mutex_lock)(ID, TMO);
 	ER (*mutex_unlock)(ID);
-	void (*puts)(const char *);
+	void (*printk)(const char *, ...);
 } kcall_t;
 
 #define kcall ((kcall_t*)KCALL_ADDR)

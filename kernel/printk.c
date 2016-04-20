@@ -72,11 +72,3 @@ static void _putc(char ch)
 		lfq_dequeue((volatile lfq_t*)KERNEL_LOG_ADDR, &trash);
 	}
 }
-
-void putsk(const char *str)
-{
-	char ch;
-
-	for (; (ch = *str); str++)
-		_putc(ch);
-}

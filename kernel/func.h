@@ -47,7 +47,6 @@ extern UW pmemfree(void);
 
 /* printk.c */
 extern void printk(const char *format, ...);
-extern void putsk(const char *str);
 
 /* tree_utils.c */
 extern void create_tree(tree_t *tree, slab_t *slab, size_t entry_size,
