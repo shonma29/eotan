@@ -54,8 +54,6 @@ Version 2, June 1991
 /* =================== miserous system calls  =============== */
 #define PSC_DUP2         23	/* 不要? */
 
-#define PSC_BIND_DEVICE (24)
-
 /* =============== 各システムコール用の 構造体定義 ================== */
 
 /* psc_chdir -
@@ -142,13 +140,6 @@ struct psc_statvfs
 
 
 #define MAX_DEVICE_NAME (31)
-struct psc_bind_device
-{
-  UW id;
-  UB *name;
-  ID port;
-  UW size;
-};
 
 /* =========================== 構造体定義 =========================== */
 
@@ -168,7 +159,6 @@ struct posix_request
     struct psc_open		par_open;
     struct psc_waitpid   	par_waitpid;
     struct psc_statvfs		par_statvfs;
-    struct psc_bind_device par_bind_device;
   } param;
 };
 

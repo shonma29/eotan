@@ -114,35 +114,6 @@ static int compare(const void *a, const void *b)
 	return (x == y)? 0:((x < y)? (-1):1);
 }
 
-void if_bind_device(fs_request *req)
-{
-	UW id = req->packet.param.par_bind_device.id;
-	UB *name = req->packet.param.par_bind_device.name;
-	ID port = req->packet.param.par_bind_device.port;
-	UW size = req->packet.param.par_bind_device.size;
-
-	if (!hash || num_device >= MAX_DEVICE) {
-		put_response(req->rdvno, ENOMEM, -1, 0);
-
-		return;
-	}
-
-	dbg_printf("fs: bind(%x, %s, %d, %d)\n", id, name, port, size);
-	table[num_device].id = id;
-	strcpy((char*)(table[num_device].name), (char*)name);
-	table[num_device].port = port;
-	table[num_device].size = size;
-	table[num_device].driver = NULL;
-
-	if (hash_put(hash, (void*)id, (void*)&(table[num_device]))) {
-		put_response(req->rdvno, EPERM, -1, 0);
-
-	} else {
-		num_device++;
-		put_response(req->rdvno, EOK, 0, 0);
-	}
-}
-
 device_info_t *device_find(const UW devid)
 {
 	return (device_info_t*)(hash_get(hash, (void*)devid));

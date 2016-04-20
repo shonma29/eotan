@@ -60,6 +60,5 @@ extern void if_mount(fs_request*);
 extern void if_unmount(fs_request*);
 extern void if_statvfs(fs_request*);
 extern void if_getdents(fs_request*);
-extern void if_bind_device(fs_request*);
 
 #endif

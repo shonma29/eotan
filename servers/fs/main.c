@@ -59,7 +59,6 @@ static void (*syscall[])(fs_request*) = {
 	if_unmount,
 	if_kill,
 	if_dup2,
-	if_bind_device,
 };
 
 static int initialize(void);

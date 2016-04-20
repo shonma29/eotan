@@ -35,7 +35,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../kernel/arch/8024.h"
 #include "../../kernel/arch/8259a.h"
 #include "../../kernel/arch/archfunc.h"
-#include "../../lib/libserv/bind.h"
 #include "../../lib/libserv/libserv.h"
 
 static ID mouse_queue_id;
