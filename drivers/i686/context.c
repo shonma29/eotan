@@ -1,135 +1,191 @@
 /*
+This is free and unencumbered software released into the public domain.
 
-B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
 
-GNU GENERAL PUBLIC LICENSE
-Version 2, June 1991
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
 
-(C) B-Free Project.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
 
-(C) 2001-2002, Tomohide Naniwa
-
+For more information, please refer to <http://unlicense.org/>
 */
-
 #include <core.h>
-#include <boot/init.h>
-#include <local.h>
-#include <mm/segment.h>
-#include <mpu/memory.h>
+#include <mpu/setting.h>
 #include <nerve/config.h>
-#include <nerve/icall.h>
 #include <func.h>
-#include <ready.h>
-#include <sync.h>
-#include <thread.h>
+#include "context.h"
 #include "eflags.h"
-#include "interrupt.h"
+#include "gate.h"
 #include "mpufunc.h"
+#include "msr.h"
+#include "tss.h"
 
-static void kill(void);
-static ER region_map(VP page_table, VP start, UW size, W accmode);
+static VP current_page_table = NULL;
+
+static void api_set_kernel_sp(const VP addr);
+static VP_INT *context_create_kernel(VP_INT *sp, const UW eflags, const FP eip);
+static VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
+		const VP esp);
 
 
-/*
- * create_user_stack
- */
-void create_user_stack(thread_t * tsk)
+void context_initialize(void)
 {
-    tsk->ustack.addr = (VP) pageRoundDown(LOCAL_ADDR - USER_STACK_MAX_SIZE);
-    tsk->ustack.len = pageRoundUp(USER_STACK_INITIAL_SIZE);
-    tsk->ustack.max = pageRoundUp(USER_STACK_MAX_SIZE - PAGE_SIZE);
-    tsk->ustack.attr = type_stack;
-
-    tsk->attr.ustack_tail = (VP)((UW)(tsk->ustack.addr) + tsk->ustack.max);
+	paging_reset();
 }
 
-static void kill(void)
+static void api_set_kernel_sp(const VP addr)
 {
-    thread_local_t *local = (thread_local_t*)LOCAL_ADDR;
+	tss_t *tss = (tss_t*)TSS_ADDR;
 
-    /* DELAY_TASK への登録 */
-    if (icall->kill((int)(local->process_id)))
-    	panic("full kqueue");
+	tss->esp0 = (UW)addr;
+	msr_write(sysenter_esp_msr, (UW)addr);
 }
 
-/* default page fault handler */
-ER context_page_fault_handler(void)
+static VP_INT *context_create_kernel(VP_INT *sp, const UW eflags, const FP eip)
 {
-    UW addr;
+	VP_INT *esp0;
 
-    if (is_kthread(running)) {
-    	return (E_SYS);
-    }
+	/* eflags */
+	*--sp = eflags;
+	/* cs */
+	*--sp = kern_code;
+	/* eip */
+	*--sp = (VP_INT)eip;
+	/* ds */
+	*--sp = kern_data;
+	/* es */
+	*--sp = kern_data;
+	/* fs */
+	*--sp = kern_data;
+	/* gs */
+	*--sp = kern_data;
+	esp0 = sp;
 
-    addr = (UW)fault_get_addr();
+	/* eax */
+	*--sp = 0;
+	/* ecx */
+	*--sp = 0;
+	/* edx */
+	*--sp = 0;
+	/* ebx */
+	*--sp = 0;
+	/* kernel esp */
+	*--sp = (VP_INT)esp0;
+	/* ebp */
+	*--sp = 0;
+	/* esi */
+	*--sp = 0;
+	/* edi */
+	*--sp = 0;
 
-    /* フォルトを起こしたアドレスがスタック領域にあればページを割り当てる */
-    if (running->ustack.attr &&
-	    (((UW) running->ustack.addr <= addr) &&
-	    (addr <= ((UW) running->ustack.addr + running->ustack.max)))) {
-	ER result = region_map(running->attr.page_table, (VP) addr, PAGE_SIZE, true);
+	return sp;
+}
 
-	if (result == E_OK) {
-	    /* ページフォルト処理に成功した */
-	    tlb_flush_all();
-	    return (E_OK);
+static VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
+		const VP esp)
+{
+	VP_INT *esp0;
+
+	/* ss */
+	*--sp = user_data | dpl_user;
+	/* user esp */
+	*--sp = (VP_INT)esp;
+	/* eflags */
+	*--sp = eflags;
+	/* cs */
+	*--sp = user_code | dpl_user;
+	/* eip */
+	*--sp = (VP_INT)eip;
+	/* ds */
+	*--sp = user_data;
+	/* es */
+	*--sp = user_data;
+	/* fs */
+	*--sp = user_data;
+	/* gs */
+	*--sp = user_data;
+	esp0 = sp;
+
+	/* eax */
+	*--sp = 0;
+	/* ecx */
+	*--sp = 0;
+	/* edx */
+	*--sp = 0;
+	/* ebx */
+	*--sp = 0;
+	/* kernel esp */
+	*--sp = (VP_INT)esp0;
+	/* ebp */
+	*--sp = 0;
+	/* esi */
+	*--sp = 0;
+	/* edi */
+	*--sp = 0;
+
+	return sp;
+}
+
+void context_switch(thread_t *prev, thread_t *next)
+{
+	if (!is_kthread(next)) {
+		if (next->attr.page_table != current_page_table) {
+			paging_set_directory(next->mpu.cr3);
+			current_page_table = next->attr.page_table;
+			api_set_kernel_sp(next->attr.kstack_tail);
+		}
+
+		fpu_save(&prev);
 	}
-    }
 
-    kill();
-    return (E_OK);
+	stack_switch_wrapper(&(prev->mpu.esp0), &(next->mpu.esp0));
+
+	if (!is_kthread(prev))
+		fpu_restore(&prev);
 }
 
-ER context_mpu_handler(void)
+void context_reset_page_table()
 {
-    if (is_kthread(running)) {
-    	return (E_SYS);
-    }
-
-    kill();
-    return (E_OK);
+	paging_set_directory((VP)KTHREAD_DIR_ADDR);
+	current_page_table = NULL;
 }
-
-/*
- * リージョン内の仮想ページへ物理メモリを割り付ける。
- *
- * 引数で指定したアドレス領域に物理メモリを割り付ける。
- *
- * 複数のページに相当するサイズが指定された場合、全てのページがマップ
- * 可能のときのみ物理メモリを割り付ける。その他の場合は割り付けない。
- *
- * マップする物理メモリのアドレスは指定できない。中心核が仮想メモリに
- * 割り付ける物理メモリを適当に割り振る。
- *
- *
- * 返り値
- *
- * 以下のエラー番号が返る。
- *	E_OK     リージョンのマップに成功  
- *	E_NOMEM  (物理)メモリが不足している
- *	E_NOSPT  本システムコールは、未サポート機能である。
- *	E_PAR	 引数がおかしい
- *
- */
-static ER region_map(VP page_table, VP start, UW size, W accmode)
-    /* 
-     * page_table        仮想メモリマップ
-     * start     マップする仮想メモリ領域の先頭アドレス
-     * size      マップする仮想メモリ領域の大きさ(バイト単位)
-     * accmode   マップする仮想メモリ領域のアクセス権を指定
-     *           (ACC_KERNEL = 0, ACC_USER = 1)
-     */
-{
-    ER res;
 
-printk("region_map: %x %p %x %x\n", page_table, start, size, accmode);
-    size = pages(size);
-    start = (VP)pageRoundDown((UW)start);
-    if (pmemfree() < size)
-	return (E_NOMEM);
-    res = map_user_pages(page_table, start, size);
-    if (res != E_OK) {
-	unmap_user_pages(page_table, start, size);
-    }
-    return (res);
+void context_reset_page_cache(const VP page_table, const VP addr)
+{
+	if (page_table == current_page_table)
+		tlb_flush(addr);
+}
+
+void create_context(thread_t *th)
+{
+	VP_INT *sp = th->attr.kstack_tail;
+
+	if (is_kthread(th)) {
+		*--sp = th->attr.arg;
+		*--sp = (INT)thread_end;
+		th->mpu.esp0 = context_create_kernel(
+				sp,
+				EFLAGS_INTERRUPT_ENABLE | EFLAGS_IOPL_3,
+				th->attr.entry);
+	} else
+		th->mpu.esp0 = context_create_user(
+				th->attr.kstack_tail,
+				EFLAGS_INTERRUPT_ENABLE | EFLAGS_IOPL_3,
+				th->attr.entry,
+				th->attr.ustack_top);
 }

@@ -288,18 +288,18 @@ ER keyboard_initialize(void)
 		return keyboard_queue_id;
 	}
 
-	result = kcall->interrupt_bind(PIC_IR_VECTOR(ir_keyboard), &pk_dinh);
+	result = define_handler(PIC_IR_VECTOR(ir_keyboard), &pk_dinh);
 	if (result) {
 		dbg_printf("keyboard: interrupt_bind error=%d\n", result);
 		kcall->queue_destroy(keyboard_queue_id);
 		return result;
 	}
 
-	result = kcall->interrupt_enable(ir_keyboard);
+	result = enable_interrupt(ir_keyboard);
 	if (result) {
 		dbg_printf("keyboard: interrupt_enable error=%d\n", result);
 		pk_dinh.inthdr = NULL;
-		kcall->interrupt_bind(PIC_IR_VECTOR(ir_keyboard), &pk_dinh);
+		define_handler(PIC_IR_VECTOR(ir_keyboard), &pk_dinh);
 		kcall->queue_destroy(keyboard_queue_id);
 		return result;
 	}

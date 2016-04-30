@@ -61,7 +61,7 @@ static inline timer_t *getTimerParent(const node_t *p);
 static inline sleeper_t *getSleeperParent(const list_t *p);
 static void time_tick(void);
 static int compare(const int a, const int b);
-static void wakeup(list_t *w);
+static void wakeup(list_t *w, int dummy);
 static ER add_timer(const struct timespec *ts, const RDVNO rdvno);
 static void doit(void);
 static ER init(void);
@@ -101,7 +101,7 @@ static int compare(const int a, const int b)
 	return timespec_compare(t1, t2);
 }
 
-static void wakeup(list_t *w)
+static void wakeup(list_t *w, int dummy)
 {
 	ER reply = E_TMOUT;
 	list_t guard;
@@ -187,7 +187,8 @@ ER timer_service(void)
 			list_t *w = list_next(&(t->waiting));
 
 			list_remove(&(t->waiting));
-			icall->handle((void (*)(const int))wakeup, (int)w);
+			icall->handle((void (*)(const int, const int))wakeup,
+					(int)w, 0);
 		}
 
 		tree_remove(&timer_tree, (int)p);
@@ -247,7 +248,7 @@ static ER init(void)
 	slab_create(&sleeper_slab);
 
 	time_initialize();
-	result = kcall->interrupt_bind(PIC_IR_VECTOR(ir_pit), &pk_dinh);
+	result = define_handler(PIC_IR_VECTOR(ir_pit), &pk_dinh);
 	if (result != E_OK) {
 		dbg_printf(MYNAME ": interrupt_bind error=%d\n", result);
 		return result;
@@ -255,11 +256,11 @@ static ER init(void)
 
 	pit_initialize(TIME_TICKS);
 
-	result = kcall->interrupt_enable(ir_pit);
+	result = enable_interrupt(ir_pit);
 	if (result != E_OK) {
 		dbg_printf(MYNAME ": interrupt_enable error=%d\n", result);
 		pk_dinh.inthdr = NULL;
-		kcall->interrupt_bind(PIC_IR_VECTOR(ir_pit), &pk_dinh);
+		define_handler(PIC_IR_VECTOR(ir_pit), &pk_dinh);
 		return result;
 	}
 
@@ -267,7 +268,7 @@ static ER init(void)
 	if (result != E_OK) {
 		dbg_printf(MYNAME ": cre_por failed %d\n", result);
 		pk_dinh.inthdr = NULL;
-		kcall->interrupt_bind(PIC_IR_VECTOR(ir_pit), &pk_dinh);
+		define_handler(PIC_IR_VECTOR(ir_pit), &pk_dinh);
 		return result;
 	}
 

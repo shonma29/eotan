@@ -125,8 +125,3 @@ void pfree(void *addr)
 
 	return;// E_OK;
 }
-
-UW pmemfree(void)
-{
-	return mm->left_pages;
-}

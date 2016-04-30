@@ -233,7 +233,7 @@ abort_handler:
 	decl interrupt_nest
 	jnz skip_abort_dispatch;
 
-	call dispatch
+	call *%eax
 
 skip_abort_dispatch:
 	popal
@@ -247,11 +247,11 @@ abort_with_error_handler:
 	movw $SELECTOR_KERN_DATA, %ax
 	movw %ax,%ds
 	incl interrupt_nest
-	call interrupt
+	call interrupt_with_error
 	decl interrupt_nest
 	jnz skip_abort_with_error_dispatch;
 
-	call dispatch
+	call *%eax
 
 skip_abort_with_error_dispatch:
 	popal

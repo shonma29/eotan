@@ -1,5 +1,3 @@
-#ifndef _NERVE_ICALL_H_
-#define _NERVE_ICALL_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,16 +24,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <nerve/config.h>
+#ifndef __SERVER_INTERRUPT_SERVICE_H__
+#define __SERVER_INTERRUPT_SERVICE_H__
 
-typedef struct {
-	ID (*thread_get_id)(void);
-	ER (*handle)(void (*)(const int, const int), int, int);
-	ER (*thread_start)(ID);
-	ER (*queue_send_nowait)(ID, VP_INT);
-} icall_t;
+#define MYNAME "interrupt"
 
-#define icall ((icall_t*)ICALL_ADDR)
+#define KQUEUE_SIZE 1024
 
 #endif

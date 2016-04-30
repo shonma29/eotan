@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <interrupt.h>
 #include <services.h>
 #include <nerve/config.h>
 #include <nerve/delay.h>
@@ -34,31 +35,32 @@ For more information, please refer to <http://unlicense.org/>
 #include <arch/archfunc.h>
 #include <mpu/mpufunc.h>
 #include <set/lf_queue.h>
-#include <sys/syscall.h>
 #include "../../lib/libserv/libserv.h"
-#include "interrupt.h"
+#include "interrupt_service.h"
 
 static char kqbuf[lfq_buf_size(sizeof(delay_param_t), KQUEUE_SIZE)];
 
 static void icall_initialize(void);
 static ER delayed_thread_start(ID thread_id);
 static ER delayed_queue_send_nowait(ID queue_id, VP_INT data);
-static ER delayed_handle(void (*callback)(const int arg), int arg);
-static ER delayed_kill(int pid);
+static ER delayed_handle(void (*callback)(const int arg1, const int arg2),
+		int arg1, int arg2);
 static ER kq_enqueue(delay_param_t *param);
-static ER kill(const int pid);
 static void delay_process(void);
-static ER init(void);
+static ER delay_initialize(void);
+static ER port_initialize(void);
+static ER execute(int_args_t *args);
+static ER accept(void);
 
 
 static void icall_initialize(void)
 {
 	icall_t *p = (icall_t*)ICALL_ADDR;
 
+	p->thread_get_id = kcall->thread_get_id;
+	p->handle = delayed_handle;
 	p->thread_start = delayed_thread_start;
 	p->queue_send_nowait = delayed_queue_send_nowait;
-	p->handle = delayed_handle;
-	p->kill = delayed_kill;
 }
 
 static ER delayed_thread_start(ID thread_id)
@@ -82,23 +84,15 @@ static ER delayed_queue_send_nowait(ID queue_id, VP_INT data)
 	return kq_enqueue(&param);
 }
 
-static ER delayed_handle(void (*callback)(const int arg), int arg)
+static ER delayed_handle(void (*callback)(const int arg1, const int arg2),
+		int arg1, int arg2)
 {
 	delay_param_t param;
 
 	param.action = delay_handle;
 	param.arg1 = (int)callback;
-	param.arg2 = arg;
-
-	return kq_enqueue(&param);
-}
-
-static ER delayed_kill(int pid)
-{
-	delay_param_t param;
-
-	param.action = delay_page_fault;
-	param.arg1 = pid;
+	param.arg2 = arg1;
+	param.arg3 = arg2;
 
 	return kq_enqueue(&param);
 }
@@ -113,21 +107,6 @@ static ER kq_enqueue(delay_param_t *param)
 	sysinfo->delay_thread_start = TRUE;
 
 	return E_OK;
-}
-
-static ER kill(const int pid)
-{
-	ER_UINT rsize;
-	struct posix_request req;
-
-	//TODO define special process id
-	req.procid = -1;
-	req.operation = PSC_KILL;
-	req.args.arg1 = (W)pid;
-	req.args.arg2 = 9;
-
-	rsize = kcall->port_call(PORT_FS, &req, sizeof(struct posix_request));
-	return (rsize < 0)? rsize:E_OK;
 }
 
 static void delay_process(void)
@@ -145,17 +124,13 @@ static void delay_process(void)
 						((const int)(param.arg2));
 				break;
 
-			case delay_page_fault:
-				kill((ID)(param.arg1));
+			case delay_activate:
+				kcall->thread_start((ID)(param.arg1));
 				break;
 
 			case delay_send:
 				kcall->queue_send((ID)(param.arg1),
 						(VP_INT)(param.arg2), TMO_POL);
-				break;
-
-			case delay_activate:
-				kcall->thread_start((ID)(param.arg1));
 				break;
 
 			default:
@@ -167,7 +142,7 @@ static void delay_process(void)
 	}
 }
 
-static ER init(void)
+static ER delay_initialize(void)
 {
 	ER result;
 	ER_ID tid;
@@ -194,16 +169,84 @@ static ER init(void)
 
 	sysinfo->delay_thread_id = tid;
 	icall_initialize();
+	arch_initialize();
+	interrupt_initialize();
+
 	return E_OK;
+}
+
+static ER port_initialize(void)
+{
+	W result;
+	T_CPOR pk_cpor = {
+			TA_TFIFO,
+			sizeof(int_args_t),
+			sizeof(ER)
+	};
+
+	result = kcall->port_create(PORT_INTERRUPT, &pk_cpor);
+	if (result) {
+		dbg_printf("interrupt: acre_por error=%d\n", result);
+
+		return result;
+	}
+
+	return E_OK;
+}
+
+static ER execute(int_args_t *args)
+{
+	switch (args->operation) {
+	case int_operation_bind:
+		return interrupt_bind((INHNO)(args->arg1),
+				(T_DINH*)(args->arg2));
+
+	case int_operation_enable:
+		return pic_reset_mask((UB)(args->arg1));
+
+	default:
+		break;
+	}
+
+	return E_NOSPT;
+}
+
+static ER accept(void)
+{
+	int_args_t args;
+	RDVNO rdvno;
+	ER_UINT size;
+	ER *reply;
+	ER result;
+
+	size = kcall->port_accept(PORT_INTERRUPT, &rdvno, &args);
+	if (size < 0) {
+		dbg_printf("interrupt: acp_por error=%d\n", size);
+		return size;
+	}
+
+	reply = (ER*)(&args);
+	*reply = (size == sizeof(args))? execute(&args):E_PAR;
+	result = kcall->port_reply(rdvno, &args, sizeof(*reply));
+	if (result)
+		dbg_printf("interrupt: rpl_rdv error=%d\n", result);
+
+	return result;
 }
 
 void start(VP_INT exinf)
 {
-	if (init() == E_OK) {
-		dbg_printf(MYNAME ": start\n");
-		kcall->thread_sleep();
-		dbg_printf(MYNAME ": end\n");
+	if (delay_initialize() == E_OK) {
+		if (port_initialize() == E_OK) {
+			dbg_printf(MYNAME ": start\n");
+
+			for (;;)
+				accept();
+
+			dbg_printf(MYNAME ": end\n");
+		}
 	}
 
 	kcall->thread_end_and_destroy();
+	//TODO disable interrupt
 }

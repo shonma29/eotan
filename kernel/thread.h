@@ -46,13 +46,11 @@ typedef struct {
 	} time;
 	PRI priority;
 	UINT wakeup_count;
-	mm_segment_t ustack;
 	struct {
 		VP_INT arg;
 		PRI priority;
 		VP page_table;
 		VP kstack_tail;
-		VP ustack_tail;
 		VP ustack_top;
 		FP entry;
 	} attr;

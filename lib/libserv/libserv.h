@@ -36,4 +36,7 @@ extern void time_get_raw(struct timespec *);
 extern ER time_get(SYSTIM *);
 extern ER time_set(SYSTIM *);
 
+extern ER define_handler(INHNO inhno, T_DINH *pk_dinh);
+extern ER enable_interrupt(INHNO inhno);
+
 #endif

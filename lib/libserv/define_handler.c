@@ -1,5 +1,3 @@
-#ifndef _NERVE_ICALL_H_
-#define _NERVE_ICALL_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,15 +25,22 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <nerve/config.h>
+#include <errno.h>
+#include <interrupt.h>
+#include <services.h>
+#include <nerve/kcall.h>
+#include "libserv.h"
 
-typedef struct {
-	ID (*thread_get_id)(void);
-	ER (*handle)(void (*)(const int, const int), int, int);
-	ER (*thread_start)(ID);
-	ER (*queue_send_nowait)(ID, VP_INT);
-} icall_t;
 
-#define icall ((icall_t*)ICALL_ADDR)
+ER define_handler(INHNO inhno, T_DINH *pk_dinh)
+{
+	int_args_t args;
+	ER *reply = (ER*)&args;
 
-#endif
+	args.operation = int_operation_bind;
+	args.arg1 = (int)inhno;
+	args.arg2 = (int)pk_dinh;
+
+	return (kcall->port_call(PORT_INTERRUPT, &args, sizeof(args))
+			== sizeof(*reply))? (*reply):E_SYS;
+}

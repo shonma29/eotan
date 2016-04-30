@@ -42,11 +42,17 @@ typedef struct {
 	node_t node;
 	struct {
 		mm_segment_t heap;
+		mm_segment_t stack;
 	} segments;
 	void *directory;
 	list_t threads;
 } mm_process_t;
 
 extern void process_initialize(void);
+extern mm_process_t *get_process(const ID);
+extern mm_thread_t *get_thread(const ID);
+
+extern ER default_handler(void);
+extern ER stack_fault_handler(void);
 
 #endif

@@ -1,5 +1,3 @@
-#ifndef _NERVE_ICALL_H_
-#define _NERVE_ICALL_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,16 +24,18 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <nerve/config.h>
+#ifndef _INTERRUPT_H_
+#define _INTERRUPT_H_
+
+typedef enum {
+	int_operation_bind = 0,
+	int_operation_enable = 1
+} int_operation_e;
 
 typedef struct {
-	ID (*thread_get_id)(void);
-	ER (*handle)(void (*)(const int, const int), int, int);
-	ER (*thread_start)(ID);
-	ER (*queue_send_nowait)(ID, VP_INT);
-} icall_t;
-
-#define icall ((icall_t*)ICALL_ADDR)
+	int_operation_e operation;
+	int arg1;
+	int arg2;
+} int_args_t;
 
 #endif

@@ -31,6 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 
 typedef struct {
 	void (*dispatch)(void);
+	ID (*thread_get_id)(void);
 	ER_ID (*thread_create_auto)(T_CTSK *);
 	ER (*thread_destroy)(ID);
 	ER (*thread_start)(ID);
@@ -38,8 +39,6 @@ typedef struct {
 	ER (*thread_terminate)(ID);
 	void (*thread_tick)(void);
 	ER (*thread_sleep)(void);
-	ER (*interrupt_bind)(const INHNO, const T_DINH *);
-	ER (*interrupt_enable)(const UB);
 	void *(*palloc)(void);
 	void (*pfree)(void *);
 	ER (*region_get)(const ID, const void *, const size_t, void *);

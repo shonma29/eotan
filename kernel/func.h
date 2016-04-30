@@ -43,7 +43,6 @@ extern void global_initialize(void);
 /* palloc.c */
 extern void *palloc(void);
 extern void pfree(void *addr);
-extern UW pmemfree(void);
 
 /* printk.c */
 extern void printk(const char *format, ...);
@@ -65,6 +64,7 @@ extern ER thread_terminate(ID tskid);
 extern void thread_tick(void);
 extern ER thread_sleep(void);
 extern ER thread_wakeup(ID tskid);
+extern ID thread_get_id(void);
 
 static inline int is_kthread(const thread_t *th)
 {

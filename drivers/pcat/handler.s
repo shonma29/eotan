@@ -64,7 +64,7 @@ interrupt_master:
 	outb %al, $PIC_MASTER1
 
 ret_interrupt:
-	call dispatch
+	call *%edx
 	popal
 	popl %ds
 	addl $4, %esp

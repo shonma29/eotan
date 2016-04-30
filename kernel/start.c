@@ -39,9 +39,6 @@ void kern_start(void (*callback)(void))
 	mutex_initialize();
 	thread_initialize();
 
-	arch_initialize();
-	interrupt_initialize();
-
 	//callback();
 	load_modules();
 

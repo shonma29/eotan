@@ -33,24 +33,11 @@ For more information, please refer to <http://unlicense.org/>
 #include "paging.h"
 
 /* context.c */
-extern void create_user_stack(thread_t * tsk);
-extern ER context_page_fault_handler(void);
-extern ER context_mpu_handler(void);
-
-/* ncontext.c */
 extern void create_context(thread_t *th);
 extern void context_initialize(void);
 extern void context_reset_page_cache(const VP page_table, const VP addr);
 extern void context_reset_page_table();
 extern void context_switch(thread_t *prev, thread_t *next);
-
-/* fault.c */
-extern void fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		UW ecx, UW eax, UW ds, UW no,
-		UW eip, UW cs, UW eflags);
-extern void fault_with_error(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		UW ecx, UW eax, UW ds, UW no,
-		UW err, UW eip, UW cs, UW eflags);
 
 /* gate.c */
 extern void mpu_initialize(void);
@@ -58,11 +45,18 @@ extern void idt_set(UB no, void (*handler)(void));
 
 /* interrupt.c */
 extern ER interrupt_initialize(void);
-extern void interrupt(const UW edi, const UW esi, const UW ebp, const UW esp,
+extern FP interrupt(const UW edi, const UW esi, const UW ebp, const UW esp,
+		const UW ebx, const UW edx, const UW ecx, const UW eax,
+		const UW ds, const UW no, const UW eip,
+		const UW cs, const W eflags);
+extern FP interrupt_with_error(const UW edi, const UW esi, const UW ebp, const UW esp,
 		const UW ebx, const UW edx, const UW ecx, const UW eax,
 		const UW ds, const UW no, const UW err, const UW eip,
 		const UW cs, const W eflags);
 ER interrupt_bind(const INHNO inhno, const T_DINH *pk_dinh);
+
+/* define_mpu_handlers */
+void define_mpu_handlers(const FP, const FP);
 
 /* paging_init.c */
 extern void paging_initialize(void);

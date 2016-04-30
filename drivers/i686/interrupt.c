@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <mpu/desc.h>
+#include <nerve/kcall.h>
 #include "func.h"
 #include "sync.h"
 #include "mpu/handler.h"
@@ -35,6 +36,12 @@ For more information, please refer to <http://unlicense.org/>
 static ER (*isr[IDT_MAX_ENTRY])(void);
 
 static ER dummy_handler(void);
+static void fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
+		UW ecx, UW eax, UW ds, UW no,
+		UW eip, UW cs, UW eflags);
+static void fault_with_error(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
+		UW ecx, UW eax, UW ds, UW no,
+		UW err, UW eip, UW cs, UW eflags);
 
 
 static ER dummy_handler(void)
@@ -46,15 +53,14 @@ ER interrupt_initialize(void)
 {
 	size_t i;
 
-	printk("interrupt_initialize\n");
+	//TODO use syslog
+	kcall->printk("interrupt_initialize\n");
 
 	// MPU exceptions
 	for (i = 0; i < sizeof(handlers) / sizeof(handlers[0]); i++) {
-		isr[i] = context_mpu_handler;
+		isr[i] = dummy_handler;
 		idt_set(i, handlers[i]);
 	}
-
-	isr[int_page_fault] = context_page_fault_handler;
 
 	// hardware interruptions
 	for (; i < sizeof(isr) / sizeof(isr[0]); i++)
@@ -68,22 +74,69 @@ ER interrupt_bind(const INHNO inhno, const T_DINH *pk_dinh)
 	if (inhno >= sizeof(isr) / sizeof(isr[0]))
 		return E_PAR;
 
-	printk("interrupt_bind[%d] 0x%x\n", inhno, pk_dinh->inthdr);
+	//TODO use syslog
+	kcall->printk("interrupt_bind[%d] 0x%x\n", inhno, pk_dinh->inthdr);
 	isr[inhno] = (pk_dinh->inthdr)?
 			((ER (*)(void))(pk_dinh->inthdr)):dummy_handler;
 
 	return E_OK;
 }
 
-void interrupt(const UW edi, const UW esi, const UW ebp, const UW esp,
+FP interrupt(const UW edi, const UW esi, const UW ebp, const UW esp,
+		const UW ebx, const UW edx, const UW ecx, const UW eax,
+		const UW ds, const UW no, const UW eip,
+		const UW cs, const W eflags)
+{
+	if ((isr[no])())
+		fault(edi, esi, ebp, esp, ebx, edx,
+				ecx, eax, ds, no, eip, cs, eflags);
+
+	enter_critical();
+
+	return kcall->dispatch;
+}
+
+FP interrupt_with_error(const UW edi, const UW esi, const UW ebp, const UW esp,
 		const UW ebx, const UW edx, const UW ecx, const UW eax,
 		const UW ds, const UW no, const UW err, const UW eip,
 		const UW cs, const W eflags)
 {
 	if ((isr[no])())
-		//TODO call fault when no error code
 		fault_with_error(edi, esi, ebp, esp, ebx, edx,
 				ecx, eax, ds, no, err, eip, cs, eflags);
 
 	enter_critical();
+
+	return kcall->dispatch;
 }
+
+static void fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
+		UW ecx, UW eax, UW ds, UW no,
+		UW eip, UW cs, UW eflags)
+{
+	kcall->printk("abort(%d). thread=%d\n"
+		" cs=%x eip=%x eflags=%x ds=%x\n"
+		" eax=%x ebx=%x ecx=%x edx=%x\n"
+		" edi=%x esi=%x ebp=%x esp=%x\n",
+			no, kcall->thread_get_id(),
+			cs, eip, eflags, ds,
+			eax, ebx, ecx, edx, edi, esi, ebp, esp);
+	//TODO stop the thread
+	panic("fault");
+}
+
+static void fault_with_error(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
+		UW ecx, UW eax, UW ds, UW no,
+		UW err, UW eip, UW cs, UW eflags)
+{
+	kcall->printk("abort(%d). thread=%d\n"
+		" cs=%x eip=%x eflags=%x ds=%x error=%x\n"
+		" eax=%x ebx=%x ecx=%x edx=%x\n"
+		" edi=%x esi=%x ebp=%x esp=%x\n",
+			no, kcall->thread_get_id(),
+			cs, eip, eflags, ds,
+			err, eax, ebx, ecx, edx, edi, esi, ebp, esp);
+	//TODO stop the thread
+	panic("fault_with_error");
+}
+

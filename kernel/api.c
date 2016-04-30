@@ -73,6 +73,7 @@ static void kcall_initialize(void)
 	kcall_t *p = (kcall_t*)KCALL_ADDR;
 
 	p->dispatch = dispatch;
+	p->thread_get_id = thread_get_id;
 	p->thread_create_auto = thread_create_auto;
 	p->thread_destroy = thread_destroy;
 	p->thread_start = thread_start;
@@ -80,8 +81,6 @@ static void kcall_initialize(void)
 	p->thread_terminate = thread_terminate;
 	p->thread_tick = thread_tick;
 	p->thread_sleep = thread_sleep;
-	p->interrupt_bind = interrupt_bind;
-	p->interrupt_enable = pic_reset_mask;
 	p->palloc = palloc;
 	p->pfree = pfree;
 	p->printk = printk;

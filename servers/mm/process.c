@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <errno.h>
+#include <local.h>
 #include <mm.h>
 #include <stdint.h>
 #include <boot/init.h>
@@ -46,29 +47,25 @@ static tree_t process_tree;
 static slab_t thread_slab;
 static tree_t thread_tree;
 
-static mm_process_t *get_process(const ID pid);
-#if 0
-static mm_thread_t *get_thread(const ID tid);
-#endif
 static mm_thread_t *getMyThread(list_t *brothers);
 static void process_clear(mm_process_t *p);
 static void thread_clear(mm_thread_t *th, mm_process_t *p);
 static ER_ID create_thread(mm_process_t *p, FP entry, VP ustack_top);
 
-static mm_process_t *get_process(const ID pid)
+mm_process_t *get_process(const ID pid)
 {
 	node_t *node = tree_get(&process_tree, pid);
 
 	return node? (mm_process_t*)getParent(mm_process_t, node):NULL;
 }
-#if 0
-static mm_thread_t *get_thread(const ID tid)
+
+mm_thread_t *get_thread(const ID tid)
 {
 	node_t *node = tree_get(&thread_tree, tid);
 
 	return node? (mm_thread_t*)getParent(mm_thread_t, node):NULL;
 }
-#endif
+
 static mm_thread_t *getMyThread(list_t *p)
 {
 	return (mm_thread_t*)((intptr_t)p - offsetof(mm_thread_t, brothers));
@@ -462,6 +459,12 @@ static ER_ID create_thread(mm_process_t *p, FP entry, VP ustack_top)
 		p->directory,
 		ustack_top
 	};
+
+	p->segments.stack.addr = (void*)pageRoundDown(LOCAL_ADDR
+			- USER_STACK_MAX_SIZE);
+	p->segments.stack.len = pageRoundUp(USER_STACK_INITIAL_SIZE);
+	p->segments.stack.max = pageRoundUp(USER_STACK_MAX_SIZE - PAGE_SIZE);
+	p->segments.stack.attr = type_stack;
 
 	return kcall->thread_create_auto(&pk_ctsk);
 }

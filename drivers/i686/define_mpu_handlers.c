@@ -24,11 +24,24 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#ifndef __SERVER_INTERRUPT_H__
-#define __SERVER_INTERRUPT_H__
+#include <core.h>
+#include "mpu/interrupt.h"
+#include "mpu/mpufunc.h"
+#include "../../lib/libserv/libserv.h"
 
-#define MYNAME "interrupt"
 
-#define KQUEUE_SIZE 1024
+void define_mpu_handlers(const FP default_handler, const FP stack_fault_handler)
+{
+	int i;
+	T_DINH pk_dinh = { TA_HLNG, NULL };
 
-#endif
+	pk_dinh.inthdr = default_handler;
+	for (i = int_division_error; i <= int_no_segment; i++)
+		define_handler(i, &pk_dinh);
+
+	for (i = int_protection; i <= int_reserved_31; i++)
+		define_handler(i, &pk_dinh);
+
+	pk_dinh.inthdr = stack_fault_handler;
+	define_handler(int_stack_segment_fault, &pk_dinh);
+}

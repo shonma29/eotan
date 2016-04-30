@@ -25,12 +25,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <mpu/io.h>
+#include <nerve/kcall.h>
 #include "func.h"
 #include "sync.h"
 
 void panic(char *msg)
 {
-	printk("shutdown by %s\n", msg);
+	kcall->printk("shutdown by %s\n", msg);
 
 	enter_critical();
 	halt();
