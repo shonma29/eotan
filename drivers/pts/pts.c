@@ -57,7 +57,7 @@ int read(unsigned char *outbuf, const int channel,
 		packet.Rread.length = len;
 		packet.Rread.data = &(outbuf[wpos]);
 
-		result = kcall->port_call(PORT_KEYBOARD, &p, sizeof(p));
+		result = kcall->port_call(PORT_CONSOLE, &p, sizeof(p));
 		if (result != 0) {
 			dbg_printf("pts: cal_por failed(%d)\n", result);
 			return -1;

@@ -193,7 +193,7 @@ static ER check_param(const UW start, const UW size)
 	return E_OK;
 }
 
-static ER_UINT read(const UW start, const UW size, UB *outbuf)
+ER_UINT keyboard_read(const UW start, const UW size, UB *outbuf)
 {
 	ER_UINT result = check_param(start, size);
 	size_t i;
@@ -212,63 +212,9 @@ static ER_UINT read(const UW start, const UW size, UB *outbuf)
 	return size;
 }
 
-static UW execute(devmsg_t *message)
-{
-	ER_UINT result;
-	UW size = 0;
-
-	switch (message->Rread.operation) {
-	case operation_read:
-		result = read(message->Rread.offset, message->Rread.length,
-				message->Rread.data);
-		message->Tread.length = result;
-		size = sizeof(message->Tread);
-		break;
-
-	case operation_write:
-		message->Twrite.length = E_NOSPT;
-		size = sizeof(message->Twrite);
-		break;
-
-	default:
-		break;
-	}
-
-	return size;
-}
-
-void keyboard_accept(void)
-{
-	for (;;) {
-		devmsg_t *message;
-		RDVNO rdvno;
-		ER_UINT size;
-		ER result;
-
-		size = kcall->port_accept(PORT_KEYBOARD, &rdvno,
-				&message);
-		if (size < 0) {
-			dbg_printf("keyboard: acp_por error=%d\n", size);
-			break;
-		}
-
-		execute(message);
-		result = kcall->port_reply(rdvno, &message, 0);
-		if (result) {
-			dbg_printf("keyboard: rpl_rdv error=%d\n", result);
-			break;
-		}
-	}
-}
-
 ER keyboard_initialize(void)
 {
 	W result;
-	T_CPOR pk_cpor = {
-			TA_TFIFO,
-			sizeof(devmsg_t),
-			sizeof(devmsg_t)
-	};
 	T_CDTQ pk_cdtq = {
 			TA_TFIFO,
 			1024 - 1,
@@ -301,13 +247,6 @@ ER keyboard_initialize(void)
 		pk_dinh.inthdr = NULL;
 		define_handler(PIC_IR_VECTOR(ir_keyboard), &pk_dinh);
 		kcall->queue_destroy(keyboard_queue_id);
-		return result;
-	}
-
-	result = kcall->port_create(PORT_KEYBOARD, &pk_cpor);
-	if (result < 0) {
-		dbg_printf("keyboard: acre_por error=%d\n", result);
-
 		return result;
 	}
 

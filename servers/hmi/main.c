@@ -76,6 +76,10 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 static UW execute(devmsg_t *message);
 static ER accept(void);
 static ER initialize(void);
+static ER_UINT dummy_read(const UW start, const UW size, UB *outbuf);
+
+static ER_UINT (*reader)(const UW start, const UW size, UB *outbuf) =
+		dummy_read;
 
 
 static ER check_param(const UW start, const UW size)
@@ -117,7 +121,9 @@ static UW execute(devmsg_t *message)
 
 	switch (message->Rread.operation) {
 	case operation_read:
-		message->Tread.length = E_NOSPT;
+		result = reader(message->Rread.offset,
+				message->Rread.length, message->Rread.data);
+		message->Tread.length = result;
 		size = sizeof(message->Tread);
 		break;
 
@@ -186,12 +192,17 @@ static ER initialize(void)
 	return E_OK;
 }
 
+static ER_UINT dummy_read(const UW start, const UW size, UB *outbuf)
+{
+	return E_NOSPT;
+}
+
 void start(VP_INT exinf)
 {
 	T_CTSK pk = {
 		TA_HLNG,
 		(VP_INT)NULL,
-		(FP)keyboard_accept,
+		(FP)mouse_accept,
 		pri_server_middle,
 		KTHREAD_STACK_SIZE,
 		NULL,
@@ -202,20 +213,11 @@ void start(VP_INT exinf)
 	if (initialize() == E_OK) {
 		dbg_printf("hmi: start\n");
 
-		if (keyboard_initialize() == E_OK) {
-			ER_ID t2 = kcall->thread_create_auto(&pk);
-
-			dbg_printf("hmi: keyboard=%d\n", t2);
-
-			if (t2 > 0)
-				kcall->thread_start(t2);
-		}
+		if (keyboard_initialize() == E_OK)
+			reader = keyboard_read;
 
 		if (mouse_initialize() == E_OK) {
-			ER_ID t2;
-
-			pk.task = (FP)mouse_accept;
-			t2 = kcall->thread_create_auto(&pk);
+			ER_ID t2 = kcall->thread_create_auto(&pk);
 
 			dbg_printf("hmi: mouse=%d\n", t2);
 
