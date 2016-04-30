@@ -23,7 +23,7 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = $(WD)/pts
+TARGET = $(WD)/cons
 
 include Makefile.in
 

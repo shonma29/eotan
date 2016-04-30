@@ -28,7 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 
-#define DEVICE_MAJOR_PTS 0x0001
+#define DEVICE_MAJOR_CONS 0x0001
 #define DEVICE_MAJOR_MOUSE 0x0002
 #define DEVICE_MAJOR_ATA 0x8001
 #define DEVICE_MAJOR_RAMDISK 0x8002

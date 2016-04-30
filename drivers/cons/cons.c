@@ -30,7 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 #include <sys/types.h>
 #include "../../lib/libserv/libserv.h"
-#include "pts.h"
+#include "cons.h"
 
 
 int detach(void)
@@ -59,12 +59,12 @@ int read(unsigned char *outbuf, const int channel,
 
 		result = kcall->port_call(PORT_CONSOLE, &p, sizeof(p));
 		if (result != 0) {
-			dbg_printf("pts: cal_por failed(%d)\n", result);
+			dbg_printf("cons: cal_por failed(%d)\n", result);
 			return -1;
 		}
 
 		else if (packet.Tread.length != len) {
-			dbg_printf("pts: read icompletely\n");
+			dbg_printf("cons: read icompletely\n");
 			return -1;
 		}
 
@@ -96,12 +96,12 @@ int write(unsigned char *inbuf, const int channel,
 
 		result = kcall->port_call(PORT_CONSOLE, &p, sizeof(p));
 		if (result != 0) {
-			dbg_printf("pts: cal_por failed(%d)\n", result);
+			dbg_printf("cons: cal_por failed(%d)\n", result);
 			return -1;
 		}
 
 		else if (packet.Twrite.length != len) {
-			dbg_printf("pts: wrote icompletely\n");
+			dbg_printf("cons: wrote icompletely\n");
 			return -1;
 		}
 

@@ -24,16 +24,21 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#ifndef __DRIVERS_PTS_H__
-#define __DRIVERS_PTS_H__
+#include <device.h>
+#include <major.h>
+#include "cons.h"
 
-#include <stdlib.h>
-#include <sys/types.h>
+static vdriver driver_mine = {
+	get_device_id(DEVICE_MAJOR_CONS, 0),
+	(unsigned char*)MYNAME,
+	DEV_BUF_SIZE,
+	detach,
+	read,
+	write
+};
 
-#define MYNAME "pts"
 
-extern int detach(void);
-extern int read(unsigned char *, const int, const off_t, const size_t);
-extern int write(unsigned char *, const int, const off_t, const size_t);
-
-#endif
+vdriver *attach(int exinf)
+{
+	return &driver_mine;
+}

@@ -23,7 +23,7 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-SERVERS = pts ramdisk
+SERVERS = cons ramdisk
 
 all: $(SERVERS)
 
