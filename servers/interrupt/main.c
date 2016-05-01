@@ -42,7 +42,6 @@ static char kqbuf[lfq_buf_size(sizeof(delay_param_t), KQUEUE_SIZE)];
 
 static void icall_initialize(void);
 static ER delayed_thread_start(ID thread_id);
-static ER delayed_queue_send_nowait(ID queue_id, VP_INT data);
 static ER delayed_handle(void (*callback)(const int arg1, const int arg2),
 		int arg1, int arg2);
 static ER kq_enqueue(delay_param_t *param);
@@ -60,7 +59,6 @@ static void icall_initialize(void)
 	p->thread_get_id = kcall->thread_get_id;
 	p->handle = delayed_handle;
 	p->thread_start = delayed_thread_start;
-	p->queue_send_nowait = delayed_queue_send_nowait;
 }
 
 static ER delayed_thread_start(ID thread_id)
@@ -69,17 +67,6 @@ static ER delayed_thread_start(ID thread_id)
 
 	param.action = delay_activate;
 	param.arg1 = (int)thread_id;
-
-	return kq_enqueue(&param);
-}
-
-static ER delayed_queue_send_nowait(ID queue_id, VP_INT data)
-{
-	delay_param_t param;
-
-	param.action = delay_send;
-	param.arg1 = (int)queue_id;
-	param.arg2 = (int)data;
 
 	return kq_enqueue(&param);
 }
@@ -126,11 +113,6 @@ static void delay_process(void)
 
 			case delay_activate:
 				kcall->thread_start((ID)(param.arg1));
-				break;
-
-			case delay_send:
-				kcall->queue_send((ID)(param.arg1),
-						(VP_INT)(param.arg2), TMO_POL);
 				break;
 
 			default:

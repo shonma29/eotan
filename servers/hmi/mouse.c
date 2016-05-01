@@ -43,7 +43,7 @@ static W buttons;
 extern void pset(unsigned int x, unsigned int y, int color);
 
 static ER mouse_interrupt(void);
-static void mouse_accept(const int d, const int dummy);
+static void mouse_process(const int d, const int dummy);
 
 
 static ER mouse_interrupt(void)
@@ -58,12 +58,12 @@ static ER mouse_interrupt(void)
 	b3 = inb(KBC_PORT_DATA);
 
 	//TODO error check
-	icall->handle(mouse_accept, (b1 << 16) | (b2 << 8) | b3, 0);
+	icall->handle(mouse_process, (b1 << 16) | (b2 << 8) | b3, 0);
 
 	return E_OK;
 }
 
-static void mouse_accept(const int d, const int dummy)
+static void mouse_process(const int d, const int dummy)
 {
 	int dx, dy;
 

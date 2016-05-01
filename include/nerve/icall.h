@@ -33,7 +33,6 @@ typedef struct {
 	ID (*thread_get_id)(void);
 	ER (*handle)(void (*)(const int, const int), int, int);
 	ER (*thread_start)(ID);
-	ER (*queue_send_nowait)(ID, VP_INT);
 } icall_t;
 
 #define icall ((icall_t*)ICALL_ADDR)

@@ -28,8 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 typedef enum {
 	delay_handle = 0,
-	delay_activate = 1,
-	delay_send = 2
+	delay_activate = 1
 } delay_action_e;
 
 typedef struct {

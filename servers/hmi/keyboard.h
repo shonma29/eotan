@@ -28,8 +28,6 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 
-#define DEV_NAME_KEYBOARD "kbd"
-
 extern ER_UINT keyboard_read(const UW, const UW, UB *);
 extern ER keyboard_initialize(void);
 

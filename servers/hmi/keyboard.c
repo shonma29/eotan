@@ -60,6 +60,8 @@ static unsigned char state = scan_normal;
 static unsigned short modifiers = 0;
 static ID keyboard_queue_id;
 
+static void keyboard_process(const int d, const int dummy);
+
 
 static inline unsigned char is_break(const unsigned char b)
 {
@@ -104,12 +106,20 @@ static ER keyboard_interrupt()
 		break;
 	}
 
-	icall->queue_send_nowait(keyboard_queue_id,
+	//TODO error check
+	icall->handle(keyboard_process,
 			is_break(b)?
 				(BREAK | scan2key[state][strip_break(b)])
-				:scan2key[state][b]);
+				:scan2key[state][b],
+			0);
 
 	return E_OK;
+}
+
+static void keyboard_process(const int d, const int dummy)
+{
+	//TODO error check
+	kcall->queue_send(keyboard_queue_id, d, TMO_POL);
 }
 
 static unsigned int get_modifier(int b)
