@@ -206,19 +206,6 @@ W init_fs(void)
     return (TRUE);
 }
 
-W get_device_info(UW major_minor, ID * port, UW * dd)
-{
-    device_info_t *p = device_find(major_minor);
-
-    if (p) {
-	*port = p->port;
-	*dd = major_minor & 0x0000FFFF;
-	return (EOK);
-    }
-
-    return (ENODEV);
-}
-
 /* file discriptor 0, 1, 2 の設定
  */
 W open_special_dev(struct proc * procp)

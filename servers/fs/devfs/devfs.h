@@ -35,7 +35,6 @@ For more information, please refer to <http://unlicense.org/>
 typedef struct {
 	UW id;
 	B name[MAX_DEVICE_NAME + 1];
-	ID port;
 	UW size;
 	vdriver *driver;
 } device_info_t;

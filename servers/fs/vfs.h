@@ -171,7 +171,6 @@ struct file
 
 /* filesystem.c */
 extern W init_fs(void);
-extern W get_device_info(UW major_minor, ID * port, UW * dd);
 extern struct inode *alloc_inode(void);
 extern W dealloc_inode(struct inode *);
 extern struct fs *alloc_fs(void);

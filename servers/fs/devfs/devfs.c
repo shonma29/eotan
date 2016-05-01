@@ -45,7 +45,9 @@ static unsigned int calc_hash(const void *key, const size_t size);
 static int compare(const void *a, const void *b);
 
 static vdriver *(*drivers[])(int) = {
+	/* cons */
 	(vdriver *(*)(int))(0x80400000),
+	/* ramdisk */
 	(vdriver *(*)(int))(0x80370000)
 };
 
@@ -68,33 +70,33 @@ int device_init(void)
 	int i;
 
 	num_device = 0;
-	hash = hash_create(MAX_DEVICE, calc_hash, compare);
 
+	hash = hash_create(MAX_DEVICE, calc_hash, compare);
 	if (!hash) {
-		dbg_printf("fs: cannot create hash\n");
+		dbg_printf("devfs: cannot create hash\n");
 		return FALSE;
 	}
 
 	for (i = 0; i < sizeof(drivers) / sizeof(drivers[0]); i++) {
 		vdriver *p = drivers[i]((int)NULL);
 
-		if (p) {
-			table[num_device].id = p->id;
-			strcpy((char*)(table[num_device].name), (char*)(p->name));
-			table[num_device].port = 0;
-			table[num_device].size = p->size;
-			table[num_device].driver = p;
+		if (!p)
+			continue;
 
-			if (hash_put(hash, (void*)(p->id),
-					(void*)&(table[num_device]))) {
-				dbg_printf("devfs: attach failure(%x, %s, %d, %x)\n",
-						p->id, p->name, p->size, p);
+		table[num_device].id = p->id;
+		strcpy((char*)(table[num_device].name), (char*)(p->name));
+		table[num_device].size = p->size;
+		table[num_device].driver = p;
 
-			} else {
-				num_device++;
-				dbg_printf("devfs: attach success(%x, %s, %d, %x)\n",
-						p->id, p->name, p->size, p);
-			}
+		if (hash_put(hash, (void*)(p->id),
+				(void*)&(table[num_device])))
+			dbg_printf("devfs: attach failure(%x, %s, %d, %x)\n",
+					p->id, p->name, p->size, p);
+
+		else {
+			num_device++;
+			dbg_printf("devfs: attach success(%x, %s, %d, %x)\n",
+					p->id, p->name, p->size, p);
 		}
 	}
 
