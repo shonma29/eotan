@@ -28,7 +28,6 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 
-extern void mouse_accept(VP_INT exinf);
 extern ER mouse_initialize(void);
 
 #endif

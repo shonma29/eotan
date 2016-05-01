@@ -199,31 +199,13 @@ static ER_UINT dummy_read(const UW start, const UW size, UB *outbuf)
 
 void start(VP_INT exinf)
 {
-	T_CTSK pk = {
-		TA_HLNG,
-		(VP_INT)NULL,
-		(FP)mouse_accept,
-		pri_server_middle,
-		KTHREAD_STACK_SIZE,
-		NULL,
-		NULL,
-		NULL
-	};
-
 	if (initialize() == E_OK) {
 		dbg_printf("hmi: start\n");
 
 		if (keyboard_initialize() == E_OK)
 			reader = keyboard_read;
 
-		if (mouse_initialize() == E_OK) {
-			ER_ID t2 = kcall->thread_create_auto(&pk);
-
-			dbg_printf("hmi: mouse=%d\n", t2);
-
-			if (t2 > 0)
-				kcall->thread_start(t2);
-		}
+		mouse_initialize();
 
 		while (accept() == E_OK);
 
