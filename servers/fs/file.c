@@ -340,12 +340,6 @@ void if_read(fs_request *req)
 	return;
     }
 
-    if (fp->f_flag & F_PIPE) {
-	/* パイプの読み書き */
-	put_response(req->rdvno, ENOTSUP, -1, 0);
-	return;
-    }
-
     if (fp->f_inode->i_mode & S_IFCHR) {
 	if ((fp->f_inode->i_dev & BLOCK_DEVICE_MASK)) {
 	    /* ブロックデバイスだった */
@@ -450,11 +444,6 @@ void if_write(fs_request *req)
 	return;
     }
 
-    if (fp->f_flag & F_PIPE) {
-	/* パイプの読み書き */
-	put_response(req->rdvno, ENOTSUP, -1, 0);
-	return;
-    }
 #ifdef debug
     dbg_printf
 	("fs: write: inode = 0x%x, offset = %d, buf = 0x%x, length = %d\n",

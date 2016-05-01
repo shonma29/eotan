@@ -43,15 +43,9 @@ void if_getdents(fs_request *req)
 	return;
     }
 
-    /* 対象ファイルがパイプだったり、
+    /* 対象ファイルが
      * ディレクトリ以外の場合には、エラーにする
      */
-    if (fp->f_flag & F_PIPE) {
-	/* パイプの読み書き */
-	put_response(req->rdvno, EINVAL, -1, 0);
-	return;
-    }
-
     if ((fp->f_inode->i_mode & S_IFMT) != S_IFDIR) {
 	put_response(req->rdvno, EINVAL, -1, 0);
 	return;

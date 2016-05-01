@@ -93,9 +93,6 @@ Version 2, June 1991
 #include <sys/statvfs.h>
 #include "types.h"
 
-#define F_FILE		0x0001
-#define F_PIPE		0x0002
-
 #define BLOCK_DEVICE_MASK	(0x80000000UL)
 
 /* file system types. */
@@ -166,7 +163,6 @@ struct inode {
 struct file
 {
   struct inode		*f_inode;
-  W			f_flag;
   off_t			f_offset;	/* current offset */
   W			f_omode;
 };
