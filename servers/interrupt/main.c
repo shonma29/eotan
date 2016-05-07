@@ -41,7 +41,6 @@ For more information, please refer to <http://unlicense.org/>
 static char kqbuf[lfq_buf_size(sizeof(delay_param_t), KQUEUE_SIZE)];
 
 static void icall_initialize(void);
-static ER delayed_thread_start(ID thread_id);
 static ER delayed_handle(void (*callback)(const int arg1, const int arg2),
 		int arg1, int arg2);
 static ER kq_enqueue(delay_param_t *param);
@@ -58,17 +57,6 @@ static void icall_initialize(void)
 
 	p->thread_get_id = kcall->thread_get_id;
 	p->handle = delayed_handle;
-	p->thread_start = delayed_thread_start;
-}
-
-static ER delayed_thread_start(ID thread_id)
-{
-	delay_param_t param;
-
-	param.action = delay_activate;
-	param.arg1 = (int)thread_id;
-
-	return kq_enqueue(&param);
 }
 
 static ER delayed_handle(void (*callback)(const int arg1, const int arg2),
@@ -76,7 +64,6 @@ static ER delayed_handle(void (*callback)(const int arg1, const int arg2),
 {
 	delay_param_t param;
 
-	param.action = delay_handle;
 	param.arg1 = (int)callback;
 	param.arg2 = arg1;
 	param.arg3 = arg2;
@@ -105,19 +92,8 @@ static void delay_process(void)
 			if (lfq_dequeue(&(sysinfo->kqueue), &param) != QUEUE_OK)
 				break;
 
-			switch (param.action) {
-			case delay_handle:
-				((void (*)(const int))(param.arg1))
-						((const int)(param.arg2));
-				break;
-
-			case delay_activate:
-				kcall->thread_start((ID)(param.arg1));
-				break;
-
-			default:
-				break;
-			}
+			((void (*)(const int))(param.arg1))
+					((const int)(param.arg2));
 		}
 
 		kcall->thread_sleep();

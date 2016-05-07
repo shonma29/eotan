@@ -32,7 +32,6 @@ For more information, please refer to <http://unlicense.org/>
 typedef struct {
 	ID (*thread_get_id)(void);
 	ER (*handle)(void (*)(const int, const int), int, int);
-	ER (*thread_start)(ID);
 } icall_t;
 
 #define icall ((icall_t*)ICALL_ADDR)
