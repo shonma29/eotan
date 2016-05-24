@@ -173,7 +173,7 @@ W sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
     dbg_printf("sfs: root file inode:\n");
     /* dbg_printf("sfs:  UID/GID: %d/%d\n", rootfile->i_uid, rootfile->i_gid); */
     dbg_printf("sfs: device = %x, index: %d\n",
-	       rootfile->i_device, rootfile->i_index);
+	       rootfile->i_fs->device, rootfile->i_index);
     dbg_printf("sfs: size:  %d bytes\n", rootfile->i_size);
 #endif
 

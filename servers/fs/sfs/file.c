@@ -232,7 +232,7 @@ sfs_i_create(struct inode * parent,
     *retip = newip;
 
     /* 新しい sfs_inode をアロケート */
-    i_index = sfs_alloc_inode(parent->i_device, parent->i_fs);
+    i_index = sfs_alloc_inode(parent->i_fs->device, parent->i_fs);
     if (i_index <= 0) {
 	return (ENOMEM);
     }
@@ -240,7 +240,6 @@ sfs_i_create(struct inode * parent,
     /* 設定 */
     time_get(&clock);
     newip->i_fs = parent->i_fs;
-    newip->i_device = parent->i_device;
     newip->i_refcount = 1;
     newip->i_dirty = 1;
     newip->i_mode = mode | S_IFREG;
@@ -300,7 +299,7 @@ W sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
 	 ip, start, length, buf);
 #endif
 
-    fd = ip->i_device;
+    fd = ip->i_fs->device;
     fsp = ip->i_fs;
 
     if (start + length > ip->i_size) {
@@ -364,7 +363,7 @@ W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
     *rsize = 0;
     retsize = size;
     filesize = start + retsize;
-    fd = ip->i_device;
+    fd = ip->i_fs->device;
     fsp = ip->i_fs;
 
     while (size > 0) {
@@ -463,7 +462,7 @@ W sfs_i_truncate(struct inode * ip, W newsize)
     struct sfs_inode *sfs_ip;
     SYSTIM clock;
 
-    fd = ip->i_device;
+    fd = ip->i_fs->device;
     fsp = ip->i_fs;
     sfs_ip = &(ip->i_private.sfs_inode);
     nblock = roundUp(newsize, fsp->private.sfs_fs.blksize) / fsp->private.sfs_fs.blksize;
@@ -660,7 +659,7 @@ W sfs_i_sync(struct inode * ip)
     ip->i_private.sfs_inode.i_mode = ip->i_mode;
 
     if (ip->i_dirty) {
-	err = sfs_write_inode(ip->i_device, ip->i_fs,
+	err = sfs_write_inode(ip->i_fs->device, ip->i_fs,
 			      &(ip->i_private.sfs_inode));
 	if (err) {
 	    return (err);
@@ -706,7 +705,7 @@ sfs_i_mkdir(struct inode * parent,
     *retip = newip;
 
     /* 新しい sfs_inode をアロケート */
-    i_index = sfs_alloc_inode(parent->i_device, parent->i_fs);
+    i_index = sfs_alloc_inode(parent->i_fs->device, parent->i_fs);
     if (i_index <= 0) {
 	return (ENOMEM);
     }
@@ -714,7 +713,6 @@ sfs_i_mkdir(struct inode * parent,
     /* 設定 */
     time_get(&clock);
     newip->i_fs = parent->i_fs;
-    newip->i_device = parent->i_device;
     newip->i_refcount = 1;
     newip->i_dirty = 1;
     newip->i_mode = mode | S_IFDIR;

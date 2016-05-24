@@ -128,7 +128,6 @@ W sfs_read_inode(struct fs *fsp, W ino, struct inode *ip)
     ip->i_refcount = 1;
     ip->i_lock = 0;
     ip->i_fs = fsp;
-    ip->i_device = fsp->device;
     if (ip->i_mode & S_IFCHR) {
 	/* スペシャルファイルだった */
 	ip->i_dev = ip->i_private.sfs_inode.i_direct[0];
@@ -256,7 +255,7 @@ W sfs_free_inode(struct fs * fsp, struct inode *ip)
 
 W sfs_stat(struct inode *ip, struct stat *st)
 {
-    st->st_dev = ip->i_device;
+    st->st_dev = ip->i_fs->device;
     st->st_ino = ip->i_index;
     st->st_mode = ip->i_mode;
     st->st_nlink = ip->i_private.sfs_inode.i_nlink;

@@ -340,15 +340,7 @@ void if_read(fs_request *req)
 	return;
     }
 
-    if (fp->f_inode->i_mode & S_IFCHR) {
-	if ((fp->f_inode->i_dev & BLOCK_DEVICE_MASK)) {
-	    /* ブロックデバイスだった */
-	    if (fp->f_offset >= fp->f_inode->i_size) {
-		error_no = EOK;
-		req->packet.args.arg3 = 0;
-	    }
-	}
-
+    if (fp->f_inode->i_dev) {
 	rest_length = req->packet.args.arg3;
 	for (i = 0; rest_length > 0;
 	    rest_length -= rlength, i += rlength) {

@@ -138,7 +138,6 @@ struct inode {
     struct inode *i_prev;
     struct inode *i_next;
     struct fs *i_fs;
-    UW i_device;
     UW i_lock;
     W i_refcount;
     W i_dirty;		/* この Inode は変更されており、ファイル上に変更が */

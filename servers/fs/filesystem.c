@@ -165,10 +165,9 @@ struct fs_entry {
 };
 
 static struct fs_entry fs_table[] = {
-
-    {
-    "null", NULL}, {
-"sfs", &sfs_fsops},};
+    {"null", NULL},
+    {"sfs", &sfs_fsops},
+};
 
 
 static struct fs fs_buf[MAX_MOUNT], *free_fs = NULL, *rootfs = NULL;
@@ -229,10 +228,7 @@ W open_special_dev(struct proc * procp)
 	ip->i_size = p->size;
 	ip->i_nblock = 0;
 	fs_register_inode(ip);
-    }
 
-    p = device_find(get_device_id(DEVICE_MAJOR_CONS, 0));
-    if (p) {
 	/* 標準出力の設定 */
 	procp->session.files[1].f_inode = ip = alloc_inode();
 	procp->session.files[1].f_offset = 0;
@@ -758,23 +754,11 @@ W fs_read_file(struct inode * ip, W start, B * buf, W length, W * rlength)
  */
 W fs_write_file(struct inode * ip, W start, B * buf, W length, W * rlength)
 {
-    ID device;
     W error_no;
 
-    if (ip->i_mode & S_IFCHR) {
+    if (ip->i_dev) {
 	/* スペシャルファイルだった */
-	device = ip->i_dev;
-
-	/* Write to the device. */
-	if ((ip->i_dev & BLOCK_DEVICE_MASK) != 0) {
-	    /* ブロック・デバイスだった */
-	    if (ip->i_size <= start) {
-		return (ENOSPC);
-	    } else if (ip->i_size <= (start + length)) {
-		length = ip->i_size - start;
-	    }
-	}
-	error_no = write_device(device, buf, start, length, rlength);
+	error_no = write_device(ip->i_dev, buf, start, length, rlength);
 	return (error_no);
     }
 
