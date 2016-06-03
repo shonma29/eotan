@@ -45,7 +45,6 @@ extern int dup(int);
 extern int dup2(int, int);
 extern int execve(char *name, char *argv[], char *envp[]);
 extern void _exit(int status) __attribute__ ((noreturn));
-extern int fcntl(int fileid, int cmd, ...);
 extern int fork(void);
 extern char *getcwd(char *buf, int size);
 extern gid_t getgid(void);

@@ -158,30 +158,6 @@ if_dup2 (fs_request *req)
   put_response (req->rdvno, EOK, req->packet.args.arg2, 0);
 }  
 
-/* if_fcntl - ファイルに対して特殊な操作を行う。
- */
-void if_fcntl(fs_request * req)
-{
-    W error_no;
-    struct file *fp;
-
-    error_no = proc_get_file(req->packet.procid, req->packet.param.par_fcntl.fileid, &fp);
-    if (error_no) {
-	put_response(req->rdvno, error_no, -1, 0);
-	return;
-    } else if (fp == 0) {
-	put_response(req->rdvno, EINVAL, -1, 0);
-	return;
-    } else if (fp->f_inode == 0) {
-	put_response(req->rdvno, EINVAL, -1, 0);
-	return;
-    }
-
-    /* とりあえず、サポートしていないというエラーで返す
-     */
-    put_response(req->rdvno, ENOTSUP, 0, 0);
-}
-
 void if_lseek(fs_request *req)
 {
     struct file *fp;

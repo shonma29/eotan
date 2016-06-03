@@ -31,28 +31,27 @@ Version 2, June 1991
 #define PSC_DUP          3
 #define PSC_EXEC         4
 #define PSC_EXIT         5
-#define PSC_FCNTL        6
-#define PSC_FORK         7
-#define PSC_FSTAT	 8
-#define PSC_LINK         9
-#define PSC_LSEEK        10
-#define PSC_MKDIR        11
-#define PSC_OPEN         12
-#define PSC_READ         13
-#define PSC_RMDIR        14
-#define PSC_UNLINK       15
-#define PSC_WAITPID      16
-#define PSC_WRITE        17
-#define PSC_GETDENTS	 18
-#define PSC_MOUNT        19
-#define PSC_STATVFS      20
-#define PSC_UNMOUNT      21
+#define PSC_FORK         6
+#define PSC_FSTAT	 7
+#define PSC_LINK         8
+#define PSC_LSEEK        9
+#define PSC_MKDIR        10
+#define PSC_OPEN         11
+#define PSC_READ         12
+#define PSC_RMDIR        13
+#define PSC_UNLINK       14
+#define PSC_WAITPID      15
+#define PSC_WRITE        16
+#define PSC_GETDENTS	 17
+#define PSC_MOUNT        18
+#define PSC_STATVFS      19
+#define PSC_UNMOUNT      20
 
 /* =================== SIGNAL 関係 =============== */
-#define PSC_KILL         22
+#define PSC_KILL         21
 
 /* =================== miserous system calls  =============== */
-#define PSC_DUP2         23	/* 不要? */
+#define PSC_DUP2         22	/* 不要? */
 
 /* =============== 各システムコール用の 構造体定義 ================== */
 
@@ -82,17 +81,6 @@ struct psc_execve
 struct psc_exit
 {
   W		evalue;
-};
-
-
-/* psc_fcntl -
- *
- */
-struct psc_fcntl
-{
-  W fileid;
-  W cmd;
-  VP arg;
 };
 
 
@@ -154,7 +142,6 @@ struct posix_request
     struct psc_chdir		par_chdir;
     struct psc_execve		par_execve;
     struct psc_exit		par_exit;
-    struct psc_fcntl		par_fcntl;
     struct psc_fork		par_fork;
     struct psc_open		par_open;
     struct psc_waitpid   	par_waitpid;

@@ -41,7 +41,6 @@ static void (*syscall[])(fs_request*) = {
 	if_dup,
 	if_exec,
 	if_exit,
-	if_fcntl,
 	if_fork,
 	if_fstat,
 	if_link,

@@ -43,7 +43,6 @@ extern void if_dup(fs_request*);
 extern void if_dup2(fs_request*);
 extern void if_exec(fs_request*);
 extern void if_exit(fs_request*);
-extern void if_fcntl(fs_request*);
 extern void if_fork(fs_request*);
 extern void if_kill(fs_request*);
 extern void if_link(fs_request*);
