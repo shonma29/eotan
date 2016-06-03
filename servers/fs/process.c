@@ -58,15 +58,15 @@ void if_exec(fs_request *req)
     error_no = exec_program(&(req->packet), req->packet.procid, req->buf);
     if (error_no) {
 //TODO check by another way
-	if (proc_get_vmtree(req->packet.procid) != NULL) {
+//	if (proc_get_vmtree(req->packet.procid) != NULL) {
 	    /* 呼び出しを行ったプロセスがまだ生き残っていた場合 */
 	    /*エラーメッセージを返す */
-	    put_response(req->rdvno, error_no, -1, 0);
-	} else {
+//	    put_response(req->rdvno, error_no, -1, 0);
+//	} else {
 	    /* 既にプロセスの仮想メモリが開放されている場合 */
 	    /* exit が実行されることは無いので，ここで開放する */
 	    proc_exit(req->packet.procid);
-	}
+//	}
 	return;
     }
 //TODO check if rdvno will be disposed
@@ -158,7 +158,7 @@ if_fork (fs_request *req)
     }
 
 #ifdef DEBUG
-  dbg_print ("fs: if_fork(): proc = 0x%x, proc->vm_tree = 0x%x\n", procp, procp->vm_tree);
+  dbg_print ("fs: if_fork(): proc = 0x%x\n", procp);
 #endif
 
   error_no = proc_alloc_proc(&child);

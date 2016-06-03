@@ -335,18 +335,6 @@ W proc_set_cwd(W procid, struct inode * cwd)
 }
 
 
-struct vm_tree *proc_get_vmtree(W procid)
-{
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (NULL);
-    }
-
-    return (proc_table[procid].vm_tree);
-}
-
-
-
-
 /* proc_new_proc - 新しいプロセスを生成する
  *
  *

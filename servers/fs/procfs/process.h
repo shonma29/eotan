@@ -125,11 +125,6 @@ struct proc
   UW			proc_wpid;		/* pid parameter of waitpid */
   RDVNO proc_wait_rdvno;
   UW			proc_exst;		/* exit status */
- 
-
-  struct vm_tree	*vm_tree;		/* 仮想空間の情報 
-						 * 仮想ページと物理ページ/スワップ情報を管理する
-						 */
 
   char			proc_name[PROC_NAME_LEN];
 };
@@ -151,7 +146,6 @@ extern W		proc_set_file (W procid, W fileid, W flag, struct inode *ip);
 extern W		proc_get_cwd (W procid, struct inode **cwd);
 extern W		proc_get_procp (W procid, struct proc **procp);
 extern W		proc_exit (W procid);
-extern struct vm_tree	*proc_get_vmtree (W procid);
 extern W		proc_alloc_proc (struct proc **procp);
 extern void proc_dealloc_proc(W procid);
 

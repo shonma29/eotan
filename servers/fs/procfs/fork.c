@@ -88,15 +88,15 @@ W proc_fork(struct proc *parent, struct proc *child)
 
 #ifdef FKDEBUG
     dbg_printf
-	("fs: fork: call alloc_proc: (%s file, %d line), parent = 0x%x, parent->vm_tree = 0x%x\n",
-	 __FILE__, __LINE__, parent, parent->vm_tree);	/* */
+	("fs: fork: call alloc_proc: (%s file, %d line), parent = 0x%x\n",
+	 __FILE__, __LINE__, parent);	/* */
 #endif
 
     /* プロセス情報のコピー */
     /* 管理情報 (プロセスおよびファイル)の更新 */
 #ifdef FKDEBUG
-    dbg_printf("fs: fork(): parent = 0x%x, parent->vm_tree = 0x%x\n", parent, parent->vm_tree);	/* */
-    dbg_printf("fs: fork(): child = 0x%x, child->vm_tree = 0x%x\n", child, child->vm_tree);	/* */
+    dbg_printf("fs: fork(): parent = 0x%x\n", parent);	/* */
+    dbg_printf("fs: fork(): child = 0x%x\n", child);	/* */
 #endif
     error_no = proc_duplicate(parent, child);
     if (error_no) {
