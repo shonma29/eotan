@@ -26,14 +26,17 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <major.h>
 #include <boot/init.h>
+#include <fs/nconfig.h>
+#include <mpu/memory.h>
 #include <nerve/global.h>
 #include <nerve/kcall.h>
+#include <set/slab.h>
 #include "api.h"
 #include "fs.h"
 #include "devfs/devfs.h"
 #include "../../kernel/mpu/mpufunc.h"
 
-static fs_request request;
+static slab_t request_slab;
 static void (*syscall[])(fs_request*) = {
 	if_chdir,
 	if_chmod,
@@ -61,6 +64,7 @@ static void (*syscall[])(fs_request*) = {
 };
 
 static int initialize(void);
+static void request_init(void);
 
 
 static int initialize(void)
@@ -73,6 +77,7 @@ static int initialize(void)
 	if (!device_init())
 		return -1;
 
+	request_init();
 	init_fs();
 	init_process();
 
@@ -95,6 +100,19 @@ static int initialize(void)
 	return 0;
 }
 
+static void request_init(void)
+{
+	request_slab.unit_size = sizeof(fs_request);
+	request_slab.block_size = PAGE_SIZE;
+	request_slab.min_block = 1;
+	request_slab.max_block = MAX_REQUEST
+			/ ((PAGE_SIZE - sizeof(slab_block_t))
+					/ sizeof(fs_request));
+	request_slab.palloc = kcall->palloc;
+	request_slab.pfree = kcall->pfree;
+	slab_create(&request_slab);
+}
+
 void start(VP_INT exinf)
 {
 	if (initialize()) {
@@ -103,13 +121,22 @@ void start(VP_INT exinf)
 	}
 
 	for (;;) {
-		if (get_request(&(request.packet), &(request.rdvno)) < 0)
+		fs_request *req = slab_alloc(&request_slab);
+
+		if (!req) {
+			kcall->thread_sleep();
 			continue;
+		}
 
-		if (request.packet.operation >= sizeof(syscall) / sizeof(syscall[0]))
-			error_response(request.rdvno, ENOTSUP);
+		if (get_request(&(req->packet), &(req->rdvno)) >= 0) {
+			if (req->packet.operation >=
+					sizeof(syscall) / sizeof(syscall[0]))
+				error_response(req->rdvno, ENOTSUP);
 
-		else
-			syscall[request.packet.operation](&request);
+			else
+				syscall[req->packet.operation](req);
+		}
+
+		slab_free(&request_slab, req);
 	}
 }
