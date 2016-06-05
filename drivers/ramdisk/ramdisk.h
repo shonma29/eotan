@@ -39,6 +39,8 @@ For more information, please refer to <http://unlicense.org/>
 extern unsigned char buf[];
 
 extern int detach(void);
+extern int open(void);
+extern int close(const int);
 extern int read(unsigned char *, const int, const off_t, const size_t);
 extern int write(unsigned char *, const int, const off_t, const size_t);
 

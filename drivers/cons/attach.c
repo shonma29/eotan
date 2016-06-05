@@ -28,17 +28,19 @@ For more information, please refer to <http://unlicense.org/>
 #include <major.h>
 #include "cons.h"
 
-static vdriver driver_mine = {
+static vdriver_t driver_mine = {
 	get_device_id(DEVICE_MAJOR_CONS, 0),
 	(unsigned char*)MYNAME,
 	DEV_BUF_SIZE,
 	detach,
+	open,
+	close,
 	read,
 	write
 };
 
 
-vdriver *attach(int exinf)
+vdriver_t *attach(int exinf)
 {
 	return &driver_mine;
 }

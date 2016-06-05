@@ -36,7 +36,7 @@ typedef struct {
 	UW id;
 	B name[MAX_DEVICE_NAME + 1];
 	UW size;
-	vdriver *driver;
+	vdriver_t *driver;
 } device_info_t;
 
 extern int device_init(void);

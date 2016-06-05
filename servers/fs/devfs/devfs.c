@@ -44,11 +44,11 @@ void free(void *p);
 static unsigned int calc_hash(const void *key, const size_t size);
 static int compare(const void *a, const void *b);
 
-static vdriver *(*drivers[])(int) = {
+static vdriver_t *(*drivers[])(int) = {
 	/* cons */
-	(vdriver *(*)(int))(0x80400000),
+	(vdriver_t *(*)(int))(0x80400000),
 	/* ramdisk */
-	(vdriver *(*)(int))(0x80370000)
+	(vdriver_t *(*)(int))(0x80370000)
 };
 
 
@@ -78,7 +78,7 @@ int device_init(void)
 	}
 
 	for (i = 0; i < sizeof(drivers) / sizeof(drivers[0]); i++) {
-		vdriver *p = drivers[i]((int)NULL);
+		vdriver_t *p = drivers[i]((int)NULL);
 
 		if (!p)
 			continue;

@@ -40,6 +40,16 @@ int detach(void)
 	return 0;
 }
 
+int open(void)
+{
+	return 0;
+}
+
+int close(const int channel)
+{
+	return 0;
+}
+
 int read(unsigned char *outbuf, const int channel,
 		const off_t start, const size_t size)
 {
