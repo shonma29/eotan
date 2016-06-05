@@ -170,7 +170,7 @@ sfs_i_lookup(struct inode *parent,
 	    return (ENOENT);
 	}
 
-	*retip = fs_check_inode(parent->i_fs, dirp[i].d_index);
+	*retip = fs_get_inode(parent->i_fs, dirp[i].d_index);
 	if (*retip) {
 	    /* すでにオープンしていたファイルだった
 	     */

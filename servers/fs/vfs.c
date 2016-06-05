@@ -174,13 +174,19 @@ static struct fs fs_buf[MAX_MOUNT], *free_fs = NULL, *rootfs = NULL;
 static struct inode inode_buf[MAX_INODE], *free_inode = NULL;
 struct inode *rootfile = NULL;
 static W mode_map[] = { R_OK, W_OK, R_OK | W_OK };
+
+static struct fs *alloc_fs(void);
+static void dealloc_fs(struct fs *);
+static W fs_create_file(struct inode *startip, char *path, W oflag,
+			W mode, struct permission *acc,
+			struct inode **newip);
 
 
 
 /* init_fs
  *
  */
-W init_fs(void)
+W fs_init(void)
 {
     W i;
 
@@ -207,7 +213,7 @@ W init_fs(void)
 
 /* file discriptor 0, 1, 2 の設定
  */
-W open_special_dev(struct proc * procp)
+W open_special_devices(struct proc * procp)
 {
     struct inode *ip;
     device_info_t *p;
@@ -270,7 +276,7 @@ W open_special_dev(struct proc * procp)
 /* alloc_fs -
  *
  */
-struct fs *alloc_fs(void)
+static struct fs *alloc_fs(void)
 {
     struct fs *p;
 
@@ -285,7 +291,7 @@ struct fs *alloc_fs(void)
     return (p);
 }
 
-void dealloc_fs(struct fs *fsp)
+static void dealloc_fs(struct fs *fsp)
 {
     if (fsp == NULL) {
 	return;
@@ -299,7 +305,7 @@ void dealloc_fs(struct fs *fsp)
 /* mount_root - root ファイルシステムのマウント
  *
  */
-W mount_root(ID device, W fstype, W option)
+W fs_mount_root(ID device, W fstype, W option)
 {
     struct fsops *fsp;
     W err;
@@ -350,7 +356,7 @@ W mount_root(ID device, W fstype, W option)
  *
  */
 W
-mount_fs(struct inode * deviceip,
+fs_mount(struct inode * deviceip,
 	 struct inode * mountpoint, W option, char *fstype)
 {
     struct fs *newfs;
@@ -429,7 +435,7 @@ mount_fs(struct inode * deviceip,
 /* unmount_fs
  *
  */
-W unmount_fs(UW device)
+W fs_unmount(UW device)
 {
     struct fs *fsp;
     struct inode *ip;
@@ -540,7 +546,7 @@ fs_open_file(B * path,
 /* fs_create_file - ファイルを作成する
  *
  */
-W
+static W
 fs_create_file(struct inode * startip,
 	       char *path,
 	       W oflag,
@@ -900,7 +906,7 @@ W fs_statvfs(ID device, struct statvfs * result)
 /*
  * fs_mkdir
  */
-W fs_make_dir(struct inode * startip,
+W fs_create_dir(struct inode * startip,
 	      char *path,
 	      W mode, struct permission * acc, struct inode ** newip)
 {
@@ -1115,7 +1121,7 @@ W dealloc_inode(struct inode * ip)
 /* fs_check_inode -
  *
  */
-struct inode *fs_check_inode(struct fs *fsp, W index)
+struct inode *fs_get_inode(struct fs *fsp, W index)
 {
     struct inode *ip, *register_list;
 

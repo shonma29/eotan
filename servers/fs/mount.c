@@ -145,7 +145,7 @@ int if_mount(fs_request *req)
     }
 
     error_no =
-	mount_fs(device, mountpoint, req->packet.args.arg3, fstype);
+	fs_mount(device, mountpoint, req->packet.args.arg3, fstype);
 
     if (error_no == EOK) {
 	fs_close_file(device);
@@ -215,7 +215,7 @@ int if_unmount(fs_request *req)
 
     fs_close_file(umpoint);
     if (error_no == EOK) {
-	error_no = unmount_fs(device);
+	error_no = fs_unmount(device);
     }
     if (error_no)
 	return error_no;

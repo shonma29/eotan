@@ -157,8 +157,8 @@ extern W		exec_program (struct posix_request *req, W procid, B *pathname);
 extern W		proc_fork (struct proc *parent, struct proc *child);
 extern W copy_local(struct proc * parent, struct proc * child);
 
-/* filesystem.c */
-extern W		open_special_dev(struct proc *procp);
+/* vfs.c */
+extern W		open_special_devices(struct proc *procp);
 
 /* init.c */
 extern W exec_init(ID process_id, char *pathname);

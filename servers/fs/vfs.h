@@ -93,8 +93,6 @@ Version 2, June 1991
 #include <sys/statvfs.h>
 #include "types.h"
 
-#define BLOCK_DEVICE_MASK	(0x80000000UL)
-
 /* file system types. */
 
 struct fsops {
@@ -168,22 +166,19 @@ struct file
 
 
 
-/* filesystem.c */
-extern W init_fs(void);
-extern struct inode *alloc_inode(void);
-extern W dealloc_inode(struct inode *);
-extern struct fs *alloc_fs(void);
-extern void dealloc_fs(struct fs *);
+/* vfs.c */
+extern W fs_init(void);
+
+extern W fs_mount_root(ID device, W fstype, W option);
+extern W fs_mount(struct inode *device, struct inode *mountpoint, W option,
+		  char *fstype);
+extern W fs_unmount(UW device);
 
 extern W fs_open_file(B * path, W oflag, W mode, struct permission *acc,
 		      struct inode *startip, struct inode **newip);
 extern W fs_close_file(struct inode *ip);
 extern W fs_lookup(struct inode *startip, char *path, W oflag,
 		   W mode, struct permission *acc, struct inode **newip);
-extern W fs_create_file(struct inode *startip, char *path, W oflag,
-			W mode, struct permission *acc,
-			struct inode **newip);
-extern W fs_sync_file(struct inode *ip);
 extern W fs_read_file(struct inode *ip, W start, B * buf, W length,
 		      W * rlength);
 extern W fs_write_file(struct inode *ip, W start, B * buf, W length,
@@ -192,22 +187,19 @@ extern W fs_remove_file(struct inode *startip, B * path,
 			struct permission *acc);
 extern W fs_remove_dir(struct inode *startip, B * path,
 		       struct permission *acc);
+extern W fs_sync_file(struct inode *ip);
 extern W fs_statvfs(ID device, struct statvfs *result);
+extern W fs_create_dir(struct inode * startip,
+		     char *path, W mode, struct permission * acc,
+		     struct inode ** newip);
 extern W fs_getdents(struct inode *ip, ID caller, W offset,
 		     VP buf, UW length, W * rsize, W * fsize);
 extern W fs_link_file(W procid, B * src, B * dst, struct permission * acc);
-extern W fs_make_dir(struct inode * startip,
-		     char *path, W mode, struct permission * acc,
-		     struct inode ** newip);
 
-extern W mount_root(ID device, W fstype, W option);
-extern W mount_fs(struct inode *device, struct inode *mountpoint, W option,
-		  char *fstype);
-extern W unmount_fs(UW device);
-
-extern struct inode *fs_check_inode(struct fs *fsp, W index);
+extern struct inode *alloc_inode(void);
+extern W dealloc_inode(struct inode *);
+extern struct inode *fs_get_inode(struct fs *fsp, W index);
 extern W fs_register_inode(struct inode *ip);
-extern W init_special_file(void);
 
 extern struct inode *rootfile;
 

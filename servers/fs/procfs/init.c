@@ -125,7 +125,7 @@ static W create_init(ID process_id)
 
 	process_create(process_id, 0, 0, 0);
 
-	err = open_special_dev(p);
+	err = open_special_devices(p);
 	if (err) {
 		dbg_printf("fs: can't open special files\n");
 		return err;

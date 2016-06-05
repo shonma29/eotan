@@ -144,7 +144,7 @@ if_mkdir (fs_request *req)
   if (error_no)
       return error_no;
 
-  error_no = fs_make_dir (startip, req->buf,
+  error_no = fs_create_dir (startip, req->buf,
 		       req->packet.args.arg2,
 		       &acc,
 		       &newip);
