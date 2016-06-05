@@ -131,5 +131,5 @@ put_response_long(RDVNO rdvno, W error_no, D status)
 W error_response(RDVNO rdvno, W error_no)
 {
     /* 要求元に送信する */
-    return (put_response(rdvno, error_no, 0, 0));
+    return (put_response(rdvno, error_no, -1, 0));
 }

@@ -37,7 +37,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../kernel/mpu/mpufunc.h"
 
 static slab_t request_slab;
-static void (*syscall[])(fs_request*) = {
+static int (*syscall[])(fs_request*) = {
 	if_chdir,
 	if_chmod,
 	if_close,
@@ -129,12 +129,17 @@ void start(VP_INT exinf)
 		}
 
 		if (get_request(&(req->packet), &(req->rdvno)) >= 0) {
+			int result;
+
 			if (req->packet.operation >=
 					sizeof(syscall) / sizeof(syscall[0]))
-				error_response(req->rdvno, ENOTSUP);
+				result = ENOTSUP;
 
 			else
-				syscall[req->packet.operation](req);
+				result = syscall[req->packet.operation](req);
+
+			if (result > 0)
+				error_response(req->rdvno, result);
 		}
 
 		slab_free(&request_slab, req);

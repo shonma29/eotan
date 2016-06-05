@@ -33,7 +33,7 @@ Version 2, June 1991
 #include "fs.h"
 #include "api.h"
 
-void if_chmod(fs_request *req)
+int if_chmod(fs_request *req)
 {
     struct inode *startip;
     struct inode *ipp;
@@ -41,32 +41,25 @@ void if_chmod(fs_request *req)
     W err;
 
     if (kcall->region_copy(get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg1),
-		 sizeof(req->buf) - 1, req->buf) < 0) {
-	put_response(req->rdvno, EINVAL, -1, 0);
-	return;
-    }
+		 sizeof(req->buf) - 1, req->buf) < 0)
+	return EINVAL;
+
     req->buf[MAX_NAMELEN] = '\0';
 
     if (req->buf[0] == '/') {
 	/* 絶対パスによる指定 */
 	startip = rootfile;
     } else {
-	if (proc_get_cwd(req->packet.procid, &startip)) {
-	    put_response(req->rdvno, EINVAL, -1, 0);
-	    return;
-	}
+	if (proc_get_cwd(req->packet.procid, &startip))
+	    return EINVAL;
     }
 
-    if (proc_get_permission(req->packet.procid, &acc)) {
-	put_response(req->rdvno, EINVAL, -1, 0);
-	return;
-    }
+    if (proc_get_permission(req->packet.procid, &acc))
+	return EINVAL;
 
     err = fs_lookup(startip, req->buf, O_RDWR, 0, &acc, &ipp);
-    if (err) {
-	put_response(req->rdvno, ENOENT, -1, 0);
-	return;
-    }
+    if (err)
+	return ENOENT;
 
     ipp->i_mode = (ipp->i_mode & S_IFMT) | req->packet.args.arg2;
     OPS(ipp).wstat(ipp);
@@ -74,54 +67,49 @@ void if_chmod(fs_request *req)
 
     /* fs_close_file で行う処理 */
     if (fs_sync_file(ipp)) {
-	put_response(req->rdvno, EINVAL, -1, 0);
 	dealloc_inode(ipp);
-	return;
+	return EINVAL;
     }
 
     dealloc_inode(ipp);
     put_response(req->rdvno, EOK, 0, 0);
+    return EOK;
 }
 
 /* if_fstat - ファイルの情報を返す
  */
-void if_fstat(fs_request *req)
+int if_fstat(fs_request *req)
 {
     struct file *fp;
     W error_no;
     struct stat st;
 
     error_no = proc_get_file(req->packet.procid, req->packet.args.arg1, &fp);
-    if (error_no) {
-	put_response(req->rdvno, error_no, -1, 0);
-	return;
-    }
+    if (error_no)
+	return error_no;
 
-    if (fp == 0) {
-	put_response(req->rdvno, EINVAL, -1, 0);
-	return;
-    } else if (fp->f_inode == 0) {
-	put_response(req->rdvno, EINVAL, -1, 0);
-	return;
-    } else if (fp->f_inode->i_fs == NULL) {
-	put_response(req->rdvno, EINVAL, -1, 0);
-	return;
-    }
+    if (fp == 0)
+	return EINVAL;
+
+    else if (fp->f_inode == 0)
+	return EINVAL;
+
+    else if (fp->f_inode->i_fs == NULL)
+	return EINVAL;
 
     fp->f_inode->i_fs->ops.stat(fp->f_inode, &st);
 
     error_no =
 	kcall->region_put(get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg2), sizeof(struct stat),
 		 &st);
-    if (error_no) {
-	put_response(req->rdvno, EINVAL, 0, 0);
-	return;
-    }
+    if (error_no)
+	return EINVAL;
 
     put_response(req->rdvno, EOK, 0, 0);
+    return EOK;
 }
 
-void
+int
 if_statvfs (fs_request *req)
 {
   struct statvfs	result;
@@ -129,16 +117,12 @@ if_statvfs (fs_request *req)
 
   error_no = fs_statvfs (req->packet.param.par_statvfs.device, &result);
   if (error_no)
-    {
-      put_response (req->rdvno, error_no, -1, 0);
-      return;
-    }
+      return error_no;
 
   error_no = kcall->region_put(get_rdv_tid(req->rdvno), req->packet.param.par_statvfs.fsp, sizeof (struct statvfs), &result);
   if (error_no)
-    {
-      put_response (req->rdvno, EFAULT, -1, 0);
-      return;
-    }
+      return EFAULT;
+
   put_response (req->rdvno, EOK, 0, 0);
+  return EOK;
 }

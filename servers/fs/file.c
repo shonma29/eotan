@@ -32,35 +32,30 @@ Version 2, June 1991
 #include "fs.h"
 #include "api.h"
 
-void if_close(fs_request *req)
+int if_close(fs_request *req)
 {
     struct file *fp;
     W err;
 
     err = proc_get_file(req->packet.procid, req->packet.args.arg1, &fp);
-    if (err) {
-	put_response(req->rdvno, err, -1, 0);
-	return;
-    }
+    if (err)
+	return err;
 
-    if (fp->f_inode == NULL) {
-	put_response(req->rdvno, EBADF, -1, 0);
-	return;
-    }
+    if (fp->f_inode == NULL)
+	return EBADF;
 
     err = fs_close_file(fp->f_inode);
-    if (err) {
-	put_response(req->rdvno, err, -1, 0);
-	return;
-    }
+    if (err)
+	return err;
 
     fp->f_inode = NULL;
     put_response(req->rdvno, EOK, 0, 0);
+    return EOK;
 }
 
 /* if_dup - ファイル記述子の複製
  */
-void
+int
 if_dup (fs_request *req)
 {
   W		error_no;
@@ -72,41 +67,29 @@ if_dup (fs_request *req)
    */
   error_no = proc_get_file (req->packet.procid, req->packet.args.arg1, &fp);
   if (error_no)
-    {
-      put_response (req->rdvno, error_no, -1, 0);
-      return;
-    }
-
+      return error_no;
 
   if (fp->f_inode == NULL)
-    {
       /* 複製するファイル記述子の番号がおかしかった
        */
-      put_response (req->rdvno, EBADF, -1, 0);
-      return;
-    }
+      return EBADF;
 
   error_no = proc_alloc_fileid (req->packet.procid, &newfileid);
   if (error_no)
-    {
-      put_response (req->rdvno, error_no, -1, 0);
-      return;
-    }
+      return error_no;
 
   fp->f_inode->i_refcount++;
   error_no = proc_set_file (req->packet.procid, newfileid, fp->f_omode, fp->f_inode);
   if (error_no)
-    {
-      put_response (req->rdvno, error_no, -1, 0);
-      return;
-    }
+      return error_no;
 
   put_response (req->rdvno, EOK, newfileid, 0);
+  return EOK;
 }  
 
 /* if_dup2 -ファイル記述子の複製
  */
-void
+int
 if_dup2 (fs_request *req)
 {
   W		error_no;
@@ -117,58 +100,45 @@ if_dup2 (fs_request *req)
    */
   error_no = proc_get_file (req->packet.procid, req->packet.args.arg1, &fp);
   if (error_no)
-    {
-      put_response (req->rdvno, error_no, -1, 0);
-      return;
-    }
-
+      return error_no;
 
   if (fp->f_inode == NULL)
-    {
       /* 複製するファイル記述子の番号がおかしい。
        * (ファイルをオープンしていない)
        */
-      put_response (req->rdvno, EBADF, -1, 0);
-      return;
-    }
+      return EBADF;
 
   error_no = proc_get_file (req->packet.procid, req->packet.args.arg2, &fp2);
-  if (error_no) {
-    put_response (req->rdvno, error_no, -1, 0);
-    return;
-  }
+  if (error_no)
+    return error_no;
+
   if (fp2->f_inode != NULL) {
     /* 既に open されている file id だった */
     error_no = fs_close_file (fp2->f_inode);
-    if (error_no) {
-      put_response (req->rdvno, error_no, -1, 0);
-      return;
-    }
+    if (error_no)
+      return error_no;
+
     fp2->f_inode = NULL;
   }
   fp->f_inode->i_refcount++;
   error_no = proc_set_file(req->packet.procid, req->packet.args.arg2,
 			fp->f_omode, fp->f_inode);
   if (error_no)
-    {
-      put_response (req->rdvno, error_no, -1, 0);
-      return;
-    }
+      return error_no;
 
   put_response (req->rdvno, EOK, req->packet.args.arg2, 0);
+  return EOK;
 }  
 
-void if_lseek(fs_request *req)
+int if_lseek(fs_request *req)
 {
     struct file *fp;
     W error_no;
     off_t *offp = (off_t*)&(req->packet.args.arg2);
 
     error_no = proc_get_file(req->packet.procid, req->packet.args.arg1, &fp);
-    if (error_no) {
-	put_response(req->rdvno, error_no, -1, error_no);
-	return;
-    }
+    if (error_no)
+	return error_no;
 
     switch (req->packet.args.arg4) {
     case SEEK_SET:
@@ -184,8 +154,7 @@ void if_lseek(fs_request *req)
 	break;
 
     default:
-	put_response(req->rdvno, EINVAL, -1, 0);
-	return;
+	return EINVAL;
     }
 
     if (fp->f_offset < 0) {
@@ -199,11 +168,12 @@ void if_lseek(fs_request *req)
     }
 
     put_response_long(req->rdvno, EOK, fp->f_offset);
+    return EOK;
 }
 
 /* if_open - ファイルのオープン
  */
-void if_open(fs_request *req)
+int if_open(fs_request *req)
 {
     W fileid;
     W error_no;
@@ -212,11 +182,9 @@ void if_open(fs_request *req)
     struct permission acc;
 
     error_no = proc_alloc_fileid(req->packet.procid, &fileid);
-    if (error_no) {
+    if (error_no)
 	/* メモリ取得エラー */
-	put_response(req->rdvno, ENOMEM, -1, 0);
-	return;
-    }
+	return ENOMEM;
 
     /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。
      */
@@ -225,37 +193,30 @@ void if_open(fs_request *req)
     if (error_no < 0) {
 	/* パス名のコピーエラー */
 	if (error_no == E_PAR)
-	    put_response(req->rdvno, EINVAL, -1, 0);
+	    return EINVAL;
 	else
-	    put_response(req->rdvno, EFAULT, -1, 0);
-
-	return;
+	    return EFAULT;
     }
     req->buf[MAX_NAMELEN] = '\0';
     if (req->buf[0] != '/') {
 	error_no = proc_get_cwd(req->packet.procid, &startip);
-	if (error_no) {
-	    put_response(req->rdvno, error_no, -1, 0);
-	    return;
-	}
+	if (error_no)
+	    return error_no;
+
     } else {
 	startip = rootfile;
     }
     error_no = proc_get_permission(req->packet.procid, &acc);
-    if (error_no) {
-	put_response(req->rdvno, error_no, -1, 0);
-	return;
-    }
+    if (error_no)
+	return error_no;
 
     error_no = fs_open_file(req->buf,
 			 req->packet.param.par_open.oflag,
 			 req->packet.param.par_open.mode,
 			 &acc, startip, &newip);
-    if (error_no) {
+    if (error_no)
 	/* ファイルがオープンできない */
-	put_response(req->rdvno, error_no, -1, 0);
-	return;
-    }
+	return error_no;
 
     if ((newip->i_mode & S_IFMT) == S_IFDIR) {
 	/* ファイルは、ディレクトリだった
@@ -267,30 +228,28 @@ void if_open(fs_request *req)
 	 */
 	if (acc.uid != SU_UID) {
 	    fs_close_file(newip);
-	    put_response(req->rdvno, EACCES, -1, 0);
-	    return;
+	    return EACCES;
 	}
 
 	if (req->packet.param.par_open.oflag != O_RDONLY) {
 	    fs_close_file(newip);
-	    put_response(req->rdvno, EISDIR, -1, 0);
-	    return;
+	    return EISDIR;
 	}
     }
 
     if (proc_set_file(req->packet.procid, fileid,
 		      req->packet.param.par_open.oflag, newip)) {
 	fs_close_file(newip);
-	put_response(req->rdvno, EINVAL, -1, 0);
-	return;
+	return EINVAL;
     }
 
     put_response(req->rdvno, EOK, fileid, 0);
+    return EOK;
 }
 
 /* if_read - ファイルからのデータの読み込み
  */
-void if_read(fs_request *req)
+int if_read(fs_request *req)
 {
     W error_no;
     struct file *fp;
@@ -300,21 +259,17 @@ void if_read(fs_request *req)
     ID caller = get_rdv_tid(req->rdvno);
 
     error_no = proc_get_file(req->packet.procid, req->packet.args.arg1, &fp);
-    if (error_no) {
-	put_response(req->rdvno, error_no, -1, 0);
-	return;
-    } else if (fp == 0) {
-	put_response(req->rdvno, EINVAL, -1, 0);
-	return;
-    } else if (fp->f_inode == 0) {
-	put_response(req->rdvno, EINVAL, -1, 0);
-	return;
-    }
+    if (error_no)
+	return error_no;
 
-    if (fp->f_omode == O_WRONLY) {
-	put_response(req->rdvno, EBADF, -1, 0);
-	return;
-    }
+    else if (fp == 0)
+	return EINVAL;
+
+    else if (fp->f_inode == 0)
+	return EINVAL;
+
+    if (fp->f_omode == O_WRONLY)
+	return EBADF;
 
     if (fp->f_inode->i_dev) {
 	rest_length = req->packet.args.arg3;
@@ -338,14 +293,12 @@ void if_read(fs_request *req)
 		break;
 	    }
 	}
-	if (error_no) {
-	    put_response(req->rdvno, error_no, -1, 0);
-	    return;
-	}
+	if (error_no)
+	    return error_no;
 
 	fp->f_offset += i;
 	put_response(req->rdvno, EOK, i, 0);
-	return;
+	return EOK;
     }
 #ifdef DEBUG
     dbg_printf
@@ -356,7 +309,7 @@ void if_read(fs_request *req)
 
     if (fp->f_offset >= fp->f_inode->i_size) {
 	put_response(req->rdvno, EOK, 0, 0);
-	return;
+	return EOK;
     }
     for (i = 0, rest_length = req->packet.args.arg3;
 	 rest_length > 0; rest_length -= rlength, i += rlength) {
@@ -376,15 +329,15 @@ void if_read(fs_request *req)
 	    break;
 	}
     }
-    if (error_no) {
-	put_response(req->rdvno, error_no, -1, 0);
-	return;
-    }
+    if (error_no)
+	return error_no;
+
     fp->f_offset += i;
     put_response(req->rdvno, EOK, i, 0);
+    return EOK;
 }
 
-void if_write(fs_request *req)
+int if_write(fs_request *req)
 {
     W error_no;
     struct file *fp;
@@ -396,21 +349,17 @@ void if_write(fs_request *req)
 #endif
 
     error_no = proc_get_file(req->packet.procid, req->packet.args.arg1, &fp);
-    if (error_no) {
-	put_response(req->rdvno, error_no, -1, 0);
-	return;
-    } else if (fp == 0) {
-	put_response(req->rdvno, EINVAL, -1, 0);
-	return;
-    } else if (fp->f_inode == 0) {
-	put_response(req->rdvno, EINVAL, -1, 0);
-	return;
-    }
+    if (error_no)
+	return error_no;
 
-    if (fp->f_omode == O_RDONLY) {
-	put_response(req->rdvno, EBADF, -1, 0);
-	return;
-    }
+    else if (fp == 0)
+	return EINVAL;
+
+    else if (fp->f_inode == 0)
+	return EINVAL;
+
+    if (fp->f_omode == O_RDONLY)
+	return EBADF;
 
 #ifdef debug
     dbg_printf
@@ -433,10 +382,8 @@ void if_write(fs_request *req)
 	}
       }
     }
-    if (error_no) {
-	put_response(req->rdvno, error_no, -1, 0);
-	return;
-    }
+    if (error_no)
+	return error_no;
 
     for (i = 0, rest_length = req->packet.args.arg3;
 	 rest_length > 0; rest_length -= rlength, i += rlength) {
@@ -472,11 +419,10 @@ void if_write(fs_request *req)
 	}
     }
 
-    if (error_no) {
-	put_response(req->rdvno, error_no, -1, 0);
-	return;
-    }
+    if (error_no)
+	return error_no;
 
     fp->f_offset += i;
     put_response(req->rdvno, EOK, i, 0);
+    return EOK;
 }

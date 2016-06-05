@@ -24,7 +24,7 @@ Version 2, June 1991
 #include "fs.h"
 #include "api.h"
 
-void if_getdents(fs_request *req)
+int if_getdents(fs_request *req)
 {
     W error_no;
     struct file *fp;
@@ -32,38 +32,34 @@ void if_getdents(fs_request *req)
 
     error_no =
 	proc_get_file(req->packet.procid, req->packet.args.arg1, &fp);
-    if (error_no) {
-	put_response(req->rdvno, error_no, -1, 0);
-	return;
-    } else if (fp == 0) {
-	put_response(req->rdvno, EINVAL, -1, 0);
-	return;
-    } else if (fp->f_inode == 0) {
-	put_response(req->rdvno, EINVAL, -1, 0);
-	return;
-    }
+    if (error_no)
+	return error_no;
+
+    else if (fp == 0)
+	return EINVAL;
+
+    else if (fp->f_inode == 0)
+	return EINVAL;
 
     /* 対象ファイルが
      * ディレクトリ以外の場合には、エラーにする
      */
-    if ((fp->f_inode->i_mode & S_IFMT) != S_IFDIR) {
-	put_response(req->rdvno, EINVAL, -1, 0);
-	return;
-    }
+    if ((fp->f_inode->i_mode & S_IFMT) != S_IFDIR)
+	return EINVAL;
 
     error_no = fs_getdents(fp->f_inode, get_rdv_tid(req->rdvno), fp->f_offset,
 			(UB*)(req->packet.args.arg2),
 			req->packet.args.arg3, &len, &flen);
 
-    if (error_no) {
-	put_response(req->rdvno, error_no, -1, 0);
-    }
+    if (error_no)
+	return error_no;
 
     fp->f_offset += flen;
     put_response(req->rdvno, EOK, len, 0);
+    return EOK;
 }
 
-void if_link(fs_request *req)
+int if_link(fs_request *req)
 {
     B src[MAX_NAMELEN + 1];
     struct permission acc;
@@ -75,11 +71,9 @@ void if_link(fs_request *req)
     if (error_no < 0) {
 	/* パス名のコピーエラー */
 	if (error_no == E_PAR)
-	    put_response(req->rdvno, EINVAL, -1, 0);
+	    return EINVAL;
 	else
-	    put_response(req->rdvno, EFAULT, -1, 0);
-
-	return;
+	    return EFAULT;
     }
     src[MAX_NAMELEN] = '\0';
     error_no = kcall->region_copy(caller, (UB*)(req->packet.args.arg2),
@@ -87,11 +81,9 @@ void if_link(fs_request *req)
     if (error_no < 0) {
 	/* パス名のコピーエラー */
 	if (error_no == E_PAR)
-	    put_response(req->rdvno, EINVAL, -1, 0);
+	    return EINVAL;
 	else
-	    put_response(req->rdvno, EFAULT, -1, 0);
-
-	return;
+	    return EFAULT;
     }
     req->buf[MAX_NAMELEN] = '\0';
 
@@ -101,20 +93,18 @@ void if_link(fs_request *req)
      * 決定する。
      */
     error_no = proc_get_permission(req->packet.procid, &acc);
-    if (error_no) {
-	put_response(req->rdvno, error_no, 0, 0);
-	return;
-    }
+    if (error_no)
+	return error_no;
 
     error_no = fs_link_file(req->packet.procid, src, req->buf, &acc);
-    if (error_no) {
-	put_response(req->rdvno, error_no, 0, 0);
-	return;
-    }
+    if (error_no)
+	return error_no;
+
     put_response(req->rdvno, EOK, 0, 0);
+    return EOK;
 }
 
-void
+int
 if_mkdir (fs_request *req)
 {
   W		fileid;
@@ -125,11 +115,8 @@ if_mkdir (fs_request *req)
 
   error_no = proc_alloc_fileid (req->packet.procid, &fileid);
   if (error_no)
-    {
       /* メモリ取得エラー */
-      put_response (req->rdvno, ENOMEM, -1, 0);
-      return;
-    }
+      return ENOMEM;
 
   error_no = kcall->region_copy(get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg1),
 		    sizeof(req->buf) - 1, req->buf);
@@ -137,11 +124,9 @@ if_mkdir (fs_request *req)
     {
       /* パス名のコピーエラー */
       if (error_no == E_PAR)
-	put_response (req->rdvno, EINVAL, -1, 0);
+	return EINVAL;
       else
-	put_response (req->rdvno, EFAULT, -1, 0);
-	
-      return;
+	return EFAULT;
     }
   req->buf[MAX_NAMELEN] = '\0';
 
@@ -149,10 +134,7 @@ if_mkdir (fs_request *req)
     {
       error_no = proc_get_cwd (req->packet.procid, &startip);
       if (error_no)
-	{
-	  put_response (req->rdvno, error_no, -1, 0);
-	  return;
-	}
+	  return error_no;
     }
   else
     {
@@ -160,29 +142,24 @@ if_mkdir (fs_request *req)
     }
   error_no = proc_get_permission (req->packet.procid, &acc);
   if (error_no)
-    {
-      put_response (req->rdvno, error_no, -1, 0);
-      return;
-    }
+      return error_no;
 
   error_no = fs_make_dir (startip, req->buf,
 		       req->packet.args.arg2,
 		       &acc,
 		       &newip);
   if (error_no)
-    {
       /* ファイルがオープンできない */
-      put_response (req->rdvno, error_no, -1, 0);
-      return;
-    }
+      return error_no;
   
   fs_close_file (newip);
   put_response (req->rdvno, EOK, 0, 0);
+  return EOK;
 }  
 
 /* if_rmdir - ディレクトリを削除する
  */
-void
+int
 if_rmdir (fs_request *req)
 {
   W		error_no;
@@ -195,11 +172,9 @@ if_rmdir (fs_request *req)
     {
       /* パス名のコピーエラー */
       if (error_no == E_PAR)
-	put_response (req->rdvno, EINVAL, -1, 0);
+	return EINVAL;
       else
-	put_response (req->rdvno, EFAULT, -1, 0);
-	
-      return;
+	return EFAULT;
     }
   req->buf[MAX_NAMELEN] = '\0';
 
@@ -208,10 +183,7 @@ if_rmdir (fs_request *req)
     {
       error_no = proc_get_cwd (req->packet.procid, &startip);
       if (error_no)
-	{
-	  put_response (req->rdvno, error_no, -1, 0);
-	  return;
-	}
+	  return error_no;
     }
   else
     {
@@ -219,22 +191,17 @@ if_rmdir (fs_request *req)
     }
   error_no = proc_get_permission (req->packet.procid, &acc);
   if (error_no)
-    {
-      put_response (req->rdvno, error_no, -1, 0);
-      return;
-    }
+      return error_no;
 
   error_no = fs_remove_dir (startip,
 			 req->buf,
 			 &acc);
   if (error_no)
-    {
       /* ファイルがオープンできない */
-      put_response (req->rdvno, error_no, -1, 0);
-      return;
-    }
+      return error_no;
   
   put_response (req->rdvno, EOK, 0, 0);
+  return EOK;
 }  
 
 /* if_unlink - ファイルを削除する
@@ -244,7 +211,7 @@ if_rmdir (fs_request *req)
  *	req->param.par_unlink.pathlen	パス名の長さ
  *
  */
-void
+int
 if_unlink (fs_request *req)
 {
   W			error_no;
@@ -264,11 +231,9 @@ if_unlink (fs_request *req)
     {
       /* パス名のコピーエラー */
       if (error_no == E_PAR)
-	put_response (req->rdvno, EINVAL, 0, 0);
+	return EINVAL;
       else
-	put_response (req->rdvno, EFAULT, 0, 0);
-	
-      return;
+	return EFAULT;
     }
   req->buf[MAX_NAMELEN] = '\0';
 
@@ -286,10 +251,7 @@ if_unlink (fs_request *req)
     {
       error_no = proc_get_cwd (req->packet.procid, &startip);
       if (error_no)
-	{
-	  put_response (req->rdvno, error_no, 0, 0);
-	  return;
-	}
+	  return error_no;
     }
   else
     {
@@ -304,20 +266,15 @@ if_unlink (fs_request *req)
    */
   error_no = proc_get_permission (req->packet.procid, &acc);
   if (error_no)
-    {
-      put_response (req->rdvno, error_no, 0, 0);
-      return;
-    }
+      return error_no;
 
   error_no = fs_remove_file (startip,
 			  req->buf,
 			  &acc);
   if (error_no)
-    {
       /* ファイルがオープンできない */
-      put_response (req->rdvno, error_no, 0, 0);
-      return;
-    }
+      return error_no;
   
   put_response (req->rdvno, EOK, 0, 0);
+  return EOK;
 } 

@@ -30,7 +30,7 @@ Version 2, June 1991
 
 /* if_exec - 指定されたプログラムファイルをメモリ中に読み込む
  */
-void if_exec(fs_request *req)
+int if_exec(fs_request *req)
 {
     W error_no;
 
@@ -45,11 +45,9 @@ void if_exec(fs_request *req)
     if (error_no < 0) {
 	/* パス名のコピーエラー */
 	if (error_no == E_PAR)
-	    put_response(req->rdvno, EINVAL, -1, 0);
+	    return EINVAL;
 	else
-	    put_response(req->rdvno, EFAULT, -1, 0);
-
-	return;
+	    return EFAULT;
     }
     req->buf[MAX_NAMELEN] = '\0';
 #ifdef EXEC_DEBUG
@@ -61,21 +59,22 @@ void if_exec(fs_request *req)
 //	if (proc_get_vmtree(req->packet.procid) != NULL) {
 	    /* 呼び出しを行ったプロセスがまだ生き残っていた場合 */
 	    /*エラーメッセージを返す */
-//	    put_response(req->rdvno, error_no, -1, 0);
+//	    return error_no;
 //	} else {
 	    /* 既にプロセスの仮想メモリが開放されている場合 */
 	    /* exit が実行されることは無いので，ここで開放する */
 	    proc_exit(req->packet.procid);
+	    return EOK;
 //	}
-	return;
     }
 //TODO check if rdvno will be disposed
     put_response(req->rdvno, EOK, 0, 0);
+    return EOK;
 }
 
 /* if_exit - プロセスを終了させる
  */
-void
+int
 if_exit (fs_request *req)
 {
   struct proc *myprocp, *procp;
@@ -86,22 +85,18 @@ if_exit (fs_request *req)
 
   mypid = req->packet.procid;
   error_no = proc_get_procp(mypid, &myprocp);
-  if (error_no) {
-    put_response (req->rdvno, ESRCH, 0, 0);
+  if (error_no)
     /* メッセージの呼び出し元にエラーを返しても処理できないが，
        タスクは exd_tsk で終了する */
-    return;
-  }
+    return ESRCH;
 
   myprocp->proc_exst = req->packet.param.par_exit.evalue;
 
   error_no = proc_get_procp(myprocp->proc_ppid, &procp);
-  if (error_no) {
-    put_response (req->rdvno, ESRCH, 0, 0);
+  if (error_no)
     /* メッセージの呼び出し元にエラーを返しても処理できないが，
        タスクは exd_tsk で終了する */
-    return;
-  }
+    return ESRCH;
 
   wpid = procp->proc_wpid;
   if (procp->proc_status == PS_WAIT &&
@@ -137,11 +132,12 @@ if_exit (fs_request *req)
   kcall->thread_destroy(tskid);
 
   put_response (req->rdvno, EOK, 0, 0);
+  return EOK;
 }  
 
 /* if_fork - 新しいプロセスを作成する
  */
-void
+int
 if_fork (fs_request *req)
 {
   struct proc *procp;
@@ -153,8 +149,7 @@ if_fork (fs_request *req)
   if (error_no)
     {
       dbg_printf ("fs: invalid process id (%d)\n", req->packet.procid);
-      put_response (req->rdvno, error_no, -1, 0);
-      return;
+      return error_no;
     }
 
 #ifdef DEBUG
@@ -165,16 +160,14 @@ if_fork (fs_request *req)
   if (error_no)
     {
       dbg_printf ("fs: cannot allocate process\n");
-      put_response (req->rdvno, error_no, -1, 0);
-      return;
+      return error_no;
     }
 
   error_no = proc_fork (procp, child);
   if (error_no)
     {
       proc_dealloc_proc(child->proc_pid);
-      put_response (req->rdvno, error_no, -1, 0);
-      return;
+      return error_no;
     }
 
   main_thread_id = thread_create(child->proc_pid, req->packet.param.par_fork.entry,
@@ -183,8 +176,7 @@ if_fork (fs_request *req)
     {
       dbg_printf ("fs: acre_tsk error (%d)\n", main_thread_id);
       proc_dealloc_proc(child->proc_pid);
-      put_response (req->rdvno, error_no, -1, 0);
-      return;
+      return error_no;
     }
 
   child->proc_maintask = main_thread_id;
@@ -195,15 +187,16 @@ if_fork (fs_request *req)
       proc_dealloc_proc(child->proc_pid);
       kcall->thread_destroy(main_thread_id);
 //TODO destroy process
-      put_response (req->rdvno, error_no, -1, 0);
+      return error_no;
     }
 
   kcall->thread_start(main_thread_id);
 
   put_response (req->rdvno, EOK, child->proc_pid, 0);	/* 親プロセスに対して応答 */
+  return EOK;
 }  
 
-void if_kill(fs_request *req)
+int if_kill(fs_request *req)
 {
     struct proc *myprocp, *procp;
     W mypid, wpid, exst;
@@ -214,17 +207,15 @@ void if_kill(fs_request *req)
 
     mypid = req->packet.args.arg1;
     error_no = proc_get_procp(mypid, &myprocp);
-    if (error_no) {
-	put_response(req->rdvno, ESRCH, -1, 0);
-	return;
-    }
+    if (error_no)
+	return ESRCH;
+
     myprocp->proc_exst = (-1);	/* 強制終了時のステータスは (-1) で良いか? */
 
     error_no = proc_get_procp(myprocp->proc_ppid, &procp);
-    if (error_no) {
-	put_response(req->rdvno, ESRCH, -1, 0);
-	return;
-    }
+    if (error_no)
+	return ESRCH;
+
     wpid = procp->proc_wpid;
     if (procp->proc_status == PS_WAIT &&
 	(wpid == -1 || wpid == mypid || -wpid == myprocp->proc_pgid)) {
@@ -262,9 +253,11 @@ void if_kill(fs_request *req)
     if (get_rdv_tid(req->rdvno) != myprocp->proc_maintask) {
 	put_response(req->rdvno, EOK, 0, 0);
     }
+
+    return EOK;
 }
 
-void
+int
 if_waitpid (fs_request *req)
 {
   W i;
@@ -296,7 +289,7 @@ if_waitpid (fs_request *req)
 	/* 子プロセスのエントリーの開放 */
 	proc_exit(i);
 	
-	return;
+	return EOK;
       }
     }
   }
@@ -305,7 +298,6 @@ if_waitpid (fs_request *req)
     if (req->packet.param.par_waitpid.opts & WNOHANG) {
       /* 親に返事を送る必要がある */
       put_response (req->rdvno, EOK, 0, 0);
-      return;
     }
     /* 親プロセスの状態を変更し，返事を送らずにシステムコールを終了 */
     proc_get_procp(mypid, &procp);
@@ -313,8 +305,9 @@ if_waitpid (fs_request *req)
     procp->proc_wpid = pid;
     procp->proc_wait_rdvno = req->rdvno;
   }
-  else {
+  else
     /* エラーを返す */
-    put_response (req->rdvno, ECHILD, 0, 0);
-  }
+    return ECHILD;
+
+  return EOK;
 }  

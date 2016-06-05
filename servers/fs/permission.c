@@ -30,7 +30,7 @@ Version 2, June 1991
 #include "fs.h"
 #include "api.h"
 
-void if_chdir(fs_request *req)
+int if_chdir(fs_request *req)
 {
     struct inode *oldip;
     struct inode *startip;
@@ -39,17 +39,13 @@ void if_chdir(fs_request *req)
     W err;
 
     if (kcall->region_copy(get_rdv_tid(req->rdvno), req->packet.param.par_chdir.path,
-		sizeof(req->buf) - 1, req->buf) < 0) {
-	put_response(req->rdvno, EINVAL, -1, 0);
-	return;
-    }
+		sizeof(req->buf) - 1, req->buf) < 0)
+	return EINVAL;
 
     req->buf[MAX_NAMELEN] = '\0';
     err = proc_get_cwd(req->packet.procid, &oldip);
-    if (err) {
-	put_response(req->rdvno, err, -1, 0);
-	return;
-    }
+    if (err)
+	return err;
 
     if (req->buf[0] == '/') {
 	/* 絶対パスによる指定 */
@@ -59,16 +55,12 @@ void if_chdir(fs_request *req)
     }
 
 
-    if (proc_get_permission(req->packet.procid, &acc)) {
-	put_response(req->rdvno, EINVAL, -1, 0);
-	return;
-    }
+    if (proc_get_permission(req->packet.procid, &acc))
+	return EINVAL;
 
     err = fs_lookup(startip, req->buf, O_RDONLY, 0, &acc, &ipp);
-    if (err) {
-	put_response(req->rdvno, err, -1, 0);
-	return;
-    }
+    if (err)
+	return err;
 
     if ((ipp->i_mode & S_IFMT) != S_IFDIR) {
 	/* ファイルは、ディレクトリではなかった。
@@ -76,22 +68,18 @@ void if_chdir(fs_request *req)
 	 * 
 	 */
 	fs_close_file(ipp);
-	put_response(req->rdvno, ENOTDIR, -1, 0);
-	return;
+	return ENOTDIR;
     }
 
     err = OPS(ipp).permit(ipp, &acc, X_OK);
-    if (err) {
-	put_response(req->rdvno, err, -1, 0);
-	return;
-    }
+    if (err)
+	return err;
 
     err = proc_set_cwd(req->packet.procid, ipp);
-    if (err) {
-	put_response(req->rdvno, err, -1, 0);
-	return;
-    }
+    if (err)
+	return err;
 
     dealloc_inode(oldip);
     put_response(req->rdvno, EOK, 0, 0);
+    return EOK;
 }

@@ -42,7 +42,7 @@ Version 2, June 1991
  *	このシステムコールは、POSIX では定義されていない。
  *
  */
-void if_mount(fs_request *req)
+int if_mount(fs_request *req)
 {
     W error_no;
     B devname[MAX_NAMELEN + 1];
@@ -58,11 +58,9 @@ void if_mount(fs_request *req)
     if (error_no < 0) {
 	/* デバイスファイルのパス名のコピーエラー */
 	if (error_no == E_PAR)
-	    put_response(req->rdvno, EINVAL, -1, 0);
+	    return EINVAL;
 	else
-	    put_response(req->rdvno, EFAULT, -1, 0);
-
-	return;
+	    return EFAULT;
     }
     devname[MAX_NAMELEN] = '\0';
     error_no = kcall->region_copy(caller,
@@ -71,12 +69,10 @@ void if_mount(fs_request *req)
 
     if (error_no < 0) {
 	/* mount 先のパス名のコピーエラー */
-	if (error_no == E_PAR) {
-	    put_response(req->rdvno, EINVAL, -1, 0);
-	} else {
-	    put_response(req->rdvno, EFAULT, -1, 0);
-	}
-	return;
+	if (error_no == E_PAR)
+	    return EINVAL;
+	else
+	    return EFAULT;
     }
     req->buf[MAX_NAMELEN] = '\0';
 
@@ -86,46 +82,37 @@ void if_mount(fs_request *req)
     if (error_no < 0) {
 	/* ファイルシステムタイプのコピーエラー */
 	if (error_no == E_PAR)
-	    put_response(req->rdvno, EINVAL, -1, 0);
+	    return EINVAL;
 	else
-	    put_response(req->rdvno, EFAULT, -1, 0);
-
-	return;
+	    return EFAULT;
     }
     fstype[MAX_NAMELEN] = '\0';
 
     /* デバイスのオープン */
     if (*devname != '/') {
 	error_no = proc_get_cwd(req->packet.procid, &startip);
-	if (error_no) {
-	    put_response(req->rdvno, error_no, -1, 0);
-	    return;
-	}
+	if (error_no)
+	    return error_no;
+
     } else {
 	startip = rootfile;
     }
 
     error_no = proc_get_permission(req->packet.procid, &acc);
-    if (error_no) {
-	put_response(req->rdvno, error_no, -1, 0);
-	return;
-    }
-    if (acc.uid != SU_UID) {
-      put_response(req->rdvno, EACCES, -1, 0);
-      return;
-    }
+    if (error_no)
+	return error_no;
+
+    if (acc.uid != SU_UID)
+      return EACCES;
 
     error_no = fs_open_file(devname, O_RDWR, 0, &acc, startip, &device);
-    if (error_no) {
-	put_response(req->rdvno, error_no, -1, 0);
-	return;
-    }
+    if (error_no)
+	return error_no;
 
     /* block device かどうかのチェック */
     if ((device->i_mode & S_IFMT) != S_IFBLK) {
 	fs_close_file(device);
-	put_response(req->rdvno, EINVAL, -1, 0);
-	return;
+	return EINVAL;
     }
 
     /* マウントポイントのオープン */
@@ -133,8 +120,7 @@ void if_mount(fs_request *req)
 	error_no = proc_get_cwd(req->packet.procid, &startip);
 	if (error_no) {
 	    fs_close_file(device);
-	    put_response(req->rdvno, error_no, -1, 0);
-	    return;
+	    return error_no;
 	}
     } else {
 	startip = rootfile;
@@ -142,40 +128,37 @@ void if_mount(fs_request *req)
 
     error_no = fs_open_file(req->buf, O_RDWR, 0, &acc, startip, &mountpoint);
     if (error_no) {
-	put_response(req->rdvno, error_no, -1, 0);
 	fs_close_file(device);
-	return;
+	return error_no;
     }
 
     if (mountpoint->i_refcount > 1) {
-	put_response(req->rdvno, EBUSY, -1, 0);
 	fs_close_file(device);
 	fs_close_file(mountpoint);
-	return;
+	return EBUSY;
     }
 
     if ((mountpoint->i_mode & S_IFMT) != S_IFDIR) {
-	put_response(req->rdvno, ENOTDIR, -1, 0);
 	fs_close_file(device);
 	fs_close_file(mountpoint);
-	return;
+	return ENOTDIR;
     }
 
     error_no =
 	mount_fs(device, mountpoint, req->packet.args.arg3, fstype);
 
     if (error_no == EOK) {
-	put_response(req->rdvno, EOK, 0, 0);
 	fs_close_file(device);
-	return;
+	put_response(req->rdvno, EOK, 0, 0);
+	return EOK;
     }
 
-    put_response(req->rdvno, error_no, -1, 0);
     fs_close_file(device);
     fs_close_file(mountpoint);
+    return error_no;
 }
 
-void if_unmount(fs_request *req)
+int if_unmount(fs_request *req)
 {
     W error_no;
     UW device = 0;
@@ -189,41 +172,33 @@ void if_unmount(fs_request *req)
 
     if (error_no < 0) {
 	/* mount 先/special file のパス名のコピーエラー */
-	if (error_no == E_PAR) {
-	    put_response(req->rdvno, EINVAL, -1, 0);
-	} else {
-	    put_response(req->rdvno, EFAULT, -1, 0);
-	}
-	return;
+	if (error_no == E_PAR)
+	    return EINVAL;
+	else
+	    return EFAULT;
     }
     req->buf[MAX_NAMELEN] = '\0';
 
     /* アンマウントポイントのオープン */
     if (req->buf[0] != '/') {
 	error_no = proc_get_cwd(req->packet.procid, &startip);
-	if (error_no) {
-	    put_response(req->rdvno, error_no, -1, 0);
-	    return;
-	}
+	if (error_no)
+	    return error_no;
+
     } else {
 	startip = rootfile;
     }
 
     error_no = proc_get_permission(req->packet.procid, &acc);
-    if (error_no) {
-	put_response(req->rdvno, error_no, -1, 0);
-	return;
-    }
-    if (acc.uid != SU_UID) {
-	put_response(req->rdvno, EACCES, -1, 0);
-	return;
-    }
+    if (error_no)
+	return error_no;
+
+    if (acc.uid != SU_UID)
+	return EACCES;
 
     error_no = fs_open_file(req->buf, O_RDWR, 0, &acc, startip, &umpoint);
-    if (error_no) {
-	put_response(req->rdvno, error_no, -1, 0);
-	return;
-    }
+    if (error_no)
+	return error_no;
 
     error_no = EOK;
     switch (umpoint->i_mode & S_IFMT) {
@@ -242,9 +217,9 @@ void if_unmount(fs_request *req)
     if (error_no == EOK) {
 	error_no = unmount_fs(device);
     }
-    if (error_no) {
-	put_response(req->rdvno, error_no, -1, 0);
-	return;
-    }
+    if (error_no)
+	return error_no;
+
     put_response(req->rdvno, EOK, 0, 0);
+    return EOK;
 }
