@@ -271,46 +271,6 @@ int if_read(fs_request *req)
     if (fp->f_omode == O_WRONLY)
 	return EBADF;
 
-    if (fp->f_inode->i_dev) {
-	rest_length = req->packet.args.arg3;
-	for (i = 0; rest_length > 0;
-	    rest_length -= rlength, i += rlength) {
-	    /* MAX_BODY_SIZE 毎にバッファに読み込み */
-	    len =
-		rest_length >
-		sizeof(req->buf) ? sizeof(req->buf) : rest_length;
-	    error_no =
-		read_device(fp->f_inode->i_dev, req->buf,
-				    fp->f_offset + i, len, &rlength);
-	    if (error_no)
-		break;
-
-	    /* 呼び出したプロセスのバッファへの書き込み */
-	    error_no = kcall->region_put(caller, (UB*)(req->packet.args.arg2) + i,
-			rlength, req->buf);
-	    if (error_no || (rlength < len)) {
-		i += rlength;
-		break;
-	    }
-	}
-	if (error_no)
-	    return error_no;
-
-	fp->f_offset += i;
-	put_response(req->rdvno, EOK, i, 0);
-	return EOK;
-    }
-#ifdef DEBUG
-    dbg_printf
-	("fs: read: inode = 0x%x, offset = %d, buf = 0x%x, length = %d\n",
-	 fp->f_inode, fp->f_offset, req->packet.args.arg2,
-	 req->packet.args.arg3);
-#endif
-
-    if (fp->f_offset >= fp->f_inode->i_size) {
-	put_response(req->rdvno, EOK, 0, 0);
-	return EOK;
-    }
     for (i = 0, rest_length = req->packet.args.arg3;
 	 rest_length > 0; rest_length -= rlength, i += rlength) {
 	/* MAX_BODY_SIZE 毎にファイルに読み込み */
@@ -344,9 +304,6 @@ int if_write(fs_request *req)
     W rlength;
     W i, len;
     W rest_length;
-#ifdef DEBUG
-    W j;
-#endif
 
     error_no = proc_get_file(req->packet.procid, req->packet.args.arg1, &fp);
     if (error_no)
@@ -361,12 +318,6 @@ int if_write(fs_request *req)
     if (fp->f_omode == O_RDONLY)
 	return EBADF;
 
-#ifdef debug
-    dbg_printf
-	("fs: write: inode = 0x%x, offset = %d, buf = 0x%x, length = %d\n",
-	 fp->f_inode, fp->f_offset, req->packet.args.arg2,
-	 req->packet.args.arg3);
-#endif
     if ((! (fp->f_inode->i_mode & S_IFCHR)) &&
 	(fp->f_offset > fp->f_inode->i_size)) {
       /* 通常ファイルで，書き込む場所がファイルの内容が存在しない場所 */
@@ -387,29 +338,11 @@ int if_write(fs_request *req)
 
     for (i = 0, rest_length = req->packet.args.arg3;
 	 rest_length > 0; rest_length -= rlength, i += rlength) {
-#ifdef DEBUG
-	dbg_printf
-	    ("fs: vget_reg (caller = %d, src addr = 0x%x, size = %d, dst = 0x%x\n",
-	     req->caller, req->packet.args.arg2 + i,
-	     rest_length > sizeof(req->buf) ? sizeof(req->buf) : rest_length,
-	     req->buf);
-#endif
 	len = rest_length > sizeof(req->buf) ? sizeof(req->buf) : rest_length;
 	error_no =
 	    kcall->region_get(get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg2) + i, len, req->buf);
 	if (error_no)
 	    break;
-#ifdef DEBUG
-	dbg_printf("fs: writedata length = %d\n", len);
-	for (j = 0;
-	     j <
-	     ((rest_length > sizeof(req->buf)) ? sizeof(req->buf) : rest_length);
-	     j++) {
-	    char print_buffer[2];
-	    dbg_printf("fs: [%x]", req->buf[j]);
-	}
-	dbg_printf("\n");
-#endif
 
 	error_no = fs_write_file(fp->f_inode,
 			      fp->f_offset + i, req->buf, len, &rlength);

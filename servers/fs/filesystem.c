@@ -734,6 +734,14 @@ W fs_read_file(struct inode * ip, W start, B * buf, W length, W * rlength)
 {
     W error_no;
 
+    if (ip->i_dev)
+	return read_device(ip->i_dev, buf, start, length, rlength);
+
+    if (start >= ip->i_size) {
+	*rlength = 0;
+	return EOK;
+    }
+
     error_no = OPS(ip).read(ip, start, buf, length, rlength);
     if (error_no) {
 	return (error_no);
