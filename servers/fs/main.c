@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <major.h>
+#include <services.h>
 #include <boot/init.h>
 #include <fs/nconfig.h>
 #include <mpu/memory.h>
@@ -64,12 +65,13 @@ static int (*syscall[])(fs_request*) = {
 };
 
 static int initialize(void);
+static bool port_init(void);
 static void request_init(void);
 
 
 static int initialize(void)
 {
-	if (!init_port()) {
+	if (!port_init()) {
 		dbg_printf("fs: init_port failed\n");
 		return -1;
 	}
@@ -100,6 +102,17 @@ static int initialize(void)
 	return 0;
 }
 
+static bool port_init(void)
+{
+	struct t_cpor packet = {
+		TA_TFIFO,
+		sizeof(struct posix_request),
+		sizeof(struct posix_response)
+	};
+
+	return kcall->port_create(PORT_FS, &packet) == E_OK;
+}
+
 static void request_init(void)
 {
 	request_slab.unit_size = sizeof(fs_request);
@@ -122,13 +135,16 @@ void start(VP_INT exinf)
 
 	for (;;) {
 		fs_request *req = slab_alloc(&request_slab);
+		ER_UINT size;
 
 		if (!req) {
 			kcall->thread_sleep();
 			continue;
 		}
 
-		if (get_request(&(req->packet), &(req->rdvno)) >= 0) {
+		size = kcall->port_accept(PORT_FS, &(req->rdvno),
+				&(req->packet));
+		if (size == sizeof(struct posix_request)) {
 			int result;
 
 			if (req->packet.operation >=
@@ -139,8 +155,14 @@ void start(VP_INT exinf)
 				result = syscall[req->packet.operation](req);
 
 			if (result > 0)
-				error_response(req->rdvno, result);
+				put_response(req->rdvno, result, -1, 0);
 		}
+
+		else if (size < 0)
+			dbg_printf("fs: acp_por failed %d\n", size);
+
+		else
+			put_response(req->rdvno, EINVAL, -1, 0);
 
 		slab_free(&request_slab, req);
 	}

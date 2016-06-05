@@ -36,12 +36,9 @@ Version 2, June 1991
 
 /* ===========================  関数定義  =========================== */
 
-/* request.c */
-extern W init_port(void);
-extern W get_request(struct posix_request *req, RDVNO *rdvno);
+/* response.c */
 extern W put_response(RDVNO rdvno, W error_no, W status, W ret1);
 extern W put_response_long(RDVNO rdvno, W error_no, D status);
-extern W error_response(RDVNO rdvno, W error_no);
 
 /* device.c */
 extern W read_device(ID device, B * buf, W start, W length, W * rlength);

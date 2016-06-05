@@ -43,53 +43,8 @@ Version 2, June 1991
  *
  */
 #include <core.h>
-#include <services.h>
 #include <nerve/kcall.h>
 #include "fs.h"
-
-
-/* init_port - 要求受け付け用のポートを初期化する
- *
- * 処理
- *	もし、すでにメッセージポートが初期化されていた場合には
- * 	何もしない。その場合には、TRUE が返る。
- *
- * 返り値
- *	TRUE	処理が成功
- *	FALSE	処理が失敗
- *
- */
-W init_port(void)
-{
-    T_CPOR arg;
-
-    arg.poratr = TA_TFIFO;
-    arg.maxcmsz = sizeof(struct posix_request);
-    arg.maxrmsz = sizeof(struct posix_response);
-
-    /* ポートを作成する */
-    if (kcall->port_create(PORT_FS, &arg)) {
-	/* ポートが作成できなかった */
-	return (FALSE);
-    }
-
-    return (TRUE);		/* ポートが作成できた */
-}
-
-
-/* get_request - リクエストを受信する
- *
- */
-W get_request(struct posix_request * req, RDVNO *rdvno)
-{
-    ER_UINT size;
-
-    size = kcall->port_accept(PORT_FS, rdvno, req);
-    if (size < 0) {
-	dbg_printf("fs: get_request: acp_por error %d\n", size);
-    }
-    return size;
-}
 
 
 /* put_response -
@@ -123,13 +78,4 @@ put_response_long(RDVNO rdvno, W error_no, D status)
     /* 要求元に送信する */
     syserr = kcall->port_reply(rdvno, &res, sizeof(res));
     return syserr? ECONNREFUSED:EOK;
-}
-
-/* エラーになったことをリクエストの送り元に返す
- *
- */
-W error_response(RDVNO rdvno, W error_no)
-{
-    /* 要求元に送信する */
-    return (put_response(rdvno, error_no, -1, 0));
 }
