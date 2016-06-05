@@ -190,7 +190,6 @@ W fs_init(void)
 {
     W i;
 
-
     /* 各データ構造の初期化を行い
      * ルートファイルシステムをマウントする
      */
@@ -202,11 +201,18 @@ W fs_init(void)
     inode_buf[MAX_INODE - 1].i_next = NULL;
     free_inode = &inode_buf[0];
 
+    rootfile = alloc_inode();
+    if (rootfile == NULL) {
+	return (E_NOMEM);
+    }
+
     for (i = 0; i < MAX_MOUNT - 1; i++) {
 	fs_buf[i].next = &fs_buf[i + 1];
     }
     fs_buf[MAX_MOUNT - 1].next = NULL;
     free_fs = &fs_buf[0];
+
+    init_cache();
 
     return (TRUE);
 }
@@ -302,129 +308,106 @@ static void dealloc_fs(struct fs *fsp)
     free_fs = fsp;
 }
 
-/* mount_root - root ファイルシステムのマウント
- *
- */
-W fs_mount_root(ID device, W fstype, W option)
+W find_fs(UB *fsname, W *fstype)
 {
-    struct fsops *fsp;
-    W err;
+    W fs_num;
 
-#ifdef FMDEBUG
-    dbg_printf("device = 0x%x, fstype = %d, option = %d\n",
-	       device, fstype, option);
-#endif
-    if ((fstype < 0) || (fstype >= sizeof(fs_table) / sizeof(struct fs_entry))) {
-	dbg_printf("ERROR: mount_root fstype error %d\n", fstype);
-	return (EINVAL);
-    }
-
-    rootfile = alloc_inode();
-    if (rootfile == NULL) {
-	return (E_NOMEM);
-    }
-
-    rootfs = alloc_fs();
-    if (rootfs == NULL) {
-	dealloc_inode(rootfile);
-	return (E_NOMEM);
-    }
-
-    fsp = fs_table[fstype].fsops;
-    init_cache();
-    err = fsp->mount(device, rootfs, rootfile);
-    if (err) {
-	return (err);
-    }
-
-    rootfile->i_fs = rootfs;
-    rootfs->rootdir = rootfile;
-    rootfs->device = device;
-    rootfs->ops = *fsp;
-
-    /* FS List の設定 */
-    rootfs->next = rootfs;
-    rootfs->prev = rootfs;
-
-    fs_register_inode(rootfile);
-
-    return (E_OK);
-}
-
-
-/* mount_fs
- *
- */
-W
-fs_mount(struct inode * deviceip,
-	 struct inode * mountpoint, W option, char *fstype)
-{
-    struct fs *newfs;
-    struct inode *newip;
-    int fs_num;
-    struct fsops *fsp;
-    W device, err;
-
-#ifdef FMDEBUG
-    dbg_printf("fs: MOUNT: device = 0x%x, fstype = %s, option = %d\n",
-	       deviceip->i_dev, fstype, option);
-#endif
     for (fs_num = 1; fs_num < sizeof(fs_table) / sizeof(struct fs_entry); ++fs_num) {
-	if (!strcmp(fstype, fs_table[fs_num].fsname))
+	if (!strcmp((const char*)fsname, fs_table[fs_num].fsname))
 	    break;
     }
     if (fs_num >= sizeof(fs_table) / sizeof(struct fs_entry)) {
 	return (EINVAL);
     }
-    /* 既に mount されていないかどうかのチェック */
-    device = deviceip->i_dev;
-    newfs = rootfs;
-    do {
-	if (newfs->device == device) {
-	    return (EBUSY);
-	}
-	newfs = newfs->next;
-    } while (newfs != rootfs);
 
-    newfs = alloc_fs();
-    if (newfs == NULL) {
-	return (ENOMEM);
-    }
+    *fstype = fs_num;
+    return EOK;
+}
 
-    newip = alloc_inode();
-    if (newip == NULL) {
-	return (E_NOMEM);
+/* mount_fs
+ *
+ */
+W
+fs_mount(const ID device,
+	 struct inode * mountpoint, W option, W fstype)
+{
+    struct fs *newfs;
+    struct inode *newip;
+    struct fsops *fsp;
+    W err;
+
+#ifdef FMDEBUG
+    dbg_printf("fs: MOUNT: device = 0x%x, fstype = %s, option = %d\n",
+	       deviceip->i_dev, fstype, option);
+#endif
+    if ((fstype < 0) || (fstype >= sizeof(fs_table) / sizeof(struct fs_entry))) {
+	dbg_printf("fs: mount unknown fstype %d\n", fstype);
+	return (EINVAL);
     }
 
     /* ファイルシステム情報の取り出し */
-    fsp = fs_table[fs_num].fsops;
-    err = fsp->mount(device, newfs, newip);
-    if (err) {
-	dealloc_fs(newfs);
+    fsp = fs_table[fstype].fsops;
 
-	/* dealloc_inode は使えないので手動で free_inode list へ再登録 */
-	newip->i_next = free_inode;
-	newip->i_prev = NULL;
-	free_inode = newip;
+    if (rootfs) {
+	/* 既に mount されていないかどうかのチェック */
+	newfs = rootfs;
+	do {
+	    if (newfs->device == device) {
+		return (EBUSY);
+	    }
+	    newfs = newfs->next;
+	} while (newfs != rootfs);
+
+	newip = alloc_inode();
+	if (newip == NULL)
+	    return (E_NOMEM);
+
+    } else
+	newip = mountpoint;
+
+    newfs = alloc_fs();
+    if (newfs == NULL)
+	err = ENOMEM;
+
+    else {
+	err = fsp->mount(device, newfs, newip);
+	if (err)
+	    dealloc_fs(newfs);
+    }
+
+    if (err) {
+	if (rootfs) {
+	    /* dealloc_inode は使えないので手動で free_inode list へ再登録 */
+	    newip->i_next = free_inode;
+	    newip->i_prev = NULL;
+	    free_inode = newip;
+	}
 
 	return (err);
     }
-
-    /* ファイルシステムのリストへ登録 */
-    newfs->ops = *fsp;
-    newfs->next = rootfs;
-    newfs->prev = rootfs->prev;
-    rootfs->prev->next = newfs;
-    rootfs->prev = newfs;
 
     /* mount されるファイルシステムの root ディレクトリの登録 */
     newip->i_fs = newfs;
     newfs->rootdir = newip;
     newfs->device = device;
+    newfs->ops = *fsp;
 
-    /* mount point に coverfile を設定 */
-    mountpoint->coverfile = newip;
-    newfs->mountpoint = mountpoint;
+    /* ファイルシステムのリストへ登録 */
+    if (rootfs) {
+	newfs->next = rootfs;
+	newfs->prev = rootfs->prev;
+	rootfs->prev->next = newfs;
+	rootfs->prev = newfs;
+
+	/* mount point に coverfile を設定 */
+	mountpoint->coverfile = newip;
+	newfs->mountpoint = mountpoint;
+
+    } else {
+	newfs->next = newfs;
+	newfs->prev = newfs;
+	rootfs = newfs;
+    }
 
     fs_register_inode(newip);
 

@@ -122,7 +122,7 @@ struct fs {
     struct fs *next;
     W typeid;
     struct fsops ops;
-    UW device;
+    ID device;
     struct inode *ilist;	/* 使用中の inode のリスト */
     struct inode *rootdir;
     struct inode *mountpoint;
@@ -147,7 +147,7 @@ struct inode {
     /* in disk */
     UW i_mode;
     UW i_index;
-    UW i_dev;			/* if device file */
+    ID i_dev;			/* if device file */
     UW i_size;
     UW i_nblock;
 
@@ -169,9 +169,9 @@ struct file
 /* vfs.c */
 extern W fs_init(void);
 
-extern W fs_mount_root(ID device, W fstype, W option);
-extern W fs_mount(struct inode *device, struct inode *mountpoint, W option,
-		  char *fstype);
+extern W find_fs(UB *, W *);
+
+extern W fs_mount(ID device, struct inode *mountpoint, W option, W fstype);
 extern W fs_unmount(UW device);
 
 extern W fs_open_file(B * path, W oflag, W mode, struct permission *acc,

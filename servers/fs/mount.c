@@ -45,58 +45,11 @@ Version 2, June 1991
 int if_mount(fs_request *req)
 {
     W error_no;
-    B devname[MAX_NAMELEN + 1];
-    B fstype[MAX_NAMELEN + 1];
+    W fstype;
     struct inode *startip;
     struct inode *mountpoint, *device;
     struct permission acc;
     ID caller = get_rdv_tid(req->rdvno);
-
-    error_no = kcall->region_copy(caller,
-		     (UB*)(req->packet.args.arg4),
-		     sizeof(devname) - 1, devname);
-    if (error_no < 0) {
-	/* デバイスファイルのパス名のコピーエラー */
-	if (error_no == E_PAR)
-	    return EINVAL;
-	else
-	    return EFAULT;
-    }
-    devname[MAX_NAMELEN] = '\0';
-    error_no = kcall->region_copy(caller,
-		     (UB*)(req->packet.args.arg2),
-		     sizeof(req->buf) - 1, req->buf);
-
-    if (error_no < 0) {
-	/* mount 先のパス名のコピーエラー */
-	if (error_no == E_PAR)
-	    return EINVAL;
-	else
-	    return EFAULT;
-    }
-    req->buf[MAX_NAMELEN] = '\0';
-
-    error_no = kcall->region_copy(caller,
-		     (UB*)(req->packet.args.arg1),
-		     sizeof(fstype) - 1, fstype);
-    if (error_no < 0) {
-	/* ファイルシステムタイプのコピーエラー */
-	if (error_no == E_PAR)
-	    return EINVAL;
-	else
-	    return EFAULT;
-    }
-    fstype[MAX_NAMELEN] = '\0';
-
-    /* デバイスのオープン */
-    if (*devname != '/') {
-	error_no = proc_get_cwd(req->packet.procid, &startip);
-	if (error_no)
-	    return error_no;
-
-    } else {
-	startip = rootfile;
-    }
 
     error_no = proc_get_permission(req->packet.procid, &acc);
     if (error_no)
@@ -105,7 +58,44 @@ int if_mount(fs_request *req)
     if (acc.uid != SU_UID)
       return EACCES;
 
-    error_no = fs_open_file(devname, O_RDWR, 0, &acc, startip, &device);
+    error_no = kcall->region_copy(caller,
+		     (UB*)(req->packet.args.arg1),
+		     sizeof(req->buf) - 1, req->buf);
+    if (error_no < 0) {
+	/* ファイルシステムタイプのコピーエラー */
+	if (error_no == E_PAR)
+	    return EINVAL;
+	else
+	    return EFAULT;
+    }
+    req->buf[MAX_NAMELEN] = '\0';
+    error_no = find_fs((UB*)(req->buf), &fstype);
+    if (error_no)
+	return error_no;
+
+    error_no = kcall->region_copy(caller,
+		     (UB*)(req->packet.args.arg4),
+		     sizeof(req->buf) - 1, req->buf);
+    if (error_no < 0) {
+	/* デバイスファイルのパス名のコピーエラー */
+	if (error_no == E_PAR)
+	    return EINVAL;
+	else
+	    return EFAULT;
+    }
+    req->buf[MAX_NAMELEN] = '\0';
+
+    /* デバイスのオープン */
+    if (req->buf[0] != '/') {
+	error_no = proc_get_cwd(req->packet.procid, &startip);
+	if (error_no)
+	    return error_no;
+
+    } else {
+	startip = rootfile;
+    }
+
+    error_no = fs_open_file(req->buf, O_RDWR, 0, &acc, startip, &device);
     if (error_no)
 	return error_no;
 
@@ -114,6 +104,23 @@ int if_mount(fs_request *req)
 	fs_close_file(device);
 	return EINVAL;
     }
+
+    error_no = kcall->region_copy(caller,
+		     (UB*)(req->packet.args.arg2),
+		     sizeof(req->buf) - 1, req->buf);
+
+    if (error_no < 0) {
+	/* mount 先のパス名のコピーエラー */
+	if (error_no == E_PAR) {
+	    fs_close_file(device);
+	    return EINVAL;
+	}
+	else {
+	    fs_close_file(device);
+	    return EFAULT;
+	}
+    }
+    req->buf[MAX_NAMELEN] = '\0';
 
     /* マウントポイントのオープン */
     if (req->buf[0] != '/') {
@@ -145,7 +152,7 @@ int if_mount(fs_request *req)
     }
 
     error_no =
-	fs_mount(device, mountpoint, req->packet.args.arg3, fstype);
+	fs_mount(device->i_dev, mountpoint, req->packet.args.arg3, fstype);
 
     if (error_no == EOK) {
 	fs_close_file(device);
