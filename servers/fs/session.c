@@ -83,3 +83,16 @@ int if_chdir(fs_request *req)
     put_response(req->rdvno, EOK, 0, 0);
     return EOK;
 }
+
+W session_get_opened_file(const ID pid, const W fno, struct file **fp)
+{
+    W err = proc_get_file(pid, fno, fp);
+
+    if (err)
+	return err;
+
+    if ((*fp)->f_inode == NULL)
+	return EBADF;
+
+    return EOK;
+}

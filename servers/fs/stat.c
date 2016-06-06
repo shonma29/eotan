@@ -84,15 +84,9 @@ int if_fstat(fs_request *req)
     W error_no;
     struct stat st;
 
-    error_no = proc_get_file(req->packet.procid, req->packet.args.arg1, &fp);
+    error_no = session_get_opened_file(req->packet.procid, req->packet.args.arg1, &fp);
     if (error_no)
 	return error_no;
-
-    if (fp == 0)
-	return EINVAL;
-
-    else if (fp->f_inode == 0)
-	return EINVAL;
 
     else if (fp->f_inode->i_fs == NULL)
 	return EINVAL;

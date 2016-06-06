@@ -31,15 +31,9 @@ int if_getdents(fs_request *req)
     W len, flen;
 
     error_no =
-	proc_get_file(req->packet.procid, req->packet.args.arg1, &fp);
+	session_get_opened_file(req->packet.procid, req->packet.args.arg1, &fp);
     if (error_no)
 	return error_no;
-
-    else if (fp == 0)
-	return EINVAL;
-
-    else if (fp->f_inode == 0)
-	return EINVAL;
 
     /* 対象ファイルが
      * ディレクトリ以外の場合には、エラーにする

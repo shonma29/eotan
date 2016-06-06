@@ -203,4 +203,7 @@ extern W fs_register_inode(struct inode *ip);
 
 extern struct inode *rootfile;
 
+/* session.c */
+extern W session_get_opened_file(const ID pid, const W fno, struct file **fp);
+
 #endif				/* __FS_VFS_H__ */

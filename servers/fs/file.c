@@ -37,12 +37,9 @@ int if_close(fs_request *req)
     struct file *fp;
     W err;
 
-    err = proc_get_file(req->packet.procid, req->packet.args.arg1, &fp);
+    err = session_get_opened_file(req->packet.procid, req->packet.args.arg1, &fp);
     if (err)
 	return err;
-
-    if (fp->f_inode == NULL)
-	return EBADF;
 
     err = fs_close_file(fp->f_inode);
     if (err)
@@ -65,14 +62,9 @@ if_dup (fs_request *req)
 
   /* プロセスからファイル構造体へのポインタを取り出す
    */
-  error_no = proc_get_file (req->packet.procid, req->packet.args.arg1, &fp);
+  error_no = session_get_opened_file (req->packet.procid, req->packet.args.arg1, &fp);
   if (error_no)
       return error_no;
-
-  if (fp->f_inode == NULL)
-      /* 複製するファイル記述子の番号がおかしかった
-       */
-      return EBADF;
 
   error_no = proc_alloc_fileid (req->packet.procid, &newfileid);
   if (error_no)
@@ -98,15 +90,9 @@ if_dup2 (fs_request *req)
 
   /* プロセスからファイル構造体へのポインタを取り出す
    */
-  error_no = proc_get_file (req->packet.procid, req->packet.args.arg1, &fp);
+  error_no = session_get_opened_file (req->packet.procid, req->packet.args.arg1, &fp);
   if (error_no)
       return error_no;
-
-  if (fp->f_inode == NULL)
-      /* 複製するファイル記述子の番号がおかしい。
-       * (ファイルをオープンしていない)
-       */
-      return EBADF;
 
   error_no = proc_get_file (req->packet.procid, req->packet.args.arg2, &fp2);
   if (error_no)
@@ -136,7 +122,7 @@ int if_lseek(fs_request *req)
     W error_no;
     off_t *offp = (off_t*)&(req->packet.args.arg2);
 
-    error_no = proc_get_file(req->packet.procid, req->packet.args.arg1, &fp);
+    error_no = session_get_opened_file(req->packet.procid, req->packet.args.arg1, &fp);
     if (error_no)
 	return error_no;
 
@@ -258,15 +244,9 @@ int if_read(fs_request *req)
     W i, len;
     ID caller = get_rdv_tid(req->rdvno);
 
-    error_no = proc_get_file(req->packet.procid, req->packet.args.arg1, &fp);
+    error_no = session_get_opened_file(req->packet.procid, req->packet.args.arg1, &fp);
     if (error_no)
 	return error_no;
-
-    else if (fp == 0)
-	return EINVAL;
-
-    else if (fp->f_inode == 0)
-	return EINVAL;
 
     if (fp->f_omode == O_WRONLY)
 	return EBADF;
@@ -305,15 +285,9 @@ int if_write(fs_request *req)
     W i, len;
     W rest_length;
 
-    error_no = proc_get_file(req->packet.procid, req->packet.args.arg1, &fp);
+    error_no = session_get_opened_file(req->packet.procid, req->packet.args.arg1, &fp);
     if (error_no)
 	return error_no;
-
-    else if (fp == 0)
-	return EINVAL;
-
-    else if (fp->f_inode == 0)
-	return EINVAL;
 
     if (fp->f_omode == O_RDONLY)
 	return EBADF;
