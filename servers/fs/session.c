@@ -96,3 +96,30 @@ W session_get_opened_file(const ID pid, const W fno, struct file **fp)
 
     return EOK;
 }
+
+W session_get_path(struct inode **ip, const ID pid, const ID tid,
+	UB *src, UB *buf)
+{
+    /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。
+     */
+    W error_no = kcall->region_copy(tid, src, MAX_NAMELEN, buf);
+
+    if (error_no < 0) {
+	/* パス名のコピーエラー */
+	if (error_no == E_PAR)
+	    return EINVAL;
+	else
+	    return EFAULT;
+    }
+    buf[MAX_NAMELEN] = '\0';
+
+    if (buf[0] != '/') {
+	error_no = proc_get_cwd(pid, ip);
+	if (error_no)
+	    return error_no;
+
+    } else
+	*ip = rootfile;
+
+    return EOK;
+}

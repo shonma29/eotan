@@ -73,27 +73,11 @@ int if_mount(fs_request *req)
     if (error_no)
 	return error_no;
 
-    error_no = kcall->region_copy(caller,
-		     (UB*)(req->packet.args.arg4),
-		     sizeof(req->buf) - 1, req->buf);
-    if (error_no < 0) {
-	/* デバイスファイルのパス名のコピーエラー */
-	if (error_no == E_PAR)
-	    return EINVAL;
-	else
-	    return EFAULT;
-    }
-    req->buf[MAX_NAMELEN] = '\0';
-
-    /* デバイスのオープン */
-    if (req->buf[0] != '/') {
-	error_no = proc_get_cwd(req->packet.procid, &startip);
-	if (error_no)
-	    return error_no;
-
-    } else {
-	startip = rootfile;
-    }
+    error_no = session_get_path(&startip, req->packet.procid,
+		     caller, (UB*)(req->packet.args.arg4),
+		     (UB*)(req->buf));
+    if (error_no)
+	return error_no;
 
     error_no = fs_open_file(req->buf, O_RDWR, 0, &acc, startip, &device);
     if (error_no)
@@ -105,32 +89,12 @@ int if_mount(fs_request *req)
 	return EINVAL;
     }
 
-    error_no = kcall->region_copy(caller,
-		     (UB*)(req->packet.args.arg2),
-		     sizeof(req->buf) - 1, req->buf);
-
-    if (error_no < 0) {
-	/* mount 先のパス名のコピーエラー */
-	if (error_no == E_PAR) {
-	    fs_close_file(device);
-	    return EINVAL;
-	}
-	else {
-	    fs_close_file(device);
-	    return EFAULT;
-	}
-    }
-    req->buf[MAX_NAMELEN] = '\0';
-
-    /* マウントポイントのオープン */
-    if (req->buf[0] != '/') {
-	error_no = proc_get_cwd(req->packet.procid, &startip);
-	if (error_no) {
-	    fs_close_file(device);
-	    return error_no;
-	}
-    } else {
-	startip = rootfile;
+    error_no = session_get_path(&startip, req->packet.procid,
+		     caller, (UB*)(req->packet.args.arg2),
+		     (UB*)(req->buf));
+    if (error_no) {
+	fs_close_file(device);
+	return error_no;
     }
 
     error_no = fs_open_file(req->buf, O_RDWR, 0, &acc, startip, &mountpoint);
@@ -173,28 +137,11 @@ int if_unmount(fs_request *req)
     struct inode *umpoint;
     struct permission acc;
 
-    error_no = kcall->region_copy(get_rdv_tid(req->rdvno),
-		     (UB*)(req->packet.args.arg1),
-		     sizeof(req->buf) - 1, req->buf);
-
-    if (error_no < 0) {
-	/* mount 先/special file のパス名のコピーエラー */
-	if (error_no == E_PAR)
-	    return EINVAL;
-	else
-	    return EFAULT;
-    }
-    req->buf[MAX_NAMELEN] = '\0';
-
-    /* アンマウントポイントのオープン */
-    if (req->buf[0] != '/') {
-	error_no = proc_get_cwd(req->packet.procid, &startip);
-	if (error_no)
-	    return error_no;
-
-    } else {
-	startip = rootfile;
-    }
+    error_no = session_get_path(&startip, req->packet.procid,
+		     get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg1),
+		     (UB*)(req->buf));
+    if (error_no)
+	return error_no;
 
     error_no = proc_get_permission(req->packet.procid, &acc);
     if (error_no)

@@ -174,24 +174,12 @@ int if_open(fs_request *req)
 
     /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。
      */
-    error_no = kcall->region_copy(get_rdv_tid(req->rdvno), req->packet.param.par_open.path,
-		     sizeof(req->buf) - 1, req->buf);
-    if (error_no < 0) {
-	/* パス名のコピーエラー */
-	if (error_no == E_PAR)
-	    return EINVAL;
-	else
-	    return EFAULT;
-    }
-    req->buf[MAX_NAMELEN] = '\0';
-    if (req->buf[0] != '/') {
-	error_no = proc_get_cwd(req->packet.procid, &startip);
-	if (error_no)
-	    return error_no;
+    error_no = session_get_path(&startip, req->packet.procid,
+		    get_rdv_tid(req->rdvno), (UB*)(req->packet.param.par_open.path),
+		    (UB*)(req->buf));
+    if (error_no)
+	return error_no;
 
-    } else {
-	startip = rootfile;
-    }
     error_no = proc_get_permission(req->packet.procid, &acc);
     if (error_no)
 	return error_no;

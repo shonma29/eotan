@@ -112,28 +112,12 @@ if_mkdir (fs_request *req)
       /* メモリ取得エラー */
       return ENOMEM;
 
-  error_no = kcall->region_copy(get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg1),
-		    sizeof(req->buf) - 1, req->buf);
-  if (error_no < 0)
-    {
-      /* パス名のコピーエラー */
-      if (error_no == E_PAR)
-	return EINVAL;
-      else
-	return EFAULT;
-    }
-  req->buf[MAX_NAMELEN] = '\0';
+  error_no = session_get_path(&startip, req->packet.procid,
+		    get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg1),
+		    (UB*)(req->buf));
+  if (error_no)
+    return error_no;
 
-  if (req->buf[0] != '/')
-    {
-      error_no = proc_get_cwd (req->packet.procid, &startip);
-      if (error_no)
-	  return error_no;
-    }
-  else
-    {
-      startip = rootfile;
-    }
   error_no = proc_get_permission (req->packet.procid, &acc);
   if (error_no)
       return error_no;
@@ -160,29 +144,12 @@ if_rmdir (fs_request *req)
   struct inode	*startip;
   struct permission	acc;
 
-  error_no = kcall->region_copy(get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg1),
-		    sizeof(req->buf) - 1, req->buf);
-  if (error_no < 0)
-    {
-      /* パス名のコピーエラー */
-      if (error_no == E_PAR)
-	return EINVAL;
-      else
-	return EFAULT;
-    }
-  req->buf[MAX_NAMELEN] = '\0';
+  error_no = session_get_path(&startip, req->packet.procid,
+		    get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg1),
+		    (UB*)(req->buf));
+  if (error_no)
+    return error_no;
 
-
-  if (req->buf[0] != '/')
-    {
-      error_no = proc_get_cwd (req->packet.procid, &startip);
-      if (error_no)
-	  return error_no;
-    }
-  else
-    {
-      startip = rootfile;
-    }
   error_no = proc_get_permission (req->packet.procid, &acc);
   if (error_no)
       return error_no;
@@ -217,41 +184,11 @@ if_unlink (fs_request *req)
    * 呼び出し元のタスク ID は、メッセージパラメータの
    * 中に入っている。
    */
-  error_no = kcall->region_copy(get_rdv_tid(req->rdvno),
-		    (UB*)(req->packet.args.arg1),
-		    sizeof(req->buf) - 1,
-		    req->buf);
-  if (error_no < 0)
-    {
-      /* パス名のコピーエラー */
-      if (error_no == E_PAR)
-	return EINVAL;
-      else
-	return EFAULT;
-    }
-  req->buf[MAX_NAMELEN] = '\0';
-
-
-  /* ファイルが相対パスで指定されているかどうかを
-   * チェックする。
-   * (パス名が '/' ではじまっていない場合には、
-   * 相対パスと見なす)
-   * 相対パスではじまっている場合には、
-   * プロセスのカレントディレクトリを取り出して、
-   * そこをファイルのパスの最初のディレクトリと
-   * する。
-   */
-  if (req->buf[0] != '/')
-    {
-      error_no = proc_get_cwd (req->packet.procid, &startip);
-      if (error_no)
-	  return error_no;
-    }
-  else
-    {
-      startip = rootfile;
-    }
-
+  error_no = session_get_path(&startip, req->packet.procid,
+		    get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg1),
+		    (UB*)(req->buf));
+  if (error_no)
+    return error_no;
 
   /* プロセスのユーザ ID とグループ ID の
    * 取り出し。

@@ -40,19 +40,11 @@ int if_chmod(fs_request *req)
     struct permission acc;
     W err;
 
-    if (kcall->region_copy(get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg1),
-		 sizeof(req->buf) - 1, req->buf) < 0)
-	return EINVAL;
-
-    req->buf[MAX_NAMELEN] = '\0';
-
-    if (req->buf[0] == '/') {
-	/* 絶対パスによる指定 */
-	startip = rootfile;
-    } else {
-	if (proc_get_cwd(req->packet.procid, &startip))
-	    return EINVAL;
-    }
+    err = session_get_path(&startip, req->packet.procid,
+		 get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg1),
+		 (UB*)(req->buf));
+    if (err)
+	return err;
 
     if (proc_get_permission(req->packet.procid, &acc))
 	return EINVAL;
