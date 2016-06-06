@@ -97,10 +97,6 @@ static W create_init(ID process_id)
 
 	dbg_printf("fs: create_init(%d)\n", process_id);
 
-	if ((process_id < INIT_PID)
-			|| (process_id >= MAX_PROCESS))
-		return EINVAL;
-
 	err = proc_get_procp(process_id, &p);
 	if (err)
 		return err;
@@ -110,7 +106,6 @@ static W create_init(ID process_id)
 
 	memset(p, 0, sizeof(*p));
 /* if set explicitly
-	p->proc_status = PS_DORMANT;
 	p->proc_next = NULL;
 */
 	p->session.permission.uid = INIT_UID;
