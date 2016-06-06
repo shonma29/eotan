@@ -53,7 +53,7 @@ Version 2, June 1991
 W
 put_response(RDVNO rdvno, W error_no, W status, W ret1)
 {
-    static struct posix_response res;
+    struct posix_response res;
     ER syserr;
 
     res.error_no = error_no;
@@ -68,7 +68,7 @@ put_response(RDVNO rdvno, W error_no, W status, W ret1)
 W
 put_response_long(RDVNO rdvno, W error_no, D status)
 {
-    static struct posix_response res;
+    struct posix_response res;
     ER syserr;
     D *dp = (D*)&(res.status);
 
