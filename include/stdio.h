@@ -92,6 +92,7 @@ static inline int fgetpos(FILE *stream, fpos_t *pos)
 	return 0;
 }
 
+extern int fclose(FILE *);
 extern int fflush(FILE *);
 
 extern int fgetc(FILE *);

@@ -28,14 +28,28 @@ For more information, please refer to <http://unlicense.org/>
 #include <unistd.h>
 #include "macros.h"
 
+static int flush(FILE *stream);
+
 
 int fflush(FILE *stream)
 {
-	if (!stream) {
-		//TODO close all;
-		return 0;
-	}
+	if (stream)
+		return flush(stream);
 
+	else {
+		int result = 0;
+		int i;
+
+		for (i = 0; i < FOPEN_MAX; i++)
+			if (isOpen(&(__libc_files[i])))
+				result |= flush(&(__libc_files[i]));
+
+		return result;
+	}
+}
+
+static int flush(FILE *stream)
+{
 	if (ferror(stream))
 		return EOF;
 

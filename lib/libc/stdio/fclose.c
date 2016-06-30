@@ -24,17 +24,46 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <errno.h>
+#include <local.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
+#include "macros.h"
 
 
-void exit(int status)
+int fclose(FILE *stream)
 {
-	int i;
+	int result;
 
-	for (i = 0; i < FOPEN_MAX; i++)
-		fclose(&(__libc_files[i]));
+	if (!isOpen(stream)) {
+		(_get_local())->error_no = EBADF;
+		return EOF;
+	}
 
-	_exit(status);
+	do {
+		if (fflush(stream)) {
+			int error_no = (_get_local())->error_no;
+
+			close(stream->fd);
+			(_get_local())->error_no = error_no;
+			result = EOF;
+			break;
+		}
+
+		if (close(stream->fd)) {
+			result = EOF;
+			break;
+		}
+
+		result = 0;
+	} while (false);
+
+	stream->mode = 0;
+	stream->pos = 0;
+	stream->len = 0;
+	stream->fd = -1;
+	stream->buf_size = sizeof(stream->buf);
+	stream->seek_pos = 0;
+
+	return result;
 }
