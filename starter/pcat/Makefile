@@ -83,7 +83,7 @@ $(WD)/kern.bin: $(WD)/append \
 		servers/hmi/hmi \
 		drivers/cons/cons \
 		drivers/ramdisk/ramdisk \
-		initrd.img
+		initrd.img.rc
 	[ `wc -c < $(WD)/starter.bin` -le $(STARTER_SIZE) ]
 	cp $(WD)/starter.bin $@
 	$(WD)/append 1 kernel/core.bin 4 >> $@
@@ -93,7 +93,7 @@ $(WD)/kern.bin: $(WD)/append \
 	$(WD)/append 3 servers/mm/mm 4 >> $@
 	$(WD)/append 3 servers/hmi/hmi 4 >> $@
 	$(WD)/append 2 drivers/cons/cons 4 >> $@
-	$(WD)/append 5 initrd.img 4 >> $@
+	$(WD)/append 5 initrd.img.rc 4 >> $@
 	$(WD)/append 2 drivers/ramdisk/ramdisk 4 >> $@
 	$(WD)/append 3 servers/fs/fs 4 >> $@
 	$(WD)/append 0 >> $@

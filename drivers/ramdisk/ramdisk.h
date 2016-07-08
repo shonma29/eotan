@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #define __DRIVERS_RAMDISK_H__
 
 #include <stdlib.h>
+#include <nerve/global.h>
 #include <sys/types.h>
 
 #define MYNAME "ramdisk"
@@ -43,5 +44,7 @@ extern int open(void);
 extern int close(const int);
 extern int read(unsigned char *, const int, const off_t, const size_t);
 extern int write(unsigned char *, const int, const off_t, const size_t);
+
+extern int decode(const system_info_t *);
 
 #endif

@@ -24,42 +24,45 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <device.h>
-#include <major.h>
-#include <string.h>
-#include <nerve/global.h>
-#include "../../lib/libserv/libserv.h"
+#include "../../lib/librc/rangecoder.h"
+#include "../../lib/librc/bit.h"
 #include "ramdisk.h"
 
-static vdriver_t driver_mine = {
-	get_device_id(DEVICE_MAJOR_RAMDISK, 0),
-	(unsigned char*)MYNAME,
-	BUF_SIZE,
-	detach,
-	open,
-	close,
-	read,
-	write
-};
+#define EOF (-1)
+
+static size_t size;
+static unsigned char *initrd;
+static unsigned int rpos;
+static unsigned int wpos;
+
+static int bgetc(RangeCoder *rc);
+static int bputc(unsigned char ch, RangeCoder *rc);
 
 
-vdriver_t *attach(int exinf)
+static int bgetc(RangeCoder *rc)
 {
-	system_info_t *info = (system_info_t*)SYSTEM_INFO_ADDR;
+	return (rpos < size)? (initrd[rpos++]):EOF;
+}
 
-	if (info->initrd.size > 0) {
-		if (info->initrd.size <= BUF_SIZE) {
-			dbg_printf(MYNAME ": initrd start=%p size=%x\n",
-					info->initrd.start, info->initrd.size);
+static int bputc(unsigned char ch, RangeCoder *rc)
+{
+	if (wpos < BUF_SIZE) {
+		buf[wpos++] = ch;
+		return ch;
+	} else
+		return EOF;
+}
 
-			if (decode(info))
-				dbg_printf(MYNAME ": broken initrd\n");
-			else
-				return &driver_mine;
-		} else
-			dbg_printf(MYNAME ": too large initrd (%x)\n",
-				info->initrd.size);
-	}
+int decode(const system_info_t *info)
+{
+	Frequency freq;
+	RangeCoder rc;
 
-	return NULL;
+	initrd = info->initrd.start;
+	size = info->initrd.size;
+
+	rc_initialize(&rc, bgetc, bputc);
+	frequency_initialize(&freq);
+
+	return rc_decode(&freq, &rc);
 }
