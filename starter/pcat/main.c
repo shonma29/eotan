@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <boot/modules.h>
 #include <boot/vesa.h>
 #include <memory_map.h>
+#include <arch/archfunc.h>
 #include <mpu/mpufunc.h>
 #include <nerve/config.h>
 #include <set/lf_queue.h>
@@ -57,6 +58,7 @@ void _main(void)
 {
 	VesaInfo *v = (VesaInfo*)VESA_INFO_ADDR;
 
+	pic_mask_all();
 #ifndef USE_VESA
 	console_initialize();
 #endif

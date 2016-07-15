@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "handler.h"
 #include "sync.h"
 #include "8259a.h"
+#include "archfunc.h"
 
 static UH ports[] = {
 	pic_master2, pic_slave2
@@ -50,9 +51,7 @@ void pic_initialize(void)
 	outb(pic_slave2, PIC_CASCADE_NO);
 	outb(pic_slave2, PIC_ICW4_8086);
 
-	/* set defaut mask */
-	outb(pic_master2, ~PIC_IR_BIT(ir_cascade & PIC_INT_NO_MASK));
-	outb(pic_slave2, ~0);
+	pic_mask_all();
 
 	idt_set(PIC_IR_VECTOR(ir_pit), handle32);
 	idt_set(PIC_IR_VECTOR(ir_keyboard), handle33);

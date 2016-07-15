@@ -33,11 +33,14 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../lib/libserv/libserv.h"
 
 static ER keyboard_initialize(void);
+#if 0
 static ER psaux_initialize(void);
+#endif
 static UB _read(void);
 static BOOL isAck(void);
+#if 0
 static BOOL _writeAux(UB b);
-
+#endif
 
 ER kbc_initialize(void)
 {
@@ -52,8 +55,9 @@ ER kbc_initialize(void)
 	//TODO check error
 	dbg_printf("keyboard=%d\n", keyboard_initialize());
 	//TODO check error
+#if 0
 	dbg_printf("psaux=%d\n", psaux_initialize());
-
+#endif
 	return E_OK;
 }
 
@@ -70,7 +74,7 @@ static ER keyboard_initialize(void)
 
 	return isAck()? E_OK:E_SYS;
 }
-
+#if 0
 static ER psaux_initialize(void)
 {
 	do {
@@ -106,7 +110,7 @@ static ER psaux_initialize(void)
 
 	return E_SYS;
 }
-
+#endif
 static UB _read(void) {
 	kbc_wait_to_read();
 
@@ -116,7 +120,7 @@ static UB _read(void) {
 static BOOL isAck(void) {
 	return _read() == AUX_ACK;
 }
-
+#if 0
 static BOOL _writeAux(UB b) {
 	outb(KBC_PORT_CMD, KBC_WRITE_AUX);
 	kbc_wait_to_write();
@@ -124,3 +128,4 @@ static BOOL _writeAux(UB b) {
 
 	return isAck();
 }
+#endif

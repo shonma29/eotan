@@ -1,5 +1,3 @@
-#ifndef __ARCH_ARCHFUNC_H__
-#define __ARCH_ARCHFUNC_H__	1
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,24 +25,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <sys/types.h>
+#include <mpu/io.h>
+#include "8259a.h"
+#include "archfunc.h"
 
-/* 8259a.c */
-extern void pic_initialize(void);
-extern ER pic_reset_mask(const UB ir);
-
-/* pic_mask_all.c */
-extern void pic_mask_all(void);
-
-/* rtc.c */
-extern void rtc_get_time(time_t *seconds);
-
-/* 8254.c */
-extern ER pit_initialize(const UW freq);
-
-/* 8024.c */
-extern ER kbc_initialize(void);
-
-#define arch_initialize pic_initialize
-
-#endif
+void pic_mask_all(void)
+{
+	/* set defaut mask */
+	outb(pic_master2, ~PIC_IR_BIT(ir_cascade & PIC_INT_NO_MASK));
+	outb(pic_slave2, ~0);
+}
