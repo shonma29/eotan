@@ -118,6 +118,8 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 	if (error_no)
 	    break;
 
+	procp->proc_status = PS_TRANSITION;
+
 	/* region の解放 */
 	error_no = process_destroy(procid);
 	if (error_no)
@@ -160,6 +162,8 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     if (error_no) {
 	return (error_no);
     }
+
+    procp->proc_status = PS_RUN;
 
     if (procid == INIT_PID)
 	set_local(procid, caller);

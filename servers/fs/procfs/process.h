@@ -101,7 +101,8 @@ enum proc_status
   PS_SLEEP = 1,		/* sleep 状態 */
   PS_WAIT = 2,		/* wait 状態 */
   PS_RUN = 3,		/* run 状態 */
-  PS_ZOMBIE = 4		/* zombie 状態 */
+  PS_ZOMBIE = 4,		/* zombie 状態 */
+  PS_TRANSITION = 5
 };
 
 struct proc
@@ -138,12 +139,12 @@ extern W		init_process (void);
 extern W		proc_get_permission (W procid, struct permission *p);
 extern W		proc_get_pid (W procid, W *pid);
 extern W		proc_get_ppid (W procid, W *ppid);
+extern W proc_get_status(W procid);
 extern W		proc_alloc_fileid (W procid, W *retval);
 extern W		proc_get_cwd (W procid, struct inode **cwd);
 extern W		proc_set_cwd (W procid, struct inode *cwd);
 extern W		proc_get_file (W procid, W fileid, struct file **fp);
 extern W		proc_set_file (W procid, W fileid, W flag, struct inode *ip);
-extern W		proc_get_cwd (W procid, struct inode **cwd);
 extern W		proc_get_procp (W procid, struct proc **procp);
 extern W		proc_exit (W procid);
 extern W		proc_alloc_proc (struct proc **procp);

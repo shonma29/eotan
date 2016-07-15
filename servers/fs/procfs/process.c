@@ -246,6 +246,16 @@ W proc_get_permission(W procid, struct permission * p)
 }
 
 
+W proc_get_status(W procid)
+{
+    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
+	return (-1);
+    }
+
+    return proc_table[procid].proc_status;
+}
+
+
 W proc_alloc_fileid(W procid, W * retval)
 {
     W i;

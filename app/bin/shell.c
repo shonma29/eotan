@@ -31,10 +31,14 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 #include <unistd.h>
 #include <set/hash.h>
+#include <sys/param.h>
 
 #define ERR (-1)
 #define ERR_OK (0)
 #define ERR_MEMORY (-2)
+
+#define DIRS_DELIMITER ':'
+#define PATH_DELIMITER '/'
 
 #define DEFAULT_BUF_SIZE 1024
 #define SHIFT_BUF_SIZE 1
@@ -43,27 +47,133 @@ For more information, please refer to <http://unlicense.org/>
 
 #define MAX_ENV (256)
 
+typedef struct {
+	char *head;
+	size_t len;
+	size_t max;
+	bool last;
+	char buf[MAXPATHLEN];
+} Token;
+
 static size_t bufsize = DEFAULT_BUF_SIZE >> 1;
 static size_t arraysize = DEFAULT_ARRAY_SIZE >> 1;
 static char *buf = NULL;
 static char **array = NULL;
 
+static int get_path(Token *s);
+static bool get_size(size_t *len, const char *head);
+static void execute(char **env, const char *path);
 static unsigned int env_calc_hash(const void *key, const size_t size);
 static int env_compare(const void *a, const void *b);
+static char *env_get(hash_t *hash, const char *key);
 static bool env_put(hash_t *hash, const char *envp);
 static void env_store(hash_t *hash);
 static char **env_expand(hash_t *hash);
 
 
-static void execute(char **env)
+static int get_path(Token *token)
+{
+	char *head = token->head;
+	char *p;
+
+	for (p = head;; p++) {
+		char c = *p;
+
+		if (c == DIRS_DELIMITER) {
+			token->head = p + 1;
+			break;
+		}
+
+		if (!c) {
+			token->head = p;
+			token->last = true;
+			break;
+		}
+	}
+
+	token->len = (size_t)p - (size_t)head;
+	if (!token->len)
+		return 1;
+
+	if (p[-1] == PATH_DELIMITER) {
+		if (token->len > token->max)
+			return 1;
+
+		memcpy(token->buf, head, token->len);
+
+	} else {
+		if (token->len + 1 > token->max)
+			return 1;
+
+		memcpy(token->buf, head, token->len);
+		token->buf[token->len++] = PATH_DELIMITER;
+	}
+
+	return 0;
+}
+
+static bool get_size(size_t *len, const char *head)
+{
+	bool has_path = false;
+	const char *p;
+
+	for (p = head; *p; p++)
+		if (*p == PATH_DELIMITER)
+			has_path = true;
+
+	*len = (size_t)p - (size_t)head;
+
+	return has_path;
+}
+
+static void execute(char **env, const char *path)
 {
 	pid_t pid = fork();
 
 	/* child */
 	if (pid == 0) {
-		if (execve(array[0], array, env) == ERR) {
-			printf("exec error %d\n", errno);
-			exit(errno);
+		Token token;
+		bool has_path = get_size(&(token.len), array[0]);
+
+		if (++token.len > MAXPATHLEN)
+			exit(ENAMETOOLONG);
+
+		if (has_path) {
+			if (execve(array[0], array, env) == ERR) {
+				if (errno == ENOENT)
+					printf("%s not found\n", array[0]);
+				else
+					printf("exec error %d\n", errno);
+
+				exit(errno);
+			}
+
+		} else if (!path)
+			exit(ENOENT);
+
+		else {
+			token.head = (char*)path;
+			token.max = MAXPATHLEN - token.len;
+			token.last = false;
+
+			do {
+				if (get_path(&token)) {
+					printf("bad path\n");
+					break;
+				}
+
+				strcpy(&(token.buf[token.len]), array[0]);
+				if (execve(token.buf, array, env) == ERR)
+					if (errno != ENOENT) {
+						printf("exec error %d\n",
+								errno);
+						exit(errno);
+					}
+
+			} while (!(token.last));
+
+			printf("%s not found\n", array[0]);
+			exit(ENOENT);
 		}
 	}
 
@@ -166,6 +276,31 @@ static int env_compare(const void *a, const void *b)
 			return 1;
 
 	return (!(*y) || (*y == '='))? 0:1;
+}
+
+static char *env_get(hash_t *hash, const char *key)
+{
+	char *p;
+
+	if (!key)
+		return NULL;
+
+	if (!key[0])
+		return NULL;
+
+	p = strchr(key, '=');
+	if (p)
+		return NULL;
+
+	p = hash_get(hash, key);
+	if (!p)
+		return NULL;
+
+	p = strchr(p, '=');
+	if (!p)
+		return NULL;
+
+	return p[1]? &(p[1]):NULL;
 }
 
 static bool env_put(hash_t *hash, const char *env)
@@ -301,7 +436,7 @@ int main(int argc, char **argv, char **env)
 			else {
 				char **envp = env_expand(hash);
 
-				execute(envp);
+				execute(envp, env_get(hash, "PATH"));
 				free(envp);
 			}
 		}

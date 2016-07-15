@@ -1,5 +1,3 @@
-#ifndef _LIMITS_H_
-#define _LIMITS_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,7 +24,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <mpu/limits.h>
+#ifndef _SYS_PARAM_H_
+#define _SYS_PARAM_H_
+
 #include <sys/syslimits.h>
+
+#define MAXPATHLEN PATH_MAX
 
 #endif
