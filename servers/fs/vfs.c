@@ -331,10 +331,6 @@ fs_mount(const ID device,
     struct fsops *fsp;
     W err;
 
-#ifdef FMDEBUG
-    dbg_printf("fs: MOUNT: device = 0x%x, fstype = %s, option = %d\n",
-	       deviceip->i_dev, fstype, option);
-#endif
     if ((fstype < 0) || (fstype >= sizeof(fs_table) / sizeof(struct fs_entry))) {
 	dbg_printf("fs: mount unknown fstype %d\n", fstype);
 	return (EINVAL);
@@ -468,20 +464,11 @@ fs_open_file(B * path,
     W error_no;
 
     if (oflag & O_CREAT) {
-#ifdef FMDEBUG
-	dbg_printf("fs_open_file: File creation mode.\n");
-#endif
 	error_no = fs_lookup(startip, path, O_RDONLY, mode, acc, newip);
 	if (error_no == ENOENT) {
-#ifdef FMDEBUG
-	    dbg_printf("fs_open_file: call fs_create_file(%s)\n", path);
-#endif
 	    error_no = fs_create_file(startip, path, oflag, mode, acc, newip);
 	    return (error_no);
 	} else if (error_no == EOK) {
-#ifdef FMDEBUG
-	    dbg_printf("fs_open_file: File already exists.\n");
-#endif
 	    dealloc_inode(*newip);	/* fs_close() で行う処理はこれだけ */
 	    /*      return (EEXIST); */
 	    /* 後で mode と acc を確かめながら再度 open する */
@@ -489,19 +476,9 @@ fs_open_file(B * path,
 	    return (error_no);
 	}
     }
-#ifdef FMDEBUG
-    /* パス名に従ってファイルをオープンする
-     */
-    dbg_printf
-	("fs_open_file: startip = 0x%x, path = %s, oflag = %d, mode = %d\n",
-	 startip, path, oflag, mode);
-#endif
 
     error_no = fs_lookup(startip, path, oflag, mode, acc, newip);
     if (error_no) {
-#ifdef FMDEBUG
-	dbg_printf("fs: Cannot lookup -> return from fs_open_file ().\n");
-#endif
 	return (error_no);
     }
 
@@ -613,10 +590,6 @@ fs_lookup(struct inode * startip,
     int len;
     char part[MAX_NAMELEN];
     W error_no;
-
-#ifdef FMDEBUG
-    dbg_printf("fs: fs_lookup(): start (path = \"%s\")\n", path);
-#endif
 
     if (startip == NULL) {
 	return (ENODEV);
