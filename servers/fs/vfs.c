@@ -182,6 +182,8 @@ static void dealloc_fs(struct fs *);
 static W fs_create_file(struct inode *startip, char *path, W oflag,
 			W mode, struct permission *acc,
 			struct inode **newip);
+static W copy_path(char * parent_path, char * path, struct inode * startip,
+		struct inode ** parent_ip);
 
 
 
@@ -500,34 +502,17 @@ fs_create_file(struct inode * startip,
 {
     char parent_path[MAX_NAMELEN];
     struct inode *parent_ip;
-    W parent_length;
+    W parent_length = copy_path(parent_path, path, startip, &parent_ip);
     W error_no;
 
-    for (parent_length = strlen(path); parent_length >= 0; parent_length--) {
-	if (path[parent_length] == '/') {
-	    strncpy(parent_path, path, MAX_NAMELEN - 1);
-	    parent_path[MAX_NAMELEN - 1] = '\0';
-	    parent_path[parent_length] = '\0';
-	    break;
-	}
-    }
-
-    if (parent_length < 0) {
-	parent_ip = startip;
-	parent_ip->i_refcount++;
-	parent_length = 0;
-    } else if (parent_length == 0) {
-	parent_ip = rootfile;
-	parent_ip->i_refcount++;
-	parent_length = 1;
-    } else {
+    if (parent_length > 0) {
 	error_no = fs_lookup(startip, parent_path, O_WRONLY,
 			  mode, acc, &parent_ip);
 	if (error_no) {
 	    return (error_no);
 	}
-	parent_length += 1;
     }
+    parent_length += 1;
 
     if ((parent_ip->i_mode & S_IFMT) != S_IFDIR) {
 	fs_close_file(parent_ip);
@@ -735,34 +720,17 @@ fs_remove_file(struct inode * startip, B * path, struct permission * acc)
 {
     char parent_path[MAX_NAMELEN];
     struct inode *parent_ip;
-    W parent_length;
+    W parent_length = copy_path(parent_path, path, startip, &parent_ip);
     W error_no;
 
-    for (parent_length = strlen(path); parent_length >= 0; parent_length--) {
-	if (path[parent_length] == '/') {
-	    strncpy(parent_path, path, MAX_NAMELEN - 1);
-	    parent_path[MAX_NAMELEN - 1] = '\0';
-	    parent_path[parent_length] = '\0';
-	    break;
-	}
-    }
-
-    if (parent_length < 0) {
-	parent_ip = startip;
-	parent_ip->i_refcount++;
-	parent_length = 0;
-    } else if (parent_length == 0) {
-	parent_ip = rootfile;
-	parent_ip->i_refcount++;
-	parent_length = 1;
-    } else {
+    if (parent_length > 0) {
 	error_no =
 	    fs_lookup(startip, parent_path, O_RDWR, 0, acc, &parent_ip);
 	if (error_no) {
 	    return (error_no);
 	}
-	parent_length += 1;
     }
+    parent_length += 1;
 
     error_no = OPS(parent_ip).unlink(parent_ip, &path[parent_length], acc);
     fs_close_file(parent_ip);
@@ -780,34 +748,17 @@ W fs_remove_dir(struct inode * startip, B * path, struct permission * acc)
 {
     char parent_path[MAX_NAMELEN];
     struct inode *parent_ip;
-    W parent_length;
+    W parent_length = copy_path(parent_path, path, startip, &parent_ip);
     W error_no;
 
-    for (parent_length = strlen(path); parent_length >= 0; parent_length--) {
-	if (path[parent_length] == '/') {
-	    strncpy(parent_path, path, MAX_NAMELEN - 1);
-	    parent_path[MAX_NAMELEN - 1] = '\0';
-	    parent_path[parent_length] = '\0';
-	    break;
-	}
-    }
-
-    if (parent_length < 0) {
-	parent_ip = startip;
-	parent_ip->i_refcount++;
-	parent_length = 0;
-    } else if (parent_length == 0) {
-	parent_ip = rootfile;
-	parent_ip->i_refcount++;
-	parent_length = 1;
-    } else {
+    if (parent_length > 0) {
 	error_no =
 	    fs_lookup(startip, parent_path, O_RDWR, 0, acc, &parent_ip);
 	if (error_no) {
 	    return (error_no);
 	}
-	parent_length += 1;
     }
+    parent_length += 1;
 
     error_no = OPS(parent_ip).rmdir(parent_ip, &path[parent_length], acc);
     fs_close_file(parent_ip);
@@ -856,31 +807,15 @@ W fs_create_dir(struct inode * startip,
 	return (error_no);
     }
 
-    for (parent_length = strlen(path); parent_length >= 0; parent_length--) {
-	if (path[parent_length] == '/') {
-	    strncpy(parent_path, path, MAX_NAMELEN - 1);
-	    parent_path[MAX_NAMELEN - 1] = '\0';
-	    parent_path[parent_length] = '\0';
-	    break;
-	}
-    }
-
-    if (parent_length < 0) {
-	parent_ip = startip;
-	parent_ip->i_refcount++;
-	parent_length = 0;
-    } else if (parent_length == 0) {
-	parent_ip = rootfile;
-	parent_ip->i_refcount++;
-	parent_length = 1;
-    } else {
+    parent_length = copy_path(parent_path, path, startip, &parent_ip);
+    if (parent_length > 0) {
 	error_no = fs_lookup(startip, parent_path, O_WRONLY,
 			  mode, acc, &parent_ip);
 	if (error_no) {
 	    return (error_no);
 	}
-	parent_length += 1;
     }
+    parent_length += 1;
 
     if ((parent_ip->i_mode & S_IFMT) != S_IFDIR) {
 	fs_close_file(parent_ip);
@@ -940,31 +875,15 @@ fs_link_file(W procid, B * src, B * dst, struct permission * acc)
 	startip = rootfile;
     }
 
-    for (parent_length = strlen(dst); parent_length >= 0; parent_length--) {
-	if (dst[parent_length] == '/') {
-	    strncpy(parent_path, dst, MAX_NAMELEN - 1);
-	    parent_path[MAX_NAMELEN - 1] = '\0';
-	    parent_path[parent_length] = '\0';
-	    break;
-	}
-    }
-
-    if (parent_length < 0) {
-	parent_ip = startip;
-	parent_ip->i_refcount++;
-	parent_length = 0;
-    } else if (parent_length == 0) {
-	parent_ip = rootfile;
-	parent_ip->i_refcount++;
-	parent_length = 1;
-    } else {
+    parent_length = copy_path(parent_path, dst, startip, &parent_ip);
+    if (parent_length > 0) {
 	error_no =
 	    fs_lookup(startip, parent_path, O_RDWR, 0, acc, &parent_ip);
 	if (error_no) {
 	    return (error_no);
 	}
-	parent_length += 1;
     }
+    parent_length += 1;
 
     /* ファイルシステムを跨ぐリンクにならないことをチェックする */
     if (srcip->i_fs != parent_ip->i_fs) {
@@ -1050,4 +969,29 @@ W fs_register_inode(struct inode * ip)
     list_append(&(ip->i_fs->ilist), &(ip->bros));
 
     return (EOK);
+}
+
+static W copy_path(char * parent_path, char * path, struct inode * startip,
+		struct inode ** parent_ip)
+{
+    W len;
+
+    for (len = strlen(path); len >= 0; len--) {
+	if (path[len] == '/') {
+	    strncpy(parent_path, path, MAX_NAMELEN - 1);
+	    parent_path[MAX_NAMELEN - 1] = '\0';
+	    parent_path[len] = '\0';
+	    break;
+	}
+    }
+
+    if (len < 0) {
+	*parent_ip = startip;
+	(*parent_ip)->i_refcount++;
+    } else if (len == 0) {
+	*parent_ip = rootfile;
+	(*parent_ip)->i_refcount++;
+    }
+
+    return len;
 }
