@@ -171,7 +171,8 @@ static struct fs_entry fs_table[] = {
 
 
 static struct fs fs_buf[MAX_MOUNT], *free_fs = NULL, *rootfs = NULL;
-static struct inode inode_buf[MAX_INODE], *free_inode = NULL;
+static struct inode inode_buf[MAX_INODE];
+static list_t free_inode;
 struct inode *rootfile = NULL;
 static W mode_map[] = { R_OK, W_OK, R_OK | W_OK };
 
@@ -193,13 +194,9 @@ W fs_init(void)
     /* 各データ構造の初期化を行い
      * ルートファイルシステムをマウントする
      */
-    for (i = 0; i < MAX_INODE - 1; i++) {
-/*      dbg_printf ("Inode [%d] = 0x%x \n", i, &inode_buf[i]);
- */
-	inode_buf[i].i_next = &(inode_buf[i + 1]);
-    }
-    inode_buf[MAX_INODE - 1].i_next = NULL;
-    free_inode = &inode_buf[0];
+    list_initialize(&free_inode);
+    for (i = 0; i < sizeof(inode_buf) / sizeof(inode_buf[0]); i++)
+	list_append(&free_inode, &(inode_buf[i].bros));
 
     rootfile = alloc_inode();
     if (rootfile == NULL) {
@@ -294,6 +291,7 @@ static struct fs *alloc_fs(void)
     free_fs = free_fs->next;
 
     memset((B*)p, 0, sizeof(struct fs));
+    list_initialize(&(p->ilist));
     return (p);
 }
 
@@ -378,9 +376,7 @@ fs_mount(const ID device,
     if (err) {
 	if (rootfs) {
 	    /* dealloc_inode は使えないので手動で free_inode list へ再登録 */
-	    newip->i_next = free_inode;
-	    newip->i_prev = NULL;
-	    free_inode = newip;
+	    list_append(&free_inode, &(newip->bros));
 	}
 
 	return (err);
@@ -421,7 +417,6 @@ fs_mount(const ID device,
 W fs_unmount(UW device)
 {
     struct fs *fsp;
-    struct inode *ip;
 
     /* device から fsp を検索 */
     fsp = rootfs;
@@ -440,8 +435,7 @@ W fs_unmount(UW device)
 	return (EBUSY);
     }
 
-    ip = fsp->ilist;
-    if (ip != ip->i_next) {
+    if (!list_is_empty(&(fsp->ilist))) {
 	/* マウントポイント以下のファイル/ディレクトリが使われている
 	 * BUSY のエラーで返す
 	 */
@@ -1030,19 +1024,18 @@ fs_link_file(W procid, B * src, B * dst, struct permission * acc)
  */
 struct inode *alloc_inode(void)
 {
-    struct inode *p;
+    list_t *p = list_pick(&free_inode);
+    struct inode *ip;
 
-    if (free_inode == NULL) {
+    if (p == NULL) {
 	return (NULL);
     }
 
-    p = free_inode;
-    free_inode = free_inode->i_next;
-
-    memset((B*)p, 0, sizeof(struct inode));
-    p->i_prev = p->i_next = p;
-    p->i_refcount = 1;
-    return (p);
+    ip = getINodeParent(p);
+    memset((B*)ip, 0, sizeof(struct inode));
+    list_initialize(&(ip->bros));
+    ip->i_refcount = 1;
+    return (ip);
 }
 
 
@@ -1056,19 +1049,9 @@ W dealloc_inode(struct inode * ip)
     if (ip->i_refcount <= 0) {
 	OPS(ip).close(ip);
 	/* fs の register_list からの取り除き */
-	if (ip->i_next == ip) {
-	    ip->i_fs->ilist = NULL;
-	} else {
-	    if (ip->i_fs->ilist == ip) {
-		ip->i_fs->ilist = ip->i_next;
-	    }
-	    ip->i_next->i_prev = ip->i_prev;
-	    ip->i_prev->i_next = ip->i_next;
-	}
+	list_remove(&(ip->bros));
 	/* free_inode list へ登録 */
-	ip->i_next = free_inode;
-	ip->i_prev = NULL;
-	free_inode = ip;
+	list_append(&(free_inode), &(ip->bros));
     }
     return (EOK);
 }
@@ -1079,18 +1062,13 @@ W dealloc_inode(struct inode * ip)
  */
 struct inode *fs_get_inode(struct fs *fsp, W index)
 {
-    struct inode *ip, *register_list;
+    list_t *register_list = &(fsp->ilist);
+    list_t *p;
 
-    register_list = fsp->ilist;
-    if (register_list == NULL) {
-	return (NULL);
-    }
+    for (p = list_next(register_list); !list_is_edge(register_list, p);
+	    p = list_next(p)) {
+	struct inode *ip = getINodeParent(p);
 
-    if (register_list->i_index == index) {
-	return (register_list);
-    }
-
-    for (ip = register_list->i_next; ip != register_list; ip = ip->i_next) {
 	if (ip->i_index == index) {
 	    return (ip);
 	}
@@ -1101,20 +1079,7 @@ struct inode *fs_get_inode(struct fs *fsp, W index)
 
 W fs_register_inode(struct inode * ip)
 {
-    struct inode *register_list;
-
-    if (ip->i_fs->ilist == NULL) {
-	ip->i_next = ip;
-	ip->i_prev = ip;
-	ip->i_fs->ilist = ip;
-    } else {
-	/* Queue の最後に追加 */
-	register_list = ip->i_fs->ilist;
-	ip->i_prev = register_list->i_prev;
-	ip->i_next = register_list;
-	register_list->i_prev->i_next = ip;
-	register_list->i_prev = ip;
-    }
+    list_append(&(ip->i_fs->ilist), &(ip->bros));
 
     return (EOK);
 }

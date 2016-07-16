@@ -90,6 +90,7 @@ Version 2, June 1991
 #define __FS_VFS_H__	1
 
 #include <fs/sfs.h>
+#include <set/list.h>
 #include <sys/statvfs.h>
 #include "types.h"
 
@@ -123,7 +124,7 @@ struct fs {
     W typeid;
     struct fsops ops;
     ID device;
-    struct inode *ilist;	/* 使用中の inode のリスト */
+    list_t ilist;	/* 使用中の inode のリスト */
     struct inode *rootdir;
     struct inode *mountpoint;
     W dirty;
@@ -133,8 +134,7 @@ struct fs {
 };
 
 struct inode {
-    struct inode *i_prev;
-    struct inode *i_next;
+    list_t bros;
     struct fs *i_fs;
     UW i_lock;
     W i_refcount;

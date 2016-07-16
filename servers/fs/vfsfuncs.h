@@ -29,6 +29,10 @@ For more information, please refer to <http://unlicense.org/>
 
 #include "vfs.h"
 
+static inline struct inode *getINodeParent(const list_t *p) {
+	return (struct inode*)((intptr_t)p - offsetof(struct inode, bros));
+}
+
 static inline W fs_sync_file(struct inode *ip)
 {
 	return OPS(ip).sync(ip, 0);
