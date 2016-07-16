@@ -187,13 +187,10 @@ extern W fs_remove_file(struct inode *startip, B * path,
 			struct permission *acc);
 extern W fs_remove_dir(struct inode *startip, B * path,
 		       struct permission *acc);
-extern W fs_sync_file(struct inode *ip);
 extern W fs_statvfs(ID device, struct statvfs *result);
 extern W fs_create_dir(struct inode * startip,
 		     char *path, W mode, struct permission * acc,
 		     struct inode ** newip);
-extern W fs_getdents(struct inode *ip, ID caller, W offset,
-		     VP buf, UW length, W * rsize, W * fsize);
 extern W fs_link_file(W procid, B * src, B * dst, struct permission * acc);
 
 extern struct inode *alloc_inode(void);
@@ -206,5 +203,7 @@ extern struct inode *rootfile;
 /* session.c */
 extern W session_get_opened_file(const ID, const W, struct file **);
 extern W session_get_path(struct inode **, const ID, const ID, UB *, UB *);
+
+#include "vfsfuncs.h"
 
 #endif				/* __FS_VFS_H__ */

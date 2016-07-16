@@ -859,18 +859,6 @@ W fs_remove_dir(struct inode * startip, B * path, struct permission * acc)
 }
 
 
-/* fs_sync_file -
- *
- */
-W fs_sync_file(struct inode * ip)
-{
-    W error_no;
-
-    error_no = OPS(ip).sync(ip, 0);
-    return (error_no);
-}
-
-
 /* fs_statvfs -
  *
  */
@@ -946,21 +934,6 @@ W fs_create_dir(struct inode * startip,
     }
     return (EOK);
 }
-
-/*
- * fs_getdents
- */
-W fs_getdents(struct inode * ip, ID caller, W offset,
-	      VP buf, UW length, W * rsize, W * fsize)
-{
-    W error_no;
-
-    error_no = OPS(ip).getdents(ip, caller, offset, buf, length, rsize, fsize);
-    if (error_no)
-	return (error_no);
-    return (EOK);
-}
-
 
 /* fs_link_file -
  *
