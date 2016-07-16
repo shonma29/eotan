@@ -119,8 +119,7 @@ struct fsops {
 #define OPS(ip) ((ip)->i_fs->ops)
 
 struct fs {
-    struct fs *prev;
-    struct fs *next;
+    list_t bros;
     W typeid;
     struct fsops ops;
     ID device;

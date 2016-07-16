@@ -170,7 +170,8 @@ static struct fs_entry fs_table[] = {
 };
 
 
-static struct fs fs_buf[MAX_MOUNT], *free_fs = NULL, *rootfs = NULL;
+static struct fs fs_buf[MAX_MOUNT], *rootfs = NULL;
+static list_t free_fs;
 static struct inode inode_buf[MAX_INODE];
 static list_t free_inode;
 struct inode *rootfile = NULL;
@@ -203,11 +204,9 @@ W fs_init(void)
 	return (E_NOMEM);
     }
 
-    for (i = 0; i < MAX_MOUNT - 1; i++) {
-	fs_buf[i].next = &fs_buf[i + 1];
-    }
-    fs_buf[MAX_MOUNT - 1].next = NULL;
-    free_fs = &fs_buf[0];
+    list_initialize(&free_fs);
+    for (i = 0; i < sizeof(fs_buf) / sizeof(fs_buf[0]); i++)
+	list_append(&free_fs, &(fs_buf[i].bros));
 
     init_cache();
 
@@ -281,18 +280,18 @@ W open_special_devices(struct proc * procp)
  */
 static struct fs *alloc_fs(void)
 {
-    struct fs *p;
+    list_t *p = list_pick(&free_fs);
+    struct fs *fsp;
 
-    if (free_fs == NULL) {
+    if (p == NULL) {
 	return (NULL);
     }
 
-    p = free_fs;
-    free_fs = free_fs->next;
+    fsp = getFsParent(p);
 
-    memset((B*)p, 0, sizeof(struct fs));
-    list_initialize(&(p->ilist));
-    return (p);
+    memset((B*)fsp, 0, sizeof(struct fs));
+    list_initialize(&(fsp->ilist));
+    return (fsp);
 }
 
 static void dealloc_fs(struct fs *fsp)
@@ -301,9 +300,7 @@ static void dealloc_fs(struct fs *fsp)
 	return;
     }
 
-    fsp->prev = NULL;
-    fsp->next = free_fs;
-    free_fs = fsp;
+    list_remove(&(fsp->bros));
 }
 
 W find_fs(UB *fsname, W *fstype)
@@ -353,7 +350,7 @@ fs_mount(const ID device,
 	    if (newfs->device == device) {
 		return (EBUSY);
 	    }
-	    newfs = newfs->next;
+	    newfs = getFsParent(list_next(&(newfs->bros)));
 	} while (newfs != rootfs);
 
 	newip = alloc_inode();
@@ -390,18 +387,14 @@ fs_mount(const ID device,
 
     /* ファイルシステムのリストへ登録 */
     if (rootfs) {
-	newfs->next = rootfs;
-	newfs->prev = rootfs->prev;
-	rootfs->prev->next = newfs;
-	rootfs->prev = newfs;
+	list_append(&(rootfs->bros), &(newfs->bros));
 
 	/* mount point に coverfile を設定 */
 	mountpoint->coverfile = newip;
 	newfs->mountpoint = mountpoint;
 
     } else {
-	newfs->next = newfs;
-	newfs->prev = newfs;
+        list_initialize(&(newfs->bros));
 	rootfs = newfs;
     }
 
@@ -423,7 +416,7 @@ W fs_unmount(UW device)
     do {
 	if (fsp->device == device)
 	    break;
-	fsp = fsp->next;
+	fsp = getFsParent(list_next(&(fsp->bros)));
     }
     while (fsp != rootfs);
     if (fsp == rootfs) {
@@ -455,8 +448,7 @@ W fs_unmount(UW device)
     fsp->rootdir = NULL;
 
     /* FS list から除外 */
-    fsp->prev->next = fsp->next;
-    fsp->next->prev = fsp->prev;
+    list_remove(&(fsp->bros));
     dealloc_fs(fsp);
 
     return (EOK);
@@ -679,7 +671,7 @@ fs_lookup(struct inode * startip,
 					    newip);
 			    break;
 			}
-			fsp = fsp->next;
+			fsp = getFsParent(list_next(&(fsp->bros)));
 		    } while (fsp != rootfs);
 		}
 		dealloc_inode(tmpip);
@@ -858,11 +850,14 @@ W fs_remove_dir(struct inode * startip, B * path, struct permission * acc)
  */
 W fs_statvfs(ID device, struct statvfs * result)
 {
-    struct fs *p;
+    list_t *p;
 
-    for (p = rootfs; p != 0; p = p->next) {
-	if (p->device == device) {
-	    return p->ops.statvfs(p, result);
+    for (p = list_next(&(rootfs->bros)); !list_is_edge(&(rootfs->bros), p);
+	     p = list_next(p)) {
+	struct fs *fsp = getFsParent(p);
+
+	if (fsp->device == device) {
+	    return fsp->ops.statvfs(fsp, result);
 	}
     }
     return (ENODEV);

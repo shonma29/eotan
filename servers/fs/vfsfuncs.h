@@ -33,6 +33,10 @@ static inline struct inode *getINodeParent(const list_t *p) {
 	return (struct inode*)((intptr_t)p - offsetof(struct inode, bros));
 }
 
+static inline struct fs *getFsParent(const list_t *p) {
+	return (struct fs*)((intptr_t)p - offsetof(struct fs, bros));
+}
+
 static inline W fs_sync_file(struct inode *ip)
 {
 	return OPS(ip).sync(ip, 0);
