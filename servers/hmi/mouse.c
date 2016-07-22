@@ -29,7 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core/packets.h>
 #include <mpu/io.h>
 #include <nerve/icall.h>
-#include "../../kernel/arch/8024.h"
+#include "../../kernel/arch/8042.h"
 #include "../../kernel/arch/8259a.h"
 #include "../../kernel/arch/archfunc.h"
 #include "../../lib/libserv/libserv.h"

@@ -42,7 +42,7 @@ extern void rtc_get_time(time_t *seconds);
 /* 8254.c */
 extern ER pit_initialize(const UW freq);
 
-/* 8024.c */
+/* 8042.c */
 extern ER kbc_initialize(void);
 
 #define arch_initialize pic_initialize

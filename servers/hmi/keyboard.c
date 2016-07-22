@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/io.h>
 #include <nerve/icall.h>
 #include <nerve/kcall.h>
-#include "../../kernel/arch/8024.h"
+#include "../../kernel/arch/8042.h"
 #include "../../kernel/arch/8259a.h"
 #include "../../kernel/arch/archfunc.h"
 #include "../../kernel/arch/scan2key.h"
