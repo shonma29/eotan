@@ -59,7 +59,7 @@ char *testfile()
 	printf("fstat: uid=%d\n", st.st_uid);
 	printf("fstat: gid=%d\n", st.st_gid);
 	printf("fstat: rdev=%x\n", st.st_rdev);
-	printf("fstat: size=%d\n", st.st_size);
+	printf("fstat: size=%d\n", (int)st.st_size);
 	printf("fstat: blksize=%d\n", st.st_blksize);
 	printf("fstat: blocks=%d\n", st.st_blocks);
 	printf("fstat: atime=%d, %d\n",

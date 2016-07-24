@@ -120,7 +120,7 @@ static ER init(void)
 }
 
 
-VP malloc(UW size)
+void *malloc(unsigned int size)
 {
     struct alloc_entry_t *p;
     struct alloc_entry_t *newmem;

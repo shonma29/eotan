@@ -28,12 +28,13 @@ ARCH = i686
 MAKE = gmake
 CC = gcc
 CFLAGS = -Wall -Werror -O2 -std=gnu99 \
- -fno-stack-protector -fno-builtin \
+ -march=$(ARCH) \
+ -fno-stack-protector \
  -I $(WD) -I include \
  -DUSE_VESA \
-# -march=$(ARCH)
+# -fno-builtin
 AS = as
-#ASFLAGS = -march=$(ARCH)
+ASFLAGS = -march=$(ARCH)
 LD = ld
 STRIP = strip -s -R .comment -R .note -R .note.ABI-tag
 

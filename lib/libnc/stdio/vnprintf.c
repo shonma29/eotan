@@ -122,7 +122,7 @@ static int _format(State *s)
 		_putchar(s, '%');
 		return FALSE;
 	case 'c':
-		_putchar(s, va_arg(s->ap, char));
+		_putchar(s, va_arg(s->ap, int) & 0xff);
 		break;
 	case 'd':
 		_putd(s, va_arg(s->ap, int));
