@@ -1,5 +1,5 @@
-#ifndef __ARCH_KEY2CHAR_H__
-#define __ARCH_KEY2CHAR_H__ 1
+#ifndef __HMI_KEY2CHAR_H__
+#define __HMI_KEY2CHAR_H__ 1
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,7 +26,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-
 enum {
 	key_base = 0,
 	key_shift = 1,

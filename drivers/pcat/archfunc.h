@@ -47,4 +47,8 @@ extern ER kbc_initialize(void);
 
 #define arch_initialize pic_initialize
 
+/* keyboard.c */
+extern ER keyboard_interrupt();
+extern unsigned int get_modifier(int);
+
 #endif

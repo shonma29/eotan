@@ -27,6 +27,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
+#define SCAN_BREAK 0x80
+
 enum {
  scan_normal = 0,
  scan_e0 = 1,

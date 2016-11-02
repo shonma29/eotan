@@ -1,5 +1,5 @@
-#ifndef _HMI_KEYBOARD_H_
-#define _HMI_KEYBOARD_H_
+#ifndef __KEYCODE_H__
+#define __KEYCODE_H__ 1
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,10 +26,19 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-
-extern void keyboard_process(const int, const int);
-extern ER_UINT keyboard_read(const UW, const UW, UB *);
-extern ER keyboard_initialize(void);
+#define LSHIFT 0x01
+#define RSHIFT 0x02
+#define MASK_SHIFT (LSHIFT | RSHIFT)
+#define LCTRL 0x04
+#define RCTRL 0x08
+#define MASK_CTRL (LCTRL | RCTRL)
+#define LALT 0x10
+#define RALT 0x20
+#define MASK_ALT (LALT | RALT)
+#define LWIN 0x40
+#define RWIN 0x80
+#define MASK_WIN (LWIN | RWIN)
+#define CAPS 0x100
+#define BREAK 0x200
 
 #endif

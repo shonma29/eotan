@@ -26,52 +26,19 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <device.h>
+#include <keycode.h>
 #include <services.h>
 #include <core/packets.h>
-#include <mpu/io.h>
-#include <nerve/icall.h>
 #include <nerve/kcall.h>
-#include "../../kernel/arch/8042.h"
 #include "../../kernel/arch/8259a.h"
 #include "../../kernel/arch/archfunc.h"
-#include "../../kernel/arch/scan2key.h"
-#include "../../kernel/arch/key2char.h"
 #include "../../lib/libserv/libserv.h"
+#include "key2char.h"
 #include "keyboard.h"
 
-#define LSHIFT 0x01
-#define RSHIFT 0x02
-#define MASK_SHIFT (LSHIFT | RSHIFT)
-#define LCTRL 0x04
-#define RCTRL 0x08
-#define MASK_CTRL (LCTRL | RCTRL)
-#define LALT 0x10
-#define RALT 0x20
-#define MASK_ALT (LALT | RALT)
-#define LWIN 0x40
-#define RWIN 0x80
-#define MASK_WIN (LWIN | RWIN)
-#define CAPS 0x100
-#define BREAK 0x200
-
-#define SCAN_BREAK 0x80
-
-static unsigned char state = scan_normal;
 static unsigned short modifiers = 0;
 static ID keyboard_queue_id;
 
-static void keyboard_process(const int d, const int dummy);
-
-
-static inline unsigned char is_break(const unsigned char b)
-{
-	return SCAN_BREAK & b;
-}
-
-static inline unsigned char strip_break(const unsigned char b)
-{
-	return (~SCAN_BREAK) & b;
-}
 
 static inline int is_shift(const unsigned short m)
 {
@@ -81,77 +48,10 @@ static inline int is_shift(const unsigned short m)
 	return shift ^ caps;
 }
 
-static ER keyboard_interrupt()
-{
-	unsigned char b;
-
-	kbc_wait_to_read();
-	b = inb(KBC_PORT_DATA);
-
-	switch (state) {
-	case scan_normal:
-		switch (b) {
-		case 0xe0:
-			state = scan_e0;
-			return E_OK;
-		case 0xe1:
-			state = scan_e1;
-			return E_OK;
-		default:
-			break;
-		}
-		break;
-	default:
-		state = scan_normal;
-		break;
-	}
-
-	//TODO error check
-	icall->handle(keyboard_process,
-			is_break(b)?
-				(BREAK | scan2key[state][strip_break(b)])
-				:scan2key[state][b],
-			0);
-
-	return E_OK;
-}
-
-static void keyboard_process(const int d, const int dummy)
+void keyboard_process(const int d, const int dummy)
 {
 	//TODO error check
 	kcall->queue_send(keyboard_queue_id, d, TMO_POL);
-}
-
-static unsigned int get_modifier(int b)
-{
-	switch (b) {
-	case 30:
-		b = CAPS;
-		break;
-	case 44:
-		b = LSHIFT;
-		break;
-	case 57:
-		b = RSHIFT;
-		break;
-	case 58:
-		b = LCTRL;
-		break;
-	case 60:
-		b = LALT;
-		break;
-	case 62:
-		b = RALT;
-		break;
-	case 64:
-		b = RCTRL;
-		break;
-	default:
-		b = 0;
-		break;
-	}
-
-	return b;
 }
 
 static int get_char(int b)

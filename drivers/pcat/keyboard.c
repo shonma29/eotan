@@ -1,5 +1,3 @@
-#ifndef _HMI_KEYBOARD_H_
-#define _HMI_KEYBOARD_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,9 +25,89 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <keycode.h>
+#include <mpu/io.h>
+#include <nerve/icall.h>
+#include "8042.h"
+#include "archfunc.h"
+#include "scan2key.h"
+#include "../../servers/hmi/keyboard.h"
 
-extern void keyboard_process(const int, const int);
-extern ER_UINT keyboard_read(const UW, const UW, UB *);
-extern ER keyboard_initialize(void);
+static unsigned char state = scan_normal;
 
-#endif
+static inline unsigned char is_break(const unsigned char b)
+{
+	return SCAN_BREAK & b;
+}
+
+static inline unsigned char strip_break(const unsigned char b)
+{
+	return (~SCAN_BREAK) & b;
+}
+
+ER keyboard_interrupt()
+{
+	unsigned char b;
+
+	kbc_wait_to_read();
+	b = inb(KBC_PORT_DATA);
+
+	switch (state) {
+	case scan_normal:
+		switch (b) {
+		case 0xe0:
+			state = scan_e0;
+			return E_OK;
+		case 0xe1:
+			state = scan_e1;
+			return E_OK;
+		default:
+			break;
+		}
+		break;
+	default:
+		state = scan_normal;
+		break;
+	}
+
+	//TODO error check
+	icall->handle(keyboard_process,
+			is_break(b)?
+				(BREAK | scan2key[state][strip_break(b)])
+				:scan2key[state][b],
+			0);
+
+	return E_OK;
+}
+
+unsigned int get_modifier(int b)
+{
+	switch (b) {
+	case 30:
+		b = CAPS;
+		break;
+	case 44:
+		b = LSHIFT;
+		break;
+	case 57:
+		b = RSHIFT;
+		break;
+	case 58:
+		b = LCTRL;
+		break;
+	case 60:
+		b = LALT;
+		break;
+	case 62:
+		b = RALT;
+		break;
+	case 64:
+		b = RCTRL;
+		break;
+	default:
+		b = 0;
+		break;
+	}
+
+	return b;
+}
