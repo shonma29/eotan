@@ -39,19 +39,47 @@ For more information, please refer to <http://unlicense.org/>
 static unsigned short modifiers = 0;
 static ID keyboard_queue_id;
 
+static unsigned int get_modifier(int);
+static int get_char(int);
+static ER check_param(const UW, const UW);
 
-static inline int is_shift(const unsigned short m)
-{
-	int shift = (m & MASK_SHIFT)? 1:0;
-	int caps = (m & CAPS)? 1:0;
-
-	return shift ^ caps;
-}
 
 void keyboard_process(const int d, const int dummy)
 {
 	//TODO error check
 	kcall->queue_send(keyboard_queue_id, d, TMO_POL);
+}
+
+static unsigned int get_modifier(int b)
+{
+	switch (b) {
+	case 30:
+		b = CAPS;
+		break;
+	case 44:
+		b = LSHIFT;
+		break;
+	case 57:
+		b = RSHIFT;
+		break;
+	case 58:
+		b = LCTRL;
+		break;
+	case 60:
+		b = LALT;
+		break;
+	case 62:
+		b = RALT;
+		break;
+	case 64:
+		b = RCTRL;
+		break;
+	default:
+		b = 0;
+		break;
+	}
+
+	return b;
 }
 
 static int get_char(int b)

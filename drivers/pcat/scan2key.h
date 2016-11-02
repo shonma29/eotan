@@ -97,4 +97,14 @@ static unsigned char scan2key[3][128] = {
 	}
 };
 
+static inline unsigned char is_break(const unsigned char b)
+{
+	return SCAN_BREAK & b;
+}
+
+static inline unsigned char strip_break(const unsigned char b)
+{
+	return (~SCAN_BREAK) & b;
+}
+
 #endif

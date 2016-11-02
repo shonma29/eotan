@@ -49,6 +49,5 @@ extern ER kbc_initialize(void);
 
 /* keyboard.c */
 extern ER keyboard_interrupt();
-extern unsigned int get_modifier(int);
 
 #endif

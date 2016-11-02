@@ -26,6 +26,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdbool.h>
+
 #define LSHIFT 0x01
 #define RSHIFT 0x02
 #define MASK_SHIFT (LSHIFT | RSHIFT)
@@ -40,5 +42,13 @@ For more information, please refer to <http://unlicense.org/>
 #define MASK_WIN (LWIN | RWIN)
 #define CAPS 0x100
 #define BREAK 0x200
+
+static inline bool is_shift(const unsigned short m)
+{
+	bool shift = (m & MASK_SHIFT)? true:false;
+	bool caps = (m & CAPS)? true:false;
+
+	return shift ^ caps;
+}
 
 #endif

@@ -35,15 +35,6 @@ For more information, please refer to <http://unlicense.org/>
 
 static unsigned char state = scan_normal;
 
-static inline unsigned char is_break(const unsigned char b)
-{
-	return SCAN_BREAK & b;
-}
-
-static inline unsigned char strip_break(const unsigned char b)
-{
-	return (~SCAN_BREAK) & b;
-}
 
 ER keyboard_interrupt()
 {
@@ -78,36 +69,4 @@ ER keyboard_interrupt()
 			0);
 
 	return E_OK;
-}
-
-unsigned int get_modifier(int b)
-{
-	switch (b) {
-	case 30:
-		b = CAPS;
-		break;
-	case 44:
-		b = LSHIFT;
-		break;
-	case 57:
-		b = RSHIFT;
-		break;
-	case 58:
-		b = LCTRL;
-		break;
-	case 60:
-		b = LALT;
-		break;
-	case 62:
-		b = RALT;
-		break;
-	case 64:
-		b = RCTRL;
-		break;
-	default:
-		b = 0;
-		break;
-	}
-
-	return b;
 }
