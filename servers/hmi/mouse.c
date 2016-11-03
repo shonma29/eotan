@@ -27,12 +27,11 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <boot/vesa.h>
 #include <core/packets.h>
-#include <mpu/io.h>
-#include <nerve/icall.h>
-#include "../../kernel/arch/8042.h"
+#include <mpu/memory.h>
 #include "../../kernel/arch/8259a.h"
 #include "../../kernel/arch/archfunc.h"
 #include "../../lib/libserv/libserv.h"
+#include "mouse.h"
 
 static W width;
 static W height;
@@ -42,28 +41,8 @@ static W buttons;
 
 extern void pset(unsigned int x, unsigned int y, int color);
 
-static ER mouse_interrupt(void);
-static void mouse_process(const int d, const int dummy);
 
-
-static ER mouse_interrupt(void)
-{
-	unsigned char b1;
-	unsigned char b2;
-	unsigned char b3;
-
-	kbc_wait_to_read();
-	b1 = inb(KBC_PORT_DATA);
-	b2 = inb(KBC_PORT_DATA);
-	b3 = inb(KBC_PORT_DATA);
-
-	//TODO error check
-	icall->handle(mouse_process, (b1 << 16) | (b2 << 8) | b3, 0);
-
-	return E_OK;
-}
-
-static void mouse_process(const int d, const int dummy)
+void mouse_process(const int d, const int dummy)
 {
 	int dx, dy;
 

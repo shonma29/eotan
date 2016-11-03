@@ -29,5 +29,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 
 extern ER mouse_initialize(void);
+extern void mouse_process(const int, const int);
 
 #endif

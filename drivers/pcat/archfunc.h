@@ -48,6 +48,9 @@ extern ER kbc_initialize(void);
 #define arch_initialize pic_initialize
 
 /* keyboard.c */
-extern ER keyboard_interrupt();
+extern ER keyboard_interrupt(void);
+
+/* mouse.c */
+extern ER mouse_interrupt(void);
 
 #endif

@@ -36,7 +36,7 @@ For more information, please refer to <http://unlicense.org/>
 static unsigned char state = scan_normal;
 
 
-ER keyboard_interrupt()
+ER keyboard_interrupt(void)
 {
 	unsigned char b;
 
