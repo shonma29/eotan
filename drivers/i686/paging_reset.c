@@ -34,7 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "paging.h"
 
 #ifdef USE_VESA
-#include <boot/vesa.h>
+#include <vesa.h>
 
 static void set_frame_buffer(PTE *dir);
 #endif

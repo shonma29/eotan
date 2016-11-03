@@ -34,19 +34,15 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
 #include <libserv.h>
+#include "font.h"
 #include "hmi.h"
 #include "keyboard.h"
 #include "mouse.h"
 
 #ifdef USE_VESA
-#include <boot/vesa.h>
+#include <vesa.h>
 
 #define MAX_WINDOW (16)
-
-typedef struct {
-	UW width;
-	UW height;
-} Screen;
 
 typedef struct {
 	UW left;
@@ -61,7 +57,6 @@ typedef struct {
 
 //static window_t window[MAX_WINDOW];
 
-extern Console *getConsole(void);
 extern void put(const unsigned int start, const size_t size,
 		const unsigned char *buf);
 #else
@@ -175,9 +170,9 @@ static ER initialize(void)
 	};
 
 #ifdef USE_VESA
-	cns = getConsole();
+	cns = getVesaConsole(&default_font);
 #else
-	cns = getConsole((const UH*)kern_p2v((void*)CGA_VRAM_ADDR));
+	cns = getCgaConsole((const UH*)kern_p2v((void*)CGA_VRAM_ADDR));
 #endif
 	cns->cls();
 	cns->locate(0, 0);

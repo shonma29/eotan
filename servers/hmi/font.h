@@ -26,12 +26,23 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <limits.h>
+#include <screen.h>
 
-#define MIN_CHAR (32)
-#define MAX_CHAR (126)
 #define CHR_WIDTH (6)
 #define CHR_HEIGHT (12)
+#define MIN_CHAR (32)
+#define MAX_CHAR (126)
 
 extern unsigned char hmi_default_font[];
+
+static Font default_font = {
+	CHR_WIDTH,
+	CHR_HEIGHT,
+	((CHR_WIDTH + CHAR_BIT - 1) / CHAR_BIT) * CHR_HEIGHT,
+	MIN_CHAR,
+	MAX_CHAR,
+	hmi_default_font
+};
 
 #endif

@@ -37,6 +37,6 @@ For more information, please refer to <http://unlicense.org/>
 #define BIOS_CURSOR_ROW 0x0451
 #define CGA_VRAM_ADDR 0x000b8000
 
-extern Console *getConsole(const unsigned short *base);
+extern Console *getCgaConsole(const unsigned short *);
 
 #endif

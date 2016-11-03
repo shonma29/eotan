@@ -30,7 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 #include <boot/memory.h>
 #ifdef USE_VESA
-#include <boot/vesa.h>
+#include <vesa.h>
 #endif
 #include <boot/modules.h>
 #include <mpu/desc.h>

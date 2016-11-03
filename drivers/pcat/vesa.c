@@ -25,45 +25,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <limits.h>
 #include <console.h>
+#include <screen.h>
+#include <stdbool.h>
 #include <stddef.h>
-#include <boot/vesa.h>
+#include <vesa.h>
 #include <mpu/memory.h>
-#include "font.h"
 
-#define True 1
-#define False 0
-
-#define MAX_COLOR 0x00ffffff
-
-typedef struct {
-	unsigned char b;
-	unsigned char g;
-	unsigned char r;
-} Color;
-
-typedef struct {
-	unsigned int width;
-	unsigned int height;
-	unsigned int bytes_per_chr;
-	unsigned char *buf;
-} Font;
-
-static struct _screen {
-	int x;
-	int y;
-	unsigned int width;
-	unsigned int height;
-	Color *p;
-	Color *base;
-	unsigned int bpl;
-	Color fgcolor;
-	Color bgcolor;
-	Font font;
-	unsigned int chr_width;
-	unsigned int chr_height;
-} _s;
+static Screen _s;
 
 static void _cls(void);
 static int _locate(const int x, const int y);
@@ -86,7 +55,7 @@ static Console _cns = {
 };
 
 
-Console *getConsole()
+Console *getVesaConsole(const Font *default_font)
 {
 	VesaInfo *v = (VesaInfo*)kern_p2v((void*)VESA_INFO_ADDR);
 
@@ -113,11 +82,7 @@ Console *getConsole()
 	_s.bgcolor.g = 0;
 	_s.bgcolor.r = 0;
 
-	_s.font.width = CHR_WIDTH;
-	_s.font.height = CHR_HEIGHT;
-	_s.font.bytes_per_chr = ((CHR_WIDTH + CHAR_BIT - 1) / CHAR_BIT)
-			* CHR_HEIGHT;
-	_s.font.buf = hmi_default_font;
+	_s.font = *default_font;
 	_s.chr_width = v->width / _s.font.width;
 	_s.chr_height = v->height / _s.font.height;
 
@@ -138,7 +103,7 @@ static int _locate(const int x, const int y)
 			|| (x >= _s.chr_width)
 			|| (y < 0)
 			|| (y >= _s.chr_height))
-		return False;
+		return false;
 
 	_s.x = x;
 	_s.y = y;
@@ -147,20 +112,20 @@ static int _locate(const int x, const int y)
 			+ x * _s.font.width * sizeof(Color));
 	_cursor();
 
-	return True;
+	return true;
 }
 
 static int _color(const int color)
 {
 	if ((color < 0)
 			|| (color > MAX_COLOR))
-		return False;
+		return false;
 
 	_s.fgcolor.r = (color >> 16) & 0xff;
 	_s.fgcolor.g = (color >> 8) & 0xff;
 	_s.fgcolor.b = color & 0xff;
 
-	return True;
+	return true;
 }
 
 static void _putc(const unsigned char ch)
@@ -229,8 +194,9 @@ static void _putc(const unsigned char ch)
 static void __putc(const unsigned char ch)
 {
 	unsigned char *line = (unsigned char*)(_s.p);
-	unsigned char c = ((ch < MIN_CHAR) || (ch > MAX_CHAR))? ' ':ch;
-	unsigned char *q = &(_s.font.buf[(c - MIN_CHAR)
+	unsigned char c = ((ch < _s.font.min_char) || (ch > _s.font.max_char))?
+			' ':ch;
+	unsigned char *q = &(_s.font.buf[(c - _s.font.min_char)
 			* _s.font.bytes_per_chr]);
 	size_t i;
 
@@ -278,7 +244,7 @@ static int _rollup(const int lines)
 {
 	if ((lines <= 0)
 			|| (lines >= _s.chr_height))
-		return False;
+		return false;
 
 	_copy_up(0,
 			lines * _s.font.height,
@@ -298,7 +264,7 @@ static int _rollup(const int lines)
 		_s.p = (Color*)((unsigned char*)(_s.p)
 				- lines * _s.font.height * _s.bpl);
 
-	return True;
+	return true;
 }
 
 static void _fill(const unsigned int x1, const unsigned int y1,

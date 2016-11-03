@@ -26,14 +26,12 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <cga.h>
 #include <console.h>
+#include <stdbool.h>
 #include <mpu/io.h>
 
 #define PORT_CRTC 0x03d4
 #define CRTC_CURSOR_HIGH 0x0e
 #define CRTC_CURSOR_LOW 0x0f
-
-#define True 1
-#define False 0
 
 static void _cls(void);
 static int _locate(const int x, const int y);
@@ -57,7 +55,7 @@ static struct _screen {
 } _s;
 
 
-Console *getConsole(const unsigned short *base) {
+Console *getCgaConsole(const unsigned short *base) {
 	_s.color = CGA_DEFAULT_COLOR;
 	_s.base = (unsigned short*)base;
 
@@ -84,23 +82,23 @@ static int _locate(const int x, const int y) {
 	if ((x < 0)
 		|| (x >= CGA_COLUMNS)
 		|| (y < 0)
-		|| (y >= CGA_ROWS))	return False;
+		|| (y >= CGA_ROWS))	return false;
 
 	_s.x = x;
 	_s.y = y;
 	_s.p = _s.base + y * CGA_COLUMNS + x;
 	_cursor();
 
-	return True;
+	return true;
 }
 
 static int _color(const int color) {
 	if ((color < 0)
-		|| (color >= CGA_COLORS))	return False;
+		|| (color >= CGA_COLORS))	return false;
 
 	_s.color = color;
 
-	return True;
+	return true;
 }
 
 static void _putc(const unsigned char ch) {
@@ -187,7 +185,7 @@ static int _rollup(const int lines) {
 	unsigned short space = _combine_chr(_s.color, ' ');
 
 	if ((lines <= 0)
-			|| (lines >= CGA_ROWS))	return False;
+			|| (lines >= CGA_ROWS))	return false;
 
 	for (i = CGA_COLUMNS * (CGA_ROWS - lines); i > 0; i--)	*w++ = *r++;
 	for (i = CGA_COLUMNS * lines; i > 0; i--)	*w++ = space;
@@ -198,5 +196,5 @@ static int _rollup(const int lines) {
 	}
 	else	_s.p -= lines * CGA_COLUMNS;
 
-	return True;
+	return true;
 }

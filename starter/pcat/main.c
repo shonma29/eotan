@@ -27,8 +27,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <elf.h>
 #include <stdarg.h>
 #include <string.h>
+#include <vesa.h>
 #include <boot/modules.h>
-#include <boot/vesa.h>
 #include <memory_map.h>
 #include <arch/archfunc.h>
 #include <mpu/mpufunc.h>
@@ -90,7 +90,7 @@ static void console_initialize(void)
 	UB *x = (UB*)BIOS_CURSOR_COL;
 	UB *y = (UB*)BIOS_CURSOR_ROW;
 
-	cns = getConsole((const UH*)CGA_VRAM_ADDR);
+	cns = getCgaConsole((const UH*)CGA_VRAM_ADDR);
 	cns->locate(*x, *y);
 }
 #endif

@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <boot/vesa.h>
+#include <vesa.h>
 #include <core/packets.h>
 #include <mpu/memory.h>
 #include "../../kernel/arch/8259a.h"

@@ -1,3 +1,5 @@
+#ifndef _SCREEN_H_
+#define _SCREEN_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,51 +26,36 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <stdarg.h>
-#include <string.h>
-#include <nerve/config.h>
-#include <set/ring.h>
-#include "func.h"
-#include "sync.h"
+#define MAX_COLOR 0x00ffffff
 
-#define DEBUG 0
+typedef struct {
+	unsigned char b;
+	unsigned char g;
+	unsigned char r;
+} Color;
 
-#if DEBUG
-#include <cga.h>
+typedef struct {
+	unsigned int width;
+	unsigned int height;
+	unsigned int bytes_per_chr;
+	unsigned int min_char;
+	unsigned int max_char;
+	unsigned char *buf;
+} Font;
 
-static Console *cns;
-static int initialized;
+typedef struct _screen {
+	int x;
+	int y;
+	unsigned int width;
+	unsigned int height;
+	Color *p;
+	Color *base;
+	unsigned int bpl;
+	Color fgcolor;
+	Color bgcolor;
+	Font font;
+	unsigned int chr_width;
+	unsigned int chr_height;
+} Screen;
+
 #endif
-
-static void _putc(const char ch);
-
-
-void printk(const char *format, ...)
-{
-	va_list ap;
-
-	va_start(ap, format);
-#if DEBUG
-	if (!initialized){
-		initialized = 1;
-		cns = getCgaConsole((const UH*)kern_p2v((void*)CGA_VRAM_ADDR));
-		cns->cls();
-		cns->locate(0, 0);
-	}
-#endif
-	vnprintf(_putc, (char*)format, ap);
-}
-
-static void _putc(char ch)
-{
-	int w = ch;
-#if DEBUG
-	cns->putc(ch);
-#endif
-	while (lfq_enqueue((volatile lfq_t*)KERNEL_LOG_ADDR, &w) != QUEUE_OK) {
-		int trash;
-
-		lfq_dequeue((volatile lfq_t*)KERNEL_LOG_ADDR, &trash);
-	}
-}
