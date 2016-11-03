@@ -34,13 +34,13 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
 #include <libserv.h>
-#include "font.h"
 #include "hmi.h"
 #include "keyboard.h"
 #include "mouse.h"
 
 #ifdef USE_VESA
 #include <vesa.h>
+#include "font.h"
 
 #define MAX_WINDOW (16)
 

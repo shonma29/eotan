@@ -25,7 +25,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#ifdef USE_VESA
 #include <vesa.h>
+#else
+#include <cga.h>
+#endif
 #include <core/packets.h>
 #include <mpu/memory.h>
 #include "../../kernel/arch/8259a.h"
@@ -78,14 +82,21 @@ void mouse_process(const int d, const int dummy)
 ER mouse_initialize(void)
 {
 	W result;
+#ifdef USE_VESA
 	VesaInfo *v = (VesaInfo*)kern_p2v((void*)VESA_INFO_ADDR);
+#endif
 	T_DINH pk_dinh = {
 		TA_HLNG,
 		(FP)mouse_interrupt
 	};
 
+#ifdef USE_VESA
 	width = v->width;
 	height = v->height;
+#else
+	width = CGA_COLUMNS;
+	height = CGA_ROWS;
+#endif
 	x = 0;
 	y = 0;
 	buttons = 0;
