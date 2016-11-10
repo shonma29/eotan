@@ -26,7 +26,37 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <core.h>
+#include <device.h>
 
 #define MYNAME "cons"
+
+#define INTERRUPT_QUEUE_SIZE (1024)
+#define REQUEST_QUEUE_SIZE (256)
+
+#define MAX_WINDOW (16)
+
+typedef struct {
+	UW left;
+	UW top;
+	UW width;
+	UW height;
+	UW cursor_x;
+	UW cursor_y;
+	UW color;
+	UW enabled;
+} window_t;
+
+typedef struct _interrupt_message_t {
+	int type;
+	int data;
+} interrupt_message_t;
+
+typedef struct _request_message_t {
+	RDVNO rdvno;
+	devmsg_t *message;
+} request_message_t;
+
+extern void hmi_handle(const int, const int);
 
 #endif

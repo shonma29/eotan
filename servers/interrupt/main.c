@@ -73,9 +73,7 @@ static ER delayed_handle(void (*callback)(const int arg1, const int arg2),
 
 static ER kq_enqueue(delay_param_t *param)
 {
-	system_info_t *info = (system_info_t*)SYSTEM_INFO_ADDR;
-
-	if (lfq_enqueue(&(info->kqueue), param) != QUEUE_OK)
+	if (lfq_enqueue(&(sysinfo->kqueue), param) != QUEUE_OK)
 		return E_TMOUT;
 
 	sysinfo->delay_thread_start = TRUE;
@@ -86,17 +84,14 @@ static ER kq_enqueue(delay_param_t *param)
 static void delay_process(void)
 {
 	for (;;) {
-		for (;;) {
-			delay_param_t param;
+		delay_param_t param;
 
-			if (lfq_dequeue(&(sysinfo->kqueue), &param) != QUEUE_OK)
-				break;
-
-			((void (*)(const int))(param.arg1))
-					((const int)(param.arg2));
-		}
-
-		kcall->thread_sleep();
+		if (lfq_dequeue(&(sysinfo->kqueue), &param) == QUEUE_OK) {
+			((void (*)(const int, const int))(param.arg1))(
+					(const int)(param.arg2),
+					(const int)(param.arg3));
+		} else
+			kcall->thread_sleep();
 	}
 }
 

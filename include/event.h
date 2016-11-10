@@ -1,5 +1,5 @@
-#ifndef _HMI_KEYBOARD_H_
-#define _HMI_KEYBOARD_H_
+#ifndef _EVENT_H_
+#define _EVENT_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,9 +26,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-
-extern ER_UINT get_char(int);
-extern ER keyboard_initialize(void);
+enum hmi_event {
+	event_keyboard,
+	event_mouse
+};
 
 #endif

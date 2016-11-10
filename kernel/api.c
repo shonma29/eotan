@@ -81,6 +81,7 @@ static void kcall_initialize(void)
 	p->thread_terminate = thread_terminate;
 	p->thread_tick = thread_tick;
 	p->thread_sleep = thread_sleep;
+	p->thread_wakeup = thread_wakeup;
 	p->palloc = palloc;
 	p->pfree = pfree;
 	p->printk = printk;
@@ -95,10 +96,6 @@ static void kcall_initialize(void)
 	p->port_call = port_call;
 	p->port_accept = port_accept;
 	p->port_reply = port_reply;
-	p->queue_create_auto = queue_create_auto;
-	p->queue_destroy = queue_destroy;
-	p->queue_send = queue_send;
-	p->queue_receive = queue_receive;
 	p->mutex_create_auto = mutex_create_auto;
 	p->mutex_destroy = mutex_destroy;
 	p->mutex_lock = mutex_lock;

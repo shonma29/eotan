@@ -27,12 +27,16 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <console.h>
 #include <device.h>
+#include <event.h>
 #include <services.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
+#include <set/lf_queue.h>
+#include <set/list.h>
 #include <libserv.h>
 #include "hmi.h"
 #include "keyboard.h"
@@ -42,19 +46,24 @@ For more information, please refer to <http://unlicense.org/>
 #include <vesa.h>
 #include "font.h"
 
-#define MAX_WINDOW (16)
+static ER_ID receiver_tid = 0;
+static ER_ID worker_tid = 0;
 
-typedef struct {
-	UW left;
-	UW top;
-	UW width;
-	UW height;
-	UW cursor_x;
-	UW cursor_y;
-	UW color;
-	UW enabled;
-} window_t;
+static request_message_t *current_req = NULL;
+static request_message_t requests[REQUEST_QUEUE_SIZE];
+static volatile lfq_t req_queue;
+static char req_buf[
+		lfq_buf_size(sizeof(request_message_t*), REQUEST_QUEUE_SIZE)
+];
+static volatile lfq_t unused_queue;
+static char unused_buf[
+		lfq_buf_size(sizeof(request_message_t*), REQUEST_QUEUE_SIZE)
+];
+static volatile lfq_t int_queue;
 
+static char int_buf[
+		lfq_buf_size(sizeof(interrupt_message_t), INTERRUPT_QUEUE_SIZE)
+];
 //static window_t window[MAX_WINDOW];
 
 extern void put(const unsigned int start, const size_t size,
@@ -65,17 +74,80 @@ extern void put(const unsigned int start, const size_t size,
 
 static Console *cns;
 
+static void process(const int arg);
 static ER check_param(const UW start, const UW size);
 static ER_UINT write(const UW dd, const UW start, const UW size,
 		const UB *inbuf);
-static UW execute(devmsg_t *message);
+static void reply(request_message_t *req);
+static void execute(request_message_t *req);
 static ER accept(void);
 static ER initialize(void);
-static ER_UINT dummy_read(const UW start, const UW size, UB *outbuf);
+static ER_UINT dummy_read(const int);
 
-static ER_UINT (*reader)(const UW start, const UW size, UB *outbuf) =
-		dummy_read;
+static ER_UINT (*reader)(const int) = dummy_read;
 
+
+void hmi_handle(const int type, const int data)
+{
+	switch (type) {
+	case event_keyboard:
+		{
+			interrupt_message_t message = { type, data };
+
+			if (lfq_enqueue(&int_queue, &message) == QUEUE_OK)
+				kcall->thread_wakeup(worker_tid);
+			else
+				dbg_printf("hmi: int_queue is full\n");
+			break;
+		}
+	case event_mouse:
+		mouse_process(type, data);
+		break;
+
+	default:
+		break;
+	}
+}
+
+static void process(const int arg)
+{
+	for (;;) {
+		interrupt_message_t data;
+
+		if (lfq_dequeue(&int_queue, &data) == QUEUE_OK) {
+			devmsg_t *message;
+			VP_INT d;
+
+			switch (data.type) {
+			case event_keyboard:
+				d = reader(data.data);
+				if (d < 0)
+					continue;
+				break;
+			default:
+				continue;
+			}
+
+			if (!current_req) {
+				if (lfq_dequeue(&req_queue, &current_req)
+						== QUEUE_OK)
+					current_req->message->Rread.offset = 0;
+				else
+					continue;
+			}
+
+			message = current_req->message;
+			message->Rread.data[message->Rread.offset++] =
+					(unsigned char)(d & 0xff);
+			if (message->Rread.length <= message->Rread.offset) {
+				message->Tread.length = message->Rread.length;
+				reply(current_req);
+				current_req = NULL;
+			}
+		} else
+			kcall->thread_sleep();
+	}
+}
 
 static ER check_param(const UW start, const UW size)
 {
@@ -91,9 +163,9 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 		const UB *inbuf)
 {
 	ER_UINT result = check_param(start, size);
-	size_t i;
 
-	if (result)	return result;
+	if (result)
+		return result;
 
 	if (dd)
 #ifdef USE_VESA
@@ -102,6 +174,8 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 		;
 #endif
 	else {
+		size_t i;
+
 		for (i = 0; i < size; i++)
 			cns->putc(inbuf[i]);
 	}
@@ -109,17 +183,35 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 	return size;
 }
 
-static UW execute(devmsg_t *message)
+static void reply(request_message_t *req)
 {
+	ER_UINT result = kcall->port_reply(req->rdvno, &(req->message), 0);
+
+	if (result)
+		dbg_printf("hmi: rpl_rdv error=%d\n", result);
+
+	lfq_enqueue(&unused_queue, &req);
+	kcall->thread_wakeup(receiver_tid);
+}
+
+static void execute(request_message_t *req)
+{
+	devmsg_t *message = req->message;
 	ER_UINT result;
-	UW size = 0;
 
 	switch (message->Rread.operation) {
 	case operation_read:
-		result = reader(message->Rread.offset,
-				message->Rread.length, message->Rread.data);
-		message->Tread.length = result;
-		size = sizeof(message->Tread);
+		result = check_param(message->Rread.offset,
+				message->Rread.length);
+		if (result) {
+			message->Tread.length = result;
+			reply(req);
+
+		} else if (lfq_enqueue(&req_queue, &req) != QUEUE_OK) {
+			dbg_printf("hmi: req_queue is full\n");
+			message->Tread.length = E_NOMEM;
+			reply(req);
+		}
 		break;
 
 	case operation_write:
@@ -128,47 +220,59 @@ static UW execute(devmsg_t *message)
 				message->Rwrite.length,
 				message->Rwrite.data);
 		message->Twrite.length = result;
-		size = sizeof(message->Twrite);
+		reply(req);
 		break;
 
 	default:
 		break;
 	}
-
-	return size;
 }
 
 static ER accept(void)
 {
-	devmsg_t *message;
-	RDVNO rdvno;
+	request_message_t *req;
 	ER_UINT size;
-	ER result;
 
-	size = kcall->port_accept(PORT_CONSOLE, &rdvno, &message);
+//TODO multiple interrupt is needed on mouse / keyboard?
+	while (lfq_dequeue(&unused_queue, &req) != QUEUE_OK)
+		kcall->thread_sleep();
+
+	size = kcall->port_accept(PORT_CONSOLE, &(req->rdvno), &(req->message));
 	if (size < 0) {
 		dbg_printf("hmi: acp_por error=%d\n", size);
 		return size;
 	}
 
-	execute(message);
-	result = kcall->port_reply(rdvno, &message, 0);
-	if (result) {
-		dbg_printf("hmi: rpl_rdv error=%d\n", result);
-	}
-
-	return result;
+	execute(req);
+	return E_OK;
 }
 
 static ER initialize(void)
 {
 	W result;
+	W i;
+	ER_ID tid;
 	T_CPOR pk_cpor = {
 			TA_TFIFO,
 			sizeof(devmsg_t),
 			sizeof(devmsg_t)
 	};
+	T_CTSK pk_ctsk = {
+		TA_HLNG, 0, process, pri_server_middle,
+		KTHREAD_STACK_SIZE, NULL, NULL, NULL
+	};
 
+	lfq_initialize(&int_queue, int_buf, sizeof(interrupt_message_t),
+				INTERRUPT_QUEUE_SIZE);
+	lfq_initialize(&req_queue, req_buf, sizeof(request_message_t*),
+				REQUEST_QUEUE_SIZE);
+	lfq_initialize(&unused_queue, unused_buf, sizeof(request_message_t*),
+				REQUEST_QUEUE_SIZE);
+	for (i = 0; i < sizeof(requests) / sizeof(requests[0]); i++) {
+		request_message_t *p = &(requests[i]);
+
+		lfq_enqueue(&unused_queue, &p);
+	}
 #ifdef USE_VESA
 	cns = getVesaConsole(&default_font);
 #else
@@ -176,7 +280,7 @@ static ER initialize(void)
 #endif
 	cns->cls();
 	cns->locate(0, 0);
-
+//TODO create mutex
 	result = kcall->port_create(PORT_CONSOLE, &pk_cpor);
 	if (result) {
 		dbg_printf("hmi: acre_por error=%d\n", result);
@@ -184,26 +288,39 @@ static ER initialize(void)
 		return result;
 	}
 
+	tid = kcall->thread_create_auto(&pk_ctsk);
+	if (tid < 0) {
+		dbg_printf("hmi: acre_tsk failed %d\n", tid);
+		kcall->port_destroy(PORT_CONSOLE);
+		return tid;
+	} else {
+		kcall->thread_start(tid);
+		worker_tid = tid;
+	}
+
 	return E_OK;
 }
 
-static ER_UINT dummy_read(const UW start, const UW size, UB *outbuf)
+static ER_UINT dummy_read(const int arg)
 {
 	return E_NOSPT;
 }
 
 void start(VP_INT exinf)
 {
+	receiver_tid = kcall->thread_get_id();
+
 	if (initialize() == E_OK) {
 		dbg_printf("hmi: start\n");
 
 		if (keyboard_initialize() == E_OK)
-			reader = keyboard_read;
+			reader = get_char;
 
 		mouse_initialize();
 
 		while (accept() == E_OK);
 
+		kcall->thread_destroy(worker_tid);
 		kcall->port_destroy(PORT_CONSOLE);
 		dbg_printf("hmi: end\n");
 	}

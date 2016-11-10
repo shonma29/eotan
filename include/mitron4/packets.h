@@ -43,15 +43,6 @@ typedef struct t_ctsk {
 } T_CTSK;
 
 /**
- * data queue
- */
-typedef struct t_cdtq {
-	ATR dtqatr;
-	UINT dtqcnt;
-	VP dtq;
-} T_CDTQ;
-
-/**
  * mutex
  */
 typedef struct t_cmtx {

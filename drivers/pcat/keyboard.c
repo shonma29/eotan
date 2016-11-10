@@ -25,13 +25,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <event.h>
 #include <keycode.h>
 #include <mpu/io.h>
 #include <nerve/icall.h>
 #include "8042.h"
 #include "archfunc.h"
 #include "scan2key.h"
-#include "../../servers/hmi/keyboard.h"
+#include "../../servers/hmi/hmi.h"
 
 static unsigned char state = scan_normal;
 
@@ -62,11 +63,11 @@ ER keyboard_interrupt(void)
 	}
 
 	//TODO error check
-	icall->handle(keyboard_process,
+	icall->handle(hmi_handle,
+			event_keyboard,
 			is_break(b)?
 				(BREAK | scan2key[state][strip_break(b)])
-				:scan2key[state][b],
-			0);
+				:scan2key[state][b]);
 
 	return E_OK;
 }

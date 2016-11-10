@@ -46,7 +46,7 @@ static W buttons;
 extern void pset(unsigned int x, unsigned int y, int color);
 
 
-void mouse_process(const int d, const int dummy)
+void mouse_process(const int type, const int d)
 {
 	int dx, dy;
 

@@ -80,13 +80,6 @@ extern ER port_destroy(ID porid);
 extern ER port_initialize(void);
 extern ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz);
 
-/* queue.c */
-extern ER_ID queue_create_auto(T_CDTQ *pk_cdtq);
-extern ER queue_destroy(ID dtqid);
-extern ER queue_initialize(void);
-extern ER queue_receive(ID dtqid, VP_INT *p_data);
-extern ER queue_send(ID dtqid, VP_INT data, TMO tmout);
-
 /* mutex.c */
 extern ER_ID mutex_create_auto(T_CMTX *pk_cmtx);
 extern ER mutex_destroy(ID mtxid);

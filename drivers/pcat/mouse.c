@@ -25,11 +25,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <event.h>
 #include <mpu/io.h>
 #include <nerve/icall.h>
 #include "8042.h"
 #include "archfunc.h"
-#include "../../servers/hmi/mouse.h"
+#include "../../servers/hmi/hmi.h"
 
 
 ER mouse_interrupt(void)
@@ -44,7 +45,7 @@ ER mouse_interrupt(void)
 	b3 = inb(KBC_PORT_DATA);
 
 	//TODO error check
-	icall->handle(mouse_process, (b1 << 16) | (b2 << 8) | b3, 0);
+	icall->handle(hmi_handle, event_mouse, (b1 << 16) | (b2 << 8) | b3);
 
 	return E_OK;
 }

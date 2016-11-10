@@ -25,11 +25,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <device.h>
 #include <keycode.h>
-#include <services.h>
 #include <core/packets.h>
-#include <nerve/kcall.h>
 #include "../../kernel/arch/8259a.h"
 #include "../../kernel/arch/archfunc.h"
 #include "../../lib/libserv/libserv.h"
@@ -37,18 +34,9 @@ For more information, please refer to <http://unlicense.org/>
 #include "keyboard.h"
 
 static unsigned short modifiers = 0;
-static ID keyboard_queue_id;
 
 static unsigned int get_modifier(int);
-static int get_char(int);
-static ER check_param(const UW, const UW);
 
-
-void keyboard_process(const int d, const int dummy)
-{
-	//TODO error check
-	kcall->queue_send(keyboard_queue_id, d, TMO_POL);
-}
 
 static unsigned int get_modifier(int b)
 {
@@ -82,7 +70,7 @@ static unsigned int get_modifier(int b)
 	return b;
 }
 
-static int get_char(int b)
+ER_UINT get_char(int b)
 {
 	int m;
 
@@ -122,42 +110,9 @@ static int get_char(int b)
 	return b;
 }
 
-static ER check_param(const UW start, const UW size)
-{
-//	if (start)	return E_PAR;
-
-	if (size > DEV_BUF_SIZE)	return E_PAR;
-
-	return E_OK;
-}
-
-ER_UINT keyboard_read(const UW start, const UW size, UB *outbuf)
-{
-	ER_UINT result = check_param(start, size);
-	size_t i;
-
-	if (result)	return result;
-
-	for (i = 0; i < size;) {
-		VP_INT d;
-
-		kcall->queue_receive(keyboard_queue_id, &d);
-		d = get_char(d);
-		if (d >= 0)
-			outbuf[i++] = (UB)(d & 0xff);
-	}
-
-	return size;
-}
-
 ER keyboard_initialize(void)
 {
 	W result;
-	T_CDTQ pk_cdtq = {
-			TA_TFIFO,
-			1024 - 1,
-			NULL
-	};
 	T_DINH pk_dinh = {
 		TA_HLNG,
 		(FP)keyboard_interrupt
@@ -165,17 +120,9 @@ ER keyboard_initialize(void)
 
 	kbc_initialize();
 
-	keyboard_queue_id = kcall->queue_create_auto(&pk_cdtq);
-	if (keyboard_queue_id < 0) {
-		dbg_printf("keyboard: acre_dtq error=%d\n", keyboard_queue_id);
-
-		return keyboard_queue_id;
-	}
-
 	result = define_handler(PIC_IR_VECTOR(ir_keyboard), &pk_dinh);
 	if (result) {
 		dbg_printf("keyboard: interrupt_bind error=%d\n", result);
-		kcall->queue_destroy(keyboard_queue_id);
 		return result;
 	}
 
@@ -184,7 +131,6 @@ ER keyboard_initialize(void)
 		dbg_printf("keyboard: interrupt_enable error=%d\n", result);
 		pk_dinh.inthdr = NULL;
 		define_handler(PIC_IR_VECTOR(ir_keyboard), &pk_dinh);
-		kcall->queue_destroy(keyboard_queue_id);
 		return result;
 	}
 

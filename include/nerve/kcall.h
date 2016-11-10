@@ -39,6 +39,7 @@ typedef struct {
 	ER (*thread_terminate)(ID);
 	void (*thread_tick)(void);
 	ER (*thread_sleep)(void);
+	ER (*thread_wakeup)(ID);
 	void *(*palloc)(void);
 	void (*pfree)(void *);
 	ER (*region_get)(const ID, const void *, const size_t, void *);
@@ -50,10 +51,6 @@ typedef struct {
 	ER_UINT (*port_call)(ID, VP, UINT);
 	ER_UINT (*port_accept)(ID, RDVNO *, VP);
 	ER (*port_reply)(RDVNO, VP, UINT);
-	ER_ID (*queue_create_auto)(T_CDTQ *);
-	ER (*queue_destroy)(ID);
-	ER (*queue_send)(ID, VP_INT, TMO);
-	ER (*queue_receive)(ID, VP_INT *);
 	ER_ID (*mutex_create_auto)(T_CMTX *);
 	ER (*mutex_destroy)(ID);
 	ER (*mutex_lock)(ID, TMO);

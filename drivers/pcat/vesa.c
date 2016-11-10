@@ -68,8 +68,8 @@ Console *getVesaConsole(const Font *default_font)
 
 	_s.x = 0;
 	_s.y = 0;
-	_s.width = v->width;
-	_s.height = v->height;
+	_s.width = v->width / 2;
+	_s.height = v->height / 2;
 	_s.p = (Color*)(v->buffer_addr);
 	_s.base = _s.p;
 	_s.bpl = v->bytes_per_line;
@@ -83,8 +83,8 @@ Console *getVesaConsole(const Font *default_font)
 	_s.bgcolor.r = 0;
 
 	_s.font = *default_font;
-	_s.chr_width = v->width / _s.font.width;
-	_s.chr_height = v->height / _s.font.height;
+	_s.chr_width = _s.width / _s.font.width;
+	_s.chr_height = _s.height / _s.font.height;
 
 	return &_cns;
 }

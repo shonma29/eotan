@@ -35,7 +35,6 @@ void kern_start(void (*callback)(void))
 	context_initialize();
 	global_initialize();
 	port_initialize();
-	queue_initialize();
 	mutex_initialize();
 	thread_initialize();
 
