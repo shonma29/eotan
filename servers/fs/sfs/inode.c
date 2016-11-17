@@ -310,3 +310,35 @@ W sfs_permit(struct inode * ip, struct permission * acc, UW bits)
 	return (EACCES);
     return (EOK);
 }
+
+
+W sfs_i_sync(struct inode * ip)
+{
+    W err;
+
+#ifdef FMDEBUG
+    dbg_printf("sfs: sfs_i_sync\n");
+#endif
+    ip->i_private.sfs_inode.i_index = ip->i_index;
+    if (ip->i_size < ip->i_private.sfs_inode.i_size) {
+      sfs_i_truncate(ip, ip->i_size);
+    }
+    ip->i_private.sfs_inode.i_size = ip->i_size;
+    ip->i_private.sfs_inode.i_nblock = ip->i_nblock;
+    ip->i_private.sfs_inode.i_mode = ip->i_mode;
+
+    if (ip->i_dirty) {
+	err = sfs_write_inode(ip->i_fs->device, ip->i_fs,
+			      &(ip->i_private.sfs_inode));
+	if (err) {
+	    return (err);
+	}
+    }
+    ip->i_dirty = 0;
+
+#ifdef FMDEBUG
+    dbg_printf("sfs: sfs_i_sync: done\n");
+#endif
+    return (EOK);
+}
+
