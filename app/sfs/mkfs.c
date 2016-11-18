@@ -244,8 +244,6 @@ static void write_inode(int formatfd)
     rootdir.i_mtime.nsec = 0;
     rootdir.i_ctime.sec = t;
     rootdir.i_ctime.nsec = 0;
-    rootdir.i_direct[0] =
-	(boot_block + super_block + bitmap_block + inode_block);
 
     lseek(formatfd, blocksize * (boot_block + super_block + bitmap_block),
 	  0);

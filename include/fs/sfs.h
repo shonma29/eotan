@@ -64,10 +64,7 @@ Version 2, June 1991
 #define SFS_VERSION_LO			1
 #define SFS_BLOCK_SIZE 512
 
-#define SFS_DIRECT_BLOCK_ENTRY		(8)
-#define SFS_INDIRECT_BLOCK_ENTRY	(16)
-#define SFS_DINDIRECT_BLOCK_ENTRY 	(88)
-#define SFS_TINDIRECT_BLOCK_ENTRY 	(0)
+#define SFS_INDIRECT_BLOCK_ENTRY	(112)
 
 #define SFS_INDIRECT_BLOCK		(SFS_BLOCK_SIZE / sizeof(UW))
 
@@ -112,10 +109,7 @@ struct sfs_inode
   SYSTIM	i_ctime;
   SYSTIM	i_mtime;
 
-  UW	i_direct[SFS_DIRECT_BLOCK_ENTRY];
   UW	i_indirect[SFS_INDIRECT_BLOCK_ENTRY];
-  UW	i_dindirect[SFS_DINDIRECT_BLOCK_ENTRY];
-  UW	i_tindirect[SFS_TINDIRECT_BLOCK_ENTRY]; /* reservation only */
 };
 
 

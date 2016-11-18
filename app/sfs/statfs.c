@@ -122,15 +122,11 @@ static int write_block(int, int, int, B *);
 static int alloc_block(int, struct sfs_superblock *);
 static int free_block(int, struct sfs_superblock *, int);
 static void free_indirect(int, struct sfs_superblock *, struct sfs_inode *, int, int);
-static void free_dindirect(int, struct sfs_superblock *, struct sfs_inode *, int, int, int);
-static void free_all_dindirect(int, struct sfs_superblock *, struct sfs_inode *, int);
 static int get_block_num(int, struct sfs_superblock *, struct sfs_inode *, int);
 static int get_indirect_block_num(int, struct sfs_superblock *, struct sfs_inode *, int);
 static int set_block_num(int, struct sfs_superblock *, struct sfs_inode *, int, int);
 static int set_indirect_block_num(int, struct sfs_superblock *, struct sfs_inode *, int, int);
-static int set_dindirect_block_num(int, struct sfs_superblock *, struct sfs_inode *, int, int);
 static int locallookup_file(int, struct sfs_superblock *, struct sfs_inode *, struct sfs_inode *, char *);
-static int get_dindirect_block_num(int, struct sfs_superblock *, struct sfs_inode *, int);
 
 
 static W read_dir(int, struct sfs_superblock *, struct sfs_inode *, int, struct sfs_dir *);
@@ -355,9 +351,9 @@ static int f_dir(int fd, struct sfs_superblock *sb, char *path)
 	    return (err);
 	}
 	if ((ip.i_mode & S_IFCHR) != 0) {
-	    fprintf(stderr, "%3u  %4.4o\t%4.4u\t%4.4u\t%-14s\t%08x\n",
+	    fprintf(stderr, "%3u  %4.4o\t%4.4u\t%4.4u\t%-14s\n",
 	       ip.i_nlink, ip.i_mode, ip.i_uid, ip.i_gid,
-		    dirp[i].d_name, ip.i_direct[0]);
+		    dirp[i].d_name);
 	} else {
 	    fprintf(stderr, "%3u  %4.4o\t%4.4u\t%4.4u\t%-14s\t%u bytes\n",
 	       ip.i_nlink, ip.i_mode, ip.i_uid, ip.i_gid,
@@ -882,7 +878,7 @@ static int truncate_file(int fd,
 		  struct sfs_inode *ip,
 		  int newsize)
 {
-    int nblock, blockno, inblock, offset, dinblock;
+    int nblock, blockno, inblock, offset;
     int i;
 
     nblock = ROUNDUP(newsize, sb->blksize);
@@ -896,35 +892,10 @@ static int truncate_file(int fd,
 	}
 
 	/* 間接ブロックの block の開放 */
-	if (blockno < SFS_DIRECT_BLOCK_ENTRY) {
-	    /* 直接ブロックの範囲内 */
-	    for (i = blockno; i < SFS_DIRECT_BLOCK_ENTRY; ++i) {
-		ip->i_direct[i] = 0;
-	    }
-	    free_indirect(fd, sb, ip, 0, 0);
-	    free_all_dindirect(fd, sb, ip, 0);
-	} else if (blockno < (SFS_DIRECT_BLOCK_ENTRY
-		    + (SFS_INDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK))) {
-	    /* 一重間接ブロックの範囲内 */
-	    inblock = (blockno - SFS_DIRECT_BLOCK_ENTRY);
-	    offset = inblock % SFS_INDIRECT_BLOCK;
-	    inblock = inblock / SFS_INDIRECT_BLOCK;
-	    free_indirect(fd, sb, ip, offset, inblock);
-	    free_all_dindirect(fd, sb, ip, 0);
-	} else if (blockno < (SFS_DIRECT_BLOCK_ENTRY
-			+ (SFS_INDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK)
-			      + (SFS_DINDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK * SFS_INDIRECT_BLOCK))) {
-	    /* 二重間接ブロックの範囲内 */
-	    blockno = blockno -
-		(SFS_DIRECT_BLOCK_ENTRY + SFS_INDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK);
-
-	    inblock = blockno / (SFS_DINDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK);
-	    dinblock = (blockno % (SFS_DINDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK))
-		/ SFS_INDIRECT_BLOCK;
-	    offset = blockno % SFS_INDIRECT_BLOCK;
-	    free_dindirect(fd, sb, ip, offset, dinblock, inblock);
-	    free_all_dindirect(fd, sb, ip, inblock + 1);
-	}
+	inblock = blockno;
+	offset = inblock % SFS_INDIRECT_BLOCK;
+	inblock = inblock / SFS_INDIRECT_BLOCK;
+	free_indirect(fd, sb, ip, offset, inblock);
     }
     ip->i_size = newsize;
     ip->i_nblock = nblock;
@@ -952,52 +923,6 @@ static void free_indirect(int fd, struct sfs_superblock *sb, struct sfs_inode *i
 	if (ip->i_indirect[i] > 0) {
 	    free_block(fd, sb, ip->i_indirect[i]);
 	    ip->i_indirect[i] = 0;
-	}
-    }
-}
-
-static void free_dindirect(int fd, struct sfs_superblock *sb, struct sfs_inode *ip,
-		    int offset, int dinblock, int inblock)
-{
-    int i;
-    struct sfs_indirect inbuf, inbuf2;
-
-    if (ip->i_dindirect[inblock] <= 0) {
-	return;
-    }
-    read_block(fd, ip->i_dindirect[inblock], sb->blksize, (B *) & inbuf);
-    if (offset != 0) {
-	read_block(fd, inbuf.in_block[dinblock], sb->blksize,
-		   (B *) & inbuf2);
-	for (i = offset; i < SFS_INDIRECT_BLOCK; ++i) {
-	    inbuf2.in_block[i] = 0;
-	}
-	write_block(fd, inbuf.in_block[dinblock], sb->blksize,
-		    (B *) & inbuf2);
-	++dinblock;
-    }
-    for (i = dinblock; i < SFS_INDIRECT_BLOCK; ++i) {
-	if (inbuf.in_block[i] > 0) {
-	    free_block(fd, sb, inbuf.in_block[i]);
-	    inbuf.in_block[i] = 0;
-	}
-    }
-    if (dinblock > 0) {
-	write_block(fd, ip->i_dindirect[inblock],
-		    sb->blksize, (B *) & inbuf);
-    }
-}
-
-static void free_all_dindirect(int fd, struct sfs_superblock *sb,
-			struct sfs_inode *ip, int inblock)
-{
-    int i;
-
-    for (i = inblock; i < SFS_DINDIRECT_BLOCK_ENTRY; ++i) {
-	if (ip->i_dindirect[i] > 0) {
-	    free_dindirect(fd, sb, ip, 0, 0, i);
-	    free_block(fd, sb, ip->i_dindirect[i]);
-	    ip->i_dindirect[i] = 0;
 	}
     }
 }
@@ -1119,21 +1044,10 @@ static int get_block_num(int fd,
 		  struct sfs_inode *ip,
 		  int blockno)
 {
-    if (blockno < SFS_DIRECT_BLOCK_ENTRY) {
-	/* 直接ブロックの範囲内
-	 */
-	return (ip->i_direct[blockno]);
-    } else if (blockno < (SFS_DIRECT_BLOCK_ENTRY
-		    + (SFS_INDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK))) {
+    if (blockno < (SFS_INDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK)) {
 	/* 一重間接ブロックの範囲内
 	 */
 	return (get_indirect_block_num(fd, sb, ip, blockno));
-    } else if (blockno < (SFS_DIRECT_BLOCK_ENTRY
-			+ (SFS_INDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK)
-			  + (SFS_DINDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK * SFS_INDIRECT_BLOCK))) {
-	/* 二重間接ブロックの範囲内
-	 */
-	return (get_dindirect_block_num(fd, sb, ip, blockno));
     }
     return (-1);
 }
@@ -1145,7 +1059,7 @@ static int get_indirect_block_num(int fd, struct sfs_superblock *sb, struct sfs_
     int inblock_offset;
     struct sfs_indirect inbuf;
 
-    inblock = (blockno - SFS_DIRECT_BLOCK_ENTRY);
+    inblock = blockno;
     inblock_offset = inblock % SFS_INDIRECT_BLOCK;
     inblock = inblock / SFS_INDIRECT_BLOCK;
     if (ip->i_indirect[inblock] <= 0) {
@@ -1154,32 +1068,6 @@ static int get_indirect_block_num(int fd, struct sfs_superblock *sb, struct sfs_
     read_block(fd, ip->i_indirect[inblock], sb->blksize, (B *) & inbuf);
     return (inbuf.in_block[inblock_offset]);
 }
-
-static int get_dindirect_block_num(int fd, struct sfs_superblock *sb, struct sfs_inode *ip, int blockno)
-{
-    int dinblock;
-    int dinblock_offset;
-    int inblock;
-    struct sfs_indirect inbuf;
-
-    blockno = blockno - (SFS_DIRECT_BLOCK_ENTRY + SFS_INDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK);
-
-    inblock = blockno / (SFS_DINDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK);
-    dinblock = (blockno % (SFS_DINDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK)) / SFS_INDIRECT_BLOCK;
-    dinblock_offset = blockno % SFS_INDIRECT_BLOCK;
-
-    if (ip->i_dindirect[inblock] <= 0) {
-	return (0);
-    }
-    read_block(fd, ip->i_dindirect[inblock], sb->blksize, (B *) & inbuf);
-    if (inbuf.in_block[dinblock] <= 0) {
-	return (0);
-    }
-    read_block(fd, inbuf.in_block[dinblock], sb->blksize, (B *) & inbuf);
-
-    return (inbuf.in_block[dinblock_offset]);
-}
-
 
 static int set_block_num(int fd,
 		  struct sfs_superblock *sb,
@@ -1190,22 +1078,10 @@ static int set_block_num(int fd,
     if (newblock < 0) {
 	return (-1);
     }
-    if (blockno < (SFS_DIRECT_BLOCK_ENTRY)) {
-	/* 直接ブロックの範囲内
-	 */
-	ip->i_direct[blockno] = newblock;
-	return (ip->i_direct[blockno]);
-    } else if (blockno < (SFS_DIRECT_BLOCK_ENTRY
-		    + (SFS_INDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK))) {
+    if (blockno < (SFS_INDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK)) {
 	/* 一重間接ブロックの範囲内
 	 */
 	return (set_indirect_block_num(fd, sb, ip, blockno, newblock));
-    } else if (blockno < (SFS_DIRECT_BLOCK_ENTRY
-			+ (SFS_INDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK)
-			  + (SFS_DINDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK * SFS_INDIRECT_BLOCK))) {
-	/* 二重間接ブロックの範囲内
-	 */
-	return (set_dindirect_block_num(fd, sb, ip, blockno, newblock));
     }
     return (-1);
 }
@@ -1223,7 +1099,7 @@ static int set_indirect_block_num(int fd,
     struct sfs_indirect inbuf;
     int newinblock;
 
-    inblock = (blockno - SFS_DIRECT_BLOCK_ENTRY);
+    inblock = blockno;
     inblock_offset = inblock % SFS_INDIRECT_BLOCK;
     inblock = inblock / SFS_INDIRECT_BLOCK;
     if (ip->i_indirect[inblock] <= 0) {
@@ -1239,56 +1115,4 @@ static int set_indirect_block_num(int fd,
     write_inode(fd, sb, ip);
 
     return (inbuf.in_block[inblock_offset]);
-}
-
-
-static int set_dindirect_block_num(int fd,
-			    struct sfs_superblock *sb,
-			    struct sfs_inode *ip,
-			    int blockno, int newblock)
-{
-    int dinblock;
-    int dinblock_offset;
-    int inblock;
-    struct sfs_indirect inbuf;	/* 一番目の間接ブロックの情報 */
-    struct sfs_indirect dinbuf;	/* 二番目の間接ブロックの情報 */
-    int newinblock;
-    int newdinblock;
-
-    blockno = blockno - (SFS_DIRECT_BLOCK_ENTRY + (SFS_INDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK));
-
-    inblock = blockno / (SFS_DINDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK);
-    dinblock = (blockno % (SFS_DINDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK)) / SFS_INDIRECT_BLOCK;
-    dinblock_offset = blockno % SFS_INDIRECT_BLOCK;
-
-    bzero(&inbuf, sizeof(inbuf));
-    bzero(&dinbuf, sizeof(dinbuf));
-    if (ip->i_dindirect[inblock] <= 0) {
-	/* 一重目の間接ブロックの更新(アロケート)
-	 */
-	newinblock = alloc_block(fd, sb);
-	ip->i_dindirect[inblock] = newinblock;
-	bzero((B *) & inbuf, sizeof(inbuf));
-    } else {
-	read_block(fd, ip->i_dindirect[inblock], sb->blksize, (B *) & inbuf);
-    }
-
-    if (inbuf.in_block[dinblock] <= 0) {
-	/* 二番目の間接ブロックの更新
-	 * (アロケート)
-	 */
-	newdinblock = alloc_block(fd, sb);
-	inbuf.in_block[dinblock] = newdinblock;
-	bzero((B *) & dinbuf, sizeof(dinbuf));
-    } else {
-	read_block(fd, inbuf.in_block[dinblock], sb->blksize, (B *) & dinbuf);
-    }
-
-    dinbuf.in_block[dinblock_offset] = newblock;
-
-    write_block(fd, ip->i_dindirect[inblock], sb->blksize, (B *) & inbuf);
-    write_block(fd, inbuf.in_block[dinblock], sb->blksize, (B *) & dinbuf);
-    write_inode(fd, sb, ip);
-
-    return (newblock);
 }
