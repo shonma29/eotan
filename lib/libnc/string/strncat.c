@@ -27,12 +27,15 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 
 char *strncat(char *dest, const char *src, size_t n) {
-	unsigned char *w = (unsigned char*)dest;
-	unsigned char *r = (unsigned char*)src;
+	char *w = (char*)dest;
+	char *r = (char*)src;
 
 	for (; *w; w++);
 
-	for (; n && *r; n--)	*w++ = *r++;
+	for (; n && *r; n--) {
+		*w = *r++;
+		w++;
+	}
 
 	*w = '\0';
 

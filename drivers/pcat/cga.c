@@ -74,7 +74,11 @@ static void _cls(void) {
 	_s.x = _s.y = 0;
 	_s.p = p;
 
-	for (i = CGA_COLUMNS * CGA_ROWS; i > 0; i--)	*p++ = c;
+	for (i = CGA_COLUMNS * CGA_ROWS; i > 0; i--) {
+		*p = c;
+		p++;
+	}
+
 	_cursor();
 }
 
@@ -187,8 +191,15 @@ static int _rollup(const int lines) {
 	if ((lines <= 0)
 			|| (lines >= CGA_ROWS))	return false;
 
-	for (i = CGA_COLUMNS * (CGA_ROWS - lines); i > 0; i--)	*w++ = *r++;
-	for (i = CGA_COLUMNS * lines; i > 0; i--)	*w++ = space;
+	for (i = CGA_COLUMNS * (CGA_ROWS - lines); i > 0; i--) {
+		*w = *r++;
+		w++;
+	}
+
+	for (i = CGA_COLUMNS * lines; i > 0; i--) {
+		*w = space;
+		w++;
+	}
 
 	if ((_s.y -= lines) < 0) {
 		_s.y = _s.x = 0;

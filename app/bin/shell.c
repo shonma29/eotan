@@ -364,7 +364,8 @@ static char **env_expand(hash_t *hash)
 			for (entry = list_next(head);
 					!list_is_edge(head, entry);
 					entry = entry->next)
-				*p++ = ((hash_entry_t*)entry)->value;
+				*p = ((hash_entry_t*)entry)->value;
+				p++;
 		}
 
 		*p = NULL;

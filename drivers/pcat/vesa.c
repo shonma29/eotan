@@ -215,9 +215,10 @@ static void __putc(const unsigned char ch)
 
 			color = (*q & b)?
 					&(_s.fgcolor):&(_s.bgcolor);
-			*p++ = color->b;
-			*p++ = color->g;
-			*p++ = color->r;
+			p[0] = color->b;
+			p[1] = color->g;
+			p[2] = color->r;
+			p += 3;
 			b <<= 1;
 		}
 
@@ -296,23 +297,26 @@ static void _fill(const unsigned int x1, const unsigned int y1,
 		size_t j;
 
 		for (j = left; j > 0; j--) {
-			*p++ = c.b;
-			*p++ = c.g;
-			*p++ = c.r;
+			p[0] = c.b;
+			p[1] = c.g;
+			p[2] = c.r;
+			p += 3;
 		}
 
 		wword = (unsigned int*)p;
 		for (j = middle; j > 0; j--) {
-			*wword++ = rword[0];
-			*wword++ = rword[1];
-			*wword++ = rword[2];
+			wword[0] = rword[0];
+			wword[1] = rword[1];
+			wword[2] = rword[2];
+			wword += 3;
 		}
 
 		p = (unsigned char*)wword;
 		for (j = right; j > 0; j--) {
-			*p++ = c.b;
-			*p++ = c.g;
-			*p++ = c.r;
+			p[0] = c.b;
+			p[1] = c.g;
+			p[2] = c.r;
+			p += 3;
 		}
 
 		p += skip;
@@ -340,18 +344,24 @@ static void _copy_up(unsigned int x1, unsigned int y1,
 		unsigned int *rword;
 		size_t j;
 
-		for (j = left; j > 0; j--)
-			*w++ = *r++;
+		for (j = left; j > 0; j--) {
+			*w = *r++;
+			w++;
+		}
 
 		wword = (unsigned int*)w;
 		rword = (unsigned int*)r;
-		for (j = middle; j > 0; j--)
-			*wword++ = *rword++;
+		for (j = middle; j > 0; j--) {
+			*wword = *rword++;
+			wword++;
+		}
 
 		w = (unsigned char*)wword;
 		r = (unsigned char*)rword;
-		for (j = right; j > 0; j--)
-			*w++ = *r++;
+		for (j = right; j > 0; j--) {
+			*w = *r++;
+			w++;
+		}
 
 		w += skip;
 		r += skip;
@@ -372,8 +382,10 @@ static void _copy_left(unsigned int x1, unsigned int y1,
 	for (i = y2 - y1; i > 0; i--) {
 		size_t j;
 
-		for(j = len; j > 0; j--)
-			*w++ = *r++;
+		for(j = len; j > 0; j--) {
+			*w = *r++;
+			w++;
+		}
 
 		w += skip;
 		r += skip;

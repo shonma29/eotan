@@ -65,7 +65,8 @@ static size_t lfcopy(unsigned char *outbuf, volatile lfq_t* q, const size_t size
 		if (lfq_dequeue(q, &w) != QUEUE_OK)
 			break;
 
-		*outbuf++ = (UB)(w & 0xff);
+		*outbuf = (UB)(w & 0xff);
+		outbuf++;
 	}
 
 	return size - left;

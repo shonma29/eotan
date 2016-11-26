@@ -74,7 +74,8 @@ static bool copy(UB *dest, UB *src, size_t *len)
 	for (left = *len; left > 0; left--) {
 		UB c = *src++;
 
-		*dest++ = c;
+		*dest = c;
+		dest++;
 		if (!c) {
 			result = true;
 			break;

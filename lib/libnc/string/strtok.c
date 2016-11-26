@@ -27,19 +27,20 @@ For more information, please refer to <http://unlicense.org/>
 #include <stddef.h>
 #include <string.h>
 
-static unsigned char *target = NULL;
+static char *target = NULL;
 
 
 char *strtok(char *str, const char *delim)
 {
-	unsigned char *p = str? ((unsigned char*)str):target;
+	char *p = str? ((char*)str):target;
 
 	for (; *p && strchr(delim, *p); p++);
 	target = p;
 
 	for (; *p; p++)
 		if (strchr(delim, *p)) {
-			*p++ = '\0';
+			*p = '\0';
+			p++;
 			break;
 		}
 

@@ -27,10 +27,13 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 
 void *memcpy(void *dest, const void *src, size_t n) {
-	unsigned char *w = (unsigned char*)dest;
-	unsigned char *r = (unsigned char*)src;
+	char *w = (char*)dest;
+	char *r = (char*)src;
 
-	for (; n; n--)	*w++ = *r++;
+	for (; n; n--) {
+		*w = *r++;
+		w++;
+	}
 
 	return dest;
 }

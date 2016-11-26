@@ -42,14 +42,20 @@ char *test_memmove() {
 	 *  aaa
 	 *     bbb
 	 */
-	for (p = buf, n = sizeof(buf); n; n--)	*p++ = '\0';
+	for (p = buf, n = sizeof(buf); n; n--) {
+		*p = '\0';
+		p++;
+	}
 	buf[0] = 'a';
 	buf[1] = 'b';
 	buf[2] = 'c';
 	assert_eq("right separeted result", &(buf[3]),
 			memmove(&(buf[3]), &(buf[0]), 3));
 
-	for (q = expect, n = sizeof(expect); n; n--)	*q++ = '\0';
+	for (q = expect, n = sizeof(expect); n; n--) {
+		*q = '\0';
+		q++;
+	}
 	expect[0] = 'a';
 	expect[1] = 'b';
 	expect[2] = 'c';
@@ -64,14 +70,20 @@ char *test_memmove() {
 	 *  aaa
 	 *    bbb
 	 */
-	for (p = buf, n = sizeof(buf); n; n--)	*p++ = '\0';
+	for (p = buf, n = sizeof(buf); n; n--) {
+		*p = '\0';
+		p++;
+	}
 	buf[0] = 'a';
 	buf[1] = 'b';
 	buf[2] = 'c';
 	assert_eq("right overlapped result", &(buf[2]),
 			memmove(&(buf[2]), &(buf[0]), 3));
 
-	for (q = expect, n = sizeof(expect); n; n--)	*q++ = '\0';
+	for (q = expect, n = sizeof(expect); n; n--) {
+		*q = '\0';
+		q++;
+	}
 	expect[0] = 'a';
 	expect[1] = 'b';
 	expect[2] = 'a';
@@ -85,14 +97,20 @@ char *test_memmove() {
 	 *  aaa
 	 *  bbb
 	 */
-	for (p = buf, n = sizeof(buf); n; n--)	*p++ = '\0';
+	for (p = buf, n = sizeof(buf); n; n--) {
+		*p = '\0';
+		p++;
+	}
 	buf[0] = 'a';
 	buf[1] = 'b';
 	buf[2] = 'c';
 	assert_eq("fully overlapped result", &(buf[0]),
 			memmove(&(buf[0]), &(buf[0]), 3));
 
-	for (q = expect, n = sizeof(expect); n; n--)	*q++ = '\0';
+	for (q = expect, n = sizeof(expect); n; n--) {
+		*q = '\0';
+		q++;
+	}
 	expect[0] = 'a';
 	expect[1] = 'b';
 	expect[2] = 'c';
@@ -104,14 +122,20 @@ char *test_memmove() {
 	 *    aaa
 	 *  bbb
 	 */
-	for (p = buf, n = sizeof(buf); n; n--)	*p++ = '\0';
+	for (p = buf, n = sizeof(buf); n; n--) {
+		*p = '\0';
+		p++;
+	}
 	buf[2] = 'a';
 	buf[3] = 'b';
 	buf[4] = 'c';
 	assert_eq("left overlapped result", &(buf[0]),
 			memmove(&(buf[0]), &(buf[2]), 3));
 
-	for (q = expect, n = sizeof(expect); n; n--)	*q++ = '\0';
+	for (q = expect, n = sizeof(expect); n; n--) {
+		*q = '\0';
+		q++;
+	}
 	expect[0] = 'a';
 	expect[1] = 'b';
 	expect[2] = 'c';
@@ -125,14 +149,20 @@ char *test_memmove() {
 	 *     aaa
 	 *  bbb
 	 */
-	for (p = buf, n = sizeof(buf); n; n--)	*p++ = '\0';
+	for (p = buf, n = sizeof(buf); n; n--) {
+		*p = '\0';
+		p++;
+	}
 	buf[3] = 'a';
 	buf[4] = 'b';
 	buf[5] = 'c';
 	assert_eq("left separeted result", &(buf[0]),
 			memmove(&(buf[0]), &(buf[3]), 3));
 
-	for (q = expect, n = sizeof(expect); n; n--)	*q++ = '\0';
+	for (q = expect, n = sizeof(expect); n; n--) {
+		*q = '\0';
+		q++;
+	}
 	expect[0] = 'a';
 	expect[1] = 'b';
 	expect[2] = 'c';
@@ -147,14 +177,20 @@ char *test_memmove() {
 	 *     aaa
 	 *  bbb
 	 */
-	for (p = buf, n = sizeof(buf); n; n--)	*p++ = '\0';
+	for (p = buf, n = sizeof(buf); n; n--) {
+		*p = '\0';
+		p++;
+	}
 	buf[3] = 'a';
 	buf[4] = 'b';
 	buf[5] = 'c';
 	assert_eq("length zero result", &(buf[0]),
 			memmove(&(buf[0]), &(buf[3]), 0));
 
-	for (q = expect, n = sizeof(expect); n; n--)	*q++ = '\0';
+	for (q = expect, n = sizeof(expect); n; n--) {
+		*q = '\0';
+		q++;
+	}
 	expect[3] = 'a';
 	expect[4] = 'b';
 	expect[5] = 'c';

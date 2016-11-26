@@ -60,8 +60,10 @@ chdir (char *path)
 	while (*top) {
 	    while (*src != '/' && *src)
 		++src;
-	    if (*src)
-		*src++ = 0;
+	    if (*src) {
+		*src = 0;
+		src++;
+	    }
 	    if (!strcmp(top, "..")) {
 		if (len > 1) {
 		    while (*dst != '/') {
@@ -81,12 +83,15 @@ chdir (char *path)
 		    flag = 1;
 		}
 		if (len != 1) {
-		    *dst++ = '/';
+		    *dst = '/';
+		    dst++;
 		    ++len;
 		}
 		len += l2;
-		while (l2-- > 0)
-		    *dst++ = *top++;
+		while (l2-- > 0) {
+		    *dst = *top++;
+		    dst++;
+		}
 		*dst = 0;
 		if (flag)
 		    break;

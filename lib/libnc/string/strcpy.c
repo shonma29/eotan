@@ -27,12 +27,16 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 
 char *strcpy(char *dest, const char *src) {
-	unsigned char *w = (unsigned char*)dest;
-	unsigned char *r = (unsigned char*)src;
+	char *w = (char*)dest;
+	char *r = (char*)src;
 
-	do {
-		;
-	} while ((*w++ = *r++));
+	for (;; w++) {
+		char c = *r++;
+
+		*w = c;
+		if (!c)
+			break;
+	}
 
 	return dest;
 }

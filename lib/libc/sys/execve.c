@@ -59,17 +59,21 @@ execve(char *name, char *argv[], char *envp[])
     bufc = (argc + envc + 2) * 4 + sizeof(int) * 3;
 
     for(i = 0; i < argc; ++i) {
-      *vp++ = (void *) (offset + bufc);
+      *vp = (void *) (offset + bufc);
+      vp++;
       strp = argv[i];
       while((buf[bufc++] = *strp++) != 0);
     }
-    *vp++ = 0;
+    *vp = 0;
+    vp++;
     for(i = 0; i < envc; ++i) {
-      *vp++ = (void *) (offset + bufc);
+      *vp = (void *) (offset + bufc);
+      vp++;
       strp = envp[i];
       while((buf[bufc++] = *strp++) != 0);
     }
-    *vp++ = 0;
+    *vp = 0;
+    vp++;
     
     req.param.par_execve.name = name;
     req.param.par_execve.stackp = buf;

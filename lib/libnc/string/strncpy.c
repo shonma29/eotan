@@ -27,11 +27,18 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 
 char *strncpy(char *dest, const char *src, size_t n) {
-	unsigned char *w = (unsigned char*)dest;
-	unsigned char *r = (unsigned char*)src;
+	char *w = (char*)dest;
+	char *r = (char*)src;
 
-	for (; n && *r; n--)	*w++ = *r++;
-	for (; n; n--)	*w++ = '\0';
+	for (; n && *r; n--) {
+		*w = *r++;
+		w++;
+	}
+
+	for (; n; n--) {
+		*w = '\0';
+		w++;
+	}
 
 	return dest;
 }

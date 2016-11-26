@@ -35,21 +35,21 @@ int _wctomb(unsigned char *dest, const wchar_t ch)
 		return 1;
 		
 	} else if (ch <= 0x7ff) {
-		*dest++ = (unsigned char)(0xc0 | (ch >> 6));
-		*dest = (unsigned char)(0x80 | (ch & 0x3f));
+		dest[0] = (unsigned char)(0xc0 | (ch >> 6));
+		dest[1] = (unsigned char)(0x80 | (ch & 0x3f));
 		return 2;
 
 	} else if (ch <= 0xffff) {
-		*dest++ = (unsigned char)(0xe0 | (ch >> 12));
-		*dest++ = (unsigned char)(0x80 | ((ch >> 6) & 0x3f));
-		*dest = (unsigned char)(0x80 | (ch & 0x3f));
+		dest[0] = (unsigned char)(0xe0 | (ch >> 12));
+		dest[1] = (unsigned char)(0x80 | ((ch >> 6) & 0x3f));
+		dest[2] = (unsigned char)(0x80 | (ch & 0x3f));
 		return 3;
 
 	} else if (ch <= 0x10ffff) {
-		*dest++ = (unsigned char)(0xf0 | (ch >> 18));
-		*dest++ = (unsigned char)(0x80 | ((ch >> 12) & 0x3f));
-		*dest++ = (unsigned char)(0x80 | ((ch >> 6) & 0x3f));
-		*dest = (unsigned char)(0x80 | (ch & 0x3f));
+		dest[0] = (unsigned char)(0xf0 | (ch >> 18));
+		dest[1] = (unsigned char)(0x80 | ((ch >> 12) & 0x3f));
+		dest[2] = (unsigned char)(0x80 | ((ch >> 6) & 0x3f));
+		dest[3] = (unsigned char)(0x80 | (ch & 0x3f));
 		return 4;
 
 	} else

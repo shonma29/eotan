@@ -27,14 +27,18 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 
 char *strcat(char *dest, const char *src) {
-	unsigned char *w = (unsigned char*)dest;
-	unsigned char *r = (unsigned char*)src;
+	char *w = (char*)dest;
+	char *r = (char*)src;
 
 	for (; *w; w++);
 
-	do {
-		;
-	} while ((*w++ = *r++));
+	for (;; w++) {
+		char c = *r++;
+
+		*w = c;
+		if (!c)
+			break;
+	}
 
 	return dest;
 }

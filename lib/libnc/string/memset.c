@@ -27,10 +27,13 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 
 void *memset(void *s, int c, size_t n) {
-	unsigned char *w = (unsigned char*)s;
-	unsigned char v = (unsigned char)(c & 0xff);
+	char *w = (char*)s;
+	char v = (char)(c & 0xff);
 
-	for (; n; n--)	*w++ = v;
+	for (; n; n--) {
+		*w = v;
+		w++;
+	}
 
 	return s;
 }

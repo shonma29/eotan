@@ -59,8 +59,10 @@ static void idt_initialize(void)
 	desc.attr = (dpl_kern << 5) | interruptGate32;
 	desc.offsetHigh = 0;
 
-	for (i = 0; i < IDT_MAX_ENTRY; i++)
-		*p++ = desc;
+	for (i = 0; i < IDT_MAX_ENTRY; i++) {
+		*p = desc;
+		p++;
+	}
 
 	idt_load();
 }
