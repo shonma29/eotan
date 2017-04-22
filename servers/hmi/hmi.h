@@ -54,7 +54,7 @@ typedef struct _interrupt_message_t {
 
 typedef struct _request_message_t {
 	RDVNO rdvno;
-	devmsg_t *message;
+	devmsg_t message;
 } request_message_t;
 
 extern void hmi_handle(const int, const int);

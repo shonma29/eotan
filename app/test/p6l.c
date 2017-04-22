@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <device.h>
 #include <fcntl.h>
+#include <services.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -62,7 +63,7 @@ int putline(UW start, UW size, UB *buf)
 	swap(size);
 	msg.Rwrite.data = buf;
 
-	err = cal_por(49152, 0xffffffff, &msg, sizeof(msg.Rwrite));
+	err = cal_por(PORT_CONSOLE, 0xffffffff, &msg, sizeof(msg.Rwrite));
 	if (err < 0)
 		printf("cal_por error %d\n", (int)err);
 	return err;
@@ -157,7 +158,7 @@ int process(int fd)
 			if (putline(pos + j, left, buf) < 0)
 				return -3;
 		}
-		pos += 1920;
+		pos += 3072;
 	}
 	printf("done\n");
 

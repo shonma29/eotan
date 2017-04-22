@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <core/options.h>
 #include <console.h>
 #include <device.h>
 #include <event.h>
@@ -48,6 +49,7 @@ For more information, please refer to <http://unlicense.org/>
 
 static ER_ID receiver_tid = 0;
 static ER_ID worker_tid = 0;
+static unsigned char line[4096];
 
 static request_message_t *current_req = NULL;
 static request_message_t requests[REQUEST_QUEUE_SIZE];
@@ -78,7 +80,7 @@ static void process(const int arg);
 static ER check_param(const UW start, const UW size);
 static ER_UINT write(const UW dd, const UW start, const UW size,
 		const UB *inbuf);
-static void reply(request_message_t *req);
+static void reply(request_message_t *req, const size_t size);
 static void execute(request_message_t *req);
 static ER accept(void);
 static ER initialize(void);
@@ -131,17 +133,17 @@ static void process(const int arg)
 			if (!current_req) {
 				if (lfq_dequeue(&req_queue, &current_req)
 						== QUEUE_OK)
-					current_req->message->Rread.offset = 0;
+					current_req->message.Rread.offset = 0;
 				else
 					continue;
 			}
 
-			message = current_req->message;
+			message = &(current_req->message);
 			message->Rread.data[message->Rread.offset++] =
 					(unsigned char)(d & 0xff);
 			if (message->Rread.length <= message->Rread.offset) {
 				message->Tread.length = message->Rread.length;
-				reply(current_req);
+				reply(current_req, sizeof(message->Tread));
 				current_req = NULL;
 			}
 		} else
@@ -183,9 +185,9 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 	return size;
 }
 
-static void reply(request_message_t *req)
+static void reply(request_message_t *req, const size_t size)
 {
-	ER_UINT result = kcall->port_reply(req->rdvno, &(req->message), 0);
+	ER_UINT result = kcall->port_reply(req->rdvno, &(req->message), size);
 
 	if (result)
 		dbg_printf("hmi: rpl_rdv error=%d\n", result);
@@ -196,31 +198,46 @@ static void reply(request_message_t *req)
 
 static void execute(request_message_t *req)
 {
-	devmsg_t *message = req->message;
+	devmsg_t *message = &(req->message);
 	ER_UINT result;
-
+//TODO cancel request
 	switch (message->Rread.operation) {
 	case operation_read:
 		result = check_param(message->Rread.offset,
 				message->Rread.length);
 		if (result) {
 			message->Tread.length = result;
-			reply(req);
+			reply(req, sizeof(message->Tread));
 
 		} else if (lfq_enqueue(&req_queue, &req) != QUEUE_OK) {
 			dbg_printf("hmi: req_queue is full\n");
 			message->Tread.length = E_NOMEM;
-			reply(req);
+			reply(req, sizeof(message->Tread));
 		}
 		break;
 
 	case operation_write:
-		result = write(message->Rwrite.channel,
-				message->Rwrite.offset,
-				message->Rwrite.length,
-				message->Rwrite.data);
+		if (message->Rwrite.channel) {
+			if (kcall->region_get(get_rdv_tid(req->rdvno),
+					message->Rwrite.data,
+					message->Rwrite.length,
+					line)) {
+				result = E_SYS;
+			} else {
+				result = write(message->Rwrite.channel,
+						message->Rwrite.offset,
+						message->Rwrite.length,
+						line);
+			}
+		} else {
+			result = write(message->Rwrite.channel,
+					message->Rwrite.offset,
+					message->Rwrite.length,
+					message->Rwrite.data);
+		}
+
 		message->Twrite.length = result;
-		reply(req);
+		reply(req, sizeof(message->Twrite));
 		break;
 
 	default:

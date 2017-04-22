@@ -59,7 +59,6 @@ int read(unsigned char *outbuf, const int channel,
 		ER_UINT result;
 		size_t len = (rest < DEV_BUF_SIZE)? rest:DEV_BUF_SIZE;
 		devmsg_t packet;
-		devmsg_t *p = &packet;
 
 		packet.Rread.operation = operation_read;
 		packet.Rread.channel = channel;
@@ -67,8 +66,9 @@ int read(unsigned char *outbuf, const int channel,
 		packet.Rread.length = len;
 		packet.Rread.data = &(outbuf[wpos]);
 
-		result = kcall->port_call(PORT_CONSOLE, &p, sizeof(p));
-		if (result != 0) {
+		result = kcall->port_call(PORT_CONSOLE, &packet,
+				sizeof(packet.Rread));
+		if (result != sizeof(packet.Tread)) {
 			dbg_printf("cons: cal_por failed(%d)\n", result);
 			return -1;
 		}
@@ -96,7 +96,6 @@ int write(unsigned char *inbuf, const int channel,
 		ER_UINT result;
 		size_t len = (rest < DEV_BUF_SIZE)? rest:DEV_BUF_SIZE;
 		devmsg_t packet;
-		devmsg_t *p = &packet;
 
 		packet.Rwrite.operation = operation_write;
 		packet.Rwrite.channel = channel;
@@ -104,8 +103,9 @@ int write(unsigned char *inbuf, const int channel,
 		packet.Rwrite.length = len;
 		packet.Rwrite.data = &(inbuf[rpos]);
 
-		result = kcall->port_call(PORT_CONSOLE, &p, sizeof(p));
-		if (result != 0) {
+		result = kcall->port_call(PORT_CONSOLE, &packet,
+				sizeof(packet.Rwrite));
+		if (result != sizeof(packet.Twrite)) {
 			dbg_printf("cons: cal_por failed(%d)\n", result);
 			return -1;
 		}
