@@ -23,14 +23,14 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-SERVERS = cons ramdisk
+DRIVERS = cons ramdisk
 
-all: $(SERVERS)
+all: $(DRIVERS)
 
-$(SERVERS):
+$(DRIVERS):
 	$(MAKE) -f drivers/$@/Makefile WD=drivers/$@
 
 clean:
-	$(SHELL) -ec 'for L in $(SERVERS); do \
+	$(SHELL) -ec 'for L in $(DRIVERS); do \
 		$(MAKE) -f drivers/$$L/Makefile WD=drivers/$$L clean; \
 		done'
