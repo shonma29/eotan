@@ -35,16 +35,15 @@ void create_tree(tree_t *tree, slab_t *slab, size_t entry_size,
 	slab->unit_size = entry_size;
 	slab->block_size = PAGE_SIZE;
 	slab->min_block = 1;
-	slab->max_block = tree_max_block(65536, PAGE_SIZE,
-			entry_size);
+	slab->max_block = tree_max_block(65536, PAGE_SIZE, entry_size);
 	slab->palloc = palloc;
 	slab->pfree = pfree;
 	slab_create(slab);
 
-	tree_create(tree, slab, compare);
+	tree_create(tree, compare);
 }
 
-node_t *find_empty_key(tree_t *tree, int *hand)
+node_t *find_empty_key(tree_t *tree, int *hand, node_t *node)
 {
 	int key;
 /*
@@ -55,14 +54,14 @@ node_t *find_empty_key(tree_t *tree, int *hand)
 	for (key = *hand + 1; key <= MAX_AUTO_ID; key++) {
 		if (!tree_get(tree, key)) {
 			*hand = key;
-			return tree_put(tree, key);
+			return tree_put(tree, key, node);
 		}
 	}
 /* TODO test */
 	for (key = MIN_AUTO_ID; key < *hand; key++) {
 		if (!tree_get(tree, key)) {
 			*hand = key;
-			return tree_put(tree, key);
+			return tree_put(tree, key, node);
 		}
 	}
 

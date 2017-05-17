@@ -148,11 +148,18 @@ static ER add_timer(const struct timespec *ts, const RDVNO rdvno)
 	if (p)
 		t = getTimerParent(p);
 	else {
-		p = tree_put(&timer_tree, (int)&entry);
+		p = slab_alloc(&timer_slab);
 		if (!p) {
 			slab_free(&sleeper_slab, s);
 			leave_critical();
 			return E_NOMEM;
+		}
+
+		if (!tree_put(&timer_tree, (int)&entry, p)) {
+			slab_free(&timer_slab, p);
+			slab_free(&sleeper_slab, s);
+			leave_critical();
+			return E_SYS;
 		}
 
 		p->key = (int)p;
@@ -191,7 +198,9 @@ ER timer_service(void)
 					(int)w, 0);
 		}
 
-		tree_remove(&timer_tree, (int)p);
+		p = tree_remove(&timer_tree, (int)p);
+		if (p)
+			slab_free(&timer_slab, p);
 	}
 
 	return E_OK;
@@ -236,7 +245,7 @@ static ER init(void)
 	timer_slab.palloc = kcall->palloc;
 	timer_slab.pfree = kcall->pfree;
 	slab_create(&timer_slab);
-	tree_create(&timer_tree, &timer_slab, compare);
+	tree_create(&timer_tree, compare);
 
 	sleeper_slab.unit_size = sizeof(sleeper_t);
 	sleeper_slab.block_size = PAGE_SIZE;

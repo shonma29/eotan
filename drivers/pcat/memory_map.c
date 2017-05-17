@@ -35,9 +35,9 @@ For more information, please refer to <http://unlicense.org/>
 #include <boot/modules.h>
 #include <mpu/desc.h>
 #include <mpu/memory.h>
-#include <nerve/config.h>
-#include <memory_map.h>
 #include <mpu/mpufunc.h>
+#include <nerve/config.h>
+#include <nerve/memory_map.h>
 
 #define DPAGE_OFFSET_MASK (4096ULL - 1ULL)
 #define DPAGE_ADDR_MASK ~(4096ULL - 1ULL);

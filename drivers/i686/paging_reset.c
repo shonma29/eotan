@@ -29,8 +29,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/memory.h>
 #include <mpu/mpufunc.h>
 #include <nerve/config.h>
+#include <nerve/memory_map.h>
 #include <func.h>
-#include <memory_map.h>
 #include "paging.h"
 
 #ifdef USE_VESA

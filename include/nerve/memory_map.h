@@ -1,5 +1,5 @@
-#ifndef _CORE_MEMORY_MAP_H_
-#define _CORE_MEMORY_MAP_H_
+#ifndef _NERVE_MEMORY_MAP_H_
+#define _NERVE_MEMORY_MAP_H_
 /*
 This is free and unencumbered software released into the public domain.
 

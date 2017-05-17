@@ -103,7 +103,7 @@ void process_initialize(void)
 	process_slab.pfree = kcall->pfree;
 	slab_create(&process_slab);
 
-	tree_create(&process_tree, &process_slab, NULL);
+	tree_create(&process_tree, NULL);
 
 	/* initialize thread table */
 	thread_slab.unit_size = sizeof(mm_thread_t);
@@ -115,7 +115,7 @@ void process_initialize(void)
 	thread_slab.pfree = kcall->pfree;
 	slab_create(&thread_slab);
 
-	tree_create(&thread_tree, &thread_slab, NULL);
+	tree_create(&thread_tree, NULL);
 }
 
 int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
@@ -127,11 +127,16 @@ int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 
 		//TODO check duplicated process_id
 		if (!p) {
-			p = (mm_process_t*)tree_put(&process_tree,
-					(ID)args->arg1);
-
+			p = (mm_process_t*)slab_alloc(&process_slab);
 			if (!p) {
 				reply->error_no = ENOMEM;
+				break;
+			}
+
+			if (!tree_put(&process_tree,
+					(ID)args->arg1, (node_t*)p)) {
+				slab_free(&process_slab, p);
+				reply->error_no = EBUSY;
 				break;
 			}
 
@@ -213,11 +218,16 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		dest = get_process((ID)args->arg2);
 		//TODO check duplicated process_id
 		if (!dest) {
-			dest = (mm_process_t*)tree_put(&process_tree,
-					(ID)args->arg2);
-
+			dest = (mm_process_t*)slab_alloc(&process_slab);
 			if (!dest) {
 				reply->error_no = ENOMEM;
+				break;
+			}
+
+			if (!tree_put(&process_tree,
+					(ID)args->arg2, (node_t*)dest)) {
+				slab_free(&process_slab, dest);
+				reply->error_no = EBUSY;
 				break;
 			}
 
@@ -303,12 +313,19 @@ int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		}
 
 		//TODO check duplicated thread_id
-		th = (mm_thread_t*)tree_put(&thread_tree, result);
-		if (th)
-			thread_clear(th, proc);
-		else {
+		th = (mm_thread_t*)slab_alloc(&thread_slab);
+		if (!th) {
 			kcall->thread_destroy(result);
 			reply->error_no = ENOMEM;
+			break;
+		}
+
+		if (tree_put(&thread_tree, result, (node_t*)th))
+			thread_clear(th, proc);
+		else {
+			slab_free(&thread_slab, th);
+			kcall->thread_destroy(result);
+			reply->error_no = EBUSY;
 			break;
 		}
 
@@ -495,12 +512,19 @@ int mm_thread_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		}
 
 		//TODO check duplicated thread_id
-		th = (mm_thread_t*)tree_put(&thread_tree, result);
-		if (th)
-			thread_clear(th, p);
-		else {
+		th = (mm_thread_t*)slab_alloc(&thread_slab);
+		if (!th) {
 			kcall->thread_destroy(result);
 			reply->error_no = ENOMEM;
+			break;
+		}
+
+		if (tree_put(&thread_tree, result, (node_t*)th))
+			thread_clear(th, p);
+		else {
+			slab_free(&thread_slab, th);
+			kcall->thread_destroy(result);
+			reply->error_no = EBUSY;
 			break;
 		}
 

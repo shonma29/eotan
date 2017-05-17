@@ -95,9 +95,15 @@ ER_ID mutex_create_auto(T_CMTX *pk_cmtx)
 
 	enter_serialize();
 	do {
-		node_t *node = find_empty_key(&mutex_tree, &mutex_hand);
+		node_t *node = slab_alloc(&mutex_slab);
 
 		if (!node) {
+			result = E_NOMEM;
+			break;
+		}
+
+		if (!find_empty_key(&mutex_tree, &mutex_hand, node)) {
+			slab_free(&mutex_slab, node);
 			result = E_NOID;
 			break;
 		}
@@ -117,6 +123,7 @@ ER mutex_destroy(ID mtxid)
 
 	enter_serialize();
 	do {
+		node_t *node;
 		thread_t *th;
 		mutex_t *q = get_mutex(mtxid);
 
@@ -139,7 +146,9 @@ ER mutex_destroy(ID mtxid)
 			}
 		}
 
-		tree_remove(&mutex_tree, mtxid);
+		node = tree_remove(&mutex_tree, mtxid);
+		if (node)
+			slab_free(&mutex_slab, node);
 		result = E_OK;
 
 	} while (FALSE);

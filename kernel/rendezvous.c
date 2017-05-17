@@ -111,9 +111,15 @@ ER port_create(ID porid, T_CPOR *pk_cpor)
 			break;
 		}
 
-		node = tree_put(&port_tree, porid);
+		node = slab_alloc(&port_slab);
 		if (!node) {
 			result = E_NOMEM;
+			break;
+		}
+
+		if (!tree_put(&port_tree, porid, node)) {
+			slab_free(&port_slab, node);
+			result = E_SYS;
 			break;
 /* TODO test */
 		}
@@ -137,9 +143,15 @@ ER_ID port_create_auto(T_CPOR *pk_cpor)
 
 	enter_serialize();
 	do {
-		node_t *node = find_empty_key(&port_tree, &port_hand);
+		node_t *node = slab_alloc(&port_slab);
 
 		if (!node) {
+			result = E_NOMEM;
+			break;
+		}
+
+		if (!find_empty_key(&port_tree, &port_hand, node)) {
+			slab_free(&port_slab, node);
 			result = E_NOID;
 			break;
 		}
@@ -171,7 +183,9 @@ ER port_destroy(ID porid)
 		release_all(&(p->acceptor));
 /* TODO remove rendevous */
 		release_all(&(p->caller));
-		tree_remove(&port_tree, porid);
+		node = tree_remove(&port_tree, porid);
+		if (node)
+			slab_free(&port_slab, node);
 		result = E_OK;
 
 	} while (FALSE);
@@ -265,8 +279,12 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 
 	p = getPortParent(node);
 
-	node = find_empty_key(&rdv_tree, &rdv_hand);
-	if (!node) {
+	node = slab_alloc(&rdv_slab);
+	if (!node)
+		return E_NOMEM;
+
+	if (!find_empty_key(&rdv_tree, &rdv_hand, node)) {
+		slab_free(&rdv_slab, node);
 		leave_serialize();
 		return E_NOID;
 /* TODO test */
@@ -287,7 +305,9 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 			printk("port_accept[%d] copy_from(%d, %p, %p, %d) error\n",
 					porid, thread_id(tp), msg,
 					tp->wait.detail.por.msg, result);
-			tree_remove(&rdv_tree, rdvno);
+			node = tree_remove(&rdv_tree, rdvno);
+			if (node)
+				slab_free(&rdv_slab, node);
 			leave_serialize();
 			return E_PAR;
 /* TODO test */
@@ -311,7 +331,9 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 		enter_serialize();
 		if (running->wait.result) {
 			result = running->wait.result;
-			tree_remove(&rdv_tree, rdvno);
+			node = tree_remove(&rdv_tree, rdvno);
+			if (node)
+				slab_free(&rdv_slab, node);
 		} else {
 			result = running->wait.detail.por.size;
 			*p_rdvno = running->wait.detail.por.rdvno;
@@ -336,7 +358,9 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 	node = tree_get(&rdv_tree, rdvno);
 	if (!node) {
 		leave_serialize();
-		tree_remove(&rdv_tree, rdvno);
+		node = tree_remove(&rdv_tree, rdvno);
+		if (node)
+			slab_free(&rdv_slab, node);
 		return E_OBJ;
 	}
 
@@ -346,7 +370,9 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 		printk("port_reply[%d] rmsgsz %d > %d\n",
 				rdvno, rmsgsz, r->maxrmsz);
 		leave_serialize();
-		tree_remove(&rdv_tree, rdvno);
+		node = tree_remove(&rdv_tree, rdvno);
+		if (node)
+			slab_free(&rdv_slab, node);
 		return E_PAR;
 	}
 
@@ -359,7 +385,9 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 					rdvno, thread_id(tp),
 					tp->wait.detail.por.msg, msg, rmsgsz);
 			leave_serialize();
-			tree_remove(&rdv_tree, rdvno);
+			node = tree_remove(&rdv_tree, rdvno);
+			if (node)
+				slab_free(&rdv_slab, node);
 			return E_PAR;
 		}
 
@@ -371,7 +399,9 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 	else	result = E_OBJ;
 /* TODO test */
 
-	tree_remove(&rdv_tree, rdvno);
+	node = tree_remove(&rdv_tree, rdvno);
+	if (node)
+		slab_free(&rdv_slab, node);
 	leave_serialize();
 
 	dispatch();

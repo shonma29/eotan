@@ -1,5 +1,5 @@
-#ifndef SET_TREE_H
-#define SET_TREE_H
+#ifndef _MEMORY_H_
+#define _MEMORY_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,38 +26,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "stddef.h"
-#include "set/slab.h"
+#include <nerve/memory_map.h>
 
-typedef struct _node_t {
-	int key;
-	int level;
-	struct _node_t *left;
-	struct _node_t *right;
-} node_t;
-
-typedef struct _tree_t {
-	int (*compare)(const int a, const int b);
-	size_t node_num;
-	node_t *root;
-	slab_t *slab;
-	node_t *removed;
-} tree_t;
-
-#define tree_max_block(max_unit, page_size, unit_size) ((max_unit) \
-		/ (((page_size) - sizeof(slab_block_t)) \
-				/ (sizeof(node_t) + (unit_size))))
-
-static inline size_t tree_size(tree_t *tree)
-{
-	return tree->node_num;
-}
-
-extern void tree_create(tree_t *, int (*compare)(const int, const int));
-extern node_t *tree_get(tree_t *, const int);
-extern node_t *tree_put(tree_t *, const int, node_t *);
-extern node_t *tree_remove(tree_t *, const int);
-extern node_t *tree_first(const tree_t *);
-extern void tree_walk(const tree_t *, int (*callback)(node_t *));
+extern void *palloc(void);
+extern void pfree(void *addr);
 
 #endif

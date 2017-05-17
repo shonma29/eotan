@@ -30,8 +30,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/memory.h>
 #include <nerve/config.h>
 #include <nerve/memory_map.h>
-#include "func.h"
-#include "sync.h"
 
 static MemoryMap *mm = (MemoryMap*)MEMORY_MAP_ADDR;
 
@@ -43,7 +41,6 @@ void *palloc(void)
 {
 	size_t i;
 
-	enter_serialize();
 	if (mm->left_pages) {
 		for (i = mm->last_block; i < mm->max_blocks; i++) {
 			UW d = mm->map[i];
@@ -55,7 +52,6 @@ void *palloc(void)
 				mm->map[i] &= ~(1 << bit);
 				mm->last_block = mm->map[i]? i:(i + 1);
 				mm->left_pages--;
-				leave_serialize();
 
 				addr = ((i << MPU_LOG_INT) | bit)
 						<< BITS_OFFSET;
@@ -68,7 +64,6 @@ void *palloc(void)
 			}
 		}
 	}
-	leave_serialize();
 
 	return NULL;
 }
@@ -102,16 +97,12 @@ void pfree(void *addr)
 	UW bit;
 
 	if (i >= mm->max_blocks) {
-		printk("pfree: over %p\n", addr);
 		return;// E_PAR;
 	}
 
 	bit = 1 << (((UW)addr >> BITS_OFFSET) & BITS_MASK);
 
-	enter_serialize();
 	if (mm->map[i] & bit) {
-		leave_serialize();
-		printk("pfree: already free %p\n", addr);
 		return;// E_OBJ;
 	}
 
@@ -121,7 +112,6 @@ void pfree(void *addr)
 		mm->last_block = i;
 
 	mm->left_pages++;
-	leave_serialize();
 
 	return;// E_OK;
 }

@@ -80,9 +80,15 @@ static ER_ID idle_initialize(void)
 			break;
 		}
 
-		node = tree_put(&thread_tree, TSK_NONE);
+		node = slab_alloc(&thread_slab);
 		if (!node) {
 			result = E_NOMEM;
+			break;
+		}
+
+		if (!tree_put(&thread_tree, TSK_NONE, node)) {
+			slab_free(&thread_slab, node);
+			result = E_SYS;
 			break;
 		}
 
@@ -161,16 +167,24 @@ ER_ID thread_create_auto(T_CTSK *pk_ctsk)
 
 	enter_serialize();
 	do {
-		node_t *node = find_empty_key(&thread_tree, &thread_hand);
+		node_t *node = slab_alloc(&thread_slab);
 
 		if (!node) {
+			result = E_NOMEM;
+			break;
+		}
+
+		if (!find_empty_key(&thread_tree, &thread_hand, node)) {
+			slab_free(&thread_slab, node);
 			result = E_NOID;
 			break;
 		}
 
 		result = setup(getThreadParent(node), pk_ctsk, node->key);
 		if (result) {
-			tree_remove(&thread_tree, node->key);
+			node = tree_remove(&thread_tree, node->key);
+			if (node)
+				slab_free(&thread_slab, node);
 			break;
 		}
 
@@ -193,6 +207,7 @@ ER thread_destroy(ID tskid)
 
 	enter_serialize();
 	do {
+		node_t *node;
 		thread_t *th = get_thread_ptr(tskid);
 
 		if (!th) {
@@ -205,7 +220,9 @@ ER thread_destroy(ID tskid)
 			break;
 		}
 
-		tree_remove(&thread_tree, tskid);
+		node = tree_remove(&thread_tree, tskid);
+		if (node)
+			slab_free(&thread_slab, node);
 		release_resources(th);
 		result = E_OK;
 
@@ -269,12 +286,12 @@ void thread_end(void)
 
 void thread_end_and_destroy(void)
 {
+	node_t *node;
 	thread_t *th;
 
 	enter_serialize();
 	th = running;
 
-	tree_remove(&thread_tree, thread_id(th));
 	list_remove(&(th->queue));
 	mutex_unlock_all(th);
 
@@ -282,6 +299,9 @@ void thread_end_and_destroy(void)
 		context_reset_page_table();
 
 	release_resources(th);
+	node = tree_remove(&thread_tree, thread_id(th));
+	if (node)
+		slab_free(&thread_slab, node);
 	leave_serialize();
 
 	dispatch();

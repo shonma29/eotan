@@ -48,22 +48,22 @@ extern void pfree(void *addr);
 extern void printk(const char *format, ...);
 
 /* tree_utils.c */
-extern void create_tree(tree_t *tree, slab_t *slab, size_t entry_size,
-		int (*compare)(const int a, const int b));
-extern node_t *find_empty_key(tree_t *tree, int *hand);
+extern void create_tree(tree_t *, slab_t *, size_t,
+		int (*)(const int, const int));
+extern node_t *find_empty_key(tree_t *, int *, node_t *);
 
 /* thread.c */
-extern thread_t *get_thread_ptr(ID tskid);
-extern ER_ID thread_create_auto(T_CTSK *pk_ctsk);
-extern ER thread_destroy(ID tskid);
+extern thread_t *get_thread_ptr(ID);
+extern ER_ID thread_create_auto(T_CTSK *);
+extern ER thread_destroy(ID);
 extern void thread_end(void);
 extern void thread_end_and_destroy(void);
 extern ER thread_initialize(void);
-extern ER thread_start(ID tskid);
-extern ER thread_terminate(ID tskid);
+extern ER thread_start(ID);
+extern ER thread_terminate(ID);
 extern void thread_tick(void);
 extern ER thread_sleep(void);
-extern ER thread_wakeup(ID tskid);
+extern ER thread_wakeup(ID);
 extern ID thread_get_id(void);
 
 static inline int is_kthread(const thread_t *th)
@@ -72,21 +72,21 @@ static inline int is_kthread(const thread_t *th)
 }
 
 /* rendezvous.c */
-extern ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg);
-extern ER_UINT port_call(ID porid, VP msg, UINT cmsgsz);
-extern ER port_create(ID porid, T_CPOR *pk_cpor);
-extern ER_ID port_create_auto(T_CPOR *pk_cpor);
-extern ER port_destroy(ID porid);
+extern ER_UINT port_accept(ID, RDVNO *, VP);
+extern ER_UINT port_call(ID, VP, UINT);
+extern ER port_create(ID, T_CPOR *);
+extern ER_ID port_create_auto(T_CPOR *);
+extern ER port_destroy(ID);
 extern ER port_initialize(void);
-extern ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz);
+extern ER port_reply(RDVNO, VP, UINT);
 
 /* mutex.c */
-extern ER_ID mutex_create_auto(T_CMTX *pk_cmtx);
-extern ER mutex_destroy(ID mtxid);
+extern ER_ID mutex_create_auto(T_CMTX *);
+extern ER mutex_destroy(ID);
 extern ER mutex_initialize(void);
-extern ER mutex_lock(ID mtxid, TMO tmout);
-extern ER mutex_unlock(ID mtxid);
-extern void mutex_unlock_all(thread_t *th);
+extern ER mutex_lock(ID, TMO);
+extern ER mutex_unlock(ID);
+extern void mutex_unlock_all(thread_t *);
 
 /* start.c */
 extern void kern_start(void (*)(void));

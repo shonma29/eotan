@@ -37,6 +37,8 @@ typedef enum {
 	reply_wait = 2
 } mm_reply_type_e;
 
+extern int mm_palloc(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
+extern int mm_pfree(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_clock_gettime(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_process_destroy(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);

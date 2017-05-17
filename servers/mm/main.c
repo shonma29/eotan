@@ -36,13 +36,15 @@ For more information, please refer to <http://unlicense.org/>
 #include "process.h"
 
 static int (*funcs[])(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args) = {
+	mm_palloc,
+	mm_pfree,
+	mm_vmap,
+	mm_vunmap,
 	mm_clock_gettime,
 	mm_process_create,
 	mm_process_destroy,
 	mm_process_duplicate,
 	mm_process_set_context,
-	mm_vmap,
-	mm_vunmap,
 	mm_sbrk,
 	mm_thread_create
 };
