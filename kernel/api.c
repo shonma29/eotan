@@ -25,8 +25,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <fstype.h>
-#include <major.h>
 #include <nerve/global.h>
 #include <nerve/kcall.h>
 #include "func.h"
@@ -41,7 +39,6 @@ typedef struct {
 	VP_INT arg4;
 } svc_arg;
 
-static void kcall_initialize(void);
 static ER region_get(const ID id, const void *from, const size_t size,
 		void *to);
 static ER region_put(const ID id, void *to, const size_t size,
@@ -55,20 +52,7 @@ static ER (*svc_entries[])(svc_arg *) = {
 };
 
 
-void global_initialize(void)
-{
-	sysinfo->root.device = get_device_id(DEVICE_MAJOR_ATA, 0);
-	sysinfo->root.fstype = FS_SFS;
-	sysinfo->initrd.start = 0;
-	sysinfo->initrd.size = 0;
-	sysinfo->delay_thread_start = FALSE;
-	sysinfo->delay_thread_id = TSK_NONE;
-
-	kcall_initialize();
-	service_initialize();
-}
-
-static void kcall_initialize(void)
+void kcall_initialize(void)
 {
 	kcall_t *p = (kcall_t*)KCALL_ADDR;
 

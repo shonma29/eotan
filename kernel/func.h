@@ -38,7 +38,7 @@ For more information, please refer to <http://unlicense.org/>
 extern void load_modules(void);
 
 /* global.c */
-extern void global_initialize(void);
+extern void kcall_initialize(void);
 
 /* palloc.c */
 extern void *palloc(void);

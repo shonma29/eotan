@@ -24,6 +24,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <fstype.h>
+#include <major.h>
+#include <nerve/global.h>
 #include "func.h"
 #include "ready.h"
 #include "arch/archfunc.h"
@@ -32,8 +35,16 @@ For more information, please refer to <http://unlicense.org/>
 
 void kern_start(void (*callback)(void))
 {
+	sysinfo->root.device = get_device_id(DEVICE_MAJOR_ATA, 0);
+	sysinfo->root.fstype = FS_SFS;
+	sysinfo->initrd.start = 0;
+	sysinfo->initrd.size = 0;
+	sysinfo->delay_thread_start = FALSE;
+	sysinfo->delay_thread_id = TSK_NONE;
+
 	context_initialize();
-	global_initialize();
+	kcall_initialize();
+	service_initialize();
 	port_initialize();
 	mutex_initialize();
 	thread_initialize();
