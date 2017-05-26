@@ -74,7 +74,6 @@ static inline int is_kthread(const thread_t *th)
 extern ER_UINT port_accept(ID, RDVNO *, VP);
 extern ER_UINT port_call(ID, VP, UINT);
 extern ER port_create(ID, T_CPOR *);
-extern ER_ID port_create_auto(T_CPOR *);
 extern ER port_destroy(ID);
 extern ER port_initialize(void);
 extern ER port_reply(RDVNO, VP, UINT);

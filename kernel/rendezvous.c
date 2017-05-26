@@ -52,7 +52,6 @@ typedef struct {
 
 static slab_t port_slab;
 static tree_t port_tree;
-static int port_hand;
 static slab_t rdv_slab;
 static tree_t rdv_tree;
 static int rdv_hand;
@@ -73,8 +72,6 @@ static inline rendezvous_t *getRdvParent(const node_t *p) {
 ER port_initialize(void)
 {
 	create_tree(&port_tree, &port_slab, sizeof(port_t), NULL);
-	port_hand = MIN_AUTO_ID - 1;
-
 	create_tree(&rdv_tree, &rdv_slab, sizeof(rendezvous_t), NULL);
 	rdv_hand = MIN_AUTO_ID - 1;
 
@@ -126,38 +123,6 @@ ER port_create(ID porid, T_CPOR *pk_cpor)
 
 		clear(getPortParent(node), pk_cpor);
 		result = E_OK;
-
-	} while (FALSE);
-	leave_serialize();
-
-	return result;
-}
-
-ER_ID port_create_auto(T_CPOR *pk_cpor)
-{
-	ER_ID result;
-
-	if (!pk_cpor)	return E_PAR;
-/* TODO validate pk */
-	if (pk_cpor->poratr != TA_TFIFO)	return E_RSATR;
-
-	enter_serialize();
-	do {
-		node_t *node = slab_alloc(&port_slab);
-
-		if (!node) {
-			result = E_NOMEM;
-			break;
-		}
-
-		if (!find_empty_key(&port_tree, &port_hand, node)) {
-			slab_free(&port_slab, node);
-			result = E_NOID;
-			break;
-		}
-
-		clear(getPortParent(node), pk_cpor);
-		result = node->key;
 
 	} while (FALSE);
 	leave_serialize();

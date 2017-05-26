@@ -35,14 +35,11 @@ For more information, please refer to <http://unlicense.org/>
 
 static ID port = 0;
 
-#if 0
 static int test_cre_por();
-#endif
-static int test_acre_por();
 static int test_acp_por();
 static int test_del_por();
 
-#if 0
+
 static int test_cre_por(void)
 {
 	T_CPOR pk_cpor = { TA_TFIFO, BUFSIZ, BUFSIZ };
@@ -74,28 +71,6 @@ static int test_cre_por(void)
 	dupport = kcall->port_create(STATIC_PORT, &pk_cpor);
 	dbg_printf(MYNAME ": test_cre_por_6 result = %d\n", dupport);
 	if (dupport != E_OBJ)	return 0;
-
-	return 1;
-}
-#endif
-
-static int test_acre_por(void)
-{
-	T_CPOR pk_cpor = { TA_TFIFO, BUFSIZ, BUFSIZ };
-
-	port = kcall->port_create_auto(0);
-	dbg_printf(MYNAME ": test_acre_por_1 port = %d\n", port);
-	if (port != E_PAR)	return 0;
-
-	pk_cpor.poratr = TA_TPRI;
-	port = kcall->port_create_auto(&pk_cpor);
-	dbg_printf(MYNAME ": test_acre_por_2 port = %d\n", port);
-	if (port != E_RSATR)	return 0;
-
-	pk_cpor.poratr = TA_TFIFO;
-	port = kcall->port_create_auto(&pk_cpor);
-	dbg_printf(MYNAME ": test_acre_por_3 port = %d\n", port);
-	if (port <= 0)	return 0;
 
 	return 1;
 }
@@ -185,7 +160,7 @@ void start(VP_INT exinf)
 {
 	dbg_printf(MYNAME ": start\n");
 
-	if (test_acre_por())	test_acp_por();
+	if (test_cre_por())	test_acp_por();
 
 	if (port > 0)	test_del_por();
 

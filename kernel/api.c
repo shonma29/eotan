@@ -91,7 +91,6 @@ static void kcall_initialize(void)
 	p->region_copy = region_copy;
 
 	p->port_create = port_create;
-	p->port_create_auto = port_create_auto;
 	p->port_destroy = port_destroy;
 	p->port_call = port_call;
 	p->port_accept = port_accept;
