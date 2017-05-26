@@ -355,17 +355,6 @@ ER thread_terminate(ID tskid)
 	return result;
 }
 
-void thread_tick(void)
-{
-	running->time.total++;
-
-	if (!is_kthread(running))
-		if (!(--(running->time.left))) {
-			running->time.left = TIME_QUANTUM;
-			ready_rotate(running->priority);
-		}
-}
-
 ER thread_sleep(void)
 {
 	enter_serialize();

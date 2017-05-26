@@ -61,7 +61,6 @@ extern void thread_end_and_destroy(void);
 extern ER thread_initialize(void);
 extern ER thread_start(ID);
 extern ER thread_terminate(ID);
-extern void thread_tick(void);
 extern ER thread_sleep(void);
 extern ER thread_wakeup(ID);
 extern ID thread_get_id(void);

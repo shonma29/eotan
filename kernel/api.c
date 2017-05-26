@@ -73,13 +73,13 @@ static void kcall_initialize(void)
 	kcall_t *p = (kcall_t*)KCALL_ADDR;
 
 	p->dispatch = dispatch;
+	p->tick = tick;
 	p->thread_get_id = thread_get_id;
 	p->thread_create_auto = thread_create_auto;
 	p->thread_destroy = thread_destroy;
 	p->thread_start = thread_start;
 	p->thread_end_and_destroy = thread_end_and_destroy;
 	p->thread_terminate = thread_terminate;
-	p->thread_tick = thread_tick;
 	p->thread_sleep = thread_sleep;
 	p->thread_wakeup = thread_wakeup;
 	p->palloc = palloc;

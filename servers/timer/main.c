@@ -180,7 +180,7 @@ ER timer_service(void)
 	node_t *p;
 
 	time_tick();
-	kcall->thread_tick();
+	kcall->tick();
 
 	time_get_raw(&now);
 

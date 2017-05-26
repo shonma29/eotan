@@ -31,13 +31,13 @@ For more information, please refer to <http://unlicense.org/>
 
 typedef struct {
 	void (*dispatch)(void);
+	void (*tick)(void);
 	ID (*thread_get_id)(void);
 	ER_ID (*thread_create_auto)(T_CTSK *);
 	ER (*thread_destroy)(ID);
 	ER (*thread_start)(ID);
 	void (*thread_end_and_destroy)(void);
 	ER (*thread_terminate)(ID);
-	void (*thread_tick)(void);
 	ER (*thread_sleep)(void);
 	ER (*thread_wakeup)(ID);
 	void *(*palloc)(void);

@@ -39,6 +39,7 @@ static int buf[MAX_PRIORITY + 1];
 static heap_t heap;
 
 static inline thread_t *getThread(const list_t *p);
+static void ready_rotate(const int);
 static thread_t *ready_dequeue();
 
 
@@ -65,13 +66,24 @@ void ready_enqueue(const int pri, list_t *src)
 	list_enqueue(dest, src);
 }
 
-void ready_rotate(const int pri)
+static void ready_rotate(const int pri)
 {
 	list_t *head = list_dequeue(&(ready_task[pri]));
 
 	if (head) {
 		list_enqueue(&(ready_task[pri]), head);
 	}
+}
+
+void tick(void)
+{
+	running->time.total++;
+
+	if (!is_kthread(running))
+		if (!(--(running->time.left))) {
+			running->time.left = TIME_QUANTUM;
+			ready_rotate(running->priority);
+		}
 }
 
 static thread_t *ready_dequeue()
