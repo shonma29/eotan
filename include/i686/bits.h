@@ -29,12 +29,11 @@ For more information, please refer to <http://unlicense.org/>
 
 static inline int count_bits(int d)
 {
-	d = d - ((d >> 1) & 0x55555555);
+	d -= ((d >> 1) & 0x55555555);
 	d = (d & 0x33333333) + ((d >> 2) & 0x33333333);
 	d = (d + (d >> 4)) & 0x0f0f0f0f;
-	d = (d + (d >> 8));
 
-	return (d + (d >> 16)) & 0x00003f;
+	return (d * 0x01010101) >> 24;
 }
 
 static inline int count_ntz(int d)
