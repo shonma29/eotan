@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <limits.h>
 #include <stddef.h>
+#include <mpu/bits.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
 #include <nerve/memory_map.h>
@@ -35,7 +36,6 @@ For more information, please refer to <http://unlicense.org/>
 
 static MemoryMap *mm = (MemoryMap*)MEMORY_MAP_ADDR;
 
-static W find_bit(const UW d);
 static void pzero(UW *p);
 
 
@@ -49,7 +49,7 @@ void *palloc(void)
 			UW d = mm->map[i];
 
 			if (d) {
-				W bit = find_bit(d);
+				W bit = count_ntz(d);
 				UW addr;
 
 				mm->map[i] &= ~(1 << bit);
@@ -71,21 +71,6 @@ void *palloc(void)
 	leave_serialize();
 
 	return NULL;
-}
-
-static W find_bit(const UW d)
-{
-	size_t i;
-	UW bit = 1;
-
-	for (i = 0; i < INT_BIT; i++) {
-		if (d & bit)
-			return i;
-
-		bit <<= 1;
-	}
-
-	return -1;
 }
 
 static void pzero(UW *p)
