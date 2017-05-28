@@ -40,8 +40,7 @@ static tree_t thread_tree;
 static int thread_hand;
 
 static inline thread_t *getThreadParent(const node_t *p);
-static ER_ID idle_initialize(void);
-static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid);
+static ER setup(thread_t *th, T_CTSK *pk_ctsk);
 static void fire(thread_t *th);
 static void release_resources(thread_t *th);
 
@@ -55,7 +54,6 @@ ER thread_initialize(void)
 	thread_hand = MIN_AUTO_ID - 1;
 
 	ready_initialize();
-	idle_initialize();
 
 	return E_OK;
 }
@@ -67,69 +65,19 @@ thread_t *get_thread_ptr(ID tskid)
 	return node? getThreadParent(node):NULL;
 }
 
-static ER_ID idle_initialize(void)
+static ER setup(thread_t *th, T_CTSK *pk_ctsk)
 {
-	ER_ID result;
+	void *p;
 
-	enter_serialize();
-	do {
-		thread_t *th;
-		node_t *node;
+	if (pk_ctsk->stk)
+		p = pk_ctsk->stk;
+	else {
+		p = palloc();
+		if (!p)
+			return E_NOMEM;
 
-		if (tree_get(&thread_tree, TSK_NONE)) {
-			result = E_OBJ;
-			break;
-		}
-
-		node = slab_alloc(&thread_slab);
-		if (!node) {
-			result = E_NOMEM;
-			break;
-		}
-
-		if (!tree_put(&thread_tree, TSK_NONE, node)) {
-			slab_free(&thread_slab, node);
-			result = E_SYS;
-			break;
-		}
-
-		th = getThreadParent(node);
-		memset(&(th->queue), 0, sizeof(*th) - sizeof(node_t));
-
-		list_initialize(&(th->queue));
-		th->status = TTS_RUN;
-		list_initialize(&(th->wait.waiting));
-		list_initialize(&(th->locking));
-		//th->time.total = 0;
-		//th->time.left = TIME_QUANTUM;
-		//th->wakeup_count = 0;
-
-		th->attr.page_table = NULL;
-		th->priority = th->attr.priority = MAX_PRIORITY;
-		//th->attr.arg = NULL;
-		//th->attr.kstack_tail = (void*)CORE_STACK_ADDR;
-		//th->attr.entry = kern_start;
-
-		/* kthread don't need to set tss */
-		//context_set_kernel_sp(&(th->mpu), th->attr.kstack_tail);
-		context_set_page_table(&(th->mpu), (VP)KTHREAD_DIR_ADDR);
-
-		running = th;
-		ready_enqueue(th->priority, &(th->queue));
-		result = node->key;
-
-	} while (FALSE);
-	leave_serialize();
-
-	return result;
-}
-
-static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid)
-{
-	void *p = palloc();
-
-	if (!p)
-		return E_NOMEM;
+		p += pk_ctsk->stksz;
+	}
 
 	memset(&(th->queue), 0, sizeof(*th) - sizeof(node_t));
 
@@ -142,7 +90,7 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid)
 	th->attr.page_table = pk_ctsk->page_table;
 	th->attr.priority = pk_ctsk->itskpri;
 	th->attr.arg = pk_ctsk->exinf;
-	th->attr.kstack_tail = (char*)kern_p2v(p) + pk_ctsk->stksz;
+	th->attr.kstack_tail = (char*)kern_p2v(p);
 	th->attr.ustack_top = pk_ctsk->ustack_top;
 	th->attr.entry = pk_ctsk->task;
 
@@ -168,6 +116,7 @@ ER_ID thread_create_auto(T_CTSK *pk_ctsk)
 
 	enter_serialize();
 	do {
+		thread_t *th;
 		node_t *node = slab_alloc(&thread_slab);
 
 		if (!node) {
@@ -181,7 +130,8 @@ ER_ID thread_create_auto(T_CTSK *pk_ctsk)
 			break;
 		}
 
-		result = setup(getThreadParent(node), pk_ctsk, node->key);
+		th = getThreadParent(node);
+		result = setup(th, pk_ctsk);
 		if (result) {
 			node = tree_remove(&thread_tree, node->key);
 			if (node)
@@ -192,7 +142,7 @@ ER_ID thread_create_auto(T_CTSK *pk_ctsk)
 		result = node->key;
 
 		if (pk_ctsk->tskatr & TA_ACT) {
-			fire(getThreadParent(node));
+			fire(th);
 			return result;
 		}
 
@@ -204,7 +154,7 @@ ER_ID thread_create_auto(T_CTSK *pk_ctsk)
 
 ER thread_create(ID tskid, T_CTSK *pk_ctsk)
 {
-	ER_ID result;
+	ER result;
 
 	if ((tskid < MIN_MANUAL_ID)
 			|| (tskid > MAX_MANUAL_ID))
@@ -218,6 +168,7 @@ ER thread_create(ID tskid, T_CTSK *pk_ctsk)
 
 	enter_serialize();
 	do {
+		thread_t *th;
 		node_t *node;
 
 		if (tree_get(&thread_tree, tskid)) {
@@ -237,7 +188,8 @@ ER thread_create(ID tskid, T_CTSK *pk_ctsk)
 			break;
 		}
 
-		result = setup(getThreadParent(node), pk_ctsk, node->key);
+		th = getThreadParent(node);
+		result = setup(th, pk_ctsk);
 		if (result) {
 			node = tree_remove(&thread_tree, node->key);
 			if (node)
@@ -248,7 +200,7 @@ ER thread_create(ID tskid, T_CTSK *pk_ctsk)
 		result = E_OK;
 
 		if (pk_ctsk->tskatr & TA_ACT) {
-			fire(getThreadParent(node));
+			fire(th);
 			return result;
 		}
 
@@ -260,16 +212,21 @@ ER thread_create(ID tskid, T_CTSK *pk_ctsk)
 
 static void fire(thread_t *th)
 {
-	th->time.total = 0;
-	th->time.left = TIME_QUANTUM;
-	th->priority = th->attr.priority;
-	th->wakeup_count = 0;
+	thread_reset(th);
 	create_context(th);
 
 	th->status = TTS_RDY;
 	ready_enqueue(th->priority, &(th->queue));
 	leave_serialize();
 	dispatch();
+}
+
+void thread_reset(thread_t *th)
+{
+	th->time.total = 0;
+	th->time.left = TIME_QUANTUM;
+	th->priority = th->attr.priority;
+	th->wakeup_count = 0;
 }
 
 static void release_resources(thread_t *th)

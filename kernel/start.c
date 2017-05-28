@@ -26,11 +26,14 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <fstype.h>
 #include <major.h>
+#include <services.h>
 #include <nerve/global.h>
 #include "func.h"
 #include "ready.h"
 #include "arch/archfunc.h"
 #include "mpu/mpufunc.h"
+
+static ER create_idle_thread(void);
 
 
 void kern_start(void (*callback)(void))
@@ -47,10 +50,42 @@ void kern_start(void (*callback)(void))
 	port_initialize();
 	mutex_initialize();
 	thread_initialize();
+	create_idle_thread();
 
 	//callback();
 	load_modules();
 
 	for (;;)
 		halt();
+}
+
+static ER create_idle_thread(void)
+{
+	static T_CTSK pk_ctsk = {
+		TA_HLNG,
+		(VP_INT)NULL,
+		(FP)kern_start,
+		MAX_PRIORITY,
+		//TODO real size of stack differs
+		KTHREAD_STACK_SIZE,
+		(void*)CORE_STACK_ADDR,
+		NULL,
+		NULL
+	};
+	ER result = thread_create(PORT_IDLE, &pk_ctsk);
+
+	if (!result) {
+		thread_t *th;
+
+		enter_serialize();
+		th = get_thread_ptr(PORT_IDLE);
+		thread_reset(th);
+
+		th->status = TTS_RUN;
+		ready_enqueue(th->priority, &(th->queue));
+		running = th;
+		leave_serialize();
+	}
+
+	return result;
 }

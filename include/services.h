@@ -39,5 +39,6 @@ For more information, please refer to <http://unlicense.org/>
 
 #define PORT_DELAY (9)
 #define PORT_HMI (10)
+#define PORT_IDLE (11)
 
 #endif
