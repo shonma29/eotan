@@ -42,6 +42,7 @@ static int thread_hand;
 static inline thread_t *getThreadParent(const node_t *p);
 static ER_ID idle_initialize(void);
 static ER setup(thread_t *th, T_CTSK *pk_ctsk, int tskid);
+static void fire(thread_t *th);
 static void release_resources(thread_t *th);
 
 static inline thread_t *getThreadParent(const node_t *p) {
@@ -190,10 +191,29 @@ ER_ID thread_create_auto(T_CTSK *pk_ctsk)
 
 		result = node->key;
 
+		if (pk_ctsk->tskatr & TA_ACT) {
+			fire(getThreadParent(node));
+			return result;
+		}
+
 	} while (FALSE);
 	leave_serialize();
 
 	return result;
+}
+
+static void fire(thread_t *th)
+{
+	th->time.total = 0;
+	th->time.left = TIME_QUANTUM;
+	th->priority = th->attr.priority;
+	th->wakeup_count = 0;
+	create_context(th);
+
+	th->status = TTS_RDY;
+	ready_enqueue(th->priority, &(th->queue));
+	leave_serialize();
+	dispatch();
 }
 
 static void release_resources(thread_t *th)
@@ -256,17 +276,8 @@ ER thread_start(ID tskid)
 			break;
 		}
 
-		th->time.total = 0;
-		th->time.left = TIME_QUANTUM;
-		th->priority = th->attr.priority;
-		th->wakeup_count = 0;
-		create_context(th);
 		result = E_OK;
-
-		th->status = TTS_RDY;
-		ready_enqueue(th->priority, &(th->queue));
-		leave_serialize();
-		dispatch();
+		fire(th);
 
 	} while (FALSE);
 

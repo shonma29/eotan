@@ -62,6 +62,7 @@ void load_modules(void)
 		h = (ModuleHeader*)((UW)h + sizeof(*h) + h->length);
 	}
 
+	dispatch();
 	release_others((void*)MODULES_ADDR,
 			kern_v2p((void*)((UW)h + sizeof(*h))));
 }
@@ -70,7 +71,7 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr)
 {
 	ID tskId;
 	T_CTSK pk_ctsk = {
-		TA_HLNG,
+		TA_HLNG | TA_ACT,
 		(VP_INT)NULL,
 		(FP)(eHdr->e_entry),
 		pri_server_middle,
@@ -85,9 +86,6 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr)
 		printk("thread_create_auto error(%d)\n", tskId);
 		return tskId;
 	}
-
-	thread_start(tskId);
-	dispatch();
 
 	return E_OK;
 }

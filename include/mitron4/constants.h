@@ -37,6 +37,8 @@ For more information, please refer to <http://unlicense.org/>
 #define TA_TFIFO 0x00
 #define TA_TPRI 0x01
 
+#define TA_ACT 0x02
+
 #define TA_INHERIT 0x02
 #define TA_CEILING 0x03
 
