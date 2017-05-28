@@ -44,6 +44,7 @@ typedef struct _ModuleHeader
 	size_t length;
 	size_t bytes;
 	size_t zBytes;
+	int arg;
 } ModuleHeader;
 
 #endif

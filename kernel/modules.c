@@ -36,7 +36,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "func.h"
 #include "ready.h"
 
-static ER run(const UW type, const Elf32_Ehdr *eHdr);
+static ER run(const UW type, const ID tid, const Elf32_Ehdr *eHdr);
 static void set_initrd(ModuleHeader *h);
 static void release_others(const void *head, const void *end);
 
@@ -48,7 +48,7 @@ void load_modules(void)
 	while (h->type != mod_end) {
 		switch (h->type) {
 		case mod_server:
-			run(h->type, (Elf32_Ehdr*)&(h[1]));
+			run(h->type, h->arg, (Elf32_Ehdr*)&(h[1]));
 			break;
 
 		case mod_initrd:
@@ -67,9 +67,9 @@ void load_modules(void)
 			kern_v2p((void*)((UW)h + sizeof(*h))));
 }
 
-static ER run(const UW type, const Elf32_Ehdr *eHdr)
+static ER run(const UW type, const ID tid, const Elf32_Ehdr *eHdr)
 {
-	ID tskId;
+	ER result;
 	T_CTSK pk_ctsk = {
 		TA_HLNG | TA_ACT,
 		(VP_INT)NULL,
@@ -81,10 +81,10 @@ static ER run(const UW type, const Elf32_Ehdr *eHdr)
 		NULL
 	};
 
-	tskId = thread_create_auto(&pk_ctsk);
-	if (tskId < 0) {
-		printk("thread_create_auto error(%d)\n", tskId);
-		return tskId;
+	result = thread_create(tid, &pk_ctsk);
+	if (result) {
+		printk("thread_create error(%d)\n", result);
+		return result;
 	}
 
 	return E_OK;

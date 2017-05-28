@@ -37,7 +37,7 @@ For more information, please refer to <http://unlicense.org/>
 #define HELP "usage:\n\tappend moduleType filename blockSize\n"
 
 static int append(FILE *out, const int moduleType, const char *fileName,
-		const int blkSize);
+		const int blkSize, const int arg);
 static int dup(FILE *out, size_t size, FILE *in);
 static int pad(FILE *out, size_t size);
 static int appendEnd(FILE *out);
@@ -55,7 +55,7 @@ int main(int argc, char **argv)
 
 		break;
 
-	case 4:
+	case 5:
 		type = atoi(argv[1]);
 
 		switch (type) {
@@ -64,7 +64,8 @@ int main(int argc, char **argv)
 		case mod_server:
 		case mod_user:
 		case mod_initrd:
-			return append(stdout, type, argv[2], atoi(argv[3]));
+			return append(stdout, type, argv[2], atoi(argv[3]),
+					atoi(argv[4]));
 
 		default:
 			break;
@@ -81,7 +82,7 @@ int main(int argc, char **argv)
 }
 
 static int append(FILE *out, const int moduleType, const char *fileName,
-		const int blkSize)
+		const int blkSize, const int arg)
 {
 	int ret = ERR_OK;
 	FILE *fp = NULL;
@@ -102,6 +103,7 @@ static int append(FILE *out, const int moduleType, const char *fileName,
 		h.length = (buf.st_size + (blkSize - 1)) & ~(blkSize - 1);
 		h.bytes = buf.st_size;
 		h.zBytes = 0;
+		h.arg = arg;
 
 		if (fwrite(&h, 1, sizeof(h), out) != sizeof(h)) {
 			fprintf(stderr, "write error(%d)\n", errno);
@@ -165,7 +167,7 @@ static int pad(FILE *out, size_t size)
 
 static int appendEnd(FILE *out)
 {
-	ModuleHeader h = { mod_end, 0, 0, 0 };
+	ModuleHeader h = { mod_end, 0, 0, 0, 0 };
 
 	if (fwrite(&h, 1, sizeof(h), out) != sizeof(h)) {
 		fprintf(stderr, "write error(%d)\n", errno);
