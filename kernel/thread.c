@@ -202,6 +202,62 @@ ER_ID thread_create_auto(T_CTSK *pk_ctsk)
 	return result;
 }
 
+ER thread_create(ID tskid, T_CTSK *pk_ctsk)
+{
+	ER_ID result;
+
+	if ((tskid < MIN_MANUAL_ID)
+			|| (tskid > MAX_MANUAL_ID))
+		return E_ID;
+
+	if (pk_ctsk->tskatr & TA_ASM)
+		return E_RSATR;
+
+	if (pk_ctsk->stksz != KTHREAD_STACK_SIZE)
+		return E_PAR;
+
+	enter_serialize();
+	do {
+		node_t *node;
+
+		if (tree_get(&thread_tree, tskid)) {
+			result = E_OBJ;
+			break;
+		}
+
+		node = slab_alloc(&thread_slab);
+		if (!node) {
+			result = E_NOMEM;
+			break;
+		}
+
+		if (!tree_put(&thread_tree, tskid, node)) {
+			slab_free(&thread_slab, node);
+			result = E_SYS;
+			break;
+		}
+
+		result = setup(getThreadParent(node), pk_ctsk, node->key);
+		if (result) {
+			node = tree_remove(&thread_tree, node->key);
+			if (node)
+				slab_free(&thread_slab, node);
+			break;
+		}
+
+		result = E_OK;
+
+		if (pk_ctsk->tskatr & TA_ACT) {
+			fire(getThreadParent(node));
+			return result;
+		}
+
+	} while (FALSE);
+	leave_serialize();
+
+	return result;
+}
+
 static void fire(thread_t *th)
 {
 	th->time.total = 0;
