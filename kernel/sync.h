@@ -26,17 +26,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdbool.h>
 #include <stdint.h>
 #include <mpu/io.h>
 #include <set/list.h>
 #include "thread.h"
 
-#define SYNC_FORBID_DISPATCH 0x00010000
+extern volatile bool sync_blocking;
 
-extern volatile uint_fast32_t sync_blocking;
-
-#define enter_serialize() (sync_blocking |= SYNC_FORBID_DISPATCH)
-#define leave_serialize() (sync_blocking &= ~SYNC_FORBID_DISPATCH)
+#define enter_serialize() (sync_blocking = true)
+#define leave_serialize() (sync_blocking = false)
 
 #define enter_critical() di()
 #define leave_critical() ei()

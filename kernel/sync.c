@@ -24,12 +24,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdbool.h>
 #include "func.h"
 #include "sync.h"
 #include "thread.h"
 #include "ready.h"
 
-volatile uint_fast32_t sync_blocking = SYNC_FORBID_DISPATCH;
+volatile bool sync_blocking = true;
 
 
 void wait(thread_t *task)
