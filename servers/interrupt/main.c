@@ -98,29 +98,20 @@ static void delay_process(void)
 static ER delay_initialize(void)
 {
 	ER result;
-	ER_ID tid;
 	T_CTSK pk_ctsk = {
-		TA_HLNG, 0, delay_process, pri_dispatcher,
+		TA_HLNG | TA_ACT, 0, delay_process, pri_dispatcher,
 		KTHREAD_STACK_SIZE, NULL, NULL, NULL
 	};
 
 	lfq_initialize(&(sysinfo->kqueue),
 			kqbuf, sizeof(delay_param_t), KQUEUE_SIZE);
 
-	tid = kcall->thread_create_auto(&pk_ctsk);
-	if (tid < 0) {
-		dbg_printf(MYNAME ": acre_tsk failed %d\n", tid);
-		return tid;
-	}
-
-	result = kcall->thread_start(tid);
+	result = kcall->thread_create(PORT_DELAY, &pk_ctsk);
 	if (result) {
-		dbg_printf(MYNAME ": sta_tsk failed %d\n", result);
-		kcall->thread_destroy(tid);
+		dbg_printf(MYNAME ": cre_tsk failed %d\n", result);
 		return result;
 	}
 
-	sysinfo->delay_thread_id = tid;
 	icall_initialize();
 	arch_initialize();
 	interrupt_initialize();
@@ -139,7 +130,7 @@ static ER port_initialize(void)
 
 	result = kcall->port_create(PORT_INTERRUPT, &pk_cpor);
 	if (result) {
-		dbg_printf("interrupt: acre_por error=%d\n", result);
+		dbg_printf("interrupt: cre_por error=%d\n", result);
 
 		return result;
 	}

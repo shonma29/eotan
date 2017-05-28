@@ -40,7 +40,6 @@ void kern_start(void (*callback)(void))
 	sysinfo->initrd.start = 0;
 	sysinfo->initrd.size = 0;
 	sysinfo->delay_thread_start = FALSE;
-	sysinfo->delay_thread_id = TSK_NONE;
 
 	context_initialize();
 	kcall_initialize();

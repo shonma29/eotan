@@ -48,7 +48,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "font.h"
 
 static ER_ID receiver_tid = 0;
-static ER_ID worker_tid = 0;
 static unsigned char line[4096];
 
 static request_message_t *current_req = NULL;
@@ -97,7 +96,7 @@ void hmi_handle(const int type, const int data)
 			interrupt_message_t message = { type, data };
 
 			if (lfq_enqueue(&int_queue, &message) == QUEUE_OK)
-				kcall->thread_wakeup(worker_tid);
+				kcall->thread_wakeup(PORT_HMI);
 			else
 				dbg_printf("hmi: int_queue is full\n");
 			break;
@@ -268,14 +267,13 @@ static ER initialize(void)
 {
 	W result;
 	W i;
-	ER_ID tid;
 	T_CPOR pk_cpor = {
 			TA_TFIFO,
 			sizeof(devmsg_t),
 			sizeof(devmsg_t)
 	};
 	T_CTSK pk_ctsk = {
-		TA_HLNG, 0, process, pri_server_middle,
+		TA_HLNG | TA_ACT, 0, process, pri_server_middle,
 		KTHREAD_STACK_SIZE, NULL, NULL, NULL
 	};
 
@@ -300,19 +298,16 @@ static ER initialize(void)
 //TODO create mutex
 	result = kcall->port_create(PORT_CONSOLE, &pk_cpor);
 	if (result) {
-		dbg_printf("hmi: acre_por error=%d\n", result);
+		dbg_printf("hmi: cre_por error=%d\n", result);
 
 		return result;
 	}
 
-	tid = kcall->thread_create_auto(&pk_ctsk);
-	if (tid < 0) {
-		dbg_printf("hmi: acre_tsk failed %d\n", tid);
+	result = kcall->thread_create(PORT_HMI, &pk_ctsk);
+	if (result) {
+		dbg_printf("hmi: cre_tsk failed %d\n", result);
 		kcall->port_destroy(PORT_CONSOLE);
-		return tid;
-	} else {
-		kcall->thread_start(tid);
-		worker_tid = tid;
+		return result;
 	}
 
 	return E_OK;
@@ -337,7 +332,7 @@ void start(VP_INT exinf)
 
 		while (accept() == E_OK);
 
-		kcall->thread_destroy(worker_tid);
+		kcall->thread_destroy(PORT_HMI);
 		kcall->port_destroy(PORT_CONSOLE);
 		dbg_printf("hmi: end\n");
 	}

@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <services.h>
 #include <nerve/global.h>
 #include <nerve/config.h>
 #include <set/list.h>
@@ -111,7 +112,7 @@ void dispatch(void)
 
 	if (sysinfo->delay_thread_start) {
 		sysinfo->delay_thread_start = FALSE;
-		thread_wakeup(sysinfo->delay_thread_id);
+		thread_wakeup(PORT_DELAY);
 	}
 
 	do {
