@@ -80,7 +80,7 @@ void kcall_initialize(void)
 	p->port_call = port_call;
 	p->port_accept = port_accept;
 	p->port_reply = port_reply;
-	p->mutex_create_auto = mutex_create_auto;
+	p->mutex_create = mutex_create;
 	p->mutex_destroy = mutex_destroy;
 	p->mutex_lock = mutex_lock;
 	p->mutex_unlock = mutex_unlock;

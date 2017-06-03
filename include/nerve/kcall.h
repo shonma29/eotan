@@ -51,7 +51,7 @@ typedef struct {
 	ER_UINT (*port_call)(ID, VP, UINT);
 	ER_UINT (*port_accept)(ID, RDVNO *, VP);
 	ER (*port_reply)(RDVNO, VP, UINT);
-	ER_ID (*mutex_create_auto)(T_CMTX *);
+	ER (*mutex_create)(ID, T_CMTX *);
 	ER (*mutex_destroy)(ID);
 	ER (*mutex_lock)(ID, TMO);
 	ER (*mutex_unlock)(ID);

@@ -83,15 +83,19 @@ static void clear(mutex_t *p, const T_CMTX *pk_cmtx) {
 	p->ceilpri = pk_cmtx->ceilpri;
 }
 
-ER_ID mutex_create_auto(T_CMTX *pk_cmtx)
+ER mutex_create(ID mtxid, T_CMTX *pk_cmtx)
 {
 	ER_ID result;
 
-	if (!pk_cmtx)	return E_PAR;
+	if (!pk_cmtx)
+		return E_PAR;
 /* TODO validate pk */
-	if (pk_cmtx->mtxatr != (TA_TFIFO | TA_CEILING))	return E_RSATR;
+	if (pk_cmtx->mtxatr != (TA_TFIFO | TA_CEILING))
+		return E_RSATR;
+
 	if ((pk_cmtx->ceilpri < MIN_PRIORITY)
-			|| (pk_cmtx->ceilpri > MAX_PRIORITY))	return E_PAR;
+			|| (pk_cmtx->ceilpri > MAX_PRIORITY))
+		return E_PAR;
 
 	enter_serialize();
 	do {
@@ -102,14 +106,14 @@ ER_ID mutex_create_auto(T_CMTX *pk_cmtx)
 			break;
 		}
 
-		if (!find_empty_key(&mutex_tree, &mutex_hand, node)) {
+		if (!tree_put(&mutex_tree, mtxid, node)) {
 			slab_free(&mutex_slab, node);
-			result = E_NOID;
+			result = E_OBJ;
 			break;
 		}
 
 		clear(getMutexParent(node), pk_cmtx);
-		result = node->key;
+		result = E_OK;
 
 	} while (FALSE);
 	leave_serialize();
@@ -119,7 +123,10 @@ ER_ID mutex_create_auto(T_CMTX *pk_cmtx)
 
 ER mutex_destroy(ID mtxid)
 {
-	ER result;
+	ER result = mutex_lock(mtxid, TMO_FEVR);
+
+	if (result)
+		return result;
 
 	enter_serialize();
 	do {

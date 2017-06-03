@@ -81,7 +81,7 @@ extern ER port_initialize(void);
 extern ER port_reply(RDVNO, VP, UINT);
 
 /* mutex.c */
-extern ER_ID mutex_create_auto(T_CMTX *);
+extern ER mutex_create(ID, T_CMTX *);
 extern ER mutex_destroy(ID);
 extern ER mutex_initialize(void);
 extern ER mutex_lock(ID, TMO);
