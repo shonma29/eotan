@@ -1,5 +1,5 @@
-#ifndef _MITRON4_TYPES_H_
-#define _MITRON4_TYPES_H_
+#ifndef _MITRON4_CONFIG_H_
+#define _MITRON4_CONFIG_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,59 +26,44 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stdbool.h>
-#include <stdint.h>
+#include <mpu/limits.h>
+#include <nerve/config.h>
 
 /**
- * common data types
+ * priority
  */
-typedef int8_t B;
-typedef int16_t H;
-typedef int32_t W;
-typedef int64_t D;
-typedef uint8_t UB;
-typedef uint16_t UH;
-typedef uint32_t UW;
-typedef uint64_t UD;
+#define TMIN_TPRI (1)
+#define TMAX_TPRI (MAX_PRIORITY)
 
-typedef int8_t VB;
-typedef int16_t VH;
-typedef int32_t VW;
-typedef int64_t VD;
+#define TMIN_MPRI (TMIN_TPRI)
+#define TMAX_MPRI (TMAX_TPRI)
 
-typedef void *VP;
-typedef void (*FP)();
+/**
+ * version
+ */
+#define TKERNEL_MAKER (0x0000)
+#define TKERNEL_PRID (0x0000)
+#define TKERNEL_SPVER (0x5403)
+#define TKERNEL_PRVER (0x0000)
 
-typedef int_fast32_t INT;
-typedef uint_fast32_t UINT;
+/**
+ * nest
+ */
+#define TMAX_ACTCNT (0)
+#define TMAX_WUPCNT (MAX_WAKEUP_COUNT)
+#define TMAX_SUSCNT (0)
 
-typedef bool BOOL;
+/**
+ * bit pattern
+ */
+#define TBIT_TEXPTN (INT_BIT)
+#define TBIT_FLGPTN (INT_BIT)
+#define TBIT_RDVPTN (INT_BIT)
 
-typedef int_fast32_t FN;
-typedef int_fast32_t ER;
-typedef int_fast32_t ID;
-typedef uint_fast32_t ATR;
-typedef uint_fast32_t STAT;
-typedef uint_fast32_t MODE;
-typedef int_fast32_t PRI;
-typedef uint_fast32_t SIZE;
-
-typedef int_fast32_t TMO;
-typedef uint_fast32_t RELTIM;
-typedef struct {
-	D sec;
-	W nsec;
-} SYSTIM;
-
-typedef uint_fast32_t INHNO;
-
-typedef int_fast32_t VP_INT;
-
-typedef int_fast32_t ER_BOOL;
-typedef int_fast32_t ER_ID;
-typedef int_fast32_t ER_UINT;
-
-typedef uint_fast32_t RDVPTN;
-typedef int_fast32_t RDVNO;
+/**
+ * tick
+ */
+#define TIC_NUME (1)
+#define TIC_DENO (TIME_TICKS)
 
 #endif

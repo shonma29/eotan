@@ -26,10 +26,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core/types.h>
+#include <core/config.h>
 #include <core/constants.h>
 #include <core/errno.h>
 #include <core/packets.h>
 #include <core/svc.h>
+#include <core/types.h>
 
 #endif

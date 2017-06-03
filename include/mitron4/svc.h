@@ -27,15 +27,52 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <mitron4/types.h>
+#include <mitron4/packets.h>
+
+/**
+ * task
+ */
+extern ER cre_tsk(ID, T_CTSK *);
+extern ER_ID acre_tsk(T_CTSK *);
+extern ER del_tsk(ID);
+extern ER sta_tsk(ID, VP_INT);
+extern void exd_tsk(void);
+extern ER ter_tsk(ID);
+
+/**
+ * task ipc
+ */
+extern ER slp_tsk(void);
+extern ER wup_tsk(ID);
+
+/**
+ * mutex
+ */
+extern ER cre_mtx(ID, T_CMTX *);
+extern ER_ID acre_mtx(T_CMTX *);
+extern ER del_mtx(ID);
+extern ER loc_mtx(ID);
+extern ER ploc_mtx(ID);
+extern ER unl_mtx(ID);
 
 /**
  * rendezvous
  */
-extern ER cre_por(ID porid, T_CPOR *pk_cpor);
-extern ER_ID acre_por(T_CPOR *pk_cpor);
-extern ER del_por(ID porid);
-extern ER_UINT cal_por(ID porid, RDVPTN calptn, VP msg, UINT cmsgsz);
-extern ER_UINT acp_por(ID porid, RDVPTN acpptn, RDVNO *p_rdvno, VP msg);
-extern ER rpl_rdv(RDVNO rdvno, VP msg, UINT rmsgsz);
+extern ER cre_por(ID, T_CPOR *);
+extern ER del_por(ID);
+extern ER_UINT cal_por(ID, RDVPTN, VP, UINT);
+extern ER_UINT acp_por(ID, RDVPTN, RDVNO *, VP);
+extern ER rpl_rdv(RDVNO, VP, UINT);
+
+/**
+ * time
+ */
+extern ER get_tim(SYSTIM *);
+extern ER isig_tim(void);
+
+/**
+ * interruption
+ */
+extern ER def_inh(INHNO, T_DINH *);
 
 #endif
