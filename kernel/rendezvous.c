@@ -90,25 +90,16 @@ ER port_create(ID porid, T_CPOR *pk_cpor)
 {
 	ER result;
 
-	if ((porid < MIN_MANUAL_ID)
-			|| (porid > MAX_MANUAL_ID)) {
-		return E_ID;
-	}
-
-	if (!pk_cpor)	return E_PAR;
+	if (!pk_cpor)
+		return E_PAR;
 /* TODO validate pk */
-	if (pk_cpor->poratr != TA_TFIFO)	return E_RSATR;
+	if (pk_cpor->poratr != TA_TFIFO)
+		return E_RSATR;
 
 	enter_serialize();
 	do {
-		node_t *node;
+		node_t *node = slab_alloc(&port_slab);
 
-		if (tree_get(&port_tree, porid)) {
-			result = E_OBJ;
-			break;
-		}
-
-		node = slab_alloc(&port_slab);
 		if (!node) {
 			result = E_NOMEM;
 			break;
@@ -116,7 +107,7 @@ ER port_create(ID porid, T_CPOR *pk_cpor)
 
 		if (!tree_put(&port_tree, porid, node)) {
 			slab_free(&port_slab, node);
-			result = E_SYS;
+			result = E_OBJ;
 			break;
 /* TODO test */
 		}

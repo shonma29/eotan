@@ -169,14 +169,8 @@ ER thread_create(ID tskid, T_CTSK *pk_ctsk)
 	enter_serialize();
 	do {
 		thread_t *th;
-		node_t *node;
+		node_t *node = slab_alloc(&thread_slab);
 
-		if (tree_get(&thread_tree, tskid)) {
-			result = E_OBJ;
-			break;
-		}
-
-		node = slab_alloc(&thread_slab);
 		if (!node) {
 			result = E_NOMEM;
 			break;
@@ -184,7 +178,7 @@ ER thread_create(ID tskid, T_CTSK *pk_ctsk)
 
 		if (!tree_put(&thread_tree, tskid, node)) {
 			slab_free(&thread_slab, node);
-			result = E_SYS;
+			result = E_OBJ;
 			break;
 		}
 
