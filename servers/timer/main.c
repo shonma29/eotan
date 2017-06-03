@@ -86,7 +86,7 @@ static void time_initialize(void)
 
 static void time_tick(void)
 {
-	struct timespec add = {
+	const static struct timespec add = {
 		0, TICK
 	};
 
