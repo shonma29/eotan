@@ -179,7 +179,7 @@ ER_UINT port_call(ID porid, VP msg, UINT cmsgsz)
 		rendezvous_t *r;
 		int rdvno;
 
-		if (copy_to(tp, tp->wait.detail.por.msg, msg, cmsgsz)) {
+		if (memcpy_k2u(tp, tp->wait.detail.por.msg, msg, cmsgsz)) {
 			printk("port_call[%d] copy_to(%d, %p, %p, %d) error\n",
 					porid, thread_id(tp),
 					tp->wait.detail.por.msg, msg, cmsgsz);
@@ -257,7 +257,7 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 
 		result = tp->wait.detail.por.size;
 
-		if (copy_from(tp, msg, tp->wait.detail.por.msg, result)) {
+		if (memcpy_u2k(tp, msg, tp->wait.detail.por.msg, result)) {
 			printk("port_accept[%d] copy_from(%d, %p, %p, %d) error\n",
 					porid, thread_id(tp), msg,
 					tp->wait.detail.por.msg, result);
@@ -336,7 +336,7 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 	if (q) {
 		thread_t *tp = getThreadWaiting(q);
 
-		if (copy_to(tp, tp->wait.detail.por.msg, msg, rmsgsz)) {
+		if (memcpy_k2u(tp, tp->wait.detail.por.msg, msg, rmsgsz)) {
 			printk("port_reply[%d] copy_to(%d, %p, %p, %d) error\n",
 					rdvno, thread_id(tp),
 					tp->wait.detail.por.msg, msg, rmsgsz);

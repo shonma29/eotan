@@ -71,10 +71,10 @@ extern void panic(char *msg);
 extern void *getPageAddress(const PTE *dir, const void *addr);
 
 /* util.c */
-extern ER copy_to(thread_t *th, void *to, const void *from, const size_t bytes);
-extern ER copy_from(thread_t *th, void *to, const void *from,
+extern ER memcpy_k2u(thread_t *th, void *to, const void *from, const size_t bytes);
+extern ER memcpy_u2k(thread_t *th, void *to, const void *from,
 		const size_t bytes);
-extern ER_UINT ncpy_from(thread_t *th, void *to, const void *from,
+extern ER_UINT strncpy_u2k(thread_t *th, void *to, const void *from,
 		const size_t bytes);
 
 /* memory.c */

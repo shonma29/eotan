@@ -90,21 +90,21 @@ static ER region_get(const ID id, const void *from, const size_t size, void *to)
 {
 	thread_t *th = get_thread_ptr(id);
 
-	return th? copy_from(th, to, from, size):E_NOEXS;
+	return th? memcpy_u2k(th, to, from, size):E_NOEXS;
 }
 
 static ER region_put(const ID id, void *to, const size_t size, const void *from)
 {
 	thread_t *th = get_thread_ptr(id);
 
-	return th? copy_to(th, to, from, size):E_NOEXS;
+	return th? memcpy_k2u(th, to, from, size):E_NOEXS;
 }
 
 static ER_UINT region_copy(const ID id, const void *from, const size_t size, void *to)
 {
 	thread_t *th = get_thread_ptr(id);
 
-	return th? ncpy_from(th, to, from, size):E_NOEXS;
+	return th? strncpy_u2k(th, to, from, size):E_NOEXS;
 }
 
 ER syscall(svc_arg *argp, UW svcno)

@@ -31,60 +31,62 @@ For more information, please refer to <http://unlicense.org/>
 #include "mpufunc.h"
 
 
-ER copy_to(thread_t *th, void *to, const void *from, const size_t bytes)
+ER memcpy_k2u(thread_t *th, void *to, const void *from, const size_t bytes)
 {
 	PTE *dir = (PTE*)kern_p2v(th->mpu.cr3);
-	UB *w = (UB*)to;
-	UB *r = (UB*)from;
-	size_t left = bytes;
-	size_t offset = getOffset(w);
+	void *p = getPageAddress(dir, to);
 
-	while (left) {
-		void *p = getPageAddress(dir, w);
-		size_t len;
-	
-		if (!p)
-			return E_PAR;
+	if (p) {
+		UB *w = (UB*)to;
+		UB *r = (UB*)from;
+		size_t left = bytes;
+		size_t offset = getOffset(w);
+		size_t len = PAGE_SIZE - offset;
 
-		len = PAGE_SIZE - offset;
-		if (len > left)
-			len = left;
+		p += offset;
 
-		memcpy(p + offset, r, len);
-		offset = 0;
-		w += len;
-		r += len;
-		left -= len;
+		do {
+			len = (left < len)? left:len;
+			memcpy(p, r, len);
+
+			if (!(left -= len))
+				return E_OK;
+
+			w += len;
+			r += len;
+			len = PAGE_SIZE;
+		} while((p = getPageAddress(dir, w)));
 	}
 
-	return E_OK;
+	return E_PAR;
 }
 
-ER copy_from(thread_t *th, void *to, const void *from, const size_t bytes)
+ER memcpy_u2k(thread_t *th, void *to, const void *from, const size_t bytes)
 {
 	PTE *dir = (PTE*)kern_p2v(th->mpu.cr3);
-	UB *w = (UB*)to;
-	UB *r = (UB*)from;
-	size_t left = bytes;
-	size_t offset = getOffset(r);
+	void *p = getPageAddress(dir, from);
 
-	while (left) {
-		void *p = getPageAddress(dir, r);
-		size_t len;
-	
-		if (!p)
-			return E_PAR;
+	if (p) {
+		UB *w = (UB*)to;
+		UB *r = (UB*)from;
+		size_t left = bytes;
+		size_t offset = getOffset(r);
+		size_t len = PAGE_SIZE - offset;
 
-		len = PAGE_SIZE - offset;
-		if (len > left)
-			len = left;
+		p += offset;
 
-		memcpy(w, p + offset, len);
-		offset = 0;
-		w += len;
-		r += len;
-		left -= len;
+		do {
+			len = (left < len)? left:len;
+			memcpy(w, p, len);
+
+			if (!(left -= len))
+				return E_OK;
+
+			w += len;
+			r += len;
+			len = PAGE_SIZE;
+		} while ((p = getPageAddress(dir, r)));
 	}
 
-	return E_OK;
+	return E_PAR;
 }

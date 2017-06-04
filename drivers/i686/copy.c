@@ -32,38 +32,38 @@ For more information, please refer to <http://unlicense.org/>
 static bool copy(UB *, UB *, size_t *);
 
 
-ER_UINT ncpy_from(thread_t *th, void *to, const void *from, const size_t bytes)
+ER_UINT strncpy_u2k(thread_t *th, void *to, const void *from, const size_t bytes)
 {
 	PTE *dir = (PTE*)kern_p2v(th->mpu.cr3);
-	UB *w = (UB*)to;
-	UB *r = (UB*)from;
-	size_t left = bytes;
-	size_t offset = getOffset(r);
+	void *p = getPageAddress(dir, from);
 
-	while (left) {
-		void *p = getPageAddress(dir, r);
-		size_t len;
-		bool done;
+	if (p) {
+		UB *w = (UB*)to;
+		UB *r = (UB*)from;
+		size_t left = bytes;
+		size_t offset = getOffset(r);
+		size_t len = PAGE_SIZE - offset;
+
+		p += offset;
+
+		do {
+			bool done;
 	
-		if (!p)
-			return E_PAR;
+			len = (left < len)? left:len;
+			done = copy(w, p, &len);
+			left -= len;
 
-		len = PAGE_SIZE - offset;
-		if (len > left)
-			len = left;
+			if (done
+					|| !left)
+				return bytes - left;
 
-		done = copy(w, p + offset, &len);
-		left -= len;
-
-		if (done)
-			break;
-
-		offset = 0;
-		w += len;
-		r += len;
+			w += len;
+			r += len;
+			len = PAGE_SIZE;
+		} while ((p = getPageAddress(dir, r)));
 	}
 
-	return bytes - left;
+	return E_PAR;
 }
 
 static bool copy(UB *dest, UB *src, size_t *len)
@@ -76,6 +76,7 @@ static bool copy(UB *dest, UB *src, size_t *len)
 
 		*dest = c;
 		dest++;
+
 		if (!c) {
 			result = true;
 			break;
