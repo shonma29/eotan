@@ -27,15 +27,23 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <string.h>
 #include <mpu/memory.h>
+#include <func.h>
 #include <thread.h>
 #include "mpufunc.h"
 
 
 ER memcpy_k2u(thread_t *th, void *to, const void *from, const size_t bytes)
 {
-	PTE *dir = (PTE*)kern_p2v(th->mpu.cr3);
-	void *p = getPageAddress(dir, to);
+	PTE *dir;
+	void *p;
 
+	if (is_kthread(th)) {
+		memcpy(to, from, bytes);
+		return E_OK;
+	}
+
+	dir = (PTE*)kern_p2v(th->mpu.cr3);
+	p = getPageAddress(dir, to);
 	if (p) {
 		UB *w = (UB*)to;
 		UB *r = (UB*)from;
@@ -63,9 +71,16 @@ ER memcpy_k2u(thread_t *th, void *to, const void *from, const size_t bytes)
 
 ER memcpy_u2k(thread_t *th, void *to, const void *from, const size_t bytes)
 {
-	PTE *dir = (PTE*)kern_p2v(th->mpu.cr3);
-	void *p = getPageAddress(dir, from);
+	PTE *dir;
+	void *p;
 
+	if (is_kthread(th)) {
+		memcpy(to, from, bytes);
+		return E_OK;
+	}
+
+	dir = (PTE*)kern_p2v(th->mpu.cr3);
+	p = getPageAddress(dir, from);
 	if (p) {
 		UB *w = (UB*)to;
 		UB *r = (UB*)from;
