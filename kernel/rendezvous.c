@@ -31,6 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/tree.h>
 #include "func.h"
 #include "ready.h"
+#include "rendezvous.h"
 #include "sync.h"
 #include "thread.h"
 #include "mpu/mpufunc.h"
@@ -38,31 +39,20 @@ For more information, please refer to <http://unlicense.org/>
 typedef struct {
 	node_t node;
 	list_t caller;
-	list_t acceptor;
-	ATR poratr;
-	UINT maxcmsz;
-	UINT maxrmsz;
-} port_t;
-
-typedef struct {
-	node_t node;
-	list_t caller;
 	UINT maxrmsz;
 } rendezvous_t;
 
-static slab_t port_slab;
-static tree_t port_tree;
 static slab_t rdv_slab;
 static tree_t rdv_tree;
 static int rdv_hand;
 
-static inline port_t *getPortParent(const node_t *p);
+static inline port_t *getPortParent(const thread_t *p);
 static inline rendezvous_t *getRdvParent(const node_t *p);
 static void clear(port_t *p, const T_CPOR *pk_cpor);
 
 
-static inline port_t *getPortParent(const node_t *p) {
-	return (port_t*)((intptr_t)p - offsetof(port_t, node));
+static inline port_t *getPortParent(const thread_t *p) {
+	return (port_t*)&(p->port);
 }
 
 static inline rendezvous_t *getRdvParent(const node_t *p) {
@@ -71,7 +61,6 @@ static inline rendezvous_t *getRdvParent(const node_t *p) {
 
 ER port_initialize(void)
 {
-	create_tree(&port_tree, &port_slab, sizeof(port_t), NULL);
 	create_tree(&rdv_tree, &rdv_slab, sizeof(rendezvous_t), NULL);
 	rdv_hand = MIN_AUTO_ID - 1;
 
@@ -79,6 +68,7 @@ ER port_initialize(void)
 }
 
 static void clear(port_t *p, const T_CPOR *pk_cpor) {
+	p->opened = true;
 	list_initialize(&(p->caller));
 	list_initialize(&(p->acceptor));
 	p->poratr = pk_cpor->poratr;
@@ -98,21 +88,15 @@ ER port_open(T_CPOR *pk_cpor)
 
 	enter_serialize();
 	do {
-		node_t *node = slab_alloc(&port_slab);
+		port_t *port = getPortParent(running);
 
-		if (!node) {
-			result = E_NOMEM;
-			break;
-		}
-
-		if (!tree_put(&port_tree, thread_id(running), node)) {
-			slab_free(&port_slab, node);
+		if (port->opened) {
 			result = E_OBJ;
 			break;
 /* TODO test */
 		}
 
-		clear(getPortParent(node), pk_cpor);
+		clear(port, pk_cpor);
 		result = E_OK;
 
 	} while (FALSE);
@@ -127,22 +111,18 @@ ER port_close(void)
 
 	enter_serialize();
 	do {
-		port_t *p;
-		ID porid = thread_id(running);
-		node_t *node = tree_get(&port_tree, porid);
+		port_t *port = getPortParent(running);
 
-		if (!node) {
-			result = E_NOEXS;
+		if (!(port->opened)) {
+			result = E_OBJ;
 			break;
+/* TODO test */
 		}
 
-		p = getPortParent(node);
-		release_all(&(p->acceptor));
+		port->opened = false;
+		release_all(&(port->acceptor));
 /* TODO remove rendevous */
-		release_all(&(p->caller));
-		node = tree_remove(&port_tree, porid);
-		if (node)
-			slab_free(&port_slab, node);
+		release_all(&(port->caller));
 		result = E_OK;
 
 	} while (FALSE);
@@ -154,29 +134,34 @@ ER port_close(void)
 
 ER_UINT port_call(ID porid, VP msg, UINT cmsgsz)
 {
-	port_t *p;
-	node_t *node;
+	thread_t *th;
+	port_t *port;
 	list_t *q;
 /* TODO validate msg */
 	enter_serialize();
-	node = tree_get(&port_tree, porid);
-	if (!node) {
+	th = get_thread_ptr(porid);
+	if (!th) {
 		leave_serialize();
 		return E_NOEXS;
 	}
 
-	p = getPortParent(node);
+	port = getPortParent(th);
+	if (!(port->opened)) {
+		leave_serialize();
+		return E_NOEXS;
+	}
 
-	if (cmsgsz > p->maxcmsz) {
+	if (cmsgsz > port->maxcmsz) {
 		printk("port_call[%d] cmsgsz %d > %d\n",
-				porid, cmsgsz, p->maxcmsz);
+				porid, cmsgsz, port->maxcmsz);
 		leave_serialize();
 		return E_PAR;
 	}
 
-	q = list_head(&(p->acceptor));
+	q = list_head(&(port->acceptor));
 	if (q) {
 		thread_t *tp = getThreadWaiting(q);
+		node_t *node;
 		rendezvous_t *r;
 		int rdvno;
 
@@ -204,7 +189,7 @@ ER_UINT port_call(ID porid, VP msg, UINT cmsgsz)
 		release(tp);
 	}
 	else {
-		list_enqueue(&(p->caller), &(running->wait.waiting));
+		list_enqueue(&(port->caller), &(running->wait.waiting));
 		running->wait.detail.por.size = cmsgsz;
 		running->wait.detail.por.msg = msg;
 		running->wait.type = wait_por;
@@ -220,7 +205,8 @@ ER_UINT port_call(ID porid, VP msg, UINT cmsgsz)
 
 ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 {
-	port_t *p;
+	thread_t *th;
+	port_t *port;
 	node_t *node;
 	rendezvous_t *r;
 	list_t *q;
@@ -228,17 +214,19 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 	int rdvno;
 /* TODO validate msg */
 	enter_serialize();
-	node = tree_get(&port_tree, porid);
-	if (!node) {
+	th = get_thread_ptr(porid);
+	if (!th) {
 		leave_serialize();
 		return E_NOEXS;
 	}
 
-	p = getPortParent(node);
+	port = getPortParent(th);
 
 	node = slab_alloc(&rdv_slab);
-	if (!node)
+	if (!node) {
+		leave_serialize();
 		return E_NOMEM;
+	}
 
 	if (!find_empty_key(&rdv_tree, &rdv_hand, node)) {
 		slab_free(&rdv_slab, node);
@@ -250,9 +238,9 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 	rdvno = node->key;
 	r = getRdvParent(node);
 	list_initialize(&(r->caller));
-	r->maxrmsz = p->maxrmsz;
+	r->maxrmsz = port->maxrmsz;
 
-	q = list_head(&(p->caller));
+	q = list_head(&(port->caller));
 	if (q) {
 		thread_t *tp = getThreadWaiting(q);
 
@@ -277,7 +265,7 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 /* TODO test */
 	}
 	else {
-		list_enqueue(&(p->acceptor), &(running->wait.waiting));
+		list_enqueue(&(port->acceptor), &(running->wait.waiting));
 		running->wait.detail.por.msg = msg;
 		running->wait.detail.por.rdvno = rdvno;
 		running->wait.type = wait_por;

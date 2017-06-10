@@ -1,5 +1,5 @@
-#ifndef _CORE_THREAD_H_
-#define _CORE_THREAD_H_
+#ifndef _CORE_RENDEZVOUS_H_
+#define _CORE_RENDEZVOUS_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,46 +27,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <mm/segment.h>
+#include <stdbool.h>
 #include <set/list.h>
-#include <set/tree.h>
-#include "rendezvous.h"
-#include "wait.h"
-#include "mpu/context.h"
 
 typedef struct {
-	node_t node;
-	list_t queue;
-	STAT status;
-	wait_reason_t wait;
-	list_t locking;
-	mpu_context_t mpu;
-	struct {
-		//TODO under 49 days
-		UW total;
-		//TODO under 49 days
-		UW left;
-	} time;
-	PRI priority;
-	UINT wakeup_count;
-	struct {
-		VP_INT arg;
-		PRI priority;
-		VP page_table;
-		VP kstack_tail;
-		VP ustack_top;
-		FP entry;
-	} attr;
-	port_t port;
-} thread_t;
-
-static inline ID thread_id(thread_t *th)
-{
-	return (ID)(th->node.key);
-}
-
-static inline thread_t *getThreadWaiting(const list_t *p) {
-	return (thread_t*)((intptr_t)p - offsetof(thread_t, wait.waiting));
-}
+	bool opened;
+	list_t caller;
+	list_t acceptor;
+	ATR poratr;
+	UINT maxcmsz;
+	UINT maxrmsz;
+} port_t;
 
 #endif
