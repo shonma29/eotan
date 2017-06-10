@@ -111,7 +111,7 @@ static bool port_init(void)
 		sizeof(struct posix_response)
 	};
 
-	return kcall->port_create(PORT_FS, &packet) == E_OK;
+	return kcall->port_open(&packet) == E_OK;
 }
 
 static void request_init(void)

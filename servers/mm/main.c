@@ -60,7 +60,7 @@ static ER init(void)
 	process_initialize();
 	define_mpu_handlers((FP)default_handler, (FP)stack_fault_handler);
 
-	return kcall->port_create(PORT_MM, &pk_cpor);
+	return kcall->port_open(&pk_cpor);
 }
 
 static void doit(void)
@@ -118,7 +118,7 @@ void start(VP_INT exinf)
 		doit();
 		dbg_printf(MYNAME ": end\n");
 
-		error = kcall->port_destroy(PORT_MM);
+		error = kcall->port_close();
 		if (error)
 			dbg_printf(MYNAME ": del_por failed %d\n", error);
 	}

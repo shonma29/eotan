@@ -273,7 +273,7 @@ static ER init(void)
 		return result;
 	}
 
-	result = kcall->port_create(PORT_TIMER, &pk_cpor);
+	result = kcall->port_open(&pk_cpor);
 	if (result != E_OK) {
 		dbg_printf(MYNAME ": cre_por failed %d\n", result);
 		pk_dinh.inthdr = NULL;
@@ -293,7 +293,7 @@ void start(VP_INT exinf)
 		doit();
 		dbg_printf(MYNAME ": end\n");
 
-		error = kcall->port_destroy(PORT_TIMER);
+		error = kcall->port_close();
 		if (error != E_OK)
 			dbg_printf(MYNAME ": del_por failed %d\n", error);
 	}

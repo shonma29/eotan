@@ -75,8 +75,8 @@ void kcall_initialize(void)
 	p->region_put = region_put;
 	p->region_copy = region_copy;
 
-	p->port_create = port_create;
-	p->port_destroy = port_destroy;
+	p->port_open = port_open;
+	p->port_close = port_close;
 	p->port_call = port_call;
 	p->port_accept = port_accept;
 	p->port_reply = port_reply;

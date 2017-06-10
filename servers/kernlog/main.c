@@ -187,7 +187,7 @@ static ER_ID initialize(void)
 
 	ring_create(buf, sizeof(buf));
 
-	err = kcall->port_create(PORT_SYSLOG, &pk_cpor);
+	err = kcall->port_open(&pk_cpor);
 	if (err) {
 		/*dbg_printf(MYNAME ": cre_por error=%d\n", err);*/
 
@@ -206,7 +206,7 @@ void start(VP_INT exinf)
 
 		while (accept(port) == E_OK);
 
-		kcall->port_destroy(port);
+		kcall->port_close();
 		/*dbg_printf(MYNAME ": end\n");*/
 	}
 

@@ -86,7 +86,7 @@ static void clear(port_t *p, const T_CPOR *pk_cpor) {
 	p->maxrmsz = pk_cpor->maxrmsz;
 }
 
-ER port_create(ID porid, T_CPOR *pk_cpor)
+ER port_open(T_CPOR *pk_cpor)
 {
 	ER result;
 
@@ -105,7 +105,7 @@ ER port_create(ID porid, T_CPOR *pk_cpor)
 			break;
 		}
 
-		if (!tree_put(&port_tree, porid, node)) {
+		if (!tree_put(&port_tree, thread_id(running), node)) {
 			slab_free(&port_slab, node);
 			result = E_OBJ;
 			break;
@@ -121,13 +121,14 @@ ER port_create(ID porid, T_CPOR *pk_cpor)
 	return result;
 }
 
-ER port_destroy(ID porid)
+ER port_close(void)
 {
 	ER result;
 
 	enter_serialize();
 	do {
 		port_t *p;
+		ID porid = thread_id(running);
 		node_t *node = tree_get(&port_tree, porid);
 
 		if (!node) {

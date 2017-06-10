@@ -311,7 +311,7 @@ static ER initialize(void)
 	cns->cls();
 	cns->locate(0, 0);
 //TODO create mutex
-	result = kcall->port_create(PORT_CONSOLE, &pk_cpor);
+	result = kcall->port_open(&pk_cpor);
 	if (result) {
 		dbg_printf("hmi: cre_por error=%d\n", result);
 
@@ -321,7 +321,7 @@ static ER initialize(void)
 	result = kcall->thread_create(PORT_HMI, &pk_ctsk);
 	if (result) {
 		dbg_printf("hmi: cre_tsk failed %d\n", result);
-		kcall->port_destroy(PORT_CONSOLE);
+		kcall->port_close();
 		return result;
 	}
 
@@ -348,7 +348,7 @@ void start(VP_INT exinf)
 		while (accept() == E_OK);
 
 		kcall->thread_destroy(PORT_HMI);
-		kcall->port_destroy(PORT_CONSOLE);
+		kcall->port_close();
 		dbg_printf("hmi: end\n");
 	}
 

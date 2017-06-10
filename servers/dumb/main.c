@@ -45,30 +45,22 @@ static int test_cre_por(void)
 	T_CPOR pk_cpor = { TA_TFIFO, BUFSIZ, BUFSIZ };
 	ID dupport;
 
-	port = kcall->port_create(0, &pk_cpor);
-	dbg_printf(MYNAME ": test_cre_por_1 result = %d\n", port);
-	if (port != E_ID)	return 0;
-
-	port = kcall->port_create(MIN_AUTO_PORT, &pk_cpor);
-	dbg_printf(MYNAME ": test_cre_por_2 result = %d\n", port);
-	if (port != E_ID)	return 0;
-
-	port = kcall->port_create(STATIC_PORT, 0);
+	port = kcall->port_open(0);
 	dbg_printf(MYNAME ": test_cre_por_3 result = %d\n", port);
 	if (port != E_PAR)	return 0;
 
 	pk_cpor.poratr = TA_TPRI;
-	port = kcall->port_create(STATIC_PORT, &pk_cpor);
+	port = kcall->port_open(&pk_cpor);
 	dbg_printf(MYNAME ": test_cre_por_4 result = %d\n", port);
 	if (port != E_RSATR)	return 0;
 
 	pk_cpor.poratr = TA_TFIFO;
-	port = kcall->port_create(STATIC_PORT, &pk_cpor);
+	port = kcall->port_open(&pk_cpor);
 	dbg_printf(MYNAME ": test_cre_por_5 result  = %d\n", port);
 	if (port != E_OK)	return 0;
 	port = STATIC_PORT;
 
-	dupport = kcall->port_create(STATIC_PORT, &pk_cpor);
+	dupport = kcall->port_open(&pk_cpor);
 	dbg_printf(MYNAME ": test_cre_por_6 result = %d\n", dupport);
 	if (dupport != E_OBJ)	return 0;
 
@@ -140,15 +132,11 @@ static int test_del_por(void)
 {
 	ER result;
 
-	result = kcall->port_destroy(0);
-	dbg_printf(MYNAME ": test_del_por_1 result = %d\n", result);
-	if (result != E_NOEXS)	return 0;
-
-	result = kcall->port_destroy(port);
+	result = kcall->port_close();
 	dbg_printf(MYNAME ": test_del_por_2 result = %d\n", result);
 	if (result != E_OK)	return 0;
 
-	result = kcall->port_destroy(port);
+	result = kcall->port_close();
 	dbg_printf(MYNAME ": test_del_por_3 result = %d\n", result);
 	if (result != E_NOEXS)	return 0;
 

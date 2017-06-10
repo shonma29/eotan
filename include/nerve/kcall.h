@@ -46,8 +46,8 @@ typedef struct {
 	ER (*region_get)(const ID, const void *, const size_t, void *);
 	ER (*region_put)(const ID, void *, const size_t, const void *);
 	ER_UINT (*region_copy)(const ID, const void *, const size_t , void *);
-	ER (*port_create)(ID porid, T_CPOR *);
-	ER (*port_destroy)(ID);
+	ER (*port_open)(T_CPOR *);
+	ER (*port_close)(void);
 	ER_UINT (*port_call)(ID, VP, UINT);
 	ER_UINT (*port_accept)(ID, RDVNO *, VP);
 	ER (*port_reply)(RDVNO, VP, UINT);

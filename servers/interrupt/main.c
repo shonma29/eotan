@@ -128,7 +128,7 @@ static ER port_initialize(void)
 			sizeof(ER)
 	};
 
-	result = kcall->port_create(PORT_INTERRUPT, &pk_cpor);
+	result = kcall->port_open(&pk_cpor);
 	if (result) {
 		dbg_printf("interrupt: cre_por error=%d\n", result);
 
