@@ -69,6 +69,7 @@ static char int_buf[
 
 extern void put(const unsigned int start, const size_t size,
 		const unsigned char *buf);
+extern void pset(unsigned int x, unsigned int y, int color);
 #else
 #include <cga.h>
 #endif
@@ -168,17 +169,31 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 	if (result)
 		return result;
 
-	if (dd)
+	switch (dd) {
 #ifdef USE_VESA
+	case 1:
 		put(start, size, inbuf);
-#else
-		;
-#endif
-	else {
-		size_t i;
+		break;
 
-		for (i = 0; i < size; i++)
-			cns->putc(inbuf[i]);
+	case 2:
+		if (size != sizeof(int) * 3)
+			return E_PAR;
+		else {
+			unsigned int x = ((int*)inbuf)[0];
+			unsigned int y = ((int*)inbuf)[1];
+			int color = ((int*)inbuf)[2];
+			pset(x, y, color);
+		}
+		break;
+#endif
+	default:
+		{
+			size_t i;
+
+			for (i = 0; i < size; i++)
+				cns->putc(inbuf[i]);
+		}
+		break;
 	}
 
 	return size;
