@@ -110,39 +110,38 @@
 #include <sys/stat.h>
 #include "sfs_utils.h"
 
-static int mount_fs(char *, struct sfs_superblock *, struct sfs_inode *, int);
-static int lookup_file(int, struct sfs_superblock *, struct sfs_inode *, char *, struct sfs_inode *);
-static int create_file(int, struct sfs_superblock *, struct sfs_inode *, const char *, int, struct sfs_inode *);
-static int read_file(int, struct sfs_superblock *, struct sfs_inode *, int, int, char *);
-static int write_inode(int, struct sfs_superblock *, struct sfs_inode *);
-static int truncate_file(int, struct sfs_superblock *, struct sfs_inode *, int);
+static int mount_fs(block_device_t *, char *, struct sfs_superblock *, struct sfs_inode *, int);
+static int lookup_file(block_device_t *, struct sfs_superblock *, struct sfs_inode *, char *, struct sfs_inode *);
+static int create_file(block_device_t *, struct sfs_superblock *, struct sfs_inode *, const char *, int, struct sfs_inode *);
+static int read_file(block_device_t *, struct sfs_superblock *, struct sfs_inode *, int, int, char *);
+static int write_inode(block_device_t *, struct sfs_superblock *, struct sfs_inode *);
+static int truncate_file(block_device_t *, struct sfs_superblock *, struct sfs_inode *, int);
 
-static int read_block(int, int, int, B *);
-static int write_block(int, int, int, B *);
-static int alloc_block(int, struct sfs_superblock *);
-static int free_block(int, struct sfs_superblock *, int);
-static void free_indirect(int, struct sfs_superblock *, struct sfs_inode *, int, int);
-static int get_block_num(int, struct sfs_superblock *, struct sfs_inode *, int);
-static int get_indirect_block_num(int, struct sfs_superblock *, struct sfs_inode *, int);
-static int set_block_num(int, struct sfs_superblock *, struct sfs_inode *, int, int);
-static int set_indirect_block_num(int, struct sfs_superblock *, struct sfs_inode *, int, int);
-static int locallookup_file(int, struct sfs_superblock *, struct sfs_inode *, struct sfs_inode *, char *);
+static int alloc_block(block_device_t *, struct sfs_superblock *);
+static int free_block(block_device_t *, struct sfs_superblock *, int);
+static void free_indirect(block_device_t *, struct sfs_superblock *, struct sfs_inode *, int, int);
+static int get_block_num(block_device_t *, struct sfs_superblock *, struct sfs_inode *, int);
+static int get_indirect_block_num(block_device_t *, struct sfs_superblock *, struct sfs_inode *, int);
+static int set_block_num(block_device_t *, struct sfs_superblock *, struct sfs_inode *, int, int);
+static int set_indirect_block_num(block_device_t *, struct sfs_superblock *, struct sfs_inode *, int, int);
+static int locallookup_file(block_device_t *, struct sfs_superblock *, struct sfs_inode *, struct sfs_inode *, char *);
 
 
-static W read_dir(int, struct sfs_superblock *, struct sfs_inode *, int, struct sfs_dir *);
+static W read_dir(block_device_t *, struct sfs_superblock *, struct sfs_inode *, int, struct sfs_dir *);
 
-static W read_inode(int, struct sfs_superblock *, int, struct sfs_inode *);
-static int write_file(int, struct sfs_superblock *, struct sfs_inode *,
+static W read_inode(block_device_t *, struct sfs_superblock *, int, struct sfs_inode *);
+static int write_file(block_device_t *, struct sfs_superblock *, struct sfs_inode *,
 		      int, int, char *);
 
 static struct sfs_inode rootdir_buf;
 static struct sfs_inode *rootdirp;
+static block_device_t device;
 
-static int f_create_file(int, struct sfs_superblock *, char *);
-static int f_write_file(int, struct sfs_superblock *, char *, char *);
-static int f_dir(int, struct sfs_superblock *, char *);
-static int f_mkdir(int, struct sfs_superblock *, char *);
-static int f_chmod(int, struct sfs_superblock *, char *, char *);
+static int f_create_file(block_device_t *, struct sfs_superblock *, char *);
+static int f_write_file(block_device_t *, struct sfs_superblock *, char *, char *);
+static int f_dir(block_device_t *, struct sfs_superblock *, char *);
+static int f_mkdir(block_device_t *, struct sfs_superblock *, char *);
+static int f_chmod(block_device_t *, struct sfs_superblock *, char *, char *);
 
 static struct cmd {
     char *name;
@@ -189,7 +188,8 @@ int main(int ac, char **av)
 	usage();
 	return (0);
     }
-    fd = mount_fs(av[1], &sb, &rootdir_buf, O_RDWR);
+    block_initialize(&device);
+    fd = mount_fs(&device, av[1], &sb, &rootdir_buf, O_RDWR);
     rootdirp = &rootdir_buf;
 
     for (i = 0; cmdtable[i].name != NULL; i++) {
@@ -202,7 +202,7 @@ int main(int ac, char **av)
 		usage();
 		return (0);
 	    }
-	    err = (*cmdtable[i].funcp) (fd, &sb, av[3], av[4], av[5]);
+	    err = (*cmdtable[i].funcp) (&device, &sb, av[3], av[4], av[5]);
 	    if (err) {
 		fprintf(stderr, "errno = %d\n", err);
 		exit(err);
@@ -224,7 +224,7 @@ int main(int ac, char **av)
 /* f_create_file
 
  */
-static int f_create_file(int fd, struct sfs_superblock *sb, char *path)
+static int f_create_file(block_device_t *dev, struct sfs_superblock *sb, char *path)
 {
     struct sfs_inode parent_ip, ip;
     int err;
@@ -244,12 +244,12 @@ static int f_create_file(int fd, struct sfs_superblock *sb, char *path)
     strncpy(fname, &path[i + 1], strlen(path) - i);
     fname[strlen(path) - i] = '\0';
 
-    err = lookup_file(fd, sb, rootdirp, pdirname, &parent_ip);
+    err = lookup_file(dev, sb, rootdirp, pdirname, &parent_ip);
     if (err) {
 	fprintf(stderr, "cannot lookup parent directory [%s]\n", pdirname);
 	return (err);
     }
-    err = create_file(fd, sb, &parent_ip, fname, 0666, &ip);
+    err = create_file(dev, sb, &parent_ip, fname, 0666, &ip);
     if (err) {
 	fprintf(stderr, "cannot create file [%s]\n", fname);
 	return (err);
@@ -262,7 +262,7 @@ static int f_create_file(int fd, struct sfs_superblock *sb, char *path)
 /* f_write_file
 
  */
-static int f_write_file(int fd, struct sfs_superblock *sb, char *path, char *src_file)
+static int f_write_file(block_device_t *dev, struct sfs_superblock *sb, char *path, char *src_file)
 {
     struct sfs_inode ip;
     int err;
@@ -282,14 +282,14 @@ static int f_write_file(int fd, struct sfs_superblock *sb, char *path, char *src
 	return (ENOMEM);
     }
 
-    err = lookup_file(fd, sb, rootdirp, path, &ip);
+    err = lookup_file(dev, sb, rootdirp, path, &ip);
     if (err) {
 	if (err == ENOENT) {
-	    err = f_create_file(fd, sb, path);
+	    err = f_create_file(dev, sb, path);
 	    if (err) {
 		return (err);
 	    }
-	    err = lookup_file(fd, sb, rootdirp, path, &ip);
+	    err = lookup_file(dev, sb, rootdirp, path, &ip);
 	    if (err) {
 		return (err);
 	    }
@@ -300,7 +300,7 @@ static int f_write_file(int fd, struct sfs_superblock *sb, char *path, char *src
 	}
     }
     read(dfd, buf, st.st_size);
-    err = write_file(fd, sb, &ip, 0, st.st_size, buf);
+    err = write_file(dev, sb, &ip, 0, st.st_size, buf);
     close(dfd);
     if (err) {
 	fprintf(stderr, "cannot write to file.\n");
@@ -312,7 +312,7 @@ static int f_write_file(int fd, struct sfs_superblock *sb, char *path, char *src
 }
 
 
-static int f_dir(int fd, struct sfs_superblock *sb, char *path)
+static int f_dir(block_device_t *dev, struct sfs_superblock *sb, char *path)
 {
     struct sfs_inode ip;
     int err;
@@ -321,7 +321,7 @@ static int f_dir(int fd, struct sfs_superblock *sb, char *path)
     char *name;
     int i;
 
-    err = lookup_file(fd, sb, rootdirp, path, &ip);
+    err = lookup_file(dev, sb, rootdirp, path, &ip);
     if (err) {
 	fprintf(stderr, "cannot open file [%s]\n", path);
 	return (err);
@@ -332,9 +332,9 @@ static int f_dir(int fd, struct sfs_superblock *sb, char *path)
 		path, ip.i_size);
 	return (0);
     }
-    nentry = read_dir(fd, sb, &ip, 0, NULL);
+    nentry = read_dir(dev, sb, &ip, 0, NULL);
     dirp = alloca(nentry * sizeof(struct sfs_dir));
-    if (read_dir(fd, sb, &ip, nentry, dirp) != 0) {
+    if (read_dir(dev, sb, &ip, nentry, dirp) != 0) {
 	fprintf(stderr, "cannot read directory\n");
 	return (-1);
     }
@@ -345,7 +345,7 @@ static int f_dir(int fd, struct sfs_superblock *sb, char *path)
 	strcpy(name, path);
 	strcat(name, "/");
 	strcat(name, (char*)(dirp[i].d_name));
-	err = lookup_file(fd, sb, rootdirp, name, &ip);
+	err = lookup_file(dev, sb, rootdirp, name, &ip);
 	if (err) {
 	    fprintf(stderr, "err = %d\n", err);
 	    return (err);
@@ -364,7 +364,7 @@ static int f_dir(int fd, struct sfs_superblock *sb, char *path)
 }
 
 
-static int f_mkdir(int fd, struct sfs_superblock *sb, char *path)
+static int f_mkdir(block_device_t *dev, struct sfs_superblock *sb, char *path)
 {
     struct sfs_inode parent_ip, ip;
     int err;
@@ -390,12 +390,12 @@ static int f_mkdir(int fd, struct sfs_superblock *sb, char *path)
     fname[strlen(path) - i] = '\0';
 
 /*  fprintf (stderr, "parent = %s, file = %s\n", pdirname, fname); */
-    err = lookup_file(fd, sb, rootdirp, pdirname, &parent_ip);
+    err = lookup_file(dev, sb, rootdirp, pdirname, &parent_ip);
     if (err) {
 	fprintf(stderr, "cannot lookup parent directory [%s]\n", pdirname);
 	return (err);
     }
-    err = create_file(fd, sb, &parent_ip, fname,
+    err = create_file(dev, sb, &parent_ip, fname,
 	    S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH, &ip);
     if (err) {
 	fprintf(stderr, "cannot create file [%s]\n", fname);
@@ -403,21 +403,21 @@ static int f_mkdir(int fd, struct sfs_superblock *sb, char *path)
     }
     ip.i_nlink = 2;
     ip.i_mode = (ip.i_mode & ~S_IFMT) | (S_IFDIR);
-    err = write_inode(fd, sb, &ip);
+    err = write_inode(dev, sb, &ip);
     if (err) {
 	fprintf(stderr, "cannot write inode\n");
 	return (err);
     }
     /* parent_ip のリンク数の更新は create_file では行わない． */
     parent_ip.i_nlink += 1;
-    err = write_inode(fd, sb, &parent_ip);
+    err = write_inode(dev, sb, &parent_ip);
     if (err) {
 	fprintf(stderr, "cannot write inode\n");
 	return (err);
     }
     dir[0].d_index = ip.i_index;
     dir[1].d_index = parent_ip.i_index;
-    err = write_file(fd, sb, &ip, 0, sizeof(dir), (char *) dir);
+    err = write_file(dev, sb, &ip, 0, sizeof(dir), (char *) dir);
     if (err) {
 	fprintf(stderr, "cannot write to directory.\n");
 	return (err);
@@ -426,20 +426,20 @@ static int f_mkdir(int fd, struct sfs_superblock *sb, char *path)
 }
 
 
-static int f_chmod(int fd, struct sfs_superblock *sb, char *num, char *path)
+static int f_chmod(block_device_t *dev, struct sfs_superblock *sb, char *num, char *path)
 {
     struct sfs_inode ip;
     int err;
     int i;
 
-    err = lookup_file(fd, sb, rootdirp, path, &ip);
+    err = lookup_file(dev, sb, rootdirp, path, &ip);
     if (err) {
 	fprintf(stderr, "cannot open file [%s]\n", path);
 	return (err);
     }
     sscanf(num, "%o", &i);
     ip.i_mode = i | (ip.i_mode & S_IFMT);
-    err = write_inode(fd, sb, &ip);
+    err = write_inode(dev, sb, &ip);
     if (err) {
 	fprintf(stderr, "cannot write inode\n");
 	return (err);
@@ -455,7 +455,7 @@ static int f_chmod(int fd, struct sfs_superblock *sb, char *num, char *path)
  */
 
 
-static int mount_fs(char *path, struct sfs_superblock *sb, struct sfs_inode *root, int mode)
+static int mount_fs(block_device_t *dev, char *path, struct sfs_superblock *sb, struct sfs_inode *root, int mode)
 {
     int fd;
 
@@ -475,13 +475,16 @@ static int mount_fs(char *path, struct sfs_superblock *sb, struct sfs_inode *roo
     if (read(fd, sb, sizeof(struct sfs_superblock)) != sizeof(struct sfs_superblock)) {
 	return (-1);
     }
-    read_inode(fd, sb, 1, root);
+    dev->channel = fd;
+    dev->block_size = sb->blksize;
+    read_inode(dev, sb, 1, root);
+
     return (fd);
 }
 
 
 static W
-read_dir(int fd,
+read_dir(block_device_t *dev,
 	 struct sfs_superblock * sb,
 	 struct sfs_inode * ip,
 	 int nentry,
@@ -496,7 +499,7 @@ read_dir(int fd,
      nentry * sizeof(struct sfs_dir) :
      ip->i_size;
 
-    read_file(fd, sb, ip, 0, size, (char *) dirp);		/* エラーチェックが必要! */
+    read_file(dev, sb, ip, 0, size, (char *) dirp);		/* エラーチェックが必要! */
     return (0);
 }
 
@@ -523,12 +526,12 @@ int get_inode_offset(struct sfs_superblock *sb, int ino)
 
 
 static W
-read_inode(int fd, struct sfs_superblock *sb, int ino, struct sfs_inode *ip)
+read_inode(block_device_t *dev, struct sfs_superblock *sb, int ino, struct sfs_inode *ip)
 {
     int offset;
     offset = get_inode_offset(sb, ino);
-    lseek(fd, offset, 0);
-    read(fd, ip, sizeof(struct sfs_inode));
+    lseek(dev->channel, offset, 0);
+    read(dev->channel, ip, sizeof(struct sfs_inode));
     return (0);
 }
 
@@ -567,39 +570,10 @@ int alloc_inode(int fd, struct sfs_superblock *sb)
 }
 
 
-/* free_inode - 
-
-
- */
-int free_inode(int fd, struct sfs_superblock *sb, int inode_index)
+static int write_inode(block_device_t *dev, struct sfs_superblock *sb, struct sfs_inode *ip)
 {
-    struct sfs_inode ipbuf;
-
-    if (lseek(fd, get_inode_offset(sb, 1), 0) < 0) {
-	perror("lseek");
-	exit(1);
-    }
-    bzero(&ipbuf, sizeof(ipbuf));
-    if (lseek(fd, get_inode_offset(sb, inode_index), 0) < 0) {
-	perror("lseek");
-	exit(1);
-    }
-    write(fd, &ipbuf, sizeof(ipbuf));
-
-    sb->freeinode++;
-    if (sb->isearch >= inode_index)
-	sb->isearch = inode_index - 1;
-    lseek(fd, 1 * sb->blksize, 0);
-    write(fd, sb, sizeof(struct sfs_superblock));
-
-    return (0);
-}
-
-
-static int write_inode(int fd, struct sfs_superblock *sb, struct sfs_inode *ip)
-{
-    lseek(fd, get_inode_offset(sb, ip->i_index), 0);
-    if (write(fd, ip, sizeof(struct sfs_inode)) < sizeof(struct sfs_inode)) {
+    lseek(dev->channel, get_inode_offset(sb, ip->i_index), 0);
+    if (write(dev->channel, ip, sizeof(struct sfs_inode)) < sizeof(struct sfs_inode)) {
 	return (EIO);
     }
     /* rootdir_buf の内容の更新 */
@@ -618,7 +592,7 @@ static int write_inode(int fd, struct sfs_superblock *sb, struct sfs_inode *ip)
  * create_file()
  * lookup()
  */
-static int write_file(int fd,
+static int write_file(block_device_t *dev,
 	       struct sfs_superblock *sb,
 	       struct sfs_inode *ip,
 	       int start,
@@ -637,19 +611,17 @@ static int write_file(int fd,
 
     blockbuf = (B *) alloca(sb->blksize);
     while (size > 0) {
-	if (get_block_num(fd, sb, ip, start / sb->blksize) <= 0) {
+	if (get_block_num(dev, sb, ip, start / sb->blksize) <= 0) {
 	    /* ファイルサイズを越えて書き込む場合には、新しくブロックをアロケートする
 	     */
-	    set_block_num(fd, sb, ip, start / sb->blksize, alloc_block(fd, sb));
+	    set_block_num(dev, sb, ip, start / sb->blksize, alloc_block(dev, sb));
 /*
- *   ip->i_direct[start / sb->blksize] = alloc_block (fd, sb);
+ *   ip->i_direct[start / sb->blksize] = alloc_block (dev, sb);
  */
 	    bzero(blockbuf, sb->blksize);
 	} else {
-	    read_block(fd,
-		    get_block_num(fd, sb, ip, start / sb->blksize),
-		       sb->blksize,
-		       blockbuf);
+	    dev->read(dev, blockbuf,
+		    get_block_num(dev, sb, ip, start / sb->blksize));
 	}
 
 	/* 読み込んだブロックの内容を更新する
@@ -660,10 +632,8 @@ static int write_file(int fd,
 
 	/* 更新したブロックを書き込む
 	 */
-	write_block(fd,
-		    get_block_num(fd, sb, ip, start / sb->blksize),
-		    sb->blksize,
-		    blockbuf);
+	dev->write(dev, blockbuf,
+		    get_block_num(dev, sb, ip, start / sb->blksize));
 
 	buf += copysize;
 	start += copysize;
@@ -677,15 +647,15 @@ static int write_file(int fd,
     if (filesize > ip->i_size) {
 	ip->i_size = filesize;
 	ip->i_nblock = ROUNDUP(filesize, sb->blksize) / sb->blksize;
-	write_inode(fd, sb, ip);
+	write_inode(dev, sb, ip);
     } else {
-	truncate_file(fd, sb, ip, filesize);
+	truncate_file(dev, sb, ip, filesize);
     }
     return (0);
 }
 
 
-static int read_file(int fd,
+static int read_file(block_device_t *dev,
 	      struct sfs_superblock *sb,
 	      struct sfs_inode *ip,
 	      int start,
@@ -703,10 +673,8 @@ static int read_file(int fd,
 /*  fprintf (stderr, "read_file: offset = %d, size = %d\n", start, size); */
     blockbuf = (B *) alloca(sb->blksize);
     while (size > 0) {
-	read_block(fd,
-		   get_block_num(fd, sb, ip, start / sb->blksize),
-		   sb->blksize,
-		   blockbuf);
+	dev->read(dev, blockbuf,
+		   get_block_num(dev, sb, ip, start / sb->blksize));
 	offset = start % sb->blksize;
 	copysize = MIN(sb->blksize - offset, size);
 	bcopy(&blockbuf[offset], buf, copysize);
@@ -720,7 +688,7 @@ static int read_file(int fd,
 
 
 
-static int create_file(int fd,
+static int create_file(block_device_t *dev,
 		struct sfs_superblock *sb,
 		struct sfs_inode *parent_dir,
 		const char *name,
@@ -737,9 +705,9 @@ static int create_file(int fd,
     if (strlen(name) > SFS_MAXNAMELEN)
 	return (ENAMETOOLONG);
 
-    nentry = read_dir(fd, sb, parent_dir, 0, NULL);
+    nentry = read_dir(dev, sb, parent_dir, 0, NULL);
     dirp = alloca(nentry * sizeof(struct sfs_dir));
-    if (read_dir(fd, sb, parent_dir, nentry, dirp) != 0) {
+    if (read_dir(dev, sb, parent_dir, nentry, dirp) != 0) {
 	return (ENOENT);
     }
     for (dir_index = 0; dir_index < nentry; dir_index++) {
@@ -755,7 +723,7 @@ static int create_file(int fd,
     /*
      * Inode の作成
      */
-    if ((inode_index = alloc_inode(fd, sb)) == 0) {
+    if ((inode_index = alloc_inode(dev->channel, sb)) == 0) {
 	return (ENOMEM);
     }
     bzero(newinode, sizeof(struct sfs_inode));
@@ -772,18 +740,18 @@ static int create_file(int fd,
     newinode->i_mtime.nsec = 0;
     newinode->i_ctime.sec = t;
     newinode->i_ctime.nsec = 0;
-    write_inode(fd, sb, newinode);
+    write_inode(dev, sb, newinode);
 
     /* parent_dir のリンクカウントは増やさない．
        parent_dir->i_nlink += 1;
-       write_inode (fd, sb, parent_dir);
+       write_inode (dev, sb, parent_dir);
      */
 
     /* 親ディレクトリの更新
      */
     newdir_entry.d_index = newinode->i_index;
     strcpy((char *) (newdir_entry.d_name), name);
-    write_file(fd,
+    write_file(dev,
 	       sb,
 	       parent_dir,
 	       sizeof(struct sfs_dir) * dir_index,
@@ -793,7 +761,7 @@ static int create_file(int fd,
 }
 
 
-static int lookup_file(int fd,
+static int lookup_file(block_device_t *dev,
 		struct sfs_superblock *sb,
 		struct sfs_inode *cwd,
 		char *path,
@@ -837,7 +805,7 @@ static int lookup_file(int fd,
 #ifdef DEBUG
 	fprintf (stderr, "local lookup = %s\n", name);
 #endif
-	err = locallookup_file(fd, sb, pdirp, dirp, name);
+	err = locallookup_file(dev, sb, pdirp, dirp, name);
 	if (err) {
 	    return (err);
 	}
@@ -850,7 +818,7 @@ static int lookup_file(int fd,
 }
 
 
-static int locallookup_file(int fd,
+static int locallookup_file(block_device_t *dev,
 		     struct sfs_superblock *sb,
 		     struct sfs_inode *parent,
 		     struct sfs_inode *ip,
@@ -860,12 +828,12 @@ static int locallookup_file(int fd,
     struct sfs_dir *dirp;
     int i;
 
-    nentry = read_dir(fd, sb, parent, 0, NULL);
+    nentry = read_dir(dev, sb, parent, 0, NULL);
     dirp = alloca(sizeof(struct sfs_dir) * nentry);
-    read_dir(fd, sb, parent, nentry, dirp);
+    read_dir(dev, sb, parent, nentry, dirp);
     for (i = 0; i < nentry; i++) {
 	if (strcmp(name, (char *) (dirp[i].d_name)) == 0) {
-	    read_inode(fd, sb, dirp[i].d_index, ip);
+	    read_inode(dev, sb, dirp[i].d_index, ip);
 	    return (0);
 	}
     }
@@ -873,7 +841,7 @@ static int locallookup_file(int fd,
 }
 
 
-static int truncate_file(int fd,
+static int truncate_file(block_device_t *dev,
 		  struct sfs_superblock *sb,
 		  struct sfs_inode *ip,
 		  int newsize)
@@ -888,40 +856,38 @@ static int truncate_file(int fd,
 	for (blockno = i = nblock / sb->blksize;
 	     i < ROUNDUP(ip->i_size, sb->blksize) / sb->blksize;
 	     i++) {
-	    free_block(fd, sb, get_block_num(fd, sb, ip, i));
+	    free_block(dev, sb, get_block_num(dev, sb, ip, i));
 	}
 
 	/* 間接ブロックの block の開放 */
 	inblock = blockno;
 	offset = inblock % SFS_INDIRECT_BLOCK;
 	inblock = inblock / SFS_INDIRECT_BLOCK;
-	free_indirect(fd, sb, ip, offset, inblock);
+	free_indirect(dev, sb, ip, offset, inblock);
     }
     ip->i_size = newsize;
     ip->i_nblock = nblock;
-    return (write_inode(fd, sb, ip));
+    return (write_inode(dev, sb, ip));
 }
 
-static void free_indirect(int fd, struct sfs_superblock *sb, struct sfs_inode *ip,
+static void free_indirect(block_device_t *dev, struct sfs_superblock *sb, struct sfs_inode *ip,
 		   int offset, int inblock)
 {
     int i;
     struct sfs_indirect inbuf;
 
     if (offset != 0) {
-	read_block(fd, ip->i_indirect[inblock], sb->blksize,
-		   (B *) & inbuf);
+	dev->read(dev, (B *) & inbuf, ip->i_indirect[inblock]);
 	for (i = offset; i < SFS_INDIRECT_BLOCK; ++i) {
 	    inbuf.in_block[i] = 0;
 	}
-	write_block(fd, ip->i_indirect[inblock], sb->blksize,
-		    (B *) & inbuf);
+	dev->write(dev, (B *) & inbuf, ip->i_indirect[inblock]);
 
 	++inblock;
     }
     for (i = inblock; i < SFS_INDIRECT_BLOCK_ENTRY; ++i) {
 	if (ip->i_indirect[i] > 0) {
-	    free_block(fd, sb, ip->i_indirect[i]);
+	    free_block(dev, sb, ip->i_indirect[i]);
 	    ip->i_indirect[i] = 0;
 	}
     }
@@ -930,37 +896,12 @@ static void free_indirect(int fd, struct sfs_superblock *sb, struct sfs_inode *i
 
 /* ブロックに関係している処理
 
- * read_block()
- * write_block()
  * alloc_block()
  * get_block_num()
  * set_block_num()
  *
  */
-static int read_block(int fd, int blockno, int blocksize, B * buf)
-{
-    if (lseek(fd, blockno * blocksize, 0) < 0) {
-	return (0);
-    }
-    if (read(fd, buf, blocksize) < blocksize) {
-	return (0);
-    }
-    return (blocksize);
-}
-
-
-static int write_block(int fd, int blockno, int blocksize, B * buf)
-{
-    if (lseek(fd, blockno * blocksize, 0) < 0) {
-	return (0);
-    }
-    if (write(fd, buf, blocksize) < blocksize) {
-	return (0);
-    }
-    return (blocksize);
-}
-
-static int alloc_block(int fd, struct sfs_superblock *sb)
+static int alloc_block(block_device_t *dev, struct sfs_superblock *sb)
 {
     int startoffset;
     int i, j, k, s;
@@ -974,12 +915,12 @@ static int alloc_block(int fd, struct sfs_superblock *sb)
 	return (-1);
     }
     startoffset = ((1 + 1) * sb->blksize);
-    lseek(fd, startoffset, 0);
+    lseek(dev->channel, startoffset, 0);
     buf = alloca(sb->blksize);
     s = (sb->bsearch - 1) / (8 * sb->blksize);
     for (i = s; i < sb->bitmapsize; i++) {
-	lseek(fd, (i * sb->blksize) + startoffset, 0);
-	if (read(fd, buf, sb->blksize) < 0) {
+	lseek(dev->channel, (i * sb->blksize) + startoffset, 0);
+	if (read(dev->channel, buf, sb->blksize) < 0) {
 	    return (-1);
 	}
 	if (i == s)
@@ -995,15 +936,15 @@ static int alloc_block(int fd, struct sfs_superblock *sb)
 			    + (j * 8)
 			    + k;
 			buf[j] = buf[j] | mask;
-			lseek(fd, (i * sb->blksize) + startoffset, 0);
-			if (write(fd, buf, sb->blksize) < 0) {
+			lseek(dev->channel, (i * sb->blksize) + startoffset, 0);
+			if (write(dev->channel, buf, sb->blksize) < 0) {
 			    fprintf(stderr, "write fail\n");
 			    return (-1);
 			}
 			sb->freeblock--;
 			sb->bsearch = free_block;
-			lseek(fd, 1 * sb->blksize, 0);
-			write(fd, sb, sizeof(struct sfs_superblock));
+			lseek(dev->channel, 1 * sb->blksize, 0);
+			write(dev->channel, sb, sizeof(struct sfs_superblock));
 			return (free_block);
 		    }
 		    mask = mask << 1;
@@ -1015,31 +956,31 @@ static int alloc_block(int fd, struct sfs_superblock *sb)
 }
 
 
-static int free_block(int fd, struct sfs_superblock *sb, int blockno)
+static int free_block(block_device_t *dev, struct sfs_superblock *sb, int blockno)
 {
     unsigned char block;
     int startoffset;
     int mask;
 
     startoffset = ((1 + 1) * sb->blksize) + (blockno / 8);
-    lseek(fd, startoffset, 0);
-    read(fd, &block, 1);
+    lseek(dev->channel, startoffset, 0);
+    read(dev->channel, &block, 1);
     mask = 0x01;
     mask = mask << (blockno % 8);
     block = block & ((~mask) & 0xff);
-    lseek(fd, startoffset, 0);
-    write(fd, &block, 1);
+    lseek(dev->channel, startoffset, 0);
+    write(dev->channel, &block, 1);
 
     sb->freeblock++;
     if (sb->bsearch >= blockno && blockno > 0)
 	sb->bsearch = blockno - 1;
-    lseek(fd, 1 * sb->blksize, 0);
-    write(fd, sb, sizeof(struct sfs_superblock));
+    lseek(dev->channel, 1 * sb->blksize, 0);
+    write(dev->channel, sb, sizeof(struct sfs_superblock));
     return (0);
 }
 
 
-static int get_block_num(int fd,
+static int get_block_num(block_device_t *dev,
 		  struct sfs_superblock *sb,
 		  struct sfs_inode *ip,
 		  int blockno)
@@ -1047,13 +988,13 @@ static int get_block_num(int fd,
     if (blockno < (SFS_INDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK)) {
 	/* 一重間接ブロックの範囲内
 	 */
-	return (get_indirect_block_num(fd, sb, ip, blockno));
+	return (get_indirect_block_num(dev, sb, ip, blockno));
     }
     return (-1);
 }
 
 
-static int get_indirect_block_num(int fd, struct sfs_superblock *sb, struct sfs_inode *ip, int blockno)
+static int get_indirect_block_num(block_device_t *dev, struct sfs_superblock *sb, struct sfs_inode *ip, int blockno)
 {
     int inblock;
     int inblock_offset;
@@ -1065,11 +1006,11 @@ static int get_indirect_block_num(int fd, struct sfs_superblock *sb, struct sfs_
     if (ip->i_indirect[inblock] <= 0) {
 	return (0);
     }
-    read_block(fd, ip->i_indirect[inblock], sb->blksize, (B *) & inbuf);
+    dev->read(dev, (B *) & inbuf, ip->i_indirect[inblock]);
     return (inbuf.in_block[inblock_offset]);
 }
 
-static int set_block_num(int fd,
+static int set_block_num(block_device_t *dev,
 		  struct sfs_superblock *sb,
 		  struct sfs_inode *ip,
 		  int blockno,
@@ -1081,14 +1022,14 @@ static int set_block_num(int fd,
     if (blockno < (SFS_INDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK)) {
 	/* 一重間接ブロックの範囲内
 	 */
-	return (set_indirect_block_num(fd, sb, ip, blockno, newblock));
+	return (set_indirect_block_num(dev, sb, ip, blockno, newblock));
     }
     return (-1);
 }
 
 
 
-static int set_indirect_block_num(int fd,
+static int set_indirect_block_num(block_device_t *dev,
 			   struct sfs_superblock *sb,
 			   struct sfs_inode *ip,
 			   int blockno,
@@ -1103,16 +1044,16 @@ static int set_indirect_block_num(int fd,
     inblock_offset = inblock % SFS_INDIRECT_BLOCK;
     inblock = inblock / SFS_INDIRECT_BLOCK;
     if (ip->i_indirect[inblock] <= 0) {
-	newinblock = alloc_block(fd, sb);
+	newinblock = alloc_block(dev, sb);
 	ip->i_indirect[inblock] = newinblock;
 	bzero((B *) & inbuf, sizeof(inbuf));
     } else {
-	read_block(fd, ip->i_indirect[inblock], sb->blksize, (B *) & inbuf);
+	dev->read(dev, (B *) & inbuf, ip->i_indirect[inblock]);
     }
 
     inbuf.in_block[inblock_offset] = newblock;
-    write_block(fd, ip->i_indirect[inblock], sb->blksize, (B *) & inbuf);
-    write_inode(fd, sb, ip);
+    dev->write(dev, (B *) & inbuf, ip->i_indirect[inblock]);
+    write_inode(dev, sb, ip);
 
     return (inbuf.in_block[inblock_offset]);
 }

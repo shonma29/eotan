@@ -28,7 +28,7 @@ TARGET = boot.iso
 .PHONY: tools libs kern core drivers servers \
 	apps bin test contrib data starter initrd
 
-all: tools libs kern initrd apps data starter
+all: libs tools kern initrd apps data starter
 
 tools:
 	$(MAKE) -f app/sfs/Makefile WD=app/sfs

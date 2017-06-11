@@ -16,6 +16,7 @@ Version 2, June 1991
 
 #include "../../include/core/types.h"
 #include "../../include/fs/sfs.h"
+#include "../../include/fs/vfs.h"
 
 
 #define ROUNDUP(x,align)	(((((int)x) + ((align) - 1))/(align))*(align))

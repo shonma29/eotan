@@ -23,11 +23,12 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = $(WD)/mkfs $(WD)/statfs
+TARGET = $(WD).a
 
 include Makefile.in
 
-CFLAGS = -Wall -Werror -O2 -std=gnu99
+CFLAGS += -I kernel -I servers/fs
+CSRCS += $(wildcard $(WD)/*.c)
 
 $(TARGET): $(OBJS)
-	$(CC) -o $@ $(@).o lib/libtfs.a
+	$(AR) rsv $@ $?

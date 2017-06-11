@@ -23,7 +23,8 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-LIBS = lib/libitron.a lib/libc.a lib/libnc.a lib/libserv.a lib/libmath.a
+LIBS = lib/libitron.a lib/libc.a lib/libnc.a lib/libserv.a lib/libmath.a \
+	lib/libtfs.a
 KLIBS = kernel/mpu/libmpu.a kernel/arch/libarch.a
 
 all: $(LIBS) $(KLIBS)
