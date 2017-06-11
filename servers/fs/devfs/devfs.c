@@ -46,9 +46,9 @@ static int compare(const void *a, const void *b);
 
 static vdriver_t *(*drivers[])(int) = {
 	/* cons */
-	(vdriver_t *(*)(int))(0x80400000),
+	(vdriver_t *(*)(int))(0x80300000),
 	/* ramdisk */
-	(vdriver_t *(*)(int))(0x80370000)
+	(vdriver_t *(*)(int))(0x80310000)
 };
 
 
