@@ -1,3 +1,5 @@
+#ifndef _BOOT_INITRD_H_
+#define _BOOT_INITRD_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,26 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#ifndef __DRIVERS_RAMDISK_H__
-#define __DRIVERS_RAMDISK_H__
 
-#include <stdlib.h>
-#include <boot/initrd.h>
-#include <nerve/global.h>
-#include <sys/types.h>
-
-#define MYNAME "ramdisk"
-
-#define BUF_SIZE (INITRD_SIZE)
-
-extern unsigned char buf[];
-
-extern int detach(void);
-extern int open(void);
-extern int close(const int);
-extern int read(unsigned char *, const int, const off_t, const size_t);
-extern int write(unsigned char *, const int, const off_t, const size_t);
-
-extern int decode(const system_info_t *);
+#define INITRD_SIZE (512 * 1024)
 
 #endif
