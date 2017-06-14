@@ -177,45 +177,15 @@ W sfs_alloc_inode(ID fd, struct fs * fsp)
  */
 W sfs_write_inode(W fd, struct fs * fsp, struct sfs_inode * ip)
 {
-    W error_no;
-    W rlength;
     W cn;
     B *buf;
 
-    if (sizeof(struct sfs_inode) >= MAX_BODY_SIZE) {	/* Kludge!! */
-	B *tmp;
-
-	tmp = (B *) ip;
-	error_no = write_device(fd,
-				 tmp,
-				 sfs_get_inode_offset(fsp,
-						      ip->i_index),
-				 MAX_BODY_SIZE, &rlength);
-	if (error_no) {
-	    return (EIO);
-	}
-
-	tmp += MAX_BODY_SIZE;
-	error_no = write_device(fd,
-				 tmp,
-				 sfs_get_inode_offset(fsp, ip->i_index)
-				 + MAX_BODY_SIZE,
-				 sizeof(struct sfs_inode) - MAX_BODY_SIZE,
-				 &rlength);
-
-	if (error_no) {
-	    return (EIO);
-	}
-    } else {
-	get_cache(fd,
-		      sfs_get_inode_offset(fsp,
-					   ip->i_index) /
-		      SFS_BLOCK_SIZE, &cn, &buf);
-	memcpy(buf, (B*)ip, sizeof(struct sfs_inode));
-	put_cache(cn, 1);
-	/* ここで fs の sync を行う必要があるか? */
-	sfs_syncfs(fsp, 0);
-    }
+    get_cache(fd,
+	    sfs_get_inode_offset(fsp, ip->i_index) / SFS_BLOCK_SIZE, &cn, &buf);
+    memcpy(buf, (B*)ip, sizeof(struct sfs_inode));
+    put_cache(cn, 1);
+    /* ここで fs の sync を行う必要があるか? */
+    sfs_syncfs(fsp, 0);
 
     return (EOK);
 }
