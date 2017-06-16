@@ -159,7 +159,7 @@ void get_cache(W device_id, W blockno, W * cn, B ** ptr)
     }
 }
 
-void check_cache(W device_id, W blockno, W * cn)
+void invalidate_cache(W device_id, W blockno, W * cn)
 {
     short int i;
     block_cache_t *cp;
@@ -175,14 +175,16 @@ void check_cache(W device_id, W blockno, W * cn)
     } else {
 	*cn = i;
 	cp = &cache_data[i];
+	cp->dirty = 0;
 	if (cp->lru_next != -1) {
 	    lru_remove(i, cp);
+	} else {
+	    lru_append(i, cp);
 	}
     }
 }
 
 /*
- * 引数の dirty が負の場合は cache の dirty flag を強制的に 0 にする．
  */
 void put_cache(W cn, W dirty)
 {
@@ -196,8 +198,6 @@ void put_cache(W cn, W dirty)
     cp = &cache_data[cn];
     if (dirty > 0) {
 	cp->dirty = dirty;
-    } else if (dirty < 0) {
-	cp->dirty = 0;
     }
 
     /* append to lru chain */

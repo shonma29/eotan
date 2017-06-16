@@ -159,10 +159,7 @@ W sfs_free_block(W fd, struct fs * fsp, W blockno)
     put_cache(cn, 1);
 
     /* キャッシュに残っているデータを無効にする */
-    check_cache(fd, blockno, &cn);
-
-    if (cn > 0)
-	put_cache(cn, -1);
+    invalidate_cache(fd, blockno, &cn);
 
     sb->freeblock++;
     fsp->dirty = 1;

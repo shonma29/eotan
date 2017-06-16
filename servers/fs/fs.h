@@ -47,7 +47,7 @@ extern W write_device(ID device, B * buf, W start, W length, W * rlength);
 /* cache.c */
 extern void init_cache(void);
 extern void get_cache(W fd, W blockno, W *cn, B **ptr);
-extern void check_cache(W fd, W blockno, W *cn);
+extern void invalidate_cache(W fd, W blockno, W *cn);
 extern void put_cache(W cn, W dirty);
 extern W sync_cache(W fd, W umflag);
 
