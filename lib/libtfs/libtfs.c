@@ -45,7 +45,7 @@ static int block_read(block_device_t *dev, void *buf, int blockno)
 	size_t size;
 
 	if (lseek(dev->channel, offset, SEEK_SET) != offset)
-		return 0;
+		return (-1);
 
 	size = dev->block_size;
 	return (read(dev->channel, buf, size) == size)? 0:(-1);
@@ -57,7 +57,7 @@ static int block_write(block_device_t *dev, void *buf, int blockno)
 	size_t size;
 
 	if (lseek(dev->channel, offset, SEEK_SET) != offset)
-		return 0;
+		return (-1);
 
 	size = dev->block_size;
 	return (write(dev->channel, buf, size) == size)? 0:(-1);
