@@ -29,9 +29,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <sys/time.h>
 
-extern void *palloc(void);
-extern void pfree(void *);
-
 extern int syslog(const char *);
 extern int dbg_printf(const char *, ...);
 
