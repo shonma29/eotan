@@ -35,38 +35,92 @@ For more information, please refer to <http://unlicense.org/>
 static ER keyboard_initialize(void);
 static ER psaux_initialize(void);
 static UB _read(void);
+static void _writeCommand(const UB b);
+static void _writeData(const UB b);
 static BOOL isAck(void);
-static BOOL _writeAux(UB b);
+static BOOL _writeAux(const UB b);
 
 
 ER kbc_initialize(void)
 {
-	/* initialize KBC */
-	outb(KBC_PORT_CMD, KBC_WRITE_CMD);
-	kbc_wait_to_write();
-	outb(KBC_PORT_DATA,
-			KBC_CMD_TYPE
-			| KBC_CMD_INTERRUPT_AUX
-			| KBC_CMD_INTERRUPT_KBD);
+	UB b;
+	UB c = KBC_CMD_DISABLE_KBD | KBC_CMD_DISABLE_AUX;
 
-	//TODO check error
-	dbg_printf("keyboard=%d\n", keyboard_initialize());
-	//TODO check error
-	dbg_printf("psaux=%d\n", psaux_initialize());
+	/* disable devices */
+	_writeCommand(KBC_DISABLE_KBD);
+	_writeCommand(KBC_DISABLE_AUX);
+
+	while (inb(KBC_PORT_CMD) & KBC_STATUS_OBF);
+
+	/* disable interrupt */
+	_writeCommand(KBC_READ_CMD);
+	b = _read();
+	b &= ~(KBC_CMD_INTERRUPT_AUX
+			| KBC_CMD_INTERRUPT_KBD);
+	_writeCommand(KBC_WRITE_CMD);
+	_writeData(b);
+
+	/* self test */
+	_writeCommand(KBC_TEST_SELF);
+
+	if (_read() != KBC_SELF_TEST_OK)
+		return E_SYS;
+
+	/* test KBD interface */
+	_writeCommand(KBC_TEST_KBD);
+
+	if (!_read()) {
+		_writeCommand(KBC_ENABLE_KBD);
+
+		if (keyboard_initialize())
+			_writeCommand(KBC_DISABLE_KBD);
+		else
+			c &= ~(KBC_CMD_DISABLE_KBD);
+	}
+
+	/* test AUX interface */
+	if (b & KBC_CMD_DISABLE_AUX) {
+		_writeCommand(KBC_ENABLE_AUX);
+		_writeCommand(KBC_READ_CMD);
+		b = _read();
+
+		if (!(b & KBC_CMD_DISABLE_AUX)) {
+			_writeCommand(KBC_DISABLE_AUX);
+			_writeCommand(KBC_TEST_AUX);
+
+			if (!_read()) {
+				_writeCommand(KBC_ENABLE_AUX);
+
+				if (psaux_initialize())
+					_writeCommand(KBC_DISABLE_AUX);
+				else
+					c &= ~(KBC_CMD_DISABLE_AUX);
+			}
+		}
+	}
+
+	/* enable interrupt */
+	_writeCommand(KBC_READ_CMD);
+	b = _read() | KBC_CMD_TYPE;
+
+	if (!(c & KBC_CMD_DISABLE_KBD))
+		b |= KBC_CMD_INTERRUPT_KBD;
+
+	if (!(c & KBC_CMD_DISABLE_AUX))
+		b |= KBC_CMD_INTERRUPT_AUX;
+
+	_writeCommand(KBC_WRITE_CMD);
+	_writeData(b);
+
+	dbg_printf("kbc: %x\n", c);
 
 	return E_OK;
 }
 
 static ER keyboard_initialize(void)
 {
-	/* check keyboard interface */
-	outb(KBC_PORT_CMD, KBC_TEST_KBD);
-	if (_read())
-		return E_SYS;
-
-	/* reset keyboard */
-	kbc_wait_to_write();
-	outb(KBC_PORT_DATA, KBD_RESET);
+	/* reset */
+	_writeData(KBD_RESET);
 
 	return isAck()? E_OK:E_SYS;
 }
@@ -74,16 +128,11 @@ static ER keyboard_initialize(void)
 static ER psaux_initialize(void)
 {
 	do {
-		/* disable psaux */
+		/* disable */
 		if (!_writeAux(AUX_DISABLE))
 			break;
 
-		/* check AUX interface */
-		outb(KBC_PORT_CMD, KBC_TEST_AUX);
-		if (_read())
-			break;
-
-		/* reset psaux */
+		/* reset */
 		if (!_writeAux(AUX_RESET))
 			break;
 
@@ -93,7 +142,7 @@ static ER psaux_initialize(void)
 		if (_read() != AUX_RESULT_MOUSE)
 			break;
 
-		/* enable psaux */
+		/* enable */
 		if (!_writeAux(AUX_SET_SCALING))
 			break;
 
@@ -101,26 +150,39 @@ static ER psaux_initialize(void)
 			break;
 
 		return E_OK;
-
 	} while (false);
 
 	return E_SYS;
 }
 
-static UB _read(void) {
+static UB _read(void)
+{
 	kbc_wait_to_read();
 
 	return inb(KBC_PORT_DATA);
 }
 
-static BOOL isAck(void) {
-	return _read() == AUX_ACK;
+static void _writeCommand(const UB b)
+{
+	kbc_wait_to_write();
+	outb(KBC_PORT_CMD, b);
 }
 
-static BOOL _writeAux(UB b) {
-	outb(KBC_PORT_CMD, KBC_WRITE_AUX);
+static void _writeData(const UB b)
+{
 	kbc_wait_to_write();
 	outb(KBC_PORT_DATA, b);
+}
+
+static BOOL isAck(void)
+{
+	return _read() == KBC_DEVICE_ACK;
+}
+
+static BOOL _writeAux(const UB b)
+{
+	_writeCommand(KBC_WRITE_AUX);
+	_writeData(b);
 
 	return isAck();
 }

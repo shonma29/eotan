@@ -67,9 +67,12 @@ For more information, please refer to <http://unlicense.org/>
 #define KBC_CMD_INTERRUPT_AUX 0x02
 #define KBC_CMD_INTERRUPT_KBD 0x01
 
+#define KBC_SELF_TEST_OK 0x55
+#define KBC_DEVICE_ACK 0xfa
+
 static inline void kbc_wait_to_write(void)
 {
-	while (inb(KBC_PORT_CMD) & (KBC_STATUS_IBF | KBC_STATUS_OBF));
+	while (inb(KBC_PORT_CMD) & KBC_STATUS_IBF);
 }
 
 static inline void kbc_wait_to_read(void)

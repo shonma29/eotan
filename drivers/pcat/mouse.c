@@ -32,20 +32,24 @@ For more information, please refer to <http://unlicense.org/>
 #include "archfunc.h"
 #include "../../servers/hmi/hmi.h"
 
+static unsigned char _read(void);
+
 
 ER mouse_interrupt(void)
 {
-	unsigned char b1;
-	unsigned char b2;
-	unsigned char b3;
-
-	kbc_wait_to_read();
-	b1 = inb(KBC_PORT_DATA);
-	b2 = inb(KBC_PORT_DATA);
-	b3 = inb(KBC_PORT_DATA);
+	unsigned char b1 = _read();
+	unsigned char b2 = _read();
+	unsigned char b3 = _read();
 
 	//TODO error check
 	icall->handle(hmi_handle, event_mouse, (b1 << 16) | (b2 << 8) | b3);
 
 	return E_OK;
+}
+
+static unsigned char _read(void)
+{
+	kbc_wait_to_read();
+
+	return inb(KBC_PORT_DATA);
 }

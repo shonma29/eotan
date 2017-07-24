@@ -46,7 +46,6 @@ For more information, please refer to <http://unlicense.org/>
 #define AUX_RESET_SCALING 0xe6
 
 /* result */
-#define AUX_ACK 0xfa
 #define AUX_RESULT_OK 0xaa
 #define AUX_RESULT_NG 0xfc
 #define AUX_RESULT_MOUSE 0x00
