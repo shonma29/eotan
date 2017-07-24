@@ -85,7 +85,7 @@ static void gdt_initialize(void)
 
 	memset(tss, 0, sizeof(*tss));
 	tss->ss0 = kern_data;
-	gdt_set_segment(dummy_tss, (UW)tss, sizeof(*tss),
+	gdt_set_segment(dummy_tss, (UW)TSS_ADDR, sizeof(*tss),
 			segmentTss, dpl_kern, 0);
 
 	gdt_load();
