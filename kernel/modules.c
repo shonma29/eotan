@@ -62,7 +62,6 @@ void load_modules(void)
 		h = (ModuleHeader*)((UW)h + sizeof(*h) + h->length);
 	}
 
-	dispatch();
 	release_others((void*)MODULES_ADDR,
 			kern_v2p((void*)((UW)h + sizeof(*h))));
 }

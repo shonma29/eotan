@@ -54,6 +54,7 @@ void kern_start(void (*callback)(void))
 
 	//callback();
 	load_modules();
+	ei();
 
 	for (;;)
 		halt();
