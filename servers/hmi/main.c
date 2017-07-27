@@ -47,9 +47,18 @@ For more information, please refer to <http://unlicense.org/>
 #include <vesa.h>
 #include "font.h"
 
-static ER_ID receiver_tid = 0;
 static unsigned char line[4096];
 
+//static window_t window[MAX_WINDOW];
+
+extern void put(const unsigned int start, const size_t size,
+		const unsigned char *buf);
+extern void pset(unsigned int x, unsigned int y, int color);
+#else
+#include <cga.h>
+#endif
+
+static ER_ID receiver_tid = 0;
 static request_message_t *current_req = NULL;
 static request_message_t requests[REQUEST_QUEUE_SIZE];
 static volatile lfq_t req_queue;
@@ -65,15 +74,6 @@ static volatile lfq_t int_queue;
 static char int_buf[
 		lfq_buf_size(sizeof(interrupt_message_t), INTERRUPT_QUEUE_SIZE)
 ];
-//static window_t window[MAX_WINDOW];
-
-extern void put(const unsigned int start, const size_t size,
-		const unsigned char *buf);
-extern void pset(unsigned int x, unsigned int y, int color);
-#else
-#include <cga.h>
-#endif
-
 static Console *cns;
 
 static void process(const int arg);
@@ -231,6 +231,7 @@ static void execute(request_message_t *req)
 		break;
 
 	case operation_write:
+#ifdef USE_VESA
 		if (message->Rwrite.channel) {
 			if (kcall->region_get(get_rdv_tid(req->rdvno),
 					message->Rwrite.data,
@@ -244,12 +245,14 @@ static void execute(request_message_t *req)
 						line);
 			}
 		} else {
+#endif
 			result = write(message->Rwrite.channel,
 					message->Rwrite.offset,
 					message->Rwrite.length,
 					message->Rwrite.data);
+#ifdef USE_VESA
 		}
-
+#endif
 		message->Twrite.length = result;
 		reply(req, sizeof(message->Twrite));
 		break;
