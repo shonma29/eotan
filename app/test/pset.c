@@ -26,8 +26,11 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <device.h>
+#include <math.h>
 #include <services.h>
 #include <stdio.h>
+
+#define SPLIT (360)
 
 typedef struct {
 	unsigned int x;
@@ -67,8 +70,17 @@ int pset(const unsigned int x, const unsigned int y, const int color)
 
 int main(int argc, char **argv)
 {
+	int i;
+	int deg = 0;
 
-	pset(320, 240, 0xff00ff);
+	for (i = 0; i < SPLIT; i++) {
+		double rad = deg * PI / 180;
+
+		pset(height / 3 * cos(rad) + width / 2,
+				height / 3 * sin(rad) + height / 2,
+				0xff00ff);
+		deg += 360 / SPLIT;
+	}
 
 	return 0;
 }
