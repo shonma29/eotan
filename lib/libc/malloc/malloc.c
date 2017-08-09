@@ -67,8 +67,6 @@ Version 2, June 1991
 #include <unistd.h>
 #include <core.h>
 #include <mpu/memory.h>
-#include "../../libserv/libserv.h"
-
 
 #define MEMORY_CLICK		(PAGE_SIZE * 10)
 #define MALLOC_SIZE		(1024 * 1024 * 10)	/* 10MB */
@@ -182,8 +180,6 @@ void free(VP addr)
     if ((newentry > (struct alloc_entry_t *) last_page)
 	|| (newentry < (struct alloc_entry_t *) start_page)) {
 	/* free するエントリのアドレスがおかしい */
-	dbg_printf("[MALLOC] illegal free pointer %x(%x)\n", addr,
-		   newentry);
 	return;
     }
 
@@ -251,7 +247,6 @@ void free(VP addr)
     }				/* for */
 
     /* 該当する部分がなかった */
-    dbg_printf("[MALLOC] cannot found insert entry in free list.\n");
 }
 
 

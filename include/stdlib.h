@@ -43,6 +43,11 @@ typedef struct {
 	long rem;
 } ldiv_t;
 
+typedef struct {
+	long long quot;
+	long long rem;
+} lldiv_t;
+
 static inline int abs(int value)
 {
 	return (value < 0)? (-value):value;
@@ -66,6 +71,16 @@ static inline div_t div(int numerator, int denominator)
 static inline ldiv_t ldiv(long numerator, long denominator)
 {
 	ldiv_t x = {
+		x.quot = numerator / denominator,
+		x.rem = numerator % denominator
+	};
+
+	return x;
+}
+
+static inline lldiv_t lldiv(long long numerator, long long denominator)
+{
+	lldiv_t x = {
 		x.quot = numerator / denominator,
 		x.rem = numerator % denominator
 	};
