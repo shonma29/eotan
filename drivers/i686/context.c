@@ -143,20 +143,16 @@ static VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
 
 void context_switch(thread_t *prev, thread_t *next)
 {
-	if (!is_kthread(next)) {
+	if (!is_kthread(next))
 		if (next->attr.page_table != current_page_table) {
 			paging_set_directory(next->mpu.cr3);
 			current_page_table = next->attr.page_table;
 			api_set_kernel_sp(next->attr.kstack_tail);
 		}
 
-		fpu_save(&prev);
-	}
-
+	fpu_save(&prev);
 	stack_switch_wrapper(&(prev->mpu.esp0), &(next->mpu.esp0));
-
-	if (!is_kthread(prev))
-		fpu_restore(&prev);
+	fpu_restore(&prev);
 }
 
 void context_reset_page_table()
