@@ -420,6 +420,8 @@ static void _putf(State *s, const double x)
 
 	if (exp == B64_EXPONENT_SPECIAL)
 		_puts(s, sig? "NaN":"oo");
+	else if (!sig)
+		_puts(s, "0.0");
 	else
 		putdouble(s, minus, sig, exp - B64_EXPONENT_BIAS);
 }
