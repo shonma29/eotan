@@ -93,6 +93,7 @@ extern void *bsearch(const void *, const void *, size_t,
 extern char *getenv(const char *);
 extern int rand(void);
 extern void srand(unsigned int);
+extern void abort(void);
 extern void exit(int);
 extern void *malloc(size_t);
 extern void free(void *);

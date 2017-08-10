@@ -1,5 +1,3 @@
-#ifndef _CUNIT_H_
-#define _CUNIT_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -28,20 +26,17 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
-#define __ITOA(n) #n
-#define _ITOA(n) __ITOA(n)
-#define _FAIL(msg) ("failed in " _ITOA(__LINE__) ". " msg)
 
-#define assert_t(msg, exp) do {if (!(exp)) return _FAIL(msg);} while(0)
-#define assert_f(msg, exp) do {if (exp) return _FAIL(msg);} while(0)
-#define assert_eq(msg, a, b) do {if ((a) != (b)) return _FAIL(msg);} while(0)
-#define assert_ne(msg, a, b) do {if ((a) == (b)) return _FAIL(msg);} while(0)
+void abort(void)
+{
+	int i;
 
-#define test(q) do { \
-	char *msg = q(); \
-	printf("%s %s.\n", #q, msg? msg:"OK"); \
-	if (msg) exit(1); \
-} while(0)
+	fprintf(stderr, "aborted by %d.\n", 6);
 
-#endif
+	for (i = 0; i < FOPEN_MAX; i++)
+		fclose(&(__libc_files[i]));
+
+	_exit(1);
+}

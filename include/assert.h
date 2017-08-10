@@ -1,5 +1,5 @@
-#ifndef _CUNIT_H_
-#define _CUNIT_H_
+#ifndef _ASSERT_H_
+#define _ASSERT_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,22 +26,18 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stdio.h>
 #include <stdlib.h>
 
-#define __ITOA(n) #n
-#define _ITOA(n) __ITOA(n)
-#define _FAIL(msg) ("failed in " _ITOA(__LINE__) ". " msg)
-
-#define assert_t(msg, exp) do {if (!(exp)) return _FAIL(msg);} while(0)
-#define assert_f(msg, exp) do {if (exp) return _FAIL(msg);} while(0)
-#define assert_eq(msg, a, b) do {if ((a) != (b)) return _FAIL(msg);} while(0)
-#define assert_ne(msg, a, b) do {if ((a) == (b)) return _FAIL(msg);} while(0)
-
-#define test(q) do { \
-	char *msg = q(); \
-	printf("%s %s.\n", #q, msg? msg:"OK"); \
-	if (msg) exit(1); \
+#ifdef NDEBUG
+#define assert(v)
+#else
+#define assert(v) do { \
+	if (!(v)) { \
+		fprintf(stderr, "Assertion \"%s\" failed: %s in %s (%d)\n", \
+				#v, __func__, __FILE__, __LINE__); \
+		abort(); \
+	} \
 } while(0)
+#endif
 
 #endif
