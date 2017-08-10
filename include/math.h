@@ -27,7 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-#define PI (3.14159265358979323846)
+#define M_PI (3.14159265358979323846)
 
 extern double sin(double);
 extern double cos(double);

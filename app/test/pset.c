@@ -74,7 +74,7 @@ int main(int argc, char **argv)
 	int deg = 0;
 
 	for (i = 0; i < SPLIT; i++) {
-		double rad = deg * PI / 180;
+		double rad = deg * M_PI / 180;
 
 		pset(height / 3 * cos(rad) + width / 2,
 				height / 3 * sin(rad) + height / 2,
