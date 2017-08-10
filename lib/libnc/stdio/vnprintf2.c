@@ -205,8 +205,10 @@ static int number_multiply(number_t *p, const uint32_t n)
 		for (i = len; i < max; i++)
 			buf[i] = 0;
 
-	} else
+	} else {
+		max = p->max;
 		buf = p->buf;
+	}
 
 	last = 0;
 	carry = 0;
