@@ -27,5 +27,8 @@ TARGET = $(WD).a
 
 include Makefile.in
 
+CSRCS += $(wildcard $(WD)/mpu/*.c)
+SSRCS += $(wildcard $(WD)/mpu/*.s)
+
 $(TARGET): $(OBJS)
 	$(AR) rsv $@ $?
