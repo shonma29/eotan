@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <ctype.h>
 #include <errno.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,7 +36,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #define ERR (-1)
 #define ERR_OK (0)
-#define ERR_MEMORY (-2)
+#define ERR_MEMORY (2)
 
 #define DIRS_DELIMITER ':'
 #define PATH_DELIMITER '/'
@@ -45,39 +46,59 @@ For more information, please refer to <http://unlicense.org/>
 #define DEFAULT_ARRAY_SIZE 16
 #define SHIFT_ARRAY_SIZE 1
 
-#define MAX_ENV (256)
+#define MAX_VAR (256)
+
+#define PROMPT "$"
 
 typedef struct {
-	char *head;
+	unsigned char *head;
 	size_t len;
 	size_t max;
 	bool last;
-	char buf[MAXPATHLEN];
+	unsigned char buf[MAXPATHLEN];
 } Token;
 
-static size_t bufsize = DEFAULT_BUF_SIZE >> 1;
-static size_t arraysize = DEFAULT_ARRAY_SIZE >> 1;
-static char *buf = NULL;
-static char **array = NULL;
+typedef struct {
+	unsigned int pos;
+	size_t bufsize;
+	unsigned char *buf;
+	size_t arraysize;
+	unsigned char **array;
+} Line;
 
-static int get_path(Token *s);
-static bool get_size(size_t *len, const char *head);
-static void execute(char **env, const char *path);
-static unsigned int env_calc_hash(const void *key, const size_t size);
-static int env_compare(const void *a, const void *b);
-static char *env_get(hash_t *hash, const char *key);
-static bool env_put(hash_t *hash, const char *envp);
-static void env_store(hash_t *hash);
-static char **env_expand(hash_t *hash);
+static Line line = {
+	0,
+	DEFAULT_BUF_SIZE >> 1,
+	NULL,
+	DEFAULT_ARRAY_SIZE >> 1,
+	NULL
+};
+
+static int get_path(Token *);
+static bool get_size(size_t *, const unsigned char *);
+static void execute(unsigned char **, unsigned char **, const unsigned char *);
+static void line_realloc_buf(Line *);
+static void line_destroy(Line *);
+static void line_clear(Line *);
+static bool line_putc(Line *, const unsigned char);
+static void line_realloc_array(Line *);
+static bool line_parse(Line *);
+static bool line_evaluate(Line *, hash_t *);
+static unsigned int var_calc_hash(const void *, const size_t);
+static int var_compare(const void *, const void *);
+static unsigned char *var_get(hash_t *, const unsigned char *);
+static bool var_put(hash_t *, const unsigned char *);
+static hash_t *var_create(void);
+static unsigned char **var_expand(hash_t *);
 
 
 static int get_path(Token *token)
 {
-	char *head = token->head;
-	char *p;
+	unsigned char *head = token->head;
+	unsigned char *p;
 
 	for (p = head;; p++) {
-		char c = *p;
+		unsigned char c = *p;
 
 		if (c == DIRS_DELIMITER) {
 			token->head = p + 1;
@@ -102,20 +123,21 @@ static int get_path(Token *token)
 		memcpy(token->buf, head, token->len);
 
 	} else {
-		if (token->len + 1 > token->max)
+		if (token->len >= token->max)
 			return 1;
 
 		memcpy(token->buf, head, token->len);
-		token->buf[token->len++] = PATH_DELIMITER;
+		token->buf[token->len] = PATH_DELIMITER;
+		token->len++;
 	}
 
 	return 0;
 }
 
-static bool get_size(size_t *len, const char *head)
+static bool get_size(size_t *len, const unsigned char *head)
 {
 	bool has_path = false;
-	const char *p;
+	const unsigned char *p;
 
 	for (p = head; *p; p++)
 		if (*p == PATH_DELIMITER)
@@ -126,7 +148,8 @@ static bool get_size(size_t *len, const char *head)
 	return has_path;
 }
 
-static void execute(char **env, const char *path)
+static void execute(unsigned char **array, unsigned char **env,
+		const unsigned char *path)
 {
 	pid_t pid = fork();
 
@@ -139,11 +162,14 @@ static void execute(char **env, const char *path)
 			exit(ENAMETOOLONG);
 
 		if (has_path) {
-			if (execve(array[0], array, env) == ERR) {
+			if (execve((char*)(array[0]), (char**)(array),
+					(char**)env) == ERR) {
 				if (errno == ENOENT)
-					printf("%s not found\n", array[0]);
+					fprintf(stderr, "%s not found\n",
+							array[0]);
 				else
-					printf("exec error %d\n", errno);
+					fprintf(stderr, "exec error %d\n",
+							errno);
 
 				exit(errno);
 			}
@@ -152,110 +178,198 @@ static void execute(char **env, const char *path)
 			exit(ENOENT);
 
 		else {
-			token.head = (char*)path;
+			token.head = (unsigned char*)path;
 			token.max = MAXPATHLEN - token.len;
 			token.last = false;
 
 			do {
 				if (get_path(&token)) {
-					printf("bad path\n");
+					fprintf(stderr, "bad path\n");
 					break;
 				}
 
-				strcpy(&(token.buf[token.len]), array[0]);
-				if (execve(token.buf, array, env) == ERR)
+				strcpy((char*)&(token.buf[token.len]),
+						(char*)(array[0]));
+				if (execve((char*)(token.buf),
+						(char**)(array),
+						(char**)env) == ERR)
 					if (errno != ENOENT) {
-						printf("exec error %d\n",
+						fprintf(stderr,
+								"exec error %d\n",
 								errno);
 						exit(errno);
 					}
 
 			} while (!(token.last));
 
-			printf("%s not found\n", array[0]);
+			fprintf(stderr, "%s not found\n", array[0]);
 			exit(ENOENT);
 		}
 	}
 
 	/* error */
 	else if (pid == ERR)
-		printf("fork error %d\n", pid);
+		fprintf(stderr, "fork error %d\n", pid);
 
 	/* parent */
 	else {
 		int status;
 
 		if (waitpid(pid, &status, 0) != pid)
-			printf("waitpid error %d\n", errno);
+			fprintf(stderr, "waitpid error %d\n", errno);
 		else
-			printf("waitpid success %d\n", status);
+			fprintf(stderr, "waitpid success %d\n", status);
 	}
 }
 
-static void get_buf()
+static void line_realloc_buf(Line *p)
 {
-	char *buf2 = (char*)malloc(sizeof(char) * (bufsize << SHIFT_BUF_SIZE));
+	size_t next_size = p->bufsize << SHIFT_BUF_SIZE;
+	unsigned char *buf = (unsigned char*)malloc(
+			sizeof(unsigned char) * next_size);
 
-	if (buf2) {
-		if (buf) {
-			memcpy(buf2, buf, bufsize);
-			free(buf);
+	if (buf) {
+		if (p->buf) {
+			memcpy(buf, p->buf, p->bufsize);
+			free(p->buf);
 		}
 
-		buf = buf2;
-		bufsize <<= SHIFT_BUF_SIZE;
-	}
-	else {
-		printf("memory exhausted\n");
+		p->buf = buf;
+		p->bufsize = next_size;
+
+	} else {
+		fprintf(stderr, "memory exhausted\n");
 		exit(ERR_MEMORY);
 	}
 }
 
-static void get_array()
+static void line_destroy(Line *p)
 {
-	char **array2 = (char**)malloc(sizeof(char*)
-			* (arraysize << SHIFT_ARRAY_SIZE));
+	if (p->buf)
+		free(p->buf);
 
-	if (array2) {
-		if (array) {
-			memcpy(array2, array, sizeof(char*) * arraysize);
-			free(array);
+	if (p->array)
+		free(p->array);
+}
+
+static void line_clear(Line *p)
+{
+	p->pos = 0;
+}
+
+static bool line_putc(Line *p, const unsigned char c)
+{
+	switch (c) {
+	case '\n':
+		p->buf[p->pos] = '\0';
+		p->pos++;
+		return true;
+
+	case 0x08:
+		if (p->pos)
+			p->pos--;
+
+		break;
+
+	default:
+		p->buf[p->pos] = c;
+		p->pos++;
+
+		if (p->pos >= p->bufsize)
+			line_realloc_buf(p);
+
+		break;
+	}
+
+	return false;
+}
+
+static void line_realloc_array(Line *p)
+{
+	size_t next_size = p->arraysize << SHIFT_ARRAY_SIZE;
+	unsigned char **array = (unsigned char**)malloc(sizeof(unsigned char*)
+			* next_size);
+
+	if (array) {
+		if (p->array) {
+			memcpy(array, p->array,
+					sizeof(unsigned char*) * p->arraysize);
+			free(p->array);
 		}
 
-		array = array2;
-		arraysize <<= SHIFT_ARRAY_SIZE;
-	}
-	else {
-		printf("memory exhausted\n");
+		p->array = array;
+		p->arraysize = next_size;
+
+	} else {
+		fprintf(stderr, "memory exhausted\n");
 		exit(ERR_MEMORY);
 	}
 }
 
-static void parse()
+static bool line_parse(Line *p)
 {
 	size_t i = 0;
 	size_t pos = 0;
 
+	//TODO handle quote
+	//TODO handle redirect
+	//TODO handle background
 	for (;;) {
-		for (; (buf[i] > 0) && (buf[i] <= ' '); i++);
-		if (!buf[i])
+		for (; (p->buf[i] > 0) && (p->buf[i] <= ' '); i++);
+		if (!p->buf[i])
 			break;
 
-		array[pos++] = &buf[i];
-		if (pos >= arraysize)
-			get_array();
+		p->array[pos++] = &(p->buf[i]);
+		if (pos >= p->arraysize)
+			line_realloc_array(p);
 
-		for (; buf[i] > ' '; i++);
-		if (!buf[i])
+		for (; p->buf[i] > ' '; i++);
+		if (!p->buf[i])
 			break;
 
-		buf[i++] = '\0';
+		p->buf[i++] = '\0';
 	}
 
-	array[pos] = NULL;
+	p->array[pos] = NULL;
+
+	return (p->array[0]? true:false);
 }
 
-static unsigned int env_calc_hash(const void *key, const size_t size)
+static bool line_evaluate(Line *p, hash_t *vars)
+{
+	if (line_parse(p)) {
+		if (!strcmp((char*)(p->array[0]), "cd")) {
+			if (chdir(p->array[1]? (char*)(p->array[1]):"/"))
+				fprintf(stderr, "chdir error=%d\n", errno);
+
+		} else if (!strcmp((char*)(p->array[0]), "exit"))
+			return true;
+
+		else if (!strcmp((char*)(p->array[0]), "env")) {
+			if (environ) {
+				unsigned char **envp;
+
+				for (envp = (unsigned char**)environ; *envp;
+						envp++)
+					printf("%s\n", *envp);
+			}
+
+		} else if (!strcmp((char*)(p->array[0]), "export"))
+			var_put(vars, p->array[1]);
+
+		else {
+			unsigned char **envp = var_expand(vars);
+
+			execute(p->array, envp, var_get(
+					vars, (unsigned char*)("PATH")));
+			free(envp);
+		}
+	}
+
+	return false;
+}
+
+static unsigned int var_calc_hash(const void *key, const size_t size)
 {
 	unsigned int v = 0;
 	unsigned char *p;
@@ -266,7 +380,7 @@ static unsigned int env_calc_hash(const void *key, const size_t size)
 	return v;
 }
 
-static int env_compare(const void *a, const void *b)
+static int var_compare(const void *a, const void *b)
 {
 	unsigned char *x = (unsigned char*)a;
 	unsigned char *y = (unsigned char*)b;
@@ -278,9 +392,9 @@ static int env_compare(const void *a, const void *b)
 	return (!(*y) || (*y == '='))? 0:1;
 }
 
-static char *env_get(hash_t *hash, const char *key)
+static unsigned char *var_get(hash_t *vars, const unsigned char *key)
 {
-	char *p;
+	unsigned char *p;
 
 	if (!key)
 		return NULL;
@@ -288,84 +402,94 @@ static char *env_get(hash_t *hash, const char *key)
 	if (!key[0])
 		return NULL;
 
-	p = strchr(key, '=');
+	p = (unsigned char*)strchr((char*)key, '=');
 	if (p)
 		return NULL;
 
-	p = hash_get(hash, key);
+	p = hash_get(vars, key);
 	if (!p)
 		return NULL;
 
-	p = strchr(p, '=');
+	p = (unsigned char*)strchr((char*)p, '=');
 	if (!p)
 		return NULL;
 
 	return p[1]? &(p[1]):NULL;
 }
 
-static bool env_put(hash_t *hash, const char *env)
+static bool var_put(hash_t *vars, const unsigned char *var)
 {
-	char *p = hash_get(hash, env);
+	unsigned char *p = hash_get(vars, var);
 
 	if (p) {
-		hash_remove(hash, p);
+		hash_remove(vars, p);
 		free(p);
 	}
 
-	p = strchr(env, '=');
-
+	p = (unsigned char*)strchr((char*)var, '=');
 	if (!p)
 		return true;
-	if (p == env)
+
+	if (p == var)
 		return false;
+
 	if (!p[1])
 		return true;
 
-	p = (char*)malloc(strlen(env));
+	p = (unsigned char*)malloc(strlen((char*)var));
 	if (!p) {
-		printf("no memory\n");
+		fprintf(stderr, "no memory\n");
 		return false;
 	}
 
-	strcpy(p, env);
+	strcpy((char*)p, (char*)var);
 
-	if (hash_put(hash, p, p)) {
+	if (hash_put(vars, p, p)) {
 		free(p);
-		printf("no memory\n");
+		fprintf(stderr, "no memory\n");
 		return false;
 	}
 
 	return true;
 }
 
-static void env_store(hash_t *hash)
+static hash_t *var_create(void)
 {
-	if (environ) {
-		char **envp;
+	hash_t *vars = hash_create(MAX_VAR, var_calc_hash, var_compare);
 
-		for (envp = environ; *envp; envp++)
-			if (!env_put(hash, *envp))
+	if (!vars)
+		return NULL;
+
+	if (environ) {
+		unsigned char **envp;
+
+		for (envp = (unsigned char**)environ; *envp; envp++)
+			if (!var_put(vars, *envp))
 				break;
 	}
+
+	return vars;
 }
 
-static char **env_expand(hash_t *hash)
+static unsigned char **var_expand(hash_t *vars)
 {
-	char **array = (char**)malloc((hash->num + 1) * sizeof(uintptr_t));
+	unsigned char **array = (unsigned char**)malloc(
+			(vars->num + 1) * sizeof(uintptr_t));
 
 	if (array) {
 		size_t i;
-		char **p = array;
+		unsigned char **p = array;
 
-		for (i = 0; i < hash->size; i++) {
-			list_t *head = &(hash->tbl[i]);
+		for (i = 0; i < vars->size; i++) {
+			list_t *head = &(vars->tbl[i]);
 			list_t *entry;
 
 			for (entry = list_next(head);
 					!list_is_edge(head, entry);
-					entry = entry->next)
+					entry = entry->next) {
 				*p = ((hash_entry_t*)entry)->value;
 				p++;
+			}
 		}
 
 		*p = NULL;
@@ -376,78 +500,32 @@ static char **env_expand(hash_t *hash)
 
 int main(int argc, char **argv, char **env)
 {
-	hash_t *hash = hash_create(MAX_ENV, env_calc_hash, env_compare);
+	hash_t *vars = var_create();
 
-	if (hash)
-		env_store(hash);
-	else {
-		printf("no memory\n");
+	if (!vars) {
+		fprintf(stderr, "no memory\n");
 		return ERR_MEMORY;
 	}
 
-	get_buf();
-	get_array();
+	line_realloc_buf(&line);
+	line_realloc_array(&line);
 
-	for (;;) {
-		size_t pos;
+	do {
+		unsigned char c;
 
-		printf("$ ");
+		printf(PROMPT " ");
+		line_clear(&line);
 
-		for (pos = 0;;) {
-			char c = fgetc(stdin);
-
+		do {
+			c = getchar();
 			putchar(c);
 
-			if (c == '\n') {
-				buf[pos] = '\0';
-				break;
+		} while (!line_putc(&line, c));
 
-			} else if (c == 0x08) {
-				if (pos)
-					pos--;
+	} while (!line_evaluate(&line, vars));
 
-			} else {
-				buf[pos++] = c;
-
-				if (pos >= bufsize)
-					get_buf();
-			}
-		}
-
-		parse();
-		if (array[0]) {
-			if (!strcmp(array[0], "cd")) {
-				if (chdir(array[1]? array[1]:"/"))
-					printf("chdir error=%d\n", errno);
-
-			} else if (!strcmp(array[0], "exit"))
-				break;
-
-			else if (!strcmp(array[0], "env")) {
-				if (environ) {
-					char **envp;
-
-					for (envp = environ; *envp; envp++)
-						printf("%s\n", *envp);
-				}
-
-			} else if (!strcmp(array[0], "export"))
-				env_put(hash, array[1]);
-
-			else {
-				char **envp = env_expand(hash);
-
-				execute(envp, env_get(hash, "PATH"));
-				free(envp);
-			}
-		}
-	}
-
-	if (buf)
-		free(buf);
-
-	if (array)
-		free(array);
+	line_destroy(&line);
+	hash_destroy(vars);
 
 	return ERR_OK;
 }
