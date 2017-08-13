@@ -106,14 +106,23 @@ static void _putd(State *s, const int v, const int radix)
 	char buf[MAX_INT_COLUMN];
 	char *p = &buf[sizeof(buf) - 1];
 	int x = v;
+	int carry = 0;
 
 	if (x < 0) {
+		unsigned int y = (unsigned int)x;
+
+		if ((unsigned int)y == INT_MIN) {
+			carry = 1;
+			x = (int)(y + 1);
+		}
+
 		_putchar(s, '-');
 		x = -x;
 	}
 
 	for (*p-- = '\0';; p--) {
-		*p = (x % radix) + '0';
+		*p = (x % radix) + carry + '0';
+		carry = 0;
 
 		if (!(x /= radix)) {
 			_puts(s, p);
