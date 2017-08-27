@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <ctype.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,6 +50,11 @@ For more information, please refer to <http://unlicense.org/>
 #define MAX_VAR (256)
 
 #define PROMPT "$"
+
+typedef struct {
+	int files[3];
+	bool background;
+} ExecOptions;
 
 typedef struct {
 	unsigned char *head;
@@ -76,7 +82,8 @@ static Line line = {
 
 static int get_path(Token *);
 static bool get_size(size_t *, const unsigned char *);
-static void execute(unsigned char **, unsigned char **, const unsigned char *);
+static void execute(unsigned char **, unsigned char **, const unsigned char *,
+		const ExecOptions *);
 static void line_realloc_buf(Line *);
 static void line_destroy(Line *);
 static void line_clear(Line *);
@@ -149,8 +156,9 @@ static bool get_size(size_t *len, const unsigned char *head)
 }
 
 static void execute(unsigned char **array, unsigned char **env,
-		const unsigned char *path)
+		const unsigned char *path, const ExecOptions *opts)
 {
+	unsigned int i;
 	pid_t pid = fork();
 
 	/* child */
@@ -160,6 +168,18 @@ static void execute(unsigned char **array, unsigned char **env,
 
 		if (++token.len > MAXPATHLEN)
 			exit(ENAMETOOLONG);
+
+		for (i = 0; i < sizeof(opts->files) / sizeof(opts->files[0]);
+				i++)
+			if (opts->files[i] != -1) {
+				close(i);
+				dup2(opts->files[i], i);
+				close(opts->files[i]);
+			}
+
+		if (opts->background
+				&& (opts->files[0] == -1))
+			close(0);
 
 		if (has_path) {
 			if (execve((char*)(array[0]), (char**)(array),
@@ -212,7 +232,7 @@ static void execute(unsigned char **array, unsigned char **env,
 		fprintf(stderr, "fork error %d\n", pid);
 
 	/* parent */
-	else {
+	else if (!opts->background) {
 		int status;
 
 		if (waitpid(pid, &status, 0) != pid)
@@ -220,6 +240,10 @@ static void execute(unsigned char **array, unsigned char **env,
 		else
 			fprintf(stderr, "waitpid success %d\n", status);
 	}
+
+	for (i = 0; i < sizeof(opts->files) / sizeof(opts->files[0]); i++)
+		if (opts->files[i] != -1)
+			close(opts->files[i]);
 }
 
 static void line_realloc_buf(Line *p)
@@ -308,26 +332,86 @@ static void line_realloc_array(Line *p)
 
 static bool line_parse(Line *p)
 {
-	size_t i = 0;
-	size_t pos = 0;
+	unsigned int i;
+	unsigned int pos = 0;
 
-	//TODO handle quote
-	//TODO handle redirect
-	//TODO handle background
-	for (;;) {
+	for (i = 0;; i++) {
 		for (; (p->buf[i] > 0) && (p->buf[i] <= ' '); i++);
 		if (!p->buf[i])
 			break;
 
-		p->array[pos++] = &(p->buf[i]);
+		p->array[pos] = &(p->buf[i]);
+		pos++;
 		if (pos >= p->arraysize)
 			line_realloc_array(p);
 
-		for (; p->buf[i] > ' '; i++);
-		if (!p->buf[i])
-			break;
+		if (p->buf[i] == '\"') {
+			unsigned char *w = &(p->buf[i]);
+			bool escape = false;
 
-		p->buf[i++] = '\0';
+			for (i++;; i++) {
+				if (!p->buf[i]) {
+					fprintf(stderr, "quote not closed\n");
+					return false;
+				}
+
+				if (escape)
+					escape = false;
+
+				else if (p->buf[i] == '\\') {
+					escape = true;
+					continue;
+
+				} else if (p->buf[i] == '\"')
+					break;
+
+				*w = p->buf[i];
+				w++;
+			}
+
+			*w = '\0';
+
+		} else if (p->buf[i] == '\'') {
+			for (i++; p->buf[i] != '\''; i++)
+				if (!p->buf[i]) {
+					fprintf(stderr, "quote not closed\n");
+					return false;
+				}
+
+			p->buf[i] = '\0';
+			p->array[pos - 1]++;
+
+		} else {
+			unsigned char c;
+			unsigned char *w = &(p->buf[i]);
+			bool escape = false;
+
+			for (; p->buf[i]; i++) {
+				if (escape)
+					escape = false;
+
+				else if (p->buf[i] == '\\') {
+					escape = true;
+					continue;
+
+				} else if (p->buf[i] <= ' ')
+					break;
+
+				*w = p->buf[i];
+				w++;
+			}
+
+			if (escape) {
+				fprintf(stderr, "bad escape\n");
+				return false;
+			}
+
+			c = p->buf[i];
+			*w = '\0';
+
+			if (!c)
+				break;
+		}
 	}
 
 	p->array[pos] = NULL;
@@ -337,7 +421,56 @@ static bool line_parse(Line *p)
 
 static bool line_evaluate(Line *p, hash_t *vars)
 {
+	ExecOptions opts = { { -1, -1, -1 }, false };
+
 	if (line_parse(p)) {
+		unsigned int i;
+		unsigned int j = 0;
+
+		for (i = 0; p->array[i]; i++) {
+			if (!strcmp((char*)(p->array[i]), "<")) {
+				i++;
+				if (!p->array[i]) {
+					fprintf(stderr, "redirect what?\n");
+					return false;
+				}
+
+				opts.files[0] = open((char*)(p->array[i]),
+						O_RDONLY);
+				if (opts.files[0] == -1) {
+					fprintf(stderr, "%s cannot open\n",
+							p->array[i]);
+					return false;
+				}
+
+			} else if (!strcmp((char*)(p->array[i]), ">")) {
+				i++;
+				if (!p->array[i]) {
+					fprintf(stderr, "redirect what?\n");
+					return false;
+				}
+
+				opts.files[1] = open((char*)(p->array[i]),
+						O_WRONLY | O_CREAT | O_TRUNC);
+				if (opts.files[1] == -1) {
+					fprintf(stderr, "%s cannot open\n",
+							p->array[i]);
+					return false;
+				}
+
+			} else if (!strcmp((char*)(p->array[i]), "&")) {
+				opts.background = true;
+				break;
+
+			} else {
+				p->array[j] = p->array[i];
+				j++;
+			}
+		}
+
+		p->array[j] = NULL;
+
+		//TODO execute inner commands in background
 		if (!strcmp((char*)(p->array[0]), "cd")) {
 			if (chdir(p->array[1]? (char*)(p->array[1]):"/"))
 				fprintf(stderr, "chdir error=%d\n", errno);
@@ -361,7 +494,7 @@ static bool line_evaluate(Line *p, hash_t *vars)
 			unsigned char **envp = var_expand(vars);
 
 			execute(p->array, envp, var_get(
-					vars, (unsigned char*)("PATH")));
+					vars, (unsigned char*)("PATH")), &opts);
 			free(envp);
 		}
 	}
@@ -477,7 +610,7 @@ static unsigned char **var_expand(hash_t *vars)
 			(vars->num + 1) * sizeof(uintptr_t));
 
 	if (array) {
-		size_t i;
+		unsigned int i;
 		unsigned char **p = array;
 
 		for (i = 0; i < vars->size; i++) {
