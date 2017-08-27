@@ -225,25 +225,27 @@ static void execute(unsigned char **array, unsigned char **env,
 			fprintf(stderr, "%s not found\n", array[0]);
 			exit(ENOENT);
 		}
+
+	} else {
+		for (i = 0; i < sizeof(opts->files) / sizeof(opts->files[0]);
+				i++)
+			if (opts->files[i] != -1)
+				close(opts->files[i]);
+
+		/* error */
+		if (pid == ERR)
+			fprintf(stderr, "fork error %d\n", pid);
+
+		/* parent */
+		else if (!opts->background) {
+			int status;
+
+			if (waitpid(pid, &status, 0) != pid)
+				fprintf(stderr, "waitpid error %d\n", errno);
+			else
+				fprintf(stderr, "waitpid success %d\n", status);
+		}
 	}
-
-	/* error */
-	else if (pid == ERR)
-		fprintf(stderr, "fork error %d\n", pid);
-
-	/* parent */
-	else if (!opts->background) {
-		int status;
-
-		if (waitpid(pid, &status, 0) != pid)
-			fprintf(stderr, "waitpid error %d\n", errno);
-		else
-			fprintf(stderr, "waitpid success %d\n", status);
-	}
-
-	for (i = 0; i < sizeof(opts->files) / sizeof(opts->files[0]); i++)
-		if (opts->files[i] != -1)
-			close(opts->files[i]);
 }
 
 static void line_realloc_buf(Line *p)
