@@ -25,51 +25,72 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <fcntl.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
+static int print(const int, const int, const char *);
+static int process(const int, const char *);
 
-static int exec(int out, char *name);
 
-
-static int exec(int out, char *name) {
-	int in = open(name, O_RDONLY);
-
-	if (in == -1) {
-		perror(name);
-		return EXIT_FAILURE;
-	}
-
+static int print(const int out, const int in, const char *name)
+{
 	for (;;) {
 		char buf[BUFSIZ];
-		int len = read(in, buf, sizeof(buf) / sizeof(char));
+		int len = read(in, buf, sizeof(buf) / sizeof(buf[0]));
 
 		if (len < 0) {
 			perror(name);
-			break;
+			return EXIT_FAILURE;
 		}
 
-		if (len == 0)	break;
+		if (len == 0)
+			break;
 
 		write(out, buf, len);
-	}
-
-	if (close(in)) {
-		perror(name);
-		return EXIT_FAILURE;
 	}
 
 	return EXIT_SUCCESS;
 }
 
-int main(int argc, char **argv) {
-	int i;
+static int process(const int out, const char *name)
+{
+	do {
+		int result;
+		int in = open(name, O_RDONLY);
+
+		if (in == -1)
+			break;
+
+		result = print(out, in, name);
+
+		if (close(in))
+			break;
+
+		return result;
+
+	} while (false);
+
+	perror(name);
+
+	return EXIT_FAILURE;
+}
+
+int main(int argc, char **argv)
+{
 	int result = EXIT_SUCCESS;
 
-	for (i = 1; i < argc; i++) {
-		argv++;
-		result |= exec(STDOUT_FILENO, *argv);
+	if (argc == 1)
+		result = print(STDOUT_FILENO, STDIN_FILENO, "stdin");
+
+	else {
+		int i;
+
+		for (i = 1; i < argc; i++) {
+			argv++;
+			result |= process(STDOUT_FILENO, *argv);
+		}
 	}
 
 	return result;
