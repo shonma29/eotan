@@ -39,24 +39,24 @@ enum device_operation {
 typedef union {
 	struct {
 		enum device_operation operation;
-		int channel;
+		int fid;
 		off_t offset;
-		size_t length;
+		size_t count;
 		unsigned char *data;
-	} Rread;
-	struct {
-		ssize_t length;
 	} Tread;
 	struct {
-		enum device_operation operation;
-		int channel;
-		off_t offset;
-		size_t length;
-		unsigned char *data;
-	} Rwrite;
+		ssize_t count;
+	} Rread;
 	struct {
-		ssize_t length;
+		enum device_operation operation;
+		int fid;
+		off_t offset;
+		size_t count;
+		unsigned char *data;
 	} Twrite;
+	struct {
+		ssize_t count;
+	} Rwrite;
 } devmsg_t;
 
 typedef struct _vdriver_t {

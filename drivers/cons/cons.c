@@ -60,20 +60,20 @@ int read(unsigned char *outbuf, const int channel,
 		size_t len = (rest < DEV_BUF_SIZE)? rest:DEV_BUF_SIZE;
 		devmsg_t packet;
 
-		packet.Rread.operation = operation_read;
-		packet.Rread.channel = channel;
-		packet.Rread.offset = rpos;
-		packet.Rread.length = len;
-		packet.Rread.data = &(outbuf[wpos]);
+		packet.Tread.operation = operation_read;
+		packet.Tread.fid = channel;
+		packet.Tread.offset = rpos;
+		packet.Tread.count = len;
+		packet.Tread.data = &(outbuf[wpos]);
 
 		result = kcall->port_call(PORT_CONSOLE, &packet,
-				sizeof(packet.Rread));
-		if (result != sizeof(packet.Tread)) {
+				sizeof(packet.Tread));
+		if (result != sizeof(packet.Rread)) {
 			dbg_printf("cons: cal_por failed(%d)\n", result);
 			return -1;
 		}
 
-		else if (packet.Tread.length != len) {
+		else if (packet.Rread.count != len) {
 			dbg_printf("cons: read icompletely\n");
 			return -1;
 		}
@@ -97,20 +97,20 @@ int write(unsigned char *inbuf, const int channel,
 		size_t len = (rest < DEV_BUF_SIZE)? rest:DEV_BUF_SIZE;
 		devmsg_t packet;
 
-		packet.Rwrite.operation = operation_write;
-		packet.Rwrite.channel = channel;
-		packet.Rwrite.offset = wpos;
-		packet.Rwrite.length = len;
-		packet.Rwrite.data = &(inbuf[rpos]);
+		packet.Twrite.operation = operation_write;
+		packet.Twrite.fid = channel;
+		packet.Twrite.offset = wpos;
+		packet.Twrite.count = len;
+		packet.Twrite.data = &(inbuf[rpos]);
 
 		result = kcall->port_call(PORT_CONSOLE, &packet,
-				sizeof(packet.Rwrite));
-		if (result != sizeof(packet.Twrite)) {
+				sizeof(packet.Twrite));
+		if (result != sizeof(packet.Rwrite)) {
 			dbg_printf("cons: cal_por failed(%d)\n", result);
 			return -1;
 		}
 
-		else if (packet.Twrite.length != len) {
+		else if (packet.Rwrite.count != len) {
 			dbg_printf("cons: wrote icompletely\n");
 			return -1;
 		}

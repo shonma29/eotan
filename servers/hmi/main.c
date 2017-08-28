@@ -133,17 +133,17 @@ static void process(const int arg)
 			if (!current_req) {
 				if (lfq_dequeue(&req_queue, &current_req)
 						== QUEUE_OK)
-					current_req->message.Rread.offset = 0;
+					current_req->message.Tread.offset = 0;
 				else
 					continue;
 			}
 
 			message = &(current_req->message);
-			message->Rread.data[message->Rread.offset++] =
+			message->Tread.data[message->Tread.offset++] =
 					(unsigned char)(d & 0xff);
-			if (message->Rread.length <= message->Rread.offset) {
-				message->Tread.length = message->Rread.length;
-				reply(current_req, sizeof(message->Tread));
+			if (message->Tread.count <= message->Tread.offset) {
+				message->Rread.count = message->Tread.count;
+				reply(current_req, sizeof(message->Rread));
 				current_req = NULL;
 			}
 		} else
@@ -215,46 +215,46 @@ static void execute(request_message_t *req)
 	devmsg_t *message = &(req->message);
 	ER_UINT result;
 //TODO cancel request
-	switch (message->Rread.operation) {
+	switch (message->Tread.operation) {
 	case operation_read:
-		result = check_param(message->Rread.offset,
-				message->Rread.length);
+		result = check_param(message->Tread.offset,
+				message->Tread.count);
 		if (result) {
-			message->Tread.length = result;
-			reply(req, sizeof(message->Tread));
+			message->Rread.count = result;
+			reply(req, sizeof(message->Rread));
 
 		} else if (lfq_enqueue(&req_queue, &req) != QUEUE_OK) {
 			dbg_printf("hmi: req_queue is full\n");
-			message->Tread.length = E_NOMEM;
-			reply(req, sizeof(message->Tread));
+			message->Rread.count = E_NOMEM;
+			reply(req, sizeof(message->Rread));
 		}
 		break;
 
 	case operation_write:
 #ifdef USE_VESA
-		if (message->Rwrite.channel) {
+		if (message->Twrite.fid) {
 			if (kcall->region_get(get_rdv_tid(req->rdvno),
-					message->Rwrite.data,
-					message->Rwrite.length,
+					message->Twrite.data,
+					message->Twrite.count,
 					line)) {
 				result = E_SYS;
 			} else {
-				result = write(message->Rwrite.channel,
-						message->Rwrite.offset,
-						message->Rwrite.length,
+				result = write(message->Twrite.fid,
+						message->Twrite.offset,
+						message->Twrite.count,
 						line);
 			}
 		} else {
 #endif
-			result = write(message->Rwrite.channel,
-					message->Rwrite.offset,
-					message->Rwrite.length,
-					message->Rwrite.data);
+			result = write(message->Twrite.fid,
+					message->Twrite.offset,
+					message->Twrite.count,
+					message->Twrite.data);
 #ifdef USE_VESA
 		}
 #endif
-		message->Twrite.length = result;
-		reply(req, sizeof(message->Twrite));
+		message->Rwrite.count = result;
+		reply(req, sizeof(message->Rwrite));
 		break;
 
 	default:

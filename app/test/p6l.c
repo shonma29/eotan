@@ -56,14 +56,14 @@ int putline(UW start, UW size, UB *buf)
 	devmsg_t msg;
 	ER_UINT err;
 
-	msg.Rwrite.operation = operation_write;
-	msg.Rwrite.channel = 1;
-	msg.Rwrite.offset = start;
-	msg.Rwrite.length = size;
+	msg.Twrite.operation = operation_write;
+	msg.Twrite.fid = 1;
+	msg.Twrite.offset = start;
+	msg.Twrite.count = size;
 	swap(size);
-	msg.Rwrite.data = buf;
+	msg.Twrite.data = buf;
 
-	err = cal_por(PORT_CONSOLE, 0xffffffff, &msg, sizeof(msg.Rwrite));
+	err = cal_por(PORT_CONSOLE, 0xffffffff, &msg, sizeof(msg.Twrite));
 	if (err < 0)
 		printf("cal_por error %d\n", (int)err);
 	return err;

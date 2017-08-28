@@ -56,13 +56,13 @@ int pset(const unsigned int x, const unsigned int y, const int color)
 	buf.y = y;
 	buf.color = color;
 
-	msg.Rwrite.operation = operation_write;
-	msg.Rwrite.channel = 2;
-	msg.Rwrite.offset = 0;
-	msg.Rwrite.length = sizeof(buf);
-	msg.Rwrite.data = (unsigned char*)&buf;
+	msg.Twrite.operation = operation_write;
+	msg.Twrite.fid = 2;
+	msg.Twrite.offset = 0;
+	msg.Twrite.count = sizeof(buf);
+	msg.Twrite.data = (unsigned char*)&buf;
 
-	err = cal_por(PORT_CONSOLE, 0xffffffff, &msg, sizeof(msg.Rwrite));
+	err = cal_por(PORT_CONSOLE, 0xffffffff, &msg, sizeof(msg.Twrite));
 	if (err < 0)
 		printf("cal_por error %d\n", (int)err);
 	return err;
