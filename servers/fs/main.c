@@ -31,13 +31,22 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/memory.h>
 #include <nerve/global.h>
 #include <nerve/kcall.h>
+#include <set/lf_queue.h>
 #include <set/slab.h>
 #include "api.h"
 #include "fs.h"
 #include "devfs/devfs.h"
 #include "../../kernel/mpu/mpufunc.h"
 
+#define REQUEST_QUEUE_SIZE (32)
+
+static ID receiver_id;
+static ID worker_id;
 static slab_t request_slab;
+static volatile lfq_t req_queue;
+static char req_buf[
+		lfq_buf_size(sizeof(fs_request *), REQUEST_QUEUE_SIZE)
+];
 static int (*syscall[])(fs_request*) = {
 	if_chdir,
 	if_chmod,
@@ -67,12 +76,27 @@ static int (*syscall[])(fs_request*) = {
 static int initialize(void);
 static bool port_init(void);
 static void request_init(void);
+static ER_UINT worker_init(void);
+static void work(void);
 
 
 static int initialize(void)
 {
+	T_CMTX pk_cmtx = {
+		TA_CEILING,
+		pri_server_high
+	};
+	ER result;
+
+	receiver_id = kcall->thread_get_id();
+	result = kcall->mutex_create(receiver_id, &pk_cmtx);
+	if (result) {
+		dbg_printf("fs: mutex_create failed %d\n", result);
+		return -1;
+	}
+
 	if (!port_init()) {
-		dbg_printf("fs: init_port failed\n");
+		dbg_printf("fs: port_init failed\n");
 		return -1;
 	}
 
@@ -80,6 +104,12 @@ static int initialize(void)
 		return -1;
 
 	request_init();
+	worker_id = worker_init();
+	if (worker_id < 0) {
+		dbg_printf("fs: worker_init failed %d\n", worker_id);
+		return -1;
+	}
+
 	fs_init();
 	init_process();
 
@@ -125,21 +155,65 @@ static void request_init(void)
 	request_slab.palloc = kcall->palloc;
 	request_slab.pfree = kcall->pfree;
 	slab_create(&request_slab);
+
+	lfq_initialize(&req_queue, req_buf, sizeof(fs_request*),
+			REQUEST_QUEUE_SIZE);
+}
+
+static ER_UINT worker_init(void)
+{
+	T_CTSK pk_ctsk = {
+		TA_HLNG | TA_ACT,
+		(VP_INT)NULL,
+		(FP)work,
+		pri_server_middle,
+		KTHREAD_STACK_SIZE,
+		NULL,
+		NULL,
+		NULL
+	};
+
+	return kcall->thread_create_auto(&pk_ctsk);
+}
+
+static void work(void)
+{
+	for (;;) {
+		fs_request *req;
+
+		if (lfq_dequeue(&req_queue, &req) == QUEUE_OK) {
+			int result = syscall[req->packet.operation](req);
+
+			if (result > 0)
+				put_response(req->rdvno, result, -1, 0);
+
+			kcall->mutex_lock(receiver_id, TMO_FEVR);
+			slab_free(&request_slab, req);
+			kcall->mutex_unlock(receiver_id);
+			kcall->thread_wakeup(receiver_id);
+
+		} else
+			kcall->thread_sleep();
+	}
 }
 
 void start(VP_INT exinf)
 {
+	fs_request *req;
+
 	if (initialize()) {
 		kcall->thread_end_and_destroy();
 		return;
 	}
 
-	for (;;) {
-		fs_request *req = slab_alloc(&request_slab);
+	for (req = slab_alloc(&request_slab);;) {
 		ER_UINT size;
 
 		if (!req) {
 			kcall->thread_sleep();
+			kcall->mutex_lock(receiver_id, TMO_FEVR);
+			req = slab_alloc(&request_slab);
+			kcall->mutex_unlock(receiver_id);
 			continue;
 		}
 
@@ -152,11 +226,17 @@ void start(VP_INT exinf)
 					sizeof(syscall) / sizeof(syscall[0]))
 				result = ENOTSUP;
 
-			else
-				result = syscall[req->packet.operation](req);
+			else if (lfq_enqueue(&req_queue, &req) == QUEUE_OK) {
+				kcall->thread_wakeup(worker_id);
+				kcall->mutex_lock(receiver_id, TMO_FEVR);
+				req = slab_alloc(&request_slab);
+				kcall->mutex_unlock(receiver_id);
+				continue;
 
-			if (result > 0)
-				put_response(req->rdvno, result, -1, 0);
+			} else
+				result = ENOMEM;
+
+			put_response(req->rdvno, result, -1, 0);
 		}
 
 		else if (size < 0)
@@ -164,7 +244,5 @@ void start(VP_INT exinf)
 
 		else
 			put_response(req->rdvno, EINVAL, -1, 0);
-
-		slab_free(&request_slab, req);
 	}
 }
