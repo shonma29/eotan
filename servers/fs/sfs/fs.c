@@ -226,10 +226,10 @@ static W sfs_statvfs(struct fs * fsp, struct statvfs * result)
     result->f_frsize = fsp->private.sfs_fs.blksize;
     result->f_blocks = fsp->private.sfs_fs.nblock;
     result->f_bfree = fsp->private.sfs_fs.freeblock;
-    result->f_bavail = fsp->private.sfs_fs.nblock;
+    result->f_bavail = fsp->private.sfs_fs.freeblock;
     result->f_files = fsp->private.sfs_fs.ninode;
     result->f_ffree = fsp->private.sfs_fs.freeinode;
-    result->f_favail = fsp->private.sfs_fs.ninode;
+    result->f_favail = fsp->private.sfs_fs.freeinode;
     result->f_fsid = fsp->typeid;
     result->f_flag = 0;
     result->f_namemax = SFS_MAXNAMELEN;
