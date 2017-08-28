@@ -36,12 +36,12 @@ int syslog(const char *msg)
 	syslog_t packet;
 	size_t len = strlen(msg);
 
-	packet.Rwrite.operation = operation_write;
-	packet.Rwrite.length = len;
-	memcpy(packet.Rwrite.data, msg, len);
+	packet.Twrite.operation = operation_write;
+	packet.Twrite.count = len;
+	memcpy(packet.Twrite.data, msg, len);
 
 	return kcall->port_call(PORT_SYSLOG, &packet,
-			sizeof(packet.Rwrite)
-			- sizeof(packet.Rwrite.data)
+			sizeof(packet.Twrite)
+			- sizeof(packet.Twrite.data)
 			+ len);
 }

@@ -44,21 +44,21 @@ enum syslog_channel {
 typedef union {
 	struct {
 		enum syslog_operation operation;
-		enum syslog_channel channel;
-		size_t length;
-	} Rread;
-	struct {
-		ssize_t length;
-		unsigned char data[SYSLOG_MAX_LENGTH];
+		enum syslog_channel fid;
+		size_t count;
 	} Tread;
 	struct {
-		enum syslog_operation operation;
-		size_t length;
+		ssize_t count;
 		unsigned char data[SYSLOG_MAX_LENGTH];
-	} Rwrite;
+	} Rread;
 	struct {
-		ssize_t length;
+		enum syslog_operation operation;
+		size_t count;
+		unsigned char data[SYSLOG_MAX_LENGTH];
 	} Twrite;
+	struct {
+		ssize_t count;
+	} Rwrite;
 } syslog_t;
 
 #endif

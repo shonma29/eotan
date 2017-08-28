@@ -62,20 +62,20 @@ static void puterror(char *message) {
 static int exec(int out) {
 	syslog_t pk;
 	ssize_t size;
-	unsigned char buf[sizeof(pk.Tread.data) + 2];
+	unsigned char buf[sizeof(pk.Rread.data) + 2];
 
-	pk.Rread.operation = operation_read;
-	pk.Rread.channel = channel_syslog;
-	pk.Rread.length = sizeof(pk.Tread.data);
+	pk.Tread.operation = operation_read;
+	pk.Tread.fid = channel_syslog;
+	pk.Tread.count = sizeof(pk.Rread.data);
 
-	size = cal_por(PORT_SYSLOG, 0xffffffff, &pk, sizeof(pk.Rread));
+	size = cal_por(PORT_SYSLOG, 0xffffffff, &pk, sizeof(pk.Tread));
 
 	if (size < 0) {
 		puterror(MSG_PORT);
 		return NG;
 	}
 
-	size = pk.Tread.length;
+	size = pk.Rread.count;
 	if (size < 0) {
 		puterror(MSG_BUF);
 		return NG;
@@ -84,7 +84,7 @@ static int exec(int out) {
 	if (!size)
 		return NG;
 
-	memcpy(buf, pk.Tread.data, size);
+	memcpy(buf, pk.Rread.data, size);
 
 #ifdef FORCE_NEWLINE
 	if (buf[size - 1] != '\n')

@@ -130,22 +130,22 @@ static size_t execute(syslog_t *message)
 	ssize_t result;
 	size_t size = 0;
 
-	switch (message->Rread.operation) {
+	switch (message->Tread.operation) {
 	case operation_read:
-		result = read(message->Tread.data,
-				message->Rread.channel,
-				message->Rread.length);
-		message->Tread.length = result;
-		size = sizeof(message->Tread)
-				- sizeof(message->Tread.data)
-				+ (message->Tread.length);
+		result = read(message->Rread.data,
+				message->Tread.fid,
+				message->Tread.count);
+		message->Rread.count = result;
+		size = sizeof(message->Rread)
+				- sizeof(message->Rread.data)
+				+ (message->Rread.count);
 		break;
 
 	case operation_write:
-		result = write(message->Rwrite.data,
-				message->Rwrite.length);
-		message->Twrite.length = result;
-		size = sizeof(message->Twrite);
+		result = write(message->Twrite.data,
+				message->Twrite.count);
+		message->Rwrite.count = result;
+		size = sizeof(message->Rwrite);
 		break;
 
 	default:
