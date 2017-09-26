@@ -131,7 +131,7 @@ Version 2, June 1991
  * 2) 親ディレクトリにアロケートした新しい inode の情報を追加。
  *
  */
-W
+int
 sfs_i_create(struct inode * parent,
 	     char *fname,
 	     W oflag,
@@ -203,7 +203,7 @@ sfs_i_create(struct inode * parent,
 /* sfs_i_read -
  *
  */
-W sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
+int sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
 {
     W copysize;
     W offset;
@@ -264,7 +264,7 @@ W sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
 }
 
 
-W sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
+int sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 {
     int copysize;
     int offset;

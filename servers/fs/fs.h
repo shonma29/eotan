@@ -22,6 +22,7 @@ Version 2, June 1991
 #include <errno.h>
 #include <unistd.h>
 #include <core.h>
+#include <fs/vfs.h>
 #include "vfs.h"
 #include "procfs/process.h"
 #include "mm.h"

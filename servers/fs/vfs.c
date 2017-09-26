@@ -157,11 +157,11 @@ Version 2, June 1991
 #include "fs.h"
 #include "devfs/devfs.h"
 
-extern struct fsops sfs_fsops;
+extern vfs_operation_t sfs_fsops;
 
 struct fs_entry {
     B *fsname;
-    struct fsops *fsops;
+    vfs_operation_t *fsops;
 };
 
 static struct fs_entry fs_table[] = {
@@ -330,7 +330,7 @@ fs_mount(const ID device,
 {
     struct fs *newfs;
     struct inode *newip;
-    struct fsops *fsp;
+    vfs_operation_t *fsp;
     W err;
 
     if ((fstype < 0) || (fstype >= sizeof(fs_table) / sizeof(struct fs_entry))) {

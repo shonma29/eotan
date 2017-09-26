@@ -126,7 +126,7 @@ sfs_write_dir (struct inode *parentp,
 /*
  * sfs_getdetns()
  */
-W sfs_getdents(struct inode *ip, ID caller, W offset,
+int sfs_getdents(struct inode *ip, ID caller, W offset,
 	       VP buf, UW length, W *rsize, W *fsize)
 {
   W nentry, i, s, error_no, len;
@@ -164,7 +164,7 @@ W sfs_getdents(struct inode *ip, ID caller, W offset,
  * 探索する。
  *
  */
-W
+int
 sfs_i_lookup(struct inode *parent,
 	     char *fname,
 	     W oflag,
@@ -230,13 +230,13 @@ sfs_i_lookup(struct inode *parent,
 }
 
 
-W sfs_i_close()
+int sfs_i_close()
 {
     return (EOK);
 }
 
 
-W sfs_i_link(struct inode * parent, char *fname, struct inode * srcip,
+int sfs_i_link(struct inode * parent, char *fname, struct inode * srcip,
 	     struct permission * acc)
 {
     W error_no;
@@ -278,7 +278,7 @@ W sfs_i_link(struct inode * parent, char *fname, struct inode * srcip,
 }
 
 
-W
+int
 sfs_i_unlink(struct inode * parent, char *fname, struct permission * acc)
 {
     int nentry;
@@ -356,7 +356,7 @@ sfs_i_unlink(struct inode * parent, char *fname, struct permission * acc)
  * 2) 親ディレクトリにアロケートした新しい inode の情報を追加。
  *
  */
-W
+int
 sfs_i_mkdir(struct inode * parent,
 	    char *fname,
 	    W mode, struct permission * acc, struct inode ** retip)
@@ -433,7 +433,7 @@ sfs_i_mkdir(struct inode * parent,
  * ディレクトリを削除する。
  *
  */
-W sfs_i_rmdir(struct inode * parent, char *fname, struct permission * acc)
+int sfs_i_rmdir(struct inode * parent, char *fname, struct permission * acc)
 {
     int nentry;
     int i;

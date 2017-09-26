@@ -96,32 +96,12 @@ Version 2, June 1991
 
 /* file system types. */
 
-struct fsops {
-    W(*mount) ();
-    W(*unmount) ();
-    W(*statvfs) ();
-    W(*lookup) ();
-    W(*create) ();
-    W(*close) ();
-    W(*read) ();
-    W(*write) ();
-    W(*link) ();
-    W(*unlink) ();
-    W(*sync) ();
-    W(*mkdir) ();
-    W(*rmdir) ();
-    W(*getdents) ();
-    W(*stat) ();
-    W(*wstat) ();
-    W(*permit) ();
-};
-
 #define OPS(ip) ((ip)->i_fs->ops)
 
 struct fs {
     list_t bros;
     W typeid;
-    struct fsops ops;
+    vfs_operation_t ops;
     ID device;
     list_t ilist;	/* 使用中の inode のリスト */
     struct inode *rootdir;

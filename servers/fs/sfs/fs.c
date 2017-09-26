@@ -93,26 +93,28 @@ Version 2, June 1991
 #include "func.h"
 
 
-static W sfs_statvfs(struct fs *, struct statvfs *);
+static int sfs_mount (ID device, struct fs *rootfsp, struct inode *rootfile);
+static int sfs_unmount(struct fs * rootfsp);
+static int sfs_statvfs(struct fs *, struct statvfs *);
 
-struct fsops sfs_fsops = {
+vfs_operation_t sfs_fsops = {
     sfs_mount,
     sfs_unmount,
+    sfs_i_sync,
     sfs_statvfs,
+    sfs_getdents,
     sfs_i_lookup,
+    sfs_i_link,
+    sfs_i_unlink,
+    sfs_i_mkdir,
+    sfs_i_rmdir,
+    sfs_stat,
+    sfs_wstat,
+    sfs_permit,
     sfs_i_create,
     sfs_i_close,
     sfs_i_read,
-    sfs_i_write,
-    sfs_i_link,
-    sfs_i_unlink,
-    sfs_i_sync,
-    sfs_i_mkdir,
-    sfs_i_rmdir,
-    sfs_getdents,
-    sfs_stat,
-    sfs_wstat,
-    sfs_permit
+    sfs_i_write
 };
 
 
@@ -121,7 +123,7 @@ struct fsops sfs_fsops = {
 /* sfs_mount -
  *
  */
-W sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
+static int sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 {
     struct sfs_superblock sfs_sb;
     W rlength;
@@ -184,7 +186,7 @@ W sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 /* sfs_unmount -
  *
  */
-W sfs_unmount(struct fs * rootfsp)
+static int sfs_unmount(struct fs * rootfsp)
 {
     /* super block 情報の sync とキャッシュ・データの無効化 */
     sfs_syncfs(rootfsp, 1);
@@ -220,7 +222,7 @@ W sfs_syncfs(struct fs * fsp, W umflag)
     return (EOK);
 }
 
-static W sfs_statvfs(struct fs * fsp, struct statvfs * result)
+static int sfs_statvfs(struct fs * fsp, struct statvfs * result)
 {
     result->f_bsize = fsp->private.sfs_fs.blksize;
     result->f_frsize = fsp->private.sfs_fs.blksize;

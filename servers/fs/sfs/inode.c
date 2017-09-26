@@ -217,7 +217,7 @@ W sfs_free_inode(struct fs * fsp, struct inode *ip)
     return (EOK);
 }
 
-W sfs_stat(struct inode *ip, struct stat *st)
+int sfs_stat(struct inode *ip, struct stat *st)
 {
     st->st_dev = ip->i_fs->device;
     st->st_ino = ip->i_index;
@@ -236,7 +236,7 @@ W sfs_stat(struct inode *ip, struct stat *st)
     return (EOK);
 }
 
-W sfs_wstat(struct inode *ip)
+int sfs_wstat(struct inode *ip)
 {
     time_get(&(ip->i_private.sfs_inode.i_ctime));
 
@@ -247,7 +247,7 @@ W sfs_wstat(struct inode *ip)
  * permit -
  */
 
-W sfs_permit(struct inode * ip, struct permission * acc, UW bits)
+int sfs_permit(struct inode * ip, struct permission * acc, UW bits)
 {
     UW mode, perm_bits;
     int shift;
@@ -276,7 +276,7 @@ W sfs_permit(struct inode * ip, struct permission * acc, UW bits)
 }
 
 
-W sfs_i_sync(struct inode * ip)
+int sfs_i_sync(struct inode * ip)
 {
     W err;
 

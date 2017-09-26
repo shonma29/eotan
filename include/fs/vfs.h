@@ -38,21 +38,21 @@ typedef struct _block_device_t {
 typedef struct {
 	int (*mount)();
 	int (*unmount)();
+	int (*sync)();
 	int (*statvfs)();
+	int (*getdents)();
 	int (*lookup)();
+	int (*link)();
+	int (*unlink)();
+	int (*mkdir)();
+	int (*rmdir)();
+	int (*stat)();
+	int (*wstat)();
+	int (*permit)();
 	int (*create)();
 	int (*close)();
 	int (*read)();
 	int (*write)();
-	int (*link)();
-	int (*unlink)();
-	int (*sync)();
-	int (*mkdir)();
-	int (*rmdir)();
-	int (*getdents)();
-	int (*stat)();
-	int (*wstat)();
-	int (*permit)();
 } vfs_operation_t;
 
 typedef struct {

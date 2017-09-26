@@ -17,7 +17,7 @@ Version 2, June 1991
 
 #include <sys/stat.h>
 
-extern struct fsops	sfs_fsops;
+extern vfs_operation_t sfs_fsops;
 
 /* block.c */
 extern W sfs_alloc_block (W fd, struct fs *fsp);
@@ -36,17 +36,17 @@ extern W sfs_free_all_dindirect(W fd, struct fs *fsp,
 /* dir.c */
 extern W sfs_read_dir (struct inode *ip, W nentry, struct sfs_dir *dirp);
 extern W sfs_write_dir (struct inode *parentp, W nentry, struct sfs_dir *dirp);
-extern W sfs_getdents (struct inode *ip, ID caller, W offset, VP buf,
+extern int sfs_getdents (struct inode *ip, ID caller, W offset, VP buf,
 		       UW length, W *rsize, W *fsize);
-extern W	sfs_i_lookup (struct inode *parent, char *fname, W oflag,
+extern int sfs_i_lookup (struct inode *parent, char *fname, W oflag,
 			      W mode, struct permission *acc,
 			      struct inode **retip);
-extern W	sfs_i_link ();
-extern W	sfs_i_unlink (struct inode *parent, char *fname,
+extern int sfs_i_link ();
+extern int sfs_i_unlink (struct inode *parent, char *fname,
 			      struct permission *acc);
-extern W	sfs_i_mkdir (struct inode *parent, char *fname, W mode,
+extern int sfs_i_mkdir (struct inode *parent, char *fname, W mode,
 			     struct permission *acc, struct inode **retip);
-extern W	sfs_i_rmdir (struct inode *parent, char *fname,
+extern int sfs_i_rmdir (struct inode *parent, char *fname,
 			     struct permission *acc);
 
 /* inode.c */
@@ -54,24 +54,22 @@ extern W	sfs_read_inode (struct fs *fsp, W index, struct inode *ip);
 extern W	sfs_alloc_inode (ID fd, struct fs *fsp);
 extern W	sfs_write_inode (W fd, struct fs *fsp, struct sfs_inode *ip);
 extern W	sfs_free_inode (struct fs *fsp, struct inode *ip);
-extern W sfs_stat(struct inode *, struct stat *);
-extern W sfs_wstat(struct inode *);
-extern W sfs_permit(struct inode *ip, struct permission *acc, UW bits);
-extern W	sfs_i_sync (struct inode *ip);
+extern int sfs_stat(struct inode *, struct stat *);
+extern int sfs_wstat(struct inode *);
+extern int sfs_permit(struct inode *ip, struct permission *acc, UW bits);
+extern int sfs_i_sync (struct inode *ip);
 
 /* file.c */
-extern W	sfs_i_create (struct inode *parent, char *fname, W oflag,
+extern int sfs_i_create (struct inode *parent, char *fname, W oflag,
 			      W mode, struct permission *acc,
 			      struct inode **retip);
-extern W	sfs_i_close ();
-extern W	sfs_i_read (struct inode *ip, W start, B *buf, W length, W *rlength);
-extern W	sfs_i_write (struct inode *ip, W start, B *buf, W size,
+extern int sfs_i_close ();
+extern int sfs_i_read (struct inode *ip, W start, B *buf, W length, W *rlength);
+extern int sfs_i_write (struct inode *ip, W start, B *buf, W size,
 			     W *rsize);
 extern W	sfs_i_truncate (struct inode *ip, W newsize);
 
 /* fs.c */
-extern W sfs_mount (ID device, struct fs *rootfsp, struct inode *rootfile);
 extern W sfs_syncfs (struct fs *fsp, W umflag);
-extern W sfs_unmount(struct fs * rootfsp);
 
 #endif /* __SFS_FUNC_H__ */
