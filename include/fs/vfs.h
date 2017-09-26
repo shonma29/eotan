@@ -32,6 +32,7 @@ typedef struct _block_device_t {
 	size_t block_size;
 	int (*read)(struct _block_device_t *, void *, int);
 	int (*write)(struct _block_device_t *, void *, int);
+	int (*invalidate)(struct _block_device_t *, int);
 } block_device_t;
 
 typedef struct {

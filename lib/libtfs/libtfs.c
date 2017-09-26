@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 
 static int block_read(block_device_t *dev, void *buf, int blockno);
 static int block_write(block_device_t *dev, void *buf, int blockno);
+static int block_invalidate(block_device_t *dev, int blockno);
 
 void block_initialize(block_device_t *dev)
 {
@@ -37,6 +38,7 @@ void block_initialize(block_device_t *dev)
 	dev->block_size = 0;
 	dev->read = block_read;
 	dev->write = block_write;
+	dev->invalidate = block_invalidate;
 }
 
 static int block_read(block_device_t *dev, void *buf, int blockno)
@@ -61,4 +63,9 @@ static int block_write(block_device_t *dev, void *buf, int blockno)
 
 	size = dev->block_size;
 	return (write(dev->channel, buf, size) == size)? 0:(-1);
+}
+
+static int block_invalidate(block_device_t *dev, int blockno)
+{
+	return 0;
 }
