@@ -105,14 +105,14 @@ extern void service_initialize(void);
 static inline void fpu_save(thread_t **th)
 {
 	__asm__ __volatile__ ( \
-			"fsave %0\n\t" \
+			"fxsave %0\n\t" \
 			:"=m" ((*th)->mpu.fpu_state));
 }
 
 static inline void fpu_restore(thread_t **th)
 {
 	__asm__ __volatile__ ( \
-			"frstor %0\n\t" \
+			"fxrstor %0\n\t" \
 			:"=m" ((*th)->mpu.fpu_state));
 }
 

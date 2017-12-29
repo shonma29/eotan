@@ -50,7 +50,8 @@ static inline thread_t *getThreadParent(const node_t *p) {
 
 ER thread_initialize(void)
 {
-	create_tree(&thread_tree, &thread_slab, sizeof(thread_t), NULL);
+	create_tree(&thread_tree, &thread_slab,
+			((sizeof(thread_t) + 15) / 16) * 16, NULL);
 	thread_hand = MIN_AUTO_ID - 1;
 
 	ready_initialize();
