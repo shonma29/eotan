@@ -27,7 +27,7 @@ ARCH = i686
 
 MAKE = gmake
 CC = clang
-CFLAGS = -Wall -Werror -O2 -std=gnu99 \
+CFLAGS = -Wall -Werror -O2 -std=c11 \
  -march=$(ARCH) \
  -fno-stack-protector \
  -I $(WD) -I include \
