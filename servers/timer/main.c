@@ -106,7 +106,7 @@ static void wakeup(list_t *w, int dummy)
 	ER reply = E_TMOUT;
 	list_t guard;
 
-	list_insert(w, &guard);
+	list_append(w, &guard);
 
 	while ((w = list_dequeue(&guard))) {
 		sleeper_t *s = getSleeperParent(w);

@@ -26,6 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include "stdbool.h"
 #include "stddef.h"
 
 typedef struct _list_t {
@@ -34,21 +35,31 @@ typedef struct _list_t {
 } list_t;
 
 
-#define list_next(entry) ((entry)->next)
-#define list_prev(entry) ((entry)->prev)
+static inline list_t *list_next(const list_t *entry)
+{
+	return entry->next;
+}
 
-#define list_is_empty(entry) (((entry)->next) == entry)
+static inline list_t *list_prev(const list_t *entry)
+{
+	return entry->prev;
+}
 
-#define list_is_edge(guard, entry) ((guard) == (entry))
-#define list_edge_to_null(guard, entry) (list_is_edge(guard, entry)? \
-  NULL:(entry))
+static inline bool list_is_empty(const list_t *entry)
+{
+	return (entry->next == entry);
+}
 
-#define list_push(guard, entry) list_append(guard, entry)
-#define list_pop(guard) list_pick(guard)
+static inline bool list_is_edge(const list_t *guard, const list_t *entry)
+{
+	return (guard == entry);
+}
 
-#define list_enqueue(guard, entry) list_insert(guard, entry)
-#define list_dequeue(guard) list_pick(guard)
-
+static inline list_t *list_edge_to_null(const list_t *guard,
+		const list_t *entry)
+{
+	return ((guard == entry)? NULL:((list_t*)entry));
+}
 
 extern void list_initialize(list_t *entry);
 extern void list_release(list_t *guard);
@@ -61,5 +72,25 @@ extern void list_insert(list_t *to, list_t *entry);
 extern void list_remove(list_t *entry);
 
 extern list_t *list_pick(list_t *guard);
+
+static inline void list_push(list_t *guard, list_t *entry)
+{
+	list_insert(guard, entry);
+}
+
+static inline list_t *list_pop(list_t *guard)
+{
+	return list_pick(guard);
+}
+
+static inline void list_enqueue(list_t *guard, list_t *entry)
+{
+	list_append(guard, entry);
+}
+
+static inline list_t *list_dequeue(list_t *guard)
+{
+	return list_pick(guard);
+}
 
 #endif

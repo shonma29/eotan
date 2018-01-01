@@ -87,7 +87,6 @@ static void thread_clear(mm_thread_t *th, mm_process_t *p)
 {
 	th->process_id = p->node.key;
 	th->stack.attr = attr_nil;
-	list_initialize(&(th->brothers));
 	list_append(&(p->threads), &(th->brothers));
 }
 

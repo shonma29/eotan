@@ -67,7 +67,7 @@ static void init_list(list_t *head, hash_entry_t *entries, const size_t size) {
 	list_initialize(head);
 
 	for (i = size; i > 0; p++, i--)
-		list_insert(head, &(p->list));
+		list_append(head, &(p->list));
 }
 
 static void init_tbl(list_t *p, const size_t size) {
