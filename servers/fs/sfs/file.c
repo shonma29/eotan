@@ -210,7 +210,6 @@ int sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
     ID fd;
     struct fs *fsp;
     W bn;
-    W cn;
     B *cbuf;
 
 #ifdef FMDEBUG
@@ -242,7 +241,7 @@ int sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
 	    return (EIO);
 	}
 
-	get_cache(fd, bn, &cn, &cbuf);
+	cbuf = get_cache(fd, bn);
 	offset = start % fsp->private.sfs_fs.blksize;
 	if (fsp->private.sfs_fs.blksize - offset < length) {
 	    copysize = fsp->private.sfs_fs.blksize - offset;
@@ -251,7 +250,7 @@ int sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
 	}
 
 	memcpy(buf, &cbuf[offset], copysize);
-	put_cache(cn, 0);
+	put_cache(cbuf, 0);
 	buf += copysize;
 	start += copysize;
 	length -= copysize;
@@ -273,7 +272,6 @@ int sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
     ID fd;
     struct fs *fsp;
     W bn;
-    W cn;
     B *cbuf;
 
 #ifdef FMDEBUG
@@ -307,9 +305,9 @@ int sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 	    if (bn < 0) {
 		return (EIO);
 	    }
-	    get_cache(fd, bn, &cn, &cbuf);
+	    cbuf = get_cache(fd, bn);
 	} else {
-	    get_cache(fd, bn, &cn, &cbuf);
+	    cbuf = get_cache(fd, bn);
 	}
 
 	/* 読み込んだブロックの内容を更新する
@@ -336,7 +334,7 @@ int sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 
 	/* 更新したブロックを書き込む
 	 */
-	put_cache(cn, 1);
+	put_cache(cbuf, 1);
 	buf += copysize;
 	start += copysize;
 	size -= copysize;
