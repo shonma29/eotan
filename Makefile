@@ -66,6 +66,7 @@ data: motd bees.p6
 		app/sfs/statfs initrd.img write /$$I $$I; \
 		app/sfs/statfs initrd.img chmod 644 /$$I; \
 	done
+	app/sfs/statfs initrd.img statvfs
 
 starter:
 	app/sfs/statfs initrd.img dir /
