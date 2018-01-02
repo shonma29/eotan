@@ -52,11 +52,12 @@ typedef struct _slab_block_t {
 	list_t empties;
 	list_t blocks;
 	list_t entries;
-	_Alignas(8) size_t entry_num;
+	size_t entry_num;
+	int pad[1];
 } slab_block_t;
 
 typedef struct _slab_entry_t {
-	_Alignas(16) list_t entries;
+	list_t entries;
 } slab_entry_t;
 
 

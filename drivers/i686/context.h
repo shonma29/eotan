@@ -32,7 +32,8 @@ typedef struct
 {
 	void *esp0;
 	PTE *cr3;
-	_Alignas(16) char fpu_state[512];
+	int pad[2];
+	char fpu_state[512];
 } mpu_context_t;
 
 static inline void context_set_kernel_sp(mpu_context_t *ctx, const void *addr)

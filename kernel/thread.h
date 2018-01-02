@@ -40,7 +40,6 @@ typedef struct {
 	STAT status;
 	wait_reason_t wait;
 	list_t locking;
-	mpu_context_t mpu;
 	struct {
 		//TODO under 49 days
 		UW total;
@@ -58,6 +57,8 @@ typedef struct {
 		FP entry;
 	} attr;
 	port_t port;
+	int pad[2];
+	mpu_context_t mpu;
 } thread_t;
 
 static inline ID thread_id(thread_t *th)
