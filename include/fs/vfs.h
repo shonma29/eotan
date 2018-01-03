@@ -26,13 +26,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stddef.h>
 
 typedef struct _block_device_t {
 	int channel;
 	size_t block_size;
-	int (*read)(struct _block_device_t *, void *, int);
-	int (*write)(struct _block_device_t *, void *, int);
-	int (*invalidate)(struct _block_device_t *, int);
+	void (*clear)(struct _block_device_t *, void *);
+	int (*read)(struct _block_device_t *, void *, const int);
+	int (*write)(struct _block_device_t *, void *, const int);
+	int (*invalidate)(struct _block_device_t *, const int);
 } block_device_t;
 
 typedef struct {

@@ -24,24 +24,31 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stddef.h>
+#include <string.h>
 #include <unistd.h>
 #include <fs/vfs.h>
 
-static int block_read(block_device_t *dev, void *buf, int blockno);
-static int block_write(block_device_t *dev, void *buf, int blockno);
-static int block_invalidate(block_device_t *dev, int blockno);
+static void block_clear(block_device_t *, void *);
+static int block_read(block_device_t *, void *, const int);
+static int block_write(block_device_t *, void *, const int);
+static int block_invalidate(block_device_t *, const int);
 
 void block_initialize(block_device_t *dev)
 {
 	dev->channel = 0;
 	dev->block_size = 0;
+	dev->clear = block_clear;
 	dev->read = block_read;
 	dev->write = block_write;
 	dev->invalidate = block_invalidate;
 }
 
-static int block_read(block_device_t *dev, void *buf, int blockno)
+static void block_clear(block_device_t *dev, void *buf)
+{
+	memset(buf, 0, dev->block_size);
+}
+
+static int block_read(block_device_t *dev, void *buf, const int blockno)
 {
 	off_t offset = blockno * dev->block_size;
 	size_t size;
@@ -53,7 +60,7 @@ static int block_read(block_device_t *dev, void *buf, int blockno)
 	return (read(dev->channel, buf, size) == size)? 0:(-1);
 }
 
-static int block_write(block_device_t *dev, void *buf, int blockno)
+static int block_write(block_device_t *dev, void *buf, const int blockno)
 {
 	off_t offset = blockno * dev->block_size;
 	size_t size;
@@ -65,7 +72,7 @@ static int block_write(block_device_t *dev, void *buf, int blockno)
 	return (write(dev->channel, buf, size) == size)? 0:(-1);
 }
 
-static int block_invalidate(block_device_t *dev, int blockno)
+static int block_invalidate(block_device_t *dev, const int blockno)
 {
 	return 0;
 }
