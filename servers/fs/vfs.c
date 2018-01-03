@@ -345,7 +345,7 @@ fs_mount(const ID device,
 	/* 既に mount されていないかどうかのチェック */
 	newfs = rootfs;
 	do {
-	    if (newfs->device == device) {
+	    if (newfs->dev.channel == device) {
 		return (EBUSY);
 	    }
 	    newfs = getFsParent(list_next(&(newfs->bros)));
@@ -380,7 +380,7 @@ fs_mount(const ID device,
     /* mount されるファイルシステムの root ディレクトリの登録 */
     newip->i_fs = newfs;
     newfs->rootdir = newip;
-    newfs->device = device;
+    newfs->dev.channel = device;
     newfs->ops = *fsp;
 
     /* ファイルシステムのリストへ登録 */
@@ -412,7 +412,7 @@ W fs_unmount(UW device)
     /* device から fsp を検索 */
     fsp = rootfs;
     do {
-	if (fsp->device == device)
+	if (fsp->dev.channel == device)
 	    break;
 	fsp = getFsParent(list_next(&(fsp->bros)));
     }
@@ -780,7 +780,7 @@ W fs_statvfs(ID device, struct statvfs * result)
 	     p = list_next(p)) {
 	struct fs *fsp = getFsParent(p);
 
-	if (fsp->device == device) {
+	if (fsp->dev.channel == device) {
 	    return fsp->ops.statvfs(fsp, result);
 	}
     }

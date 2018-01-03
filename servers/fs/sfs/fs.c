@@ -148,7 +148,9 @@ static int sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
     }
 
     rootfsp->typeid = FS_SFS;
-    rootfsp->device = device;
+    block_initialize(&(rootfsp->dev));
+    rootfsp->dev.channel = device;
+    rootfsp->dev.block_size = sfs_sb.blksize;
     rootfsp->private.sfs_fs = sfs_sb;
 
 #ifdef FMDEBUG
@@ -206,7 +208,7 @@ W sfs_syncfs(struct fs * fsp, W umflag)
     if (fsp->dirty) {
 	sb = &(fsp->private.sfs_fs);
 	error_no =
-	    write_device(fsp->device, (B *) sb,
+	    write_device(fsp->dev.channel, (B *) sb,
 			     1 * sb->blksize,
 			     sizeof(struct sfs_superblock), &rsize);
 	if (error_no) {
@@ -215,7 +217,7 @@ W sfs_syncfs(struct fs * fsp, W umflag)
 	fsp->dirty = 0;
     }
 
-    error_no = sync_cache(fsp->device, umflag);
+    error_no = sync_cache(fsp->dev.channel, umflag);
     if (error_no) {
 	return (error_no);
     }

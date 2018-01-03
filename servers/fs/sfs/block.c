@@ -106,7 +106,7 @@ W sfs_alloc_block(W fd, struct fs * fsp)
 			    + k;
 
 			buf[j] = buf[j] & ~mask;
-			put_cache(buf, 1);
+			put_cache(buf, true);
 
 			sb->freeblock--;
 			sb->bsearch = free_block;
@@ -124,8 +124,6 @@ W sfs_alloc_block(W fd, struct fs * fsp)
 		}
 	    }
     }
-
-    put_cache(buf, 0);
 
     return (-1);
 }
@@ -153,7 +151,7 @@ W sfs_free_block(W fd, struct fs * fsp, W blockno)
     mask = 0x01;
     mask = mask << (blockno % 8);
     buf[s] = buf[s] | (mask & 0xff);
-    put_cache(buf, 1);
+    put_cache(buf, true);
 
     /* キャッシュに残っているデータを無効にする */
     invalidate_cache(fd, blockno);
@@ -188,7 +186,7 @@ W sfs_free_indirect(W fd, struct fs * fsp, struct sfs_inode * ip,
 		inbufp->in_block[i] = 0;
 	    }
 
-	put_cache(inbufp, 1);
+	put_cache(inbufp, true);
 	++inblock;
     }
 
@@ -202,7 +200,6 @@ W sfs_free_indirect(W fd, struct fs * fsp, struct sfs_inode * ip,
 		if (inbufp->in_block[j] > 0)
 		    sfs_free_block(fd, fsp, inbufp->in_block[j]);
 
-	    put_cache(inbufp, 0);
 	    sfs_free_block(fd, fsp, ip->i_indirect[i]);
 	}
 
@@ -241,7 +238,6 @@ sfs_get_indirect_block_num(W fd, struct fs * fsp, struct sfs_inode * ip,
 
     inbufp = get_cache(fd, ip->i_indirect[inblock]);
     bn = inbufp->in_block[inblock_offset];
-    put_cache(inbufp, 0);
 
     return (bn);
 }
@@ -280,13 +276,13 @@ sfs_set_indirect_block_num(W fd,
 
 	ip->i_indirect[inblock] = newinblock;
 	inbufp = get_cache(fd, newinblock);
-	memset((B*)inbufp, 0, sizeof(struct sfs_indirect));
+	fsp->dev.clear(&(fsp->dev), (B*)inbufp);
 
     } else
 	inbufp = get_cache(fd, ip->i_indirect[inblock]);
 
     inbufp->in_block[inblock_offset] = newblock;
-    put_cache(inbufp, 1);
+    put_cache(inbufp, true);
 
     /* inode の書き込みは sfs_i_write() 以上の部分で行われるはず...
        sfs_write_inode (fd, fsp, ip);

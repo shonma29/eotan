@@ -113,12 +113,11 @@ W sfs_read_inode(struct fs *fsp, W ino, struct inode *ip)
     ID fd;
     B *buf;
 
-    fd = fsp->device;
+    fd = fsp->dev.channel;
     offset = sfs_get_inode_offset(fsp, ino);
     buf = get_cache(fd, offset / SFS_BLOCK_SIZE);
     memcpy((B*)&(ip->i_private.sfs_inode), buf,
 	  sizeof(struct sfs_inode));
-    put_cache(buf, 0);
 
     ip->i_index = ip->i_private.sfs_inode.i_index;
     ip->i_size = ip->i_private.sfs_inode.i_size;
@@ -152,17 +151,15 @@ W sfs_alloc_inode(ID fd, struct fs * fsp)
 
 	offset += sizeof(struct sfs_inode);
 	if (ipbufp->i_index != i) {
-	    memset((VP)ipbufp, 0, sizeof(struct sfs_inode));
+	    fsp->dev.clear(&(fsp->dev), (VP)ipbufp);
 	    ipbufp->i_index = i;
-	    put_cache(ipbufp, 1);
+	    put_cache(ipbufp, true);
 	    fsp->private.sfs_fs.freeinode--;
 	    fsp->private.sfs_fs.isearch = (i + 1);
 	    fsp->dirty = 1;
 	    /* ここで fs の sync を行う必要があるか? */
 	    sfs_syncfs(fsp, 0);
 	    return (i);
-	} else {
-	    put_cache(ipbufp, 0);
 	}
     }
 
@@ -178,7 +175,7 @@ W sfs_write_inode(W fd, struct fs * fsp, struct sfs_inode * ip)
     B *buf = get_cache(fd,
 	    sfs_get_inode_offset(fsp, ip->i_index) / SFS_BLOCK_SIZE);
     memcpy(buf, (B*)ip, sizeof(struct sfs_inode));
-    put_cache(buf, 1);
+    put_cache(buf, true);
     /* ここで fs の sync を行う必要があるか? */
     sfs_syncfs(fsp, 0);
 
@@ -192,10 +189,10 @@ W sfs_write_inode(W fd, struct fs * fsp, struct sfs_inode * ip)
 W sfs_free_inode(struct fs * fsp, struct inode *ip)
 {
     W inode_index = ip->i_index;
-    B *buf = get_cache(fsp->device,
+    B *buf = get_cache(fsp->dev.channel,
 		  sfs_get_inode_offset(fsp, inode_index) / SFS_BLOCK_SIZE);
-    memset(buf, 0, sizeof(struct sfs_inode));
-    put_cache(buf, 1);
+    fsp->dev.clear(&(fsp->dev), buf);
+    put_cache(buf, true);
     ip->i_dirty = 0;
 
     fsp->private.sfs_fs.freeinode++;
@@ -209,7 +206,7 @@ W sfs_free_inode(struct fs * fsp, struct inode *ip)
 
 int sfs_stat(struct inode *ip, struct stat *st)
 {
-    st->st_dev = ip->i_fs->device;
+    st->st_dev = ip->i_fs->dev.channel;
     st->st_ino = ip->i_index;
     st->st_mode = ip->i_mode;
     st->st_nlink = ip->i_private.sfs_inode.i_nlink;
@@ -282,7 +279,7 @@ int sfs_i_sync(struct inode * ip)
     ip->i_private.sfs_inode.i_mode = ip->i_mode;
 
     if (ip->i_dirty) {
-	err = sfs_write_inode(ip->i_fs->device, ip->i_fs,
+	err = sfs_write_inode(ip->i_fs->dev.channel, ip->i_fs,
 			      &(ip->i_private.sfs_inode));
 	if (err) {
 	    return (err);

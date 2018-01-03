@@ -157,7 +157,7 @@ int if_unmount(fs_request *req)
     error_no = EOK;
     switch (umpoint->i_mode & S_IFMT) {
     case S_IFDIR:
-	device = umpoint->i_fs->device;
+	device = umpoint->i_fs->dev.channel;
 	break;
     case S_IFREG:
         error_no = ENOTDIR;

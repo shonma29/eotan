@@ -152,7 +152,7 @@ sfs_i_create(struct inode * parent,
     *retip = newip;
 
     /* 新しい sfs_inode をアロケート */
-    i_index = sfs_alloc_inode(parent->i_fs->device, parent->i_fs);
+    i_index = sfs_alloc_inode(parent->i_fs->dev.channel, parent->i_fs);
     if (i_index <= 0) {
 	return (ENOMEM);
     }
@@ -218,7 +218,7 @@ int sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
 	 ip, start, length, buf);
 #endif
 
-    fd = ip->i_fs->device;
+    fd = ip->i_fs->dev.channel;
     fsp = ip->i_fs;
 
     if (start + length > ip->i_size) {
@@ -250,7 +250,6 @@ int sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
 	}
 
 	memcpy(buf, &cbuf[offset], copysize);
-	put_cache(cbuf, 0);
 	buf += copysize;
 	start += copysize;
 	length -= copysize;
@@ -281,7 +280,7 @@ int sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
     *rsize = 0;
     retsize = size;
     filesize = start + retsize;
-    fd = ip->i_fs->device;
+    fd = ip->i_fs->dev.channel;
     fsp = ip->i_fs;
 
     while (size > 0) {
@@ -334,7 +333,7 @@ int sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 
 	/* 更新したブロックを書き込む
 	 */
-	put_cache(cbuf, 1);
+	put_cache(cbuf, true);
 	buf += copysize;
 	start += copysize;
 	size -= copysize;
@@ -379,7 +378,7 @@ W sfs_i_truncate(struct inode * ip, W newsize)
     struct sfs_inode *sfs_ip;
     SYSTIM clock;
 
-    fd = ip->i_fs->device;
+    fd = ip->i_fs->dev.channel;
     fsp = ip->i_fs;
     sfs_ip = &(ip->i_private.sfs_inode);
     nblock = roundUp(newsize, fsp->private.sfs_fs.blksize) / fsp->private.sfs_fs.blksize;
