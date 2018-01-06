@@ -381,7 +381,7 @@ sfs_i_mkdir(struct inode * parent,
     *retip = newip;
 
     /* 新しい sfs_inode をアロケート */
-    i_index = sfs_alloc_inode(parent->i_fs->dev.channel, parent->i_fs);
+    i_index = sfs_alloc_inode(parent->i_fs);
     if (i_index <= 0) {
 	return (ENOMEM);
     }

@@ -110,12 +110,10 @@ static W sfs_get_inode_offset(struct fs *fsp, W ino)
 W sfs_read_inode(struct fs *fsp, W ino, struct inode *ip)
 {
     W offset;
-    ID fd;
     B *buf;
 
-    fd = fsp->dev.channel;
     offset = sfs_get_inode_offset(fsp, ino);
-    buf = get_cache(fd, offset / SFS_BLOCK_SIZE);
+    buf = get_cache(&(fsp->dev), offset / SFS_BLOCK_SIZE);
     memcpy((B*)&(ip->i_private.sfs_inode), buf,
 	  sizeof(struct sfs_inode));
 
@@ -135,7 +133,7 @@ W sfs_read_inode(struct fs *fsp, W ino, struct inode *ip)
 /* sfs_alloc_inode -
  *
  */
-W sfs_alloc_inode(ID fd, struct fs * fsp)
+W sfs_alloc_inode(struct fs * fsp)
 {
     W i;
     W offset;
@@ -147,7 +145,7 @@ W sfs_alloc_inode(ID fd, struct fs * fsp)
 
     offset = sfs_get_inode_offset(fsp, fsp->private.sfs_fs.isearch);
     for (i = fsp->private.sfs_fs.isearch; i <= fsp->private.sfs_fs.ninode; i++) {
-	ipbufp = get_cache(fd, offset / SFS_BLOCK_SIZE);
+	ipbufp = get_cache(&(fsp->dev), offset / SFS_BLOCK_SIZE);
 
 	offset += sizeof(struct sfs_inode);
 	if (ipbufp->i_index != i) {
@@ -170,9 +168,9 @@ W sfs_alloc_inode(ID fd, struct fs * fsp)
 /* sfs_write_inode -
  *
  */
-W sfs_write_inode(W fd, struct fs * fsp, struct sfs_inode * ip)
+W sfs_write_inode(struct fs * fsp, struct sfs_inode * ip)
 {
-    B *buf = get_cache(fd,
+    B *buf = get_cache(&(fsp->dev),
 	    sfs_get_inode_offset(fsp, ip->i_index) / SFS_BLOCK_SIZE);
     memcpy(buf, (B*)ip, sizeof(struct sfs_inode));
     put_cache(buf);
@@ -189,7 +187,7 @@ W sfs_write_inode(W fd, struct fs * fsp, struct sfs_inode * ip)
 W sfs_free_inode(struct fs * fsp, struct inode *ip)
 {
     W inode_index = ip->i_index;
-    B *buf = get_cache(fsp->dev.channel,
+    B *buf = get_cache(&(fsp->dev),
 		  sfs_get_inode_offset(fsp, inode_index) / SFS_BLOCK_SIZE);
     fsp->dev.clear(&(fsp->dev), buf);
     put_cache(buf);
@@ -279,7 +277,7 @@ int sfs_i_sync(struct inode * ip)
     ip->i_private.sfs_inode.i_mode = ip->i_mode;
 
     if (ip->i_dirty) {
-	err = sfs_write_inode(ip->i_fs->dev.channel, ip->i_fs,
+	err = sfs_write_inode(ip->i_fs,
 			      &(ip->i_private.sfs_inode));
 	if (err) {
 	    return (err);

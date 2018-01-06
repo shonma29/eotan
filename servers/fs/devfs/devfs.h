@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <device.h>
+#include <fs/vfs.h>
 #include <sys/syscall.h>
 
 #define MAX_DEVICE (32)
@@ -46,9 +47,9 @@ extern W write_device(ID, B *, W, W, W *);
 extern W read_device(ID, B *, W, W, W *);
 
 extern void init_cache(void);
-extern void *get_cache(const W, const W);
-extern bool invalidate_cache(const W, const W);
+extern void *get_cache(block_device_t *, const W);
+extern bool invalidate_cache(block_device_t *, const W);
 extern bool put_cache(const void *);
-extern W sync_cache(const W, const bool);
+extern W sync_cache(block_device_t *, const bool);
 
 #endif

@@ -152,7 +152,7 @@ sfs_i_create(struct inode * parent,
     *retip = newip;
 
     /* 新しい sfs_inode をアロケート */
-    i_index = sfs_alloc_inode(parent->i_fs->dev.channel, parent->i_fs);
+    i_index = sfs_alloc_inode(parent->i_fs);
     if (i_index <= 0) {
 	return (ENOMEM);
     }
@@ -235,13 +235,13 @@ int sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
 	       sfs_get_block_num(fd, fsp, &(ip->i_private.sfs_inode),
 				 start / fsp->fs_blksize));
 #endif
-	bn = sfs_get_block_num(fd, fsp, &(ip->i_private.sfs_inode),
+	bn = sfs_get_block_num(fsp, &(ip->i_private.sfs_inode),
 			       start / fsp->private.sfs_fs.blksize);
 	if (bn < 0) {
 	    return (EIO);
 	}
 
-	cbuf = get_cache(fd, bn);
+	cbuf = get_cache(&(fsp->dev), bn);
 	offset = start % fsp->private.sfs_fs.blksize;
 	if (fsp->private.sfs_fs.blksize - offset < length) {
 	    copysize = fsp->private.sfs_fs.blksize - offset;
@@ -291,22 +291,22 @@ int sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 	       "allocate block" : "read block");
 #endif
 
-	if ((bn = sfs_get_block_num(fd, fsp, &(ip->i_private.sfs_inode),
+	if ((bn = sfs_get_block_num(fsp, &(ip->i_private.sfs_inode),
 				    start / fsp->private.sfs_fs.blksize)) <= 0) {
 	    /* ファイルサイズを越えて書き込む場合には、新しくブロックをアロケートする
 	     */
-	    bn = sfs_set_block_num(fd, fsp, &(ip->i_private.sfs_inode),
+	    bn = sfs_set_block_num(fsp, &(ip->i_private.sfs_inode),
 				   start / fsp->private.sfs_fs.blksize,
-				   sfs_alloc_block(fd, fsp));
+				   sfs_alloc_block(fsp));
 /*
  *   ip->sfs_i_direct[start / fsp->blksize] = alloc_block (fd, fsp);
  */
 	    if (bn < 0) {
 		return (EIO);
 	    }
-	    cbuf = get_cache(fd, bn);
+	    cbuf = get_cache(&(fsp->dev), bn);
 	} else {
-	    cbuf = get_cache(fd, bn);
+	    cbuf = get_cache(&(fsp->dev), bn);
 	}
 
 	/* 読み込んだブロックの内容を更新する
@@ -340,7 +340,7 @@ int sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
     }
 
     /* cache の sync をここで行う必要はあるか? */
-    sync_cache(fd, 0);
+    sync_cache(&(fsp->dev), 0);
 
     /* もし、書き込みをおこなった後にファイルのサイズが増えていれば、
      * サイズを更新して inode を書き込む。
@@ -390,7 +390,7 @@ W sfs_i_truncate(struct inode * ip, W newsize)
 	    inblock = blockno;
 	    offset = inblock % SFS_INDIRECT_BLOCK;
 	    inblock = inblock / SFS_INDIRECT_BLOCK;
-	    sfs_free_indirect(fd, fsp, sfs_ip, offset, inblock);
+	    sfs_free_indirect(fsp, sfs_ip, offset, inblock);
 	}
     }
 

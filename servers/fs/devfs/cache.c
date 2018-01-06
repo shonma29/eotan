@@ -25,12 +25,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stdbool.h>
+#include <fs/nconfig.h>
+#include <fs/vfs.h>
 #include <nerve/kcall.h>
 #include <set/list.h>
 #include <set/hash.h>
 #include "fs.h"
-
-#define CACHE_SIZE (128)
 
 #define numOf(x) (sizeof(x) / sizeof(x[0]))
 
@@ -43,7 +43,7 @@ typedef struct {
 } cache_t;
 
 static hash_t *hash;
-static cache_t cache[CACHE_SIZE];
+static cache_t cache[MAX_CACHE];
 static cache_t key;
 static list_t free_list;
 static list_t lru_list;
@@ -65,7 +65,7 @@ static inline cache_t *getBufParent(const void *p) {
 
 void init_cache(void)
 {
-	hash = hash_create(CACHE_SIZE, calc_hash, compare);
+	hash = hash_create(MAX_CACHE, calc_hash, compare);
 	if (!hash) {
 		dbg_printf("fs: cannot create hash\n");
 		return;
@@ -78,10 +78,10 @@ void init_cache(void)
 		list_append(&free_list, &(cache[i].lru));
 }
 
-void *get_cache(const W device_id, const W blockno)
+void *get_cache(block_device_t *dev, const W blockno)
 {
 	key.blockno = blockno;
-	key.device_id = device_id;
+	key.device_id = dev->channel;
 	cache_t *cp = hash_get(hash, &key);
 
 	if (!cp) {
@@ -98,7 +98,7 @@ void *get_cache(const W device_id, const W blockno)
 			return NULL;
 
 		cp->dirty = false;
-		cp->device_id = device_id;
+		cp->device_id = dev->channel;
 		cp->blockno = blockno;
 
 		if (fill(cp)) {
@@ -116,10 +116,10 @@ void *get_cache(const W device_id, const W blockno)
 	return cp->buf;
 }
 
-bool invalidate_cache(const W device_id, const W blockno)
+bool invalidate_cache(block_device_t *dev, const W blockno)
 {
 	key.blockno = blockno;
-	key.device_id = device_id;
+	key.device_id = dev->channel;
 	cache_t *cp = hash_get(hash, &key);
 
 	if (!cp)
@@ -141,13 +141,13 @@ bool put_cache(const void *p)
 	return true;
 }
 
-W sync_cache(const W device_id, const bool unmount)
+W sync_cache(block_device_t *dev, const bool unmount)
 {
 	for (list_t *p = list_next(&lru_list); !list_is_edge(&lru_list, p);
 			p = p->next) {
 		cache_t *cp = getLruParent(p);
 
-		if (cp->device_id != device_id)
+		if (cp->device_id != dev->channel)
 			continue;
 
 		if (cp->dirty) {

@@ -20,17 +20,17 @@ Version 2, June 1991
 extern vfs_operation_t sfs_fsops;
 
 /* block.c */
-extern W sfs_alloc_block (W fd, struct fs *fsp);
-extern W sfs_get_block_num (W fd, struct fs *fsp,
+extern W sfs_alloc_block (struct fs *fsp);
+extern W sfs_get_block_num (struct fs *fsp,
 			    struct sfs_inode *ip, W blockno);
-extern W sfs_set_block_num (W fd, struct fs *fsp,
+extern W sfs_set_block_num (struct fs *fsp,
 	       struct sfs_inode *ip, W blockno, W newblock);
-extern W sfs_free_block (W fd, struct fs *fsp, W blockno);
-extern W sfs_free_indirect(W fd, struct fs *fsp, struct sfs_inode *ip,
+extern W sfs_free_block (struct fs *fsp, W blockno);
+extern W sfs_free_indirect(struct fs *fsp, struct sfs_inode *ip,
 			   int offset, int inblock);
-extern W sfs_free_dindirect(W fd, struct fs *fsp, struct sfs_inode *ip,
+extern W sfs_free_dindirect(struct fs *fsp, struct sfs_inode *ip,
 			    int offset, int dinblock, int inblock);
-extern W sfs_free_all_dindirect(W fd, struct fs *fsp,
+extern W sfs_free_all_dindirect(struct fs *fsp,
 				struct sfs_inode *ip, int inblock);
 
 /* dir.c */
@@ -51,8 +51,8 @@ extern int sfs_i_rmdir (struct inode *parent, char *fname,
 
 /* inode.c */
 extern W	sfs_read_inode (struct fs *fsp, W index, struct inode *ip);
-extern W	sfs_alloc_inode (ID fd, struct fs *fsp);
-extern W	sfs_write_inode (W fd, struct fs *fsp, struct sfs_inode *ip);
+extern W	sfs_alloc_inode (struct fs *fsp);
+extern W	sfs_write_inode (struct fs *fsp, struct sfs_inode *ip);
 extern W	sfs_free_inode (struct fs *fsp, struct inode *ip);
 extern int sfs_stat(struct inode *, struct stat *);
 extern int sfs_wstat(struct inode *);
