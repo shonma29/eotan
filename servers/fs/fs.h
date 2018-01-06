@@ -25,6 +25,7 @@ Version 2, June 1991
 #include <core.h>
 #include <fs/vfs.h>
 #include "vfs.h"
+#include "devfs/devfs.h"
 #include "procfs/process.h"
 #include "mm.h"
 #include "sys/syscall.h"
@@ -41,16 +42,5 @@ Version 2, June 1991
 /* response.c */
 extern W put_response(RDVNO rdvno, W error_no, W status, W ret1);
 extern W put_response_long(RDVNO rdvno, W error_no, D status);
-
-/* device.c */
-extern W read_device(ID device, B * buf, W start, W length, W * rlength);
-extern W write_device(ID device, B * buf, W start, W length, W * rlength);
-
-/* cache.c */
-extern void init_cache(void);
-extern void *get_cache(const W, const W);
-extern bool invalidate_cache(const W, const W);
-extern bool put_cache(const void *);
-extern W sync_cache(const W, const bool);
 
 #endif				/* __FS_H__ */
