@@ -217,7 +217,7 @@ W sfs_syncfs(struct fs * fsp, W umflag)
 	fsp->dirty = 0;
     }
 
-    error_no = sync_cache(&(fsp->dev), umflag);
+    error_no = cache_synchronize(&(fsp->dev), umflag);
     if (error_no) {
 	return (error_no);
     }

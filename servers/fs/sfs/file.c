@@ -241,7 +241,7 @@ int sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
 	    return (EIO);
 	}
 
-	cbuf = get_cache(&(fsp->dev), bn);
+	cbuf = cache_get(&(fsp->dev), bn);
 	offset = start % fsp->private.sfs_fs.blksize;
 	if (fsp->private.sfs_fs.blksize - offset < length) {
 	    copysize = fsp->private.sfs_fs.blksize - offset;
@@ -304,9 +304,9 @@ int sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 	    if (bn < 0) {
 		return (EIO);
 	    }
-	    cbuf = get_cache(&(fsp->dev), bn);
+	    cbuf = cache_get(&(fsp->dev), bn);
 	} else {
-	    cbuf = get_cache(&(fsp->dev), bn);
+	    cbuf = cache_get(&(fsp->dev), bn);
 	}
 
 	/* 読み込んだブロックの内容を更新する
@@ -333,14 +333,14 @@ int sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 
 	/* 更新したブロックを書き込む
 	 */
-	put_cache(cbuf);
+	cache_put(cbuf);
 	buf += copysize;
 	start += copysize;
 	size -= copysize;
     }
 
     /* cache の sync をここで行う必要はあるか? */
-    sync_cache(&(fsp->dev), 0);
+    cache_synchronize(&(fsp->dev), 0);
 
     /* もし、書き込みをおこなった後にファイルのサイズが増えていれば、
      * サイズを更新して inode を書き込む。

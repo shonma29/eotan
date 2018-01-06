@@ -46,10 +46,4 @@ extern device_info_t *device_find(const UW id);
 extern W write_device(ID, B *, W, W, W *);
 extern W read_device(ID, B *, W, W, W *);
 
-extern void init_cache(void);
-extern void *get_cache(block_device_t *, const W);
-extern bool invalidate_cache(block_device_t *, const W);
-extern bool put_cache(const void *);
-extern W sync_cache(block_device_t *, const bool);
-
 #endif

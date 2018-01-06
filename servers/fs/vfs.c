@@ -210,7 +210,8 @@ W fs_init(void)
     for (i = 0; i < sizeof(fs_buf) / sizeof(fs_buf[0]); i++)
 	list_append(&free_fs, &(fs_buf[i].bros));
 
-    init_cache();
+    if (cache_initialize())
+	return (E_NOMEM);
 
     return (TRUE);
 }

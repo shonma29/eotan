@@ -25,21 +25,21 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stdbool.h>
+#include <stdint.h>
+#include <fs/config.h>
 #include <fs/nconfig.h>
 #include <fs/vfs.h>
-#include <nerve/kcall.h>
 #include <set/list.h>
 #include <set/hash.h>
-#include "fs.h"
 
 #define numOf(x) (sizeof(x) / sizeof(x[0]))
 
 typedef struct {
 	list_t lru;
-	W blockno;
-	W device_id;
+	int blockno;
+	block_device_t *dev;
 	bool dirty;
-	B buf[CACHE_BLOCK_SIZE];
+	char buf[CACHE_BLOCK_SIZE];
 } cache_t;
 
 static hash_t *hash;
@@ -48,8 +48,8 @@ static cache_t key;
 static list_t free_list;
 static list_t lru_list;
 
-static W fill(cache_t *cp);
-static W sweep(cache_t *cp);
+static int fill(cache_t *cp);
+static int sweep(cache_t *cp);
 static void dispose(cache_t *cp);
 
 static unsigned int calc_hash(const void *key, const size_t size);
@@ -63,25 +63,25 @@ static inline cache_t *getBufParent(const void *p) {
 	return (cache_t*)((intptr_t)p - offsetof(cache_t, buf));
 }
 
-void init_cache(void)
+int cache_initialize(void)
 {
 	hash = hash_create(MAX_CACHE, calc_hash, compare);
-	if (!hash) {
-		dbg_printf("fs: cannot create hash\n");
-		return;
-	}
+	if (!hash)
+		return (-1);
 
 	list_initialize(&free_list);
 	list_initialize(&lru_list);
 
 	for (int i = 0; i < numOf(cache); i++)
 		list_append(&free_list, &(cache[i].lru));
+
+	return 0;
 }
 
-void *get_cache(block_device_t *dev, const W blockno)
+void *cache_get(block_device_t *dev, const unsigned int blockno)
 {
 	key.blockno = blockno;
-	key.device_id = dev->channel;
+	key.dev = dev;
 	cache_t *cp = hash_get(hash, &key);
 
 	if (!cp) {
@@ -98,7 +98,7 @@ void *get_cache(block_device_t *dev, const W blockno)
 			return NULL;
 
 		cp->dirty = false;
-		cp->device_id = dev->channel;
+		cp->dev = dev;
 		cp->blockno = blockno;
 
 		if (fill(cp)) {
@@ -116,10 +116,10 @@ void *get_cache(block_device_t *dev, const W blockno)
 	return cp->buf;
 }
 
-bool invalidate_cache(block_device_t *dev, const W blockno)
+bool cache_invalidate(block_device_t *dev, const unsigned int blockno)
 {
 	key.blockno = blockno;
-	key.device_id = dev->channel;
+	key.dev = dev;
 	cache_t *cp = hash_get(hash, &key);
 
 	if (!cp)
@@ -130,7 +130,7 @@ bool invalidate_cache(block_device_t *dev, const W blockno)
 	return true;
 }
 
-bool put_cache(const void *p)
+bool cache_put(const void *p)
 {
 	if (!p)
 		return false;
@@ -141,17 +141,17 @@ bool put_cache(const void *p)
 	return true;
 }
 
-W sync_cache(block_device_t *dev, const bool unmount)
+int cache_synchronize(block_device_t *dev, const bool unmount)
 {
 	for (list_t *p = list_next(&lru_list); !list_is_edge(&lru_list, p);
 			p = p->next) {
 		cache_t *cp = getLruParent(p);
 
-		if (cp->device_id != dev->channel)
+		if (cp->dev->channel != dev->channel)
 			continue;
 
 		if (cp->dirty) {
-			W error_no = sweep(cp);
+			int error_no = sweep(cp);
 			if (error_no)
 				return error_no;
 		}
@@ -160,33 +160,17 @@ W sync_cache(block_device_t *dev, const bool unmount)
 			dispose(cp);
 	}
 
-	return EOK;
+	return 0;
 }
 
-static W fill(cache_t *cp)
+static int fill(cache_t *cp)
 {
-	W rsize;
-	W error_no = read_device(cp->device_id, cp->buf,
-			cp->blockno * sizeof(cache[0].buf),
-			sizeof(cache[0].buf), &rsize);
-
-	if (error_no)
-		dbg_printf("fs: fill failed(%d)\n", error_no);
-
-	return error_no;
+	return cp->dev->read(cp->dev, cp->buf, cp->blockno);
 }
 
-static W sweep(cache_t *cp)
+static int sweep(cache_t *cp)
 {
-	W rsize;
-	W error_no = write_device(cp->device_id, cp->buf,
-			cp->blockno * sizeof(cache[0].buf),
-			sizeof(cache[0].buf), &rsize);
-
-	if (error_no)
-		dbg_printf("fs: sweep failed(%d)\n", error_no);
-
-	return error_no;
+	return cp->dev->write(cp->dev, cp->buf, cp->blockno);
 }
 
 static void dispose(cache_t *cp)
@@ -209,9 +193,9 @@ static int compare(const void *a, const void *b)
 	cache_t *y = (cache_t *)b;
 
 	if (x->blockno == y->blockno) {
-			if (x->device_id == y->device_id)
+			if (x->dev->channel == y->dev->channel)
 				return 0;
-			else if (x->device_id < y->device_id)
+			else if (x->dev->channel < y->dev->channel)
 				return (-1);
 			else
 				return 1;

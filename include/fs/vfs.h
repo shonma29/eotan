@@ -64,4 +64,10 @@ typedef struct {
 
 extern void block_initialize(block_device_t *);
 
+extern int cache_initialize(void);
+extern void *cache_get(block_device_t *, const unsigned int);
+extern bool cache_invalidate(block_device_t *, const unsigned int);
+extern bool cache_put(const void *);
+extern int cache_synchronize(block_device_t *, const bool);
+
 #endif
