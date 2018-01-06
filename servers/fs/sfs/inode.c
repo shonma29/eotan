@@ -95,7 +95,7 @@ static W sfs_get_inode_offset(struct fs *fsp, W ino)
     W blocksize;
     struct sfs_superblock *sb;
 
-    sb = &(fsp->private.sfs_fs);
+    sb = (struct sfs_superblock*)(fsp->private);
     nblock = sb->nblock;
     blocksize = sb->blksize;
     offset = 1 + 1 + (ROUNDUP(nblock / 8, blocksize) / blocksize);
@@ -138,13 +138,14 @@ W sfs_alloc_inode(struct fs * fsp)
     W i;
     W offset;
     struct sfs_inode *ipbufp;
+    struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
 
-    if (fsp->private.sfs_fs.freeinode <= 0) {
+    if (sb->freeinode <= 0) {
 	return (0);
     }
 
-    offset = sfs_get_inode_offset(fsp, fsp->private.sfs_fs.isearch);
-    for (i = fsp->private.sfs_fs.isearch; i <= fsp->private.sfs_fs.ninode; i++) {
+    offset = sfs_get_inode_offset(fsp, sb->isearch);
+    for (i = sb->isearch; i <= sb->ninode; i++) {
 	ipbufp = cache_get(&(fsp->dev), offset / SFS_BLOCK_SIZE);
 
 	offset += sizeof(struct sfs_inode);
@@ -152,8 +153,8 @@ W sfs_alloc_inode(struct fs * fsp)
 	    fsp->dev.clear(&(fsp->dev), (VP)ipbufp);
 	    ipbufp->i_index = i;
 	    cache_put(ipbufp);
-	    fsp->private.sfs_fs.freeinode--;
-	    fsp->private.sfs_fs.isearch = (i + 1);
+	    sb->freeinode--;
+	    sb->isearch = (i + 1);
 	    fsp->dirty = 1;
 	    /* ここで fs の sync を行う必要があるか? */
 	    sfs_syncfs(fsp, 0);
@@ -193,10 +194,11 @@ W sfs_free_inode(struct fs * fsp, struct inode *ip)
     cache_put(buf);
     ip->i_dirty = 0;
 
-    fsp->private.sfs_fs.freeinode++;
+    struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
+    sb->freeinode++;
     fsp->dirty = 1;
-    if (fsp->private.sfs_fs.isearch >= inode_index)
-	fsp->private.sfs_fs.isearch = inode_index;
+    if (sb->isearch >= inode_index)
+	sb->isearch = inode_index;
     /* ここで fs の sync を行う必要があるか? */
     sfs_syncfs(fsp, 0);
     return (EOK);
@@ -204,6 +206,8 @@ W sfs_free_inode(struct fs * fsp, struct inode *ip)
 
 int sfs_stat(struct inode *ip, struct stat *st)
 {
+    struct sfs_superblock *sb = (struct sfs_superblock*)(ip->i_fs->private);
+
     st->st_dev = ip->i_fs->dev.channel;
     st->st_ino = ip->i_index;
     st->st_mode = ip->i_mode;
@@ -212,7 +216,7 @@ int sfs_stat(struct inode *ip, struct stat *st)
     st->st_uid = ip->i_private.sfs_inode.i_uid;
     st->st_gid = ip->i_private.sfs_inode.i_gid;
     st->st_rdev = ip->i_dev;
-    st->st_blksize = ip->i_fs->private.sfs_fs.blksize;
+    st->st_blksize = sb->blksize;
     st->st_blocks = ROUNDUP(st->st_size, st->st_blksize) / st->st_blksize;
     st->st_atime = ip->i_private.sfs_inode.i_atime.sec;
     st->st_mtime = ip->i_private.sfs_inode.i_mtime.sec;

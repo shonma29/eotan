@@ -79,7 +79,7 @@ static W sfs_set_indirect_block_num (struct fs *fsp,
  */
 W sfs_alloc_block(struct fs * fsp)
 {
-    struct sfs_superblock *sb = &(fsp->private.sfs_fs);
+    struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
     W i, s;
     B *buf;
 
@@ -134,7 +134,7 @@ W sfs_alloc_block(struct fs * fsp)
  */
 W sfs_free_block(struct fs * fsp, W blockno)
 {
-    struct sfs_superblock *sb = &(fsp->private.sfs_fs);
+    struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
     W mask;
     int s;
     B *buf;

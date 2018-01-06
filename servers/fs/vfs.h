@@ -108,9 +108,7 @@ struct fs {
     struct inode *rootdir;
     struct inode *mountpoint;
     W dirty;
-    union {
-	struct sfs_superblock sfs_fs;
-    } private;
+    void *private;
 };
 
 struct inode {

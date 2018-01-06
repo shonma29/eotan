@@ -229,6 +229,7 @@ int sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
 
     *rlength = length;
 
+    struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
     while (length > 0) {
 #ifdef FMDEBUG
 	dbg_printf("sfs: read block: %d\n",
@@ -236,15 +237,15 @@ int sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
 				 start / fsp->fs_blksize));
 #endif
 	bn = sfs_get_block_num(fsp, &(ip->i_private.sfs_inode),
-			       start / fsp->private.sfs_fs.blksize);
+			       start / sb->blksize);
 	if (bn < 0) {
 	    return (EIO);
 	}
 
 	cbuf = cache_get(&(fsp->dev), bn);
-	offset = start % fsp->private.sfs_fs.blksize;
-	if (fsp->private.sfs_fs.blksize - offset < length) {
-	    copysize = fsp->private.sfs_fs.blksize - offset;
+	offset = start % sb->blksize;
+	if (sb->blksize - offset < length) {
+	    copysize = sb->blksize - offset;
 	} else {
 	    copysize = length;
 	}
@@ -283,6 +284,7 @@ int sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
     fd = ip->i_fs->dev.channel;
     fsp = ip->i_fs;
 
+    struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
     while (size > 0) {
 #ifdef FMDEBUG
 	dbg_printf("sfs: %s\n",
@@ -292,11 +294,11 @@ int sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 #endif
 
 	if ((bn = sfs_get_block_num(fsp, &(ip->i_private.sfs_inode),
-				    start / fsp->private.sfs_fs.blksize)) <= 0) {
+				    start / sb->blksize)) <= 0) {
 	    /* ファイルサイズを越えて書き込む場合には、新しくブロックをアロケートする
 	     */
 	    bn = sfs_set_block_num(fsp, &(ip->i_private.sfs_inode),
-				   start / fsp->private.sfs_fs.blksize,
+				   start / sb->blksize,
 				   sfs_alloc_block(fsp));
 /*
  *   ip->sfs_i_direct[start / fsp->blksize] = alloc_block (fd, fsp);
@@ -311,8 +313,8 @@ int sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 
 	/* 読み込んだブロックの内容を更新する
 	 */
-	offset = start % fsp->private.sfs_fs.blksize;
-	copysize = MIN(fsp->private.sfs_fs.blksize - offset, size);
+	offset = start % sb->blksize;
+	copysize = MIN(sb->blksize - offset, size);
 
 #ifdef FMDEBUG
 	dbg_printf("sfs: *** read block contents ***\n");
@@ -351,7 +353,7 @@ int sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
         time_get(&clock);
 	ip->i_size = filesize;
 	ip->i_nblock =
-	    roundUp(filesize, fsp->private.sfs_fs.blksize) / fsp->private.sfs_fs.blksize;
+	    roundUp(filesize, sb->blksize) / sb->blksize;
 	ip->i_private.sfs_inode.i_mtime = clock;
 	ip->i_private.sfs_inode.i_ctime = clock;
 	ip->i_dirty = 1;
@@ -381,7 +383,8 @@ W sfs_i_truncate(struct inode * ip, W newsize)
     fd = ip->i_fs->dev.channel;
     fsp = ip->i_fs;
     sfs_ip = &(ip->i_private.sfs_inode);
-    nblock = roundUp(newsize, fsp->private.sfs_fs.blksize) / fsp->private.sfs_fs.blksize;
+    struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
+    nblock = roundUp(newsize, sb->blksize) / sb->blksize;
     if (nblock < sfs_ip->i_nblock) {
 	/* 余分なブロックを開放 */
 	blockno = nblock;

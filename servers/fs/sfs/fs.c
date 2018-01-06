@@ -89,6 +89,7 @@ Version 2, June 1991
  */
 
 #include <fstype.h>
+#include <nerve/kcall.h>
 #include "../fs.h"
 #include "func.h"
 
@@ -125,12 +126,16 @@ vfs_operation_t sfs_fsops = {
  */
 static int sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 {
-    struct sfs_superblock sfs_sb;
+	void *buf = kcall->palloc();
+	if (!buf)
+		return ENOMEM;
+
+    struct sfs_superblock *sfs_sb = (struct sfs_superblock*)buf;
     W rlength;
     W error_no;
 
     error_no =
-	read_device(device, (B *) & sfs_sb, SFS_BLOCK_SIZE,
+	read_device(device, (B *)sfs_sb, SFS_BLOCK_SIZE,
 			sizeof(struct sfs_superblock), &rlength);
     if (error_no) {
 #ifdef FMDEBUG
@@ -142,16 +147,16 @@ static int sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
     dbg_printf("sfs: rootfsp = 0x%x\n", rootfsp);
 #endif
 
-    if (sfs_sb.magic != SFS_MAGIC) {
-	dbg_printf("sfs: ERROR: mount: magic number %x\n", sfs_sb.magic);
+    if (sfs_sb->magic != SFS_MAGIC) {
+	dbg_printf("sfs: ERROR: mount: magic number %x\n", sfs_sb->magic);
 	return (EINVAL);
     }
 
     rootfsp->typeid = FS_SFS;
     block_initialize(&(rootfsp->dev));
     rootfsp->dev.channel = device;
-    rootfsp->dev.block_size = sfs_sb.blksize;
-    rootfsp->private.sfs_fs = sfs_sb;
+    rootfsp->dev.block_size = sfs_sb->blksize;
+    rootfsp->private = sfs_sb;
 
 #ifdef FMDEBUG
     /* ファイルシステム情報の出力 ; for FMDEBUG
@@ -192,6 +197,7 @@ static int sfs_unmount(struct fs * rootfsp)
 {
     /* super block 情報の sync とキャッシュ・データの無効化 */
     sfs_syncfs(rootfsp, 1);
+    kcall->pfree(rootfsp->private);
     return (EOK);
 }
 
@@ -206,7 +212,7 @@ W sfs_syncfs(struct fs * fsp, W umflag)
     struct sfs_superblock *sb;
 
     if (fsp->dirty) {
-	sb = &(fsp->private.sfs_fs);
+	sb = (struct sfs_superblock*)(fsp->private);
 	error_no =
 	    write_device(fsp->dev.channel, (B *) sb,
 			     1 * sb->blksize,
@@ -226,14 +232,16 @@ W sfs_syncfs(struct fs * fsp, W umflag)
 
 static int sfs_statvfs(struct fs * fsp, struct statvfs * result)
 {
-    result->f_bsize = fsp->private.sfs_fs.blksize;
-    result->f_frsize = fsp->private.sfs_fs.blksize;
-    result->f_blocks = fsp->private.sfs_fs.nblock;
-    result->f_bfree = fsp->private.sfs_fs.freeblock;
-    result->f_bavail = fsp->private.sfs_fs.freeblock;
-    result->f_files = fsp->private.sfs_fs.ninode;
-    result->f_ffree = fsp->private.sfs_fs.freeinode;
-    result->f_favail = fsp->private.sfs_fs.freeinode;
+    struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
+
+    result->f_bsize = sb->blksize;
+    result->f_frsize = sb->blksize;
+    result->f_blocks = sb->nblock;
+    result->f_bfree = sb->freeblock;
+    result->f_bavail = sb->freeblock;
+    result->f_files = sb->ninode;
+    result->f_ffree = sb->freeinode;
+    result->f_favail = sb->freeinode;
     result->f_fsid = fsp->typeid;
     result->f_flag = 0;
     result->f_namemax = SFS_MAXNAMELEN;
