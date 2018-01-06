@@ -333,7 +333,7 @@ int sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 
 	/* 更新したブロックを書き込む
 	 */
-	put_cache(cbuf, true);
+	put_cache(cbuf);
 	buf += copysize;
 	start += copysize;
 	size -= copysize;

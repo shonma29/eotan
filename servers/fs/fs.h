@@ -50,7 +50,7 @@ extern W write_device(ID device, B * buf, W start, W length, W * rlength);
 extern void init_cache(void);
 extern void *get_cache(const W, const W);
 extern bool invalidate_cache(const W, const W);
-extern bool put_cache(const void *, const bool);
+extern bool put_cache(const void *);
 extern W sync_cache(const W, const bool);
 
 #endif				/* __FS_H__ */
