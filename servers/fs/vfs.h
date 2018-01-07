@@ -92,6 +92,7 @@ Version 2, June 1991
 #include <fs/sfs.h>
 #include <fs/vfs.h>
 #include <set/list.h>
+#include <set/slab.h>
 #include <sys/statvfs.h>
 #include "types.h"
 
@@ -108,6 +109,7 @@ struct fs {
     struct inode *rootdir;
     struct inode *mountpoint;
     W dirty;
+    slab_t buf_slab;
     void *private;
 };
 

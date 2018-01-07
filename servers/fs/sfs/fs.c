@@ -89,6 +89,7 @@ Version 2, June 1991
  */
 
 #include <fstype.h>
+#include <string.h>
 #include <nerve/kcall.h>
 #include "../fs.h"
 #include "func.h"
@@ -189,6 +190,24 @@ static int sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
     dbg_printf("sfs: size:  %d bytes\n", rootfile->i_size);
 #endif
 
+    rootfsp->buf_slab.unit_size = rootfsp->dev.block_size;
+    rootfsp->buf_slab.block_size = PAGE_SIZE;
+    rootfsp->buf_slab.min_block = 0;
+    rootfsp->buf_slab.max_block = 65536
+	    / ((PAGE_SIZE - sizeof(slab_block_t))
+		    / sizeof(rootfsp->dev.block_size));
+    rootfsp->buf_slab.palloc = kcall->palloc;
+    rootfsp->buf_slab.pfree = kcall->pfree;
+    slab_create(&(rootfsp->buf_slab));
+    rootfsp->private = slab_alloc(&(rootfsp->buf_slab));
+    if (rootfsp->private) {
+	memcpy(rootfsp->private, buf, rootfsp->dev.block_size);
+	kcall->pfree(buf);
+    } else {
+	kcall->pfree(buf);
+	return ENOMEM;
+    }
+
     return (EOK);
 }
 
@@ -200,7 +219,7 @@ static int sfs_unmount(struct fs * rootfsp)
 {
     /* super block 情報の sync とキャッシュ・データの無効化 */
     sfs_syncfs(rootfsp, 1);
-    kcall->pfree(rootfsp->private);
+    slab_free(&(rootfsp->buf_slab), rootfsp->private);
     return (EOK);
 }
 
