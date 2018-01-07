@@ -293,6 +293,7 @@ static struct fs *alloc_fs(void)
     fsp = getFsParent(p);
 
     memset((B*)fsp, 0, sizeof(struct fs));
+    list_initialize(&(fsp->bros));
     list_initialize(&(fsp->ilist));
     return (fsp);
 }
@@ -304,6 +305,7 @@ static void dealloc_fs(struct fs *fsp)
     }
 
     list_remove(&(fsp->bros));
+    list_append(&free_fs, &(fsp->bros));
 }
 
 W find_fs(UB *fsname, W *fstype)
@@ -392,10 +394,8 @@ fs_mount(const ID device,
 	mountpoint->coverfile = newip;
 	newfs->mountpoint = mountpoint;
 
-    } else {
-        list_initialize(&(newfs->bros));
+    } else
 	rootfs = newfs;
-    }
 
     fs_register_inode(newip);
 
@@ -442,12 +442,7 @@ W fs_unmount(UW device)
     dealloc_inode(fsp->mountpoint);
     dealloc_inode(fsp->rootdir);
 
-    /* 冗長 */
-    fsp->mountpoint = NULL;
-    fsp->rootdir = NULL;
-
     /* FS list から除外 */
-    list_remove(&(fsp->bros));
     dealloc_fs(fsp);
 
     return (EOK);
@@ -540,11 +535,13 @@ W fs_close_file(struct inode * ip)
 {
     W error_no;
 
-    /* 普通は inode を deallocate するときに書き出すのではないか? */
-    if (ip->i_dirty) {
-	error_no = fs_sync_file(ip);
-	if (error_no) {
-	    return (error_no);
+    if (!(ip->i_dev)) {
+	/* 普通は inode を deallocate するときに書き出すのではないか? */
+	if (ip->i_dirty) {
+	    error_no = fs_sync_file(ip);
+	    if (error_no) {
+		return (error_no);
+	    }
 	}
     }
 

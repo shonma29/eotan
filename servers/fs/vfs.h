@@ -103,7 +103,7 @@ struct fs {
     list_t bros;
     W typeid;
     vfs_operation_t ops;
-	block_device_t dev;
+    block_device_t dev;
     list_t ilist;	/* 使用中の inode のリスト */
     struct inode *rootdir;
     struct inode *mountpoint;

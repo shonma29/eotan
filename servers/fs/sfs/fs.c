@@ -126,9 +126,9 @@ vfs_operation_t sfs_fsops = {
  */
 static int sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 {
-	void *buf = kcall->palloc();
-	if (!buf)
-		return ENOMEM;
+    void *buf = kcall->palloc();
+    if (!buf)
+	return ENOMEM;
 
     struct sfs_superblock *sfs_sb = (struct sfs_superblock*)buf;
     W rlength;
@@ -141,6 +141,7 @@ static int sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 #ifdef FMDEBUG
 	dbg_printf("sfs: Cannot read from device.\n");
 #endif
+	kcall->pfree(buf);
 	return (EIO);
     }
 #ifdef FMDEBUG
@@ -149,6 +150,7 @@ static int sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 
     if (sfs_sb->magic != SFS_MAGIC) {
 	dbg_printf("sfs: ERROR: mount: magic number %x\n", sfs_sb->magic);
+	kcall->pfree(buf);
 	return (EINVAL);
     }
 
@@ -176,6 +178,7 @@ static int sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 #ifdef FMDEBUG
 	dbg_printf("sfs: sfs_mount: error = %d\n", error_no);
 #endif
+	kcall->pfree(buf);
 	return (error_no);
     }
 #ifdef FMDEBUG
