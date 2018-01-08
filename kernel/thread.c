@@ -225,7 +225,7 @@ void thread_reset(thread_t *th)
 
 static void release_resources(thread_t *th)
 {
-	pfree((VP)kern_v2p((char*)(th->attr.kstack_tail)) - KTHREAD_STACK_SIZE);
+	pfree((void*)((UW)(th->attr.kstack_tail) - KTHREAD_STACK_SIZE));
 }
 
 ER thread_destroy(ID tskid)

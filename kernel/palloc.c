@@ -83,6 +83,7 @@ static void pzero(UW *p)
 
 void pfree(void *addr)
 {
+	addr = kern_v2p(addr);
 	size_t i = (size_t)addr >> (BITS_OFFSET + MPU_LOG_INT);
 	UW bit;
 
