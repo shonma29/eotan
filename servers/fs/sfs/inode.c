@@ -153,7 +153,7 @@ W sfs_alloc_inode(struct fs * fsp)
 	if (ipbufp->i_index != i) {
 	    fsp->dev.clear(&(fsp->dev), (VP)ipbufp);
 	    ipbufp->i_index = i;
-	    cache_put(ipbufp);
+	    cache_release(ipbufp, true);
 	    sb->freeinode--;
 	    sb->isearch = (i + 1);
 	    fsp->dirty = 1;
@@ -161,6 +161,8 @@ W sfs_alloc_inode(struct fs * fsp)
 	    sfs_syncfs(fsp, 0);
 	    return (i);
 	}
+
+	cache_release(ipbufp, false);
     }
 
     return (0);
@@ -175,7 +177,7 @@ W sfs_write_inode(struct fs * fsp, struct sfs_inode * ip)
     B *buf = cache_get(&(fsp->dev),
 	    sfs_get_inode_offset(fsp, ip->i_index) / SFS_BLOCK_SIZE);
     memcpy(buf, (B*)ip, sizeof(struct sfs_inode));
-    cache_put(buf);
+    cache_release(buf, true);
     /* ここで fs の sync を行う必要があるか? */
     sfs_syncfs(fsp, 0);
 
@@ -189,10 +191,9 @@ W sfs_write_inode(struct fs * fsp, struct sfs_inode * ip)
 W sfs_free_inode(struct fs * fsp, struct inode *ip)
 {
     W inode_index = ip->i_index;
-    B *buf = cache_get(&(fsp->dev),
+    B *buf = cache_create(&(fsp->dev),
 		  sfs_get_inode_offset(fsp, inode_index) / SFS_BLOCK_SIZE);
-    fsp->dev.clear(&(fsp->dev), buf);
-    cache_put(buf);
+    cache_release(buf, true);
     ip->i_dirty = 0;
 
     struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);

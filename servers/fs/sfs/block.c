@@ -106,7 +106,7 @@ W sfs_alloc_block(struct fs * fsp)
 			    + k;
 
 			buf[j] = buf[j] & ~mask;
-			cache_put(buf);
+			cache_release(buf, true);
 
 			sb->freeblock--;
 			sb->bsearch = free_block;
@@ -123,6 +123,8 @@ W sfs_alloc_block(struct fs * fsp)
 		    mask = mask << 1;
 		}
 	    }
+
+	cache_release(buf, false);
     }
 
     return (-1);
@@ -151,7 +153,7 @@ W sfs_free_block(struct fs * fsp, W blockno)
     mask = 0x01;
     mask = mask << (blockno % 8);
     buf[s] = buf[s] | (mask & 0xff);
-    cache_put(buf);
+    cache_release(buf, true);
 
     /* キャッシュに残っているデータを無効にする */
     cache_invalidate(&(fsp->dev), blockno);
@@ -186,7 +188,7 @@ W sfs_free_indirect(struct fs * fsp, struct sfs_inode * ip,
 		inbufp->in_block[i] = 0;
 	    }
 
-	cache_put(inbufp);
+	cache_release(inbufp, true);
 	++inblock;
     }
 
@@ -273,14 +275,13 @@ sfs_set_indirect_block_num(struct fs * fsp,
 	W newinblock = sfs_alloc_block(fsp);
 
 	ip->i_indirect[inblock] = newinblock;
-	inbufp = cache_get(&(fsp->dev), newinblock);
-	fsp->dev.clear(&(fsp->dev), (B*)inbufp);
+	inbufp = cache_create(&(fsp->dev), newinblock);
 
     } else
 	inbufp = cache_get(&(fsp->dev), ip->i_indirect[inblock]);
 
     inbufp->in_block[inblock_offset] = newblock;
-    cache_put(inbufp);
+    cache_release(inbufp, true);
 
     /* inode の書き込みは sfs_i_write() 以上の部分で行われるはず...
        sfs_write_inode (fd, fsp, ip);

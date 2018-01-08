@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 #include <fs/config.h>
 #include <fs/nconfig.h>
 #include <fs/vfs.h>
@@ -36,9 +37,10 @@ For more information, please refer to <http://unlicense.org/>
 
 typedef struct {
 	list_t lru;
-	int blockno;
+	int block_no;
 	block_device_t *dev;
 	bool dirty;
+	unsigned int lock_count;
 	char buf[CACHE_BLOCK_SIZE];
 } cache_t;
 
@@ -78,9 +80,9 @@ int cache_initialize(void)
 	return 0;
 }
 
-void *cache_get(block_device_t *dev, const unsigned int blockno)
+void *cache_create(block_device_t *dev, const unsigned int block_no)
 {
-	key.blockno = blockno;
+	key.block_no = block_no;
 	key.dev = dev;
 	cache_t *cp = hash_get(hash, &key);
 
@@ -97,9 +99,45 @@ void *cache_get(block_device_t *dev, const unsigned int blockno)
 		} else
 			return NULL;
 
-		cp->dirty = false;
 		cp->dev = dev;
-		cp->blockno = blockno;
+		cp->block_no = block_no;
+		cp->dirty = false;
+		cp->lock_count = 0;
+
+		hash_put(hash, cp, cp);
+	}
+
+	cp->lock_count++;
+	list_remove(&(cp->lru));
+	list_insert(&lru_list, &(cp->lru));
+	memset(cp->buf, 0, sizeof(cp->buf));
+
+	return cp->buf;
+}
+
+void *cache_get(block_device_t *dev, const unsigned int block_no)
+{
+	key.block_no = block_no;
+	key.dev = dev;
+	cache_t *cp = hash_get(hash, &key);
+
+	if (!cp) {
+		if (!list_is_empty(&free_list))
+			cp = getLruParent(list_next(&free_list));
+		else if (!list_is_empty(&lru_list)) {
+			cp = getLruParent(list_next(&lru_list));
+			if (cp->dirty)
+				if (sweep(cp))
+					return NULL;
+
+			hash_remove(hash, cp);
+		} else
+			return NULL;
+
+		cp->dev = dev;
+		cp->block_no = block_no;
+		cp->dirty = false;
+		cp->lock_count = 0;
 
 		if (fill(cp)) {
 			list_remove(&(cp->lru));
@@ -110,15 +148,28 @@ void *cache_get(block_device_t *dev, const unsigned int blockno)
 		hash_put(hash, cp, cp);
 	}
 
+	cp->lock_count++;
 	list_remove(&(cp->lru));
 	list_insert(&lru_list, &(cp->lru));
 
 	return cp->buf;
 }
 
-bool cache_invalidate(block_device_t *dev, const unsigned int blockno)
+bool cache_release(const void *p, const bool dirty)
 {
-	key.blockno = blockno;
+	if (!p)
+		return false;
+
+	cache_t *cp = getBufParent(p);
+	cp->dirty |= dirty;
+	cp->lock_count--;
+
+	return true;
+}
+
+bool cache_invalidate(block_device_t *dev, const unsigned int block_no)
+{
+	key.block_no = block_no;
 	key.dev = dev;
 	cache_t *cp = hash_get(hash, &key);
 
@@ -130,17 +181,6 @@ bool cache_invalidate(block_device_t *dev, const unsigned int blockno)
 	return true;
 }
 
-bool cache_put(const void *p)
-{
-	if (!p)
-		return false;
-
-	cache_t *cp = getBufParent(p);
-	cp->dirty = true;
-
-	return true;
-}
-
 int cache_synchronize(block_device_t *dev, const bool unmount)
 {
 	for (list_t *p = list_next(&lru_list); !list_is_edge(&lru_list, p);
@@ -148,6 +188,9 @@ int cache_synchronize(block_device_t *dev, const bool unmount)
 		cache_t *cp = getLruParent(p);
 
 		if (cp->dev->channel != dev->channel)
+			continue;
+
+		if (cp->lock_count)
 			continue;
 
 		if (cp->dirty) {
@@ -165,12 +208,12 @@ int cache_synchronize(block_device_t *dev, const bool unmount)
 
 static int fill(cache_t *cp)
 {
-	return cp->dev->read(cp->dev, cp->buf, cp->blockno);
+	return cp->dev->read(cp->dev, cp->buf, cp->block_no);
 }
 
 static int sweep(cache_t *cp)
 {
-	return cp->dev->write(cp->dev, cp->buf, cp->blockno);
+	return cp->dev->write(cp->dev, cp->buf, cp->block_no);
 }
 
 static void dispose(cache_t *cp)
@@ -184,7 +227,7 @@ static unsigned int calc_hash(const void *key, const size_t size)
 {
 	cache_t *p = (cache_t*)key;
 
-	return (p->blockno % size);
+	return (p->block_no % size);
 }
 
 static int compare(const void *a, const void *b)
@@ -192,14 +235,14 @@ static int compare(const void *a, const void *b)
 	cache_t *x = (cache_t *)a;
 	cache_t *y = (cache_t *)b;
 
-	if (x->blockno == y->blockno) {
+	if (x->block_no == y->block_no) {
 			if (x->dev->channel == y->dev->channel)
 				return 0;
 			else if (x->dev->channel < y->dev->channel)
 				return (-1);
 			else
 				return 1;
-	} else if (x->blockno < y->blockno)
+	} else if (x->block_no < y->block_no)
 		return (-1);
 	else
 		return 1;
