@@ -159,6 +159,7 @@ sfs_i_create(struct inode * parent,
 
     /* 設定 */
     struct sfs_inode *sfs_inode = newip->i_private;
+    memset(sfs_inode, 0, sizeof(*sfs_inode));
     time_get(&clock);
     newip->i_fs = parent->i_fs;
     newip->i_refcount = 1;
