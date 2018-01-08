@@ -161,6 +161,21 @@ static int sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
     rootfsp->dev.block_size = sfs_sb->blksize;
     rootfsp->private = sfs_sb;
 
+    rootfsp->buf_slab.unit_size = rootfsp->dev.block_size;
+    rootfsp->buf_slab.block_size = PAGE_SIZE;
+    rootfsp->buf_slab.min_block = 0;
+    rootfsp->buf_slab.max_block = 65536
+	    / ((PAGE_SIZE - sizeof(slab_block_t))
+		    / sizeof(rootfsp->dev.block_size));
+    rootfsp->buf_slab.palloc = kcall->palloc;
+    rootfsp->buf_slab.pfree = kcall->pfree;
+    slab_create(&(rootfsp->buf_slab));
+
+    rootfile->i_private = slab_alloc(&(rootfsp->buf_slab));
+    if (!(rootfile->i_private)) {
+	kcall->pfree(buf);
+	return ENOMEM;
+    }
 #ifdef FMDEBUG
     /* ファイルシステム情報の出力 ; for FMDEBUG
      */
@@ -179,6 +194,7 @@ static int sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 #ifdef FMDEBUG
 	dbg_printf("sfs: sfs_mount: error = %d\n", error_no);
 #endif
+	slab_free(&(rootfsp->buf_slab), rootfile->i_private);
 	kcall->pfree(buf);
 	return (error_no);
     }
@@ -190,20 +206,12 @@ static int sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
     dbg_printf("sfs: size:  %d bytes\n", rootfile->i_size);
 #endif
 
-    rootfsp->buf_slab.unit_size = rootfsp->dev.block_size;
-    rootfsp->buf_slab.block_size = PAGE_SIZE;
-    rootfsp->buf_slab.min_block = 0;
-    rootfsp->buf_slab.max_block = 65536
-	    / ((PAGE_SIZE - sizeof(slab_block_t))
-		    / sizeof(rootfsp->dev.block_size));
-    rootfsp->buf_slab.palloc = kcall->palloc;
-    rootfsp->buf_slab.pfree = kcall->pfree;
-    slab_create(&(rootfsp->buf_slab));
     rootfsp->private = slab_alloc(&(rootfsp->buf_slab));
     if (rootfsp->private) {
 	memcpy(rootfsp->private, buf, rootfsp->dev.block_size);
 	kcall->pfree(buf);
     } else {
+	slab_free(&(rootfsp->buf_slab), rootfile->i_private);
 	kcall->pfree(buf);
 	return ENOMEM;
     }

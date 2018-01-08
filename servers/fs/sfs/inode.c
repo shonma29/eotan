@@ -114,13 +114,14 @@ W sfs_read_inode(struct fs *fsp, W ino, struct inode *ip)
 
     offset = sfs_get_inode_offset(fsp, ino);
     buf = cache_get(&(fsp->dev), offset / SFS_BLOCK_SIZE);
-    memcpy((B*)&(ip->i_private.sfs_inode), buf,
+    struct sfs_inode *sfs_inode = ip->i_private;
+    memcpy((B*)sfs_inode, buf,
 	  sizeof(struct sfs_inode));
 
-    ip->i_index = ip->i_private.sfs_inode.i_index;
-    ip->i_size = ip->i_private.sfs_inode.i_size;
-    ip->i_nblock = ip->i_private.sfs_inode.i_nblock;
-    ip->i_mode = ip->i_private.sfs_inode.i_mode;
+    ip->i_index = sfs_inode->i_index;
+    ip->i_size = sfs_inode->i_size;
+    ip->i_nblock = sfs_inode->i_nblock;
+    ip->i_mode = sfs_inode->i_mode;
     ip->i_refcount = 1;
     ip->i_lock = 0;
     ip->i_fs = fsp;
@@ -207,27 +208,29 @@ W sfs_free_inode(struct fs * fsp, struct inode *ip)
 int sfs_stat(struct inode *ip, struct stat *st)
 {
     struct sfs_superblock *sb = (struct sfs_superblock*)(ip->i_fs->private);
+    struct sfs_inode *sfs_inode = ip->i_private;
 
     st->st_dev = ip->i_fs->dev.channel;
     st->st_ino = ip->i_index;
     st->st_mode = ip->i_mode;
-    st->st_nlink = ip->i_private.sfs_inode.i_nlink;
+    st->st_nlink = sfs_inode->i_nlink;
     st->st_size = ip->i_size;
-    st->st_uid = ip->i_private.sfs_inode.i_uid;
-    st->st_gid = ip->i_private.sfs_inode.i_gid;
+    st->st_uid = sfs_inode->i_uid;
+    st->st_gid = sfs_inode->i_gid;
     st->st_rdev = ip->i_dev;
     st->st_blksize = sb->blksize;
     st->st_blocks = ROUNDUP(st->st_size, st->st_blksize) / st->st_blksize;
-    st->st_atime = ip->i_private.sfs_inode.i_atime.sec;
-    st->st_mtime = ip->i_private.sfs_inode.i_mtime.sec;
-    st->st_ctime = ip->i_private.sfs_inode.i_ctime.sec;
+    st->st_atime = sfs_inode->i_atime.sec;
+    st->st_mtime = sfs_inode->i_mtime.sec;
+    st->st_ctime = sfs_inode->i_ctime.sec;
 
     return (EOK);
 }
 
 int sfs_wstat(struct inode *ip)
 {
-    time_get(&(ip->i_private.sfs_inode.i_ctime));
+    struct sfs_inode *sfs_inode = ip->i_private;
+    time_get(&(sfs_inode->i_ctime));
 
     return (EOK);
 }
@@ -250,9 +253,11 @@ int sfs_permit(struct inode * ip, struct permission * acc, UW bits)
 	    perm_bits = R_OK | W_OK;
 	}
     } else {
-	if (acc->uid == ip->i_private.sfs_inode.i_uid)
+	struct sfs_inode *sfs_inode = ip->i_private;
+
+	if (acc->uid == sfs_inode->i_uid)
 	    shift = 6;
-	else if (acc->gid == ip->i_private.sfs_inode.i_gid)
+	else if (acc->gid == sfs_inode->i_gid)
 	    shift = 3;
 	else
 	    shift = 0;
@@ -272,17 +277,18 @@ int sfs_i_sync(struct inode * ip)
 #ifdef FMDEBUG
     dbg_printf("sfs: sfs_i_sync\n");
 #endif
-    ip->i_private.sfs_inode.i_index = ip->i_index;
-    if (ip->i_size < ip->i_private.sfs_inode.i_size) {
+    struct sfs_inode *sfs_inode = ip->i_private;
+    sfs_inode->i_index = ip->i_index;
+    if (ip->i_size < sfs_inode->i_size) {
       sfs_i_truncate(ip, ip->i_size);
     }
-    ip->i_private.sfs_inode.i_size = ip->i_size;
-    ip->i_private.sfs_inode.i_nblock = ip->i_nblock;
-    ip->i_private.sfs_inode.i_mode = ip->i_mode;
+
+    sfs_inode->i_size = ip->i_size;
+    sfs_inode->i_nblock = ip->i_nblock;
+    sfs_inode->i_mode = ip->i_mode;
 
     if (ip->i_dirty) {
-	err = sfs_write_inode(ip->i_fs,
-			      &(ip->i_private.sfs_inode));
+	err = sfs_write_inode(ip->i_fs, sfs_inode);
 	if (err) {
 	    return (err);
 	}

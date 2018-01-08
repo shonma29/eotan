@@ -130,11 +130,7 @@ struct inode {
     ID i_dev;			/* if device file */
     UW i_size;
     UW i_nblock;
-
-    /* ここに各ファイルシステムの独自の情報が入る (union で... ) */
-    union {
-	struct sfs_inode sfs_inode;
-    } i_private;
+    void *i_private;
 };
 
 struct file
@@ -173,7 +169,7 @@ extern W fs_create_dir(struct inode * startip,
 		     struct inode ** newip);
 extern W fs_link_file(W procid, B * src, B * dst, struct permission * acc);
 
-extern struct inode *alloc_inode(void);
+extern struct inode *alloc_inode(struct fs *);
 extern W dealloc_inode(struct inode *);
 extern struct inode *fs_get_inode(struct fs *fsp, W index);
 extern W fs_register_inode(struct inode *ip);

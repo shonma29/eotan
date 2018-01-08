@@ -201,7 +201,7 @@ W fs_init(void)
     for (i = 0; i < sizeof(inode_buf) / sizeof(inode_buf[0]); i++)
 	list_append(&free_inode, &(inode_buf[i].bros));
 
-    rootfile = alloc_inode();
+    rootfile = alloc_inode(NULL);
     if (rootfile == NULL) {
 	return (E_NOMEM);
     }
@@ -226,7 +226,7 @@ W open_special_devices(struct proc * procp)
     p = device_find(get_device_id(DEVICE_MAJOR_CONS, 0));
     if (p) {
 	/* 標準入力の設定 */
-	procp->session.files[0].f_inode = ip = alloc_inode();
+	procp->session.files[0].f_inode = ip = alloc_inode(NULL);
 	procp->session.files[0].f_offset = 0;
 	procp->session.files[0].f_omode = O_RDONLY;
 	if (ip == NULL) {
@@ -241,7 +241,7 @@ W open_special_devices(struct proc * procp)
 	fs_register_inode(ip);
 
 	/* 標準出力の設定 */
-	procp->session.files[1].f_inode = ip = alloc_inode();
+	procp->session.files[1].f_inode = ip = alloc_inode(NULL);
 	procp->session.files[1].f_offset = 0;
 	procp->session.files[1].f_omode = O_WRONLY;
 	if (ip == NULL) {
@@ -256,7 +256,7 @@ W open_special_devices(struct proc * procp)
 	fs_register_inode(ip);
 
 	/* 標準エラー出力の設定 */
-	procp->session.files[2].f_inode = ip = alloc_inode();
+	procp->session.files[2].f_inode = ip = alloc_inode(NULL);
 	procp->session.files[2].f_offset = 0;
 	procp->session.files[2].f_omode = O_WRONLY;
 	if (ip == NULL) {
@@ -354,7 +354,7 @@ fs_mount(const ID device,
 	    newfs = getFsParent(list_next(&(newfs->bros)));
 	} while (newfs != rootfs);
 
-	newip = alloc_inode();
+	newip = alloc_inode(NULL);
 	if (newip == NULL)
 	    return (E_NOMEM);
 
@@ -907,7 +907,7 @@ fs_link_file(W procid, B * src, B * dst, struct permission * acc)
 /* alloc_inode - 
  *
  */
-struct inode *alloc_inode(void)
+struct inode *alloc_inode(struct fs *fsp)
 {
     list_t *p = list_pick(&free_inode);
     struct inode *ip;
@@ -920,6 +920,16 @@ struct inode *alloc_inode(void)
     memset((B*)ip, 0, sizeof(struct inode));
     list_initialize(&(ip->bros));
     ip->i_refcount = 1;
+
+    if (fsp)
+	if (fsp->buf_slab.unit_size) {
+	    ip->i_private = slab_alloc(&(fsp->buf_slab));
+	    if (!(ip->i_private)) {
+		list_append(&(free_inode), &(ip->bros));
+	    	return NULL;
+	    }
+	}
+
     return (ip);
 }
 
@@ -933,6 +943,11 @@ W dealloc_inode(struct inode * ip)
     ip->i_refcount--;
     if (ip->i_refcount <= 0) {
 	OPS(ip).close(ip);
+
+	struct fs *fsp = ip->i_fs;
+	if (fsp->buf_slab.unit_size)
+	    slab_free(&(fsp->buf_slab), ip->i_private);
+
 	/* fs の register_list からの取り除き */
 	list_remove(&(ip->bros));
 	/* free_inode list へ登録 */

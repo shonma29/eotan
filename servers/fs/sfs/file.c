@@ -145,7 +145,7 @@ sfs_i_create(struct inode * parent,
     SYSTIM clock;
 
     /* 引数のチェック */
-    newip = alloc_inode();
+    newip = alloc_inode(parent->i_fs);
     if (newip == NULL) {
 	return (ENOMEM);
     }
@@ -158,20 +158,21 @@ sfs_i_create(struct inode * parent,
     }
 
     /* 設定 */
+    struct sfs_inode *sfs_inode = newip->i_private;
     time_get(&clock);
     newip->i_fs = parent->i_fs;
     newip->i_refcount = 1;
     newip->i_dirty = 1;
     newip->i_mode = mode | S_IFREG;
-    newip->i_private.sfs_inode.i_nlink = 1;
+    sfs_inode->i_nlink = 1;
     newip->i_index = i_index;
-    newip->i_private.sfs_inode.i_uid = acc->uid;
-    newip->i_private.sfs_inode.i_gid = acc->gid;
+    sfs_inode->i_uid = acc->uid;
+    sfs_inode->i_gid = acc->gid;
     newip->i_dev = 0;
     newip->i_size = 0;
-    newip->i_private.sfs_inode.i_atime = clock;
-    newip->i_private.sfs_inode.i_ctime = clock;
-    newip->i_private.sfs_inode.i_mtime = clock;
+    sfs_inode->i_atime = clock;
+    sfs_inode->i_ctime = clock;
+    sfs_inode->i_mtime = clock;
     newip->i_nblock = 0;
 
     fs_register_inode(newip);
@@ -230,13 +231,14 @@ int sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
     *rlength = length;
 
     struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
+    struct sfs_inode *sfs_inode = ip->i_private;
     while (length > 0) {
 #ifdef FMDEBUG
 	dbg_printf("sfs: read block: %d\n",
-	       sfs_get_block_num(fd, fsp, &(ip->i_private.sfs_inode),
+	       sfs_get_block_num(fd, fsp, sfs_inode,
 				 start / fsp->fs_blksize));
 #endif
-	bn = sfs_get_block_num(fsp, &(ip->i_private.sfs_inode),
+	bn = sfs_get_block_num(fsp, sfs_inode,
 			       start / sb->blksize);
 	if (bn < 0) {
 	    return (EIO);
@@ -285,19 +287,20 @@ int sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
     fsp = ip->i_fs;
 
     struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
+    struct sfs_inode *sfs_inode = ip->i_private;
     while (size > 0) {
 #ifdef FMDEBUG
 	dbg_printf("sfs: %s\n",
-	       (sfs_get_block_num(fd, fsp, &(ip->i_private.sfs_inode),
+	       (sfs_get_block_num(fd, fsp, sfs_inode,
 				  start / fsp->fs_blksize) <= 0) ?
 	       "allocate block" : "read block");
 #endif
 
-	if ((bn = sfs_get_block_num(fsp, &(ip->i_private.sfs_inode),
+	if ((bn = sfs_get_block_num(fsp, sfs_inode,
 				    start / sb->blksize)) <= 0) {
 	    /* ファイルサイズを越えて書き込む場合には、新しくブロックをアロケートする
 	     */
-	    bn = sfs_set_block_num(fsp, &(ip->i_private.sfs_inode),
+	    bn = sfs_set_block_num(fsp, sfs_inode,
 				   start / sb->blksize,
 				   sfs_alloc_block(fsp));
 /*
@@ -354,8 +357,8 @@ int sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 	ip->i_size = filesize;
 	ip->i_nblock =
 	    roundUp(filesize, sb->blksize) / sb->blksize;
-	ip->i_private.sfs_inode.i_mtime = clock;
-	ip->i_private.sfs_inode.i_ctime = clock;
+	sfs_inode->i_mtime = clock;
+	sfs_inode->i_ctime = clock;
 	ip->i_dirty = 1;
 	/* これは deallocate の中で処理するのが普通 */
 	sfs_i_sync(ip);
@@ -382,7 +385,8 @@ W sfs_i_truncate(struct inode * ip, W newsize)
 
     fd = ip->i_fs->dev.channel;
     fsp = ip->i_fs;
-    sfs_ip = &(ip->i_private.sfs_inode);
+    struct sfs_inode *sfs_inode = ip->i_private;
+    sfs_ip = sfs_inode;
     struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
     nblock = roundUp(newsize, sb->blksize) / sb->blksize;
     if (nblock < sfs_ip->i_nblock) {
@@ -400,8 +404,8 @@ W sfs_i_truncate(struct inode * ip, W newsize)
     ip->i_size = newsize;
     ip->i_nblock = nblock;
     time_get(&clock);
-    ip->i_private.sfs_inode.i_mtime = clock;
-    ip->i_private.sfs_inode.i_ctime = clock;
+    sfs_inode->i_mtime = clock;
+    sfs_inode->i_ctime = clock;
     ip->i_dirty = 1;
 
     /* ここで fs を sync する必要があるか? */
