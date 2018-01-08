@@ -89,7 +89,6 @@ Version 2, June 1991
 #ifndef __FS_VFS_H__
 #define __FS_VFS_H__	1
 
-#include <fs/sfs.h>
 #include <fs/vfs.h>
 #include <set/list.h>
 #include <set/slab.h>
