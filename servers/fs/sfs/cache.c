@@ -155,6 +155,17 @@ void *cache_get(block_device_t *dev, const unsigned int block_no)
 	return cp->buf;
 }
 
+bool cache_modify(const void *p)
+{
+	if (!p)
+		return false;
+
+	cache_t *cp = getBufParent(p);
+	cp->dirty = true;
+
+	return true;
+}
+
 bool cache_release(const void *p, const bool dirty)
 {
 	if (!p)
@@ -197,6 +208,8 @@ int cache_synchronize(block_device_t *dev, const bool unmount)
 			int error_no = sweep(cp);
 			if (error_no)
 				return error_no;
+
+			cp->dirty = false;
 		}
 
 		if (unmount)

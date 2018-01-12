@@ -156,9 +156,10 @@ W sfs_alloc_inode(struct fs * fsp)
 	    cache_release(ipbufp, true);
 	    sb->freeinode--;
 	    sb->isearch = (i + 1);
-	    fsp->dirty = 1;
-	    /* ここで fs の sync を行う必要があるか? */
-	    sfs_syncfs(fsp, 0);
+
+	    if (!cache_modify(fsp->private))
+		return EIO;
+
 	    return (i);
 	}
 
@@ -198,11 +199,12 @@ W sfs_free_inode(struct fs * fsp, struct inode *ip)
 
     struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
     sb->freeinode++;
-    fsp->dirty = 1;
     if (sb->isearch >= inode_index)
 	sb->isearch = inode_index;
-    /* ここで fs の sync を行う必要があるか? */
-    sfs_syncfs(fsp, 0);
+
+    if (!cache_modify(fsp->private))
+	return EIO;
+
     return (EOK);
 }
 
@@ -299,6 +301,6 @@ int sfs_i_sync(struct inode * ip)
 #ifdef FMDEBUG
     dbg_printf("sfs: sfs_i_sync: done\n");
 #endif
+
     return (EOK);
 }
-

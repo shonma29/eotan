@@ -107,7 +107,6 @@ struct fs {
     list_t ilist;	/* 使用中の inode のリスト */
     struct inode *rootdir;
     struct inode *mountpoint;
-    W dirty;
     slab_t buf_slab;
     void *private;
 };

@@ -100,7 +100,6 @@ W sfs_alloc_block(struct fs * fsp)
 
 		for (k = 0; k < 8; k++) {
 		    if (mask & buf[j]) {
-			W error_no;
 			W free_block = (i * sb->blksize * 8)
 			    + (j * 8)
 			    + k;
@@ -110,12 +109,9 @@ W sfs_alloc_block(struct fs * fsp)
 
 			sb->freeblock--;
 			sb->bsearch = free_block;
-			fsp->dirty = 1;
 
-			/* ここで fs を sync する必要があるか? */
-			error_no = sfs_syncfs(fsp, 0);
-			if (error_no)
-			    return (-1);
+			if (!cache_modify(fsp->private))
+			    return EIO;
 
 			return (free_block);
 		    }
@@ -159,16 +155,12 @@ W sfs_free_block(struct fs * fsp, W blockno)
     cache_invalidate(&(fsp->dev), blockno);
 
     sb->freeblock++;
-    fsp->dirty = 1;
 
     if (sb->bsearch >= blockno && blockno > 0)
 	sb->bsearch = blockno - 1;
 
-    /* ここで fs は sync しない 
-       error_no = sfs_syncfs(fsp, 0);
-       if (error_no)
-       return (EP_IO);
-     */
+    if (!cache_modify(fsp->private))
+	return EIO;
 
     return (EOK);
 }

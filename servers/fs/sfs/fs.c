@@ -191,7 +191,6 @@ W sfs_syncfs(struct fs * fsp, W umflag)
     if (error_no)
 	return (error_no);
 
-    fsp->dirty = 0;
     return (EOK);
 }
 
