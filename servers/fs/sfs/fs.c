@@ -127,39 +127,22 @@ vfs_operation_t sfs_fsops = {
  */
 static int sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 {
-    void *buf = kcall->palloc();
-    if (!buf)
-	return ENOMEM;
+    block_initialize(&(rootfsp->dev));
+    rootfsp->dev.channel = device;
+    rootfsp->dev.block_size = SFS_BLOCK_SIZE;
+    rootfsp->private = cache_get(&(rootfsp->dev), 1);
 
-    struct sfs_superblock *sfs_sb = (struct sfs_superblock*)buf;
-    W rlength;
-    W error_no;
-
-    error_no =
-	read_device(device, (B *)sfs_sb, SFS_BLOCK_SIZE,
-			sizeof(struct sfs_superblock), &rlength);
-    if (error_no) {
-#ifdef FMDEBUG
-	dbg_printf("sfs: Cannot read from device.\n");
-#endif
-	kcall->pfree(buf);
+    if (!(rootfsp->private))
 	return (EIO);
-    }
-#ifdef FMDEBUG
-    dbg_printf("sfs: rootfsp = 0x%x\n", rootfsp);
-#endif
 
+    struct sfs_superblock *sfs_sb = rootfsp->private;
     if (sfs_sb->magic != SFS_MAGIC) {
 	dbg_printf("sfs: ERROR: mount: magic number %x\n", sfs_sb->magic);
-	kcall->pfree(buf);
+	cache_release(rootfsp->private, false);
 	return (EINVAL);
     }
 
     rootfsp->typeid = FS_SFS;
-    block_initialize(&(rootfsp->dev));
-    rootfsp->dev.channel = device;
-    rootfsp->dev.block_size = sfs_sb->blksize;
-    rootfsp->private = sfs_sb;
 
     rootfsp->buf_slab.unit_size = rootfsp->dev.block_size;
     rootfsp->buf_slab.block_size = PAGE_SIZE;
@@ -173,47 +156,16 @@ static int sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 
     rootfile->i_private = slab_alloc(&(rootfsp->buf_slab));
     if (!(rootfile->i_private)) {
-	kcall->pfree(buf);
+	cache_release(rootfsp->private, false);
 	return ENOMEM;
     }
-#ifdef FMDEBUG
-    /* ファイルシステム情報の出力 ; for FMDEBUG
-     */
-    dbg_printf("sfs: sfs_sb: blocksize = %d\n", rootfsp->blksize);
-    dbg_printf("sfs: sfs_sb: allblock  = %d\n", rootfsp->allblock);
-    dbg_printf("sfs: sfs_sb: allinode  = %d\n", rootfsp->allinode);
-    dbg_printf("sfs: sfs_sb: version  = %d.%d\n",
-	       rootfsp->fs_private.sfs_fs.version_hi,
-	       rootfsp->fs_private.sfs_fs.version_lo);
-#endif
 
-    error_no = sfs_read_inode(rootfsp, 1, rootfile);
     /* root file の読み込み、inode = 1 が root file */
-
+    W error_no = sfs_read_inode(rootfsp, 1, rootfile);
     if (error_no) {
-#ifdef FMDEBUG
-	dbg_printf("sfs: sfs_mount: error = %d\n", error_no);
-#endif
 	slab_free(&(rootfsp->buf_slab), rootfile->i_private);
-	kcall->pfree(buf);
+	cache_release(rootfsp->private, false);
 	return (error_no);
-    }
-#ifdef FMDEBUG
-    dbg_printf("sfs: root file inode:\n");
-    /* dbg_printf("sfs:  UID/GID: %d/%d\n", rootfile->i_uid, rootfile->i_gid); */
-    dbg_printf("sfs: device = %x, index: %d\n",
-	       rootfile->i_fs->device, rootfile->i_index);
-    dbg_printf("sfs: size:  %d bytes\n", rootfile->i_size);
-#endif
-
-    rootfsp->private = slab_alloc(&(rootfsp->buf_slab));
-    if (rootfsp->private) {
-	memcpy(rootfsp->private, buf, rootfsp->dev.block_size);
-	kcall->pfree(buf);
-    } else {
-	slab_free(&(rootfsp->buf_slab), rootfile->i_private);
-	kcall->pfree(buf);
-	return ENOMEM;
     }
 
     return (EOK);
@@ -226,9 +178,7 @@ static int sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 static int sfs_unmount(struct fs * rootfsp)
 {
     /* super block 情報の sync とキャッシュ・データの無効化 */
-    sfs_syncfs(rootfsp, 1);
-    slab_free(&(rootfsp->buf_slab), rootfsp->private);
-    return (EOK);
+    return sfs_syncfs(rootfsp, 1);
 }
 
 
@@ -237,26 +187,11 @@ static int sfs_unmount(struct fs * rootfsp)
  */
 W sfs_syncfs(struct fs * fsp, W umflag)
 {
-    W error_no;
-    W rsize;
-    struct sfs_superblock *sb;
-
-    if (fsp->dirty) {
-	sb = (struct sfs_superblock*)(fsp->private);
-	error_no =
-	    write_device(fsp->dev.channel, (B *) sb,
-			     1 * sb->blksize,
-			     sizeof(struct sfs_superblock), &rsize);
-	if (error_no) {
-	    return (error_no);
-	}
-	fsp->dirty = 0;
-    }
-
-    error_no = cache_synchronize(&(fsp->dev), umflag);
-    if (error_no) {
+    W error_no = cache_synchronize(&(fsp->dev), umflag);
+    if (error_no)
 	return (error_no);
-    }
+
+    fsp->dirty = 0;
     return (EOK);
 }
 
