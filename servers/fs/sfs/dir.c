@@ -1,4 +1,4 @@
-	/*
+/*
 
 B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
@@ -58,6 +58,10 @@ Version 2, June 1991
 #include <sys/dirent.h>
 #include "../fs.h"
 #include "func.h"
+
+static int append_entry(struct inode *parent, char *fname, struct inode *ip,
+		bool directory);
+static int remove_entry(struct inode *parent, char *fname, struct inode *ip);
 
 
 /* ディレクトリに関係する処理
@@ -240,8 +244,6 @@ int sfs_i_link(struct inode * parent, char *fname, struct inode * srcip,
 	     struct permission * acc)
 {
     W error_no;
-    struct sfs_dir dirent;
-    W dirnentry;
     struct inode *ip;
 
     /* リンク先にファイルが存在していたらエラー */
@@ -251,16 +253,8 @@ int sfs_i_link(struct inode * parent, char *fname, struct inode * srcip,
 	return (EEXIST);
     }
 
-    /* ディレクトリのエントリを作成 */
-    dirent.d_index = srcip->i_index;
-    /* 表示文字長を SFS_MAXNAMELEN にするため．後に pad があるので大丈夫 */
-    strncpy(dirent.d_name, fname, SFS_MAXNAMELEN);
-    dirent.pad[0] = '\0';
-
-    /* ディレクトリにエントリを追加 */
-    dirnentry = sfs_read_dir(parent, 0, NULL);
-    error_no = sfs_write_dir(parent, dirnentry, &dirent);
-    if (error_no != EOK) {
+    error_no = append_entry(parent, fname, srcip, false);
+    if (error_no) {
 	return (error_no);
     }
 
@@ -282,10 +276,8 @@ int sfs_i_link(struct inode * parent, char *fname, struct inode * srcip,
 int
 sfs_i_unlink(struct inode * parent, char *fname, struct permission * acc)
 {
-    int nentry;
-    int i;
     struct inode *ip;
-    W rsize, error_no;
+    W error_no;
 
     error_no = fs_lookup(parent, fname, O_RDWR, 0, acc, &ip);
     if (error_no) {
@@ -303,48 +295,15 @@ sfs_i_unlink(struct inode * parent, char *fname, struct permission * acc)
 	return (EBUSY);
     }
 
-    nentry = sfs_read_dir(parent, 0, NULL);
-    if (nentry <= 0) {
+    error_no = remove_entry(parent, fname, ip);
+    if (error_no) {
 	fs_close_file(ip);
-	return (ENOENT);
-    } {
-	struct sfs_dir buf[nentry];	/* GCC の拡張機能を使っている */
-	if (sfs_read_dir(parent, nentry, buf) != 0) {
-	    fs_close_file(ip);
-	    return (EIO);
-	}
+	return (error_no);
+    }
 
-	for (i = 0; i < nentry; i++) {
-	    /* 表示文字長を SFS_MAXNAMELEN にするため．後に pad があるので大丈夫 */
-	    if (strncmp(fname, buf[i].d_name, SFS_MAXNAMELEN + 1) == 0) {
-		break;
-	    }
-	}
-	if (i >= nentry) {
-	    fs_close_file(ip);
-	    return (ENOENT);
-	}
-
-	while (i < nentry) {
-	    buf[i].d_index = buf[i + 1].d_index;
-	    /* 表示文字長を SFS_MAXNAMELEN にするため．後に pad があるので大丈夫 */
-	    strncpy(buf[i].d_name, buf[i + 1].d_name,
-		    SFS_MAXNAMELEN);
-	    buf[i].pad[0] = '\0';
-	    i++;
-	}
-	i = parent->i_size - sizeof(struct sfs_dir);
-	sfs_i_write(parent, 0, (B *) buf, i, &rsize);
-	parent->i_dirty = 1;
-	sfs_i_truncate(parent, i);
-
-	sfs_inode->i_nlink--;
-	time_get(&(sfs_inode->i_ctime));
-	ip->i_dirty = 1;
-	if (sfs_inode->i_nlink <= 0) {
-	    sfs_i_truncate(ip, 0);
-	    sfs_free_inode(ip->i_fs, ip);
-	}
+    if (sfs_inode->i_nlink <= 0) {
+	sfs_i_truncate(ip, 0);
+	sfs_free_inode(ip->i_fs, ip);
     }
     fs_close_file(ip);
     return (EOK);
@@ -365,8 +324,6 @@ sfs_i_mkdir(struct inode * parent,
 {
     struct inode *newip;
     W error_no;
-    struct sfs_dir dirent;
-    W dirnentry;
     W i_index;
     W rsize;
     static struct sfs_dir dir[2] = {
@@ -416,18 +373,8 @@ sfs_i_mkdir(struct inode * parent,
 	return (error_no);
     }
 
-    /* ディレクトリのエントリを作成 */
-    dirent.d_index = newip->i_index;
-    /* 表示文字長を SFS_MAXNAMELEN にするため．後に pad があるので大丈夫 */
-    strncpy(dirent.d_name, fname, SFS_MAXNAMELEN);
-    dirent.pad[0] = '\0';
-
-    /* ディレクトリにエントリを追加 */
-    sfs_inode = parent->i_private;
-    sfs_inode->i_nlink += 1;
-    dirnentry = sfs_read_dir(parent, 0, NULL);
-    error_no = sfs_write_dir(parent, dirnentry, &dirent);
-    if (error_no != EOK) {
+    error_no = append_entry(parent, fname, newip, true);
+    if (error_no) {
 	return (error_no);
     }
 
@@ -441,10 +388,8 @@ sfs_i_mkdir(struct inode * parent,
 int sfs_i_rmdir(struct inode * parent, char *fname, struct permission * acc)
 {
     int nentry;
-    int i;
     struct inode *ip;
-    W rsize, error_no;
-    SYSTIM clock;
+    W error_no;
 
     error_no = fs_lookup(parent, fname, O_RDWR, 0, acc, &ip);
     if (error_no) {
@@ -468,17 +413,68 @@ int sfs_i_rmdir(struct inode * parent, char *fname, struct permission * acc)
 	return (ENOTEMPTY);
     }
 
-    nentry = sfs_read_dir(parent, 0, NULL);
-    if (nentry <= 0) {
+    error_no = remove_entry(parent, fname, ip);
+    if (error_no) {
 	fs_close_file(ip);
+	return (error_no);
+    }
+
+    struct sfs_inode *sfs_inode = ip->i_private;
+    if (sfs_inode->i_nlink <= 1) {
+	sfs_i_truncate(ip, 0);
+	sfs_free_inode(ip->i_fs, ip);
+    }
+    sfs_inode = parent->i_private;
+    sfs_inode->i_nlink -= 1;
+    time_get(&(sfs_inode->i_ctime));
+    parent->i_dirty = 1;
+
+    fs_close_file(ip);
+    return (EOK);
+}
+
+static int append_entry(struct inode *parent, char *fname, struct inode *ip,
+		bool directory)
+{
+    W error_no;
+    struct sfs_dir dirent;
+    W dirnentry;
+
+    /* ディレクトリのエントリを作成 */
+    dirent.d_index = ip->i_index;
+    /* 表示文字長を SFS_MAXNAMELEN にするため．後に pad があるので大丈夫 */
+    strncpy(dirent.d_name, fname, SFS_MAXNAMELEN);
+    dirent.pad[0] = '\0';
+
+    /* ディレクトリにエントリを追加 */
+    if (directory) {
+	struct sfs_inode *sfs_inode = parent->i_private;
+	sfs_inode->i_nlink += 1;
+    }
+    dirnentry = sfs_read_dir(parent, 0, NULL);
+
+    error_no = sfs_write_dir(parent, dirnentry, &dirent);
+    if (error_no) {
+	return (error_no);
+    }
+
+    return (EOK);
+}
+
+static int remove_entry(struct inode *parent, char *fname, struct inode *ip)
+{
+    int nentry = sfs_read_dir(parent, 0, NULL);
+    if (nentry <= 0) {
 	return (ENOENT);
-    } {
+    }
+
+    {
 	struct sfs_dir buf[nentry];	/* GCC の拡張機能を使っている */
 	if (sfs_read_dir(parent, nentry, buf) != 0) {
-	    fs_close_file(ip);
 	    return (EIO);
 	}
 
+	int i;
 	for (i = 0; i < nentry; i++) {
 	    /* 表示文字長を SFS_MAXNAMELEN にするため．後に pad があるので大丈夫 */
 	    if (strncmp(fname, buf[i].d_name, SFS_MAXNAMELEN + 1) == 0) {
@@ -486,7 +482,6 @@ int sfs_i_rmdir(struct inode * parent, char *fname, struct permission * acc)
 	    }
 	}
 	if (i >= nentry) {
-	    fs_close_file(ip);
 	    return (ENOENT);
 	}
 
@@ -499,24 +494,17 @@ int sfs_i_rmdir(struct inode * parent, char *fname, struct permission * acc)
 	    i++;
 	}
 	i = parent->i_size - sizeof(struct sfs_dir);
+
+	W rsize;
 	sfs_i_write(parent, 0, (B *) buf, i, &rsize);
 	parent->i_dirty = 1;
 	sfs_i_truncate(parent, i);
 
 	struct sfs_inode *sfs_inode = ip->i_private;
 	sfs_inode->i_nlink--;
-	time_get(&clock);
-	sfs_inode->i_ctime = clock;
+	time_get(&(sfs_inode->i_ctime));
 	ip->i_dirty = 1;
-	if (sfs_inode->i_nlink <= 1) {
-	    sfs_i_truncate(ip, 0);
-	    sfs_free_inode(ip->i_fs, ip);
-	}
-	sfs_inode = parent->i_private;
-	sfs_inode->i_nlink -= 1;
-	sfs_inode->i_ctime = clock;
-	parent->i_dirty = 1;
     }
-    fs_close_file(ip);
-    return (EOK);
+
+    return EOK;
 }
