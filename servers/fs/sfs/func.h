@@ -53,7 +53,7 @@ extern int sfs_i_close (struct inode * ip);
 
 /* inode.c */
 extern W	sfs_read_inode (struct fs *fsp, W index, struct inode *ip);
-extern W	sfs_alloc_inode (struct fs *fsp);
+extern W	sfs_alloc_inode (struct fs *fsp, struct inode *ip);
 extern W	sfs_free_inode (struct fs *fsp, struct inode *ip);
 extern int sfs_stat(struct inode *, struct stat *);
 extern int sfs_wstat(struct inode *);

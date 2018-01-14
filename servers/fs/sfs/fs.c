@@ -90,7 +90,6 @@ Version 2, June 1991
 
 #include <fstype.h>
 #include <string.h>
-#include <nerve/kcall.h>
 #include "../fs.h"
 #include "func.h"
 
@@ -141,29 +140,17 @@ static int sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 	cache_release(rootfsp->private, false);
 	return (EINVAL);
     }
+    if (sfs_sb->blksize != SFS_BLOCK_SIZE) {
+	dbg_printf("sfs: ERROR: mount: block size %d\n", sfs_sb->blksize);
+	cache_release(rootfsp->private, false);
+	return (EINVAL);
+    }
 
     rootfsp->typeid = FS_SFS;
-
-    rootfsp->buf_slab.unit_size = rootfsp->dev.block_size;
-    rootfsp->buf_slab.block_size = PAGE_SIZE;
-    rootfsp->buf_slab.min_block = 0;
-    rootfsp->buf_slab.max_block = 65536
-	    / ((PAGE_SIZE - sizeof(slab_block_t))
-		    / sizeof(rootfsp->dev.block_size));
-    rootfsp->buf_slab.palloc = kcall->palloc;
-    rootfsp->buf_slab.pfree = kcall->pfree;
-    slab_create(&(rootfsp->buf_slab));
-
-    rootfile->i_private = slab_alloc(&(rootfsp->buf_slab));
-    if (!(rootfile->i_private)) {
-	cache_release(rootfsp->private, false);
-	return ENOMEM;
-    }
 
     /* root file の読み込み、inode = 1 が root file */
     W error_no = sfs_read_inode(rootfsp, 1, rootfile);
     if (error_no) {
-	slab_free(&(rootfsp->buf_slab), rootfile->i_private);
 	cache_release(rootfsp->private, false);
 	return (error_no);
     }
@@ -178,6 +165,7 @@ static int sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 static int sfs_unmount(struct fs * rootfsp)
 {
     /* super block 情報の sync とキャッシュ・データの無効化 */
+    cache_release(rootfsp->private, false);
     return cache_synchronize(&(rootfsp->dev), true);
 }
 

@@ -225,6 +225,7 @@ sfs_i_lookup(struct inode *parent,
 
 	error_no = sfs_read_inode(parent->i_fs, dirp[i].d_index, *retip);
 	if (error_no) {
+	    dealloc_inode(*retip);
 	    return (error_no);
 	}
 	fs_register_inode(*retip);
@@ -329,7 +330,7 @@ sfs_i_mkdir(struct inode * parent,
     *retip = newip;
 
     /* 新しい sfs_inode をアロケート */
-    i_index = sfs_alloc_inode(parent->i_fs);
+    i_index = sfs_alloc_inode(parent->i_fs, newip);
     if (i_index <= 0) {
 	dealloc_inode(newip);
 	return (ENOMEM);

@@ -91,7 +91,6 @@ Version 2, June 1991
 
 #include <fs/vfs.h>
 #include <set/list.h>
-#include <set/slab.h>
 #include <sys/statvfs.h>
 #include "types.h"
 
@@ -107,7 +106,6 @@ struct fs {
     list_t ilist;	/* 使用中の inode のリスト */
     struct inode *rootdir;
     struct inode *mountpoint;
-    slab_t buf_slab;
     void *private;
 };
 

@@ -152,8 +152,9 @@ sfs_i_create(struct inode * parent,
     *retip = newip;
 
     /* 新しい sfs_inode をアロケート */
-    i_index = sfs_alloc_inode(parent->i_fs);
+    i_index = sfs_alloc_inode(parent->i_fs, newip);
     if (i_index <= 0) {
+	dealloc_inode(newip);
 	return (ENOMEM);
     }
 
@@ -188,6 +189,8 @@ sfs_i_create(struct inode * parent,
     dirnentry = sfs_read_dir(parent, 0, NULL);
     error_no = sfs_write_dir(parent, dirnentry, &dirent);
     if (error_no != EOK) {
+	sfs_free_inode(newip->i_fs, newip);
+	fs_close_file(newip);
 	return (error_no);
     }
 

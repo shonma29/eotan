@@ -911,15 +911,6 @@ struct inode *alloc_inode(struct fs *fsp)
     list_initialize(&(ip->bros));
     ip->i_refcount = 1;
 
-    if (fsp)
-	if (fsp->buf_slab.unit_size) {
-	    ip->i_private = slab_alloc(&(fsp->buf_slab));
-	    if (!(ip->i_private)) {
-		list_append(&(free_inode), &(ip->bros));
-	    	return NULL;
-	    }
-	}
-
     return (ip);
 }
 
@@ -935,10 +926,6 @@ W dealloc_inode(struct inode * ip)
 	if (!(ip->i_dev)) {
 	    OPS(ip).close(ip);
 	}
-
-	struct fs *fsp = ip->i_fs;
-	if (fsp->buf_slab.unit_size)
-	    slab_free(&(fsp->buf_slab), ip->i_private);
 
 	/* fs の register_list からの取り除き */
 	list_remove(&(ip->bros));

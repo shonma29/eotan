@@ -111,13 +111,13 @@ static W sfs_get_inode_offset(struct fs *fsp, W ino)
 W sfs_read_inode(struct fs *fsp, W ino, struct inode *ip)
 {
     W offset;
-    B *buf;
+    struct sfs_inode *sfs_inode;
 
     offset = sfs_get_inode_offset(fsp, ino);
-    buf = cache_get(&(fsp->dev), offset / SFS_BLOCK_SIZE);
-    struct sfs_inode *sfs_inode = ip->i_private;
-    memcpy((B*)sfs_inode, buf,
-	  sizeof(struct sfs_inode));
+    sfs_inode = cache_get(&(fsp->dev), offset / SFS_BLOCK_SIZE);
+    if (!sfs_inode) {
+	return EIO;
+    }
 
     ip->i_index = sfs_inode->i_index;
     ip->i_size = sfs_inode->i_size;
@@ -127,6 +127,7 @@ W sfs_read_inode(struct fs *fsp, W ino, struct inode *ip)
     ip->i_lock = 0;
     ip->i_fs = fsp;
     ip->i_dev =  0;
+    ip->i_private = sfs_inode;
 
     return (0);
 }
@@ -135,7 +136,7 @@ W sfs_read_inode(struct fs *fsp, W ino, struct inode *ip)
 /* sfs_alloc_inode -
  *
  */
-W sfs_alloc_inode(struct fs * fsp)
+W sfs_alloc_inode(struct fs * fsp, struct inode *ip)
 {
     W i;
     W offset;
@@ -149,17 +150,28 @@ W sfs_alloc_inode(struct fs * fsp)
     offset = sfs_get_inode_offset(fsp, sb->isearch);
     for (i = sb->isearch; i <= sb->ninode; i++) {
 	ipbufp = cache_get(&(fsp->dev), offset / SFS_BLOCK_SIZE);
+	if (!ipbufp) {
+	    return EIO;
+	}
 
 	offset += sizeof(struct sfs_inode);
 	if (ipbufp->i_index != i) {
 	    fsp->dev.clear(&(fsp->dev), (VP)ipbufp);
 	    ipbufp->i_index = i;
-	    cache_release(ipbufp, true);
+	    if (!cache_modify(ipbufp)) {
+		cache_release(ipbufp, false);
+		return EIO;
+	    }
+
+	    ip->i_private = ipbufp;
 	    sb->freeinode--;
 	    sb->isearch = (i + 1);
 
-	    if (!cache_modify(fsp->private))
+	    if (!cache_modify(fsp->private)) {
+		ip->i_private = NULL;
+		cache_release(ipbufp, false);
 		return EIO;
+	    }
 
 	    return (i);
 	}
@@ -176,14 +188,7 @@ W sfs_alloc_inode(struct fs * fsp)
  */
 static W sfs_write_inode(struct fs * fsp, struct sfs_inode * ip)
 {
-    B *buf = cache_get(&(fsp->dev),
-	    sfs_get_inode_offset(fsp, ip->i_index) / SFS_BLOCK_SIZE);
-    if (!buf) {
-	return EIO;
-    }
-
-    memcpy(buf, (B*)ip, sizeof(struct sfs_inode));
-    if (!cache_release(buf, true)) {
+    if (!cache_modify(ip)) {
 	return EIO;
     }
 
@@ -197,9 +202,10 @@ static W sfs_write_inode(struct fs * fsp, struct sfs_inode * ip)
 W sfs_free_inode(struct fs * fsp, struct inode *ip)
 {
     W inode_index = ip->i_index;
-    B *buf = cache_create(&(fsp->dev),
-		  sfs_get_inode_offset(fsp, inode_index) / SFS_BLOCK_SIZE);
-    cache_release(buf, true);
+    fsp->dev.clear(&(fsp->dev), ip->i_private);
+    if (!cache_modify(ip->i_private)) {
+	return EIO;
+    }
     ip->i_dirty = 0;
 
     struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
@@ -288,6 +294,10 @@ int sfs_i_close(struct inode * ip)
     dbg_printf("sfs: sfs_i_sync\n");
 #endif
     struct sfs_inode *sfs_inode = ip->i_private;
+    if (!sfs_inode) {
+	return (EOK);
+    }
+
     sfs_inode->i_index = ip->i_index;
     if (ip->i_size < sfs_inode->i_size) {
       sfs_i_truncate(ip, ip->i_size);
@@ -302,8 +312,13 @@ int sfs_i_close(struct inode * ip)
 	if (err) {
 	    return (err);
 	}
+	ip->i_dirty = 0;
     }
-    ip->i_dirty = 0;
+
+    err = cache_release(sfs_inode, false);
+    if (err) {
+	return (err);
+    }
 
 #ifdef FMDEBUG
     dbg_printf("sfs: sfs_i_sync: done\n");
