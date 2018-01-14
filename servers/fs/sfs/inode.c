@@ -73,6 +73,7 @@ Version 2, June 1991
 #endif
 
 static W	sfs_get_inode_offset (struct fs *fsp, W ino);
+static W sfs_write_inode(struct fs * fsp, struct sfs_inode * ip);
 
 
 
@@ -173,14 +174,18 @@ W sfs_alloc_inode(struct fs * fsp)
 /* sfs_write_inode -
  *
  */
-W sfs_write_inode(struct fs * fsp, struct sfs_inode * ip)
+static W sfs_write_inode(struct fs * fsp, struct sfs_inode * ip)
 {
     B *buf = cache_get(&(fsp->dev),
 	    sfs_get_inode_offset(fsp, ip->i_index) / SFS_BLOCK_SIZE);
+    if (!buf) {
+	return EIO;
+    }
+
     memcpy(buf, (B*)ip, sizeof(struct sfs_inode));
-    cache_release(buf, true);
-    /* ここで fs の sync を行う必要があるか? */
-    sfs_syncfs(fsp, 0);
+    if (!cache_release(buf, true)) {
+	return EIO;
+    }
 
     return (EOK);
 }
@@ -233,7 +238,9 @@ int sfs_stat(struct inode *ip, struct stat *st)
 int sfs_wstat(struct inode *ip)
 {
     struct sfs_inode *sfs_inode = ip->i_private;
+    sfs_inode->i_mode = ip->i_mode;
     time_get(&(sfs_inode->i_ctime));
+    ip->i_dirty = 1;
 
     return (EOK);
 }
@@ -273,7 +280,7 @@ int sfs_permit(struct inode * ip, struct permission * acc, UW bits)
 }
 
 
-int sfs_i_sync(struct inode * ip)
+int sfs_i_close(struct inode * ip)
 {
     W err;
 

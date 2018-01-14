@@ -54,16 +54,11 @@ int if_chmod(fs_request *req)
 	return ENOENT;
 
     ipp->i_mode = (ipp->i_mode & S_IFMT) | req->packet.args.arg2;
-    OPS(ipp).wstat(ipp);
-    ipp->i_dirty = 1;
+    err = OPS(ipp).wstat(ipp);
+    fs_close_file(ipp);
+    if (err)
+	return err;
 
-    /* fs_close_file で行う処理 */
-    if (fs_sync_file(ipp)) {
-	dealloc_inode(ipp);
-	return EINVAL;
-    }
-
-    dealloc_inode(ipp);
     put_response(req->rdvno, EOK, 0, 0);
     return EOK;
 }

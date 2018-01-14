@@ -275,9 +275,5 @@ sfs_set_indirect_block_num(struct fs * fsp,
     inbufp->in_block[inblock_offset] = newblock;
     cache_release(inbufp, true);
 
-    /* inode の書き込みは sfs_i_write() 以上の部分で行われるはず...
-       sfs_write_inode (fd, fsp, ip);
-     */
-
     return (newblock);
 }

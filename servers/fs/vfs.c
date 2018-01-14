@@ -535,16 +535,6 @@ W fs_close_file(struct inode * ip)
 {
     W error_no;
 
-    if (!(ip->i_dev)) {
-	/* 普通は inode を deallocate するときに書き出すのではないか? */
-	if (ip->i_dirty) {
-	    error_no = fs_sync_file(ip);
-	    if (error_no) {
-		return (error_no);
-	    }
-	}
-    }
-
     error_no = dealloc_inode(ip);
     if (error_no) {
 	return (error_no);
@@ -942,7 +932,9 @@ W dealloc_inode(struct inode * ip)
 {
     ip->i_refcount--;
     if (ip->i_refcount <= 0) {
-	OPS(ip).close(ip);
+	if (!(ip->i_dev)) {
+	    OPS(ip).close(ip);
+	}
 
 	struct fs *fsp = ip->i_fs;
 	if (fsp->buf_slab.unit_size)

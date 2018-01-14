@@ -234,12 +234,6 @@ sfs_i_lookup(struct inode *parent,
 }
 
 
-int sfs_i_close()
-{
-    return (EOK);
-}
-
-
 int sfs_i_link(struct inode * parent, char *fname, struct inode * srcip,
 	     struct permission * acc)
 {
@@ -264,11 +258,6 @@ int sfs_i_link(struct inode * parent, char *fname, struct inode * srcip,
     time_get(&(sfs_inode->i_ctime));
     srcip->i_dirty = 1;
 
-    /* 本来は inode の deallocate のところで行う処理のはず */
-    error_no = sfs_i_sync(srcip);
-    if (error_no != EOK) {
-	return (error_no);
-    }
     return (EOK);
 }
 
@@ -342,6 +331,7 @@ sfs_i_mkdir(struct inode * parent,
     /* 新しい sfs_inode をアロケート */
     i_index = sfs_alloc_inode(parent->i_fs);
     if (i_index <= 0) {
+	dealloc_inode(newip);
 	return (ENOMEM);
     }
 
@@ -352,17 +342,17 @@ sfs_i_mkdir(struct inode * parent,
     newip->i_fs = parent->i_fs;
     newip->i_refcount = 1;
     newip->i_dirty = 1;
-    newip->i_mode = mode | S_IFDIR;
+    sfs_inode->i_mode = newip->i_mode = mode | S_IFDIR;
     sfs_inode->i_nlink = 2;
-    newip->i_index = i_index;
+    sfs_inode->i_index = newip->i_index = i_index;
     sfs_inode->i_uid = acc->uid;
     sfs_inode->i_gid = acc->gid;
     newip->i_dev = 0;
-    newip->i_size = 0;
+    sfs_inode->i_size = newip->i_size = 0;
     sfs_inode->i_atime = clock;
     sfs_inode->i_ctime = clock;
     sfs_inode->i_mtime = clock;
-    newip->i_nblock = 0;
+    sfs_inode->i_nblock = newip->i_nblock = 0;
 
     fs_register_inode(newip);
 
@@ -370,11 +360,16 @@ sfs_i_mkdir(struct inode * parent,
     dir[1].d_index = parent->i_index;
     error_no = sfs_i_write(newip, 0, (B *) dir, sizeof(dir), &rsize);
     if (error_no) {
+	sfs_free_inode(newip->i_fs, newip);
+	fs_close_file(newip);
 	return (error_no);
     }
 
     error_no = append_entry(parent, fname, newip, true);
     if (error_no) {
+	sfs_i_truncate(newip, 0);
+	sfs_free_inode(newip->i_fs, newip);
+	fs_close_file(newip);
 	return (error_no);
     }
 
@@ -496,7 +491,10 @@ static int remove_entry(struct inode *parent, char *fname, struct inode *ip)
 	i = parent->i_size - sizeof(struct sfs_dir);
 
 	W rsize;
-	sfs_i_write(parent, 0, (B *) buf, i, &rsize);
+	W error_no = sfs_i_write(parent, 0, (B *) buf, i, &rsize);
+	if (error_no) {
+	    return (error_no);
+	}
 	parent->i_dirty = 1;
 	sfs_i_truncate(parent, i);
 

@@ -49,28 +49,26 @@ extern int sfs_i_mkdir (struct inode *parent, char *fname, W mode,
 			     struct permission *acc, struct inode **retip);
 extern int sfs_i_rmdir (struct inode *parent, char *fname,
 			     struct permission *acc);
+extern int sfs_i_close (struct inode * ip);
 
 /* inode.c */
 extern W	sfs_read_inode (struct fs *fsp, W index, struct inode *ip);
 extern W	sfs_alloc_inode (struct fs *fsp);
-extern W	sfs_write_inode (struct fs *fsp, struct sfs_inode *ip);
 extern W	sfs_free_inode (struct fs *fsp, struct inode *ip);
 extern int sfs_stat(struct inode *, struct stat *);
 extern int sfs_wstat(struct inode *);
 extern int sfs_permit(struct inode *ip, struct permission *acc, UW bits);
-extern int sfs_i_sync (struct inode *ip);
 
 /* file.c */
 extern int sfs_i_create (struct inode *parent, char *fname, W oflag,
 			      W mode, struct permission *acc,
 			      struct inode **retip);
-extern int sfs_i_close ();
 extern int sfs_i_read (struct inode *ip, W start, B *buf, W length, W *rlength);
 extern int sfs_i_write (struct inode *ip, W start, B *buf, W size,
 			     W *rsize);
 extern W	sfs_i_truncate (struct inode *ip, W newsize);
 
 /* fs.c */
-extern W sfs_syncfs (struct fs *fsp, W umflag);
+extern int sfs_syncfs (struct fs *fsp);
 
 #endif /* __SFS_FUNC_H__ */

@@ -164,17 +164,17 @@ sfs_i_create(struct inode * parent,
     newip->i_fs = parent->i_fs;
     newip->i_refcount = 1;
     newip->i_dirty = 1;
-    newip->i_mode = mode | S_IFREG;
+    sfs_inode->i_mode = newip->i_mode = mode | S_IFREG;
     sfs_inode->i_nlink = 1;
-    newip->i_index = i_index;
+    sfs_inode->i_index = newip->i_index = i_index;
     sfs_inode->i_uid = acc->uid;
     sfs_inode->i_gid = acc->gid;
     newip->i_dev = 0;
-    newip->i_size = 0;
+    sfs_inode->i_size = newip->i_size = 0;
     sfs_inode->i_atime = clock;
     sfs_inode->i_ctime = clock;
     sfs_inode->i_mtime = clock;
-    newip->i_nblock = 0;
+    sfs_inode->i_nblock = newip->i_nblock = 0;
 
     fs_register_inode(newip);
 
@@ -187,13 +187,6 @@ sfs_i_create(struct inode * parent,
     /* ディレクトリにエントリを追加 */
     dirnentry = sfs_read_dir(parent, 0, NULL);
     error_no = sfs_write_dir(parent, dirnentry, &dirent);
-    if (error_no != EOK) {
-	return (error_no);
-    }
-
-    /* inode 情報の更新 */
-    /* 本来は inode の deallocate のところで行う処理のはず */
-    error_no = sfs_i_sync(newip);
     if (error_no != EOK) {
 	return (error_no);
     }
@@ -352,19 +345,16 @@ int sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
      * サイズを更新して inode を書き込む。
      */
     if (filesize > ip->i_size) {
-        SYSTIM clock;
-
-        time_get(&clock);
 	ip->i_size = filesize;
 	ip->i_nblock =
 	    roundUp(filesize, sb->blksize) / sb->blksize;
-	sfs_inode->i_mtime = clock;
-	sfs_inode->i_ctime = clock;
-	ip->i_dirty = 1;
-	/* これは deallocate の中で処理するのが普通 */
-	sfs_i_sync(ip);
     }
 
+    SYSTIM clock;
+    time_get(&clock);
+    sfs_inode->i_mtime = clock;
+    sfs_inode->i_ctime = clock;
+    ip->i_dirty = 1;
     *rsize = retsize - size;
 
 #ifdef FMDEBUG
@@ -378,7 +368,6 @@ int sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 W sfs_i_truncate(struct inode * ip, W newsize)
 {
     int nblock, blockno, inblock, offset;
-    W error_no;
     W fd;
     struct fs *fsp;
     struct sfs_inode *sfs_ip;
@@ -409,10 +398,5 @@ W sfs_i_truncate(struct inode * ip, W newsize)
     sfs_inode->i_ctime = clock;
     ip->i_dirty = 1;
 
-    /* ここで fs を sync する必要があるか? */
-    error_no = sfs_syncfs(fsp, 0);
-    if (error_no) {
-	return (error_no);
-    }
     return (EOK);
 }

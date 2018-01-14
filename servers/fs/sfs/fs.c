@@ -102,7 +102,7 @@ static int sfs_statvfs(struct fs *, struct statvfs *);
 vfs_operation_t sfs_fsops = {
     sfs_mount,
     sfs_unmount,
-    sfs_i_sync,
+    sfs_syncfs,
     sfs_statvfs,
     sfs_getdents,
     sfs_i_lookup,
@@ -178,16 +178,16 @@ static int sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 static int sfs_unmount(struct fs * rootfsp)
 {
     /* super block 情報の sync とキャッシュ・データの無効化 */
-    return sfs_syncfs(rootfsp, 1);
+    return cache_synchronize(&(rootfsp->dev), true);
 }
 
 
 /* sfs_syncfs -
  * 引数 umflag は unmount の時 1，それ以外の場合は 0 にする．
  */
-W sfs_syncfs(struct fs * fsp, W umflag)
+int sfs_syncfs(struct fs * fsp)
 {
-    W error_no = cache_synchronize(&(fsp->dev), umflag);
+    W error_no = cache_synchronize(&(fsp->dev), false);
     if (error_no)
 	return (error_no);
 
