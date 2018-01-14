@@ -703,7 +703,18 @@ fs_remove_file(struct inode * startip, B * path, struct permission * acc)
     }
     parent_length += 1;
 
-    error_no = OPS(parent_ip).unlink(parent_ip, &path[parent_length], acc);
+    struct inode *ip;
+    error_no = fs_lookup(parent_ip, &path[parent_length], O_RDWR, 0, acc, &ip);
+    if (error_no) {
+	dealloc_inode(parent_ip);
+	return (error_no);
+    }
+    if ((ip->i_mode & S_IFMT) == S_IFDIR) {
+	error_no = EISDIR;
+    } else {
+	error_no = OPS(parent_ip).unlink(parent_ip, &path[parent_length], acc);
+    }
+    dealloc_inode(ip);
     dealloc_inode(parent_ip);
     if (error_no) {
 	return (error_no);
@@ -731,7 +742,20 @@ W fs_remove_dir(struct inode * startip, B * path, struct permission * acc)
     }
     parent_length += 1;
 
-    error_no = OPS(parent_ip).rmdir(parent_ip, &path[parent_length], acc);
+    struct inode *ip;
+    error_no = fs_lookup(parent_ip, &path[parent_length], O_RDWR, 0, acc, &ip);
+    if (error_no) {
+	dealloc_inode(parent_ip);
+	return (error_no);
+    }
+    if ((ip->i_mode & S_IFMT) != S_IFDIR) {
+	error_no = ENOTDIR;
+    } else if (ip->i_refcount >= 2) {
+	error_no = EBUSY;
+    } else {
+	error_no = OPS(parent_ip).rmdir(parent_ip, &path[parent_length], acc);
+    }
+    dealloc_inode(ip);
     dealloc_inode(parent_ip);
     if (error_no) {
 	return (error_no);
@@ -863,9 +887,16 @@ fs_link_file(W procid, B * src, B * dst, struct permission * acc)
 	return (EXDEV);
     }
 
-    /* 各ファイルシステムの link 関数を呼び出す */
-    error_no = OPS(parent_ip).link(parent_ip, &dst[parent_length], srcip, acc);
-
+    /* リンク先にファイルが存在していたらエラー */
+    struct inode *ip;
+    error_no = fs_lookup(parent_ip, &dst[parent_length], O_RDONLY, 0, acc, &ip);
+    if (error_no == EOK) {
+	dealloc_inode(ip);
+	error_no = EEXIST;
+    } else {
+	/* 各ファイルシステムの link 関数を呼び出す */
+	error_no = OPS(parent_ip).link(parent_ip, &dst[parent_length], srcip);
+    }
     dealloc_inode(parent_ip);
     dealloc_inode(srcip);
     if (error_no) {

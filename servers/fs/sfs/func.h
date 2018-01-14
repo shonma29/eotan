@@ -42,14 +42,11 @@ extern int sfs_getdents (struct inode *ip, ID caller, W offset, VP buf,
 extern int sfs_i_lookup (struct inode *parent, char *fname, W oflag,
 			      W mode, struct permission *acc,
 			      struct inode **retip);
-extern int sfs_i_link ();
-extern int sfs_i_unlink (struct inode *parent, char *fname,
-			      struct permission *acc);
+extern int sfs_i_link (struct inode * parent, char *fname, struct inode * srcip);
+extern int sfs_i_unlink (struct inode *parent, char *fname, struct inode *ip);
 extern int sfs_i_mkdir (struct inode *parent, char *fname, W mode,
 			     struct permission *acc, struct inode **retip);
-extern int sfs_i_rmdir (struct inode *parent, char *fname,
-			     struct permission *acc);
-extern int sfs_i_close (struct inode * ip);
+extern int sfs_i_rmdir (struct inode *parent, char *fname, struct inode *ip);
 
 /* inode.c */
 extern W	sfs_read_inode (struct fs *fsp, W index, struct inode *ip);
@@ -58,6 +55,7 @@ extern W	sfs_free_inode (struct fs *fsp, struct inode *ip);
 extern int sfs_stat(struct inode *, struct stat *);
 extern int sfs_wstat(struct inode *);
 extern int sfs_permit(struct inode *ip, struct permission *acc, UW bits);
+extern int sfs_i_close (struct inode * ip);
 
 /* file.c */
 extern int sfs_i_create (struct inode *parent, char *fname, W oflag,
