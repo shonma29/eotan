@@ -31,45 +31,41 @@ For more information, please refer to <http://unlicense.org/>
 #include "fs.h"
 
 
-W write_device(ID device, B *buf, W start, W length, W *rlength)
+int write_device(int channel, void *buf, off_t start, size_t length,
+		size_t *rlength)
 {
-	int result;
-	device_info_t *info;
-
-	if ((start < 0) || (length < 0))
+	if (start < 0)
 		return EINVAL;
 
-	info = device_find(device);
+	device_info_t *info = device_find(channel);
 	if (!info)
 		return ENODEV;
 
 	if (!(info->driver))
 		return ENODEV;
 
-	result = info->driver->write((unsigned char*)buf, get_channel(device),
-			(off_t)start, (size_t)length);
+	int result = info->driver->write(buf, get_channel(channel),
+			start, length);
 	*rlength = (result > 0)? result:0;
 
 	return (result == length)? E_OK:E_SYS;
 }
 
-W read_device(ID device, B *buf, W start, W length, W *rlength)
+int read_device(int channel, void *buf, off_t start, size_t length,
+		size_t *rlength)
 {
-	int result;
-	device_info_t *info;
-
-	if ((start < 0) || (length < 0))
+	if (start < 0)
 		return EINVAL;
 
-	info = device_find(device);
+	device_info_t *info = device_find(channel);
 	if (!info)
 		return ENODEV;
 
 	if (!(info->driver))
 		return ENODEV;
 
-	result = info->driver->read((unsigned char*)buf, get_channel(device),
-			(off_t)start, (size_t)length);
+	int result = info->driver->read(buf, get_channel(channel),
+			start, length);
 	*rlength = (result > 0)? result:0;
 
 	return (result == length)? E_OK:E_SYS;

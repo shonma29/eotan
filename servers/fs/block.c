@@ -24,8 +24,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdbool.h>
 #include <string.h>
-#include "../fs.h"
+#include <devfs/devfs.h>
+#include <fs/vfs.h>
 
 static void block_clear(block_device_t *, void *);
 static int block_read(block_device_t *, void *, const int);
@@ -52,7 +54,7 @@ static int block_read(block_device_t *dev, void *buf, const int blockno)
 	size_t read_length;
 
 	return read_device(dev->channel, buf, blockno * dev->block_size,
-			dev->block_size, (W*)&read_length);
+			dev->block_size, &read_length);
 }
 
 static int block_write(block_device_t *dev, void *buf, const int blockno)
@@ -60,7 +62,7 @@ static int block_write(block_device_t *dev, void *buf, const int blockno)
 	size_t written_length;
 
 	return write_device(dev->channel, buf, blockno * dev->block_size,
-			dev->block_size, (W*)&written_length);
+			dev->block_size, &written_length);
 }
 
 static int block_invalidate(block_device_t *dev, const int blockno)

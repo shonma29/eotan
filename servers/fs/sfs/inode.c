@@ -65,7 +65,10 @@ Version 2, June 1991
  */
 
 #include <string.h>
-#include "../fs.h"
+#include <fs/nconfig.h>
+#include <sys/errno.h>
+#include <sys/unistd.h>
+#include "../../../lib/libserv/libserv.h"
 #include "func.h"
 
 #ifndef ROUNDUP
@@ -201,7 +204,7 @@ W sfs_free_inode(struct fs * fsp, struct inode *ip)
     if (!cache_modify(fsp->private))
 	return EIO;
 
-    return (EOK);
+    return 0;
 }
 
 int sfs_stat(struct inode *ip, struct stat *st)
@@ -223,7 +226,7 @@ int sfs_stat(struct inode *ip, struct stat *st)
     st->st_mtime = sfs_inode->i_mtime.sec;
     st->st_ctime = sfs_inode->i_ctime.sec;
 
-    return (EOK);
+    return 0;
 }
 
 int sfs_wstat(struct inode *ip)
@@ -233,7 +236,7 @@ int sfs_wstat(struct inode *ip)
     time_get(&(sfs_inode->i_ctime));
     ip->i_dirty = 1;
 
-    return (EOK);
+    return 0;
 }
 
 /*
@@ -246,7 +249,7 @@ int sfs_permit(struct inode * ip, struct permission * acc, UW bits)
     int shift;
 
     mode = ip->i_mode;
-    if (acc->uid == SU_UID) {
+    if (acc->uid == ROOT_UID) {
 	if (((mode & S_IFMT) == S_IFDIR) ||
 	    (mode & (X_OK << 6 | X_OK << 3 | X_OK))) {
 	    perm_bits = R_OK | W_OK | X_OK;
@@ -267,7 +270,7 @@ int sfs_permit(struct inode * ip, struct permission * acc, UW bits)
 
     if ((perm_bits | bits) != perm_bits)
 	return (EACCES);
-    return (EOK);
+    return 0;
 }
 
 
@@ -280,7 +283,7 @@ int sfs_i_close(struct inode * ip)
 #endif
     struct sfs_inode *sfs_inode = ip->i_private;
     if (!sfs_inode) {
-	return (EOK);
+	return 0;
     }
 
     sfs_inode->i_index = ip->i_index;
@@ -309,5 +312,5 @@ int sfs_i_close(struct inode * ip)
     dbg_printf("sfs: sfs_i_close: done\n");
 #endif
 
-    return (EOK);
+    return 0;
 }

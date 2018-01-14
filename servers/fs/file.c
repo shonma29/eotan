@@ -200,7 +200,7 @@ int if_open(fs_request *req)
 	/* root ユーザの場合には、
 	 * 成功でもよい
 	 */
-	if (acc.uid != SU_UID) {
+	if (acc.uid != ROOT_UID) {
 	    dealloc_inode(newip);
 	    return EACCES;
 	}

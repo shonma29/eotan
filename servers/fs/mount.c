@@ -55,7 +55,7 @@ int if_mount(fs_request *req)
     if (error_no)
 	return error_no;
 
-    if (acc.uid != SU_UID)
+    if (acc.uid != ROOT_UID)
       return EACCES;
 
     error_no = kcall->region_copy(caller,
@@ -147,7 +147,7 @@ int if_unmount(fs_request *req)
     if (error_no)
 	return error_no;
 
-    if (acc.uid != SU_UID)
+    if (acc.uid != ROOT_UID)
 	return EACCES;
 
     error_no = fs_open_file(req->buf, O_RDWR, 0, &acc, startip, &umpoint);

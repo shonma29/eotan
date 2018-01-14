@@ -57,7 +57,8 @@ Version 2, June 1991
  */
 
 #include <string.h>
-#include "../fs.h"
+#include <sys/errno.h>
+#include "../../../lib/libserv/libserv.h"
 #include "func.h"
 
 
@@ -162,7 +163,7 @@ W sfs_free_block(struct fs * fsp, W blockno)
     if (!cache_modify(fsp->private))
 	return EIO;
 
-    return (EOK);
+    return 0;
 }
 
 W sfs_free_indirect(struct fs * fsp, struct sfs_inode * ip,
@@ -200,7 +201,7 @@ W sfs_free_indirect(struct fs * fsp, struct sfs_inode * ip,
 	ip->i_indirect[i] = 0;
     }
 
-    return (EOK);
+    return 0;
 }
 
 /* sfs_get_block_num - ファイルのデータが実際のどのブロックにあるかを検索する。

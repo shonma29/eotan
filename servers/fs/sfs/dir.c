@@ -56,7 +56,8 @@ Version 2, June 1991
 #include <fs/sfs.h>
 #include <nerve/kcall.h>
 #include <sys/dirent.h>
-#include "../fs.h"
+#include <sys/errno.h>
+#include "../../../lib/libserv/libserv.h"
 #include "func.h"
 
 static int append_entry(struct inode *parent, char *fname, struct inode *ip,
@@ -140,14 +141,14 @@ int sfs_getdents(struct inode *ip, ID caller, W offset,
   dent.d_ino = ip->i_index;
   nentry = sfs_read_dir (ip, 0, NULL);
   s = sizeof(struct sfs_dir);
-  if (offset >= nentry*s) return(EOK);
+  if (offset >= nentry*s) return 0;
   {
     struct sfs_dir dirp[nentry]; /* GCC の拡張機能を使っている */
     error_no = sfs_read_dir (ip, nentry, dirp);
     if (error_no) return(error_no);
     for (i = offset/s; i < nentry; i++) {
       len = sizeof(struct dirent)+strlen(dirp[i].d_name);
-      if ((*rsize) + len >= length) return(EOK);
+      if ((*rsize) + len >= length) return 0;
       dent.d_reclen = len;
       dent.d_off = i*s;
       strncpy(dent.d_name, dirp[i].d_name, MAX_NAME_LEN);
@@ -158,7 +159,7 @@ int sfs_getdents(struct inode *ip, ID caller, W offset,
       *fsize += s;
     }
   }
-  return(EOK);
+  return 0;
 }
 
 
@@ -183,7 +184,7 @@ sfs_i_lookup(struct inode *parent,
     if (strcmp(fname, ".") == 0) {
 	*retip = parent;
 	(*retip)->i_refcount++;
-	return (EOK);
+	return 0;
     }
 
     nentry = sfs_read_dir(parent, 0, NULL);
@@ -215,7 +216,7 @@ sfs_i_lookup(struct inode *parent,
 		*retip = (*retip)->coverfile;
 	    }
 	    (*retip)->i_refcount++;
-	    return (EOK);
+	    return 0;
 	}
 
 	*retip = alloc_inode(parent->i_fs);
@@ -231,7 +232,7 @@ sfs_i_lookup(struct inode *parent,
 	fs_register_inode(*retip);
     }
 
-    return (EOK);
+    return 0;
 }
 
 
@@ -250,7 +251,7 @@ int sfs_i_link(struct inode * parent, char *fname, struct inode * srcip)
     time_get(&(sfs_inode->i_ctime));
     srcip->i_dirty = 1;
 
-    return (EOK);
+    return 0;
 }
 
 
@@ -274,7 +275,7 @@ sfs_i_unlink(struct inode * parent, char *fname, struct inode *ip)
 	sfs_i_truncate(ip, 0);
 	sfs_free_inode(ip->i_fs, ip);
     }
-    return (EOK);
+    return 0;
 }
 
 
@@ -352,7 +353,7 @@ sfs_i_mkdir(struct inode * parent,
 	return (error_no);
     }
 
-    return (EOK);
+    return 0;
 }
 
 /*
@@ -384,7 +385,7 @@ int sfs_i_rmdir(struct inode * parent, char *fname, struct inode *ip)
     time_get(&(sfs_inode->i_ctime));
     parent->i_dirty = 1;
 
-    return (EOK);
+    return 0;
 }
 
 static int append_entry(struct inode *parent, char *fname, struct inode *ip,
@@ -412,7 +413,7 @@ static int append_entry(struct inode *parent, char *fname, struct inode *ip,
 	return (error_no);
     }
 
-    return (EOK);
+    return 0;
 }
 
 static int remove_entry(struct inode *parent, char *fname, struct inode *ip)
@@ -463,5 +464,5 @@ static int remove_entry(struct inode *parent, char *fname, struct inode *ip)
 	ip->i_dirty = 1;
     }
 
-    return EOK;
+    return 0;
 }

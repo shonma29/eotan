@@ -113,8 +113,8 @@ Version 2, June 1991
 
 #include <string.h>
 #include <mpu/memory.h>
-#include "../fs.h"
-#include "../vfs.h"
+#include <sys/errno.h>
+#include "../../../lib/libserv/libserv.h"
 #include "func.h"
 
 #ifndef MIN
@@ -188,13 +188,13 @@ sfs_i_create(struct inode * parent,
     /* ディレクトリにエントリを追加 */
     dirnentry = sfs_read_dir(parent, 0, NULL);
     error_no = sfs_write_dir(parent, dirnentry, &dirent);
-    if (error_no != EOK) {
+    if (error_no) {
 	sfs_free_inode(newip->i_fs, newip);
 	dealloc_inode(newip);
 	return (error_no);
     }
 
-    return (EOK);
+    return 0;
 }
 
 
@@ -258,7 +258,7 @@ int sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
     ip->i_atime = get_system_time();
     ip->i_dirty = 1;
 #endif
-    return (EOK);
+    return 0;
 }
 
 
@@ -361,7 +361,7 @@ int sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
     dbg_printf("sfs: write size: %d bytes\n", *rsize);
 #endif
 
-    return (EOK);
+    return 0;
 }
 
 
@@ -398,5 +398,5 @@ W sfs_i_truncate(struct inode * ip, W newsize)
     sfs_inode->i_ctime = clock;
     ip->i_dirty = 1;
 
-    return (EOK);
+    return 0;
 }

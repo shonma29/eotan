@@ -639,7 +639,7 @@ W fs_read_file(struct inode * ip, W start, B * buf, W length, W * rlength)
     W error_no;
 
     if (ip->i_dev)
-	return read_device(ip->i_dev, buf, start, length, rlength);
+	return read_device(ip->i_dev, buf, start, length, (size_t*)rlength);
 
     if (start >= ip->i_size) {
 	*rlength = 0;
@@ -670,7 +670,7 @@ W fs_write_file(struct inode * ip, W start, B * buf, W length, W * rlength)
 
     if (ip->i_dev) {
 	/* スペシャルファイルだった */
-	error_no = write_device(ip->i_dev, buf, start, length, rlength);
+	error_no = write_device(ip->i_dev, buf, start, length, (size_t*)rlength);
 	return (error_no);
     }
 

@@ -23,6 +23,7 @@ Version 2, June 1991
 #include <stdbool.h>
 #include <unistd.h>
 #include <core.h>
+#include <fs/nconfig.h>
 #include <fs/vfs.h>
 #include "vfs.h"
 #include "devfs/devfs.h"
@@ -34,8 +35,6 @@ Version 2, June 1991
 /* =========================== マクロ定義 =========================== */
 
 #define EOK (0)
-
-#define SU_UID		0
 
 /* ===========================  関数定義  =========================== */
 

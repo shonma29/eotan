@@ -43,7 +43,7 @@ typedef struct {
 extern int device_init(void);
 extern device_info_t *device_find(const UW id);
 
-extern W write_device(ID, B *, W, W, W *);
-extern W read_device(ID, B *, W, W, W *);
+extern int write_device(int, void *, off_t, size_t, size_t *);
+extern int read_device(int, void *, off_t, size_t, size_t *);
 
 #endif

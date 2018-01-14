@@ -30,4 +30,6 @@ For more information, please refer to <http://unlicense.org/>
 #define MAX_REQUEST (32)
 #define MAX_CACHE (128)
 
+#define ROOT_UID (0)
+
 #endif

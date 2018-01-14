@@ -90,8 +90,9 @@ Version 2, June 1991
 
 #include <fstype.h>
 #include <string.h>
-#include "../fs.h"
+#include <sys/errno.h>
 #include "func.h"
+#include "../../../lib/libserv/libserv.h"
 
 
 static int sfs_mount (ID device, struct fs *rootfsp, struct inode *rootfile);
@@ -155,7 +156,7 @@ static int sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 	return (error_no);
     }
 
-    return (EOK);
+    return 0;
 }
 
 
@@ -179,7 +180,7 @@ int sfs_syncfs(struct fs * fsp)
     if (error_no)
 	return (error_no);
 
-    return (EOK);
+    return 0;
 }
 
 static int sfs_statvfs(struct fs * fsp, struct statvfs * result)
@@ -197,5 +198,5 @@ static int sfs_statvfs(struct fs * fsp, struct statvfs * result)
     result->f_fsid = fsp->typeid;
     result->f_flag = 0;
     result->f_namemax = SFS_MAXNAMELEN;
-    return (EOK);
+    return 0;
 }

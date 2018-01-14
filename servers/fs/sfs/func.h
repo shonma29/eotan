@@ -16,7 +16,9 @@ Version 2, June 1991
 #define __SFS_FUNC_H__	1
 
 #include <fs/sfs.h>
+#include <fs/vfs.h>
 #include <sys/stat.h>
+#include "../vfs.h"
 
 extern vfs_operation_t sfs_fsops;
 
