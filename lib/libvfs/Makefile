@@ -23,18 +23,9 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = $(WD)/fs
+TARGET = $(WD).a
 
 include Makefile.in
 
-CFLAGS += -I kernel -I lib/libserv
-ENTRY_ADDR = 0x80260000
-ENTRY_FUNC = start
-CSRCS += $(wildcard $(WD)/devfs/*.c)
-CSRCS += $(wildcard $(WD)/procfs/*.c)
-
-$(TARGET): $(OBJS) \
-		lib/libvfs.a lib/libtfs.a \
-		lib/libserv.a lib/libnc.a kernel/mpu/libmpu.a
-	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
-	$(STRIP) $@
+$(TARGET): $(OBJS)
+	$(AR) rsv $@ $?

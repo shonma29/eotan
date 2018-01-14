@@ -27,8 +27,7 @@ TARGET = $(WD).a
 
 include Makefile.in
 
-CFLAGS += -I kernel -I servers/fs
-CSRCS += $(wildcard $(WD)/*.c)
+CFLAGS += -I servers/fs
 
 $(TARGET): $(OBJS)
 	$(AR) rsv $@ $?

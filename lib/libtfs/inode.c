@@ -68,7 +68,7 @@ Version 2, June 1991
 #include <fs/nconfig.h>
 #include <sys/errno.h>
 #include <sys/unistd.h>
-#include "../../../lib/libserv/libserv.h"
+#include "../libserv/libserv.h"
 #include "func.h"
 
 #ifndef ROUNDUP

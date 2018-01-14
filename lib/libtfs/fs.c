@@ -92,7 +92,7 @@ Version 2, June 1991
 #include <string.h>
 #include <sys/errno.h>
 #include "func.h"
-#include "../../../lib/libserv/libserv.h"
+#include "../libserv/libserv.h"
 
 
 static int sfs_mount (ID device, struct fs *rootfsp, struct inode *rootfile);

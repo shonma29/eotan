@@ -29,5 +29,8 @@ include Makefile.in
 
 CFLAGS = -Wall -Werror -O2 -std=gnu99
 
+$(WD)/block.o: $(WD)/block.c
+	$(CC) -I include -c -o $@ $<
+
 $(TARGET): $(OBJS)
-	$(CC) -o $@ $(@).o lib/libtfs.a
+	$(CC) -o $@ $(@).o $(WD)/block.o lib/libtfs.a

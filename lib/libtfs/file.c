@@ -114,7 +114,7 @@ Version 2, June 1991
 #include <string.h>
 #include <mpu/memory.h>
 #include <sys/errno.h>
-#include "../../../lib/libserv/libserv.h"
+#include "../libserv/libserv.h"
 #include "func.h"
 
 #ifndef MIN

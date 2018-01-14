@@ -18,7 +18,7 @@ Version 2, June 1991
 #include <fs/sfs.h>
 #include <fs/vfs.h>
 #include <sys/stat.h>
-#include "../vfs.h"
+#include "vfs.h"
 
 extern vfs_operation_t sfs_fsops;
 

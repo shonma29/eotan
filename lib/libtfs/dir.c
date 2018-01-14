@@ -57,7 +57,7 @@ Version 2, June 1991
 #include <nerve/kcall.h>
 #include <sys/dirent.h>
 #include <sys/errno.h>
-#include "../../../lib/libserv/libserv.h"
+#include "../libserv/libserv.h"
 #include "func.h"
 
 static int append_entry(struct inode *parent, char *fname, struct inode *ip,
