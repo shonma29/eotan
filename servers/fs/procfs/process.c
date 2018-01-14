@@ -181,14 +181,14 @@ W proc_exit(W procid)
     procp = &proc_table[procid];
     /* working directory の開放 */
     if (procp->session.cwd != NULL) {
-	fs_close_file(procp->session.cwd);
+	dealloc_inode(procp->session.cwd);
 	procp->session.cwd = NULL;
     }
 
     /* open されているファイルの close */
     for (i = 0; i < MAX_OPEN; ++i) {
 	if (procp->session.files[i].f_inode != NULL) {
-	    fs_close_file(procp->session.files[i].f_inode);
+	    dealloc_inode(procp->session.files[i].f_inode);
 	    procp->session.files[i].f_inode = NULL;
 	}
     }

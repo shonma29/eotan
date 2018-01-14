@@ -67,7 +67,7 @@ int if_chdir(fs_request *req)
 	 * エラーとする
 	 * 
 	 */
-	fs_close_file(ipp);
+	dealloc_inode(ipp);
 	return ENOTDIR;
     }
 

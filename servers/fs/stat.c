@@ -55,7 +55,7 @@ int if_chmod(fs_request *req)
 
     ipp->i_mode = (ipp->i_mode & S_IFMT) | req->packet.args.arg2;
     err = OPS(ipp).wstat(ipp);
-    fs_close_file(ipp);
+    dealloc_inode(ipp);
     if (err)
 	return err;
 

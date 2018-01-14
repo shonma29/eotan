@@ -244,7 +244,7 @@ int sfs_i_link(struct inode * parent, char *fname, struct inode * srcip,
     /* リンク先にファイルが存在していたらエラー */
     error_no = fs_lookup(parent, fname, O_RDONLY, 0, acc, &ip);
     if (error_no == EOK) {
-	fs_close_file(ip);
+	dealloc_inode(ip);
 	return (EEXIST);
     }
 
@@ -274,20 +274,20 @@ sfs_i_unlink(struct inode * parent, char *fname, struct permission * acc)
 	return (error_no);
     }
     if ((ip->i_mode & S_IFMT) == S_IFDIR) {
-	fs_close_file(ip);
+	dealloc_inode(ip);
 	return (EISDIR);
     }
 
     /* ファイルの名前の最後の１つで，使用中なら削除しない */
     struct sfs_inode *sfs_inode = ip->i_private;
     if ((sfs_inode->i_nlink == 1) && (ip->i_refcount >= 2)) {
-	fs_close_file(ip);
+	dealloc_inode(ip);
 	return (EBUSY);
     }
 
     error_no = remove_entry(parent, fname, ip);
     if (error_no) {
-	fs_close_file(ip);
+	dealloc_inode(ip);
 	return (error_no);
     }
 
@@ -295,7 +295,7 @@ sfs_i_unlink(struct inode * parent, char *fname, struct permission * acc)
 	sfs_i_truncate(ip, 0);
 	sfs_free_inode(ip->i_fs, ip);
     }
-    fs_close_file(ip);
+    dealloc_inode(ip);
     return (EOK);
 }
 
@@ -362,7 +362,7 @@ sfs_i_mkdir(struct inode * parent,
     error_no = sfs_i_write(newip, 0, (B *) dir, sizeof(dir), &rsize);
     if (error_no) {
 	sfs_free_inode(newip->i_fs, newip);
-	fs_close_file(newip);
+	dealloc_inode(newip);
 	return (error_no);
     }
 
@@ -370,7 +370,7 @@ sfs_i_mkdir(struct inode * parent,
     if (error_no) {
 	sfs_i_truncate(newip, 0);
 	sfs_free_inode(newip->i_fs, newip);
-	fs_close_file(newip);
+	dealloc_inode(newip);
 	return (error_no);
     }
 
@@ -396,22 +396,22 @@ int sfs_i_rmdir(struct inode * parent, char *fname, struct permission * acc)
 	return (error_no);
     }
     if ((ip->i_mode & S_IFMT) != S_IFDIR) {
-	fs_close_file(ip);
+	dealloc_inode(ip);
 	return (ENOTDIR);
     }
     if (ip->i_refcount >= 2) {
-	fs_close_file(ip);
+	dealloc_inode(ip);
 	return (EBUSY);
     }
     nentry = sfs_read_dir(ip, 0, NULL);
     if (nentry >= 3) {
-	fs_close_file(ip);
+	dealloc_inode(ip);
 	return (ENOTEMPTY);
     }
 
     error_no = remove_entry(parent, fname, ip);
     if (error_no) {
-	fs_close_file(ip);
+	dealloc_inode(ip);
 	return (error_no);
     }
 
@@ -425,7 +425,7 @@ int sfs_i_rmdir(struct inode * parent, char *fname, struct permission * acc)
     time_get(&(sfs_inode->i_ctime));
     parent->i_dirty = 1;
 
-    fs_close_file(ip);
+    dealloc_inode(ip);
     return (EOK);
 }
 

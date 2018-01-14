@@ -190,7 +190,7 @@ sfs_i_create(struct inode * parent,
     error_no = sfs_write_dir(parent, dirnentry, &dirent);
     if (error_no != EOK) {
 	sfs_free_inode(newip->i_fs, newip);
-	fs_close_file(newip);
+	dealloc_inode(newip);
 	return (error_no);
     }
 

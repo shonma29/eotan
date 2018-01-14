@@ -511,7 +511,7 @@ fs_create_file(struct inode * startip,
     parent_length += 1;
 
     if ((parent_ip->i_mode & S_IFMT) != S_IFDIR) {
-	fs_close_file(parent_ip);
+	dealloc_inode(parent_ip);
 	return (ENOTDIR);
     }
 
@@ -519,28 +519,11 @@ fs_create_file(struct inode * startip,
 	    & (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
     error_no = OPS(parent_ip).create(parent_ip,
 			&path[parent_length], oflag, mode, acc, newip);
-    fs_close_file(parent_ip);
+    dealloc_inode(parent_ip);
     if (error_no) {
 	return (error_no);
     }
     return (EOK);
-}
-
-
-
-/* fs_close_file -
- *
- */
-W fs_close_file(struct inode * ip)
-{
-    W error_no;
-
-    error_no = dealloc_inode(ip);
-    if (error_no) {
-	return (error_no);
-    }
-
-    return (error_no);
 }
 
 
@@ -721,7 +704,7 @@ fs_remove_file(struct inode * startip, B * path, struct permission * acc)
     parent_length += 1;
 
     error_no = OPS(parent_ip).unlink(parent_ip, &path[parent_length], acc);
-    fs_close_file(parent_ip);
+    dealloc_inode(parent_ip);
     if (error_no) {
 	return (error_no);
     }
@@ -749,7 +732,7 @@ W fs_remove_dir(struct inode * startip, B * path, struct permission * acc)
     parent_length += 1;
 
     error_no = OPS(parent_ip).rmdir(parent_ip, &path[parent_length], acc);
-    fs_close_file(parent_ip);
+    dealloc_inode(parent_ip);
     if (error_no) {
 	return (error_no);
     }
@@ -806,14 +789,14 @@ W fs_create_dir(struct inode * startip,
     parent_length += 1;
 
     if ((parent_ip->i_mode & S_IFMT) != S_IFDIR) {
-	fs_close_file(parent_ip);
+	dealloc_inode(parent_ip);
 	return (ENOTDIR);
     }
 
     mode &= parent_ip->i_mode & (S_IRWXU | S_IRWXG | S_IRWXO);
     error_no = OPS(parent_ip).mkdir(parent_ip, &path[parent_length], mode, acc, newip);
 
-    fs_close_file(parent_ip);
+    dealloc_inode(parent_ip);
     if (error_no) {
 	return (error_no);
     }
@@ -849,7 +832,7 @@ fs_link_file(W procid, B * src, B * dst, struct permission * acc)
 
     /* リンク元がディレクトリならエラー */
     if ((srcip->i_mode & S_IFMT) == S_IFDIR) {
-	fs_close_file(srcip);
+	dealloc_inode(srcip);
 	return (EISDIR);
     }
 
@@ -875,16 +858,16 @@ fs_link_file(W procid, B * src, B * dst, struct permission * acc)
 
     /* ファイルシステムを跨ぐリンクにならないことをチェックする */
     if (srcip->i_fs != parent_ip->i_fs) {
-	fs_close_file(parent_ip);
-	fs_close_file(srcip);
+	dealloc_inode(parent_ip);
+	dealloc_inode(srcip);
 	return (EXDEV);
     }
 
     /* 各ファイルシステムの link 関数を呼び出す */
     error_no = OPS(parent_ip).link(parent_ip, &dst[parent_length], srcip, acc);
 
-    fs_close_file(parent_ip);
-    fs_close_file(srcip);
+    dealloc_inode(parent_ip);
+    dealloc_inode(srcip);
     if (error_no) {
 	return (error_no);
     }

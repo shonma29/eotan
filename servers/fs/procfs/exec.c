@@ -157,7 +157,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 
     } while (false);
 
-    fs_close_file(ip);
+    dealloc_inode(ip);
 
     if (error_no) {
 	return (error_no);

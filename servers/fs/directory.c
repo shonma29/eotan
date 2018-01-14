@@ -130,7 +130,7 @@ if_mkdir (fs_request *req)
       /* ファイルがオープンできない */
       return error_no;
   
-  fs_close_file (newip);
+  dealloc_inode (newip);
   put_response (req->rdvno, EOK, 0, 0);
   return EOK;
 }  

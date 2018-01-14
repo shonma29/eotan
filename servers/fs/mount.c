@@ -85,7 +85,7 @@ int if_mount(fs_request *req)
 
     /* block device かどうかのチェック */
     if ((device->i_mode & S_IFMT) != S_IFBLK) {
-	fs_close_file(device);
+	dealloc_inode(device);
 	return EINVAL;
     }
 
@@ -93,25 +93,25 @@ int if_mount(fs_request *req)
 		     caller, (UB*)(req->packet.args.arg2),
 		     (UB*)(req->buf));
     if (error_no) {
-	fs_close_file(device);
+	dealloc_inode(device);
 	return error_no;
     }
 
     error_no = fs_open_file(req->buf, O_RDWR, 0, &acc, startip, &mountpoint);
     if (error_no) {
-	fs_close_file(device);
+	dealloc_inode(device);
 	return error_no;
     }
 
     if (mountpoint->i_refcount > 1) {
-	fs_close_file(device);
-	fs_close_file(mountpoint);
+	dealloc_inode(device);
+	dealloc_inode(mountpoint);
 	return EBUSY;
     }
 
     if ((mountpoint->i_mode & S_IFMT) != S_IFDIR) {
-	fs_close_file(device);
-	fs_close_file(mountpoint);
+	dealloc_inode(device);
+	dealloc_inode(mountpoint);
 	return ENOTDIR;
     }
 
@@ -119,13 +119,13 @@ int if_mount(fs_request *req)
 	fs_mount(device->i_dev, mountpoint, req->packet.args.arg3, fstype);
 
     if (error_no == EOK) {
-	fs_close_file(device);
+	dealloc_inode(device);
 	put_response(req->rdvno, EOK, 0, 0);
 	return EOK;
     }
 
-    fs_close_file(device);
-    fs_close_file(mountpoint);
+    dealloc_inode(device);
+    dealloc_inode(mountpoint);
     return error_no;
 }
 
@@ -167,7 +167,7 @@ int if_unmount(fs_request *req)
 	break;
     }
 
-    fs_close_file(umpoint);
+    dealloc_inode(umpoint);
     if (error_no == EOK) {
 	error_no = fs_unmount(device);
     }

@@ -148,7 +148,6 @@ extern W fs_unmount(UW device);
 
 extern W fs_open_file(B * path, W oflag, W mode, struct permission *acc,
 		      struct inode *startip, struct inode **newip);
-extern W fs_close_file(struct inode *ip);
 extern W fs_lookup(struct inode *startip, char *path, W oflag,
 		   W mode, struct permission *acc, struct inode **newip);
 extern W fs_read_file(struct inode *ip, W start, B * buf, W length,
