@@ -73,7 +73,6 @@ Version 2, June 1991
 #endif
 
 static W	sfs_get_inode_offset (struct fs *fsp, W ino);
-static W sfs_write_inode(struct fs * fsp, struct sfs_inode * ip);
 
 
 
@@ -82,7 +81,6 @@ static W sfs_write_inode(struct fs * fsp, struct sfs_inode * ip);
  * sfs_get_inode_offset()
  * sfs_read_inode()
  * sfs_alloc_inode()
- * sfs_write_inode()
  */
 
 
@@ -183,19 +181,6 @@ W sfs_alloc_inode(struct fs * fsp, struct inode *ip)
 }
 
 
-/* sfs_write_inode -
- *
- */
-static W sfs_write_inode(struct fs * fsp, struct sfs_inode * ip)
-{
-    if (!cache_modify(ip)) {
-	return EIO;
-    }
-
-    return (EOK);
-}
-
-
 /* sfs_free_inode -
  *
  */
@@ -291,7 +276,7 @@ int sfs_i_close(struct inode * ip)
     W err;
 
 #ifdef FMDEBUG
-    dbg_printf("sfs: sfs_i_sync\n");
+    dbg_printf("sfs: sfs_i_close\n");
 #endif
     struct sfs_inode *sfs_inode = ip->i_private;
     if (!sfs_inode) {
@@ -308,10 +293,10 @@ int sfs_i_close(struct inode * ip)
     sfs_inode->i_mode = ip->i_mode;
 
     if (ip->i_dirty) {
-	err = sfs_write_inode(ip->i_fs, sfs_inode);
-	if (err) {
-	    return (err);
+	if (!cache_modify(ip)) {
+	    return EIO;
 	}
+
 	ip->i_dirty = 0;
     }
 
@@ -321,7 +306,7 @@ int sfs_i_close(struct inode * ip)
     }
 
 #ifdef FMDEBUG
-    dbg_printf("sfs: sfs_i_sync: done\n");
+    dbg_printf("sfs: sfs_i_close: done\n");
 #endif
 
     return (EOK);

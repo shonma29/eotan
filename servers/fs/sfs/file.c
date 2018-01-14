@@ -341,9 +341,6 @@ int sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 	size -= copysize;
     }
 
-    /* cache の sync をここで行う必要はあるか? */
-    cache_synchronize(&(fsp->dev), 0);
-
     /* もし、書き込みをおこなった後にファイルのサイズが増えていれば、
      * サイズを更新して inode を書き込む。
      */
