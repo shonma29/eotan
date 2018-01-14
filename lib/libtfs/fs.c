@@ -95,9 +95,9 @@ Version 2, June 1991
 #include "../libserv/libserv.h"
 
 
-static int sfs_mount (ID device, struct fs *rootfsp, struct inode *rootfile);
-static int sfs_unmount(struct fs * rootfsp);
-static int sfs_statvfs(struct fs *, struct statvfs *);
+static int sfs_mount (ID device, vfs_t *rootfsp, vnode_t *rootfile);
+static int sfs_unmount(vfs_t * rootfsp);
+static int sfs_statvfs(vfs_t *, struct statvfs *);
 
 vfs_operation_t sfs_fsops = {
     sfs_mount,
@@ -125,12 +125,12 @@ vfs_operation_t sfs_fsops = {
 /* sfs_mount -
  *
  */
-static int sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
+static int sfs_mount(ID device, vfs_t *rootfsp, vnode_t *rootfile)
 {
-    block_initialize(&(rootfsp->dev));
-    rootfsp->dev.channel = device;
-    rootfsp->dev.block_size = SFS_BLOCK_SIZE;
-    rootfsp->private = cache_get(&(rootfsp->dev), 1);
+    block_initialize(&(rootfsp->device));
+    rootfsp->device.channel = device;
+    rootfsp->device.block_size = SFS_BLOCK_SIZE;
+    rootfsp->private = cache_get(&(rootfsp->device), 1);
 
     if (!(rootfsp->private))
 	return (EIO);
@@ -147,8 +147,6 @@ static int sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 	return (EINVAL);
     }
 
-    rootfsp->typeid = FS_SFS;
-
     /* root file の読み込み、inode = 1 が root file */
     W error_no = sfs_read_inode(rootfsp, 1, rootfile);
     if (error_no) {
@@ -163,27 +161,27 @@ static int sfs_mount(ID device, struct fs *rootfsp, struct inode *rootfile)
 /* sfs_unmount -
  *
  */
-static int sfs_unmount(struct fs * rootfsp)
+static int sfs_unmount(vfs_t * rootfsp)
 {
     /* super block 情報の sync とキャッシュ・データの無効化 */
     cache_release(rootfsp->private, false);
-    return cache_synchronize(&(rootfsp->dev), true);
+    return cache_synchronize(&(rootfsp->device), true);
 }
 
 
 /* sfs_syncfs -
  * 引数 umflag は unmount の時 1，それ以外の場合は 0 にする．
  */
-int sfs_syncfs(struct fs * fsp)
+int sfs_syncfs(vfs_t * fsp)
 {
-    W error_no = cache_synchronize(&(fsp->dev), false);
+    W error_no = cache_synchronize(&(fsp->device), false);
     if (error_no)
 	return (error_no);
 
     return 0;
 }
 
-static int sfs_statvfs(struct fs * fsp, struct statvfs * result)
+static int sfs_statvfs(vfs_t * fsp, struct statvfs * result)
 {
     struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
 
@@ -195,7 +193,7 @@ static int sfs_statvfs(struct fs * fsp, struct statvfs * result)
     result->f_files = sb->ninode;
     result->f_ffree = sb->freeinode;
     result->f_favail = sb->freeinode;
-    result->f_fsid = fsp->typeid;
+    result->f_fsid = FS_SFS;
     result->f_flag = 0;
     result->f_namemax = SFS_MAXNAMELEN;
     return 0;

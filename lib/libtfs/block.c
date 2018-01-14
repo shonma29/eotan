@@ -62,9 +62,9 @@ Version 2, June 1991
 #include "func.h"
 
 
-static W sfs_get_indirect_block_num (struct fs *fsp,
+static W sfs_get_indirect_block_num (vfs_t *fsp,
 				     struct sfs_inode *ip, W blockno);
-static W sfs_set_indirect_block_num (struct fs *fsp, 
+static W sfs_set_indirect_block_num (vfs_t *fsp, 
 				     struct sfs_inode *ip, W blockno, W newblock);
 
 /* ブロックに関係している処理
@@ -78,7 +78,7 @@ static W sfs_set_indirect_block_num (struct fs *fsp,
 /* sfs_alloc_block - ブロックをひとつアロケートする
  *
  */
-W sfs_alloc_block(struct fs * fsp)
+W sfs_alloc_block(vfs_t * fsp)
 {
     struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
     W i, s;
@@ -92,7 +92,7 @@ W sfs_alloc_block(struct fs * fsp)
     for (i = s; i < sb->bitmapsize; i++) {
 	W j;
 
-	buf = cache_get(&(fsp->dev), i + 2);
+	buf = cache_get(&(fsp->device), i + 2);
 	for (j = (i == s)? (((sb->bsearch - 1) / 8) % sb->blksize):0;
 		j < sb->blksize; j++)
 	    if (buf[j] & 0xff) {
@@ -131,7 +131,7 @@ W sfs_alloc_block(struct fs * fsp)
 /* sfs_free_block - ブロックをひとつ解放する。
  *
  */
-W sfs_free_block(struct fs * fsp, W blockno)
+W sfs_free_block(vfs_t * fsp, W blockno)
 {
     struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
     W mask;
@@ -144,7 +144,7 @@ W sfs_free_block(struct fs * fsp, W blockno)
     }
 
     s = blockno / (8 * sb->blksize);
-    buf = cache_get(&(fsp->dev), s + 2);
+    buf = cache_get(&(fsp->device), s + 2);
     s = (blockno / 8) % sb->blksize;
 
     mask = 0x01;
@@ -153,7 +153,7 @@ W sfs_free_block(struct fs * fsp, W blockno)
     cache_release(buf, true);
 
     /* キャッシュに残っているデータを無効にする */
-    cache_invalidate(&(fsp->dev), blockno);
+    cache_invalidate(&(fsp->device), blockno);
 
     sb->freeblock++;
 
@@ -166,14 +166,14 @@ W sfs_free_block(struct fs * fsp, W blockno)
     return 0;
 }
 
-W sfs_free_indirect(struct fs * fsp, struct sfs_inode * ip,
+W sfs_free_indirect(vfs_t * fsp, struct sfs_inode * ip,
 		    int offset, int inblock)
 {
     int i;
     struct sfs_indirect *inbufp;
 
     if (offset != 0) {
-	inbufp = cache_get(&(fsp->dev), ip->i_indirect[inblock]);
+	inbufp = cache_get(&(fsp->device), ip->i_indirect[inblock]);
 
 	for (i = offset; i < SFS_INDIRECT_BLOCK; ++i)
 	    if (inbufp->in_block[i] > 0) {
@@ -189,7 +189,7 @@ W sfs_free_indirect(struct fs * fsp, struct sfs_inode * ip,
 	if (ip->i_indirect[i] > 0) {
 	    int j;
 
-	    inbufp = cache_get(&(fsp->dev), ip->i_indirect[i]);
+	    inbufp = cache_get(&(fsp->device), ip->i_indirect[i]);
 
 	    for (j = 0; j < SFS_INDIRECT_BLOCK; ++j)
 		if (inbufp->in_block[j] > 0)
@@ -208,7 +208,7 @@ W sfs_free_indirect(struct fs * fsp, struct sfs_inode * ip,
  *
  */
 W
-sfs_get_block_num(struct fs * fsp, struct sfs_inode * ip, W blockno)
+sfs_get_block_num(vfs_t * fsp, struct sfs_inode * ip, W blockno)
 {
     if (blockno < (SFS_INDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK))
 	/* 一重間接ブロックの範囲内
@@ -220,7 +220,7 @@ sfs_get_block_num(struct fs * fsp, struct sfs_inode * ip, W blockno)
 
 
 static W
-sfs_get_indirect_block_num(struct fs * fsp, struct sfs_inode * ip,
+sfs_get_indirect_block_num(vfs_t * fsp, struct sfs_inode * ip,
 			   W blockno)
 {
     W inblock = blockno / SFS_INDIRECT_BLOCK;
@@ -231,7 +231,7 @@ sfs_get_indirect_block_num(struct fs * fsp, struct sfs_inode * ip,
     if (ip->i_indirect[inblock] <= 0)
 	return (-1);
 
-    inbufp = cache_get(&(fsp->dev), ip->i_indirect[inblock]);
+    inbufp = cache_get(&(fsp->device), ip->i_indirect[inblock]);
     bn = inbufp->in_block[inblock_offset];
 
     return (bn);
@@ -239,7 +239,7 @@ sfs_get_indirect_block_num(struct fs * fsp, struct sfs_inode * ip,
 
 
 W
-sfs_set_block_num(struct fs * fsp,
+sfs_set_block_num(vfs_t * fsp,
 		  struct sfs_inode * ip, W blockno, W newblock)
 {
     if (newblock < 0)
@@ -257,7 +257,7 @@ sfs_set_block_num(struct fs * fsp,
 
 
 static W
-sfs_set_indirect_block_num(struct fs * fsp,
+sfs_set_indirect_block_num(vfs_t * fsp,
 			   struct sfs_inode * ip, W blockno, W newblock)
 {
     W inblock = blockno / SFS_INDIRECT_BLOCK;
@@ -268,10 +268,10 @@ sfs_set_indirect_block_num(struct fs * fsp,
 	W newinblock = sfs_alloc_block(fsp);
 
 	ip->i_indirect[inblock] = newinblock;
-	inbufp = cache_create(&(fsp->dev), newinblock);
+	inbufp = cache_create(&(fsp->device), newinblock);
 
     } else
-	inbufp = cache_get(&(fsp->dev), ip->i_indirect[inblock]);
+	inbufp = cache_get(&(fsp->device), ip->i_indirect[inblock]);
 
     inbufp->in_block[inblock_offset] = newblock;
     cache_release(inbufp, true);

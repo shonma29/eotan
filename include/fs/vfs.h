@@ -27,6 +27,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stddef.h>
+#ifdef HOST_APP
+#include "../../include/set/list.h"
+#else
+#include <set/list.h>
+#endif
 
 typedef struct _block_device_t {
 	int channel;
@@ -57,10 +62,30 @@ typedef struct {
 	int (*write)();
 } vfs_operation_t;
 
-typedef struct {
-	block_device_t *device;
-	vfs_operation_t *operation;
+typedef struct _vfs_t {
+	list_t bros;
+	block_device_t device;
+	void *private;
+	struct _vnode_t *root;
+	struct _vnode_t *origin;
+	list_t vnodes;
+	vfs_operation_t operations;
 } vfs_t;
+
+typedef struct _vnode_t {
+	list_t bros;
+	vfs_t *fs;
+	unsigned int index;
+	unsigned int mode;
+	size_t size;
+	size_t nblock;
+	void *private;
+	bool dirty;
+	unsigned int refer_count;
+	unsigned int lock_count;
+	struct _vnode_t *covered;
+	int dev;
+} vnode_t;
 
 extern void block_initialize(block_device_t *);
 

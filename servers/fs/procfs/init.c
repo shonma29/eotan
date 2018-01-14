@@ -113,7 +113,7 @@ static W create_init(ID process_id)
 	p->proc_status = PS_RUN;
 
 	p->session.cwd = rootfile;
-	rootfile->i_refcount++;
+	rootfile->refer_count++;
 
 	p->proc_pid = process_id;
 	p->proc_ppid = INIT_PPID;

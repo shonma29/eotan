@@ -70,7 +70,7 @@ if_dup (fs_request *req)
   if (error_no)
       return error_no;
 
-  fp->f_inode->i_refcount++;
+  fp->f_inode->refer_count++;
   error_no = proc_set_file (req->packet.procid, newfileid, fp->f_omode, fp->f_inode);
   if (error_no)
       return error_no;
@@ -106,7 +106,7 @@ if_dup2 (fs_request *req)
 
     fp2->f_inode = NULL;
   }
-  fp->f_inode->i_refcount++;
+  fp->f_inode->refer_count++;
   error_no = proc_set_file(req->packet.procid, req->packet.args.arg2,
 			fp->f_omode, fp->f_inode);
   if (error_no)
@@ -136,7 +136,7 @@ int if_lseek(fs_request *req)
 	break;
 
     case SEEK_END:
-	fp->f_offset = fp->f_inode->i_size + *offp;
+	fp->f_offset = fp->f_inode->size + *offp;
 	break;
 
     default:
@@ -146,10 +146,10 @@ int if_lseek(fs_request *req)
     if (fp->f_offset < 0) {
 	fp->f_offset = 0;
     }
-    else if (fp->f_inode->i_mode & S_IFCHR) {
-      if (fp->f_offset > fp->f_inode->i_size) {
+    else if (fp->f_inode->mode & S_IFCHR) {
+      if (fp->f_offset > fp->f_inode->size) {
 	/* ブロックデバイスなど，サイズの制限のあるデバイスの場合 */
-	fp->f_offset = fp->f_inode->i_size;
+	fp->f_offset = fp->f_inode->size;
       }
     }
 
@@ -163,8 +163,8 @@ int if_open(fs_request *req)
 {
     W fileid;
     W error_no;
-    struct inode *startip;
-    struct inode *newip;
+    vnode_t *startip;
+    vnode_t *newip;
     struct permission acc;
 
     error_no = proc_alloc_fileid(req->packet.procid, &fileid);
@@ -192,7 +192,7 @@ int if_open(fs_request *req)
 	/* ファイルがオープンできない */
 	return error_no;
 
-    if ((newip->i_mode & S_IFMT) == S_IFDIR) {
+    if ((newip->mode & S_IFMT) == S_IFDIR) {
 	/* ファイルは、ディレクトリだった
 	 * エラーとする
 	 */
@@ -280,16 +280,16 @@ int if_write(fs_request *req)
     if (fp->f_omode == O_RDONLY)
 	return EBADF;
 
-    if ((! (fp->f_inode->i_mode & S_IFCHR)) &&
-	(fp->f_offset > fp->f_inode->i_size)) {
+    if ((! (fp->f_inode->mode & S_IFCHR)) &&
+	(fp->f_offset > fp->f_inode->size)) {
       /* 通常ファイルで，書き込む場所がファイルの内容が存在しない場所 */
       /* そこまでを 0 で埋める */
       memset(req->buf, 0, sizeof(req->buf));
-      for (rest_length = fp->f_offset - fp->f_inode->i_size;
+      for (rest_length = fp->f_offset - fp->f_inode->size;
 	   rest_length > 0; rest_length -= rlength) {
 	len = rest_length > sizeof(req->buf) ? sizeof(req->buf) : rest_length;
 	error_no = fs_write_file(fp->f_inode,
-			      fp->f_inode->i_size, req->buf, len, &rlength);
+			      fp->f_inode->size, req->buf, len, &rlength);
 	if (error_no || (rlength < len)) {
 	  break;
 	}

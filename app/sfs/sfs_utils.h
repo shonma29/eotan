@@ -13,7 +13,7 @@ Version 2, June 1991
 #ifndef __APP_SFS_UTILS_H__
 #define __APP_SFS_UTILS_H__	1
 
-
+#define HOST_APP
 #include "../../include/core/types.h"
 #include "../../include/fs/sfs.h"
 #include "../../include/fs/vfs.h"

@@ -35,8 +35,8 @@ Version 2, June 1991
 
 int if_chmod(fs_request *req)
 {
-    struct inode *startip;
-    struct inode *ipp;
+    vnode_t *startip;
+    vnode_t *ipp;
     struct permission acc;
     W err;
 
@@ -53,8 +53,8 @@ int if_chmod(fs_request *req)
     if (err)
 	return ENOENT;
 
-    ipp->i_mode = (ipp->i_mode & S_IFMT) | req->packet.args.arg2;
-    err = OPS(ipp).wstat(ipp);
+    ipp->mode = (ipp->mode & S_IFMT) | req->packet.args.arg2;
+    err = ipp->fs->operations.wstat(ipp);
     dealloc_inode(ipp);
     if (err)
 	return err;
@@ -75,10 +75,10 @@ int if_fstat(fs_request *req)
     if (error_no)
 	return error_no;
 
-    else if (fp->f_inode->i_fs == NULL)
+    else if (fp->f_inode->fs == NULL)
 	return EINVAL;
 
-    fp->f_inode->i_fs->ops.stat(fp->f_inode, &st);
+    fp->f_inode->fs->operations.stat(fp->f_inode, &st);
 
     error_no =
 	kcall->region_put(get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg2), sizeof(struct stat),

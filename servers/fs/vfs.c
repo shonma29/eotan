@@ -170,20 +170,20 @@ static struct fs_entry fs_table[] = {
 };
 
 
-static struct fs fs_buf[MAX_MOUNT], *rootfs = NULL;
+static vfs_t fs_buf[MAX_MOUNT], *rootfs = NULL;
 static list_t free_fs;
-static struct inode inode_buf[MAX_INODE];
+static vnode_t inode_buf[MAX_INODE];
 static list_t free_inode;
-struct inode *rootfile = NULL;
+vnode_t *rootfile = NULL;
 static W mode_map[] = { R_OK, W_OK, R_OK | W_OK };
 
-static struct fs *alloc_fs(void);
-static void dealloc_fs(struct fs *);
-static W fs_create_file(struct inode *startip, char *path, W oflag,
+static vfs_t *alloc_fs(void);
+static void dealloc_fs(vfs_t *);
+static W fs_create_file(vnode_t *startip, char *path, W oflag,
 			W mode, struct permission *acc,
-			struct inode **newip);
-static W copy_path(char * parent_path, char * path, struct inode * startip,
-		struct inode ** parent_ip);
+			vnode_t **newip);
+static W copy_path(char * parent_path, char * path, vnode_t * startip,
+		vnode_t ** parent_ip);
 
 
 
@@ -220,7 +220,7 @@ W fs_init(void)
  */
 W open_special_devices(struct proc * procp)
 {
-    struct inode *ip;
+    vnode_t *ip;
     device_info_t *p;
 
     p = device_find(get_device_id(DEVICE_MAJOR_CONS, 0));
@@ -232,12 +232,12 @@ W open_special_devices(struct proc * procp)
 	if (ip == NULL) {
 	    return (ENOMEM);
 	}
-	ip->i_mode = S_IFCHR;
-	ip->i_dev = p->id;
-	ip->i_fs = rootfs;
-	ip->i_index = -1;
-	ip->i_size = p->size;
-	ip->i_nblock = 0;
+	ip->mode = S_IFCHR;
+	ip->dev = p->id;
+	ip->fs = rootfs;
+	ip->index = -1;
+	ip->size = p->size;
+	ip->nblock = 0;
 	fs_register_inode(ip);
 
 	/* 標準出力の設定 */
@@ -247,12 +247,12 @@ W open_special_devices(struct proc * procp)
 	if (ip == NULL) {
 	    return (ENOMEM);
 	}
-	ip->i_mode = S_IFCHR;
-	ip->i_dev = p->id;
-	ip->i_fs = rootfs;
-	ip->i_index = -2;
-	ip->i_size = p->size;
-	ip->i_nblock = 0;
+	ip->mode = S_IFCHR;
+	ip->dev = p->id;
+	ip->fs = rootfs;
+	ip->index = -2;
+	ip->size = p->size;
+	ip->nblock = 0;
 	fs_register_inode(ip);
 
 	/* 標準エラー出力の設定 */
@@ -262,12 +262,12 @@ W open_special_devices(struct proc * procp)
 	if (ip == NULL) {
 	    return (ENOMEM);
 	}
-	ip->i_mode = S_IFCHR;
-	ip->i_dev = p->id;
-	ip->i_fs = rootfs;
-	ip->i_index = -3;
-	ip->i_size = p->size;
-	ip->i_nblock = 0;
+	ip->mode = S_IFCHR;
+	ip->dev = p->id;
+	ip->fs = rootfs;
+	ip->index = -3;
+	ip->size = p->size;
+	ip->nblock = 0;
 	fs_register_inode(ip);
     }
 
@@ -281,10 +281,10 @@ W open_special_devices(struct proc * procp)
 /* alloc_fs -
  *
  */
-static struct fs *alloc_fs(void)
+static vfs_t *alloc_fs(void)
 {
     list_t *p = list_pick(&free_fs);
-    struct fs *fsp;
+    vfs_t *fsp;
 
     if (p == NULL) {
 	return (NULL);
@@ -292,13 +292,13 @@ static struct fs *alloc_fs(void)
 
     fsp = getFsParent(p);
 
-    memset((B*)fsp, 0, sizeof(struct fs));
+    memset((B*)fsp, 0, sizeof(vfs_t));
     list_initialize(&(fsp->bros));
-    list_initialize(&(fsp->ilist));
+    list_initialize(&(fsp->vnodes));
     return (fsp);
 }
 
-static void dealloc_fs(struct fs *fsp)
+static void dealloc_fs(vfs_t *fsp)
 {
     if (fsp == NULL) {
 	return;
@@ -329,10 +329,10 @@ W find_fs(UB *fsname, W *fstype)
  */
 W
 fs_mount(const ID device,
-	 struct inode * mountpoint, W option, W fstype)
+	 vnode_t * mountpoint, W option, W fstype)
 {
-    struct fs *newfs;
-    struct inode *newip;
+    vfs_t *newfs;
+    vnode_t *newip;
     vfs_operation_t *fsp;
     W err;
 
@@ -348,7 +348,7 @@ fs_mount(const ID device,
 	/* 既に mount されていないかどうかのチェック */
 	newfs = rootfs;
 	do {
-	    if (newfs->dev.channel == device) {
+	    if (newfs->device.channel == device) {
 		return (EBUSY);
 	    }
 	    newfs = getFsParent(list_next(&(newfs->bros)));
@@ -381,18 +381,18 @@ fs_mount(const ID device,
     }
 
     /* mount されるファイルシステムの root ディレクトリの登録 */
-    newip->i_fs = newfs;
-    newfs->rootdir = newip;
-    newfs->dev.channel = device;
-    newfs->ops = *fsp;
+    newip->fs = newfs;
+    newfs->root = newip;
+    newfs->device.channel = device;
+    newfs->operations = *fsp;
 
     /* ファイルシステムのリストへ登録 */
     if (rootfs) {
 	list_append(&(rootfs->bros), &(newfs->bros));
 
 	/* mount point に coverfile を設定 */
-	mountpoint->coverfile = newip;
-	newfs->mountpoint = mountpoint;
+	mountpoint->covered = newip;
+	newfs->origin = mountpoint;
 
     } else
 	rootfs = newfs;
@@ -408,12 +408,12 @@ fs_mount(const ID device,
  */
 W fs_unmount(UW device)
 {
-    struct fs *fsp;
+    vfs_t *fsp;
 
     /* device から fsp を検索 */
     fsp = rootfs;
     do {
-	if (fsp->dev.channel == device)
+	if (fsp->device.channel == device)
 	    break;
 	fsp = getFsParent(list_next(&(fsp->bros)));
     }
@@ -423,11 +423,11 @@ W fs_unmount(UW device)
 	return (EINVAL);
     }
 
-    if (fsp->rootdir->i_refcount > 1) {
+    if (fsp->root->refer_count > 1) {
 	return (EBUSY);
     }
 
-    if (!list_is_empty(&(fsp->ilist))) {
+    if (!list_is_empty(&(fsp->vnodes))) {
 	/* マウントポイント以下のファイル/ディレクトリが使われている
 	 * BUSY のエラーで返す
 	 */
@@ -435,12 +435,12 @@ W fs_unmount(UW device)
     }
 
     /* ファイルシステム情報を解放する */
-    fsp->ops.unmount(fsp);
+    fsp->operations.unmount(fsp);
 
     /* マウントポイントを解放する */
-    fsp->mountpoint->coverfile = NULL;
-    dealloc_inode(fsp->mountpoint);
-    dealloc_inode(fsp->rootdir);
+    fsp->origin->covered = NULL;
+    dealloc_inode(fsp->origin);
+    dealloc_inode(fsp->root);
 
     /* FS list から除外 */
     dealloc_fs(fsp);
@@ -457,7 +457,7 @@ fs_open_file(B * path,
 	     W oflag,
 	     W mode,
 	     struct permission * acc,
-	     struct inode * startip, struct inode ** newip)
+	     vnode_t * startip, vnode_t ** newip)
 {
     W error_no;
 
@@ -481,7 +481,7 @@ fs_open_file(B * path,
     }
 
     if (oflag & O_TRUNC) {
-      (*newip)->i_size = 0;
+      (*newip)->size = 0;
     }
     return (EOK);
 }
@@ -491,13 +491,13 @@ fs_open_file(B * path,
  *
  */
 static W
-fs_create_file(struct inode * startip,
+fs_create_file(vnode_t * startip,
 	       char *path,
 	       W oflag,
-	       W mode, struct permission * acc, struct inode ** newip)
+	       W mode, struct permission * acc, vnode_t ** newip)
 {
     char parent_path[MAX_NAMELEN];
-    struct inode *parent_ip;
+    vnode_t *parent_ip;
     W parent_length = copy_path(parent_path, path, startip, &parent_ip);
     W error_no;
 
@@ -510,14 +510,14 @@ fs_create_file(struct inode * startip,
     }
     parent_length += 1;
 
-    if ((parent_ip->i_mode & S_IFMT) != S_IFDIR) {
+    if ((parent_ip->mode & S_IFMT) != S_IFDIR) {
 	dealloc_inode(parent_ip);
 	return (ENOTDIR);
     }
 
-    mode &= parent_ip->i_mode
+    mode &= parent_ip->mode
 	    & (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-    error_no = OPS(parent_ip).create(parent_ip,
+    error_no = parent_ip->fs->operations.create(parent_ip,
 			&path[parent_length], oflag, mode, acc, newip);
     dealloc_inode(parent_ip);
     if (error_no) {
@@ -537,12 +537,12 @@ fs_create_file(struct inode * startip,
  *
  */
 W
-fs_lookup(struct inode * startip,
+fs_lookup(vnode_t * startip,
 	  char *path,
-	  W oflag, W mode, struct permission * acc, struct inode ** newip)
+	  W oflag, W mode, struct permission * acc, vnode_t ** newip)
 {
-    struct inode *tmpip;
-    struct fs *fsp;
+    vnode_t *tmpip;
+    vfs_t *fsp;
     int len;
     char part[MAX_NAMELEN];
     W error_no;
@@ -553,7 +553,7 @@ fs_lookup(struct inode * startip,
 
     tmpip = startip;
     if ((path[0] == '/') && (path[1] == '\0')) {
-	startip->i_refcount++;
+	startip->refer_count++;
 	*newip = startip;
 	return (EOK);
     } else if (*path == '/') {
@@ -566,12 +566,12 @@ fs_lookup(struct inode * startip,
       path[len] = 0;
     }
 
-    tmpip->i_refcount++;
+    tmpip->refer_count++;
     while (*path != '\0') {
 	int i;
 
 	/* ディレクトリの実行許可のチェック */
-	error_no = OPS(tmpip).permit(tmpip, acc, X_OK);
+	error_no = tmpip->fs->operations.permit(tmpip, acc, X_OK);
 	if (error_no) {
 	    dealloc_inode(tmpip);
 	    return (error_no);
@@ -580,7 +580,7 @@ fs_lookup(struct inode * startip,
 	for (i = 0; i < MAX_NAMELEN; i++) {
 	    if ((*path == '/') || (*path == '\0')) {
 		part[i] = '\0';
-		error_no = OPS(tmpip).lookup(tmpip, part, oflag, mode, acc, newip);
+		error_no = tmpip->fs->operations.lookup(tmpip, part, oflag, mode, acc, newip);
 		if (error_no) {
 		    dealloc_inode(tmpip);
 		    return (error_no);
@@ -589,14 +589,14 @@ fs_lookup(struct inode * startip,
 		if ((tmpip == *newip) && (!strcmp("..", part))) {
 		    fsp = rootfs;
 		    do {
-			if ((fsp->mountpoint) != NULL &&
-			    (fsp->rootdir == tmpip)) {
-			    tmpip->i_refcount--;
+			if ((fsp->origin) != NULL &&
+			    (fsp->root == tmpip)) {
+			    tmpip->refer_count--;
 			    dealloc_inode(tmpip);
-			    tmpip = fsp->mountpoint;
-			    tmpip->i_refcount++;
+			    tmpip = fsp->origin;
+			    tmpip->refer_count++;
 			    error_no =
-				OPS(tmpip).lookup(tmpip, part, oflag, mode, acc,
+				tmpip->fs->operations.lookup(tmpip, part, oflag, mode, acc,
 					    newip);
 			    break;
 			}
@@ -609,7 +609,7 @@ fs_lookup(struct inode * startip,
 		 */
 		if (*path == '\0') {
 		    /* ディレクトリの許可のチェック */
-		    error_no = OPS(*newip).permit(*newip, acc, mode_map[oflag & 0x03]);
+		    error_no = (*newip)->fs->operations.permit(*newip, acc, mode_map[oflag & 0x03]);
 		    if (error_no)
 			dealloc_inode(*newip);
 		    return (error_no);
@@ -634,19 +634,19 @@ fs_lookup(struct inode * startip,
  * 
  *	
  */
-W fs_read_file(struct inode * ip, W start, B * buf, W length, W * rlength)
+W fs_read_file(vnode_t * ip, W start, B * buf, W length, W * rlength)
 {
     W error_no;
 
-    if (ip->i_dev)
-	return read_device(ip->i_dev, buf, start, length, (size_t*)rlength);
+    if (ip->dev)
+	return read_device(ip->dev, buf, start, length, (size_t*)rlength);
 
-    if (start >= ip->i_size) {
+    if (start >= ip->size) {
 	*rlength = 0;
 	return EOK;
     }
 
-    error_no = OPS(ip).read(ip, start, buf, length, rlength);
+    error_no = ip->fs->operations.read(ip, start, buf, length, rlength);
     if (error_no) {
 	return (error_no);
     }
@@ -664,17 +664,17 @@ W fs_read_file(struct inode * ip, W start, B * buf, W length, W * rlength)
  * 
  *	
  */
-W fs_write_file(struct inode * ip, W start, B * buf, W length, W * rlength)
+W fs_write_file(vnode_t * ip, W start, B * buf, W length, W * rlength)
 {
     W error_no;
 
-    if (ip->i_dev) {
+    if (ip->dev) {
 	/* スペシャルファイルだった */
-	error_no = write_device(ip->i_dev, buf, start, length, (size_t*)rlength);
+	error_no = write_device(ip->dev, buf, start, length, (size_t*)rlength);
 	return (error_no);
     }
 
-    error_no = OPS(ip).write(ip, start, buf, length, rlength);
+    error_no = ip->fs->operations.write(ip, start, buf, length, rlength);
     if (error_no) {
 	return (error_no);
     }
@@ -687,10 +687,10 @@ W fs_write_file(struct inode * ip, W start, B * buf, W length, W * rlength)
  *
  */
 W
-fs_remove_file(struct inode * startip, B * path, struct permission * acc)
+fs_remove_file(vnode_t * startip, B * path, struct permission * acc)
 {
     char parent_path[MAX_NAMELEN];
-    struct inode *parent_ip;
+    vnode_t *parent_ip;
     W parent_length = copy_path(parent_path, path, startip, &parent_ip);
     W error_no;
 
@@ -703,16 +703,16 @@ fs_remove_file(struct inode * startip, B * path, struct permission * acc)
     }
     parent_length += 1;
 
-    struct inode *ip;
+    vnode_t *ip;
     error_no = fs_lookup(parent_ip, &path[parent_length], O_RDWR, 0, acc, &ip);
     if (error_no) {
 	dealloc_inode(parent_ip);
 	return (error_no);
     }
-    if ((ip->i_mode & S_IFMT) == S_IFDIR) {
+    if ((ip->mode & S_IFMT) == S_IFDIR) {
 	error_no = EISDIR;
     } else {
-	error_no = OPS(parent_ip).unlink(parent_ip, &path[parent_length], acc);
+	error_no = parent_ip->fs->operations.unlink(parent_ip, &path[parent_length], acc);
     }
     dealloc_inode(ip);
     dealloc_inode(parent_ip);
@@ -726,10 +726,10 @@ fs_remove_file(struct inode * startip, B * path, struct permission * acc)
 /* fs_remove_dir -
  *
  */
-W fs_remove_dir(struct inode * startip, B * path, struct permission * acc)
+W fs_remove_dir(vnode_t * startip, B * path, struct permission * acc)
 {
     char parent_path[MAX_NAMELEN];
-    struct inode *parent_ip;
+    vnode_t *parent_ip;
     W parent_length = copy_path(parent_path, path, startip, &parent_ip);
     W error_no;
 
@@ -742,18 +742,18 @@ W fs_remove_dir(struct inode * startip, B * path, struct permission * acc)
     }
     parent_length += 1;
 
-    struct inode *ip;
+    vnode_t *ip;
     error_no = fs_lookup(parent_ip, &path[parent_length], O_RDWR, 0, acc, &ip);
     if (error_no) {
 	dealloc_inode(parent_ip);
 	return (error_no);
     }
-    if ((ip->i_mode & S_IFMT) != S_IFDIR) {
+    if ((ip->mode & S_IFMT) != S_IFDIR) {
 	error_no = ENOTDIR;
-    } else if (ip->i_refcount >= 2) {
+    } else if (ip->refer_count >= 2) {
 	error_no = EBUSY;
     } else {
-	error_no = OPS(parent_ip).rmdir(parent_ip, &path[parent_length], acc);
+	error_no = parent_ip->fs->operations.rmdir(parent_ip, &path[parent_length], acc);
     }
     dealloc_inode(ip);
     dealloc_inode(parent_ip);
@@ -773,10 +773,10 @@ W fs_statvfs(ID device, struct statvfs * result)
 
     for (p = list_next(&(rootfs->bros)); !list_is_edge(&(rootfs->bros), p);
 	     p = list_next(p)) {
-	struct fs *fsp = getFsParent(p);
+	vfs_t *fsp = getFsParent(p);
 
-	if (fsp->dev.channel == device) {
-	    return fsp->ops.statvfs(fsp, result);
+	if (fsp->device.channel == device) {
+	    return fsp->operations.statvfs(fsp, result);
 	}
     }
     return (ENODEV);
@@ -785,12 +785,12 @@ W fs_statvfs(ID device, struct statvfs * result)
 /*
  * fs_mkdir
  */
-W fs_create_dir(struct inode * startip,
+W fs_create_dir(vnode_t * startip,
 	      char *path,
-	      W mode, struct permission * acc, struct inode ** newip)
+	      W mode, struct permission * acc, vnode_t ** newip)
 {
     char parent_path[MAX_NAMELEN];
-    struct inode *parent_ip;
+    vnode_t *parent_ip;
     W parent_length;
     W error_no;
 
@@ -812,13 +812,13 @@ W fs_create_dir(struct inode * startip,
     }
     parent_length += 1;
 
-    if ((parent_ip->i_mode & S_IFMT) != S_IFDIR) {
+    if ((parent_ip->mode & S_IFMT) != S_IFDIR) {
 	dealloc_inode(parent_ip);
 	return (ENOTDIR);
     }
 
-    mode &= parent_ip->i_mode & (S_IRWXU | S_IRWXG | S_IRWXO);
-    error_no = OPS(parent_ip).mkdir(parent_ip, &path[parent_length], mode, acc, newip);
+    mode &= parent_ip->mode & (S_IRWXU | S_IRWXG | S_IRWXO);
+    error_no = parent_ip->fs->operations.mkdir(parent_ip, &path[parent_length], mode, acc, newip);
 
     dealloc_inode(parent_ip);
     if (error_no) {
@@ -834,8 +834,8 @@ W
 fs_link_file(W procid, B * src, B * dst, struct permission * acc)
 {
     char parent_path[MAX_NAMELEN];
-    struct inode *startip;
-    struct inode *srcip, *parent_ip;
+    vnode_t *startip;
+    vnode_t *srcip, *parent_ip;
     W parent_length;
     W error_no;
 
@@ -855,7 +855,7 @@ fs_link_file(W procid, B * src, B * dst, struct permission * acc)
     }
 
     /* リンク元がディレクトリならエラー */
-    if ((srcip->i_mode & S_IFMT) == S_IFDIR) {
+    if ((srcip->mode & S_IFMT) == S_IFDIR) {
 	dealloc_inode(srcip);
 	return (EISDIR);
     }
@@ -881,21 +881,21 @@ fs_link_file(W procid, B * src, B * dst, struct permission * acc)
     parent_length += 1;
 
     /* ファイルシステムを跨ぐリンクにならないことをチェックする */
-    if (srcip->i_fs != parent_ip->i_fs) {
+    if (srcip->fs != parent_ip->fs) {
 	dealloc_inode(parent_ip);
 	dealloc_inode(srcip);
 	return (EXDEV);
     }
 
     /* リンク先にファイルが存在していたらエラー */
-    struct inode *ip;
+    vnode_t *ip;
     error_no = fs_lookup(parent_ip, &dst[parent_length], O_RDONLY, 0, acc, &ip);
     if (error_no == EOK) {
 	dealloc_inode(ip);
 	error_no = EEXIST;
     } else {
 	/* 各ファイルシステムの link 関数を呼び出す */
-	error_no = OPS(parent_ip).link(parent_ip, &dst[parent_length], srcip);
+	error_no = parent_ip->fs->operations.link(parent_ip, &dst[parent_length], srcip);
     }
     dealloc_inode(parent_ip);
     dealloc_inode(srcip);
@@ -911,19 +911,19 @@ fs_link_file(W procid, B * src, B * dst, struct permission * acc)
 /* alloc_inode - 
  *
  */
-struct inode *alloc_inode(struct fs *fsp)
+vnode_t *alloc_inode(vfs_t *fsp)
 {
     list_t *p = list_pick(&free_inode);
-    struct inode *ip;
+    vnode_t *ip;
 
     if (p == NULL) {
 	return (NULL);
     }
 
     ip = getINodeParent(p);
-    memset((B*)ip, 0, sizeof(struct inode));
+    memset((B*)ip, 0, sizeof(vnode_t));
     list_initialize(&(ip->bros));
-    ip->i_refcount = 1;
+    ip->refer_count = 1;
 
     return (ip);
 }
@@ -933,12 +933,12 @@ struct inode *alloc_inode(struct fs *fsp)
 /* dealloc_inode -
  *
  */
-W dealloc_inode(struct inode * ip)
+W dealloc_inode(vnode_t * ip)
 {
-    ip->i_refcount--;
-    if (ip->i_refcount <= 0) {
-	if (!(ip->i_dev)) {
-	    OPS(ip).close(ip);
+    ip->refer_count--;
+    if (ip->refer_count <= 0) {
+	if (!(ip->dev)) {
+	    ip->fs->operations.close(ip);
 	}
 
 	/* fs の register_list からの取り除き */
@@ -953,16 +953,16 @@ W dealloc_inode(struct inode * ip)
 /* fs_check_inode -
  *
  */
-struct inode *fs_get_inode(struct fs *fsp, W index)
+vnode_t *fs_get_inode(vfs_t *fsp, W index)
 {
-    list_t *register_list = &(fsp->ilist);
+    list_t *register_list = &(fsp->vnodes);
     list_t *p;
 
     for (p = list_next(register_list); !list_is_edge(register_list, p);
 	    p = list_next(p)) {
-	struct inode *ip = getINodeParent(p);
+	vnode_t *ip = getINodeParent(p);
 
-	if (ip->i_index == index) {
+	if (ip->index == index) {
 	    return (ip);
 	}
     }
@@ -970,15 +970,15 @@ struct inode *fs_get_inode(struct fs *fsp, W index)
 }
 
 
-W fs_register_inode(struct inode * ip)
+W fs_register_inode(vnode_t * ip)
 {
-    list_append(&(ip->i_fs->ilist), &(ip->bros));
+    list_append(&(ip->fs->vnodes), &(ip->bros));
 
     return (EOK);
 }
 
-static W copy_path(char * parent_path, char * path, struct inode * startip,
-		struct inode ** parent_ip)
+static W copy_path(char * parent_path, char * path, vnode_t * startip,
+		vnode_t ** parent_ip)
 {
     W len;
 
@@ -993,10 +993,10 @@ static W copy_path(char * parent_path, char * path, struct inode * startip,
 
     if (len < 0) {
 	*parent_ip = startip;
-	(*parent_ip)->i_refcount++;
+	(*parent_ip)->refer_count++;
     } else if (len == 0) {
 	*parent_ip = rootfile;
-	(*parent_ip)->i_refcount++;
+	(*parent_ip)->refer_count++;
     }
 
     return len;

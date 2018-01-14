@@ -75,7 +75,7 @@ Version 2, June 1991
 #define ROUNDUP(x,align)	(((((int)x) + ((align) - 1))/(align))*(align))
 #endif
 
-static W	sfs_get_inode_offset (struct fs *fsp, W ino);
+static W	sfs_get_inode_offset (vfs_t *fsp, W ino);
 
 
 
@@ -90,7 +90,7 @@ static W	sfs_get_inode_offset (struct fs *fsp, W ino);
 /* get_inode_offset -
  *
  */
-static W sfs_get_inode_offset(struct fs *fsp, W ino)
+static W sfs_get_inode_offset(vfs_t *fsp, W ino)
 {
     W offset;
     W nblock;
@@ -109,26 +109,26 @@ static W sfs_get_inode_offset(struct fs *fsp, W ino)
 /* sfs_read_inode -
  *
  */
-W sfs_read_inode(struct fs *fsp, W ino, struct inode *ip)
+W sfs_read_inode(vfs_t *fsp, W ino, vnode_t *ip)
 {
     W offset;
     struct sfs_inode *sfs_inode;
 
     offset = sfs_get_inode_offset(fsp, ino);
-    sfs_inode = cache_get(&(fsp->dev), offset / SFS_BLOCK_SIZE);
+    sfs_inode = cache_get(&(fsp->device), offset / SFS_BLOCK_SIZE);
     if (!sfs_inode) {
 	return EIO;
     }
 
-    ip->i_index = sfs_inode->i_index;
-    ip->i_size = sfs_inode->i_size;
-    ip->i_nblock = sfs_inode->i_nblock;
-    ip->i_mode = sfs_inode->i_mode;
-    ip->i_refcount = 1;
-    ip->i_lock = 0;
-    ip->i_fs = fsp;
-    ip->i_dev =  0;
-    ip->i_private = sfs_inode;
+    ip->index = sfs_inode->i_index;
+    ip->size = sfs_inode->i_size;
+    ip->nblock = sfs_inode->i_nblock;
+    ip->mode = sfs_inode->i_mode;
+    ip->refer_count = 1;
+    ip->lock_count = 0;
+    ip->fs = fsp;
+    ip->dev =  0;
+    ip->private = sfs_inode;
 
     return (0);
 }
@@ -137,7 +137,7 @@ W sfs_read_inode(struct fs *fsp, W ino, struct inode *ip)
 /* sfs_alloc_inode -
  *
  */
-W sfs_alloc_inode(struct fs * fsp, struct inode *ip)
+W sfs_alloc_inode(vfs_t * fsp, vnode_t *ip)
 {
     W i;
     W offset;
@@ -150,26 +150,26 @@ W sfs_alloc_inode(struct fs * fsp, struct inode *ip)
 
     offset = sfs_get_inode_offset(fsp, sb->isearch);
     for (i = sb->isearch; i <= sb->ninode; i++) {
-	ipbufp = cache_get(&(fsp->dev), offset / SFS_BLOCK_SIZE);
+	ipbufp = cache_get(&(fsp->device), offset / SFS_BLOCK_SIZE);
 	if (!ipbufp) {
 	    return EIO;
 	}
 
 	offset += sizeof(struct sfs_inode);
 	if (ipbufp->i_index != i) {
-	    fsp->dev.clear(&(fsp->dev), (VP)ipbufp);
+	    fsp->device.clear(&(fsp->device), (VP)ipbufp);
 	    ipbufp->i_index = i;
 	    if (!cache_modify(ipbufp)) {
 		cache_release(ipbufp, false);
 		return EIO;
 	    }
 
-	    ip->i_private = ipbufp;
+	    ip->private = ipbufp;
 	    sb->freeinode--;
 	    sb->isearch = (i + 1);
 
 	    if (!cache_modify(fsp->private)) {
-		ip->i_private = NULL;
+		ip->private = NULL;
 		cache_release(ipbufp, false);
 		return EIO;
 	    }
@@ -187,14 +187,14 @@ W sfs_alloc_inode(struct fs * fsp, struct inode *ip)
 /* sfs_free_inode -
  *
  */
-W sfs_free_inode(struct fs * fsp, struct inode *ip)
+W sfs_free_inode(vfs_t * fsp, vnode_t *ip)
 {
-    W inode_index = ip->i_index;
-    fsp->dev.clear(&(fsp->dev), ip->i_private);
-    if (!cache_modify(ip->i_private)) {
+    W inode_index = ip->index;
+    fsp->device.clear(&(fsp->device), ip->private);
+    if (!cache_modify(ip->private)) {
 	return EIO;
     }
-    ip->i_dirty = 0;
+    ip->dirty = false;
 
     struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
     sb->freeinode++;
@@ -207,19 +207,19 @@ W sfs_free_inode(struct fs * fsp, struct inode *ip)
     return 0;
 }
 
-int sfs_stat(struct inode *ip, struct stat *st)
+int sfs_stat(vnode_t *ip, struct stat *st)
 {
-    struct sfs_superblock *sb = (struct sfs_superblock*)(ip->i_fs->private);
-    struct sfs_inode *sfs_inode = ip->i_private;
+    struct sfs_superblock *sb = (struct sfs_superblock*)(ip->fs->private);
+    struct sfs_inode *sfs_inode = ip->private;
 
-    st->st_dev = ip->i_fs->dev.channel;
-    st->st_ino = ip->i_index;
-    st->st_mode = ip->i_mode;
+    st->st_dev = ip->fs->device.channel;
+    st->st_ino = ip->index;
+    st->st_mode = ip->mode;
     st->st_nlink = sfs_inode->i_nlink;
-    st->st_size = ip->i_size;
+    st->st_size = ip->size;
     st->st_uid = sfs_inode->i_uid;
     st->st_gid = sfs_inode->i_gid;
-    st->st_rdev = ip->i_dev;
+    st->st_rdev = ip->dev;
     st->st_blksize = sb->blksize;
     st->st_blocks = ROUNDUP(st->st_size, st->st_blksize) / st->st_blksize;
     st->st_atime = sfs_inode->i_atime.sec;
@@ -229,12 +229,12 @@ int sfs_stat(struct inode *ip, struct stat *st)
     return 0;
 }
 
-int sfs_wstat(struct inode *ip)
+int sfs_wstat(vnode_t *ip)
 {
-    struct sfs_inode *sfs_inode = ip->i_private;
-    sfs_inode->i_mode = ip->i_mode;
+    struct sfs_inode *sfs_inode = ip->private;
+    sfs_inode->i_mode = ip->mode;
     time_get(&(sfs_inode->i_ctime));
-    ip->i_dirty = 1;
+    ip->dirty = true;
 
     return 0;
 }
@@ -243,12 +243,12 @@ int sfs_wstat(struct inode *ip)
  * permit -
  */
 
-int sfs_permit(struct inode * ip, struct permission * acc, UW bits)
+int sfs_permit(vnode_t * ip, struct permission * acc, UW bits)
 {
     UW mode, perm_bits;
     int shift;
 
-    mode = ip->i_mode;
+    mode = ip->mode;
     if (acc->uid == ROOT_UID) {
 	if (((mode & S_IFMT) == S_IFDIR) ||
 	    (mode & (X_OK << 6 | X_OK << 3 | X_OK))) {
@@ -257,7 +257,7 @@ int sfs_permit(struct inode * ip, struct permission * acc, UW bits)
 	    perm_bits = R_OK | W_OK;
 	}
     } else {
-	struct sfs_inode *sfs_inode = ip->i_private;
+	struct sfs_inode *sfs_inode = ip->private;
 
 	if (acc->uid == sfs_inode->i_uid)
 	    shift = 6;
@@ -274,33 +274,33 @@ int sfs_permit(struct inode * ip, struct permission * acc, UW bits)
 }
 
 
-int sfs_i_close(struct inode * ip)
+int sfs_i_close(vnode_t * ip)
 {
     W err;
 
 #ifdef FMDEBUG
     dbg_printf("sfs: sfs_i_close\n");
 #endif
-    struct sfs_inode *sfs_inode = ip->i_private;
+    struct sfs_inode *sfs_inode = ip->private;
     if (!sfs_inode) {
 	return 0;
     }
 
-    sfs_inode->i_index = ip->i_index;
-    if (ip->i_size < sfs_inode->i_size) {
-      sfs_i_truncate(ip, ip->i_size);
+    sfs_inode->i_index = ip->index;
+    if (ip->size < sfs_inode->i_size) {
+      sfs_i_truncate(ip, ip->size);
     }
 
-    sfs_inode->i_size = ip->i_size;
-    sfs_inode->i_nblock = ip->i_nblock;
-    sfs_inode->i_mode = ip->i_mode;
+    sfs_inode->i_size = ip->size;
+    sfs_inode->i_nblock = ip->nblock;
+    sfs_inode->i_mode = ip->mode;
 
-    if (ip->i_dirty) {
+    if (ip->dirty) {
 	if (!cache_modify(ip)) {
 	    return EIO;
 	}
 
-	ip->i_dirty = 0;
+	ip->dirty = false;
     }
 
     err = cache_release(sfs_inode, false);

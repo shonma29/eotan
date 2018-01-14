@@ -132,12 +132,12 @@ Version 2, June 1991
  *
  */
 int
-sfs_i_create(struct inode * parent,
+sfs_i_create(vnode_t * parent,
 	     char *fname,
 	     W oflag,
-	     W mode, struct permission * acc, struct inode ** retip)
+	     W mode, struct permission * acc, vnode_t ** retip)
 {
-    struct inode *newip;
+    vnode_t *newip;
     W error_no;
     struct sfs_dir dirent;
     W dirnentry;
@@ -145,42 +145,42 @@ sfs_i_create(struct inode * parent,
     SYSTIM clock;
 
     /* 引数のチェック */
-    newip = alloc_inode(parent->i_fs);
+    newip = alloc_inode(parent->fs);
     if (newip == NULL) {
 	return (ENOMEM);
     }
     *retip = newip;
 
     /* 新しい sfs_inode をアロケート */
-    i_index = sfs_alloc_inode(parent->i_fs, newip);
+    i_index = sfs_alloc_inode(parent->fs, newip);
     if (i_index <= 0) {
 	dealloc_inode(newip);
 	return (ENOMEM);
     }
 
     /* 設定 */
-    struct sfs_inode *sfs_inode = newip->i_private;
+    struct sfs_inode *sfs_inode = newip->private;
     memset(sfs_inode, 0, sizeof(*sfs_inode));
     time_get(&clock);
-    newip->i_fs = parent->i_fs;
-    newip->i_refcount = 1;
-    newip->i_dirty = 1;
-    sfs_inode->i_mode = newip->i_mode = mode | S_IFREG;
+    newip->fs = parent->fs;
+    newip->refer_count = 1;
+    newip->dirty = true;
+    sfs_inode->i_mode = newip->mode = mode | S_IFREG;
     sfs_inode->i_nlink = 1;
-    sfs_inode->i_index = newip->i_index = i_index;
+    sfs_inode->i_index = newip->index = i_index;
     sfs_inode->i_uid = acc->uid;
     sfs_inode->i_gid = acc->gid;
-    newip->i_dev = 0;
-    sfs_inode->i_size = newip->i_size = 0;
+    newip->dev = 0;
+    sfs_inode->i_size = newip->size = 0;
     sfs_inode->i_atime = clock;
     sfs_inode->i_ctime = clock;
     sfs_inode->i_mtime = clock;
-    sfs_inode->i_nblock = newip->i_nblock = 0;
+    sfs_inode->i_nblock = newip->nblock = 0;
 
     fs_register_inode(newip);
 
     /* ディレクトリのエントリを作成 */
-    dirent.d_index = newip->i_index;
+    dirent.d_index = newip->index;
     /* 表示文字長を SFS_MAXNAMELEN にするため．後に pad があるので大丈夫 */
     strncpy(dirent.d_name, fname, SFS_MAXNAMELEN);
     dirent.pad[0] = '\0';
@@ -189,7 +189,7 @@ sfs_i_create(struct inode * parent,
     dirnentry = sfs_read_dir(parent, 0, NULL);
     error_no = sfs_write_dir(parent, dirnentry, &dirent);
     if (error_no) {
-	sfs_free_inode(newip->i_fs, newip);
+	sfs_free_inode(newip->fs, newip);
 	dealloc_inode(newip);
 	return (error_no);
     }
@@ -201,12 +201,12 @@ sfs_i_create(struct inode * parent,
 /* sfs_i_read -
  *
  */
-int sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
+int sfs_i_read(vnode_t * ip, W start, B * buf, W length, W * rlength)
 {
     W copysize;
     W offset;
     ID fd;
-    struct fs *fsp;
+    vfs_t *fsp;
     W bn;
     B *cbuf;
 
@@ -216,11 +216,11 @@ int sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
 	 ip, start, length, buf);
 #endif
 
-    fd = ip->i_fs->dev.channel;
-    fsp = ip->i_fs;
+    fd = ip->fs->device.channel;
+    fsp = ip->fs;
 
-    if (start + length > ip->i_size) {
-	length = ip->i_size - start;
+    if (start + length > ip->size) {
+	length = ip->size - start;
     }
     if (length < 0)
 	length = 0;
@@ -228,7 +228,7 @@ int sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
     *rlength = length;
 
     struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
-    struct sfs_inode *sfs_inode = ip->i_private;
+    struct sfs_inode *sfs_inode = ip->private;
     while (length > 0) {
 #ifdef FMDEBUG
 	dbg_printf("sfs: read block: %d\n",
@@ -241,7 +241,7 @@ int sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
 	    return (EIO);
 	}
 
-	cbuf = cache_get(&(fsp->dev), bn);
+	cbuf = cache_get(&(fsp->device), bn);
 	offset = start % sb->blksize;
 	if (sb->blksize - offset < length) {
 	    copysize = sb->blksize - offset;
@@ -262,14 +262,14 @@ int sfs_i_read(struct inode * ip, W start, B * buf, W length, W * rlength)
 }
 
 
-int sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
+int sfs_i_write(vnode_t * ip, W start, B * buf, W size, W * rsize)
 {
     int copysize;
     int offset;
     int retsize;
     int filesize;
     ID fd;
-    struct fs *fsp;
+    vfs_t *fsp;
     W bn;
     B *cbuf;
 
@@ -280,11 +280,11 @@ int sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
     *rsize = 0;
     retsize = size;
     filesize = start + retsize;
-    fd = ip->i_fs->dev.channel;
-    fsp = ip->i_fs;
+    fd = ip->fs->device.channel;
+    fsp = ip->fs;
 
     struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
-    struct sfs_inode *sfs_inode = ip->i_private;
+    struct sfs_inode *sfs_inode = ip->private;
     while (size > 0) {
 #ifdef FMDEBUG
 	dbg_printf("sfs: %s\n",
@@ -306,9 +306,9 @@ int sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 	    if (bn < 0) {
 		return (EIO);
 	    }
-	    cbuf = cache_get(&(fsp->dev), bn);
+	    cbuf = cache_get(&(fsp->device), bn);
 	} else {
-	    cbuf = cache_get(&(fsp->dev), bn);
+	    cbuf = cache_get(&(fsp->device), bn);
 	}
 
 	/* 読み込んだブロックの内容を更新する
@@ -344,9 +344,9 @@ int sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
     /* もし、書き込みをおこなった後にファイルのサイズが増えていれば、
      * サイズを更新して inode を書き込む。
      */
-    if (filesize > ip->i_size) {
-	ip->i_size = filesize;
-	ip->i_nblock =
+    if (filesize > ip->size) {
+	ip->size = filesize;
+	ip->nblock =
 	    roundUp(filesize, sb->blksize) / sb->blksize;
     }
 
@@ -354,7 +354,7 @@ int sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
     time_get(&clock);
     sfs_inode->i_mtime = clock;
     sfs_inode->i_ctime = clock;
-    ip->i_dirty = 1;
+    ip->dirty = true;
     *rsize = retsize - size;
 
 #ifdef FMDEBUG
@@ -365,17 +365,17 @@ int sfs_i_write(struct inode * ip, W start, B * buf, W size, W * rsize)
 }
 
 
-W sfs_i_truncate(struct inode * ip, W newsize)
+W sfs_i_truncate(vnode_t * ip, W newsize)
 {
     int nblock, blockno, inblock, offset;
     W fd;
-    struct fs *fsp;
+    vfs_t *fsp;
     struct sfs_inode *sfs_ip;
     SYSTIM clock;
 
-    fd = ip->i_fs->dev.channel;
-    fsp = ip->i_fs;
-    struct sfs_inode *sfs_inode = ip->i_private;
+    fd = ip->fs->device.channel;
+    fsp = ip->fs;
+    struct sfs_inode *sfs_inode = ip->private;
     sfs_ip = sfs_inode;
     struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
     nblock = roundUp(newsize, sb->blksize) / sb->blksize;
@@ -391,12 +391,12 @@ W sfs_i_truncate(struct inode * ip, W newsize)
 	}
     }
 
-    ip->i_size = newsize;
-    ip->i_nblock = nblock;
+    ip->size = newsize;
+    ip->nblock = nblock;
     time_get(&clock);
     sfs_inode->i_mtime = clock;
     sfs_inode->i_ctime = clock;
-    ip->i_dirty = 1;
+    ip->dirty = true;
 
     return 0;
 }

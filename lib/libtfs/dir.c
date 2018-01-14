@@ -60,9 +60,9 @@ Version 2, June 1991
 #include "../libserv/libserv.h"
 #include "func.h"
 
-static int append_entry(struct inode *parent, char *fname, struct inode *ip,
+static int append_entry(vnode_t *parent, char *fname, vnode_t *ip,
 		bool directory);
-static int remove_entry(struct inode *parent, char *fname, struct inode *ip);
+static int remove_entry(vnode_t *parent, char *fname, vnode_t *ip);
 
 
 /* ディレクトリに関係する処理
@@ -77,7 +77,7 @@ static int remove_entry(struct inode *parent, char *fname, struct inode *ip);
  *
  */
 W
-sfs_read_dir (struct inode *parentp,
+sfs_read_dir (vnode_t *parentp,
 	      W nentry,
 	      struct sfs_dir *dirp)
 {
@@ -91,12 +91,12 @@ sfs_read_dir (struct inode *parentp,
 
   if ((nentry <= 0) || (dirp == NULL))
     {
-      return (parentp->i_size / sizeof (struct sfs_dir));
+      return (parentp->size / sizeof (struct sfs_dir));
     }
   
-  size = ((nentry * sizeof (struct sfs_dir)) <= parentp->i_size) ? 
+  size = ((nentry * sizeof (struct sfs_dir)) <= parentp->size) ?
           nentry * sizeof (struct sfs_dir) :
-	  parentp->i_size;
+	  parentp->size;
 
   error_no = sfs_i_read (parentp, 0, (char *)dirp, size, &rsize);
   if (error_no)
@@ -111,7 +111,7 @@ sfs_read_dir (struct inode *parentp,
  *
  */
 W
-sfs_write_dir (struct inode *parentp,
+sfs_write_dir (vnode_t *parentp,
 	      W nentry,
 	      struct sfs_dir *dirp)
 {
@@ -131,14 +131,14 @@ sfs_write_dir (struct inode *parentp,
 /*
  * sfs_getdetns()
  */
-int sfs_getdents(struct inode *ip, ID caller, W offset,
+int sfs_getdents(vnode_t *ip, ID caller, W offset,
 	       VP buf, UW length, W *rsize, W *fsize)
 {
   W nentry, i, s, error_no, len;
   struct dirent dent;
 
   *rsize = 0; *fsize = 0;
-  dent.d_ino = ip->i_index;
+  dent.d_ino = ip->index;
   nentry = sfs_read_dir (ip, 0, NULL);
   s = sizeof(struct sfs_dir);
   if (offset >= nentry*s) return 0;
@@ -170,10 +170,10 @@ int sfs_getdents(struct inode *ip, ID caller, W offset,
  *
  */
 int
-sfs_i_lookup(struct inode *parent,
+sfs_i_lookup(vnode_t *parent,
 	     char *fname,
 	     W oflag,
-	     W mode, struct permission *acc, struct inode **retip)
+	     W mode, struct permission *acc, vnode_t **retip)
 {
     W error_no;
     W nentry;
@@ -183,7 +183,7 @@ sfs_i_lookup(struct inode *parent,
 #endif
     if (strcmp(fname, ".") == 0) {
 	*retip = parent;
-	(*retip)->i_refcount++;
+	(*retip)->refer_count++;
 	return 0;
     }
 
@@ -208,23 +208,23 @@ sfs_i_lookup(struct inode *parent,
 	    return (ENOENT);
 	}
 
-	*retip = fs_get_inode(parent->i_fs, dirp[i].d_index);
+	*retip = fs_get_inode(parent->fs, dirp[i].d_index);
 	if (*retip) {
 	    /* すでにオープンしていたファイルだった
 	     */
-	    if ((*retip)->coverfile) {
-		*retip = (*retip)->coverfile;
+	    if ((*retip)->covered) {
+		*retip = (*retip)->covered;
 	    }
-	    (*retip)->i_refcount++;
+	    (*retip)->refer_count++;
 	    return 0;
 	}
 
-	*retip = alloc_inode(parent->i_fs);
+	*retip = alloc_inode(parent->fs);
 	if (*retip == NULL) {
 	    return (ENOMEM);
 	}
 
-	error_no = sfs_read_inode(parent->i_fs, dirp[i].d_index, *retip);
+	error_no = sfs_read_inode(parent->fs, dirp[i].d_index, *retip);
 	if (error_no) {
 	    dealloc_inode(*retip);
 	    return (error_no);
@@ -236,7 +236,7 @@ sfs_i_lookup(struct inode *parent,
 }
 
 
-int sfs_i_link(struct inode * parent, char *fname, struct inode * srcip)
+int sfs_i_link(vnode_t * parent, char *fname, vnode_t * srcip)
 {
     W error_no;
 
@@ -246,23 +246,23 @@ int sfs_i_link(struct inode * parent, char *fname, struct inode * srcip)
     }
 
     /* inode 情報の更新 */
-    struct sfs_inode *sfs_inode = srcip->i_private;
+    struct sfs_inode *sfs_inode = srcip->private;
     sfs_inode->i_nlink += 1;
     time_get(&(sfs_inode->i_ctime));
-    srcip->i_dirty = 1;
+    srcip->dirty = true;
 
     return 0;
 }
 
 
 int
-sfs_i_unlink(struct inode * parent, char *fname, struct inode *ip)
+sfs_i_unlink(vnode_t * parent, char *fname, vnode_t *ip)
 {
     W error_no;
 
     /* ファイルの名前の最後の１つで，使用中なら削除しない */
-    struct sfs_inode *sfs_inode = ip->i_private;
-    if ((sfs_inode->i_nlink == 1) && (ip->i_refcount >= 2)) {
+    struct sfs_inode *sfs_inode = ip->private;
+    if ((sfs_inode->i_nlink == 1) && (ip->refer_count >= 2)) {
 	return (EBUSY);
     }
 
@@ -273,7 +273,7 @@ sfs_i_unlink(struct inode * parent, char *fname, struct inode *ip)
 
     if (sfs_inode->i_nlink <= 0) {
 	sfs_i_truncate(ip, 0);
-	sfs_free_inode(ip->i_fs, ip);
+	sfs_free_inode(ip->fs, ip);
     }
     return 0;
 }
@@ -287,11 +287,11 @@ sfs_i_unlink(struct inode * parent, char *fname, struct inode *ip)
  *
  */
 int
-sfs_i_mkdir(struct inode * parent,
+sfs_i_mkdir(vnode_t * parent,
 	    char *fname,
-	    W mode, struct permission * acc, struct inode ** retip)
+	    W mode, struct permission * acc, vnode_t ** retip)
 {
-    struct inode *newip;
+    vnode_t *newip;
     W error_no;
     W i_index;
     W rsize;
@@ -302,45 +302,45 @@ sfs_i_mkdir(struct inode * parent,
     SYSTIM clock;
 
     /* 引数のチェック */
-    newip = alloc_inode(parent->i_fs);
+    newip = alloc_inode(parent->fs);
     if (newip == NULL) {
 	return (ENOMEM);
     }
     *retip = newip;
 
     /* 新しい sfs_inode をアロケート */
-    i_index = sfs_alloc_inode(parent->i_fs, newip);
+    i_index = sfs_alloc_inode(parent->fs, newip);
     if (i_index <= 0) {
 	dealloc_inode(newip);
 	return (ENOMEM);
     }
 
     /* 設定 */
-    struct sfs_inode *sfs_inode = newip->i_private;
+    struct sfs_inode *sfs_inode = newip->private;
     memset(sfs_inode, 0, sizeof(*sfs_inode));
     time_get(&clock);
-    newip->i_fs = parent->i_fs;
-    newip->i_refcount = 1;
-    newip->i_dirty = 1;
-    sfs_inode->i_mode = newip->i_mode = mode | S_IFDIR;
+    newip->fs = parent->fs;
+    newip->refer_count = 1;
+    newip->dirty = true;
+    sfs_inode->i_mode = newip->mode = mode | S_IFDIR;
     sfs_inode->i_nlink = 2;
-    sfs_inode->i_index = newip->i_index = i_index;
+    sfs_inode->i_index = newip->index = i_index;
     sfs_inode->i_uid = acc->uid;
     sfs_inode->i_gid = acc->gid;
-    newip->i_dev = 0;
-    sfs_inode->i_size = newip->i_size = 0;
+    newip->dev = 0;
+    sfs_inode->i_size = newip->size = 0;
     sfs_inode->i_atime = clock;
     sfs_inode->i_ctime = clock;
     sfs_inode->i_mtime = clock;
-    sfs_inode->i_nblock = newip->i_nblock = 0;
+    sfs_inode->i_nblock = newip->nblock = 0;
 
     fs_register_inode(newip);
 
     dir[0].d_index = i_index;
-    dir[1].d_index = parent->i_index;
+    dir[1].d_index = parent->index;
     error_no = sfs_i_write(newip, 0, (B *) dir, sizeof(dir), &rsize);
     if (error_no) {
-	sfs_free_inode(newip->i_fs, newip);
+	sfs_free_inode(newip->fs, newip);
 	dealloc_inode(newip);
 	return (error_no);
     }
@@ -348,7 +348,7 @@ sfs_i_mkdir(struct inode * parent,
     error_no = append_entry(parent, fname, newip, true);
     if (error_no) {
 	sfs_i_truncate(newip, 0);
-	sfs_free_inode(newip->i_fs, newip);
+	sfs_free_inode(newip->fs, newip);
 	dealloc_inode(newip);
 	return (error_no);
     }
@@ -360,7 +360,7 @@ sfs_i_mkdir(struct inode * parent,
  * ディレクトリを削除する。
  *
  */
-int sfs_i_rmdir(struct inode * parent, char *fname, struct inode *ip)
+int sfs_i_rmdir(vnode_t * parent, char *fname, vnode_t *ip)
 {
     int nentry;
     W error_no;
@@ -375,20 +375,20 @@ int sfs_i_rmdir(struct inode * parent, char *fname, struct inode *ip)
 	return (error_no);
     }
 
-    struct sfs_inode *sfs_inode = ip->i_private;
+    struct sfs_inode *sfs_inode = ip->private;
     if (sfs_inode->i_nlink <= 1) {
 	sfs_i_truncate(ip, 0);
-	sfs_free_inode(ip->i_fs, ip);
+	sfs_free_inode(ip->fs, ip);
     }
-    sfs_inode = parent->i_private;
+    sfs_inode = parent->private;
     sfs_inode->i_nlink -= 1;
     time_get(&(sfs_inode->i_ctime));
-    parent->i_dirty = 1;
+    parent->dirty = true;
 
     return 0;
 }
 
-static int append_entry(struct inode *parent, char *fname, struct inode *ip,
+static int append_entry(vnode_t *parent, char *fname, vnode_t *ip,
 		bool directory)
 {
     W error_no;
@@ -396,14 +396,14 @@ static int append_entry(struct inode *parent, char *fname, struct inode *ip,
     W dirnentry;
 
     /* ディレクトリのエントリを作成 */
-    dirent.d_index = ip->i_index;
+    dirent.d_index = ip->index;
     /* 表示文字長を SFS_MAXNAMELEN にするため．後に pad があるので大丈夫 */
     strncpy(dirent.d_name, fname, SFS_MAXNAMELEN);
     dirent.pad[0] = '\0';
 
     /* ディレクトリにエントリを追加 */
     if (directory) {
-	struct sfs_inode *sfs_inode = parent->i_private;
+	struct sfs_inode *sfs_inode = parent->private;
 	sfs_inode->i_nlink += 1;
     }
     dirnentry = sfs_read_dir(parent, 0, NULL);
@@ -416,7 +416,7 @@ static int append_entry(struct inode *parent, char *fname, struct inode *ip,
     return 0;
 }
 
-static int remove_entry(struct inode *parent, char *fname, struct inode *ip)
+static int remove_entry(vnode_t *parent, char *fname, vnode_t *ip)
 {
     int nentry = sfs_read_dir(parent, 0, NULL);
     if (nentry <= 0) {
@@ -448,20 +448,20 @@ static int remove_entry(struct inode *parent, char *fname, struct inode *ip)
 	    buf[i].pad[0] = '\0';
 	    i++;
 	}
-	i = parent->i_size - sizeof(struct sfs_dir);
+	i = parent->size - sizeof(struct sfs_dir);
 
 	W rsize;
 	W error_no = sfs_i_write(parent, 0, (B *) buf, i, &rsize);
 	if (error_no) {
 	    return (error_no);
 	}
-	parent->i_dirty = 1;
+	parent->dirty = true;
 	sfs_i_truncate(parent, i);
 
-	struct sfs_inode *sfs_inode = ip->i_private;
+	struct sfs_inode *sfs_inode = ip->private;
 	sfs_inode->i_nlink--;
 	time_get(&(sfs_inode->i_ctime));
-	ip->i_dirty = 1;
+	ip->dirty = true;
     }
 
     return 0;

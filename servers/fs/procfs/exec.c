@@ -63,10 +63,10 @@ Version 2, June 1991
 #include "fs.h"
 
 static W set_local(ID pid, ID tskid);
-static W read_exec_header(struct inode *ip, Elf32_Addr *entry,
+static W read_exec_header(vnode_t *ip, Elf32_Addr *entry,
 			  Elf32_Phdr *text,
 			  Elf32_Phdr *data);
-static W load_segment(W procid, struct inode *ip, Elf32_Phdr *segment,
+static W load_segment(W procid, vnode_t *ip, Elf32_Phdr *segment,
 		   ID task);
 
 
@@ -76,7 +76,7 @@ static W load_segment(W procid, struct inode *ip, Elf32_Phdr *segment,
  */
 W exec_program(struct posix_request *req, W procid, B * pathname)
 {
-    struct inode *ip;
+    vnode_t *ip;
     W error_no;
     struct permission acc;
     Elf32_Addr entry;
@@ -94,7 +94,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     if (pathname[0] == '/') {
 	error_no = fs_open_file(pathname, O_RDONLY, 0, &acc, rootfile, &ip);
     } else {
-	struct inode *startip;
+	vnode_t *startip;
 
 	error_no = proc_get_cwd(procid, &startip);
 	if (error_no) {
@@ -110,7 +110,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 	Elf32_Phdr text, data;
 
 	/* 実行許可のチェック */
-	error_no = OPS(ip).permit(ip, &acc, X_OK);
+	error_no = ip->fs->operations.permit(ip, &acc, X_OK);
 	if (error_no)
 	    break;
 
@@ -190,7 +190,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
  *
  */
 static W
-read_exec_header(struct inode *ip,
+read_exec_header(vnode_t *ip,
 		 Elf32_Addr *entry,
 		 Elf32_Phdr *text, Elf32_Phdr *data)
 {
@@ -260,7 +260,7 @@ read_exec_header(struct inode *ip,
  *
  */
 static W
-load_segment(W procid, struct inode *ip, Elf32_Phdr *segment, ID task)
+load_segment(W procid, vnode_t *ip, Elf32_Phdr *segment, ID task)
 {
     W error_no;
     W rest_length;

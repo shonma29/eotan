@@ -29,23 +29,24 @@ For more information, please refer to <http://unlicense.org/>
 
 #include "vfs.h"
 
-static inline struct inode *getINodeParent(const list_t *p) {
-	return (struct inode*)((intptr_t)p - offsetof(struct inode, bros));
+static inline vnode_t *getINodeParent(const list_t *p) {
+	return (vnode_t*)((intptr_t)p - offsetof(vnode_t, bros));
 }
 
-static inline struct fs *getFsParent(const list_t *p) {
-	return (struct fs*)((intptr_t)p - offsetof(struct fs, bros));
+static inline vfs_t *getFsParent(const list_t *p) {
+	return (vfs_t*)((intptr_t)p - offsetof(vfs_t, bros));
 }
 
-static inline W fs_sync_file(struct inode *ip)
+static inline W fs_sync_file(vnode_t *ip)
 {
-	return OPS(ip).sync(ip, 0);
+	return ip->fs->operations.sync(ip, 0);
 }
 
-static inline W fs_getdents(struct inode *ip, ID caller, W offset,
+static inline W fs_getdents(vnode_t *ip, ID caller, W offset,
 		VP buf, UW length, W * rsize, W * fsize)
 {
-	return OPS(ip).getdents(ip, caller, offset, buf, length, rsize, fsize);
+	return ip->fs->operations.getdents(ip, caller, offset, buf, length,
+			rsize, fsize);
 }
 
 #endif

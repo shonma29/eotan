@@ -38,7 +38,7 @@ int if_getdents(fs_request *req)
     /* 対象ファイルが
      * ディレクトリ以外の場合には、エラーにする
      */
-    if ((fp->f_inode->i_mode & S_IFMT) != S_IFDIR)
+    if ((fp->f_inode->mode & S_IFMT) != S_IFDIR)
 	return EINVAL;
 
     error_no = fs_getdents(fp->f_inode, get_rdv_tid(req->rdvno), fp->f_offset,
@@ -103,8 +103,8 @@ if_mkdir (fs_request *req)
 {
   W		fileid;
   W		error_no;
-  struct inode	*startip;
-  struct inode	*newip;
+  vnode_t	*startip;
+  vnode_t	*newip;
   struct permission	acc;
 
   error_no = proc_alloc_fileid (req->packet.procid, &fileid);
@@ -141,7 +141,7 @@ int
 if_rmdir (fs_request *req)
 {
   W		error_no;
-  struct inode	*startip;
+  vnode_t	*startip;
   struct permission	acc;
 
   error_no = session_get_path(&startip, req->packet.procid,
@@ -176,7 +176,7 @@ int
 if_unlink (fs_request *req)
 {
   W			error_no;
-  struct inode		*startip;
+  vnode_t		*startip;
   struct permission	acc;
 
   /* パス名を呼び出し元のプロセス(タスク)から

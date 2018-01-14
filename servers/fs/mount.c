@@ -46,8 +46,8 @@ int if_mount(fs_request *req)
 {
     W error_no;
     W fstype;
-    struct inode *startip;
-    struct inode *mountpoint, *device;
+    vnode_t *startip;
+    vnode_t *mountpoint, *device;
     struct permission acc;
     ID caller = get_rdv_tid(req->rdvno);
 
@@ -84,7 +84,7 @@ int if_mount(fs_request *req)
 	return error_no;
 
     /* block device かどうかのチェック */
-    if ((device->i_mode & S_IFMT) != S_IFBLK) {
+    if ((device->mode & S_IFMT) != S_IFBLK) {
 	dealloc_inode(device);
 	return EINVAL;
     }
@@ -103,20 +103,20 @@ int if_mount(fs_request *req)
 	return error_no;
     }
 
-    if (mountpoint->i_refcount > 1) {
+    if (mountpoint->refer_count > 1) {
 	dealloc_inode(device);
 	dealloc_inode(mountpoint);
 	return EBUSY;
     }
 
-    if ((mountpoint->i_mode & S_IFMT) != S_IFDIR) {
+    if ((mountpoint->mode & S_IFMT) != S_IFDIR) {
 	dealloc_inode(device);
 	dealloc_inode(mountpoint);
 	return ENOTDIR;
     }
 
     error_no =
-	fs_mount(device->i_dev, mountpoint, req->packet.args.arg3, fstype);
+	fs_mount(device->dev, mountpoint, req->packet.args.arg3, fstype);
 
     if (error_no == EOK) {
 	dealloc_inode(device);
@@ -133,8 +133,8 @@ int if_unmount(fs_request *req)
 {
     W error_no;
     UW device = 0;
-    struct inode *startip;
-    struct inode *umpoint;
+    vnode_t *startip;
+    vnode_t *umpoint;
     struct permission acc;
 
     error_no = session_get_path(&startip, req->packet.procid,
@@ -155,9 +155,9 @@ int if_unmount(fs_request *req)
 	return error_no;
 
     error_no = EOK;
-    switch (umpoint->i_mode & S_IFMT) {
+    switch (umpoint->mode & S_IFMT) {
     case S_IFDIR:
-	device = umpoint->i_fs->dev.channel;
+	device = umpoint->fs->device.channel;
 	break;
     case S_IFREG:
         error_no = ENOTDIR;

@@ -34,7 +34,7 @@ typedef struct _session_t {
 	node_t node;
 	int session_id;
 	struct permission permission;
-	struct inode *cwd;
+	vnode_t *cwd;
 	struct file files[MAX_OPEN];
 } session_t;
 

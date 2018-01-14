@@ -276,7 +276,7 @@ W proc_alloc_fileid(W procid, W * retval)
 }
 
 
-W proc_set_file(W procid, W fileid, W flag, struct inode * ip)
+W proc_set_file(W procid, W fileid, W flag, vnode_t * ip)
 {
     if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
 	return (EINVAL);
@@ -292,7 +292,7 @@ W proc_set_file(W procid, W fileid, W flag, struct inode * ip)
 
     proc_table[procid].session.files[fileid].f_inode = ip;
     if ((flag & O_APPEND) != 0) {
-	proc_table[procid].session.files[fileid].f_offset = ip->i_size;
+	proc_table[procid].session.files[fileid].f_offset = ip->size;
     } else {
 	proc_table[procid].session.files[fileid].f_offset = 0;
     }
@@ -316,7 +316,7 @@ W proc_get_file(W procid, W fileid, struct file ** fp)
 }
 
 
-W proc_get_cwd(W procid, struct inode ** cwd)
+W proc_get_cwd(W procid, vnode_t ** cwd)
 {
     if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
 	return (EINVAL);
@@ -330,13 +330,13 @@ W proc_get_cwd(W procid, struct inode ** cwd)
     return (EOK);
 }
 
-W proc_set_cwd(W procid, struct inode * cwd)
+W proc_set_cwd(W procid, vnode_t * cwd)
 {
     if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
 	return (EINVAL);
     }
 
-    if (cwd == (struct inode *) 0) {
+    if (cwd == (vnode_t *) 0) {
 	return (EINVAL);
     }
 

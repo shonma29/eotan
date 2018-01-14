@@ -175,13 +175,13 @@ static W proc_duplicate(struct proc * source, struct proc * destination)
 	if (source->session.files[index].f_inode != NULL) {
 	    destination->session.files[index] =
 		source->session.files[index];
-	    destination->session.files[index].f_inode->i_refcount++;
+	    destination->session.files[index].f_inode->refer_count++;
 	}
     }
 
     /* copy of working directory */
     destination->session.cwd = source->session.cwd;
-    destination->session.cwd->i_refcount++;
+    destination->session.cwd->refer_count++;
 
     /* copy of uid/gid */
     destination->session.permission = source->session.permission;

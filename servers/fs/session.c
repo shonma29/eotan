@@ -32,9 +32,9 @@ Version 2, June 1991
 
 int if_chdir(fs_request *req)
 {
-    struct inode *oldip;
-    struct inode *startip;
-    struct inode *ipp;
+    vnode_t *oldip;
+    vnode_t *startip;
+    vnode_t *ipp;
     struct permission acc;
     W err;
 
@@ -62,7 +62,7 @@ int if_chdir(fs_request *req)
     if (err)
 	return err;
 
-    if ((ipp->i_mode & S_IFMT) != S_IFDIR) {
+    if ((ipp->mode & S_IFMT) != S_IFDIR) {
 	/* ファイルは、ディレクトリではなかった。
 	 * エラーとする
 	 * 
@@ -71,7 +71,7 @@ int if_chdir(fs_request *req)
 	return ENOTDIR;
     }
 
-    err = OPS(ipp).permit(ipp, &acc, X_OK);
+    err = ipp->fs->operations.permit(ipp, &acc, X_OK);
     if (err)
 	return err;
 
@@ -97,7 +97,7 @@ W session_get_opened_file(const ID pid, const W fno, struct file **fp)
     return EOK;
 }
 
-W session_get_path(struct inode **ip, const ID pid, const ID tid,
+W session_get_path(vnode_t **ip, const ID pid, const ID tid,
 	UB *src, UB *buf)
 {
     /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。

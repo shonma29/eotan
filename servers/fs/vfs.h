@@ -96,42 +96,9 @@ Version 2, June 1991
 
 /* file system types. */
 
-#define OPS(ip) ((ip)->i_fs->ops)
-
-struct fs {
-    list_t bros;
-    W typeid;
-    vfs_operation_t ops;
-    block_device_t dev;
-    list_t ilist;	/* 使用中の inode のリスト */
-    struct inode *rootdir;
-    struct inode *mountpoint;
-    void *private;
-};
-
-struct inode {
-    list_t bros;
-    struct fs *i_fs;
-    UW i_lock;
-    W i_refcount;
-    W i_dirty;		/* この Inode は変更されており、ファイル上に変更が */
-			/* 反映されていない */
-    struct inode *coverfile;
-    /* もし、*ここ* が マウントポイントの時には、 */
-    /* この要素を実際のファイルとして処理する */
-
-    /* in disk */
-    UW i_mode;
-    UW i_index;
-    ID i_dev;			/* if device file */
-    UW i_size;
-    UW i_nblock;
-    void *i_private;
-};
-
 struct file
 {
-  struct inode		*f_inode;
+  vnode_t		*f_inode;
   off_t			f_offset;	/* current offset */
   W			f_omode;
 };
@@ -143,37 +110,37 @@ extern W fs_init(void);
 
 extern W find_fs(UB *, W *);
 
-extern W fs_mount(ID device, struct inode *mountpoint, W option, W fstype);
+extern W fs_mount(ID device, vnode_t *mountpoint, W option, W fstype);
 extern W fs_unmount(UW device);
 
 extern W fs_open_file(B * path, W oflag, W mode, struct permission *acc,
-		      struct inode *startip, struct inode **newip);
-extern W fs_lookup(struct inode *startip, char *path, W oflag,
-		   W mode, struct permission *acc, struct inode **newip);
-extern W fs_read_file(struct inode *ip, W start, B * buf, W length,
+		      vnode_t *startip, vnode_t **newip);
+extern W fs_lookup(vnode_t *startip, char *path, W oflag,
+		   W mode, struct permission *acc, vnode_t **newip);
+extern W fs_read_file(vnode_t *ip, W start, B * buf, W length,
 		      W * rlength);
-extern W fs_write_file(struct inode *ip, W start, B * buf, W length,
+extern W fs_write_file(vnode_t *ip, W start, B * buf, W length,
 		       W * rlength);
-extern W fs_remove_file(struct inode *startip, B * path,
+extern W fs_remove_file(vnode_t *startip, B * path,
 			struct permission *acc);
-extern W fs_remove_dir(struct inode *startip, B * path,
+extern W fs_remove_dir(vnode_t *startip, B * path,
 		       struct permission *acc);
 extern W fs_statvfs(ID device, struct statvfs *result);
-extern W fs_create_dir(struct inode * startip,
+extern W fs_create_dir(vnode_t * startip,
 		     char *path, W mode, struct permission * acc,
-		     struct inode ** newip);
+		     vnode_t ** newip);
 extern W fs_link_file(W procid, B * src, B * dst, struct permission * acc);
 
-extern struct inode *alloc_inode(struct fs *);
-extern W dealloc_inode(struct inode *);
-extern struct inode *fs_get_inode(struct fs *fsp, W index);
-extern W fs_register_inode(struct inode *ip);
+extern vnode_t *alloc_inode(vfs_t *);
+extern W dealloc_inode(vnode_t *);
+extern vnode_t *fs_get_inode(vfs_t *fsp, W index);
+extern W fs_register_inode(vnode_t *ip);
 
-extern struct inode *rootfile;
+extern vnode_t *rootfile;
 
 /* session.c */
 extern W session_get_opened_file(const ID, const W, struct file **);
-extern W session_get_path(struct inode **, const ID, const ID, UB *, UB *);
+extern W session_get_path(vnode_t **, const ID, const ID, UB *, UB *);
 
 #include "vfsfuncs.h"
 
