@@ -201,7 +201,7 @@ W fs_init(void)
     for (i = 0; i < sizeof(inode_buf) / sizeof(inode_buf[0]); i++)
 	list_append(&free_inode, &(inode_buf[i].bros));
 
-    rootfile = alloc_inode(NULL);
+    rootfile = alloc_inode();
     if (rootfile == NULL) {
 	return (E_NOMEM);
     }
@@ -226,7 +226,7 @@ W open_special_devices(struct proc * procp)
     p = device_find(get_device_id(DEVICE_MAJOR_CONS, 0));
     if (p) {
 	/* 標準入力の設定 */
-	procp->session.files[0].f_inode = ip = alloc_inode(NULL);
+	procp->session.files[0].f_inode = ip = alloc_inode();
 	procp->session.files[0].f_offset = 0;
 	procp->session.files[0].f_omode = O_RDONLY;
 	if (ip == NULL) {
@@ -241,7 +241,7 @@ W open_special_devices(struct proc * procp)
 	fs_register_inode(ip);
 
 	/* 標準出力の設定 */
-	procp->session.files[1].f_inode = ip = alloc_inode(NULL);
+	procp->session.files[1].f_inode = ip = alloc_inode();
 	procp->session.files[1].f_offset = 0;
 	procp->session.files[1].f_omode = O_WRONLY;
 	if (ip == NULL) {
@@ -256,7 +256,7 @@ W open_special_devices(struct proc * procp)
 	fs_register_inode(ip);
 
 	/* 標準エラー出力の設定 */
-	procp->session.files[2].f_inode = ip = alloc_inode(NULL);
+	procp->session.files[2].f_inode = ip = alloc_inode();
 	procp->session.files[2].f_offset = 0;
 	procp->session.files[2].f_omode = O_WRONLY;
 	if (ip == NULL) {
@@ -354,7 +354,7 @@ fs_mount(const ID device,
 	    newfs = getFsParent(list_next(&(newfs->bros)));
 	} while (newfs != rootfs);
 
-	newip = alloc_inode(NULL);
+	newip = alloc_inode();
 	if (newip == NULL)
 	    return (E_NOMEM);
 
@@ -373,8 +373,7 @@ fs_mount(const ID device,
 
     if (err) {
 	if (rootfs) {
-	    /* dealloc_inode は使えないので手動で free_inode list へ再登録 */
-	    list_append(&free_inode, &(newip->bros));
+	    dealloc_inode(newip);
 	}
 
 	return (err);
@@ -911,7 +910,7 @@ fs_link_file(W procid, B * src, B * dst, struct permission * acc)
 /* alloc_inode - 
  *
  */
-vnode_t *alloc_inode(vfs_t *fsp)
+vnode_t *alloc_inode(void)
 {
     list_t *p = list_pick(&free_inode);
     vnode_t *ip;
@@ -937,7 +936,8 @@ W dealloc_inode(vnode_t * ip)
 {
     ip->refer_count--;
     if (ip->refer_count <= 0) {
-	if (!(ip->dev)) {
+	if (!(ip->dev)
+		&& ip->fs) {
 	    ip->fs->operations.close(ip);
 	}
 

@@ -145,7 +145,7 @@ sfs_i_create(vnode_t * parent,
     SYSTIM clock;
 
     /* 引数のチェック */
-    newip = alloc_inode(parent->fs);
+    newip = alloc_inode();
     if (newip == NULL) {
 	return (ENOMEM);
     }

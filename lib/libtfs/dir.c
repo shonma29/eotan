@@ -219,7 +219,7 @@ sfs_i_lookup(vnode_t *parent,
 	    return 0;
 	}
 
-	*retip = alloc_inode(parent->fs);
+	*retip = alloc_inode();
 	if (*retip == NULL) {
 	    return (ENOMEM);
 	}
@@ -302,7 +302,7 @@ sfs_i_mkdir(vnode_t * parent,
     SYSTIM clock;
 
     /* 引数のチェック */
-    newip = alloc_inode(parent->fs);
+    newip = alloc_inode();
     if (newip == NULL) {
 	return (ENOMEM);
     }
