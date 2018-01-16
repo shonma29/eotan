@@ -145,7 +145,7 @@ sfs_i_create(vnode_t * parent,
     SYSTIM clock;
 
     /* 引数のチェック */
-    newip = alloc_inode();
+    newip = vnodes_create();
     if (newip == NULL) {
 	return (ENOMEM);
     }
@@ -154,7 +154,7 @@ sfs_i_create(vnode_t * parent,
     /* 新しい sfs_inode をアロケート */
     i_index = sfs_alloc_inode(parent->fs, newip);
     if (i_index <= 0) {
-	dealloc_inode(newip);
+	vnodes_remove(newip);
 	return (ENOMEM);
     }
 
@@ -177,7 +177,7 @@ sfs_i_create(vnode_t * parent,
     sfs_inode->i_mtime = clock;
     sfs_inode->i_nblock = newip->nblock = 0;
 
-    fs_register_inode(newip);
+    vnodes_append(newip);
 
     /* ディレクトリのエントリを作成 */
     dirent.d_index = newip->index;
@@ -190,7 +190,7 @@ sfs_i_create(vnode_t * parent,
     error_no = sfs_write_dir(parent, dirnentry, &dirent);
     if (error_no) {
 	sfs_free_inode(newip->fs, newip);
-	dealloc_inode(newip);
+	vnodes_remove(newip);
 	return (error_no);
     }
 

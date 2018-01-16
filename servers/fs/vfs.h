@@ -131,11 +131,6 @@ extern W fs_create_dir(vnode_t * startip,
 		     vnode_t ** newip);
 extern W fs_link_file(W procid, B * src, B * dst, struct permission * acc);
 
-extern vnode_t *alloc_inode(void);
-extern W dealloc_inode(vnode_t *);
-extern vnode_t *fs_get_inode(vfs_t *fsp, W index);
-extern W fs_register_inode(vnode_t *ip);
-
 extern vnode_t *rootfile;
 
 /* session.c */

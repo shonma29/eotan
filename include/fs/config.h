@@ -24,7 +24,6 @@ Version 2, June 1991
 
 /* 各種制限値 */
 #define MAX_MOUNT	5
-#define MAX_INODE	200
 #define MAX_OPEN	100
 #define MAX_NAMELEN	255
 #define MAX_PROCESS	100

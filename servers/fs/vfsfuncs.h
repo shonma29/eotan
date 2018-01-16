@@ -29,10 +29,6 @@ For more information, please refer to <http://unlicense.org/>
 
 #include "vfs.h"
 
-static inline vnode_t *getINodeParent(const list_t *p) {
-	return (vnode_t*)((intptr_t)p - offsetof(vnode_t, bros));
-}
-
 static inline vfs_t *getFsParent(const list_t *p) {
 	return (vfs_t*)((intptr_t)p - offsetof(vfs_t, bros));
 }

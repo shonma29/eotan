@@ -172,8 +172,6 @@ static struct fs_entry fs_table[] = {
 
 static vfs_t fs_buf[MAX_MOUNT], *rootfs = NULL;
 static list_t free_fs;
-static vnode_t inode_buf[MAX_INODE];
-static list_t free_inode;
 vnode_t *rootfile = NULL;
 static W mode_map[] = { R_OK, W_OK, R_OK | W_OK };
 
@@ -197,11 +195,9 @@ W fs_init(void)
     /* 各データ構造の初期化を行い
      * ルートファイルシステムをマウントする
      */
-    list_initialize(&free_inode);
-    for (i = 0; i < sizeof(inode_buf) / sizeof(inode_buf[0]); i++)
-	list_append(&free_inode, &(inode_buf[i].bros));
+    vnodes_initialize();
 
-    rootfile = alloc_inode();
+    rootfile = vnodes_create();
     if (rootfile == NULL) {
 	return (E_NOMEM);
     }
@@ -226,7 +222,7 @@ W open_special_devices(struct proc * procp)
     p = device_find(get_device_id(DEVICE_MAJOR_CONS, 0));
     if (p) {
 	/* 標準入力の設定 */
-	procp->session.files[0].f_inode = ip = alloc_inode();
+	procp->session.files[0].f_inode = ip = vnodes_create();
 	procp->session.files[0].f_offset = 0;
 	procp->session.files[0].f_omode = O_RDONLY;
 	if (ip == NULL) {
@@ -238,10 +234,10 @@ W open_special_devices(struct proc * procp)
 	ip->index = -1;
 	ip->size = p->size;
 	ip->nblock = 0;
-	fs_register_inode(ip);
+	vnodes_append(ip);
 
 	/* 標準出力の設定 */
-	procp->session.files[1].f_inode = ip = alloc_inode();
+	procp->session.files[1].f_inode = ip = vnodes_create();
 	procp->session.files[1].f_offset = 0;
 	procp->session.files[1].f_omode = O_WRONLY;
 	if (ip == NULL) {
@@ -253,10 +249,10 @@ W open_special_devices(struct proc * procp)
 	ip->index = -2;
 	ip->size = p->size;
 	ip->nblock = 0;
-	fs_register_inode(ip);
+	vnodes_append(ip);
 
 	/* 標準エラー出力の設定 */
-	procp->session.files[2].f_inode = ip = alloc_inode();
+	procp->session.files[2].f_inode = ip = vnodes_create();
 	procp->session.files[2].f_offset = 0;
 	procp->session.files[2].f_omode = O_WRONLY;
 	if (ip == NULL) {
@@ -268,7 +264,7 @@ W open_special_devices(struct proc * procp)
 	ip->index = -3;
 	ip->size = p->size;
 	ip->nblock = 0;
-	fs_register_inode(ip);
+	vnodes_append(ip);
     }
 
     return (EOK);
@@ -354,7 +350,7 @@ fs_mount(const ID device,
 	    newfs = getFsParent(list_next(&(newfs->bros)));
 	} while (newfs != rootfs);
 
-	newip = alloc_inode();
+	newip = vnodes_create();
 	if (newip == NULL)
 	    return (E_NOMEM);
 
@@ -373,7 +369,7 @@ fs_mount(const ID device,
 
     if (err) {
 	if (rootfs) {
-	    dealloc_inode(newip);
+	    vnodes_remove(newip);
 	}
 
 	return (err);
@@ -396,7 +392,7 @@ fs_mount(const ID device,
     } else
 	rootfs = newfs;
 
-    fs_register_inode(newip);
+    vnodes_append(newip);
 
     return (EOK);
 }
@@ -438,8 +434,8 @@ W fs_unmount(UW device)
 
     /* マウントポイントを解放する */
     fsp->origin->covered = NULL;
-    dealloc_inode(fsp->origin);
-    dealloc_inode(fsp->root);
+    vnodes_remove(fsp->origin);
+    vnodes_remove(fsp->root);
 
     /* FS list から除外 */
     dealloc_fs(fsp);
@@ -466,7 +462,7 @@ fs_open_file(B * path,
 	    error_no = fs_create_file(startip, path, oflag, mode, acc, newip);
 	    return (error_no);
 	} else if (error_no == EOK) {
-	    dealloc_inode(*newip);	/* fs_close() で行う処理はこれだけ */
+	    vnodes_remove(*newip);	/* fs_close() で行う処理はこれだけ */
 	    /*      return (EEXIST); */
 	    /* 後で mode と acc を確かめながら再度 open する */
 	} else {
@@ -510,7 +506,7 @@ fs_create_file(vnode_t * startip,
     parent_length += 1;
 
     if ((parent_ip->mode & S_IFMT) != S_IFDIR) {
-	dealloc_inode(parent_ip);
+	vnodes_remove(parent_ip);
 	return (ENOTDIR);
     }
 
@@ -518,7 +514,7 @@ fs_create_file(vnode_t * startip,
 	    & (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
     error_no = parent_ip->fs->operations.create(parent_ip,
 			&path[parent_length], oflag, mode, acc, newip);
-    dealloc_inode(parent_ip);
+    vnodes_remove(parent_ip);
     if (error_no) {
 	return (error_no);
     }
@@ -572,7 +568,7 @@ fs_lookup(vnode_t * startip,
 	/* ディレクトリの実行許可のチェック */
 	error_no = tmpip->fs->operations.permit(tmpip, acc, X_OK);
 	if (error_no) {
-	    dealloc_inode(tmpip);
+	    vnodes_remove(tmpip);
 	    return (error_no);
 	}
 
@@ -581,7 +577,7 @@ fs_lookup(vnode_t * startip,
 		part[i] = '\0';
 		error_no = tmpip->fs->operations.lookup(tmpip, part, oflag, mode, acc, newip);
 		if (error_no) {
-		    dealloc_inode(tmpip);
+		    vnodes_remove(tmpip);
 		    return (error_no);
 		}
 		/* ファイルシステムの root directory にいる場合 */
@@ -591,7 +587,7 @@ fs_lookup(vnode_t * startip,
 			if ((fsp->origin) != NULL &&
 			    (fsp->root == tmpip)) {
 			    tmpip->refer_count--;
-			    dealloc_inode(tmpip);
+			    vnodes_remove(tmpip);
 			    tmpip = fsp->origin;
 			    tmpip->refer_count++;
 			    error_no =
@@ -602,7 +598,7 @@ fs_lookup(vnode_t * startip,
 			fsp = getFsParent(list_next(&(fsp->bros)));
 		    } while (fsp != rootfs);
 		}
-		dealloc_inode(tmpip);
+		vnodes_remove(tmpip);
 
 		/* パス名の次の要素へ 
 		 */
@@ -610,7 +606,7 @@ fs_lookup(vnode_t * startip,
 		    /* ディレクトリの許可のチェック */
 		    error_no = (*newip)->fs->operations.permit(*newip, acc, mode_map[oflag & 0x03]);
 		    if (error_no)
-			dealloc_inode(*newip);
+			vnodes_remove(*newip);
 		    return (error_no);
 		}
 		path++;
@@ -705,7 +701,7 @@ fs_remove_file(vnode_t * startip, B * path, struct permission * acc)
     vnode_t *ip;
     error_no = fs_lookup(parent_ip, &path[parent_length], O_RDWR, 0, acc, &ip);
     if (error_no) {
-	dealloc_inode(parent_ip);
+	vnodes_remove(parent_ip);
 	return (error_no);
     }
     if ((ip->mode & S_IFMT) == S_IFDIR) {
@@ -713,8 +709,8 @@ fs_remove_file(vnode_t * startip, B * path, struct permission * acc)
     } else {
 	error_no = parent_ip->fs->operations.unlink(parent_ip, &path[parent_length], acc);
     }
-    dealloc_inode(ip);
-    dealloc_inode(parent_ip);
+    vnodes_remove(ip);
+    vnodes_remove(parent_ip);
     if (error_no) {
 	return (error_no);
     }
@@ -744,7 +740,7 @@ W fs_remove_dir(vnode_t * startip, B * path, struct permission * acc)
     vnode_t *ip;
     error_no = fs_lookup(parent_ip, &path[parent_length], O_RDWR, 0, acc, &ip);
     if (error_no) {
-	dealloc_inode(parent_ip);
+	vnodes_remove(parent_ip);
 	return (error_no);
     }
     if ((ip->mode & S_IFMT) != S_IFDIR) {
@@ -754,8 +750,8 @@ W fs_remove_dir(vnode_t * startip, B * path, struct permission * acc)
     } else {
 	error_no = parent_ip->fs->operations.rmdir(parent_ip, &path[parent_length], acc);
     }
-    dealloc_inode(ip);
-    dealloc_inode(parent_ip);
+    vnodes_remove(ip);
+    vnodes_remove(parent_ip);
     if (error_no) {
 	return (error_no);
     }
@@ -795,7 +791,7 @@ W fs_create_dir(vnode_t * startip,
 
     error_no = fs_lookup(startip, path, O_RDONLY, mode, acc, newip);
     if (error_no == EOK) {
-	dealloc_inode(*newip);	/* fs_close() で行う処理はこれだけ */
+	vnodes_remove(*newip);	/* fs_close() で行う処理はこれだけ */
 	return (EEXIST);
     } else if (error_no != ENOENT) {
 	return (error_no);
@@ -812,14 +808,14 @@ W fs_create_dir(vnode_t * startip,
     parent_length += 1;
 
     if ((parent_ip->mode & S_IFMT) != S_IFDIR) {
-	dealloc_inode(parent_ip);
+	vnodes_remove(parent_ip);
 	return (ENOTDIR);
     }
 
     mode &= parent_ip->mode & (S_IRWXU | S_IRWXG | S_IRWXO);
     error_no = parent_ip->fs->operations.mkdir(parent_ip, &path[parent_length], mode, acc, newip);
 
-    dealloc_inode(parent_ip);
+    vnodes_remove(parent_ip);
     if (error_no) {
 	return (error_no);
     }
@@ -855,7 +851,7 @@ fs_link_file(W procid, B * src, B * dst, struct permission * acc)
 
     /* リンク元がディレクトリならエラー */
     if ((srcip->mode & S_IFMT) == S_IFDIR) {
-	dealloc_inode(srcip);
+	vnodes_remove(srcip);
 	return (EISDIR);
     }
 
@@ -881,8 +877,8 @@ fs_link_file(W procid, B * src, B * dst, struct permission * acc)
 
     /* ファイルシステムを跨ぐリンクにならないことをチェックする */
     if (srcip->fs != parent_ip->fs) {
-	dealloc_inode(parent_ip);
-	dealloc_inode(srcip);
+	vnodes_remove(parent_ip);
+	vnodes_remove(srcip);
 	return (EXDEV);
     }
 
@@ -890,14 +886,14 @@ fs_link_file(W procid, B * src, B * dst, struct permission * acc)
     vnode_t *ip;
     error_no = fs_lookup(parent_ip, &dst[parent_length], O_RDONLY, 0, acc, &ip);
     if (error_no == EOK) {
-	dealloc_inode(ip);
+	vnodes_remove(ip);
 	error_no = EEXIST;
     } else {
 	/* 各ファイルシステムの link 関数を呼び出す */
 	error_no = parent_ip->fs->operations.link(parent_ip, &dst[parent_length], srcip);
     }
-    dealloc_inode(parent_ip);
-    dealloc_inode(srcip);
+    vnodes_remove(parent_ip);
+    vnodes_remove(srcip);
     if (error_no) {
 	return (error_no);
     }
@@ -906,76 +902,6 @@ fs_link_file(W procid, B * src, B * dst, struct permission * acc)
 
 
 /* --------=========== 細々とした関数群 ================--------- */
-
-/* alloc_inode - 
- *
- */
-vnode_t *alloc_inode(void)
-{
-    list_t *p = list_pick(&free_inode);
-    vnode_t *ip;
-
-    if (p == NULL) {
-	return (NULL);
-    }
-
-    ip = getINodeParent(p);
-    memset((B*)ip, 0, sizeof(vnode_t));
-    list_initialize(&(ip->bros));
-    ip->refer_count = 1;
-
-    return (ip);
-}
-
-
-
-/* dealloc_inode -
- *
- */
-W dealloc_inode(vnode_t * ip)
-{
-    ip->refer_count--;
-    if (ip->refer_count <= 0) {
-	if (!(ip->dev)
-		&& ip->fs) {
-	    ip->fs->operations.close(ip);
-	}
-
-	/* fs の register_list からの取り除き */
-	list_remove(&(ip->bros));
-	/* free_inode list へ登録 */
-	list_append(&(free_inode), &(ip->bros));
-    }
-    return (EOK);
-}
-
-
-/* fs_check_inode -
- *
- */
-vnode_t *fs_get_inode(vfs_t *fsp, W index)
-{
-    list_t *register_list = &(fsp->vnodes);
-    list_t *p;
-
-    for (p = list_next(register_list); !list_is_edge(register_list, p);
-	    p = list_next(p)) {
-	vnode_t *ip = getINodeParent(p);
-
-	if (ip->index == index) {
-	    return (ip);
-	}
-    }
-    return (NULL);
-}
-
-
-W fs_register_inode(vnode_t * ip)
-{
-    list_append(&(ip->fs->vnodes), &(ip->bros));
-
-    return (EOK);
-}
 
 static W copy_path(char * parent_path, char * path, vnode_t * startip,
 		vnode_t ** parent_ip)

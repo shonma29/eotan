@@ -157,7 +157,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 
     } while (false);
 
-    dealloc_inode(ip);
+    vnodes_remove(ip);
 
     if (error_no) {
 	return (error_no);

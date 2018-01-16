@@ -67,7 +67,7 @@ int if_chdir(fs_request *req)
 	 * エラーとする
 	 * 
 	 */
-	dealloc_inode(ipp);
+	vnodes_remove(ipp);
 	return ENOTDIR;
     }
 
@@ -79,7 +79,7 @@ int if_chdir(fs_request *req)
     if (err)
 	return err;
 
-    dealloc_inode(oldip);
+    vnodes_remove(oldip);
     put_response(req->rdvno, EOK, 0, 0);
     return EOK;
 }

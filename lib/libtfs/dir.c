@@ -208,7 +208,7 @@ sfs_i_lookup(vnode_t *parent,
 	    return (ENOENT);
 	}
 
-	*retip = fs_get_inode(parent->fs, dirp[i].d_index);
+	*retip = vnodes_find(parent->fs, dirp[i].d_index);
 	if (*retip) {
 	    /* すでにオープンしていたファイルだった
 	     */
@@ -219,17 +219,17 @@ sfs_i_lookup(vnode_t *parent,
 	    return 0;
 	}
 
-	*retip = alloc_inode();
+	*retip = vnodes_create();
 	if (*retip == NULL) {
 	    return (ENOMEM);
 	}
 
 	error_no = sfs_read_inode(parent->fs, dirp[i].d_index, *retip);
 	if (error_no) {
-	    dealloc_inode(*retip);
+	    vnodes_remove(*retip);
 	    return (error_no);
 	}
-	fs_register_inode(*retip);
+	vnodes_append(*retip);
     }
 
     return 0;
@@ -302,7 +302,7 @@ sfs_i_mkdir(vnode_t * parent,
     SYSTIM clock;
 
     /* 引数のチェック */
-    newip = alloc_inode();
+    newip = vnodes_create();
     if (newip == NULL) {
 	return (ENOMEM);
     }
@@ -311,7 +311,7 @@ sfs_i_mkdir(vnode_t * parent,
     /* 新しい sfs_inode をアロケート */
     i_index = sfs_alloc_inode(parent->fs, newip);
     if (i_index <= 0) {
-	dealloc_inode(newip);
+	vnodes_remove(newip);
 	return (ENOMEM);
     }
 
@@ -334,14 +334,14 @@ sfs_i_mkdir(vnode_t * parent,
     sfs_inode->i_mtime = clock;
     sfs_inode->i_nblock = newip->nblock = 0;
 
-    fs_register_inode(newip);
+    vnodes_append(newip);
 
     dir[0].d_index = i_index;
     dir[1].d_index = parent->index;
     error_no = sfs_i_write(newip, 0, (B *) dir, sizeof(dir), &rsize);
     if (error_no) {
 	sfs_free_inode(newip->fs, newip);
-	dealloc_inode(newip);
+	vnodes_remove(newip);
 	return (error_no);
     }
 
@@ -349,7 +349,7 @@ sfs_i_mkdir(vnode_t * parent,
     if (error_no) {
 	sfs_i_truncate(newip, 0);
 	sfs_free_inode(newip->fs, newip);
-	dealloc_inode(newip);
+	vnodes_remove(newip);
 	return (error_no);
     }
 

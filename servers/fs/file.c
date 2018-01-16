@@ -41,7 +41,7 @@ int if_close(fs_request *req)
     if (err)
 	return err;
 
-    err = dealloc_inode(fp->f_inode);
+    err = vnodes_remove(fp->f_inode);
     if (err)
 	return err;
 
@@ -100,7 +100,7 @@ if_dup2 (fs_request *req)
 
   if (fp2->f_inode != NULL) {
     /* 既に open されている file id だった */
-    error_no = dealloc_inode (fp2->f_inode);
+    error_no = vnodes_remove (fp2->f_inode);
     if (error_no)
       return error_no;
 
@@ -201,19 +201,19 @@ int if_open(fs_request *req)
 	 * 成功でもよい
 	 */
 	if (acc.uid != ROOT_UID) {
-	    dealloc_inode(newip);
+	    vnodes_remove(newip);
 	    return EACCES;
 	}
 
 	if (req->packet.param.par_open.oflag != O_RDONLY) {
-	    dealloc_inode(newip);
+	    vnodes_remove(newip);
 	    return EISDIR;
 	}
     }
 
     if (proc_set_file(req->packet.procid, fileid,
 		      req->packet.param.par_open.oflag, newip)) {
-	dealloc_inode(newip);
+	vnodes_remove(newip);
 	return EINVAL;
     }
 

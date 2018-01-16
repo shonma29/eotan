@@ -55,7 +55,7 @@ int if_chmod(fs_request *req)
 
     ipp->mode = (ipp->mode & S_IFMT) | req->packet.args.arg2;
     err = ipp->fs->operations.wstat(ipp);
-    dealloc_inode(ipp);
+    vnodes_remove(ipp);
     if (err)
 	return err;
 
