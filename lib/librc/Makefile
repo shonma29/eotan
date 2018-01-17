@@ -27,7 +27,7 @@ TARGET = $(WD).a $(WD)/encode $(WD)/decode
 
 include Makefile.in
 
-CFLAGS = -Wall -Werror -O2 -std=gnu99
+CFLAGS = -Wall -Werror -O2 -std=c11
 
 $(WD).a: $(WD)/drc_common.o $(WD)/drc_encode.o $(WD)/drc_decode.o \
 		$(WD)/bit_common.o $(WD)/bit_encode.o \
