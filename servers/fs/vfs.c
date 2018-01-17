@@ -153,6 +153,8 @@ Version 2, June 1991
 #include <fcntl.h>
 #include <major.h>
 #include <string.h>
+#include <fs/nconfig.h>
+#include <nerve/kcall.h>
 #include <sys/stat.h>
 #include "fs.h"
 #include "devfs/devfs.h"
@@ -195,7 +197,7 @@ W fs_init(void)
     /* 各データ構造の初期化を行い
      * ルートファイルシステムをマウントする
      */
-    vnodes_initialize();
+    vnodes_initialize(kcall->palloc, kcall->pfree, MAX_VNODE);
 
     rootfile = vnodes_create();
     if (rootfile == NULL) {

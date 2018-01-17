@@ -40,16 +40,17 @@ static inline vnode_t *getINodeParent(const list_t *p) {
 	return (vnode_t*)((intptr_t)p - offsetof(vnode_t, bros));
 }
 
-int vnodes_initialize(void)
+int vnodes_initialize(void *(*palloc)(void), void (*pfree)(void *),
+		const size_t max_vnode)
 {
 	vnodes_slab.unit_size = sizeof(vnode_t);
 	vnodes_slab.block_size = PAGE_SIZE;
 	vnodes_slab.min_block = 1;
-	vnodes_slab.max_block = MAX_VNODE
+	vnodes_slab.max_block = max_vnode
 			/ ((PAGE_SIZE - sizeof(slab_block_t))
 					/ sizeof(vnode_t));
-	vnodes_slab.palloc = kcall->palloc;
-	vnodes_slab.pfree = kcall->pfree;
+	vnodes_slab.palloc = palloc;
+	vnodes_slab.pfree = pfree;
 	slab_create(&vnodes_slab);
 
 	return 0;
