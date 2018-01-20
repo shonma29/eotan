@@ -21,6 +21,7 @@ Version 2, June 1991
 #include <core/options.h>
 #include <nerve/kcall.h>
 #include <sys/stat.h>
+#include <sys/syslimits.h>
 #include "fs.h"
 #include "api.h"
 
@@ -55,7 +56,7 @@ int if_getdents(fs_request *req)
 
 int if_link(fs_request *req)
 {
-    B src[MAX_NAMELEN + 1];
+    B src[NAME_MAX + 1];
     struct permission acc;
     W error_no;
     ID caller = get_rdv_tid(req->rdvno);
@@ -69,7 +70,7 @@ int if_link(fs_request *req)
 	else
 	    return EFAULT;
     }
-    src[MAX_NAMELEN] = '\0';
+    src[NAME_MAX] = '\0';
     error_no = kcall->region_copy(caller, (UB*)(req->packet.args.arg2),
 		     sizeof(req->buf) - 1, req->buf);
     if (error_no < 0) {
@@ -79,7 +80,7 @@ int if_link(fs_request *req)
 	else
 	    return EFAULT;
     }
-    req->buf[MAX_NAMELEN] = '\0';
+    req->buf[NAME_MAX] = '\0';
 
     /* プロセスのユーザ ID とグループ ID の
      * 取り出し。

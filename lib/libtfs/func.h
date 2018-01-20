@@ -41,9 +41,7 @@ extern W sfs_read_dir (vnode_t *ip, W nentry, struct sfs_dir *dirp);
 extern W sfs_write_dir (vnode_t *parentp, W nentry, struct sfs_dir *dirp);
 extern int sfs_getdents (vnode_t *ip, ID caller, W offset, VP buf,
 		       UW length, W *rsize, W *fsize);
-extern int sfs_i_lookup (vnode_t *parent, char *fname, W oflag,
-			      W mode, struct permission *acc,
-			      vnode_t **retip);
+extern int sfs_i_lookup (vnode_t *parent, char *fname, vnode_t **retip);
 extern int sfs_i_link (vnode_t * parent, char *fname, vnode_t * srcip);
 extern int sfs_i_unlink (vnode_t *parent, char *fname, vnode_t *ip);
 extern int sfs_i_mkdir (vnode_t *parent, char *fname, W mode,

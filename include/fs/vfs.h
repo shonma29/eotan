@@ -26,6 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <sys/types.h>
 #include <stddef.h>
 #ifdef HOST_APP
 #include "../../include/set/list.h"
@@ -87,6 +88,11 @@ typedef struct _vnode_t {
 	int dev;
 } vnode_t;
 
+struct permission {
+	uid_t uid;
+	gid_t gid;
+};
+
 extern void block_initialize(block_device_t *);
 
 extern int cache_initialize(void);
@@ -104,5 +110,8 @@ extern int vnodes_append(vnode_t *);
 extern int vnodes_remove(vnode_t *);
 extern vnode_t *vnodes_find(const vfs_t *, const int);
 #endif
+
+extern int vfs_lookup(vnode_t *, const char *, const int, const mode_t,
+		const struct permission *, vnode_t **);
 
 #endif

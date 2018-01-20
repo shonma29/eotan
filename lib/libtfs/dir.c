@@ -170,10 +170,7 @@ int sfs_getdents(vnode_t *ip, ID caller, W offset,
  *
  */
 int
-sfs_i_lookup(vnode_t *parent,
-	     char *fname,
-	     W oflag,
-	     W mode, struct permission *acc, vnode_t **retip)
+sfs_i_lookup(vnode_t *parent, char *fname, vnode_t **retip)
 {
     W error_no;
     W nentry;

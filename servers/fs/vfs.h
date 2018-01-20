@@ -92,7 +92,6 @@ Version 2, June 1991
 #include <fs/vfs.h>
 #include <set/list.h>
 #include <sys/statvfs.h>
-#include "types.h"
 
 /* file system types. */
 
@@ -115,8 +114,6 @@ extern W fs_unmount(UW device);
 
 extern W fs_open_file(B * path, W oflag, W mode, struct permission *acc,
 		      vnode_t *startip, vnode_t **newip);
-extern W fs_lookup(vnode_t *startip, char *path, W oflag,
-		   W mode, struct permission *acc, vnode_t **newip);
 extern W fs_read_file(vnode_t *ip, W start, B * buf, W length,
 		      W * rlength);
 extern W fs_write_file(vnode_t *ip, W start, B * buf, W length,

@@ -23,6 +23,7 @@ Version 2, June 1991
 #include <mpu/memory.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
+#include <sys/syslimits.h>
 #include <sys/wait.h>
 #include "../../lib/libserv/libmm.h"
 #include "fs.h"
@@ -49,7 +50,7 @@ int if_exec(fs_request *req)
 	else
 	    return EFAULT;
     }
-    req->buf[MAX_NAMELEN] = '\0';
+    req->buf[NAME_MAX] = '\0';
 #ifdef EXEC_DEBUG
     dbg_printf("fs: exec: pathname is %s\n", req->buf);
 #endif

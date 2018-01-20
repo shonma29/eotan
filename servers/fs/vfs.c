@@ -156,6 +156,7 @@ Version 2, June 1991
 #include <fs/nconfig.h>
 #include <nerve/kcall.h>
 #include <sys/stat.h>
+#include <sys/syslimits.h>
 #include "fs.h"
 #include "devfs/devfs.h"
 
@@ -175,7 +176,6 @@ static struct fs_entry fs_table[] = {
 static vfs_t fs_buf[MAX_MOUNT], *rootfs = NULL;
 static list_t free_fs;
 vnode_t *rootfile = NULL;
-static W mode_map[] = { R_OK, W_OK, R_OK | W_OK };
 
 static vfs_t *alloc_fs(void);
 static void dealloc_fs(vfs_t *);
@@ -380,7 +380,6 @@ fs_mount(const ID device,
     /* mount されるファイルシステムの root ディレクトリの登録 */
     newip->fs = newfs;
     newfs->root = newip;
-    newfs->device.channel = device;
     newfs->operations = *fsp;
 
     /* ファイルシステムのリストへ登録 */
@@ -459,7 +458,7 @@ fs_open_file(B * path,
     W error_no;
 
     if (oflag & O_CREAT) {
-	error_no = fs_lookup(startip, path, O_RDONLY, mode, acc, newip);
+	error_no = vfs_lookup(startip, path, O_RDONLY, mode, acc, newip);
 	if (error_no == ENOENT) {
 	    error_no = fs_create_file(startip, path, oflag, mode, acc, newip);
 	    return (error_no);
@@ -472,7 +471,7 @@ fs_open_file(B * path,
 	}
     }
 
-    error_no = fs_lookup(startip, path, oflag, mode, acc, newip);
+    error_no = vfs_lookup(startip, path, oflag, mode, acc, newip);
     if (error_no) {
 	return (error_no);
     }
@@ -493,13 +492,13 @@ fs_create_file(vnode_t * startip,
 	       W oflag,
 	       W mode, struct permission * acc, vnode_t ** newip)
 {
-    char parent_path[MAX_NAMELEN];
+    char parent_path[NAME_MAX + 1];
     vnode_t *parent_ip;
     W parent_length = copy_path(parent_path, path, startip, &parent_ip);
     W error_no;
 
     if (parent_length > 0) {
-	error_no = fs_lookup(startip, parent_path, O_WRONLY,
+	error_no = vfs_lookup(startip, parent_path, O_WRONLY,
 			  mode, acc, &parent_ip);
 	if (error_no) {
 	    return (error_no);
@@ -525,104 +524,6 @@ fs_create_file(vnode_t * startip,
 
 
 
-/* fs_lookup
- *
- * 機能
- *	ファイルをオープンする。
- *
- * 
- *
- */
-W
-fs_lookup(vnode_t * startip,
-	  char *path,
-	  W oflag, W mode, struct permission * acc, vnode_t ** newip)
-{
-    vnode_t *tmpip;
-    vfs_t *fsp;
-    int len;
-    char part[MAX_NAMELEN];
-    W error_no;
-
-    if (startip == NULL) {
-	return (ENODEV);
-    }
-
-    tmpip = startip;
-    if ((path[0] == '/') && (path[1] == '\0')) {
-	startip->refer_count++;
-	*newip = startip;
-	return (EOK);
-    } else if (*path == '/') {
-	path++;
-    }
-
-    /* パス名の最後に / があれば除去する */
-    len = strlen(path) - 1;
-    if ((len > 0) && (path[len] == '/')) {
-      path[len] = 0;
-    }
-
-    tmpip->refer_count++;
-    while (*path != '\0') {
-	int i;
-
-	/* ディレクトリの実行許可のチェック */
-	error_no = tmpip->fs->operations.permit(tmpip, acc, X_OK);
-	if (error_no) {
-	    vnodes_remove(tmpip);
-	    return (error_no);
-	}
-
-	for (i = 0; i < MAX_NAMELEN; i++) {
-	    if ((*path == '/') || (*path == '\0')) {
-		part[i] = '\0';
-		error_no = tmpip->fs->operations.lookup(tmpip, part, oflag, mode, acc, newip);
-		if (error_no) {
-		    vnodes_remove(tmpip);
-		    return (error_no);
-		}
-		/* ファイルシステムの root directory にいる場合 */
-		if ((tmpip == *newip) && (!strcmp("..", part))) {
-		    fsp = rootfs;
-		    do {
-			if ((fsp->origin) != NULL &&
-			    (fsp->root == tmpip)) {
-			    tmpip->refer_count--;
-			    vnodes_remove(tmpip);
-			    tmpip = fsp->origin;
-			    tmpip->refer_count++;
-			    error_no =
-				tmpip->fs->operations.lookup(tmpip, part, oflag, mode, acc,
-					    newip);
-			    break;
-			}
-			fsp = getFsParent(list_next(&(fsp->bros)));
-		    } while (fsp != rootfs);
-		}
-		vnodes_remove(tmpip);
-
-		/* パス名の次の要素へ 
-		 */
-		if (*path == '\0') {
-		    /* ディレクトリの許可のチェック */
-		    error_no = (*newip)->fs->operations.permit(*newip, acc, mode_map[oflag & 0x03]);
-		    if (error_no)
-			vnodes_remove(*newip);
-		    return (error_no);
-		}
-		path++;
-		tmpip = *newip;
-		break;
-	    }
-	    part[i] = *path;
-	    path++;
-	}
-    }
-
-    return (ENAMETOOLONG);
-}
-
 /* fs_read_file -
  *
  * 機能
@@ -686,14 +587,14 @@ W fs_write_file(vnode_t * ip, W start, B * buf, W length, W * rlength)
 W
 fs_remove_file(vnode_t * startip, B * path, struct permission * acc)
 {
-    char parent_path[MAX_NAMELEN];
+    char parent_path[NAME_MAX + 1];
     vnode_t *parent_ip;
     W parent_length = copy_path(parent_path, path, startip, &parent_ip);
     W error_no;
 
     if (parent_length > 0) {
 	error_no =
-	    fs_lookup(startip, parent_path, O_RDWR, 0, acc, &parent_ip);
+	    vfs_lookup(startip, parent_path, O_RDWR, 0, acc, &parent_ip);
 	if (error_no) {
 	    return (error_no);
 	}
@@ -701,7 +602,7 @@ fs_remove_file(vnode_t * startip, B * path, struct permission * acc)
     parent_length += 1;
 
     vnode_t *ip;
-    error_no = fs_lookup(parent_ip, &path[parent_length], O_RDWR, 0, acc, &ip);
+    error_no = vfs_lookup(parent_ip, &path[parent_length], O_RDWR, 0, acc, &ip);
     if (error_no) {
 	vnodes_remove(parent_ip);
 	return (error_no);
@@ -725,14 +626,14 @@ fs_remove_file(vnode_t * startip, B * path, struct permission * acc)
  */
 W fs_remove_dir(vnode_t * startip, B * path, struct permission * acc)
 {
-    char parent_path[MAX_NAMELEN];
+    char parent_path[NAME_MAX + 1];
     vnode_t *parent_ip;
     W parent_length = copy_path(parent_path, path, startip, &parent_ip);
     W error_no;
 
     if (parent_length > 0) {
 	error_no =
-	    fs_lookup(startip, parent_path, O_RDWR, 0, acc, &parent_ip);
+	    vfs_lookup(startip, parent_path, O_RDWR, 0, acc, &parent_ip);
 	if (error_no) {
 	    return (error_no);
 	}
@@ -740,7 +641,7 @@ W fs_remove_dir(vnode_t * startip, B * path, struct permission * acc)
     parent_length += 1;
 
     vnode_t *ip;
-    error_no = fs_lookup(parent_ip, &path[parent_length], O_RDWR, 0, acc, &ip);
+    error_no = vfs_lookup(parent_ip, &path[parent_length], O_RDWR, 0, acc, &ip);
     if (error_no) {
 	vnodes_remove(parent_ip);
 	return (error_no);
@@ -786,12 +687,12 @@ W fs_create_dir(vnode_t * startip,
 	      char *path,
 	      W mode, struct permission * acc, vnode_t ** newip)
 {
-    char parent_path[MAX_NAMELEN];
+    char parent_path[NAME_MAX + 1];
     vnode_t *parent_ip;
     W parent_length;
     W error_no;
 
-    error_no = fs_lookup(startip, path, O_RDONLY, mode, acc, newip);
+    error_no = vfs_lookup(startip, path, O_RDONLY, mode, acc, newip);
     if (error_no == EOK) {
 	vnodes_remove(*newip);	/* fs_close() で行う処理はこれだけ */
 	return (EEXIST);
@@ -801,7 +702,7 @@ W fs_create_dir(vnode_t * startip,
 
     parent_length = copy_path(parent_path, path, startip, &parent_ip);
     if (parent_length > 0) {
-	error_no = fs_lookup(startip, parent_path, O_WRONLY,
+	error_no = vfs_lookup(startip, parent_path, O_WRONLY,
 			  mode, acc, &parent_ip);
 	if (error_no) {
 	    return (error_no);
@@ -830,7 +731,7 @@ W fs_create_dir(vnode_t * startip,
 W
 fs_link_file(W procid, B * src, B * dst, struct permission * acc)
 {
-    char parent_path[MAX_NAMELEN];
+    char parent_path[NAME_MAX + 1];
     vnode_t *startip;
     vnode_t *srcip, *parent_ip;
     W parent_length;
@@ -846,7 +747,7 @@ fs_link_file(W procid, B * src, B * dst, struct permission * acc)
 	startip = rootfile;
     }
 
-    error_no = fs_lookup(startip, src, O_RDONLY, 0, acc, &srcip);
+    error_no = vfs_lookup(startip, src, O_RDONLY, 0, acc, &srcip);
     if (error_no) {
 	return (error_no);
     }
@@ -870,7 +771,7 @@ fs_link_file(W procid, B * src, B * dst, struct permission * acc)
     parent_length = copy_path(parent_path, dst, startip, &parent_ip);
     if (parent_length > 0) {
 	error_no =
-	    fs_lookup(startip, parent_path, O_RDWR, 0, acc, &parent_ip);
+	    vfs_lookup(startip, parent_path, O_RDWR, 0, acc, &parent_ip);
 	if (error_no) {
 	    return (error_no);
 	}
@@ -886,7 +787,7 @@ fs_link_file(W procid, B * src, B * dst, struct permission * acc)
 
     /* リンク先にファイルが存在していたらエラー */
     vnode_t *ip;
-    error_no = fs_lookup(parent_ip, &dst[parent_length], O_RDONLY, 0, acc, &ip);
+    error_no = vfs_lookup(parent_ip, &dst[parent_length], O_RDONLY, 0, acc, &ip);
     if (error_no == EOK) {
 	vnodes_remove(ip);
 	error_no = EEXIST;
@@ -912,8 +813,8 @@ static W copy_path(char * parent_path, char * path, vnode_t * startip,
 
     for (len = strlen(path); len >= 0; len--) {
 	if (path[len] == '/') {
-	    strncpy(parent_path, path, MAX_NAMELEN - 1);
-	    parent_path[MAX_NAMELEN - 1] = '\0';
+	    strncpy(parent_path, path, NAME_MAX);
+	    parent_path[NAME_MAX] = '\0';
 	    parent_path[len] = '\0';
 	    break;
 	}

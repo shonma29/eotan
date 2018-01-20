@@ -27,6 +27,7 @@ Version 2, June 1991
 #include <core/options.h>
 #include <nerve/kcall.h>
 #include <sys/stat.h>
+#include <sys/syslimits.h>
 #include "fs.h"
 #include "api.h"
 
@@ -68,7 +69,7 @@ int if_mount(fs_request *req)
 	else
 	    return EFAULT;
     }
-    req->buf[MAX_NAMELEN] = '\0';
+    req->buf[NAME_MAX] = '\0';
     error_no = find_fs((UB*)(req->buf), &fstype);
     if (error_no)
 	return error_no;

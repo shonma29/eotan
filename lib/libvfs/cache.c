@@ -194,15 +194,18 @@ bool cache_invalidate(block_device_t *dev, const unsigned int block_no)
 
 int cache_synchronize(block_device_t *dev, const bool unmount)
 {
-	for (list_t *p = list_next(&lru_list); !list_is_edge(&lru_list, p);
-			p = p->next) {
+	for (list_t *p = list_next(&lru_list); !list_is_edge(&lru_list, p);) {
 		cache_t *cp = getLruParent(p);
 
-		if (cp->dev->channel != dev->channel)
+		if (cp->dev->channel != dev->channel) {
+			p = list_next(p);
 			continue;
+		}
 
-		if (cp->lock_count)
+		if (cp->lock_count) {
+			p = list_next(p);
 			continue;
+		}
 
 		if (cp->dirty) {
 			int error_no = sweep(cp);
@@ -211,6 +214,8 @@ int cache_synchronize(block_device_t *dev, const bool unmount)
 
 			cp->dirty = false;
 		}
+
+		p = list_next(p);
 
 		if (unmount)
 			dispose(cp);

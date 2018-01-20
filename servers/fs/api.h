@@ -29,11 +29,12 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <fs/config.h>
 #include <sys/syscall.h>
+#include <sys/syslimits.h>
 
 typedef struct {
 	struct posix_request packet;
 	RDVNO rdvno;
-	B buf[MAX_NAMELEN + 1];
+	B buf[NAME_MAX + 1];
 } fs_request;
 
 extern int if_chdir(fs_request*);

@@ -28,7 +28,6 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <set/tree.h>
 #include "vfs.h"
-#include "types.h"
 
 typedef struct _session_t {
 	node_t node;

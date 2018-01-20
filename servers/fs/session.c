@@ -42,7 +42,7 @@ int if_chdir(fs_request *req)
 		sizeof(req->buf) - 1, req->buf) < 0)
 	return EINVAL;
 
-    req->buf[MAX_NAMELEN] = '\0';
+    req->buf[NAME_MAX] = '\0';
     err = proc_get_cwd(req->packet.procid, &oldip);
     if (err)
 	return err;
@@ -58,7 +58,7 @@ int if_chdir(fs_request *req)
     if (proc_get_permission(req->packet.procid, &acc))
 	return EINVAL;
 
-    err = fs_lookup(startip, req->buf, O_RDONLY, 0, &acc, &ipp);
+    err = vfs_lookup(startip, req->buf, O_RDONLY, 0, &acc, &ipp);
     if (err)
 	return err;
 
@@ -102,7 +102,7 @@ W session_get_path(vnode_t **ip, const ID pid, const ID tid,
 {
     /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。
      */
-    W error_no = kcall->region_copy(tid, src, MAX_NAMELEN, buf);
+    W error_no = kcall->region_copy(tid, src, NAME_MAX, buf);
 
     if (error_no < 0) {
 	/* パス名のコピーエラー */
@@ -111,7 +111,7 @@ W session_get_path(vnode_t **ip, const ID pid, const ID tid,
 	else
 	    return EFAULT;
     }
-    buf[MAX_NAMELEN] = '\0';
+    buf[NAME_MAX] = '\0';
 
     if (buf[0] != '/') {
 	error_no = proc_get_cwd(pid, ip);
