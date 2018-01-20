@@ -111,7 +111,7 @@ extern int vnodes_remove(vnode_t *);
 extern vnode_t *vnodes_find(const vfs_t *, const int);
 #endif
 
-extern int vfs_lookup(vnode_t *, const char *, const int, const mode_t,
+extern int vfs_lookup(vnode_t *, const char *, const int,
 		const struct permission *, vnode_t **);
 
 #endif

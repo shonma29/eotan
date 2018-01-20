@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <fcntl.h>
 #include <string.h>
 #include <fs/vfs.h>
 #include <sys/errno.h>
@@ -39,7 +40,7 @@ static int modes[] = {
 
 
 int vfs_lookup(vnode_t *parent, const char *path, const int flags,
-		const mode_t mode, const struct permission *perm, vnode_t **ip)
+		const struct permission *perm, vnode_t **ip)
 {
 	if (!parent)
 		return ENODEV;
@@ -78,7 +79,7 @@ int vfs_lookup(vnode_t *parent, const char *path, const int flags,
 			}
 		}
 
-		if (!(parent->mode & S_IFDIR)) {
+		if ((parent->mode & S_IFMT) != S_IFDIR) {
 			vnodes_remove(parent);
 			return ENOTDIR;
 		}
@@ -103,7 +104,7 @@ int vfs_lookup(vnode_t *parent, const char *path, const int flags,
 	*ip = parent;
 
 	int error_no = (*ip)->fs->operations.permit(*ip, perm,
-			modes[flags & 3]);
+			modes[flags & O_ACCMODE]);
 	if (error_no)
 		vnodes_remove(*ip);
 

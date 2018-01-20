@@ -49,7 +49,7 @@ int if_chmod(fs_request *req)
     if (proc_get_permission(req->packet.procid, &acc))
 	return EINVAL;
 
-    err = vfs_lookup(startip, req->buf, O_RDWR, 0, &acc, &ipp);
+    err = vfs_lookup(startip, req->buf, O_RDWR, &acc, &ipp);
     if (err)
 	return ENOENT;
 

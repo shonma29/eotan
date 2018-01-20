@@ -58,7 +58,7 @@ int if_chdir(fs_request *req)
     if (proc_get_permission(req->packet.procid, &acc))
 	return EINVAL;
 
-    err = vfs_lookup(startip, req->buf, O_RDONLY, 0, &acc, &ipp);
+    err = vfs_lookup(startip, req->buf, O_RDONLY, &acc, &ipp);
     if (err)
 	return err;
 
