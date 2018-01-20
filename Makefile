@@ -32,6 +32,7 @@ all: libs tools kern initrd apps data starter
 
 tools:
 	$(MAKE) -f app/sfs/Makefile WD=app/sfs
+	$(MAKE) -f app/tfs/Makefile WD=app/tfs
 	$(MAKE) -f lib/librc/Makefile WD=lib/librc
 
 libs:
@@ -82,6 +83,7 @@ initrd:
 
 clean:
 	$(MAKE) -f app/sfs/Makefile WD=app/sfs clean
+	$(MAKE) -f app/tfs/Makefile WD=app/tfs clean
 	$(MAKE) -f lib/librc/Makefile WD=lib/librc clean
 	$(MAKE) -f lib/Makefile clean
 	$(MAKE) -f kernel/Makefile WD=kernel clean
