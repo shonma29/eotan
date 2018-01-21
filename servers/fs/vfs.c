@@ -436,7 +436,6 @@ W fs_unmount(UW device)
     /* マウントポイントを解放する */
     fsp->origin->covered = NULL;
     vnodes_remove(fsp->origin);
-    vnodes_remove(fsp->root);
 
     /* FS list から除外 */
     dealloc_fs(fsp);

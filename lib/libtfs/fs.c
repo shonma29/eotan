@@ -164,6 +164,7 @@ static int sfs_mount(ID device, vfs_t *rootfsp, vnode_t *rootfile)
 static int sfs_unmount(vfs_t * rootfsp)
 {
     /* super block 情報の sync とキャッシュ・データの無効化 */
+    vnodes_remove(rootfsp->root);
     cache_release(rootfsp->private, false);
     return cache_synchronize(&(rootfsp->device), true);
 }

@@ -1,5 +1,5 @@
-#ifndef _SYS_TYPES_H_
-#define _SYS_TYPES_H_
+#ifndef _WRITER_H_
+#define _WRITER_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,36 +26,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stdbool.h>
-#include <stdint.h>
+#include "../../include/fs/vfs.h"
 
-typedef int pid_t;
+extern vfs_operation_t sfs_fsops;
 
-typedef unsigned int dev_t;
-typedef unsigned int ino_t;
-typedef unsigned int mode_t;
-typedef unsigned int nlink_t;
-typedef unsigned int uid_t;
-typedef unsigned int gid_t;
-typedef int64_t off_t;
-typedef unsigned int blksize_t;
-typedef int blkcnt_t;
-
-typedef int64_t time_t;
-typedef int suseconds_t;
-
-typedef bool boolean_t;
-
-#ifndef TRUE
-#define TRUE true
-#endif
-#ifndef FALSE
-#define FALSE false
-#endif
-
-typedef uint64_t fsblkcnt_t;
-typedef uint64_t fsfilcnt_t;
-
-typedef int ssize_t;
+#define fsops sfs_fsops
 
 #endif

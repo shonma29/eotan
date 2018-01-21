@@ -134,7 +134,6 @@ Version 2, June 1991
 int
 sfs_i_create(vnode_t * parent,
 	     char *fname,
-	     W oflag,
 	     W mode, struct permission * acc, vnode_t ** retip)
 {
     vnode_t *newip;
@@ -250,6 +249,7 @@ int sfs_i_read(vnode_t * ip, W start, B * buf, W length, W * rlength)
 	}
 
 	memcpy(buf, &cbuf[offset], copysize);
+	cache_release(cbuf, false);
 	buf += copysize;
 	start += copysize;
 	length -= copysize;
@@ -310,27 +310,14 @@ int sfs_i_write(vnode_t * ip, W start, B * buf, W size, W * rsize)
 	} else {
 	    cbuf = cache_get(&(fsp->device), bn);
 	}
+	if (!cbuf) {
+		return EIO;
+	}
 
 	/* 読み込んだブロックの内容を更新する
 	 */
 	offset = start % sb->blksize;
 	copysize = MIN(sb->blksize - offset, size);
-
-#ifdef FMDEBUG
-	dbg_printf("sfs: *** read block contents ***\n");
-	{
-	    int i;
-	    char tmpbuf[2];
-
-	    tmpbuf[1] = '\0';
-	    dbg_printf("sfs: copy size: %d\n", copysize);
-	    for (i = 0; i < copysize; i++) {
-		tmpbuf[0] = blockbuf[i];
-		dbg_printf("sfs: %s", tmpbuf);
-	    }
-	}
-#endif
-
 	memcpy(&cbuf[offset], buf, copysize);
 
 	/* 更新したブロックを書き込む

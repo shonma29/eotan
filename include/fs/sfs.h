@@ -122,7 +122,7 @@ struct sfs_indirect
 struct sfs_dir
 {
   UW	d_index;		/* inode 番号 */
-  B	d_name[SFS_MAXNAMELEN];
+  char	d_name[SFS_MAXNAMELEN];
   B	pad[2];			/* padding */
 };
 

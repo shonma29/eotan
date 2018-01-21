@@ -233,6 +233,7 @@ sfs_get_indirect_block_num(vfs_t * fsp, struct sfs_inode * ip,
 
     inbufp = cache_get(&(fsp->device), ip->i_indirect[inblock]);
     bn = inbufp->in_block[inblock_offset];
+    cache_release(inbufp, false);
 
     return (bn);
 }

@@ -27,10 +27,10 @@ TARGET = $(WD)/writer
 
 include Makefile.in
 
-CFLAGS = -Wall -Werror -O2 -std=c11 -I include
+CFLAGS = -Wall -Werror -O2 -std=c11 -D HOST_APP
 
 $(WD)/block.o: $(WD)/block.c
-	$(CC) -I include -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(TARGET): $(OBJS)
 	$(CC) -o $@ $(@).o $(WD)/block.o lib/libvfs.a lib/libtfs.a \

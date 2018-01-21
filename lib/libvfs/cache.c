@@ -32,6 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <fs/vfs.h>
 #include <set/list.h>
 #include <set/hash.h>
+#include "../libserv/libserv.h"
 
 #define numOf(x) (sizeof(x) / sizeof(x[0]))
 
@@ -92,12 +93,17 @@ void *cache_create(block_device_t *dev, const unsigned int block_no)
 		else if (!list_is_empty(&lru_list)) {
 			cp = getLruParent(list_next(&lru_list));
 			if (cp->dirty)
-				if (sweep(cp))
+				if (sweep(cp)) {
+					dbg_printf("cache_create: sweep(%d) error\n",
+							block_no);
 					return NULL;
+				}
 
 			hash_remove(hash, cp);
-		} else
+		} else {
+			dbg_printf("cache_create: no memory\n");
 			return NULL;
+		}
 
 		cp->dev = dev;
 		cp->block_no = block_no;
@@ -112,6 +118,9 @@ void *cache_create(block_device_t *dev, const unsigned int block_no)
 	list_insert(&lru_list, &(cp->lru));
 	memset(cp->buf, 0, sizeof(cp->buf));
 
+//	dbg_printf("cache_create: %d %d %d %d\n",
+//			cp->dev->channel, cp->block_no, cp->lock_count,
+//			cp->dirty);
 	return cp->buf;
 }
 
@@ -127,12 +136,17 @@ void *cache_get(block_device_t *dev, const unsigned int block_no)
 		else if (!list_is_empty(&lru_list)) {
 			cp = getLruParent(list_next(&lru_list));
 			if (cp->dirty)
-				if (sweep(cp))
+				if (sweep(cp)) {
+					dbg_printf("cache_get: sweep(%d) error\n",
+							block_no);
 					return NULL;
+				}
 
 			hash_remove(hash, cp);
-		} else
+		} else {
+			dbg_printf("cache_get: no memory\n");
 			return NULL;
+		}
 
 		cp->dev = dev;
 		cp->block_no = block_no;
@@ -142,6 +156,7 @@ void *cache_get(block_device_t *dev, const unsigned int block_no)
 		if (fill(cp)) {
 			list_remove(&(cp->lru));
 			list_insert(&free_list, &(cp->lru));
+			dbg_printf("cache_get: fill(%d) error\n", block_no);
 			return NULL;
 		}
 
@@ -152,6 +167,9 @@ void *cache_get(block_device_t *dev, const unsigned int block_no)
 	list_remove(&(cp->lru));
 	list_insert(&lru_list, &(cp->lru));
 
+//	dbg_printf("cache_get: %d %d %d %d\n",
+//			cp->dev->channel, cp->block_no, cp->lock_count,
+//			cp->dirty);
 	return cp->buf;
 }
 
@@ -163,6 +181,8 @@ bool cache_modify(const void *p)
 	cache_t *cp = getBufParent(p);
 	cp->dirty = true;
 
+//	dbg_printf("cache_modify: %d %d %d\n",
+//			cp->block_no, cp->lock_count, cp->dirty);
 	return true;
 }
 
@@ -174,6 +194,9 @@ bool cache_release(const void *p, const bool dirty)
 	cache_t *cp = getBufParent(p);
 	cp->dirty |= dirty;
 	cp->lock_count--;
+//	dbg_printf("cache_release: %d %d %d %d\n",
+//			cp->dev->channel, cp->block_no, cp->lock_count,
+//			cp->dirty);
 
 	return true;
 }
@@ -197,6 +220,9 @@ int cache_synchronize(block_device_t *dev, const bool unmount)
 	for (list_t *p = list_next(&lru_list); !list_is_edge(&lru_list, p);) {
 		cache_t *cp = getLruParent(p);
 
+//	dbg_printf("cache_sync: %d %d %d %d\n",
+//			cp->dev->channel, cp->block_no, cp->lock_count,
+//			cp->dirty);
 		if (cp->dev->channel != dev->channel) {
 			p = list_next(p);
 			continue;
@@ -211,7 +237,6 @@ int cache_synchronize(block_device_t *dev, const bool unmount)
 			int error_no = sweep(cp);
 			if (error_no)
 				return error_no;
-
 			cp->dirty = false;
 		}
 

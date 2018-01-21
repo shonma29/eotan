@@ -58,7 +58,7 @@ extern int sfs_permit(vnode_t *ip, struct permission *acc, UW bits);
 extern int sfs_i_close (vnode_t * ip);
 
 /* file.c */
-extern int sfs_i_create (vnode_t *parent, char *fname, W oflag,
+extern int sfs_i_create (vnode_t *parent, char *fname,
 			      W mode, struct permission *acc,
 			      vnode_t **retip);
 extern int sfs_i_read (vnode_t *ip, W start, B *buf, W length, W *rlength);

@@ -24,9 +24,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <errno.h>
 #include <string.h>
 #include <unistd.h>
-#include <fs/vfs.h>
+#include "../../include/fs/vfs.h"
+#include "libserv.h"
 
 static void block_clear(block_device_t *, void *);
 static int block_read(block_device_t *, void *, const int);
@@ -53,11 +55,23 @@ static int block_read(block_device_t *dev, void *buf, const int blockno)
 	off_t offset = blockno * dev->block_size;
 	size_t size;
 
-	if (lseek(dev->channel, offset, SEEK_SET) != offset)
+	if (lseek(dev->channel, offset, SEEK_SET) != offset) {
+		dbg_printf("block_read: seek(%d) error\n", blockno);
 		return (-1);
+	}
 
 	size = dev->block_size;
-	return (read(dev->channel, buf, size) == size)? 0:(-1);
+	int result = read(dev->channel, buf, size);
+	if (result < 0) {
+		dbg_printf("block_read: read(%d) error %d\n", blockno, result);
+		return -1;
+	}
+
+	//TODO until replace statfs
+	if (result < size)
+		memset(&(buf[result]), 0, size - result);
+
+	return 0;
 }
 
 static int block_write(block_device_t *dev, void *buf, const int blockno)
@@ -65,11 +79,17 @@ static int block_write(block_device_t *dev, void *buf, const int blockno)
 	off_t offset = blockno * dev->block_size;
 	size_t size;
 
-	if (lseek(dev->channel, offset, SEEK_SET) != offset)
+	if (lseek(dev->channel, offset, SEEK_SET) != offset) {
+		dbg_printf("block_write: seek(%d) error\n", blockno);
 		return (-1);
+	}
 
 	size = dev->block_size;
-	return (write(dev->channel, buf, size) == size)? 0:(-1);
+	int result = (write(dev->channel, buf, size) == size)? 0:(-1);
+	if (result)
+		dbg_printf("block_write: write(%d) error\n", blockno);
+
+	return result;
 }
 
 static int block_invalidate(block_device_t *dev, const int blockno)

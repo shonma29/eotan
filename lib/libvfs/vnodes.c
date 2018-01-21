@@ -83,10 +83,9 @@ int vnodes_remove(vnode_t *ip)
 	if (!(ip->refer_count)) {
 		if (!(ip->dev)
 				&& ip->fs) {
-			ip->fs->operations.close(ip);
-//			int error_no = ip->fs->operations.close(ip);
-//			if (error_no)
-//				return error_no;
+			int error_no = ip->fs->operations.close(ip);
+			if (error_no)
+				return error_no;
 		}
 
 		list_remove(&(ip->bros));

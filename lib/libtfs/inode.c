@@ -242,7 +242,7 @@ int sfs_wstat(vnode_t *ip)
 /*
  * permit -
  */
-
+//TODO check fs is readonly
 int sfs_permit(vnode_t * ip, struct permission * acc, UW bits)
 {
     UW mode, perm_bits;
@@ -296,7 +296,7 @@ int sfs_i_close(vnode_t * ip)
     sfs_inode->i_mode = ip->mode;
 
     if (ip->dirty) {
-	if (!cache_modify(ip)) {
+	if (!cache_modify(ip->private)) {
 	    return EIO;
 	}
 
