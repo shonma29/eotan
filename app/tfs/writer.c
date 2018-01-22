@@ -306,7 +306,8 @@ static int do_create(vfs_t *fs, char *path, const char *from,
 		if (last[1] == '\0') {
 			printf("create: bad path %s\n", path);
 			return ERR_ARG;
-		}
+		} else
+			break;
 	}
 
 	char *parent_path;
@@ -441,6 +442,8 @@ static int do_mkdir(vfs_t *fs, char *path, const struct permission *permission)
 		//TODO is this error?
 		if (last[1] == '\0')
 			*last = '\0';
+		else
+			break;
 	}
 
 	char *parent_path;
@@ -502,7 +505,7 @@ static int do_mkdir(vfs_t *fs, char *path, const struct permission *permission)
 	return 0;
 }
 
-static int do_chmod(vfs_t *fs, char *path, const char *mode,
+static int do_chmod(vfs_t *fs, const char *mode, char *path,
 		const struct permission *permission)
 {
 	char *head = path;
@@ -518,11 +521,8 @@ static int do_chmod(vfs_t *fs, char *path, const char *mode,
 		//TODO is this error?
 		if (last[1] == '\0')
 			*last = '\0';
-	}
-
-	if (!strlen(head)) {
-		printf("chmod: bad path %s\n", path);
-		return ERR_ARG;
+		else
+			break;
 	}
 
 	vnode_t *ip;
@@ -535,9 +535,7 @@ static int do_chmod(vfs_t *fs, char *path, const char *mode,
 	}
 
 	//TODO use constant definition of guest
-	ip->mode = (ip->mode & ~(S_IRWXU | S_IRWXG | S_IRWXO))
-			| (strtol(mode, NULL, 8)
-					& (S_IRWXU | S_IRWXG | S_IRWXO));
+	ip->mode = (ip->mode & S_IFMT) | strtol(mode, NULL, 8);
 	result = ip->fs->operations.wstat(ip);
 	vnodes_remove(ip);
 
