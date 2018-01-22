@@ -154,6 +154,7 @@ int main(int ac, char **av)
 static void write_superblock(int formatfd)
 {
     int error;
+    char buf[SFS_BLOCK_SIZE];
 
     struct sfs_superblock superblock;
 
@@ -164,7 +165,7 @@ static void write_superblock(int formatfd)
     superblock.nblock = nblock;
     superblock.freeblock =
 	nblock - (boot_block + super_block + bitmap_block + inode_block +
-		  1);
+		  2);
     superblock.bitmapsize = bitmap_block;
     superblock.ninode = inodecount;
     superblock.freeinode = inodecount - 1;	/* root ディレクトリの分 */
@@ -172,10 +173,12 @@ static void write_superblock(int formatfd)
 	(boot_block + super_block + bitmap_block + inode_block);
     superblock.isearch = 1;
     superblock.bsearch = (boot_block + super_block + bitmap_block
-			      + inode_block + 1) - 1;
+			      + inode_block + 2) - 1;
 
+    memset(buf, 0, sizeof(buf));
+    memcpy(buf, &superblock, sizeof(superblock));
     lseek(formatfd, blocksize, 0);
-    error = write(formatfd, &superblock, sizeof(superblock));
+    error = write(formatfd, buf, sizeof(buf));
     if (error < 0) {
 	perror("Write error in write_superblock().\n");
     }
@@ -244,6 +247,8 @@ static void write_inode(int formatfd)
     rootdir.i_mtime.nsec = 0;
     rootdir.i_ctime.sec = t;
     rootdir.i_ctime.nsec = 0;
+    rootdir.i_indirect[0] = boot_block + super_block + bitmap_block
+	    + inode_block;
 
     lseek(formatfd, blocksize * (boot_block + super_block + bitmap_block),
 	  0);
@@ -254,8 +259,22 @@ static void write_inode(int formatfd)
 
 static void write_rootdir(int formatfd)
 {
+    char buf[SFS_BLOCK_SIZE];
+    int *intp = (int*)buf;
+    struct sfs_dir *dirp = (struct sfs_dir *)buf;
+
+    memset(buf, 0, sizeof(buf));
+    *intp = boot_block + super_block + bitmap_block
+	    + inode_block + 1;
     lseek(formatfd,
 	  blocksize * (boot_block + super_block + bitmap_block +
 		       inode_block), 0);
-    write(formatfd, rootentry, sizeof(rootentry));
+    write(formatfd, buf, sizeof(buf));
+
+    memset(buf, 0, sizeof(buf));
+    memcpy(dirp, rootentry, sizeof(rootentry));
+    lseek(formatfd,
+	  blocksize * (boot_block + super_block + bitmap_block +
+		       inode_block + 1), 0);
+    write(formatfd, buf, sizeof(buf));
 }
