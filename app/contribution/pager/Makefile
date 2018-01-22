@@ -36,5 +36,5 @@ $(TARGET): $(OBJS) \
 		lib/libc.a lib/libitron.a
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
 	$(STRIP) $@
-	app/sfs/statfs initrd.img write /$(@F) $@
-	app/sfs/statfs initrd.img chmod 755 /$(@F)
+	app/tfs/writer initrd.img create /$(@F) $@
+	app/tfs/writer initrd.img chmod 755 /$(@F)

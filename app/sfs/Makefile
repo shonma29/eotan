@@ -23,14 +23,11 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = $(WD)/mkfs $(WD)/statfs
+TARGET = $(WD)/mkfs
 
 include Makefile.in
 
 CFLAGS = -Wall -Werror -O2 -std=gnu99
 
-$(WD)/block.o: $(WD)/block.c
-	$(CC) -I include -c -o $@ $<
-
 $(TARGET): $(OBJS)
-	$(CC) -o $@ $(@).o $(WD)/block.o lib/libtfs.a
+	$(CC) -o $@ $(@).o

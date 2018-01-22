@@ -42,5 +42,5 @@ $(TARGET): $(OBJS) \
 		lib/libc.a lib/libserv.a lib/libitron.a lib/libnc.a \
 		lib/libm.a
 	$(STRIP) $@
-	app/sfs/statfs initrd.img write /$(@F) $@
-	app/sfs/statfs initrd.img chmod 755 /$(@F)
+	app/tfs/writer initrd.img create /$(@F) $@
+	app/tfs/writer initrd.img chmod 755 /$(@F)

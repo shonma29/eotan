@@ -52,7 +52,7 @@ servers:
 apps: bin test contrib
 
 bin:
-	app/sfs/statfs initrd.img mkdir /bin
+	app/tfs/writer initrd.img mkdir /bin
 	$(MAKE) -f app/bin/Makefile WD=app/bin
 
 test:
@@ -64,13 +64,12 @@ contrib:
 data: motd bees.p6
 	./motd.sh > motd
 	for I in $^; do \
-		app/sfs/statfs initrd.img write /$$I $$I; \
-		app/sfs/statfs initrd.img chmod 644 /$$I; \
+		app/tfs/writer initrd.img create /$$I $$I; \
+		app/tfs/writer initrd.img chmod 644 /$$I; \
 	done
-	app/sfs/statfs initrd.img statvfs
 
 starter:
-	app/sfs/statfs initrd.img dir /
+	app/tfs/writer initrd.img ls /
 	lib/librc/encode < initrd.img > initrd.img.rc
 	mkdir -p build
 	$(MAKE) -f starter/arch/Makefile WD=starter/arch
@@ -78,8 +77,10 @@ starter:
 initrd:
 	$(RM) initrd.img
 	app/sfs/mkfs initrd.img 1024 4
-	app/sfs/statfs initrd.img mkdir /lost+found
-	app/sfs/statfs initrd.img chmod 1700 /lost+found
+	app/sfs/mkfs initrd.img 1024 4
+	app/tfs/writer initrd.img chmod 755 /
+	app/tfs/writer initrd.img mkdir /lost+found
+	app/tfs/writer initrd.img chmod 1700 /lost+found
 
 clean:
 	$(MAKE) -f app/sfs/Makefile WD=app/sfs clean
