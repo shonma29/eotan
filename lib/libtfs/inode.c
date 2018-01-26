@@ -121,9 +121,12 @@ W sfs_read_inode(vfs_t *fsp, W ino, vnode_t *ip)
     }
 
     ip->index = sfs_inode->i_index;
+    ip->nlink = sfs_inode->i_nlink;
     ip->size = sfs_inode->i_size;
     ip->nblock = sfs_inode->i_nblock;
     ip->mode = sfs_inode->i_mode;
+    ip->uid = sfs_inode->i_uid;
+    ip->gid = sfs_inode->i_gid;
     ip->refer_count = 1;
     ip->lock_count = 0;
     ip->fs = fsp;
@@ -215,10 +218,10 @@ int sfs_stat(vnode_t *ip, struct stat *st)
     st->st_dev = ip->fs->device.channel;
     st->st_ino = ip->index;
     st->st_mode = ip->mode;
-    st->st_nlink = sfs_inode->i_nlink;
+    st->st_nlink = ip->nlink;
     st->st_size = ip->size;
-    st->st_uid = sfs_inode->i_uid;
-    st->st_gid = sfs_inode->i_gid;
+    st->st_uid = ip->uid;
+    st->st_gid = ip->gid;
     st->st_rdev = ip->dev;
     st->st_blksize = sb->blksize;
     st->st_blocks = ROUNDUP(st->st_size, st->st_blksize) / st->st_blksize;
@@ -233,6 +236,7 @@ int sfs_wstat(vnode_t *ip)
 {
     struct sfs_inode *sfs_inode = ip->private;
     sfs_inode->i_mode = ip->mode;
+    sfs_inode->i_gid = ip->gid;
     time_get(&(sfs_inode->i_ctime));
     ip->dirty = true;
 
@@ -257,11 +261,9 @@ int sfs_permit(vnode_t * ip, struct permission * acc, UW bits)
 	    perm_bits = R_OK | W_OK;
 	}
     } else {
-	struct sfs_inode *sfs_inode = ip->private;
-
-	if (acc->uid == sfs_inode->i_uid)
+	if (acc->uid == ip->uid)
 	    shift = 6;
-	else if (acc->gid == sfs_inode->i_gid)
+	else if (acc->gid == ip->gid)
 	    shift = 3;
 	else
 	    shift = 0;
@@ -291,9 +293,11 @@ int sfs_i_close(vnode_t * ip)
       sfs_i_truncate(ip, ip->size);
     }
 
+    sfs_inode->i_nlink = ip->nlink;
+    sfs_inode->i_mode = ip->mode;
+    sfs_inode->i_gid = ip->gid;
     sfs_inode->i_size = ip->size;
     sfs_inode->i_nblock = ip->nblock;
-    sfs_inode->i_mode = ip->mode;
 
     if (ip->dirty) {
 	if (!cache_modify(ip->private)) {

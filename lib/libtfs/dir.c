@@ -244,7 +244,7 @@ int sfs_i_link(vnode_t * parent, char *fname, vnode_t * srcip)
 
     /* inode 情報の更新 */
     struct sfs_inode *sfs_inode = srcip->private;
-    sfs_inode->i_nlink += 1;
+    srcip->nlink += 1;
     time_get(&(sfs_inode->i_ctime));
     srcip->dirty = true;
 
@@ -258,8 +258,7 @@ sfs_i_unlink(vnode_t * parent, char *fname, vnode_t *ip)
     W error_no;
 
     /* ファイルの名前の最後の１つで，使用中なら削除しない */
-    struct sfs_inode *sfs_inode = ip->private;
-    if ((sfs_inode->i_nlink == 1) && (ip->refer_count >= 2)) {
+    if ((ip->nlink == 1) && (ip->refer_count >= 2)) {
 	return (EBUSY);
     }
 
@@ -268,7 +267,7 @@ sfs_i_unlink(vnode_t * parent, char *fname, vnode_t *ip)
 	return (error_no);
     }
 
-    if (sfs_inode->i_nlink <= 0) {
+    if (ip->nlink <= 0) {
 	sfs_i_truncate(ip, 0);
 	sfs_free_inode(ip->fs, ip);
     }
@@ -320,7 +319,7 @@ sfs_i_mkdir(vnode_t * parent,
     newip->refer_count = 1;
     newip->dirty = true;
     sfs_inode->i_mode = newip->mode = mode | S_IFDIR;
-    sfs_inode->i_nlink = 2;
+    sfs_inode->i_nlink = newip->nlink = 2;
     sfs_inode->i_index = newip->index = i_index;
     sfs_inode->i_uid = acc->uid;
     sfs_inode->i_gid = acc->gid;
@@ -373,12 +372,12 @@ int sfs_i_rmdir(vnode_t * parent, char *fname, vnode_t *ip)
     }
 
     struct sfs_inode *sfs_inode = ip->private;
-    if (sfs_inode->i_nlink <= 1) {
+    if (ip->nlink <= 1) {
 	sfs_i_truncate(ip, 0);
 	sfs_free_inode(ip->fs, ip);
     }
     sfs_inode = parent->private;
-    sfs_inode->i_nlink -= 1;
+    parent->nlink -= 1;
     time_get(&(sfs_inode->i_ctime));
     parent->dirty = true;
 
@@ -400,8 +399,7 @@ static int append_entry(vnode_t *parent, char *fname, vnode_t *ip,
 
     /* ディレクトリにエントリを追加 */
     if (directory) {
-	struct sfs_inode *sfs_inode = parent->private;
-	sfs_inode->i_nlink += 1;
+	parent->nlink += 1;
     }
     dirnentry = sfs_read_dir(parent, 0, NULL);
 
@@ -456,7 +454,7 @@ static int remove_entry(vnode_t *parent, char *fname, vnode_t *ip)
 	sfs_i_truncate(parent, i);
 
 	struct sfs_inode *sfs_inode = ip->private;
-	sfs_inode->i_nlink--;
+	ip->nlink--;
 	time_get(&(sfs_inode->i_ctime));
 	ip->dirty = true;
     }

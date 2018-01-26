@@ -77,8 +77,11 @@ typedef struct _vfs_t {
 typedef struct _vnode_t {
 	list_t bros;
 	vfs_t *fs;
-	unsigned int index;
+	ino_t index;
+	unsigned int nlink;
 	unsigned int mode;
+	uid_t uid;
+	gid_t gid;
 	size_t size;
 	size_t nblock;
 	void *private;
@@ -86,7 +89,7 @@ typedef struct _vnode_t {
 	unsigned int refer_count;
 	unsigned int lock_count;
 	struct _vnode_t *covered;
-	int dev;
+	dev_t dev;
 } vnode_t;
 
 struct permission {

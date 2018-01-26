@@ -165,7 +165,7 @@ sfs_i_create(vnode_t * parent,
     newip->refer_count = 1;
     newip->dirty = true;
     sfs_inode->i_mode = newip->mode = mode | S_IFREG;
-    sfs_inode->i_nlink = 1;
+    sfs_inode->i_nlink = newip->nlink = 1;
     sfs_inode->i_index = newip->index = i_index;
     sfs_inode->i_uid = acc->uid;
     sfs_inode->i_gid = acc->gid;
