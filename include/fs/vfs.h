@@ -57,7 +57,6 @@ typedef struct _vfs_operation_t {
 	int (*rmdir)();
 	int (*stat)();
 	int (*wstat)();
-	int (*permit)();
 	int (*create)();
 	int (*close)();
 	int (*read)();
@@ -116,5 +115,7 @@ extern vnode_t *vnodes_find(const vfs_t *, const int);
 
 extern int vfs_walk(vnode_t *, const char *, const int,
 		const struct permission *, vnode_t **);
+extern int vfs_permit(const vnode_t *, const struct permission *,
+		const unsigned int);
 
 #endif

@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <fcntl.h>
 #include <string.h>
+#include <fs/nconfig.h>
 #include <fs/vfs.h>
 #include <sys/errno.h>
 #include <sys/stat.h>
@@ -84,8 +85,7 @@ int vfs_walk(vnode_t *parent, const char *path, const int flags,
 			return ENOTDIR;
 		}
 
-		int error_no = parent->fs->operations.permit(parent, perm,
-				R_OK | X_OK);
+		int error_no = vfs_permit(parent, perm, R_OK | X_OK);
 		if (!error_no)
 			error_no = parent->fs->operations.walk(parent, entry,
 					ip);
@@ -103,10 +103,28 @@ int vfs_walk(vnode_t *parent, const char *path, const int flags,
 
 	*ip = parent;
 
-	int error_no = (*ip)->fs->operations.permit(*ip, perm,
-			modes[flags & O_ACCMODE]);
+	int error_no = vfs_permit(*ip, perm, modes[flags & O_ACCMODE]);
 	if (error_no)
 		vnodes_remove(*ip);
 
 	return error_no;
+}
+
+int vfs_permit(const vnode_t *ip, const struct permission *permission,
+		const unsigned int want)
+{
+	unsigned int mode = ip->mode;
+
+	if (permission->uid == ROOT_UID) {
+		mode |= S_IROTH | S_IWOTH | ((mode & S_IXUSR) >> 6)
+				| ((mode & S_IXGRP) >> 3);
+		if ((mode & S_IFMT) == S_IFDIR)
+			mode |= S_IXOTH;
+	} else if (permission->uid == ip->uid)
+		mode >>= 6;
+	else if (permission->gid == ip->gid)
+		mode >>= 3;
+
+	unsigned int need = want & (R_OK | W_OK | X_OK);
+	return ((mode & need) == need)? 0:EACCES;
 }

@@ -54,7 +54,6 @@ extern W	sfs_alloc_inode (vfs_t *fsp, vnode_t *ip);
 extern W	sfs_free_inode (vfs_t *fsp, vnode_t *ip);
 extern int sfs_stat(vnode_t *, struct stat *);
 extern int sfs_wstat(vnode_t *);
-extern int sfs_permit(vnode_t *ip, struct permission *acc, UW bits);
 extern int sfs_i_close (vnode_t * ip);
 
 /* file.c */

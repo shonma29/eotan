@@ -243,39 +243,6 @@ int sfs_wstat(vnode_t *ip)
     return 0;
 }
 
-/*
- * permit -
- */
-//TODO check fs is readonly
-int sfs_permit(vnode_t * ip, struct permission * acc, UW bits)
-{
-    UW mode, perm_bits;
-    int shift;
-
-    mode = ip->mode;
-    if (acc->uid == ROOT_UID) {
-	if (((mode & S_IFMT) == S_IFDIR) ||
-	    (mode & (X_OK << 6 | X_OK << 3 | X_OK))) {
-	    perm_bits = R_OK | W_OK | X_OK;
-	} else {
-	    perm_bits = R_OK | W_OK;
-	}
-    } else {
-	if (acc->uid == ip->uid)
-	    shift = 6;
-	else if (acc->gid == ip->gid)
-	    shift = 3;
-	else
-	    shift = 0;
-	perm_bits = (mode >> shift) & 0x03;
-    }
-
-    if ((perm_bits | bits) != perm_bits)
-	return (EACCES);
-    return 0;
-}
-
-
 int sfs_i_close(vnode_t * ip)
 {
     W err;

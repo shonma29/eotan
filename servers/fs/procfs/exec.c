@@ -110,7 +110,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 	Elf32_Phdr text, data;
 
 	/* 実行許可のチェック */
-	error_no = ip->fs->operations.permit(ip, &acc, X_OK);
+	error_no = vfs_permit(ip, &acc, X_OK);
 	if (error_no)
 	    break;
 

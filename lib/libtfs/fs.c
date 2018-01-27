@@ -112,7 +112,6 @@ vfs_operation_t sfs_fsops = {
     sfs_i_rmdir,
     sfs_stat,
     sfs_wstat,
-    sfs_permit,
     sfs_i_create,
     sfs_i_close,
     sfs_i_read,

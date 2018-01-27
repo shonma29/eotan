@@ -71,7 +71,7 @@ int if_chdir(fs_request *req)
 	return ENOTDIR;
     }
 
-    err = ipp->fs->operations.permit(ipp, &acc, X_OK);
+    err = vfs_permit(ipp, &acc, X_OK);
     if (err)
 	return err;
 
