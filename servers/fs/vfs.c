@@ -457,7 +457,7 @@ fs_open_file(B * path,
     W error_no;
 
     if (oflag & O_CREAT) {
-	error_no = vfs_lookup(startip, path, O_RDONLY, acc, newip);
+	error_no = vfs_walk(startip, path, O_RDONLY, acc, newip);
 	if (error_no == ENOENT) {
 	    error_no = fs_create_file(startip, path, oflag, mode, acc, newip);
 	    return (error_no);
@@ -470,7 +470,7 @@ fs_open_file(B * path,
 	}
     }
 
-    error_no = vfs_lookup(startip, path, oflag, acc, newip);
+    error_no = vfs_walk(startip, path, oflag, acc, newip);
     if (error_no) {
 	return (error_no);
     }
@@ -497,7 +497,7 @@ fs_create_file(vnode_t * startip,
     W error_no;
 
     if (parent_length > 0) {
-	error_no = vfs_lookup(startip, parent_path, O_WRONLY,
+	error_no = vfs_walk(startip, parent_path, O_WRONLY,
 			  acc, &parent_ip);
 	if (error_no) {
 	    return (error_no);
@@ -593,7 +593,7 @@ fs_remove_file(vnode_t * startip, B * path, struct permission * acc)
 
     if (parent_length > 0) {
 	error_no =
-	    vfs_lookup(startip, parent_path, O_RDWR, acc, &parent_ip);
+	    vfs_walk(startip, parent_path, O_RDWR, acc, &parent_ip);
 	if (error_no) {
 	    return (error_no);
 	}
@@ -601,7 +601,7 @@ fs_remove_file(vnode_t * startip, B * path, struct permission * acc)
     parent_length += 1;
 
     vnode_t *ip;
-    error_no = vfs_lookup(parent_ip, &path[parent_length], O_RDWR, acc, &ip);
+    error_no = vfs_walk(parent_ip, &path[parent_length], O_RDWR, acc, &ip);
     if (error_no) {
 	vnodes_remove(parent_ip);
 	return (error_no);
@@ -632,7 +632,7 @@ W fs_remove_dir(vnode_t * startip, B * path, struct permission * acc)
 
     if (parent_length > 0) {
 	error_no =
-	    vfs_lookup(startip, parent_path, O_RDWR, acc, &parent_ip);
+	    vfs_walk(startip, parent_path, O_RDWR, acc, &parent_ip);
 	if (error_no) {
 	    return (error_no);
 	}
@@ -640,7 +640,7 @@ W fs_remove_dir(vnode_t * startip, B * path, struct permission * acc)
     parent_length += 1;
 
     vnode_t *ip;
-    error_no = vfs_lookup(parent_ip, &path[parent_length], O_RDWR, acc, &ip);
+    error_no = vfs_walk(parent_ip, &path[parent_length], O_RDWR, acc, &ip);
     if (error_no) {
 	vnodes_remove(parent_ip);
 	return (error_no);
@@ -673,7 +673,7 @@ W fs_create_dir(vnode_t * startip,
     W parent_length;
     W error_no;
 
-    error_no = vfs_lookup(startip, path, O_RDONLY, acc, newip);
+    error_no = vfs_walk(startip, path, O_RDONLY, acc, newip);
     if (error_no == EOK) {
 	vnodes_remove(*newip);	/* fs_close() で行う処理はこれだけ */
 	return (EEXIST);
@@ -683,7 +683,7 @@ W fs_create_dir(vnode_t * startip,
 
     parent_length = copy_path(parent_path, path, startip, &parent_ip);
     if (parent_length > 0) {
-	error_no = vfs_lookup(startip, parent_path, O_WRONLY,
+	error_no = vfs_walk(startip, parent_path, O_WRONLY,
 			  acc, &parent_ip);
 	if (error_no) {
 	    return (error_no);
@@ -728,7 +728,7 @@ fs_link_file(W procid, B * src, B * dst, struct permission * acc)
 	startip = rootfile;
     }
 
-    error_no = vfs_lookup(startip, src, O_RDONLY, acc, &srcip);
+    error_no = vfs_walk(startip, src, O_RDONLY, acc, &srcip);
     if (error_no) {
 	return (error_no);
     }
@@ -752,7 +752,7 @@ fs_link_file(W procid, B * src, B * dst, struct permission * acc)
     parent_length = copy_path(parent_path, dst, startip, &parent_ip);
     if (parent_length > 0) {
 	error_no =
-	    vfs_lookup(startip, parent_path, O_RDWR, acc, &parent_ip);
+	    vfs_walk(startip, parent_path, O_RDWR, acc, &parent_ip);
 	if (error_no) {
 	    return (error_no);
 	}
@@ -768,7 +768,7 @@ fs_link_file(W procid, B * src, B * dst, struct permission * acc)
 
     /* リンク先にファイルが存在していたらエラー */
     vnode_t *ip;
-    error_no = vfs_lookup(parent_ip, &dst[parent_length], O_RDONLY, acc, &ip);
+    error_no = vfs_walk(parent_ip, &dst[parent_length], O_RDONLY, acc, &ip);
     if (error_no == EOK) {
 	vnodes_remove(ip);
 	error_no = EEXIST;

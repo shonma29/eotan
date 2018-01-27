@@ -50,7 +50,7 @@ typedef struct _vfs_operation_t {
 	int (*sync)();
 	int (*statvfs)();
 	int (*getdents)();
-	int (*lookup)();
+	int (*walk)();
 	int (*link)();
 	int (*unlink)();
 	int (*mkdir)();
@@ -114,7 +114,7 @@ extern int vnodes_append(vnode_t *);
 extern int vnodes_remove(vnode_t *);
 extern vnode_t *vnodes_find(const vfs_t *, const int);
 
-extern int vfs_lookup(vnode_t *, const char *, const int,
+extern int vfs_walk(vnode_t *, const char *, const int,
 		const struct permission *, vnode_t **);
 
 #endif

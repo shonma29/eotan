@@ -39,7 +39,7 @@ static int modes[] = {
 };
 
 
-int vfs_lookup(vnode_t *parent, const char *path, const int flags,
+int vfs_walk(vnode_t *parent, const char *path, const int flags,
 		const struct permission *perm, vnode_t **ip)
 {
 	if (!parent)
@@ -87,7 +87,7 @@ int vfs_lookup(vnode_t *parent, const char *path, const int flags,
 		int error_no = parent->fs->operations.permit(parent, perm,
 				R_OK | X_OK);
 		if (!error_no)
-			error_no = parent->fs->operations.lookup(parent, entry,
+			error_no = parent->fs->operations.walk(parent, entry,
 					ip);
 
 		vnodes_remove(parent);

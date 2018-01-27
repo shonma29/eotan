@@ -225,10 +225,10 @@ static int readdir(vfs_t *fs, vnode_t *ip, const struct permission *permission)
 			struct sfs_dir *p = (struct sfs_dir*)buf;
 			vnode_t *entry;
 			//TODO use constant definition of guest
-			int result = vfs_lookup(ip, p[i].d_name, O_RDONLY,
+			int result = vfs_walk(ip, p[i].d_name, O_RDONLY,
 					permission, &entry);
 			if (result) {
-				printf("readdir: vfs_lookup(%s) failed %d\n",
+				printf("readdir: vfs_walk(%s) failed %d\n",
 						p[i].d_name, result);
 				free(buf);
 				return ERR_UNKNOWN;
@@ -257,9 +257,9 @@ static int do_ls(vfs_t *fs, const char *path,
 	vnode_t *ip;
 
 	//TODO use constant definition of guest in vfs
-	int result = vfs_lookup(fs->root, path, O_RDONLY, permission, &ip);
+	int result = vfs_walk(fs->root, path, O_RDONLY, permission, &ip);
 	if (result) {
-		printf("ls: vfs_lookup(%s) failed %d\n", path, result);
+		printf("ls: vfs_walk(%s) failed %d\n", path, result);
 		return ERR_UNKNOWN;
 	}
 
@@ -326,10 +326,10 @@ static int do_create(vfs_t *fs, char *path, const char *from,
 	vnode_t *parent;
 	//TODO use constant definition of guest
 	//TODO is O_WRONLY correct?
-	int result = vfs_lookup(fs->root, parent_path, O_RDWR, permission,
+	int result = vfs_walk(fs->root, parent_path, O_RDWR, permission,
 			&parent);
 	if (result) {
-		printf("create: vfs_lookup(%s) failed %d\n",
+		printf("create: vfs_walk(%s) failed %d\n",
 				parent_path, result);
 		return ERR_UNKNOWN;
 	}
@@ -343,7 +343,7 @@ static int do_create(vfs_t *fs, char *path, const char *from,
 
 	vnode_t *ip;
 	//TODO use constant definition of guest
-	result = vfs_lookup(parent, head, O_RDONLY, permission, &ip);
+	result = vfs_walk(parent, head, O_RDONLY, permission, &ip);
 	if (!result) {
 		printf("create: create(%s) already exists\n", head);
 		vnodes_remove(ip);
@@ -462,10 +462,10 @@ static int do_mkdir(vfs_t *fs, char *path, const struct permission *permission)
 	vnode_t *parent;
 	//TODO use constant definition of guest
 	//TODO is O_WRONLY correct?
-	int result = vfs_lookup(fs->root, parent_path, O_RDWR, permission,
+	int result = vfs_walk(fs->root, parent_path, O_RDWR, permission,
 			&parent);
 	if (result) {
-		printf("mkdir: vfs_lookup(%s) failed %d\n",
+		printf("mkdir: vfs_walk(%s) failed %d\n",
 				parent_path, result);
 		return ERR_UNKNOWN;
 	}
@@ -479,7 +479,7 @@ static int do_mkdir(vfs_t *fs, char *path, const struct permission *permission)
 
 	vnode_t *ip;
 	//TODO use constant definition of guest
-	result = vfs_lookup(parent, head, O_RDONLY, permission, &ip);
+	result = vfs_walk(parent, head, O_RDONLY, permission, &ip);
 	if (!result) {
 		printf("mkdir: mkdir(%s) already exists\n", head);
 		vnodes_remove(ip);
@@ -528,9 +528,9 @@ static int do_chmod(vfs_t *fs, const char *mode, char *path,
 	vnode_t *ip;
 	//TODO use constant definition of guest
 	//TODO is O_WRONLY correct?
-	int result = vfs_lookup(fs->root, head, O_RDWR, permission, &ip);
+	int result = vfs_walk(fs->root, head, O_RDWR, permission, &ip);
 	if (result) {
-		printf("chmod: vfs_lookup(%s) failed %d\n", head, result);
+		printf("chmod: vfs_walk(%s) failed %d\n", head, result);
 		return ERR_UNKNOWN;
 	}
 
