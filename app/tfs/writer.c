@@ -185,7 +185,7 @@ static int do_stat(vnode_t *ip, const char *path)
 	int result = ip->fs->operations.stat(ip, &st);
 
 	if (result) {
-		printf("stat(%llu) failed %d\n", ip->index, result);
+		printf("stat(%d) failed %d\n", ip->index, result);
 		return ERR_UNKNOWN;
 	}
 
@@ -211,7 +211,7 @@ static int readdir(vfs_t *fs, vnode_t *ip, const struct permission *permission)
 		int error_no = fs->operations.read(ip, offset, buf,
 				fs->device.block_size, &rlength);
 		if (error_no) {
-			printf("readdir: read(%llu, %d) failed %d\n",
+			printf("readdir: read(%d, %d) failed %d\n",
 					ip->index, offset, error_no);
 			free(buf);
 			return ERR_FILE;
@@ -272,7 +272,7 @@ static int do_ls(vfs_t *fs, const char *path,
 		vnodes_remove(ip);
 
 		if (result) {
-			printf("ls: readdir(%llu) failed %d\n",
+			printf("ls: readdir(%d) failed %d\n",
 					ip->index, result);
 			return result;
 		}
@@ -400,7 +400,7 @@ static int do_create(vfs_t *fs, char *path, const char *from,
 		int error_no = fs->operations.write(ip, offset, buf,
 				len, &rlength);
 		if (error_no) {
-			printf("create: write(%llu, %d) failed %d\n",
+			printf("create: write(%d, %d) failed %d\n",
 					ip->index, offset, error_no);
 			free(buf);
 			vnodes_remove(ip);
@@ -409,7 +409,7 @@ static int do_create(vfs_t *fs, char *path, const char *from,
 		}
 
 		if (rlength != len) {
-			printf("create: write(%llu, %d) partially failed\n",
+			printf("create: write(%d, %d) partially failed\n",
 					ip->index, offset);
 			free(buf);
 			vnodes_remove(ip);

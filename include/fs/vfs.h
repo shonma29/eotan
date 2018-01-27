@@ -77,7 +77,8 @@ typedef struct _vfs_t {
 typedef struct _vnode_t {
 	list_t bros;
 	vfs_t *fs;
-	ino_t index;
+//	ino_t index;
+	unsigned int index;
 	unsigned int nlink;
 	unsigned int mode;
 	uid_t uid;

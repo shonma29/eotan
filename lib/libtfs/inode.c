@@ -295,6 +295,7 @@ int sfs_i_close(vnode_t * ip)
 
     sfs_inode->i_nlink = ip->nlink;
     sfs_inode->i_mode = ip->mode;
+    sfs_inode->i_uid = ip->uid;
     sfs_inode->i_gid = ip->gid;
     sfs_inode->i_size = ip->size;
     sfs_inode->i_nblock = ip->nblock;

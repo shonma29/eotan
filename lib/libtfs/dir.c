@@ -318,17 +318,17 @@ sfs_i_mkdir(vnode_t * parent,
     newip->fs = parent->fs;
     newip->refer_count = 1;
     newip->dirty = true;
-    sfs_inode->i_mode = newip->mode = mode | S_IFDIR;
-    sfs_inode->i_nlink = newip->nlink = 2;
-    sfs_inode->i_index = newip->index = i_index;
+    newip->mode = mode | S_IFDIR;
+    newip->nlink = 2;
+    newip->index = i_index;
     sfs_inode->i_uid = acc->uid;
     sfs_inode->i_gid = acc->gid;
     newip->dev = 0;
-    sfs_inode->i_size = newip->size = 0;
+    newip->size = 0;
     sfs_inode->i_atime = clock;
     sfs_inode->i_ctime = clock;
     sfs_inode->i_mtime = clock;
-    sfs_inode->i_nblock = newip->nblock = 0;
+    newip->nblock = 0;
 
     vnodes_append(newip);
 
