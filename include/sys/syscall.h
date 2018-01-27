@@ -44,11 +44,10 @@ Version 2, June 1991
 #define PSC_WRITE        16
 #define PSC_GETDENTS	 17
 #define PSC_MOUNT        18
-#define PSC_STATVFS      19
-#define PSC_UNMOUNT      20
+#define PSC_UNMOUNT      19
 
 /* =================== SIGNAL 関係 =============== */
-#define PSC_KILL         21
+#define PSC_KILL         20
 
 /* =============== 各システムコール用の 構造体定義 ================== */
 
@@ -114,16 +113,6 @@ struct psc_waitpid
 };
 
 
-/* psc_statvfs -
- *
- */
-struct psc_statvfs
-{
-  ID		device;
-  struct statvfs	*fsp;
-};
-
-
 #define MAX_DEVICE_NAME (31)
 
 /* =========================== 構造体定義 =========================== */
@@ -142,7 +131,6 @@ struct posix_request
     struct psc_fork		par_fork;
     struct psc_open		par_open;
     struct psc_waitpid   	par_waitpid;
-    struct psc_statvfs		par_statvfs;
   } param;
 };
 

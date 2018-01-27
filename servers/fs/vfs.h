@@ -91,7 +91,6 @@ Version 2, June 1991
 
 #include <fs/vfs.h>
 #include <set/list.h>
-#include <sys/statvfs.h>
 
 /* file system types. */
 
@@ -122,7 +121,6 @@ extern W fs_remove_file(vnode_t *startip, B * path,
 			struct permission *acc);
 extern W fs_remove_dir(vnode_t *startip, B * path,
 		       struct permission *acc);
-extern W fs_statvfs(ID device, struct statvfs *result);
 extern W fs_create_dir(vnode_t * startip,
 		     char *path, W mode, struct permission * acc,
 		     vnode_t ** newip);

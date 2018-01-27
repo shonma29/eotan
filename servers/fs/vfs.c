@@ -661,24 +661,6 @@ W fs_remove_dir(vnode_t * startip, B * path, struct permission * acc)
 }
 
 
-/* fs_statvfs -
- *
- */
-W fs_statvfs(ID device, struct statvfs * result)
-{
-    list_t *p;
-
-    for (p = list_next(&(rootfs->bros)); !list_is_edge(&(rootfs->bros), p);
-	     p = list_next(p)) {
-	vfs_t *fsp = getFsParent(p);
-
-	if (fsp->device.channel == device) {
-	    return fsp->operations.statvfs(fsp, result);
-	}
-    }
-    return (ENODEV);
-}
-
 /*
  * fs_mkdir
  */

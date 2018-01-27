@@ -57,7 +57,6 @@ extern int if_waitpid(fs_request*);
 extern int if_write(fs_request*);
 extern int if_mount(fs_request*);
 extern int if_unmount(fs_request*);
-extern int if_statvfs(fs_request*);
 extern int if_getdents(fs_request*);
 
 #endif

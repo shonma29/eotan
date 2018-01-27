@@ -67,7 +67,6 @@ static int (*syscall[])(fs_request*) = {
 	if_write,
 	if_getdents,
 	if_mount,
-	if_statvfs,
 	if_unmount,
 	if_kill,
 };

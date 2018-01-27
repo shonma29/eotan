@@ -89,21 +89,3 @@ int if_fstat(fs_request *req)
     put_response(req->rdvno, EOK, 0, 0);
     return EOK;
 }
-
-int
-if_statvfs (fs_request *req)
-{
-  struct statvfs	result;
-  ER		error_no;
-
-  error_no = fs_statvfs (req->packet.param.par_statvfs.device, &result);
-  if (error_no)
-      return error_no;
-
-  error_no = kcall->region_put(get_rdv_tid(req->rdvno), req->packet.param.par_statvfs.fsp, sizeof (struct statvfs), &result);
-  if (error_no)
-      return EFAULT;
-
-  put_response (req->rdvno, EOK, 0, 0);
-  return EOK;
-}
