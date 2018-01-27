@@ -121,12 +121,6 @@ char *testdup()
 	int fd;
 	char buf[1];
 
-	fd = dup(1);
-	assert_ne("dup[0]", -1, fd);
-	buf[0] = 'a';
-	write(fd, buf, 1);
-	assert_eq("dup-close[0]", 0, close(fd));
-
 	fd = dup2(1, 2);
 	assert_eq("dup2[0]", 2, fd);
 	buf[0] = 'b';

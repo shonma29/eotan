@@ -50,35 +50,6 @@ int if_close(fs_request *req)
     return EOK;
 }
 
-/* if_dup - ファイル記述子の複製
- */
-int
-if_dup (fs_request *req)
-{
-  W		error_no;
-  struct file	*fp;
-  W		newfileid;
-
-
-  /* プロセスからファイル構造体へのポインタを取り出す
-   */
-  error_no = session_get_opened_file (req->packet.procid, req->packet.args.arg1, &fp);
-  if (error_no)
-      return error_no;
-
-  error_no = proc_alloc_fileid (req->packet.procid, &newfileid);
-  if (error_no)
-      return error_no;
-
-  fp->f_inode->refer_count++;
-  error_no = proc_set_file (req->packet.procid, newfileid, fp->f_omode, fp->f_inode);
-  if (error_no)
-      return error_no;
-
-  put_response (req->rdvno, EOK, newfileid, 0);
-  return EOK;
-}  
-
 /* if_dup2 -ファイル記述子の複製
  */
 int

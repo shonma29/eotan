@@ -28,7 +28,7 @@ Version 2, June 1991
 #define PSC_CHDIR        0
 #define PSC_CHMOD        1
 #define PSC_CLOSE        2
-#define PSC_DUP          3
+#define PSC_DUP2         3
 #define PSC_EXEC         4
 #define PSC_EXIT         5
 #define PSC_FORK         6
@@ -49,9 +49,6 @@ Version 2, June 1991
 
 /* =================== SIGNAL 関係 =============== */
 #define PSC_KILL         21
-
-/* =================== miserous system calls  =============== */
-#define PSC_DUP2         22	/* 不要? */
 
 /* =============== 各システムコール用の 構造体定義 ================== */
 

@@ -51,7 +51,7 @@ static int (*syscall[])(fs_request*) = {
 	if_chdir,
 	if_chmod,
 	if_close,
-	if_dup,
+	if_dup2,
 	if_exec,
 	if_exit,
 	if_fork,
@@ -70,7 +70,6 @@ static int (*syscall[])(fs_request*) = {
 	if_statvfs,
 	if_unmount,
 	if_kill,
-	if_dup2,
 };
 
 static int initialize(void);

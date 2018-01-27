@@ -41,7 +41,6 @@ extern int chdir(char *);
 extern int access(const char *, int);
 extern void *sbrk(intptr_t);
 extern int close(int);
-extern int dup(int);
 extern int dup2(int, int);
 extern int execve(char *name, char *argv[], char *envp[]);
 extern void _exit(int status) __attribute__ ((noreturn));
