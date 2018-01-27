@@ -43,6 +43,31 @@ void *malloc(size_t size);
 void free(void *p);
 static unsigned int calc_hash(const void *key, const size_t size);
 static int compare(const void *a, const void *b);
+static int dummy_error();
+static int dummy_ok();
+static int devfs_read(vnode_t *ip, void *buf, const int offset,
+		const size_t len, size_t *rlength);
+static int devfs_write(vnode_t *ip, void *buf, const int offset,
+		const size_t len, size_t *rlength);
+
+vfs_operation_t devfs_fsops = {
+    dummy_error,
+    dummy_error,
+    dummy_error,
+    dummy_error,
+    dummy_error,
+    dummy_error,
+    dummy_error,
+    dummy_error,
+    dummy_error,
+    dummy_error,
+    dummy_error,
+    dummy_error,
+    dummy_error,
+    dummy_ok,
+    devfs_read,
+    devfs_write
+};
 
 static vdriver_t *(*drivers[])(int) = {
 	/* cons */
@@ -119,4 +144,26 @@ static int compare(const void *a, const void *b)
 device_info_t *device_find(const UW devid)
 {
 	return (device_info_t*)(hash_get(hash, (void*)devid));
+}
+
+static int dummy_error()
+{
+	return ENOTSUP;
+}
+
+static int dummy_ok()
+{
+	return 0;
+}
+
+static int devfs_read(vnode_t *ip, void *buf, const int offset,
+		const size_t len, size_t *rlength)
+{
+	return read_device(ip->dev, buf, offset, len, rlength);
+}
+
+static int devfs_write(vnode_t *ip, void *buf, const int offset,
+		const size_t len, size_t *rlength)
+{
+	return write_device(ip->dev, buf, offset, len, rlength);
 }

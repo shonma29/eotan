@@ -161,6 +161,7 @@ Version 2, June 1991
 #include "devfs/devfs.h"
 
 extern vfs_operation_t sfs_fsops;
+extern vfs_operation_t devfs_fsops;
 
 struct fs_entry {
     B *fsname;
@@ -175,6 +176,7 @@ static struct fs_entry fs_table[] = {
 
 static vfs_t fs_buf[MAX_MOUNT], *rootfs = NULL;
 static list_t free_fs;
+static vfs_t *devfs = NULL;
 vnode_t *rootfile = NULL;
 
 static vfs_t *alloc_fs(void);
@@ -211,6 +213,13 @@ W fs_init(void)
     if (cache_initialize())
 	return (E_NOMEM);
 
+    devfs = alloc_fs();
+    if (!devfs) {
+	return (E_NOMEM);
+    }
+
+    devfs->operations = devfs_fsops;
+
     return (TRUE);
 }
 
@@ -232,10 +241,11 @@ W open_special_devices(struct proc * procp)
 	}
 	ip->mode = S_IFCHR;
 	ip->dev = p->id;
-	ip->fs = rootfs;
+	ip->fs = devfs;
 	ip->index = -1;
 	ip->size = p->size;
 	ip->nblock = 0;
+	ip->refer_count = 1;
 	vnodes_append(ip);
 
 	/* 標準出力の設定 */
@@ -247,10 +257,11 @@ W open_special_devices(struct proc * procp)
 	}
 	ip->mode = S_IFCHR;
 	ip->dev = p->id;
-	ip->fs = rootfs;
+	ip->fs = devfs;
 	ip->index = -2;
 	ip->size = p->size;
 	ip->nblock = 0;
+	ip->refer_count = 1;
 	vnodes_append(ip);
 
 	/* 標準エラー出力の設定 */
@@ -262,10 +273,11 @@ W open_special_devices(struct proc * procp)
 	}
 	ip->mode = S_IFCHR;
 	ip->dev = p->id;
-	ip->fs = rootfs;
+	ip->fs = devfs;
 	ip->index = -3;
 	ip->size = p->size;
 	ip->nblock = 0;
+	ip->refer_count = 1;
 	vnodes_append(ip);
     }
 
@@ -521,63 +533,6 @@ fs_create_file(vnode_t * startip,
     return (EOK);
 }
 
-
-
-/* fs_read_file -
- *
- * 機能
- *	引数で指定されたファイルの内容を読み込む
- *
- * 
- *	
- */
-W fs_read_file(vnode_t * ip, W start, B * buf, W length, W * rlength)
-{
-    W error_no;
-
-    if (ip->dev)
-	return read_device(ip->dev, buf, start, length, (size_t*)rlength);
-
-    if (start >= ip->size) {
-	*rlength = 0;
-	return EOK;
-    }
-
-    error_no = ip->fs->operations.read(ip, start, buf, length, rlength);
-    if (error_no) {
-	return (error_no);
-    }
-
-    return (EOK);
-}
-
-
-
-/* fs_write_file -
- *
- * 機能
- *	引数で指定されたファイルに buf の内容を書き込む
- *
- * 
- *	
- */
-W fs_write_file(vnode_t * ip, W start, B * buf, W length, W * rlength)
-{
-    W error_no;
-
-    if (ip->dev) {
-	/* スペシャルファイルだった */
-	error_no = write_device(ip->dev, buf, start, length, (size_t*)rlength);
-	return (error_no);
-    }
-
-    error_no = ip->fs->operations.write(ip, start, buf, length, rlength);
-    if (error_no) {
-	return (error_no);
-    }
-
-    return (EOK);
-}
 
 
 /* fs_remove_file -

@@ -60,8 +60,8 @@ extern int sfs_i_close (vnode_t * ip);
 extern int sfs_i_create (vnode_t *parent, char *fname,
 			      W mode, struct permission *acc,
 			      vnode_t **retip);
-extern int sfs_i_read (vnode_t *ip, W start, B *buf, W length, W *rlength);
-extern int sfs_i_write (vnode_t *ip, W start, B *buf, W size,
+extern int sfs_i_read (vnode_t *ip, B *buf, W start, W length, W *rlength);
+extern int sfs_i_write (vnode_t *ip, B *buf, W start, W size,
 			     W *rsize);
 extern W	sfs_i_truncate (vnode_t *ip, W newsize);
 

@@ -200,7 +200,7 @@ sfs_i_create(vnode_t * parent,
 /* sfs_i_read -
  *
  */
-int sfs_i_read(vnode_t * ip, W start, B * buf, W length, W * rlength)
+int sfs_i_read(vnode_t * ip, B * buf, W start, W length, W * rlength)
 {
     W copysize;
     W offset;
@@ -262,7 +262,7 @@ int sfs_i_read(vnode_t * ip, W start, B * buf, W length, W * rlength)
 }
 
 
-int sfs_i_write(vnode_t * ip, W start, B * buf, W size, W * rsize)
+int sfs_i_write(vnode_t * ip, B * buf, W start, W size, W * rsize)
 {
     int copysize;
     int offset;

@@ -98,7 +98,7 @@ sfs_read_dir (vnode_t *parentp,
           nentry * sizeof (struct sfs_dir) :
 	  parentp->size;
 
-  error_no = sfs_i_read (parentp, 0, (char *)dirp, size, &rsize);
+  error_no = sfs_i_read (parentp, (char *)dirp, 0, size, &rsize);
   if (error_no)
     {
       return (error_no);
@@ -119,7 +119,7 @@ sfs_write_dir (vnode_t *parentp,
   W	rsize;
 
   /* 親ディレクトリの netnry 目から後に dirp の内容を追加 */
-  error_no = sfs_i_write (parentp, nentry*sizeof(struct sfs_dir), (char *)dirp,
+  error_no = sfs_i_write (parentp, (char *)dirp, nentry*sizeof(struct sfs_dir),
 		       sizeof(struct sfs_dir), &rsize);
   if (error_no)
     {
@@ -334,7 +334,7 @@ sfs_i_mkdir(vnode_t * parent,
 
     dir[0].d_index = i_index;
     dir[1].d_index = parent->index;
-    error_no = sfs_i_write(newip, 0, (B *) dir, sizeof(dir), &rsize);
+    error_no = sfs_i_write(newip, (B *) dir, 0, sizeof(dir), &rsize);
     if (error_no) {
 	sfs_free_inode(newip->fs, newip);
 	vnodes_remove(newip);
@@ -446,7 +446,7 @@ static int remove_entry(vnode_t *parent, char *fname, vnode_t *ip)
 	i = parent->size - sizeof(struct sfs_dir);
 
 	W rsize;
-	W error_no = sfs_i_write(parent, 0, (B *) buf, i, &rsize);
+	W error_no = sfs_i_write(parent, (B *) buf, 0, i, &rsize);
 	if (error_no) {
 	    return (error_no);
 	}

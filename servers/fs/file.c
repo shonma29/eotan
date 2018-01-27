@@ -198,7 +198,7 @@ int if_read(fs_request *req)
 {
     W error_no;
     struct file *fp;
-    W rlength;
+    size_t rlength;
     W rest_length;
     W i, len;
     ID caller = get_rdv_tid(req->rdvno);
@@ -240,7 +240,7 @@ int if_write(fs_request *req)
 {
     W error_no;
     struct file *fp;
-    W rlength;
+    size_t rlength;
     W i, len;
     W rest_length;
 

@@ -195,7 +195,7 @@ read_exec_header(vnode_t *ip,
 		 Elf32_Phdr *text, Elf32_Phdr *data)
 {
     W error_no;
-    W rlength;
+    size_t rlength;
     Elf32_Phdr ph_table[10];
     Elf32_Ehdr elf_header;
     W ph_index;
@@ -265,7 +265,7 @@ load_segment(W procid, vnode_t *ip, Elf32_Phdr *segment, ID task)
     W error_no;
     W rest_length;
     W offset;
-    W read_size;
+    size_t read_size;
     W vaddr;
     static B buf[PAGE_SIZE];
 

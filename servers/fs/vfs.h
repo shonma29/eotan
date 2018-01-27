@@ -113,10 +113,6 @@ extern W fs_unmount(UW device);
 
 extern W fs_open_file(B * path, W oflag, W mode, struct permission *acc,
 		      vnode_t *startip, vnode_t **newip);
-extern W fs_read_file(vnode_t *ip, W start, B * buf, W length,
-		      W * rlength);
-extern W fs_write_file(vnode_t *ip, W start, B * buf, W length,
-		       W * rlength);
 extern W fs_remove_file(vnode_t *startip, B * path,
 			struct permission *acc);
 extern W fs_remove_dir(vnode_t *startip, B * path,

@@ -208,7 +208,7 @@ static int readdir(vfs_t *fs, vnode_t *ip, const struct permission *permission)
 	size_t offset = 0;
 	while (left) {
 		size_t rlength;
-		int error_no = fs->operations.read(ip, offset, buf,
+		int error_no = fs->operations.read(ip, buf, offset,
 				fs->device.block_size, &rlength);
 		if (error_no) {
 			printf("readdir: read(%d, %d) failed %d\n",
@@ -397,7 +397,7 @@ static int do_create(vfs_t *fs, char *path, const char *from,
 			break;
 
 		int rlength;
-		int error_no = fs->operations.write(ip, offset, buf,
+		int error_no = fs->operations.write(ip, buf, offset,
 				len, &rlength);
 		if (error_no) {
 			printf("create: write(%d, %d) failed %d\n",

@@ -45,4 +45,16 @@ static inline W fs_getdents(vnode_t *ip, ID caller, W offset,
 			rsize, fsize);
 }
 
+static inline W fs_read_file(vnode_t *ip, const int offset, void *buf,
+		const size_t len, size_t *rlength)
+{
+	return ip->fs->operations.read(ip, buf, offset, len, rlength);
+}
+
+static inline W fs_write_file(vnode_t *ip, const int offset, const void *buf,
+		const size_t len, size_t *rlength)
+{
+	return ip->fs->operations.write(ip, buf, offset, len, rlength);
+}
+
 #endif
