@@ -293,75 +293,13 @@ static int do_ls(vfs_t *fs, const char *path,
 static int do_create(vfs_t *fs, char *path, const char *from,
 		const struct permission *permission)
 {
-	char *head = path;
-	while (*head == '/')
-		head++;
-
-	char *last;
-	for (;;) {
-		last = strrchr(head, '/');
-		if (!last)
-			break;
-
-		if (last[1] == '\0') {
-			printf("create: bad path %s\n", path);
-			return ERR_ARG;
-		} else
-			break;
-	}
-
-	char *parent_path;
-	if (last) {
-		*last = '\0';
-		parent_path = head;
-		head = last + 1;
-	} else
-		parent_path = "/";
-
-	if (!strlen(head)) {
-		printf("create: bad path %s\n", path);
-		return ERR_ARG;
-	}
-
-	vnode_t *parent;
-	//TODO use constant definition of guest
-	//TODO is O_WRONLY correct?
-	int result = vfs_walk(fs->root, parent_path, O_RDWR, permission,
-			&parent);
-	if (result) {
-		printf("create: vfs_walk(%s) failed %d\n",
-				parent_path, result);
-		return ERR_UNKNOWN;
-	}
-
-	//TODO use constant definition of guest
-	if ((parent->mode & S_IFMT) != S_IFDIR) {
-		printf("create: parent(%s) is not directory\n", parent_path);
-		vnodes_remove(parent);
-		return ERR_ARG;
-	}
-
 	vnode_t *ip;
-	//TODO use constant definition of guest
-	result = vfs_walk(parent, head, O_RDONLY, permission, &ip);
-	if (!result) {
-		printf("create: create(%s) already exists\n", head);
-		vnodes_remove(ip);
-		vnodes_remove(parent);
-		return ERR_ARG;
-	}
-
-	//TODO use constant definition of guest
-	result = parent->fs->operations.create(parent, head,
-			//TODO really?
-			parent->mode & (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
-					| S_IROTH | S_IWOTH),
+	int result = vfs_create(fs->root, path,
+			S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
+					| S_IROTH | S_IWOTH,
 			permission, &ip);
-
-	vnodes_remove(parent);
-
 	if (result) {
-		printf("create: create(%s) failed %d\n", head, result);
+		printf("create: create(%s) failed %d\n", path, result);
 		return result;
 	}
 

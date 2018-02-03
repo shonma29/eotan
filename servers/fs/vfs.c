@@ -181,9 +181,6 @@ vnode_t *rootfile = NULL;
 
 static vfs_t *alloc_fs(void);
 static void dealloc_fs(vfs_t *);
-static W fs_create_file(vnode_t *startip, char *path, W oflag,
-			W mode, struct permission *acc,
-			vnode_t **newip);
 static W copy_path(char * parent_path, char * path, vnode_t * startip,
 		vnode_t ** parent_ip);
 
@@ -471,7 +468,7 @@ fs_open_file(B * path,
     if (oflag & O_CREAT) {
 	error_no = vfs_walk(startip, path, O_RDONLY, acc, newip);
 	if (error_no == ENOENT) {
-	    error_no = fs_create_file(startip, path, oflag, mode, acc, newip);
+	    error_no = vfs_create(startip, path, mode, acc, newip);
 	    return (error_no);
 	} else if (error_no == EOK) {
 	    vnodes_remove(*newip);	/* fs_close() で行う処理はこれだけ */
@@ -489,46 +486,6 @@ fs_open_file(B * path,
 
     if (oflag & O_TRUNC) {
       (*newip)->size = 0;
-    }
-    return (EOK);
-}
-
-
-/* fs_create_file - ファイルを作成する
- *
- */
-static W
-fs_create_file(vnode_t * startip,
-	       char *path,
-	       W oflag,
-	       W mode, struct permission * acc, vnode_t ** newip)
-{
-    char parent_path[NAME_MAX + 1];
-    vnode_t *parent_ip;
-    W parent_length = copy_path(parent_path, path, startip, &parent_ip);
-    W error_no;
-
-    if (parent_length > 0) {
-	error_no = vfs_walk(startip, parent_path, O_WRONLY,
-			  acc, &parent_ip);
-	if (error_no) {
-	    return (error_no);
-	}
-    }
-    parent_length += 1;
-
-    if ((parent_ip->mode & S_IFMT) != S_IFDIR) {
-	vnodes_remove(parent_ip);
-	return (ENOTDIR);
-    }
-
-    mode &= parent_ip->mode
-	    & (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-    error_no = parent_ip->fs->operations.create(parent_ip,
-			&path[parent_length], oflag, mode, acc, newip);
-    vnodes_remove(parent_ip);
-    if (error_no) {
-	return (error_no);
     }
     return (EOK);
 }
@@ -749,19 +706,16 @@ static W copy_path(char * parent_path, char * path, vnode_t * startip,
 
     for (len = strlen(path); len >= 0; len--) {
 	if (path[len] == '/') {
-	    strncpy(parent_path, path, NAME_MAX);
+	    strncpy(parent_path, path, NAME_MAX + 1);
 	    parent_path[NAME_MAX] = '\0';
-	    parent_path[len] = '\0';
 	    break;
 	}
     }
 
     if (len < 0) {
 	*parent_ip = startip;
-	(*parent_ip)->refer_count++;
     } else if (len == 0) {
 	*parent_ip = rootfile;
-	(*parent_ip)->refer_count++;
     }
 
     return len;

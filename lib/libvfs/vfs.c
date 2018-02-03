@@ -32,6 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/stat.h>
 #include <sys/syslimits.h>
 #include <sys/unistd.h>
+#include "../../lib/libserv/libserv.h"
 
 static int modes[] = {
 	R_OK,
@@ -108,6 +109,81 @@ int vfs_walk(vnode_t *parent, const char *path, const int flags,
 		vnodes_remove(*ip);
 
 	return error_no;
+}
+
+int vfs_create(vnode_t *cwd, char *path, const mode_t mode,
+		const struct permission *permission, vnode_t **ip)
+{
+	char *head = path;
+	while (*head == '/')
+		head++;
+
+	char *last;
+	for (;;) {
+		last = strrchr(head, '/');
+		if (!last)
+			break;
+
+		if (last[1] == '\0') {
+			dbg_printf("vfs_create: bad path %s\n", path);
+			return EINVAL;
+		} else
+			break;
+	}
+
+	char *parent_path;
+	if (last) {
+		*last = '\0';
+		parent_path = head;
+		head = last + 1;
+	} else
+		parent_path = ".";
+
+	if (!(*head)) {
+		dbg_printf("vfs_create: bad path %s\n", path);
+		return EINVAL;
+	}
+
+	vnode_t *parent;
+	//TODO is O_WRONLY correct?
+	int result = vfs_walk(cwd, parent_path, O_RDWR, permission,
+			&parent);
+	if (result) {
+		dbg_printf("vfs_create: vfs_walk(%s) failed %d\n",
+				parent_path, result);
+		return result;
+	}
+
+	if ((parent->mode & S_IFMT) != S_IFDIR) {
+		dbg_printf("vfs_create: %s is not directory\n",
+				parent_path);
+		vnodes_remove(parent);
+		return ENOTDIR;
+	}
+
+	result = vfs_walk(parent, head, O_RDONLY, permission, ip);
+	if (!result) {
+		dbg_printf("vfs_create: %s already exists\n", head);
+		vnodes_remove(*ip);
+		vnodes_remove(parent);
+		return EEXIST;
+	}
+
+	result = parent->fs->operations.create(parent, head,
+			//TODO really?
+			mode & parent->mode
+					& (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
+							| S_IROTH | S_IWOTH),
+			permission, ip);
+
+	vnodes_remove(parent);
+
+	if (result) {
+		dbg_printf("vfs_create: create(%s) failed %d\n", head, result);
+		return result;
+	}
+
+	return 0;
 }
 
 int vfs_permit(const vnode_t *ip, const struct permission *permission,
