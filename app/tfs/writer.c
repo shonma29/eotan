@@ -367,74 +367,11 @@ static int do_create(vfs_t *fs, char *path, const char *from,
 
 static int do_mkdir(vfs_t *fs, char *path, const struct permission *permission)
 {
-	char *head = path;
-	while (*head == '/')
-		head++;
-
-	char *last;
-	for (;;) {
-		last = strrchr(head, '/');
-		if (!last)
-			break;
-
-		//TODO is this error?
-		if (last[1] == '\0')
-			*last = '\0';
-		else
-			break;
-	}
-
-	char *parent_path;
-	if (last) {
-		*last = '\0';
-		parent_path = head;
-		head = last + 1;
-	} else
-		parent_path = "/";
-
-	if (!strlen(head)) {
-		printf("mkdir: bad path %s\n", path);
-		return ERR_ARG;
-	}
-
-	vnode_t *parent;
-	//TODO use constant definition of guest
-	//TODO is O_WRONLY correct?
-	int result = vfs_walk(fs->root, parent_path, O_RDWR, permission,
-			&parent);
-	if (result) {
-		printf("mkdir: vfs_walk(%s) failed %d\n",
-				parent_path, result);
-		return ERR_UNKNOWN;
-	}
-
-	//TODO use constant definition of guest
-	if ((parent->mode & S_IFMT) != S_IFDIR) {
-		printf("mkdir: parent(%s) is not directory\n", parent_path);
-		vnodes_remove(parent);
-		return ERR_ARG;
-	}
-
 	vnode_t *ip;
-	//TODO use constant definition of guest
-	result = vfs_walk(parent, head, O_RDONLY, permission, &ip);
-	if (!result) {
-		printf("mkdir: mkdir(%s) already exists\n", head);
-		vnodes_remove(ip);
-		vnodes_remove(parent);
-		return ERR_ARG;
-	}
-
-	//TODO use constant definition of guest
-	result = parent->fs->operations.mkdir(parent, head,
-			//TODO really?
-			parent->mode & (S_IRWXU | S_IRWXG | S_IRWXO),
+	int result = vfs_mkdir(fs->root, path, S_IRWXU | S_IRWXG | S_IRWXO,
 			permission, &ip);
-
-	vnodes_remove(parent);
-
 	if (result) {
-		printf("mkdir: mkdir(%s) failed %d\n", head, result);
+		printf("mkdir: mkdir(%s) failed %d\n", path, result);
 		return result;
 	}
 

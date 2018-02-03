@@ -118,6 +118,8 @@ extern int vfs_walk(vnode_t *, const char *, const int,
 		const struct permission *, vnode_t **);
 extern int vfs_create(vnode_t *, char *, const mode_t,
 		const struct permission *, vnode_t **);
+extern int vfs_mkdir(vnode_t *, char *, const mode_t,
+		const struct permission *, vnode_t **);
 extern int vfs_permit(const vnode_t *, const struct permission *,
 		const unsigned int);
 

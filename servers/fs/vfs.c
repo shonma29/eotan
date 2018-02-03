@@ -573,51 +573,6 @@ W fs_remove_dir(vnode_t * startip, B * path, struct permission * acc)
 }
 
 
-/*
- * fs_mkdir
- */
-W fs_create_dir(vnode_t * startip,
-	      char *path,
-	      W mode, struct permission * acc, vnode_t ** newip)
-{
-    char parent_path[NAME_MAX + 1];
-    vnode_t *parent_ip;
-    W parent_length;
-    W error_no;
-
-    error_no = vfs_walk(startip, path, O_RDONLY, acc, newip);
-    if (error_no == EOK) {
-	vnodes_remove(*newip);	/* fs_close() で行う処理はこれだけ */
-	return (EEXIST);
-    } else if (error_no != ENOENT) {
-	return (error_no);
-    }
-
-    parent_length = copy_path(parent_path, path, startip, &parent_ip);
-    if (parent_length > 0) {
-	error_no = vfs_walk(startip, parent_path, O_WRONLY,
-			  acc, &parent_ip);
-	if (error_no) {
-	    return (error_no);
-	}
-    }
-    parent_length += 1;
-
-    if ((parent_ip->mode & S_IFMT) != S_IFDIR) {
-	vnodes_remove(parent_ip);
-	return (ENOTDIR);
-    }
-
-    mode &= parent_ip->mode & (S_IRWXU | S_IRWXG | S_IRWXO);
-    error_no = parent_ip->fs->operations.mkdir(parent_ip, &path[parent_length], mode, acc, newip);
-
-    vnodes_remove(parent_ip);
-    if (error_no) {
-	return (error_no);
-    }
-    return (EOK);
-}
-
 /* fs_link_file -
  *
  */

@@ -186,6 +186,78 @@ int vfs_create(vnode_t *cwd, char *path, const mode_t mode,
 	return 0;
 }
 
+int vfs_mkdir(vnode_t *cwd, char *path, const mode_t mode,
+		const struct permission *permission, vnode_t **ip)
+{
+	char *head = path;
+	while (*head == '/')
+		head++;
+
+	char *last;
+	for (;;) {
+		last = strrchr(head, '/');
+		if (!last)
+			break;
+
+		//TODO is this error?
+		if (last[1] == '\0')
+			*last = '\0';
+		else
+			break;
+	}
+
+	char *parent_path;
+	if (last) {
+		*last = '\0';
+		parent_path = head;
+		head = last + 1;
+	} else
+		parent_path = ".";
+
+	if (!(*head)) {
+		dbg_printf("vfs_mkdir: bad path %s\n", path);
+		return EINVAL;
+	}
+
+	vnode_t *parent;
+	//TODO is O_WRONLY correct?
+	int result = vfs_walk(cwd, parent_path, O_RDWR, permission,
+			&parent);
+	if (result) {
+		dbg_printf("vfs_mkdir: vfs_walk(%s) failed %d\n",
+				parent_path, result);
+		return result;
+	}
+
+	if ((parent->mode & S_IFMT) != S_IFDIR) {
+		dbg_printf("vfs_mkdir: %s is not directory\n", parent_path);
+		vnodes_remove(parent);
+		return ENOTDIR;
+	}
+
+	result = vfs_walk(parent, head, O_RDONLY, permission, ip);
+	if (!result) {
+		dbg_printf("vfs_mkdir: %s already exists\n", head);
+		vnodes_remove(*ip);
+		vnodes_remove(parent);
+		return EEXIST;
+	}
+
+	result = parent->fs->operations.mkdir(parent, head,
+			//TODO really?
+			mode & parent->mode & (S_IRWXU | S_IRWXG | S_IRWXO),
+			permission, ip);
+
+	vnodes_remove(parent);
+
+	if (result) {
+		dbg_printf("vfs_mkdir: mkdir(%s) failed %d\n", head, result);
+		return result;
+	}
+
+	return 0;
+}
+
 int vfs_permit(const vnode_t *ip, const struct permission *permission,
 		const unsigned int want)
 {
