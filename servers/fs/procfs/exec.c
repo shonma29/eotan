@@ -201,7 +201,7 @@ read_exec_header(vnode_t *ip,
     W ph_index;
 
     error_no =
-	fs_read_file(ip, 0, (B *) &elf_header, sizeof(Elf32_Ehdr),
+	vfs_read(ip, (B *) &elf_header, 0, sizeof(Elf32_Ehdr),
 		     &rlength);
     if (error_no) {
 	return (error_no);
@@ -217,7 +217,7 @@ read_exec_header(vnode_t *ip,
     }
 
     error_no =
-	fs_read_file(ip, elf_header.e_phoff, (B *) ph_table,
+	vfs_read(ip, (B *) ph_table, elf_header.e_phoff,
 		     elf_header.e_phentsize * elf_header.e_phnum, &rlength);
     if (error_no) {
 	return (error_no);
@@ -273,7 +273,7 @@ load_segment(W procid, vnode_t *ip, Elf32_Phdr *segment, ID task)
 	 segment->p_vaddr; rest_length > 0;
 	 rest_length -= PAGE_SIZE, vaddr += PAGE_SIZE, offset += read_size) {
 	error_no =
-	    fs_read_file(ip, offset, buf,
+	    vfs_read(ip, buf, offset,
 			 (PAGE_SIZE <
 			  rest_length) ? PAGE_SIZE : rest_length,
 			 &read_size);

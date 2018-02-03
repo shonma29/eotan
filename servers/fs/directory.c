@@ -42,7 +42,7 @@ int if_getdents(fs_request *req)
     if ((fp->f_inode->mode & S_IFMT) != S_IFDIR)
 	return EINVAL;
 
-    error_no = fs_getdents(fp->f_inode, get_rdv_tid(req->rdvno), fp->f_offset,
+    error_no = vfs_getdents(fp->f_inode, get_rdv_tid(req->rdvno), fp->f_offset,
 			(UB*)(req->packet.args.arg2),
 			req->packet.args.arg3, &len, &flen);
 

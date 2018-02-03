@@ -214,8 +214,8 @@ int if_read(fs_request *req)
 	 rest_length > 0; rest_length -= rlength, i += rlength) {
 	/* MAX_BODY_SIZE 毎にファイルに読み込み */
 	len = rest_length > sizeof(req->buf) ? sizeof(req->buf) : rest_length;
-	error_no = fs_read_file(fp->f_inode,
-			     fp->f_offset + i, req->buf, len, &rlength);
+	error_no = vfs_read(fp->f_inode, req->buf,
+			     fp->f_offset + i, len, &rlength);
 	if (error_no) {
 	    break;
 	}
@@ -259,8 +259,8 @@ int if_write(fs_request *req)
       for (rest_length = fp->f_offset - fp->f_inode->size;
 	   rest_length > 0; rest_length -= rlength) {
 	len = rest_length > sizeof(req->buf) ? sizeof(req->buf) : rest_length;
-	error_no = fs_write_file(fp->f_inode,
-			      fp->f_inode->size, req->buf, len, &rlength);
+	error_no = vfs_write(fp->f_inode, req->buf,
+			      fp->f_inode->size, len, &rlength);
 	if (error_no || (rlength < len)) {
 	  break;
 	}
@@ -277,8 +277,8 @@ int if_write(fs_request *req)
 	if (error_no)
 	    break;
 
-	error_no = fs_write_file(fp->f_inode,
-			      fp->f_offset + i, req->buf, len, &rlength);
+	error_no = vfs_write(fp->f_inode, req->buf,
+			      fp->f_offset + i, len, &rlength);
 	if (error_no || (rlength < len)) {
 	    i += rlength;
 	    break;

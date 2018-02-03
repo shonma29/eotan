@@ -33,25 +33,25 @@ static inline vfs_t *getFsParent(const list_t *p) {
 	return (vfs_t*)((intptr_t)p - offsetof(vfs_t, bros));
 }
 
-static inline W fs_sync_file(vnode_t *ip)
+static inline int vfs_sync(vnode_t *ip)
 {
-	return ip->fs->operations.sync(ip, 0);
+	return ip->fs->operations.sync(ip);
 }
 
-static inline W fs_getdents(vnode_t *ip, ID caller, W offset,
+static inline int vfs_getdents(vnode_t *ip, ID caller, W offset,
 		VP buf, UW length, W * rsize, W * fsize)
 {
 	return ip->fs->operations.getdents(ip, caller, offset, buf, length,
 			rsize, fsize);
 }
-
-static inline W fs_read_file(vnode_t *ip, const int offset, void *buf,
+//TODO use off_t
+static inline int vfs_read(vnode_t *ip, void *buf, const int offset,
 		const size_t len, size_t *rlength)
 {
 	return ip->fs->operations.read(ip, buf, offset, len, rlength);
 }
-
-static inline W fs_write_file(vnode_t *ip, const int offset, const void *buf,
+//TODO use off_t
+static inline int vfs_write(vnode_t *ip, const void *buf, const int offset,
 		const size_t len, size_t *rlength)
 {
 	return ip->fs->operations.write(ip, buf, offset, len, rlength);
