@@ -59,7 +59,7 @@ Version 2, June 1991
 
 
 #define SFS_MAGIC			0x12345678
-#define SFS_MAXNAMELEN			14
+#define SFS_MAXNAMELEN			255
 #define SFS_VERSION_HI			2
 #define SFS_VERSION_LO			1
 #define SFS_BLOCK_SIZE 512
@@ -122,8 +122,7 @@ struct sfs_indirect
 struct sfs_dir
 {
   UW	d_index;		/* inode 番号 */
-  char	d_name[SFS_MAXNAMELEN];
-  B	pad[2];			/* padding */
+  char	d_name[SFS_MAXNAMELEN + 1];
 };
 
 #endif /* __FS_SFS_H__ */

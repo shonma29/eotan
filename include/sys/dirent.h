@@ -26,16 +26,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-
+#include <sys/syslimits.h>
 #include <sys/types.h>
 
-#define MAX_NAME_LEN (14)
+#define MAXNAMLEN NAME_MAX
 
 struct dirent {
 	ino_t d_ino;
-	off_t d_off;
-	unsigned short d_reclen;
-	char d_name[MAX_NAME_LEN + 1];
+	char d_name[MAXNAMLEN + 1];
 };
 
 #endif

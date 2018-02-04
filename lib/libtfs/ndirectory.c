@@ -53,8 +53,6 @@ int tfs_getdents(vnode_t *ip, const ID caller, const int offset, void *buf,
 
 		struct dirent entry;
 		entry.d_ino = dir.d_index;
-		entry.d_reclen = size;
-		entry.d_off = offset + *file_size;
 		strncpy(entry.d_name, dir.d_name, SFS_MAXNAMELEN);
 		entry.d_name[SFS_MAXNAMELEN] = '\0';
 
@@ -82,7 +80,7 @@ int tfs_walk(vnode_t *parent, const char *fname, vnode_t **retip)
 		if (error_no)
 			return error_no;
 
-		if (!strncmp(fname, dir.d_name, SFS_MAXNAMELEN))
+		if (!strncmp(fname, dir.d_name, SFS_MAXNAMELEN + 1))
 			break;
 	}
 	if (i == entries)
@@ -156,7 +154,7 @@ int tfs_append_entry(vnode_t *parent, const char *fname, vnode_t *ip)
 
 	dir.d_index = ip->index;
 	strncpy(dir.d_name, fname, SFS_MAXNAMELEN);
-	dir.pad[0] = '\0';
+	dir.d_name[SFS_MAXNAMELEN] = '\0';
 
 	size_t len;
 	return sfs_i_write(parent, (B*)&dir, parent->size, sizeof(dir),
@@ -175,7 +173,7 @@ int tfs_remove_entry(vnode_t *parent, const char *fname, vnode_t *ip)
 		if (error_no)
 			return error_no;
 
-		if (!strncmp(fname, dir.d_name, SFS_MAXNAMELEN))
+		if (!strncmp(fname, dir.d_name, SFS_MAXNAMELEN + 1))
 			break;
 	}
 	if (i == entries)
