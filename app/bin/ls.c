@@ -114,8 +114,9 @@ static int exec(int out, char *name, int argc, int *out_count) {
 					write(out, NEWLINE, 1);
 				}
 
-				len -= p->d_reclen;
-				p = (struct dirent*)((size_t)p + p->d_reclen);
+				len -= sizeof(struct dirent);
+				p = (struct dirent*)((size_t)p
+						+ sizeof(struct dirent));
 			}
 		}
 	} else {

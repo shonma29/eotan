@@ -137,7 +137,7 @@ int vfs_create(vnode_t *cwd, char *path, const mode_t mode,
 		parent_path = head;
 		head = last + 1;
 	} else
-		parent_path = ".";
+		parent_path = "";
 
 	if (!(*head)) {
 		dbg_printf("vfs_create: bad path %s\n", path);
@@ -212,7 +212,7 @@ int vfs_mkdir(vnode_t *cwd, char *path, const mode_t mode,
 		parent_path = head;
 		head = last + 1;
 	} else
-		parent_path = ".";
+		parent_path = "";
 
 	if (!(*head)) {
 		dbg_printf("vfs_mkdir: bad path %s\n", path);

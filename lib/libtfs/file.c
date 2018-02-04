@@ -133,13 +133,11 @@ Version 2, June 1991
  */
 int
 sfs_i_create(vnode_t * parent,
-	     char *fname,
+	     const char *fname,
 	     W mode, struct permission * acc, vnode_t ** retip)
 {
     vnode_t *newip;
     W error_no;
-    struct sfs_dir dirent;
-    W dirnentry;
     W i_index;
     SYSTIM clock;
 
@@ -178,15 +176,7 @@ sfs_i_create(vnode_t * parent,
 
     vnodes_append(newip);
 
-    /* ディレクトリのエントリを作成 */
-    dirent.d_index = newip->index;
-    /* 表示文字長を SFS_MAXNAMELEN にするため．後に pad があるので大丈夫 */
-    strncpy(dirent.d_name, fname, SFS_MAXNAMELEN);
-    dirent.pad[0] = '\0';
-
-    /* ディレクトリにエントリを追加 */
-    dirnentry = sfs_read_dir(parent, 0, NULL);
-    error_no = sfs_write_dir(parent, dirnentry, &dirent);
+    error_no = sfs_append_entry(parent, fname, newip);
     if (error_no) {
 	sfs_free_inode(newip->fs, newip);
 	vnodes_remove(newip);
@@ -200,6 +190,7 @@ sfs_i_create(vnode_t * parent,
 /* sfs_i_read -
  *
  */
+//TODO use off_t
 int sfs_i_read(vnode_t * ip, B * buf, W start, W length, W * rlength)
 {
     W copysize;
@@ -261,7 +252,7 @@ int sfs_i_read(vnode_t * ip, B * buf, W start, W length, W * rlength)
     return 0;
 }
 
-
+//TODO use off_t
 int sfs_i_write(vnode_t * ip, B * buf, W start, W size, W * rsize)
 {
     int copysize;

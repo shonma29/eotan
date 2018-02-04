@@ -77,7 +77,6 @@ starter:
 initrd:
 	$(RM) initrd.img
 	app/sfs/mkfs initrd.img 1024 4
-	app/sfs/mkfs initrd.img 1024 4
 	app/tfs/writer initrd.img chmod 755 /
 	app/tfs/writer initrd.img mkdir /lost+found
 	app/tfs/writer initrd.img chmod 1700 /lost+found

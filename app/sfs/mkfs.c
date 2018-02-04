@@ -194,7 +194,7 @@ static void write_bitmap(int formatfd)
     buf = alloca(blocksize * bitmap_block);
     memset(buf, 0xff, blocksize * bitmap_block);
     for (i = 0;
-	 i < (boot_block + super_block + bitmap_block + inode_block + 1);
+	 i < (boot_block + super_block + bitmap_block + inode_block + 2);
 	 i++) {
 	set_bit(buf, i);
     }

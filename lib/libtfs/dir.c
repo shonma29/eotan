@@ -60,184 +60,13 @@ Version 2, June 1991
 #include "../libserv/libserv.h"
 #include "func.h"
 
-static int append_entry(vnode_t *parent, char *fname, vnode_t *ip,
-		bool directory);
-static int remove_entry(vnode_t *parent, char *fname, vnode_t *ip);
-
-
-/* ディレクトリに関係する処理
- *
- * sfs_read_dir()
- * sfs_write_dir()
- *
- */
-
-
-/* sfsread_dir -
- *
- */
-W
-sfs_read_dir (vnode_t *parentp,
-	      W nentry,
-	      struct sfs_dir *dirp)
-{
-  W	size;
-  W	error_no;
-  W	rsize;
-
-#ifdef FMDEBUG
-  dbg_printf ("sfs: sfs_read_dir: start. parent = 0x%x, nentry = %d\n", parentp, nentry);
-#endif
-
-  if ((nentry <= 0) || (dirp == NULL))
-    {
-      return (parentp->size / sizeof (struct sfs_dir));
-    }
-  
-  size = ((nentry * sizeof (struct sfs_dir)) <= parentp->size) ?
-          nentry * sizeof (struct sfs_dir) :
-	  parentp->size;
-
-  error_no = sfs_i_read (parentp, (char *)dirp, 0, size, &rsize);
-  if (error_no)
-    {
-      return (error_no);
-    }
-  return (0);
-}
-
-
-/* sfs_write_dir - ディレクトリに新しい要素を追加
- *
- */
-W
-sfs_write_dir (vnode_t *parentp,
-	      W nentry,
-	      struct sfs_dir *dirp)
-{
-  W	error_no;
-  W	rsize;
-
-  /* 親ディレクトリの netnry 目から後に dirp の内容を追加 */
-  error_no = sfs_i_write (parentp, (char *)dirp, nentry*sizeof(struct sfs_dir),
-		       sizeof(struct sfs_dir), &rsize);
-  if (error_no)
-    {
-      return (error_no);
-    }
-  return (0);
-}
-
-/*
- * sfs_getdetns()
- */
-int sfs_getdents(vnode_t *ip, ID caller, W offset,
-	       VP buf, UW length, W *rsize, W *fsize)
-{
-  W nentry, i, s, error_no, len;
-  struct dirent dent;
-
-  *rsize = 0; *fsize = 0;
-  dent.d_ino = ip->index;
-  nentry = sfs_read_dir (ip, 0, NULL);
-  s = sizeof(struct sfs_dir);
-  if (offset >= nentry*s) return 0;
-  {
-    struct sfs_dir dirp[nentry]; /* GCC の拡張機能を使っている */
-    error_no = sfs_read_dir (ip, nentry, dirp);
-    if (error_no) return(error_no);
-    for (i = offset/s; i < nentry; i++) {
-      len = sizeof(struct dirent)+strlen(dirp[i].d_name);
-      if ((*rsize) + len >= length) return 0;
-      dent.d_reclen = len;
-      dent.d_off = i*s;
-      strncpy(dent.d_name, dirp[i].d_name, MAX_NAME_LEN);
-      dent.d_name[MAX_NAME_LEN] = '\0';
-      error_no = kcall->region_put(caller, buf+(*rsize), len, &dent);
-      if (error_no) return(error_no);
-      *rsize += len;
-      *fsize += s;
-    }
-  }
-  return 0;
-}
-
-
-/* sfs_i_lookup - ファイルの探索
- *
- * 引数 parent (親ディレクトリ) の指すディレクトリからファイルを
- * 探索する。
- *
- */
-int
-sfs_i_lookup(vnode_t *parent, char *fname, vnode_t **retip)
-{
-    W error_no;
-    W nentry;
-    W i;
-#ifdef FMDEBUG
-    dbg_printf("sfs: sfs_i_lookup: start. fname = %s\n", fname);	/* */
-#endif
-    if (strcmp(fname, ".") == 0) {
-	*retip = parent;
-	(*retip)->refer_count++;
-	return 0;
-    }
-
-    nentry = sfs_read_dir(parent, 0, NULL);
-    {
-	struct sfs_dir dirp[nentry];
-
-	error_no = sfs_read_dir(parent, nentry, dirp);
-	for (i = 0; i < nentry; i++) {
-	    /* 表示文字長を SFS_MAXNAMELEN にするため．後に pad があるので大丈夫 */
-	    if ((W) strncmp(fname, dirp[i].d_name, SFS_MAXNAMELEN + 1)
-		== 0) {
-		break;
-	    }
-	}
-#ifdef FMDEBUG
-	dbg_printf
-	    ("sfs: sfs_i_lookup: called sfs_read_dir(). i = %d, nentry = %d\n",
-	     i, nentry);
-#endif
-	if (i >= nentry) {
-	    return (ENOENT);
-	}
-
-	*retip = vnodes_find(parent->fs, dirp[i].d_index);
-	if (*retip) {
-	    /* すでにオープンしていたファイルだった
-	     */
-	    if ((*retip)->covered) {
-		*retip = (*retip)->covered;
-	    }
-	    (*retip)->refer_count++;
-	    return 0;
-	}
-
-	*retip = vnodes_create();
-	if (*retip == NULL) {
-	    return (ENOMEM);
-	}
-
-	error_no = sfs_read_inode(parent->fs, dirp[i].d_index, *retip);
-	if (error_no) {
-	    vnodes_remove(*retip);
-	    return (error_no);
-	}
-	vnodes_append(*retip);
-    }
-
-    return 0;
-}
 
 
 int sfs_i_link(vnode_t * parent, char *fname, vnode_t * srcip)
 {
     W error_no;
 
-    error_no = append_entry(parent, fname, srcip, false);
+    error_no = sfs_append_entry(parent, fname, srcip);
     if (error_no) {
 	return (error_no);
     }
@@ -262,7 +91,7 @@ sfs_i_unlink(vnode_t * parent, char *fname, vnode_t *ip)
 	return (EBUSY);
     }
 
-    error_no = remove_entry(parent, fname, ip);
+    error_no = sfs_remove_entry(parent, fname, ip);
     if (error_no) {
 	return (error_no);
     }
@@ -276,83 +105,6 @@ sfs_i_unlink(vnode_t * parent, char *fname, vnode_t *ip)
 
 
 /*
- * ディレクトリを作成する。
- *
- * 1) 新しい inode をアロケート。
- * 2) 親ディレクトリにアロケートした新しい inode の情報を追加。
- *
- */
-int
-sfs_i_mkdir(vnode_t * parent,
-	    char *fname,
-	    W mode, struct permission * acc, vnode_t ** retip)
-{
-    vnode_t *newip;
-    W error_no;
-    W i_index;
-    W rsize;
-    static struct sfs_dir dir[2] = {
-	{0, "."},
-	{0, ".."}
-    };
-    SYSTIM clock;
-
-    /* 引数のチェック */
-    newip = vnodes_create();
-    if (newip == NULL) {
-	return (ENOMEM);
-    }
-    *retip = newip;
-
-    /* 新しい sfs_inode をアロケート */
-    i_index = sfs_alloc_inode(parent->fs, newip);
-    if (i_index <= 0) {
-	vnodes_remove(newip);
-	return (ENOMEM);
-    }
-
-    /* 設定 */
-    struct sfs_inode *sfs_inode = newip->private;
-    memset(sfs_inode, 0, sizeof(*sfs_inode));
-    time_get(&clock);
-    newip->fs = parent->fs;
-    newip->refer_count = 1;
-    newip->dirty = true;
-    newip->mode = mode | S_IFDIR;
-    newip->nlink = 2;
-    newip->index = i_index;
-    sfs_inode->i_uid = acc->uid;
-    sfs_inode->i_gid = acc->gid;
-    newip->dev = 0;
-    newip->size = 0;
-    sfs_inode->i_atime = clock;
-    sfs_inode->i_ctime = clock;
-    sfs_inode->i_mtime = clock;
-    newip->nblock = 0;
-
-    vnodes_append(newip);
-
-    dir[0].d_index = i_index;
-    dir[1].d_index = parent->index;
-    error_no = sfs_i_write(newip, (B *) dir, 0, sizeof(dir), &rsize);
-    if (error_no) {
-	sfs_free_inode(newip->fs, newip);
-	vnodes_remove(newip);
-	return (error_no);
-    }
-
-    error_no = append_entry(parent, fname, newip, true);
-    if (error_no) {
-	sfs_i_truncate(newip, 0);
-	sfs_free_inode(newip->fs, newip);
-	vnodes_remove(newip);
-	return (error_no);
-    }
-
-    return 0;
-}
-
-/*
  * ディレクトリを削除する。
  *
  */
@@ -361,12 +113,12 @@ int sfs_i_rmdir(vnode_t * parent, char *fname, vnode_t *ip)
     int nentry;
     W error_no;
 
-    nentry = sfs_read_dir(ip, 0, NULL);
+    nentry = parent->size / sizeof(struct sfs_dir);
     if (nentry >= 3) {
 	return (ENOTEMPTY);
     }
 
-    error_no = remove_entry(parent, fname, ip);
+    error_no = sfs_remove_entry(parent, fname, ip);
     if (error_no) {
 	return (error_no);
     }
@@ -380,84 +132,6 @@ int sfs_i_rmdir(vnode_t * parent, char *fname, vnode_t *ip)
     parent->nlink -= 1;
     time_get(&(sfs_inode->i_ctime));
     parent->dirty = true;
-
-    return 0;
-}
-
-static int append_entry(vnode_t *parent, char *fname, vnode_t *ip,
-		bool directory)
-{
-    W error_no;
-    struct sfs_dir dirent;
-    W dirnentry;
-
-    /* ディレクトリのエントリを作成 */
-    dirent.d_index = ip->index;
-    /* 表示文字長を SFS_MAXNAMELEN にするため．後に pad があるので大丈夫 */
-    strncpy(dirent.d_name, fname, SFS_MAXNAMELEN);
-    dirent.pad[0] = '\0';
-
-    /* ディレクトリにエントリを追加 */
-    if (directory) {
-	parent->nlink += 1;
-    }
-    dirnentry = sfs_read_dir(parent, 0, NULL);
-
-    error_no = sfs_write_dir(parent, dirnentry, &dirent);
-    if (error_no) {
-	return (error_no);
-    }
-
-    return 0;
-}
-
-static int remove_entry(vnode_t *parent, char *fname, vnode_t *ip)
-{
-    int nentry = sfs_read_dir(parent, 0, NULL);
-    if (nentry <= 0) {
-	return (ENOENT);
-    }
-
-    {
-	struct sfs_dir buf[nentry];	/* GCC の拡張機能を使っている */
-	if (sfs_read_dir(parent, nentry, buf) != 0) {
-	    return (EIO);
-	}
-
-	int i;
-	for (i = 0; i < nentry; i++) {
-	    /* 表示文字長を SFS_MAXNAMELEN にするため．後に pad があるので大丈夫 */
-	    if (strncmp(fname, buf[i].d_name, SFS_MAXNAMELEN + 1) == 0) {
-		break;
-	    }
-	}
-	if (i >= nentry) {
-	    return (ENOENT);
-	}
-
-	while (i < nentry) {
-	    buf[i].d_index = buf[i + 1].d_index;
-	    /* 表示文字長を SFS_MAXNAMELEN にするため．後に pad があるので大丈夫 */
-	    strncpy(buf[i].d_name, buf[i + 1].d_name,
-		    SFS_MAXNAMELEN);
-	    buf[i].pad[0] = '\0';
-	    i++;
-	}
-	i = parent->size - sizeof(struct sfs_dir);
-
-	W rsize;
-	W error_no = sfs_i_write(parent, (B *) buf, 0, i, &rsize);
-	if (error_no) {
-	    return (error_no);
-	}
-	parent->dirty = true;
-	sfs_i_truncate(parent, i);
-
-	struct sfs_inode *sfs_inode = ip->private;
-	ip->nlink--;
-	time_get(&(sfs_inode->i_ctime));
-	ip->dirty = true;
-    }
 
     return 0;
 }
