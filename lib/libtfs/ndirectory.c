@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "func.h"
 #include "../../lib/libserv/libserv.h"
 
-int sfs_getdents(vnode_t *ip, const ID caller, const int offset, void *buf,
+int tfs_getdents(vnode_t *ip, const ID caller, const int offset, void *buf,
 		const size_t length, size_t *dir_size, size_t *file_size)
 {
 	*dir_size = 0;
@@ -70,7 +70,7 @@ int sfs_getdents(vnode_t *ip, const ID caller, const int offset, void *buf,
 	return 0;
 }
 
-int sfs_i_lookup(vnode_t *parent, const char *fname, vnode_t **retip)
+int tfs_walk(vnode_t *parent, const char *fname, vnode_t **retip)
 {
 	struct sfs_dir dir;
 	size_t entries = parent->size / sizeof(dir);
@@ -113,7 +113,7 @@ int sfs_i_lookup(vnode_t *parent, const char *fname, vnode_t **retip)
 	return 0;
 }
 
-int sfs_i_mkdir(vnode_t *parent, const char *fname, const mode_t mode,
+int tfs_mkdir(vnode_t *parent, const char *fname, const mode_t mode,
 		struct permission *acc, vnode_t **retip)
 {
 	vnode_t *newip;
@@ -129,7 +129,7 @@ int sfs_i_mkdir(vnode_t *parent, const char *fname, const mode_t mode,
 	size_t len;
 	error_no = sfs_i_write(newip, (B*)dir, 0, sizeof(dir), (W*)&len);
 	if (error_no) {
-		error_no = sfs_remove_entry(parent, fname, newip);
+		error_no = tfs_remove_entry(parent, fname, newip);
 		if (error_no)
 			dbg_printf("sfs_i_mkdir: %s is dead link\n", fname);
 
@@ -150,7 +150,7 @@ int sfs_i_mkdir(vnode_t *parent, const char *fname, const mode_t mode,
 	return 0;
 }
 
-int sfs_append_entry(vnode_t *parent, const char *fname, vnode_t *ip)
+int tfs_append_entry(vnode_t *parent, const char *fname, vnode_t *ip)
 {
 	struct sfs_dir dir;
 
@@ -163,7 +163,7 @@ int sfs_append_entry(vnode_t *parent, const char *fname, vnode_t *ip)
 			(W*)&len);
 }
 
-int sfs_remove_entry(vnode_t *parent, const char *fname, vnode_t *ip)
+int tfs_remove_entry(vnode_t *parent, const char *fname, vnode_t *ip)
 {
 	struct sfs_dir dir;
 	size_t entries = parent->size / sizeof(dir);

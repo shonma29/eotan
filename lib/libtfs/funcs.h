@@ -31,12 +31,12 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/types.h>
 
 /* ndirectory.c */
-extern int sfs_getdents(vnode_t *, const ID, const int, void *,
+extern int tfs_getdents(vnode_t *, const ID, const int, void *,
 		const size_t, size_t *, size_t *);
-extern int sfs_i_lookup(vnode_t *, const char *, vnode_t **);
-extern int sfs_i_mkdir(vnode_t *, const char *, const mode_t mode,
+extern int tfs_walk(vnode_t *, const char *, vnode_t **);
+extern int tfs_mkdir(vnode_t *, const char *, const mode_t mode,
 			     struct permission *, vnode_t **);
-extern int sfs_append_entry(vnode_t *, const char *, vnode_t *);
-extern int sfs_remove_entry(vnode_t *, const char *, vnode_t *);
+extern int tfs_append_entry(vnode_t *, const char *, vnode_t *);
+extern int tfs_remove_entry(vnode_t *, const char *, vnode_t *);
 
 #endif

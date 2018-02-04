@@ -176,7 +176,7 @@ sfs_i_create(vnode_t * parent,
 
     vnodes_append(newip);
 
-    error_no = sfs_append_entry(parent, fname, newip);
+    error_no = tfs_append_entry(parent, fname, newip);
     if (error_no) {
 	sfs_free_inode(newip->fs, newip);
 	vnodes_remove(newip);

@@ -66,7 +66,7 @@ int sfs_i_link(vnode_t * parent, char *fname, vnode_t * srcip)
 {
     W error_no;
 
-    error_no = sfs_append_entry(parent, fname, srcip);
+    error_no = tfs_append_entry(parent, fname, srcip);
     if (error_no) {
 	return (error_no);
     }
@@ -91,7 +91,7 @@ sfs_i_unlink(vnode_t * parent, char *fname, vnode_t *ip)
 	return (EBUSY);
     }
 
-    error_no = sfs_remove_entry(parent, fname, ip);
+    error_no = tfs_remove_entry(parent, fname, ip);
     if (error_no) {
 	return (error_no);
     }
@@ -118,7 +118,7 @@ int sfs_i_rmdir(vnode_t * parent, char *fname, vnode_t *ip)
 	return (ENOTEMPTY);
     }
 
-    error_no = sfs_remove_entry(parent, fname, ip);
+    error_no = tfs_remove_entry(parent, fname, ip);
     if (error_no) {
 	return (error_no);
     }
