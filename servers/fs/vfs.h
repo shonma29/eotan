@@ -115,8 +115,6 @@ extern W fs_open_file(B * path, W oflag, W mode, struct permission *acc,
 		      vnode_t *startip, vnode_t **newip);
 extern W fs_remove_file(vnode_t *startip, B * path,
 			struct permission *acc);
-extern W fs_remove_dir(vnode_t *startip, B * path,
-		       struct permission *acc);
 extern W fs_link_file(W procid, B * src, B * dst, struct permission * acc);
 
 extern vnode_t *rootfile;

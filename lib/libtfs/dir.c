@@ -113,7 +113,7 @@ int sfs_i_rmdir(vnode_t * parent, char *fname, vnode_t *ip)
     int nentry;
     W error_no;
 
-    nentry = parent->size / sizeof(struct sfs_dir);
+    nentry = ip->size / sizeof(struct sfs_dir);
     if (nentry >= 3) {
 	return (ENOTEMPTY);
     }

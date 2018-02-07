@@ -155,7 +155,7 @@ if_rmdir (fs_request *req)
   if (error_no)
       return error_no;
 
-  error_no = fs_remove_dir (startip,
+  error_no = vfs_rmdir (startip,
 			 req->buf,
 			 &acc);
   if (error_no)

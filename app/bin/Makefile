@@ -24,7 +24,8 @@
 # For more information, please refer to <http://unlicense.org/>
 
 TARGET = $(WD)/cat $(WD)/shell \
-		$(WD)/echo $(WD)/ls $(WD)/pwd $(WD)/sleep
+		$(WD)/echo $(WD)/ls $(WD)/pwd $(WD)/sleep \
+		$(WD)/mkdir $(WD)/rmdir
 
 include Makefile.in
 

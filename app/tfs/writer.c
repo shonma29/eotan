@@ -306,6 +306,7 @@ static int do_create(vfs_t *fs, char *path, const char *from,
 	int fd = open(from, O_RDONLY);
 	if (fd < 0) {
 		printf("create: open(%s) failed %d\n", from, result);
+		//TODO remove file
 		vnodes_remove(ip);
 		return ERR_FILE;
 	}
@@ -313,6 +314,7 @@ static int do_create(vfs_t *fs, char *path, const char *from,
 	char *buf = malloc(fs->device.block_size);
 	if (!buf) {
 		printf("create: malloc failed\n");
+		//TODO remove file
 		vnodes_remove(ip);
 		close(fd);
 		return ERR_MEMORY;
@@ -326,6 +328,7 @@ static int do_create(vfs_t *fs, char *path, const char *from,
 		if (len < 0) {
 			printf("create: read(%s) failed\n", from, errno);
 			free(buf);
+			//TODO remove file
 			vnodes_remove(ip);
 			close(fd);
 			return ERR_FILE;
@@ -341,6 +344,7 @@ static int do_create(vfs_t *fs, char *path, const char *from,
 			printf("create: write(%d, %d) failed %d\n",
 					ip->index, offset, error_no);
 			free(buf);
+			//TODO remove file
 			vnodes_remove(ip);
 			close(fd);
 			return ERR_FILE;
@@ -350,6 +354,7 @@ static int do_create(vfs_t *fs, char *path, const char *from,
 			printf("create: write(%d, %d) partially failed\n",
 					ip->index, offset);
 			free(buf);
+			//TODO remove file
 			vnodes_remove(ip);
 			close(fd);
 			return ERR_FILE;
@@ -364,7 +369,18 @@ static int do_create(vfs_t *fs, char *path, const char *from,
 
 	return 0;
 }
+/*
+static int do_remove(vfs_t *fs, char *path, const struct permission *permission)
+{
+	int result = vfs_remove(fs->root, path, permission);
+	if (result) {
+		printf("remove: remove(%s) failed %d\n", path, result);
+		return result;
+	}
 
+	return 0;
+}
+*/
 static int do_mkdir(vfs_t *fs, char *path, const struct permission *permission)
 {
 	vnode_t *ip;
@@ -376,6 +392,17 @@ static int do_mkdir(vfs_t *fs, char *path, const struct permission *permission)
 	}
 
 	vnodes_remove(ip);
+
+	return 0;
+}
+
+static int do_rmdir(vfs_t *fs, char *path, const struct permission *permission)
+{
+	int result = vfs_rmdir(fs->root, path, permission);
+	if (result) {
+		printf("rmdir: rmdir(%s) failed %d\n", path, result);
+		return result;
+	}
 
 	return 0;
 }
@@ -460,12 +487,35 @@ int main(int argc, char **argv)
 			} else
 				result = do_create(&fs, argv[3], argv[4],
 						&permission);
+/*
+		} else if (!strcmp(argv[2], "remove")) {
+			if (argc < 4) {
+				printf("no parameter\n");
+				result = ERR_ARG;
+			} else
+				result = do_remove(&fs, argv[3], &permission);
+*/
 		} else if (!strcmp(argv[2], "mkdir")) {
 			if (argc < 4) {
 				printf("no parameter\n");
 				result = ERR_ARG;
 			} else
 				result = do_mkdir(&fs, argv[3], &permission);
+		} else if (!strcmp(argv[2], "rmdir")) {
+			if (argc < 4) {
+				printf("no parameter\n");
+				result = ERR_ARG;
+			} else
+				result = do_rmdir(&fs, argv[3], &permission);
+/*
+		} else if (!strcmp(argv[2], "mv")) {
+			if (argc < 5) {
+				printf("no parameter\n");
+				result = ERR_ARG;
+			} else
+				result = do_mv(&fs, argv[3], argv[4],
+						&permission);
+*/
 		} else if (!strcmp(argv[2], "chmod")) {
 			if (argc < 5) {
 				printf("no parameter\n");
@@ -473,6 +523,7 @@ int main(int argc, char **argv)
 			} else
 				result = do_chmod(&fs, argv[3], argv[4],
 						&permission);
+
 		} else {
 			printf("unknown command %s\n", argv[2]);
 			result = ERR_ARG;
