@@ -492,46 +492,6 @@ fs_open_file(B * path,
 
 
 
-/* fs_remove_file -
- *
- */
-W
-fs_remove_file(vnode_t * startip, B * path, struct permission * acc)
-{
-    char parent_path[NAME_MAX + 1];
-    vnode_t *parent_ip;
-    W parent_length = copy_path(parent_path, path, startip, &parent_ip);
-    W error_no;
-
-    if (parent_length > 0) {
-	error_no =
-	    vfs_walk(startip, parent_path, O_RDWR, acc, &parent_ip);
-	if (error_no) {
-	    return (error_no);
-	}
-    }
-    parent_length += 1;
-
-    vnode_t *ip;
-    error_no = vfs_walk(parent_ip, &path[parent_length], O_RDWR, acc, &ip);
-    if (error_no) {
-	vnodes_remove(parent_ip);
-	return (error_no);
-    }
-    if ((ip->mode & S_IFMT) == S_IFDIR) {
-	error_no = EISDIR;
-    } else {
-	error_no = parent_ip->fs->operations.unlink(parent_ip, &path[parent_length], acc);
-    }
-    vnodes_remove(ip);
-    vnodes_remove(parent_ip);
-    if (error_no) {
-	return (error_no);
-    }
-    return (EOK);
-}
-
-
 /* fs_link_file -
  *
  */

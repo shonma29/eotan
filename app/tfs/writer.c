@@ -367,7 +367,7 @@ static int do_create(vfs_t *fs, char *path, const char *from,
 
 	return 0;
 }
-/*
+
 static int do_remove(vfs_t *fs, char *path, const struct permission *permission)
 {
 	int result = vfs_remove(fs->root, path, permission);
@@ -378,7 +378,7 @@ static int do_remove(vfs_t *fs, char *path, const struct permission *permission)
 
 	return 0;
 }
-*/
+
 static int do_mkdir(vfs_t *fs, char *path, const struct permission *permission)
 {
 	vnode_t *ip;
@@ -485,14 +485,12 @@ int main(int argc, char **argv)
 			} else
 				result = do_create(&fs, argv[3], argv[4],
 						&permission);
-/*
 		} else if (!strcmp(argv[2], "remove")) {
 			if (argc < 4) {
 				printf("no parameter\n");
 				result = ERR_ARG;
 			} else
 				result = do_remove(&fs, argv[3], &permission);
-*/
 		} else if (!strcmp(argv[2], "mkdir")) {
 			if (argc < 4) {
 				printf("no parameter\n");
