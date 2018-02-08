@@ -209,7 +209,7 @@ static int readdir(vfs_t *fs, vnode_t *ip, const struct permission *permission)
 	while (left) {
 		size_t rlength;
 		int error_no = fs->operations.read(ip, buf, offset,
-				fs->device.block_size, &rlength);
+				sizeof(struct sfs_dir), &rlength);
 		if (error_no) {
 			printf("readdir: read(%d, %d) failed %d\n",
 					ip->index, offset, error_no);
@@ -220,29 +220,27 @@ static int readdir(vfs_t *fs, vnode_t *ip, const struct permission *permission)
 		offset += rlength;
 		left -= rlength;
 
-		for (int i = 0; i < rlength / sizeof(struct sfs_dir); i++) {
-			//TODO define in vfs
-			struct sfs_dir *p = (struct sfs_dir*)buf;
-			vnode_t *entry;
-			//TODO use constant definition of guest
-			int result = vfs_walk(ip, p[i].d_name, O_RDONLY,
-					permission, &entry);
-			if (result) {
-				printf("readdir: vfs_walk(%s) failed %d\n",
-						p[i].d_name, result);
-				free(buf);
-				return ERR_UNKNOWN;
-			}
+		//TODO define in vfs
+		struct sfs_dir *p = (struct sfs_dir*)buf;
+		vnode_t *entry;
+		//TODO use constant definition of guest
+		int result = vfs_walk(ip, p->d_name, O_RDONLY,
+				permission, &entry);
+		if (result) {
+			printf("readdir: vfs_walk(%s) failed %d\n",
+					p->d_name, result);
+			free(buf);
+			return ERR_UNKNOWN;
+		}
 
-			result = do_stat(entry, p[i].d_name);
-			vnodes_remove(entry);
+		result = do_stat(entry, p->d_name);
+		vnodes_remove(entry);
 
-			if (result) {
-				printf("readdir: stat(%s) failed %d\n",
-						p[i].d_name, result);
-				free(buf);
-				return result;
-			}
+		if (result) {
+			printf("readdir: stat(%s) failed %d\n",
+					p->d_name, result);
+			free(buf);
+			return result;
 		}
 	}
 
