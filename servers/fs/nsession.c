@@ -1,5 +1,3 @@
-#ifndef _FS_API_H_
-#define _FS_API_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,36 +25,29 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <fs/config.h>
-#include <sys/syscall.h>
-#include <sys/syslimits.h>
+#include <limits.h>
+#include <nerve/kcall.h>
+#include <fs/vfs.h>
+#include <sys/errno.h>
+#include "fs.h"
+#include "procfs/process.h"
 
-typedef struct {
-	struct posix_request packet;
-	RDVNO rdvno;
-	B buf[PATH_MAX];
-} fs_request;
 
-extern int if_chdir(fs_request*);
-extern int if_chmod(fs_request*);
-extern int if_close(fs_request*);
-extern int if_dup2(fs_request*);
-extern int if_exec(fs_request*);
-extern int if_exit(fs_request*);
-extern int if_fork(fs_request*);
-extern int if_kill(fs_request*);
-extern int if_link(fs_request*);
-extern int if_lseek(fs_request*);
-extern int if_mkdir(fs_request*);
-extern int if_open(fs_request*);
-extern int if_read(fs_request*);
-extern int if_rmdir(fs_request*);
-extern int if_fstat(fs_request*);
-extern int if_unlink(fs_request*);
-extern int if_waitpid(fs_request*);
-extern int if_write(fs_request*);
-extern int if_mount(fs_request*);
-extern int if_unmount(fs_request*);
-extern int if_getdents(fs_request*);
+int session_get_path(vnode_t **ip, const ID pid, const ID tid,
+	UB *src, UB *dest)
+{
+    ER_UINT len = kcall->region_copy(tid, src, PATH_MAX, dest);
+    if (len <= 0)
+	return EINVAL;
 
-#endif
+    if (len == PATH_MAX)
+	return ENAMETOOLONG;
+
+    if (*dest == '/') {
+	*ip = rootfile;
+
+	return 0;
+    }
+
+    return proc_get_cwd(pid, ip);
+}

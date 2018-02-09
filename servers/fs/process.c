@@ -50,7 +50,7 @@ int if_exec(fs_request *req)
 	else
 	    return EFAULT;
     }
-    req->buf[NAME_MAX] = '\0';
+    req->buf[sizeof(req->buf) - 1] = '\0';
 #ifdef EXEC_DEBUG
     dbg_printf("fs: exec: pathname is %s\n", req->buf);
 #endif

@@ -119,7 +119,9 @@ extern vnode_t *rootfile;
 
 /* session.c */
 extern W session_get_opened_file(const ID, const W, struct file **);
-extern W session_get_path(vnode_t **, const ID, const ID, UB *, UB *);
+
+/* nsession.c */
+extern int session_get_path(vnode_t **, const ID, const ID, UB *, UB *);
 
 #include "vfsfuncs.h"
 

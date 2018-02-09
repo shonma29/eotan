@@ -69,7 +69,7 @@ int if_mount(fs_request *req)
 	else
 	    return EFAULT;
     }
-    req->buf[NAME_MAX] = '\0';
+    req->buf[sizeof(req->buf) - 1] = '\0';
     error_no = find_fs((UB*)(req->buf), &fstype);
     if (error_no)
 	return error_no;

@@ -48,7 +48,7 @@ typedef struct {
 	char buf[0];
 } init_arg_t;
 
-static char buf[sizeof(init_arg_t) + NAME_MAX + 1];
+static char buf[sizeof(init_arg_t) + PATH_MAX];
 
 static W create_init(ID process_id);
 

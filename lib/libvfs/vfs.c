@@ -47,30 +47,32 @@ int vfs_walk(vnode_t *parent, const char *path, const int flags,
 	if (!parent)
 		return ENODEV;
 
-	for (parent->refer_count++; *path; path++) {
-		char entry[NAME_MAX + 1];
-
+	char *p = (char*)path;
+	for (parent->refer_count++;; p++) {
+		bool last = false;
+		char *head = p;
 		int i;
-		for (i = 0; i < sizeof(entry); i++) {
-			if ((*path == '/') || !(*path)) {
-				entry[i] = '\0';
+		for (i = 0; i <= NAME_MAX; i++) {
+			if (!(*p)) {
+				last = true;
 				break;
-			} else {
-				entry[i] = *path;
-				path++;
-			}
+			} else if (*p == '/') {
+				*p = '\0';
+				break;
+			} else
+				p++;
 		}
 		if (!i) {
-			if (*path)
-				continue;
-			else
+			if (last)
 				break;
-		} else if (i == sizeof(entry)) {
+			else
+				continue;
+		} else if (i == (NAME_MAX + 1)) {
 			vnodes_remove(parent);
 			return ENAMETOOLONG;
 		}
 
-		if (!strcmp(entry, "..")) {
+		if (!strcmp(head, "..")) {
 			vfs_t *fsp = parent->fs;
 
 			if ((fsp->root == parent)
@@ -88,7 +90,7 @@ int vfs_walk(vnode_t *parent, const char *path, const int flags,
 
 		int error_no = vfs_permit(parent, perm, R_OK | X_OK);
 		if (!error_no)
-			error_no = parent->fs->operations.walk(parent, entry,
+			error_no = parent->fs->operations.walk(parent, head,
 					ip);
 
 		vnodes_remove(parent);
@@ -98,7 +100,7 @@ int vfs_walk(vnode_t *parent, const char *path, const int flags,
 
 		parent = *ip;
 
-		if (!(*path))
+		if (last)
 			break;
 	}
 
