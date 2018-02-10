@@ -35,7 +35,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <unistd.h>
 #include "../../include/sys/stat.h"
 #include "../../include/fs/vfs.h"
-#include "../../include/fs/sfs.h"
 #include "libserv.h"
 #include "writer.h"
 
@@ -60,6 +59,11 @@ typedef struct {
 	uint32_t blksize;
 	int32_t blocks;
 } vstat_t;
+
+typedef struct {
+	int32_t d_ino;
+	char d_name[256];
+} vdirent_t;
 
 static vfs_t fs;
 static vnode_t *root_node;
@@ -196,49 +200,46 @@ static int do_stat(vnode_t *ip, const char *path)
 
 static int readdir(vfs_t *fs, vnode_t *ip, const struct permission *permission)
 {
-	char *buf = malloc(fs->device.block_size);
+	vdirent_t *buf = malloc(sizeof(vdirent_t));
 	if (!buf) {
 		printf("readdir: malloc failed\n");
 		return ERR_MEMORY;
 	}
 
-	size_t left = ip->size;
 	//TODO use off_t
 //	off_t offset = 0;
 	size_t offset = 0;
-	while (left) {
+	for (;;) {
 		size_t rlength;
-		int error_no = fs->operations.read(ip, buf, offset,
-				sizeof(struct sfs_dir), &rlength);
+		int error_no = fs->operations.getdents(ip, &offset, buf,
+				&rlength);
 		if (error_no) {
-			printf("readdir: read(%d, %d) failed %d\n",
+			printf("readdir: getdents(%d, %d) failed %d\n",
 					ip->index, offset, error_no);
 			free(buf);
 			return ERR_FILE;
 		}
 
-		offset += rlength;
-		left -= rlength;
+		if (!rlength)
+			break;
 
-		//TODO define in vfs
-		struct sfs_dir *p = (struct sfs_dir*)buf;
 		vnode_t *entry;
 		//TODO use constant definition of guest
-		int result = vfs_walk(ip, p->d_name, O_RDONLY,
+		int result = vfs_walk(ip, buf->d_name, O_RDONLY,
 				permission, &entry);
 		if (result) {
 			printf("readdir: vfs_walk(%s) failed %d\n",
-					p->d_name, result);
+					buf->d_name, result);
 			free(buf);
 			return ERR_UNKNOWN;
 		}
 
-		result = do_stat(entry, p->d_name);
+		result = do_stat(entry, buf->d_name);
 		vnodes_remove(entry);
 
 		if (result) {
 			printf("readdir: stat(%s) failed %d\n",
-					p->d_name, result);
+					buf->d_name, result);
 			free(buf);
 			return result;
 		}
