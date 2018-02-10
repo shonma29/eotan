@@ -45,41 +45,48 @@ typedef struct {
 	char *arg0;
 	char *arg1;
 	char *env0;
+	char *env1;
 	char buf[0];
 } init_arg_t;
 
-static char buf[sizeof(init_arg_t) + PATH_MAX];
+//TODO where to define?
+static char envpath[] = "PATH=/bin";
+static char buf[sizeof(init_arg_t) + PATH_MAX + 16];
 
 static W create_init(ID process_id);
 
 
 W exec_init(ID process_id, char *pathname)
 {
-	struct posix_request req;
-	W err;
-	init_arg_t *p;
-	size_t offset;
+	//TODO add strnlen
+//	size_t pathlen = strnlen(pathname, PATH_MAX);
+	size_t pathlen = strlen(pathname);
+	if (pathlen >= PATH_MAX)
+		return ENAMETOOLONG;
 
-	req.param.par_execve.stsize = sizeof(init_arg_t)
-			+ strlen(pathname) + 1;
-	req.param.par_execve.stsize = (req.param.par_execve.stsize
-			+ sizeof(int) - 1)
+	pathlen++;
+
+	struct posix_request req;
+	req.param.par_execve.stsize = (sizeof(init_arg_t) + pathlen
+			+ strlen(envpath) + 1 + sizeof(int) - 1)
 			& ~(sizeof(int) - 1);
 	if (req.param.par_execve.stsize > sizeof(buf))
 		return ENOMEM;
 
-	offset = STACK_TAIL - req.param.par_execve.stsize;
-	p = (init_arg_t*)buf;
+	size_t offset = STACK_TAIL - req.param.par_execve.stsize;
+	init_arg_t *p = (init_arg_t*)buf;
 	p->argc = 1;
 	p->argv = (char**)(offsetof(init_arg_t, arg0) + offset);
 	p->envp = (char**)(offsetof(init_arg_t, env0) + offset);
 	p->arg0 = (char*)(offsetof(init_arg_t, buf) + offset);
 	p->arg1 = NULL;
-	p->env0 = NULL;
+	p->env0 = (char*)(sizeof(init_arg_t) + pathlen + offset);
+	p->env1 = NULL;
 	strcpy(p->buf, pathname);
+	strcpy(&(buf[sizeof(init_arg_t) + pathlen]), envpath);
 	req.param.par_execve.stackp = (VP)p;
 
-	err = create_init(process_id);
+	W err = create_init(process_id);
 	if (err) {
 		//TODO destroy vmtree and process
 		return err;
