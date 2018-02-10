@@ -26,44 +26,34 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <string.h>
 #include <fs/sfs.h>
-#include <nerve/kcall.h>
 #include <sys/dirent.h>
 #include <sys/errno.h>
 #include "func.h"
 #include "../../lib/libserv/libserv.h"
 
-int tfs_getdents(vnode_t *ip, const ID caller, const int offset, void *buf,
-		const size_t length, size_t *dir_size, size_t *file_size)
+
+int tfs_getdents(vnode_t *ip, int *offset, struct dirent *entry, size_t *length)
 {
-	*dir_size = 0;
-	*file_size = 0;
-
 	struct sfs_dir dir;
-	size_t size = sizeof(dir);
-	size_t entries = ip->size / size;
-	for (int i = offset / size; i < entries; i++) {
-		if (*dir_size >= length)
-			return 0;
+	size_t len;
+	int error_no = sfs_i_read(ip, (B*)&dir, *offset, sizeof(dir), (W*)&len);
+	if (error_no)
+		return error_no;
 
-		size_t len;
-		int error_no = sfs_i_read(ip, (B*)&dir, offset + *file_size,
-				size, (W*)&len);
-		if (error_no)
-			return error_no;
-
-		struct dirent entry;
-		entry.d_ino = dir.d_index;
-		strncpy(entry.d_name, dir.d_name, SFS_MAXNAMELEN);
-		entry.d_name[SFS_MAXNAMELEN] = '\0';
-
-		error_no = kcall->region_put(caller, buf + *dir_size,
-				sizeof(entry), &entry);
-		if (error_no)
-			return error_no;
-
-		*dir_size += sizeof(entry);
-		*file_size += size;
+	if (!len) {
+		*length = 0;
+		return 0;
 	}
+
+	if (len != sizeof(dir))
+		return EINVAL;
+
+	*offset += len;
+	*length = sizeof(*entry);
+
+	entry->d_ino = dir.d_index;
+	strncpy(entry->d_name, dir.d_name, SFS_MAXNAMELEN);
+	entry->d_name[SFS_MAXNAMELEN] = '\0';
 
 	return 0;
 }

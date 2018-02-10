@@ -25,35 +25,6 @@ Version 2, June 1991
 #include "fs.h"
 #include "api.h"
 
-int if_getdents(fs_request *req)
-{
-    W error_no;
-    struct file *fp;
-    W len, flen;
-
-    error_no =
-	session_get_opened_file(req->packet.procid, req->packet.args.arg1, &fp);
-    if (error_no)
-	return error_no;
-
-    /* 対象ファイルが
-     * ディレクトリ以外の場合には、エラーにする
-     */
-    if ((fp->f_inode->mode & S_IFMT) != S_IFDIR)
-	return EINVAL;
-
-    error_no = vfs_getdents(fp->f_inode, get_rdv_tid(req->rdvno), fp->f_offset,
-			(UB*)(req->packet.args.arg2),
-			req->packet.args.arg3, &len, &flen);
-
-    if (error_no)
-	return error_no;
-
-    fp->f_offset += flen;
-    put_response(req->rdvno, EOK, len, 0);
-    return EOK;
-}
-
 int if_link(fs_request *req)
 {
     B src[NAME_MAX + 1];

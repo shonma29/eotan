@@ -97,27 +97,23 @@ static int exec(int out, char *name, int argc, int *out_count) {
 		for (;;) {
 			int len = getdents(in, buf,
 					sizeof(buf) / sizeof(struct dirent));
-			struct dirent *p;
-
 			if (len < 0) {
 				puterror(name, MSG_READ);
 				result = NG;
 				break;
 			}
 
-			if (len == 0)	break;
+			struct dirent *p = (struct dirent*)buf;
+			for (size_t i = len; i > 0; p++, i--) {
+				if (p->d_name[0] == '.')
+					continue;
 
-			p = (struct dirent*)buf; 
-			while (len > 0) {
-				if (p->d_name[0] != '.') {
-					write(out, p->d_name, strlen(p->d_name));
-					write(out, NEWLINE, 1);
-				}
-
-				len -= sizeof(struct dirent);
-				p = (struct dirent*)((size_t)p
-						+ sizeof(struct dirent));
+				write(out, p->d_name, strlen(p->d_name));
+				write(out, NEWLINE, 1);
 			}
+
+			if (len < sizeof(buf) / sizeof(struct dirent))
+				break;
 		}
 	} else {
 		write(out, name, strlen(name));

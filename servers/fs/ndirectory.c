@@ -1,5 +1,3 @@
-#ifndef _TFS_FUNCS_H_
-#define _TFS_FUNCS_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,18 +24,54 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
 #include <stddef.h>
-#include <fs/vfs.h>
+#include <core/options.h>
+#include <nerve/kcall.h>
 #include <sys/dirent.h>
-#include <sys/types.h>
+#include <sys/errno.h>
+#include <sys/stat.h>
+#include "fs.h"
+#include "api.h"
 
-/* ndirectory.c */
-extern int tfs_getdents(vnode_t *, int *, struct dirent *, size_t *);
-extern int tfs_walk(vnode_t *, const char *, vnode_t **);
-extern int tfs_mkdir(vnode_t *, const char *, const mode_t mode,
-			     struct permission *, vnode_t **);
-extern int tfs_append_entry(vnode_t *, const char *, vnode_t *);
-extern int tfs_remove_entry(vnode_t *, const char *, vnode_t *);
 
-#endif
+int if_getdents(fs_request *req)
+{
+	struct file *fp;
+	int error_no = session_get_opened_file(req->packet.procid,
+			req->packet.args.arg1, &fp);
+	if (error_no)
+		return error_no;
+
+	if ((fp->f_inode->mode & S_IFMT) != S_IFDIR)
+		return EINVAL;
+
+	struct dirent *buf = (struct dirent*)(req->packet.args.arg2);
+	size_t max = req->packet.args.arg3;
+	size_t len = 0;
+	int offset;
+	for (offset = fp->f_offset; offset < fp->f_inode->size; len++) {
+		if (len >= max)
+			break;
+
+		struct dirent *entry = (struct dirent*)(req->buf);
+		size_t read;
+		error_no = vfs_getdents(fp->f_inode, &offset, entry, &read);
+		if (error_no)
+			return error_no;
+
+		if (!read)
+			break;
+
+		error_no = kcall->region_put(get_rdv_tid(req->rdvno),
+				buf, sizeof(*buf), entry);
+		if (error_no)
+			return error_no;
+
+		buf++;
+	}
+
+	fp->f_offset = offset;
+	put_response(req->rdvno, 0, len, 0);
+
+	return 0;
+}
