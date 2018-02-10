@@ -1,5 +1,3 @@
-#ifndef _FS_SESSION_H_
-#define _FS_SESSION_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,18 +24,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <set/tree.h>
-#include <sys/types.h>
-#include "vfs.h"
+#include "sys.h"
 
-typedef struct _session_t {
-	node_t node;
-	int session_id;
-	struct permission permission;
-	vnode_t *cwd;
-	struct file files[MAX_OPEN];
-} session_t;
 
-extern session_t *session_find(const pid_t pid);
+int _chdir(const char *path)
+{
+	struct posix_request request;
 
-#endif
+	request.args.arg1 = (W)path;
+
+	return _call_fs(PSC_CHDIR, &request);
+}

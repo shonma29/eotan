@@ -19,6 +19,8 @@ Version 2, June 1991
 #include "sys.h"
 #include "../libserv/libserv.h"
 
+extern int _chdir(const char *);
+
 
 /* chdir 
  *
@@ -26,25 +28,13 @@ Version 2, June 1991
 int
 chdir (char *path)
 {
+    int result = _chdir(path);
+    if (result)
+	return result;
+
     thread_local_t *local_data = _get_local();
-    ER error;
-    struct posix_request req;
-    struct posix_response *res = (struct posix_response*)&req;
     char buf[MAX_CWD + 1], *src, *top, *dst;
     int len = strlen(path), l2, flag = 0;
-
-    req.param.par_chdir.path = path;
-
-    error = _make_connection(PSC_CHDIR, &req);
-    if (error != E_OK) {
-	local_data->error_no = error;
-	return (-1);
-    }
-
-    else if (res->error_no) {
-	local_data->error_no = res->error_no;
-	return (-1);
-    }
 
     /* lowlib_data->dpath の更新 */
     if (path[0] == '/') {
@@ -101,7 +91,5 @@ chdir (char *path)
 	local_data->cwd_length = len;
     }
 
-    return (res->status);
+    return result;
 }
-
-

@@ -51,15 +51,6 @@ Version 2, June 1991
 
 /* =============== 各システムコール用の 構造体定義 ================== */
 
-/* psc_chdir -
- *
- */
-struct psc_chdir
-{
-  B		*path;
-};
-
-
 /* psc_execve - 指定したプログラムファイルを読み込み、実行する
  *
  */
@@ -125,7 +116,6 @@ struct posix_request
   UW	operation;		/* 要求番号(システムコールに対応)	*/
   struct psc_args args;
   union {
-    struct psc_chdir		par_chdir;
     struct psc_execve		par_execve;
     struct psc_exit		par_exit;
     struct psc_fork		par_fork;

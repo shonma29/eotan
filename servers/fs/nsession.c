@@ -25,13 +25,66 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <fcntl.h>
 #include <limits.h>
-#include <nerve/kcall.h>
+#include <boot/init.h>
+#include <core/options.h>
 #include <fs/vfs.h>
+#include <nerve/kcall.h>
 #include <sys/errno.h>
+#include <sys/stat.h>
+#include "api.h"
 #include "fs.h"
 #include "procfs/process.h"
 
+
+int if_chdir(fs_request *req)
+{
+	session_t *session = session_find(req->packet.procid);
+	if (!session)
+		return ESRCH;
+
+	vnode_t *starting_node;
+	int error_no = session_get_path(&starting_node, req->packet.procid,
+			get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg1),
+			(UB*)(req->buf));
+	if (error_no)
+		return error_no;
+
+	vnode_t *wd;
+	error_no = vfs_walk(starting_node, req->buf, O_RDONLY,
+			&(session->permission), &wd);
+	if (error_no)
+		return error_no;
+
+	if ((wd->mode & S_IFMT) != S_IFDIR) {
+		vnodes_remove(wd);
+		return ENOTDIR;
+	}
+
+	//TODO not need in plan 9
+	error_no = vfs_permit(wd, &(session->permission), X_OK);
+	if (error_no) {
+		vnodes_remove(wd);
+		return error_no;
+	}
+
+	vnodes_remove(session->cwd);
+	session->cwd = wd;
+
+	put_response(req->rdvno, 0, 0, 0);
+
+	return 0;
+}
+
+session_t *session_find(const pid_t pid)
+{
+	if ((pid < INIT_PID)
+			|| (pid >= MAX_PROCESS))
+		return NULL;
+
+	return &(proc_table[pid].session);
+}
 
 int session_get_path(vnode_t **ip, const ID pid, const ID tid,
 	UB *src, UB *dest)
