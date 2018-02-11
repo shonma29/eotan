@@ -167,15 +167,6 @@ int if_open(fs_request *req)
 	/* ファイルは、ディレクトリだった
 	 * エラーとする
 	 */
-
-	/* root ユーザの場合には、
-	 * 成功でもよい
-	 */
-	if (acc.uid != ROOT_UID) {
-	    vnodes_remove(newip);
-	    return EACCES;
-	}
-
 	if (req->packet.param.par_open.oflag != O_RDONLY) {
 	    vnodes_remove(newip);
 	    return EISDIR;
@@ -210,28 +201,30 @@ int if_read(fs_request *req)
     if (fp->f_omode == O_WRONLY)
 	return EBADF;
 
+    int offset = fp->f_offset;
     for (i = 0, rest_length = req->packet.args.arg3;
 	 rest_length > 0; rest_length -= rlength, i += rlength) {
 	/* MAX_BODY_SIZE 毎にファイルに読み込み */
 	len = rest_length > sizeof(req->buf) ? sizeof(req->buf) : rest_length;
-	error_no = vfs_read(fp->f_inode, req->buf,
-			     fp->f_offset + i, len, &rlength);
-	if (error_no) {
+	int delta = vfs_read(fp->f_inode, req->buf, offset, len, &rlength);
+	if (delta < 0) {
 	    break;
-	}
+	} else if (!rlength)
+	    break;
 
 	/* 呼び出したプロセスのバッファへの書き込み */
 	error_no = kcall->region_put(caller, (UB*)(req->packet.args.arg2) + i,
 			 rlength, req->buf);
-	if (error_no || (rlength < len)) {
-	    i += rlength;
+	if (error_no) {
 	    break;
 	}
+
+	offset += delta;
     }
     if (error_no)
 	return error_no;
 
-    fp->f_offset += i;
+    fp->f_offset = offset;
     put_response(req->rdvno, EOK, i, 0);
     return EOK;
 }

@@ -33,7 +33,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/types.h>
 
 /* ndirectory.c */
-extern int tfs_getdents(vnode_t *, int *, struct dirent *, size_t *);
+extern int tfs_getdents(vnode_t *, struct dirent *, const int,  const size_t,
+		size_t *);
 extern int tfs_walk(vnode_t *, const char *, vnode_t **);
 extern int tfs_mkdir(vnode_t *, const char *, const mode_t mode,
 			     struct permission *, vnode_t **);

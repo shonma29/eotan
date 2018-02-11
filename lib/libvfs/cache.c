@@ -91,6 +91,7 @@ void *cache_create(block_device_t *dev, const unsigned int block_no)
 		if (!list_is_empty(&free_list))
 			cp = getLruParent(list_next(&free_list));
 		else if (!list_is_empty(&lru_list)) {
+			//TODO skip locked block
 			cp = getLruParent(list_next(&lru_list));
 			if (cp->dirty)
 				if (sweep(cp)) {
@@ -134,6 +135,7 @@ void *cache_get(block_device_t *dev, const unsigned int block_no)
 		if (!list_is_empty(&free_list))
 			cp = getLruParent(list_next(&free_list));
 		else if (!list_is_empty(&lru_list)) {
+			//TODO skip locked block
 			cp = getLruParent(list_next(&lru_list));
 			if (cp->dirty)
 				if (sweep(cp)) {
@@ -153,7 +155,7 @@ void *cache_get(block_device_t *dev, const unsigned int block_no)
 		cp->dirty = false;
 		cp->lock_count = 0;
 
-		if (fill(cp)) {
+		if (fill(cp) != dev->block_size) {
 			list_remove(&(cp->lru));
 			list_insert(&free_list, &(cp->lru));
 			dbg_printf("cache_get: fill(%d) error\n", block_no);

@@ -249,7 +249,7 @@ int sfs_i_read(vnode_t * ip, B * buf, W start, W length, W * rlength)
     ip->i_atime = get_system_time();
     ip->i_dirty = 1;
 #endif
-    return 0;
+    return *rlength;
 }
 
 //TODO use off_t

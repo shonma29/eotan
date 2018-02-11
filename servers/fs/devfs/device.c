@@ -68,5 +68,5 @@ int read_device(int channel, void *buf, off_t start, size_t length,
 			start, length);
 	*rlength = (result > 0)? result:0;
 
-	return (result == length)? E_OK:E_SYS;
+	return (result == length)? length:E_SYS;
 }

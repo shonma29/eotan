@@ -32,30 +32,35 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../lib/libserv/libserv.h"
 
 
-int tfs_getdents(vnode_t *ip, int *offset, struct dirent *entry, size_t *length)
+int tfs_getdents(vnode_t *ip, struct dirent *entry, const int offset,
+		const size_t max, size_t *length)
 {
-	struct sfs_dir dir;
-	size_t len;
-	int error_no = sfs_i_read(ip, (B*)&dir, *offset, sizeof(dir), (W*)&len);
-	if (error_no)
-		return error_no;
+	int delta = 0;
 
-	if (!len) {
-		*length = 0;
-		return 0;
+	for (*length = 0; *length + sizeof(*entry) <= max;
+			*length += sizeof(*entry)) {
+		struct sfs_dir dir;
+		size_t len;
+		int error_no = sfs_i_read(ip, (B*)&dir, offset + delta,
+				sizeof(dir), (W*)&len);
+		if (error_no < 0)
+			return error_no;
+
+		if (!len)
+			break;
+
+		if (len != sizeof(dir))
+			return EINVAL;
+
+		entry->d_ino = dir.d_index;
+		strncpy(entry->d_name, dir.d_name, SFS_MAXNAMELEN);
+		entry->d_name[SFS_MAXNAMELEN] = '\0';
+
+		delta += len;
+		entry++;
 	}
 
-	if (len != sizeof(dir))
-		return EINVAL;
-
-	*offset += len;
-	*length = sizeof(*entry);
-
-	entry->d_ino = dir.d_index;
-	strncpy(entry->d_name, dir.d_name, SFS_MAXNAMELEN);
-	entry->d_name[SFS_MAXNAMELEN] = '\0';
-
-	return 0;
+	return delta;
 }
 
 int tfs_walk(vnode_t *parent, const char *fname, vnode_t **retip)
@@ -67,7 +72,7 @@ int tfs_walk(vnode_t *parent, const char *fname, vnode_t **retip)
 		size_t len;
 		int error_no = sfs_i_read(parent, (B*)&dir, i * sizeof(dir),
 				sizeof(dir), (W*)&len);
-		if (error_no)
+		if (error_no < 0)
 			return error_no;
 
 		if (!strncmp(fname, dir.d_name, SFS_MAXNAMELEN + 1))
@@ -160,7 +165,7 @@ int tfs_remove_entry(vnode_t *parent, const char *fname, vnode_t *ip)
 		size_t len;
 		int error_no = sfs_i_read(parent, (B*)&dir, i * sizeof(dir),
 				sizeof(dir), (W*)&len);
-		if (error_no)
+		if (error_no < 0)
 			return error_no;
 
 		if (!strncmp(fname, dir.d_name, SFS_MAXNAMELEN + 1))
@@ -178,7 +183,7 @@ int tfs_remove_entry(vnode_t *parent, const char *fname, vnode_t *ip)
 		size_t len;
 		int error_no = sfs_i_read(parent, (B*)&dir, i * sizeof(dir),
 				sizeof(dir), (W*)&len);
-		if (error_no)
+		if (error_no < 0)
 			return error_no;
 
 		error_no = sfs_i_write(parent, (B*)&dir, (i - 1) * sizeof(dir),

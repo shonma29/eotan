@@ -27,7 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #ifndef _FS_VFSFUNCS_H_
 #define _FS_VFSFUNCS_H_
 
-#include <sys/dirent.h>
+#include <sys/stat.h>
 #include "vfs.h"
 
 static inline vfs_t *getFsParent(const list_t *p) {
@@ -39,16 +39,13 @@ static inline int vfs_sync(vnode_t *ip)
 	return ip->fs->operations.sync(ip);
 }
 
-static inline int vfs_getdents(vnode_t *ip, int *offset,
-		struct dirent *entry, size_t *length)
-{
-	return ip->fs->operations.getdents(ip, offset, entry, length);
-}
 //TODO use off_t
 static inline int vfs_read(vnode_t *ip, void *buf, const int offset,
 		const size_t len, size_t *rlength)
 {
-	return ip->fs->operations.read(ip, buf, offset, len, rlength);
+	return ((ip->mode & S_IFMT) == S_IFDIR)?
+		ip->fs->operations.getdents(ip, buf, offset, len, rlength)
+		:ip->fs->operations.read(ip, buf, offset, len, rlength);
 }
 //TODO use off_t
 static inline int vfs_write(vnode_t *ip, const void *buf, const int offset,

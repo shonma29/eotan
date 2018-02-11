@@ -71,7 +71,7 @@ static int block_read(block_device_t *dev, void *buf, const int blockno)
 	if (result < size)
 		memset(&(buf[result]), 0, size - result);
 
-	return 0;
+	return size;
 }
 
 static int block_write(block_device_t *dev, void *buf, const int blockno)

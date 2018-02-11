@@ -41,12 +41,11 @@ Version 2, June 1991
 #define PSC_REMOVE       13
 #define PSC_WAITPID      14
 #define PSC_WRITE        15
-#define PSC_GETDENTS	 16
-#define PSC_MOUNT        17
-#define PSC_UNMOUNT      18
+#define PSC_MOUNT        16
+#define PSC_UNMOUNT      17
 
 /* =================== SIGNAL 関係 =============== */
-#define PSC_KILL         19
+#define PSC_KILL         18
 
 /* =============== 各システムコール用の 構造体定義 ================== */
 

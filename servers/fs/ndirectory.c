@@ -24,57 +24,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stddef.h>
 #include <core/options.h>
-#include <nerve/kcall.h>
-#include <sys/dirent.h>
 #include <sys/errno.h>
-#include <sys/stat.h>
 #include "fs.h"
 #include "api.h"
 
-
-int if_getdents(fs_request *req)
-{
-	struct file *file;
-	int error_no = session_get_opened_file(req->packet.procid,
-			req->packet.args.arg1, &file);
-	if (error_no)
-		return error_no;
-
-	if ((file->f_inode->mode & S_IFMT) != S_IFDIR)
-		return EINVAL;
-
-	struct dirent *buf = (struct dirent*)(req->packet.args.arg2);
-	size_t max = req->packet.args.arg3;
-	size_t len = 0;
-	int offset;
-	for (offset = file->f_offset; offset < file->f_inode->size; len++) {
-		if (len >= max)
-			break;
-
-		struct dirent *entry = (struct dirent*)(req->buf);
-		size_t read;
-		error_no = vfs_getdents(file->f_inode, &offset, entry, &read);
-		if (error_no)
-			return error_no;
-
-		if (!read)
-			break;
-
-		error_no = kcall->region_put(get_rdv_tid(req->rdvno),
-				buf, sizeof(*buf), entry);
-		if (error_no)
-			return error_no;
-
-		buf++;
-	}
-
-	file->f_offset = offset;
-	put_response(req->rdvno, 0, len, 0);
-
-	return 0;
-}
 
 int if_create(fs_request *req)
 {
