@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <sys/stat.h>
 #include "sys.h"
 
 
@@ -32,7 +33,7 @@ int mkdir(const char *path, mode_t mode)
 	struct posix_request request;
 
 	request.args.arg1 = (W)path;
-	request.args.arg2 = (W)mode;
+	request.args.arg2 = DMDIR | (W)mode;
 
-	return _call_fs(PSC_MKDIR, &request);
+	return _call_fs(PSC_CREATE, &request);
 }

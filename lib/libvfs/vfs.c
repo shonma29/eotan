@@ -42,7 +42,7 @@ static int modes[] = {
 
 
 int vfs_walk(vnode_t *parent, const char *path, const int flags,
-		const struct permission *perm, vnode_t **ip)
+		const struct permission *perm, vnode_t **node)
 {
 	if (!parent)
 		return ENODEV;
@@ -91,30 +91,30 @@ int vfs_walk(vnode_t *parent, const char *path, const int flags,
 		int error_no = vfs_permit(parent, perm, R_OK | X_OK);
 		if (!error_no)
 			error_no = parent->fs->operations.walk(parent, head,
-					ip);
+					node);
 
 		vnodes_remove(parent);
 
 		if (error_no)
 			return error_no;
 
-		parent = *ip;
+		parent = *node;
 
 		if (last)
 			break;
 	}
 
-	*ip = parent;
+	*node = parent;
 
-	int error_no = vfs_permit(*ip, perm, modes[flags & O_ACCMODE]);
+	int error_no = vfs_permit(*node, perm, modes[flags & O_ACCMODE]);
 	if (error_no)
-		vnodes_remove(*ip);
+		vnodes_remove(*node);
 
 	return error_no;
 }
 
 int vfs_create(vnode_t *cwd, char *path, const mode_t mode,
-		const struct permission *permission, vnode_t **ip)
+		const struct permission *permission, vnode_t **node)
 {
 	char *head = path;
 	while (*head == '/')
@@ -147,8 +147,7 @@ int vfs_create(vnode_t *cwd, char *path, const mode_t mode,
 	}
 
 	vnode_t *parent;
-	//TODO is O_WRONLY correct?
-	int result = vfs_walk(cwd, parent_path, O_RDWR, permission,
+	int result = vfs_walk(cwd, parent_path, O_WRONLY, permission,
 			&parent);
 	if (result) {
 		dbg_printf("vfs_create: vfs_walk(%s) failed %d\n",
@@ -163,20 +162,27 @@ int vfs_create(vnode_t *cwd, char *path, const mode_t mode,
 		return ENOTDIR;
 	}
 
-	result = vfs_walk(parent, head, O_RDONLY, permission, ip);
+	result = vfs_walk(parent, head, O_RDONLY, permission, node);
 	if (!result) {
 		dbg_printf("vfs_create: %s already exists\n", head);
-		vnodes_remove(*ip);
+		vnodes_remove(*node);
 		vnodes_remove(parent);
 		return EEXIST;
 	}
 
-	result = parent->fs->operations.create(parent, head,
-			//TODO really?
-			mode & parent->mode
-					& (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
-							| S_IROTH | S_IWOTH),
-			permission, ip);
+	if (mode & DMDIR)
+		result = parent->fs->operations.mkdir(parent, head,
+				//TODO really?
+				mode & parent->mode
+						& (S_IRWXU | S_IRWXG | S_IRWXO),
+				permission, node);
+	else
+		result = parent->fs->operations.create(parent, head,
+				//TODO really?
+				mode & parent->mode
+						& (S_IRUSR | S_IWUSR | S_IRGRP
+						| S_IWGRP | S_IROTH | S_IWOTH),
+				permission, node);
 
 	vnodes_remove(parent);
 
@@ -221,8 +227,7 @@ int vfs_remove(vnode_t *cwd, char *path, const struct permission *permission)
 	}
 
 	vnode_t *parent;
-	//TODO is O_WRONLY correct?
-	int result = vfs_walk(cwd, parent_path, O_RDWR, permission,
+	int result = vfs_walk(cwd, parent_path, O_WRONLY, permission,
 			&parent);
 	if (result) {
 		dbg_printf("vfs_remove: vfs_walk(%s) failed %d\n",
@@ -236,192 +241,33 @@ int vfs_remove(vnode_t *cwd, char *path, const struct permission *permission)
 		return ENOTDIR;
 	}
 
-	vnode_t *ip;
+	vnode_t *node;
 	//TODO is O_RDONLY really?
-	result = vfs_walk(parent, head, O_RDONLY, permission, &ip);
+	result = vfs_walk(parent, head, O_RDONLY, permission, &node);
 	if (result) {
 		dbg_printf("vfs_remove: vfs_walk(%s) failed %d\n", head, result);
 		vnodes_remove(parent);
 		return result;
 	}
 
-	if ((ip->mode & S_IFMT) == S_IFDIR) {
-		dbg_printf("vfs_remove: %s is directory\n", head);
-		vnodes_remove(ip);
-		vnodes_remove(parent);
-		return EISDIR;
-	}
-
 	//TODO really?
-	if (ip->refer_count > 1) {
+	if (node->refer_count > 1) {
 		dbg_printf("vfs_remove: %s is refered\n", head);
-		vnodes_remove(ip);
+		vnodes_remove(node);
 		vnodes_remove(parent);
 		return EBUSY;
 	}
 
-	result = parent->fs->operations.unlink(parent, head, ip);
-	vnodes_remove(ip);
+	if ((node->mode & S_IFMT) == S_IFDIR)
+		result = parent->fs->operations.rmdir(parent, head, node);
+	else
+		result = parent->fs->operations.unlink(parent, head, node);
+
+	vnodes_remove(node);
 	vnodes_remove(parent);
 
 	if (result) {
 		dbg_printf("vfs_remove: mkdir(%s) failed %d\n", head, result);
-		return result;
-	}
-
-	return 0;
-}
-
-int vfs_mkdir(vnode_t *cwd, char *path, const mode_t mode,
-		const struct permission *permission, vnode_t **ip)
-{
-	char *head = path;
-	while (*head == '/')
-		head++;
-
-	char *last;
-	for (;;) {
-		last = strrchr(head, '/');
-		if (!last)
-			break;
-
-		//TODO is this error?
-		if (last[1] == '\0')
-			*last = '\0';
-		else
-			break;
-	}
-
-	char *parent_path;
-	if (last) {
-		*last = '\0';
-		parent_path = head;
-		head = last + 1;
-	} else
-		parent_path = "";
-
-	if (!(*head)) {
-		dbg_printf("vfs_mkdir: bad path %s\n", path);
-		return EINVAL;
-	}
-
-	vnode_t *parent;
-	//TODO is O_WRONLY correct?
-	int result = vfs_walk(cwd, parent_path, O_RDWR, permission,
-			&parent);
-	if (result) {
-		dbg_printf("vfs_mkdir: vfs_walk(%s) failed %d\n",
-				parent_path, result);
-		return result;
-	}
-
-	if ((parent->mode & S_IFMT) != S_IFDIR) {
-		dbg_printf("vfs_mkdir: %s is not directory\n", parent_path);
-		vnodes_remove(parent);
-		return ENOTDIR;
-	}
-
-	result = vfs_walk(parent, head, O_RDONLY, permission, ip);
-	if (!result) {
-		dbg_printf("vfs_mkdir: %s already exists\n", head);
-		vnodes_remove(*ip);
-		vnodes_remove(parent);
-		return EEXIST;
-	}
-
-	result = parent->fs->operations.mkdir(parent, head,
-			//TODO really?
-			mode & parent->mode & (S_IRWXU | S_IRWXG | S_IRWXO),
-			permission, ip);
-
-	vnodes_remove(parent);
-
-	if (result) {
-		dbg_printf("vfs_mkdir: mkdir(%s) failed %d\n", head, result);
-		return result;
-	}
-
-	return 0;
-}
-
-int vfs_rmdir(vnode_t *cwd, char *path, const struct permission *permission)
-{
-	char *head = path;
-	while (*head == '/')
-		head++;
-
-	char *last;
-	for (;;) {
-		last = strrchr(head, '/');
-		if (!last)
-			break;
-
-		//TODO is this error?
-		if (last[1] == '\0')
-			*last = '\0';
-		else
-			break;
-	}
-
-	char *parent_path;
-	if (last) {
-		*last = '\0';
-		parent_path = head;
-		head = last + 1;
-	} else
-		parent_path = "";
-
-	if (!(*head)) {
-		dbg_printf("vfs_rmdir: bad path %s\n", path);
-		return EINVAL;
-	}
-
-	vnode_t *parent;
-	//TODO is O_WRONLY correct?
-	int result = vfs_walk(cwd, parent_path, O_RDWR, permission,
-			&parent);
-	if (result) {
-		dbg_printf("vfs_rmdir: vfs_walk(%s) failed %d\n",
-				parent_path, result);
-		return result;
-	}
-
-	if ((parent->mode & S_IFMT) != S_IFDIR) {
-		dbg_printf("vfs_rmdir: %s is not directory\n", parent_path);
-		vnodes_remove(parent);
-		return ENOTDIR;
-	}
-
-	vnode_t *ip;
-	//TODO is O_RDONLY really?
-	result = vfs_walk(parent, head, O_RDONLY, permission, &ip);
-	if (result) {
-		dbg_printf("vfs_rmdir: vfs_walk(%s) failed %d\n", head, result);
-		vnodes_remove(parent);
-		return result;
-	}
-
-	if ((ip->mode & S_IFMT) != S_IFDIR) {
-		dbg_printf("vfs_rmdir: %s is not directory\n", head);
-		vnodes_remove(ip);
-		vnodes_remove(parent);
-		return ENOTDIR;
-	}
-
-	//TODO really?
-	if (ip->refer_count > 1) {
-		dbg_printf("vfs_rmdir: %s is refered\n", head);
-		vnodes_remove(ip);
-		vnodes_remove(parent);
-		return EBUSY;
-	}
-
-	result = parent->fs->operations.rmdir(parent, head, ip);
-	vnodes_remove(ip);
-	vnodes_remove(parent);
-
-	if (result) {
-		dbg_printf("vfs_rmdir: mkdir(%s) failed %d\n", head, result);
 		return result;
 	}
 

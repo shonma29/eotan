@@ -33,5 +33,5 @@ int unlink(const char *path)
 
 	request.args.arg1 = (W)path;
   
-	return _call_fs(PSC_UNLINK, &request);
+	return _call_fs(PSC_REMOVE, &request);
 }

@@ -70,6 +70,8 @@ struct stat {
 #define S_IWOTH (0002)
 #define S_IXOTH (0001)
 
+#define DMDIR 0x80000000
+
 extern int chmod(const char *, mode_t);
 extern int fstat(int, struct stat *);
 extern int mkdir(const char *, mode_t);

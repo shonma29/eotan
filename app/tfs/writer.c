@@ -44,6 +44,8 @@ For more information, please refer to <http://unlicense.org/>
 #define ERR_UNKNOWN (4)
 
 //TODO fix another way
+#define DMDIR 0x80000000
+
 typedef struct {
 	uint32_t dev;
 	uint32_t ino;
@@ -383,7 +385,8 @@ static int do_remove(vfs_t *fs, char *path, const struct permission *permission)
 static int do_mkdir(vfs_t *fs, char *path, const struct permission *permission)
 {
 	vnode_t *ip;
-	int result = vfs_mkdir(fs->root, path, S_IRWXU | S_IRWXG | S_IRWXO,
+	int result = vfs_create(fs->root, path,
+			DMDIR | S_IRWXU | S_IRWXG | S_IRWXO,
 			permission, &ip);
 	if (result) {
 		printf("mkdir: mkdir(%s) failed %d\n", path, result);
@@ -397,7 +400,7 @@ static int do_mkdir(vfs_t *fs, char *path, const struct permission *permission)
 
 static int do_rmdir(vfs_t *fs, char *path, const struct permission *permission)
 {
-	int result = vfs_rmdir(fs->root, path, permission);
+	int result = vfs_remove(fs->root, path, permission);
 	if (result) {
 		printf("rmdir: rmdir(%s) failed %d\n", path, result);
 		return result;

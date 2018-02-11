@@ -36,26 +36,26 @@ For more information, please refer to <http://unlicense.org/>
 
 int if_getdents(fs_request *req)
 {
-	struct file *fp;
+	struct file *file;
 	int error_no = session_get_opened_file(req->packet.procid,
-			req->packet.args.arg1, &fp);
+			req->packet.args.arg1, &file);
 	if (error_no)
 		return error_no;
 
-	if ((fp->f_inode->mode & S_IFMT) != S_IFDIR)
+	if ((file->f_inode->mode & S_IFMT) != S_IFDIR)
 		return EINVAL;
 
 	struct dirent *buf = (struct dirent*)(req->packet.args.arg2);
 	size_t max = req->packet.args.arg3;
 	size_t len = 0;
 	int offset;
-	for (offset = fp->f_offset; offset < fp->f_inode->size; len++) {
+	for (offset = file->f_offset; offset < file->f_inode->size; len++) {
 		if (len >= max)
 			break;
 
 		struct dirent *entry = (struct dirent*)(req->buf);
 		size_t read;
-		error_no = vfs_getdents(fp->f_inode, &offset, entry, &read);
+		error_no = vfs_getdents(file->f_inode, &offset, entry, &read);
 		if (error_no)
 			return error_no;
 
@@ -70,8 +70,55 @@ int if_getdents(fs_request *req)
 		buf++;
 	}
 
-	fp->f_offset = offset;
+	file->f_offset = offset;
 	put_response(req->rdvno, 0, len, 0);
+
+	return 0;
+}
+
+int if_create(fs_request *req)
+{
+	session_t *session = session_find(req->packet.procid);
+	if (!session)
+		return ESRCH;
+
+	vnode_t *starting_node;
+	int error_no = session_get_path(&starting_node, req->packet.procid,
+			get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg1),
+			(UB*)(req->buf));
+	if (error_no)
+		return error_no;
+
+	vnode_t *node;
+	error_no = vfs_create(starting_node, req->buf, req->packet.args.arg2,
+			&(session->permission), &node);
+	if (error_no)
+		return error_no;
+
+	vnodes_remove(node);
+	put_response(req->rdvno, 0, 0, 0);
+
+	return 0;
+}
+
+int if_remove(fs_request *req)
+{
+	session_t *session = session_find(req->packet.procid);
+	if (!session)
+		return ESRCH;
+
+	vnode_t *starting_node;
+	int error_no = session_get_path(&starting_node, req->packet.procid,
+			get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg1),
+			(UB*)(req->buf));
+	if (error_no)
+		return error_no;
+
+	error_no = vfs_remove(starting_node, req->buf, &(session->permission));
+	if (error_no)
+		return error_no;
+
+	put_response(req->rdvno, 0, 0, 0);
 
 	return 0;
 }

@@ -35,19 +35,18 @@ Version 2, June 1991
 #define PSC_FSTAT	 7
 #define PSC_LINK         8
 #define PSC_LSEEK        9
-#define PSC_MKDIR        10
+#define PSC_CREATE       10
 #define PSC_OPEN         11
 #define PSC_READ         12
-#define PSC_RMDIR        13
-#define PSC_UNLINK       14
-#define PSC_WAITPID      15
-#define PSC_WRITE        16
-#define PSC_GETDENTS	 17
-#define PSC_MOUNT        18
-#define PSC_UNMOUNT      19
+#define PSC_REMOVE       13
+#define PSC_WAITPID      14
+#define PSC_WRITE        15
+#define PSC_GETDENTS	 16
+#define PSC_MOUNT        17
+#define PSC_UNMOUNT      18
 
 /* =================== SIGNAL 関係 =============== */
-#define PSC_KILL         20
+#define PSC_KILL         19
 
 /* =============== 各システムコール用の 構造体定義 ================== */
 

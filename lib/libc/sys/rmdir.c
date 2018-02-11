@@ -33,5 +33,5 @@ int rmdir(const char *path)
 
 	request.args.arg1 = (W)path;
 
-	return _call_fs(PSC_RMDIR, &request);
+	return _call_fs(PSC_REMOVE, &request);
 }
