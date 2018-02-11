@@ -30,7 +30,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <fs/config.h>
 #include <sys/syscall.h>
 #include <sys/syslimits.h>
-#include "fs.h"
 
 typedef struct {
 	struct posix_request packet;
@@ -57,7 +56,5 @@ extern int if_waitpid(fs_request*);
 extern int if_write(fs_request*);
 extern int if_mount(fs_request*);
 extern int if_unmount(fs_request*);
-
-extern int if_getdents(struct file *, const ID, fs_request *);
 
 #endif
