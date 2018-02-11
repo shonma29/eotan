@@ -40,6 +40,8 @@ static int modes[] = {
 	R_OK | W_OK
 };
 
+static char *split_path(const char *path, char **parent_path);
+
 
 int vfs_walk(vnode_t *parent, const char *path, const int flags,
 		const struct permission *perm, vnode_t **node)
@@ -116,31 +118,8 @@ int vfs_walk(vnode_t *parent, const char *path, const int flags,
 int vfs_create(vnode_t *cwd, char *path, const mode_t mode,
 		const struct permission *permission, vnode_t **node)
 {
-	char *head = path;
-	while (*head == '/')
-		head++;
-
-	char *last;
-	for (;;) {
-		last = strrchr(head, '/');
-		if (!last)
-			break;
-
-		if (last[1] == '\0') {
-			dbg_printf("vfs_create: bad path %s\n", path);
-			return EINVAL;
-		} else
-			break;
-	}
-
-	char *parent_path;
-	if (last) {
-		*last = '\0';
-		parent_path = head;
-		head = last + 1;
-	} else
-		parent_path = "";
-
+	char *parent_path = "";
+	char *head = split_path(path, &parent_path);
 	if (!(*head)) {
 		dbg_printf("vfs_create: bad path %s\n", path);
 		return EINVAL;
@@ -196,31 +175,8 @@ int vfs_create(vnode_t *cwd, char *path, const mode_t mode,
 
 int vfs_remove(vnode_t *cwd, char *path, const struct permission *permission)
 {
-	char *head = path;
-	while (*head == '/')
-		head++;
-
-	char *last;
-	for (;;) {
-		last = strrchr(head, '/');
-		if (!last)
-			break;
-
-		if (last[1] == '\0') {
-			dbg_printf("vfs_remove: bad path %s\n", path);
-			return EINVAL;
-		} else
-			break;
-	}
-
-	char *parent_path;
-	if (last) {
-		*last = '\0';
-		parent_path = head;
-		head = last + 1;
-	} else
-		parent_path = "";
-
+	char *parent_path = "";
+	char *head = split_path(path, &parent_path);
 	if (!(*head)) {
 		dbg_printf("vfs_remove: bad path %s\n", path);
 		return EINVAL;
@@ -261,7 +217,7 @@ int vfs_remove(vnode_t *cwd, char *path, const struct permission *permission)
 	if ((node->mode & S_IFMT) == S_IFDIR)
 		result = parent->fs->operations.rmdir(parent, head, node);
 	else
-		result = parent->fs->operations.unlink(parent, head, node);
+		result = parent->fs->operations.remove(parent, head, node);
 
 	vnodes_remove(node);
 	vnodes_remove(parent);
@@ -272,6 +228,22 @@ int vfs_remove(vnode_t *cwd, char *path, const struct permission *permission)
 	}
 
 	return 0;
+}
+
+static char *split_path(const char *path, char **parent_path)
+{
+	char *head = (char*)path;
+	while (*head == '/')
+		head++;
+
+	char *last = strrchr(head, '/');
+	if (last) {
+		*last = '\0';
+		*parent_path = head;
+		head = last + 1;
+	}
+
+	return head;
 }
 
 int vfs_permit(const vnode_t *ip, const struct permission *permission,

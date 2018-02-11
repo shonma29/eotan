@@ -52,7 +52,7 @@ typedef struct _vfs_operation_t {
 	int (*getdents)();
 	int (*walk)();
 	int (*link)();
-	int (*unlink)();
+	int (*remove)();
 	int (*mkdir)();
 	int (*rmdir)();
 	int (*stat)();
