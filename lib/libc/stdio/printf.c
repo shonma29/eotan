@@ -26,7 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <stdio.h>
 
-extern int vnprintf2(int (*)(const char, void*), void *, char *, va_list);
+extern int vnprintf2(int (*)(const char, void*), void *, const char *, va_list);
 
 
 int fprintf(FILE *stream, const char *format, ...)
@@ -34,8 +34,7 @@ int fprintf(FILE *stream, const char *format, ...)
 	va_list ap;
 
 	va_start(ap, format);
-	return vnprintf2((int (*)(char, void*))fputc, stream,
-			(char*)format, ap);
+	return vnprintf2((int (*)(char, void*))fputc, stream, format, ap);
 }
 
 int printf(const char *format, ...)
@@ -43,19 +42,16 @@ int printf(const char *format, ...)
 	va_list ap;
 
 	va_start(ap, format);
-	return vnprintf2((int (*)(char, void*))fputc, stdout,
-			(char*)format, ap);
+	return vnprintf2((int (*)(char, void*))fputc, stdout, format, ap);
 }
 
 int vfprintf(FILE *stream, const char *format, va_list ap)
 {
-	return vnprintf2((int (*)(char, void*))fputc, stream,
-			(char*)format, ap);
+	return vnprintf2((int (*)(char, void*))fputc, stream, format, ap);
 }
 
 int vprintf(const char *format, va_list ap)
 {
-	return vnprintf2((int (*)(char, void*))fputc, stdout,
-			(char*)format, ap);
+	return vnprintf2((int (*)(char, void*))fputc, stdout, format, ap);
 }
 

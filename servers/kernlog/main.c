@@ -36,13 +36,15 @@ For more information, please refer to <http://unlicense.org/>
 #include <libserv.h>
 #include "kernlog.h"
 
+#define LEN_PRIORITY (2)
+
 static unsigned char buf[SYSLOG_SIZE];
 
 static ER check_param(const size_t);
 static size_t lfcopy(unsigned char *, volatile lfq_t*, const size_t);
 static size_t rcopy(unsigned char *, ring_t *, const size_t);
 static ssize_t read(unsigned char *, const int, const size_t);
-static ssize_t write(unsigned char *, const size_t);
+static ssize_t write(const int priority, unsigned char *, const size_t);
 static size_t execute(syslog_t *);
 static ER accept(const ID);
 static ER_ID initialize(void);
@@ -50,7 +52,8 @@ static ER_ID initialize(void);
 
 static ER check_param(const size_t size)
 {
-	if (size > SYSLOG_MAX_LENGTH)	return E_PAR;
+	if (size > SYSLOG_MAX_LENGTH)
+		return E_PAR;
 
 	return E_OK;
 }
@@ -94,9 +97,8 @@ static size_t rcopy(unsigned char *outbuf, ring_t *r, const size_t size)
 static ssize_t read(unsigned char *outbuf, const int channel, const size_t size)
 {
 	ER result = check_param(size);
-
-	if (result)	return result;
-	if (size != RING_MAX_LEN)	return E_PAR;
+	if (result)
+		return result;
 
 	switch (channel) {
 	case channel_kernlog:
@@ -110,15 +112,25 @@ static ssize_t read(unsigned char *outbuf, const int channel, const size_t size)
 	}
 }
 
-static ssize_t write(unsigned char *inbuf, const size_t size)
+static ssize_t write(const int priority, unsigned char *inbuf,
+		const size_t size)
 {
 	ER result = check_param(size);
+	if (result)
+		return result;
 
-	if (result)	return result;
-	if (size > RING_MAX_LEN)	return E_PAR;
+	if (size + LEN_PRIORITY > RING_MAX_LEN)
+		return E_PAR;
+
+	//TODO put current time
+	//TODO put priority name
+	unsigned char pri_msg[2] = {
+		'0' + ((priority > LOG_DEBUG)? 9:priority), ' '
+	};
+	if (ring_put((ring_t*)buf, pri_msg, sizeof(pri_msg)) < 0)
+		return E_SYS;
 
 	result = ring_put((ring_t*)buf, inbuf, size);
-
 	if (result < 0)
 		return E_SYS;
 
@@ -138,11 +150,11 @@ static size_t execute(syslog_t *message)
 		message->Rread.count = result;
 		size = sizeof(message->Rread)
 				- sizeof(message->Rread.data)
-				+ (message->Rread.count);
+				+ ((result > 0)? message->Rread.count:0);
 		break;
 
 	case operation_write:
-		result = write(message->Twrite.data,
+		result = write(message->Twrite.priority, message->Twrite.data,
 				message->Twrite.count);
 		message->Rwrite.count = result;
 		size = sizeof(message->Rwrite);

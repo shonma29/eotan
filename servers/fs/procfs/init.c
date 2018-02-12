@@ -90,10 +90,10 @@ W exec_init(ID process_id, char *pathname)
 	if (err) {
 		//TODO destroy vmtree and process
 		return err;
-	} else
+	} else {
+		dbg_printf("fs: exec_init(%d, %s)\n", process_id, pathname);
 		err = exec_program(&req, process_id, pathname);
-
-	dbg_printf("fs: exec_init(%d, %s)\n", process_id, pathname);
+	}
 
 	return err;
 }

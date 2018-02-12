@@ -26,24 +26,32 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <device.h>
 #include <stddef.h>
 #include <sys/types.h>
 
-#define SYSLOG_MAX_LENGTH (1024)
-
-enum syslog_operation {
-	operation_read,
-	operation_write
-};
+//#define SYSLOG_MAX_LENGTH (1024)
+#define SYSLOG_MAX_LENGTH (80)
 
 enum syslog_channel {
 	channel_kernlog,
 	channel_syslog
 };
 
+enum log_level {
+	LOG_EMERG,
+	LOG_ALERT,
+	LOG_CRIT,
+	LOG_ERR,
+	LOG_WARNING,
+	LOG_NOTICE,
+	LOG_INFO,
+	LOG_DEBUG
+};
+
 typedef union {
 	struct {
-		enum syslog_operation operation;
+		enum device_operation operation;
 		enum syslog_channel fid;
 		size_t count;
 	} Tread;
@@ -52,7 +60,8 @@ typedef union {
 		unsigned char data[SYSLOG_MAX_LENGTH];
 	} Rread;
 	struct {
-		enum syslog_operation operation;
+		enum device_operation operation;
+		enum log_level priority;
 		size_t count;
 		unsigned char data[SYSLOG_MAX_LENGTH];
 	} Twrite;
@@ -60,5 +69,7 @@ typedef union {
 		ssize_t count;
 	} Rwrite;
 } syslog_t;
+
+extern void syslog(const int,  const char *, ...);
 
 #endif

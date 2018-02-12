@@ -24,24 +24,52 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
+#include <device.h>
 #include <services.h>
+#include <stdarg.h>
 #include <string.h>
 #include <syslog.h>
 #include <nerve/kcall.h>
 
+static int send(const syslog_t *);
+static int _putc(const char, syslog_t *);
 
-int syslog(const char *msg)
+
+void syslog(const int priority, const char *message, ...)
 {
 	syslog_t packet;
-	size_t len = strlen(msg);
-
 	packet.Twrite.operation = operation_write;
-	packet.Twrite.count = len;
-	memcpy(packet.Twrite.data, msg, len);
+	packet.Twrite.priority = priority;
+	packet.Twrite.count = 0;
 
-	return kcall->port_call(PORT_SYSLOG, &packet,
-			sizeof(packet.Twrite)
-			- sizeof(packet.Twrite.data)
-			+ len);
+	va_list ap;
+	va_start(ap, message);
+	vnprintf2((int (*)(char, void*))_putc, &packet, message, ap);
+
+	if (packet.Twrite.count)
+		send(&packet);
+}
+
+static int send(const syslog_t *packet)
+{
+	return kcall->port_call(PORT_SYSLOG, (void*)packet,
+			sizeof(packet->Twrite)
+					- sizeof(packet->Twrite.data)
+					+ packet->Twrite.count);
+}
+
+static int _putc(const char ch, syslog_t *packet)
+{
+	packet->Twrite.data[packet->Twrite.count] = ch;
+	packet->Twrite.count++;
+
+	if (packet->Twrite.count == SYSLOG_MAX_LENGTH - 1) {
+		packet->Twrite.data[SYSLOG_MAX_LENGTH - 1] = '\n';
+		packet->Twrite.count = SYSLOG_MAX_LENGTH;
+		send(packet);
+		//TODO why 2nd block can't put?
+		packet->Twrite.count = 0;
+	}
+
+	return 0;
 }

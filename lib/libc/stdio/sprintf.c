@@ -43,8 +43,7 @@ int sprintf(char *str, const char *format, ...)
 	va_list ap;
 
 	va_start(ap, format);
-	len = vnprintf2((int (*)(char, void*))_putc, &buf,
-			(char*)format, ap);
+	len = vnprintf2((int (*)(char, void*))_putc, &buf, format, ap);
 	str[buf.len] = '\0';
 	return len;
 }
@@ -56,8 +55,7 @@ int snprintf(char *str, size_t size, const char *format, ...)
 	va_list ap;
 
 	va_start(ap, format);
-	len = vnprintf2((int (*)(char, void*))_putc, &buf,
-			(char*)format, ap);
+	len = vnprintf2((int (*)(char, void*))_putc, &buf, format, ap);
 	if (size)
 		str[buf.len] = '\0';
 	return len;
@@ -66,8 +64,7 @@ int snprintf(char *str, size_t size, const char *format, ...)
 int vsprintf(char *str, const char *format, va_list ap)
 {
 	CharBuffer buf = { 0, 0xffffffff, str };
-	int len = vnprintf2((int (*)(char, void*))_putc, &buf,
-			(char*)format, ap);
+	int len = vnprintf2((int (*)(char, void*))_putc, &buf, format, ap);
 
 	str[buf.len] = '\0';
 	return len;
@@ -76,8 +73,7 @@ int vsprintf(char *str, const char *format, va_list ap)
 int vsnprintf(char *str, size_t size, const char *format, va_list ap)
 {
 	CharBuffer buf = { 0, size? (size - 1):0, str };
-	int len = vnprintf2((int (*)(char, void*))_putc, &buf,
-			(char*)format, ap);
+	int len = vnprintf2((int (*)(char, void*))_putc, &buf, format, ap);
 
 	if (size)
 		str[buf.len] = '\0';

@@ -27,10 +27,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <syslog.h>
 #include <sys/time.h>
 
-extern int syslog(const char *);
-extern int dbg_printf(const char *, ...);
+#ifdef DEBUG
+#define dbg_printf(...) syslog(LOG_DEBUG, __VA_ARGS__)
+#else
+#define dbg_printf(...)
+#endif
 
 extern void time_get_raw(struct timespec *);
 extern ER time_get(SYSTIM *);

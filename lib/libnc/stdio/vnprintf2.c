@@ -60,7 +60,7 @@ typedef struct {
 
 typedef struct _State {
 	int (*handler)(struct _State*);
-	char *format;
+	const char *format;
 	va_list ap;
 	int (*out)(const char, void *);
 	void *env;
@@ -528,7 +528,7 @@ static int _escape(State *s)
 }
 
 int vnprintf2(int (*out)(const char, void*), void *env,
-		char *format, va_list ap) {
+		const char *format, va_list ap) {
 	State s = { _immediate, format, ap, out, env, 0 };
 
 	while (s.handler(&s));
