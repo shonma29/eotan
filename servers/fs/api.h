@@ -34,7 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 typedef struct {
 	struct posix_request packet;
 	RDVNO rdvno;
-	B buf[PATH_MAX];
+	B buf[PATH_MAX + 1];
 } fs_request;
 
 extern int if_chdir(fs_request*);

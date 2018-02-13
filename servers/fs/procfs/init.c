@@ -37,6 +37,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "fs.h"
 
 #define STACK_TAIL (LOCAL_ADDR - PAGE_SIZE)
+#define MAX_ENV (10)
 
 typedef struct {
 	int argc;
@@ -51,7 +52,7 @@ typedef struct {
 
 //TODO where to define?
 static char envpath[] = "PATH=/bin";
-static char buf[sizeof(init_arg_t) + PATH_MAX + 16];
+static char buf[sizeof(init_arg_t) + PATH_MAX + 1 + MAX_ENV];
 
 static W create_init(ID process_id);
 
@@ -59,9 +60,9 @@ static W create_init(ID process_id);
 W exec_init(ID process_id, char *pathname)
 {
 	//TODO add strnlen
-//	size_t pathlen = strnlen(pathname, PATH_MAX);
+//	size_t pathlen = strnlen(pathname, PATH_MAX + 1);
 	size_t pathlen = strlen(pathname);
-	if (pathlen >= PATH_MAX)
+	if (pathlen > PATH_MAX)
 		return ENAMETOOLONG;
 
 	pathlen++;

@@ -89,11 +89,11 @@ session_t *session_find(const pid_t pid)
 int session_get_path(vnode_t **ip, const ID pid, const ID tid,
 	UB *src, UB *dest)
 {
-    ER_UINT len = kcall->region_copy(tid, src, PATH_MAX, dest);
+    ER_UINT len = kcall->region_copy(tid, src, PATH_MAX + 1, dest);
     if (len <= 0)
 	return EINVAL;
 
-    if (len == PATH_MAX)
+    if (len > PATH_MAX)
 	return ENAMETOOLONG;
 
     if (*dest == '/') {
