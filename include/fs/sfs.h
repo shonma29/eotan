@@ -68,8 +68,6 @@ Version 2, June 1991
 struct sfs_superblock
 {
   UW	magic;
-  H	version_hi;
-  H	version_lo;
   H	blksize;		/* ブロックサイズ */
 
   UW	nblock;
