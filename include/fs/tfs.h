@@ -29,6 +29,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdint.h>
 #include <sys/types.h>
 
+#define TFS_MAGIC 0x30465374
+
 #define TFS_MAXNAMLEN (255)
 #define TFS_MINNAMLEN (3)
 

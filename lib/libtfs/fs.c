@@ -135,7 +135,7 @@ static int sfs_mount(ID device, vfs_t *rootfsp, vnode_t *rootfile)
 	return (EIO);
 
     struct sfs_superblock *sfs_sb = rootfsp->private;
-    if (sfs_sb->magic != SFS_MAGIC) {
+    if (sfs_sb->magic != TFS_MAGIC) {
 	dbg_printf("sfs: ERROR: mount: magic number %x\n", sfs_sb->magic);
 	cache_release(rootfsp->private, false);
 	return (EINVAL);

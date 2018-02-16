@@ -58,10 +58,7 @@ Version 2, June 1991
 #include "../core/types.h"
 
 
-#define SFS_MAGIC			0x12345678
 #define SFS_MAXNAMELEN			255
-#define SFS_VERSION_HI			2
-#define SFS_VERSION_LO			1
 #define SFS_BLOCK_SIZE 512
 
 #define SFS_INDIRECT_BLOCK_ENTRY	(112)

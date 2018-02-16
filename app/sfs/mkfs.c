@@ -158,9 +158,7 @@ static void write_superblock(int formatfd)
 
     struct sfs_superblock superblock;
 
-    superblock.magic = SFS_MAGIC;
-    superblock.version_hi = SFS_VERSION_HI;
-    superblock.version_lo = SFS_VERSION_LO;
+    superblock.magic = TFS_MAGIC;
     superblock.blksize = blocksize;
     superblock.nblock = nblock;
     superblock.freeblock =
