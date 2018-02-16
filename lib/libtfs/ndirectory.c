@@ -32,165 +32,229 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../lib/libserv/libserv.h"
 
 
-int tfs_getdents(vnode_t *ip, struct dirent *entry, const int offset,
+int tfs_getdents(vnode_t *parent, struct dirent *entry, const int offset,
 		const size_t max, size_t *length)
 {
-	int delta = 0;
+	size_t delta = 0;
 
+	//TODO optimize
 	for (*length = 0; *length + sizeof(*entry) <= max;
 			*length += sizeof(*entry)) {
-		struct sfs_dir dir;
+		char buf[sizeof(struct tfs_dir) - TFS_MINNAMLEN
+				+ TFS_MAXNAMLEN];
+		struct tfs_dir *dir = (struct tfs_dir*)buf;
 		size_t len;
-		int error_no = sfs_i_read(ip, (B*)&dir, offset + delta,
-				sizeof(dir), (W*)&len);
+		int error_no = sfs_i_read(parent, buf, offset + delta,
+				sizeof(buf), (W*)&len);
 		if (error_no < 0)
 			return error_no;
 
 		if (!len)
 			break;
 
-		if (len != sizeof(dir))
+		if (len < sizeof(*dir) - TFS_MINNAMLEN)
+			//TODO select adequate errno
 			return EINVAL;
 
-		entry->d_ino = dir.d_index;
-		strncpy(entry->d_name, dir.d_name, SFS_MAXNAMELEN);
-		entry->d_name[SFS_MAXNAMELEN] = '\0';
+		size_t real_len = sizeof(*dir) - TFS_MINNAMLEN
+				+ real_name_len(dir->d_namlen);
+		if (len < real_len)
+			return EINVAL;
 
-		delta += len;
+		entry->d_ino = dir->d_fileno;
+		memcpy(entry->d_name, dir->d_name, dir->d_namlen);
+		//TODO set 0 until end of buffer
+		entry->d_name[dir->d_namlen] = '\0';
+
+		delta += real_len;
 		entry++;
 	}
 
 	return delta;
 }
 
-int tfs_walk(vnode_t *parent, const char *fname, vnode_t **retip)
+int tfs_walk(vnode_t *parent, const char *name, vnode_t **node)
 {
-	struct sfs_dir dir;
-	size_t entries = parent->size / sizeof(dir);
-	int i;
-	for (i = 0; i < entries; i++) {
+	char buf[sizeof(struct tfs_dir) - TFS_MINNAMLEN + TFS_MAXNAMLEN];
+	struct tfs_dir *dir = (struct tfs_dir*)buf;
+	size_t name_len = strlen(name);
+	size_t delta;
+	int offset;
+	//TODO optimize
+	for (offset = 0;;) {
 		size_t len;
-		int error_no = sfs_i_read(parent, (B*)&dir, i * sizeof(dir),
-				sizeof(dir), (W*)&len);
+		int error_no = sfs_i_read(parent, buf, offset, sizeof(buf),
+				(W*)&len);
 		if (error_no < 0)
 			return error_no;
 
-		if (!strncmp(fname, dir.d_name, SFS_MAXNAMELEN + 1))
-			break;
+		if (!len)
+			return ENOENT;
+
+		if (len < sizeof(*dir) - TFS_MINNAMLEN)
+			//TODO select adequate errno
+			return EINVAL;
+
+		size_t real_len = sizeof(*dir) - TFS_MINNAMLEN
+				+ real_name_len(dir->d_namlen);
+		if (len < real_len)
+			return EINVAL;
+
+		if (name_len == dir->d_namlen)
+			if (!memcmp(name, dir->d_name, name_len)) {
+				delta = real_len;
+				break;
+			}
+
+		offset += real_len;
 	}
-	if (i == entries)
-		return ENOENT;
 
-	*retip = vnodes_find(parent->fs, dir.d_index);
-	if (*retip) {
-		if ((*retip)->covered)
-			*retip = (*retip)->covered;
+	*node = vnodes_find(parent->fs, dir->d_fileno);
+	if (*node) {
+		if ((*node)->covered)
+			*node = (*node)->covered;
 
-		(*retip)->refer_count++;
+		(*node)->refer_count++;
 
 		return 0;
 	}
 
-	*retip = vnodes_create();
-	if (!(*retip))
+	*node = vnodes_create();
+	if (!(*node))
 		return ENOMEM;
 
-	int error_no = sfs_read_inode(parent->fs, dir.d_index, *retip);
+	int error_no = sfs_read_inode(parent->fs, dir->d_fileno, *node);
 	if (error_no) {
-		vnodes_remove(*retip);
+		vnodes_remove(*node);
 		return error_no;
 	}
 
-	vnodes_append(*retip);
+	vnodes_append(*node);
 
 	return 0;
 }
 
-int tfs_mkdir(vnode_t *parent, const char *fname, const mode_t mode,
-		struct permission *acc, vnode_t **retip)
+int tfs_mkdir(vnode_t *parent, const char *name, const mode_t mode,
+		struct permission *permission, vnode_t **node)
 {
-	vnode_t *newip;
-	int error_no = sfs_i_create(parent, (char*)fname, mode, acc, &newip);
+	vnode_t *child;
+	int error_no = sfs_i_create(parent, (char*)name, mode, permission,
+			&child);
 	if (error_no)
 		return error_no;
 
-	struct sfs_dir dir[2] = {
-		{ newip->index, "." },
-		{ parent->index, ".." }
+	struct tfs_dir dir[] = {
+		{ child->index, 1, ".\0" },
+		{ parent->index, 2, ".." }
 	};
 
 	size_t len;
-	error_no = sfs_i_write(newip, (B*)dir, 0, sizeof(dir), (W*)&len);
+	error_no = sfs_i_write(child, (B*)dir, 0, sizeof(dir), (W*)&len);
 	if (error_no) {
-		error_no = tfs_remove_entry(parent, fname, newip);
+		error_no = tfs_remove_entry(parent, name, child);
 		if (error_no)
-			dbg_printf("sfs_i_mkdir: %s is dead link\n", fname);
+			dbg_printf("sfs_i_mkdir: %s is dead link\n", name);
 
-		sfs_free_inode(newip->fs, newip);
-		vnodes_remove(newip);
-		return (error_no);
+		sfs_free_inode(child->fs, child);
+		vnodes_remove(child);
+		return error_no;
 	}
 
-	newip->mode = mode | S_IFDIR;
-	newip->nlink = 2;
-	newip->dirty = true;
+	child->mode = mode | S_IFDIR;
+	child->nlink = 2;
+	child->dirty = true;
 
 	parent->nlink += 1;
 	parent->dirty = true;
 
-	*retip = newip;
+	*node = child;
 
 	return 0;
 }
 
-int tfs_append_entry(vnode_t *parent, const char *fname, vnode_t *ip)
+int tfs_append_entry(vnode_t *parent, const char *name, vnode_t *node)
 {
-	struct sfs_dir dir;
+	char buf[sizeof(struct tfs_dir) - TFS_MINNAMLEN + TFS_MAXNAMLEN];
+	struct tfs_dir *dir = (struct tfs_dir*)buf;
+	size_t name_len = strlen(name);
 
-	dir.d_index = ip->index;
-	strncpy(dir.d_name, fname, SFS_MAXNAMELEN);
-	dir.d_name[SFS_MAXNAMELEN] = '\0';
+	dir->d_fileno = node->index;
+	dir->d_namlen = name_len;
+	memcpy(dir->d_name, name, name_len);
 
 	size_t len;
-	return sfs_i_write(parent, (B*)&dir, parent->size, sizeof(dir),
+	return sfs_i_write(parent, buf, parent->size,
+			sizeof(*dir) - TFS_MINNAMLEN + real_name_len(name_len),
 			(W*)&len);
 }
 
-int tfs_remove_entry(vnode_t *parent, const char *fname, vnode_t *ip)
+int tfs_remove_entry(vnode_t *parent, const char *name, vnode_t *node)
 {
-	struct sfs_dir dir;
-	size_t entries = parent->size / sizeof(dir);
-	int i;
-	for (i = 0; i < entries; i++) {
+	char buf[sizeof(struct tfs_dir) - TFS_MINNAMLEN + TFS_MAXNAMLEN];
+	struct tfs_dir *dir = (struct tfs_dir*)buf;
+	size_t name_len = strlen(name);
+	size_t delta;
+	int offset;
+	//TODO optimize
+	for (offset = 0;;) {
 		size_t len;
-		int error_no = sfs_i_read(parent, (B*)&dir, i * sizeof(dir),
-				sizeof(dir), (W*)&len);
+		int error_no = sfs_i_read(parent, buf, offset, sizeof(buf),
+				(W*)&len);
 		if (error_no < 0)
 			return error_no;
 
-		if (!strncmp(fname, dir.d_name, SFS_MAXNAMELEN + 1))
-			break;
+		if (!len)
+			return ENOENT;
+
+		if (len < sizeof(*dir) - TFS_MINNAMLEN)
+			//TODO select adequate errno
+			return EINVAL;
+
+		size_t real_len = sizeof(*dir) - TFS_MINNAMLEN
+				+ real_name_len(dir->d_namlen);
+		if (len < real_len)
+			return EINVAL;
+
+		if (name_len == dir->d_namlen)
+			if (!memcmp(name, dir->d_name, name_len)) {
+				delta = real_len;
+				break;
+			}
+
+		offset += real_len;
 	}
-	if (i == entries)
-		return ENOENT;
 
-	struct sfs_inode *sfs_inode = ip->private;
-	ip->nlink--;
+	struct sfs_inode *sfs_inode = node->private;
+	node->nlink--;
 	time_get(&(sfs_inode->i_ctime));
-	ip->dirty = true;
+	node->dirty = true;
 
-	for (i++; i < entries; i++) {
+	//TODO optimize
+	for (;;) {
 		size_t len;
-		int error_no = sfs_i_read(parent, (B*)&dir, i * sizeof(dir),
-				sizeof(dir), (W*)&len);
+		int error_no = sfs_i_read(parent, buf, offset + delta,
+				sizeof(buf), (W*)&len);
 		if (error_no < 0)
 			return error_no;
 
-		error_no = sfs_i_write(parent, (B*)&dir, (i - 1) * sizeof(dir),
-				sizeof(dir), (W*)&len);
+		if (!len)
+			break;
+
+		if (len < sizeof(*dir) - TFS_MINNAMLEN)
+			return EINVAL;
+
+		size_t real_len = sizeof(*dir) - TFS_MINNAMLEN
+				+ real_name_len(dir->d_namlen);
+		if (len < real_len)
+			return EINVAL;
+
+		error_no = sfs_i_write(parent, buf, offset, real_len,
+				(W*)&len);
 		if (error_no)
 			return error_no;
+
+		offset += real_len;
 	}
 
-	return sfs_i_truncate(parent, parent->size - sizeof(dir));
+	return sfs_i_truncate(parent, parent->size - delta);
 }

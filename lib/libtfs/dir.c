@@ -110,11 +110,9 @@ sfs_i_unlink(vnode_t * parent, char *fname, vnode_t *ip)
  */
 int sfs_i_rmdir(vnode_t * parent, char *fname, vnode_t *ip)
 {
-    int nentry;
     W error_no;
 
-    nentry = ip->size / sizeof(struct sfs_dir);
-    if (nentry >= 3) {
+    if (ip->size > TFS_MINDIRSIZE) {
 	return (ENOTEMPTY);
     }
 

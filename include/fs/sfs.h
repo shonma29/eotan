@@ -118,11 +118,6 @@ struct sfs_indirect
   UW	in_block[SFS_INDIRECT_BLOCK];
 };
 
-
-struct sfs_dir
-{
-  UW	d_index;		/* inode 番号 */
-  char	d_name[SFS_MAXNAMELEN + 1];
-};
+#include "tfs.h"
 
 #endif /* __FS_SFS_H__ */

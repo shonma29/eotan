@@ -78,9 +78,9 @@ static void write_inode(int formatfd);
 static void write_rootdir(int formatfd);
 static void set_bit(char buf[], int index);
 
-static struct sfs_dir rootentry[] = {
-    {1, "."},
-    {1, ".."}
+static struct tfs_dir rootentry[] = {
+    {1, 1, ".\0"},
+    {1, 2, ".."}
 };
 
 
@@ -261,7 +261,7 @@ static void write_rootdir(int formatfd)
 {
     char buf[SFS_BLOCK_SIZE];
     int *intp = (int*)buf;
-    struct sfs_dir *dirp = (struct sfs_dir *)buf;
+    struct tfs_dir *dirp = (struct tfs_dir *)buf;
 
     memset(buf, 0, sizeof(buf));
     *intp = boot_block + super_block + bitmap_block
@@ -272,6 +272,7 @@ static void write_rootdir(int formatfd)
     write(formatfd, buf, sizeof(buf));
 
     memset(buf, 0, sizeof(buf));
+printf("rootentry=%d\n", sizeof(rootentry));
     memcpy(dirp, rootentry, sizeof(rootentry));
     lseek(formatfd,
 	  blocksize * (boot_block + super_block + bitmap_block +
