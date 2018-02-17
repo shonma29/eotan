@@ -34,5 +34,5 @@ int unmount(const char *dir, int flags)
 	request.args.arg1 = (W)dir;
 	request.args.arg2 = (W)flags;
 
-	return _call_fs(PSC_UNMOUNT, &request);
+	return _call_fs(fscall_unmount, &request);
 }

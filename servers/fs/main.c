@@ -48,25 +48,25 @@ static char req_buf[
 		lfq_buf_size(sizeof(fs_request *), REQUEST_QUEUE_SIZE)
 ];
 static int (*syscall[])(fs_request*) = {
-	if_chdir,
-	if_chmod,
-	if_close,
-	if_dup2,
+	if_fork,
+	if_waitpid,
 	if_exec,
 	if_exit,
-	if_fork,
-	if_fstat,
-	if_link,
-	if_lseek,
+	if_kill,
+	if_chdir,
 	if_create,
-	if_open,
-	if_read,
 	if_remove,
-	if_waitpid,
+	if_fstat,
+	if_chmod,
+	if_dup2,
+	if_open,
+	if_lseek,
+	if_read,
 	if_write,
+	if_close,
+	if_link,
 	if_mount,
 	if_unmount,
-	if_kill,
 };
 
 static int initialize(void);

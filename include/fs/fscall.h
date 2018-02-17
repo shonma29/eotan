@@ -1,3 +1,5 @@
+#ifndef _FS_FSCALL_H_
+#define _FS_FSCALL_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,16 +26,27 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "sys.h"
 
+enum FsCall {
+	fscall_fork = 0,
+	fscall_waitpid = 1,
+	fscall_exec = 2,
+	fscall_exit = 3,
+	fscall_kill = 4,
+	fscall_chdir = 5,
+	fscall_create = 6,
+	fscall_remove = 7,
+	fscall_fstat = 8,
+	fscall_chmod = 9,
+	fscall_dup2 = 10,
+	fscall_open = 11,
+	fscall_lseek = 12,
+	fscall_read = 13,
+	fscall_write = 14,
+	fscall_close = 15,
+	fscall_link = 16,
+	fscall_mount = 17,
+	fscall_unmount = 18
+};
 
-ssize_t read(int d, void *buf, size_t nbytes)
-{
-	struct posix_request request;
-
-	request.args.arg1 = (W)d;
-	request.args.arg2 = (W)buf;
-	request.args.arg3 = (W)nbytes;
-
-	return _call_fs(fscall_read, &request);
-}
+#endif

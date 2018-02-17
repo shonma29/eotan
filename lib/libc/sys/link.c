@@ -34,5 +34,5 @@ int link(const char *name1, const char *name2)
 	request.args.arg1 = (W)name1;
 	request.args.arg2 = (W)name2;
 
-	return _call_fs(PSC_LINK, &request);
+	return _call_fs(fscall_link, &request);
 }

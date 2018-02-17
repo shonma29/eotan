@@ -79,6 +79,6 @@ execve(char *name, char *argv[], char *envp[])
     req.param.par_execve.stackp = buf;
     req.param.par_execve.stsize = stsize;
 
-    return _call_fs(PSC_EXEC, &req);
+    return _call_fs(fscall_exec, &req);
   }
 }

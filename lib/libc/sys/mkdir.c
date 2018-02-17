@@ -35,5 +35,5 @@ int mkdir(const char *path, mode_t mode)
 	request.args.arg1 = (W)path;
 	request.args.arg2 = DMDIR | (W)mode;
 
-	return _call_fs(PSC_CREATE, &request);
+	return _call_fs(fscall_create, &request);
 }

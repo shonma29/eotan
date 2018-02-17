@@ -110,7 +110,7 @@ static void kill(const int tid, const int dummy)
 	}
 
 	req.procid = -1;
-	req.operation = PSC_KILL;
+	req.operation = fscall_kill;
 	req.args.arg1 = (W)(th->process_id);
 	req.args.arg2 = 9;
 

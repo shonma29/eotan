@@ -34,5 +34,5 @@ int kill(pid_t pid, int sig)
 	request.args.arg1 = (W)pid;
 	request.args.arg2 = (W)sig;
 
-	return _call_fs(PSC_KILL, &request);
+	return _call_fs(fscall_kill, &request);
 }

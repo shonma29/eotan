@@ -38,5 +38,5 @@ int mount(const char *type, const char *dir, int flags, void *data,
 	request.args.arg4 = (W)data;
 	request.args.arg5 = (W)data_len;
 
-	return _call_fs(PSC_MOUNT, &request);
+	return _call_fs(fscall_mount, &request);
 }

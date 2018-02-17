@@ -23,29 +23,7 @@ Version 2, June 1991
 
 #include <core/types.h>
 #include <sys/packets.h>
-
-/* =================== POSIX システムコール番号の定義 =============== */
-#define PSC_CHDIR        0
-#define PSC_CHMOD        1
-#define PSC_CLOSE        2
-#define PSC_DUP2         3
-#define PSC_EXEC         4
-#define PSC_EXIT         5
-#define PSC_FORK         6
-#define PSC_FSTAT	 7
-#define PSC_LINK         8
-#define PSC_LSEEK        9
-#define PSC_CREATE       10
-#define PSC_OPEN         11
-#define PSC_READ         12
-#define PSC_REMOVE       13
-#define PSC_WAITPID      14
-#define PSC_WRITE        15
-#define PSC_MOUNT        16
-#define PSC_UNMOUNT      17
-
-/* =================== SIGNAL 関係 =============== */
-#define PSC_KILL         18
+#include <fs/fscall.h>
 
 /* =============== 各システムコール用の 構造体定義 ================== */
 
@@ -111,7 +89,7 @@ struct psc_waitpid
 struct posix_request
 {
   ID	procid;			/* 呼び出し元のプロセス ID */
-  UW	operation;		/* 要求番号(システムコールに対応)	*/
+  enum FsCall operation;		/* 要求番号(システムコールに対応)	*/
   struct psc_args args;
   union {
     struct psc_execve		par_execve;

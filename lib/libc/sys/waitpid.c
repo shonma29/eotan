@@ -33,7 +33,7 @@ waitpid (pid_t pid, int *status, int option)
     req.param.par_waitpid.statloc = (W*)status;
     req.param.par_waitpid.opts = option;
 
-    error = _make_connection(PSC_WAITPID, &req);
+    error = _make_connection(fscall_waitpid, &req);
     if (error != E_OK) {
 	local_data->error_no = error;
 	return (-1);

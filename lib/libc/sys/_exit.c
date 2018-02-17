@@ -27,6 +27,6 @@ _exit (int status)
   struct posix_request	req;
 
   req.param.par_exit.evalue = status;
-  _make_connection(PSC_EXIT, &req);
+  _make_connection(fscall_exit, &req);
   for (;;);
 }

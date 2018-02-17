@@ -35,5 +35,5 @@ int fstat(int fd, struct stat *sb)
 	request.args.arg1 = (W)fd;
 	request.args.arg2 = (W)sb;
 
-	return _call_fs(PSC_FSTAT, &request);
+	return _call_fs(fscall_fstat, &request);
 }

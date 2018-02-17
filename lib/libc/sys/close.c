@@ -33,5 +33,5 @@ int close (int d)
 
 	request.args.arg1 = (W)d;
 
-	return _call_fs(PSC_CLOSE, &request);
+	return _call_fs(fscall_close, &request);
 }

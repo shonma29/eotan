@@ -34,5 +34,5 @@ int dup2(int oldd, int newd)
 	request.args.arg1 = (W)oldd;
 	request.args.arg2 = (W)newd;
 
-	return _call_fs(PSC_DUP2, &request);
+	return _call_fs(fscall_dup2, &request);
 }

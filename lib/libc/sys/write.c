@@ -35,5 +35,5 @@ size_t write(int d, const void *buf, size_t nbytes)
 	request.args.arg2 = (W)buf;
 	request.args.arg3 = (W)nbytes;
 
-	return _call_fs(PSC_WRITE, &request);
+	return _call_fs(fscall_write, &request);
 }

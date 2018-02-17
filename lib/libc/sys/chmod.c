@@ -34,5 +34,5 @@ int chmod(const char *path, mode_t mode)
 	request.args.arg1 = (W)path;
 	request.args.arg2 = (W)mode;
 
-	return _call_fs(PSC_CHMOD, &request);
+	return _call_fs(fscall_chmod, &request);
 }

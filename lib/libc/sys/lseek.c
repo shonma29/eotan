@@ -40,7 +40,7 @@ off_t lseek(int fildes, off_t offset, int whence)
 	*offp = offset;
 	request.args.arg4= (W)whence;
 
-	result = _make_connection(PSC_LSEEK, &request);
+	result = _make_connection(fscall_lseek, &request);
 	if (result) {
 		local->error_no = result;
 		return -1;

@@ -39,7 +39,7 @@ _fork (int esp, int ebx, int ebp, int esi, int edi)
     req.param.par_fork.sp = (VP)esp;
     req.param.par_fork.entry = (FP)_fork_entry;
 
-    error = _make_connection(PSC_FORK, &req);
+    error = _make_connection(fscall_fork, &req);
     if (error != E_OK) {
 	local_data->error_no = error;
 	return (-1);
