@@ -82,12 +82,12 @@ void pfree(void *p)
 	free(p);
 }
 
-int dbg_printf(const char *format, ...)
+void syslog(const int priority, const char *message, ...)
 {
 	va_list ap;
 
-	va_start(ap, format);
-	return vprintf(format, ap);
+	va_start(ap, message);
+	vprintf(message, ap);
 }
 
 int time_get(systime_t *p)

@@ -32,7 +32,12 @@ typedef struct {
 	long nsec;
 } systime_t;
 
-extern int dbg_printf(const char *, ...);
+#ifdef DEBUG
+#define dbg_printf(...) syslog(LOG_DEBUG, __VA_ARGS__)
+#else
+#define dbg_printf(...)
+#endif
+
 extern int time_get(systime_t *);
 
 #endif
