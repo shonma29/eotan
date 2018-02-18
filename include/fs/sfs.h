@@ -60,10 +60,6 @@ Version 2, June 1991
 
 #define SFS_BLOCK_SIZE 512
 
-#define SFS_INDIRECT_BLOCK_ENTRY	(112)
-
-#define SFS_INDIRECT_BLOCK		(SFS_BLOCK_SIZE / sizeof(UW))
-
 struct sfs_superblock
 {
   UW	magic;
@@ -103,14 +99,9 @@ struct sfs_inode
   SYSTIM	i_ctime;
   SYSTIM	i_mtime;
 
-  UW	i_indirect[SFS_INDIRECT_BLOCK_ENTRY];
+  UW	i_indirect[0];
 };
 
-
-struct sfs_indirect
-{
-  UW	in_block[SFS_INDIRECT_BLOCK];
-};
 
 #include "tfs.h"
 

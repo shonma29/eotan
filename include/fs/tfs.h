@@ -34,6 +34,16 @@ For more information, please refer to <http://unlicense.org/>
 #define TFS_MAXNAMLEN (255)
 #define TFS_MINNAMLEN (3)
 
+static inline size_t num_of_1st_blocks(const blksize_t blksize)
+{
+	return (blksize - sizeof(struct sfs_inode)) / sizeof(uint32_t);
+}
+
+static inline size_t num_of_2nd_blocks(const blksize_t blksize)
+{
+	return blksize / sizeof(uint32_t);
+}
+
 static inline size_t real_name_len(const size_t n)
 {
 	return n + (3 - (n & 3));

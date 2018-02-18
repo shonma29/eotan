@@ -133,10 +133,10 @@ int main(int ac, char **av)
     super_block = 1;
     bitmap_block = ROUNDUP(nblock / 8, blocksize) / blocksize;
     inodecount = (nblock - boot_block - super_block - bitmap_block) /
-	(kbpinode * 1024 / SFS_BLOCK_SIZE + ROUNDUP(sizeof(struct sfs_inode),
+	(kbpinode * 1024 / SFS_BLOCK_SIZE + ROUNDUP(SFS_BLOCK_SIZE,
 				blocksize) / blocksize);
     inode_block =
-	ROUNDUP(inodecount * sizeof(struct sfs_inode),
+	ROUNDUP(inodecount * SFS_BLOCK_SIZE,
 		blocksize) / blocksize;
 
     printf("superblock = %d, bitmap block = %d, inode block = %d\n",
@@ -245,12 +245,13 @@ static void write_inode(int formatfd)
     rootdir.i_mtime.nsec = 0;
     rootdir.i_ctime.sec = t;
     rootdir.i_ctime.nsec = 0;
-    rootdir.i_indirect[0] = boot_block + super_block + bitmap_block
-	    + inode_block;
-
     lseek(formatfd, blocksize * (boot_block + super_block + bitmap_block),
 	  0);
     write(formatfd, &rootdir, sizeof(rootdir));
+
+    uint32_t i_indirect = boot_block + super_block + bitmap_block
+	    + inode_block;
+    write(formatfd, &i_indirect, sizeof(i_indirect));
 }
 
 
@@ -270,7 +271,6 @@ static void write_rootdir(int formatfd)
     write(formatfd, buf, sizeof(buf));
 
     memset(buf, 0, sizeof(buf));
-printf("rootentry=%d\n", sizeof(rootentry));
     memcpy(dirp, rootentry, sizeof(rootentry));
     lseek(formatfd,
 	  blocksize * (boot_block + super_block + bitmap_block +

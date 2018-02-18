@@ -360,11 +360,13 @@ W sfs_i_truncate(vnode_t * ip, W newsize)
     if (nblock < sfs_ip->i_nblock) {
 	/* 余分なブロックを開放 */
 	blockno = nblock;
-	if (blockno < (SFS_INDIRECT_BLOCK_ENTRY * SFS_INDIRECT_BLOCK)) {
+	if (blockno < (num_of_1st_blocks(fsp->device.block_size)
+		* num_of_2nd_blocks(fsp->device.block_size))) {
 	    /* 一重間接ブロックの範囲内 */
 	    inblock = blockno;
-	    offset = inblock % SFS_INDIRECT_BLOCK;
-	    inblock = inblock / SFS_INDIRECT_BLOCK;
+	    size_t blocks = num_of_2nd_blocks(fsp->device.block_size);
+	    offset = inblock % blocks;
+	    inblock = inblock / blocks;
 	    sfs_free_indirect(fsp, sfs_ip, offset, inblock);
 	}
     }

@@ -102,7 +102,7 @@ static W sfs_get_inode_offset(vfs_t *fsp, W ino)
     blocksize = sb->blksize;
     offset = 1 + 1 + (ROUNDUP(nblock / 8, blocksize) / blocksize);
     offset *= blocksize;
-    return (offset + ((ino - 1) * sizeof(struct sfs_inode)));
+    return (offset + ((ino - 1) * fsp->device.block_size));
 }
 
 
@@ -158,7 +158,7 @@ W sfs_alloc_inode(vfs_t * fsp, vnode_t *ip)
 	    return EIO;
 	}
 
-	offset += sizeof(struct sfs_inode);
+	offset += fsp->device.block_size;
 	if (ipbufp->i_index != i) {
 	    fsp->device.clear(&(fsp->device), (VP)ipbufp);
 	    ipbufp->i_index = i;
