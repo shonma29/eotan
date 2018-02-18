@@ -28,9 +28,12 @@ Version 2, June 1991
 #include <string.h>
 #include <core/options.h>
 #include <nerve/kcall.h>
+#include <sys/errno.h>
 #include <sys/stat.h>
-#include "fs.h"
+#include <sys/unistd.h>
 #include "api.h"
+#include "vfs.h"
+#include "procfs/process.h"
 
 int if_close(fs_request *req)
 {
@@ -46,7 +49,7 @@ int if_close(fs_request *req)
 	return err;
 
     fp->f_inode = NULL;
-    put_response(req->rdvno, EOK, 0, 0);
+    reply2(req->rdvno, 0, 0, 0);
     return EOK;
 }
 
@@ -83,7 +86,7 @@ if_dup2 (fs_request *req)
   if (error_no)
       return error_no;
 
-  put_response (req->rdvno, EOK, req->packet.args.arg2, 0);
+  reply2(req->rdvno, 0, req->packet.args.arg2, 0);
   return EOK;
 }  
 
@@ -124,7 +127,7 @@ int if_lseek(fs_request *req)
       }
     }
 
-    put_response_long(req->rdvno, EOK, fp->f_offset);
+    reply64(req->rdvno, EOK, fp->f_offset);
     return EOK;
 }
 
@@ -179,7 +182,7 @@ int if_open(fs_request *req)
 	return EINVAL;
     }
 
-    put_response(req->rdvno, EOK, fileid, 0);
+    reply2(req->rdvno, 0, fileid, 0);
     return EOK;
 }
 
@@ -225,7 +228,7 @@ int if_read(fs_request *req)
 	return error_no;
 
     fp->f_offset = offset;
-    put_response(req->rdvno, EOK, i, 0);
+    reply2(req->rdvno, 0, i, 0);
     return EOK;
 }
 
@@ -282,6 +285,6 @@ int if_write(fs_request *req)
 	return error_no;
 
     fp->f_offset += i;
-    put_response(req->rdvno, EOK, i, 0);
+    reply2(req->rdvno, 0, i, 0);
     return EOK;
 }

@@ -26,6 +26,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <fs/config.h>
+#include <fs/vfs.h>
 #include <set/tree.h>
 #include <sys/types.h>
 #include "vfs.h"

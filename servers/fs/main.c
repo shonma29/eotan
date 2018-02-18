@@ -33,10 +33,13 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 #include <set/lf_queue.h>
 #include <set/slab.h>
+#include <sys/errno.h>
 #include "api.h"
-#include "fs.h"
+#include "vfs.h"
 #include "devfs/devfs.h"
+#include "procfs/process.h"
 #include "../../kernel/mpu/mpufunc.h"
+#include "../../lib/libserv/libserv.h"
 
 #define REQUEST_QUEUE_SIZE (32)
 
@@ -181,7 +184,7 @@ static void work(void)
 			int result = syscall[req->packet.operation](req);
 
 			if (result > 0)
-				put_response(req->rdvno, result, -1, 0);
+				reply2(req->rdvno, result, -1, 0);
 
 			kcall->mutex_lock(receiver_id, TMO_FEVR);
 			slab_free(&request_slab, req);
@@ -232,13 +235,13 @@ void start(VP_INT exinf)
 			} else
 				result = ENOMEM;
 
-			put_response(req->rdvno, result, -1, 0);
+			reply2(req->rdvno, result, -1, 0);
 		}
 
 		else if (size < 0)
 			dbg_printf("fs: acp_por failed %d\n", size);
 
 		else
-			put_response(req->rdvno, EINVAL, -1, 0);
+			reply2(req->rdvno, EINVAL, -1, 0);
 	}
 }

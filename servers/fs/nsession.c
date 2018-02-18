@@ -33,8 +33,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 #include <sys/errno.h>
 #include <sys/stat.h>
+#include <sys/unistd.h>
 #include "api.h"
-#include "fs.h"
 #include "procfs/process.h"
 
 
@@ -72,7 +72,7 @@ int if_chdir(fs_request *req)
 	vnodes_remove(session->cwd);
 	session->cwd = wd;
 
-	put_response(req->rdvno, 0, 0, 0);
+	reply2(req->rdvno, 0, 0, 0);
 
 	return 0;
 }

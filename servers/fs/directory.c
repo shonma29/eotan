@@ -19,10 +19,14 @@ Version 2, June 1991
  */
 
 #include <core/options.h>
+#include <fs/vfs.h>
 #include <nerve/kcall.h>
+#include <sys/errno.h>
 #include <sys/syslimits.h>
-#include "fs.h"
 #include "api.h"
+#include "session.h"
+#include "vfs.h"
+#include "procfs/process.h"
 
 int if_link(fs_request *req)
 {
@@ -65,6 +69,6 @@ int if_link(fs_request *req)
     if (error_no)
 	return error_no;
 
-    put_response(req->rdvno, EOK, 0, 0);
+    reply2(req->rdvno, 0, 0, 0);
     return EOK;
 }

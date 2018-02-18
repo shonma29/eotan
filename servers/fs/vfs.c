@@ -154,11 +154,15 @@ Version 2, June 1991
 #include <major.h>
 #include <string.h>
 #include <fs/nconfig.h>
+#include <fs/vfs.h>
 #include <nerve/kcall.h>
+#include <sys/errno.h>
 #include <sys/stat.h>
 #include <sys/syslimits.h>
-#include "fs.h"
+#include "api.h"
 #include "devfs/devfs.h"
+#include "procfs/process.h"
+#include "../../lib/libserv/libserv.h"
 
 extern vfs_operation_t sfs_fsops;
 extern vfs_operation_t devfs_fsops;

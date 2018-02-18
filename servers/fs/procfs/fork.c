@@ -72,7 +72,8 @@ Version 2, June 1991
 #include <local.h>
 #include <string.h>
 #include <nerve/kcall.h>
-#include "fs.h"
+#include "api.h"
+#include "procfs/process.h"
 #include "../../lib/libserv/libmm.h"
 
 static W proc_duplicate(struct proc * source, struct proc * destination);

@@ -32,7 +32,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/hash.h>
 #include "../../lib/libserv/libserv.h"
 #include "devfs.h"
-#include "fs.h"
 #include "api.h"
 
 static hash_t *hash;
@@ -45,8 +44,10 @@ static unsigned int calc_hash(const void *key, const size_t size);
 static int compare(const void *a, const void *b);
 static int dummy_error();
 static int dummy_ok();
+//TODO use off_t
 static int devfs_read(vnode_t *ip, void *buf, const int offset,
 		const size_t len, size_t *rlength);
+//TODO use off_t
 static int devfs_write(vnode_t *ip, void *buf, const int offset,
 		const size_t len, size_t *rlength);
 
@@ -155,13 +156,13 @@ static int dummy_ok()
 {
 	return 0;
 }
-
+//TODO use off_t
 static int devfs_read(vnode_t *ip, void *buf, const int offset,
 		const size_t len, size_t *rlength)
 {
 	return read_device(ip->dev, buf, offset, len, rlength);
 }
-
+//TODO use off_t
 static int devfs_write(vnode_t *ip, void *buf, const int offset,
 		const size_t len, size_t *rlength)
 {

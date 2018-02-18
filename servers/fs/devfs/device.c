@@ -27,8 +27,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <device.h>
 #include <major.h>
+#include <sys/errno.h>
 #include "devfs.h"
-#include "fs.h"
 
 
 int write_device(int channel, void *buf, off_t start, size_t length,

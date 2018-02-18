@@ -16,6 +16,8 @@ Version 2, June 1991
  */
 
 #include <core.h>
+#include <local.h>
+#include <stddef.h>
 #include <thread.h>
 #include <mm/segment.h>
 #include <boot/init.h>
@@ -23,11 +25,13 @@ Version 2, June 1991
 #include <mpu/memory.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
+#include <sys/errno.h>
 #include <sys/syslimits.h>
 #include <sys/wait.h>
 #include "../../lib/libserv/libmm.h"
-#include "fs.h"
 #include "api.h"
+#include "procfs/process.h"
+#include "../../lib/libserv/libserv.h"
 
 /* if_exec - 指定されたプログラムファイルをメモリ中に読み込む
  */
@@ -68,7 +72,7 @@ int if_exec(fs_request *req)
 	}
     }
 //TODO check if rdvno will be disposed
-    put_response(req->rdvno, EOK, 0, 0);
+    reply2(req->rdvno, 0, 0, 0);
     return EOK;
 }
 
@@ -104,7 +108,7 @@ if_exit (fs_request *req)
     /* 親プロセスが自分を WAIT していればメッセージ送信 */
     procp->proc_status = PS_RUN;
     exst = (myprocp->proc_exst << 8);
-    put_response (procp->proc_wait_rdvno, EOK, mypid, exst);
+    reply2(procp->proc_wait_rdvno, 0, mypid, exst);
 
     /* エントリーの開放 */
     proc_exit(mypid);
@@ -131,7 +135,7 @@ if_exit (fs_request *req)
   kcall->thread_terminate(tskid);
   kcall->thread_destroy(tskid);
 
-  put_response (req->rdvno, EOK, 0, 0);
+  reply2(req->rdvno, 0, 0, 0);
   return EOK;
 }  
 
@@ -192,7 +196,7 @@ if_fork (fs_request *req)
 
   kcall->thread_start(main_thread_id);
 
-  put_response (req->rdvno, EOK, child->proc_pid, 0);	/* 親プロセスに対して応答 */
+  reply2(req->rdvno, 0, child->proc_pid, 0);	/* 親プロセスに対して応答 */
   return EOK;
 }  
 
@@ -222,7 +226,7 @@ int if_kill(fs_request *req)
 	/* 親プロセスが自分を WAIT していればメッセージ送信 */
 	procp->proc_status = PS_RUN;
 	exst = (myprocp->proc_exst << 8);
-	put_response(req->rdvno, EOK, mypid, exst);
+	reply2(req->rdvno, 0, mypid, exst);
 
 	/* エントリーの開放 */
 	proc_exit(mypid);
@@ -251,7 +255,7 @@ int if_kill(fs_request *req)
     kcall->thread_destroy(myprocp->proc_maintask);
 
     if (get_rdv_tid(req->rdvno) != myprocp->proc_maintask) {
-	put_response(req->rdvno, EOK, 0, 0);
+	reply2(req->rdvno, 0, 0, 0);
     }
 
     return EOK;
@@ -280,7 +284,7 @@ if_waitpid (fs_request *req)
       if (procp->proc_status == PS_ZOMBIE) {
 	/* 子プロセスの情報をクリアし，親プロセスに返事を送る */
 	exst = (procp->proc_exst << 8);
-	put_response (req->rdvno, EOK, i, exst);
+	reply2(req->rdvno, 0, i, exst);
 	
 	/* 親プロセスの状態変更 */
 	proc_get_procp(mypid, &procp);
@@ -297,7 +301,7 @@ if_waitpid (fs_request *req)
     /* 対応する子プロセスはあったが，まだ終了していなかった */
     if (req->packet.param.par_waitpid.opts & WNOHANG) {
       /* 親に返事を送る必要がある */
-      put_response (req->rdvno, EOK, 0, 0);
+      reply2(req->rdvno, 0, 0, 0);
     }
     /* 親プロセスの状態を変更し，返事を送らずにシステムコールを終了 */
     proc_get_procp(mypid, &procp);

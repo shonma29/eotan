@@ -125,7 +125,9 @@ Version 2, June 1991
 #include <string.h>
 #include <boot/init.h>
 #include <nerve/kcall.h>
-#include "fs.h"
+#include <sys/errno.h>
+#include "api.h"
+#include "procfs/process.h"
 #include "../../lib/libserv/libmm.h"
 
 struct proc proc_table[MAX_PROCESS];

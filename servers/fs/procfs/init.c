@@ -32,9 +32,12 @@ For more information, please refer to <http://unlicense.org/>
 #include <mm/segment.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
+#include <sys/errno.h>
 #include <sys/syslimits.h>
 #include "../../lib/libserv/libmm.h"
-#include "fs.h"
+#include "../../lib/libserv/libserv.h"
+#include "api.h"
+#include "procfs/process.h"
 
 #define STACK_TAIL (LOCAL_ADDR - PAGE_SIZE)
 #define MAX_ENV (10)

@@ -25,11 +25,15 @@ Version 2, June 1991
 
 #include <fcntl.h>
 #include <core/options.h>
+#include <fs/nconfig.h>
+#include <fs/vfs.h>
 #include <nerve/kcall.h>
+#include <sys/errno.h>
 #include <sys/stat.h>
 #include <sys/syslimits.h>
-#include "fs.h"
 #include "api.h"
+#include "vfs.h"
+#include "procfs/process.h"
 
 /* if_mount - ファイルシステムをマウントする
  *
@@ -121,7 +125,7 @@ int if_mount(fs_request *req)
 
     if (error_no == EOK) {
 	vnodes_remove(device);
-	put_response(req->rdvno, EOK, 0, 0);
+	reply2(req->rdvno, 0, 0, 0);
 	return EOK;
     }
 
@@ -175,6 +179,6 @@ int if_unmount(fs_request *req)
     if (error_no)
 	return error_no;
 
-    put_response(req->rdvno, EOK, 0, 0);
+    reply2(req->rdvno, 0, 0, 0);
     return EOK;
 }

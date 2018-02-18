@@ -25,9 +25,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core/options.h>
+#include <fs/vfs.h>
 #include <sys/errno.h>
-#include "fs.h"
 #include "api.h"
+#include "session.h"
 
 
 int if_create(fs_request *req)
@@ -50,7 +51,7 @@ int if_create(fs_request *req)
 		return error_no;
 
 	vnodes_remove(node);
-	put_response(req->rdvno, 0, 0, 0);
+	reply2(req->rdvno, 0, 0, 0);
 
 	return 0;
 }
@@ -72,7 +73,7 @@ int if_remove(fs_request *req)
 	if (error_no)
 		return error_no;
 
-	put_response(req->rdvno, 0, 0, 0);
+	reply2(req->rdvno, 0, 0, 0);
 
 	return 0;
 }

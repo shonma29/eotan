@@ -1,5 +1,3 @@
-#ifndef _FS_API_H_
-#define _FS_API_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,39 +25,32 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <sys/syscall.h>
-#include <sys/syslimits.h>
+#include <nerve/kcall.h>
+#include <sys/errno.h>
+#include "api.h"
 
-#define EOK (0)
 
-typedef struct {
-	struct posix_request packet;
-	RDVNO rdvno;
-	B buf[PATH_MAX + 1];
-} fs_request;
+//TODO define reply0 and reply1
+int reply2(const RDVNO rdvno, int32_t error_no, int32_t result1,
+		int32_t result2)
+{
+	struct posix_response response = {
+		error_no,
+		result1,
+		result2
+	};
 
-extern int if_chdir(fs_request*);
-extern int if_chmod(fs_request*);
-extern int if_close(fs_request*);
-extern int if_dup2(fs_request*);
-extern int if_exec(fs_request*);
-extern int if_exit(fs_request*);
-extern int if_fork(fs_request*);
-extern int if_kill(fs_request*);
-extern int if_link(fs_request*);
-extern int if_lseek(fs_request*);
-extern int if_create(fs_request*);
-extern int if_open(fs_request*);
-extern int if_read(fs_request*);
-extern int if_remove(fs_request*);
-extern int if_fstat(fs_request*);
-extern int if_waitpid(fs_request*);
-extern int if_write(fs_request*);
-extern int if_mount(fs_request*);
-extern int if_unmount(fs_request*);
+	return kcall->port_reply(rdvno, &response, sizeof(response))?
+			ECONNREFUSED:0;
+}
 
-extern int reply2(const RDVNO, const int32_t, const int32_t,
-		const int32_t);
-extern int reply64(const RDVNO, const int32_t, const int64_t);
+int reply64(const RDVNO rdvno, int32_t error_no, int64_t result)
+{
+	struct posix_response response;
+	response.error_no = error_no;
+	int64_t *p = (int64_t*)&(response.status);
+	*p = result;
 
-#endif
+	return kcall->port_reply(rdvno, &response, sizeof(response))?
+			ECONNREFUSED:0;
+}

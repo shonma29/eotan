@@ -56,11 +56,15 @@ Version 2, June 1991
 
 #include <elf.h>
 #include <fcntl.h>
+#include <local.h>
 #include <string.h>
 #include <boot/init.h>
 #include <nerve/kcall.h>
+#include <sys/errno.h>
+#include <sys/unistd.h>
 #include "../../lib/libserv/libmm.h"
-#include "fs.h"
+#include "api.h"
+#include "procfs/process.h"
 
 static W set_local(ID pid, ID tskid);
 static W read_exec_header(vnode_t *ip, Elf32_Addr *entry,
