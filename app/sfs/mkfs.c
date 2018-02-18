@@ -61,8 +61,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#include "sfs_utils.h"
+#include "../../include/fs/sfs.h"
 
+#define ROUNDUP(x,align)	(((((int)x) + ((align) - 1))/(align))*(align))
 
 static int nblock;
 static int blocksize;

@@ -27,7 +27,7 @@ TARGET = $(WD)/mkfs
 
 include Makefile.in
 
-CFLAGS = -Wall -Werror -O2 -std=gnu99
+CFLAGS = -Wall -Werror -O2 -std=c11
 
 $(TARGET): $(OBJS)
 	$(CC) -o $@ $(@).o
