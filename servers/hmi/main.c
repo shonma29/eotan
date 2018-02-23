@@ -49,8 +49,6 @@ For more information, please refer to <http://unlicense.org/>
 
 static unsigned char line[4096];
 
-//static window_t window[MAX_WINDOW];
-
 extern void put(const unsigned int start, const size_t size,
 		const unsigned char *buf);
 extern void pset(unsigned int x, unsigned int y, int color);
@@ -58,6 +56,7 @@ extern void pset(unsigned int x, unsigned int y, int color);
 #include <cga.h>
 #endif
 
+static Screen window[MAX_WINDOW];
 static ER_ID receiver_tid = 0;
 static request_message_t *current_req = NULL;
 static request_message_t requests[REQUEST_QUEUE_SIZE];
@@ -191,7 +190,7 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 			size_t i;
 
 			for (i = 0; i < size; i++)
-				cns->putc(inbuf[i]);
+				cns->putc(&(window[0]), inbuf[i]);
 		}
 		break;
 	}
@@ -307,12 +306,13 @@ static ER initialize(void)
 		lfq_enqueue(&unused_queue, &p);
 	}
 #ifdef USE_VESA
-	cns = getVesaConsole(&default_font);
+	cns = getVesaConsole(&(window[0]), &default_font);
 #else
-	cns = getCgaConsole((const UH*)kern_p2v((void*)CGA_VRAM_ADDR));
+	cns = getCgaConsole(&(window[0]),
+			(const UH*)kern_p2v((void*)CGA_VRAM_ADDR));
 #endif
-	cns->cls();
-	cns->locate(0, 0);
+	cns->cls(&(window[0]));
+	cns->locate(&(window[0]), 0, 0);
 //TODO create mutex
 	result = kcall->port_open(&pk_cpor);
 	if (result) {

@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <console.h>
+#include <screen.h>
 
 #define CGA_COLUMNS (80)
 #define CGA_ROWS (25)
@@ -37,6 +38,6 @@ For more information, please refer to <http://unlicense.org/>
 #define BIOS_CURSOR_ROW 0x0451
 #define CGA_VRAM_ADDR 0x000b8000
 
-extern Console *getCgaConsole(const unsigned short *);
+extern Console *getCgaConsole(Screen *, const void *);
 
 #endif

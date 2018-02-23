@@ -26,121 +26,125 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <cga.h>
 #include <console.h>
+#include <screen.h>
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <mpu/io.h>
 
 #define PORT_CRTC 0x03d4
 #define CRTC_CURSOR_HIGH 0x0e
 #define CRTC_CURSOR_LOW 0x0f
 
-static void _cls(void);
-static int _locate(const int x, const int y);
-static int _color(const int color);
-static void _putc(const unsigned char ch);
-static void __putc(const unsigned char ch);
-static void _newline(void);
-static void _cursor(void);
-static int _rollup(const int lines);
+static uint16_t _combine_chr(int color, uint8_t ch);
+static void _cls(Screen *s);
+static int _locate(Screen *s, const int x, const int y);
+static int _color(Screen *s, const int color);
+static void _putc(Screen *s, const uint8_t ch);
+static void __putc(Screen *s, const uint8_t ch);
+static void _newline(Screen *s);
+static void _cursor(Screen *s);
+static int _rollup(Screen *s, const int lines);
 
 static Console _cns = {
 	_cls, _locate, _color, _putc, _rollup
 };
 
-static struct _screen {
-	int x;
-	int y;
-	int color;
-	unsigned short *p;
-	unsigned short *base;
-} _s;
 
-
-Console *getCgaConsole(const unsigned short *base) {
-	_s.color = CGA_DEFAULT_COLOR;
-	_s.base = (unsigned short*)base;
+Console *getCgaConsole(Screen *s, const void *base)
+{
+	s->fgcolor.palet = CGA_DEFAULT_COLOR;
+	s->base = base;
 
 	return &_cns;
 }
 
-static unsigned short _combine_chr(int color, unsigned char ch) {
+static uint16_t _combine_chr(int color, uint8_t ch)
+{
 	return ((color << 8) | ch);
 }
 
-static void _cls(void) {
-	unsigned short *p = _s.base;
-	unsigned int i;
-	unsigned short c = _combine_chr(_s.color, ' ');
+static void _cls(Screen *s)
+{
+	uint16_t *p = (uint16_t*)(s->base);
+	uint16_t c = _combine_chr(s->fgcolor.palet, ' ');
 
-	_s.x = _s.y = 0;
-	_s.p = p;
+	s->x = s->y = 0;
+	s->p = (uint8_t*)p;
 
-	for (i = CGA_COLUMNS * CGA_ROWS; i > 0; i--) {
+	for (size_t i = CGA_COLUMNS * CGA_ROWS; i > 0; i--) {
 		*p = c;
 		p++;
 	}
 
-	_cursor();
+	_cursor(s);
 }
 
-static int _locate(const int x, const int y) {
+static int _locate(Screen *s, const int x, const int y)
+{
 	if ((x < 0)
-		|| (x >= CGA_COLUMNS)
-		|| (y < 0)
-		|| (y >= CGA_ROWS))	return false;
+			|| (x >= CGA_COLUMNS)
+			|| (y < 0)
+			|| (y >= CGA_ROWS))
+		return false;
 
-	_s.x = x;
-	_s.y = y;
-	_s.p = _s.base + y * CGA_COLUMNS + x;
-	_cursor();
+	s->x = x;
+	s->y = y;
+	s->p = (uint8_t*)((uint16_t*)(s->base) + y * CGA_COLUMNS + x);
+	_cursor(s);
 
 	return true;
 }
 
-static int _color(const int color) {
+static int _color(Screen *s, const int color)
+{
 	if ((color < 0)
-		|| (color >= CGA_COLORS))	return false;
+			|| (color >= CGA_COLORS))
+		return false;
 
-	_s.color = color;
+	s->fgcolor.palet = color;
 
 	return true;
 }
 
-static void _putc(const unsigned char ch) {
+static void _putc(Screen *s, const uint8_t ch)
+{
 	switch(ch) {
 	case 0x08:
-		if (_s.x > 0) {
-			unsigned short *p = --_s.p;
-			int len = CGA_COLUMNS - _s.x;
+		if (s->x > 0) {
+			s->p -= sizeof(uint16_t);
 
-			for(; len > 0; len--) {
-				_s.p[0] = _s.p[1];
-				_s.p++;
+			uint16_t *p = (uint16_t*)(s->p);
+			uint16_t *q = p;
+			for(int len = CGA_COLUMNS - s->x; len > 0; len--) {
+				q[0] = q[1];
+				q++;
 			}
 
-			__putc(' ');
-			_s.x--;
-			_s.p = p;
+			__putc(s, ' ');
+			s->x--;
+			s->p = (uint8_t*)p;
 		}
 		break;
 
 	case '\t':
 		{
 			int len = CONSOLE_TAB_COLUMNS
-					- (_s.x % CONSOLE_TAB_COLUMNS);
-			int i;
+					- (s->x % CONSOLE_TAB_COLUMNS);
+			for (int i = 0; i < len; i++)
+				__putc(s, ' ');
 
-			for (i = 0; i < len; i++)	__putc(' ');
-
-			if (_s.x + len >= CGA_COLUMNS)	_newline();
+			if (s->x + len >= CGA_COLUMNS)
+				_newline(s);
 			else {
-				_s.x += len;
-				_s.p += len;
+				s->x += len;
+				s->p += len * sizeof(uint16_t);
 			}
 		}
 		break;
 
 	case '\n':
-		_newline();
+		_newline(s);
 		break;
 
 	case '\r':
@@ -150,62 +154,70 @@ static void _putc(const unsigned char ch) {
 		break;
 
 	default:
-		__putc((ch > ' ')? ch:' ');
+		__putc(s, (ch > ' ')? ch:' ');
 
-		if (_s.x >= (CGA_COLUMNS - 1))	_newline();
+		if (s->x >= (CGA_COLUMNS - 1))
+			_newline(s);
 		else {
-			_s.x++;
-			_s.p++;
+			s->x++;
+			s->p += sizeof(uint16_t);
 		}
 		break;
 	}
 
-	_cursor();
+	_cursor(s);
 }
 
-static void __putc(const unsigned char ch) {
-	*_s.p = _combine_chr(_s.color, ch);
+static void __putc(Screen *s, const uint8_t ch)
+{
+	uint16_t *q = (uint16_t*)(s->p);
+	*q = _combine_chr(s->fgcolor.palet, ch);
 }
 
-static void _newline(void) {
-	if (_s.y >= (CGA_ROWS - 1))	_rollup(1);
+static void _newline(Screen *s)
+{
+	if (s->y >= (CGA_ROWS - 1))
+		_rollup(s, 1);
 
-	_s.x = 0;
-	_s.y++;
-	_s.p = _s.base + _s.y * CGA_COLUMNS;
+	s->x = 0;
+	s->y++;
+	s->p = (uint8_t*)((uint16_t*)(s->base) + s->y * CGA_COLUMNS);
 }
 
-static void _cursor() {
-	unsigned int pos = _s.y * CGA_COLUMNS + _s.x;
+static void _cursor(Screen *s)
+{
+	unsigned int pos = s->y * CGA_COLUMNS + s->x;
 
 	outw(PORT_CRTC, (pos & 0xff00) | CRTC_CURSOR_HIGH);
 	outw(PORT_CRTC, ((pos & 0xff) << 8) | CRTC_CURSOR_LOW);
 }
 
-static int _rollup(const int lines) {
-	unsigned short *w = _s.base;
-	unsigned short *r = w + lines * CGA_COLUMNS;
-	unsigned int i;
-	unsigned short space = _combine_chr(_s.color, ' ');
+static int _rollup(Screen *s, const int lines)
+{
+	uint16_t *w = (uint16_t*)(s->base);
+	uint16_t *r = w + lines * CGA_COLUMNS;
+	uint16_t space = _combine_chr(s->fgcolor.palet, ' ');
 
 	if ((lines <= 0)
-			|| (lines >= CGA_ROWS))	return false;
+			|| (lines >= CGA_ROWS))
+		return false;
 
-	for (i = CGA_COLUMNS * (CGA_ROWS - lines); i > 0; i--) {
+	for (size_t i = CGA_COLUMNS * (CGA_ROWS - lines); i > 0; i--) {
 		*w = *r++;
 		w++;
 	}
 
-	for (i = CGA_COLUMNS * lines; i > 0; i--) {
+	for (size_t i = CGA_COLUMNS * lines; i > 0; i--) {
 		*w = space;
 		w++;
 	}
 
-	if ((_s.y -= lines) < 0) {
-		_s.y = _s.x = 0;
-		_s.p = _s.base;
+	if ((s->y -= lines) < 0) {
+		s->y = s->x = 0;
+		s->p = (void*)(s->base);
 	}
-	else	_s.p -= lines * CGA_COLUMNS;
+	else
+		s->p -= lines * CGA_COLUMNS * sizeof(uint16_t);
 
 	return true;
 }

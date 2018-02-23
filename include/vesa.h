@@ -84,6 +84,6 @@ typedef struct
 	unsigned char reserved2[190];
 } VesaInfo;
 
-extern Console *getVesaConsole(const Font *);
+extern Console *getVesaConsole(Screen *, const Font *);
 
 #endif

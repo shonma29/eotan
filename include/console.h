@@ -26,15 +26,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <screen.h>
 
 #define CONSOLE_TAB_COLUMNS (8)
 
 typedef struct {
-	void (*cls)(void);
-	int (*locate)(const int x, const int y);
-	int (*color)(const int color);
-	void (*putc)(const unsigned char ch);
-	int (*rollup)(const int lines);
+	void (*cls)(Screen *);
+	int (*locate)(Screen *, const int, const int);
+	int (*color)(Screen *, const int);
+	void (*putc)(Screen *, const unsigned char);
+	int (*rollup)(Screen *, const int);
 } Console;
 
 #endif

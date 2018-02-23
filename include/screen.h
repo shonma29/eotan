@@ -26,12 +26,19 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdint.h>
+
 #define MAX_COLOR 0x00ffffff
 
 typedef struct {
-	unsigned char b;
-	unsigned char g;
-	unsigned char r;
+	uint8_t b;
+	uint8_t g;
+	uint8_t r;
+} Color_Rgb;
+
+typedef union {
+	uint32_t palet;
+	Color_Rgb rgb;
 } Color;
 
 typedef struct {
@@ -40,7 +47,7 @@ typedef struct {
 	unsigned int bytes_per_chr;
 	unsigned int min_char;
 	unsigned int max_char;
-	unsigned char *buf;
+	uint8_t *buf;
 } Font;
 
 typedef struct _screen {
@@ -48,8 +55,8 @@ typedef struct _screen {
 	int y;
 	unsigned int width;
 	unsigned int height;
-	Color *p;
-	Color *base;
+	uint8_t *p;
+	const uint8_t *base;
 	unsigned int bpl;
 	Color fgcolor;
 	Color bgcolor;

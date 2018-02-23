@@ -43,6 +43,7 @@ For more information, please refer to <http://unlicense.org/>
 #define KERNLOG_UNITS ((KERNEL_LOG_SIZE - sizeof(lfq_t)) \
 		/ lfq_node_size(sizeof(int)))
 
+static Screen window;
 #ifndef USE_VESA
 static Console *cns;
 
@@ -90,8 +91,8 @@ static void console_initialize(void)
 	UB *x = (UB*)BIOS_CURSOR_COL;
 	UB *y = (UB*)BIOS_CURSOR_ROW;
 
-	cns = getCgaConsole((const UH*)CGA_VRAM_ADDR);
-	cns->locate(*x, *y);
+	cns = getCgaConsole(&window, (const UH*)CGA_VRAM_ADDR);
+	cns->locate(&window, *x, *y);
 }
 #endif
 
@@ -99,7 +100,7 @@ static void _putc(const char ch)
 {
 	int w = ch;
 #ifndef USE_VESA
-	cns->putc(ch);
+	cns->putc(&window, ch);
 #endif
 	while (lfq_enqueue((volatile lfq_t*)KERNEL_LOG_ADDR, &w) != QUEUE_OK) {
 		int trash;
