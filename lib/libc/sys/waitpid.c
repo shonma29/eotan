@@ -29,9 +29,9 @@ waitpid (pid_t pid, int *status, int option)
     struct posix_response *res = (struct posix_response*)&req;
     thread_local_t *local_data = _get_local();
 
-    req.param.par_waitpid.pid = pid;
-    req.param.par_waitpid.statloc = (W*)status;
-    req.param.par_waitpid.opts = option;
+    req.args.arg1 = pid;
+    req.args.arg2 = (W)status;
+    req.args.arg3 = option;
 
     error = _make_connection(fscall_waitpid, &req);
     if (error != E_OK) {

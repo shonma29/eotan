@@ -75,9 +75,9 @@ execve(char *name, char *argv[], char *envp[])
     *vp = 0;
     vp++;
     
-    req.param.par_execve.name = name;
-    req.param.par_execve.stackp = buf;
-    req.param.par_execve.stsize = stsize;
+    req.args.arg1 = (W)name;
+    req.args.arg2 = (W)buf;
+    req.args.arg3 = stsize;
 
     return _call_fs(fscall_exec, &req);
   }

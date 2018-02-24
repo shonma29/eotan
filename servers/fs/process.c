@@ -45,7 +45,7 @@ int if_exec(fs_request *req)
 
     /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。
      */
-    error_no = kcall->region_copy(get_rdv_tid(req->rdvno), req->packet.param.par_execve.name,
+    error_no = kcall->region_copy(get_rdv_tid(req->rdvno), (void*)(req->packet.args.arg1),
 		     sizeof(req->buf) - 1, req->buf);
     if (error_no < 0) {
 	/* パス名のコピーエラー */
@@ -94,7 +94,7 @@ if_exit (fs_request *req)
        タスクは exd_tsk で終了する */
     return ESRCH;
 
-  myprocp->proc_exst = req->packet.param.par_exit.evalue;
+  myprocp->proc_exst = req->packet.args.arg1;
 
   error_no = proc_get_procp(myprocp->proc_ppid, &procp);
   if (error_no)
@@ -174,8 +174,8 @@ if_fork (fs_request *req)
       return error_no;
     }
 
-  main_thread_id = thread_create(child->proc_pid, req->packet.param.par_fork.entry,
-      (VP)(req->packet.param.par_fork.sp));
+  main_thread_id = thread_create(child->proc_pid, (FP)(req->packet.args.arg2),
+      (VP)(req->packet.args.arg1));
   if (main_thread_id < 0)
     {
       dbg_printf ("fs: acre_tsk error (%d)\n", main_thread_id);
@@ -268,7 +268,7 @@ if_waitpid (fs_request *req)
   W mypid, pid, children, exst;
   struct proc *procp;
 
-  pid = req->packet.param.par_waitpid.pid;
+  pid = req->packet.args.arg1;
   mypid = req->packet.procid;
   if (pid == 0) pid = (-proc_table[mypid].proc_pgid);
 
@@ -299,7 +299,7 @@ if_waitpid (fs_request *req)
   }
   if (children > 0) {
     /* 対応する子プロセスはあったが，まだ終了していなかった */
-    if (req->packet.param.par_waitpid.opts & WNOHANG) {
+    if (req->packet.args.arg3 & WNOHANG) {
       /* 親に返事を送る必要がある */
       reply2(req->rdvno, 0, 0, 0);
     }

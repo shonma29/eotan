@@ -26,14 +26,14 @@ open (const char *path, int oflag, ...)
 {
     struct posix_request req;
 
-    req.param.par_open.path = (char*)path;
-    req.param.par_open.oflag = oflag;	/* o_rdonly | o_wronly | o_rdwr | o_creat */
+    req.args.arg1 = (W)path;
+    req.args.arg2 = oflag;	/* o_rdonly | o_wronly | o_rdwr | o_creat */
 
     if (oflag & O_CREAT) {
       va_list args;
 
       va_start(args, oflag);
-      req.param.par_open.mode = va_arg(args, int);	/* no use except oflag includes o_creat */
+      req.args.arg3 = va_arg(args, int);	/* no use except oflag includes o_creat */
     }
 
     return _call_fs(fscall_open, &req);

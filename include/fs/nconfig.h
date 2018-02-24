@@ -31,6 +31,8 @@ For more information, please refer to <http://unlicense.org/>
 #define MAX_VNODE (128)
 #define MAX_CACHE (128)
 
+#define MAX_DEVICE_NAME (31)
+
 #define ROOT_UID (0)
 
 #endif

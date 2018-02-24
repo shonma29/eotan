@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <device.h>
+#include <fs/nconfig.h>
 #include <fs/vfs.h>
 #include <sys/syscall.h>
 

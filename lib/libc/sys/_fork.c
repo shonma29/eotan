@@ -36,8 +36,8 @@ _fork (int esp, int ebx, int ebp, int esi, int edi)
 
      * 引数を設定して、POSIX manager にメッセージを送る。
      */
-    req.param.par_fork.sp = (VP)esp;
-    req.param.par_fork.entry = (FP)_fork_entry;
+    req.args.arg1 = esp;
+    req.args.arg2 = (W)_fork_entry;
 
     error = _make_connection(fscall_fork, &req);
     if (error != E_OK) {

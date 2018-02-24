@@ -149,7 +149,7 @@ int if_open(fs_request *req)
     /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。
      */
     error_no = session_get_path(&startip, req->packet.procid,
-		    get_rdv_tid(req->rdvno), (UB*)(req->packet.param.par_open.path),
+		    get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg1),
 		    (UB*)(req->buf));
     if (error_no)
 	return error_no;
@@ -159,8 +159,8 @@ int if_open(fs_request *req)
 	return error_no;
 
     error_no = vfs_open(startip, req->buf,
-			 req->packet.param.par_open.oflag,
-			 req->packet.param.par_open.mode,
+			 req->packet.args.arg2,
+			 req->packet.args.arg3,
 			 &acc, &newip);
     if (error_no)
 	/* ファイルがオープンできない */
@@ -170,14 +170,14 @@ int if_open(fs_request *req)
 	/* ファイルは、ディレクトリだった
 	 * エラーとする
 	 */
-	if (req->packet.param.par_open.oflag != O_RDONLY) {
+	if (req->packet.args.arg2 != O_RDONLY) {
 	    vnodes_remove(newip);
 	    return EISDIR;
 	}
     }
 
     if (proc_set_file(req->packet.procid, fileid,
-		      req->packet.param.par_open.oflag, newip)) {
+		      req->packet.args.arg2, newip)) {
 	vnodes_remove(newip);
 	return EINVAL;
     }

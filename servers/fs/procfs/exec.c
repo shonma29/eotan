@@ -139,8 +139,8 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 	/* タスクの context.eip を elf_header.e_entry に設定する */
 	caller = process_set_context(procid,
 		entry,
-		req->param.par_execve.stackp,
-		req->param.par_execve.stsize);
+		(B*)(req->args.arg2),
+		req->args.arg3);
 
 	if (caller < 0) {
 	    error_no = ECONNREFUSED;

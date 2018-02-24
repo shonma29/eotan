@@ -25,63 +25,6 @@ Version 2, June 1991
 #include <sys/packets.h>
 #include <fs/fscall.h>
 
-/* =============== 各システムコール用の 構造体定義 ================== */
-
-/* psc_execve - 指定したプログラムファイルを読み込み、実行する
- *
- */
-struct psc_execve
-{
-  B		*name;
-  B		*stackp;
-  W		stsize;
-};
-
-
-/* psc_exit -
- *
- */
-struct psc_exit
-{
-  W		evalue;
-};
-
-
-/* psc_fork -
- *
- */
-struct psc_fork
-{
-  VP sp;
-  FP entry;
-};
-
-
-
-/* psc_open -
- *
- */
-struct psc_open
-{
-  B		*path;
-  W		oflag;
-  W		mode;	/* if oflag is O_CREATE */
-};
-
-
-/* psc_waitpid -
- *
- */
-struct psc_waitpid
-{
-  W pid;
-  W *statloc;
-  W opts;
-};
-
-
-#define MAX_DEVICE_NAME (31)
-
 /* =========================== 構造体定義 =========================== */
 
 
@@ -91,13 +34,6 @@ struct posix_request
   ID	procid;			/* 呼び出し元のプロセス ID */
   enum FsCall operation;		/* 要求番号(システムコールに対応)	*/
   struct psc_args args;
-  union {
-    struct psc_execve		par_execve;
-    struct psc_exit		par_exit;
-    struct psc_fork		par_fork;
-    struct psc_open		par_open;
-    struct psc_waitpid   	par_waitpid;
-  } param;
 };
 
 
