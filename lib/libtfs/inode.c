@@ -245,8 +245,6 @@ int sfs_wstat(vnode_t *ip)
 
 int sfs_i_close(vnode_t * ip)
 {
-    W err;
-
 #ifdef FMDEBUG
     dbg_printf("sfs: sfs_i_close\n");
 #endif
@@ -275,9 +273,8 @@ int sfs_i_close(vnode_t * ip)
 	ip->dirty = false;
     }
 
-    err = cache_release(sfs_inode, false);
-    if (err) {
-	return (err);
+    if (!cache_release(sfs_inode, false)) {
+	return (EIO);
     }
 
 #ifdef FMDEBUG
