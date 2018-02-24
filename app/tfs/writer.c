@@ -256,8 +256,7 @@ static int readdir(vfs_t *fs, vnode_t *ip, const struct permission *permission)
 	return 0;
 }
 
-static int do_ls(vfs_t *fs, const char *path,
-		const struct permission *permission)
+static int do_ls(vfs_t *fs, char *path, const struct permission *permission)
 {
 	vnode_t *ip;
 

@@ -114,8 +114,10 @@ extern int vnodes_append(vnode_t *);
 extern int vnodes_remove(vnode_t *);
 extern vnode_t *vnodes_find(const vfs_t *, const int);
 
-extern int vfs_walk(vnode_t *, const char *, const int,
+extern int vfs_walk(vnode_t *, char *, const int,
 		const struct permission *, vnode_t **);
+extern int vfs_open(vnode_t *, char *, const int, const mode_t,
+		struct permission *acc, vnode_t **);
 extern int vfs_create(vnode_t *, char *, const mode_t,
 		const struct permission *, vnode_t **);
 extern int vfs_remove(vnode_t *, char *, const struct permission *);

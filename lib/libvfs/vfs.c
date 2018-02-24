@@ -43,7 +43,7 @@ static int modes[] = {
 static char *split_path(const char *path, char **parent_path);
 
 
-int vfs_walk(vnode_t *parent, const char *path, const int flags,
+int vfs_walk(vnode_t *parent, char *path, const int flags,
 		const struct permission *perm, vnode_t **node)
 {
 	if (!parent)
@@ -113,6 +113,22 @@ int vfs_walk(vnode_t *parent, const char *path, const int flags,
 		vnodes_remove(*node);
 
 	return error_no;
+}
+
+int vfs_open(vnode_t *cwd, char *path, const int flags, const mode_t mode,
+		struct permission *permission, vnode_t **node)
+{
+	if (flags & O_CREAT)
+		return vfs_create(cwd, path, mode, permission, node);
+
+	int error_no = vfs_walk(cwd, path, flags, permission, node);
+	if (error_no)
+		return error_no;
+
+	if (flags & O_TRUNC)
+		(*node)->size = 0;
+
+	return 0;
 }
 
 int vfs_create(vnode_t *cwd, char *path, const mode_t mode,

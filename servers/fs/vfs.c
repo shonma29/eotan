@@ -457,45 +457,6 @@ W fs_unmount(UW device)
 }
 
 
-/* fs_open_file -
- *
- */
-W
-fs_open_file(B * path,
-	     W oflag,
-	     W mode,
-	     struct permission * acc,
-	     vnode_t * startip, vnode_t ** newip)
-{
-    W error_no;
-
-    if (oflag & O_CREAT) {
-	error_no = vfs_walk(startip, path, O_RDONLY, acc, newip);
-	if (error_no == ENOENT) {
-	    error_no = vfs_create(startip, path, mode, acc, newip);
-	    return (error_no);
-	} else if (error_no == EOK) {
-	    vnodes_remove(*newip);	/* fs_close() で行う処理はこれだけ */
-	    /*      return (EEXIST); */
-	    /* 後で mode と acc を確かめながら再度 open する */
-	} else {
-	    return (error_no);
-	}
-    }
-
-    error_no = vfs_walk(startip, path, oflag, acc, newip);
-    if (error_no) {
-	return (error_no);
-    }
-
-    if (oflag & O_TRUNC) {
-      (*newip)->size = 0;
-    }
-    return (EOK);
-}
-
-
-
 /* fs_link_file -
  *
  */

@@ -111,8 +111,6 @@ extern W find_fs(UB *, W *);
 extern W fs_mount(ID device, vnode_t *mountpoint, W option, W fstype);
 extern W fs_unmount(UW device);
 
-extern W fs_open_file(B * path, W oflag, W mode, struct permission *acc,
-		      vnode_t *startip, vnode_t **newip);
 extern W fs_link_file(W procid, B * src, B * dst, struct permission * acc);
 
 extern vnode_t *rootfile;

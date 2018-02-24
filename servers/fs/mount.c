@@ -84,7 +84,7 @@ int if_mount(fs_request *req)
     if (error_no)
 	return error_no;
 
-    error_no = fs_open_file(req->buf, O_RDWR, 0, &acc, startip, &device);
+    error_no = vfs_open(startip, req->buf, O_RDWR, 0, &acc, &device);
     if (error_no)
 	return error_no;
 
@@ -102,7 +102,7 @@ int if_mount(fs_request *req)
 	return error_no;
     }
 
-    error_no = fs_open_file(req->buf, O_RDWR, 0, &acc, startip, &mountpoint);
+    error_no = vfs_open(startip, req->buf, O_RDWR, 0, &acc, &mountpoint);
     if (error_no) {
 	vnodes_remove(device);
 	return error_no;
@@ -155,7 +155,7 @@ int if_unmount(fs_request *req)
     if (acc.uid != ROOT_UID)
 	return EACCES;
 
-    error_no = fs_open_file(req->buf, O_RDWR, 0, &acc, startip, &umpoint);
+    error_no = vfs_open(startip, req->buf, O_RDWR, 0, &acc, &umpoint);
     if (error_no)
 	return error_no;
 

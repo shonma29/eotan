@@ -96,7 +96,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
     /* 対象となるプログラムファイルをオープンする */
     proc_get_permission(procid, &acc);
     if (pathname[0] == '/') {
-	error_no = fs_open_file(pathname, O_RDONLY, 0, &acc, rootfile, &ip);
+	error_no = vfs_open(rootfile, pathname, O_RDONLY, 0, &acc, &ip);
     } else {
 	vnode_t *startip;
 
@@ -104,7 +104,7 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 	if (error_no) {
 	    return (error_no);
 	}
-	error_no = fs_open_file(pathname, O_RDONLY, 0, &acc, startip, &ip);
+	error_no = vfs_open(startip, pathname, O_RDONLY, 0, &acc, &ip);
     }
     if (error_no) {
 	return (error_no);

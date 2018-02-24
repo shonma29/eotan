@@ -158,10 +158,10 @@ int if_open(fs_request *req)
     if (error_no)
 	return error_no;
 
-    error_no = fs_open_file(req->buf,
+    error_no = vfs_open(startip, req->buf,
 			 req->packet.param.par_open.oflag,
 			 req->packet.param.par_open.mode,
-			 &acc, startip, &newip);
+			 &acc, &newip);
     if (error_no)
 	/* ファイルがオープンできない */
 	return error_no;
