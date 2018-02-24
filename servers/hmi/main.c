@@ -49,14 +49,14 @@ For more information, please refer to <http://unlicense.org/>
 
 static unsigned char line[4096];
 
-extern void put(const unsigned int start, const size_t size,
+extern void put(Screen *s, const unsigned int start, const size_t size,
 		const unsigned char *buf);
-extern void pset(unsigned int x, unsigned int y, int color);
+extern void pset(Screen *s, unsigned int x, unsigned int y, int color);
 #else
 #include <cga.h>
 #endif
 
-static Screen window[MAX_WINDOW];
+Screen window[MAX_WINDOW];
 static ER_ID receiver_tid = 0;
 static request_message_t *current_req = NULL;
 static request_message_t requests[REQUEST_QUEUE_SIZE];
@@ -171,7 +171,7 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 	switch (dd) {
 #ifdef USE_VESA
 	case 1:
-		put(start, size, inbuf);
+		put(&(window[0]), start, size, inbuf);
 		break;
 
 	case 2:
@@ -181,7 +181,7 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 			unsigned int x = ((int*)inbuf)[0];
 			unsigned int y = ((int*)inbuf)[1];
 			int color = ((int*)inbuf)[2];
-			pset(x, y, color);
+			pset(&(window[0]), x, y, color);
 		}
 		break;
 #endif

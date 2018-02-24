@@ -43,8 +43,8 @@ static W x;
 static W y;
 static W buttons;
 
-extern void pset(unsigned int x, unsigned int y, int color);
-
+extern void pset(Screen *s, unsigned int x, unsigned int y, int color);
+extern Screen window[];
 
 void mouse_process(const int type, const int d)
 {
@@ -71,11 +71,11 @@ void mouse_process(const int type, const int d)
 		y = height - 1;
 #ifdef USE_VESA
 	if (buttons & 1)
-		pset(x, y, 0xff0000);
+		pset(&(window[0]), x, y, 0xff0000);
 	else if (buttons & 2)
-		pset(x, y, 0x00ff00);
+		pset(&(window[0]), x, y, 0x00ff00);
 	else if (buttons & 4)
-		pset(x, y, 0xffff00);
+		pset(&(window[0]), x, y, 0xffff00);
 #endif
 }
 
