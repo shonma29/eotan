@@ -211,21 +211,18 @@ int if_read(fs_request *req)
 	len = rest_length > sizeof(req->buf) ? sizeof(req->buf) : rest_length;
 	int delta = vfs_read(fp->f_inode, req->buf, offset, len, &rlength);
 	if (delta < 0) {
-	    break;
+	    return (-delta);
 	} else if (!rlength)
 	    break;
 
 	/* 呼び出したプロセスのバッファへの書き込み */
 	error_no = kcall->region_put(caller, (UB*)(req->packet.args.arg2) + i,
 			 rlength, req->buf);
-	if (error_no) {
-	    break;
-	}
+	if (error_no)
+	    return EFAULT;
 
 	offset += delta;
     }
-    if (error_no)
-	return error_no;
 
     fp->f_offset = offset;
     reply2(req->rdvno, 0, i, 0);

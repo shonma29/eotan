@@ -208,7 +208,7 @@ read_exec_header(vnode_t *ip,
 	vfs_read(ip, (B *) &elf_header, 0, sizeof(Elf32_Ehdr),
 		     &rlength);
     if (error_no < 0) {
-	return (error_no);
+	return (-error_no);
     }
 
     if (!isValidModule(&elf_header))
@@ -224,7 +224,7 @@ read_exec_header(vnode_t *ip,
 	vfs_read(ip, (B *) ph_table, elf_header.e_phoff,
 		     elf_header.e_phentsize * elf_header.e_phnum, &rlength);
     if (error_no < 0) {
-	return (error_no);
+	return (-error_no);
     } else if (rlength != elf_header.e_phentsize * elf_header.e_phnum) {
 	return (ENOEXEC);
     }
@@ -282,7 +282,7 @@ load_segment(W procid, vnode_t *ip, Elf32_Phdr *segment, ID task)
 			  rest_length) ? PAGE_SIZE : rest_length,
 			 &read_size);
 	if (error_no < 0) {
-	    return (ENOMEM);
+	    return (-error_no);
 	}
 
 	error_no = kcall->region_put(task, (B *) vaddr, read_size, buf);

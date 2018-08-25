@@ -54,12 +54,12 @@ int tfs_getdents(vnode_t *parent, struct dirent *entry, const int offset,
 
 		if (len < sizeof(*dir) - TFS_MINNAMLEN)
 			//TODO select adequate errno
-			return EINVAL;
+			return (-EINVAL);
 
 		size_t real_len = sizeof(*dir) - TFS_MINNAMLEN
 				+ real_name_len(dir->d_namlen);
 		if (len < real_len)
-			return EINVAL;
+			return (-EINVAL);
 
 		entry->d_ino = dir->d_fileno;
 		memcpy(entry->d_name, dir->d_name, dir->d_namlen);
@@ -86,7 +86,7 @@ int tfs_walk(vnode_t *parent, const char *name, vnode_t **node)
 		int error_no = sfs_i_read(parent, buf, offset, sizeof(buf),
 				(W*)&len);
 		if (error_no < 0)
-			return error_no;
+			return (-error_no);
 
 		if (!len)
 			return ENOENT;
@@ -201,7 +201,7 @@ int tfs_remove_entry(vnode_t *parent, const char *name, vnode_t *node)
 		int error_no = sfs_i_read(parent, buf, offset, sizeof(buf),
 				(W*)&len);
 		if (error_no < 0)
-			return error_no;
+			return (-error_no);
 
 		if (!len)
 			return ENOENT;
@@ -235,7 +235,7 @@ int tfs_remove_entry(vnode_t *parent, const char *name, vnode_t *node)
 		int error_no = sfs_i_read(parent, buf, offset + delta,
 				sizeof(buf), (W*)&len);
 		if (error_no < 0)
-			return error_no;
+			return (-error_no);
 
 		if (!len)
 			break;

@@ -228,7 +228,7 @@ int sfs_i_read(vnode_t * ip, B * buf, W start, W length, W * rlength)
 	bn = sfs_get_block_num(fsp, sfs_inode,
 			       start / sb->blksize);
 	if (bn < 0) {
-	    return (EIO);
+	    return (-EIO);
 	}
 
 	cbuf = cache_get(&(fsp->device), bn);
