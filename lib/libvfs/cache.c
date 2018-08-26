@@ -50,6 +50,7 @@ static cache_t cache[MAX_CACHE];
 static cache_t key;
 static list_t free_list;
 static list_t lru_list;
+static list_t locked_list;
 
 static int fill(cache_t *cp);
 static int sweep(cache_t *cp);
@@ -74,6 +75,7 @@ int cache_initialize(void)
 
 	list_initialize(&free_list);
 	list_initialize(&lru_list);
+	list_initialize(&locked_list);
 
 	for (int i = 0; i < numOf(cache); i++)
 		list_append(&free_list, &(cache[i].lru));
@@ -91,7 +93,6 @@ void *cache_create(block_device_t *dev, const unsigned int block_no)
 		if (!list_is_empty(&free_list))
 			cp = getLruParent(list_next(&free_list));
 		else if (!list_is_empty(&lru_list)) {
-			//TODO skip locked block
 			cp = getLruParent(list_next(&lru_list));
 			if (cp->dirty)
 				if (sweep(cp)) {
@@ -116,7 +117,7 @@ void *cache_create(block_device_t *dev, const unsigned int block_no)
 
 	cp->lock_count++;
 	list_remove(&(cp->lru));
-	list_insert(&lru_list, &(cp->lru));
+	list_insert(&locked_list, &(cp->lru));
 	memset(cp->buf, 0, sizeof(cp->buf));
 
 //	dbg_printf("cache_create: %d %d %d %d\n",
@@ -135,7 +136,6 @@ void *cache_get(block_device_t *dev, const unsigned int block_no)
 		if (!list_is_empty(&free_list))
 			cp = getLruParent(list_next(&free_list));
 		else if (!list_is_empty(&lru_list)) {
-			//TODO skip locked block
 			cp = getLruParent(list_next(&lru_list));
 			if (cp->dirty)
 				if (sweep(cp)) {
@@ -167,7 +167,7 @@ void *cache_get(block_device_t *dev, const unsigned int block_no)
 
 	cp->lock_count++;
 	list_remove(&(cp->lru));
-	list_insert(&lru_list, &(cp->lru));
+	list_insert(&locked_list, &(cp->lru));
 
 //	dbg_printf("cache_get: %d %d %d %d\n",
 //			cp->dev->channel, cp->block_no, cp->lock_count,
@@ -195,7 +195,15 @@ bool cache_release(const void *p, const bool dirty)
 
 	cache_t *cp = getBufParent(p);
 	cp->dirty |= dirty;
-	cp->lock_count--;
+
+	if (cp->lock_count > 0) {
+		cp->lock_count--;
+		if (!(cp->lock_count)) {
+			list_remove(&(cp->lru));
+			list_insert(&lru_list, &(cp->lru));
+		}
+	}
+
 //	dbg_printf("cache_release: %d %d %d %d\n",
 //			cp->dev->channel, cp->block_no, cp->lock_count,
 //			cp->dirty);
@@ -226,11 +234,6 @@ int cache_synchronize(block_device_t *dev, const bool unmount)
 //			cp->dev->channel, cp->block_no, cp->lock_count,
 //			cp->dirty);
 		if (cp->dev->channel != dev->channel) {
-			p = list_next(p);
-			continue;
-		}
-
-		if (cp->lock_count) {
 			p = list_next(p);
 			continue;
 		}
