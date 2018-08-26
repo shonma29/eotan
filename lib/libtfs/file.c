@@ -225,9 +225,9 @@ int sfs_i_read(vnode_t * ip, B * buf, W start, W length, W * rlength)
 	       sfs_get_block_num(fd, fsp, sfs_inode,
 				 start / fsp->fs_blksize));
 #endif
-	bn = sfs_get_block_num(fsp, sfs_inode,
+	bn = tfs_get_block_no(fsp, sfs_inode,
 			       start / sb->blksize);
-	if (bn < 0) {
+	if (!bn) {
 	    return (-EIO);
 	}
 
@@ -284,17 +284,17 @@ int sfs_i_write(vnode_t * ip, B * buf, W start, W size, W * rsize)
 	       "allocate block" : "read block");
 #endif
 
-	if ((bn = sfs_get_block_num(fsp, sfs_inode,
-				    start / sb->blksize)) <= 0) {
+	if (!(bn = tfs_get_block_no(fsp, sfs_inode,
+				    start / sb->blksize))) {
 	    /* ファイルサイズを越えて書き込む場合には、新しくブロックをアロケートする
 	     */
-	    bn = sfs_set_block_num(fsp, sfs_inode,
+	    bn = tfs_set_block_no(fsp, sfs_inode,
 				   start / sb->blksize,
-				   sfs_alloc_block(fsp));
+				   tfs_allocate_block(fsp));
 /*
  *   ip->sfs_i_direct[start / fsp->blksize] = alloc_block (fd, fsp);
  */
-	    if (bn < 0) {
+	    if (!bn) {
 		return (EIO);
 	    }
 	    cbuf = cache_get(&(fsp->device), bn);
@@ -367,7 +367,7 @@ W sfs_i_truncate(vnode_t * ip, W newsize)
 	    size_t blocks = num_of_2nd_blocks(fsp->device.block_size);
 	    offset = inblock % blocks;
 	    inblock = inblock / blocks;
-	    sfs_free_indirect(fsp, sfs_ip, offset, inblock);
+	    tfs_deallocate_1st(fsp, sfs_ip, inblock, offset);
 	}
     }
 

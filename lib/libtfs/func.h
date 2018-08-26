@@ -21,20 +21,6 @@ Version 2, June 1991
 
 extern vfs_operation_t sfs_fsops;
 
-/* block.c */
-extern W sfs_alloc_block (vfs_t *fsp);
-extern W sfs_get_block_num (vfs_t *fsp,
-			    struct sfs_inode *ip, W blockno);
-extern W sfs_set_block_num (vfs_t *fsp,
-	       struct sfs_inode *ip, W blockno, W newblock);
-extern W sfs_free_block (vfs_t *fsp, W blockno);
-extern W sfs_free_indirect(vfs_t *fsp, struct sfs_inode *ip,
-			   int offset, int inblock);
-extern W sfs_free_dindirect(vfs_t *fsp, struct sfs_inode *ip,
-			    int offset, int dinblock, int inblock);
-extern W sfs_free_all_dindirect(vfs_t *fsp,
-				struct sfs_inode *ip, int inblock);
-
 /* dir.c */
 extern int sfs_i_link (vnode_t * parent, char *fname, vnode_t * srcip);
 extern int sfs_i_unlink (vnode_t *parent, char *fname, vnode_t *ip);

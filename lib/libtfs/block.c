@@ -1,285 +1,240 @@
 /*
+This is free and unencumbered software released into the public domain.
 
-B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
 
-GNU GENERAL PUBLIC LICENSE
-Version 2, June 1991
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
 
-(C) B-Free Project.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
 
-(C) 2001-2002, Tomohide Naniwa
-
+For more information, please refer to <http://unlicense.org/>
 */
-/* sfs_block.c - SFS のブロックの管理を行う
- *
- * $Log: sfs_block.c,v $
- * Revision 1.13  2000/07/02 04:14:22  naniwa
- * to implement disk block cache
- *
- * Revision 1.12  1999/07/09 08:13:42  naniwa
- * modified to cache bitmap block
- *
- * Revision 1.11  1999/06/01 09:18:56  naniwa
- * modified to make sfs_i_truncate () work
- *
- * Revision 1.10  1999/05/29 09:53:39  naniwa
- * removed variable 'sb'
- *
- * Revision 1.9  1999/05/28 15:48:31  naniwa
- * sfs ver 1.1
- *
- * Revision 1.8  1999/05/10 16:01:18  night
- * alloca を使って一時バッファの領域を確保している処理を、alloca の代わり
- * に動的な配列確保 (GCC の拡張機能) を使うように変更。
- *
- * Revision 1.7  1999/04/13 04:15:24  monaka
- * MAJOR FIXcvs commit -m 'MAJOR FIX!!! There are so many changes, modifys, fixes. Sorry but I can't remember all of those. For example, all the manager and driver programmer have got power to access all ITRON systemcall. (My works is just making access route to ITRON. I don't know what happens in the nuclus.'! There are so many changes, modifys, fixes. Sorry but I can't remember all of those. For example, all the manager and driver programmer have got power to access all ITRON systemcall. (My works is just making access route to ITRON. I don't know what happens in the nuclus.
- *
- * Revision 1.6  1999/03/24 04:52:13  monaka
- * Source file cleaning for avoid warnings.
- *
- * Revision 1.5  1999/03/24 03:54:49  monaka
- * printf() was renamed to printk().
- *
- * Revision 1.4  1997/10/24 14:00:39  night
- * 変数の引数合わせを厳密にした。
- *
- * Revision 1.3  1997/07/03 14:24:34  night
- * mountroot/open 処理のバグを修正。
- *
- * Revision 1.2  1996/11/18  13:46:10  night
- * ファイルの中身を作成。
- *
- * Revision 1.1  1996/11/17  14:52:56  night
- * 最初の登録
- *
- *
- */
-
-#include <string.h>
+#include <stdint.h>
+#include <mpu/bits.h>
+#include <mpu/limits.h>
 #include <sys/errno.h>
-#include "../libserv/libserv.h"
 #include "func.h"
-
 
-static W sfs_get_indirect_block_num (vfs_t *fsp,
-				     struct sfs_inode *ip, W blockno);
-static W sfs_set_indirect_block_num (vfs_t *fsp, 
-				     struct sfs_inode *ip, W blockno, W newblock);
+static int tfs_deallocate_block(vfs_t *fsp, const blkno_t block_no);
+static bool is_valid_nth(const vfs_t *fsp, const unsigned int nth);
 
-/* ブロックに関係している処理
- *
- * sfs_alloc_block()
- * sfs_get_block_num()
- * sfs_set_block_num()
- *
- */
-
-/* sfs_alloc_block - ブロックをひとつアロケートする
- *
- */
-W sfs_alloc_block(vfs_t * fsp)
+blkno_t tfs_allocate_block(vfs_t *fsp)
 {
-    struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
-    W i, s;
-    B *buf;
+	struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
+	if (!(sb->freeblock))
+		return 0;
 
-    if (sb->freeblock <= 0)
-	return (-1);
+	unsigned int start = (sb->bsearch - 1) / (CHAR_BIT * sb->blksize);
+	for (unsigned int i = start; i < sb->bitmapsize; i++) {
+		uint32_t *buf = cache_get(&(fsp->device),
+				i + TFS_RESERVED_BLOCKS);
+		if (!buf)
+			return 0;
 
-    s = (sb->bsearch - 1) / (8 * sb->blksize);
+		for (unsigned int j = (i == start)?
+						(((sb->bsearch - 1) / INT_BIT)
+						% (sb->blksize / sizeof(j))):0;
+				j < sb->blksize / sizeof(j); j++) {
+			if (!buf[j])
+				continue;
 
-    for (i = s; i < sb->bitmapsize; i++) {
-	W j;
+			unsigned int k = count_ntz(buf[j]);
+			buf[j] &= ~(1 << k);
+			if (!cache_release(buf, true))
+				return 0;
 
-	buf = cache_get(&(fsp->device), i + 2);
-	for (j = (i == s)? (((sb->bsearch - 1) / 8) % sb->blksize):0;
-		j < sb->blksize; j++)
-	    if (buf[j] & 0xff) {
-		unsigned char mask = 1;
-		W k;
-
-		for (k = 0; k < 8; k++) {
-		    if (mask & buf[j]) {
-			W free_block = (i * sb->blksize * 8)
-			    + (j * 8)
-			    + k;
-
-			buf[j] = buf[j] & ~mask;
-			cache_release(buf, true);
-
+			blkno_t block_no = i * sb->blksize * CHAR_BIT
+					+ j * INT_BIT + k;
 			sb->freeblock--;
-			sb->bsearch = free_block;
+			sb->bsearch = block_no;
 
 			if (!cache_modify(fsp->private))
-			    return EIO;
+				return 0;
 
-			return (free_block);
-		    }
-
-		    mask = mask << 1;
+			return block_no;
 		}
-	    }
 
-	cache_release(buf, false);
-    }
-
-    return (-1);
-}
-
-
-/* sfs_free_block - ブロックをひとつ解放する。
- *
- */
-W sfs_free_block(vfs_t * fsp, W blockno)
-{
-    struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
-    W mask;
-    int s;
-    B *buf;
-
-    if (blockno < sb->datablock) {
-	dbg_printf("sfs: sfs_free_block: illegal block # %d\n", blockno);
-	return (EINVAL);
-    }
-
-    s = blockno / (8 * sb->blksize);
-    buf = cache_get(&(fsp->device), s + 2);
-    s = (blockno / 8) % sb->blksize;
-
-    mask = 0x01;
-    mask = mask << (blockno % 8);
-    buf[s] = buf[s] | (mask & 0xff);
-    cache_release(buf, true);
-
-    /* キャッシュに残っているデータを無効にする */
-    cache_invalidate(&(fsp->device), blockno);
-
-    sb->freeblock++;
-
-    if (sb->bsearch >= blockno && blockno > 0)
-	sb->bsearch = blockno - 1;
-
-    if (!cache_modify(fsp->private))
-	return EIO;
-
-    return 0;
-}
-
-W sfs_free_indirect(vfs_t * fsp, struct sfs_inode * ip,
-		    int offset, int inblock)
-{
-    int i;
-    uint32_t *inbufp;
-
-    if (offset != 0) {
-	inbufp = cache_get(&(fsp->device), ip->i_indirect[inblock]);
-
-	for (i = offset; i < num_of_2nd_blocks(fsp->device.block_size); ++i)
-	    if (inbufp[i] > 0) {
-		sfs_free_block(fsp, inbufp[i]);
-		inbufp[i] = 0;
-	    }
-
-	cache_release(inbufp, true);
-	++inblock;
-    }
-
-    for (i = inblock; i < num_of_1st_blocks(fsp->device.block_size); ++i) {
-	if (ip->i_indirect[i] > 0) {
-	    int j;
-
-	    inbufp = cache_get(&(fsp->device), ip->i_indirect[i]);
-
-	    for (j = 0; j < num_of_2nd_blocks(fsp->device.block_size); ++j)
-		if (inbufp[j] > 0)
-		    sfs_free_block(fsp, inbufp[j]);
-
-	    sfs_free_block(fsp, ip->i_indirect[i]);
+		if (!cache_release(buf, false))
+			return 0;
 	}
 
-	ip->i_indirect[i] = 0;
-    }
-
-    return 0;
+	return 0;
 }
 
-/* sfs_get_block_num - ファイルのデータが実際のどのブロックにあるかを検索する。
- *
- */
-W
-sfs_get_block_num(vfs_t * fsp, struct sfs_inode * ip, W blockno)
+int tfs_deallocate_1st(vfs_t *fsp, struct sfs_inode *ip,
+		const unsigned int index, const unsigned int offset)
 {
-    if (blockno < (num_of_1st_blocks(fsp->device.block_size)
-	    * num_of_2nd_blocks(fsp->device.block_size)))
-	/* 一重間接ブロックの範囲内
-	 */
-	return (sfs_get_indirect_block_num(fsp, ip, blockno));
+	unsigned int pos = index;
 
-    return (-1);
+	if (offset) {
+		blkno_t *buf = cache_get(&(fsp->device), ip->i_indirect[pos]);
+		if (!buf)
+			return EIO;
+
+		for (unsigned int i = offset;
+				i < num_of_2nd_blocks(fsp->device.block_size);
+				i++)
+			if (buf[i]) {
+				int error_no = tfs_deallocate_block(fsp,
+						buf[i]);
+				if (error_no)
+					return error_no;
+
+				buf[i] = 0;
+			}
+
+		if (!cache_release(buf, true))
+			return EIO;
+
+		pos++;
+	}
+
+	for (unsigned int i = pos;
+			i < num_of_1st_blocks(fsp->device.block_size);
+			i++) {
+		if (!(ip->i_indirect[i]))
+			continue;
+
+		blkno_t *buf = cache_get(&(fsp->device), ip->i_indirect[i]);
+		if (!buf)
+			return EIO;
+
+		for (unsigned int j = 0;
+				j < num_of_2nd_blocks(fsp->device.block_size);
+				j++)
+			if (buf[j]) {
+				int error_no = tfs_deallocate_block(fsp,
+						buf[j]);
+				if (error_no)
+					return error_no;
+
+				buf[j] = 0;
+			}
+
+		int error_no = tfs_deallocate_block(fsp, ip->i_indirect[i]);
+		if (error_no)
+			return error_no;
+
+		ip->i_indirect[i] = 0;
+	}
+
+//	if (!cache_modify(ip->private))
+//		return EIO;
+
+	return 0;
 }
 
-
-static W
-sfs_get_indirect_block_num(vfs_t * fsp, struct sfs_inode * ip,
-			   W blockno)
+static int tfs_deallocate_block(vfs_t *fsp, const blkno_t block_no)
 {
-    size_t blocks = num_of_2nd_blocks(fsp->device.block_size);
-    W inblock = blockno / blocks;
-    W inblock_offset = blockno % blocks;
-    W bn;
-    uint32_t *inbufp;
+	struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
+	if (block_no < sb->datablock)
+		return EINVAL;
 
-    if (ip->i_indirect[inblock] <= 0)
-	return (-1);
+	uint8_t *buf = cache_get(&(fsp->device),
+			block_no / (CHAR_BIT * sb->blksize)
+					+ TFS_RESERVED_BLOCKS);
+	if (!buf)
+		return EIO;
 
-    inbufp = cache_get(&(fsp->device), ip->i_indirect[inblock]);
-    bn = inbufp[inblock_offset];
-    cache_release(inbufp, false);
+	buf[(block_no / CHAR_BIT) % sb->blksize] |=
+			(1 << (block_no % CHAR_BIT)) & 0xff;
 
-    return (bn);
+	if (!cache_release(buf, true))
+		return EIO;
+
+	if (!cache_invalidate(&(fsp->device), block_no))
+		return EIO;
+
+	sb->freeblock++;
+
+	if ((sb->bsearch >= block_no)
+			&& block_no)
+		sb->bsearch = block_no - 1;
+
+	if (!cache_modify(fsp->private))
+		return EIO;
+
+	return 0;
 }
 
-
-W
-sfs_set_block_num(vfs_t * fsp,
-		  struct sfs_inode * ip, W blockno, W newblock)
+blkno_t tfs_get_block_no(vfs_t *fsp, const struct sfs_inode *ip,
+		const unsigned int nth)
 {
-    if (newblock < 0)
-	return (-1);
+	if (!is_valid_nth(fsp, nth))
+		return 0;
 
-    if (blockno < (num_of_1st_blocks(fsp->device.block_size)
-	    * num_of_2nd_blocks(fsp->device.block_size)))
-	/* 一重間接ブロックの範囲内
-	 */
-	return (sfs_set_indirect_block_num
-		(fsp, ip, blockno, newblock));
+	size_t blocks = num_of_2nd_blocks(fsp->device.block_size);
+	blkno_t block_no = ip->i_indirect[nth / blocks];
+	if (!block_no)
+		return 0;
 
-    return (-1);
+	blkno_t *buf = cache_get(&(fsp->device), block_no);
+	if (!buf)
+		return 0;
+
+	block_no = buf[nth % blocks];
+
+	if (!cache_release(buf, false))
+		return 0;
+
+	return block_no;
 }
 
-
-
-static W
-sfs_set_indirect_block_num(vfs_t * fsp,
-			   struct sfs_inode * ip, W blockno, W newblock)
+blkno_t tfs_set_block_no(vfs_t *fsp, struct sfs_inode *ip,
+		const unsigned int nth, const blkno_t new_block_no)
 {
-    size_t blocks = num_of_2nd_blocks(fsp->device.block_size);
-    W inblock = blockno / blocks;
-    W inblock_offset = blockno % blocks;
-    uint32_t *inbufp;
+	if (!is_valid_nth(fsp, nth))
+		return 0;
 
-    if (ip->i_indirect[inblock] <= 0) {
-	W newinblock = sfs_alloc_block(fsp);
+	if (!new_block_no)
+		return 0;
 
-	ip->i_indirect[inblock] = newinblock;
-	inbufp = cache_create(&(fsp->device), newinblock);
+	blkno_t *buf;
+	size_t blocks = num_of_2nd_blocks(fsp->device.block_size);
+	unsigned int index = nth / blocks;
+	blkno_t block_no = ip->i_indirect[index];
+	if (block_no)
+		buf = cache_get(&(fsp->device), block_no);
+	else {
+		block_no = tfs_allocate_block(fsp);
+		if (!block_no)
+			return 0;
 
-    } else
-	inbufp = cache_get(&(fsp->device), ip->i_indirect[inblock]);
+		ip->i_indirect[index] = block_no;
+//		if (!cache_modify(ip->private))
+//			return 0;
 
-    inbufp[inblock_offset] = newblock;
-    cache_release(inbufp, true);
+		buf = cache_create(&(fsp->device), block_no);
+	}
 
-    return (newblock);
+	if (!buf)
+		return 0;
+
+	buf[nth % blocks] = new_block_no;
+
+	if (!cache_release(buf, true))
+		return 0;
+
+	return new_block_no;
+}
+
+static bool is_valid_nth(const vfs_t *fsp, const unsigned int nth)
+{
+	return (nth < num_of_1st_blocks(fsp->device.block_size)
+			* num_of_2nd_blocks(fsp->device.block_size));
 }

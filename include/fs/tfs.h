@@ -26,10 +26,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stddef.h>
 #include <stdint.h>
 #include <sys/types.h>
 
+typedef uint32_t blkno_t;
+
 #define TFS_MAGIC 0x30465374
+
+#define TFS_RESERVED_BLOCKS (2)
 
 #define TFS_MAXNAMLEN (255)
 #define TFS_MINNAMLEN (sizeof(uint32_t) - sizeof(uint8_t))

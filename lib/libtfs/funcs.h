@@ -32,6 +32,15 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/dirent.h>
 #include <sys/types.h>
 
+/* block.c */
+extern blkno_t tfs_allocate_block(vfs_t *);
+extern int tfs_deallocate_1st(vfs_t *, struct sfs_inode *, const unsigned int,
+		const unsigned int);
+extern blkno_t tfs_get_block_no(vfs_t *, const struct sfs_inode *,
+		const unsigned int);
+extern blkno_t tfs_set_block_no(vfs_t *, struct sfs_inode *,
+		const unsigned int, const blkno_t);
+
 /* ndirectory.c */
 extern int tfs_getdents(vnode_t *, struct dirent *, const int,  const size_t,
 		size_t *);
