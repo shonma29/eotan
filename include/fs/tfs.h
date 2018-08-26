@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #define TFS_MAGIC 0x30465374
 
 #define TFS_MAXNAMLEN (255)
-#define TFS_MINNAMLEN (3)
+#define TFS_MINNAMLEN (sizeof(uint32_t) - sizeof(uint8_t))
 
 static inline size_t num_of_1st_blocks(const blksize_t blksize)
 {
@@ -46,7 +46,7 @@ static inline size_t num_of_2nd_blocks(const blksize_t blksize)
 
 static inline size_t real_name_len(const size_t n)
 {
-	return n + (3 - (n & 3));
+	return n + (TFS_MINNAMLEN - (n & TFS_MINNAMLEN));
 }
 
 struct tfs_dir {
