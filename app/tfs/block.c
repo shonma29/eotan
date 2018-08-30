@@ -56,14 +56,14 @@ static int block_read(block_device_t *dev, void *buf, const int blockno)
 	size_t size;
 
 	if (lseek(dev->channel, offset, SEEK_SET) != offset) {
-		dbg_printf("block_read: seek(%d) error\n", blockno);
+		log_debug("block_read: seek(%d) error\n", blockno);
 		return (-1);
 	}
 
 	size = dev->block_size;
 	int result = read(dev->channel, buf, size);
 	if (result < 0) {
-		dbg_printf("block_read: read(%d) error %d\n", blockno, result);
+		log_debug("block_read: read(%d) error %d\n", blockno, result);
 		return -1;
 	}
 
@@ -80,14 +80,14 @@ static int block_write(block_device_t *dev, void *buf, const int blockno)
 	size_t size;
 
 	if (lseek(dev->channel, offset, SEEK_SET) != offset) {
-		dbg_printf("block_write: seek(%d) error\n", blockno);
+		log_debug("block_write: seek(%d) error\n", blockno);
 		return (-1);
 	}
 
 	size = dev->block_size;
 	int result = (write(dev->channel, buf, size) == size)? 0:(-1);
 	if (result)
-		dbg_printf("block_write: write(%d) error\n", blockno);
+		log_debug("block_write: write(%d) error\n", blockno);
 
 	return result;
 }

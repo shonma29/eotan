@@ -112,7 +112,7 @@ ER kbc_initialize(void)
 	_writeCommand(KBC_WRITE_CMD);
 	_writeData(b);
 
-	dbg_printf("kbc: %x\n", c);
+	log_info("kbc: status=%x\n", c);
 
 	return E_OK;
 }

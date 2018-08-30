@@ -30,10 +30,18 @@ For more information, please refer to <http://unlicense.org/>
 #include <syslog.h>
 #include <sys/time.h>
 
+#define log_emerg(...) syslog(LOG_EMERG, __VA_ARGS__)
+#define log_alert(...) syslog(LOG_ALERT, __VA_ARGS__)
+#define log_crit(...) syslog(LOG_CRIT, __VA_ARGS__)
+#define log_err(...) syslog(LOG_ERR, __VA_ARGS__)
+#define log_warning(...) syslog(LOG_WARNING, __VA_ARGS__)
+#define log_notice(...) syslog(LOG_NOTICE, __VA_ARGS__)
+#define log_info(...) syslog(LOG_INFO, __VA_ARGS__)
+
 #ifdef DEBUG
-#define dbg_printf(...) syslog(LOG_DEBUG, __VA_ARGS__)
+#define log_debug(...) syslog(LOG_DEBUG, __VA_ARGS__)
 #else
-#define dbg_printf(...)
+#define log_debug(...)
 #endif
 
 extern void time_get_raw(struct timespec *);

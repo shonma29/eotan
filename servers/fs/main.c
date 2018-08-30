@@ -90,12 +90,12 @@ static int initialize(void)
 	receiver_id = kcall->thread_get_id();
 	result = kcall->mutex_create(receiver_id, &pk_cmtx);
 	if (result) {
-		dbg_printf("fs: mutex_create failed %d\n", result);
+		log_err("fs: mutex_create failed %d\n", result);
 		return -1;
 	}
 
 	if (!port_init()) {
-		dbg_printf("fs: port_init failed\n");
+		log_err("fs: port_init failed\n");
 		return -1;
 	}
 
@@ -105,7 +105,7 @@ static int initialize(void)
 	request_init();
 	worker_id = worker_init();
 	if (worker_id < 0) {
-		dbg_printf("fs: worker_init failed %d\n", worker_id);
+		log_err("fs: worker_init failed %d\n", worker_id);
 		return -1;
 	}
 
@@ -116,18 +116,18 @@ static int initialize(void)
 			&& device_find(get_device_id(DEVICE_MAJOR_CONS, 0))) {
 		if (fs_mount(sysinfo->root.device, rootfile, 0,
 				sysinfo->root.fstype)) {
-			dbg_printf("fs: fs_mount_root(%x, %d) failed\n",
+			log_err("fs: fs_mount(%x, %d) failed\n",
 					sysinfo->root.device,
 					sysinfo->root.fstype);
 		} else {
-			dbg_printf("fs: fs_mount_root(%x, %d) succeeded\n",
+			log_info("fs: fs_mount(%x, %d) succeeded\n",
 					sysinfo->root.device,
 					sysinfo->root.fstype);
 			exec_init(INIT_PID, INIT_PATH_NAME);
 		}
 	}
 
-	dbg_printf("fs: start\n");
+	log_info("fs: start\n");
 
 	return 0;
 }
@@ -239,7 +239,7 @@ void start(VP_INT exinf)
 		}
 
 		else if (size < 0)
-			dbg_printf("fs: acp_por failed %d\n", size);
+			log_err("fs: receive failed %d\n", size);
 
 		else
 			reply2(req->rdvno, EINVAL, -1, 0);

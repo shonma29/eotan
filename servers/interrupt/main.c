@@ -108,7 +108,7 @@ static ER delay_initialize(void)
 
 	result = kcall->thread_create(PORT_DELAY, &pk_ctsk);
 	if (result) {
-		dbg_printf(MYNAME ": cre_tsk failed %d\n", result);
+		log_err(MYNAME ": create error=%d\n", result);
 		return result;
 	}
 
@@ -130,7 +130,7 @@ static ER port_initialize(void)
 
 	result = kcall->port_open(&pk_cpor);
 	if (result) {
-		dbg_printf("interrupt: cre_por error=%d\n", result);
+		log_err("interrupt: open error=%d\n", result);
 
 		return result;
 	}
@@ -165,7 +165,7 @@ static ER accept(void)
 
 	size = kcall->port_accept(PORT_INTERRUPT, &rdvno, &args);
 	if (size < 0) {
-		dbg_printf("interrupt: acp_por error=%d\n", size);
+		log_err("interrupt: receive error=%d\n", size);
 		return size;
 	}
 
@@ -173,7 +173,7 @@ static ER accept(void)
 	*reply = (size == sizeof(args))? execute(&args):E_PAR;
 	result = kcall->port_reply(rdvno, &args, sizeof(*reply));
 	if (result)
-		dbg_printf("interrupt: rpl_rdv error=%d\n", result);
+		log_err("interrupt: reply error=%d\n", result);
 
 	return result;
 }
@@ -182,12 +182,12 @@ void start(VP_INT exinf)
 {
 	if (delay_initialize() == E_OK) {
 		if (port_initialize() == E_OK) {
-			dbg_printf(MYNAME ": start\n");
+			log_info(MYNAME ": start\n");
 
 			for (;;)
 				accept();
 
-			dbg_printf(MYNAME ": end\n");
+			log_info(MYNAME ": end\n");
 		}
 	}
 

@@ -73,7 +73,7 @@ static void doit(void)
 		ER_UINT size = kcall->port_accept(PORT_MM, &rdvno, &args);
 
 		if (size < 0) {
-			dbg_printf(MYNAME ": acp_por failed %d\n", size);
+			log_err(MYNAME ": receive failed %d\n", size);
 			break;
 		}
 
@@ -96,7 +96,7 @@ static void doit(void)
 			result = kcall->port_reply(rdvno, &reply,
 					sizeof(reply));
 			if (result != E_OK)
-				dbg_printf(MYNAME ": rpl_rdv failed %d\n",
+				log_err(MYNAME ": reply failed %d\n",
 						result);
 			break;
 
@@ -111,16 +111,16 @@ void start(VP_INT exinf)
 	ER error = init();
 
 	if (error)
-		dbg_printf(MYNAME ": cre_por failed %d\n", error);
+		log_err(MYNAME ": open failed %d\n", error);
 
 	else {
-		dbg_printf(MYNAME ": start\n");
+		log_info(MYNAME ": start\n");
 		doit();
-		dbg_printf(MYNAME ": end\n");
+		log_info(MYNAME ": end\n");
 
 		error = kcall->port_close();
 		if (error)
-			dbg_printf(MYNAME ": del_por failed %d\n", error);
+			log_err(MYNAME ": close failed %d\n", error);
 	}
 
 	kcall->thread_end_and_destroy();

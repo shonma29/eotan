@@ -49,15 +49,15 @@ vdriver_t *attach(int exinf)
 
 	if (info->initrd.size > 0) {
 		if (info->initrd.size <= BUF_SIZE) {
-			dbg_printf(MYNAME ": initrd start=%p size=%x\n",
+			log_info(MYNAME ": initrd start=%p size=%x\n",
 					info->initrd.start, info->initrd.size);
 
 			if (decode(info))
-				dbg_printf(MYNAME ": broken initrd\n");
+				log_err(MYNAME ": broken initrd\n");
 			else
 				return &driver_mine;
 		} else
-			dbg_printf(MYNAME ": too large initrd (%x)\n",
+			log_err(MYNAME ": too large initrd (%x)\n",
 				info->initrd.size);
 	}
 

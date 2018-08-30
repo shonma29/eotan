@@ -137,7 +137,7 @@ int vfs_create(vnode_t *cwd, char *path, const mode_t mode,
 	char *parent_path = "";
 	char *head = split_path(path, &parent_path);
 	if (!(*head)) {
-		dbg_printf("vfs_create: bad path %s\n", path);
+		log_debug("vfs_create: bad path %s\n", path);
 		return EINVAL;
 	}
 
@@ -145,13 +145,13 @@ int vfs_create(vnode_t *cwd, char *path, const mode_t mode,
 	int result = vfs_walk(cwd, parent_path, O_WRONLY, permission,
 			&parent);
 	if (result) {
-		dbg_printf("vfs_create: vfs_walk(%s) failed %d\n",
+		log_debug("vfs_create: vfs_walk(%s) failed %d\n",
 				parent_path, result);
 		return result;
 	}
 
 	if ((parent->mode & S_IFMT) != S_IFDIR) {
-		dbg_printf("vfs_create: %s is not directory\n",
+		log_debug("vfs_create: %s is not directory\n",
 				parent_path);
 		vnodes_remove(parent);
 		return ENOTDIR;
@@ -159,7 +159,7 @@ int vfs_create(vnode_t *cwd, char *path, const mode_t mode,
 
 	result = vfs_walk(parent, head, O_RDONLY, permission, node);
 	if (!result) {
-		dbg_printf("vfs_create: %s already exists\n", head);
+		log_debug("vfs_create: %s already exists\n", head);
 		vnodes_remove(*node);
 		vnodes_remove(parent);
 		return EEXIST;
@@ -182,7 +182,7 @@ int vfs_create(vnode_t *cwd, char *path, const mode_t mode,
 	vnodes_remove(parent);
 
 	if (result) {
-		dbg_printf("vfs_create: create(%s) failed %d\n", head, result);
+		log_debug("vfs_create: create(%s) failed %d\n", head, result);
 		return result;
 	}
 
@@ -194,7 +194,7 @@ int vfs_remove(vnode_t *cwd, char *path, const struct permission *permission)
 	char *parent_path = "";
 	char *head = split_path(path, &parent_path);
 	if (!(*head)) {
-		dbg_printf("vfs_remove: bad path %s\n", path);
+		log_debug("vfs_remove: bad path %s\n", path);
 		return EINVAL;
 	}
 
@@ -202,13 +202,13 @@ int vfs_remove(vnode_t *cwd, char *path, const struct permission *permission)
 	int result = vfs_walk(cwd, parent_path, O_WRONLY, permission,
 			&parent);
 	if (result) {
-		dbg_printf("vfs_remove: vfs_walk(%s) failed %d\n",
+		log_debug("vfs_remove: vfs_walk(%s) failed %d\n",
 				parent_path, result);
 		return result;
 	}
 
 	if ((parent->mode & S_IFMT) != S_IFDIR) {
-		dbg_printf("vfs_remove: %s is not directory\n", parent_path);
+		log_debug("vfs_remove: %s is not directory\n", parent_path);
 		vnodes_remove(parent);
 		return ENOTDIR;
 	}
@@ -217,14 +217,14 @@ int vfs_remove(vnode_t *cwd, char *path, const struct permission *permission)
 	//TODO is O_RDONLY really?
 	result = vfs_walk(parent, head, O_RDONLY, permission, &node);
 	if (result) {
-		dbg_printf("vfs_remove: vfs_walk(%s) failed %d\n", head, result);
+		log_debug("vfs_remove: vfs_walk(%s) failed %d\n", head, result);
 		vnodes_remove(parent);
 		return result;
 	}
 
 	//TODO really?
 	if (node->refer_count > 1) {
-		dbg_printf("vfs_remove: %s is refered\n", head);
+		log_debug("vfs_remove: %s is refered\n", head);
 		vnodes_remove(node);
 		vnodes_remove(parent);
 		return EBUSY;
@@ -239,7 +239,7 @@ int vfs_remove(vnode_t *cwd, char *path, const struct permission *permission)
 	vnodes_remove(parent);
 
 	if (result) {
-		dbg_printf("vfs_remove: mkdir(%s) failed %d\n", head, result);
+		log_debug("vfs_remove: mkdir(%s) failed %d\n", head, result);
 		return result;
 	}
 

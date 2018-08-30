@@ -98,7 +98,7 @@ void hmi_handle(const int type, const int data)
 			if (lfq_enqueue(&int_queue, &message) == QUEUE_OK)
 				kcall->thread_wakeup(PORT_HMI);
 			else
-				dbg_printf("hmi: int_queue is full\n");
+				log_warning("hmi: int_queue is full\n");
 			break;
 		}
 	case event_mouse:
@@ -203,7 +203,7 @@ static void reply(request_message_t *req, const size_t size)
 	ER_UINT result = kcall->port_reply(req->rdvno, &(req->message), size);
 
 	if (result)
-		dbg_printf("hmi: rpl_rdv error=%d\n", result);
+		log_err("hmi: reply error=%d\n", result);
 
 	lfq_enqueue(&unused_queue, &req);
 	kcall->thread_wakeup(receiver_tid);
@@ -223,7 +223,7 @@ static void execute(request_message_t *req)
 			reply(req, sizeof(message->Rread));
 
 		} else if (lfq_enqueue(&req_queue, &req) != QUEUE_OK) {
-			dbg_printf("hmi: req_queue is full\n");
+			log_debug("hmi: req_queue is full\n");
 			message->Rread.count = E_NOMEM;
 			reply(req, sizeof(message->Rread));
 		}
@@ -272,7 +272,7 @@ static ER accept(void)
 
 	size = kcall->port_accept(PORT_CONSOLE, &(req->rdvno), &(req->message));
 	if (size < 0) {
-		dbg_printf("hmi: acp_por error=%d\n", size);
+		log_err("hmi: receive error=%d\n", size);
 		return size;
 	}
 
@@ -316,14 +316,14 @@ static ER initialize(void)
 //TODO create mutex
 	result = kcall->port_open(&pk_cpor);
 	if (result) {
-		dbg_printf("hmi: cre_por error=%d\n", result);
+		log_err("hmi: open error=%d\n", result);
 
 		return result;
 	}
 
 	result = kcall->thread_create(PORT_HMI, &pk_ctsk);
 	if (result) {
-		dbg_printf("hmi: cre_tsk failed %d\n", result);
+		log_err("hmi: create error=%d\n", result);
 		kcall->port_close();
 		return result;
 	}
@@ -341,7 +341,7 @@ void start(VP_INT exinf)
 	receiver_tid = kcall->thread_get_id();
 
 	if (initialize() == E_OK) {
-		dbg_printf("hmi: start\n");
+		log_info("hmi: start\n");
 
 		if (keyboard_initialize() == E_OK)
 			reader = get_char;
@@ -352,7 +352,7 @@ void start(VP_INT exinf)
 
 		kcall->thread_destroy(PORT_HMI);
 		kcall->port_close();
-		dbg_printf("hmi: end\n");
+		log_info("hmi: end\n");
 	}
 
 	kcall->thread_end_and_destroy();

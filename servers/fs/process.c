@@ -39,10 +39,6 @@ int if_exec(fs_request *req)
 {
     W error_no;
 
-#ifdef EXEC_DEBUG
-    dbg_printf("fs: exec: start\n");
-#endif
-
     /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。
      */
     error_no = kcall->region_copy(get_rdv_tid(req->rdvno), (void*)(req->packet.args.arg1),
@@ -55,9 +51,6 @@ int if_exec(fs_request *req)
 	    return EFAULT;
     }
     req->buf[sizeof(req->buf) - 1] = '\0';
-#ifdef EXEC_DEBUG
-    dbg_printf("fs: exec: pathname is %s\n", req->buf);
-#endif
     error_no = exec_program(&(req->packet), req->packet.procid, req->buf);
     if (error_no) {
 	if (proc_get_status(req->packet.procid) == PS_RUN) {
@@ -152,18 +145,14 @@ if_fork (fs_request *req)
   error_no = proc_get_procp (req->packet.procid, &procp);		/* 親プロセスの情報の取りだし */
   if (error_no)
     {
-      dbg_printf ("fs: invalid process id (%d)\n", req->packet.procid);
+      log_debug("fs: invalid process id (%d)\n", req->packet.procid);
       return error_no;
     }
-
-#ifdef DEBUG
-  dbg_print ("fs: if_fork(): proc = 0x%x\n", procp);
-#endif
 
   error_no = proc_alloc_proc(&child);
   if (error_no)
     {
-      dbg_printf ("fs: cannot allocate process\n");
+      log_debug("fs: cannot allocate process\n");
       return error_no;
     }
 
@@ -178,7 +167,7 @@ if_fork (fs_request *req)
       (VP)(req->packet.args.arg1));
   if (main_thread_id < 0)
     {
-      dbg_printf ("fs: acre_tsk error (%d)\n", main_thread_id);
+      log_debug("fs: create error=%d\n", main_thread_id);
       proc_dealloc_proc(child->proc_pid);
       return error_no;
     }

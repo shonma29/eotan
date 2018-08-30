@@ -136,12 +136,12 @@ static int sfs_mount(ID device, vfs_t *rootfsp, vnode_t *rootfile)
 
     struct sfs_superblock *sfs_sb = rootfsp->private;
     if (sfs_sb->magic != TFS_MAGIC) {
-	dbg_printf("sfs: ERROR: mount: magic number %x\n", sfs_sb->magic);
+	log_err("sfs: ERROR: mount: magic number %x\n", sfs_sb->magic);
 	cache_release(rootfsp->private, false);
 	return (EINVAL);
     }
     if (sfs_sb->blksize != SFS_BLOCK_SIZE) {
-	dbg_printf("sfs: ERROR: mount: block size %d\n", sfs_sb->blksize);
+	log_err("sfs: ERROR: mount: block size %d\n", sfs_sb->blksize);
 	cache_release(rootfsp->private, false);
 	return (EINVAL);
     }

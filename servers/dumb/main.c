@@ -35,39 +35,39 @@ For more information, please refer to <http://unlicense.org/>
 
 static ID port = 0;
 
-static int test_cre_por();
-static int test_acp_por();
-static int test_del_por();
+static int test_open();
+static int test_receive();
+static int test_close();
 
 
-static int test_cre_por(void)
+static int test_open(void)
 {
 	T_CPOR pk_cpor = { TA_TFIFO, BUFSIZ, BUFSIZ };
 	ID dupport;
 
 	port = kcall->port_open(0);
-	dbg_printf(MYNAME ": test_cre_por_3 result = %d\n", port);
+	log_notice(MYNAME ": test_open_3 result = %d\n", port);
 	if (port != E_PAR)	return 0;
 
 	pk_cpor.poratr = TA_TPRI;
 	port = kcall->port_open(&pk_cpor);
-	dbg_printf(MYNAME ": test_cre_por_4 result = %d\n", port);
+	log_notice(MYNAME ": test_open_4 result = %d\n", port);
 	if (port != E_RSATR)	return 0;
 
 	pk_cpor.poratr = TA_TFIFO;
 	port = kcall->port_open(&pk_cpor);
-	dbg_printf(MYNAME ": test_cre_por_5 result  = %d\n", port);
+	log_notice(MYNAME ": test_open_5 result  = %d\n", port);
 	if (port != E_OK)	return 0;
 	port = STATIC_PORT;
 
 	dupport = kcall->port_open(&pk_cpor);
-	dbg_printf(MYNAME ": test_cre_por_6 result = %d\n", dupport);
+	log_notice(MYNAME ": test_open_6 result = %d\n", dupport);
 	if (dupport != E_OBJ)	return 0;
 
 	return 1;
 }
 
-static int test_acp_por(void)
+static int test_receive(void)
 {
 	unsigned char buf[BUFSIZ];
 	RDVNO rdvno;
@@ -76,29 +76,29 @@ static int test_acp_por(void)
 	ER result;
 
 /*	size = kcall->port_accept(port, 1, &rdvno, buf);
-	dbg_printf(MYNAME ": test_acp_por_1 size = %d\n", size);
+	log_notice(MYNAME ": test_receive_1 size = %d\n", size);
 	if (size != E_NOSPT)	return 0;
 
 	size = kcall->port_accept(0, 0xffffffff, &rdvno, buf);
-	dbg_printf(MYNAME ": test_acp_por_2 size = %d\n", size);
+	log_notice(MYNAME ": test_receive_2 size = %d\n", size);
 	if (size != E_NOEXS)	return 0;
 */
 	for (;;) {
 /*
 		size = kcall->port_accept(port, &rdvno, 0);
-		dbg_printf(MYNAME ": test_acp_por_3 rdvno = %d, size = %d\n",
+		log_notice(MYNAME ": test_receive_3 rdvno = %d, size = %d\n",
 				rdvno, size);
 		if (size != E_PAR)	return 0;
 */
-		dbg_printf(MYNAME ": test_acp_por_4 port = %d\n", port);
+		log_notice(MYNAME ": test_receive_4 port = %d\n", port);
 		size = kcall->port_accept(port, &rdvno, buf);
-		dbg_printf(MYNAME ": test_acp_por_4 rdvno = %d, size = %d\n",
+		log_notice(MYNAME ": test_receive_4 rdvno = %d, size = %d\n",
 				rdvno, size);
 
 		if (size < 0)	break;
 
 		for (i = 0; i < size; i++) {
-			dbg_printf(MYNAME ": buf[%d] = %c\n", i, buf[i]);
+			log_notice(MYNAME ": buf[%d] = %c\n", i, buf[i]);
 		}
 
 		buf[0] = 'd';
@@ -107,19 +107,19 @@ static int test_acp_por(void)
 		buf[3] = 'b';
 
 		result = kcall->port_reply(0, buf, 4);
-		dbg_printf(MYNAME ": test_rpl_rdv_1 result = %d\n", result);
+		log_notice(MYNAME ": test_reply_1 result = %d\n", result);
 		if (result != E_OBJ)	return 0;
 
 		result = kcall->port_reply(rdvno, buf, 17);
-		dbg_printf(MYNAME ": test_rpl_rdv_2 result = %d\n", result);
+		log_notice(MYNAME ": test_reply_2 result = %d\n", result);
 		if (result != E_PAR)	return 0;
 
 		result = kcall->port_reply(rdvno, 0, 4);
-		dbg_printf(MYNAME ": test_rpl_rdv_3 result = %d\n", result);
+		log_notice(MYNAME ": test_reply_3 result = %d\n", result);
 		if (result != E_PAR)	return 0;
 
 		result = kcall->port_reply(rdvno, buf, 4);
-		dbg_printf(MYNAME ": test_rpl_rdv_4 result = %d\n", result);
+		log_notice(MYNAME ": test_reply_4 result = %d\n", result);
 		if (result != E_OK)	return 0;
 
 		break;
@@ -128,16 +128,16 @@ static int test_acp_por(void)
 	return 1;
 }
 
-static int test_del_por(void)
+static int test_close(void)
 {
 	ER result;
 
 	result = kcall->port_close();
-	dbg_printf(MYNAME ": test_del_por_2 result = %d\n", result);
+	log_notice(MYNAME ": test_close_2 result = %d\n", result);
 	if (result != E_OK)	return 0;
 
 	result = kcall->port_close();
-	dbg_printf(MYNAME ": test_del_por_3 result = %d\n", result);
+	log_notice(MYNAME ": test_close_3 result = %d\n", result);
 	if (result != E_NOEXS)	return 0;
 
 	port = 0;
@@ -146,13 +146,13 @@ static int test_del_por(void)
 
 void start(VP_INT exinf)
 {
-	dbg_printf(MYNAME ": start\n");
+	log_info(MYNAME ": start\n");
 
-	if (test_cre_por())	test_acp_por();
+	if (test_open())	test_receive();
 
-	if (port > 0)	test_del_por();
+	if (port > 0)	test_close();
 
-	dbg_printf(MYNAME ": exit\n");
+	log_info(MYNAME ": exit\n");
 
 	kcall->thread_end_and_destroy();
 }

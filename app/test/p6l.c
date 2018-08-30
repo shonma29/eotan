@@ -65,7 +65,7 @@ int putline(UW start, UW size, UB *buf)
 
 	err = cal_por(PORT_CONSOLE, 0xffffffff, &msg, sizeof(msg.Twrite));
 	if (err < 0)
-		printf("cal_por error %d\n", (int)err);
+		printf("call error %d\n", (int)err);
 	return err;
 }
 

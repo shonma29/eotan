@@ -87,18 +87,8 @@ W proc_fork(struct proc *parent, struct proc *child)
 {
     W error_no;
 
-#ifdef FKDEBUG
-    dbg_printf
-	("fs: fork: call alloc_proc: (%s file, %d line), parent = 0x%x\n",
-	 __FILE__, __LINE__, parent);	/* */
-#endif
-
     /* プロセス情報のコピー */
     /* 管理情報 (プロセスおよびファイル)の更新 */
-#ifdef FKDEBUG
-    dbg_printf("fs: fork(): parent = 0x%x\n", parent);	/* */
-    dbg_printf("fs: fork(): child = 0x%x\n", child);	/* */
-#endif
     error_no = proc_duplicate(parent, child);
     if (error_no) {
 	return (error_no);
@@ -159,10 +149,6 @@ static W proc_duplicate(struct proc * source, struct proc * destination)
 
      *    新しく仮想空間を生成し、コピー元の仮想空間からデータをコピーする。
      */
-
-#ifdef FKDEBUG
-    dbg_printf("fs: fork: proc_duplicate: (%s file, %d line)\n", __FILE__, __LINE__);	/* */
-#endif
 
     /* region のコピー */
     /* text */

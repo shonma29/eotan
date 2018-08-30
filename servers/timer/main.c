@@ -112,7 +112,7 @@ static void wakeup(list_t *w, int dummy)
 		sleeper_t *s = getSleeperParent(w);
 		ER result = kcall->port_reply(s->rdvno, &reply, sizeof(reply));
 		if (result != E_OK)
-			dbg_printf(MYNAME ": rpl_rdv(0x%x) failed %d\n",
+			log_err(MYNAME ": reply(0x%x) failed %d\n",
 					s->rdvno, result);
 		slab_free(&sleeper_slab, s);
 	}
@@ -216,7 +216,7 @@ static void doit(void)
 		ER_UINT size = kcall->port_accept(PORT_TIMER, &rdvno, &arg);
 
 		if (size < 0) {
-			dbg_printf(MYNAME ": acp_por failed %d\n", size);
+			log_err(MYNAME ": receive failed %d\n", size);
 			break;
 		}
 
@@ -225,7 +225,7 @@ static void doit(void)
 			result = kcall->port_reply(rdvno, &reply,
 					sizeof(reply));
 			if (result != E_OK)
-				dbg_printf(MYNAME ": rpl_rdv(0x%x) failed %d\n",
+				log_err(MYNAME ": reply(0x%x) failed %d\n",
 						rdvno, result);
 		}
 	}
@@ -259,7 +259,7 @@ static ER init(void)
 	time_initialize();
 	result = define_handler(PIC_IR_VECTOR(ir_pit), &pk_dinh);
 	if (result != E_OK) {
-		dbg_printf(MYNAME ": interrupt_bind error=%d\n", result);
+		log_err(MYNAME ": interrupt_bind error=%d\n", result);
 		return result;
 	}
 
@@ -267,7 +267,7 @@ static ER init(void)
 
 	result = enable_interrupt(ir_pit);
 	if (result != E_OK) {
-		dbg_printf(MYNAME ": interrupt_enable error=%d\n", result);
+		log_err(MYNAME ": interrupt_enable error=%d\n", result);
 		pk_dinh.inthdr = NULL;
 		define_handler(PIC_IR_VECTOR(ir_pit), &pk_dinh);
 		return result;
@@ -275,7 +275,7 @@ static ER init(void)
 
 	result = kcall->port_open(&pk_cpor);
 	if (result != E_OK) {
-		dbg_printf(MYNAME ": cre_por failed %d\n", result);
+		log_err(MYNAME ": open failed %d\n", result);
 		pk_dinh.inthdr = NULL;
 		define_handler(PIC_IR_VECTOR(ir_pit), &pk_dinh);
 		return result;
@@ -289,13 +289,13 @@ void start(VP_INT exinf)
 	if (init() == E_OK) {
 		ER error;
 
-		dbg_printf(MYNAME ": start\n");
+		log_info(MYNAME ": start\n");
 		doit();
-		dbg_printf(MYNAME ": end\n");
+		log_info(MYNAME ": end\n");
 
 		error = kcall->port_close();
 		if (error != E_OK)
-			dbg_printf(MYNAME ": del_por failed %d\n", error);
+			log_err(MYNAME ": close failed %d\n", error);
 	}
 
 	kcall->thread_end_and_destroy();

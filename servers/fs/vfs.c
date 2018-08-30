@@ -348,7 +348,7 @@ fs_mount(const ID device,
     W err;
 
     if ((fstype < 0) || (fstype >= sizeof(fs_table) / sizeof(struct fs_entry))) {
-	dbg_printf("fs: mount unknown fstype %d\n", fstype);
+	log_debug("fs: mount unknown fstype %d\n", fstype);
 	return (EINVAL);
     }
 

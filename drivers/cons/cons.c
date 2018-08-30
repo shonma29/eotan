@@ -69,12 +69,12 @@ int read(unsigned char *outbuf, const int channel,
 		result = kcall->port_call(PORT_CONSOLE, &packet,
 				sizeof(packet.Tread));
 		if (result != sizeof(packet.Rread)) {
-			dbg_printf("cons: cal_por failed(%d)\n", result);
+			log_err("cons: call failed(%d)\n", result);
 			return -1;
 		}
 
 		else if (packet.Rread.count != len) {
-			dbg_printf("cons: read icompletely\n");
+			log_err("cons: call icompletely\n");
 			return -1;
 		}
 
@@ -106,12 +106,12 @@ int write(unsigned char *inbuf, const int channel,
 		result = kcall->port_call(PORT_CONSOLE, &packet,
 				sizeof(packet.Twrite));
 		if (result != sizeof(packet.Rwrite)) {
-			dbg_printf("cons: cal_por failed(%d)\n", result);
+			log_err("cons: call failed(%d)\n", result);
 			return -1;
 		}
 
 		else if (packet.Rwrite.count != len) {
-			dbg_printf("cons: wrote icompletely\n");
+			log_err("cons: wrote icompletely\n");
 			return -1;
 		}
 

@@ -95,7 +95,7 @@ W exec_init(ID process_id, char *pathname)
 		//TODO destroy vmtree and process
 		return err;
 	} else {
-		dbg_printf("fs: exec_init(%d, %s)\n", process_id, pathname);
+		log_info("fs: exec_init(%d, %s)\n", process_id, pathname);
 		err = exec_program(&req, process_id, pathname);
 	}
 
@@ -107,7 +107,7 @@ static W create_init(ID process_id)
 	struct proc *p;
 	W err;
 
-	dbg_printf("fs: create_init(%d)\n", process_id);
+	log_info("fs: create_init(%d)\n", process_id);
 
 	err = proc_get_procp(process_id, &p);
 	if (err)
@@ -134,7 +134,7 @@ static W create_init(ID process_id)
 
 	err = open_special_devices(p);
 	if (err) {
-		dbg_printf("fs: can't open special files\n");
+		log_debug("fs: can't open special files\n");
 		return err;
 	}
 

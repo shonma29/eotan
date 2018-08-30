@@ -245,9 +245,6 @@ int sfs_wstat(vnode_t *ip)
 
 int sfs_i_close(vnode_t * ip)
 {
-#ifdef FMDEBUG
-    dbg_printf("sfs: sfs_i_close\n");
-#endif
     struct sfs_inode *sfs_inode = ip->private;
     if (!sfs_inode) {
 	return 0;
@@ -276,10 +273,6 @@ int sfs_i_close(vnode_t * ip)
     if (!cache_release(sfs_inode, false)) {
 	return (EIO);
     }
-
-#ifdef FMDEBUG
-    dbg_printf("sfs: sfs_i_close: done\n");
-#endif
 
     return 0;
 }

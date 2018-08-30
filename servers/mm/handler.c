@@ -68,7 +68,8 @@ static void expand_stack(const int tid, const int addr)
 
 		if (!p) {
 			//TODO test
-			dbg_printf("mm: unknown process=%d\n", th->process_id);
+			log_warning("mm: expand unknown process=%d\n",
+					th->process_id);
 			return;
 		}
 
@@ -95,7 +96,7 @@ static void expand_stack(const int tid, const int addr)
 
 	} else
 		//TODO test
-		dbg_printf("mm: unknown thread=%d\n", tid);
+		log_warning("mm: expand unknown thread=%d\n", tid);
 }
 
 static void kill(const int tid, const int dummy)
@@ -105,7 +106,7 @@ static void kill(const int tid, const int dummy)
 	struct posix_request req;
 
 	if (!th) {
-		dbg_printf("mm: unknown thread=%d\n", tid);
+		log_warning("mm: kill unknown thread=%d\n", tid);
 		return;
 	}
 
@@ -116,5 +117,5 @@ static void kill(const int tid, const int dummy)
 
 	rsize = kcall->port_call(PORT_FS, &req, sizeof(struct posix_request));
 	if (rsize < 0)
-		dbg_printf("mm: failed to kill(%d)\n", rsize);
+		log_err("mm: kill call error=%d\n", rsize);
 }

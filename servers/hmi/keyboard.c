@@ -122,13 +122,13 @@ ER keyboard_initialize(void)
 
 	result = define_handler(PIC_IR_VECTOR(ir_keyboard), &pk_dinh);
 	if (result) {
-		dbg_printf("keyboard: interrupt_bind error=%d\n", result);
+		log_err("keyboard: bind error=%d\n", result);
 		return result;
 	}
 
 	result = enable_interrupt(ir_keyboard);
 	if (result) {
-		dbg_printf("keyboard: interrupt_enable error=%d\n", result);
+		log_err("keyboard: enable error=%d\n", result);
 		pk_dinh.inthdr = NULL;
 		define_handler(PIC_IR_VECTOR(ir_keyboard), &pk_dinh);
 		return result;

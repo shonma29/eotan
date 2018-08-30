@@ -99,7 +99,7 @@ int device_init(void)
 
 	hash = hash_create(MAX_DEVICE, calc_hash, compare);
 	if (!hash) {
-		dbg_printf("devfs: cannot create hash\n");
+		log_err("devfs: cannot create hash\n");
 		return FALSE;
 	}
 
@@ -116,12 +116,12 @@ int device_init(void)
 
 		if (hash_put(hash, (void*)(p->id),
 				(void*)&(table[num_device])))
-			dbg_printf("devfs: attach failure(%x, %s, %d, %x)\n",
+			log_err("devfs: attach failure(%x, %s, %d, %x)\n",
 					p->id, p->name, p->size, p);
 
 		else {
 			num_device++;
-			dbg_printf("devfs: attach success(%x, %s, %d, %x)\n",
+			log_info("devfs: attach success(%x, %s, %d, %x)\n",
 					p->id, p->name, p->size, p);
 		}
 	}

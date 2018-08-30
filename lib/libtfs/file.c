@@ -200,12 +200,6 @@ int sfs_i_read(vnode_t * ip, B * buf, W start, W length, W * rlength)
     W bn;
     B *cbuf;
 
-#ifdef FMDEBUG
-    dbg_printf
-	("sfs: sfs_i_read: start. ip = 0x%x, start = %d, length = %d, buf = 0x%x\n",
-	 ip, start, length, buf);
-#endif
-
     fd = ip->fs->device.channel;
     fsp = ip->fs;
 
@@ -220,11 +214,6 @@ int sfs_i_read(vnode_t * ip, B * buf, W start, W length, W * rlength)
     struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
     struct sfs_inode *sfs_inode = ip->private;
     while (length > 0) {
-#ifdef FMDEBUG
-	dbg_printf("sfs: read block: %d\n",
-	       sfs_get_block_num(fd, fsp, sfs_inode,
-				 start / fsp->fs_blksize));
-#endif
 	bn = tfs_get_block_no(fsp, sfs_inode,
 			       start / sb->blksize);
 	if (!bn) {
@@ -264,10 +253,6 @@ int sfs_i_write(vnode_t * ip, B * buf, W start, W size, W * rsize)
     W bn;
     B *cbuf;
 
-#ifdef FMDEBUG
-    dbg_printf("sfs: sfs_i_write:(start = %d, size = %d)\n", start, size);	/* */
-#endif
-
     *rsize = 0;
     retsize = size;
     filesize = start + retsize;
@@ -277,13 +262,6 @@ int sfs_i_write(vnode_t * ip, B * buf, W start, W size, W * rsize)
     struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
     struct sfs_inode *sfs_inode = ip->private;
     while (size > 0) {
-#ifdef FMDEBUG
-	dbg_printf("sfs: %s\n",
-	       (sfs_get_block_num(fd, fsp, sfs_inode,
-				  start / fsp->fs_blksize) <= 0) ?
-	       "allocate block" : "read block");
-#endif
-
 	if (!(bn = tfs_get_block_no(fsp, sfs_inode,
 				    start / sb->blksize))) {
 	    /* ファイルサイズを越えて書き込む場合には、新しくブロックをアロケートする
@@ -334,10 +312,6 @@ int sfs_i_write(vnode_t * ip, B * buf, W start, W size, W * rsize)
     sfs_inode->i_ctime = clock;
     ip->dirty = true;
     *rsize = retsize - size;
-
-#ifdef FMDEBUG
-    dbg_printf("sfs: write size: %d bytes\n", *rsize);
-#endif
 
     return 0;
 }

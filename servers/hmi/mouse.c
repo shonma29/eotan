@@ -103,13 +103,13 @@ ER mouse_initialize(void)
 
 	result = define_handler(PIC_IR_VECTOR(ir_mouse), &pk_dinh);
 	if (result) {
-		dbg_printf("mouse: interrupt_bind error=%d\n", result);
+		log_err("mouse: bind error=%d\n", result);
 		return result;
 	}
 
 	result = enable_interrupt(ir_mouse);
 	if (result) {
-		dbg_printf("mouse: interrupt_enable error=%d\n", result);
+		log_err("mouse: enable error=%d\n", result);
 		pk_dinh.inthdr = NULL;
 		define_handler(PIC_IR_VECTOR(ir_mouse), &pk_dinh);
 		return result;
