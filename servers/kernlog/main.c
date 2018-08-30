@@ -214,12 +214,12 @@ void start(VP_INT exinf)
 	ER_ID port = initialize();
 
 	if (port >= 0) {
-		/*info(MYNAME ": start port=%d\n", port);*/
+		kcall->printk(MYNAME ": start port=%d\n", port);
 
 		while (accept(port) == E_OK);
 
 		kcall->port_close();
-		/*info(MYNAME ": end\n");*/
+		kcall->printk(MYNAME ": end\n");
 	}
 
 	kcall->thread_end_and_destroy();
