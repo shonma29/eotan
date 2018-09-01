@@ -92,6 +92,7 @@ static inline int fgetpos(FILE *stream, fpos_t *pos)
 	return 0;
 }
 
+extern FILE *fopen(const char *, const char *);
 extern int fclose(FILE *);
 extern int fflush(FILE *);
 
@@ -103,6 +104,10 @@ extern int fputc(int, FILE *);
 extern int putchar(int);
 extern int fputs(const char *, FILE *);
 extern int puts(const char *);
+
+extern size_t fread(void *, size_t, size_t, FILE *);
+extern int fseek(FILE *, long, int);
+extern size_t fwrite(const void *, size_t, size_t, FILE *);
 
 extern int printf(const char *, ...);
 extern int fprintf(FILE *, const char *, ...);
