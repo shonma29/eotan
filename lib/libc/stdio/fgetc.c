@@ -39,12 +39,13 @@ int fgetc(FILE *stream)
 		return EOF;
 
 	if (stream->pos >= stream->len) {
-		int len;
+		if (fflush(stream))
+			return EOF;
 
 		stream->pos = 0;
 		stream->seek_pos += stream->len;
-		len = read(stream->fd, stream->buf, stream->buf_size);
 
+		int len = read(stream->fd, stream->buf, stream->buf_size);
 		if (len == 0) {
 			stream->len = 0;
 			stream->mode |= __FILE_MODE_EOF;

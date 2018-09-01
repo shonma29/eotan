@@ -30,7 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 int fputs(const char *s, FILE *stream)
 {
 	for (; *s; s++)
-		if (fputc(*s, stdout) == EOF)
+		if (fputc(*s, stream) == EOF)
 			return EOF;
 
 	return 0;
