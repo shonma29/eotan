@@ -26,7 +26,7 @@
 TARGET = boot.iso
 
 .PHONY: tools libs kern core drivers servers \
-	apps bin test contrib data starter initrd
+	apps bin test data starter initrd
 
 all: libs tools kern initrd apps data starter
 
@@ -49,7 +49,7 @@ drivers:
 servers:
 	$(MAKE) -f servers/Makefile
 
-apps: bin test contrib
+apps: bin test
 
 bin:
 	app/tfs/writer initrd.img mkdir /bin
@@ -57,9 +57,6 @@ bin:
 
 test:
 	$(MAKE) -f app/test/Makefile WD=app/test
-
-contrib:
-	$(MAKE) -f app/contribution/pager/Makefile WD=app/contribution/pager
 
 data: motd bees.p6
 	./motd.sh > motd
@@ -91,7 +88,6 @@ clean:
 	$(MAKE) -f servers/Makefile clean
 	$(MAKE) -f app/bin/Makefile WD=app/bin clean
 	$(MAKE) -f app/test/Makefile WD=app/test clean
-	$(MAKE) -f app/contribution/pager/Makefile WD=app/contribution/pager clean
 	$(RM) initrd.img initrd.img.rc motd
 	$(MAKE) -f starter/arch/Makefile WD=starter/arch clean
 	$(RM) -rf build
