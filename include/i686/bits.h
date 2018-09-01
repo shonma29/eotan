@@ -49,7 +49,7 @@ static inline int count_nlz(int d)
 	d |= d >> 8;
 	d |= d >> 16;
 
-	return count_bits(- d);
+	return count_bits(~d);
 }
 
 #endif
