@@ -50,6 +50,6 @@ static inline double difftime(time_t time1, time_t time0)
 
 extern time_t time(time_t *);
 extern int clock_gettime(clockid_t, struct timespec *);
-extern struct tm *gmtime(const time_t *);
+extern struct tm *gmtime_r(const time_t *, struct tm *);
 
 #endif
