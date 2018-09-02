@@ -92,6 +92,7 @@ extern int atoi(const char *);
 extern long atol(const char *);
 extern void *bsearch(const void *, const void *, size_t,
 		size_t, int (*)(const void *, const void *));
+extern void qsort(void *, size_t, size_t, int (*)(const void *, const void *));
 extern char *getenv(const char *);
 extern int rand(void);
 extern void srand(unsigned int);
