@@ -280,3 +280,23 @@ int vfs_permit(const vnode_t *ip, const struct permission *permission,
 	unsigned int need = want & (R_OK | W_OK | X_OK);
 	return ((mode & need) == need)? 0:EACCES;
 }
+
+int vfs_read(vnode_t *ip, void *dest, const int offset, const size_t nbytes,
+		size_t *read_len)
+{
+#ifdef UPDATE_ATIME
+	SYSTIM clock;
+	time_get(&clock);
+#endif
+	int result = ip->fs->operations.read(ip, dest, offset,
+				(offset + nbytes > ip->size)?
+						(ip->size - offset):nbytes,
+				read_len);
+#ifdef UPDATE_ATIME
+	if (result >= 0) {
+		ip->i_atime = clock;
+		ip->i_dirty = true;
+	}
+#endif
+	return result;
+}

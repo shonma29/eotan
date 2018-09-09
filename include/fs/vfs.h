@@ -123,5 +123,7 @@ extern int vfs_create(vnode_t *, char *, const mode_t,
 extern int vfs_remove(vnode_t *, char *, const struct permission *);
 extern int vfs_permit(const vnode_t *, const struct permission *,
 		const unsigned int);
+extern int vfs_read(vnode_t *ip, void *dest, const int offset,
+		const size_t nbytes, size_t *read_len);
 
 #endif

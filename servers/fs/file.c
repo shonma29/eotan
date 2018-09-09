@@ -209,7 +209,7 @@ int if_read(fs_request *req)
 	 rest_length > 0; rest_length -= rlength, i += rlength) {
 	/* MAX_BODY_SIZE 毎にファイルに読み込み */
 	len = rest_length > sizeof(req->buf) ? sizeof(req->buf) : rest_length;
-	int delta = vfs_read(fp->f_inode, req->buf, offset, len, &rlength);
+	int delta = fs_read(fp->f_inode, req->buf, offset, len, &rlength);
 	if (delta < 0) {
 	    return (-delta);
 	} else if (!rlength)

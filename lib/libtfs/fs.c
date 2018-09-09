@@ -114,7 +114,7 @@ vfs_operation_t sfs_fsops = {
     sfs_wstat,
     sfs_i_create,
     sfs_i_close,
-    sfs_i_read,
+    tfs_read,
     sfs_i_write
 };
 

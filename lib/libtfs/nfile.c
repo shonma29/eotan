@@ -24,34 +24,42 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#ifndef _FS_VFSFUNCS_H_
-#define _FS_VFSFUNCS_H_
+#include <string.h>
+#include <fs/sfs.h>
+#include <sys/errno.h>
+#include "func.h"
 
-#include <sys/stat.h>
-#include "vfs.h"
-
-static inline vfs_t *getFsParent(const list_t *p) {
-	return (vfs_t*)((intptr_t)p - offsetof(vfs_t, bros));
-}
-
-static inline int vfs_sync(vnode_t *ip)
-{
-	return ip->fs->operations.sync(ip);
-}
 
 //TODO use off_t
-static inline int fs_read(vnode_t *ip, void *buf, const int offset,
-		const size_t len, size_t *rlength)
+int tfs_read(vnode_t *ip, char *dest, int offset, size_t nbytes,
+		size_t *read_len)
 {
-	return ((ip->mode & S_IFMT) == S_IFDIR)?
-		ip->fs->operations.getdents(ip, buf, offset, len, rlength)
-		:vfs_read(ip, buf, offset, len, rlength);
-}
-//TODO use off_t
-static inline int vfs_write(vnode_t *ip, const void *buf, const int offset,
-		const size_t len, size_t *rlength)
-{
-	return ip->fs->operations.write(ip, buf, offset, len, rlength);
-}
+	*read_len = nbytes;
 
-#endif
+	vfs_t *fs = ip->fs;
+	size_t block_size = ((struct sfs_superblock*)(fs->private))->blksize;
+	uint32_t skip = offset % block_size;
+	for (offset /= block_size; nbytes > 0; offset++) {
+		size_t size = block_size - skip;
+		if (size > nbytes)
+				size = nbytes;
+
+		blkno_t block_no = tfs_get_block_no(fs, ip->private, offset);
+		if (!block_no)
+			return (-EIO);
+
+		uint8_t *src = cache_get(&(fs->device), block_no);
+		if (!src)
+			return (-EIO);
+
+		memcpy(dest, &src[skip], size);
+		if (!cache_release(src, false))
+			return (-EIO);
+
+		skip = 0;
+		dest += size;
+		nbytes -= size;
+	}
+
+	return *read_len;
+}

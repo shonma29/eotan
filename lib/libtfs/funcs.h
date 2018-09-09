@@ -26,11 +26,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
 #include <stddef.h>
 #include <fs/vfs.h>
 #include <sys/dirent.h>
-#include <sys/types.h>
 
 /* block.c */
 extern blkno_t tfs_allocate_block(vfs_t *);
@@ -40,6 +38,10 @@ extern blkno_t tfs_get_block_no(vfs_t *, const struct sfs_inode *,
 		const unsigned int);
 extern blkno_t tfs_set_block_no(vfs_t *, struct sfs_inode *,
 		const unsigned int, const blkno_t);
+
+/* nfile.c */
+//TODO use off_t
+extern int tfs_read(vnode_t *, char *, int, size_t, size_t *);
 
 /* ndirectory.c */
 extern int tfs_getdents(vnode_t *, struct dirent *, const int,  const size_t,

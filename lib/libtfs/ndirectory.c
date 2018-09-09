@@ -44,8 +44,8 @@ int tfs_getdents(vnode_t *parent, struct dirent *entry, const int offset,
 				+ TFS_MAXNAMLEN];
 		struct tfs_dir *dir = (struct tfs_dir*)buf;
 		size_t len;
-		int error_no = sfs_i_read(parent, buf, offset + delta,
-				sizeof(buf), (W*)&len);
+		int error_no = vfs_read(parent, buf, offset + delta,
+				sizeof(buf), &len);
 		if (error_no < 0)
 			return error_no;
 
@@ -83,8 +83,7 @@ int tfs_walk(vnode_t *parent, const char *name, vnode_t **node)
 	//TODO optimize
 	for (offset = 0;;) {
 		size_t len;
-		int error_no = sfs_i_read(parent, buf, offset, sizeof(buf),
-				(W*)&len);
+		int error_no = vfs_read(parent, buf, offset, sizeof(buf), &len);
 		if (error_no < 0)
 			return (-error_no);
 
@@ -198,8 +197,7 @@ int tfs_remove_entry(vnode_t *parent, const char *name, vnode_t *node)
 	//TODO optimize
 	for (offset = 0;;) {
 		size_t len;
-		int error_no = sfs_i_read(parent, buf, offset, sizeof(buf),
-				(W*)&len);
+		int error_no = vfs_read(parent, buf, offset, sizeof(buf), &len);
 		if (error_no < 0)
 			return (-error_no);
 
@@ -232,8 +230,8 @@ int tfs_remove_entry(vnode_t *parent, const char *name, vnode_t *node)
 	//TODO optimize
 	for (;;) {
 		size_t len;
-		int error_no = sfs_i_read(parent, buf, offset + delta,
-				sizeof(buf), (W*)&len);
+		int error_no = vfs_read(parent, buf, offset + delta,
+				sizeof(buf), &len);
 		if (error_no < 0)
 			return (-error_no);
 

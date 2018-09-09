@@ -187,60 +187,6 @@ sfs_i_create(vnode_t * parent,
 }
 
 
-/* sfs_i_read -
- *
- */
-//TODO use off_t
-int sfs_i_read(vnode_t * ip, B * buf, W start, W length, W * rlength)
-{
-    W copysize;
-    W offset;
-    ID fd;
-    vfs_t *fsp;
-    W bn;
-    B *cbuf;
-
-    fd = ip->fs->device.channel;
-    fsp = ip->fs;
-
-    if (start + length > ip->size) {
-	length = ip->size - start;
-    }
-    if (length < 0)
-	length = 0;
-
-    *rlength = length;
-
-    struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
-    struct sfs_inode *sfs_inode = ip->private;
-    while (length > 0) {
-	bn = tfs_get_block_no(fsp, sfs_inode,
-			       start / sb->blksize);
-	if (!bn) {
-	    return (-EIO);
-	}
-
-	cbuf = cache_get(&(fsp->device), bn);
-	offset = start % sb->blksize;
-	if (sb->blksize - offset < length) {
-	    copysize = sb->blksize - offset;
-	} else {
-	    copysize = length;
-	}
-
-	memcpy(buf, &cbuf[offset], copysize);
-	cache_release(cbuf, false);
-	buf += copysize;
-	start += copysize;
-	length -= copysize;
-    }
-#ifdef UPDATE_ATIME
-    ip->i_atime = get_system_time();
-    ip->i_dirty = 1;
-#endif
-    return *rlength;
-}
-
 //TODO use off_t
 int sfs_i_write(vnode_t * ip, B * buf, W start, W size, W * rsize)
 {
