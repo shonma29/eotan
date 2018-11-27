@@ -35,7 +35,7 @@ int if_link(fs_request *req)
     W error_no;
     ID caller = get_rdv_tid(req->rdvno);
 
-    error_no = kcall->region_copy(caller, (UB*)(req->packet.args.arg1),
+    error_no = kcall->region_copy(caller, (UB*)(req->packet.arg1),
 		     sizeof(src) - 1, src);
     if (error_no < 0) {
 	/* パス名のコピーエラー */
@@ -45,7 +45,7 @@ int if_link(fs_request *req)
 	    return EFAULT;
     }
     src[NAME_MAX] = '\0';
-    error_no = kcall->region_copy(caller, (UB*)(req->packet.args.arg2),
+    error_no = kcall->region_copy(caller, (UB*)(req->packet.arg2),
 		     sizeof(req->buf) - 1, req->buf);
     if (error_no < 0) {
 	/* パス名のコピーエラー */
@@ -61,11 +61,11 @@ int if_link(fs_request *req)
      * この情報に基づいて、ファイルを削除できるかどうかを
      * 決定する。
      */
-    error_no = proc_get_permission(req->packet.procid, &acc);
+    error_no = proc_get_permission(req->packet.process_id, &acc);
     if (error_no)
 	return error_no;
 
-    error_no = fs_link_file(req->packet.procid, src, req->buf, &acc);
+    error_no = fs_link_file(req->packet.process_id, src, req->buf, &acc);
     if (error_no)
 	return error_no;
 

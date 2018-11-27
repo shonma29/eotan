@@ -41,7 +41,7 @@ int if_exec(fs_request *req)
 
     /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。
      */
-    error_no = kcall->region_copy(get_rdv_tid(req->rdvno), (void*)(req->packet.args.arg1),
+    error_no = kcall->region_copy(get_rdv_tid(req->rdvno), (void*)(req->packet.arg1),
 		     sizeof(req->buf) - 1, req->buf);
     if (error_no < 0) {
 	/* パス名のコピーエラー */
@@ -51,16 +51,16 @@ int if_exec(fs_request *req)
 	    return EFAULT;
     }
     req->buf[sizeof(req->buf) - 1] = '\0';
-    error_no = exec_program(&(req->packet), req->packet.procid, req->buf);
+    error_no = exec_program(&(req->packet), req->packet.process_id, req->buf);
     if (error_no) {
-	if (proc_get_status(req->packet.procid) == PS_RUN) {
+	if (proc_get_status(req->packet.process_id) == PS_RUN) {
 	    /* 呼び出しを行ったプロセスがまだ生き残っていた場合 */
 	    /*エラーメッセージを返す */
 	    return error_no;
 	} else {
 	    /* 既にプロセスの仮想メモリが開放されている場合 */
 	    /* exit が実行されることは無いので，ここで開放する */
-	    proc_exit(req->packet.procid);
+	    proc_exit(req->packet.process_id);
 	    return EOK;
 	}
     }
@@ -80,14 +80,14 @@ if_exit (fs_request *req)
   ER error_no;
   ID tskid;
 
-  mypid = req->packet.procid;
+  mypid = req->packet.process_id;
   error_no = proc_get_procp(mypid, &myprocp);
   if (error_no)
     /* メッセージの呼び出し元にエラーを返しても処理できないが，
        タスクは exd_tsk で終了する */
     return ESRCH;
 
-  myprocp->proc_exst = req->packet.args.arg1;
+  myprocp->proc_exst = req->packet.arg1;
 
   error_no = proc_get_procp(myprocp->proc_ppid, &procp);
   if (error_no)
@@ -142,7 +142,7 @@ if_fork (fs_request *req)
   ID main_thread_id;
   struct proc *child;
 
-  error_no = proc_get_procp (req->packet.procid, &procp);		/* 親プロセスの情報の取りだし */
+  error_no = proc_get_procp (req->packet.process_id, &procp);		/* 親プロセスの情報の取りだし */
   if (error_no)
     {
       log_debug("fs: invalid process id (%d)\n", req->packet.procid);
@@ -163,8 +163,8 @@ if_fork (fs_request *req)
       return error_no;
     }
 
-  main_thread_id = thread_create(child->proc_pid, (FP)(req->packet.args.arg2),
-      (VP)(req->packet.args.arg1));
+  main_thread_id = thread_create(child->proc_pid, (FP)(req->packet.arg2),
+      (VP)(req->packet.arg1));
   if (main_thread_id < 0)
     {
       log_debug("fs: create error=%d\n", main_thread_id);
@@ -198,7 +198,7 @@ int if_kill(fs_request *req)
 
     /* req->caller が task 1 の場合は，返事のメッセージを送らない */
 
-    mypid = req->packet.args.arg1;
+    mypid = req->packet.arg1;
     error_no = proc_get_procp(mypid, &myprocp);
     if (error_no)
 	return ESRCH;
@@ -257,8 +257,8 @@ if_waitpid (fs_request *req)
   W mypid, pid, children, exst;
   struct proc *procp;
 
-  pid = req->packet.args.arg1;
-  mypid = req->packet.procid;
+  pid = req->packet.arg1;
+  mypid = req->packet.process_id;
   if (pid == 0) pid = (-proc_table[mypid].proc_pgid);
 
   /* プロセステーブルを走査して子プロセスを調査 */
@@ -288,7 +288,7 @@ if_waitpid (fs_request *req)
   }
   if (children > 0) {
     /* 対応する子プロセスはあったが，まだ終了していなかった */
-    if (req->packet.args.arg3 & WNOHANG) {
+    if (req->packet.arg3 & WNOHANG) {
       /* 親に返事を送る必要がある */
       reply2(req->rdvno, 0, 0, 0);
     }

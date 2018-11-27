@@ -29,10 +29,10 @@ For more information, please refer to <http://unlicense.org/>
 
 int dup2(int oldd, int newd)
 {
-	struct posix_request request;
+	pm_args_t request;
 
-	request.args.arg1 = (W)oldd;
-	request.args.arg2 = (W)newd;
+	request.arg1 = oldd;
+	request.arg2 = newd;
 
 	return _call_fs(fscall_dup2, &request);
 }

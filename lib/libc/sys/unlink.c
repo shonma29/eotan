@@ -29,9 +29,9 @@ For more information, please refer to <http://unlicense.org/>
 
 int unlink(const char *path)
 {
-	struct posix_request request;
+	pm_args_t request;
 
-	request.args.arg1 = (W)path;
+	request.arg1 = (int)path;
   
 	return _call_fs(fscall_remove, &request);
 }

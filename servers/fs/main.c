@@ -136,8 +136,8 @@ static bool port_init(void)
 {
 	struct t_cpor packet = {
 		TA_TFIFO,
-		sizeof(struct posix_request),
-		sizeof(struct posix_response)
+		sizeof(pm_args_t),
+		sizeof(pm_reply_t)
 	};
 
 	return kcall->port_open(&packet) == E_OK;
@@ -218,7 +218,7 @@ void start(VP_INT exinf)
 
 		size = kcall->port_accept(PORT_FS, &(req->rdvno),
 				&(req->packet));
-		if (size == sizeof(struct posix_request)) {
+		if (size == sizeof(pm_args_t)) {
 			int result;
 
 			if (req->packet.operation >=

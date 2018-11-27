@@ -24,9 +24,9 @@ Version 2, June 1991
 void
 _exit (int status)
 {
-  struct posix_request	req;
+  pm_args_t	req;
 
-  req.args.arg1 = status;
+  req.arg1 = status;
   _make_connection(fscall_exit, &req);
   for (;;);
 }

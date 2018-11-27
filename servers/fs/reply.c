@@ -34,10 +34,10 @@ For more information, please refer to <http://unlicense.org/>
 int reply2(const RDVNO rdvno, int32_t error_no, int32_t result1,
 		int32_t result2)
 {
-	struct posix_response response = {
-		error_no,
+	pm_reply_t response = {
 		result1,
-		result2
+		result2,
+		error_no
 	};
 
 	return kcall->port_reply(rdvno, &response, sizeof(response))?
@@ -46,9 +46,9 @@ int reply2(const RDVNO rdvno, int32_t error_no, int32_t result1,
 
 int reply64(const RDVNO rdvno, int32_t error_no, int64_t result)
 {
-	struct posix_response response;
+	pm_reply_t response;
 	response.error_no = error_no;
-	int64_t *p = (int64_t*)&(response.status);
+	int64_t *p = (int64_t*)&(response.result1);
 	*p = result;
 
 	return kcall->port_reply(rdvno, &response, sizeof(response))?

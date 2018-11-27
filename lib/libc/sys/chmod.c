@@ -29,10 +29,10 @@ For more information, please refer to <http://unlicense.org/>
 
 int chmod(const char *path, mode_t mode)
 {
-	struct posix_request request;
+	pm_args_t request;
 
-	request.args.arg1 = (W)path;
-	request.args.arg2 = (W)mode;
+	request.arg1 = (int)path;
+	request.arg2 = (int)mode;
 
 	return _call_fs(fscall_chmod, &request);
 }

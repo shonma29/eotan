@@ -40,7 +40,7 @@ int if_close(fs_request *req)
     struct file *fp;
     W err;
 
-    err = session_get_opened_file(req->packet.procid, req->packet.args.arg1, &fp);
+    err = session_get_opened_file(req->packet.process_id, req->packet.arg1, &fp);
     if (err)
 	return err;
 
@@ -64,11 +64,11 @@ if_dup2 (fs_request *req)
 
   /* プロセスからファイル構造体へのポインタを取り出す
    */
-  error_no = session_get_opened_file (req->packet.procid, req->packet.args.arg1, &fp);
+  error_no = session_get_opened_file (req->packet.process_id, req->packet.arg1, &fp);
   if (error_no)
       return error_no;
 
-  error_no = proc_get_file (req->packet.procid, req->packet.args.arg2, &fp2);
+  error_no = proc_get_file (req->packet.process_id, req->packet.arg2, &fp2);
   if (error_no)
     return error_no;
 
@@ -81,12 +81,12 @@ if_dup2 (fs_request *req)
     fp2->f_inode = NULL;
   }
   fp->f_inode->refer_count++;
-  error_no = proc_set_file(req->packet.procid, req->packet.args.arg2,
+  error_no = proc_set_file(req->packet.process_id, req->packet.arg2,
 			fp->f_omode, fp->f_inode);
   if (error_no)
       return error_no;
 
-  reply2(req->rdvno, 0, req->packet.args.arg2, 0);
+  reply2(req->rdvno, 0, req->packet.arg2, 0);
   return EOK;
 }  
 
@@ -94,13 +94,13 @@ int if_lseek(fs_request *req)
 {
     struct file *fp;
     W error_no;
-    off_t *offp = (off_t*)&(req->packet.args.arg2);
+    off_t *offp = (off_t*)&(req->packet.arg2);
 
-    error_no = session_get_opened_file(req->packet.procid, req->packet.args.arg1, &fp);
+    error_no = session_get_opened_file(req->packet.process_id, req->packet.arg1, &fp);
     if (error_no)
 	return error_no;
 
-    switch (req->packet.args.arg4) {
+    switch (req->packet.arg4) {
     case SEEK_SET:
 	fp->f_offset = *offp;
 	break;
@@ -141,26 +141,26 @@ int if_open(fs_request *req)
     vnode_t *newip;
     struct permission acc;
 
-    error_no = proc_alloc_fileid(req->packet.procid, &fileid);
+    error_no = proc_alloc_fileid(req->packet.process_id, &fileid);
     if (error_no)
 	/* メモリ取得エラー */
 	return ENOMEM;
 
     /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。
      */
-    error_no = session_get_path(&startip, req->packet.procid,
-		    get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg1),
+    error_no = session_get_path(&startip, req->packet.process_id,
+		    get_rdv_tid(req->rdvno), (UB*)(req->packet.arg1),
 		    (UB*)(req->buf));
     if (error_no)
 	return error_no;
 
-    error_no = proc_get_permission(req->packet.procid, &acc);
+    error_no = proc_get_permission(req->packet.process_id, &acc);
     if (error_no)
 	return error_no;
 
     error_no = vfs_open(startip, req->buf,
-			 req->packet.args.arg2,
-			 req->packet.args.arg3,
+			 req->packet.arg2,
+			 req->packet.arg3,
 			 &acc, &newip);
     if (error_no)
 	/* ファイルがオープンできない */
@@ -170,14 +170,14 @@ int if_open(fs_request *req)
 	/* ファイルは、ディレクトリだった
 	 * エラーとする
 	 */
-	if (req->packet.args.arg2 != O_RDONLY) {
+	if (req->packet.arg2 != O_RDONLY) {
 	    vnodes_remove(newip);
 	    return EISDIR;
 	}
     }
 
-    if (proc_set_file(req->packet.procid, fileid,
-		      req->packet.args.arg2, newip)) {
+    if (proc_set_file(req->packet.process_id, fileid,
+		      req->packet.arg2, newip)) {
 	vnodes_remove(newip);
 	return EINVAL;
     }
@@ -197,7 +197,7 @@ int if_read(fs_request *req)
     W i, len;
     ID caller = get_rdv_tid(req->rdvno);
 
-    error_no = session_get_opened_file(req->packet.procid, req->packet.args.arg1, &fp);
+    error_no = session_get_opened_file(req->packet.process_id, req->packet.arg1, &fp);
     if (error_no)
 	return error_no;
 
@@ -205,7 +205,7 @@ int if_read(fs_request *req)
 	return EBADF;
 
     int offset = fp->f_offset;
-    for (i = 0, rest_length = req->packet.args.arg3;
+    for (i = 0, rest_length = req->packet.arg3;
 	 rest_length > 0; rest_length -= rlength, i += rlength) {
 	/* MAX_BODY_SIZE 毎にファイルに読み込み */
 	len = rest_length > sizeof(req->buf) ? sizeof(req->buf) : rest_length;
@@ -216,7 +216,7 @@ int if_read(fs_request *req)
 	    break;
 
 	/* 呼び出したプロセスのバッファへの書き込み */
-	error_no = kcall->region_put(caller, (UB*)(req->packet.args.arg2) + i,
+	error_no = kcall->region_put(caller, (UB*)(req->packet.arg2) + i,
 			 rlength, req->buf);
 	if (error_no)
 	    return EFAULT;
@@ -237,7 +237,7 @@ int if_write(fs_request *req)
     W i, len;
     W rest_length;
 
-    error_no = session_get_opened_file(req->packet.procid, req->packet.args.arg1, &fp);
+    error_no = session_get_opened_file(req->packet.process_id, req->packet.arg1, &fp);
     if (error_no)
 	return error_no;
 
@@ -262,11 +262,11 @@ int if_write(fs_request *req)
     if (error_no)
 	return error_no;
 
-    for (i = 0, rest_length = req->packet.args.arg3;
+    for (i = 0, rest_length = req->packet.arg3;
 	 rest_length > 0; rest_length -= rlength, i += rlength) {
 	len = rest_length > sizeof(req->buf) ? sizeof(req->buf) : rest_length;
 	error_no =
-	    kcall->region_get(get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg2) + i, len, req->buf);
+	    kcall->region_get(get_rdv_tid(req->rdvno), (UB*)(req->packet.arg2) + i, len, req->buf);
 	if (error_no)
 	    break;
 

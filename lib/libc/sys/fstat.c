@@ -30,10 +30,10 @@ For more information, please refer to <http://unlicense.org/>
 
 int fstat(int fd, struct stat *sb)
 {
-	struct posix_request request;
+	pm_args_t request;
 
-	request.args.arg1 = (W)fd;
-	request.args.arg2 = (W)sb;
+	request.arg1 = fd;
+	request.arg2 = (int)sb;
 
 	return _call_fs(fscall_fstat, &request);
 }

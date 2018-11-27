@@ -1,5 +1,5 @@
-#ifndef _SYS_PACKETS_H_
-#define _SYS_PACKETS_H_
+#ifndef _PM_H_
+#define _PM_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,15 +26,22 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core/types.h>
+#include <fs/fscall.h>
 
-struct psc_args
-{
-	W arg1;
-	W arg2;
-	W arg3;
-	W arg4;
-	W arg5;
-};
+typedef struct {
+	enum FsCall operation;
+	int process_id;
+	int arg1;
+	int arg2;
+	int arg3;
+	int arg4;
+	int arg5;
+} pm_args_t;
+
+typedef struct {
+	int result1;
+	int result2;
+	int error_no;
+} pm_reply_t;
 
 #endif

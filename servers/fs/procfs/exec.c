@@ -78,7 +78,7 @@ static W load_segment(W procid, vnode_t *ip, Elf32_Phdr *segment,
 /* exec_program - 
  *
  */
-W exec_program(struct posix_request *req, W procid, B * pathname)
+W exec_program(pm_args_t *req, W procid, B * pathname)
 {
     vnode_t *ip;
     W error_no;
@@ -139,8 +139,8 @@ W exec_program(struct posix_request *req, W procid, B * pathname)
 	/* タスクの context.eip を elf_header.e_entry に設定する */
 	caller = process_set_context(procid,
 		entry,
-		(B*)(req->args.arg2),
-		req->args.arg3);
+		(B*)(req->arg2),
+		req->arg3);
 
 	if (caller < 0) {
 	    error_no = ECONNREFUSED;

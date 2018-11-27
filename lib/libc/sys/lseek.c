@@ -29,16 +29,16 @@ For more information, please refer to <http://unlicense.org/>
 
 off_t lseek(int fildes, off_t offset, int whence)
 {
-	struct posix_request request;
-	struct posix_response *response;
+	pm_args_t request;
+	pm_reply_t *response;
 	thread_local_t *local = _get_local();
 	off_t *offp;
 	ER result;
 
-	request.args.arg1 = (W)fildes;
-	offp = (off_t*)&(request.args.arg2);
+	request.arg1 = fildes;
+	offp = (off_t*)&(request.arg2);
 	*offp = offset;
-	request.args.arg4= (W)whence;
+	request.arg4= whence;
 
 	result = _make_connection(fscall_lseek, &request);
 	if (result) {
@@ -46,12 +46,12 @@ off_t lseek(int fildes, off_t offset, int whence)
 		return -1;
 	}
 
-	response = (struct posix_response*)&request;
+	response = (pm_reply_t*)&request;
 	if (response->error_no) {
 		local->error_no = response->error_no;
 		return -1;
 	}
 
-	offp = (off_t*)&(response->status);
+	offp = (off_t*)&(response->result1);
 	return *offp;
 }

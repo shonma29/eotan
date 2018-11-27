@@ -50,7 +50,7 @@ execve(char *name, char *argv[], char *envp[])
     char buf[stsize], *strp;
     int bufc;
     void **vp;
-    struct posix_request req;
+    pm_args_t req;
 
     vp = (void *) ((unsigned int)buf + sizeof(int) * 3);
     vp[-3] = (void*)argc;
@@ -75,9 +75,9 @@ execve(char *name, char *argv[], char *envp[])
     *vp = 0;
     vp++;
     
-    req.args.arg1 = (W)name;
-    req.args.arg2 = (W)buf;
-    req.args.arg3 = stsize;
+    req.arg1 = (int)name;
+    req.arg2 = (int)buf;
+    req.arg3 = stsize;
 
     return _call_fs(fscall_exec, &req);
   }

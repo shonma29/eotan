@@ -29,10 +29,10 @@ For more information, please refer to <http://unlicense.org/>
 
 int link(const char *name1, const char *name2)
 {
-	struct posix_request request;
+	pm_args_t request;
 
-	request.args.arg1 = (W)name1;
-	request.args.arg2 = (W)name2;
+	request.arg1 = (int)name1;
+	request.arg2 = (int)name2;
 
 	return _call_fs(fscall_link, &request);
 }

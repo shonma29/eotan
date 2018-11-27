@@ -33,7 +33,7 @@ For more information, please refer to <http://unlicense.org/>
 #define EOK (0)
 
 typedef struct {
-	struct posix_request packet;
+	pm_args_t packet;
 	RDVNO rdvno;
 	B buf[PATH_MAX + 1];
 } fs_request;

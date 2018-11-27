@@ -25,13 +25,13 @@ int
 waitpid (pid_t pid, int *status, int option)
 {
     ER error;
-    struct posix_request req;
-    struct posix_response *res = (struct posix_response*)&req;
+    pm_args_t req;
+    pm_reply_t *res = (pm_reply_t*)&req;
     thread_local_t *local_data = _get_local();
 
-    req.args.arg1 = pid;
-    req.args.arg2 = (W)status;
-    req.args.arg3 = option;
+    req.arg1 = pid;
+    req.arg2 = (int)status;
+    req.arg3 = option;
 
     error = _make_connection(fscall_waitpid, &req);
     if (error != E_OK) {
@@ -44,6 +44,6 @@ waitpid (pid_t pid, int *status, int option)
     }
 
     if (status != NULL)
-	*(status) = res->ret1;
-    return (res->status);
+	*(status) = res->result2;
+    return (res->result1);
 }

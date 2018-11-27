@@ -29,10 +29,10 @@ For more information, please refer to <http://unlicense.org/>
 
 int kill(pid_t pid, int sig)
 {
-	struct posix_request request;
+	pm_args_t request;
 
-	request.args.arg1 = (W)pid;
-	request.args.arg2 = (W)sig;
+	request.arg1 = (int)pid;
+	request.arg2 = sig;
 
 	return _call_fs(fscall_kill, &request);
 }

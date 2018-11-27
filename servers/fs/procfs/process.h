@@ -152,7 +152,7 @@ extern void proc_dealloc_proc(W procid);
 
 
 /* exec.c */
-extern W		exec_program (struct posix_request *req, W procid, B *pathname);
+extern W		exec_program (pm_args_t *req, W procid, B *pathname);
 
 /* fork.c */
 extern W		proc_fork (struct proc *parent, struct proc *child);

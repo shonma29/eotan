@@ -56,7 +56,7 @@ int if_mount(fs_request *req)
     struct permission acc;
     ID caller = get_rdv_tid(req->rdvno);
 
-    error_no = proc_get_permission(req->packet.procid, &acc);
+    error_no = proc_get_permission(req->packet.process_id, &acc);
     if (error_no)
 	return error_no;
 
@@ -64,7 +64,7 @@ int if_mount(fs_request *req)
       return EACCES;
 
     error_no = kcall->region_copy(caller,
-		     (UB*)(req->packet.args.arg1),
+		     (UB*)(req->packet.arg1),
 		     sizeof(req->buf) - 1, req->buf);
     if (error_no < 0) {
 	/* ファイルシステムタイプのコピーエラー */
@@ -78,8 +78,8 @@ int if_mount(fs_request *req)
     if (error_no)
 	return error_no;
 
-    error_no = session_get_path(&startip, req->packet.procid,
-		     caller, (UB*)(req->packet.args.arg4),
+    error_no = session_get_path(&startip, req->packet.process_id,
+		     caller, (UB*)(req->packet.arg4),
 		     (UB*)(req->buf));
     if (error_no)
 	return error_no;
@@ -94,8 +94,8 @@ int if_mount(fs_request *req)
 	return EINVAL;
     }
 
-    error_no = session_get_path(&startip, req->packet.procid,
-		     caller, (UB*)(req->packet.args.arg2),
+    error_no = session_get_path(&startip, req->packet.process_id,
+		     caller, (UB*)(req->packet.arg2),
 		     (UB*)(req->buf));
     if (error_no) {
 	vnodes_remove(device);
@@ -121,7 +121,7 @@ int if_mount(fs_request *req)
     }
 
     error_no =
-	fs_mount(device->dev, mountpoint, req->packet.args.arg3, fstype);
+	fs_mount(device->dev, mountpoint, req->packet.arg3, fstype);
 
     if (error_no == EOK) {
 	vnodes_remove(device);
@@ -142,13 +142,13 @@ int if_unmount(fs_request *req)
     vnode_t *umpoint;
     struct permission acc;
 
-    error_no = session_get_path(&startip, req->packet.procid,
-		     get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg1),
+    error_no = session_get_path(&startip, req->packet.process_id,
+		     get_rdv_tid(req->rdvno), (UB*)(req->packet.arg1),
 		     (UB*)(req->buf));
     if (error_no)
 	return error_no;
 
-    error_no = proc_get_permission(req->packet.procid, &acc);
+    error_no = proc_get_permission(req->packet.process_id, &acc);
     if (error_no)
 	return error_no;
 

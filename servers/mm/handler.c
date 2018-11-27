@@ -103,19 +103,19 @@ static void kill(const int tid, const int dummy)
 {
 	mm_thread_t *th = get_thread(tid);
 	ER_UINT rsize;
-	struct posix_request req;
+	pm_args_t req;
 
 	if (!th) {
 		log_warning("mm: kill unknown thread=%d\n", tid);
 		return;
 	}
 
-	req.procid = -1;
+	req.process_id = -1;
 	req.operation = fscall_kill;
-	req.args.arg1 = (W)(th->process_id);
-	req.args.arg2 = 9;
+	req.arg1 = th->process_id;
+	req.arg2 = 9;
 
-	rsize = kcall->port_call(PORT_FS, &req, sizeof(struct posix_request));
+	rsize = kcall->port_call(PORT_FS, &req, sizeof(req));
 	if (rsize < 0)
 		log_err("mm: kill call error=%d\n", rsize);
 }

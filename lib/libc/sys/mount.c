@@ -30,13 +30,13 @@ For more information, please refer to <http://unlicense.org/>
 int mount(const char *type, const char *dir, int flags, void *data,
 		size_t data_len)
 {
-	struct posix_request request;
+	pm_args_t request;
 
-	request.args.arg1 = (W)type;
-	request.args.arg2 = (W)dir;
-	request.args.arg3 = (W)flags;
-	request.args.arg4 = (W)data;
-	request.args.arg5 = (W)data_len;
+	request.arg1 = (int)type;
+	request.arg2 = (int)dir;
+	request.arg3 = flags;
+	request.arg4 = (int)data;
+	request.arg5 = (int)data_len;
 
 	return _call_fs(fscall_mount, &request);
 }

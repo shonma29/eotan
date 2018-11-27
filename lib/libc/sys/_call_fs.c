@@ -33,14 +33,14 @@ Version 2, June 1991
 
 ER
 _make_connection(W wOperation,
-		 struct posix_request *req)
+		 pm_args_t *req)
 {
     thread_local_t *local_data = _get_local();
     W rsize;
 
     req->operation = wOperation;
-    req->procid = local_data->process_id;
-    rsize = cal_por(PORT_FS, 0xffffffff, req, sizeof(struct posix_request));
+    req->process_id = local_data->process_id;
+    rsize = cal_por(PORT_FS, 0xffffffff, req, sizeof(*req));
 
     if (rsize < 0) {
 	return (ECONNREFUSED);
@@ -50,9 +50,9 @@ _make_connection(W wOperation,
 }
 
 W
-_call_fs(W wOperation, struct posix_request *req)
+_call_fs(W wOperation, pm_args_t *req)
 {
-  struct posix_response *res = (struct posix_response*)req;
+  pm_reply_t *res = (pm_reply_t*)req;
   ER error = _make_connection(wOperation, req);
   thread_local_t *local_data = _get_local();
 
@@ -68,5 +68,5 @@ _call_fs(W wOperation, struct posix_request *req)
       return (-1);
     }
 
-  return (res->status);
+  return (res->result1);
 }

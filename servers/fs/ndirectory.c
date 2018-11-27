@@ -33,19 +33,19 @@ For more information, please refer to <http://unlicense.org/>
 
 int if_create(fs_request *req)
 {
-	session_t *session = session_find(req->packet.procid);
+	session_t *session = session_find(req->packet.process_id);
 	if (!session)
 		return ESRCH;
 
 	vnode_t *starting_node;
-	int error_no = session_get_path(&starting_node, req->packet.procid,
-			get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg1),
+	int error_no = session_get_path(&starting_node, req->packet.process_id,
+			get_rdv_tid(req->rdvno), (UB*)(req->packet.arg1),
 			(UB*)(req->buf));
 	if (error_no)
 		return error_no;
 
 	vnode_t *node;
-	error_no = vfs_create(starting_node, req->buf, req->packet.args.arg2,
+	error_no = vfs_create(starting_node, req->buf, req->packet.arg2,
 			&(session->permission), &node);
 	if (error_no)
 		return error_no;
@@ -58,13 +58,13 @@ int if_create(fs_request *req)
 
 int if_remove(fs_request *req)
 {
-	session_t *session = session_find(req->packet.procid);
+	session_t *session = session_find(req->packet.process_id);
 	if (!session)
 		return ESRCH;
 
 	vnode_t *starting_node;
-	int error_no = session_get_path(&starting_node, req->packet.procid,
-			get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg1),
+	int error_no = session_get_path(&starting_node, req->packet.process_id,
+			get_rdv_tid(req->rdvno), (UB*)(req->packet.arg1),
 			(UB*)(req->buf));
 	if (error_no)
 		return error_no;

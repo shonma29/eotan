@@ -22,7 +22,7 @@ Version 2, June 1991
 
 extern thread_local_t *local_data;
 
-extern ER _make_connection(W wOperation, struct posix_request *req);
-extern W _call_fs(W wOperation, struct posix_request *req);
+extern ER _make_connection(W wOperation, pm_args_t *req);
+extern W _call_fs(W wOperation, pm_args_t *req);
 
 #endif

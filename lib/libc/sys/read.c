@@ -29,11 +29,11 @@ For more information, please refer to <http://unlicense.org/>
 
 ssize_t read(int d, void *buf, size_t nbytes)
 {
-	struct posix_request request;
+	pm_args_t request;
 
-	request.args.arg1 = (W)d;
-	request.args.arg2 = (W)buf;
-	request.args.arg3 = (W)nbytes;
+	request.arg1 = d;
+	request.arg2 = (int)buf;
+	request.arg3 = (int)nbytes;
 
 	return _call_fs(fscall_read, &request);
 }

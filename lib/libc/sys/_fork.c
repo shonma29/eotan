@@ -28,16 +28,16 @@ int
 _fork (int esp, int ebx, int ebp, int esi, int edi)
 {
     ER error;
-    struct posix_request req;
-    struct posix_response *res = (struct posix_response*)&req;
+    pm_args_t req;
+    pm_reply_t *res = (pm_reply_t*)&req;
     thread_local_t *local_data = _get_local();
 
     /* POSIX manager の呼び出し 
 
      * 引数を設定して、POSIX manager にメッセージを送る。
      */
-    req.args.arg1 = esp;
-    req.args.arg2 = (W)_fork_entry;
+    req.arg1 = esp;
+    req.arg2 = (int)_fork_entry;
 
     error = _make_connection(fscall_fork, &req);
     if (error != E_OK) {
@@ -48,5 +48,5 @@ _fork (int esp, int ebx, int ebp, int esi, int edi)
 	return (-1);
     }
 
-    return (res->status);
+    return (res->result1);
 }

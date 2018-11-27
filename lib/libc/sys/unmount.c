@@ -29,10 +29,10 @@ For more information, please refer to <http://unlicense.org/>
 
 int unmount(const char *dir, int flags)
 {
-	struct posix_request request;
+	pm_args_t request;
 
-	request.args.arg1 = (W)dir;
-	request.args.arg2 = (W)flags;
+	request.arg1 = (int)dir;
+	request.arg2 = flags;
 
 	return _call_fs(fscall_unmount, &request);
 }

@@ -29,9 +29,9 @@ For more information, please refer to <http://unlicense.org/>
 
 int close (int d)
 {
-	struct posix_request request;
+	pm_args_t request;
 
-	request.args.arg1 = (W)d;
+	request.arg1 = d;
 
 	return _call_fs(fscall_close, &request);
 }

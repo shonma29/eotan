@@ -42,20 +42,20 @@ int if_chmod(fs_request *req)
     struct permission acc;
     W err;
 
-    err = session_get_path(&startip, req->packet.procid,
-		 get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg1),
+    err = session_get_path(&startip, req->packet.process_id,
+		 get_rdv_tid(req->rdvno), (UB*)(req->packet.arg1),
 		 (UB*)(req->buf));
     if (err)
 	return err;
 
-    if (proc_get_permission(req->packet.procid, &acc))
+    if (proc_get_permission(req->packet.process_id, &acc))
 	return EINVAL;
 
     err = vfs_walk(startip, req->buf, O_RDWR, &acc, &ipp);
     if (err)
 	return ENOENT;
 
-    ipp->mode = (ipp->mode & S_IFMT) | req->packet.args.arg2;
+    ipp->mode = (ipp->mode & S_IFMT) | req->packet.arg2;
     err = ipp->fs->operations.wstat(ipp);
     vnodes_remove(ipp);
     if (err)
@@ -73,7 +73,7 @@ int if_fstat(fs_request *req)
     W error_no;
     struct stat st;
 
-    error_no = session_get_opened_file(req->packet.procid, req->packet.args.arg1, &fp);
+    error_no = session_get_opened_file(req->packet.process_id, req->packet.arg1, &fp);
     if (error_no)
 	return error_no;
 
@@ -83,7 +83,7 @@ int if_fstat(fs_request *req)
     fp->f_inode->fs->operations.stat(fp->f_inode, &st);
 
     error_no =
-	kcall->region_put(get_rdv_tid(req->rdvno), (UB*)(req->packet.args.arg2), sizeof(struct stat),
+	kcall->region_put(get_rdv_tid(req->rdvno), (UB*)(req->packet.arg2), sizeof(struct stat),
 		 &st);
     if (error_no)
 	return EINVAL;

@@ -70,14 +70,14 @@ W exec_init(ID process_id, char *pathname)
 
 	pathlen++;
 
-	struct posix_request req;
-	req.args.arg3 = (sizeof(init_arg_t) + pathlen
+	pm_args_t req;
+	req.arg3 = (sizeof(init_arg_t) + pathlen
 			+ strlen(envpath) + 1 + sizeof(int) - 1)
 			& ~(sizeof(int) - 1);
-	if (req.args.arg3 > sizeof(buf))
+	if (req.arg3 > sizeof(buf))
 		return ENOMEM;
 
-	size_t offset = STACK_TAIL - req.args.arg3;
+	size_t offset = STACK_TAIL - req.arg3;
 	init_arg_t *p = (init_arg_t*)buf;
 	p->argc = 1;
 	p->argv = (char**)(offsetof(init_arg_t, arg0) + offset);
@@ -88,7 +88,7 @@ W exec_init(ID process_id, char *pathname)
 	p->env1 = NULL;
 	strcpy(p->buf, pathname);
 	strcpy(&(buf[sizeof(init_arg_t) + pathlen]), envpath);
-	req.args.arg2 = (W)p;
+	req.arg2 = (W)p;
 
 	W err = create_init(process_id);
 	if (err) {
