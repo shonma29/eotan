@@ -36,5 +36,5 @@ open (const char *path, int oflag, ...)
       req.arg3 = va_arg(args, int);	/* no use except oflag includes o_creat */
     }
 
-    return _call_fs(fscall_open, &req);
+    return _call_fs(pm_syscall_open, &req);
 }

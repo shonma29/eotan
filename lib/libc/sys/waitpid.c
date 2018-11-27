@@ -33,7 +33,7 @@ waitpid (pid_t pid, int *status, int option)
     req.arg2 = (int)status;
     req.arg3 = option;
 
-    error = _make_connection(fscall_waitpid, &req);
+    error = _make_connection(pm_syscall_waitpid, &req);
     if (error != E_OK) {
 	local_data->error_no = error;
 	return (-1);

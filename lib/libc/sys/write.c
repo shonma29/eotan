@@ -35,5 +35,5 @@ size_t write(int d, const void *buf, size_t nbytes)
 	request.arg2 = (int)buf;
 	request.arg3 = (int)nbytes;
 
-	return _call_fs(fscall_write, &request);
+	return _call_fs(pm_syscall_write, &request);
 }

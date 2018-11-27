@@ -79,6 +79,6 @@ execve(char *name, char *argv[], char *envp[])
     req.arg2 = (int)buf;
     req.arg3 = stsize;
 
-    return _call_fs(fscall_exec, &req);
+    return _call_fs(pm_syscall_exec, &req);
   }
 }

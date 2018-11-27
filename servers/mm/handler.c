@@ -111,7 +111,7 @@ static void kill(const int tid, const int dummy)
 	}
 
 	req.process_id = -1;
-	req.operation = fscall_kill;
+	req.operation = pm_syscall_kill;
 	req.arg1 = th->process_id;
 	req.arg2 = 9;
 

@@ -33,5 +33,5 @@ int close (int d)
 
 	request.arg1 = d;
 
-	return _call_fs(fscall_close, &request);
+	return _call_fs(pm_syscall_close, &request);
 }

@@ -26,10 +26,31 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <fs/fscall.h>
+
+typedef enum {
+	pm_syscall_fork = 0,
+	pm_syscall_waitpid = 1,
+	pm_syscall_exec = 2,
+	pm_syscall_exit = 3,
+	pm_syscall_kill = 4,
+	pm_syscall_chdir = 5,
+	pm_syscall_create = 6,
+	pm_syscall_remove = 7,
+	pm_syscall_fstat = 8,
+	pm_syscall_chmod = 9,
+	pm_syscall_dup2 = 10,
+	pm_syscall_open = 11,
+	pm_syscall_lseek = 12,
+	pm_syscall_read = 13,
+	pm_syscall_write = 14,
+	pm_syscall_close = 15,
+	pm_syscall_link = 16,
+	pm_syscall_mount = 17,
+	pm_syscall_unmount = 18
+} pm_syscall_e;
 
 typedef struct {
-	enum FsCall operation;
+	pm_syscall_e operation;
 	int process_id;
 	int arg1;
 	int arg2;

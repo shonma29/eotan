@@ -38,5 +38,5 @@ int mount(const char *type, const char *dir, int flags, void *data,
 	request.arg4 = (int)data;
 	request.arg5 = (int)data_len;
 
-	return _call_fs(fscall_mount, &request);
+	return _call_fs(pm_syscall_mount, &request);
 }

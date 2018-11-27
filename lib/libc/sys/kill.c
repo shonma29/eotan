@@ -34,5 +34,5 @@ int kill(pid_t pid, int sig)
 	request.arg1 = (int)pid;
 	request.arg2 = sig;
 
-	return _call_fs(fscall_kill, &request);
+	return _call_fs(pm_syscall_kill, &request);
 }

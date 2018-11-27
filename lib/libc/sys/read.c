@@ -35,5 +35,5 @@ ssize_t read(int d, void *buf, size_t nbytes)
 	request.arg2 = (int)buf;
 	request.arg3 = (int)nbytes;
 
-	return _call_fs(fscall_read, &request);
+	return _call_fs(pm_syscall_read, &request);
 }

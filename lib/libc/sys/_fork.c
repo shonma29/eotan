@@ -39,7 +39,7 @@ _fork (int esp, int ebx, int ebp, int esi, int edi)
     req.arg1 = esp;
     req.arg2 = (int)_fork_entry;
 
-    error = _make_connection(fscall_fork, &req);
+    error = _make_connection(pm_syscall_fork, &req);
     if (error != E_OK) {
 	local_data->error_no = error;
 	return (-1);

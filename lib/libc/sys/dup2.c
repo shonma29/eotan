@@ -34,5 +34,5 @@ int dup2(int oldd, int newd)
 	request.arg1 = oldd;
 	request.arg2 = newd;
 
-	return _call_fs(fscall_dup2, &request);
+	return _call_fs(pm_syscall_dup2, &request);
 }

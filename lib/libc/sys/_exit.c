@@ -27,6 +27,6 @@ _exit (int status)
   pm_args_t	req;
 
   req.arg1 = status;
-  _make_connection(fscall_exit, &req);
+  _make_connection(pm_syscall_exit, &req);
   for (;;);
 }

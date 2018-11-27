@@ -34,5 +34,5 @@ int link(const char *name1, const char *name2)
 	request.arg1 = (int)name1;
 	request.arg2 = (int)name2;
 
-	return _call_fs(fscall_link, &request);
+	return _call_fs(pm_syscall_link, &request);
 }

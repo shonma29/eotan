@@ -35,5 +35,5 @@ int mkdir(const char *path, mode_t mode)
 	request.arg1 = (int)path;
 	request.arg2 = DMDIR | (int)mode;
 
-	return _call_fs(fscall_create, &request);
+	return _call_fs(pm_syscall_create, &request);
 }

@@ -33,5 +33,5 @@ int _chdir(const char *path)
 
 	request.arg1 = (int)path;
 
-	return _call_fs(fscall_chdir, &request);
+	return _call_fs(pm_syscall_chdir, &request);
 }

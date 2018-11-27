@@ -34,5 +34,5 @@ int chmod(const char *path, mode_t mode)
 	request.arg1 = (int)path;
 	request.arg2 = (int)mode;
 
-	return _call_fs(fscall_chmod, &request);
+	return _call_fs(pm_syscall_chmod, &request);
 }

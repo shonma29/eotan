@@ -33,5 +33,5 @@ int rmdir(const char *path)
 
 	request.arg1 = (int)path;
 
-	return _call_fs(fscall_remove, &request);
+	return _call_fs(pm_syscall_remove, &request);
 }
