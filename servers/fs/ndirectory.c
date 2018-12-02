@@ -33,13 +33,16 @@ For more information, please refer to <http://unlicense.org/>
 
 int if_create(fs_request *req)
 {
+	ID caller = (req->packet.process_id >> 16) & 0xffff;
+
+	req->packet.process_id &= 0xffff;
 	session_t *session = session_find(req->packet.process_id);
 	if (!session)
 		return ESRCH;
 
 	vnode_t *starting_node;
 	int error_no = session_get_path(&starting_node, req->packet.process_id,
-			get_rdv_tid(req->rdvno), (UB*)(req->packet.arg1),
+			caller, (UB*)(req->packet.arg1),
 			(UB*)(req->buf));
 	if (error_no)
 		return error_no;
@@ -58,13 +61,17 @@ int if_create(fs_request *req)
 
 int if_remove(fs_request *req)
 {
+	ID caller = (req->packet.process_id >> 16) & 0xffff;
+
+	req->packet.process_id &= 0xffff;
+
 	session_t *session = session_find(req->packet.process_id);
 	if (!session)
 		return ESRCH;
 
 	vnode_t *starting_node;
 	int error_no = session_get_path(&starting_node, req->packet.process_id,
-			get_rdv_tid(req->rdvno), (UB*)(req->packet.arg1),
+			caller, (UB*)(req->packet.arg1),
 			(UB*)(req->buf));
 	if (error_no)
 		return error_no;

@@ -40,6 +40,7 @@ int if_close(fs_request *req)
     struct file *fp;
     W err;
 
+    req->packet.process_id &= 0xffff;
     err = session_get_opened_file(req->packet.process_id, req->packet.arg1, &fp);
     if (err)
 	return err;
@@ -96,6 +97,7 @@ int if_lseek(fs_request *req)
     W error_no;
     off_t *offp = (off_t*)&(req->packet.arg2);
 
+    req->packet.process_id &= 0xffff;
     error_no = session_get_opened_file(req->packet.process_id, req->packet.arg1, &fp);
     if (error_no)
 	return error_no;
@@ -140,7 +142,9 @@ int if_open(fs_request *req)
     vnode_t *startip;
     vnode_t *newip;
     struct permission acc;
+    ID caller = (req->packet.process_id >> 16) & 0xffff;
 
+    req->packet.process_id &= 0xffff;
     error_no = proc_alloc_fileid(req->packet.process_id, &fileid);
     if (error_no)
 	/* メモリ取得エラー */
@@ -149,7 +153,7 @@ int if_open(fs_request *req)
     /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。
      */
     error_no = session_get_path(&startip, req->packet.process_id,
-		    get_rdv_tid(req->rdvno), (UB*)(req->packet.arg1),
+		    caller, (UB*)(req->packet.arg1),
 		    (UB*)(req->buf));
     if (error_no)
 	return error_no;
@@ -195,8 +199,9 @@ int if_read(fs_request *req)
     size_t rlength;
     W rest_length;
     W i, len;
-    ID caller = get_rdv_tid(req->rdvno);
+    ID caller = (req->packet.process_id >> 16) & 0xffff;
 
+    req->packet.process_id &= 0xffff;
     error_no = session_get_opened_file(req->packet.process_id, req->packet.arg1, &fp);
     if (error_no)
 	return error_no;
@@ -236,7 +241,9 @@ int if_write(fs_request *req)
     size_t rlength;
     W i, len;
     W rest_length;
+    ID caller = (req->packet.process_id >> 16) & 0xffff;
 
+    req->packet.process_id &= 0xffff;
     error_no = session_get_opened_file(req->packet.process_id, req->packet.arg1, &fp);
     if (error_no)
 	return error_no;
@@ -266,7 +273,7 @@ int if_write(fs_request *req)
 	 rest_length > 0; rest_length -= rlength, i += rlength) {
 	len = rest_length > sizeof(req->buf) ? sizeof(req->buf) : rest_length;
 	error_no =
-	    kcall->region_get(get_rdv_tid(req->rdvno), (UB*)(req->packet.arg2) + i, len, req->buf);
+	    kcall->region_get(caller, (UB*)(req->packet.arg2) + i, len, req->buf);
 	if (error_no)
 	    break;
 

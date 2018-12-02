@@ -27,8 +27,11 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <errno.h>
 #include <mm.h>
+#include <pm.h>
 #include <services.h>
+#include <core/options.h>
 #include <nerve/kcall.h>
+#include <sys/errno.h>
 #include "../../kernel/mpu/interrupt.h"
 #include "../../kernel/mpu/mpufunc.h"
 #include "../../lib/libserv/libserv.h"
@@ -53,14 +56,73 @@ static int (*funcs[])(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args) = {
 #define NUM_OF_FUNCS (sizeof(funcs) / sizeof(void*))
 #define MYNAME "mm"
 
+static ER init(void);
+static ER proxy_initialize(void);
+static void proxy(void);
+static void doit(void);
+
 static ER init(void)
 {
 	T_CPOR pk_cpor = { TA_TFIFO, BUFSIZ, BUFSIZ };
 
 	process_initialize();
+
+	ER result = proxy_initialize();
+	if (result)
+		return result;
+
 	define_mpu_handlers((FP)default_handler, (FP)stack_fault_handler);
 
 	return kcall->port_open(&pk_cpor);
+}
+
+static ER proxy_initialize(void)
+{
+	T_CTSK pk_ctsk = {
+		TA_HLNG | TA_ACT, 0, proxy, pri_server_middle,
+		KTHREAD_STACK_SIZE, NULL, NULL, NULL
+	};
+
+	return kcall->thread_create(PORT_PM, &pk_ctsk);
+}
+
+static void proxy(void)
+{
+	T_CPOR pk_cpor = { TA_TFIFO, sizeof(pm_args_t), sizeof(pm_reply_t) };
+	ER error = kcall->port_open(&pk_cpor);
+	if (error) {
+		log_err("proxy: open failed %d\n", error);
+		return;
+	} else
+		log_info("proxy: start\n");
+
+	for (;;) {
+		RDVNO rdvno;
+		pm_args_t args;
+		ER_UINT size = kcall->port_accept(PORT_PM, &rdvno, &args);
+		if (size < 0) {
+			log_err("proxy: receive failed %d\n", size);
+			break;
+		}
+
+		args.process_id |= get_rdv_tid(rdvno) << 16;
+
+		pm_reply_t reply;
+		size = kcall->port_call(PORT_FS, &args, sizeof(args));
+		if (size == sizeof(reply)) {
+			pm_reply_t *p = (pm_reply_t*)(&args);
+			reply = *p;
+		} else {
+			log_err("proxy: call failed %d\n", size);
+			reply.result1 = -1;
+			reply.result2 = 0;
+			reply.error_no = ECONNREFUSED;
+		}
+
+		int result = kcall->port_reply(rdvno, &reply, sizeof(reply));
+		if (result)
+			log_err("proxy: reply failed %d\n", result);
+	}
 }
 
 static void doit(void)

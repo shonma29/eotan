@@ -41,9 +41,11 @@ int if_chmod(fs_request *req)
     vnode_t *ipp;
     struct permission acc;
     W err;
+    ID caller = (req->packet.process_id >> 16) & 0xffff;
 
+    req->packet.process_id &= 0xffff;
     err = session_get_path(&startip, req->packet.process_id,
-		 get_rdv_tid(req->rdvno), (UB*)(req->packet.arg1),
+		 caller, (UB*)(req->packet.arg1),
 		 (UB*)(req->buf));
     if (err)
 	return err;
@@ -72,7 +74,9 @@ int if_fstat(fs_request *req)
     struct file *fp;
     W error_no;
     struct stat st;
+    ID caller = (req->packet.process_id >> 16) & 0xffff;
 
+    req->packet.process_id &= 0xffff;
     error_no = session_get_opened_file(req->packet.process_id, req->packet.arg1, &fp);
     if (error_no)
 	return error_no;
@@ -83,7 +87,7 @@ int if_fstat(fs_request *req)
     fp->f_inode->fs->operations.stat(fp->f_inode, &st);
 
     error_no =
-	kcall->region_put(get_rdv_tid(req->rdvno), (UB*)(req->packet.arg2), sizeof(struct stat),
+	kcall->region_put(caller, (UB*)(req->packet.arg2), sizeof(struct stat),
 		 &st);
     if (error_no)
 	return EINVAL;
