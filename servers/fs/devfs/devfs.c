@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <errno.h>
 #include <stddef.h>
 #include <string.h>
+#include <fs/drivers.h>
 #include <nerve/kcall.h>
 #include <set/hash.h>
 #include "../../lib/libserv/libserv.h"
@@ -68,13 +69,6 @@ vfs_operation_t devfs_fsops = {
     dummy_ok,
     devfs_read,
     devfs_write
-};
-
-static vdriver_t *(*drivers[])(int) = {
-	/* cons */
-	(vdriver_t *(*)(int))(0x80300000),
-	/* ramdisk */
-	(vdriver_t *(*)(int))(0x80310000)
 };
 
 
