@@ -28,17 +28,17 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-#define PORT_INTERRUPT 1
-#define PORT_TIMER 2
-#define PORT_MM 3
-#define PORT_FS 4
-#define PORT_SYSLOG 5
-#define PORT_NET 6
-#define PORT_WINDOW 7
-#define PORT_CONSOLE 8
+#define PORT_IDLE (1)
+#define PORT_DELAY (2)
+#define PORT_INTERRUPT (3)
+#define PORT_TIMER (4)
+#define PORT_SYSLOG (5)
+#define PORT_MM (6)
+#define PORT_FS (7)
 
-#define PORT_DELAY (9)
-#define PORT_HMI (10)
-#define PORT_IDLE (11)
+#define PORT_CONSOLE (8)
+#define PORT_HMI (9)
+#define PORT_WINDOW (10)
+#define PORT_NET (11)
 
 #endif
