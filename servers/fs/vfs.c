@@ -155,6 +155,7 @@ Version 2, June 1991
 #include <string.h>
 #include <fs/nconfig.h>
 #include <fs/vfs.h>
+#include <fs/fsops.h>
 #include <nerve/kcall.h>
 #include <sys/errno.h>
 #include <sys/stat.h>
@@ -163,19 +164,6 @@ Version 2, June 1991
 #include "devfs/devfs.h"
 #include "procfs/process.h"
 #include "../../lib/libserv/libserv.h"
-
-extern vfs_operation_t sfs_fsops;
-extern vfs_operation_t devfs_fsops;
-
-struct fs_entry {
-    B *fsname;
-    vfs_operation_t *fsops;
-};
-
-static struct fs_entry fs_table[] = {
-    {"null", NULL},
-    {"sfs", &sfs_fsops},
-};
 
 
 static vfs_t fs_buf[MAX_MOUNT], *rootfs = NULL;

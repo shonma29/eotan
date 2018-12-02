@@ -26,10 +26,10 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <elf.h>
-#include <fstype.h>
 #include <major.h>
 #include <stddef.h>
 #include <boot/modules.h>
+#include <fs/fstype.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
 #include <nerve/global.h>

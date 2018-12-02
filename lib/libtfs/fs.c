@@ -88,8 +88,8 @@ Version 2, June 1991
  *
  */
 
-#include <fstype.h>
 #include <string.h>
+#include <fs/fstype.h>
 #include <sys/errno.h>
 #include "func.h"
 #include "../libserv/libserv.h"

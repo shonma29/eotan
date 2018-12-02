@@ -24,9 +24,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <fstype.h>
 #include <major.h>
 #include <services.h>
+#include <fs/fstype.h>
 #include <nerve/global.h>
 #include "func.h"
 #include "ready.h"
