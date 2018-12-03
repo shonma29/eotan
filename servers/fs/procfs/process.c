@@ -213,30 +213,6 @@ W proc_get_procp(W procid, struct proc ** procp)
 
 
 
-W proc_get_pid(W procid, W * pid)
-{
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
-    }
-
-    *pid = proc_table[procid].proc_pid;
-    return (EOK);
-}
-
-
-
-W proc_get_ppid(W procid, W * ppid)
-{
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
-    }
-
-    *ppid = proc_table[procid].proc_ppid;
-    return (EOK);
-}
-
-
-
 W proc_get_permission(W procid, struct permission * p)
 {
     if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
@@ -331,21 +307,6 @@ W proc_get_cwd(W procid, vnode_t ** cwd)
 
     return (EOK);
 }
-
-W proc_set_cwd(W procid, vnode_t * cwd)
-{
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
-    }
-
-    if (cwd == (vnode_t *) 0) {
-	return (EINVAL);
-    }
-
-    proc_table[procid].session.cwd = cwd;
-    return (EOK);
-}
-
 
 /* proc_new_proc - 新しいプロセスを生成する
  *

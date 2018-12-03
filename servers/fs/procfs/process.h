@@ -137,12 +137,9 @@ extern struct proc	proc_table[MAX_PROCESS];
 
 extern W		init_process (void);
 extern W		proc_get_permission (W procid, struct permission *p);
-extern W		proc_get_pid (W procid, W *pid);
-extern W		proc_get_ppid (W procid, W *ppid);
 extern W proc_get_status(W procid);
 extern W		proc_alloc_fileid (W procid, W *retval);
 extern W		proc_get_cwd (W procid, vnode_t **cwd);
-extern W		proc_set_cwd (W procid, vnode_t *cwd);
 extern W		proc_get_file (W procid, W fileid, struct file **fp);
 extern W		proc_set_file (W procid, W fileid, W flag, vnode_t *ip);
 extern W		proc_get_procp (W procid, struct proc **procp);
