@@ -32,8 +32,8 @@ For more information, please refer to <http://unlicense.org/>
 #define DEV_BUF_SIZE (1024)
 
 enum device_operation {
-	operation_read,
-	operation_write
+	operation_read = 0xff01,
+	operation_write = 0xff02
 };
 
 typedef union {
