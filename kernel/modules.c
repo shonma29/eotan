@@ -28,8 +28,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <elf.h>
 #include <major.h>
 #include <stddef.h>
+#include <boot/initrd.h>
 #include <boot/modules.h>
-#include <fs/fstype.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
 #include <nerve/global.h>
@@ -92,7 +92,7 @@ static ER run(const UW type, const ID tid, const Elf32_Ehdr *eHdr)
 static void set_initrd(ModuleHeader *h)
 {
 	sysinfo->root.device = get_device_id(DEVICE_MAJOR_RAMDISK, 0);
-	sysinfo->root.fstype = FS_SFS;
+	sysinfo->root.fstype = INITRD_FS;
 	sysinfo->initrd.start = &(h[1]);
 	sysinfo->initrd.size = h->bytes;
 }

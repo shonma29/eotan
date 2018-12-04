@@ -26,7 +26,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include "../fs/fstype.h"
 
 #define INITRD_SIZE (512 * 1024)
+#define INITRD_FS FS_SFS
 
 #endif

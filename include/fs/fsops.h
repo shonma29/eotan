@@ -164,7 +164,6 @@ struct fs_entry {
 };
 
 static struct fs_entry fs_table[] = {
-    {"null", NULL},
     {"sfs", &sfs_fsops},
 };
 
