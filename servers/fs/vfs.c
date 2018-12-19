@@ -155,7 +155,6 @@ Version 2, June 1991
 #include <string.h>
 #include <fs/nconfig.h>
 #include <fs/vfs.h>
-#include <fs/fsops.h>
 #include <nerve/kcall.h>
 #include <sys/errno.h>
 #include <sys/stat.h>
@@ -165,14 +164,14 @@ Version 2, June 1991
 #include "procfs/process.h"
 #include "../../lib/libserv/libserv.h"
 
+extern vfs_operation_t sfs_fsops;
+extern vfs_operation_t devfs_fsops;
 
-static vfs_t fs_buf[MAX_MOUNT], *rootfs = NULL;
-static list_t free_fs;
-static vfs_t *devfs = NULL;
+static vfs_t rootfs;
+static vfs_t devfs;
 vnode_t *rootfile = NULL;
 
-static vfs_t *alloc_fs(void);
-static void dealloc_fs(vfs_t *);
+static void alloc_fs(vfs_t *);
 
 
 
@@ -181,8 +180,6 @@ static void dealloc_fs(vfs_t *);
  */
 W fs_init(void)
 {
-    W i;
-
     /* 各データ構造の初期化を行い
      * ルートファイルシステムをマウントする
      */
@@ -193,19 +190,14 @@ W fs_init(void)
 	return (E_NOMEM);
     }
 
-    list_initialize(&free_fs);
-    for (i = 0; i < sizeof(fs_buf) / sizeof(fs_buf[0]); i++)
-	list_append(&free_fs, &(fs_buf[i].bros));
-
     if (cache_initialize())
 	return (E_NOMEM);
 
-    devfs = alloc_fs();
-    if (!devfs) {
-	return (E_NOMEM);
-    }
+    alloc_fs(&rootfs);
+    rootfs.operations = sfs_fsops;
 
-    devfs->operations = devfs_fsops;
+    alloc_fs(&devfs);
+    devfs.operations = devfs_fsops;
 
     return (TRUE);
 }
@@ -228,7 +220,7 @@ W open_special_devices(struct proc * procp)
 	}
 	ip->mode = S_IFCHR;
 	ip->dev = p->id;
-	ip->fs = devfs;
+	ip->fs = &devfs;
 	ip->index = -1;
 	ip->size = p->size;
 	ip->nblock = 0;
@@ -244,7 +236,7 @@ W open_special_devices(struct proc * procp)
 	}
 	ip->mode = S_IFCHR;
 	ip->dev = p->id;
-	ip->fs = devfs;
+	ip->fs = &devfs;
 	ip->index = -2;
 	ip->size = p->size;
 	ip->nblock = 0;
@@ -260,7 +252,7 @@ W open_special_devices(struct proc * procp)
 	}
 	ip->mode = S_IFCHR;
 	ip->dev = p->id;
-	ip->fs = devfs;
+	ip->fs = &devfs;
 	ip->index = -3;
 	ip->size = p->size;
 	ip->nblock = 0;
@@ -278,105 +270,26 @@ W open_special_devices(struct proc * procp)
 /* alloc_fs -
  *
  */
-static vfs_t *alloc_fs(void)
+static void alloc_fs(vfs_t *fsp)
 {
-    list_t *p = list_pick(&free_fs);
-    vfs_t *fsp;
-
-    if (p == NULL) {
-	return (NULL);
-    }
-
-    fsp = getFsParent(p);
-
-    memset((B*)fsp, 0, sizeof(vfs_t));
-    list_initialize(&(fsp->bros));
     list_initialize(&(fsp->vnodes));
-    return (fsp);
-}
-
-static void dealloc_fs(vfs_t *fsp)
-{
-    if (fsp == NULL) {
-	return;
-    }
-
-    list_remove(&(fsp->bros));
-    list_append(&free_fs, &(fsp->bros));
 }
 
 /* mount_fs
  *
  */
 W
-fs_mount(const ID device,
-	 vnode_t * mountpoint, W option, W fstype)
+fs_mount(const ID device)
 {
-    vfs_t *newfs;
-    vnode_t *newip;
-    vfs_operation_t *fsp;
-    W err;
-
-    if ((fstype < 0) || (fstype >= sizeof(fs_table) / sizeof(struct fs_entry))) {
-	log_debug("fs: mount unknown fstype %d\n", fstype);
-	return (EINVAL);
-    }
-
-    /* ファイルシステム情報の取り出し */
-    fsp = fs_table[fstype].fsops;
-
-    if (rootfs) {
-	/* 既に mount されていないかどうかのチェック */
-	newfs = rootfs;
-	do {
-	    if (newfs->device.channel == device) {
-		return (EBUSY);
-	    }
-	    newfs = getFsParent(list_next(&(newfs->bros)));
-	} while (newfs != rootfs);
-
-	newip = vnodes_create();
-	if (newip == NULL)
-	    return (E_NOMEM);
-
-    } else
-	newip = mountpoint;
-
-    newfs = alloc_fs();
-    if (newfs == NULL)
-	err = ENOMEM;
-
-    else {
-	err = fsp->mount(device, newfs, newip);
-	if (err)
-	    dealloc_fs(newfs);
-    }
-
-    if (err) {
-	if (rootfs) {
-	    vnodes_remove(newip);
-	}
-
+    W err = sfs_fsops.mount(device, &rootfs, rootfile);
+    if (err)
 	return (err);
-    }
 
     /* mount されるファイルシステムの root ディレクトリの登録 */
-    newip->fs = newfs;
-    newfs->root = newip;
-    newfs->operations = *fsp;
+    rootfile->fs = &rootfs;
+    rootfs.root = rootfile;
 
-    /* ファイルシステムのリストへ登録 */
-    if (rootfs) {
-	list_append(&(rootfs->bros), &(newfs->bros));
-
-	/* mount point に coverfile を設定 */
-	mountpoint->covered = newip;
-	newfs->origin = mountpoint;
-
-    } else
-	rootfs = newfs;
-
-    vnodes_append(newip);
+    vnodes_append(rootfile);
 
     return (EOK);
 }

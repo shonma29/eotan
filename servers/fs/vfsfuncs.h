@@ -30,10 +30,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/stat.h>
 #include "vfs.h"
 
-static inline vfs_t *getFsParent(const list_t *p) {
-	return (vfs_t*)((intptr_t)p - offsetof(vfs_t, bros));
-}
-
 static inline int vfs_sync(vnode_t *ip)
 {
 	return ip->fs->operations.sync(ip);

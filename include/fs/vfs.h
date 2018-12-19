@@ -63,7 +63,6 @@ typedef struct _vfs_operation_t {
 } vfs_operation_t;
 
 typedef struct _vfs_t {
-	list_t bros;
 	block_device_t device;
 	void *private;
 	struct _vnode_t *root;

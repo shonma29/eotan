@@ -106,7 +106,7 @@ struct file
 /* vfs.c */
 extern W fs_init(void);
 
-extern W fs_mount(ID device, vnode_t *mountpoint, W option, W fstype);
+extern W fs_mount(ID device);
 
 extern vnode_t *rootfile;
 

@@ -131,7 +131,6 @@ static int mount(vfs_t *fs, const char *filename, vnode_t *root)
 		return ERR_FILE;
 	}
 
-	list_initialize(&(fs->bros));
 	list_initialize(&(fs->vnodes));
 	fs->operations = fsops;
 
