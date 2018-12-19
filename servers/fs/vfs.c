@@ -173,8 +173,6 @@ vnode_t *rootfile = NULL;
 
 static vfs_t *alloc_fs(void);
 static void dealloc_fs(vfs_t *);
-static W copy_path(char * parent_path, char * path, vnode_t * startip,
-		vnode_t ** parent_ip);
 
 
 
@@ -442,108 +440,4 @@ W fs_unmount(UW device)
     dealloc_fs(fsp);
 
     return (EOK);
-}
-
-
-/* fs_link_file -
- *
- */
-W
-fs_link_file(W procid, B * src, B * dst, struct permission * acc)
-{
-    char parent_path[NAME_MAX + 1];
-    vnode_t *startip;
-    vnode_t *srcip, *parent_ip;
-    W parent_length;
-    W error_no;
-
-    /* リンク元の i-node を get 無ければエラー */
-    if (*src != '/') {
-	error_no = proc_get_cwd(procid, &startip);
-	if (error_no) {
-	    return (error_no);
-	}
-    } else {
-	startip = rootfile;
-    }
-
-    error_no = vfs_walk(startip, src, O_RDONLY, acc, &srcip);
-    if (error_no) {
-	return (error_no);
-    }
-
-    /* リンク元がディレクトリならエラー */
-    if ((srcip->mode & S_IFMT) == S_IFDIR) {
-	vnodes_remove(srcip);
-	return (EISDIR);
-    }
-
-    /* リンク先の親ディレクトリの i-node を get */
-    if (*dst != '/') {
-	error_no = proc_get_cwd(procid, &startip);
-	if (error_no) {
-	    return (error_no);
-	}
-    } else {
-	startip = rootfile;
-    }
-
-    parent_length = copy_path(parent_path, dst, startip, &parent_ip);
-    if (parent_length > 0) {
-	error_no =
-	    vfs_walk(startip, parent_path, O_RDWR, acc, &parent_ip);
-	if (error_no) {
-	    return (error_no);
-	}
-    }
-    parent_length += 1;
-
-    /* ファイルシステムを跨ぐリンクにならないことをチェックする */
-    if (srcip->fs != parent_ip->fs) {
-	vnodes_remove(parent_ip);
-	vnodes_remove(srcip);
-	return (EXDEV);
-    }
-
-    /* リンク先にファイルが存在していたらエラー */
-    vnode_t *ip;
-    error_no = vfs_walk(parent_ip, &dst[parent_length], O_RDONLY, acc, &ip);
-    if (error_no == EOK) {
-	vnodes_remove(ip);
-	error_no = EEXIST;
-    } else {
-	/* 各ファイルシステムの link 関数を呼び出す */
-	error_no = parent_ip->fs->operations.link(parent_ip, &dst[parent_length], srcip);
-    }
-    vnodes_remove(parent_ip);
-    vnodes_remove(srcip);
-    if (error_no) {
-	return (error_no);
-    }
-    return (EOK);
-}
-
-
-/* --------=========== 細々とした関数群 ================--------- */
-
-static W copy_path(char * parent_path, char * path, vnode_t * startip,
-		vnode_t ** parent_ip)
-{
-    W len;
-
-    for (len = strlen(path); len >= 0; len--) {
-	if (path[len] == '/') {
-	    strncpy(parent_path, path, NAME_MAX + 1);
-	    parent_path[NAME_MAX] = '\0';
-	    break;
-	}
-    }
-
-    if (len < 0) {
-	*parent_ip = startip;
-    } else if (len == 0) {
-	*parent_ip = rootfile;
-    }
-
-    return len;
 }

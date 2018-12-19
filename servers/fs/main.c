@@ -67,7 +67,6 @@ static int (*syscall[])(fs_request*) = {
 	if_read,
 	if_write,
 	if_close,
-	if_link,
 	if_mount,
 	if_unmount,
 };

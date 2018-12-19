@@ -50,7 +50,6 @@ extern gid_t getgid(void);
 extern pid_t getpid(void);
 extern pid_t getppid(void);
 extern uid_t getuid(void);
-extern int link(const char *, const char *);
 extern off_t lseek(int, off_t, int);
 extern int open(const char *path, int oflag, ...);
 extern ssize_t read(int, void *, size_t);

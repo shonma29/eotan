@@ -106,7 +106,6 @@ vfs_operation_t sfs_fsops = {
     sfs_statvfs,
     tfs_getdents,
     tfs_walk,
-    sfs_i_link,
     sfs_i_unlink,
     tfs_mkdir,
     sfs_i_rmdir,

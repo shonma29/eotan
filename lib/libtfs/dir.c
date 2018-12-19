@@ -62,25 +62,6 @@ Version 2, June 1991
 
 
 
-int sfs_i_link(vnode_t * parent, char *fname, vnode_t * srcip)
-{
-    W error_no;
-
-    error_no = tfs_append_entry(parent, fname, srcip);
-    if (error_no) {
-	return (error_no);
-    }
-
-    /* inode 情報の更新 */
-    struct sfs_inode *sfs_inode = srcip->private;
-    srcip->nlink += 1;
-    time_get(&(sfs_inode->i_ctime));
-    srcip->dirty = true;
-
-    return 0;
-}
-
-
 int
 sfs_i_unlink(vnode_t * parent, char *fname, vnode_t *ip)
 {

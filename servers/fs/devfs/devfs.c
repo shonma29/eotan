@@ -65,7 +65,6 @@ vfs_operation_t devfs_fsops = {
     dummy_error,
     dummy_error,
     dummy_error,
-    dummy_error,
     dummy_ok,
     devfs_read,
     devfs_write

@@ -46,7 +46,6 @@ extern int if_exec(fs_request*);
 extern int if_exit(fs_request*);
 extern int if_fork(fs_request*);
 extern int if_kill(fs_request*);
-extern int if_link(fs_request*);
 extern int if_lseek(fs_request*);
 extern int if_create(fs_request*);
 extern int if_open(fs_request*);
