@@ -305,22 +305,6 @@ static void dealloc_fs(vfs_t *fsp)
     list_append(&free_fs, &(fsp->bros));
 }
 
-W find_fs(UB *fsname, W *fstype)
-{
-    W fs_num;
-
-    for (fs_num = 1; fs_num < sizeof(fs_table) / sizeof(struct fs_entry); ++fs_num) {
-	if (!strcmp((const char*)fsname, fs_table[fs_num].fsname))
-	    break;
-    }
-    if (fs_num >= sizeof(fs_table) / sizeof(struct fs_entry)) {
-	return (EINVAL);
-    }
-
-    *fstype = fs_num;
-    return EOK;
-}
-
 /* mount_fs
  *
  */
@@ -393,51 +377,6 @@ fs_mount(const ID device,
 	rootfs = newfs;
 
     vnodes_append(newip);
-
-    return (EOK);
-}
-
-
-/* unmount_fs
- *
- */
-W fs_unmount(UW device)
-{
-    vfs_t *fsp;
-
-    /* device から fsp を検索 */
-    fsp = rootfs;
-    do {
-	if (fsp->device.channel == device)
-	    break;
-	fsp = getFsParent(list_next(&(fsp->bros)));
-    }
-    while (fsp != rootfs);
-    if (fsp == rootfs) {
-	/* 見付からなかったか，root file system だった場合 */
-	return (EINVAL);
-    }
-
-    if (fsp->root->refer_count > 1) {
-	return (EBUSY);
-    }
-
-    if (!list_is_empty(&(fsp->vnodes))) {
-	/* マウントポイント以下のファイル/ディレクトリが使われている
-	 * BUSY のエラーで返す
-	 */
-	return (EBUSY);
-    }
-
-    /* ファイルシステム情報を解放する */
-    fsp->operations.unmount(fsp);
-
-    /* マウントポイントを解放する */
-    fsp->origin->covered = NULL;
-    vnodes_remove(fsp->origin);
-
-    /* FS list から除外 */
-    dealloc_fs(fsp);
 
     return (EOK);
 }

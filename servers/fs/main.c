@@ -66,9 +66,7 @@ static int (*syscall[])(fs_request*) = {
 	if_lseek,
 	if_read,
 	if_write,
-	if_close,
-	if_mount,
-	if_unmount,
+	if_close
 };
 
 static int initialize(void);
@@ -220,7 +218,7 @@ void start(VP_INT exinf)
 		if (size == sizeof(pm_args_t)) {
 			int result;
 
-			if (req->packet.operation >=
+			if ((int)(req->packet.operation) >=
 					sizeof(syscall) / sizeof(syscall[0]))
 				result = ENOTSUP;
 

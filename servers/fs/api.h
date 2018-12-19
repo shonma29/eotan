@@ -54,8 +54,6 @@ extern int if_remove(fs_request*);
 extern int if_fstat(fs_request*);
 extern int if_waitpid(fs_request*);
 extern int if_write(fs_request*);
-extern int if_mount(fs_request*);
-extern int if_unmount(fs_request*);
 
 extern int reply2(const RDVNO, const int32_t, const int32_t,
 		const int32_t);
