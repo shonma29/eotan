@@ -36,7 +36,7 @@ extern node_t nil_node;
 
 static inline int compare_int(const int a, const int b)
 {
-	return a - b;
+	return ((a > b)? 1:((a == b)? 0:(-1)));
 }
 
 #endif
