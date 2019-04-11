@@ -44,7 +44,6 @@ void _main(int argc, char *argv[], char *envp[])
 
 static void __libc_initialize(void)
 {
-	int i;
 	FILE *p;
 
 	p = stdin;
@@ -55,12 +54,12 @@ static void __libc_initialize(void)
 	p->buf_size = 1;
 	p->seek_pos = 0;
 
-	for (i = STDOUT_FILENO; i <= STDERR_FILENO; i++) {
+	for (int i = STDOUT_FILENO; i <= STDERR_FILENO; i++) {
 		p = &(__libc_files[i]);
 		p->mode = __FILE_MODE_WRITABLE;
 		p->pos = 0;
 		p->len = 0;
-		p->fd = STDOUT_FILENO;
+		p->fd = i;
 		p->buf_size = 1;
 		p->seek_pos = 0;
 	}
