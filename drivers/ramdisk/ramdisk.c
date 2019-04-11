@@ -47,15 +47,15 @@ int open(void)
 
 int close(const int channel)
 {
-	return (channel == 0)? 0:(-1);
+	return ((channel == 0)? 0:(-1));
 }
 
 int read(unsigned char *outbuf, const int channel,
 		const off_t start, const size_t size)
 {
 	int result = check_param(start, size);
-
-	if (result)	return result;
+	if (result)
+		return result;
 
 	memcpy(outbuf, &(buf[start]), size);
 
@@ -65,8 +65,8 @@ int read(unsigned char *outbuf, const int channel,
 int write(unsigned char *inbuf, const int channel,
 		const off_t start, const size_t size) {
 	int result = check_param(start, size);
-
-	if (result)	return result;
+	if (result)
+		return result;
 
 	memcpy(&(buf[start]), inbuf, size);
 
@@ -75,10 +75,18 @@ int write(unsigned char *inbuf, const int channel,
 
 static int check_param(const off_t start, const size_t size)
 {
-	if (start >= sizeof(buf))	return -1;
-	if ((start + size) > sizeof(buf))	return -1;
+	if (start < 0)
+		return -1;
 
-	if (size > DEV_BUF_SIZE)	return -1;
+	if (start >= sizeof(buf))
+		return -1;
+
+	size_t rest = sizeof(buf) - start;
+	if (size > rest)
+		return -1;
+
+	if (size > DEV_BUF_SIZE)
+		return -1;
 
 	return 0;
 }
