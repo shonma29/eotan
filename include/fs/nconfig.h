@@ -34,5 +34,6 @@ For more information, please refer to <http://unlicense.org/>
 #define MAX_DEVICE_NAME (31)
 
 #define ROOT_UID (0)
+#define ROOT_GID (0)
 
 #endif

@@ -31,7 +31,6 @@ TARGET = boot.iso
 all: libs tools kern initrd apps data starter
 
 tools:
-	$(MAKE) -f app/sfs/Makefile WD=app/sfs
 	$(MAKE) -f app/tfs/Makefile WD=app/tfs
 	$(MAKE) -f lib/librc/Makefile WD=lib/librc
 
@@ -73,13 +72,12 @@ starter:
 
 initrd:
 	$(RM) initrd.img
-	app/sfs/mkfs initrd.img 1024 4
+	app/tfs/mkfs initrd.img 512 1024 4
 	app/tfs/writer initrd.img chmod 755 /
 	app/tfs/writer initrd.img mkdir /lost+found
 	app/tfs/writer initrd.img chmod 1700 /lost+found
 
 clean:
-	$(MAKE) -f app/sfs/Makefile WD=app/sfs clean
 	$(MAKE) -f app/tfs/Makefile WD=app/tfs clean
 	$(MAKE) -f lib/librc/Makefile WD=lib/librc clean
 	$(MAKE) -f lib/Makefile clean

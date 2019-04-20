@@ -23,7 +23,7 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = $(WD)/writer
+TARGET = $(WD)/mkfs $(WD)/writer
 
 include Makefile.in
 
