@@ -62,6 +62,7 @@ if_dup2 (fs_request *req)
   W		error_no;
   struct file	*fp, *fp2;
 
+  req->packet.process_id &= 0xffff;
 
   /* プロセスからファイル構造体へのポインタを取り出す
    */
