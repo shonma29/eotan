@@ -23,7 +23,6 @@ Version 2, June 1991
 /* =========================== マクロ定義 =========================== */
 
 /* 各種制限値 */
-#define MAX_MOUNT	5
 #define MAX_OPEN	100
 #define MAX_PROCESS	100
 
