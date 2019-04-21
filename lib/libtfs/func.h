@@ -19,7 +19,7 @@ Version 2, June 1991
 #include <fs/vfs.h>
 #include <sys/stat.h>
 
-extern vfs_operation_t sfs_fsops;
+extern vfs_operation_t vfs_fsops;
 
 /* dir.c */
 extern int sfs_i_unlink (vnode_t *parent, char *fname, vnode_t *ip);

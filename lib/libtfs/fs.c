@@ -99,7 +99,7 @@ static int sfs_mount (ID device, vfs_t *rootfsp, vnode_t *rootfile);
 static int sfs_unmount(vfs_t * rootfsp);
 static int sfs_statvfs(vfs_t *, struct statvfs *);
 
-vfs_operation_t sfs_fsops = {
+vfs_operation_t vfs_fsops = {
     sfs_mount,
     sfs_unmount,
     sfs_syncfs,

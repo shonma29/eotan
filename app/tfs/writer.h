@@ -28,8 +28,8 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include "../../include/fs/vfs.h"
 
-extern vfs_operation_t sfs_fsops;
+extern vfs_operation_t vfs_fsops;
 
-#define fsops sfs_fsops
+#define fsops vfs_fsops
 
 #endif

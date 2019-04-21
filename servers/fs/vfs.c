@@ -164,7 +164,7 @@ Version 2, June 1991
 #include "procfs/process.h"
 #include "../../lib/libserv/libserv.h"
 
-extern vfs_operation_t sfs_fsops;
+extern vfs_operation_t vfs_fsops;
 extern vfs_operation_t devfs_fsops;
 
 static vfs_t rootfs;
@@ -194,7 +194,7 @@ W fs_init(void)
 	return (E_NOMEM);
 
     alloc_fs(&rootfs);
-    rootfs.operations = sfs_fsops;
+    rootfs.operations = vfs_fsops;
 
     alloc_fs(&devfs);
     devfs.operations = devfs_fsops;
@@ -281,7 +281,7 @@ static void alloc_fs(vfs_t *fsp)
 W
 fs_mount(const ID device)
 {
-    W err = sfs_fsops.mount(device, &rootfs, rootfile);
+    W err = rootfs.operations.mount(device, &rootfs, rootfile);
     if (err)
 	return (err);
 
