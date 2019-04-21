@@ -159,10 +159,10 @@ static W proc_duplicate(struct proc * source, struct proc * destination)
     /* オープンファイルの情報のコピー
      */
     for (index = 0; index < MAX_OPEN; index++) {
-	if (source->session.files[index].f_inode != NULL) {
+	if (source->session.files[index].f_vnode != NULL) {
 	    destination->session.files[index] =
 		source->session.files[index];
-	    destination->session.files[index].f_inode->refer_count++;
+	    destination->session.files[index].f_vnode->refer_count++;
 	}
     }
 

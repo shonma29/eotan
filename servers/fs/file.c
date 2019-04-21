@@ -45,11 +45,11 @@ int if_close(fs_request *req)
     if (err)
 	return err;
 
-    err = vnodes_remove(fp->f_inode);
+    err = vnodes_remove(fp->f_vnode);
     if (err)
 	return err;
 
-    fp->f_inode = NULL;
+    fp->f_vnode = NULL;
     reply2(req->rdvno, 0, 0, 0);
     return EOK;
 }
@@ -74,17 +74,17 @@ if_dup2 (fs_request *req)
   if (error_no)
     return error_no;
 
-  if (fp2->f_inode != NULL) {
+  if (fp2->f_vnode != NULL) {
     /* 既に open されている file id だった */
-    error_no = vnodes_remove (fp2->f_inode);
+    error_no = vnodes_remove (fp2->f_vnode);
     if (error_no)
       return error_no;
 
-    fp2->f_inode = NULL;
+    fp2->f_vnode = NULL;
   }
-  fp->f_inode->refer_count++;
+  fp->f_vnode->refer_count++;
   error_no = proc_set_file(req->packet.process_id, req->packet.arg2,
-			fp->f_omode, fp->f_inode);
+			fp->f_flag, fp->f_vnode);
   if (error_no)
       return error_no;
 
@@ -113,7 +113,7 @@ int if_lseek(fs_request *req)
 	break;
 
     case SEEK_END:
-	fp->f_offset = fp->f_inode->size + *offp;
+	fp->f_offset = fp->f_vnode->size + *offp;
 	break;
 
     default:
@@ -123,10 +123,10 @@ int if_lseek(fs_request *req)
     if (fp->f_offset < 0) {
 	fp->f_offset = 0;
     }
-    else if (fp->f_inode->mode & S_IFCHR) {
-      if (fp->f_offset > fp->f_inode->size) {
+    else if (fp->f_vnode->mode & S_IFCHR) {
+      if (fp->f_offset > fp->f_vnode->size) {
 	/* ブロックデバイスなど，サイズの制限のあるデバイスの場合 */
-	fp->f_offset = fp->f_inode->size;
+	fp->f_offset = fp->f_vnode->size;
       }
     }
 
@@ -207,7 +207,7 @@ int if_read(fs_request *req)
     if (error_no)
 	return error_no;
 
-    if (fp->f_omode == O_WRONLY)
+    if (fp->f_flag == O_WRONLY)
 	return EBADF;
 
     int offset = fp->f_offset;
@@ -215,7 +215,7 @@ int if_read(fs_request *req)
 	 rest_length > 0; rest_length -= rlength, i += rlength) {
 	/* MAX_BODY_SIZE 毎にファイルに読み込み */
 	len = rest_length > sizeof(req->buf) ? sizeof(req->buf) : rest_length;
-	int delta = fs_read(fp->f_inode, req->buf, offset, len, &rlength);
+	int delta = fs_read(fp->f_vnode, req->buf, offset, len, &rlength);
 	if (delta < 0) {
 	    return (-delta);
 	} else if (!rlength)
@@ -249,19 +249,19 @@ int if_write(fs_request *req)
     if (error_no)
 	return error_no;
 
-    if (fp->f_omode == O_RDONLY)
+    if (fp->f_flag == O_RDONLY)
 	return EBADF;
 
-    if ((! (fp->f_inode->mode & S_IFCHR)) &&
-	(fp->f_offset > fp->f_inode->size)) {
+    if ((! (fp->f_vnode->mode & S_IFCHR)) &&
+	(fp->f_offset > fp->f_vnode->size)) {
       /* 通常ファイルで，書き込む場所がファイルの内容が存在しない場所 */
       /* そこまでを 0 で埋める */
       memset(req->buf, 0, sizeof(req->buf));
-      for (rest_length = fp->f_offset - fp->f_inode->size;
+      for (rest_length = fp->f_offset - fp->f_vnode->size;
 	   rest_length > 0; rest_length -= rlength) {
 	len = rest_length > sizeof(req->buf) ? sizeof(req->buf) : rest_length;
-	error_no = vfs_write(fp->f_inode, req->buf,
-			      fp->f_inode->size, len, &rlength);
+	error_no = vfs_write(fp->f_vnode, req->buf,
+			      fp->f_vnode->size, len, &rlength);
 	if (error_no || (rlength < len)) {
 	  break;
 	}
@@ -278,7 +278,7 @@ int if_write(fs_request *req)
 	if (error_no)
 	    break;
 
-	error_no = vfs_write(fp->f_inode, req->buf,
+	error_no = vfs_write(fp->f_vnode, req->buf,
 			      fp->f_offset + i, len, &rlength);
 	if (error_no || (rlength < len)) {
 	    i += rlength;

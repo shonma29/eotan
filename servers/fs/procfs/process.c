@@ -189,9 +189,9 @@ W proc_exit(W procid)
 
     /* open されているファイルの close */
     for (i = 0; i < MAX_OPEN; ++i) {
-	if (procp->session.files[i].f_inode != NULL) {
-	    vnodes_remove(procp->session.files[i].f_inode);
-	    procp->session.files[i].f_inode = NULL;
+	if (procp->session.files[i].f_vnode != NULL) {
+	    vnodes_remove(procp->session.files[i].f_vnode);
+	    procp->session.files[i].f_vnode = NULL;
 	}
     }
 
@@ -243,7 +243,7 @@ W proc_alloc_fileid(W procid, W * retval)
     }
 
     for (i = 0; i < MAX_OPEN; i++) {
-	if (proc_table[procid].session.files[i].f_inode == NULL) {
+	if (proc_table[procid].session.files[i].f_vnode == NULL) {
 	    *retval = i;
 	    memset((B*)&(proc_table[procid].session.files[i]), 0,
 		  sizeof(struct file));
@@ -264,17 +264,17 @@ W proc_set_file(W procid, W fileid, W flag, vnode_t * ip)
 	return (EINVAL);
     }
 
-    if (proc_table[procid].session.files[fileid].f_inode != NULL) {
+    if (proc_table[procid].session.files[fileid].f_vnode != NULL) {
 	return (EBADF);
     }
 
-    proc_table[procid].session.files[fileid].f_inode = ip;
+    proc_table[procid].session.files[fileid].f_vnode = ip;
     if ((flag & O_APPEND) != 0) {
 	proc_table[procid].session.files[fileid].f_offset = ip->size;
     } else {
 	proc_table[procid].session.files[fileid].f_offset = 0;
     }
-    proc_table[procid].session.files[fileid].f_omode = flag & 0x03;
+    proc_table[procid].session.files[fileid].f_flag = flag & 0x03;
     return (EOK);
 }
 

@@ -91,17 +91,7 @@ Version 2, June 1991
 
 #include <fs/vfs.h>
 #include <set/list.h>
-
-/* file system types. */
-
-struct file
-{
-  vnode_t		*f_inode;
-  off_t			f_offset;	/* current offset */
-  W			f_omode;
-};
-
-
+#include "vfsfuncs.h"
 
 /* vfs.c */
 extern W fs_init(void);
@@ -112,10 +102,5 @@ extern vnode_t *rootfile;
 
 /* session.c */
 extern W session_get_opened_file(const ID, const W, struct file **);
-
-/* nsession.c */
-extern int session_get_path(vnode_t **, const ID, const ID, UB *, UB *);
-
-#include "vfsfuncs.h"
 
 #endif				/* __FS_VFS_H__ */

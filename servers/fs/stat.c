@@ -81,10 +81,10 @@ int if_fstat(fs_request *req)
     if (error_no)
 	return error_no;
 
-    else if (fp->f_inode->fs == NULL)
+    else if (fp->f_vnode->fs == NULL)
 	return EINVAL;
 
-    fp->f_inode->fs->operations.stat(fp->f_inode, &st);
+    fp->f_vnode->fs->operations.stat(fp->f_vnode, &st);
 
     error_no =
 	kcall->region_put(caller, (UB*)(req->packet.arg2), sizeof(struct stat),

@@ -36,7 +36,7 @@ W session_get_opened_file(const ID pid, const W fno, struct file **fp)
     if (err)
 	return err;
 
-    if ((*fp)->f_inode == NULL)
+    if ((*fp)->f_vnode == NULL)
 	return EBADF;
 
     return EOK;

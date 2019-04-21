@@ -27,8 +27,16 @@ For more information, please refer to <http://unlicense.org/>
 #ifndef _FS_VFSFUNCS_H_
 #define _FS_VFSFUNCS_H_
 
+#include <fs/vfs.h>
 #include <sys/stat.h>
 #include "vfs.h"
+
+struct file {
+	vnode_t *f_vnode;
+	uint_fast32_t f_flag;
+	uint_fast32_t f_count;
+	off_t f_offset;
+};
 
 static inline int vfs_sync(vnode_t *ip)
 {
@@ -49,5 +57,7 @@ static inline int vfs_write(vnode_t *ip, const void *buf, const int offset,
 {
 	return ip->fs->operations.write(ip, buf, offset, len, rlength);
 }
+
+extern int session_get_path(vnode_t **, const ID, const ID, UB *, UB *);
 
 #endif
