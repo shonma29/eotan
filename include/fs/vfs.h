@@ -66,7 +66,6 @@ typedef struct _vfs_t {
 	block_device_t device;
 	void *private;
 	struct _vnode_t *root;
-	struct _vnode_t *origin;
 	list_t vnodes;
 	vfs_operation_t operations;
 } vfs_t;
@@ -87,7 +86,6 @@ typedef struct _vnode_t {
 	bool dirty;
 	unsigned int refer_count;
 	unsigned int lock_count;
-	struct _vnode_t *covered;
 	dev_t dev;
 } vnode_t;
 

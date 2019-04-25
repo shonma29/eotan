@@ -74,17 +74,6 @@ int vfs_walk(vnode_t *parent, char *path, const int flags,
 			return ENAMETOOLONG;
 		}
 
-		if (!strcmp(head, "..")) {
-			vfs_t *fsp = parent->fs;
-
-			if ((fsp->root == parent)
-					&& fsp->origin) {
-				vnodes_remove(parent);
-				parent = fsp->origin;
-				parent->refer_count++;
-			}
-		}
-
 		if ((parent->mode & S_IFMT) != S_IFDIR) {
 			vnodes_remove(parent);
 			return ENOTDIR;
@@ -157,6 +146,7 @@ int vfs_create(vnode_t *cwd, char *path, const mode_t mode,
 		return ENOTDIR;
 	}
 
+	//TODO really RDONLY?
 	result = vfs_walk(parent, head, O_RDONLY, permission, node);
 	if (!result) {
 		log_debug("vfs_create: %s already exists\n", head);

@@ -78,10 +78,8 @@ int tfs_walk(vnode_t *parent, const char *name, vnode_t **node)
 	char buf[sizeof(struct tfs_dir) - TFS_MINNAMLEN + TFS_MAXNAMLEN];
 	struct tfs_dir *dir = (struct tfs_dir*)buf;
 	size_t name_len = strlen(name);
-	size_t delta;
-	int offset;
 	//TODO optimize
-	for (offset = 0;;) {
+	for (int offset = 0;;) {
 		size_t len;
 		int error_no = vfs_read(parent, buf, offset, sizeof(buf), &len);
 		if (error_no < 0)
@@ -100,19 +98,14 @@ int tfs_walk(vnode_t *parent, const char *name, vnode_t **node)
 			return EINVAL;
 
 		if (name_len == dir->d_namlen)
-			if (!memcmp(name, dir->d_name, name_len)) {
-				delta = real_len;
+			if (!memcmp(name, dir->d_name, name_len))
 				break;
-			}
 
 		offset += real_len;
 	}
 
 	*node = vnodes_find(parent->fs, dir->d_fileno);
 	if (*node) {
-		if ((*node)->covered)
-			*node = (*node)->covered;
-
 		(*node)->refer_count++;
 
 		return 0;
