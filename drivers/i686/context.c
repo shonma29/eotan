@@ -152,7 +152,7 @@ void context_switch(thread_t *prev, thread_t *next)
 
 	fpu_save(&prev);
 	stack_switch_wrapper(&(prev->mpu.esp0), &(next->mpu.esp0));
-	fpu_restore(&prev);
+	fpu_restore(&next);
 }
 
 void context_reset_page_table()
