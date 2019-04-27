@@ -56,7 +56,6 @@ extern node_t *find_empty_key(tree_t *, int *, node_t *);
 extern thread_t *get_thread_ptr(ID);
 extern ER_ID thread_create_auto(T_CTSK *);
 extern ER thread_create(ID, T_CTSK *);
-extern void thread_reset(thread_t *);
 extern ER thread_destroy(ID);
 extern void thread_end(void);
 extern void thread_end_and_destroy(void);

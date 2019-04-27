@@ -33,11 +33,13 @@ For more information, please refer to <http://unlicense.org/>
 #include "arch/archfunc.h"
 #include "mpu/mpufunc.h"
 
-static ER create_idle_thread(void);
+static ER create_idle_thread(const VP_INT exinf);
+static void idle_start(VP_INT exinf);
 
 
 void kern_start(void (*callback)(void))
 {
+	//TODO move to starter
 	sysinfo->root.device = get_device_id(DEVICE_MAJOR_ATA, 0);
 	sysinfo->root.fstype = FS_SFS;
 	sysinfo->initrd.start = 0;
@@ -50,43 +52,45 @@ void kern_start(void (*callback)(void))
 	port_initialize();
 	mutex_initialize();
 	thread_initialize();
-	create_idle_thread();
+	create_idle_thread((VP_INT)callback);
+}
 
-	//callback();
+//TODO move to starter
+static ER create_idle_thread(const VP_INT exinf)
+{
+	static T_CTSK pk_ctsk = {
+		TA_HLNG | TA_ACT,
+		(VP_INT)NULL,
+		(FP)idle_start,
+		MAX_PRIORITY,
+		KTHREAD_STACK_SIZE,
+		//TODO release current stack in module.c
+//		(void*)CORE_STACK_ADDR,
+		NULL,
+		NULL,
+		NULL
+	};
+	pk_ctsk.exinf = exinf;
+
+	//TODO ugly
+#if __i386__
+	thread_t __attribute__ ((aligned(16))) dummy;
+#else
+	thread_t dummy;
+#endif
+	dummy.status = TTS_DMT;
+	running = &dummy;
+
+	return thread_create(PORT_IDLE, &pk_ctsk);
+}
+
+static void idle_start(VP_INT exinf)
+{
+//	void (*callback)(void)) = (void (*callback)(void))exinf;
+//	callback();
 	load_modules();
 	ei();
 
 	for (;;)
 		halt();
-}
-
-static ER create_idle_thread(void)
-{
-	static T_CTSK pk_ctsk = {
-		TA_HLNG,
-		(VP_INT)NULL,
-		(FP)kern_start,
-		MAX_PRIORITY,
-		//TODO real size of stack differs
-		KTHREAD_STACK_SIZE,
-		(void*)CORE_STACK_ADDR,
-		NULL,
-		NULL
-	};
-	ER result = thread_create(PORT_IDLE, &pk_ctsk);
-
-	if (!result) {
-		thread_t *th;
-
-		enter_serialize();
-		th = get_thread_ptr(PORT_IDLE);
-		thread_reset(th);
-
-		th->status = TTS_RUN;
-		ready_enqueue(th->priority, &(th->queue));
-		running = th;
-		leave_serialize();
-	}
-
-	return result;
 }

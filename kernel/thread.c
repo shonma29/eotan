@@ -206,21 +206,17 @@ ER thread_create(ID tskid, T_CTSK *pk_ctsk)
 
 static void fire(thread_t *th)
 {
-	thread_reset(th);
+	th->time.total = 0;
+	th->time.left = TIME_QUANTUM;
+	th->priority = th->attr.priority;
+	th->wakeup_count = 0;
+
 	create_context(th);
 
 	th->status = TTS_RDY;
 	ready_enqueue(th->priority, &(th->queue));
 	leave_serialize();
 	dispatch();
-}
-
-void thread_reset(thread_t *th)
-{
-	th->time.total = 0;
-	th->time.left = TIME_QUANTUM;
-	th->priority = th->attr.priority;
-	th->wakeup_count = 0;
 }
 
 static void release_resources(thread_t *th)
