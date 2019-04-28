@@ -23,11 +23,8 @@ Version 2, June 1991
 /* =========================== マクロ定義 =========================== */
 
 /* 各種制限値 */
-#define MAX_OPEN	100
 #define MAX_PROCESS	100
 
 #define PROC_NAME_LEN	35
-
-#define CACHE_BLOCK_SIZE	512
 
 #endif				/* __FS_CONFIG_H__ */

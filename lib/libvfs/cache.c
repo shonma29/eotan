@@ -42,10 +42,12 @@ typedef struct {
 	block_device_t *dev;
 	bool dirty;
 	unsigned int lock_count;
-	char buf[CACHE_BLOCK_SIZE];
+	//TODO dynamic allocation
+	char buf[DEFAULT_BLOCK_SIZE];
 } cache_t;
 
 static hash_t *hash;
+//TODO dynamic allocation
 static cache_t cache[MAX_CACHE];
 static cache_t key;
 static list_t free_list;

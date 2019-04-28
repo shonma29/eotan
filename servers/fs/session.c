@@ -116,7 +116,7 @@ int session_get_opened_file(const pid_t pid, const int fd, struct file **file)
 		return ESRCH;
 
 	if ((fd < 0)
-			|| (fd >= MAX_OPEN))
+			|| (fd >= MAX_FILE))
 		return EBADF;
 
 	if (session->files[fd].f_vnode) {

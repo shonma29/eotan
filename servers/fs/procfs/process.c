@@ -190,7 +190,7 @@ W proc_exit(W procid)
     }
 
     /* open されているファイルの close */
-    for (i = 0; i < MAX_OPEN; ++i) {
+    for (i = 0; i < MAX_FILE; ++i) {
 	if (procp->session.files[i].f_vnode != NULL) {
 	    vnodes_remove(procp->session.files[i].f_vnode);
 	    procp->session.files[i].f_vnode = NULL;
@@ -244,7 +244,7 @@ W proc_alloc_fileid(W procid, W * retval)
 	return (EINVAL);
     }
 
-    for (i = 0; i < MAX_OPEN; i++) {
+    for (i = 0; i < MAX_FILE; i++) {
 	if (proc_table[procid].session.files[i].f_vnode == NULL) {
 	    *retval = i;
 	    memset((B*)&(proc_table[procid].session.files[i]), 0,
@@ -262,7 +262,7 @@ W proc_set_file(W procid, W fileid, W flag, vnode_t * ip)
 	return (EINVAL);
     }
 
-    if ((fileid < 0) || (fileid >= MAX_OPEN)) {
+    if ((fileid < 0) || (fileid >= MAX_FILE)) {
 	return (EINVAL);
     }
 
@@ -287,7 +287,7 @@ W proc_get_file(W procid, W fileid, struct file ** fp)
 	return (EINVAL);
     }
 
-    if ((fileid < 0) || (fileid >= MAX_OPEN)) {
+    if ((fileid < 0) || (fileid >= MAX_FILE)) {
 	return (EINVAL);
     }
 

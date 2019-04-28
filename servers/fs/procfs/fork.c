@@ -158,7 +158,7 @@ static W proc_duplicate(struct proc * source, struct proc * destination)
 
     /* オープンファイルの情報のコピー
      */
-    for (index = 0; index < MAX_OPEN; index++) {
+    for (index = 0; index < MAX_FILE; index++) {
 	if (source->session.files[index].f_vnode != NULL) {
 	    destination->session.files[index] =
 		source->session.files[index];

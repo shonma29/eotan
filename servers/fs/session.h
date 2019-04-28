@@ -26,7 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <fs/config.h>
+#include <fs/nconfig.h>
 #include <fs/vfs.h>
 #include <set/tree.h>
 #include <sys/types.h>
@@ -37,7 +37,7 @@ typedef struct _session_t {
 	int session_id;
 	struct permission permission;
 	vnode_t *cwd;
-	struct file files[MAX_OPEN];
+	struct file files[MAX_FILE];
 } session_t;
 
 extern session_t *session_find(const pid_t pid);
