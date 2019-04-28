@@ -1,97 +1,97 @@
 /*
+This is free and unencumbered software released into the public domain.
 
-B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
 
-GNU GENERAL PUBLIC LICENSE
-Version 2, June 1991
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
 
-(C) B-Free Project.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
 
-(C) 2002, Tomohide Naniwa
-
+For more information, please refer to <http://unlicense.org/>
 */
-/*
- * $Log: access.c,v $
- * Revision 1.3  2000/05/06 03:54:22  naniwa
- * implement mkdir/rmdir, etc.
- *
- * Revision 1.2  1999/07/10 10:45:34  naniwa
- * minor fix
- *
- * Revision 1.1  1999/03/21 14:01:51  monaka
- * They are separated from syscall.c. Still no major changes available.
- *
- */
-
 #include <fcntl.h>
-#include <string.h>
-#include <utime.h>
-#include <core/options.h>
-#include <mpu/memory.h>
 #include <nerve/kcall.h>
 #include <sys/errno.h>
-#include <sys/stat.h>
-#include "api.h"
-#include "vfs.h"
 #include "procfs/process.h"
+
+#define INVALID_MODE_BITS (~(S_IRWXU | S_IRWXG | S_IRWXO))
+
+static int path2vnode(vnode_t **vnode, const pid_t pid, const int tid,
+		const unsigned char *path, unsigned char *buf);
+
+
+static int path2vnode(vnode_t **vnode, const pid_t pid, const int tid,
+		const unsigned char *path, unsigned char *buf)
+{
+	vnode_t *starting_node;
+	int error_no = session_get_path(&starting_node, pid, tid,
+			(unsigned char*)path, buf);
+	if (error_no)
+		return error_no;
+
+	return vfs_walk(starting_node, (char*)buf, O_ACCMODE,
+			&(proc_table[pid].session.permission), vnode);
+}
 
 int if_chmod(fs_request *req)
 {
-    vnode_t *startip;
-    vnode_t *ipp;
-    struct permission acc;
-    W err;
-    ID caller = (req->packet.process_id >> 16) & 0xffff;
+	pid_t pid = unpack_pid(req);
+	vnode_t *vnode;
+	int error_no = path2vnode(&vnode, pid, unpack_tid(req),
+			(unsigned char*)(req->packet.arg1),
+			(unsigned char*)(req->buf));
+	if (error_no)
+		return error_no;
 
-    req->packet.process_id &= 0xffff;
-    err = session_get_path(&startip, req->packet.process_id,
-		 caller, (UB*)(req->packet.arg1),
-		 (UB*)(req->buf));
-    if (err)
-	return err;
+	//TODO allow group leader
+	if (vnode->uid != proc_table[pid].session.permission.uid)
+		return EPERM;
 
-    if (proc_get_permission(req->packet.process_id, &acc))
-	return EINVAL;
+	if (req->packet.arg2 & INVALID_MODE_BITS)
+		return EINVAL;
 
-    err = vfs_walk(startip, req->buf, O_RDWR, &acc, &ipp);
-    if (err)
-	return ENOENT;
+	vnode->mode = (vnode->mode & S_IFMT) | req->packet.arg2;
+	error_no = vfs_wstat(vnode);
+	vnodes_remove(vnode);
 
-    ipp->mode = (ipp->mode & S_IFMT) | req->packet.arg2;
-    err = ipp->fs->operations.wstat(ipp);
-    vnodes_remove(ipp);
-    if (err)
-	return err;
+	if (!error_no)
+		reply2(req->rdvno, 0, 0, 0);
 
-    reply2(req->rdvno, 0, 0, 0);
-    return EOK;
+	return error_no;
 }
 
-/* if_fstat - ファイルの情報を返す
- */
 int if_fstat(fs_request *req)
 {
-    struct file *fp;
-    W error_no;
-    struct stat st;
-    ID caller = (req->packet.process_id >> 16) & 0xffff;
+	struct file *file;
+	int error_no = session_get_opened_file(unpack_pid(req),
+			req->packet.arg1, &file);
+	if (error_no)
+		return error_no;
 
-    req->packet.process_id &= 0xffff;
-    error_no = session_get_opened_file(req->packet.process_id, req->packet.arg1, &fp);
-    if (error_no)
-	return error_no;
+	struct stat *st = (struct stat*)&(req->buf);
+	error_no = vfs_stat(file->f_vnode, st);
+	if (error_no)
+		return error_no;
 
-    else if (fp->f_vnode->fs == NULL)
-	return EINVAL;
+	if (kcall->region_put(unpack_tid(req),
+			(struct stat*)(req->packet.arg2), sizeof(*st), st))
+		return EFAULT;
 
-    fp->f_vnode->fs->operations.stat(fp->f_vnode, &st);
-
-    error_no =
-	kcall->region_put(caller, (UB*)(req->packet.arg2), sizeof(struct stat),
-		 &st);
-    if (error_no)
-	return EINVAL;
-
-    reply2(req->rdvno, 0, 0, 0);
-    return EOK;
+	reply2(req->rdvno, 0, 0, 0);
+	return 0;
 }

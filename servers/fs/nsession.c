@@ -86,21 +86,25 @@ session_t *session_find(const pid_t pid)
 	return &(proc_table[pid].session);
 }
 
-int session_get_path(vnode_t **ip, const ID pid, const ID tid,
-	UB *src, UB *dest)
+int session_get_path(vnode_t **vnode, const pid_t pid, const int tid,
+	unsigned char *src, unsigned char *dest)
 {
-    ER_UINT len = kcall->region_copy(tid, src, PATH_MAX + 1, dest);
-    if (len <= 0)
-	return EINVAL;
+	ER_UINT len = kcall->region_copy(tid, src, PATH_MAX + 1, dest);
+	if (len <= 0)
+		return EFAULT;
 
-    if (len > PATH_MAX)
-	return ENAMETOOLONG;
+	if (len > PATH_MAX)
+		return ENAMETOOLONG;
 
-    if (*dest == '/') {
-	*ip = rootfile;
+	if (*dest == '/') {
+		*vnode = rootfile;
+		return 0;
+	}
 
+	session_t *session = session_find(pid);
+	if (!session)
+		return ESRCH;
+
+	*vnode = session->cwd;
 	return 0;
-    }
-
-    return proc_get_cwd(pid, ip);
 }

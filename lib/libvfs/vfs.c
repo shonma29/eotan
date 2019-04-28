@@ -37,7 +37,8 @@ For more information, please refer to <http://unlicense.org/>
 static int modes[] = {
 	R_OK,
 	W_OK,
-	R_OK | W_OK
+	R_OK | W_OK,
+	F_OK
 };
 
 static char *split_path(const char *path, char **parent_path);

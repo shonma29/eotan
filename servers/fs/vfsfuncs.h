@@ -29,6 +29,8 @@ For more information, please refer to <http://unlicense.org/>
 
 #include <fs/vfs.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include "api.h"
 #include "vfs.h"
 
 struct file {
@@ -38,26 +40,47 @@ struct file {
 	off_t f_offset;
 };
 
-static inline int vfs_sync(vnode_t *ip)
+static inline pid_t unpack_pid(const fs_request *req)
 {
-	return ip->fs->operations.sync(ip);
+	return (req->packet.process_id & 0xffff);
+}
+
+static inline int unpack_tid(const fs_request *req)
+{
+	return ((req->packet.process_id >> 16) & 0xffff);
+}
+
+static inline int vfs_sync(vnode_t *vnode)
+{
+	return vnode->fs->operations.sync(vnode);
 }
 
 //TODO use off_t
-static inline int fs_read(vnode_t *ip, void *buf, const int offset,
+static inline int fs_read(vnode_t *vnode, void *buf, const int offset,
 		const size_t len, size_t *rlength)
 {
-	return ((ip->mode & S_IFMT) == S_IFDIR)?
-		ip->fs->operations.getdents(ip, buf, offset, len, rlength)
-		:vfs_read(ip, buf, offset, len, rlength);
+	return ((vnode->mode & S_IFMT) == S_IFDIR)?
+		vnode->fs->operations.getdents(vnode, buf, offset, len, rlength)
+		:vfs_read(vnode, buf, offset, len, rlength);
 }
 //TODO use off_t
-static inline int vfs_write(vnode_t *ip, const void *buf, const int offset,
+static inline int vfs_write(vnode_t *vnode, const void *buf, const int offset,
 		const size_t len, size_t *rlength)
 {
-	return ip->fs->operations.write(ip, buf, offset, len, rlength);
+	return vnode->fs->operations.write(vnode, buf, offset, len, rlength);
 }
 
-extern int session_get_path(vnode_t **, const ID, const ID, UB *, UB *);
+static inline int vfs_stat(vnode_t *vnode, struct stat *st)
+{
+	return vnode->fs->operations.stat(vnode, st);
+}
+
+static inline int vfs_wstat(vnode_t *vnode)
+{
+	return vnode->fs->operations.wstat(vnode);
+}
+
+extern int session_get_path(vnode_t **, const pid_t, const int,
+		unsigned char *, unsigned char *);
 
 #endif
