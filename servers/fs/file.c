@@ -32,7 +32,7 @@ Version 2, June 1991
 #include <sys/stat.h>
 #include <sys/unistd.h>
 #include "api.h"
-#include "vfs.h"
+#include "fs.h"
 #include "procfs/process.h"
 
 int if_close(fs_request *req)

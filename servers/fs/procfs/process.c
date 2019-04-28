@@ -122,11 +122,13 @@ Version 2, June 1991
 
 #include <fcntl.h>
 #include <local.h>
+#include <major.h>
 #include <string.h>
 #include <boot/init.h>
 #include <nerve/kcall.h>
 #include <sys/errno.h>
 #include "api.h"
+#include "devfs/devfs.h"
 #include "procfs/process.h"
 #include "../../lib/libserv/libmm.h"
 
@@ -348,4 +350,65 @@ void proc_dealloc_proc(W procid)
     }
 
     tail_proc = &proc_table[procid];
+}
+
+/* file discriptor 0, 1, 2 の設定
+ */
+W open_special_devices(struct proc * procp)
+{
+    vnode_t *ip;
+    device_info_t *p;
+
+    p = device_find(get_device_id(DEVICE_MAJOR_CONS, 0));
+    if (p) {
+	/* 標準入力の設定 */
+	procp->session.files[0].f_vnode = ip = vnodes_create();
+	procp->session.files[0].f_offset = 0;
+	procp->session.files[0].f_flag = O_RDONLY;
+	if (ip == NULL) {
+	    return (ENOMEM);
+	}
+	ip->mode = S_IFCHR;
+	ip->dev = p->id;
+	ip->fs = &devfs;
+	ip->index = -1;
+	ip->size = p->size;
+	ip->nblock = 0;
+	ip->refer_count = 1;
+	vnodes_append(ip);
+
+	/* 標準出力の設定 */
+	procp->session.files[1].f_vnode = ip = vnodes_create();
+	procp->session.files[1].f_offset = 0;
+	procp->session.files[1].f_flag = O_WRONLY;
+	if (ip == NULL) {
+	    return (ENOMEM);
+	}
+	ip->mode = S_IFCHR;
+	ip->dev = p->id;
+	ip->fs = &devfs;
+	ip->index = -2;
+	ip->size = p->size;
+	ip->nblock = 0;
+	ip->refer_count = 1;
+	vnodes_append(ip);
+
+	/* 標準エラー出力の設定 */
+	procp->session.files[2].f_vnode = ip = vnodes_create();
+	procp->session.files[2].f_offset = 0;
+	procp->session.files[2].f_flag = O_WRONLY;
+	if (ip == NULL) {
+	    return (ENOMEM);
+	}
+	ip->mode = S_IFCHR;
+	ip->dev = p->id;
+	ip->fs = &devfs;
+	ip->index = -3;
+	ip->size = p->size;
+	ip->nblock = 0;
+	ip->refer_count = 1;
+	vnodes_append(ip);
+    }
+
+    return (EOK);
 }

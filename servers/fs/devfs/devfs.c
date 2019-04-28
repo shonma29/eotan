@@ -52,7 +52,7 @@ static int devfs_read(vnode_t *ip, void *buf, const int offset,
 static int devfs_write(vnode_t *ip, void *buf, const int offset,
 		const size_t len, size_t *rlength);
 
-vfs_operation_t devfs_fsops = {
+static vfs_operation_t devfs_fsops = {
     dummy_error,
     dummy_error,
     dummy_error,
@@ -69,6 +69,7 @@ vfs_operation_t devfs_fsops = {
     devfs_read,
     devfs_write
 };
+vfs_t devfs;
 
 
 void *malloc(size_t size)
@@ -118,6 +119,9 @@ int device_init(void)
 					p->id, p->name, p->size, p);
 		}
 	}
+
+	list_initialize(&(devfs.vnodes));
+	devfs.operations = devfs_fsops;
 
 	return TRUE;
 }

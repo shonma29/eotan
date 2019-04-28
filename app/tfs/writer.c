@@ -131,19 +131,14 @@ static int mount(vfs_t *fs, const char *filename, vnode_t *root)
 		return ERR_FILE;
 	}
 
-	list_initialize(&(fs->vnodes));
 	fs->operations = fsops;
 
-	int result = fs->operations.mount(fd, fs, root);
+	int result = vfs_mount(fd, fs, root);
 	if (result) {
 		printf("mount(%d) failed %d\n", fd, result);
 		close(fd);
 		return ERR_UNKNOWN;
 	}
-
-	fs->root = root;
-	root->fs = fs;
-	vnodes_append(root);
 
 //	printf("mount: fd = %d\n", fd);
 

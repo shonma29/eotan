@@ -44,6 +44,21 @@ static int modes[] = {
 static char *split_path(const char *path, char **parent_path);
 
 
+int vfs_mount(const int device, vfs_t *fs, vnode_t *root)
+{
+	list_initialize(&(fs->vnodes));
+
+	int error_no = fs->operations.mount(device, fs, root);
+	if (error_no)
+		return error_no;
+
+	fs->root = root;
+	root->fs = fs;
+	vnodes_append(root);
+
+	return 0;
+}
+
 int vfs_walk(vnode_t *parent, char *path, const int flags,
 		const struct permission *perm, vnode_t **node)
 {

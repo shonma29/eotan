@@ -35,7 +35,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/slab.h>
 #include <sys/errno.h>
 #include "api.h"
-#include "vfs.h"
+#include "fs.h"
 #include "devfs/devfs.h"
 #include "procfs/process.h"
 #include "../../kernel/mpu/mpufunc.h"
@@ -78,6 +78,9 @@ static void work(void);
 
 static int initialize(void)
 {
+	if (fs_initialize())
+		return -1;
+
 	T_CMTX pk_cmtx = {
 		TA_CEILING,
 		pri_server_high
@@ -106,7 +109,6 @@ static int initialize(void)
 		return -1;
 	}
 
-	fs_init();
 	init_process();
 
 	if (device_find(sysinfo->root.device)

@@ -81,11 +81,13 @@ typedef struct _vnode_t {
 	uid_t uid;
 	gid_t gid;
 	size_t size;
+//TODO is needed?
 	size_t nblock;
 	void *private;
 	bool dirty;
 	unsigned int refer_count;
 	unsigned int lock_count;
+//TODO is needed?
 	dev_t dev;
 } vnode_t;
 
@@ -93,6 +95,8 @@ struct permission {
 	uid_t uid;
 	gid_t gid;
 };
+
+extern vfs_operation_t vfs_fsops;
 
 extern void block_initialize(block_device_t *);
 
@@ -110,6 +114,7 @@ extern int vnodes_append(vnode_t *);
 extern int vnodes_remove(vnode_t *);
 extern vnode_t *vnodes_find(const vfs_t *, const int);
 
+extern int vfs_mount(const int, vfs_t *, vnode_t *);
 extern int vfs_walk(vnode_t *, char *, const int,
 		const struct permission *, vnode_t **);
 extern int vfs_open(vnode_t *, char *, const int, const mode_t,

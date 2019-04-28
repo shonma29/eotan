@@ -1,5 +1,3 @@
-#ifndef _FS_DEVFS_H_
-#define _FS_DEVFS_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,27 +24,33 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <device.h>
 #include <fs/nconfig.h>
-#include <fs/vfs.h>
-#include <sys/syscall.h>
+#include <nerve/kcall.h>
+#include <sys/errno.h>
+#include "fs.h"
 
-#define MAX_DEVICE (32)
+static vfs_t rootfs;
+vnode_t *rootfile;
 
-typedef struct {
-	UW id;
-	B name[MAX_DEVICE_NAME + 1];
-	UW size;
-	vdriver_t *driver;
-} device_info_t;
 
-extern vfs_t devfs;
+int fs_initialize(void)
+{
+	if (cache_initialize())
+		return E_NOMEM;
 
-extern int device_init(void);
-extern device_info_t *device_find(const UW id);
+	if (vnodes_initialize(kcall->palloc, kcall->pfree, MAX_VNODE))
+		return E_NOMEM;
 
-extern int write_device(int, void *, off_t, size_t, size_t *);
-extern int read_device(int, void *, off_t, size_t, size_t *);
+	rootfile = vnodes_create();
+	if (!rootfile)
+		return E_NOMEM;
 
-#endif
+	return 0;
+}
+
+int fs_mount(const int device)
+{
+	rootfs.operations = vfs_fsops;
+
+	return vfs_mount(device, &rootfs, rootfile);
+}

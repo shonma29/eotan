@@ -1,3 +1,5 @@
+#ifndef __FS_FS_H__
+#define __FS_FS_H__
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,14 +26,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#ifndef _FS_VFSFUNCS_H_
-#define _FS_VFSFUNCS_H_
-
 #include <fs/vfs.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "api.h"
-#include "vfs.h"
 
 struct file {
 	vnode_t *f_vnode;
@@ -80,7 +78,14 @@ static inline int vfs_wstat(vnode_t *vnode)
 	return vnode->fs->operations.wstat(vnode);
 }
 
+extern vnode_t *rootfile;
+
+extern int fs_initialize(void);
+extern int fs_mount(const int device);
+
 extern int session_get_path(vnode_t **, const pid_t, const int,
 		unsigned char *, unsigned char *);
+
+extern W session_get_opened_file(const ID, const W, struct file **);
 
 #endif

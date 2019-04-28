@@ -26,7 +26,7 @@ Version 2, June 1991
 #include <core.h>
 #include <sys/errno.h>
 #include "api.h"
-#include "vfs.h"
+#include "fs.h"
 #include "procfs/process.h"
 
 W session_get_opened_file(const ID pid, const W fno, struct file **fp)

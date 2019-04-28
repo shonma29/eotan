@@ -30,7 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <fs/vfs.h>
 #include <set/tree.h>
 #include <sys/types.h>
-#include "vfs.h"
+#include "fs.h"
 
 typedef struct _session_t {
 	node_t node;
