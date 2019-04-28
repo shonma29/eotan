@@ -41,5 +41,8 @@ typedef struct _session_t {
 } session_t;
 
 extern session_t *session_find(const pid_t pid);
+extern int session_get_path(vnode_t **, const pid_t, const int,
+	unsigned char *, unsigned char *);
+extern int session_get_opened_file(const pid_t, const int, struct file **);
 
 #endif

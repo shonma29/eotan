@@ -83,9 +83,4 @@ extern vnode_t *rootfile;
 extern int fs_initialize(void);
 extern int fs_mount(const int device);
 
-extern int session_get_path(vnode_t **, const pid_t, const int,
-		unsigned char *, unsigned char *);
-
-extern W session_get_opened_file(const ID, const W, struct file **);
-
 #endif
