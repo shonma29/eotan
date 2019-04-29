@@ -152,7 +152,7 @@ ER_UINT port_call(ID porid, VP msg, UINT cmsgsz)
 	}
 
 	if (cmsgsz > port->maxcmsz) {
-		printk("port_call[%d] cmsgsz %d > %d\n",
+		warn("port_call[%d] cmsgsz %d > %d\n",
 				porid, cmsgsz, port->maxcmsz);
 		leave_serialize();
 		return E_PAR;
@@ -166,7 +166,7 @@ ER_UINT port_call(ID porid, VP msg, UINT cmsgsz)
 		int rdvno;
 
 		if (memcpy_k2u(tp, tp->wait.detail.por.msg, msg, cmsgsz)) {
-			printk("port_call[%d] copy_to(%d, %p, %p, %d) error\n",
+			warn("port_call[%d] copy_to(%d, %p, %p, %d) error\n",
 					porid, thread_id(tp),
 					tp->wait.detail.por.msg, msg, cmsgsz);
 			leave_serialize();
@@ -247,7 +247,7 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 		result = tp->wait.detail.por.size;
 
 		if (memcpy_u2k(tp, msg, tp->wait.detail.por.msg, result)) {
-			printk("port_accept[%d] copy_from(%d, %p, %p, %d) error\n",
+			warn("port_accept[%d] copy_from(%d, %p, %p, %d) error\n",
 					porid, thread_id(tp), msg,
 					tp->wait.detail.por.msg, result);
 			node = tree_remove(&rdv_tree, rdvno);
@@ -312,7 +312,7 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 	r = getRdvParent(node);
 
 	if (rmsgsz > r->maxrmsz) {
-		printk("port_reply[%d] rmsgsz %d > %d\n",
+		warn("port_reply[%d] rmsgsz %d > %d\n",
 				rdvno, rmsgsz, r->maxrmsz);
 		leave_serialize();
 		node = tree_remove(&rdv_tree, rdvno);
@@ -326,7 +326,7 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 		thread_t *tp = getThreadWaiting(q);
 
 		if (memcpy_k2u(tp, tp->wait.detail.por.msg, msg, rmsgsz)) {
-			printk("port_reply[%d] copy_to(%d, %p, %p, %d) error\n",
+			warn("port_reply[%d] copy_to(%d, %p, %p, %d) error\n",
 					rdvno, thread_id(tp),
 					tp->wait.detail.por.msg, msg, rmsgsz);
 			leave_serialize();

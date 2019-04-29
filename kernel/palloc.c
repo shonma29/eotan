@@ -88,7 +88,7 @@ void pfree(void *addr)
 	UW bit;
 
 	if (i >= mm->max_blocks) {
-		printk("pfree: over %p\n", addr);
+		warn("pfree: over %p\n", addr);
 		return;// E_PAR;
 	}
 
@@ -97,7 +97,7 @@ void pfree(void *addr)
 	enter_serialize();
 	if (mm->map[i] & bit) {
 		leave_serialize();
-		printk("pfree: already free %p\n", addr);
+		warn("pfree: already free %p\n", addr);
 		return;// E_OBJ;
 	}
 

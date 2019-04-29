@@ -34,6 +34,14 @@ For more information, please refer to <http://unlicense.org/>
 #include "sync.h"
 #include "thread.h"
 
+#define SHOW_WARN 0
+
+#if SHOW_WARN
+#define warn printk
+#else
+#define warn(...)
+#endif
+
 /* modules.c */
 extern void load_modules(void);
 
