@@ -34,6 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <time.h>
 #include <unistd.h>
 #include "../../include/sys/stat.h"
+#include "../../include/fs/nconfig.h"
 #include "../../include/fs/vfs.h"
 #include "libserv.h"
 #include "writer.h"
@@ -69,7 +70,7 @@ typedef struct {
 
 static vfs_t fs;
 static vnode_t *root_node;
-static struct permission permission = { 0, 0 };
+static struct permission permission = { ROOT_UID, ROOT_GID };
 
 
 void *palloc(void)
@@ -428,15 +429,21 @@ static int do_chmod(vfs_t *fs, const char *mode, char *path,
 
 	vnode_t *ip;
 	//TODO use constant definition of guest
-	//TODO is O_WRONLY correct?
-	int result = vfs_walk(fs->root, head, O_RDWR, permission, &ip);
+	int result = vfs_walk(fs->root, head, O_ACCMODE, permission, &ip);
 	if (result) {
 		printf("chmod: vfs_walk(%s) failed %d\n", head, result);
 		return ERR_UNKNOWN;
 	}
 
+	int m = strtol(mode, NULL, 8);
+	if (m & UNMODIFIABLE_MODE_BITS) {
+		printf("chmod: invalid mode %s\n", mode);
+		vnodes_remove(ip);
+		return ERR_ARG;
+	}
+
 	//TODO use constant definition of guest
-	ip->mode = (ip->mode & S_IFMT) | strtol(mode, NULL, 8);
+	ip->mode = (ip->mode & S_IFMT) | m;
 	result = ip->fs->operations.wstat(ip);
 	vnodes_remove(ip);
 

@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/statvfs.h>
 #include <stddef.h>
 #ifdef HOST_APP
@@ -34,6 +35,8 @@ For more information, please refer to <http://unlicense.org/>
 #else
 #include <set/list.h>
 #endif
+
+#define UNMODIFIABLE_MODE_BITS (~(S_IRWXU | S_IRWXG | S_IRWXO))
 
 typedef struct _block_device_t {
 	int channel;

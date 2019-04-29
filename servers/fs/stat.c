@@ -29,8 +29,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/errno.h>
 #include "procfs/process.h"
 
-#define INVALID_MODE_BITS (~(S_IRWXU | S_IRWXG | S_IRWXO))
-
 static int path2vnode(vnode_t **vnode, const pid_t pid, const int tid,
 		const unsigned char *path, unsigned char *buf);
 
@@ -50,6 +48,7 @@ static int path2vnode(vnode_t **vnode, const pid_t pid, const int tid,
 
 int if_chmod(fs_request *req)
 {
+//TODO use session
 	pid_t pid = unpack_pid(req);
 	vnode_t *vnode;
 	int error_no = path2vnode(&vnode, pid, unpack_tid(req),
@@ -62,7 +61,7 @@ int if_chmod(fs_request *req)
 	if (vnode->uid != proc_table[pid].session.permission.uid)
 		return EPERM;
 
-	if (req->packet.arg2 & INVALID_MODE_BITS)
+	if (req->packet.arg2 & UNMODIFIABLE_MODE_BITS)
 		return EINVAL;
 
 	vnode->mode = (vnode->mode & S_IFMT) | req->packet.arg2;
