@@ -30,8 +30,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "api.h"
 #include "session.h"
 
-static bool check_flags(const int flags);
-
 
 int if_open(fs_request *req)
 {
@@ -45,28 +43,12 @@ int if_open(fs_request *req)
 	if (error_no)
 		return error_no;
 
-	//TODO move to vfs_open
-	if (!check_flags(req->packet.arg2))
-		return EINVAL;
-
-	//TODO move to vfs_open
-	//TODO arg3(mode) is not needed in plan9?
-	if (req->packet.arg2 & O_CREAT)
-		if (req->packet.arg3 & UNMODIFIABLE_MODE_BITS)
-			return EINVAL;
-
 	vnode_t *vnode;
+	//TODO mode is not needed in plan9?
 	error_no = vfs_open(starting_node, req->buf, req->packet.arg2,
 			req->packet.arg3, &(session->permission), &vnode);
 	if (error_no)
 		return error_no;
-
-	//TODO move to vfs_open
-	if ((vnode->mode & S_IFMT) == S_IFDIR)
-		if (req->packet.arg2 != O_RDONLY) {
-			vnodes_remove(vnode);
-			return EISDIR;
-		}
 
 	struct file *file;
 	error_no = session_create_desc(&file, session, -1);
@@ -82,24 +64,6 @@ int if_open(fs_request *req)
 
 	reply2(req->rdvno, 0, file->node.key, 0);
 	return 0;
-}
-
-static bool check_flags(const int flags)
-{
-	switch (flags & O_ACCMODE) {
-	case O_RDONLY:
-	case O_WRONLY:
-	case O_RDWR:
-		break;
-	default:
-		return false;
-	}
-
-	//TODO unknown bits check is needed?
-	if (flags & ~(O_ACCMODE | O_APPEND | O_CREAT | O_TRUNC))
-		return false;
-
-	return true;
 }
 
 int if_close(fs_request *req)

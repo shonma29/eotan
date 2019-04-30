@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <fcntl.h>
 #include <core/options.h>
 #include <sys/errno.h>
 #include "api.h"
@@ -43,8 +44,8 @@ int if_create(fs_request *req)
 		return error_no;
 
 	vnode_t *node;
-	error_no = vfs_create(starting_node, req->buf, req->packet.arg2,
-			&(session->permission), &node);
+	error_no = vfs_create(starting_node, req->buf, O_RDONLY,
+			req->packet.arg2, &(session->permission), &node);
 	if (error_no)
 		return error_no;
 

@@ -41,9 +41,10 @@ static int modes[] = {
 	F_OK
 };
 
+static bool check_flags(const int flags);
 static char *split_path(const char *path, char **parent_path);
 
-
+//TODO split this file per function
 int vfs_mount(const int device, vfs_t *fs, vnode_t *root)
 {
 	list_initialize(&(fs->vnodes));
@@ -123,12 +124,24 @@ int vfs_walk(vnode_t *parent, char *path, const int flags,
 int vfs_open(vnode_t *cwd, char *path, const int flags, const mode_t mode,
 		struct permission *permission, vnode_t **node)
 {
+	if (!check_flags(flags)) {
+		log_debug("vfs_open: bad flags %x\n", flags);
+		return EINVAL;
+	}
+
 	if (flags & O_CREAT)
-		return vfs_create(cwd, path, mode, permission, node);
+		return vfs_create(cwd, path, flags, mode, permission, node);
 
 	int error_no = vfs_walk(cwd, path, flags, permission, node);
 	if (error_no)
 		return error_no;
+
+	if ((mode & S_IFMT) == S_IFDIR)
+		if ((flags & O_ACCMODE) != O_RDONLY) {
+			log_debug("vfs_open: %s is directory\n", path);
+			vnodes_remove(*node);
+			return EISDIR;
+		}
 
 	if (flags & O_TRUNC)
 		(*node)->size = 0;
@@ -136,9 +149,40 @@ int vfs_open(vnode_t *cwd, char *path, const int flags, const mode_t mode,
 	return 0;
 }
 
-int vfs_create(vnode_t *cwd, char *path, const mode_t mode,
+static bool check_flags(const int flags)
+{
+	switch (flags & O_ACCMODE) {
+	case O_RDONLY:
+	case O_WRONLY:
+	case O_RDWR:
+		break;
+	default:
+		return false;
+	}
+
+	//TODO unknown bits check is needed?
+	if (flags & ~(O_ACCMODE | O_APPEND | O_CREAT | O_TRUNC))
+		return false;
+
+	return true;
+}
+
+int vfs_create(vnode_t *cwd, char *path, const int flags, const mode_t mode,
 		const struct permission *permission, vnode_t **node)
 {
+	//TODO really?
+	if (mode & (UNMODIFIABLE_MODE_BITS & ~DMDIR)) {
+		log_debug("vfs_create: bad mode %x\n", mode);
+		return EINVAL;
+	}
+
+	//TODO really?
+	if ((mode & DMDIR)
+			&& ((flags & O_ACCMODE) != O_RDONLY)) {
+		log_debug("vfs_create: bad mode %x\n", mode);
+		return EINVAL;
+	}
+
 	char *parent_path = "";
 	char *head = split_path(path, &parent_path);
 	if (!(*head)) {
@@ -156,14 +200,18 @@ int vfs_create(vnode_t *cwd, char *path, const mode_t mode,
 	}
 
 	if ((parent->mode & S_IFMT) != S_IFDIR) {
-		log_debug("vfs_create: %s is not directory\n",
-				parent_path);
+		log_debug("vfs_create: %s is not directory\n", parent_path);
 		vnodes_remove(parent);
 		return ENOTDIR;
 	}
 
-	//TODO really RDONLY?
-	result = vfs_walk(parent, head, O_RDONLY, permission, node);
+	if (vfs_permit(parent, permission, W_OK | X_OK)) {
+		log_debug("vfs_create: %s is not writable\n", parent_path);
+		vnodes_remove(parent);
+		return EACCES;
+	}
+
+	result = vfs_walk(parent, head, O_ACCMODE, permission, node);
 	if (!result) {
 		log_debug("vfs_create: %s already exists\n", head);
 		vnodes_remove(*node);
@@ -219,9 +267,14 @@ int vfs_remove(vnode_t *cwd, char *path, const struct permission *permission)
 		return ENOTDIR;
 	}
 
+	if (vfs_permit(parent, permission, W_OK | X_OK)) {
+		log_debug("vfs_remove: %s is not writable\n", parent_path);
+		vnodes_remove(parent);
+		return EACCES;
+	}
+
 	vnode_t *node;
-	//TODO is O_RDONLY really?
-	result = vfs_walk(parent, head, O_RDONLY, permission, &node);
+	result = vfs_walk(parent, head, O_ACCMODE, permission, &node);
 	if (result) {
 		log_debug("vfs_remove: vfs_walk(%s) failed %d\n", head, result);
 		vnodes_remove(parent);

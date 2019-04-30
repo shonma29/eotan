@@ -293,7 +293,7 @@ static int do_create(vfs_t *fs, char *path, const char *from,
 		const struct permission *permission)
 {
 	vnode_t *ip;
-	int result = vfs_create(fs->root, path,
+	int result = vfs_create(fs->root, path, O_WRONLY,
 			S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
 					| S_IROTH | S_IWOTH,
 			permission, &ip);
@@ -383,7 +383,7 @@ static int do_remove(vfs_t *fs, char *path, const struct permission *permission)
 static int do_mkdir(vfs_t *fs, char *path, const struct permission *permission)
 {
 	vnode_t *ip;
-	int result = vfs_create(fs->root, path,
+	int result = vfs_create(fs->root, path, O_RDONLY,
 			DMDIR | S_IRWXU | S_IRWXG | S_IRWXO,
 			permission, &ip);
 	if (result) {
