@@ -24,21 +24,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
 #include <fcntl.h>
 #include <limits.h>
-#include <boot/init.h>
 #include <core/options.h>
-#include <fs/vfs.h>
+#include <fs/config.h>
 #include <nerve/kcall.h>
-#include <set/slab.h>
-#include <set/tree.h>
 #include <sys/errno.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <sys/unistd.h>
-#include "api.h"
-#include "procfs/process.h"
+#include "fs.h"
+#include "session.h"
 
 #define MIN_AUTO_FD (3)
 
@@ -54,9 +48,9 @@ int if_chdir(fs_request *req)
 		return ESRCH;
 
 	vnode_t *starting_node;
-	int error_no = session_get_path(&starting_node, req->packet.process_id,
-			get_rdv_tid(req->rdvno), (UB*)(req->packet.arg1),
-			(UB*)(req->buf));
+	int error_no = session_get_path((UB*)(req->buf), &starting_node,
+			session, get_rdv_tid(req->rdvno),
+			(UB*)(req->packet.arg1));
 	if (error_no)
 		return error_no;
 
@@ -141,7 +135,7 @@ void session_destroy(session_t *session)
 
 	//TODO optimize
 	for (int fd = 0; fd < MAX_FILE; fd++)
-		if (session_destroy_file(session, fd)) {
+		if (session_destroy_desc(session, fd)) {
 			//TODO what to do?
 		}
 
@@ -153,12 +147,12 @@ session_t *session_find(const pid_t pid)
 	return (session_t*)tree_get(&session_tree, pid);
 }
 
-int session_create_file(struct file **file, session_t *session, const int fd)
+int session_create_desc(struct file **file, session_t *session, const int fd)
 {
 	int d;
 
 	if (fd >= 0) {
-		if (session_find_file(session, fd))
+		if (session_find_desc(session, fd))
 			//TODO adequate error code
 			return EBUSY;
 
@@ -166,7 +160,7 @@ int session_create_file(struct file **file, session_t *session, const int fd)
 	} else {
 		//TODO optimize
 		for (d = MIN_AUTO_FD; d < MAX_FILE; d++) {
-			if (!session_find_file(session, d))
+			if (!session_find_desc(session, d))
 				break;
 		}
 		if (d >= MAX_FILE)
@@ -192,30 +186,26 @@ int session_create_file(struct file **file, session_t *session, const int fd)
 	return 0;
 }
 
-int session_destroy_file(session_t *session, const int fd)
+int session_destroy_desc(session_t *session, const int fd)
 {
 	struct file *file = (struct file*)tree_remove(&(session->files), fd);
 	if (!file)
 		return EBADF;
 
-	int error_no = 0;
-
-	//TODO really? NULL?
-	if (file->f_vnode)
-		error_no = vnodes_remove(file->f_vnode);
+	int error_no = vnodes_remove(file->f_vnode);
 
 	slab_free(&file_slab, file);
 	return error_no;
 }
 
 //TODO session should to be const
-struct file *session_find_file(session_t *session, const int fd)
+struct file *session_find_desc(session_t *session, const int fd)
 {
 	return (struct file*)tree_get(&(session->files), fd);
 }
 
-int session_get_path(vnode_t **vnode, const pid_t pid, const int tid,
-	unsigned char *src, unsigned char *dest)
+int session_get_path(unsigned char *dest, vnode_t **vnode,
+	const session_t *session, const int tid, unsigned char *src)
 {
 	ER_UINT len = kcall->region_copy(tid, src, PATH_MAX + 1, dest);
 	if (len <= 0)
@@ -229,66 +219,6 @@ int session_get_path(vnode_t **vnode, const pid_t pid, const int tid,
 		return 0;
 	}
 
-	session_t *session = session_find(pid);
-	if (!session)
-		return ESRCH;
-
 	*vnode = session->cwd;
-	return 0;
-}
-
-int session_get_opened_file(const pid_t pid, const int fd, struct file **file)
-{
-	session_t *session = session_find(pid);
-	if (!session)
-		return ESRCH;
-
-	struct file *f = session_find_file(session, fd);
-	if (f) {
-		if (f->f_vnode) {
-			*file = f;
-			return 0;
-		}
-	}
-
-	return EBADF;
-}
-
-//TODO delete this function
-int proc_alloc_fileid(const pid_t procid, int *retval)
-{
-	session_t *session = session_find(procid);
-	if (!session)
-		return ESRCH;
-
-	struct file *f;
-	int error_no = session_create_file(&f, session, -1);
-	if (error_no)
-		return error_no;
-
-	*retval = f->node.key;
-	return 0;
-}
-
-//TODO delete this function
-int proc_set_file(const pid_t pid, const int fd, const int flag,
-	vnode_t *vnode)
-{
-	session_t *session = session_find(pid);
-	if (!session)
-		return ESRCH;
-
-	struct file *f = session_find_file(session, fd);
-	if (!f)
-		return EBADF;
-
-	if (f->f_vnode)
-		return EBADF;
-
-	f->f_vnode = vnode;
-	f->f_flag = flag & O_ACCMODE;
-	f->f_count = 0;
-	//TODO really? share when dup
-	f->f_offset = (flag  & O_APPEND)? vnode->size:0;
 	return 0;
 }

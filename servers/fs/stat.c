@@ -27,7 +27,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <fcntl.h>
 #include <nerve/kcall.h>
 #include <sys/errno.h>
-#include "procfs/process.h"
+#include "fs.h"
+#include "session.h"
 
 static int path2vnode(vnode_t **vnode, const session_t *session, const int tid,
 		const unsigned char *path, unsigned char *buf);
@@ -37,8 +38,8 @@ static int path2vnode(vnode_t **vnode, const session_t *session, const int tid,
 		const unsigned char *path, unsigned char *buf)
 {
 	vnode_t *starting_node;
-	int error_no = session_get_path(&starting_node, session->node.key, tid,
-			(unsigned char*)path, buf);
+	int error_no = session_get_path(buf, &starting_node, session, tid,
+			(unsigned char*)path);
 	if (error_no)
 		return error_no;
 
@@ -78,14 +79,16 @@ int if_chmod(fs_request *req)
 
 int if_fstat(fs_request *req)
 {
-	struct file *file;
-	int error_no = session_get_opened_file(unpack_pid(req),
-			req->packet.arg1, &file);
-	if (error_no)
-		return error_no;
+	session_t *session = session_find(unpack_pid(req));
+	if (!session)
+		return ESRCH;
+
+	struct file *file = session_find_desc(session, req->packet.arg1);
+	if (!file)
+		return EBADF;
 
 	struct stat *st = (struct stat*)&(req->buf);
-	error_no = vfs_stat(file->f_vnode, st);
+	int error_no = vfs_stat(file->f_vnode, st);
 	if (error_no)
 		return error_no;
 

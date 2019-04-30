@@ -35,124 +35,6 @@ Version 2, June 1991
 #include "fs.h"
 #include "procfs/process.h"
 
-int if_close(fs_request *req)
-{
-    struct file *fp;
-    W err;
-
-    req->packet.process_id &= 0xffff;
-    err = session_get_opened_file(req->packet.process_id, req->packet.arg1, &fp);
-    if (err)
-	return err;
-
-    err = vnodes_remove(fp->f_vnode);
-    if (err)
-	return err;
-
-    fp->f_vnode = NULL;
-    reply2(req->rdvno, 0, 0, 0);
-    return EOK;
-}
-
-int if_lseek(fs_request *req)
-{
-    struct file *fp;
-    W error_no;
-    off_t *offp = (off_t*)&(req->packet.arg2);
-
-    req->packet.process_id &= 0xffff;
-    error_no = session_get_opened_file(req->packet.process_id, req->packet.arg1, &fp);
-    if (error_no)
-	return error_no;
-
-    switch (req->packet.arg4) {
-    case SEEK_SET:
-	fp->f_offset = *offp;
-	break;
-
-    case SEEK_CUR:
-	fp->f_offset += *offp;
-	break;
-
-    case SEEK_END:
-	fp->f_offset = fp->f_vnode->size + *offp;
-	break;
-
-    default:
-	return EINVAL;
-    }
-
-    if (fp->f_offset < 0) {
-	fp->f_offset = 0;
-    }
-    else if (fp->f_vnode->mode & S_IFCHR) {
-      if (fp->f_offset > fp->f_vnode->size) {
-	/* ブロックデバイスなど，サイズの制限のあるデバイスの場合 */
-	fp->f_offset = fp->f_vnode->size;
-      }
-    }
-
-    reply64(req->rdvno, EOK, fp->f_offset);
-    return EOK;
-}
-
-/* if_open - ファイルのオープン
- */
-int if_open(fs_request *req)
-{
-    int fileid;
-    W error_no;
-    vnode_t *startip;
-    vnode_t *newip;
-    struct permission acc;
-    ID caller = (req->packet.process_id >> 16) & 0xffff;
-
-    req->packet.process_id &= 0xffff;
-    error_no = proc_alloc_fileid(req->packet.process_id, &fileid);
-    if (error_no)
-	/* メモリ取得エラー */
-	return ENOMEM;
-
-    /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。
-     */
-    error_no = session_get_path(&startip, req->packet.process_id,
-		    caller, (UB*)(req->packet.arg1),
-		    (UB*)(req->buf));
-    if (error_no)
-	return error_no;
-
-    error_no = proc_get_permission(req->packet.process_id, &acc);
-    if (error_no)
-	return error_no;
-
-    error_no = vfs_open(startip, req->buf,
-			 req->packet.arg2,
-			 req->packet.arg3,
-			 &acc, &newip);
-    if (error_no)
-	/* ファイルがオープンできない */
-	return error_no;
-
-    if ((newip->mode & S_IFMT) == S_IFDIR) {
-	/* ファイルは、ディレクトリだった
-	 * エラーとする
-	 */
-	if (req->packet.arg2 != O_RDONLY) {
-	    vnodes_remove(newip);
-	    return EISDIR;
-	}
-    }
-
-    if (proc_set_file(req->packet.process_id, fileid,
-		      req->packet.arg2, newip)) {
-	vnodes_remove(newip);
-	return EINVAL;
-    }
-
-    reply2(req->rdvno, 0, fileid, 0);
-    return EOK;
-}
-
 /* if_read - ファイルからのデータの読み込み
  */
 int if_read(fs_request *req)
@@ -165,9 +47,13 @@ int if_read(fs_request *req)
     ID caller = (req->packet.process_id >> 16) & 0xffff;
 
     req->packet.process_id &= 0xffff;
-    error_no = session_get_opened_file(req->packet.process_id, req->packet.arg1, &fp);
-    if (error_no)
-	return error_no;
+    session_t *session = session_find(req->packet.process_id);
+    if (!session)
+	return ESRCH;
+
+    fp = session_find_desc(session, req->packet.arg1);
+    if (!fp)
+	return EBADF;
 
     if (fp->f_flag == O_WRONLY)
 	return EBADF;
@@ -199,7 +85,7 @@ int if_read(fs_request *req)
 
 int if_write(fs_request *req)
 {
-    W error_no;
+    W error_no = 0;
     struct file *fp;
     size_t rlength;
     W i, len;
@@ -207,9 +93,13 @@ int if_write(fs_request *req)
     ID caller = (req->packet.process_id >> 16) & 0xffff;
 
     req->packet.process_id &= 0xffff;
-    error_no = session_get_opened_file(req->packet.process_id, req->packet.arg1, &fp);
-    if (error_no)
-	return error_no;
+    session_t *session = session_find(req->packet.process_id);
+    if (!session)
+	return ESRCH;
+
+    fp = session_find_desc(session, req->packet.arg1);
+    if (!fp)
+	return EBADF;
 
     if (fp->f_flag == O_RDONLY)
 	return EBADF;

@@ -299,7 +299,8 @@ W open_special_devices(struct proc * procp)
     p = device_find(get_device_id(DEVICE_MAJOR_CONS, 0));
     if (p) {
 	struct file *f;
-	session_create_file(&f, procp->session, 0);
+	//TODO check error
+	session_create_desc(&f, procp->session, 0);
 	/* 標準入力の設定 */
 	f->f_vnode = ip = vnodes_create();
 	f->f_offset = 0;
@@ -317,7 +318,7 @@ W open_special_devices(struct proc * procp)
 	vnodes_append(ip);
 
 	/* 標準出力の設定 */
-	session_create_file(&f, procp->session, 1);
+	session_create_desc(&f, procp->session, 1);
 	f->f_vnode = ip = vnodes_create();
 	f->f_offset = 0;
 	f->f_flag = O_WRONLY;
@@ -334,7 +335,7 @@ W open_special_devices(struct proc * procp)
 	vnodes_append(ip);
 
 	/* 標準エラー出力の設定 */
-	session_create_file(&f, procp->session, 2);
+	session_create_desc(&f, procp->session, 2);
 	f->f_vnode = ip = vnodes_create();
 	f->f_offset = 0;
 	f->f_flag = O_WRONLY;

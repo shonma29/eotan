@@ -25,25 +25,20 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core/options.h>
-#include <fs/vfs.h>
 #include <sys/errno.h>
-#include "api.h"
+#include "fs.h"
 #include "session.h"
 
 
 int if_create(fs_request *req)
 {
-	ID caller = (req->packet.process_id >> 16) & 0xffff;
-
-	req->packet.process_id &= 0xffff;
-	session_t *session = session_find(req->packet.process_id);
+	session_t *session = session_find(unpack_pid(req));
 	if (!session)
 		return ESRCH;
 
 	vnode_t *starting_node;
-	int error_no = session_get_path(&starting_node, req->packet.process_id,
-			caller, (UB*)(req->packet.arg1),
-			(UB*)(req->buf));
+	int error_no = session_get_path((UB*)(req->buf), &starting_node,
+			session, unpack_tid(req), (UB*)(req->packet.arg1));
 	if (error_no)
 		return error_no;
 
@@ -61,18 +56,13 @@ int if_create(fs_request *req)
 
 int if_remove(fs_request *req)
 {
-	ID caller = (req->packet.process_id >> 16) & 0xffff;
-
-	req->packet.process_id &= 0xffff;
-
-	session_t *session = session_find(req->packet.process_id);
+	session_t *session = session_find(unpack_pid(req));
 	if (!session)
 		return ESRCH;
 
 	vnode_t *starting_node;
-	int error_no = session_get_path(&starting_node, req->packet.process_id,
-			caller, (UB*)(req->packet.arg1),
-			(UB*)(req->buf));
+	int error_no = session_get_path((UB*)(req->buf), &starting_node,
+			session, unpack_tid(req), (UB*)(req->packet.arg1));
 	if (error_no)
 		return error_no;
 

@@ -26,7 +26,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <fs/config.h>
 #include <fs/vfs.h>
 #include <set/tree.h>
 #include <sys/types.h>
@@ -45,15 +44,11 @@ extern session_t *session_create(const pid_t);
 extern void session_destroy(session_t *);
 extern session_t *session_find(const pid_t);
 
-extern int session_create_file(struct file **, session_t *, const int);
-extern int session_destroy_file(session_t *, const int);
-extern struct file *session_find_file(session_t *, const int);
+extern int session_create_desc(struct file **, session_t *, const int);
+extern int session_destroy_desc(session_t *, const int);
+extern struct file *session_find_desc(session_t *, const int);
 
-extern int session_get_path(vnode_t **, const pid_t, const int,
-	unsigned char *, unsigned char *);
-extern int session_get_opened_file(const pid_t, const int, struct file **);
-
-extern int proc_alloc_fileid(const pid_t, int *);
-extern int proc_set_file(const pid_t, const int, const int, vnode_t *);
+extern int session_get_path(unsigned char *, vnode_t **,
+	const session_t *, const int, unsigned char *);
 
 #endif

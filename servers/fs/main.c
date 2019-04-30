@@ -32,9 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/global.h>
 #include <nerve/kcall.h>
 #include <set/lf_queue.h>
-#include <set/slab.h>
 #include <sys/errno.h>
-#include "api.h"
 #include "fs.h"
 #include "devfs/devfs.h"
 #include "procfs/process.h"

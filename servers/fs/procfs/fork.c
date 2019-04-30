@@ -159,18 +159,17 @@ static W proc_duplicate(struct proc * source, struct proc * destination)
     /* オープンファイルの情報のコピー
      */
     for (index = 0; index < MAX_FILE; index++) {
-	struct file *srcfile = session_find_file(source->session, index);
+	struct file *srcfile = session_find_desc(source->session, index);
 	if (srcfile) {
-	    if (srcfile->f_vnode) {
-		struct file *destfile;
-		session_create_file(&destfile, destination->session,
-			index);
-		destfile->f_vnode = srcfile->f_vnode;
-		destfile->f_flag = srcfile->f_flag;
-		destfile->f_count = srcfile->f_count;
-		destfile->f_offset = srcfile->f_offset;
-		srcfile->f_vnode->refer_count++;
-	    }
+	    struct file *destfile;
+	    //TODO check error
+	    session_create_desc(&destfile, destination->session,
+		    index);
+	    destfile->f_vnode = srcfile->f_vnode;
+	    destfile->f_flag = srcfile->f_flag;
+	    destfile->f_count = srcfile->f_count;
+	    destfile->f_offset = srcfile->f_offset;
+	    srcfile->f_vnode->refer_count++;
 	}
     }
 
