@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 #include <sys/errno.h>
 #include <sys/unistd.h>
-#include "fs.h"
+#include "api.h"
 #include "session.h"
 
 #define MIN_AUTO_FD (3)
@@ -48,9 +48,9 @@ int if_chdir(fs_request *req)
 		return ESRCH;
 
 	vnode_t *starting_node;
-	int error_no = session_get_path((UB*)(req->buf), &starting_node,
+	int error_no = session_get_path(req->buf, &starting_node,
 			session, get_rdv_tid(req->rdvno),
-			(UB*)(req->packet.arg1));
+			(char*)(req->packet.arg1));
 	if (error_no)
 		return error_no;
 
@@ -204,8 +204,8 @@ struct file *session_find_desc(session_t *session, const int fd)
 	return (struct file*)tree_get(&(session->files), fd);
 }
 
-int session_get_path(unsigned char *dest, vnode_t **vnode,
-	const session_t *session, const int tid, unsigned char *src)
+int session_get_path(char *dest, vnode_t **vnode,
+	const session_t *session, const int tid, const char *src)
 {
 	ER_UINT len = kcall->region_copy(tid, src, PATH_MAX + 1, dest);
 	if (len <= 0)

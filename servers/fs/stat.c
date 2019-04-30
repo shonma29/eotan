@@ -27,19 +27,19 @@ For more information, please refer to <http://unlicense.org/>
 #include <fcntl.h>
 #include <nerve/kcall.h>
 #include <sys/errno.h>
-#include "fs.h"
+#include "api.h"
 #include "session.h"
 
 static int path2vnode(vnode_t **vnode, const session_t *session, const int tid,
-		const unsigned char *path, unsigned char *buf);
+		const char *path, char *buf);
 
 
 static int path2vnode(vnode_t **vnode, const session_t *session, const int tid,
-		const unsigned char *path, unsigned char *buf)
+		const char *path, char *buf)
 {
 	vnode_t *starting_node;
 	int error_no = session_get_path(buf, &starting_node, session, tid,
-			(unsigned char*)path);
+			path);
 	if (error_no)
 		return error_no;
 
@@ -55,8 +55,7 @@ int if_chmod(fs_request *req)
 
 	vnode_t *vnode;
 	int error_no = path2vnode(&vnode, session, unpack_tid(req),
-			(unsigned char*)(req->packet.arg1),
-			(unsigned char*)(req->buf));
+			(char*)(req->packet.arg1), req->buf);
 	if (error_no)
 		return error_no;
 

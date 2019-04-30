@@ -29,13 +29,15 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <sys/syscall.h>
 #include <sys/syslimits.h>
+#include <sys/types.h>
 
+//TODO delete definition
 #define EOK (0)
 
 typedef struct {
 	pm_args_t packet;
 	RDVNO rdvno;
-	B buf[PATH_MAX + 1];
+	char buf[PATH_MAX + 1];
 } fs_request;
 
 extern int if_chdir(fs_request*);
@@ -55,6 +57,17 @@ extern int if_fstat(fs_request*);
 extern int if_waitpid(fs_request*);
 extern int if_write(fs_request*);
 
+static inline pid_t unpack_pid(const fs_request *req)
+{
+	return (req->packet.process_id & 0xffff);
+}
+
+static inline int unpack_tid(const fs_request *req)
+{
+	return ((req->packet.process_id >> 16) & 0xffff);
+}
+
+//TODO exclude mpu dependency
 extern int reply2(const RDVNO, const int32_t, const int32_t,
 		const int32_t);
 extern int reply64(const RDVNO, const int32_t, const int64_t);

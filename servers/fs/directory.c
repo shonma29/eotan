@@ -26,7 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core/options.h>
 #include <sys/errno.h>
-#include "fs.h"
+#include "api.h"
 #include "session.h"
 
 
@@ -37,8 +37,8 @@ int if_create(fs_request *req)
 		return ESRCH;
 
 	vnode_t *starting_node;
-	int error_no = session_get_path((UB*)(req->buf), &starting_node,
-			session, unpack_tid(req), (UB*)(req->packet.arg1));
+	int error_no = session_get_path(req->buf, &starting_node,
+			session, unpack_tid(req), (char*)(req->packet.arg1));
 	if (error_no)
 		return error_no;
 
@@ -61,8 +61,8 @@ int if_remove(fs_request *req)
 		return ESRCH;
 
 	vnode_t *starting_node;
-	int error_no = session_get_path((UB*)(req->buf), &starting_node,
-			session, unpack_tid(req), (UB*)(req->packet.arg1));
+	int error_no = session_get_path(req->buf, &starting_node,
+			session, unpack_tid(req), (char*)(req->packet.arg1));
 	if (error_no)
 		return error_no;
 

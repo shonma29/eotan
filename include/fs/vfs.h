@@ -99,6 +99,28 @@ struct permission {
 	gid_t gid;
 };
 
+//TODO use off_t
+static inline int vfs_write(vnode_t *vnode, const void *buf, const int offset,
+		const size_t len, size_t *rlength)
+{
+	return vnode->fs->operations.write(vnode, buf, offset, len, rlength);
+}
+
+static inline int vfs_stat(vnode_t *vnode, struct stat *st)
+{
+	return vnode->fs->operations.stat(vnode, st);
+}
+
+static inline int vfs_wstat(vnode_t *vnode)
+{
+	return vnode->fs->operations.wstat(vnode);
+}
+
+static inline int vfs_sync(vnode_t *vnode)
+{
+	return vnode->fs->operations.sync(vnode);
+}
+
 extern vfs_operation_t vfs_fsops;
 
 extern void block_initialize(block_device_t *);

@@ -1,5 +1,5 @@
-#ifndef __FS_FS_H__
-#define __FS_FS_H__
+#ifndef _FS_FS_H_
+#define _FS_FS_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -28,9 +28,6 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <fs/vfs.h>
 #include <set/tree.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include "api.h"
 
 struct file {
 	node_t node;
@@ -40,44 +37,14 @@ struct file {
 	off_t f_offset;
 };
 
-static inline pid_t unpack_pid(const fs_request *req)
-{
-	return (req->packet.process_id & 0xffff);
-}
-
-static inline int unpack_tid(const fs_request *req)
-{
-	return ((req->packet.process_id >> 16) & 0xffff);
-}
-
-static inline int vfs_sync(vnode_t *vnode)
-{
-	return vnode->fs->operations.sync(vnode);
-}
-
 //TODO use off_t
+//TODO move to vfs.h
 static inline int fs_read(vnode_t *vnode, void *buf, const int offset,
 		const size_t len, size_t *rlength)
 {
 	return ((vnode->mode & S_IFMT) == S_IFDIR)?
 		vnode->fs->operations.getdents(vnode, buf, offset, len, rlength)
 		:vfs_read(vnode, buf, offset, len, rlength);
-}
-//TODO use off_t
-static inline int vfs_write(vnode_t *vnode, const void *buf, const int offset,
-		const size_t len, size_t *rlength)
-{
-	return vnode->fs->operations.write(vnode, buf, offset, len, rlength);
-}
-
-static inline int vfs_stat(vnode_t *vnode, struct stat *st)
-{
-	return vnode->fs->operations.stat(vnode, st);
-}
-
-static inline int vfs_wstat(vnode_t *vnode)
-{
-	return vnode->fs->operations.wstat(vnode);
 }
 
 extern vnode_t *rootfile;

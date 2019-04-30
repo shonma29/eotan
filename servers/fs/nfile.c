@@ -27,7 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <fcntl.h>
 #include <sys/errno.h>
 #include <sys/unistd.h>
-#include "fs.h"
+#include "api.h"
 #include "session.h"
 
 static bool check_flags(const int flags);
@@ -40,14 +40,16 @@ int if_open(fs_request *req)
 		return ESRCH;
 
 	vnode_t *starting_node;
-	int error_no = session_get_path((UB*)(req->buf), &starting_node,
-			session, unpack_tid(req), (UB*)(req->packet.arg1));
+	int error_no = session_get_path(req->buf, &starting_node,
+			session, unpack_tid(req), (char*)(req->packet.arg1));
 	if (error_no)
 		return error_no;
 
+	//TODO move to vfs_open
 	if (!check_flags(req->packet.arg2))
 		return EINVAL;
 
+	//TODO move to vfs_open
 	//TODO arg3(mode) is not needed in plan9?
 	if (req->packet.arg2 & O_CREAT)
 		if (req->packet.arg3 & UNMODIFIABLE_MODE_BITS)
@@ -59,6 +61,7 @@ int if_open(fs_request *req)
 	if (error_no)
 		return error_no;
 
+	//TODO move to vfs_open
 	if ((vnode->mode & S_IFMT) == S_IFDIR)
 		if (req->packet.arg2 != O_RDONLY) {
 			vnodes_remove(vnode);
