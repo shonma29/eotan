@@ -34,6 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <unistd.h>
 #include <set/hash.h>
 #include <sys/param.h>
+#include <sys/stat.h>
 
 #define ERR (-1)
 #define ERR_OK (0)
@@ -166,6 +167,7 @@ static void execute(unsigned char **array, unsigned char **env,
 		Token token;
 		bool has_path = get_size(&(token.len), array[0]);
 
+		//TODO is safe?
 		if (++token.len > MAXPATHLEN)
 			exit(ENAMETOOLONG);
 
@@ -453,9 +455,12 @@ static bool line_evaluate(Line *p, hash_t *vars)
 				}
 
 				opts.files[1] = open((char*)(p->array[i]),
-						O_WRONLY | O_CREAT | O_TRUNC);
+						O_WRONLY | O_CREAT | O_TRUNC,
+						//TODO adhoc
+						S_IRUSR | S_IWUSR | S_IRGRP
+								| S_IROTH);
 				if (opts.files[1] == -1) {
-					fprintf(stderr, "%s cannot open\n",
+					fprintf(stderr, "%s cannot open %d\n",
 							p->array[i]);
 					return false;
 				}
