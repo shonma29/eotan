@@ -65,7 +65,7 @@ Version 2, June 1991
  */
 
 #include <string.h>
-#include <fs/nconfig.h>
+#include <fs/config.h>
 #include <sys/errno.h>
 #include <sys/unistd.h>
 #include "../libserv/libserv.h"

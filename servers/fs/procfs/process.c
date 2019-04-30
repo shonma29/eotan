@@ -132,7 +132,7 @@ Version 2, June 1991
 #include "procfs/process.h"
 #include "../../lib/libserv/libmm.h"
 
-struct proc proc_table[MAX_PROCESS];
+struct proc proc_table[MAX_SESSION];
 static struct proc *free_proc, *tail_proc;
 
 
@@ -144,7 +144,7 @@ W init_process(void)
 {
     W i;
 
-    for (i = 0; i < MAX_PROCESS; i++) {
+    for (i = 0; i < MAX_SESSION; i++) {
 	memset((B*)&proc_table[i], 0, sizeof(struct proc));
 /* if set explicitly
 	proc_table[i].proc_status = PS_DORMANT;
@@ -167,10 +167,9 @@ W init_process(void)
  */
 W proc_exit(W procid)
 {
-    int i;
     struct proc *procp;
 
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
+    if ((procid < INIT_PID) || (procid >= MAX_SESSION)) {
 	return (EINVAL);
     }
 
@@ -184,18 +183,13 @@ W proc_exit(W procid)
      */
     procp = &proc_table[procid];
     /* working directory の開放 */
-    if (procp->session.cwd != NULL) {
-	vnodes_remove(procp->session.cwd);
-	procp->session.cwd = NULL;
+    if (procp->session->cwd != NULL) {
+	vnodes_remove(procp->session->cwd);
+	procp->session->cwd = NULL;
     }
 
     /* open されているファイルの close */
-    for (i = 0; i < MAX_FILE; ++i) {
-	if (procp->session.files[i].f_vnode != NULL) {
-	    vnodes_remove(procp->session.files[i].f_vnode);
-	    procp->session.files[i].f_vnode = NULL;
-	}
-    }
+    session_destroy(procp->session);
 
     proc_dealloc_proc(procid);
 
@@ -205,7 +199,7 @@ W proc_exit(W procid)
 
 W proc_get_procp(W procid, struct proc ** procp)
 {
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
+    if ((procid < INIT_PID) || (procid >= MAX_SESSION)) {
 	return (EINVAL);
     }
 
@@ -217,92 +211,31 @@ W proc_get_procp(W procid, struct proc ** procp)
 
 W proc_get_permission(W procid, struct permission * p)
 {
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
+    if ((procid < INIT_PID) || (procid >= MAX_SESSION)) {
 	return (EINVAL);
     }
 
-    *p = proc_table[procid].session.permission;
+    *p = proc_table[procid].session->permission;
     return (EOK);
 }
 
 
 W proc_get_status(W procid)
 {
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
+    if ((procid < INIT_PID) || (procid >= MAX_SESSION)) {
 	return (-1);
     }
 
     return proc_table[procid].proc_status;
 }
 
-
-W proc_alloc_fileid(W procid, W * retval)
-{
-    W i;
-
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
-    }
-
-    for (i = 0; i < MAX_FILE; i++) {
-	if (proc_table[procid].session.files[i].f_vnode == NULL) {
-	    *retval = i;
-	    memset((B*)&(proc_table[procid].session.files[i]), 0,
-		  sizeof(struct file));
-	    return (EOK);
-	}
-    }
-    return (ENOMEM);
-}
-
-
-W proc_set_file(W procid, W fileid, W flag, vnode_t * ip)
-{
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
-    }
-
-    if ((fileid < 0) || (fileid >= MAX_FILE)) {
-	return (EINVAL);
-    }
-
-    if (proc_table[procid].session.files[fileid].f_vnode != NULL) {
-	return (EBADF);
-    }
-
-    proc_table[procid].session.files[fileid].f_vnode = ip;
-    if ((flag & O_APPEND) != 0) {
-	proc_table[procid].session.files[fileid].f_offset = ip->size;
-    } else {
-	proc_table[procid].session.files[fileid].f_offset = 0;
-    }
-    proc_table[procid].session.files[fileid].f_flag = flag & 0x03;
-    return (EOK);
-}
-
-
-W proc_get_file(W procid, W fileid, struct file ** fp)
-{
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
-	return (EINVAL);
-    }
-
-    if ((fileid < 0) || (fileid >= MAX_FILE)) {
-	return (EINVAL);
-    }
-
-    *fp = &(proc_table[procid].session.files[fileid]);
-    return (EOK);
-}
-
-
 W proc_get_cwd(W procid, vnode_t ** cwd)
 {
-    if ((procid < INIT_PID) || (procid >= MAX_PROCESS)) {
+    if ((procid < INIT_PID) || (procid >= MAX_SESSION)) {
 	return (EINVAL);
     }
 
-    *cwd = proc_table[procid].session.cwd;
+    *cwd = proc_table[procid].session->cwd;
     if (*cwd == NULL) {
 	return (ESRCH);
     }
@@ -336,6 +269,10 @@ W proc_alloc_proc(struct proc ** procp)
 */
     (*procp)->proc_pid = pid;
 
+    (*procp)->session = session_create(pid);
+    if (!((*procp)->session))
+	return ENOMEM;
+
     return (EOK);
 }
 
@@ -361,10 +298,12 @@ W open_special_devices(struct proc * procp)
 
     p = device_find(get_device_id(DEVICE_MAJOR_CONS, 0));
     if (p) {
+	struct file *f;
+	session_create_file(&f, procp->session, 0);
 	/* 標準入力の設定 */
-	procp->session.files[0].f_vnode = ip = vnodes_create();
-	procp->session.files[0].f_offset = 0;
-	procp->session.files[0].f_flag = O_RDONLY;
+	f->f_vnode = ip = vnodes_create();
+	f->f_offset = 0;
+	f->f_flag = O_RDONLY;
 	if (ip == NULL) {
 	    return (ENOMEM);
 	}
@@ -378,9 +317,10 @@ W open_special_devices(struct proc * procp)
 	vnodes_append(ip);
 
 	/* 標準出力の設定 */
-	procp->session.files[1].f_vnode = ip = vnodes_create();
-	procp->session.files[1].f_offset = 0;
-	procp->session.files[1].f_flag = O_WRONLY;
+	session_create_file(&f, procp->session, 1);
+	f->f_vnode = ip = vnodes_create();
+	f->f_offset = 0;
+	f->f_flag = O_WRONLY;
 	if (ip == NULL) {
 	    return (ENOMEM);
 	}
@@ -394,9 +334,10 @@ W open_special_devices(struct proc * procp)
 	vnodes_append(ip);
 
 	/* 標準エラー出力の設定 */
-	procp->session.files[2].f_vnode = ip = vnodes_create();
-	procp->session.files[2].f_offset = 0;
-	procp->session.files[2].f_flag = O_WRONLY;
+	session_create_file(&f, procp->session, 2);
+	f->f_vnode = ip = vnodes_create();
+	f->f_offset = 0;
+	f->f_flag = O_WRONLY;
 	if (ip == NULL) {
 	    return (ENOMEM);
 	}

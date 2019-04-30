@@ -26,7 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <fs/nconfig.h>
+#include <fs/config.h>
 #include <fs/vfs.h>
 #include <set/tree.h>
 #include <sys/types.h>
@@ -37,12 +37,23 @@ typedef struct _session_t {
 	int session_id;
 	struct permission permission;
 	vnode_t *cwd;
-	struct file files[MAX_FILE];
+	tree_t files;
 } session_t;
 
-extern session_t *session_find(const pid_t pid);
+extern void session_initialize(void);
+extern session_t *session_create(const pid_t);
+extern void session_destroy(session_t *);
+extern session_t *session_find(const pid_t);
+
+extern int session_create_file(struct file **, session_t *, const int);
+extern int session_destroy_file(session_t *, const int);
+extern struct file *session_find_file(session_t *, const int);
+
 extern int session_get_path(vnode_t **, const pid_t, const int,
 	unsigned char *, unsigned char *);
 extern int session_get_opened_file(const pid_t, const int, struct file **);
+
+extern int proc_alloc_fileid(const pid_t, int *);
+extern int proc_set_file(const pid_t, const int, const int, vnode_t *);
 
 #endif

@@ -54,44 +54,6 @@ int if_close(fs_request *req)
     return EOK;
 }
 
-/* if_dup2 -ファイル記述子の複製
- */
-int
-if_dup2 (fs_request *req)
-{
-  W		error_no;
-  struct file	*fp, *fp2;
-
-  req->packet.process_id &= 0xffff;
-
-  /* プロセスからファイル構造体へのポインタを取り出す
-   */
-  error_no = session_get_opened_file (req->packet.process_id, req->packet.arg1, &fp);
-  if (error_no)
-      return error_no;
-
-  error_no = proc_get_file (req->packet.process_id, req->packet.arg2, &fp2);
-  if (error_no)
-    return error_no;
-
-  if (fp2->f_vnode != NULL) {
-    /* 既に open されている file id だった */
-    error_no = vnodes_remove (fp2->f_vnode);
-    if (error_no)
-      return error_no;
-
-    fp2->f_vnode = NULL;
-  }
-  fp->f_vnode->refer_count++;
-  error_no = proc_set_file(req->packet.process_id, req->packet.arg2,
-			fp->f_flag, fp->f_vnode);
-  if (error_no)
-      return error_no;
-
-  reply2(req->rdvno, 0, req->packet.arg2, 0);
-  return EOK;
-}  
-
 int if_lseek(fs_request *req)
 {
     struct file *fp;
@@ -138,7 +100,7 @@ int if_lseek(fs_request *req)
  */
 int if_open(fs_request *req)
 {
-    W fileid;
+    int fileid;
     W error_no;
     vnode_t *startip;
     vnode_t *newip;

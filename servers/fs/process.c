@@ -112,7 +112,7 @@ if_exit (fs_request *req)
   }
 
   /* 子プロセスの親を INIT に変更 */
-  for(i = INIT_PID + 1; i < MAX_PROCESS; ++i) {
+  for(i = INIT_PID + 1; i < MAX_SESSION; ++i) {
     proc_get_procp(i, &procp);
     if (procp->proc_status == PS_DORMANT) continue;
     if (procp->proc_ppid != mypid) continue;
@@ -225,7 +225,7 @@ int if_kill(fs_request *req)
     }
 
     /* 子プロセスの親を INIT に変更 */
-    for (i = INIT_PID + 1; i < MAX_PROCESS; ++i) {
+    for (i = INIT_PID + 1; i < MAX_SESSION; ++i) {
 	proc_get_procp(i, &procp);
 	if (procp->proc_status == PS_DORMANT)
 	    continue;
@@ -263,7 +263,7 @@ if_waitpid (fs_request *req)
 
   /* プロセステーブルを走査して子プロセスを調査 */
   children = 0;
-  for(i = INIT_PID + 1; i < MAX_PROCESS; ++i) {
+  for(i = INIT_PID + 1; i < MAX_SESSION; ++i) {
     proc_get_procp(i, &procp);
     if (procp->proc_status == PS_DORMANT) continue;
     if (procp->proc_ppid == mypid) {

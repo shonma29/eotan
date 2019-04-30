@@ -26,7 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <fcntl.h>
 #include <string.h>
-#include <fs/nconfig.h>
+#include <fs/config.h>
 #include <fs/vfs.h>
 #include <sys/errno.h>
 #include <sys/stat.h>

@@ -28,7 +28,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdint.h>
 #include <string.h>
 #include <fs/config.h>
-#include <fs/nconfig.h>
 #include <fs/vfs.h>
 #include <set/list.h>
 #include <set/hash.h>

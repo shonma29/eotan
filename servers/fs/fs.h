@@ -27,11 +27,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <fs/vfs.h>
+#include <set/tree.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "api.h"
 
 struct file {
+	node_t node;
 	vnode_t *f_vnode;
 	uint_fast32_t f_flag;
 	uint_fast32_t f_count;

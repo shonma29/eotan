@@ -121,8 +121,8 @@ W copy_local(struct proc *parent, struct proc *child)
 
     local_data.thread_id = child->proc_maintask;
     local_data.process_id = child->proc_pid;
-    local_data.user_id = child->session.permission.uid;
-    local_data.group_id = child->session.permission.gid;
+    local_data.user_id = child->session->permission.uid;
+    local_data.group_id = child->session->permission.gid;
     local_data.parent_process_id = child->proc_ppid;
 
     error_no = kcall->region_put(child->proc_maintask, (thread_local_t*)LOCAL_ADDR,
@@ -159,19 +159,27 @@ static W proc_duplicate(struct proc * source, struct proc * destination)
     /* オープンファイルの情報のコピー
      */
     for (index = 0; index < MAX_FILE; index++) {
-	if (source->session.files[index].f_vnode != NULL) {
-	    destination->session.files[index] =
-		source->session.files[index];
-	    destination->session.files[index].f_vnode->refer_count++;
+	struct file *srcfile = session_find_file(source->session, index);
+	if (srcfile) {
+	    if (srcfile->f_vnode) {
+		struct file *destfile;
+		session_create_file(&destfile, destination->session,
+			index);
+		destfile->f_vnode = srcfile->f_vnode;
+		destfile->f_flag = srcfile->f_flag;
+		destfile->f_count = srcfile->f_count;
+		destfile->f_offset = srcfile->f_offset;
+		srcfile->f_vnode->refer_count++;
+	    }
 	}
     }
 
     /* copy of working directory */
-    destination->session.cwd = source->session.cwd;
-    destination->session.cwd->refer_count++;
+    destination->session->cwd = source->session->cwd;
+    destination->session->cwd->refer_count++;
 
     /* copy of uid/gid */
-    destination->session.permission = source->session.permission;
+    destination->session->permission = source->session->permission;
 
     return (EOK);
 }

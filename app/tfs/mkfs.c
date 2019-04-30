@@ -29,7 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 #include <time.h>
 #include <sys/stat.h>
-#include "../../include/fs/nconfig.h"
+#include "../../include/fs/config.h"
 #include "../../include/fs/sfs.h"
 #include "../../include/mpu/limits.h"
 

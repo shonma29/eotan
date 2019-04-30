@@ -34,7 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <time.h>
 #include <unistd.h>
 #include "../../include/sys/stat.h"
-#include "../../include/fs/nconfig.h"
+#include "../../include/fs/config.h"
 #include "../../include/fs/vfs.h"
 #include "libserv.h"
 #include "writer.h"

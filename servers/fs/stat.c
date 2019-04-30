@@ -29,36 +29,38 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/errno.h>
 #include "procfs/process.h"
 
-static int path2vnode(vnode_t **vnode, const pid_t pid, const int tid,
+static int path2vnode(vnode_t **vnode, const session_t *session, const int tid,
 		const unsigned char *path, unsigned char *buf);
 
 
-static int path2vnode(vnode_t **vnode, const pid_t pid, const int tid,
+static int path2vnode(vnode_t **vnode, const session_t *session, const int tid,
 		const unsigned char *path, unsigned char *buf)
 {
 	vnode_t *starting_node;
-	int error_no = session_get_path(&starting_node, pid, tid,
+	int error_no = session_get_path(&starting_node, session->node.key, tid,
 			(unsigned char*)path, buf);
 	if (error_no)
 		return error_no;
 
 	return vfs_walk(starting_node, (char*)buf, O_ACCMODE,
-			&(proc_table[pid].session.permission), vnode);
+			&(session->permission), vnode);
 }
 
 int if_chmod(fs_request *req)
 {
-//TODO use session
-	pid_t pid = unpack_pid(req);
+	session_t *session = session_find(unpack_pid(req));
+	if (!session)
+		return ESRCH;
+
 	vnode_t *vnode;
-	int error_no = path2vnode(&vnode, pid, unpack_tid(req),
+	int error_no = path2vnode(&vnode, session, unpack_tid(req),
 			(unsigned char*)(req->packet.arg1),
 			(unsigned char*)(req->buf));
 	if (error_no)
 		return error_no;
 
 	//TODO allow group leader
-	if (vnode->uid != proc_table[pid].session.permission.uid)
+	if (vnode->uid != session->permission.uid)
 		return EPERM;
 
 	if (req->packet.arg2 & UNMODIFIABLE_MODE_BITS)

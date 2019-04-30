@@ -95,6 +95,8 @@ Version 2, June 1991
 #include <sys/syscall.h>
 #include "../session.h"
 
+#define PROC_NAME_LEN	35
+
 enum proc_status
 {
   PS_DORMANT = 0,		/* 未生成状態 */
@@ -113,7 +115,7 @@ struct proc
 
   ID			proc_maintask;		/* メインタスク */
 
-  session_t session;
+  session_t *session;
 
   UW			proc_pid;		/* my process ID 
 						 * この値が 0 のときは、このエントリは、
@@ -133,15 +135,12 @@ struct proc
 
 /* process.c */
 
-extern struct proc	proc_table[MAX_PROCESS];
+extern struct proc	proc_table[MAX_SESSION];
 
 extern W		init_process (void);
 extern W		proc_get_permission (W procid, struct permission *p);
 extern W proc_get_status(W procid);
-extern W		proc_alloc_fileid (W procid, W *retval);
 extern W		proc_get_cwd (W procid, vnode_t **cwd);
-extern W		proc_get_file (W procid, W fileid, struct file **fp);
-extern W		proc_set_file (W procid, W fileid, W flag, vnode_t *ip);
 extern W		proc_get_procp (W procid, struct proc **procp);
 extern W		proc_exit (W procid);
 extern W		proc_alloc_proc (struct proc **procp);

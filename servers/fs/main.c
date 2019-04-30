@@ -27,7 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <major.h>
 #include <services.h>
 #include <boot/init.h>
-#include <fs/nconfig.h>
+#include <fs/config.h>
 #include <mpu/memory.h>
 #include <nerve/global.h>
 #include <nerve/kcall.h>
@@ -78,6 +78,8 @@ static void work(void);
 
 static int initialize(void)
 {
+	session_initialize();
+
 	if (fs_initialize())
 		return -1;
 
