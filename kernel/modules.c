@@ -62,8 +62,10 @@ void load_modules(void)
 		h = (ModuleHeader*)((UW)h + sizeof(*h) + h->length);
 	}
 
-	release_others((void*)MODULES_ADDR,
-			kern_v2p((void*)((UW)h + sizeof(*h))));
+	release_others((void*)(CORE_STACK_ADDR - CORE_STACK_SIZE),
+			(void*)CORE_STACK_ADDR);
+	release_others(kern_p2v((void*)MODULES_ADDR),
+			(void*)((UW)h + sizeof(*h)));
 }
 
 static ER run(const UW type, const ID tid, const Elf32_Ehdr *eHdr)
@@ -98,16 +100,14 @@ static void set_initrd(ModuleHeader *h)
 }
 
 //TODO wait for init starting
-//TODO release others (BIOS workarea, kernel stack, ...)
 static void release_others(const void *head, const void *end)
 {
-	UW addr = (UW)head & ~((1 << BITS_OFFSET) - 1);
-	UW max = pages((UW)end - addr);
-	size_t i;
+	unsigned int addr = (unsigned int)head & ~((1 << BITS_OFFSET) - 1);
+	size_t max = pages((unsigned int)end - addr);
 
-	printk("release addr=%p max=%d\n", addr, max);
+	printk("release addr=%p pages=%d\n", addr, max);
 
-	for (i = 0; i < max; i++) {
+	for (int i = 0; i < max; i++) {
 		pfree((void*)addr);
 		addr += PAGE_SIZE;
 	}

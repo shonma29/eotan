@@ -30,7 +30,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/global.h>
 #include "func.h"
 #include "ready.h"
-#include "arch/archfunc.h"
 #include "mpu/mpufunc.h"
 
 static ER create_idle_thread(const VP_INT exinf);
@@ -64,8 +63,6 @@ static ER create_idle_thread(const VP_INT exinf)
 		(FP)idle_start,
 		MAX_PRIORITY,
 		KTHREAD_STACK_SIZE,
-		//TODO release current stack in module.c
-//		(void*)CORE_STACK_ADDR,
 		NULL,
 		NULL,
 		NULL
@@ -86,7 +83,7 @@ static ER create_idle_thread(const VP_INT exinf)
 
 static void idle_start(VP_INT exinf)
 {
-//	void (*callback)(void)) = (void (*callback)(void))exinf;
+//	void (*callback)(void) = (void (*)(void))exinf;
 //	callback();
 	load_modules();
 	ei();

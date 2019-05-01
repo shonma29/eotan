@@ -64,10 +64,10 @@ static size_t dupModule(char **to, Elf32_Ehdr *eHdr);
 void memory_initialize(void)
 {
 	/* create memory map */
+	//TODO optimize
 	map_initialize(getLastPresentPage());
 	setAbsentPages();
 
-	/* keep realmode interrupt vector, BIOS workarea */
 	/* keep GDT, IDT */
 	map_set_use(kern_v2p((void*)GDT_ADDR), 1);
 	/* keep page directory */
@@ -75,11 +75,9 @@ void memory_initialize(void)
 	/* keep boot infomation */
 	map_set_use(kern_v2p((void*)BOOT_INFO_ADDR), 1);
 	/* keep kernel stack */
-	//TODO release after starting kernel
 	map_set_use(kern_v2p((void*)(CORE_STACK_ADDR - CORE_STACK_SIZE)),
 			pages(CORE_STACK_SIZE));
 	/* keep modules */
-	//TODO release after starting kernel
 	map_set_use((void*)MODULES_ADDR,
 			pages((unsigned int)setModules() - MODULES_ADDR));
 
