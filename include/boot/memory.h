@@ -26,18 +26,20 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdint.h>
+
+//TODO These are PC/AT specific.
 #define MEMORY_INFO_END 0x00003000
 #define MEMORY_INFO_ADDR 0x00003004
 
 #define MEMORY_PRESENT (1)
 
-typedef struct
-{
-	unsigned int baseLow;
-	unsigned int baseHigh;
-	unsigned int sizeLow;
-	unsigned int sizeHigh;
-	unsigned int type;
+typedef struct {
+	uint32_t baseLow;
+	uint32_t baseHigh;
+	uint32_t sizeLow;
+	uint32_t sizeHigh;
+	uint32_t type;
 } MemoryInfo;
 
 #endif

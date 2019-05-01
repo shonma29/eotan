@@ -29,20 +29,17 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <stddef.h>
 
-#define MAP_USE (0)
-#define MAP_FULL_USE (0x00000000)
-
-#define MAP_FREE (1)
-#define MAP_FULL_FREE (0xffffffff)
+#define MAP_ALL_USING (0)
+#define MAP_ALL_FREE (-1)
 
 #define BITS_MASK ((1 << MPU_LOG_INT) - 1)
 
 typedef struct {
 	size_t left_pages;
-	UW last_block;
+	unsigned int last_block;
 	size_t max_blocks;
 	size_t max_pages;
-	UW map[0];
+	unsigned int map[0];
 } MemoryMap;
 
 extern void memory_initialize(void);

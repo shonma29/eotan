@@ -39,34 +39,35 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/config.h>
 #include <nerve/memory_map.h>
 
+#define TYPE_SKIP (-1)
+
 #define DPAGE_OFFSET_MASK (4096ULL - 1ULL)
-#define DPAGE_ADDR_MASK ~(4096ULL - 1ULL);
+#define DPAGE_ADDR_MASK ~(4096ULL - 1ULL)
 #define OVER_INT 0x100000000ULL
 
 static MemoryMap *mm = (MemoryMap*)MEMORY_MAP_ADDR;
 
 extern int printk(const char *format, ...);
 
-static ER map_initialize(const size_t pages);
-static ER map_set_use(const void *addr, const size_t pages);
+static int map_initialize(const size_t pages);
+static int map_set_use(const void *addr, const size_t pages);
 #ifdef DEBUG
 static void map_print(void);
 #endif
-static UW getLastPresentAddress(void);
+static size_t getLastPresentPage(void);
 static void setAbsentPages(void);
-static UW getMemoryRange(MemoryInfo *p);
+static size_t getMemoryRange(MemoryInfo *p);
 static void *setModules(void);
-static size_t dupModule(UB **to, Elf32_Ehdr *eHdr);
+static size_t dupModule(char **to, Elf32_Ehdr *eHdr);
 
 
 void memory_initialize(void)
 {
 	/* create memory map */
-	map_initialize(pages(getLastPresentAddress()));
+	map_initialize(getLastPresentPage());
 	setAbsentPages();
 
 	/* keep realmode interrupt vector, BIOS workarea */
-	map_set_use(0, 1);
 	/* keep GDT, IDT */
 	map_set_use(kern_v2p((void*)GDT_ADDR), 1);
 	/* keep page directory */
@@ -74,99 +75,96 @@ void memory_initialize(void)
 	/* keep boot infomation */
 	map_set_use(kern_v2p((void*)BOOT_INFO_ADDR), 1);
 	/* keep kernel stack */
+	//TODO release after starting kernel
 	map_set_use(kern_v2p((void*)(CORE_STACK_ADDR - CORE_STACK_SIZE)),
 			pages(CORE_STACK_SIZE));
 	/* keep modules */
+	//TODO release after starting kernel
 	map_set_use((void*)MODULES_ADDR,
-			pages((UW)setModules() - MODULES_ADDR));
+			pages((unsigned int)setModules() - MODULES_ADDR));
 
 	/* keep kernel log */
 	map_set_use(kern_v2p((void*)KERNEL_LOG_ADDR), pages(KERNEL_LOG_SIZE));
 	/* keep memory map */
+	//TODO move meta data to sysinfo
 	map_set_use(kern_v2p((void*)mm),
-			pages(mm->max_blocks * sizeof(UW) + sizeof(*mm)));
+			pages(mm->max_blocks * sizeof(unsigned int)
+					+ sizeof(*mm)));
 #ifdef DEBUG
 	map_print();
 #endif
 }
 
-static ER map_initialize(const size_t pages)
+static int map_initialize(const size_t pages)
 {
-	UW i;
-	UW bits;
-
 	mm->left_pages = (pages > MAX_PAGES)? MAX_PAGES:pages;
 	mm->last_block = 0;
 	mm->max_blocks = (mm->left_pages + INT_BIT - 1) >> MPU_LOG_INT;
 	mm->max_pages = mm->left_pages;
 
+	unsigned int i;
 	for (i = 0; i < mm->max_blocks; i++)
-		mm->map[i] = MAP_FULL_FREE;
+		mm->map[i] = MAP_ALL_FREE;
 
-	bits = mm->left_pages & BITS_MASK;
-	if (bits)
-		mm->map[i - 1] = (1 << bits) - 1;
+	unsigned int offset = mm->left_pages & BITS_MASK;
+	if (offset)
+		mm->map[i - 1] = (1 << offset) - 1;
 
 	printk("map_initialize left=%d last=%d max=%d\n",
-			mm->left_pages, mm->last_block, mm->max_blocks);
+			mm->left_pages, mm->last_block,
+			mm->max_blocks * CHAR_BIT * sizeof(mm->map[0]));
 
-	return E_OK;
+	return 0;
 }
 
-static ER map_set_use(const void *addr, const size_t pages)
+static int map_set_use(const void *addr, const size_t pages)
 {
-	UW i;
-	UW bits;
-	UW left;
-	UW mask;
-
 #ifdef DEBUG
 	printk("map_set_use addr=%p pages=%d\n", addr, pages);
 #endif
 	if (!pages)
 		return E_PAR;
 
-	i = (UW)addr >> BITS_OFFSET;
+	unsigned int i = (unsigned int)addr >> BITS_OFFSET;
 	if (i >= mm->max_pages)
 		return E_PAR;
 
-	left = (i + pages > mm->max_pages)? (mm->max_pages - i):pages;
+	size_t left = (i + pages > mm->max_pages)? (mm->max_pages - i):pages;
 	mm->left_pages -= left;
-	bits = i & BITS_MASK;
+
+	unsigned int mask;
+	unsigned int offset = i & BITS_MASK;
 	i >>= MPU_LOG_INT;
 
-	if (bits) {
-		mask = (1 << bits) - 1;
+	if (offset) {
+		mask = (1 << offset) - 1;
 
-		if (bits + left < INT_BIT) {
-			left += bits;
+		if (offset + left < INT_BIT) {
+			left += offset;
 		} else {
 			mm->map[i++] &= mask;
-			left -= INT_BIT - bits;
+			left -= INT_BIT - offset;
 			mask = 0;
 		}
-	} else {
+	} else
 		mask = 0;
-	}
 
-	bits = left & BITS_MASK;
+	offset = left & BITS_MASK;
 	left = (left >> MPU_LOG_INT) + i;
 
 	for (; i < left; i++)
-		mm->map[i] = MAP_FULL_USE;
+		mm->map[i] = MAP_ALL_USING;
 
-	if (bits)
-		mm->map[i] &= mask | ~((1 << bits) - 1);
+	if (offset)
+		mm->map[i] &= mask | ~((1 << offset) - 1);
 
-	return E_OK;
+	return 0;
 }
 
 #ifdef DEBUG
 static void map_print(void)
 {
-	size_t i;
-
-	for (i = 0; i < mm->max_blocks; i++) {
+	for (unsigned int i = 0; i < mm->max_blocks; i++) {
 		if (i && !(i & (8 - 1)))
 			printk("\n");
 
@@ -177,18 +175,15 @@ static void map_print(void)
 }
 #endif
 
-static UW getLastPresentAddress(void)
+static size_t getLastPresentPage(void)
 {
-	UW max = *((UW*)MEMORY_INFO_END);
-	MemoryInfo *p = (MemoryInfo*)MEMORY_INFO_ADDR;
-	UW prevEnd = 0;
+	unsigned int prevEnd = 0;
 #ifdef USE_VESA
 	VesaInfo *v = (VesaInfo*)VESA_INFO_ADDR;
 #endif
-	for (; (UW)p < max; p ++) {
-		size_t len;
-		UW addr;
-
+	size_t max = *((uint32_t*)MEMORY_INFO_END);
+	for (MemoryInfo *p = (MemoryInfo*)MEMORY_INFO_ADDR;
+			(size_t)p < max; p++) {
 		printk("memory type=%x base=%x %x size=%x %x\n",
 				p->type, p->baseHigh, p->baseLow,
 				p->sizeHigh, p->sizeLow);
@@ -196,16 +191,20 @@ static UW getLastPresentAddress(void)
 		if (p->type != MEMORY_PRESENT)
 			continue;
 
-		addr = p->baseLow;
+		unsigned int head = p->baseLow;
 #ifdef USE_VESA
-		if (addr == v->buffer_addr)
+		if (head == v->buffer_addr) {
+			p->type = TYPE_SKIP;
 			continue;
+		}
 #endif
-		len = getMemoryRange(p);
-		if (!len)
+		size_t len = getMemoryRange(p);
+		if (!len) {
+			p->type = TYPE_SKIP;
 			continue;
+		}
 
-		prevEnd = addr + len * PAGE_SIZE;
+		prevEnd = (head >> BITS_OFFSET) + len;
 	}
 
 	return prevEnd;
@@ -213,69 +212,54 @@ static UW getLastPresentAddress(void)
 
 static void setAbsentPages(void)
 {
-	UW max = *((UW*)MEMORY_INFO_END);
-	MemoryInfo *p;
-	UW prevEnd = 0;
-
-	for (p = (MemoryInfo*)MEMORY_INFO_ADDR; (UW)p < max; p++) {
-		UW addr;
-		size_t len = getMemoryRange(p);
-
-		if (!len)
+	unsigned int prevEnd = 0;
+	size_t max = *((size_t*)MEMORY_INFO_END);
+	for (MemoryInfo *p = (MemoryInfo*)MEMORY_INFO_ADDR;
+			(size_t)p < max; p++) {
+		if (p->type != MEMORY_PRESENT)
 			continue;
 
-		addr = p->baseLow;
+		unsigned int head = p->baseLow >> BITS_OFFSET;
+		if (p->baseLow & MASK_OFFSET)
+			head++;
 
-		if (addr != prevEnd)
-			map_set_use((void*)prevEnd, pages(addr - prevEnd));
+		if (head != prevEnd)
+			map_set_use((void*)(prevEnd << BITS_OFFSET),
+					head - prevEnd);
 
-		prevEnd = addr + len * PAGE_SIZE;
-
-		if (p->type != MEMORY_PRESENT)
-			map_set_use((void*)addr, len);
+		prevEnd = head + getMemoryRange(p);
 	}
 }
 
-static UW getMemoryRange(MemoryInfo *p)
+static size_t getMemoryRange(MemoryInfo *p)
 {
-	UD base;
-	UD size;
-	UD end;
-	UD diff;
-
 	if (p->baseHigh)
 		return 0;
 
-	base = ((UD)(p->baseHigh) << 32) | (UD)(p->baseLow);
-	size = ((UD)(p->sizeHigh) << 32) | (UD)(p->sizeLow);
-	end = ((UD)base + (UD)size) & DPAGE_ADDR_MASK;
+	uint_fast64_t base = (uint_fast64_t)(p->baseLow);
+	uint_fast64_t rest = OVER_INT - base;
+	uint_fast64_t size = ((uint_fast64_t)(p->sizeHigh) << 32)
+			| (uint_fast64_t)(p->sizeLow);
+	if (size > rest)
+		size = rest;
 
-	if ((UD)base & DPAGE_OFFSET_MASK)
-		base = (UD)base & DPAGE_ADDR_MASK;
+	uint_fast64_t end = (base + size) & DPAGE_ADDR_MASK;
 
-	if (base > end)
+	if (p->baseLow & MASK_OFFSET) {
+		base = (base + PAGE_SIZE) & DPAGE_ADDR_MASK;
+		if (base >= OVER_INT)
+			return 0;
+	}
+	if (base >= end)
 		return 0;
 
-	diff = (UD)end - (UD)base;
-	if (end > OVER_INT)
-		diff -= (UD)(end - OVER_INT);
-
-	p->baseLow = (UD)base & 0xffffffff;
-
-	return (((UD)diff + PAGE_SIZE - 1) >> BITS_OFFSET) & 0xffffffff;
+	return (((end - base) >> BITS_OFFSET) & 0xffffffff);
 }
-
+//TODO move to starter
 static void *setModules(void)
 {
 	ModuleHeader *h = (ModuleHeader*)MODULES_ADDR;
-	size_t i;
-
-	for (i = 0; h->type != mod_end; i++) {
-		Elf32_Ehdr *eHdr;
-		UW addr;
-		UB *to = NULL;
-		size_t size;
-
+	for (int i = 0; h->type != mod_end; i++) {
 		printk("module type=%x length=%x bytes=%x zBytes=%x\n",
 				h->type, h->length, h->bytes, h->zBytes);
 
@@ -283,10 +267,13 @@ static void *setModules(void)
 		case mod_kernel:
 		case mod_driver:
 		case mod_server:
-			eHdr = (Elf32_Ehdr*)&(h[1]);
-			size = dupModule(&to, eHdr);
+		{
+			Elf32_Ehdr *eHdr = (Elf32_Ehdr*)&(h[1]);
+			char *to = NULL;
+			size_t size = dupModule(&to, eHdr);
 			if (size)
-				map_set_use(kern_v2p((void*)to), pages(size));
+				map_set_use(kern_v2p(to), pages(size));
+		}
 			break;
 
 		case mod_user:
@@ -295,29 +282,23 @@ static void *setModules(void)
 			break;
 		}
 
-		addr = (UW)h + sizeof(*h) + h->length;
+		unsigned int addr = (unsigned int)h + sizeof(*h) + h->length;
 		h = (ModuleHeader*)addr;
 	}
 
-	return (void*)((UW)h + sizeof(*h));
+	return (void*)((unsigned int)h + sizeof(*h));
 }
 
-static size_t dupModule(UB **to, Elf32_Ehdr *eHdr)
+static size_t dupModule(char **to, Elf32_Ehdr *eHdr)
 {
-	Elf32_Phdr *pHdr;
-	UB *p;
-	size_t i;
 	size_t size = 0;
 
 	if (!isValidModule(eHdr))
 		panic("bad ELF");
 
-	p = (UB*)eHdr;
-	pHdr = (Elf32_Phdr*)&(p[eHdr->e_phoff]);
-
-	for (i = 0; i < eHdr->e_phnum; pHdr++, i++) {
-		UB *w;
-		UB *r;
+	char *p = (char*)eHdr;
+	Elf32_Phdr *pHdr = (Elf32_Phdr*)&(p[eHdr->e_phoff]);
+	for (int i = 0; i < eHdr->e_phnum; pHdr++, i++) {
 #ifdef DEBUG
 		printk("t=%d o=%p v=%p p=%p"
 				", f=%d, m=%d\n",
@@ -328,15 +309,15 @@ static size_t dupModule(UB **to, Elf32_Ehdr *eHdr)
 		if (pHdr->p_type != PT_LOAD)
 			continue;
 
-		w = (UB*)(pHdr->p_vaddr);
-		if (i == 0)
+		char *w = (char*)(pHdr->p_vaddr);
+		if (!i)
 			*to = w;
 
-		r = (UB*)eHdr + pHdr->p_offset;
+		char *r = (char*)eHdr + pHdr->p_offset;
 		//TODO fill a gap with zero
 		memcpy(w, r, pHdr->p_filesz);
 		memset(w + pHdr->p_filesz, 0, pHdr->p_memsz - pHdr->p_filesz);
-		size = pHdr->p_vaddr - (UW)(*to) + pHdr->p_memsz;
+		size = pHdr->p_vaddr - (unsigned int)(*to) + pHdr->p_memsz;
 	}
 
 	return size;
