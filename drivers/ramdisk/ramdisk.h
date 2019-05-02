@@ -34,9 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #define MYNAME "ramdisk"
 
-#define BUF_SIZE (INITRD_SIZE)
-
-extern unsigned char buf[];
+extern memory_range_t ranges[];
 
 extern int detach(void);
 extern int open(void);

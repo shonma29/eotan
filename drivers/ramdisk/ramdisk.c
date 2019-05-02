@@ -27,12 +27,13 @@ For more information, please refer to <http://unlicense.org/>
 #include <device.h>
 #include <stddef.h>
 #include <string.h>
-#include <sys/types.h>
 #include "ramdisk.h"
 
-unsigned char buf[BUF_SIZE];
+memory_range_t ranges[1];
 
-static int check_param(const off_t start, const size_t size);
+//TODO return adequate error code
+static bool check_channel(const int);
+static bool check_param(const int, const off_t, const size_t);
 
 
 int detach(void)
@@ -47,46 +48,54 @@ int open(void)
 
 int close(const int channel)
 {
-	return ((channel == 0)? 0:(-1));
+	return (check_channel(channel)? 0:(-1));
 }
 
 int read(unsigned char *outbuf, const int channel,
 		const off_t start, const size_t size)
 {
-	int result = check_param(start, size);
-	if (result)
-		return result;
+	if (!check_param(channel, start, size))
+		return (-1);
 
-	memcpy(outbuf, &(buf[start]), size);
+	memcpy(outbuf, &(ranges[channel].start[start]), size);
 
 	return size;
 }
 
 int write(unsigned char *inbuf, const int channel,
-		const off_t start, const size_t size) {
-	int result = check_param(start, size);
-	if (result)
-		return result;
+		const off_t start, const size_t size)
+{
+	if (!check_param(channel, start, size))
+		return (-1);
 
-	memcpy(&(buf[start]), inbuf, size);
+	memcpy(&(ranges[channel].start[start]), inbuf, size);
 
 	return size;
 }
 
-static int check_param(const off_t start, const size_t size)
+static bool check_channel(const int channel)
 {
+	if ((channel < 0)
+			|| (channel >= sizeof(ranges) / sizeof(ranges[0])))
+		return false;
+
+	return true;
+}
+
+static bool check_param(const int channel, const off_t start, const size_t size)
+{
+	if (!check_channel(channel))
+		return false;
+
 	if (start < 0)
-		return -1;
+		return false;
 
-	if (start >= sizeof(buf))
-		return -1;
+	if (start >= ranges[channel].size)
+		return false;
 
-	size_t rest = sizeof(buf) - start;
+	size_t rest = ranges[channel].size - start;
 	if (size > rest)
-		return -1;
+		return false;
 
-	if (size > DEV_BUF_SIZE)
-		return -1;
-
-	return 0;
+	return true;
 }

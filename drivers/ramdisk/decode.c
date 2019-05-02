@@ -46,7 +46,8 @@ static int bgetc(RangeCoder *rc)
 
 static int bputc(unsigned char ch, RangeCoder *rc)
 {
-	if (wpos < BUF_SIZE) {
+	if (wpos < ranges[0].size) {
+		unsigned char *buf = (unsigned char*)(ranges[0].start);
 		buf[wpos++] = ch;
 		return ch;
 	} else

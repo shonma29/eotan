@@ -29,7 +29,7 @@ include Makefile.in
 
 CFLAGS += -I kernel
 
-ENTRY_ADDR = 0x80220000
+ENTRY_ADDR = 0x80130000
 ENTRY_FUNC = start
 
 $(TARGET): $(OBJS) \

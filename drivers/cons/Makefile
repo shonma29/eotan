@@ -27,7 +27,7 @@ TARGET = $(WD)/cons
 
 include Makefile.in
 
-ENTRY_ADDR = 0x80300000
+ENTRY_ADDR = 0x80140000
 ENTRY_FUNC = attach
 
 $(TARGET): $(OBJS) \

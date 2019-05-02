@@ -28,7 +28,7 @@ TARGET = $(WD)/mm
 include Makefile.in
 
 CFLAGS += -I kernel
-ENTRY_ADDR = 0x80230000
+ENTRY_ADDR = 0x80200000
 ENTRY_FUNC = start
 
 $(TARGET): $(OBJS) \

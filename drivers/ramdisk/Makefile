@@ -27,7 +27,7 @@ TARGET = $(WD)/ramdisk
 
 include Makefile.in
 
-ENTRY_ADDR = 0x80310000
+ENTRY_ADDR = 0x80150000
 ENTRY_FUNC = attach
 
 $(TARGET): $(OBJS) \

@@ -32,6 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #ifdef USE_VESA
 #include <vesa.h>
 #endif
+#include <boot/initrd.h>
 #include <boot/modules.h>
 #include <mpu/desc.h>
 #include <mpu/memory.h>
@@ -91,6 +92,8 @@ void memory_initialize(void)
 	/* keep memory map */
 	map_set_use(kern_v2p((void*)mm),
 			pages(mm->num_blocks * sizeof(mm->map[0])));
+	/* keep initrd */
+	map_set_use(kern_v2p((void*)INITRD_ADDR), pages(INITRD_SIZE));
 #ifdef DEBUG
 	map_print();
 #endif

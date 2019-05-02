@@ -28,7 +28,7 @@ TARGET = $(WD)/hmi
 include Makefile.in
 
 CFLAGS += -I lib/libserv
-ENTRY_ADDR = 0x80240000
+ENTRY_ADDR = 0x80220000
 ENTRY_FUNC = start
 
 $(TARGET): $(OBJS) \
