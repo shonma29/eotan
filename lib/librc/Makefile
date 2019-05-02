@@ -31,7 +31,7 @@ CFLAGS = -Wall -Werror -O2 -std=c11
 
 $(WD).a: $(WD)/drc_common.o $(WD)/drc_encode.o $(WD)/drc_decode.o \
 		$(WD)/bit_common.o $(WD)/bit_encode.o \
-		$(WD)/bit_decode.o
+		$(WD)/bit_decode.o $(WD)/zle_encode.o $(WD)/zle_decode.o
 	$(AR) rsv $@ $?
 
 $(WD)/encode: $(WD)/encode.o $(WD).a
