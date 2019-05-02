@@ -26,8 +26,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
 #include <stddef.h>
+#include <mpu/memory.h>
 
 #define MAP_ALL_USING (0)
 #define MAP_ALL_FREE (-1)
@@ -35,11 +35,11 @@ For more information, please refer to <http://unlicense.org/>
 #define BITS_MASK ((1 << MPU_LOG_INT) - 1)
 
 typedef struct {
-	size_t left_pages;
-	unsigned int last_block;
-	size_t max_blocks;
+	size_t rest_pages;
+	unsigned int clock_block;
+	size_t num_blocks;
 	size_t max_pages;
-	unsigned int map[0];
+	unsigned int *map;
 } MemoryMap;
 
 extern void memory_initialize(void);

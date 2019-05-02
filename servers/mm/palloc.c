@@ -29,9 +29,10 @@ For more information, please refer to <http://unlicense.org/>
 #include <stddef.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
+#include <nerve/global.h>
 #include <nerve/memory_map.h>
 
-static MemoryMap *mm = (MemoryMap*)MEMORY_MAP_ADDR;
+static MemoryMap *mm = &(sysinfo->memory_map);
 
 static W find_bit(const UW d);
 static void pzero(UW *p);
@@ -41,8 +42,8 @@ void *palloc(void)
 {
 	size_t i;
 
-	if (mm->left_pages) {
-		for (i = mm->last_block; i < mm->max_blocks; i++) {
+	if (mm->rest_pages) {
+		for (i = mm->clock_block; i < mm->num_blocks; i++) {
 			UW d = mm->map[i];
 
 			if (d) {
@@ -50,8 +51,8 @@ void *palloc(void)
 				UW addr;
 
 				mm->map[i] &= ~(1 << bit);
-				mm->last_block = mm->map[i]? i:(i + 1);
-				mm->left_pages--;
+				mm->clock_block = mm->map[i]? i:(i + 1);
+				mm->rest_pages--;
 
 				addr = ((i << MPU_LOG_INT) | bit)
 						<< BITS_OFFSET;
@@ -96,7 +97,7 @@ void pfree(void *addr)
 	size_t i = (size_t)addr >> (BITS_OFFSET + MPU_LOG_INT);
 	UW bit;
 
-	if (i >= mm->max_blocks) {
+	if (i >= mm->num_blocks) {
 		return;// E_PAR;
 	}
 
@@ -108,10 +109,10 @@ void pfree(void *addr)
 
 	mm->map[i] |= bit;
 
-	if (i < mm->last_block)
-		mm->last_block = i;
+	if (i < mm->clock_block)
+		mm->clock_block = i;
 
-	mm->left_pages++;
+	mm->rest_pages++;
 
 	return;// E_OK;
 }

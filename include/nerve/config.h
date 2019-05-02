@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/memory.h>
 
 #define BOOT_INFO_ADDR 0x80003000
+#define SYSTEM_INFO_ADDR 0x80003e00
 #define MEMORY_MAP_ADDR 0x80180000
 
 #define CORE_STACK_ADDR 0x80008000

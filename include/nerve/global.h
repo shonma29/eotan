@@ -29,9 +29,9 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <time.h>
 #include <stddef.h>
+#include <nerve/config.h>
+#include <nerve/memory_map.h>
 #include <set/lf_queue.h>
-
-#define SYSTEM_INFO_ADDR 0x80003e00
 
 typedef struct {
 	ID device;
@@ -49,6 +49,7 @@ typedef struct {
 	memory_range_t initrd;
 	volatile lfq_t kqueue;
 	volatile int delay_thread_start;
+	MemoryMap memory_map;
 } system_info_t;
 
 #define sysinfo ((system_info_t*)SYSTEM_INFO_ADDR)

@@ -37,6 +37,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/memory.h>
 #include <mpu/mpufunc.h>
 #include <nerve/config.h>
+#include <nerve/global.h>
 #include <nerve/memory_map.h>
 
 #define TYPE_SKIP (-1)
@@ -45,7 +46,7 @@ For more information, please refer to <http://unlicense.org/>
 #define DPAGE_ADDR_MASK ~(4096ULL - 1ULL)
 #define OVER_INT 0x100000000ULL
 
-static MemoryMap *mm = (MemoryMap*)MEMORY_MAP_ADDR;
+static MemoryMap *mm = &(sysinfo->memory_map);
 
 extern int printk(const char *format, ...);
 
@@ -68,6 +69,10 @@ void memory_initialize(void)
 	map_initialize(getLastPresentPage());
 	setAbsentPages();
 
+	printk("memory_initialize pages=%d/%d clock=%d/%d\n",
+			mm->rest_pages, mm->max_pages,
+			mm->clock_block, mm->num_blocks);
+
 	/* keep GDT, IDT */
 	map_set_use(kern_v2p((void*)GDT_ADDR), 1);
 	/* keep page directory */
@@ -84,10 +89,8 @@ void memory_initialize(void)
 	/* keep kernel log */
 	map_set_use(kern_v2p((void*)KERNEL_LOG_ADDR), pages(KERNEL_LOG_SIZE));
 	/* keep memory map */
-	//TODO move meta data to sysinfo
 	map_set_use(kern_v2p((void*)mm),
-			pages(mm->max_blocks * sizeof(unsigned int)
-					+ sizeof(*mm)));
+			pages(mm->num_blocks * sizeof(mm->map[0])));
 #ifdef DEBUG
 	map_print();
 #endif
@@ -95,22 +98,19 @@ void memory_initialize(void)
 
 static int map_initialize(const size_t pages)
 {
-	mm->left_pages = (pages > MAX_PAGES)? MAX_PAGES:pages;
-	mm->last_block = 0;
-	mm->max_blocks = (mm->left_pages + INT_BIT - 1) >> MPU_LOG_INT;
-	mm->max_pages = mm->left_pages;
+	mm->rest_pages = (pages > MAX_PAGES)? MAX_PAGES:pages;
+	mm->clock_block = 0;
+	mm->num_blocks = (mm->rest_pages + INT_BIT - 1) >> MPU_LOG_INT;
+	mm->max_pages = mm->rest_pages;
+	mm->map = (unsigned int*)MEMORY_MAP_ADDR;
 
 	unsigned int i;
-	for (i = 0; i < mm->max_blocks; i++)
+	for (i = 0; i < mm->num_blocks; i++)
 		mm->map[i] = MAP_ALL_FREE;
 
-	unsigned int offset = mm->left_pages & BITS_MASK;
+	unsigned int offset = mm->rest_pages & BITS_MASK;
 	if (offset)
 		mm->map[i - 1] = (1 << offset) - 1;
-
-	printk("map_initialize left=%d last=%d max=%d\n",
-			mm->left_pages, mm->last_block,
-			mm->max_blocks * CHAR_BIT * sizeof(mm->map[0]));
 
 	return 0;
 }
@@ -128,7 +128,7 @@ static int map_set_use(const void *addr, const size_t pages)
 		return E_PAR;
 
 	size_t left = (i + pages > mm->max_pages)? (mm->max_pages - i):pages;
-	mm->left_pages -= left;
+	mm->rest_pages -= left;
 
 	unsigned int mask;
 	unsigned int offset = i & BITS_MASK;
@@ -162,7 +162,7 @@ static int map_set_use(const void *addr, const size_t pages)
 #ifdef DEBUG
 static void map_print(void)
 {
-	for (unsigned int i = 0; i < mm->max_blocks; i++) {
+	for (unsigned int i = 0; i < mm->num_blocks; i++) {
 		if (i && !(i & (8 - 1)))
 			printk("\n");
 

@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/memory.h>
 #include <mpu/mpufunc.h>
 #include <nerve/config.h>
+#include <nerve/global.h>
 #include <nerve/memory_map.h>
 #include <func.h>
 #include "paging.h"
@@ -39,10 +40,11 @@ For more information, please refer to <http://unlicense.org/>
 static void set_frame_buffer(PTE *dir);
 #endif
 
-
+//TODO unify paging_init
+//TODO skip memory hole
 void paging_reset(void)
 {
-	MemoryMap *mm = (MemoryMap*)MEMORY_MAP_ADDR;
+	MemoryMap *mm = &(sysinfo->memory_map);
 	PTE *dir = (PTE*)kern_p2v((void*)KTHREAD_DIR_ADDR);
 	UB *addr = (UB*)0;
 	size_t i;
