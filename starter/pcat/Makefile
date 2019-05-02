@@ -36,16 +36,18 @@ BLK_SIZE = 512
 BOOT_ADDR = 0x7c00
 STARTER_SEG = 0x0800
 STARTER_ADDR = 0x8000
+MAX_KERN = `echo "(640 - 32 - 16 - 4) * 1024" | bc`
 
 OBJS = build/boot.img $(WD)/pad $(WD)/append \
 	$(WD)/boot.bin $(WD)/boot.o $(WD)/starter.inc \
 	$(WD)/kern.bin \
-	$(WD)/starter.bin $(WD)/starter.o $(WD)/main.o
+	$(WD)/starter.bin $(WD)/starter $(WD)/starter.o $(WD)/main.o
 
 $(TARGET): build/boot.img
 	mkisofs -R -b boot.img -o $(TARGET) build
 
 build/boot.img: $(WD)/pad $(WD)/boot.bin $(WD)/kern.bin
+	test `wc -c < $(WD)/kern.bin | xargs` -le $(MAX_KERN)
 	cat $(WD)/boot.bin $(WD)/kern.bin > $@
 	$(WD)/pad $@ 1474560
 
@@ -60,9 +62,13 @@ $(WD)/starter.inc: $(WD)/kern.bin
 	echo -n ".set STARTER_SECTORS, " >> $@
 	echo "(`wc -c < $(WD)/kern.bin` + $(BLK_SIZE) - 1) / $(BLK_SIZE)" | bc >> $@
 
-$(WD)/starter.bin: $(WD)/starter.o $(WD)/main.o kernel/arch/libarch.a \
+$(WD)/starter: $(WD)/starter.o $(WD)/main.o kernel/arch/libarch.a \
 		kernel/mpu/libmpu.a lib/libnc.a
 	$(LD) $(LDFLAGS) -Ttext $(STARTER_ADDR) -L$(LIB) -o $@ $^
+
+$(WD)/starter.bin: $(WD)/starter
+	test `wc -c < $< | xargs` -le $(STARTER_SIZE)
+	cp -a $< $@
 	$(WD)/pad $@ $(STARTER_SIZE) 
 
 $(WD)/main.o: $(WD)/main.c
