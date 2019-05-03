@@ -31,6 +31,6 @@ ENTRY_ADDR = 0x80150000
 ENTRY_FUNC = attach
 
 $(TARGET): $(OBJS) \
-		lib/libserv.a lib/librc.a lib/libnc.a
+		lib/libserv.a lib/libnc.a
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
 	$(STRIP) $@

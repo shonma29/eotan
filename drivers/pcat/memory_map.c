@@ -50,6 +50,7 @@ For more information, please refer to <http://unlicense.org/>
 static MemoryMap *mm = &(sysinfo->memory_map);
 
 extern int printk(const char *format, ...);
+extern int decode(unsigned char *, const size_t);
 
 static int map_initialize(const size_t pages);
 static int map_set_use(const void *addr, const size_t pages);
@@ -276,9 +277,15 @@ static void *setModules(void)
 				map_set_use(kern_v2p(to), pages(size));
 		}
 			break;
-
-		case mod_user:
 		case mod_initrd:
+		{
+			int result = decode((unsigned char*)&(h[1]), h->bytes);
+			//TODO write sysinfo
+			if (result)
+				printk("failed to decode initrd %d\n", result);
+		}
+			break;
+		case mod_user:
 		default:
 			break;
 		}

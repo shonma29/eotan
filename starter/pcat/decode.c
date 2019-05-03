@@ -24,14 +24,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <boot/initrd.h>
+#include <mpu/memory.h>
 #include "../../lib/librc/rangecoder.h"
 #include "../../lib/librc/bit.h"
-#include "ramdisk.h"
 
 #define EOF (-1)
 
-static size_t size;
-static unsigned char *initrd;
+static size_t image_size;
+static unsigned char *image_buf;
 static unsigned int rpos;
 static unsigned int wpos;
 
@@ -41,26 +42,27 @@ static int bputc(unsigned char ch, RangeCoder *rc);
 
 static int bgetc(RangeCoder *rc)
 {
-	return (rpos < size)? (initrd[rpos++]):EOF;
+	return (rpos < image_size)? (image_buf[rpos++]):EOF;
 }
 
 static int bputc(unsigned char ch, RangeCoder *rc)
 {
-	if (wpos < ranges[0].size) {
-		unsigned char *buf = (unsigned char*)(ranges[0].start);
+	if (wpos < INITRD_SIZE) {
+		//TODO get from parameter
+		unsigned char *buf = kern_v2p((unsigned char*)(INITRD_ADDR));
 		buf[wpos++] = ch;
 		return ch;
 	} else
 		return EOF;
 }
 
-int decode(const system_info_t *info)
+int decode(unsigned char *address, const size_t size)
 {
 	Frequency freq;
 	RangeCoder rc;
 
-	initrd = info->initrd.start;
-	size = info->initrd.size;
+	image_buf = address;
+	image_size = size;
 
 	rc_initialize(&rc, bgetc, bputc);
 	frequency_initialize(&freq);

@@ -95,8 +95,8 @@ static void set_initrd(ModuleHeader *h)
 {
 	sysinfo->root.device = get_device_id(DEVICE_MAJOR_RAMDISK, 0);
 	sysinfo->root.fstype = INITRD_FS;
-	sysinfo->initrd.start = &(h[1]);
-	sysinfo->initrd.size = h->bytes;
+	sysinfo->initrd.start = (void*)INITRD_ADDR;
+	sysinfo->initrd.size = INITRD_SIZE;
 }
 
 //TODO wait for init starting

@@ -26,7 +26,6 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <device.h>
 #include <major.h>
-#include <string.h>
 #include <boot/initrd.h>
 #include <nerve/global.h>
 #include "../../lib/libserv/libserv.h"
@@ -52,13 +51,8 @@ vdriver_t *attach(int exinf)
 		if (info->initrd.size <= driver_mine.size) {
 			log_info(MYNAME ": initrd start=%p size=%x\n",
 					info->initrd.start, info->initrd.size);
-			ranges[0].start = (void*)INITRD_ADDR;
-			ranges[0].size = (size_t)INITRD_SIZE;
-
-			if (decode(info))
-				log_err(MYNAME ": broken initrd\n");
-			else
-				return &driver_mine;
+			ranges[0] = info->initrd;
+			return &driver_mine;
 		} else
 			log_err(MYNAME ": too large initrd (%x)\n",
 				info->initrd.size);

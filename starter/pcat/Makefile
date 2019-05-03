@@ -41,7 +41,8 @@ MAX_KERN = `echo "(640 - 32 - 16 - 4) * 1024" | bc`
 OBJS = build/boot.img $(WD)/pad $(WD)/append \
 	$(WD)/boot.bin $(WD)/boot.o $(WD)/starter.inc \
 	$(WD)/kern.bin \
-	$(WD)/starter.bin $(WD)/starter $(WD)/starter.o $(WD)/main.o
+	$(WD)/starter.bin $(WD)/starter $(WD)/starter.o $(WD)/main.o \
+	$(WD)/decode.o
 
 $(TARGET): build/boot.img
 	mkisofs -R -b boot.img -o $(TARGET) build
@@ -62,7 +63,8 @@ $(WD)/starter.inc: $(WD)/kern.bin
 	echo -n ".set STARTER_SECTORS, " >> $@
 	echo "(`wc -c < $(WD)/kern.bin` + $(BLK_SIZE) - 1) / $(BLK_SIZE)" | bc >> $@
 
-$(WD)/starter: $(WD)/starter.o $(WD)/main.o kernel/arch/libarch.a \
+$(WD)/starter: $(WD)/starter.o $(WD)/main.o $(WD)/decode.o \
+		kernel/arch/libarch.a lib/librc.a \
 		kernel/mpu/libmpu.a lib/libnc.a
 	$(LD) $(LDFLAGS) -Ttext $(STARTER_ADDR) -L$(LIB) -o $@ $^
 
