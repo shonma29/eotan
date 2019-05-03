@@ -57,7 +57,7 @@ int pset(const unsigned int x, const unsigned int y, const int color)
 	buf.color = color;
 
 	msg.Twrite.operation = operation_write;
-	msg.Twrite.fid = 2;
+	msg.Twrite.fid = 5;
 	msg.Twrite.offset = 0;
 	msg.Twrite.count = sizeof(buf);
 	msg.Twrite.data = (unsigned char*)&buf;

@@ -57,7 +57,7 @@ int putline(UW start, UW size, UB *buf)
 	ER_UINT err;
 
 	msg.Twrite.operation = operation_write;
-	msg.Twrite.fid = 1;
+	msg.Twrite.fid = 4;
 	msg.Twrite.offset = start;
 	msg.Twrite.count = size;
 	swap(size);

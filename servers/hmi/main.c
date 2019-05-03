@@ -170,11 +170,11 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 
 	switch (dd) {
 #ifdef USE_VESA
-	case 1:
+	case 4:
 		put(&(window[0]), start, size, inbuf);
 		break;
 
-	case 2:
+	case 5:
 		if (size != sizeof(int) * 3)
 			return E_PAR;
 		else {
@@ -184,14 +184,21 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 			pset(&(window[0]), x, y, color);
 		}
 		break;
-#endif
+	default:
+		if (dd >= sizeof(window) / sizeof(window[0]))
+			return E_PAR;
+
+		{
+			for (int i = 0; i < size; i++)
+				cns->putc(&(window[dd]), inbuf[i]);
+		}
+#else
 	default:
 		{
-			size_t i;
-
-			for (i = 0; i < size; i++)
+			for (int i = 0; i < size; i++)
 				cns->putc(&(window[0]), inbuf[i]);
 		}
+#endif
 		break;
 	}
 
@@ -307,6 +314,50 @@ static ER initialize(void)
 	}
 #ifdef USE_VESA
 	cns = getVesaConsole(&(window[0]), &default_font);
+	Screen *s = &(window[0]);
+	s->width /= 2;
+	s->height /= 2;
+	s->chr_width = s->width / s->font.width;
+	s->chr_height = s->height / s->font.height;
+
+	window[1] = window[0];
+	s = &(window[1]);
+	s->base += s->width * 3;
+	s->p = (uint8_t*)(s->base);
+	s->fgcolor.rgb.b = 31;
+	s->fgcolor.rgb.g = 223;
+	s->fgcolor.rgb.r = 0;
+	s->bgcolor.rgb.b = 0;
+	s->bgcolor.rgb.g = 31;
+	s->bgcolor.rgb.r = 0;
+	cns->cls(s);
+	cns->locate(s, 0, 0);
+
+	window[2] = window[0];
+	s = &(window[2]);
+	s->base += s->height * s->bpl;
+	s->p = (uint8_t*)(s->base);
+	s->fgcolor.rgb.b = 0;
+	s->fgcolor.rgb.g = 127;
+	s->fgcolor.rgb.r = 255;
+	s->bgcolor.rgb.b = 0;
+	s->bgcolor.rgb.g = 0;
+	s->bgcolor.rgb.r = 31;
+	cns->cls(s);
+	cns->locate(s, 0, 0);
+
+	window[3] = window[0];
+	s = &(window[3]);
+	s->base += s->height * s->bpl + s->width * 3;
+	s->p = (uint8_t*)(s->base);
+	s->fgcolor.rgb.b = 0x30;
+	s->fgcolor.rgb.g = 0x30;
+	s->fgcolor.rgb.r = 0x30;
+	s->bgcolor.rgb.b = 0xfc;
+	s->bgcolor.rgb.g = 0xfc;
+	s->bgcolor.rgb.r = 0xfc;
+	cns->cls(s);
+	cns->locate(s, 0, 0);
 #else
 	cns = getCgaConsole(&(window[0]),
 			(const UH*)kern_p2v((void*)CGA_VRAM_ADDR));

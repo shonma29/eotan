@@ -34,18 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 #define INTERRUPT_QUEUE_SIZE (1024)
 #define REQUEST_QUEUE_SIZE (256)
 
-#define MAX_WINDOW (16)
-
-typedef struct {
-	UW left;
-	UW top;
-	UW width;
-	UW height;
-	UW cursor_x;
-	UW cursor_y;
-	UW color;
-	UW enabled;
-} window_t;
+#define MAX_WINDOW (4)
 
 typedef struct _interrupt_message_t {
 	int type;
