@@ -24,20 +24,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
 #include <elf.h>
-#include <major.h>
 #include <stddef.h>
-#include <boot/initrd.h>
 #include <boot/modules.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
-#include <nerve/global.h>
-#include "func.h"
-#include "ready.h"
+#include <nerve/kcall.h>
 
-static ER run(const UW type, const ID tid, const Elf32_Ehdr *eHdr);
-static void set_initrd(ModuleHeader *h);
+static ER run(const enum ModuleType type, const int tid,
+		const Elf32_Ehdr *eHdr);
 static void release_others(const void *head, const void *end);
 
 
@@ -50,27 +45,22 @@ void load_modules(void)
 		case mod_server:
 			run(h->type, h->arg, (Elf32_Ehdr*)&(h[1]));
 			break;
-
-		case mod_initrd:
-			set_initrd(h);
-			break;
-
 		default:
 			break;
 		}
 
-		h = (ModuleHeader*)((UW)h + sizeof(*h) + h->length);
+		h = (ModuleHeader*)((unsigned int)h + sizeof(*h) + h->length);
 	}
 
 	release_others((void*)(CORE_STACK_ADDR - CORE_STACK_SIZE),
 			(void*)CORE_STACK_ADDR);
 	release_others(kern_p2v((void*)MODULES_ADDR),
-			(void*)((UW)h + sizeof(*h)));
+			(void*)((unsigned int)h + sizeof(*h)));
 }
 
-static ER run(const UW type, const ID tid, const Elf32_Ehdr *eHdr)
+static ER run(const enum ModuleType type, const int tid,
+		const Elf32_Ehdr *eHdr)
 {
-	ER result;
 	T_CTSK pk_ctsk = {
 		TA_HLNG | TA_ACT,
 		(VP_INT)NULL,
@@ -81,22 +71,11 @@ static ER run(const UW type, const ID tid, const Elf32_Ehdr *eHdr)
 		NULL,
 		NULL
 	};
+	ER result = kcall->thread_create(tid, &pk_ctsk);
+	if (result)
+		kcall->printk("thread_create error(%d)\n", result);
 
-	result = thread_create(tid, &pk_ctsk);
-	if (result) {
-		printk("thread_create error(%d)\n", result);
-		return result;
-	}
-
-	return E_OK;
-}
-
-static void set_initrd(ModuleHeader *h)
-{
-	sysinfo->root.device = get_device_id(DEVICE_MAJOR_RAMDISK, 0);
-	sysinfo->root.fstype = INITRD_FS;
-	sysinfo->initrd.start = (void*)INITRD_ADDR;
-	sysinfo->initrd.size = INITRD_SIZE;
+	return result;
 }
 
 //TODO wait for init starting
@@ -105,10 +84,10 @@ static void release_others(const void *head, const void *end)
 	unsigned int addr = (unsigned int)head & ~((1 << BITS_OFFSET) - 1);
 	size_t max = pages((unsigned int)end - addr);
 
-	printk("release addr=%p pages=%d\n", addr, max);
+	kcall->printk("release addr=%p pages=%d\n", addr, max);
 
 	for (int i = 0; i < max; i++) {
-		pfree((void*)addr);
+		kcall->pfree((void*)addr);
 		addr += PAGE_SIZE;
 	}
 }

@@ -24,9 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <major.h>
 #include <services.h>
-#include <fs/fstype.h>
 #include <nerve/global.h>
 #include "func.h"
 #include "ready.h"
@@ -38,11 +36,6 @@ static void idle_start(VP_INT exinf);
 
 void kern_start(void (*callback)(void))
 {
-	//TODO move to starter
-	sysinfo->root.device = get_device_id(DEVICE_MAJOR_ATA, 0);
-	sysinfo->root.fstype = FS_SFS;
-	sysinfo->initrd.start = 0;
-	sysinfo->initrd.size = 0;
 	sysinfo->delay_thread_start = FALSE;
 
 	context_initialize();

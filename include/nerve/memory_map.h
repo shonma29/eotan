@@ -42,6 +42,4 @@ typedef struct {
 	unsigned int *map;
 } MemoryMap;
 
-extern void memory_initialize(void);
-
 #endif

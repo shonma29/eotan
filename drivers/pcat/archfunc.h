@@ -27,7 +27,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <stddef.h>
 #include <sys/types.h>
+
+/* memory_map.c */
+extern size_t get_max_address(void);
+extern void set_reserved_pages(void);
 
 /* 8259a.c */
 extern void pic_initialize(void);

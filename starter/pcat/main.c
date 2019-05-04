@@ -50,6 +50,8 @@ static Console *cns;
 static void console_initialize(void);
 #endif
 
+extern void memory_initialize(void);
+
 static void _putc(const char ch);
 void printk(const char *format, ...);
 static void kick(const ModuleHeader *h);

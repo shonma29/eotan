@@ -26,6 +26,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stddef.h>
+
 #define MODULES_ADDR 0x0000c000
 
 enum ModuleType
