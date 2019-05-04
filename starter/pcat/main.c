@@ -128,7 +128,7 @@ static void kick(const ModuleHeader *h)
 			Elf32_Ehdr *eHdr = (Elf32_Ehdr*)&(h[1]);
 			void (*entry)(void*) = (void*)(eHdr->e_entry);
 
-			entry(NULL);
+			entry((void*)RUNNER_ADDR);
 			break;
 		}
 

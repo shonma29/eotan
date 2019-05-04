@@ -76,9 +76,8 @@ static ER create_idle_thread(const VP_INT exinf)
 
 static void idle_start(VP_INT exinf)
 {
-//	void (*callback)(void) = (void (*)(void))exinf;
-//	callback();
-	load_modules();
+	void (*callback)(void) = (void (*)(void))exinf;
+	callback();
 	ei();
 
 	for (;;)

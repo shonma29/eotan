@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <elf.h>
 #include <stddef.h>
 #include <boot/modules.h>
+#include <mpu/io.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
@@ -52,9 +53,10 @@ void load_modules(void)
 		h = (ModuleHeader*)((unsigned int)h + sizeof(*h) + h->length);
 	}
 
+	di();
 	release_others((void*)(CORE_STACK_ADDR - CORE_STACK_SIZE),
 			(void*)CORE_STACK_ADDR);
-	release_others(kern_p2v((void*)MODULES_ADDR),
+	release_others((void*)RUNNER_ADDR,
 			(void*)((unsigned int)h + sizeof(*h)));
 }
 
@@ -78,7 +80,6 @@ static ER run(const enum ModuleType type, const int tid,
 	return result;
 }
 
-//TODO wait for init starting
 static void release_others(const void *head, const void *end)
 {
 	unsigned int addr = (unsigned int)head & ~((1 << BITS_OFFSET) - 1);

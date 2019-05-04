@@ -36,19 +36,23 @@ BLK_SIZE = 512
 BOOT_ADDR = 0x7c00
 STARTER_SEG = 0x0800
 STARTER_ADDR = 0x8000
+LOADER_SIZE = 12288
+RUNNER_ADDR = 0x8000b000
+RUNNER_SIZE = 4096
 MAX_KERN = `echo "(640 - 32 - 16 - 4) * 1024" | bc`
 
 OBJS = build/boot.img $(WD)/pad $(WD)/append \
 	$(WD)/boot.bin $(WD)/boot.o $(WD)/starter.inc \
 	$(WD)/kern.bin \
 	$(WD)/starter.bin $(WD)/starter $(WD)/starter.o $(WD)/main.o \
-	$(WD)/deploy.o $(WD)/decode.o
+	$(WD)/deploy.o $(WD)/decode.o \
+	$(WD)/runner $(WD)/runner.o
 
 $(TARGET): build/boot.img
 	mkisofs -R -b boot.img -o $(TARGET) build
 
 build/boot.img: $(WD)/pad $(WD)/boot.bin $(WD)/kern.bin
-	test `wc -c < $(WD)/kern.bin | xargs` -le $(MAX_KERN)
+	[ `wc -c < $(WD)/kern.bin` -le $(MAX_KERN) ]
 	cat $(WD)/boot.bin $(WD)/kern.bin > $@
 	$(WD)/pad $@ 1474560
 
@@ -68,10 +72,16 @@ $(WD)/starter: $(WD)/starter.o $(WD)/main.o $(WD)/deploy.o $(WD)/decode.o \
 		kernel/mpu/libmpu.a lib/libnc.a
 	$(LD) $(LDFLAGS) -Ttext $(STARTER_ADDR) -L$(LIB) -o $@ $^
 
-$(WD)/starter.bin: $(WD)/starter
-	test `wc -c < $< | xargs` -le $(STARTER_SIZE)
-	cp -a $< $@
-	$(WD)/pad $@ $(STARTER_SIZE) 
+$(WD)/runner: $(WD)/runner.o
+	$(LD) $(LDFLAGS) -Ttext $(RUNNER_ADDR) -o $@ $^
+
+$(WD)/starter.bin: $(WD)/starter $(WD)/runner
+	[ `wc -c < $(WD)/starter` -le $(LOADER_SIZE) ]
+	cp $(WD)/starter $@
+	$(WD)/pad $@ $(LOADER_SIZE)
+	[ `wc -c < $(WD)/runner` -le $(RUNNER_SIZE) ]
+	cat $(WD)/runner >> $@
+	$(WD)/pad $@ $(STARTER_SIZE)
 
 $(WD)/main.o: $(WD)/main.c
 

@@ -42,9 +42,6 @@ For more information, please refer to <http://unlicense.org/>
 #define warn(...)
 #endif
 
-/* modules.c */
-extern void load_modules(void);
-
 /* global.c */
 extern void kcall_initialize(void);
 
