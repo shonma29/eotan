@@ -43,8 +43,8 @@ For more information, please refer to <http://unlicense.org/>
 #define KERNLOG_UNITS ((KERNEL_LOG_SIZE - sizeof(lfq_t)) \
 		/ lfq_node_size(sizeof(int)))
 
-static Screen window;
 #ifndef USE_VESA
+static Screen window;
 static Console *cns;
 
 static void console_initialize(void);

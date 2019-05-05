@@ -37,7 +37,7 @@ static ER run(const enum ModuleType type, const int tid,
 static void release_others(const void *head, const void *end);
 
 
-void load_modules(void)
+void _start(void)
 {
 	ModuleHeader *h = (ModuleHeader*)(kern_p2v((void*)MODULES_ADDR));
 

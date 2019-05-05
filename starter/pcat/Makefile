@@ -27,7 +27,7 @@ TARGET = boot.iso
 
 include Makefile.in
 
-CFLAGS = -Wall -Werror -O2 -std=c11 -I include -I kernel
+CFLAGS += -I kernel
 LDFLAGS = --oformat binary
 LIB = libc
 
