@@ -45,6 +45,7 @@ static VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
 
 void context_initialize(void)
 {
+	//TODO move to starter
 	paging_reset();
 }
 
@@ -155,7 +156,7 @@ void context_switch(thread_t *prev, thread_t *next)
 	fpu_restore(&next);
 }
 
-void context_reset_page_table()
+void context_reset_page_table(void)
 {
 	paging_set_directory((VP)KTHREAD_DIR_ADDR);
 	current_page_table = NULL;

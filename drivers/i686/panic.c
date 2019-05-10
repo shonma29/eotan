@@ -29,7 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "func.h"
 #include "sync.h"
 
-void panic(char *msg)
+_Noreturn void panic(char *msg)
 {
 	kcall->printk("shutdown by %s\n", msg);
 

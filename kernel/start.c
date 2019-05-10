@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "mpu/mpufunc.h"
 
 static ER create_idle_thread(const VP_INT exinf);
-static void idle_start(VP_INT exinf);
+static _Noreturn void idle_start(VP_INT exinf);
 
 
 void kern_start(void (*callback)(void))
@@ -74,7 +74,7 @@ static ER create_idle_thread(const VP_INT exinf)
 	return thread_create(PORT_IDLE, &pk_ctsk);
 }
 
-static void idle_start(VP_INT exinf)
+static _Noreturn void idle_start(VP_INT exinf)
 {
 	void (*callback)(void) = (void (*)(void))exinf;
 	callback();

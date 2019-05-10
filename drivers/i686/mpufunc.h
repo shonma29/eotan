@@ -33,27 +33,27 @@ For more information, please refer to <http://unlicense.org/>
 #include "paging.h"
 
 /* context.c */
-extern void create_context(thread_t *th);
+extern void create_context(thread_t *);
 extern void context_initialize(void);
-extern void context_reset_page_cache(const VP page_table, const VP addr);
-extern void context_reset_page_table();
-extern void context_switch(thread_t *prev, thread_t *next);
+extern void context_reset_page_cache(const VP, const VP);
+extern void context_reset_page_table(void);
+extern void context_switch(thread_t *, thread_t *);
 
 /* gate.c */
 extern void mpu_initialize(void);
-extern void idt_set(UB no, void (*handler)(void));
+extern void idt_set(UB no, void (*)(void));
 
 /* interrupt.c */
 extern ER interrupt_initialize(void);
-extern FP interrupt(const UW edi, const UW esi, const UW ebp, const UW esp,
-		const UW ebx, const UW edx, const UW ecx, const UW eax,
-		const UW ds, const UW no, const UW eip,
-		const UW cs, const W eflags);
-extern FP interrupt_with_error(const UW edi, const UW esi, const UW ebp, const UW esp,
-		const UW ebx, const UW edx, const UW ecx, const UW eax,
-		const UW ds, const UW no, const UW err, const UW eip,
-		const UW cs, const W eflags);
-ER interrupt_bind(const INHNO inhno, const T_DINH *pk_dinh);
+extern FP interrupt(const UW, const UW, const UW, const UW,
+		const UW, const UW, const UW, const UW,
+		const UW, const UW, const UW,
+		const UW, const W);
+extern FP interrupt_with_error(const UW, const UW, const UW, const UW,
+		const UW, const UW, const UW, const UW,
+		const UW, const UW, const UW, const UW,
+		const UW, const W);
+ER interrupt_bind(const INHNO, const T_DINH *);
 
 /* define_mpu_handlers */
 void define_mpu_handlers(const FP, const FP);
@@ -65,25 +65,25 @@ extern void paging_initialize(void);
 extern void paging_reset(void);
 
 /* panic.c */
-extern void panic(char *msg);
+extern _Noreturn void panic(char *);
 
 /* address.c */
-extern void *getPageAddress(const PTE *dir, const void *addr);
+extern void *getPageAddress(const PTE *, const void *);
 
 /* util.c */
-extern ER memcpy_k2u(thread_t *th, void *to, const void *from, const size_t bytes);
-extern ER memcpy_u2k(thread_t *th, void *to, const void *from,
-		const size_t bytes);
-extern ER_UINT strncpy_u2k(thread_t *th, void *to, const void *from,
-		const size_t bytes);
+extern ER memcpy_k2u(thread_t *, void *, const void *, const size_t);
+extern ER memcpy_u2k(thread_t *, void *, const void *,
+		const size_t);
+extern ER_UINT strncpy_u2k(thread_t *, void *, const void *,
+		const size_t);
 
 /* memory.c */
 extern PTE *copy_kernel_page_table(void);
-extern ER copy_user_pages(PTE *dest, const PTE *src, size_t cnt);
-extern ER map_user_pages(PTE *dir, VP addr, size_t cnt);
-extern ER unmap_user_pages(PTE *dir, VP addr, size_t cnt);
-extern ER move_stack(const PTE *page_table, void *to, const void *from,
-		const size_t bytes);
+extern ER copy_user_pages(PTE *, const PTE *, size_t);
+extern ER map_user_pages(PTE *, VP, size_t);
+extern ER unmap_user_pages(PTE *, VP, size_t);
+extern ER move_stack(const PTE *, void *, const void *,
+		const size_t);
 
 /* gate_loader.s */
 extern void gdt_load(void);
@@ -91,10 +91,10 @@ extern void idt_load(void);
 
 /* paging.s */
 extern void *fault_get_addr(void);
-extern void paging_set_directory(void *dir);
+extern void paging_set_directory(void *);
 extern void paging_start(void);
 extern void tlb_flush_all(void);
-extern void tlb_flush(VP addr);
+extern void tlb_flush(VP);
 
 /* service_handler.s */
 extern void service_handler(void);

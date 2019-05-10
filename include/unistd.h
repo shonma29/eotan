@@ -43,7 +43,7 @@ extern void *sbrk(intptr_t);
 extern int close(int);
 extern int dup2(int, int);
 extern int execve(char *name, char *argv[], char *envp[]);
-extern void _exit(int status) __attribute__ ((noreturn));
+extern _Noreturn void _exit(int);
 extern int fork(void);
 extern char *getcwd(char *buf, int size);
 extern gid_t getgid(void);

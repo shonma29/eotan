@@ -57,7 +57,7 @@ void printk(const char *format, ...);
 static void kick(const ModuleHeader *h);
 
 
-void _main(void)
+_Noreturn void _main(void)
 {
 	VesaInfo *v = (VesaInfo*)VESA_INFO_ADDR;
 

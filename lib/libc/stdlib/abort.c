@@ -29,7 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <unistd.h>
 
 
-void abort(void)
+_Noreturn void abort(void)
 {
 	int i;
 

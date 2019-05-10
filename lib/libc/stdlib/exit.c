@@ -29,7 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <unistd.h>
 
 
-void exit(int status)
+_Noreturn void exit(int status)
 {
 	int i;
 
