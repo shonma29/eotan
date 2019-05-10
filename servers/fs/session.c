@@ -198,8 +198,7 @@ int session_destroy_desc(session_t *session, const int fd)
 	return error_no;
 }
 
-//TODO session should to be const
-struct file *session_find_desc(session_t *session, const int fd)
+struct file *session_find_desc(const session_t *session, const int fd)
 {
 	return (struct file*)tree_get(&(session->files), fd);
 }

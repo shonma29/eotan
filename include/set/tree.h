@@ -37,7 +37,7 @@ typedef struct _node_t {
 } node_t;
 
 typedef struct _tree_t {
-	int (*compare)(const int a, const int b);
+	int (*compare)(const int, const int);
 	size_t node_num;
 	node_t *root;
 	slab_t *slab;
@@ -54,7 +54,7 @@ static inline size_t tree_size(tree_t *tree)
 }
 
 extern void tree_create(tree_t *, int (*compare)(const int, const int));
-extern node_t *tree_get(tree_t *, const int);
+extern node_t *tree_get(const tree_t *, const int);
 extern node_t *tree_put(tree_t *, const int, node_t *);
 extern node_t *tree_remove(tree_t *, const int);
 extern node_t *tree_first(const tree_t *);

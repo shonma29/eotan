@@ -44,7 +44,7 @@ extern session_t *session_find(const pid_t);
 
 extern int session_create_desc(struct file **, session_t *, const int);
 extern int session_destroy_desc(session_t *, const int);
-extern struct file *session_find_desc(session_t *, const int);
+extern struct file *session_find_desc(const session_t *, const int);
 
 extern int session_get_path(char *, vnode_t **,
 	const session_t *, const int, const char *);

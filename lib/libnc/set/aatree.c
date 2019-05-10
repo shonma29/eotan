@@ -178,7 +178,7 @@ void tree_create(tree_t *tree, int (*compare)(const int a, const int b))
 	tree->root = NIL;
 }
 
-node_t *tree_get(tree_t *tree, const int key)
+node_t *tree_get(const tree_t *tree, const int key)
 {
 	node_t *p = tree->root;
 
