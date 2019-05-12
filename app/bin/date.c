@@ -1,5 +1,3 @@
-#ifndef _TIME_H_
-#define _TIME_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,32 +24,29 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stddef.h>
-#include <sys/time.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
-#define CLOCK_REALTIME (0)
-#define CLOCK_MONOTONIC (1)
 
-struct tm {
-	int tm_sec;
-	int tm_min;
-	int tm_hour;
-	int tm_mday;
-	int tm_mon;
-	int tm_year;
-	int tm_wday;
-	int tm_yday;
-	int tm_isdst;
-};
-
-static inline double difftime(time_t time1, time_t time0)
+int main(int argc, char **argv)
 {
-	return (double)(time1 - time0);
+	//TODO support options
+	//TODO support parameter
+
+	do {
+		time_t t = time(NULL);
+		struct tm tm;
+		gmtime_r(&t, &tm);
+
+		char buf[256];
+		if (!strftime(buf, sizeof(buf), "%a %b %d %H:%M:%S %Z %Y\n",
+				&tm))
+			return EXIT_FAILURE;
+
+		fputs(buf, stdout);
+	} while (false);
+
+	return EXIT_SUCCESS;
 }
-
-extern time_t time(time_t *);
-extern int clock_gettime(clockid_t, struct timespec *);
-extern struct tm *gmtime_r(const time_t *, struct tm *);
-extern size_t strftime(char *, size_t, const char *, const struct tm *);
-
-#endif
