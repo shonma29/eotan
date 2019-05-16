@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <elf.h>
 #include <stdarg.h>
+#include <stdnoreturn.h>
 #include <string.h>
 #include <vesa.h>
 #include <boot/modules.h>
@@ -57,7 +58,7 @@ void printk(const char *format, ...);
 static void kick(const ModuleHeader *h);
 
 
-_Noreturn void _main(void)
+noreturn void _main(void)
 {
 	VesaInfo *v = (VesaInfo*)VESA_INFO_ADDR;
 

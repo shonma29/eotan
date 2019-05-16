@@ -1,3 +1,5 @@
+#ifndef _STDNORETURN_H_
+#define _STDNORETURN_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,20 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdnoreturn.h>
-#include <unistd.h>
 
+#define noreturn _Noreturn
 
-noreturn void abort(void)
-{
-	int i;
-
-	fprintf(stderr, "aborted by %d.\n", 6);
-
-	for (i = 0; i < FOPEN_MAX; i++)
-		fclose(&(__libc_files[i]));
-
-	_exit(1);
-}
+#endif

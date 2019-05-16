@@ -24,12 +24,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdnoreturn.h>
 #include <mpu/io.h>
 #include <nerve/kcall.h>
 #include "func.h"
 #include "sync.h"
 
-_Noreturn void panic(char *msg)
+noreturn void panic(char *msg)
 {
 	kcall->printk("shutdown by %s\n", msg);
 

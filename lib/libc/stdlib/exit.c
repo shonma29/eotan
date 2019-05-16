@@ -26,10 +26,11 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdnoreturn.h>
 #include <unistd.h>
 
 
-_Noreturn void exit(int status)
+noreturn void exit(int status)
 {
 	int i;
 

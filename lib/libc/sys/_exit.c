@@ -24,10 +24,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdnoreturn.h>
 #include "sys.h"
 
 
-_Noreturn void _exit(int status)
+noreturn void _exit(int status)
 {
 	pm_args_t request;
 

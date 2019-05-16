@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <stddef.h>
 #include <stdint.h>
+#include <stdnoreturn.h>
 #include <sys/types.h>
 #include <sys/unistd.h>
 
@@ -43,7 +44,7 @@ extern void *sbrk(intptr_t);
 extern int close(int);
 extern int dup2(int, int);
 extern int execve(char *name, char *argv[], char *envp[]);
-extern _Noreturn void _exit(int);
+extern noreturn void _exit(int);
 extern int fork(void);
 extern char *getcwd(char *buf, int size);
 extern gid_t getgid(void);

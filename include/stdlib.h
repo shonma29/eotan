@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stddef.h>
+#include <stdnoreturn.h>
 
 #define RAND_MAX 0x7fffffff
 
@@ -96,8 +97,8 @@ extern void qsort(void *, size_t, size_t, int (*)(const void *, const void *));
 extern char *getenv(const char *);
 extern int rand(void);
 extern void srand(unsigned int);
-extern void _Noreturn abort(void);
-extern void _Noreturn exit(int);
+extern void noreturn abort(void);
+extern void noreturn exit(int);
 extern void *malloc(size_t);
 extern void free(void *);
 extern void *calloc(size_t, size_t);

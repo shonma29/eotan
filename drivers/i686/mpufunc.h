@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <stdnoreturn.h>
 #include <thread.h>
 #include <mm/segment.h>
 #include "gate.h"
@@ -65,7 +66,7 @@ extern void paging_initialize(void);
 extern void paging_reset(void);
 
 /* panic.c */
-extern _Noreturn void panic(char *);
+extern noreturn void panic(char *);
 
 /* address.c */
 extern void *getPageAddress(const PTE *, const void *);
