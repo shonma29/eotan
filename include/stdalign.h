@@ -1,3 +1,5 @@
+#ifndef _STDALIGN_H_
+#define _STDALIGN_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,64 +26,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <services.h>
-#include <stdalign.h>
-#include <stdnoreturn.h>
-#include <nerve/global.h>
-#include "func.h"
-#include "ready.h"
-#include "mpu/mpufunc.h"
 
-static ER create_idle_thread(const VP_INT exinf);
-static noreturn void idle_start(VP_INT exinf);
+#define alignas _Alignas
+#define __alignas_is_defined 1
 
+#define alignof _Alignof
+#define __alignof_is_defined 1
 
-void kern_start(void (*callback)(void))
-{
-	sysinfo->delay_thread_start = FALSE;
-
-	context_initialize();
-	kcall_initialize();
-	service_initialize();
-	port_initialize();
-	mutex_initialize();
-	thread_initialize();
-	create_idle_thread((VP_INT)callback);
-}
-
-//TODO move to starter
-static ER create_idle_thread(const VP_INT exinf)
-{
-	static T_CTSK pk_ctsk = {
-		TA_HLNG | TA_ACT,
-		(VP_INT)NULL,
-		(FP)idle_start,
-		MAX_PRIORITY,
-		KTHREAD_STACK_SIZE,
-		NULL,
-		NULL,
-		NULL
-	};
-	pk_ctsk.exinf = exinf;
-
-	//TODO ugly
-#if __i386__
-	alignas(16) thread_t dummy;
-#else
-	thread_t dummy;
 #endif
-	dummy.status = TTS_DMT;
-	running = &dummy;
-
-	return thread_create(PORT_IDLE, &pk_ctsk);
-}
-
-static noreturn void idle_start(VP_INT exinf)
-{
-	void (*callback)(void) = (void (*)(void))exinf;
-	callback();
-	ei();
-
-	for (;;)
-		halt();
-}
