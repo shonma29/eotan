@@ -49,6 +49,12 @@ static size_t execute(syslog_t *);
 static ER accept(const ID);
 static ER_ID initialize(void);
 
+#if USE_MONITOR
+static ER monitor_initialize(void);
+static void monitor(void);
+static int write_cons(unsigned char *, const int, const off_t, const size_t);
+static unsigned int sleep(unsigned int);
+#endif
 
 static ER check_param(const size_t size)
 {
@@ -215,7 +221,9 @@ void start(VP_INT exinf)
 
 	if (port >= 0) {
 		kcall->printk(MYNAME ": start port=%d\n", port);
-
+#if USE_MONITOR
+		monitor_initialize();
+#endif
 		while (accept(port) == E_OK);
 
 		kcall->port_close();
@@ -224,3 +232,102 @@ void start(VP_INT exinf)
 
 	kcall->thread_end_and_destroy();
 }
+
+#if USE_MONITOR
+static ER monitor_initialize(void)
+{
+	T_CTSK pk_ctsk = {
+		TA_HLNG | TA_ACT, 0, monitor, pri_server_middle,
+		KTHREAD_STACK_SIZE, NULL, NULL, NULL
+	};
+
+	return kcall->thread_create_auto(&pk_ctsk);
+}
+
+static void monitor(void)
+{
+	kcall->printk("monitor: start\n");
+
+	for (;;) {
+		sleep(1);
+
+		unsigned char outbuf[1024];
+		
+		for (size_t len;
+				(len  = lfcopy(outbuf,
+						(volatile lfq_t*)KERNEL_LOG_ADDR,
+						sizeof(outbuf)));)
+			write_cons(outbuf, 1, 0, len);
+
+		for (size_t len;
+				(len = rcopy(outbuf, (ring_t*)buf,
+						sizeof(outbuf)));)
+			write_cons(outbuf, 3, 0, len);
+	}
+}
+
+//TODO use cons driver
+static int write_cons(unsigned char *inbuf, const int channel,
+		const off_t start, const size_t size) {
+	off_t rpos = 0;
+	off_t wpos = start;
+	size_t rest = size;
+
+	while (rest > 0) {
+		ER_UINT result;
+		size_t len = (rest < DEV_BUF_SIZE)? rest:DEV_BUF_SIZE;
+		devmsg_t packet;
+
+		packet.Twrite.operation = operation_write;
+		packet.Twrite.fid = channel;
+		packet.Twrite.offset = wpos;
+		packet.Twrite.count = len;
+		packet.Twrite.data = &(inbuf[rpos]);
+
+		result = kcall->port_call(PORT_CONSOLE, &packet,
+				sizeof(packet.Twrite));
+		if (result != sizeof(packet.Rwrite)) {
+			kcall->printk("cons: call failed(%d)\n", result);
+			return -1;
+		}
+
+		else if (packet.Rwrite.count != len) {
+			kcall->printk("cons: wrote icompletely\n");
+			return -1;
+		}
+
+		rpos += len;
+		wpos += len;
+		rest -= len;
+	}
+
+	return size;
+}
+
+//TODO extract to libserv
+static unsigned int sleep(unsigned int second)
+{
+	struct timespec t = { second, 0 };
+	ER_UINT reply_size = kcall->port_call(PORT_TIMER, &t, sizeof(t));
+
+	if (reply_size == sizeof(ER)) {
+		ER *result = (ER*)&t;
+
+		switch (*result) {
+		case E_TMOUT:
+			return 0;
+
+		case E_PAR:
+			return second;
+
+		case E_NOMEM:
+			return second;
+
+		default:
+			break;
+		}
+	}
+
+	return second;
+}
+#endif
