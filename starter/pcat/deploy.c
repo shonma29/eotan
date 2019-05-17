@@ -68,12 +68,10 @@ void memory_initialize(void)
 	/* keep boot infomation */
 	map_set_using(kern_v2p((void*)BOOT_INFO_ADDR), 1);
 	/* keep memory map */
-	map_set_using(kern_v2p((void*)mm),
+	map_set_using(kern_v2p(mm->map),
 			pages(mm->num_blocks * sizeof(mm->map[0])));
 	/* keep kernel log */
 	map_set_using(kern_v2p((void*)KERNEL_LOG_ADDR), pages(KERNEL_LOG_SIZE));
-	/* keep initrd */
-	map_set_using(kern_v2p((void*)INITRD_ADDR), pages(INITRD_SIZE));
 
 	/* keep kernel stack */
 	map_set_using(kern_v2p((void*)(CORE_STACK_ADDR - CORE_STACK_SIZE)),
@@ -189,8 +187,11 @@ static void *set_modules(void)
 			int result = decode((unsigned char*)&(h[1]), h->bytes);
 			if (result)
 				printk("failed to decode initrd %d\n", result);
-			else
+			else {
 				set_initrd_info();
+				map_set_using(kern_v2p((void*)INITRD_ADDR),
+						pages(INITRD_SIZE));
+			}
 		}
 			break;
 		case mod_user:
@@ -202,6 +203,7 @@ static void *set_modules(void)
 		h = (ModuleHeader*)addr;
 	}
 
+	//TODO driver and initrd headers are not needed
 	return (void*)((unsigned int)h + sizeof(*h));
 }
 
