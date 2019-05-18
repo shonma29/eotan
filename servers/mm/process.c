@@ -31,6 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdint.h>
 #include <boot/init.h>
 #include <core/options.h>
+#include <mm/config.h>
 #include <mm/segment.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
@@ -40,17 +41,21 @@ For more information, please refer to <http://unlicense.org/>
 #include "process.h"
 #include "../../kernel/mpu/mpufunc.h"
 
+#define MIN_AUTO_FD (3)
+
 #define getParent(type, p) ((intptr_t)p - offsetof(type, node))
 
 static slab_t process_slab;
 static tree_t process_tree;
 static slab_t thread_slab;
 static tree_t thread_tree;
+static slab_t file_slab;
 
 static mm_thread_t *getMyThread(list_t *brothers);
 static void process_clear(mm_process_t *p);
 static void thread_clear(mm_thread_t *th, mm_process_t *p);
 static ER_ID create_thread(mm_process_t *p, FP entry, VP ustack_top);
+
 
 mm_process_t *get_process(const ID pid)
 {
@@ -81,6 +86,7 @@ static void process_clear(mm_process_t *p)
 	}
 
 	list_initialize(&(p->threads));
+	tree_create(&(p->files), NULL);
 }
 
 static void thread_clear(mm_thread_t *th, mm_process_t *p)
@@ -96,7 +102,7 @@ void process_initialize(void)
 	process_slab.unit_size = sizeof(mm_process_t);
 	process_slab.block_size = PAGE_SIZE;
 	process_slab.min_block = 1;
-	process_slab.max_block = tree_max_block(65536, PAGE_SIZE,
+	process_slab.max_block = tree_max_block(PROCESS_MAX, PAGE_SIZE,
 			sizeof(mm_process_t));
 	process_slab.palloc = kcall->palloc;
 	process_slab.pfree = kcall->pfree;
@@ -108,13 +114,23 @@ void process_initialize(void)
 	thread_slab.unit_size = sizeof(mm_thread_t);
 	thread_slab.block_size = PAGE_SIZE;
 	thread_slab.min_block = 1;
-	thread_slab.max_block = tree_max_block(65536, PAGE_SIZE,
+	thread_slab.max_block = tree_max_block(THREAD_MAX, PAGE_SIZE,
 			sizeof(mm_thread_t));
 	thread_slab.palloc = kcall->palloc;
 	thread_slab.pfree = kcall->pfree;
 	slab_create(&thread_slab);
 
 	tree_create(&thread_tree, NULL);
+
+	/* initialize file table */
+	file_slab.unit_size = sizeof(mm_file_t);
+	file_slab.block_size = PAGE_SIZE;
+	file_slab.min_block = 1;
+	file_slab.max_block = tree_max_block(FILE_MAX, PAGE_SIZE,
+			sizeof(mm_file_t));
+	file_slab.palloc = kcall->palloc;
+	file_slab.pfree = kcall->pfree;
+	slab_create(&file_slab);
 }
 
 int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
@@ -177,6 +193,12 @@ int mm_process_destroy(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			reply->error_no = ESRCH;
 			break;
 		}
+
+		//TODO optimize
+		for (int fd = 0; fd < FILES_PER_PROCESS; fd++)
+			if (process_destroy_desc(p, fd)) {
+				//TODO what to do?
+			}
 
 		if (unmap_user_pages(p->directory,
 				//TODO this address is adhoc. fix region_unmap
@@ -538,3 +560,33 @@ int mm_thread_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 }
 //TODO delete thread
 //TODO delete process
+
+mm_file_t *process_allocate_desc(void)
+{
+	return (mm_file_t*)slab_alloc(&file_slab);
+}
+
+void process_deallocate_desc(mm_file_t *desc)
+{
+	slab_free(&file_slab, desc);
+}
+
+int process_set_desc(mm_process_t *process, const int fd, mm_file_t *desc)
+{
+	return tree_put(&(process->files), fd, &(desc->node))? 0:1;
+}
+
+int process_destroy_desc(mm_process_t *process, const int fd)
+{
+	mm_file_t *file = (mm_file_t*)tree_remove(&(process->files), fd);
+	if (!file)
+		return EBADF;
+
+	slab_free(&file_slab, file);
+	return 0;
+}
+
+mm_file_t *process_find_desc(const mm_process_t *process, const int fd)
+{
+	return (mm_file_t*)tree_get(&(process->files), fd);
+}

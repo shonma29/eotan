@@ -1,5 +1,5 @@
-#ifndef _PROCESS_H_
-#define _PROCESS_H_
+#ifndef _MM_CONFIG_H_
+#define _MM_CONFIG_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,51 +26,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <mm/segment.h>
-#include <mpu/memory.h>
-#include <set/list.h>
-#include <set/tree.h>
 
-typedef struct {
-	node_t node;
-	int server_id;
-	int fid;
-	int f_flag;
-	int f_count;
-	off_t f_offset;
-} mm_file_t;
-
-typedef struct {
-	node_t node;
-//TODO pointer to process
-	int process_id;
-	mm_segment_t stack;
-	list_t brothers;
-} mm_thread_t;
-
-typedef struct {
-	node_t node;
-	struct {
-		mm_segment_t heap;
-		mm_segment_t stack;
-	} segments;
-	void *directory;
-	list_t threads;
-	tree_t files;
-} mm_process_t;
-
-extern void process_initialize(void);
-extern mm_process_t *get_process(const ID);
-extern mm_thread_t *get_thread(const ID);
-
-extern mm_file_t *process_allocate_desc(void);
-extern void process_deallocate_desc(mm_file_t *);
-extern int process_set_desc(mm_process_t *, const int, mm_file_t *);
-
-extern int process_destroy_desc(mm_process_t *process, const int fd);
-extern mm_file_t *process_find_desc(const mm_process_t *process, const int fd);
-
-extern ER default_handler(void);
-extern ER stack_fault_handler(void);
+#define PROCESS_MAX (65535)
+#define THREAD_MAX (65535)
+#define FILE_MAX (65535)
+#define FILES_PER_PROCESS (32)
 
 #endif

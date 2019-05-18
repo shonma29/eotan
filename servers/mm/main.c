@@ -59,6 +59,10 @@ static int (*funcs[])(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args) = {
 static ER init(void);
 static ER proxy_initialize(void);
 static void proxy(void);
+static int if_dup(mm_process_t *, pm_args_t *);
+static int if_open(mm_process_t *, pm_args_t *);
+static int if_close(mm_process_t *, pm_args_t *);
+static int if_ref_fid(mm_process_t *, pm_args_t *);
 static void doit(void);
 
 static ER init(void)
@@ -105,24 +109,177 @@ static void proxy(void)
 			break;
 		}
 
-		args.process_id |= get_rdv_tid(rdvno) << 16;
-
-		pm_reply_t reply;
-		size = kcall->port_call(PORT_FS, &args, sizeof(args));
-		if (size == sizeof(reply)) {
-			pm_reply_t *p = (pm_reply_t*)(&args);
-			reply = *p;
-		} else {
-			log_err("proxy: call failed %d\n", size);
-			reply.result1 = -1;
-			reply.result2 = 0;
-			reply.error_no = ECONNREFUSED;
+		pm_reply_t *reply = (pm_reply_t*)(&args);
+		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
+		if (!th) {
+			//TODO return error
 		}
 
-		int result = kcall->port_reply(rdvno, &reply, sizeof(reply));
+		mm_process_t *process = get_process(th->process_id);
+		if (!process) {
+			//TODO thread has pointer to process
+		}
+
+		args.process_id |= get_rdv_tid(rdvno) << 16;
+
+		int result;
+		switch (args.operation) {
+		case pm_syscall_dup2:
+			result = if_dup(process, &args);
+			break;
+		case pm_syscall_open:
+			result = if_open(process, &args);
+			break;
+		case pm_syscall_close:
+			result = if_close(process, &args);
+			break;
+		case pm_syscall_fstat:
+		case pm_syscall_read:
+		case pm_syscall_write:
+		case pm_syscall_lseek:
+			result = if_ref_fid(process, &args);
+			break;
+		default:
+			result = (kcall->port_call(PORT_FS, &args, sizeof(args))
+					== sizeof(pm_reply_t))? 0:ECONNREFUSED;
+			break;
+		}
+
+		if (result) {
+			log_err("proxy: call failed %d\n", result);
+			reply->result1 = -1;
+			reply->result2 = 0;
+			reply->error_no = result;
+		}
+
+		result = kcall->port_reply(rdvno, reply, sizeof(*reply));
 		if (result)
 			log_err("proxy: reply failed %d\n", result);
 	}
+}
+
+static int if_dup(mm_process_t *process, pm_args_t *args)
+{
+	int fid = args->arg1;
+	mm_file_t *f1 = process_find_desc(process, fid);
+//	if (!f1)
+//		return ENOMEM;
+
+	int fid2 = 0;
+	mm_file_t *f2 = process_find_desc(process, args->arg2);
+	if (!f2) {
+		fid2 = args->arg2;
+		f2 = process_allocate_desc();
+		if (!f2)
+			return ENOMEM;
+
+		f2->fid = fid2;
+	}
+
+	if (kcall->port_call(PORT_FS, args, sizeof(*args))
+			!= sizeof(pm_reply_t))
+		return ECONNREFUSED;
+
+	pm_reply_t *reply = (pm_reply_t*)args;
+	log_notice("proxy: %d dup(%d, %d) %d %d\n",
+			process->node.key, fid, fid2, reply->result1,
+			reply->error_no);
+
+	if (reply->result1 >= 0) {
+		if (f1) {
+			f2->server_id = f1->server_id;
+			f2->f_flag = f1->f_flag;
+			f2->f_count = f1->f_count;
+			f2->f_offset = f1->f_offset;
+		} else {
+			f2->server_id = PORT_FS;
+			f2->f_flag = 0;
+			f2->f_count = 1;
+			f2->f_offset = 0;
+		}
+		if (fid2) {
+			if (process_set_desc(process, fid2, f2)) {
+				process_deallocate_desc(f2);
+				//TODO what to do?
+			}
+		}
+	} else if (fid2)
+		process_deallocate_desc(f2);
+
+	return 0;
+}
+
+static int if_open(mm_process_t *process, pm_args_t *args)
+{
+	mm_file_t *f = process_allocate_desc();
+	if (!f)
+		return ENOMEM;
+
+	int oflag = args->arg2;
+
+	if (kcall->port_call(PORT_FS, args, sizeof(*args))
+			!= sizeof(pm_reply_t)) {
+		process_deallocate_desc(f);
+		return ECONNREFUSED;
+	}
+
+	pm_reply_t *reply = (pm_reply_t*)args;
+	log_notice("proxy: %d open %d %d\n",
+			process->node.key, reply->result1, reply->error_no);
+
+	if (reply->result1 >= 0) {
+		f->server_id = PORT_FS;
+		f->fid = reply->result1;
+		f->f_flag = oflag;
+		f->f_count = 1;
+		//TODO set at last if append mode
+		f->f_offset = 0;
+
+		if (process_set_desc(process, reply->result1, f)) {
+			process_deallocate_desc(f);
+			//TODO what to do?
+		}
+	} else {
+		process_deallocate_desc(f);
+	}
+
+	return 0;
+}
+
+static int if_close(mm_process_t *process, pm_args_t *args)
+{
+	int fid = args->arg1;
+//	if (!process_find_desc(process, fid))
+//		return EBADF;
+
+	if (kcall->port_call(PORT_FS, args, sizeof(*args))
+			!= sizeof(pm_reply_t))
+		return ECONNREFUSED;
+
+	pm_reply_t *reply = (pm_reply_t*)args;
+	log_notice("proxy: %d close(%d) %d %d\n",
+			process->node.key, fid, reply->result1,
+			reply->error_no);
+
+	if (reply->result1 == 0) {
+		if (process_destroy_desc(process, fid)) {
+			//TODO what to do?
+		}
+	}
+
+	return 0;
+}
+
+static int if_ref_fid(mm_process_t *process, pm_args_t *args)
+{
+//	if (!process_find_desc(process, args->arg1))
+//		return EBADF;
+
+	if (kcall->port_call(PORT_FS, args, sizeof(*args))
+			!= sizeof(pm_reply_t))
+		return ECONNREFUSED;
+
+	return 0;
 }
 
 static void doit(void)
