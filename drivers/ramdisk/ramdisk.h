@@ -38,7 +38,7 @@ extern memory_range_t ranges[];
 extern int detach(void);
 extern int open(void);
 extern int close(const int);
-extern int read(unsigned char *, const int, const off_t, const size_t);
-extern int write(unsigned char *, const int, const off_t, const size_t);
+extern int read(char *, const int, const off_t, const size_t);
+extern int write(char *, const int, const off_t, const size_t);
 
 #endif

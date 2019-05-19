@@ -87,7 +87,8 @@ Console *getVesaConsole(Screen *s, const Font *default_font)
 	return &_cns;
 }
 
-static void _cls(Screen *s) {
+static void _cls(Screen *s)
+{
 	s->x = s->y = 0;
 	s->p = (uint8_t*)(s->base);
 
@@ -221,7 +222,8 @@ static void __putc(Screen *s, const uint8_t ch)
 	}
 }
 
-static void _newline(Screen *s) {
+static void _newline(Screen *s)
+{
 	if (s->y >= (s->chr_height - 1))
 		_rollup(s, 1);
 
@@ -378,9 +380,9 @@ static void _copy_left(Screen *s, unsigned int x1, unsigned int y1,
 }
 
 void put(Screen *s, const unsigned int start, const size_t size,
-		const uint8_t *buf)
+		const int8_t *buf)
 {
-	uint8_t *w = (uint8_t*)(s->base) + start;
+	int8_t *w = (int8_t*)(s->base) + start;
 
 	for (size_t i = 0; i < size; i++)
 		w[i] = buf[i];

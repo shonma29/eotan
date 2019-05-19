@@ -27,38 +27,186 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stddef.h>
-#include <sys/types.h>
+#include <sys/stat.h>
 
 #define DEV_BUF_SIZE (1024)
 
+#dfine NOFID (0)
+
 enum device_operation {
-	operation_read = 0xff01,
-	operation_write = 0xff02
+	operation_version = 0xff01,
+	operation_auth = 0xff02,
+	operation_attach = 0xff03,
+	operation_flush = 0xff04,
+	operation_walk = 0xff05,
+	operation_open = 0xff06,
+	operation_create = 0xff07,
+	operation_read = 0xff08,
+	operation_write = 0xff09,
+	operation_clunk = 0xff0a,
+	operation_remove = 0xff0b,
+	operation_stat = 0xff0c,
+	operation_wstat = 0xff0d
 };
 
 typedef union {
 	struct {
 		enum device_operation operation;
+		int tag;
+		size_t msize;
+		char *version;
+	} Tversion;
+	struct {
+		ssize_t size;
+		int tag;
+		size_t msize;
+		char *version;
+	} Rversion;
+	struct {
+		enum device_operation operation;
+		int tag;
+		int afid;
+		char *uname;
+		char *aname;
+	} Tauth;
+	struct {
+		ssize_t size;
+		int tag;
+		int aqid;
+	} Rauth;
+	struct {
+		enum device_operation operation;
+		int tag;
+		int fid;
+		int afid;
+		char *uname;
+		char *aname;
+	} Tattach;
+	struct {
+		ssize_t size;
+		int tag;
+		int qid;
+	} Rattach;
+	struct {
+		ssize_t size;
+		char *ename;
+	} Rerror;
+	struct {
+		enum device_operation operation;
+		int tag;
+		int oldtag;
+	} Tflush;
+	struct {
+		ssize_t size;
+		int tag;
+	} Rflush;
+	struct {
+		enum device_operation operation;
+		int tag;
+		int fid;
+		int newfid;
+		int mwname;
+		char *wname;
+	} Twalk;
+	struct {
+		ssize_t size;
+		int tag;
+		int nwqid;
+		char *wqid;
+	} Rwalk;
+	struct {
+		enum device_operation operation;
+		int tag;
+		int fid;
+		int mode;
+	} Topen;
+	struct {
+		ssize_t size;
+		int tag;
+		int qid;
+		int iounit;
+	} Ropen;
+	struct {
+		enum device_operation operation;
+		int tag;
+		int fid;
+		char *name;
+		int perm;
+		int mode;
+	} Tcreate;
+	struct {
+		ssize_t size;
+		int tag;
+		int qid;
+		int iounit;
+	} Rcreate;
+	struct {
+		enum device_operation operation;
+		int tag;
 		int fid;
 		off_t offset;
 		size_t count;
-		unsigned char *data;
+		char *data;
 	} Tread;
 	struct {
+		ssize_t size;
+		int tag;
 		ssize_t count;
 	} Rread;
 	struct {
 		enum device_operation operation;
+		int tag;
 		int fid;
 		off_t offset;
 		size_t count;
-		unsigned char *data;
+		char *data;
 	} Twrite;
 	struct {
+		ssize_t size;
+		int tag;
 		ssize_t count;
 	} Rwrite;
+	struct {
+		enum device_operation operation;
+		int tag;
+		int fid;
+	} Tclunk;
+	struct {
+		ssize_t size;
+		int tag;
+	} Rclunk;
+	struct {
+		enum device_operation operation;
+		int tag;
+		int fid;
+	} Tremove;
+	struct {
+		ssize_t size;
+		int tag;
+	} Rremove;
+	struct {
+		enum device_operation operation;
+		int tag;
+		int fid;
+		struct stat *stat;
+	} Tstat;
+	struct {
+		ssize_t size;
+		int tag;
+	} Rstat;
+	struct {
+		enum device_operation operation;
+		int tag;
+		int fid;
+		struct stat *stat;
+	} Twstat;
+	struct {
+		ssize_t size;
+		int tag;
+	} Rwstat;
 } devmsg_t;
 
+//TODO move to other header
 typedef struct _vdriver_t {
 	unsigned int id;
 	unsigned char *name;
@@ -66,8 +214,8 @@ typedef struct _vdriver_t {
 	int (*detach)(void);
 	int (*open)(void);
 	int (*close)(const int);
-	int (*read)(unsigned char *, const int, const off_t, const size_t);
-	int (*write)(unsigned char *, const int, const off_t, const size_t);
+	int (*read)(char *, const int, const off_t, const size_t);
+	int (*write)(char *, const int, const off_t, const size_t);
 } vdriver_t;
 
 #endif

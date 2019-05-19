@@ -38,13 +38,13 @@ For more information, please refer to <http://unlicense.org/>
 
 #define LEN_PRIORITY (2)
 
-static unsigned char buf[SYSLOG_SIZE];
+static char buf[SYSLOG_SIZE];
 
 static ER check_param(const size_t);
-static size_t lfcopy(unsigned char *, volatile lfq_t*, const size_t);
-static size_t rcopy(unsigned char *, ring_t *, const size_t);
-static ssize_t read(unsigned char *, const int, const size_t);
-static ssize_t write(const int priority, unsigned char *, const size_t);
+static size_t lfcopy(char *, volatile lfq_t*, const size_t);
+static size_t rcopy(char *, ring_t *, const size_t);
+static ssize_t read(char *, const int, const size_t);
+static ssize_t write(const int priority, char *, const size_t);
 static size_t execute(syslog_t *);
 static ER accept(const ID);
 static ER_ID initialize(void);
@@ -52,7 +52,7 @@ static ER_ID initialize(void);
 #if USE_MONITOR
 static ER monitor_initialize(void);
 static void monitor(void);
-static int write_cons(unsigned char *, const int, const off_t, const size_t);
+static int write_cons(char *, const int, const off_t, const size_t);
 static unsigned int sleep(unsigned int);
 #endif
 
@@ -64,7 +64,7 @@ static ER check_param(const size_t size)
 	return E_OK;
 }
 
-static size_t lfcopy(unsigned char *outbuf, volatile lfq_t* q, const size_t size)
+static size_t lfcopy(char *outbuf, volatile lfq_t* q, const size_t size)
 {
 	size_t left;
 
@@ -81,7 +81,7 @@ static size_t lfcopy(unsigned char *outbuf, volatile lfq_t* q, const size_t size
 	return size - left;
 }
 
-static size_t rcopy(unsigned char *outbuf, ring_t *r, const size_t size)
+static size_t rcopy(char *outbuf, ring_t *r, const size_t size)
 {
 	size_t left = size;
 
@@ -100,7 +100,7 @@ static size_t rcopy(unsigned char *outbuf, ring_t *r, const size_t size)
 	return size - left;
 }
 
-static ssize_t read(unsigned char *outbuf, const int channel, const size_t size)
+static ssize_t read(char *outbuf, const int channel, const size_t size)
 {
 	ER result = check_param(size);
 	if (result)
@@ -118,7 +118,7 @@ static ssize_t read(unsigned char *outbuf, const int channel, const size_t size)
 	}
 }
 
-static ssize_t write(const int priority, unsigned char *inbuf,
+static ssize_t write(const int priority, char *inbuf,
 		const size_t size)
 {
 	ER result = check_param(size);
@@ -130,7 +130,7 @@ static ssize_t write(const int priority, unsigned char *inbuf,
 
 	//TODO put current time
 	//TODO put priority name
-	unsigned char pri_msg[2] = {
+	char pri_msg[2] = {
 		'0' + ((priority > LOG_DEBUG)? 9:priority), ' '
 	};
 	if (ring_put((ring_t*)buf, pri_msg, sizeof(pri_msg)) < 0)
@@ -251,8 +251,8 @@ static void monitor(void)
 	for (;;) {
 		sleep(1);
 
-		unsigned char outbuf[1024];
-		
+		char outbuf[1024];
+
 		for (size_t len;
 				(len  = lfcopy(outbuf,
 						(volatile lfq_t*)KERNEL_LOG_ADDR,
@@ -267,8 +267,9 @@ static void monitor(void)
 }
 
 //TODO use cons driver
-static int write_cons(unsigned char *inbuf, const int channel,
-		const off_t start, const size_t size) {
+static int write_cons(char *inbuf, const int channel,
+		const off_t start, const size_t size)
+{
 	off_t rpos = 0;
 	off_t wpos = start;
 	size_t rest = size;

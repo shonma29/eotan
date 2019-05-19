@@ -34,11 +34,11 @@ For more information, please refer to <http://unlicense.org/>
 
 #define BUF_SIZE (341*3)
 
-static UB buf[BUF_SIZE];
+static char buf[BUF_SIZE];
 
 void swap(size_t size)
 {
-	unsigned char *p = buf;
+	char *p = buf;
 	size_t i;
 
 	for (i = size / 3; i > 0; i--) {
@@ -51,7 +51,7 @@ void swap(size_t size)
 	}
 }
 
-int putline(UW start, UW size, UB *buf)
+int putline(UW start, UW size, char *buf)
 {
 	devmsg_t msg;
 	ER_UINT err;

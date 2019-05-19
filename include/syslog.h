@@ -57,13 +57,13 @@ typedef union {
 	} Tread;
 	struct {
 		ssize_t count;
-		unsigned char data[SYSLOG_MAX_LENGTH];
+		char data[SYSLOG_MAX_LENGTH];
 	} Rread;
 	struct {
 		enum device_operation operation;
 		enum log_level priority;
 		size_t count;
-		unsigned char data[SYSLOG_MAX_LENGTH];
+		char data[SYSLOG_MAX_LENGTH];
 	} Twrite;
 	struct {
 		ssize_t count;

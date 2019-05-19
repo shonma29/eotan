@@ -47,10 +47,10 @@ For more information, please refer to <http://unlicense.org/>
 #include <vesa.h>
 #include "font.h"
 
-static unsigned char line[4096];
+static char line[4096];
 
 extern void put(Screen *s, const unsigned int start, const size_t size,
-		const unsigned char *buf);
+		const char *buf);
 extern void pset(Screen *s, unsigned int x, unsigned int y, int color);
 #else
 #include <cga.h>
@@ -78,7 +78,7 @@ static Console *cns;
 static void process(const int arg);
 static ER check_param(const UW start, const UW size);
 static ER_UINT write(const UW dd, const UW start, const UW size,
-		const UB *inbuf);
+		const char *inbuf);
 static void reply(request_message_t *req, const size_t size);
 static void execute(request_message_t *req);
 static ER accept(void);
@@ -161,7 +161,7 @@ static ER check_param(const UW start, const UW size)
 }
 
 static ER_UINT write(const UW dd, const UW start, const UW size,
-		const UB *inbuf)
+		const char *inbuf)
 {
 	ER_UINT result = check_param(start, size);
 

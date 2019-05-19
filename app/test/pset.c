@@ -60,7 +60,7 @@ int pset(const unsigned int x, const unsigned int y, const int color)
 	msg.Twrite.fid = 5;
 	msg.Twrite.offset = 0;
 	msg.Twrite.count = sizeof(buf);
-	msg.Twrite.data = (unsigned char*)&buf;
+	msg.Twrite.data = (char*)&buf;
 
 	err = cal_por(PORT_CONSOLE, 0xffffffff, &msg, sizeof(msg.Twrite));
 	if (err < 0)

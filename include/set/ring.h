@@ -37,7 +37,7 @@ For more information, please refer to <http://unlicense.org/>
 
 typedef unsigned int ring_pos_t;
 typedef unsigned int counter_t;
-typedef unsigned char ring_chr_t;
+typedef char ring_chr_t;
 
 typedef struct
 {

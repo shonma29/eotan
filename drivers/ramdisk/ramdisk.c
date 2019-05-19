@@ -51,7 +51,7 @@ int close(const int channel)
 	return (check_channel(channel)? 0:(-1));
 }
 
-int read(unsigned char *outbuf, const int channel,
+int read(char *outbuf, const int channel,
 		const off_t start, const size_t size)
 {
 	if (!check_param(channel, start, size))
@@ -62,7 +62,7 @@ int read(unsigned char *outbuf, const int channel,
 	return size;
 }
 
-int write(unsigned char *inbuf, const int channel,
+int write(char *inbuf, const int channel,
 		const off_t start, const size_t size)
 {
 	if (!check_param(channel, start, size))

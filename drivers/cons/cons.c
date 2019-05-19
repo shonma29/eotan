@@ -48,7 +48,7 @@ int close(const int channel)
 	return (channel == 0)? 0:(-1);
 }
 
-int read(unsigned char *outbuf, const int channel,
+int read(char *outbuf, const int channel,
 		const off_t start, const size_t size)
 {
 	off_t rpos = start;
@@ -86,8 +86,9 @@ int read(unsigned char *outbuf, const int channel,
 	return size;
 }
 
-int write(unsigned char *inbuf, const int channel,
-		const off_t start, const size_t size) {
+int write(char *inbuf, const int channel,
+		const off_t start, const size_t size)
+{
 	off_t rpos = 0;
 	off_t wpos = start;
 	size_t rest = size;
