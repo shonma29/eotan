@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #define DEV_BUF_SIZE (1024)
 
-#dfine NOFID (0)
+#define NOFID (0)
 
 enum device_operation {
 	operation_version = 0xff01,
