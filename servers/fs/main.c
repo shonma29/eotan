@@ -114,7 +114,6 @@ static int initialize(void)
 	init_process();
 
 	if (device_find(sysinfo->root.device)) {
-			&& device_find(get_device_id(DEVICE_MAJOR_CONS, 0))) {
 		if (fs_mount(sysinfo->root.device)) {
 			log_err("fs: fs_mount(%x, %d) failed\n",
 					sysinfo->root.device,
