@@ -129,6 +129,7 @@ static void proxy(void)
 		args.process_id |= get_rdv_tid(rdvno) << 16;
 
 		int result;
+		int op = args.operation;
 		switch (args.operation) {
 		case pm_syscall_dup2:
 //TODO implement in here
@@ -161,7 +162,7 @@ static void proxy(void)
 		}
 
 		if (result) {
-			log_err("proxy: call failed %d\n", result);
+			log_err("proxy: call %d failed %d\n", op, result);
 			reply->result1 = -1;
 			reply->result2 = 0;
 			reply->error_no = result;
@@ -263,8 +264,8 @@ static int if_open(mm_process_t *process, pm_args_t *args)
 
 static int if_read(mm_process_t *process, pm_args_t *args)
 {
-//	if (!process_find_desc(process, args->arg1))
-//		return EBADF;
+	if (!process_find_desc(process, args->arg1))
+		return EBADF;
 
 	devmsg_t *message = (devmsg_t*)args;
 	message->Tread.count = args->arg3;
@@ -272,7 +273,7 @@ static int if_read(mm_process_t *process, pm_args_t *args)
 	message->Tread.offset = 0;
 
 	int result = call_device(message, MESSAGE_SIZE(Tread),
-		Rread, MESSAGE_SIZE(Rread));
+			Rread, MESSAGE_SIZE(Rread));
 	if (result)
 		return result;
 
@@ -286,8 +287,8 @@ static int if_read(mm_process_t *process, pm_args_t *args)
 
 static int if_write(mm_process_t *process, pm_args_t *args)
 {
-//	if (!process_find_desc(process, args->arg1))
-//		return EBADF;
+	if (!process_find_desc(process, args->arg1))
+		return EBADF;
 
 	devmsg_t *message = (devmsg_t*)args;
 	message->Twrite.count = args->arg3;
@@ -295,7 +296,7 @@ static int if_write(mm_process_t *process, pm_args_t *args)
 	message->Twrite.offset = 0;
 
 	int result = call_device(message, MESSAGE_SIZE(Twrite),
-		Rwrite, MESSAGE_SIZE(Rwrite));
+			Rwrite, MESSAGE_SIZE(Rwrite));
 	if (result)
 		return result;
 
@@ -310,22 +311,24 @@ static int if_write(mm_process_t *process, pm_args_t *args)
 static int if_close(mm_process_t *process, pm_args_t *args)
 {
 	int fid = args->arg1;
-//	if (!process_find_desc(process, fid))
-//		return EBADF;
+	if (!process_find_desc(process, fid))
+//		log_notice("proxy: %d close not found(%d)\n",
+//				process->node.key, fid);
+		return EBADF;
 
 	if (process_destroy_desc(process, fid)) {
 		//TODO what to do?
 	}
 
 	int result = call_device((devmsg_t*)args, MESSAGE_SIZE(Tclunk),
-		Rclunk, MESSAGE_SIZE(Rclunk));
+			Rclunk, MESSAGE_SIZE(Rclunk));
 	if (result) {
-		log_notice("proxy: %d close err(%d) %d %d\n",
+		log_notice("proxy: %d close err(%d) %d\n",
 				process->node.key, fid, result);
 		return result;
 	}
 
-	log_notice("proxy: %d close ok(%d) %d\n",
+	log_notice("proxy: %d close ok(%d)\n",
 			process->node.key, fid);
 
 	pm_reply_t *reply = (pm_reply_t*)args;
@@ -342,7 +345,7 @@ static int if_stat(mm_process_t *process, pm_args_t *args)
 		return EBADF;
 
 	int result = call_device((devmsg_t*)args, MESSAGE_SIZE(Tstat),
-		Rstat, MESSAGE_SIZE(Rstat));
+			Rstat, MESSAGE_SIZE(Rstat));
 	if (result)
 		return result;
 
@@ -356,8 +359,8 @@ static int if_stat(mm_process_t *process, pm_args_t *args)
 
 static int if_ref_fid(mm_process_t *process, pm_args_t *args)
 {
-//	if (!process_find_desc(process, args->arg1))
-//		return EBADF;
+	if (!process_find_desc(process, args->arg1))
+		return EBADF;
 
 	if (kcall->port_call(PORT_FS, args, sizeof(*args))
 			!= sizeof(pm_reply_t))

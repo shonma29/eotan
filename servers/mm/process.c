@@ -26,9 +26,12 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <local.h>
 #include <mm.h>
+#include <services.h>
 #include <stdint.h>
+#include <unistd.h>
 #include <boot/init.h>
 #include <core/options.h>
 #include <mm/config.h>
@@ -175,6 +178,41 @@ int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		p->segments.heap.max = pageRoundUp(args->arg4) - end;
 		p->segments.heap.attr = type_heap;
 
+		if (p->node.key == INIT_PID) {
+			mm_file_t *f = process_allocate_desc();
+			if (f) {
+				f->server_id = PORT_CONSOLE;
+				f->fid = 0;
+				f->f_flag = O_RDONLY;
+				f->f_count = 1;
+				f->f_offset = 0;
+				if (process_set_desc(p, STDIN_FILENO, f))
+					process_deallocate_desc(f);
+			}
+
+			f = process_allocate_desc();
+			if (f) {
+				f->server_id = PORT_CONSOLE;
+				f->fid = 0;
+				f->f_flag = O_WRONLY;
+				f->f_count = 1;
+				f->f_offset = 0;
+				if (process_set_desc(p, STDOUT_FILENO, f))
+					process_deallocate_desc(f);
+			}
+
+			f = process_allocate_desc();
+			if (f) {
+				f->server_id = PORT_CONSOLE;
+				f->fid = 0;
+				f->f_flag = O_WRONLY;
+				f->f_count = 1;
+				f->f_offset = 0;
+				if (process_set_desc(p, STDERR_FILENO, f))
+					process_deallocate_desc(f);
+			}
+		}
+
 		reply->error_no = EOK;
 		reply->result = 0;
 		return reply_success;
@@ -194,11 +232,12 @@ int mm_process_destroy(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
+		//TODO close on exit. not exec
 		//TODO optimize
-		for (int fd = 0; fd < FILES_PER_PROCESS; fd++)
-			if (process_destroy_desc(p, fd)) {
-				//TODO what to do?
-			}
+//		for (int fd = 0; fd < FILES_PER_PROCESS; fd++)
+//			if (process_destroy_desc(p, fd)) {
+//				//TODO what to do?
+//			}
 
 		if (unmap_user_pages(p->directory,
 				//TODO this address is adhoc. fix region_unmap
@@ -269,6 +308,24 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		}
 
 		dest->segments.heap = src->segments.heap;
+
+		for (int fd = 0; fd < FILES_PER_PROCESS; fd++) {
+			mm_file_t *s = process_find_desc(src, fd);
+			if (!s)
+				continue;
+
+			mm_file_t *d = process_allocate_desc();
+			if (!d)
+				continue;
+
+			d->server_id = s->server_id;
+			d->fid = s->fid;
+			d->f_flag = s->f_flag;
+			d->f_count = s->f_count;
+			d->f_offset = s->f_offset;
+			if (process_set_desc(dest, fd, d))
+				process_deallocate_desc(d);
+		}
 
 		reply->error_no = EOK;
 		reply->result = 0;
