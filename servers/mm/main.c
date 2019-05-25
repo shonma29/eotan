@@ -68,7 +68,8 @@ static int if_write(mm_process_t *, pm_args_t *);
 static int if_close(mm_process_t *, pm_args_t *);
 static int if_stat(mm_process_t *, pm_args_t *);
 static int if_ref_fid(mm_process_t *, pm_args_t *);
-static int call_device(devmsg_t *, const size_t, const int, const size_t);
+static int call_device(const int, devmsg_t *, const size_t, const int,
+		const size_t);
 static void doit(void);
 
 static ER init(void)
@@ -178,49 +179,58 @@ static int if_dup(mm_process_t *process, pm_args_t *args)
 {
 	int fid = args->arg1;
 	mm_file_t *f1 = process_find_desc(process, fid);
-//	if (!f1)
-//		return ENOMEM;
+	if (!f1)
+		return EBADF;
 
-	int fid2 = 0;
-	mm_file_t *f2 = process_find_desc(process, args->arg2);
-	if (!f2) {
-		fid2 = args->arg2;
-		f2 = process_allocate_desc();
-		if (!f2)
-			return ENOMEM;
-
-		f2->fid = fid2;
-	}
-
-	if (kcall->port_call(PORT_FS, args, sizeof(*args))
-			!= sizeof(pm_reply_t))
-		return ECONNREFUSED;
-
-	pm_reply_t *reply = (pm_reply_t*)args;
-	log_notice("proxy: %d dup(%d, %d) %d %d\n",
-			process->node.key, fid, fid2, reply->result1,
-			reply->error_no);
-
-	if (reply->result1 >= 0) {
-		if (f1) {
-			f2->server_id = f1->server_id;
-			f2->f_flag = f1->f_flag;
-			f2->f_count = f1->f_count;
-			f2->f_offset = f1->f_offset;
+	if (fid != args->arg2) {
+		int fid2 = 0;
+		//TODO check arg2
+		mm_file_t *f2 = process_find_desc(process, args->arg2);
+		if (f2) {
+			devmsg_t message;
+			message.type = Tclunk;
+			message.Tclunk.tag = args->process_id;
+			message.Tclunk.fid = f2->fid;
+			int result = call_device(f2->server_id, &message,
+					MESSAGE_SIZE(Tclunk),
+					Rclunk, MESSAGE_SIZE(Rclunk));
+			if (result) {
+				//TODO what to do?
+				log_notice("proxy: %d dup err in close(%d) %d\n",
+						process->node.key, f2->fid, result);
+			} else {
+				log_notice("proxy: %d dup ok in close(%d)\n",
+						process->node.key, f2->fid);
+			}
 		} else {
-			f2->server_id = PORT_FS;
-			f2->f_flag = 0;
-			f2->f_count = 1;
-			f2->f_offset = 0;
+			fid2 = args->arg2;
+			//TODO lock fid2 in tree
+			f2 = process_allocate_desc();
+			if (!f2)
+				return ENOMEM;
+
+			f2->fid = fid2;
 		}
-		if (fid2) {
+
+		//TODO share descriptor
+		f2->server_id = f1->server_id;
+		f2->fid = f1->fid;
+		//TODO mask flag if needed
+		f2->f_flag = f1->f_flag;
+		f2->f_count = f1->f_count;
+		f2->f_offset = f1->f_offset;
+
+		if (fid2)
 			if (process_set_desc(process, fid2, f2)) {
-				process_deallocate_desc(f2);
+			process_deallocate_desc(f2);
 				//TODO what to do?
 			}
-		}
-	} else if (fid2)
-		process_deallocate_desc(f2);
+	}
+
+	pm_reply_t *reply = (pm_reply_t*)args;
+	reply->result1 = args->arg2;
+	reply->result2 = 0;
+	reply->error_no = 0;
 
 	return 0;
 }
@@ -251,6 +261,7 @@ static int if_open(mm_process_t *process, pm_args_t *args)
 		//TODO set at last if append mode
 		f->f_offset = 0;
 
+		//TODO find empty fid
 		if (process_set_desc(process, reply->result1, f)) {
 			process_deallocate_desc(f);
 			//TODO what to do?
@@ -264,15 +275,19 @@ static int if_open(mm_process_t *process, pm_args_t *args)
 
 static int if_read(mm_process_t *process, pm_args_t *args)
 {
-	if (!process_find_desc(process, args->arg1))
+	mm_file_t *f = process_find_desc(process, args->arg1);
+	if (!f)
 		return EBADF;
 
 	devmsg_t *message = (devmsg_t*)args;
+	if (f->server_id != PORT_FS)
+		message->type = Tread;
+	message->Tread.fid = f->fid;
 	message->Tread.count = args->arg3;
 	message->Tread.data = (char*)(args->arg2);
 	message->Tread.offset = 0;
 
-	int result = call_device(message, MESSAGE_SIZE(Tread),
+	int result = call_device(f->server_id, message, MESSAGE_SIZE(Tread),
 			Rread, MESSAGE_SIZE(Rread));
 	if (result)
 		return result;
@@ -287,15 +302,19 @@ static int if_read(mm_process_t *process, pm_args_t *args)
 
 static int if_write(mm_process_t *process, pm_args_t *args)
 {
-	if (!process_find_desc(process, args->arg1))
+	mm_file_t *f = process_find_desc(process, args->arg1);
+	if (!f)
 		return EBADF;
 
 	devmsg_t *message = (devmsg_t*)args;
+	if (f->server_id != PORT_FS)
+		message->type = Twrite;
+	message->Twrite.fid = f->fid;
 	message->Twrite.count = args->arg3;
 	message->Twrite.data = (char*)(args->arg2);
 	message->Twrite.offset = 0;
 
-	int result = call_device(message, MESSAGE_SIZE(Twrite),
+	int result = call_device(f->server_id, message, MESSAGE_SIZE(Twrite),
 			Rwrite, MESSAGE_SIZE(Rwrite));
 	if (result)
 		return result;
@@ -311,16 +330,19 @@ static int if_write(mm_process_t *process, pm_args_t *args)
 static int if_close(mm_process_t *process, pm_args_t *args)
 {
 	int fid = args->arg1;
-	if (!process_find_desc(process, fid))
-//		log_notice("proxy: %d close not found(%d)\n",
-//				process->node.key, fid);
+	mm_file_t *f = process_find_desc(process, fid);
+	if (!f)
 		return EBADF;
 
 	if (process_destroy_desc(process, fid)) {
 		//TODO what to do?
 	}
 
-	int result = call_device((devmsg_t*)args, MESSAGE_SIZE(Tclunk),
+	devmsg_t *message = (devmsg_t*)args;
+	if (f->server_id != PORT_FS)
+		message->type = Tclunk;
+	message->Tclunk.fid = f->fid;
+	int result = call_device(f->server_id, message, MESSAGE_SIZE(Tclunk),
 			Rclunk, MESSAGE_SIZE(Rclunk));
 	if (result) {
 		log_notice("proxy: %d close err(%d) %d\n",
@@ -341,10 +363,13 @@ static int if_close(mm_process_t *process, pm_args_t *args)
 
 static int if_stat(mm_process_t *process, pm_args_t *args)
 {
-	if (!process_find_desc(process, args->arg1))
+	mm_file_t *f = process_find_desc(process, args->arg1);
+	if (!f)
 		return EBADF;
 
-	int result = call_device((devmsg_t*)args, MESSAGE_SIZE(Tstat),
+	devmsg_t *message = (devmsg_t*)args;
+	message->Tstat.fid = f->fid;
+	int result = call_device(f->server_id, message, MESSAGE_SIZE(Tstat),
 			Rstat, MESSAGE_SIZE(Rstat));
 	if (result)
 		return result;
@@ -359,9 +384,11 @@ static int if_stat(mm_process_t *process, pm_args_t *args)
 
 static int if_ref_fid(mm_process_t *process, pm_args_t *args)
 {
-	if (!process_find_desc(process, args->arg1))
+	mm_file_t *f = process_find_desc(process, args->arg1);
+	if (!f)
 		return EBADF;
 
+	args->arg1 = f->fid;
 	if (kcall->port_call(PORT_FS, args, sizeof(*args))
 			!= sizeof(pm_reply_t))
 		return ECONNREFUSED;
@@ -369,10 +396,10 @@ static int if_ref_fid(mm_process_t *process, pm_args_t *args)
 	return 0;
 }
 
-static int call_device(devmsg_t *message, const size_t tsize,
-	const int rtype, const size_t rsize)
+static int call_device(const int server_id, devmsg_t *message,
+	const size_t tsize, const int rtype, const size_t rsize)
 {
-	ER_UINT size = kcall->port_call(PORT_FS, message, tsize);
+	ER_UINT size = kcall->port_call(server_id, message, tsize);
 	if (size >= MIN_MESSAGE_SIZE) {
 		//TODO check tag
 

@@ -61,7 +61,7 @@ static int (*syscall[])(fs_request*) = {
 	if_remove,
 	if_fstat,
 	if_chmod,
-	if_dup2,
+	NULL,
 	if_open,
 	if_lseek,
 	if_read,
@@ -235,16 +235,16 @@ void start(VP_INT exinf)
 			reply2(req->rdvno, EINVAL, -1, 0);
 			continue;
 		}
-
+/*
+		//TODO validate session
 		pid_t pid = thread_find(unpack_tid(req));
 		if (pid == -1) {
 			log_err("fs: find failed %d\n", pid);
-/*			//TODO what to do?
+			//TODO what to do?
 			reply2(req->rdvno, EINVAL, -1, 0);
 			continue;
-*/
 		}
-
+*/
 		int result;
 		switch (req->packet.operation) {
 		case pm_syscall_read:
@@ -292,7 +292,6 @@ void start(VP_INT exinf)
 		case pm_syscall_create:
 		case pm_syscall_remove:
 		case pm_syscall_chmod:
-		case pm_syscall_dup2:
 		case pm_syscall_open:
 		case pm_syscall_lseek:
 		default:

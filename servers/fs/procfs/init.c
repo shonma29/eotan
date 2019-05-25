@@ -120,6 +120,11 @@ static W create_init(ID process_id)
 /* if set explicitly
 	p->proc_next = NULL;
 */
+	process_create(process_id, 0, 0, 0);
+	p->proc_status = PS_RUN;
+	p->proc_pid = process_id;
+	p->proc_ppid = INIT_PPID;
+
 	p->session = session_create(process_id);
 	if (!(p->session))
 		return ENOMEM;
@@ -127,20 +132,7 @@ static W create_init(ID process_id)
 	p->session->permission.uid = INIT_UID;
 	p->session->permission.gid = INIT_GID;
 	p->session->cwd = rootfile;
-
-	p->proc_status = PS_RUN;
-	p->proc_pid = process_id;
-	p->proc_ppid = INIT_PPID;
-
 	rootfile->refer_count++;
-
-	process_create(process_id, 0, 0, 0);
-
-	err = open_special_devices(p);
-	if (err) {
-		log_debug("fs: can't open special files\n");
-		return err;
-	}
 
 	return EOK;
 }

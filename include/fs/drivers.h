@@ -30,7 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 
 static vdriver_t *(*drivers[])(int) = {
 	/* cons */
-	(vdriver_t *(*)(int))(0x80140000),
+//	(vdriver_t *(*)(int))(0x80140000),
 	/* ramdisk */
 	(vdriver_t *(*)(int))(0x80150000)
 };

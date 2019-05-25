@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core/options.h>
 #include <console.h>
 #include <device.h>
+#include <errno.h>
 #include <event.h>
 #include <services.h>
 #include <stdbool.h>
@@ -138,9 +139,22 @@ static void process(const int arg)
 			}
 
 			message = &(current_req->message);
-			message->Tread.data[message->Tread.offset++] =
-					(unsigned char)(d & 0xff);
+//			message->Tread.data[message->Tread.offset++] =
+//					(unsigned char)(d & 0xff);
+			unsigned char buf[1];
+			buf[0] = (unsigned char)(d & 0xff);
+
+			//TODO loop
+			//TODO error check
+			kcall->region_put(get_rdv_tid(message->Tread.tag),
+					(char*)((unsigned int)(message->Tread.data)
+					+ message->Tread.offset),
+					1,
+					buf);
+			message->Tread.offset++;
 			if (message->Tread.count <= message->Tread.offset) {
+				message->type = Rread;
+//TODO tag
 				message->Rread.count = message->Tread.count;
 				reply(current_req, MESSAGE_SIZE(Rread));
 				current_req = NULL;
@@ -226,13 +240,17 @@ static void execute(request_message_t *req)
 		result = check_param(message->Tread.offset,
 				message->Tread.count);
 		if (result) {
+			message->type = Rread;
+//TODO tag
 			message->Rread.count = result;
 			reply(req, MESSAGE_SIZE(Rread));
 
 		} else if (lfq_enqueue(&req_queue, &req) != QUEUE_OK) {
 			log_debug("hmi: req_queue is full\n");
-			message->Rread.count = E_NOMEM;
-			reply(req, MESSAGE_SIZE(Rread));
+			message->type = Rerror;
+//TODO tag
+			message->Rerror.ename = ENOMEM;
+			reply(req, MESSAGE_SIZE(Rerror));
 		}
 		break;
 
@@ -252,18 +270,51 @@ static void execute(request_message_t *req)
 			}
 		} else {
 #endif
-			result = write(message->Twrite.fid,
-					message->Twrite.offset,
-					message->Twrite.count,
-					message->Twrite.data);
+			//TODO loop by bufsize
+			unsigned int pos = 0;
+			result = 0;
+			for (size_t rest = message->Twrite.count; rest > 0;) {
+				size_t len = (rest > sizeof(line))? sizeof(line):rest;
+				if (kcall->region_get(get_rdv_tid(message->Twrite.tag),
+						(char*)((unsigned int)(message->Twrite.data) + pos),
+						len,
+						line)) {
+					result = E_SYS;
+					break;
+				} else {
+					result = write(message->Twrite.fid,
+							message->Twrite.offset,
+							len,
+							line);
+					if (result < 0)
+						break;
+				}
+				rest -= len;
+				pos += len;
+				message->Twrite.offset += len;
+			}
+//TODO return Rerror
+			if (result >= 0)
+				result = message->Twrite.count;
 #ifdef USE_VESA
 		}
 #endif
+		message->type = Rwrite;
+//TODO tag
 		message->Rwrite.count = result;
 		reply(req, MESSAGE_SIZE(Rwrite));
 		break;
 
+	case Tclunk:
+		message->type = Rclunk;
+//TODO tag
+		reply(req, MESSAGE_SIZE(Rclunk));
+		break;
+
 	default:
+		message->type = Rerror;
+		message->Rerror.ename = ENOTSUP;
+		reply(req, MESSAGE_SIZE(Rerror));
 		break;
 	}
 }

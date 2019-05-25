@@ -44,7 +44,6 @@ typedef struct {
 extern int if_chdir(fs_request*);
 extern int if_chmod(fs_request*);
 extern int if_close(fs_request*);
-extern int if_dup2(fs_request*);
 extern int if_exec(fs_request*);
 extern int if_exit(fs_request*);
 extern int if_fork(fs_request*);

@@ -24,16 +24,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <device.h>
-#include <errno.h>
-#include <stddef.h>
 #include <string.h>
 #include <fs/drivers.h>
 #include <nerve/kcall.h>
 #include <set/hash.h>
 #include "../../lib/libserv/libserv.h"
 #include "devfs.h"
-#include "api.h"
 
 static hash_t *hash;
 static device_info_t table[MAX_DEVICE];
@@ -43,33 +39,6 @@ void *malloc(size_t size);
 void free(void *p);
 static unsigned int calc_hash(const void *key, const size_t size);
 static int compare(const void *a, const void *b);
-static int dummy_error();
-static int dummy_ok();
-//TODO use off_t
-static int devfs_read(vnode_t *ip, void *buf, const int offset,
-		const size_t len, size_t *rlength);
-//TODO use off_t
-static int devfs_write(vnode_t *ip, void *buf, const int offset,
-		const size_t len, size_t *rlength);
-
-static vfs_operation_t devfs_fsops = {
-    dummy_error,
-    dummy_error,
-    dummy_error,
-    dummy_error,
-    dummy_error,
-    dummy_error,
-    dummy_error,
-    dummy_error,
-    dummy_error,
-    dummy_error,
-    dummy_error,
-    dummy_error,
-    dummy_ok,
-    devfs_read,
-    devfs_write
-};
-vfs_t devfs;
 
 
 void *malloc(size_t size)
@@ -120,9 +89,6 @@ int device_init(void)
 		}
 	}
 
-	list_initialize(&(devfs.vnodes));
-	devfs.operations = devfs_fsops;
-
 	return TRUE;
 }
 
@@ -142,26 +108,4 @@ static int compare(const void *a, const void *b)
 device_info_t *device_find(const UW devid)
 {
 	return (device_info_t*)(hash_get(hash, (void*)devid));
-}
-
-static int dummy_error()
-{
-	return ENOTSUP;
-}
-
-static int dummy_ok()
-{
-	return 0;
-}
-//TODO use off_t
-static int devfs_read(vnode_t *ip, void *buf, const int offset,
-		const size_t len, size_t *rlength)
-{
-	return read_device(ip->dev, buf, offset, len, rlength);
-}
-//TODO use off_t
-static int devfs_write(vnode_t *ip, void *buf, const int offset,
-		const size_t len, size_t *rlength)
-{
-	return write_device(ip->dev, buf, offset, len, rlength);
 }

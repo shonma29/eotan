@@ -154,9 +154,6 @@ extern W		exec_program (pm_args_t *req, W procid, B *pathname);
 extern W		proc_fork (struct proc *parent, struct proc *child);
 extern W copy_local(struct proc * parent, struct proc * child);
 
-/* process.c */
-extern W		open_special_devices(struct proc *procp);
-
 /* init.c */
 extern W exec_init(ID process_id, char *pathname);
 

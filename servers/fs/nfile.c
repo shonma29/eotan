@@ -138,36 +138,3 @@ int if_lseek(fs_request *req)
 	reply64(req->rdvno, 0, next);
 	return 0;
 }
-
-int if_dup2(fs_request *req)
-{
-	session_t *session = session_find(unpack_pid(req));
-	if (!session)
-		return ESRCH;
-
-	struct file *src = session_find_desc(session, req->packet.arg1);
-	if (!src)
-		return EBADF;
-
-	struct file *dest = session_find_desc(session, req->packet.arg2);
-	if (dest) {
-		int error_no = vnodes_remove(dest->f_vnode);
-		if (error_no)
-			return error_no;
-	} else {
-		int error_no = session_create_desc(&dest, session,
-				req->packet.arg2);
-		if (error_no)
-			return error_no;
-	}
-
-	//TODO share file struct, and increment count
-	src->f_vnode->refer_count++;
-	dest->f_vnode = src->f_vnode;
-	dest->f_flag = src->f_flag & O_ACCMODE;
-	dest->f_count = 0;
-	dest->f_offset = (src->f_flag & O_APPEND)? src->f_vnode->size:0;
-
-	reply2(req->rdvno, 0, req->packet.arg2, 0);
-	return 0;
-}

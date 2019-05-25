@@ -29,8 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <device.h>
 #include <fs/config.h>
-#include <fs/vfs.h>
-#include <sys/syscall.h>
+#include <sys/types.h>
 
 #define MAX_DEVICE (32)
 
@@ -40,8 +39,6 @@ typedef struct {
 	UW size;
 	vdriver_t *driver;
 } device_info_t;
-
-extern vfs_t devfs;
 
 extern int device_init(void);
 extern device_info_t *device_find(const UW id);
