@@ -48,5 +48,6 @@ extern int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_sbrk(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_thread_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
+extern int mm_thread_find(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 
 #endif

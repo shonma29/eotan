@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <device.h>
 #include <sys/syscall.h>
 #include <sys/syslimits.h>
 #include <sys/types.h>
@@ -71,5 +72,7 @@ static inline int unpack_tid(const fs_request *req)
 extern int reply2(const RDVNO, const int32_t, const int32_t,
 		const int32_t);
 extern int reply64(const RDVNO, const int32_t, const int64_t);
+extern int reply_dev(const RDVNO, const devmsg_t *, const size_t);
+extern int reply_dev_error(const RDVNO, const int, const int);
 
 #endif

@@ -48,15 +48,21 @@ int if_read(fs_request *req)
 
     req->packet.process_id &= 0xffff;
     session_t *session = session_find(req->packet.process_id);
-    if (!session)
-	return ESRCH;
+    if (!session) {
+	reply_dev_error(req->rdvno, req->packet.process_id, ESRCH);
+	return 0;
+    }
 
     fp = session_find_desc(session, req->packet.arg1);
-    if (!fp)
-	return EBADF;
+    if (!fp) {
+	reply_dev_error(req->rdvno, req->packet.process_id, EBADF);
+	return 0;
+    }
 
-    if (fp->f_flag == O_WRONLY)
-	return EBADF;
+    if (fp->f_flag == O_WRONLY) {
+	reply_dev_error(req->rdvno, req->packet.process_id, EBADF);
+	return 0;
+    }
 
     int offset = fp->f_offset;
     for (i = 0, rest_length = req->packet.arg3;
@@ -65,21 +71,29 @@ int if_read(fs_request *req)
 	len = rest_length > sizeof(req->buf) ? sizeof(req->buf) : rest_length;
 	int delta = fs_read(fp->f_vnode, req->buf, offset, len, &rlength);
 	if (delta < 0) {
-	    return (-delta);
+	    reply_dev_error(req->rdvno, req->packet.process_id, (-delta));
+	    return 0;
 	} else if (!rlength)
 	    break;
 
 	/* 呼び出したプロセスのバッファへの書き込み */
 	error_no = kcall->region_put(caller, (UB*)(req->packet.arg2) + i,
 			 rlength, req->buf);
-	if (error_no)
-	    return EFAULT;
+	if (error_no) {
+	    reply_dev_error(req->rdvno, req->packet.process_id, EFAULT);
+	    return 0;
+	}
 
 	offset += delta;
     }
 
     fp->f_offset = offset;
-    reply2(req->rdvno, 0, i, 0);
+
+    devmsg_t response;
+    response.type = Rread;
+    response.Rread.tag = req->packet.process_id;
+    response.Rread.count = i;
+    reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rread));
     return EOK;
 }
 
@@ -94,15 +108,21 @@ int if_write(fs_request *req)
 
     req->packet.process_id &= 0xffff;
     session_t *session = session_find(req->packet.process_id);
-    if (!session)
-	return ESRCH;
+    if (!session) {
+	reply_dev_error(req->rdvno, req->packet.process_id, ESRCH);
+	return 0;
+    }
 
     fp = session_find_desc(session, req->packet.arg1);
-    if (!fp)
-	return EBADF;
+    if (!fp) {
+	reply_dev_error(req->rdvno, req->packet.process_id, EBADF);
+	return 0;
+    }
 
-    if (fp->f_flag == O_RDONLY)
-	return EBADF;
+    if (fp->f_flag == O_RDONLY) {
+	reply_dev_error(req->rdvno, req->packet.process_id, EBADF);
+	return 0;
+    }
 
     if ((! (fp->f_vnode->mode & S_IFCHR)) &&
 	(fp->f_offset > fp->f_vnode->size)) {
@@ -119,8 +139,10 @@ int if_write(fs_request *req)
 	}
       }
     }
-    if (error_no)
-	return error_no;
+    if (error_no) {
+	reply_dev_error(req->rdvno, req->packet.process_id, error_no);
+	return 0;
+    }
 
     for (i = 0, rest_length = req->packet.arg3;
 	 rest_length > 0; rest_length -= rlength, i += rlength) {
@@ -138,10 +160,17 @@ int if_write(fs_request *req)
 	}
     }
 
-    if (error_no)
-	return error_no;
+    if (error_no) {
+	reply_dev_error(req->rdvno, req->packet.process_id, error_no);
+	return 0;
+    }
 
     fp->f_offset += i;
-    reply2(req->rdvno, 0, i, 0);
+
+    devmsg_t response;
+    response.type = Rwrite;
+    response.Rwrite.tag = req->packet.process_id;
+    response.Rwrite.count = i;
+    reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rwrite));
     return EOK;
 }

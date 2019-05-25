@@ -33,178 +33,173 @@ For more information, please refer to <http://unlicense.org/>
 
 #define NOFID (0)
 
-enum device_operation {
-	operation_version = 0xff01,
-	operation_auth = 0xff02,
-	operation_attach = 0xff03,
-	operation_flush = 0xff04,
-	operation_walk = 0xff05,
-	operation_open = 0xff06,
-	operation_create = 0xff07,
-	operation_read = 0xff08,
-	operation_write = 0xff09,
-	operation_clunk = 0xff0a,
-	operation_remove = 0xff0b,
-	operation_stat = 0xff0c,
-	operation_wstat = 0xff0d
+enum dev_message_type {
+	Tversion = 0xff01,
+	Rversion = 0xff02,
+	Tauth = 0xff03,
+	Rauth = 0xff04,
+	Tattach = 0xff05,
+	Rattach = 0xff06,
+	Rerror = 0xff07,
+	Tflush = 0xff08,
+	Rflush = 0xff09,
+	Twalk = 0xff0a,
+	Rwalk = 0xff0b,
+	Topen = 0xff0c,
+	Ropen = 0xff0d,
+	Tcreate = 0xff0e,
+	Rcreate = 0xff0f,
+	Tread = 0xff10,
+	Rread = 0xff11,
+	Twrite = 0xff12,
+	Rwrite = 0xff13,
+	Tclunk = 0xff14,
+	Rclunk = 0xff15,
+	Tremove = 0xff16,
+	Rremove = 0xff17,
+	Tstat = 0xff18,
+	Rstat = 0xff19,
+	Twstat = 0xff1a,
+	Rwstat = 0xff1b
 };
 
-typedef union {
-	struct {
-		enum device_operation operation;
-		int tag;
-		size_t msize;
-		char *version;
-	} Tversion;
-	struct {
-		ssize_t size;
-		int tag;
-		size_t msize;
-		char *version;
-	} Rversion;
-	struct {
-		enum device_operation operation;
-		int tag;
-		int afid;
-		char *uname;
-		char *aname;
-	} Tauth;
-	struct {
-		ssize_t size;
-		int tag;
-		int aqid;
-	} Rauth;
-	struct {
-		enum device_operation operation;
-		int tag;
-		int fid;
-		int afid;
-		char *uname;
-		char *aname;
-	} Tattach;
-	struct {
-		ssize_t size;
-		int tag;
-		int qid;
-	} Rattach;
-	struct {
-		ssize_t size;
-		char *ename;
-	} Rerror;
-	struct {
-		enum device_operation operation;
-		int tag;
-		int oldtag;
-	} Tflush;
-	struct {
-		ssize_t size;
-		int tag;
-	} Rflush;
-	struct {
-		enum device_operation operation;
-		int tag;
-		int fid;
-		int newfid;
-		int mwname;
-		char *wname;
-	} Twalk;
-	struct {
-		ssize_t size;
-		int tag;
-		int nwqid;
-		char *wqid;
-	} Rwalk;
-	struct {
-		enum device_operation operation;
-		int tag;
-		int fid;
-		int mode;
-	} Topen;
-	struct {
-		ssize_t size;
-		int tag;
-		int qid;
-		int iounit;
-	} Ropen;
-	struct {
-		enum device_operation operation;
-		int tag;
-		int fid;
-		char *name;
-		int perm;
-		int mode;
-	} Tcreate;
-	struct {
-		ssize_t size;
-		int tag;
-		int qid;
-		int iounit;
-	} Rcreate;
-	struct {
-		enum device_operation operation;
-		int tag;
-		int fid;
-		off_t offset;
-		size_t count;
-		char *data;
-	} Tread;
-	struct {
-		ssize_t size;
-		int tag;
-		ssize_t count;
-	} Rread;
-	struct {
-		enum device_operation operation;
-		int tag;
-		int fid;
-		off_t offset;
-		size_t count;
-		char *data;
-	} Twrite;
-	struct {
-		ssize_t size;
-		int tag;
-		ssize_t count;
-	} Rwrite;
-	struct {
-		enum device_operation operation;
-		int tag;
-		int fid;
-	} Tclunk;
-	struct {
-		ssize_t size;
-		int tag;
-	} Rclunk;
-	struct {
-		enum device_operation operation;
-		int tag;
-		int fid;
-	} Tremove;
-	struct {
-		ssize_t size;
-		int tag;
-	} Rremove;
-	struct {
-		enum device_operation operation;
-		int tag;
-		int fid;
-		struct stat *stat;
-	} Tstat;
-	struct {
-		ssize_t size;
-		int tag;
-	} Rstat;
-	struct {
-		enum device_operation operation;
-		int tag;
-		int fid;
-		struct stat *stat;
-	} Twstat;
-	struct {
-		ssize_t size;
-		int tag;
-	} Rwstat;
+typedef struct {
+	enum dev_message_type type;
+	union {
+		struct {
+			int tag;
+			size_t msize;
+			char *version;
+		} Tversion;
+		struct {
+			int tag;
+			size_t msize;
+			char *version;
+		} Rversion;
+		struct {
+			int tag;
+			int afid;
+			char *uname;
+			char *aname;
+		} Tauth;
+		struct {
+			int tag;
+			int aqid;
+		} Rauth;
+		struct {
+			int tag;
+			int fid;
+			int afid;
+			char *uname;
+			char *aname;
+		} Tattach;
+		struct {
+			int tag;
+			int qid;
+		} Rattach;
+		struct {
+			int tag;
+			int ename;
+		} Rerror;
+		struct {
+			int tag;
+			int oldtag;
+		} Tflush;
+		struct {
+			int tag;
+		} Rflush;
+		struct {
+			int tag;
+			int fid;
+			int newfid;
+			int mwname;
+			char *wname;
+		} Twalk;
+		struct {
+			int tag;
+			int nwqid;
+			char *wqid;
+		} Rwalk;
+		struct {
+			int tag;
+			int fid;
+			int mode;
+		} Topen;
+		struct {
+			int tag;
+			int qid;
+			int iounit;
+		} Ropen;
+		struct {
+			int tag;
+			int fid;
+			char *name;
+			int perm;
+			int mode;
+		} Tcreate;
+		struct {
+			int tag;
+			int qid;
+			int iounit;
+		} Rcreate;
+		struct {
+			int tag;
+			int fid;
+			off_t offset;
+			size_t count;
+			char *data;
+		} Tread;
+		struct {
+			int tag;
+			ssize_t count;
+		} Rread;
+		struct {
+			int tag;
+			int fid;
+			off_t offset;
+			size_t count;
+			char *data;
+		} Twrite;
+		struct {
+			int tag;
+			ssize_t count;
+		} Rwrite;
+		struct {
+			int tag;
+			int fid;
+		} Tclunk;
+		struct {
+			int tag;
+		} Rclunk;
+		struct {
+			int tag;
+			int fid;
+		} Tremove;
+		struct {
+			int tag;
+		} Rremove;
+		struct {
+			int tag;
+			int fid;
+			struct stat *stat;
+		} Tstat;
+		struct {
+			int tag;
+		} Rstat;
+		struct {
+			int tag;
+			int fid;
+			struct stat *stat;
+		} Twstat;
+		struct {
+			int tag;
+		} Rwstat;
+	};
 } devmsg_t;
+
+#define MESSAGE_SIZE(t) \
+	(sizeof(((devmsg_t*)0)->type) + sizeof(((devmsg_t*)0)->t))
+#define MIN_MESSAGE_SIZE (sizeof(((devmsg_t*)0)->type) + sizeof(int))
 
 //TODO move to other header
 typedef struct _vdriver_t {

@@ -52,7 +52,8 @@ typedef enum {
 	mm_syscall_process_duplicate = 7,
 	mm_syscall_process_set_context = 8,
 	mm_syscall_sbrk = 9,
-	mm_syscall_thread_create = 10
+	mm_syscall_thread_create = 10,
+	mm_syscall_thread_find = 11
 } mm_syscall_e;
 
 #endif

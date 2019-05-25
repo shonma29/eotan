@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <device.h>
 #include <errno.h>
 #include <mm.h>
 #include <pm.h>
@@ -49,7 +50,8 @@ static int (*funcs[])(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args) = {
 	mm_process_duplicate,
 	mm_process_set_context,
 	mm_sbrk,
-	mm_thread_create
+	mm_thread_create,
+	mm_thread_find
 };
 
 #define BUFSIZ (sizeof(mm_args_t))
@@ -61,8 +63,12 @@ static ER proxy_initialize(void);
 static void proxy(void);
 static int if_dup(mm_process_t *, pm_args_t *);
 static int if_open(mm_process_t *, pm_args_t *);
+static int if_read(mm_process_t *, pm_args_t *);
+static int if_write(mm_process_t *, pm_args_t *);
 static int if_close(mm_process_t *, pm_args_t *);
+static int if_stat(mm_process_t *, pm_args_t *);
 static int if_ref_fid(mm_process_t *, pm_args_t *);
+static int call_device(devmsg_t *, const size_t, const int, const size_t);
 static void doit(void);
 
 static ER init(void)
@@ -125,18 +131,27 @@ static void proxy(void)
 		int result;
 		switch (args.operation) {
 		case pm_syscall_dup2:
+//TODO implement in here
 			result = if_dup(process, &args);
 			break;
 		case pm_syscall_open:
+//TODO walk and open / create
 			result = if_open(process, &args);
 			break;
 		case pm_syscall_close:
 			result = if_close(process, &args);
 			break;
 		case pm_syscall_fstat:
+			result = if_stat(process, &args);
+			break;
 		case pm_syscall_read:
+			result = if_read(process, &args);
+			break;
 		case pm_syscall_write:
+			result = if_write(process, &args);
+			break;
 		case pm_syscall_lseek:
+//TODO implement in here
 			result = if_ref_fid(process, &args);
 			break;
 		default:
@@ -246,26 +261,95 @@ static int if_open(mm_process_t *process, pm_args_t *args)
 	return 0;
 }
 
+static int if_read(mm_process_t *process, pm_args_t *args)
+{
+//	if (!process_find_desc(process, args->arg1))
+//		return EBADF;
+
+	devmsg_t *message = (devmsg_t*)args;
+	message->Tread.count = args->arg3;
+	message->Tread.data = (char*)(args->arg2);
+	message->Tread.offset = 0;
+
+	int result = call_device(message, MESSAGE_SIZE(Tread),
+		Rread, MESSAGE_SIZE(Rread));
+	if (result)
+		return result;
+
+	pm_reply_t *reply = (pm_reply_t*)args;
+	reply->result1 = args->arg1;
+	reply->result2 = 0;
+	reply->error_no = 0;
+
+	return 0;
+}
+
+static int if_write(mm_process_t *process, pm_args_t *args)
+{
+//	if (!process_find_desc(process, args->arg1))
+//		return EBADF;
+
+	devmsg_t *message = (devmsg_t*)args;
+	message->Twrite.count = args->arg3;
+	message->Twrite.data = (char*)(args->arg2);
+	message->Twrite.offset = 0;
+
+	int result = call_device(message, MESSAGE_SIZE(Twrite),
+		Rwrite, MESSAGE_SIZE(Rwrite));
+	if (result)
+		return result;
+
+	pm_reply_t *reply = (pm_reply_t*)args;
+	reply->result1 = args->arg1;
+	reply->result2 = 0;
+	reply->error_no = 0;
+
+	return 0;
+}
+
 static int if_close(mm_process_t *process, pm_args_t *args)
 {
 	int fid = args->arg1;
 //	if (!process_find_desc(process, fid))
 //		return EBADF;
 
-	if (kcall->port_call(PORT_FS, args, sizeof(*args))
-			!= sizeof(pm_reply_t))
-		return ECONNREFUSED;
+	if (process_destroy_desc(process, fid)) {
+		//TODO what to do?
+	}
+
+	int result = call_device((devmsg_t*)args, MESSAGE_SIZE(Tclunk),
+		Rclunk, MESSAGE_SIZE(Rclunk));
+	if (result) {
+		log_notice("proxy: %d close err(%d) %d %d\n",
+				process->node.key, fid, result);
+		return result;
+	}
+
+	log_notice("proxy: %d close ok(%d) %d\n",
+			process->node.key, fid);
 
 	pm_reply_t *reply = (pm_reply_t*)args;
-	log_notice("proxy: %d close(%d) %d %d\n",
-			process->node.key, fid, reply->result1,
-			reply->error_no);
+	reply->result1 = 0;
+	reply->result2 = 0;
+	reply->error_no = 0;
 
-	if (reply->result1 == 0) {
-		if (process_destroy_desc(process, fid)) {
-			//TODO what to do?
-		}
-	}
+	return 0;
+}
+
+static int if_stat(mm_process_t *process, pm_args_t *args)
+{
+	if (!process_find_desc(process, args->arg1))
+		return EBADF;
+
+	int result = call_device((devmsg_t*)args, MESSAGE_SIZE(Tstat),
+		Rstat, MESSAGE_SIZE(Rstat));
+	if (result)
+		return result;
+
+	pm_reply_t *reply = (pm_reply_t*)args;
+	reply->result1 = 0;
+	reply->result2 = 0;
+	reply->error_no = 0;
 
 	return 0;
 }
@@ -280,6 +364,25 @@ static int if_ref_fid(mm_process_t *process, pm_args_t *args)
 		return ECONNREFUSED;
 
 	return 0;
+}
+
+static int call_device(devmsg_t *message, const size_t tsize,
+	const int rtype, const size_t rsize)
+{
+	ER_UINT size = kcall->port_call(PORT_FS, message, tsize);
+	if (size >= MIN_MESSAGE_SIZE) {
+		//TODO check tag
+
+		if (message->type == rtype) {
+			if (size == rsize)
+				return 0;
+		} else if (message->type == Rerror) {
+			if (size == MESSAGE_SIZE(Rerror))
+				return message->Rerror.ename;
+		}
+	}
+
+	return ECONNREFUSED;
 }
 
 static void doit(void)

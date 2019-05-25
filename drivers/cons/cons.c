@@ -60,15 +60,15 @@ int read(char *outbuf, const int channel,
 		size_t len = (rest < DEV_BUF_SIZE)? rest:DEV_BUF_SIZE;
 		devmsg_t packet;
 
-		packet.Tread.operation = operation_read;
+		packet.type = Tread;
 		packet.Tread.fid = channel;
 		packet.Tread.offset = rpos;
 		packet.Tread.count = len;
 		packet.Tread.data = &(outbuf[wpos]);
 
 		result = kcall->port_call(PORT_CONSOLE, &packet,
-				sizeof(packet.Tread));
-		if (result != sizeof(packet.Rread)) {
+				MESSAGE_SIZE(Tread));
+		if (result != MESSAGE_SIZE(Rread)) {
 			log_err("cons: call failed(%d)\n", result);
 			return -1;
 		}
@@ -98,15 +98,15 @@ int write(char *inbuf, const int channel,
 		size_t len = (rest < DEV_BUF_SIZE)? rest:DEV_BUF_SIZE;
 		devmsg_t packet;
 
-		packet.Twrite.operation = operation_write;
+		packet.type = Twrite;
 		packet.Twrite.fid = channel;
 		packet.Twrite.offset = wpos;
 		packet.Twrite.count = len;
 		packet.Twrite.data = &(inbuf[rpos]);
 
 		result = kcall->port_call(PORT_CONSOLE, &packet,
-				sizeof(packet.Twrite));
-		if (result != sizeof(packet.Rwrite)) {
+				MESSAGE_SIZE(Twrite));
+		if (result != MESSAGE_SIZE(Rwrite)) {
 			log_err("cons: call failed(%d)\n", result);
 			return -1;
 		}

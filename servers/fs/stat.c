@@ -78,23 +78,43 @@ int if_chmod(fs_request *req)
 
 int if_fstat(fs_request *req)
 {
-	session_t *session = session_find(unpack_pid(req));
-	if (!session)
-		return ESRCH;
+	int error_no = 0;
+	devmsg_t *request = (devmsg_t*)&(req->packet);
 
-	struct file *file = session_find_desc(session, req->packet.arg1);
-	if (!file)
-		return EBADF;
+	do {
+		session_t *session = session_find(unpack_pid(req));
+		if (!session) {
+			error_no = ESRCH;
+			break;
+		}
 
-	struct stat *st = (struct stat*)&(req->buf);
-	int error_no = vfs_stat(file->f_vnode, st);
+		struct file *file = session_find_desc(session,
+				request->Tstat.fid);
+		if (!file) {
+			error_no = EBADF;
+			break;
+		}
+
+		struct stat *st = (struct stat*)&(req->buf);
+		int error_no = vfs_stat(file->f_vnode, st);
+		if (error_no)
+			break;
+
+		if (kcall->region_put(unpack_tid(req),
+				request->Tstat.stat, sizeof(*st), st)) {
+			error_no = EFAULT;
+			break;
+		}
+	} while (false);
+
 	if (error_no)
-		return error_no;
+		reply_dev_error(req->rdvno, request->Tstat.tag, error_no);
+	else {
+		devmsg_t response;
+		response.type = Rstat;
+		response.Rstat.tag = request->Tstat.tag;
+		reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rstat));
+	}
 
-	if (kcall->region_put(unpack_tid(req),
-			(struct stat*)(req->packet.arg2), sizeof(*st), st))
-		return EFAULT;
-
-	reply2(req->rdvno, 0, 0, 0);
 	return 0;
 }

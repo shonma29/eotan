@@ -39,6 +39,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "procfs/process.h"
 #include "../../kernel/mpu/mpufunc.h"
 #include "../../lib/libserv/libserv.h"
+#include "../../lib/libserv/libmm.h"
 
 #define REQUEST_QUEUE_SIZE (32)
 
@@ -112,7 +113,7 @@ static int initialize(void)
 
 	init_process();
 
-	if (device_find(sysinfo->root.device)
+	if (device_find(sysinfo->root.device)) {
 			&& device_find(get_device_id(DEVICE_MAJOR_CONS, 0))) {
 		if (fs_mount(sysinfo->root.device)) {
 			log_err("fs: fs_mount(%x, %d) failed\n",
@@ -195,18 +196,27 @@ static void work(void)
 	}
 }
 
+static int worker_enqueue(fs_request **req)
+{
+	 if (lfq_enqueue(&req_queue, req) == QUEUE_OK) {
+		kcall->thread_wakeup(worker_id);
+		kcall->mutex_lock(receiver_id, TMO_FEVR);
+		*req = slab_alloc(&request_slab);
+		kcall->mutex_unlock(receiver_id);
+		return 0;
+	}
+
+	return ENOMEM;
+}
+
 void start(VP_INT exinf)
 {
-	fs_request *req;
-
 	if (initialize()) {
 		kcall->thread_end_and_destroy();
 		return;
 	}
 
-	for (req = slab_alloc(&request_slab);;) {
-		ER_UINT size;
-
+	for (fs_request *req = slab_alloc(&request_slab);;) {
 		if (!req) {
 			kcall->thread_sleep();
 			kcall->mutex_lock(receiver_id, TMO_FEVR);
@@ -215,32 +225,90 @@ void start(VP_INT exinf)
 			continue;
 		}
 
-		size = kcall->port_accept(PORT_FS, &(req->rdvno),
+		ER_UINT size = kcall->port_accept(PORT_FS, &(req->rdvno),
 				&(req->packet));
-		if (size == sizeof(pm_args_t)) {
-			int result;
-
-			if ((int)(req->packet.operation) >=
-					sizeof(syscall) / sizeof(syscall[0]))
-				result = ENOTSUP;
-
-			else if (lfq_enqueue(&req_queue, &req) == QUEUE_OK) {
-				kcall->thread_wakeup(worker_id);
-				kcall->mutex_lock(receiver_id, TMO_FEVR);
-				req = slab_alloc(&request_slab);
-				kcall->mutex_unlock(receiver_id);
-				continue;
-
-			} else
-				result = ENOMEM;
-
-			reply2(req->rdvno, result, -1, 0);
+		if (size < 0) {
+			log_err("fs: receive failed %d\n", size);
+			continue;
 		}
 
-		else if (size < 0)
-			log_err("fs: receive failed %d\n", size);
-
-		else
+		if (size < sizeof(req->packet.operation)) {
 			reply2(req->rdvno, EINVAL, -1, 0);
+			continue;
+		}
+
+		pid_t pid = thread_find(unpack_tid(req));
+		if (pid == -1) {
+			log_err("fs: find failed %d\n", pid);
+/*			//TODO what to do?
+			reply2(req->rdvno, EINVAL, -1, 0);
+			continue;
+*/
+		}
+
+		int result;
+		switch (req->packet.operation) {
+		case pm_syscall_read:
+		{
+			devmsg_t *message = (devmsg_t*)&(req->packet);
+			if (size == MESSAGE_SIZE(Tread)) {
+				req->packet.arg2 = (int)(message->Tread.data);
+				req->packet.arg3 = message->Tread.count;
+				result = worker_enqueue(&req);
+			} else
+				result = EINVAL;
+		}
+			break;
+		case pm_syscall_write:
+		{
+			devmsg_t *message = (devmsg_t*)&(req->packet);
+			if (size == MESSAGE_SIZE(Twrite)) {
+				req->packet.arg2 = (int)(message->Twrite.data);
+				req->packet.arg3 = message->Twrite.count;
+				result = worker_enqueue(&req);
+			} else
+				result = EINVAL;
+		}
+			break;
+		case pm_syscall_close:
+		{
+//			devmsg_t *message = (devmsg_t*)&(req->packet);
+			result = (size == MESSAGE_SIZE(Tclunk))?
+					worker_enqueue(&req):EINVAL;
+		}
+			break;
+		case pm_syscall_fstat:
+		{
+//			devmsg_t *message = (devmsg_t*)&(req->packet);
+			result = (size == MESSAGE_SIZE(Tstat))?
+					worker_enqueue(&req):EINVAL;
+		}
+			break;
+		case pm_syscall_fork:
+		case pm_syscall_waitpid:
+		case pm_syscall_exec:
+		case pm_syscall_exit:
+		case pm_syscall_kill:
+		case pm_syscall_chdir:
+		case pm_syscall_create:
+		case pm_syscall_remove:
+		case pm_syscall_chmod:
+		case pm_syscall_dup2:
+		case pm_syscall_open:
+		case pm_syscall_lseek:
+		default:
+			if (size != sizeof(pm_args_t))
+				result = EINVAL;
+			else if ((int)(req->packet.operation) >=
+					sizeof(syscall) / sizeof(syscall[0]))
+				result = ENOTSUP;
+			else
+				result = worker_enqueue(&req);
+			break;
+		}
+		if (!result)
+			continue;
+
+		reply2(req->rdvno, result, -1, 0);
 	}
 }

@@ -56,13 +56,13 @@ int pset(const unsigned int x, const unsigned int y, const int color)
 	buf.y = y;
 	buf.color = color;
 
-	msg.Twrite.operation = operation_write;
+	msg.type = Twrite;
 	msg.Twrite.fid = 5;
 	msg.Twrite.offset = 0;
 	msg.Twrite.count = sizeof(buf);
 	msg.Twrite.data = (char*)&buf;
 
-	err = cal_por(PORT_CONSOLE, 0xffffffff, &msg, sizeof(msg.Twrite));
+	err = cal_por(PORT_CONSOLE, 0xffffffff, &msg, MESSAGE_SIZE(Twrite));
 	if (err < 0)
 		printf("call error %d\n", (int)err);
 	return err;

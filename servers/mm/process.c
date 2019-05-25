@@ -561,6 +561,24 @@ int mm_thread_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 //TODO delete thread
 //TODO delete process
 
+int mm_thread_find(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+{
+	do {
+		mm_thread_t *th = get_thread((ID)args->arg1);
+		if (!th) {
+			reply->error_no = ESRCH;
+			break;
+		}
+
+		reply->error_no = EOK;
+		reply->result = th->process_id;
+		return reply_success;
+	} while (FALSE);
+
+	reply->result = -1;
+	return reply_failure;
+}
+
 mm_file_t *process_allocate_desc(void)
 {
 	return (mm_file_t*)slab_alloc(&file_slab);

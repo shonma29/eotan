@@ -38,7 +38,7 @@ static int _putc(const char, syslog_t *);
 void syslog(const int priority, const char *message, ...)
 {
 	syslog_t packet;
-	packet.Twrite.operation = operation_write;
+	packet.Twrite.type = Twrite;
 	packet.Twrite.priority = priority;
 	packet.Twrite.count = 0;
 

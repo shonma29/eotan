@@ -142,7 +142,7 @@ static void process(const int arg)
 					(unsigned char)(d & 0xff);
 			if (message->Tread.count <= message->Tread.offset) {
 				message->Rread.count = message->Tread.count;
-				reply(current_req, sizeof(message->Rread));
+				reply(current_req, MESSAGE_SIZE(Rread));
 				current_req = NULL;
 			}
 		} else
@@ -221,22 +221,22 @@ static void execute(request_message_t *req)
 	devmsg_t *message = &(req->message);
 	ER_UINT result;
 //TODO cancel request
-	switch (message->Tread.operation) {
-	case operation_read:
+	switch (message->type) {
+	case Tread:
 		result = check_param(message->Tread.offset,
 				message->Tread.count);
 		if (result) {
 			message->Rread.count = result;
-			reply(req, sizeof(message->Rread));
+			reply(req, MESSAGE_SIZE(Rread));
 
 		} else if (lfq_enqueue(&req_queue, &req) != QUEUE_OK) {
 			log_debug("hmi: req_queue is full\n");
 			message->Rread.count = E_NOMEM;
-			reply(req, sizeof(message->Rread));
+			reply(req, MESSAGE_SIZE(Rread));
 		}
 		break;
 
-	case operation_write:
+	case Twrite:
 #ifdef USE_VESA
 		if (message->Twrite.fid) {
 			if (kcall->region_get(get_rdv_tid(req->rdvno),
@@ -260,7 +260,7 @@ static void execute(request_message_t *req)
 		}
 #endif
 		message->Rwrite.count = result;
-		reply(req, sizeof(message->Rwrite));
+		reply(req, MESSAGE_SIZE(Rwrite));
 		break;
 
 	default:

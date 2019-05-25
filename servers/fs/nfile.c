@@ -68,15 +68,23 @@ int if_open(fs_request *req)
 
 int if_close(fs_request *req)
 {
+	int error_no;
+	devmsg_t *request = (devmsg_t*)&(req->packet);
 	session_t *session = session_find(unpack_pid(req));
-	if (!session)
-		return ESRCH;
+	if (session)
+		error_no = session_destroy_desc(session, request->Tclunk.fid);
+	else
+		error_no = ESRCH;
 
-	int error_no = session_destroy_desc(session, req->packet.arg1);
 	if (error_no)
-		return error_no;
+		reply_dev_error(req->rdvno, request->Tclunk.tag, error_no);
+	else {
+		devmsg_t response;
+		response.type = Rclunk;
+		response.Rclunk.tag = request->Tclunk.tag;
+		reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rclunk));
+	}
 
-	reply2(req->rdvno, 0, 0, 0);
 	return 0;
 }
 

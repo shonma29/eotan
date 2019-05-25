@@ -51,7 +51,7 @@ enum log_level {
 
 typedef union {
 	struct {
-		enum device_operation operation;
+		enum dev_message_type type;
 		enum syslog_channel fid;
 		size_t count;
 	} Tread;
@@ -60,7 +60,7 @@ typedef union {
 		char data[SYSLOG_MAX_LENGTH];
 	} Rread;
 	struct {
-		enum device_operation operation;
+		enum dev_message_type type;
 		enum log_level priority;
 		size_t count;
 		char data[SYSLOG_MAX_LENGTH];

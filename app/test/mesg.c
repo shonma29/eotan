@@ -64,7 +64,7 @@ static int exec(int out) {
 	ssize_t size;
 	unsigned char buf[sizeof(pk.Rread.data) + 2];
 
-	pk.Tread.operation = operation_read;
+	pk.Tread.type = Tread;
 	pk.Tread.fid = channel_syslog;
 	pk.Tread.count = sizeof(pk.Rread.data);
 

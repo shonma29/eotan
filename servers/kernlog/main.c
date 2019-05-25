@@ -148,8 +148,8 @@ static size_t execute(syslog_t *message)
 	ssize_t result;
 	size_t size = 0;
 
-	switch (message->Tread.operation) {
-	case operation_read:
+	switch (message->Tread.type) {
+	case Tread:
 		result = read(message->Rread.data,
 				message->Tread.fid,
 				message->Tread.count);
@@ -159,7 +159,7 @@ static size_t execute(syslog_t *message)
 				+ ((result > 0)? message->Rread.count:0);
 		break;
 
-	case operation_write:
+	case Twrite:
 		result = write(message->Twrite.priority, message->Twrite.data,
 				message->Twrite.count);
 		message->Rwrite.count = result;
@@ -279,15 +279,15 @@ static int write_cons(char *inbuf, const int channel,
 		size_t len = (rest < DEV_BUF_SIZE)? rest:DEV_BUF_SIZE;
 		devmsg_t packet;
 
-		packet.Twrite.operation = operation_write;
+		packet.type = Twrite;
 		packet.Twrite.fid = channel;
 		packet.Twrite.offset = wpos;
 		packet.Twrite.count = len;
 		packet.Twrite.data = &(inbuf[rpos]);
 
 		result = kcall->port_call(PORT_CONSOLE, &packet,
-				sizeof(packet.Twrite));
-		if (result != sizeof(packet.Rwrite)) {
+				MESSAGE_SIZE(Twrite));
+		if (result != MESSAGE_SIZE(Rwrite)) {
 			kcall->printk("cons: call failed(%d)\n", result);
 			return -1;
 		}

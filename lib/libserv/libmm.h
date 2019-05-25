@@ -29,12 +29,13 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <mm/segment.h>
 
-extern int process_create(ID pid, VP addr, size_t initial_len, VP heap_end);
-extern int process_destroy(ID pid);
-extern int process_duplicate(ID src_process, ID dest_process);
-extern ER_ID process_set_context(ID pid, W eip, B *stack, W stacksz);
-extern int vmap(ID pid, VP addr, UW len, W attr);
-extern int vunmap(ID pid, VP addr, UW len);
-extern ER_ID thread_create(ID pid, FP entry, VP sp);
+extern int process_create(ID, VP, size_t, VP);
+extern int process_destroy(ID);
+extern int process_duplicate(ID, ID);
+extern ER_ID process_set_context(ID, W, B *, W);
+extern int vmap(ID, VP, UW, W);
+extern int vunmap(ID, VP, UW);
+extern ER_ID thread_create(ID, FP, VP);
+extern ER_ID thread_find(ID);
 
 #endif

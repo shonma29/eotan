@@ -24,48 +24,29 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <core.h>
+#include <errno.h>
+#include <local.h>
+#include <mm.h>
+#include <services.h>
 #include <nerve/kcall.h>
-#include <sys/errno.h>
-#include "api.h"
 
 
-//TODO define reply0 and reply1
-int reply2(const RDVNO rdvno, int32_t error_no, int32_t result1,
-		int32_t result2)
+int thread_find(const ID thread_id)
 {
-	pm_reply_t response = {
-		result1,
-		result2,
-		error_no
-	};
+	mm_args_t args;
+	args.syscall_no = mm_syscall_thread_find;
+	args.arg1 = (ID)thread_id;
 
-	return kcall->port_reply(rdvno, &response, sizeof(response))?
-			ECONNREFUSED:0;
-}
+//	thread_local_t *local = _get_local();
+	mm_reply_t *reply = (mm_reply_t*)&args;
+	ER_UINT reply_size = kcall->port_call(PORT_MM, &args, sizeof(args));
+	if (reply_size == sizeof(*reply)) {
+//		local->error_no = reply->error_no;
+		return reply->result;
 
-int reply64(const RDVNO rdvno, int32_t error_no, int64_t result)
-{
-	pm_reply_t response;
-	response.error_no = error_no;
-	int64_t *p = (int64_t*)&(response.result1);
-	*p = result;
-
-	return kcall->port_reply(rdvno, &response, sizeof(response))?
-			ECONNREFUSED:0;
-}
-
-int reply_dev(const RDVNO rdvno, const devmsg_t *response, const size_t size)
-{
-	return kcall->port_reply(rdvno, (void*)response, size)? ECONNREFUSED:0;
-}
-
-int reply_dev_error(const RDVNO rdvno, const int tag, const int error_no)
-{
-	devmsg_t response;
-	response.type = Rerror;
-	response.Rerror.tag = tag;
-	response.Rerror.ename = error_no;
-
-	return kcall->port_reply(rdvno, (void*)&response, MESSAGE_SIZE(Rerror))?
-			ECONNREFUSED:0;
+	} else {
+//		local->error_no = ECONNREFUSED;
+		return -1;
+	}
 }
