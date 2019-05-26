@@ -24,25 +24,22 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <local.h>
 #include <mm.h>
 #include <services.h>
 #include <stdint.h>
+#include <string.h>
 #include <unistd.h>
 #include <boot/init.h>
 #include <core/options.h>
 #include <mm/config.h>
-#include <mm/segment.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
-#include <set/list.h>
-#include <set/tree.h>
 #include "interface.h"
 #include "process.h"
 #include "../../kernel/mpu/mpufunc.h"
+#include "../../lib/libserv/libserv.h"
 
 #define MIN_AUTO_FD (3)
 
@@ -53,6 +50,9 @@ static tree_t process_tree;
 static slab_t thread_slab;
 static tree_t thread_tree;
 static slab_t file_slab;
+static slab_t process_group_slab;
+static tree_t process_group_tree;
+static slab_t session_slab;
 
 static mm_thread_t *getMyThread(list_t *brothers);
 static void process_clear(mm_process_t *p);
@@ -78,6 +78,28 @@ static mm_thread_t *getMyThread(list_t *p)
 {
 	return (mm_thread_t*)((intptr_t)p - offsetof(mm_thread_t, brothers));
 }
+/*
+static mm_process_t *getProcessFromChildren(list_t *p)
+{
+	return (mm_process_t*)((intptr_t)p - offsetof(mm_process_t, children));
+}
+
+static mm_process_t *getProcessFromBrothers(list_t *p)
+{
+	return (mm_process_t*)((intptr_t)p - offsetof(mm_process_t, brothers));
+}
+
+static mm_process_t *getProcessFromMembers(list_t *p)
+{
+	return (mm_process_t*)((intptr_t)p - offsetof(mm_process_t, members));
+}
+
+static mm_process_group_t *getProcessGroupFromMembers(list_t *p)
+{
+	return (mm_process_group_t*)((intptr_t)p
+			- offsetof(mm_process_group_t, members));
+}
+*/
 
 static void process_clear(mm_process_t *p)
 {
@@ -89,7 +111,15 @@ static void process_clear(mm_process_t *p)
 	}
 
 	list_initialize(&(p->threads));
+	//TODO leave on exec
 	tree_create(&(p->files), NULL);
+	tree_create(&(p->sessions), NULL);
+	list_initialize(&(p->brothers));
+	list_initialize(&(p->children));
+	list_initialize(&(p->members));
+	p->local = NULL;
+	p->wait.rdvno = 0;
+	p->name[0] = '\0';
 }
 
 static void thread_clear(mm_thread_t *th, mm_process_t *p)
@@ -101,7 +131,7 @@ static void thread_clear(mm_thread_t *th, mm_process_t *p)
 
 void process_initialize(void)
 {
-	/* initialize process table */
+	// initialize process table
 	process_slab.unit_size = sizeof(mm_process_t);
 	process_slab.block_size = PAGE_SIZE;
 	process_slab.min_block = 1;
@@ -113,7 +143,7 @@ void process_initialize(void)
 
 	tree_create(&process_tree, NULL);
 
-	/* initialize thread table */
+	// initialize thread table
 	thread_slab.unit_size = sizeof(mm_thread_t);
 	thread_slab.block_size = PAGE_SIZE;
 	thread_slab.min_block = 1;
@@ -125,7 +155,7 @@ void process_initialize(void)
 
 	tree_create(&thread_tree, NULL);
 
-	/* initialize file table */
+	// initialize file table
 	file_slab.unit_size = sizeof(mm_file_t);
 	file_slab.block_size = PAGE_SIZE;
 	file_slab.min_block = 1;
@@ -134,6 +164,28 @@ void process_initialize(void)
 	file_slab.palloc = kcall->palloc;
 	file_slab.pfree = kcall->pfree;
 	slab_create(&file_slab);
+
+	// initialize process group table
+	process_group_slab.unit_size = sizeof(mm_process_group_t);
+	process_group_slab.block_size = PAGE_SIZE;
+	process_group_slab.min_block = 1;
+	process_group_slab.max_block = tree_max_block(PROCESS_GROUP_MAX,
+			PAGE_SIZE, sizeof(mm_process_group_t));
+	process_group_slab.palloc = kcall->palloc;
+	process_group_slab.pfree = kcall->pfree;
+	slab_create(&process_group_slab);
+
+	tree_create(&process_group_tree, NULL);
+
+	// initialize session table
+	session_slab.unit_size = sizeof(mm_session_t);
+	session_slab.block_size = PAGE_SIZE;
+	session_slab.min_block = 1;
+	session_slab.max_block = tree_max_block(SESSION_MAX, PAGE_SIZE,
+			sizeof(mm_session_t));
+	session_slab.palloc = kcall->palloc;
+	session_slab.pfree = kcall->pfree;
+	slab_create(&session_slab);
 }
 
 int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
@@ -158,6 +210,8 @@ int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 				break;
 			}
 
+			//TODO adhoc
+			p->directory = NULL;
 			process_clear(p);
 
 			//TODO check NULL
@@ -179,6 +233,15 @@ int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		p->segments.heap.attr = type_heap;
 
 		if (p->node.key == INIT_PID) {
+			p->ppid = INIT_PPID;
+			p->pgid = INIT_PID;
+			p->uid = INIT_UID;
+			p->gid = INIT_GID;
+			if (!tree_put(&process_group_tree, INIT_PID,
+					(node_t*)p)) {
+				//TODO what to do?
+			}
+
 			mm_file_t *f = process_allocate_desc();
 			if (f) {
 				f->server_id = PORT_CONSOLE;
@@ -212,6 +275,13 @@ int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 					process_deallocate_desc(f);
 			}
 		}
+
+log_notice("c %d %x->%x, %x->%x pp=%d pg=%d u=%d g=%d n=%s\n",
+		p->node.key,
+		&p->brothers, p->brothers.next,
+		&p->members, p->members.next,
+		p->ppid, p->pgid, p->uid, p->gid,
+		p->name);
 
 		reply->error_no = EOK;
 		reply->result = 0;
@@ -323,10 +393,32 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			d->f_flag = s->f_flag;
 			d->f_count = s->f_count;
 			d->f_offset = s->f_offset;
+//TODO attach
+//TODO walk
+//TODO open
 			if (process_set_desc(dest, fd, d))
 				process_deallocate_desc(d);
 		}
 
+		list_append(&(src->children), &(dest->brothers));
+		node_t *leader = tree_get(&process_group_tree, INIT_PID);
+		if (leader) {
+			list_append(&((mm_process_group_t*)leader)->members,
+					&(dest->members));
+		}
+		dest->ppid = src->node.key;
+		dest->pgid = src->pgid;
+		dest->uid = src->uid;
+		dest->gid = src->gid;
+		//TODO attach -> walk -> set cwd
+		//TODO set local
+		strcpy(dest->name, src->name);
+log_notice("d %d %x->%x, %x->%x pp=%d pg=%d u=%d g=%d n=%s\n",
+		dest->node.key,
+		&dest->brothers, dest->brothers.next,
+		&dest->members, dest->members.next,
+		dest->ppid, dest->pgid, dest->uid, dest->gid,
+		dest->name);
 		reply->error_no = EOK;
 		reply->result = 0;
 		return reply_success;

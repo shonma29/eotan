@@ -31,5 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 #define THREAD_MAX (65535)
 #define FILE_MAX (65535)
 #define FILES_PER_PROCESS (32)
+#define PROCESS_GROUP_MAX (65535)
+#define SESSION_MAX (65535)
 
 #endif

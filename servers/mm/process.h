@@ -26,10 +26,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <core.h>
+#include <local.h>
 #include <mm/segment.h>
 #include <mpu/memory.h>
 #include <set/list.h>
 #include <set/tree.h>
+#include <sys/types.h>
 
 typedef struct {
 	node_t node;
@@ -50,6 +53,16 @@ typedef struct {
 
 typedef struct {
 	node_t node;
+	list_t members;
+} mm_process_group_t;
+
+typedef struct {
+	node_t node;
+	int fid;
+} mm_session_t;
+
+typedef struct {
+	node_t node;
 	struct {
 		mm_segment_t heap;
 		mm_segment_t stack;
@@ -57,6 +70,21 @@ typedef struct {
 	void *directory;
 	list_t threads;
 	tree_t files;
+	tree_t sessions;//TODO attach on fork/walk
+	list_t brothers;
+	list_t children;
+	list_t members;
+	pid_t ppid;
+	pid_t pgid;
+	uid_t uid;
+	gid_t gid;
+	thread_local_t *local;//TODO set on fork/exec
+	int exit_status;//TODO set on exit/kill
+	struct {
+		RDVNO rdvno;//TODO set on waitpid
+		pid_t wpid;//TODO set on waitpid
+	} wait;
+	char name[32];//TODO set on fork/exec
 } mm_process_t;
 
 extern void process_initialize(void);
