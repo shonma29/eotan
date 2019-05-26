@@ -237,9 +237,16 @@ int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			p->pgid = INIT_PID;
 			p->uid = INIT_UID;
 			p->gid = INIT_GID;
-			if (!tree_put(&process_group_tree, INIT_PID,
-					(node_t*)p)) {
-				//TODO what to do?
+
+			mm_process_group_t *pg =
+					slab_alloc(&process_group_slab);
+			if (pg) {
+				list_initialize(&(pg->members));
+				if (!tree_put(&process_group_tree, INIT_PID,
+						(node_t*)pg)) {
+					//TODO what to do?
+					slab_free(&process_group_slab, pg);
+				}
 			}
 
 			mm_file_t *f = process_allocate_desc();
@@ -413,6 +420,7 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		//TODO attach -> walk -> set cwd
 		//TODO set local
 		strcpy(dest->name, src->name);
+
 log_notice("d %d %x->%x, %x->%x pp=%d pg=%d u=%d g=%d n=%s\n",
 		dest->node.key,
 		&dest->brothers, dest->brothers.next,
