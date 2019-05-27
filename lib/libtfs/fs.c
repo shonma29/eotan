@@ -192,7 +192,7 @@ static int sfs_statvfs(vfs_t * fsp, struct statvfs * result)
     result->f_files = sb->ninode;
     result->f_ffree = sb->freeinode;
     result->f_favail = sb->freeinode;
-    result->f_fsid = FS_SFS;
+    result->f_fsid = FS_TFS;
     result->f_flag = 0;
     result->f_namemax = TFS_MAXNAMLEN;
     return 0;

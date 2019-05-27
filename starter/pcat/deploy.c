@@ -245,7 +245,7 @@ static void initialize_initrd_info(void)
 {
 	system_info_t *info = kern_v2p(sysinfo);
 	info->root.device = get_device_id(DEVICE_MAJOR_ATA, 0);
-	info->root.fstype = FS_SFS;
+	info->root.fstype = FS_TFS;
 	info->initrd.start = NULL;
 	info->initrd.size = 0;
 }
