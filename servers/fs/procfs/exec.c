@@ -125,7 +125,7 @@ W exec_program(pm_args_t *req, W procid, B * pathname)
 	procp->proc_status = PS_TRANSITION;
 
 	/* region の解放 */
-	error_no = process_destroy(procid);
+	error_no = process_clean(procid);
 	if (error_no)
 	    break;
 

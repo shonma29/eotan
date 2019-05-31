@@ -48,7 +48,7 @@ typedef enum {
 	mm_syscall_vunmap = 3,
 	mm_syscall_clock_gettime = 4,
 	mm_syscall_process_create = 5,
-	mm_syscall_process_destroy = 6,
+	mm_syscall_process_clean = 6,
 	mm_syscall_process_duplicate = 7,
 	mm_syscall_process_set_context = 8,
 	mm_syscall_sbrk = 9,

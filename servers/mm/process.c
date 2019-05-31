@@ -321,7 +321,7 @@ int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	return reply_failure;
 }
 
-int mm_process_destroy(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+int mm_process_clean(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
 		mm_process_t *p = get_process((ID)args->arg1);

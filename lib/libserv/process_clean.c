@@ -32,14 +32,14 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 
 
-int process_destroy(ID pid)
+int process_clean(ID pid)
 {
 //	thread_local_t *local = _get_local();
 	mm_args_t args;
 	mm_reply_t *reply = (mm_reply_t*)&args;
 	ER_UINT reply_size;
 
-	args.syscall_no = mm_syscall_process_destroy;
+	args.syscall_no = mm_syscall_process_clean;
 	args.arg1 = (long int)pid;
 	reply_size = kcall->port_call(PORT_MM, &args, sizeof(args));
 
