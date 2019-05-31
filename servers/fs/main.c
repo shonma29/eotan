@@ -61,7 +61,6 @@ static int (*syscall[])(fs_request*) = {
 	if_remove,
 	if_fstat,
 	if_chmod,
-	NULL,
 	if_open,
 	if_lseek,
 	if_read,

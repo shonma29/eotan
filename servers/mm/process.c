@@ -50,6 +50,7 @@ static tree_t process_tree;
 static slab_t thread_slab;
 static tree_t thread_tree;
 static slab_t file_slab;
+static slab_t descriptor_slab;
 static slab_t process_group_slab;
 static tree_t process_group_tree;
 static slab_t session_slab;
@@ -112,7 +113,7 @@ static void process_clear(mm_process_t *p)
 
 	list_initialize(&(p->threads));
 	//TODO leave on exec
-	tree_create(&(p->files), NULL);
+	tree_create(&(p->descriptors), NULL);
 	tree_create(&(p->sessions), NULL);
 	list_initialize(&(p->brothers));
 	list_initialize(&(p->children));
@@ -164,6 +165,16 @@ void process_initialize(void)
 	file_slab.palloc = kcall->palloc;
 	file_slab.pfree = kcall->pfree;
 	slab_create(&file_slab);
+
+	// initialize descriptor table
+	descriptor_slab.unit_size = sizeof(mm_descriptor_t);
+	descriptor_slab.block_size = PAGE_SIZE;
+	descriptor_slab.min_block = 1;
+	descriptor_slab.max_block = tree_max_block(FILE_MAX, PAGE_SIZE,
+			sizeof(mm_descriptor_t));
+	descriptor_slab.palloc = kcall->palloc;
+	descriptor_slab.pfree = kcall->pfree;
+	slab_create(&descriptor_slab);
 
 	// initialize process group table
 	process_group_slab.unit_size = sizeof(mm_process_group_t);
@@ -249,46 +260,57 @@ int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 				}
 			}
 
-			mm_file_t *f = process_allocate_desc();
-			if (f) {
+			mm_descriptor_t *d = process_create_file();
+			if (d) {
+				mm_file_t *f = d->file;
 				f->server_id = PORT_CONSOLE;
+				//TODO open
 				f->fid = 0;
 				f->f_flag = O_RDONLY;
 				f->f_count = 1;
 				f->f_offset = 0;
-				if (process_set_desc(p, STDIN_FILENO, f))
-					process_deallocate_desc(f);
+				if (process_set_desc(p, STDIN_FILENO, d)) {
+					//TODO what to do?
+					process_deallocate_file(f);
+					process_deallocate_desc(d);
+				}
 			}
 
-			f = process_allocate_desc();
-			if (f) {
+			d = process_create_file();
+			if (d) {
+				mm_file_t *f = d->file;
 				f->server_id = PORT_CONSOLE;
+				//TODO open
 				f->fid = 0;
 				f->f_flag = O_WRONLY;
 				f->f_count = 1;
 				f->f_offset = 0;
-				if (process_set_desc(p, STDOUT_FILENO, f))
-					process_deallocate_desc(f);
-			}
+				if (process_set_desc(p, STDOUT_FILENO, d)) {
+					//TODO what to do?
+					process_deallocate_file(f);
+					process_deallocate_desc(d);
+				}
 
-			f = process_allocate_desc();
-			if (f) {
-				f->server_id = PORT_CONSOLE;
-				f->fid = 0;
-				f->f_flag = O_WRONLY;
-				f->f_count = 1;
-				f->f_offset = 0;
-				if (process_set_desc(p, STDERR_FILENO, f))
-					process_deallocate_desc(f);
+				d = process_allocate_desc();
+				if (d) {
+					if (process_set_desc(p, STDERR_FILENO,
+							d))
+						//TODO what to do?
+						process_deallocate_desc(d);
+					else {
+						d->file = f;
+						f->f_count++;
+					}
+				}
 			}
 		}
 
-log_notice("c %d %x->%x, %x->%x pp=%d pg=%d u=%d g=%d n=%s\n",
-		p->node.key,
-		&p->brothers, p->brothers.next,
-		&p->members, p->members.next,
-		p->ppid, p->pgid, p->uid, p->gid,
-		p->name);
+		log_notice("c %d %x->%x, %x->%x pp=%d pg=%d u=%d g=%d n=%s\n",
+				p->node.key,
+				&p->brothers, p->brothers.next,
+				&p->members, p->members.next,
+				p->ppid, p->pgid, p->uid, p->gid,
+				p->name);
 
 		reply->error_no = EOK;
 		reply->result = 0;
@@ -387,24 +409,21 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		dest->segments.heap = src->segments.heap;
 
 		for (int fd = 0; fd < FILES_PER_PROCESS; fd++) {
-			mm_file_t *s = process_find_desc(src, fd);
+			mm_descriptor_t *s = process_find_desc(src, fd);
 			if (!s)
 				continue;
 
-			mm_file_t *d = process_allocate_desc();
+			mm_descriptor_t *d = process_allocate_desc();
 			if (!d)
+				//TODO return error
 				continue;
 
-			d->server_id = s->server_id;
-			d->fid = s->fid;
-			d->f_flag = s->f_flag;
-			d->f_count = s->f_count;
-			d->f_offset = s->f_offset;
-//TODO attach
-//TODO walk
-//TODO open
 			if (process_set_desc(dest, fd, d))
 				process_deallocate_desc(d);
+			else {
+				d->file = s->file;
+				d->file->f_count++;
+			}
 		}
 
 		list_append(&(src->children), &(dest->brothers));
@@ -421,12 +440,12 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		//TODO set local
 		strcpy(dest->name, src->name);
 
-log_notice("d %d %x->%x, %x->%x pp=%d pg=%d u=%d g=%d n=%s\n",
-		dest->node.key,
-		&dest->brothers, dest->brothers.next,
-		&dest->members, dest->members.next,
-		dest->ppid, dest->pgid, dest->uid, dest->gid,
-		dest->name);
+		log_notice("d %d %x->%x, %x->%x pp=%d pg=%d u=%d g=%d n=%s\n",
+				dest->node.key,
+				&dest->brothers, dest->brothers.next,
+				&dest->members, dest->members.next,
+				dest->ppid, dest->pgid, dest->uid, dest->gid,
+				dest->name);
 		reply->error_no = EOK;
 		reply->result = 0;
 		return reply_success;
@@ -736,32 +755,64 @@ int mm_thread_find(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	return reply_failure;
 }
 
-mm_file_t *process_allocate_desc(void)
+mm_descriptor_t *process_create_file(void)
 {
-	return (mm_file_t*)slab_alloc(&file_slab);
+	mm_descriptor_t *d = (mm_descriptor_t*)slab_alloc(&descriptor_slab);
+	if (d) {
+		mm_file_t *f = (mm_file_t*)slab_alloc(&file_slab);
+		if (!f) {
+			slab_free(&descriptor_slab, d);
+			return NULL;
+		}
+
+		d->file = f;
+	}
+
+	return d;
 }
 
-void process_deallocate_desc(mm_file_t *desc)
+void process_deallocate_file(mm_file_t *file)
 {
-	slab_free(&file_slab, desc);
+	slab_free(&file_slab, file);
 }
 
-int process_set_desc(mm_process_t *process, const int fd, mm_file_t *desc)
+mm_descriptor_t *process_allocate_desc(void)
 {
-	return tree_put(&(process->files), fd, &(desc->node))? 0:1;
+	mm_descriptor_t *d = (mm_descriptor_t*)slab_alloc(&descriptor_slab);
+	if (d)
+		//TODO is needed?
+		d->file = NULL;
+
+	return d;
+}
+
+void process_deallocate_desc(mm_descriptor_t *desc)
+{
+	slab_free(&descriptor_slab, desc);
+}
+
+int process_set_desc(mm_process_t *process, const int fd, mm_descriptor_t *desc)
+{
+	return tree_put(&(process->descriptors), fd, &(desc->node))? 0:1;
 }
 
 int process_destroy_desc(mm_process_t *process, const int fd)
 {
-	mm_file_t *file = (mm_file_t*)tree_remove(&(process->files), fd);
-	if (!file)
+	mm_descriptor_t *desc =
+			(mm_descriptor_t*)tree_remove(&(process->descriptors),
+					fd);
+	if (!desc)
 		return EBADF;
 
-	slab_free(&file_slab, file);
+	if (desc->file)
+		//TODO close here?
+		process_deallocate_file(desc->file);
+
+	process_deallocate_desc(desc);
 	return 0;
 }
 
-mm_file_t *process_find_desc(const mm_process_t *process, const int fd)
+mm_descriptor_t *process_find_desc(const mm_process_t *process, const int fd)
 {
-	return (mm_file_t*)tree_get(&(process->files), fd);
+	return (mm_descriptor_t*)tree_get(&(process->descriptors), fd);
 }

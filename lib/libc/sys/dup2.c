@@ -24,15 +24,29 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "sys.h"
+#include <core.h>
+#include <errno.h>
+#include <local.h>
+#include <mm.h>
+#include <services.h>
 
 
 int dup2(int oldd, int newd)
 {
-	pm_args_t request;
+	mm_args_t args;
+	args.syscall_no = mm_syscall_dup;
+	args.arg1 = oldd;
+	args.arg2 = newd;
 
-	request.arg1 = oldd;
-	request.arg2 = newd;
+	thread_local_t *local = _get_local();
+	mm_reply_t *reply = (mm_reply_t*)&args;
+	ER_UINT reply_size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
+	if (reply_size == sizeof(*reply)) {
+		local->error_no = reply->error_no;
+		return reply->result;
 
-	return _call_fs(pm_syscall_dup2, &request);
+	} else {
+		local->error_no = ECONNREFUSED;
+		return (-1);
+	}
 }

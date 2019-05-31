@@ -38,12 +38,11 @@ typedef enum {
 	pm_syscall_remove = 7,
 	pm_syscall_fstat = 8,
 	pm_syscall_chmod = 9,
-	pm_syscall_dup2 = 10,
-	pm_syscall_open = 11,
-	pm_syscall_lseek = 12,
-	pm_syscall_read = 13,
-	pm_syscall_write = 14,
-	pm_syscall_close = 15
+	pm_syscall_open = 10,
+	pm_syscall_lseek = 11,
+	pm_syscall_read = 12,
+	pm_syscall_write = 13,
+	pm_syscall_close = 14
 } pm_syscall_e;
 
 typedef struct {

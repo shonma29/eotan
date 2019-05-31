@@ -35,13 +35,17 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/types.h>
 
 typedef struct {
-	node_t node;
 	int server_id;
 	int fid;
 	int f_flag;
 	int f_count;
 	off_t f_offset;
 } mm_file_t;
+
+typedef struct {
+	node_t node;
+	mm_file_t *file;
+} mm_descriptor_t;
 
 typedef struct {
 	node_t node;
@@ -69,7 +73,7 @@ typedef struct {
 	} segments;
 	void *directory;
 	list_t threads;
-	tree_t files;
+	tree_t descriptors;
 	tree_t sessions;//TODO attach on fork/walk
 	list_t brothers;
 	list_t children;
@@ -91,12 +95,13 @@ extern void process_initialize(void);
 extern mm_process_t *get_process(const ID);
 extern mm_thread_t *get_thread(const ID);
 
-extern mm_file_t *process_allocate_desc(void);
-extern void process_deallocate_desc(mm_file_t *);
-extern int process_set_desc(mm_process_t *, const int, mm_file_t *);
-
-extern int process_destroy_desc(mm_process_t *process, const int fd);
-extern mm_file_t *process_find_desc(const mm_process_t *process, const int fd);
+extern mm_descriptor_t *process_create_file(void);
+extern void process_deallocate_file(mm_file_t *);
+extern mm_descriptor_t *process_allocate_desc(void);
+extern void process_deallocate_desc(mm_descriptor_t *);
+extern int process_set_desc(mm_process_t *, const int, mm_descriptor_t *);
+extern int process_destroy_desc(mm_process_t *, const int);
+extern mm_descriptor_t *process_find_desc(const mm_process_t *, const int);
 
 extern ER default_handler(void);
 extern ER stack_fault_handler(void);

@@ -28,17 +28,17 @@ For more information, please refer to <http://unlicense.org/>
 */
 
 typedef struct {
-	unsigned long int syscall_no;
-	long int arg1;
-	long int arg2;
-	long int arg3;
-	long int arg4;
-	long int arg5;
+	unsigned int syscall_no;
+	int arg1;
+	int arg2;
+	int arg3;
+	int arg4;
+	int arg5;
 } mm_args_t;
 
 typedef struct {
-	long int result;
-	long int error_no;
+	int result;
+	int error_no;
 } mm_reply_t;
 
 typedef enum {
@@ -53,7 +53,8 @@ typedef enum {
 	mm_syscall_process_set_context = 8,
 	mm_syscall_sbrk = 9,
 	mm_syscall_thread_create = 10,
-	mm_syscall_thread_find = 11
+	mm_syscall_thread_find = 11,
+	mm_syscall_dup = 12
 } mm_syscall_e;
 
 #endif

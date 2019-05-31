@@ -51,7 +51,8 @@ static int (*funcs[])(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args) = {
 	mm_process_set_context,
 	mm_sbrk,
 	mm_thread_create,
-	mm_thread_find
+	mm_thread_find,
+	mm_dup
 };
 
 #define BUFSIZ (sizeof(mm_args_t))
@@ -61,11 +62,11 @@ static int (*funcs[])(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args) = {
 static ER init(void);
 static ER proxy_initialize(void);
 static void proxy(void);
-static int if_dup(mm_process_t *, pm_args_t *);
 static int if_open(mm_process_t *, pm_args_t *);
 static int if_read(mm_process_t *, pm_args_t *);
 static int if_write(mm_process_t *, pm_args_t *);
 static int if_close(mm_process_t *, pm_args_t *);
+static int file_close(mm_file_t *, devmsg_t *);
 static int if_stat(mm_process_t *, pm_args_t *);
 static int if_ref_fid(mm_process_t *, pm_args_t *);
 static int call_device(const int, devmsg_t *, const size_t, const int,
@@ -132,10 +133,6 @@ static void proxy(void)
 		int result;
 		int op = args.operation;
 		switch (args.operation) {
-		case pm_syscall_dup2:
-//TODO implement in here
-			result = if_dup(process, &args);
-			break;
 		case pm_syscall_open:
 //TODO walk and open / create
 			result = if_open(process, &args);
@@ -175,77 +172,83 @@ static void proxy(void)
 	}
 }
 
-static int if_dup(mm_process_t *process, pm_args_t *args)
+int mm_dup(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
-	int fid = args->arg1;
-	mm_file_t *f1 = process_find_desc(process, fid);
-	if (!f1)
-		return EBADF;
-
-	if (fid != args->arg2) {
-		int fid2 = 0;
-		//TODO check arg2
-		mm_file_t *f2 = process_find_desc(process, args->arg2);
-		if (f2) {
-			devmsg_t message;
-			message.type = Tclunk;
-			message.Tclunk.tag = args->process_id;
-			message.Tclunk.fid = f2->fid;
-			int result = call_device(f2->server_id, &message,
-					MESSAGE_SIZE(Tclunk),
-					Rclunk, MESSAGE_SIZE(Rclunk));
-			if (result) {
-				//TODO what to do?
-				log_notice("proxy: %d dup err in close(%d) %d\n",
-						process->node.key, f2->fid, result);
-			} else {
-				log_notice("proxy: %d dup ok in close(%d)\n",
-						process->node.key, f2->fid);
-			}
-		} else {
-			fid2 = args->arg2;
-			//TODO lock fid2 in tree
-			f2 = process_allocate_desc();
-			if (!f2)
-				return ENOMEM;
-
-			f2->fid = fid2;
+	do {
+		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
+		if (!th) {
+			reply->error_no = ESRCH;
+			break;
 		}
 
-		//TODO share descriptor
-		f2->server_id = f1->server_id;
-		f2->fid = f1->fid;
-		//TODO mask flag if needed
-		f2->f_flag = f1->f_flag;
-		f2->f_count = f1->f_count;
-		f2->f_offset = f1->f_offset;
+		mm_process_t *process = get_process(th->process_id);
+		if (!process) {
+			reply->error_no = ESRCH;
+			break;
+		}
 
-		if (fid2)
-			if (process_set_desc(process, fid2, f2)) {
-			process_deallocate_desc(f2);
-				//TODO what to do?
+		int fid = args->arg1;
+		mm_descriptor_t *d1 = process_find_desc(process, fid);
+		if (!d1) {
+			reply->error_no = EBADF;
+			break;
+		}
+
+		if (fid != args->arg2) {
+			if (args->arg2 < 0) {
+				reply->error_no = EINVAL;
+				break;
 			}
-	}
 
-	pm_reply_t *reply = (pm_reply_t*)args;
-	reply->result1 = args->arg2;
-	reply->result2 = 0;
-	reply->error_no = 0;
+			mm_descriptor_t *d2 = process_find_desc(process,
+					args->arg2);
+			if (d2) {
+				pm_args_t pargs;
+				pargs.operation = pm_syscall_close;
+				pargs.process_id = process->node.key
+						| get_rdv_tid(rdvno) << 16;
+				file_close(d2->file, (devmsg_t*)&pargs);
+				d2->file = NULL;
+			} else {
+				int fid2 = args->arg2;
+				//TODO lock fid2 in tree
+				d2 = process_allocate_desc();
+				if (!d2) {
+					reply->result = ENOMEM;
+					break;
+				}
 
-	return 0;
+				if (process_set_desc(process, fid2, d2)) {
+					process_deallocate_desc(d2);
+					//TODO what to do?
+				}
+			}
+
+			d2->file = d1->file;
+			d2->file->f_count++;
+		}
+
+		reply->result = args->arg2;
+		reply->error_no = 0;
+		return reply_success;
+	} while (FALSE);
+
+	reply->result = -1;
+	return reply_failure;
 }
 
 static int if_open(mm_process_t *process, pm_args_t *args)
 {
-	mm_file_t *f = process_allocate_desc();
-	if (!f)
+	mm_descriptor_t *d = process_create_file();
+	if (!d)
 		return ENOMEM;
 
 	int oflag = args->arg2;
 
 	if (kcall->port_call(PORT_FS, args, sizeof(*args))
 			!= sizeof(pm_reply_t)) {
-		process_deallocate_desc(f);
+		process_deallocate_file(d->file);
+		process_deallocate_desc(d);
 		return ECONNREFUSED;
 	}
 
@@ -254,6 +257,7 @@ static int if_open(mm_process_t *process, pm_args_t *args)
 			process->node.key, reply->result1, reply->error_no);
 
 	if (reply->result1 >= 0) {
+		mm_file_t *f = d->file;
 		f->server_id = PORT_FS;
 		f->fid = reply->result1;
 		f->f_flag = oflag;
@@ -262,12 +266,14 @@ static int if_open(mm_process_t *process, pm_args_t *args)
 		f->f_offset = 0;
 
 		//TODO find empty fid
-		if (process_set_desc(process, reply->result1, f)) {
-			process_deallocate_desc(f);
+		if (process_set_desc(process, reply->result1, d)) {
+			process_deallocate_file(d->file);
+			process_deallocate_desc(d);
 			//TODO what to do?
 		}
 	} else {
-		process_deallocate_desc(f);
+		process_deallocate_file(d->file);
+		process_deallocate_desc(d);
 	}
 
 	return 0;
@@ -275,10 +281,11 @@ static int if_open(mm_process_t *process, pm_args_t *args)
 
 static int if_read(mm_process_t *process, pm_args_t *args)
 {
-	mm_file_t *f = process_find_desc(process, args->arg1);
-	if (!f)
+	mm_descriptor_t *d = process_find_desc(process, args->arg1);
+	if (!d)
 		return EBADF;
 
+	mm_file_t *f = d->file;
 	devmsg_t *message = (devmsg_t*)args;
 	if (f->server_id != PORT_FS)
 		message->type = Tread;
@@ -302,10 +309,11 @@ static int if_read(mm_process_t *process, pm_args_t *args)
 
 static int if_write(mm_process_t *process, pm_args_t *args)
 {
-	mm_file_t *f = process_find_desc(process, args->arg1);
-	if (!f)
+	mm_descriptor_t *d = process_find_desc(process, args->arg1);
+	if (!d)
 		return EBADF;
 
+	mm_file_t *f = d->file;
 	devmsg_t *message = (devmsg_t*)args;
 	if (f->server_id != PORT_FS)
 		message->type = Twrite;
@@ -330,20 +338,16 @@ static int if_write(mm_process_t *process, pm_args_t *args)
 static int if_close(mm_process_t *process, pm_args_t *args)
 {
 	int fid = args->arg1;
-	mm_file_t *f = process_find_desc(process, fid);
-	if (!f)
+	mm_descriptor_t *d = process_find_desc(process, fid);
+	if (!d)
 		return EBADF;
 
+	int result = file_close(d->file, (devmsg_t*)args);
+	d->file = NULL;
 	if (process_destroy_desc(process, fid)) {
 		//TODO what to do?
 	}
 
-	devmsg_t *message = (devmsg_t*)args;
-	if (f->server_id != PORT_FS)
-		message->type = Tclunk;
-	message->Tclunk.fid = f->fid;
-	int result = call_device(f->server_id, message, MESSAGE_SIZE(Tclunk),
-			Rclunk, MESSAGE_SIZE(Rclunk));
 	if (result) {
 		log_notice("proxy: %d close err(%d) %d\n",
 				process->node.key, fid, result);
@@ -361,12 +365,32 @@ static int if_close(mm_process_t *process, pm_args_t *args)
 	return 0;
 }
 
+static int file_close(mm_file_t *file, devmsg_t *message)
+{
+	file->f_count--;
+	if (file->f_count > 0) {
+		log_notice("proxy: close skip(%d)\n", file->fid);
+		return 0;
+	}
+
+	if (file->server_id != PORT_FS)
+		message->type = Tclunk;
+	message->Tclunk.fid = file->fid;
+
+	int result = call_device(file->server_id, message,
+			MESSAGE_SIZE(Tclunk), Rclunk, MESSAGE_SIZE(Rclunk));
+
+	process_deallocate_file(file);
+	return result;
+}
+
 static int if_stat(mm_process_t *process, pm_args_t *args)
 {
-	mm_file_t *f = process_find_desc(process, args->arg1);
-	if (!f)
+	mm_descriptor_t *d = process_find_desc(process, args->arg1);
+	if (!d)
 		return EBADF;
 
+	mm_file_t *f = d->file;
 	devmsg_t *message = (devmsg_t*)args;
 	message->Tstat.fid = f->fid;
 	int result = call_device(f->server_id, message, MESSAGE_SIZE(Tstat),
@@ -384,11 +408,11 @@ static int if_stat(mm_process_t *process, pm_args_t *args)
 
 static int if_ref_fid(mm_process_t *process, pm_args_t *args)
 {
-	mm_file_t *f = process_find_desc(process, args->arg1);
-	if (!f)
+	mm_descriptor_t *d = process_find_desc(process, args->arg1);
+	if (!d)
 		return EBADF;
 
-	args->arg1 = f->fid;
+	args->arg1 = d->file->fid;
 	if (kcall->port_call(PORT_FS, args, sizeof(*args))
 			!= sizeof(pm_reply_t))
 		return ECONNREFUSED;

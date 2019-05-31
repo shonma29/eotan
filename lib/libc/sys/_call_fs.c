@@ -52,7 +52,6 @@ _make_connection(W wOperation,
     case 12:
     case 13:
     case 14:
-    case 15:
 	port = PORT_PM;
 	break;
     default:
