@@ -34,7 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 
 .global _start
 
-.include "starter/arch/starter.inc"
+.include "starter/arch/loader.inc"
 
 .set BIOS_MEMORY_KB, 32
 

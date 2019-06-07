@@ -31,59 +31,59 @@ CFLAGS += -I kernel
 LDFLAGS = --oformat binary
 LIB = libc
 
-STARTER_SIZE = 16384
 BLK_SIZE = 512
-BOOT_ADDR = 0x7c00
+LOADER_ADDR = 0x7c00
 STARTER_SEG = 0x0800
 STARTER_ADDR = 0x8000
-LOADER_SIZE = 12288
-RUNNER_ADDR = 0x8000b000
-RUNNER_SIZE = 4096
-MAX_KERN = `echo "(640 - 32 - 16 - 4) * 1024" | bc`
+STARTER_SIZE = 12288
+BOOT_ADDR = 0x8000b000
+BOOT_SIZE = 4096
+BIN_SIZE = `echo "$(STARTER_SIZE) + $(BOOT_SIZE)" | bc`
+MAX_KERNEL = `echo "(640 - 32 - 16 - 4) * 1024" | bc`
 
 OBJS = build/boot.img $(WD)/pad $(WD)/append \
-	$(WD)/boot.bin $(WD)/boot.o $(WD)/starter.inc \
-	$(WD)/kern.bin \
-	$(WD)/starter.bin $(WD)/starter $(WD)/starter.o $(WD)/main.o \
-	$(WD)/deploy.o $(WD)/decode.o \
-	$(WD)/runner $(WD)/runner.o
+	$(WD)/loader $(WD)/loader.o $(WD)/loader.inc \
+	$(WD)/kernel.img \
+	$(WD)/starter.bin $(WD)/starter $(WD)/protect.o $(WD)/starter.o \
+	$(WD)/memory.o $(WD)/decode.o \
+	$(WD)/boot $(WD)/boot.o
 
 $(TARGET): build/boot.img
 	mkisofs -R -b boot.img -o $(TARGET) build
 
-build/boot.img: $(WD)/pad $(WD)/boot.bin $(WD)/kern.bin
-	[ `wc -c < $(WD)/kern.bin` -le $(MAX_KERN) ]
-	cat $(WD)/boot.bin $(WD)/kern.bin > $@
+build/boot.img: $(WD)/pad $(WD)/loader $(WD)/kernel.img
+	[ `wc -c < $(WD)/kernel.img` -le $(MAX_KERNEL) ]
+	cat $(WD)/loader $(WD)/kernel.img > $@
 	$(WD)/pad $@ 1474560
 
-$(WD)/boot.bin: $(WD)/boot.o
-	$(LD) $(LDFLAGS) -L$(LIB) -Ttext $(BOOT_ADDR) -o $@ $^
+$(WD)/loader: $(WD)/loader.o
+	$(LD) $(LDFLAGS) -L$(LIB) -Ttext $(LOADER_ADDR) -o $@ $^
 
-$(WD)/boot.o: $(WD)/boot.s $(WD)/starter.inc
+$(WD)/loader.o: $(WD)/loader.s $(WD)/loader.inc
 
-$(WD)/starter.inc: $(WD)/kern.bin
+$(WD)/loader.inc: $(WD)/kernel.img
 	echo ".set STARTER_SEGMENT, $(STARTER_SEG)" > $@
 	echo ".set STARTER_ADDRESS, $(STARTER_ADDR)" >> $@
 	echo -n ".set STARTER_SECTORS, " >> $@
-	echo "(`wc -c < $(WD)/kern.bin` + $(BLK_SIZE) - 1) / $(BLK_SIZE)" | bc >> $@
+	echo "(`wc -c < $(WD)/kernel.img` + $(BLK_SIZE) - 1) / $(BLK_SIZE)" | bc >> $@
 
-$(WD)/starter: $(WD)/starter.o $(WD)/main.o $(WD)/deploy.o $(WD)/decode.o \
+$(WD)/starter: $(WD)/protect.o $(WD)/starter.o $(WD)/memory.o $(WD)/decode.o \
 		kernel/arch/libarch.a lib/librc.a \
 		kernel/mpu/libmpu.a lib/libnc.a
 	$(LD) $(LDFLAGS) -Ttext $(STARTER_ADDR) -L$(LIB) -o $@ $^
 
-$(WD)/runner: $(WD)/runner.o
-	$(LD) $(LDFLAGS) -Ttext $(RUNNER_ADDR) -o $@ $^
+$(WD)/boot: $(WD)/boot.o
+	$(LD) $(LDFLAGS) -Ttext $(BOOT_ADDR) -o $@ $^
 
-$(WD)/starter.bin: $(WD)/starter $(WD)/runner
-	[ `wc -c < $(WD)/starter` -le $(LOADER_SIZE) ]
+$(WD)/starter.bin: $(WD)/starter $(WD)/boot
+	[ `wc -c < $(WD)/starter` -le $(STARTER_SIZE) ]
 	cp $(WD)/starter $@
-	$(WD)/pad $@ $(LOADER_SIZE)
-	[ `wc -c < $(WD)/runner` -le $(RUNNER_SIZE) ]
-	cat $(WD)/runner >> $@
 	$(WD)/pad $@ $(STARTER_SIZE)
+	[ `wc -c < $(WD)/boot` -le $(BOOT_SIZE) ]
+	cat $(WD)/boot >> $@
+	$(WD)/pad $@ $(BIN_SIZE)
 
-$(WD)/main.o: $(WD)/main.c
+$(WD)/starter.o: $(WD)/starter.c
 
 $(WD)/pad: $(WD)/pad.c
 	$(CC) -o $@ $^
@@ -91,7 +91,7 @@ $(WD)/pad: $(WD)/pad.c
 $(WD)/append: $(WD)/append.c
 	$(CC) -o $@ $^ lib/libnc.a
 
-$(WD)/kern.bin: $(WD)/append \
+$(WD)/kernel.img: $(WD)/append \
 		$(WD)/starter.bin kernel/core.bin \
 		servers/kernlog/kernlog \
 		servers/interrupt/interrupt \
@@ -102,7 +102,7 @@ $(WD)/kern.bin: $(WD)/append \
 		drivers/cons/cons \
 		drivers/ramdisk/ramdisk \
 		initrd.img.rc
-	[ `wc -c < $(WD)/starter.bin` -le $(STARTER_SIZE) ]
+	[ `wc -c < $(WD)/starter.bin` -le $(BIN_SIZE) ]
 	cp $(WD)/starter.bin $@
 	$(WD)/append 1 kernel/core.bin 4 >> $@
 	$(WD)/append 3 servers/interrupt/interrupt 4 3 >> $@
