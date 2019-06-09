@@ -58,4 +58,7 @@ static inline int isDirty(const FILE *stream)
 	return stream->mode & __FILE_MODE_DIRTY;
 }
 
+extern int __fill_buffer(void *, const size_t, FILE *);
+extern int __sweep_buffer(FILE *);
+
 #endif

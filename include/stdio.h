@@ -106,8 +106,11 @@ extern int fputs(const char *, FILE *);
 extern int puts(const char *);
 
 extern size_t fread(void *, size_t, size_t, FILE *);
-extern int fseek(FILE *, long, int);
 extern size_t fwrite(const void *, size_t, size_t, FILE *);
+
+extern int fseek(FILE *, long, int);
+extern int fsetpos(FILE *, const fpos_t *);
+extern void rewind(FILE *);
 
 extern int printf(const char *, ...);
 extern int fprintf(FILE *, const char *, ...);

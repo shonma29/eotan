@@ -25,21 +25,60 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 #include "macros.h"
 
 
-int fgetc(FILE *stream)
+size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
 	//TODO set errno
-	if (ferror(stream) || feof(stream))
-		return EOF;
+	if (ferror(stream))
+		return 0;
 
-	if (!isReadable(stream))
-		return EOF;
+	if (!isWritable(stream))
+		return 0;
 
-	if (stream->pos >= stream->len)
-		if (__fill_buffer(stream->buf, stream->buf_size, stream))
-			return EOF;
+	size_t bytes = size * nmemb;
+	size_t rest = bytes;
+	int len = stream->buf_size - stream->pos;
+	if (len) {
+		if (len > rest)
+			len = rest;
 
-	return (int)(stream->buf[stream->pos++]);
+		memcpy(&(stream->buf[stream->pos]), ptr, len);
+		stream->mode |= __FILE_MODE_DIRTY;
+		stream->pos += len;
+		if (stream->pos > stream->len)
+			stream->len = stream->pos;
+
+		rest -= len;
+		if (!rest)
+			return nmemb;
+
+		ptr = (void*)(((unsigned int)ptr) + len);
+	}
+
+	if (!__sweep_buffer(stream)) {
+		if (rest < stream->buf_size) {
+			if (len > rest)
+				len = rest;
+	
+			memcpy(stream->buf, ptr, len);
+			stream->mode |= __FILE_MODE_DIRTY;
+			stream->pos += len;
+			stream->len = stream->pos;
+			rest -= len;
+		} else {
+			len = write(stream->fd, ptr, rest);
+			if (len < 0)
+				stream->mode |= __FILE_MODE_ERROR;
+			else if (len > 0) {
+				stream->seek_pos += len;
+				rest -= len;
+			}
+		}
+	}
+
+	return ((bytes - rest) / size);
 }

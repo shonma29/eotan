@@ -25,21 +25,27 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stdio.h>
+#include <unistd.h>
 #include "macros.h"
 
 
-int fgetc(FILE *stream)
+int __sweep_buffer(FILE *stream)
 {
-	//TODO set errno
-	if (ferror(stream) || feof(stream))
-		return EOF;
+	if (isDirty(stream)) {
+		//TODO APPEND mode
+		if (write(stream->fd, stream->buf, stream->len) == stream->len)
+			stream->mode &= ~__FILE_MODE_DIRTY;
+		else {
+			stream->mode |= __FILE_MODE_ERROR;
+			return (-1);
+		}
+	}
 
-	if (!isReadable(stream))
-		return EOF;
+	if (stream->len) {
+		stream->seek_pos += stream->len;
+		stream->len = 0;
+	}
 
-	if (stream->pos >= stream->len)
-		if (__fill_buffer(stream->buf, stream->buf_size, stream))
-			return EOF;
-
-	return (int)(stream->buf[stream->pos++]);
+	stream->pos = 0;
+	return 0;
 }

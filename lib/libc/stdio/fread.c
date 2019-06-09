@@ -25,21 +25,51 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stdio.h>
+#include <string.h>
 #include "macros.h"
 
 
-int fgetc(FILE *stream)
+size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
 	//TODO set errno
 	if (ferror(stream) || feof(stream))
-		return EOF;
+		return 0;
 
 	if (!isReadable(stream))
-		return EOF;
+		return 0;
 
-	if (stream->pos >= stream->len)
-		if (__fill_buffer(stream->buf, stream->buf_size, stream))
-			return EOF;
+	size_t bytes = size * nmemb;
+	size_t rest = bytes;
+	size_t len = stream->len - stream->pos;
+	if (len) {
+		if (len > rest)
+			len = rest;
 
-	return (int)(stream->buf[stream->pos++]);
+		memcpy(ptr, &(stream->buf[stream->pos]), len);
+		stream->pos += len;
+		rest -= len;
+		if (!rest)
+			return nmemb;
+
+		ptr = (void*)(((unsigned int)ptr) + len);
+	}
+
+	if (rest < stream->buf_size) {
+		if (!__fill_buffer(stream->buf, stream->buf_size, stream)) {
+			len = stream->len;
+			if (len > rest)
+				len = rest;
+	
+			memcpy(ptr, stream->buf, len);
+			stream->pos += len;
+			rest -= len;
+		}
+	} else if (!__fill_buffer(ptr, rest, stream)) {
+		len = stream->len;
+		stream->len = 0;
+		stream->seek_pos += len;
+		rest -= len;
+	}
+
+	return ((bytes - rest) / size);
 }

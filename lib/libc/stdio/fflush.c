@@ -25,7 +25,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stdio.h>
-#include <unistd.h>
 #include "macros.h"
 
 static int flush(FILE *stream);
@@ -53,19 +52,8 @@ static int flush(FILE *stream)
 	if (ferror(stream))
 		return EOF;
 
-	if (isWritable(stream) && isDirty(stream)) {
-		//TODO APPEND mode
-		if (write(stream->fd, stream->buf, stream->len) == stream->len)
-			stream->mode &= ~__FILE_MODE_DIRTY;
-
-		else {
-			stream->mode |= __FILE_MODE_ERROR;
-			return EOF;
-		}
-	}
-
-	if (isReadable(stream))
-		stream->len = stream->pos;
+	if (__sweep_buffer(stream))
+		return EOF;
 
 	return 0;
 }

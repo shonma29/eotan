@@ -24,11 +24,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stdbool.h>
 #include <stdio.h>
 #include "macros.h"
-
-static bool sweep(FILE *);
 
 
 int fputc(int c, FILE *stream)
@@ -41,31 +38,18 @@ int fputc(int c, FILE *stream)
 		return EOF;
 
 	if (stream->pos >= stream->buf_size)
-		if (!sweep(stream))
+		if (__sweep_buffer(stream))
 			return EOF;
 
 	stream->mode |= __FILE_MODE_DIRTY;
 	stream->buf[stream->pos++] = c & 0xff;
 
-	if (stream->pos > stream->len) {
-		stream->mode &= ~__FILE_MODE_EOF;
+	if (stream->pos > stream->len)
 		stream->len = stream->pos;
-	}
 
 	if (!isBlock(stream))
-		if (!sweep(stream))
+		if (__sweep_buffer(stream))
 			return EOF;
 
 	return c;
-}
-
-static bool sweep(FILE *stream)
-{
-	if (fflush(stream))
-		return false;
-
-	stream->seek_pos += stream->pos;
-	stream->len = stream->pos = 0;
-
-	return true;
 }
