@@ -37,9 +37,8 @@ int fflush(FILE *stream)
 
 	else {
 		int result = 0;
-		int i;
 
-		for (i = 0; i < FOPEN_MAX; i++)
+		for (int i = 0; i < FOPEN_MAX; i++)
 			if (isOpen(&(__libc_files[i])))
 				result |= flush(&(__libc_files[i]));
 

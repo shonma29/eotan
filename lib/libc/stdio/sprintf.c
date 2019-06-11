@@ -25,65 +25,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stdio.h>
-#include <string.h>
-
-typedef struct {
-	size_t len;
-	size_t max;
-	char *buf;
-} CharBuffer;
-
-static int _putc(const char, CharBuffer *);
+#include "macros.h"
 
 
 int sprintf(char *str, const char *format, ...)
 {
-	CharBuffer buf = { 0, 0xffffffff, str };
-	int len;
 	va_list ap;
-
 	va_start(ap, format);
-	len = vnprintf2((int (*)(char, void*))_putc, &buf, format, ap);
+
+	CharBuffer buf = { 0, 0xffffffff, str };
+	int len = vnprintf2((int (*)(char, void*))__putc, &buf, format, ap);
 	str[buf.len] = '\0';
 	return len;
-}
-
-int snprintf(char *str, size_t size, const char *format, ...)
-{
-	CharBuffer buf = { 0, size? (size - 1):0, str };
-	int len;
-	va_list ap;
-
-	va_start(ap, format);
-	len = vnprintf2((int (*)(char, void*))_putc, &buf, format, ap);
-	if (size)
-		str[buf.len] = '\0';
-	return len;
-}
-
-int vsprintf(char *str, const char *format, va_list ap)
-{
-	CharBuffer buf = { 0, 0xffffffff, str };
-	int len = vnprintf2((int (*)(char, void*))_putc, &buf, format, ap);
-
-	str[buf.len] = '\0';
-	return len;
-}
-
-int vsnprintf(char *str, size_t size, const char *format, va_list ap)
-{
-	CharBuffer buf = { 0, size? (size - 1):0, str };
-	int len = vnprintf2((int (*)(char, void*))_putc, &buf, format, ap);
-
-	if (size)
-		str[buf.len] = '\0';
-	return len;
-}
-
-static int _putc(const char ch, CharBuffer *buf)
-{
-	if (buf->len < buf->max)
-		buf->buf[buf->len++] = ch;
-
-	return 0;
 }

@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <errno.h>
 #include <stdio.h>
 #include <unistd.h>
 #include "macros.h"
@@ -31,9 +32,13 @@ For more information, please refer to <http://unlicense.org/>
 
 int fseek(FILE *stream, long offset, int whence)
 {
-	//TODO set errno
 	if (ferror(stream))
-		return -1;
+		return (-1);
+
+	if (!isOpen(stream)) {
+		_set_local_errno(EBADF);
+		return (-1);
+	}
 
 	fpos_t next;
 	fpos_t end = stream->seek_pos + stream->len;
@@ -51,8 +56,8 @@ int fseek(FILE *stream, long offset, int whence)
 		next = -1;
 		break;
 	default:
-		//TODO set errno
-		return -1;
+		_set_local_errno(EINVAL);
+		return (-1);
 	}
 
 	if ((next < stream->seek_pos)
@@ -62,8 +67,12 @@ int fseek(FILE *stream, long offset, int whence)
 			return result;
 
 		param = lseek(stream->fd, param, whence);
-		if (param == (off_t)(-1))
-			return -1;
+		if (param == (off_t)(-1)) {
+			if (errno == EBADF)
+				stream->mode |= __FILE_MODE_ERROR;
+
+			return (-1);
+		}
 
 		stream->seek_pos = param;
 		stream->len = stream->pos = 0;

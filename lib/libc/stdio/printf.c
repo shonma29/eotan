@@ -25,33 +25,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stdio.h>
+#include "macros.h"
 
-extern int vnprintf2(int (*)(const char, void*), void *, const char *, va_list);
-
-
-int fprintf(FILE *stream, const char *format, ...)
-{
-	va_list ap;
-
-	va_start(ap, format);
-	return vnprintf2((int (*)(char, void*))fputc, stream, format, ap);
-}
 
 int printf(const char *format, ...)
 {
 	va_list ap;
-
 	va_start(ap, format);
 	return vnprintf2((int (*)(char, void*))fputc, stdout, format, ap);
 }
-
-int vfprintf(FILE *stream, const char *format, va_list ap)
-{
-	return vnprintf2((int (*)(char, void*))fputc, stream, format, ap);
-}
-
-int vprintf(const char *format, va_list ap)
-{
-	return vnprintf2((int (*)(char, void*))fputc, stdout, format, ap);
-}
-

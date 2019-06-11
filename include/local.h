@@ -57,4 +57,8 @@ static inline int _get_local_errno(void)
 	return local->error_no;
 }
 
+static inline void _set_local_errno(const int error_no)
+{
+	((thread_local_t*)LOCAL_ADDR)->error_no = error_no;
+}
 #endif

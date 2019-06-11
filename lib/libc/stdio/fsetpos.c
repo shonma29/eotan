@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <errno.h>
 #include <stdio.h>
 #include <unistd.h>
 #include "macros.h"
@@ -31,9 +32,13 @@ For more information, please refer to <http://unlicense.org/>
 
 int fsetpos(FILE *stream, const fpos_t *pos)
 {
-	//TODO set errno
 	if (ferror(stream))
-		return -1;
+		return (-1);
+
+	if (!isOpen(stream)) {
+		_set_local_errno(EBADF);
+		return (-1);
+	}
 
 	fpos_t next = *pos;
 	fpos_t end = stream->seek_pos + stream->len;
@@ -46,8 +51,12 @@ int fsetpos(FILE *stream, const fpos_t *pos)
 			return result;
 
 		param = lseek(stream->fd, param, SEEK_SET);
-		if (param == (off_t)(-1))
-			return -1;
+		if (param == (off_t)(-1)) {
+			if (errno == EBADF)
+				stream->mode |= __FILE_MODE_ERROR;
+
+			return (-1);
+		}
 
 		stream->seek_pos = param;
 		stream->len = stream->pos = 0;

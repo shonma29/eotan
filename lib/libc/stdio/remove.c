@@ -32,28 +32,25 @@ For more information, please refer to <http://unlicense.org/>
 
 int remove(const char *pathname)
 {
-	struct stat stat;
-	int fd;
-	int result;
-
-	fd = open(pathname, O_RDWR);
+	int fd = open(pathname, O_RDWR);
 	if (fd < 0)
 		return fd;
 
-	result = fstat(fd, &stat);
-	if (result)
-		return result;
+	struct stat stat;
+	int result = fstat(fd, &stat);
+	if (!result) {
+		if (stat.st_mode & S_IFREG)
+			result = unlink(pathname);
 
-	if (stat.st_mode & S_IFREG)
-		result = unlink(pathname);
+		else if (stat.st_mode & S_IFDIR)
+			result = rmdir(pathname);
 
-	else if (stat.st_mode & S_IFDIR)
-		result = rmdir(pathname);
-
-	else
-		result = EPERM;
+		else {
+			_set_local_errno(EPERM);
+			result = -1;
+		}
+	}
 
 	close(fd);
-
 	return result;
 }

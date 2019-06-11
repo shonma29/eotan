@@ -24,18 +24,20 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <errno.h>
 #include <stdio.h>
 #include "macros.h"
 
 
 int fgetc(FILE *stream)
 {
-	//TODO set errno
 	if (ferror(stream) || feof(stream))
 		return EOF;
 
-	if (!isReadable(stream))
+	if (!isReadable(stream)) {
+		_set_local_errno(EBADF);
 		return EOF;
+	}
 
 	if (stream->pos >= stream->len)
 		if (__fill_buffer(stream->buf, stream->buf_size, stream))

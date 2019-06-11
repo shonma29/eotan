@@ -29,14 +29,13 @@ For more information, please refer to <http://unlicense.org/>
 
 char *fgets(char *s, int size, FILE *stream)
 {
-	int pos;
-
 	if (--size < 0)
 		return NULL;
 
+	//TODO optimize. buf scan -> fill loop
+	int pos;
 	for (pos = 0; pos < size;) {
 		int c = fgetc(stream);
-
 		if (c == EOF)
 			break;
 
@@ -48,5 +47,5 @@ char *fgets(char *s, int size, FILE *stream)
 
 	s[pos] = '\0';
 
-	return pos? s:NULL;
+	return (pos? s:NULL);
 }

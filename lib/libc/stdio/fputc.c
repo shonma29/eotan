@@ -24,18 +24,20 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <errno.h>
 #include <stdio.h>
 #include "macros.h"
 
 
 int fputc(int c, FILE *stream)
 {
-	//TODO set errno
 	if (ferror(stream))
 		return EOF;
 
-	if (!isWritable(stream))
+	if (!isWritable(stream)) {
+		_set_local_errno(EBADF);
 		return EOF;
+	}
 
 	if (stream->pos >= stream->buf_size)
 		if (__sweep_buffer(stream))

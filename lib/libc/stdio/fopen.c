@@ -25,7 +25,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
-#include <local.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -40,7 +39,7 @@ FILE *fopen(const char *path, const char *mode)
 		if (!isOpen(&(__libc_files[i])))
 			return _fopen(&(__libc_files[i]), path, mode);
 
-	//TODO set errno
+	_set_local_errno(EMFILE);
 	return NULL;
 }
 
@@ -61,6 +60,7 @@ static FILE *_fopen(FILE *stream, const char *path, const char *mode)
 		file_mode = __FILE_MODE_WRITABLE;
 		break;
 	default:
+		_set_local_errno(EINVAL);
 		return NULL;
 	}
 
@@ -68,13 +68,17 @@ static FILE *_fopen(FILE *stream, const char *path, const char *mode)
 	if (*p == 'b') {
 		p++;
 
-		if (*p == 'b')
+		if (*p == 'b') {
+			_set_local_errno(EINVAL);
 			return NULL;
+		}
 	}
 
 	if (*p) {
-		if (*p != '+')
+		if (*p != '+') {
+			_set_local_errno(EINVAL);
 			return NULL;
+		}
 
 		p++;
 		switch (*p) {
@@ -82,10 +86,13 @@ static FILE *_fopen(FILE *stream, const char *path, const char *mode)
 			break;
 		case 'b':
 			p++;
-			if (*p)
+			if (*p) {
+				_set_local_errno(EINVAL);
 				return NULL;
+			}
 			break;
 		default:
+			_set_local_errno(EINVAL);
 			return NULL;
 		}
 
@@ -110,6 +117,5 @@ static FILE *_fopen(FILE *stream, const char *path, const char *mode)
 	stream->fd = fd;
 	stream->buf_size = sizeof(stream->buf);
 	stream->seek_pos = 0;
-
 	return stream;
 }

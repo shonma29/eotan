@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
-#include <local.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <unistd.h>
 #include "macros.h"
@@ -33,19 +33,18 @@ For more information, please refer to <http://unlicense.org/>
 
 int fclose(FILE *stream)
 {
-	int result;
-
 	if (!isOpen(stream)) {
-		(_get_local())->error_no = EBADF;
+		_set_local_errno(EBADF);
 		return EOF;
 	}
 
+	int result;
 	do {
 		if (fflush(stream)) {
-			int error_no = (_get_local())->error_no;
+			int error_no = errno;
 
 			close(stream->fd);
-			(_get_local())->error_no = error_no;
+			_set_local_errno(error_no);
 			result = EOF;
 			break;
 		}
@@ -64,6 +63,5 @@ int fclose(FILE *stream)
 	stream->fd = -1;
 	stream->buf_size = sizeof(stream->buf);
 	stream->seek_pos = 0;
-
 	return result;
 }

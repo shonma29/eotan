@@ -46,6 +46,5 @@ int __fill_buffer(void *ptr, const size_t size, FILE *stream)
 	}
 
 	stream->len = len;
-
 	return 0;
 }

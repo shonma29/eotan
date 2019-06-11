@@ -80,17 +80,7 @@ static inline void clearerr(FILE *stream)
 	stream->mode &= ~(__FILE_MODE_EOF | __FILE_MODE_ERROR);
 }
 
-static inline long ftell(FILE *stream)
-{
-	return (long)(stream->seek_pos + stream->pos);
-}
-
-static inline int fgetpos(FILE *stream, fpos_t *pos)
-{
-	*pos = stream->seek_pos + stream->pos;
-
-	return 0;
-}
+extern int fileno(FILE*);
 
 extern FILE *fopen(const char *, const char *);
 extern int fclose(FILE *);
@@ -105,12 +95,14 @@ extern int putchar(int);
 extern int fputs(const char *, FILE *);
 extern int puts(const char *);
 
+extern int fgetpos(FILE *, fpos_t *);
+extern long ftell(FILE *);
+extern int fsetpos(FILE *, const fpos_t *);
+extern int fseek(FILE *, long, int);
+extern void rewind(FILE *);
+
 extern size_t fread(void *, size_t, size_t, FILE *);
 extern size_t fwrite(const void *, size_t, size_t, FILE *);
-
-extern int fseek(FILE *, long, int);
-extern int fsetpos(FILE *, const fpos_t *);
-extern void rewind(FILE *);
 
 extern int printf(const char *, ...);
 extern int fprintf(FILE *, const char *, ...);

@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include "macros.h"
@@ -31,12 +32,13 @@ For more information, please refer to <http://unlicense.org/>
 
 size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
-	//TODO set errno
 	if (ferror(stream) || feof(stream))
 		return 0;
 
-	if (!isReadable(stream))
+	if (!isReadable(stream)) {
+		_set_local_errno(EBADF);
 		return 0;
+	}
 
 	size_t bytes = size * nmemb;
 	size_t rest = bytes;

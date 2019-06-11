@@ -1,5 +1,3 @@
-#ifndef _LIBC_STDIO_MACROS_H_
-#define _LIBC_STDIO_MACROS_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,49 +24,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stdio.h>
+#include "macros.h"
 
-typedef struct {
-	size_t len;
-	size_t max;
-	char *buf;
-} CharBuffer;
 
-static inline int isOpen(const FILE *stream)
+int __putc(const char ch, CharBuffer *buf)
 {
-	return stream->mode & (__FILE_MODE_READABLE | __FILE_MODE_WRITABLE);
+	if (buf->len < buf->max)
+		buf->buf[buf->len++] = ch;
+
+	return 0;
 }
-
-static inline int isReadable(const FILE *stream)
-{
-	return stream->mode & __FILE_MODE_READABLE;
-}
-
-static inline int isWritable(const FILE *stream)
-{
-	return stream->mode & __FILE_MODE_WRITABLE;
-}
-
-static inline int isAppend(const FILE *stream)
-{
-	return stream->mode & __FILE_MODE_APPEND;
-}
-
-static inline int isBlock(const FILE *stream)
-{
-	return stream->mode & __FILE_MODE_BLOCK;
-}
-
-static inline int isDirty(const FILE *stream)
-{
-	return stream->mode & __FILE_MODE_DIRTY;
-}
-
-extern int __putc(const char, CharBuffer *);
-extern int __fill_buffer(void *, const size_t, FILE *);
-extern int __sweep_buffer(FILE *);
-
-extern int vnprintf2(int (*)(const char, void*), void *,
-		const char *, va_list);
-
-#endif
