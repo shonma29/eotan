@@ -251,13 +251,13 @@ int if_kill(fs_request *req)
 }
 
 int
-if_waitpid (fs_request *req)
+if_wait (fs_request *req)
 {
   W i;
   W mypid, pid, children, exst;
   struct proc *procp;
 
-  pid = req->packet.arg1;
+  pid = -1;
   mypid = req->packet.process_id;
   if (pid == 0) pid = (-proc_table[mypid].proc_pgid);
 
@@ -288,7 +288,7 @@ if_waitpid (fs_request *req)
   }
   if (children > 0) {
     /* 対応する子プロセスはあったが，まだ終了していなかった */
-    if (req->packet.arg3 & WNOHANG) {
+    if (0 & WNOHANG) {
       /* 親に返事を送る必要がある */
       reply2(req->rdvno, 0, 0, 0);
     }

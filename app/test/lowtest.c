@@ -194,7 +194,7 @@ char *testmm()
 		sleep(1);
 		printf("parent's pid = %d, ppid = %d\n",
 				getpid(), getppid());
-		waitpid(-1, &pid, 0);
+		wait(&pid);
 	}
 
 	t2 = time(&t1);

@@ -54,7 +54,7 @@ extern int if_open(fs_request*);
 extern int if_read(fs_request*);
 extern int if_remove(fs_request*);
 extern int if_fstat(fs_request*);
-extern int if_waitpid(fs_request*);
+extern int if_wait(fs_request*);
 extern int if_write(fs_request*);
 
 static inline pid_t unpack_pid(const fs_request *req)

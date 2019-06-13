@@ -52,7 +52,7 @@ static char req_buf[
 ];
 static int (*syscall[])(fs_request*) = {
 	if_fork,
-	if_waitpid,
+	if_wait,
 	if_exec,
 	if_exit,
 	if_kill,
@@ -283,7 +283,7 @@ void start(VP_INT exinf)
 		}
 			break;
 		case pm_syscall_fork:
-		case pm_syscall_waitpid:
+		case pm_syscall_wait:
 		case pm_syscall_exec:
 		case pm_syscall_exit:
 		case pm_syscall_kill:

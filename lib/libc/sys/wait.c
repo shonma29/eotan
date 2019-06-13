@@ -1,5 +1,3 @@
-#ifndef _UNISTD_H_
-#define _UNISTD_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,38 +24,27 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stddef.h>
-#include <stdint.h>
-#include <stdnoreturn.h>
-#include <sys/types.h>
-#include <sys/unistd.h>
+#include <errno.h>
+#include <unistd.h>
+#include "sys.h"
 
-#define STDIN_FILENO (0)
-#define STDOUT_FILENO (1)
-#define STDERR_FILENO (2)
 
-extern char **environ;
+int wait(int *status)
+{
+	pm_args_t req;
+	req.arg1 = (int)status;
 
-extern int chdir(char *);
-extern int access(const char *, int);
-extern void *sbrk(intptr_t);
-extern int close(int);
-extern int dup2(int, int);
-extern int execve(char *name, char *argv[], char *envp[]);
-extern noreturn void _exit(int);
-extern int fork(void);
-extern char *getcwd(char *buf, int size);
-extern gid_t getgid(void);
-extern pid_t getpid(void);
-extern pid_t getppid(void);
-extern uid_t getuid(void);
-extern off_t lseek(int, off_t, int);
-extern int open(const char *path, int oflag, ...);
-extern ssize_t read(int, void *, size_t);
-extern int rmdir(const char *);
-extern unsigned int sleep(unsigned int);
-extern int unlink(const char *);
-extern int wait(int *);
-extern size_t write(int, const void *, size_t);
+	ER error = _make_connection(pm_syscall_wait, &req);
+	if (error) {
+		_set_local_errno(error);
+		return (-1);
+	}
 
-#endif
+	pm_reply_t *res = (pm_reply_t*)&req;
+	if (res->error_no == -1)
+		_set_local_errno(res->error_no);
+	else if (status)
+		*status = res->result2;
+
+	return res->result1;
+}

@@ -29,7 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 
 typedef enum {
 	pm_syscall_fork = 0,
-	pm_syscall_waitpid = 1,
+	pm_syscall_wait = 1,
 	pm_syscall_exec = 2,
 	pm_syscall_exit = 3,
 	pm_syscall_kill = 4,

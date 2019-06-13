@@ -242,10 +242,10 @@ static void execute(unsigned char **array, unsigned char **env,
 		else if (!opts->background) {
 			int status;
 
-			if (waitpid(pid, &status, 0) != pid)
-				fprintf(stderr, "waitpid error %d\n", errno);
+			if (wait(&status) == -1)
+				fprintf(stderr, "wait error %d\n", errno);
 			else
-				fprintf(stderr, "waitpid success %d\n", status);
+				fprintf(stderr, "wait success %d\n", status);
 		}
 	}
 }
