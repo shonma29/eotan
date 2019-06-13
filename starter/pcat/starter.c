@@ -55,7 +55,7 @@ extern void memory_initialize(void);
 
 static void _putc(const char ch);
 void printk(const char *format, ...);
-static void kick(const ModuleHeader *h);
+static void run_kernel(const ModuleHeader *h);
 
 
 noreturn void _main(void)
@@ -84,7 +84,7 @@ noreturn void _main(void)
 		v->green_position, v->green_size, 
 		v->blue_position, v->blue_size, v->direct_color_mode);
 
-	kick((ModuleHeader*)MODULES_ADDR);
+	run_kernel((ModuleHeader*)MODULES_ADDR);
 	for (;;);
 }
 
@@ -120,7 +120,7 @@ void printk(const char *format, ...)
 	vnprintf(_putc, (char*)format, ap);
 };
 
-static void kick(const ModuleHeader *h)
+static void run_kernel(const ModuleHeader *h)
 {
 	while (h->type != mod_end) {
 		UW addr;
@@ -129,7 +129,7 @@ static void kick(const ModuleHeader *h)
 			Elf32_Ehdr *eHdr = (Elf32_Ehdr*)&(h[1]);
 			void (*entry)(void*) = (void*)(eHdr->e_entry);
 
-			entry((void*)RUNNER_ADDR);
+			entry((void*)BOOT_ADDR);
 			break;
 		}
 

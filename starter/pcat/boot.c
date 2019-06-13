@@ -32,9 +32,9 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
 
-static ER run(const enum ModuleType type, const int tid,
+static ER run_module(const enum ModuleType type, const int tid,
 		const Elf32_Ehdr *eHdr);
-static void release_others(const void *head, const void *end);
+static void release_pages(const void *head, const void *end);
 
 
 void _start(void)
@@ -44,9 +44,13 @@ void _start(void)
 	while (h->type != mod_end) {
 		switch (h->type) {
 		case mod_server:
-			run(h->type, h->arg, (Elf32_Ehdr*)&(h[1]));
+			run_module(h->type, h->arg, (Elf32_Ehdr*)&(h[1]));
 			break;
 		default:
+//TODO set device names
+//TODO set env
+//TODO authenticate
+//TODO run 'init' at last, and init exec shell
 			break;
 		}
 
@@ -54,13 +58,13 @@ void _start(void)
 	}
 
 	di();
-	release_others((void*)(CORE_STACK_ADDR - CORE_STACK_SIZE),
+	release_pages((void*)(CORE_STACK_ADDR - CORE_STACK_SIZE),
 			(void*)CORE_STACK_ADDR);
-	release_others((void*)RUNNER_ADDR,
+	release_pages((void*)BOOT_ADDR,
 			(void*)((unsigned int)h + sizeof(*h)));
 }
 
-static ER run(const enum ModuleType type, const int tid,
+static ER run_module(const enum ModuleType type, const int tid,
 		const Elf32_Ehdr *eHdr)
 {
 	T_CTSK pk_ctsk = {
@@ -73,6 +77,7 @@ static ER run(const enum ModuleType type, const int tid,
 		NULL,
 		NULL
 	};
+//TODO give information of boot device to 'fs'
 	ER result = kcall->thread_create(tid, &pk_ctsk);
 	if (result)
 		kcall->printk("thread_create error(%d)\n", result);
@@ -80,7 +85,7 @@ static ER run(const enum ModuleType type, const int tid,
 	return result;
 }
 
-static void release_others(const void *head, const void *end)
+static void release_pages(const void *head, const void *end)
 {
 	unsigned int addr = (unsigned int)head & ~((1 << BITS_OFFSET) - 1);
 	size_t max = pages((unsigned int)end - addr);

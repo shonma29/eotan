@@ -77,7 +77,7 @@ void memory_initialize(void)
 	map_set_using(kern_v2p((void*)(CORE_STACK_ADDR - CORE_STACK_SIZE)),
 			pages(CORE_STACK_SIZE));
 	/* keep runner and modules */
-	map_set_using(kern_v2p((void*)RUNNER_ADDR),
+	map_set_using(kern_v2p((void*)BOOT_ADDR),
 			pages((unsigned int)set_modules() - MODULES_ADDR) + 1);
 #ifdef DEBUG
 	map_print();

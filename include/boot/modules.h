@@ -28,7 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <stddef.h>
 
-#define RUNNER_ADDR 0x8000b000
+#define BOOT_ADDR 0x8000b000
 #define MODULES_ADDR 0x0000c000
 
 enum ModuleType
