@@ -53,27 +53,27 @@ int mm_clock_gettime(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		struct timespec tspec;
 
 		if (args->arg1 != CLOCK_REALTIME) {
-			reply->error_no = EINVAL;
+			reply->data[0] = EINVAL;
 			break;
 		}
 
 		if (!args->arg2) {
-			reply->error_no = EFAULT;
+			reply->data[0] = EFAULT;
 			break;
 		}
 
 		if (!get_timespec(&tspec)) {
-			reply->error_no = ECONNREFUSED;
+			reply->data[0] = ECONNREFUSED;
 			break;
 		}
 
 		if (kcall->region_put(get_rdv_tid(rdvno),
 				(void*)(args->arg2), sizeof(tspec), &tspec)) {
-			reply->error_no = EFAULT;
+			reply->data[0] = EFAULT;
 			break;
 		}
 
-		reply->error_no = EOK;
+		reply->data[0] = EOK;
 		reply->result = 0;
 		return reply_success;
 	} while (FALSE);

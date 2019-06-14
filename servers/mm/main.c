@@ -177,26 +177,26 @@ int mm_dup(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	do {
 		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
 		if (!th) {
-			reply->error_no = ESRCH;
+			reply->data[0] = ESRCH;
 			break;
 		}
 
 		mm_process_t *process = get_process(th->process_id);
 		if (!process) {
-			reply->error_no = ESRCH;
+			reply->data[0] = ESRCH;
 			break;
 		}
 
 		int fid = args->arg1;
 		mm_descriptor_t *d1 = process_find_desc(process, fid);
 		if (!d1) {
-			reply->error_no = EBADF;
+			reply->data[0] = EBADF;
 			break;
 		}
 
 		if (fid != args->arg2) {
 			if (args->arg2 < 0) {
-				reply->error_no = EINVAL;
+				reply->data[0] = EINVAL;
 				break;
 			}
 
@@ -229,7 +229,7 @@ int mm_dup(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		}
 
 		reply->result = args->arg2;
-		reply->error_no = 0;
+		reply->data[0] = 0;
 		return reply_success;
 	} while (FALSE);
 
@@ -455,12 +455,12 @@ static void doit(void)
 
 		if (size != sizeof(mm_args_t)) {
 			reply.result = -1;
-			reply.error_no = EINVAL;
+			reply.data[0] = EINVAL;
 			result = reply_failure;
 
 		} else if (args.syscall_no > NUM_OF_FUNCS) {
 			reply.result = -1;
-			reply.error_no = ENOTSUP;
+			reply.data[0] = ENOTSUP;
 			result = reply_failure;
 
 		} else

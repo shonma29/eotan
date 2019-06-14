@@ -26,29 +26,28 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <errno.h>
-#include <local.h>
 #include <mm.h>
 #include <services.h>
 #include <time.h>
 
+
 int clock_gettime(clockid_t clk_id, struct timespec *tp)
 {
-	thread_local_t *local = _get_local();
-	mm_args_t args;
+	mm_args_t args = {
+		mm_syscall_clock_gettime,
+		(long int)clk_id,
+		(long int)tp
+	};
+
+	ER_UINT size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
 	mm_reply_t *reply = (mm_reply_t*)&args;
-	ER_UINT size;
-
-	args.syscall_no = mm_syscall_clock_gettime;
-	args.arg1 = (long int)clk_id;
-	args.arg2 = (long int)tp;
-	size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
-
 	if (size == sizeof(*reply)) {
-		local->error_no = reply->error_no;
-		return reply->result;
+		if (reply->result == -1)
+			_set_local_errno(reply->data[0]);
 
+		return reply->result;
 	} else {
-		local->error_no = ECONNREFUSED;
-		return -1;
+		_set_local_errno(ECONNREFUSED);
+		return (-1);
 	}
 }

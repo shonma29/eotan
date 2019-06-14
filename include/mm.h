@@ -38,7 +38,7 @@ typedef struct {
 
 typedef struct {
 	int result;
-	int error_no;
+	int data[1];
 } mm_reply_t;
 
 typedef enum {

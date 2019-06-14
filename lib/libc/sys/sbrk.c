@@ -26,30 +26,26 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <errno.h>
-#include <local.h>
 #include <mm.h>
 #include <services.h>
-#include <stdint.h>
 
 
 void *sbrk(intptr_t increment)
 {
-	thread_local_t *local = _get_local();
-	mm_args_t args;
+	mm_args_t args = {
+		mm_syscall_sbrk,
+		(long int)increment
+	};
+
+	ER_UINT reply_size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
 	mm_reply_t *reply = (mm_reply_t*)&args;
-	ER_UINT reply_size;
-
-	args.syscall_no = mm_syscall_sbrk;
-	args.arg1 = (long int)(local->process_id);
-	args.arg2 = (long int)increment;
-	reply_size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
-
 	if (reply_size == sizeof(*reply)) {
-		local->error_no = reply->error_no;
-		return (void*)(reply->result);
+		if (reply->result == -1)
+			_set_local_errno(reply->data[0]);
 
+		return (void*)(reply->result);
 	} else {
-		local->error_no = ECONNREFUSED;
+		_set_local_errno(ECONNREFUSED);
 		return (void*)(-1);
 	}
 }

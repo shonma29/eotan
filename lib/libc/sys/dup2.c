@@ -26,27 +26,26 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <errno.h>
-#include <local.h>
 #include <mm.h>
 #include <services.h>
 
 
 int dup2(int oldd, int newd)
 {
-	mm_args_t args;
-	args.syscall_no = mm_syscall_dup;
-	args.arg1 = oldd;
-	args.arg2 = newd;
-
-	thread_local_t *local = _get_local();
-	mm_reply_t *reply = (mm_reply_t*)&args;
+	mm_args_t args = {
+		mm_syscall_dup,
+		oldd,
+		newd
+	};
 	ER_UINT reply_size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
+	mm_reply_t *reply = (mm_reply_t*)&args;
 	if (reply_size == sizeof(*reply)) {
-		local->error_no = reply->error_no;
-		return reply->result;
+		if (reply->result == -1)
+			_set_local_errno(reply->data[0]);
 
+		return reply->result;
 	} else {
-		local->error_no = ECONNREFUSED;
+		_set_local_errno(ECONNREFUSED);
 		return (-1);
 	}
 }

@@ -210,14 +210,14 @@ int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		if (!p) {
 			p = (mm_process_t*)slab_alloc(&process_slab);
 			if (!p) {
-				reply->error_no = ENOMEM;
+				reply->data[0] = ENOMEM;
 				break;
 			}
 
 			if (!tree_put(&process_tree,
 					(ID)args->arg1, (node_t*)p)) {
 				slab_free(&process_slab, p);
-				reply->error_no = EBUSY;
+				reply->data[0] = EBUSY;
 				break;
 			}
 
@@ -234,7 +234,7 @@ int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 
 		if (map_user_pages(p->directory,
 				(VP)start, pages(end - start))) {
-			reply->error_no = ENOMEM;
+			reply->data[0] = ENOMEM;
 			break;
 		}
 
@@ -312,7 +312,7 @@ int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 				p->ppid, p->pgid, p->uid, p->gid,
 				p->name);
 
-		reply->error_no = EOK;
+		reply->data[0] = EOK;
 		reply->result = 0;
 		return reply_success;
 	} while (FALSE);
@@ -327,7 +327,7 @@ int mm_process_clean(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		mm_process_t *p = get_process((ID)args->arg1);
 
 		if (!p) {
-			reply->error_no = ESRCH;
+			reply->data[0] = ESRCH;
 			break;
 		}
 
@@ -343,7 +343,7 @@ int mm_process_clean(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 				(VP)0x1000,
 				pages((size_t)(p->segments.heap.addr)
 						+  p->segments.heap.len))) {
-			reply->error_no = EFAULT;
+			reply->data[0] = EFAULT;
 			break;
 		}
 
@@ -354,7 +354,7 @@ int mm_process_clean(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 
 //		kcall->pfree(p->directory);
 
-		reply->error_no = EOK;
+		reply->data[0] = EOK;
 		reply->result = 0;
 		return reply_success;
 	} while (FALSE);
@@ -370,7 +370,7 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		mm_process_t *src = get_process((ID)args->arg1);
 
 		if (!src) {
-			reply->error_no = ESRCH;
+			reply->data[0] = ESRCH;
 			break;
 		}
 
@@ -379,14 +379,14 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		if (!dest) {
 			dest = (mm_process_t*)slab_alloc(&process_slab);
 			if (!dest) {
-				reply->error_no = ENOMEM;
+				reply->data[0] = ENOMEM;
 				break;
 			}
 
 			if (!tree_put(&process_tree,
 					(ID)args->arg2, (node_t*)dest)) {
 				slab_free(&process_slab, dest);
-				reply->error_no = EBUSY;
+				reply->data[0] = EBUSY;
 				break;
 			}
 
@@ -402,7 +402,7 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 //				pageRoundUp((UW)(src->segments.heap.addr)
 //						+ src->segments.heap.len)
 						>> BITS_OFFSET)) {
-			reply->error_no = EFAULT;
+			reply->data[0] = EFAULT;
 			break;
 		}
 
@@ -446,7 +446,7 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 				&dest->members, dest->members.next,
 				dest->ppid, dest->pgid, dest->uid, dest->gid,
 				dest->name);
-		reply->error_no = EOK;
+		reply->data[0] = EOK;
 		reply->result = 0;
 		return reply_success;
 	} while (FALSE);
@@ -465,13 +465,13 @@ int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		mm_process_t *proc = get_process((ID)args->arg1);
 
 		if (!proc) {
-			reply->error_no = ESRCH;
+			reply->data[0] = ESRCH;
 			break;
 		}
 
 		stack_size = (size_t)(args->arg4);
 		if (stack_size > USER_STACK_INITIAL_SIZE) {
-			reply->error_no = E2BIG;
+			reply->data[0] = E2BIG;
 			break;
 		}
 
@@ -479,7 +479,7 @@ int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			if (map_user_pages(proc->directory,
 					(VP)pageRoundDown(LOCAL_ADDR - USER_STACK_INITIAL_SIZE - PAGE_SIZE),
 					pages(pageRoundUp(USER_STACK_INITIAL_SIZE)))) {
-				reply->error_no = ENOMEM;
+				reply->data[0] = ENOMEM;
 				break;
 			}
 		}
@@ -498,14 +498,14 @@ int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 
 		if (move_stack(proc->directory, (void*)stack_top,
 				(void*)(args->arg3), stack_size)) {
-			reply->error_no = EFAULT;
+			reply->data[0] = EFAULT;
 			break;
 		}
 
 		result = create_thread(proc, (FP)(args->arg2),
 				(VP)(stack_top - sizeof(int)));
 		if (result < 0) {
-			reply->error_no = ECONNREFUSED;
+			reply->data[0] = ECONNREFUSED;
 			break;
 		}
 
@@ -513,7 +513,7 @@ int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		th = (mm_thread_t*)slab_alloc(&thread_slab);
 		if (!th) {
 			kcall->thread_destroy(result);
-			reply->error_no = ENOMEM;
+			reply->data[0] = ENOMEM;
 			break;
 		}
 
@@ -522,11 +522,11 @@ int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		else {
 			slab_free(&thread_slab, th);
 			kcall->thread_destroy(result);
-			reply->error_no = EBUSY;
+			reply->data[0] = EBUSY;
 			break;
 		}
 
-		reply->error_no = EOK;
+		reply->data[0] = EOK;
 		reply->result = result;
 		return reply_success;
 	} while (FALSE);
@@ -543,13 +543,13 @@ int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		mm_process_t *p = get_process((ID)args->arg1);
 
 		if (!p) {
-			reply->error_no = ESRCH;
+			reply->data[0] = ESRCH;
 			break;
 		}
 
 		if (map_user_pages(p->directory,
 				(VP)(args->arg2), pages((UW)(args->arg3)))) {
-			reply->error_no = ENOMEM;
+			reply->data[0] = ENOMEM;
 			break;
 		}
 
@@ -560,7 +560,7 @@ int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			p->segments.heap.len = newEnd
 					- (size_t)(p->segments.heap.addr);
 
-		reply->error_no = EOK;
+		reply->data[0] = EOK;
 		reply->result = 0;
 		return reply_success;
 	} while (FALSE);
@@ -577,13 +577,13 @@ int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		mm_process_t *p = get_process((ID)args->arg1);
 
 		if (!p) {
-			reply->error_no = ESRCH;
+			reply->data[0] = ESRCH;
 			break;
 		}
 
 		if (unmap_user_pages(p->directory,
 				(VP)(args->arg2), pages((UW)(args->arg3)))) {
-			reply->error_no = EACCES;
+			reply->data[0] = EACCES;
 			break;
 		}
 
@@ -594,7 +594,7 @@ int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			p->segments.heap.len = (size_t)(args->arg2)
 					- (size_t)(p->segments.heap.addr);
 
-		reply->error_no = EOK;
+		reply->data[0] = EOK;
 		reply->result = 0;
 		return reply_success;
 	} while (FALSE);
@@ -606,29 +606,31 @@ int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_sbrk(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
-		mm_segment_t *s;
-		intptr_t diff;
-		uintptr_t end;
-		mm_process_t *p = get_process((ID)args->arg1);
-
-		if (!p) {
-			reply->error_no = ESRCH;
+		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
+		if (!th) {
+			reply->data[0] = ESRCH;
 			break;
 		}
 
-		s = &(p->segments.heap);
-		end = (uintptr_t)(s->addr) + s->len;
-		diff = (intptr_t)(args->arg2);
+		mm_process_t *p = get_process(th->process_id);
+		if (!p) {
+			reply->data[0] = ESRCH;
+			break;
+		}
+
+		mm_segment_t *s = &(p->segments.heap);
+		uintptr_t end = (uintptr_t)(s->addr) + s->len;
+		intptr_t diff = (intptr_t)(args->arg1);
 		if (diff > 0) {
 			diff = pageRoundUp(diff);
 			if (s->max - s->len < diff) {
-				reply->error_no = ENOMEM;
+				reply->data[0] = ENOMEM;
 				break;
 			}
 
 			if (map_user_pages(p->directory,
 					(VP)end, pages(diff))) {
-				reply->error_no = ENOMEM;
+				reply->data[0] = ENOMEM;
 				break;
 			}
 
@@ -638,13 +640,13 @@ int mm_sbrk(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		} else if (diff < 0) {
 			diff = pageRoundUp(-diff);
 			if (s->len < diff) {
-				reply->error_no = ENOMEM;
+				reply->data[0] = ENOMEM;
 				break;
 			}
 
 			if (unmap_user_pages(p->directory,
 					(VP)(end - diff), pages(diff))) {
-				reply->error_no = ENOMEM;
+				reply->data[0] = ENOMEM;
 				break;
 			}
 
@@ -652,7 +654,7 @@ int mm_sbrk(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			end -= diff;
 		}
 
-		reply->error_no = EOK;
+		reply->data[0] = EOK;
 		reply->result = (int)end;
 		return reply_success;
 	} while (FALSE);
@@ -691,20 +693,20 @@ int mm_thread_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		mm_process_t *p = get_process((ID)args->arg1);
 
 		if (!p) {
-			reply->error_no = ESRCH;
+			reply->data[0] = ESRCH;
 			break;
 		}
 
 		if (map_user_pages(p->directory,
 				(VP)pageRoundDown(LOCAL_ADDR - USER_STACK_INITIAL_SIZE - PAGE_SIZE),
 				pages(pageRoundUp(USER_STACK_INITIAL_SIZE)))) {
-			reply->error_no = ENOMEM;
+			reply->data[0] = ENOMEM;
 			break;
 		}
 
 		result = create_thread(p, (FP)(args->arg2), (VP)(args->arg3));
 		if (result < 0) {
-			reply->error_no = ECONNREFUSED;
+			reply->data[0] = ECONNREFUSED;
 			break;
 		}
 
@@ -712,7 +714,7 @@ int mm_thread_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		th = (mm_thread_t*)slab_alloc(&thread_slab);
 		if (!th) {
 			kcall->thread_destroy(result);
-			reply->error_no = ENOMEM;
+			reply->data[0] = ENOMEM;
 			break;
 		}
 
@@ -721,11 +723,11 @@ int mm_thread_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		else {
 			slab_free(&thread_slab, th);
 			kcall->thread_destroy(result);
-			reply->error_no = EBUSY;
+			reply->data[0] = EBUSY;
 			break;
 		}
 
-		reply->error_no = EOK;
+		reply->data[0] = EOK;
 		reply->result = result;
 		return reply_success;
 	} while (FALSE);
@@ -742,11 +744,11 @@ int mm_thread_find(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	do {
 		mm_thread_t *th = get_thread((ID)args->arg1);
 		if (!th) {
-			reply->error_no = ESRCH;
+			reply->data[0] = ESRCH;
 			break;
 		}
 
-		reply->error_no = EOK;
+		reply->data[0] = EOK;
 		reply->result = th->process_id;
 		return reply_success;
 	} while (FALSE);

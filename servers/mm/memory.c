@@ -34,15 +34,15 @@ For more information, please refer to <http://unlicense.org/>
 
 int mm_palloc(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
-	reply->error_no = EOK;
 	reply->result = (int)(palloc());
+	reply->data[0] = EOK;
 	return reply_success;
 }
 
 int mm_pfree(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	pfree((void*)(args->arg1));
-	reply->error_no = EOK;
 	reply->result = 0;
+	reply->data[0] = EOK;
 	return reply_success;
 }
