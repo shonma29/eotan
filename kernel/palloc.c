@@ -24,82 +24,62 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <limits.h>
-#include <stddef.h>
 #include <mpu/bits.h>
-#include <mpu/memory.h>
-#include <nerve/config.h>
 #include <nerve/global.h>
 #include <nerve/memory_map.h>
 #include "func.h"
-#include "sync.h"
 
-static MemoryMap *mm = &(sysinfo->memory_map);
-
-static void pzero(UW *p);
+static void pzero(unsigned int *p);
 
 
 void *palloc(void)
 {
-	size_t i;
-
-	enter_serialize();
-	if (mm->rest_pages) {
-		for (i = mm->clock_block; i < mm->num_blocks; i++) {
-			UW d = mm->map[i];
-
+	MemoryMap *mm = &(sysinfo->memory_map);
+	if (mm->rest_pages)
+		for (int i = mm->clock_block; i < mm->num_blocks; i++) {
+			unsigned int d = mm->map[i];
 			if (d) {
-				W bit = count_ntz(d);
-				UW addr;
-
+				unsigned int bit = count_ntz(d);
 				mm->map[i] &= ~(1 << bit);
 				mm->clock_block = mm->map[i]? i:(i + 1);
 				mm->rest_pages--;
-				leave_serialize();
 
-				addr = ((i << MPU_LOG_INT) | bit)
+				unsigned int addr = ((i << MPU_LOG_INT) | bit)
 						<< BITS_OFFSET;
 				//TODO why here?
-				addr = (UW)kern_p2v((void*)addr);
+				addr = (unsigned int)kern_p2v((void*)addr);
 				//TODO why here?
-				pzero((UW*)addr);
+				pzero((unsigned int*)addr);
 
 				return (void*)addr;
 			}
 		}
-	}
-	leave_serialize();
 
 	return NULL;
 }
 
-static void pzero(UW *p)
+static void pzero(unsigned int *p)
 {
-	size_t i;
-
-	for (i = 0; i < PAGE_SIZE / sizeof(UW); i++)
+	for (int i = 0; i < PAGE_SIZE / sizeof(*p); i++)
 		p[i] = 0;
 }
 
 void pfree(void *addr)
 {
 	addr = kern_v2p(addr);
-	size_t i = (size_t)addr >> (BITS_OFFSET + MPU_LOG_INT);
-	UW bit;
 
+	unsigned int i = (unsigned int)addr >> (BITS_OFFSET + MPU_LOG_INT);
+	MemoryMap *mm = &(sysinfo->memory_map);
 	if (i >= mm->num_blocks) {
 		warn("pfree: over %p\n", addr);
-		return;// E_PAR;
+		return;
 	}
 
-	bit = 1 << (((UW)addr >> BITS_OFFSET) & BITS_MASK);
-
-	enter_serialize();
+	unsigned int bit = 1 <<
+			(((unsigned int)addr >> BITS_OFFSET) & BITS_MASK);
 	if (mm->map[i] & bit) {
-		leave_serialize();
 		warn("pfree: already free %p\n", addr);
-		return;// E_OBJ;
+		return;
 	}
 
 	mm->map[i] |= bit;
@@ -108,7 +88,5 @@ void pfree(void *addr)
 		mm->clock_block = i;
 
 	mm->rest_pages++;
-	leave_serialize();
-
-	return;// E_OK;
+	return;
 }

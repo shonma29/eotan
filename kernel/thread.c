@@ -380,7 +380,6 @@ ER thread_sleep(void)
 
 	} else {
 		running->wait.type = wait_slp;
-		leave_serialize();
 		wait(running);
 		return running->wait.result;
 	}

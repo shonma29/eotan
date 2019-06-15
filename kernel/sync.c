@@ -38,6 +38,8 @@ void wait(thread_t *task)
 	task->wait.result = E_OK;
 	task->status = TTS_WAI;
 	list_remove(&(task->queue));
+
+	leave_serialize();
 	dispatch();
 }
 

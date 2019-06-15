@@ -64,7 +64,6 @@ static inline mutex_t *getMutexLocked(const list_t *p) {
 static mutex_t *get_mutex(const ID mtxid)
 {
 	node_t *node = tree_get(&mutex_tree, mtxid);
-
 	return node? getMutexParent(node):NULL;
 }
 
@@ -72,7 +71,6 @@ ER mutex_initialize(void)
 {
 	create_tree(&mutex_tree, &mutex_slab, sizeof(mutex_t), NULL);
 	mutex_hand = MIN_AUTO_ID - 1;
-
 	return E_OK;
 }
 
@@ -85,8 +83,6 @@ static void clear(mutex_t *p, const T_CMTX *pk_cmtx) {
 
 ER mutex_create(ID mtxid, T_CMTX *pk_cmtx)
 {
-	ER_ID result;
-
 	if (!pk_cmtx)
 		return E_PAR;
 /* TODO validate pk */
@@ -97,10 +93,11 @@ ER mutex_create(ID mtxid, T_CMTX *pk_cmtx)
 			|| (pk_cmtx->ceilpri > MAX_PRIORITY))
 		return E_PAR;
 
+	ER_ID result;
+
 	enter_serialize();
 	do {
 		node_t *node = slab_alloc(&mutex_slab);
-
 		if (!node) {
 			result = E_NOMEM;
 			break;
@@ -114,8 +111,7 @@ ER mutex_create(ID mtxid, T_CMTX *pk_cmtx)
 
 		clear(getMutexParent(node), pk_cmtx);
 		result = E_OK;
-
-	} while (FALSE);
+	} while (false);
 	leave_serialize();
 
 	return result;
@@ -124,16 +120,12 @@ ER mutex_create(ID mtxid, T_CMTX *pk_cmtx)
 ER mutex_destroy(ID mtxid)
 {
 	ER result = mutex_lock(mtxid, TMO_FEVR);
-
 	if (result)
 		return result;
 
 	enter_serialize();
 	do {
-		node_t *node;
-		thread_t *th;
 		mutex_t *q = get_mutex(mtxid);
-
 		if (!q) {
 			result = E_NOEXS;
 			break;
@@ -141,8 +133,8 @@ ER mutex_destroy(ID mtxid)
 
 		release_all(&(q->waiter));
 		list_remove(&(q->locked));
-		th = get_thread_ptr(q->locker);
 
+		thread_t *th = get_thread_ptr(q->locker);
 		if (list_is_empty(&(th->locking))
 				&& (th->priority != th->attr.priority)) {
 			th->priority = th->attr.priority;
@@ -153,12 +145,11 @@ ER mutex_destroy(ID mtxid)
 			}
 		}
 
-		node = tree_remove(&mutex_tree, mtxid);
+		node_t *node = tree_remove(&mutex_tree, mtxid);
 		if (node)
 			slab_free(&mutex_slab, node);
 		result = E_OK;
-
-	} while (FALSE);
+	} while (false);
 	leave_serialize();
 
 	dispatch();
@@ -167,14 +158,13 @@ ER mutex_destroy(ID mtxid)
 
 ER mutex_lock(ID mtxid, TMO tmout)
 {
-	mutex_t *q;
-
 	if ((tmout > 0)
 			|| (tmout < TMO_FEVR))
 		return E_PAR;
 
 	enter_serialize();
-	q = get_mutex(mtxid);
+
+	mutex_t *q = get_mutex(mtxid);
 	if (!q) {
 		leave_serialize();
 		return E_NOEXS;
@@ -211,19 +201,15 @@ ER mutex_lock(ID mtxid, TMO tmout)
 
 	list_enqueue(&(q->waiter), &(running->wait.waiting));
 	running->wait.type = wait_mtx;
-	leave_serialize();
-
 	wait(running);
-
 	return running->wait.result;
 }
 
 ER mutex_unlock(ID mtxid)
 {
-	mutex_t *q;
-
 	enter_serialize();
-	q = get_mutex(mtxid);
+
+	mutex_t *q = get_mutex(mtxid);
 	if (!q) {
 		leave_serialize();
 		return E_NOEXS;
@@ -253,8 +239,8 @@ void mutex_unlock_all(thread_t *th)
 {
 	for (;;) {
 		list_t *p = list_head(&(th->locking));
-
-		if (!p)	break;
+		if (!p)
+			break;
 
 		list_remove(p);
 		give(getMutexLocked(p));
@@ -264,7 +250,6 @@ void mutex_unlock_all(thread_t *th)
 static void give(mutex_t *q)
 {
 	list_t *waiter = list_head(&(q->waiter));
-
 	if (waiter) {
 		thread_t *tp = getThreadWaiting(waiter);
 

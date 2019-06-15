@@ -29,7 +29,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 #include "func.h"
 #include "ready.h"
-#include "arch/archfunc.h"
 #include "mpu/mpufunc.h"
 
 typedef struct {
@@ -39,6 +38,8 @@ typedef struct {
 	VP_INT arg4;
 } svc_arg;
 
+static void *page_alloc(void);
+static void page_free(void *addr);
 static ER region_get(const ID id, const void *from, const size_t size,
 		void *to);
 static ER region_put(const ID id, void *to, const size_t size,
@@ -67,8 +68,8 @@ void kcall_initialize(void)
 	p->thread_terminate = thread_terminate;
 	p->thread_sleep = thread_sleep;
 	p->thread_wakeup = thread_wakeup;
-	p->palloc = palloc;
-	p->pfree = pfree;
+	p->palloc = page_alloc;
+	p->pfree = page_free;
 	p->printk = printk;
 
 	p->region_get = region_get;
@@ -86,25 +87,56 @@ void kcall_initialize(void)
 	p->mutex_unlock = mutex_unlock;
 }
 
+static void *page_alloc(void)
+{
+	enter_serialize();
+
+	void *result = palloc();
+
+	leave_serialize();
+	return result;
+}
+
+static void page_free(void *addr)
+{
+	enter_serialize();
+
+	pfree(addr);
+
+	leave_serialize();
+}
+
 static ER region_get(const ID id, const void *from, const size_t size, void *to)
 {
-	thread_t *th = get_thread_ptr(id);
+	enter_serialize();
 
-	return th? memcpy_u2k(th, to, from, size):E_NOEXS;
+	thread_t *th = get_thread_ptr(id);
+	ER result = th? memcpy_u2k(th, to, from, size):E_NOEXS;
+
+	leave_serialize();
+	return result;
 }
 
 static ER region_put(const ID id, void *to, const size_t size, const void *from)
 {
-	thread_t *th = get_thread_ptr(id);
+	enter_serialize();
 
-	return th? memcpy_k2u(th, to, from, size):E_NOEXS;
+	thread_t *th = get_thread_ptr(id);
+	ER result = th? memcpy_k2u(th, to, from, size):E_NOEXS;
+
+	leave_serialize();
+	return result;
 }
 
 static ER_UINT region_copy(const ID id, const void *from, const size_t size, void *to)
 {
-	thread_t *th = get_thread_ptr(id);
+	enter_serialize();
 
-	return th? strncpy_u2k(th, to, from, size):E_NOEXS;
+	thread_t *th = get_thread_ptr(id);
+	ER_UINT result = th? strncpy_u2k(th, to, from, size):E_NOEXS;
+
+	leave_serialize();
+	return result;
 }
 
 ER syscall(svc_arg *argp, UW svcno)
@@ -115,5 +147,6 @@ ER syscall(svc_arg *argp, UW svcno)
 
 static ER_UINT _port_call(svc_arg *argp)
 {
-	return port_call((ID)(argp->arg1), (VP)(argp->arg3), (UINT)(argp->arg4));
+	return port_call((ID)(argp->arg1), (VP)(argp->arg3),
+			(UINT)(argp->arg4));
 }

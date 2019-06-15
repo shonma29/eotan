@@ -27,28 +27,32 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-static inline void outb(unsigned short port, unsigned char v) {
+static inline void outb(unsigned short port, unsigned char v)
+{
 	__asm__ __volatile__ ( \
 			"outb %b0, %w1\n\t" \
 			: \
 			:"a"(v), "d"(port));
 }
 
-static inline void outw(unsigned short port, unsigned short v) {
+static inline void outw(unsigned short port, unsigned short v)
+{
 	__asm__ __volatile__ ( \
 			"outw %w0, %w1\n\t" \
 			: \
 			:"a"(v), "d"(port));
 }
 
-static inline void outl(unsigned short port, unsigned int v) {
+static inline void outl(unsigned short port, unsigned int v)
+{
 	__asm__ __volatile__ ( \
 			"outl %0, %w1\n\t" \
 			: \
 			:"a"(v), "d"(port));
 }
 
-static inline unsigned char inb(unsigned short port) {
+static inline unsigned char inb(unsigned short port)
+{
 	unsigned char v;
 
 	__asm__ __volatile__ ( \
@@ -58,7 +62,8 @@ static inline unsigned char inb(unsigned short port) {
 	return v;
 }
 
-static inline unsigned short inw(unsigned short port) {
+static inline unsigned short inw(unsigned short port)
+{
 	unsigned short v;
 
 	__asm__ __volatile__ ( \
@@ -68,7 +73,8 @@ static inline unsigned short inw(unsigned short port) {
 	return v;
 }
 
-static inline unsigned int inl(unsigned short port) {
+static inline unsigned int inl(unsigned short port)
+{
 	unsigned int v;
 
 	__asm__ __volatile__ ( \
@@ -78,17 +84,20 @@ static inline unsigned int inl(unsigned short port) {
 	return v;
 }
 
-static inline void di(void) {
+static inline void di(void)
+{
 	__asm__ __volatile__ ( \
 			"cli\n\t");
 }
 
-static inline void ei(void) {
+static inline void ei(void)
+{
 	__asm__ __volatile__ ( \
 			"sti\n\t");
 }
 
-static inline void halt(void) {
+static inline void halt(void)
+{
 	__asm__ __volatile__ ( \
 			"hlt\n\t");
 }

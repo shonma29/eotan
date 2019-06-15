@@ -27,21 +27,34 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stdbool.h>
-#include <stdint.h>
 #include <mpu/io.h>
 #include <set/list.h>
 #include "thread.h"
 
 extern volatile bool sync_blocking;
 
-#define enter_serialize() (sync_blocking = true)
-#define leave_serialize() (sync_blocking = false)
+static inline void enter_serialize(void)
+{
+	sync_blocking = true;
+}
 
-#define enter_critical() di()
-#define leave_critical() ei()
+static inline void leave_serialize(void)
+{
+	sync_blocking = false;
+}
 
-extern void wait(thread_t *task);
-extern void release(thread_t *task);
-extern void release_all(list_t *waiting);
+static inline void enter_critical(void)
+{
+	di();
+}
+
+static inline void leave_critical(void)
+{
+	ei();
+}
+
+extern void wait(thread_t *);
+extern void release(thread_t *);
+extern void release_all(list_t *);
 
 #endif

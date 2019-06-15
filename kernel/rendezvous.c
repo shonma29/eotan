@@ -63,7 +63,6 @@ ER port_initialize(void)
 {
 	create_tree(&rdv_tree, &rdv_slab, sizeof(rendezvous_t), NULL);
 	rdv_hand = MIN_AUTO_ID - 1;
-
 	return E_OK;
 }
 
@@ -78,18 +77,16 @@ static void clear(port_t *p, const T_CPOR *pk_cpor) {
 
 ER port_open(T_CPOR *pk_cpor)
 {
-	ER result;
-
 	if (!pk_cpor)
 		return E_PAR;
 /* TODO validate pk */
 	if (pk_cpor->poratr != TA_TFIFO)
 		return E_RSATR;
 
+	ER result;
 	enter_serialize();
 	do {
 		port_t *port = getPortParent(running);
-
 		if (port->opened) {
 			result = E_OBJ;
 			break;
@@ -98,8 +95,7 @@ ER port_open(T_CPOR *pk_cpor)
 
 		clear(port, pk_cpor);
 		result = E_OK;
-
-	} while (FALSE);
+	} while (false);
 	leave_serialize();
 
 	return result;
@@ -112,7 +108,6 @@ ER port_close(void)
 	enter_serialize();
 	do {
 		port_t *port = getPortParent(running);
-
 		if (!(port->opened)) {
 			result = E_OBJ;
 			break;
@@ -124,8 +119,7 @@ ER port_close(void)
 /* TODO remove rendevous */
 		release_all(&(port->caller));
 		result = E_OK;
-
-	} while (FALSE);
+	} while (false);
 	leave_serialize();
 
 	dispatch();
@@ -134,18 +128,15 @@ ER port_close(void)
 
 ER_UINT port_call(ID porid, VP msg, UINT cmsgsz)
 {
-	thread_t *th;
-	port_t *port;
-	list_t *q;
 /* TODO validate msg */
 	enter_serialize();
-	th = get_thread_ptr(porid);
+	thread_t *th = get_thread_ptr(porid);
 	if (!th) {
 		leave_serialize();
 		return E_NOEXS;
 	}
 
-	port = getPortParent(th);
+	port_t *port = getPortParent(th);
 	if (!(port->opened)) {
 		leave_serialize();
 		return E_NOEXS;
@@ -158,12 +149,9 @@ ER_UINT port_call(ID porid, VP msg, UINT cmsgsz)
 		return E_PAR;
 	}
 
-	q = list_head(&(port->acceptor));
+	list_t *q = list_head(&(port->acceptor));
 	if (q) {
 		thread_t *tp = getThreadWaiting(q);
-		node_t *node;
-		rendezvous_t *r;
-		int rdvno;
 
 		if (memcpy_k2u(tp, tp->wait.detail.por.msg, msg, cmsgsz)) {
 			warn("port_call[%d] copy_to(%d, %p, %p, %d) error\n",
@@ -176,27 +164,24 @@ ER_UINT port_call(ID porid, VP msg, UINT cmsgsz)
 		list_remove(q);
 		tp->wait.detail.por.size = cmsgsz;
 
-		rdvno = tp->wait.detail.por.rdvno;
-		node = tree_get(&rdv_tree, rdvno);
+		int rdvno = tp->wait.detail.por.rdvno;
+		node_t *node = tree_get(&rdv_tree, rdvno);
 		rdvno = get_rdvno(thread_id(running), rdvno);
 		tp->wait.detail.por.rdvno = rdvno;
-		r = getRdvParent(node);
 
+		rendezvous_t *r = getRdvParent(node);
 		list_enqueue(&(r->caller), &(running->wait.waiting));
 		running->wait.detail.por.msg = msg;
 		running->wait.detail.por.rdvno = rdvno;
 		running->wait.type = wait_rdv;
 		release(tp);
-	}
-	else {
+	} else {
 		list_enqueue(&(port->caller), &(running->wait.waiting));
 		running->wait.detail.por.size = cmsgsz;
 		running->wait.detail.por.msg = msg;
 		running->wait.type = wait_por;
 /* TODO test */
 	}
-
-	leave_serialize();
 
 	wait(running);
 	return (running->wait.result)?
@@ -205,24 +190,16 @@ ER_UINT port_call(ID porid, VP msg, UINT cmsgsz)
 
 ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 {
-	thread_t *th;
-	port_t *port;
-	node_t *node;
-	rendezvous_t *r;
-	list_t *q;
-	ER_UINT result;
-	int rdvno;
 /* TODO validate msg */
 	enter_serialize();
-	th = get_thread_ptr(porid);
+	thread_t *th = get_thread_ptr(porid);
 	if (!th) {
 		leave_serialize();
 		return E_NOEXS;
 	}
 
-	port = getPortParent(th);
-
-	node = slab_alloc(&rdv_slab);
+	port_t *port = getPortParent(th);
+	node_t *node = slab_alloc(&rdv_slab);
 	if (!node) {
 		leave_serialize();
 		return E_NOMEM;
@@ -235,15 +212,15 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 /* TODO test */
 	}
 
-	rdvno = node->key;
-	r = getRdvParent(node);
+	int rdvno = node->key;
+	rendezvous_t *r = getRdvParent(node);
 	list_initialize(&(r->caller));
 	r->maxrmsz = port->maxrmsz;
 
-	q = list_head(&(port->caller));
+	ER_UINT result;
+	list_t *q = list_head(&(port->caller));
 	if (q) {
 		thread_t *tp = getThreadWaiting(q);
-
 		result = tp->wait.detail.por.size;
 
 		if (memcpy_u2k(tp, msg, tp->wait.detail.por.msg, result)) {
@@ -263,14 +240,11 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 		*p_rdvno = tp->wait.detail.por.rdvno = get_rdvno(thread_id(tp), rdvno);
 		tp->wait.type = wait_rdv;
 /* TODO test */
-	}
-	else {
+	} else {
 		list_enqueue(&(port->acceptor), &(running->wait.waiting));
 		running->wait.detail.por.msg = msg;
 		running->wait.detail.por.rdvno = rdvno;
 		running->wait.type = wait_por;
-		leave_serialize();
-
 		wait(running);
 
 		enter_serialize();
@@ -292,36 +266,34 @@ ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)
 
 ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 {
-	rendezvous_t *r;
-	node_t *node;
-	list_t *q;
-	ER result;
-
+	rdvno = get_rdv_seq(rdvno);
 /* TODO validate msg */
 	enter_serialize();
-	rdvno = get_rdv_seq(rdvno);
-	node = tree_get(&rdv_tree, rdvno);
+
+	node_t *node = tree_get(&rdv_tree, rdvno);
 	if (!node) {
-		leave_serialize();
 		node = tree_remove(&rdv_tree, rdvno);
 		if (node)
 			slab_free(&rdv_slab, node);
+
+		leave_serialize();
 		return E_OBJ;
 	}
 
-	r = getRdvParent(node);
-
+	rendezvous_t *r = getRdvParent(node);
 	if (rmsgsz > r->maxrmsz) {
 		warn("port_reply[%d] rmsgsz %d > %d\n",
 				rdvno, rmsgsz, r->maxrmsz);
-		leave_serialize();
 		node = tree_remove(&rdv_tree, rdvno);
 		if (node)
 			slab_free(&rdv_slab, node);
+
+		leave_serialize();
 		return E_PAR;
 	}
 
-	q = list_head(&(r->caller));
+	ER result;
+	list_t *q = list_head(&(r->caller));
 	if (q) {
 		thread_t *tp = getThreadWaiting(q);
 
@@ -329,10 +301,11 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 			warn("port_reply[%d] copy_to(%d, %p, %p, %d) error\n",
 					rdvno, thread_id(tp),
 					tp->wait.detail.por.msg, msg, rmsgsz);
-			leave_serialize();
 			node = tree_remove(&rdv_tree, rdvno);
 			if (node)
 				slab_free(&rdv_slab, node);
+
+			leave_serialize();
 			return E_PAR;
 		}
 
@@ -340,15 +313,15 @@ ER port_reply(RDVNO rdvno, VP msg, UINT rmsgsz)
 		tp->wait.detail.por.size = rmsgsz;
 		release(tp);
 		result = E_OK;
-	}
-	else	result = E_OBJ;
+	} else
+		result = E_OBJ;
 /* TODO test */
 
 	node = tree_remove(&rdv_tree, rdvno);
 	if (node)
 		slab_free(&rdv_slab, node);
-	leave_serialize();
 
+	leave_serialize();
 	dispatch();
 	return result;
 }
