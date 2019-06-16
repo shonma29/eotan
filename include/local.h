@@ -26,23 +26,22 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <limits.h>
 #include <stddef.h>
 #include <core/types.h>
 #include <sys/types.h>
 
 #define LOCAL_ADDR 0x7fffd000
 
-#define MAX_CWD (1023)
-
 typedef struct {
 	ID thread_id;
 	pid_t process_id;
-	W error_no;
+	int error_no;
 	uid_t user_id;
 	gid_t group_id;
 	pid_t parent_process_id;
-	size_t cwd_length;
-	UB cwd[MAX_CWD + 1];
+	size_t wd_len;
+	char wd[PATH_MAX];
 } thread_local_t;
 
 static inline thread_local_t *_get_local(void)

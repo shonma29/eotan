@@ -27,7 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "sys.h"
 
 
-size_t write(int d, const void *buf, size_t nbytes)
+ssize_t write(int d, const void *buf, size_t nbytes)
 {
 	pm_args_t request;
 

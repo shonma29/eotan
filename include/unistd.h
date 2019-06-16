@@ -27,7 +27,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stddef.h>
-#include <stdint.h>
 #include <stdnoreturn.h>
 #include <sys/types.h>
 #include <sys/unistd.h>
@@ -38,26 +37,24 @@ For more information, please refer to <http://unlicense.org/>
 
 extern char **environ;
 
-extern int chdir(char *);
+extern int chdir(const char *);
 extern int access(const char *, int);
 extern void *sbrk(intptr_t);
 extern int close(int);
 extern int dup2(int, int);
-extern int execve(char *name, char *argv[], char *envp[]);
+extern int execve(const char *, char *const [], char *const []);
 extern noreturn void _exit(int);
-extern int fork(void);
-extern char *getcwd(char *buf, int size);
+extern pid_t fork(void);
+extern char *getcwd(char *, size_t);
 extern gid_t getgid(void);
 extern pid_t getpid(void);
 extern pid_t getppid(void);
 extern uid_t getuid(void);
 extern off_t lseek(int, off_t, int);
-extern int open(const char *path, int oflag, ...);
 extern ssize_t read(int, void *, size_t);
 extern int rmdir(const char *);
 extern unsigned int sleep(unsigned int);
 extern int unlink(const char *);
-extern int wait(int *);
-extern size_t write(int, const void *, size_t);
+extern ssize_t write(int, const void *, size_t);
 
 #endif

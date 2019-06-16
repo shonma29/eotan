@@ -32,6 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/utsname.h>
+#include <sys/wait.h>
 #include "cunit.h"
 
 extern void *malloc(size_t);

@@ -24,7 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <local.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -32,32 +32,26 @@ For more information, please refer to <http://unlicense.org/>
 #define MSG_MEMORY "memory exhausted\n"
 
 
-int main(int argc, char **argv) {
-	size_t size = MAX_CWD + 1;
-	char *q = NULL;
-
-	//TODO parse option -L (use environment variable PWD. BSD default)
-	//TODO parse option -P (get absolute path. POSIX default)
+int main(int argc, char **argv)
+{
+	size_t size = PATH_MAX;
+	char *p = NULL;
 
 	do {
-		char *p = (char*)malloc(size);
-
-		if (!p) {
+		char *buf = (char*)malloc(size);
+		if (!buf) {
 			fputs(MSG_MEMORY, stderr);
 			return EXIT_FAILURE;
 		}
 
-		q = getcwd(p, size);
-
-		if (q) {
-			puts(q);
-
+		p = getcwd(buf, size);
+		if (p) {
+			puts(p);
 		} else
 			size *= 2;
 
-		free(p);
-
-	} while (!q);
+		free(buf);
+	} while (!p);
 
 	return EXIT_SUCCESS;
 }

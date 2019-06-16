@@ -26,8 +26,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <sys/types.h>
+
+//TODO delete unused definitions
 #define WNOHANG 0x00000001
 #define WUNTRACED 0x00000002
 
-#endif
+extern pid_t wait(int *);
 
+#endif

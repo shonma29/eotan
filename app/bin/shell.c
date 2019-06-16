@@ -35,6 +35,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/hash.h>
 #include <sys/param.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 
 #define ERR (-1)
 #define ERR_OK (0)

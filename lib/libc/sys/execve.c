@@ -24,7 +24,7 @@ Version 2, June 1991
  *
  */
 int
-execve(char *name, char *argv[], char *envp[])
+execve(const char *name, char *const argv[], char *const envp[])
 {
   int stsize = 0, i, argc, envc;
   unsigned int offset;

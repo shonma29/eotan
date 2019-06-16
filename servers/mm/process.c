@@ -202,8 +202,8 @@ void process_initialize(void)
 int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
-		size_t start;
-		size_t end;
+		unsigned int start;
+		unsigned int end;
 		mm_process_t *p = get_process((ID)args->arg1);
 
 		//TODO check duplicated process_id
@@ -230,7 +230,8 @@ int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		}
 
 		start = pageRoundDown(args->arg2);
-		end = pageRoundUp((size_t)(args->arg2) + (size_t)(args->arg3));
+		end = pageRoundUp((unsigned int)(args->arg2)
+				+ (unsigned int)(args->arg3));
 
 		if (map_user_pages(p->directory,
 				(VP)start, pages(end - start))) {
@@ -341,7 +342,7 @@ int mm_process_clean(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		if (unmap_user_pages(p->directory,
 				//TODO this address is adhoc. fix region_unmap
 				(VP)0x1000,
-				pages((size_t)(p->segments.heap.addr)
+				pages((unsigned int)(p->segments.heap.addr)
 						+  p->segments.heap.len))) {
 			reply->data[0] = EFAULT;
 			break;
@@ -460,7 +461,7 @@ int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	do {
 		ER_ID result;
 		size_t stack_size;
-		size_t stack_top;
+		unsigned int stack_top;
 		mm_thread_t *th;
 		mm_process_t *proc = get_process((ID)args->arg1);
 
@@ -538,8 +539,8 @@ int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
-		size_t currentEnd;
-		size_t newEnd;
+		unsigned int currentEnd;
+		unsigned int newEnd;
 		mm_process_t *p = get_process((ID)args->arg1);
 
 		if (!p) {
@@ -553,12 +554,17 @@ int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-		currentEnd = (size_t)(p->segments.heap.addr)
+		currentEnd = (unsigned int)(p->segments.heap.addr)
 				+ p->segments.heap.len;
-		newEnd = (size_t)(args->arg2) + (size_t)(args->arg3);
-		if (currentEnd == (size_t)(args->arg2))
+		newEnd = (unsigned int)(args->arg2)
+				+ (unsigned int)(args->arg3);
+		if (currentEnd == (unsigned int)(args->arg2))
 			p->segments.heap.len = newEnd
-					- (size_t)(p->segments.heap.addr);
+					- (unsigned int)(p->segments.heap.addr);
+
+		if (args->arg2 == LOCAL_ADDR)
+			p->local = getPageAddress(kern_p2v(p->directory),
+					(void*)(args->arg2));
 
 		reply->data[0] = EOK;
 		reply->result = 0;
@@ -572,8 +578,8 @@ int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
-		size_t currentEnd;
-		size_t newEnd;
+		unsigned int currentEnd;
+		unsigned int newEnd;
 		mm_process_t *p = get_process((ID)args->arg1);
 
 		if (!p) {
@@ -587,12 +593,13 @@ int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-		currentEnd = (size_t)(p->segments.heap.addr)
+		currentEnd = (unsigned int)(p->segments.heap.addr)
 				+ p->segments.heap.len;
-		newEnd = (size_t)(args->arg2) + (size_t)(args->arg3);
+		newEnd = (unsigned int)(args->arg2)
+				+ (unsigned int)(args->arg3);
 		if (currentEnd == newEnd)
-			p->segments.heap.len = (size_t)(args->arg2)
-					- (size_t)(p->segments.heap.addr);
+			p->segments.heap.len = (unsigned int)(args->arg2)
+					- (unsigned int)(p->segments.heap.addr);
 
 		reply->data[0] = EOK;
 		reply->result = 0;

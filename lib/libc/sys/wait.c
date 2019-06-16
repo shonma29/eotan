@@ -25,11 +25,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
-#include <unistd.h>
+#include <sys/wait.h>
 #include "sys.h"
 
 
-int wait(int *status)
+pid_t wait(int *status)
 {
 	pm_args_t req;
 	req.arg1 = (int)status;

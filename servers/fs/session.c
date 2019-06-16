@@ -43,13 +43,13 @@ static slab_t file_slab;
 
 int if_chdir(fs_request *req)
 {
-	session_t *session = session_find(req->packet.process_id);
+	session_t *session = session_find(unpack_pid(req));
 	if (!session)
 		return ESRCH;
 
 	vnode_t *starting_node;
 	int error_no = session_get_path(req->buf, &starting_node,
-			session, get_rdv_tid(req->rdvno),
+			session, unpack_tid(req),
 			(char*)(req->packet.arg1));
 	if (error_no)
 		return error_no;

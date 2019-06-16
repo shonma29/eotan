@@ -24,14 +24,20 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "sys.h"
+#include <errno.h>
+#include <string.h>
+#include <unistd.h>
 
 
-int _chdir(const char *path)
+char *getcwd(char *buf, size_t size)
 {
-	pm_args_t request;
+	thread_local_t *local_data = _get_local();
 
-	request.arg1 = (int)path;
+	if (size <= local_data->wd_len) {
+		_set_local_errno(ERANGE);
+		return NULL;
+	}
 
-	return _call_fs(pm_syscall_chdir, &request);
+	strcpy(buf, local_data->wd);
+	return buf;
 }

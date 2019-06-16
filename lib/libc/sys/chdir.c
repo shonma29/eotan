@@ -1,95 +1,37 @@
 /*
+This is free and unencumbered software released into the public domain.
 
-B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
 
-GNU GENERAL PUBLIC LICENSE
-Version 2, June 1991
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
 
-(C) B-Free Project.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
 
+For more information, please refer to <http://unlicense.org/>
 */
-/* POSIX Library misc function.
-*/
-
-/* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_chdir.c,v 1.1 1997/08/31 13:25:18 night Exp $  */
-
-#include <errno.h>
-#include <string.h>
-#include <core/types.h>
 #include "sys.h"
-#include "../libserv/libserv.h"
-
-extern int _chdir(const char *);
 
 
-/* chdir 
- *
- */
-int
-chdir (char *path)
+int chdir(const char *path)
 {
-    int result = _chdir(path);
-    if (result)
-	return result;
+	pm_args_t request;
 
-    thread_local_t *local_data = _get_local();
-    char buf[MAX_CWD + 1], *src, *top, *dst;
-    int len = strlen(path), l2, flag = 0;
+	request.arg1 = (int)path;
 
-    /* lowlib_data->dpath の更新 */
-    if (path[0] == '/') {
-	strncpy((B*)(local_data->cwd), path, MAX_CWD);
-	local_data->cwd[MAX_CWD] = '\0';
-	local_data->cwd_length = len;
-    } else {
-	strncpy(buf, path, MAX_CWD);
-	buf[MAX_CWD] = '\0';
-	top = src = buf;
-	len = local_data->cwd_length;
-	dst = (B*)(local_data->cwd + len);
-	while (*top) {
-	    while (*src != '/' && *src)
-		++src;
-	    if (*src) {
-		*src = 0;
-		src++;
-	    }
-	    if (!strcmp(top, "..")) {
-		if (len > 1) {
-		    while (*dst != '/') {
-			--dst;
-			--len;
-		    }
-		    if (len == 0) {
-			++len;
-			*(dst + 1) = 0;
-		    } else
-			*dst = 0;
-		}
-	    } else if (strcmp(top, ".")) {
-		l2 = strlen(top);
-		if (len + l2 >= MAX_CWD) {
-		    l2 = MAX_CWD - len - 1;
-		    flag = 1;
-		}
-		if (len != 1) {
-		    *dst = '/';
-		    dst++;
-		    ++len;
-		}
-		len += l2;
-		while (l2-- > 0) {
-		    *dst = *top++;
-		    dst++;
-		}
-		*dst = 0;
-		if (flag)
-		    break;
-	    }
-	    top = src;
-	}
-	local_data->cwd_length = len;
-    }
-
-    return result;
+	return _call_fs(pm_syscall_chdir, &request);
 }

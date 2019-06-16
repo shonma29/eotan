@@ -307,8 +307,8 @@ static W set_local(ID pid, ID tskid)
     memset(&local_data, 0, sizeof(local_data));
     local_data.thread_id = tskid;
     local_data.process_id = pid;
-    strcpy((B*)local_data.cwd, "/");
-    local_data.cwd_length = 1;
+    strcpy(local_data.wd, "/");
+    local_data.wd_len = 1;
 
     error_no = kcall->region_put(tskid, (thread_local_t*)LOCAL_ADDR,
 		     sizeof(thread_local_t), &local_data);

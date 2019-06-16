@@ -26,7 +26,6 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
 #include <stdio.h>
-#include <unistd.h>
 #include <fcntl.h>
 #include "macros.h"
 

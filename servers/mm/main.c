@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <mm.h>
 #include <pm.h>
 #include <services.h>
+#include <string.h>
 #include <core/options.h>
 #include <nerve/kcall.h>
 #include <sys/errno.h>
@@ -59,9 +60,14 @@ static int (*funcs[])(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args) = {
 #define NUM_OF_FUNCS (sizeof(funcs) / sizeof(void*))
 #define MYNAME "mm"
 
+static char pathbuf1[PATH_MAX];
+static char pathbuf2[PATH_MAX];
+
 static ER init(void);
 static ER proxy_initialize(void);
 static void proxy(void);
+static int if_chdir(mm_process_t *, pm_args_t *);
+static size_t calc_path(char *, char *, const size_t);
 static int if_open(mm_process_t *, pm_args_t *);
 static int if_read(mm_process_t *, pm_args_t *);
 static int if_write(mm_process_t *, pm_args_t *);
@@ -133,6 +139,9 @@ static void proxy(void)
 		int result;
 		int op = args.operation;
 		switch (args.operation) {
+		case pm_syscall_chdir:
+			result = if_chdir(process, &args);
+			break;
 		case pm_syscall_open:
 //TODO walk and open / create
 			result = if_open(process, &args);
@@ -235,6 +244,114 @@ int mm_dup(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 
 	reply->result = -1;
 	return reply_failure;
+}
+
+static int if_chdir(mm_process_t *process, pm_args_t *args)
+{
+	ER_UINT len = kcall->region_copy((args->process_id >> 16) & 0xffff,
+			(char*)(args->arg1), PATH_MAX, pathbuf2);
+	if (len < 0)
+		return EFAULT;
+
+	if (len >= PATH_MAX)
+		return ENAMETOOLONG;
+
+	strcpy(pathbuf1, process->local->wd);
+	len = calc_path(pathbuf1, pathbuf2, PATH_MAX);
+	if (!len)
+		return ENAMETOOLONG;
+
+	if (kcall->port_call(PORT_FS, args, sizeof(*args))
+			!= sizeof(pm_reply_t)) {
+		return ECONNREFUSED;
+	}
+
+	pm_reply_t *reply = (pm_reply_t*)args;
+	if (reply->result1 == 0) {
+		process->local->wd_len = len;
+		strcpy(process->local->wd, pathbuf1);
+	}
+
+	log_notice("proxy: %d chdir %d %d %s\n",
+			process->node.key, reply->result1, reply->error_no,
+			process->local->wd);
+
+	return 0;
+}
+
+static size_t calc_path(char *dest, char *src, const size_t size)
+{
+	char *w;
+	char *r = src;
+	size_t rest = size;
+
+	if (*r == '/') {
+		w = dest;
+		r++;
+	} else {
+		size_t last = strlen(dest);
+		if (last == 1)
+			last = 0;
+
+		w = &(dest[last]);
+		rest -= last;
+	}
+
+	bool last = false;
+	do {
+		char *word = r;
+		for (;; r++) {
+			if (!*r) {
+				last = true;
+				break;
+			}
+
+			if (*r == '/') {
+				*r = '\0';
+				break;
+			}
+		}
+
+		size_t len = (size_t)r - (size_t)word;
+		r++;
+
+		if (!len)
+			continue;
+
+		if (!strcmp(word, "."))
+			continue;
+
+		if (!strcmp(word, "..")) {
+			for (;;) {
+				if (w == dest)
+					break;
+				w--;
+				if (*w == '/')
+					break;
+			}
+
+			rest = size - ((size_t)w - (size_t)dest);
+			continue;
+		}
+
+		if (rest < len + 2)
+			return 0;
+
+		w[0] = '/';
+		len++;
+		strcpy(&(w[1]), word);
+		w = &(w[len]);
+		rest -= len;
+	} while (!last);
+
+	size_t total = size - rest;
+	if (total)
+		return total;
+	else {
+		dest[0] = '/';
+		dest[1] = '\0';
+		return 1;
+	}
 }
 
 static int if_open(mm_process_t *process, pm_args_t *args)

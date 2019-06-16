@@ -36,4 +36,6 @@ For more information, please refer to <http://unlicense.org/>
 #define O_CREAT 0x0200
 #define O_TRUNC 0x0400
 
+extern int open(const char *, int, ...);
+
 #endif

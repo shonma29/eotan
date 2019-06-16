@@ -43,6 +43,7 @@ _make_connection(W wOperation,
 
     ID port;
     switch (wOperation) {
+    case 5:
     case 6:
     case 7:
     case 8:
