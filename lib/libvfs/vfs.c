@@ -129,8 +129,12 @@ int vfs_open(vnode_t *cwd, char *path, const int flags, const mode_t mode,
 		return EINVAL;
 	}
 
-	if (flags & O_CREAT)
-		return vfs_create(cwd, path, flags, mode, permission, node);
+	if (flags & O_CREAT) {
+		int error_no = vfs_create(cwd, path, flags, mode, permission,
+				node);
+		if (error_no != EEXIST)
+			return error_no;
+	}
 
 	int error_no = vfs_walk(cwd, path, flags, permission, node);
 	if (error_no)
