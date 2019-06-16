@@ -38,9 +38,8 @@ static int print(const int out, const int in, const char *name)
 {
 	for (;;) {
 		char buf[BUFSIZ];
-		int len = read(in, buf, sizeof(buf) / sizeof(buf[0]));
-
-		if (len < 0) {
+		int len = read(in, buf, sizeof(buf));
+		if (len == -1) {
 			perror(name);
 			return EXIT_FAILURE;
 		}
@@ -48,7 +47,10 @@ static int print(const int out, const int in, const char *name)
 		if (len == 0)
 			break;
 
-		write(out, buf, len);
+		if (write(out, buf, len) == -1) {
+			perror(name);
+			return EXIT_FAILURE;
+		}
 	}
 
 	return EXIT_SUCCESS;
@@ -57,23 +59,19 @@ static int print(const int out, const int in, const char *name)
 static int process(const int out, const char *name)
 {
 	do {
-		int result;
 		int in = open(name, O_RDONLY);
-
 		if (in == -1)
 			break;
 
-		result = print(out, in, name);
+		int result = print(out, in, name);
 
 		if (close(in))
 			break;
 
 		return result;
-
 	} while (false);
 
 	perror(name);
-
 	return EXIT_FAILURE;
 }
 
@@ -83,15 +81,11 @@ int main(int argc, char **argv)
 
 	if (argc == 1)
 		result = print(STDOUT_FILENO, STDIN_FILENO, "stdin");
-
-	else {
-		int i;
-
-		for (i = 1; i < argc; i++) {
+	else
+		for (int i = 1; i < argc; i++) {
 			argv++;
 			result |= process(STDOUT_FILENO, *argv);
 		}
-	}
 
 	return result;
 }

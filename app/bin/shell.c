@@ -443,8 +443,8 @@ static bool line_evaluate(Line *p, hash_t *vars)
 				opts.files[0] = open((char*)(p->array[i]),
 						O_RDONLY);
 				if (opts.files[0] == -1) {
-					fprintf(stderr, "%s cannot open\n",
-							p->array[i]);
+					fprintf(stderr, "%s cannot open (%d)\n",
+							p->array[i], errno);
 					return false;
 				}
 
@@ -461,8 +461,8 @@ static bool line_evaluate(Line *p, hash_t *vars)
 						S_IRUSR | S_IWUSR | S_IRGRP
 								| S_IROTH);
 				if (opts.files[1] == -1) {
-					fprintf(stderr, "%s cannot open %d\n",
-							p->array[i]);
+					fprintf(stderr, "%s cannot open (%d)\n",
+							p->array[i], errno);
 					return false;
 				}
 

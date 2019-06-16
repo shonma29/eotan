@@ -177,11 +177,6 @@ static ER check_param(const UW start, const UW size)
 static ER_UINT write(const UW dd, const UW start, const UW size,
 		const char *inbuf)
 {
-	ER_UINT result = check_param(start, size);
-
-	if (result)
-		return result;
-
 	switch (dd) {
 #ifdef USE_VESA
 	case 4:
@@ -257,7 +252,9 @@ static void execute(request_message_t *req)
 	case Twrite:
 #ifdef USE_VESA
 		if (message->Twrite.fid) {
-			if (kcall->region_get(get_rdv_tid(req->rdvno),
+			if (message->Twrite.count > sizeof(line))
+				result = E_PAR;
+			else if (kcall->region_get(get_rdv_tid(req->rdvno),
 					message->Twrite.data,
 					message->Twrite.count,
 					line)) {
