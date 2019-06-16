@@ -44,66 +44,12 @@ FILE *fopen(const char *path, const char *mode)
 
 static FILE *_fopen(FILE *stream, const char *path, const char *mode)
 {
-	int open_mode = 0;
-	int file_mode = 0;
-	const char *p = mode;
-
-	//TODO support append
-	switch (*p) {
-	case 'r':
-		open_mode = O_RDONLY;
-		file_mode = __FILE_MODE_READABLE;
-		break;
-	case 'w':
-		open_mode = O_WRONLY | O_CREAT | O_TRUNC;
-		file_mode = __FILE_MODE_WRITABLE;
-		break;
-	default:
-		_set_local_errno(EINVAL);
+	int open_mode;
+	int file_mode;
+	int result = __parse_file_mode(mode, &file_mode, &open_mode);
+	if (result) {
+		_set_local_errno(result);
 		return NULL;
-	}
-
-	p++;
-	if (*p == 'b') {
-		p++;
-
-		if (*p == 'b') {
-			_set_local_errno(EINVAL);
-			return NULL;
-		}
-	}
-
-	if (*p) {
-		if (*p != '+') {
-			_set_local_errno(EINVAL);
-			return NULL;
-		}
-
-		p++;
-		switch (*p) {
-		case '\0':
-			break;
-		case 'b':
-			p++;
-			if (*p) {
-				_set_local_errno(EINVAL);
-				return NULL;
-			}
-			break;
-		default:
-			_set_local_errno(EINVAL);
-			return NULL;
-		}
-
-		file_mode = __FILE_MODE_READABLE | __FILE_MODE_WRITABLE;
-		switch (open_mode) {
-		case 'r':
-			open_mode = O_RDWR;
-			break;
-		case 'w':
-			open_mode = O_RDWR | O_CREAT | O_TRUNC;
-			break;
-		}
 	}
 
 	int fd = open(path, open_mode);

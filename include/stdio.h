@@ -61,9 +61,9 @@ typedef struct {
 
 extern FILE __libc_files[];
 
-#define stdin (&(__libc_files[STDIN_FILENO]))
-#define stdout (&(__libc_files[STDOUT_FILENO]))
-#define stderr (&(__libc_files[STDERR_FILENO]))
+extern FILE *stdin;
+extern FILE *stdout;
+extern FILE *stderr;
 
 static inline int feof(FILE *stream)
 {
@@ -83,6 +83,7 @@ static inline void clearerr(FILE *stream)
 extern int fileno(FILE*);
 
 extern FILE *fopen(const char *, const char *);
+extern FILE *fdopen(int fd, const char *);
 extern int fclose(FILE *);
 extern int fflush(FILE *);
 

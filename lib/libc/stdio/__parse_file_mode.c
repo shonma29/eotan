@@ -1,5 +1,3 @@
-#ifndef _LIBC_STDIO_MACROS_H_
-#define _LIBC_STDIO_MACROS_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,51 +24,66 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stdio.h>
+#include <errno.h>
+#include <fcntl.h>
+#include "macros.h"
 
-typedef struct {
-	size_t len;
-	size_t max;
-	char *buf;
-} CharBuffer;
 
-static inline int isOpen(const FILE *stream)
+int __parse_file_mode(const char *mode, int *file_mode, int *open_mode)
 {
-	return stream->mode & (__FILE_MODE_READABLE | __FILE_MODE_WRITABLE);
+	const char *p = mode;
+	//TODO support append
+	switch (*p) {
+	case 'r':
+		*open_mode = O_RDONLY;
+		*file_mode = __FILE_MODE_READABLE;
+		break;
+	case 'w':
+		*open_mode = O_WRONLY | O_CREAT | O_TRUNC;
+		*file_mode = __FILE_MODE_WRITABLE;
+		break;
+	default:
+		return EINVAL;
+	}
+
+	p++;
+	if (*p == 'b') {
+		p++;
+
+		if (*p == 'b')
+			return EINVAL;
+	}
+
+	if (*p) {
+		if (*p != '+')
+			return EINVAL;
+
+		p++;
+		switch (*p) {
+		case '\0':
+			break;
+		case 'b':
+			p++;
+			if (*p)
+				return EINVAL;
+			break;
+		default:
+			return EINVAL;
+		}
+
+		*file_mode = __FILE_MODE_READABLE | __FILE_MODE_WRITABLE;
+
+		switch (*mode) {
+		case 'r':
+			*open_mode = O_RDWR;
+			break;
+		case 'w':
+			*open_mode = O_RDWR | O_CREAT | O_TRUNC;
+			break;
+		default:
+			break;
+		}
+	}
+
+	return 0;
 }
-
-static inline int isReadable(const FILE *stream)
-{
-	return stream->mode & __FILE_MODE_READABLE;
-}
-
-static inline int isWritable(const FILE *stream)
-{
-	return stream->mode & __FILE_MODE_WRITABLE;
-}
-
-static inline int isAppend(const FILE *stream)
-{
-	return stream->mode & __FILE_MODE_APPEND;
-}
-
-static inline int isBlock(const FILE *stream)
-{
-	return stream->mode & __FILE_MODE_BLOCK;
-}
-
-static inline int isDirty(const FILE *stream)
-{
-	return stream->mode & __FILE_MODE_DIRTY;
-}
-
-extern int __putc(const char, CharBuffer *);
-extern int __fill_buffer(void *, const size_t, FILE *);
-extern int __sweep_buffer(FILE *);
-
-extern int __parse_file_mode(const char *, int *, int *);
-
-extern int vnprintf2(int (*)(const char, void*), void *,
-		const char *, va_list);
-
-#endif

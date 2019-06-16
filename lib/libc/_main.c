@@ -29,6 +29,9 @@ For more information, please refer to <http://unlicense.org/>
 #include <unistd.h>
 
 FILE __libc_files[FOPEN_MAX];
+FILE *stdin;
+FILE *stdout;
+FILE *stderr;
 char **environ;
 
 extern int main(int argc, char *argv[], char *envp[]);
@@ -44,23 +47,16 @@ void _main(int argc, char *argv[], char *envp[])
 
 static void __libc_initialize(void)
 {
-	FILE *p;
+	stdin = fdopen(STDIN_FILENO, "r");
+	//TODO fix when you can discriminate terminal
+	if (stdin)
+		stdin->buf_size = 1;
 
-	p = stdin;
-	p->mode = __FILE_MODE_READABLE;
-	p->pos = 0;
-	p->len = 0;
-	p->fd = STDIN_FILENO;
-	p->buf_size = 1;
-	p->seek_pos = 0;
+	stdout = fdopen(STDOUT_FILENO, "w");
+	if (stdout)
+		stdout->buf_size = 1;
 
-	for (int i = STDOUT_FILENO; i <= STDERR_FILENO; i++) {
-		p = &(__libc_files[i]);
-		p->mode = __FILE_MODE_WRITABLE;
-		p->pos = 0;
-		p->len = 0;
-		p->fd = i;
-		p->buf_size = 1;
-		p->seek_pos = 0;
-	}
+	stderr = fdopen(STDERR_FILENO, "w");
+	if (stderr)
+		stderr->buf_size = 1;
 }

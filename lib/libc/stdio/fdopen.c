@@ -1,5 +1,3 @@
-#ifndef _LIBC_STDIO_MACROS_H_
-#define _LIBC_STDIO_MACROS_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,51 +24,53 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <errno.h>
 #include <stdio.h>
+#include <unistd.h>
+#include "macros.h"
 
-typedef struct {
-	size_t len;
-	size_t max;
-	char *buf;
-} CharBuffer;
+static FILE *_fdopen(FILE *, const int, const char *);
 
-static inline int isOpen(const FILE *stream)
+
+FILE *fdopen(int fd, const char *mode)
 {
-	return stream->mode & (__FILE_MODE_READABLE | __FILE_MODE_WRITABLE);
+	for (int i = 0; i < FOPEN_MAX; i++)
+		if (!isOpen(&(__libc_files[i])))
+			return _fdopen(&(__libc_files[i]), fd, mode);
+
+	_set_local_errno(EMFILE);
+	return NULL;
 }
 
-static inline int isReadable(const FILE *stream)
+static FILE *_fdopen(FILE *stream, const int fd, const char *mode)
 {
-	return stream->mode & __FILE_MODE_READABLE;
+	int open_mode;
+	int file_mode;
+	int result = __parse_file_mode(mode, &file_mode, &open_mode);
+	if (result) {
+		_set_local_errno(result);
+		return NULL;
+	}
+
+	off_t offset = lseek(fd, 0, SEEK_CUR);
+	if (offset == (off_t)(-1)) {
+		int error_no = errno;
+		switch (error_no) {
+//TODO fix when proxy completes
+//		case ESRCH:
+//		case EBADF:
+//			return NULL;
+		default:
+			offset = 0;
+			break;
+		}
+	}
+
+	stream->mode = file_mode;
+	stream->pos = 0;
+	stream->len = 0;
+	stream->fd = fd;
+	stream->buf_size = sizeof(stream->buf);
+	stream->seek_pos = offset;
+	return stream;
 }
-
-static inline int isWritable(const FILE *stream)
-{
-	return stream->mode & __FILE_MODE_WRITABLE;
-}
-
-static inline int isAppend(const FILE *stream)
-{
-	return stream->mode & __FILE_MODE_APPEND;
-}
-
-static inline int isBlock(const FILE *stream)
-{
-	return stream->mode & __FILE_MODE_BLOCK;
-}
-
-static inline int isDirty(const FILE *stream)
-{
-	return stream->mode & __FILE_MODE_DIRTY;
-}
-
-extern int __putc(const char, CharBuffer *);
-extern int __fill_buffer(void *, const size_t, FILE *);
-extern int __sweep_buffer(FILE *);
-
-extern int __parse_file_mode(const char *, int *, int *);
-
-extern int vnprintf2(int (*)(const char, void*), void *,
-		const char *, va_list);
-
-#endif
