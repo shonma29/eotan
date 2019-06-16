@@ -118,7 +118,7 @@ if_exit (fs_request *req)
     if (procp->proc_ppid != mypid) continue;
     procp->proc_ppid = INIT_PID; /* INIT プロセスの pid は 0 */
     kcall->region_put(procp->proc_maintask,
-	     (pid_t*)(LOCAL_ADDR + offsetof(thread_local_t, parent_process_id)),
+	     (pid_t*)(LOCAL_ADDR + offsetof(thread_local_t, ppid)),
 	     sizeof(pid_t), &(procp->proc_ppid));
     
     /* 子プロセスが ZOMBIE で INIT が wait していれば クリアする? */
@@ -173,16 +173,6 @@ if_fork (fs_request *req)
     }
 
   child->proc_maintask = main_thread_id;
-
-  error_no = copy_local(procp, child);
-  if (error_no)
-    {
-      proc_dealloc_proc(child->proc_pid);
-      kcall->thread_destroy(main_thread_id);
-//TODO destroy process
-      return error_no;
-    }
-
   kcall->thread_start(main_thread_id);
 
   reply2(req->rdvno, 0, child->proc_pid, 0);	/* 親プロセスに対して応答 */
@@ -233,7 +223,7 @@ int if_kill(fs_request *req)
 	    continue;
 	procp->proc_ppid = INIT_PID;	/* INIT プロセスの pid は 0 */
 	kcall->region_put(procp->proc_maintask,
-		(pid_t*)(LOCAL_ADDR + offsetof(thread_local_t, parent_process_id)),
+		(pid_t*)(LOCAL_ADDR + offsetof(thread_local_t, ppid)),
 		sizeof(pid_t), &(procp->proc_ppid));
 
 	/* 子プロセスが ZOMBIE で INIT が wait していれば クリアする? */

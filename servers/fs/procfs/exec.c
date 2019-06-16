@@ -56,7 +56,6 @@ Version 2, June 1991
 
 #include <elf.h>
 #include <fcntl.h>
-#include <local.h>
 #include <string.h>
 #include <boot/init.h>
 #include <nerve/kcall.h>
@@ -66,7 +65,6 @@ Version 2, June 1991
 #include "api.h"
 #include "procfs/process.h"
 
-static W set_local(ID pid, ID tskid);
 static W read_exec_header(vnode_t *ip, Elf32_Addr *entry,
 			  Elf32_Phdr *text,
 			  Elf32_Phdr *data);
@@ -168,17 +166,6 @@ W exec_program(pm_args_t *req, W procid, B * pathname)
     }
 
     procp->proc_status = PS_RUN;
-
-    if (procid == INIT_PID)
-	set_local(procid, caller);
-    else
-	error_no = kcall->region_put(caller,
-		&(((thread_local_t*)LOCAL_ADDR)->thread_id),
-		sizeof(caller), &(caller));
-
-    if (error_no) {
-	return (error_no);
-    }
 
     strncpy(procp->proc_name, pathname, PROC_NAME_LEN - 1);
     procp->proc_name[PROC_NAME_LEN - 1] = '\0';
@@ -293,27 +280,3 @@ load_segment(W procid, vnode_t *ip, Elf32_Phdr *segment, ID task)
 
     return (EOK);
 }
-
-static W set_local(ID pid, ID tskid)
-{
-    W error_no;
-    thread_local_t local_data;
-
-    error_no = vmap(pid, (thread_local_t*)LOCAL_ADDR, sizeof(thread_local_t),
-    		true);
-    if (error_no)
-	return error_no;
-
-    memset(&local_data, 0, sizeof(local_data));
-    local_data.thread_id = tskid;
-    local_data.process_id = pid;
-    strcpy(local_data.wd, "/");
-    local_data.wd_len = 1;
-
-    error_no = kcall->region_put(tskid, (thread_local_t*)LOCAL_ADDR,
-		     sizeof(thread_local_t), &local_data);
-    if (error_no)
-	return error_no;
-    return (EOK);
-}
-

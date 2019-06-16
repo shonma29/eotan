@@ -69,9 +69,7 @@ Version 2, June 1991
  *
  */
 
-#include <local.h>
 #include <string.h>
-#include <nerve/kcall.h>
 #include "api.h"
 #include "procfs/process.h"
 #include "../../lib/libserv/libmm.h"
@@ -98,39 +96,6 @@ W proc_fork(struct proc *parent, struct proc *child)
     child->proc_ppid = parent->proc_pid;
     strncpy(child->proc_name, parent->proc_name, PROC_NAME_LEN - 1);
     child->proc_name[PROC_NAME_LEN - 1] = '\0';
-
-    return (EOK);
-}
-
-W copy_local(struct proc *parent, struct proc *child)
-{
-    thread_local_t local_data;
-    W error_no = vmap(child->proc_pid, (thread_local_t*)LOCAL_ADDR,
-		sizeof(thread_local_t), true);
-
-    if (error_no) {
-	return error_no;
-    }
-
-    error_no = kcall->region_get(parent->proc_maintask, (thread_local_t*)LOCAL_ADDR,
-		     sizeof(thread_local_t), &local_data);
-    if (error_no) {
-//TODO release local
-	return error_no;
-    }
-
-    local_data.thread_id = child->proc_maintask;
-    local_data.process_id = child->proc_pid;
-    local_data.user_id = child->session->permission.uid;
-    local_data.group_id = child->session->permission.gid;
-    local_data.parent_process_id = child->proc_ppid;
-
-    error_no = kcall->region_put(child->proc_maintask, (thread_local_t*)LOCAL_ADDR,
-		     sizeof(thread_local_t), &local_data);
-    if (error_no) {
-//TODO release local
-	return error_no;
-    }
 
     return (EOK);
 }
@@ -169,12 +134,12 @@ static W proc_duplicate(struct proc * source, struct proc * destination)
 	    destfile->f_flag = srcfile->f_flag;
 	    destfile->f_count = srcfile->f_count;
 	    destfile->f_offset = srcfile->f_offset;
-	    srcfile->f_vnode->refer_count++;
 	}
     }
 
     /* copy of working directory */
     destination->session->cwd = source->session->cwd;
+//TODO is not needed?
     destination->session->cwd->refer_count++;
 
     /* copy of uid/gid */

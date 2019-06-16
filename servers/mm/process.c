@@ -261,6 +261,22 @@ int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 				}
 			}
 
+			if (map_user_pages(p->directory, (void*)LOCAL_ADDR,
+					pages(sizeof(*(p->local))))) {
+				reply->data[0] = ENOMEM;
+				break;
+			}
+
+			p->local = getPageAddress(kern_p2v(p->directory),
+					(void*)LOCAL_ADDR);
+			memset(p->local, 0, sizeof(*(p->local)));
+			p->local->pid = p->node.key;
+			p->local->ppid = p->ppid;
+			p->local->uid = p->uid;
+			p->local->gid = p->gid;
+			p->local->wd_len = 1;
+			strcpy(p->local->wd, "/");
+
 			mm_descriptor_t *d = process_create_file();
 			if (d) {
 				mm_file_t *f = d->file;
@@ -441,6 +457,22 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		//TODO set local
 		strcpy(dest->name, src->name);
 
+		if (map_user_pages(dest->directory, (void*)LOCAL_ADDR,
+				pages(sizeof(*(dest->local))))) {
+			reply->data[0] = ENOMEM;
+			break;
+		}
+
+		dest->local = getPageAddress(kern_p2v(dest->directory),
+				(void*)LOCAL_ADDR);
+		memset(dest->local, 0, sizeof(*(dest->local)));
+		dest->local->pid = dest->node.key;
+		dest->local->ppid = dest->ppid;
+		dest->local->uid = dest->uid;
+		dest->local->gid = dest->gid;
+		dest->local->wd_len = src->local->wd_len;
+		strcpy(dest->local->wd, src->local->wd);
+
 		log_notice("d %d %x->%x, %x->%x pp=%d pg=%d u=%d g=%d n=%s\n",
 				dest->node.key,
 				&dest->brothers, dest->brothers.next,
@@ -478,7 +510,7 @@ int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 
 		if (args->arg1 == INIT_PID) {
 			if (map_user_pages(proc->directory,
-					(VP)pageRoundDown(LOCAL_ADDR - USER_STACK_INITIAL_SIZE - PAGE_SIZE),
+					(void*)pageRoundDown(LOCAL_ADDR - USER_STACK_INITIAL_SIZE - PAGE_SIZE),
 					pages(pageRoundUp(USER_STACK_INITIAL_SIZE)))) {
 				reply->data[0] = ENOMEM;
 				break;
@@ -510,6 +542,9 @@ int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
+		if (proc->local)
+				proc->local->thread_id = result;
+
 		//TODO check duplicated thread_id
 		th = (mm_thread_t*)slab_alloc(&thread_slab);
 		if (!th) {
@@ -539,10 +574,7 @@ int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
-		unsigned int currentEnd;
-		unsigned int newEnd;
 		mm_process_t *p = get_process((ID)args->arg1);
-
 		if (!p) {
 			reply->data[0] = ESRCH;
 			break;
@@ -554,9 +586,9 @@ int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-		currentEnd = (unsigned int)(p->segments.heap.addr)
+		unsigned int currentEnd = (unsigned int)(p->segments.heap.addr)
 				+ p->segments.heap.len;
-		newEnd = (unsigned int)(args->arg2)
+		unsigned int newEnd = (unsigned int)(args->arg2)
 				+ (unsigned int)(args->arg3);
 		if (currentEnd == (unsigned int)(args->arg2))
 			p->segments.heap.len = newEnd
@@ -733,6 +765,10 @@ int mm_thread_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			reply->data[0] = EBUSY;
 			break;
 		}
+
+		//TODO only main thread
+		if (p->local)
+				p->local->thread_id = result;
 
 		reply->data[0] = EOK;
 		reply->result = result;

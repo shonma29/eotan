@@ -39,7 +39,7 @@ _make_connection(W wOperation,
     W rsize;
 
     req->operation = wOperation;
-    req->process_id = local_data->process_id;
+    req->process_id = local_data->pid;
 
     ID port;
     switch (wOperation) {

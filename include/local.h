@@ -34,12 +34,12 @@ For more information, please refer to <http://unlicense.org/>
 #define LOCAL_ADDR 0x7fffd000
 
 typedef struct {
-	ID thread_id;
-	pid_t process_id;
 	int error_no;
-	uid_t user_id;
-	gid_t group_id;
-	pid_t parent_process_id;
+	ID thread_id;
+	pid_t pid;
+	pid_t ppid;
+	uid_t uid;
+	gid_t gid;
 	size_t wd_len;
 	char wd[PATH_MAX];
 } thread_local_t;

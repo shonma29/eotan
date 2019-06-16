@@ -24,15 +24,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "local.h"
-#include "sys/types.h"
+#include <local.h>
+#include <unistd.h>
 
 
 gid_t getgid(void)
 {
-	thread_local_t *local = _get_local();
-
-	return local->group_id;
+	return _get_local()->gid;
 }
-
-
