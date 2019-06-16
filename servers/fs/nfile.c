@@ -100,29 +100,27 @@ int if_lseek(fs_request *req)
 
 	off_t *offset = (off_t*)&(req->packet.arg2);
 	off_t next = *offset;
-	if (next < 0)
-		return EINVAL;
 
 	switch (req->packet.arg4) {
 	case SEEK_SET:
 		break;
 	case SEEK_CUR:
-	{
-		//TODO off_t size is ambiguous. find another way
-		off_t rest = LLONG_MAX - next;
-		if (file->f_offset > rest)
-			return EOVERFLOW;
-	}
+		if (next > 0) {
+			//TODO off_t size is ambiguous. find another way
+			off_t rest = LLONG_MAX - file->f_offset;
+			if (next > rest)
+				return EOVERFLOW;
+		}
 
 		next += file->f_offset;
 		break;
 	case SEEK_END:
-	{
-		//TODO off_t size is ambiguous. find another way
-		off_t rest = LLONG_MAX - next;
-		if (file->f_vnode->size > rest)
-			return EOVERFLOW;
-	}
+		if (next > 0) {
+			//TODO off_t size is ambiguous. find another way
+			off_t rest = LLONG_MAX - file->f_vnode->size;
+			if (next > rest)
+				return EOVERFLOW;
+		}
 
 		next += file->f_vnode->size;
 		break;
@@ -130,9 +128,8 @@ int if_lseek(fs_request *req)
 		return EINVAL;
 	}
 
-	if (file->f_vnode->mode & S_IFCHR)
-		if (file->f_offset > file->f_vnode->size)
-			return EINVAL;
+	if (next < 0)
+		return EINVAL;
 
 	file->f_offset = next;
 	reply64(req->rdvno, 0, next);
