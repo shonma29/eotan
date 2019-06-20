@@ -139,6 +139,9 @@ void session_destroy(session_t *session)
 			//TODO what to do?
 		}
 
+	if (session->cwd)
+		vnodes_remove(session->cwd);
+
 	slab_free(&session_slab, session);
 }
 

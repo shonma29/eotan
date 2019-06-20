@@ -74,59 +74,19 @@ int if_exec(fs_request *req)
 int
 if_exit (fs_request *req)
 {
-  struct proc *myprocp, *procp;
-  W mypid, wpid, exst;
-  W i;
+  struct proc *myprocp;
+  W mypid;
   ER error_no;
-  ID tskid;
 
-  mypid = req->packet.process_id;
+  mypid = unpack_pid(req);
   error_no = proc_get_procp(mypid, &myprocp);
   if (error_no)
     /* メッセージの呼び出し元にエラーを返しても処理できないが，
        タスクは exd_tsk で終了する */
     return ESRCH;
 
-  myprocp->proc_exst = req->packet.arg1;
-
-  error_no = proc_get_procp(myprocp->proc_ppid, &procp);
-  if (error_no)
-    /* メッセージの呼び出し元にエラーを返しても処理できないが，
-       タスクは exd_tsk で終了する */
-    return ESRCH;
-
-  wpid = procp->proc_wpid;
-  if (procp->proc_status == PS_WAIT &&
-      (wpid == -1 || wpid == mypid || -wpid == myprocp->proc_pgid)) {
-    /* 親プロセスが自分を WAIT していればメッセージ送信 */
-    procp->proc_status = PS_RUN;
-    exst = (myprocp->proc_exst << 8);
-    reply2(procp->proc_wait_rdvno, 0, mypid, exst);
-
-    /* エントリーの開放 */
-    proc_exit(mypid);
-  }
-  else {
-    /* そうでなければ，ZOMBIE 状態に */
-    myprocp->proc_status = PS_ZOMBIE;
-  }
-
-  /* 子プロセスの親を INIT に変更 */
-  for(i = INIT_PID + 1; i < MAX_SESSION; ++i) {
-    proc_get_procp(i, &procp);
-    if (procp->proc_status == PS_DORMANT) continue;
-    if (procp->proc_ppid != mypid) continue;
-    procp->proc_ppid = INIT_PID; /* INIT プロセスの pid は 0 */
-    kcall->region_put(procp->proc_maintask,
-	     (pid_t*)(LOCAL_ADDR + offsetof(thread_local_t, ppid)),
-	     sizeof(pid_t), &(procp->proc_ppid));
-    
-    /* 子プロセスが ZOMBIE で INIT が wait していれば クリアする? */
-  }
-
-  tskid = get_rdv_tid(req->rdvno);
-  kcall->thread_terminate(tskid);
-  kcall->thread_destroy(tskid);
+  /* エントリーの開放 */
+  proc_exit(mypid);
 
   reply2(req->rdvno, 0, 0, 0);
   return EOK;
@@ -172,125 +132,8 @@ if_fork (fs_request *req)
       return error_no;
     }
 
-  child->proc_maintask = main_thread_id;
   kcall->thread_start(main_thread_id);
 
   reply2(req->rdvno, 0, child->proc_pid, 0);	/* 親プロセスに対して応答 */
-  return EOK;
-}  
-
-int if_kill(fs_request *req)
-{
-    struct proc *myprocp, *procp;
-    W mypid, wpid, exst;
-    W i;
-    ER error_no;
-
-    /* req->caller が task 1 の場合は，返事のメッセージを送らない */
-
-    mypid = req->packet.arg1;
-    error_no = proc_get_procp(mypid, &myprocp);
-    if (error_no)
-	return ESRCH;
-
-    myprocp->proc_exst = (-1);	/* 強制終了時のステータスは (-1) で良いか? */
-
-    error_no = proc_get_procp(myprocp->proc_ppid, &procp);
-    if (error_no)
-	return ESRCH;
-
-    wpid = procp->proc_wpid;
-    if (procp->proc_status == PS_WAIT &&
-	(wpid == -1 || wpid == mypid || -wpid == myprocp->proc_pgid)) {
-	/* 親プロセスが自分を WAIT していればメッセージ送信 */
-	procp->proc_status = PS_RUN;
-	exst = (myprocp->proc_exst << 8);
-	reply2(req->rdvno, 0, mypid, exst);
-
-	/* エントリーの開放 */
-	proc_exit(mypid);
-    } else {
-	/* そうでなければ，ZOMBIE 状態に */
-	myprocp->proc_status = PS_ZOMBIE;
-    }
-
-    /* 子プロセスの親を INIT に変更 */
-    for (i = INIT_PID + 1; i < MAX_SESSION; ++i) {
-	proc_get_procp(i, &procp);
-	if (procp->proc_status == PS_DORMANT)
-	    continue;
-	if (procp->proc_ppid != mypid)
-	    continue;
-	procp->proc_ppid = INIT_PID;	/* INIT プロセスの pid は 0 */
-	kcall->region_put(procp->proc_maintask,
-		(pid_t*)(LOCAL_ADDR + offsetof(thread_local_t, ppid)),
-		sizeof(pid_t), &(procp->proc_ppid));
-
-	/* 子プロセスが ZOMBIE で INIT が wait していれば クリアする? */
-    }
-
-    /* メインタスクの強制終了 */
-    kcall->thread_terminate(myprocp->proc_maintask);
-    kcall->thread_destroy(myprocp->proc_maintask);
-
-    if (get_rdv_tid(req->rdvno) != myprocp->proc_maintask) {
-	reply2(req->rdvno, 0, 0, 0);
-    }
-
-    return EOK;
-}
-
-int
-if_wait (fs_request *req)
-{
-  W i;
-  W mypid, pid, children, exst;
-  struct proc *procp;
-
-  pid = -1;
-  mypid = req->packet.process_id;
-  if (pid == 0) pid = (-proc_table[mypid].proc_pgid);
-
-  /* プロセステーブルを走査して子プロセスを調査 */
-  children = 0;
-  for(i = INIT_PID + 1; i < MAX_SESSION; ++i) {
-    proc_get_procp(i, &procp);
-    if (procp->proc_status == PS_DORMANT) continue;
-    if (procp->proc_ppid == mypid) {
-      if (pid > 0 && pid != procp->proc_pid) continue;
-      if (pid < -1 && pid != -procp->proc_pgid) continue;
-      children++;
-      if (procp->proc_status == PS_ZOMBIE) {
-	/* 子プロセスの情報をクリアし，親プロセスに返事を送る */
-	exst = (procp->proc_exst << 8);
-	reply2(req->rdvno, 0, i, exst);
-	
-	/* 親プロセスの状態変更 */
-	proc_get_procp(mypid, &procp);
-	procp->proc_status = PS_RUN;
-
-	/* 子プロセスのエントリーの開放 */
-	proc_exit(i);
-	
-	return EOK;
-      }
-    }
-  }
-  if (children > 0) {
-    /* 対応する子プロセスはあったが，まだ終了していなかった */
-    if (0 & WNOHANG) {
-      /* 親に返事を送る必要がある */
-      reply2(req->rdvno, 0, 0, 0);
-    }
-    /* 親プロセスの状態を変更し，返事を送らずにシステムコールを終了 */
-    proc_get_procp(mypid, &procp);
-    procp->proc_status = PS_WAIT;
-    procp->proc_wpid = pid;
-    procp->proc_wait_rdvno = req->rdvno;
-  }
-  else
-    /* エラーを返す */
-    return ECHILD;
-
   return EOK;
 }  

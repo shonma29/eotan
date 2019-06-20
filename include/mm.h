@@ -54,7 +54,8 @@ typedef enum {
 	mm_syscall_sbrk = 9,
 	mm_syscall_thread_create = 10,
 	mm_syscall_thread_find = 11,
-	mm_syscall_dup = 12
+	mm_syscall_dup = 12,
+	mm_syscall_wait = 13
 } mm_syscall_e;
 
 #endif

@@ -47,14 +47,12 @@ extern int if_close(fs_request*);
 extern int if_exec(fs_request*);
 extern int if_exit(fs_request*);
 extern int if_fork(fs_request*);
-extern int if_kill(fs_request*);
 extern int if_lseek(fs_request*);
 extern int if_create(fs_request*);
 extern int if_open(fs_request*);
 extern int if_read(fs_request*);
 extern int if_remove(fs_request*);
 extern int if_fstat(fs_request*);
-extern int if_wait(fs_request*);
 extern int if_write(fs_request*);
 
 static inline pid_t unpack_pid(const fs_request *req)

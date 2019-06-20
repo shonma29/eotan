@@ -102,20 +102,18 @@ static void expand_stack(const int tid, const int addr)
 static void kill(const int tid, const int dummy)
 {
 	mm_thread_t *th = get_thread(tid);
-	ER_UINT rsize;
-	pm_args_t req;
 
 	if (!th) {
 		log_warning("mm: kill unknown thread=%d\n", tid);
 		return;
 	}
 
-	req.process_id = -1;
-	req.operation = pm_syscall_kill;
-	req.arg1 = th->process_id;
-	req.arg2 = 9;
-
-	rsize = kcall->port_call(PORT_FS, &req, sizeof(req));
-	if (rsize < 0)
-		log_err("mm: kill call error=%d\n", rsize);
+	mm_process_t *p = get_process(tid);
+	if (p) {
+		pm_args_t req;
+		req.process_id = th->process_id | (tid << 16);
+		req.operation = pm_syscall_exit;
+		req.arg1 = 9;
+		if_exit(p, &req);
+	}
 }

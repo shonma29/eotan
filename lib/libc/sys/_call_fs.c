@@ -43,6 +43,9 @@ _make_connection(W wOperation,
 
     ID port;
     switch (wOperation) {
+    case 2:
+    case 3:
+    case 4:
     case 5:
     case 6:
     case 7:
@@ -51,8 +54,6 @@ _make_connection(W wOperation,
     case 10:
     case 11:
     case 12:
-    case 13:
-    case 14:
 	port = PORT_PM;
 	break;
     default:

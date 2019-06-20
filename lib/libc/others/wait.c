@@ -24,15 +24,29 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "sys.h"
+#include <core.h>
+#include <errno.h>
+#include <mm.h>
+#include <services.h>
+#include <sys/wait.h>
 
 
-int kill(pid_t pid, int sig)
+pid_t wait(int *status)
 {
-	pm_args_t request;
+	mm_args_t args = {
+		mm_syscall_wait
+	};
+	ER_UINT reply_size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
+	mm_reply_t *reply = (mm_reply_t*)&args;
+	if (reply_size == sizeof(*reply)) {
+		if (reply->result == -1)
+			_set_local_errno(reply->data[0]);
+		else if (status)
+			*status = reply->data[0];
 
-	request.arg1 = (int)pid;
-	request.arg2 = sig;
-
-	return _call_fs(pm_syscall_kill, &request);
+		return reply->result;
+	} else {
+		_set_local_errno(ECONNREFUSED);
+		return (-1);
+	}
 }

@@ -55,7 +55,6 @@ static slab_t process_group_slab;
 static tree_t process_group_tree;
 static slab_t session_slab;
 
-static mm_thread_t *getMyThread(list_t *brothers);
 static void process_clear(mm_process_t *p);
 static void thread_clear(mm_thread_t *th, mm_process_t *p);
 static ER_ID create_thread(mm_process_t *p, FP entry, VP ustack_top);
@@ -75,27 +74,27 @@ mm_thread_t *get_thread(const ID tid)
 	return node? (mm_thread_t*)getParent(mm_thread_t, node):NULL;
 }
 
-static mm_thread_t *getMyThread(list_t *p)
+static inline mm_thread_t *getMyThread(const list_t *p)
 {
 	return (mm_thread_t*)((intptr_t)p - offsetof(mm_thread_t, brothers));
 }
 /*
-static mm_process_t *getProcessFromChildren(list_t *p)
+static inline mm_process_t *getProcessFromChildren(const list_t *p)
 {
 	return (mm_process_t*)((intptr_t)p - offsetof(mm_process_t, children));
 }
-
-static mm_process_t *getProcessFromBrothers(list_t *p)
+*/
+static inline mm_process_t *getProcessFromBrothers(const list_t *p)
 {
 	return (mm_process_t*)((intptr_t)p - offsetof(mm_process_t, brothers));
 }
-
-static mm_process_t *getProcessFromMembers(list_t *p)
+/*
+static inline mm_process_t *getProcessFromMembers(const list_t *p)
 {
 	return (mm_process_t*)((intptr_t)p - offsetof(mm_process_t, members));
 }
 
-static mm_process_group_t *getProcessGroupFromMembers(list_t *p)
+static inline mm_process_group_t *getProcessGroupFromMembers(const list_t *p)
 {
 	return (mm_process_group_t*)((intptr_t)p
 			- offsetof(mm_process_group_t, members));
@@ -119,7 +118,7 @@ static void process_clear(mm_process_t *p)
 	list_initialize(&(p->children));
 	list_initialize(&(p->members));
 	p->local = NULL;
-	p->wait.rdvno = 0;
+	p->rdvno = 0;
 	p->name[0] = '\0';
 }
 
@@ -213,7 +212,7 @@ int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 				reply->data[0] = ENOMEM;
 				break;
 			}
-
+//TODO key must not be 0
 			if (!tree_put(&process_tree,
 					(ID)args->arg1, (node_t*)p)) {
 				slab_free(&process_slab, p);
@@ -569,6 +568,104 @@ int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 
 	reply->result = -1;
 	return reply_failure;
+}
+
+int process_destroy(mm_process_t *proc, const int status)
+{
+	proc->exit_status = status;
+
+	for (;;) {
+		list_t *thread = list_pick(&(proc->threads));
+		if (!thread)
+			break;
+
+		mm_thread_t *th = getMyThread(thread);
+		kcall->thread_terminate(th->node.key);
+		kcall->thread_destroy(th->node.key);
+		tree_remove(&thread_tree, th->node.key);
+	}
+
+	mm_process_t *parent = get_process(proc->ppid);
+	if (parent) {
+		if (parent->rdvno) {
+			log_info("mm: %d release parent %d\n",
+					proc->node.key, proc->ppid);
+			process_release_body(parent);
+		} else {
+			log_info("mm: %d parent not wait destroy\n",
+					proc->node.key);
+		}
+	} else {
+		//TODO what to do?
+		log_info("mm: %d no parent destroy\n", proc->node.key);
+	}
+
+	parent = get_process(INIT_PID);
+	if (parent) {
+		bool found = false;
+		for (;;) {
+			list_t *child = list_pick(&(proc->children));
+			if (!child)
+				break;
+
+			mm_process_t *p = getProcessFromBrothers(child);
+			p->ppid = INIT_PID;
+			list_append(&(parent->children), child);
+			found = true;
+		}
+
+		if (found) {
+			if (parent->rdvno)
+				process_release_body(parent);
+		}
+	} else {
+		//TODO what to do?
+	}
+
+	//TODO release resources
+	return 0;
+}
+
+int process_release_body(mm_process_t *proc)
+{
+//TODO list_insert dead child on exit
+	if (list_is_empty(&(proc->children))) {
+		log_info("mm: %d no child release body\n", proc->node.key);
+		return ECHILD;
+	}
+
+	for (list_t *child= list_next(&(proc->children));
+			!list_is_edge(&(proc->children), child);
+			child = list_next(child)) {
+		mm_process_t *p = getProcessFromBrothers(child);
+		if (!list_is_empty(&(p->threads)))
+			continue;
+
+		RDVNO rdvno = proc->rdvno;
+		mm_reply_t reply = {
+			p->node.key,
+			{ p->exit_status & 0xff }
+		};
+
+		proc->rdvno = 0;
+		list_remove(child);
+		if (!tree_remove(&process_tree, p->node.key)) {
+			//TODO what to do?
+		}
+
+		slab_free(&process_slab, p);
+
+		ER result = kcall->port_reply(rdvno, &reply, sizeof(reply));
+		if (result)
+			log_err("mm: %d failed to release body(%d)\n",
+					proc->node.key, result);
+
+		log_info("mm: %d success release body\n", proc->node.key);
+		return 0;
+	}
+
+	log_info("mm: %d not found release body\n", proc->node.key);
+	return 0;
 }
 
 int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)

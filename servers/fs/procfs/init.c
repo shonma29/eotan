@@ -123,7 +123,6 @@ static W create_init(ID process_id)
 	process_create(process_id, 0, 0, 0);
 	p->proc_status = PS_RUN;
 	p->proc_pid = process_id;
-	p->proc_ppid = INIT_PPID;
 
 	p->session = session_create(process_id);
 	if (!(p->session))

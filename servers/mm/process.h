@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <local.h>
+#include <pm.h>
 #include <mm/segment.h>
 #include <mpu/memory.h>
 #include <set/list.h>
@@ -82,12 +83,9 @@ typedef struct {
 	pid_t pgid;
 	uid_t uid;
 	gid_t gid;
-	thread_local_t *local;//TODO set on fork/exec
-	int exit_status;//TODO set on exit/kill
-	struct {
-		RDVNO rdvno;//TODO set on waitpid
-		pid_t wpid;//TODO set on waitpid
-	} wait;
+	thread_local_t *local;
+	int exit_status;
+	RDVNO rdvno;
 	char name[32];//TODO set on fork/exec
 } mm_process_t;
 
@@ -95,6 +93,8 @@ extern void process_initialize(void);
 extern mm_process_t *get_process(const ID);
 extern mm_thread_t *get_thread(const ID);
 
+extern int process_destroy(mm_process_t *, const int);
+extern int process_release_body(mm_process_t *);
 extern mm_descriptor_t *process_create_file(void);
 extern void process_deallocate_file(mm_file_t *);
 extern mm_descriptor_t *process_allocate_desc(void);
@@ -105,5 +105,7 @@ extern mm_descriptor_t *process_find_desc(const mm_process_t *, const int);
 
 extern ER default_handler(void);
 extern ER stack_fault_handler(void);
+
+extern int if_exit(mm_process_t *, pm_args_t *);
 
 #endif

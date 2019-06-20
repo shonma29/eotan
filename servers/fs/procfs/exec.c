@@ -145,8 +145,6 @@ W exec_program(pm_args_t *req, W procid, B * pathname)
 	    break;
 	}
 
-	procp->proc_maintask = caller;
-
 	/* テキスト領域をメモリに入れる
 	 */
 	error_no = load_segment(procid, ip, &text, caller);

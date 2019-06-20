@@ -113,8 +113,6 @@ struct proc
 
   enum proc_status	proc_status;		/* プロセスの状態を示す */
 
-  ID			proc_maintask;		/* メインタスク */
-
   session_t *session;
 
   UW			proc_pid;		/* my process ID 
@@ -122,13 +120,6 @@ struct proc
 						 * 使っていない。
 						 */
   
-  UW			proc_ppid;		/* parent process ID */
-
-  UW			proc_pgid;		/* process group ID */
-  UW			proc_wpid;		/* pid parameter of waitpid */
-  RDVNO proc_wait_rdvno;
-  UW			proc_exst;		/* exit status */
-
   char			proc_name[PROC_NAME_LEN];
 };
 
@@ -152,7 +143,6 @@ extern W		exec_program (pm_args_t *req, W procid, B *pathname);
 
 /* fork.c */
 extern W		proc_fork (struct proc *parent, struct proc *child);
-extern W copy_local(struct proc * parent, struct proc * child);
 
 /* init.c */
 extern W exec_init(ID process_id, char *pathname);

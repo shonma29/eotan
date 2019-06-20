@@ -53,7 +53,8 @@ static int (*funcs[])(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args) = {
 	mm_sbrk,
 	mm_thread_create,
 	mm_thread_find,
-	mm_dup
+	mm_dup,
+	mm_wait
 };
 
 #define BUFSIZ (sizeof(mm_args_t))
@@ -139,6 +140,9 @@ static void proxy(void)
 		int result;
 		int op = args.operation;
 		switch (args.operation) {
+		case pm_syscall_exit:
+			result = if_exit(process, &args);
+			break;
 		case pm_syscall_chdir:
 			result = if_chdir(process, &args);
 			break;
@@ -186,12 +190,14 @@ int mm_dup(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	do {
 		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
 		if (!th) {
+//TODO use other errno
 			reply->data[0] = ESRCH;
 			break;
 		}
 
 		mm_process_t *process = get_process(th->process_id);
 		if (!process) {
+//TODO use other errno
 			reply->data[0] = ESRCH;
 			break;
 		}
@@ -240,10 +246,59 @@ int mm_dup(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		reply->result = args->arg2;
 		reply->data[0] = 0;
 		return reply_success;
-	} while (FALSE);
+	} while (false);
 
 	reply->result = -1;
 	return reply_failure;
+}
+
+int mm_wait(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+{
+	do {
+		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
+		if (!th) {
+//TODO use other errno
+			reply->data[0] = ESRCH;
+			break;
+		}
+
+		mm_process_t *process = get_process(th->process_id);
+		if (!process) {
+//TODO use other errno
+			reply->data[0] = ESRCH;
+			break;
+		}
+
+		process->rdvno = rdvno;
+
+		int result = process_release_body(process);
+		if (result) {
+			reply->data[0] = result;
+			break;
+		}
+
+		return reply_wait;
+	} while (false);
+
+	reply->result = -1;
+	return reply_failure;
+}
+
+int if_exit(mm_process_t *process, pm_args_t *args)
+{
+	if (kcall->port_call(PORT_FS, args, sizeof(*args))
+			!= sizeof(pm_reply_t)) {
+		return ECONNREFUSED;
+	}
+
+	pm_reply_t *reply = (pm_reply_t*)args;
+	if (!(reply->result1)) {
+		process_destroy(process, args->arg1);
+	}
+
+	log_notice("proxy: %d exit %d %d\n",
+			process->node.key, reply->result1, reply->error_no);
+	return 0;
 }
 
 static int if_chdir(mm_process_t *process, pm_args_t *args)
@@ -534,6 +589,9 @@ static int if_ref_fid(mm_process_t *process, pm_args_t *args)
 			!= sizeof(pm_reply_t))
 		return ECONNREFUSED;
 
+	pm_reply_t *reply = (pm_reply_t*)args;
+	log_info("proxy: ref_fid %d %d %d\n",
+			reply->result1, reply->result2, reply->error_no);
 	return 0;
 }
 
@@ -592,7 +650,6 @@ static void doit(void)
 				log_err(MYNAME ": reply failed %d\n",
 						result);
 			break;
-
 		default:
 			break;
 		}
@@ -602,10 +659,8 @@ static void doit(void)
 void start(VP_INT exinf)
 {
 	ER error = init();
-
 	if (error)
 		log_err(MYNAME ": open failed %d\n", error);
-
 	else {
 		log_info(MYNAME ": start\n");
 		doit();

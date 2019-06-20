@@ -176,11 +176,6 @@ W proc_exit(W procid)
     /* プロセスの情報の解放
      */
     procp = &proc_table[procid];
-    /* working directory の開放 */
-    if (procp->session->cwd != NULL) {
-	vnodes_remove(procp->session->cwd);
-	procp->session->cwd = NULL;
-    }
 
     /* open されているファイルの close */
     session_destroy(procp->session);

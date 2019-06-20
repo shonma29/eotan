@@ -52,10 +52,8 @@ static char req_buf[
 ];
 static int (*syscall[])(fs_request*) = {
 	if_fork,
-	if_wait,
 	if_exec,
 	if_exit,
-	if_kill,
 	if_chdir,
 	if_create,
 	if_remove,
@@ -283,10 +281,8 @@ void start(VP_INT exinf)
 		}
 			break;
 		case pm_syscall_fork:
-		case pm_syscall_wait:
 		case pm_syscall_exec:
 		case pm_syscall_exit:
-		case pm_syscall_kill:
 		case pm_syscall_chdir:
 		case pm_syscall_create:
 		case pm_syscall_remove:

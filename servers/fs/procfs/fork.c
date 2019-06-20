@@ -93,7 +93,6 @@ W proc_fork(struct proc *parent, struct proc *child)
     }
 
     child->proc_status = PS_RUN;
-    child->proc_ppid = parent->proc_pid;
     strncpy(child->proc_name, parent->proc_name, PROC_NAME_LEN - 1);
     child->proc_name[PROC_NAME_LEN - 1] = '\0';
 

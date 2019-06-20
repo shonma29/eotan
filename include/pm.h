@@ -29,20 +29,18 @@ For more information, please refer to <http://unlicense.org/>
 
 typedef enum {
 	pm_syscall_fork = 0,
-	pm_syscall_wait = 1,
-	pm_syscall_exec = 2,
-	pm_syscall_exit = 3,
-	pm_syscall_kill = 4,
-	pm_syscall_chdir = 5,
-	pm_syscall_create = 6,
-	pm_syscall_remove = 7,
-	pm_syscall_fstat = 8,
-	pm_syscall_chmod = 9,
-	pm_syscall_open = 10,
-	pm_syscall_lseek = 11,
-	pm_syscall_read = 12,
-	pm_syscall_write = 13,
-	pm_syscall_close = 14
+	pm_syscall_exec = 1,
+	pm_syscall_exit = 2,
+	pm_syscall_chdir = 3,
+	pm_syscall_create = 4,
+	pm_syscall_remove = 5,
+	pm_syscall_fstat = 6,
+	pm_syscall_chmod = 7,
+	pm_syscall_open = 8,
+	pm_syscall_lseek = 9,
+	pm_syscall_read = 10,
+	pm_syscall_write = 11,
+	pm_syscall_close = 12
 } pm_syscall_e;
 
 typedef struct {
