@@ -41,7 +41,7 @@ int if_exec(fs_request *req)
 
     /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。
      */
-    error_no = kcall->region_copy(get_rdv_tid(req->rdvno), (void*)(req->packet.arg1),
+    error_no = kcall->region_copy(unpack_tid(req), (void*)(req->packet.arg1),
 		     sizeof(req->buf) - 1, req->buf);
     if (error_no < 0) {
 	/* パス名のコピーエラー */
@@ -51,16 +51,16 @@ int if_exec(fs_request *req)
 	    return EFAULT;
     }
     req->buf[sizeof(req->buf) - 1] = '\0';
-    error_no = exec_program(&(req->packet), req->packet.process_id, req->buf);
+    error_no = exec_program(&(req->packet), unpack_pid(req), req->buf);
     if (error_no) {
-	if (proc_get_status(req->packet.process_id) == PS_RUN) {
+	if (proc_get_status(unpack_pid(req)) == PS_RUN) {
 	    /* 呼び出しを行ったプロセスがまだ生き残っていた場合 */
 	    /*エラーメッセージを返す */
 	    return error_no;
 	} else {
 	    /* 既にプロセスの仮想メモリが開放されている場合 */
 	    /* exit が実行されることは無いので，ここで開放する */
-	    proc_exit(req->packet.process_id);
+	    proc_exit(unpack_pid(req));
 	    return EOK;
 	}
     }
@@ -102,7 +102,7 @@ if_fork (fs_request *req)
   ID main_thread_id;
   struct proc *child;
 
-  error_no = proc_get_procp (req->packet.process_id, &procp);		/* 親プロセスの情報の取りだし */
+  error_no = proc_get_procp (unpack_pid(req), &procp);		/* 親プロセスの情報の取りだし */
   if (error_no)
     {
       log_debug("fs: invalid process id (%d)\n", req->packet.procid);

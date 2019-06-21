@@ -41,27 +41,7 @@ _make_connection(W wOperation,
     req->operation = wOperation;
     req->process_id = local_data->pid;
 
-    ID port;
-    switch (wOperation) {
-    case 2:
-    case 3:
-    case 4:
-    case 5:
-    case 6:
-    case 7:
-    case 8:
-    case 9:
-    case 10:
-    case 11:
-    case 12:
-	port = PORT_PM;
-	break;
-    default:
-	port = PORT_FS;
-	break;
-    }
-
-    rsize = cal_por(port, 0xffffffff, req, sizeof(*req));
+    rsize = cal_por(PORT_PM, 0xffffffff, req, sizeof(*req));
 
     if (rsize < 0) {
 	return (ECONNREFUSED);

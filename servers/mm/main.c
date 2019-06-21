@@ -67,6 +67,8 @@ static char pathbuf2[PATH_MAX];
 static ER init(void);
 static ER proxy_initialize(void);
 static void proxy(void);
+static int if_fork(mm_process_t *, pm_args_t *);
+static int if_exec(mm_process_t *, pm_args_t *);
 static int if_chdir(mm_process_t *, pm_args_t *);
 static size_t calc_path(char *, char *, const size_t);
 static int if_open(mm_process_t *, pm_args_t *);
@@ -140,6 +142,12 @@ static void proxy(void)
 		int result;
 		int op = args.operation;
 		switch (args.operation) {
+		case pm_syscall_fork:
+			result = if_fork(process, &args);
+			break;
+		case pm_syscall_exec:
+			result = if_exec(process, &args);
+			break;
 		case pm_syscall_exit:
 			result = if_exit(process, &args);
 			break;
@@ -282,6 +290,39 @@ int mm_wait(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 
 	reply->result = -1;
 	return reply_failure;
+}
+
+//TODO to mm call
+int if_fork(mm_process_t *process, pm_args_t *args)
+{
+	if (kcall->port_call(PORT_FS, args, sizeof(*args))
+			!= sizeof(pm_reply_t)) {
+		return ECONNREFUSED;
+	}
+
+	pm_reply_t *reply = (pm_reply_t*)args;
+	if (!(reply->result1)) {
+	}
+
+	log_notice("proxy: %d fork %d %d\n",
+			process->node.key, reply->result1, reply->error_no);
+	return 0;
+}
+
+int if_exec(mm_process_t *process, pm_args_t *args)
+{
+	if (kcall->port_call(PORT_FS, args, sizeof(*args))
+			!= sizeof(pm_reply_t)) {
+		return ECONNREFUSED;
+	}
+
+	pm_reply_t *reply = (pm_reply_t*)args;
+	if (!(reply->result1)) {
+	}
+
+	log_notice("proxy: %d exec %d %d\n",
+			process->node.key, reply->result1, reply->error_no);
+	return 0;
 }
 
 int if_exit(mm_process_t *process, pm_args_t *args)
