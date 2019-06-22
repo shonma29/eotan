@@ -68,7 +68,7 @@ Version 2, June 1991
 static W read_exec_header(vnode_t *ip, Elf32_Addr *entry,
 			  Elf32_Phdr *text,
 			  Elf32_Phdr *data);
-static W load_segment(W procid, vnode_t *ip, Elf32_Phdr *segment,
+static W load_segment(vnode_t *ip, Elf32_Phdr *segment,
 		   ID task);
 
 
@@ -76,34 +76,16 @@ static W load_segment(W procid, vnode_t *ip, Elf32_Phdr *segment,
 /* exec_program - 
  *
  */
-W exec_program(pm_args_t *req, W procid, B * pathname)
+W exec_program(pm_args_t *req, session_t * session, vnode_t * parent, B * pathname)
 {
     vnode_t *ip;
     W error_no;
-    struct permission acc;
+    struct permission *acc = &(session->permission);
     Elf32_Addr entry;
-    struct proc *procp;
     ID caller;
 
-    /* プロセスの情報の取りだし */
-    error_no = proc_get_procp(procid, &procp);
-    if (error_no) {
-	return (error_no);
-    }
-
     /* 対象となるプログラムファイルをオープンする */
-    proc_get_permission(procid, &acc);
-    if (pathname[0] == '/') {
-	error_no = vfs_open(rootfile, pathname, O_RDONLY, 0, &acc, &ip);
-    } else {
-	vnode_t *startip;
-
-	error_no = proc_get_cwd(procid, &startip);
-	if (error_no) {
-	    return (error_no);
-	}
-	error_no = vfs_open(startip, pathname, O_RDONLY, 0, &acc, &ip);
-    }
+    error_no = vfs_open(parent, pathname, O_RDONLY, 0, acc, &ip);
     if (error_no) {
 	return (error_no);
     }
@@ -112,7 +94,7 @@ W exec_program(pm_args_t *req, W procid, B * pathname)
 	Elf32_Phdr text, data;
 
 	/* 実行許可のチェック */
-	error_no = vfs_permit(ip, &acc, X_OK);
+	error_no = vfs_permit(ip, acc, X_OK);
 	if (error_no)
 	    break;
 
@@ -120,14 +102,12 @@ W exec_program(pm_args_t *req, W procid, B * pathname)
 	if (error_no)
 	    break;
 
-	procp->proc_status = PS_TRANSITION;
-
 	/* region の解放 */
-	error_no = process_clean(procid);
+	error_no = process_clean(session->node.key);
 	if (error_no)
 	    break;
 
-	if (process_create(procid, (VP)(text.p_vaddr),
+	if (process_create(session->node.key, (VP)(text.p_vaddr),
 		(size_t)(data.p_vaddr) + data.p_memsz - (UW)(text.p_vaddr),
 		(VP)USER_HEAP_MAX_ADDR)) {
 	    error_no = ENOMEM;
@@ -135,7 +115,7 @@ W exec_program(pm_args_t *req, W procid, B * pathname)
 	}
 
 	/* タスクの context.eip を elf_header.e_entry に設定する */
-	caller = process_set_context(procid,
+	caller = process_set_context(session->node.key,
 		entry,
 		(B*)(req->arg2),
 		req->arg3);
@@ -147,13 +127,13 @@ W exec_program(pm_args_t *req, W procid, B * pathname)
 
 	/* テキスト領域をメモリに入れる
 	 */
-	error_no = load_segment(procid, ip, &text, caller);
+	error_no = load_segment(ip, &text, caller);
 	if (error_no)
 	    break;
 
 	/* データ領域をメモリに入れる
 	 */
-	error_no = load_segment(procid, ip, &data, caller);
+	error_no = load_segment(ip, &data, caller);
 
     } while (false);
 
@@ -162,11 +142,6 @@ W exec_program(pm_args_t *req, W procid, B * pathname)
     if (error_no) {
 	return (error_no);
     }
-
-    procp->proc_status = PS_RUN;
-
-    strncpy(procp->proc_name, pathname, PROC_NAME_LEN - 1);
-    procp->proc_name[PROC_NAME_LEN - 1] = '\0';
 
     kcall->thread_start(caller);
     return E_OK;
@@ -249,7 +224,7 @@ read_exec_header(vnode_t *ip,
  *
  */
 static W
-load_segment(W procid, vnode_t *ip, Elf32_Phdr *segment, ID task)
+load_segment(vnode_t *ip, Elf32_Phdr *segment, ID task)
 {
     W error_no;
     W rest_length;

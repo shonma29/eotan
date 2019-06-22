@@ -1,139 +1,113 @@
 /*
+This is free and unencumbered software released into the public domain.
 
-B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
 
-GNU GENERAL PUBLIC LICENSE
-Version 2, June 1991
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
 
-(C) B-Free Project.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
 
-(C) 2001-2003, Tomohide Naniwa
-
+For more information, please refer to <http://unlicense.org/>
 */
-/*
- * $Log$
- *
- */
-
-#include <core.h>
-#include <local.h>
-#include <stddef.h>
-#include <thread.h>
-#include <mm/segment.h>
+#include <errno.h>
 #include <boot/init.h>
-#include <core/options.h>
-#include <mpu/memory.h>
-#include <nerve/config.h>
 #include <nerve/kcall.h>
-#include <sys/errno.h>
-#include <sys/syslimits.h>
-#include <sys/wait.h>
-#include "../../lib/libserv/libmm.h"
 #include "api.h"
+#include "session.h"
 #include "procfs/process.h"
-#include "../../lib/libserv/libserv.h"
+#include "../../lib/libserv/libmm.h"
 
-/* if_exec - 指定されたプログラムファイルをメモリ中に読み込む
- */
-int if_exec(fs_request *req)
+
+int if_fork(fs_request *req)
 {
-    W error_no;
+	session_t *parent = session_find(unpack_pid(req));
+	if (!parent)
+		return ESRCH;
 
-    /* パス名をユーザプロセスから POSIX サーバのメモリ空間へコピーする。
-     */
-    error_no = kcall->region_copy(unpack_tid(req), (void*)(req->packet.arg1),
-		     sizeof(req->buf) - 1, req->buf);
-    if (error_no < 0) {
-	/* パス名のコピーエラー */
-	if (error_no == E_PAR)
-	    return EINVAL;
-	else
-	    return EFAULT;
-    }
-    req->buf[sizeof(req->buf) - 1] = '\0';
-    error_no = exec_program(&(req->packet), unpack_pid(req), req->buf);
-    if (error_no) {
-	if (proc_get_status(unpack_pid(req)) == PS_RUN) {
-	    /* 呼び出しを行ったプロセスがまだ生き残っていた場合 */
-	    /*エラーメッセージを返す */
-	    return error_no;
-	} else {
-	    /* 既にプロセスの仮想メモリが開放されている場合 */
-	    /* exit が実行されることは無いので，ここで開放する */
-	    proc_exit(unpack_pid(req));
-	    return EOK;
+	pid_t pid;
+	for (pid = INIT_PID + 1; pid < MAX_SESSION; pid++) {
+		if (!session_find(pid))
+			break;
 	}
-    }
-//TODO check if rdvno will be disposed
-    reply2(req->rdvno, 0, 0, 0);
-    return EOK;
+	if (pid >= MAX_SESSION)
+		return ENOMEM;
+
+	if (process_duplicate(parent->node.key, pid) == -1)
+		return ENOMEM;
+
+	session_t *child = session_create(pid);
+	if (!child) {
+		//TODO destroy process
+		return ENOMEM;
+	}
+
+	proc_duplicate(parent, child);
+
+	ID thread_id = thread_create(pid, (FP)(req->packet.arg2),
+			(VP)(req->packet.arg1));
+	if (thread_id < 0) {
+		//TODO destroy process
+		session_destroy(child);
+		//TODO adequate errno
+		return ENOMEM;
+	}
+
+	if (kcall->thread_start(thread_id) < 0) {
+		//TODO destroy process
+		session_destroy(child);
+		//TODO adequate errno
+		return ENOMEM;
+	}
+
+	reply2(req->rdvno, 0, pid, 0);
+	return 0;
 }
 
-/* if_exit - プロセスを終了させる
- */
-int
-if_exit (fs_request *req)
+int if_exec(fs_request *req)
 {
-  struct proc *myprocp;
-  W mypid;
-  ER error_no;
+	session_t *session = session_find(unpack_pid(req));
+	if (!session)
+		return ESRCH;
 
-  mypid = unpack_pid(req);
-  error_no = proc_get_procp(mypid, &myprocp);
-  if (error_no)
-    /* メッセージの呼び出し元にエラーを返しても処理できないが，
-       タスクは exd_tsk で終了する */
-    return ESRCH;
+	vnode_t *parent;
+	int error_no = session_get_path(req->buf, &parent, session,
+			unpack_tid(req), (char*)(req->packet.arg1));
+	if (error_no)
+		return error_no;
 
-  /* エントリーの開放 */
-  proc_exit(mypid);
+	error_no = exec_program(&(req->packet), session, parent, req->buf);
+	if (error_no) {
+		//TODO release resource if needed
+		//session_destroy(session);
+		return error_no;
+	}
 
-  reply2(req->rdvno, 0, 0, 0);
-  return EOK;
-}  
+	reply2(req->rdvno, 0, 0, 0);
+	return 0;
+}
 
-/* if_fork - 新しいプロセスを作成する
- */
-int
-if_fork (fs_request *req)
+int if_exit(fs_request *req)
 {
-  struct proc *procp;
-  W	       error_no;
-  ID main_thread_id;
-  struct proc *child;
+	session_t *session = session_find(unpack_pid(req));
+	if (!session)
+		return ESRCH;
 
-  error_no = proc_get_procp (unpack_pid(req), &procp);		/* 親プロセスの情報の取りだし */
-  if (error_no)
-    {
-      log_debug("fs: invalid process id (%d)\n", req->packet.procid);
-      return error_no;
-    }
-
-  error_no = proc_alloc_proc(&child);
-  if (error_no)
-    {
-      log_debug("fs: cannot allocate process\n");
-      return error_no;
-    }
-
-  error_no = proc_fork (procp, child);
-  if (error_no)
-    {
-      proc_dealloc_proc(child->proc_pid);
-      return error_no;
-    }
-
-  main_thread_id = thread_create(child->proc_pid, (FP)(req->packet.arg2),
-      (VP)(req->packet.arg1));
-  if (main_thread_id < 0)
-    {
-      log_debug("fs: create error=%d\n", main_thread_id);
-      proc_dealloc_proc(child->proc_pid);
-      return error_no;
-    }
-
-  kcall->thread_start(main_thread_id);
-
-  reply2(req->rdvno, 0, child->proc_pid, 0);	/* 親プロセスに対して応答 */
-  return EOK;
-}  
+	session_destroy(session);
+	reply2(req->rdvno, 0, 0, 0);
+	return 0;
+}

@@ -108,8 +108,6 @@ static int initialize(void)
 		return -1;
 	}
 
-	init_process();
-
 	if (device_find(sysinfo->root.device)) {
 		if (fs_mount(sysinfo->root.device)) {
 			log_err("fs: fs_mount(%x, %d) failed\n",

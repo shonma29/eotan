@@ -92,59 +92,15 @@ Version 2, June 1991
 #define __FS_PROCESS_H__	1
 
 #include <fs/config.h>
-#include <sys/syscall.h>
 #include "../session.h"
 
-#define PROC_NAME_LEN	35
-
-enum proc_status
-{
-  PS_DORMANT = 0,		/* 未生成状態 */
-  PS_SLEEP = 1,		/* sleep 状態 */
-  PS_WAIT = 2,		/* wait 状態 */
-  PS_RUN = 3,		/* run 状態 */
-  PS_ZOMBIE = 4,		/* zombie 状態 */
-  PS_TRANSITION = 5
-};
-
-struct proc
-{
-  struct proc		*proc_next;
-
-  enum proc_status	proc_status;		/* プロセスの状態を示す */
-
-  session_t *session;
-
-  UW			proc_pid;		/* my process ID 
-						 * この値が 0 のときは、このエントリは、
-						 * 使っていない。
-						 */
-  
-  char			proc_name[PROC_NAME_LEN];
-};
-
-
-/* process.c */
-
-extern struct proc	proc_table[MAX_SESSION];
-
-extern W		init_process (void);
-extern W		proc_get_permission (W procid, struct permission *p);
-extern W proc_get_status(W procid);
-extern W		proc_get_cwd (W procid, vnode_t **cwd);
-extern W		proc_get_procp (W procid, struct proc **procp);
-extern W		proc_exit (W procid);
-extern W		proc_alloc_proc (struct proc **procp);
-extern void proc_dealloc_proc(W procid);
-
-
 /* exec.c */
-extern W		exec_program (pm_args_t *req, W procid, B *pathname);
+extern W		exec_program (pm_args_t *, session_t *, vnode_t *, B *);
 
 /* fork.c */
-extern W		proc_fork (struct proc *parent, struct proc *child);
+extern W		proc_duplicate (session_t *, session_t *);
 
 /* init.c */
-extern W exec_init(ID process_id, char *pathname);
+extern W exec_init(ID, char *);
 
 #endif /* __FS_PROCESS_H__ */

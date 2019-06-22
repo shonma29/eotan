@@ -74,61 +74,23 @@ Version 2, June 1991
 #include "procfs/process.h"
 #include "../../lib/libserv/libmm.h"
 
-static W proc_duplicate(struct proc * source, struct proc * destination);
 
-
-/* fork - プロセスの fork を行う
- *
- *
- */
-W proc_fork(struct proc *parent, struct proc *child)
-{
-    W error_no;
-
-    /* プロセス情報のコピー */
-    /* 管理情報 (プロセスおよびファイル)の更新 */
-    error_no = proc_duplicate(parent, child);
-    if (error_no) {
-	return (error_no);
-    }
-
-    child->proc_status = PS_RUN;
-    strncpy(child->proc_name, parent->proc_name, PROC_NAME_LEN - 1);
-    child->proc_name[PROC_NAME_LEN - 1] = '\0';
-
-    return (EOK);
-}
 
 /* proc_duplicate - プロセス情報のコピー
  *
- *	Lowlib についての情報は、呼び出しもとで設定しているので必要ない。
- *	(タスクの実行開始アドレスは、Lowlib 中の fork 用関数に設定されている)
- *
  */
-static W proc_duplicate(struct proc * source, struct proc * destination)
+W proc_duplicate(session_t *source, session_t *destination)
 {
     W index;
-
-    /* プロセスの仮想空間のコピー
-
-     *    新しく仮想空間を生成し、コピー元の仮想空間からデータをコピーする。
-     */
-
-    /* region のコピー */
-    /* text */
-    /* data+bss */
-    /* heap */
-    process_duplicate(source->proc_pid, destination->proc_pid);
 
     /* オープンファイルの情報のコピー
      */
     for (index = 0; index < MAX_FILE; index++) {
-	struct file *srcfile = session_find_desc(source->session, index);
+	struct file *srcfile = session_find_desc(source, index);
 	if (srcfile) {
 	    struct file *destfile;
 	    //TODO check error
-	    session_create_desc(&destfile, destination->session,
-		    index);
+	    session_create_desc(&destfile, destination, index);
 	    destfile->f_vnode = srcfile->f_vnode;
 	    destfile->f_flag = srcfile->f_flag;
 	    destfile->f_count = srcfile->f_count;
@@ -137,12 +99,12 @@ static W proc_duplicate(struct proc * source, struct proc * destination)
     }
 
     /* copy of working directory */
-    destination->session->cwd = source->session->cwd;
+    destination->cwd = source->cwd;
 //TODO is not needed?
-    destination->session->cwd->refer_count++;
+    destination->cwd->refer_count++;
 
     /* copy of uid/gid */
-    destination->session->permission = source->session->permission;
+    destination->permission = source->permission;
 
     return (EOK);
 }

@@ -120,8 +120,8 @@ session_t *session_create(const pid_t pid)
 		return NULL;
 	}
 
-	//TODO adhoc. clear other fields in here?
 	session->session_id = pid;
+	session->cwd = NULL;
 	tree_create(&(session->files), NULL);
 
 	return session;

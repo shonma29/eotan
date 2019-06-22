@@ -57,8 +57,6 @@ typedef struct {
 static char envpath[] = "PATH=/bin";
 static char buf[sizeof(init_arg_t) + PATH_MAX + 1 + MAX_ENV];
 
-static W create_init(ID process_id);
-
 
 W exec_init(ID process_id, char *pathname)
 {
@@ -77,6 +75,18 @@ W exec_init(ID process_id, char *pathname)
 	if (req.arg3 > sizeof(buf))
 		return ENOMEM;
 
+	if (process_create(process_id, 0, 0, 0) == -1)
+		return ENOMEM;
+
+	session_t *session = session_create(process_id);
+	if (!session)
+		return ENOMEM;
+
+	session->permission.uid = INIT_UID;
+	session->permission.gid = INIT_GID;
+	session->cwd = rootfile;
+	rootfile->refer_count++;
+
 	size_t offset = STACK_TAIL - req.arg3;
 	init_arg_t *p = (init_arg_t*)buf;
 	p->argc = 1;
@@ -90,48 +100,6 @@ W exec_init(ID process_id, char *pathname)
 	strcpy(&(buf[sizeof(init_arg_t) + pathlen]), envpath);
 	req.arg2 = (W)p;
 
-	W err = create_init(process_id);
-	if (err) {
-		//TODO destroy vmtree and process
-		return err;
-	} else {
-		log_info("fs: exec_init(%d, %s)\n", process_id, pathname);
-		err = exec_program(&req, process_id, pathname);
-	}
-
-	return err;
-}
-
-static W create_init(ID process_id)
-{
-	struct proc *p;
-	W err;
-
-	log_info("fs: create_init(%d)\n", process_id);
-
-	err = proc_get_procp(process_id, &p);
-	if (err)
-		return err;
-
-	if (p->proc_status == PS_DORMANT)
-		return EINVAL;
-
-	memset(p, 0, sizeof(*p));
-/* if set explicitly
-	p->proc_next = NULL;
-*/
-	process_create(process_id, 0, 0, 0);
-	p->proc_status = PS_RUN;
-	p->proc_pid = process_id;
-
-	p->session = session_create(process_id);
-	if (!(p->session))
-		return ENOMEM;
-
-	p->session->permission.uid = INIT_UID;
-	p->session->permission.gid = INIT_GID;
-	p->session->cwd = rootfile;
-	rootfile->refer_count++;
-
-	return EOK;
+	log_info("fs: exec_init(%d, %s)\n", process_id, pathname);
+	return exec_program(&req, session, session->cwd, pathname);
 }
