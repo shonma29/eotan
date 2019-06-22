@@ -83,6 +83,7 @@ W exec_program(pm_args_t *req, session_t * session, vnode_t * parent, B * pathna
     struct permission *acc = &(session->permission);
     Elf32_Addr entry;
     ID caller;
+    pid_t pid = req->arg4;
 
     /* 対象となるプログラムファイルをオープンする */
     error_no = vfs_open(parent, pathname, O_RDONLY, 0, acc, &ip);
@@ -103,11 +104,11 @@ W exec_program(pm_args_t *req, session_t * session, vnode_t * parent, B * pathna
 	    break;
 
 	/* region の解放 */
-	error_no = process_clean(session->node.key);
+	error_no = process_clean(pid);
 	if (error_no)
 	    break;
 
-	if (process_create(session->node.key, (VP)(text.p_vaddr),
+	if (process_create(pid, (VP)(text.p_vaddr),
 		(size_t)(data.p_vaddr) + data.p_memsz - (UW)(text.p_vaddr),
 		(VP)USER_HEAP_MAX_ADDR)) {
 	    error_no = ENOMEM;
@@ -115,7 +116,7 @@ W exec_program(pm_args_t *req, session_t * session, vnode_t * parent, B * pathna
 	}
 
 	/* タスクの context.eip を elf_header.e_entry に設定する */
-	caller = process_set_context(session->node.key,
+	caller = process_set_context(pid,
 		entry,
 		(B*)(req->arg2),
 		req->arg3);

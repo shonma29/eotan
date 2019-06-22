@@ -31,45 +31,33 @@ For more information, please refer to <http://unlicense.org/>
 #include "session.h"
 #include "procfs/process.h"
 #include "../../lib/libserv/libmm.h"
+#include "../../lib/libserv/libserv.h"
 
 
 int if_fork(fs_request *req)
 {
-	session_t *parent = session_find(unpack_pid(req));
-	if (!parent)
+	session_t *session = session_find(unpack_sid(req));
+	if (!session)
 		return ESRCH;
 
-	pid_t pid;
-	for (pid = INIT_PID + 1; pid < MAX_SESSION; pid++) {
-		if (!session_find(pid))
-			break;
-	}
-	if (pid >= MAX_SESSION)
-		return ENOMEM;
-
-	if (process_duplicate(parent->node.key, pid) == -1)
-		return ENOMEM;
-
-	session_t *child = session_create(pid);
-	if (!child) {
-		//TODO destroy process
+	pid_t pid = process_duplicate(req->packet.arg3);
+	if (pid == -1) {
+		log_err("fs: duplicate err\n");
 		return ENOMEM;
 	}
 
-	proc_duplicate(parent, child);
+	session->cwd->refer_count++;
 
 	ID thread_id = thread_create(pid, (FP)(req->packet.arg2),
 			(VP)(req->packet.arg1));
 	if (thread_id < 0) {
-		//TODO destroy process
-		session_destroy(child);
+		log_err("fs: th create err\n");
 		//TODO adequate errno
 		return ENOMEM;
 	}
 
 	if (kcall->thread_start(thread_id) < 0) {
-		//TODO destroy process
-		session_destroy(child);
+		log_err("fs: th start err\n");
 		//TODO adequate errno
 		return ENOMEM;
 	}
@@ -80,7 +68,7 @@ int if_fork(fs_request *req)
 
 int if_exec(fs_request *req)
 {
-	session_t *session = session_find(unpack_pid(req));
+	session_t *session = session_find(unpack_sid(req));
 	if (!session)
 		return ESRCH;
 
@@ -103,7 +91,7 @@ int if_exec(fs_request *req)
 
 int if_exit(fs_request *req)
 {
-	session_t *session = session_find(unpack_pid(req));
+	session_t *session = session_find(unpack_sid(req));
 	if (!session)
 		return ESRCH;
 

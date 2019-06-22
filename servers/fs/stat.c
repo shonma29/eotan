@@ -49,7 +49,7 @@ static int path2vnode(vnode_t **vnode, const session_t *session, const int tid,
 
 int if_chmod(fs_request *req)
 {
-	session_t *session = session_find(unpack_pid(req));
+	session_t *session = session_find(unpack_sid(req));
 	if (!session)
 		return ESRCH;
 
@@ -82,7 +82,7 @@ int if_fstat(fs_request *req)
 	devmsg_t *request = (devmsg_t*)&(req->packet);
 
 	do {
-		session_t *session = session_find(unpack_pid(req));
+		session_t *session = session_find(unpack_sid(req));
 		if (!session) {
 			error_no = ESRCH;
 			break;

@@ -33,7 +33,6 @@ struct file {
 	node_t node;
 	vnode_t *f_vnode;
 	uint_fast32_t f_flag;
-	uint_fast32_t f_count;
 	off_t f_offset;
 };
 

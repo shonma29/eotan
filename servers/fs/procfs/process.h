@@ -91,14 +91,10 @@ Version 2, June 1991
 #ifndef __FS_PROCESS_H__
 #define __FS_PROCESS_H__	1
 
-#include <fs/config.h>
 #include "../session.h"
 
 /* exec.c */
 extern W		exec_program (pm_args_t *, session_t *, vnode_t *, B *);
-
-/* fork.c */
-extern W		proc_duplicate (session_t *, session_t *);
 
 /* init.c */
 extern W exec_init(ID, char *);

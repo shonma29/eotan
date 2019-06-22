@@ -83,6 +83,7 @@ typedef struct {
 	pid_t pgid;
 	uid_t uid;
 	gid_t gid;
+	int session_id;
 	thread_local_t *local;
 	int exit_status;
 	RDVNO rdvno;
@@ -102,6 +103,7 @@ extern void process_deallocate_desc(mm_descriptor_t *);
 extern int process_set_desc(mm_process_t *, const int, mm_descriptor_t *);
 extern int process_destroy_desc(mm_process_t *, const int);
 extern mm_descriptor_t *process_find_desc(const mm_process_t *, const int);
+int process_find_new_fd(const mm_process_t *);
 
 extern ER default_handler(void);
 extern ER stack_fault_handler(void);

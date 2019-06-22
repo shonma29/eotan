@@ -40,6 +40,8 @@ For more information, please refer to <http://unlicense.org/>
 #include "interface.h"
 #include "process.h"
 
+#define MIN_AUTO_FD (3)
+
 static int (*funcs[])(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args) = {
 	mm_palloc,
 	mm_pfree,
@@ -137,7 +139,8 @@ static void proxy(void)
 			//TODO thread has pointer to process
 		}
 
-		args.process_id |= get_rdv_tid(rdvno) << 16;
+		args.process_id = process->session_id
+				| get_rdv_tid(rdvno) << 16;
 
 		int result;
 		int op = args.operation;
@@ -295,6 +298,7 @@ int mm_wait(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 //TODO to mm call
 int if_fork(mm_process_t *process, pm_args_t *args)
 {
+	args->arg3 = process->node.key;
 	if (kcall->port_call(PORT_FS, args, sizeof(*args))
 			!= sizeof(pm_reply_t)) {
 		return ECONNREFUSED;
@@ -311,6 +315,7 @@ int if_fork(mm_process_t *process, pm_args_t *args)
 
 int if_exec(mm_process_t *process, pm_args_t *args)
 {
+	args->arg4 = process->node.key;
 	if (kcall->port_call(PORT_FS, args, sizeof(*args))
 			!= sizeof(pm_reply_t)) {
 		return ECONNREFUSED;
@@ -327,6 +332,7 @@ int if_exec(mm_process_t *process, pm_args_t *args)
 
 int if_exit(mm_process_t *process, pm_args_t *args)
 {
+/*
 	if (kcall->port_call(PORT_FS, args, sizeof(*args))
 			!= sizeof(pm_reply_t)) {
 		return ECONNREFUSED;
@@ -339,6 +345,13 @@ int if_exit(mm_process_t *process, pm_args_t *args)
 
 	log_notice("proxy: %d exit %d %d\n",
 			process->node.key, reply->result1, reply->error_no);
+*/
+	process_destroy(process, args->arg1);
+	pm_reply_t *reply = (pm_reply_t*)args;
+	reply->result1 = 0;
+	reply->result2 = 0;
+	reply->error_no = 0;
+
 	return 0;
 }
 
@@ -456,6 +469,10 @@ static int if_open(mm_process_t *process, pm_args_t *args)
 	if (!d)
 		return ENOMEM;
 
+	int fid = process_find_new_fd(process);
+	if (fid == -1)
+		return ENOMEM;
+
 	int oflag = args->arg2;
 
 	if (kcall->port_call(PORT_FS, args, sizeof(*args))
@@ -479,11 +496,13 @@ static int if_open(mm_process_t *process, pm_args_t *args)
 		f->f_offset = 0;
 
 		//TODO find empty fid
-		if (process_set_desc(process, reply->result1, d)) {
+		if (process_set_desc(process, fid, d)) {
 			process_deallocate_file(d->file);
 			process_deallocate_desc(d);
 			//TODO what to do?
 		}
+
+		reply->result1 = fid;
 	} else {
 		process_deallocate_file(d->file);
 		process_deallocate_desc(d);

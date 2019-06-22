@@ -30,7 +30,6 @@ For more information, please refer to <http://unlicense.org/>
 
 typedef struct _session_t {
 	node_t node;
-	int session_id;
 	struct permission permission;
 	vnode_t *cwd;
 	tree_t files;

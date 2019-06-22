@@ -34,8 +34,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "api.h"
 #include "session.h"
 
-#define MIN_AUTO_FD (3)
-
 static slab_t session_slab;
 static tree_t session_tree;
 static slab_t file_slab;
@@ -43,7 +41,7 @@ static slab_t file_slab;
 
 int if_chdir(fs_request *req)
 {
-	session_t *session = session_find(unpack_pid(req));
+	session_t *session = session_find(unpack_sid(req));
 	if (!session)
 		return ESRCH;
 
@@ -120,7 +118,6 @@ session_t *session_create(const pid_t pid)
 		return NULL;
 	}
 
-	session->session_id = pid;
 	session->cwd = NULL;
 	tree_create(&(session->files), NULL);
 
@@ -162,7 +159,7 @@ int session_create_desc(struct file **file, session_t *session, const int fd)
 		d = fd;
 	} else {
 		//TODO optimize
-		for (d = MIN_AUTO_FD; d < MAX_FILE; d++) {
+		for (d = 0; d < MAX_FILE; d++) {
 			if (!session_find_desc(session, d))
 				break;
 		}
@@ -182,7 +179,6 @@ int session_create_desc(struct file **file, session_t *session, const int fd)
 
 	f->f_vnode = NULL;
 	f->f_flag = 0;
-	f->f_count = 0;
 	f->f_offset = 0;
 
 	*file = f;

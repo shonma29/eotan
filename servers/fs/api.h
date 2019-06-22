@@ -55,7 +55,7 @@ extern int if_remove(fs_request*);
 extern int if_fstat(fs_request*);
 extern int if_write(fs_request*);
 
-static inline pid_t unpack_pid(const fs_request *req)
+static inline int unpack_sid(const fs_request *req)
 {
 	return (req->packet.process_id & 0xffff);
 }

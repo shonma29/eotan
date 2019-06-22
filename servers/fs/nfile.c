@@ -33,7 +33,7 @@ For more information, please refer to <http://unlicense.org/>
 
 int if_open(fs_request *req)
 {
-	session_t *session = session_find(unpack_pid(req));
+	session_t *session = session_find(unpack_sid(req));
 	if (!session)
 		return ESRCH;
 
@@ -59,7 +59,6 @@ int if_open(fs_request *req)
 
 	file->f_vnode = vnode;
 	file->f_flag = req->packet.arg2 & O_ACCMODE;
-	file->f_count = 0;
 	file->f_offset = (req->packet.arg2 & O_APPEND)? vnode->size:0;
 
 	reply2(req->rdvno, 0, file->node.key, 0);
@@ -70,7 +69,7 @@ int if_close(fs_request *req)
 {
 	int error_no;
 	devmsg_t *request = (devmsg_t*)&(req->packet);
-	session_t *session = session_find(unpack_pid(req));
+	session_t *session = session_find(unpack_sid(req));
 	if (session)
 		error_no = session_destroy_desc(session, request->Tclunk.fid);
 	else
@@ -90,7 +89,7 @@ int if_close(fs_request *req)
 
 int if_lseek(fs_request *req)
 {
-	session_t *session = session_find(unpack_pid(req));
+	session_t *session = session_find(unpack_sid(req));
 	if (!session)
 		return ESRCH;
 

@@ -58,6 +58,7 @@ static slab_t session_slab;
 static void process_clear(mm_process_t *p);
 static void thread_clear(mm_thread_t *th, mm_process_t *p);
 static ER_ID create_thread(mm_process_t *p, FP entry, VP ustack_top);
+static int process_find_new_pid(void);
 
 
 mm_process_t *get_process(const ID pid)
@@ -248,6 +249,7 @@ int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			p->pgid = INIT_PID;
 			p->uid = INIT_UID;
 			p->gid = INIT_GID;
+			p->session_id = INIT_SESSION_ID;
 
 			mm_process_group_t *pg =
 					slab_alloc(&process_group_slab);
@@ -382,15 +384,20 @@ int mm_process_clean(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
-		mm_process_t *dest;
 		mm_process_t *src = get_process((ID)args->arg1);
-
 		if (!src) {
 			reply->data[0] = ESRCH;
 			break;
 		}
 
-		dest = get_process((ID)args->arg2);
+		pid_t pid = process_find_new_pid();
+		if (pid == -1) {
+			//TODO set adequate errno
+			reply->data[0] = ENOMEM;
+			break;
+		}
+
+		mm_process_t *dest = get_process(pid);
 		//TODO check duplicated process_id
 		if (!dest) {
 			dest = (mm_process_t*)slab_alloc(&process_slab);
@@ -400,7 +407,7 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			}
 
 			if (!tree_put(&process_tree,
-					(ID)args->arg2, (node_t*)dest)) {
+					pid, (node_t*)dest)) {
 				slab_free(&process_slab, dest);
 				reply->data[0] = EBUSY;
 				break;
@@ -452,6 +459,7 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		dest->pgid = src->pgid;
 		dest->uid = src->uid;
 		dest->gid = src->gid;
+		dest->session_id = src->session_id;
 		//TODO attach -> walk -> set cwd
 		//TODO set local
 		strcpy(dest->name, src->name);
@@ -478,8 +486,8 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 				&dest->members, dest->members.next,
 				dest->ppid, dest->pgid, dest->uid, dest->gid,
 				dest->name);
-		reply->data[0] = EOK;
-		reply->result = 0;
+		reply->data[0] = 0;
+		reply->result = pid;
 		return reply_success;
 	} while (FALSE);
 
@@ -600,6 +608,7 @@ int process_destroy(mm_process_t *proc, const int status)
 		log_info("mm: %d no parent destroy\n", proc->node.key);
 	}
 
+//TODO if current process is 'init'?
 	parent = get_process(INIT_PID);
 	if (parent) {
 		bool found = false;
@@ -957,4 +966,22 @@ int process_destroy_desc(mm_process_t *process, const int fd)
 mm_descriptor_t *process_find_desc(const mm_process_t *process, const int fd)
 {
 	return (mm_descriptor_t*)tree_get(&(process->descriptors), fd);
+}
+
+static int process_find_new_pid(void)
+{
+	for (int id = INIT_PID; id < PROCESS_MAX; id++)
+		if (!tree_get(&process_tree, id))
+			return id;
+
+	return -1;
+}
+
+int process_find_new_fd(const mm_process_t *process)
+{
+	for (int id = MIN_AUTO_FD; id < FILES_PER_PROCESS; id++)
+		if (!process_find_desc(process, id))
+			return id;
+
+	return -1;
 }

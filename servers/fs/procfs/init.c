@@ -78,7 +78,7 @@ W exec_init(ID process_id, char *pathname)
 	if (process_create(process_id, 0, 0, 0) == -1)
 		return ENOMEM;
 
-	session_t *session = session_create(process_id);
+	session_t *session = session_create(INIT_SESSION_ID);
 	if (!session)
 		return ENOMEM;
 
@@ -99,6 +99,7 @@ W exec_init(ID process_id, char *pathname)
 	strcpy(p->buf, pathname);
 	strcpy(&(buf[sizeof(init_arg_t) + pathlen]), envpath);
 	req.arg2 = (W)p;
+	req.arg4 = INIT_PID;
 
 	log_info("fs: exec_init(%d, %s)\n", process_id, pathname);
 	return exec_program(&req, session, session->cwd, pathname);

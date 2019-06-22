@@ -33,7 +33,7 @@ For more information, please refer to <http://unlicense.org/>
 
 int if_create(fs_request *req)
 {
-	session_t *session = session_find(unpack_pid(req));
+	session_t *session = session_find(unpack_sid(req));
 	if (!session)
 		return ESRCH;
 
@@ -57,7 +57,7 @@ int if_create(fs_request *req)
 
 int if_remove(fs_request *req)
 {
-	session_t *session = session_find(unpack_pid(req));
+	session_t *session = session_find(unpack_sid(req));
 	if (!session)
 		return ESRCH;
 
