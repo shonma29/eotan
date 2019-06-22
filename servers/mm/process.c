@@ -244,85 +244,6 @@ int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		p->segments.heap.max = pageRoundUp(args->arg4) - end;
 		p->segments.heap.attr = type_heap;
 
-		if (p->node.key == INIT_PID) {
-			p->ppid = INIT_PPID;
-			p->pgid = INIT_PID;
-			p->uid = INIT_UID;
-			p->gid = INIT_GID;
-			p->session_id = INIT_SESSION_ID;
-
-			mm_process_group_t *pg =
-					slab_alloc(&process_group_slab);
-			if (pg) {
-				list_initialize(&(pg->members));
-				if (!tree_put(&process_group_tree, INIT_PID,
-						(node_t*)pg)) {
-					//TODO what to do?
-					slab_free(&process_group_slab, pg);
-				}
-			}
-
-			if (map_user_pages(p->directory, (void*)LOCAL_ADDR,
-					pages(sizeof(*(p->local))))) {
-				reply->data[0] = ENOMEM;
-				break;
-			}
-
-			p->local = getPageAddress(kern_p2v(p->directory),
-					(void*)LOCAL_ADDR);
-			memset(p->local, 0, sizeof(*(p->local)));
-			p->local->pid = p->node.key;
-			p->local->ppid = p->ppid;
-			p->local->uid = p->uid;
-			p->local->gid = p->gid;
-			p->local->wd_len = 1;
-			strcpy(p->local->wd, "/");
-
-			mm_descriptor_t *d = process_create_file();
-			if (d) {
-				mm_file_t *f = d->file;
-				f->server_id = PORT_CONSOLE;
-				//TODO open
-				f->fid = 0;
-				f->f_flag = O_RDONLY;
-				f->f_count = 1;
-				f->f_offset = 0;
-				if (process_set_desc(p, STDIN_FILENO, d)) {
-					//TODO what to do?
-					process_deallocate_file(f);
-					process_deallocate_desc(d);
-				}
-			}
-
-			d = process_create_file();
-			if (d) {
-				mm_file_t *f = d->file;
-				f->server_id = PORT_CONSOLE;
-				//TODO open
-				f->fid = 0;
-				f->f_flag = O_WRONLY;
-				f->f_count = 1;
-				f->f_offset = 0;
-				if (process_set_desc(p, STDOUT_FILENO, d)) {
-					//TODO what to do?
-					process_deallocate_file(f);
-					process_deallocate_desc(d);
-				}
-
-				d = process_allocate_desc();
-				if (d) {
-					if (process_set_desc(p, STDERR_FILENO,
-							d))
-						//TODO what to do?
-						process_deallocate_desc(d);
-					else {
-						d->file = f;
-						f->f_count++;
-					}
-				}
-			}
-		}
-
 		log_notice("c %d %x->%x, %x->%x pp=%d pg=%d u=%d g=%d n=%s\n",
 				p->node.key,
 				&p->brothers, p->brothers.next,
@@ -965,4 +886,121 @@ int process_find_new_fd(const mm_process_t *process)
 			return id;
 
 	return -1;
+}
+
+int create_init(const pid_t pid)
+{
+	unsigned int start;
+	unsigned int end;
+	mm_process_t *p = get_process(pid);
+
+	//TODO check duplicated process_id
+	if (!p) {
+		p = (mm_process_t*)slab_alloc(&process_slab);
+		if (!p)
+			return ENOMEM;
+//TODO key must not be 0
+		if (!tree_put(&process_tree, pid, (node_t*)p)) {
+			slab_free(&process_slab, p);
+			return EBUSY;
+		}
+
+		//TODO adhoc
+		p->directory = NULL;
+		process_clear(p);
+
+		//TODO check NULL
+		p->directory = copy_kernel_page_table();
+	}
+
+	start = pageRoundDown(0);
+	end = pageRoundUp((unsigned int)0 + (unsigned int)0);
+
+	if (map_user_pages(p->directory, (VP)start, pages(end - start)))
+		return ENOMEM;
+
+	p->segments.heap.addr = (void*)end;
+	p->segments.heap.len = 0;
+	p->segments.heap.max = pageRoundUp(0) - end;
+	p->segments.heap.attr = type_heap;
+
+	p->ppid = INIT_PPID;
+	p->pgid = INIT_PID;
+	p->uid = INIT_UID;
+	p->gid = INIT_GID;
+	p->session_id = INIT_SESSION_ID;
+
+	mm_process_group_t *pg = slab_alloc(&process_group_slab);
+	if (pg) {
+		list_initialize(&(pg->members));
+		if (!tree_put(&process_group_tree, INIT_PID, (node_t*)pg)) {
+			//TODO what to do?
+			slab_free(&process_group_slab, pg);
+		}
+	}
+
+	if (map_user_pages(p->directory, (void*)LOCAL_ADDR,
+			pages(sizeof(*(p->local))))) {
+		return ENOMEM;
+	}
+
+	p->local = getPageAddress(kern_p2v(p->directory), (void*)LOCAL_ADDR);
+	memset(p->local, 0, sizeof(*(p->local)));
+	p->local->pid = p->node.key;
+	p->local->ppid = p->ppid;
+	p->local->uid = p->uid;
+	p->local->gid = p->gid;
+	p->local->wd_len = 1;
+	strcpy(p->local->wd, "/");
+
+	mm_descriptor_t *d = process_create_file();
+	if (d) {
+		mm_file_t *f = d->file;
+		f->server_id = PORT_CONSOLE;
+		//TODO open
+		f->fid = 0;
+		f->f_flag = O_RDONLY;
+		f->f_count = 1;
+		f->f_offset = 0;
+		if (process_set_desc(p, STDIN_FILENO, d)) {
+			//TODO what to do?
+			process_deallocate_file(f);
+			process_deallocate_desc(d);
+		}
+	}
+
+	d = process_create_file();
+	if (d) {
+		mm_file_t *f = d->file;
+		f->server_id = PORT_CONSOLE;
+		//TODO open
+		f->fid = 0;
+		f->f_flag = O_WRONLY;
+		f->f_count = 1;
+		f->f_offset = 0;
+		if (process_set_desc(p, STDOUT_FILENO, d)) {
+			//TODO what to do?
+			process_deallocate_file(f);
+			process_deallocate_desc(d);
+		}
+
+		d = process_allocate_desc();
+		if (d) {
+			if (process_set_desc(p, STDERR_FILENO, d))
+				//TODO what to do?
+				process_deallocate_desc(d);
+			else {
+				d->file = f;
+				f->f_count++;
+			}
+		}
+	}
+
+	log_notice("c %d %x->%x, %x->%x pp=%d pg=%d u=%d g=%d n=%s\n",
+			p->node.key,
+			&p->brothers, p->brothers.next,
+			&p->members, p->members.next,
+			p->ppid, p->pgid, p->uid, p->gid,
+			p->name);
+	return 0;
 }

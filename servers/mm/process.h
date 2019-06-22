@@ -109,6 +109,9 @@ int process_find_new_fd(const mm_process_t *);
 extern ER default_handler(void);
 extern ER stack_fault_handler(void);
 
-extern int if_exit(mm_process_t *, pm_args_t *);
+extern int if_exec(mm_process_t *, pm_args_t *);
+
+extern int create_init(const pid_t);
+extern int exec_init(const pid_t, char *);
 
 #endif

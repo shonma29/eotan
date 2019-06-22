@@ -116,7 +116,15 @@ static int initialize(void)
 			log_info("fs: fs_mount(%x, %d) succeeded\n",
 					sysinfo->root.device,
 					sysinfo->root.fstype);
-			exec_init(INIT_PID, INIT_PATH_NAME);
+
+			session_t *session = session_create(INIT_SESSION_ID);
+			if (!session)
+				return -1;
+
+			session->permission.uid = INIT_UID;
+			session->permission.gid = INIT_GID;
+			session->cwd = rootfile;
+			rootfile->refer_count++;
 		}
 	}
 

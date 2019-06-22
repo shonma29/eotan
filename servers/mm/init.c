@@ -24,20 +24,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
+#include <errno.h>
 #include <local.h>
+#include <pm.h>
+#include <process.h>
+#include <services.h>
 #include <stddef.h>
 #include <string.h>
 #include <boot/init.h>
-#include <mm/segment.h>
-#include <nerve/config.h>
-#include <nerve/kcall.h>
-#include <sys/errno.h>
 #include <sys/syslimits.h>
-#include "../../lib/libserv/libmm.h"
 #include "../../lib/libserv/libserv.h"
-#include "api.h"
-#include "procfs/process.h"
 
 #define STACK_TAIL (LOCAL_ADDR - PAGE_SIZE)
 #define MAX_ENV (10)
@@ -58,10 +54,8 @@ static char envpath[] = "PATH=/bin";
 static char buf[sizeof(init_arg_t) + PATH_MAX + 1 + MAX_ENV];
 
 
-W exec_init(ID process_id, char *pathname)
+int exec_init(const pid_t process_id, char *pathname)
 {
-	//TODO add strnlen
-//	size_t pathlen = strnlen(pathname, PATH_MAX + 1);
 	size_t pathlen = strlen(pathname);
 	if (pathlen > PATH_MAX)
 		return ENAMETOOLONG;
@@ -75,17 +69,9 @@ W exec_init(ID process_id, char *pathname)
 	if (req.arg3 > sizeof(buf))
 		return ENOMEM;
 
-	if (process_create(process_id, 0, 0, 0) == -1)
-		return ENOMEM;
-
-	session_t *session = session_create(INIT_SESSION_ID);
-	if (!session)
-		return ENOMEM;
-
-	session->permission.uid = INIT_UID;
-	session->permission.gid = INIT_GID;
-	session->cwd = rootfile;
-	rootfile->refer_count++;
+	int result = create_init(process_id);
+	if (result)
+		return result;
 
 	size_t offset = STACK_TAIL - req.arg3;
 	init_arg_t *p = (init_arg_t*)buf;
@@ -98,9 +84,13 @@ W exec_init(ID process_id, char *pathname)
 	p->env1 = NULL;
 	strcpy(p->buf, pathname);
 	strcpy(&(buf[sizeof(init_arg_t) + pathlen]), envpath);
-	req.arg2 = (W)p;
-	req.arg4 = INIT_PID;
 
-	log_info("fs: exec_init(%d, %s)\n", process_id, pathname);
-	return exec_program(&req, session, session->cwd, pathname);
+	mm_process_t *process = get_process(process_id);
+	req.operation = pm_syscall_exec;
+	req.process_id = process->session_id | (PORT_MM << 16);
+	req.arg1 = (int)pathname;
+	req.arg2 = (int)p;
+
+	log_info("mm: exec_init(%d, %s)\n", process_id, pathname);
+	return if_exec(process, &req);
 }

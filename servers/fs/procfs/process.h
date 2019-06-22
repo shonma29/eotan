@@ -96,7 +96,4 @@ Version 2, June 1991
 /* exec.c */
 extern W		exec_program (pm_args_t *, session_t *, vnode_t *, B *);
 
-/* init.c */
-extern W exec_init(ID, char *);
-
 #endif /* __FS_PROCESS_H__ */

@@ -31,6 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <pm.h>
 #include <services.h>
 #include <string.h>
+#include <boot/init.h>
 #include <core/options.h>
 #include <nerve/kcall.h>
 #include <sys/errno.h>
@@ -68,8 +69,8 @@ static char pathbuf2[PATH_MAX];
 static ER init(void);
 static ER proxy_initialize(void);
 static void proxy(void);
+static unsigned int sleep(unsigned int);
 static int if_fork(mm_process_t *, pm_args_t *);
-static int if_exec(mm_process_t *, pm_args_t *);
 static int if_chdir(mm_process_t *, pm_args_t *);
 static size_t calc_path(char *, char *, const size_t);
 static int if_open(mm_process_t *, pm_args_t *);
@@ -110,6 +111,9 @@ static ER proxy_initialize(void)
 
 static void proxy(void)
 {
+	sleep(1);
+	exec_init(INIT_PID, INIT_PATH_NAME);
+
 	T_CPOR pk_cpor = { TA_TFIFO, sizeof(pm_args_t), sizeof(pm_reply_t) };
 	ER error = kcall->port_open(&pk_cpor);
 	if (error) {
@@ -190,6 +194,33 @@ static void proxy(void)
 		if (result)
 			log_err("proxy: reply failed %d\n", result);
 	}
+}
+
+//TODO extract to libserv
+static unsigned int sleep(unsigned int second)
+{
+	struct timespec t = { second, 0 };
+	ER_UINT reply_size = kcall->port_call(PORT_TIMER, &t, sizeof(t));
+
+	if (reply_size == sizeof(ER)) {
+		ER *result = (ER*)&t;
+
+		switch (*result) {
+		case E_TMOUT:
+			return 0;
+
+		case E_PAR:
+			return second;
+
+		case E_NOMEM:
+			return second;
+
+		default:
+			break;
+		}
+	}
+
+	return second;
 }
 
 int mm_dup(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)

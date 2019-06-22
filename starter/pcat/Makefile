@@ -108,9 +108,9 @@ $(WD)/kernel.img: $(WD)/append \
 	$(WD)/append 3 servers/interrupt/interrupt 4 3 >> $@
 	$(WD)/append 3 servers/timer/timer 4 4 >> $@
 	$(WD)/append 3 servers/kernlog/kernlog 4 5 >> $@
-	$(WD)/append 3 servers/mm/mm 4 6 >> $@
 	$(WD)/append 3 servers/hmi/hmi 4 8 >> $@
 	$(WD)/append 3 servers/fs/fs 4 7 >> $@
+	$(WD)/append 3 servers/mm/mm 4 6 >> $@
 	$(WD)/append 2 drivers/ramdisk/ramdisk 4 >> $@
 	$(WD)/append 5 initrd.img.rc 4 >> $@
 	$(WD)/append 0 >> $@
