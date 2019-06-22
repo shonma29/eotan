@@ -93,9 +93,10 @@ typedef struct {
 extern void process_initialize(void);
 extern mm_process_t *get_process(const ID);
 extern mm_thread_t *get_thread(const ID);
-
+extern mm_process_t *process_duplicate(mm_process_t *);
 extern int process_destroy(mm_process_t *, const int);
 extern int process_release_body(mm_process_t *);
+extern int thread_create(mm_process_t *, FP, VP);
 extern mm_descriptor_t *process_create_file(void);
 extern void process_deallocate_file(mm_file_t *);
 extern mm_descriptor_t *process_allocate_desc(void);

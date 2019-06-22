@@ -49,13 +49,12 @@ typedef enum {
 	mm_syscall_clock_gettime = 4,
 	mm_syscall_process_create = 5,
 	mm_syscall_process_clean = 6,
-	mm_syscall_process_duplicate = 7,
-	mm_syscall_process_set_context = 8,
-	mm_syscall_sbrk = 9,
-	mm_syscall_thread_create = 10,
-	mm_syscall_thread_find = 11,
-	mm_syscall_dup = 12,
-	mm_syscall_wait = 13
+	mm_syscall_process_set_context = 7,
+	mm_syscall_sbrk = 8,
+	mm_syscall_thread_find = 9,
+	mm_syscall_dup = 10,
+	mm_syscall_wait = 11,
+	mm_syscall_exit = 12
 } mm_syscall_e;
 
 #endif

@@ -25,13 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
-#include <boot/init.h>
-#include <nerve/kcall.h>
 #include "api.h"
 #include "session.h"
 #include "procfs/process.h"
-#include "../../lib/libserv/libmm.h"
-#include "../../lib/libserv/libserv.h"
 
 
 int if_fork(fs_request *req)
@@ -40,29 +36,8 @@ int if_fork(fs_request *req)
 	if (!session)
 		return ESRCH;
 
-	pid_t pid = process_duplicate(req->packet.arg3);
-	if (pid == -1) {
-		log_err("fs: duplicate err\n");
-		return ENOMEM;
-	}
-
 	session->cwd->refer_count++;
-
-	ID thread_id = thread_create(pid, (FP)(req->packet.arg2),
-			(VP)(req->packet.arg1));
-	if (thread_id < 0) {
-		log_err("fs: th create err\n");
-		//TODO adequate errno
-		return ENOMEM;
-	}
-
-	if (kcall->thread_start(thread_id) < 0) {
-		log_err("fs: th start err\n");
-		//TODO adequate errno
-		return ENOMEM;
-	}
-
-	reply2(req->rdvno, 0, pid, 0);
+	reply2(req->rdvno, 0, 0, 0);
 	return 0;
 }
 
@@ -88,7 +63,7 @@ int if_exec(fs_request *req)
 	reply2(req->rdvno, 0, 0, 0);
 	return 0;
 }
-
+#if 0
 int if_exit(fs_request *req)
 {
 	session_t *session = session_find(unpack_sid(req));
@@ -99,3 +74,4 @@ int if_exit(fs_request *req)
 	reply2(req->rdvno, 0, 0, 0);
 	return 0;
 }
+#endif

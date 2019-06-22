@@ -53,7 +53,6 @@ static char req_buf[
 static int (*syscall[])(fs_request*) = {
 	if_fork,
 	if_exec,
-	if_exit,
 	if_chdir,
 	if_create,
 	if_remove,
@@ -278,15 +277,6 @@ void start(VP_INT exinf)
 					worker_enqueue(&req):EINVAL;
 		}
 			break;
-		case pm_syscall_fork:
-		case pm_syscall_exec:
-		case pm_syscall_exit:
-		case pm_syscall_chdir:
-		case pm_syscall_create:
-		case pm_syscall_remove:
-		case pm_syscall_chmod:
-		case pm_syscall_open:
-		case pm_syscall_lseek:
 		default:
 			if (size != sizeof(pm_args_t))
 				result = EINVAL;

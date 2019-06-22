@@ -50,13 +50,12 @@ static int (*funcs[])(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args) = {
 	mm_clock_gettime,
 	mm_process_create,
 	mm_process_clean,
-	mm_process_duplicate,
 	mm_process_set_context,
 	mm_sbrk,
-	mm_thread_create,
 	mm_thread_find,
 	mm_dup,
-	mm_wait
+	mm_wait,
+	mm_exit
 };
 
 #define BUFSIZ (sizeof(mm_args_t))
@@ -150,9 +149,6 @@ static void proxy(void)
 			break;
 		case pm_syscall_exec:
 			result = if_exec(process, &args);
-			break;
-		case pm_syscall_exit:
-			result = if_exit(process, &args);
 			break;
 		case pm_syscall_chdir:
 			result = if_chdir(process, &args);
@@ -298,14 +294,34 @@ int mm_wait(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 //TODO to mm call
 int if_fork(mm_process_t *process, pm_args_t *args)
 {
-	args->arg3 = process->node.key;
+	mm_process_t *child = process_duplicate(process);
+	if (!child) {
+		log_err("mm: duplicate err\n");
+		return ENOMEM;
+	}
+
+	int thread_id = thread_create(child, (FP)(args->arg2),
+			(VP)(args->arg1));
+	if (thread_id < 0) {
+		log_err("mm: th create err\n");
+		//TODO adequate errno
+		return ENOMEM;
+	}
+
 	if (kcall->port_call(PORT_FS, args, sizeof(*args))
 			!= sizeof(pm_reply_t)) {
 		return ECONNREFUSED;
 	}
 
+	if (kcall->thread_start(thread_id) < 0) {
+		log_err("mm: th start err\n");
+		//TODO adequate errno
+		return ENOMEM;
+	}
+
 	pm_reply_t *reply = (pm_reply_t*)args;
 	if (!(reply->result1)) {
+		reply->result1 = child->node.key;
 	}
 
 	log_notice("proxy: %d fork %d %d\n",
@@ -330,7 +346,7 @@ int if_exec(mm_process_t *process, pm_args_t *args)
 	return 0;
 }
 
-int if_exit(mm_process_t *process, pm_args_t *args)
+int mm_exit(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 /*
 	if (kcall->port_call(PORT_FS, args, sizeof(*args))
@@ -342,17 +358,32 @@ int if_exit(mm_process_t *process, pm_args_t *args)
 	if (!(reply->result1)) {
 		process_destroy(process, args->arg1);
 	}
-
-	log_notice("proxy: %d exit %d %d\n",
-			process->node.key, reply->result1, reply->error_no);
 */
-	process_destroy(process, args->arg1);
-	pm_reply_t *reply = (pm_reply_t*)args;
-	reply->result1 = 0;
-	reply->result2 = 0;
-	reply->error_no = 0;
+	do {
+		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
+		if (!th) {
+//TODO use other errno
+			reply->data[0] = ESRCH;
+			break;
+		}
 
-	return 0;
+		mm_process_t *process = get_process(th->process_id);
+		if (!process) {
+//TODO use other errno
+			reply->data[0] = ESRCH;
+			break;
+		}
+
+		process_destroy(process, args->arg1);
+		log_notice("mm: %d exit\n", process->node.key);
+
+		reply->result = 0;
+		reply->data[0] = 0;
+		return reply_success;
+	} while (false);
+
+	reply->result = -1;
+	return reply_failure;
 }
 
 static int if_chdir(mm_process_t *process, pm_args_t *args)

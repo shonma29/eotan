@@ -31,11 +31,9 @@ For more information, please refer to <http://unlicense.org/>
 
 extern int process_create(ID, VP, size_t, VP);
 extern int process_clean(ID);
-extern ER_ID process_duplicate(ID);
 extern ER_ID process_set_context(ID, W, B *, W);
 extern int vmap(ID, VP, UW, W);
 extern int vunmap(ID, VP, UW);
-extern ER_ID thread_create(ID, FP, VP);
 extern ER_ID thread_find(ID);
 
 #endif

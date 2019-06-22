@@ -26,30 +26,25 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <errno.h>
-#include <local.h>
 #include <mm.h>
 #include <services.h>
-#include <nerve/kcall.h>
+#include <stdnoreturn.h>
+#include <unistd.h>
 
 
-int process_duplicate(ID src_process, ID dest_process)
+noreturn void _exit(int status)
 {
-//	thread_local_t *local = _get_local();
-	mm_args_t args;
+	mm_args_t args = {
+		mm_syscall_exit,
+		status
+	};
+	ER_UINT reply_size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
 	mm_reply_t *reply = (mm_reply_t*)&args;
-	ER_UINT reply_size;
-
-	args.syscall_no = mm_syscall_process_duplicate;
-	args.arg1 = (long int)src_process;
-	args.arg2 = (long int)dest_process;
-	reply_size = kcall->port_call(PORT_MM, &args, sizeof(args));
-
 	if (reply_size == sizeof(*reply)) {
-//		local->error_no = reply->error_no;
-		return reply->result;
+		if (reply->result == -1)
+			_set_local_errno(reply->data[0]);
+	} else
+		_set_local_errno(ECONNREFUSED);
 
-	} else {
-//		local->error_no = ECONNREFUSED;
-		return -1;
-	}
+	for (;;);
 }

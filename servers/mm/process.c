@@ -329,7 +329,6 @@ int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 				&p->members, p->members.next,
 				p->ppid, p->pgid, p->uid, p->gid,
 				p->name);
-
 		reply->data[0] = EOK;
 		reply->result = 0;
 		return reply_success;
@@ -381,19 +380,13 @@ int mm_process_clean(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	return reply_failure;
 }
 
-int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+mm_process_t *process_duplicate(mm_process_t *src)
 {
 	do {
-		mm_process_t *src = get_process((ID)args->arg1);
-		if (!src) {
-			reply->data[0] = ESRCH;
-			break;
-		}
-
 		pid_t pid = process_find_new_pid();
 		if (pid == -1) {
 			//TODO set adequate errno
-			reply->data[0] = ENOMEM;
+//			reply->data[0] = ENOMEM;
 			break;
 		}
 
@@ -402,14 +395,14 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		if (!dest) {
 			dest = (mm_process_t*)slab_alloc(&process_slab);
 			if (!dest) {
-				reply->data[0] = ENOMEM;
+//				reply->data[0] = ENOMEM;
 				break;
 			}
 
 			if (!tree_put(&process_tree,
 					pid, (node_t*)dest)) {
 				slab_free(&process_slab, dest);
-				reply->data[0] = EBUSY;
+//				reply->data[0] = EBUSY;
 				break;
 			}
 
@@ -425,7 +418,7 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 //				pageRoundUp((UW)(src->segments.heap.addr)
 //						+ src->segments.heap.len)
 						>> BITS_OFFSET)) {
-			reply->data[0] = EFAULT;
+//			reply->data[0] = EFAULT;
 			break;
 		}
 
@@ -466,7 +459,7 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 
 		if (map_user_pages(dest->directory, (void*)LOCAL_ADDR,
 				pages(sizeof(*(dest->local))))) {
-			reply->data[0] = ENOMEM;
+//			reply->data[0] = ENOMEM;
 			break;
 		}
 
@@ -486,13 +479,10 @@ int mm_process_duplicate(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 				&dest->members, dest->members.next,
 				dest->ppid, dest->pgid, dest->uid, dest->gid,
 				dest->name);
-		reply->data[0] = 0;
-		reply->result = pid;
-		return reply_success;
-	} while (FALSE);
+		return dest;
+	} while (false);
 
-	reply->result = -1;
-	return reply_failure;
+	return NULL;
 }
 
 int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
@@ -830,28 +820,22 @@ static ER_ID create_thread(mm_process_t *p, FP entry, VP ustack_top)
 	return kcall->thread_create_auto(&pk_ctsk);
 }
 
-int mm_thread_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+int thread_create(mm_process_t *process, FP entry, VP stack)
 {
 	do {
 		ER_ID result;
 		mm_thread_t *th;
-		mm_process_t *p = get_process((ID)args->arg1);
 
-		if (!p) {
-			reply->data[0] = ESRCH;
-			break;
-		}
-
-		if (map_user_pages(p->directory,
+		if (map_user_pages(process->directory,
 				(VP)pageRoundDown(LOCAL_ADDR - USER_STACK_INITIAL_SIZE - PAGE_SIZE),
 				pages(pageRoundUp(USER_STACK_INITIAL_SIZE)))) {
-			reply->data[0] = ENOMEM;
+//			reply->data[0] = ENOMEM;
 			break;
 		}
 
-		result = create_thread(p, (FP)(args->arg2), (VP)(args->arg3));
+		result = create_thread(process, entry, stack);
 		if (result < 0) {
-			reply->data[0] = ECONNREFUSED;
+//			reply->data[0] = ECONNREFUSED;
 			break;
 		}
 
@@ -859,31 +843,28 @@ int mm_thread_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		th = (mm_thread_t*)slab_alloc(&thread_slab);
 		if (!th) {
 			kcall->thread_destroy(result);
-			reply->data[0] = ENOMEM;
+//			reply->data[0] = ENOMEM;
 			break;
 		}
 
 		if (tree_put(&thread_tree, result, (node_t*)th))
-			thread_clear(th, p);
+			thread_clear(th, process);
 		else {
 			slab_free(&thread_slab, th);
 			kcall->thread_destroy(result);
-			reply->data[0] = EBUSY;
+//			reply->data[0] = EBUSY;
 			break;
 		}
 
 		//TODO only main thread
-		if (p->local)
-				p->local->thread_id = result;
+		if (process->local)
+				process->local->thread_id = result;
 
-		reply->data[0] = EOK;
-		reply->result = result;
-		return reply_success;
-	} while (FALSE);
+		return result;
+	} while (false);
 
 //TODO unmap
-	reply->result = -1;
-	return reply_failure;
+	return -1;
 }
 //TODO delete thread
 //TODO delete process

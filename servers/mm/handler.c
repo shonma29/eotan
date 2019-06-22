@@ -109,11 +109,6 @@ static void kill(const int tid, const int dummy)
 	}
 
 	mm_process_t *p = get_process(tid);
-	if (p) {
-		pm_args_t req;
-		req.process_id = th->process_id | (tid << 16);
-		req.operation = pm_syscall_exit;
-		req.arg1 = 9;
-		if_exit(p, &req);
-	}
+	if (p)
+		process_destroy(p, 9);
 }

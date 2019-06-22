@@ -45,7 +45,6 @@ extern int if_chdir(fs_request*);
 extern int if_chmod(fs_request*);
 extern int if_close(fs_request*);
 extern int if_exec(fs_request*);
-extern int if_exit(fs_request*);
 extern int if_fork(fs_request*);
 extern int if_lseek(fs_request*);
 extern int if_create(fs_request*);
