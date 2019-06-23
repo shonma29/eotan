@@ -57,9 +57,9 @@ For more information, please refer to <http://unlicense.org/>
 		((MIN_MEMORY_MB * 1024 * 1024) / PAGE_SIZE / PTE_PER_PAGE)
 
 #define MIN_MANUAL_ID (1)
-#define MAX_MANUAL_ID (49151)
-#define MIN_AUTO_ID (49152)
-#define MAX_AUTO_ID (65535)
+#define MAX_MANUAL_ID (1024)
+#define MIN_AUTO_ID (1025)
+#define MAX_AUTO_ID (32767)
 
 typedef enum {
 	pri_dispatcher = 0,

@@ -27,12 +27,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-#define MAX_REQUEST (32)
+#define MAX_REQUEST (4)
 #define MAX_VNODE (128)
 #define MAX_CACHE (128)
 
-#define MAX_SESSION (100)
-#define MAX_FILE (64)
+#define MAX_SESSION (256)
+#define MAX_FILE (65536)
 #define MAX_TOTAL_FILE (MAX_SESSION * MAX_FILE)
 #define DEFAULT_BLOCK_SIZE (512)
 
