@@ -60,6 +60,13 @@ typedef struct _slab_entry_t {
 	list_t entries;
 } slab_entry_t;
 
+static inline size_t slab_max_block(const size_t max_unit,
+		const size_t page_size, const size_t unit_size)
+{
+	size_t max_block = (max_unit
+			/ ((page_size - sizeof(slab_block_t)) / unit_size));
+	return (max_block ? max_block : 1);
+}
 
 extern int slab_create(slab_t *slab);
 extern void slab_destroy(slab_t *slab);

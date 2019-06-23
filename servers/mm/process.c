@@ -136,7 +136,7 @@ void process_initialize(void)
 	process_slab.unit_size = sizeof(mm_process_t);
 	process_slab.block_size = PAGE_SIZE;
 	process_slab.min_block = 1;
-	process_slab.max_block = tree_max_block(PROCESS_MAX, PAGE_SIZE,
+	process_slab.max_block = slab_max_block(PROCESS_MAX, PAGE_SIZE,
 			sizeof(mm_process_t));
 	process_slab.palloc = kcall->palloc;
 	process_slab.pfree = kcall->pfree;
@@ -148,7 +148,7 @@ void process_initialize(void)
 	thread_slab.unit_size = sizeof(mm_thread_t);
 	thread_slab.block_size = PAGE_SIZE;
 	thread_slab.min_block = 1;
-	thread_slab.max_block = tree_max_block(THREAD_MAX, PAGE_SIZE,
+	thread_slab.max_block = slab_max_block(THREAD_MAX, PAGE_SIZE,
 			sizeof(mm_thread_t));
 	thread_slab.palloc = kcall->palloc;
 	thread_slab.pfree = kcall->pfree;
@@ -160,7 +160,7 @@ void process_initialize(void)
 	file_slab.unit_size = sizeof(mm_file_t);
 	file_slab.block_size = PAGE_SIZE;
 	file_slab.min_block = 1;
-	file_slab.max_block = tree_max_block(FILE_MAX, PAGE_SIZE,
+	file_slab.max_block = slab_max_block(FILE_MAX, PAGE_SIZE,
 			sizeof(mm_file_t));
 	file_slab.palloc = kcall->palloc;
 	file_slab.pfree = kcall->pfree;
@@ -170,7 +170,7 @@ void process_initialize(void)
 	descriptor_slab.unit_size = sizeof(mm_descriptor_t);
 	descriptor_slab.block_size = PAGE_SIZE;
 	descriptor_slab.min_block = 1;
-	descriptor_slab.max_block = tree_max_block(FILE_MAX, PAGE_SIZE,
+	descriptor_slab.max_block = slab_max_block(FILE_MAX, PAGE_SIZE,
 			sizeof(mm_descriptor_t));
 	descriptor_slab.palloc = kcall->palloc;
 	descriptor_slab.pfree = kcall->pfree;
@@ -180,7 +180,7 @@ void process_initialize(void)
 	process_group_slab.unit_size = sizeof(mm_process_group_t);
 	process_group_slab.block_size = PAGE_SIZE;
 	process_group_slab.min_block = 1;
-	process_group_slab.max_block = tree_max_block(PROCESS_GROUP_MAX,
+	process_group_slab.max_block = slab_max_block(PROCESS_GROUP_MAX,
 			PAGE_SIZE, sizeof(mm_process_group_t));
 	process_group_slab.palloc = kcall->palloc;
 	process_group_slab.pfree = kcall->pfree;
@@ -192,7 +192,7 @@ void process_initialize(void)
 	session_slab.unit_size = sizeof(mm_session_t);
 	session_slab.block_size = PAGE_SIZE;
 	session_slab.min_block = 1;
-	session_slab.max_block = tree_max_block(SESSION_MAX, PAGE_SIZE,
+	session_slab.max_block = slab_max_block(SESSION_MAX, PAGE_SIZE,
 			sizeof(mm_session_t));
 	session_slab.palloc = kcall->palloc;
 	session_slab.pfree = kcall->pfree;

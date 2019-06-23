@@ -83,9 +83,8 @@ void session_initialize(void)
 	session_slab.unit_size = sizeof(session_t);
 	session_slab.block_size = PAGE_SIZE;
 	session_slab.min_block = 1;
-	session_slab.max_block = MAX_SESSION
-			/ ((PAGE_SIZE - sizeof(slab_block_t))
-					/ sizeof(session_t));
+	session_slab.max_block = slab_max_block(MAX_SESSION, PAGE_SIZE,
+			sizeof(session_t));
 	session_slab.palloc = kcall->palloc;
 	session_slab.pfree = kcall->pfree;
 	slab_create(&session_slab);
@@ -94,9 +93,8 @@ void session_initialize(void)
 	file_slab.unit_size = sizeof(struct file);
 	file_slab.block_size = PAGE_SIZE;
 	file_slab.min_block = 1;
-	file_slab.max_block = MAX_TOTAL_FILE
-			/ ((PAGE_SIZE - sizeof(slab_block_t))
-					/ sizeof(struct file));
+	file_slab.max_block = slab_max_block(MAX_TOTAL_FILE, PAGE_SIZE,
+			sizeof(struct file));
 	file_slab.palloc = kcall->palloc;
 	file_slab.pfree = kcall->pfree;
 	slab_create(&file_slab);

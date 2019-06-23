@@ -35,7 +35,7 @@ void create_tree(tree_t *tree, slab_t *slab, size_t entry_size,
 	slab->unit_size = entry_size;
 	slab->block_size = PAGE_SIZE;
 	slab->min_block = 1;
-	slab->max_block = tree_max_block(65536, PAGE_SIZE, entry_size);
+	slab->max_block = slab_max_block(65536, PAGE_SIZE, entry_size);
 	slab->palloc = palloc;
 	slab->pfree = pfree;
 	slab_create(slab);

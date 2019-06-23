@@ -149,9 +149,8 @@ static void request_init(void)
 	request_slab.unit_size = sizeof(fs_request);
 	request_slab.block_size = PAGE_SIZE;
 	request_slab.min_block = 1;
-	request_slab.max_block = MAX_REQUEST
-			/ ((PAGE_SIZE - sizeof(slab_block_t))
-					/ sizeof(fs_request));
+	request_slab.max_block = slab_max_block(MAX_REQUEST, PAGE_SIZE,
+			sizeof(fs_request));
 	request_slab.palloc = kcall->palloc;
 	request_slab.pfree = kcall->pfree;
 	slab_create(&request_slab);

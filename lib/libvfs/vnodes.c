@@ -46,9 +46,8 @@ int vnodes_initialize(void *(*palloc)(void), void (*pfree)(void *),
 	vnodes_slab.unit_size = sizeof(vnode_t);
 	vnodes_slab.block_size = PAGE_SIZE;
 	vnodes_slab.min_block = 1;
-	vnodes_slab.max_block = max_vnode
-			/ ((PAGE_SIZE - sizeof(slab_block_t))
-					/ sizeof(vnode_t));
+	vnodes_slab.max_block = slab_max_block(max_vnode, PAGE_SIZE,
+			sizeof(vnode_t));
 	vnodes_slab.palloc = palloc;
 	vnodes_slab.pfree = pfree;
 	slab_create(&vnodes_slab);

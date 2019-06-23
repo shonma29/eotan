@@ -44,10 +44,6 @@ typedef struct _tree_t {
 	node_t *removed;
 } tree_t;
 
-#define tree_max_block(max_unit, page_size, unit_size) ((max_unit) \
-		/ (((page_size) - sizeof(slab_block_t)) \
-				/ (sizeof(node_t) + (unit_size))))
-
 static inline size_t tree_size(tree_t *tree)
 {
 	return tree->node_num;

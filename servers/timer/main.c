@@ -240,7 +240,7 @@ static ER init(void)
 	timer_slab.unit_size = sizeof(timer_t);
 	timer_slab.block_size = PAGE_SIZE;
 	timer_slab.min_block = 1;
-	timer_slab.max_block = tree_max_block(MAX_TIMER, PAGE_SIZE,
+	timer_slab.max_block = slab_max_block(MAX_TIMER, PAGE_SIZE,
 			sizeof(timer_t));
 	timer_slab.palloc = kcall->palloc;
 	timer_slab.pfree = kcall->pfree;
@@ -250,8 +250,8 @@ static ER init(void)
 	sleeper_slab.unit_size = sizeof(sleeper_t);
 	sleeper_slab.block_size = PAGE_SIZE;
 	sleeper_slab.min_block = 1;
-	sleeper_slab.max_block = MAX_TIMER / ((PAGE_SIZE - sizeof(slab_block_t))
-			/ sizeof(sleeper_t));
+	sleeper_slab.max_block = slab_max_block(MAX_TIMER, PAGE_SIZE,
+			sizeof(sleeper_t));
 	sleeper_slab.palloc = kcall->palloc;
 	sleeper_slab.pfree = kcall->pfree;
 	slab_create(&sleeper_slab);
