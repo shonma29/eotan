@@ -62,7 +62,7 @@ thread_t *get_thread_ptr(ID tskid)
 {
 	node_t *node = tree_get(&thread_tree, tskid);
 
-	return node? getThreadParent(node):NULL;
+	return (node ? getThreadParent(node) : NULL);
 }
 
 static ER setup(thread_t *th, T_CTSK *pk_ctsk)
@@ -96,10 +96,10 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk)
 
 	context_set_kernel_sp(&(th->mpu), th->attr.kstack_tail);
 	context_set_page_table(&(th->mpu),
-			is_kthread(th)?
+			is_kthread(th) ?
 					(VP)KTHREAD_DIR_ADDR
 					//TODO null check
-					:th->attr.page_table);
+					: th->attr.page_table);
 
 	return E_OK;
 }

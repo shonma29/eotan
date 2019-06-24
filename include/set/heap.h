@@ -37,7 +37,10 @@ typedef struct {
 	int *buf;
 } heap_t;
 
-#define heap_head(h) (((h)->cnt)? ((h)->buf[0]):HEAP_EMPTY)
+static inline int heap_head(heap_t *h)
+{
+	return ((h->cnt) ? (h->buf[0]) : HEAP_EMPTY);
+}
 
 extern void heap_initialize(heap_t *h, const int max, int *buf);
 extern int heap_enqueue(heap_t *h, const int val);

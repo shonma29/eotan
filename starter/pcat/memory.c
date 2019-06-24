@@ -86,7 +86,7 @@ void memory_initialize(void)
 
 static int map_initialize(const size_t pages)
 {
-	mm->rest_pages = (pages > MAX_PAGES)? MAX_PAGES:pages;
+	mm->rest_pages = (pages > MAX_PAGES) ? MAX_PAGES : pages;
 	mm->clock_block = 0;
 	mm->num_blocks = (mm->rest_pages + INT_BIT - 1) >> MPU_LOG_INT;
 	mm->max_pages = mm->rest_pages;
@@ -115,7 +115,7 @@ int map_set_using(const void *addr, const size_t pages)
 	if (i >= mm->max_pages)
 		return E_PAR;
 
-	size_t left = (i + pages > mm->max_pages)? (mm->max_pages - i):pages;
+	size_t left = (i + pages > mm->max_pages) ? (mm->max_pages - i) : pages;
 	mm->rest_pages -= left;
 
 	unsigned int mask;

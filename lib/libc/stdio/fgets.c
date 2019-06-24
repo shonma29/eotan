@@ -47,5 +47,5 @@ char *fgets(char *s, int size, FILE *stream)
 
 	s[pos] = '\0';
 
-	return (pos? s:NULL);
+	return (pos ? s : NULL);
 }

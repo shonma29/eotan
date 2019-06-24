@@ -45,10 +45,10 @@ For more information, please refer to <http://unlicense.org/>
 
 static inline bool is_shift(const unsigned short m)
 {
-	bool shift = (m & MASK_SHIFT)? true:false;
-	bool caps = (m & CAPS)? true:false;
+	bool shift = (m & MASK_SHIFT) ? true : false;
+	bool caps = (m & CAPS) ? true : false;
 
-	return shift ^ caps;
+	return (shift ^ caps);
 }
 
 #endif

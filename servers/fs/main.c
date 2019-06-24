@@ -273,15 +273,15 @@ void start(VP_INT exinf)
 		case pm_syscall_close:
 		{
 //			devmsg_t *message = (devmsg_t*)&(req->packet);
-			result = (size == MESSAGE_SIZE(Tclunk))?
-					worker_enqueue(&req):EINVAL;
+			result = (size == MESSAGE_SIZE(Tclunk)) ?
+					worker_enqueue(&req) : EINVAL;
 		}
 			break;
 		case pm_syscall_fstat:
 		{
 //			devmsg_t *message = (devmsg_t*)&(req->packet);
-			result = (size == MESSAGE_SIZE(Tstat))?
-					worker_enqueue(&req):EINVAL;
+			result = (size == MESSAGE_SIZE(Tstat)) ?
+					worker_enqueue(&req) : EINVAL;
 		}
 			break;
 		default:

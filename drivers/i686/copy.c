@@ -49,7 +49,7 @@ ER_UINT strncpy_u2k(thread_t *th, void *to, const void *from, const size_t bytes
 		do {
 			bool done;
 	
-			len = (left < len)? left:len;
+			len = (left < len) ? left : len;
 			done = copy(w, p, &len);
 			left -= len;
 

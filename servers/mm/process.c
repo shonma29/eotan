@@ -64,15 +64,13 @@ static int process_find_new_pid(void);
 mm_process_t *get_process(const ID pid)
 {
 	node_t *node = tree_get(&process_tree, pid);
-
-	return node? (mm_process_t*)getParent(mm_process_t, node):NULL;
+	return (node ? (mm_process_t*)getParent(mm_process_t, node) : NULL);
 }
 
 mm_thread_t *get_thread(const ID tid)
 {
 	node_t *node = tree_get(&thread_tree, tid);
-
-	return node? (mm_thread_t*)getParent(mm_thread_t, node):NULL;
+	return (node ? (mm_thread_t*)getParent(mm_thread_t, node) : NULL);
 }
 
 static inline mm_thread_t *getMyThread(const list_t *p)
@@ -846,7 +844,7 @@ void process_deallocate_desc(mm_descriptor_t *desc)
 
 int process_set_desc(mm_process_t *process, const int fd, mm_descriptor_t *desc)
 {
-	return tree_put(&(process->descriptors), fd, &(desc->node))? 0:1;
+	return (tree_put(&(process->descriptors), fd, &(desc->node)) ? 0 : 1);
 }
 
 int process_destroy_desc(mm_process_t *process, const int fd)

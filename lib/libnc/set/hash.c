@@ -84,9 +84,9 @@ hash_t *hash_create(const size_t max,
 	size_t bits = calc_bits(max);
 	size_t size;
 
-	bits = (bits < HASH_MIN_BITS)?
-			HASH_MIN_BITS:((bits > HASH_MAX_BITS)?
-					HASH_MAX_BITS:bits);
+	bits = (bits < HASH_MIN_BITS) ?
+			HASH_MIN_BITS : ((bits > HASH_MAX_BITS) ?
+					HASH_MAX_BITS : bits);
 	size = primes[bits - HASH_MIN_BITS];
 	h = (hash_t*)malloc(sizeof(*h) + size * sizeof(list_t));
 

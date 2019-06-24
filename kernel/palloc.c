@@ -41,7 +41,7 @@ void *palloc(void)
 			if (d) {
 				unsigned int bit = count_ntz(d);
 				mm->map[i] &= ~(1 << bit);
-				mm->clock_block = mm->map[i]? i:(i + 1);
+				mm->clock_block = mm->map[i] ? i : (i + 1);
 				mm->rest_pages--;
 
 				unsigned int addr = ((i << MPU_LOG_INT) | bit)

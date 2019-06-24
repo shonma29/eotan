@@ -102,7 +102,7 @@ static int compare(const void *a, const void *b)
 	UW x = (UW)a;
 	UW y = (UW)b;
 
-	return (x == y)? 0:((x < y)? (-1):1);
+	return ((x == y) ? 0 : ((x < y) ? (-1) : 1));
 }
 
 device_info_t *device_find(const UW devid)

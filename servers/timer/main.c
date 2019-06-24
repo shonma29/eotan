@@ -220,7 +220,7 @@ static void doit(void)
 			break;
 		}
 
-		reply = (size == sizeof(arg))? add_timer(&arg, rdvno):E_PAR;
+		reply = (size == sizeof(arg)) ? add_timer(&arg, rdvno) : E_PAR;
 		if (reply != E_OK) {
 			result = kcall->port_reply(rdvno, &reply,
 					sizeof(reply));

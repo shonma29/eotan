@@ -34,7 +34,7 @@ static inline size_t roundup(const size_t len)
 
 static inline size_t rotate(const ring_pos_t pos, const size_t ceil)
 {
-	return (pos >= ceil)? (pos - ceil):pos;
+	return ((pos >= ceil) ? (pos - ceil) : pos);
 }
 
 static inline size_t get_len(ring_t *r)

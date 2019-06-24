@@ -76,8 +76,8 @@ ER interrupt_bind(const INHNO inhno, const T_DINH *pk_dinh)
 
 	//TODO use syslog
 	kcall->printk("interrupt_bind[%d] 0x%x\n", inhno, pk_dinh->inthdr);
-	isr[inhno] = (pk_dinh->inthdr)?
-			((ER (*)(void))(pk_dinh->inthdr)):dummy_handler;
+	isr[inhno] = (pk_dinh->inthdr) ?
+			((ER (*)(void))(pk_dinh->inthdr)) : dummy_handler;
 
 	return E_OK;
 }

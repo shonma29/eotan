@@ -64,7 +64,7 @@ static inline mutex_t *getMutexLocked(const list_t *p) {
 static mutex_t *get_mutex(const ID mtxid)
 {
 	node_t *node = tree_get(&mutex_tree, mtxid);
-	return node? getMutexParent(node):NULL;
+	return (node ? getMutexParent(node) : NULL);
 }
 
 ER mutex_initialize(void)

@@ -111,7 +111,7 @@ static ER region_get(const ID id, const void *from, const size_t size, void *to)
 	enter_serialize();
 
 	thread_t *th = get_thread_ptr(id);
-	ER result = th? memcpy_u2k(th, to, from, size):E_NOEXS;
+	ER result = th ? memcpy_u2k(th, to, from, size) : E_NOEXS;
 
 	leave_serialize();
 	return result;
@@ -122,7 +122,7 @@ static ER region_put(const ID id, void *to, const size_t size, const void *from)
 	enter_serialize();
 
 	thread_t *th = get_thread_ptr(id);
-	ER result = th? memcpy_k2u(th, to, from, size):E_NOEXS;
+	ER result = th ? memcpy_k2u(th, to, from, size) : E_NOEXS;
 
 	leave_serialize();
 	return result;
@@ -133,7 +133,7 @@ static ER_UINT region_copy(const ID id, const void *from, const size_t size, voi
 	enter_serialize();
 
 	thread_t *th = get_thread_ptr(id);
-	ER_UINT result = th? strncpy_u2k(th, to, from, size):E_NOEXS;
+	ER_UINT result = th ? strncpy_u2k(th, to, from, size) : E_NOEXS;
 
 	leave_serialize();
 	return result;
@@ -141,8 +141,8 @@ static ER_UINT region_copy(const ID id, const void *from, const size_t size, voi
 
 ER syscall(svc_arg *argp, UW svcno)
 {
-	return (svcno >= sizeof(svc_entries) / sizeof(svc_entries[0]))?
-			E_NOSPT:(svc_entries[svcno](argp));
+	return ((svcno >= sizeof(svc_entries) / sizeof(svc_entries[0])) ?
+			E_NOSPT : (svc_entries[svcno](argp)));
 }
 
 static ER_UINT _port_call(svc_arg *argp)

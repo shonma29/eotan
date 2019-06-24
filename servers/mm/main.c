@@ -179,7 +179,8 @@ static void proxy(void)
 			break;
 		default:
 			result = (kcall->port_call(PORT_FS, &args, sizeof(args))
-					== sizeof(pm_reply_t))? 0:ECONNREFUSED;
+					== sizeof(pm_reply_t)) ?
+							0 : ECONNREFUSED;
 			break;
 		}
 

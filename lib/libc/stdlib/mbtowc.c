@@ -48,7 +48,7 @@ int _mbtowc(wchar_t *restrict w, const unsigned char *restrict r, size_t n)
 	if (!(r[0] >> 7)) {
 		ch = r[0];
 		*w = ch;
-		return (ch? 1:0);
+		return (ch ? 1 : 0);
 	}
 
 	if ((r[0] >> 5) == 0x6) {

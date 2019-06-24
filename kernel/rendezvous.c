@@ -184,8 +184,8 @@ ER_UINT port_call(ID porid, VP msg, UINT cmsgsz)
 	}
 
 	wait(running);
-	return (running->wait.result)?
-			running->wait.result:running->wait.detail.por.size;
+	return ((running->wait.result) ?
+			running->wait.result : running->wait.detail.por.size);
 }
 
 ER_UINT port_accept(ID porid, RDVNO *p_rdvno, VP msg)

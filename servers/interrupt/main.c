@@ -170,7 +170,7 @@ static ER accept(void)
 	}
 
 	reply = (ER*)(&args);
-	*reply = (size == sizeof(args))? execute(&args):E_PAR;
+	*reply = (size == sizeof(args)) ? execute(&args) : E_PAR;
 	result = kcall->port_reply(rdvno, &args, sizeof(*reply));
 	if (result)
 		log_err("interrupt: reply error=%d\n", result);

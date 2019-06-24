@@ -122,7 +122,7 @@ static ER keyboard_initialize(void)
 	/* reset */
 	_writeData(KBD_RESET);
 
-	return isAck()? E_OK:E_SYS;
+	return (isAck() ? E_OK : E_SYS);
 }
 
 static ER psaux_initialize(void)

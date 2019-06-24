@@ -90,11 +90,11 @@ static void set_frame_buffer(PTE *dir)
 	UW last = v->buffer_addr + v->bytes_per_line * v->height;
 	size_t i;
 
-	last = (last >> BITS_OFFSET) + ((last & MASK_OFFSET)? 1:0);
+	last = (last >> BITS_OFFSET) + ((last & MASK_OFFSET) ? 1 : 0);
 	printk("VESA start=%x last=%x\n", start, last);
 
 	for (i = start >> BITS_PAGE;
-			i < (last >> BITS_PAGE) + ((last & MASK_PAGE)? 1:0);
+			i < (last >> BITS_PAGE) + ((last & MASK_PAGE) ? 1 : 0);
 			i++) {
 		if (!(dir[i] & PAGE_PRESENT)) {
 			UB *p = (UB*)palloc();

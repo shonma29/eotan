@@ -247,7 +247,7 @@ ER move_stack(const PTE *page_table, void *to, const void *from,
 			return E_PAR;
 
 		if (roffset) {
-			size_t len = (roffset > left)? left:roffset;
+			size_t len = (roffset > left) ? left : roffset;
 
 			memrcpy(p + PAGE_SIZE, q + roffset, len);
 			left -= len;
@@ -257,7 +257,7 @@ ER move_stack(const PTE *page_table, void *to, const void *from,
 
 		q = getPageAddress(dir, (void*)((UW)from + left - 1));
 		if (q) {
-			size_t len = (woffset > left)? left:woffset;
+			size_t len = (woffset > left) ? left : woffset;
 
 			memrcpy(p + woffset, q + PAGE_SIZE, len);
 			left -= len;

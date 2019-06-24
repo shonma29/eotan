@@ -48,7 +48,7 @@ int open(void)
 
 int close(const int channel)
 {
-	return (check_channel(channel)? 0:(-1));
+	return (check_channel(channel) ? 0 : (-1));
 }
 
 int read(char *outbuf, const int channel,

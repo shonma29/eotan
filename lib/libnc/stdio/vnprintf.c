@@ -97,7 +97,7 @@ static void _puth(State *s, const int x)
 	for (shift = MAX_INT_BITS - 4; shift >= 0; shift -= 4) {
 		int c = (x >> shift) & 0xf;
 
-		_putchar(s, c + ((c >= 10)? ('a' - 10):'0'));
+		_putchar(s, c + ((c >= 10) ? ('a' - 10) : '0'));
 	}
 }
 

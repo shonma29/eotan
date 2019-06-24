@@ -54,7 +54,7 @@ ER memcpy_k2u(thread_t *th, void *to, const void *from, const size_t bytes)
 		p += offset;
 
 		do {
-			len = (left < len)? left:len;
+			len = (left < len) ? left : len;
 			memcpy(p, r, len);
 
 			if (!(left -= len))
@@ -91,7 +91,7 @@ ER memcpy_u2k(thread_t *th, void *to, const void *from, const size_t bytes)
 		p += offset;
 
 		do {
-			len = (left < len)? left:len;
+			len = (left < len) ? left : len;
 			memcpy(w, p, len);
 
 			if (!(left -= len))

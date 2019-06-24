@@ -65,9 +65,9 @@ ER keyboard_interrupt(void)
 	//TODO error check
 	icall->handle(hmi_handle,
 			event_keyboard,
-			is_break(b)?
+			is_break(b) ?
 				(BREAK | scan2key[state][strip_break(b)])
-				:scan2key[state][b]);
+				: scan2key[state][b]);
 
 	return E_OK;
 }

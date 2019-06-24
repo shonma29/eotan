@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 
 static inline int min(const int a, const int b)
 {
-	return (a < b)? a:b;
+	return ((a < b) ? a : b);
 }
 
 static inline void *getAddr(void *base, size_t size, int n)

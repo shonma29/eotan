@@ -53,5 +53,5 @@ int atoi(const char *p)
 		v += *r - '0';
 	}
 
-	return (minus? (-v):v);
+	return (minus ? (-v) : v);
 }

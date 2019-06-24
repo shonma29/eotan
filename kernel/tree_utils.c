@@ -47,7 +47,7 @@ node_t *find_empty_key(tree_t *tree, int *hand, node_t *node)
 {
 	int key;
 /*
-	int max = (tree == &(queue_tree))? 49156:MAX_AUTO_ID;
+	int max = (tree == &(queue_tree)) ? 49156 : MAX_AUTO_ID;
 
 	for (key = *hand + 1; key <= max; key++) {
 */

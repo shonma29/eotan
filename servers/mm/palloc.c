@@ -51,7 +51,7 @@ void *palloc(void)
 				UW addr;
 
 				mm->map[i] &= ~(1 << bit);
-				mm->clock_block = mm->map[i]? i:(i + 1);
+				mm->clock_block = mm->map[i] ? i : (i + 1);
 				mm->rest_pages--;
 
 				addr = ((i << MPU_LOG_INT) | bit)

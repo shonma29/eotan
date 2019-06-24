@@ -421,7 +421,7 @@ static bool line_parse(Line *p)
 
 	p->array[pos] = NULL;
 
-	return (p->array[0]? true:false);
+	return (p->array[0] ? true : false);
 }
 
 static bool line_evaluate(Line *p, hash_t *vars)
@@ -480,7 +480,7 @@ static bool line_evaluate(Line *p, hash_t *vars)
 
 		//TODO execute inner commands in background
 		if (!strcmp((char*)(p->array[0]), "cd")) {
-			if (chdir(p->array[1]? (char*)(p->array[1]):"/"))
+			if (chdir(p->array[1] ? (char*)(p->array[1]) : "/"))
 				fprintf(stderr, "chdir error=%d\n", errno);
 
 		} else if (!strcmp((char*)(p->array[0]), "exit"))
@@ -530,7 +530,7 @@ static int var_compare(const void *a, const void *b)
 		if (*x != *y)
 			return 1;
 
-	return (!(*y) || (*y == '='))? 0:1;
+	return ((!(*y) || (*y == '=')) ? 0 : 1);
 }
 
 static unsigned char *var_get(hash_t *vars, const unsigned char *key)
@@ -555,7 +555,7 @@ static unsigned char *var_get(hash_t *vars, const unsigned char *key)
 	if (!p)
 		return NULL;
 
-	return p[1]? &(p[1]):NULL;
+	return (p[1] ? &(p[1]) : NULL);
 }
 
 static bool var_put(hash_t *vars, const unsigned char *var)

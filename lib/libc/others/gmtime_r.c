@@ -98,5 +98,6 @@ struct tm *gmtime_r(const time_t *timep, struct tm *result)
 static int *get_days_of_month(const int year)
 {
 	return days_of_month[
-			(year % 4)? 0:((year % 100)? 1:((year % 400)? 0:1))];
+			(year % 4) ? 0 : ((year % 100) ?
+					1 : ((year % 400) ? 0 : 1))];
 }

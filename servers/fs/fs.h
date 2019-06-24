@@ -41,9 +41,9 @@ struct file {
 static inline int fs_read(vnode_t *vnode, void *buf, const int offset,
 		const size_t len, size_t *rlength)
 {
-	return ((vnode->mode & S_IFMT) == S_IFDIR)?
+	return ((vnode->mode & S_IFMT) == S_IFDIR) ?
 		vnode->fs->operations.getdents(vnode, buf, offset, len, rlength)
-		:vfs_read(vnode, buf, offset, len, rlength);
+		: vfs_read(vnode, buf, offset, len, rlength);
 }
 
 extern vnode_t *rootfile;

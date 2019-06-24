@@ -271,7 +271,8 @@ static void execute(request_message_t *req)
 			unsigned int pos = 0;
 			result = 0;
 			for (size_t rest = message->Twrite.count; rest > 0;) {
-				size_t len = (rest > sizeof(line))? sizeof(line):rest;
+				size_t len = (rest > sizeof(line)) ?
+						sizeof(line) : rest;
 				if (kcall->region_get(get_rdv_tid(message->Twrite.tag),
 						(char*)((unsigned int)(message->Twrite.data) + pos),
 						len,

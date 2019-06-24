@@ -154,7 +154,7 @@ static void _putc(Screen *s, const uint8_t ch)
 		break;
 
 	default:
-		__putc(s, (ch > ' ')? ch:' ');
+		__putc(s, (ch > ' ') ? ch : ' ');
 
 		if (s->x >= (CGA_COLUMNS - 1))
 			_newline(s);

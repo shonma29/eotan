@@ -1,4 +1,4 @@
-#/*
+/*
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -140,5 +140,5 @@ int main(int argc, char **argv) {
 			result |= exec(STDOUT_FILENO, *argv, argc, &out_count);
 		}
 
-	return result? EXIT_FAILURE:EXIT_SUCCESS;
+	return (result ? EXIT_FAILURE : EXIT_SUCCESS);
 }

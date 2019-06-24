@@ -341,7 +341,7 @@ int vfs_permit(const vnode_t *ip, const struct permission *permission,
 		mode >>= 3;
 
 	unsigned int need = want & (R_OK | W_OK | X_OK);
-	return ((mode & need) == need)? 0:EACCES;
+	return (((mode & need) == need) ? 0 : EACCES);
 }
 
 int vfs_read(vnode_t *ip, void *dest, const int offset, const size_t nbytes,
@@ -352,8 +352,8 @@ int vfs_read(vnode_t *ip, void *dest, const int offset, const size_t nbytes,
 	time_get(&clock);
 #endif
 	int result = ip->fs->operations.read(ip, dest, offset,
-				(offset + nbytes > ip->size)?
-						(ip->size - offset):nbytes,
+				(offset + nbytes > ip->size) ?
+						(ip->size - offset) : nbytes,
 				read_len);
 #ifdef UPDATE_ATIME
 	if (result >= 0) {

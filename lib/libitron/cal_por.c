@@ -30,7 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 
 
 ER_UINT cal_por(ID porid, RDVPTN calptn, VP msg, UINT cmsgsz) {
-	return (calptn == 0xffffffff)? 
+	return (calptn == 0xffffffff) ?
 			ncall(SVC_PORT_CALL, porid, calptn, msg, cmsgsz)
-					:E_NOSPT;
+			: E_NOSPT;
 }

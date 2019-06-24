@@ -173,7 +173,7 @@ static node_t *node_remove(tree_t *tree, node_t *p, const int key)
 
 void tree_create(tree_t *tree, int (*compare)(const int a, const int b))
 {
-	tree->compare = compare? compare:compare_int;
+	tree->compare = compare ? compare : compare_int;
 	tree->node_num = 0;
 	tree->root = NIL;
 }
@@ -188,7 +188,7 @@ node_t *tree_get(const tree_t *tree, const int key)
 		if (d == 0)
 			return p;
 
-		p = (d < 0)? p->left:p->right;
+		p = (d < 0) ? p->left : p->right;
 	}
 
 	return NULL;

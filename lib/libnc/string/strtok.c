@@ -32,7 +32,7 @@ static char *target = NULL;
 
 char *strtok(char *str, const char *delim)
 {
-	char *p = str? ((char*)str):target;
+	char *p = str ? ((char*)str) : target;
 
 	for (; *p && strchr(delim, *p); p++);
 	target = p;

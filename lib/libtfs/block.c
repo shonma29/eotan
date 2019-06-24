@@ -46,9 +46,9 @@ blkno_t tfs_allocate_block(vfs_t *fsp)
 		if (!buf)
 			return 0;
 
-		for (unsigned int j = (i == start)?
-						(((sb->bsearch - 1) / INT_BIT)
-						% (sb->blksize / sizeof(j))):0;
+		for (unsigned int j = (i == start) ?
+				(((sb->bsearch - 1) / INT_BIT)
+						% (sb->blksize / sizeof(j))) : 0;
 				j < sb->blksize / sizeof(j); j++) {
 			if (!buf[j])
 				continue;

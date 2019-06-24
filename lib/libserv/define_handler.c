@@ -41,6 +41,6 @@ ER define_handler(INHNO inhno, T_DINH *pk_dinh)
 	args.arg1 = (int)inhno;
 	args.arg2 = (int)pk_dinh;
 
-	return (kcall->port_call(PORT_INTERRUPT, &args, sizeof(args))
-			== sizeof(*reply))? (*reply):E_SYS;
+	return ((kcall->port_call(PORT_INTERRUPT, &args, sizeof(args))
+			== sizeof(*reply)) ? (*reply) : E_SYS);
 }

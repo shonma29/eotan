@@ -42,7 +42,7 @@ static int bputc(unsigned char ch, RangeCoder *rc);
 
 static int bgetc(RangeCoder *rc)
 {
-	return (rpos < image_size)? (image_buf[rpos++]):EOF;
+	return ((rpos < image_size) ? (image_buf[rpos++]) : EOF);
 }
 
 static int bputc(unsigned char ch, RangeCoder *rc)

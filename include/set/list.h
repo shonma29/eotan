@@ -58,7 +58,7 @@ static inline bool list_is_edge(const list_t *guard, const list_t *entry)
 static inline list_t *list_edge_to_null(const list_t *guard,
 		const list_t *entry)
 {
-	return ((guard == entry)? NULL:((list_t*)entry));
+	return ((guard == entry) ? NULL : ((list_t*)entry));
 }
 
 extern void list_initialize(list_t *entry);

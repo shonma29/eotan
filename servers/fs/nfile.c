@@ -59,7 +59,7 @@ int if_open(fs_request *req)
 
 	file->f_vnode = vnode;
 	file->f_flag = req->packet.arg2 & O_ACCMODE;
-	file->f_offset = (req->packet.arg2 & O_APPEND)? vnode->size:0;
+	file->f_offset = (req->packet.arg2 & O_APPEND) ? vnode->size : 0;
 
 	reply2(req->rdvno, 0, file->node.key, 0);
 	return 0;

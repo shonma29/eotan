@@ -40,6 +40,6 @@ ER enable_interrupt(INHNO inhno)
 	args.operation = int_operation_enable;
 	args.arg1 = (int)inhno;
 
-	return (kcall->port_call(PORT_INTERRUPT, &args, sizeof(args))
-			== sizeof(*reply))? (*reply):E_SYS;
+	return ((kcall->port_call(PORT_INTERRUPT, &args, sizeof(args))
+			== sizeof(*reply)) ? (*reply) : E_SYS);
 }

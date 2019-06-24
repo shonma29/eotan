@@ -131,7 +131,7 @@ static ssize_t write(const int priority, char *inbuf,
 	//TODO put current time
 	//TODO put priority name
 	char pri_msg[2] = {
-		'0' + ((priority > LOG_DEBUG)? 9:priority), ' '
+		'0' + ((priority > LOG_DEBUG) ? 9 : priority), ' '
 	};
 	if (ring_put((ring_t*)buf, pri_msg, sizeof(pri_msg)) < 0)
 		return E_SYS;
@@ -156,7 +156,7 @@ static size_t execute(syslog_t *message)
 		message->Rread.count = result;
 		size = sizeof(message->Rread)
 				- sizeof(message->Rread.data)
-				+ ((result > 0)? message->Rread.count:0);
+				+ ((result > 0) ? message->Rread.count : 0);
 		break;
 
 	case Twrite:
@@ -276,7 +276,7 @@ static int write_cons(char *inbuf, const int channel,
 
 	while (rest > 0) {
 		ER_UINT result;
-		size_t len = (rest < DEV_BUF_SIZE)? rest:DEV_BUF_SIZE;
+		size_t len = (rest < DEV_BUF_SIZE) ? rest : DEV_BUF_SIZE;
 		devmsg_t packet;
 
 		packet.type = Twrite;

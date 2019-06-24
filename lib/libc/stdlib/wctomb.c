@@ -61,5 +61,5 @@ int _wctomb(unsigned char *dest, const wchar_t ch)
  */
 int wctomb(char *s, wchar_t wchar)
 {
-	return s? _wctomb((unsigned char*)s, wchar):0;
+	return (s ? _wctomb((unsigned char*)s, wchar) : 0);
 }

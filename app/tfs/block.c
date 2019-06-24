@@ -85,7 +85,7 @@ static int block_write(block_device_t *dev, void *buf, const int blockno)
 	}
 
 	size = dev->block_size;
-	int result = (write(dev->channel, buf, size) == size)? 0:(-1);
+	int result = (write(dev->channel, buf, size) == size) ? 0 : (-1);
 	if (result)
 		log_debug("block_write: write(%d) error\n", blockno);
 

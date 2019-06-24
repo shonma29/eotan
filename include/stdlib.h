@@ -51,12 +51,12 @@ typedef struct {
 
 static inline int abs(int value)
 {
-	return (value < 0)? (-value):value;
+	return ((value < 0) ? (-value) : value);
 }
 
 static inline long labs(long value)
 {
-	return (value < 0)? (-value):value;
+	return ((value < 0) ? (-value) : value);
 }
 
 static inline div_t div(int numerator, int denominator)

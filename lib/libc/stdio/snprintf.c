@@ -33,7 +33,7 @@ int snprintf(char *str, size_t size, const char *format, ...)
 	va_list ap;
 	va_start(ap, format);
 
-	CharBuffer buf = { 0, size? (size - 1):0, str };
+	CharBuffer buf = { 0, size ? (size - 1) : 0, str };
 	int len = vnprintf2((int (*)(char, void*))__putc, &buf, format, ap);
 
 	if (size)

@@ -174,7 +174,7 @@ static void _putc(Screen *s, const uint8_t ch)
 		break;
 
 	default:
-		__putc(s, (ch > ' ')? ch:' ');
+		__putc(s, (ch > ' ') ? ch : ' ');
 
 		if (s->x >= (s->chr_width - 1))
 			_newline(s);
@@ -191,8 +191,8 @@ static void _putc(Screen *s, const uint8_t ch)
 static void __putc(Screen *s, const uint8_t ch)
 {
 	uint8_t *line = (uint8_t*)(s->p);
-	uint8_t c = ((ch < s->font.min_char) || (ch > s->font.max_char))?
-			' ':ch;
+	uint8_t c = ((ch < s->font.min_char) || (ch > s->font.max_char)) ?
+			' ' : ch;
 	uint8_t *q = &(s->font.buf[(c - s->font.min_char)
 			* s->font.bytes_per_chr]);
 
@@ -208,8 +208,7 @@ static void __putc(Screen *s, const uint8_t ch)
 				q++;
 			}
 
-			color = (*q & b)?
-					&(s->fgcolor):&(s->bgcolor);
+			color = (*q & b) ? &(s->fgcolor) : &(s->bgcolor);
 			p[0] = color->rgb.b;
 			p[1] = color->rgb.g;
 			p[2] = color->rgb.r;

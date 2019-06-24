@@ -89,7 +89,7 @@ static int decode(FILE *out, FILE *in)
 			if (c == EOF)
 				return ERR_UNKNOWN;
 
-			fputc(c? 0xff:0xfe, out);
+			fputc(c ? 0xff : 0xfe, out);
 			break;
 		default:
 			fputc(c - 1, out);

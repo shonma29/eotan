@@ -138,7 +138,7 @@ static void _puth(State *s, const int x)
 	for (shift = MAX_INT_BITS - 4; shift >= 0; shift -= 4) {
 		int c = (x >> shift) & 0xf;
 
-		_putchar(s, c + ((c >= 10)? ('a' - 10):'0'));
+		_putchar(s, c + ((c >= 10) ? ('a' - 10) : '0'));
 	}
 }
 
@@ -222,7 +222,7 @@ static int number_multiply(number_t *p, const uint32_t n)
 	last = 0;
 	carry = 0;
 	for (i = 0; i < len; i++) {
-		uint64_t v = (i < p->len)? ((uint64_t)(p->buf[i]) * n):0;
+		uint64_t v = (i < p->len) ? ((uint64_t)(p->buf[i]) * n) : 0;
 
 		v += carry;
 		carry = (v >> NUMBER_CARRY_BIT) & NUMBER_VALUE_MASK;
@@ -383,7 +383,7 @@ static void putdouble(State *s, const bool minus, uint64_t sig, const int exp)
 				unsigned char c = p[i];
 
 				carry = (c == '9');
-				p[i] = carry? '0':(c + 1);
+				p[i] = carry ? '0' : (c + 1);
 			}
 	}
 
@@ -413,7 +413,7 @@ static void putdouble(State *s, const bool minus, uint64_t sig, const int exp)
 static void _putf(State *s, const double x)
 {
 	unsigned char *p = (unsigned char*)&x;
-	bool minus = (p[7] & 0x80)? true:false;
+	bool minus = (p[7] & 0x80) ? true : false;
 	int exp = ((p[7] << 4) & 0x7f0) | ((p[6] >> 4) & 0x00f);
 	uint64_t sig = (p[6] << 16) & 0x000f0000;
 
@@ -430,7 +430,7 @@ static void _putf(State *s, const double x)
 		_putchar(s, '-');
 
 	if (exp == B64_EXPONENT_SPECIAL)
-		_puts(s, sig? "NaN":"oo");
+		_puts(s, sig ? "NaN" : "oo");
 	else if (!sig)
 		_puts(s, "0.0");
 	else

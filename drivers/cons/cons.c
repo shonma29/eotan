@@ -45,7 +45,7 @@ int open(void)
 
 int close(const int channel)
 {
-	return (channel == 0)? 0:(-1);
+	return ((channel == 0) ? 0 : (-1));
 }
 
 int read(char *outbuf, const int channel,
@@ -57,7 +57,7 @@ int read(char *outbuf, const int channel,
 
 	while (rest > 0) {
 		ER_UINT result;
-		size_t len = (rest < DEV_BUF_SIZE)? rest:DEV_BUF_SIZE;
+		size_t len = (rest < DEV_BUF_SIZE) ? rest : DEV_BUF_SIZE;
 		devmsg_t packet;
 
 		packet.type = Tread;
@@ -95,7 +95,7 @@ int write(char *inbuf, const int channel,
 
 	while (rest > 0) {
 		ER_UINT result;
-		size_t len = (rest < DEV_BUF_SIZE)? rest:DEV_BUF_SIZE;
+		size_t len = (rest < DEV_BUF_SIZE) ? rest : DEV_BUF_SIZE;
 		devmsg_t packet;
 
 		packet.type = Twrite;

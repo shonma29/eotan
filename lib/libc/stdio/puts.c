@@ -29,5 +29,5 @@ For more information, please refer to <http://unlicense.org/>
 
 int puts(const char *s)
 {
-	return ((fputs(s, stdout) == EOF)? EOF:fputc(__CHR_LF, stdout));
+	return ((fputs(s, stdout) == EOF) ? EOF : fputc(__CHR_LF, stdout));
 }
