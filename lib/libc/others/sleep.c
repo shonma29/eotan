@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <errno.h>
 #include <local.h>
 #include <services.h>
+#include <unistd.h>
 #include <sys/time.h>
 
 

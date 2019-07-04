@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <errno.h>
 #include <mm.h>
 #include <services.h>
+#include <unistd.h>
 
 
 int dup2(int oldd, int newd)
