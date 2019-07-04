@@ -52,14 +52,13 @@ For more information, please refer to <http://unlicense.org/>
 static uint8_t *buf;
 static struct sfs_superblock super;
 static struct tfs_dir root_directory[] = {
-	{ ROOT_INODE_INDEX, strlen(CURRENT_NAME), CURRENT_NAME },
-	{ ROOT_INODE_INDEX, strlen(PARENT_NAME), PARENT_NAME }
+	{ ROOT_INODE_INDEX, 1, CURRENT_NAME },
+	{ ROOT_INODE_INDEX, 2, PARENT_NAME }
 };
 static struct sfs_inode root_inode = {
 	ROOT_INODE_INDEX,
 	sizeof(root_directory) / sizeof(root_directory[0]),
 	sizeof(root_directory),
-	1,
 	S_IFDIR | S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH,
 	ROOT_UID,
 	ROOT_GID,

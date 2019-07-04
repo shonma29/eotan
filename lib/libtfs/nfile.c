@@ -28,38 +28,119 @@ For more information, please refer to <http://unlicense.org/>
 #include <fs/sfs.h>
 #include <sys/errno.h>
 #include "func.h"
+#include "../libserv/libserv.h"
 
 
 //TODO use off_t
-int tfs_read(vnode_t *ip, char *dest, int offset, size_t nbytes,
-		size_t *read_len)
+int tfs_read(vnode_t *vnode, copier_t *dest, unsigned int offset,
+		const size_t nbytes, size_t *read_size)
 {
-	*read_len = nbytes;
-
-	vfs_t *fs = ip->fs;
+#ifdef UPDATE_ATIME
+	SYSTIM clock;
+	time_get(&clock);
+#endif
+	int result = 0;
+	vfs_t *fs = vnode->fs;
 	size_t block_size = ((struct sfs_superblock*)(fs->private))->blksize;
-	uint32_t skip = offset % block_size;
-	for (offset /= block_size; nbytes > 0; offset++) {
-		size_t size = block_size - skip;
-		if (size > nbytes)
-				size = nbytes;
+	unsigned int index = offset / block_size;
+	unsigned int skip = offset % block_size;
+	struct sfs_inode *inode = vnode->private;
+	size_t rest = nbytes;
+	for (; rest > 0; index++) {
+		blkno_t block_no = tfs_get_block_no(fs, inode, index);
+		if (!block_no) {
+			result = EIO;
+			break;
+		}
 
-		blkno_t block_no = tfs_get_block_no(fs, ip->private, offset);
-		if (!block_no)
-			return (-EIO);
+		char *src = cache_get(&(fs->device), block_no);
+		if (!src) {
+			result = EIO;
+			break;
+		}
 
-		uint8_t *src = cache_get(&(fs->device), block_no);
-		if (!src)
-			return (-EIO);
+		size_t len = block_size - skip;
+		if (len > rest)
+			len = rest;
 
-		memcpy(dest, &src[skip], size);
-		if (!cache_release(src, false))
-			return (-EIO);
+		result = dest->copy(dest, &src[skip], len);
+		if (result)
+			break;
+
+		if (!cache_release(src, false)) {
+			result = EIO;
+			break;
+		}
 
 		skip = 0;
-		dest += size;
-		nbytes -= size;
+		rest -= len;
+	}
+#ifdef UPDATE_ATIME
+	if (!read || *read_size) {
+		inode->i_atime = clock;
+		inode->i_dirty = true;
+	}
+#endif
+	*read_size = nbytes - rest;
+	return result;
+}
+
+//TODO use off_t
+int tfs_write(vnode_t *vnode, copier_t *src, const unsigned int offset,
+		const size_t nbytes, size_t *wrote_size)
+{
+	SYSTIM clock;
+	time_get(&clock);
+
+	int result = 0;
+	vfs_t *fs = vnode->fs;
+	size_t block_size = ((struct sfs_superblock*)(fs->private))->blksize;
+	unsigned int index = offset / block_size;
+	unsigned int skip = offset % block_size;
+	struct sfs_inode *inode = vnode->private;
+	size_t rest = nbytes;
+	for (; rest > 0; index++) {
+		blkno_t block_no = tfs_get_block_no(fs, inode, index);
+		if (!block_no) {
+			block_no = tfs_set_block_no(fs, inode, index,
+					tfs_allocate_block(fs));
+			if (!block_no) {
+				result = EIO;
+				break;
+			}
+		}
+
+		char *dest = cache_get(&(fs->device), block_no);
+		if (!dest) {
+			result = EIO;
+			break;
+		}
+
+		size_t len = block_size - skip;
+		if (len > rest)
+			len = rest;
+
+		result = src->copy(&dest[skip], src, len);
+		if (result)
+			break;
+
+		if (!cache_release(dest, true))
+			return EIO;
+
+		skip = 0;
+		rest -= len;
 	}
 
-	return *read_len;
+	*wrote_size = nbytes - rest;
+	if (*wrote_size) {
+		size_t tail = offset + *wrote_size;
+		if (tail > vnode->size)
+			vnode->size = tail;
+
+		vnode->dirty = true;
+		inode->i_mtime = clock;
+		inode->i_ctime = clock;
+	}
+
+	return result;
 }

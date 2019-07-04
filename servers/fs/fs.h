@@ -33,22 +33,25 @@ struct file {
 	node_t node;
 	vnode_t *f_vnode;
 	uint_fast32_t f_flag;
-	off_t f_offset;
 };
 
 //TODO use off_t
 //TODO move to vfs.h
-static inline int fs_read(vnode_t *vnode, void *buf, const int offset,
+static inline int fs_read(vnode_t *vnode, copier_t *dest, const int offset,
 		const size_t len, size_t *rlength)
 {
 	return ((vnode->mode & S_IFMT) == S_IFDIR) ?
-		vnode->fs->operations.getdents(vnode, buf, offset, len, rlength)
-		: vfs_read(vnode, buf, offset, len, rlength);
+		vnode->fs->operations.getdents(vnode, dest, offset, len,
+				rlength)
+		: vfs_read(vnode, dest, offset, len, rlength);
 }
 
 extern vnode_t *rootfile;
 
 extern int fs_initialize(void);
 extern int fs_mount(const int device);
+
+extern int copy_from_user(void *, void *, const size_t);
+extern int copy_to_user(void *, void *, const size_t);
 
 #endif

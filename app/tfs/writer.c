@@ -35,6 +35,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <unistd.h>
 #include "../../include/sys/stat.h"
 #include "../../include/fs/config.h"
+#include "../../include/fs/sfs.h"
 #include "../../include/fs/vfs.h"
 #include "libserv.h"
 #include "writer.h"
@@ -206,24 +207,28 @@ static int readdir(vfs_t *fs, vnode_t *ip, const struct permission *permission)
 	//TODO use off_t
 //	off_t offset = 0;
 	size_t offset = 0;
+	copier_t copier = {
+		copy_to,
+	};
 	for (;;) {
-		size_t rlength;
-		int delta = fs->operations.getdents(ip, buf, offset,
-				sizeof(*buf), &rlength);
-		if (delta < 0) {
+		copier.buf = (char*)buf;
+		size_t read_size;
+		int result = fs->operations.getdents(ip, &copier, offset,
+				sizeof(*buf), &read_size);
+		if (result) {
 			printf("readdir: getdents(%d, %d) failed %d\n",
-					ip->index, offset, delta);
+					ip->index, offset, result);
 			free(buf);
 			return ERR_FILE;
 		}
 
-		if (!rlength)
+		if (!read_size)
 			break;
 
-		for (int i = 0; i < rlength / sizeof(*buf); i++) {
+		for (int i = 0; i < read_size / sizeof(*buf); i++) {
 			vnode_t *entry;
 			//TODO use constant definition of guest
-			int result = vfs_walk(ip, buf[i].d_name, O_RDONLY,
+			result = vfs_walk(ip, buf[i].d_name, O_RDONLY,
 					permission, &entry);
 			if (result) {
 				printf("readdir: vfs_walk(%s) failed %d\n",
@@ -243,7 +248,7 @@ static int readdir(vfs_t *fs, vnode_t *ip, const struct permission *permission)
 			}
 		}
 
-		offset += delta;
+		offset += read_size;
 	}
 
 	free(buf);
@@ -324,8 +329,8 @@ static int do_create(vfs_t *fs, char *path, const char *from,
 	size_t offset = 0;
 	for (;;) {
 		ssize_t len = read(fd, buf, fs->device.block_size);
-		if (len < 0) {
-			printf("create: read(%s) failed\n", from, errno);
+		if (len == -1) {
+			printf("create: read(%s) failed %d\n", from, errno);
 			free(buf);
 			//TODO remove file
 			vnodes_remove(ip);
@@ -336,9 +341,12 @@ static int do_create(vfs_t *fs, char *path, const char *from,
 		if (len == 0)
 			break;
 
-		int rlength;
-		int error_no = fs->operations.write(ip, buf, offset,
-				len, &rlength);
+		copier_t copier = {
+			copy_from,
+			buf
+		};
+		size_t rlength;
+		int error_no = vfs_write(ip, &copier, offset, len, &rlength);
 		if (error_no) {
 			printf("create: write(%d, %d) failed %d\n",
 					ip->index, offset, error_no);

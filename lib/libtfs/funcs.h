@@ -41,10 +41,13 @@ extern blkno_t tfs_set_block_no(vfs_t *, struct sfs_inode *,
 
 /* nfile.c */
 //TODO use off_t
-extern int tfs_read(vnode_t *, char *, int, size_t, size_t *);
+extern int tfs_read(vnode_t *, copier_t *, const unsigned int, const size_t,
+		size_t *);
+extern int tfs_write(vnode_t *, copier_t *, const unsigned int, const size_t,
+		size_t *);
 
 /* ndirectory.c */
-extern int tfs_getdents(vnode_t *, struct dirent *, const int,  const size_t,
+extern int tfs_getdents(vnode_t *, copier_t *, const int, const size_t,
 		size_t *);
 extern int tfs_walk(vnode_t *, const char *, vnode_t **);
 extern int tfs_mkdir(vnode_t *, const char *, const mode_t mode,

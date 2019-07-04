@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
+#include "../../include/copier.h"
 #include "../../include/fs/vfs.h"
 #include "libserv.h"
 
@@ -69,7 +70,7 @@ static int block_read(block_device_t *dev, void *buf, const int blockno)
 
 	//TODO until replace statfs
 	if (result < size)
-		memset(&(buf[result]), 0, size - result);
+		memset(&(((char*)buf)[result]), 0, size - result);
 
 	return size;
 }

@@ -164,12 +164,15 @@ read_exec_header(vnode_t *ip,
     Elf32_Phdr ph_table[10];
     Elf32_Ehdr elf_header;
     W ph_index;
-
+    copier_t copier = {
+	copy_to,
+	(char*)&elf_header
+    };
     error_no =
-	vfs_read(ip, (B *) &elf_header, 0, sizeof(Elf32_Ehdr),
+	vfs_read(ip, &copier, 0, sizeof(Elf32_Ehdr),
 		     &rlength);
-    if (error_no < 0) {
-	return (-error_no);
+    if (error_no) {
+	return error_no;
     }
 
     if (!isValidModule(&elf_header))
@@ -181,11 +184,12 @@ read_exec_header(vnode_t *ip,
 	return (ENOEXEC);
     }
 
+    copier.buf = (char*)ph_table;
     error_no =
-	vfs_read(ip, (B *) ph_table, elf_header.e_phoff,
+	vfs_read(ip, &copier, elf_header.e_phoff,
 		     elf_header.e_phentsize * elf_header.e_phnum, &rlength);
-    if (error_no < 0) {
-	return (-error_no);
+    if (error_no) {
+	return error_no;
     } else if (rlength != elf_header.e_phentsize * elf_header.e_phnum) {
 	return (ENOEXEC);
     }
@@ -228,28 +232,16 @@ static W
 load_segment(vnode_t *ip, Elf32_Phdr *segment, ID task)
 {
     W error_no;
-    W rest_length;
-    W offset;
     size_t read_size;
-    W vaddr;
-    static B buf[PAGE_SIZE];
-
-    for (rest_length = segment->p_filesz, offset = segment->p_offset, vaddr =
-	 segment->p_vaddr; rest_length > 0;
-	 rest_length -= PAGE_SIZE, vaddr += PAGE_SIZE, offset += read_size) {
-	error_no =
-	    vfs_read(ip, buf, offset,
-			 (PAGE_SIZE <
-			  rest_length) ? PAGE_SIZE : rest_length,
-			 &read_size);
-	if (error_no < 0) {
-	    return (-error_no);
-	}
-
-	error_no = kcall->region_put(task, (B *) vaddr, read_size, buf);
-	if (error_no) {
-	    return (ENOMEM);
-	}
+    copier_t copier = {
+	copy_to_user,
+	(char*)(segment->p_vaddr),
+	task
+    };
+    error_no = vfs_read(ip, &copier, segment->p_offset, segment->p_filesz,
+	    &read_size);
+    if (error_no) {
+	return error_no;
     }
 
     return (EOK);

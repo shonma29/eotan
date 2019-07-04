@@ -114,7 +114,7 @@ vfs_operation_t vfs_fsops = {
     sfs_i_create,
     sfs_i_close,
     tfs_read,
-    sfs_i_write
+    tfs_write
 };
 
 

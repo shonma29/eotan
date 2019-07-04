@@ -1,176 +1,212 @@
 /*
+This is free and unencumbered software released into the public domain.
 
-B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
 
-GNU GENERAL PUBLIC LICENSE
-Version 2, June 1991
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
 
-(C) B-Free Project.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
 
-(C) 2001-2002, Tomohide Naniwa
-
+For more information, please refer to <http://unlicense.org/>
 */
-/*
- * $Log: close.c,v $
- * Revision 1.3  2000/02/04 15:16:25  naniwa
- * minor fix
- *
- * Revision 1.2  1999/05/30 04:08:19  naniwa
- * modified to clear closed file slot
- *
- * Revision 1.1  1999/03/21 14:01:51  monaka
- * They are separated from syscall.c. Still no major changes available.
- *
- */
-
-#include <device.h>
 #include <fcntl.h>
 #include <string.h>
-#include <core/options.h>
 #include <nerve/kcall.h>
 #include <sys/errno.h>
-#include <sys/stat.h>
-#include <sys/unistd.h>
 #include "api.h"
-#include "fs.h"
-#include "procfs/process.h"
+#include "session.h"
 
-/* if_read - ファイルからのデータの読み込み
- */
-int if_read(fs_request *req)
+
+int if_open(fs_request *req)
 {
-    W error_no;
-    struct file *fp;
-    size_t rlength;
-    W rest_length;
-    W i, len;
-    ID caller = (req->packet.process_id >> 16) & 0xffff;
+	session_t *session = session_find(unpack_sid(req));
+	if (!session)
+		return ESRCH;
 
-    req->packet.process_id &= 0xffff;
-    session_t *session = session_find(req->packet.process_id);
-    if (!session) {
-	reply_dev_error(req->rdvno, req->packet.process_id, ESRCH);
-	return 0;
-    }
+	vnode_t *starting_node;
+	int error_no = session_get_path(req->buf, &starting_node,
+			session, unpack_tid(req), (char*)(req->packet.arg1));
+	if (error_no)
+		return error_no;
 
-    fp = session_find_desc(session, req->packet.arg1);
-    if (!fp) {
-	reply_dev_error(req->rdvno, req->packet.process_id, EBADF);
-	return 0;
-    }
+	vnode_t *vnode;
+	//TODO mode is not needed in plan9?
+	error_no = vfs_open(starting_node, req->buf, req->packet.arg2,
+			req->packet.arg3, &(session->permission), &vnode);
+	if (error_no)
+		return error_no;
 
-    if (fp->f_flag == O_WRONLY) {
-	reply_dev_error(req->rdvno, req->packet.process_id, EBADF);
-	return 0;
-    }
-
-    int offset = fp->f_offset;
-    for (i = 0, rest_length = req->packet.arg3;
-	 rest_length > 0; rest_length -= rlength, i += rlength) {
-	/* MAX_BODY_SIZE 毎にファイルに読み込み */
-	len = rest_length > sizeof(req->buf) ? sizeof(req->buf) : rest_length;
-	int delta = fs_read(fp->f_vnode, req->buf, offset, len, &rlength);
-	if (delta < 0) {
-	    reply_dev_error(req->rdvno, req->packet.process_id, (-delta));
-	    return 0;
-	} else if (!rlength)
-	    break;
-
-	/* 呼び出したプロセスのバッファへの書き込み */
-	error_no = kcall->region_put(caller, (UB*)(req->packet.arg2) + i,
-			 rlength, req->buf);
+	struct file *file;
+	error_no = session_create_desc(&file, session, -1);
 	if (error_no) {
-	    reply_dev_error(req->rdvno, req->packet.process_id, EFAULT);
-	    return 0;
+		vnodes_remove(vnode);
+		return error_no;
 	}
 
-	offset += delta;
-    }
+	file->f_vnode = vnode;
+	file->f_flag = req->packet.arg2 & O_ACCMODE;
 
-    fp->f_offset = offset;
+	reply2(req->rdvno, 0, file->node.key, 0);
+	return 0;
+}
 
-    devmsg_t response;
-    response.type = Rread;
-    response.Rread.tag = req->packet.process_id;
-    response.Rread.count = i;
-    reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rread));
-    return EOK;
+int if_close(fs_request *req)
+{
+	int error_no;
+	devmsg_t *request = (devmsg_t*)&(req->packet);
+	session_t *session = session_find(unpack_sid(req));
+	if (session)
+		error_no = session_destroy_desc(session, request->Tclunk.fid);
+	else
+		error_no = ESRCH;
+
+	if (error_no)
+		reply_dev_error(req->rdvno, request->Tclunk.tag, error_no);
+	else {
+		devmsg_t response;
+		response.type = Rclunk;
+		response.Rclunk.tag = request->Tclunk.tag;
+		reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rclunk));
+	}
+
+	return 0;
+}
+
+int if_read(fs_request *req)
+{
+	devmsg_t *request = (devmsg_t*)&(req->packet);
+	session_t *session = session_find(unpack_sid(req));
+	if (!session) {
+		reply_dev_error(req->rdvno, request->Tread.tag, ESRCH);
+		return 0;
+	}
+
+	struct file *file = session_find_desc(session, request->Tread.fid);
+	if (!file) {
+		reply_dev_error(req->rdvno, request->Tread.tag, EBADF);
+		return 0;
+	}
+
+	if (file->f_flag == O_WRONLY) {
+		reply_dev_error(req->rdvno, request->Tread.tag, EBADF);
+		return 0;
+	}
+
+	copier_t copier = {
+		copy_to_user,
+		request->Tread.data,
+		unpack_tid(req)
+	};
+	size_t count = 0;
+	int error_no = fs_read(file->f_vnode, &copier, request->Tread.offset,
+			request->Tread.count, &count);
+	if (error_no) {
+		reply_dev_error(req->rdvno, request->Tread.tag,
+				error_no);
+		return 0;
+	}
+
+	devmsg_t response;
+	response.type = Rread;
+	response.Rread.tag = req->packet.process_id;
+	response.Rread.count = count;
+	reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rread));
+	return 0;
 }
 
 int if_write(fs_request *req)
 {
-    W error_no = 0;
-    struct file *fp;
-    size_t rlength;
-    W i, len;
-    W rest_length;
-    ID caller = (req->packet.process_id >> 16) & 0xffff;
-
-    req->packet.process_id &= 0xffff;
-    session_t *session = session_find(req->packet.process_id);
-    if (!session) {
-	reply_dev_error(req->rdvno, req->packet.process_id, ESRCH);
-	return 0;
-    }
-
-    fp = session_find_desc(session, req->packet.arg1);
-    if (!fp) {
-	reply_dev_error(req->rdvno, req->packet.process_id, EBADF);
-	return 0;
-    }
-
-    if (fp->f_flag == O_RDONLY) {
-	reply_dev_error(req->rdvno, req->packet.process_id, EBADF);
-	return 0;
-    }
-
-    if ((! (fp->f_vnode->mode & S_IFCHR)) &&
-	(fp->f_offset > fp->f_vnode->size)) {
-      /* 通常ファイルで，書き込む場所がファイルの内容が存在しない場所 */
-      /* そこまでを 0 で埋める */
-      memset(req->buf, 0, sizeof(req->buf));
-      for (rest_length = fp->f_offset - fp->f_vnode->size;
-	   rest_length > 0; rest_length -= rlength) {
-	len = rest_length > sizeof(req->buf) ? sizeof(req->buf) : rest_length;
-	error_no = vfs_write(fp->f_vnode, req->buf,
-			      fp->f_vnode->size, len, &rlength);
-	if (error_no || (rlength < len)) {
-	  break;
+	devmsg_t *request = (devmsg_t*)&(req->packet);
+	session_t *session = session_find(unpack_sid(req));
+	if (!session) {
+		reply_dev_error(req->rdvno, request->Twrite.tag, ESRCH);
+		return 0;
 	}
-      }
-    }
-    if (error_no) {
-	reply_dev_error(req->rdvno, req->packet.process_id, error_no);
-	return 0;
-    }
 
-    for (i = 0, rest_length = req->packet.arg3;
-	 rest_length > 0; rest_length -= rlength, i += rlength) {
-	len = rest_length > sizeof(req->buf) ? sizeof(req->buf) : rest_length;
-	error_no =
-	    kcall->region_get(caller, (UB*)(req->packet.arg2) + i, len, req->buf);
+	struct file *file;
+	file = session_find_desc(session, request->Twrite.fid);
+	if (!file) {
+		reply_dev_error(req->rdvno, request->Twrite.tag, EBADF);
+		return 0;
+	}
+
+	if (file->f_flag == O_RDONLY) {
+		reply_dev_error(req->rdvno, request->Twrite.tag, EBADF);
+		return 0;
+	}
+
+	int error_no = 0;
+	unsigned int offset = request->Twrite.offset;
+	if (offset > file->f_vnode->size) {
+		memset(req->buf, 0, sizeof(req->buf));
+		copier_t copier = {
+			copy_from,
+			req->buf
+		};
+		size_t wrote_size;
+		error_no = vfs_write(file->f_vnode, &copier,
+				file->f_vnode->size,
+				offset - file->f_vnode->size, &wrote_size);
+	}
+	if (error_no) {
+		reply_dev_error(req->rdvno, request->Twrite.tag, error_no);
+		return 0;
+	}
+
+	copier_t copier = {
+		copy_from_user,
+		request->Twrite.data,
+		unpack_tid(req)
+	};
+	size_t wrote_size;
+	error_no = vfs_write(file->f_vnode, &copier,
+			offset, request->Twrite.count, &wrote_size);
+	if (error_no) {
+		reply_dev_error(req->rdvno, request->Twrite.tag, error_no);
+		return 0;
+	}
+
+	devmsg_t response;
+	response.type = Rwrite;
+	response.Rwrite.tag = req->packet.process_id;
+	response.Rwrite.count = wrote_size;
+	reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rwrite));
+	return 0;
+}
+
+int copy_from_user(void *dest, void *src, const size_t len)
+{
+	copier_t *cp = (copier_t*)src;
+	int error_no = kcall->region_get(cp->caller, cp->buf, len, dest);
 	if (error_no)
-	    break;
+		return error_no;
 
-	error_no = vfs_write(fp->f_vnode, req->buf,
-			      fp->f_offset + i, len, &rlength);
-	if (error_no || (rlength < len)) {
-	    i += rlength;
-	    break;
-	}
-    }
-
-    if (error_no) {
-	reply_dev_error(req->rdvno, req->packet.process_id, error_no);
+	cp->buf += len;
 	return 0;
-    }
+}
 
-    fp->f_offset += i;
+int copy_to_user(void *dest, void *src, const size_t len)
+{
+	copier_t *cp = (copier_t*)dest;
+	int error_no = kcall->region_put(cp->caller, cp->buf, len, src);
+	if (error_no)
+		return error_no;
 
-    devmsg_t response;
-    response.type = Rwrite;
-    response.Rwrite.tag = req->packet.process_id;
-    response.Rwrite.count = i;
-    reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rwrite));
-    return EOK;
+	cp->buf += len;
+	return 0;
 }

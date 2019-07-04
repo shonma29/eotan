@@ -38,7 +38,7 @@ typedef struct {
 
 typedef struct {
 	int result;
-	int data[1];
+	int data[2];
 } mm_reply_t;
 
 typedef enum {
@@ -54,7 +54,8 @@ typedef enum {
 	mm_syscall_thread_find = 9,
 	mm_syscall_dup = 10,
 	mm_syscall_wait = 11,
-	mm_syscall_exit = 12
+	mm_syscall_exit = 12,
+	mm_syscall_lseek = 13
 } mm_syscall_e;
 
 #endif

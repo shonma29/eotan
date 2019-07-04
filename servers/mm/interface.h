@@ -51,5 +51,6 @@ extern int mm_thread_find(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_dup(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_wait(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_exit(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
+extern int mm_lseek(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 
 #endif

@@ -1,5 +1,3 @@
-#ifndef _FS_TFS_H_
-#define _FS_TFS_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,40 +24,22 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stddef.h>
-#include <stdint.h>
-#include <sys/types.h>
+#include <string.h>
+#include <fs/vfs.h>
 
-typedef uint32_t blkno_t;
 
-#define TFS_MAGIC 0x30465374
-
-#define TFS_RESERVED_BLOCKS (2)
-
-#define TFS_MAXNAMLEN (255)
-#define TFS_MINNAMLEN (sizeof(uint32_t) - sizeof(uint8_t))
-
-static inline size_t num_of_1st_blocks(const blksize_t blksize)
+int copy_from(void *dest, void *src, const size_t len)
 {
-	return (blksize - sizeof(struct sfs_inode)) / sizeof(uint32_t);
+	copier_t *cp = (copier_t*)src;
+	memcpy(dest, cp->buf, len);
+	cp->buf += len;
+	return 0;
 }
 
-static inline size_t num_of_2nd_blocks(const blksize_t blksize)
+int copy_to(void *dest, void *src, const size_t len)
 {
-	return blksize / sizeof(uint32_t);
+	copier_t *cp = (copier_t*)dest;
+	memcpy(cp->buf, src, len);
+	cp->buf += len;
+	return 0;
 }
-
-static inline size_t real_name_len(const size_t n)
-{
-	return n + (TFS_MINNAMLEN - (n & TFS_MINNAMLEN));
-}
-
-struct tfs_dir {
-	uint32_t d_fileno;
-	uint8_t d_namlen;
-	char d_name[TFS_MINNAMLEN];
-};
-
-#define TFS_MINDIRSIZE (sizeof(struct tfs_dir) * 2)
-
-#endif

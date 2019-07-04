@@ -59,7 +59,6 @@ static int (*syscall[])(fs_request*) = {
 	if_fstat,
 	if_chmod,
 	if_open,
-	if_lseek,
 	if_read,
 	if_write,
 	if_close
@@ -249,40 +248,20 @@ void start(VP_INT exinf)
 		int result;
 		switch (req->packet.operation) {
 		case pm_syscall_read:
-		{
-			devmsg_t *message = (devmsg_t*)&(req->packet);
-			if (size == MESSAGE_SIZE(Tread)) {
-				req->packet.arg2 = (int)(message->Tread.data);
-				req->packet.arg3 = message->Tread.count;
-				result = worker_enqueue(&req);
-			} else
-				result = EINVAL;
-		}
+			result = (size == MESSAGE_SIZE(Tread)) ?
+					worker_enqueue(&req) : EINVAL;
 			break;
 		case pm_syscall_write:
-		{
-			devmsg_t *message = (devmsg_t*)&(req->packet);
-			if (size == MESSAGE_SIZE(Twrite)) {
-				req->packet.arg2 = (int)(message->Twrite.data);
-				req->packet.arg3 = message->Twrite.count;
-				result = worker_enqueue(&req);
-			} else
-				result = EINVAL;
-		}
+			result = (size == MESSAGE_SIZE(Twrite)) ?
+					worker_enqueue(&req) : EINVAL;
 			break;
 		case pm_syscall_close:
-		{
-//			devmsg_t *message = (devmsg_t*)&(req->packet);
 			result = (size == MESSAGE_SIZE(Tclunk)) ?
 					worker_enqueue(&req) : EINVAL;
-		}
 			break;
 		case pm_syscall_fstat:
-		{
-//			devmsg_t *message = (devmsg_t*)&(req->packet);
 			result = (size == MESSAGE_SIZE(Tstat)) ?
 					worker_enqueue(&req) : EINVAL;
-		}
 			break;
 		default:
 			if (size != sizeof(pm_args_t))

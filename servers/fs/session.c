@@ -177,7 +177,6 @@ int session_create_desc(struct file **file, session_t *session, const int fd)
 
 	f->f_vnode = NULL;
 	f->f_flag = 0;
-	f->f_offset = 0;
 
 	*file = f;
 	return 0;

@@ -36,10 +36,9 @@ typedef enum {
 	pm_syscall_fstat = 5,
 	pm_syscall_chmod = 6,
 	pm_syscall_open = 7,
-	pm_syscall_lseek = 8,
-	pm_syscall_read = 9,
-	pm_syscall_write = 10,
-	pm_syscall_close = 11
+	pm_syscall_read = 8,
+	pm_syscall_write = 9,
+	pm_syscall_close = 10
 } pm_syscall_e;
 
 typedef struct {

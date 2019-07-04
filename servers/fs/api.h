@@ -46,7 +46,6 @@ extern int if_chmod(fs_request*);
 extern int if_close(fs_request*);
 extern int if_exec(fs_request*);
 extern int if_fork(fs_request*);
-extern int if_lseek(fs_request*);
 extern int if_create(fs_request*);
 extern int if_open(fs_request*);
 extern int if_read(fs_request*);
@@ -67,7 +66,6 @@ static inline int unpack_tid(const fs_request *req)
 //TODO exclude mpu dependency
 extern int reply2(const RDVNO, const int32_t, const int32_t,
 		const int32_t);
-extern int reply64(const RDVNO, const int32_t, const int64_t);
 extern int reply_dev(const RDVNO, const devmsg_t *, const size_t);
 extern int reply_dev_error(const RDVNO, const int, const int);
 

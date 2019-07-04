@@ -31,8 +31,10 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/statvfs.h>
 #include <stddef.h>
 #ifdef HOST_APP
+#include "../../include/copier.h"
 #include "../../include/set/list.h"
 #else
+#include <copier.h>
 #include <set/list.h>
 #endif
 
@@ -84,8 +86,6 @@ typedef struct _vnode_t {
 	uid_t uid;
 	gid_t gid;
 	size_t size;
-//TODO is needed?
-	size_t nblock;
 	void *private;
 	bool dirty;
 	unsigned int refer_count;
@@ -100,10 +100,12 @@ struct permission {
 };
 
 //TODO use off_t
-static inline int vfs_write(vnode_t *vnode, const void *buf, const int offset,
-		const size_t len, size_t *rlength)
+static inline int vfs_write(vnode_t *vnode, copier_t *src,
+		const unsigned int offset, const size_t nbytes,
+		size_t *wrote_size)
 {
-	return vnode->fs->operations.write(vnode, buf, offset, len, rlength);
+	return vnode->fs->operations.write(vnode, src, offset, nbytes,
+			wrote_size);
 }
 
 static inline int vfs_stat(vnode_t *vnode, struct stat *st)
@@ -122,6 +124,9 @@ static inline int vfs_sync(vnode_t *vnode)
 }
 
 extern vfs_operation_t vfs_fsops;
+
+extern int copy_from(void *, void *, const size_t);
+extern int copy_to(void *, void *, const size_t);
 
 extern void block_initialize(block_device_t *);
 
@@ -149,7 +154,7 @@ extern int vfs_create(vnode_t *, char *, const int, const mode_t,
 extern int vfs_remove(vnode_t *, char *, const struct permission *);
 extern int vfs_permit(const vnode_t *, const struct permission *,
 		const unsigned int);
-extern int vfs_read(vnode_t *ip, void *dest, const int offset,
-		const size_t nbytes, size_t *read_len);
+extern int vfs_read(vnode_t *, copier_t *, const unsigned int, const size_t,
+		size_t *);
 
 #endif

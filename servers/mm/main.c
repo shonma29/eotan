@@ -35,6 +35,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core/options.h>
 #include <nerve/kcall.h>
 #include <sys/errno.h>
+#include <sys/unistd.h>
 #include "../../kernel/mpu/interrupt.h"
 #include "../../kernel/mpu/mpufunc.h"
 #include "../../lib/libserv/libserv.h"
@@ -56,7 +57,8 @@ static int (*funcs[])(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args) = {
 	mm_thread_find,
 	mm_dup,
 	mm_wait,
-	mm_exit
+	mm_exit,
+	mm_lseek
 };
 
 #define BUFSIZ (sizeof(mm_args_t))
@@ -71,6 +73,8 @@ static ER proxy_initialize(void);
 static void proxy(void);
 static unsigned int sleep(unsigned int);
 static int if_fork(mm_process_t *, pm_args_t *);
+static int _seek(mm_process_t *, mm_file_t *, mm_args_t *);
+static int _fstat(struct stat *, const mm_file_t *, const int);
 static int if_chdir(mm_process_t *, pm_args_t *);
 static size_t calc_path(char *, char *, const size_t);
 static int if_open(mm_process_t *, pm_args_t *);
@@ -79,7 +83,6 @@ static int if_write(mm_process_t *, pm_args_t *);
 static int if_close(mm_process_t *, pm_args_t *);
 static int file_close(mm_file_t *, devmsg_t *);
 static int if_stat(mm_process_t *, pm_args_t *);
-static int if_ref_fid(mm_process_t *, pm_args_t *);
 static int call_device(const int, devmsg_t *, const size_t, const int,
 		const size_t);
 static void doit(void);
@@ -172,10 +175,6 @@ static void proxy(void)
 			break;
 		case pm_syscall_write:
 			result = if_write(process, &args);
-			break;
-		case pm_syscall_lseek:
-//TODO implement in here
-			result = if_ref_fid(process, &args);
 			break;
 		default:
 			result = (kcall->port_call(PORT_FS, &args, sizeof(args))
@@ -418,6 +417,106 @@ int mm_exit(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	return reply_failure;
 }
 
+int mm_lseek(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+{
+	do {
+		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
+		if (!th) {
+			//TODO use other errno
+			reply->data[1] = ESRCH;
+			break;
+		}
+
+		mm_process_t *process = get_process(th->process_id);
+		if (!process) {
+			//TODO use other errno
+			reply->data[1] = ESRCH;
+			break;
+		}
+
+		mm_descriptor_t *desc = process_find_desc(process, args->arg1);
+		if (!desc) {
+			reply->data[1] = EBADF;
+			break;
+		}
+
+		//TODO return error if directory
+		//TODO do nothing if pipe
+		int result = _seek(process, desc->file, args);
+		if (result) {
+			reply->data[1] = result;
+			break;
+		}
+
+		log_notice("mm: %d seek\n", process->node.key);
+
+		off_t *offset = (off_t*)reply;
+		*offset = desc->file->f_offset;
+
+		reply->data[1] = 0;
+		return reply_success;
+	} while (false);
+
+	off_t *offset = (off_t*)reply;
+	*offset = (off_t)(-1);
+	return reply_failure;
+}
+
+static int _seek(mm_process_t *process, mm_file_t *file, mm_args_t *args)
+{
+	off_t *offset = (off_t*)&(args->arg2);
+	off_t next = *offset;
+
+	switch (args->arg4) {
+	case SEEK_SET:
+		break;
+	case SEEK_CUR:
+		if (next > 0) {
+			off_t rest = LLONG_MAX - file->f_offset;
+			if (next > rest)
+				return EOVERFLOW;
+		}
+
+		next += file->f_offset;
+		break;
+	case SEEK_END:
+	{
+		int tag = (kcall->thread_get_id() << 16) | process->node.key;
+		struct stat st;
+		int result = _fstat(&st, file, tag);
+		if (result)
+			return result;
+
+		if (next > 0) {
+			off_t rest = LLONG_MAX - st.st_size;
+			if (next > rest)
+				return EOVERFLOW;
+		}
+
+		next += st.st_size;
+	}
+		break;
+	default:
+		return EINVAL;
+	}
+
+	if (next < 0)
+		return EINVAL;
+
+	file->f_offset = next;
+	return 0;
+}
+
+static int _fstat(struct stat *st, const mm_file_t *file, const int tag)
+{
+	devmsg_t message;
+	message.Tstat.tag = tag;
+	message.Tstat.fid = file->fid;
+	message.Tstat.stat = st;
+	return call_device(file->server_id, &message, MESSAGE_SIZE(Tstat),
+			Rstat, MESSAGE_SIZE(Rstat));
+}
+
 static int if_chdir(mm_process_t *process, pm_args_t *args)
 {
 	ER_UINT len = kcall->region_copy((args->process_id >> 16) & 0xffff,
@@ -587,12 +686,14 @@ static int if_read(mm_process_t *process, pm_args_t *args)
 	message->Tread.fid = f->fid;
 	message->Tread.count = args->arg3;
 	message->Tread.data = (char*)(args->arg2);
-	message->Tread.offset = 0;
+	message->Tread.offset = f->f_offset;
 
 	int result = call_device(f->server_id, message, MESSAGE_SIZE(Tread),
 			Rread, MESSAGE_SIZE(Rread));
 	if (result)
 		return result;
+
+	f->f_offset += message->Rread.count;
 
 	pm_reply_t *reply = (pm_reply_t*)args;
 	reply->result1 = args->arg1;
@@ -615,12 +716,14 @@ static int if_write(mm_process_t *process, pm_args_t *args)
 	message->Twrite.fid = f->fid;
 	message->Twrite.count = args->arg3;
 	message->Twrite.data = (char*)(args->arg2);
-	message->Twrite.offset = 0;
+	message->Twrite.offset = f->f_offset;
 
 	int result = call_device(f->server_id, message, MESSAGE_SIZE(Twrite),
 			Rwrite, MESSAGE_SIZE(Rwrite));
 	if (result)
 		return result;
+
+	f->f_offset += message->Rwrite.count;
 
 	pm_reply_t *reply = (pm_reply_t*)args;
 	reply->result1 = args->arg1;
@@ -698,23 +801,6 @@ static int if_stat(mm_process_t *process, pm_args_t *args)
 	reply->result2 = 0;
 	reply->error_no = 0;
 
-	return 0;
-}
-
-static int if_ref_fid(mm_process_t *process, pm_args_t *args)
-{
-	mm_descriptor_t *d = process_find_desc(process, args->arg1);
-	if (!d)
-		return EBADF;
-
-	args->arg1 = d->file->fid;
-	if (kcall->port_call(PORT_FS, args, sizeof(*args))
-			!= sizeof(pm_reply_t))
-		return ECONNREFUSED;
-
-	pm_reply_t *reply = (pm_reply_t*)args;
-	log_info("proxy: ref_fid %d %d %d\n",
-			reply->result1, reply->result2, reply->error_no);
 	return 0;
 }
 

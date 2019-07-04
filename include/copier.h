@@ -1,5 +1,5 @@
-#ifndef _FS_TFS_H_
-#define _FS_TFS_H_
+#ifndef _COPIER_H_
+#define _COPIER_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,39 +27,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stddef.h>
-#include <stdint.h>
-#include <sys/types.h>
 
-typedef uint32_t blkno_t;
-
-#define TFS_MAGIC 0x30465374
-
-#define TFS_RESERVED_BLOCKS (2)
-
-#define TFS_MAXNAMLEN (255)
-#define TFS_MINNAMLEN (sizeof(uint32_t) - sizeof(uint8_t))
-
-static inline size_t num_of_1st_blocks(const blksize_t blksize)
-{
-	return (blksize - sizeof(struct sfs_inode)) / sizeof(uint32_t);
-}
-
-static inline size_t num_of_2nd_blocks(const blksize_t blksize)
-{
-	return blksize / sizeof(uint32_t);
-}
-
-static inline size_t real_name_len(const size_t n)
-{
-	return n + (TFS_MINNAMLEN - (n & TFS_MINNAMLEN));
-}
-
-struct tfs_dir {
-	uint32_t d_fileno;
-	uint8_t d_namlen;
-	char d_name[TFS_MINNAMLEN];
-};
-
-#define TFS_MINDIRSIZE (sizeof(struct tfs_dir) * 2)
+typedef struct {
+	int (*copy)(void *, void *, const size_t);
+	char *buf;
+	int caller;
+} copier_t;
 
 #endif

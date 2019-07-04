@@ -123,7 +123,6 @@ W sfs_read_inode(vfs_t *fsp, W ino, vnode_t *ip)
     ip->index = sfs_inode->i_index;
     ip->nlink = sfs_inode->i_nlink;
     ip->size = sfs_inode->i_size;
-    ip->nblock = sfs_inode->i_nblock;
     ip->mode = sfs_inode->i_mode;
     ip->uid = sfs_inode->i_uid;
     ip->gid = sfs_inode->i_gid;
@@ -260,7 +259,6 @@ int sfs_i_close(vnode_t * ip)
     sfs_inode->i_uid = ip->uid;
     sfs_inode->i_gid = ip->gid;
     sfs_inode->i_size = ip->size;
-    sfs_inode->i_nblock = ip->nblock;
 
     if (ip->dirty) {
 	if (!cache_modify(ip->private)) {

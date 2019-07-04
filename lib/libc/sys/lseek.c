@@ -24,34 +24,33 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "sys.h"
+#include <core.h>
+#include <errno.h>
+#include <mm.h>
+#include <services.h>
 
 
 off_t lseek(int fildes, off_t offset, int whence)
 {
-	pm_args_t request;
-	pm_reply_t *response;
-	thread_local_t *local = _get_local();
-	off_t *offp;
-	ER result;
+	mm_args_t args;
+	args.syscall_no = mm_syscall_lseek;
+	args.arg1 = fildes;
 
-	request.arg1 = fildes;
-	offp = (off_t*)&(request.arg2);
+	off_t *offp = (off_t*)&(args.arg2);
 	*offp = offset;
-	request.arg4= whence;
 
-	result = _make_connection(pm_syscall_lseek, &request);
-	if (result) {
-		local->error_no = result;
-		return -1;
+	args.arg4= whence;
+
+	ER_UINT reply_size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
+	mm_reply_t *reply = (mm_reply_t*)&args;
+	if (reply_size == sizeof(*reply)) {
+		offp = (off_t*)reply;
+		if (*offp == -1)
+			_set_local_errno(reply->data[1]);
+
+		return *offp;
+	} else {
+		_set_local_errno(ECONNREFUSED);
+		return (-1);
 	}
-
-	response = (pm_reply_t*)&request;
-	if (response->error_no) {
-		local->error_no = response->error_no;
-		return -1;
-	}
-
-	offp = (off_t*)&(response->result1);
-	return *offp;
 }

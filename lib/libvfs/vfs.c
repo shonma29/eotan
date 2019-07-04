@@ -344,22 +344,12 @@ int vfs_permit(const vnode_t *ip, const struct permission *permission,
 	return (((mode & need) == need) ? 0 : EACCES);
 }
 
-int vfs_read(vnode_t *ip, void *dest, const int offset, const size_t nbytes,
-		size_t *read_len)
+int vfs_read(vnode_t *vnode, copier_t *dest, const unsigned int offset,
+		const size_t nbytes, size_t *read_size)
 {
-#ifdef UPDATE_ATIME
-	SYSTIM clock;
-	time_get(&clock);
-#endif
-	int result = ip->fs->operations.read(ip, dest, offset,
-				(offset + nbytes > ip->size) ?
-						(ip->size - offset) : nbytes,
-				read_len);
-#ifdef UPDATE_ATIME
-	if (result >= 0) {
-		ip->i_atime = clock;
-		ip->i_dirty = true;
-	}
-#endif
-	return result;
+	//TODO check offset
+	return vnode->fs->operations.read(vnode, dest, offset,
+				(offset + nbytes > vnode->size) ?
+						(vnode->size - offset) : nbytes,
+				read_size);
 }

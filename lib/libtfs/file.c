@@ -172,7 +172,6 @@ sfs_i_create(vnode_t * parent,
     sfs_inode->i_atime = clock;
     sfs_inode->i_ctime = clock;
     sfs_inode->i_mtime = clock;
-    newip->nblock = 0;
 
     vnodes_append(newip);
 
@@ -186,98 +185,19 @@ sfs_i_create(vnode_t * parent,
     return 0;
 }
 
-
-//TODO use off_t
-int sfs_i_write(vnode_t * ip, B * buf, W start, W size, W * rsize)
-{
-    int copysize;
-    int offset;
-    int retsize;
-    int filesize;
-    ID fd;
-    vfs_t *fsp;
-    W bn;
-    B *cbuf;
-
-    *rsize = 0;
-    retsize = size;
-    filesize = start + retsize;
-    fd = ip->fs->device.channel;
-    fsp = ip->fs;
-
-    struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
-    struct sfs_inode *sfs_inode = ip->private;
-    while (size > 0) {
-	if (!(bn = tfs_get_block_no(fsp, sfs_inode,
-				    start / sb->blksize))) {
-	    /* ファイルサイズを越えて書き込む場合には、新しくブロックをアロケートする
-	     */
-	    bn = tfs_set_block_no(fsp, sfs_inode,
-				   start / sb->blksize,
-				   tfs_allocate_block(fsp));
-/*
- *   ip->sfs_i_direct[start / fsp->blksize] = alloc_block (fd, fsp);
- */
-	    if (!bn) {
-		return (EIO);
-	    }
-	    cbuf = cache_get(&(fsp->device), bn);
-	} else {
-	    cbuf = cache_get(&(fsp->device), bn);
-	}
-	if (!cbuf) {
-		return EIO;
-	}
-
-	/* 読み込んだブロックの内容を更新する
-	 */
-	offset = start % sb->blksize;
-	copysize = MIN(sb->blksize - offset, size);
-	memcpy(&cbuf[offset], buf, copysize);
-
-	/* 更新したブロックを書き込む
-	 */
-	cache_release(cbuf, true);
-	buf += copysize;
-	start += copysize;
-	size -= copysize;
-    }
-
-    /* もし、書き込みをおこなった後にファイルのサイズが増えていれば、
-     * サイズを更新して inode を書き込む。
-     */
-    if (filesize > ip->size) {
-	ip->size = filesize;
-	ip->nblock =
-	    roundUp(filesize, sb->blksize) / sb->blksize;
-    }
-
-    SYSTIM clock;
-    time_get(&clock);
-    sfs_inode->i_mtime = clock;
-    sfs_inode->i_ctime = clock;
-    ip->dirty = true;
-    *rsize = retsize - size;
-
-    return 0;
-}
-
-
 W sfs_i_truncate(vnode_t * ip, W newsize)
 {
     int nblock, blockno, inblock, offset;
-    W fd;
     vfs_t *fsp;
     struct sfs_inode *sfs_ip;
     SYSTIM clock;
 
-    fd = ip->fs->device.channel;
     fsp = ip->fs;
     struct sfs_inode *sfs_inode = ip->private;
     sfs_ip = sfs_inode;
     struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
     nblock = roundUp(newsize, sb->blksize) / sb->blksize;
-    if (nblock < sfs_ip->i_nblock) {
+    if (nblock < roundUp(sfs_ip->i_size, sb->blksize) / sb->blksize) {
 	/* 余分なブロックを開放 */
 	blockno = nblock;
 	if (blockno < (num_of_1st_blocks(fsp->device.block_size)
@@ -292,7 +212,6 @@ W sfs_i_truncate(vnode_t * ip, W newsize)
     }
 
     ip->size = newsize;
-    ip->nblock = nblock;
     time_get(&clock);
     sfs_inode->i_mtime = clock;
     sfs_inode->i_ctime = clock;

@@ -43,17 +43,6 @@ int reply2(const RDVNO rdvno, int32_t error_no, int32_t result1,
 			ECONNREFUSED : 0);
 }
 
-int reply64(const RDVNO rdvno, int32_t error_no, int64_t result)
-{
-	pm_reply_t response;
-	response.error_no = error_no;
-	int64_t *p = (int64_t*)&(response.result1);
-	*p = result;
-
-	return (kcall->port_reply(rdvno, &response, sizeof(response)) ?
-			ECONNREFUSED : 0);
-}
-
 int reply_dev(const RDVNO rdvno, const devmsg_t *response, const size_t size)
 {
 	return (kcall->port_reply(rdvno, (void*)response, size) ?
