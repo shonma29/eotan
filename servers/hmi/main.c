@@ -146,11 +146,10 @@ static void process(const int arg)
 
 			//TODO loop
 			//TODO error check
+			unsigned int addr = ((unsigned int)(message->Tread.data)
+					+ message->Tread.offset);
 			kcall->region_put(get_rdv_tid(message->Tread.tag),
-					(char*)((unsigned int)(message->Tread.data)
-					+ message->Tread.offset),
-					1,
-					buf);
+					(char*)addr, 1, buf);
 			message->Tread.offset++;
 			if (message->Tread.count <= message->Tread.offset) {
 				message->type = Rread;

@@ -57,7 +57,7 @@ int read(char *outbuf, const int channel,
 	if (!check_param(channel, start, size))
 		return (-1);
 
-	memcpy(outbuf, &(ranges[channel].start[start]), size);
+	memcpy(outbuf, &(((char*)(ranges[channel].start))[start]), size);
 
 	return size;
 }
@@ -68,7 +68,7 @@ int write(char *inbuf, const int channel,
 	if (!check_param(channel, start, size))
 		return (-1);
 
-	memcpy(&(ranges[channel].start[start]), inbuf, size);
+	memcpy(&(((char*)(ranges[channel].start))[start]), inbuf, size);
 
 	return size;
 }
