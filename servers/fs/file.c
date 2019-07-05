@@ -107,28 +107,22 @@ int if_read(fs_request *req)
 		return 0;
 	}
 
-	if ((request->Tread.offset < 0)
-			|| (request->Tread.offset > file->f_vnode->size)) {
+	if (request->Tread.offset < 0) {
 		reply_dev_error(req->rdvno, request->Tread.tag, EINVAL);
 		return 0;
 	}
 
-	size_t rest = file->f_vnode->size - request->Tread.offset;
-	size_t count = (request->Tread.count > rest)?
-			rest : request->Tread.count;
-	if (count) {
-		copier_t copier = {
-			copy_to_user,
-			request->Tread.data,
-			unpack_tid(req)
-		};
-		int error_no = fs_read(file->f_vnode, &copier,
-				request->Tread.offset, count, &count);
-		if (error_no) {
-			reply_dev_error(req->rdvno, request->Tread.tag,
-					error_no);
-			return 0;
-		}
+	copier_t copier = {
+		copy_to_user,
+		request->Tread.data,
+		unpack_tid(req)
+	};
+	size_t count;
+	int error_no = fs_read(file->f_vnode, &copier, request->Tread.offset,
+			request->Tread.count, &count);
+	if (error_no) {
+		reply_dev_error(req->rdvno, request->Tread.tag, error_no);
+		return 0;
 	}
 
 	devmsg_t response;

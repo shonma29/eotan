@@ -347,9 +347,24 @@ int vfs_permit(const vnode_t *ip, const struct permission *permission,
 int vfs_read(vnode_t *vnode, copier_t *dest, const unsigned int offset,
 		const size_t nbytes, size_t *read_size)
 {
-	//TODO check offset
-	return vnode->fs->operations.read(vnode, dest, offset,
-				(offset + nbytes > vnode->size) ?
-						(vnode->size - offset) : nbytes,
+	int result;
+	do {
+		if (offset > vnode->size) {
+			result = EINVAL;
+			break;
+		}
+
+		size_t rest = vnode->size - offset;
+		size_t len = (nbytes > rest)? rest : nbytes;
+		if (!len) {
+			result = 0;
+			break;
+		}
+
+		return vnode->fs->operations.read(vnode, dest, offset, len,
 				read_size);
+	} while (false);
+
+	*read_size = 0;
+	return result;
 }
