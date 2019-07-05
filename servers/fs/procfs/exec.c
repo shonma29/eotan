@@ -231,6 +231,10 @@ read_exec_header(vnode_t *ip,
 static W
 load_segment(vnode_t *ip, Elf32_Phdr *segment, ID task)
 {
+    if (segment->p_filesz == 0) {
+	return EOK;
+    }
+
     W error_no;
     size_t read_size;
     copier_t copier = {

@@ -107,18 +107,28 @@ int if_read(fs_request *req)
 		return 0;
 	}
 
-	copier_t copier = {
-		copy_to_user,
-		request->Tread.data,
-		unpack_tid(req)
-	};
-	size_t count = 0;
-	int error_no = fs_read(file->f_vnode, &copier, request->Tread.offset,
-			request->Tread.count, &count);
-	if (error_no) {
-		reply_dev_error(req->rdvno, request->Tread.tag,
-				error_no);
+	if ((request->Tread.offset < 0)
+			|| (request->Tread.offset > file->f_vnode->size)) {
+		reply_dev_error(req->rdvno, request->Tread.tag, EINVAL);
 		return 0;
+	}
+
+	size_t rest = file->f_vnode->size - request->Tread.offset;
+	size_t count = (request->Tread.count > rest)?
+			rest : request->Tread.count;
+	if (count) {
+		copier_t copier = {
+			copy_to_user,
+			request->Tread.data,
+			unpack_tid(req)
+		};
+		int error_no = fs_read(file->f_vnode, &copier,
+				request->Tread.offset, count, &count);
+		if (error_no) {
+			reply_dev_error(req->rdvno, request->Tread.tag,
+					error_no);
+			return 0;
+		}
 	}
 
 	devmsg_t response;
@@ -150,36 +160,47 @@ int if_write(fs_request *req)
 		return 0;
 	}
 
-	int error_no = 0;
-	unsigned int offset = request->Twrite.offset;
-	if (offset > file->f_vnode->size) {
-		memset(req->buf, 0, sizeof(req->buf));
-		copier_t copier = {
-			copy_from,
-			req->buf
-		};
-		size_t wrote_size;
-		error_no = vfs_write(file->f_vnode, &copier,
-				file->f_vnode->size,
-				offset - file->f_vnode->size, &wrote_size);
-	}
-	if (error_no) {
-		reply_dev_error(req->rdvno, request->Twrite.tag, error_no);
+	if (request->Twrite.offset < 0) {
+		reply_dev_error(req->rdvno, request->Twrite.tag, EINVAL);
 		return 0;
 	}
 
-	copier_t copier = {
-		copy_from_user,
-		request->Twrite.data,
-		unpack_tid(req)
-	};
 	size_t wrote_size;
-	error_no = vfs_write(file->f_vnode, &copier,
-			offset, request->Twrite.count, &wrote_size);
-	if (error_no) {
-		reply_dev_error(req->rdvno, request->Twrite.tag, error_no);
-		return 0;
-	}
+	if (request->Twrite.count) {
+		int error_no = 0;
+		unsigned int offset = request->Twrite.offset;
+		if (offset > file->f_vnode->size) {
+			memset(req->buf, 0, sizeof(req->buf));
+			copier_t copier = {
+				copy_from,
+				req->buf
+			};
+			size_t wrote_size;
+			error_no = vfs_write(file->f_vnode, &copier,
+					file->f_vnode->size,
+					offset - file->f_vnode->size,
+					&wrote_size);
+		}
+		if (error_no) {
+			reply_dev_error(req->rdvno, request->Twrite.tag,
+					error_no);
+			return 0;
+		}
+
+		copier_t copier = {
+			copy_from_user,
+			request->Twrite.data,
+			unpack_tid(req)
+		};
+		error_no = vfs_write(file->f_vnode, &copier,
+				offset, request->Twrite.count, &wrote_size);
+		if (error_no) {
+			reply_dev_error(req->rdvno, request->Twrite.tag,
+					error_no);
+			return 0;
+		}
+	} else
+		wrote_size = 0;
 
 	devmsg_t response;
 	response.type = Rwrite;
