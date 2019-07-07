@@ -81,8 +81,6 @@ static int if_write(mm_process_t *, pm_args_t *);
 static int if_close(mm_process_t *, pm_args_t *);
 static int file_close(mm_file_t *, devmsg_t *);
 static int if_stat(mm_process_t *, pm_args_t *);
-static int call_device(const int, devmsg_t *, const size_t, const int,
-		const size_t);
 static void doit(void);
 
 static ER init(void)
@@ -991,7 +989,7 @@ static int if_stat(mm_process_t *process, pm_args_t *args)
 	return 0;
 }
 
-static int call_device(const int server_id, devmsg_t *message,
+int call_device(const int server_id, devmsg_t *message,
 	const size_t tsize, const int rtype, const size_t rsize)
 {
 	ER_UINT size = kcall->port_call(server_id, message, tsize);

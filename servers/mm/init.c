@@ -84,8 +84,29 @@ int exec_init(const pid_t process_id, char *pathname)
 	args.arg1 = (int)pathname;
 	args.arg2 = (int)p;
 
+	mm_process_t *process = get_process(process_id);
+
+	//TODO move to 'attach' (or 'auth') system call
+	pm_args_t a;
+	a.operation = pm_syscall_attach;
+	devmsg_t *message = (devmsg_t*)&a;
+	message->Tattach.tag = (PORT_MM << 16) | process->session_id;
+	message->Tattach.fid = process->session_id;
+	message->Tattach.afid = NOFID;
+	message->Tattach.uname = (char*)(process->uid);
+	message->Tattach.aname = (char*)"/";
+
+	result = call_device(PORT_FS, message, MESSAGE_SIZE(Tattach),
+			Rattach, MESSAGE_SIZE(Rattach));
+	if (result) {
+		log_err("mm: attach(%d) %d\n",
+				process->session_id, result);
+		//TODO destroy process
+		return result;
+	}
+
 	mm_reply_t reply;
-	result = process_exec(&reply, get_process(process_id), PORT_MM << 16,
+	result = process_exec(&reply, process, PORT_MM << 16,
 			&args);
 	log_info("mm: exec_init(%d, %s) %d %d\n",
 			process_id, pathname, result, reply.data[0]);

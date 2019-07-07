@@ -48,6 +48,7 @@ extern int if_read(fs_request*);
 extern int if_remove(fs_request*);
 extern int if_fstat(fs_request*);
 extern int if_write(fs_request*);
+extern int if_attach(fs_request*);
 
 static inline int unpack_sid(const fs_request *req)
 {

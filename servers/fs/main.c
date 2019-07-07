@@ -24,24 +24,17 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <major.h>
 #include <services.h>
-#include <boot/init.h>
-#include <fs/config.h>
-#include <mpu/memory.h>
 #include <nerve/global.h>
 #include <nerve/kcall.h>
 #include <set/lf_queue.h>
 #include <sys/errno.h>
 #include "api.h"
-#include "fs.h"
 #include "session.h"
 #include "devfs/devfs.h"
-#include "../../kernel/mpu/mpufunc.h"
 #include "../../lib/libserv/libserv.h"
-#include "../../lib/libserv/libmm.h"
 
-#define REQUEST_QUEUE_SIZE (32)
+#define REQUEST_QUEUE_SIZE MAX_REQUEST
 
 static ID receiver_id;
 static ID worker_id;
@@ -60,7 +53,8 @@ static int (*syscall[])(fs_request*) = {
 	if_open,
 	if_read,
 	if_write,
-	if_close
+	if_close,
+	if_attach
 };
 
 static int initialize(void);
@@ -114,15 +108,6 @@ static int initialize(void)
 			log_info("fs: fs_mount(%x, %d) succeeded\n",
 					sysinfo->root.device,
 					sysinfo->root.fstype);
-
-			session_t *session = session_create(INIT_SESSION_ID);
-			if (!session)
-				return -1;
-
-			session->permission.uid = INIT_UID;
-			session->permission.gid = INIT_GID;
-			session->cwd = rootfile;
-			rootfile->refer_count++;
 		}
 	}
 
@@ -260,6 +245,10 @@ void start(VP_INT exinf)
 			break;
 		case pm_syscall_fstat:
 			result = (size == MESSAGE_SIZE(Tstat)) ?
+					worker_enqueue(&req) : EINVAL;
+			break;
+		case pm_syscall_attach:
+			result = (size == MESSAGE_SIZE(Tattach)) ?
 					worker_enqueue(&req) : EINVAL;
 			break;
 		default:

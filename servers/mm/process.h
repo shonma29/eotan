@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <device.h>
 #include <local.h>
 #include <pm.h>
 #include <mm/segment.h>
@@ -115,6 +116,8 @@ extern int process_exec(mm_reply_t *, mm_process_t *, const int, mm_args_t *);
 extern ER default_handler(void);
 extern ER stack_fault_handler(void);
 
+extern int call_device(const int, devmsg_t *, const size_t, const int,
+		const size_t);
 extern int create_init(const pid_t);
 extern int exec_init(const pid_t, char *);
 

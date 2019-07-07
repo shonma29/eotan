@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <boot/init.h>
 #include <fcntl.h>
 #include <limits.h>
 #include <core/options.h>
@@ -38,6 +39,48 @@ static slab_t session_slab;
 static tree_t session_tree;
 static slab_t file_slab;
 
+
+int if_attach(fs_request *req)
+{
+	devmsg_t *request = (devmsg_t*)&(req->packet);
+	int error_no;
+
+	do {
+		//TODO check if fid has already used
+		//int fid = request->Tattach.fid;
+
+		if (request->Tattach.afid != NOFID) {
+			error_no = EINVAL;
+			break;
+		}
+
+		session_t *session = session_create(unpack_sid(req));
+		if (!session) {
+			//TODO other error when sid exists
+			error_no = ENOMEM;
+			break;
+		}
+
+		//TODO get from auth server
+		session->permission.uid = (uid_t)(request->Tattach.uname);
+		session->permission.gid = INIT_GID;
+		//TODO walk aname
+		//TODO can not walk to the parent of aname
+		session->cwd = rootfile;
+		rootfile->refer_count++;
+		//TODO bind fid to session type (for use to close session)
+
+		devmsg_t response;
+		response.type = Rattach;
+		response.Rattach.tag = request->Tattach.tag;
+		response.Rattach.qid = session->cwd->index;
+		reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rattach));
+		return 0;
+	} while (false);
+
+	reply_dev_error(req->rdvno, request->Tattach.tag, error_no);
+	return 0;
+}
 
 int if_chdir(fs_request *req)
 {
