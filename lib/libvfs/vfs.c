@@ -124,30 +124,39 @@ int vfs_walk(vnode_t *parent, char *path, const int flags,
 int vfs_open(vnode_t *cwd, char *path, const int flags, const mode_t mode,
 		struct permission *permission, vnode_t **node)
 {
-	if (!check_flags(flags)) {
-		log_debug("vfs_open: bad flags %x\n", flags);
+	int f = (flags == O_EXEC) ? O_RDONLY : flags;
+	if (!check_flags(f)) {
+		log_debug("vfs_open: bad flags %x\n", f);
 		return EINVAL;
 	}
 
-	if (flags & O_CREAT) {
-		int error_no = vfs_create(cwd, path, flags, mode, permission,
+	if (f & O_CREAT) {
+		int error_no = vfs_create(cwd, path, f, mode, permission,
 				node);
 		if (error_no != EEXIST)
 			return error_no;
 	}
 
-	int error_no = vfs_walk(cwd, path, flags, permission, node);
+	int error_no = vfs_walk(cwd, path, f, permission, node);
 	if (error_no)
 		return error_no;
 
 	if ((mode & S_IFMT) == S_IFDIR)
-		if ((flags & O_ACCMODE) != O_RDONLY) {
+		if ((f & O_ACCMODE) != O_RDONLY) {
 			log_debug("vfs_open: %s is directory\n", path);
 			vnodes_remove(*node);
 			return EISDIR;
 		}
 
-	if (flags & O_TRUNC)
+	if (flags == O_EXEC) {
+		int error_no = vfs_permit(*node, permission, X_OK);
+		if (error_no) {
+			vnodes_remove(*node);
+			return error_no;
+		}
+	}
+
+	if (f & O_TRUNC)
 		(*node)->size = 0;
 
 	return 0;

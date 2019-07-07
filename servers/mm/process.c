@@ -197,108 +197,6 @@ void process_initialize(void)
 	slab_create(&session_slab);
 }
 
-int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
-{
-	do {
-		unsigned int start;
-		unsigned int end;
-		mm_process_t *p = get_process((ID)args->arg1);
-
-		//TODO check duplicated process_id
-		if (!p) {
-			p = (mm_process_t*)slab_alloc(&process_slab);
-			if (!p) {
-				reply->data[0] = ENOMEM;
-				break;
-			}
-//TODO key must not be 0
-			if (!tree_put(&process_tree,
-					(ID)args->arg1, (node_t*)p)) {
-				slab_free(&process_slab, p);
-				reply->data[0] = EBUSY;
-				break;
-			}
-
-			//TODO adhoc
-			p->directory = NULL;
-			process_clear(p);
-
-			//TODO check NULL
-			p->directory = copy_kernel_page_table();
-		}
-
-		start = pageRoundDown(args->arg2);
-		end = pageRoundUp((unsigned int)(args->arg2)
-				+ (unsigned int)(args->arg3));
-
-		if (map_user_pages(p->directory,
-				(VP)start, pages(end - start))) {
-			reply->data[0] = ENOMEM;
-			break;
-		}
-
-		p->segments.heap.addr = (void*)end;
-		p->segments.heap.len = 0;
-		p->segments.heap.max = pageRoundUp(args->arg4) - end;
-		p->segments.heap.attr = type_heap;
-
-		log_notice("c %d %x->%x, %x->%x pp=%d pg=%d u=%d g=%d n=%s\n",
-				p->node.key,
-				&p->brothers, p->brothers.next,
-				&p->members, p->members.next,
-				p->ppid, p->pgid, p->uid, p->gid,
-				p->name);
-		reply->data[0] = EOK;
-		reply->result = 0;
-		return reply_success;
-	} while (FALSE);
-
-	reply->result = -1;
-	return reply_failure;
-}
-
-int mm_process_clean(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
-{
-	do {
-		mm_process_t *p = get_process((ID)args->arg1);
-
-		if (!p) {
-			reply->data[0] = ESRCH;
-			break;
-		}
-
-		//TODO close on exit. not exec
-		//TODO optimize
-//		for (int fd = 0; fd < FILES_PER_PROCESS; fd++)
-//			if (process_destroy_desc(p, fd)) {
-//				//TODO what to do?
-//			}
-
-		if (unmap_user_pages(p->directory,
-				//TODO this address is adhoc. fix region_unmap
-				(VP)0x1000,
-				pages((unsigned int)(p->segments.heap.addr)
-						+  p->segments.heap.len))) {
-			reply->data[0] = EFAULT;
-			break;
-		}
-
-		p->segments.heap.addr = NULL;
-		p->segments.heap.len = 0;
-		p->segments.heap.max = 0;
-		p->segments.heap.attr = attr_nil;
-
-//		kcall->pfree(p->directory);
-
-		reply->data[0] = EOK;
-		reply->result = 0;
-		return reply_success;
-	} while (FALSE);
-
-	reply->result = -1;
-	return reply_failure;
-}
-
 mm_process_t *process_duplicate(mm_process_t *src)
 {
 	do {
@@ -402,89 +300,6 @@ mm_process_t *process_duplicate(mm_process_t *src)
 	} while (false);
 
 	return NULL;
-}
-
-int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
-{
-	do {
-		ER_ID result;
-		size_t stack_size;
-		unsigned int stack_top;
-		mm_thread_t *th;
-		mm_process_t *proc = get_process((ID)args->arg1);
-
-		if (!proc) {
-			reply->data[0] = ESRCH;
-			break;
-		}
-
-		stack_size = (size_t)(args->arg4);
-		if (stack_size > USER_STACK_INITIAL_SIZE) {
-			reply->data[0] = E2BIG;
-			break;
-		}
-
-		if (args->arg1 == INIT_PID) {
-			if (map_user_pages(proc->directory,
-					(void*)pageRoundDown(LOCAL_ADDR - USER_STACK_INITIAL_SIZE - PAGE_SIZE),
-					pages(pageRoundUp(USER_STACK_INITIAL_SIZE)))) {
-				reply->data[0] = ENOMEM;
-				break;
-			}
-		}
-
-		while (!list_is_empty(&(proc->threads))) {
-			list_t *n = list_next(&(proc->threads));
-			mm_thread_t *th = getMyThread(n);
-
-			list_remove(n);
-			kcall->thread_terminate(th->node.key);
-			kcall->thread_destroy(th->node.key);
-			tree_remove(&thread_tree, th->node.key);
-		}
-
-		stack_top = pageRoundDown(LOCAL_ADDR - PAGE_SIZE) - stack_size;
-
-		if (move_stack(proc->directory, (void*)stack_top,
-				(void*)(args->arg3), stack_size)) {
-			reply->data[0] = EFAULT;
-			break;
-		}
-
-		result = create_thread(proc, (FP)(args->arg2),
-				(VP)(stack_top - sizeof(int)));
-		if (result < 0) {
-			reply->data[0] = ECONNREFUSED;
-			break;
-		}
-
-		if (proc->local)
-				proc->local->thread_id = result;
-
-		//TODO check duplicated thread_id
-		th = (mm_thread_t*)slab_alloc(&thread_slab);
-		if (!th) {
-			kcall->thread_destroy(result);
-			reply->data[0] = ENOMEM;
-			break;
-		}
-
-		if (tree_put(&thread_tree, result, (node_t*)th))
-			thread_clear(th, proc);
-		else {
-			slab_free(&thread_slab, th);
-			kcall->thread_destroy(result);
-			reply->data[0] = EBUSY;
-			break;
-		}
-
-		reply->data[0] = EOK;
-		reply->result = result;
-		return reply_success;
-	} while (FALSE);
-
-	reply->result = -1;
-	return reply_failure;
 }
 
 int process_destroy(mm_process_t *proc, const int status)
@@ -888,32 +703,27 @@ int process_find_new_fd(const mm_process_t *process)
 
 int create_init(const pid_t pid)
 {
-	unsigned int start;
-	unsigned int end;
-	mm_process_t *p = get_process(pid);
-
 	//TODO check duplicated process_id
-	if (!p) {
-		p = (mm_process_t*)slab_alloc(&process_slab);
-		if (!p)
-			return ENOMEM;
-//TODO key must not be 0
-		if (!tree_put(&process_tree, pid, (node_t*)p)) {
-			slab_free(&process_slab, p);
-			return EBUSY;
-		}
+	//TODO key must not be 0
 
-		//TODO adhoc
-		p->directory = NULL;
-		process_clear(p);
+	mm_process_t *p = (mm_process_t*)slab_alloc(&process_slab);
+	if (!p)
+		return ENOMEM;
 
-		//TODO check NULL
-		p->directory = copy_kernel_page_table();
+	if (!tree_put(&process_tree, pid, (node_t*)p)) {
+		slab_free(&process_slab, p);
+		return EBUSY;
 	}
 
-	start = pageRoundDown(0);
-	end = pageRoundUp((unsigned int)0 + (unsigned int)0);
+	//TODO adhoc
+	p->directory = NULL;
+	process_clear(p);
 
+	//TODO check NULL
+	p->directory = copy_kernel_page_table();
+
+	unsigned int start = pageRoundDown(0);
+	unsigned int end = pageRoundUp((unsigned int)0 + (unsigned int)0);
 	if (map_user_pages(p->directory, (VP)start, pages(end - start)))
 		return ENOMEM;
 
@@ -993,12 +803,105 @@ int create_init(const pid_t pid)
 			}
 		}
 	}
-
+#if 0
 	log_notice("c %d %x->%x, %x->%x pp=%d pg=%d u=%d g=%d n=%s\n",
 			p->node.key,
 			&p->brothers, p->brothers.next,
 			&p->members, p->members.next,
 			p->ppid, p->pgid, p->uid, p->gid,
 			p->name);
+#endif
+	return 0;
+}
+
+int process_replace(mm_process_t *process,
+		void *address, const size_t size,
+		void *entry, const void *args, const size_t stack_size,
+		int *thread_id)
+{
+//clean
+	if (unmap_user_pages(process->directory,
+			//TODO this address is adhoc. fix region_unmap
+			(VP)0x1000,
+			pages((unsigned int)(process->segments.heap.addr)
+					+  process->segments.heap.len))) {
+		return EFAULT;
+	}
+
+	process->segments.heap.addr = NULL;
+	process->segments.heap.len = 0;
+	process->segments.heap.max = 0;
+	process->segments.heap.attr = attr_nil;
+//create
+	unsigned int start = pageRoundDown((unsigned int)address);
+	unsigned int end = pageRoundUp((unsigned int)(address)
+			+ (unsigned int)(size));
+
+	if (map_user_pages(process->directory,
+			(VP)start, pages(end - start))) {
+		return ENOMEM;
+	}
+
+	process->segments.heap.addr = (void*)end;
+	process->segments.heap.len = 0;
+	process->segments.heap.max = pageRoundUp(USER_HEAP_MAX_ADDR) - end;
+	process->segments.heap.attr = type_heap;
+//set context
+	if (stack_size > USER_STACK_INITIAL_SIZE) {
+		return E2BIG;
+	}
+
+	if (process->node.key == INIT_PID) {
+		if (map_user_pages(process->directory,
+				(void*)pageRoundDown(LOCAL_ADDR - USER_STACK_INITIAL_SIZE - PAGE_SIZE),
+				pages(pageRoundUp(USER_STACK_INITIAL_SIZE)))) {
+			return ENOMEM;
+		}
+	}
+
+	while (!list_is_empty(&(process->threads))) {
+		list_t *n = list_next(&(process->threads));
+		mm_thread_t *th = getMyThread(n);
+
+		list_remove(n);
+		kcall->thread_terminate(th->node.key);
+		kcall->thread_destroy(th->node.key);
+		tree_remove(&thread_tree, th->node.key);
+		//TODO destroy mm_thread_t
+	}
+
+	unsigned int stack_top = pageRoundDown(LOCAL_ADDR - PAGE_SIZE)
+			- stack_size;
+	if (move_stack(process->directory, (void*)stack_top,
+			(void*)args, stack_size)) {
+		return EFAULT;
+	}
+
+	ER_ID result = create_thread(process, (FP)entry,
+			(VP)(stack_top - sizeof(int)));
+	if (result < 0) {
+		return ECONNREFUSED;
+	}
+
+	if (process->local)
+			process->local->thread_id = result;
+
+	//TODO check duplicated thread_id
+	mm_thread_t *th = (mm_thread_t*)slab_alloc(&thread_slab);
+	if (!th) {
+		kcall->thread_destroy(result);
+		return ENOMEM;
+	}
+
+	if (tree_put(&thread_tree, result, (node_t*)th))
+		thread_clear(th, process);
+	else {
+		slab_free(&thread_slab, th);
+		kcall->thread_destroy(result);
+		return EBUSY;
+	}
+
+	*thread_id = th->node.key;
+
 	return 0;
 }

@@ -32,9 +32,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/syslimits.h>
 #include <sys/types.h>
 
-//TODO delete definition
-#define EOK (0)
-
 typedef struct {
 	pm_args_t packet;
 	RDVNO rdvno;
@@ -44,7 +41,6 @@ typedef struct {
 extern int if_chdir(fs_request*);
 extern int if_chmod(fs_request*);
 extern int if_close(fs_request*);
-extern int if_exec(fs_request*);
 extern int if_fork(fs_request*);
 extern int if_create(fs_request*);
 extern int if_open(fs_request*);

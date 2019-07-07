@@ -34,6 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/list.h>
 #include <set/tree.h>
 #include <sys/types.h>
+#include "interface.h"
 
 typedef struct {
 	int server_id;
@@ -104,12 +105,15 @@ extern void process_deallocate_desc(mm_descriptor_t *);
 extern int process_set_desc(mm_process_t *, const int, mm_descriptor_t *);
 extern int process_destroy_desc(mm_process_t *, const int);
 extern mm_descriptor_t *process_find_desc(const mm_process_t *, const int);
-int process_find_new_fd(const mm_process_t *);
+extern int process_find_new_fd(const mm_process_t *);
+extern int process_replace(mm_process_t *process,
+		void *address, const size_t size,
+		void *entry, const void *args, const size_t stack_size,
+		int *);
+extern int process_exec(mm_reply_t *, mm_process_t *, const int, mm_args_t *);
 
 extern ER default_handler(void);
 extern ER stack_fault_handler(void);
-
-extern int if_exec(mm_process_t *, pm_args_t *);
 
 extern int create_init(const pid_t);
 extern int exec_init(const pid_t, char *);

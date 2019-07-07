@@ -13,10 +13,11 @@ Version 2, June 1991
 
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_exec.c,v 1.2 1999/11/10 10:39:07 naniwa Exp $  */
 
+#include <core.h>
+#include <errno.h>
+#include <mm.h>
+#include <services.h>
 #include <string.h>
-#include <local.h>
-#include <nerve/config.h>
-#include "sys.h"
 
 #define STACK_TAIL (LOCAL_ADDR - PAGE_SIZE)
 
@@ -50,7 +51,6 @@ execve(const char *name, char *const argv[], char *const envp[])
     char buf[stsize], *strp;
     int bufc;
     void **vp;
-    pm_args_t req;
 
     vp = (void *) ((unsigned int)buf + sizeof(int) * 3);
     vp[-3] = (void*)argc;
@@ -75,10 +75,24 @@ execve(const char *name, char *const argv[], char *const envp[])
     *vp = 0;
     vp++;
     
-    req.arg1 = (int)name;
-    req.arg2 = (int)buf;
-    req.arg3 = stsize;
+	mm_args_t args = {
+		mm_syscall_exec,
+		(int)name,
+		(int)buf,
+		stsize
 
-    return _call_fs(pm_syscall_exec, &req);
+	};
+
+	ER_UINT reply_size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
+	mm_reply_t *reply = (mm_reply_t*)&args;
+	if (reply_size == sizeof(*reply)) {
+		if (reply->result == -1)
+			_set_local_errno(reply->data[0]);
+
+		return reply->result;
+	} else {
+		_set_local_errno(ECONNREFUSED);
+		return (-1);
+	}
   }
 }

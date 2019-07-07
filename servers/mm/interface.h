@@ -40,10 +40,7 @@ typedef enum {
 extern int mm_palloc(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_pfree(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_clock_gettime(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_process_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_process_clean(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 
-extern int mm_process_set_context(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_sbrk(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
@@ -52,5 +49,6 @@ extern int mm_dup(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_wait(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_exit(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_lseek(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
+extern int mm_exec(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 
 #endif

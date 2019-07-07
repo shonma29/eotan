@@ -27,7 +27,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <errno.h>
 #include "api.h"
 #include "session.h"
-#include "procfs/process.h"
 
 
 int if_fork(fs_request *req)
@@ -41,28 +40,6 @@ int if_fork(fs_request *req)
 	return 0;
 }
 
-int if_exec(fs_request *req)
-{
-	session_t *session = session_find(unpack_sid(req));
-	if (!session)
-		return ESRCH;
-
-	vnode_t *parent;
-	int error_no = session_get_path(req->buf, &parent, session,
-			unpack_tid(req), (char*)(req->packet.arg1));
-	if (error_no)
-		return error_no;
-
-	error_no = exec_program(&(req->packet), session, parent, req->buf);
-	if (error_no) {
-		//TODO release resource if needed
-		//session_destroy(session);
-		return error_no;
-	}
-
-	reply2(req->rdvno, 0, 0, 0);
-	return 0;
-}
 #if 0
 int if_exit(fs_request *req)
 {

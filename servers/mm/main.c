@@ -26,7 +26,9 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <device.h>
+#include <elf.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <mm.h>
 #include <pm.h>
 #include <services.h>
@@ -50,15 +52,13 @@ static int (*funcs[])(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args) = {
 	mm_vmap,
 	mm_vunmap,
 	mm_clock_gettime,
-	mm_process_create,
-	mm_process_clean,
-	mm_process_set_context,
 	mm_sbrk,
 	mm_thread_find,
 	mm_dup,
 	mm_wait,
 	mm_exit,
-	mm_lseek
+	mm_lseek,
+	mm_exec
 };
 
 #define BUFSIZ (sizeof(mm_args_t))
@@ -153,9 +153,6 @@ static void proxy(void)
 		switch (args.operation) {
 		case pm_syscall_fork:
 			result = if_fork(process, &args);
-			break;
-		case pm_syscall_exec:
-			result = if_exec(process, &args);
 			break;
 		case pm_syscall_chdir:
 			result = if_chdir(process, &args);
@@ -360,21 +357,213 @@ int if_fork(mm_process_t *process, pm_args_t *args)
 	return 0;
 }
 
-int if_exec(mm_process_t *process, pm_args_t *args)
+int mm_exec(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
-	args->arg4 = process->node.key;
-	if (kcall->port_call(PORT_FS, args, sizeof(*args))
-			!= sizeof(pm_reply_t)) {
-		return ECONNREFUSED;
-	}
+	do {
+		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
+		if (!th) {
+			//TODO use other errno
+			reply->data[0] = ESRCH;
+			break;
+		}
 
-	pm_reply_t *reply = (pm_reply_t*)args;
-	if (!(reply->result1)) {
-	}
+		mm_process_t *process = get_process(th->process_id);
+		if (!process) {
+			//TODO use other errno
+			reply->data[0] = ESRCH;
+			break;
+		}
+		return process_exec(reply, process, th->node.key << 16, args);
+	} while (false);
 
-	log_notice("proxy: %d exec %d %d\n",
-			process->node.key, reply->result1, reply->error_no);
-	return 0;
+	reply->result = -1;
+	return reply_failure;
+}
+
+int process_exec(mm_reply_t *reply, mm_process_t *process, const int thread_id,
+		mm_args_t *args)
+{
+	do {
+		pm_args_t a;
+		a.operation = pm_syscall_open;
+		a.process_id = thread_id | process->session_id;
+		a.arg1 = args->arg1;
+		a.arg2 = O_EXEC;
+		a.arg3 = 0;
+
+		if (kcall->port_call(PORT_FS, &a, sizeof(a))
+				!= sizeof(pm_reply_t)) {
+			reply->data[0] = ECONNREFUSED;
+			break;
+		}
+
+		pm_reply_t *r = (pm_reply_t*)&a;
+		if (r->result1 == -1) {
+			reply->data[0] = r->error_no;;
+			break;
+		}
+
+		int fid = r->result1;
+		Elf32_Ehdr ehdr;
+		a.operation = pm_syscall_read;
+		devmsg_t *message = (devmsg_t*)&a;
+		message->Tread.tag = (kcall->thread_get_id() << 16)
+				| process->session_id;
+		message->Tread.fid = fid;
+		message->Tread.count = sizeof(ehdr);
+		message->Tread.data = (char*)&ehdr;
+		message->Tread.offset = 0;
+
+		int result = call_device(PORT_FS, message, MESSAGE_SIZE(Tread),
+				Rread, MESSAGE_SIZE(Rread));
+		if (result) {
+			log_err("ehdr0\n");
+			reply->data[0] = result;
+			break;
+		} else {
+			if (message->Rread.count == sizeof(ehdr)) {
+				if (isValidModule(&ehdr)) {
+					log_info("ehdr ok\n");
+				} else {
+					log_err("ehdr1\n");
+					reply->data[0] = ENOEXEC;
+					break;
+				}
+			} else {
+				log_err("ehdr2\n");
+				reply->data[0] = ENOEXEC;
+				break;
+			}
+		}
+
+		int x = 0;
+		Elf32_Phdr ro;
+		Elf32_Phdr rw;
+		unsigned int offset = ehdr.e_phoff;
+		for (int i = 0; i < ehdr.e_phnum; i++) {
+			Elf32_Phdr phdr;
+			a.operation = pm_syscall_read;
+			message->Tread.tag = (kcall->thread_get_id() << 16)
+					| process->session_id;
+			message->Tread.fid = fid;
+			message->Tread.count = sizeof(phdr);
+			message->Tread.data = (char*)&phdr;
+			message->Tread.offset = offset;
+
+			result = call_device(PORT_FS, message, MESSAGE_SIZE(Tread),
+					Rread, MESSAGE_SIZE(Rread));
+			if (result) {
+//				return result;
+				log_err("phdr0\n");
+				break;
+			} else {
+				if (message->Rread.count == sizeof(phdr)) {
+					log_info("phdr ok\n");
+					if (phdr.p_type != PT_LOAD)
+						continue;
+					switch (phdr.p_flags) {
+					case (PF_X | PF_R):
+						ro = phdr;
+						x |= 1;
+						break;
+					case (PF_W | PF_R):
+						rw = phdr;
+						x |= 2;
+						break;
+					}
+					if (x == 3) {
+						log_info("phdr all ok\n");
+						break;
+					}
+				} else {
+					log_err("phdr2\n");
+					//ENOEXEC
+					break;
+				}
+			}
+			offset += sizeof(phdr);
+		}
+//		if (x != 3)
+//			return ENOEXEC;
+
+		int new_thread_id;
+		log_err("replace\n");
+		result = process_replace(process,
+				(void*)(ro.p_vaddr),
+				rw.p_vaddr + rw.p_memsz - ro.p_vaddr,
+				(void*)ehdr.e_entry, (void*)(args->arg2),
+				args->arg3,
+				&new_thread_id);
+		if (result) {
+			log_err("replace0 %d\n", result);
+		}
+
+		a.operation = pm_syscall_read;
+		message->Tread.tag = (new_thread_id << 16)
+				| process->session_id;
+		message->Tread.fid = fid;
+		message->Tread.count = ro.p_filesz;
+		message->Tread.data = (char*)(ro.p_vaddr);
+		message->Tread.offset = ro.p_offset;
+
+		result = call_device(PORT_FS, message, MESSAGE_SIZE(Tread),
+				Rread, MESSAGE_SIZE(Rread));
+		if (result) {
+			log_err("tread0 %d\n", result);
+		} else {
+			if (message->Rread.count == ro.p_filesz) {
+				log_err("tread1\n");
+			} else {
+				log_err("tread2\n");
+			}
+		}
+
+		if (rw.p_filesz) {
+			a.operation = pm_syscall_read;
+			message->Tread.tag = (new_thread_id << 16)
+					| process->session_id;
+			message->Tread.fid = fid;
+			message->Tread.count = rw.p_filesz;
+			message->Tread.data = (char*)(rw.p_vaddr);
+			message->Tread.offset = rw.p_offset;
+
+			result = call_device(PORT_FS, message, MESSAGE_SIZE(Tread),
+					Rread, MESSAGE_SIZE(Rread));
+			if (result) {
+				log_err("dread0 %d\n", result);
+			} else {
+				if (message->Rread.count == rw.p_filesz) {
+					log_err("dread1\n");
+				} else {
+					log_err("dread2\n");
+				}
+			}
+		}
+
+		log_err("start\n");
+		kcall->thread_start(new_thread_id);
+
+		a.operation = pm_syscall_close;
+		a.process_id = (new_thread_id << 16) | process->session_id;
+		a.arg1 = fid;
+		if (kcall->port_call(PORT_FS, &a, sizeof(a))
+				== sizeof(pm_reply_t)) {
+			if (r->result1 == -1) {
+				//TODO what to do?
+				log_err("close0\n");
+			}
+		} else {
+			log_err("close1\n");
+			//TODO what to do?
+		}
+
+		reply->result = 0;
+		reply->data[0] = 0;
+		return reply_success;
+	} while (false);
+
+	reply->result = -1;
+	return reply_failure;
 }
 
 int mm_exit(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
@@ -481,7 +670,7 @@ static int _seek(mm_process_t *process, mm_file_t *file, mm_args_t *args)
 		break;
 	case SEEK_END:
 	{
-		int tag = (kcall->thread_get_id() << 16) | process->node.key;
+		int tag = (kcall->thread_get_id() << 16) | process->session_id;
 		struct stat st;
 		int result = _fstat(&st, file, tag);
 		if (result)

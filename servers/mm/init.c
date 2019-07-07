@@ -25,14 +25,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
-#include <local.h>
-#include <pm.h>
-#include <process.h>
 #include <services.h>
 #include <stddef.h>
 #include <string.h>
-#include <boot/init.h>
-#include <sys/syslimits.h>
+#include "process.h"
 #include "../../lib/libserv/libserv.h"
 
 #define STACK_TAIL (LOCAL_ADDR - PAGE_SIZE)
@@ -62,18 +58,18 @@ int exec_init(const pid_t process_id, char *pathname)
 
 	pathlen++;
 
-	pm_args_t req;
-	req.arg3 = (sizeof(init_arg_t) + pathlen
+	mm_args_t args;
+	args.arg3 = (sizeof(init_arg_t) + pathlen
 			+ strlen(envpath) + 1 + sizeof(int) - 1)
 			& ~(sizeof(int) - 1);
-	if (req.arg3 > sizeof(buf))
+	if (args.arg3 > sizeof(buf))
 		return ENOMEM;
 
 	int result = create_init(process_id);
 	if (result)
 		return result;
 
-	size_t offset = STACK_TAIL - req.arg3;
+	size_t offset = STACK_TAIL - args.arg3;
 	init_arg_t *p = (init_arg_t*)buf;
 	p->argc = 1;
 	p->argv = (char**)(offsetof(init_arg_t, arg0) + offset);
@@ -85,12 +81,13 @@ int exec_init(const pid_t process_id, char *pathname)
 	strcpy(p->buf, pathname);
 	strcpy(&(buf[sizeof(init_arg_t) + pathlen]), envpath);
 
-	mm_process_t *process = get_process(process_id);
-	req.operation = pm_syscall_exec;
-	req.process_id = process->session_id | (PORT_MM << 16);
-	req.arg1 = (int)pathname;
-	req.arg2 = (int)p;
+	args.arg1 = (int)pathname;
+	args.arg2 = (int)p;
 
-	log_info("mm: exec_init(%d, %s)\n", process_id, pathname);
-	return if_exec(process, &req);
+	mm_reply_t reply;
+	result = process_exec(&reply, get_process(process_id), PORT_MM << 16,
+			&args);
+	log_info("mm: exec_init(%d, %s) %d %d\n",
+			process_id, pathname, result, reply.data[0]);
+	return (result ? reply.data[0] : 0);
 }
