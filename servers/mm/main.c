@@ -47,18 +47,16 @@ For more information, please refer to <http://unlicense.org/>
 #define MIN_AUTO_FD (3)
 
 static int (*funcs[])(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args) = {
-	mm_palloc,
-	mm_pfree,
-	mm_vmap,
-	mm_vunmap,
-	mm_clock_gettime,
-	mm_sbrk,
-	mm_thread_find,
-	mm_dup,
+	mm_exec,
 	mm_wait,
 	mm_exit,
+	mm_vmap,
+	mm_vunmap,
+	mm_sbrk,
+	mm_dup,
 	mm_lseek,
-	mm_exec
+	mm_clock_gettime,
+	mm_thread_find
 };
 
 #define BUFSIZ (sizeof(mm_args_t))
