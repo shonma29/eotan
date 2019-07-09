@@ -92,6 +92,7 @@ typedef struct _vnode_t {
 	unsigned int lock_count;
 //TODO is needed?
 	dev_t dev;
+	struct _vnode_t *parent;
 } vnode_t;
 
 struct permission {

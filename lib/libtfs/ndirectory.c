@@ -163,6 +163,7 @@ int tfs_walk(vnode_t *parent, const char *name, vnode_t **node)
 		return error_no;
 	}
 
+	(*node)->parent = parent;
 	vnodes_append(*node);
 
 	return 0;
