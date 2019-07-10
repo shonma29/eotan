@@ -55,39 +55,48 @@ int vnodes_initialize(void *(*palloc)(void), void (*pfree)(void *),
 	return 0;
 }
 
-vnode_t *vnodes_create(void)
+vnode_t *vnodes_create(vnode_t *parent)
 {
-	vnode_t *ip = slab_alloc(&vnodes_slab);
-	if (!ip)
+	vnode_t *vnode = slab_alloc(&vnodes_slab);
+	if (!vnode)
 		return NULL;
 
-	memset(ip, 0, sizeof(vnode_t));
-	list_initialize(&(ip->bros));
-	ip->refer_count = 1;
+	memset(vnode, 0, sizeof(vnode_t));
+	list_initialize(&(vnode->bros));
+	vnode->refer_count = 1;
 
-	return ip;
+	if (parent) {
+		vnode->parent = parent;
+		parent->refer_count++;
+	}
+
+	return vnode;
 }
 
-int vnodes_append(vnode_t *ip)
+int vnodes_append(vnode_t *vnode)
 {
-	list_push(&(ip->fs->vnodes), &(ip->bros));
-
+	list_push(&(vnode->fs->vnodes), &(vnode->bros));
 	return 0;
 }
 
-int vnodes_remove(vnode_t *ip)
+int vnodes_remove(vnode_t *vnode)
 {
-	ip->refer_count--;
-
-	if (!(ip->refer_count)) {
-		if (ip->fs) {
-			int error_no = ip->fs->operations.close(ip);
+	vnode->refer_count--;
+	if (!(vnode->refer_count)) {
+		if (vnode->fs) {
+			int error_no = vnode->fs->operations.close(vnode);
 			if (error_no)
 				return error_no;
 		}
 
-		list_remove(&(ip->bros));
-		slab_free(&vnodes_slab, ip);
+		if (vnode->parent) {
+			// discard error
+			vnodes_remove(vnode->parent);
+			vnode->parent = NULL;
+		}
+
+		list_remove(&(vnode->bros));
+		slab_free(&vnodes_slab, vnode);
 	}
 
 	return 0;
@@ -96,13 +105,11 @@ int vnodes_remove(vnode_t *ip)
 vnode_t *vnodes_find(const vfs_t *fsp, const int index)
 {
 	const list_t *vnodes = &(fsp->vnodes);
-	
 	for (list_t *p = list_next(vnodes); !list_is_edge(vnodes, p);
 			p = list_next(p)) {
-		vnode_t *ip = getINodeParent(p);
-
-		if (ip->index == index)
-			return ip;
+		vnode_t *vnode = getINodeParent(p);
+		if (vnode->index == index)
+			return vnode;
 	}
 
 	return NULL;

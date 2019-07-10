@@ -140,7 +140,7 @@ extern bool cache_invalidate(block_device_t *, const unsigned int);
 extern int cache_synchronize(block_device_t *, const bool);
 
 extern int vnodes_initialize(void *(*)(void), void (*)(void *),	const size_t);
-extern vnode_t *vnodes_create(void);
+extern vnode_t *vnodes_create(vnode_t *);
 extern int vnodes_append(vnode_t *);
 extern int vnodes_remove(vnode_t *);
 extern vnode_t *vnodes_find(const vfs_t *, const int);

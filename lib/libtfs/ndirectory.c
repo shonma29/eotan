@@ -153,7 +153,7 @@ int tfs_walk(vnode_t *parent, const char *name, vnode_t **node)
 		return 0;
 	}
 
-	*node = vnodes_create();
+	*node = vnodes_create(parent);
 	if (!(*node))
 		return ENOMEM;
 
@@ -163,7 +163,6 @@ int tfs_walk(vnode_t *parent, const char *name, vnode_t **node)
 		return error_no;
 	}
 
-	(*node)->parent = parent;
 	vnodes_append(*node);
 
 	return 0;
