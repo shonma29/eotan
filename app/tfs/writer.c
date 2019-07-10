@@ -114,7 +114,7 @@ static int initialize(vnode_t **root)
 		return ERR_MEMORY;
 	}
 
-	*root = vnodes_create();
+	*root = vnodes_create(NULL);
 	if (!(*root)) {
 		printf("vnodes_create failed\n");
 		return ERR_MEMORY;

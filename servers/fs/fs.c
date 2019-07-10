@@ -41,7 +41,7 @@ int fs_initialize(void)
 	if (vnodes_initialize(kcall->palloc, kcall->pfree, MAX_VNODE))
 		return E_NOMEM;
 
-	rootfile = vnodes_create();
+	rootfile = vnodes_create(NULL);
 	if (!rootfile)
 		return E_NOMEM;
 

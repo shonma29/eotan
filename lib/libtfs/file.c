@@ -142,7 +142,7 @@ sfs_i_create(vnode_t * parent,
     SYSTIM clock;
 
     /* 引数のチェック */
-    newip = vnodes_create();
+    newip = vnodes_create(parent);
     if (newip == NULL) {
 	return (ENOMEM);
     }
@@ -169,7 +169,6 @@ sfs_i_create(vnode_t * parent,
     sfs_inode->i_gid = acc->gid;
     newip->dev = 0;
     newip->size = 0;
-    newip->parent = parent;
     sfs_inode->i_atime = clock;
     sfs_inode->i_ctime = clock;
     sfs_inode->i_mtime = clock;
