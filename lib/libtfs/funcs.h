@@ -53,6 +53,6 @@ extern int tfs_walk(vnode_t *, const char *, vnode_t **);
 extern int tfs_mkdir(vnode_t *, const char *, const mode_t mode,
 			     struct permission *, vnode_t **);
 extern int tfs_append_entry(vnode_t *, const char *, vnode_t *);
-extern int tfs_remove_entry(vnode_t *, const char *, vnode_t *);
+extern int tfs_remove_entry(vnode_t *, vnode_t *);
 
 #endif

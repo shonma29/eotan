@@ -29,7 +29,126 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/errno.h>
 #include "api.h"
 #include "session.h"
+#include "../../lib/libserv/libserv.h"
 
+
+int if_walk(fs_request *req)
+{
+	devmsg_t *request = (devmsg_t*)&(req->packet);
+	//TODO set adequate errno
+	int error_no;
+//log_info("walk-1 %x\n", req->rdvno);
+	do {
+		session_t *session = session_find(unpack_sid(req));
+		if (!session) {
+			error_no = ESRCH;
+			break;
+		}
+
+		int fid = request->Twalk.fid;
+		struct file *parent = session_find_desc(session, fid);
+		if (!parent) {
+//log_info("walk0 %d\n", fid);
+			error_no = EBADF;
+			break;
+		}
+
+		if (parent->f_flag != O_ACCMODE) {
+//log_info("walk1\n");
+			error_no = EBADF;
+			break;
+		}
+
+		struct file *file = NULL;
+		int newfid = request->Twalk.newfid;
+		if (request->Twalk.nwname) {
+//log_info("walk3\n");
+			if ((parent->f_vnode->mode & S_IFMT) != S_IFDIR) {
+				error_no = ENOTDIR;
+//log_info("walk4\n");
+				break;
+			}
+
+			if (fid != newfid) {
+//log_info("walk6\n");
+				error_no = session_create_desc(&file, session,
+						newfid);
+				if (error_no) {
+//log_info("walk7\n");
+					break;
+				}
+			}
+		} else if (newfid == fid) {
+//log_info("walk9\n");
+			//TODO really?
+			devmsg_t response;
+			response.type = Rwalk;
+			response.Rwalk.tag = request->Twalk.tag;
+			//TODO return nwqid and wqid
+			reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rwalk));
+			return 0;
+		}
+
+		vnode_t *vnode;
+		if (request->Twalk.nwname) {
+//log_info("walk11\n");
+			vnode_t *starting_node;
+			error_no = session_get_path2(req->buf, &starting_node,
+					session, parent->f_vnode,
+					unpack_tid(req), request->Twalk.wname);
+			if (error_no) {
+//log_info("walk12\n");
+				if (file) {
+//log_info("walk13\n");
+					session_destroy_desc(session, newfid);
+				}
+
+				break;
+			}
+
+			//TODO '.' entry is illegal
+			//TODO '..' cannot use in top level
+			error_no = vfs_walk(starting_node, req->buf, O_RDONLY,
+					&(session->permission), &vnode);
+			if (error_no) {
+//log_info("walk15\n");
+				if (file) {
+//log_info("walk16\n");
+					session_destroy_desc(session, newfid);
+				}
+
+				break;
+			}
+		} else {
+//log_info("walk17\n");
+			vnode = parent->f_vnode;
+			vnode->refer_count++;
+		}
+
+		if (!file) {
+//log_info("walk18\n");
+			vnodes_remove(parent->f_vnode);
+			file = parent;
+		}
+
+		file->f_vnode = vnode;
+		file->f_flag = O_ACCMODE;
+
+		devmsg_t response;
+		response.type = Rwalk;
+		response.Rwalk.tag = request->Twalk.tag;
+		//TODO return nwqid and wqid
+//log_info("walk22 %x %p %d\n", req->rdvno, &response, MESSAGE_SIZE(Rwalk));
+		int result = reply_dev(req->rdvno, &response,
+				MESSAGE_SIZE(Rwalk));
+//log_info("walk23 %d\n", result);
+		return 0;
+	} while (false);
+//log_info("walk20\n");
+	//TODO return nwqid and wqid
+	reply_dev_error(req->rdvno, request->Twalk.tag, error_no);
+	return 0;
+}
 
 int if_create(fs_request *req)
 {
@@ -57,21 +176,41 @@ int if_create(fs_request *req)
 
 int if_remove(fs_request *req)
 {
-	session_t *session = session_find(unpack_sid(req));
-	if (!session)
-		return ESRCH;
+	devmsg_t *request = (devmsg_t*)&(req->packet);
+	int error_no;
 
-	vnode_t *starting_node;
-	int error_no = session_get_path(req->buf, &starting_node,
-			session, unpack_tid(req), (char*)(req->packet.arg1));
-	if (error_no)
-		return error_no;
+	do {
+		session_t *session = session_find(unpack_sid(req));
+		if (!session) {
+			error_no = ESRCH;
+			break;
+		}
 
-	error_no = vfs_remove(starting_node, req->buf, &(session->permission));
-	if (error_no)
-		return error_no;
+		int fid = request->Tremove.fid;
+		struct file *file = session_find_desc(session, fid);
+		if (!file) {
+			error_no = EBADF;
+			break;
+		}
 
-	reply2(req->rdvno, 0, 0, 0);
+		error_no = vfs_remove(file->f_vnode, &(session->permission));
 
+		int e = session_destroy_desc(session, fid);
+		if (e) {
+			//TODO what to do?
+		}
+
+
+		if (error_no)
+			break;
+
+		devmsg_t response;
+		response.type = Rremove;
+		response.Rremove.tag = request->Tremove.tag;
+		reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rremove));
+		return 0;
+	} while (false);
+
+	reply_dev_error(req->rdvno, request->Tremove.tag, error_no);
 	return 0;
 }

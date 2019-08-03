@@ -51,8 +51,9 @@ int if_open(fs_request *req)
 	if (error_no)
 		return error_no;
 
+	int fid = req->packet.arg4;
 	struct file *file;
-	error_no = session_create_desc(&file, session, -1);
+	error_no = session_create_desc(&file, session, fid);
 	if (error_no) {
 		vnodes_remove(vnode);
 		return error_no;
@@ -65,7 +66,7 @@ int if_open(fs_request *req)
 	return 0;
 }
 
-int if_close(fs_request *req)
+int if_clunk(fs_request *req)
 {
 	int error_no;
 	devmsg_t *request = (devmsg_t*)&(req->packet);

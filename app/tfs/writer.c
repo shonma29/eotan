@@ -379,9 +379,15 @@ static int do_create(vfs_t *fs, char *path, const char *from,
 
 static int do_remove(vfs_t *fs, char *path, const struct permission *permission)
 {
-	int result = vfs_remove(fs->root, path, permission);
+	vnode_t *vnode;
+	int result = vfs_walk(fs->root, path, O_ACCMODE, permission, &vnode);
+	if (result)
+		return result;
+
+	result = vfs_remove(vnode, permission);
 	if (result) {
 		printf("remove: remove(%s) failed %d\n", path, result);
+		vnodes_remove(vnode);
 		return result;
 	}
 
@@ -406,9 +412,15 @@ static int do_mkdir(vfs_t *fs, char *path, const struct permission *permission)
 
 static int do_rmdir(vfs_t *fs, char *path, const struct permission *permission)
 {
-	int result = vfs_remove(fs->root, path, permission);
+	vnode_t *vnode;
+	int result = vfs_walk(fs->root, path, O_ACCMODE, permission, &vnode);
+	if (result)
+		return result;
+
+	result = vfs_remove(vnode, permission);
 	if (result) {
 		printf("rmdir: rmdir(%s) failed %d\n", path, result);
+		vnodes_remove(vnode);
 		return result;
 	}
 

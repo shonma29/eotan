@@ -63,7 +63,7 @@ Version 2, June 1991
 
 
 int
-sfs_i_unlink(vnode_t * parent, char *fname, vnode_t *ip)
+sfs_i_unlink(vnode_t * parent, vnode_t *ip)
 {
     W error_no;
 
@@ -72,7 +72,7 @@ sfs_i_unlink(vnode_t * parent, char *fname, vnode_t *ip)
 	return (EBUSY);
     }
 
-    error_no = tfs_remove_entry(parent, fname, ip);
+    error_no = tfs_remove_entry(parent, ip);
     if (error_no) {
 	return (error_no);
     }
@@ -89,7 +89,7 @@ sfs_i_unlink(vnode_t * parent, char *fname, vnode_t *ip)
  * ディレクトリを削除する。
  *
  */
-int sfs_i_rmdir(vnode_t * parent, char *fname, vnode_t *ip)
+int sfs_i_rmdir(vnode_t * parent, vnode_t *ip)
 {
     W error_no;
 
@@ -97,7 +97,7 @@ int sfs_i_rmdir(vnode_t * parent, char *fname, vnode_t *ip)
 	return (ENOTEMPTY);
     }
 
-    error_no = tfs_remove_entry(parent, fname, ip);
+    error_no = tfs_remove_entry(parent, ip);
     if (error_no) {
 	return (error_no);
     }

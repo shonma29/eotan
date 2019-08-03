@@ -41,6 +41,8 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../kernel/mpu/mpufunc.h"
 #include "../../lib/libserv/libserv.h"
 
+#define MIN_SID (1)
+#define MIN_FID (1)
 #define MIN_AUTO_FD (3)
 
 #define getParent(type, p) ((intptr_t)p - offsetof(type, node))
@@ -54,6 +56,7 @@ static slab_t descriptor_slab;
 static slab_t process_group_slab;
 static tree_t process_group_tree;
 static slab_t session_slab;
+static tree_t session_tree;
 
 static void process_clear(mm_process_t *p);
 static void thread_clear(mm_thread_t *th, mm_process_t *p);
@@ -109,6 +112,7 @@ static void process_clear(mm_process_t *p)
 		p->directory = NULL;
 	}
 
+	//TODO take over fields when duplicate?
 	list_initialize(&(p->threads));
 	//TODO leave on exec
 	tree_create(&(p->descriptors), NULL);
@@ -195,6 +199,8 @@ void process_initialize(void)
 	session_slab.palloc = kcall->palloc;
 	session_slab.pfree = kcall->pfree;
 	slab_create(&session_slab);
+
+	tree_create(&session_tree, NULL);
 }
 
 mm_process_t *process_duplicate(mm_process_t *src)
@@ -269,9 +275,11 @@ mm_process_t *process_duplicate(mm_process_t *src)
 		dest->pgid = src->pgid;
 		dest->uid = src->uid;
 		dest->gid = src->gid;
-		dest->session_id = src->session_id;
-		//TODO attach -> walk -> set cwd
-		//TODO set local
+		dest->session = src->session;
+		dest->wd = src->wd;
+		if (dest->wd)
+			dest->wd->f_count++;
+
 		strcpy(dest->name, src->name);
 
 		if (map_user_pages(dest->directory, (void*)LOCAL_ADDR,
@@ -290,12 +298,13 @@ mm_process_t *process_duplicate(mm_process_t *src)
 		dest->local->wd_len = src->local->wd_len;
 		strcpy(dest->local->wd, src->local->wd);
 
-		log_notice("d %d %x->%x, %x->%x pp=%d pg=%d u=%d g=%d n=%s\n",
+		log_notice("d %d %x->%x, %x->%x pp=%d pg=%d u=%d g=%d n=%s %x\n",
 				dest->node.key,
 				&dest->brothers, dest->brothers.next,
 				&dest->members, dest->members.next,
 				dest->ppid, dest->pgid, dest->uid, dest->gid,
-				dest->name);
+				dest->name,
+				(dest->wd) ? dest->wd->node.key : (-1));
 		return dest;
 	} while (false);
 
@@ -625,7 +634,7 @@ mm_descriptor_t *process_create_file(void)
 {
 	mm_descriptor_t *d = (mm_descriptor_t*)slab_alloc(&descriptor_slab);
 	if (d) {
-		mm_file_t *f = (mm_file_t*)slab_alloc(&file_slab);
+		mm_file_t *f = process_allocate_file();
 		if (!f) {
 			slab_free(&descriptor_slab, d);
 			return NULL;
@@ -635,6 +644,11 @@ mm_descriptor_t *process_create_file(void)
 	}
 
 	return d;
+}
+
+mm_file_t *process_allocate_file(void)
+{
+	return (mm_file_t*)slab_alloc(&file_slab);
 }
 
 void process_deallocate_file(mm_file_t *file)
@@ -736,7 +750,8 @@ int create_init(const pid_t pid)
 	p->pgid = INIT_PID;
 	p->uid = INIT_UID;
 	p->gid = INIT_GID;
-	p->session_id = INIT_SESSION_ID;
+	p->session = NULL;
+	p->wd = NULL;
 
 	mm_process_group_t *pg = slab_alloc(&process_group_slab);
 	if (pg) {
@@ -766,7 +781,7 @@ int create_init(const pid_t pid)
 		mm_file_t *f = d->file;
 		f->server_id = PORT_CONSOLE;
 		//TODO open
-		f->fid = 0;
+		f->node.key = 0;
 		f->f_flag = O_RDONLY;
 		f->f_count = 1;
 		f->f_offset = 0;
@@ -782,7 +797,7 @@ int create_init(const pid_t pid)
 		mm_file_t *f = d->file;
 		f->server_id = PORT_CONSOLE;
 		//TODO open
-		f->fid = 0;
+		f->node.key = 0;
 		f->f_flag = O_WRONLY;
 		f->f_count = 1;
 		f->f_offset = 0;
@@ -819,7 +834,6 @@ int process_replace(mm_process_t *process,
 		void *entry, const void *args, const size_t stack_size,
 		int *thread_id)
 {
-//clean
 	if (unmap_user_pages(process->directory,
 			//TODO this address is adhoc. fix region_unmap
 			(VP)0x1000,
@@ -832,7 +846,7 @@ int process_replace(mm_process_t *process,
 	process->segments.heap.len = 0;
 	process->segments.heap.max = 0;
 	process->segments.heap.attr = attr_nil;
-//create
+
 	unsigned int start = pageRoundDown((unsigned int)address);
 	unsigned int end = pageRoundUp((unsigned int)(address)
 			+ (unsigned int)(size));
@@ -846,7 +860,7 @@ int process_replace(mm_process_t *process,
 	process->segments.heap.len = 0;
 	process->segments.heap.max = pageRoundUp(USER_HEAP_MAX_ADDR) - end;
 	process->segments.heap.attr = type_heap;
-//set context
+
 	if (stack_size > USER_STACK_INITIAL_SIZE) {
 		return E2BIG;
 	}
@@ -902,6 +916,72 @@ int process_replace(mm_process_t *process,
 	}
 
 	*thread_id = th->node.key;
+
+	return 0;
+}
+
+mm_session_t *session_create(void)
+{
+	int id;
+	for (id = MIN_SID; id < SESSION_MAX; id++)
+		if (!tree_get(&session_tree, id))
+			break;
+
+	if (id == SESSION_MAX)
+		return NULL;
+
+	mm_session_t *session = (mm_session_t*)slab_alloc(&session_slab);
+	if (session) {
+		if (!tree_put(&session_tree, id, &(session->node))) {
+			//TODO what to do?
+		}
+
+		tree_create(&(session->files), NULL);
+		session->refer_count = 1;
+	}
+
+	return session;
+}
+
+int session_destroy(mm_session_t *session)
+{
+	session->refer_count--;
+	if (!(session->refer_count)) {
+		//TODO warn and release opened files
+		//TODO clunk root fid if opened
+
+		if (!tree_remove(&session_tree, session->node.key)) {
+			//TODO what to do?
+		}
+
+		slab_free(&session_slab, session);
+	}
+
+	return 0;
+}
+
+int session_find_new_fid(mm_session_t *session)
+{
+//log_info("mm: ffile %d\n", session->node.key);
+	for (int fid = MIN_FID; fid < FILES_PER_SESSION; fid++)
+		if (!tree_get(&(session->files), fid))
+			return fid;
+
+	return -1;
+}
+
+int session_add_file(mm_session_t *session, const int fid, mm_file_t *file)
+{
+//log_info("mm: afile sid=%d fid=%d\n", session->node.key, fid);
+	return (tree_put(&(session->files), fid, &(file->node)) ? 0 : 1);
+}
+
+int session_remove_file(mm_session_t *session, const int fid)
+{
+//log_info("mm: rfile sid=%d fid=%d\n", session->node.key, fid);
+	mm_file_t *file = (mm_file_t*)tree_remove(&(session->files), fid);
+	if (!file)
+		return EBADF;
 
 	return 0;
 }

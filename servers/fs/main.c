@@ -46,15 +46,16 @@ static char req_buf[
 static int (*syscall[])(fs_request*) = {
 	if_fork,
 	if_chdir,
-	if_create,
-	if_remove,
-	if_fstat,
-	if_chmod,
+	if_attach,
+	if_walk,
 	if_open,
+	if_create,
 	if_read,
 	if_write,
-	if_close,
-	if_attach
+	if_clunk,
+	if_remove,
+	if_stat,
+	if_wstat
 };
 
 static int initialize(void);
@@ -121,7 +122,8 @@ static bool port_init(void)
 	struct t_cpor packet = {
 		TA_TFIFO,
 		sizeof(pm_args_t),
-		sizeof(pm_reply_t)
+//TODO fix		sizeof(pm_reply_t)
+		sizeof(devmsg_t)
 	};
 
 	return kcall->port_open(&packet) == E_OK;
@@ -231,6 +233,14 @@ void start(VP_INT exinf)
 */
 		int result;
 		switch (req->packet.operation) {
+		case pm_syscall_attach:
+			result = (size == MESSAGE_SIZE(Tattach)) ?
+					worker_enqueue(&req) : EINVAL;
+			break;
+		case pm_syscall_walk:
+			result = (size == MESSAGE_SIZE(Twalk)) ?
+					worker_enqueue(&req) : EINVAL;
+			break;
 		case pm_syscall_read:
 			result = (size == MESSAGE_SIZE(Tread)) ?
 					worker_enqueue(&req) : EINVAL;
@@ -243,12 +253,16 @@ void start(VP_INT exinf)
 			result = (size == MESSAGE_SIZE(Tclunk)) ?
 					worker_enqueue(&req) : EINVAL;
 			break;
+		case pm_syscall_remove:
+			result = (size == MESSAGE_SIZE(Tremove)) ?
+					worker_enqueue(&req) : EINVAL;
+			break;
 		case pm_syscall_fstat:
 			result = (size == MESSAGE_SIZE(Tstat)) ?
 					worker_enqueue(&req) : EINVAL;
 			break;
-		case pm_syscall_attach:
-			result = (size == MESSAGE_SIZE(Tattach)) ?
+		case pm_syscall_chmod:
+			result = (size == MESSAGE_SIZE(Twstat)) ?
 					worker_enqueue(&req) : EINVAL;
 			break;
 		default:

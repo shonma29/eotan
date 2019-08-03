@@ -152,7 +152,7 @@ extern int vfs_open(vnode_t *, char *, const int, const mode_t,
 		struct permission *acc, vnode_t **);
 extern int vfs_create(vnode_t *, char *, const int, const mode_t,
 		const struct permission *, vnode_t **);
-extern int vfs_remove(vnode_t *, char *, const struct permission *);
+extern int vfs_remove(vnode_t *, const struct permission *);
 extern int vfs_permit(const vnode_t *, const struct permission *,
 		const unsigned int);
 extern int vfs_read(vnode_t *, copier_t *, const unsigned int, const size_t,

@@ -37,9 +37,11 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/types.h>
 #include "interface.h"
 
+#define SESSION_FID (0)
+
 typedef struct {
+	node_t node;
 	int server_id;
-	int fid;
 	int f_flag;
 	int f_count;
 	off_t f_offset;
@@ -65,7 +67,8 @@ typedef struct {
 
 typedef struct {
 	node_t node;
-	int fid;
+	tree_t files;
+	int refer_count;
 } mm_session_t;
 
 typedef struct {
@@ -85,7 +88,8 @@ typedef struct {
 	pid_t pgid;
 	uid_t uid;
 	gid_t gid;
-	int session_id;
+	mm_session_t *session;
+	mm_file_t *wd;
 	thread_local_t *local;
 	int exit_status;
 	RDVNO rdvno;
@@ -100,6 +104,7 @@ extern int process_destroy(mm_process_t *, const int);
 extern int process_release_body(mm_process_t *);
 extern int thread_create(mm_process_t *, FP, VP);
 extern mm_descriptor_t *process_create_file(void);
+extern mm_file_t *process_allocate_file(void);
 extern void process_deallocate_file(mm_file_t *);
 extern mm_descriptor_t *process_allocate_desc(void);
 extern void process_deallocate_desc(mm_descriptor_t *);
@@ -111,6 +116,11 @@ extern int process_replace(mm_process_t *process,
 		void *address, const size_t size,
 		void *entry, const void *args, const size_t stack_size,
 		int *);
+extern mm_session_t *session_create(void);
+extern int session_destroy(mm_session_t *);
+extern int session_find_new_fid(mm_session_t *);
+extern int session_add_file(mm_session_t *, const int, mm_file_t *);
+extern int session_remove_file(mm_session_t *, const int);
 extern int process_exec(mm_reply_t *, mm_process_t *, const int, mm_args_t *);
 
 extern ER default_handler(void);

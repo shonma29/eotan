@@ -64,7 +64,8 @@ enum dev_message_type {
 };
 
 typedef struct {
-	enum dev_message_type type;
+	//TODO enum dev_message_type type;
+	int type;
 	union {
 		struct {
 			int tag;
@@ -112,7 +113,7 @@ typedef struct {
 			int tag;
 			int fid;
 			int newfid;
-			int mwname;
+			int nwname;
 			char *wname;
 		} Twalk;
 		struct {

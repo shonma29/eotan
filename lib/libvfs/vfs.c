@@ -256,65 +256,44 @@ int vfs_create(vnode_t *cwd, char *path, const int flags, const mode_t mode,
 	return 0;
 }
 
-int vfs_remove(vnode_t *cwd, char *path, const struct permission *permission)
+int vfs_remove(vnode_t *node, const struct permission *permission)
 {
-	char *parent_path = "";
-	char *head = split_path(path, &parent_path);
-	if (!(*head)) {
-		log_debug("vfs_remove: bad path %s\n", path);
+	vnode_t *parent = node->parent;
+	if (!parent)
+		//TODO really?
 		return EINVAL;
-	}
-
-	vnode_t *parent;
-	int result = vfs_walk(cwd, parent_path, O_WRONLY, permission,
-			&parent);
-	if (result) {
-		log_debug("vfs_remove: vfs_walk(%s) failed %d\n",
-				parent_path, result);
-		return result;
-	}
 
 	if ((parent->mode & S_IFMT) != S_IFDIR) {
 		log_debug("vfs_remove: %s is not directory\n", parent_path);
-		vnodes_remove(parent);
 		return ENOTDIR;
 	}
 
 	if (vfs_permit(parent, permission, W_OK | X_OK)) {
 		log_debug("vfs_remove: %s is not writable\n", parent_path);
-		vnodes_remove(parent);
 		return EACCES;
-	}
-
-	vnode_t *node;
-	result = vfs_walk(parent, head, O_ACCMODE, permission, &node);
-	if (result) {
-		log_debug("vfs_remove: vfs_walk(%s) failed %d\n", head, result);
-		vnodes_remove(parent);
-		return result;
 	}
 
 	//TODO really?
 	if (node->refer_count > 1) {
-		log_debug("vfs_remove: %s is refered\n", head);
-		vnodes_remove(node);
-		vnodes_remove(parent);
+		log_debug("vfs_remove: %d is referred\n", node->index);
 		return EBUSY;
 	}
 
+	int result;
 	if ((node->mode & S_IFMT) == S_IFDIR)
-		result = parent->fs->operations.rmdir(parent, head, node);
+		result = parent->fs->operations.rmdir(parent, node);
 	else
-		result = parent->fs->operations.remove(parent, head, node);
-
-	vnodes_remove(node);
-	vnodes_remove(parent);
+		result = parent->fs->operations.remove(parent, node);
 
 	if (result) {
-		log_debug("vfs_remove: mkdir(%s) failed %d\n", head, result);
+		log_debug("vfs_remove: remove(%d) failed %d\n", node->index,
+				result);
 		return result;
 	}
 
+	//TODO here?
+	vnodes_remove(parent);
+	vnodes_remove(node);
 	return 0;
 }
 

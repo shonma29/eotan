@@ -34,6 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/unistd.h>
 #include "api.h"
 #include "session.h"
+#include "../../lib/libserv/libserv.h"
 
 static slab_t session_slab;
 static tree_t session_tree;
@@ -46,9 +47,6 @@ int if_attach(fs_request *req)
 	int error_no;
 
 	do {
-		//TODO check if fid has already used
-		//int fid = request->Tattach.fid;
-
 		if (request->Tattach.afid != NOFID) {
 			error_no = EINVAL;
 			break;
@@ -61,6 +59,14 @@ int if_attach(fs_request *req)
 			break;
 		}
 
+		int fid = request->Tattach.fid;
+		struct file *file;
+		error_no = session_create_desc(&file, session, fid);
+		if (error_no) {
+			session_destroy(session);
+			break;
+		}
+
 		//TODO get from auth server
 		session->permission.uid = (uid_t)(request->Tattach.uname);
 		session->permission.gid = INIT_GID;
@@ -68,8 +74,10 @@ int if_attach(fs_request *req)
 		//TODO can not walk to the parent of aname
 		session->cwd = rootfile;
 		rootfile->refer_count++;
-		//TODO bind fid to session type (for use to close session)
-
+		//TODO bind fid to with session type (for use to close session)
+		file->f_vnode = rootfile;
+		file->f_flag = O_ACCMODE;
+log_info("fs: attach %d\n", file->node.key);
 		devmsg_t response;
 		response.type = Rattach;
 		response.Rattach.tag = request->Tattach.tag;
@@ -88,21 +96,37 @@ int if_chdir(fs_request *req)
 	if (!session)
 		return ESRCH;
 
+	int fid = req->packet.arg2;
+	struct file *file;
+	int error_no = session_create_desc(&file, session, fid);
+	if (error_no) {
+log_info("fs: chdir0 %x %d\n", fid, error_no);
+		return error_no;
+	}
+
 	vnode_t *starting_node;
-	int error_no = session_get_path(req->buf, &starting_node,
+	error_no = session_get_path(req->buf, &starting_node,
 			session, unpack_tid(req),
 			(char*)(req->packet.arg1));
-	if (error_no)
+	if (error_no) {
+		session_destroy_desc(session, fid);
+log_info("fs: chdir1\n");
 		return error_no;
+	}
 
 	vnode_t *wd;
 	error_no = vfs_walk(starting_node, req->buf, O_RDONLY,
 			&(session->permission), &wd);
-	if (error_no)
+	if (error_no) {
+		session_destroy_desc(session, fid);
+log_info("fs: chdir2\n");
 		return error_no;
+	}
 
 	if ((wd->mode & S_IFMT) != S_IFDIR) {
 		vnodes_remove(wd);
+		session_destroy_desc(session, fid);
+log_info("fs: chdir3\n");
 		return ENOTDIR;
 	}
 
@@ -110,14 +134,17 @@ int if_chdir(fs_request *req)
 	error_no = vfs_permit(wd, &(session->permission), X_OK);
 	if (error_no) {
 		vnodes_remove(wd);
+		session_destroy_desc(session, fid);
+log_info("fs: chdir4\n");
 		return error_no;
 	}
-
+log_info("fs: chdir5\n");
 	vnodes_remove(session->cwd);
 	session->cwd = wd;
-
+	file->f_vnode = wd;
+	//TODO really?
+	file->f_flag = O_ACCMODE;
 	reply2(req->rdvno, 0, 0, 0);
-
 	return 0;
 }
 
@@ -190,29 +217,16 @@ session_t *session_find(const pid_t pid)
 
 int session_create_desc(struct file **file, session_t *session, const int fd)
 {
-	int d;
-
-	if (fd >= 0) {
-		if (session_find_desc(session, fd))
-			//TODO adequate error code
-			return EBUSY;
-
-		d = fd;
-	} else {
-		//TODO optimize
-		for (d = 0; d < MAX_FILE; d++) {
-			if (!session_find_desc(session, d))
-				break;
-		}
-		if (d >= MAX_FILE)
-			return EMFILE;
-	}
+log_info("fs: creeate_desc %d\n", fd);
+	if (session_find_desc(session, fd))
+		//TODO adequate error code
+		return EBUSY;
 
 	struct file *f = slab_alloc(&file_slab);
 	if (!f)
 		return ENOMEM;
 
-	if (!tree_put(&(session->files), d, &(f->node))) {
+	if (!tree_put(&(session->files), fd, &(f->node))) {
 		slab_free(&file_slab, f);
 		//TODO adequate error code
 		return EIO;
@@ -258,5 +272,24 @@ int session_get_path(char *dest, vnode_t **vnode,
 	}
 
 	*vnode = session->cwd;
+	return 0;
+}
+
+int session_get_path2(char *dest, vnode_t **vnode, const session_t *session,
+		const vnode_t *parent, const int tid, const char *src)
+{
+	ER_UINT len = kcall->region_copy(tid, src, PATH_MAX + 1, dest);
+	if (len <= 0)
+		return EFAULT;
+
+	if (len > PATH_MAX)
+		return ENAMETOOLONG;
+
+	if (*dest == '/') {
+		*vnode = session->cwd;
+		return 0;
+	}
+
+	*vnode = (vnode_t*)parent;
 	return 0;
 }

@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 
 typedef struct _session_t {
 	node_t node;
+	//TODO add thread_id list
 	struct permission permission;
 	vnode_t *cwd;
 	tree_t files;
@@ -46,6 +47,8 @@ extern int session_destroy_desc(session_t *, const int);
 extern struct file *session_find_desc(const session_t *, const int);
 
 extern int session_get_path(char *, vnode_t **,
-	const session_t *, const int, const char *);
+		const session_t *, const int, const char *);
+extern int session_get_path2(char *, vnode_t **, const session_t *,
+		const vnode_t *, const int, const char *);
 
 #endif

@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
+#include <fcntl.h>
 #include <services.h>
 #include <stddef.h>
 #include <string.h>
@@ -48,6 +49,8 @@ typedef struct {
 //TODO where to define?
 static char envpath[] = "PATH=/bin";
 static char buf[sizeof(init_arg_t) + PATH_MAX + 1 + MAX_ENV];
+
+static int attach(mm_process_t *process, const int thread_id);
 
 
 int exec_init(const pid_t process_id, char *pathname)
@@ -85,30 +88,71 @@ int exec_init(const pid_t process_id, char *pathname)
 	args.arg2 = (int)p;
 
 	mm_process_t *process = get_process(process_id);
-
-	//TODO move to 'attach' (or 'auth') system call
-	pm_args_t a;
-	a.operation = pm_syscall_attach;
-	devmsg_t *message = (devmsg_t*)&a;
-	message->Tattach.tag = (PORT_MM << 16) | process->session_id;
-	message->Tattach.fid = process->session_id;
-	message->Tattach.afid = NOFID;
-	message->Tattach.uname = (char*)(process->uid);
-	message->Tattach.aname = (char*)"/";
-
-	result = call_device(PORT_FS, message, MESSAGE_SIZE(Tattach),
-			Rattach, MESSAGE_SIZE(Rattach));
+	result = attach(process, PORT_MM << 16);
 	if (result) {
-		log_err("mm: attach(%d) %d\n",
-				process->session_id, result);
 		//TODO destroy process
+log_info("mm: init attach %d\n", result);
 		return result;
 	}
 
 	mm_reply_t reply;
 	result = process_exec(&reply, process, PORT_MM << 16,
 			&args);
-	log_info("mm: exec_init(%d, %s) %d %d\n",
+	log_info("mm: exec_init(pid=%d, %s) r=%d e=%d\n",
 			process_id, pathname, result, reply.data[0]);
 	return (result ? reply.data[0] : 0);
+}
+
+//TODO move to 'attach' (or 'auth') system call
+static int attach(mm_process_t *process, const int thread_id)
+{
+	mm_session_t *session = session_create();
+	if (!session)
+		return ENOMEM;
+
+	int fid = session_find_new_fid(session);
+	if (fid == -1) {
+		session_destroy(session);
+		return ENOMEM;
+	}
+
+	mm_file_t *f = process_allocate_file();
+	if (!f) {
+		session_destroy(session);
+		return ENOMEM;
+	}
+
+	pm_args_t a;
+	a.operation = pm_syscall_attach;
+	devmsg_t *message = (devmsg_t*)&a;
+	message->Tattach.tag = thread_id | session->node.key;
+	message->Tattach.fid = fid;
+	message->Tattach.afid = NOFID;
+	message->Tattach.uname = (char*)(process->uid);
+	message->Tattach.aname = (char*)"/";
+
+	int result = call_device(PORT_FS, message, MESSAGE_SIZE(Tattach),
+			Rattach, MESSAGE_SIZE(Rattach));
+	if (result) {
+		log_err("mm: attach(%x) %d\n", fid, result);
+		process_deallocate_file(f);
+		session_destroy(session);
+		return result;
+	}
+
+	f->server_id = PORT_FS;
+	f->f_flag = O_ACCMODE;
+	f->f_count = 1;
+	f->f_offset = 0;
+
+	result = session_add_file(session, fid, f);
+	if (result) {
+		//TODO what to do?
+	}
+log_info("mm: attach(%p fid=%d) %d\n", session, fid, result);
+
+	process->wd = f;
+	process->session = session;
+
+	return 0;
 }

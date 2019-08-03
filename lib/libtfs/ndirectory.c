@@ -189,7 +189,7 @@ int tfs_mkdir(vnode_t *parent, const char *name, const mode_t mode,
 	size_t len;
 	error_no = tfs_write(child, &copier, 0, sizeof(dir), &len);
 	if (error_no) {
-		error_no = tfs_remove_entry(parent, name, child);
+		error_no = tfs_remove_entry(parent, child);
 		if (error_no)
 			log_warning("sfs_i_mkdir: %s is dead link\n", name);
 
@@ -230,14 +230,13 @@ int tfs_append_entry(vnode_t *parent, const char *name, vnode_t *node)
 			&len);
 }
 
-int tfs_remove_entry(vnode_t *parent, const char *name, vnode_t *node)
+int tfs_remove_entry(vnode_t *parent, vnode_t *node)
 {
 	char buf[sizeof(struct tfs_dir) - TFS_MINNAMLEN + TFS_MAXNAMLEN];
 	copier_t copier = {
 		copy_to
 	};
 	struct tfs_dir *dir = (struct tfs_dir*)buf;
-	size_t name_len = strlen(name);
 	size_t delta;
 	int offset;
 	//TODO optimize
@@ -261,11 +260,10 @@ int tfs_remove_entry(vnode_t *parent, const char *name, vnode_t *node)
 		if (len < real_len)
 			return EINVAL;
 
-		if (name_len == dir->d_namlen)
-			if (!memcmp(name, dir->d_name, name_len)) {
-				delta = real_len;
-				break;
-			}
+		if (dir->d_fileno == node->index) {
+			delta = real_len;
+			break;
+		}
 
 		offset += real_len;
 	}
@@ -294,11 +292,11 @@ int tfs_remove_entry(vnode_t *parent, const char *name, vnode_t *node)
 		if (len < real_len)
 			return EINVAL;
 
-		copier_t copier = {
+		copier_t writer = {
 			copy_to,
 			buf
 		};
-		error_no = tfs_write(parent, &copier, offset, real_len, &len);
+		error_no = tfs_write(parent, &writer, offset, real_len, &len);
 		if (error_no)
 			return error_no;
 
