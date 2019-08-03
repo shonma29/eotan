@@ -139,8 +139,8 @@ int if_walk(fs_request *req)
 		response.Rwalk.tag = request->Twalk.tag;
 		//TODO return nwqid and wqid
 //log_info("walk22 %x %p %d\n", req->rdvno, &response, MESSAGE_SIZE(Rwalk));
-		int result = reply_dev(req->rdvno, &response,
-				MESSAGE_SIZE(Rwalk));
+//		int result = 
+		reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rwalk));
 //log_info("walk23 %d\n", result);
 		return 0;
 	} while (false);
