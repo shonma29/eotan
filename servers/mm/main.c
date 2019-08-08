@@ -76,6 +76,7 @@ static int _fstat(struct stat *, const mm_file_t *, const int);
 static int if_chdir(mm_process_t *, pm_args_t *);
 static size_t calc_path(char *, char *, const size_t);
 static int if_open(mm_process_t *, pm_args_t *);
+static int if_create(mm_process_t *, pm_args_t *);
 static int if_read(mm_process_t *, pm_args_t *);
 static int if_write(mm_process_t *, pm_args_t *);
 static int if_close(mm_process_t *, pm_args_t *);
@@ -159,8 +160,10 @@ static void proxy(void)
 			result = if_chdir(process, &args);
 			break;
 		case pm_syscall_open:
-//TODO walk and open / create
 			result = if_open(process, &args);
+			break;
+		case pm_syscall_create:
+			result = if_create(process, &args);
 			break;
 		case pm_syscall_read:
 			result = if_read(process, &args);
@@ -906,6 +909,63 @@ static int if_open(mm_process_t *process, pm_args_t *args)
 		mm_file_t *f = d->file;
 		f->server_id = PORT_FS;
 		f->f_flag = oflag;
+		f->f_count = 1;
+		//TODO set at last if append mode
+		f->f_offset = 0;
+
+		if (session_add_file(process->session, fid, f)) {
+			//TODO what to do?
+		}
+
+		if (process_set_desc(process, fd, d)) {
+			process_deallocate_file(d->file);
+			process_deallocate_desc(d);
+			//TODO what to do?
+		}
+
+		reply->result1 = fd;
+	} else {
+		process_deallocate_file(d->file);
+		process_deallocate_desc(d);
+	}
+
+	return 0;
+}
+
+static int if_create(mm_process_t *process, pm_args_t *args)
+{
+	int fid = session_find_new_fid(process->session);
+	if (fid == -1)
+		return ENOMEM;
+
+	int fd = process_find_new_fd(process);
+	if (fd == -1)
+		return ENOMEM;
+
+	mm_descriptor_t *d = process_create_file();
+	if (!d)
+		return ENOMEM;
+
+	int oflag = args->arg2;
+	args->arg4 = fid;
+
+	if (kcall->port_call(PORT_FS, args, sizeof(*args))
+			!= sizeof(pm_reply_t)) {
+		process_deallocate_file(d->file);
+		process_deallocate_desc(d);
+		return ECONNREFUSED;
+	}
+
+	pm_reply_t *reply = (pm_reply_t*)args;
+	log_notice("proxy: %d create[%d:%d] %d %d\n",
+			process->node.key, fd, fid, reply->result1,
+			reply->error_no);
+
+	if (reply->result1 >= 0) {
+		mm_file_t *f = d->file;
+		f->server_id = PORT_FS;
+		//TODO really?
+		f->f_flag = oflag & O_ACCMODE;
 		f->f_count = 1;
 		//TODO set at last if append mode
 		f->f_offset = 0;

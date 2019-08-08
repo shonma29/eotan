@@ -156,21 +156,32 @@ int if_create(fs_request *req)
 	if (!session)
 		return ESRCH;
 
+	//TODO lock fid
 	vnode_t *starting_node;
 	int error_no = session_get_path(req->buf, &starting_node,
 			session, unpack_tid(req), (char*)(req->packet.arg1));
 	if (error_no)
 		return error_no;
 
-	vnode_t *node;
-	error_no = vfs_create(starting_node, req->buf, O_RDONLY,
-			req->packet.arg2, &(session->permission), &node);
+	vnode_t *vnode;
+	error_no = vfs_create(starting_node, req->buf, req->packet.arg2,
+			req->packet.arg3, &(session->permission), &vnode);
 	if (error_no)
 		return error_no;
 
-	vnodes_remove(node);
-	reply2(req->rdvno, 0, 0, 0);
+	int fid = req->packet.arg4;
+	struct file *file;
+	error_no = session_create_desc(&file, session, fid);
+	if (error_no) {
+		vnodes_remove(vnode);
+		return error_no;
+	}
 
+	file->f_vnode = vnode;
+	//TODO really?
+	file->f_flag = req->packet.arg2 & O_ACCMODE;
+
+	reply2(req->rdvno, 0, file->node.key, 0);
 	return 0;
 }
 

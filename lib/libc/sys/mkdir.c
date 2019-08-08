@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <fcntl.h>
 #include <sys/stat.h>
 #include "sys.h"
 
@@ -31,9 +32,15 @@ For more information, please refer to <http://unlicense.org/>
 int mkdir(const char *path, mode_t mode)
 {
 	pm_args_t request;
-
 	request.arg1 = (int)path;
-	request.arg2 = DMDIR | (int)mode;
+	//TODO really?
+	request.arg2 = O_RDONLY;
+	request.arg3 = DMDIR | (int)mode;
 
-	return _call_fs(pm_syscall_create, &request);
+	int result = _call_fs(pm_syscall_create, &request);
+	if (result == -1)
+		return result;
+
+	close(result);
+	return 0;
 }
