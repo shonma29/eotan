@@ -298,7 +298,7 @@ mm_process_t *process_duplicate(mm_process_t *src)
 		dest->local->wd_len = src->local->wd_len;
 		strcpy(dest->local->wd, src->local->wd);
 
-		log_notice("d %d %x->%x, %x->%x pp=%d pg=%d u=%d g=%d n=%s %x\n",
+		log_info("d %d %x->%x, %x->%x pp=%d pg=%d u=%d g=%d n=%s %x\n",
 				dest->node.key,
 				&dest->brothers, dest->brothers.next,
 				&dest->members, dest->members.next,
@@ -819,7 +819,7 @@ int create_init(const pid_t pid)
 		}
 	}
 #if 0
-	log_notice("c %d %x->%x, %x->%x pp=%d pg=%d u=%d g=%d n=%s\n",
+	log_info("c %d %x->%x, %x->%x pp=%d pg=%d u=%d g=%d n=%s\n",
 			p->node.key,
 			&p->brothers, p->brothers.next,
 			&p->members, p->members.next,

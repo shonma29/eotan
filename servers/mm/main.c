@@ -80,11 +80,11 @@ static int if_create(mm_process_t *, pm_args_t *);
 static int if_read(mm_process_t *, pm_args_t *);
 static int if_write(mm_process_t *, pm_args_t *);
 static int if_close(mm_process_t *, pm_args_t *);
-static int file_close(mm_session_t *, mm_file_t *, devmsg_t *);
+static int _clunk(mm_session_t *, mm_file_t *, devmsg_t *);
 static int if_remove(mm_process_t *, pm_args_t *);
 static int if_stat(mm_process_t *, pm_args_t *);
 static int if_wstat(mm_process_t *, pm_args_t *);
-static int walk(mm_process_t *, const int, const char *, int *);
+static int _walk(mm_process_t *, const int, const char *, mm_file_t **);
 static void doit(void);
 
 static ER init(void)
@@ -235,26 +235,26 @@ int mm_dup(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	do {
 		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
 		if (!th) {
-//TODO use other errno
+			//TODO use other errno
 			reply->data[0] = ESRCH;
 			break;
 		}
 
 		mm_process_t *process = get_process(th->process_id);
 		if (!process) {
-//TODO use other errno
+			//TODO use other errno
 			reply->data[0] = ESRCH;
 			break;
 		}
 
-		int fid = args->arg1;
-		mm_descriptor_t *d1 = process_find_desc(process, fid);
+		int fd = args->arg1;
+		mm_descriptor_t *d1 = process_find_desc(process, fd);
 		if (!d1) {
 			reply->data[0] = EBADF;
 			break;
 		}
 
-		if (fid != args->arg2) {
+		if (fd != args->arg2) {
 			if (args->arg2 < 0) {
 				reply->data[0] = EINVAL;
 				break;
@@ -263,23 +263,25 @@ int mm_dup(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			mm_descriptor_t *d2 = process_find_desc(process,
 					args->arg2);
 			if (d2) {
-				pm_args_t pargs;
-				pargs.operation = pm_syscall_close;
-				pargs.process_id = process->node.key
-						| get_rdv_tid(rdvno) << 16;
-				file_close(process->session, d2->file,
-						(devmsg_t*)&pargs);
+				devmsg_t message;
+				message.Tclunk.tag = (get_rdv_tid(rdvno) << 16)
+						| process->session->node.key;
+				int error_no = _clunk(process->session,
+						d2->file, &message);
+				if (error_no) {
+					//TODO what to do?
+				}
+
 				d2->file = NULL;
 			} else {
-				int fid2 = args->arg2;
-				//TODO lock fid2 in tree
+				//TODO lock fd2 in tree
 				d2 = process_allocate_desc();
 				if (!d2) {
-					reply->result = ENOMEM;
+					reply->data[0] = ENOMEM;
 					break;
 				}
 
-				if (process_set_desc(process, fid2, d2)) {
+				if (process_set_desc(process, args->arg2, d2)) {
 					process_deallocate_desc(d2);
 					//TODO what to do?
 				}
@@ -303,14 +305,14 @@ int mm_wait(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	do {
 		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
 		if (!th) {
-//TODO use other errno
+			//TODO use other errno
 			reply->data[0] = ESRCH;
 			break;
 		}
 
 		mm_process_t *process = get_process(th->process_id);
 		if (!process) {
-//TODO use other errno
+			//TODO use other errno
 			reply->data[0] = ESRCH;
 			break;
 		}
@@ -343,7 +345,7 @@ int if_fork(mm_process_t *process, pm_args_t *args)
 			(VP)(args->arg1));
 	if (thread_id < 0) {
 		log_err("mm: th create err\n");
-		//TODO adequate errno
+		//TODO use other errno
 		return ENOMEM;
 	}
 
@@ -354,7 +356,7 @@ int if_fork(mm_process_t *process, pm_args_t *args)
 
 	if (kcall->thread_start(thread_id) < 0) {
 		log_err("mm: th start err\n");
-		//TODO adequate errno
+		//TODO use other errno
 		return ENOMEM;
 	}
 
@@ -363,7 +365,7 @@ int if_fork(mm_process_t *process, pm_args_t *args)
 		reply->result1 = child->node.key;
 	}
 
-	log_notice("proxy: %d fork %d %d\n",
+	log_info("proxy: %d fork %d %d\n",
 			process->node.key, reply->result1, reply->error_no);
 	return 0;
 }
@@ -373,7 +375,6 @@ int mm_exec(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	do {
 		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
 		if (!th) {
-log_info("exec0\n");
 			//TODO use other errno
 			reply->data[0] = ESRCH;
 			break;
@@ -381,12 +382,11 @@ log_info("exec0\n");
 
 		mm_process_t *process = get_process(th->process_id);
 		if (!process) {
-log_info("exec1\n");
 			//TODO use other errno
 			reply->data[0] = ESRCH;
 			break;
 		}
-		return process_exec(reply, process, th->node.key << 16, args);
+		return process_exec(reply, process, th->node.key, args);
 	} while (false);
 
 	reply->result = -1;
@@ -397,62 +397,59 @@ int process_exec(mm_reply_t *reply, mm_process_t *process, const int thread_id,
 		mm_args_t *args)
 {
 	do {
-		pm_args_t a;
-		a.operation = pm_syscall_open;
-		a.process_id = thread_id | process->session->node.key;
-		a.arg1 = args->arg1;
-		a.arg2 = O_EXEC;
-		a.arg3 = 0;
-
-		int fid = session_find_new_fid(process->session);
-		if (fid == -1) {
-			reply->data[0] = ENOMEM;
-			break;
-		}
-		a.arg4 = fid;
-//log_info("pexec0\n");
-		if (kcall->port_call(PORT_FS, &a, sizeof(a))
-				!= sizeof(pm_reply_t)) {
-log_info("pexec1\n");
-			reply->data[0] = ECONNREFUSED;
+		mm_file_t *file;
+		int result = _walk(process, thread_id, (char*)(args->arg1),
+				&file);
+		if (result) {
+			reply->data[0] = result;
 			break;
 		}
 
-		pm_reply_t *r = (pm_reply_t*)&a;
-		if (r->result1 == -1) {
-log_info("pexec 2\n");
-			reply->data[0] = r->error_no;;
+		devmsg_t message;
+		message.type = pm_syscall_open;//Topen;
+		message.Topen.tag =
+				(thread_id << 16) | process->session->node.key;
+		message.Topen.fid = file->node.key;
+		message.Topen.mode = O_EXEC;
+		result = call_device(process->wd->server_id, &message,
+				MESSAGE_SIZE(Topen), Ropen,
+				MESSAGE_SIZE(Ropen));
+		if (result) {
+			reply->data[0] = result;
+//TODO clunk
 			break;
 		}
 
 		Elf32_Ehdr ehdr;
-		a.operation = pm_syscall_read;
-		devmsg_t *message = (devmsg_t*)&a;
-		message->Tread.tag = (kcall->thread_get_id() << 16)
+		message.type = pm_syscall_read;//Tread;
+		message.Tread.tag = (kcall->thread_get_id() << 16)
 				| process->session->node.key;
-		message->Tread.fid = fid;
-		message->Tread.count = sizeof(ehdr);
-		message->Tread.data = (char*)&ehdr;
-		message->Tread.offset = 0;
+		message.Tread.fid = file->node.key;
+		message.Tread.count = sizeof(ehdr);
+		message.Tread.data = (char*)&ehdr;
+		message.Tread.offset = 0;
 
-		int result = call_device(PORT_FS, message, MESSAGE_SIZE(Tread),
+		result = call_device(PORT_FS, &message, MESSAGE_SIZE(Tread),
 				Rread, MESSAGE_SIZE(Rread));
 		if (result) {
 			log_err("ehdr0\n");
 			reply->data[0] = result;
+//TODO clunk
 			break;
 		} else {
-			if (message->Rread.count == sizeof(ehdr)) {
+			if (message.Rread.count == sizeof(ehdr)) {
 				if (isValidModule(&ehdr)) {
 //					log_info("ehdr ok\n");
 				} else {
 					log_err("ehdr1\n");
 					reply->data[0] = ENOEXEC;
+//TODO clunk
 					break;
 				}
 			} else {
 				log_err("ehdr2\n");
 				reply->data[0] = ENOEXEC;
+//TODO clunk
 				break;
 			}
 		}
@@ -463,22 +460,24 @@ log_info("pexec 2\n");
 		unsigned int offset = ehdr.e_phoff;
 		for (int i = 0; i < ehdr.e_phnum; i++) {
 			Elf32_Phdr phdr;
-			a.operation = pm_syscall_read;
-			message->Tread.tag = (kcall->thread_get_id() << 16)
+			message.type = pm_syscall_read;//Tread;
+			message.Tread.tag = (kcall->thread_get_id() << 16)
 					| process->session->node.key;
-			message->Tread.fid = fid;
-			message->Tread.count = sizeof(phdr);
-			message->Tread.data = (char*)&phdr;
-			message->Tread.offset = offset;
+			message.Tread.fid = file->node.key;
+			message.Tread.count = sizeof(phdr);
+			message.Tread.data = (char*)&phdr;
+			message.Tread.offset = offset;
 
-			result = call_device(PORT_FS, message, MESSAGE_SIZE(Tread),
+			result = call_device(PORT_FS, &message,
+					MESSAGE_SIZE(Tread),
 					Rread, MESSAGE_SIZE(Rread));
 			if (result) {
+//TODO clunk
 //				return result;
 				log_err("phdr0\n");
 				break;
 			} else {
-				if (message->Rread.count == sizeof(phdr)) {
+				if (message.Rread.count == sizeof(phdr)) {
 //					log_info("phdr ok\n");
 					if (phdr.p_type != PT_LOAD)
 						continue;
@@ -505,6 +504,7 @@ log_info("pexec 2\n");
 			offset += sizeof(phdr);
 		}
 //		if (x != 3)
+//TODO clunk
 //			return ENOEXEC;
 
 		int new_thread_id;
@@ -519,20 +519,20 @@ log_info("pexec 2\n");
 			log_err("replace0 %d\n", result);
 		}
 
-		a.operation = pm_syscall_read;
-		message->Tread.tag = (new_thread_id << 16)
+		message.type = pm_syscall_read;//Tread;
+		message.Tread.tag = (new_thread_id << 16)
 				| process->session->node.key;
-		message->Tread.fid = fid;
-		message->Tread.count = ro.p_filesz;
-		message->Tread.data = (char*)(ro.p_vaddr);
-		message->Tread.offset = ro.p_offset;
+		message.Tread.fid = file->node.key;
+		message.Tread.count = ro.p_filesz;
+		message.Tread.data = (char*)(ro.p_vaddr);
+		message.Tread.offset = ro.p_offset;
 
-		result = call_device(PORT_FS, message, MESSAGE_SIZE(Tread),
+		result = call_device(PORT_FS, &message, MESSAGE_SIZE(Tread),
 				Rread, MESSAGE_SIZE(Rread));
 		if (result) {
 			log_err("tread0 %d\n", result);
 		} else {
-			if (message->Rread.count == ro.p_filesz) {
+			if (message.Rread.count == ro.p_filesz) {
 //				log_info("tread1\n");
 			} else {
 				log_err("tread2\n");
@@ -540,20 +540,21 @@ log_info("pexec 2\n");
 		}
 
 		if (rw.p_filesz) {
-			a.operation = pm_syscall_read;
-			message->Tread.tag = (new_thread_id << 16)
+			message.type = pm_syscall_read;//Tread;
+			message.Tread.tag = (new_thread_id << 16)
 					| process->session->node.key;
-			message->Tread.fid = fid;
-			message->Tread.count = rw.p_filesz;
-			message->Tread.data = (char*)(rw.p_vaddr);
-			message->Tread.offset = rw.p_offset;
+			message.Tread.fid = file->node.key;
+			message.Tread.count = rw.p_filesz;
+			message.Tread.data = (char*)(rw.p_vaddr);
+			message.Tread.offset = rw.p_offset;
 
-			result = call_device(PORT_FS, message, MESSAGE_SIZE(Tread),
+			result = call_device(PORT_FS, &message,
+					MESSAGE_SIZE(Tread),
 					Rread, MESSAGE_SIZE(Rread));
 			if (result) {
 				log_err("dread0 %d\n", result);
 			} else {
-				if (message->Rread.count == rw.p_filesz) {
+				if (message.Rread.count == rw.p_filesz) {
 //					log_info("dread1\n");
 				} else {
 					log_err("dread2\n");
@@ -561,21 +562,16 @@ log_info("pexec 2\n");
 			}
 		}
 
-//		log_info("start\n");
 		kcall->thread_start(new_thread_id);
 
-		a.operation = pm_syscall_close;
-		a.process_id = (new_thread_id << 16)
+		message.Tclunk.tag = (new_thread_id << 16)
 				| process->session->node.key;
-		a.arg1 = fid;
-		result = call_device(PORT_FS, (devmsg_t*)&a,
-				MESSAGE_SIZE(Tclunk), Rclunk,
-				MESSAGE_SIZE(Rclunk));
+		result = _clunk(process->session, file, &message);
 		if (result) {
 			log_err("mm: exec close1 %d\n", result);
 			//TODO what to do?
 		}
-//log_info("pexec s\n");
+
 		reply->result = 0;
 		reply->data[0] = 0;
 		return reply_success;
@@ -601,20 +597,20 @@ int mm_exit(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	do {
 		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
 		if (!th) {
-//TODO use other errno
+			//TODO use other errno
 			reply->data[0] = ESRCH;
 			break;
 		}
 
 		mm_process_t *process = get_process(th->process_id);
 		if (!process) {
-//TODO use other errno
+			//TODO use other errno
 			reply->data[0] = ESRCH;
 			break;
 		}
 
 		process_destroy(process, args->arg1);
-		log_notice("mm: %d exit\n", process->node.key);
+		log_info("mm: %d exit\n", process->node.key);
 
 		reply->result = 0;
 		reply->data[0] = 0;
@@ -656,7 +652,7 @@ int mm_lseek(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-//		log_notice("mm: %d seek\n", process->node.key);
+//		log_info("mm: %d seek\n", process->node.key);
 
 		off_t *offset = (off_t*)reply;
 		*offset = desc->file->f_offset;
@@ -734,7 +730,7 @@ static int if_chdir(mm_process_t *process, pm_args_t *args)
 	if (len < 0)
 		return EFAULT;
 
-	if (len >= PATH_MAX)
+ 	if (len >= PATH_MAX)
 		return ENAMETOOLONG;
 
 	strcpy(pathbuf1, process->local->wd);
@@ -770,13 +766,11 @@ static int if_chdir(mm_process_t *process, pm_args_t *args)
 
 		if (process->wd) {
 //log_info("mm: if_chdir0\n");
-			pm_args_t a;
-			a.operation = pm_syscall_close;
-			a.process_id = (tag & 0xffff0000)
+			devmsg_t message;
+			message.Tclunk.tag = (tag & 0xffff0000)
 					| process->session->node.key;
-
-			int result = file_close(process->session, process->wd,
-					(devmsg_t*)&a);
+			int result = _clunk(process->session, process->wd,
+					&message);
 log_info("if_chdir: close[%d] %d\n", old, result);
 			if (result) {
 				//TODO what to do?
@@ -794,7 +788,7 @@ log_info("if_chdir: close[%d] %d\n", old, result);
 		process_deallocate_file(f);
 	}
 
-	log_notice("proxy: %d chdir %d %d %d->%d %s\n",
+	log_info("proxy: %d chdir %d %d %d->%d %s\n",
 			process->node.key, reply->result1, reply->error_no,
 			old, process->wd->node.key, process->local->wd);
 
@@ -878,56 +872,66 @@ static size_t calc_path(char *dest, char *src, const size_t size)
 
 static int if_open(mm_process_t *process, pm_args_t *args)
 {
-	int fid = session_find_new_fid(process->session);
-	if (fid == -1)
-		return ENOMEM;
-
 	int fd = process_find_new_fd(process);
 	if (fd == -1)
 		return ENOMEM;
 
-	mm_descriptor_t *d = process_create_file();
+	mm_descriptor_t *d = process_allocate_desc();
 	if (!d)
 		return ENOMEM;
 
-	int oflag = args->arg2;
-	args->arg4 = fid;
-
-	if (kcall->port_call(PORT_FS, args, sizeof(*args))
-			!= sizeof(pm_reply_t)) {
-		process_deallocate_file(d->file);
+	if (process_set_desc(process, fd, d)) {
 		process_deallocate_desc(d);
-		return ECONNREFUSED;
+		//TODO use nother errno
+		return ENOMEM;
 	}
+
+	int thread_id = (args->process_id >> 16) & 0xffff;
+	mm_file_t *file;
+	int result = _walk(process, thread_id, (char*)(args->arg1), &file);
+	if (result) {
+		process_destroy_desc(process, fd);
+		return result;
+	}
+
+	d->file = file;
+	int oflag = args->arg2;
+	devmsg_t message;
+	message.type = pm_syscall_open;//Topen;
+	message.Topen.tag = (thread_id << 16) | process->session->node.key;
+	message.Topen.fid = file->node.key;
+	message.Topen.mode = oflag;
+
+	//TODO find server_id
+	result = call_device(process->wd->server_id, &message,
+			MESSAGE_SIZE(Topen), Ropen, MESSAGE_SIZE(Ropen));
+	log_err("proxy: %d open[%d:%d] %d\n",
+			process->node.key, fd, file->node.key, result);
+
+	if (result) {
+		d->file = NULL;
+		process_destroy_desc(process, fd);
+
+		message.Tclunk.tag = (thread_id << 16)
+				| process->session->node.key;
+		int error_no = _clunk(process->session, file, &message);
+		if (error_no) {
+			//TODO what to do?
+		}
+
+		return result;
+	}
+
+	file->server_id = process->wd->server_id;
+	file->f_flag = oflag;
+	file->f_count = 1;
+	//TODO set at last if append mode
+	file->f_offset = 0;
 
 	pm_reply_t *reply = (pm_reply_t*)args;
-	log_notice("proxy: %d open[%d:%d] %d %d\n",
-			process->node.key, fd, fid, reply->result1,
-			reply->error_no);
-
-	if (reply->result1 >= 0) {
-		mm_file_t *f = d->file;
-		f->server_id = PORT_FS;
-		f->f_flag = oflag;
-		f->f_count = 1;
-		//TODO set at last if append mode
-		f->f_offset = 0;
-
-		if (session_add_file(process->session, fid, f)) {
-			//TODO what to do?
-		}
-
-		if (process_set_desc(process, fd, d)) {
-			process_deallocate_file(d->file);
-			process_deallocate_desc(d);
-			//TODO what to do?
-		}
-
-		reply->result1 = fd;
-	} else {
-		process_deallocate_file(d->file);
-		process_deallocate_desc(d);
-	}
+	reply->result1 = fd;
+	reply->result2 = 0;
+	reply->error_no = 0;
 
 	return 0;
 }
@@ -957,7 +961,7 @@ static int if_create(mm_process_t *process, pm_args_t *args)
 	}
 
 	pm_reply_t *reply = (pm_reply_t*)args;
-	log_notice("proxy: %d create[%d:%d] %d %d\n",
+	log_info("proxy: %d create[%d:%d] %d %d\n",
 			process->node.key, fd, fid, reply->result1,
 			reply->error_no);
 
@@ -1053,25 +1057,26 @@ static int if_close(mm_process_t *process, pm_args_t *args)
 {
 	int fd = args->arg1;
 	mm_descriptor_t *d = process_find_desc(process, fd);
-	if (!d) {
-		log_err("if_close: %d not found(%d)\n", process->node.key, fd);
+	if (!d)
 		return EBADF;
-	}
 
-//log_info("mm: if_close0 fd=%d fid=%d\n", fd, d->file->node.key);
-	int result = file_close(process->session, d->file, (devmsg_t*)args);
+	mm_file_t *file = d->file;
 	d->file = NULL;
-	if (process_destroy_desc(process, d->node.key)) {
+	if (process_destroy_desc(process, fd)) {
 		//TODO what to do?
 	}
 
+	devmsg_t message;
+	message.Tclunk.tag = args->process_id;
+	int result = _clunk(process->session, file, &message);
+
 	if (result) {
-		log_notice("proxy: %d close err(%d) %d\n",
+		log_err("proxy: %d close[%d:] err %d\n",
 				process->node.key, fd, result);
 		return result;
 	}
 
-	log_notice("proxy: %d close ok(%d)\n",
+	log_info("proxy: %d close[%d:] ok\n",
 			process->node.key, fd);
 
 	pm_reply_t *reply = (pm_reply_t*)args;
@@ -1082,16 +1087,16 @@ static int if_close(mm_process_t *process, pm_args_t *args)
 	return 0;
 }
 
-static int file_close(mm_session_t *session, mm_file_t *file, devmsg_t *message)
+static int _clunk(mm_session_t *session, mm_file_t *file, devmsg_t *message)
 {
 	file->f_count--;
 	if (file->f_count > 0) {
-		log_notice("proxy: close skip(%d)\n", file->node.key);
+		log_info("proxy: close[:%d] skip\n", file->node.key);
 		return 0;
 	}
 
-	if (file->server_id != PORT_FS)
-		message->type = Tclunk;
+	message->type = (file->server_id == PORT_FS) ?
+			pm_syscall_close : Tclunk;
 	message->Tclunk.fid = file->node.key;
 
 	int result = call_device(file->server_id, message,
@@ -1108,28 +1113,31 @@ static int file_close(mm_session_t *session, mm_file_t *file, devmsg_t *message)
 static int if_remove(mm_process_t *process, pm_args_t *args)
 {
 	int thread_id = (args->process_id >> 16) & 0xffff;
-	int fid;
-	int result = walk(process, thread_id, (char*)(args->arg1), &fid);
+	mm_file_t *file;
+	int result = _walk(process, thread_id, (char*)(args->arg1), &file);
 	if (result)
 		return result;
 
 	devmsg_t message;
 	message.type = pm_syscall_remove;//Tremove;
 	message.Tremove.tag = (thread_id << 16) | process->session->node.key;
-	message.Tremove.fid = fid;
+	message.Tremove.fid = file->node.key;
 
+	//TODO find server_id
 	result = call_device(process->wd->server_id, &message,
 			MESSAGE_SIZE(Tremove), Rremove, MESSAGE_SIZE(Rremove));
-	//TODO unlock fid
-	//TODO what todo if succeeded to walk and failed to remove
-	if (result) {
-		log_notice("proxy: %d remove err(%d) %d\n",
-				process->node.key, fid, result);
-		return result;
+
+	log_info("proxy: %d remove[:%d] %d\n",
+			process->node.key, file->node.key, result);
+
+	if (session_remove_file(process->session, file->node.key)) {
+		//TODO what to do?
 	}
 
-	log_notice("proxy: %d remove ok(%d)\n",
-			process->node.key, fid);
+	process_deallocate_file(file);
+
+	if (result)
+		return result;
 
 	pm_reply_t *reply = (pm_reply_t*)args;
 	reply->result1 = 0;
@@ -1151,7 +1159,7 @@ static int if_stat(mm_process_t *process, pm_args_t *args)
 	int result = call_device(f->server_id, message, MESSAGE_SIZE(Tstat),
 			Rstat, MESSAGE_SIZE(Rstat));
 	if (result) {
-log_err("mm:if_stat result=%d\n", result);
+		log_err("mm:if_stat result=%d\n", result);
 		return result;
 	}
 
@@ -1166,10 +1174,10 @@ log_err("mm:if_stat result=%d\n", result);
 static int if_wstat(mm_process_t *process, pm_args_t *args)
 {
 	int thread_id = (args->process_id >> 16) & 0xffff;
-	int fid;
-	int result = walk(process, thread_id, (char*)(args->arg1), &fid);
+	mm_file_t *file;
+	int result = _walk(process, thread_id, (char*)(args->arg1), &file);
 	if (result) {
-log_err("proxy: %d wstat0 err %d\n", process->node.key, result);
+		log_err("proxy: %d wstat0 err %d\n", process->node.key, result);
 		return result;
 	}
 
@@ -1179,32 +1187,23 @@ log_err("proxy: %d wstat0 err %d\n", process->node.key, result);
 	devmsg_t message;
 	message.type = pm_syscall_chmod;//Twstat;
 	message.Twstat.tag = (thread_id << 16) | process->session->node.key;
-	message.Twstat.fid = fid;
+	message.Twstat.fid = file->node.key;
 	message.Twstat.stat = &st;
 
 	result = call_device(process->wd->server_id, &message,
 			MESSAGE_SIZE(Twstat), Rwstat, MESSAGE_SIZE(Rwstat));
-	//TODO unlock fid
-//TODO clunk
-	//TODO what todo if succeeded to walk and failed to remove
-	if (result) {
-		log_notice("proxy: %d wstat err(%d) %d\n",
-				process->node.key, fid, result);
-		return result;
-	}
 
-	log_notice("proxy: %d wstat ok(%d)\n",
-			process->node.key, fid);
-
-	message.type = pm_syscall_close;//Tclunk;
+	int fid = file->node.key;
+	log_info("proxy: %d wstat[:%d] %d\n",
+			process->node.key, fid, result);
 	message.Tclunk.tag = (thread_id << 16) | process->session->node.key;
-	message.Tclunk.fid = fid;
-	result = call_device(PORT_FS, &message,
-			MESSAGE_SIZE(Tclunk), Rclunk, MESSAGE_SIZE(Rclunk));
-	if (result) {
-		log_err("proxy: %d fwstat close err(%d) %d\n",
-				process->node.key, fid, result);
-	}
+	int error_no = _clunk(process->session, file, &message);
+	if (error_no)
+		log_err("proxy: %d fwstat close err[:%d] %d\n",
+				process->node.key, fid, error_no);
+
+	if (result)
+		return result;
 
 	pm_reply_t *reply = (pm_reply_t*)args;
 	reply->result1 = 0;
@@ -1214,8 +1213,8 @@ log_err("proxy: %d wstat0 err %d\n", process->node.key, result);
 	return 0;
 }
 
-static int walk(mm_process_t *process, const int thread_id, const char *path,
-		int *fid)
+static int _walk(mm_process_t *process, const int thread_id, const char *path,
+		mm_file_t **file)
 {
 	if (!(process->wd))
 		//TODO what to do?
@@ -1233,7 +1232,16 @@ static int walk(mm_process_t *process, const int thread_id, const char *path,
 	if (id == -1)
 		return ENOMEM;
 
-	//TODO lock fid
+	mm_file_t *f = process_allocate_file();
+	if (!f)
+		return ENOMEM;
+
+	if (session_add_file(process->session, id, f)) {
+		process_deallocate_file(f);
+		//TODO use other errno
+		return ENOMEM;
+	}
+
 	devmsg_t message;
 	message.type = pm_syscall_walk;
 	message.Twalk.tag = (thread_id << 16) | process->session->node.key;
@@ -1241,17 +1249,21 @@ static int walk(mm_process_t *process, const int thread_id, const char *path,
 	message.Twalk.newfid = id;
 	message.Twalk.nwname = len;
 	message.Twalk.wname = (char*)path;
-log_info(MYNAME ": walk %x %d %s %d\n", process->session,
-		message.Twalk.fid, message.Twalk.wname,
-		message.Twalk.newfid);
+//	log_info(MYNAME ": walk %x %d %s %d\n", process->session,
+//			message.Twalk.fid, message.Twalk.wname,
+//			message.Twalk.newfid);
 
-	int result;
-	result = call_device(process->wd->server_id, &message,
+	int result = call_device(process->wd->server_id, &message,
 			MESSAGE_SIZE(Twalk), Rwalk, MESSAGE_SIZE(Rwalk));
-log_info(MYNAME ": walk result=%d\n", result);
-
-	if (!result)
-		*fid = id;
+	if (result)
+		process_deallocate_file(f);
+	else {
+		*file = f;
+		f->server_id = process->wd->server_id;
+		f->f_flag = O_ACCMODE;
+		f->f_count = 1;
+		f->f_offset = 0;
+	}
 
 	return result;
 }

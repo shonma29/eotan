@@ -121,43 +121,27 @@ int vfs_walk(vnode_t *parent, char *path, const int flags,
 	return error_no;
 }
 
-int vfs_open(vnode_t *cwd, char *path, const int flags, const mode_t mode,
-		struct permission *permission, vnode_t **node)
+int vfs_open(vnode_t *vnode, const int flags, struct permission *permission)
 {
 	int f = (flags == O_EXEC) ? O_RDONLY : flags;
 	if (!check_flags(f)) {
-		log_debug("vfs_open: bad flags %x\n", f);
+		log_debug("vfs_open: bad flags %x\n", flags);
 		return EINVAL;
 	}
 
-	if (f & O_CREAT) {
-		int error_no = vfs_create(cwd, path, f, mode, permission,
-				node);
-		if (error_no != EEXIST)
-			return error_no;
-	}
-
-	int error_no = vfs_walk(cwd, path, f, permission, node);
-	if (error_no)
-		return error_no;
-
-	if ((mode & S_IFMT) == S_IFDIR)
+	if ((vnode->mode & S_IFMT) == S_IFDIR)
 		if ((f & O_ACCMODE) != O_RDONLY) {
-			log_debug("vfs_open: %s is directory\n", path);
-			vnodes_remove(*node);
+			log_debug("vfs_open: is directory\n");
 			return EISDIR;
 		}
 
-	if (flags == O_EXEC) {
-		int error_no = vfs_permit(*node, permission, X_OK);
-		if (error_no) {
-			vnodes_remove(*node);
-			return error_no;
-		}
-	}
+	int error_no = vfs_permit(vnode, permission,
+			(flags == O_EXEC) ? X_OK : modes[flags & O_ACCMODE]);
+	if (error_no)
+		return error_no;
 
 	if (f & O_TRUNC)
-		(*node)->size = 0;
+		vnode->size = 0;
 
 	return 0;
 }
@@ -174,7 +158,7 @@ static bool check_flags(const int flags)
 	}
 
 	//TODO unknown bits check is needed?
-	if (flags & ~(O_ACCMODE | O_APPEND | O_CREAT | O_TRUNC))
+	if (flags & ~(O_ACCMODE | O_APPEND | O_TRUNC))
 		return false;
 
 	return true;
@@ -246,6 +230,7 @@ int vfs_create(vnode_t *cwd, char *path, const int flags, const mode_t mode,
 						| S_IWGRP | S_IROTH | S_IWOTH),
 				permission, node);
 
+	//TODO not close. open with flags
 	vnodes_remove(parent);
 
 	if (result) {
@@ -313,19 +298,19 @@ static char *split_path(const char *path, char **parent_path)
 	return head;
 }
 
-int vfs_permit(const vnode_t *ip, const struct permission *permission,
+int vfs_permit(const vnode_t *vnode, const struct permission *permission,
 		const unsigned int want)
 {
-	unsigned int mode = ip->mode;
+	unsigned int mode = vnode->mode;
 
 	if (permission->uid == ROOT_UID) {
 		mode |= S_IROTH | S_IWOTH | ((mode & S_IXUSR) >> 6)
 				| ((mode & S_IXGRP) >> 3);
 		if ((mode & S_IFMT) == S_IFDIR)
 			mode |= S_IXOTH;
-	} else if (permission->uid == ip->uid)
+	} else if (permission->uid == vnode->uid)
 		mode >>= 6;
-	else if (permission->gid == ip->gid)
+	else if (permission->gid == vnode->gid)
 		mode >>= 3;
 
 	unsigned int need = want & (R_OK | W_OK | X_OK);

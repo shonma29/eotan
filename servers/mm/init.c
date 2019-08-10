@@ -96,7 +96,7 @@ log_info("mm: init attach %d\n", result);
 	}
 
 	mm_reply_t reply;
-	result = process_exec(&reply, process, PORT_MM << 16,
+	result = process_exec(&reply, process, PORT_MM,
 			&args);
 	log_info("mm: exec_init(pid=%d, %s) r=%d e=%d\n",
 			process_id, pathname, result, reply.data[0]);

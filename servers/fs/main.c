@@ -241,6 +241,10 @@ void start(VP_INT exinf)
 			result = (size == MESSAGE_SIZE(Twalk)) ?
 					worker_enqueue(&req) : EINVAL;
 			break;
+		case pm_syscall_open:
+			result = (size == MESSAGE_SIZE(Topen)) ?
+					worker_enqueue(&req) : EINVAL;
+			break;
 		case pm_syscall_read:
 			result = (size == MESSAGE_SIZE(Tread)) ?
 					worker_enqueue(&req) : EINVAL;

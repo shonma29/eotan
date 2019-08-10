@@ -34,35 +34,39 @@ For more information, please refer to <http://unlicense.org/>
 
 int if_open(fs_request *req)
 {
+	devmsg_t *request = (devmsg_t*)&(req->packet);
 	session_t *session = session_find(unpack_sid(req));
-	if (!session)
-		return ESRCH;
-
-	vnode_t *starting_node;
-	int error_no = session_get_path(req->buf, &starting_node,
-			session, unpack_tid(req), (char*)(req->packet.arg1));
-	if (error_no)
-		return error_no;
-
-	vnode_t *vnode;
-	//TODO mode is not needed in plan9?
-	error_no = vfs_open(starting_node, req->buf, req->packet.arg2,
-			req->packet.arg3, &(session->permission), &vnode);
-	if (error_no)
-		return error_no;
-
-	int fid = req->packet.arg4;
-	struct file *file;
-	error_no = session_create_desc(&file, session, fid);
-	if (error_no) {
-		vnodes_remove(vnode);
-		return error_no;
+	if (!session) {
+		reply_dev_error(req->rdvno, request->Topen.tag, ESRCH);
+		return 0;
 	}
 
-	file->f_vnode = vnode;
-	file->f_flag = req->packet.arg2 & O_ACCMODE;
+	struct file *file = session_find_desc(session, request->Topen.fid);
+	if (!file) {
+		reply_dev_error(req->rdvno, request->Topen.tag, EBADF);
+		return 0;
+	}
 
-	reply2(req->rdvno, 0, file->node.key, 0);
+	if (file->f_flag != O_ACCMODE) {
+		reply_dev_error(req->rdvno, request->Topen.tag, EBUSY);
+		return 0;
+	}
+
+	int error_no = vfs_open(file->f_vnode, request->Topen.mode,
+			&(session->permission));
+	if (error_no) {
+		reply_dev_error(req->rdvno, request->Topen.tag, error_no);
+		return 0;
+	}
+
+	file->f_flag = request->Topen.mode & O_ACCMODE;
+
+	devmsg_t response;
+	response.type = Ropen;
+	response.Ropen.tag = request->Topen.tag;
+//	response.Ropen.qid = file->f_vnode->index;
+//	response.Ropen.iounit = sizeof(devmsg_t);
+	reply_dev(req->rdvno, &response, MESSAGE_SIZE(Ropen));
 	return 0;
 }
 

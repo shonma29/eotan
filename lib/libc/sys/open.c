@@ -33,14 +33,17 @@ int open(const char *path, int oflag, ...)
 {
 	pm_args_t request;
 	request.arg1 = (int)path;
-	request.arg2 = oflag;
 
 	if (oflag & O_CREAT) {
+		request.arg2 = oflag & ~O_CREAT;
+
 		va_list args;
 		va_start(args, oflag);
 		request.arg3 = va_arg(args, int);
+
 		return _call_fs(pm_syscall_create, &request);
 	}
 
+	request.arg2 = oflag;
 	return _call_fs(pm_syscall_open, &request);
 }
