@@ -47,12 +47,14 @@ For more information, please refer to <http://unlicense.org/>
 #define MIN_AUTO_FD (3)
 
 static int (*funcs[])(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args) = {
+	mm_fork,
 	mm_exec,
 	mm_wait,
 	mm_exit,
 	mm_vmap,
 	mm_vunmap,
 	mm_sbrk,
+	mm_chdir,
 	mm_dup,
 	mm_lseek,
 	mm_clock_gettime,
@@ -70,10 +72,8 @@ static ER init(void);
 static ER proxy_initialize(void);
 static void proxy(void);
 static unsigned int sleep(unsigned int);
-static int if_fork(mm_process_t *, pm_args_t *);
 static int _seek(mm_process_t *, mm_file_t *, mm_args_t *);
 static int _fstat(struct stat *, const mm_file_t *, const int);
-static int if_chdir(mm_process_t *, pm_args_t *);
 static size_t calc_path(char *, char *, const size_t);
 static int if_open(mm_process_t *, pm_args_t *);
 static int if_create(mm_process_t *, pm_args_t *);
@@ -153,12 +153,6 @@ static void proxy(void)
 		int result;
 		int op = args.operation;
 		switch (args.operation) {
-		case pm_syscall_fork:
-			result = if_fork(process, &args);
-			break;
-		case pm_syscall_chdir:
-			result = if_chdir(process, &args);
-			break;
 		case pm_syscall_open:
 			result = if_open(process, &args);
 			break;
@@ -332,37 +326,56 @@ int mm_wait(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	return reply_failure;
 }
 
-//TODO to mm call
-int if_fork(mm_process_t *process, pm_args_t *args)
+int mm_fork(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
-	mm_process_t *child = process_duplicate(process);
-	if (!child) {
-		log_err("mm: duplicate err\n");
-		return ENOMEM;
-	}
+	do {
+		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
+		if (!th) {
+			//TODO use other errno
+			reply->data[0] = ESRCH;
+			break;
+		}
 
-	int thread_id = thread_create(child, (FP)(args->arg2),
-			(VP)(args->arg1));
-	if (thread_id < 0) {
-		log_err("mm: th create err\n");
-		//TODO use other errno
-		return ENOMEM;
-	}
+		mm_process_t *process = get_process(th->process_id);
+		if (!process) {
+			//TODO use other errno
+			reply->data[0] = ESRCH;
+			break;
+		}
 
-	if (kcall->thread_start(thread_id) < 0) {
-		log_err("mm: th start err\n");
-		//TODO use other errno
-		return ENOMEM;
-	}
+		mm_process_t *child = process_duplicate(process);
+		if (!child) {
+			log_err("mm: duplicate err\n");
+			reply->data[0] = ENOMEM;
+			break;
+		}
 
-	pm_reply_t *reply = (pm_reply_t*)args;
-	reply->result1 = child->node.key;
-	reply->result2 = 0;
-	reply->error_no = 0;
+		int thread_id = thread_create(child, (FP)(args->arg2),
+				(VP)(args->arg1));
+		if (thread_id < 0) {
+			log_err("mm: th create err\n");
+			//TODO use other errno
+			reply->data[0] = ENOMEM;
+			break;
+		}
 
-	log_info("proxy: %d fork %d %d\n",
-			process->node.key, reply->result1, reply->error_no);
-	return 0;
+		if (kcall->thread_start(thread_id) < 0) {
+			log_err("mm: th start err\n");
+			//TODO use other errno
+			reply->data[0] = ENOMEM;
+			break;
+		}
+
+		log_info("proxy: %d fork %d\n",
+				process->node.key, child->node.key);
+
+		reply->result = child->node.key;
+		reply->data[0] = 0;
+		return reply_success;
+	} while (false);
+
+	reply->result = -1;
+	return reply_failure;
 }
 
 int mm_exec(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
@@ -717,59 +730,83 @@ static int _fstat(struct stat *st, const mm_file_t *file, const int tag)
 			Rstat, MESSAGE_SIZE(Rstat));
 }
 
-static int if_chdir(mm_process_t *process, pm_args_t *args)
+int mm_chdir(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
-	int tag = args->process_id;
-	ER_UINT len = kcall->region_copy((tag >> 16) & 0xffff,
-			(char*)(args->arg1), PATH_MAX, pathbuf2);
-	if (len < 0)
-		return EFAULT;
-
- 	if (len >= PATH_MAX)
-		return ENAMETOOLONG;
-
-	strcpy(pathbuf1, process->local->wd);
-	len = calc_path(pathbuf1, pathbuf2, PATH_MAX);
-	if (!len)
-		return ENAMETOOLONG;
-
-	int old = (process->wd) ? process->wd->node.key : 0;
-	int thread_id = (args->process_id >> 16) & 0xffff;
-	mm_file_t *file;
-	int result = _walk(process, thread_id, (char*)(args->arg1), &file);
-	if (result)
-		return result;
-
-	process->local->wd_len = len;
-	strcpy(process->local->wd, pathbuf1);
-
-	file->server_id = PORT_FS;
-	file->f_flag = O_ACCMODE;
-	file->f_count = 1;
-	file->f_offset = 0;
-
-	if (process->wd) {
-		devmsg_t message;
-		message.Tclunk.tag = (tag & 0xffff0000)
-				| process->session->node.key;
-		result = _clunk(process->session, process->wd, &message);
-		log_info("if_chdir: close[:%d] %d\n", old, result);
-		if (result) {
-			//TODO what to do?
+	do {
+		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
+		if (!th) {
+			//TODO use other errno
+			reply->data[0] = ESRCH;
+			break;
 		}
-	}
 
-	process->wd = file;
+		mm_process_t *process = get_process(th->process_id);
+		if (!process) {
+			//TODO use other errno
+			reply->data[0] = ESRCH;
+			break;
+		}
 
-	log_info("proxy: %d chdir %d->%d %s\n",
-			process->node.key, old, process->wd->node.key,
-			process->local->wd);
+		ER_UINT len = kcall->region_copy(th->node.key,
+				(char*)(args->arg1), PATH_MAX, pathbuf2);
+		if (len < 0) {
+			reply->data[0] = EFAULT;
+			break;
+		}
 
-	pm_reply_t *reply = (pm_reply_t*)args;
-	reply->result1 = 0;
-	reply->result2 = 0;
-	reply->error_no = 0;
-	return 0;
+	 	if (len >= PATH_MAX) {
+			reply->data[0] = ENAMETOOLONG;
+			break;
+		}
+
+		strcpy(pathbuf1, process->local->wd);
+		len = calc_path(pathbuf1, pathbuf2, PATH_MAX);
+		if (!len) {
+			reply->data[0] = ENAMETOOLONG;
+			break;
+		}
+
+		int old = (process->wd) ? process->wd->node.key : 0;
+		mm_file_t *file;
+		int result = _walk(process, th->node.key, (char*)(args->arg1),
+				&file);
+		if (result) {
+			reply->data[0] = result;
+			break;
+		}
+
+		process->local->wd_len = len;
+		strcpy(process->local->wd, pathbuf1);
+
+		file->server_id = PORT_FS;
+		file->f_flag = O_ACCMODE;
+		file->f_count = 1;
+		file->f_offset = 0;
+
+		if (process->wd) {
+			devmsg_t message;
+			message.Tclunk.tag = (th->node.key << 16)
+					| process->session->node.key;
+			result = _clunk(process->session, process->wd,
+					&message);
+			log_info("if_chdir: close[:%d] %d\n", old, result);
+			if (result) {
+				//TODO what to do?
+			}
+		}
+
+		process->wd = file;
+		log_info("proxy: %d chdir %d->%d %s\n",
+				process->node.key, old, process->wd->node.key,
+				process->local->wd);
+
+		reply->result = 0;
+		reply->data[0] = 0;
+		return reply_success;
+	} while (false);
+
+	reply->result = -1;
+	return reply_failure;
 }
 
 static size_t calc_path(char *dest, char *src, const size_t size)

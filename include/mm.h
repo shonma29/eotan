@@ -42,16 +42,18 @@ typedef struct {
 } mm_reply_t;
 
 typedef enum {
-	mm_syscall_exec = 0,
-	mm_syscall_wait = 1,
-	mm_syscall_exit = 2,
-	mm_syscall_vmap = 3,
-	mm_syscall_vunmap = 4,
-	mm_syscall_sbrk = 5,
-	mm_syscall_dup = 6,
-	mm_syscall_lseek = 7,
-	mm_syscall_clock_gettime = 8,
-	mm_syscall_thread_find = 9
+	mm_syscall_fork = 0,
+	mm_syscall_exec = 1,
+	mm_syscall_wait = 2,
+	mm_syscall_exit = 3,
+	mm_syscall_vmap = 4,
+	mm_syscall_vunmap = 5,
+	mm_syscall_sbrk = 6,
+	mm_syscall_chdir = 7,
+	mm_syscall_dup = 8,
+	mm_syscall_lseek = 9,
+	mm_syscall_clock_gettime = 10,
+	mm_syscall_thread_find = 11
 } mm_syscall_e;
 
 #endif

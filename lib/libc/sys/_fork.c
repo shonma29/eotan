@@ -1,52 +1,53 @@
 /*
+This is free and unencumbered software released into the public domain.
 
-B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
 
-GNU GENERAL PUBLIC LICENSE
-Version 2, June 1991
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
 
-(C) B-Free Project.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
 
-(C) 2002, Tomohide Naniwa
-
+For more information, please refer to <http://unlicense.org/>
 */
-/* POSIX Library misc function.
-*/
-
-/* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_fork.c,v 1.3 1999/11/10 10:39:32 naniwa Exp $  */
-
+#include <core.h>
 #include <errno.h>
-#include "sys.h"
+#include <mm.h>
+#include <services.h>
 
-/* fork 用エントリールーチン */
 extern int _fork_entry();
 
-/* fork 
- *
- */
-int
-_fork (int esp, int ebx, int ebp, int esi, int edi)
+
+int _fork(int esp, int ebx, int ebp, int esi, int edi)
 {
-    ER error;
-    pm_args_t req;
-    pm_reply_t *res = (pm_reply_t*)&req;
-    thread_local_t *local_data = _get_local();
+	mm_args_t args = {
+		mm_syscall_fork,
+		esp,
+		(int)_fork_entry
+	};
+	ER_UINT reply_size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
+	mm_reply_t *reply = (mm_reply_t*)&args;
+	if (reply_size == sizeof(*reply)) {
+		if (reply->result == -1)
+			_set_local_errno(reply->data[0]);
 
-    /* POSIX manager の呼び出し 
-
-     * 引数を設定して、POSIX manager にメッセージを送る。
-     */
-    req.arg1 = esp;
-    req.arg2 = (int)_fork_entry;
-
-    error = _make_connection(pm_syscall_fork, &req);
-    if (error != E_OK) {
-	local_data->error_no = error;
-	return (-1);
-    } else if (res->error_no) {
-	local_data->error_no = res->error_no;
-	return (-1);
-    }
-
-    return (res->result1);
+		return reply->result;
+	} else {
+		_set_local_errno(ECONNREFUSED);
+		return (-1);
+	}
 }

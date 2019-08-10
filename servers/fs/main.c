@@ -44,8 +44,6 @@ static char req_buf[
 		lfq_buf_size(sizeof(fs_request *), REQUEST_QUEUE_SIZE)
 ];
 static int (*syscall[])(fs_request*) = {
-	NULL,
-	NULL,
 	if_attach,
 	if_walk,
 	if_open,
@@ -233,12 +231,6 @@ void start(VP_INT exinf)
 */
 		int result;
 		switch (req->packet.operation) {
-		case pm_syscall_fork:
-			result = ENOTSUP;
-			break;
-		case pm_syscall_chdir:
-			result = ENOTSUP;
-			break;
 		case pm_syscall_attach:
 			result = (size == MESSAGE_SIZE(Tattach)) ?
 					worker_enqueue(&req) : EINVAL;
