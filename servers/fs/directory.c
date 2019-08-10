@@ -156,10 +156,21 @@ int if_create(fs_request *req)
 	if (!session)
 		return ESRCH;
 
+	struct file *parent = session_find_desc(session, req->packet.arg5);
+	if (!parent)
+		return EBADF;
+
+	if (parent->f_flag != O_ACCMODE)
+		return EBADF;
+
+	if ((parent->f_vnode->mode & S_IFMT) != S_IFDIR)
+		return ENOTDIR;
+
 	//TODO lock fid
 	vnode_t *starting_node;
-	int error_no = session_get_path(req->buf, &starting_node,
-			session, unpack_tid(req), (char*)(req->packet.arg1));
+	int error_no = session_get_path2(req->buf, &starting_node, session,
+			parent->f_vnode, unpack_tid(req),
+			(char*)(req->packet.arg1));
 	if (error_no)
 		return error_no;
 

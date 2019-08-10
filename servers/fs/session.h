@@ -49,6 +49,6 @@ extern struct file *session_find_desc(const session_t *, const int);
 extern int session_get_path(char *, vnode_t **,
 		const session_t *, const int, const char *);
 extern int session_get_path2(char *, vnode_t **, const session_t *,
-		const vnode_t *, const int, const char *);
+		vnode_t *, const int, const char *);
 
 #endif

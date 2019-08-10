@@ -276,7 +276,7 @@ int session_get_path(char *dest, vnode_t **vnode,
 }
 
 int session_get_path2(char *dest, vnode_t **vnode, const session_t *session,
-		const vnode_t *parent, const int tid, const char *src)
+		vnode_t *parent, const int tid, const char *src)
 {
 	ER_UINT len = kcall->region_copy(tid, src, PATH_MAX + 1, dest);
 	if (len <= 0)
@@ -285,11 +285,6 @@ int session_get_path2(char *dest, vnode_t **vnode, const session_t *session,
 	if (len > PATH_MAX)
 		return ENAMETOOLONG;
 
-	if (*dest == '/') {
-		*vnode = session->cwd;
-		return 0;
-	}
-
-	*vnode = (vnode_t*)parent;
+	*vnode = (*dest == '/') ? session->cwd : parent;
 	return 0;
 }

@@ -952,6 +952,7 @@ static int if_create(mm_process_t *process, pm_args_t *args)
 
 	int oflag = args->arg2;
 	args->arg4 = fid;
+	args->arg5 = process->wd->node.key;
 
 	if (kcall->port_call(PORT_FS, args, sizeof(*args))
 			!= sizeof(pm_reply_t)) {
