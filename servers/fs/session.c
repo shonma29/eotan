@@ -90,64 +90,6 @@ log_info("fs: attach %d\n", file->node.key);
 	return 0;
 }
 
-int if_chdir(fs_request *req)
-{
-	session_t *session = session_find(unpack_sid(req));
-	if (!session)
-		return ESRCH;
-
-	int fid = req->packet.arg2;
-	struct file *file;
-	int error_no = session_create_desc(&file, session, fid);
-	if (error_no) {
-log_info("fs: chdir0 %x %d\n", fid, error_no);
-		return error_no;
-	}
-
-	vnode_t *starting_node;
-	error_no = session_get_path(req->buf, &starting_node,
-			session, unpack_tid(req),
-			(char*)(req->packet.arg1));
-	if (error_no) {
-		session_destroy_desc(session, fid);
-log_info("fs: chdir1\n");
-		return error_no;
-	}
-
-	vnode_t *wd;
-	error_no = vfs_walk(starting_node, req->buf, O_RDONLY,
-			&(session->permission), &wd);
-	if (error_no) {
-		session_destroy_desc(session, fid);
-log_info("fs: chdir2\n");
-		return error_no;
-	}
-
-	if ((wd->mode & S_IFMT) != S_IFDIR) {
-		vnodes_remove(wd);
-		session_destroy_desc(session, fid);
-log_info("fs: chdir3\n");
-		return ENOTDIR;
-	}
-
-	//TODO not need in plan 9
-	error_no = vfs_permit(wd, &(session->permission), X_OK);
-	if (error_no) {
-		vnodes_remove(wd);
-		session_destroy_desc(session, fid);
-log_info("fs: chdir4\n");
-		return error_no;
-	}
-log_info("fs: chdir5\n");
-	vnodes_remove(session->cwd);
-	session->cwd = wd;
-	file->f_vnode = wd;
-	//TODO really?
-	file->f_flag = O_ACCMODE;
-	reply2(req->rdvno, 0, 0, 0);
-	return 0;
-}
-
 void session_initialize(void)
 {
 	session_slab.unit_size = sizeof(session_t);
@@ -256,26 +198,7 @@ struct file *session_find_desc(const session_t *session, const int fd)
 	return (struct file*)tree_get(&(session->files), fd);
 }
 
-int session_get_path(char *dest, vnode_t **vnode,
-	const session_t *session, const int tid, const char *src)
-{
-	ER_UINT len = kcall->region_copy(tid, src, PATH_MAX + 1, dest);
-	if (len <= 0)
-		return EFAULT;
-
-	if (len > PATH_MAX)
-		return ENAMETOOLONG;
-
-	if (*dest == '/') {
-		*vnode = rootfile;
-		return 0;
-	}
-
-	*vnode = session->cwd;
-	return 0;
-}
-
-int session_get_path2(char *dest, vnode_t **vnode, const session_t *session,
+int session_get_path(char *dest, vnode_t **vnode, const session_t *session,
 		vnode_t *parent, const int tid, const char *src)
 {
 	ER_UINT len = kcall->region_copy(tid, src, PATH_MAX + 1, dest);
@@ -288,3 +211,16 @@ int session_get_path2(char *dest, vnode_t **vnode, const session_t *session,
 	*vnode = (*dest == '/') ? session->cwd : parent;
 	return 0;
 }
+
+#if 0
+int if_exit(fs_request *req)
+{
+	session_t *session = session_find(unpack_sid(req));
+	if (!session)
+		return ESRCH;
+
+	session_destroy(session);
+	reply2(req->rdvno, 0, 0, 0);
+	return 0;
+}
+#endif

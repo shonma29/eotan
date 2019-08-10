@@ -349,11 +349,6 @@ int if_fork(mm_process_t *process, pm_args_t *args)
 		return ENOMEM;
 	}
 
-	if (kcall->port_call(PORT_FS, args, sizeof(*args))
-			!= sizeof(pm_reply_t)) {
-		return ECONNREFUSED;
-	}
-
 	if (kcall->thread_start(thread_id) < 0) {
 		log_err("mm: th start err\n");
 		//TODO use other errno
@@ -361,9 +356,9 @@ int if_fork(mm_process_t *process, pm_args_t *args)
 	}
 
 	pm_reply_t *reply = (pm_reply_t*)args;
-	if (!(reply->result1)) {
-		reply->result1 = child->node.key;
-	}
+	reply->result1 = child->node.key;
+	reply->result2 = 0;
+	reply->error_no = 0;
 
 	log_info("proxy: %d fork %d %d\n",
 			process->node.key, reply->result1, reply->error_no);
@@ -725,7 +720,7 @@ static int _fstat(struct stat *st, const mm_file_t *file, const int tag)
 static int if_chdir(mm_process_t *process, pm_args_t *args)
 {
 	int tag = args->process_id;
-	ER_UINT len = kcall->region_copy((args->process_id >> 16) & 0xffff,
+	ER_UINT len = kcall->region_copy((tag >> 16) & 0xffff,
 			(char*)(args->arg1), PATH_MAX, pathbuf2);
 	if (len < 0)
 		return EFAULT;
@@ -738,60 +733,42 @@ static int if_chdir(mm_process_t *process, pm_args_t *args)
 	if (!len)
 		return ENAMETOOLONG;
 
-	int fid = session_find_new_fid(process->session);
-	if (fid == -1)
-		return ENOMEM;
-
-	mm_file_t *f = process_allocate_file();
-	if (!f)
-		return ENOMEM;
-
-	args->arg2 = fid;
-	if (kcall->port_call(PORT_FS, args, sizeof(*args))
-			!= sizeof(pm_reply_t)) {
-		process_deallocate_file(f);
-		return ECONNREFUSED;
-	}
-
 	int old = (process->wd) ? process->wd->node.key : 0;
-	pm_reply_t *reply = (pm_reply_t*)args;
-	if (reply->result1 == 0) {
-		process->local->wd_len = len;
-		strcpy(process->local->wd, pathbuf1);
+	int thread_id = (args->process_id >> 16) & 0xffff;
+	mm_file_t *file;
+	int result = _walk(process, thread_id, (char*)(args->arg1), &file);
+	if (result)
+		return result;
 
-		f->server_id = PORT_FS;
-		f->f_flag = O_ACCMODE;
-		f->f_count = 1;
-		f->f_offset = 0;
+	process->local->wd_len = len;
+	strcpy(process->local->wd, pathbuf1);
 
-		if (process->wd) {
-//log_info("mm: if_chdir0\n");
-			devmsg_t message;
-			message.Tclunk.tag = (tag & 0xffff0000)
-					| process->session->node.key;
-			int result = _clunk(process->session, process->wd,
-					&message);
-log_info("if_chdir: close[%d] %d\n", old, result);
-			if (result) {
-				//TODO what to do?
-			}
+	file->server_id = PORT_FS;
+	file->f_flag = O_ACCMODE;
+	file->f_count = 1;
+	file->f_offset = 0;
 
-			process->wd = NULL;
-		}
-
-		if (session_add_file(process->session, fid, f)) {
+	if (process->wd) {
+		devmsg_t message;
+		message.Tclunk.tag = (tag & 0xffff0000)
+				| process->session->node.key;
+		result = _clunk(process->session, process->wd, &message);
+		log_info("if_chdir: close[:%d] %d\n", old, result);
+		if (result) {
 			//TODO what to do?
 		}
-
-		process->wd = f;
-	} else {
-		process_deallocate_file(f);
 	}
 
-	log_info("proxy: %d chdir %d %d %d->%d %s\n",
-			process->node.key, reply->result1, reply->error_no,
-			old, process->wd->node.key, process->local->wd);
+	process->wd = file;
 
+	log_info("proxy: %d chdir %d->%d %s\n",
+			process->node.key, old, process->wd->node.key,
+			process->local->wd);
+
+	pm_reply_t *reply = (pm_reply_t*)args;
+	reply->result1 = 0;
+	reply->result2 = 0;
+	reply->error_no = 0;
 	return 0;
 }
 

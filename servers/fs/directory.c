@@ -93,7 +93,7 @@ int if_walk(fs_request *req)
 		if (request->Twalk.nwname) {
 //log_info("walk11\n");
 			vnode_t *starting_node;
-			error_no = session_get_path2(req->buf, &starting_node,
+			error_no = session_get_path(req->buf, &starting_node,
 					session, parent->f_vnode,
 					unpack_tid(req), request->Twalk.wname);
 			if (error_no) {
@@ -168,7 +168,7 @@ int if_create(fs_request *req)
 
 	//TODO lock fid
 	vnode_t *starting_node;
-	int error_no = session_get_path2(req->buf, &starting_node, session,
+	int error_no = session_get_path(req->buf, &starting_node, session,
 			parent->f_vnode, unpack_tid(req),
 			(char*)(req->packet.arg1));
 	if (error_no)
