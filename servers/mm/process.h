@@ -29,13 +29,12 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <device.h>
 #include <local.h>
-#include <pm.h>
 #include <mm/segment.h>
 #include <mpu/memory.h>
 #include <set/list.h>
 #include <set/tree.h>
 #include <sys/types.h>
-#include "interface.h"
+#include "api.h"
 
 #define SESSION_FID (0)
 

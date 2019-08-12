@@ -1,5 +1,5 @@
-#ifndef _INTERFACE_H_
-#define _INTERFACE_H_
+#ifndef _MM_API_H_
+#define _MM_API_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -47,6 +47,14 @@ extern int mm_sbrk(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_chdir(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_dup(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_lseek(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
+extern int mm_open(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
+extern int mm_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
+extern int mm_read(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
+extern int mm_write(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
+extern int mm_close(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
+extern int mm_remove(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
+extern int mm_fstat(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
+extern int mm_chmod(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_clock_gettime(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 extern int mm_thread_find(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
 

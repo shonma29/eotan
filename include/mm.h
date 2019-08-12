@@ -52,8 +52,16 @@ typedef enum {
 	mm_syscall_chdir = 7,
 	mm_syscall_dup = 8,
 	mm_syscall_lseek = 9,
-	mm_syscall_clock_gettime = 10,
-	mm_syscall_thread_find = 11
+	mm_syscall_open = 10,
+	mm_syscall_create = 11,
+	mm_syscall_read = 12,
+	mm_syscall_write = 13,
+	mm_syscall_close = 14,
+	mm_syscall_remove = 15,
+	mm_syscall_fstat = 16,
+	mm_syscall_chmod = 17,
+	mm_syscall_clock_gettime = 18,
+	mm_syscall_thread_find = 19
 } mm_syscall_e;
 
 #endif

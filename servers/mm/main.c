@@ -30,7 +30,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <errno.h>
 #include <fcntl.h>
 #include <mm.h>
-#include <pm.h>
 #include <services.h>
 #include <string.h>
 #include <boot/init.h>
@@ -41,7 +40,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../kernel/mpu/interrupt.h"
 #include "../../kernel/mpu/mpufunc.h"
 #include "../../lib/libserv/libserv.h"
-#include "interface.h"
+#include "api.h"
 #include "process.h"
 
 #define MIN_AUTO_FD (3)
@@ -57,6 +56,14 @@ static int (*funcs[])(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args) = {
 	mm_chdir,
 	mm_dup,
 	mm_lseek,
+	mm_open,
+	mm_create,
+	mm_read,
+	mm_write,
+	mm_close,
+	mm_remove,
+	mm_fstat,
+	mm_chmod,
 	mm_clock_gettime,
 	mm_thread_find
 };
@@ -76,15 +83,7 @@ static int _seek(mm_process_t *, mm_file_t *, mm_args_t *);
 static int _fstat(struct stat *, const mm_file_t *, const int);
 static size_t calc_path(char *, char *, const size_t);
 static char *split_path(const char *path, char **parent_path);
-static int if_open(mm_process_t *, pm_args_t *);
-static int if_create(mm_process_t *, pm_args_t *);
-static int if_read(mm_process_t *, pm_args_t *);
-static int if_write(mm_process_t *, pm_args_t *);
-static int if_close(mm_process_t *, pm_args_t *);
 static int _clunk(mm_session_t *, mm_file_t *, devmsg_t *);
-static int if_remove(mm_process_t *, pm_args_t *);
-static int if_stat(mm_process_t *, pm_args_t *);
-static int if_wstat(mm_process_t *, pm_args_t *);
 static int _walk(mm_process_t *, const int, const char *, mm_file_t **);
 static void doit(void);
 
@@ -94,8 +93,8 @@ static ER init(void)
 
 	process_initialize();
 
-	ER result = proxy_initialize();
-	if (result)
+	ER_ID result = proxy_initialize();
+	if (result < 0)
 		return result;
 
 	define_mpu_handlers((FP)default_handler, (FP)stack_fault_handler);
@@ -110,92 +109,13 @@ static ER proxy_initialize(void)
 		KTHREAD_STACK_SIZE, NULL, NULL, NULL
 	};
 
-	return kcall->thread_create(PORT_PM, &pk_ctsk);
+	return kcall->thread_create_auto(&pk_ctsk);
 }
 
 static void proxy(void)
 {
 	sleep(1);
 	exec_init(INIT_PID, INIT_PATH_NAME);
-
-//	T_CPOR pk_cpor = { TA_TFIFO, sizeof(pm_args_t), sizeof(pm_reply_t) };
-	T_CPOR pk_cpor = { TA_TFIFO, sizeof(pm_args_t), sizeof(devmsg_t) };
-//log_info("proxy size=%d\n", sizeof(devmsg_t));
-	ER error = kcall->port_open(&pk_cpor);
-	if (error) {
-		log_err("proxy: open failed %d\n", error);
-		return;
-	} else
-		log_info("proxy: start\n");
-
-	for (;;) {
-		RDVNO rdvno;
-		pm_args_t args;
-		ER_UINT size = kcall->port_accept(PORT_PM, &rdvno, &args);
-		if (size < 0) {
-			log_err("proxy: receive failed %d\n", size);
-			break;
-		}
-
-		pm_reply_t *reply = (pm_reply_t*)(&args);
-		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
-		if (!th) {
-			//TODO return error
-		}
-
-		mm_process_t *process = get_process(th->process_id);
-		if (!process) {
-			//TODO thread has pointer to process
-		}
-
-		args.process_id = process->session->node.key
-				| get_rdv_tid(rdvno) << 16;
-
-		int result;
-		int op = args.operation;
-		switch (args.operation) {
-		case pm_syscall_open:
-			result = if_open(process, &args);
-			break;
-		case pm_syscall_create:
-			result = if_create(process, &args);
-			break;
-		case pm_syscall_read:
-			result = if_read(process, &args);
-			break;
-		case pm_syscall_write:
-			result = if_write(process, &args);
-			break;
-		case pm_syscall_close:
-			result = if_close(process, &args);
-			break;
-		case pm_syscall_remove:
-			result = if_remove(process, &args);
-			break;
-		case pm_syscall_fstat:
-			result = if_stat(process, &args);
-			break;
-		case pm_syscall_chmod:
-			result = if_wstat(process, &args);
-			break;
-		default:
-			result = (kcall->port_call(PORT_FS, &args, sizeof(args))
-					== sizeof(pm_reply_t)) ?
-							0 : ECONNREFUSED;
-			break;
-		}
-
-		if (result) {
-			log_err("proxy: call %d failed %d\n", op, result);
-			reply->result1 = -1;
-			reply->result2 = 0;
-			reply->error_no = result;
-		}
-
-		result = kcall->port_reply(rdvno, reply, sizeof(*reply));
-		if (result)
-			log_err("proxy: reply failed %d\n", result);
-	}
 }
 
 //TODO extract to libserv
@@ -395,6 +315,7 @@ int mm_exec(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			reply->data[0] = ESRCH;
 			break;
 		}
+
 		return process_exec(reply, process, th->node.key, args);
 	} while (false);
 
@@ -415,12 +336,12 @@ int process_exec(mm_reply_t *reply, mm_process_t *process, const int thread_id,
 		}
 
 		devmsg_t message;
-		message.type = pm_syscall_open;//Topen;
+		message.type = Topen;
 		message.Topen.tag =
 				(thread_id << 16) | process->session->node.key;
 		message.Topen.fid = file->node.key;
 		message.Topen.mode = O_EXEC;
-		result = call_device(process->wd->server_id, &message,
+		result = call_device(file->server_id, &message,
 				MESSAGE_SIZE(Topen), Ropen,
 				MESSAGE_SIZE(Ropen));
 		if (result) {
@@ -430,7 +351,7 @@ int process_exec(mm_reply_t *reply, mm_process_t *process, const int thread_id,
 		}
 
 		Elf32_Ehdr ehdr;
-		message.type = pm_syscall_read;//Tread;
+		message.type = Tread;
 		message.Tread.tag = (kcall->thread_get_id() << 16)
 				| process->session->node.key;
 		message.Tread.fid = file->node.key;
@@ -469,7 +390,7 @@ int process_exec(mm_reply_t *reply, mm_process_t *process, const int thread_id,
 		unsigned int offset = ehdr.e_phoff;
 		for (int i = 0; i < ehdr.e_phnum; i++) {
 			Elf32_Phdr phdr;
-			message.type = pm_syscall_read;//Tread;
+			message.type = Tread;
 			message.Tread.tag = (kcall->thread_get_id() << 16)
 					| process->session->node.key;
 			message.Tread.fid = file->node.key;
@@ -528,7 +449,7 @@ int process_exec(mm_reply_t *reply, mm_process_t *process, const int thread_id,
 			log_err("replace0 %d\n", result);
 		}
 
-		message.type = pm_syscall_read;//Tread;
+		message.type = Tread;
 		message.Tread.tag = (new_thread_id << 16)
 				| process->session->node.key;
 		message.Tread.fid = file->node.key;
@@ -549,7 +470,7 @@ int process_exec(mm_reply_t *reply, mm_process_t *process, const int thread_id,
 		}
 
 		if (rw.p_filesz) {
-			message.type = pm_syscall_read;//Tread;
+			message.type =Tread;
 			message.Tread.tag = (new_thread_id << 16)
 					| process->session->node.key;
 			message.Tread.fid = file->node.key;
@@ -592,17 +513,6 @@ int process_exec(mm_reply_t *reply, mm_process_t *process, const int thread_id,
 
 int mm_exit(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
-/*
-	if (kcall->port_call(PORT_FS, args, sizeof(*args))
-			!= sizeof(pm_reply_t)) {
-		return ECONNREFUSED;
-	}
-
-	pm_reply_t *reply = (pm_reply_t*)args;
-	if (!(reply->result1)) {
-		process_destroy(process, args->arg1);
-	}
-*/
 	do {
 		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
 		if (!th) {
@@ -724,6 +634,7 @@ static int _seek(mm_process_t *process, mm_file_t *file, mm_args_t *args)
 static int _fstat(struct stat *st, const mm_file_t *file, const int tag)
 {
 	devmsg_t message;
+	message.type = Tstat;
 	message.Tstat.tag = tag;
 	message.Tstat.fid = file->node.key;
 	message.Tstat.stat = st;
@@ -779,18 +690,13 @@ int mm_chdir(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		process->local->wd_len = len;
 		strcpy(process->local->wd, pathbuf1);
 
-		file->server_id = PORT_FS;
-		file->f_flag = O_ACCMODE;
-		file->f_count = 1;
-		file->f_offset = 0;
-
 		if (process->wd) {
 			devmsg_t message;
 			message.Tclunk.tag = (th->node.key << 16)
 					| process->session->node.key;
 			result = _clunk(process->session, process->wd,
 					&message);
-			log_info("if_chdir: close[:%d] %d\n", old, result);
+			log_info("mm_chdir: close[:%d] %d\n", old, result);
 			if (result) {
 				//TODO what to do?
 			}
@@ -901,240 +807,353 @@ static char *split_path(const char *path, char **parent_path)
 	return head;
 }
 
-static int if_open(mm_process_t *process, pm_args_t *args)
+int mm_open(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
-	int fd = process_find_new_fd(process);
-	if (fd == -1)
-		return ENOMEM;
+	do {
+		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
+		if (!th) {
+			//TODO use other errno
+			reply->data[0] = ESRCH;
+			break;
+		}
 
-	mm_descriptor_t *d = process_allocate_desc();
-	if (!d)
-		return ENOMEM;
+		mm_process_t *process = get_process(th->process_id);
+		if (!process) {
+			//TODO use other errno
+			reply->data[0] = ESRCH;
+			break;
+		}
 
-	if (process_set_desc(process, fd, d)) {
-		process_deallocate_desc(d);
-		//TODO use nother errno
-		return ENOMEM;
-	}
+		int fd = process_find_new_fd(process);
+		if (fd == -1) {
+			reply->data[0] = ENOMEM;
+			break;
+		}
 
-	int thread_id = (args->process_id >> 16) & 0xffff;
-	mm_file_t *file;
-	int result = _walk(process, thread_id, (char*)(args->arg1), &file);
-	if (result) {
-		process_destroy_desc(process, fd);
-		return result;
-	}
+		mm_descriptor_t *desc = process_allocate_desc();
+		if (!desc) {
+			reply->data[0] = ENOMEM;
+			break;
+		}
 
-	d->file = file;
-	int oflag = args->arg2;
-	devmsg_t message;
-	message.type = pm_syscall_open;//Topen;
-	message.Topen.tag = (thread_id << 16) | process->session->node.key;
-	message.Topen.fid = file->node.key;
-	message.Topen.mode = oflag;
+		if (process_set_desc(process, fd, desc)) {
+			process_deallocate_desc(desc);
+			//TODO use nother errno
+			reply->data[0] = ENOMEM;
+			break;
+		}
 
-	//TODO find server_id
-	result = call_device(process->wd->server_id, &message,
-			MESSAGE_SIZE(Topen), Ropen, MESSAGE_SIZE(Ropen));
-	log_err("proxy: %d open[%d:%d] %d\n",
-			process->node.key, fd, file->node.key, result);
+		mm_file_t *file;
+		int result = _walk(process, th->node.key, (char*)(args->arg1),
+				&file);
+		if (result) {
+			process_destroy_desc(process, fd);
+			reply->data[0] = result;
+			break;
+		}
 
-	if (result) {
-		d->file = NULL;
-		process_destroy_desc(process, fd);
-
-		message.Tclunk.tag = (thread_id << 16)
+		desc->file = file;
+		int oflag = args->arg2;
+		devmsg_t message;
+		message.type = Topen;
+		message.Topen.tag = (th->node.key << 16)
 				| process->session->node.key;
-		int error_no = _clunk(process->session, file, &message);
-		if (error_no) {
+		message.Topen.fid = file->node.key;
+		message.Topen.mode = oflag;
+		result = call_device(file->server_id, &message,
+				MESSAGE_SIZE(Topen),
+				Ropen, MESSAGE_SIZE(Ropen));
+		log_err("proxy: %d open[%d:%d] %d\n",
+				process->node.key, fd, file->node.key, result);
+
+		if (result) {
+			desc->file = NULL;
+			process_destroy_desc(process, fd);
+
+			message.Tclunk.tag = (th->node.key << 16)
+					| process->session->node.key;
+			int error_no = _clunk(process->session, file, &message);
+			if (error_no) {
+				//TODO what to do?
+			}
+
+			reply->data[0] = result;
+			break;
+		}
+
+		file->f_flag = oflag;
+		//TODO set at last if append mode
+		file->f_offset = 0;
+
+		reply->result = fd;
+		reply->data[0] = 0;
+		return reply_success;
+	} while (false);
+
+	reply->result = -1;
+	return reply_failure;
+}
+
+int mm_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+{
+	do {
+		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
+		if (!th) {
+			//TODO use other errno
+			reply->data[0] = ESRCH;
+			break;
+		}
+
+		mm_process_t *process = get_process(th->process_id);
+		if (!process) {
+			//TODO use other errno
+			reply->data[0] = ESRCH;
+			break;
+		}
+
+		ER_UINT len = kcall->region_copy(th->node.key,
+				(char*)(args->arg1), PATH_MAX, pathbuf1);
+		if (len < 0) {
+			reply->data[0] = EFAULT;
+			break;
+		}
+
+		if (len >= PATH_MAX) {
+			reply->data[0] = ENAMETOOLONG;
+			break;
+		}
+
+		int fd = process_find_new_fd(process);
+		if (fd == -1) {
+			reply->data[0] = ENOMEM;
+			break;
+		}
+
+		mm_descriptor_t *desc = process_allocate_desc();
+		if (!desc) {
+			reply->data[0] = ENOMEM;
+			break;
+		}
+
+		if (process_set_desc(process, fd, desc)) {
+			process_deallocate_desc(desc);
+			//TODO use nother errno
+			reply->data[0] = ENOMEM;
+			break;
+		}
+
+		char *parent_path = "";
+		char *head = split_path(pathbuf1, &parent_path);
+		mm_file_t *file;
+		int result = _walk(process, kcall->thread_get_id(),
+				parent_path, &file);
+		if (result) {
+			process_destroy_desc(process, fd);
+			reply->data[0] = result;
+			break;
+		}
+
+		int fid = file->node.key;
+		int oflag = args->arg2;
+		devmsg_t message;
+		message.type = Tcreate;
+		message.Tcreate.tag = (kcall->thread_get_id() << 16)
+				| process->session->node.key;
+		message.Tcreate.fid = fid;
+		message.Tcreate.name = head;
+		message.Tcreate.perm = args->arg3;
+		message.Tcreate.mode = oflag;
+		result = call_device(file->server_id, &message,
+				MESSAGE_SIZE(Tcreate),
+				Rcreate, MESSAGE_SIZE(Rcreate));
+		log_info("proxy: %d create[%d:%d] %d\n",
+				process->node.key, fd, fid, result);
+
+		if (result) {
+			process_destroy_desc(process, fd);
+
+			message.Tclunk.tag = (kcall->thread_get_id() << 16)
+					| process->session->node.key;
+			int error_no = _clunk(process->session, file, &message);
+			if (error_no) {
+				//TODO what to do?
+			}
+
+			reply->data[0] = result;
+			break;
+		}
+
+		desc->file = file;
+		//TODO really?
+		file->f_flag = oflag & O_ACCMODE;
+		file->f_count = 1;
+		//TODO set at last if append mode
+		file->f_offset = 0;
+
+		reply->result = fd;
+		reply->data[0] = 0;
+		return reply_success;
+	} while (false);
+
+	reply->result = -1;
+	return reply_failure;
+}
+
+int mm_read(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+{
+	do {
+		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
+		if (!th) {
+			//TODO use other errno
+			reply->data[0] = ESRCH;
+			break;
+		}
+
+		mm_process_t *process = get_process(th->process_id);
+		if (!process) {
+			//TODO use other errno
+			reply->data[0] = ESRCH;
+			break;
+		}
+
+		mm_descriptor_t *desc = process_find_desc(process, args->arg1);
+		if (!desc) {
+			reply->data[0] = EBADF;
+			break;
+		}
+
+		mm_file_t *file = desc->file;
+		devmsg_t message;
+		message.type = Tread;
+		message.Tread.tag = (th->node.key << 16)
+				| process->session->node.key;
+		message.Tread.fid = file->node.key;
+		message.Tread.offset = file->f_offset;
+		message.Tread.count = args->arg3;
+		message.Tread.data = (char*)(args->arg2);
+
+		int result = call_device(file->server_id, &message,
+				MESSAGE_SIZE(Tread),
+				Rread, MESSAGE_SIZE(Rread));
+		if (result) {
+			reply->data[0] = result;
+			break;
+		}
+
+		file->f_offset += message.Rread.count;
+
+		reply->result = message.Rread.count;
+		reply->data[0] = 0;
+		return reply_success;
+	} while (false);
+
+	reply->result = -1;
+	return reply_failure;
+}
+
+int mm_write(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+{
+	do {
+		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
+		if (!th) {
+			//TODO use other errno
+			reply->data[0] = ESRCH;
+			break;
+		}
+
+		mm_process_t *process = get_process(th->process_id);
+		if (!process) {
+			//TODO use other errno
+			reply->data[0] = ESRCH;
+			break;
+		}
+
+		mm_descriptor_t *desc = process_find_desc(process, args->arg1);
+		if (!desc) {
+			reply->data[0] = EBADF;
+			break;
+		}
+
+		mm_file_t *file = desc->file;
+		devmsg_t message;
+		message.type = Twrite;
+		message.Twrite.tag = (th->node.key << 16)
+				| process->session->node.key;
+		message.Twrite.fid = file->node.key;
+		message.Twrite.offset = file->f_offset;
+		message.Twrite.count = args->arg3;
+		message.Twrite.data = (char*)(args->arg2);
+
+		int result = call_device(file->server_id, &message,
+				MESSAGE_SIZE(Twrite),
+				Rwrite, MESSAGE_SIZE(Rwrite));
+		if (result) {
+			reply->data[0] = result;
+			break;
+		}
+
+		file->f_offset += message.Rwrite.count;
+
+		reply->result = message.Rwrite.count;
+		reply->data[0] = 0;
+		return reply_success;
+	} while (false);
+
+	reply->result = -1;
+	return reply_failure;
+}
+
+int mm_close(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+{
+	do {
+		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
+		if (!th) {
+			//TODO use other errno
+			reply->data[0] = ESRCH;
+			break;
+		}
+
+		mm_process_t *process = get_process(th->process_id);
+		if (!process) {
+			//TODO use other errno
+			reply->data[0] = ESRCH;
+			break;
+		}
+
+		int fd = args->arg1;
+		mm_descriptor_t *desc = process_find_desc(process, fd);
+		if (!desc) {
+			reply->data[0] = EBADF;
+			break;
+		}
+
+		mm_file_t *file = desc->file;
+		desc->file = NULL;
+		if (process_destroy_desc(process, fd)) {
 			//TODO what to do?
 		}
 
-		return result;
-	}
-
-	file->server_id = process->wd->server_id;
-	file->f_flag = oflag;
-	file->f_count = 1;
-	//TODO set at last if append mode
-	file->f_offset = 0;
-
-	pm_reply_t *reply = (pm_reply_t*)args;
-	reply->result1 = fd;
-	reply->result2 = 0;
-	reply->error_no = 0;
-
-	return 0;
-}
-
-static int if_create(mm_process_t *process, pm_args_t *args)
-{
-	ER_UINT len = kcall->region_copy((args->process_id >> 16) & 0xffff,
-			(char*)(args->arg1), PATH_MAX, pathbuf1);
-	if (len < 0)
-		return EFAULT;
-
-	if (len >= PATH_MAX)
-		return ENAMETOOLONG;
-
-	int fd = process_find_new_fd(process);
-	if (fd == -1)
-		return ENOMEM;
-
-	mm_descriptor_t *d = process_allocate_desc();
-	if (!d)
-		return ENOMEM;
-
-	if (process_set_desc(process, fd, d)) {
-		process_deallocate_desc(d);
-		//TODO use nother errno
-		return ENOMEM;
-	}
-
-	char *parent_path = "";
-	char *head = split_path(pathbuf1, &parent_path);
-	mm_file_t *file;
-	int result = _walk(process, kcall->thread_get_id(), parent_path, &file);
-	if (result) {
-		process_destroy_desc(process, fd);
-		return result;
-	}
-
-	int fid = file->node.key;
-	int oflag = args->arg2;
-	devmsg_t message;
-	message.type = pm_syscall_create;//Tcreate;
-	message.Tcreate.tag = (kcall->thread_get_id() << 16)
-			| process->session->node.key;
-	message.Tcreate.fid = fid;
-	message.Tcreate.name = head;
-	message.Tcreate.perm = args->arg3;
-	message.Tcreate.mode = oflag;
-	result = call_device(process->wd->server_id, &message,
-			MESSAGE_SIZE(Tcreate), Rcreate, MESSAGE_SIZE(Rcreate));
-	log_info("proxy: %d create[%d:%d] %d\n",
-			process->node.key, fd, fid, result);
-
-	if (result) {
-		process_destroy_desc(process, fd);
-
-		message.Tclunk.tag = (kcall->thread_get_id() << 16)
+		devmsg_t message;
+		message.Tclunk.tag = (th->node.key << 16)
 				| process->session->node.key;
-		int error_no = _clunk(process->session, file, &message);
-		if (error_no) {
-			//TODO what to do?
+		int result = _clunk(process->session, file, &message);
+		if (result) {
+			log_err("proxy: %d close[%d:] err %d\n",
+					process->node.key, fd, result);
+			reply->data[0] = result;
+			break;
 		}
 
-		return result;
-	}
+		log_info("proxy: %d close[%d:] ok\n",
+				process->node.key, fd);
 
-	d->file = file;
-	file->server_id = process->wd->server_id;
-	//TODO really?
-	file->f_flag = oflag & O_ACCMODE;
-	file->f_count = 1;
-	//TODO set at last if append mode
-	file->f_offset = 0;
+		reply->result = 0;
+		reply->data[0] = 0;
+		return reply_success;
+	} while (false);
 
-	pm_reply_t *reply = (pm_reply_t*)args;
-	reply->result1 = fd;
-	reply->result2 = 0;
-	reply->error_no = 0;
-	return 0;
-}
-
-static int if_read(mm_process_t *process, pm_args_t *args)
-{
-	mm_descriptor_t *d = process_find_desc(process, args->arg1);
-	if (!d)
-		return EBADF;
-
-	mm_file_t *f = d->file;
-	devmsg_t *message = (devmsg_t*)args;
-	if (f->server_id != PORT_FS)
-		message->type = Tread;
-	message->Tread.fid = f->node.key;
-	message->Tread.count = args->arg3;
-	message->Tread.data = (char*)(args->arg2);
-	message->Tread.offset = f->f_offset;
-
-	int result = call_device(f->server_id, message, MESSAGE_SIZE(Tread),
-			Rread, MESSAGE_SIZE(Rread));
-	if (result)
-		return result;
-
-	f->f_offset += message->Rread.count;
-
-	pm_reply_t *reply = (pm_reply_t*)args;
-	reply->result1 = args->arg1;
-	reply->result2 = 0;
-	reply->error_no = 0;
-
-	return 0;
-}
-
-static int if_write(mm_process_t *process, pm_args_t *args)
-{
-	mm_descriptor_t *d = process_find_desc(process, args->arg1);
-	if (!d)
-		return EBADF;
-
-	mm_file_t *f = d->file;
-	devmsg_t *message = (devmsg_t*)args;
-	if (f->server_id != PORT_FS)
-		message->type = Twrite;
-	message->Twrite.fid = f->node.key;
-	message->Twrite.count = args->arg3;
-	message->Twrite.data = (char*)(args->arg2);
-	message->Twrite.offset = f->f_offset;
-
-	int result = call_device(f->server_id, message, MESSAGE_SIZE(Twrite),
-			Rwrite, MESSAGE_SIZE(Rwrite));
-	if (result)
-		return result;
-
-	f->f_offset += message->Rwrite.count;
-
-	pm_reply_t *reply = (pm_reply_t*)args;
-	reply->result1 = args->arg1;
-	reply->result2 = 0;
-	reply->error_no = 0;
-
-	return 0;
-}
-
-static int if_close(mm_process_t *process, pm_args_t *args)
-{
-	int fd = args->arg1;
-	mm_descriptor_t *d = process_find_desc(process, fd);
-	if (!d)
-		return EBADF;
-
-	mm_file_t *file = d->file;
-	d->file = NULL;
-	if (process_destroy_desc(process, fd)) {
-		//TODO what to do?
-	}
-
-	devmsg_t message;
-	message.Tclunk.tag = args->process_id;
-	int result = _clunk(process->session, file, &message);
-
-	if (result) {
-		log_err("proxy: %d close[%d:] err %d\n",
-				process->node.key, fd, result);
-		return result;
-	}
-
-	log_info("proxy: %d close[%d:] ok\n",
-			process->node.key, fd);
-
-	pm_reply_t *reply = (pm_reply_t*)args;
-	reply->result1 = 0;
-	reply->result2 = 0;
-	reply->error_no = 0;
-
-	return 0;
+	reply->result = -1;
+	return reply_failure;
 }
 
 static int _clunk(mm_session_t *session, mm_file_t *file, devmsg_t *message)
@@ -1145,8 +1164,7 @@ static int _clunk(mm_session_t *session, mm_file_t *file, devmsg_t *message)
 		return 0;
 	}
 
-	message->type = (file->server_id == PORT_FS) ?
-			pm_syscall_close : Tclunk;
+	message->type = Tclunk;
 	message->Tclunk.fid = file->node.key;
 
 	int result = call_device(file->server_id, message,
@@ -1160,107 +1178,163 @@ static int _clunk(mm_session_t *session, mm_file_t *file, devmsg_t *message)
 	return result;
 }
 
-static int if_remove(mm_process_t *process, pm_args_t *args)
+int mm_remove(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
-	int thread_id = (args->process_id >> 16) & 0xffff;
-	mm_file_t *file;
-	int result = _walk(process, thread_id, (char*)(args->arg1), &file);
-	if (result)
-		return result;
+	do {
+		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
+		if (!th) {
+			//TODO use other errno
+			reply->data[0] = ESRCH;
+			break;
+		}
 
-	devmsg_t message;
-	message.type = pm_syscall_remove;//Tremove;
-	message.Tremove.tag = (thread_id << 16) | process->session->node.key;
-	message.Tremove.fid = file->node.key;
+		mm_process_t *process = get_process(th->process_id);
+		if (!process) {
+			//TODO use other errno
+			reply->data[0] = ESRCH;
+			break;
+		}
 
-	//TODO find server_id
-	result = call_device(process->wd->server_id, &message,
-			MESSAGE_SIZE(Tremove), Rremove, MESSAGE_SIZE(Rremove));
+		mm_file_t *file;
+		int result = _walk(process, th->node.key, (char*)(args->arg1),
+				&file);
+		if (result) {
+			reply->data[0] = result;
+			break;
+		}
 
-	log_info("proxy: %d remove[:%d] %d\n",
-			process->node.key, file->node.key, result);
+		devmsg_t message;
+		message.type = Tremove;
+		message.Tremove.tag = (th->node.key << 16)
+				| process->session->node.key;
+		message.Tremove.fid = file->node.key;
+		result = call_device(file->server_id, &message,
+				MESSAGE_SIZE(Tremove),
+				Rremove, MESSAGE_SIZE(Rremove));
 
-	if (session_remove_file(process->session, file->node.key)) {
-		//TODO what to do?
-	}
+		log_info("proxy: %d remove[:%d] %d\n",
+				process->node.key, file->node.key, result);
 
-	process_deallocate_file(file);
+		if (session_remove_file(process->session, file->node.key)) {
+			//TODO what to do?
+		}
 
-	if (result)
-		return result;
+		process_deallocate_file(file);
 
-	pm_reply_t *reply = (pm_reply_t*)args;
-	reply->result1 = 0;
-	reply->result2 = 0;
-	reply->error_no = 0;
+		if (result) {
+			reply->data[0] = result;
+			break;
+		}
 
-	return 0;
+		reply->result = 0;
+		reply->data[0] = 0;
+		return reply_success;
+	} while (false);
+
+	reply->result = -1;
+	return reply_failure;
 }
 
-static int if_stat(mm_process_t *process, pm_args_t *args)
+int mm_fstat(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
-	mm_descriptor_t *d = process_find_desc(process, args->arg1);
-	if (!d)
-		return EBADF;
+	do {
+		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
+		if (!th) {
+			//TODO use other errno
+			reply->data[0] = ESRCH;
+			break;
+		}
 
-	mm_file_t *f = d->file;
-	devmsg_t *message = (devmsg_t*)args;
-	message->Tstat.fid = f->node.key;
-	int result = call_device(f->server_id, message, MESSAGE_SIZE(Tstat),
-			Rstat, MESSAGE_SIZE(Rstat));
-	if (result) {
-		log_err("mm:if_stat result=%d\n", result);
-		return result;
-	}
+		mm_process_t *process = get_process(th->process_id);
+		if (!process) {
+			//TODO use other errno
+			reply->data[0] = ESRCH;
+			break;
+		}
 
-	pm_reply_t *reply = (pm_reply_t*)args;
-	reply->result1 = 0;
-	reply->result2 = 0;
-	reply->error_no = 0;
+		mm_descriptor_t *desc = process_find_desc(process, args->arg1);
+		if (!desc) {
+			reply->data[0] = EBADF;
+			break;
+		}
 
-	return 0;
+		int result = _fstat((struct stat *) args->arg2, desc->file,
+				(th->node.key << 16)
+						| process->session->node.key);
+		if (result) {
+			reply->data[0] = result;
+			break;
+		}
+
+		reply->result = 0;
+		reply->data[0] = 0;
+		return reply_success;
+	} while (false);
+
+	reply->result = -1;
+	return reply_failure;
 }
 
-static int if_wstat(mm_process_t *process, pm_args_t *args)
+int mm_chmod(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
-	int thread_id = (args->process_id >> 16) & 0xffff;
-	mm_file_t *file;
-	int result = _walk(process, thread_id, (char*)(args->arg1), &file);
-	if (result) {
-		log_err("proxy: %d wstat0 err %d\n", process->node.key, result);
-		return result;
-	}
+	do {
+		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
+		if (!th) {
+			//TODO use other errno
+			reply->data[0] = ESRCH;
+			break;
+		}
 
-	struct stat st;
-	st.st_mode = args->arg2;
+		mm_process_t *process = get_process(th->process_id);
+		if (!process) {
+			//TODO use other errno
+			reply->data[0] = ESRCH;
+			break;
+		}
 
-	devmsg_t message;
-	message.type = pm_syscall_chmod;//Twstat;
-	message.Twstat.tag = (thread_id << 16) | process->session->node.key;
-	message.Twstat.fid = file->node.key;
-	message.Twstat.stat = &st;
+		mm_file_t *file;
+		int result = _walk(process, th->node.key, (char*)(args->arg1),
+				&file);
+		if (result) {
+			reply->data[0] = result;
+			break;
+		}
 
-	result = call_device(process->wd->server_id, &message,
-			MESSAGE_SIZE(Twstat), Rwstat, MESSAGE_SIZE(Rwstat));
+		struct stat st;
+		st.st_mode = args->arg2;
 
-	int fid = file->node.key;
-	log_info("proxy: %d wstat[:%d] %d\n",
-			process->node.key, fid, result);
-	message.Tclunk.tag = (thread_id << 16) | process->session->node.key;
-	int error_no = _clunk(process->session, file, &message);
-	if (error_no)
-		log_err("proxy: %d fwstat close err[:%d] %d\n",
-				process->node.key, fid, error_no);
+		devmsg_t message;
+		message.type = Twstat;
+		message.Twstat.tag = (th->node.key << 16)
+				| process->session->node.key;
+		message.Twstat.fid = file->node.key;
+		message.Twstat.stat = &st;
+		result = call_device(file->server_id, &message,
+				MESSAGE_SIZE(Twstat),
+				Rwstat, MESSAGE_SIZE(Rwstat));
 
-	if (result)
-		return result;
+		int fid = file->node.key;
+		log_info("proxy: %d chmod[:%d] %d\n",
+				process->node.key, fid, result);
+		message.Tclunk.tag = (th->node.key << 16)
+				| process->session->node.key;
+		int error_no = _clunk(process->session, file, &message);
+		if (error_no) {
+			//TODO what to do?
+		}
 
-	pm_reply_t *reply = (pm_reply_t*)args;
-	reply->result1 = 0;
-	reply->result2 = 0;
-	reply->error_no = 0;
+		if (result) {
+			reply->data[0] = result;
+			break;
+		}
 
-	return 0;
+		reply->result = 0;
+		reply->data[0] = 0;
+		return reply_success;
+	} while (false);
+
+	reply->result = -1;
+	return reply_failure;
 }
 
 static int _walk(mm_process_t *process, const int thread_id, const char *path,
@@ -1293,7 +1367,7 @@ static int _walk(mm_process_t *process, const int thread_id, const char *path,
 	}
 
 	devmsg_t message;
-	message.type = pm_syscall_walk;
+	message.type = Twalk;
 	message.Twalk.tag = (thread_id << 16) | process->session->node.key;
 	message.Twalk.fid = process->wd->node.key;
 	message.Twalk.newfid = id;

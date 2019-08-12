@@ -24,23 +24,36 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <core.h>
+#include <errno.h>
 #include <fcntl.h>
+#include <mm.h>
+#include <services.h>
+#include <unistd.h>
 #include <sys/stat.h>
-#include "sys.h"
 
 
 int mkdir(const char *path, mode_t mode)
 {
-	pm_args_t request;
-	request.arg1 = (int)path;
-	//TODO really?
-	request.arg2 = O_RDONLY;
-	request.arg3 = DMDIR | (int)mode;
-
-	int result = _call_fs(pm_syscall_create, &request);
-	if (result == -1)
-		return result;
-
-	close(result);
-	return 0;
+	mm_args_t args = {
+		mm_syscall_create,
+		(int)path,
+		//TODO really?
+		O_RDONLY,
+		DMDIR | (int)mode
+	};
+	ER_UINT reply_size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
+	mm_reply_t *reply = (mm_reply_t*)&args;
+	if (reply_size == sizeof(*reply)) {
+		if (reply->result == -1) {
+			_set_local_errno(reply->data[0]);
+			return (-1);
+		} else {
+			close(reply->result);
+			return 0;
+		}
+	} else {
+		_set_local_errno(ECONNREFUSED);
+		return (-1);
+	}
 }

@@ -122,16 +122,15 @@ static int attach(mm_process_t *process, const int thread_id)
 		return ENOMEM;
 	}
 
-	pm_args_t a;
-	a.operation = pm_syscall_attach;
-	devmsg_t *message = (devmsg_t*)&a;
-	message->Tattach.tag = thread_id | session->node.key;
-	message->Tattach.fid = fid;
-	message->Tattach.afid = NOFID;
-	message->Tattach.uname = (char*)(process->uid);
-	message->Tattach.aname = (char*)"/";
+	devmsg_t message;
+	message.type = Tattach;
+	message.Tattach.tag = thread_id | session->node.key;
+	message.Tattach.fid = fid;
+	message.Tattach.afid = NOFID;
+	message.Tattach.uname = (char*)(process->uid);
+	message.Tattach.aname = (char*)"/";
 
-	int result = call_device(PORT_FS, message, MESSAGE_SIZE(Tattach),
+	int result = call_device(PORT_FS, &message, MESSAGE_SIZE(Tattach),
 			Rattach, MESSAGE_SIZE(Rattach));
 	if (result) {
 		log_err("mm: attach(%x) %d\n", fid, result);

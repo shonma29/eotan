@@ -29,7 +29,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/memory.h>
 #include <nerve/icall.h>
 #include <nerve/kcall.h>
-#include <sys/syscall.h>
 #include "../../kernel/mpu/mpufunc.h"
 #include "../../lib/libserv/libserv.h"
 #include "process.h"

@@ -40,6 +40,5 @@ For more information, please refer to <http://unlicense.org/>
 #define PORT_HMI (9)
 #define PORT_WINDOW (10)
 #define PORT_NET (11)
-#define PORT_PM (12)
 
 #endif

@@ -24,16 +24,30 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "sys.h"
+#include <core.h>
+#include <errno.h>
+#include <mm.h>
+#include <services.h>
+#include <unistd.h>
 
 
 ssize_t read(int d, void *buf, size_t nbytes)
 {
-	pm_args_t request;
+	mm_args_t args = {
+		mm_syscall_read,
+		d,
+		(int)buf,
+		(int)nbytes
+	};
+	ER_UINT reply_size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
+	mm_reply_t *reply = (mm_reply_t*)&args;
+	if (reply_size == sizeof(*reply)) {
+		if (reply->result == -1)
+			_set_local_errno(reply->data[0]);
 
-	request.arg1 = d;
-	request.arg2 = (int)buf;
-	request.arg3 = (int)nbytes;
-
-	return _call_fs(pm_syscall_read, &request);
+		return reply->result;
+	} else {
+		_set_local_errno(ECONNREFUSED);
+		return (-1);
+	}
 }

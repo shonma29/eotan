@@ -36,7 +36,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <mm/config.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
-#include "interface.h"
+#include "api.h"
 #include "process.h"
 #include "../../kernel/mpu/mpufunc.h"
 #include "../../lib/libserv/libserv.h"
