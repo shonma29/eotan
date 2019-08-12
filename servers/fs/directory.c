@@ -25,18 +25,18 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <fcntl.h>
-#include <core/options.h>
 #include <sys/errno.h>
 #include "api.h"
 #include "session.h"
 
 
-int if_walk(fs_request *req)
+void if_walk(fs_request *req)
 {
-	devmsg_t *request = (devmsg_t*)&(req->packet);
+	devmsg_t *request = &(req->packet);
 	int error_no;
 	do {
-		session_t *session = session_find(unpack_sid(req));
+		session_t *session = session_find(
+				unpack_sid(request->Twalk.tag));
 		if (!session) {
 			//TODO set adequate errno
 			error_no = ESRCH;
@@ -72,7 +72,7 @@ int if_walk(fs_request *req)
 				//TODO return nwqid and wqid
 				reply_dev(req->rdvno, &response,
 						MESSAGE_SIZE(Rwalk));
-				return 0;
+				return;
 			}
 		} else {
 			error_no = session_create_desc(&file, session, newfid);
@@ -85,7 +85,8 @@ int if_walk(fs_request *req)
 			vnode_t *starting_node;
 			error_no = session_get_path(req->buf, &starting_node,
 					session, parent->f_vnode,
-					unpack_tid(req), request->Twalk.wname);
+					unpack_tid(request->Twalk.tag),
+					request->Twalk.wname);
 			if (error_no) {
 				if (file)
 					session_destroy_desc(session, newfid);
@@ -121,20 +122,20 @@ int if_walk(fs_request *req)
 		response.Rwalk.tag = request->Twalk.tag;
 		//TODO return nwqid and wqid
 		reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rwalk));
-		return 0;
+		return;
 	} while (false);
 
 	//TODO return nwqid and wqid
 	reply_dev_error(req->rdvno, request->Twalk.tag, error_no);
-	return 0;
 }
 
-int if_create(fs_request *req)
+void if_create(fs_request *req)
 {
-	devmsg_t *request = (devmsg_t*)&(req->packet);
+	devmsg_t *request = &(req->packet);
 	int error_no;
 	do {
-		session_t *session = session_find(unpack_sid(req));
+		session_t *session = session_find(
+				unpack_sid(request->Tcreate.tag));
 		if (!session) {
 			error_no = ESRCH;
 			break;
@@ -160,7 +161,8 @@ int if_create(fs_request *req)
 		//TODO check filename. not path
 		vnode_t *starting_node;
 		error_no = session_get_path(req->buf, &starting_node,
-				session, parent->f_vnode, unpack_tid(req),
+				session, parent->f_vnode,
+				unpack_tid(request->Tcreate.tag),
 				request->Tcreate.name);
 		if (error_no)
 			break;
@@ -183,20 +185,19 @@ int if_create(fs_request *req)
 		response.Rcreate.qid = parent->node.key;
 		response.Rcreate.iounit = 0;
 		reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rcreate));
-		return 0;
+		return;
 	} while (false);
 
 	reply_dev_error(req->rdvno, request->Tcreate.tag, error_no);
-	return 0;
 }
 
-int if_remove(fs_request *req)
+void if_remove(fs_request *req)
 {
-	devmsg_t *request = (devmsg_t*)&(req->packet);
+	devmsg_t *request = &(req->packet);
 	int error_no;
-
 	do {
-		session_t *session = session_find(unpack_sid(req));
+		session_t *session = session_find(
+				unpack_sid(request->Tremove.tag));
 		if (!session) {
 			error_no = ESRCH;
 			break;
@@ -224,9 +225,8 @@ int if_remove(fs_request *req)
 		response.type = Rremove;
 		response.Rremove.tag = request->Tremove.tag;
 		reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rremove));
-		return 0;
+		return;
 	} while (false);
 
 	reply_dev_error(req->rdvno, request->Tremove.tag, error_no);
-	return 0;
 }

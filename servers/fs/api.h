@@ -28,41 +28,36 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <device.h>
-#include <sys/syscall.h>
 #include <sys/syslimits.h>
 #include <sys/types.h>
 
 typedef struct {
-	pm_args_t packet;
+	devmsg_t packet;
 	RDVNO rdvno;
 	char buf[PATH_MAX + 1];
 } fs_request;
 
-extern int if_attach(fs_request*);
-extern int if_walk(fs_request*);
-extern int if_open(fs_request*);
-extern int if_create(fs_request*);
-extern int if_read(fs_request*);
-extern int if_write(fs_request*);
-extern int if_clunk(fs_request*);
-extern int if_remove(fs_request*);
-extern int if_stat(fs_request*);
-extern int if_wstat(fs_request*);
+extern void if_attach(fs_request*);
+extern void if_walk(fs_request*);
+extern void if_open(fs_request*);
+extern void if_create(fs_request*);
+extern void if_read(fs_request*);
+extern void if_write(fs_request*);
+extern void if_clunk(fs_request*);
+extern void if_remove(fs_request*);
+extern void if_stat(fs_request*);
+extern void if_wstat(fs_request*);
 
-
-static inline int unpack_sid(const fs_request *req)
+static inline int unpack_sid(const int tag)
 {
-	return (req->packet.process_id & 0xffff);
+	return (tag & 0xffff);
 }
 
-static inline int unpack_tid(const fs_request *req)
+static inline int unpack_tid(const int tag)
 {
-	return ((req->packet.process_id >> 16) & 0xffff);
+	return ((tag >> 16) & 0xffff);
 }
 
-//TODO exclude mpu dependency
-extern int reply2(const RDVNO, const int32_t, const int32_t,
-		const int32_t);
 extern int reply_dev(const RDVNO, const devmsg_t *, const size_t);
 extern int reply_dev_error(const RDVNO, const int, const int);
 

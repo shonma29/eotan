@@ -40,7 +40,7 @@ int open(const char *path, int oflag, ...)
 		va_list args;
 		va_start(args, oflag);
 		request.arg3 = va_arg(args, int);
-
+//TODO 9p create sequence
 		return _call_fs(pm_syscall_create, &request);
 	}
 

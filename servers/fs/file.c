@@ -31,50 +31,54 @@ For more information, please refer to <http://unlicense.org/>
 #include "api.h"
 #include "session.h"
 
+static int copy_from_user(void *, void *, const size_t);
+static int copy_to_user(void *, void *, const size_t);
 
-int if_open(fs_request *req)
+
+void if_open(fs_request *req)
 {
-	devmsg_t *request = (devmsg_t*)&(req->packet);
-	session_t *session = session_find(unpack_sid(req));
+	devmsg_t *request = &(req->packet);
+	session_t *session = session_find(unpack_sid(request->Topen.tag));
 	if (!session) {
 		reply_dev_error(req->rdvno, request->Topen.tag, ESRCH);
-		return 0;
+		return;
 	}
 
 	struct file *file = session_find_desc(session, request->Topen.fid);
 	if (!file) {
 		reply_dev_error(req->rdvno, request->Topen.tag, EBADF);
-		return 0;
+		return;
 	}
 
 	if (file->f_flag != O_ACCMODE) {
 		reply_dev_error(req->rdvno, request->Topen.tag, EBUSY);
-		return 0;
+		return;
 	}
 
+	//TODO check mode only here
 	int error_no = vfs_open(file->f_vnode, request->Topen.mode,
 			&(session->permission));
 	if (error_no) {
 		reply_dev_error(req->rdvno, request->Topen.tag, error_no);
-		return 0;
+		return;
 	}
 
+	//TODO save other bits
 	file->f_flag = request->Topen.mode & O_ACCMODE;
 
 	devmsg_t response;
 	response.type = Ropen;
 	response.Ropen.tag = request->Topen.tag;
-//	response.Ropen.qid = file->f_vnode->index;
-//	response.Ropen.iounit = sizeof(devmsg_t);
+	response.Ropen.qid = file->f_vnode->index;
+	response.Ropen.iounit = 0;
 	reply_dev(req->rdvno, &response, MESSAGE_SIZE(Ropen));
-	return 0;
 }
 
-int if_clunk(fs_request *req)
+void if_clunk(fs_request *req)
 {
 	int error_no;
-	devmsg_t *request = (devmsg_t*)&(req->packet);
-	session_t *session = session_find(unpack_sid(req));
+	devmsg_t *request = &(req->packet);
+	session_t *session = session_find(unpack_sid(request->Tclunk.tag));
 	if (session)
 		error_no = session_destroy_desc(session, request->Tclunk.fid);
 	else
@@ -88,80 +92,77 @@ int if_clunk(fs_request *req)
 		response.Rclunk.tag = request->Tclunk.tag;
 		reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rclunk));
 	}
-
-	return 0;
 }
 
-int if_read(fs_request *req)
+void if_read(fs_request *req)
 {
-	devmsg_t *request = (devmsg_t*)&(req->packet);
-	session_t *session = session_find(unpack_sid(req));
+	devmsg_t *request = &(req->packet);
+	session_t *session = session_find(unpack_sid(request->Tread.tag));
 	if (!session) {
 		reply_dev_error(req->rdvno, request->Tread.tag, ESRCH);
-		return 0;
+		return;
 	}
 
 	struct file *file = session_find_desc(session, request->Tread.fid);
 	if (!file) {
 		reply_dev_error(req->rdvno, request->Tread.tag, EBADF);
-		return 0;
+		return;
 	}
 
 	if (file->f_flag == O_WRONLY) {
 		reply_dev_error(req->rdvno, request->Tread.tag, EBADF);
-		return 0;
+		return;
 	}
 
 	if (request->Tread.offset < 0) {
 		reply_dev_error(req->rdvno, request->Tread.tag, EINVAL);
-		return 0;
+		return;
 	}
 
 	copier_t copier = {
 		copy_to_user,
 		request->Tread.data,
-		unpack_tid(req)
+		unpack_tid(request->Tread.tag)
 	};
 	size_t count;
 	int error_no = fs_read(file->f_vnode, &copier, request->Tread.offset,
 			request->Tread.count, &count);
 	if (error_no) {
 		reply_dev_error(req->rdvno, request->Tread.tag, error_no);
-		return 0;
+		return;
 	}
 
 	devmsg_t response;
 	response.type = Rread;
-	response.Rread.tag = req->packet.process_id;
+	response.Rread.tag = request->Tread.tag;
 	response.Rread.count = count;
 	reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rread));
-	return 0;
 }
 
-int if_write(fs_request *req)
+void if_write(fs_request *req)
 {
-	devmsg_t *request = (devmsg_t*)&(req->packet);
-	session_t *session = session_find(unpack_sid(req));
+	devmsg_t *request = &(req->packet);
+	session_t *session = session_find(unpack_sid(request->Twrite.tag));
 	if (!session) {
 		reply_dev_error(req->rdvno, request->Twrite.tag, ESRCH);
-		return 0;
+		return;
 	}
 
 	struct file *file;
 	file = session_find_desc(session, request->Twrite.fid);
 	if (!file) {
 		reply_dev_error(req->rdvno, request->Twrite.tag, EBADF);
-		return 0;
+		return;
 	}
 
 	if (file->f_flag == O_RDONLY) {
 		reply_dev_error(req->rdvno, request->Twrite.tag, EBADF);
-		return 0;
+		return;
 	}
 
 	if (request->Twrite.offset < 0) {
 		reply_dev_error(req->rdvno, request->Twrite.tag, EINVAL);
-		return 0;
+		return;
 	}
 
 	size_t wrote_size;
@@ -183,33 +184,32 @@ int if_write(fs_request *req)
 		if (error_no) {
 			reply_dev_error(req->rdvno, request->Twrite.tag,
 					error_no);
-			return 0;
+			return;
 		}
 
 		copier_t copier = {
 			copy_from_user,
 			request->Twrite.data,
-			unpack_tid(req)
+			unpack_tid(request->Twrite.tag)
 		};
 		error_no = vfs_write(file->f_vnode, &copier,
 				offset, request->Twrite.count, &wrote_size);
 		if (error_no) {
 			reply_dev_error(req->rdvno, request->Twrite.tag,
 					error_no);
-			return 0;
+			return;
 		}
 	} else
 		wrote_size = 0;
 
 	devmsg_t response;
 	response.type = Rwrite;
-	response.Rwrite.tag = req->packet.process_id;
+	response.Rwrite.tag = request->Twrite.tag;
 	response.Rwrite.count = wrote_size;
 	reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rwrite));
-	return 0;
 }
 
-int copy_from_user(void *dest, void *src, const size_t len)
+static int copy_from_user(void *dest, void *src, const size_t len)
 {
 	copier_t *cp = (copier_t*)src;
 	int error_no = kcall->region_get(cp->caller, cp->buf, len, dest);
@@ -220,7 +220,7 @@ int copy_from_user(void *dest, void *src, const size_t len)
 	return 0;
 }
 
-int copy_to_user(void *dest, void *src, const size_t len)
+static int copy_to_user(void *dest, void *src, const size_t len)
 {
 	copier_t *cp = (copier_t*)dest;
 	int error_no = kcall->region_put(cp->caller, cp->buf, len, src);

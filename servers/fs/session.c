@@ -41,18 +41,18 @@ static tree_t session_tree;
 static slab_t file_slab;
 
 
-int if_attach(fs_request *req)
+void if_attach(fs_request *req)
 {
-	devmsg_t *request = (devmsg_t*)&(req->packet);
+	devmsg_t *request = &(req->packet);
 	int error_no;
-
 	do {
 		if (request->Tattach.afid != NOFID) {
 			error_no = EINVAL;
 			break;
 		}
 
-		session_t *session = session_create(unpack_sid(req));
+		session_t *session = session_create(
+				unpack_sid(request->Tattach.tag));
 		if (!session) {
 			//TODO other error when sid exists
 			error_no = ENOMEM;
@@ -83,11 +83,10 @@ log_info("fs: attach %d\n", file->node.key);
 		response.Rattach.tag = request->Tattach.tag;
 		response.Rattach.qid = session->root->index;
 		reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rattach));
-		return 0;
+		return;
 	} while (false);
 
 	reply_dev_error(req->rdvno, request->Tattach.tag, error_no);
-	return 0;
 }
 
 void session_initialize(void)

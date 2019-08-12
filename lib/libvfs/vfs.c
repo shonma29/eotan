@@ -123,6 +123,7 @@ int vfs_walk(vnode_t *parent, char *path, const int flags,
 
 int vfs_open(vnode_t *vnode, const int flags, struct permission *permission)
 {
+	//TODO ad-hoc
 	int f = (flags == O_EXEC) ? O_RDONLY : flags;
 	if (!check_flags(f)) {
 		log_debug("vfs_open: bad flags %x\n", flags);
@@ -130,6 +131,7 @@ int vfs_open(vnode_t *vnode, const int flags, struct permission *permission)
 	}
 
 	if ((vnode->mode & S_IFMT) == S_IFDIR)
+		//TODO O_TRUNC and ORCLOSE are error
 		if ((f & O_ACCMODE) != O_RDONLY) {
 			log_debug("vfs_open: is directory\n");
 			return EISDIR;
@@ -140,6 +142,9 @@ int vfs_open(vnode_t *vnode, const int flags, struct permission *permission)
 	if (error_no)
 		return error_no;
 
+	//TODO exclusive open
+
+	//TODO need write permission
 	if (f & O_TRUNC)
 		vnode->size = 0;
 
@@ -158,12 +163,14 @@ static bool check_flags(const int flags)
 	}
 
 	//TODO unknown bits check is needed?
+	//TODO ORCLOSE
 	if (flags & ~(O_ACCMODE | O_APPEND | O_TRUNC))
 		return false;
 
 	return true;
 }
 
+//TODO specify file (or directory), not path
 int vfs_create(vnode_t *cwd, char *path, const int flags, const mode_t mode,
 		const struct permission *permission, vnode_t **node)
 {
@@ -180,6 +187,7 @@ int vfs_create(vnode_t *cwd, char *path, const int flags, const mode_t mode,
 		return EINVAL;
 	}
 
+//TODO check name (not '.')
 	char *parent_path = "";
 	char *head = split_path(path, &parent_path);
 	if (!(*head)) {
@@ -216,6 +224,7 @@ int vfs_create(vnode_t *cwd, char *path, const int flags, const mode_t mode,
 		return EEXIST;
 	}
 
+//TODO extend permission from parent
 	if (mode & DMDIR)
 		result = parent->fs->operations.mkdir(parent, head,
 				//TODO really?

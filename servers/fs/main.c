@@ -43,7 +43,7 @@ static volatile lfq_t req_queue;
 static char req_buf[
 		lfq_buf_size(sizeof(fs_request *), REQUEST_QUEUE_SIZE)
 ];
-static int (*syscall[])(fs_request*) = {
+static void (*syscall[])(fs_request*) = {
 	if_attach,
 	if_walk,
 	if_open,
@@ -119,8 +119,7 @@ static bool port_init(void)
 {
 	struct t_cpor packet = {
 		TA_TFIFO,
-		sizeof(pm_args_t),
-//TODO fix		sizeof(pm_reply_t)
+		sizeof(devmsg_t),
 		sizeof(devmsg_t)
 	};
 
@@ -162,18 +161,12 @@ static void work(void)
 {
 	for (;;) {
 		fs_request *req;
-
 		if (lfq_dequeue(&req_queue, &req) == QUEUE_OK) {
-			int result = syscall[req->packet.operation](req);
-
-			if (result > 0)
-				reply2(req->rdvno, result, -1, 0);
-
+			syscall[req->packet.type](req);
 			kcall->mutex_lock(receiver_id, TMO_FEVR);
 			slab_free(&request_slab, req);
 			kcall->mutex_unlock(receiver_id);
 			kcall->thread_wakeup(receiver_id);
-
 		} else
 			kcall->thread_sleep();
 	}
@@ -215,8 +208,9 @@ void start(VP_INT exinf)
 			continue;
 		}
 
-		if (size < sizeof(req->packet.operation)) {
-			reply2(req->rdvno, EINVAL, -1, 0);
+		if (size < sizeof(req->packet.type)) {
+			//TODO what is tag?
+			reply_dev_error(req->rdvno, 0, EINVAL);
 			continue;
 		}
 /*
@@ -230,60 +224,54 @@ void start(VP_INT exinf)
 		}
 */
 		int result;
-		switch (req->packet.operation) {
-		case pm_syscall_attach:
+		switch (req->packet.type) {
+		case Tattach:
 			result = (size == MESSAGE_SIZE(Tattach)) ?
 					worker_enqueue(&req) : EINVAL;
 			break;
-		case pm_syscall_walk:
+		case Twalk:
 			result = (size == MESSAGE_SIZE(Twalk)) ?
 					worker_enqueue(&req) : EINVAL;
 			break;
-		case pm_syscall_open:
+		case Topen:
 			result = (size == MESSAGE_SIZE(Topen)) ?
 					worker_enqueue(&req) : EINVAL;
 			break;
-		case pm_syscall_create:
+		case Tcreate:
 			result = (size == MESSAGE_SIZE(Tcreate)) ?
 					worker_enqueue(&req) : EINVAL;
 			break;
-		case pm_syscall_read:
+		case Tread:
 			result = (size == MESSAGE_SIZE(Tread)) ?
 					worker_enqueue(&req) : EINVAL;
 			break;
-		case pm_syscall_write:
+		case Twrite:
 			result = (size == MESSAGE_SIZE(Twrite)) ?
 					worker_enqueue(&req) : EINVAL;
 			break;
-		case pm_syscall_close:
+		case Tclunk:
 			result = (size == MESSAGE_SIZE(Tclunk)) ?
 					worker_enqueue(&req) : EINVAL;
 			break;
-		case pm_syscall_remove:
+		case Tremove:
 			result = (size == MESSAGE_SIZE(Tremove)) ?
 					worker_enqueue(&req) : EINVAL;
 			break;
-		case pm_syscall_fstat:
+		case Tstat:
 			result = (size == MESSAGE_SIZE(Tstat)) ?
 					worker_enqueue(&req) : EINVAL;
 			break;
-		case pm_syscall_chmod:
+		case Twstat:
 			result = (size == MESSAGE_SIZE(Twstat)) ?
 					worker_enqueue(&req) : EINVAL;
 			break;
 		default:
-			if (size != sizeof(pm_args_t))
-				result = EINVAL;
-			else if ((int)(req->packet.operation) >=
-					sizeof(syscall) / sizeof(syscall[0]))
-				result = ENOTSUP;
-			else
-				result = worker_enqueue(&req);
+			result = ENOTSUP;
 			break;
 		}
-		if (!result)
-			continue;
 
-		reply2(req->rdvno, result, -1, 0);
+		if (result)
+			//TODO what is tag?
+			reply_dev_error(req->rdvno, 0, result);
 	}
 }

@@ -51,7 +51,4 @@ extern vnode_t *rootfile;
 extern int fs_initialize(void);
 extern int fs_mount(const int device);
 
-extern int copy_from_user(void *, void *, const size_t);
-extern int copy_to_user(void *, void *, const size_t);
-
 #endif

@@ -30,13 +30,13 @@ For more information, please refer to <http://unlicense.org/>
 #include "session.h"
 
 
-int if_stat(fs_request *req)
+void if_stat(fs_request *req)
 {
+	devmsg_t *request = &(req->packet);
 	int error_no = 0;
-	devmsg_t *request = (devmsg_t*)&(req->packet);
-
 	do {
-		session_t *session = session_find(unpack_sid(req));
+		session_t *session = session_find(
+				unpack_sid(request->Tstat.tag));
 		if (!session) {
 			error_no = ESRCH;
 			break;
@@ -54,7 +54,7 @@ int if_stat(fs_request *req)
 		if (error_no)
 			break;
 
-		if (kcall->region_put(unpack_tid(req),
+		if (kcall->region_put(unpack_tid(request->Tstat.tag),
 				request->Tstat.stat, sizeof(*st), st)) {
 			error_no = EFAULT;
 			break;
@@ -64,20 +64,19 @@ int if_stat(fs_request *req)
 		response.type = Rstat;
 		response.Rstat.tag = request->Tstat.tag;
 		reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rstat));
-		return 0;
+		return;
 	} while (false);
 
 	reply_dev_error(req->rdvno, request->Tstat.tag, error_no);
-	return 0;
 }
 
-int if_wstat(fs_request *req)
+void if_wstat(fs_request *req)
 {
+	devmsg_t *request = &(req->packet);
 	int error_no = 0;
-	devmsg_t *request = (devmsg_t*)&(req->packet);
-
 	do {
-		session_t *session = session_find(unpack_sid(req));
+		session_t *session = session_find(
+				unpack_sid(request->Twstat.tag));
 		if (!session) {
 			error_no = ESRCH;
 			break;
@@ -98,7 +97,7 @@ int if_wstat(fs_request *req)
 		}
 
 		struct stat *st = (struct stat*)&(req->buf);
-		if (kcall->region_get(unpack_tid(req),
+		if (kcall->region_get(unpack_tid(request->Twstat.tag),
 				request->Twstat.stat, sizeof(*st), st)) {
 			error_no = EFAULT;
 			break;
@@ -118,9 +117,8 @@ int if_wstat(fs_request *req)
 		response.type = Rwstat;
 		response.Rwstat.tag = request->Twstat.tag;
 		reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rwstat));
-		return 0;
+		return;
 	} while (false);
 
 	reply_dev_error(req->rdvno, request->Twstat.tag, error_no);
-	return 0;
 }

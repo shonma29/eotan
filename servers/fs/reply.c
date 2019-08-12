@@ -29,20 +29,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "api.h"
 
 
-//TODO define reply0 and reply1
-int reply2(const RDVNO rdvno, int32_t error_no, int32_t result1,
-		int32_t result2)
-{
-	pm_reply_t response = {
-		result1,
-		result2,
-		error_no
-	};
-
-	return (kcall->port_reply(rdvno, &response, sizeof(response)) ?
-			ECONNREFUSED : 0);
-}
-
 int reply_dev(const RDVNO rdvno, const devmsg_t *response, const size_t size)
 {
 	return (kcall->port_reply(rdvno, (void*)response, size) ?
