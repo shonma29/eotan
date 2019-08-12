@@ -75,6 +75,7 @@ static unsigned int sleep(unsigned int);
 static int _seek(mm_process_t *, mm_file_t *, mm_args_t *);
 static int _fstat(struct stat *, const mm_file_t *, const int);
 static size_t calc_path(char *, char *, const size_t);
+static char *split_path(const char *path, char **parent_path);
 static int if_open(mm_process_t *, pm_args_t *);
 static int if_create(mm_process_t *, pm_args_t *);
 static int if_read(mm_process_t *, pm_args_t *);
@@ -884,6 +885,22 @@ static size_t calc_path(char *dest, char *src, const size_t size)
 	}
 }
 
+static char *split_path(const char *path, char **parent_path)
+{
+	char *head = (char*)path;
+	while (*head == '/')
+		head++;
+
+	char *last = strrchr(head, '/');
+	if (last) {
+		*last = '\0';
+		*parent_path = head;
+		head = last + 1;
+	}
+
+	return head;
+}
+
 static int if_open(mm_process_t *process, pm_args_t *args)
 {
 	int fd = process_find_new_fd(process);
@@ -952,59 +969,77 @@ static int if_open(mm_process_t *process, pm_args_t *args)
 
 static int if_create(mm_process_t *process, pm_args_t *args)
 {
-	int fid = session_find_new_fid(process->session);
-	if (fid == -1)
-		return ENOMEM;
+	ER_UINT len = kcall->region_copy((args->process_id >> 16) & 0xffff,
+			(char*)(args->arg1), PATH_MAX, pathbuf1);
+	if (len < 0)
+		return EFAULT;
+
+	if (len >= PATH_MAX)
+		return ENAMETOOLONG;
 
 	int fd = process_find_new_fd(process);
 	if (fd == -1)
 		return ENOMEM;
 
-	mm_descriptor_t *d = process_create_file();
+	mm_descriptor_t *d = process_allocate_desc();
 	if (!d)
 		return ENOMEM;
 
-	int oflag = args->arg2;
-	args->arg4 = fid;
-	args->arg5 = process->wd->node.key;
-
-	if (kcall->port_call(PORT_FS, args, sizeof(*args))
-			!= sizeof(pm_reply_t)) {
-		process_deallocate_file(d->file);
+	if (process_set_desc(process, fd, d)) {
 		process_deallocate_desc(d);
-		return ECONNREFUSED;
+		//TODO use nother errno
+		return ENOMEM;
 	}
+
+	char *parent_path = "";
+	char *head = split_path(pathbuf1, &parent_path);
+	mm_file_t *file;
+	int result = _walk(process, kcall->thread_get_id(), parent_path, &file);
+	if (result) {
+		process_destroy_desc(process, fd);
+		return result;
+	}
+
+	int fid = file->node.key;
+	int oflag = args->arg2;
+	devmsg_t message;
+	message.type = pm_syscall_create;//Tcreate;
+	message.Tcreate.tag = (kcall->thread_get_id() << 16)
+			| process->session->node.key;
+	message.Tcreate.fid = fid;
+	message.Tcreate.name = head;
+	message.Tcreate.perm = args->arg3;
+	message.Tcreate.mode = oflag;
+	result = call_device(process->wd->server_id, &message,
+			MESSAGE_SIZE(Tcreate), Rcreate, MESSAGE_SIZE(Rcreate));
+	log_info("proxy: %d create[%d:%d] %d\n",
+			process->node.key, fd, fid, result);
+
+	if (result) {
+		process_destroy_desc(process, fd);
+
+		message.Tclunk.tag = (kcall->thread_get_id() << 16)
+				| process->session->node.key;
+		int error_no = _clunk(process->session, file, &message);
+		if (error_no) {
+			//TODO what to do?
+		}
+
+		return result;
+	}
+
+	d->file = file;
+	file->server_id = process->wd->server_id;
+	//TODO really?
+	file->f_flag = oflag & O_ACCMODE;
+	file->f_count = 1;
+	//TODO set at last if append mode
+	file->f_offset = 0;
 
 	pm_reply_t *reply = (pm_reply_t*)args;
-	log_info("proxy: %d create[%d:%d] %d %d\n",
-			process->node.key, fd, fid, reply->result1,
-			reply->error_no);
-
-	if (reply->result1 >= 0) {
-		mm_file_t *f = d->file;
-		f->server_id = PORT_FS;
-		//TODO really?
-		f->f_flag = oflag & O_ACCMODE;
-		f->f_count = 1;
-		//TODO set at last if append mode
-		f->f_offset = 0;
-
-		if (session_add_file(process->session, fid, f)) {
-			//TODO what to do?
-		}
-
-		if (process_set_desc(process, fd, d)) {
-			process_deallocate_file(d->file);
-			process_deallocate_desc(d);
-			//TODO what to do?
-		}
-
-		reply->result1 = fd;
-	} else {
-		process_deallocate_file(d->file);
-		process_deallocate_desc(d);
-	}
-
+	reply->result1 = fd;
+	reply->result2 = 0;
+	reply->error_no = 0;
 	return 0;
 }
 
@@ -1264,9 +1299,9 @@ static int _walk(mm_process_t *process, const int thread_id, const char *path,
 	message.Twalk.newfid = id;
 	message.Twalk.nwname = len;
 	message.Twalk.wname = (char*)path;
-//	log_info(MYNAME ": walk %x %d %s %d\n", process->session,
-//			message.Twalk.fid, message.Twalk.wname,
-//			message.Twalk.newfid);
+	log_info(MYNAME ": walk %d %d [%s] %d\n", process->session->node.key,
+			message.Twalk.fid, message.Twalk.wname,
+			message.Twalk.newfid);
 
 	int result = call_device(process->wd->server_id, &message,
 			MESSAGE_SIZE(Twalk), Rwalk, MESSAGE_SIZE(Rwalk));

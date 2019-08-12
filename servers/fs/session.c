@@ -72,7 +72,7 @@ int if_attach(fs_request *req)
 		session->permission.gid = INIT_GID;
 		//TODO walk aname
 		//TODO can not walk to the parent of aname
-		session->cwd = rootfile;
+		session->root = rootfile;
 		rootfile->refer_count++;
 		//TODO bind fid to with session type (for use to close session)
 		file->f_vnode = rootfile;
@@ -81,7 +81,7 @@ log_info("fs: attach %d\n", file->node.key);
 		devmsg_t response;
 		response.type = Rattach;
 		response.Rattach.tag = request->Tattach.tag;
-		response.Rattach.qid = session->cwd->index;
+		response.Rattach.qid = session->root->index;
 		reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rattach));
 		return 0;
 	} while (false);
@@ -128,7 +128,7 @@ session_t *session_create(const pid_t pid)
 		return NULL;
 	}
 
-	session->cwd = NULL;
+	session->root = NULL;
 	tree_create(&(session->files), NULL);
 
 	return session;
@@ -146,8 +146,8 @@ void session_destroy(session_t *session)
 			//TODO what to do?
 		}
 
-	if (session->cwd)
-		vnodes_remove(session->cwd);
+	if (session->root)
+		vnodes_remove(session->root);
 
 	slab_free(&session_slab, session);
 }
@@ -208,7 +208,7 @@ int session_get_path(char *dest, vnode_t **vnode, const session_t *session,
 	if (len > PATH_MAX)
 		return ENAMETOOLONG;
 
-	*vnode = (*dest == '/') ? session->cwd : parent;
+	*vnode = (*dest == '/') ? session->root : parent;
 	return 0;
 }
 

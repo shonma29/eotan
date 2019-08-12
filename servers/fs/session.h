@@ -32,7 +32,7 @@ typedef struct _session_t {
 	node_t node;
 	//TODO add thread_id list
 	struct permission permission;
-	vnode_t *cwd;
+	vnode_t *root;
 	tree_t files;
 } session_t;
 
