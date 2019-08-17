@@ -56,7 +56,7 @@ int pset(const unsigned int x, const unsigned int y, const int color)
 	buf.y = y;
 	buf.color = color;
 
-	msg.type = Twrite;
+	msg.header.type = Twrite;
 	msg.Twrite.fid = 5;
 	msg.Twrite.offset = 0;
 	msg.Twrite.count = sizeof(buf);

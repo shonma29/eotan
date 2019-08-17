@@ -32,18 +32,17 @@ For more information, please refer to <http://unlicense.org/>
 
 void if_walk(fs_request *req)
 {
-	devmsg_t *request = &(req->packet);
 	int error_no;
+	struct _Twalk *request = &(req->packet.Twalk);
 	do {
-		session_t *session = session_find(
-				unpack_sid(request->Twalk.tag));
+		session_t *session = session_find(unpack_sid(req));
 		if (!session) {
 			//TODO set adequate errno
 			error_no = ESRCH;
 			break;
 		}
 
-		int fid = request->Twalk.fid;
+		int fid = request->fid;
 		struct file *parent = session_find_file(session, fid);
 		if (!parent) {
 			error_no = EBADF;
@@ -55,22 +54,24 @@ void if_walk(fs_request *req)
 			break;
 		}
 
-		if (request->Twalk.nwname)
+		if (request->nwname)
 			if ((parent->f_vnode->mode & S_IFMT) != S_IFDIR) {
 				error_no = ENOTDIR;
 				break;
 			}
 
 		struct file *file = NULL;
-		int newfid = request->Twalk.newfid;
+		int newfid = request->newfid;
 		if (newfid == fid) {
-			if (request->Twalk.nwname == 0) {
+			if (request->nwname == 0) {
 				//TODO really?
 				devmsg_t response;
-				response.type = Rwalk;
-				response.Rwalk.tag = request->Twalk.tag;
+				response.header.token =
+						req->packet.header.token;
+				response.header.type = Rwalk;
+				response.Rwalk.tag = request->tag;
 				//TODO return nwqid and wqid
-				reply_dev(req->rdvno, &response,
+				reply(req->rdvno, &response,
 						MESSAGE_SIZE(Rwalk));
 				return;
 			}
@@ -81,12 +82,11 @@ void if_walk(fs_request *req)
 		}
 
 		vnode_t *vnode;
-		if (request->Twalk.nwname) {
+		if (request->nwname) {
 			vnode_t *starting_node;
 			error_no = session_get_path(req->buf, &starting_node,
 					session, parent->f_vnode,
-					unpack_tid(request->Twalk.tag),
-					request->Twalk.wname);
+					unpack_tid(req), request->wname);
 			if (error_no) {
 				if (file)
 					session_destroy_file(session, newfid);
@@ -118,31 +118,31 @@ void if_walk(fs_request *req)
 		file->f_flag = O_ACCMODE;
 
 		devmsg_t response;
-		response.type = Rwalk;
-		response.Rwalk.tag = request->Twalk.tag;
+		response.header.token = req->packet.header.token;
+		response.header.type = Rwalk;
+		response.Rwalk.tag = request->tag;
 		//TODO return nwqid and wqid
-		reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rwalk));
+		reply(req->rdvno, &response, MESSAGE_SIZE(Rwalk));
 		return;
 	} while (false);
 
 	//TODO return nwqid and wqid
-	reply_dev_error(req->rdvno, request->Twalk.tag, error_no);
+	reply_error(req->rdvno, req->packet.header.token, request->tag,
+			error_no);
 }
 
 void if_create(fs_request *req)
 {
-	devmsg_t *request = &(req->packet);
 	int error_no;
+	struct _Tcreate *request = &(req->packet.Tcreate);
 	do {
-		session_t *session = session_find(
-				unpack_sid(request->Tcreate.tag));
+		session_t *session = session_find(unpack_sid(req));
 		if (!session) {
 			error_no = ESRCH;
 			break;
 		}
 
-		struct file *parent = session_find_file(session,
-				request->Tcreate.fid);
+		struct file *parent = session_find_file(session, request->fid);
 		if (!parent) {
 			error_no = EBADF;
 			break;
@@ -161,49 +161,48 @@ void if_create(fs_request *req)
 		//TODO check filename. not path
 		vnode_t *starting_node;
 		error_no = session_get_path(req->buf, &starting_node,
-				session, parent->f_vnode,
-				unpack_tid(request->Tcreate.tag),
-				request->Tcreate.name);
+				session, parent->f_vnode, unpack_tid(req),
+				request->name);
 		if (error_no)
 			break;
 
 		vnode_t *vnode;
-		error_no = vfs_create(starting_node, req->buf,
-				request->Tcreate.mode, request->Tcreate.perm,
-				&(session->permission), &vnode);
+		error_no = vfs_create(starting_node, req->buf, request->mode,
+				request->perm, &(session->permission), &vnode);
 		if (error_no)
 			break;
 
 		vnodes_remove(parent->f_vnode);
 		parent->f_vnode = vnode;
 		//TODO really?
-		parent->f_flag = request->Tcreate.mode & O_ACCMODE;
+		parent->f_flag = request->mode & O_ACCMODE;
 
 		devmsg_t response;
-		response.type = Rcreate;
-		response.Rcreate.tag = request->Tcreate.tag;
+		response.header.token = req->packet.header.token;
+		response.header.type = Rcreate;
+		response.Rcreate.tag = request->tag;
 		response.Rcreate.qid = parent->node.key;
 		response.Rcreate.iounit = 0;
-		reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rcreate));
+		reply(req->rdvno, &response, MESSAGE_SIZE(Rcreate));
 		return;
 	} while (false);
 
-	reply_dev_error(req->rdvno, request->Tcreate.tag, error_no);
+	reply_error(req->rdvno, req->packet.header.token, request->tag,
+			error_no);
 }
 
 void if_remove(fs_request *req)
 {
-	devmsg_t *request = &(req->packet);
 	int error_no;
+	struct _Tremove *request = &(req->packet.Tremove);
 	do {
-		session_t *session = session_find(
-				unpack_sid(request->Tremove.tag));
+		session_t *session = session_find(unpack_sid(req));
 		if (!session) {
 			error_no = ESRCH;
 			break;
 		}
 
-		int fid = request->Tremove.fid;
+		int fid = request->fid;
 		struct file *file = session_find_file(session, fid);
 		if (!file) {
 			error_no = EBADF;
@@ -222,11 +221,13 @@ void if_remove(fs_request *req)
 			break;
 
 		devmsg_t response;
-		response.type = Rremove;
-		response.Rremove.tag = request->Tremove.tag;
-		reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rremove));
+		response.header.token = req->packet.header.token;
+		response.header.type = Rremove;
+		response.Rremove.tag = request->tag;
+		reply(req->rdvno, &response, MESSAGE_SIZE(Rremove));
 		return;
 	} while (false);
 
-	reply_dev_error(req->rdvno, request->Tremove.tag, error_no);
+	reply_error(req->rdvno, req->packet.header.token, request->tag,
+			error_no);
 }

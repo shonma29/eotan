@@ -32,58 +32,56 @@ For more information, please refer to <http://unlicense.org/>
 
 void if_stat(fs_request *req)
 {
-	devmsg_t *request = &(req->packet);
-	int error_no = 0;
+	int error_no;
+	struct _Tstat *request = &(req->packet.Tstat);
 	do {
-		session_t *session = session_find(
-				unpack_sid(request->Tstat.tag));
+		session_t *session = session_find(unpack_sid(req));
 		if (!session) {
 			error_no = ESRCH;
 			break;
 		}
 
-		struct file *file = session_find_file(session,
-				request->Tstat.fid);
+		struct file *file = session_find_file(session, request->fid);
 		if (!file) {
 			error_no = EBADF;
 			break;
 		}
 
 		struct stat *st = (struct stat*)&(req->buf);
-		int error_no = vfs_stat(file->f_vnode, st);
+		error_no = vfs_stat(file->f_vnode, st);
 		if (error_no)
 			break;
 
-		if (kcall->region_put(unpack_tid(request->Tstat.tag),
-				request->Tstat.stat, sizeof(*st), st)) {
+		if (kcall->region_put(unpack_tid(req), request->stat,
+				sizeof(*st), st)) {
 			error_no = EFAULT;
 			break;
 		}
 
 		devmsg_t response;
-		response.type = Rstat;
-		response.Rstat.tag = request->Tstat.tag;
-		reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rstat));
+		response.header.token = req->packet.header.token;
+		response.header.type = Rstat;
+		response.Rstat.tag = request->tag;
+		reply(req->rdvno, &response, MESSAGE_SIZE(Rstat));
 		return;
 	} while (false);
 
-	reply_dev_error(req->rdvno, request->Tstat.tag, error_no);
+	reply_error(req->rdvno, req->packet.header.token, request->tag,
+			error_no);
 }
 
 void if_wstat(fs_request *req)
 {
-	devmsg_t *request = &(req->packet);
-	int error_no = 0;
+	int error_no;
+	struct _Twstat *request = &(req->packet.Twstat);
 	do {
-		session_t *session = session_find(
-				unpack_sid(request->Twstat.tag));
+		session_t *session = session_find(unpack_sid(req));
 		if (!session) {
 			error_no = ESRCH;
 			break;
 		}
 
-		struct file *file = session_find_file(session,
-				request->Twstat.fid);
+		struct file *file = session_find_file(session, request->fid);
 		if (!file) {
 			error_no = EBADF;
 			break;
@@ -97,8 +95,8 @@ void if_wstat(fs_request *req)
 		}
 
 		struct stat *st = (struct stat*)&(req->buf);
-		if (kcall->region_get(unpack_tid(request->Twstat.tag),
-				request->Twstat.stat, sizeof(*st), st)) {
+		if (kcall->region_get(unpack_tid(req), request->stat,
+				sizeof(*st), st)) {
 			error_no = EFAULT;
 			break;
 		}
@@ -114,11 +112,13 @@ void if_wstat(fs_request *req)
 			break;
 
 		devmsg_t response;
-		response.type = Rwstat;
-		response.Rwstat.tag = request->Twstat.tag;
-		reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rwstat));
+		response.header.token = req->packet.header.token;
+		response.header.type = Rwstat;
+		response.Rwstat.tag = request->tag;
+		reply(req->rdvno, &response, MESSAGE_SIZE(Rwstat));
 		return;
 	} while (false);
 
-	reply_dev_error(req->rdvno, request->Twstat.tag, error_no);
+	reply_error(req->rdvno, req->packet.header.token, request->tag,
+			error_no);
 }

@@ -123,8 +123,9 @@ static int attach(mm_process_t *process, const int thread_id)
 	}
 
 	devmsg_t message;
-	message.type = Tattach;
-	message.Tattach.tag = thread_id | session->node.key;
+	message.header.type = Tattach;
+	message.header.token = thread_id | session->node.key;
+	message.Tattach.tag = create_tag();
 	message.Tattach.fid = fid;
 	message.Tattach.afid = NOFID;
 	message.Tattach.uname = (char*)(process->uid);

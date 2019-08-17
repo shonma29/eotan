@@ -148,12 +148,13 @@ static void process(const int arg)
 			//TODO error check
 			unsigned int addr = ((unsigned int)(message->Tread.data)
 					+ message->Tread.offset);
-			kcall->region_put(get_rdv_tid(message->Tread.tag),
+			kcall->region_put(get_rdv_tid(message->header.token),
 					(char*)addr, 1, buf);
 			message->Tread.offset++;
 			if (message->Tread.count <= message->Tread.offset) {
-				message->type = Rread;
-//TODO tag
+//				message->header.token = message->head.token;
+				message->header.type = Rread;
+//				message->Rread.tag = message->Tread.tag;
 				message->Rread.count = message->Tread.count;
 				reply(current_req, MESSAGE_SIZE(Rread));
 				current_req = NULL;
@@ -229,20 +230,22 @@ static void execute(request_message_t *req)
 	devmsg_t *message = &(req->message);
 	ER_UINT result;
 //TODO cancel request
-	switch (message->type) {
+	switch (message->header.type) {
 	case Tread:
 		result = check_param(message->Tread.offset,
 				message->Tread.count);
 		if (result) {
-			message->type = Rread;
-//TODO tag
+//			message->header.token = message->head.token;
+			message->header.type = Rread;
+//			message->Rread.tag = message->Tread.tag;
 			message->Rread.count = result;
 			reply(req, MESSAGE_SIZE(Rread));
 
 		} else if (lfq_enqueue(&req_queue, &req) != QUEUE_OK) {
 			log_debug("hmi: req_queue is full\n");
-			message->type = Rerror;
-//TODO tag
+//			message->header.token = message->head.token;
+			message->header.type = Rerror;
+//			message->Rerror.tag = message->Tread.tag;
 			message->Rerror.ename = ENOMEM;
 			reply(req, MESSAGE_SIZE(Rerror));
 		}
@@ -272,7 +275,8 @@ static void execute(request_message_t *req)
 			for (size_t rest = message->Twrite.count; rest > 0;) {
 				size_t len = (rest > sizeof(line)) ?
 						sizeof(line) : rest;
-				if (kcall->region_get(get_rdv_tid(message->Twrite.tag),
+				if (kcall->region_get(
+						get_rdv_tid(message->header.token),
 						(char*)((unsigned int)(message->Twrite.data) + pos),
 						len,
 						line)) {
@@ -296,20 +300,24 @@ static void execute(request_message_t *req)
 #ifdef USE_VESA
 		}
 #endif
-		message->type = Rwrite;
-//TODO tag
+//		message->header.token = message->head.token;
+		message->header.type = Rwrite;
+//		message->Rwrite.tag = message->Twrite.tag;
 		message->Rwrite.count = result;
 		reply(req, MESSAGE_SIZE(Rwrite));
 		break;
 
 	case Tclunk:
-		message->type = Rclunk;
-//TODO tag
+//		message->header.token = message->head.token;
+		message->header.type = Rclunk;
+//		message->Rclunk.tag = message->Tclunk.tag;
 		reply(req, MESSAGE_SIZE(Rclunk));
 		break;
 
 	default:
-		message->type = Rerror;
+//		message->header.token = message->head.token;
+		message->header.type = Rerror;
+		message->Rerror.tag = 0;
 		message->Rerror.ename = ENOTSUP;
 		reply(req, MESSAGE_SIZE(Rerror));
 		break;

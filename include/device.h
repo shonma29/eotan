@@ -63,144 +63,200 @@ enum dev_message_type {
 	Rwstat = 0xff1b
 };
 
+struct _Tversion {
+	int tag;
+	size_t msize;
+	char *version;
+};
+
+struct _Rversion {
+	int tag;
+	size_t msize;
+	char *version;
+};
+
+struct _Tauth {
+	int tag;
+	int afid;
+	char *uname;
+	char *aname;
+};
+
+struct _Rauth {
+	int tag;
+	int aqid;
+};
+
+struct _Tattach {
+	int tag;
+	int fid;
+	int afid;
+	char *uname;
+	char *aname;
+};
+
+struct _Rattach {
+	int tag;
+	int qid;
+};
+
+struct _Rerror {
+	int tag;
+	int ename;
+};
+
+struct _Tflush {
+	int tag;
+	int oldtag;
+};
+
+struct _Rflush {
+	int tag;
+};
+
+struct _Twalk {
+	int tag;
+	int fid;
+	int newfid;
+	int nwname;
+	char *wname;
+};
+
+struct _Rwalk {
+	int tag;
+	int nwqid;
+	char *wqid;
+};
+
+struct _Topen {
+	int tag;
+	int fid;
+	int mode;
+};
+
+struct _Ropen {
+	int tag;
+	int qid;
+	int iounit;
+};
+
+struct _Tcreate {
+	int tag;
+	int fid;
+	char *name;
+	int perm;
+	int mode;
+};
+
+struct _Rcreate {
+	int tag;
+	int qid;
+	int iounit;
+};
+
+struct _Tread {
+	int tag;
+	int fid;
+	off_t offset;
+	size_t count;
+	char *data;
+};
+
+struct _Rread {
+	int tag;
+	ssize_t count;
+};
+
+struct _Twrite {
+	int tag;
+	int fid;
+	off_t offset;
+	size_t count;
+	char *data;
+};
+
+struct _Rwrite {
+	int tag;
+	ssize_t count;
+};
+
+struct _Tclunk {
+	int tag;
+	int fid;
+};
+
+struct _Rclunk {
+	int tag;
+};
+
+struct _Tremove {
+	int tag;
+	int fid;
+};
+
+struct _Rremove {
+	int tag;
+};
+
+struct _Tstat {
+	int tag;
+	int fid;
+	struct stat *stat;
+};
+
+struct _Rstat {
+	int tag;
+};
+
+struct _Twstat {
+	int tag;
+	int fid;
+	struct stat *stat;
+};
+
+struct _Rwstat {
+	int tag;
+};
+
 typedef struct {
-	//TODO enum dev_message_type type;
-	int type;
+	struct {
+		int token;
+		enum dev_message_type type;
+	} header;
 	union {
-		struct {
-			int tag;
-			size_t msize;
-			char *version;
-		} Tversion;
-		struct {
-			int tag;
-			size_t msize;
-			char *version;
-		} Rversion;
-		struct {
-			int tag;
-			int afid;
-			char *uname;
-			char *aname;
-		} Tauth;
-		struct {
-			int tag;
-			int aqid;
-		} Rauth;
-		struct {
-			int tag;
-			int fid;
-			int afid;
-			char *uname;
-			char *aname;
-		} Tattach;
-		struct {
-			int tag;
-			int qid;
-		} Rattach;
-		struct {
-			int tag;
-			int ename;
-		} Rerror;
-		struct {
-			int tag;
-			int oldtag;
-		} Tflush;
-		struct {
-			int tag;
-		} Rflush;
-		struct {
-			int tag;
-			int fid;
-			int newfid;
-			int nwname;
-			char *wname;
-		} Twalk;
-		struct {
-			int tag;
-			int nwqid;
-			char *wqid;
-		} Rwalk;
-		struct {
-			int tag;
-			int fid;
-			int mode;
-		} Topen;
-		struct {
-			int tag;
-			int qid;
-			int iounit;
-		} Ropen;
-		struct {
-			int tag;
-			int fid;
-			char *name;
-			int perm;
-			int mode;
-		} Tcreate;
-		struct {
-			int tag;
-			int qid;
-			int iounit;
-		} Rcreate;
-		struct {
-			int tag;
-			int fid;
-			off_t offset;
-			size_t count;
-			char *data;
-		} Tread;
-		struct {
-			int tag;
-			ssize_t count;
-		} Rread;
-		struct {
-			int tag;
-			int fid;
-			off_t offset;
-			size_t count;
-			char *data;
-		} Twrite;
-		struct {
-			int tag;
-			ssize_t count;
-		} Rwrite;
-		struct {
-			int tag;
-			int fid;
-		} Tclunk;
-		struct {
-			int tag;
-		} Rclunk;
-		struct {
-			int tag;
-			int fid;
-		} Tremove;
-		struct {
-			int tag;
-		} Rremove;
-		struct {
-			int tag;
-			int fid;
-			struct stat *stat;
-		} Tstat;
-		struct {
-			int tag;
-		} Rstat;
-		struct {
-			int tag;
-			int fid;
-			struct stat *stat;
-		} Twstat;
-		struct {
-			int tag;
-		} Rwstat;
+		struct _Tversion Tversion;
+		struct _Rversion Rversion;
+		struct _Tauth Tauth;
+		struct _Rauth Rauth;
+		struct _Tattach Tattach;
+		struct _Rattach Rattach;
+		struct _Rerror Rerror;
+		struct _Tflush Tflush;
+		struct _Rflush Rflush;
+		struct _Twalk Twalk;
+		struct _Rwalk Rwalk;
+		struct _Topen Topen;
+		struct _Ropen Ropen;
+		struct _Tcreate Tcreate;
+		struct _Rcreate Rcreate;
+		struct _Tread Tread;
+		struct _Rread Rread;
+		struct _Twrite Twrite;
+		struct _Rwrite Rwrite;
+		struct _Tclunk Tclunk;
+		struct _Rclunk Rclunk;
+		struct _Tremove Tremove;
+		struct _Rremove Rremove;
+		struct _Tstat Tstat;
+		struct _Rstat Rstat;
+		struct _Twstat Twstat;
+		struct _Rwstat Rwstat;
 	};
 } devmsg_t;
 
 #define MESSAGE_SIZE(t) \
-	(sizeof(((devmsg_t*)0)->type) + sizeof(((devmsg_t*)0)->t))
-#define MIN_MESSAGE_SIZE (sizeof(((devmsg_t*)0)->type) + sizeof(int))
+	(sizeof(((devmsg_t*)0)->header) + sizeof(((devmsg_t*)0)->t))
+#define MIN_MESSAGE_SIZE (sizeof(((devmsg_t*)0)->header) + sizeof(int))
 
 //TODO move to other header
 typedef struct _vdriver_t {

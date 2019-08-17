@@ -130,4 +130,6 @@ extern int call_device(const int, devmsg_t *, const size_t, const int,
 extern int create_init(const pid_t);
 extern int exec_init(const pid_t, char *);
 
+extern int create_tag(void);
+
 #endif

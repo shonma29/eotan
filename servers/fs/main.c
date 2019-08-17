@@ -163,7 +163,7 @@ static void work(void)
 	for (;;) {
 		fs_request *req;
 		if (lfq_dequeue(&req_queue, &req) == QUEUE_OK) {
-			syscall[req->packet.type](req);
+			syscall[req->packet.header.type](req);
 			kcall->mutex_lock(receiver_id, TMO_FEVR);
 			slab_free(&request_slab, req);
 			kcall->mutex_unlock(receiver_id);
@@ -209,9 +209,9 @@ void start(VP_INT exinf)
 			continue;
 		}
 
-		if (size < sizeof(req->packet.type)) {
+		if (size < sizeof(req->packet.header)) {
 			//TODO what is tag?
-			reply_dev_error(req->rdvno, 0, EINVAL);
+			reply_error(req->rdvno, 0, 0, EINVAL);
 			continue;
 		}
 /*
@@ -225,7 +225,7 @@ void start(VP_INT exinf)
 		}
 */
 		int result;
-		switch (req->packet.type) {
+		switch (req->packet.header.type) {
 		case Tattach:
 			result = (size == MESSAGE_SIZE(Tattach)) ?
 					worker_enqueue(&req) : EINVAL;
@@ -273,6 +273,7 @@ void start(VP_INT exinf)
 
 		if (result)
 			//TODO what is tag?
-			reply_dev_error(req->rdvno, 0, result);
+			reply_error(req->rdvno, req->packet.header.token, 0,
+					result);
 	}
 }

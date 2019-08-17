@@ -43,23 +43,22 @@ static slab_t file_slab;
 
 void if_attach(fs_request *req)
 {
-	devmsg_t *request = &(req->packet);
 	int error_no;
+	struct _Tattach *request = &(req->packet.Tattach);
 	do {
-		if (request->Tattach.afid != NOFID) {
+		if (request->afid != NOFID) {
 			error_no = EINVAL;
 			break;
 		}
 
-		session_t *session = session_create(
-				unpack_sid(request->Tattach.tag));
+		session_t *session = session_create(unpack_sid(req));
 		if (!session) {
 			//TODO other error when sid exists
 			error_no = ENOMEM;
 			break;
 		}
 
-		int fid = request->Tattach.fid;
+		int fid = request->fid;
 		struct file *file;
 		error_no = session_create_file(&file, session, fid);
 		if (error_no) {
@@ -68,7 +67,7 @@ void if_attach(fs_request *req)
 		}
 
 		//TODO get from auth server
-		session->permission.uid = (uid_t)(request->Tattach.uname);
+		session->permission.uid = (uid_t)(request->uname);
 		session->permission.gid = INIT_GID;
 		//TODO walk aname
 		//TODO can not walk to the parent of aname
@@ -79,14 +78,16 @@ void if_attach(fs_request *req)
 		file->f_flag = O_ACCMODE;
 
 		devmsg_t response;
-		response.type = Rattach;
-		response.Rattach.tag = request->Tattach.tag;
+		response.header.token = req->packet.header.token;
+		response.header.type = Rattach;
+		response.Rattach.tag = request->tag;
 		response.Rattach.qid = session->root->index;
-		reply_dev(req->rdvno, &response, MESSAGE_SIZE(Rattach));
+		reply(req->rdvno, &response, MESSAGE_SIZE(Rattach));
 		return;
 	} while (false);
 
-	reply_dev_error(req->rdvno, request->Tattach.tag, error_no);
+	reply_error(req->rdvno, req->packet.header.token, request->tag,
+			error_no);
 }
 
 void session_initialize(void)

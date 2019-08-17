@@ -56,7 +56,7 @@ int putline(UW start, UW size, char *buf)
 	devmsg_t msg;
 	ER_UINT err;
 
-	msg.type = Twrite;
+	msg.header.type = Twrite;
 	msg.Twrite.fid = 4;
 	msg.Twrite.offset = start;
 	msg.Twrite.count = size;

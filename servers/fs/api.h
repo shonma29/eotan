@@ -48,17 +48,17 @@ extern void if_remove(fs_request*);
 extern void if_stat(fs_request*);
 extern void if_wstat(fs_request*);
 
-static inline int unpack_sid(const int tag)
+static inline int unpack_sid(const fs_request *req)
 {
-	return (tag & 0xffff);
+	return (req->packet.header.token & 0xffff);
 }
 
-static inline int unpack_tid(const int tag)
+static inline int unpack_tid(const fs_request *req)
 {
-	return ((tag >> 16) & 0xffff);
+	return ((req->packet.header.token >> 16) & 0xffff);
 }
 
-extern int reply_dev(const RDVNO, const devmsg_t *, const size_t);
-extern int reply_dev_error(const RDVNO, const int, const int);
+extern int reply(const RDVNO, const devmsg_t *, const size_t);
+extern int reply_error(const RDVNO, const int, const int, const int);
 
 #endif

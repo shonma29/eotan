@@ -985,3 +985,8 @@ int session_remove_file(mm_session_t *session, const int fid)
 
 	return 0;
 }
+
+int create_tag(void)
+{
+	return 0;
+}

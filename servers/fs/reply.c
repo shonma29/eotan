@@ -24,21 +24,24 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <services.h>
 #include <nerve/kcall.h>
 #include <sys/errno.h>
 #include "api.h"
 
 
-int reply_dev(const RDVNO rdvno, const devmsg_t *response, const size_t size)
+int reply(const RDVNO rdvno, const devmsg_t *response, const size_t size)
 {
 	return (kcall->port_reply(rdvno, (void*)response, size) ?
 			ECONNREFUSED : 0);
 }
 
-int reply_dev_error(const RDVNO rdvno, const int tag, const int error_no)
+int reply_error(const RDVNO rdvno, const int token, const int tag,
+		const int error_no)
 {
 	devmsg_t response;
-	response.type = Rerror;
+	response.header.token = (PORT_FS << 16) | (token & 0xffff);
+	response.header.type = Rerror;
 	response.Rerror.tag = tag;
 	response.Rerror.ename = error_no;
 

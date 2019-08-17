@@ -60,7 +60,7 @@ int read(char *outbuf, const int channel,
 		size_t len = (rest < DEV_BUF_SIZE) ? rest : DEV_BUF_SIZE;
 		devmsg_t packet;
 
-		packet.type = Tread;
+		packet.header.type = Tread;
 		packet.Tread.fid = channel;
 		packet.Tread.offset = rpos;
 		packet.Tread.count = len;
@@ -98,7 +98,7 @@ int write(char *inbuf, const int channel,
 		size_t len = (rest < DEV_BUF_SIZE) ? rest : DEV_BUF_SIZE;
 		devmsg_t packet;
 
-		packet.type = Twrite;
+		packet.header.type = Twrite;
 		packet.Twrite.fid = channel;
 		packet.Twrite.offset = wpos;
 		packet.Twrite.count = len;
