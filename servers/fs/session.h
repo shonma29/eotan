@@ -26,7 +26,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "fs.h"
+#include <fs/vfs.h>
+#include <set/tree.h>
+
+struct file {
+	node_t node;
+	vnode_t *f_vnode;
+	uint_fast32_t f_flag;
+};
 
 typedef struct _session_t {
 	node_t node;
@@ -42,9 +49,9 @@ extern session_t *session_create(const pid_t);
 extern void session_destroy(session_t *);
 extern session_t *session_find(const pid_t);
 
-extern int session_create_desc(struct file **, session_t *, const int);
-extern int session_destroy_desc(session_t *, const int);
-extern struct file *session_find_desc(const session_t *, const int);
+extern int session_create_file(struct file **, session_t *, const int);
+extern int session_destroy_file(session_t *, const int);
+extern struct file *session_find_file(const session_t *, const int);
 
 extern int session_get_path(char *, vnode_t **, const session_t *,
 		vnode_t *, const int, const char *);

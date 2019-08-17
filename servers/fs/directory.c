@@ -44,7 +44,7 @@ void if_walk(fs_request *req)
 		}
 
 		int fid = request->Twalk.fid;
-		struct file *parent = session_find_desc(session, fid);
+		struct file *parent = session_find_file(session, fid);
 		if (!parent) {
 			error_no = EBADF;
 			break;
@@ -75,7 +75,7 @@ void if_walk(fs_request *req)
 				return;
 			}
 		} else {
-			error_no = session_create_desc(&file, session, newfid);
+			error_no = session_create_file(&file, session, newfid);
 			if (error_no)
 				break;
 		}
@@ -89,7 +89,7 @@ void if_walk(fs_request *req)
 					request->Twalk.wname);
 			if (error_no) {
 				if (file)
-					session_destroy_desc(session, newfid);
+					session_destroy_file(session, newfid);
 
 				break;
 			}
@@ -100,7 +100,7 @@ void if_walk(fs_request *req)
 					&(session->permission), &vnode);
 			if (error_no) {
 				if (file)
-					session_destroy_desc(session, newfid);
+					session_destroy_file(session, newfid);
 
 				break;
 			}
@@ -141,7 +141,7 @@ void if_create(fs_request *req)
 			break;
 		}
 
-		struct file *parent = session_find_desc(session,
+		struct file *parent = session_find_file(session,
 				request->Tcreate.fid);
 		if (!parent) {
 			error_no = EBADF;
@@ -204,7 +204,7 @@ void if_remove(fs_request *req)
 		}
 
 		int fid = request->Tremove.fid;
-		struct file *file = session_find_desc(session, fid);
+		struct file *file = session_find_file(session, fid);
 		if (!file) {
 			error_no = EBADF;
 			break;
@@ -212,7 +212,7 @@ void if_remove(fs_request *req)
 
 		error_no = vfs_remove(file->f_vnode, &(session->permission));
 
-		int e = session_destroy_desc(session, fid);
+		int e = session_destroy_file(session, fid);
 		if (e) {
 			//TODO what to do?
 		}

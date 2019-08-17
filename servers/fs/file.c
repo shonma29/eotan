@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 #include <sys/errno.h>
 #include "api.h"
+#include "fs.h"
 #include "session.h"
 
 static int copy_from_user(void *, void *, const size_t);
@@ -44,7 +45,7 @@ void if_open(fs_request *req)
 		return;
 	}
 
-	struct file *file = session_find_desc(session, request->Topen.fid);
+	struct file *file = session_find_file(session, request->Topen.fid);
 	if (!file) {
 		reply_dev_error(req->rdvno, request->Topen.tag, EBADF);
 		return;
@@ -80,7 +81,7 @@ void if_clunk(fs_request *req)
 	devmsg_t *request = &(req->packet);
 	session_t *session = session_find(unpack_sid(request->Tclunk.tag));
 	if (session)
-		error_no = session_destroy_desc(session, request->Tclunk.fid);
+		error_no = session_destroy_file(session, request->Tclunk.fid);
 	else
 		error_no = ESRCH;
 
@@ -103,7 +104,7 @@ void if_read(fs_request *req)
 		return;
 	}
 
-	struct file *file = session_find_desc(session, request->Tread.fid);
+	struct file *file = session_find_file(session, request->Tread.fid);
 	if (!file) {
 		reply_dev_error(req->rdvno, request->Tread.tag, EBADF);
 		return;
@@ -149,7 +150,7 @@ void if_write(fs_request *req)
 	}
 
 	struct file *file;
-	file = session_find_desc(session, request->Twrite.fid);
+	file = session_find_file(session, request->Twrite.fid);
 	if (!file) {
 		reply_dev_error(req->rdvno, request->Twrite.tag, EBADF);
 		return;
@@ -169,8 +170,10 @@ void if_write(fs_request *req)
 	if (request->Twrite.count) {
 		int error_no = 0;
 		unsigned int offset = request->Twrite.offset;
+		//TODO move to vfs
 		if (offset > file->f_vnode->size) {
 			memset(req->buf, 0, sizeof(req->buf));
+			//TODO when length > size of buf?
 			copier_t copier = {
 				copy_from,
 				req->buf

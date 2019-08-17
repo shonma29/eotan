@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/lf_queue.h>
 #include <sys/errno.h>
 #include "api.h"
+#include "fs.h"
 #include "session.h"
 #include "devfs/devfs.h"
 #include "../../lib/libserv/libserv.h"

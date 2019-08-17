@@ -42,7 +42,7 @@ void if_stat(fs_request *req)
 			break;
 		}
 
-		struct file *file = session_find_desc(session,
+		struct file *file = session_find_file(session,
 				request->Tstat.fid);
 		if (!file) {
 			error_no = EBADF;
@@ -82,7 +82,7 @@ void if_wstat(fs_request *req)
 			break;
 		}
 
-		struct file *file = session_find_desc(session,
+		struct file *file = session_find_file(session,
 				request->Twstat.fid);
 		if (!file) {
 			error_no = EBADF;

@@ -33,8 +33,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/errno.h>
 #include <sys/unistd.h>
 #include "api.h"
+#include "fs.h"
 #include "session.h"
-#include "../../lib/libserv/libserv.h"
 
 static slab_t session_slab;
 static tree_t session_tree;
@@ -61,7 +61,7 @@ void if_attach(fs_request *req)
 
 		int fid = request->Tattach.fid;
 		struct file *file;
-		error_no = session_create_desc(&file, session, fid);
+		error_no = session_create_file(&file, session, fid);
 		if (error_no) {
 			session_destroy(session);
 			break;
@@ -77,7 +77,7 @@ void if_attach(fs_request *req)
 		//TODO bind fid to with session type (for use to close session)
 		file->f_vnode = rootfile;
 		file->f_flag = O_ACCMODE;
-log_info("fs: attach %d\n", file->node.key);
+
 		devmsg_t response;
 		response.type = Rattach;
 		response.Rattach.tag = request->Tattach.tag;
@@ -141,7 +141,7 @@ void session_destroy(session_t *session)
 
 	//TODO optimize
 	for (int fd = 0; fd < MAX_FILE; fd++)
-		if (session_destroy_desc(session, fd)) {
+		if (session_destroy_file(session, fd)) {
 			//TODO what to do?
 		}
 
@@ -156,10 +156,9 @@ session_t *session_find(const pid_t pid)
 	return (session_t*)tree_get(&session_tree, pid);
 }
 
-int session_create_desc(struct file **file, session_t *session, const int fd)
+int session_create_file(struct file **file, session_t *session, const int fd)
 {
-log_info("fs: creeate_desc %d\n", fd);
-	if (session_find_desc(session, fd))
+	if (session_find_file(session, fd))
 		//TODO adequate error code
 		return EBUSY;
 
@@ -180,7 +179,7 @@ log_info("fs: creeate_desc %d\n", fd);
 	return 0;
 }
 
-int session_destroy_desc(session_t *session, const int fd)
+int session_destroy_file(session_t *session, const int fd)
 {
 	struct file *file = (struct file*)tree_remove(&(session->files), fd);
 	if (!file)
@@ -192,7 +191,7 @@ int session_destroy_desc(session_t *session, const int fd)
 	return error_no;
 }
 
-struct file *session_find_desc(const session_t *session, const int fd)
+struct file *session_find_file(const session_t *session, const int fd)
 {
 	return (struct file*)tree_get(&(session->files), fd);
 }

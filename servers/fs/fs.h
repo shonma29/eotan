@@ -29,12 +29,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <fs/vfs.h>
 #include <set/tree.h>
 
-struct file {
-	node_t node;
-	vnode_t *f_vnode;
-	uint_fast32_t f_flag;
-};
-
 //TODO use off_t
 //TODO move to vfs.h
 static inline int fs_read(vnode_t *vnode, copier_t *dest, const int offset,
@@ -49,6 +43,6 @@ static inline int fs_read(vnode_t *vnode, copier_t *dest, const int offset,
 extern vnode_t *rootfile;
 
 extern int fs_initialize(void);
-extern int fs_mount(const int device);
+extern int fs_mount(const int);
 
 #endif
