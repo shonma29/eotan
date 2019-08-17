@@ -1,5 +1,5 @@
-#ifndef _PROCESS_H_
-#define _PROCESS_H_
+#ifndef _MM_PROCESS_H_
+#define _MM_PROCESS_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -102,25 +102,27 @@ extern mm_process_t *process_duplicate(mm_process_t *);
 extern int process_destroy(mm_process_t *, const int);
 extern int process_release_body(mm_process_t *);
 extern int thread_create(mm_process_t *, FP, VP);
-extern mm_descriptor_t *process_create_file(void);
-extern mm_file_t *process_allocate_file(void);
-extern void process_deallocate_file(mm_file_t *);
-extern mm_descriptor_t *process_allocate_desc(void);
-extern void process_deallocate_desc(mm_descriptor_t *);
-extern int process_set_desc(mm_process_t *, const int, mm_descriptor_t *);
-extern int process_destroy_desc(mm_process_t *, const int);
-extern mm_descriptor_t *process_find_desc(const mm_process_t *, const int);
-extern int process_find_new_fd(const mm_process_t *);
 extern int process_replace(mm_process_t *process,
 		void *address, const size_t size,
 		void *entry, const void *args, const size_t stack_size,
 		int *);
+
+extern void file_initialize(void);
 extern mm_session_t *session_create(void);
 extern int session_destroy(mm_session_t *);
-extern int session_find_new_fid(mm_session_t *);
+extern mm_descriptor_t *process_create_file(void);
+extern int process_destroy_desc(mm_process_t *, const int);
+extern int process_set_desc(mm_process_t *, const int, mm_descriptor_t *);
+extern mm_descriptor_t *process_find_desc(const mm_process_t *, const int);
+extern int process_find_new_fd(const mm_process_t *);
+extern mm_descriptor_t *process_allocate_desc(void);
+extern void process_deallocate_desc(mm_descriptor_t *);
 extern int session_add_file(mm_session_t *, const int, mm_file_t *);
 extern int session_remove_file(mm_session_t *, const int);
-extern int process_exec(mm_reply_t *, mm_process_t *, const int, mm_args_t *);
+extern int session_find_new_fid(mm_session_t *);
+extern mm_file_t *process_allocate_file(void);
+extern void process_deallocate_file(mm_file_t *);
+extern int create_tag(void);
 
 extern ER default_handler(void);
 extern ER stack_fault_handler(void);
@@ -130,6 +132,6 @@ extern int call_device(const int, devmsg_t *, const size_t, const int,
 extern int create_init(const pid_t);
 extern int exec_init(const pid_t, char *);
 
-extern int create_tag(void);
+extern int process_exec(mm_reply_t *, mm_process_t *, const int, mm_args_t *);
 
 #endif

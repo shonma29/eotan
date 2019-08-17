@@ -32,7 +32,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 #include <unistd.h>
 #include <boot/init.h>
-#include <core/options.h>
 #include <mm/config.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
@@ -41,22 +40,14 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../kernel/mpu/mpufunc.h"
 #include "../../lib/libserv/libserv.h"
 
-#define MIN_SID (1)
-#define MIN_FID (1)
-#define MIN_AUTO_FD (3)
-
 #define getParent(type, p) ((intptr_t)p - offsetof(type, node))
 
 static slab_t process_slab;
 static tree_t process_tree;
 static slab_t thread_slab;
 static tree_t thread_tree;
-static slab_t file_slab;
-static slab_t descriptor_slab;
 static slab_t process_group_slab;
 static tree_t process_group_tree;
-static slab_t session_slab;
-static tree_t session_tree;
 
 static void process_clear(mm_process_t *p);
 static void thread_clear(mm_thread_t *th, mm_process_t *p);
@@ -158,26 +149,6 @@ void process_initialize(void)
 
 	tree_create(&thread_tree, NULL);
 
-	// initialize file table
-	file_slab.unit_size = sizeof(mm_file_t);
-	file_slab.block_size = PAGE_SIZE;
-	file_slab.min_block = 1;
-	file_slab.max_block = slab_max_block(FILE_MAX, PAGE_SIZE,
-			sizeof(mm_file_t));
-	file_slab.palloc = kcall->palloc;
-	file_slab.pfree = kcall->pfree;
-	slab_create(&file_slab);
-
-	// initialize descriptor table
-	descriptor_slab.unit_size = sizeof(mm_descriptor_t);
-	descriptor_slab.block_size = PAGE_SIZE;
-	descriptor_slab.min_block = 1;
-	descriptor_slab.max_block = slab_max_block(FILE_MAX, PAGE_SIZE,
-			sizeof(mm_descriptor_t));
-	descriptor_slab.palloc = kcall->palloc;
-	descriptor_slab.pfree = kcall->pfree;
-	slab_create(&descriptor_slab);
-
 	// initialize process group table
 	process_group_slab.unit_size = sizeof(mm_process_group_t);
 	process_group_slab.block_size = PAGE_SIZE;
@@ -189,18 +160,6 @@ void process_initialize(void)
 	slab_create(&process_group_slab);
 
 	tree_create(&process_group_tree, NULL);
-
-	// initialize session table
-	session_slab.unit_size = sizeof(mm_session_t);
-	session_slab.block_size = PAGE_SIZE;
-	session_slab.min_block = 1;
-	session_slab.max_block = slab_max_block(SESSION_MAX, PAGE_SIZE,
-			sizeof(mm_session_t));
-	session_slab.palloc = kcall->palloc;
-	session_slab.pfree = kcall->pfree;
-	slab_create(&session_slab);
-
-	tree_create(&session_tree, NULL);
 }
 
 mm_process_t *process_duplicate(mm_process_t *src)
@@ -410,137 +369,6 @@ int process_release_body(mm_process_t *proc)
 	return 0;
 }
 
-int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
-{
-	do {
-		mm_process_t *p = get_process((ID)args->arg1);
-		if (!p) {
-			reply->data[0] = ESRCH;
-			break;
-		}
-
-		if (map_user_pages(p->directory,
-				(VP)(args->arg2), pages((UW)(args->arg3)))) {
-			reply->data[0] = ENOMEM;
-			break;
-		}
-
-		unsigned int currentEnd = (unsigned int)(p->segments.heap.addr)
-				+ p->segments.heap.len;
-		unsigned int newEnd = (unsigned int)(args->arg2)
-				+ (unsigned int)(args->arg3);
-		if (currentEnd == (unsigned int)(args->arg2))
-			p->segments.heap.len = newEnd
-					- (unsigned int)(p->segments.heap.addr);
-
-		if (args->arg2 == LOCAL_ADDR)
-			p->local = getPageAddress(kern_p2v(p->directory),
-					(void*)(args->arg2));
-
-		reply->data[0] = EOK;
-		reply->result = 0;
-		return reply_success;
-	} while (FALSE);
-
-	reply->result = -1;
-	return reply_failure;
-}
-
-int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
-{
-	do {
-		unsigned int currentEnd;
-		unsigned int newEnd;
-		mm_process_t *p = get_process((ID)args->arg1);
-
-		if (!p) {
-			reply->data[0] = ESRCH;
-			break;
-		}
-
-		if (unmap_user_pages(p->directory,
-				(VP)(args->arg2), pages((UW)(args->arg3)))) {
-			reply->data[0] = EACCES;
-			break;
-		}
-
-		currentEnd = (unsigned int)(p->segments.heap.addr)
-				+ p->segments.heap.len;
-		newEnd = (unsigned int)(args->arg2)
-				+ (unsigned int)(args->arg3);
-		if (currentEnd == newEnd)
-			p->segments.heap.len = (unsigned int)(args->arg2)
-					- (unsigned int)(p->segments.heap.addr);
-
-		reply->data[0] = EOK;
-		reply->result = 0;
-		return reply_success;
-	} while (FALSE);
-
-	reply->result = -1;
-	return reply_failure;
-}
-
-int mm_sbrk(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
-{
-	do {
-		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
-		if (!th) {
-			reply->data[0] = ESRCH;
-			break;
-		}
-
-		mm_process_t *p = get_process(th->process_id);
-		if (!p) {
-			reply->data[0] = ESRCH;
-			break;
-		}
-
-		mm_segment_t *s = &(p->segments.heap);
-		uintptr_t end = (uintptr_t)(s->addr) + s->len;
-		intptr_t diff = (intptr_t)(args->arg1);
-		if (diff > 0) {
-			diff = pageRoundUp(diff);
-			if (s->max - s->len < diff) {
-				reply->data[0] = ENOMEM;
-				break;
-			}
-
-			if (map_user_pages(p->directory,
-					(VP)end, pages(diff))) {
-				reply->data[0] = ENOMEM;
-				break;
-			}
-
-			s->len += diff;
-			end += diff;
-
-		} else if (diff < 0) {
-			diff = pageRoundUp(-diff);
-			if (s->len < diff) {
-				reply->data[0] = ENOMEM;
-				break;
-			}
-
-			if (unmap_user_pages(p->directory,
-					(VP)(end - diff), pages(diff))) {
-				reply->data[0] = ENOMEM;
-				break;
-			}
-
-			s->len -= diff;
-			end -= diff;
-		}
-
-		reply->data[0] = EOK;
-		reply->result = (int)end;
-		return reply_success;
-	} while (FALSE);
-
-	reply->result = -1;
-	return reply_failure;
-}
-
 static ER_ID create_thread(mm_process_t *p, FP entry, VP ustack_top)
 {
 	T_CTSK pk_ctsk = {
@@ -630,86 +458,10 @@ int mm_thread_find(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	return reply_failure;
 }
 
-mm_descriptor_t *process_create_file(void)
-{
-	mm_descriptor_t *d = (mm_descriptor_t*)slab_alloc(&descriptor_slab);
-	if (d) {
-		mm_file_t *f = process_allocate_file();
-		if (!f) {
-			slab_free(&descriptor_slab, d);
-			return NULL;
-		}
-
-		d->file = f;
-	}
-
-	return d;
-}
-
-mm_file_t *process_allocate_file(void)
-{
-	return (mm_file_t*)slab_alloc(&file_slab);
-}
-
-void process_deallocate_file(mm_file_t *file)
-{
-	slab_free(&file_slab, file);
-}
-
-mm_descriptor_t *process_allocate_desc(void)
-{
-	mm_descriptor_t *d = (mm_descriptor_t*)slab_alloc(&descriptor_slab);
-	if (d)
-		//TODO is needed?
-		d->file = NULL;
-
-	return d;
-}
-
-void process_deallocate_desc(mm_descriptor_t *desc)
-{
-	slab_free(&descriptor_slab, desc);
-}
-
-int process_set_desc(mm_process_t *process, const int fd, mm_descriptor_t *desc)
-{
-	return (tree_put(&(process->descriptors), fd, &(desc->node)) ? 0 : 1);
-}
-
-int process_destroy_desc(mm_process_t *process, const int fd)
-{
-	mm_descriptor_t *desc =
-			(mm_descriptor_t*)tree_remove(&(process->descriptors),
-					fd);
-	if (!desc)
-		return EBADF;
-
-	if (desc->file)
-		//TODO close here?
-		process_deallocate_file(desc->file);
-
-	process_deallocate_desc(desc);
-	return 0;
-}
-
-mm_descriptor_t *process_find_desc(const mm_process_t *process, const int fd)
-{
-	return (mm_descriptor_t*)tree_get(&(process->descriptors), fd);
-}
-
 static int process_find_new_pid(void)
 {
 	for (int id = INIT_PID; id < PROCESS_MAX; id++)
 		if (!tree_get(&process_tree, id))
-			return id;
-
-	return -1;
-}
-
-int process_find_new_fd(const mm_process_t *process)
-{
-	for (int id = MIN_AUTO_FD; id < FILES_PER_PROCESS; id++)
-		if (!process_find_desc(process, id))
 			return id;
 
 	return -1;
@@ -917,76 +669,5 @@ int process_replace(mm_process_t *process,
 
 	*thread_id = th->node.key;
 
-	return 0;
-}
-
-mm_session_t *session_create(void)
-{
-	int id;
-	for (id = MIN_SID; id < SESSION_MAX; id++)
-		if (!tree_get(&session_tree, id))
-			break;
-
-	if (id == SESSION_MAX)
-		return NULL;
-
-	mm_session_t *session = (mm_session_t*)slab_alloc(&session_slab);
-	if (session) {
-		if (!tree_put(&session_tree, id, &(session->node))) {
-			//TODO what to do?
-		}
-
-		tree_create(&(session->files), NULL);
-		session->refer_count = 1;
-	}
-
-	return session;
-}
-
-int session_destroy(mm_session_t *session)
-{
-	session->refer_count--;
-	if (!(session->refer_count)) {
-		//TODO warn and release opened files
-		//TODO clunk root fid if opened
-
-		if (!tree_remove(&session_tree, session->node.key)) {
-			//TODO what to do?
-		}
-
-		slab_free(&session_slab, session);
-	}
-
-	return 0;
-}
-
-int session_find_new_fid(mm_session_t *session)
-{
-//log_info("mm: ffile %d\n", session->node.key);
-	for (int fid = MIN_FID; fid < FILES_PER_SESSION; fid++)
-		if (!tree_get(&(session->files), fid))
-			return fid;
-
-	return -1;
-}
-
-int session_add_file(mm_session_t *session, const int fid, mm_file_t *file)
-{
-//log_info("mm: afile sid=%d fid=%d\n", session->node.key, fid);
-	return (tree_put(&(session->files), fid, &(file->node)) ? 0 : 1);
-}
-
-int session_remove_file(mm_session_t *session, const int fid)
-{
-//log_info("mm: rfile sid=%d fid=%d\n", session->node.key, fid);
-	mm_file_t *file = (mm_file_t*)tree_remove(&(session->files), fid);
-	if (!file)
-		return EBADF;
-
-	return 0;
-}
-
-int create_tag(void)
-{
 	return 0;
 }
