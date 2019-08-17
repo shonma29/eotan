@@ -35,11 +35,11 @@ For more information, please refer to <http://unlicense.org/>
 #endif
 
 #define MAX_INT_COLUMN (10)
-#define MAX_INT_BITS (32)
+#define INT_BIT ((CHAR_BIT) * sizeof(int))
 
 #ifdef USE_FLOAT
 #define NUMBER_MIN_UNITS (4)
-#define NUMBER_CARRY_BIT (MAX_INT_BITS - 1)
+#define NUMBER_CARRY_BIT (INT_BIT - 1)
 #define NUMBER_CARRY_MASK ((uint32_t)(1 << NUMBER_CARRY_BIT))
 #define NUMBER_VALUE_MASK ((uint32_t)(NUMBER_CARRY_MASK - 1))
 
@@ -135,7 +135,7 @@ static void _puth(State *s, const int x)
 {
 	int shift;
 
-	for (shift = MAX_INT_BITS - 4; shift >= 0; shift -= 4) {
+	for (shift = INT_BIT - 4; shift >= 0; shift -= 4) {
 		int c = (x >> shift) & 0xf;
 
 		_putchar(s, c + ((c >= 10) ? ('a' - 10) : '0'));
@@ -311,15 +311,15 @@ static int number_divide(number_t *p, const uint32_t n)
 	last = 0;
 	reminder = 0;
 	for (i = p->len; i > 0; i--) {
-		uint32_t x = (reminder << ((MAX_INT_BITS / 2) - 1))
-				| (p->buf[i - 1] >> (MAX_INT_BITS / 2));
+		uint32_t x = (reminder << ((INT_BIT / 2) - 1))
+				| (p->buf[i - 1] >> (INT_BIT / 2));
 		uint32_t q;
 		ldiv_t v = ldiv(x, n);
 
-		q = v.quot << (MAX_INT_BITS / 2);
-		x = (v.rem << (MAX_INT_BITS / 2))
+		q = v.quot << (INT_BIT / 2);
+		x = (v.rem << (INT_BIT / 2))
 				| (p->buf[i - 1]
-				& ((1 << (MAX_INT_BITS / 2)) - 1));
+				& ((1 << (INT_BIT / 2)) - 1));
 		v = ldiv(x, n);
 		reminder = v.rem;
 		q |= v.quot;

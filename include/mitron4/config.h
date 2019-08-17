@@ -56,9 +56,9 @@ For more information, please refer to <http://unlicense.org/>
 /**
  * bit pattern
  */
-#define TBIT_TEXPTN (INT_BIT)
-#define TBIT_FLGPTN (INT_BIT)
-#define TBIT_RDVPTN (INT_BIT)
+#define TBIT_TEXPTN ((CHAR_BIT) * sizeof(int))
+#define TBIT_FLGPTN ((CHAR_BIT) * sizeof(int))
+#define TBIT_RDVPTN ((CHAR_BIT) * sizeof(int))
 
 /**
  * tick

@@ -26,12 +26,14 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <stdint.h>
 #include <mpu/bits.h>
-#include <mpu/limits.h>
 #include <sys/errno.h>
 #include "func.h"
 
+#define INT_BIT ((CHAR_BIT) * sizeof(int))
+
 static int tfs_deallocate_block(vfs_t *fsp, const blkno_t block_no);
 static bool is_valid_nth(const vfs_t *fsp, const unsigned int nth);
+
 
 blkno_t tfs_allocate_block(vfs_t *fsp)
 {

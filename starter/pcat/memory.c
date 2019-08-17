@@ -25,7 +25,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <elf.h>
-#include <limits.h>
 #include <major.h>
 #include <stddef.h>
 #include <string.h>
@@ -36,6 +35,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/memory.h>
 #include <mpu/mpufunc.h>
 #include <nerve/global.h>
+
+#define INT_BIT ((CHAR_BIT) * sizeof(int))
 
 static MemoryMap *mm = &(sysinfo->memory_map);
 

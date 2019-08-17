@@ -26,14 +26,15 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <stdint.h>
 #include <stdlib.h>
-#include <mpu/limits.h>
 
-static unsigned long x = 123456789;
-static unsigned long y = 362436069;
-static unsigned long z = 521288629;
-static unsigned long w = 88675123;
+#define INT_BIT ((CHAR_BIT) * sizeof(int))
 
-static unsigned long rotate(const unsigned int v, const unsigned int n);
+static unsigned int x = 123456789;
+static unsigned int y = 362436069;
+static unsigned int z = 521288629;
+static unsigned int w = 88675123;
+
+static unsigned int rotate(const unsigned int, const unsigned int);
 
 
 /**
@@ -41,7 +42,7 @@ static unsigned long rotate(const unsigned int v, const unsigned int n);
  */
 int rand(void)
 {
-	unsigned long t = x ^ (x << 11);
+	unsigned int t = x ^ (x << 11);
 
 	x = y;
 	y = z;
@@ -50,10 +51,10 @@ int rand(void)
 	return (int)((w = (w ^ (w >> 19)) ^ (t ^ (t >> 8))) & RAND_MAX);
 }
 
-static unsigned long rotate(const unsigned int v, const unsigned int n)
+static unsigned int rotate(const unsigned int v, const unsigned int n)
 {
-	unsigned long lmask = (1 << n) - 1;
-	unsigned long rmask = (1 << (INT_BIT - n)) - 1;
+	unsigned int lmask = (1 << n) - 1;
+	unsigned int rmask = (1 << (INT_BIT - n)) - 1;
 
 	return ((v & lmask) << (INT_BIT - n)) | ((v >> n) & rmask);
 }

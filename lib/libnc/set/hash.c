@@ -28,6 +28,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <stddef.h>
 #include <set/hash.h>
 
+#define INT_BIT ((CHAR_BIT) * sizeof(int))
+
 #define HASH_OK (0)
 #define HASH_ERR (1)
 

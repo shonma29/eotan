@@ -28,7 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/types.h>
 
 #define MAX_INT_COLUMN (10)
-#define MAX_INT_BITS (32)
+#define INT_BIT ((CHAR_BIT) * sizeof(int))
 
 typedef struct _State {
 	int (*handler)(struct _State*);
@@ -94,7 +94,7 @@ static void _puth(State *s, const int x)
 {
 	int shift;
 
-	for (shift = MAX_INT_BITS - 4; shift >= 0; shift -= 4) {
+	for (shift = INT_BIT - 4; shift >= 0; shift -= 4) {
 		int c = (x >> shift) & 0xf;
 
 		_putchar(s, c + ((c >= 10) ? ('a' - 10) : '0'));

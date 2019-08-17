@@ -28,7 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 
 #define CHAR_BIT 8
-#define INT_BIT 32
+
 #define MB_LEN_MAX 6
 
 #define CHAR_MAX 0x7f
