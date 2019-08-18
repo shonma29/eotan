@@ -62,23 +62,22 @@ static int (*funcs[])(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args) = {
 static ER init(void);
 static ER proxy_initialize(void);
 static void proxy(void);
-static unsigned int sleep(unsigned int);
+static unsigned int nsleep(unsigned int);
 static void doit(void);
 
 
 static ER init(void)
 {
-	T_CPOR pk_cpor = { TA_TFIFO, BUFSIZ, BUFSIZ };
-
 	process_initialize();
 	file_initialize();
+	define_mpu_handlers((FP)default_handler, (FP)stack_fault_handler);
 
 	ER_ID result = proxy_initialize();
 	if (result < 0)
 		return result;
 
-	define_mpu_handlers((FP)default_handler, (FP)stack_fault_handler);
 //log_info("mm size=%d\n", BUFSIZ);
+	T_CPOR pk_cpor = { TA_TFIFO, BUFSIZ, BUFSIZ };
 	return kcall->port_open(&pk_cpor);
 }
 
@@ -88,57 +87,50 @@ static ER proxy_initialize(void)
 		TA_HLNG | TA_ACT, 0, proxy, pri_server_middle,
 		KTHREAD_STACK_SIZE, NULL, NULL, NULL
 	};
-
 	return kcall->thread_create_auto(&pk_ctsk);
 }
 
 static void proxy(void)
 {
-	sleep(1);
+	nsleep(1000 * 1000);
 	exec_init(INIT_PID, INIT_PATH_NAME);
 }
 
 //TODO extract to libserv
-static unsigned int sleep(unsigned int second)
+static unsigned int nsleep(unsigned int nsec)
 {
-	struct timespec t = { second, 0 };
+	struct timespec t = { 0, nsec };
 	ER_UINT reply_size = kcall->port_call(PORT_TIMER, &t, sizeof(t));
-
 	if (reply_size == sizeof(ER)) {
 		ER *result = (ER*)&t;
-
 		switch (*result) {
 		case E_TMOUT:
 			return 0;
-
 		case E_PAR:
-			return second;
-
+			return nsec;
 		case E_NOMEM:
-			return second;
-
+			return nsec;
 		default:
 			break;
 		}
 	}
 
-	return second;
+	return nsec;
 }
 
 static void doit(void)
 {
 	for (;;) {
-		mm_args_t args;
-		mm_reply_t reply;
 		RDVNO rdvno;
-		int result;
+		mm_args_t args;
 		ER_UINT size = kcall->port_accept(PORT_MM, &rdvno, &args);
-
 		if (size < 0) {
 			log_err(MYNAME ": receive failed %d\n", size);
 			break;
 		}
 
+		mm_reply_t reply;
+		int result;
 		if (size != sizeof(mm_args_t)) {
 			reply.result = -1;
 			reply.data[0] = EINVAL;

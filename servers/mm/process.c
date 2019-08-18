@@ -49,23 +49,11 @@ static tree_t thread_tree;
 static slab_t process_group_slab;
 static tree_t process_group_tree;
 
-static void process_clear(mm_process_t *p);
-static void thread_clear(mm_thread_t *th, mm_process_t *p);
-static ER_ID create_thread(mm_process_t *p, FP entry, VP ustack_top);
 static int process_find_new_pid(void);
+static void process_clear(mm_process_t *p);
+static ER_ID create_thread(mm_process_t *p, FP entry, VP ustack_top);
+static void thread_clear(mm_thread_t *th, mm_process_t *p);
 
-
-mm_process_t *get_process(const ID pid)
-{
-	node_t *node = tree_get(&process_tree, pid);
-	return (node ? (mm_process_t*)getParent(mm_process_t, node) : NULL);
-}
-
-mm_thread_t *get_thread(const ID tid)
-{
-	node_t *node = tree_get(&thread_tree, tid);
-	return (node ? (mm_thread_t*)getParent(mm_thread_t, node) : NULL);
-}
 
 static inline mm_thread_t *getMyThread(const list_t *p)
 {
@@ -93,35 +81,6 @@ static inline mm_process_group_t *getProcessGroupFromMembers(const list_t *p)
 			- offsetof(mm_process_group_t, members));
 }
 */
-
-static void process_clear(mm_process_t *p)
-{
-	p->segments.heap.attr = attr_nil;
-
-	if (p->directory) {
-		kcall->pfree(p->directory);
-		p->directory = NULL;
-	}
-
-	//TODO take over fields when duplicate?
-	list_initialize(&(p->threads));
-	//TODO leave on exec
-	tree_create(&(p->descriptors), NULL);
-	tree_create(&(p->sessions), NULL);
-	list_initialize(&(p->brothers));
-	list_initialize(&(p->children));
-	list_initialize(&(p->members));
-	p->local = NULL;
-	p->rdvno = 0;
-	p->name[0] = '\0';
-}
-
-static void thread_clear(mm_thread_t *th, mm_process_t *p)
-{
-	th->process_id = p->node.key;
-	th->stack.attr = attr_nil;
-	list_append(&(p->threads), &(th->brothers));
-}
 
 void process_initialize(void)
 {
@@ -162,6 +121,12 @@ void process_initialize(void)
 	tree_create(&process_group_tree, NULL);
 }
 
+mm_process_t *process_find(const ID pid)
+{
+	node_t *node = tree_get(&process_tree, pid);
+	return (node ? (mm_process_t*)getParent(mm_process_t, node) : NULL);
+}
+
 mm_process_t *process_duplicate(mm_process_t *src)
 {
 	do {
@@ -172,7 +137,7 @@ mm_process_t *process_duplicate(mm_process_t *src)
 			break;
 		}
 
-		mm_process_t *dest = get_process(pid);
+		mm_process_t *dest = process_find(pid);
 		//TODO check duplicated process_id
 		if (!dest) {
 			dest = (mm_process_t*)slab_alloc(&process_slab);
@@ -270,194 +235,7 @@ mm_process_t *process_duplicate(mm_process_t *src)
 	return NULL;
 }
 
-int process_destroy(mm_process_t *proc, const int status)
-{
-	proc->exit_status = status;
-
-	for (;;) {
-		list_t *thread = list_pick(&(proc->threads));
-		if (!thread)
-			break;
-
-		mm_thread_t *th = getMyThread(thread);
-		kcall->thread_terminate(th->node.key);
-		kcall->thread_destroy(th->node.key);
-		tree_remove(&thread_tree, th->node.key);
-	}
-
-	mm_process_t *parent = get_process(proc->ppid);
-	if (parent) {
-		if (parent->rdvno) {
-			log_info("mm: %d release parent %d\n",
-					proc->node.key, proc->ppid);
-			process_release_body(parent);
-		} else {
-			log_info("mm: %d parent not wait destroy\n",
-					proc->node.key);
-		}
-	} else {
-		//TODO what to do?
-		log_info("mm: %d no parent destroy\n", proc->node.key);
-	}
-
-//TODO if current process is 'init'?
-	parent = get_process(INIT_PID);
-	if (parent) {
-		bool found = false;
-		for (;;) {
-			list_t *child = list_pick(&(proc->children));
-			if (!child)
-				break;
-
-			mm_process_t *p = getProcessFromBrothers(child);
-			p->ppid = INIT_PID;
-			list_append(&(parent->children), child);
-			found = true;
-		}
-
-		if (found) {
-			if (parent->rdvno)
-				process_release_body(parent);
-		}
-	} else {
-		//TODO what to do?
-	}
-
-	//TODO release resources
-	return 0;
-}
-
-int process_release_body(mm_process_t *proc)
-{
-//TODO list_insert dead child on exit
-	if (list_is_empty(&(proc->children))) {
-		log_info("mm: %d no child release body\n", proc->node.key);
-		return ECHILD;
-	}
-
-	for (list_t *child= list_next(&(proc->children));
-			!list_is_edge(&(proc->children), child);
-			child = list_next(child)) {
-		mm_process_t *p = getProcessFromBrothers(child);
-		if (!list_is_empty(&(p->threads)))
-			continue;
-
-		RDVNO rdvno = proc->rdvno;
-		mm_reply_t reply = {
-			p->node.key,
-			{ p->exit_status & 0xff }
-		};
-
-		proc->rdvno = 0;
-		list_remove(child);
-		if (!tree_remove(&process_tree, p->node.key)) {
-			//TODO what to do?
-		}
-
-		slab_free(&process_slab, p);
-
-		ER result = kcall->port_reply(rdvno, &reply, sizeof(reply));
-		if (result)
-			log_err("mm: %d failed to release body(%d)\n",
-					proc->node.key, result);
-
-		log_info("mm: %d success release body\n", proc->node.key);
-		return 0;
-	}
-
-	log_info("mm: %d not found release body\n", proc->node.key);
-	return 0;
-}
-
-static ER_ID create_thread(mm_process_t *p, FP entry, VP ustack_top)
-{
-	T_CTSK pk_ctsk = {
-		TA_HLNG,
-		(VP_INT)NULL,
-		entry,
-		pri_user_foreground,
-		KTHREAD_STACK_SIZE,
-		NULL,
-		p->directory,
-		ustack_top
-	};
-
-	p->segments.stack.addr = (void*)pageRoundDown(LOCAL_ADDR
-			- USER_STACK_MAX_SIZE);
-	p->segments.stack.len = pageRoundUp(USER_STACK_INITIAL_SIZE);
-	p->segments.stack.max = pageRoundUp(USER_STACK_MAX_SIZE - PAGE_SIZE);
-	p->segments.stack.attr = type_stack;
-
-	return kcall->thread_create_auto(&pk_ctsk);
-}
-
-int thread_create(mm_process_t *process, FP entry, VP stack)
-{
-	do {
-		ER_ID result;
-		mm_thread_t *th;
-
-		if (map_user_pages(process->directory,
-				(VP)pageRoundDown(LOCAL_ADDR - USER_STACK_INITIAL_SIZE - PAGE_SIZE),
-				pages(pageRoundUp(USER_STACK_INITIAL_SIZE)))) {
-//			reply->data[0] = ENOMEM;
-			break;
-		}
-
-		result = create_thread(process, entry, stack);
-		if (result < 0) {
-//			reply->data[0] = ECONNREFUSED;
-			break;
-		}
-
-		//TODO check duplicated thread_id
-		th = (mm_thread_t*)slab_alloc(&thread_slab);
-		if (!th) {
-			kcall->thread_destroy(result);
-//			reply->data[0] = ENOMEM;
-			break;
-		}
-
-		if (tree_put(&thread_tree, result, (node_t*)th))
-			thread_clear(th, process);
-		else {
-			slab_free(&thread_slab, th);
-			kcall->thread_destroy(result);
-//			reply->data[0] = EBUSY;
-			break;
-		}
-
-		//TODO only main thread
-		if (process->local)
-				process->local->thread_id = result;
-
-		return result;
-	} while (false);
-
-//TODO unmap
-	return -1;
-}
-//TODO delete thread
-//TODO delete process
-
-int mm_thread_find(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
-{
-	do {
-		mm_thread_t *th = get_thread((ID)args->arg1);
-		if (!th) {
-			reply->data[0] = ESRCH;
-			break;
-		}
-
-		reply->data[0] = EOK;
-		reply->result = th->process_id;
-		return reply_success;
-	} while (FALSE);
-
-	reply->result = -1;
-	return reply_failure;
-}
-
+//TODO from process_duplicate
 static int process_find_new_pid(void)
 {
 	for (int id = INIT_PID; id < PROCESS_MAX; id++)
@@ -465,120 +243,6 @@ static int process_find_new_pid(void)
 			return id;
 
 	return -1;
-}
-
-int create_init(const pid_t pid)
-{
-	//TODO check duplicated process_id
-	//TODO key must not be 0
-
-	mm_process_t *p = (mm_process_t*)slab_alloc(&process_slab);
-	if (!p)
-		return ENOMEM;
-
-	if (!tree_put(&process_tree, pid, (node_t*)p)) {
-		slab_free(&process_slab, p);
-		return EBUSY;
-	}
-
-	//TODO adhoc
-	p->directory = NULL;
-	process_clear(p);
-
-	//TODO check NULL
-	p->directory = copy_kernel_page_table();
-
-	unsigned int start = pageRoundDown(0);
-	unsigned int end = pageRoundUp((unsigned int)0 + (unsigned int)0);
-	if (map_user_pages(p->directory, (VP)start, pages(end - start)))
-		return ENOMEM;
-
-	p->segments.heap.addr = (void*)end;
-	p->segments.heap.len = 0;
-	p->segments.heap.max = pageRoundUp(0) - end;
-	p->segments.heap.attr = type_heap;
-
-	p->ppid = INIT_PPID;
-	p->pgid = INIT_PID;
-	p->uid = INIT_UID;
-	p->gid = INIT_GID;
-	p->session = NULL;
-	p->wd = NULL;
-
-	mm_process_group_t *pg = slab_alloc(&process_group_slab);
-	if (pg) {
-		list_initialize(&(pg->members));
-		if (!tree_put(&process_group_tree, INIT_PID, (node_t*)pg)) {
-			//TODO what to do?
-			slab_free(&process_group_slab, pg);
-		}
-	}
-
-	if (map_user_pages(p->directory, (void*)LOCAL_ADDR,
-			pages(sizeof(*(p->local))))) {
-		return ENOMEM;
-	}
-
-	p->local = getPageAddress(kern_p2v(p->directory), (void*)LOCAL_ADDR);
-	memset(p->local, 0, sizeof(*(p->local)));
-	p->local->pid = p->node.key;
-	p->local->ppid = p->ppid;
-	p->local->uid = p->uid;
-	p->local->gid = p->gid;
-	p->local->wd_len = 1;
-	strcpy(p->local->wd, "/");
-
-	mm_descriptor_t *d = process_create_file();
-	if (d) {
-		mm_file_t *f = d->file;
-		f->server_id = PORT_CONSOLE;
-		//TODO open
-		f->node.key = 0;
-		f->f_flag = O_RDONLY;
-		f->f_count = 1;
-		f->f_offset = 0;
-		if (process_set_desc(p, STDIN_FILENO, d)) {
-			//TODO what to do?
-			process_deallocate_file(f);
-			process_deallocate_desc(d);
-		}
-	}
-
-	d = process_create_file();
-	if (d) {
-		mm_file_t *f = d->file;
-		f->server_id = PORT_CONSOLE;
-		//TODO open
-		f->node.key = 0;
-		f->f_flag = O_WRONLY;
-		f->f_count = 1;
-		f->f_offset = 0;
-		if (process_set_desc(p, STDOUT_FILENO, d)) {
-			//TODO what to do?
-			process_deallocate_file(f);
-			process_deallocate_desc(d);
-		}
-
-		d = process_allocate_desc();
-		if (d) {
-			if (process_set_desc(p, STDERR_FILENO, d))
-				//TODO what to do?
-				process_deallocate_desc(d);
-			else {
-				d->file = f;
-				f->f_count++;
-			}
-		}
-	}
-#if 0
-	log_info("c %d %x->%x, %x->%x pp=%d pg=%d u=%d g=%d n=%s\n",
-			p->node.key,
-			&p->brothers, p->brothers.next,
-			&p->members, p->members.next,
-			p->ppid, p->pgid, p->uid, p->gid,
-			p->name);
-#endif
-	return 0;
 }
 
 int process_replace(mm_process_t *process,
@@ -670,4 +334,346 @@ int process_replace(mm_process_t *process,
 	*thread_id = th->node.key;
 
 	return 0;
+}
+
+int process_release_body(mm_process_t *proc)
+{
+//TODO list_insert dead child on exit
+	if (list_is_empty(&(proc->children))) {
+		log_info("mm: %d no child release body\n", proc->node.key);
+		return ECHILD;
+	}
+
+	for (list_t *child= list_next(&(proc->children));
+			!list_is_edge(&(proc->children), child);
+			child = list_next(child)) {
+		mm_process_t *p = getProcessFromBrothers(child);
+		if (!list_is_empty(&(p->threads)))
+			continue;
+
+		RDVNO rdvno = proc->rdvno;
+		mm_reply_t reply = {
+			p->node.key,
+			{ p->exit_status & 0xff }
+		};
+
+		proc->rdvno = 0;
+		list_remove(child);
+		if (!tree_remove(&process_tree, p->node.key)) {
+			//TODO what to do?
+		}
+
+		slab_free(&process_slab, p);
+
+		ER result = kcall->port_reply(rdvno, &reply, sizeof(reply));
+		if (result)
+			log_err("mm: %d failed to release body(%d)\n",
+					proc->node.key, result);
+
+		log_info("mm: %d success release body\n", proc->node.key);
+		return 0;
+	}
+
+	log_info("mm: %d not found release body\n", proc->node.key);
+	return 0;
+}
+
+int process_destroy(mm_process_t *proc, const int status)
+{
+	proc->exit_status = status;
+
+	for (;;) {
+		list_t *thread = list_pick(&(proc->threads));
+		if (!thread)
+			break;
+
+		mm_thread_t *th = getMyThread(thread);
+		kcall->thread_terminate(th->node.key);
+		kcall->thread_destroy(th->node.key);
+		tree_remove(&thread_tree, th->node.key);
+	}
+
+	mm_process_t *parent = process_find(proc->ppid);
+	if (parent) {
+		if (parent->rdvno) {
+			log_info("mm: %d release parent %d\n",
+					proc->node.key, proc->ppid);
+			process_release_body(parent);
+		} else {
+			log_info("mm: %d parent not wait destroy\n",
+					proc->node.key);
+		}
+	} else {
+		//TODO what to do?
+		log_info("mm: %d no parent destroy\n", proc->node.key);
+	}
+
+//TODO if current process is 'init'?
+	parent = process_find(INIT_PID);
+	if (parent) {
+		bool found = false;
+		for (;;) {
+			list_t *child = list_pick(&(proc->children));
+			if (!child)
+				break;
+
+			mm_process_t *p = getProcessFromBrothers(child);
+			p->ppid = INIT_PID;
+			list_append(&(parent->children), child);
+			found = true;
+		}
+
+		if (found) {
+			if (parent->rdvno)
+				process_release_body(parent);
+		}
+	} else {
+		//TODO what to do?
+	}
+
+	//TODO release resources
+	return 0;
+}
+
+int create_init(const pid_t pid)
+{
+	//TODO check duplicated process_id
+	//TODO key must not be 0
+
+	mm_process_t *p = (mm_process_t*)slab_alloc(&process_slab);
+	if (!p)
+		return ENOMEM;
+
+	if (!tree_put(&process_tree, pid, (node_t*)p)) {
+		slab_free(&process_slab, p);
+		return EBUSY;
+	}
+
+	//TODO adhoc
+	p->directory = NULL;
+	process_clear(p);
+
+	//TODO check NULL
+	p->directory = copy_kernel_page_table();
+
+	unsigned int start = pageRoundDown(0);
+	unsigned int end = pageRoundUp((unsigned int)0 + (unsigned int)0);
+	if (map_user_pages(p->directory, (VP)start, pages(end - start)))
+		return ENOMEM;
+
+	p->segments.heap.addr = (void*)end;
+	p->segments.heap.len = 0;
+	p->segments.heap.max = pageRoundUp(0) - end;
+	p->segments.heap.attr = type_heap;
+
+	p->ppid = INIT_PPID;
+	p->pgid = INIT_PID;
+	p->uid = INIT_UID;
+	p->gid = INIT_GID;
+	p->session = NULL;
+	p->wd = NULL;
+
+	mm_process_group_t *pg = slab_alloc(&process_group_slab);
+	if (pg) {
+		list_initialize(&(pg->members));
+		if (!tree_put(&process_group_tree, INIT_PID, (node_t*)pg)) {
+			//TODO what to do?
+			slab_free(&process_group_slab, pg);
+		}
+	}
+
+	if (map_user_pages(p->directory, (void*)LOCAL_ADDR,
+			pages(sizeof(*(p->local))))) {
+		return ENOMEM;
+	}
+
+	p->local = getPageAddress(kern_p2v(p->directory), (void*)LOCAL_ADDR);
+	memset(p->local, 0, sizeof(*(p->local)));
+	p->local->pid = p->node.key;
+	p->local->ppid = p->ppid;
+	p->local->uid = p->uid;
+	p->local->gid = p->gid;
+	p->local->wd_len = 1;
+	strcpy(p->local->wd, "/");
+
+	mm_descriptor_t *d = process_create_dummy_file();
+	if (d) {
+		mm_file_t *f = d->file;
+		f->server_id = PORT_CONSOLE;
+		//TODO open
+		f->node.key = 0;
+		f->f_flag = O_RDONLY;
+		f->f_count = 1;
+		f->f_offset = 0;
+		if (process_set_desc(p, STDIN_FILENO, d)) {
+			//TODO what to do?
+			session_deallocate_file(f);
+			process_deallocate_desc(d);
+		}
+	}
+
+	//TODO create dummy session
+	d = process_create_dummy_file();
+	if (d) {
+		mm_file_t *f = d->file;
+		f->server_id = PORT_CONSOLE;
+		//TODO open
+		f->node.key = 0;
+		f->f_flag = O_WRONLY;
+		f->f_count = 1;
+		f->f_offset = 0;
+		if (process_set_desc(p, STDOUT_FILENO, d)) {
+			//TODO what to do?
+			session_deallocate_file(f);
+			process_deallocate_desc(d);
+		}
+
+		d = process_allocate_desc();
+		if (d) {
+			if (process_set_desc(p, STDERR_FILENO, d))
+				//TODO what to do?
+				process_deallocate_desc(d);
+			else {
+				d->file = f;
+				f->f_count++;
+			}
+		}
+	}
+#if 0
+	log_info("c %d %x->%x, %x->%x pp=%d pg=%d u=%d g=%d n=%s\n",
+			p->node.key,
+			&p->brothers, p->brothers.next,
+			&p->members, p->members.next,
+			p->ppid, p->pgid, p->uid, p->gid,
+			p->name);
+#endif
+	return 0;
+}
+
+//TODO from process_duplicate, create_init
+static void process_clear(mm_process_t *p)
+{
+	p->segments.heap.attr = attr_nil;
+
+	if (p->directory) {
+		kcall->pfree(p->directory);
+		p->directory = NULL;
+	}
+
+	//TODO take over fields when duplicate?
+	list_initialize(&(p->threads));
+	//TODO leave on exec
+	tree_create(&(p->descriptors), NULL);
+	tree_create(&(p->sessions), NULL);
+	list_initialize(&(p->brothers));
+	list_initialize(&(p->children));
+	list_initialize(&(p->members));
+	p->local = NULL;
+	p->rdvno = 0;
+	p->name[0] = '\0';
+}
+
+mm_thread_t *thread_find(const ID tid)
+{
+	node_t *node = tree_get(&thread_tree, tid);
+	return (node ? (mm_thread_t*)getParent(mm_thread_t, node) : NULL);
+}
+
+int thread_create(mm_process_t *process, FP entry, VP stack)
+{
+	do {
+		ER_ID result;
+		mm_thread_t *th;
+
+		if (map_user_pages(process->directory,
+				(VP)pageRoundDown(LOCAL_ADDR - USER_STACK_INITIAL_SIZE - PAGE_SIZE),
+				pages(pageRoundUp(USER_STACK_INITIAL_SIZE)))) {
+//			reply->data[0] = ENOMEM;
+			break;
+		}
+
+		result = create_thread(process, entry, stack);
+		if (result < 0) {
+//			reply->data[0] = ECONNREFUSED;
+			break;
+		}
+
+		//TODO check duplicated thread_id
+		th = (mm_thread_t*)slab_alloc(&thread_slab);
+		if (!th) {
+			kcall->thread_destroy(result);
+//			reply->data[0] = ENOMEM;
+			break;
+		}
+
+		if (tree_put(&thread_tree, result, (node_t*)th))
+			thread_clear(th, process);
+		else {
+			slab_free(&thread_slab, th);
+			kcall->thread_destroy(result);
+//			reply->data[0] = EBUSY;
+			break;
+		}
+
+		//TODO only main thread
+		if (process->local)
+				process->local->thread_id = result;
+
+		return result;
+	} while (false);
+
+//TODO unmap
+	return -1;
+}
+//TODO delete thread
+//TODO delete process
+
+//TODO from process_replace, thread_create
+static ER_ID create_thread(mm_process_t *p, FP entry, VP ustack_top)
+{
+	T_CTSK pk_ctsk = {
+		TA_HLNG,
+		(VP_INT)NULL,
+		entry,
+		pri_user_foreground,
+		KTHREAD_STACK_SIZE,
+		NULL,
+		p->directory,
+		ustack_top
+	};
+
+	p->segments.stack.addr = (void*)pageRoundDown(LOCAL_ADDR
+			- USER_STACK_MAX_SIZE);
+	p->segments.stack.len = pageRoundUp(USER_STACK_INITIAL_SIZE);
+	p->segments.stack.max = pageRoundUp(USER_STACK_MAX_SIZE - PAGE_SIZE);
+	p->segments.stack.attr = type_stack;
+
+	return kcall->thread_create_auto(&pk_ctsk);
+}
+
+//TODO from process_replace, thread_create
+static void thread_clear(mm_thread_t *th, mm_process_t *p)
+{
+	th->process_id = p->node.key;
+	th->stack.attr = attr_nil;
+	th->process = p;
+	list_append(&(p->threads), &(th->brothers));
+}
+
+int mm_thread_find(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+{
+	do {
+		mm_thread_t *th = thread_find((ID)args->arg1);
+		if (!th) {
+			reply->data[0] = ESRCH;
+			break;
+		}
+
+		reply->data[0] = EOK;
+		reply->result = th->process_id;
+		return reply_success;
+	} while (FALSE);
+
+	reply->result = -1;
+	return reply_failure;
 }

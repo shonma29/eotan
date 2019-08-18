@@ -58,10 +58,10 @@ ER stack_fault_handler(void)
 
 static void expand_stack(const int tid, const int addr)
 {
-	mm_thread_t *th = get_thread(tid);
+	mm_thread_t *th = thread_find(tid);
 
 	if (th) {
-		mm_process_t *p = get_process(th->process_id);
+		mm_process_t *p = get_process(th);
 		mm_segment_t *s;
 		void *start;
 
@@ -100,14 +100,14 @@ static void expand_stack(const int tid, const int addr)
 
 static void kill(const int tid, const int dummy)
 {
-	mm_thread_t *th = get_thread(tid);
+	mm_thread_t *th = thread_find(tid);
 
 	if (!th) {
 		log_warning("mm: kill unknown thread=%d\n", tid);
 		return;
 	}
 
-	mm_process_t *p = get_process(tid);
+	mm_process_t *p = get_process(th);
 	if (p)
 		process_destroy(p, 9);
 }

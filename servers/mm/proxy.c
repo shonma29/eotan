@@ -41,100 +41,75 @@ char pathbuf1[PATH_MAX];
 char pathbuf2[PATH_MAX];
 
 static char *split_path(const char *path, char **parent_path);
+static int call_device(const int, devmsg_t *, const size_t, const int,
+		const size_t);
+static int create_tag(void);
 
 
-int attach(mm_process_t *process, const int thread_id)
+int _attach(mm_process_t *process, const int thread_id)
 {
 	mm_session_t *session = session_create();
 	if (!session)
 		return ENOMEM;
 
-	int fid = session_find_new_fid(session);
-	if (fid == -1) {
-		session_destroy(session);
-		return ENOMEM;
-	}
-
-	mm_file_t *f = process_allocate_file();
-	if (!f) {
+	mm_file_t *file = session_create_file(session);
+	if (!file) {
 		session_destroy(session);
 		return ENOMEM;
 	}
 
 	devmsg_t message;
 	message.header.type = Tattach;
-	message.header.token = thread_id | session->node.key;
+	message.header.token = create_token(thread_id, session);
 	message.Tattach.tag = create_tag();
-	message.Tattach.fid = fid;
+	message.Tattach.fid = file->node.key;
 	message.Tattach.afid = NOFID;
 	message.Tattach.uname = (char*)(process->uid);
 	message.Tattach.aname = (char*)"/";
 
 	int result = call_device(PORT_FS, &message, MESSAGE_SIZE(Tattach),
 			Rattach, MESSAGE_SIZE(Rattach));
+	//log_info("mm: attach[sid=%d fid=%d] %d\n", session->node.key,
+	//		file->node.key, result);
+
 	if (result) {
-		log_err("mm: attach(%x) %d\n", fid, result);
-		process_deallocate_file(f);
+		log_err("mm: attach(%x) %d\n", file->node.key, result);
+		session_destroy_file(session, file);
 		session_destroy(session);
 		return result;
 	}
 
-	f->server_id = PORT_FS;
-	f->f_flag = O_ACCMODE;
-	f->f_count = 1;
-	f->f_offset = 0;
-
-	result = session_add_file(session, fid, f);
-	if (result) {
-		//TODO what to do?
-	}
-log_info("mm: attach(%p fid=%d) %d\n", session, fid, result);
-
-	process->wd = f;
+	file->server_id = PORT_FS;
+	file->f_flag = O_ACCMODE;
+	file->f_count = 1;
+	file->f_offset = 0;
+	process->wd = file;
 	process->session = session;
-
 	return 0;
 }
 
 int mm_open(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
-		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
+		mm_thread_t *th = thread_find(get_rdv_tid(rdvno));
 		if (!th) {
 			//TODO use other errno
 			reply->data[0] = ESRCH;
 			break;
 		}
 
-		mm_process_t *process = get_process(th->process_id);
-		if (!process) {
-			//TODO use other errno
-			reply->data[0] = ESRCH;
-			break;
-		}
-
-		int fd = process_find_new_fd(process);
-		if (fd == -1) {
-			reply->data[0] = ENOMEM;
-			break;
-		}
-
-		mm_descriptor_t *desc = process_allocate_desc();
+		mm_process_t *process = get_process(th);
+		mm_descriptor_t *desc = process_create_desc(process);
 		if (!desc) {
 			reply->data[0] = ENOMEM;
 			break;
 		}
 
-		if (process_set_desc(process, fd, desc)) {
-			process_deallocate_desc(desc);
-			//TODO use nother errno
-			reply->data[0] = ENOMEM;
-			break;
-		}
-
+		int fd = desc->node.key;
 		mm_file_t *file;
-		int result = _walk(process, th->node.key, (char*)(args->arg1),
-				&file);
+		devmsg_t message;
+		int result = _walk(&file, process, th->node.key,
+				(char*)(args->arg1), &message);
 		if (result) {
 			process_destroy_desc(process, fd);
 			reply->data[0] = result;
@@ -142,28 +117,18 @@ int mm_open(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		}
 
 		desc->file = file;
-		int oflag = args->arg2;
-		devmsg_t message;
-		message.header.type = Topen;
-		message.header.token = (th->node.key << 16)
-				| process->session->node.key;
-		message.Topen.tag = create_tag();
-		message.Topen.fid = file->node.key;
-		message.Topen.mode = oflag;
-		result = call_device(file->server_id, &message,
-				MESSAGE_SIZE(Topen),
-				Ropen, MESSAGE_SIZE(Ropen));
-		log_err("proxy: %d open[%d:%d] %d\n",
-				process->node.key, fd, file->node.key, result);
 
+		int token = create_token(th->node.key, process->session);
+		int oflag = args->arg2;
+		result = _open(file, token, oflag, &message);
+//		log_info("proxy: %d open[%d:%d] %d\n",
+//				process->node.key, fd, file->node.key, result);
 		if (result) {
 			desc->file = NULL;
 			process_destroy_desc(process, fd);
 
-			message.header.token = (th->node.key << 16)
-					| process->session->node.key;
-			message.Tclunk.tag = create_tag();
-			int error_no = _clunk(process->session, file, &message);
+			int error_no = _clunk(process->session, file, token,
+					&message);
 			if (error_no) {
 				//TODO what to do?
 			}
@@ -188,20 +153,14 @@ int mm_open(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
-		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
+		mm_thread_t *th = thread_find(get_rdv_tid(rdvno));
 		if (!th) {
 			//TODO use other errno
 			reply->data[0] = ESRCH;
 			break;
 		}
 
-		mm_process_t *process = get_process(th->process_id);
-		if (!process) {
-			//TODO use other errno
-			reply->data[0] = ESRCH;
-			break;
-		}
-
+		mm_process_t *process = get_process(th);
 		ER_UINT len = kcall->region_copy(th->node.key,
 				(char*)(args->arg1), PATH_MAX, pathbuf1);
 		if (len < 0) {
@@ -214,30 +173,19 @@ int mm_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-		int fd = process_find_new_fd(process);
-		if (fd == -1) {
-			reply->data[0] = ENOMEM;
-			break;
-		}
-
-		mm_descriptor_t *desc = process_allocate_desc();
+		mm_descriptor_t *desc = process_create_desc(process);
 		if (!desc) {
 			reply->data[0] = ENOMEM;
 			break;
 		}
 
-		if (process_set_desc(process, fd, desc)) {
-			process_deallocate_desc(desc);
-			//TODO use nother errno
-			reply->data[0] = ENOMEM;
-			break;
-		}
-
+		int fd = desc->node.key;
 		char *parent_path = "";
 		char *head = split_path(pathbuf1, &parent_path);
 		mm_file_t *file;
-		int result = _walk(process, kcall->thread_get_id(),
-				parent_path, &file);
+		devmsg_t message;
+		int result = _walk(&file, process, kcall->thread_get_id(),
+				parent_path, &message);
 		if (result) {
 			process_destroy_desc(process, fd);
 			reply->data[0] = result;
@@ -246,10 +194,10 @@ int mm_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 
 		int fid = file->node.key;
 		int oflag = args->arg2;
-		devmsg_t message;
+		int token = create_token(kcall->thread_get_id(),
+				process->session);
 		message.header.type = Tcreate;
-		message.header.token = (kcall->thread_get_id() << 16)
-				| process->session->node.key;
+		message.header.token = token;
 		message.Tcreate.tag = create_tag();
 		message.Tcreate.fid = fid;
 		message.Tcreate.name = head;
@@ -258,16 +206,14 @@ int mm_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		result = call_device(file->server_id, &message,
 				MESSAGE_SIZE(Tcreate),
 				Rcreate, MESSAGE_SIZE(Rcreate));
-		log_info("proxy: %d create[%d:%d] %d\n",
-				process->node.key, fd, fid, result);
+//		log_info("proxy: %d create[%d:%d] %d\n",
+//				process->node.key, fd, fid, result);
 
 		if (result) {
 			process_destroy_desc(process, fd);
 
-			message.header.token = (kcall->thread_get_id() << 16)
-					| process->session->node.key;
-			message.Tclunk.tag = create_tag();
-			int error_no = _clunk(process->session, file, &message);
+			int error_no = _clunk(process->session, file, token,
+					&message);
 			if (error_no) {
 				//TODO what to do?
 			}
@@ -311,20 +257,14 @@ static char *split_path(const char *path, char **parent_path)
 int mm_read(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
-		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
+		mm_thread_t *th = thread_find(get_rdv_tid(rdvno));
 		if (!th) {
 			//TODO use other errno
 			reply->data[0] = ESRCH;
 			break;
 		}
 
-		mm_process_t *process = get_process(th->process_id);
-		if (!process) {
-			//TODO use other errno
-			reply->data[0] = ESRCH;
-			break;
-		}
-
+		mm_process_t *process = get_process(th);
 		mm_descriptor_t *desc = process_find_desc(process, args->arg1);
 		if (!desc) {
 			reply->data[0] = EBADF;
@@ -333,18 +273,10 @@ int mm_read(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 
 		mm_file_t *file = desc->file;
 		devmsg_t message;
-		message.header.type = Tread;
-		message.header.token = (th->node.key << 16)
-				| process->session->node.key;
-		message.Tread.tag = create_tag();
-		message.Tread.fid = file->node.key;
-		message.Tread.offset = file->f_offset;
-		message.Tread.count = args->arg3;
-		message.Tread.data = (char*)(args->arg2);
-
-		int result = call_device(file->server_id, &message,
-				MESSAGE_SIZE(Tread),
-				Rread, MESSAGE_SIZE(Rread));
+		int result = _read(file,
+				create_token(th->node.key, process->session),
+				file->f_offset, args->arg3, (char*)(args->arg2),
+				&message);
 		if (result) {
 			reply->data[0] = result;
 			break;
@@ -364,20 +296,14 @@ int mm_read(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_write(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
-		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
+		mm_thread_t *th = thread_find(get_rdv_tid(rdvno));
 		if (!th) {
 			//TODO use other errno
 			reply->data[0] = ESRCH;
 			break;
 		}
 
-		mm_process_t *process = get_process(th->process_id);
-		if (!process) {
-			//TODO use other errno
-			reply->data[0] = ESRCH;
-			break;
-		}
-
+		mm_process_t *process = get_process(th);
 		mm_descriptor_t *desc = process_find_desc(process, args->arg1);
 		if (!desc) {
 			reply->data[0] = EBADF;
@@ -387,8 +313,8 @@ int mm_write(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		mm_file_t *file = desc->file;
 		devmsg_t message;
 		message.header.type = Twrite;
-		message.header.token = (th->node.key << 16)
-				| process->session->node.key;
+		message.header.token = create_token(th->node.key,
+				process->session);
 		message.Twrite.tag = create_tag();
 		message.Twrite.fid = file->node.key;
 		message.Twrite.offset = file->f_offset;
@@ -417,20 +343,14 @@ int mm_write(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_close(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
-		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
+		mm_thread_t *th = thread_find(get_rdv_tid(rdvno));
 		if (!th) {
 			//TODO use other errno
 			reply->data[0] = ESRCH;
 			break;
 		}
 
-		mm_process_t *process = get_process(th->process_id);
-		if (!process) {
-			//TODO use other errno
-			reply->data[0] = ESRCH;
-			break;
-		}
-
+		mm_process_t *process = get_process(th);
 		int fd = args->arg1;
 		mm_descriptor_t *desc = process_find_desc(process, fd);
 		if (!desc) {
@@ -445,10 +365,9 @@ int mm_close(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		}
 
 		devmsg_t message;
-		message.header.token = (th->node.key << 16)
-				| process->session->node.key;
-		message.Tclunk.tag = create_tag();
-		int result = _clunk(process->session, file, &message);
+		int result = _clunk(process->session, file,
+				create_token(th->node.key, process->session),
+				&message);
 		if (result) {
 			log_err("proxy: %d close[%d:] err %d\n",
 					process->node.key, fd, result);
@@ -456,8 +375,8 @@ int mm_close(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-		log_info("proxy: %d close[%d:] ok\n",
-				process->node.key, fd);
+//		log_info("proxy: %d close[%d:] ok\n",
+//				process->node.key, fd);
 
 		reply->result = 0;
 		reply->data[0] = 0;
@@ -471,46 +390,38 @@ int mm_close(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_remove(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
-		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
+		mm_thread_t *th = thread_find(get_rdv_tid(rdvno));
 		if (!th) {
 			//TODO use other errno
 			reply->data[0] = ESRCH;
 			break;
 		}
 
-		mm_process_t *process = get_process(th->process_id);
-		if (!process) {
-			//TODO use other errno
-			reply->data[0] = ESRCH;
-			break;
-		}
-
+		mm_process_t *process = get_process(th);
 		mm_file_t *file;
-		int result = _walk(process, th->node.key, (char*)(args->arg1),
-				&file);
+		devmsg_t message;
+		int result = _walk(&file, process, th->node.key,
+				(char*)(args->arg1), &message);
 		if (result) {
 			reply->data[0] = result;
 			break;
 		}
 
-		devmsg_t message;
 		message.header.type = Tremove;
-		message.header.token = (th->node.key << 16)
-				| process->session->node.key;
+		message.header.token = create_token(th->node.key,
+				process->session);
 		message.Tremove.tag = create_tag();
 		message.Tremove.fid = file->node.key;
 		result = call_device(file->server_id, &message,
 				MESSAGE_SIZE(Tremove),
 				Rremove, MESSAGE_SIZE(Rremove));
 
-		log_info("proxy: %d remove[:%d] %d\n",
-				process->node.key, file->node.key, result);
+//		log_info("proxy: %d remove[:%d] %d\n",
+//				process->node.key, file->node.key, result);
 
-		if (session_remove_file(process->session, file->node.key)) {
+		if (session_destroy_file(process->session, file)) {
 			//TODO what to do?
 		}
-
-		process_deallocate_file(file);
 
 		if (result) {
 			reply->data[0] = result;
@@ -529,29 +440,24 @@ int mm_remove(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_fstat(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
-		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
+		mm_thread_t *th = thread_find(get_rdv_tid(rdvno));
 		if (!th) {
 			//TODO use other errno
 			reply->data[0] = ESRCH;
 			break;
 		}
 
-		mm_process_t *process = get_process(th->process_id);
-		if (!process) {
-			//TODO use other errno
-			reply->data[0] = ESRCH;
-			break;
-		}
-
+		mm_process_t *process = get_process(th);
 		mm_descriptor_t *desc = process_find_desc(process, args->arg1);
 		if (!desc) {
 			reply->data[0] = EBADF;
 			break;
 		}
 
+		devmsg_t message;
 		int result = _fstat((struct stat *) args->arg2, desc->file,
-				(th->node.key << 16)
-						| process->session->node.key);
+				create_token(th->node.key, process->session),
+				&message);
 		if (result) {
 			reply->data[0] = result;
 			break;
@@ -569,23 +475,18 @@ int mm_fstat(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_chmod(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
-		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
+		mm_thread_t *th = thread_find(get_rdv_tid(rdvno));
 		if (!th) {
 			//TODO use other errno
 			reply->data[0] = ESRCH;
 			break;
 		}
 
-		mm_process_t *process = get_process(th->process_id);
-		if (!process) {
-			//TODO use other errno
-			reply->data[0] = ESRCH;
-			break;
-		}
-
+		mm_process_t *process = get_process(th);
 		mm_file_t *file;
-		int result = _walk(process, th->node.key, (char*)(args->arg1),
-				&file);
+		devmsg_t message;
+		int result = _walk(&file, process, th->node.key,
+				(char*)(args->arg1), &message);
 		if (result) {
 			reply->data[0] = result;
 			break;
@@ -594,10 +495,9 @@ int mm_chmod(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		struct stat st;
 		st.st_mode = args->arg2;
 
-		devmsg_t message;
+		int token = create_token(th->node.key, process->session);
 		message.header.type = Twstat;
-		message.header.token = (th->node.key << 16)
-				| process->session->node.key;
+		message.header.token = token;
 		message.Twstat.tag = create_tag();
 		message.Twstat.fid = file->node.key;
 		message.Twstat.stat = &st;
@@ -605,13 +505,10 @@ int mm_chmod(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 				MESSAGE_SIZE(Twstat),
 				Rwstat, MESSAGE_SIZE(Rwstat));
 
-		int fid = file->node.key;
-		log_info("proxy: %d chmod[:%d] %d\n",
-				process->node.key, fid, result);
-		message.header.token = (th->node.key << 16)
-				| process->session->node.key;
-		message.Tclunk.tag = create_tag();
-		int error_no = _clunk(process->session, file, &message);
+//		int fid = file->node.key;
+//		log_info("proxy: %d chmod[:%d] %d\n",
+//				process->node.key, fid, result);
+		int error_no = _clunk(process->session, file, token, &message);
 		if (error_no) {
 			//TODO what to do?
 		}
@@ -630,8 +527,8 @@ int mm_chmod(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	return reply_failure;
 }
 
-int _walk(mm_process_t *process, const int thread_id, const char *path,
-		mm_file_t **file)
+int _walk(mm_file_t **file, mm_process_t *process, const int thread_id,
+		const char *path, devmsg_t *message)
 {
 	if (!(process->wd))
 		//TODO what to do?
@@ -645,36 +542,25 @@ int _walk(mm_process_t *process, const int thread_id, const char *path,
 	if (len >= PATH_MAX)
 		return ENAMETOOLONG;
 
-	int id = session_find_new_fid(process->session);
-	if (id == -1)
-		return ENOMEM;
-
-	mm_file_t *f = process_allocate_file();
+	mm_file_t *f = session_create_file(process->session);
 	if (!f)
 		return ENOMEM;
 
-	if (session_add_file(process->session, id, f)) {
-		process_deallocate_file(f);
-		//TODO use other errno
-		return ENOMEM;
-	}
+	message->header.type = Twalk;
+	message->header.token = create_token(thread_id, process->session);
+	message->Twalk.tag = create_tag();
+	message->Twalk.fid = process->wd->node.key;
+	message->Twalk.newfid = f->node.key;
+	message->Twalk.nwname = len;
+	message->Twalk.wname = (char*)path;
+//	log_info(MYNAME ": walk %d %d [%s] %d\n", process->session->node.key,
+//			message->Twalk.fid, message->Twalk.wname,
+//			message->Twalk.newfid);
 
-	devmsg_t message;
-	message.header.type = Twalk;
-	message.header.token = (thread_id << 16) | process->session->node.key;
-	message.Twalk.tag = create_tag();
-	message.Twalk.fid = process->wd->node.key;
-	message.Twalk.newfid = id;
-	message.Twalk.nwname = len;
-	message.Twalk.wname = (char*)path;
-	log_info(MYNAME ": walk %d %d [%s] %d\n", process->session->node.key,
-			message.Twalk.fid, message.Twalk.wname,
-			message.Twalk.newfid);
-
-	int result = call_device(process->wd->server_id, &message,
+	int result = call_device(process->wd->server_id, message,
 			MESSAGE_SIZE(Twalk), Rwalk, MESSAGE_SIZE(Rwalk));
 	if (result)
-		process_deallocate_file(f);
+		session_destroy_file(process->session, f);
 	else {
 		*file = f;
 		f->server_id = process->wd->server_id;
@@ -686,41 +572,69 @@ int _walk(mm_process_t *process, const int thread_id, const char *path,
 	return result;
 }
 
-int _clunk(mm_session_t *session, mm_file_t *file, devmsg_t *message)
+int _open(const mm_file_t *file, const int token, const int mode,
+		devmsg_t *message)
+{
+	message->header.type = Topen;
+	message->header.token = token;
+	message->Topen.tag = create_tag();
+	message->Topen.fid = file->node.key;
+	message->Topen.mode = mode;
+	return call_device(file->server_id, message, MESSAGE_SIZE(Topen),
+			Ropen, MESSAGE_SIZE(Ropen));
+}
+
+int _read(const mm_file_t *file, const int token, const off_t offset,
+		const size_t count, char *data, devmsg_t *message)
+{
+	message->header.type = Tread;
+	message->header.token = token;
+	message->Tread.tag = create_tag();
+	message->Tread.fid = file->node.key;
+	message->Tread.offset = offset;
+	message->Tread.count = count;
+	message->Tread.data = data;
+	return call_device(file->server_id, message, MESSAGE_SIZE(Tread),
+			Rread, MESSAGE_SIZE(Rread));
+}
+
+int _clunk(mm_session_t *session, mm_file_t *file, const int token,
+		devmsg_t *message)
 {
 	file->f_count--;
 	if (file->f_count > 0) {
-		log_info("proxy: close[:%d] skip\n", file->node.key);
+//		log_info("proxy: close[:%d] skip\n", file->node.key);
 		return 0;
 	}
 
 	message->header.type = Tclunk;
+	message->header.token = token;
+	message->Tclunk.tag = create_tag();
 	message->Tclunk.fid = file->node.key;
 
 	int result = call_device(file->server_id, message,
 			MESSAGE_SIZE(Tclunk), Rclunk, MESSAGE_SIZE(Rclunk));
 
-	if (session_remove_file(session, file->node.key)) {
+	if (session_destroy_file(session, file)) {
 		//TODO what to do?
 	}
 
-	process_deallocate_file(file);
 	return result;
 }
 
-int _fstat(struct stat *st, const mm_file_t *file, const int token)
+int _fstat(struct stat *st, const mm_file_t *file, const int token,
+		devmsg_t *message)
 {
-	devmsg_t message;
-	message.header.type = Tstat;
-	message.header.token = token;
-	message.Tstat.tag = create_tag();
-	message.Tstat.fid = file->node.key;
-	message.Tstat.stat = st;
-	return call_device(file->server_id, &message, MESSAGE_SIZE(Tstat),
+	message->header.type = Tstat;
+	message->header.token = token;
+	message->Tstat.tag = create_tag();
+	message->Tstat.fid = file->node.key;
+	message->Tstat.stat = st;
+	return call_device(file->server_id, message, MESSAGE_SIZE(Tstat),
 			Rstat, MESSAGE_SIZE(Rstat));
 }
 
-int call_device(const int server_id, devmsg_t *message,
+static int call_device(const int server_id, devmsg_t *message,
 	const size_t tsize, const int rtype, const size_t rsize)
 {
 	ER_UINT size = kcall->port_call(server_id, message, tsize);
@@ -739,4 +653,9 @@ int call_device(const int server_id, devmsg_t *message,
 	}
 
 	return ECONNREFUSED;
+}
+
+static int create_tag(void)
+{
+	return 0;
 }

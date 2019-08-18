@@ -33,9 +33,18 @@ For more information, please refer to <http://unlicense.org/>
 extern char pathbuf1[];
 extern char pathbuf2[];
 
-extern int attach(mm_process_t *, const int);
-extern int _fstat(struct stat *, const mm_file_t *, const int);
-extern int _clunk(mm_session_t *, mm_file_t *, devmsg_t *);
-extern int _walk(mm_process_t *, const int, const char *, mm_file_t **);
+static inline int create_token(const int thread_id, const mm_session_t *session)
+{
+	return ((thread_id << 16) | session->node.key);
+}
+
+extern int _attach(mm_process_t *, const int);
+extern int _walk(mm_file_t **, mm_process_t *, const int, const char *,
+		devmsg_t *);
+extern int _open(const mm_file_t *, const int, const int, devmsg_t *);
+extern int _read(const mm_file_t *, const int, const off_t, const size_t,
+		char *, devmsg_t *);
+extern int _clunk(mm_session_t *, mm_file_t *, const int, devmsg_t *);
+extern int _fstat(struct stat *, const mm_file_t *, const int, devmsg_t *);
 
 #endif

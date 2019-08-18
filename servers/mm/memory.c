@@ -33,7 +33,7 @@ For more information, please refer to <http://unlicense.org/>
 int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
-		mm_process_t *p = get_process((ID)args->arg1);
+		mm_process_t *p = process_find((ID)args->arg1);
 		if (!p) {
 			reply->data[0] = ESRCH;
 			break;
@@ -71,7 +71,7 @@ int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	do {
 		unsigned int currentEnd;
 		unsigned int newEnd;
-		mm_process_t *p = get_process((ID)args->arg1);
+		mm_process_t *p = process_find((ID)args->arg1);
 
 		if (!p) {
 			reply->data[0] = ESRCH;
@@ -104,18 +104,13 @@ int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 int mm_sbrk(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 {
 	do {
-		mm_thread_t *th = get_thread(get_rdv_tid(rdvno));
+		mm_thread_t *th = thread_find(get_rdv_tid(rdvno));
 		if (!th) {
 			reply->data[0] = ESRCH;
 			break;
 		}
 
-		mm_process_t *p = get_process(th->process_id);
-		if (!p) {
-			reply->data[0] = ESRCH;
-			break;
-		}
-
+		mm_process_t *p = get_process(th);
 		mm_segment_t *s = &(p->segments.heap);
 		uintptr_t end = (uintptr_t)(s->addr) + s->len;
 		intptr_t diff = (intptr_t)(args->arg1);

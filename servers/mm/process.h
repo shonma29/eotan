@@ -53,22 +53,22 @@ typedef struct {
 
 typedef struct {
 	node_t node;
-//TODO pointer to process
 	int process_id;
+	void *process;
 	mm_segment_t stack;
 	list_t brothers;
 } mm_thread_t;
 
 typedef struct {
 	node_t node;
-	list_t members;
-} mm_process_group_t;
-
-typedef struct {
-	node_t node;
 	tree_t files;
 	int refer_count;
 } mm_session_t;
+
+typedef struct {
+	node_t node;
+	list_t members;
+} mm_process_group_t;
 
 typedef struct {
 	node_t node;
@@ -95,43 +95,42 @@ typedef struct {
 	char name[32];//TODO set on fork/exec
 } mm_process_t;
 
+static inline mm_process_t *get_process(const mm_thread_t *thread)
+{
+	return ((mm_process_t *)(thread->process));
+}
+
 extern void process_initialize(void);
-extern mm_process_t *get_process(const ID);
-extern mm_thread_t *get_thread(const ID);
+extern mm_process_t *process_find(const ID);
 extern mm_process_t *process_duplicate(mm_process_t *);
-extern int process_destroy(mm_process_t *, const int);
+extern int process_replace(mm_process_t *process, void *address,
+		const size_t size, void *entry, const void *args,
+		const size_t stack_size, int *);
 extern int process_release_body(mm_process_t *);
+extern int process_destroy(mm_process_t *, const int);
+extern int create_init(const pid_t);
+extern mm_thread_t *thread_find(const ID);
 extern int thread_create(mm_process_t *, FP, VP);
-extern int process_replace(mm_process_t *process,
-		void *address, const size_t size,
-		void *entry, const void *args, const size_t stack_size,
-		int *);
 
 extern void file_initialize(void);
 extern mm_session_t *session_create(void);
 extern int session_destroy(mm_session_t *);
-extern mm_descriptor_t *process_create_file(void);
+extern mm_descriptor_t *process_create_dummy_file(void);
+extern mm_descriptor_t *process_create_desc(mm_process_t *);
 extern int process_destroy_desc(mm_process_t *, const int);
 extern int process_set_desc(mm_process_t *, const int, mm_descriptor_t *);
 extern mm_descriptor_t *process_find_desc(const mm_process_t *, const int);
-extern int process_find_new_fd(const mm_process_t *);
 extern mm_descriptor_t *process_allocate_desc(void);
 extern void process_deallocate_desc(mm_descriptor_t *);
-extern int session_add_file(mm_session_t *, const int, mm_file_t *);
-extern int session_remove_file(mm_session_t *, const int);
-extern int session_find_new_fid(mm_session_t *);
-extern mm_file_t *process_allocate_file(void);
-extern void process_deallocate_file(mm_file_t *);
-extern int create_tag(void);
+extern mm_file_t *session_create_file(mm_session_t *);
+extern int session_destroy_file(mm_session_t *, mm_file_t *);
+extern void session_deallocate_file(mm_file_t *);
+
+extern int process_exec(mm_reply_t *, mm_process_t *, const int, mm_args_t *);
+
+extern int exec_init(const pid_t, char *);
 
 extern ER default_handler(void);
 extern ER stack_fault_handler(void);
-
-extern int call_device(const int, devmsg_t *, const size_t, const int,
-		const size_t);
-extern int create_init(const pid_t);
-extern int exec_init(const pid_t, char *);
-
-extern int process_exec(mm_reply_t *, mm_process_t *, const int, mm_args_t *);
 
 #endif

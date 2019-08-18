@@ -84,8 +84,8 @@ int exec_init(const pid_t process_id, char *pathname)
 	args.arg1 = (int)pathname;
 	args.arg2 = (int)p;
 
-	mm_process_t *process = get_process(process_id);
-	result = attach(process, PORT_MM << 16);
+	mm_process_t *process = process_find(process_id);
+	result = _attach(process, PORT_MM << 16);
 	if (result) {
 		//TODO destroy process
 log_info("mm: init attach %d\n", result);

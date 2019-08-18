@@ -39,6 +39,10 @@ static slab_t descriptor_slab;
 static slab_t session_slab;
 static tree_t session_tree;
 
+static int process_find_new_fd(const mm_process_t *);
+static int session_find_new_fid(mm_session_t *);
+static mm_file_t *session_allocate_file(void);
+
 
 void file_initialize(void)
 {
@@ -77,17 +81,17 @@ void file_initialize(void)
 
 mm_session_t *session_create(void)
 {
-	int id;
-	for (id = MIN_SID; id < SESSION_MAX; id++)
-		if (!tree_get(&session_tree, id))
+	int sid;
+	for (sid = MIN_SID; sid < SESSION_MAX; sid++)
+		if (!tree_get(&session_tree, sid))
 			break;
 
-	if (id == SESSION_MAX)
+	if (sid == SESSION_MAX)
 		return NULL;
 
 	mm_session_t *session = (mm_session_t*)slab_alloc(&session_slab);
 	if (session) {
-		if (!tree_put(&session_tree, id, &(session->node))) {
+		if (!tree_put(&session_tree, sid, &(session->node))) {
 			//TODO what to do?
 		}
 
@@ -115,20 +119,38 @@ int session_destroy(mm_session_t *session)
 	return 0;
 }
 
-mm_descriptor_t *process_create_file(void)
+mm_descriptor_t *process_create_dummy_file(void)
 {
-	mm_descriptor_t *d = (mm_descriptor_t*)slab_alloc(&descriptor_slab);
-	if (d) {
-		mm_file_t *f = process_allocate_file();
-		if (!f) {
-			slab_free(&descriptor_slab, d);
+	mm_descriptor_t *desc = (mm_descriptor_t*)slab_alloc(&descriptor_slab);
+	if (desc) {
+		mm_file_t *file = session_allocate_file();
+		if (!file) {
+			slab_free(&descriptor_slab, desc);
 			return NULL;
 		}
 
-		d->file = f;
+		desc->file = file;
 	}
 
-	return d;
+	return desc;
+}
+
+mm_descriptor_t *process_create_desc(mm_process_t *process)
+{
+	int fd = process_find_new_fd(process);
+	if (fd == -1)
+		return NULL;
+
+	mm_descriptor_t *desc = process_allocate_desc();
+	if (!desc)
+		return NULL;
+
+	if (process_set_desc(process, fd, desc)) {
+		process_deallocate_desc(desc);
+		return NULL;
+	}
+
+	return desc;
 }
 
 int process_destroy_desc(mm_process_t *process, const int fd)
@@ -141,7 +163,7 @@ int process_destroy_desc(mm_process_t *process, const int fd)
 
 	if (desc->file)
 		//TODO close here?
-		process_deallocate_file(desc->file);
+		session_deallocate_file(desc->file);
 
 	process_deallocate_desc(desc);
 	return 0;
@@ -157,23 +179,23 @@ mm_descriptor_t *process_find_desc(const mm_process_t *process, const int fd)
 	return (mm_descriptor_t*)tree_get(&(process->descriptors), fd);
 }
 
-int process_find_new_fd(const mm_process_t *process)
+static int process_find_new_fd(const mm_process_t *process)
 {
-	for (int id = MIN_AUTO_FD; id < FILES_PER_PROCESS; id++)
-		if (!process_find_desc(process, id))
-			return id;
+	for (int fd = MIN_AUTO_FD; fd < FILES_PER_PROCESS; fd++)
+		if (!process_find_desc(process, fd))
+			return fd;
 
 	return -1;
 }
 
 mm_descriptor_t *process_allocate_desc(void)
 {
-	mm_descriptor_t *d = (mm_descriptor_t*)slab_alloc(&descriptor_slab);
-	if (d)
+	mm_descriptor_t *desc = (mm_descriptor_t*)slab_alloc(&descriptor_slab);
+	if (desc)
 		//TODO is needed?
-		d->file = NULL;
+		desc->file = NULL;
 
-	return d;
+	return desc;
 }
 
 void process_deallocate_desc(mm_descriptor_t *desc)
@@ -181,25 +203,26 @@ void process_deallocate_desc(mm_descriptor_t *desc)
 	slab_free(&descriptor_slab, desc);
 }
 
-int session_add_file(mm_session_t *session, const int fid, mm_file_t *file)
+mm_file_t *session_create_file(mm_session_t *session)
 {
-//log_info("mm: afile sid=%d fid=%d\n", session->node.key, fid);
-	return (tree_put(&(session->files), fid, &(file->node)) ? 0 : 1);
-}
+	int fid = session_find_new_fid(session);
+	if (fid == -1)
+		return NULL;
 
-int session_remove_file(mm_session_t *session, const int fid)
-{
-//log_info("mm: rfile sid=%d fid=%d\n", session->node.key, fid);
-	mm_file_t *file = (mm_file_t*)tree_remove(&(session->files), fid);
+	mm_file_t *file = session_allocate_file();
 	if (!file)
-		return EBADF;
+		return NULL;
 
-	return 0;
+	if (!tree_put(&(session->files), fid, &(file->node))) {
+		session_deallocate_file(file);
+		return NULL;
+	}
+
+	return file;
 }
 
-int session_find_new_fid(mm_session_t *session)
+static int session_find_new_fid(mm_session_t *session)
 {
-//log_info("mm: ffile %d\n", session->node.key);
 	for (int fid = MIN_FID; fid < FILES_PER_SESSION; fid++)
 		if (!tree_get(&(session->files), fid))
 			return fid;
@@ -207,17 +230,21 @@ int session_find_new_fid(mm_session_t *session)
 	return -1;
 }
 
-mm_file_t *process_allocate_file(void)
+int session_destroy_file(mm_session_t *session, mm_file_t *file)
+{
+	//TODO use other errno
+	int result = tree_remove(&(session->files), file->node.key) ? 0 : EBADF;
+
+	session_deallocate_file(file);
+	return result;
+}
+
+static mm_file_t *session_allocate_file(void)
 {
 	return (mm_file_t*)slab_alloc(&file_slab);
 }
 
-void process_deallocate_file(mm_file_t *file)
+void session_deallocate_file(mm_file_t *file)
 {
 	slab_free(&file_slab, file);
-}
-
-int create_tag(void)
-{
-	return 0;
 }
