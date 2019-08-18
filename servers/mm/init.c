@@ -27,8 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <errno.h>
 #include <services.h>
 #include <string.h>
-#include "pm.h"
-#include "process.h"
+#include "proxy.h"
 #include "../../lib/libserv/libserv.h"
 
 #define STACK_TAIL (LOCAL_ADDR - PAGE_SIZE)

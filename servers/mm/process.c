@@ -669,10 +669,10 @@ int mm_thread_find(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-		reply->data[0] = EOK;
+		reply->data[0] = 0;
 		reply->result = th->process_id;
 		return reply_success;
-	} while (FALSE);
+	} while (false);
 
 	reply->result = -1;
 	return reply_failure;

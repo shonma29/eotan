@@ -38,7 +38,7 @@ static noreturn void idle_start(VP_INT exinf);
 
 void kern_start(void (*callback)(void))
 {
-	sysinfo->delay_thread_start = FALSE;
+	sysinfo->delay_thread_start = false;
 
 	context_initialize();
 	kcall_initialize();

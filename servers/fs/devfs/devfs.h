@@ -40,7 +40,7 @@ typedef struct {
 	vdriver_t *driver;
 } device_info_t;
 
-extern int device_init(void);
+extern bool device_init(void);
 extern device_info_t *device_find(const UW id);
 
 extern int write_device(int, void *, off_t, size_t, size_t *);

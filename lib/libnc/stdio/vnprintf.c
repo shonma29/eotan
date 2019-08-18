@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 #define INT_BIT ((CHAR_BIT) * sizeof(int))
 
 typedef struct _State {
-	int (*handler)(struct _State*);
+	bool (*handler)(struct _State*);
 	char *format;
 	va_list ap;
 	void (*out)(const char);
@@ -42,9 +42,9 @@ static void _putchar(State *, const char);
 static void _puts(State *, const char *);
 static void _putd(State *, const int);
 static void _puth(State *, const int);
-static int _immediate(State *);
-static int _format(State *);
-static int _escape(State *);
+static bool _immediate(State *);
+static bool _format(State *);
+static bool _escape(State *);
 
 
 static void _putchar(State *s, const char c)
@@ -101,13 +101,13 @@ static void _puth(State *s, const int x)
 	}
 }
 
-static int _immediate(State *s)
+static bool _immediate(State *s)
 {
 	char c = *(s->format)++;
 
 	switch (c) {
 	case '\0':
-		return FALSE;
+		return false;
 	case '%':
 		s->handler = _format;
 		break;
@@ -119,17 +119,17 @@ static int _immediate(State *s)
 		break;
 	}
 
-	return TRUE;
+	return true;
 }
 
-static int _format(State *s)
+static bool _format(State *s)
 {
 	char c = *(s->format)++;
 
 	switch (c) {
 	case '\0':
 		_putchar(s, '%');
-		return FALSE;
+		return false;
 	case 'c':
 		_putchar(s, va_arg(s->ap, int) & 0xff);
 		break;
@@ -153,17 +153,17 @@ static int _format(State *s)
 
 	s->handler = _immediate;
 
-	return TRUE;
+	return true;
 }
 
-static int _escape(State *s)
+static bool _escape(State *s)
 {
 	char c = *(s->format)++;
 
 	switch (c) {
 	case '\0':
 		_putchar(s, '\\');
-		return FALSE;
+		return false;
 	case 'n':
 		c = '\n';
 		break;
@@ -179,7 +179,7 @@ static int _escape(State *s)
 
 	_putchar(s, c);
 	s->handler = _immediate;
-	return TRUE;
+	return true;
 }
 
 int vnprintf(void (*out)(char), char *format, va_list ap)

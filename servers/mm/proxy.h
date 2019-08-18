@@ -1,5 +1,5 @@
-#ifndef _MM_PM_H_
-#define _MM_PM_H_
+#ifndef _MM_PROXY_H_
+#define _MM_PROXY_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,8 +27,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include "process.h"
-
-#define MYNAME "mm"
 
 extern char pathbuf1[];
 extern char pathbuf2[];

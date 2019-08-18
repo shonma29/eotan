@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../kernel/mpu/mpufunc.h"
 #include "../../lib/libserv/libserv.h"
 #include "api.h"
-#include "pm.h"
+#include "proxy.h"
 
 static int (*funcs[])(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args) = {
 	mm_fork,

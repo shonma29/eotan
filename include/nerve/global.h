@@ -48,7 +48,7 @@ typedef struct {
 	mount_node_t root;
 	memory_range_t initrd;
 	volatile lfq_t kqueue;
-	volatile int delay_thread_start;
+	volatile bool delay_thread_start;
 	MemoryMap memory_map;
 } system_info_t;
 

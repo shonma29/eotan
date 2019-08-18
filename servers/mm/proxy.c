@@ -32,8 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core/options.h>
 #include <nerve/kcall.h>
 #include "../../lib/libserv/libserv.h"
-#include "pm.h"
-#include "process.h"
+#include "proxy.h"
 
 #define MYNAME "mm"
 

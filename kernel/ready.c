@@ -111,7 +111,7 @@ void dispatch(void)
 	}
 
 	if (sysinfo->delay_thread_start) {
-		sysinfo->delay_thread_start = FALSE;
+		sysinfo->delay_thread_start = false;
 		thread_wakeup(PORT_DELAY);
 	}
 

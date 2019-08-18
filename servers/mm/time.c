@@ -34,17 +34,17 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../lib/libserv/libserv.h"
 
 
-static int get_timespec(struct timespec *tspec)
+static bool get_timespec(struct timespec *tspec)
 {
 	SYSTIM time;
 
 	if (time_get(&time))
-		return FALSE;
+		return false;
 
 	tspec->tv_sec = time.sec;
 	tspec->tv_nsec = time.nsec;
 
-	return TRUE;
+	return true;
 }
 
 int mm_clock_gettime(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
@@ -73,10 +73,10 @@ int mm_clock_gettime(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-		reply->data[0] = EOK;
+		reply->data[0] = 0;
 		reply->result = 0;
 		return reply_success;
-	} while (FALSE);
+	} while (false);
 
 	reply->result = -1;
 	return reply_failure;

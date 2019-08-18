@@ -54,7 +54,7 @@ void free(void *p)
 	kcall->pfree(p);
 }
 
-int device_init(void)
+bool device_init(void)
 {
 	int i;
 
@@ -63,7 +63,7 @@ int device_init(void)
 	hash = hash_create(MAX_DEVICE, calc_hash, compare);
 	if (!hash) {
 		log_err("devfs: cannot create hash\n");
-		return FALSE;
+		return false;
 	}
 
 	for (i = 0; i < sizeof(drivers) / sizeof(drivers[0]); i++) {
@@ -89,7 +89,7 @@ int device_init(void)
 		}
 	}
 
-	return TRUE;
+	return true;
 }
 
 static unsigned int calc_hash(const void *key, const size_t size)

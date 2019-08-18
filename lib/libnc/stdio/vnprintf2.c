@@ -59,7 +59,7 @@ typedef struct {
 #endif
 
 typedef struct _State {
-	int (*handler)(struct _State*);
+	bool (*handler)(struct _State*);
 	const char *format;
 	va_list ap;
 	int (*out)(const char, void *);
@@ -83,9 +83,9 @@ static void putdouble(State *, const bool, uint64_t, const int);
 static void _putf(State *, const double);
 #endif
 
-static int _immediate(State *);
-static int _format(State *);
-static int _escape(State *);
+static bool _immediate(State *);
+static bool _format(State *);
+static bool _escape(State *);
 
 
 static void _putchar(State *s, const char c)
@@ -438,13 +438,13 @@ static void _putf(State *s, const double x)
 }
 #endif
 
-static int _immediate(State *s)
+static bool _immediate(State *s)
 {
 	char c = *(s->format)++;
 
 	switch (c) {
 	case '\0':
-		return FALSE;
+		return false;
 	case '%':
 		s->handler = _format;
 		break;
@@ -456,17 +456,17 @@ static int _immediate(State *s)
 		break;
 	}
 
-	return TRUE;
+	return true;
 }
 
-static int _format(State *s)
+static bool _format(State *s)
 {
 	char c = *(s->format)++;
 
 	switch (c) {
 	case '\0':
 		_putchar(s, '%');
-		return FALSE;
+		return false;
 	case 'c':
 		_putchar(s, va_arg(s->ap, int) & 0xff);
 		break;
@@ -498,17 +498,17 @@ static int _format(State *s)
 
 	s->handler = _immediate;
 
-	return TRUE;
+	return true;
 }
 
-static int _escape(State *s)
+static bool _escape(State *s)
 {
 	char c = *(s->format)++;
 
 	switch (c) {
 	case '\0':
 		_putchar(s, '\\');
-		return FALSE;
+		return false;
 	case 'n':
 		c = '\n';
 		break;
@@ -524,7 +524,7 @@ static int _escape(State *s)
 
 	_putchar(s, c);
 	s->handler = _immediate;
-	return TRUE;
+	return true;
 }
 
 int vnprintf2(int (*out)(const char, void*), void *env,

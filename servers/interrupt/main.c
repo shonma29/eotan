@@ -76,7 +76,7 @@ static ER kq_enqueue(delay_param_t *param)
 	if (lfq_enqueue(&(sysinfo->kqueue), param) != QUEUE_OK)
 		return E_TMOUT;
 
-	sysinfo->delay_thread_start = TRUE;
+	sysinfo->delay_thread_start = true;
 
 	return E_OK;
 }

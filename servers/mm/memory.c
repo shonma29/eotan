@@ -57,10 +57,10 @@ int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			p->local = getPageAddress(kern_p2v(p->directory),
 					(void*)(args->arg2));
 
-		reply->data[0] = EOK;
+		reply->data[0] = 0;
 		reply->result = 0;
 		return reply_success;
-	} while (FALSE);
+	} while (false);
 
 	reply->result = -1;
 	return reply_failure;
@@ -92,10 +92,10 @@ int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			p->segments.heap.len = (unsigned int)(args->arg2)
 					- (unsigned int)(p->segments.heap.addr);
 
-		reply->data[0] = EOK;
+		reply->data[0] = 0;
 		reply->result = 0;
 		return reply_success;
-	} while (FALSE);
+	} while (false);
 
 	reply->result = -1;
 	return reply_failure;
@@ -147,10 +147,10 @@ int mm_sbrk(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			end -= diff;
 		}
 
-		reply->data[0] = EOK;
+		reply->data[0] = 0;
 		reply->result = (int)end;
 		return reply_success;
-	} while (FALSE);
+	} while (false);
 
 	reply->result = -1;
 	return reply_failure;

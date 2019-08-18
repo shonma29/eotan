@@ -146,7 +146,7 @@ ER_ID thread_create_auto(T_CTSK *pk_ctsk)
 			return result;
 		}
 
-	} while (FALSE);
+	} while (false);
 	leave_serialize();
 
 	return result;
@@ -198,7 +198,7 @@ ER thread_create(ID tskid, T_CTSK *pk_ctsk)
 			return result;
 		}
 
-	} while (FALSE);
+	} while (false);
 	leave_serialize();
 
 	return result;
@@ -249,7 +249,7 @@ ER thread_destroy(ID tskid)
 		release_resources(th);
 		result = E_OK;
 
-	} while (FALSE);
+	} while (false);
 	leave_serialize();
 
 	return result;
@@ -282,7 +282,7 @@ ER thread_start(ID tskid)
 		result = E_OK;
 		fire(th);
 
-	} while (FALSE);
+	} while (false);
 
 	return result;
 }
@@ -363,7 +363,7 @@ ER thread_terminate(ID tskid)
 			result = E_OBJ;
 			break;
 		}
-	} while (FALSE);
+	} while (false);
 	leave_serialize();
 
 	return result;
@@ -428,7 +428,7 @@ ER thread_wakeup(ID tskid)
 			break;
 		}
 
-	} while (FALSE);
+	} while (false);
 	leave_serialize();
 
 	return result;

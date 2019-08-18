@@ -36,7 +36,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/types.h>
 #include "api.h"
 
-#define SESSION_FID (0)
+#define MYNAME "mm"
 
 typedef struct {
 	node_t node;

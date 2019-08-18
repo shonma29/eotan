@@ -29,8 +29,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <mm.h>
 
-#define EOK (0)
-
 typedef enum {
 	reply_success = 0,
 	reply_failure = 1,

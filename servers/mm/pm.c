@@ -33,8 +33,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 #include <sys/unistd.h>
 #include "../../lib/libserv/libserv.h"
-#include "pm.h"
-#include "process.h"
+#include "proxy.h"
 
 static int _seek(mm_process_t *, mm_file_t *, mm_args_t *);
 static size_t calc_path(char *, char *, const size_t);
