@@ -110,7 +110,7 @@ extern int process_release_body(mm_process_t *);
 extern int process_destroy(mm_process_t *, const int);
 extern int create_init(const pid_t);
 extern mm_thread_t *thread_find(const ID);
-extern int thread_create(mm_process_t *, FP, VP);
+extern int thread_create(int *, mm_process_t *, FP, VP);
 
 extern void file_initialize(void);
 extern mm_session_t *session_create(void);

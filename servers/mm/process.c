@@ -49,12 +49,6 @@ static tree_t thread_tree;
 static slab_t process_group_slab;
 static tree_t process_group_tree;
 
-static int process_find_new_pid(void);
-static void process_clear(mm_process_t *p);
-static ER_ID create_thread(mm_process_t *p, FP entry, VP ustack_top);
-static void thread_clear(mm_thread_t *th, mm_process_t *p);
-
-
 static inline mm_thread_t *getMyThread(const list_t *p)
 {
 	return (mm_thread_t*)((intptr_t)p - offsetof(mm_thread_t, brothers));
@@ -81,6 +75,13 @@ static inline mm_process_group_t *getProcessGroupFromMembers(const list_t *p)
 			- offsetof(mm_process_group_t, members));
 }
 */
+
+static int process_find_new_pid(void);
+static int process_create(mm_process_t **, const int);
+static int set_local(mm_process_t *, char *, const size_t);
+static int create_thread(int *, mm_process_t *, FP, VP);
+static void destroy_threads(mm_process_t *);
+
 
 void process_initialize(void)
 {
@@ -132,32 +133,14 @@ mm_process_t *process_duplicate(mm_process_t *src)
 	do {
 		pid_t pid = process_find_new_pid();
 		if (pid == -1) {
-			//TODO set adequate errno
 //			reply->data[0] = ENOMEM;
 			break;
 		}
 
-		mm_process_t *dest = process_find(pid);
-		//TODO check duplicated process_id
-		if (!dest) {
-			dest = (mm_process_t*)slab_alloc(&process_slab);
-			if (!dest) {
-//				reply->data[0] = ENOMEM;
-				break;
-			}
-
-			if (!tree_put(&process_tree,
-					pid, (node_t*)dest)) {
-				slab_free(&process_slab, dest);
-//				reply->data[0] = EBUSY;
-				break;
-			}
-
-			process_clear(dest);
-
-			//TODO check NULL
-			dest->directory = copy_kernel_page_table();
-		}
+		mm_process_t *dest;
+		int error_no = process_create(&dest, pid);
+		if (error_no)
+			break;
 
 		if (copy_user_pages(dest->directory, src->directory,
 //TODO copy only current stack
@@ -206,21 +189,10 @@ mm_process_t *process_duplicate(mm_process_t *src)
 
 		strcpy(dest->name, src->name);
 
-		if (map_user_pages(dest->directory, (void*)LOCAL_ADDR,
-				pages(sizeof(*(dest->local))))) {
+		if (set_local(dest, src->local->wd, src->local->wd_len)) {
 //			reply->data[0] = ENOMEM;
 			break;
 		}
-
-		dest->local = getPageAddress(kern_p2v(dest->directory),
-				(void*)LOCAL_ADDR);
-		memset(dest->local, 0, sizeof(*(dest->local)));
-		dest->local->pid = dest->node.key;
-		dest->local->ppid = dest->ppid;
-		dest->local->uid = dest->uid;
-		dest->local->gid = dest->gid;
-		dest->local->wd_len = src->local->wd_len;
-		strcpy(dest->local->wd, src->local->wd);
 
 		log_info("d %d %x->%x, %x->%x pp=%d pg=%d u=%d g=%d n=%s %x\n",
 				dest->node.key,
@@ -245,6 +217,7 @@ static int process_find_new_pid(void)
 	return -1;
 }
 
+//TODO from exec
 int process_replace(mm_process_t *process,
 		void *address, const size_t size,
 		void *entry, const void *args, const size_t stack_size,
@@ -268,37 +241,26 @@ int process_replace(mm_process_t *process,
 			+ (unsigned int)(size));
 
 	if (map_user_pages(process->directory,
-			(VP)start, pages(end - start))) {
+			(VP)start, pages(end - start)))
 		return ENOMEM;
-	}
 
 	process->segments.heap.addr = (void*)end;
 	process->segments.heap.len = 0;
 	process->segments.heap.max = pageRoundUp(USER_HEAP_MAX_ADDR) - end;
 	process->segments.heap.attr = type_heap;
 
-	if (stack_size > USER_STACK_INITIAL_SIZE) {
+	if (stack_size > USER_STACK_INITIAL_SIZE)
 		return E2BIG;
-	}
 
-	if (process->node.key == INIT_PID) {
+	if (process->node.key == INIT_PID)
 		if (map_user_pages(process->directory,
-				(void*)pageRoundDown(LOCAL_ADDR - USER_STACK_INITIAL_SIZE - PAGE_SIZE),
-				pages(pageRoundUp(USER_STACK_INITIAL_SIZE)))) {
+				(void*)pageRoundDown(LOCAL_ADDR
+						- USER_STACK_INITIAL_SIZE
+						- PAGE_SIZE),
+				pages(pageRoundUp(USER_STACK_INITIAL_SIZE))))
 			return ENOMEM;
-		}
-	}
 
-	while (!list_is_empty(&(process->threads))) {
-		list_t *n = list_next(&(process->threads));
-		mm_thread_t *th = getMyThread(n);
-
-		list_remove(n);
-		kcall->thread_terminate(th->node.key);
-		kcall->thread_destroy(th->node.key);
-		tree_remove(&thread_tree, th->node.key);
-		//TODO destroy mm_thread_t
-	}
+	destroy_threads(process);
 
 	unsigned int stack_top = pageRoundDown(LOCAL_ADDR - PAGE_SIZE)
 			- stack_size;
@@ -307,31 +269,13 @@ int process_replace(mm_process_t *process,
 		return EFAULT;
 	}
 
-	ER_ID result = create_thread(process, (FP)entry,
+	int result = create_thread(thread_id, process, (FP)entry,
 			(VP)(stack_top - sizeof(int)));
-	if (result < 0) {
-		return ECONNREFUSED;
-	}
+	if (result)
+		return result;
 
 	if (process->local)
-			process->local->thread_id = result;
-
-	//TODO check duplicated thread_id
-	mm_thread_t *th = (mm_thread_t*)slab_alloc(&thread_slab);
-	if (!th) {
-		kcall->thread_destroy(result);
-		return ENOMEM;
-	}
-
-	if (tree_put(&thread_tree, result, (node_t*)th))
-		thread_clear(th, process);
-	else {
-		slab_free(&thread_slab, th);
-		kcall->thread_destroy(result);
-		return EBUSY;
-	}
-
-	*thread_id = th->node.key;
+			process->local->thread_id = *thread_id;
 
 	return 0;
 }
@@ -378,34 +322,24 @@ int process_release_body(mm_process_t *proc)
 	return 0;
 }
 
-int process_destroy(mm_process_t *proc, const int status)
+int process_destroy(mm_process_t *process, const int status)
 {
-	proc->exit_status = status;
+	process->exit_status = status;
+	destroy_threads(process);
 
-	for (;;) {
-		list_t *thread = list_pick(&(proc->threads));
-		if (!thread)
-			break;
-
-		mm_thread_t *th = getMyThread(thread);
-		kcall->thread_terminate(th->node.key);
-		kcall->thread_destroy(th->node.key);
-		tree_remove(&thread_tree, th->node.key);
-	}
-
-	mm_process_t *parent = process_find(proc->ppid);
+	mm_process_t *parent = process_find(process->ppid);
 	if (parent) {
 		if (parent->rdvno) {
 			log_info("mm: %d release parent %d\n",
-					proc->node.key, proc->ppid);
+					process->node.key, process->ppid);
 			process_release_body(parent);
 		} else {
 			log_info("mm: %d parent not wait destroy\n",
-					proc->node.key);
+					process->node.key);
 		}
 	} else {
 		//TODO what to do?
-		log_info("mm: %d no parent destroy\n", proc->node.key);
+		log_info("mm: %d no parent destroy\n", process->node.key);
 	}
 
 //TODO if current process is 'init'?
@@ -413,7 +347,7 @@ int process_destroy(mm_process_t *proc, const int status)
 	if (parent) {
 		bool found = false;
 		for (;;) {
-			list_t *child = list_pick(&(proc->children));
+			list_t *child = list_pick(&(process->children));
 			if (!child)
 				break;
 
@@ -435,26 +369,13 @@ int process_destroy(mm_process_t *proc, const int status)
 	return 0;
 }
 
+//TODO key must not be 0
 int create_init(const pid_t pid)
 {
-	//TODO check duplicated process_id
-	//TODO key must not be 0
-
-	mm_process_t *p = (mm_process_t*)slab_alloc(&process_slab);
-	if (!p)
-		return ENOMEM;
-
-	if (!tree_put(&process_tree, pid, (node_t*)p)) {
-		slab_free(&process_slab, p);
-		return EBUSY;
-	}
-
-	//TODO adhoc
-	p->directory = NULL;
-	process_clear(p);
-
-	//TODO check NULL
-	p->directory = copy_kernel_page_table();
+	mm_process_t *p;
+	int error_no = process_create(&p, pid);
+	if (error_no)
+		return error_no;
 
 	unsigned int start = pageRoundDown(0);
 	unsigned int end = pageRoundUp((unsigned int)0 + (unsigned int)0);
@@ -482,25 +403,14 @@ int create_init(const pid_t pid)
 		}
 	}
 
-	if (map_user_pages(p->directory, (void*)LOCAL_ADDR,
-			pages(sizeof(*(p->local))))) {
+	if (set_local(p, "/", 1))
 		return ENOMEM;
-	}
 
-	p->local = getPageAddress(kern_p2v(p->directory), (void*)LOCAL_ADDR);
-	memset(p->local, 0, sizeof(*(p->local)));
-	p->local->pid = p->node.key;
-	p->local->ppid = p->ppid;
-	p->local->uid = p->uid;
-	p->local->gid = p->gid;
-	p->local->wd_len = 1;
-	strcpy(p->local->wd, "/");
-
+	//TODO open cons
 	mm_descriptor_t *d = process_create_dummy_file();
 	if (d) {
 		mm_file_t *f = d->file;
 		f->server_id = PORT_CONSOLE;
-		//TODO open
 		f->node.key = 0;
 		f->f_flag = O_RDONLY;
 		f->f_count = 1;
@@ -517,7 +427,6 @@ int create_init(const pid_t pid)
 	if (d) {
 		mm_file_t *f = d->file;
 		f->server_id = PORT_CONSOLE;
-		//TODO open
 		f->node.key = 0;
 		f->f_flag = O_WRONLY;
 		f->f_count = 1;
@@ -550,114 +459,67 @@ int create_init(const pid_t pid)
 	return 0;
 }
 
-//TODO from process_duplicate, create_init
-static void process_clear(mm_process_t *p)
+static int process_create(mm_process_t **process, const int pid)
 {
-	p->segments.heap.attr = attr_nil;
-
-	if (p->directory) {
-		kcall->pfree(p->directory);
-		p->directory = NULL;
-	}
-
-	//TODO take over fields when duplicate?
-	list_initialize(&(p->threads));
-	//TODO leave on exec
-	tree_create(&(p->descriptors), NULL);
-	tree_create(&(p->sessions), NULL);
-	list_initialize(&(p->brothers));
-	list_initialize(&(p->children));
-	list_initialize(&(p->members));
-	p->local = NULL;
-	p->rdvno = 0;
-	p->name[0] = '\0';
-}
-
-mm_thread_t *thread_find(const ID tid)
-{
-	node_t *node = tree_get(&thread_tree, tid);
-	return (node ? (mm_thread_t*)getParent(mm_thread_t, node) : NULL);
-}
-
-int thread_create(mm_process_t *process, FP entry, VP stack)
-{
+	int error_no;
 	do {
-		ER_ID result;
-		mm_thread_t *th;
-
-		if (map_user_pages(process->directory,
-				(VP)pageRoundDown(LOCAL_ADDR - USER_STACK_INITIAL_SIZE - PAGE_SIZE),
-				pages(pageRoundUp(USER_STACK_INITIAL_SIZE)))) {
-//			reply->data[0] = ENOMEM;
+		mm_process_t *p = (mm_process_t *) slab_alloc(&process_slab);
+		if (!p) {
+			error_no = ENOMEM;
 			break;
 		}
 
-		result = create_thread(process, entry, stack);
-		if (result < 0) {
-//			reply->data[0] = ECONNREFUSED;
+		if (!tree_put(&process_tree, pid, (node_t *) p)) {
+			slab_free(&process_slab, p);
+			error_no = EBUSY;
 			break;
 		}
 
-		//TODO check duplicated thread_id
-		th = (mm_thread_t*)slab_alloc(&thread_slab);
-		if (!th) {
-			kcall->thread_destroy(result);
-//			reply->data[0] = ENOMEM;
-			break;
+		p->segments.heap.attr = attr_nil;
+#if 0
+		//TODO release on exit
+		if (p->directory) {
+			kcall->pfree(p->directory);
+			p->directory = NULL;
 		}
+#endif
+		//TODO take over fields when duplicate?
+		list_initialize(&(p->threads));
+		//TODO leave on exec
+		tree_create(&(p->descriptors), NULL);
+		tree_create(&(p->sessions), NULL);
+		list_initialize(&(p->brothers));
+		list_initialize(&(p->children));
+		list_initialize(&(p->members));
+		p->local = NULL;
+		p->rdvno = 0;
+		p->name[0] = '\0';
 
-		if (tree_put(&thread_tree, result, (node_t*)th))
-			thread_clear(th, process);
-		else {
-			slab_free(&thread_slab, th);
-			kcall->thread_destroy(result);
-//			reply->data[0] = EBUSY;
-			break;
-		}
-
-		//TODO only main thread
-		if (process->local)
-				process->local->thread_id = result;
-
-		return result;
+		//TODO check NULL
+		p->directory = copy_kernel_page_table();
+		*process = p;
+		return 0;
 	} while (false);
 
-//TODO unmap
-	return -1;
-}
-//TODO delete thread
-//TODO delete process
-
-//TODO from process_replace, thread_create
-static ER_ID create_thread(mm_process_t *p, FP entry, VP ustack_top)
-{
-	T_CTSK pk_ctsk = {
-		TA_HLNG,
-		(VP_INT)NULL,
-		entry,
-		pri_user_foreground,
-		KTHREAD_STACK_SIZE,
-		NULL,
-		p->directory,
-		ustack_top
-	};
-
-	p->segments.stack.addr = (void*)pageRoundDown(LOCAL_ADDR
-			- USER_STACK_MAX_SIZE);
-	p->segments.stack.len = pageRoundUp(USER_STACK_INITIAL_SIZE);
-	p->segments.stack.max = pageRoundUp(USER_STACK_MAX_SIZE - PAGE_SIZE);
-	p->segments.stack.attr = type_stack;
-
-	return kcall->thread_create_auto(&pk_ctsk);
+	return error_no;
 }
 
-//TODO from process_replace, thread_create
-static void thread_clear(mm_thread_t *th, mm_process_t *p)
+static int set_local(mm_process_t *process, char *wd, const size_t wd_len)
 {
-	th->process_id = p->node.key;
-	th->stack.attr = attr_nil;
-	th->process = p;
-	list_append(&(p->threads), &(th->brothers));
+	if (map_user_pages(process->directory, (void*)LOCAL_ADDR,
+			pages(sizeof(*(process->local)))))
+		return ENOMEM;
+
+	process->local = getPageAddress(kern_p2v(process->directory),
+			(void*)LOCAL_ADDR);
+	memset(process->local, 0, sizeof(*(process->local)));
+	process->local->pid = process->node.key;
+	process->local->ppid = process->ppid;
+	process->local->uid = process->uid;
+	process->local->gid = process->gid;
+	process->local->wd_len = wd_len;
+	strcpy(process->local->wd, wd);
+	return 0;
 }
 
 int mm_thread_find(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
@@ -676,4 +538,103 @@ int mm_thread_find(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 
 	reply->result = -1;
 	return reply_failure;
+}
+
+mm_thread_t *thread_find(const ID tid)
+{
+	node_t *node = tree_get(&thread_tree, tid);
+	return (node ? (mm_thread_t*)getParent(mm_thread_t, node) : NULL);
+}
+
+//TODO from fork
+int thread_create(int *thread_id, mm_process_t *process, FP entry, VP stack)
+{
+	int error_no;
+	do {
+		if (map_user_pages(process->directory,
+				(VP) pageRoundDown(LOCAL_ADDR
+						- USER_STACK_INITIAL_SIZE
+						- PAGE_SIZE),
+				pages(pageRoundUp(USER_STACK_INITIAL_SIZE)))) {
+			error_no = ENOMEM;
+			break;
+		}
+
+		error_no = create_thread(thread_id, process, entry, stack);
+		if (error_no) {
+			//TODO unmap
+			break;
+		}
+
+		//TODO only main thread
+		if (process->local)
+			process->local->thread_id = *thread_id;
+
+		return 0;
+	} while (false);
+
+	return error_no;
+}
+//TODO delete thread
+//TODO delete process
+
+//TODO from process_replace(exec), thread_create(fork)
+static int create_thread(int *thread_id, mm_process_t *process, FP entry,
+		VP ustack_top)
+{
+	mm_thread_t *th = (mm_thread_t *) slab_alloc(&thread_slab);
+	if (!th)
+		return ENOMEM;
+
+	T_CTSK pk_ctsk = {
+		TA_HLNG,
+		(VP_INT)NULL,
+		entry,
+		pri_user_foreground,
+		KTHREAD_STACK_SIZE,
+		NULL,
+		process->directory,
+		ustack_top
+	};
+	ER_ID tid = kcall->thread_create_auto(&pk_ctsk);
+	if (tid < 0) {
+		slab_free(&thread_slab, th);
+		//TODO use another errno
+		return ENOMEM;
+	}
+
+	if (!tree_put(&thread_tree, tid, &(th->node))) {
+		kcall->thread_destroy(tid);
+		slab_free(&thread_slab, th);
+		//TODO use another errno
+		return EBUSY;
+	}
+
+	th->process_id = process->node.key;
+	th->process = process;
+	th->stack.attr = attr_nil;
+
+	list_append(&(process->threads), &(th->brothers));
+
+	//TODO only main thread
+	process->segments.stack.addr = (void*)pageRoundDown(LOCAL_ADDR
+			- USER_STACK_MAX_SIZE);
+	process->segments.stack.len = pageRoundUp(USER_STACK_INITIAL_SIZE);
+	process->segments.stack.max =
+			pageRoundUp(USER_STACK_MAX_SIZE - PAGE_SIZE);
+	process->segments.stack.attr = type_stack;
+
+	*thread_id = tid;
+	return 0;
+}
+
+static void destroy_threads(mm_process_t *process)
+{
+	for (list_t *p; (p = list_pick(&(process->threads)));) {
+		mm_thread_t *th = getMyThread(p);
+		kcall->thread_terminate(th->node.key);
+		kcall->thread_destroy(th->node.key);
+		tree_remove(&thread_tree, th->node.key);
+		//TODO destroy mm_thread_t
+	}
 }

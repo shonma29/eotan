@@ -57,12 +57,12 @@ int mm_fork(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-		int thread_id = thread_create(child, (FP)(args->arg2),
-				(VP)(args->arg1));
-		if (thread_id < 0) {
+		int thread_id;
+		int error_no = thread_create(&thread_id, child,
+				(FP)(args->arg2), (VP)(args->arg1));
+		if (error_no) {
 			log_err("mm: th create err\n");
-			//TODO use other errno
-			reply->data[0] = ENOMEM;
+			reply->data[0] = error_no;
 			break;
 		}
 
