@@ -35,4 +35,6 @@ For more information, please refer to <http://unlicense.org/>
 #define SESSION_MAX (32768)
 #define FILES_PER_SESSION (32768)
 
+#define REQUEST_MAX (1024)
+
 #endif

@@ -87,10 +87,11 @@ int _attach(mm_process_t *process, const int thread_id)
 	return 0;
 }
 
-int mm_open(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+int mm_open(mm_request *req)
 {
+	mm_reply_t *reply = (mm_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(rdvno));
+		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
 			//TODO use other errno
 			reply->data[0] = ESRCH;
@@ -106,9 +107,9 @@ int mm_open(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 
 		int fd = desc->node.key;
 		mm_file_t *file;
-		devmsg_t message;
+		devmsg_t *message = &(req->message);
 		int result = _walk(&file, process, th->node.key,
-				(char*)(args->arg1), &message);
+				(char*)(req->args.arg1), message);
 		if (result) {
 			process_destroy_desc(process, fd);
 			reply->data[0] = result;
@@ -118,8 +119,8 @@ int mm_open(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		desc->file = file;
 
 		int token = create_token(th->node.key, process->session);
-		int oflag = args->arg2;
-		result = _open(file, token, oflag, &message);
+		int oflag = req->args.arg2;
+		result = _open(file, token, oflag, message);
 //		log_info("proxy: %d open[%d:%d] %d\n",
 //				process->node.key, fd, file->node.key, result);
 		if (result) {
@@ -127,7 +128,7 @@ int mm_open(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			process_destroy_desc(process, fd);
 
 			int error_no = _clunk(process->session, file, token,
-					&message);
+					message);
 			if (error_no) {
 				//TODO what to do?
 			}
@@ -149,10 +150,11 @@ int mm_open(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	return reply_failure;
 }
 
-int mm_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+int mm_create(mm_request *req)
 {
+	mm_reply_t *reply = (mm_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(rdvno));
+		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
 			//TODO use other errno
 			reply->data[0] = ESRCH;
@@ -161,7 +163,7 @@ int mm_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 
 		mm_process_t *process = get_process(th);
 		ER_UINT len = kcall->region_copy(th->node.key,
-				(char*)(args->arg1), PATH_MAX, pathbuf1);
+				(char*)(req->args.arg1), PATH_MAX, pathbuf1);
 		if (len < 0) {
 			reply->data[0] = EFAULT;
 			break;
@@ -182,9 +184,9 @@ int mm_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		char *parent_path = "";
 		char *head = split_path(pathbuf1, &parent_path);
 		mm_file_t *file;
-		devmsg_t message;
+		devmsg_t *message = &(req->message);
 		int result = _walk(&file, process, kcall->thread_get_id(),
-				parent_path, &message);
+				parent_path, message);
 		if (result) {
 			process_destroy_desc(process, fd);
 			reply->data[0] = result;
@@ -192,17 +194,17 @@ int mm_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		}
 
 		int fid = file->node.key;
-		int oflag = args->arg2;
+		int oflag = req->args.arg2;
 		int token = create_token(kcall->thread_get_id(),
 				process->session);
-		message.header.type = Tcreate;
-		message.header.token = token;
-		message.Tcreate.tag = create_tag();
-		message.Tcreate.fid = fid;
-		message.Tcreate.name = head;
-		message.Tcreate.perm = args->arg3;
-		message.Tcreate.mode = oflag;
-		result = call_device(file->server_id, &message,
+		message->header.type = Tcreate;
+		message->header.token = token;
+		message->Tcreate.tag = create_tag();
+		message->Tcreate.fid = fid;
+		message->Tcreate.name = head;
+		message->Tcreate.perm = req->args.arg3;
+		message->Tcreate.mode = oflag;
+		result = call_device(file->server_id, message,
 				MESSAGE_SIZE(Tcreate),
 				Rcreate, MESSAGE_SIZE(Rcreate));
 //		log_info("proxy: %d create[%d:%d] %d\n",
@@ -212,7 +214,7 @@ int mm_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			process_destroy_desc(process, fd);
 
 			int error_no = _clunk(process->session, file, token,
-					&message);
+					message);
 			if (error_no) {
 				//TODO what to do?
 			}
@@ -253,10 +255,11 @@ static char *split_path(const char *path, char **parent_path)
 	return head;
 }
 
-int mm_read(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+int mm_read(mm_request *req)
 {
+	mm_reply_t *reply = (mm_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(rdvno));
+		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
 			//TODO use other errno
 			reply->data[0] = ESRCH;
@@ -264,26 +267,27 @@ int mm_read(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		}
 
 		mm_process_t *process = get_process(th);
-		mm_descriptor_t *desc = process_find_desc(process, args->arg1);
+		mm_descriptor_t *desc = process_find_desc(process,
+				req->args.arg1);
 		if (!desc) {
 			reply->data[0] = EBADF;
 			break;
 		}
 
 		mm_file_t *file = desc->file;
-		devmsg_t message;
+		devmsg_t *message = &(req->message);
 		int result = _read(file,
 				create_token(th->node.key, process->session),
-				file->f_offset, args->arg3, (char*)(args->arg2),
-				&message);
+				file->f_offset, req->args.arg3,
+				(char*)(req->args.arg2), message);
 		if (result) {
 			reply->data[0] = result;
 			break;
 		}
 
-		file->f_offset += message.Rread.count;
+		file->f_offset += message->Rread.count;
 
-		reply->result = message.Rread.count;
+		reply->result = message->Rread.count;
 		reply->data[0] = 0;
 		return reply_success;
 	} while (false);
@@ -292,10 +296,11 @@ int mm_read(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	return reply_failure;
 }
 
-int mm_write(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+int mm_write(mm_request *req)
 {
+	mm_reply_t *reply = (mm_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(rdvno));
+		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
 			//TODO use other errno
 			reply->data[0] = ESRCH;
@@ -303,24 +308,25 @@ int mm_write(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		}
 
 		mm_process_t *process = get_process(th);
-		mm_descriptor_t *desc = process_find_desc(process, args->arg1);
+		mm_descriptor_t *desc = process_find_desc(process,
+				req->args.arg1);
 		if (!desc) {
 			reply->data[0] = EBADF;
 			break;
 		}
 
 		mm_file_t *file = desc->file;
-		devmsg_t message;
-		message.header.type = Twrite;
-		message.header.token = create_token(th->node.key,
+		devmsg_t *message = &(req->message);
+		message->header.type = Twrite;
+		message->header.token = create_token(th->node.key,
 				process->session);
-		message.Twrite.tag = create_tag();
-		message.Twrite.fid = file->node.key;
-		message.Twrite.offset = file->f_offset;
-		message.Twrite.count = args->arg3;
-		message.Twrite.data = (char*)(args->arg2);
+		message->Twrite.tag = create_tag();
+		message->Twrite.fid = file->node.key;
+		message->Twrite.offset = file->f_offset;
+		message->Twrite.count = req->args.arg3;
+		message->Twrite.data = (char*)(req->args.arg2);
 
-		int result = call_device(file->server_id, &message,
+		int result = call_device(file->server_id, message,
 				MESSAGE_SIZE(Twrite),
 				Rwrite, MESSAGE_SIZE(Rwrite));
 		if (result) {
@@ -328,9 +334,9 @@ int mm_write(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-		file->f_offset += message.Rwrite.count;
+		file->f_offset += message->Rwrite.count;
 
-		reply->result = message.Rwrite.count;
+		reply->result = message->Rwrite.count;
 		reply->data[0] = 0;
 		return reply_success;
 	} while (false);
@@ -339,10 +345,11 @@ int mm_write(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	return reply_failure;
 }
 
-int mm_close(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+int mm_close(mm_request *req)
 {
+	mm_reply_t *reply = (mm_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(rdvno));
+		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
 			//TODO use other errno
 			reply->data[0] = ESRCH;
@@ -350,7 +357,7 @@ int mm_close(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		}
 
 		mm_process_t *process = get_process(th);
-		int fd = args->arg1;
+		int fd = req->args.arg1;
 		mm_descriptor_t *desc = process_find_desc(process, fd);
 		if (!desc) {
 			reply->data[0] = EBADF;
@@ -363,10 +370,10 @@ int mm_close(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			//TODO what to do?
 		}
 
-		devmsg_t message;
+		devmsg_t *message = &(req->message);
 		int result = _clunk(process->session, file,
 				create_token(th->node.key, process->session),
-				&message);
+				message);
 		if (result) {
 			log_err("proxy: %d close[%d:] err %d\n",
 					process->node.key, fd, result);
@@ -386,10 +393,11 @@ int mm_close(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	return reply_failure;
 }
 
-int mm_remove(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+int mm_remove(mm_request *req)
 {
+	mm_reply_t *reply = (mm_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(rdvno));
+		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
 			//TODO use other errno
 			reply->data[0] = ESRCH;
@@ -398,20 +406,20 @@ int mm_remove(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 
 		mm_process_t *process = get_process(th);
 		mm_file_t *file;
-		devmsg_t message;
+		devmsg_t *message = &(req->message);
 		int result = _walk(&file, process, th->node.key,
-				(char*)(args->arg1), &message);
+				(char*)(req->args.arg1), message);
 		if (result) {
 			reply->data[0] = result;
 			break;
 		}
 
-		message.header.type = Tremove;
-		message.header.token = create_token(th->node.key,
+		message->header.type = Tremove;
+		message->header.token = create_token(th->node.key,
 				process->session);
-		message.Tremove.tag = create_tag();
-		message.Tremove.fid = file->node.key;
-		result = call_device(file->server_id, &message,
+		message->Tremove.tag = create_tag();
+		message->Tremove.fid = file->node.key;
+		result = call_device(file->server_id, message,
 				MESSAGE_SIZE(Tremove),
 				Rremove, MESSAGE_SIZE(Rremove));
 
@@ -436,10 +444,11 @@ int mm_remove(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	return reply_failure;
 }
 
-int mm_fstat(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+int mm_fstat(mm_request *req)
 {
+	mm_reply_t *reply = (mm_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(rdvno));
+		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
 			//TODO use other errno
 			reply->data[0] = ESRCH;
@@ -447,16 +456,17 @@ int mm_fstat(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		}
 
 		mm_process_t *process = get_process(th);
-		mm_descriptor_t *desc = process_find_desc(process, args->arg1);
+		mm_descriptor_t *desc = process_find_desc(process,
+				req->args.arg1);
 		if (!desc) {
 			reply->data[0] = EBADF;
 			break;
 		}
 
-		devmsg_t message;
-		int result = _fstat((struct stat *) args->arg2, desc->file,
+		devmsg_t *message = &(req->message);
+		int result = _fstat((struct stat *) req->args.arg2, desc->file,
 				create_token(th->node.key, process->session),
-				&message);
+				message);
 		if (result) {
 			reply->data[0] = result;
 			break;
@@ -471,10 +481,11 @@ int mm_fstat(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	return reply_failure;
 }
 
-int mm_chmod(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+int mm_chmod(mm_request *req)
 {
+	mm_reply_t *reply = (mm_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(rdvno));
+		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
 			//TODO use other errno
 			reply->data[0] = ESRCH;
@@ -483,31 +494,31 @@ int mm_chmod(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 
 		mm_process_t *process = get_process(th);
 		mm_file_t *file;
-		devmsg_t message;
+		devmsg_t *message = &(req->message);
 		int result = _walk(&file, process, th->node.key,
-				(char*)(args->arg1), &message);
+				(char*)(req->args.arg1), message);
 		if (result) {
 			reply->data[0] = result;
 			break;
 		}
 
 		struct stat st;
-		st.st_mode = args->arg2;
+		st.st_mode = req->args.arg2;
 
 		int token = create_token(th->node.key, process->session);
-		message.header.type = Twstat;
-		message.header.token = token;
-		message.Twstat.tag = create_tag();
-		message.Twstat.fid = file->node.key;
-		message.Twstat.stat = &st;
-		result = call_device(file->server_id, &message,
+		message->header.type = Twstat;
+		message->header.token = token;
+		message->Twstat.tag = create_tag();
+		message->Twstat.fid = file->node.key;
+		message->Twstat.stat = &st;
+		result = call_device(file->server_id, message,
 				MESSAGE_SIZE(Twstat),
 				Rwstat, MESSAGE_SIZE(Rwstat));
 
 //		int fid = file->node.key;
 //		log_info("proxy: %d chmod[:%d] %d\n",
 //				process->node.key, fid, result);
-		int error_no = _clunk(process->session, file, token, &message);
+		int error_no = _clunk(process->session, file, token, message);
 		if (error_no) {
 			//TODO what to do?
 		}

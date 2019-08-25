@@ -30,32 +30,34 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../kernel/mpu/mpufunc.h"
 
 
-int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+int mm_vmap(mm_request *req)
 {
+	mm_reply_t *reply = (mm_reply_t *) &(req->args);
 	do {
-		mm_process_t *p = process_find((ID)args->arg1);
+		mm_process_t *p = process_find((ID)(req->args.arg1));
 		if (!p) {
 			reply->data[0] = ESRCH;
 			break;
 		}
 
 		if (map_user_pages(p->directory,
-				(VP)(args->arg2), pages((UW)(args->arg3)))) {
+				(VP)(req->args.arg2),
+				pages((UW)(req->args.arg3)))) {
 			reply->data[0] = ENOMEM;
 			break;
 		}
 
 		unsigned int currentEnd = (unsigned int)(p->segments.heap.addr)
 				+ p->segments.heap.len;
-		unsigned int newEnd = (unsigned int)(args->arg2)
-				+ (unsigned int)(args->arg3);
-		if (currentEnd == (unsigned int)(args->arg2))
+		unsigned int newEnd = (unsigned int)(req->args.arg2)
+				+ (unsigned int)(req->args.arg3);
+		if (currentEnd == (unsigned int)(req->args.arg2))
 			p->segments.heap.len = newEnd
 					- (unsigned int)(p->segments.heap.addr);
 
-		if (args->arg2 == LOCAL_ADDR)
+		if (req->args.arg2 == LOCAL_ADDR)
 			p->local = getPageAddress(kern_p2v(p->directory),
-					(void*)(args->arg2));
+					(void*)(req->args.arg2));
 
 		reply->data[0] = 0;
 		reply->result = 0;
@@ -66,12 +68,13 @@ int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	return reply_failure;
 }
 
-int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+int mm_vunmap(mm_request *req)
 {
+	mm_reply_t *reply = (mm_reply_t *) &(req->args);
 	do {
 		unsigned int currentEnd;
 		unsigned int newEnd;
-		mm_process_t *p = process_find((ID)args->arg1);
+		mm_process_t *p = process_find((ID)(req->args.arg1));
 
 		if (!p) {
 			reply->data[0] = ESRCH;
@@ -79,17 +82,18 @@ int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		}
 
 		if (unmap_user_pages(p->directory,
-				(VP)(args->arg2), pages((UW)(args->arg3)))) {
+				(VP)(req->args.arg2),
+				pages((UW)(req->args.arg3)))) {
 			reply->data[0] = EACCES;
 			break;
 		}
 
 		currentEnd = (unsigned int)(p->segments.heap.addr)
 				+ p->segments.heap.len;
-		newEnd = (unsigned int)(args->arg2)
-				+ (unsigned int)(args->arg3);
+		newEnd = (unsigned int)(req->args.arg2)
+				+ (unsigned int)(req->args.arg3);
 		if (currentEnd == newEnd)
-			p->segments.heap.len = (unsigned int)(args->arg2)
+			p->segments.heap.len = (unsigned int)(req->args.arg2)
 					- (unsigned int)(p->segments.heap.addr);
 
 		reply->data[0] = 0;
@@ -101,10 +105,11 @@ int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	return reply_failure;
 }
 
-int mm_sbrk(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+int mm_sbrk(mm_request *req)
 {
+	mm_reply_t *reply = (mm_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(rdvno));
+		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
 			reply->data[0] = ESRCH;
 			break;
@@ -113,7 +118,7 @@ int mm_sbrk(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		mm_process_t *p = get_process(th);
 		mm_segment_t *s = &(p->segments.heap);
 		uintptr_t end = (uintptr_t)(s->addr) + s->len;
-		intptr_t diff = (intptr_t)(args->arg1);
+		intptr_t diff = (intptr_t)(req->args.arg1);
 		if (diff > 0) {
 			diff = pageRoundUp(diff);
 			if (s->max - s->len < diff) {

@@ -522,10 +522,11 @@ static int set_local(mm_process_t *process, char *wd, const size_t wd_len)
 	return 0;
 }
 
-int mm_thread_find(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+int mm_thread_find(mm_request *req)
 {
+	mm_reply_t *reply = (mm_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find((ID)args->arg1);
+		mm_thread_t *th = thread_find((ID)(req->args.arg1));
 		if (!th) {
 			reply->data[0] = ESRCH;
 			break;

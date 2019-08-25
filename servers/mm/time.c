@@ -47,17 +47,18 @@ static bool get_timespec(struct timespec *tspec)
 	return true;
 }
 
-int mm_clock_gettime(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+int mm_clock_gettime(mm_request *req)
 {
+	mm_reply_t *reply = (mm_reply_t *) &(req->args);
 	do {
 		struct timespec tspec;
 
-		if (args->arg1 != CLOCK_REALTIME) {
+		if (req->args.arg1 != CLOCK_REALTIME) {
 			reply->data[0] = EINVAL;
 			break;
 		}
 
-		if (!args->arg2) {
+		if (!(req->args.arg2)) {
 			reply->data[0] = EFAULT;
 			break;
 		}
@@ -67,8 +68,9 @@ int mm_clock_gettime(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			break;
 		}
 
-		if (kcall->region_put(get_rdv_tid(rdvno),
-				(void*)(args->arg2), sizeof(tspec), &tspec)) {
+		if (kcall->region_put(get_rdv_tid(req->rdvno),
+				(void*)(req->args.arg2), sizeof(tspec),
+				&tspec)) {
 			reply->data[0] = EFAULT;
 			break;
 		}

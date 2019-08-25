@@ -39,10 +39,11 @@ static int _seek(mm_process_t *, mm_file_t *, mm_args_t *);
 static size_t calc_path(char *, char *, const size_t);
 
 
-int mm_fork(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+int mm_fork(mm_request *req)
 {
+	mm_reply_t *reply = (mm_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(rdvno));
+		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
 			//TODO use other errno
 			reply->data[0] = ESRCH;
@@ -59,7 +60,7 @@ int mm_fork(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 
 		int thread_id;
 		int error_no = thread_create(&thread_id, child,
-				(FP)(args->arg2), (VP)(args->arg1));
+				(FP)(req->args.arg2), (VP)(req->args.arg1));
 		if (error_no) {
 			log_err("mm: th create err\n");
 			reply->data[0] = error_no;
@@ -85,10 +86,11 @@ int mm_fork(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	return reply_failure;
 }
 
-int mm_exec(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+int mm_exec(mm_request *req)
 {
+	mm_reply_t *reply = (mm_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(rdvno));
+		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
 			//TODO use other errno
 			reply->data[0] = ESRCH;
@@ -96,7 +98,8 @@ int mm_exec(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		}
 
 		mm_process_t *process = get_process(th);
-		return process_exec(reply, process, th->node.key, args);
+		return process_exec(reply, process, th->node.key,
+				&(req->args));
 	} while (false);
 
 	reply->result = -1;
@@ -254,10 +257,11 @@ int process_exec(mm_reply_t *reply, mm_process_t *process, const int thread_id,
 	return reply_failure;
 }
 
-int mm_wait(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+int mm_wait(mm_request *req)
 {
+	mm_reply_t *reply = (mm_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(rdvno));
+		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
 			//TODO use other errno
 			reply->data[0] = ESRCH;
@@ -265,7 +269,7 @@ int mm_wait(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		}
 
 		mm_process_t *process = get_process(th);
-		process->rdvno = rdvno;
+		process->rdvno = req->rdvno;
 
 		int result = process_release_body(process);
 		if (result) {
@@ -280,10 +284,11 @@ int mm_wait(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	return reply_failure;
 }
 
-int mm_exit(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+int mm_exit(mm_request *req)
 {
+	mm_reply_t *reply = (mm_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(rdvno));
+		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
 			//TODO use other errno
 			reply->data[0] = ESRCH;
@@ -291,7 +296,7 @@ int mm_exit(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		}
 
 		mm_process_t *process = get_process(th);
-		process_destroy(process, args->arg1);
+		process_destroy(process, req->args.arg1);
 //		log_info("mm: %d exit\n", process->node.key);
 
 		reply->result = 0;
@@ -303,10 +308,11 @@ int mm_exit(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	return reply_failure;
 }
 
-int mm_chdir(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+int mm_chdir(mm_request *req)
 {
+	mm_reply_t *reply = (mm_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(rdvno));
+		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
 			//TODO use other errno
 			reply->data[0] = ESRCH;
@@ -315,7 +321,7 @@ int mm_chdir(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 
 		mm_process_t *process = get_process(th);
 		ER_UINT len = kcall->region_copy(th->node.key,
-				(char*)(args->arg1), PATH_MAX, pathbuf2);
+				(char*)(req->args.arg1), PATH_MAX, pathbuf2);
 		if (len < 0) {
 			reply->data[0] = EFAULT;
 			break;
@@ -337,7 +343,7 @@ int mm_chdir(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		mm_file_t *file;
 		devmsg_t message;
 		int result = _walk(&file, process, th->node.key,
-				(char*)(args->arg1), &message);
+				(char*)(req->args.arg1), &message);
 		if (result) {
 			reply->data[0] = result;
 			break;
@@ -446,10 +452,11 @@ static size_t calc_path(char *dest, char *src, const size_t size)
 	}
 }
 
-int mm_dup(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+int mm_dup(mm_request *req)
 {
+	mm_reply_t *reply = (mm_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(rdvno));
+		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
 			//TODO use other errno
 			reply->data[0] = ESRCH;
@@ -457,21 +464,21 @@ int mm_dup(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		}
 
 		mm_process_t *process = get_process(th);
-		int fd = args->arg1;
+		int fd = req->args.arg1;
 		mm_descriptor_t *d1 = process_find_desc(process, fd);
 		if (!d1) {
 			reply->data[0] = EBADF;
 			break;
 		}
 
-		if (fd != args->arg2) {
-			if (args->arg2 < 0) {
+		if (fd != req->args.arg2) {
+			if (req->args.arg2 < 0) {
 				reply->data[0] = EINVAL;
 				break;
 			}
 
 			mm_descriptor_t *d2 = process_find_desc(process,
-					args->arg2);
+					req->args.arg2);
 			if (d2) {
 				devmsg_t message;
 				int error_no = _clunk(process->session,
@@ -492,7 +499,8 @@ int mm_dup(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 					break;
 				}
 
-				if (process_set_desc(process, args->arg2, d2)) {
+				if (process_set_desc(process, req->args.arg2,
+						d2)) {
 					process_deallocate_desc(d2);
 					//TODO what to do?
 				}
@@ -502,7 +510,7 @@ int mm_dup(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 			d2->file->f_count++;
 		}
 
-		reply->result = args->arg2;
+		reply->result = req->args.arg2;
 		reply->data[0] = 0;
 		return reply_success;
 	} while (false);
@@ -511,10 +519,11 @@ int mm_dup(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 	return reply_failure;
 }
 
-int mm_lseek(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
+int mm_lseek(mm_request *req)
 {
+	mm_reply_t *reply = (mm_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(rdvno));
+		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
 			//TODO use other errno
 			reply->data[1] = ESRCH;
@@ -522,7 +531,8 @@ int mm_lseek(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 		}
 
 		mm_process_t *process = get_process(th);
-		mm_descriptor_t *desc = process_find_desc(process, args->arg1);
+		mm_descriptor_t *desc = process_find_desc(process,
+				req->args.arg1);
 		if (!desc) {
 			reply->data[1] = EBADF;
 			break;
@@ -530,7 +540,7 @@ int mm_lseek(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args)
 
 		//TODO return error if directory
 		//TODO do nothing if pipe
-		int result = _seek(process, desc->file, args);
+		int result = _seek(process, desc->file, &(req->args));
 		if (result) {
 			reply->data[1] = result;
 			break;

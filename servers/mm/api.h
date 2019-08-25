@@ -27,7 +27,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <device.h>
 #include <mm.h>
+#include <set/tree.h>
 
 typedef enum {
 	reply_success = 0,
@@ -35,25 +37,36 @@ typedef enum {
 	reply_wait = 2
 } mm_reply_type_e;
 
-extern int mm_fork(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_exec(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_wait(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_exit(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_vmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_vunmap(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_sbrk(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_chdir(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_dup(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_lseek(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_open(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_create(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_read(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_write(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_close(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_remove(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_fstat(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_chmod(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_clock_gettime(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
-extern int mm_thread_find(mm_reply_t *reply, RDVNO rdvno, mm_args_t *args);
+typedef struct {
+	node_t node;//TODO key is tag = rdvno
+	mm_args_t args;
+	RDVNO rdvno;
+	devmsg_t message;
+//	char *pathbuf1;//TODO kalloc
+//	char *pathbuf2;//TODO kalloc
+//	mm_thread_t *caller;
+	/* callback parameters */
+} mm_request;
+
+extern int mm_fork(mm_request *);
+extern int mm_exec(mm_request *);
+extern int mm_wait(mm_request *);
+extern int mm_exit(mm_request *);
+extern int mm_vmap(mm_request *);
+extern int mm_vunmap(mm_request *);
+extern int mm_sbrk(mm_request *);
+extern int mm_chdir(mm_request *);
+extern int mm_dup(mm_request *);
+extern int mm_lseek(mm_request *);
+extern int mm_open(mm_request *);
+extern int mm_create(mm_request *);
+extern int mm_read(mm_request *);
+extern int mm_write(mm_request *);
+extern int mm_close(mm_request *);
+extern int mm_remove(mm_request *);
+extern int mm_fstat(mm_request *);
+extern int mm_chmod(mm_request *);
+extern int mm_clock_gettime(mm_request *);
+extern int mm_thread_find(mm_request *);
 
 #endif
