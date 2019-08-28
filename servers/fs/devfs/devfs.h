@@ -26,24 +26,19 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
 #include <device.h>
 #include <fs/config.h>
-#include <sys/types.h>
 
 #define MAX_DEVICE (32)
 
 typedef struct {
-	UW id;
-	B name[MAX_DEVICE_NAME + 1];
-	UW size;
+	int id;
+	char name[MAX_DEVICE_NAME + 1];
+	size_t size;
 	vdriver_t *driver;
 } device_info_t;
 
 extern bool device_init(void);
-extern device_info_t *device_find(const UW id);
-
-extern int write_device(int, void *, off_t, size_t, size_t *);
-extern int read_device(int, void *, off_t, size_t, size_t *);
+extern device_info_t *device_find(const int id);
 
 #endif

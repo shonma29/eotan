@@ -260,8 +260,8 @@ typedef struct {
 
 //TODO move to other header
 typedef struct _vdriver_t {
-	unsigned int id;
-	unsigned char *name;
+	int id;
+	char *name;
 	const size_t size;
 	int (*detach)(void);
 	int (*open)(void);

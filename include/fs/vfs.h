@@ -129,7 +129,7 @@ extern vfs_operation_t vfs_fsops;
 extern int copy_from(void *, void *, const size_t);
 extern int copy_to(void *, void *, const size_t);
 
-extern void block_initialize(block_device_t *);
+extern int block_initialize(block_device_t *);
 
 extern int cache_initialize(void);
 extern void *cache_create(block_device_t *, const unsigned int);

@@ -24,24 +24,33 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stdbool.h>
+#include <errno.h>
+#include <major.h>
 #include <string.h>
 #include <devfs/devfs.h>
 #include <fs/vfs.h>
+
+static vdriver_t *driver;
 
 static void block_clear(block_device_t *, void *);
 static int block_read(block_device_t *, void *, const int);
 static int block_write(block_device_t *, void *, const int);
 static int block_invalidate(block_device_t *, const int);
 
-void block_initialize(block_device_t *dev)
+
+int block_initialize(block_device_t *dev)
 {
-	dev->channel = 0;
-	dev->block_size = 0;
 	dev->clear = block_clear;
 	dev->read = block_read;
 	dev->write = block_write;
 	dev->invalidate = block_invalidate;
+
+	device_info_t *info = device_find(dev->channel);
+	if (info) {
+		driver = info->driver;
+		return 0;
+	} else
+		return ENODEV;
 }
 
 static void block_clear(block_device_t *dev, void *buf)
@@ -51,18 +60,24 @@ static void block_clear(block_device_t *dev, void *buf)
 
 static int block_read(block_device_t *dev, void *buf, const int blockno)
 {
-	size_t read_length;
+	if (blockno < 0)
+		return EINVAL;
 
-	return read_device(dev->channel, buf, blockno * dev->block_size,
-			dev->block_size, &read_length);
+	size_t len = dev->block_size;
+	int result = driver->read(buf, get_channel(dev->channel),
+			blockno * dev->block_size, len);
+	return ((result == len) ? len : (-1));
 }
 
 static int block_write(block_device_t *dev, void *buf, const int blockno)
 {
-	size_t written_length;
+	if (blockno < 0)
+		return EINVAL;
 
-	return write_device(dev->channel, buf, blockno * dev->block_size,
-			dev->block_size, &written_length);
+	size_t len = dev->block_size;
+	int result = driver->write(buf, get_channel(dev->channel),
+			blockno * dev->block_size, len);
+	return ((result == len) ? 0 : (-1));
 }
 
 static int block_invalidate(block_device_t *dev, const int blockno)

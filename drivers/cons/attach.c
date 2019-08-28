@@ -30,7 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 
 static vdriver_t driver_mine = {
 	get_device_id(DEVICE_MAJOR_CONS, 0),
-	(unsigned char*)MYNAME,
+	MYNAME,
 	DEV_BUF_SIZE,
 	detach,
 	open,

@@ -105,7 +105,7 @@ static int compare(const void *a, const void *b)
 	return ((x == y) ? 0 : ((x < y) ? (-1) : 1));
 }
 
-device_info_t *device_find(const UW devid)
+device_info_t *device_find(const int devid)
 {
 	return (device_info_t*)(hash_get(hash, (void*)devid));
 }

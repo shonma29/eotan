@@ -36,14 +36,13 @@ static int block_read(block_device_t *, void *, const int);
 static int block_write(block_device_t *, void *, const int);
 static int block_invalidate(block_device_t *, const int);
 
-void block_initialize(block_device_t *dev)
+int block_initialize(block_device_t *dev)
 {
-	dev->channel = 0;
-	dev->block_size = 0;
 	dev->clear = block_clear;
 	dev->read = block_read;
 	dev->write = block_write;
 	dev->invalidate = block_invalidate;
+	return 0;
 }
 
 static void block_clear(block_device_t *dev, void *buf)

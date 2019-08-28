@@ -125,9 +125,11 @@ vfs_operation_t vfs_fsops = {
  */
 static int sfs_mount(ID device, vfs_t *rootfsp, vnode_t *rootfile)
 {
-    block_initialize(&(rootfsp->device));
     rootfsp->device.channel = device;
     rootfsp->device.block_size = SFS_BLOCK_SIZE;
+    if (block_initialize(&(rootfsp->device)))
+	return (EIO);
+
     rootfsp->private = cache_get(&(rootfsp->device), 1);
 
     if (!(rootfsp->private))

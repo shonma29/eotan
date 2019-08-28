@@ -33,7 +33,7 @@ For more information, please refer to <http://unlicense.org/>
 
 static vdriver_t driver_mine = {
 	get_device_id(DEVICE_MAJOR_RAMDISK, 0),
-	(unsigned char*)MYNAME,
+	MYNAME,
 	INITRD_SIZE,
 	detach,
 	open,
