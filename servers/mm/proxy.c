@@ -93,8 +93,7 @@ int mm_open(mm_request *req)
 	do {
 		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
-			//TODO use other errno
-			reply->data[0] = ESRCH;
+			reply->data[0] = EPERM;
 			break;
 		}
 
@@ -156,8 +155,7 @@ int mm_create(mm_request *req)
 	do {
 		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
-			//TODO use other errno
-			reply->data[0] = ESRCH;
+			reply->data[0] = EPERM;
 			break;
 		}
 
@@ -261,8 +259,7 @@ int mm_read(mm_request *req)
 	do {
 		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
-			//TODO use other errno
-			reply->data[0] = ESRCH;
+			reply->data[0] = EPERM;
 			break;
 		}
 
@@ -302,8 +299,7 @@ int mm_write(mm_request *req)
 	do {
 		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
-			//TODO use other errno
-			reply->data[0] = ESRCH;
+			reply->data[0] = EPERM;
 			break;
 		}
 
@@ -351,8 +347,7 @@ int mm_close(mm_request *req)
 	do {
 		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
-			//TODO use other errno
-			reply->data[0] = ESRCH;
+			reply->data[0] = EPERM;
 			break;
 		}
 
@@ -399,8 +394,7 @@ int mm_remove(mm_request *req)
 	do {
 		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
-			//TODO use other errno
-			reply->data[0] = ESRCH;
+			reply->data[0] = EPERM;
 			break;
 		}
 
@@ -450,8 +444,7 @@ int mm_fstat(mm_request *req)
 	do {
 		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
-			//TODO use other errno
-			reply->data[0] = ESRCH;
+			reply->data[0] = EPERM;
 			break;
 		}
 
@@ -487,8 +480,7 @@ int mm_chmod(mm_request *req)
 	do {
 		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
-			//TODO use other errno
-			reply->data[0] = ESRCH;
+			reply->data[0] = EPERM;
 			break;
 		}
 

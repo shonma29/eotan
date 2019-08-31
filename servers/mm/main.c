@@ -191,7 +191,7 @@ static void doit(void)
 
 		int result;
 		if (size != sizeof(req->args))
-			result = EINVAL;
+			result = EPROTO;
 		else if (req->args.syscall_no > NUM_OF_FUNCS)
 			result = ENOTSUP;
 		else

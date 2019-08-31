@@ -53,13 +53,12 @@ static FILE *_fdopen(FILE *stream, const int fd, const char *mode)
 	}
 
 	off_t offset = lseek(fd, 0, SEEK_CUR);
-	if (offset == (off_t)(-1)) {
+	if (offset == (off_t) (-1)) {
 		int error_no = errno;
 		switch (error_no) {
-//TODO fix when proxy completes
-//		case ESRCH:
-//		case EBADF:
-//			return NULL;
+		case EPERM:
+		case EBADF:
+			return NULL;
 		default:
 			offset = 0;
 			break;

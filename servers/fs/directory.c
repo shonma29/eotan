@@ -37,8 +37,7 @@ void if_walk(fs_request *req)
 	do {
 		session_t *session = session_find(unpack_sid(req));
 		if (!session) {
-			//TODO set adequate errno
-			error_no = ESRCH;
+			error_no = EPERM;
 			break;
 		}
 
@@ -138,7 +137,7 @@ void if_create(fs_request *req)
 	do {
 		session_t *session = session_find(unpack_sid(req));
 		if (!session) {
-			error_no = ESRCH;
+			error_no = EPERM;
 			break;
 		}
 
@@ -198,7 +197,7 @@ void if_remove(fs_request *req)
 	do {
 		session_t *session = session_find(unpack_sid(req));
 		if (!session) {
-			error_no = ESRCH;
+			error_no = EPERM;
 			break;
 		}
 

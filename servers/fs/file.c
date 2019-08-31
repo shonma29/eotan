@@ -43,7 +43,7 @@ void if_open(fs_request *req)
 	do {
 		session_t *session = session_find(unpack_sid(req));
 		if (!session) {
-			error_no = ESRCH;
+			error_no = EPERM;
 			break;
 		}
 
@@ -88,7 +88,7 @@ void if_clunk(fs_request *req)
 	do {
 		session_t *session = session_find(unpack_sid(req));
 		if (!session) {
-			error_no = ESRCH;
+			error_no = EPERM;
 			break;
 		}
 
@@ -115,7 +115,7 @@ void if_read(fs_request *req)
 	do {
 		session_t *session = session_find(unpack_sid(req));
 		if (!session) {
-			error_no = ESRCH;
+			error_no = EPERM;
 			break;
 		}
 
@@ -166,7 +166,7 @@ void if_write(fs_request *req)
 	do {
 		session_t *session = session_find(unpack_sid(req));
 		if (!session) {
-			error_no = ESRCH;
+			error_no = EPERM;
 			break;
 		}
 

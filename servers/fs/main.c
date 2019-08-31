@@ -198,7 +198,7 @@ void start(VP_INT exinf)
 
 		if (size < sizeof(req->packet.header)) {
 			//TODO what is tag?
-			reply_error(req->rdvno, 0, 0, EINVAL);
+			reply_error(req->rdvno, 0, 0, EPROTO);
 			continue;
 		}
 /*
@@ -219,7 +219,7 @@ void start(VP_INT exinf)
 			if (size == func_table[req->packet.header.type].max)
 				result = worker_enqueue(&req);
 			else
-				result = EINVAL;
+				result = EPROTO;
 		}
 
 		if (result)

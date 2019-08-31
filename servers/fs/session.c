@@ -216,7 +216,7 @@ int if_exit(fs_request *req)
 {
 	session_t *session = session_find(unpack_sid(req));
 	if (!session)
-		return ESRCH;
+		return EPERM;
 
 	session_destroy(session);
 	reply2(req->rdvno, 0, 0, 0);

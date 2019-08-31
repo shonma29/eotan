@@ -111,7 +111,7 @@ int mm_sbrk(mm_request *req)
 	do {
 		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
-			reply->data[0] = ESRCH;
+			reply->data[0] = EPERM;
 			break;
 		}
 
