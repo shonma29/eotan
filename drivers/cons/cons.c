@@ -24,9 +24,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <device.h>
 #include <services.h>
 #include <stddef.h>
+#include <dev/device.h>
 #include <nerve/kcall.h>
 #include <sys/types.h>
 #include "../../lib/libserv/libserv.h"
@@ -58,7 +58,7 @@ int read(char *outbuf, const int channel,
 	while (rest > 0) {
 		ER_UINT result;
 		size_t len = (rest < DEV_BUF_SIZE) ? rest : DEV_BUF_SIZE;
-		devmsg_t packet;
+		fsmsg_t packet;
 
 		packet.header.type = Tread;
 		packet.Tread.fid = channel;
@@ -96,7 +96,7 @@ int write(char *inbuf, const int channel,
 	while (rest > 0) {
 		ER_UINT result;
 		size_t len = (rest < DEV_BUF_SIZE) ? rest : DEV_BUF_SIZE;
-		devmsg_t packet;
+		fsmsg_t packet;
 
 		packet.header.type = Twrite;
 		packet.Twrite.fid = channel;

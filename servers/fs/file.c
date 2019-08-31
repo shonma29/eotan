@@ -67,7 +67,7 @@ void if_open(fs_request *req)
 		//TODO save other bits
 		file->f_flag = request->mode & O_ACCMODE;
 
-		devmsg_t response;
+		fsmsg_t response;
 		response.header.token = req->packet.header.token;
 		response.header.type = Ropen;
 		response.Ropen.tag = request->tag;
@@ -96,7 +96,7 @@ void if_clunk(fs_request *req)
 		if (error_no)
 			break;
 
-		devmsg_t response;
+		fsmsg_t response;
 		response.header.token = req->packet.header.token;
 		response.header.type = Rclunk;
 		response.Rclunk.tag = request->tag;
@@ -146,7 +146,7 @@ void if_read(fs_request *req)
 		if (error_no)
 			break;
 
-		devmsg_t response;
+		fsmsg_t response;
 		response.header.token = req->packet.header.token;
 		response.header.type = Rread;
 		response.Rread.tag = request->tag;
@@ -220,7 +220,7 @@ void if_write(fs_request *req)
 		} else
 			wrote_size = 0;
 
-		devmsg_t response;
+		fsmsg_t response;
 		response.header.token = req->packet.header.token;
 		response.header.type = Rwrite;
 		response.Rwrite.tag = request->tag;

@@ -27,7 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <device.h>
+#include <fs/protocol.h>
 
 #define MYNAME "cons"
 
@@ -43,7 +43,7 @@ typedef struct _interrupt_message_t {
 
 typedef struct _request_message_t {
 	RDVNO rdvno;
-	devmsg_t message;
+	fsmsg_t message;
 } request_message_t;
 
 extern void hmi_handle(const int, const int);

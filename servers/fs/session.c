@@ -77,7 +77,7 @@ void if_attach(fs_request *req)
 		file->f_vnode = rootfile;
 		file->f_flag = O_ACCMODE;
 
-		devmsg_t response;
+		fsmsg_t response;
 		response.header.token = req->packet.header.token;
 		response.header.type = Rattach;
 		response.Rattach.tag = request->tag;

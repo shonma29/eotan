@@ -24,9 +24,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <device.h>
 #include <major.h>
 #include <boot/initrd.h>
+#include <dev/device.h>
 #include <nerve/global.h>
 #include "../../lib/libserv/libserv.h"
 #include "ramdisk.h"

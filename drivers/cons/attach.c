@@ -24,8 +24,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <device.h>
 #include <major.h>
+#include <dev/device.h>
 #include "cons.h"
 
 static vdriver_t driver_mine = {

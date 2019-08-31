@@ -27,12 +27,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <device.h>
+#include <fs/protocol.h>
 #include <sys/syslimits.h>
 #include <sys/types.h>
 
 typedef struct {
-	devmsg_t packet;
+	fsmsg_t packet;
 	RDVNO rdvno;
 	char buf[PATH_MAX + 1];
 } fs_request;
@@ -58,7 +58,7 @@ static inline int unpack_tid(const fs_request *req)
 	return ((req->packet.header.token >> 16) & 0xffff);
 }
 
-extern int reply(const RDVNO, const devmsg_t *, const size_t);
+extern int reply(const RDVNO, const fsmsg_t *, const size_t);
 extern int reply_error(const RDVNO, const int, const int, const int);
 
 #endif

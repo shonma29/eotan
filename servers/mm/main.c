@@ -72,7 +72,7 @@ static char req_buf[
 ];
 
 static ER init(void);
-static ER worker_initialize(void);
+static ER_ID worker_initialize(void);
 static void worker(void);
 static int worker_enqueue(mm_request **req);
 static void doit(void);
@@ -106,7 +106,7 @@ static ER init(void)
 	return kcall->port_open(&pk_cpor);
 }
 
-static ER worker_initialize(void)
+static ER_ID worker_initialize(void)
 {
 	request_slab.unit_size = sizeof(mm_request);
 	request_slab.block_size = PAGE_SIZE;

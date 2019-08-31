@@ -1,5 +1,5 @@
-#ifndef __SYSLOG_H__
-#define __SYSLOG_H__ 1
+#ifndef _DEV_DEVICE_H_
+#define _DEV_DEVICE_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,49 +27,19 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stddef.h>
-#include <fs/protocol.h>
 #include <sys/types.h>
 
-//#define SYSLOG_MAX_LENGTH (1024)
-#define SYSLOG_MAX_LENGTH (80)
+#define DEV_BUF_SIZE (1024)
 
-enum syslog_channel {
-	channel_kernlog,
-	channel_syslog
-};
-
-enum log_level {
-	LOG_EMERG,
-	LOG_ALERT,
-	LOG_CRIT,
-	LOG_ERR,
-	LOG_WARNING,
-	LOG_NOTICE,
-	LOG_INFO,
-	LOG_DEBUG
-};
-
-typedef union {
-	struct {
-		enum fs_message_type type;
-		enum syslog_channel fid;
-		size_t count;
-	} Tread;
-	struct {
-		ssize_t count;
-		char data[SYSLOG_MAX_LENGTH];
-	} Rread;
-	struct {
-		enum fs_message_type type;
-		enum log_level priority;
-		size_t count;
-		char data[SYSLOG_MAX_LENGTH];
-	} Twrite;
-	struct {
-		ssize_t count;
-	} Rwrite;
-} syslog_t;
-
-extern void syslog(const int,  const char *, ...);
+typedef struct _vdriver_t {
+	int id;
+	char *name;
+	const size_t size;
+	int (*detach)(void);
+	int (*open)(void);
+	int (*close)(const int);
+	int (*read)(char *, const int, const off_t, const size_t);
+	int (*write)(char *, const int, const off_t, const size_t);
+} vdriver_t;
 
 #endif

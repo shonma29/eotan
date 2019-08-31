@@ -58,7 +58,7 @@ void if_stat(fs_request *req)
 			break;
 		}
 
-		devmsg_t response;
+		fsmsg_t response;
 		response.header.token = req->packet.header.token;
 		response.header.type = Rstat;
 		response.Rstat.tag = request->tag;
@@ -111,7 +111,7 @@ void if_wstat(fs_request *req)
 		if (error_no)
 			break;
 
-		devmsg_t response;
+		fsmsg_t response;
 		response.header.token = req->packet.header.token;
 		response.header.type = Rwstat;
 		response.Rwstat.tag = request->tag;

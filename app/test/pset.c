@@ -25,10 +25,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <device.h>
 #include <math.h>
 #include <services.h>
 #include <stdio.h>
+#include <fs/protocol.h>
 
 #define SPLIT (360)
 
@@ -43,7 +43,7 @@ static unsigned int height = 480;
 
 int pset(const unsigned int x, const unsigned int y, const int color)
 {
-	devmsg_t msg;
+	fsmsg_t msg;
 	ER_UINT err;
 	point_t buf;
 

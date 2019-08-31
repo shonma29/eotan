@@ -27,13 +27,14 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <core/options.h>
 #include <console.h>
-#include <device.h>
 #include <errno.h>
 #include <event.h>
 #include <services.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
+#include <dev/device.h>
+#include <fs/protocol.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
@@ -117,7 +118,7 @@ static void process(const int arg)
 		interrupt_message_t data;
 
 		if (lfq_dequeue(&int_queue, &data) == QUEUE_OK) {
-			devmsg_t *message;
+			fsmsg_t *message;
 			VP_INT d;
 
 			switch (data.type) {
@@ -227,7 +228,7 @@ static void reply(request_message_t *req, const size_t size)
 
 static void execute(request_message_t *req)
 {
-	devmsg_t *message = &(req->message);
+	fsmsg_t *message = &(req->message);
 	ER_UINT result;
 //TODO cancel request
 	switch (message->header.type) {
@@ -349,8 +350,8 @@ static ER initialize(void)
 	W i;
 	T_CPOR pk_cpor = {
 			TA_TFIFO,
-			sizeof(devmsg_t),
-			sizeof(devmsg_t)
+			sizeof(fsmsg_t),
+			sizeof(fsmsg_t)
 	};
 	T_CTSK pk_ctsk = {
 		TA_HLNG | TA_ACT, 0, process, pri_server_middle,

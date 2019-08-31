@@ -111,7 +111,7 @@ int process_exec(mm_reply_t *reply, mm_process_t *process, const int thread_id,
 {
 	do {
 		mm_file_t *file;
-		devmsg_t message;
+		fsmsg_t message;
 		int result = _walk(&file, process, thread_id,
 				(char*)(args->arg1), &message);
 		if (result) {
@@ -341,7 +341,7 @@ int mm_chdir(mm_request *req)
 
 //		int old = (process->wd) ? process->wd->node.key : 0;
 		mm_file_t *file;
-		devmsg_t message;
+		fsmsg_t message;
 		int result = _walk(&file, process, th->node.key,
 				(char*)(req->args.arg1), &message);
 		if (result) {
@@ -480,7 +480,7 @@ int mm_dup(mm_request *req)
 			mm_descriptor_t *d2 = process_find_desc(process,
 					req->args.arg2);
 			if (d2) {
-				devmsg_t message;
+				fsmsg_t message;
 				int error_no = _clunk(process->session,
 						d2->file,
 						create_token(th->node.key,
@@ -580,7 +580,7 @@ static int _seek(mm_process_t *process, mm_file_t *file, mm_args_t *args)
 	case SEEK_END:
 	{
 		struct stat st;
-		devmsg_t message;
+		fsmsg_t message;
 		int result = _fstat(&st, file,
 				create_token(kcall->thread_get_id(),
 						process->session),

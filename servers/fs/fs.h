@@ -29,6 +29,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <fs/vfs.h>
 #include <set/tree.h>
 
+#define MYNAME "fs"
+
 //TODO use off_t
 //TODO move to vfs.h
 static inline int fs_read(vnode_t *vnode, copier_t *dest, const int offset,

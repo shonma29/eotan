@@ -35,33 +35,33 @@ For more information, please refer to <http://unlicense.org/>
 #include "devfs/devfs.h"
 #include "../../lib/libserv/libserv.h"
 
-#define REQUEST_QUEUE_SIZE MAX_REQUEST
+struct fs_func {
+	void (*call)(fs_request*);
+	size_t max;
+};
 
 static ID receiver_id;
 static ID worker_id;
 static slab_t request_slab;
 static volatile lfq_t req_queue;
-static char req_buf[
-		lfq_buf_size(sizeof(fs_request *), REQUEST_QUEUE_SIZE)
-];
-static void (*syscall[])(fs_request*) = {
-	if_attach,
-	if_walk,
-	if_open,
-	if_create,
-	if_read,
-	if_write,
-	if_clunk,
-	if_remove,
-	if_stat,
-	if_wstat
+static char req_buf[lfq_buf_size(sizeof(fs_request *), MAX_REQUEST)];
+static struct fs_func func_table[] = {
+	{ if_attach, MESSAGE_SIZE(Tattach) },
+	{ if_walk, MESSAGE_SIZE(Twalk) },
+	{ if_open, MESSAGE_SIZE(Topen) },
+	{ if_create, MESSAGE_SIZE(Tcreate) },
+	{ if_read, MESSAGE_SIZE(Tread) },
+	{ if_write, MESSAGE_SIZE(Twrite) },
+	{ if_clunk, MESSAGE_SIZE(Tclunk) },
+	{ if_remove, MESSAGE_SIZE(Tremove) },
+	{ if_stat, MESSAGE_SIZE(Tstat) },
+	{ if_wstat, MESSAGE_SIZE(Twstat) }
 };
+#define NUM_OF_FUNC (sizeof(func_table) / sizeof(func_table[0]))
 
 static int initialize(void);
-static bool port_init(void);
-static void request_init(void);
-static ER_UINT worker_init(void);
-static void work(void);
+static ER_ID worker_initialize(void);
+static void worker(void);
 
 
 static int initialize(void)
@@ -71,63 +71,53 @@ static int initialize(void)
 	if (fs_initialize())
 		return -1;
 
-	T_CMTX pk_cmtx = {
-		TA_CEILING,
-		pri_server_high
-	};
-	ER result;
-
-	receiver_id = kcall->thread_get_id();
-	result = kcall->mutex_create(receiver_id, &pk_cmtx);
-	if (result) {
-		log_err("fs: mutex_create failed %d\n", result);
-		return -1;
-	}
-
-	if (!port_init()) {
-		log_err("fs: port_init failed\n");
-		return -1;
-	}
-
 	if (!device_init())
 		return -1;
 
-	request_init();
-	worker_id = worker_init();
-	if (worker_id < 0) {
-		log_err("fs: worker_init failed %d\n", worker_id);
-		return -1;
-	}
-
 	if (device_find(sysinfo->root.device)) {
 		if (fs_mount(sysinfo->root.device)) {
-			log_err("fs: fs_mount(%x, %d) failed\n",
+			log_err(MYNAME ": fs_mount(%x, %d) failed\n",
 					sysinfo->root.device,
 					sysinfo->root.fstype);
 		} else {
-			log_info("fs: fs_mount(%x, %d) succeeded\n",
+			log_info(MYNAME ": fs_mount(%x, %d) succeeded\n",
 					sysinfo->root.device,
 					sysinfo->root.fstype);
 		}
 	}
 
-	log_info("fs: start\n");
+	receiver_id = kcall->thread_get_id();
+	T_CMTX pk_cmtx = {
+		TA_CEILING,
+		pri_server_high
+	};
+	ER result = kcall->mutex_create(receiver_id, &pk_cmtx);
+	if (result) {
+		log_err(MYNAME ": mutex_create failed %d\n", result);
+		return -1;
+	}
+
+	worker_id = worker_initialize();
+	if (worker_id < 0) {
+		log_err(MYNAME ": worker_initialize failed %d\n", worker_id);
+		return -1;
+	}
+
+	struct t_cpor pk_cpor = {
+		TA_TFIFO,
+		sizeof(fsmsg_t),
+		sizeof(fsmsg_t)
+	};
+	result = kcall->port_open(&pk_cpor);
+	if (result) {
+		log_err(MYNAME ": port_initialize failed %d\n", result);
+		return -1;
+	}
 
 	return 0;
 }
 
-static bool port_init(void)
-{
-	struct t_cpor packet = {
-		TA_TFIFO,
-		sizeof(devmsg_t),
-		sizeof(devmsg_t)
-	};
-
-	return kcall->port_open(&packet) == E_OK;
-}
-
-static void request_init(void)
+static ER_ID worker_initialize(void)
 {
 	request_slab.unit_size = sizeof(fs_request);
 	request_slab.block_size = PAGE_SIZE;
@@ -138,32 +128,27 @@ static void request_init(void)
 	request_slab.pfree = kcall->pfree;
 	slab_create(&request_slab);
 
-	lfq_initialize(&req_queue, req_buf, sizeof(fs_request*),
-			REQUEST_QUEUE_SIZE);
-}
+	lfq_initialize(&req_queue, req_buf, sizeof(fs_request*), MAX_REQUEST);
 
-static ER_UINT worker_init(void)
-{
 	T_CTSK pk_ctsk = {
 		TA_HLNG | TA_ACT,
 		(VP_INT)NULL,
-		(FP)work,
+		(FP)worker,
 		pri_server_middle,
 		KTHREAD_STACK_SIZE,
 		NULL,
 		NULL,
 		NULL
 	};
-
 	return kcall->thread_create_auto(&pk_ctsk);
 }
 
-static void work(void)
+static void worker(void)
 {
 	for (;;) {
 		fs_request *req;
 		if (lfq_dequeue(&req_queue, &req) == QUEUE_OK) {
-			syscall[req->packet.header.type](req);
+			func_table[req->packet.header.type].call(req);
 			kcall->mutex_lock(receiver_id, TMO_FEVR);
 			slab_free(&request_slab, req);
 			kcall->mutex_unlock(receiver_id);
@@ -193,6 +178,8 @@ void start(VP_INT exinf)
 		return;
 	}
 
+	log_info(MYNAME ": start\n");
+
 	for (fs_request *req = slab_alloc(&request_slab);;) {
 		if (!req) {
 			kcall->thread_sleep();
@@ -205,7 +192,7 @@ void start(VP_INT exinf)
 		ER_UINT size = kcall->port_accept(PORT_FS, &(req->rdvno),
 				&(req->packet));
 		if (size < 0) {
-			log_err("fs: receive failed %d\n", size);
+			log_err(MYNAME ": receive failed %d\n", size);
 			continue;
 		}
 
@@ -218,57 +205,21 @@ void start(VP_INT exinf)
 		//TODO validate session
 		pid_t pid = thread_find(unpack_tid(req));
 		if (pid == -1) {
-			log_err("fs: find failed %d\n", pid);
+			log_err(MYNAME ": find failed %d\n", pid);
 			//TODO what to do?
 			reply2(req->rdvno, EINVAL, -1, 0);
 			continue;
 		}
 */
+
 		int result;
-		switch (req->packet.header.type) {
-		case Tattach:
-			result = (size == MESSAGE_SIZE(Tattach)) ?
-					worker_enqueue(&req) : EINVAL;
-			break;
-		case Twalk:
-			result = (size == MESSAGE_SIZE(Twalk)) ?
-					worker_enqueue(&req) : EINVAL;
-			break;
-		case Topen:
-			result = (size == MESSAGE_SIZE(Topen)) ?
-					worker_enqueue(&req) : EINVAL;
-			break;
-		case Tcreate:
-			result = (size == MESSAGE_SIZE(Tcreate)) ?
-					worker_enqueue(&req) : EINVAL;
-			break;
-		case Tread:
-			result = (size == MESSAGE_SIZE(Tread)) ?
-					worker_enqueue(&req) : EINVAL;
-			break;
-		case Twrite:
-			result = (size == MESSAGE_SIZE(Twrite)) ?
-					worker_enqueue(&req) : EINVAL;
-			break;
-		case Tclunk:
-			result = (size == MESSAGE_SIZE(Tclunk)) ?
-					worker_enqueue(&req) : EINVAL;
-			break;
-		case Tremove:
-			result = (size == MESSAGE_SIZE(Tremove)) ?
-					worker_enqueue(&req) : EINVAL;
-			break;
-		case Tstat:
-			result = (size == MESSAGE_SIZE(Tstat)) ?
-					worker_enqueue(&req) : EINVAL;
-			break;
-		case Twstat:
-			result = (size == MESSAGE_SIZE(Twstat)) ?
-					worker_enqueue(&req) : EINVAL;
-			break;
-		default:
+		if (req->packet.header.type >= NUM_OF_FUNC)
 			result = ENOTSUP;
-			break;
+		else {
+			if (size == func_table[req->packet.header.type].max)
+				result = worker_enqueue(&req);
+			else
+				result = EINVAL;
 		}
 
 		if (result)

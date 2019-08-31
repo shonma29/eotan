@@ -24,11 +24,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <device.h>
 #include <services.h>
 #include <stdarg.h>
 #include <string.h>
 #include <syslog.h>
+#include <dev/device.h>
 #include <nerve/kcall.h>
 
 static int send(const syslog_t *);

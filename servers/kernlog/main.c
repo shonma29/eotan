@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <services.h>
 #include <string.h>
 #include <syslog.h>
+#include <dev/device.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
 #include <set/lf_queue.h>
@@ -277,7 +278,7 @@ static int write_cons(char *inbuf, const int channel,
 	while (rest > 0) {
 		ER_UINT result;
 		size_t len = (rest < DEV_BUF_SIZE) ? rest : DEV_BUF_SIZE;
-		devmsg_t packet;
+		fsmsg_t packet;
 
 		packet.header.type = Twrite;
 		packet.Twrite.fid = channel;

@@ -40,7 +40,7 @@ char pathbuf1[PATH_MAX];
 char pathbuf2[PATH_MAX];
 
 static char *split_path(const char *path, char **parent_path);
-static int call_device(const int, devmsg_t *, const size_t, const int,
+static int call_device(const int, fsmsg_t *, const size_t, const int,
 		const size_t);
 static int create_tag(void);
 
@@ -57,7 +57,7 @@ int _attach(mm_process_t *process, const int thread_id)
 		return ENOMEM;
 	}
 
-	devmsg_t message;
+	fsmsg_t message;
 	message.header.type = Tattach;
 	message.header.token = create_token(thread_id, session);
 	message.Tattach.tag = create_tag();
@@ -107,7 +107,7 @@ int mm_open(mm_request *req)
 
 		int fd = desc->node.key;
 		mm_file_t *file;
-		devmsg_t *message = &(req->message);
+		fsmsg_t *message = &(req->message);
 		int result = _walk(&file, process, th->node.key,
 				(char*)(req->args.arg1), message);
 		if (result) {
@@ -184,7 +184,7 @@ int mm_create(mm_request *req)
 		char *parent_path = "";
 		char *head = split_path(pathbuf1, &parent_path);
 		mm_file_t *file;
-		devmsg_t *message = &(req->message);
+		fsmsg_t *message = &(req->message);
 		int result = _walk(&file, process, kcall->thread_get_id(),
 				parent_path, message);
 		if (result) {
@@ -275,7 +275,7 @@ int mm_read(mm_request *req)
 		}
 
 		mm_file_t *file = desc->file;
-		devmsg_t *message = &(req->message);
+		fsmsg_t *message = &(req->message);
 		int result = _read(file,
 				create_token(th->node.key, process->session),
 				file->f_offset, req->args.arg3,
@@ -316,7 +316,7 @@ int mm_write(mm_request *req)
 		}
 
 		mm_file_t *file = desc->file;
-		devmsg_t *message = &(req->message);
+		fsmsg_t *message = &(req->message);
 		message->header.type = Twrite;
 		message->header.token = create_token(th->node.key,
 				process->session);
@@ -370,7 +370,7 @@ int mm_close(mm_request *req)
 			//TODO what to do?
 		}
 
-		devmsg_t *message = &(req->message);
+		fsmsg_t *message = &(req->message);
 		int result = _clunk(process->session, file,
 				create_token(th->node.key, process->session),
 				message);
@@ -406,7 +406,7 @@ int mm_remove(mm_request *req)
 
 		mm_process_t *process = get_process(th);
 		mm_file_t *file;
-		devmsg_t *message = &(req->message);
+		fsmsg_t *message = &(req->message);
 		int result = _walk(&file, process, th->node.key,
 				(char*)(req->args.arg1), message);
 		if (result) {
@@ -463,7 +463,7 @@ int mm_fstat(mm_request *req)
 			break;
 		}
 
-		devmsg_t *message = &(req->message);
+		fsmsg_t *message = &(req->message);
 		int result = _fstat((struct stat *) req->args.arg2, desc->file,
 				create_token(th->node.key, process->session),
 				message);
@@ -494,7 +494,7 @@ int mm_chmod(mm_request *req)
 
 		mm_process_t *process = get_process(th);
 		mm_file_t *file;
-		devmsg_t *message = &(req->message);
+		fsmsg_t *message = &(req->message);
 		int result = _walk(&file, process, th->node.key,
 				(char*)(req->args.arg1), message);
 		if (result) {
@@ -538,7 +538,7 @@ int mm_chmod(mm_request *req)
 }
 
 int _walk(mm_file_t **file, mm_process_t *process, const int thread_id,
-		const char *path, devmsg_t *message)
+		const char *path, fsmsg_t *message)
 {
 	if (!(process->wd))
 		//TODO what to do?
@@ -583,7 +583,7 @@ int _walk(mm_file_t **file, mm_process_t *process, const int thread_id,
 }
 
 int _open(const mm_file_t *file, const int token, const int mode,
-		devmsg_t *message)
+		fsmsg_t *message)
 {
 	message->header.type = Topen;
 	message->header.token = token;
@@ -595,7 +595,7 @@ int _open(const mm_file_t *file, const int token, const int mode,
 }
 
 int _read(const mm_file_t *file, const int token, const off_t offset,
-		const size_t count, char *data, devmsg_t *message)
+		const size_t count, char *data, fsmsg_t *message)
 {
 	message->header.type = Tread;
 	message->header.token = token;
@@ -609,7 +609,7 @@ int _read(const mm_file_t *file, const int token, const off_t offset,
 }
 
 int _clunk(mm_session_t *session, mm_file_t *file, const int token,
-		devmsg_t *message)
+		fsmsg_t *message)
 {
 	file->f_count--;
 	if (file->f_count > 0) {
@@ -633,7 +633,7 @@ int _clunk(mm_session_t *session, mm_file_t *file, const int token,
 }
 
 int _fstat(struct stat *st, const mm_file_t *file, const int token,
-		devmsg_t *message)
+		fsmsg_t *message)
 {
 	message->header.type = Tstat;
 	message->header.token = token;
@@ -644,7 +644,7 @@ int _fstat(struct stat *st, const mm_file_t *file, const int token,
 			Rstat, MESSAGE_SIZE(Rstat));
 }
 
-static int call_device(const int server_id, devmsg_t *message,
+static int call_device(const int server_id, fsmsg_t *message,
 	const size_t tsize, const int rtype, const size_t rsize)
 {
 	ER_UINT size = kcall->port_call(server_id, message, tsize);

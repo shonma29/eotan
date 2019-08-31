@@ -27,8 +27,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <device.h>
 #include <local.h>
+#include <fs/protocol.h>
 #include <mm/segment.h>
 #include <mpu/memory.h>
 #include <set/list.h>

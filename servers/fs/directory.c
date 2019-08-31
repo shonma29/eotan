@@ -65,7 +65,7 @@ void if_walk(fs_request *req)
 		if (newfid == fid) {
 			if (request->nwname == 0) {
 				//TODO really?
-				devmsg_t response;
+				fsmsg_t response;
 				response.header.token =
 						req->packet.header.token;
 				response.header.type = Rwalk;
@@ -117,7 +117,7 @@ void if_walk(fs_request *req)
 		file->f_vnode = vnode;
 		file->f_flag = O_ACCMODE;
 
-		devmsg_t response;
+		fsmsg_t response;
 		response.header.token = req->packet.header.token;
 		response.header.type = Rwalk;
 		response.Rwalk.tag = request->tag;
@@ -177,7 +177,7 @@ void if_create(fs_request *req)
 		//TODO really?
 		parent->f_flag = request->mode & O_ACCMODE;
 
-		devmsg_t response;
+		fsmsg_t response;
 		response.header.token = req->packet.header.token;
 		response.header.type = Rcreate;
 		response.Rcreate.tag = request->tag;
@@ -220,7 +220,7 @@ void if_remove(fs_request *req)
 		if (error_no)
 			break;
 
-		devmsg_t response;
+		fsmsg_t response;
 		response.header.token = req->packet.header.token;
 		response.header.type = Rremove;
 		response.Rremove.tag = request->tag;

@@ -1,5 +1,5 @@
-#ifndef _DEVICE_H_
-#define _DEVICE_H_
+#ifndef _FS_PROTOCOL_H_
+#define _FS_PROTOCOL_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -29,11 +29,9 @@ For more information, please refer to <http://unlicense.org/>
 #include <stddef.h>
 #include <sys/stat.h>
 
-#define DEV_BUF_SIZE (1024)
-
 #define NOFID (0)
 
-enum dev_message_type {
+enum fs_message_type {
 	Tversion = 0xff01,
 	Rversion = 0xff02,
 	Tauth = 0xff03,
@@ -221,7 +219,7 @@ struct _Rwstat {
 typedef struct {
 	struct {
 		int token;
-		enum dev_message_type type;
+		enum fs_message_type type;
 	} header;
 	union {
 		struct _Tversion Tversion;
@@ -252,22 +250,10 @@ typedef struct {
 		struct _Twstat Twstat;
 		struct _Rwstat Rwstat;
 	};
-} devmsg_t;
+} fsmsg_t;
 
 #define MESSAGE_SIZE(t) \
-	(sizeof(((devmsg_t*)0)->header) + sizeof(((devmsg_t*)0)->t))
-#define MIN_MESSAGE_SIZE (sizeof(((devmsg_t*)0)->header) + sizeof(int))
-
-//TODO move to other header
-typedef struct _vdriver_t {
-	int id;
-	char *name;
-	const size_t size;
-	int (*detach)(void);
-	int (*open)(void);
-	int (*close)(const int);
-	int (*read)(char *, const int, const off_t, const size_t);
-	int (*write)(char *, const int, const off_t, const size_t);
-} vdriver_t;
+	(sizeof(((fsmsg_t*)0)->header) + sizeof(((fsmsg_t*)0)->t))
+#define MIN_MESSAGE_SIZE (sizeof(((fsmsg_t*)0)->header) + sizeof(int))
 
 #endif

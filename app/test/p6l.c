@@ -25,12 +25,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <device.h>
 #include <fcntl.h>
 #include <services.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <fs/protocol.h>
 
 #define BUF_SIZE (341*3)
 
@@ -53,7 +53,7 @@ void swap(size_t size)
 
 int putline(UW start, UW size, char *buf)
 {
-	devmsg_t msg;
+	fsmsg_t msg;
 	ER_UINT err;
 
 	msg.header.type = Twrite;

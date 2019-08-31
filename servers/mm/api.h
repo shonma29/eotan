@@ -27,8 +27,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <device.h>
 #include <mm.h>
+#include <fs/protocol.h>
 #include <set/tree.h>
 
 typedef enum {
@@ -41,7 +41,7 @@ typedef struct {
 	node_t node;//TODO key is tag = rdvno
 	mm_args_t args;
 	RDVNO rdvno;
-	devmsg_t message;
+	fsmsg_t message;
 //	char *pathbuf1;//TODO kalloc
 //	char *pathbuf2;//TODO kalloc
 //	mm_thread_t *caller;

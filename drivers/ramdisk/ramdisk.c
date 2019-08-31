@@ -24,9 +24,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <device.h>
 #include <stddef.h>
 #include <string.h>
+#include <dev/device.h>
 #include "ramdisk.h"
 
 memory_range_t ranges[1];

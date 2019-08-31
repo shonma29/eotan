@@ -26,7 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <device.h>
+#include <dev/device.h>
 #include <fs/config.h>
 
 #define MAX_DEVICE (32)

@@ -30,7 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "api.h"
 
 
-int reply(const RDVNO rdvno, const devmsg_t *response, const size_t size)
+int reply(const RDVNO rdvno, const fsmsg_t *response, const size_t size)
 {
 	return (kcall->port_reply(rdvno, (void*)response, size) ?
 			ECONNREFUSED : 0);
@@ -39,7 +39,7 @@ int reply(const RDVNO rdvno, const devmsg_t *response, const size_t size)
 int reply_error(const RDVNO rdvno, const int token, const int tag,
 		const int error_no)
 {
-	devmsg_t response;
+	fsmsg_t response;
 	response.header.token = (PORT_FS << 16) | (token & 0xffff);
 	response.header.type = Rerror;
 	response.Rerror.tag = tag;
