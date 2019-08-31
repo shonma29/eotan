@@ -24,12 +24,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <errno.h>
-#include <services.h>
 #include <stdnoreturn.h>
 #include <unistd.h>
-#include <sys/syscall.h>
+#include "sys.h"
 
 
 noreturn void _exit(int status)
@@ -38,13 +35,7 @@ noreturn void _exit(int status)
 		syscall_exit,
 		status
 	};
-	ER_UINT reply_size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
-	sys_reply_t *reply = (sys_reply_t *) &args;
-	if (reply_size == sizeof(*reply)) {
-		if (reply->result == -1)
-			_set_local_errno(reply->data[0]);
-	} else
-		_set_local_errno(ECONNREFUSED);
+	_syscall(&args, sizeof(args));
 
 	for (;;);
 }

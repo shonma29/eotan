@@ -24,11 +24,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <errno.h>
-#include <services.h>
 #include <unistd.h>
-#include <sys/syscall.h>
+#include "sys.h"
 
 
 int unlink(const char *path)
@@ -37,15 +34,5 @@ int unlink(const char *path)
 		syscall_remove,
 		(int) path
 	};
-	ER_UINT reply_size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
-	sys_reply_t *reply = (sys_reply_t *) &args;
-	if (reply_size == sizeof(*reply)) {
-		if (reply->result == -1)
-			_set_local_errno(reply->data[0]);
-
-		return reply->result;
-	} else {
-		_set_local_errno(ECONNREFUSED);
-		return (-1);
-	}
+	return _syscall(&args, sizeof(args));
 }

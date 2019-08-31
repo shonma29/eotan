@@ -13,11 +13,11 @@ Version 2, June 1991
 
 /* @(#)$Header: /usr/local/src/master/B-Free/Program/btron-pc/kernel/POSIX/libc/native/sys_exec.c,v 1.2 1999/11/10 10:39:07 naniwa Exp $  */
 
-#include <core.h>
-#include <errno.h>
-#include <services.h>
+#include <local.h>
 #include <string.h>
-#include <sys/syscall.h>
+#include <unistd.h>
+#include <mpu/memory.h>
+#include "sys.h"
 
 #define STACK_TAIL (LOCAL_ADDR - PAGE_SIZE)
 
@@ -82,17 +82,6 @@ execve(const char *name, char *const argv[], char *const envp[])
 		stsize
 
 	};
-
-	ER_UINT reply_size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
-	sys_reply_t *reply = (sys_reply_t*)&args;
-	if (reply_size == sizeof(*reply)) {
-		if (reply->result == -1)
-			_set_local_errno(reply->data[0]);
-
-		return reply->result;
-	} else {
-		_set_local_errno(ECONNREFUSED);
-		return (-1);
-	}
+	return _syscall(&args, sizeof(args));
   }
 }

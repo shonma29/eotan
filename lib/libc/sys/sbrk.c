@@ -24,10 +24,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <errno.h>
-#include <services.h>
-#include <sys/syscall.h>
+#include <unistd.h>
+#include "sys.h"
 
 
 void *sbrk(intptr_t increment)
@@ -36,16 +34,5 @@ void *sbrk(intptr_t increment)
 		syscall_sbrk,
 		(long int) increment
 	};
-
-	ER_UINT reply_size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
-	sys_reply_t *reply = (sys_reply_t *) &args;
-	if (reply_size == sizeof(*reply)) {
-		if (reply->result == -1)
-			_set_local_errno(reply->data[0]);
-
-		return (void *) (reply->result);
-	} else {
-		_set_local_errno(ECONNREFUSED);
-		return (void *) (-1);
-	}
+	return (void *) _syscall(&args, sizeof(args));
 }

@@ -24,10 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <errno.h>
-#include <services.h>
-#include <sys/syscall.h>
+#include "sys.h"
 
 extern int _fork_entry();
 
@@ -39,15 +36,5 @@ int _fork(int esp, int ebx, int ebp, int esi, int edi)
 		esp,
 		(int) _fork_entry
 	};
-	ER_UINT reply_size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
-	sys_reply_t *reply = (sys_reply_t *) &args;
-	if (reply_size == sizeof(*reply)) {
-		if (reply->result == -1)
-			_set_local_errno(reply->data[0]);
-
-		return reply->result;
-	} else {
-		_set_local_errno(ECONNREFUSED);
-		return (-1);
-	}
+	return _syscall(&args, sizeof(args));
 }

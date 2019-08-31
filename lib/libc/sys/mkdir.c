@@ -24,13 +24,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <errno.h>
 #include <fcntl.h>
-#include <services.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <sys/syscall.h>
+#include "sys.h"
 
 
 int mkdir(const char *path, mode_t mode)
@@ -42,18 +39,10 @@ int mkdir(const char *path, mode_t mode)
 		O_RDONLY,
 		DMDIR | (int) mode
 	};
-	ER_UINT reply_size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
-	sys_reply_t *reply = (sys_reply_t *) &args;
-	if (reply_size == sizeof(*reply)) {
-		if (reply->result == -1) {
-			_set_local_errno(reply->data[0]);
-			return (-1);
-		} else {
-			close(reply->result);
-			return 0;
-		}
-	} else {
-		_set_local_errno(ECONNREFUSED);
-		return (-1);
-	}
+	int result = _syscall(&args, sizeof(args));
+	if (result == -1)
+		return result;
+
+	close(result);
+	return 0;
 }
