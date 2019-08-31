@@ -27,19 +27,19 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <errno.h>
 #include <local.h>
-#include <mm.h>
 #include <services.h>
 #include <nerve/kcall.h>
+#include <sys/syscall.h>
 
 
 int thread_find(const ID thread_id)
 {
-	mm_args_t args;
-	args.syscall_no = mm_syscall_thread_find;
-	args.arg1 = (ID)thread_id;
+	sys_args_t args;
+	args.syscall_no = syscall_thread_find;
+	args.arg1 = (ID) thread_id;
 
 //	thread_local_t *local = _get_local();
-	mm_reply_t *reply = (mm_reply_t*)&args;
+	sys_reply_t *reply = (sys_reply_t *) &args;
 	ER_UINT reply_size = kcall->port_call(PORT_MM, &args, sizeof(args));
 	if (reply_size == sizeof(*reply)) {
 //		local->error_no = reply->error_no;

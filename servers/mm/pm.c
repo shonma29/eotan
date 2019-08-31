@@ -35,13 +35,13 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../lib/libserv/libserv.h"
 #include "proxy.h"
 
-static int _seek(mm_process_t *, mm_file_t *, mm_args_t *);
+static int _seek(mm_process_t *, mm_file_t *, sys_args_t *);
 static size_t calc_path(char *, char *, const size_t);
 
 
 int mm_fork(mm_request *req)
 {
-	mm_reply_t *reply = (mm_reply_t *) &(req->args);
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
 		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
@@ -88,7 +88,7 @@ int mm_fork(mm_request *req)
 
 int mm_exec(mm_request *req)
 {
-	mm_reply_t *reply = (mm_reply_t *) &(req->args);
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
 		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
@@ -106,8 +106,8 @@ int mm_exec(mm_request *req)
 	return reply_failure;
 }
 
-int process_exec(mm_reply_t *reply, mm_process_t *process, const int thread_id,
-		mm_args_t *args)
+int process_exec(sys_reply_t *reply, mm_process_t *process, const int thread_id,
+		sys_args_t *args)
 {
 	do {
 		mm_file_t *file;
@@ -259,7 +259,7 @@ int process_exec(mm_reply_t *reply, mm_process_t *process, const int thread_id,
 
 int mm_wait(mm_request *req)
 {
-	mm_reply_t *reply = (mm_reply_t *) &(req->args);
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
 		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
@@ -286,7 +286,7 @@ int mm_wait(mm_request *req)
 
 int mm_exit(mm_request *req)
 {
-	mm_reply_t *reply = (mm_reply_t *) &(req->args);
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
 		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
@@ -310,7 +310,7 @@ int mm_exit(mm_request *req)
 
 int mm_chdir(mm_request *req)
 {
-	mm_reply_t *reply = (mm_reply_t *) &(req->args);
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
 		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
@@ -454,7 +454,7 @@ static size_t calc_path(char *dest, char *src, const size_t size)
 
 int mm_dup(mm_request *req)
 {
-	mm_reply_t *reply = (mm_reply_t *) &(req->args);
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
 		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
@@ -521,7 +521,7 @@ int mm_dup(mm_request *req)
 
 int mm_lseek(mm_request *req)
 {
-	mm_reply_t *reply = (mm_reply_t *) &(req->args);
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
 		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
@@ -560,7 +560,7 @@ int mm_lseek(mm_request *req)
 	return reply_failure;
 }
 
-static int _seek(mm_process_t *process, mm_file_t *file, mm_args_t *args)
+static int _seek(mm_process_t *process, mm_file_t *file, sys_args_t *args)
 {
 	off_t *offset = (off_t*)&(args->arg2);
 	off_t next = *offset;

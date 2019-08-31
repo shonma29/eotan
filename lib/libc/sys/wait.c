@@ -26,18 +26,18 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <errno.h>
-#include <mm.h>
 #include <services.h>
+#include <sys/syscall.h>
 #include <sys/wait.h>
 
 
 pid_t wait(int *status)
 {
-	mm_args_t args = {
-		mm_syscall_wait
+	sys_args_t args = {
+		syscall_wait
 	};
 	ER_UINT reply_size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
-	mm_reply_t *reply = (mm_reply_t*)&args;
+	sys_reply_t *reply = (sys_reply_t *) &args;
 	if (reply_size == sizeof(*reply)) {
 		if (reply->result == -1)
 			_set_local_errno(reply->data[0]);

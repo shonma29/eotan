@@ -26,7 +26,6 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
 #include <fcntl.h>
-#include <mm.h>
 #include <services.h>
 #include <stdint.h>
 #include <string.h>
@@ -35,6 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <mm/config.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
+#include <sys/syscall.h>
 #include "api.h"
 #include "process.h"
 #include "../../kernel/mpu/mpufunc.h"
@@ -296,7 +296,7 @@ int process_release_body(mm_process_t *proc)
 			continue;
 
 		RDVNO rdvno = proc->rdvno;
-		mm_reply_t reply = {
+		sys_reply_t reply = {
 			p->node.key,
 			{ p->exit_status & 0xff }
 		};
@@ -524,7 +524,7 @@ static int set_local(mm_process_t *process, char *wd, const size_t wd_len)
 
 int mm_thread_find(mm_request *req)
 {
-	mm_reply_t *reply = (mm_reply_t *) &(req->args);
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
 		mm_thread_t *th = thread_find((ID)(req->args.arg1));
 		if (!th) {

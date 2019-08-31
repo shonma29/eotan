@@ -27,9 +27,10 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <errno.h>
 #include <local.h>
-#include <mm.h>
 #include <services.h>
 #include <time.h>
+#include <sys/syscall.h>
+
 
 time_t time(time_t *t)
 {

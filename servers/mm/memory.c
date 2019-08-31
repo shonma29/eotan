@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 
 int mm_vmap(mm_request *req)
 {
-	mm_reply_t *reply = (mm_reply_t *) &(req->args);
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
 		mm_process_t *p = process_find((ID)(req->args.arg1));
 		if (!p) {
@@ -70,7 +70,7 @@ int mm_vmap(mm_request *req)
 
 int mm_vunmap(mm_request *req)
 {
-	mm_reply_t *reply = (mm_reply_t *) &(req->args);
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
 		unsigned int currentEnd;
 		unsigned int newEnd;
@@ -107,7 +107,7 @@ int mm_vunmap(mm_request *req)
 
 int mm_sbrk(mm_request *req)
 {
-	mm_reply_t *reply = (mm_reply_t *) &(req->args);
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
 		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {

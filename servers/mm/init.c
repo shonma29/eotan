@@ -57,7 +57,7 @@ int exec_init(const pid_t process_id, char *pathname)
 
 	pathlen++;
 
-	mm_args_t args;
+	sys_args_t args;
 	args.arg3 = (sizeof(init_arg_t) + pathlen
 			+ strlen(envpath) + 1 + sizeof(int) - 1)
 			& ~(sizeof(int) - 1);
@@ -91,7 +91,7 @@ log_info("mm: init attach %d\n", result);
 		return result;
 	}
 
-	mm_reply_t reply;
+	sys_reply_t reply;
 	result = process_exec(&reply, process, PORT_MM,
 			&args);
 	log_info("mm: exec_init(pid=%d, %s) r=%d e=%d\n",

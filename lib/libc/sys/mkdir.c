@@ -27,23 +27,23 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <mm.h>
 #include <services.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/syscall.h>
 
 
 int mkdir(const char *path, mode_t mode)
 {
-	mm_args_t args = {
-		mm_syscall_create,
-		(int)path,
+	sys_args_t args = {
+		syscall_create,
+		(int) path,
 		//TODO really?
 		O_RDONLY,
-		DMDIR | (int)mode
+		DMDIR | (int) mode
 	};
 	ER_UINT reply_size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
-	mm_reply_t *reply = (mm_reply_t*)&args;
+	sys_reply_t *reply = (sys_reply_t *) &args;
 	if (reply_size == sizeof(*reply)) {
 		if (reply->result == -1) {
 			_set_local_errno(reply->data[0]);

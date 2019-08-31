@@ -26,25 +26,25 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <errno.h>
-#include <mm.h>
 #include <services.h>
+#include <sys/syscall.h>
 
 
 off_t lseek(int fildes, off_t offset, int whence)
 {
-	mm_args_t args;
-	args.syscall_no = mm_syscall_lseek;
+	sys_args_t args;
+	args.syscall_no = syscall_lseek;
 	args.arg1 = fildes;
 
-	off_t *offp = (off_t*)&(args.arg2);
+	off_t *offp = (off_t *) &(args.arg2);
 	*offp = offset;
 
-	args.arg4= whence;
+	args.arg4 = whence;
 
 	ER_UINT reply_size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
-	mm_reply_t *reply = (mm_reply_t*)&args;
+	sys_reply_t *reply = (sys_reply_t *) &args;
 	if (reply_size == sizeof(*reply)) {
-		offp = (off_t*)reply;
+		offp = (off_t *) reply;
 		if (*offp == -1)
 			_set_local_errno(reply->data[1]);
 

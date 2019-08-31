@@ -27,9 +27,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <mm.h>
 #include <fs/protocol.h>
 #include <set/tree.h>
+#include <sys/syscall.h>
 
 typedef enum {
 	reply_success = 0,
@@ -39,7 +39,7 @@ typedef enum {
 
 typedef struct {
 	node_t node;//TODO key is tag = rdvno
-	mm_args_t args;
+	sys_args_t args;
 	RDVNO rdvno;
 	fsmsg_t message;
 //	char *pathbuf1;//TODO kalloc

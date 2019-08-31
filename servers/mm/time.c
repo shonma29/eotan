@@ -26,10 +26,10 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <errno.h>
-#include <mm.h>
 #include <time.h>
 #include <core/options.h>
 #include <nerve/kcall.h>
+#include <sys/syscall.h>
 #include "api.h"
 #include "../../lib/libserv/libserv.h"
 
@@ -49,7 +49,7 @@ static bool get_timespec(struct timespec *tspec)
 
 int mm_clock_gettime(mm_request *req)
 {
-	mm_reply_t *reply = (mm_reply_t *) &(req->args);
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
 		struct timespec tspec;
 

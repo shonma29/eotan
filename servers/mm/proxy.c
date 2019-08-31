@@ -26,11 +26,11 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
 #include <fcntl.h>
-#include <mm.h>
 #include <services.h>
 #include <string.h>
 #include <core/options.h>
 #include <nerve/kcall.h>
+#include <sys/syscall.h>
 #include "../../lib/libserv/libserv.h"
 #include "proxy.h"
 
@@ -89,7 +89,7 @@ int _attach(mm_process_t *process, const int thread_id)
 
 int mm_open(mm_request *req)
 {
-	mm_reply_t *reply = (mm_reply_t *) &(req->args);
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
 		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
@@ -152,7 +152,7 @@ int mm_open(mm_request *req)
 
 int mm_create(mm_request *req)
 {
-	mm_reply_t *reply = (mm_reply_t *) &(req->args);
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
 		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
@@ -257,7 +257,7 @@ static char *split_path(const char *path, char **parent_path)
 
 int mm_read(mm_request *req)
 {
-	mm_reply_t *reply = (mm_reply_t *) &(req->args);
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
 		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
@@ -298,7 +298,7 @@ int mm_read(mm_request *req)
 
 int mm_write(mm_request *req)
 {
-	mm_reply_t *reply = (mm_reply_t *) &(req->args);
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
 		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
@@ -347,7 +347,7 @@ int mm_write(mm_request *req)
 
 int mm_close(mm_request *req)
 {
-	mm_reply_t *reply = (mm_reply_t *) &(req->args);
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
 		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
@@ -395,7 +395,7 @@ int mm_close(mm_request *req)
 
 int mm_remove(mm_request *req)
 {
-	mm_reply_t *reply = (mm_reply_t *) &(req->args);
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
 		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
@@ -446,7 +446,7 @@ int mm_remove(mm_request *req)
 
 int mm_fstat(mm_request *req)
 {
-	mm_reply_t *reply = (mm_reply_t *) &(req->args);
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
 		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {
@@ -483,7 +483,7 @@ int mm_fstat(mm_request *req)
 
 int mm_chmod(mm_request *req)
 {
-	mm_reply_t *reply = (mm_reply_t *) &(req->args);
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
 		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
 		if (!th) {

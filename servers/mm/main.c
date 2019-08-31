@@ -58,7 +58,7 @@ static int (*funcs[])(mm_request *) = {
 	mm_thread_find
 };
 
-#define BUFSIZ (sizeof(mm_args_t))
+#define BUFSIZ (sizeof(sys_args_t))
 #define NUM_OF_FUNCS (sizeof(funcs) / sizeof(void*))
 
 #define REQUEST_QUEUE_SIZE REQUEST_MAX
@@ -140,7 +140,7 @@ static void worker(void)
 			kcall->mutex_unlock(receiver_id);
 			kcall->thread_wakeup(receiver_id);
 
-			mm_reply_t *reply = (mm_reply_t *) &(req->args);
+			sys_reply_t *reply = (sys_reply_t *) &(req->args);
 			switch (result) {
 			case reply_success:
 			case reply_failure:
@@ -198,7 +198,7 @@ static void doit(void)
 			result = worker_enqueue(&req);
 
 		if (result) {
-			mm_reply_t *reply = (mm_reply_t *) &(req->args);
+			sys_reply_t *reply = (sys_reply_t *) &(req->args);
 			reply->result = -1;
 			reply->data[0] = result;
 			result = kcall->port_reply(req->rdvno, reply,

@@ -15,9 +15,9 @@ Version 2, June 1991
 
 #include <core.h>
 #include <errno.h>
-#include <mm.h>
 #include <services.h>
 #include <string.h>
+#include <sys/syscall.h>
 
 #define STACK_TAIL (LOCAL_ADDR - PAGE_SIZE)
 
@@ -75,8 +75,8 @@ execve(const char *name, char *const argv[], char *const envp[])
     *vp = 0;
     vp++;
     
-	mm_args_t args = {
-		mm_syscall_exec,
+	sys_args_t args = {
+		syscall_exec,
 		(int)name,
 		(int)buf,
 		stsize
@@ -84,7 +84,7 @@ execve(const char *name, char *const argv[], char *const envp[])
 	};
 
 	ER_UINT reply_size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
-	mm_reply_t *reply = (mm_reply_t*)&args;
+	sys_reply_t *reply = (sys_reply_t*)&args;
 	if (reply_size == sizeof(*reply)) {
 		if (reply->result == -1)
 			_set_local_errno(reply->data[0]);

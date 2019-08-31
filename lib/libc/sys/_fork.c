@@ -26,21 +26,21 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <errno.h>
-#include <mm.h>
 #include <services.h>
+#include <sys/syscall.h>
 
 extern int _fork_entry();
 
 
 int _fork(int esp, int ebx, int ebp, int esi, int edi)
 {
-	mm_args_t args = {
-		mm_syscall_fork,
+	sys_args_t args = {
+		syscall_fork,
 		esp,
-		(int)_fork_entry
+		(int) _fork_entry
 	};
 	ER_UINT reply_size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
-	mm_reply_t *reply = (mm_reply_t*)&args;
+	sys_reply_t *reply = (sys_reply_t *) &args;
 	if (reply_size == sizeof(*reply)) {
 		if (reply->result == -1)
 			_set_local_errno(reply->data[0]);

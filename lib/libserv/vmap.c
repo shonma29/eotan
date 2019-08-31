@@ -27,23 +27,23 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <errno.h>
 #include <local.h>
-#include <mm.h>
 #include <services.h>
 #include <nerve/kcall.h>
+#include <sys/syscall.h>
 
 
 int vmap(ID pid, VP addr, UW len, W attr)
 {
 //	thread_local_t *local = _get_local();
-	mm_args_t args;
-	mm_reply_t *reply = (mm_reply_t*)&args;
+	sys_args_t args;
+	sys_reply_t *reply = (sys_reply_t *) &args;
 	ER_UINT reply_size;
 
-	args.syscall_no = mm_syscall_vmap;
-	args.arg1 = (long int)pid;
-	args.arg2 = (long int)addr;
-	args.arg3 = (long int)len;
-	args.arg4 = (long int)attr;
+	args.syscall_no = syscall_vmap;
+	args.arg1 = (long int) pid;
+	args.arg2 = (long int) addr;
+	args.arg3 = (long int) len;
+	args.arg4 = (long int) attr;
 	reply_size = kcall->port_call(PORT_MM, &args, sizeof(args));
 
 	if (reply_size == sizeof(*reply)) {
