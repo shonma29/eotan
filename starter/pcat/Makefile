@@ -99,7 +99,6 @@ $(WD)/kernel.img: $(WD)/append \
 		servers/mm/mm \
 		servers/fs/fs \
 		servers/hmi/hmi \
-		drivers/cons/cons \
 		drivers/ramdisk/ramdisk \
 		initrd.img.rc
 	[ `wc -c < $(WD)/starter.bin` -le $(BIN_SIZE) ]

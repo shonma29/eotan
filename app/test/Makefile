@@ -23,7 +23,7 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = $(WD)/test $(WD)/lowtest $(WD)/rdtest \
+TARGET = $(WD)/test $(WD)/systest \
 		$(WD)/dmesg $(WD)/mesg $(WD)/p6l $(WD)/pset \
 		$(WD)/test_iso646 $(WD)/test_stdbool $(WD)/test_string \
 		$(WD)/cpuid

@@ -23,7 +23,7 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-SERVERS = kernlog interrupt timer mm fs hmi dumb
+SERVERS = kernlog interrupt timer mm fs hmi
 
 all: $(SERVERS)
 

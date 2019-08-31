@@ -23,7 +23,7 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-DRIVERS = cons ramdisk
+DRIVERS = ramdisk
 
 all: $(DRIVERS)
 
