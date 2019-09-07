@@ -1,6 +1,5 @@
-#ifndef _SERVICES_H_
-#define _SERVICES_H_
-
+#ifndef __DEV_H__
+#define __DEV_H__
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -28,18 +27,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-#define PORT_IDLE (1)
-#define PORT_DELAY (2)
-#define PORT_INTERRUPT (3)
-#define PORT_TIMER (4)
-#define PORT_SYSLOG (5)
-#define PORT_DEV (6)
-#define PORT_MM (7)
-#define PORT_FS (8)
-
-#define PORT_CONSOLE (9)
-#define PORT_HMI (10)
-#define PORT_WINDOW (11)
-#define PORT_NET (12)
+#define MYNAME "dev"
 
 #endif

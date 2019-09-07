@@ -1,6 +1,5 @@
-#ifndef _SERVICES_H_
-#define _SERVICES_H_
-
+#ifndef __DEV_TABLE_H__
+#define __DEV_TABLE_H__
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,19 +26,18 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <dev/device.h>
 
-#define PORT_IDLE (1)
-#define PORT_DELAY (2)
-#define PORT_INTERRUPT (3)
-#define PORT_TIMER (4)
-#define PORT_SYSLOG (5)
-#define PORT_DEV (6)
-#define PORT_MM (7)
-#define PORT_FS (8)
+#define MAX_DEVICE (32)
 
-#define PORT_CONSOLE (9)
-#define PORT_HMI (10)
-#define PORT_WINDOW (11)
-#define PORT_NET (12)
+typedef struct {
+	int id;
+	char name[MAX_DEVICE_NAME + 1];
+	size_t size;
+	vdriver_t *driver;
+} device_info_t;
+
+extern bool dev_initialize(void);
+extern device_info_t *dev_find(const int id);
 
 #endif

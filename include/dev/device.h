@@ -29,12 +29,27 @@ For more information, please refer to <http://unlicense.org/>
 #include <stddef.h>
 #include <sys/types.h>
 
+#define MAX_DEVICE_NAME (31)
 #define DEV_BUF_SIZE (1024)
+
+typedef enum {
+	devmsg_find = 0,
+	devmsg_add = 1,
+	devmsg_remove = 2
+} devmsg_e;
+
+typedef struct {
+	devmsg_e type;
+	int arg1;
+	int arg2;
+	int arg3;
+} devmsg_t;
 
 typedef struct _vdriver_t {
 	int id;
 	char *name;
 	const size_t size;
+	struct _vdriver_t *(*attach)(int);
 	int (*detach)(void);
 	int (*open)(void);
 	int (*close)(const int);

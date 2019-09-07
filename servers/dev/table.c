@@ -25,11 +25,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <string.h>
-#include <fs/drivers.h>
+#include <dev/drivers.h>
 #include <nerve/kcall.h>
 #include <set/hash.h>
 #include "../../lib/libserv/libserv.h"
-#include "devfs.h"
+#include "table.h"
 
 static hash_t *hash;
 static device_info_t table[MAX_DEVICE];
@@ -54,7 +54,7 @@ void free(void *p)
 	kcall->pfree(p);
 }
 
-bool device_init(void)
+bool dev_initialize(void)
 {
 	int i;
 
@@ -73,12 +73,12 @@ bool device_init(void)
 			continue;
 
 		table[num_device].id = p->id;
-		strcpy((char*)(table[num_device].name), (char*)(p->name));
+		strcpy((char *) (table[num_device].name), (char *) (p->name));
 		table[num_device].size = p->size;
 		table[num_device].driver = p;
 
-		if (hash_put(hash, (void*)(p->id),
-				(void*)&(table[num_device])))
+		if (hash_put(hash, (void *) (p->id),
+				(void *) &(table[num_device])))
 			log_err("devfs: attach failure(%x, %s, %d, %x)\n",
 					p->id, p->name, p->size, p);
 
@@ -94,18 +94,19 @@ bool device_init(void)
 
 static unsigned int calc_hash(const void *key, const size_t size)
 {
-	return (UW)key % size;
+	return (UW) key % size;
 }
 
 static int compare(const void *a, const void *b)
 {
-	UW x = (UW)a;
-	UW y = (UW)b;
+	UW x = (UW) a;
+	UW y = (UW) b;
 
 	return ((x == y) ? 0 : ((x < y) ? (-1) : 1));
 }
 
-device_info_t *device_find(const int devid)
+device_info_t *dev_find(const int devid)
 {
-	return (device_info_t*)(hash_get(hash, (void*)devid));
+	device_info_t *p = (device_info_t *) (hash_get(hash, (void *) devid));
+	return p;
 }

@@ -36,8 +36,6 @@ For more information, please refer to <http://unlicense.org/>
 #define MAX_TOTAL_FILE (MAX_SESSION * MAX_FILE)
 #define DEFAULT_BLOCK_SIZE (512)
 
-#define MAX_DEVICE_NAME (31)
-
 #define ROOT_UID (0)
 #define ROOT_GID (0)
 

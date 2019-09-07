@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <syslog.h>
+#include <dev/device.h>
 #include <sys/time.h>
 
 #define log_emerg(...) syslog(LOG_EMERG, __VA_ARGS__)
@@ -48,7 +49,9 @@ extern void time_get_raw(struct timespec *);
 extern ER time_get(SYSTIM *);
 extern ER time_set(SYSTIM *);
 
-extern ER define_handler(INHNO inhno, T_DINH *pk_dinh);
-extern ER enable_interrupt(INHNO inhno);
+extern ER define_handler(INHNO, T_DINH *);
+extern ER enable_interrupt(INHNO);
+
+extern vdriver_t *device_find(const int);
 
 #endif

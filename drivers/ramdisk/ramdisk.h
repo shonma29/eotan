@@ -1,3 +1,5 @@
+#ifndef __DRIVERS_RAMDISK_H__
+#define __DRIVERS_RAMDISK_H__
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,9 +26,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#ifndef __DRIVERS_RAMDISK_H__
-#define __DRIVERS_RAMDISK_H__
-
 #include <stdlib.h>
 #include <nerve/global.h>
 #include <sys/types.h>
@@ -35,6 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 
 extern memory_range_t ranges[];
 
+extern vdriver_t *attach(int);
 extern int detach(void);
 extern int open(void);
 extern int close(const int);

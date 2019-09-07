@@ -27,14 +27,12 @@ TARGET = $(WD)/fs
 
 include Makefile.in
 
-CFLAGS += -I kernel -I lib/libserv
+CFLAGS += -I kernel
+
 ENTRY_ADDR = 0x80240000
 ENTRY_FUNC = start
-CSRCS += $(wildcard $(WD)/devfs/*.c)
-CSRCS += $(wildcard $(WD)/procfs/*.c)
 
 $(TARGET): $(OBJS) \
-		lib/libvfs.a lib/libtfs.a \
-		lib/libserv.a lib/libnc.a kernel/mpu/libmpu.a
+		lib/libvfs.a lib/libtfs.a lib/libserv.a lib/libnc.a
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
 	$(STRIP) $@

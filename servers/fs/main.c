@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <services.h>
+#include <fs/config.h>
 #include <nerve/global.h>
 #include <nerve/kcall.h>
 #include <set/lf_queue.h>
@@ -32,7 +33,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "api.h"
 #include "fs.h"
 #include "session.h"
-#include "devfs/devfs.h"
 #include "../../lib/libserv/libserv.h"
 
 struct fs_func {
@@ -71,20 +71,15 @@ static int initialize(void)
 	if (fs_initialize())
 		return -1;
 
-	if (!device_init())
+	if (fs_mount(sysinfo->root.device)) {
+		log_err(MYNAME ": fs_mount(%x, %d) failed\n",
+				sysinfo->root.device,
+				sysinfo->root.fstype);
 		return -1;
-
-	if (device_find(sysinfo->root.device)) {
-		if (fs_mount(sysinfo->root.device)) {
-			log_err(MYNAME ": fs_mount(%x, %d) failed\n",
-					sysinfo->root.device,
-					sysinfo->root.fstype);
-		} else {
-			log_info(MYNAME ": fs_mount(%x, %d) succeeded\n",
-					sysinfo->root.device,
-					sysinfo->root.fstype);
-		}
-	}
+	} else
+		log_info(MYNAME ": fs_mount(%x, %d) succeeded\n",
+				sysinfo->root.device,
+				sysinfo->root.fstype);
 
 	receiver_id = kcall->thread_get_id();
 	T_CMTX pk_cmtx = {

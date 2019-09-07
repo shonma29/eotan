@@ -27,16 +27,31 @@ For more information, please refer to <http://unlicense.org/>
 #include <errno.h>
 #include <major.h>
 #include <string.h>
-#include <devfs/devfs.h>
 #include <fs/vfs.h>
+#include <nerve/kcall.h>
+#include "../../lib/libserv/libserv.h"
 
 static vdriver_t *driver;
+static int minor;
 
 static void block_clear(block_device_t *, void *);
 static int block_read(block_device_t *, void *, const int);
 static int block_write(block_device_t *, void *, const int);
 static int block_invalidate(block_device_t *, const int);
 
+
+void *malloc(size_t size)
+{
+	if (size > PAGE_SIZE)
+		return NULL;
+
+	return kcall->palloc();
+}
+
+void free(void *p)
+{
+	kcall->pfree(p);
+}
 
 int block_initialize(block_device_t *dev)
 {
@@ -45,9 +60,9 @@ int block_initialize(block_device_t *dev)
 	dev->write = block_write;
 	dev->invalidate = block_invalidate;
 
-	device_info_t *info = device_find(dev->channel);
-	if (info) {
-		driver = info->driver;
+	driver = device_find(dev->channel);
+	if (driver) {
+		minor = get_channel(dev->channel);
 		return 0;
 	} else
 		return ENODEV;
@@ -64,8 +79,7 @@ static int block_read(block_device_t *dev, void *buf, const int blockno)
 		return EINVAL;
 
 	size_t len = dev->block_size;
-	int result = driver->read(buf, get_channel(dev->channel),
-			blockno * dev->block_size, len);
+	int result = driver->read(buf, minor, blockno * dev->block_size, len);
 	return ((result == len) ? len : (-1));
 }
 
@@ -75,8 +89,7 @@ static int block_write(block_device_t *dev, void *buf, const int blockno)
 		return EINVAL;
 
 	size_t len = dev->block_size;
-	int result = driver->write(buf, get_channel(dev->channel),
-			blockno * dev->block_size, len);
+	int result = driver->write(buf, minor, blockno * dev->block_size, len);
 	return ((result == len) ? 0 : (-1));
 }
 

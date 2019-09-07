@@ -1,5 +1,3 @@
-#ifndef _FS_DRIVERS_H_
-#define _FS_DRIVERS_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,11 +24,21 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <dev/device.h>
+#include <services.h>
+#include <nerve/kcall.h>
+#include "libserv.h"
 
-static vdriver_t *(*drivers[])(int) = {
-	/* ramdisk */
-	(vdriver_t *(*)(int))(0x80150000)
-};
 
-#endif
+vdriver_t *device_find(const int devno)
+{
+	devmsg_t packet = {
+		devmsg_find,
+		devno
+	};
+	ER_UINT size = kcall->port_call(PORT_DEV, &packet, sizeof(packet));
+	if ((size == sizeof(packet))
+			&& !(packet.arg1))
+		return ((vdriver_t *) packet.arg2);
+
+	return NULL;
+}

@@ -35,6 +35,7 @@ static vdriver_t driver_mine = {
 	get_device_id(DEVICE_MAJOR_RAMDISK, 0),
 	MYNAME,
 	INITRD_SIZE,
+	attach,
 	detach,
 	open,
 	close,
