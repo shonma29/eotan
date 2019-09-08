@@ -40,7 +40,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../kernel/mpu/mpufunc.h"
 #include "../../lib/libserv/libserv.h"
 
-#define getParent(type, p) ((intptr_t)p - offsetof(type, node))
+#define getParent(type, p) ((intptr_t) p - offsetof(type, node))
 
 static slab_t process_slab;
 static tree_t process_tree;
@@ -51,27 +51,27 @@ static tree_t process_group_tree;
 
 static inline mm_thread_t *getMyThread(const list_t *p)
 {
-	return (mm_thread_t*)((intptr_t)p - offsetof(mm_thread_t, brothers));
+	return (mm_thread_t *) ((intptr_t) p - offsetof(mm_thread_t, brothers));
 }
 /*
 static inline mm_process_t *getProcessFromChildren(const list_t *p)
 {
-	return (mm_process_t*)((intptr_t)p - offsetof(mm_process_t, children));
+	return (mm_process_t *) ((intptr_t) p - offsetof(mm_process_t, children));
 }
 */
 static inline mm_process_t *getProcessFromBrothers(const list_t *p)
 {
-	return (mm_process_t*)((intptr_t)p - offsetof(mm_process_t, brothers));
+	return (mm_process_t *) ((intptr_t) p - offsetof(mm_process_t, brothers));
 }
 /*
 static inline mm_process_t *getProcessFromMembers(const list_t *p)
 {
-	return (mm_process_t*)((intptr_t)p - offsetof(mm_process_t, members));
+	return (mm_process_t *) ((intptr_t) p - offsetof(mm_process_t, members));
 }
 
 static inline mm_process_group_t *getProcessGroupFromMembers(const list_t *p)
 {
-	return (mm_process_group_t*)((intptr_t)p
+	return (mm_process_group_t *) ((intptr_t) p
 			- offsetof(mm_process_group_t, members));
 }
 */
@@ -125,7 +125,7 @@ void process_initialize(void)
 mm_process_t *process_find(const ID pid)
 {
 	node_t *node = tree_get(&process_tree, pid);
-	return (node ? (mm_process_t*)getParent(mm_process_t, node) : NULL);
+	return (node ? (mm_process_t *) getParent(mm_process_t, node) : NULL);
 }
 
 mm_process_t *process_duplicate(mm_process_t *src)
@@ -145,7 +145,7 @@ mm_process_t *process_duplicate(mm_process_t *src)
 		if (copy_user_pages(dest->directory, src->directory,
 //TODO copy only current stack
 				pageRoundUp(LOCAL_ADDR - PAGE_SIZE)
-//				pageRoundUp((UW)(src->segments.heap.addr)
+//				pageRoundUp((UW) (src->segments.heap.addr)
 //						+ src->segments.heap.len)
 						>> BITS_OFFSET)) {
 //			reply->data[0] = EFAULT;
@@ -175,7 +175,7 @@ mm_process_t *process_duplicate(mm_process_t *src)
 		list_append(&(src->children), &(dest->brothers));
 		node_t *leader = tree_get(&process_group_tree, INIT_PID);
 		if (leader) {
-			list_append(&((mm_process_group_t*)leader)->members,
+			list_append(&((mm_process_group_t *) leader)->members,
 					&(dest->members));
 		}
 		dest->ppid = src->node.key;
@@ -225,8 +225,8 @@ int process_replace(mm_process_t *process,
 {
 	if (unmap_user_pages(process->directory,
 			//TODO this address is adhoc. fix region_unmap
-			(VP)0x1000,
-			pages((unsigned int)(process->segments.heap.addr)
+			(VP) 0x1000,
+			pages((unsigned int) (process->segments.heap.addr)
 					+  process->segments.heap.len))) {
 		return EFAULT;
 	}
@@ -236,15 +236,15 @@ int process_replace(mm_process_t *process,
 	process->segments.heap.max = 0;
 	process->segments.heap.attr = attr_nil;
 
-	unsigned int start = pageRoundDown((unsigned int)address);
-	unsigned int end = pageRoundUp((unsigned int)(address)
-			+ (unsigned int)(size));
+	unsigned int start = pageRoundDown((unsigned int) address);
+	unsigned int end = pageRoundUp((unsigned int) address
+			+ (unsigned int) size);
 
 	if (map_user_pages(process->directory,
-			(VP)start, pages(end - start)))
+			(VP) start, pages(end - start)))
 		return ENOMEM;
 
-	process->segments.heap.addr = (void*)end;
+	process->segments.heap.addr = (void *) end;
 	process->segments.heap.len = 0;
 	process->segments.heap.max = pageRoundUp(USER_HEAP_MAX_ADDR) - end;
 	process->segments.heap.attr = type_heap;
@@ -254,7 +254,7 @@ int process_replace(mm_process_t *process,
 
 	if (process->node.key == INIT_PID)
 		if (map_user_pages(process->directory,
-				(void*)pageRoundDown(LOCAL_ADDR
+				(void *) pageRoundDown(LOCAL_ADDR
 						- USER_STACK_INITIAL_SIZE
 						- PAGE_SIZE),
 				pages(pageRoundUp(USER_STACK_INITIAL_SIZE))))
@@ -264,13 +264,13 @@ int process_replace(mm_process_t *process,
 
 	unsigned int stack_top = pageRoundDown(LOCAL_ADDR - PAGE_SIZE)
 			- stack_size;
-	if (move_stack(process->directory, (void*)stack_top,
-			(void*)args, stack_size)) {
+	if (move_stack(process->directory, (void *) stack_top,
+			(void *) args, stack_size)) {
 		return EFAULT;
 	}
 
-	int result = create_thread(thread_id, process, (FP)entry,
-			(VP)(stack_top - sizeof(int)));
+	int result = create_thread(thread_id, process, (FP) entry,
+			(VP) (stack_top - sizeof(int)));
 	if (result)
 		return result;
 
@@ -378,11 +378,11 @@ int create_init(const pid_t pid)
 		return error_no;
 
 	unsigned int start = pageRoundDown(0);
-	unsigned int end = pageRoundUp((unsigned int)0 + (unsigned int)0);
-	if (map_user_pages(p->directory, (VP)start, pages(end - start)))
+	unsigned int end = pageRoundUp((unsigned int) 0 + (unsigned int) 0);
+	if (map_user_pages(p->directory, (VP) start, pages(end - start)))
 		return ENOMEM;
 
-	p->segments.heap.addr = (void*)end;
+	p->segments.heap.addr = (void *) end;
 	p->segments.heap.len = 0;
 	p->segments.heap.max = pageRoundUp(0) - end;
 	p->segments.heap.attr = type_heap;
@@ -397,7 +397,7 @@ int create_init(const pid_t pid)
 	mm_process_group_t *pg = slab_alloc(&process_group_slab);
 	if (pg) {
 		list_initialize(&(pg->members));
-		if (!tree_put(&process_group_tree, INIT_PID, (node_t*)pg)) {
+		if (!tree_put(&process_group_tree, INIT_PID, (node_t *) pg)) {
 			//TODO what to do?
 			slab_free(&process_group_slab, pg);
 		}
@@ -506,12 +506,12 @@ static int process_create(mm_process_t **process, const int pid)
 
 static int set_local(mm_process_t *process, char *wd, const size_t wd_len)
 {
-	if (map_user_pages(process->directory, (void*)LOCAL_ADDR,
+	if (map_user_pages(process->directory, (void *) LOCAL_ADDR,
 			pages(sizeof(*(process->local)))))
 		return ENOMEM;
 
 	process->local = getPageAddress(kern_p2v(process->directory),
-			(void*)LOCAL_ADDR);
+			(void *) LOCAL_ADDR);
 	memset(process->local, 0, sizeof(*(process->local)));
 	process->local->pid = process->node.key;
 	process->local->ppid = process->ppid;
@@ -526,14 +526,14 @@ int mm_thread_find(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find((ID)(req->args.arg1));
+		mm_thread_t *th = thread_find((ID) (req->args.arg1));
 		if (!th) {
 			reply->data[0] = ESRCH;
 			break;
 		}
 
 		reply->data[0] = 0;
-		reply->result = th->process_id;
+		reply->result = ((mm_process_t *) (th->process))->node.key;
 		return reply_success;
 	} while (false);
 
@@ -544,7 +544,7 @@ int mm_thread_find(mm_request *req)
 mm_thread_t *thread_find(const ID tid)
 {
 	node_t *node = tree_get(&thread_tree, tid);
-	return (node ? (mm_thread_t*)getParent(mm_thread_t, node) : NULL);
+	return (node ? (mm_thread_t *) getParent(mm_thread_t, node) : NULL);
 }
 
 //TODO from fork
@@ -589,7 +589,7 @@ static int create_thread(int *thread_id, mm_process_t *process, FP entry,
 
 	T_CTSK pk_ctsk = {
 		TA_HLNG,
-		(VP_INT)NULL,
+		(VP_INT) NULL,
 		entry,
 		pri_user_foreground,
 		KTHREAD_STACK_SIZE,
@@ -611,14 +611,13 @@ static int create_thread(int *thread_id, mm_process_t *process, FP entry,
 		return EBUSY;
 	}
 
-	th->process_id = process->node.key;
 	th->process = process;
 	th->stack.attr = attr_nil;
 
 	list_append(&(process->threads), &(th->brothers));
 
 	//TODO only main thread
-	process->segments.stack.addr = (void*)pageRoundDown(LOCAL_ADDR
+	process->segments.stack.addr = (void *) pageRoundDown(LOCAL_ADDR
 			- USER_STACK_MAX_SIZE);
 	process->segments.stack.len = pageRoundUp(USER_STACK_INITIAL_SIZE);
 	process->segments.stack.max =

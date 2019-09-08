@@ -53,7 +53,6 @@ typedef struct {
 
 typedef struct {
 	node_t node;
-	int process_id;
 	void *process;
 	mm_segment_t stack;
 	list_t brothers;
@@ -97,7 +96,7 @@ typedef struct {
 
 static inline mm_process_t *get_process(const mm_thread_t *thread)
 {
-	return ((mm_process_t *)(thread->process));
+	return ((mm_process_t *) (thread->process));
 }
 
 extern void process_initialize(void);
