@@ -1,5 +1,3 @@
-#ifndef _SET_TREE_H_
-#define _SET_TREE_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,49 +24,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "stddef.h"
-#include "set/slab.h"
+#include <set/tree.h>
 
-typedef struct _node_t {
-	int key;
-	int level;
-	struct _node_t *left;
-	struct _node_t *right;
-} node_t;
 
-typedef struct _tree_t {
-	int (*compare)(const int, const int);
-	node_t **(*select_root)(const struct _tree_t *, const int);
-	void *root;
-	slab_t *slab;
-	size_t node_num;
-	node_t *removed;
-} tree_t;
-
-static inline size_t tree_size(const tree_t *tree)
+void tree_initialize_lookup(tree_t *tree, node_t **lookup, const size_t size)
 {
-	return tree->node_num;
+	tree->root = lookup;
+
+	for (int i = 0; i < size; i++)
+		lookup[i] = &nil_node;
 }
-
-static inline int compare_int(const int a, const int b)
-{
-	return ((a > b) ? 1 : ((a == b) ? 0 : (-1)));
-}
-
-static inline node_t **select_root_direct(const tree_t *tree, const int key)
-{
-	return ((node_t **) &(tree->root));
-}
-
-extern node_t nil_node;
-
-extern void tree_create(tree_t *, int (*compare)(const int, const int),
-		node_t **(*select_root)(const tree_t *, const int));
-extern node_t *tree_get(const tree_t *, const int);
-extern node_t *tree_put(tree_t *, const int, node_t *);
-extern node_t *tree_remove(tree_t *, const int);
-extern node_t *tree_first(const tree_t *);
-extern void tree_walk(const tree_t *, int (*callback)(node_t *));
-extern void tree_initialize_lookup(tree_t *, node_t **, const size_t);
-
-#endif

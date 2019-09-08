@@ -38,7 +38,7 @@ void tree_walk(const tree_t *tree, int (*callback)(node_t *node))
 
 static int _walk(node_t *node, int (*callback)(node_t *node))
 {
-	if (!IS_NIL(node)) {
+	if (!is_nil(node)) {
 		if (_walk(node->left, callback))
 			return true;
 

@@ -32,10 +32,10 @@ node_t *tree_first(const tree_t *tree)
 {
 	node_t *node = tree->root;
 
-	if (IS_NIL(node))
+	if (is_nil(node))
 		return NULL;
 
-	while (!IS_NIL(node->left))
+	while (!is_nil(node->left))
 		node = node->left;
 
 	return node;

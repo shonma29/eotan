@@ -40,12 +40,15 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../kernel/mpu/mpufunc.h"
 #include "../../lib/libserv/libserv.h"
 
+#define THREAD_LOOKUP_SIZE (16)
+
 #define getParent(type, p) ((intptr_t) p - offsetof(type, node))
 
 static slab_t process_slab;
 static tree_t process_tree;
 static slab_t thread_slab;
 static tree_t thread_tree;
+static node_t *thread_lookup[THREAD_LOOKUP_SIZE];
 static slab_t process_group_slab;
 static tree_t process_group_tree;
 
@@ -76,12 +79,18 @@ static inline mm_process_group_t *getProcessGroupFromMembers(const list_t *p)
 }
 */
 
+static node_t **thread_lookup_selector(const tree_t *, const int);
 static int process_find_new_pid(void);
 static int process_create(mm_process_t **, const int);
 static int set_local(mm_process_t *, char *, const size_t);
 static int create_thread(int *, mm_process_t *, FP, VP);
 static void destroy_threads(mm_process_t *);
 
+
+static node_t **thread_lookup_selector(const tree_t *tree, const int key)
+{
+	return &(((node_t **) tree->root)[key & (THREAD_LOOKUP_SIZE - 1)]);
+}
 
 void process_initialize(void)
 {
@@ -95,7 +104,7 @@ void process_initialize(void)
 	process_slab.pfree = kcall->pfree;
 	slab_create(&process_slab);
 
-	tree_create(&process_tree, NULL);
+	tree_create(&process_tree, NULL, NULL);
 
 	// initialize thread table
 	thread_slab.unit_size = sizeof(mm_thread_t);
@@ -107,7 +116,8 @@ void process_initialize(void)
 	thread_slab.pfree = kcall->pfree;
 	slab_create(&thread_slab);
 
-	tree_create(&thread_tree, NULL);
+	tree_create(&thread_tree, NULL, thread_lookup_selector);
+	tree_initialize_lookup(&thread_tree, thread_lookup, THREAD_LOOKUP_SIZE);
 
 	// initialize process group table
 	process_group_slab.unit_size = sizeof(mm_process_group_t);
@@ -119,7 +129,7 @@ void process_initialize(void)
 	process_group_slab.pfree = kcall->pfree;
 	slab_create(&process_group_slab);
 
-	tree_create(&process_group_tree, NULL);
+	tree_create(&process_group_tree, NULL, NULL);
 }
 
 mm_process_t *process_find(const ID pid)
@@ -486,8 +496,8 @@ static int process_create(mm_process_t **process, const int pid)
 		//TODO take over fields when duplicate?
 		list_initialize(&(p->threads));
 		//TODO leave on exec
-		tree_create(&(p->descriptors), NULL);
-		tree_create(&(p->sessions), NULL);
+		tree_create(&(p->descriptors), NULL, NULL);
+		tree_create(&(p->sessions), NULL, NULL);
 		list_initialize(&(p->brothers));
 		list_initialize(&(p->children));
 		list_initialize(&(p->members));

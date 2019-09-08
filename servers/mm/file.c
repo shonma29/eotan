@@ -76,7 +76,7 @@ void file_initialize(void)
 	session_slab.pfree = kcall->pfree;
 	slab_create(&session_slab);
 
-	tree_create(&session_tree, NULL);
+	tree_create(&session_tree, NULL, NULL);
 }
 
 mm_session_t *session_create(void)
@@ -95,7 +95,7 @@ mm_session_t *session_create(void)
 			//TODO what to do?
 		}
 
-		tree_create(&(session->files), NULL);
+		tree_create(&(session->files), NULL, NULL);
 		session->refer_count = 1;
 	}
 

@@ -27,16 +27,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <set/tree.h>
-#include "aatree.h"
 
-extern node_t nil_node;
-
-#define NIL (&nil_node)
-#define IS_NIL(p) ((p) == &nil_node)
-
-static inline int compare_int(const int a, const int b)
+static inline bool is_nil(const node_t *node)
 {
-	return ((a > b) ? 1 : ((a == b) ? 0 : (-1)));
+	return (node == &nil_node);
 }
 
 #endif

@@ -40,7 +40,7 @@ void create_tree(tree_t *tree, slab_t *slab, size_t entry_size,
 	slab->pfree = pfree;
 	slab_create(slab);
 
-	tree_create(tree, compare);
+	tree_create(tree, compare, NULL);
 }
 
 node_t *find_empty_key(tree_t *tree, int *hand, node_t *node)

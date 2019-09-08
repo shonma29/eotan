@@ -100,7 +100,7 @@ void session_initialize(void)
 	session_slab.palloc = kcall->palloc;
 	session_slab.pfree = kcall->pfree;
 	slab_create(&session_slab);
-	tree_create(&session_tree, NULL);
+	tree_create(&session_tree, NULL, NULL);
 
 	file_slab.unit_size = sizeof(struct file);
 	file_slab.block_size = PAGE_SIZE;
@@ -129,7 +129,7 @@ session_t *session_create(const pid_t pid)
 	}
 
 	session->root = NULL;
-	tree_create(&(session->files), NULL);
+	tree_create(&(session->files), NULL, NULL);
 
 	return session;
 }

@@ -245,7 +245,7 @@ static ER init(void)
 	timer_slab.palloc = kcall->palloc;
 	timer_slab.pfree = kcall->pfree;
 	slab_create(&timer_slab);
-	tree_create(&timer_tree, compare);
+	tree_create(&timer_tree, compare, NULL);
 
 	sleeper_slab.unit_size = sizeof(sleeper_t);
 	sleeper_slab.block_size = PAGE_SIZE;

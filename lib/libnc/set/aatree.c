@@ -73,24 +73,21 @@ static node_t *node_split(node_t *p)
 
 static node_t *node_put(tree_t *tree, node_t *p, node_t *child)
 {
-	if (IS_NIL(p))
+	if (is_nil(p))
 		p = child;
 	else {
 		int d = tree->compare(child->key, p->key);
-
 		if (d == 0)
 			return NULL;
 
 		if (d < 0) {
 			node_t *q = node_put(tree, p->left, child);
-
 			if (!q)
 				return NULL;
 
 			p->left = q;
 		} else {
 			node_t *q = node_put(tree, p->right, child);
-
 			if (!q)
 				return NULL;
 
@@ -122,7 +119,7 @@ static node_t *node_rebalance(node_t *p)
 
 static node_t *node_remove_swap(tree_t *tree, node_t *p, node_t **to)
 {
-	if (IS_NIL(p->left)) {
+	if (is_nil(p->left)) {
 		node_t *q = p->right;
 
 		p->level = (*to)->level;
@@ -138,16 +135,15 @@ static node_t *node_remove_swap(tree_t *tree, node_t *p, node_t **to)
 
 static node_t *node_remove(tree_t *tree, node_t *p, const int key)
 {
-	if (!IS_NIL(p)) {
+	if (!is_nil(p)) {
 		int d = tree->compare(key, p->key);
-
 		if (d == 0) {
-			if (IS_NIL(p->left)) {
+			if (is_nil(p->left)) {
 				node_t *q = p->right;
 
 				node_destroy(tree, p);
 				return q;
-			} else if (IS_NIL(p->right)) {
+			} else if (is_nil(p->right)) {
 				node_t *q = p->left;
 
 				node_destroy(tree, p);
@@ -171,20 +167,20 @@ static node_t *node_remove(tree_t *tree, node_t *p, const int key)
 	return p;
 }
 
-void tree_create(tree_t *tree, int (*compare)(const int a, const int b))
+void tree_create(tree_t *tree, int (*compare)(const int a, const int b),
+		node_t **(*select_root)(const tree_t *tree, const int key))
 {
 	tree->compare = compare ? compare : compare_int;
+	tree->select_root = select_root ? select_root : select_root_direct;
 	tree->node_num = 0;
-	tree->root = NIL;
+	tree->root = &nil_node;
 }
 
 node_t *tree_get(const tree_t *tree, const int key)
 {
-	node_t *p = tree->root;
-
-	while (!IS_NIL(p)) {
+	node_t **root = tree->select_root(tree, key);
+	for (node_t *p = *root; !is_nil(p);) {
 		int d = tree->compare(key, p->key);
-
 		if (d == 0)
 			return p;
 
@@ -196,15 +192,14 @@ node_t *tree_get(const tree_t *tree, const int key)
 
 node_t *tree_put(tree_t *tree, const int key, node_t *node)
 {
-	node_t *p;
-
 	node->key = key;
 	node->level = 1;
-	node->right = node->left = NIL;
+	node->right = node->left = &nil_node;
 
-	p = node_put(tree, tree->root, node);
+	node_t **root = tree->select_root(tree, key);
+	node_t *p = node_put(tree, *root, node);
 	if (p) {
-		tree->root = p;
+		*root = p;
 		tree->node_num++;
 	}
 
@@ -214,6 +209,9 @@ node_t *tree_put(tree_t *tree, const int key, node_t *node)
 node_t *tree_remove(tree_t *tree, const int key)
 {
 	tree->removed = NULL;
-	tree->root = node_remove(tree, tree->root, key);
+
+	node_t **root = tree->select_root(tree, key);
+	*root = node_remove(tree, *root, key);
+
 	return tree->removed;
 }
