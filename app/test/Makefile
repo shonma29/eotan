@@ -30,17 +30,13 @@ TARGET = $(WD)/test $(WD)/systest \
 
 include Makefile.in
 
-#CFLAGS += -fno-builtin
-
 ENTRY_ADDR = 0x00001000
 ENTRY_FUNC = _main
 
 $(TARGET): $(OBJS) \
-		lib/libc.a lib/libserv.a lib/libitron.a lib/libnc.a \
-		lib/libm.a
+		lib/libc.a lib/libm.a
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $(@).o \
-		lib/libc.a lib/libserv.a lib/libitron.a lib/libnc.a \
-		lib/libm.a
+		lib/libc.a lib/libm.a
 	$(STRIP) $@
 	app/tfs/writer initrd.img create /$(@F) $@
 	app/tfs/writer initrd.img chmod 755 /$(@F)

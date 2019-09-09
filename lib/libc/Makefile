@@ -36,6 +36,7 @@ CSRCS += $(wildcard $(WD)/others/*.c)
 CSRCS += $(wildcard $(WD)/string/*.c)
 CSRCS += $(wildcard $(WD)/sys/*.c)
 SSRCS += $(wildcard $(WD)/sys/*.s)
+CSRCS += $(wildcard $(WD)/core/*.c)
 
 $(TARGET): $(OBJS)
 	$(AR) rsv $@ $?

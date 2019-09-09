@@ -1,5 +1,5 @@
-#ifndef _MPU_CALL_SYSCALL_H_
-#define _MPU_CALL_SYSCALL_H_
+#ifndef _MPU_CALL_KERNEL_H_
+#define _MPU_CALL_KERNEL_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,7 +27,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-static inline int ncall(int no, ...) {
+static inline int ncall(const int svcno, ...)
+{
 	int result;
 
 	__asm__ __volatile__ ( \
@@ -37,7 +38,7 @@ static inline int ncall(int no, ...) {
 		"popl %%ebp\n\t" \
 		"sysenter\n\t" \
 		:"=a"(result) \
-		:"n"(no)  \
+		:"n"(svcno)  \
 		:"%ecx", "%edx");
 
 	return result;

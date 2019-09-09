@@ -39,13 +39,10 @@ typedef struct {
 } svc_arg;
 
 static void *page_alloc(void);
-static void page_free(void *addr);
-static ER region_get(const ID id, const void *from, const size_t size,
-		void *to);
-static ER region_put(const ID id, void *to, const size_t size,
-		const void *from);
-static ER_UINT region_copy(const ID id, const void *from, const size_t size,
-		void *to);
+static void page_free(void *);
+static ER region_get(const ID, const void *, const size_t, void *);
+static ER region_put(const ID, void *, const size_t, const void *);
+static ER_UINT region_copy(const ID, const void *, const size_t, void *);
 static ER_UINT _port_call(svc_arg *);
 
 static ER (*svc_entries[])(svc_arg *) = {
@@ -55,7 +52,7 @@ static ER (*svc_entries[])(svc_arg *) = {
 
 void kcall_initialize(void)
 {
-	kcall_t *p = (kcall_t*)KCALL_ADDR;
+	kcall_t *p = (kcall_t *) KCALL_ADDR;
 
 	p->dispatch = dispatch;
 	p->tick = tick;
@@ -147,6 +144,6 @@ ER syscall(svc_arg *argp, UW svcno)
 
 static ER_UINT _port_call(svc_arg *argp)
 {
-	return port_call((ID)(argp->arg1), (VP)(argp->arg3),
-			(UINT)(argp->arg4));
+	return port_call((ID) (argp->arg1), (VP) (argp->arg2),
+			(UINT) (argp->arg3));
 }

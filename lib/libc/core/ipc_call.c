@@ -24,29 +24,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <errno.h>
 #include <ipc.h>
-#include <services.h>
-#include <time.h>
-#include <sys/syscall.h>
+#include <nerve/svcno.h>
+#include <mpu/call_kernel.h>
 
 
-int clock_gettime(clockid_t clk_id, struct timespec *tp)
+int ipc_call(const int id, void *message, const size_t size)
 {
-	sys_args_t args = {
-		syscall_clock_gettime,
-		(long int) clk_id,
-		(long int) tp
-	};
-	int size = ipc_call(PORT_MM, &args, sizeof(args));
-	sys_reply_t *reply = (sys_reply_t *) &args;
-	if (size == sizeof(*reply)) {
-		if (reply->result == -1)
-			_set_local_errno(reply->data[0]);
-
-		return reply->result;
-	} else {
-		_set_local_errno(ECONNREFUSED);
-		return (-1);
-	}
+	return ncall(SVC_PORT_CALL, id, message, size);
 }

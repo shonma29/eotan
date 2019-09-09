@@ -24,144 +24,163 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
 #include <fcntl.h>
+#include <ipc.h>
 #include <services.h>
 #include <stdio.h>
-#include <string.h>
 #include <unistd.h>
 #include <fs/protocol.h>
 
-#define BUF_SIZE (341*3)
+#define BUF_SIZE (341 * 3)
 
-static char buf[BUF_SIZE];
+static unsigned char buf[BUF_SIZE];
 
-void swap(size_t size)
+static void swap(const size_t);
+static int putline(const unsigned int, const size_t, unsigned char *);
+static int process(const int);
+
+
+static void swap(const size_t size)
 {
-	char *p = buf;
-	size_t i;
+	unsigned char *p = buf;
+	for (size_t i = size / 3; i > 0; i--) {
+		unsigned char c = p[0];
 
-	for (i = size / 3; i > 0; i--) {
-		unsigned char c;
-
-		c = p[0];
 		p[0] = p[2];
 		p[2] = c;
 		p += 3;
 	}
 }
 
-int putline(UW start, UW size, char *buf)
+static int putline(const unsigned int start, const size_t size,
+		unsigned char *buf)
 {
-	fsmsg_t msg;
-	ER_UINT err;
-
-	msg.header.type = Twrite;
-	msg.Twrite.fid = 4;
-	msg.Twrite.offset = start;
-	msg.Twrite.count = size;
+	fsmsg_t message;
+	message.header.type = Twrite;
+	message.Twrite.fid = 4;
+	message.Twrite.offset = start;
+	message.Twrite.count = size;
 	swap(size);
-	msg.Twrite.data = buf;
+	message.Twrite.data = (char *) buf;
 
-	err = cal_por(PORT_CONSOLE, 0xffffffff, &msg, MESSAGE_SIZE(Twrite));
+	int err = ipc_call(PORT_CONSOLE, &message, MESSAGE_SIZE(Twrite));
 	if (err < 0)
-		printf("call error %d\n", (int)err);
+		printf("call error %d\n", err);
+
 	return err;
 }
 
-int process(int fd)
+static int process(const int fd)
 {
-	size_t i;
 	size_t width = 0;
 	size_t height = 0;
 	unsigned int c = 0;
-	unsigned int pos = 0;
 
 	if (read(fd, buf, 3) != 3) {
 		printf("read err[desc]\n");
-		return -1;
+		return (-1);
 	}
+
 	if (buf[0] != 'P' || buf[1] != '6' || buf[2] != '\n') {
 		printf("bad desc\n");
-		return -2;
+		return (-2);
 	}
 
 	for (;;) {
 		if (read(fd, buf, 1) != 1) {
 			printf("read err[width]\n");
-			return -1;
+			return (-1);
 		}
+
 		if (buf[0] == ' ')
 			break;
+
 		if (buf[0] < '0' || buf[0] > '9') {
 			printf("not num[width]\n");
-			return -2;
+			return (-2);
 		}
+
 		width = width * 10 + buf[0] - '0';
 	}
+
 	for (;;) {
 		if (read(fd, buf, 1) != 1) {
 			printf("read err[height]\n");
-			return -1;
+			return (-1);
 		}
+
 		if (buf[0] == '\n')
 			break;
+
 		if (buf[0] < '0' || buf[0] > '9') {
 			printf("not num[height]\n");
-			return -2;
+			return (-2);
 		}
+
 		height = height * 10 + buf[0] - '0';
 	}
+
 	if (width == 0 || width >= 640 || height == 0 || height >= 480) {
 		printf("bad size %d, %d\n", width, height);
-		return -2;
+		return (-2);
 	}
+
 	printf("size %d, %d\n", width, height);
 
 	for (;;) {
 		if (read(fd, buf, 1) != 1) {
 			printf("read err[color]\n");
-			return -1;
+			return (-1);
 		}
+
 		if (buf[0] == '\n')
 			break;
+
 		if (buf[0] < '0' || buf[0] > '9') {
 			printf("not num[color]\n");
-			return -2;
+			return (-2);
 		}
+
 		c = c * 10 + buf[0] - '0';
 	}
+
 	if (c != 255) {
 		printf("bad color %d\n", c);
-		return -2;
+		return (-2);
 	}
 
-	for (i = 0; i < height; i++) {
-		size_t left = width * 3;
-		size_t j = 0;
+	unsigned int pos = 0;
+	for (size_t i = 0; i < height; i++) {
+		size_t rest = width * 3;
+		unsigned int j = 0;
 
-		while (left > sizeof(buf)) {
+		while (rest > sizeof(buf)) {
 			if (read(fd, buf, sizeof(buf)) != sizeof(buf)) {
 				printf("read err[block]\n");
-				return -1;
+				return (-1);
 			}
+
 			if (putline(pos + j, sizeof(buf), buf) < 0)
-				return -3;
+				return (-3);
+
 			j += sizeof(buf);
-			left -= sizeof(buf);
+			rest -= sizeof(buf);
 		}
-		if (left) {
-			if (read(fd, buf, left) != left) {
-				printf("read err[left]\n");
-				return -1;
+
+		if (rest) {
+			if (read(fd, buf, rest) != rest) {
+				printf("read err[rest]\n");
+				return (-1);
 			}
-			if (putline(pos + j, left, buf) < 0)
-				return -3;
+
+			if (putline(pos + j, rest, buf) < 0)
+				return (-3);
 		}
+
 		pos += 3072;
 	}
-	printf("done\n");
 
+	printf("done\n");
 	return 0;
 }
 
@@ -169,7 +188,6 @@ int main(int argc, char **argv)
 {
 	if (argc == 2) {
 		int fd = open(argv[1], O_RDONLY);
-
 		if (fd > 0) {
 			process(fd);
 			close(fd);

@@ -1,3 +1,5 @@
+#ifndef _IPC_H_
+#define _IPC_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,13 +26,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <mpu/call_kernel.h>
-#include <nerve/svcno.h>
+#include <stddef.h>
 
+extern int ipc_call(const int, void *, const size_t);
 
-ER_UINT cal_por(ID porid, RDVPTN calptn, VP msg, UINT cmsgsz) {
-	return (calptn == 0xffffffff) ?
-			ncall(SVC_PORT_CALL, porid, calptn, msg, cmsgsz)
-			: E_NOSPT;
-}
+#endif

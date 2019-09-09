@@ -24,8 +24,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
 #include <errno.h>
+#include <ipc.h>
 #include <services.h>
 #include <sys/syscall.h>
 
@@ -41,7 +41,7 @@ off_t lseek(int fildes, off_t offset, int whence)
 
 	args.arg4 = whence;
 
-	ER_UINT reply_size = cal_por(PORT_MM, 0xffffffff, &args, sizeof(args));
+	int reply_size = ipc_call(PORT_MM, &args, sizeof(args));
 	sys_reply_t *reply = (sys_reply_t *) &args;
 	if (reply_size == sizeof(*reply)) {
 		offp = (off_t *) reply;

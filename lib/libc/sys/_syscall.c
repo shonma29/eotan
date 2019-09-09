@@ -24,15 +24,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
 #include <errno.h>
+#include <ipc.h>
 #include <services.h>
 #include <sys/syscall.h>
 
 
 int _syscall(sys_args_t *packet, const size_t size)
 {
-	ER_UINT reply_size = cal_por(PORT_MM, 0xffffffff, packet, size);
+	int reply_size = ipc_call(PORT_MM, packet, size);
 	sys_reply_t *reply = (sys_reply_t *) packet;
 	if (reply_size == sizeof(*reply)) {
 		if (reply->result == -1)

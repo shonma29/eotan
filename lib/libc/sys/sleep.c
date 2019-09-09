@@ -24,40 +24,34 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
 #include <errno.h>
-#include <local.h>
+#include <ipc.h>
 #include <services.h>
 #include <unistd.h>
+#include <core/errno.h>
 #include <sys/time.h>
 
 
 unsigned int sleep(unsigned int second)
 {
-	thread_local_t *local = _get_local();
 	struct timespec t = { second, 0 };
-	ER_UINT reply_size = cal_por(PORT_TIMER, 0xffffffff, &t, sizeof(t));
-
-	if (reply_size == sizeof(ER)) {
-		ER *result = (ER*)&t;
-
+	int reply_size = ipc_call(PORT_TIMER, &t, sizeof(t));
+	if (reply_size == sizeof(reply_size)) {
+		int *result = (int *) &t;
 		switch (*result) {
 		case E_TMOUT:
 			return 0;
-
 		case E_PAR:
-			local->error_no = EINVAL;
+			_set_local_errno(EINVAL);
 			return second;
-
 		case E_NOMEM:
-			local->error_no = ENOMEM;
+			_set_local_errno(ENOMEM);
 			return second;
-
 		default:
 			break;
 		}
 	}
 
-	local->error_no = ECONNREFUSED;
+	_set_local_errno(ECONNREFUSED);
 	return second;
 }

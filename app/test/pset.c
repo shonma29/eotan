@@ -24,7 +24,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
+#include <errno.h>
+#include <ipc.h>
 #include <math.h>
 #include <services.h>
 #include <stdio.h>
@@ -38,44 +39,44 @@ typedef struct {
 	int color;
 } point_t;
 
-static unsigned int width = 640;
-static unsigned int height = 480;
+static size_t width = 640;
+static size_t height = 480;
 
-int pset(const unsigned int x, const unsigned int y, const int color)
+static int pset(const unsigned int, const unsigned int, const int);
+
+
+static int pset(const unsigned int x, const unsigned int y, const int color)
 {
-	fsmsg_t msg;
-	ER_UINT err;
-	point_t buf;
-
 	if (x >= width)
-		return E_PAR;
-	if (y >= height)
-		return E_PAR;
+		return EINVAL;
 
+	if (y >= height)
+		return EINVAL;
+
+	point_t buf;
 	buf.x = x;
 	buf.y = y;
 	buf.color = color;
 
-	msg.header.type = Twrite;
-	msg.Twrite.fid = 5;
-	msg.Twrite.offset = 0;
-	msg.Twrite.count = sizeof(buf);
-	msg.Twrite.data = (char*)&buf;
+	fsmsg_t message;
+	message.header.type = Twrite;
+	message.Twrite.fid = 5;
+	message.Twrite.offset = 0;
+	message.Twrite.count = sizeof(buf);
+	message.Twrite.data = (char *) &buf;
 
-	err = cal_por(PORT_CONSOLE, 0xffffffff, &msg, MESSAGE_SIZE(Twrite));
+	int err = ipc_call(PORT_CONSOLE, &message, MESSAGE_SIZE(Twrite));
 	if (err < 0)
-		printf("call error %d\n", (int)err);
+		printf("call error %d\n", err);
+
 	return err;
 }
 
 int main(int argc, char **argv)
 {
-	int i;
 	int deg = 0;
-
-	for (i = 0; i < SPLIT; i++) {
+	for (int i = 0; i < SPLIT; i++) {
 		double rad = deg * M_PI / 180;
-
 		pset(height / 3 * cos(rad) + width / 2,
 				height / 3 * sin(rad) + height / 2,
 				0xff00ff);

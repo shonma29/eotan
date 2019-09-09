@@ -1,4 +1,4 @@
-#/*
+/*
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -24,9 +24,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
+#include <ipc.h>
 #include <services.h>
-#include <stdio.h>
 #include <string.h>
 #include <syslog.h>
 #include <unistd.h>
@@ -35,7 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #define MYNAME "dmesg"
 
-#define MSG_PORT "port error"
+#define MSG_IPC "ipc error"
 #define MSG_BUF "buffer error"
 #define DELIMITER ": "
 #define NEWLINE "\n"
@@ -43,35 +42,34 @@ For more information, please refer to <http://unlicense.org/>
 #define OK (0)
 #define NG (1)
 
-static void pute(char *);
-static void puterror(char *);
-static int exec(int);
+static void pute(const char *);
+static void puterror(const char *);
+static int exec(const int);
 
 
-static void pute(char *str) {
+static void pute(const char *str)
+{
 	write(STDERR_FILENO, str, strlen(str));
 }
 
-static void puterror(char *message) {
+static void puterror(const char *message)
+{
 	pute(MYNAME);
 	pute(DELIMITER);
 	pute(message);
 	pute(NEWLINE);
 }
 
-static int exec(int out) {
+static int exec(const int out)
+{
 	syslog_t pk;
-	ssize_t size;
-	unsigned char buf[sizeof(pk.Rread.data) + 2];
-
 	pk.Tread.type = Tread;
 	pk.Tread.fid = channel_kernlog;
 	pk.Tread.count = sizeof(pk.Rread.data);
 
-	size = cal_por(PORT_SYSLOG, 0xffffffff, &pk, sizeof(pk.Tread));
-
+	ssize_t size = ipc_call(PORT_SYSLOG, &pk, sizeof(pk.Tread));
 	if (size < 0) {
-		puterror(MSG_PORT);
+		puterror(MSG_IPC);
 		return NG;
 	}
 
@@ -84,6 +82,7 @@ static int exec(int out) {
 	if (!size)
 		return NG;
 
+	char buf[sizeof(pk.Rread.data) + 2];
 	memcpy(buf, pk.Rread.data, size);
 
 #ifdef FORCE_NEWLINE
@@ -91,12 +90,13 @@ static int exec(int out) {
 		buf[size++] = '\n';
 #endif
 	buf[size] = '\0';
-	write(out, (char*)buf, size);
+	write(out, buf, size);
 
 	return OK;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
 	while (!exec(STDOUT_FILENO));
 
 	return OK;
