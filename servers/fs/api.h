@@ -33,7 +33,7 @@ For more information, please refer to <http://unlicense.org/>
 
 typedef struct {
 	fsmsg_t packet;
-	RDVNO rdvno;
+	int tag;
 	char buf[PATH_MAX + 1];
 } fs_request;
 
@@ -58,7 +58,7 @@ static inline int unpack_tid(const fs_request *req)
 	return ((req->packet.header.token >> 16) & 0xffff);
 }
 
-extern int reply(const RDVNO, const fsmsg_t *, const size_t);
-extern int reply_error(const RDVNO, const int, const int, const int);
+extern int reply(const int, const fsmsg_t *, const size_t);
+extern int reply_error(const int, const int, const int, const int);
 
 #endif

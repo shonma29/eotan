@@ -200,7 +200,7 @@ ER mutex_lock(ID mtxid, TMO tmout)
 	}
 
 	list_enqueue(&(q->waiter), &(running->wait.waiting));
-	running->wait.type = wait_mtx;
+	running->wait.type = wait_mutex;
 	wait(running);
 	return running->wait.result;
 }

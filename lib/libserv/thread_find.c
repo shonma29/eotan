@@ -26,7 +26,6 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <errno.h>
-#include <local.h>
 #include <services.h>
 #include <nerve/kcall.h>
 #include <sys/syscall.h>
@@ -34,19 +33,18 @@ For more information, please refer to <http://unlicense.org/>
 
 int thread_find(const ID thread_id)
 {
-	sys_args_t args;
-	args.syscall_no = syscall_thread_find;
-	args.arg1 = (ID) thread_id;
-
-//	thread_local_t *local = _get_local();
+	sys_args_t args = {
+		syscall_thread_find,
+		(ID) thread_id
+	};
+	ER_UINT reply_size = kcall->ipc_call(PORT_MM, &args, sizeof(args));
 	sys_reply_t *reply = (sys_reply_t *) &args;
-	ER_UINT reply_size = kcall->port_call(PORT_MM, &args, sizeof(args));
 	if (reply_size == sizeof(*reply)) {
-//		local->error_no = reply->error_no;
+//		_set_local_errno(reply->error_no);
 		return reply->result;
 
 	} else {
-//		local->error_no = ECONNREFUSED;
+//		_set_local_errno(ECONNREFUSED);
 		return -1;
 	}
 }

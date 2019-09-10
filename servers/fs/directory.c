@@ -70,7 +70,7 @@ void if_walk(fs_request *req)
 				response.header.type = Rwalk;
 				response.Rwalk.tag = request->tag;
 				//TODO return nwqid and wqid
-				reply(req->rdvno, &response,
+				reply(req->tag, &response,
 						MESSAGE_SIZE(Rwalk));
 				return;
 			}
@@ -121,12 +121,12 @@ void if_walk(fs_request *req)
 		response.header.type = Rwalk;
 		response.Rwalk.tag = request->tag;
 		//TODO return nwqid and wqid
-		reply(req->rdvno, &response, MESSAGE_SIZE(Rwalk));
+		reply(req->tag, &response, MESSAGE_SIZE(Rwalk));
 		return;
 	} while (false);
 
 	//TODO return nwqid and wqid
-	reply_error(req->rdvno, req->packet.header.token, request->tag,
+	reply_error(req->tag, req->packet.header.token, request->tag,
 			error_no);
 }
 
@@ -182,11 +182,11 @@ void if_create(fs_request *req)
 		response.Rcreate.tag = request->tag;
 		response.Rcreate.qid = parent->node.key;
 		response.Rcreate.iounit = 0;
-		reply(req->rdvno, &response, MESSAGE_SIZE(Rcreate));
+		reply(req->tag, &response, MESSAGE_SIZE(Rcreate));
 		return;
 	} while (false);
 
-	reply_error(req->rdvno, req->packet.header.token, request->tag,
+	reply_error(req->tag, req->packet.header.token, request->tag,
 			error_no);
 }
 
@@ -223,10 +223,10 @@ void if_remove(fs_request *req)
 		response.header.token = req->packet.header.token;
 		response.header.type = Rremove;
 		response.Rremove.tag = request->tag;
-		reply(req->rdvno, &response, MESSAGE_SIZE(Rremove));
+		reply(req->tag, &response, MESSAGE_SIZE(Rremove));
 		return;
 	} while (false);
 
-	reply_error(req->rdvno, req->packet.header.token, request->tag,
+	reply_error(req->tag, req->packet.header.token, request->tag,
 			error_no);
 }

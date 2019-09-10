@@ -30,21 +30,21 @@ For more information, please refer to <http://unlicense.org/>
 #include "api.h"
 
 
-int reply(const RDVNO rdvno, const fsmsg_t *response, const size_t size)
+int reply(const int tag, const fsmsg_t *response, const size_t size)
 {
-	return (kcall->port_reply(rdvno, (void*)response, size) ?
+	return (kcall->ipc_reply(tag, (void*)response, size) ?
 			ECONNREFUSED : 0);
 }
 
-int reply_error(const RDVNO rdvno, const int token, const int tag,
+int reply_error(const int ipc_tag, const int token, const int caller_tag,
 		const int error_no)
 {
 	fsmsg_t response;
 	response.header.token = (PORT_FS << 16) | (token & 0xffff);
 	response.header.type = Rerror;
-	response.Rerror.tag = tag;
+	response.Rerror.tag = caller_tag;
 	response.Rerror.ename = error_no;
 
-	return (kcall->port_reply(rdvno, &response, MESSAGE_SIZE(Rerror)) ?
+	return (kcall->ipc_reply(ipc_tag, &response, MESSAGE_SIZE(Rerror)) ?
 			ECONNREFUSED : 0);
 }

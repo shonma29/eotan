@@ -25,7 +25,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <core/options.h>
 #include <console.h>
 #include <errno.h>
 #include <event.h>
@@ -37,6 +36,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <fs/protocol.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
+#include <nerve/ipc_utils.h>
 #include <nerve/kcall.h>
 #include <set/lf_queue.h>
 #include <set/list.h>
@@ -149,7 +149,7 @@ static void process(const int arg)
 			//TODO error check
 			unsigned int addr = ((unsigned int)(message->Tread.data)
 					+ message->Tread.offset);
-			kcall->region_put(get_rdv_tid(message->header.token),
+			kcall->region_put(port_of_ipc(message->header.token),
 					(char*)addr, 1, buf);
 			message->Tread.offset++;
 			if (message->Tread.count <= message->Tread.offset) {
@@ -217,7 +217,7 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 
 static void reply(request_message_t *req, const size_t size)
 {
-	ER_UINT result = kcall->port_reply(req->rdvno, &(req->message), size);
+	ER_UINT result = kcall->ipc_reply(req->tag, &(req->message), size);
 
 	if (result)
 		log_err("hmi: reply error=%d\n", result);
@@ -257,7 +257,7 @@ static void execute(request_message_t *req)
 		if (message->Twrite.fid) {
 			if (message->Twrite.count > sizeof(line))
 				result = E_PAR;
-			else if (kcall->region_get(get_rdv_tid(req->rdvno),
+			else if (kcall->region_get(port_of_ipc(req->tag),
 					message->Twrite.data,
 					message->Twrite.count,
 					line)) {
@@ -277,7 +277,7 @@ static void execute(request_message_t *req)
 				size_t len = (rest > sizeof(line)) ?
 						sizeof(line) : rest;
 				if (kcall->region_get(
-						get_rdv_tid(message->header.token),
+						port_of_ipc(message->header.token),
 						(char*)((unsigned int)(message->Twrite.data) + pos),
 						len,
 						line)) {
@@ -334,7 +334,7 @@ static ER accept(void)
 	while (lfq_dequeue(&unused_queue, &req) != QUEUE_OK)
 		kcall->thread_sleep();
 
-	size = kcall->port_accept(PORT_CONSOLE, &(req->rdvno), &(req->message));
+	size = kcall->ipc_receive(PORT_CONSOLE, &(req->tag), &(req->message));
 	if (size < 0) {
 		log_err("hmi: receive error=%d\n", size);
 		return size;
@@ -422,7 +422,7 @@ static ER initialize(void)
 	cns->cls(&(window[0]));
 	cns->locate(&(window[0]), 0, 0);
 //TODO create mutex
-	result = kcall->port_open(&pk_cpor);
+	result = kcall->ipc_open(&pk_cpor);
 	if (result) {
 		log_err("hmi: open error=%d\n", result);
 
@@ -432,7 +432,7 @@ static ER initialize(void)
 	result = kcall->thread_create(PORT_HMI, &pk_ctsk);
 	if (result) {
 		log_err("hmi: create error=%d\n", result);
-		kcall->port_close();
+		kcall->ipc_close();
 		return result;
 	}
 
@@ -459,7 +459,7 @@ void start(VP_INT exinf)
 		while (accept() == E_OK);
 
 		kcall->thread_destroy(PORT_HMI);
-		kcall->port_close();
+		kcall->ipc_close();
 		log_info("hmi: end\n");
 	}
 

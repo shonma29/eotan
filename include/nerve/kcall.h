@@ -46,11 +46,11 @@ typedef struct {
 	ER (*region_get)(const ID, const void *, const size_t, void *);
 	ER (*region_put)(const ID, void *, const size_t, const void *);
 	ER_UINT (*region_copy)(const ID, const void *, const size_t , void *);
-	ER (*port_open)(T_CPOR *);
-	ER (*port_close)(void);
-	ER_UINT (*port_call)(ID, VP, UINT);
-	ER_UINT (*port_accept)(ID, RDVNO *, VP);
-	ER (*port_reply)(RDVNO, VP, UINT);
+	int (*ipc_open)(const T_CPOR *);
+	int (*ipc_close)(void);
+	int (*ipc_call)(const int, void *, const size_t);
+	int (*ipc_receive)(const int, int *, void *);
+	int (*ipc_reply)(const int, const void *, const size_t);
 	ER (*mutex_create)(ID, T_CMTX *);
 	ER (*mutex_destroy)(ID);
 	ER (*mutex_lock)(ID, TMO);
@@ -58,6 +58,6 @@ typedef struct {
 	void (*printk)(const char *, ...);
 } kcall_t;
 
-#define kcall ((kcall_t*)KCALL_ADDR)
+#define kcall ((kcall_t *) KCALL_ADDR)
 
 #endif

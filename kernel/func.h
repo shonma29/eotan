@@ -47,10 +47,10 @@ extern void kcall_initialize(void);
 
 /* palloc.c */
 extern void *palloc(void);
-extern void pfree(void *addr);
+extern void pfree(void *);
 
 /* printk.c */
-extern void printk(const char *format, ...);
+extern void printk(const char *, ...);
 
 /* tree_utils.c */
 extern void create_tree(tree_t *, slab_t *, size_t,
@@ -71,18 +71,18 @@ extern ER thread_sleep(void);
 extern ER thread_wakeup(ID);
 extern ID thread_get_id(void);
 
-static inline int is_kthread(const thread_t *th)
+static inline int is_kthread(const thread_t *thread)
 {
-	return th->attr.page_table == NULL;
+	return (thread->attr.page_table == NULL);
 }
 
-/* rendezvous.c */
-extern ER_UINT port_accept(ID, RDVNO *, VP);
-extern ER_UINT port_call(ID, VP, UINT);
-extern ER port_open(T_CPOR *);
-extern ER port_close(void);
-extern ER port_initialize(void);
-extern ER port_reply(RDVNO, VP, UINT);
+/* ipc.c */
+extern int ipc_initialize(void);
+extern int ipc_open(const T_CPOR *);
+extern int ipc_close(void);
+extern int ipc_call(const int, void *, const size_t);
+extern int ipc_receive(const int, int *, void *);
+extern int ipc_reply(const int, const void *, const size_t);
 
 /* mutex.c */
 extern ER mutex_create(ID, T_CMTX *);

@@ -39,8 +39,8 @@ static void doit(void)
 {
 	for (;;) {
 		devmsg_t packet;
-		RDVNO rdvno;
-		ER_UINT size = kcall->port_accept(PORT_DEV, &rdvno, &packet);
+		int tag;
+		int size = kcall->ipc_receive(PORT_DEV, &tag, &packet);
 		if (size < 0) {
 			log_err(MYNAME ": receive failed %d\n", size);
 			break;
@@ -69,10 +69,10 @@ static void doit(void)
 			packet.arg3 = 0;
 		}
 
-		ER result = kcall->port_reply(rdvno, &packet, sizeof(packet));
+		ER result = kcall->ipc_reply(tag, &packet, sizeof(packet));
 		if (result)
 			log_err(MYNAME ": reply(0x%x) failed %d\n",
-					rdvno, result);
+					tag, result);
 	}
 }
 
@@ -82,7 +82,7 @@ static ER initialize(void)
 		return E_NOMEM;
 
 	T_CPOR pk_cpor = { TA_TFIFO, sizeof(devmsg_t), sizeof(devmsg_t) };
-	ER result = kcall->port_open(&pk_cpor);
+	ER result = kcall->ipc_open(&pk_cpor);
 	if (result) {
 		log_err(MYNAME ": open failed %d\n", result);
 		return result;
@@ -100,7 +100,7 @@ void start(VP_INT exinf)
 		doit();
 		log_info(MYNAME ": end\n");
 
-		error = kcall->port_close();
+		error = kcall->ipc_close();
 		if (error)
 			log_err(MYNAME ": close failed %d\n", error);
 	}

@@ -177,17 +177,14 @@ static size_t execute(syslog_t *message)
 static ER accept(const ID port)
 {
 	syslog_t message;
-	RDVNO rdvno;
-	ER_UINT size;
-	ER result;
-
-	size = kcall->port_accept(port, &rdvno, &message);
+	int tag;
+	int size = kcall->ipc_receive(port, &tag, &message);
 	if (size < 0) {
 		/*log_err(MYNAME ": receive error=%d\n", size);*/
 		return size;
 	}
 
-	result = kcall->port_reply(rdvno, &message, execute(&message));
+	int result = kcall->ipc_reply(tag, &message, execute(&message));
 	if (result) {
 		/*log_err(MYNAME ": reply error=%d\n", result);*/
 	}
@@ -206,7 +203,7 @@ static ER_ID initialize(void)
 
 	ring_create(buf, sizeof(buf));
 
-	err = kcall->port_open(&pk_cpor);
+	err = kcall->ipc_open(&pk_cpor);
 	if (err) {
 		/*log_err(MYNAME ": open error=%d\n", err);*/
 
@@ -227,7 +224,7 @@ void start(VP_INT exinf)
 #endif
 		while (accept(port) == E_OK);
 
-		kcall->port_close();
+		kcall->ipc_close();
 		kcall->printk(MYNAME ": end\n");
 	}
 
@@ -286,7 +283,7 @@ static int write_cons(char *inbuf, const int channel,
 		packet.Twrite.count = len;
 		packet.Twrite.data = &(inbuf[rpos]);
 
-		result = kcall->port_call(PORT_CONSOLE, &packet,
+		result = kcall->ipc_call(PORT_CONSOLE, &packet,
 				MESSAGE_SIZE(Twrite));
 		if (result != MESSAGE_SIZE(Rwrite)) {
 			kcall->printk("cons: call failed(%d)\n", result);
@@ -310,7 +307,7 @@ static int write_cons(char *inbuf, const int channel,
 static unsigned int sleep(unsigned int second)
 {
 	struct timespec t = { second, 0 };
-	ER_UINT reply_size = kcall->port_call(PORT_TIMER, &t, sizeof(t));
+	ER_UINT reply_size = kcall->ipc_call(PORT_TIMER, &t, sizeof(t));
 
 	if (reply_size == sizeof(ER)) {
 		ER *result = (ER*)&t;

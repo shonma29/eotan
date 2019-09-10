@@ -38,9 +38,9 @@ typedef enum {
 } mm_reply_type_e;
 
 typedef struct {
-	node_t node;//TODO key is tag = rdvno
+	node_t node;
 	sys_args_t args;
-	RDVNO rdvno;
+	int tag;
 	fsmsg_t message;
 //	char *pathbuf1;//TODO kalloc
 //	char *pathbuf2;//TODO kalloc

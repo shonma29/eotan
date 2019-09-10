@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
-#include <core/options.h>
+#include <nerve/ipc_utils.h>
 #include "process.h"
 #include "../../kernel/mpu/mpufunc.h"
 
@@ -109,7 +109,7 @@ int mm_sbrk(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
+		mm_thread_t *th = thread_find(port_of_ipc(req->tag));
 		if (!th) {
 			reply->data[0] = EPERM;
 			break;

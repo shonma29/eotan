@@ -73,11 +73,11 @@ void if_open(fs_request *req)
 		response.Ropen.tag = request->tag;
 		response.Ropen.qid = file->f_vnode->index;
 		response.Ropen.iounit = 0;
-		reply(req->rdvno, &response, MESSAGE_SIZE(Ropen));
+		reply(req->tag, &response, MESSAGE_SIZE(Ropen));
 		return;
 	} while (false);
 
-	reply_error(req->rdvno, req->packet.header.token, request->tag,
+	reply_error(req->tag, req->packet.header.token, request->tag,
 			error_no);
 }
 
@@ -100,11 +100,11 @@ void if_clunk(fs_request *req)
 		response.header.token = req->packet.header.token;
 		response.header.type = Rclunk;
 		response.Rclunk.tag = request->tag;
-		reply(req->rdvno, &response, MESSAGE_SIZE(Rclunk));
+		reply(req->tag, &response, MESSAGE_SIZE(Rclunk));
 		return;
 	} while (false);
 
-	reply_error(req->rdvno, req->packet.header.token, request->tag,
+	reply_error(req->tag, req->packet.header.token, request->tag,
 			error_no);
 }
 
@@ -151,11 +151,11 @@ void if_read(fs_request *req)
 		response.header.type = Rread;
 		response.Rread.tag = request->tag;
 		response.Rread.count = count;
-		reply(req->rdvno, &response, MESSAGE_SIZE(Rread));
+		reply(req->tag, &response, MESSAGE_SIZE(Rread));
 		return;
 	} while (false);
 
-	reply_error(req->rdvno, req->packet.header.token, request->tag,
+	reply_error(req->tag, req->packet.header.token, request->tag,
 			error_no);
 }
 
@@ -225,11 +225,11 @@ void if_write(fs_request *req)
 		response.header.type = Rwrite;
 		response.Rwrite.tag = request->tag;
 		response.Rwrite.count = wrote_size;
-		reply(req->rdvno, &response, MESSAGE_SIZE(Rwrite));
+		reply(req->tag, &response, MESSAGE_SIZE(Rwrite));
 		return;
 	} while (false);
 
-	reply_error(req->rdvno, req->packet.header.token, request->tag,
+	reply_error(req->tag, req->packet.header.token, request->tag,
 			error_no);
 }
 

@@ -25,21 +25,19 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <errno.h>
 #include <interrupt.h>
 #include <services.h>
 #include <nerve/kcall.h>
 #include "libserv.h"
 
 
-ER enable_interrupt(INHNO inhno)
+ER enable_interrupt(const INHNO inhno)
 {
-	int_args_t args;
-	ER *reply = (ER*)&args;
-
-	args.operation = int_operation_enable;
-	args.arg1 = (int)inhno;
-
-	return ((kcall->port_call(PORT_INTERRUPT, &args, sizeof(args))
+	int_args_t args = {
+		int_operation_enable,
+		(int) inhno
+	};
+	ER *reply = (ER *) &args;
+	return ((kcall->ipc_call(PORT_INTERRUPT, &args, sizeof(args))
 			== sizeof(*reply)) ? (*reply) : E_SYS);
 }

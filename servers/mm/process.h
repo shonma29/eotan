@@ -90,7 +90,7 @@ typedef struct {
 	mm_file_t *wd;
 	thread_local_t *local;
 	int exit_status;
-	RDVNO rdvno;
+	int tag;
 	char name[32];//TODO set on fork/exec
 } mm_process_t;
 

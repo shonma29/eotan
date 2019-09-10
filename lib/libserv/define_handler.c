@@ -32,15 +32,14 @@ For more information, please refer to <http://unlicense.org/>
 #include "libserv.h"
 
 
-ER define_handler(INHNO inhno, T_DINH *pk_dinh)
+ER define_handler(const INHNO inhno, const T_DINH *pk_dinh)
 {
 	int_args_t args;
-	ER *reply = (ER*)&args;
-
 	args.operation = int_operation_bind;
-	args.arg1 = (int)inhno;
-	args.arg2 = (int)pk_dinh;
+	args.arg1 = (int) inhno;
+	args.arg2 = (int) pk_dinh;
 
-	return ((kcall->port_call(PORT_INTERRUPT, &args, sizeof(args))
+	ER *reply = (ER*) &args;
+	return ((kcall->ipc_call(PORT_INTERRUPT, &args, sizeof(args))
 			== sizeof(*reply)) ? (*reply) : E_SYS);
 }

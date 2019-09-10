@@ -35,7 +35,7 @@ vdriver_t *device_find(const int devno)
 		devmsg_find,
 		devno
 	};
-	ER_UINT size = kcall->port_call(PORT_DEV, &packet, sizeof(packet));
+	ER_UINT size = kcall->ipc_call(PORT_DEV, &packet, sizeof(packet));
 	if ((size == sizeof(packet))
 			&& !(packet.arg1))
 		return ((vdriver_t *) packet.arg2);

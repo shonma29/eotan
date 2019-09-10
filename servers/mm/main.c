@@ -103,7 +103,7 @@ static ER init(void)
 
 //log_info("mm size=%d\n", BUFSIZ);
 	T_CPOR pk_cpor = { TA_TFIFO, BUFSIZ, BUFSIZ };
-	return kcall->port_open(&pk_cpor);
+	return kcall->ipc_open(&pk_cpor);
 }
 
 static ER_ID worker_initialize(void)
@@ -144,7 +144,7 @@ static void worker(void)
 			switch (result) {
 			case reply_success:
 			case reply_failure:
-				result = kcall->port_reply(req->rdvno, reply,
+				result = kcall->ipc_reply(req->tag, reply,
 						sizeof(*reply));
 				if (result)
 					log_err(MYNAME ": reply failed %d\n",
@@ -182,7 +182,7 @@ static void doit(void)
 			continue;
 		}
 
-		ER_UINT size = kcall->port_accept(PORT_MM, &(req->rdvno),
+		int size = kcall->ipc_receive(PORT_MM, &(req->tag),
 				&(req->args));
 		if (size < 0) {
 			log_err(MYNAME ": receive failed %d\n", size);
@@ -201,7 +201,7 @@ static void doit(void)
 			sys_reply_t *reply = (sys_reply_t *) &(req->args);
 			reply->result = -1;
 			reply->data[0] = result;
-			result = kcall->port_reply(req->rdvno, reply,
+			result = kcall->ipc_reply(req->tag, reply,
 					sizeof(*reply));
 			if (result)
 				log_err(MYNAME ": reply failed %d\n", result);
@@ -219,7 +219,7 @@ void start(VP_INT exinf)
 		doit();
 		log_info(MYNAME ": end\n");
 
-		error = kcall->port_close();
+		error = kcall->ipc_close();
 		if (error)
 			log_err(MYNAME ": close failed %d\n", error);
 	}

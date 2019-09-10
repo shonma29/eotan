@@ -44,7 +44,7 @@ void syslog(const int priority, const char *message, ...)
 
 	va_list ap;
 	va_start(ap, message);
-	vnprintf2((int (*)(char, void*))_putc, &packet, message, ap);
+	vnprintf2((int (*)(char, void *)) _putc, &packet, message, ap);
 
 	if (packet.Twrite.count)
 		send(&packet);
@@ -52,7 +52,7 @@ void syslog(const int priority, const char *message, ...)
 
 static int send(const syslog_t *packet)
 {
-	return kcall->port_call(PORT_SYSLOG, (void*)packet,
+	return kcall->ipc_call(PORT_SYSLOG, (void *) packet,
 			sizeof(packet->Twrite)
 					- sizeof(packet->Twrite.data)
 					+ packet->Twrite.count);

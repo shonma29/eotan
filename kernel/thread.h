@@ -30,7 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <mm/segment.h>
 #include <set/list.h>
 #include <set/tree.h>
-#include "rendezvous.h"
+#include "ipc.h"
 #include "wait.h"
 #include "mpu/context.h"
 
@@ -56,14 +56,14 @@ typedef struct {
 		VP ustack_top;
 		FP entry;
 	} attr;
-	port_t port;
+	ipc_t port;
 	int pad[2];
 	mpu_context_t mpu;
 } thread_t;
 
 static inline ID thread_id(thread_t *th)
 {
-	return (ID)(th->node.key);
+	return (ID) (th->node.key);
 }
 
 static inline thread_t *getThreadWaiting(const list_t *p) {

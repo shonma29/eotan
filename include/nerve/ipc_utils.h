@@ -26,21 +26,20 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <mitron4/types.h>
 
-static inline ID get_rdv_tid(RDVNO rdvno)
+static inline int port_of_ipc(const int tag)
 {
-	return (ID)((UW)rdvno >> 16);
+	return (int) (((unsigned int) tag) >> 16);
 }
 
-static inline W get_rdv_seq(RDVNO rdvno)
+static inline int key_of_ipc(const int tag)
 {
-	return (W)((UW)rdvno & 0xffff);
+	return (int) (((unsigned int) tag) & 0xffff);
 }
 
-static inline RDVNO get_rdvno(ID tid, W seq)
+static inline int create_ipc_tag(const int port, const int key)
 {
-	return (RDVNO)((UW)tid << 16 | (UW)seq);
+	return (int) ((((unsigned int) port) << 16) | ((unsigned int) key));
 }
 
 #endif

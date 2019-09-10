@@ -27,8 +27,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <boot/init.h>
 #include <fcntl.h>
 #include <limits.h>
-#include <core/options.h>
 #include <fs/config.h>
+#include <nerve/ipc_utils.h>
 #include <nerve/kcall.h>
 #include <sys/errno.h>
 #include <sys/unistd.h>
@@ -82,11 +82,11 @@ void if_attach(fs_request *req)
 		response.header.type = Rattach;
 		response.Rattach.tag = request->tag;
 		response.Rattach.qid = session->root->index;
-		reply(req->rdvno, &response, MESSAGE_SIZE(Rattach));
+		reply(req->tag, &response, MESSAGE_SIZE(Rattach));
 		return;
 	} while (false);
 
-	reply_error(req->rdvno, req->packet.header.token, request->tag,
+	reply_error(req->tag, req->packet.header.token, request->tag,
 			error_no);
 }
 
@@ -219,7 +219,7 @@ int if_exit(fs_request *req)
 		return EPERM;
 
 	session_destroy(session);
-	reply2(req->rdvno, 0, 0, 0);
+	reply2(req->tag, 0, 0, 0);
 	return 0;
 }
 #endif

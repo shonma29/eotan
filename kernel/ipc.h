@@ -1,5 +1,5 @@
-#ifndef _CORE_RENDEZVOUS_H_
-#define _CORE_RENDEZVOUS_H_
+#ifndef _CORE_IPC_H_
+#define _CORE_IPC_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,17 +26,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
 #include <stdbool.h>
 #include <set/list.h>
 
 typedef struct {
 	bool opened;
 	list_t caller;
-	list_t acceptor;
-	ATR poratr;
-	UINT maxcmsz;
-	UINT maxrmsz;
-} port_t;
+	list_t receiver;
+	int attr;
+	size_t max_call;
+	size_t max_reply;
+} ipc_t;
 
 #endif

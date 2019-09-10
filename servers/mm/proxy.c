@@ -28,7 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <fcntl.h>
 #include <services.h>
 #include <string.h>
-#include <core/options.h>
+#include <nerve/ipc_utils.h>
 #include <nerve/kcall.h>
 #include <sys/syscall.h>
 #include "../../lib/libserv/libserv.h"
@@ -91,7 +91,7 @@ int mm_open(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
+		mm_thread_t *th = thread_find(port_of_ipc(req->tag));
 		if (!th) {
 			reply->data[0] = EPERM;
 			break;
@@ -153,7 +153,7 @@ int mm_create(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
+		mm_thread_t *th = thread_find(port_of_ipc(req->tag));
 		if (!th) {
 			reply->data[0] = EPERM;
 			break;
@@ -257,7 +257,7 @@ int mm_read(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
+		mm_thread_t *th = thread_find(port_of_ipc(req->tag));
 		if (!th) {
 			reply->data[0] = EPERM;
 			break;
@@ -297,7 +297,7 @@ int mm_write(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
+		mm_thread_t *th = thread_find(port_of_ipc(req->tag));
 		if (!th) {
 			reply->data[0] = EPERM;
 			break;
@@ -345,7 +345,7 @@ int mm_close(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
+		mm_thread_t *th = thread_find(port_of_ipc(req->tag));
 		if (!th) {
 			reply->data[0] = EPERM;
 			break;
@@ -392,7 +392,7 @@ int mm_remove(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
+		mm_thread_t *th = thread_find(port_of_ipc(req->tag));
 		if (!th) {
 			reply->data[0] = EPERM;
 			break;
@@ -442,7 +442,7 @@ int mm_fstat(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
+		mm_thread_t *th = thread_find(port_of_ipc(req->tag));
 		if (!th) {
 			reply->data[0] = EPERM;
 			break;
@@ -478,7 +478,7 @@ int mm_chmod(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
+		mm_thread_t *th = thread_find(port_of_ipc(req->tag));
 		if (!th) {
 			reply->data[0] = EPERM;
 			break;
@@ -639,7 +639,7 @@ int _fstat(struct stat *st, const mm_file_t *file, const int token,
 static int call_device(const int server_id, fsmsg_t *message,
 	const size_t tsize, const int rtype, const size_t rsize)
 {
-	ER_UINT size = kcall->port_call(server_id, message, tsize);
+	ER_UINT size = kcall->ipc_call(server_id, message, tsize);
 //if (rtype == Rwalk)
 //log_info(MYNAME ": call_device size=%d\n", size);
 	if (size >= MIN_MESSAGE_SIZE) {

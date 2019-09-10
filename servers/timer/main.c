@@ -50,19 +50,19 @@ typedef struct {
 
 typedef struct {
 	list_t brothers;
-	RDVNO rdvno;
+	int tag;
 } sleeper_t;
 
 static slab_t timer_slab;
 static tree_t timer_tree;
 static slab_t sleeper_slab;
 
-static inline timer_t *getTimerParent(const node_t *p);
-static inline sleeper_t *getSleeperParent(const list_t *p);
+static inline timer_t *getTimerParent(const node_t *);
+static inline sleeper_t *getSleeperParent(const list_t *);
 static void time_tick(void);
-static int compare(const int a, const int b);
-static void wakeup(list_t *w, int dummy);
-static ER add_timer(const struct timespec *ts, const RDVNO rdvno);
+static int compare(const int, const int);
+static void wakeup(list_t *, int);
+static ER add_timer(const struct timespec *, const int);
 static void doit(void);
 static ER init(void);
 
@@ -110,15 +110,15 @@ static void wakeup(list_t *w, int dummy)
 
 	while ((w = list_dequeue(&guard))) {
 		sleeper_t *s = getSleeperParent(w);
-		ER result = kcall->port_reply(s->rdvno, &reply, sizeof(reply));
+		ER result = kcall->ipc_reply(s->tag, &reply, sizeof(reply));
 		if (result != E_OK)
 			log_err(MYNAME ": reply(0x%x) failed %d\n",
-					s->rdvno, result);
+					s->tag, result);
 		slab_free(&sleeper_slab, s);
 	}
 }
 
-static ER add_timer(const struct timespec *ts, const RDVNO rdvno)
+static ER add_timer(const struct timespec *ts, const int tag)
 {
 	node_t *p;
 	timer_t *t;
@@ -142,7 +142,7 @@ static ER add_timer(const struct timespec *ts, const RDVNO rdvno)
 	}
 
 	list_initialize(&(s->brothers));
-	s->rdvno = rdvno;
+	s->tag = tag;
 
 	p = tree_get(&timer_tree, (int)&entry);
 	if (p)
@@ -210,23 +210,21 @@ static void doit(void)
 {
 	for (;;) {
 		struct timespec arg;
-		RDVNO rdvno;
-		ER reply;
-		ER result;
-		ER_UINT size = kcall->port_accept(PORT_TIMER, &rdvno, &arg);
-
+		int tag;
+		int size = kcall->ipc_receive(PORT_TIMER, &tag, &arg);
 		if (size < 0) {
 			log_err(MYNAME ": receive failed %d\n", size);
 			break;
 		}
 
-		reply = (size == sizeof(arg)) ? add_timer(&arg, rdvno) : E_PAR;
+		int reply = (size == sizeof(arg)) ?
+				add_timer(&arg, tag) : E_PAR;
 		if (reply != E_OK) {
-			result = kcall->port_reply(rdvno, &reply,
+			int result = kcall->ipc_reply(tag, &reply,
 					sizeof(reply));
 			if (result != E_OK)
 				log_err(MYNAME ": reply(0x%x) failed %d\n",
-						rdvno, result);
+						tag, result);
 		}
 	}
 }
@@ -273,7 +271,7 @@ static ER init(void)
 		return result;
 	}
 
-	result = kcall->port_open(&pk_cpor);
+	result = kcall->ipc_open(&pk_cpor);
 	if (result != E_OK) {
 		log_err(MYNAME ": open failed %d\n", result);
 		pk_dinh.inthdr = NULL;
@@ -293,7 +291,7 @@ void start(VP_INT exinf)
 		doit();
 		log_info(MYNAME ": end\n");
 
-		error = kcall->port_close();
+		error = kcall->ipc_close();
 		if (error != E_OK)
 			log_err(MYNAME ": close failed %d\n", error);
 	}

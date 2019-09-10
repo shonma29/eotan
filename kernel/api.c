@@ -43,10 +43,10 @@ static void page_free(void *);
 static ER region_get(const ID, const void *, const size_t, void *);
 static ER region_put(const ID, void *, const size_t, const void *);
 static ER_UINT region_copy(const ID, const void *, const size_t, void *);
-static ER_UINT _port_call(svc_arg *);
+static ER_UINT _ipc_call(svc_arg *);
 
 static ER (*svc_entries[])(svc_arg *) = {
-	_port_call
+	_ipc_call
 };
 
 
@@ -73,11 +73,11 @@ void kcall_initialize(void)
 	p->region_put = region_put;
 	p->region_copy = region_copy;
 
-	p->port_open = port_open;
-	p->port_close = port_close;
-	p->port_call = port_call;
-	p->port_accept = port_accept;
-	p->port_reply = port_reply;
+	p->ipc_open = ipc_open;
+	p->ipc_close = ipc_close;
+	p->ipc_call = ipc_call;
+	p->ipc_receive = ipc_receive;
+	p->ipc_reply = ipc_reply;
 	p->mutex_create = mutex_create;
 	p->mutex_destroy = mutex_destroy;
 	p->mutex_lock = mutex_lock;
@@ -142,8 +142,8 @@ ER syscall(svc_arg *argp, UW svcno)
 			E_NOSPT : (svc_entries[svcno](argp)));
 }
 
-static ER_UINT _port_call(svc_arg *argp)
+static ER_UINT _ipc_call(svc_arg *argp)
 {
-	return port_call((ID) (argp->arg1), (VP) (argp->arg2),
+	return ipc_call((ID) (argp->arg1), (VP) (argp->arg2),
 			(UINT) (argp->arg3));
 }

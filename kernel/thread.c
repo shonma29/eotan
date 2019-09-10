@@ -379,7 +379,7 @@ ER thread_sleep(void)
 		return E_OK;
 
 	} else {
-		running->wait.type = wait_slp;
+		running->wait.type = wait_sleep;
 		wait(running);
 		return running->wait.result;
 	}
@@ -410,7 +410,7 @@ ER thread_wakeup(ID tskid)
 
 		case TTS_WAI:
 		case TTS_WAS:
-			if (th->wait.type == wait_slp) {
+			if (th->wait.type == wait_sleep) {
 				release(th);
 				result = E_OK;
 				break;

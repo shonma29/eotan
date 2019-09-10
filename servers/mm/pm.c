@@ -29,7 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <fcntl.h>
 #include <services.h>
 #include <string.h>
-#include <core/options.h>
+#include <nerve/ipc_utils.h>
 #include <nerve/kcall.h>
 #include <sys/unistd.h>
 #include "../../lib/libserv/libserv.h"
@@ -43,7 +43,7 @@ int mm_fork(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
+		mm_thread_t *th = thread_find(port_of_ipc(req->tag));
 		if (!th) {
 			reply->data[0] = EPERM;
 			break;
@@ -89,7 +89,7 @@ int mm_exec(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
+		mm_thread_t *th = thread_find(port_of_ipc(req->tag));
 		if (!th) {
 			reply->data[0] = EPERM;
 			break;
@@ -259,14 +259,14 @@ int mm_wait(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
+		mm_thread_t *th = thread_find(port_of_ipc(req->tag));
 		if (!th) {
 			reply->data[0] = EPERM;
 			break;
 		}
 
 		mm_process_t *process = get_process(th);
-		process->rdvno = req->rdvno;
+		process->tag = req->tag;
 
 		int result = process_release_body(process);
 		if (result) {
@@ -285,7 +285,7 @@ int mm_exit(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
+		mm_thread_t *th = thread_find(port_of_ipc(req->tag));
 		if (!th) {
 			reply->data[0] = EPERM;
 			break;
@@ -308,7 +308,7 @@ int mm_chdir(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
+		mm_thread_t *th = thread_find(port_of_ipc(req->tag));
 		if (!th) {
 			reply->data[0] = EPERM;
 			break;
@@ -451,7 +451,7 @@ int mm_dup(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
+		mm_thread_t *th = thread_find(port_of_ipc(req->tag));
 		if (!th) {
 			reply->data[0] = EPERM;
 			break;
@@ -517,7 +517,7 @@ int mm_lseek(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(get_rdv_tid(req->rdvno));
+		mm_thread_t *th = thread_find(port_of_ipc(req->tag));
 		if (!th) {
 			reply->data[1] = EPERM;
 			break;

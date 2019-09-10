@@ -128,7 +128,7 @@ static ER port_initialize(void)
 			sizeof(ER)
 	};
 
-	result = kcall->port_open(&pk_cpor);
+	result = kcall->ipc_open(&pk_cpor);
 	if (result) {
 		log_err("interrupt: open error=%d\n", result);
 
@@ -158,20 +158,17 @@ static ER execute(int_args_t *args)
 static ER accept(void)
 {
 	int_args_t args;
-	RDVNO rdvno;
-	ER_UINT size;
-	ER *reply;
-	ER result;
-
-	size = kcall->port_accept(PORT_INTERRUPT, &rdvno, &args);
+	int tag;
+	int size = kcall->ipc_receive(PORT_INTERRUPT, &tag, &args);
 	if (size < 0) {
 		log_err("interrupt: receive error=%d\n", size);
 		return size;
 	}
 
-	reply = (ER*)(&args);
+	int *reply = (int *) &args;
 	*reply = (size == sizeof(args)) ? execute(&args) : E_PAR;
-	result = kcall->port_reply(rdvno, &args, sizeof(*reply));
+
+	int result = kcall->ipc_reply(tag, &args, sizeof(*reply));
 	if (result)
 		log_err("interrupt: reply error=%d\n", result);
 

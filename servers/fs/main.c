@@ -103,9 +103,9 @@ static int initialize(void)
 		sizeof(fsmsg_t),
 		sizeof(fsmsg_t)
 	};
-	result = kcall->port_open(&pk_cpor);
+	result = kcall->ipc_open(&pk_cpor);
 	if (result) {
-		log_err(MYNAME ": port_initialize failed %d\n", result);
+		log_err(MYNAME ": ipc_open failed %d\n", result);
 		return -1;
 	}
 
@@ -184,7 +184,7 @@ void start(VP_INT exinf)
 			continue;
 		}
 
-		ER_UINT size = kcall->port_accept(PORT_FS, &(req->rdvno),
+		ER_UINT size = kcall->ipc_receive(PORT_FS, &(req->tag),
 				&(req->packet));
 		if (size < 0) {
 			log_err(MYNAME ": receive failed %d\n", size);
@@ -193,7 +193,7 @@ void start(VP_INT exinf)
 
 		if (size < sizeof(req->packet.header)) {
 			//TODO what is tag?
-			reply_error(req->rdvno, 0, 0, EPROTO);
+			reply_error(req->tag, 0, 0, EPROTO);
 			continue;
 		}
 /*
@@ -202,7 +202,7 @@ void start(VP_INT exinf)
 		if (pid == -1) {
 			log_err(MYNAME ": find failed %d\n", pid);
 			//TODO what to do?
-			reply2(req->rdvno, EINVAL, -1, 0);
+			reply2(req->tag, EINVAL, -1, 0);
 			continue;
 		}
 */
@@ -219,7 +219,7 @@ void start(VP_INT exinf)
 
 		if (result)
 			//TODO what is tag?
-			reply_error(req->rdvno, req->packet.header.token, 0,
+			reply_error(req->tag, req->packet.header.token, 0,
 					result);
 	}
 }

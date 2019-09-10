@@ -26,27 +26,27 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
+#include <stddef.h>
 #include <set/list.h>
 
 typedef enum {
 	wait_none,
-	wait_slp,
-	wait_mtx,
-	wait_por,
-	wait_rdv
+	wait_sleep,
+	wait_mutex,
+	wait_call,
+	wait_reply
 } wait_type_e;
 
 typedef struct {
 	wait_type_e type;
 	list_t waiting;
-	ER result;
+	int result;
 	union {
 		struct {
-			UINT size;
-			VP msg;
-			RDVNO rdvno;
-		} por;
+			size_t size;
+			void *message;
+			int key;
+		} ipc;
 	} detail;
 } wait_reason_t;
 

@@ -62,11 +62,11 @@ void if_stat(fs_request *req)
 		response.header.token = req->packet.header.token;
 		response.header.type = Rstat;
 		response.Rstat.tag = request->tag;
-		reply(req->rdvno, &response, MESSAGE_SIZE(Rstat));
+		reply(req->tag, &response, MESSAGE_SIZE(Rstat));
 		return;
 	} while (false);
 
-	reply_error(req->rdvno, req->packet.header.token, request->tag,
+	reply_error(req->tag, req->packet.header.token, request->tag,
 			error_no);
 }
 
@@ -115,10 +115,10 @@ void if_wstat(fs_request *req)
 		response.header.token = req->packet.header.token;
 		response.header.type = Rwstat;
 		response.Rwstat.tag = request->tag;
-		reply(req->rdvno, &response, MESSAGE_SIZE(Rwstat));
+		reply(req->tag, &response, MESSAGE_SIZE(Rwstat));
 		return;
 	} while (false);
 
-	reply_error(req->rdvno, req->packet.header.token, request->tag,
+	reply_error(req->tag, req->packet.header.token, request->tag,
 			error_no);
 }

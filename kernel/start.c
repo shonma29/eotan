@@ -32,8 +32,8 @@ For more information, please refer to <http://unlicense.org/>
 #include "ready.h"
 #include "mpu/mpufunc.h"
 
-static ER create_idle_thread(const VP_INT exinf);
-static noreturn void idle_start(VP_INT exinf);
+static ER create_idle_thread(const VP_INT);
+static noreturn void idle_start(VP_INT);
 
 
 void kern_start(void (*callback)(void))
@@ -43,10 +43,10 @@ void kern_start(void (*callback)(void))
 	context_initialize();
 	kcall_initialize();
 	service_initialize();
-	port_initialize();
+	ipc_initialize();
 	mutex_initialize();
 	thread_initialize();
-	create_idle_thread((VP_INT)callback);
+	create_idle_thread((VP_INT) callback);
 }
 
 //TODO move to starter
@@ -54,8 +54,8 @@ static ER create_idle_thread(const VP_INT exinf)
 {
 	static T_CTSK pk_ctsk = {
 		TA_HLNG | TA_ACT,
-		(VP_INT)NULL,
-		(FP)idle_start,
+		(VP_INT) NULL,
+		(FP) idle_start,
 		MAX_PRIORITY,
 		KTHREAD_STACK_SIZE,
 		NULL,
@@ -78,7 +78,7 @@ static ER create_idle_thread(const VP_INT exinf)
 
 static noreturn void idle_start(VP_INT exinf)
 {
-	void (*callback)(void) = (void (*)(void))exinf;
+	void (*callback)(void) = (void (*)(void)) exinf;
 	callback();
 	ei();
 

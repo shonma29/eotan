@@ -27,7 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <errno.h>
 #include <time.h>
-#include <core/options.h>
+#include <nerve/ipc_utils.h>
 #include <nerve/kcall.h>
 #include <sys/syscall.h>
 #include "api.h"
@@ -68,7 +68,7 @@ int mm_clock_gettime(mm_request *req)
 			break;
 		}
 
-		if (kcall->region_put(get_rdv_tid(req->rdvno),
+		if (kcall->region_put(port_of_ipc(req->tag),
 				(void*)(req->args.arg2), sizeof(tspec),
 				&tspec)) {
 			reply->data[0] = EFAULT;

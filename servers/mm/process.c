@@ -305,13 +305,13 @@ int process_release_body(mm_process_t *proc)
 		if (!list_is_empty(&(p->threads)))
 			continue;
 
-		RDVNO rdvno = proc->rdvno;
+		int tag = proc->tag;
 		sys_reply_t reply = {
 			p->node.key,
 			{ p->exit_status & 0xff }
 		};
 
-		proc->rdvno = 0;
+		proc->tag = 0;
 		list_remove(child);
 		if (!tree_remove(&process_tree, p->node.key)) {
 			//TODO what to do?
@@ -319,7 +319,7 @@ int process_release_body(mm_process_t *proc)
 
 		slab_free(&process_slab, p);
 
-		ER result = kcall->port_reply(rdvno, &reply, sizeof(reply));
+		ER result = kcall->ipc_reply(tag, &reply, sizeof(reply));
 		if (result)
 			log_err("mm: %d failed to release body(%d)\n",
 					proc->node.key, result);
@@ -339,7 +339,7 @@ int process_destroy(mm_process_t *process, const int status)
 
 	mm_process_t *parent = process_find(process->ppid);
 	if (parent) {
-		if (parent->rdvno) {
+		if (parent->tag) {
 			log_info("mm: %d release parent %d\n",
 					process->node.key, process->ppid);
 			process_release_body(parent);
@@ -368,7 +368,7 @@ int process_destroy(mm_process_t *process, const int status)
 		}
 
 		if (found) {
-			if (parent->rdvno)
+			if (parent->tag)
 				process_release_body(parent);
 		}
 	} else {
@@ -502,7 +502,7 @@ static int process_create(mm_process_t **process, const int pid)
 		list_initialize(&(p->children));
 		list_initialize(&(p->members));
 		p->local = NULL;
-		p->rdvno = 0;
+		p->tag = 0;
 		p->name[0] = '\0';
 
 		//TODO check NULL

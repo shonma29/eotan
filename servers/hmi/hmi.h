@@ -42,7 +42,7 @@ typedef struct _interrupt_message_t {
 } interrupt_message_t;
 
 typedef struct _request_message_t {
-	RDVNO rdvno;
+	int tag;
 	fsmsg_t message;
 } request_message_t;
 
