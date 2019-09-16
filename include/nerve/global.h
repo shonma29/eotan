@@ -26,7 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
+//#include <core.h>
 #include <time.h>
 #include <stddef.h>
 #include <nerve/config.h>
@@ -34,12 +34,12 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/lf_queue.h>
 
 typedef struct {
-	ID device;
-	W fstype;
+	char device[MAX_DEVICE_NAME + 1];
+	int fstype;
 } mount_node_t;
 
 typedef struct {
-	VP start;
+	void *address;
 	size_t size;
 } memory_range_t;
 
@@ -52,6 +52,6 @@ typedef struct {
 	MemoryMap memory_map;
 } system_info_t;
 
-#define sysinfo ((system_info_t*)SYSTEM_INFO_ADDR)
+#define sysinfo ((system_info_t *) SYSTEM_INFO_ADDR)
 
 #endif

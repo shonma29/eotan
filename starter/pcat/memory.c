@@ -245,17 +245,17 @@ static size_t dup_module(char **to, Elf32_Ehdr *eHdr)
 static void initialize_initrd_info(void)
 {
 	system_info_t *info = kern_v2p(sysinfo);
-	info->root.device = get_device_id(DEVICE_MAJOR_ATA, 0);
+	strcpy(info->root.device, DEVICE_CONTROLLER_ATA0);
 	info->root.fstype = FS_TFS;
-	info->initrd.start = NULL;
+	info->initrd.address = NULL;
 	info->initrd.size = 0;
 }
 
 static void set_initrd_info(void)
 {
 	system_info_t *info = kern_v2p(sysinfo);
-	info->root.device = get_device_id(DEVICE_MAJOR_RAMDISK, 0);
+	strcpy(info->root.device, DEVICE_CONTROLLER_RAMDISK0);
 	info->root.fstype = INITRD_FS;
-	info->initrd.start = (void*)INITRD_ADDR;
+	info->initrd.address = (void *) INITRD_ADDR;
 	info->initrd.size = INITRD_SIZE;
 }

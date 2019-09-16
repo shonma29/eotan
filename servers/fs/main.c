@@ -71,22 +71,22 @@ static int initialize(void)
 	if (fs_initialize())
 		return -1;
 
-	if (fs_mount(sysinfo->root.device)) {
-		log_err(MYNAME ": fs_mount(%x, %d) failed\n",
-				sysinfo->root.device,
-				sysinfo->root.fstype);
+	int result = fs_mount((int) (sysinfo->root.device));
+	if (result) {
+		log_err(MYNAME ": fs_mount(%s, %d) failed %d\n",
+				sysinfo->root.device, sysinfo->root.fstype,
+				result);
 		return -1;
 	} else
-		log_info(MYNAME ": fs_mount(%x, %d) succeeded\n",
-				sysinfo->root.device,
-				sysinfo->root.fstype);
+		log_info(MYNAME ": fs_mount(%s, %d)\n",
+				sysinfo->root.device, sysinfo->root.fstype);
 
 	receiver_id = kcall->thread_get_id();
 	T_CMTX pk_cmtx = {
 		TA_CEILING,
 		pri_server_high
 	};
-	ER result = kcall->mutex_create(receiver_id, &pk_cmtx);
+	result = kcall->mutex_create(receiver_id, &pk_cmtx);
 	if (result) {
 		log_err(MYNAME ": mutex_create failed %d\n", result);
 		return -1;

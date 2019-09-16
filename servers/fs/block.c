@@ -31,8 +31,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 #include "../../lib/libserv/libserv.h"
 
+static int channel;
 static vdriver_t *driver;
-static int minor;
 
 static void block_clear(block_device_t *, void *);
 static int block_read(block_device_t *, void *, const int);
@@ -60,9 +60,10 @@ int block_initialize(block_device_t *dev)
 	dev->write = block_write;
 	dev->invalidate = block_invalidate;
 
-	driver = device_find(dev->channel);
-	if (driver) {
-		minor = get_channel(dev->channel);
+	device_info_t *info = device_find((char *) (dev->channel));
+	if (info) {
+		channel = (int) (info->unit);
+		driver = (vdriver_t *) (info->driver);
 		return 0;
 	} else
 		return ENODEV;
@@ -79,7 +80,7 @@ static int block_read(block_device_t *dev, void *buf, const int blockno)
 		return EINVAL;
 
 	size_t len = dev->block_size;
-	int result = driver->read(buf, minor, blockno * dev->block_size, len);
+	int result = driver->read(buf, channel, blockno * dev->block_size, len);
 	return ((result == len) ? len : (-1));
 }
 
@@ -89,7 +90,8 @@ static int block_write(block_device_t *dev, void *buf, const int blockno)
 		return EINVAL;
 
 	size_t len = dev->block_size;
-	int result = driver->write(buf, minor, blockno * dev->block_size, len);
+	int result = driver->write(buf, channel, blockno * dev->block_size,
+			len);
 	return ((result == len) ? 0 : (-1));
 }
 

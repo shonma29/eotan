@@ -33,7 +33,7 @@ For more information, please refer to <http://unlicense.org/>
 
 static hash_t *hash;
 static device_info_t table[MAX_DEVICE];
-static size_t num_device;
+static size_t num_device = 0;
 
 void *malloc(size_t size);
 void free(void *p);
@@ -56,36 +56,30 @@ void free(void *p)
 
 bool dev_initialize(void)
 {
-	int i;
-
-	num_device = 0;
-
 	hash = hash_create(MAX_DEVICE, calc_hash, compare);
 	if (!hash) {
-		log_err("devfs: cannot create hash\n");
+		log_err("dev: cannot create hash\n");
 		return false;
 	}
 
-	for (i = 0; i < sizeof(drivers) / sizeof(drivers[0]); i++) {
-		vdriver_t *p = drivers[i]((int)NULL);
-
+	for (int i = 0; i < sizeof(drivers) / sizeof(drivers[0]); i++) {
+		vdriver_t *p = drivers[i](sysinfo);
 		if (!p)
 			continue;
 
-		table[num_device].id = p->id;
-		strcpy((char *) (table[num_device].name), (char *) (p->name));
-		table[num_device].size = p->size;
-		table[num_device].driver = p;
+		for (const vdriver_unit_t **unit = p->units; *unit; unit++) {
+			device_info_t *tbl = &(table[num_device]);
+			strcpy(tbl->name, (*unit)->name);
+			tbl->unit = (*unit)->unit;
+			tbl->driver = p;
 
-		if (hash_put(hash, (void *) (p->id),
-				(void *) &(table[num_device])))
-			log_err("devfs: attach failure(%x, %s, %d, %x)\n",
-					p->id, p->name, p->size, p);
-
-		else {
-			num_device++;
-			log_info("devfs: attach success(%x, %s, %d, %x)\n",
-					p->id, p->name, p->size, p);
+			if (hash_put(hash, tbl->name, (void *) tbl))
+				log_err("dev: attach failure(%s, %p)\n",
+						tbl->name, p);
+			else {
+				num_device++;
+				log_info("dev: attach(%s, %p)\n", tbl->name, p);
+			}
 		}
 	}
 
@@ -94,19 +88,21 @@ bool dev_initialize(void)
 
 static unsigned int calc_hash(const void *key, const size_t size)
 {
-	return (UW) key % size;
+	unsigned int v = 0;
+	for (unsigned char *p = (unsigned char *) key; *p; p++)
+		v = v * 241 + *p;
+
+	return (v % size);
 }
 
 static int compare(const void *a, const void *b)
 {
-	UW x = (UW) a;
-	UW y = (UW) b;
-
-	return ((x == y) ? 0 : ((x < y) ? (-1) : 1));
+	device_info_t *x = (device_info_t *) a;
+	device_info_t *y = (device_info_t *) b;
+	return strcmp(x->name, y->name);
 }
 
-device_info_t *dev_find(const int devid)
+device_info_t *dev_find(const char *name)
 {
-	device_info_t *p = (device_info_t *) (hash_get(hash, (void *) devid));
-	return p;
+	return (device_info_t *) (hash_get(hash, name));
 }

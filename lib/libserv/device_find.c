@@ -29,16 +29,16 @@ For more information, please refer to <http://unlicense.org/>
 #include "libserv.h"
 
 
-vdriver_t *device_find(const int devno)
+device_info_t *device_find(const char *name)
 {
 	devmsg_t packet = {
 		devmsg_find,
-		devno
+		(int) name
 	};
 	ER_UINT size = kcall->ipc_call(PORT_DEV, &packet, sizeof(packet));
 	if ((size == sizeof(packet))
 			&& !(packet.arg1))
-		return ((vdriver_t *) packet.arg2);
+		return ((device_info_t *) packet.arg2);
 
 	return NULL;
 }

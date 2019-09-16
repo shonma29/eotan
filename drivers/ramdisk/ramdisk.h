@@ -26,17 +26,17 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stdlib.h>
-#include <nerve/global.h>
+#include <major.h>
+#include <dev/device.h>
 #include <sys/types.h>
 
-#define MYNAME "ramdisk"
+#define MYNAME DEVICE_CONTROLLER_RAMDISK0
 
 extern memory_range_t ranges[];
 
-extern vdriver_t *attach(int);
+extern const vdriver_t *attach(system_info_t *);
 extern int detach(void);
-extern int open(void);
+extern int open(const char *);
 extern int close(const int);
 extern int read(char *, const int, const off_t, const size_t);
 extern int write(char *, const int, const off_t, const size_t);

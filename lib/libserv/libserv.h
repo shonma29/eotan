@@ -52,6 +52,6 @@ extern ER time_set(SYSTIM *);
 extern ER define_handler(const INHNO, const T_DINH *);
 extern ER enable_interrupt(INHNO);
 
-extern vdriver_t *device_find(const int);
+extern device_info_t *device_find(const char *);
 
 #endif

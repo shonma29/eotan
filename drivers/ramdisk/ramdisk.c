@@ -24,9 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stddef.h>
 #include <string.h>
-#include <dev/device.h>
 #include "ramdisk.h"
 
 memory_range_t ranges[1];
@@ -41,7 +39,7 @@ int detach(void)
 	return 0;
 }
 
-int open(void)
+int open(const char *name)
 {
 	return 0;
 }
@@ -51,49 +49,48 @@ int close(const int channel)
 	return (check_channel(channel) ? 0 : (-1));
 }
 
-int read(char *outbuf, const int channel,
-		const off_t start, const size_t size)
+int read(char *outbuf, const int channel, const off_t offset, const size_t size)
 {
-	if (!check_param(channel, start, size))
+	if (!check_param(channel, offset, size))
 		return (-1);
 
-	memcpy(outbuf, &(((char*)(ranges[channel].start))[start]), size);
-
+	memory_range_t *r = (memory_range_t *) channel;
+	memcpy(outbuf, &(((char *) (r->address))[offset]), size);
 	return size;
 }
 
-int write(char *inbuf, const int channel,
-		const off_t start, const size_t size)
+int write(char *inbuf, const int channel, const off_t offset, const size_t size)
 {
-	if (!check_param(channel, start, size))
+	if (!check_param(channel, offset, size))
 		return (-1);
 
-	memcpy(&(((char*)(ranges[channel].start))[start]), inbuf, size);
-
+	memory_range_t *r = (memory_range_t *) channel;
+	memcpy(&(((char *) (r->address))[offset]), inbuf, size);
 	return size;
 }
 
 static bool check_channel(const int channel)
 {
-	if ((channel < 0)
-			|| (channel >= sizeof(ranges) / sizeof(ranges[0])))
+	if (((memory_range_t *) channel) != &(ranges[0]))
 		return false;
 
 	return true;
 }
 
-static bool check_param(const int channel, const off_t start, const size_t size)
+static bool check_param(const int channel, const off_t offset,
+		const size_t size)
 {
 	if (!check_channel(channel))
 		return false;
 
-	if (start < 0)
+	if (offset < 0)
 		return false;
 
-	if (start >= ranges[channel].size)
+	memory_range_t *r = (memory_range_t *) channel;
+	if (offset >= r->size)
 		return false;
 
-	size_t rest = ranges[channel].size - start;
+	size_t rest = r->size - offset;
 	if (size > rest)
 		return false;
 

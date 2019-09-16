@@ -27,9 +27,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stddef.h>
+#include <nerve/global.h>
 #include <sys/types.h>
 
-#define MAX_DEVICE_NAME (31)
+#define MAX_DEVICE (32)
 #define DEV_BUF_SIZE (1024)
 
 typedef enum {
@@ -45,16 +46,26 @@ typedef struct {
 	int arg3;
 } devmsg_t;
 
+typedef struct {
+	const char *name;
+	const void *unit;
+} vdriver_unit_t;
+
 typedef struct _vdriver_t {
-	int id;
-	char *name;
-	const size_t size;
-	struct _vdriver_t *(*attach)(int);
+	const char *class;
+	const vdriver_unit_t **units;
+	const struct _vdriver_t *(*attach)(system_info_t *);
 	int (*detach)(void);
-	int (*open)(void);
+	int (*open)(const char *);
 	int (*close)(const int);
 	int (*read)(char *, const int, const off_t, const size_t);
 	int (*write)(char *, const int, const off_t, const size_t);
 } vdriver_t;
+
+typedef struct {
+	char name[MAX_DEVICE_NAME + 1];
+	const void *unit;
+	const vdriver_t *driver;
+} device_info_t;
 
 #endif

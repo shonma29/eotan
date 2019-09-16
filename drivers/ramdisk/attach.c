@@ -24,17 +24,22 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <major.h>
-#include <boot/initrd.h>
+#include <stddef.h>
 #include <dev/device.h>
-#include <nerve/global.h>
 #include "../../lib/libserv/libserv.h"
 #include "ramdisk.h"
 
-static vdriver_t driver_mine = {
-	get_device_id(DEVICE_MAJOR_RAMDISK, 0),
+static vdriver_unit_t initrd = {
 	MYNAME,
-	INITRD_SIZE,
+	(const void *) &(ranges[0])
+};
+static vdriver_unit_t *units[] = {
+	&initrd,
+	NULL
+};
+static vdriver_t driver_mine = {
+	DEVICE_CLASS_STORAGE,
+	(const vdriver_unit_t **) units,
 	attach,
 	detach,
 	open,
@@ -44,19 +49,13 @@ static vdriver_t driver_mine = {
 };
 
 
-vdriver_t *attach(int exinf)
+const vdriver_t *attach(system_info_t *info)
 {
-	system_info_t *info = (system_info_t*)SYSTEM_INFO_ADDR;
-
-	if (info->initrd.size > 0) {
-		if (info->initrd.size <= driver_mine.size) {
-			log_info(MYNAME ": initrd start=%p size=%x\n",
-					info->initrd.start, info->initrd.size);
-			ranges[0] = info->initrd;
-			return &driver_mine;
-		} else
-			log_err(MYNAME ": too large initrd (%x)\n",
-				info->initrd.size);
+	if (info->initrd.size) {
+		log_info(MYNAME ": addr=%p size=%x\n",
+				info->initrd.address, info->initrd.size);
+		ranges[0] = info->initrd;
+		return &driver_mine;
 	}
 
 	return NULL;

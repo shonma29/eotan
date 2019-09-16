@@ -48,10 +48,11 @@ static void doit(void)
 
 		if (size == sizeof(packet)) {
 			if (packet.type == devmsg_find) {
-				device_info_t *d = dev_find(packet.arg1);
+				device_info_t *d = dev_find(
+						(char *) packet.arg1);
 				if (d && d->driver) {
 					packet.arg1 = E_OK;
-					packet.arg2 = (int) (d->driver);
+					packet.arg2 = (int) d;
 					packet.arg3 = 0;
 				} else {
 					packet.arg1 = E_NOEXS;

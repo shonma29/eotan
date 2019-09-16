@@ -28,16 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <dev/device.h>
 
-#define MAX_DEVICE (32)
-
-typedef struct {
-	int id;
-	char name[MAX_DEVICE_NAME + 1];
-	size_t size;
-	vdriver_t *driver;
-} device_info_t;
-
 extern bool dev_initialize(void);
-extern device_info_t *dev_find(const int id);
+extern device_info_t *dev_find(const char *);
 
 #endif
