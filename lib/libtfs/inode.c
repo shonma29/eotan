@@ -121,7 +121,6 @@ W sfs_read_inode(vfs_t *fsp, W ino, vnode_t *ip)
     }
 
     ip->index = sfs_inode->i_index;
-    ip->nlink = sfs_inode->i_nlink;
     ip->size = sfs_inode->i_size;
     ip->mode = sfs_inode->i_mode;
     ip->uid = sfs_inode->i_uid;
@@ -129,7 +128,6 @@ W sfs_read_inode(vfs_t *fsp, W ino, vnode_t *ip)
     ip->refer_count = 1;
     ip->lock_count = 0;
     ip->fs = fsp;
-    ip->dev =  0;
     ip->private = sfs_inode;
 
     return (0);
@@ -217,11 +215,11 @@ int sfs_stat(vnode_t *ip, struct stat *st)
     st->st_dev = ip->fs->device.channel;
     st->st_ino = ip->index;
     st->st_mode = ip->mode;
-    st->st_nlink = ip->nlink;
+    st->st_nlink = 1;
     st->st_size = ip->size;
     st->st_uid = ip->uid;
     st->st_gid = ip->gid;
-    st->st_rdev = ip->dev;
+    st->st_rdev = 0;
     st->st_blksize = sb->blksize;
     st->st_blocks = ROUNDUP(st->st_size, st->st_blksize) / st->st_blksize;
     st->st_atime = sfs_inode->i_atime.sec;
@@ -254,7 +252,6 @@ int sfs_i_close(vnode_t * ip)
       sfs_i_truncate(ip, ip->size);
     }
 
-    sfs_inode->i_nlink = ip->nlink;
     sfs_inode->i_mode = ip->mode;
     sfs_inode->i_uid = ip->uid;
     sfs_inode->i_gid = ip->gid;

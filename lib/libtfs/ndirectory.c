@@ -199,10 +199,8 @@ int tfs_mkdir(vnode_t *parent, const char *name, const mode_t mode,
 	}
 
 	child->mode = mode | S_IFDIR;
-	child->nlink = 2;
 	child->dirty = true;
 
-	parent->nlink += 1;
 	parent->dirty = true;
 
 	*node = child;
@@ -269,7 +267,6 @@ int tfs_remove_entry(vnode_t *parent, vnode_t *node)
 	}
 
 	struct sfs_inode *sfs_inode = node->private;
-	node->nlink--;
 	time_get(&(sfs_inode->i_ctime));
 	node->dirty = true;
 

@@ -81,7 +81,6 @@ typedef struct _vnode_t {
 //TODO use ino_t (64bit)
 //	ino_t index;
 	unsigned int index;
-	unsigned int nlink;
 	unsigned int mode;
 	uid_t uid;
 	gid_t gid;
@@ -90,8 +89,6 @@ typedef struct _vnode_t {
 	bool dirty;
 	unsigned int refer_count;
 	unsigned int lock_count;
-//TODO is needed?
-	dev_t dev;
 	struct _vnode_t *parent;
 } vnode_t;
 

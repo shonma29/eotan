@@ -163,11 +163,9 @@ sfs_i_create(vnode_t * parent,
     newip->refer_count = 1;
     newip->dirty = true;
     newip->mode = mode | S_IFREG;
-    newip->nlink = 1;
     newip->index = i_index;
     sfs_inode->i_uid = acc->uid;
     sfs_inode->i_gid = acc->gid;
-    newip->dev = 0;
     newip->size = 0;
     sfs_inode->i_atime = clock;
     sfs_inode->i_ctime = clock;

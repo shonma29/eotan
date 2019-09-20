@@ -67,8 +67,8 @@ sfs_i_unlink(vnode_t * parent, vnode_t *ip)
 {
     W error_no;
 
-    /* ファイルの名前の最後の１つで，使用中なら削除しない */
-    if ((ip->nlink == 1) && (ip->refer_count >= 2)) {
+    /* 使用中なら削除しない */
+    if (ip->refer_count >= 2) {
 	return (EBUSY);
     }
 
@@ -77,10 +77,8 @@ sfs_i_unlink(vnode_t * parent, vnode_t *ip)
 	return (error_no);
     }
 
-    if (ip->nlink <= 0) {
-	sfs_i_truncate(ip, 0);
-	sfs_free_inode(ip->fs, ip);
-    }
+    sfs_i_truncate(ip, 0);
+    sfs_free_inode(ip->fs, ip);
     return 0;
 }
 
@@ -103,12 +101,10 @@ int sfs_i_rmdir(vnode_t * parent, vnode_t *ip)
     }
 
     struct sfs_inode *sfs_inode = ip->private;
-    if (ip->nlink <= 1) {
-	sfs_i_truncate(ip, 0);
-	sfs_free_inode(ip->fs, ip);
-    }
+    sfs_i_truncate(ip, 0);
+    sfs_free_inode(ip->fs, ip);
+
     sfs_inode = parent->private;
-    parent->nlink -= 1;
     time_get(&(sfs_inode->i_ctime));
     parent->dirty = true;
 
