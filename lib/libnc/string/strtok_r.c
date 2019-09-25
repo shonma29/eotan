@@ -24,21 +24,31 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stddef.h>
 #include <string.h>
 
 
-char *strcpy(char *restrict s1, const char *restrict s2)
+char *strtok_r(char *restrict s, const char *restrict sep,
+		char **restrict state)
 {
-	char *w = (char *) s1;
-	char *r = (char *) s2;
+	char *p = s ? ((char *) s) : *state;
 
-	for (;; w++) {
-		char c = *r++;
+	for (; *p && strchr(sep, *p); p++);
+	*state = p;
 
-		*w = c;
-		if (!c)
+	for (; *p; p++)
+		if (strchr(sep, *p)) {
+			*p = '\0';
+			p++;
 			break;
-	}
+		}
 
-	return s1;
+	if (*state == p)
+		return NULL;
+	else {
+		char *result = (char *) *state;
+
+		*state = p;
+		return result;
+	}
 }

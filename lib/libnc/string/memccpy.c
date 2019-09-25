@@ -27,18 +27,19 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 
 
-char *strcpy(char *restrict s1, const char *restrict s2)
+void *memccpy(void *restrict s1, const void *restrict s2, int c, size_t n)
 {
 	char *w = (char *) s1;
 	char *r = (char *) s2;
+	unsigned char term = (unsigned char) (c & 0xff);
 
-	for (;; w++) {
-		char c = *r++;
+	for (; n; n--) {
+		*w = *r++;
+		if ((unsigned char) (*w) == term)
+			return (w + 1);
 
-		*w = c;
-		if (!c)
-			break;
+		w++;
 	}
 
-	return s1;
+	return NULL;
 }

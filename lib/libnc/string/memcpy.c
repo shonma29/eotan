@@ -26,14 +26,16 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <string.h>
 
-void *memcpy(void *dest, const void *src, size_t n) {
-	char *w = (char*)dest;
-	char *r = (char*)src;
+
+void *memcpy(void *restrict s1, const void *restrict s2, size_t n)
+{
+	char *w = (char *) s1;
+	char *r = (char *) s2;
 
 	for (; n; n--) {
 		*w = *r++;
 		w++;
 	}
 
-	return dest;
+	return s1;
 }

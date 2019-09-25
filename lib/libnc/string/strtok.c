@@ -27,31 +27,10 @@ For more information, please refer to <http://unlicense.org/>
 #include <stddef.h>
 #include <string.h>
 
-static char *target = NULL;
+static char *state;
 
 
-char *strtok(char *str, const char *delim)
+char *strtok(char *restrict s, const char *restrict sep)
 {
-	char *p = str ? ((char*)str) : target;
-
-	for (; *p && strchr(delim, *p); p++);
-	target = p;
-
-	for (; *p; p++)
-		if (strchr(delim, *p)) {
-			*p = '\0';
-			p++;
-			break;
-		}
-
-	if (target == p)
-		return NULL;
-
-	else {
-		char *result = (char*)target;
-
-		target = p;
-
-		return result;
-	}
+	return strtok_r(s, sep, &state);
 }

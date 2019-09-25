@@ -26,9 +26,11 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <string.h>
 
-char *strncat(char *dest, const char *src, size_t n) {
-	char *w = (char*)dest;
-	char *r = (char*)src;
+
+char *strncat(char *restrict s1, const char *restrict s2, size_t n)
+{
+	char *w = (char *) s1;
+	char *r = (char *) s2;
 
 	for (; *w; w++);
 
@@ -38,6 +40,5 @@ char *strncat(char *dest, const char *src, size_t n) {
 	}
 
 	*w = '\0';
-
-	return dest;
+	return s1;
 }

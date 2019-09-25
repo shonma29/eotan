@@ -24,21 +24,19 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 
 
-char *strcpy(char *restrict s1, const char *restrict s2)
-{
-	char *w = (char *) s1;
-	char *r = (char *) s2;
-
-	for (;; w++) {
-		char c = *r++;
-
-		*w = c;
-		if (!c)
-			break;
+char *strdup(const char *s1) {
+	size_t len = strlen(s1) + 1;
+	char *p = malloc(len);
+	if (!p) {
+		_set_local_errno(ENOMEM);
+		return NULL;
 	}
 
-	return s1;
+	memcpy(p, s1, len);
+	return p;
 }

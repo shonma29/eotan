@@ -26,9 +26,11 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <string.h>
 
-char *strncpy(char *dest, const char *src, size_t n) {
-	char *w = (char*)dest;
-	char *r = (char*)src;
+
+char *strncpy(char *restrict s1, const char *restrict s2, size_t n)
+{
+	char *w = (char *) s1;
+	char *r = (char *) s2;
 
 	for (; n && *r; n--) {
 		*w = *r++;
@@ -40,5 +42,5 @@ char *strncpy(char *dest, const char *src, size_t n) {
 		w++;
 	}
 
-	return dest;
+	return s1;
 }

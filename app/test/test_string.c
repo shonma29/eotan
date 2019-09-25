@@ -30,6 +30,22 @@ For more information, please refer to <http://unlicense.org/>
 #include "cunit.h"
 
 
+char *test_memccpy() {
+	char a[] = "abcd";
+
+	unsigned char b[] = "AB" "\x96" "D";
+	assert_eq("zero result", NULL, memccpy(a, (char *) b, '\x96', 0));
+	assert_eq("zero copied", 0, strcmp(a, "abcd"));
+	assert_eq("match result", &(a[3]), memccpy(a, (char *) b, '\x96', 4));
+	assert_eq("match copied", 0, strcmp(a, "AB" "\x96" "d"));
+
+	char c[] = "1234";
+	assert_eq("len result", NULL, memccpy(a, c, '4', 3));
+	assert_eq("len copied", 0, strcmp(a, "123d"));
+
+	return NULL;
+}
+
 char *test_memmove() {
 	char buf[8];
 	char expect[sizeof(buf)];
@@ -226,6 +242,20 @@ char *test_strchr() {
 	return NULL;
 }
 
+char *test_strdup() {
+	char *txt = "t\x80st";
+	char *dest;
+
+	dest = strdup(txt);
+	assert_ne("success result", NULL, dest);
+	assert_eq("success same", 0, strcmp(txt, dest));
+	free(dest);
+
+	//TODO NOMEM
+
+	return NULL;
+}
+
 char *test_strrchr() {
 	char *txt = "t\x80st";
 
@@ -320,9 +350,41 @@ char *test_strtok() {
 	return NULL;
 }
 
+char *test_strtok_r() {
+	char *st;
+	char txt[256];
+
+	strcpy(txt, "t\x80sthoget\x80st");
+	assert_eq("skip chr start", &(txt[1]), strtok_r(txt, "t", &st));
+	assert_eq("skip chr end", 2, strlen(&(txt[1])));
+	assert_eq("next chr start", &(txt[4]), strtok_r(NULL, "\x80st", &st));
+	assert_eq("next chr end", 4, strlen(&(txt[4])));
+	assert_eq("tail", NULL, strtok_r(NULL, "\x80st", &st));
+	assert_eq("tail (2nd)", NULL, strtok_r(NULL, "\x80st", &st));
+
+	assert_eq("empty", NULL, strtok_r("", "t", &st));
+	assert_eq("empty (2nd)", NULL, strtok_r(NULL, "t", &st));
+
+	strcpy(txt, "t\x80sthoget\x80st");
+	assert_eq("full (empty delim)", txt, strtok_r(txt, "", &st));
+	assert_eq("full (empty delim, 2nd)", NULL, strtok_r(NULL, "", &st));
+	assert_eq("full (empty delim, 3rd)", NULL, strtok_r(NULL, "", &st));
+
+	strcpy(txt, "t\x80sthoget\x80st");
+	assert_eq("full (unmatch delim)", txt, strtok_r(txt, "XYZ", &st));
+	assert_eq("full (unmatch delim, 2nd)", NULL, strtok_r(NULL, "XYZ", &st));
+	assert_eq("full (unmatch delim, 3rd)", NULL, strtok_r(NULL, "XYZ", &st));
+
+	strcpy(txt, "t\x80sthoget\x80st");
+	assert_eq("not found", NULL, strtok_r(txt, "\x80sthoge", &st));
+	assert_eq("not found (2nd)", NULL, strtok_r(NULL, "\x80sthoge", &st));
+
+	return NULL;
+}
+
 int main(int argc, char **argv)
 {
-extern char *strchr(const char *s, int c);
+	test(test_memccpy);
 	//test(test_memcpy);
 	test(test_memmove);
 	//test(test_memset);
@@ -340,6 +402,7 @@ extern char *strchr(const char *s, int c);
 
 	test(test_memchr);
 	test(test_strchr);
+	test(test_strdup);
 	test(test_strrchr);
 
 	test(test_strpbrk);
@@ -349,6 +412,7 @@ extern char *strchr(const char *s, int c);
 	//test(test_strerror);
 	test(test_strstr);
 	test(test_strtok);
+	test(test_strtok_r);
 
 	return 0;
 }
