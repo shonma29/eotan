@@ -69,6 +69,8 @@ extern ER thread_start(ID);
 extern ER thread_terminate(ID);
 extern ER thread_sleep(void);
 extern ER thread_wakeup(ID);
+extern ER thread_suspend(ID);
+extern ER thread_resume(ID);
 extern ID thread_get_id(void);
 
 static inline int is_kthread(const thread_t *thread)

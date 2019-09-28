@@ -41,6 +41,8 @@ typedef struct {
 	ER (*thread_terminate)(ID);
 	ER (*thread_sleep)(void);
 	ER (*thread_wakeup)(ID);
+	ER (*thread_suspend)(ID);
+	ER (*thread_resume)(ID);
 	void *(*palloc)(void);
 	void (*pfree)(void *);
 	ER (*region_get)(const ID, const void *, const size_t, void *);

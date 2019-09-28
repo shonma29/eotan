@@ -65,6 +65,8 @@ void kcall_initialize(void)
 	p->thread_terminate = thread_terminate;
 	p->thread_sleep = thread_sleep;
 	p->thread_wakeup = thread_wakeup;
+	p->thread_suspend = thread_suspend;
+	p->thread_resume = thread_resume;
 	p->palloc = page_alloc;
 	p->pfree = page_free;
 	p->printk = printk;

@@ -434,6 +434,91 @@ ER thread_wakeup(ID tskid)
 	return result;
 }
 
+ER thread_suspend(ID tskid)
+{
+	ER result;
+//TODO test
+	enter_serialize();
+	do {
+		thread_t *th;
+
+		if (tskid == TSK_SELF)
+			th = running;
+		else {
+			th = get_thread_ptr(tskid);
+			if (!th) {
+				result = E_NOEXS;
+				break;
+			}
+		}
+
+		switch (th->status) {
+		case TTS_RUN:
+			th->status = TTS_SUS;
+			list_remove(&(th->queue));
+			result = E_OK;
+			if (tskid == TSK_SELF) {
+				leave_serialize();
+				dispatch();
+				return result;
+			}
+			break;
+		case TTS_RDY:
+			th->status = TTS_SUS;
+			list_remove(&(th->queue));
+			result = E_OK;
+			break;
+		case TTS_WAI:
+			th->status = TTS_WAS;
+			result = E_OK;
+			break;
+		case TTS_SUS:
+		case TTS_WAS:
+			result = E_QOVR;
+			break;
+		default:
+			result = E_OBJ;
+			break;
+		}
+	} while (false);
+	leave_serialize();
+
+	return result;
+}
+
+ER thread_resume(ID tskid)
+{
+	ER result;
+//TODO test
+	enter_serialize();
+	do {
+		thread_t *th = get_thread_ptr(tskid);
+		if (!th) {
+			result = E_NOEXS;
+			break;
+		}
+
+		switch (th->status) {
+		case TTS_SUS:
+			th->status = TTS_RDY;
+			ready_enqueue(th->priority, &(th->queue));
+			leave_serialize();
+			dispatch();
+			return E_OK;
+		case TTS_WAS:
+			th->status = TTS_WAI;
+			result = E_OK;
+			break;
+		default:
+			result = E_OBJ;
+			break;
+		}
+	} while (false);
+	leave_serialize();
+
+	return result;
+}
+
 ID thread_get_id(void)
 {
 	return running->node.key;

@@ -44,6 +44,8 @@ extern ER ter_tsk(ID);
  */
 extern ER slp_tsk(void);
 extern ER wup_tsk(ID);
+extern ER sus_tsk(ID);
+extern ER rsm_tsk(ID);
 
 /**
  * mutex

@@ -93,6 +93,8 @@ static void expand_stack(const int tid, const int addr)
 
 static void kill(const int tid, const int dummy)
 {
+	kcall->thread_suspend(tid);
+
 	mm_thread_t *th = thread_find(tid);
 	if (!th) {
 		log_warning("mm: kill unknown thread=%d\n", tid);
