@@ -30,7 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../lib/libserv/libserv.h"
 
 
-void define_mpu_handlers(const FP default_handler, const FP stack_fault_handler)
+void define_mpu_handlers(const FP default_handler, const FP page_fault_handler)
 {
 	int i;
 	T_DINH pk_dinh = { TA_HLNG, NULL };
@@ -42,6 +42,6 @@ void define_mpu_handlers(const FP default_handler, const FP stack_fault_handler)
 	for (i = int_protection; i <= int_reserved_31; i++)
 		define_handler(i, &pk_dinh);
 
-	pk_dinh.inthdr = stack_fault_handler;
-	define_handler(int_stack_segment_fault, &pk_dinh);
+	pk_dinh.inthdr = page_fault_handler;
+	define_handler(int_page_fault, &pk_dinh);
 }

@@ -82,7 +82,7 @@ static ER init(void)
 {
 	process_initialize();
 	file_initialize();
-	define_mpu_handlers((FP)default_handler, (FP)stack_fault_handler);
+	define_mpu_handlers((FP) default_handler, (FP) page_fault_handler);
 
 	receiver_id = kcall->thread_get_id();
 	T_CMTX pk_cmtx = {

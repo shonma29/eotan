@@ -46,7 +46,7 @@ ER default_handler(void)
 	return E_OK;
 }
 
-ER stack_fault_handler(void)
+ER page_fault_handler(void)
 {
 	if (icall->handle(expand_stack, icall->thread_get_id(),
 			(int) fault_get_addr()))
@@ -102,6 +102,8 @@ static void kill(const int tid, const int dummy)
 	}
 
 	mm_process_t *p = get_process(th);
-	if (p)
+	if (p) {
+		log_info("mm: killed %d\n", p->node.key);
 		process_destroy(p, 9);
+	}
 }

@@ -130,6 +130,6 @@ extern int process_exec(sys_reply_t *, mm_process_t *, const int, sys_args_t *);
 extern int exec_init(const pid_t, char *);
 
 extern ER default_handler(void);
-extern ER stack_fault_handler(void);
+extern ER page_fault_handler(void);
 
 #endif
