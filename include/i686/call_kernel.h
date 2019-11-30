@@ -32,13 +32,11 @@ static inline int ncall(const int svcno, ...)
 	int result;
 
 	__asm__ __volatile__ ( \
-		"movl %1, %%eax\n\t" \
-		"leal 8(%%ebp), %%ecx\n\t" \
-		"movl 4(%%ebp), %%edx\n\t" \
-		"popl %%ebp\n\t" \
+		"leal 4(%%esp), %%ecx\n\t" \
+		"movl (%%esp), %%edx\n\t" \
 		"sysenter\n\t" \
 		:"=a"(result) \
-		:"n"(svcno)  \
+		:"a"(svcno)  \
 		:"%ecx", "%edx");
 
 	return result;
