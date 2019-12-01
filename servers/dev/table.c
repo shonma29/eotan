@@ -67,10 +67,12 @@ bool dev_initialize(void)
 		if (!p)
 			continue;
 
-		for (const vdriver_unit_t **unit = p->units; *unit; unit++) {
+		for (list_t *u = list_head(&(p->units));
+				!list_is_edge(&(p->units), u); (u = u->next)) {
+			vdriver_unit_t *unit = (vdriver_unit_t *) u;
 			device_info_t *tbl = &(table[num_device]);
-			strcpy(tbl->name, (*unit)->name);
-			tbl->unit = (*unit)->unit;
+			strcpy(tbl->name, unit->name);
+			tbl->unit = unit->unit;
 			tbl->driver = p;
 
 			if (hash_put(hash, tbl->name, (void *) tbl))

@@ -24,24 +24,21 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stddef.h>
 #include <dev/device.h>
 #include "../../lib/libserv/libserv.h"
 #include "ramdisk.h"
 
 static vdriver_unit_t initrd = {
+	{ NULL, NULL },
 	MYNAME,
-	(const void *) &(ranges[0])
-};
-static vdriver_unit_t *units[] = {
-	&initrd,
-	NULL
+	&(ranges[0])
 };
 static vdriver_t driver_mine = {
 	DEVICE_CLASS_STORAGE,
-	(const vdriver_unit_t **) units,
-	attach,
+	{ NULL, NULL },
 	detach,
+	NULL,
+	NULL,
 	open,
 	close,
 	read,
@@ -51,10 +48,13 @@ static vdriver_t driver_mine = {
 
 const vdriver_t *attach(system_info_t *info)
 {
+	list_initialize(&(driver_mine.units));
+
 	if (info->initrd.size) {
 		log_info(MYNAME ": addr=%p size=%x\n",
 				info->initrd.address, info->initrd.size);
 		ranges[0] = info->initrd;
+		list_append(&(driver_mine.units), &(initrd.bros));
 		return &driver_mine;
 	}
 

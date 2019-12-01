@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <stddef.h>
 #include <nerve/global.h>
+#include <set/list.h>
 #include <sys/types.h>
 
 #define MAX_DEVICE (32)
@@ -47,15 +48,17 @@ typedef struct {
 } devmsg_t;
 
 typedef struct {
+	list_t bros;
 	const char *name;
-	const void *unit;
+	void *unit;
 } vdriver_unit_t;
 
 typedef struct _vdriver_t {
 	const char *class;
-	const vdriver_unit_t **units;
-	const struct _vdriver_t *(*attach)(system_info_t *);
+	list_t units;
 	int (*detach)(void);
+	int (*create)(const char *, const void *);
+	int (*remove)(const char *);
 	int (*open)(const char *);
 	int (*close)(const int);
 	int (*read)(char *, const int, const off_t, const size_t);

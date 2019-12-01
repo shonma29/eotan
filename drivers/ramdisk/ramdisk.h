@@ -34,7 +34,6 @@ For more information, please refer to <http://unlicense.org/>
 
 extern memory_range_t ranges[];
 
-extern const vdriver_t *attach(system_info_t *);
 extern int detach(void);
 extern int open(const char *);
 extern int close(const int);
