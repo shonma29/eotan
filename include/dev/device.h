@@ -35,9 +35,7 @@ For more information, please refer to <http://unlicense.org/>
 #define DEV_BUF_SIZE (1024)
 
 typedef enum {
-	devmsg_find = 0,
-	devmsg_add = 1,
-	devmsg_remove = 2
+	devmsg_find = 0
 } devmsg_e;
 
 typedef struct {
@@ -57,7 +55,7 @@ typedef struct _vdriver_t {
 	const char *class;
 	list_t units;
 	int (*detach)(void);
-	int (*create)(const char *, const void *);
+	int (*create)(const void *);
 	int (*remove)(const char *);
 	int (*open)(const char *);
 	int (*close)(const int);

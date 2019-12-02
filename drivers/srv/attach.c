@@ -1,5 +1,3 @@
-#ifndef __DRIVERS_RAMDISK_H__
-#define __DRIVERS_RAMDISK_H__
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,17 +24,33 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <dev/device.h>
-#include <sys/types.h>
+#include <major.h>
+#include "../../lib/libserv/libserv.h"
+#include "srv.h"
 
-#define MYNAME DEVICE_CONTROLLER_RAMDISK0
+static vdriver_unit_t parent = {
+	{ NULL, NULL },
+	MYNAME,
+	NULL
+};
+static vdriver_t driver_mine = {
+	DEVICE_CLASS_SERVER,
+	{ NULL, NULL },
+	detach,
+	create,
+	remove,
+	open,
+	close,
+	read,
+	write
+};
 
-extern memory_range_t ranges[];
 
-extern int detach(void);
-extern int open(const char *);
-extern int close(const int);
-extern int read(char *, const int, const off_t, const size_t);
-extern int write(char *, const int, const off_t, const size_t);
+const vdriver_t *attach(system_info_t *info)
+{
+	list_initialize(&servers);
 
-#endif
+	list_initialize(&(driver_mine.units));
+	list_append(&(driver_mine.units), &(parent.bros));
+	return &driver_mine;
+}

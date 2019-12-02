@@ -24,7 +24,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <major.h>
 #include <services.h>
+#include <dev/units.h>
 #include <fs/config.h>
 #include <nerve/global.h>
 #include <nerve/kcall.h>
@@ -36,7 +38,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../lib/libserv/libserv.h"
 
 struct fs_func {
-	void (*call)(fs_request*);
+	void (*call)(fs_request *);
 	size_t max;
 };
 
@@ -45,6 +47,7 @@ static ID worker_id;
 static slab_t request_slab;
 static volatile lfq_t req_queue;
 static char req_buf[lfq_buf_size(sizeof(fs_request *), MAX_REQUEST)];
+static srv_unit_t unit;
 static struct fs_func func_table[] = {
 	{ if_attach, MESSAGE_SIZE(Tattach) },
 	{ if_walk, MESSAGE_SIZE(Twalk) },
@@ -123,19 +126,39 @@ static ER_ID worker_initialize(void)
 	request_slab.pfree = kcall->pfree;
 	slab_create(&request_slab);
 
-	lfq_initialize(&req_queue, req_buf, sizeof(fs_request*), MAX_REQUEST);
+	lfq_initialize(&req_queue, req_buf, sizeof(fs_request *), MAX_REQUEST);
+
+	const char *server = DEVICE_CONTROLLER_SERVER;
+	device_info_t *info = device_find(server);
+	if (!info) {
+		log_err(MYNAME ": not found %s\n", server);
+		return (-1);
+	}
 
 	T_CTSK pk_ctsk = {
 		TA_HLNG | TA_ACT,
-		(VP_INT)NULL,
-		(FP)worker,
+		(VP_INT) NULL,
+		(FP) worker,
 		pri_server_middle,
 		KTHREAD_STACK_SIZE,
 		NULL,
 		NULL,
 		NULL
 	};
-	return kcall->thread_create_auto(&pk_ctsk);
+	int thread_id = kcall->thread_create_auto(&pk_ctsk);
+	if (thread_id >= 0) {
+		unit.name = MYNAME;
+		unit.queue = &req_queue;
+		unit.thread_id = thread_id;
+		if (info->driver->create(&unit)) {
+			log_err(MYNAME ": cannot create in %s\n", server);
+			kcall->thread_destroy(worker_id);
+			return (-1);
+		} else
+			log_info(MYNAME ": created in %s\n", server);
+	}
+
+	return thread_id;
 }
 
 static void worker(void)

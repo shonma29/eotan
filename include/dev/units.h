@@ -1,5 +1,5 @@
-#ifndef __DRIVERS_RAMDISK_H__
-#define __DRIVERS_RAMDISK_H__
+#ifndef _DEV_UNITS_H_
+#define _DEV_UNITS_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,17 +26,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <dev/device.h>
-#include <sys/types.h>
+#include <set/lf_queue.h>
+#include <set/list.h>
 
-#define MYNAME DEVICE_CONTROLLER_RAMDISK0
-
-extern memory_range_t ranges[];
-
-extern int detach(void);
-extern int open(const char *);
-extern int close(const int);
-extern int read(char *, const int, const off_t, const size_t);
-extern int write(char *, const int, const off_t, const size_t);
+typedef struct _srv_unit_t {
+	list_t bros;
+	const char *name;
+	volatile lfq_t *queue;
+	int thread_id;
+} srv_unit_t;
 
 #endif

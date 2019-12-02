@@ -101,6 +101,7 @@ $(WD)/kernel.img: $(WD)/append \
 		servers/fs/fs \
 		servers/hmi/hmi \
 		drivers/ramdisk/ramdisk \
+		drivers/srv/srv \
 		initrd.img.rc
 	[ `wc -c < $(WD)/starter.bin` -le $(BIN_SIZE) ]
 	cp $(WD)/starter.bin $@
@@ -113,5 +114,6 @@ $(WD)/kernel.img: $(WD)/append \
 	$(WD)/append 3 servers/fs/fs 4 8 >> $@
 	$(WD)/append 3 servers/mm/mm 4 7 >> $@
 	$(WD)/append 2 drivers/ramdisk/ramdisk 4 >> $@
+	$(WD)/append 2 drivers/srv/srv 4 >> $@
 	$(WD)/append 5 initrd.img.rc 4 >> $@
 	$(WD)/append 0 >> $@

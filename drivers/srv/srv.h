@@ -1,5 +1,5 @@
-#ifndef __DRIVERS_RAMDISK_H__
-#define __DRIVERS_RAMDISK_H__
+#ifndef __DRIVERS_SRV_H__
+#define __DRIVERS_SRV_H__
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,13 +27,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <dev/device.h>
+#include <dev/units.h>
 #include <sys/types.h>
 
-#define MYNAME DEVICE_CONTROLLER_RAMDISK0
+#define MYNAME DEVICE_CONTROLLER_SERVER
 
-extern memory_range_t ranges[];
+extern list_t servers;
 
 extern int detach(void);
+extern int create(const void *);
+extern int remove(const char *);
 extern int open(const char *);
 extern int close(const int);
 extern int read(char *, const int, const off_t, const size_t);
