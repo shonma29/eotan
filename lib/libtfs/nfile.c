@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <string.h>
-#include <fs/sfs.h>
+#include <fs/tfs.h>
 #include <sys/errno.h>
 #include "func.h"
 #include "../libserv/libserv.h"
@@ -41,10 +41,10 @@ int tfs_read(vnode_t *vnode, copier_t *dest, unsigned int offset,
 #endif
 	int result = 0;
 	vfs_t *fs = vnode->fs;
-	size_t block_size = ((struct sfs_superblock*)(fs->private))->blksize;
+	size_t block_size = ((struct tfs *) (fs->private))->fs_bsize;
 	unsigned int index = offset / block_size;
 	unsigned int skip = offset % block_size;
-	struct sfs_inode *inode = vnode->private;
+	struct tfs_inode *inode = vnode->private;
 	size_t rest = nbytes;
 	for (; rest > 0; index++) {
 		blkno_t block_no = tfs_get_block_no(fs, inode, index);
@@ -94,10 +94,10 @@ int tfs_write(vnode_t *vnode, copier_t *src, const unsigned int offset,
 
 	int result = 0;
 	vfs_t *fs = vnode->fs;
-	size_t block_size = ((struct sfs_superblock*)(fs->private))->blksize;
+	size_t block_size = ((struct tfs *) (fs->private))->fs_bsize;
 	unsigned int index = offset / block_size;
 	unsigned int skip = offset % block_size;
-	struct sfs_inode *inode = vnode->private;
+	struct tfs_inode *inode = vnode->private;
 	size_t rest = nbytes;
 	for (; rest > 0; index++) {
 		blkno_t block_no = tfs_get_block_no(fs, inode, index);
@@ -138,8 +138,12 @@ int tfs_write(vnode_t *vnode, copier_t *src, const unsigned int offset,
 			vnode->size = tail;
 
 		vnode->dirty = true;
-		inode->i_mtime = clock;
-		inode->i_ctime = clock;
+
+		SYSTIM *p;
+		p = (SYSTIM *) &(inode->i_mtime);
+		*p = clock;
+		p = (SYSTIM *) &(inode->i_ctime);
+		*p = clock;
 	}
 
 	return result;

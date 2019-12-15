@@ -48,9 +48,9 @@ int fs_initialize(void)
 	return 0;
 }
 
-int fs_mount(const int device)
+int fs_mount(const int device, const size_t block_size)
 {
 	rootfs.operations = vfs_fsops;
 
-	return vfs_mount(device, &rootfs, rootfile);
+	return vfs_mount(device, &rootfs, rootfile, block_size);
 }

@@ -15,7 +15,8 @@ Version 2, June 1991
 #ifndef __SFS_FUNC_H__
 #define __SFS_FUNC_H__	1
 
-#include <fs/sfs.h>
+#include <core/types.h>
+#include <fs/tfs.h>
 #include <fs/vfs.h>
 #include <sys/stat.h>
 

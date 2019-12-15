@@ -247,6 +247,7 @@ static void initialize_initrd_info(void)
 	system_info_t *info = kern_v2p(sysinfo);
 	strcpy(info->root.device, DEVICE_CONTROLLER_ATA0);
 	info->root.fstype = FS_TFS;
+	info->root.block_size = 0;
 	info->initrd.address = NULL;
 	info->initrd.size = 0;
 }
@@ -256,6 +257,7 @@ static void set_initrd_info(void)
 	system_info_t *info = kern_v2p(sysinfo);
 	strcpy(info->root.device, DEVICE_CONTROLLER_RAMDISK0);
 	info->root.fstype = INITRD_FS;
+	info->root.block_size = INITRD_BLOCK_SIZE;
 	info->initrd.address = (void *) INITRD_ADDR;
 	info->initrd.size = INITRD_SIZE;
 }

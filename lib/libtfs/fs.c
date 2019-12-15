@@ -95,7 +95,8 @@ Version 2, June 1991
 #include "../libserv/libserv.h"
 
 
-static int sfs_mount (ID device, vfs_t *rootfsp, vnode_t *rootfile);
+static int sfs_mount (ID device, vfs_t *rootfsp, vnode_t *rootfile,
+		const size_t);
 static int sfs_unmount(vfs_t * rootfsp);
 static int sfs_statvfs(vfs_t *, struct statvfs *);
 
@@ -123,10 +124,11 @@ vfs_operation_t vfs_fsops = {
 /* sfs_mount -
  *
  */
-static int sfs_mount(ID device, vfs_t *rootfsp, vnode_t *rootfile)
+static int sfs_mount(ID device, vfs_t *rootfsp, vnode_t *rootfile,
+		const size_t block_size)
 {
     rootfsp->device.channel = device;
-    rootfsp->device.block_size = SFS_BLOCK_SIZE;
+    rootfsp->device.block_size = block_size;
     if (block_initialize(&(rootfsp->device)))
 	return (EIO);
 
@@ -135,14 +137,14 @@ static int sfs_mount(ID device, vfs_t *rootfsp, vnode_t *rootfile)
     if (!(rootfsp->private))
 	return (EIO);
 
-    struct sfs_superblock *sfs_sb = rootfsp->private;
-    if (sfs_sb->magic != TFS_MAGIC) {
-	log_err("sfs: ERROR: mount: magic number %x\n", sfs_sb->magic);
+    struct tfs *sfs_sb = rootfsp->private;
+    if (sfs_sb->fs_magic != TFS_MAGIC) {
+	log_err("sfs: ERROR: mount: magic number %x\n", sfs_sb->fs_magic);
 	cache_release(rootfsp->private, false);
 	return (EINVAL);
     }
-    if (sfs_sb->blksize != SFS_BLOCK_SIZE) {
-	log_err("sfs: ERROR: mount: block size %d\n", sfs_sb->blksize);
+    if (sfs_sb->fs_bsize != block_size) {
+	log_err("sfs: ERROR: mount: block size %d\n", sfs_sb->fs_bsize);
 	cache_release(rootfsp->private, false);
 	return (EINVAL);
     }
@@ -184,16 +186,16 @@ int sfs_syncfs(vfs_t * fsp)
 
 static int sfs_statvfs(vfs_t * fsp, struct statvfs * result)
 {
-    struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
+    struct tfs *sb = (struct tfs *) (fsp->private);
 
-    result->f_bsize = sb->blksize;
-    result->f_frsize = sb->blksize;
-    result->f_blocks = sb->nblock;
-    result->f_bfree = sb->freeblock;
-    result->f_bavail = sb->freeblock;
-    result->f_files = sb->ninode;
-    result->f_ffree = sb->freeinode;
-    result->f_favail = sb->freeinode;
+    result->f_bsize = sb->fs_bsize;
+    result->f_frsize = sb->fs_bsize;
+    result->f_blocks = sb->fs_dsize;
+    result->f_bfree = sb->fs_free_blocks;
+    result->f_bavail = sb->fs_free_blocks;
+    result->f_files = sb->fs_dblkno - sb->fs_iblkno;
+    result->f_ffree = sb->fs_free_inodes;
+    result->f_favail = sb->fs_free_inodes;
     result->f_fsid = FS_TFS;
     result->f_flag = 0;
     result->f_namemax = TFS_MAXNAMLEN;

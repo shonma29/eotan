@@ -53,7 +53,7 @@ Version 2, June 1991
 
 #include <fcntl.h>
 #include <string.h>
-#include <fs/sfs.h>
+#include <fs/tfs.h>
 #include <nerve/kcall.h>
 #include <sys/dirent.h>
 #include <sys/errno.h>
@@ -100,12 +100,12 @@ int sfs_i_rmdir(vnode_t * parent, vnode_t *ip)
 	return (error_no);
     }
 
-    struct sfs_inode *sfs_inode = ip->private;
+    struct tfs_inode *tfs_inode = ip->private;
     sfs_i_truncate(ip, 0);
     sfs_free_inode(ip->fs, ip);
 
-    sfs_inode = parent->private;
-    time_get(&(sfs_inode->i_ctime));
+    tfs_inode = parent->private;
+    time_get((SYSTIM *) &(tfs_inode->i_ctime));
     parent->dirty = true;
 
     return 0;

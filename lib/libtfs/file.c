@@ -156,20 +156,25 @@ sfs_i_create(vnode_t * parent,
     }
 
     /* 設定 */
-    struct sfs_inode *sfs_inode = newip->private;
-    memset(sfs_inode, 0, sizeof(*sfs_inode));
+    struct tfs_inode *tfs_inode = newip->private;
+    memset(tfs_inode, 0, sizeof(*tfs_inode));
     time_get(&clock);
     newip->fs = parent->fs;
     newip->refer_count = 1;
     newip->dirty = true;
     newip->mode = mode | S_IFREG;
     newip->index = i_index;
-    sfs_inode->i_uid = acc->uid;
-    sfs_inode->i_gid = acc->gid;
+    tfs_inode->i_uid = acc->uid;
+    tfs_inode->i_gid = acc->gid;
     newip->size = 0;
-    sfs_inode->i_atime = clock;
-    sfs_inode->i_ctime = clock;
-    sfs_inode->i_mtime = clock;
+
+	SYSTIM *p;
+	p = (SYSTIM *) &(tfs_inode->i_atime);
+    *p = clock;
+	p = (SYSTIM *) &(tfs_inode->i_ctime);
+    *p = clock;
+	p = (SYSTIM *) &(tfs_inode->i_mtime);
+    *p = clock;
 
     vnodes_append(newip);
 
@@ -187,15 +192,15 @@ W sfs_i_truncate(vnode_t * ip, W newsize)
 {
     int nblock, blockno, inblock, offset;
     vfs_t *fsp;
-    struct sfs_inode *sfs_ip;
+    struct tfs_inode *sfs_ip;
     SYSTIM clock;
 
     fsp = ip->fs;
-    struct sfs_inode *sfs_inode = ip->private;
-    sfs_ip = sfs_inode;
-    struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
-    nblock = roundUp(newsize, sb->blksize) / sb->blksize;
-    if (nblock < roundUp(sfs_ip->i_size, sb->blksize) / sb->blksize) {
+    struct tfs_inode *tfs_inode = ip->private;
+    sfs_ip = tfs_inode;
+    struct tfs *sb = (struct tfs *) (fsp->private);
+    nblock = roundUp(newsize, sb->fs_bsize) / sb->fs_bsize;
+    if (nblock < roundUp(sfs_ip->i_size, sb->fs_bsize) / sb->fs_bsize) {
 	/* 余分なブロックを開放 */
 	blockno = nblock;
 	if (blockno < (num_of_1st_blocks(fsp->device.block_size)
@@ -211,8 +216,13 @@ W sfs_i_truncate(vnode_t * ip, W newsize)
 
     ip->size = newsize;
     time_get(&clock);
-    sfs_inode->i_mtime = clock;
-    sfs_inode->i_ctime = clock;
+
+	SYSTIM *p;
+	p = (SYSTIM *) &(tfs_inode->i_mtime);
+	*p = clock;
+	p = (SYSTIM *) &(tfs_inode->i_ctime);
+	*p = clock;
+
     ip->dirty = true;
 
     return 0;

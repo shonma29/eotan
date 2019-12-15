@@ -36,6 +36,7 @@ For more information, please refer to <http://unlicense.org/>
 typedef struct {
 	char device[MAX_DEVICE_NAME + 1];
 	int fstype;
+	size_t block_size;
 } mount_node_t;
 
 typedef struct {

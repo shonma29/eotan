@@ -32,11 +32,11 @@ For more information, please refer to <http://unlicense.org/>
 
 /* block.c */
 extern blkno_t tfs_allocate_block(vfs_t *);
-extern int tfs_deallocate_1st(vfs_t *, struct sfs_inode *, const unsigned int,
+extern int tfs_deallocate_1st(vfs_t *, struct tfs_inode *, const unsigned int,
 		const unsigned int);
-extern blkno_t tfs_get_block_no(vfs_t *, const struct sfs_inode *,
+extern blkno_t tfs_get_block_no(vfs_t *, const struct tfs_inode *,
 		const unsigned int);
-extern blkno_t tfs_set_block_no(vfs_t *, struct sfs_inode *,
+extern blkno_t tfs_set_block_no(vfs_t *, struct tfs_inode *,
 		const unsigned int, const blkno_t);
 
 /* nfile.c */

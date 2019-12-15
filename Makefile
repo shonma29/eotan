@@ -25,6 +25,8 @@
 
 TARGET = boot.iso
 
+BLKSIZE = 512
+
 .PHONY: tools libs kern core drivers servers \
 	apps bin test data starter initrd
 
@@ -51,7 +53,7 @@ servers:
 apps: bin test
 
 bin:
-	app/tfs/writer initrd.img mkdir /bin
+	app/tfs/writer initrd.img $(BLKSIZE) mkdir /bin
 	$(MAKE) -f app/bin/Makefile WD=app/bin
 
 test:
@@ -60,12 +62,12 @@ test:
 data: motd bees.p6
 	./motd.sh > motd
 	for I in $^; do \
-		app/tfs/writer initrd.img create /$$I $$I; \
-		app/tfs/writer initrd.img chmod 644 /$$I; \
+		app/tfs/writer initrd.img $(BLKSIZE) create /$$I $$I; \
+		app/tfs/writer initrd.img $(BLKSIZE) chmod 644 /$$I; \
 	done
 
 starter:
-	app/tfs/writer initrd.img ls /
+	app/tfs/writer initrd.img $(BLKSIZE) ls /
 	lib/librc/encode < initrd.img > initrd.img.rc
 	mkdir -p build
 	$(MAKE) -f starter/arch/Makefile WD=starter/arch
@@ -73,9 +75,9 @@ starter:
 initrd:
 	$(RM) initrd.img
 	app/tfs/mkfs initrd.img 512 1024 4
-	app/tfs/writer initrd.img chmod 755 /
-	app/tfs/writer initrd.img mkdir /lost+found
-	app/tfs/writer initrd.img chmod 700 /lost+found
+	app/tfs/writer initrd.img $(BLKSIZE) chmod 755 /
+	app/tfs/writer initrd.img $(BLKSIZE) mkdir /lost+found
+	app/tfs/writer initrd.img $(BLKSIZE) chmod 700 /lost+found
 
 clean:
 	$(MAKE) -f app/tfs/Makefile WD=app/tfs clean

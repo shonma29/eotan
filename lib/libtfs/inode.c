@@ -95,11 +95,11 @@ static W sfs_get_inode_offset(vfs_t *fsp, W ino)
     W offset;
     W nblock;
     W blocksize;
-    struct sfs_superblock *sb;
+    struct tfs *sb;
 
-    sb = (struct sfs_superblock*)(fsp->private);
-    nblock = sb->nblock;
-    blocksize = sb->blksize;
+    sb = (struct tfs *) (fsp->private);
+    nblock = sb->fs_dsize;
+    blocksize = sb->fs_bsize;
     offset = 1 + 1 + (ROUNDUP(nblock / 8, blocksize) / blocksize);
     offset *= blocksize;
     return (offset + ((ino - 1) * fsp->device.block_size));
@@ -112,23 +112,24 @@ static W sfs_get_inode_offset(vfs_t *fsp, W ino)
 W sfs_read_inode(vfs_t *fsp, W ino, vnode_t *ip)
 {
     W offset;
-    struct sfs_inode *sfs_inode;
+    struct tfs_inode *tfs_inode;
 
     offset = sfs_get_inode_offset(fsp, ino);
-    sfs_inode = cache_get(&(fsp->device), offset / SFS_BLOCK_SIZE);
-    if (!sfs_inode) {
+    struct tfs *sb = (struct tfs *) (fsp->private);
+    tfs_inode = cache_get(&(fsp->device), offset / sb->fs_bsize);
+    if (!tfs_inode) {
 	return EIO;
     }
 
-    ip->index = sfs_inode->i_index;
-    ip->size = sfs_inode->i_size;
-    ip->mode = sfs_inode->i_mode;
-    ip->uid = sfs_inode->i_uid;
-    ip->gid = sfs_inode->i_gid;
+    ip->index = tfs_inode->i_inumber;
+    ip->size = tfs_inode->i_size;
+    ip->mode = tfs_inode->i_mode;
+    ip->uid = tfs_inode->i_uid;
+    ip->gid = tfs_inode->i_gid;
     ip->refer_count = 1;
     ip->lock_count = 0;
     ip->fs = fsp;
-    ip->private = sfs_inode;
+    ip->private = tfs_inode;
 
     return (0);
 }
@@ -141,32 +142,32 @@ W sfs_alloc_inode(vfs_t * fsp, vnode_t *ip)
 {
     W i;
     W offset;
-    struct sfs_inode *ipbufp;
-    struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
+    struct tfs_inode *ipbufp;
+    struct tfs *sb = (struct tfs *) (fsp->private);
 
-    if (sb->freeinode <= 0) {
+    if (sb->fs_free_inodes <= 0) {
 	return (0);
     }
 
-    offset = sfs_get_inode_offset(fsp, sb->isearch);
-    for (i = sb->isearch; i <= sb->ninode; i++) {
-	ipbufp = cache_get(&(fsp->device), offset / SFS_BLOCK_SIZE);
+    offset = sfs_get_inode_offset(fsp, sb->fs_inode_hand);
+    for (i = sb->fs_inode_hand; i <= sb->fs_dblkno - sb->fs_iblkno; i++) {
+	ipbufp = cache_get(&(fsp->device), offset / sb->fs_bsize);
 	if (!ipbufp) {
 	    return EIO;
 	}
 
 	offset += fsp->device.block_size;
-	if (ipbufp->i_index != i) {
+	if (ipbufp->i_inumber != i) {
 	    fsp->device.clear(&(fsp->device), (VP)ipbufp);
-	    ipbufp->i_index = i;
+	    ipbufp->i_inumber = i;
 	    if (!cache_modify(ipbufp)) {
 		cache_release(ipbufp, false);
 		return EIO;
 	    }
 
 	    ip->private = ipbufp;
-	    sb->freeinode--;
-	    sb->isearch = (i + 1);
+	    sb->fs_free_inodes--;
+	    sb->fs_inode_hand = (i + 1);
 
 	    if (!cache_modify(fsp->private)) {
 		ip->private = NULL;
@@ -196,10 +197,10 @@ W sfs_free_inode(vfs_t * fsp, vnode_t *ip)
     }
     ip->dirty = false;
 
-    struct sfs_superblock *sb = (struct sfs_superblock*)(fsp->private);
-    sb->freeinode++;
-    if (sb->isearch >= inode_index)
-	sb->isearch = inode_index;
+    struct tfs *sb = (struct tfs *) (fsp->private);
+    sb->fs_free_inodes++;
+    if (sb->fs_inode_hand >= inode_index)
+	sb->fs_inode_hand = inode_index;
 
     if (!cache_modify(fsp->private))
 	return EIO;
@@ -209,8 +210,8 @@ W sfs_free_inode(vfs_t * fsp, vnode_t *ip)
 
 int sfs_stat(vnode_t *ip, struct stat *st)
 {
-    struct sfs_superblock *sb = (struct sfs_superblock*)(ip->fs->private);
-    struct sfs_inode *sfs_inode = ip->private;
+    struct tfs *sb = (struct tfs *) (ip->fs->private);
+    struct tfs_inode *tfs_inode = ip->private;
 
     st->st_dev = ip->fs->device.channel;
     st->st_ino = ip->index;
@@ -220,21 +221,21 @@ int sfs_stat(vnode_t *ip, struct stat *st)
     st->st_uid = ip->uid;
     st->st_gid = ip->gid;
     st->st_rdev = 0;
-    st->st_blksize = sb->blksize;
+    st->st_blksize = sb->fs_bsize;
     st->st_blocks = ROUNDUP(st->st_size, st->st_blksize) / st->st_blksize;
-    st->st_atime = sfs_inode->i_atime.sec;
-    st->st_mtime = sfs_inode->i_mtime.sec;
-    st->st_ctime = sfs_inode->i_ctime.sec;
+    st->st_atime = tfs_inode->i_atime;
+    st->st_mtime = tfs_inode->i_mtime;
+    st->st_ctime = tfs_inode->i_ctime;
 
     return 0;
 }
 
 int sfs_wstat(vnode_t *ip)
 {
-    struct sfs_inode *sfs_inode = ip->private;
-    sfs_inode->i_mode = ip->mode;
-    sfs_inode->i_gid = ip->gid;
-    time_get(&(sfs_inode->i_ctime));
+    struct tfs_inode *tfs_inode = ip->private;
+    tfs_inode->i_mode = ip->mode;
+    tfs_inode->i_gid = ip->gid;
+    time_get((SYSTIM *) &(tfs_inode->i_ctime));
     ip->dirty = true;
 
     return 0;
@@ -242,20 +243,20 @@ int sfs_wstat(vnode_t *ip)
 
 int sfs_i_close(vnode_t * ip)
 {
-    struct sfs_inode *sfs_inode = ip->private;
-    if (!sfs_inode) {
+    struct tfs_inode *tfs_inode = ip->private;
+    if (!tfs_inode) {
 	return 0;
     }
 
-    sfs_inode->i_index = ip->index;
-    if (ip->size < sfs_inode->i_size) {
+    tfs_inode->i_inumber = ip->index;
+    if (ip->size < tfs_inode->i_size) {
       sfs_i_truncate(ip, ip->size);
     }
 
-    sfs_inode->i_mode = ip->mode;
-    sfs_inode->i_uid = ip->uid;
-    sfs_inode->i_gid = ip->gid;
-    sfs_inode->i_size = ip->size;
+    tfs_inode->i_mode = ip->mode;
+    tfs_inode->i_uid = ip->uid;
+    tfs_inode->i_gid = ip->gid;
+    tfs_inode->i_size = ip->size;
 
     if (ip->dirty) {
 	if (!cache_modify(ip->private)) {
@@ -265,7 +266,7 @@ int sfs_i_close(vnode_t * ip)
 	ip->dirty = false;
     }
 
-    if (!cache_release(sfs_inode, false)) {
+    if (!cache_release(tfs_inode, false)) {
 	return (EIO);
     }
 

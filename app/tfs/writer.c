@@ -35,7 +35,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <unistd.h>
 #include "../../include/sys/stat.h"
 #include "../../include/fs/config.h"
-#include "../../include/fs/sfs.h"
+#include "../../include/fs/tfs.h"
 #include "../../include/fs/vfs.h"
 #include "libserv.h"
 #include "writer.h"
@@ -125,7 +125,8 @@ static int initialize(vnode_t **root)
 	return 0;
 }
 
-static int mount(vfs_t *fs, const char *filename, vnode_t *root)
+static int mount(vfs_t *fs, const char *filename, vnode_t *root,
+		const size_t block_size)
 {
 	int fd = open(filename, O_RDWR);
 	if (fd < 0) {
@@ -135,7 +136,7 @@ static int mount(vfs_t *fs, const char *filename, vnode_t *root)
 
 	fs->operations = fsops;
 
-	int result = vfs_mount(fd, fs, root);
+	int result = vfs_mount(fd, fs, root, block_size);
 	if (result) {
 		printf("mount(%d) failed %d\n", fd, result);
 		close(fd);
@@ -483,6 +484,11 @@ int main(int argc, char **argv)
 	}
 
 	if (argc == 2) {
+		printf("no block size\n");
+		return ERR_ARG;
+	}
+
+	if (argc == 3) {
 		printf("no commands\n");
 		return ERR_ARG;
 	}
@@ -492,64 +498,65 @@ int main(int argc, char **argv)
 	if (result)
 		return result;
 
-	result = mount(&fs, argv[1], root_node);
+	int block_size = atoi(argv[2]);
+	result = mount(&fs, argv[1], root_node, block_size);
 	if (result) {
 		vnodes_remove(root_node);
 		return result;
 	}
 
 	// manipulate vfs here
-	if (argc > 2) {
-		if (!strcmp(argv[2], "ls")) {
+	if (argc > 3) {
+		if (!strcmp(argv[3], "ls")) {
 			if (argc < 4) {
 				printf("no parameter\n");
 				result = ERR_ARG;
 			} else
-				result = do_ls(&fs, argv[3], &permission);
-		} else if (!strcmp(argv[2], "create")) {
+				result = do_ls(&fs, argv[4], &permission);
+		} else if (!strcmp(argv[3], "create")) {
 			if (argc < 5) {
 				printf("no parameter\n");
 				result = ERR_ARG;
 			} else
-				result = do_create(&fs, argv[3], argv[4],
+				result = do_create(&fs, argv[4], argv[5],
 						&permission);
-		} else if (!strcmp(argv[2], "remove")) {
+		} else if (!strcmp(argv[3], "remove")) {
 			if (argc < 4) {
 				printf("no parameter\n");
 				result = ERR_ARG;
 			} else
-				result = do_remove(&fs, argv[3], &permission);
-		} else if (!strcmp(argv[2], "mkdir")) {
+				result = do_remove(&fs, argv[4], &permission);
+		} else if (!strcmp(argv[3], "mkdir")) {
 			if (argc < 4) {
 				printf("no parameter\n");
 				result = ERR_ARG;
 			} else
-				result = do_mkdir(&fs, argv[3], &permission);
-		} else if (!strcmp(argv[2], "rmdir")) {
+				result = do_mkdir(&fs, argv[4], &permission);
+		} else if (!strcmp(argv[3], "rmdir")) {
 			if (argc < 4) {
 				printf("no parameter\n");
 				result = ERR_ARG;
 			} else
-				result = do_rmdir(&fs, argv[3], &permission);
+				result = do_rmdir(&fs, argv[4], &permission);
 /*
-		} else if (!strcmp(argv[2], "mv")) {
+		} else if (!strcmp(argv[3], "mv")) {
 			if (argc < 5) {
 				printf("no parameter\n");
 				result = ERR_ARG;
 			} else
-				result = do_mv(&fs, argv[3], argv[4],
+				result = do_mv(&fs, argv[4], argv[5],
 						&permission);
 */
-		} else if (!strcmp(argv[2], "chmod")) {
+		} else if (!strcmp(argv[3], "chmod")) {
 			if (argc < 5) {
 				printf("no parameter\n");
 				result = ERR_ARG;
 			} else
-				result = do_chmod(&fs, argv[3], argv[4],
+				result = do_chmod(&fs, argv[4], argv[5],
 						&permission);
 
 		} else {
-			printf("unknown command %s\n", argv[2]);
+			printf("unknown command %s\n", argv[3]);
 			result = ERR_ARG;
 		}
 

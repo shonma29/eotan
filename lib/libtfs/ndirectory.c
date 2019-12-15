@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <string.h>
-#include <fs/sfs.h>
+#include <fs/tfs.h>
 #include <sys/dirent.h>
 #include <sys/errno.h>
 #include "func.h"
@@ -266,8 +266,8 @@ int tfs_remove_entry(vnode_t *parent, vnode_t *node)
 		offset += real_len;
 	}
 
-	struct sfs_inode *sfs_inode = node->private;
-	time_get(&(sfs_inode->i_ctime));
+	struct tfs_inode *tfs_inode = node->private;
+	time_get((SYSTIM *) &(tfs_inode->i_ctime));
 	node->dirty = true;
 
 	//TODO optimize

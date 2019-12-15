@@ -32,10 +32,12 @@ include Makefile.in
 ENTRY_ADDR = 0x00001000
 ENTRY_FUNC = _main
 
+BLKSIZE = 512
+
 $(TARGET): $(OBJS) \
 		lib/libc.a lib/libnc.a
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $(@).o \
 		lib/libc.a lib/libnc.a
 	$(STRIP) $@
-	app/tfs/writer initrd.img create /bin/$(@F) $@
-	app/tfs/writer initrd.img chmod 755 /bin/$(@F)
+	app/tfs/writer initrd.img $(BLKSIZE) create /bin/$(@F) $@
+	app/tfs/writer initrd.img $(BLKSIZE) chmod 755 /bin/$(@F)

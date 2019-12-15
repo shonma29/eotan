@@ -24,13 +24,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <sys/stat.h>
 #include "../../include/fs/config.h"
-#include "../../include/fs/sfs.h"
+#include "../../include/fs/tfs.h"
 #include "../../include/mpu/limits.h"
 
 #define ERR_ARG (1)
@@ -50,21 +51,23 @@ For more information, please refer to <http://unlicense.org/>
 #define PARENT_NAME ".."
 
 static uint8_t *buf;
-static struct sfs_superblock super;
+static struct tfs super;
 static struct tfs_dir root_directory[] = {
 	{ ROOT_INODE_INDEX, 1, CURRENT_NAME },
 	{ ROOT_INODE_INDEX, 2, PARENT_NAME }
 };
-static struct sfs_inode root_inode = {
-	ROOT_INODE_INDEX,
-	sizeof(root_directory) / sizeof(root_directory[0]),
-	sizeof(root_directory),
+static struct tfs_inode root_inode = {
 	S_IFDIR | S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH,
+	ROOT_INODE_INDEX,
+	sizeof(root_directory),
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
 	ROOT_UID,
 	ROOT_GID,
-	{ 0, 0 },
-	{ 0, 0 },
-	{ 0, 0 },
 };
 
 static int usage(void);
@@ -88,6 +91,19 @@ static int usage(void)
 static int calc_super_block(const int block_size, const int block_num,
 		const int kb_per_inode)
 {
+	int intshift = 0;
+	for (int bits = sizeof(int); !(bits & 1); bits >>= 1)
+		intshift++;
+
+	int bshift = 0;
+	for (int bits = block_size; !(bits & 1); bits >>= 1)
+		bshift++;
+
+	if ((1 << bshift) != block_size) {
+		fprintf(stderr, "bad block size %d\n", block_size);
+		return ERR_ARG;
+	}
+
 	int bits_per_block = block_size * CHAR_BIT;
 	int bitmap_block_num = (block_num + bits_per_block - 1)
 			/ bits_per_block;
@@ -111,22 +127,27 @@ static int calc_super_block(const int block_size, const int block_num,
 	printf("superblock = %d, bitmap block = %d, inode block = %d\n",
 			1, bitmap_block_num, inode_num);
 
-	super.magic = TFS_MAGIC;
-	super.blksize = block_size;
-	super.nblock = block_num;
-	super.bitmapsize = bitmap_block_num;
-	super.ninode = inode_num;
-
-	int reserved = TFS_RESERVED_BLOCKS + bitmap_block_num + inode_num;
-	super.datablock = reserved;
+	super.fs_sblkno = TFS_BOOT_BLOCKS;
+	super.fs_sbsize = TFS_SUPER_BLOCKS;
+	super.fs_iblkno = super.fs_sblkno + super.fs_sbsize + bitmap_block_num;
+	super.fs_dblkno = super.fs_iblkno + inode_num;
+	super.fs_bsize = block_size;
+	super.fs_bmask = (1 << bshift) - 1;
+	super.fs_bshift = bshift;
+	super.fs_size = block_num;
+	super.fs_dsize = block_num - super.fs_dblkno;
+	super.fs_avgfilesize = bytes_per_inode;
+	super.fs_maxfilesize = 1 << (bshift * 3 - intshift * 2);
+	super.fs_qbmask = super.fs_bmask;
+	super.fs_magic = TFS_MAGIC;
 
 	// root inode is allocated
-	super.freeinode = inode_num - 1;
-	super.isearch = 1;
+	super.fs_free_inodes = inode_num - 1;
+	super.fs_inode_hand = 1;
 
 	// root blocks are allocated
-	super.freeblock = block_num - reserved - ROOT_BLOCK_NUM;
-	super.bsearch = reserved + ROOT_BLOCK_NUM - 1;
+	super.fs_free_blocks = super.fs_dsize - ROOT_BLOCK_NUM;
+	super.fs_block_hand = super.fs_dblkno + ROOT_BLOCK_NUM - 1;
 
 	return 0;
 }
@@ -134,7 +155,7 @@ static int calc_super_block(const int block_size, const int block_num,
 static int skip_boot_block(FILE *fp)
 {
 	// boot block occupies 1 sector
-	if (fseek(fp, super.blksize, SEEK_SET)) {
+	if (fseek(fp, super.fs_bsize, SEEK_SET)) {
 		perror("fseek failed in skip_boot_block\n");
 		return ERR_FILE;
 	}
@@ -145,10 +166,10 @@ static int skip_boot_block(FILE *fp)
 static int write_super_block(FILE *fp)
 {
 	// super block occupies 1 sector
-	memset(buf, 0, super.blksize);
+	memset(buf, 0, super.fs_bsize);
 	memcpy(buf, &super, sizeof(super));
 
-	if (fwrite(buf, super.blksize, 1, fp) != 1) {
+	if (fwrite(buf, super.fs_bsize, 1, fp) != 1) {
 		perror("fwrite failed in write_super_block\n");
 		return ERR_FILE;
 	}
@@ -158,32 +179,33 @@ static int write_super_block(FILE *fp)
 
 static int write_bitmap(FILE *fp)
 {
-	memset(buf, 0, super.blksize);
+	memset(buf, 0, super.fs_bsize);
 
-	int edge_bit = super.datablock + ROOT_BLOCK_NUM;
+	int edge_bit = super.fs_dblkno + ROOT_BLOCK_NUM;
 	int edge_byte = edge_bit / CHAR_BIT;
-	int edge_block = edge_byte / super.blksize;
+	int edge_block = edge_byte / super.fs_bsize;
 	int i = 0;
 
 	while (i++ < edge_block)
-		if (fwrite(buf, super.blksize, 1, fp) != 1) {
+		if (fwrite(buf, super.fs_bsize, 1, fp) != 1) {
 			perror("fwrite failed in write_bitmap\n");
 			return ERR_FILE;
 		}
 
-	edge_byte %= super.blksize;
+	edge_byte %= super.fs_bsize;
 	buf[edge_byte] = ~((1 << edge_bit % CHAR_BIT) - 1);
-	memset(&(buf[edge_byte + 1]), 0xff, super.blksize - edge_byte - 1);
+	memset(&(buf[edge_byte + 1]), 0xff, super.fs_bsize - edge_byte - 1);
 
-	if (fwrite(buf, super.blksize, 1, fp) != 1) {
+	if (fwrite(buf, super.fs_bsize, 1, fp) != 1) {
 		perror("fwrite failed in write_bitmap\n");
 		return ERR_FILE;
 	}
 
-	memset(buf, 0xff, super.blksize);
+	memset(buf, 0xff, super.fs_bsize);
 
-	while (++i < super.bitmapsize)
-		if (fwrite(buf, super.blksize, 1, fp) != 1) {
+	size_t max = super.fs_iblkno - super.fs_sblkno - super.fs_sbsize;
+	while (++i < max)
+		if (fwrite(buf, super.fs_bsize, 1, fp) != 1) {
 			perror("fwrite failed in write_bitmap\n");
 			return ERR_FILE;
 		}
@@ -195,24 +217,25 @@ static int write_inodes(FILE *fp)
 {
 	// inode occupies 1 sector
 	time_t t = time(NULL);
-	root_inode.i_atime.sec = t;
-	root_inode.i_mtime.sec = t;
-	root_inode.i_ctime.sec = t;
+	root_inode.i_atime = t;
+	root_inode.i_mtime = t;
+	root_inode.i_ctime = t;
 
-	memset(buf, 0, super.blksize);
+	memset(buf, 0, super.fs_bsize);
 	memcpy(buf, &root_inode, sizeof(root_inode));
 
 	// 1st index points to 2nd index block
-	struct sfs_inode *inode = (struct sfs_inode*)buf;
-	inode->i_indirect[0] = super.datablock;
+	struct tfs_inode *inode = (struct tfs_inode*)buf;
+	inode->i_ib[0] = super.fs_dblkno;
 
-	if (fwrite(buf, super.blksize, 1, fp) != 1) {
+	if (fwrite(buf, super.fs_bsize, 1, fp) != 1) {
 		perror("fwrite failed in write_inodes\n");
 		return ERR_FILE;
 	}
 
 	// skip unused inodes
-	if (fseek(fp, (super.ninode - 1) * super.blksize, SEEK_CUR)) {
+	size_t blocks = super.fs_dblkno - super.fs_iblkno - 1;
+	if (fseek(fp, blocks * super.fs_bsize, SEEK_CUR)) {
 		perror("fseek failed in write_inodes\n");
 		return ERR_FILE;
 	}
@@ -223,13 +246,13 @@ static int write_inodes(FILE *fp)
 static int write_index(FILE *fp)
 {
 	// index block occupies 1 sector
-	memset(buf, 0, super.blksize);
+	memset(buf, 0, super.fs_bsize);
 
 	// 2nd index points to body block
 	uint32_t *index = (uint32_t*)buf;
-	*index = super.datablock + 1;
+	*index = super.fs_dblkno + 1;
 
-	if (fwrite(buf, super.blksize, 1, fp) != 1) {
+	if (fwrite(buf, super.fs_bsize, 1, fp) != 1) {
 		perror("fwrite failed in write_index\n");
 		return ERR_FILE;
 	}
@@ -240,10 +263,10 @@ static int write_index(FILE *fp)
 static int write_directory(FILE *fp)
 {
 	// body block occupies 1 sector
-	memset(buf, 0, super.blksize);
+	memset(buf, 0, super.fs_bsize);
 	memcpy(buf, root_directory, sizeof(root_directory));
 
-	if (fwrite(buf, super.blksize, 1, fp) != 1) {
+	if (fwrite(buf, super.fs_bsize, 1, fp) != 1) {
 		perror("fwrite failed in write_directory\n");
 		return ERR_FILE;
 	}

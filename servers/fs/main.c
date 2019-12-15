@@ -74,7 +74,8 @@ static int initialize(void)
 	if (fs_initialize())
 		return -1;
 
-	int result = fs_mount((int) (sysinfo->root.device));
+	int result = fs_mount((int) (sysinfo->root.device),
+			sysinfo->root.block_size);
 	if (result) {
 		log_err(MYNAME ": fs_mount(%s, %d) failed %d\n",
 				sysinfo->root.device, sysinfo->root.fstype,

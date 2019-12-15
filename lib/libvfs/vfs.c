@@ -45,11 +45,12 @@ static bool check_flags(const int flags);
 static char *split_path(const char *path, char **parent_path);
 
 //TODO split this file per function
-int vfs_mount(const int device, vfs_t *fs, vnode_t *root)
+int vfs_mount(const int device, vfs_t *fs, vnode_t *root,
+		const size_t block_size)
 {
 	list_initialize(&(fs->vnodes));
 
-	int error_no = fs->operations.mount(device, fs, root);
+	int error_no = fs->operations.mount(device, fs, root, block_size);
 	if (error_no)
 		return error_no;
 
