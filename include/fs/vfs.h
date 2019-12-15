@@ -52,8 +52,6 @@ typedef struct _block_device_t {
 typedef struct _vfs_operation_t {
 	int (*mount)();
 	int (*unmount)();
-	int (*sync)();
-	int (*statvfs)();
 	int (*getdents)();
 	int (*walk)();
 	int (*remove)();
@@ -114,11 +112,6 @@ static inline int vfs_stat(vnode_t *vnode, struct stat *st)
 static inline int vfs_wstat(vnode_t *vnode)
 {
 	return vnode->fs->operations.wstat(vnode);
-}
-
-static inline int vfs_sync(vnode_t *vnode)
-{
-	return vnode->fs->operations.sync(vnode);
 }
 
 extern vfs_operation_t vfs_fsops;

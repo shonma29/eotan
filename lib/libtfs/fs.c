@@ -98,13 +98,10 @@ Version 2, June 1991
 static int sfs_mount (ID device, vfs_t *rootfsp, vnode_t *rootfile,
 		const size_t);
 static int sfs_unmount(vfs_t * rootfsp);
-static int sfs_statvfs(vfs_t *, struct statvfs *);
 
 vfs_operation_t vfs_fsops = {
     sfs_mount,
     sfs_unmount,
-    sfs_syncfs,
-    sfs_statvfs,
     tfs_getdents,
     tfs_walk,
     sfs_i_unlink,
@@ -169,35 +166,4 @@ static int sfs_unmount(vfs_t * rootfsp)
     vnodes_remove(rootfsp->root);
     cache_release(rootfsp->private, false);
     return cache_synchronize(&(rootfsp->device), true);
-}
-
-
-/* sfs_syncfs -
- * 引数 umflag は unmount の時 1，それ以外の場合は 0 にする．
- */
-int sfs_syncfs(vfs_t * fsp)
-{
-    W error_no = cache_synchronize(&(fsp->device), false);
-    if (error_no)
-	return (error_no);
-
-    return 0;
-}
-
-static int sfs_statvfs(vfs_t * fsp, struct statvfs * result)
-{
-    struct tfs *sb = (struct tfs *) (fsp->private);
-
-    result->f_bsize = sb->fs_bsize;
-    result->f_frsize = sb->fs_bsize;
-    result->f_blocks = sb->fs_dsize;
-    result->f_bfree = sb->fs_free_blocks;
-    result->f_bavail = sb->fs_free_blocks;
-    result->f_files = sb->fs_dblkno - sb->fs_iblkno;
-    result->f_ffree = sb->fs_free_inodes;
-    result->f_favail = sb->fs_free_inodes;
-    result->f_fsid = FS_TFS;
-    result->f_flag = 0;
-    result->f_namemax = TFS_MAXNAMLEN;
-    return 0;
 }

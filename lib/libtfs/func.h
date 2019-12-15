@@ -40,9 +40,6 @@ extern int sfs_i_create(vnode_t *parent, const char *fname,
 			      vnode_t **retip);
 extern W	sfs_i_truncate (vnode_t *ip, W newsize);
 
-/* fs.c */
-extern int sfs_syncfs (vfs_t *fsp);
-
 #include "funcs.h"
 
 #endif /* __SFS_FUNC_H__ */
