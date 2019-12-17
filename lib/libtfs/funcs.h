@@ -30,6 +30,11 @@ For more information, please refer to <http://unlicense.org/>
 #include <fs/vfs.h>
 #include <sys/dirent.h>
 
+static inline int calc_inode_blockno(const struct tfs *fs, const int ino)
+{
+	return (fs->fs_iblkno + ino - 1);
+}
+
 /* block.c */
 extern blkno_t tfs_allocate_block(vfs_t *);
 extern int tfs_deallocate_1st(vfs_t *, struct tfs_inode *, const unsigned int,

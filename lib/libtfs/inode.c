@@ -74,36 +74,14 @@ Version 2, June 1991
 #ifndef ROUNDUP
 #define ROUNDUP(x,align)	(((((int)x) + ((align) - 1))/(align))*(align))
 #endif
-
-static W	sfs_get_inode_offset (vfs_t *fsp, W ino);
 
 
 
 /* inode に関係している処理
  *
- * sfs_get_inode_offset()
  * sfs_read_inode()
  * sfs_alloc_inode()
  */
-
-
-/* get_inode_offset -
- *
- */
-static W sfs_get_inode_offset(vfs_t *fsp, W ino)
-{
-    W offset;
-    W nblock;
-    W blocksize;
-    struct tfs *sb;
-
-    sb = (struct tfs *) (fsp->private);
-    nblock = sb->fs_dsize;
-    blocksize = sb->fs_bsize;
-    offset = 1 + 1 + (ROUNDUP(nblock / 8, blocksize) / blocksize);
-    offset *= blocksize;
-    return (offset + ((ino - 1) * fsp->device.block_size));
-}
 
 
 /* sfs_read_inode -
@@ -114,9 +92,8 @@ W sfs_read_inode(vfs_t *fsp, W ino, vnode_t *ip)
     W offset;
     struct tfs_inode *tfs_inode;
 
-    offset = sfs_get_inode_offset(fsp, ino);
-    struct tfs *sb = (struct tfs *) (fsp->private);
-    tfs_inode = cache_get(&(fsp->device), offset / sb->fs_bsize);
+    offset = calc_inode_blockno((struct tfs *) (fsp->private), ino);
+    tfs_inode = cache_get(&(fsp->device), offset);
     if (!tfs_inode) {
 	return EIO;
     }
@@ -149,14 +126,14 @@ W sfs_alloc_inode(vfs_t * fsp, vnode_t *ip)
 	return (0);
     }
 
-    offset = sfs_get_inode_offset(fsp, sb->fs_inode_hand);
+    offset = calc_inode_blockno(sb, sb->fs_inode_hand);
     for (i = sb->fs_inode_hand; i <= sb->fs_dblkno - sb->fs_iblkno; i++) {
-	ipbufp = cache_get(&(fsp->device), offset / sb->fs_bsize);
+	ipbufp = cache_get(&(fsp->device), offset);
 	if (!ipbufp) {
 	    return EIO;
 	}
 
-	offset += fsp->device.block_size;
+	offset++;
 	if (ipbufp->i_inumber != i) {
 	    fsp->device.clear(&(fsp->device), (VP)ipbufp);
 	    ipbufp->i_inumber = i;
