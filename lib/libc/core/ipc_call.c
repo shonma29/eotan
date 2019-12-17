@@ -26,10 +26,10 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <ipc.h>
 #include <nerve/svcno.h>
-#include <mpu/call_kernel.h>
+#include <mpu/_ncall.h>
 
 
 int ipc_call(const int id, void *message, const size_t size)
 {
-	return ncall(SVC_PORT_CALL, id, message, size);
+	return _ncall(SVC_PORT_CALL, id, message, size);
 }

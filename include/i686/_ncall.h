@@ -1,5 +1,5 @@
-#ifndef _MPU_CALL_KERNEL_H_
-#define _MPU_CALL_KERNEL_H_
+#ifndef _MPU__NCALL_H_
+#define _MPU__NCALL_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,7 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-static inline int ncall(const int svcno, ...)
+static inline int _ncall(const int svcno, ...)
 {
 	int result;
 
