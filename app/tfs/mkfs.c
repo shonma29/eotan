@@ -32,6 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/stat.h>
 #include "../../include/fs/config.h"
 #include "../../include/fs/tfs.h"
+#include "../../include/mpu/bits.h"
 #include "../../include/mpu/limits.h"
 
 #define ERR_ARG (1)
@@ -84,13 +85,8 @@ static int usage(void)
 
 static int calc_super_block(const int block_size, const int block_num)
 {
-	int intshift = 0;
-	for (int bits = sizeof(int); !(bits & 1); bits >>= 1)
-		intshift++;
-
-	int bshift = 0;
-	for (int bits = block_size; !(bits & 1); bits >>= 1)
-		bshift++;
+	int intshift = count_ntz(sizeof(int));
+	int bshift = count_ntz(block_size);
 
 	if ((1 << bshift) != block_size) {
 		fprintf(stderr, "bad block size %d\n", block_size);
