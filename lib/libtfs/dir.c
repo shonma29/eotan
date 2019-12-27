@@ -78,7 +78,7 @@ sfs_i_unlink(vnode_t * parent, vnode_t *ip)
     }
 
     sfs_i_truncate(ip, 0);
-    sfs_free_inode(ip->fs, ip);
+    tfs_deallocate_inode(ip->fs, ip);
     return 0;
 }
 
@@ -102,7 +102,7 @@ int sfs_i_rmdir(vnode_t * parent, vnode_t *ip)
 
     struct tfs_inode *tfs_inode = ip->private;
     sfs_i_truncate(ip, 0);
-    sfs_free_inode(ip->fs, ip);
+    tfs_deallocate_inode(ip->fs, ip);
 
     tfs_inode = parent->private;
     time_get((SYSTIM *) &(tfs_inode->i_ctime));

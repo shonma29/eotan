@@ -80,7 +80,6 @@ Version 2, June 1991
 /* inode に関係している処理
  *
  * sfs_read_inode()
- * sfs_alloc_inode()
  */
 
 
@@ -89,11 +88,9 @@ Version 2, June 1991
  */
 W sfs_read_inode(vfs_t *fsp, W ino, vnode_t *ip)
 {
-    W offset;
     struct tfs_inode *tfs_inode;
 
-    offset = calc_inode_blockno((struct tfs *) (fsp->private), ino);
-    tfs_inode = cache_get(&(fsp->device), offset);
+    tfs_inode = cache_get(&(fsp->device), ino);
     if (!tfs_inode) {
 	return EIO;
     }
@@ -111,79 +108,6 @@ W sfs_read_inode(vfs_t *fsp, W ino, vnode_t *ip)
     return (0);
 }
 
-
-/* sfs_alloc_inode -
- *
- */
-W sfs_alloc_inode(vfs_t * fsp, vnode_t *ip)
-{
-    W i;
-    W offset;
-    struct tfs_inode *ipbufp;
-    struct tfs *sb = (struct tfs *) (fsp->private);
-
-    if (sb->fs_free_inodes <= 0) {
-	return (0);
-    }
-
-    offset = calc_inode_blockno(sb, sb->fs_inode_hand);
-    for (i = sb->fs_inode_hand; i <= sb->fs_dblkno - sb->fs_iblkno; i++) {
-	ipbufp = cache_get(&(fsp->device), offset);
-	if (!ipbufp) {
-	    return EIO;
-	}
-
-	offset++;
-	if (ipbufp->i_inumber != i) {
-	    fsp->device.clear(&(fsp->device), (VP)ipbufp);
-	    ipbufp->i_inumber = i;
-	    if (!cache_modify(ipbufp)) {
-		cache_release(ipbufp, false);
-		return EIO;
-	    }
-
-	    ip->private = ipbufp;
-	    sb->fs_free_inodes--;
-	    sb->fs_inode_hand = (i + 1);
-
-	    if (!cache_modify(fsp->private)) {
-		ip->private = NULL;
-		cache_release(ipbufp, false);
-		return EIO;
-	    }
-
-	    return (i);
-	}
-
-	cache_release(ipbufp, false);
-    }
-
-    return (0);
-}
-
-
-/* sfs_free_inode -
- *
- */
-W sfs_free_inode(vfs_t * fsp, vnode_t *ip)
-{
-    W inode_index = ip->index;
-    fsp->device.clear(&(fsp->device), ip->private);
-    if (!cache_modify(ip->private)) {
-	return EIO;
-    }
-    ip->dirty = false;
-
-    struct tfs *sb = (struct tfs *) (fsp->private);
-    sb->fs_free_inodes++;
-    if (sb->fs_inode_hand >= inode_index)
-	sb->fs_inode_hand = inode_index;
-
-    if (!cache_modify(fsp->private))
-	return EIO;
-
-    return 0;
-}
 
 int sfs_stat(vnode_t *ip, struct stat *st)
 {

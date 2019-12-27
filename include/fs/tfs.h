@@ -37,13 +37,13 @@ typedef uint32_t blkno_t;
 #define TFS_BOOT_BLOCKS (1)
 #define TFS_SUPER_BLOCKS (1)
 #define TFS_RESERVED_BLOCKS (TFS_BOOT_BLOCKS + TFS_SUPER_BLOCKS)
+#define TFS_ROOT_BLOCK_NO (3)
 
 #define TFS_MAXNAMLEN (255)
 #define TFS_MINNAMLEN (sizeof(uint32_t) - sizeof(uint8_t))
 
 struct tfs {
 	int32_t fs_sblkno;
-	int32_t fs_iblkno;
 	int32_t fs_dblkno;
 	int32_t fs_bsize;
 	int32_t fs_bmask;
@@ -51,15 +51,12 @@ struct tfs {
 	int32_t fs_sbsize;
 	int64_t fs_size;
 	int64_t fs_dsize;
-	uint32_t fs_avgfilesize;
 	uint64_t fs_maxfilesize;
 	int64_t fs_qbmask;
 	int32_t fs_magic;
 
 	int32_t fs_free_blocks;
-	int32_t fs_free_inodes;
 	int32_t fs_block_hand;
-	int32_t fs_inode_hand;
 };
 
 struct tfs_inode {

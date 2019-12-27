@@ -147,7 +147,7 @@ static int sfs_mount(ID device, vfs_t *rootfsp, vnode_t *rootfile,
     }
 
     /* root file の読み込み、inode = 1 が root file */
-    W error_no = sfs_read_inode(rootfsp, 1, rootfile);
+    W error_no = sfs_read_inode(rootfsp, TFS_ROOT_BLOCK_NO, rootfile);
     if (error_no) {
 	cache_release(rootfsp->private, false);
 	return (error_no);

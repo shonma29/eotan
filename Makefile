@@ -74,7 +74,7 @@ starter:
 
 initrd:
 	$(RM) initrd.img
-	app/tfs/mkfs initrd.img 512 1024 4
+	app/tfs/mkfs initrd.img 512 1024
 	app/tfs/writer initrd.img $(BLKSIZE) chmod 755 /
 	app/tfs/writer initrd.img $(BLKSIZE) mkdir /lost+found
 	app/tfs/writer initrd.img $(BLKSIZE) chmod 700 /lost+found

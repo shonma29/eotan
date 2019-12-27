@@ -259,12 +259,12 @@ int vfs_remove(vnode_t *node, const struct permission *permission)
 		return EINVAL;
 
 	if ((parent->mode & S_IFMT) != S_IFDIR) {
-		log_debug("vfs_remove: %s is not directory\n", parent_path);
+		log_debug("vfs_remove: [%d] is not directory\n", parent->index);
 		return ENOTDIR;
 	}
 
 	if (vfs_permit(parent, permission, W_OK | X_OK)) {
-		log_debug("vfs_remove: %s is not writable\n", parent_path);
+		log_debug("vfs_remove: [%d] is not writable\n", parent->index);
 		return EACCES;
 	}
 

@@ -149,7 +149,7 @@ sfs_i_create(vnode_t * parent,
     *retip = newip;
 
     /* 新しい sfs_inode をアロケート */
-    i_index = sfs_alloc_inode(parent->fs, newip);
+    i_index = tfs_allocate_inode(parent->fs, newip);
     if (i_index <= 0) {
 	vnodes_remove(newip);
 	return (ENOMEM);
@@ -180,7 +180,7 @@ sfs_i_create(vnode_t * parent,
 
     error_no = tfs_append_entry(parent, fname, newip);
     if (error_no) {
-	sfs_free_inode(newip->fs, newip);
+	tfs_deallocate_inode(newip->fs, newip);
 	vnodes_remove(newip);
 	return (error_no);
     }

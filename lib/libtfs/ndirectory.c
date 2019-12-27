@@ -193,7 +193,7 @@ int tfs_mkdir(vnode_t *parent, const char *name, const mode_t mode,
 		if (error_no)
 			log_warning("sfs_i_mkdir: %s is dead link\n", name);
 
-		sfs_free_inode(child->fs, child);
+		tfs_deallocate_inode(child->fs, child);
 		vnodes_remove(child);
 		return error_no;
 	}

@@ -31,7 +31,6 @@ For more information, please refer to <http://unlicense.org/>
 
 #define INT_BIT ((CHAR_BIT) * sizeof(int))
 
-static int tfs_deallocate_block(vfs_t *fsp, const blkno_t block_no);
 static bool is_valid_nth(const vfs_t *fsp, const unsigned int nth);
 
 
@@ -42,7 +41,7 @@ blkno_t tfs_allocate_block(vfs_t *fsp)
 		return 0;
 
 	unsigned int start = (sb->fs_block_hand - 1) / (CHAR_BIT * sb->fs_bsize);
-	int max = sb->fs_iblkno - sb->fs_sblkno - sb->fs_sbsize;
+	int max = sb->fs_dblkno - sb->fs_sblkno - sb->fs_sbsize;
 	for (unsigned int i = start; i < max; i++) {
 		uint32_t *buf = cache_get(&(fsp->device),
 				i + TFS_RESERVED_BLOCKS);
@@ -142,7 +141,7 @@ int tfs_deallocate_1st(vfs_t *fsp, struct tfs_inode *ip,
 	return 0;
 }
 
-static int tfs_deallocate_block(vfs_t *fsp, const blkno_t block_no)
+int tfs_deallocate_block(vfs_t *fsp, const blkno_t block_no)
 {
 	struct tfs *sb = (struct tfs *) (fsp->private);
 	if (block_no < sb->fs_dblkno)
@@ -240,4 +239,39 @@ static bool is_valid_nth(const vfs_t *fsp, const unsigned int nth)
 {
 	return (nth < num_of_1st_blocks(fsp->device.block_size)
 			* num_of_2nd_blocks(fsp->device.block_size));
+}
+
+int tfs_allocate_inode(vfs_t *fs, vnode_t *vnode)
+{
+	blkno_t block_no = tfs_allocate_block(fs);
+	if (!block_no)
+		return 0;
+
+	struct tfs_inode *buf = cache_get(&(fs->device), block_no);
+	if (!buf)
+		return EIO;
+
+	fs->device.clear(&(fs->device), buf);
+	buf->i_inumber = block_no;
+
+	if (!cache_modify(buf)) {
+		cache_release(buf, false);
+		return EIO;
+	}
+
+	vnode->private = buf;
+	return block_no;
+}
+
+int tfs_deallocate_inode(vfs_t *fs, vnode_t *vnode)
+{
+	blkno_t block_no = vnode->index;
+
+	fs->device.clear(&(fs->device), vnode->private);
+
+	if (!cache_modify(vnode->private))
+		return EIO;
+
+	vnode->dirty = false;
+	return tfs_deallocate_block(fs, block_no);
 }
