@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <fcntl.h>
 #include <services.h>
 #include <string.h>
+#include <fs/vfs.h>
 #include <nerve/ipc_utils.h>
 #include <nerve/kcall.h>
 #include <sys/syscall.h>
@@ -39,7 +40,6 @@ For more information, please refer to <http://unlicense.org/>
 char pathbuf1[PATH_MAX];
 char pathbuf2[PATH_MAX];
 
-static char *split_path(const char *path, char **parent_path);
 static int call_device(const int, fsmsg_t *, const size_t, const int,
 		const size_t);
 static int create_tag(void);
@@ -180,7 +180,7 @@ int mm_create(mm_request *req)
 
 		int fd = desc->node.key;
 		char *parent_path = "";
-		char *head = split_path(pathbuf1, &parent_path);
+		char *head = vfs_split_path(pathbuf1, &parent_path);
 		mm_file_t *file;
 		fsmsg_t *message = &(req->message);
 		int result = _walk(&file, process, kcall->thread_get_id(),
@@ -235,22 +235,6 @@ int mm_create(mm_request *req)
 
 	reply->result = -1;
 	return reply_failure;
-}
-
-static char *split_path(const char *path, char **parent_path)
-{
-	char *head = (char*)path;
-	while (*head == '/')
-		head++;
-
-	char *last = strrchr(head, '/');
-	if (last) {
-		*last = '\0';
-		*parent_path = head;
-		head = last + 1;
-	}
-
-	return head;
 }
 
 int mm_read(mm_request *req)

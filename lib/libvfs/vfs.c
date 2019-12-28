@@ -41,7 +41,7 @@ static int modes[] = {
 };
 
 static bool check_flags(const int flags);
-static char *split_path(const char *path, char **parent_path);
+
 
 //TODO split this file per function
 int vfs_mount(const int device, vfs_t *fs, vnode_t *root,
@@ -170,10 +170,24 @@ static bool check_flags(const int flags)
 	return true;
 }
 
-//TODO specify file (or directory), not path
-int vfs_create(vnode_t *cwd, char *path, const int flags, const mode_t mode,
+int vfs_create(vnode_t *parent, char *name, const int flags, const mode_t mode,
 		const struct permission *permission, vnode_t **node)
 {
+	if ((parent->mode & S_IFMT) != S_IFDIR) {
+		log_debug("vfs_create: [%d] is not directory\n", parent->index);
+		return ENOTDIR;
+	}
+
+	if (vfs_permit(parent, permission, W_OK | X_OK)) {
+		log_debug("vfs_create: [%d] is not writable\n", parent->index);
+		return EACCES;
+	}
+
+	if (!vfs_is_valid_name(name)) {
+		log_debug("vfs_create: bad name %s\n", name);
+		return EINVAL;
+	}
+
 	//TODO really?
 	if (mode & (UNMODIFIABLE_MODE_BITS & ~DMDIR)) {
 		log_debug("vfs_create: bad mode %x\n", mode);
@@ -187,63 +201,30 @@ int vfs_create(vnode_t *cwd, char *path, const int flags, const mode_t mode,
 		return EINVAL;
 	}
 
-//TODO check name (not '.')
-	char *parent_path = "";
-	char *head = split_path(path, &parent_path);
-	if (!(*head)) {
-		log_debug("vfs_create: bad path %s\n", path);
-		return EINVAL;
-	}
-
-	vnode_t *parent;
-	int result = vfs_walk(cwd, parent_path, O_WRONLY, permission,
-			&parent);
-	if (result) {
-		log_debug("vfs_create: vfs_walk(%s) failed %d\n",
-				parent_path, result);
-		return result;
-	}
-
-	if ((parent->mode & S_IFMT) != S_IFDIR) {
-		log_debug("vfs_create: %s is not directory\n", parent_path);
-		vnodes_remove(parent);
-		return ENOTDIR;
-	}
-
-	if (vfs_permit(parent, permission, W_OK | X_OK)) {
-		log_debug("vfs_create: %s is not writable\n", parent_path);
-		vnodes_remove(parent);
-		return EACCES;
-	}
-
-	result = vfs_walk(parent, head, O_ACCMODE, permission, node);
+	int result = vfs_walk(parent, name, O_ACCMODE, permission, node);
 	if (!result) {
-		log_debug("vfs_create: %s already exists\n", head);
+		log_debug("vfs_create: %s already exists\n", name);
 		vnodes_remove(*node);
-		vnodes_remove(parent);
 		return EEXIST;
 	}
 
 //TODO extend permission from parent
 	if (mode & DMDIR)
-		result = parent->fs->operations.mkdir(parent, head,
+		result = parent->fs->operations.mkdir(parent, name,
 				//TODO really?
 				mode & parent->mode
 						& (S_IRWXU | S_IRWXG | S_IRWXO),
 				permission, node);
 	else
-		result = parent->fs->operations.create(parent, head,
+		result = parent->fs->operations.create(parent, name,
 				//TODO really?
 				mode & parent->mode
 						& (S_IRUSR | S_IWUSR | S_IRGRP
 						| S_IWGRP | S_IROTH | S_IWOTH),
 				permission, node);
-
 	//TODO not close. open with flags
-	vnodes_remove(parent);
-
 	if (result) {
-		log_debug("vfs_create: create(%s) failed %d\n", head, result);
+		log_debug("vfs_create: create(%s) failed %d\n", name, result);
 		return result;
 	}
 
@@ -289,22 +270,6 @@ int vfs_remove(vnode_t *node, const struct permission *permission)
 	vnodes_remove(parent);
 	vnodes_remove(node);
 	return 0;
-}
-
-static char *split_path(const char *path, char **parent_path)
-{
-	char *head = (char*)path;
-	while (*head == '/')
-		head++;
-
-	char *last = strrchr(head, '/');
-	if (last) {
-		*last = '\0';
-		*parent_path = head;
-		head = last + 1;
-	}
-
-	return head;
 }
 
 int vfs_permit(const vnode_t *vnode, const struct permission *permission,

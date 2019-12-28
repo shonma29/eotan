@@ -181,14 +181,13 @@ static void format(const vstat_t *st, const char *path)
 			path);
 }
 
-static int do_stat(vnode_t *ip, const char *path)
+static int do_stat(vnode_t *vnode, const char *path)
 {
 	//TODO use struct definition of guest
 	vstat_t st;
-	int result = ip->fs->operations.stat(ip, &st);
-
+	int result = vnode->fs->operations.stat(vnode, &st);
 	if (result) {
-		printf("stat(%d) failed %d\n", ip->index, result);
+		printf("stat(%d) failed %d\n", vnode->index, result);
 		return ERR_UNKNOWN;
 	}
 
@@ -197,7 +196,8 @@ static int do_stat(vnode_t *ip, const char *path)
 	return 0;
 }
 
-static int readdir(vfs_t *fs, vnode_t *ip, const struct permission *permission)
+static int readdir(vfs_t *fs, vnode_t *vnode,
+		const struct permission *permission)
 {
 	vdirent_t *buf = malloc(sizeof(vdirent_t));
 	if (!buf) {
@@ -212,13 +212,13 @@ static int readdir(vfs_t *fs, vnode_t *ip, const struct permission *permission)
 		copy_to,
 	};
 	for (;;) {
-		copier.buf = (char*)buf;
+		copier.buf = (char *) buf;
 		size_t read_size;
-		int result = fs->operations.getdents(ip, &copier, offset,
+		int result = fs->operations.getdents(vnode, &copier, offset,
 				sizeof(*buf), &read_size);
 		if (result) {
 			printf("readdir: getdents(%d, %d) failed %d\n",
-					ip->index, offset, result);
+					vnode->index, offset, result);
 			free(buf);
 			return ERR_FILE;
 		}
@@ -229,7 +229,7 @@ static int readdir(vfs_t *fs, vnode_t *ip, const struct permission *permission)
 		for (int i = 0; i < read_size / sizeof(*buf); i++) {
 			vnode_t *entry;
 			//TODO use constant definition of guest
-			result = vfs_walk(ip, buf[i].d_name, O_RDONLY,
+			result = vfs_walk(vnode, buf[i].d_name, O_RDONLY,
 					permission, &entry);
 			if (result) {
 				printf("readdir: vfs_walk(%s) failed %d\n",
@@ -245,7 +245,7 @@ static int readdir(vfs_t *fs, vnode_t *ip, const struct permission *permission)
 				printf("readdir: stat(%s) failed %d\n",
 						buf[i].d_name, result);
 				free(buf);
-				return result;
+				return ERR_UNKNOWN;
 			}
 		}
 
@@ -259,36 +259,34 @@ static int readdir(vfs_t *fs, vnode_t *ip, const struct permission *permission)
 
 static int do_ls(vfs_t *fs, char *path, const struct permission *permission)
 {
-	vnode_t *ip;
-
+	vnode_t *vnode;
 	//TODO use constant definition of guest in vfs
-	int result = vfs_walk(fs->root, path, O_RDONLY, permission, &ip);
+	int result = vfs_walk(fs->root, path, O_RDONLY, permission, &vnode);
 	if (result) {
 		printf("ls: vfs_walk(%s) failed %d\n", path, result);
 		return ERR_UNKNOWN;
 	}
 
 	//TODO use constant definition of guest, or define method in vnodes
-	if ((ip->mode & S_IFMT) == S_IFDIR) {
+	if ((vnode->mode & S_IFMT) == S_IFDIR) {
 //		printf("%s is directory\n", path);
-//		do_stat(ip, path);
+//		do_stat(vnode, path);
 //		printf("---\n");
-		result = readdir(fs, ip, permission);
-		vnodes_remove(ip);
+		result = readdir(fs, vnode, permission);
+		vnodes_remove(vnode);
 
 		if (result) {
 			printf("ls: readdir(%d) failed %d\n",
-					ip->index, result);
-			return result;
+					vnode->index, result);
+			return ERR_UNKNOWN;
 		}
-
 	} else {
-		result = do_stat(ip, path);
-		vnodes_remove(ip);
+		result = do_stat(vnode, path);
+		vnodes_remove(vnode);
 
 		if (result) {
 			printf("ls: stat(%s) failed %d\n", path, result);
-			return result;
+			return ERR_UNKNOWN;
 		}
 	}
 
@@ -298,21 +296,33 @@ static int do_ls(vfs_t *fs, char *path, const struct permission *permission)
 static int do_create(vfs_t *fs, char *path, const char *from,
 		const struct permission *permission)
 {
-	vnode_t *ip;
-	int result = vfs_create(fs->root, path, O_WRONLY,
+	char *parent_path = "";
+	char *name = vfs_split_path(path, &parent_path);
+	vnode_t *parent;
+	int result = vfs_walk(fs->root, parent_path, O_ACCMODE, permission,
+			&parent);
+	if (result) {
+		printf("create: vfs_walk(%s) failed %d\n", parent_path, result);
+		return ERR_UNKNOWN;
+	}
+
+	vnode_t *vnode;
+	result = vfs_create(parent, name, O_WRONLY,
 			S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
 					| S_IROTH | S_IWOTH,
-			permission, &ip);
+			permission, &vnode);
+	vnodes_remove(parent);
+
 	if (result) {
-		printf("create: create(%s) failed %d\n", path, result);
-		return result;
+		printf("create: create(%s) failed %d\n", name, result);
+		return ERR_UNKNOWN;
 	}
 
 	int fd = open(from, O_RDONLY);
 	if (fd < 0) {
 		printf("create: open(%s) failed %d\n", from, result);
 		//TODO remove file
-		vnodes_remove(ip);
+		vnodes_remove(vnode);
 		return ERR_FILE;
 	}
 
@@ -320,7 +330,7 @@ static int do_create(vfs_t *fs, char *path, const char *from,
 	if (!buf) {
 		printf("create: malloc failed\n");
 		//TODO remove file
-		vnodes_remove(ip);
+		vnodes_remove(vnode);
 		close(fd);
 		return ERR_MEMORY;
 	}
@@ -334,7 +344,7 @@ static int do_create(vfs_t *fs, char *path, const char *from,
 			printf("create: read(%s) failed %d\n", from, errno);
 			free(buf);
 			//TODO remove file
-			vnodes_remove(ip);
+			vnodes_remove(vnode);
 			close(fd);
 			return ERR_FILE;
 		}
@@ -347,23 +357,23 @@ static int do_create(vfs_t *fs, char *path, const char *from,
 			buf
 		};
 		size_t rlength;
-		int error_no = vfs_write(ip, &copier, offset, len, &rlength);
+		int error_no = vfs_write(vnode, &copier, offset, len, &rlength);
 		if (error_no) {
 			printf("create: write(%d, %d) failed %d\n",
-					ip->index, offset, error_no);
+					vnode->index, offset, error_no);
 			free(buf);
 			//TODO remove file
-			vnodes_remove(ip);
+			vnodes_remove(vnode);
 			close(fd);
 			return ERR_FILE;
 		}
 
 		if (rlength != len) {
 			printf("create: write(%d, %d) partially failed\n",
-					ip->index, offset);
+					vnode->index, offset);
 			free(buf);
 			//TODO remove file
-			vnodes_remove(ip);
+			vnodes_remove(vnode);
 			close(fd);
 			return ERR_FILE;
 		}
@@ -373,7 +383,7 @@ static int do_create(vfs_t *fs, char *path, const char *from,
 
 	free(buf);
 	close(fd);
-	vnodes_remove(ip);
+	vnodes_remove(vnode);
 
 	return 0;
 }
@@ -382,14 +392,16 @@ static int do_remove(vfs_t *fs, char *path, const struct permission *permission)
 {
 	vnode_t *vnode;
 	int result = vfs_walk(fs->root, path, O_ACCMODE, permission, &vnode);
-	if (result)
-		return result;
+	if (result) {
+		printf("remove: vfs_walk(%s) failed %d\n", path, result);
+		return ERR_UNKNOWN;
+	}
 
 	result = vfs_remove(vnode, permission);
 	if (result) {
 		printf("remove: remove(%s) failed %d\n", path, result);
 		vnodes_remove(vnode);
-		return result;
+		return ERR_UNKNOWN;
 	}
 
 	return 0;
@@ -397,33 +409,28 @@ static int do_remove(vfs_t *fs, char *path, const struct permission *permission)
 
 static int do_mkdir(vfs_t *fs, char *path, const struct permission *permission)
 {
-	vnode_t *ip;
-	int result = vfs_create(fs->root, path, O_RDONLY,
-			DMDIR | S_IRWXU | S_IRWXG | S_IRWXO,
-			permission, &ip);
+	char *parent_path = "";
+	char *name = vfs_split_path(path, &parent_path);
+	vnode_t *parent;
+	int result = vfs_walk(fs->root, parent_path, O_ACCMODE, permission,
+			&parent);
 	if (result) {
-		printf("mkdir: mkdir(%s) failed %d\n", path, result);
-		return result;
+		printf("mkdir: vfs_walk(%s) failed %d\n", parent_path, result);
+		return ERR_UNKNOWN;
 	}
 
-	vnodes_remove(ip);
-
-	return 0;
-}
-
-static int do_rmdir(vfs_t *fs, char *path, const struct permission *permission)
-{
 	vnode_t *vnode;
-	int result = vfs_walk(fs->root, path, O_ACCMODE, permission, &vnode);
-	if (result)
-		return result;
+	result = vfs_create(parent, name, O_RDONLY,
+			DMDIR | S_IRWXU | S_IRWXG | S_IRWXO,
+			permission, &vnode);
+	vnodes_remove(parent);
 
-	result = vfs_remove(vnode, permission);
 	if (result) {
-		printf("rmdir: rmdir(%s) failed %d\n", path, result);
-		vnodes_remove(vnode);
-		return result;
+		printf("mkdir: create(%s) failed %d\n", name, result);
+		return ERR_UNKNOWN;
 	}
+
+	vnodes_remove(vnode);
 
 	return 0;
 }
@@ -431,46 +438,29 @@ static int do_rmdir(vfs_t *fs, char *path, const struct permission *permission)
 static int do_chmod(vfs_t *fs, const char *mode, char *path,
 		const struct permission *permission)
 {
-	char *head = path;
-	while (*head == '/')
-		head++;
-
-	char *last;
-	for (;;) {
-		last = strrchr(head, '/');
-		if (!last)
-			break;
-
-		//TODO is this error?
-		if (last[1] == '\0')
-			*last = '\0';
-		else
-			break;
-	}
-
-	vnode_t *ip;
+	vnode_t *vnode;
 	//TODO use constant definition of guest
-	int result = vfs_walk(fs->root, head, O_ACCMODE, permission, &ip);
+	int result = vfs_walk(fs->root, path, O_ACCMODE, permission, &vnode);
 	if (result) {
-		printf("chmod: vfs_walk(%s) failed %d\n", head, result);
+		printf("chmod: vfs_walk(%s) failed %d\n", path, result);
 		return ERR_UNKNOWN;
 	}
 
 	int m = strtol(mode, NULL, 8);
 	if (m & UNMODIFIABLE_MODE_BITS) {
 		printf("chmod: invalid mode %s\n", mode);
-		vnodes_remove(ip);
+		vnodes_remove(vnode);
 		return ERR_ARG;
 	}
 
 	//TODO use constant definition of guest
-	ip->mode = (ip->mode & S_IFMT) | m;
-	result = ip->fs->operations.wstat(ip);
-	vnodes_remove(ip);
+	vnode->mode = (vnode->mode & S_IFMT) | m;
+	result = vnode->fs->operations.wstat(vnode);
+	vnodes_remove(vnode);
 
 	if (result) {
-		printf("chmod: chmod(%s) failed %d\n", head, result);
-		return result;
+		printf("chmod: chmod(%s) failed %d\n", path, result);
+		return ERR_UNKNOWN;
 	}
 
 	return 0;
@@ -532,12 +522,6 @@ int main(int argc, char **argv)
 				result = ERR_ARG;
 			} else
 				result = do_mkdir(&fs, argv[4], &permission);
-		} else if (!strcmp(argv[3], "rmdir")) {
-			if (argc < 4) {
-				printf("no parameter\n");
-				result = ERR_ARG;
-			} else
-				result = do_rmdir(&fs, argv[4], &permission);
 /*
 		} else if (!strcmp(argv[3], "mv")) {
 			if (argc < 5) {
