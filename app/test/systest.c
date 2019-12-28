@@ -91,7 +91,7 @@ char *testfile()
 
 	assert_eq("close[0]", 0, close(fd));
 
-	assert_eq("chmod[0]", 0, chmod("/motd", S_IXGRP | S_IROTH | S_IWOTH));
+	assert_eq("chmod[0]", 0, chmod("/motd", S_IRGRP | S_IXGRP | S_IWOTH));
 
 	fd = open("/motd", O_RDONLY);
 	assert_ne("open[1]", -1, fd);
@@ -100,19 +100,19 @@ char *testfile()
 
 	printf("fstat: mode=%x\n", st2.st_mode);
 	assert_eq("chmod[0-1]",
-			S_IFREG | S_IXGRP | S_IROTH | S_IWOTH,
+			S_IFREG | S_IRGRP | S_IXGRP | S_IWOTH,
 			st2.st_mode);
 
-	assert_eq("read[0]", 1, read(fd, buf, 1));
-	assert_eq("read[0] buf[0]", 'k', buf[0]);
+	assert_eq("read[2-0]", 1, read(fd, buf, 1));
+	assert_eq("read[2-0] buf[0]", 'k', buf[0]);
 
-	assert_eq("read[1]", read(fd, buf, 1), 1);
-	assert_eq("read[1] buf[0]", '@', buf[0]);
+	assert_eq("read[2-1]", read(fd, buf, 1), 1);
+	assert_eq("read[2-1] buf[0]", '@', buf[0]);
 
-	assert_eq("close[0]", 0, close(fd));
+	assert_eq("close[1]", 0, close(fd));
 
 	assert_eq("access[0]", 0,
-			access("/motd", R_OK | W_OK));
+			access("/motd", R_OK | W_OK | X_OK));
 
 	return NULL;
 }

@@ -311,13 +311,15 @@ int vfs_permit(const vnode_t *vnode, const struct permission *permission,
 		const unsigned int want)
 {
 	unsigned int need = want & (R_OK | W_OK | X_OK);
-	unsigned int mode = vnode->mode;
-	if (permission->uid == vnode->uid)
-		mode >>= 6;
-	else if (permission->gid == vnode->gid)
-		mode >>= 3;
+	unsigned int bits = vnode->mode & need;
 
-	return (((mode & need) == need) ? 0 : EACCES);
+	if (permission->uid == vnode->uid)
+		bits |= (vnode->mode >> 6) & need;
+
+	if (permission->gid == vnode->gid)
+		bits |= (vnode->mode >> 3) & need;
+
+	return ((bits == need) ? 0 : EACCES);
 }
 
 int vfs_read(vnode_t *vnode, copier_t *dest, const unsigned int offset,

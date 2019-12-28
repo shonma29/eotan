@@ -186,7 +186,7 @@ int session_destroy_file(session_t *session, const int fd)
 	if (!file)
 		return EBADF;
 
-	int error_no = vnodes_remove(file->f_vnode);
+	int error_no = file->f_vnode ? vnodes_remove(file->f_vnode) : 0;
 
 	slab_free(&file_slab, file);
 	return error_no;

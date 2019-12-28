@@ -80,17 +80,14 @@ int access(const char *path, int mode)
 
 static int can_access(const struct stat *stat, const int mode)
 {
-	int mask = mode;
+	int bits = stat->st_mode & mode;
 	uid_t uid = getuid();
 
-	if (!uid && (mode & X_OK))
-		mask |= 0111;
-
 	if (stat->st_uid == uid)
-		mask |= mode << 6;
+		bits |= (stat->st_mode >> 6) & mode;
 
 	if (stat->st_gid == getgid())
-		mask |= mode << 3;
+		bits |= (stat->st_mode >> 3) & mode;
 
-	return stat->st_mode & mask;
+	return (bits == mode);
 }
