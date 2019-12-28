@@ -76,8 +76,6 @@ initrd:
 	$(RM) initrd.img
 	app/tfs/mkfs initrd.img 512 1024
 	app/tfs/writer initrd.img $(BLKSIZE) chmod 755 /
-	app/tfs/writer initrd.img $(BLKSIZE) mkdir /lost+found
-	app/tfs/writer initrd.img $(BLKSIZE) chmod 700 /lost+found
 
 clean:
 	$(MAKE) -f app/tfs/Makefile WD=app/tfs clean
