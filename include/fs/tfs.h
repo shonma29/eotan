@@ -61,7 +61,7 @@ struct tfs {
 
 struct tfs_inode {
 	uint32_t i_mode;
-	uint32_t i_inumber;
+	blkno_t i_inumber;
 	uint64_t i_size;
 	int64_t i_atime;
 	int32_t i_atimensec;
@@ -71,30 +71,28 @@ struct tfs_inode {
 	int32_t i_mtimensec;
 	uint32_t i_uid;
 	uint32_t i_gid;
-	uint32_t i_ib[0];
+	blkno_t i_ib[0];
+};
+
+struct tfs_dir {
+	blkno_t d_fileno;
+	uint8_t d_namlen;
+	char d_name[TFS_MINNAMLEN];
 };
 
 static inline size_t num_of_1st_blocks(const blksize_t blksize)
 {
-	return (blksize - sizeof(struct tfs_inode)) / sizeof(uint32_t);
+	return (blksize - sizeof(struct tfs_inode)) / sizeof(blkno_t);
 }
 
 static inline size_t num_of_2nd_blocks(const blksize_t blksize)
 {
-	return blksize / sizeof(uint32_t);
+	return blksize / sizeof(blkno_t);
 }
 
 static inline size_t real_name_len(const size_t n)
 {
 	return n + (TFS_MINNAMLEN - (n & TFS_MINNAMLEN));
 }
-
-struct tfs_dir {
-	uint32_t d_fileno;
-	uint8_t d_namlen;
-	char d_name[TFS_MINNAMLEN];
-};
-
-#define TFS_MINDIRSIZE (sizeof(struct tfs_dir) * 2)
 
 #endif
