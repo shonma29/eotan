@@ -42,23 +42,15 @@ For more information, please refer to <http://unlicense.org/>
 
 #define MIN_BLOCK_SIZE (512)
 
-// index and body blocks
-#define ROOT_BLOCK_NUM (1 + 1 + 1)
-
-// entries in root directory
-#define CURRENT_NAME ".\0"
-#define PARENT_NAME ".."
+// inode blocks
+#define ROOT_BLOCK_NUM (1)
 
 static uint8_t *buf;
 static struct tfs super;
-static struct tfs_dir root_directory[] = {
-	{ 0, 1, CURRENT_NAME },
-	{ 0, 2, PARENT_NAME }
-};
 static struct tfs_inode root_inode = {
 	S_IFDIR | S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH,
 	0,
-	sizeof(root_directory),
+	0,
 	0, 0,
 	0, 0,
 	0, 0,
@@ -72,8 +64,6 @@ static int skip_boot_block(FILE *);
 static int write_super_block(FILE *);
 static int write_bitmap(FILE *);
 static int write_inodes(FILE *);
-static int write_index(FILE *);
-static int write_directory(FILE *);
 
 
 static int usage(void)
@@ -85,9 +75,7 @@ static int usage(void)
 
 static int calc_super_block(const int block_size, const int block_num)
 {
-	int intshift = count_ntz(sizeof(int));
 	int bshift = count_ntz(block_size);
-
 	if ((1 << bshift) != block_size) {
 		fprintf(stderr, "bad block size %d\n", block_size);
 		return ERR_ARG;
@@ -115,7 +103,7 @@ static int calc_super_block(const int block_size, const int block_num)
 	super.fs_bshift = bshift;
 	super.fs_size = block_num;
 	super.fs_dsize = block_num - super.fs_dblkno;
-	super.fs_maxfilesize = 1 << (bshift * 3 - intshift * 2);
+	super.fs_maxfilesize = 1 << (bshift * 3 - count_ntz(sizeof(int)) * 2);
 	super.fs_qbmask = super.fs_bmask;
 	super.fs_magic = TFS_MAGIC;
 
@@ -200,47 +188,8 @@ static int write_inodes(FILE *fp)
 	memset(buf, 0, super.fs_bsize);
 	memcpy(buf, &root_inode, sizeof(root_inode));
 
-	// 1st index points to 2nd index block
-	struct tfs_inode *inode = (struct tfs_inode *) buf;
-	inode->i_ib[0] = super.fs_dblkno + 1;
-
 	if (fwrite(buf, super.fs_bsize, 1, fp) != 1) {
 		perror("fwrite failed in write_inodes\n");
-		return ERR_FILE;
-	}
-
-	return 0;
-}
-
-static int write_index(FILE *fp)
-{
-	// index block occupies 1 sector
-	memset(buf, 0, super.fs_bsize);
-
-	// 2nd index points to body block
-	uint32_t *index = (uint32_t *) buf;
-	*index = super.fs_dblkno + 2;
-
-	if (fwrite(buf, super.fs_bsize, 1, fp) != 1) {
-		perror("fwrite failed in write_index\n");
-		return ERR_FILE;
-	}
-
-	return 0;
-}
-
-static int write_directory(FILE *fp)
-{
-	for (int i = 0; i < sizeof(root_directory) / sizeof(root_directory[0]);
-			i++)
-		root_directory[i].d_fileno += super.fs_dblkno;
-
-	// body block occupies 1 sector
-	memset(buf, 0, super.fs_bsize);
-	memcpy(buf, root_directory, sizeof(root_directory));
-
-	if (fwrite(buf, super.fs_bsize, 1, fp) != 1) {
-		perror("fwrite failed in write_directory\n");
 		return ERR_FILE;
 	}
 
@@ -296,14 +245,6 @@ int main(int argc, char **argv)
 			break;
 
 		error = write_inodes(fp);
-		if (error)
-			break;
-
-		error = write_index(fp);
-		if (error)
-			break;
-
-		error = write_directory(fp);
 		if (error)
 			break;
 	} while (false);

@@ -80,8 +80,6 @@ struct tfs_dir {
 	char d_name[TFS_MINNAMLEN];
 };
 
-#define TFS_MINDIRSIZE (sizeof(struct tfs_dir) * 2)
-
 static inline size_t num_of_1st_blocks(const blksize_t blksize)
 {
 	return (blksize - sizeof(struct tfs_inode)) / sizeof(blkno_t);

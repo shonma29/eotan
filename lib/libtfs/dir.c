@@ -91,7 +91,7 @@ int sfs_i_rmdir(vnode_t * parent, vnode_t *ip)
 {
     W error_no;
 
-    if (ip->size > TFS_MINDIRSIZE) {
+    if (ip->size > 0) {
 	return (ENOTEMPTY);
     }
 

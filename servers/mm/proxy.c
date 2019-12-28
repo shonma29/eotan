@@ -43,6 +43,7 @@ char pathbuf2[PATH_MAX];
 static int call_device(const int, fsmsg_t *, const size_t, const int,
 		const size_t);
 static int create_tag(void);
+static int compact_path(char *);
 
 
 int _attach(mm_process_t *process, const int thread_id)
@@ -528,17 +529,22 @@ int _walk(mm_file_t **file, mm_process_t *process, const int thread_id,
 	if (len >= PATH_MAX)
 		return ENAMETOOLONG;
 
+	len = compact_path(pathbuf2);
+	if (len < 0)
+		return ENOENT;
+
 	mm_file_t *f = session_create_file(process->session);
 	if (!f)
 		return ENOMEM;
 
 	message->header.type = Twalk;
-	message->header.token = create_token(thread_id, process->session);
+	message->header.token =
+			create_token(kcall->thread_get_id(), process->session);
 	message->Twalk.tag = create_tag();
 	message->Twalk.fid = process->wd->node.key;
 	message->Twalk.newfid = f->node.key;
 	message->Twalk.nwname = len;
-	message->Twalk.wname = (char*)path;
+	message->Twalk.wname = (char *) pathbuf2;
 //	log_info(MYNAME ": walk %d %d [%s] %d\n", process->session->node.key,
 //			message->Twalk.fid, message->Twalk.wname,
 //			message->Twalk.newfid);
@@ -644,4 +650,45 @@ static int call_device(const int server_id, fsmsg_t *message,
 static int create_tag(void)
 {
 	return 0;
+}
+
+static int compact_path(char *src)
+{
+	char *r = src;
+	if (*r == '/')
+		r++;
+
+	char *w = r;
+	bool last = false;
+	for (;;) {
+		if (*r == '/')
+			return (-1);
+
+		char *word = r;
+		for (;; w++, r++) {
+			if (!*r) {
+				last = true;
+				break;
+			}
+
+			if (*r == '/')
+				break;
+
+			*w = *r;
+		}
+
+		if (((size_t) r - (size_t) word == 1) && (*word == '.'))
+			w--;
+
+		if (last)
+			break;
+		else {
+			*w = '/';
+			w++;
+			r++;
+		}
+	}
+
+	*w = '\0';
+	return ((size_t) w - (size_t) src);
 }

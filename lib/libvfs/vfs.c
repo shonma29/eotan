@@ -66,6 +66,7 @@ int vfs_walk(vnode_t *parent, char *path, const int flags,
 	if (!parent)
 		return ENODEV;
 
+	vnode_t *first = parent;
 	char *p = (char*)path;
 	for (parent->refer_count++;; p++) {
 		bool last = false;
@@ -96,17 +97,24 @@ int vfs_walk(vnode_t *parent, char *path, const int flags,
 			return ENOTDIR;
 		}
 
-		int error_no = vfs_permit(parent, perm, R_OK | X_OK);
-		if (!error_no)
-			error_no = parent->fs->operations.walk(parent, head,
-					node);
+		if (strcmp(head, "..")) {
+			int error_no = vfs_permit(parent, perm, R_OK | X_OK);
+			if (!error_no)
+				error_no = parent->fs->operations.walk(parent,
+						head, node);
 
-		vnodes_remove(parent);
+			vnodes_remove(parent);
 
-		if (error_no)
-			return error_no;
+			if (error_no)
+				return error_no;
 
-		parent = *node;
+			parent = *node;
+		} else {
+			vnode_t *pp = (parent->parent) ? parent->parent : first;
+			pp->refer_count++;
+			vnodes_remove(parent);
+			parent = pp;
+		}
 
 		if (last)
 			break;

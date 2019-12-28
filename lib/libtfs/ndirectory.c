@@ -177,34 +177,12 @@ int tfs_mkdir(vnode_t *parent, const char *name, const mode_t mode,
 	if (error_no)
 		return error_no;
 
-	struct tfs_dir dir[] = {
-		{ child->index, 1, ".\0" },
-		{ parent->index, 2, ".." }
-	};
-
-	copier_t copier = {
-		copy_from,
-		(char*)dir
-	};
-	size_t len;
-	error_no = tfs_write(child, &copier, 0, sizeof(dir), &len);
-	if (error_no) {
-		error_no = tfs_remove_entry(parent, child);
-		if (error_no)
-			log_warning("sfs_i_mkdir: %s is dead link\n", name);
-
-		tfs_deallocate_inode(child->fs, child);
-		vnodes_remove(child);
-		return error_no;
-	}
-
 	child->mode = mode | S_IFDIR;
 	child->dirty = true;
 
 	parent->dirty = true;
 
 	*node = child;
-
 	return 0;
 }
 
