@@ -37,6 +37,9 @@ bool vfs_is_valid_name(const char *name)
 		switch (name[1]) {
 		case '\0':
 			return false;
+		case '.':
+			if (name[2] == '\0')
+				return false;
 		default:
 			break;
 		}
