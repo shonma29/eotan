@@ -26,7 +26,6 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <fcntl.h>
 #include <string.h>
-#include <fs/config.h>
 #include <fs/vfs.h>
 #include <sys/errno.h>
 #include <sys/stat.h>
@@ -311,19 +310,13 @@ static char *split_path(const char *path, char **parent_path)
 int vfs_permit(const vnode_t *vnode, const struct permission *permission,
 		const unsigned int want)
 {
+	unsigned int need = want & (R_OK | W_OK | X_OK);
 	unsigned int mode = vnode->mode;
-
-	if (permission->uid == ROOT_UID) {
-		mode |= S_IROTH | S_IWOTH | ((mode & S_IXUSR) >> 6)
-				| ((mode & S_IXGRP) >> 3);
-		if ((mode & S_IFMT) == S_IFDIR)
-			mode |= S_IXOTH;
-	} else if (permission->uid == vnode->uid)
+	if (permission->uid == vnode->uid)
 		mode >>= 6;
 	else if (permission->gid == vnode->gid)
 		mode >>= 3;
 
-	unsigned int need = want & (R_OK | W_OK | X_OK);
 	return (((mode & need) == need) ? 0 : EACCES);
 }
 
