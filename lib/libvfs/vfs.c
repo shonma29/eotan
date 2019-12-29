@@ -262,12 +262,7 @@ int vfs_remove(vnode_t *node, const struct permission *permission)
 		return EBUSY;
 	}
 
-	int result;
-	if ((node->mode & S_IFMT) == S_IFDIR)
-		result = parent->fs->operations.rmdir(parent, node);
-	else
-		result = parent->fs->operations.remove(parent, node);
-
+	int result = parent->fs->operations.remove(parent, node);
 	if (result) {
 		log_debug("vfs_remove: remove(%d) failed %d\n", node->index,
 				result);

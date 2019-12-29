@@ -267,6 +267,11 @@ int tfs_deallocate_inode(vfs_t *fs, vnode_t *vnode)
 {
 	blkno_t block_no = vnode->index;
 
+	//TODO private may not be initialized
+	int error_no = sfs_i_truncate(vnode, 0);
+	if (error_no)
+		return error_no;
+
 	fs->device.clear(&(fs->device), vnode->private);
 
 	if (!cache_modify(vnode->private))

@@ -31,6 +31,8 @@ For more information, please refer to <http://unlicense.org/>
 #include "func.h"
 #include "../../lib/libserv/libserv.h"
 
+static int tfs_remove_entry(vnode_t *, vnode_t *);
+
 
 int tfs_getdents(vnode_t *parent, copier_t *dest, const int offset,
 		const size_t max, size_t *length)
@@ -206,7 +208,7 @@ int tfs_append_entry(vnode_t *parent, const char *name, vnode_t *node)
 			&len);
 }
 
-int tfs_remove_entry(vnode_t *parent, vnode_t *node)
+static int tfs_remove_entry(vnode_t *parent, vnode_t *node)
 {
 	char buf[sizeof(struct tfs_dir) - TFS_MINNAMLEN + TFS_MAXNAMLEN];
 	copier_t copier = {
@@ -279,4 +281,28 @@ int tfs_remove_entry(vnode_t *parent, vnode_t *node)
 	}
 
 	return sfs_i_truncate(parent, parent->size - delta);
+}
+
+int tfs_remove(vnode_t *parent, vnode_t *vnode)
+{
+	if (vnode->refer_count > 1)
+		return EBUSY;
+
+	if (((vnode->mode & S_IFMT) == S_IFDIR)
+			&& (vnode->size > 0))
+		return ENOTEMPTY;
+
+	int error_no = tfs_remove_entry(parent, vnode);
+	if (error_no)
+		return error_no;
+
+	error_no = tfs_deallocate_inode(vnode->fs, vnode);
+	if (error_no)
+		return error_no;
+
+	struct tfs_inode *buf = parent->private;
+	//TODO really?
+	time_get((SYSTIM *) &(buf->i_ctime));
+	parent->dirty = true;
+	return 0;
 }

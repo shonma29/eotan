@@ -22,10 +22,6 @@ Version 2, June 1991
 
 extern vfs_operation_t vfs_fsops;
 
-/* dir.c */
-extern int sfs_i_unlink (vnode_t *parent, vnode_t *ip);
-extern int sfs_i_rmdir (vnode_t *parent, vnode_t *ip);
-
 /* inode.c */
 extern W	sfs_read_inode (vfs_t *fsp, W index, vnode_t *ip);
 extern int sfs_stat(vnode_t *, struct stat *);
