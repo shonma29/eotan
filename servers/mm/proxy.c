@@ -659,11 +659,11 @@ static int compact_path(char *src)
 		r++;
 
 	char *w = r;
-	bool last = false;
-	for (;;) {
+	for (;; r++) {
 		if (*r == '/')
 			return (-1);
 
+		bool last = false;
 		char *word = r;
 		for (;; w++, r++) {
 			if (!*r) {
@@ -677,17 +677,24 @@ static int compact_path(char *src)
 			*w = *r;
 		}
 
-		if (((size_t) r - (size_t) word == 1) && (*word == '.'))
+		if (((size_t) r - (size_t) word == 1)
+				&& (*word == '.')) {
 			w--;
+
+			if (!last)
+				continue;
+		}
 
 		if (last)
 			break;
-		else {
-			*w = '/';
-			w++;
-			r++;
-		}
+
+		*w = '/';
+		w++;
 	}
+
+	if (((size_t) w - (size_t) src > 1)
+			&& (w[-1] == '/'))
+		w--;
 
 	*w = '\0';
 	return ((size_t) w - (size_t) src);
