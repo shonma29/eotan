@@ -47,7 +47,7 @@ int tfs_wstat(vnode_t *vnode, const struct stat *st)
 	}
 
 	if (st->st_size != -1) {
-		int result = sfs_i_truncate(vnode, 0);
+		int result = tfs_shorten(vnode, 0);
 		if (result)
 			return result;
 

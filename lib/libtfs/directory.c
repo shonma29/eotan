@@ -276,7 +276,7 @@ static int tfs_remove_entry(vnode_t *parent, vnode_t *node)
 		offset += real_len;
 	}
 
-	return sfs_i_truncate(parent, parent->size - delta);
+	return tfs_shorten(parent, parent->size - delta);
 }
 
 int tfs_remove(vnode_t *parent, vnode_t *vnode)

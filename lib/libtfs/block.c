@@ -31,7 +31,11 @@ For more information, please refer to <http://unlicense.org/>
 
 #define INT_BIT ((CHAR_BIT) * sizeof(int))
 
-static bool is_valid_nth(const vfs_t *fsp, const unsigned int nth);
+static size_t calc_blocks(const struct tfs *, const size_t);
+static int shorten_blocks(vfs_t *, struct tfs_inode *, const size_t);
+static int deallocate_2nd(vfs_t *, const size_t,
+		const blkno_t, const unsigned int);
+static bool is_valid_nth(const vfs_t *, const unsigned int);
 
 
 blkno_t tfs_allocate_block(vfs_t *fsp)
@@ -78,65 +82,80 @@ blkno_t tfs_allocate_block(vfs_t *fsp)
 	return 0;
 }
 
-int tfs_deallocate_1st(vfs_t *fsp, struct tfs_inode *ip,
-		const unsigned int index, const unsigned int offset)
+int tfs_shorten(vnode_t *vnode, const size_t size)
 {
-	unsigned int pos = index;
-
-	if (offset) {
-		blkno_t *buf = cache_get(&(fsp->device), ip->i_ib[pos]);
-		if (!buf)
-			return EIO;
-
-		for (unsigned int i = offset;
-				i < num_of_2nd_blocks(fsp->device.block_size);
-				i++)
-			if (buf[i]) {
-				int error_no = tfs_deallocate_block(fsp,
-						buf[i]);
-				if (error_no)
-					return error_no;
-
-				buf[i] = 0;
-			}
-
-		if (!cache_release(buf, true))
-			return EIO;
-
-		pos++;
+	vfs_t *fs = vnode->fs;
+	struct tfs *tfs = (struct tfs *) (fs->private);
+	size_t blocks = calc_blocks(tfs, size);
+	if (blocks < calc_blocks(tfs, vnode->size)) {
+		int error_no = shorten_blocks(fs,
+				(struct tfs_inode *) vnode->private, blocks);
+		if (error_no)
+			return error_no;
 	}
 
-	for (unsigned int i = pos;
-			i < num_of_1st_blocks(fsp->device.block_size);
-			i++) {
-		if (!(ip->i_ib[i]))
-			continue;
+	vnode->size = size;
+	return 0;
+}
 
-		blkno_t *buf = cache_get(&(fsp->device), ip->i_ib[i]);
-		if (!buf)
-			return EIO;
+static size_t calc_blocks(const struct tfs *tfs, const size_t size)
+{
+	return ((size + tfs->fs_bsize - 1) >> tfs->fs_bshift);
+}
 
-		for (unsigned int j = 0;
-				j < num_of_2nd_blocks(fsp->device.block_size);
-				j++)
-			if (buf[j]) {
-				int error_no = tfs_deallocate_block(fsp,
-						buf[j]);
-				if (error_no)
-					return error_no;
-
-				buf[j] = 0;
-			}
-
-		int error_no = tfs_deallocate_block(fsp, ip->i_ib[i]);
+static int shorten_blocks(vfs_t *fs, struct tfs_inode *inode,
+		const size_t blocks)
+{
+	size_t base = num_of_2nd_blocks(fs->device.block_size);
+	unsigned int index = blocks / base;
+	unsigned int offset = blocks % base;
+	if (offset) {
+		int error_no = deallocate_2nd(fs, base, inode->i_ib[index],
+				offset);
 		if (error_no)
 			return error_no;
 
-		ip->i_ib[i] = 0;
+		index++;
 	}
 
-//	if (!cache_modify(ip->private))
+	for (; index < num_of_1st_blocks(fs->device.block_size); index++) {
+		if (!(inode->i_ib[index]))
+			break;
+
+		int error_no = deallocate_2nd(fs, base, inode->i_ib[index], 0);
+		if (error_no)
+			return error_no;
+
+		error_no = tfs_deallocate_block(fs, inode->i_ib[index]);
+		if (error_no)
+			return error_no;
+
+		inode->i_ib[index] = 0;
+	}
+
+//	if (!cache_modify(inode->private))
 //		return EIO;
+
+	return 0;
+}
+
+static int deallocate_2nd(vfs_t *fs, const size_t base,
+		const blkno_t index, const unsigned int offset)
+{
+	blkno_t *buf = cache_get(&(fs->device), index);
+	if (!buf)
+		return EIO;
+
+	for (unsigned int i = offset; (i < base) && buf[i]; i++) {
+		int error_no = tfs_deallocate_block(fs, buf[i]);
+		if (error_no)
+			return error_no;
+
+		buf[i] = 0;
+	}
+
+	if (!cache_release(buf, true))
+		return EIO;
 
 	return 0;
 }
@@ -268,7 +287,7 @@ int tfs_deallocate_inode(vfs_t *fs, vnode_t *vnode)
 	blkno_t block_no = vnode->index;
 
 	//TODO private may not be initialized
-	int error_no = sfs_i_truncate(vnode, 0);
+	int error_no = tfs_shorten(vnode, 0);
 	if (error_no)
 		return error_no;
 

@@ -112,7 +112,6 @@ Version 2, June 1991
  */
 
 #include <string.h>
-#include <mpu/memory.h>
 #include <sys/errno.h>
 #include "../libserv/libserv.h"
 #include "func.h"
@@ -184,36 +183,6 @@ sfs_i_create(vnode_t * parent,
 	vnodes_remove(newip);
 	return (error_no);
     }
-
-    return 0;
-}
-
-W sfs_i_truncate(vnode_t * ip, W newsize)
-{
-    int nblock, blockno, inblock, offset;
-    vfs_t *fsp;
-    struct tfs_inode *sfs_ip;
-
-    fsp = ip->fs;
-    struct tfs_inode *tfs_inode = ip->private;
-    sfs_ip = tfs_inode;
-    struct tfs *sb = (struct tfs *) (fsp->private);
-    nblock = roundUp(newsize, sb->fs_bsize) / sb->fs_bsize;
-    if (nblock < roundUp(sfs_ip->i_size, sb->fs_bsize) / sb->fs_bsize) {
-	/* 余分なブロックを開放 */
-	blockno = nblock;
-	if (blockno < (num_of_1st_blocks(fsp->device.block_size)
-		* num_of_2nd_blocks(fsp->device.block_size))) {
-	    /* 一重間接ブロックの範囲内 */
-	    inblock = blockno;
-	    size_t blocks = num_of_2nd_blocks(fsp->device.block_size);
-	    offset = inblock % blocks;
-	    inblock = inblock / blocks;
-	    tfs_deallocate_1st(fsp, sfs_ip, inblock, offset);
-	}
-    }
-
-    ip->size = newsize;
 
     return 0;
 }
