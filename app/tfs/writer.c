@@ -454,8 +454,12 @@ static int do_chmod(vfs_t *fs, const char *mode, char *path,
 	}
 
 	//TODO use constant definition of guest
-	vnode->mode = (vnode->mode & S_IFMT) | m;
-	result = vnode->fs->operations.wstat(vnode);
+	vstat_t st;
+	st.mode = m;
+	st.gid = (uint32_t) (-1);
+	st.size = -1;
+	st.mtime = -1;
+	result = vnode->fs->operations.wstat(vnode, &st);
 	vnodes_remove(vnode);
 
 	if (result) {

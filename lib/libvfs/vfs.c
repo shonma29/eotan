@@ -153,8 +153,14 @@ int vfs_open(vnode_t *vnode, const int flags, struct permission *permission)
 	//TODO exclusive open
 
 	//TODO need write permission
-	if (f & O_TRUNC)
-		vnode->size = 0;
+	if (f & O_TRUNC) {
+		struct stat st;
+		st.st_mode = (mode_t) (-1);
+		st.st_gid = (gid_t) (-1);
+		st.st_size = 0;
+		st.st_mtime = -1;
+		return vfs_wstat(vnode, &st);
+	}
 
 	return 0;
 }

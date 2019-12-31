@@ -106,8 +106,7 @@ void if_wstat(fs_request *req)
 			break;
 		}
 
-		vnode->mode = (vnode->mode & S_IFMT) | st->st_mode;
-		error_no = vfs_wstat(vnode);
+		error_no = vfs_wstat(vnode, st);
 		if (error_no)
 			break;
 

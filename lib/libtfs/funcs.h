@@ -58,4 +58,7 @@ extern int tfs_mkdir(vnode_t *, const char *, const mode_t mode,
 extern int tfs_append_entry(vnode_t *, const char *, vnode_t *);
 extern int tfs_remove(vnode_t *, vnode_t *);
 
+/* stat.c */
+extern int tfs_wstat(vnode_t *, const struct stat *);
+
 #endif

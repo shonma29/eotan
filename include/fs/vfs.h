@@ -108,9 +108,9 @@ static inline int vfs_stat(vnode_t *vnode, struct stat *st)
 	return vnode->fs->operations.stat(vnode, st);
 }
 
-static inline int vfs_wstat(vnode_t *vnode)
+static inline int vfs_wstat(vnode_t *vnode, const struct stat *st)
 {
-	return vnode->fs->operations.wstat(vnode);
+	return vnode->fs->operations.wstat(vnode, st);
 }
 
 extern vfs_operation_t vfs_fsops;

@@ -481,6 +481,9 @@ int mm_chmod(mm_request *req)
 
 		struct stat st;
 		st.st_mode = req->args.arg2;
+		st.st_gid = (gid_t) (-1);
+		st.st_size = -1;
+		st.st_mtime = -1;
 
 		int token = create_token(th->node.key, process->session);
 		message->header.type = Twstat;

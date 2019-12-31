@@ -25,7 +25,6 @@ extern vfs_operation_t vfs_fsops;
 /* inode.c */
 extern W	sfs_read_inode (vfs_t *fsp, W index, vnode_t *ip);
 extern int sfs_stat(vnode_t *, struct stat *);
-extern int sfs_wstat(vnode_t *);
 extern int sfs_i_close (vnode_t * ip);
 
 /* file.c */

@@ -131,17 +131,6 @@ int sfs_stat(vnode_t *ip, struct stat *st)
     return 0;
 }
 
-int sfs_wstat(vnode_t *ip)
-{
-    struct tfs_inode *tfs_inode = ip->private;
-    tfs_inode->i_mode = ip->mode;
-    tfs_inode->i_gid = ip->gid;
-    time_get((SYSTIM *) &(tfs_inode->i_ctime));
-    ip->dirty = true;
-
-    return 0;
-}
-
 int sfs_i_close(vnode_t * ip)
 {
     struct tfs_inode *tfs_inode = ip->private;

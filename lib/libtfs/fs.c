@@ -107,7 +107,7 @@ vfs_operation_t vfs_fsops = {
     tfs_remove,
     tfs_mkdir,
     sfs_stat,
-    sfs_wstat,
+    tfs_wstat,
     sfs_i_create,
     sfs_i_close,
     tfs_read,
