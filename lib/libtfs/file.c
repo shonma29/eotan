@@ -193,7 +193,6 @@ W sfs_i_truncate(vnode_t * ip, W newsize)
     int nblock, blockno, inblock, offset;
     vfs_t *fsp;
     struct tfs_inode *sfs_ip;
-    SYSTIM clock;
 
     fsp = ip->fs;
     struct tfs_inode *tfs_inode = ip->private;
@@ -215,15 +214,6 @@ W sfs_i_truncate(vnode_t * ip, W newsize)
     }
 
     ip->size = newsize;
-    time_get(&clock);
-
-	SYSTIM *p;
-	p = (SYSTIM *) &(tfs_inode->i_mtime);
-	*p = clock;
-	p = (SYSTIM *) &(tfs_inode->i_ctime);
-	*p = clock;
-
-    ip->dirty = true;
 
     return 0;
 }

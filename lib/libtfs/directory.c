@@ -246,10 +246,6 @@ static int tfs_remove_entry(vnode_t *parent, vnode_t *node)
 		offset += real_len;
 	}
 
-	struct tfs_inode *tfs_inode = node->private;
-	time_get((SYSTIM *) &(tfs_inode->i_ctime));
-	node->dirty = true;
-
 	//TODO optimize
 	for (;;) {
 		size_t len;
@@ -296,13 +292,15 @@ int tfs_remove(vnode_t *parent, vnode_t *vnode)
 	if (error_no)
 		return error_no;
 
-	error_no = tfs_deallocate_inode(vnode->fs, vnode);
-	if (error_no)
-		return error_no;
+	SYSTIM clock;
+	time_get(&clock);
 
-	struct tfs_inode *buf = parent->private;
-	//TODO really?
-	time_get((SYSTIM *) &(buf->i_ctime));
+	struct tfs_inode *tfs_inode = parent->private;
+	SYSTIM *p;
+	p = (SYSTIM *) &(tfs_inode->i_mtime);
+	*p = clock;
+	p = (SYSTIM *) &(tfs_inode->i_ctime);
+	*p = clock;
 	parent->dirty = true;
-	return 0;
+	return tfs_deallocate_inode(vnode->fs, vnode);
 }

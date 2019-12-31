@@ -33,18 +33,16 @@ For more information, please refer to <http://unlicense.org/>
 
 int tfs_wstat(vnode_t *vnode, const struct stat *st)
 {
-	struct tfs_inode *buf = vnode->private;
 	bool modified = false;
 	bool truncated = false;
 
 	if (st->st_mode != (unsigned int) (-1)) {
 		vnode->mode = (vnode->mode & S_IFMT) | st->st_mode;
-		buf->i_mode = vnode->mode;
 		modified = true;
 	}
 
 	if (st->st_gid != (unsigned int) (-1)) {
-		buf->i_gid = vnode->gid = st->st_gid;
+		vnode->gid = st->st_gid;
 		modified = true;
 	}
 
@@ -58,6 +56,7 @@ int tfs_wstat(vnode_t *vnode, const struct stat *st)
 	}
 
 	if (modified) {
+		struct tfs_inode *buf = vnode->private;
 		SYSTIM *p;
 		SYSTIM clock;
 		time_get(&clock);

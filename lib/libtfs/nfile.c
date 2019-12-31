@@ -35,10 +35,6 @@ For more information, please refer to <http://unlicense.org/>
 int tfs_read(vnode_t *vnode, copier_t *dest, unsigned int offset,
 		const size_t nbytes, size_t *read_size)
 {
-#ifdef UPDATE_ATIME
-	SYSTIM clock;
-	time_get(&clock);
-#endif
 	int result = 0;
 	vfs_t *fs = vnode->fs;
 	size_t block_size = ((struct tfs *) (fs->private))->fs_bsize;
@@ -75,12 +71,12 @@ int tfs_read(vnode_t *vnode, copier_t *dest, unsigned int offset,
 		skip = 0;
 		rest -= len;
 	}
-#ifdef UPDATE_ATIME
-	if (!read || *read_size) {
-		inode->i_atime = clock;
-		inode->i_dirty = true;
+
+	if (nbytes) {
+		time_get((SYSTIM *) &(inode->i_atime));
+		vnode->dirty = true;
 	}
-#endif
+
 	*read_size = nbytes - rest;
 	return result;
 }

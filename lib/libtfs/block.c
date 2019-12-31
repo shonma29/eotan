@@ -272,6 +272,7 @@ int tfs_deallocate_inode(vfs_t *fs, vnode_t *vnode)
 	if (error_no)
 		return error_no;
 
+	vnode->dirty = true;
 	fs->device.clear(&(fs->device), vnode->private);
 
 	if (!cache_modify(vnode->private))

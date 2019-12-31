@@ -139,10 +139,6 @@ int sfs_i_close(vnode_t * ip)
     }
 
     tfs_inode->i_inumber = ip->index;
-    if (ip->size < tfs_inode->i_size) {
-      sfs_i_truncate(ip, ip->size);
-    }
-
     tfs_inode->i_mode = ip->mode;
     tfs_inode->i_uid = ip->uid;
     tfs_inode->i_gid = ip->gid;
