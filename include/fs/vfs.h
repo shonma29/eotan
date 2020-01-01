@@ -55,7 +55,6 @@ typedef struct _vfs_operation_t {
 	int (*getdents)();
 	int (*walk)();
 	int (*remove)();
-	int (*mkdir)();
 	int (*stat)();
 	int (*wstat)();
 	int (*create)();

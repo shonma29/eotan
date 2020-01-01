@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <stddef.h>
 #include <fs/vfs.h>
 #include <sys/dirent.h>
+#include <sys/stat.h>
 
 /* block.c */
 extern blkno_t tfs_allocate_block(vfs_t *);
@@ -41,23 +42,24 @@ extern int tfs_allocate_inode(vfs_t *, vnode_t *);
 extern int tfs_deallocate_inode(vfs_t *, vnode_t *);
 extern int tfs_shorten(vnode_t *, const size_t);
 
-/* nfile.c */
+/* file.c */
+extern int tfs_open(vfs_t *, const ino_t, vnode_t *);
+extern int tfs_close(vnode_t *);
 //TODO use off_t
 extern int tfs_read(vnode_t *, copier_t *, const unsigned int, const size_t,
 		size_t *);
 extern int tfs_write(vnode_t *, copier_t *, const unsigned int, const size_t,
 		size_t *);
 
-/* ndirectory.c */
-extern int tfs_getdents(vnode_t *, copier_t *, const int, const size_t,
-		size_t *);
+/* directory.c */
+extern int tfs_getdents(vnode_t *, copier_t *, const unsigned int,
+		const size_t, size_t *);
 extern int tfs_walk(vnode_t *, const char *, vnode_t **);
-extern int tfs_mkdir(vnode_t *, const char *, const mode_t mode,
-			     struct permission *, vnode_t **);
-extern int tfs_append_entry(vnode_t *, const char *, vnode_t *);
+extern int tfs_create(vnode_t *, const char *, vnode_t **);
 extern int tfs_remove(vnode_t *, vnode_t *);
 
 /* stat.c */
+extern int tfs_stat(vnode_t *, struct stat *);
 extern int tfs_wstat(vnode_t *, const struct stat *);
 
 #endif

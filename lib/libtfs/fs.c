@@ -95,9 +95,9 @@ Version 2, June 1991
 #include "../libserv/libserv.h"
 
 
-static int sfs_mount (ID device, vfs_t *rootfsp, vnode_t *rootfile,
+static int sfs_mount(ID device, vfs_t *rootfsp, vnode_t *rootfile,
 		const size_t);
-static int sfs_unmount(vfs_t * rootfsp);
+static int sfs_unmount(vfs_t *rootfsp);
 
 vfs_operation_t vfs_fsops = {
     sfs_mount,
@@ -105,11 +105,10 @@ vfs_operation_t vfs_fsops = {
     tfs_getdents,
     tfs_walk,
     tfs_remove,
-    tfs_mkdir,
-    sfs_stat,
+    tfs_stat,
     tfs_wstat,
-    sfs_i_create,
-    sfs_i_close,
+    tfs_create,
+    tfs_close,
     tfs_read,
     tfs_write
 };
@@ -146,7 +145,7 @@ static int sfs_mount(ID device, vfs_t *rootfsp, vnode_t *rootfile,
     }
 
     /* root file の読み込み、inode = 1 が root file */
-    W error_no = sfs_read_inode(rootfsp, TFS_ROOT_BLOCK_NO, rootfile);
+    W error_no = tfs_open(rootfsp, TFS_ROOT_BLOCK_NO, rootfile);
     if (error_no) {
 	cache_release(rootfsp->private, false);
 	return (error_no);
@@ -159,7 +158,7 @@ static int sfs_mount(ID device, vfs_t *rootfsp, vnode_t *rootfile,
 /* sfs_unmount -
  *
  */
-static int sfs_unmount(vfs_t * rootfsp)
+static int sfs_unmount(vfs_t *rootfsp)
 {
     /* super block 情報の sync とキャッシュ・データの無効化 */
     vnodes_remove(rootfsp->root);

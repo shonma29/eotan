@@ -25,11 +25,32 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <fs/tfs.h>
-#include <sys/unistd.h>
 #include "../libserv/libserv.h"
-#include "func.h"
 #include "funcs.h"
 
+
+int tfs_stat(vnode_t *vnode, struct stat *st)
+{
+	st->st_dev = vnode->fs->device.channel;
+	st->st_ino = vnode->index;
+	st->st_mode = vnode->mode;
+	st->st_nlink = 1;
+	st->st_uid = vnode->uid;
+	st->st_gid = vnode->gid;
+	st->st_rdev = 0;
+	st->st_size = vnode->size;
+
+	struct tfs_inode *inode = vnode->private;
+	st->st_atime = inode->i_atime;
+	st->st_mtime = inode->i_mtime;
+	st->st_ctime = inode->i_ctime;
+
+	struct tfs *tfs = (struct tfs *) (vnode->fs->private);
+	st->st_blksize = tfs->fs_bsize;
+	st->st_blocks = (st->st_size + tfs->fs_bsize - 1) >> tfs->fs_bshift;
+
+	return 0;
+}
 
 int tfs_wstat(vnode_t *vnode, const struct stat *st)
 {
@@ -47,9 +68,9 @@ int tfs_wstat(vnode_t *vnode, const struct stat *st)
 	}
 
 	if (st->st_size != -1) {
-		int result = tfs_shorten(vnode, 0);
-		if (result)
-			return result;
+		int error_no = tfs_shorten(vnode, 0);
+		if (error_no)
+			return error_no;
 
 		modified = true;
 		truncated = true;

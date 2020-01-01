@@ -18,19 +18,9 @@ Version 2, June 1991
 #include <core/types.h>
 #include <fs/tfs.h>
 #include <fs/vfs.h>
-#include <sys/stat.h>
 
 extern vfs_operation_t vfs_fsops;
 
-/* inode.c */
-extern W	sfs_read_inode (vfs_t *fsp, W index, vnode_t *ip);
-extern int sfs_stat(vnode_t *, struct stat *);
-extern int sfs_i_close (vnode_t * ip);
-
-/* file.c */
-extern int sfs_i_create(vnode_t *parent, const char *fname,
-			      W mode, struct permission *acc,
-			      vnode_t **retip);
 #include "funcs.h"
 
 #endif /* __SFS_FUNC_H__ */

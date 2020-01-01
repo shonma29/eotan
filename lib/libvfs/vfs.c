@@ -223,25 +223,29 @@ int vfs_create(vnode_t *parent, char *name, const int flags, const mode_t mode,
 	}
 
 //TODO extend permission from parent
-	if (mode & DMDIR)
-		result = parent->fs->operations.mkdir(parent, name,
-				//TODO really?
-				mode & parent->mode
-						& (S_IRWXU | S_IRWXG | S_IRWXO),
-				permission, node);
-	else
-		result = parent->fs->operations.create(parent, name,
-				//TODO really?
-				mode & parent->mode
-						& (S_IRUSR | S_IWUSR | S_IRGRP
-						| S_IWGRP | S_IROTH | S_IWOTH),
-				permission, node);
+	result = parent->fs->operations.create(parent, name, node);
 	//TODO not close. open with flags
 	if (result) {
 		log_debug("vfs_create: create(%s) failed %d\n", name, result);
 		return result;
 	}
 
+	if (mode & DMDIR) {
+		(*node)->mode = (mode & parent->mode
+				& (S_IRWXU | S_IRWXG | S_IRWXO))
+				| S_IFDIR;
+	} else {
+		//TODO really?
+		(*node)->mode = (mode & parent->mode
+				& (S_IRUSR | S_IWUSR | S_IRGRP
+						| S_IWGRP | S_IROTH | S_IWOTH))
+				| S_IFREG;
+	}
+
+	(*node)->uid = permission->uid;
+	(*node)->gid = permission->gid;
+	(*node)->refer_count = 1;
+	(*node)->lock_count = 0;
 	return 0;
 }
 

@@ -38,24 +38,25 @@ static int deallocate_2nd(vfs_t *, const size_t,
 static bool is_valid_nth(const vfs_t *, const unsigned int);
 
 
-blkno_t tfs_allocate_block(vfs_t *fsp)
+blkno_t tfs_allocate_block(vfs_t *fs)
 {
-	struct tfs *sb = (struct tfs *) (fsp->private);
-	if (!(sb->fs_free_blocks))
+	struct tfs *tfs = (struct tfs *) (fs->private);
+	if (!(tfs->fs_free_blocks))
 		return 0;
 
-	unsigned int start = (sb->fs_block_hand - 1) / (CHAR_BIT * sb->fs_bsize);
-	int max = sb->fs_dblkno - sb->fs_sblkno - sb->fs_sbsize;
+	unsigned int start = (tfs->fs_block_hand - 1)
+			/ (CHAR_BIT * tfs->fs_bsize);
+	unsigned int max = tfs->fs_dblkno - tfs->fs_sblkno - tfs->fs_sbsize;
 	for (unsigned int i = start; i < max; i++) {
-		uint32_t *buf = cache_get(&(fsp->device),
+		uint32_t *buf = cache_get(&(fs->device),
 				i + TFS_RESERVED_BLOCKS);
 		if (!buf)
 			return 0;
 
 		for (unsigned int j = (i == start) ?
-				(((sb->fs_block_hand - 1) / INT_BIT)
-						% (sb->fs_bsize / sizeof(j))) : 0;
-				j < sb->fs_bsize / sizeof(j); j++) {
+				(((tfs->fs_block_hand - 1) / INT_BIT)
+						% (tfs->fs_bsize / sizeof(j))) : 0;
+				j < tfs->fs_bsize / sizeof(j); j++) {
 			if (!buf[j])
 				continue;
 
@@ -64,12 +65,12 @@ blkno_t tfs_allocate_block(vfs_t *fsp)
 			if (!cache_release(buf, true))
 				return 0;
 
-			blkno_t block_no = i * sb->fs_bsize * CHAR_BIT
+			blkno_t block_no = i * tfs->fs_bsize * CHAR_BIT
 					+ j * INT_BIT + k;
-			sb->fs_free_blocks--;
-			sb->fs_block_hand = block_no;
+			tfs->fs_free_blocks--;
+			tfs->fs_block_hand = block_no;
 
-			if (!cache_modify(fsp->private))
+			if (!cache_modify(fs->private))
 				return 0;
 
 			return block_no;
@@ -160,51 +161,51 @@ static int deallocate_2nd(vfs_t *fs, const size_t base,
 	return 0;
 }
 
-int tfs_deallocate_block(vfs_t *fsp, const blkno_t block_no)
+int tfs_deallocate_block(vfs_t *fs, const blkno_t block_no)
 {
-	struct tfs *sb = (struct tfs *) (fsp->private);
-	if (block_no < sb->fs_dblkno)
+	struct tfs *tfs = (struct tfs *) (fs->private);
+	if (block_no < tfs->fs_dblkno)
 		return EINVAL;
 
-	uint8_t *buf = cache_get(&(fsp->device),
-			block_no / (CHAR_BIT * sb->fs_bsize)
+	uint8_t *buf = cache_get(&(fs->device),
+			block_no / (CHAR_BIT * tfs->fs_bsize)
 					+ TFS_RESERVED_BLOCKS);
 	if (!buf)
 		return EIO;
 
-	buf[(block_no / CHAR_BIT) % sb->fs_bsize] |=
+	buf[(block_no / CHAR_BIT) % tfs->fs_bsize] |=
 			(1 << (block_no % CHAR_BIT)) & 0xff;
 
 	if (!cache_release(buf, true))
 		return EIO;
 
-	if (!cache_invalidate(&(fsp->device), block_no))
+	if (!cache_invalidate(&(fs->device), block_no))
 		return EIO;
 
-	sb->fs_free_blocks++;
+	tfs->fs_free_blocks++;
 
-	if ((sb->fs_block_hand >= block_no)
+	if ((tfs->fs_block_hand >= block_no)
 			&& block_no)
-		sb->fs_block_hand = block_no - 1;
+		tfs->fs_block_hand = block_no - 1;
 
-	if (!cache_modify(fsp->private))
+	if (!cache_modify(fs->private))
 		return EIO;
 
 	return 0;
 }
 
-blkno_t tfs_get_block_no(vfs_t *fsp, const struct tfs_inode *ip,
+blkno_t tfs_get_block_no(vfs_t *fs, const struct tfs_inode *inode,
 		const unsigned int nth)
 {
-	if (!is_valid_nth(fsp, nth))
+	if (!is_valid_nth(fs, nth))
 		return 0;
 
-	size_t blocks = num_of_2nd_blocks(fsp->device.block_size);
-	blkno_t block_no = ip->i_ib[nth / blocks];
+	size_t blocks = num_of_2nd_blocks(fs->device.block_size);
+	blkno_t block_no = inode->i_ib[nth / blocks];
 	if (!block_no)
 		return 0;
 
-	blkno_t *buf = cache_get(&(fsp->device), block_no);
+	blkno_t *buf = cache_get(&(fs->device), block_no);
 	if (!buf)
 		return 0;
 
@@ -216,31 +217,31 @@ blkno_t tfs_get_block_no(vfs_t *fsp, const struct tfs_inode *ip,
 	return block_no;
 }
 
-blkno_t tfs_set_block_no(vfs_t *fsp, struct tfs_inode *ip,
+blkno_t tfs_set_block_no(vfs_t *fs, struct tfs_inode *inode,
 		const unsigned int nth, const blkno_t new_block_no)
 {
-	if (!is_valid_nth(fsp, nth))
+	if (!is_valid_nth(fs, nth))
 		return 0;
 
 	if (!new_block_no)
 		return 0;
 
 	blkno_t *buf;
-	size_t blocks = num_of_2nd_blocks(fsp->device.block_size);
+	size_t blocks = num_of_2nd_blocks(fs->device.block_size);
 	unsigned int index = nth / blocks;
-	blkno_t block_no = ip->i_ib[index];
+	blkno_t block_no = inode->i_ib[index];
 	if (block_no)
-		buf = cache_get(&(fsp->device), block_no);
+		buf = cache_get(&(fs->device), block_no);
 	else {
-		block_no = tfs_allocate_block(fsp);
+		block_no = tfs_allocate_block(fs);
 		if (!block_no)
 			return 0;
 
-		ip->i_ib[index] = block_no;
-//		if (!cache_modify(ip->private))
+		inode->i_ib[index] = block_no;
+//		if (!cache_modify(inode->private))
 //			return 0;
 
-		buf = cache_create(&(fsp->device), block_no);
+		buf = cache_create(&(fs->device), block_no);
 	}
 
 	if (!buf)
@@ -254,32 +255,34 @@ blkno_t tfs_set_block_no(vfs_t *fsp, struct tfs_inode *ip,
 	return new_block_no;
 }
 
-static bool is_valid_nth(const vfs_t *fsp, const unsigned int nth)
+static bool is_valid_nth(const vfs_t *fs, const unsigned int nth)
 {
-	return (nth < num_of_1st_blocks(fsp->device.block_size)
-			* num_of_2nd_blocks(fsp->device.block_size));
+	return (nth < num_of_1st_blocks(fs->device.block_size)
+			* num_of_2nd_blocks(fs->device.block_size));
 }
 
 int tfs_allocate_inode(vfs_t *fs, vnode_t *vnode)
 {
 	blkno_t block_no = tfs_allocate_block(fs);
 	if (!block_no)
-		return 0;
+		return ENOMEM;
 
 	struct tfs_inode *buf = cache_get(&(fs->device), block_no);
 	if (!buf)
 		return EIO;
 
 	fs->device.clear(&(fs->device), buf);
-	buf->i_inumber = block_no;
 
 	if (!cache_modify(buf)) {
 		cache_release(buf, false);
 		return EIO;
 	}
 
+	vnode->fs = fs;
+	vnode->index = block_no;
+	vnode->size = 0;
 	vnode->private = buf;
-	return block_no;
+	return 0;
 }
 
 int tfs_deallocate_inode(vfs_t *fs, vnode_t *vnode)
