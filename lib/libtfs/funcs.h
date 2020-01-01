@@ -27,9 +27,18 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stddef.h>
+#include <fs/tfs.h>
 #include <fs/vfs.h>
 #include <sys/dirent.h>
 #include <sys/stat.h>
+
+static inline unsigned int mask(unsigned int shift)
+{
+	return ((1 << shift) - 1);
+}
+
+/* tfs.c */
+extern vfs_operation_t vfs_fsops;
 
 /* block.c */
 extern blkno_t tfs_allocate_block(vfs_t *);

@@ -42,9 +42,8 @@ static inline int fs_read(vnode_t *vnode, copier_t *dest, const int offset,
 		: vfs_read(vnode, dest, offset, len, rlength);
 }
 
-extern vnode_t *rootfile;
+extern vfs_t rootfs;
 
-extern int fs_initialize(void);
-extern int fs_mount(const int, const size_t);
+extern int fs_initialize(const int, const size_t);
 
 #endif

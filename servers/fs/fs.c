@@ -29,11 +29,10 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/errno.h>
 #include "fs.h"
 
-static vfs_t rootfs;
-vnode_t *rootfile;
+vfs_t rootfs;
 
 
-int fs_initialize(void)
+int fs_initialize(const int device, const size_t block_size)
 {
 	if (cache_initialize())
 		return E_NOMEM;
@@ -41,16 +40,5 @@ int fs_initialize(void)
 	if (vnodes_initialize(kcall->palloc, kcall->pfree, MAX_VNODE))
 		return E_NOMEM;
 
-	rootfile = vnodes_create(NULL);
-	if (!rootfile)
-		return E_NOMEM;
-
-	return 0;
-}
-
-int fs_mount(const int device, const size_t block_size)
-{
-	rootfs.operations = vfs_fsops;
-
-	return vfs_mount(device, &rootfs, rootfile, block_size);
+	return vfs_mount(device, &rootfs, block_size);
 }

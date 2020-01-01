@@ -25,10 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <string.h>
-#include <fs/tfs.h>
 #include <sys/errno.h>
-#include "func.h"
 #include "../libserv/libserv.h"
+#include "funcs.h"
 
 
 int tfs_open(vfs_t *fs, const ino_t ino, vnode_t *vnode)
@@ -81,9 +80,10 @@ int tfs_read(vnode_t *vnode, copier_t *dest, const unsigned int offset,
 {
 	int result = 0;
 	vfs_t *fs = vnode->fs;
-	size_t block_size = ((struct tfs *) (fs->private))->fs_bsize;
-	unsigned int index = offset / block_size;
-	unsigned int skip = offset % block_size;
+	struct tfs *tfs = (struct tfs *) (fs->private);
+	unsigned int index = offset >> tfs->fs_bshift;
+	unsigned int skip = offset & mask(tfs->fs_bshift);
+	size_t block_size = tfs->fs_bsize;
 	struct tfs_inode *inode = vnode->private;
 	size_t rest = nbytes;
 	for (; rest > 0; index++) {
@@ -134,9 +134,10 @@ int tfs_write(vnode_t *vnode, copier_t *src, const unsigned int offset,
 
 	int result = 0;
 	vfs_t *fs = vnode->fs;
-	size_t block_size = ((struct tfs *) (fs->private))->fs_bsize;
-	unsigned int index = offset / block_size;
-	unsigned int skip = offset % block_size;
+	struct tfs *tfs = (struct tfs *) (fs->private);
+	unsigned int index = offset >> tfs->fs_bshift;
+	unsigned int skip = offset & mask(tfs->fs_bshift);
+	size_t block_size = tfs->fs_bsize;
 	struct tfs_inode *inode = vnode->private;
 	size_t rest = nbytes;
 	for (; rest > 0; index++) {

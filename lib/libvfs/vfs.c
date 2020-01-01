@@ -44,20 +44,44 @@ static bool check_flags(const int flags);
 
 
 //TODO split this file per function
-int vfs_mount(const int device, vfs_t *fs, vnode_t *root,
-		const size_t block_size)
+int vfs_mount(const int device, vfs_t *fs, const size_t block_size)
 {
-	list_initialize(&(fs->vnodes));
+	fs->device.channel = device;
+	fs->device.block_size = block_size;
+	if (block_initialize(&(fs->device)))
+		return EIO;
 
-	int error_no = fs->operations.mount(device, fs, root, block_size);
-	if (error_no)
+	vnode_t *root = vnodes_create(NULL);
+	if (!root)
+		return E_NOMEM;
+
+	list_initialize(&(fs->vnodes));
+	fs->operations = vfs_fsops;
+
+	int error_no = fs->operations.mount(fs, root);
+	if (error_no) {
+		vnodes_remove(root);
 		return error_no;
+	}
 
 	fs->root = root;
 	root->fs = fs;
 	vnodes_append(root);
-
 	return 0;
+
+}
+
+int vfs_unmount(vfs_t *fs)
+{
+	int error_no = vnodes_remove(fs->root);
+	if (error_no)
+		return error_no;
+
+	error_no = fs->operations.unmount(fs);
+	if (error_no)
+		return error_no;
+
+	return cache_synchronize(&(fs->device), true);
 }
 
 int vfs_walk(vnode_t *parent, char *path, const int flags,

@@ -71,10 +71,10 @@ void if_attach(fs_request *req)
 		session->permission.gid = INIT_GID;
 		//TODO walk aname
 		//TODO can not walk to the parent of aname
-		session->root = rootfile;
-		rootfile->refer_count++;
+		session->root = rootfs.root;
+		rootfs.root->refer_count++;
 		//TODO bind fid to with session type (for use to close session)
-		file->f_vnode = rootfile;
+		file->f_vnode = rootfs.root;
 		file->f_flag = O_ACCMODE;
 
 		fsmsg_t response;

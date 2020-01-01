@@ -37,7 +37,8 @@ typedef uint32_t blkno_t;
 #define TFS_BOOT_BLOCKS (1)
 #define TFS_SUPER_BLOCKS (1)
 #define TFS_RESERVED_BLOCKS (TFS_BOOT_BLOCKS + TFS_SUPER_BLOCKS)
-#define TFS_ROOT_BLOCK_NO (3)
+
+#define TFS_SUPER_BLOCK_NO (1)
 
 #define TFS_MAXNAMLEN (255)
 #define TFS_MINNAMLEN (sizeof(uint32_t) - sizeof(uint8_t))

@@ -24,7 +24,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <fs/tfs.h>
 #include "../libserv/libserv.h"
 #include "funcs.h"
 

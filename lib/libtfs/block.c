@@ -24,10 +24,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stdint.h>
 #include <mpu/bits.h>
 #include <sys/errno.h>
-#include "func.h"
+#include "funcs.h"
 
 #define INT_BIT ((CHAR_BIT) * sizeof(int))
 
@@ -44,8 +43,9 @@ blkno_t tfs_allocate_block(vfs_t *fs)
 	if (!(tfs->fs_free_blocks))
 		return 0;
 
-	unsigned int start = (tfs->fs_block_hand - 1)
-			/ (CHAR_BIT * tfs->fs_bsize);
+	unsigned int start = ((tfs->fs_block_hand - 1) / CHAR_BIT)
+			>> tfs->fs_bshift;
+	unsigned int units = tfs->fs_bsize / sizeof(int);
 	unsigned int max = tfs->fs_dblkno - tfs->fs_sblkno - tfs->fs_sbsize;
 	for (unsigned int i = start; i < max; i++) {
 		uint32_t *buf = cache_get(&(fs->device),
@@ -55,8 +55,8 @@ blkno_t tfs_allocate_block(vfs_t *fs)
 
 		for (unsigned int j = (i == start) ?
 				(((tfs->fs_block_hand - 1) / INT_BIT)
-						% (tfs->fs_bsize / sizeof(j))) : 0;
-				j < tfs->fs_bsize / sizeof(j); j++) {
+						% units) : 0;
+				j < units; j++) {
 			if (!buf[j])
 				continue;
 
@@ -65,7 +65,7 @@ blkno_t tfs_allocate_block(vfs_t *fs)
 			if (!cache_release(buf, true))
 				return 0;
 
-			blkno_t block_no = i * tfs->fs_bsize * CHAR_BIT
+			blkno_t block_no = (i << tfs->fs_bshift) * CHAR_BIT
 					+ j * INT_BIT + k;
 			tfs->fs_free_blocks--;
 			tfs->fs_block_hand = block_no;
@@ -168,13 +168,13 @@ int tfs_deallocate_block(vfs_t *fs, const blkno_t block_no)
 		return EINVAL;
 
 	uint8_t *buf = cache_get(&(fs->device),
-			block_no / (CHAR_BIT * tfs->fs_bsize)
+			((block_no / CHAR_BIT) >> tfs->fs_bshift)
 					+ TFS_RESERVED_BLOCKS);
 	if (!buf)
 		return EIO;
 
-	buf[(block_no / CHAR_BIT) % tfs->fs_bsize] |=
-			(1 << (block_no % CHAR_BIT)) & 0xff;
+	buf[(block_no / CHAR_BIT) & mask(tfs->fs_bshift)] |=
+			(unsigned int) 1 << (block_no % CHAR_BIT);
 
 	if (!cache_release(buf, true))
 		return EIO;

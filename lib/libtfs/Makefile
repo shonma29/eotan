@@ -27,7 +27,5 @@ TARGET = $(WD).a
 
 include Makefile.in
 
-CFLAGS += -I servers/fs
-
 $(TARGET): $(OBJS)
 	$(AR) rsv $@ $?

@@ -25,11 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <string.h>
-#include <fs/tfs.h>
-#include <sys/dirent.h>
 #include <sys/errno.h>
-#include "func.h"
 #include "../../lib/libserv/libserv.h"
+#include "funcs.h"
 
 static int tfs_append_entry(vnode_t *, const char *, const ino_t);
 static int tfs_remove_entry(vnode_t *, vnode_t *);

@@ -70,7 +70,6 @@ typedef struct {
 } vdirent_t;
 
 static vfs_t fs;
-static vnode_t *root_node;
 static struct permission permission = { ROOT_UID, ROOT_GID };
 
 
@@ -100,7 +99,7 @@ int time_get(systime_t *p)
 	return 0;
 }
 
-static int initialize(vnode_t **root)
+static int initialize(void)
 {
 	int result = cache_initialize();
 	if (result) {
@@ -114,19 +113,12 @@ static int initialize(vnode_t **root)
 		return ERR_MEMORY;
 	}
 
-	*root = vnodes_create(NULL);
-	if (!(*root)) {
-		printf("vnodes_create failed\n");
-		return ERR_MEMORY;
-	}
-
-//	printf("initialize: root_node = %p\n", *root);
+//	printf("initialize: done\n");
 
 	return 0;
 }
 
-static int mount(vfs_t *fs, const char *filename, vnode_t *root,
-		const size_t block_size)
+static int mount(vfs_t *fs, const char *filename, const size_t block_size)
 {
 	int fd = open(filename, O_RDWR);
 	if (fd < 0) {
@@ -134,9 +126,7 @@ static int mount(vfs_t *fs, const char *filename, vnode_t *root,
 		return ERR_FILE;
 	}
 
-	fs->operations = fsops;
-
-	int result = vfs_mount(fd, fs, root, block_size);
+	int result = vfs_mount(fd, fs, block_size);
 	if (result) {
 		printf("mount(%d) failed %d\n", fd, result);
 		close(fd);
@@ -148,9 +138,9 @@ static int mount(vfs_t *fs, const char *filename, vnode_t *root,
 	return 0;
 }
 
-static int unmount(vfs_t *fs, vnode_t *root)
+static int unmount(vfs_t *fs)
 {
-	int result = fs->operations.unmount(fs);
+	int result = vfs_unmount(fs);
 	if (result) {
 		printf("unmount failed %d\n", result);
 		close(fs->device.channel);
@@ -488,16 +478,14 @@ int main(int argc, char **argv)
 	}
 
 	int result;
-	result = initialize(&root_node);
+	result = initialize();
 	if (result)
 		return result;
 
 	int block_size = atoi(argv[2]);
-	result = mount(&fs, argv[1], root_node, block_size);
-	if (result) {
-		vnodes_remove(root_node);
+	result = mount(&fs, argv[1], block_size);
+	if (result)
 		return result;
-	}
 
 	// manipulate vfs here
 	if (argc > 3) {
@@ -549,12 +537,12 @@ int main(int argc, char **argv)
 		}
 
 		if (result) {
-			unmount(&fs, root_node);
+			unmount(&fs);
 			return result;
 		}
 	}
 
-	result = unmount(&fs, root_node);
+	result = unmount(&fs);
 	if (result)
 		return result;
 

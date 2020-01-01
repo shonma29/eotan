@@ -1,5 +1,3 @@
-#ifndef _WRITER_H_
-#define _WRITER_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,6 +24,49 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "../../include/fs/vfs.h"
+#include <sys/errno.h>
+#include "funcs.h"
 
-#endif
+static int tfs_mount(vfs_t *, vnode_t *);
+static int tfs_unmount(vfs_t *);
+
+vfs_operation_t vfs_fsops = {
+	tfs_mount,
+	tfs_unmount,
+	tfs_getdents,
+	tfs_walk,
+	tfs_remove,
+	tfs_stat,
+	tfs_wstat,
+	tfs_create,
+	tfs_close,
+	tfs_read,
+	tfs_write
+};
+
+
+static int tfs_mount(vfs_t *fs, vnode_t *root)
+{
+	struct tfs *tfs = cache_get(&(fs->device), TFS_SUPER_BLOCK_NO);
+	if (!tfs)
+		return EIO;
+
+	if ((tfs->fs_magic != TFS_MAGIC)
+			|| (tfs->fs_bsize != fs->device.block_size)) {
+		cache_release(fs->private, false);
+		return EINVAL;
+	}
+
+	fs->private = tfs;
+
+	int error_no = tfs_open(fs, tfs->fs_dblkno, root);
+	if (error_no)
+		cache_release(fs->private, false);
+
+	return error_no;
+}
+
+static int tfs_unmount(vfs_t *fs)
+{
+	return (cache_release(fs->private, false) ? 0 : EIO);
+}

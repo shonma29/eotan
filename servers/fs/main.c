@@ -71,19 +71,17 @@ static int initialize(void)
 {
 	session_initialize();
 
-	if (fs_initialize())
-		return -1;
-
-	int result = fs_mount((int) (sysinfo->root.device),
+	int result = fs_initialize((int) (sysinfo->root.device),
 			sysinfo->root.block_size);
 	if (result) {
-		log_err(MYNAME ": fs_mount(%s, %d) failed %d\n",
+		log_err(MYNAME ": fs_initialize(%s, %d) failed %d\n",
 				sysinfo->root.device, sysinfo->root.fstype,
 				result);
 		return -1;
-	} else
-		log_info(MYNAME ": fs_mount(%s, %d)\n",
-				sysinfo->root.device, sysinfo->root.fstype);
+	}
+
+	log_info(MYNAME ": fs_mount(%s, %d)\n",
+			sysinfo->root.device, sysinfo->root.fstype);
 
 	receiver_id = kcall->thread_get_id();
 	T_CMTX pk_cmtx = {
