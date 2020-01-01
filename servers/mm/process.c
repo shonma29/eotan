@@ -233,6 +233,23 @@ int process_replace(mm_process_t *process,
 		void *entry, const void *args, const size_t stack_size,
 		int *thread_id)
 {
+	if (process->node.key == INIT_PID)
+		if (map_user_pages(process->directory,
+				(void *) pageRoundDown(LOCAL_ADDR
+						- USER_STACK_INITIAL_SIZE
+						- PAGE_SIZE),
+				pages(pageRoundUp(USER_STACK_INITIAL_SIZE))))
+			return ENOMEM;
+
+	if (stack_size > USER_STACK_INITIAL_SIZE)
+		return E2BIG;
+
+	unsigned int stack_top = pageRoundDown(LOCAL_ADDR - PAGE_SIZE)
+			- stack_size;
+	if (move_stack(process->directory, (void *) stack_top,
+			(void *) args, stack_size))
+		return EFAULT;
+
 	if (unmap_user_pages(process->directory,
 			//TODO this address is adhoc. fix region_unmap
 			(VP) 0x1000,
@@ -259,25 +276,7 @@ int process_replace(mm_process_t *process,
 	process->segments.heap.max = pageRoundUp(USER_HEAP_MAX_ADDR) - end;
 	process->segments.heap.attr = type_heap;
 
-	if (stack_size > USER_STACK_INITIAL_SIZE)
-		return E2BIG;
-
-	if (process->node.key == INIT_PID)
-		if (map_user_pages(process->directory,
-				(void *) pageRoundDown(LOCAL_ADDR
-						- USER_STACK_INITIAL_SIZE
-						- PAGE_SIZE),
-				pages(pageRoundUp(USER_STACK_INITIAL_SIZE))))
-			return ENOMEM;
-
 	destroy_threads(process);
-
-	unsigned int stack_top = pageRoundDown(LOCAL_ADDR - PAGE_SIZE)
-			- stack_size;
-	if (move_stack(process->directory, (void *) stack_top,
-			(void *) args, stack_size)) {
-		return EFAULT;
-	}
 
 	int result = create_thread(thread_id, process, (FP) entry,
 			(VP) (stack_top - sizeof(int)));
