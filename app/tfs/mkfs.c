@@ -109,7 +109,7 @@ static int calc_super_block(const int block_size, const int block_num)
 
 	// root inode and blocks are allocated
 	super.fs_free_blocks = super.fs_dsize - ROOT_BLOCK_NUM;
-	super.fs_block_hand = super.fs_dblkno + ROOT_BLOCK_NUM - 1;
+	super.fs_block_hand = super.fs_dblkno + ROOT_BLOCK_NUM;
 
 	return 0;
 }

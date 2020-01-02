@@ -43,8 +43,7 @@ blkno_t tfs_allocate_block(vfs_t *fs)
 	if (!(tfs->fs_free_blocks))
 		return 0;
 
-	unsigned int start = ((tfs->fs_block_hand - 1) / CHAR_BIT)
-			>> tfs->fs_bshift;
+	unsigned int start = (tfs->fs_block_hand / CHAR_BIT) >> tfs->fs_bshift;
 	unsigned int units = tfs->fs_bsize / sizeof(int);
 	unsigned int max = tfs->fs_dblkno - tfs->fs_sblkno - tfs->fs_sbsize;
 	for (unsigned int i = start; i < max; i++) {
@@ -54,8 +53,7 @@ blkno_t tfs_allocate_block(vfs_t *fs)
 			return 0;
 
 		for (unsigned int j = (i == start) ?
-				(((tfs->fs_block_hand - 1) / INT_BIT)
-						% units) : 0;
+				((tfs->fs_block_hand / INT_BIT) % units) : 0;
 				j < units; j++) {
 			if (!buf[j])
 				continue;
@@ -68,7 +66,7 @@ blkno_t tfs_allocate_block(vfs_t *fs)
 			blkno_t block_no = (i << tfs->fs_bshift) * CHAR_BIT
 					+ j * INT_BIT + k;
 			tfs->fs_free_blocks--;
-			tfs->fs_block_hand = block_no;
+			tfs->fs_block_hand = block_no + 1;
 
 			if (!cache_modify(fs->private))
 				return 0;
@@ -184,9 +182,8 @@ int tfs_deallocate_block(vfs_t *fs, const blkno_t block_no)
 
 	tfs->fs_free_blocks++;
 
-	if ((tfs->fs_block_hand >= block_no)
-			&& block_no)
-		tfs->fs_block_hand = block_no - 1;
+	if (block_no < tfs->fs_block_hand)
+		tfs->fs_block_hand = block_no;
 
 	if (!cache_modify(fs->private))
 		return EIO;
