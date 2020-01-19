@@ -34,30 +34,30 @@ int mm_vmap(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_process_t *p = process_find((ID)(req->args.arg1));
+		mm_process_t *p = process_find((ID) (req->args.arg1));
 		if (!p) {
 			reply->data[0] = ESRCH;
 			break;
 		}
 
 		if (map_user_pages(p->directory,
-				(VP)(req->args.arg2),
-				pages((UW)(req->args.arg3)))) {
+				(VP) (req->args.arg2),
+				pages((UW) (req->args.arg3)))) {
 			reply->data[0] = ENOMEM;
 			break;
 		}
 
-		unsigned int currentEnd = (unsigned int)(p->segments.heap.addr)
+		unsigned int currentEnd = (unsigned int) (p->segments.heap.addr)
 				+ p->segments.heap.len;
-		unsigned int newEnd = (unsigned int)(req->args.arg2)
-				+ (unsigned int)(req->args.arg3);
-		if (currentEnd == (unsigned int)(req->args.arg2))
+		unsigned int newEnd = (unsigned int) (req->args.arg2)
+				+ (unsigned int) (req->args.arg3);
+		if (currentEnd == (unsigned int) (req->args.arg2))
 			p->segments.heap.len = newEnd
-					- (unsigned int)(p->segments.heap.addr);
+					- (unsigned int) (p->segments.heap.addr);
 
 		if (req->args.arg2 == LOCAL_ADDR)
 			p->local = getPageAddress(kern_p2v(p->directory),
-					(void*)(req->args.arg2));
+					(void *) (req->args.arg2));
 
 		reply->data[0] = 0;
 		reply->result = 0;
@@ -74,7 +74,7 @@ int mm_vunmap(mm_request *req)
 	do {
 		unsigned int currentEnd;
 		unsigned int newEnd;
-		mm_process_t *p = process_find((ID)(req->args.arg1));
+		mm_process_t *p = process_find((ID) (req->args.arg1));
 
 		if (!p) {
 			reply->data[0] = ESRCH;
@@ -82,19 +82,19 @@ int mm_vunmap(mm_request *req)
 		}
 
 		if (unmap_user_pages(p->directory,
-				(VP)(req->args.arg2),
-				pages((UW)(req->args.arg3)))) {
+				(VP) (req->args.arg2),
+				pages((UW) (req->args.arg3)))) {
 			reply->data[0] = EACCES;
 			break;
 		}
 
-		currentEnd = (unsigned int)(p->segments.heap.addr)
+		currentEnd = (unsigned int) (p->segments.heap.addr)
 				+ p->segments.heap.len;
-		newEnd = (unsigned int)(req->args.arg2)
-				+ (unsigned int)(req->args.arg3);
+		newEnd = (unsigned int) (req->args.arg2)
+				+ (unsigned int) (req->args.arg3);
 		if (currentEnd == newEnd)
-			p->segments.heap.len = (unsigned int)(req->args.arg2)
-					- (unsigned int)(p->segments.heap.addr);
+			p->segments.heap.len = (unsigned int) (req->args.arg2)
+					- (unsigned int) (p->segments.heap.addr);
 
 		reply->data[0] = 0;
 		reply->result = 0;
@@ -117,8 +117,8 @@ int mm_sbrk(mm_request *req)
 
 		mm_process_t *p = get_process(th);
 		mm_segment_t *s = &(p->segments.heap);
-		uintptr_t end = (uintptr_t)(s->addr) + s->len;
-		intptr_t diff = (intptr_t)(req->args.arg1);
+		uintptr_t end = (uintptr_t) (s->addr) + s->len;
+		intptr_t diff = (intptr_t) (req->args.arg1);
 		if (diff > 0) {
 			diff = pageRoundUp(diff);
 			if (s->max - s->len < diff) {
@@ -127,14 +127,12 @@ int mm_sbrk(mm_request *req)
 			}
 
 			if (map_user_pages(p->directory,
-					(VP)end, pages(diff))) {
+					(VP) end, pages(diff))) {
 				reply->data[0] = ENOMEM;
 				break;
 			}
 
 			s->len += diff;
-			end += diff;
-
 		} else if (diff < 0) {
 			diff = pageRoundUp(-diff);
 			if (s->len < diff) {
@@ -143,17 +141,16 @@ int mm_sbrk(mm_request *req)
 			}
 
 			if (unmap_user_pages(p->directory,
-					(VP)(end - diff), pages(diff))) {
+					(VP) (end - diff), pages(diff))) {
 				reply->data[0] = ENOMEM;
 				break;
 			}
 
 			s->len -= diff;
-			end -= diff;
 		}
 
 		reply->data[0] = 0;
-		reply->result = (int)end;
+		reply->result = (int) end;
 		return reply_success;
 	} while (false);
 
