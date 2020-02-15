@@ -75,7 +75,10 @@ int execve(const char *name, char *const argv[], char *const envp[])
 		(int) buf,
 		size
 	};
-	return _syscall(&args, sizeof(args));
+	int result = _syscall(&args, sizeof(args));
+
+	free(buf);
+	return result;
 }
 
 static int count_args(char *const argv[], size_t *size)
