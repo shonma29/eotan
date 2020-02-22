@@ -29,7 +29,6 @@ include Makefile.in
 
 CFLAGS += -I kernel -I servers/fs -DUSE_FLOAT
 CSRCS += $(wildcard $(WD)/ctype/*.c)
-CSRCS += $(wildcard $(WD)/malloc/*.c)
 CSRCS += $(wildcard $(WD)/stdio/*.c)
 CSRCS += $(wildcard $(WD)/stdlib/*.c)
 CSRCS += $(wildcard $(WD)/others/*.c)

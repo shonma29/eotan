@@ -35,6 +35,8 @@ FILE *stderr;
 char **environ;
 
 extern int main(int argc, char *argv[], char *envp[]);
+extern void __malloc_initialize(void);
+
 static void __libc_initialize(void);
 
 
@@ -47,6 +49,8 @@ void _main(int argc, char *argv[], char *envp[])
 
 static void __libc_initialize(void)
 {
+	__malloc_initialize();
+
 	stdin = fdopen(STDIN_FILENO, "r");
 	//TODO fix when you can discriminate terminal
 	if (stdin)
