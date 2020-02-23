@@ -37,10 +37,9 @@ For more information, please refer to <http://unlicense.org/>
 
 static VP current_page_table = NULL;
 
-static void api_set_kernel_sp(const VP addr);
-static VP_INT *context_create_kernel(VP_INT *sp, const UW eflags, const FP eip);
-static VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
-		const VP esp);
+static void api_set_kernel_sp(const VP);
+static VP_INT *context_create_kernel(VP_INT *, const UW, const FP);
+static VP_INT *context_create_user(VP_INT *, const UW, const FP, const VP);
 
 
 void context_initialize(void)
@@ -51,10 +50,10 @@ void context_initialize(void)
 
 static void api_set_kernel_sp(const VP addr)
 {
-	tss_t *tss = (tss_t*)TSS_ADDR;
+	tss_t *tss = (tss_t *) TSS_ADDR;
 
-	tss->esp0 = (UW)addr;
-	msr_write(sysenter_esp_msr, (UW)addr);
+	tss->esp0 = (uintptr_t) addr;
+	msr_write(sysenter_esp_msr, (uintptr_t) addr);
 }
 
 static VP_INT *context_create_kernel(VP_INT *sp, const UW eflags, const FP eip)
@@ -66,7 +65,7 @@ static VP_INT *context_create_kernel(VP_INT *sp, const UW eflags, const FP eip)
 	/* cs */
 	*--sp = kern_code;
 	/* eip */
-	*--sp = (VP_INT)eip;
+	*--sp = (VP_INT) eip;
 	/* ds */
 	*--sp = kern_data;
 	/* es */
@@ -86,7 +85,7 @@ static VP_INT *context_create_kernel(VP_INT *sp, const UW eflags, const FP eip)
 	/* ebx */
 	*--sp = 0;
 	/* kernel esp */
-	*--sp = (VP_INT)esp0;
+	*--sp = (VP_INT) esp0;
 	/* ebp */
 	*--sp = 0;
 	/* esi */
@@ -105,13 +104,13 @@ static VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
 	/* ss */
 	*--sp = user_data | dpl_user;
 	/* user esp */
-	*--sp = (VP_INT)esp;
+	*--sp = (VP_INT) esp;
 	/* eflags */
 	*--sp = eflags;
 	/* cs */
 	*--sp = user_code | dpl_user;
 	/* eip */
-	*--sp = (VP_INT)eip;
+	*--sp = (VP_INT) eip;
 	/* ds */
 	*--sp = user_data;
 	/* es */
@@ -131,7 +130,7 @@ static VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
 	/* ebx */
 	*--sp = 0;
 	/* kernel esp */
-	*--sp = (VP_INT)esp0;
+	*--sp = (VP_INT) esp0;
 	/* ebp */
 	*--sp = 0;
 	/* esi */
@@ -158,7 +157,7 @@ void context_switch(thread_t *prev, thread_t *next)
 
 void context_reset_page_table(void)
 {
-	paging_set_directory((VP)KTHREAD_DIR_ADDR);
+	paging_set_directory((VP) KTHREAD_DIR_ADDR);
 	current_page_table = NULL;
 }
 
@@ -174,7 +173,7 @@ void create_context(thread_t *th)
 
 	if (is_kthread(th)) {
 		*--sp = th->attr.arg;
-		*--sp = (INT)thread_end;
+		*--sp = (INT) thread_end;
 		th->mpu.esp0 = context_create_kernel(
 				sp,
 				EFLAGS_INTERRUPT_ENABLE | EFLAGS_IOPL_3,

@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <stdint.h>
 #include <services.h>
 #include <mpu/memory.h>
 #include <nerve/icall.h>
@@ -33,8 +34,8 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../lib/libserv/libserv.h"
 #include "process.h"
 
-static void expand_stack(const int tid, const int addr);
-static void kill(const int tid, const int dummy);
+static void expand_stack(const int, const int);
+static void kill(const int, const int);
 
 
 ER default_handler(void)
@@ -68,7 +69,7 @@ static void expand_stack(const int tid, const int addr)
 		}
 
 		mm_segment_t *s = &(p->segments.stack);
-		void *start = (void *) pageRoundDown((UW) addr);
+		void *start = (void *) pageRoundDown((uintptr_t) addr);
 		if (s->attr
 				&& ((size_t) start >= (size_t) (s->addr)
 				&& ((size_t) addr <= ((size_t) (s->addr) + s->max)))) {

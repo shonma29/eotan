@@ -26,6 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdint.h>
 #include <mpu/memory.h>
 
 #define PAGE_BIG_ADDR_MASK 0xffc00000
@@ -51,7 +52,7 @@ For more information, please refer to <http://unlicense.org/>
 
 static inline PTE calc_pte(const void *addr, const UW attr)
 {
-	return (PTE)((((UW)addr) & PAGE_ADDR_MASK) | attr);
+	return (PTE) ((((uintptr_t) addr) & PAGE_ADDR_MASK) | attr);
 }
 
 static inline BOOL is_present(PTE pte)

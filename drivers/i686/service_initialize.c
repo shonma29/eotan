@@ -24,7 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
+#include <stdint.h>
 #include "context.h"
 #include "mpufunc.h"
 #include "gate.h"
@@ -34,5 +34,5 @@ For more information, please refer to <http://unlicense.org/>
 void service_initialize(void)
 {
 	tr_set(dummy_tss);
-	msr_write(sysenter_eip_msr, (UW)service_handler);
+	msr_write(sysenter_eip_msr, (uintptr_t) service_handler);
 }

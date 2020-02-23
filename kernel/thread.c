@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <stdint.h>
 #include <string.h>
 #include <nerve/config.h>
 #include <set/list.h>
@@ -39,13 +40,13 @@ static slab_t thread_slab;
 static tree_t thread_tree;
 static int thread_hand;
 
-static inline thread_t *getThreadParent(const node_t *p);
-static ER setup(thread_t *th, T_CTSK *pk_ctsk);
-static void fire(thread_t *th);
-static void release_resources(thread_t *th);
+static inline thread_t *getThreadParent(const node_t *);
+static ER setup(thread_t *, T_CTSK *);
+static void fire(thread_t *);
+static void release_resources(thread_t *);
 
 static inline thread_t *getThreadParent(const node_t *p) {
-	return (thread_t*)((intptr_t)p - offsetof(thread_t, node));
+	return (thread_t *) ((intptr_t) p - offsetof(thread_t, node));
 }
 
 ER thread_initialize(void)
@@ -54,14 +55,12 @@ ER thread_initialize(void)
 	thread_hand = MIN_AUTO_ID - 1;
 
 	ready_initialize();
-
 	return E_OK;
 }
 
 thread_t *get_thread_ptr(ID tskid)
 {
 	node_t *node = tree_get(&thread_tree, tskid);
-
 	return (node ? getThreadParent(node) : NULL);
 }
 
@@ -90,17 +89,16 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk)
 	th->attr.page_table = pk_ctsk->page_table;
 	th->attr.priority = pk_ctsk->itskpri;
 	th->attr.arg = pk_ctsk->exinf;
-	th->attr.kstack_tail = (char*)kern_p2v(p);
+	th->attr.kstack_tail = (char *) kern_p2v(p);
 	th->attr.ustack_top = pk_ctsk->ustack_top;
 	th->attr.entry = pk_ctsk->task;
 
 	context_set_kernel_sp(&(th->mpu), th->attr.kstack_tail);
 	context_set_page_table(&(th->mpu),
 			is_kthread(th) ?
-					(VP)KTHREAD_DIR_ADDR
+					(VP) KTHREAD_DIR_ADDR
 					//TODO null check
 					: th->attr.page_table);
-
 	return E_OK;
 }
 
@@ -118,7 +116,6 @@ ER_ID thread_create_auto(T_CTSK *pk_ctsk)
 	do {
 		thread_t *th;
 		node_t *node = slab_alloc(&thread_slab);
-
 		if (!node) {
 			result = E_NOMEM;
 			break;
@@ -145,7 +142,6 @@ ER_ID thread_create_auto(T_CTSK *pk_ctsk)
 			fire(th);
 			return result;
 		}
-
 	} while (false);
 	leave_serialize();
 
@@ -170,7 +166,6 @@ ER thread_create(ID tskid, T_CTSK *pk_ctsk)
 	do {
 		thread_t *th;
 		node_t *node = slab_alloc(&thread_slab);
-
 		if (!node) {
 			result = E_NOMEM;
 			break;
@@ -197,7 +192,6 @@ ER thread_create(ID tskid, T_CTSK *pk_ctsk)
 			fire(th);
 			return result;
 		}
-
 	} while (false);
 	leave_serialize();
 
@@ -216,12 +210,14 @@ static void fire(thread_t *th)
 	th->status = TTS_RDY;
 	ready_enqueue(th->priority, &(th->queue));
 	leave_serialize();
+
 	dispatch();
 }
 
 static void release_resources(thread_t *th)
 {
-	pfree((void*)((UW)(th->attr.kstack_tail) - KTHREAD_STACK_SIZE));
+	pfree((void *) ((uintptr_t) (th->attr.kstack_tail)
+			- KTHREAD_STACK_SIZE));
 }
 
 ER thread_destroy(ID tskid)
@@ -232,7 +228,6 @@ ER thread_destroy(ID tskid)
 	do {
 		node_t *node;
 		thread_t *th = get_thread_ptr(tskid);
-
 		if (!th) {
 			result = E_NOEXS;
 			break;
@@ -281,7 +276,6 @@ ER thread_start(ID tskid)
 
 		result = E_OK;
 		fire(th);
-
 	} while (false);
 
 	return result;
@@ -300,12 +294,8 @@ void thread_end(void)
 
 void thread_end_and_destroy(void)
 {
-	node_t *node;
-	thread_t *th;
-
 	enter_serialize();
-	th = running;
-
+	thread_t *th = running;
 	list_remove(&(th->queue));
 	mutex_unlock_all(th);
 
@@ -313,7 +303,7 @@ void thread_end_and_destroy(void)
 		context_reset_page_table();
 
 	release_resources(th);
-	node = tree_remove(&thread_tree, thread_id(th));
+	node_t *node = tree_remove(&thread_tree, thread_id(th));
 	if (node)
 		slab_free(&thread_slab, node);
 	leave_serialize();
@@ -328,7 +318,6 @@ ER thread_terminate(ID tskid)
 	enter_serialize();
 	do {
 		thread_t *th = get_thread_ptr(tskid);
-
 		if (!th) {
 			result = E_NOEXS;
 			break;
@@ -338,27 +327,23 @@ ER thread_terminate(ID tskid)
 		case TTS_RUN:
 			result = E_ILUSE;
 			break;
-
 		case TTS_RDY:
 			list_remove(&(th->queue));
 			th->status = TTS_DMT;
 			mutex_unlock_all(th);
 			result = E_OK;
 			break;
-
 		case TTS_WAI:
 		case TTS_WAS:
 			if (th->wait.type) {
 				th->wait.type = wait_none;
 				list_remove(&(th->wait.waiting));
 			}
-
 		case TTS_SUS:
 			th->status = TTS_DMT;
 			mutex_unlock_all(th);
 			result = E_OK;
 			break;
-
 		default:
 			result = E_OBJ;
 			break;
@@ -377,7 +362,6 @@ ER thread_sleep(void)
 		running->wakeup_count--;
 		leave_serialize();
 		return E_OK;
-
 	} else {
 		running->wait.type = wait_sleep;
 		wait(running);
@@ -407,7 +391,6 @@ ER thread_wakeup(ID tskid)
 		case TTS_DMT:
 			result = E_OBJ;
 			break;
-
 		case TTS_WAI:
 		case TTS_WAS:
 			if (th->wait.type == wait_sleep) {
@@ -415,19 +398,15 @@ ER thread_wakeup(ID tskid)
 				result = E_OK;
 				break;
 			}
-
 		default:
 			if (th->wakeup_count >= MAX_WAKEUP_COUNT)
 				result = E_QOVR;
-
 			else {
 				th->wakeup_count++;
 				result = E_OK;
 			}
-
 			break;
 		}
-
 	} while (false);
 	leave_serialize();
 

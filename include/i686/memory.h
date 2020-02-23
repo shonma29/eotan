@@ -26,15 +26,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core/types.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #define PAGE_SIZE (4096)
 #define MPU_MAX_PAGE (1024 * 1024)
 
 #define MPU_LOG_INT (5)
 
-typedef UW PTE;
+typedef uintptr_t PTE;
 
 #define PTE_PER_PAGE (PAGE_SIZE / sizeof(PTE))
 
@@ -46,44 +46,44 @@ typedef UW PTE;
 
 #define SUPERVISOR_START 0x80000000
 
-static inline UW pageRoundDown(const UW value)
+static inline uintptr_t pageRoundDown(const uintptr_t value)
 {
 	return value & PAGE_ADDR_MASK;
 }
 
-static inline UW roundUp(const UW value, const UW ceil)
+static inline size_t roundUp(const size_t value, const size_t ceil)
 {
 	return (value + (ceil - 1)) & (~(ceil - 1));
 }
 
-static inline UW pageRoundUp(const UW value)
+static inline uintptr_t pageRoundUp(const uintptr_t value)
 {
 	return (value + PAGE_SIZE - 1) & PAGE_ADDR_MASK;
 }
 
-static inline UW getDirectoryOffset(const void *addr)
+static inline uintptr_t getDirectoryOffset(const void *addr)
 {
-	return (UW)addr >> (BITS_PAGE + BITS_OFFSET);
+	return (uintptr_t) addr >> (BITS_PAGE + BITS_OFFSET);
 }
 
-static inline UW getPageOffset(const void *addr)
+static inline uintptr_t getPageOffset(const void *addr)
 {
-	return ((UW)addr >> BITS_OFFSET) & MASK_PAGE;
+	return ((uintptr_t) addr >> BITS_OFFSET) & MASK_PAGE;
 }
 
-static inline UW getOffset(const void *addr)
+static inline uintptr_t getOffset(const void *addr)
 {
-	return (UW)addr & MASK_OFFSET;
+	return (uintptr_t) addr & MASK_OFFSET;
 }
 
 static inline void *kern_p2v(const void *addr)
 {
-	return (void*)((UW)addr | SUPERVISOR_START);
+	return (void *) ((uintptr_t) addr | SUPERVISOR_START);
 }
 
 static inline void *kern_v2p(const void *addr)
 {
-	return (void*)((UW)addr & (~SUPERVISOR_START));
+	return (void *) ((uintptr_t) addr & (~SUPERVISOR_START));
 }
 
 static inline size_t pages(const size_t bytes)

@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
+#include <stdint.h>
 #include <nerve/ipc_utils.h>
 #include "process.h"
 #include "../../kernel/mpu/mpufunc.h"
@@ -42,7 +43,7 @@ int mm_vmap(mm_request *req)
 
 		if (map_user_pages(p->directory,
 				(VP) (req->args.arg2),
-				pages((UW) (req->args.arg3)))) {
+				pages((uintptr_t) (req->args.arg3)))) {
 			reply->data[0] = ENOMEM;
 			break;
 		}
@@ -83,7 +84,7 @@ int mm_vunmap(mm_request *req)
 
 		if (unmap_user_pages(p->directory,
 				(VP) (req->args.arg2),
-				pages((UW) (req->args.arg3)))) {
+				pages((uintptr_t) (req->args.arg3)))) {
 			reply->data[0] = EACCES;
 			break;
 		}

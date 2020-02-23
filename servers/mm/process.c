@@ -155,7 +155,7 @@ mm_process_t *process_duplicate(mm_process_t *src)
 		if (copy_user_pages(dest->directory, src->directory,
 //TODO copy only current stack
 				pageRoundUp(LOCAL_ADDR - PAGE_SIZE)
-//				pageRoundUp((UW) (src->segments.heap.addr)
+//				pageRoundUp((uintptr_t) (src->segments.heap.addr)
 //						+ src->segments.heap.len)
 						>> BITS_OFFSET)) {
 //			reply->data[0] = EFAULT;

@@ -24,28 +24,28 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
+#include <stdint.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
 #include "mpufunc.h"
 #include "paging.h"
 
 static void set_initial_directories(void);
-static PTE calc_kern_pte(const void *addr);
+static PTE calc_kern_pte(const void *);
 
 
 void paging_initialize(void)
 {
 	set_initial_directories();
-	paging_set_directory((PTE*)KTHREAD_DIR_ADDR);
+	paging_set_directory((PTE *) KTHREAD_DIR_ADDR);
 	paging_start();
 }
 
 static void set_initial_directories(void)
 {
 	size_t i;
-	PTE *dir = (PTE*)KTHREAD_DIR_ADDR;
-	UB *addr = (UB*)0;
+	PTE *dir = (PTE *) KTHREAD_DIR_ADDR;
+	UB *addr = (UB *) 0;
 
 	for (i = 0; i < NUM_OF_INITIAL_DIR; i++) {
 		dir[i] = calc_kern_pte(addr);
@@ -61,5 +61,5 @@ static void set_initial_directories(void)
 
 static PTE calc_kern_pte(const void *addr)
 {
-	return (PTE)((((UW)addr) & PAGE_BIG_ADDR_MASK) | ATTR_BIG);
+	return (PTE) ((((uintptr_t) addr) & PAGE_BIG_ADDR_MASK) | ATTR_BIG);
 }

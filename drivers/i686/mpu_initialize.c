@@ -24,7 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-
+#include <stdint.h>
 #include <string.h>
 #include <core.h>
 #include <mpu/desc.h>
@@ -51,7 +51,7 @@ static void idt_initialize(void)
 {
 	UW i;
 	GateDescriptor desc;
-	GateDescriptor *p = (GateDescriptor*)IDT_ADDR;
+	GateDescriptor *p = (GateDescriptor *) IDT_ADDR;
 
 	desc.offsetLow = 0;
 	desc.selector = kern_code;
@@ -69,8 +69,8 @@ static void idt_initialize(void)
 
 static void gdt_initialize(void)
 {
-	SegmentDescriptor *p = (SegmentDescriptor*)GDT_ADDR;
-	tss_t *tss = (tss_t*)kern_v2p((VP)TSS_ADDR);
+	SegmentDescriptor *p = (SegmentDescriptor *) GDT_ADDR;
+	tss_t *tss = (tss_t *) kern_v2p((VP) TSS_ADDR);
 
 	/* segments */
 	memset(p, 0, GDT_MAX_ENTRY * sizeof(SegmentDescriptor));
@@ -85,7 +85,7 @@ static void gdt_initialize(void)
 
 	memset(tss, 0, sizeof(*tss));
 	tss->ss0 = kern_data;
-	gdt_set_segment(dummy_tss, (UW)TSS_ADDR, sizeof(*tss),
+	gdt_set_segment(dummy_tss, (uintptr_t) TSS_ADDR, sizeof(*tss),
 			segmentTss, dpl_kern, 0);
 
 	gdt_load();
@@ -97,7 +97,7 @@ static void gdt_set_segment(const UH selector,
 		const UW base, const UW limit,
 		const UB type, const UB dpl, const UB option)
 {
-	SegmentDescriptor *p = (SegmentDescriptor*)GDT_ADDR;
+	SegmentDescriptor *p = (SegmentDescriptor *) GDT_ADDR;
 
 	//TODO error check
 	p = &(p[selector >> 3]);
