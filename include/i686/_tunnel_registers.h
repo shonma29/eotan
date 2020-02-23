@@ -1,5 +1,5 @@
-#ifndef _MPU__NFORK_H_
-#define _MPU__NFORK_H_
+#ifndef _MPU__TUNNEL_REGISTERS_H_
+#define _MPU__TUNNEL_REGISTERS_H_
 /*
 This is free and unencumbered software released into the public domain.
 
