@@ -1,3 +1,5 @@
+#ifndef _MPU__NFORK_H_
+#define _MPU__NFORK_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,17 +26,23 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "sys.h"
 
-extern int _fork_entry();
-
-
-int _fork(int esp, int ebx, int ebp, int esi, int edi)
+static inline int _tunnel_registers(void *func)
 {
-	sys_args_t args = {
-		syscall_fork,
-		esp,
-		(int) _fork_entry
-	};
-	return _syscall(&args, sizeof(args));
+	int result;
+
+	__asm__ __volatile__ ( \
+		"pushl %%edi\n\t" \
+		"pushl %%esi\n\t" \
+		"pushl %%ebp\n\t" \
+		"pushl %%ebx\n\t" \
+		"call *%%eax\n\t" \
+		"addl $16, %%esp\n\t" \
+		:"=a"(result) \
+		:"a"(func) \
+		:);
+
+	return result;
 }
+
+#endif
