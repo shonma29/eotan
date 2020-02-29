@@ -144,7 +144,7 @@ static void worker(void)
 			switch (result) {
 			case reply_success:
 			case reply_failure:
-				result = kcall->ipc_reply(req->tag, reply,
+				result = kcall->ipc_send(req->tag, reply,
 						sizeof(*reply));
 				if (result)
 					log_err(MYNAME ": reply failed %d\n",
@@ -201,7 +201,7 @@ static void doit(void)
 			sys_reply_t *reply = (sys_reply_t *) &(req->args);
 			reply->result = -1;
 			reply->data[0] = result;
-			result = kcall->ipc_reply(req->tag, reply,
+			result = kcall->ipc_send(req->tag, reply,
 					sizeof(*reply));
 			if (result)
 				log_err(MYNAME ": reply failed %d\n", result);

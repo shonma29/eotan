@@ -268,7 +268,7 @@ int ipc_receive(const int port_id, int *tag, void *message)
 	return result;
 }
 
-int ipc_reply(const int tag, const void *message, const size_t size)
+int ipc_send(const int tag, const void *message, const size_t size)
 {
 	int reply_key = key_of_ipc(tag);
 /* TODO validate message */
@@ -286,7 +286,7 @@ int ipc_reply(const int tag, const void *message, const size_t size)
 
 	reply_t *r = getReplyParent(node);
 	if (size > r->max_reply) {
-		warn("ipc_reply[%d] size %d > %d\n",
+		warn("ipc_send[%d] size %d > %d\n",
 				reply_key, size, r->maxrmsz);
 		node = tree_remove(&reply_tree, reply_key);
 		if (node)
@@ -303,7 +303,7 @@ int ipc_reply(const int tag, const void *message, const size_t size)
 
 		if (memcpy_k2u(tp, tp->wait.detail.ipc.message, message,
 				size)) {
-			warn("ipc_reply[%d] copy_to(%d, %p, %p, %d) error\n",
+			warn("ipc_send[%d] copy_to(%d, %p, %p, %d) error\n",
 					reply_key, thread_id(tp),
 					tp->wait.detail.ipc.message, message,
 					size);

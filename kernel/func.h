@@ -84,7 +84,7 @@ extern int ipc_open(const T_CPOR *);
 extern int ipc_close(void);
 extern int ipc_call(const int, void *, const size_t);
 extern int ipc_receive(const int, int *, void *);
-extern int ipc_reply(const int, const void *, const size_t);
+extern int ipc_send(const int, const void *, const size_t);
 
 /* mutex.c */
 extern ER mutex_create(ID, T_CMTX *);

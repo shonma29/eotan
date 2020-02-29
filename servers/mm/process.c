@@ -309,7 +309,7 @@ int process_release_body(mm_process_t *proc)
 
 		slab_free(&process_slab, p);
 
-		ER result = kcall->ipc_reply(tag, &reply, sizeof(reply));
+		ER result = kcall->ipc_send(tag, &reply, sizeof(reply));
 		if (result)
 			log_err("mm: %d failed to release body(%d)\n",
 					proc->node.key, result);

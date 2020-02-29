@@ -184,7 +184,7 @@ static ER accept(const ID port)
 		return size;
 	}
 
-	int result = kcall->ipc_reply(tag, &message, execute(&message));
+	int result = kcall->ipc_send(tag, &message, execute(&message));
 	if (result) {
 		/*log_err(MYNAME ": reply error=%d\n", result);*/
 	}

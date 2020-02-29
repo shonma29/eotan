@@ -52,7 +52,7 @@ typedef struct {
 	int (*ipc_close)(void);
 	int (*ipc_call)(const int, void *, const size_t);
 	int (*ipc_receive)(const int, int *, void *);
-	int (*ipc_reply)(const int, const void *, const size_t);
+	int (*ipc_send)(const int, const void *, const size_t);
 	ER (*mutex_create)(ID, T_CMTX *);
 	ER (*mutex_destroy)(ID);
 	ER (*mutex_lock)(ID, TMO);

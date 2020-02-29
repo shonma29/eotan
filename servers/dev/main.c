@@ -70,7 +70,7 @@ static void doit(void)
 			packet.arg3 = 0;
 		}
 
-		ER result = kcall->ipc_reply(tag, &packet, sizeof(packet));
+		ER result = kcall->ipc_send(tag, &packet, sizeof(packet));
 		if (result)
 			log_err(MYNAME ": reply(0x%x) failed %d\n",
 					tag, result);

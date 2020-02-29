@@ -110,7 +110,7 @@ static void wakeup(list_t *w, int dummy)
 
 	while ((w = list_dequeue(&guard))) {
 		sleeper_t *s = getSleeperParent(w);
-		ER result = kcall->ipc_reply(s->tag, &reply, sizeof(reply));
+		ER result = kcall->ipc_send(s->tag, &reply, sizeof(reply));
 		if (result != E_OK)
 			log_err(MYNAME ": reply(0x%x) failed %d\n",
 					s->tag, result);
@@ -220,7 +220,7 @@ static void doit(void)
 		int reply = (size == sizeof(arg)) ?
 				add_timer(&arg, tag) : E_PAR;
 		if (reply != E_OK) {
-			int result = kcall->ipc_reply(tag, &reply,
+			int result = kcall->ipc_send(tag, &reply,
 					sizeof(reply));
 			if (result != E_OK)
 				log_err(MYNAME ": reply(0x%x) failed %d\n",

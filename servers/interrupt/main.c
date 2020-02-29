@@ -168,7 +168,7 @@ static ER accept(void)
 	int *reply = (int *) &args;
 	*reply = (size == sizeof(args)) ? execute(&args) : E_PAR;
 
-	int result = kcall->ipc_reply(tag, &args, sizeof(*reply));
+	int result = kcall->ipc_send(tag, &args, sizeof(*reply));
 	if (result)
 		log_err("interrupt: reply error=%d\n", result);
 

@@ -217,7 +217,7 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 
 static void reply(request_message_t *req, const size_t size)
 {
-	ER_UINT result = kcall->ipc_reply(req->tag, &(req->message), size);
+	ER_UINT result = kcall->ipc_send(req->tag, &(req->message), size);
 
 	if (result)
 		log_err("hmi: reply error=%d\n", result);

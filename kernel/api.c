@@ -79,7 +79,7 @@ void kcall_initialize(void)
 	p->ipc_close = ipc_close;
 	p->ipc_call = ipc_call;
 	p->ipc_receive = ipc_receive;
-	p->ipc_reply = ipc_reply;
+	p->ipc_send = ipc_send;
 	p->mutex_create = mutex_create;
 	p->mutex_destroy = mutex_destroy;
 	p->mutex_lock = mutex_lock;
