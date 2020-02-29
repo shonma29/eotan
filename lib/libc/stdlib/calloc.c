@@ -39,9 +39,8 @@ void *calloc(size_t nmemb, size_t size)
 		p = malloc(bytes);
 		if (p)
 			memset(p, 0, bytes);
-		else {
-			((thread_local_t *)_get_local())->error_no = ENOMEM;
-		}
+		else
+			_set_local_errno(ENOMEM);
 	} else
 		p = NULL;
 

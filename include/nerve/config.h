@@ -40,6 +40,8 @@ For more information, please refer to <http://unlicense.org/>
 
 #define USER_STACK_INITIAL_SIZE (16 * 1024)
 #define USER_STACK_MAX_SIZE (1 * 1024 * 1024)
+#define USER_STACK_END_ADDR 0x80000000
+#define USER_STACK_ADDR_MASK 0x7ff00000
 
 #define USER_HEAP_MAX_ADDR (1 * 1024 * 1024 * 1024)
 
@@ -48,6 +50,9 @@ For more information, please refer to <http://unlicense.org/>
 
 #define KCALL_ADDR 0x80003f00
 #define ICALL_ADDR 0x80003fc0
+
+#define MACHINE_LOCAL_ADDR 0x7ff00000
+#define PROCESS_LOCAL_ADDR 0x7ff01000
 
 #define MAX_PAGES (1024 * 1024 / 2)
 

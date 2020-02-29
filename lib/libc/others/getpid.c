@@ -30,5 +30,5 @@ For more information, please refer to <http://unlicense.org/>
 
 pid_t getpid(void)
 {
-	return _get_local()->pid;
+	return _get_process_local()->pid;
 }

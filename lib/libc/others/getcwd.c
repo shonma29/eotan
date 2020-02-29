@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 
 char *getcwd(char *buf, size_t size)
 {
-	thread_local_t *local_data = _get_local();
+	process_local_t *local_data = _get_process_local();
 
 	if (size <= local_data->wd_len) {
 		_set_local_errno(ERANGE);

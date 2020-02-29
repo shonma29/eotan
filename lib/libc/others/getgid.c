@@ -30,5 +30,5 @@ For more information, please refer to <http://unlicense.org/>
 
 gid_t getgid(void)
 {
-	return _get_local()->gid;
+	return _get_process_local()->gid;
 }

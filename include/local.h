@@ -28,36 +28,41 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <limits.h>
 #include <stddef.h>
-#include <core/types.h>
+#include <nerve/config.h>
 #include <sys/types.h>
 
-#define LOCAL_ADDR 0x7fffd000
-
 typedef struct {
-	int error_no;
-	ID thread_id;
 	pid_t pid;
 	pid_t ppid;
 	uid_t uid;
 	gid_t gid;
 	size_t wd_len;
 	char wd[PATH_MAX];
+} process_local_t;
+
+typedef struct {
+	int error_no;
+	int thread_id;
 } thread_local_t;
 
-static inline thread_local_t *_get_local(void)
+#define MAIN_THREAD_LOCAL_ADDR (USER_STACK_END_ADDR - sizeof(thread_local_t))
+
+extern thread_local_t *_get_thread_local(void);
+
+static inline process_local_t *_get_process_local(void)
 {
-	return (thread_local_t*)LOCAL_ADDR;
+	return ((process_local_t *) PROCESS_LOCAL_ADDR);
 }
 
 static inline int _get_local_errno(void)
 {
-	thread_local_t *local = (thread_local_t*)LOCAL_ADDR;
-
-	return local->error_no;
+	return (_get_thread_local())->error_no;
 }
 
 static inline void _set_local_errno(const int error_no)
 {
-	((thread_local_t*)LOCAL_ADDR)->error_no = error_no;
+
+	(_get_thread_local())->error_no = error_no;
 }
+
 #endif

@@ -88,7 +88,7 @@ typedef struct {
 	gid_t gid;
 	mm_session_t *session;
 	mm_file_t *wd;
-	thread_local_t *local;
+	process_local_t *local;
 	int exit_status;
 	int tag;
 	char name[32];//TODO set on fork/exec

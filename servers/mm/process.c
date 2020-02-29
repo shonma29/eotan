@@ -154,7 +154,7 @@ mm_process_t *process_duplicate(mm_process_t *src)
 
 		if (copy_user_pages(dest->directory, src->directory,
 //TODO copy only current stack
-				pageRoundUp(LOCAL_ADDR - PAGE_SIZE)
+				pageRoundUp(USER_STACK_END_ADDR)
 //				pageRoundUp((uintptr_t) (src->segments.heap.addr)
 //						+ src->segments.heap.len)
 						>> BITS_OFFSET)) {
@@ -235,16 +235,15 @@ int process_replace(mm_process_t *process,
 {
 	if (process->node.key == INIT_PID)
 		if (map_user_pages(process->directory,
-				(void *) pageRoundDown(LOCAL_ADDR
-						- USER_STACK_INITIAL_SIZE
-						- PAGE_SIZE),
+				(void *) pageRoundDown(USER_STACK_END_ADDR
+						- USER_STACK_INITIAL_SIZE),
 				pages(pageRoundUp(USER_STACK_INITIAL_SIZE))))
 			return ENOMEM;
 
 	if (stack_size > USER_STACK_INITIAL_SIZE)
 		return E2BIG;
 
-	unsigned int stack_top = pageRoundDown(LOCAL_ADDR - PAGE_SIZE)
+	unsigned int stack_top = pageRoundDown(USER_STACK_END_ADDR)
 			- stack_size;
 	if (move_stack(process->directory, (void *) stack_top,
 			(void *) args, stack_size))
@@ -277,16 +276,8 @@ int process_replace(mm_process_t *process,
 	process->segments.heap.attr = type_heap;
 
 	destroy_threads(process);
-
-	int result = create_thread(thread_id, process, (FP) entry,
+	return create_thread(thread_id, process, (FP) entry,
 			(VP) (stack_top - sizeof(int)));
-	if (result)
-		return result;
-
-	if (process->local)
-			process->local->thread_id = *thread_id;
-
-	return 0;
 }
 
 int process_release_body(mm_process_t *proc)
@@ -515,12 +506,12 @@ static int process_create(mm_process_t **process, const int pid)
 
 static int set_local(mm_process_t *process, char *wd, const size_t wd_len)
 {
-	if (map_user_pages(process->directory, (void *) LOCAL_ADDR,
+	if (map_user_pages(process->directory, (void *) PROCESS_LOCAL_ADDR,
 			pages(sizeof(*(process->local)))))
 		return ENOMEM;
 
 	process->local = getPageAddress(kern_p2v(process->directory),
-			(void *) LOCAL_ADDR);
+			(void *) PROCESS_LOCAL_ADDR);
 	memset(process->local, 0, sizeof(*(process->local)));
 	process->local->pid = process->node.key;
 	process->local->ppid = process->ppid;
@@ -562,9 +553,8 @@ int thread_create(int *thread_id, mm_process_t *process, FP entry, VP stack)
 	int error_no;
 	do {
 		if (map_user_pages(process->directory,
-				(VP) pageRoundDown(LOCAL_ADDR
-						- USER_STACK_INITIAL_SIZE
-						- PAGE_SIZE),
+				(VP) pageRoundDown(USER_STACK_END_ADDR
+						- USER_STACK_INITIAL_SIZE),
 				pages(pageRoundUp(USER_STACK_INITIAL_SIZE)))) {
 			error_no = ENOMEM;
 			break;
@@ -575,10 +565,6 @@ int thread_create(int *thread_id, mm_process_t *process, FP entry, VP stack)
 			//TODO unmap
 			break;
 		}
-
-		//TODO only main thread
-		if (process->local)
-			process->local->thread_id = *thread_id;
 
 		return 0;
 	} while (false);
@@ -626,14 +612,19 @@ static int create_thread(int *thread_id, mm_process_t *process, FP entry,
 	list_append(&(process->threads), &(th->brothers));
 
 	//TODO only main thread
-	process->segments.stack.addr = (void *) pageRoundDown(LOCAL_ADDR
-			- USER_STACK_MAX_SIZE);
+	process->segments.stack.addr = (void *) pageRoundDown(
+			USER_STACK_END_ADDR - USER_STACK_MAX_SIZE);
 	process->segments.stack.len = pageRoundUp(USER_STACK_INITIAL_SIZE);
-	process->segments.stack.max =
-			pageRoundUp(USER_STACK_MAX_SIZE - PAGE_SIZE);
+	process->segments.stack.max = pageRoundUp(USER_STACK_MAX_SIZE);
 	process->segments.stack.attr = type_stack;
 
 	*thread_id = tid;
+
+	thread_local_t *local = (thread_local_t *) MAIN_THREAD_LOCAL_ADDR;
+	if (kcall->region_put(tid, &(local->thread_id), sizeof(tid), &tid)) {
+		//TODO what to do?
+	}
+
 	return 0;
 }
 

@@ -56,7 +56,8 @@ int mm_vmap(mm_request *req)
 			p->segments.heap.len = newEnd
 					- (unsigned int) (p->segments.heap.addr);
 
-		if (req->args.arg2 == LOCAL_ADDR)
+		//TODO adhoc
+		if (req->args.arg2 == PROCESS_LOCAL_ADDR)
 			p->local = getPageAddress(kern_p2v(p->directory),
 					(void *) (req->args.arg2));
 

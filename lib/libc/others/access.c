@@ -35,27 +35,20 @@ static int can_access(const struct stat *, const int);
 
 int access(const char *path, int mode)
 {
-	int fd;
-	int result;
-	thread_local_t *local;
-	struct stat stat;
-
 	if (mode == F_OK)
 		mode = 0;
-
 	else {
 		int m = mode & (X_OK | W_OK | R_OK);
 
 		if (!m || m != mode) {
-			local = _get_local();
-			local->error_no = EINVAL;
+			_set_local_errno(EINVAL);
 			return -1;
 		}
 
 		mode = m;
 	}
 
-	fd = open(path, O_RDONLY);
+	int fd = open(path, O_RDONLY);
 	if (fd < 0)
 		return fd;
 
@@ -64,7 +57,8 @@ int access(const char *path, int mode)
 		return 0;
 	}
 
-	result = fstat(fd, &stat);
+	struct stat stat;
+	int result = fstat(fd, &stat);
 	close(fd);
 
 	if (result)
@@ -73,8 +67,7 @@ int access(const char *path, int mode)
 	if (can_access(&stat, mode))
 		return 0;
 
-	local = _get_local();
-	local->error_no = EACCES;
+	_set_local_errno(EACCES);
 	return -1;
 }
 

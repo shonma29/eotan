@@ -30,5 +30,5 @@ For more information, please refer to <http://unlicense.org/>
 
 uid_t getuid(void)
 {
-	return _get_local()->uid;
+	return _get_process_local()->uid;
 }

@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/memory.h>
 #include "sys.h"
 
-#define STACK_TAIL (LOCAL_ADDR - PAGE_SIZE)
+#define STACK_TAIL USER_STACK_END_ADDR
 
 static int count_args(char *const [], size_t *);
 static void copy_args(void **, const unsigned int, char **,
@@ -45,7 +45,8 @@ int execve(const char *name, char *const argv[], char *const envp[])
 	int argc = count_args(argv, &size);
 	int envc = count_args(envp, &size);
 	int num_of_array = (3 + argc + 1 + envc + 1);
-	size = roundUp(size, sizeof(int)) + num_of_array * sizeof(int);
+	size = roundUp(size, sizeof(int)) + num_of_array * sizeof(int)
+			+ sizeof(thread_local_t);
 	void **buf = (void **) malloc(size);
 	if (!buf) {
 		_set_local_errno(ENOMEM);

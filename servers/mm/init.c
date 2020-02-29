@@ -30,7 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "proxy.h"
 #include "../../lib/libserv/libserv.h"
 
-#define STACK_TAIL (LOCAL_ADDR - PAGE_SIZE)
+#define STACK_TAIL USER_STACK_END_ADDR
 #define MAX_ENV (10)
 
 typedef struct {
@@ -46,7 +46,8 @@ typedef struct {
 
 //TODO where to define?
 static char envpath[] = "PATH=/bin";
-static char buf[sizeof(init_arg_t) + PATH_MAX + 1 + MAX_ENV];
+static char buf[sizeof(init_arg_t) + PATH_MAX + 1 + MAX_ENV
+		+ sizeof(thread_local_t)];
 
 
 int exec_init(const pid_t process_id, char *pathname)
@@ -58,9 +59,9 @@ int exec_init(const pid_t process_id, char *pathname)
 	pathlen++;
 
 	sys_args_t args;
-	args.arg3 = (sizeof(init_arg_t) + pathlen
-			+ strlen(envpath) + 1 + sizeof(int) - 1)
-			& ~(sizeof(int) - 1);
+	args.arg3 = roundUp(sizeof(init_arg_t) + pathlen
+					+ strlen(envpath) + 1, sizeof(int))
+			+ sizeof(thread_local_t);
 	if (args.arg3 > sizeof(buf))
 		return ENOMEM;
 
@@ -69,19 +70,19 @@ int exec_init(const pid_t process_id, char *pathname)
 		return result;
 
 	size_t offset = STACK_TAIL - args.arg3;
-	init_arg_t *p = (init_arg_t*)buf;
+	init_arg_t *p = (init_arg_t *) buf;
 	p->argc = 1;
-	p->argv = (char**)(offsetof(init_arg_t, arg0) + offset);
-	p->envp = (char**)(offsetof(init_arg_t, env0) + offset);
-	p->arg0 = (char*)(offsetof(init_arg_t, buf) + offset);
+	p->argv = (char **) (offsetof(init_arg_t, arg0) + offset);
+	p->envp = (char **) (offsetof(init_arg_t, env0) + offset);
+	p->arg0 = (char *) (offsetof(init_arg_t, buf) + offset);
 	p->arg1 = NULL;
-	p->env0 = (char*)(sizeof(init_arg_t) + pathlen + offset);
+	p->env0 = (char *) (sizeof(init_arg_t) + pathlen + offset);
 	p->env1 = NULL;
 	strcpy(p->buf, pathname);
 	strcpy(&(buf[sizeof(init_arg_t) + pathlen]), envpath);
 
-	args.arg1 = (int)pathname;
-	args.arg2 = (int)p;
+	args.arg1 = (int) pathname;
+	args.arg2 = (int) p;
 
 	mm_process_t *process = process_find(process_id);
 	result = _attach(process, PORT_MM << 16);
@@ -92,8 +93,7 @@ log_info("mm: init attach %d\n", result);
 	}
 
 	sys_reply_t reply;
-	result = process_exec(&reply, process, PORT_MM,
-			&args);
+	result = process_exec(&reply, process, PORT_MM, &args);
 	log_info("mm: exec_init(pid=%d, %s) r=%d e=%d\n",
 			process_id, pathname, result, reply.data[0]);
 	return (result ? reply.data[0] : 0);

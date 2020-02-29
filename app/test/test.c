@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <local.h>
 #include <math.h>
 #include <stdio.h>
 
@@ -42,6 +43,10 @@ int main(int argc, char **argv)
 	int i = 1;
 	int j = 0;
 	printf("div %d\n", i / j);
+
+	thread_local_t *local = _get_thread_local();
+	printf("thread_local=%p, error_no=%d, thread_id=%d\n",
+			local, local->error_no, local->thread_id);
 
 	return 0;
 }

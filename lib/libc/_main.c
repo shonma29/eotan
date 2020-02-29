@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <local.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -49,6 +50,7 @@ void _main(int argc, char *argv[], char *envp[])
 
 static void __libc_initialize(void)
 {
+	_set_local_errno(0);
 	__malloc_initialize();
 
 	stdin = fdopen(STDIN_FILENO, "r");
@@ -63,4 +65,12 @@ static void __libc_initialize(void)
 	stderr = fdopen(STDERR_FILENO, "w");
 	if (stderr)
 		stderr->buf_size = 1;
+}
+
+thread_local_t *_get_thread_local(void)
+{
+	uintptr_t addr = (uintptr_t) __builtin_frame_address(0);
+	addr &= USER_STACK_ADDR_MASK;
+	addr += USER_STACK_MAX_SIZE - sizeof(thread_local_t);
+	return ((thread_local_t *) addr);
 }
