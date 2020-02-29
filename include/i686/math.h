@@ -1,3 +1,5 @@
+#ifndef _MPU_MATH_H_
+#define _MPU_MATH_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,55 +26,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <local.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <mpu/math.h>
 
-FILE __libc_files[FOPEN_MAX];
-FILE *stdin;
-FILE *stdout;
-FILE *stderr;
-char **environ;
-
-extern int main(int argc, char *argv[], char *envp[]);
-extern void __malloc_initialize(void);
-
-static void __libc_initialize(void);
-
-
-void _main(int argc, char *argv[], char *envp[])
+static inline void _math_initialize(void)
 {
-	environ = envp;
-	_math_initialize();
-	__libc_initialize();
-	exit(main(argc, argv, envp));
+	__asm__ __volatile__ ("finit");
 }
 
-static void __libc_initialize(void)
-{
-	_set_local_errno(0);
-	__malloc_initialize();
-
-	stdin = fdopen(STDIN_FILENO, "r");
-	//TODO fix when you can discriminate terminal
-	if (stdin)
-		stdin->buf_size = 1;
-
-	stdout = fdopen(STDOUT_FILENO, "w");
-	if (stdout)
-		stdout->buf_size = 1;
-
-	stderr = fdopen(STDERR_FILENO, "w");
-	if (stderr)
-		stderr->buf_size = 1;
-}
-
-thread_local_t *_get_thread_local(void)
-{
-	uintptr_t addr = (uintptr_t) __builtin_frame_address(0);
-	addr &= USER_STACK_ADDR_MASK;
-	addr += USER_STACK_MAX_SIZE - sizeof(thread_local_t);
-	return ((thread_local_t *) addr);
-}
+#endif
