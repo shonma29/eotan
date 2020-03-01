@@ -63,11 +63,13 @@ typedef struct {
 
 static inline ID thread_id(thread_t *th)
 {
-	return (ID) (th->node.key);
+	return ((ID) (th->node.key));
 }
 
-static inline thread_t *getThreadWaiting(const list_t *p) {
-	return (thread_t*)((intptr_t)p - offsetof(thread_t, wait.waiting));
+static inline thread_t *getThreadWaiting(const list_t *p)
+{
+	return ((thread_t *) ((uintptr_t) p
+			- offsetof(thread_t, wait.waiting)));
 }
 
 #endif

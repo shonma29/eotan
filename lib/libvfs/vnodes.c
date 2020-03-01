@@ -36,8 +36,9 @@ For more information, please refer to <http://unlicense.org/>
 static slab_t vnodes_slab;
 
 
-static inline vnode_t *getINodeParent(const list_t *p) {
-	return (vnode_t*)((intptr_t)p - offsetof(vnode_t, bros));
+static inline vnode_t *getINodeParent(const list_t *p)
+{
+	return ((vnode_t *) ((uintptr_t) p - offsetof(vnode_t, bros)));
 }
 
 int vnodes_initialize(void *(*palloc)(void), void (*pfree)(void *),
@@ -51,7 +52,6 @@ int vnodes_initialize(void *(*palloc)(void), void (*pfree)(void *),
 	vnodes_slab.palloc = palloc;
 	vnodes_slab.pfree = pfree;
 	slab_create(&vnodes_slab);
-
 	return 0;
 }
 

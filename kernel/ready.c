@@ -39,22 +39,20 @@ static list_t ready_task[MAX_PRIORITY + 1];
 static int buf[MAX_PRIORITY + 1];
 static heap_t heap;
 
-static inline thread_t *getThread(const list_t *p);
+static inline thread_t *getThread(const list_t *);
 static void ready_rotate(const int);
 static thread_t *ready_dequeue();
 
 
-static inline thread_t *getThread(const list_t *p) {
-	return (thread_t*)((intptr_t)p - offsetof(thread_t, queue));
+static inline thread_t *getThread(const list_t *p)
+{
+	return ((thread_t *) ((uintptr_t) p - offsetof(thread_t, queue)));
 }
 
-void ready_initialize()
+void ready_initialize(void)
 {
-	int i;
-
-	for (i = MIN_PRIORITY; i <= MAX_PRIORITY; i++) {
+	for (int i = MIN_PRIORITY; i <= MAX_PRIORITY; i++)
 		list_initialize(&(ready_task[i]));
-	}
 
 	heap_initialize(&heap, MAX_PRIORITY + 1, buf);
 }
@@ -62,18 +60,17 @@ void ready_initialize()
 void ready_enqueue(const int pri, list_t *src)
 {
 	list_t *dest = &(ready_task[pri]);
+	if (list_is_empty(dest))
+		heap_enqueue(&heap, pri);
 
-	if (list_is_empty(dest))	heap_enqueue(&heap, pri);
 	list_enqueue(dest, src);
 }
 
 static void ready_rotate(const int pri)
 {
 	list_t *head = list_dequeue(&(ready_task[pri]));
-
-	if (head) {
+	if (head)
 		list_enqueue(&(ready_task[pri]), head);
-	}
 }
 
 void tick(void)
@@ -87,17 +84,16 @@ void tick(void)
 		}
 }
 
-static thread_t *ready_dequeue()
+static thread_t *ready_dequeue(void)
 {
 	for (;; heap_dequeue(&heap)) {
-		list_t *q;
 		int pri = heap_head(&heap);
+		if (pri == HEAP_EMPTY)
+			return NULL;
 
-		if (pri == HEAP_EMPTY)	return NULL;
-
-		q = list_head(&(ready_task[pri]));
-
-		if (q)	return getThread(q);
+		list_t *q = list_head(&(ready_task[pri]));
+		if (q)
+			return getThread(q);
 	}
 }
 
@@ -118,7 +114,6 @@ void dispatch(void)
 	do {
 		thread_t *p = running;
 		thread_t *q = ready_dequeue();
-
 		if (q == p) {
 			leave_critical();
 			break;
@@ -129,7 +124,6 @@ void dispatch(void)
 
 		q->status = TTS_RUN;
 		running = q;
-
 		context_switch(p, q);
 	} while (false);
 }

@@ -46,19 +46,21 @@ static slab_t mutex_slab;
 static tree_t mutex_tree;
 static int mutex_hand;
 
-static inline mutex_t *getMutexParent(const node_t *p);
-static inline mutex_t *getMutexLocked(const list_t *p);
-static mutex_t *get_mutex(const ID mtxid);
-static void clear(mutex_t *p, const T_CMTX *pk_cmtx);
-static void give(mutex_t *q);
+static inline mutex_t *getMutexParent(const node_t *);
+static inline mutex_t *getMutexLocked(const list_t *);
+static mutex_t *get_mutex(const ID);
+static void clear(mutex_t *, const T_CMTX *);
+static void give(mutex_t *);
 
 
-static inline mutex_t *getMutexParent(const node_t *p) {
-	return (mutex_t*)((intptr_t)p - offsetof(mutex_t, node));
+static inline mutex_t *getMutexParent(const node_t *p)
+{
+	return ((mutex_t *) ((uintptr_t) p - offsetof(mutex_t, node)));
 }
 
-static inline mutex_t *getMutexLocked(const list_t *p) {
-	return (mutex_t*)((intptr_t)p - offsetof(mutex_t, locked));
+static inline mutex_t *getMutexLocked(const list_t *p)
+{
+	return ((mutex_t *) ((uintptr_t) p - offsetof(mutex_t, locked)));
 }
 
 static mutex_t *get_mutex(const ID mtxid)
@@ -74,7 +76,8 @@ ER mutex_initialize(void)
 	return E_OK;
 }
 
-static void clear(mutex_t *p, const T_CMTX *pk_cmtx) {
+static void clear(mutex_t *p, const T_CMTX *pk_cmtx)
+{
 	p->locker = 0;
 	list_initialize(&(p->waiter));
 	list_initialize(&(p->locked));
@@ -148,6 +151,7 @@ ER mutex_destroy(ID mtxid)
 		node_t *node = tree_remove(&mutex_tree, mtxid);
 		if (node)
 			slab_free(&mutex_slab, node);
+
 		result = E_OK;
 	} while (false);
 	leave_serialize();
@@ -252,7 +256,6 @@ static void give(mutex_t *q)
 	list_t *waiter = list_head(&(q->waiter));
 	if (waiter) {
 		thread_t *tp = getThreadWaiting(waiter);
-
 		q->locker = tp->node.key;
 		list_enqueue(&(tp->locking), &(q->locked));
 		list_remove(waiter);
@@ -261,7 +264,6 @@ static void give(mutex_t *q)
 			tp->priority = q->ceilpri;
 
 		release(tp);
-
 	} else
 		q->locker = 0;
 }

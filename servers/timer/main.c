@@ -40,7 +40,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../lib/libserv/libserv.h"
 #include "timer.h"
 
-#define system_time (((system_info_t*)SYSTEM_INFO_ADDR)->system_time)
+#define system_time (((system_info_t *) SYSTEM_INFO_ADDR)->system_time)
 
 typedef struct {
 	node_t node;
@@ -67,45 +67,42 @@ static void doit(void);
 static ER init(void);
 
 
-static inline timer_t *getTimerParent(const node_t *p) {
-	return (timer_t*)((intptr_t)p - offsetof(timer_t, node));
+static inline timer_t *getTimerParent(const node_t *p)
+{
+	return ((timer_t *) ((uintptr_t) p - offsetof(timer_t, node)));
 }
 
-static inline sleeper_t *getSleeperParent(const list_t *p) {
-	return (sleeper_t*)((intptr_t)p - offsetof(sleeper_t, brothers));
+static inline sleeper_t *getSleeperParent(const list_t *p)
+{
+	return ((sleeper_t *) ((uintptr_t) p
+			- offsetof(sleeper_t, brothers)));
 }
 
 static void time_initialize(void)
 {
-	long nsec = 0;
+	const static long nsec = 0;
 	time_t seconds;
-
 	rtc_get_time(&seconds);
 	timespec_set(&system_time, &seconds, &nsec);
 }
 
 static void time_tick(void)
 {
-	const static struct timespec add = {
-		0, TICK
-	};
-
+	const static struct timespec add = { 0, TICK };
 	timespec_add(&system_time, &add);
 }
 
 static int compare(const int a, const int b)
 {
-	struct timespec *t1 = (struct timespec*)&(((timer_t*)a)->ts);
-	struct timespec *t2 = (struct timespec*)&(((timer_t*)b)->ts);
-
+	struct timespec *t1 = (struct timespec *) &(((timer_t *) a)->ts);
+	struct timespec *t2 = (struct timespec *) &(((timer_t *) b)->ts);
 	return timespec_compare(t1, t2);
 }
 
 static void wakeup(list_t *w, int dummy)
 {
-	ER reply = E_TMOUT;
+	const static ER reply = E_TMOUT;
 	list_t guard;
-
 	list_append(w, &guard);
 
 	while ((w = list_dequeue(&guard))) {
@@ -114,28 +111,27 @@ static void wakeup(list_t *w, int dummy)
 		if (result != E_OK)
 			log_err(MYNAME ": reply(0x%x) failed %d\n",
 					s->tag, result);
+
 		slab_free(&sleeper_slab, s);
 	}
 }
 
 static ER add_timer(const struct timespec *ts, const int tag)
 {
-	node_t *p;
-	timer_t *t;
-	timer_t entry;
-	sleeper_t *s;
-
-	if ((ts->tv_sec < 0) || (ts->tv_nsec < 0))
+	if ((ts->tv_sec < 0)
+			|| (ts->tv_nsec < 0))
 		return E_PAR;
 
-	if ((ts->tv_sec == 0) && (ts->tv_nsec == 0))
+	if ((ts->tv_sec == 0)
+			&& (ts->tv_nsec == 0))
 		return E_TMOUT;
 
+	timer_t entry;
 	time_get_raw(&(entry.ts));
 	timespec_add(&(entry.ts), ts);
 
 	enter_critical();
-	s = slab_alloc(&sleeper_slab);
+	sleeper_t *s = slab_alloc(&sleeper_slab);
 	if (!s) {
 		leave_critical();
 		return E_NOMEM;
@@ -144,7 +140,8 @@ static ER add_timer(const struct timespec *ts, const int tag)
 	list_initialize(&(s->brothers));
 	s->tag = tag;
 
-	p = tree_get(&timer_tree, (int)&entry);
+	timer_t *t;
+	node_t *p = tree_get(&timer_tree, (int) &entry);
 	if (p)
 		t = getTimerParent(p);
 	else {
@@ -155,14 +152,14 @@ static ER add_timer(const struct timespec *ts, const int tag)
 			return E_NOMEM;
 		}
 
-		if (!tree_put(&timer_tree, (int)&entry, p)) {
+		if (!tree_put(&timer_tree, (int) &entry, p)) {
 			slab_free(&timer_slab, p);
 			slab_free(&sleeper_slab, s);
 			leave_critical();
 			return E_SYS;
 		}
 
-		p->key = (int)p;
+		p->key = (int) p;
 		t = getTimerParent(p);
 		t->ts = entry.ts;
 		list_initialize(&(t->waiting));
@@ -176,17 +173,14 @@ static ER add_timer(const struct timespec *ts, const int tag)
 
 ER timer_service(void)
 {
-	struct timespec now;
-	node_t *p;
-
 	time_tick();
 	kcall->tick();
 
+	struct timespec now;
 	time_get_raw(&now);
 
-	while ((p = tree_first(&timer_tree))) {
+	for (node_t *p; (p = tree_first(&timer_tree));) {
 		timer_t *t = getTimerParent(p);
-
 		if (timespec_compare(&now, &(t->ts)) < 0)
 			break;
 
@@ -194,11 +188,11 @@ ER timer_service(void)
 			list_t *w = list_next(&(t->waiting));
 
 			list_remove(&(t->waiting));
-			icall->handle((void (*)(const int, const int))wakeup,
-					(int)w, 0);
+			icall->handle((void (*)(const int, const int)) wakeup,
+					(int) w, 0);
 		}
 
-		p = tree_remove(&timer_tree, (int)p);
+		p = tree_remove(&timer_tree, (int) p);
 		if (p)
 			slab_free(&timer_slab, p);
 	}
@@ -231,10 +225,6 @@ static void doit(void)
 
 static ER init(void)
 {
-	T_CPOR pk_cpor = { TA_TFIFO, sizeof(struct timespec), sizeof(ER) };
-	T_DINH pk_dinh = { TA_HLNG, (FP)timer_service };
-	ER result;
-
 	timer_slab.unit_size = sizeof(timer_t);
 	timer_slab.block_size = PAGE_SIZE;
 	timer_slab.min_block = 1;
@@ -255,7 +245,9 @@ static ER init(void)
 	slab_create(&sleeper_slab);
 
 	time_initialize();
-	result = define_handler(PIC_IR_VECTOR(ir_pit), &pk_dinh);
+
+	T_DINH pk_dinh = { TA_HLNG, (FP) timer_service };
+	ER result = define_handler(PIC_IR_VECTOR(ir_pit), &pk_dinh);
 	if (result != E_OK) {
 		log_err(MYNAME ": interrupt_bind error=%d\n", result);
 		return result;
@@ -271,6 +263,7 @@ static ER init(void)
 		return result;
 	}
 
+	T_CPOR pk_cpor = { TA_TFIFO, sizeof(struct timespec), sizeof(ER) };
 	result = kcall->ipc_open(&pk_cpor);
 	if (result != E_OK) {
 		log_err(MYNAME ": open failed %d\n", result);
@@ -285,13 +278,11 @@ static ER init(void)
 void start(VP_INT exinf)
 {
 	if (init() == E_OK) {
-		ER error;
-
 		log_info(MYNAME ": start\n");
 		doit();
 		log_info(MYNAME ": end\n");
 
-		error = kcall->ipc_close();
+		ER error = kcall->ipc_close();
 		if (error != E_OK)
 			log_err(MYNAME ": close failed %d\n", error);
 	}

@@ -44,7 +44,6 @@ typedef struct _lfs_t {
 	size_t entry_size;
 } lfs_t;
 
-
 static inline lfs_entry_t *lfs_next(lfs_entry_t *entry)
 {
 	return entry->next;
@@ -52,7 +51,7 @@ static inline lfs_entry_t *lfs_next(lfs_entry_t *entry)
 
 static inline void *lfs_buf(lfs_entry_t *entry)
 {
-	return (void*)(entry->buf);
+	return ((void *) (entry->buf));
 }
 
 static inline int lfs_is_empty(lfs_t *stack)
@@ -61,17 +60,14 @@ static inline int lfs_is_empty(lfs_t *stack)
 }
 
 #define lfs_entry_size(size) \
-	((size + sizeof(lfs_entry_t) + sizeof(intptr_t) - 1) \
-			& ~(sizeof(intptr_t) - 1))
+	((size + sizeof(lfs_entry_t) + sizeof(uintptr_t) - 1) \
+			& ~(sizeof(uintptr_t) - 1))
 
 #define lfs_buf_size(size, entry_num) \
 	(lfs_entry_size(size) * entry_num)
 
-
-extern void lfs_initialize(volatile lfs_t *stack, void *buf,
-	size_t size, size_t entry_num);
-
-extern void lfs_push(volatile lfs_t *stack, void *p);
-extern void *lfs_pop(volatile lfs_t *stack);
+extern void lfs_initialize(volatile lfs_t *, void *, size_t, size_t);
+extern void lfs_push(volatile lfs_t *, void *);
+extern void *lfs_pop(volatile lfs_t *);
 
 #endif

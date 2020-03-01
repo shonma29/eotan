@@ -31,8 +31,8 @@ For more information, please refer to <http://unlicense.org/>
 
 extern thread_t *running;
 
-extern void ready_initialize();
-extern void ready_enqueue(const int pri, list_t *src);
+extern void ready_initialize(void);
+extern void ready_enqueue(const int, list_t *);
 extern void tick(void);
 extern void dispatch(void);
 

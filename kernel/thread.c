@@ -45,15 +45,16 @@ static ER setup(thread_t *, T_CTSK *);
 static void fire(thread_t *);
 static void release_resources(thread_t *);
 
-static inline thread_t *getThreadParent(const node_t *p) {
-	return (thread_t *) ((intptr_t) p - offsetof(thread_t, node));
+
+static inline thread_t *getThreadParent(const node_t *p)
+{
+	return ((thread_t *) ((uintptr_t) p - offsetof(thread_t, node)));
 }
 
 ER thread_initialize(void)
 {
 	create_tree(&thread_tree, &thread_slab, sizeof(thread_t), NULL);
 	thread_hand = MIN_AUTO_ID - 1;
-
 	ready_initialize();
 	return E_OK;
 }
@@ -104,17 +105,16 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk)
 
 ER_ID thread_create_auto(T_CTSK *pk_ctsk)
 {
-	ER_ID result;
-
 	if (pk_ctsk->tskatr & TA_ASM)
 		return E_RSATR;
 
 	if (pk_ctsk->stksz != KTHREAD_STACK_SIZE)
 		return E_PAR;
 
+	ER_ID result;
+
 	enter_serialize();
 	do {
-		thread_t *th;
 		node_t *node = slab_alloc(&thread_slab);
 		if (!node) {
 			result = E_NOMEM;
@@ -127,7 +127,7 @@ ER_ID thread_create_auto(T_CTSK *pk_ctsk)
 			break;
 		}
 
-		th = getThreadParent(node);
+		thread_t *th = getThreadParent(node);
 		result = setup(th, pk_ctsk);
 		if (result) {
 			node = tree_remove(&thread_tree, node->key);
@@ -150,8 +150,6 @@ ER_ID thread_create_auto(T_CTSK *pk_ctsk)
 
 ER thread_create(ID tskid, T_CTSK *pk_ctsk)
 {
-	ER result;
-
 	if ((tskid < MIN_MANUAL_ID)
 			|| (tskid > MAX_MANUAL_ID))
 		return E_ID;
@@ -161,6 +159,8 @@ ER thread_create(ID tskid, T_CTSK *pk_ctsk)
 
 	if (pk_ctsk->stksz != KTHREAD_STACK_SIZE)
 		return E_PAR;
+
+	ER result;
 
 	enter_serialize();
 	do {
@@ -226,7 +226,6 @@ ER thread_destroy(ID tskid)
 
 	enter_serialize();
 	do {
-		node_t *node;
 		thread_t *th = get_thread_ptr(tskid);
 		if (!th) {
 			result = E_NOEXS;
@@ -238,12 +237,12 @@ ER thread_destroy(ID tskid)
 			break;
 		}
 
-		node = tree_remove(&thread_tree, tskid);
+		node_t *node = tree_remove(&thread_tree, tskid);
 		if (node)
 			slab_free(&thread_slab, node);
+
 		release_resources(th);
 		result = E_OK;
-
 	} while (false);
 	leave_serialize();
 
@@ -256,12 +255,10 @@ ER thread_start(ID tskid)
 
 	enter_serialize();
 	do {
-		thread_t *th;
-
 		if (tskid == TSK_SELF)
 			tskid = thread_id(running);
 
-		th = get_thread_ptr(tskid);
+		thread_t *th = get_thread_ptr(tskid);
 		if (!th) {
 			leave_serialize();
 			result = E_NOEXS;
@@ -306,8 +303,8 @@ void thread_end_and_destroy(void)
 	node_t *node = tree_remove(&thread_tree, thread_id(th));
 	if (node)
 		slab_free(&thread_slab, node);
-	leave_serialize();
 
+	leave_serialize();
 	dispatch();
 }
 

@@ -42,7 +42,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #define THREAD_LOOKUP_SIZE (16)
 
-#define getParent(type, p) ((intptr_t) p - offsetof(type, node))
+#define getParent(type, p) ((uintptr_t) p - offsetof(type, node))
 
 static slab_t process_slab;
 static tree_t process_tree;
@@ -54,27 +54,31 @@ static tree_t process_group_tree;
 
 static inline mm_thread_t *getMyThread(const list_t *p)
 {
-	return (mm_thread_t *) ((intptr_t) p - offsetof(mm_thread_t, brothers));
+	return ((mm_thread_t *) ((uintptr_t) p
+			- offsetof(mm_thread_t, brothers)));
 }
 /*
 static inline mm_process_t *getProcessFromChildren(const list_t *p)
 {
-	return (mm_process_t *) ((intptr_t) p - offsetof(mm_process_t, children));
+	return ((mm_process_t *) ((uintptr_t) p
+			- offsetof(mm_process_t, children)));
 }
 */
 static inline mm_process_t *getProcessFromBrothers(const list_t *p)
 {
-	return (mm_process_t *) ((intptr_t) p - offsetof(mm_process_t, brothers));
+	return ((mm_process_t *) ((uintptr_t) p
+			- offsetof(mm_process_t, brothers)));
 }
 /*
 static inline mm_process_t *getProcessFromMembers(const list_t *p)
 {
-	return (mm_process_t *) ((intptr_t) p - offsetof(mm_process_t, members));
+	return ((mm_process_t *) ((uintptr_t) p
+			- offsetof(mm_process_t, members)));
 }
 
 static inline mm_process_group_t *getProcessGroupFromMembers(const list_t *p)
 {
-	return (mm_process_group_t *) ((intptr_t) p
+	return ((mm_process_group_t *) ((uintptr_t) p
 			- offsetof(mm_process_group_t, members));
 }
 */
@@ -224,7 +228,7 @@ static int process_find_new_pid(void)
 		if (!tree_get(&process_tree, id))
 			return id;
 
-	return -1;
+	return (-1);
 }
 
 //TODO from exec

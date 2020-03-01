@@ -51,12 +51,14 @@ static inline reply_t *getReplyParent(const node_t *);
 static void clear(ipc_t *, const T_CPOR *);
 
 
-static inline ipc_t *getPortParent(const thread_t *p) {
-	return (ipc_t *) &(p->port);
+static inline ipc_t *getPortParent(const thread_t *p)
+{
+	return ((ipc_t *) &(p->port));
 }
 
-static inline reply_t *getReplyParent(const node_t *p) {
-	return (reply_t *) ((intptr_t) p - offsetof(reply_t, node));
+static inline reply_t *getReplyParent(const node_t *p)
+{
+	return ((reply_t *) ((uintptr_t) p - offsetof(reply_t, node)));
 }
 
 int ipc_initialize(void)
@@ -66,7 +68,8 @@ int ipc_initialize(void)
 	return E_OK;
 }
 
-static void clear(ipc_t *p, const T_CPOR *pk_cpor) {
+static void clear(ipc_t *p, const T_CPOR *pk_cpor)
+{
 	p->opened = true;
 	list_initialize(&(p->caller));
 	list_initialize(&(p->receiver));
@@ -152,7 +155,6 @@ int ipc_call(const int port_id, void *message, const size_t size)
 	list_t *q = list_head(&(port->receiver));
 	if (q) {
 		thread_t *tp = getThreadWaiting(q);
-
 		if (memcpy_k2u(tp, tp->wait.detail.ipc.message, message,
 				size)) {
 			warn("ipc_call[%d] copy_to(%d, %p, %p, %d) error\n",
@@ -233,6 +235,7 @@ int ipc_receive(const int port_id, int *tag, void *message)
 			node = tree_remove(&reply_tree, reply_key);
 			if (node)
 				slab_free(&reply_slab, node);
+
 			leave_serialize();
 			return E_PAR;
 /* TODO test */
@@ -300,7 +303,6 @@ int ipc_send(const int tag, const void *message, const size_t size)
 	list_t *q = list_head(&(r->caller));
 	if (q) {
 		thread_t *tp = getThreadWaiting(q);
-
 		if (memcpy_k2u(tp, tp->wait.detail.ipc.message, message,
 				size)) {
 			warn("ipc_send[%d] copy_to(%d, %p, %p, %d) error\n",

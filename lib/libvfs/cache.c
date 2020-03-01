@@ -53,19 +53,22 @@ static list_t free_list;
 static list_t lru_list;
 static list_t locked_list;
 
-static int fill(cache_t *cp);
-static int sweep(cache_t *cp);
-static void dispose(cache_t *cp);
+static int fill(cache_t *);
+static int sweep(cache_t *);
+static void dispose(cache_t *);
 
-static unsigned int calc_hash(const void *key, const size_t size);
-static int compare(const void *a, const void *b);
+static unsigned int calc_hash(const void *, const size_t);
+static int compare(const void *, const void *);
 
-static inline cache_t *getLruParent(const list_t *p) {
-	return (cache_t*)((intptr_t)p - offsetof(cache_t, lru));
+
+static inline cache_t *getLruParent(const list_t *p)
+{
+	return ((cache_t *) ((uintptr_t) p - offsetof(cache_t, lru)));
 }
 
-static inline cache_t *getBufParent(const void *p) {
-	return (cache_t*)((intptr_t)p - offsetof(cache_t, buf));
+static inline cache_t *getBufParent(const void *p)
+{
+	return ((cache_t *) ((uintptr_t) p - offsetof(cache_t, buf)));
 }
 
 int cache_initialize(void)
@@ -208,7 +211,6 @@ bool cache_release(const void *p, const bool dirty)
 //	log_debug("cache_release: %d %d %d %d\n",
 //			cp->dev->channel, cp->block_no, cp->lock_count,
 //			cp->dirty);
-
 	return true;
 }
 
@@ -222,7 +224,6 @@ bool cache_invalidate(block_device_t *dev, const unsigned int block_no)
 		return false;
 
 	dispose(cp);
-
 	return true;
 }
 
@@ -231,9 +232,9 @@ int cache_synchronize(block_device_t *dev, const bool unmount)
 	for (list_t *p = list_next(&lru_list); !list_is_edge(&lru_list, p);) {
 		cache_t *cp = getLruParent(p);
 
-//	log_debug("cache_sync: %d %d %d %d\n",
-//			cp->dev->channel, cp->block_no, cp->lock_count,
-//			cp->dirty);
+//		log_debug("cache_sync: %d %d %d %d\n",
+//				cp->dev->channel, cp->block_no,
+//				cp->lock_count, cp->dirty);
 		if (cp->dev->channel != dev->channel) {
 			p = list_next(p);
 			continue;
@@ -243,6 +244,7 @@ int cache_synchronize(block_device_t *dev, const bool unmount)
 			int error_no = sweep(cp);
 			if (error_no)
 				return error_no;
+
 			cp->dirty = false;
 		}
 
@@ -274,15 +276,13 @@ static void dispose(cache_t *cp)
 
 static unsigned int calc_hash(const void *key, const size_t size)
 {
-	cache_t *p = (cache_t*)key;
-
-	return (p->block_no % size);
+	return (((cache_t *) key)->block_no % size);
 }
 
 static int compare(const void *a, const void *b)
 {
-	cache_t *x = (cache_t *)a;
-	cache_t *y = (cache_t *)b;
+	cache_t *x = (cache_t *) a;
+	cache_t *y = (cache_t *) b;
 
 	if (x->block_no == y->block_no) {
 			if (x->dev->channel == y->dev->channel)

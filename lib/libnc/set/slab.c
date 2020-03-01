@@ -27,19 +27,13 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/slab.h>
 
 
-static slab_block_t *slab_add_block(slab_t *slab) {
-	slab_block_t *block;
+static slab_block_t *slab_add_block(slab_t *slab)
+{
+	if (slab->block_num >= slab->max_block)
+		return NULL;
 
-	if (slab->block_num >= slab->max_block)	return NULL;
-
-	block = (slab_block_t*)slab->palloc();
-
+	slab_block_t *block = (slab_block_t *) slab->palloc();
 	if (block) {
-		size_t i;
-		slab_entry_t *entry = (slab_entry_t*)((intptr_t)block
-				+ sizeof(slab_block_t)
-				+ slab->offset);
-
 		list_enqueue(&(slab->empties), &(block->empties));
 		slab->empty_num++;
 		list_enqueue(&(slab->blocks), &(block->blocks));
@@ -47,9 +41,12 @@ static slab_block_t *slab_add_block(slab_t *slab) {
 		list_initialize(&(block->entries));
 		block->entry_num = slab->entries_per_block;
 
-		for (i = 0; i < slab->entries_per_block; i++) {
+		slab_entry_t *entry = (slab_entry_t *) ((uintptr_t) block
+				+ sizeof(slab_block_t)
+				+ slab->offset);
+		for (unsigned int i = 0; i < slab->entries_per_block; i++) {
 			list_enqueue(&(block->entries), &(entry->entries));
-			entry = (slab_entry_t*)((intptr_t)entry
+			entry = (slab_entry_t *) ((uintptr_t) entry
 					+ slab->unit_size);
 		}
 	}
@@ -57,18 +54,16 @@ static slab_block_t *slab_add_block(slab_t *slab) {
 	return block;
 }
 
-int slab_create(slab_t *slab) {
-	size_t i;
-
+int slab_create(slab_t *slab)
+{
 	if (!slab->block_size
 			|| slab->unit_size < sizeof(slab_entry_t)
 			|| (slab->unit_size + sizeof(slab_block_t)
 					> slab->block_size)
 			|| !slab->max_block
 			|| !slab->palloc
-			|| !slab->pfree) {
+			|| !slab->pfree)
 		return SLAB_ERROR;
-	}
 
 	slab->entries_per_block = (slab->block_size - sizeof(slab_block_t))
 			/ slab->unit_size;
@@ -79,47 +74,43 @@ int slab_create(slab_t *slab) {
 	list_initialize(&(slab->blocks));
 	slab->block_num = 0;
 
-	for (i = 0; i < slab->min_block; i++) {
-		if (!slab_add_block(slab))	break;
-	}
+	for (unsigned int i = 0; i < slab->min_block; i++)
+		if (!slab_add_block(slab))
+			break;
 
 	return SLAB_OK;
 }
 
-void slab_destroy(slab_t *slab) {
+void slab_destroy(slab_t *slab)
+{
 	list_t *q = &(slab->blocks);
-	list_t *p;
-
-	for (p = list_dequeue(q); p; p = list_dequeue(q)) {
-		slab->pfree((void*)((intptr_t)p - offsetof(slab_block_t, blocks)));
-	}
+	for (list_t *p = list_dequeue(q); p; p = list_dequeue(q))
+		slab->pfree((void *) ((uintptr_t) p
+				- offsetof(slab_block_t, blocks)));
 }
 
-void *slab_alloc(slab_t *slab) {
-	slab_block_t *block = (slab_block_t*)list_head(&(slab->empties));
-	list_t *entry;
-
+void *slab_alloc(slab_t *slab)
+{
+	slab_block_t *block = (slab_block_t *) list_head(&(slab->empties));
 	if (!block) {
-		if (slab_add_block(slab)) {
-			block = (slab_block_t*)list_head(&(slab->empties));
-		}
-
-		else	return NULL;
+		if (slab_add_block(slab))
+			block = (slab_block_t *) list_head(&(slab->empties));
+		else
+			return NULL;
 	}
 
-	entry = (list_t*)list_dequeue(&(block->entries));
 	block->entry_num--;
-
 	if (!block->entry_num) {
 		list_remove(&(block->empties));
 		slab->empty_num--;
 	}
 
-	return entry;
+	return list_dequeue(&(block->entries));
 }
 
-void slab_free(slab_t *slab, void *p) {
-	slab_block_t *block = (slab_block_t*)(((intptr_t)p) & slab->mask);
+void slab_free(slab_t *slab, void *p)
+{
+	slab_block_t *block = (slab_block_t *) (((uintptr_t) p) & slab->mask);
 
 	if (!block->entry_num) {
 		list_enqueue(&(slab->empties), &(block->empties));
@@ -127,7 +118,6 @@ void slab_free(slab_t *slab, void *p) {
 	}
 
 	block->entry_num++;
-
 	if ((block->entry_num == slab->entries_per_block)
 			&& (slab->empty_num > 1)
 			&& (slab->block_num > slab->min_block)) {
@@ -136,7 +126,7 @@ void slab_free(slab_t *slab, void *p) {
 		list_remove(&(block->blocks));
 		slab->block_num--;
 		slab->pfree(block);
-	}
-
-	else	list_enqueue(&(block->entries), &(((slab_entry_t*)p)->entries));
+	} else
+		list_enqueue(&(block->entries),
+				&(((slab_entry_t *) p)->entries));
 }
