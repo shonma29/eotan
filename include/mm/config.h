@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #define PROCESS_MAX (32768)
 #define THREAD_MAX (32768)
+#define THREADS_PER_PROCESS (32)
 #define FILE_MAX (65536)
 #define FILES_PER_PROCESS (1024)
 #define PROCESS_GROUP_MAX (32768)
@@ -36,5 +37,12 @@ For more information, please refer to <http://unlicense.org/>
 #define FILES_PER_SESSION (32768)
 
 #define REQUEST_MAX (1024)
+
+#define USER_STACK_INITIAL_SIZE (16 * 1024)
+#define USER_STACK_MAX_SIZE (1 * 1024 * 1024)
+#define USER_STACK_END_ADDR 0x80000000
+#define USER_STACK_ADDR_MASK 0x7ff00000
+
+#define USER_HEAP_MAX_ADDR (1 * 1024 * 1024 * 1024)
 
 #endif

@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <mm/config.h>
 #include <mpu/math.h>
 
 FILE __libc_files[FOPEN_MAX];

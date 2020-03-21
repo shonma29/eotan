@@ -38,14 +38,6 @@ For more information, please refer to <http://unlicense.org/>
 #define KTHREAD_DIR_ADDR 0x00002000
 #define KTHREAD_STACK_SIZE (4 * 1024)
 
-#define THREADS_PER_PROCESS (32)
-#define USER_STACK_INITIAL_SIZE (16 * 1024)
-#define USER_STACK_MAX_SIZE (1 * 1024 * 1024)
-#define USER_STACK_END_ADDR 0x80000000
-#define USER_STACK_ADDR_MASK 0x7ff00000
-
-#define USER_HEAP_MAX_ADDR (1 * 1024 * 1024 * 1024)
-
 #define KERNEL_LOG_ADDR 0x80170000
 #define KERNEL_LOG_SIZE (32 * 1024)
 

@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <errno.h>
 #include <services.h>
 #include <string.h>
+#include <mm/config.h>
 #include "proxy.h"
 #include "../../lib/libserv/libserv.h"
 

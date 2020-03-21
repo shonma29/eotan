@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <mm/config.h>
 #include <mpu/memory.h>
 #include "sys.h"
 
