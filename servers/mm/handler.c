@@ -59,27 +59,30 @@ ER page_fault_handler(void)
 
 static void expand_stack(const int tid, const int addr)
 {
+	//TODO lock thread/process table
 	mm_thread_t *th = thread_find(tid);
 	if (th) {
 		mm_process_t *p = get_process(th);
 		if (!p) {
 			//TODO test
-			log_warning("mm: expand no parent=%d\n", tid);
+			kcall->printk("mm: expand no parent=%d\n", tid);
 			return;
 		}
 
-		mm_segment_t *s = &(p->segments.stack);
+		mm_segment_t *s = &(th->stack);
 		void *start = (void *) pageRoundDown((uintptr_t) addr);
 		if (s->attr
 				&& ((size_t) start >= (size_t) (s->addr)
-				&& ((size_t) addr <= ((size_t) (s->addr) + s->max)))) {
-			size_t size = pages(PAGE_SIZE);
-
+				&& ((size_t) addr < ((size_t) (s->addr)
+						+ s->max)))) {
+			uintptr_t end = (uintptr_t) s->addr + s->max - s->len;
+			size_t size = pages(end - (uintptr_t) start);
 			if (map_user_pages(p->directory, start, size))
 				//TODO test
+				//TODO skip holes on recovery
 				unmap_user_pages(p->directory, start, size);
 			else {
-				//TODO test
+				s->len += end - (uintptr_t) start;
 				tlb_flush_all();
 				return;
 			}
@@ -89,7 +92,7 @@ static void expand_stack(const int tid, const int addr)
 		kill(tid, 0);
 	} else
 		//TODO test
-		log_warning("mm: expand unknown thread=%d\n", tid);
+		kcall->printk("mm: expand unknown thread=%d\n", tid);
 }
 
 static void kill(const int tid, const int dummy)
@@ -98,13 +101,15 @@ static void kill(const int tid, const int dummy)
 
 	mm_thread_t *th = thread_find(tid);
 	if (!th) {
-		log_warning("mm: kill unknown thread=%d\n", tid);
+		//TODO test
+		kcall->printk("mm: kill unknown thread=%d\n", tid);
 		return;
 	}
 
 	mm_process_t *p = get_process(th);
 	if (p) {
-		log_info("mm: killed %d\n", p->node.key);
+		//TODO test
+		kcall->printk("mm: killed %d\n", p->node.key);
 		process_destroy(p, 9);
 	}
 }

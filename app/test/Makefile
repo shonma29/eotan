@@ -30,6 +30,13 @@ TARGET = $(WD)/test $(WD)/systest \
 
 include Makefile.in
 
+# when no optimize
+#CFLAGS = -Wall -Werror -std=c11 \
+# -march=$(ARCH) \
+# -I $(WD) -I include \
+# -DUSE_VESA \
+# -fno-asynchronous-unwind-tables
+
 ENTRY_ADDR = 0x00001000
 ENTRY_FUNC = _main
 

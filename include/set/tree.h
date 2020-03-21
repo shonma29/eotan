@@ -67,6 +67,7 @@ extern void tree_create(tree_t *, int (*compare)(const int, const int),
 extern node_t *tree_get(const tree_t *, const int);
 extern node_t *tree_put(tree_t *, const int, node_t *);
 extern node_t *tree_remove(tree_t *, const int);
+extern node_t *tree_root(const tree_t *);
 extern node_t *tree_first(const tree_t *);
 extern void tree_walk(const tree_t *, int (*callback)(node_t *));
 extern void tree_initialize_lookup(tree_t *, node_t **, const size_t);

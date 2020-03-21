@@ -29,6 +29,17 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdio.h>
 
 
+static int recursion(int v)
+{
+	if ((v % 1000) == 0)
+		printf("%d\n", v);
+
+	if (v == 0)
+		return 0;
+
+	return (v + recursion(v - 1));
+}
+
 int main(int argc, char **argv)
 {
 	double x = 1.0;
@@ -40,13 +51,18 @@ int main(int argc, char **argv)
 	printf("%f\n", sin(x));
 	printf("%f\n", cos(x));
 
+	// test exception
 	int i = 1;
 	int j = 0;
 	printf("div %d\n", i / j);
 
+	// test thread local
 	thread_local_t *local = _get_thread_local();
 	printf("thread_local=%p, error_no=%d, thread_id=%d\n",
 			local, local->error_no, local->thread_id);
+
+	// test stack expansion (need no optimizer)
+	printf("%d\n", recursion(1024));
 
 	return 0;
 }

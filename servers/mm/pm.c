@@ -50,25 +50,11 @@ int mm_fork(mm_request *req)
 		}
 
 		mm_process_t *process = get_process(th);
-		mm_process_t *child = process_duplicate(process);
+		mm_process_t *child = process_duplicate(process,
+				(void *) (req->args.arg2),
+				(void *) (req->args.arg1));
 		if (!child) {
 			log_err("mm: duplicate err\n");
-			reply->data[0] = ENOMEM;
-			break;
-		}
-
-		int thread_id;
-		int error_no = thread_create(&thread_id, child,
-				(FP)(req->args.arg2), (VP)(req->args.arg1));
-		if (error_no) {
-			log_err("mm: th create err\n");
-			reply->data[0] = error_no;
-			break;
-		}
-
-		if (kcall->thread_start(thread_id) < 0) {
-			log_err("mm: th start err\n");
-			//TODO use other errno
 			reply->data[0] = ENOMEM;
 			break;
 		}
@@ -207,6 +193,7 @@ int process_exec(sys_reply_t *reply, mm_process_t *process, const int thread_id,
 				&new_thread_id);
 		if (result) {
 			log_err("replace0 %d\n", result);
+			//TODO check error
 		}
 
 		token = create_token(new_thread_id, process->session);
@@ -292,6 +279,25 @@ int mm_exit(mm_request *req)
 		}
 
 		mm_process_t *process = get_process(th);
+		for (node_t *n; (n = tree_root(&(process->descriptors)));) {
+			mm_descriptor_t *desc = (mm_descriptor_t *) n;
+			mm_file_t *file = desc->file;
+			desc->file = NULL;
+			if (process_destroy_desc(process, n->key)) {
+				//TODO what to do?
+			}
+
+			fsmsg_t *message = &(req->message);
+			int result = _clunk(process->session, file,
+					create_token(th->node.key,
+							process->session),
+					message);
+			if (result)
+				log_err("pm: %d close[%d:] err %d\n",
+						process->node.key, n->key,
+						result);
+		}
+
 		process_destroy(process, req->args.arg1);
 //		log_info("mm: %d exit\n", process->node.key);
 

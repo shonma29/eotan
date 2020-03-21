@@ -237,11 +237,11 @@ ER thread_destroy(ID tskid)
 			break;
 		}
 
+		release_resources(th);
 		node_t *node = tree_remove(&thread_tree, tskid);
 		if (node)
 			slab_free(&thread_slab, node);
 
-		release_resources(th);
 		result = E_OK;
 	} while (false);
 	leave_serialize();

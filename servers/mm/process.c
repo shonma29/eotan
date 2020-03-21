@@ -87,6 +87,8 @@ static node_t **thread_lookup_selector(const tree_t *, const int);
 static int process_find_new_pid(void);
 static int process_create(mm_process_t **, const int);
 static int set_local(mm_process_t *, char *, const size_t);
+static int map_user_stack(mm_process_t *);
+static int release_memory(mm_process_t *);
 static int create_thread(int *, mm_process_t *, FP, VP);
 static void destroy_threads(mm_process_t *);
 
@@ -142,14 +144,12 @@ mm_process_t *process_find(const ID pid)
 	return (node ? (mm_process_t *) getParent(mm_process_t, node) : NULL);
 }
 
-mm_process_t *process_duplicate(mm_process_t *src)
+mm_process_t *process_duplicate(mm_process_t *src, void *entry, void *stack)
 {
 	do {
 		pid_t pid = process_find_new_pid();
-		if (pid == -1) {
-//			reply->data[0] = ENOMEM;
+		if (pid == -1)
 			break;
-		}
 
 		mm_process_t *dest;
 		int error_no = process_create(&dest, pid);
@@ -161,12 +161,12 @@ mm_process_t *process_duplicate(mm_process_t *src)
 				pageRoundUp(USER_STACK_END_ADDR)
 //				pageRoundUp((uintptr_t) (src->segments.heap.addr)
 //						+ src->segments.heap.len)
-						>> BITS_OFFSET)) {
-//			reply->data[0] = EFAULT;
+						>> BITS_OFFSET))
 			break;
-		}
 
+		dest->segments.exec = src->segments.exec;
 		dest->segments.heap = src->segments.heap;
+		dest->segments.stack = src->segments.stack;
 
 		for (int fd = 0; fd < FILES_PER_PROCESS; fd++) {
 			mm_descriptor_t *s = process_find_desc(src, fd);
@@ -203,10 +203,8 @@ mm_process_t *process_duplicate(mm_process_t *src)
 
 		strcpy(dest->name, src->name);
 
-		if (set_local(dest, src->local->wd, src->local->wd_len)) {
-//			reply->data[0] = ENOMEM;
+		if (set_local(dest, src->local->wd, src->local->wd_len))
 			break;
-		}
 
 		log_info("d %d %x->%x, %x->%x pp=%d pg=%d u=%d g=%d n=%s %x\n",
 				dest->node.key,
@@ -215,13 +213,32 @@ mm_process_t *process_duplicate(mm_process_t *src)
 				dest->ppid, dest->pgid, dest->uid, dest->gid,
 				dest->name,
 				(dest->wd) ? dest->wd->node.key : (-1));
+
+		error_no = map_user_stack(dest);
+		if (error_no) {
+			log_err("mm: th map err\n");
+			break;
+		}
+
+		int thread_id;
+		error_no = create_thread(&thread_id, dest,
+				(FP) entry, (VP) stack);
+		if (error_no) {
+			//TODO unmap
+			break;
+		}
+
+		if (kcall->thread_start(thread_id) < 0) {
+			log_err("mm: th start err\n");
+			break;
+		}
+
 		return dest;
 	} while (false);
 
 	return NULL;
 }
 
-//TODO from process_duplicate
 static int process_find_new_pid(void)
 {
 	for (int id = INIT_PID; id < PROCESS_MAX; id++)
@@ -231,55 +248,51 @@ static int process_find_new_pid(void)
 	return (-1);
 }
 
-//TODO from exec
 int process_replace(mm_process_t *process,
 		void *address, const size_t size,
 		void *entry, const void *args, const size_t stack_size,
 		int *thread_id)
 {
-	if (process->node.key == INIT_PID)
-		if (map_user_pages(process->directory,
-				(void *) pageRoundDown(USER_STACK_END_ADDR
-						- USER_STACK_INITIAL_SIZE),
-				pages(pageRoundUp(USER_STACK_INITIAL_SIZE))))
-			return ENOMEM;
-
 	if (stack_size > USER_STACK_INITIAL_SIZE)
 		return E2BIG;
 
-	unsigned int stack_top = pageRoundDown(USER_STACK_END_ADDR)
-			- stack_size;
+	destroy_threads(process);
+
+	if (map_user_stack(process))
+		return ENOMEM;
+
+	uintptr_t stack_top = pageRoundDown(USER_STACK_END_ADDR) - stack_size;
 	if (move_stack(process->directory, (void *) stack_top,
 			(void *) args, stack_size))
 		return EFAULT;
 
-	if (unmap_user_pages(process->directory,
-			//TODO this address is adhoc. fix region_unmap
-			(VP) 0x1000,
-			pages((unsigned int) (process->segments.heap.addr)
-					+  process->segments.heap.len))) {
+	if (release_memory(process))
 		return EFAULT;
-	}
 
-	process->segments.heap.addr = NULL;
-	process->segments.heap.len = 0;
-	process->segments.heap.max = 0;
-	process->segments.heap.attr = attr_nil;
-
-	unsigned int start = pageRoundDown((unsigned int) address);
-	unsigned int end = pageRoundUp((unsigned int) address
-			+ (unsigned int) size);
-
+	uintptr_t start = pageRoundDown((uintptr_t) address);
+	uintptr_t end = pageRoundUp((uintptr_t) address + size);
 	if (map_user_pages(process->directory,
-			(VP) start, pages(end - start)))
+			(void *) start, pages(end - start)))
 		return ENOMEM;
+
+	process->segments.exec.addr = (void *) start;
+	process->segments.exec.len = end - start;
+	process->segments.exec.max = process->segments.exec.len;
+	process->segments.exec.attr = type_exec;
 
 	process->segments.heap.addr = (void *) end;
 	process->segments.heap.len = 0;
 	process->segments.heap.max = pageRoundUp(USER_HEAP_MAX_ADDR) - end;
 	process->segments.heap.attr = type_heap;
 
-	destroy_threads(process);
+	process->segments.stack.max =
+			THREADS_PER_PROCESS * USER_STACK_MAX_SIZE;
+	process->segments.stack.addr = (void *) (
+			(uintptr_t) USER_STACK_END_ADDR
+			- process->segments.stack.max);
+	process->segments.stack.len = 0;
+	process->segments.stack.attr = type_heap;
+
 	return create_thread(thread_id, process, (FP) entry,
 			(VP) (stack_top - sizeof(int)));
 }
@@ -306,6 +319,7 @@ int process_release_body(mm_process_t *proc)
 		};
 
 		proc->tag = 0;
+		list_remove(&(p->members));
 		list_remove(child);
 		if (!tree_remove(&process_tree, p->node.key)) {
 			//TODO what to do?
@@ -329,7 +343,21 @@ int process_release_body(mm_process_t *proc)
 int process_destroy(mm_process_t *process, const int status)
 {
 	process->exit_status = status;
+	process->session = NULL;
 	destroy_threads(process);
+
+	if (release_memory(process)) {
+		//TODO what to do?
+	}
+
+	if (unmap_user_pages(process->directory, (void *) PROCESS_LOCAL_ADDR,
+			pages(sizeof(*(process->local))))) {
+		//TODO what to do?
+	}
+
+	process->local = NULL;
+	kcall->pfree(process->directory);
+	process->directory = NULL;
 
 	mm_process_t *parent = process_find(process->ppid);
 	if (parent) {
@@ -338,14 +366,15 @@ int process_destroy(mm_process_t *process, const int status)
 					process->node.key, process->ppid);
 			process_release_body(parent);
 		} else {
-			log_info("mm: %d parent not wait destroy\n",
+			log_info("mm: %d parent not waiting\n",
 					process->node.key);
 		}
 	} else {
 		//TODO what to do?
-		log_info("mm: %d no parent destroy\n", process->node.key);
+		log_info("mm: %d no parent\n", process->node.key);
 	}
 
+//TODO if parent process is 'init'?
 //TODO if current process is 'init'?
 	parent = process_find(INIT_PID);
 	if (parent) {
@@ -369,7 +398,6 @@ int process_destroy(mm_process_t *process, const int status)
 		//TODO what to do?
 	}
 
-	//TODO release resources
 	return 0;
 }
 
@@ -381,15 +409,20 @@ int create_init(const pid_t pid)
 	if (error_no)
 		return error_no;
 
-	unsigned int start = pageRoundDown(0);
-	unsigned int end = pageRoundUp((unsigned int) 0 + (unsigned int) 0);
-	if (map_user_pages(p->directory, (VP) start, pages(end - start)))
-		return ENOMEM;
+	p->segments.exec.addr = (void *) 0;
+	p->segments.exec.len = 0;
+	p->segments.exec.max = 0;
+	p->segments.exec.attr = type_exec;
 
-	p->segments.heap.addr = (void *) end;
+	p->segments.heap.addr = (void *) 0;
 	p->segments.heap.len = 0;
-	p->segments.heap.max = pageRoundUp(0) - end;
+	p->segments.heap.max = 0;
 	p->segments.heap.attr = type_heap;
+
+	p->segments.stack.addr = (void *) 0;
+	p->segments.stack.len = 0;
+	p->segments.stack.max = 0;
+	p->segments.stack.attr = type_stack;
 
 	p->ppid = INIT_PPID;
 	p->pgid = INIT_PID;
@@ -479,14 +512,10 @@ static int process_create(mm_process_t **process, const int pid)
 			break;
 		}
 
+		p->segments.exec.attr = attr_nil;
 		p->segments.heap.attr = attr_nil;
-#if 0
-		//TODO release on exit
-		if (p->directory) {
-			kcall->pfree(p->directory);
-			p->directory = NULL;
-		}
-#endif
+		p->segments.stack.attr = attr_nil;
+
 		//TODO take over fields when duplicate?
 		list_initialize(&(p->threads));
 		//TODO leave on exec
@@ -551,34 +580,45 @@ mm_thread_t *thread_find(const ID tid)
 	return (node ? (mm_thread_t *) getParent(mm_thread_t, node) : NULL);
 }
 
-//TODO from fork
-int thread_create(int *thread_id, mm_process_t *process, FP entry, VP stack)
+static int map_user_stack(mm_process_t *process)
 {
-	int error_no;
-	do {
-		if (map_user_pages(process->directory,
-				(VP) pageRoundDown(USER_STACK_END_ADDR
-						- USER_STACK_INITIAL_SIZE),
-				pages(pageRoundUp(USER_STACK_INITIAL_SIZE)))) {
-			error_no = ENOMEM;
-			break;
-		}
+	if (map_user_pages(process->directory,
+			(void *) pageRoundDown(USER_STACK_END_ADDR
+					- USER_STACK_INITIAL_SIZE),
+			pages(pageRoundUp(USER_STACK_INITIAL_SIZE))))
+		return ENOMEM;
 
-		error_no = create_thread(thread_id, process, entry, stack);
-		if (error_no) {
-			//TODO unmap
-			break;
-		}
-
-		return 0;
-	} while (false);
-
-	return error_no;
+	return 0;
 }
-//TODO delete thread
-//TODO delete process
 
-//TODO from process_replace(exec), thread_create(fork)
+static int release_memory(mm_process_t *process)
+{
+	if (unmap_user_pages(process->directory,
+			process->segments.exec.addr,
+			//TODO skip holes
+			pages(process->segments.exec.len
+					+  process->segments.heap.len))) {
+		return EFAULT;
+	}
+
+	process->segments.exec.addr = (void *) 0;
+	process->segments.exec.len = 0;
+	process->segments.exec.max = 0;
+	process->segments.exec.attr = attr_nil;
+
+	process->segments.heap.addr = (void *) 0;
+	process->segments.heap.len = 0;
+	process->segments.heap.max = 0;
+	process->segments.heap.attr = attr_nil;
+
+	process->segments.stack.addr = (void *) 0;
+	process->segments.stack.len = 0;
+	process->segments.stack.max = 0;
+	process->segments.stack.attr = attr_nil;
+
+	return 0;
+}
+
 static int create_thread(int *thread_id, mm_process_t *process, FP entry,
 		VP ustack_top)
 {
@@ -610,17 +650,16 @@ static int create_thread(int *thread_id, mm_process_t *process, FP entry,
 		return EBUSY;
 	}
 
-	th->process = process;
-	th->stack.attr = attr_nil;
-
 	list_append(&(process->threads), &(th->brothers));
+	th->process = process;
 
-	//TODO only main thread
-	process->segments.stack.addr = (void *) pageRoundDown(
-			USER_STACK_END_ADDR - USER_STACK_MAX_SIZE);
-	process->segments.stack.len = pageRoundUp(USER_STACK_INITIAL_SIZE);
-	process->segments.stack.max = pageRoundUp(USER_STACK_MAX_SIZE);
-	process->segments.stack.attr = type_stack;
+	//TODO set process stack map
+	th->stack.addr = (void *) pageRoundDown(
+			(uintptr_t) USER_STACK_END_ADDR
+			- USER_STACK_MAX_SIZE);
+	th->stack.len = pageRoundUp(USER_STACK_INITIAL_SIZE);
+	th->stack.max = pageRoundUp(USER_STACK_MAX_SIZE);
+	th->stack.attr = type_stack;
 
 	*thread_id = tid;
 
@@ -636,9 +675,21 @@ static void destroy_threads(mm_process_t *process)
 {
 	for (list_t *p; (p = list_pick(&(process->threads)));) {
 		mm_thread_t *th = getMyThread(p);
+		//TODO check error
 		kcall->thread_terminate(th->node.key);
+		//TODO check error
 		kcall->thread_destroy(th->node.key);
+		//TODO check error
 		tree_remove(&thread_tree, th->node.key);
-		//TODO destroy mm_thread_t
+
+		uintptr_t start = (uintptr_t) th->stack.addr
+				+ th->stack.max - th->stack.len;
+		//TODO check error
+		if (unmap_user_pages(process->directory,
+				(void *) start, pages(th->stack.len)))
+			log_err("mm: unmap error %p,%x\n",
+					start, pages(th->stack.len));
+
+		slab_free(&thread_slab, th);
 	}
 }

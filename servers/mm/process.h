@@ -72,6 +72,7 @@ typedef struct {
 typedef struct {
 	node_t node;
 	struct {
+		mm_segment_t exec;
 		mm_segment_t heap;
 		mm_segment_t stack;
 	} segments;
@@ -101,7 +102,7 @@ static inline mm_process_t *get_process(const mm_thread_t *thread)
 
 extern void process_initialize(void);
 extern mm_process_t *process_find(const ID);
-extern mm_process_t *process_duplicate(mm_process_t *);
+extern mm_process_t *process_duplicate(mm_process_t *, void *, void *);
 extern int process_replace(mm_process_t *process, void *address,
 		const size_t size, void *entry, const void *args,
 		const size_t stack_size, int *);
@@ -109,7 +110,6 @@ extern int process_release_body(mm_process_t *);
 extern int process_destroy(mm_process_t *, const int);
 extern int create_init(const pid_t);
 extern mm_thread_t *thread_find(const ID);
-extern int thread_create(int *, mm_process_t *, FP, VP);
 
 extern void file_initialize(void);
 extern mm_session_t *session_create(void);

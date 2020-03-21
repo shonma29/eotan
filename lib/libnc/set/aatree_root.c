@@ -1,5 +1,3 @@
-#ifndef _MM_SEGMENT_H_
-#define _MM_SEGMENT_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,34 +24,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stddef.h>
+#include <set/tree.h>
+#include "aatree.h"
 
-typedef enum {
-	attr_nil = 0,
-	attr_readable = 1,
-	attr_writable = 2,
-	attr_executable = 4,
-	attr_expandable = 8,
-	attr_backward = 16,
-	attr_shared = 32
-} mm_segment_attr_e;
 
-typedef enum {
-	type_code = attr_readable | attr_executable,
-	type_data = attr_readable | attr_writable,
-	type_exec = attr_readable | attr_writable | attr_executable,
-	type_heap = attr_readable | attr_writable | attr_expandable,
-	type_stack = attr_readable | attr_writable | attr_expandable
-			| attr_backward,
-	type_share = attr_readable | attr_writable | attr_shared
-} mm_segment_type_e;
-
-typedef struct {
-	void *addr;
-	size_t len;
-	size_t max;
-	unsigned int attr;
-//	int owner;
-} mm_segment_t;
-
-#endif
+node_t *tree_root(const tree_t *tree)
+{
+	node_t *node = tree->root;
+	return (is_nil(node) ? NULL : node);
+}
