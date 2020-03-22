@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <fcntl.h>
 #include "macros.h"
 
@@ -44,6 +45,12 @@ FILE *fopen(const char *path, const char *mode)
 
 static FILE *_fopen(FILE *stream, const char *path, const char *mode)
 {
+	unsigned char *buf = malloc(BUFSIZ);
+	if (!buf) {
+		_set_local_errno(ENOMEM);
+		return NULL;
+	}
+
 	int open_mode;
 	int file_mode;
 	int result = __parse_file_mode(mode, &file_mode, &open_mode);
@@ -60,7 +67,8 @@ static FILE *_fopen(FILE *stream, const char *path, const char *mode)
 	stream->pos = 0;
 	stream->len = 0;
 	stream->fd = fd;
-	stream->buf_size = sizeof(stream->buf);
+	stream->buf_size = BUFSIZ;
 	stream->seek_pos = 0;
+	stream->buf = buf;
 	return stream;
 }

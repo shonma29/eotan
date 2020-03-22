@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include "macros.h"
 
@@ -61,7 +62,13 @@ int fclose(FILE *stream)
 	stream->pos = 0;
 	stream->len = 0;
 	stream->fd = -1;
-	stream->buf_size = sizeof(stream->buf);
+	stream->buf_size = 0;
 	stream->seek_pos = 0;
+
+	if (stream->buf) {
+		free(stream->buf);
+		stream->buf = NULL;
+	}
+
 	return result;
 }

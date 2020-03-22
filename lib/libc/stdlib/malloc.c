@@ -30,7 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <unistd.h>
 #include <mpu/memory.h>
 
-#define INITIAL_SIZE (PAGE_SIZE * 4)
+#define INITIAL_SIZE (PAGE_SIZE * 8)
 #define MASK_USING (1)
 
 typedef struct _Fragment {

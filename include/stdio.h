@@ -56,7 +56,7 @@ typedef struct {
 	int fd;
 	size_t buf_size;
 	fpos_t seek_pos;
-	unsigned char buf[BUFSIZ];
+	unsigned char *buf;
 } FILE;
 
 extern FILE __libc_files[];
