@@ -64,6 +64,7 @@ extern int mm_read(mm_request *);
 extern int mm_write(mm_request *);
 extern int mm_close(mm_request *);
 extern int mm_remove(mm_request *);
+extern int mm_stat(mm_request *);
 extern int mm_fstat(mm_request *);
 extern int mm_chmod(mm_request *);
 extern int mm_clock_gettime(mm_request *);

@@ -52,6 +52,7 @@ static int (*funcs[])(mm_request *) = {
 	mm_write,
 	mm_close,
 	mm_remove,
+	mm_stat,
 	mm_fstat,
 	mm_chmod,
 	mm_clock_gettime,

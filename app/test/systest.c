@@ -36,51 +36,58 @@ For more information, please refer to <http://unlicense.org/>
 #include "cunit.h"
 
 extern void *malloc(size_t);
-extern void free(void*);
+extern void free(void *);
 
 
-char *testfile()
+char *testfile(void)
 {
-	int fd;
-	struct stat st;
-	struct stat st2;
-	char buf[1];
-	char buf2[1];
-	off_t offset;
+	struct stat st0;
+	assert_eq("stat", 0, stat("/motd", &st0));
 
-	fd = open("/motd", O_RDWR);
+	int fd = open("/motd", O_RDWR);
 	assert_ne("open[0]", -1, fd);
 
+	struct stat st;
 	assert_eq("fstat", 0, fstat(fd, &st));
 
-	printf("fstat: dev=%x\n", st.st_dev);
-	printf("fstat: ino=%d\n", st.st_ino);
-	printf("fstat: mode=%x\n", st.st_mode);
-	printf("fstat: nlink=%d\n", st.st_nlink);
-	printf("fstat: uid=%d\n", st.st_uid);
-	printf("fstat: gid=%d\n", st.st_gid);
-	printf("fstat: rdev=%x\n", st.st_rdev);
-	printf("fstat: size=%d\n", (int)st.st_size);
-	printf("fstat: blksize=%d\n", st.st_blksize);
-	printf("fstat: blocks=%d\n", st.st_blocks);
-	printf("fstat: atime=%d, %d\n",
-		(int)((long long int)st.st_atime >> 32),
-		(int)((long long int)st.st_atime & 0xffffffff));
-	printf("fstat: mtime=%d, %d\n",
-		(int)((long long int)st.st_mtime >> 32),
-		(int)((long long int)st.st_mtime & 0xffffffff));
-	printf("fstat: ctime=%d, %d\n",
-		(int)((long long int)st.st_ctime >> 32),
-		(int)((long long int)st.st_ctime & 0xffffffff));
+	printf("fstat: dev=%x : %x\n", st0.st_dev, st.st_dev);
+	printf("fstat: ino=%d : %d\n", st0.st_ino, st.st_ino);
+	printf("fstat: mode=%x : %x\n", st0.st_mode, st.st_mode);
+	printf("fstat: nlink=%d : %d\n", st0.st_nlink, st.st_nlink);
+	printf("fstat: uid=%d : %d\n", st0.st_uid, st.st_uid);
+	printf("fstat: gid=%d : %d\n", st0.st_gid, st.st_gid);
+	printf("fstat: rdev=%x : %x\n", st0.st_rdev, st.st_rdev);
+	printf("fstat: size=%d : %d\n", (int) st0.st_size, (int) st.st_size);
+	printf("fstat: blksize=%d : %d\n", st0.st_blksize, st.st_blksize);
+	printf("fstat: blocks=%d : %d\n", st0.st_blocks, st.st_blocks);
 
+	printf("fstat: atime=%d, %d : %d, %d\n",
+			(int) ((long long int) st0.st_atime >> 32),
+			(int) ((long long int) st0.st_atime & 0xffffffff),
+			(int) ((long long int) st.st_atime >> 32),
+			(int) ((long long int) st.st_atime & 0xffffffff));
+	printf("fstat: mtime=%d, %d : %d, %d\n",
+			(int) ((long long int) st0.st_mtime >> 32),
+			(int) ((long long int) st0.st_mtime & 0xffffffff),
+			(int) ((long long int) st.st_mtime >> 32),
+			(int) ((long long int) st.st_mtime & 0xffffffff));
+	printf("fstat: ctime=%d, %d : %d, %d\n",
+			(int) ((long long int) st0.st_ctime >> 32),
+			(int) ((long long int) st0.st_ctime & 0xffffffff),
+			(int) ((long long int) st.st_ctime >> 32),
+			(int) ((long long int) st.st_ctime & 0xffffffff));
+
+	char buf[1];
 	assert_eq("read[0]", 1, read(fd, buf, 1));
 	assert_eq("read[0] buf[0]", 'k', buf[0]);
 
 	assert_eq("read[1]", 1, read(fd, buf, 1));
 	assert_eq("read[1] buf[0]", 'e', buf[0]);
 
-	offset = lseek(fd, 1, SEEK_SET);
+	off_t offset = lseek(fd, 1, SEEK_SET);
 	assert_t("lseek[1]", offset == 1LL);
+
+	char buf2[1];
 	assert_eq("read[1-2]", 1, read(fd, buf2, 1));
 	assert_eq("read[1-2] buf[0]", buf[0], buf2[0]);
 	assert_eq("read[1-2] cmp", buf[0], buf2[0]);
@@ -96,6 +103,7 @@ char *testfile()
 	fd = open("/motd", O_RDONLY);
 	assert_ne("open[1]", -1, fd);
 
+	struct stat st2;
 	assert_eq("fstat[1]", 0, fstat(fd, &st2));
 
 	printf("fstat: mode=%x\n", st2.st_mode);
@@ -117,13 +125,12 @@ char *testfile()
 	return NULL;
 }
 
-char *testdup()
+char *testdup(void)
 {
-	int fd;
-	char buf[1];
-
-	fd = dup2(1, 2);
+	int fd = dup2(1, 2);
 	assert_eq("dup2[0]", 2, fd);
+
+	char buf[1];
 	buf[0] = 'b';
 	write(fd, buf, 1);
 	assert_eq("dup2-close[0]", 0, close(fd));
@@ -131,12 +138,9 @@ char *testdup()
 	return NULL;
 }
 
-char *testdir()
+char *testdir(void)
 {
-	int fd;
-	struct stat st;
 	char buf[1024];
-
 	assert_eq("getcwd[0]", 0, strcmp("/", getcwd(buf, sizeof(buf))));
 
 	assert_eq("chdir", 0, chdir("bin"));
@@ -144,7 +148,9 @@ char *testdir()
 
 	assert_eq("mkdir[0]", 0,
 			mkdir("hoge", S_IRGRP | S_IROTH | S_IWOTH));
-	fd = open("hoge", O_RDONLY);
+
+	int fd = open("hoge", O_RDONLY);
+	struct stat st;
 	assert_ne("mkdir-open[0]", -1, fd);
 	assert_eq("mkdir-fstat[0]", 0, fstat(fd, &st));
 	assert_eq("mkdir-fstat[0-1]",
@@ -176,69 +182,62 @@ char *testdir()
 	return NULL;
 }
 
-char *testmm()
+char *testmm(void)
 {
-	int pid;
-	time_t t1;
-	time_t t2;
-	struct timespec ts;
-	char *buf;
-	int i;
-
-	pid = fork();
+	int pid = fork();
 	if (pid == 0) {
 		printf("child's pid = %d, ppid = %d\n",
 				getpid(), getppid());
 		exit(EXIT_SUCCESS);
-	}
-	else {
+	} else {
 		sleep(1);
 		printf("parent's pid = %d, ppid = %d\n",
 				getpid(), getppid());
 		wait(&pid);
 	}
 
-	t2 = time(&t1);
+	time_t t1;
+	time_t t2 = time(&t1);
+	struct timespec ts;
 	printf("time = %d, %d\n",
-		(int)((long long int)t1 >> 32),
-		(int)((long long int)t1 & 0xffffffff));
+			(int) ((long long int) t1 >> 32),
+			(int) ((long long int) t1 & 0xffffffff));
 	printf("time = %d, %d\n",
-		(int)((long long int)t2 >> 32),
-		(int)((long long int)t2 & 0xffffffff));
+			(int) ((long long int) t2 >> 32),
+			(int) ((long long int) t2 & 0xffffffff));
 	assert_eq("clock_gettime[0]", 0, clock_gettime(CLOCK_REALTIME, &ts));
 	printf("time = %d, %d, %x\n",
-		(int)((long long int)(ts.tv_sec) >> 32),
-		(int)((long long int)(ts.tv_sec) & 0xffffffff),
-		(int)(ts.tv_nsec));
+			(int) ((long long int) (ts.tv_sec) >> 32),
+			(int) ((long long int) (ts.tv_sec) & 0xffffffff),
+			(int) (ts.tv_nsec));
 	assert_eq("clock_gettime[1]", -1, clock_gettime(CLOCK_MONOTONIC, &ts));
 
 	sleep(2);
 	clock_gettime(CLOCK_REALTIME, &ts);
 	printf("time = %d, %d, %x\n",
-		(int)((long long int)(ts.tv_sec) >> 32),
-		(int)((long long int)(ts.tv_sec) & 0xffffffff),
-		(int)(ts.tv_nsec));
+			(int) ((long long int) (ts.tv_sec) >> 32),
+			(int) ((long long int) (ts.tv_sec) & 0xffffffff),
+			(int) (ts.tv_nsec));
 
 	printf("uid = %d\n", getuid());
 	printf("gid = %d\n", getgid());
 
-	buf = malloc(1024 * 1024);
+	char *buf = malloc(1024 * 1024);
 	assert_ne("brk", 0, buf);
-	for (i = 0; i < 1024 * 1024; i++)	buf[i] = '0';
-	free(buf);
+	for (int i = 0; i < 1024 * 1024; i++)
+		buf[i] = '0';
 
+	free(buf);
 	return NULL;
 }
 
-char *testothers()
+char *testothers(void)
 {
-	int i;
-
-	for (i = 0; i < 5; i++)
+	for (int i = 0; i < 5; i++)
 		printf("%d\n", rand());
 
 	srand(1);
-	for (i = 0; i < 5; i++)
+	for (int i = 0; i < 5; i++)
 		printf("%d\n", rand());
 
 	return NULL;

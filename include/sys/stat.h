@@ -73,6 +73,7 @@ struct stat {
 #define DMDIR 0x80000000
 
 extern int chmod(const char *, mode_t);
+extern int stat(const char *, struct stat *);
 extern int fstat(int, struct stat *);
 extern int mkdir(const char *, mode_t);
 

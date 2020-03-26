@@ -423,6 +423,48 @@ int mm_remove(mm_request *req)
 	return reply_failure;
 }
 
+int mm_stat(mm_request *req)
+{
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
+	do {
+		mm_thread_t *th = thread_find(port_of_ipc(req->tag));
+		if (!th) {
+			reply->data[0] = EPERM;
+			break;
+		}
+
+		mm_process_t *process = get_process(th);
+		mm_file_t *file;
+		fsmsg_t *message = &(req->message);
+		int result = _walk(&file, process, th->node.key,
+				(char*)(req->args.arg1), message);
+		if (result) {
+			reply->data[0] = result;
+			break;
+		}
+
+		int token = create_token(th->node.key, process->session);
+		result = _fstat((struct stat *) req->args.arg2, file,
+				token, message);
+		int error_no = _clunk(process->session, file, token, message);
+		if (error_no) {
+			//TODO what to do?
+		}
+
+		if (result) {
+			reply->data[0] = result;
+			break;
+		}
+
+		reply->result = 0;
+		reply->data[0] = 0;
+		return reply_success;
+	} while (false);
+
+	reply->result = -1;
+	return reply_failure;
+}
+
 int mm_fstat(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
@@ -495,9 +537,6 @@ int mm_chmod(mm_request *req)
 				MESSAGE_SIZE(Twstat),
 				Rwstat, MESSAGE_SIZE(Rwstat));
 
-//		int fid = file->node.key;
-//		log_info("proxy: %d chmod[:%d] %d\n",
-//				process->node.key, fid, result);
 		int error_no = _clunk(process->session, file, token, message);
 		if (error_no) {
 			//TODO what to do?
