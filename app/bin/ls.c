@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 #include <sys/dirent.h>
 #include <sys/stat.h>
@@ -40,62 +41,82 @@ For more information, please refer to <http://unlicense.org/>
 #define MSG_READ "failed to read"
 #define MSG_CLOSE "failed to close"
 #define MSG_STAT "failed to get status"
-#define DELIMITER ": "
-#define NEWLINE "\n"
+#define MSG_MALLOC "No memory"
 
-#define SIZE_BUF 16348
+#define DIRENT_BUFSIZ 16348
 
 #define OK (0)
 #define NG (1)
 
-static char buf[SIZE_BUF];
+static char dir_buf[DIRENT_BUFSIZ];
 
-static void pute(char *str);
-static void puterror(char *name, char *message);
-static int exec(int out, char *name, int argc, int *out_count);
+static void puterror(const char *, const char *);
+static void format(FILE *, const char *, const char *);
+static int exec(FILE *, const char *, const int, bool *);
 
 
-static void pute(char *str) {
-	write(STDERR_FILENO, str, strlen(str));
+static void puterror(const char *name, const char *message)
+{
+	fprintf(stderr, MYNAME ": %s: %s\n", name, message);
 }
 
-static void puterror(char *name, char *message) {
-	pute(MYNAME);
-	pute(DELIMITER);
-	pute(name);
-	pute(DELIMITER);
-	pute(message);
-	pute(NEWLINE);
+static void format(FILE *out, const char *path, const char *name)
+{
+	struct stat st;
+	if (stat(path, &st)) {
+		puterror(path, MSG_STAT);
+		return;
+	}
+
+	char time_buf[13];
+	struct tm t;
+	strftime(time_buf, sizeof(time_buf), "%b %d %H:%M",
+			gmtime_r(&(st.st_mtime), &t));
+
+	int size_buf[2];
+	long long *p = (long long *) size_buf;
+	*p = st.st_size;
+
+	fprintf(out, "%o %d %d %d %d %s %s\n",
+			st.st_mode, st.st_nlink, st.st_uid, st.st_gid,
+			size_buf[0], time_buf, name);
 }
 
-static int exec(int out, char *name, int argc, int *out_count) {
-	struct stat stat;
-	int result = OK;
+static int exec(FILE *out, const char *name, const int argc, bool *is_block)
+{
+	*is_block = false;
+
 	int in = open(name, O_RDONLY);
-
 	if (in == -1) {
 		puterror(name, MSG_OPEN);
 		return NG;
 	}
 
-	if (fstat(in, &stat)) {
+	struct stat st;
+	if (fstat(in, &st)) {
 		close(in);
 		puterror(name, MSG_STAT);
 		return NG;
 	}
 
-	if (*out_count)
-		write(out, NEWLINE, 1);
-
-	if (stat.st_mode & S_IFDIR) {
-		if (argc > 2) {
-			write(out, name, strlen(name));
-			write(out, DELIMITER, strlen(DELIMITER));
-			write(out, NEWLINE, 1);
+	int result = OK;
+	if (st.st_mode & S_IFDIR) {
+		size_t path_len = strlen(name);
+		char *buf = malloc(path_len + 1 + PATH_MAX + 1);
+		if (!buf) {
+			close(in);
+			puterror(name, MSG_MALLOC);
+			return NG;
 		}
 
+		strcpy(buf, name);
+		buf[path_len] = '/';
+
+		if (argc > 2)
+			fprintf(out, "%s:\n", name);
+
 		for (;;) {
-			int len = read(in, buf, sizeof(buf));
+			int len = read(in, dir_buf, sizeof(dir_buf));
 			if (len < 0) {
 				puterror(name, MSG_READ);
 				result = NG;
@@ -103,41 +124,41 @@ static int exec(int out, char *name, int argc, int *out_count) {
 			} else if (!len)
 				break;
 
-			struct dirent *p = (struct dirent*)buf;
-			for (size_t i = len / sizeof(*p); i > 0; p++, i--) {
-				if (p->d_name[0] == '.')
-					continue;
-
-				write(out, p->d_name, strlen(p->d_name));
-				write(out, NEWLINE, 1);
+			struct dirent *p = (struct dirent *) dir_buf;
+			for (int i = len / sizeof(*p); i > 0; p++, i--) {
+				strcpy(&(buf[path_len + 1]), p->d_name);
+				format(out, buf, p->d_name);
 			}
+
+			*is_block = true;;
 		}
-	} else {
-		write(out, name, strlen(name));
-		write(out, NEWLINE, 1);
-	}
+
+		free(buf);
+	} else
+		format(out, name, name);
 
 	if (close(in)) {
 		puterror(name, MSG_CLOSE);
 		result = NG;
 	}
 
-	*out_count += 1;
-
 	return result;
 }
 
-int main(int argc, char **argv) {
-	int i;
+int main(int argc, char **argv)
+{
 	int result = OK;
-	int out_count = 0;
+	bool is_block = false;
 
 	if (argc == 1)
-		result |= exec(STDOUT_FILENO, ".", argc, &out_count);
+		result |= exec(stdout, ".", argc, &is_block);
 	else
-		for (i = 1; i < argc; i++) {
+		for (int i = 1; i < argc; i++) {
+			if (is_block)
+				fprintf(stdout, "\n");
+
 			argv++;
-			result |= exec(STDOUT_FILENO, *argv, argc, &out_count);
+			result |= exec(stdout, *argv, argc, &is_block);
 		}
 
 	return (result ? EXIT_FAILURE : EXIT_SUCCESS);
