@@ -28,9 +28,9 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/_tunnel_registers.h>
 #include "sys.h"
 
-extern int _fork_entry();
 static pid_t call_fork(const uintptr_t, const uintptr_t,
 		const uintptr_t, const uintptr_t);
+static int _fork_entry();
 
 
 pid_t fork(void)
@@ -47,4 +47,9 @@ static pid_t call_fork(const uintptr_t ebx, const uintptr_t ebp,
 		(int) _fork_entry
 	};
 	return _syscall(&args, sizeof(args));
+}
+
+static int _fork_entry(void)
+{
+	return _tunnel_out();
 }

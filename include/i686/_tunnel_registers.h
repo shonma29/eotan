@@ -45,4 +45,20 @@ static inline int _tunnel_registers(void *func)
 	return result;
 }
 
+static inline int _tunnel_out(void)
+{
+	int result;
+
+	__asm__ __volatile__ ( \
+		"popl %%ebx\n\t" \
+		"popl %%ebp\n\t" \
+		"popl %%esi\n\t" \
+		"popl %%edi\n\t" \
+		:"=a"(result) \
+		: \
+		:);
+
+	return result;
+}
+
 #endif
