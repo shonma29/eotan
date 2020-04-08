@@ -34,7 +34,9 @@ typedef enum {
 	wait_sleep,
 	wait_mutex,
 	wait_call,
-	wait_reply
+	wait_reply,
+	wait_receive,
+	wait_send
 } wait_type_e;
 
 typedef struct {

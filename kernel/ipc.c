@@ -36,6 +36,9 @@ For more information, please refer to <http://unlicense.org/>
 #include "thread.h"
 #include "mpu/mpufunc.h"
 
+#define RDV_MASK 0x7fff
+#define RDV_BIT 0x8000
+
 typedef struct {
 	node_t node;
 	list_t caller;
@@ -49,6 +52,8 @@ static int reply_hand;
 static inline ipc_t *getPortParent(const thread_t *);
 static inline reply_t *getReplyParent(const node_t *);
 static void clear(ipc_t *, const T_CPOR *);
+static int _reply(const int, const void *, const size_t);
+static int _send(const int, const void *, const size_t);
 
 
 static inline ipc_t *getPortParent(const thread_t *p)
@@ -170,7 +175,7 @@ int ipc_call(const int port_id, void *message, const size_t size)
 
 		int tag = tp->wait.detail.ipc.key;
 		node_t *node = tree_get(&reply_tree, tag);
-		tag = create_ipc_tag((int) thread_id(running), tag);
+		tag = RDV_BIT | create_ipc_tag((int) thread_id(running), tag);
 		tp->wait.detail.ipc.key = tag;
 
 		reply_t *r = getReplyParent(node);
@@ -242,16 +247,29 @@ int ipc_receive(const int port_id, int *tag, void *message)
 		}
 
 		list_remove(q);
-		list_enqueue(&(r->caller), &(tp->wait.waiting));
-		*tag = tp->wait.detail.ipc.key =
-				create_ipc_tag((int) thread_id(tp), reply_key);
-		tp->wait.type = wait_reply;
+		switch (tp->wait.type) {
+		case wait_call:
+			list_enqueue(&(r->caller), &(tp->wait.waiting));
+			*tag = tp->wait.detail.ipc.key = RDV_BIT
+					| create_ipc_tag((int) thread_id(tp),
+							reply_key);
+			tp->wait.type = wait_reply;
+			break;
+		case wait_send:
+			node = tree_remove(&reply_tree, reply_key);
+			if (node)
+				slab_free(&reply_slab, node);
+			release(tp);
+			break;
+		default:
+			break;
+		}
 /* TODO test */
 	} else {
 		list_enqueue(&(port->receiver), &(running->wait.waiting));
 		running->wait.detail.ipc.message = message;
 		running->wait.detail.ipc.key = reply_key;
-		running->wait.type = wait_call;
+		running->wait.type = wait_receive;
 		wait(running);
 
 		enter_serialize();
@@ -273,7 +291,13 @@ int ipc_receive(const int port_id, int *tag, void *message)
 
 int ipc_send(const int tag, const void *message, const size_t size)
 {
-	int reply_key = key_of_ipc(tag);
+	return ((tag & RDV_BIT) ?
+			_reply(tag, message, size) : _send(tag, message, size));
+}
+
+static int _reply(const int tag, const void *message, const size_t size)
+{
+	int reply_key = key_of_ipc(tag) & RDV_MASK;
 /* TODO validate message */
 	enter_serialize();
 
@@ -332,4 +356,61 @@ int ipc_send(const int tag, const void *message, const size_t size)
 	leave_serialize();
 	dispatch();
 	return result;
+}
+
+static int _send(const int port_id, const void *message, const size_t size)
+{
+/* TODO validate message */
+	enter_serialize();
+	thread_t *th = get_thread_ptr(port_id);
+	if (!th) {
+		leave_serialize();
+		return E_NOEXS;
+	}
+
+	ipc_t *port = getPortParent(th);
+	if (!(port->opened)) {
+		leave_serialize();
+		return E_NOEXS;
+	}
+
+	if (size > port->max_call) {
+		warn("ipc_send[%d] size %d > %d\n",
+				port_id, size, port->maxcmsz);
+		leave_serialize();
+		return E_PAR;
+	}
+
+	list_t *q = list_head(&(port->receiver));
+	if (q) {
+		thread_t *tp = getThreadWaiting(q);
+		if (memcpy_k2u(tp, tp->wait.detail.ipc.message, message,
+				size)) {
+			warn("ipc_send[%d] copy_to(%d, %p, %p, %d) error\n",
+					port_id, thread_id(tp),
+					tp->wait.detail.ipc.message, message,
+					size);
+			leave_serialize();
+			return E_PAR;
+		}
+
+		node_t *node = tree_remove(&reply_tree,
+				tp->wait.detail.ipc.key);
+		if (node)
+			slab_free(&reply_slab, node);
+
+		list_remove(q);
+		tp->wait.detail.ipc.size = size;
+		tp->wait.detail.ipc.key = 0;
+		release(tp);
+		leave_serialize();
+		return E_OK;
+	}
+/* TODO test */
+	list_enqueue(&(port->caller), &(running->wait.waiting));
+	running->wait.detail.ipc.size = size;
+	running->wait.detail.ipc.message = (void *) message;
+	running->wait.type = wait_send;
+	wait(running);
+	return running->wait.result;
 }
