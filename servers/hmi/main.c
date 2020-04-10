@@ -60,6 +60,7 @@ extern void pset(Screen *s, unsigned int x, unsigned int y, int color);
 
 Screen window[MAX_WINDOW];
 static ER_ID receiver_tid = 0;
+static ER_ID hmi_tid = 0;
 static request_message_t *current_req = NULL;
 static request_message_t requests[REQUEST_QUEUE_SIZE];
 static volatile lfq_t req_queue;
@@ -98,7 +99,7 @@ void hmi_handle(const int type, const int data)
 			interrupt_message_t message = { type, data };
 
 			if (lfq_enqueue(&int_queue, &message) == QUEUE_OK)
-				kcall->thread_wakeup(PORT_HMI);
+				kcall->thread_wakeup(hmi_tid);
 			else
 				log_warning("hmi: int_queue is full\n");
 			break;
@@ -429,12 +430,13 @@ static ER initialize(void)
 		return result;
 	}
 
-	result = kcall->thread_create(PORT_HMI, &pk_ctsk);
-	if (result) {
+	result = kcall->thread_create_auto(&pk_ctsk);
+	if (result < 0) {
 		log_err("hmi: create error=%d\n", result);
 		kcall->ipc_close();
 		return result;
 	}
+	hmi_tid = result;
 
 	return E_OK;
 }
@@ -458,7 +460,7 @@ void start(VP_INT exinf)
 
 		while (accept() == E_OK);
 
-		kcall->thread_destroy(PORT_HMI);
+		kcall->thread_destroy(hmi_tid);
 		kcall->ipc_close();
 		log_info("hmi: end\n");
 	}
