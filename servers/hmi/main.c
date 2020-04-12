@@ -49,8 +49,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <vesa.h>
 #include "font.h"
 
-static char line[4096];
-
 extern void put(Screen *s, const unsigned int start, const size_t size,
 		const char *buf);
 extern void pset(Screen *s, unsigned int x, unsigned int y, int color);
@@ -58,6 +56,7 @@ extern void pset(Screen *s, unsigned int x, unsigned int y, int color);
 #include <cga.h>
 #endif
 
+static char line[4096];
 Screen window[MAX_WINDOW];
 static ER_ID receiver_tid = 0;
 static ER_ID hmi_tid = 0;
@@ -270,6 +269,8 @@ static void execute(request_message_t *req)
 						line);
 			}
 		} else {
+#else
+		{
 #endif
 			//TODO loop by bufsize
 			unsigned int pos = 0;
@@ -299,9 +300,8 @@ static void execute(request_message_t *req)
 //TODO return Rerror
 			if (result >= 0)
 				result = message->Twrite.count;
-#ifdef USE_VESA
 		}
-#endif
+
 //		message->header.token = message->head.token;
 		message->header.type = Rwrite;
 //		message->Rwrite.tag = message->Twrite.tag;

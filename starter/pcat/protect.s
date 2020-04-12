@@ -34,14 +34,19 @@ For more information, please refer to <http://unlicense.org/>
 
 .global _start
 
+.equ USE_VESA, 1
+
 .set SELECTOR_CODE, 0x08
 .set SELECTOR_DATA, 0x10
 .set SELECTOR_STACK, 0x18
 
 .set STACK_ADDR, 0x00008000
 .set MEMORY_INFO_ADDR, 0x3000
+
+.ifdef USE_VESA
 .set VESA_INFO_ADDR, 0x3c00
 .set VESA_MODE, 0x0118
+.endif
 
 /**
  * start on segment 0x0800.
@@ -87,6 +92,7 @@ memory_loop:
 	movw %di, %ax
 	movl %eax, MEMORY_INFO_ADDR
 
+.ifdef USE_VESA
 	/* check if supports VESA */
 	xorw %ax, %ax
 	movw %ax, %es
@@ -115,6 +121,7 @@ memory_loop:
 
 	cmpw $0x004f, %ax
 	jne error_vesa
+.endif
 
 	/* enable A20 */
 	call a20_wait
@@ -160,9 +167,11 @@ error_memory:
 	movw $message_memory_error, %ax
 	jmp die
 
+.ifdef USE_VESA
 error_vesa:
 	movw $message_vesa_error, %ax
 	jmp die
+.endif
 
 /**
  * wait KBC
@@ -243,7 +252,9 @@ message_cpu_error:
 message_memory_error:
 	.asciz "cannot get memory map"
 
+.ifdef USE_VESA
 message_vesa_error:
 	.asciz "cannot use VESA"
+.endif
 
 .org 256, 0
