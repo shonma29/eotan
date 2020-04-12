@@ -29,17 +29,17 @@ For more information, please refer to <http://unlicense.org/>
 
 static inline int port_of_ipc(const int tag)
 {
-	return (int) (((unsigned int) tag) >> 16);
+	return (int) (((unsigned int) tag) & 0xffff);
 }
 
 static inline int key_of_ipc(const int tag)
 {
-	return (int) (((unsigned int) tag) & 0xffff);
+	return (int) (((unsigned int) tag) >> 16);
 }
 
 static inline int create_ipc_tag(const int port, const int key)
 {
-	return (int) ((((unsigned int) port) << 16) | ((unsigned int) key));
+	return (int) ((((unsigned int) key) << 16) | ((unsigned int) port));
 }
 
 #endif

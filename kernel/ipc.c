@@ -36,9 +36,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "thread.h"
 #include "mpu/mpufunc.h"
 
-#define RDV_MASK 0x7fff
-#define RDV_BIT 0x8000
-
 typedef struct {
 	node_t node;
 	list_t caller;
@@ -175,7 +172,7 @@ int ipc_call(const int port_id, void *message, const size_t size)
 
 		int tag = tp->wait.detail.ipc.key;
 		node_t *node = tree_get(&reply_tree, tag);
-		tag = RDV_BIT | create_ipc_tag((int) thread_id(running), tag);
+		tag = create_ipc_tag((int) thread_id(running), tag);
 		tp->wait.detail.ipc.key = tag;
 
 		reply_t *r = getReplyParent(node);
@@ -224,6 +221,7 @@ int ipc_receive(const int port_id, int *tag, void *message)
 	int reply_key = node->key;
 	reply_t *r = getReplyParent(node);
 	list_initialize(&(r->caller));
+//TODO what to set?
 	r->max_reply = port->max_reply;
 
 	ER_UINT result;
@@ -250,15 +248,17 @@ int ipc_receive(const int port_id, int *tag, void *message)
 		switch (tp->wait.type) {
 		case wait_call:
 			list_enqueue(&(r->caller), &(tp->wait.waiting));
-			*tag = tp->wait.detail.ipc.key = RDV_BIT
-					| create_ipc_tag((int) thread_id(tp),
+			*tag = tp->wait.detail.ipc.key =
+					create_ipc_tag((int) thread_id(tp),
 							reply_key);
 			tp->wait.type = wait_reply;
 			break;
 		case wait_send:
+//TODO test
 			node = tree_remove(&reply_tree, reply_key);
 			if (node)
 				slab_free(&reply_slab, node);
+			*tag = create_ipc_tag((int) thread_id(tp), 0);
 			release(tp);
 			break;
 		default:
@@ -291,19 +291,18 @@ int ipc_receive(const int port_id, int *tag, void *message)
 
 int ipc_send(const int tag, const void *message, const size_t size)
 {
-	return ((tag & RDV_BIT) ?
-			_reply(tag, message, size) : _send(tag, message, size));
+	int key = key_of_ipc(tag);
+	return (key ? _reply(key, message, size) : _send(tag, message, size));
 }
 
-static int _reply(const int tag, const void *message, const size_t size)
+static int _reply(const int key, const void *message, const size_t size)
 {
-	int reply_key = key_of_ipc(tag) & RDV_MASK;
 /* TODO validate message */
 	enter_serialize();
 
-	node_t *node = tree_get(&reply_tree, reply_key);
+	node_t *node = tree_get(&reply_tree, key);
 	if (!node) {
-		node = tree_remove(&reply_tree, reply_key);
+		node = tree_remove(&reply_tree, key);
 		if (node)
 			slab_free(&reply_slab, node);
 
@@ -314,8 +313,8 @@ static int _reply(const int tag, const void *message, const size_t size)
 	reply_t *r = getReplyParent(node);
 	if (size > r->max_reply) {
 		warn("ipc_send[%d] size %d > %d\n",
-				reply_key, size, r->maxrmsz);
-		node = tree_remove(&reply_tree, reply_key);
+				key, size, r->maxrmsz);
+		node = tree_remove(&reply_tree, key);
 		if (node)
 			slab_free(&reply_slab, node);
 
@@ -330,10 +329,10 @@ static int _reply(const int tag, const void *message, const size_t size)
 		if (memcpy_k2u(tp, tp->wait.detail.ipc.message, message,
 				size)) {
 			warn("ipc_send[%d] copy_to(%d, %p, %p, %d) error\n",
-					reply_key, thread_id(tp),
+					key, thread_id(tp),
 					tp->wait.detail.ipc.message, message,
 					size);
-			node = tree_remove(&reply_tree, reply_key);
+			node = tree_remove(&reply_tree, key);
 			if (node)
 				slab_free(&reply_slab, node);
 
@@ -349,7 +348,7 @@ static int _reply(const int tag, const void *message, const size_t size)
 		result = E_OBJ;
 /* TODO test */
 
-	node = tree_remove(&reply_tree, reply_key);
+	node = tree_remove(&reply_tree, key);
 	if (node)
 		slab_free(&reply_slab, node);
 
@@ -364,17 +363,20 @@ static int _send(const int port_id, const void *message, const size_t size)
 	enter_serialize();
 	thread_t *th = get_thread_ptr(port_id);
 	if (!th) {
+//TODO test
 		leave_serialize();
 		return E_NOEXS;
 	}
 
 	ipc_t *port = getPortParent(th);
 	if (!(port->opened)) {
+//TODO test
 		leave_serialize();
 		return E_NOEXS;
 	}
 
 	if (size > port->max_call) {
+//TODO test
 		warn("ipc_send[%d] size %d > %d\n",
 				port_id, size, port->maxcmsz);
 		leave_serialize();
@@ -398,10 +400,11 @@ static int _send(const int port_id, const void *message, const size_t size)
 				tp->wait.detail.ipc.key);
 		if (node)
 			slab_free(&reply_slab, node);
-
+//TODO test
 		list_remove(q);
 		tp->wait.detail.ipc.size = size;
-		tp->wait.detail.ipc.key = 0;
+		tp->wait.detail.ipc.key =
+				create_ipc_tag((int) thread_id(running), 0);
 		release(tp);
 		leave_serialize();
 		return E_OK;
