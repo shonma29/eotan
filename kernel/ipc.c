@@ -51,6 +51,7 @@ static inline reply_t *getReplyParent(const node_t *);
 static void clear(ipc_t *, const T_CPOR *);
 static int _reply(const int, const void *, const size_t);
 static int _send(const int, const void *, const size_t);
+static void release_rendezvous(const int);
 
 
 static inline ipc_t *getPortParent(const thread_t *p)
@@ -154,57 +155,6 @@ int ipc_call(const int port_id, void *message, const size_t size)
 		return E_PAR;
 	}
 
-	list_t *q = list_head(&(port->receiver));
-	if (q) {
-		thread_t *tp = getThreadWaiting(q);
-		if (memcpy_k2u(tp, tp->wait.detail.ipc.message, message,
-				size)) {
-			warn("ipc_call[%d] copy_to(%d, %p, %p, %d) error\n",
-					port_id, thread_id(tp),
-					tp->wait.detail.ipc.message, message,
-					size);
-			leave_serialize();
-			return E_PAR;
-		}
-
-		list_remove(q);
-		tp->wait.detail.ipc.size = size;
-
-		int tag = tp->wait.detail.ipc.key;
-		node_t *node = tree_get(&reply_tree, tag);
-		tag = create_ipc_tag((int) thread_id(running), tag);
-		tp->wait.detail.ipc.key = tag;
-
-		reply_t *r = getReplyParent(node);
-		list_enqueue(&(r->caller), &(running->wait.waiting));
-		running->wait.detail.ipc.message = message;
-		running->wait.detail.ipc.key = tag;
-		running->wait.type = wait_reply;
-		release(tp);
-	} else {
-		list_enqueue(&(port->caller), &(running->wait.waiting));
-		running->wait.detail.ipc.size = size;
-		running->wait.detail.ipc.message = message;
-		running->wait.type = wait_call;
-/* TODO test */
-	}
-
-	wait(running);
-	return ((running->wait.result) ?
-			running->wait.result : running->wait.detail.ipc.size);
-}
-
-int ipc_receive(const int port_id, int *tag, void *message)
-{
-/* TODO validate message */
-	enter_serialize();
-	thread_t *th = get_thread_ptr(port_id);
-	if (!th) {
-		leave_serialize();
-		return E_NOEXS;
-	}
-
-	ipc_t *port = getPortParent(th);
 	node_t *node = slab_alloc(&reply_slab);
 	if (!node) {
 		leave_serialize();
@@ -224,6 +174,61 @@ int ipc_receive(const int port_id, int *tag, void *message)
 //TODO what to set?
 	r->max_reply = port->max_reply;
 
+	int tag = create_ipc_tag((int) thread_id(running), reply_key);
+	list_t *q = list_head(&(port->receiver));
+	if (q) {
+		thread_t *tp = getThreadWaiting(q);
+		if (memcpy_k2u(tp, tp->wait.detail.ipc.message, message,
+				size)) {
+			warn("ipc_call[%d] copy_to(%d, %p, %p, %d) error\n",
+					port_id, thread_id(tp),
+					tp->wait.detail.ipc.message, message,
+					size);
+			release_rendezvous(reply_key);
+			leave_serialize();
+			return E_PAR;
+		}
+
+		list_remove(q);
+		tp->wait.detail.ipc.size = size;
+		tp->wait.detail.ipc.key = tag;
+		release(tp);
+
+		list_enqueue(&(r->caller), &(running->wait.waiting));
+		running->wait.type = wait_reply;
+	} else {
+		list_enqueue(&(port->caller), &(running->wait.waiting));
+		running->wait.detail.ipc.size = size;
+		running->wait.detail.ipc.key = tag;
+		running->wait.type = wait_call;
+/* TODO test */
+	}
+
+	running->wait.detail.ipc.message = message;
+	wait(running);
+	if (running->wait.result) {
+		release_rendezvous(reply_key);
+		return running->wait.result;
+	} else
+		return running->wait.detail.ipc.size;
+}
+
+int ipc_receive(const int port_id, int *tag, void *message)
+{
+/* TODO validate message */
+	enter_serialize();
+	thread_t *th = get_thread_ptr(port_id);
+	if (!th) {
+		leave_serialize();
+		return E_NOEXS;
+	}
+
+	ipc_t *port = getPortParent(th);
+	if (!(port->opened)) {
+		leave_serialize();
+		return E_NOEXS;
+	}
+
 	ER_UINT result;
 	list_t *q = list_head(&(port->caller));
 	if (q) {
@@ -235,30 +240,26 @@ int ipc_receive(const int port_id, int *tag, void *message)
 			warn("ipc_receive[%d] copy_from(%d, %p, %p, %d) error\n",
 					port_id, thread_id(tp), message,
 					tp->wait.detail.ipc.message, result);
-			node = tree_remove(&reply_tree, reply_key);
-			if (node)
-				slab_free(&reply_slab, node);
-
+			//TODO what to do caller?
 			leave_serialize();
 			return E_PAR;
 /* TODO test */
 		}
 
 		list_remove(q);
+		*tag = tp->wait.detail.ipc.key;
 		switch (tp->wait.type) {
 		case wait_call:
+		{
+			node_t *node = tree_get(&reply_tree,
+					key_of_ipc(tp->wait.detail.ipc.key));
+			reply_t *r = getReplyParent(node);
 			list_enqueue(&(r->caller), &(tp->wait.waiting));
-			*tag = tp->wait.detail.ipc.key =
-					create_ipc_tag((int) thread_id(tp),
-							reply_key);
 			tp->wait.type = wait_reply;
+		}
 			break;
 		case wait_send:
 //TODO test
-			node = tree_remove(&reply_tree, reply_key);
-			if (node)
-				slab_free(&reply_slab, node);
-			*tag = create_ipc_tag((int) thread_id(tp), 0);
 			release(tp);
 			break;
 		default:
@@ -268,17 +269,13 @@ int ipc_receive(const int port_id, int *tag, void *message)
 	} else {
 		list_enqueue(&(port->receiver), &(running->wait.waiting));
 		running->wait.detail.ipc.message = message;
-		running->wait.detail.ipc.key = reply_key;
 		running->wait.type = wait_receive;
 		wait(running);
 
 		enter_serialize();
-		if (running->wait.result) {
+		if (running->wait.result)
 			result = running->wait.result;
-			node = tree_remove(&reply_tree, reply_key);
-			if (node)
-				slab_free(&reply_slab, node);
-		} else {
+		else {
 			result = running->wait.detail.ipc.size;
 			*tag = running->wait.detail.ipc.key;
 		}
@@ -302,10 +299,7 @@ static int _reply(const int key, const void *message, const size_t size)
 
 	node_t *node = tree_get(&reply_tree, key);
 	if (!node) {
-		node = tree_remove(&reply_tree, key);
-		if (node)
-			slab_free(&reply_slab, node);
-
+		release_rendezvous(key);
 		leave_serialize();
 		return E_OBJ;
 	}
@@ -314,10 +308,7 @@ static int _reply(const int key, const void *message, const size_t size)
 	if (size > r->max_reply) {
 		warn("ipc_send[%d] size %d > %d\n",
 				key, size, r->maxrmsz);
-		node = tree_remove(&reply_tree, key);
-		if (node)
-			slab_free(&reply_slab, node);
-
+		release_rendezvous(key);
 		leave_serialize();
 		return E_PAR;
 	}
@@ -332,10 +323,7 @@ static int _reply(const int key, const void *message, const size_t size)
 					key, thread_id(tp),
 					tp->wait.detail.ipc.message, message,
 					size);
-			node = tree_remove(&reply_tree, key);
-			if (node)
-				slab_free(&reply_slab, node);
-
+			release_rendezvous(key);
 			leave_serialize();
 			return E_PAR;
 		}
@@ -347,11 +335,7 @@ static int _reply(const int key, const void *message, const size_t size)
 	} else
 		result = E_OBJ;
 /* TODO test */
-
-	node = tree_remove(&reply_tree, key);
-	if (node)
-		slab_free(&reply_slab, node);
-
+	release_rendezvous(key);
 	leave_serialize();
 	dispatch();
 	return result;
@@ -383,6 +367,7 @@ static int _send(const int port_id, const void *message, const size_t size)
 		return E_PAR;
 	}
 
+	int tag = create_ipc_tag((int) thread_id(running), 0);
 	list_t *q = list_head(&(port->receiver));
 	if (q) {
 		thread_t *tp = getThreadWaiting(q);
@@ -395,16 +380,10 @@ static int _send(const int port_id, const void *message, const size_t size)
 			leave_serialize();
 			return E_PAR;
 		}
-
-		node_t *node = tree_remove(&reply_tree,
-				tp->wait.detail.ipc.key);
-		if (node)
-			slab_free(&reply_slab, node);
 //TODO test
 		list_remove(q);
 		tp->wait.detail.ipc.size = size;
-		tp->wait.detail.ipc.key =
-				create_ipc_tag((int) thread_id(running), 0);
+		tp->wait.detail.ipc.key = tag;
 		release(tp);
 		leave_serialize();
 		return E_OK;
@@ -413,7 +392,15 @@ static int _send(const int port_id, const void *message, const size_t size)
 	list_enqueue(&(port->caller), &(running->wait.waiting));
 	running->wait.detail.ipc.size = size;
 	running->wait.detail.ipc.message = (void *) message;
+	running->wait.detail.ipc.key = tag;
 	running->wait.type = wait_send;
 	wait(running);
 	return running->wait.result;
+}
+
+static void release_rendezvous(const int key)
+{
+	node_t *node = tree_remove(&reply_tree, key);
+	if (node)
+		slab_free(&reply_slab, node);
 }
