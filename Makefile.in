@@ -44,6 +44,10 @@ SSRCS += $(wildcard $(WD)/*.s)
 OBJS = $(patsubst %.c, %.o, $(CSRCS))
 OBJS += $(patsubst %.s, %.o, $(SSRCS))
 
+WRITER = app/tfs/writer
+INITRD = initrd.img
+BLKSIZE = 512
+
 #%.d: %.c
 #	$(SHELL) -ec '$(CC) -MM $(CFLAGS) $< \
 #		| sed "s/\($(subst /, \/, $*)\)\.o[ :]*/\1.o $(subst /,\/,$@) : /g" \

@@ -25,6 +25,9 @@
 
 TARGET = boot.iso
 
+MKFS = app/tfs/mkfs
+WRITER = app/tfs/writer
+INITRD = initrd.img
 BLKSIZE = 512
 
 .PHONY: tools libs kern core drivers servers \
@@ -53,7 +56,7 @@ servers:
 apps: bin test
 
 bin:
-	app/tfs/writer initrd.img $(BLKSIZE) mkdir /bin
+	$(WRITER) $(INITRD) $(BLKSIZE) mkdir /bin
 	$(MAKE) -f app/bin/Makefile WD=app/bin
 
 test:
@@ -62,20 +65,20 @@ test:
 data: motd bees.p6
 	./motd.sh > motd
 	for I in $^; do \
-		app/tfs/writer initrd.img $(BLKSIZE) create /$$I $$I; \
-		app/tfs/writer initrd.img $(BLKSIZE) chmod 644 /$$I; \
+		$(WRITER) $(INITRD) $(BLKSIZE) create /$$I $$I; \
+		$(WRITER) $(INITRD) $(BLKSIZE) chmod 644 /$$I; \
 	done
 
 starter:
-	app/tfs/writer initrd.img $(BLKSIZE) ls /
-	lib/librc/encode < initrd.img > initrd.img.rc
+	$(WRITER) $(INITRD) $(BLKSIZE) ls /
+	lib/librc/encode < $(INITRD) > $(INITRD).rc
 	mkdir -p build
 	$(MAKE) -f starter/arch/Makefile WD=starter/arch
 
 initrd:
-	$(RM) initrd.img
-	app/tfs/mkfs initrd.img 512 1024
-	app/tfs/writer initrd.img $(BLKSIZE) chmod 755 /
+	$(RM) $(INITRD)
+	$(MKFS) $(INITRD) 512 1024
+	$(WRITER) $(INITRD) $(BLKSIZE) chmod 755 /
 
 clean:
 	$(MAKE) -f app/tfs/Makefile WD=app/tfs clean
@@ -86,6 +89,6 @@ clean:
 	$(MAKE) -f servers/Makefile clean
 	$(MAKE) -f app/bin/Makefile WD=app/bin clean
 	$(MAKE) -f app/test/Makefile WD=app/test clean
-	$(RM) initrd.img initrd.img.rc motd
+	$(RM) $(INITRD) $(INITRD).rc motd
 	$(MAKE) -f starter/arch/Makefile WD=starter/arch clean
 	$(RM) -rf build

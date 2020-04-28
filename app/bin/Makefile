@@ -32,12 +32,14 @@ include Makefile.in
 ENTRY_ADDR = 0x00001000
 ENTRY_FUNC = _main
 
-BLKSIZE = 512
+all: $(TARGET)
+	for I in $(^F); do \
+		$(WRITER) $(INITRD) $(BLKSIZE) create /bin/$$I $(WD)/$$I; \
+		$(WRITER) $(INITRD) $(BLKSIZE) chmod 755 /bin/$$I; \
+	done
 
 $(TARGET): $(OBJS) \
 		lib/libc.a lib/libnc.a
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $(@).o \
 		lib/libc.a lib/libnc.a
 	$(STRIP) $@
-	app/tfs/writer initrd.img $(BLKSIZE) create /bin/$(@F) $@
-	app/tfs/writer initrd.img $(BLKSIZE) chmod 755 /bin/$(@F)
