@@ -37,6 +37,7 @@ For more information, please refer to <http://unlicense.org/>
 #if DEBUG
 #include <cga.h>
 
+static Screen window;
 static Console *cns;
 static int initialized;
 #endif
@@ -52,9 +53,10 @@ void printk(const char *format, ...)
 #if DEBUG
 	if (!initialized){
 		initialized = 1;
-		cns = getCgaConsole((const UH*)kern_p2v((void*)CGA_VRAM_ADDR));
-		cns->cls();
-		cns->locate(0, 0);
+		cns = getCgaConsole(&window,
+				(const UH *) kern_p2v((void *) CGA_VRAM_ADDR));
+		cns->cls(&window);
+		cns->locate(&window, 0, 0);
 	}
 #endif
 	vnprintf(_putc, (char*)format, ap);
@@ -64,7 +66,7 @@ static void _putc(char ch)
 {
 	int w = ch;
 #if DEBUG
-	cns->putc(ch);
+	cns->putc(&window, ch);
 #endif
 	while (lfq_enqueue((volatile lfq_t*)KERNEL_LOG_ADDR, &w) != QUEUE_OK) {
 		int trash;
