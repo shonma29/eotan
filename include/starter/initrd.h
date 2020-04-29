@@ -1,5 +1,5 @@
-#ifndef _BOOT_INIT_H_
-#define _BOOT_INIT_H_
+#ifndef _STARTER_INITRD_H_
+#define _STARTER_INITRD_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,12 +26,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include "../fs/fstype.h"
 
-#define INIT_PATH_NAME "/bin/shell"
-
-#define INIT_PID (1)
-#define INIT_PPID (1)
-#define INIT_UID (0)
-#define INIT_GID (0)
+#define INITRD_ADDR 0x80280000
+#define INITRD_BLOCK_SIZE (512)
+#define INITRD_SIZE (INITRD_BLOCK_SIZE * 1024)
+#define INITRD_FS FS_TFS
 
 #endif

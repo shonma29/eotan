@@ -29,8 +29,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include "../../include/elf.h"
-#include "../../include/boot/initrd.h"
-#include "../../include/boot/modules.h"
+#include "../../include/starter/initrd.h"
+#include "../../include/starter/modules.h"
 
 #define ERR_OK (0)
 #define ERR_ARG (1)

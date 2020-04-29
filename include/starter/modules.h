@@ -1,5 +1,5 @@
-#ifndef _BOOT_INITRD_H_
-#define _BOOT_INITRD_H_
+#ifndef _STARTER_MODULES_H_
+#define _STARTER_MODULES_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,11 +26,28 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "../fs/fstype.h"
+#include <stddef.h>
 
-#define INITRD_ADDR 0x80280000
-#define INITRD_BLOCK_SIZE (512)
-#define INITRD_SIZE (INITRD_BLOCK_SIZE * 1024)
-#define INITRD_FS FS_TFS
+#define BOOT_ADDR 0x8000b000
+#define MODULES_ADDR 0x0000c000
+
+enum ModuleType
+{
+	mod_end = 0,
+	mod_kernel = 1,
+	mod_driver = 2,
+	mod_server = 3,
+	mod_user = 4,
+	mod_initrd = 5
+};
+
+typedef struct _ModuleHeader
+{
+	enum ModuleType type;
+	size_t length;
+	size_t bytes;
+	size_t zBytes;
+	int arg;
+} ModuleHeader;
 
 #endif

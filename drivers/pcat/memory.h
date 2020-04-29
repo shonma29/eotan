@@ -1,5 +1,5 @@
-#ifndef __BOOT_MEMORY_H__
-#define __BOOT_MEMORY_H__
+#ifndef __ARCH_MEMORY_H__
+#define __ARCH_MEMORY_H__
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -28,7 +28,6 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <stdint.h>
 
-//TODO These are PC/AT specific.
 #define MEMORY_INFO_END 0x00003000
 #define MEMORY_INFO_ADDR 0x00003004
 

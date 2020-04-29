@@ -25,8 +25,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
+#include <init.h>
 #include <services.h>
-#include <boot/init.h>
 #include <mm/config.h>
 #include <nerve/kcall.h>
 #include <set/lf_queue.h>

@@ -24,8 +24,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <boot/initrd.h>
 #include <mpu/memory.h>
+#include <starter/initrd.h>
 #include "../../lib/librc/rangecoder.h"
 #include "../../lib/librc/bit.h"
 

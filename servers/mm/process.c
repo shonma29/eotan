@@ -26,11 +26,11 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
 #include <fcntl.h>
+#include <init.h>
 #include <services.h>
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
-#include <boot/init.h>
 #include <mm/config.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>

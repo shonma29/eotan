@@ -24,8 +24,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <boot/init.h>
 #include <fcntl.h>
+#include <init.h>
 #include <limits.h>
 #include <fs/config.h>
 #include <nerve/ipc_utils.h>

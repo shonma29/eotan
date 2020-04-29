@@ -26,11 +26,11 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <elf.h>
 #include <stddef.h>
-#include <boot/modules.h>
 #include <mpu/io.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
+#include <starter/modules.h>
 
 static ER run_module(const enum ModuleType type, const int tid,
 		const Elf32_Ehdr *eHdr);

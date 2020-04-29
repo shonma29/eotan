@@ -1,5 +1,5 @@
-#ifndef __BOOT_MODULES_H__
-#define __BOOT_MODULES_H__
+#ifndef _INIT_H_
+#define _INIT_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,28 +26,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stddef.h>
 
-#define BOOT_ADDR 0x8000b000
-#define MODULES_ADDR 0x0000c000
+#define INIT_PATH_NAME "/bin/shell"
 
-enum ModuleType
-{
-	mod_end = 0,
-	mod_kernel = 1,
-	mod_driver = 2,
-	mod_server = 3,
-	mod_user = 4,
-	mod_initrd = 5
-};
-
-typedef struct _ModuleHeader
-{
-	enum ModuleType type;
-	size_t length;
-	size_t bytes;
-	size_t zBytes;
-	int arg;
-} ModuleHeader;
+#define INIT_PID (1)
+#define INIT_PPID (1)
+#define INIT_UID (0)
+#define INIT_GID (0)
 
 #endif

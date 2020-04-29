@@ -29,12 +29,12 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdnoreturn.h>
 #include <string.h>
 #include <vesa.h>
-#include <boot/modules.h>
 #include <arch/archfunc.h>
 #include <mpu/mpufunc.h>
 #include <nerve/config.h>
 #include <nerve/memory_map.h>
 #include <set/lf_queue.h>
+#include <starter/modules.h>
 
 #ifndef USE_VESA
 #include <cga.h>

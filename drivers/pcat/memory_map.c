@@ -28,7 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <vesa.h>
 #endif
 #include <arch/archfunc.h>
-#include <boot/memory.h>
+#include <arch/memory.h>
 #include <mpu/desc.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>

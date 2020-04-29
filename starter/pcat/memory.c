@@ -29,12 +29,12 @@ For more information, please refer to <http://unlicense.org/>
 #include <stddef.h>
 #include <string.h>
 #include <arch/archfunc.h>
-#include <boot/initrd.h>
-#include <boot/modules.h>
 #include <fs/fstype.h>
 #include <mpu/memory.h>
 #include <mpu/mpufunc.h>
 #include <nerve/global.h>
+#include <starter/initrd.h>
+#include <starter/modules.h>
 
 #define INT_BIT ((CHAR_BIT) * sizeof(int))
 
