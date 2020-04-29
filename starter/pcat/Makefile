@@ -35,11 +35,11 @@ BLK_SIZE = 512
 LOADER_ADDR = 0x7c00
 STARTER_SEG = 0x0800
 STARTER_ADDR = 0x8000
-STARTER_SIZE = 12288
+STARTER_SIZE = 16384
 BOOT_ADDR = 0x8000b000
 BOOT_SIZE = 4096
 BIN_SIZE = `echo "$(STARTER_SIZE) + $(BOOT_SIZE)" | bc`
-MAX_KERNEL = `echo "(640 - 32 - 16 - 4) * 1024" | bc`
+MAX_KERNEL = `echo "(640 - 32 - 20 - 4) * 1024" | bc`
 
 OBJS = build/boot.img $(WD)/pad $(WD)/append \
 	$(WD)/loader $(WD)/loader.o $(WD)/loader.inc \

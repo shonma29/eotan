@@ -29,7 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <stddef.h>
 
 #define BOOT_ADDR 0x8000b000
-#define MODULES_ADDR 0x0000c000
+#define MODULES_ADDR 0x0000d000
 
 enum ModuleType
 {
