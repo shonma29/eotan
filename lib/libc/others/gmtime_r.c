@@ -75,7 +75,7 @@ struct tm *gmtime_r(const time_t *timep, struct tm *result)
 
 	int *months = get_days_of_month(y);
 	int m;
-	for (m = 0; (m < 12) && (d > months[m]); m++)
+	for (m = 0; (m < 12) && (d >= months[m]); m++)
 		d -= months[m];
 
 	result->tm_mon = m;
