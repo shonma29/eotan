@@ -478,6 +478,26 @@ static bool _format(State *s)
 		_putf(s, va_arg(s->ap, double));
 		break;
 #endif
+	case 'l': {
+			char c2 = *(s->format)++;
+			switch (c2) {
+			case 'd':
+				_putd(s, va_arg(s->ap, long), 10);
+				break;
+			case 'o':
+				_putd(s, va_arg(s->ap, long), 8);
+				break;
+			case 'x':
+				_puth(s, va_arg(s->ap, long));
+				break;
+			default:
+				_putchar(s, '%');
+				_putchar(s, c);
+				_putchar(s, c2);
+				break;
+			}
+		}
+		break;
 	case 'o':
 		_putd(s, va_arg(s->ap, int), 8);
 		break;
