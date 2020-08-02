@@ -40,7 +40,7 @@ char *test_stdbool_undefined() {
 #define true (49)
 #undef false
 #define false (74)
-#include <stdbool.h>
+#include <sys/stdbool.h>
 	assert_eq("undefined cond", 1, __bool_true_false_are_defined);
 	assert_eq("undefined bool", 0,
 			strcmp("int", to_string(bool)));
@@ -55,8 +55,8 @@ char *test_stdbool_defined() {
 #undef bool
 #undef true
 #undef false
-#undef _STDBOOL_H_
-#include <stdbool.h>
+#undef _SYS_STDBOOL_H_
+#include <sys/stdbool.h>
 	assert_eq("defined cond", 1, __bool_true_false_are_defined);
 	assert_eq("defined bool", 0,
 			strcmp("_Bool", to_string(bool)));

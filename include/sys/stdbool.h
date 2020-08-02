@@ -1,5 +1,5 @@
-#ifndef _SYS_TYPES_H_
-#define _SYS_TYPES_H_
+#ifndef _SYS_STDBOOL_H_
+#define _SYS_STDBOOL_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,36 +26,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <sys/stdbool.h>
-#include <sys/stdint.h>
 
-typedef int pid_t;
+#ifndef __bool_true_false_are_defined
+#define __bool_true_false_are_defined 1
 
-typedef unsigned int dev_t;
-typedef unsigned int ino_t;
-typedef unsigned int mode_t;
-typedef unsigned int nlink_t;
-typedef unsigned int uid_t;
-typedef unsigned int gid_t;
-typedef int64_t off_t;
-typedef unsigned int blksize_t;
-typedef int blkcnt_t;
+#define bool _Bool
 
-typedef int64_t time_t;
-typedef int suseconds_t;
+#define true (1)
+#define false (0)
 
-typedef bool boolean_t;
-
-#ifndef TRUE
-#define TRUE true
 #endif
-#ifndef FALSE
-#define FALSE false
-#endif
-
-typedef uint64_t fsblkcnt_t;
-typedef uint64_t fsfilcnt_t;
-
-typedef int ssize_t;
 
 #endif

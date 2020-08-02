@@ -26,7 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stdbool.h>
+#include <sys/stdbool.h>
 
 #define LSHIFT 0x01
 #define RSHIFT 0x02

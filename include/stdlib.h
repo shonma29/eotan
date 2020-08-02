@@ -26,6 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <sys/types.h>
 #include <stddef.h>
 #include <stdnoreturn.h>
 
