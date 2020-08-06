@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include "process.h"
 
+extern ID worker_id;
 extern char pathbuf1[];
 extern char pathbuf2[];
 

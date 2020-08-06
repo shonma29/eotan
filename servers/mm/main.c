@@ -65,7 +65,7 @@ static int (*funcs[])(mm_request *) = {
 #define REQUEST_QUEUE_SIZE REQUEST_MAX
 
 static ID receiver_id;
-static ID worker_id;
+ID worker_id;
 static slab_t request_slab;
 static volatile lfq_t req_queue;
 static char req_buf[
@@ -84,6 +84,18 @@ static ER init(void)
 	process_initialize();
 	file_initialize();
 	define_mpu_handlers((FP) default_handler, (FP) page_fault_handler);
+
+	request_slab.unit_size = sizeof(mm_request);
+	request_slab.block_size = PAGE_SIZE;
+	request_slab.min_block = 1;
+	request_slab.max_block = slab_max_block(REQUEST_MAX, PAGE_SIZE,
+			sizeof(mm_request));
+	request_slab.palloc = kcall->palloc;
+	request_slab.pfree = kcall->pfree;
+	slab_create(&request_slab);
+
+	lfq_initialize(&req_queue, req_buf, sizeof(mm_request*),
+			REQUEST_QUEUE_SIZE);
 
 	receiver_id = kcall->thread_get_id();
 	T_CMTX pk_cmtx = {
@@ -109,18 +121,6 @@ static ER init(void)
 
 static ER_ID worker_initialize(void)
 {
-	request_slab.unit_size = sizeof(mm_request);
-	request_slab.block_size = PAGE_SIZE;
-	request_slab.min_block = 1;
-	request_slab.max_block = slab_max_block(REQUEST_MAX, PAGE_SIZE,
-			sizeof(mm_request));
-	request_slab.palloc = kcall->palloc;
-	request_slab.pfree = kcall->pfree;
-	slab_create(&request_slab);
-
-	lfq_initialize(&req_queue, req_buf, sizeof(mm_request*),
-			REQUEST_QUEUE_SIZE);
-
 	T_CTSK pk_ctsk = {
 		TA_HLNG | TA_ACT, 0, worker, pri_server_middle,
 		KTHREAD_STACK_SIZE, NULL, NULL, NULL
@@ -130,8 +130,12 @@ static ER_ID worker_initialize(void)
 
 static void worker(void)
 {
-	exec_init(INIT_PID, INIT_PATH_NAME);
+	T_CPOR pk_cpor = { TA_TFIFO, BUFSIZ, BUFSIZ };
+	ER_ID result = kcall->ipc_open(&pk_cpor);
+	if (result)
+		return;
 
+	exec_init(INIT_PID, INIT_PATH_NAME);
 	for (;;) {
 		mm_request *req;
 		if (lfq_dequeue(&req_queue, &req) == QUEUE_OK) {

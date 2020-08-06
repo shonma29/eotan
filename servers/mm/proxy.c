@@ -671,9 +671,12 @@ int _fstat(struct stat *st, const mm_file_t *file, const int token,
 static int call_device(const int server_id, fsmsg_t *message,
 	const size_t tsize, const int rtype, const size_t rsize)
 {
-	ER_UINT size = kcall->ipc_call(server_id, message, tsize);
-//if (rtype == Rwalk)
-//log_info(MYNAME ": call_device size=%d\n", size);
+	ER_UINT size = kcall->ipc_send(server_id, message, tsize);
+	if (size)
+		return ECONNREFUSED;
+
+	int rdvno;
+	size = kcall->ipc_receive(worker_id, &rdvno, message);
 	if (size >= MIN_MESSAGE_SIZE) {
 		//TODO check tag
 
