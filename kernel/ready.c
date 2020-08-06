@@ -37,6 +37,7 @@ thread_t *running;
 
 static list_t ready_task[MAX_PRIORITY + 1];
 static int buf[MAX_PRIORITY + 1];
+static bool cnt[MAX_PRIORITY + 1];
 static heap_t heap;
 
 static inline thread_t *getThread(const list_t *);
@@ -51,8 +52,10 @@ static inline thread_t *getThread(const list_t *p)
 
 void ready_initialize(void)
 {
-	for (int i = MIN_PRIORITY; i <= MAX_PRIORITY; i++)
+	for (int i = MIN_PRIORITY; i <= MAX_PRIORITY; i++) {
 		list_initialize(&(ready_task[i]));
+		cnt[i] = false;
+	}
 
 	heap_initialize(&heap, MAX_PRIORITY + 1, buf);
 }
@@ -60,8 +63,10 @@ void ready_initialize(void)
 void ready_enqueue(const int pri, list_t *src)
 {
 	list_t *dest = &(ready_task[pri]);
-	if (list_is_empty(dest))
+	if (!(cnt[pri])) {
+		cnt[pri] = true;
 		heap_enqueue(&heap, pri);
+	}
 
 	list_enqueue(dest, src);
 }
@@ -94,6 +99,8 @@ static thread_t *ready_dequeue(void)
 		list_t *q = list_head(&(ready_task[pri]));
 		if (q)
 			return getThread(q);
+
+		cnt[pri] = false;
 	}
 }
 
