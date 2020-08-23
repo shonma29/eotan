@@ -37,9 +37,6 @@ For more information, please refer to <http://unlicense.org/>
 
 #define MYNAME "mm"
 
-char pathbuf1[PATH_MAX];
-char pathbuf2[PATH_MAX];
-
 static int call_device(const int, fsmsg_t *, const size_t, const int,
 		const size_t);
 static int create_tag(void);
@@ -109,7 +106,8 @@ int mm_open(mm_request *req)
 		mm_file_t *file;
 		fsmsg_t *message = &(req->message);
 		int result = _walk(&file, process, th->node.key,
-				(char*)(req->args.arg1), message);
+				(char*)(req->args.arg1), message,
+				req->walkpath);
 		if (result) {
 			process_destroy_desc(process, fd);
 			reply->data[0] = result;
@@ -162,7 +160,8 @@ int mm_create(mm_request *req)
 
 		mm_process_t *process = get_process(th);
 		ER_UINT len = kcall->region_copy(th->node.key,
-				(char*)(req->args.arg1), PATH_MAX, pathbuf1);
+				(char*)(req->args.arg1), PATH_MAX,
+				req->pathbuf);
 		if (len < 0) {
 			reply->data[0] = EFAULT;
 			break;
@@ -181,11 +180,11 @@ int mm_create(mm_request *req)
 
 		int fd = desc->node.key;
 		char *parent_path = "";
-		char *head = vfs_split_path(pathbuf1, &parent_path);
+		char *head = vfs_split_path(req->pathbuf, &parent_path);
 		mm_file_t *file;
 		fsmsg_t *message = &(req->message);
 		int result = _walk(&file, process, kcall->thread_get_id(),
-				parent_path, message);
+				parent_path, message, req->walkpath);
 		if (result) {
 			process_destroy_desc(process, fd);
 			reply->data[0] = result;
@@ -387,7 +386,8 @@ int mm_remove(mm_request *req)
 		mm_file_t *file;
 		fsmsg_t *message = &(req->message);
 		int result = _walk(&file, process, th->node.key,
-				(char*)(req->args.arg1), message);
+				(char*)(req->args.arg1), message,
+				req->walkpath);
 		if (result) {
 			reply->data[0] = result;
 			break;
@@ -437,7 +437,8 @@ int mm_stat(mm_request *req)
 		mm_file_t *file;
 		fsmsg_t *message = &(req->message);
 		int result = _walk(&file, process, th->node.key,
-				(char*)(req->args.arg1), message);
+				(char*)(req->args.arg1), message,
+				req->walkpath);
 		if (result) {
 			reply->data[0] = result;
 			break;
@@ -515,7 +516,8 @@ int mm_chmod(mm_request *req)
 		mm_file_t *file;
 		fsmsg_t *message = &(req->message);
 		int result = _walk(&file, process, th->node.key,
-				(char*)(req->args.arg1), message);
+				(char*)(req->args.arg1), message,
+				req->walkpath);
 		if (result) {
 			reply->data[0] = result;
 			break;
@@ -557,21 +559,21 @@ int mm_chmod(mm_request *req)
 }
 
 int _walk(mm_file_t **file, mm_process_t *process, const int thread_id,
-		const char *path, fsmsg_t *message)
+		const char *path, fsmsg_t *message, char *buf)
 {
 	if (!(process->wd))
 		//TODO what to do?
 		return ECONNREFUSED;
 
 	//TODO omit copy
-	ER_UINT len = kcall->region_copy(thread_id, path, PATH_MAX, pathbuf2);
+	ER_UINT len = kcall->region_copy(thread_id, path, PATH_MAX, buf);
 	if (len < 0)
 		return EFAULT;
 
 	if (len >= PATH_MAX)
 		return ENAMETOOLONG;
 
-	len = compact_path(pathbuf2);
+	len = compact_path(buf);
 	if (len < 0)
 		return ENOENT;
 
@@ -586,7 +588,7 @@ int _walk(mm_file_t **file, mm_process_t *process, const int thread_id,
 	message->Twalk.fid = process->wd->node.key;
 	message->Twalk.newfid = f->node.key;
 	message->Twalk.nwname = len;
-	message->Twalk.wname = (char *) pathbuf2;
+	message->Twalk.wname = buf;
 //	log_info(MYNAME ": walk %d %d [%s] %d\n", process->session->node.key,
 //			message->Twalk.fid, message->Twalk.wname,
 //			message->Twalk.newfid);

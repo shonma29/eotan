@@ -41,8 +41,8 @@ typedef struct {
 	node_t node;
 	sys_args_t args;
 	fsmsg_t message;
-//	char *pathbuf1;//TODO kalloc
-//	char *pathbuf2;//TODO kalloc
+	char walkpath[PATH_MAX];
+	char pathbuf[PATH_MAX];
 //	mm_thread_t *caller;
 	/* callback parameters */
 } mm_request;

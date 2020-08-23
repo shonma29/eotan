@@ -29,8 +29,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "process.h"
 
 extern ID worker_id;
-extern char pathbuf1[];
-extern char pathbuf2[];
 
 static inline int create_token(const int thread_id, const mm_session_t *session)
 {
@@ -39,7 +37,7 @@ static inline int create_token(const int thread_id, const mm_session_t *session)
 
 extern int _attach(mm_process_t *, const int);
 extern int _walk(mm_file_t **, mm_process_t *, const int, const char *,
-		fsmsg_t *);
+		fsmsg_t *, char *);
 extern int _open(const mm_file_t *, const int, const int, fsmsg_t *);
 extern int _read(const mm_file_t *, const int, const off_t, const size_t,
 		char *, fsmsg_t *);

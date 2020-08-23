@@ -66,10 +66,6 @@ int exec_init(const pid_t process_id, char *pathname)
 	if (args.arg3 > sizeof(buf))
 		return ENOMEM;
 
-	int result = create_init(process_id);
-	if (result)
-		return result;
-
 	size_t offset = STACK_TAIL - args.arg3;
 	init_arg_t *p = (init_arg_t *) buf;
 	p->argc = 1;
@@ -85,6 +81,10 @@ int exec_init(const pid_t process_id, char *pathname)
 	args.arg1 = (int) pathname;
 	args.arg2 = (int) p;
 
+	int result = create_init(process_id);
+	if (result)
+		return result;
+
 	mm_process_t *process = process_find(process_id);
 	result = _attach(process, PORT_MM << 16);
 	if (result) {
@@ -94,7 +94,8 @@ log_info("mm: init attach %d\n", result);
 	}
 
 	sys_reply_t reply;
-	result = process_exec(&reply, process, PORT_MM, &args);
+	char pathbuf[PATH_MAX];
+	result = process_exec(&reply, process, PORT_MM, &args, pathbuf);
 	log_info("mm: exec_init(pid=%d, %s) r=%d e=%d\n",
 			process_id, pathname, result, reply.data[0]);
 	return (result ? reply.data[0] : 0);

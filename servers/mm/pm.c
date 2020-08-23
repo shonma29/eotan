@@ -83,21 +83,21 @@ int mm_exec(mm_request *req)
 
 		mm_process_t *process = get_process(th);
 		return process_exec(reply, process, th->node.key,
-				&(req->args));
+				&(req->args), req->walkpath);
 	} while (false);
 
 	reply->result = -1;
 	return reply_failure;
 }
 
-int process_exec(sys_reply_t *reply, mm_process_t *process, const int thread_id,
-		sys_args_t *args)
+int process_exec(sys_reply_t *reply, mm_process_t *process,
+		const int thread_id, sys_args_t *args, char *pathbuf)
 {
 	do {
 		mm_file_t *file;
 		fsmsg_t message;
 		int result = _walk(&file, process, thread_id,
-				(char*)(args->arg1), &message);
+				(char*)(args->arg1), &message, pathbuf);
 		if (result) {
 			reply->data[0] = result;
 			break;
@@ -322,7 +322,8 @@ int mm_chdir(mm_request *req)
 
 		mm_process_t *process = get_process(th);
 		ER_UINT len = kcall->region_copy(th->node.key,
-				(char*)(req->args.arg1), PATH_MAX, pathbuf2);
+				(char*)(req->args.arg1), PATH_MAX,
+				req->walkpath);
 		if (len < 0) {
 			reply->data[0] = EFAULT;
 			break;
@@ -333,8 +334,8 @@ int mm_chdir(mm_request *req)
 			break;
 		}
 
-		strcpy(pathbuf1, process->local->wd);
-		len = calc_path(pathbuf1, pathbuf2, PATH_MAX);
+		strcpy(req->pathbuf, process->local->wd);
+		len = calc_path(req->pathbuf, req->walkpath, PATH_MAX);
 		if (!len) {
 			reply->data[0] = ENAMETOOLONG;
 			break;
@@ -344,14 +345,15 @@ int mm_chdir(mm_request *req)
 		mm_file_t *file;
 		fsmsg_t message;
 		int result = _walk(&file, process, th->node.key,
-				(char*)(req->args.arg1), &message);
+				(char*)(req->args.arg1), &message,
+				req->walkpath);
 		if (result) {
 			reply->data[0] = result;
 			break;
 		}
 
 		process->local->wd_len = len;
-		strcpy(process->local->wd, pathbuf1);
+		strcpy(process->local->wd, req->pathbuf);
 
 		if (process->wd) {
 			result = _clunk(process->session, process->wd,
