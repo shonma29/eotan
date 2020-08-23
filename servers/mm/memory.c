@@ -111,7 +111,7 @@ int mm_sbrk(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(port_of_ipc(req->tag));
+		mm_thread_t *th = thread_find(port_of_ipc(req->node.key));
 		if (!th) {
 			reply->data[0] = EPERM;
 			break;

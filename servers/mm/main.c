@@ -71,15 +71,16 @@ static volatile lfq_t req_queue;
 static char req_buf[
 		lfq_buf_size(sizeof(mm_request *), REQUEST_QUEUE_SIZE)
 ];
+static tree_t tag_tree;
 
-static ER init(void);
+static ER initialize(void);
 static ER_ID worker_initialize(void);
 static void worker(void);
 static int worker_enqueue(mm_request **req);
 static void doit(void);
 
 
-static ER init(void)
+static ER initialize(void)
 {
 	process_initialize();
 	file_initialize();
@@ -93,6 +94,7 @@ static ER init(void)
 	request_slab.palloc = kcall->palloc;
 	request_slab.pfree = kcall->pfree;
 	slab_create(&request_slab);
+	tree_create(&tag_tree, NULL, NULL);
 
 	lfq_initialize(&req_queue, req_buf, sizeof(mm_request*),
 			REQUEST_QUEUE_SIZE);
@@ -139,25 +141,31 @@ static void worker(void)
 	for (;;) {
 		mm_request *req;
 		if (lfq_dequeue(&req_queue, &req) == QUEUE_OK) {
-			int result = funcs[req->args.syscall_no](req);
-			kcall->mutex_lock(receiver_id, TMO_FEVR);
-			slab_free(&request_slab, req);
-			kcall->mutex_unlock(receiver_id);
-			kcall->thread_wakeup(receiver_id);
-
-			sys_reply_t *reply = (sys_reply_t *) &(req->args);
-			switch (result) {
+			switch (funcs[req->args.syscall_no](req)) {
 			case reply_success:
 			case reply_failure:
-				result = kcall->ipc_send(req->tag, reply,
-						sizeof(*reply));
-				if (result)
-					log_err(MYNAME ": reply failed %d\n",
-							result);
+				{
+					sys_reply_t *reply = (sys_reply_t *) &(req->args);
+					int result = kcall->ipc_send(req->node.key,
+							reply,
+							sizeof(*reply));
+					if (result)
+						log_err(MYNAME ": reply failed %d\n",
+								result);
+				}
 				break;
 			default:
 				break;
 			}
+
+			kcall->mutex_lock(receiver_id, TMO_FEVR);
+			if (remove_request(req->node.key, req))
+				log_err(MYNAME ": remove tree failed %d\n",
+						req->node.key);
+
+			slab_free(&request_slab, req);
+			kcall->mutex_unlock(receiver_id);
+			kcall->thread_wakeup(receiver_id);
 		} else
 			kcall->thread_sleep();
 	}
@@ -165,14 +173,18 @@ static void worker(void)
 
 static int worker_enqueue(mm_request **req)
 {
-	 if (lfq_enqueue(&req_queue, req) == QUEUE_OK) {
+	kcall->mutex_lock(receiver_id, TMO_FEVR);
+
+	if (add_request((*req)->node.key, *req))
+		log_err(MYNAME ": add tree failed %d\n", (*req)->node.key);
+	else if (lfq_enqueue(&req_queue, req) == QUEUE_OK) {
 		kcall->thread_wakeup(worker_id);
-		kcall->mutex_lock(receiver_id, TMO_FEVR);
 		*req = slab_alloc(&request_slab);
 		kcall->mutex_unlock(receiver_id);
 		return 0;
 	}
 
+	kcall->mutex_unlock(receiver_id);
 	return ENOMEM;
 }
 
@@ -187,7 +199,7 @@ static void doit(void)
 			continue;
 		}
 
-		int size = kcall->ipc_receive(PORT_MM, &(req->tag),
+		int size = kcall->ipc_receive(PORT_MM, &(req->node.key),
 				&(req->args));
 		if (size < 0) {
 			log_err(MYNAME ": receive failed %d\n", size);
@@ -206,7 +218,7 @@ static void doit(void)
 			sys_reply_t *reply = (sys_reply_t *) &(req->args);
 			reply->result = -1;
 			reply->data[0] = result;
-			result = kcall->ipc_send(req->tag, reply,
+			result = kcall->ipc_send(req->node.key, reply,
 					sizeof(*reply));
 			if (result)
 				log_err(MYNAME ": reply failed %d\n", result);
@@ -216,7 +228,7 @@ static void doit(void)
 
 void start(VP_INT exinf)
 {
-	ER error = init();
+	ER error = initialize();
 	if (error)
 		log_err(MYNAME ": open failed %d\n", error);
 	else {
@@ -230,4 +242,25 @@ void start(VP_INT exinf)
 	}
 
 	kcall->thread_end_and_destroy();
+}
+
+mm_request *find_request(const int tag)
+{
+	node_t *node = tree_get(&tag_tree, tag);
+	//TODO define getParent macro
+	return ((mm_request *) node);
+}
+
+int add_request(const int tag, mm_request *req)
+{
+	//TODO remove this code after test
+	if (tree_get(&tag_tree, tag))
+		return (-1);
+
+	return (tree_put(&tag_tree, tag, &(req->node)) ? 0 : (-1));
+}
+
+int remove_request(const int tag, mm_request *req)
+{
+	return (tree_remove(&tag_tree, req->node.key) ? 0 : (-1));
 }

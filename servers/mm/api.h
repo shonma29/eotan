@@ -40,7 +40,6 @@ typedef enum {
 typedef struct {
 	node_t node;
 	sys_args_t args;
-	int tag;
 	fsmsg_t message;
 //	char *pathbuf1;//TODO kalloc
 //	char *pathbuf2;//TODO kalloc
@@ -69,5 +68,9 @@ extern int mm_fstat(mm_request *);
 extern int mm_chmod(mm_request *);
 extern int mm_clock_gettime(mm_request *);
 extern int mm_thread_find(mm_request *);
+
+extern mm_request *find_request(const int);
+extern int add_request(const int, mm_request *);
+extern int remove_request(const int, mm_request *);
 
 #endif

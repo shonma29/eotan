@@ -68,7 +68,7 @@ int mm_clock_gettime(mm_request *req)
 			break;
 		}
 
-		if (kcall->region_put(port_of_ipc(req->tag),
+		if (kcall->region_put(port_of_ipc(req->node.key),
 				(void*)(req->args.arg2), sizeof(tspec),
 				&tspec)) {
 			reply->data[0] = EFAULT;

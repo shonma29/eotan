@@ -92,7 +92,7 @@ int mm_open(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(port_of_ipc(req->tag));
+		mm_thread_t *th = thread_find(port_of_ipc(req->node.key));
 		if (!th) {
 			reply->data[0] = EPERM;
 			break;
@@ -154,7 +154,7 @@ int mm_create(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(port_of_ipc(req->tag));
+		mm_thread_t *th = thread_find(port_of_ipc(req->node.key));
 		if (!th) {
 			reply->data[0] = EPERM;
 			break;
@@ -242,7 +242,7 @@ int mm_read(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(port_of_ipc(req->tag));
+		mm_thread_t *th = thread_find(port_of_ipc(req->node.key));
 		if (!th) {
 			reply->data[0] = EPERM;
 			break;
@@ -282,7 +282,7 @@ int mm_write(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(port_of_ipc(req->tag));
+		mm_thread_t *th = thread_find(port_of_ipc(req->node.key));
 		if (!th) {
 			reply->data[0] = EPERM;
 			break;
@@ -330,7 +330,7 @@ int mm_close(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(port_of_ipc(req->tag));
+		mm_thread_t *th = thread_find(port_of_ipc(req->node.key));
 		if (!th) {
 			reply->data[0] = EPERM;
 			break;
@@ -377,7 +377,7 @@ int mm_remove(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(port_of_ipc(req->tag));
+		mm_thread_t *th = thread_find(port_of_ipc(req->node.key));
 		if (!th) {
 			reply->data[0] = EPERM;
 			break;
@@ -427,7 +427,7 @@ int mm_stat(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(port_of_ipc(req->tag));
+		mm_thread_t *th = thread_find(port_of_ipc(req->node.key));
 		if (!th) {
 			reply->data[0] = EPERM;
 			break;
@@ -469,7 +469,7 @@ int mm_fstat(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(port_of_ipc(req->tag));
+		mm_thread_t *th = thread_find(port_of_ipc(req->node.key));
 		if (!th) {
 			reply->data[0] = EPERM;
 			break;
@@ -505,7 +505,7 @@ int mm_chmod(mm_request *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(port_of_ipc(req->tag));
+		mm_thread_t *th = thread_find(port_of_ipc(req->node.key));
 		if (!th) {
 			reply->data[0] = EPERM;
 			break;
