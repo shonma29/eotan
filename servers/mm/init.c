@@ -25,9 +25,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
+#include <init.h>
 #include <services.h>
 #include <string.h>
 #include <mm/config.h>
+#include <nerve/kcall.h>
 #include "proxy.h"
 #include "../../lib/libserv/libserv.h"
 
@@ -50,37 +52,11 @@ static char envpath[] = "PATH=/bin";
 static char buf[sizeof(init_arg_t) + PATH_MAX + 1 + MAX_ENV
 		+ sizeof(thread_local_t)];
 
+static void phantom(void);
 
-int exec_init(const pid_t process_id, char *pathname)
+
+int exec_init(const pid_t process_id)
 {
-	size_t pathlen = strlen(pathname);
-	if (pathlen > PATH_MAX)
-		return ENAMETOOLONG;
-
-	pathlen++;
-
-	sys_args_t args;
-	args.arg3 = roundUp(sizeof(init_arg_t) + pathlen
-					+ strlen(envpath) + 1, sizeof(int))
-			+ sizeof(thread_local_t);
-	if (args.arg3 > sizeof(buf))
-		return ENOMEM;
-
-	size_t offset = STACK_TAIL - args.arg3;
-	init_arg_t *p = (init_arg_t *) buf;
-	p->argc = 1;
-	p->argv = (char **) (offsetof(init_arg_t, arg0) + offset);
-	p->envp = (char **) (offsetof(init_arg_t, env0) + offset);
-	p->arg0 = (char *) (offsetof(init_arg_t, buf) + offset);
-	p->arg1 = NULL;
-	p->env0 = (char *) (sizeof(init_arg_t) + pathlen + offset);
-	p->env1 = NULL;
-	strcpy(p->buf, pathname);
-	strcpy(&(buf[sizeof(init_arg_t) + pathlen]), envpath);
-
-	args.arg1 = (int) pathname;
-	args.arg2 = (int) p;
-
 	int result = create_init(process_id);
 	if (result)
 		return result;
@@ -89,14 +65,61 @@ int exec_init(const pid_t process_id, char *pathname)
 	result = _attach(process, PORT_MM << 16);
 	if (result) {
 		//TODO destroy process
-log_info("mm: init attach %d\n", result);
+		log_info("mm: _attach %d\n", result);
 		return result;
 	}
 
-	sys_reply_t reply;
-	char pathbuf[PATH_MAX];
-	result = process_exec(&reply, process, PORT_MM, &args, pathbuf);
-	log_info("mm: exec_init(pid=%d, %s) r=%d e=%d\n",
-			process_id, pathname, result, reply.data[0]);
-	return (result ? reply.data[0] : 0);
+	int phantom_id;
+	result = create_init_thread(&phantom_id, process, phantom);
+	if (result) {
+		//TODO detach and destroy process
+		log_info("mm: create_init_thread %d\n", result);
+		return result;
+	}
+
+	log_info("mm: exec_init(pid=%d)\n", process_id);
+	return 0;
+}
+
+static void phantom(void)
+{
+	char *pathname = INIT_PATH_NAME;
+	do {
+		size_t pathlen = strlen(pathname);
+		if (pathlen > PATH_MAX) {
+			log_err("phantom: ENAMETOOLONG\n");
+			break;
+		}
+
+		pathlen++;
+
+		sys_args_t args;
+		args.arg3 = roundUp(sizeof(init_arg_t) + pathlen
+				+ strlen(envpath) + 1, sizeof(int))
+				+ sizeof(thread_local_t);
+		if (args.arg3 > sizeof(buf)) {
+			log_err("phantom: ENOMEM\n");
+			break;
+		}
+
+		size_t offset = STACK_TAIL - args.arg3;
+		init_arg_t *p = (init_arg_t *) buf;
+		p->argc = 1;
+		p->argv = (char **) (offsetof(init_arg_t, arg0) + offset);
+		p->envp = (char **) (offsetof(init_arg_t, env0) + offset);
+		p->arg0 = (char *) (offsetof(init_arg_t, buf) + offset);
+		p->arg1 = NULL;
+		p->env0 = (char *) (sizeof(init_arg_t) + pathlen + offset);
+		p->env1 = NULL;
+		strcpy(p->buf, pathname);
+		strcpy(&(buf[sizeof(init_arg_t) + pathlen]), envpath);
+
+		args.syscall_no = syscall_exec;
+		args.arg1 = (int) pathname;
+		args.arg2 = (int) p;
+		log_info("mm: phantom(%s)\n", pathname);
+		kcall->ipc_call(PORT_MM, &args, sizeof(args));
+	} while (false);
+
+	kcall->thread_end_and_destroy();
 }

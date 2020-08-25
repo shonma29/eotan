@@ -693,3 +693,39 @@ static void destroy_threads(mm_process_t *process)
 		slab_free(&thread_slab, th);
 	}
 }
+
+int create_init_thread(int *thread_id, mm_process_t *process, FP entry)
+{
+	mm_thread_t *th = (mm_thread_t *) slab_alloc(&thread_slab);
+	if (!th)
+		return ENOMEM;
+
+	T_CTSK pk_ctsk = {
+		TA_HLNG | TA_ACT,
+		(VP_INT) NULL,
+		entry,
+		pri_user_foreground,
+		KTHREAD_STACK_SIZE,
+		NULL,
+		NULL,
+		NULL
+	};
+	ER_ID tid = kcall->thread_create_auto(&pk_ctsk);
+	if (tid < 0) {
+		slab_free(&thread_slab, th);
+		//TODO use another errno
+		return ENOMEM;
+	}
+
+	if (!tree_put(&thread_tree, tid, &(th->node))) {
+		kcall->thread_destroy(tid);
+		slab_free(&thread_slab, th);
+		//TODO use another errno
+		return EBUSY;
+	}
+
+	list_append(&(process->threads), &(th->brothers));
+	th->process = process;
+	*thread_id = tid;
+	return 0;
+}

@@ -137,14 +137,14 @@ static void worker(void)
 	if (result)
 		return;
 
-	exec_init(INIT_PID, INIT_PATH_NAME);
+	exec_init(INIT_PID);
 	for (;;) {
 		mm_request *req;
 		if (lfq_dequeue(&req_queue, &req) == QUEUE_OK) {
 			switch (funcs[req->args.syscall_no](req)) {
 			case reply_success:
 			case reply_failure:
-				{
+				if (req->node.key) {
 					sys_reply_t *reply = (sys_reply_t *) &(req->args);
 					int result = kcall->ipc_send(req->node.key,
 							reply,
@@ -152,7 +152,10 @@ static void worker(void)
 					if (result)
 						log_err(MYNAME ": reply failed %d\n",
 								result);
-				}
+				} else
+					//TODO set sequence for inner call
+					log_warning(MYNAME ": inner call %d\n",
+						req->node.key);
 				break;
 			default:
 				break;
