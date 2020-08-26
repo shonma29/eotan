@@ -46,6 +46,7 @@ static int (*funcs[])(mm_request *) = {
 	mm_chdir,
 	mm_dup,
 	mm_lseek,
+	mm_attach,
 	mm_open,
 	mm_create,
 	mm_read,
@@ -153,6 +154,7 @@ static void worker(void)
 						log_err(MYNAME ": reply failed %d\n",
 								result);
 				} else
+					//TODO really exists?
 					//TODO set sequence for inner call
 					log_warning(MYNAME ": inner call %d\n",
 						req->node.key);

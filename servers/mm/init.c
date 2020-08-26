@@ -62,13 +62,6 @@ int exec_init(const pid_t process_id)
 		return result;
 
 	mm_process_t *process = process_find(process_id);
-	result = _attach(process, PORT_MM << 16);
-	if (result) {
-		//TODO destroy process
-		log_info("mm: _attach %d\n", result);
-		return result;
-	}
-
 	int phantom_id;
 	result = create_init_thread(&phantom_id, process, phantom);
 	if (result) {
@@ -83,8 +76,23 @@ int exec_init(const pid_t process_id)
 
 static void phantom(void)
 {
-	char *pathname = INIT_PATH_NAME;
 	do {
+		sys_args_t args;
+		args.syscall_no = syscall_attach;
+		if (kcall->ipc_call(PORT_MM, &args, sizeof(args))
+				!= sizeof(sys_reply_t)) {
+			log_info("mm: phantom call failed\n");
+			break;
+		} else {
+			sys_reply_t *reply = (sys_reply_t *) &args;
+			if (reply->result) {
+				log_info("mm: attach failed %d\n",
+						reply->result);
+				break;
+			}
+		}
+
+		char *pathname = INIT_PATH_NAME;
 		size_t pathlen = strlen(pathname);
 		if (pathlen > PATH_MAX) {
 			log_err("phantom: ENAMETOOLONG\n");
@@ -93,7 +101,6 @@ static void phantom(void)
 
 		pathlen++;
 
-		sys_args_t args;
 		args.arg3 = roundUp(sizeof(init_arg_t) + pathlen
 				+ strlen(envpath) + 1, sizeof(int))
 				+ sizeof(thread_local_t);

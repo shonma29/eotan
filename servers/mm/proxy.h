@@ -35,7 +35,6 @@ static inline int create_token(const int thread_id, const mm_session_t *session)
 	return ((thread_id << 16) | session->node.key);
 }
 
-extern int _attach(mm_process_t *, const int);
 extern int _walk(mm_file_t **, mm_process_t *, const int, const char *,
 		fsmsg_t *, char *);
 extern int _open(const mm_file_t *, const int, const int, fsmsg_t *);

@@ -43,46 +43,67 @@ static int create_tag(void);
 static int compact_path(char *);
 
 
-int _attach(mm_process_t *process, const int thread_id)
+int mm_attach(mm_request *req)
 {
-	mm_session_t *session = session_create();
-	if (!session)
-		return ENOMEM;
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
+	do {
+		mm_thread_t *th = thread_find(port_of_ipc(req->node.key));
+		if (!th) {
+			reply->data[0] = EPERM;
+			break;
+		}
 
-	mm_file_t *file = session_create_file(session);
-	if (!file) {
-		session_destroy(session);
-		return ENOMEM;
-	}
+		mm_process_t *process = get_process(th);
+		mm_session_t *session = session_create();
+		if (!session) {
+			reply->data[0] = ENOMEM;
+			break;
+		}
 
-	fsmsg_t message;
-	message.header.type = Tattach;
-	message.header.token = create_token(thread_id, session);
-	message.Tattach.tag = create_tag();
-	message.Tattach.fid = file->node.key;
-	message.Tattach.afid = NOFID;
-	message.Tattach.uname = (char*)(process->uid);
-	message.Tattach.aname = (char*)"/";
+		mm_file_t *file = session_create_file(session);
+		if (!file) {
+			session_destroy(session);
+			reply->data[0] = ENOMEM;
+			break;
+		}
 
-	int result = call_device(PORT_FS, &message, MESSAGE_SIZE(Tattach),
-			Rattach, MESSAGE_SIZE(Rattach));
-	//log_info("mm: attach[sid=%d fid=%d] %d\n", session->node.key,
-	//		file->node.key, result);
+		fsmsg_t message;
+		message.header.type = Tattach;
+		message.header.token = create_token(th->node.key, session);
+		message.Tattach.tag = create_tag();
+		message.Tattach.fid = file->node.key;
+		message.Tattach.afid = NOFID;
+		message.Tattach.uname = (char *) (process->uid);
+		message.Tattach.aname = (char *) "/";
 
-	if (result) {
-		log_err("mm: attach(%x) %d\n", file->node.key, result);
-		session_destroy_file(session, file);
-		session_destroy(session);
-		return result;
-	}
+		int result = call_device(PORT_FS, &message,
+				MESSAGE_SIZE(Tattach),
+				Rattach, MESSAGE_SIZE(Rattach));
+		//log_info("mm: attach[sid=%d fid=%d] %d\n", session->node.key,
+		//		file->node.key, result);
 
-	file->server_id = PORT_FS;
-	file->f_flag = O_ACCMODE;
-	file->f_count = 1;
-	file->f_offset = 0;
-	process->wd = file;
-	process->session = session;
-	return 0;
+		if (result) {
+			log_err("mm: attach(%x) %d\n", file->node.key, result);
+			session_destroy_file(session, file);
+			session_destroy(session);
+			reply->data[0] = result;
+			break;
+		}
+
+		file->server_id = PORT_FS;
+		file->f_flag = O_ACCMODE;
+		file->f_count = 1;
+		file->f_offset = 0;
+		process->wd = file;
+		process->session = session;
+
+		reply->result = 0;
+		reply->data[0] = 0;
+		return reply_success;
+	} while (false);
+
+	reply->result = -1;
+	return reply_failure;
 }
 
 int mm_open(mm_request *req)

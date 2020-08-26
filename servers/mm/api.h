@@ -57,6 +57,7 @@ extern int mm_sbrk(mm_request *);
 extern int mm_chdir(mm_request *);
 extern int mm_dup(mm_request *);
 extern int mm_lseek(mm_request *);
+extern int mm_attach(mm_request *);
 extern int mm_open(mm_request *);
 extern int mm_create(mm_request *);
 extern int mm_read(mm_request *);
