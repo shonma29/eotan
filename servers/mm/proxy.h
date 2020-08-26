@@ -28,7 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include "process.h"
 
-extern ID worker_id;
+extern ID receiver_id;
 
 static inline int create_token(const int thread_id, const mm_session_t *session)
 {

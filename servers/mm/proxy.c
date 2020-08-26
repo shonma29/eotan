@@ -699,7 +699,7 @@ static int call_device(const int server_id, fsmsg_t *message,
 		return ECONNREFUSED;
 
 	int rdvno;
-	size = kcall->ipc_receive(worker_id, &rdvno, message);
+	size = kcall->ipc_receive(receiver_id, &rdvno, message);
 	if (size >= MIN_MESSAGE_SIZE) {
 		//TODO check tag
 
