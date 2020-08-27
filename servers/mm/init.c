@@ -24,13 +24,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <errno.h>
 #include <init.h>
+#include <local.h>
 #include <services.h>
 #include <string.h>
 #include <mm/config.h>
 #include <nerve/kcall.h>
-#include "proxy.h"
+#include <sys/syscall.h>
 #include "../../lib/libserv/libserv.h"
 
 #define STACK_TAIL USER_STACK_END_ADDR
@@ -52,41 +52,20 @@ static char envpath[] = "PATH=/bin";
 static char buf[sizeof(init_arg_t) + PATH_MAX + 1 + MAX_ENV
 		+ sizeof(thread_local_t)];
 
-static void phantom(void);
 
-
-int exec_init(const pid_t process_id)
-{
-	int result = create_init(process_id);
-	if (result)
-		return result;
-
-	mm_process_t *process = process_find(process_id);
-	int phantom_id;
-	result = create_init_thread(&phantom_id, process, phantom);
-	if (result) {
-		//TODO detach and destroy process
-		log_info("mm: create_init_thread %d\n", result);
-		return result;
-	}
-
-	log_info("mm: exec_init(pid=%d)\n", process_id);
-	return 0;
-}
-
-static void phantom(void)
+void init(void)
 {
 	do {
 		sys_args_t args;
 		args.syscall_no = syscall_attach;
 		if (kcall->ipc_call(PORT_MM, &args, sizeof(args))
 				!= sizeof(sys_reply_t)) {
-			log_info("mm: phantom call failed\n");
+			log_info("init: call failed\n");
 			break;
 		} else {
 			sys_reply_t *reply = (sys_reply_t *) &args;
 			if (reply->result) {
-				log_info("mm: attach failed %d\n",
+				log_info("init: attach failed %d\n",
 						reply->result);
 				break;
 			}
@@ -95,7 +74,7 @@ static void phantom(void)
 		char *pathname = INIT_PATH_NAME;
 		size_t pathlen = strlen(pathname);
 		if (pathlen > PATH_MAX) {
-			log_err("phantom: ENAMETOOLONG\n");
+			log_err("init: ENAMETOOLONG\n");
 			break;
 		}
 
@@ -105,7 +84,7 @@ static void phantom(void)
 				+ strlen(envpath) + 1, sizeof(int))
 				+ sizeof(thread_local_t);
 		if (args.arg3 > sizeof(buf)) {
-			log_err("phantom: ENOMEM\n");
+			log_err("init: ENOMEM\n");
 			break;
 		}
 
@@ -124,7 +103,7 @@ static void phantom(void)
 		args.syscall_no = syscall_exec;
 		args.arg1 = (int) pathname;
 		args.arg2 = (int) p;
-		log_info("mm: phantom(%s)\n", pathname);
+		log_info("init: exec(%s)\n", pathname);
 		kcall->ipc_call(PORT_MM, &args, sizeof(args));
 	} while (false);
 

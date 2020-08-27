@@ -69,7 +69,7 @@ ID receiver_id;
 
 static int initialize(void);
 static void execute(mm_request *);
-static void doit(void);
+static void accept(void);
 
 
 static int initialize(void)
@@ -95,7 +95,7 @@ static int initialize(void)
 	if (result)
 		return result;
 
-	exec_init(INIT_PID);
+	create_init(INIT_PID, init);
 	return 0;
 }
 
@@ -124,7 +124,7 @@ static void execute(mm_request *req)
 		log_err(MYNAME ": remove tree failed %d\n", req->node.key);
 }
 
-static void doit(void)
+static void accept(void)
 {
 	int rdvno;
 	sys_args_t args;
@@ -167,7 +167,7 @@ void start(VP_INT exinf)
 	else {
 		log_info(MYNAME ": start\n");
 		for (;;)
-			doit();
+			accept();
 		log_info(MYNAME ": end\n");
 
 		error = kcall->ipc_close();

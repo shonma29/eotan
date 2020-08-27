@@ -91,6 +91,7 @@ static int map_user_stack(mm_process_t *);
 static int release_memory(mm_process_t *);
 static int create_thread(int *, mm_process_t *, FP, VP);
 static void destroy_threads(mm_process_t *);
+static int create_init_thread(mm_process_t *, const FP);
 
 
 static node_t **thread_lookup_selector(const tree_t *tree, const int key)
@@ -402,7 +403,7 @@ int process_destroy(mm_process_t *process, const int status)
 }
 
 //TODO key must not be 0
-int create_init(const pid_t pid)
+int create_init(const pid_t pid, const FP entry)
 {
 	mm_process_t *p;
 	int error_no = process_create(&p, pid);
@@ -493,6 +494,14 @@ int create_init(const pid_t pid)
 			p->ppid, p->pgid, p->uid, p->gid,
 			p->name);
 #endif
+	error_no = create_init_thread(p, entry);
+	if (error_no) {
+		//TODO destroy process
+		log_info("mm: create_init_thread %d\n", error_no);
+		return error_no;
+	}
+
+	log_info("mm: create_init(pid=%d)\n", pid);
 	return 0;
 }
 
@@ -694,7 +703,7 @@ static void destroy_threads(mm_process_t *process)
 	}
 }
 
-int create_init_thread(int *thread_id, mm_process_t *process, FP entry)
+static int create_init_thread(mm_process_t *process, const FP entry)
 {
 	mm_thread_t *th = (mm_thread_t *) slab_alloc(&thread_slab);
 	if (!th)
@@ -726,6 +735,5 @@ int create_init_thread(int *thread_id, mm_process_t *process, FP entry)
 
 	list_append(&(process->threads), &(th->brothers));
 	th->process = process;
-	*thread_id = tid;
 	return 0;
 }
