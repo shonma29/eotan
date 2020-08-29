@@ -25,10 +25,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <services.h>
+#include <mpu/bits.h>
 #include <nerve/global.h>
 #include <nerve/config.h>
 #include <set/list.h>
-#include <set/heap.h>
 #include "func.h"
 #include "thread.h"
 #include "mpu/mpufunc.h"
@@ -36,9 +36,7 @@ For more information, please refer to <http://unlicense.org/>
 thread_t *running;
 
 static list_t ready_task[MAX_PRIORITY + 1];
-static int buf[MAX_PRIORITY + 1];
-static bool cnt[MAX_PRIORITY + 1];
-static heap_t heap;
+static unsigned int ready_bits;
 
 static inline thread_t *getThread(const list_t *);
 static void ready_rotate(const int);
@@ -52,22 +50,16 @@ static inline thread_t *getThread(const list_t *p)
 
 void ready_initialize(void)
 {
-	for (int i = MIN_PRIORITY; i <= MAX_PRIORITY; i++) {
+	for (int i = MIN_PRIORITY; i <= MAX_PRIORITY; i++)
 		list_initialize(&(ready_task[i]));
-		cnt[i] = false;
-	}
 
-	heap_initialize(&heap, MAX_PRIORITY + 1, buf);
+	ready_bits = 0;
 }
 
 void ready_enqueue(const int pri, list_t *src)
 {
 	list_t *dest = &(ready_task[pri]);
-	if (!(cnt[pri])) {
-		cnt[pri] = true;
-		heap_enqueue(&heap, pri);
-	}
-
+	ready_bits |= 1 << pri;
 	list_enqueue(dest, src);
 }
 
@@ -91,17 +83,16 @@ void tick(void)
 
 static thread_t *ready_dequeue(void)
 {
-	for (;; heap_dequeue(&heap)) {
-		int pri = heap_head(&heap);
-		if (pri == HEAP_EMPTY)
-			return NULL;
-
+	while (ready_bits) {
+		int pri = count_ntz(ready_bits);
 		list_t *q = list_head(&(ready_task[pri]));
 		if (q)
 			return getThread(q);
 
-		cnt[pri] = false;
+		ready_bits &= ~(1 << pri);
 	}
+
+	return NULL;
 }
 
 void dispatch(void)

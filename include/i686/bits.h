@@ -27,6 +27,19 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
+static inline int count_ntz(const int d)
+{
+	if (!d)
+		return 32;
+
+	int cnt;
+	__asm__( \
+		"bsfl %1, %0\n\t" \
+		:"=r"(cnt) \
+		:"r"(d));
+	return cnt;
+}
+
 static inline int count_bits(int d)
 {
 	d -= ((d >> 1) & 0x55555555);
@@ -34,11 +47,6 @@ static inline int count_bits(int d)
 	d = (d + (d >> 4)) & 0x0f0f0f0f;
 
 	return (d * 0x01010101) >> 24;
-}
-
-static inline int count_ntz(int d)
-{
-	return count_bits((d & (-d)) - 1);
 }
 
 static inline int count_nlz(int d)
