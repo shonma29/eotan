@@ -404,3 +404,49 @@ static void release_rendezvous(const int key)
 	if (node)
 		slab_free(&reply_slab, node);
 }
+
+int ipc_listen(void)
+{
+	enter_serialize();
+
+	if (running->flag) {
+		running->flag = 0;
+		leave_serialize();
+		return E_OK;
+	} else {
+		running->wait.type = wait_sleep;
+		wait(running);
+		return running->wait.result;
+	}
+}
+
+int ipc_notify(const int port_id, const unsigned int flag)
+{
+	int result;
+
+	enter_serialize();
+	do {
+		thread_t *th = get_thread_ptr(port_id);
+		if (!th) {
+			result = E_NOEXS;
+			break;
+		}
+
+		switch (th->status) {
+		case TTS_DMT:
+			result = E_OBJ;
+			break;
+		case TTS_WAI:
+		case TTS_WAS:
+			if (th->wait.type == wait_sleep)
+				release(th);
+		default:
+			th->flag |= flag;
+			result = E_OK;
+			break;
+		}
+	} while (false);
+	leave_serialize();
+
+	return result;
+}

@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 
 typedef struct {
 	void (*dispatch)(void);
-	void (*tick)(void);
+	void (*tick)(void);//TODO yield(id)
 	ID (*thread_get_id)(void);
 	ER (*thread_create)(ID, T_CTSK *);
 	ER_ID (*thread_create_auto)(T_CTSK *);
@@ -39,8 +39,6 @@ typedef struct {
 	ER (*thread_start)(ID);
 	void (*thread_end_and_destroy)(void);
 	ER (*thread_terminate)(ID);
-	ER (*thread_sleep)(void);
-	ER (*thread_wakeup)(ID);
 	ER (*thread_suspend)(ID);
 	ER (*thread_resume)(ID);
 	void *(*palloc)(void);
@@ -53,6 +51,8 @@ typedef struct {
 	int (*ipc_call)(const int, void *, const size_t);
 	int (*ipc_receive)(const int, int *, void *);
 	int (*ipc_send)(const int, const void *, const size_t);
+	int (*ipc_listen)(void);
+	int (*ipc_notify)(const int, const unsigned int);
 	ER (*mutex_create)(ID, T_CMTX *);
 	ER (*mutex_destroy)(ID);
 	ER (*mutex_lock)(ID, TMO);

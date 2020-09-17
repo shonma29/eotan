@@ -85,7 +85,7 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk)
 	th->status = TTS_DMT;
 	list_initialize(&(th->wait.waiting));
 	list_initialize(&(th->locking));
-	//th->wakeup_count = 0;
+	//th->flag = 0;
 
 	th->attr.page_table = pk_ctsk->page_table;
 	th->attr.priority = pk_ctsk->itskpri;
@@ -203,7 +203,7 @@ static void fire(thread_t *th)
 	th->time.total = 0;
 	th->time.left = TIME_QUANTUM;
 	th->priority = th->attr.priority;
-	th->wakeup_count = 0;
+	th->flag = 0;
 
 	create_context(th);
 
@@ -296,6 +296,7 @@ void thread_end_and_destroy(void)
 	list_remove(&(th->queue));
 	mutex_unlock_all(th);
 
+//TODO is using released stack and resource?
 	if (!is_kthread(th))
 		context_reset_page_table();
 
@@ -343,65 +344,6 @@ ER thread_terminate(ID tskid)
 			break;
 		default:
 			result = E_OBJ;
-			break;
-		}
-	} while (false);
-	leave_serialize();
-
-	return result;
-}
-
-ER thread_sleep(void)
-{
-	enter_serialize();
-
-	if (running->wakeup_count > 0) {
-		running->wakeup_count--;
-		leave_serialize();
-		return E_OK;
-	} else {
-		running->wait.type = wait_sleep;
-		wait(running);
-		return running->wait.result;
-	}
-}
-
-ER thread_wakeup(ID tskid)
-{
-	ER result;
-
-	enter_serialize();
-	do {
-		thread_t *th;
-
-		if (tskid == TSK_SELF)
-			th = running;
-		else {
-			th = get_thread_ptr(tskid);
-			if (!th) {
-				result = E_NOEXS;
-				break;
-			}
-		}
-
-		switch (th->status) {
-		case TTS_DMT:
-			result = E_OBJ;
-			break;
-		case TTS_WAI:
-		case TTS_WAS:
-			if (th->wait.type == wait_sleep) {
-				release(th);
-				result = E_OK;
-				break;
-			}
-		default:
-			if (th->wakeup_count >= MAX_WAKEUP_COUNT)
-				result = E_QOVR;
-			else {
-				th->wakeup_count++;
-				result = E_OK;
-			}
 			break;
 		}
 	} while (false);

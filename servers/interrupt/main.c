@@ -55,7 +55,7 @@ static void icall_initialize(void)
 {
 	icall_t *p = (icall_t*)ICALL_ADDR;
 
-	p->thread_get_id = kcall->thread_get_id;
+	p->thread_get_id = kcall->thread_get_id;//TODO why here?
 	p->handle = delayed_handle;
 }
 
@@ -75,7 +75,7 @@ static ER kq_enqueue(delay_param_t *param)
 {
 	if (lfq_enqueue(&(sysinfo->kqueue), param) != QUEUE_OK)
 		return E_TMOUT;
-
+	//TODO not boolean. pass PORT_DELAY to wakeup.
 	sysinfo->delay_thread_start = true;
 
 	return E_OK;
@@ -91,7 +91,7 @@ static void delay_process(void)
 					(const int)(param.arg2),
 					(const int)(param.arg3));
 		} else
-			kcall->thread_sleep();
+			kcall->ipc_listen();
 	}
 }
 

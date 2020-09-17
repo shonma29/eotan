@@ -63,8 +63,6 @@ void kcall_initialize(void)
 	p->thread_start = thread_start;
 	p->thread_end_and_destroy = thread_end_and_destroy;
 	p->thread_terminate = thread_terminate;
-	p->thread_sleep = thread_sleep;
-	p->thread_wakeup = thread_wakeup;
 	p->thread_suspend = thread_suspend;
 	p->thread_resume = thread_resume;
 	p->palloc = page_alloc;
@@ -80,6 +78,8 @@ void kcall_initialize(void)
 	p->ipc_call = ipc_call;
 	p->ipc_receive = ipc_receive;
 	p->ipc_send = ipc_send;
+	p->ipc_listen = ipc_listen;
+	p->ipc_notify = ipc_notify;
 	p->mutex_create = mutex_create;
 	p->mutex_destroy = mutex_destroy;
 	p->mutex_lock = mutex_lock;

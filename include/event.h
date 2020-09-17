@@ -31,4 +31,8 @@ enum hmi_event {
 	event_mouse
 };
 
+#define EVENT_INTERRUPT (1)
+#define EVENT_IO (2)
+#define EVENT_SERVICE (4)
+
 #endif

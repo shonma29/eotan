@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <event.h>
 #include <services.h>
 #include <mpu/bits.h>
 #include <nerve/global.h>
@@ -56,28 +57,28 @@ void ready_initialize(void)
 	ready_bits = 0;
 }
 
-void ready_enqueue(const int pri, list_t *src)
+void ready_enqueue(const int pri, list_t *src)//TODO is locked?
 {
 	list_t *dest = &(ready_task[pri]);
 	ready_bits |= 1 << pri;
 	list_enqueue(dest, src);
 }
 
-static void ready_rotate(const int pri)
+static void ready_rotate(const int pri)//TODO is locked?
 {
 	list_t *head = list_dequeue(&(ready_task[pri]));
 	if (head)
 		list_enqueue(&(ready_task[pri]), head);
 }
 
-void tick(void)
+void tick(void)//TODO can notify as return value if overrun
 {
-	running->time.total++;
+	running->time.total++;//TODO is needed for kthread? who is running?
 
 	if (!is_kthread(running))
-		if (!(--(running->time.left))) {
-			running->time.left = TIME_QUANTUM;
-			ready_rotate(running->priority);
+		if (!(--(running->time.left))) {//TODO it is overrun
+			running->time.left = TIME_QUANTUM;//TODO why 'left'?
+			ready_rotate(running->priority);//TODO need lock
 		}
 }
 
@@ -104,9 +105,9 @@ void dispatch(void)
 		return;
 	}
 
-	if (sysinfo->delay_thread_start) {
+	if (sysinfo->delay_thread_start) {//TODO it is scheduler
 		sysinfo->delay_thread_start = false;
-		thread_wakeup(PORT_DELAY);
+		ipc_notify(PORT_DELAY, EVENT_INTERRUPT);
 	}
 
 	do {

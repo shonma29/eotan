@@ -78,6 +78,7 @@ typedef int_fast32_t ER_BOOL;
 typedef int_fast32_t ER_ID;
 typedef int_fast32_t ER_UINT;
 
+typedef uint_fast32_t FLGPTN;
 typedef uint_fast32_t RDVPTN;
 typedef int_fast32_t RDVNO;
 

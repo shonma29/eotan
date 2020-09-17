@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <event.h>
 #include <string.h>
 #include <nerve/kcall.h>
 #include "srv.h"
@@ -78,7 +79,7 @@ int read(char *outbuf, const int channel, const off_t offset, const size_t size)
 		if (lfq_dequeue(u->queue, outbuf) == QUEUE_OK)
 			return size;
 
-		kcall->thread_sleep();
+		kcall->ipc_listen();
 	}
 }
 
@@ -89,7 +90,7 @@ int write(char *inbuf, const int channel, const off_t offset, const size_t size)
 
 	srv_unit_t *u = (srv_unit_t *) channel;
 	if (lfq_enqueue(u->queue, inbuf) == QUEUE_OK) {
-		kcall->thread_wakeup(u->thread_id);
+		kcall->ipc_notify(u->thread_id, EVENT_IO);
 		return size;
 	}
 

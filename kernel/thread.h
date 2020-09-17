@@ -47,7 +47,7 @@ typedef struct {
 		UW left;
 	} time;
 	PRI priority;
-	UINT wakeup_count;
+	unsigned int flag;
 	struct {
 		VP_INT arg;
 		PRI priority;

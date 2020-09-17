@@ -98,7 +98,7 @@ void hmi_handle(const int type, const int data)
 			interrupt_message_t message = { type, data };
 
 			if (lfq_enqueue(&int_queue, &message) == QUEUE_OK)
-				kcall->thread_wakeup(hmi_tid);
+				kcall->ipc_notify(hmi_tid, EVENT_IO);
 			else
 				log_warning("hmi: int_queue is full\n");
 			break;
@@ -161,7 +161,7 @@ static void process(const int arg)
 				current_req = NULL;
 			}
 		} else
-			kcall->thread_sleep();
+			kcall->ipc_listen();
 	}
 }
 
@@ -223,7 +223,7 @@ static void reply(request_message_t *req, const size_t size)
 		log_err("hmi: reply error=%d\n", result);
 
 	lfq_enqueue(&unused_queue, &req);
-	kcall->thread_wakeup(receiver_tid);
+	kcall->ipc_notify(receiver_tid, EVENT_SERVICE);
 }
 
 static void execute(request_message_t *req)
@@ -333,7 +333,7 @@ static ER accept(void)
 
 //TODO multiple interrupt is needed on mouse / keyboard?
 	while (lfq_dequeue(&unused_queue, &req) != QUEUE_OK)
-		kcall->thread_sleep();
+		kcall->ipc_listen();
 
 	size = kcall->ipc_receive(PORT_CONSOLE, &(req->tag), &(req->message));
 	if (size < 0) {

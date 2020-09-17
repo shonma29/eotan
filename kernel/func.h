@@ -67,8 +67,6 @@ extern void thread_end_and_destroy(void);
 extern ER thread_initialize(void);
 extern ER thread_start(ID);
 extern ER thread_terminate(ID);
-extern ER thread_sleep(void);
-extern ER thread_wakeup(ID);
 extern ER thread_suspend(ID);
 extern ER thread_resume(ID);
 extern ID thread_get_id(void);
@@ -85,6 +83,8 @@ extern int ipc_close(void);
 extern int ipc_call(const int, void *, const size_t);
 extern int ipc_receive(const int, int *, void *);
 extern int ipc_send(const int, const void *, const size_t);
+extern int ipc_listen(void);
+extern int ipc_notify(const int, const unsigned int);
 
 /* mutex.c */
 extern ER mutex_create(ID, T_CMTX *);

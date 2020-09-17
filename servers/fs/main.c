@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <event.h>
 #include <major.h>
 #include <services.h>
 #include <dev/units.h>
@@ -169,16 +170,16 @@ static void worker(void)
 			kcall->mutex_lock(receiver_id, TMO_FEVR);
 			slab_free(&request_slab, req);
 			kcall->mutex_unlock(receiver_id);
-			kcall->thread_wakeup(receiver_id);
+			kcall->ipc_notify(receiver_id, EVENT_SERVICE);
 		} else
-			kcall->thread_sleep();
+			kcall->ipc_listen();
 	}
 }
 
 static int worker_enqueue(fs_request **req)
 {
 	 if (lfq_enqueue(&req_queue, req) == QUEUE_OK) {
-		kcall->thread_wakeup(worker_id);
+		kcall->ipc_notify(worker_id, EVENT_SERVICE);
 		kcall->mutex_lock(receiver_id, TMO_FEVR);
 		*req = slab_alloc(&request_slab);
 		kcall->mutex_unlock(receiver_id);
@@ -199,7 +200,7 @@ void start(VP_INT exinf)
 
 	for (fs_request *req = slab_alloc(&request_slab);;) {
 		if (!req) {
-			kcall->thread_sleep();
+			kcall->ipc_listen();
 			kcall->mutex_lock(receiver_id, TMO_FEVR);
 			req = slab_alloc(&request_slab);
 			kcall->mutex_unlock(receiver_id);
