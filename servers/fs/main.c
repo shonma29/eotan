@@ -231,7 +231,9 @@ void start(VP_INT exinf)
 */
 
 		int result;
-		if (req->packet.header.type >= NUM_OF_FUNC)
+		if (req->packet.header.ident != IDENT)
+			result = EPROTO;
+		else if (req->packet.header.type >= NUM_OF_FUNC)
 			result = ENOTSUP;
 		else {
 			if (size == func_table[req->packet.header.type].max)

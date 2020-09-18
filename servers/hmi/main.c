@@ -204,8 +204,17 @@ static void reply(request_message_t *req, const size_t size)
 
 static void execute(request_message_t *req)
 {
-	ER_UINT result;
 	fsmsg_t *message = &(req->message);
+	if (message->header.ident != IDENT) {
+//		message->header.token = message->head.token;
+		message->header.type = Rerror;
+		message->Rerror.tag = 0;
+		message->Rerror.ename = EPROTO;
+		reply(req, MESSAGE_SIZE(Rerror));
+		return;
+	}
+
+	ER_UINT result;
 //TODO cancel request
 	switch (message->header.type) {
 	case Tread:

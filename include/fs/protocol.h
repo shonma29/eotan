@@ -29,6 +29,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <stddef.h>
 #include <sys/stat.h>
 
+#define IDENT 0x5039
+
 #define NOFID (0)
 
 enum fs_message_type {
@@ -218,8 +220,9 @@ struct _Rwstat {
 
 typedef struct {
 	struct {
+		unsigned short ident;
+		unsigned short type;
 		int token;
-		enum fs_message_type type;
 	} header;
 	union {
 		struct _Tversion Tversion;

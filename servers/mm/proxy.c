@@ -694,6 +694,7 @@ int _fstat(struct stat *st, const mm_file_t *file, const int token,
 static int call_device(const int server_id, fsmsg_t *message,
 	const size_t tsize, const int rtype, const size_t rsize)
 {
+	message->header.ident = IDENT;
 	ER_UINT size = kcall->ipc_send(server_id, message, tsize);
 	if (size)
 		return ECONNREFUSED;

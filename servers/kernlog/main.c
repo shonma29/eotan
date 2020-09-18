@@ -180,13 +180,13 @@ static ER accept(const ID port)
 	int tag;
 	int size = kcall->ipc_receive(port, &tag, &message);
 	if (size < 0) {
-		/*log_err(MYNAME ": receive error=%d\n", size);*/
+		/*kcall->printk(MYNAME ": receive error=%d\n", size);*/
 		return size;
 	}
 
 	int result = kcall->ipc_send(tag, &message, execute(&message));
 	if (result) {
-		/*log_err(MYNAME ": reply error=%d\n", result);*/
+		/*kcall->printk(MYNAME ": reply error=%d\n", result);*/
 	}
 
 	return result;
@@ -250,7 +250,6 @@ static void monitor(void)
 		sleep(1);
 
 		char outbuf[1024];
-
 		for (size_t len;
 				(len  = lfcopy(outbuf,
 						(volatile lfq_t*)KERNEL_LOG_ADDR,
@@ -277,6 +276,7 @@ static int write_cons(char *inbuf, const int channel,
 		size_t len = (rest < DEV_BUF_SIZE) ? rest : DEV_BUF_SIZE;
 		fsmsg_t packet;
 
+		packet.header.ident = IDENT;
 		packet.header.type = Twrite;
 		packet.Twrite.fid = channel;
 		packet.Twrite.offset = wpos;
@@ -291,7 +291,7 @@ static int write_cons(char *inbuf, const int channel,
 		}
 
 		else if (packet.Rwrite.count != len) {
-			kcall->printk("cons: wrote icompletely\n");
+			kcall->printk("cons: wrote incompletely\n");
 			return -1;
 		}
 
