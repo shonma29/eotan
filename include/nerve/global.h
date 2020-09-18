@@ -26,7 +26,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-//#include <core.h>
 #include <time.h>
 #include <stddef.h>
 #include <nerve/config.h>
@@ -46,11 +45,11 @@ typedef struct {
 
 typedef struct {
 	volatile struct timespec system_time;
+	volatile bool delay_thread_start;
+	volatile lfq_t kqueue;
+	MemoryMap memory_map;
 	mount_node_t root;
 	memory_range_t initrd;
-	volatile lfq_t kqueue;
-	volatile bool delay_thread_start;
-	MemoryMap memory_map;
 } system_info_t;
 
 #define sysinfo ((system_info_t *) SYSTEM_INFO_ADDR)
