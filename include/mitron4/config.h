@@ -50,7 +50,7 @@ For more information, please refer to <http://unlicense.org/>
  * nest
  */
 #define TMAX_ACTCNT (0)
-#define TMAX_WUPCNT (MAX_WAKEUP_COUNT)
+#define TMAX_WUPCNT (0)
 #define TMAX_SUSCNT (0)
 
 /**
