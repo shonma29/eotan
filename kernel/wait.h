@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 
 typedef enum {
 	wait_none,
-	wait_sleep,
+	wait_flag,
 	wait_mutex,
 	wait_call,
 	wait_reply,

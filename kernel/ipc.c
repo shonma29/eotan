@@ -414,7 +414,7 @@ int ipc_listen(void)
 		leave_serialize();
 		return E_OK;
 	} else {
-		running->wait.type = wait_sleep;
+		running->wait.type = wait_flag;
 		wait(running);
 		return running->wait.result;
 	}
@@ -438,7 +438,7 @@ int ipc_notify(const int port_id, const unsigned int flag)
 			break;
 		case TTS_WAI:
 		case TTS_WAS:
-			if (th->wait.type == wait_sleep)
+			if (th->wait.type == wait_flag)
 				release(th);
 		default:
 			th->flag |= flag;
