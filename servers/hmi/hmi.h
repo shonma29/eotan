@@ -36,10 +36,10 @@ For more information, please refer to <http://unlicense.org/>
 
 #define MAX_WINDOW (4)
 
-typedef struct _interrupt_message_t {
+typedef struct _hmi_interrupt_t {
 	int type;
 	int data;
-} interrupt_message_t;
+} hmi_interrupt_t;
 
 typedef struct _request_message_t {
 	int tag;

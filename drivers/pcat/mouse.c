@@ -28,9 +28,12 @@ For more information, please refer to <http://unlicense.org/>
 #include <event.h>
 #include <mpu/io.h>
 #include <nerve/icall.h>
+#include <set/lf_queue.h>
 #include "8042.h"
 #include "archfunc.h"
 #include "../../servers/hmi/hmi.h"
+
+extern volatile lfq_t hmi_queue;
 
 static unsigned char _read(void);
 
@@ -42,7 +45,13 @@ ER mouse_interrupt(void)
 	unsigned char b3 = _read();
 
 	//TODO error check
-	icall->handle(hmi_handle, event_mouse, (b1 << 16) | (b2 << 8) | b3);
+	hmi_interrupt_t message = {
+		event_mouse,
+		(b1 << 16) | (b2 << 8) | b3
+	};
+	if (lfq_enqueue(&hmi_queue, &message) == QUEUE_OK)
+		//TODO error check
+		icall->handle(hmi_handle, 0, 0);
 
 	return E_OK;
 }

@@ -49,9 +49,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <vesa.h>
 #include "font.h"
 
-extern void put(Screen *s, const unsigned int start, const size_t size,
-		const char *buf);
-extern void pset(Screen *s, unsigned int x, unsigned int y, int color);
+extern void put(Screen *, const unsigned int, const size_t, const char *);
+extern void pset(Screen *, unsigned int, unsigned int, int);
 #else
 #include <cga.h>
 #endif
@@ -59,30 +58,29 @@ extern void pset(Screen *s, unsigned int x, unsigned int y, int color);
 static char line[4096];
 Screen window[MAX_WINDOW];
 static ER_ID receiver_tid = 0;
-static ER_ID hmi_tid = 0;
+//static ER_ID hmi_tid = 0;
 static request_message_t *current_req = NULL;
 static request_message_t requests[REQUEST_QUEUE_SIZE];
 static volatile lfq_t req_queue;
 static char req_buf[
-		lfq_buf_size(sizeof(request_message_t*), REQUEST_QUEUE_SIZE)
+		lfq_buf_size(sizeof(request_message_t *), REQUEST_QUEUE_SIZE)
 ];
 static volatile lfq_t unused_queue;
 static char unused_buf[
-		lfq_buf_size(sizeof(request_message_t*), REQUEST_QUEUE_SIZE)
+		lfq_buf_size(sizeof(request_message_t *), REQUEST_QUEUE_SIZE)
 ];
-static volatile lfq_t int_queue;
+volatile lfq_t hmi_queue;
 
 static char int_buf[
-		lfq_buf_size(sizeof(interrupt_message_t), INTERRUPT_QUEUE_SIZE)
+		lfq_buf_size(sizeof(hmi_interrupt_t), INTERRUPT_QUEUE_SIZE)
 ];
 static Console *cns;
 
-static void process(const int arg);
-static ER check_param(const UW start, const UW size);
-static ER_UINT write(const UW dd, const UW start, const UW size,
-		const char *inbuf);
-static void reply(request_message_t *req, const size_t size);
-static void execute(request_message_t *req);
+static void process(const int);
+static ER check_param(const UW, const UW);
+static ER_UINT write(const UW, const UW, const UW, const char *);
+static void reply(request_message_t *, const size_t);
+static void execute(request_message_t *);
 static ER accept(void);
 static ER initialize(void);
 static ER_UINT dummy_read(const int);
@@ -92,85 +90,69 @@ static ER_UINT (*reader)(const int) = dummy_read;
 
 void hmi_handle(const int type, const int data)
 {
-	switch (type) {
-	case event_keyboard:
-		{
-			interrupt_message_t message = { type, data };
-
-			if (lfq_enqueue(&int_queue, &message) == QUEUE_OK)
-				kcall->ipc_notify(hmi_tid, EVENT_IO);
-			else
-				log_warning("hmi: int_queue is full\n");
+	for (;;) {
+		hmi_interrupt_t in;
+		if (lfq_dequeue(&hmi_queue, &in) == QUEUE_OK)
+			switch (in.type) {
+			case event_keyboard:
+//				kcall->ipc_notify(hmi_tid, EVENT_IO);
+				process(in.data);
+				break;
+			case event_mouse:
+				mouse_process(in.type, in.data);
+				break;
+			default:
+				break;
+			}
+		else
+//			kcall->ipc_listen();
 			break;
-		}
-	case event_mouse:
-		mouse_process(type, data);
-		break;
-
-	default:
-		break;
 	}
 }
 
-static void process(const int arg)
+static void process(const int data)
 {
-	for (;;) {
-		interrupt_message_t data;
+	ER_UINT d = reader(data);
+	if (d < 0)
+		return;
 
-		if (lfq_dequeue(&int_queue, &data) == QUEUE_OK) {
-			fsmsg_t *message;
-			VP_INT d;
+	if (!current_req) {
+		if (lfq_dequeue(&req_queue, &current_req) == QUEUE_OK)
+			current_req->message.Tread.offset = 0;
+		else
+			return;
+	}
 
-			switch (data.type) {
-			case event_keyboard:
-				d = reader(data.data);
-				if (d < 0)
-					continue;
-				break;
-			default:
-				continue;
-			}
+	fsmsg_t *message = &(current_req->message);
+//	message->Tread.data[message->Tread.offset++] =
+//			(unsigned char) (d & 0xff);
+	unsigned char buf = (unsigned char) (d & 0xff);
 
-			if (!current_req) {
-				if (lfq_dequeue(&req_queue, &current_req)
-						== QUEUE_OK)
-					current_req->message.Tread.offset = 0;
-				else
-					continue;
-			}
-
-			message = &(current_req->message);
-//			message->Tread.data[message->Tread.offset++] =
-//					(unsigned char)(d & 0xff);
-			unsigned char buf[1];
-			buf[0] = (unsigned char)(d & 0xff);
-
-			//TODO loop
-			//TODO error check
-			unsigned int addr = ((unsigned int)(message->Tread.data)
-					+ message->Tread.offset);
-			kcall->region_put(port_of_ipc(message->header.token),
-					(char*)addr, 1, buf);
-			message->Tread.offset++;
-			if (message->Tread.count <= message->Tread.offset) {
-//				message->header.token = message->head.token;
-				message->header.type = Rread;
-//				message->Rread.tag = message->Tread.tag;
-				message->Rread.count = message->Tread.count;
-				reply(current_req, MESSAGE_SIZE(Rread));
-				current_req = NULL;
-			}
-		} else
-			kcall->ipc_listen();
+	//TODO loop
+	//TODO error check
+	uintptr_t addr = ((uintptr_t) (message->Tread.data)
+			+ message->Tread.offset);
+	kcall->region_put(port_of_ipc(message->header.token),
+			(char *) addr, 1, &buf);
+	message->Tread.offset++;
+	if (message->Tread.count <= message->Tread.offset) {
+//		message->header.token = message->head.token;
+		message->header.type = Rread;
+//		message->Rread.tag = message->Tread.tag;
+		message->Rread.count = message->Tread.count;
+		reply(current_req, MESSAGE_SIZE(Rread));
+		current_req = NULL;
 	}
 }
 
 static ER check_param(const UW start, const UW size)
 {
 /*
-	if (start)	return E_PAR;
+	if (start)
+		return E_PAR;
 */
-	if (size > DEV_BUF_SIZE)	return E_PAR;
+	if (size > DEV_BUF_SIZE)
+		return E_PAR;
 
 	return E_OK;
 }
@@ -183,14 +165,13 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 	case 4:
 		put(&(window[0]), start, size, inbuf);
 		break;
-
 	case 5:
 		if (size != sizeof(int) * 3)
 			return E_PAR;
 		else {
-			unsigned int x = ((int*)inbuf)[0];
-			unsigned int y = ((int*)inbuf)[1];
-			int color = ((int*)inbuf)[2];
+			unsigned int x = ((int *) inbuf)[0];
+			unsigned int y = ((int *) inbuf)[1];
+			int color = ((int *) inbuf)[2];
 			pset(&(window[0]), x, y, color);
 		}
 		break;
@@ -198,16 +179,12 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 		if (dd >= sizeof(window) / sizeof(window[0]))
 			return E_PAR;
 
-		{
-			for (int i = 0; i < size; i++)
-				cns->putc(&(window[dd]), inbuf[i]);
-		}
+		for (int i = 0; i < size; i++)
+			cns->putc(&(window[dd]), inbuf[i]);
 #else
 	default:
-		{
-			for (int i = 0; i < size; i++)
-				cns->putc(&(window[0]), inbuf[i]);
-		}
+		for (int i = 0; i < size; i++)
+			cns->putc(&(window[0]), inbuf[i]);
 #endif
 		break;
 	}
@@ -218,7 +195,6 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 static void reply(request_message_t *req, const size_t size)
 {
 	ER_UINT result = kcall->ipc_send(req->tag, &(req->message), size);
-
 	if (result)
 		log_err("hmi: reply error=%d\n", result);
 
@@ -228,8 +204,8 @@ static void reply(request_message_t *req, const size_t size)
 
 static void execute(request_message_t *req)
 {
-	fsmsg_t *message = &(req->message);
 	ER_UINT result;
+	fsmsg_t *message = &(req->message);
 //TODO cancel request
 	switch (message->header.type) {
 	case Tread:
@@ -251,7 +227,6 @@ static void execute(request_message_t *req)
 			reply(req, MESSAGE_SIZE(Rerror));
 		}
 		break;
-
 	case Twrite:
 #ifdef USE_VESA
 		if (message->Twrite.fid) {
@@ -260,14 +235,13 @@ static void execute(request_message_t *req)
 			else if (kcall->region_get(port_of_ipc(req->tag),
 					message->Twrite.data,
 					message->Twrite.count,
-					line)) {
+					line))
 				result = E_SYS;
-			} else {
+			else
 				result = write(message->Twrite.fid,
 						message->Twrite.offset,
 						message->Twrite.count,
 						line);
-			}
 		} else {
 #else
 		{
@@ -280,7 +254,7 @@ static void execute(request_message_t *req)
 						sizeof(line) : rest;
 				if (kcall->region_get(
 						port_of_ipc(message->header.token),
-						(char*)((unsigned int)(message->Twrite.data) + pos),
+						(char *) ((unsigned int) (message->Twrite.data) + pos),
 						len,
 						line)) {
 					result = E_SYS;
@@ -308,14 +282,12 @@ static void execute(request_message_t *req)
 		message->Rwrite.count = result;
 		reply(req, MESSAGE_SIZE(Rwrite));
 		break;
-
 	case Tclunk:
 //		message->header.token = message->head.token;
 		message->header.type = Rclunk;
 //		message->Rclunk.tag = message->Tclunk.tag;
 		reply(req, MESSAGE_SIZE(Rclunk));
 		break;
-
 	default:
 //		message->header.token = message->head.token;
 		message->header.type = Rerror;
@@ -347,27 +319,15 @@ static ER accept(void)
 
 static ER initialize(void)
 {
-	W result;
-	W i;
-	T_CPOR pk_cpor = {
-			TA_TFIFO,
-			sizeof(fsmsg_t),
-			sizeof(fsmsg_t)
-	};
-	T_CTSK pk_ctsk = {
-		TA_HLNG | TA_ACT, 0, process, pri_server_middle,
-		KTHREAD_STACK_SIZE, NULL, NULL, NULL
-	};
-
-	lfq_initialize(&int_queue, int_buf, sizeof(interrupt_message_t),
+	lfq_initialize(&hmi_queue, int_buf, sizeof(hmi_interrupt_t),
 				INTERRUPT_QUEUE_SIZE);
-	lfq_initialize(&req_queue, req_buf, sizeof(request_message_t*),
+	lfq_initialize(&req_queue, req_buf, sizeof(request_message_t *),
 				REQUEST_QUEUE_SIZE);
-	lfq_initialize(&unused_queue, unused_buf, sizeof(request_message_t*),
+	lfq_initialize(&unused_queue, unused_buf, sizeof(request_message_t *),
 				REQUEST_QUEUE_SIZE);
-	for (i = 0; i < sizeof(requests) / sizeof(requests[0]); i++) {
-		request_message_t *p = &(requests[i]);
 
+	for (int i = 0; i < sizeof(requests) / sizeof(requests[0]); i++) {
+		request_message_t *p = &(requests[i]);
 		lfq_enqueue(&unused_queue, &p);
 	}
 #ifdef USE_VESA
@@ -381,7 +341,7 @@ static ER initialize(void)
 	window[1] = window[0];
 	s = &(window[1]);
 	s->base += s->width * 3;
-	s->p = (uint8_t*)(s->base);
+	s->p = (uint8_t *) (s->base);
 	s->fgcolor.rgb.b = 31;
 	s->fgcolor.rgb.g = 223;
 	s->fgcolor.rgb.r = 0;
@@ -394,7 +354,7 @@ static ER initialize(void)
 	window[2] = window[0];
 	s = &(window[2]);
 	s->base += s->height * s->bpl;
-	s->p = (uint8_t*)(s->base);
+	s->p = (uint8_t *) (s->base);
 	s->fgcolor.rgb.b = 0;
 	s->fgcolor.rgb.g = 127;
 	s->fgcolor.rgb.r = 255;
@@ -407,7 +367,7 @@ static ER initialize(void)
 	window[3] = window[0];
 	s = &(window[3]);
 	s->base += s->height * s->bpl + s->width * 3;
-	s->p = (uint8_t*)(s->base);
+	s->p = (uint8_t *) (s->base);
 	s->fgcolor.rgb.b = 0x30;
 	s->fgcolor.rgb.g = 0x30;
 	s->fgcolor.rgb.r = 0x30;
@@ -418,26 +378,34 @@ static ER initialize(void)
 	cns->locate(s, 0, 0);
 #else
 	cns = getCgaConsole(&(window[0]),
-			(const UH*)kern_p2v((void*)CGA_VRAM_ADDR));
+			(const UH *) kern_p2v((void *) CGA_VRAM_ADDR));
 #endif
 	cns->cls(&(window[0]));
 	cns->locate(&(window[0]), 0, 0);
 //TODO create mutex
-	result = kcall->ipc_open(&pk_cpor);
+	T_CPOR pk_cpor = {
+		TA_TFIFO,
+		sizeof(fsmsg_t),
+		sizeof(fsmsg_t)
+	};
+	int result = kcall->ipc_open(&pk_cpor);
 	if (result) {
 		log_err("hmi: open error=%d\n", result);
-
 		return result;
 	}
 
-	result = kcall->thread_create_auto(&pk_ctsk);
-	if (result < 0) {
-		log_err("hmi: create error=%d\n", result);
-		kcall->ipc_close();
-		return result;
-	}
-	hmi_tid = result;
+//	T_CTSK pk_ctsk = {
+//		TA_HLNG | TA_ACT, 0, process, pri_server_middle,
+//		KTHREAD_STACK_SIZE, NULL, NULL, NULL
+//	};
+//	result = kcall->thread_create_auto(&pk_ctsk);
+//	if (result < 0) {
+//		log_err("hmi: create error=%d\n", result);
+//		kcall->ipc_close();
+//		return result;
+//	}
 
+//	hmi_tid = result;
 	return E_OK;
 }
 
@@ -460,7 +428,7 @@ void start(VP_INT exinf)
 
 		while (accept() == E_OK);
 
-		kcall->thread_destroy(hmi_tid);
+//		kcall->thread_destroy(hmi_tid);
 		kcall->ipc_close();
 		log_info("hmi: end\n");
 	}
