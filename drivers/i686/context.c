@@ -144,27 +144,21 @@ static VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
 void context_switch(thread_t *prev, thread_t *next)
 {
 	if (!is_kthread(next))
-		if (next->attr.page_table != current_page_table) {
+		if (next->mpu.cr3 != current_page_table) {
 			paging_set_directory(next->mpu.cr3);
-			current_page_table = next->attr.page_table;
+			current_page_table = next->mpu.cr3;
 			api_set_kernel_sp(next->attr.kstack_tail);
 		}
 
 	fpu_save(&prev);
 	stack_switch_wrapper(&(prev->mpu.esp0), &(next->mpu.esp0));
-	fpu_restore(&next);
+	fpu_restore(&next);//TODO what is next? now prev on stack?
 }
 
 void context_reset_page_table(void)
 {
 	paging_set_directory((VP) KTHREAD_DIR_ADDR);
 	current_page_table = NULL;
-}
-
-void context_reset_page_cache(const VP page_table, const VP addr)
-{
-	if (page_table == current_page_table)
-		tlb_flush(addr);
 }
 
 void create_context(thread_t *th)
@@ -178,10 +172,12 @@ void create_context(thread_t *th)
 				sp,
 				EFLAGS_INTERRUPT_ENABLE | EFLAGS_IOPL_3,
 				th->attr.entry);
-	} else
+	} else {
 		th->mpu.esp0 = context_create_user(
 				th->attr.kstack_tail,
 				EFLAGS_INTERRUPT_ENABLE | EFLAGS_IOPL_3,
 				th->attr.entry,
 				th->attr.ustack_top);
+		//TODO initialize and save fpu if user thread
+	}
 }

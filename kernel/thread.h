@@ -51,13 +51,13 @@ typedef struct {
 	struct {
 		VP_INT arg;
 		PRI priority;
-		VP page_table;
 		VP kstack_tail;
+		// kthread is NULL
 		VP ustack_top;
 		FP entry;
 	} attr;
 	ipc_t port;
-	int pad[2];
+	int pad[3];
 	mpu_context_t mpu;
 } thread_t;
 

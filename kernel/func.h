@@ -73,7 +73,7 @@ extern ID thread_get_id(void);
 
 static inline int is_kthread(const thread_t *thread)
 {
-	return (thread->attr.page_table == NULL);
+	return (thread->attr.ustack_top == NULL);
 }
 
 /* ipc.c */

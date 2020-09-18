@@ -87,7 +87,6 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk)
 	list_initialize(&(th->locking));
 	//th->flag = 0;
 
-	th->attr.page_table = pk_ctsk->page_table;
 	th->attr.priority = pk_ctsk->itskpri;
 	th->attr.arg = pk_ctsk->exinf;
 	th->attr.kstack_tail = (char *) kern_p2v(p);
@@ -99,7 +98,7 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk)
 			is_kthread(th) ?
 					(VP) KTHREAD_DIR_ADDR
 					//TODO null check
-					: th->attr.page_table);
+					: pk_ctsk->page_table);
 	return E_OK;
 }
 
@@ -297,6 +296,7 @@ void thread_end_and_destroy(void)
 	mutex_unlock_all(th);
 
 //TODO is using released stack and resource?
+//TODO if other thread exists in the same user process?
 	if (!is_kthread(th))
 		context_reset_page_table();
 
