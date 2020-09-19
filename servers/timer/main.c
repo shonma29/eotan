@@ -247,19 +247,18 @@ static ER init(void)
 	time_initialize();
 
 	T_DINH pk_dinh = { TA_HLNG, (FP) timer_service };
-	ER result = define_handler(PIC_IR_VECTOR(ir_pit), &pk_dinh);
-	if (result != E_OK) {
-		log_err(MYNAME ": interrupt_bind error=%d\n", result);
-		return result;
+	ER_ID id = define_handler(PIC_IR_VECTOR(ir_pit), &pk_dinh);
+	if (id < 0) {
+		log_err(MYNAME ": define_handler error=%d\n", id);
+		return id;
 	}
 
 	pit_initialize(TIME_TICKS);
 
-	result = enable_interrupt(ir_pit);
+	ER result = enable_interrupt(ir_pit);
 	if (result != E_OK) {
 		log_err(MYNAME ": interrupt_enable error=%d\n", result);
-		pk_dinh.inthdr = NULL;
-		define_handler(PIC_IR_VECTOR(ir_pit), &pk_dinh);
+		delete_handler(id);
 		return result;
 	}
 
@@ -267,8 +266,7 @@ static ER init(void)
 	result = kcall->ipc_open(&pk_cpor);
 	if (result != E_OK) {
 		log_err(MYNAME ": open failed %d\n", result);
-		pk_dinh.inthdr = NULL;
-		define_handler(PIC_IR_VECTOR(ir_pit), &pk_dinh);
+		delete_handler(id);
 		return result;
 	}
 

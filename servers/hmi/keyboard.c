@@ -112,25 +112,22 @@ ER_UINT get_char(int b)
 
 ER keyboard_initialize(void)
 {
-	W result;
-	T_DINH pk_dinh = {
-		TA_HLNG,
-		(FP)keyboard_interrupt
-	};
-
 	kbc_initialize();
 
-	result = define_handler(PIC_IR_VECTOR(ir_keyboard), &pk_dinh);
-	if (result) {
-		log_err("keyboard: bind error=%d\n", result);
-		return result;
+	T_DINH pk_dinh = {
+		TA_HLNG,
+		(FP) keyboard_interrupt
+	};
+	ER_ID id = define_handler(PIC_IR_VECTOR(ir_keyboard), &pk_dinh);
+	if (id < 0) {
+		log_err("keyboard: bind error=%d\n", id);
+		return id;
 	}
 
-	result = enable_interrupt(ir_keyboard);
+	W result = enable_interrupt(ir_keyboard);
 	if (result) {
 		log_err("keyboard: enable error=%d\n", result);
-		pk_dinh.inthdr = NULL;
-		define_handler(PIC_IR_VECTOR(ir_keyboard), &pk_dinh);
+		delete_handler(id);
 		return result;
 	}
 

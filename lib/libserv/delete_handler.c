@@ -25,23 +25,20 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include "mpu/interrupt.h"
-#include "mpu/mpufunc.h"
-#include "../../lib/libserv/libserv.h"
+#include <errno.h>
+#include <interrupt.h>
+#include <services.h>
+#include <nerve/kcall.h>
+#include "libserv.h"
 
 
-void define_mpu_handlers(const FP default_handler, const FP page_fault_handler)
+ER delete_handler(const ID id)
 {
-	int i;
-	T_DINH pk_dinh = { TA_HLNG, NULL };
+	int_args_t args;
+	args.operation = int_operation_unbind;
+	args.arg1 = (int) id;
 
-	pk_dinh.inthdr = default_handler;
-	for (i = int_division_error; i <= int_protection; i++)
-		define_handler(i, &pk_dinh);
-
-	for (i = int_reserved_15; i <= int_reserved_31; i++)
-		define_handler(i, &pk_dinh);
-
-	pk_dinh.inthdr = page_fault_handler;
-	define_handler(int_page_fault, &pk_dinh);
+	ER *reply = (ER*) &args;
+	return ((kcall->ipc_call(PORT_INTERRUPT, &args, sizeof(args))
+			== sizeof(*reply)) ? (*reply) : E_SYS);
 }

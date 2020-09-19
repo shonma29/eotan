@@ -54,7 +54,8 @@ extern FP interrupt_with_error(const UW, const UW, const UW, const UW,
 		const UW, const UW, const UW, const UW,
 		const UW, const UW, const UW, const UW,
 		const UW, const W);
-ER interrupt_bind(const INHNO, const T_DINH *);
+ER_ID interrupt_bind(const INHNO, const T_DINH *);
+ER interrupt_unbind(const ID);
 
 /* define_mpu_handlers */
 void define_mpu_handlers(const FP, const FP);

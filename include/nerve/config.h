@@ -81,4 +81,6 @@ typedef enum {
 
 #define MAX_DEVICE_NAME (31)
 
+#define MAX_INTERRUPT_SERVICE (64)
+
 #endif

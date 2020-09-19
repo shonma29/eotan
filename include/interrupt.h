@@ -29,7 +29,8 @@ For more information, please refer to <http://unlicense.org/>
 
 typedef enum {
 	int_operation_bind = 0,
-	int_operation_enable = 1
+	int_operation_unbind = 1,
+	int_operation_enable = 2
 } int_operation_e;
 
 typedef struct {

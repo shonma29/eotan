@@ -49,7 +49,8 @@ extern void time_get_raw(struct timespec *);
 extern ER time_get(SYSTIM *);
 extern ER time_set(SYSTIM *);
 
-extern ER define_handler(const INHNO, const T_DINH *);
+extern ER_ID define_handler(const INHNO, const T_DINH *);
+extern ER delete_handler(const ID);
 extern ER enable_interrupt(INHNO);
 
 extern device_info_t *device_find(const char *);

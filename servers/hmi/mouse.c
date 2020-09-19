@@ -81,16 +81,8 @@ void mouse_process(const int type, const int d)
 
 ER mouse_initialize(void)
 {
-	W result;
 #ifdef USE_VESA
 	VesaInfo *v = (VesaInfo*)kern_p2v((void*)VESA_INFO_ADDR);
-#endif
-	T_DINH pk_dinh = {
-		TA_HLNG,
-		(FP)mouse_interrupt
-	};
-
-#ifdef USE_VESA
 	width = v->width;
 	height = v->height;
 #else
@@ -101,17 +93,20 @@ ER mouse_initialize(void)
 	y = 0;
 	buttons = 0;
 
-	result = define_handler(PIC_IR_VECTOR(ir_mouse), &pk_dinh);
-	if (result) {
-		log_err("mouse: bind error=%d\n", result);
-		return result;
+	T_DINH pk_dinh = {
+		TA_HLNG,
+		(FP) mouse_interrupt
+	};
+	ER_ID id = define_handler(PIC_IR_VECTOR(ir_mouse), &pk_dinh);
+	if (id < 0) {
+		log_err("mouse: bind error=%d\n", id);
+		return id;
 	}
 
-	result = enable_interrupt(ir_mouse);
+	W result = enable_interrupt(ir_mouse);
 	if (result) {
 		log_err("mouse: enable error=%d\n", result);
-		pk_dinh.inthdr = NULL;
-		define_handler(PIC_IR_VECTOR(ir_mouse), &pk_dinh);
+		delete_handler(id);
 		return result;
 	}
 

@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "libserv.h"
 
 
-ER define_handler(const INHNO inhno, const T_DINH *pk_dinh)
+ER_ID define_handler(const INHNO inhno, const T_DINH *pk_dinh)
 {
 	int_args_t args;
 	args.operation = int_operation_bind;

@@ -33,53 +33,143 @@ For more information, please refer to <http://unlicense.org/>
 #include "mpu/interrupt.h"
 #include "mpu/mpufunc.h"
 
-static ER (*isr[IDT_MAX_ENTRY])(void);
+typedef struct _service {
+	int (*func)(void);
+	struct _service *next;
+	int interrupt_no;
+	int service_id;
+} service_t;
 
-static ER dummy_handler(void);
-static void fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		UW ecx, UW eax, UW ds, UW no,
-		UW eip, UW cs, UW eflags);
-static void fault_with_error(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
-		UW ecx, UW eax, UW ds, UW no,
-		UW err, UW eip, UW cs, UW eflags);
+// entries MUST be larger than service_map
+static service_t entries[MAX_INTERRUPT_SERVICE];
+static service_t *unmapped;
+static service_t *service_map[IDT_MAX_ENTRY];
+
+static int dummy(void);
+static service_t *get_unmapped_entry(void);
+static _Noreturn void fault(UW, UW, UW, UW, UW, UW, UW, UW, UW, UW, UW, UW, UW);
+static _Noreturn void fault_with_error(UW, UW, UW, UW, UW, UW, UW, UW, UW, UW,
+		UW, UW, UW, UW);
 
 
-static ER dummy_handler(void)
+static int dummy(void)
 {
 	return E_SYS;
 }
 
+//TODO test
+static service_t *get_unmapped_entry(void)
+{
+	service_t *entry = unmapped;
+	if (entry)
+		unmapped = entry->next;
+
+	return entry;
+}
+
 ER interrupt_initialize(void)
 {
-	size_t i;
+	int i;
 
-	//TODO use syslog
 	kcall->printk("interrupt_initialize\n");
 
 	// MPU exceptions
 	for (i = 0; i < sizeof(handlers) / sizeof(handlers[0]); i++) {
-		isr[i] = dummy_handler;
+		service_t *entry = &(entries[i]);
+		entry->func = dummy;
+		entry->next = NULL;
+		entry->interrupt_no = i;
+		entry->service_id = i;
+		service_map[i] = entry;
+
 		idt_set(i, handlers[i]);
 	}
 
 	// hardware interruptions
-	for (; i < sizeof(isr) / sizeof(isr[0]); i++)
-		isr[i] = dummy_handler;
+	for (; i < sizeof(service_map) / sizeof(service_map[0]); i++) {
+		service_t *entry = &(entries[i]);
+		entry->func = dummy;
+		entry->next = NULL;
+		entry->interrupt_no = i;
+		entry->service_id = i;
+		service_map[i] = entry;
+	}
 
+	// unmapped entry list
+	unmapped = &entries[i];
+	for (; i < sizeof(entries) / sizeof(entries[0]) - 1; i++) {
+		entries[i].func = dummy;
+		entries[i].next = &(entries[i + 1]);
+		entries[i].service_id = i;
+	}
+
+	entries[i].func = dummy;
+	entries[i].next = NULL;
+	entries[i].service_id = i;
 	return E_OK;
 }
 
-ER interrupt_bind(const INHNO inhno, const T_DINH *pk_dinh)
+ER_ID interrupt_bind(const INHNO inhno, const T_DINH *pk_dinh)
 {
-	if (inhno >= sizeof(isr) / sizeof(isr[0]))
+	if (sizeof(service_map) / sizeof(service_map[0]) <= inhno)
+		return E_ID;
+
+	if (pk_dinh->inthdr == NULL)
 		return E_PAR;
 
-	//TODO use syslog
-	kcall->printk("interrupt_bind[%d] 0x%x\n", inhno, pk_dinh->inthdr);
-	isr[inhno] = (pk_dinh->inthdr) ?
-			((ER (*)(void))(pk_dinh->inthdr)) : dummy_handler;
+	for (service_t *p = service_map[inhno]; p; p = p->next)
+		if (p->func == dummy) {
+			p->func = ((int (*)(void))(pk_dinh->inthdr));
+			kcall->printk("interrupt_bind[%d] 0x%x\n",
+					inhno, pk_dinh->inthdr);
+			return p->service_id;
+		} else if (p->next == NULL) {
+			service_t *entry = get_unmapped_entry();
+			if (!entry)
+				return E_NOID;
 
-	return E_OK;
+			entry->func = ((int (*)(void))(pk_dinh->inthdr));
+			entry->next = NULL;
+			entry->interrupt_no = inhno;
+			p->next = entry;
+			kcall->printk("interrupt_bind[%d] 0x%x\n",
+					inhno, pk_dinh->inthdr);
+			return entry->service_id;
+		}
+
+	return E_ID;
+}
+
+ER interrupt_unbind(const ID service_id)
+{
+	if ((service_id < 0)
+			|| (sizeof(entries) / sizeof(entries[0]) <= service_id))
+		return E_ID;
+
+	service_t *entry = &(entries[service_id]);
+	if (entry->func == dummy)
+		return E_OBJ;
+
+	service_t *prev = NULL;
+	for (service_t *p = service_map[entry->interrupt_no]; p;
+			prev = p, p = p->next)
+		if (p == entry) {
+			if (prev)
+				prev->next = entry->next;
+			else if (entry->next)
+				service_map[entry->interrupt_no] = entry->next;
+			else {
+				entry->func = dummy;
+				return E_OK;
+			}
+
+			entry->func = dummy;
+			entry->next = unmapped;
+			unmapped = entry;
+			return E_OK;
+		}
+
+	return E_ID;
 }
 
 FP interrupt(const UW edi, const UW esi, const UW ebp, const UW esp,
@@ -87,12 +177,14 @@ FP interrupt(const UW edi, const UW esi, const UW ebp, const UW esp,
 		const UW ds, const UW no, const UW eip,
 		const UW cs, const W eflags)
 {
-	if ((isr[no])())
-		fault(edi, esi, ebp, esp, ebx, edx,
-				ecx, eax, ds, no, eip, cs, eflags);
+	service_t *p = service_map[no];
+	do {
+		if ((p->func)())
+			fault(edi, esi, ebp, esp, ebx, edx,
+					ecx, eax, ds, no, eip, cs, eflags);
+	} while ((p = p->next));
 
-	enter_critical();
-
+	enter_critical();//TODO really?
 	return kcall->dispatch;
 }
 
@@ -101,16 +193,27 @@ FP interrupt_with_error(const UW edi, const UW esi, const UW ebp, const UW esp,
 		const UW ds, const UW no, const UW err, const UW eip,
 		const UW cs, const W eflags)
 {
-	if ((isr[no])())
-		fault_with_error(edi, esi, ebp, esp, ebx, edx,
-				ecx, eax, ds, no, err, eip, cs, eflags);
+	//TODO for debug
+	kcall->printk("interrupt(%d). thread=%d\n"
+		" cs=%x eip=%x eflags=%x ds=%x error=%x\n"
+		" eax=%x ebx=%x ecx=%x edx=%x\n"
+		" edi=%x esi=%x ebp=%x esp=%x\n",
+			no, kcall->thread_get_id(),
+			cs, eip, eflags, ds,
+			err, eax, ebx, ecx, edx, edi, esi, ebp, esp);
 
-	enter_critical();
+	service_t *p = service_map[no];
+	do {
+		if ((p->func)())
+			fault_with_error(edi, esi, ebp, esp, ebx, edx,
+					ecx, eax, ds, no, err, eip, cs, eflags);
+	} while ((p = p->next));
 
+	enter_critical();//TODO really?
 	return kcall->dispatch;
 }
 
-static void fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
+static _Noreturn void fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 		UW ecx, UW eax, UW ds, UW no,
 		UW eip, UW cs, UW eflags)
 {
@@ -121,11 +224,11 @@ static void fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 			no, kcall->thread_get_id(),
 			cs, eip, eflags, ds,
 			eax, ebx, ecx, edx, edi, esi, ebp, esp);
-	//TODO stop the thread
 	panic("fault");
 }
 
-static void fault_with_error(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
+static _Noreturn void fault_with_error(
+		UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 		UW ecx, UW eax, UW ds, UW no,
 		UW err, UW eip, UW cs, UW eflags)
 {
@@ -136,7 +239,5 @@ static void fault_with_error(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 			no, kcall->thread_get_id(),
 			cs, eip, eflags, ds,
 			err, eax, ebx, ecx, edx, edi, esi, ebp, esp);
-	//TODO stop the thread
 	panic("fault_with_error");
 }
-
