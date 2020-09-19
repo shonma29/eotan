@@ -247,7 +247,8 @@ static void monitor(void)
 	kcall->printk("monitor: start\n");
 
 	for (;;) {
-		sleep(1);
+		if (sleep(1))
+			break;
 
 		char outbuf[1024];
 		for (size_t len;
