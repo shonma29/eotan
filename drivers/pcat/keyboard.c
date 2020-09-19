@@ -37,6 +37,7 @@ For more information, please refer to <http://unlicense.org/>
 
 extern volatile lfq_t hmi_queue;
 
+static hmi_interrupt_t message = { event_keyboard, 0 };
 static unsigned char state = scan_normal;
 
 
@@ -65,13 +66,9 @@ ER keyboard_interrupt(void)
 		break;
 	}
 
-	hmi_interrupt_t message = {
-		event_keyboard,
-		(is_break(b) ?
-				(BREAK | scan2key[state][strip_break(b)])
-				: scan2key[state][b])
-
-	};
+	message.data = (is_break(b) ?
+			(BREAK | scan2key[state][strip_break(b)])
+			: scan2key[state][b]);
 	if (lfq_enqueue(&hmi_queue, &message) == QUEUE_OK)
 		//TODO error check
 		icall->handle(hmi_handle, 0, 0);

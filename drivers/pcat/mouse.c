@@ -35,20 +35,18 @@ For more information, please refer to <http://unlicense.org/>
 
 extern volatile lfq_t hmi_queue;
 
+static hmi_interrupt_t message = { event_mouse, 0 };
+
 static unsigned char _read(void);
 
 
 ER mouse_interrupt(void)
 {
-	unsigned char b1 = _read();
-	unsigned char b2 = _read();
-	unsigned char b3 = _read();
-
+	message.data = _read() << 16;
+	message.data |= _read() << 8;
+	message.data |= _read();
 	//TODO error check
-	hmi_interrupt_t message = {
-		event_mouse,
-		(b1 << 16) | (b2 << 8) | b3
-	};
+
 	if (lfq_enqueue(&hmi_queue, &message) == QUEUE_OK)
 		//TODO error check
 		icall->handle(hmi_handle, 0, 0);
