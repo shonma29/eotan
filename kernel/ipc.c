@@ -409,8 +409,8 @@ int ipc_listen(void)
 {
 	enter_serialize();
 
-	if (running->flag) {
-		running->flag = 0;
+	if (running->port.flag) {
+		running->port.flag = 0;
 		leave_serialize();
 		return E_OK;
 	} else {
@@ -441,7 +441,7 @@ int ipc_notify(const int port_id, const unsigned int flag)
 			if (th->wait.type == wait_flag)
 				release(th);
 		default:
-			th->flag |= flag;
+			th->port.flag |= flag;
 			result = E_OK;
 			break;
 		}

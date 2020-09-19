@@ -40,24 +40,17 @@ typedef struct {
 	STAT status;
 	wait_reason_t wait;
 	list_t locking;
-	struct {
-		//TODO under 49 days
-		UW total;
-		//TODO under 49 days
-		UW left;
-	} time;
 	PRI priority;
-	unsigned int flag;
+	unsigned int quantum;
 	struct {
-		VP_INT arg;
 		PRI priority;
 		VP kstack_tail;
 		// kthread is NULL
 		VP ustack_top;
 		FP entry;
+		VP_INT arg;
 	} attr;
 	ipc_t port;
-	int pad[3];
 	mpu_context_t mpu;
 } thread_t;
 

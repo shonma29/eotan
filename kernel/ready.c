@@ -71,14 +71,12 @@ static void ready_rotate(const int pri)//TODO is locked?
 		list_enqueue(&(ready_task[pri]), head);
 }
 
-void tick(void)//TODO can notify as return value if overrun
+void tick(void)
 {
-	running->time.total++;//TODO is needed for kthread? who is running?
-
 	if (!is_kthread(running))
-		if (!(--(running->time.left))) {//TODO it is overrun
-			running->time.left = TIME_QUANTUM;//TODO why 'left'?
-			ready_rotate(running->priority);//TODO need lock
+		if (!(--(running->quantum))) {
+			running->quantum = TIME_QUANTUM;
+			ready_rotate(running->priority);
 		}
 }
 

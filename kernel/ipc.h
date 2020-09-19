@@ -31,6 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 
 typedef struct {
 	bool opened;
+	unsigned int flag;
 	list_t caller;
 	list_t receiver;
 	int attr;

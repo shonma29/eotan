@@ -85,13 +85,12 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk)
 	th->status = TTS_DMT;
 	list_initialize(&(th->wait.waiting));
 	list_initialize(&(th->locking));
-	//th->flag = 0;
 
 	th->attr.priority = pk_ctsk->itskpri;
-	th->attr.arg = pk_ctsk->exinf;
 	th->attr.kstack_tail = (char *) kern_p2v(p);
 	th->attr.ustack_top = pk_ctsk->ustack_top;
 	th->attr.entry = pk_ctsk->task;
+	th->attr.arg = pk_ctsk->exinf;
 
 	context_set_kernel_sp(&(th->mpu), th->attr.kstack_tail);
 	context_set_page_table(&(th->mpu),
@@ -199,10 +198,9 @@ ER thread_create(ID tskid, T_CTSK *pk_ctsk)
 
 static void fire(thread_t *th)
 {
-	th->time.total = 0;
-	th->time.left = TIME_QUANTUM;
 	th->priority = th->attr.priority;
-	th->flag = 0;
+	th->quantum = TIME_QUANTUM;
+	th->port.flag = 0;
 
 	create_context(th);
 
