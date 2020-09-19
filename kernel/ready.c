@@ -98,29 +98,27 @@ void dispatch(void)
 {
 	enter_critical();
 
-	if (sync_blocking) {
-		leave_critical();
-		return;
-	}
-
-	if (sysinfo->delay_thread_start) {//TODO it is scheduler
-		sysinfo->delay_thread_start = false;
-		ipc_notify(PORT_DELAY, EVENT_INTERRUPT);
-	}
-
 	do {
-		thread_t *p = running;
-		thread_t *q = ready_dequeue();
-		if (q == p) {
-			leave_critical();
+		if (sync_blocking)
 			break;
+
+		if (sysinfo->delay_thread_start) {
+			sysinfo->delay_thread_start = false;
+			ipc_notify(PORT_DELAY, EVENT_INTERRUPT);
 		}
 
-		if (p->status == TTS_RUN)
-			p->status = TTS_RDY;
+		thread_t *prev = running;
+		thread_t *next = ready_dequeue();
+		if (next == prev)
+			break;
 
-		q->status = TTS_RUN;
-		running = q;
-		context_switch(p, q);
+		if (prev->status == TTS_RUN)
+			prev->status = TTS_RDY;
+
+		next->status = TTS_RUN;
+		running = next;
+		context_switch(prev, next);
 	} while (false);
+
+	leave_critical();
 }

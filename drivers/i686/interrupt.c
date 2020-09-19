@@ -184,7 +184,6 @@ FP interrupt(const UW edi, const UW esi, const UW ebp, const UW esp,
 					ecx, eax, ds, no, eip, cs, eflags);
 	} while ((p = p->next));
 
-	enter_critical();//TODO really?
 	return kcall->dispatch;
 }
 
@@ -209,7 +208,6 @@ FP interrupt_with_error(const UW edi, const UW esi, const UW ebp, const UW esp,
 					ecx, eax, ds, no, err, eip, cs, eflags);
 	} while ((p = p->next));
 
-	enter_critical();//TODO really?
 	return kcall->dispatch;
 }
 
