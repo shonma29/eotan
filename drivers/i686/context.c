@@ -150,9 +150,13 @@ void context_switch(thread_t *prev, thread_t *next)
 			api_set_kernel_sp(next->attr.kstack_tail);
 		}
 
-	fpu_save(&prev);
+	if (!is_kthread(prev))
+		fpu_save(&prev);
+
 	stack_switch_wrapper(&(prev->mpu.esp0), &(next->mpu.esp0));
-	fpu_restore(&next);//TODO what is next? now prev on stack?
+
+	if (!is_kthread(prev))
+		fpu_restore(&prev);
 }
 
 void context_reset_page_table(void)
