@@ -78,9 +78,10 @@ static ER create_idle_thread(const VP_INT exinf)
 
 static noreturn void idle_start(VP_INT exinf)
 {
+	ei();
+
 	void (*callback)(void) = (void (*)(void)) exinf;
 	callback();
-	ei();
 
 	for (;;)
 		halt();

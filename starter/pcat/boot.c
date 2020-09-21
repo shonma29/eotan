@@ -62,6 +62,7 @@ void _start(void)
 			(void*)CORE_STACK_ADDR);
 	release_pages((void*)BOOT_ADDR,
 			(void*)((unsigned int)h + sizeof(*h)));
+	ei();
 }
 
 static ER run_module(const enum ModuleType type, const int tid,
