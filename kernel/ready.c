@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/bits.h>
 #include <nerve/global.h>
 #include <nerve/config.h>
+#include <nerve/icall.h>
 #include <set/list.h>
 #include "func.h"
 #include "thread.h"
@@ -40,7 +41,7 @@ static list_t ready_task[MAX_PRIORITY + 1];
 static unsigned int ready_bits;
 
 static inline thread_t *getThread(const list_t *);
-static void ready_rotate(const int);
+static void ready_rotate(const int, thread_t *);
 static thread_t *ready_dequeue();
 
 
@@ -57,18 +58,27 @@ void ready_initialize(void)
 	ready_bits = 0;
 }
 
-void ready_enqueue(const int pri, list_t *src)//TODO is locked?
+void ready_enqueue(const int pri, list_t *src)
 {
 	list_t *dest = &(ready_task[pri]);
 	ready_bits |= 1 << pri;
 	list_enqueue(dest, src);
 }
 
-static void ready_rotate(const int pri)//TODO is locked?
+static void ready_rotate(const int priority, thread_t *thread)
 {
-	list_t *head = list_dequeue(&(ready_task[pri]));
-	if (head)
-		list_enqueue(&(ready_task[pri]), head);
+	enter_serialize();
+
+	list_t *guard = &(ready_task[priority]);
+	list_t *head = list_next(guard);
+	if ((head != guard)
+			&& (getThread(head) == thread)
+			&& (list_prev(guard) != head)) {
+		list_dequeue(guard);
+		list_enqueue(guard, head);
+	}
+
+	leave_serialize();
 }
 
 void tick(void)
@@ -76,7 +86,9 @@ void tick(void)
 	if (!is_kthread(running))
 		if (!(--(running->quantum))) {
 			running->quantum = TIME_QUANTUM;
-			ready_rotate(running->priority);
+			icall->handle((void (*)(const int, const int)) ready_rotate,
+					(const int) (running->priority),
+					(const int) running);
 		}
 }
 
