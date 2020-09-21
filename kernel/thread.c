@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdint.h>
 #include <string.h>
 #include <nerve/config.h>
+#include <nerve/icall.h>
 #include <set/list.h>
 #include <set/tree.h>
 #include "func.h"
@@ -285,21 +286,10 @@ void thread_end(void)
 void thread_end_and_destroy(void)
 {
 	enter_serialize();
-	thread_t *th = running;
-	list_remove(&(th->queue));
-	mutex_unlock_all(th);
-
-//TODO is using released stack and resource?
-//TODO if other thread exists in the same user process?
-	if (!is_kthread(th))
-		context_reset_page_table();
-
-	release_resources(th);
-	node_t *node = tree_remove(&thread_tree, thread_id(th));
-	if (node)
-		slab_free(&thread_slab, node);
-
-	leave_serialize_and_dispatch();
+	icall->handle((void (*)(const int, const int)) thread_destroy,
+			(const int) thread_id(running),
+			0);
+	thread_end();
 }
 
 ER thread_terminate(ID tskid)
