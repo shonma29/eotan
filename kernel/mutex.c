@@ -154,9 +154,8 @@ ER mutex_destroy(ID mtxid)
 
 		result = E_OK;
 	} while (false);
-	leave_serialize();
 
-	dispatch();
+	leave_serialize_and_dispatch();
 	return result;
 }
 
@@ -233,9 +232,7 @@ ER mutex_unlock(ID mtxid)
 		}
 
 	give(q);
-	leave_serialize();
-
-	dispatch();
+	leave_serialize_and_dispatch();
 	return E_OK;
 }
 

@@ -36,11 +36,6 @@ static inline void enter_serialize(void)
 	sysinfo->sync.state.serializing = 1;
 }
 
-static inline void leave_serialize(void)
-{
-	sysinfo->sync.state.serializing = 0;
-}
-
 static inline void enter_critical(void)
 {
 	di();
@@ -54,5 +49,7 @@ static inline void leave_critical(void)
 extern void wait(thread_t *);
 extern void release(thread_t *);
 extern void release_all(list_t *);
+extern void leave_serialize(void);
+extern void leave_serialize_and_dispatch(void);
 
 #endif

@@ -39,8 +39,7 @@ void wait(thread_t *task)
 	task->status = TTS_WAI;
 	list_remove(&(task->queue));
 
-	leave_serialize();
-	dispatch();
+	leave_serialize_and_dispatch();
 }
 
 void release(thread_t *task)
@@ -64,4 +63,17 @@ void release_all(list_t *waiting) {
 		release(p);
 /* TODO test */
 	}
+}
+
+void leave_serialize(void)
+{
+	sysinfo->sync.state.serializing = 0;
+	if (!(sysinfo->sync.dispatch_skippable))
+		dispatch();
+}
+
+void leave_serialize_and_dispatch(void)
+{
+	sysinfo->sync.state.no_request = 0;
+	leave_serialize();
 }

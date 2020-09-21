@@ -112,11 +112,11 @@ void dispatch(void)
 
 	do {
 		if (sysinfo->sync.state.serializing) {
-			sysinfo->sync.state.delayable = 0;
+			sysinfo->sync.state.no_request = 0;
 			break;
 		}
 
-		sysinfo->sync.state.delayable = 1;
+		sysinfo->sync.state.no_request = 1;
 
 		if (sysinfo->delay_thread_start) {
 			sysinfo->delay_thread_start = false;

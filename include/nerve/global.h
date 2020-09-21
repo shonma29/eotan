@@ -46,10 +46,10 @@ typedef struct {
 typedef struct {
 	volatile struct timespec system_time;
 	union {
-		volatile uint32_t dispatchable;
+		volatile uint32_t dispatch_skippable;
 		struct {
 			volatile uint16_t interrupt_nest;
-			volatile uint8_t delayable;
+			volatile uint8_t no_request;
 			volatile uint8_t serializing;
 		} state;
 	} sync;

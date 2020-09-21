@@ -198,7 +198,7 @@ void interrupt(const UW edi, const UW esi, const UW ebp, const UW esp,
 	} while ((p = p->next));
 
 	sysinfo->sync.state.interrupt_nest--;
-	if (!(sysinfo->sync.dispatchable))
+	if (!(sysinfo->sync.dispatch_skippable))
 		kcall->dispatch();
 }
 
@@ -229,7 +229,7 @@ void interrupt_with_error(const UW edi, const UW esi, const UW ebp,
 	} while ((p = p->next));
 
 	sysinfo->sync.state.interrupt_nest--;
-	if (!(sysinfo->sync.dispatchable))
+	if (!(sysinfo->sync.dispatch_skippable))
 		kcall->dispatch();
 }
 

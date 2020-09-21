@@ -206,9 +206,7 @@ static void fire(thread_t *th)
 
 	th->status = TTS_RDY;
 	ready_enqueue(th->priority, &(th->queue));
-	leave_serialize();
-
-	dispatch();
+	leave_serialize_and_dispatch();
 }
 
 static void release_resources(thread_t *th)
@@ -281,9 +279,7 @@ void thread_end(void)
 	list_remove(&(running->queue));
 	running->status = TTS_DMT;
 	mutex_unlock_all(running);
-	leave_serialize();
-
-	dispatch();
+	leave_serialize_and_dispatch();
 }
 
 void thread_end_and_destroy(void)
@@ -303,8 +299,7 @@ void thread_end_and_destroy(void)
 	if (node)
 		slab_free(&thread_slab, node);
 
-	leave_serialize();
-	dispatch();
+	leave_serialize_and_dispatch();
 }
 
 ER thread_terminate(ID tskid)
@@ -374,8 +369,7 @@ ER thread_suspend(ID tskid)
 			list_remove(&(th->queue));
 			result = E_OK;
 			if (tskid == TSK_SELF) {
-				leave_serialize();
-				dispatch();
+				leave_serialize_and_dispatch();
 				return result;
 			}
 			break;
@@ -418,8 +412,7 @@ ER thread_resume(ID tskid)
 		case TTS_SUS:
 			th->status = TTS_RDY;
 			ready_enqueue(th->priority, &(th->queue));
-			leave_serialize();
-			dispatch();
+			leave_serialize_and_dispatch();
 			return E_OK;
 		case TTS_WAS:
 			th->status = TTS_WAI;

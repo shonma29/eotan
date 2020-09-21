@@ -126,9 +126,8 @@ int ipc_close(void)
 		release_all(&(port->caller));
 		result = E_OK;
 	} while (false);
-	leave_serialize();
 
-	dispatch();
+	leave_serialize_and_dispatch();
 	return result;
 }
 
@@ -336,8 +335,8 @@ static int _reply(const int key, const void *message, const size_t size)
 		result = E_OBJ;
 /* TODO test */
 	release_rendezvous(key);
-	leave_serialize();
-	dispatch();
+
+	leave_serialize_and_dispatch();
 	return result;
 }
 
