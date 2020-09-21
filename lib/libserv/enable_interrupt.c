@@ -31,11 +31,11 @@ For more information, please refer to <http://unlicense.org/>
 #include "libserv.h"
 
 
-ER enable_interrupt(const INHNO inhno)
+ER enable_interrupt(const INTNO intno)
 {
 	int_args_t args = {
 		int_operation_enable,
-		(int) inhno
+		(int) intno
 	};
 	ER *reply = (ER *) &args;
 	return ((kcall->ipc_call(PORT_INTERRUPT, &args, sizeof(args))

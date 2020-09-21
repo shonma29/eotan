@@ -27,6 +27,8 @@ TARGET = kernel/core.bin
 
 include Makefile.in
 
+CFLAGS += -I $(WD)
+
 ENTRY_ADDR = 0x80100000
 ENTRY_FUNC = startup
 

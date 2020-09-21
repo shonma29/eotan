@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <interrupt.h>
 #include <stddef.h>
 #include <sys/types.h>
 
@@ -53,9 +54,9 @@ extern ER kbc_initialize(void);
 #define arch_initialize pic_initialize
 
 /* keyboard.c */
-extern ER keyboard_interrupt(void);
+extern void keyboard_interrupt(VP_INT);
 
 /* mouse.c */
-extern ER mouse_interrupt(void);
+extern void mouse_interrupt(VP_INT);
 
 #endif

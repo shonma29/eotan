@@ -114,11 +114,13 @@ ER keyboard_initialize(void)
 {
 	kbc_initialize();
 
-	T_DINH pk_dinh = {
+	T_CISR pk_cisr = {
 		TA_HLNG,
-		(FP) keyboard_interrupt
+		PIC_IR_VECTOR(ir_keyboard),
+		PIC_IR_VECTOR(ir_keyboard),
+		keyboard_interrupt
 	};
-	ER_ID id = define_handler(PIC_IR_VECTOR(ir_keyboard), &pk_dinh);
+	ER_ID id = create_isr(&pk_cisr);
 	if (id < 0) {
 		log_err("keyboard: bind error=%d\n", id);
 		return id;
@@ -127,7 +129,7 @@ ER keyboard_initialize(void)
 	W result = enable_interrupt(ir_keyboard);
 	if (result) {
 		log_err("keyboard: enable error=%d\n", result);
-		delete_handler(id);
+		destroy_isr(id);
 		return result;
 	}
 

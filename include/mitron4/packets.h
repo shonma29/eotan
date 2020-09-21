@@ -62,9 +62,11 @@ typedef struct t_cpor {
 /**
  * interrupt
  */
-typedef struct t_dinh {
-	ATR inhatr;
-	FP inthdr;
-} T_DINH;
+typedef struct t_cisr {
+	ATR isratr;
+	VP_INT exinf;
+	INTNO intno;
+	FP isr;
+} T_CISR;
 
 #endif

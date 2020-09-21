@@ -29,7 +29,7 @@ MAKE = gmake
 CC = clang
 CFLAGS = -Wall -Werror -O2 -std=c11 \
  -march=$(ARCH) \
- -I $(WD) -I include \
+ -I include \
  -DUSE_VESA \
  -fno-asynchronous-unwind-tables
 # -fno-stack-protector

@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <interrupt.h>
 #include <syslog.h>
 #include <dev/device.h>
 #include <sys/time.h>
@@ -49,9 +50,9 @@ extern void time_get_raw(struct timespec *);
 extern ER time_get(SYSTIM *);
 extern ER time_set(SYSTIM *);
 
-extern ER_ID define_handler(const INHNO, const T_DINH *);
-extern ER delete_handler(const ID);
-extern ER enable_interrupt(INHNO);
+extern ER_ID create_isr(T_CISR *);
+extern ER destroy_isr(ID);
+extern ER enable_interrupt(INTNO);
 
 extern device_info_t *device_find(const char *);
 

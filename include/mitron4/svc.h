@@ -75,6 +75,8 @@ extern ER isig_tim(void);
 /**
  * interruption
  */
-extern ER def_inh(INHNO, T_DINH *);
+extern ER_ID acre_isr(T_CISR *);
+extern ER del_isr(ID);
+extern ER ena_int(INTNO);
 
 #endif

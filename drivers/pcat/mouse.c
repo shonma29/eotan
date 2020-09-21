@@ -40,7 +40,7 @@ static hmi_interrupt_t message = { event_mouse, 0 };
 static unsigned char _read(void);
 
 
-ER mouse_interrupt(void)
+void mouse_interrupt(VP_INT exinf)
 {
 	message.data = _read() << 16;
 	message.data |= _read() << 8;
@@ -50,8 +50,6 @@ ER mouse_interrupt(void)
 	if (lfq_enqueue(&hmi_queue, &message) == QUEUE_OK)
 		//TODO error check
 		icall->handle(hmi_handle, 0, 0);
-
-	return E_OK;
 }
 
 static unsigned char _read(void)

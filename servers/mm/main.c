@@ -76,7 +76,7 @@ static int initialize(void)
 {
 	process_initialize();
 	file_initialize();
-	define_mpu_handlers((FP) default_handler, (FP) page_fault_handler);
+	define_mpu_handlers(default_handler, page_fault_handler);
 
 	request_slab.unit_size = sizeof(mm_request);
 	request_slab.block_size = PAGE_SIZE;

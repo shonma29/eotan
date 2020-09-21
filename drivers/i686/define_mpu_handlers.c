@@ -30,18 +30,27 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../lib/libserv/libserv.h"
 
 
-void define_mpu_handlers(const FP default_handler, const FP page_fault_handler)
+void define_mpu_handlers(void (*default_handler)(VP_INT exinf),
+		void (*page_fault_handler)(VP_INT exinf))
 {
-	int i;
-	T_DINH pk_dinh = { TA_HLNG, NULL };
+	T_CISR pk_cisr;
+	pk_cisr.isratr = TA_HLNG,
+	pk_cisr.isr = default_handler;
 
-	pk_dinh.inthdr = default_handler;
-	for (i = int_division_error; i <= int_protection; i++)
-		define_handler(i, &pk_dinh);
+	for (INTNO i = int_division_error; i <= int_protection; i++) {
+		pk_cisr.exinf = i;
+		pk_cisr.intno = i;
+		create_isr(&pk_cisr);
+	}
 
-	for (i = int_reserved_15; i <= int_reserved_31; i++)
-		define_handler(i, &pk_dinh);
+	for (INTNO i = int_reserved_15; i <= int_reserved_31; i++) {
+		pk_cisr.exinf = i;
+		pk_cisr.intno = i;
+		create_isr(&pk_cisr);
+	}
 
-	pk_dinh.inthdr = page_fault_handler;
-	define_handler(int_page_fault, &pk_dinh);
+	pk_cisr.exinf = int_page_fault;
+	pk_cisr.intno = int_page_fault;
+	pk_cisr.isr = page_fault_handler;
+	create_isr(&pk_cisr);
 }

@@ -93,11 +93,13 @@ ER mouse_initialize(void)
 	y = 0;
 	buttons = 0;
 
-	T_DINH pk_dinh = {
+	T_CISR pk_cisr = {
 		TA_HLNG,
-		(FP) mouse_interrupt
+		PIC_IR_VECTOR(ir_mouse),
+		PIC_IR_VECTOR(ir_mouse),
+		mouse_interrupt
 	};
-	ER_ID id = define_handler(PIC_IR_VECTOR(ir_mouse), &pk_dinh);
+	ER_ID id = create_isr(&pk_cisr);
 	if (id < 0) {
 		log_err("mouse: bind error=%d\n", id);
 		return id;
@@ -106,7 +108,7 @@ ER mouse_initialize(void)
 	W result = enable_interrupt(ir_mouse);
 	if (result) {
 		log_err("mouse: enable error=%d\n", result);
-		delete_handler(id);
+		destroy_isr(id);
 		return result;
 	}
 

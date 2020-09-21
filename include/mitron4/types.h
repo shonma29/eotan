@@ -70,7 +70,7 @@ typedef struct {
 	W nsec;
 } SYSTIM;
 
-typedef uint_fast32_t INHNO;
+typedef uint_fast32_t INTNO;
 
 typedef int_fast32_t VP_INT;
 

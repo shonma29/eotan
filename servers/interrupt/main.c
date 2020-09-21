@@ -132,8 +132,7 @@ static ER execute(int_args_t *args)
 {
 	switch (args->operation) {
 	case int_operation_bind:
-		return interrupt_bind((INHNO) (args->arg1),
-				(T_DINH *) (args->arg2));
+		return interrupt_bind((T_CISR *) (args->arg1));
 	case int_operation_unbind:
 		return interrupt_unbind((ID) (args->arg1));
 	case int_operation_enable:

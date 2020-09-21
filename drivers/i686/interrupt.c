@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <interrupt.h>
 #include <mpu/desc.h>
 #include <nerve/kcall.h>
 #include "func.h"
@@ -34,10 +35,11 @@ For more information, please refer to <http://unlicense.org/>
 #include "mpu/mpufunc.h"
 
 typedef struct _service {
-	int (*func)(void);
+	void (*isr)(VP_INT);
+	VP_INT exinf;
 	struct _service *next;
-	int interrupt_no;
-	int service_id;
+	INTNO interrupt_no;
+	ID service_id;
 } service_t;
 
 // entries MUST be larger than service_map
@@ -45,16 +47,15 @@ static service_t entries[MAX_INTERRUPT_SERVICE];
 static service_t *unmapped;
 static service_t *service_map[IDT_MAX_ENTRY];
 
-static int dummy(void);
+static void dummy(VP_INT);
 static service_t *get_unmapped_entry(void);
 static _Noreturn void fault(UW, UW, UW, UW, UW, UW, UW, UW, UW, UW, UW, UW, UW);
 static _Noreturn void fault_with_error(UW, UW, UW, UW, UW, UW, UW, UW, UW, UW,
 		UW, UW, UW, UW);
 
 
-static int dummy(void)
+static void dummy(VP_INT exinf)
 {
-	return E_SYS;
 }
 
 //TODO test
@@ -67,6 +68,7 @@ static service_t *get_unmapped_entry(void)
 	return entry;
 }
 
+//TODO test
 ER interrupt_initialize(void)
 {
 	int i;
@@ -76,7 +78,7 @@ ER interrupt_initialize(void)
 	// MPU exceptions
 	for (i = 0; i < sizeof(handlers) / sizeof(handlers[0]); i++) {
 		service_t *entry = &(entries[i]);
-		entry->func = dummy;
+		entry->isr = dummy;
 		entry->next = NULL;
 		entry->interrupt_no = i;
 		entry->service_id = i;
@@ -88,7 +90,7 @@ ER interrupt_initialize(void)
 	// hardware interruptions
 	for (; i < sizeof(service_map) / sizeof(service_map[0]); i++) {
 		service_t *entry = &(entries[i]);
-		entry->func = dummy;
+		entry->isr = dummy;
 		entry->next = NULL;
 		entry->interrupt_no = i;
 		entry->service_id = i;
@@ -98,56 +100,63 @@ ER interrupt_initialize(void)
 	// unmapped entry list
 	unmapped = &entries[i];
 	for (; i < sizeof(entries) / sizeof(entries[0]) - 1; i++) {
-		entries[i].func = dummy;
+		entries[i].isr = dummy;
 		entries[i].next = &(entries[i + 1]);
 		entries[i].service_id = i;
 	}
 
-	entries[i].func = dummy;
+	entries[i].isr = dummy;
 	entries[i].next = NULL;
 	entries[i].service_id = i;
 	return E_OK;
 }
 
-ER_ID interrupt_bind(const INHNO inhno, const T_DINH *pk_dinh)
+//TODO test
+ER_ID interrupt_bind(T_CISR *pk_cisr)
 {
-	if (sizeof(service_map) / sizeof(service_map[0]) <= inhno)
+	if (pk_cisr->isratr != TA_HLNG)
+		return E_RSATR;
+
+	if (sizeof(service_map) / sizeof(service_map[0]) <= pk_cisr->intno)
 		return E_ID;
 
-	if (pk_dinh->inthdr == NULL)
+	if (pk_cisr->isr == NULL)
 		return E_PAR;
 
-	for (service_t *p = service_map[inhno]; p; p = p->next)
-		if (p->func == dummy) {
-			p->func = ((int (*)(void))(pk_dinh->inthdr));
+	for (service_t *p = service_map[pk_cisr->intno]; p; p = p->next)
+		if (p->isr == dummy) {
+			p->isr = pk_cisr->isr;
+			p->exinf = pk_cisr->exinf;
 			kcall->printk("interrupt_bind[%d] 0x%x\n",
-					inhno, pk_dinh->inthdr);
+					pk_cisr->intno, pk_cisr->isr);
 			return p->service_id;
 		} else if (p->next == NULL) {
 			service_t *entry = get_unmapped_entry();
 			if (!entry)
 				return E_NOID;
 
-			entry->func = ((int (*)(void))(pk_dinh->inthdr));
+			entry->isr = pk_cisr->isr;
+			entry->exinf = pk_cisr->exinf;
 			entry->next = NULL;
-			entry->interrupt_no = inhno;
+			entry->interrupt_no = pk_cisr->intno;
 			p->next = entry;
 			kcall->printk("interrupt_bind[%d] 0x%x\n",
-					inhno, pk_dinh->inthdr);
+					pk_cisr->intno, pk_cisr->isr);
 			return entry->service_id;
 		}
 
 	return E_ID;
 }
 
-ER interrupt_unbind(const ID service_id)
+//TODO test
+ER interrupt_unbind(ID service_id)
 {
 	if ((service_id < 0)
 			|| (sizeof(entries) / sizeof(entries[0]) <= service_id))
 		return E_ID;
 
 	service_t *entry = &(entries[service_id]);
-	if (entry->func == dummy)
+	if (entry->isr == dummy)
 		return E_OBJ;
 
 	service_t *prev = NULL;
@@ -159,11 +168,11 @@ ER interrupt_unbind(const ID service_id)
 			else if (entry->next)
 				service_map[entry->interrupt_no] = entry->next;
 			else {
-				entry->func = dummy;
+				entry->isr = dummy;
 				return E_OK;
 			}
 
-			entry->func = dummy;
+			entry->isr = dummy;
 			entry->next = unmapped;
 			unmapped = entry;
 			return E_OK;
@@ -172,6 +181,7 @@ ER interrupt_unbind(const ID service_id)
 	return E_ID;
 }
 
+//TODO test
 FP interrupt(const UW edi, const UW esi, const UW ebp, const UW esp,
 		const UW ebx, const UW edx, const UW ecx, const UW eax,
 		const UW ds, const UW no, const UW eip,
@@ -179,14 +189,17 @@ FP interrupt(const UW edi, const UW esi, const UW ebp, const UW esp,
 {
 	service_t *p = service_map[no];
 	do {
-		if ((p->func)())
+		if (p->isr == dummy)
 			fault(edi, esi, ebp, esp, ebx, edx,
 					ecx, eax, ds, no, eip, cs, eflags);
+
+		p->isr(p->exinf);
 	} while ((p = p->next));
 
 	return kcall->dispatch;
 }
 
+//TODO test
 FP interrupt_with_error(const UW edi, const UW esi, const UW ebp, const UW esp,
 		const UW ebx, const UW edx, const UW ecx, const UW eax,
 		const UW ds, const UW no, const UW err, const UW eip,
@@ -203,9 +216,11 @@ FP interrupt_with_error(const UW edi, const UW esi, const UW ebp, const UW esp,
 
 	service_t *p = service_map[no];
 	do {
-		if ((p->func)())
+		if (p->isr == dummy)
 			fault_with_error(edi, esi, ebp, esp, ebx, edx,
 					ecx, eax, ds, no, err, eip, cs, eflags);
+
+		p->isr(p->exinf);
 	} while ((p = p->next));
 
 	return kcall->dispatch;

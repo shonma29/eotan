@@ -41,7 +41,7 @@ static hmi_interrupt_t message = { event_keyboard, 0 };
 static unsigned char state = scan_normal;
 
 
-ER keyboard_interrupt(void)
+void keyboard_interrupt(VP_INT exinf)
 {
 	unsigned char b;
 
@@ -53,10 +53,10 @@ ER keyboard_interrupt(void)
 		switch (b) {
 		case 0xe0:
 			state = scan_e0;
-			return E_OK;
+			return;
 		case 0xe1:
 			state = scan_e1;
-			return E_OK;
+			return;
 		default:
 			break;
 		}
@@ -72,6 +72,4 @@ ER keyboard_interrupt(void)
 	if (lfq_enqueue(&hmi_queue, &message) == QUEUE_OK)
 		//TODO error check
 		icall->handle(hmi_handle, 0, 0);
-
-	return E_OK;
 }

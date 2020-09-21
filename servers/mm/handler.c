@@ -38,23 +38,19 @@ static void expand_stack(const int, const int);
 static void kill(const int, const int);
 
 
-ER default_handler(void)
+void default_handler(VP_INT exinf)
 {
 	if (icall->handle(kill, icall->thread_get_id(), 0))
 		//TODO test
 		panic("mm: full kqueue");
-
-	return E_OK;
 }
 
-ER page_fault_handler(void)
+void page_fault_handler(VP_INT exinf)
 {
 	if (icall->handle(expand_stack, icall->thread_get_id(),
 			(int) fault_get_addr()))
 		//TODO test
 		panic("mm: full kqueue");
-
-	return E_OK;
 }
 
 static void expand_stack(const int tid, const int addr)

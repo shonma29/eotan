@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <interrupt.h>
 #include <services.h>
 #include <nerve/config.h>
 #include <nerve/delay.h>
@@ -171,7 +172,7 @@ static ER add_timer(const struct timespec *ts, const int tag)
 	return E_OK;
 }
 
-ER timer_service(void)
+void timer_service(VP_INT exinf)
 {
 	time_tick();
 	kcall->tick();
@@ -196,8 +197,6 @@ ER timer_service(void)
 		if (p)
 			slab_free(&timer_slab, p);
 	}
-
-	return E_OK;
 }
 
 static void doit(void)
@@ -246,8 +245,13 @@ static ER init(void)
 
 	time_initialize();
 
-	T_DINH pk_dinh = { TA_HLNG, (FP) timer_service };
-	ER_ID id = define_handler(PIC_IR_VECTOR(ir_pit), &pk_dinh);
+	T_CISR pk_cisr = {
+		TA_HLNG,
+		PIC_IR_VECTOR(ir_pit),
+		PIC_IR_VECTOR(ir_pit),
+		timer_service
+	};
+	ER_ID id = create_isr(&pk_cisr);
 	if (id < 0) {
 		log_err(MYNAME ": define_handler error=%d\n", id);
 		return id;
@@ -258,7 +262,7 @@ static ER init(void)
 	ER result = enable_interrupt(ir_pit);
 	if (result != E_OK) {
 		log_err(MYNAME ": interrupt_enable error=%d\n", result);
-		delete_handler(id);
+		destroy_isr(id);
 		return result;
 	}
 
@@ -266,7 +270,7 @@ static ER init(void)
 	result = kcall->ipc_open(&pk_cpor);
 	if (result != E_OK) {
 		log_err(MYNAME ": open failed %d\n", result);
-		delete_handler(id);
+		destroy_isr(id);
 		return result;
 	}
 

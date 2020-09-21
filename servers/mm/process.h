@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <interrupt.h>
 #include <local.h>
 #include <fs/protocol.h>
 #include <mm/segment.h>
@@ -130,7 +131,7 @@ extern int process_exec(sys_reply_t *, mm_process_t *, const int,
 
 extern void init(void);
 
-extern ER default_handler(void);
-extern ER page_fault_handler(void);
+extern void default_handler(VP_INT);
+extern void page_fault_handler(VP_INT);
 
 #endif

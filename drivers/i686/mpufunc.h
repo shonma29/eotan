@@ -27,11 +27,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <interrupt.h>
 #include <stdnoreturn.h>
-#include <thread.h>
 #include <mm/segment.h>
 #include "gate.h"
 #include "paging.h"
+#include "thread.h"
 
 /* context.c */
 extern void create_context(thread_t *);
@@ -54,11 +55,11 @@ extern FP interrupt_with_error(const UW, const UW, const UW, const UW,
 		const UW, const UW, const UW, const UW,
 		const UW, const UW, const UW, const UW,
 		const UW, const W);
-ER_ID interrupt_bind(const INHNO, const T_DINH *);
-ER interrupt_unbind(const ID);
+ER_ID interrupt_bind(T_CISR *);
+ER interrupt_unbind(ID);
 
 /* define_mpu_handlers */
-void define_mpu_handlers(const FP, const FP);
+void define_mpu_handlers(void (*)(VP_INT), void (*)(VP_INT));
 
 /* paging_init.c */
 extern void paging_initialize(void);

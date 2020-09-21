@@ -32,11 +32,11 @@ For more information, please refer to <http://unlicense.org/>
 #include "libserv.h"
 
 
-ER delete_handler(const ID id)
+ER_ID create_isr(T_CISR *pk_cisr)
 {
 	int_args_t args;
-	args.operation = int_operation_unbind;
-	args.arg1 = (int) id;
+	args.operation = int_operation_bind;
+	args.arg1 = (int) pk_cisr;
 
 	ER *reply = (ER*) &args;
 	return ((kcall->ipc_call(PORT_INTERRUPT, &args, sizeof(args))
