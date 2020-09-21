@@ -73,6 +73,7 @@ static ER kq_enqueue(delay_param_t *param)
 	if (lfq_enqueue(&(sysinfo->kqueue), param) != QUEUE_OK)
 		return E_TMOUT;
 
+	sysinfo->sync.state.delayable = 0;
 	//TODO not boolean. pass PORT_DELAY to wakeup.
 	sysinfo->delay_thread_start = true;
 	return E_OK;

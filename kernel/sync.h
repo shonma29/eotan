@@ -26,21 +26,19 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stdbool.h>
 #include <mpu/io.h>
+#include <nerve/global.h>
 #include <set/list.h>
 #include "thread.h"
 
-extern volatile bool sync_blocking;
-
 static inline void enter_serialize(void)
 {
-	sync_blocking = true;
+	sysinfo->sync.state.serializing = 1;
 }
 
 static inline void leave_serialize(void)
 {
-	sync_blocking = false;
+	sysinfo->sync.state.serializing = 0;
 }
 
 static inline void enter_critical(void)

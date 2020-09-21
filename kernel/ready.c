@@ -111,8 +111,12 @@ void dispatch(void)
 	enter_critical();
 
 	do {
-		if (sync_blocking)
+		if (sysinfo->sync.state.serializing) {
+			sysinfo->sync.state.delayable = 0;
 			break;
+		}
+
+		sysinfo->sync.state.delayable = 1;
 
 		if (sysinfo->delay_thread_start) {
 			sysinfo->delay_thread_start = false;

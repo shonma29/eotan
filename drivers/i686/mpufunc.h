@@ -47,11 +47,11 @@ extern void idt_set(UB no, void (*)(void));
 
 /* interrupt.c */
 extern ER interrupt_initialize(void);
-extern FP interrupt(const UW, const UW, const UW, const UW,
+extern void interrupt(const UW, const UW, const UW, const UW,
 		const UW, const UW, const UW, const UW,
 		const UW, const UW, const UW,
 		const UW, const W);
-extern FP interrupt_with_error(const UW, const UW, const UW, const UW,
+extern void interrupt_with_error(const UW, const UW, const UW, const UW,
 		const UW, const UW, const UW, const UW,
 		const UW, const UW, const UW, const UW,
 		const UW, const W);

@@ -182,11 +182,12 @@ ER interrupt_unbind(ID service_id)
 }
 
 //TODO test
-FP interrupt(const UW edi, const UW esi, const UW ebp, const UW esp,
+void interrupt(const UW edi, const UW esi, const UW ebp, const UW esp,
 		const UW ebx, const UW edx, const UW ecx, const UW eax,
 		const UW ds, const UW no, const UW eip,
 		const UW cs, const W eflags)
 {
+	sysinfo->sync.state.interrupt_nest++;
 	service_t *p = service_map[no];
 	do {
 		if (p->isr == dummy)
@@ -196,15 +197,19 @@ FP interrupt(const UW edi, const UW esi, const UW ebp, const UW esp,
 		p->isr(p->exinf);
 	} while ((p = p->next));
 
-	return kcall->dispatch;
+	sysinfo->sync.state.interrupt_nest--;
+	if (!(sysinfo->sync.dispatchable))
+		kcall->dispatch();
 }
 
 //TODO test
-FP interrupt_with_error(const UW edi, const UW esi, const UW ebp, const UW esp,
+void interrupt_with_error(const UW edi, const UW esi, const UW ebp,
+		const UW esp,
 		const UW ebx, const UW edx, const UW ecx, const UW eax,
 		const UW ds, const UW no, const UW err, const UW eip,
 		const UW cs, const W eflags)
 {
+	sysinfo->sync.state.interrupt_nest++;
 	//TODO for debug
 	kcall->printk("interrupt(%d). thread=%d\n"
 		" cs=%x eip=%x eflags=%x ds=%x error=%x\n"
@@ -223,7 +228,9 @@ FP interrupt_with_error(const UW edi, const UW esi, const UW ebp, const UW esp,
 		p->isr(p->exinf);
 	} while ((p = p->next));
 
-	return kcall->dispatch;
+	sysinfo->sync.state.interrupt_nest--;
+	if (!(sysinfo->sync.dispatchable))
+		kcall->dispatch();
 }
 
 static _Noreturn void fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,

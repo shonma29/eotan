@@ -45,6 +45,14 @@ typedef struct {
 
 typedef struct {
 	volatile struct timespec system_time;
+	union {
+		volatile uint32_t dispatchable;
+		struct {
+			volatile uint16_t interrupt_nest;
+			volatile uint8_t delayable;
+			volatile uint8_t serializing;
+		} state;
+	} sync;
 	volatile bool delay_thread_start;
 	volatile lfq_t kqueue;
 	MemoryMap memory_map;

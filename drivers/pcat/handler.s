@@ -57,14 +57,11 @@ interrupt_master:
 	movw $SELECTOR_KERN_DATA, %ax
 	movw %ax,%ds
 	call interrupt
-
-	movl %eax, %edx
 	movl 36(%esp), %eax
 	orb $0x60, %al
 	outb %al, $PIC_MASTER1
 
 ret_interrupt:
-	call *%edx
 	popal
 	popl %ds
 	addl $4, %esp
@@ -76,8 +73,6 @@ interrupt_slave:
 	movw $SELECTOR_KERN_DATA, %ax
 	movw %ax,%ds
 	call interrupt
-
-	movl %eax, %edx
 	movl 36(%esp), %eax
 	xorb $0x48, %al
 	outb %al, $PIC_SLAVE1
