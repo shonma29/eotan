@@ -32,14 +32,24 @@ static inline int _tunnel_registers(void *func)
 	int result;
 
 	__asm__ __volatile__ ( \
+		"subl $524, %%esp\n\t" \
+		"xorl %%edx, %%edx\n\t" \
+		"movl %%esp, %%ecx\n\t" \
+		"movb %%cl, %%dl\n\t" \
+		"notb %%dl\n\t" \
+		"incb %%dl\n\t" \
+		"andb $0xf, %%dl\n\t" \
+		"addl %%edx, %%ecx\n\t" \
+		"fxsave (%%ecx)\n\t" \
+		"pushl %%ecx\n\t" \
 		"pushl %%edi\n\t" \
 		"pushl %%esi\n\t" \
 		"pushl %%ebp\n\t" \
 		"pushl %%ebx\n\t" \
 		"call *%%eax\n\t" \
-		"addl $16, %%esp\n\t" \
-		:"=a"(result) \
-		:"a"(func) \
+		"addl $544, %%esp\n\t" \
+		:"=a" (result) \
+		:"a" (func) \
 		:);
 
 	return result;
@@ -54,7 +64,10 @@ static inline int _tunnel_out(void)
 		"popl %%ebp\n\t" \
 		"popl %%esi\n\t" \
 		"popl %%edi\n\t" \
-		:"=a"(result) \
+		"popl %%ecx\n\t" \
+		"fxrstor (%%ecx)\n\t" \
+		"addl $524, %%esp\n\t" \
+		:"=a" (result) \
 		: \
 		:);
 
