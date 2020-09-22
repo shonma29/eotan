@@ -37,8 +37,6 @@ For more information, please refer to <http://unlicense.org/>
 /* context.c */
 extern void create_context(thread_t *);
 extern void context_initialize(void);
-extern void context_reset_page_cache(const VP, const VP);
-extern void context_reset_page_table(void);
 extern void context_switch(thread_t *, thread_t *);
 
 /* gate.c */
