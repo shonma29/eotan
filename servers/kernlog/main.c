@@ -24,16 +24,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
+#include <major.h>
 #include <services.h>
-#include <string.h>
-#include <syslog.h>
-#include <dev/device.h>
-#include <nerve/config.h>
 #include <nerve/kcall.h>
 #include <set/lf_queue.h>
 #include <set/ring.h>
-#include <sync.h>
 #include <libserv.h>
 #include "kernlog.h"
 
@@ -53,7 +48,6 @@ static ER_ID initialize(void);
 #if USE_MONITOR
 static ER monitor_initialize(void);
 static void monitor(void);
-static int write_cons(char *, const int, const off_t, const size_t);
 static unsigned int sleep(unsigned int);
 #endif
 
@@ -65,21 +59,21 @@ static ER check_param(const size_t size)
 	return E_OK;
 }
 
-static size_t lfcopy(char *outbuf, volatile lfq_t* q, const size_t size)
+static size_t lfcopy(char *outbuf, volatile lfq_t *q, const size_t size)
 {
 	size_t left;
 
 	for (left = size; left > 0; left--) {
-		int w;
+		wchar_t w;
 
 		if (lfq_dequeue(q, &w) != QUEUE_OK)
 			break;
 
-		*outbuf = (UB)(w & 0xff);
+		*outbuf = w & 0xff;
 		outbuf++;
 	}
 
-	return size - left;
+	return (size - left);
 }
 
 static size_t rcopy(char *outbuf, ring_t *r, const size_t size)
@@ -98,7 +92,7 @@ static size_t rcopy(char *outbuf, ring_t *r, const size_t size)
 		outbuf += len;
 	}
 
-	return size - left;
+	return (size - left);
 }
 
 static ssize_t read(char *outbuf, const int channel, const size_t size)
@@ -109,18 +103,15 @@ static ssize_t read(char *outbuf, const int channel, const size_t size)
 
 	switch (channel) {
 	case channel_kernlog:
-		return lfcopy(outbuf, (volatile lfq_t*)KERNEL_LOG_ADDR, size);
-
+		return lfcopy(outbuf, (volatile lfq_t *) KERNEL_LOG_ADDR, size);
 	case channel_syslog:
-		return rcopy(outbuf, (ring_t*)buf, size);
-
+		return rcopy(outbuf, (ring_t *) buf, size);
 	default:
 		return E_PAR;
 	}
 }
 
-static ssize_t write(const int priority, char *inbuf,
-		const size_t size)
+static ssize_t write(const int priority, char *inbuf, const size_t size)
 {
 	ER result = check_param(size);
 	if (result)
@@ -134,10 +125,10 @@ static ssize_t write(const int priority, char *inbuf,
 	char pri_msg[2] = {
 		'0' + ((priority > LOG_DEBUG) ? 9 : priority), ' '
 	};
-	if (ring_put((ring_t*)buf, pri_msg, sizeof(pri_msg)) < 0)
+	if (ring_put((ring_t *) buf, pri_msg, sizeof(pri_msg)) < 0)
 		return E_SYS;
 
-	result = ring_put((ring_t*)buf, inbuf, size);
+	result = ring_put((ring_t *) buf, inbuf, size);
 	if (result < 0)
 		return E_SYS;
 
@@ -159,14 +150,12 @@ static size_t execute(syslog_t *message)
 				- sizeof(message->Rread.data)
 				+ ((result > 0) ? message->Rread.count : 0);
 		break;
-
 	case Twrite:
 		result = write(message->Twrite.priority, message->Twrite.data,
 				message->Twrite.count);
 		message->Rwrite.count = result;
 		size = sizeof(message->Rwrite);
 		break;
-
 	default:
 		break;
 	}
@@ -194,19 +183,16 @@ static ER accept(const ID port)
 
 static ER_ID initialize(void)
 {
-	ER err;
-	T_CPOR pk_cpor = {
-			TA_TFIFO,
-			sizeof(syslog_t),
-			sizeof(syslog_t)
-	};
-
 	ring_create(buf, sizeof(buf));
 
-	err = kcall->ipc_open(&pk_cpor);
+	T_CPOR pk_cpor = {
+		TA_TFIFO,
+		sizeof(syslog_t),
+		sizeof(syslog_t)
+	};
+	ER err = kcall->ipc_open(&pk_cpor);
 	if (err) {
 		/*log_err(MYNAME ": open error=%d\n", err);*/
-
 		return err;
 	}
 
@@ -216,7 +202,6 @@ static ER_ID initialize(void)
 void start(VP_INT exinf)
 {
 	ER_ID port = initialize();
-
 	if (port >= 0) {
 		kcall->printk(MYNAME ": start port=%d\n", port);
 #if USE_MONITOR
@@ -238,7 +223,6 @@ static ER monitor_initialize(void)
 		TA_HLNG | TA_ACT, 0, monitor, pri_server_middle,
 		KTHREAD_STACK_SIZE, NULL, NULL, NULL
 	};
-
 	return kcall->thread_create_auto(&pk_ctsk);
 }
 
@@ -246,62 +230,28 @@ static void monitor(void)
 {
 	kcall->printk("monitor: start\n");
 
-	for (;;) {
-		if (sleep(1))
-			break;
+	for (vdriver_t *driver = NULL; !sleep(1);) {
+		if (!driver) {
+			device_info_t *info = device_find(
+					DEVICE_CONTROLLER_MONITOR);
+			if (info)
+				driver = (vdriver_t *) (info->driver);
+			else
+				continue;
+		}
 
 		char outbuf[1024];
 		for (size_t len;
 				(len  = lfcopy(outbuf,
-						(volatile lfq_t*)KERNEL_LOG_ADDR,
+						(volatile lfq_t *) KERNEL_LOG_ADDR,
 						sizeof(outbuf)));)
-			write_cons(outbuf, 1, 0, len);
+			driver->write(outbuf, 3, 0, len);
 
 		for (size_t len;
-				(len = rcopy(outbuf, (ring_t*)buf,
+				(len = rcopy(outbuf, (ring_t *) buf,
 						sizeof(outbuf)));)
-			write_cons(outbuf, 3, 0, len);
+			driver->write(outbuf, 1, 0, len);
 	}
-}
-
-//TODO use cons driver
-static int write_cons(char *inbuf, const int channel,
-		const off_t start, const size_t size)
-{
-	off_t rpos = 0;
-	off_t wpos = start;
-	size_t rest = size;
-
-	while (rest > 0) {
-		ER_UINT result;
-		size_t len = (rest < DEV_BUF_SIZE) ? rest : DEV_BUF_SIZE;
-		fsmsg_t packet;
-
-		packet.header.ident = IDENT;
-		packet.header.type = Twrite;
-		packet.Twrite.fid = channel;
-		packet.Twrite.offset = wpos;
-		packet.Twrite.count = len;
-		packet.Twrite.data = &(inbuf[rpos]);
-
-		result = kcall->ipc_call(PORT_CONSOLE, &packet,
-				MESSAGE_SIZE(Twrite));
-		if (result != MESSAGE_SIZE(Rwrite)) {
-			kcall->printk("cons: call failed(%d)\n", result);
-			return -1;
-		}
-
-		else if (packet.Rwrite.count != len) {
-			kcall->printk("cons: wrote incompletely\n");
-			return -1;
-		}
-
-		rpos += len;
-		wpos += len;
-		rest -= len;
-	}
-
-	return size;
 }
 
 //TODO extract to libserv
@@ -309,20 +259,14 @@ static unsigned int sleep(unsigned int second)
 {
 	struct timespec t = { second, 0 };
 	ER_UINT reply_size = kcall->ipc_call(PORT_TIMER, &t, sizeof(t));
-
 	if (reply_size == sizeof(ER)) {
-		ER *result = (ER*)&t;
-
+		ER *result = (ER *) &t;
 		switch (*result) {
 		case E_TMOUT:
 			return 0;
-
 		case E_PAR:
-			return second;
-
 		case E_NOMEM:
 			return second;
-
 		default:
 			break;
 		}
