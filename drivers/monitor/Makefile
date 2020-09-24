@@ -23,14 +23,15 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-DRIVERS = ramdisk srv monitor
+TARGET = $(WD)/monitor
 
-all: $(DRIVERS)
+include Makefile.in
 
-$(DRIVERS):
-	$(MAKE) -f drivers/$@/Makefile WD=drivers/$@
+ENTRY_ADDR = 0x80154000
+ENTRY_FUNC = attach
 
-clean:
-	$(SHELL) -ec 'for L in $(DRIVERS); do \
-		$(MAKE) -f drivers/$$L/Makefile WD=drivers/$$L clean; \
-		done'
+$(TARGET): $(OBJS) \
+		lib/libserv.a lib/libnc.a
+	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^ \
+		kernel/arch/libarch.a
+	$(STRIP) $@

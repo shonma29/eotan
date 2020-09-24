@@ -1,5 +1,5 @@
-#ifndef _DEV_DRIVERS_H_
-#define _DEV_DRIVERS_H_
+#ifndef __DRIVERS_MONITOR_H__
+#define __DRIVERS_MONITOR_H__
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,16 +26,21 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <console.h>
 #include <dev/device.h>
+#include <sys/types.h>
 
+#define MYNAME DEVICE_CONTROLLER_MONITOR
 
-static vdriver_t *(*drivers[])(system_info_t *) = {
-	// ramdisk
-	(vdriver_t *(*)(system_info_t *)) (0x80150000),
-	// srv
-	(vdriver_t *(*)(system_info_t *)) (0x80152000),
-	// monitor
-	(vdriver_t *(*)(system_info_t *)) (0x80154000)
-};
+#define MAX_WINDOW (4)
+
+extern Screen window[];
+extern Console *cns;
+
+extern int detach(void);
+extern int open(const char *);
+extern int close(const int);
+extern int read(char *, const int, const off_t, const size_t);
+extern int write(char *, const int, const off_t, const size_t);
 
 #endif

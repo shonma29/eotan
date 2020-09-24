@@ -1,5 +1,5 @@
-#ifndef _DEV_DRIVERS_H_
-#define _DEV_DRIVERS_H_
+#ifndef _DRIVERS_MONITOR_FONT_H_
+#define _DRIVERS_MONITOR_FONT_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,16 +26,23 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <dev/device.h>
+#include <limits.h>
+#include <screen.h>
 
+#define CHR_WIDTH (6)
+#define CHR_HEIGHT (12)
+#define MIN_CHAR (32)
+#define MAX_CHAR (126)
 
-static vdriver_t *(*drivers[])(system_info_t *) = {
-	// ramdisk
-	(vdriver_t *(*)(system_info_t *)) (0x80150000),
-	// srv
-	(vdriver_t *(*)(system_info_t *)) (0x80152000),
-	// monitor
-	(vdriver_t *(*)(system_info_t *)) (0x80154000)
+extern unsigned char monitor_default_font[];
+
+static Font default_font = {
+	CHR_WIDTH,
+	CHR_HEIGHT,
+	((CHR_WIDTH + CHAR_BIT - 1) / CHAR_BIT) * CHR_HEIGHT,
+	MIN_CHAR,
+	MAX_CHAR,
+	monitor_default_font
 };
 
 #endif
