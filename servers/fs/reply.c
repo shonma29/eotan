@@ -30,7 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "api.h"
 
 
-int reply(const int tag, const fsmsg_t *response, const size_t size)
+int reply(const int tag, fsmsg_t *response, const size_t size)
 {
 	response->header.ident = IDENT;
 	return (kcall->ipc_send(tag, (void*)response, size) ?

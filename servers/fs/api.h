@@ -58,7 +58,7 @@ static inline int unpack_tid(const fs_request *req)
 	return ((req->packet.header.token >> 16) & 0xffff);
 }
 
-extern int reply(const int, const fsmsg_t *, const size_t);
+extern int reply(const int, fsmsg_t *, const size_t);
 extern int reply_error(const int, const int, const int, const int);
 
 #endif
