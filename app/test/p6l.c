@@ -56,6 +56,7 @@ static int putline(const unsigned int start, const size_t size,
 		unsigned char *buf)
 {
 	fsmsg_t message;
+	message.header.ident = IDENT;
 	message.header.type = Twrite;
 	message.Twrite.fid = 4;
 	message.Twrite.offset = start;

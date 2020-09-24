@@ -206,6 +206,7 @@ static void execute(request_message_t *req)
 {
 	fsmsg_t *message = &(req->message);
 	if (message->header.ident != IDENT) {
+		message->header.ident = IDENT;
 //		message->header.token = message->head.token;
 		message->header.type = Rerror;
 		message->Rerror.tag = 0;

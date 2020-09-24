@@ -59,6 +59,7 @@ static int pset(const unsigned int x, const unsigned int y, const int color)
 	buf.color = color;
 
 	fsmsg_t message;
+	message.header.ident = IDENT;
 	message.header.type = Twrite;
 	message.Twrite.fid = 5;
 	message.Twrite.offset = 0;

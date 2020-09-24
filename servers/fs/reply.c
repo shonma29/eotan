@@ -32,6 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 
 int reply(const int tag, const fsmsg_t *response, const size_t size)
 {
+	response->header.ident = IDENT;
 	return (kcall->ipc_send(tag, (void*)response, size) ?
 			ECONNREFUSED : 0);
 }
@@ -40,8 +41,9 @@ int reply_error(const int ipc_tag, const int token, const int caller_tag,
 		const int error_no)
 {
 	fsmsg_t response;
-	response.header.token = (PORT_FS << 16) | (token & 0xffff);
+	response.header.ident = IDENT;
 	response.header.type = Rerror;
+	response.header.token = (PORT_FS << 16) | (token & 0xffff);
 	response.Rerror.tag = caller_tag;
 	response.Rerror.ename = error_no;
 
