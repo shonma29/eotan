@@ -37,6 +37,7 @@ For more information, please refer to <http://unlicense.org/>
 /* context.c */
 extern void create_context(thread_t *);
 extern void context_initialize(void);
+extern void context_release(const thread_t *);
 extern void context_switch(thread_t *, thread_t *);
 
 /* gate.c */

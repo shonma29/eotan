@@ -36,6 +36,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "tss.h"
 
 static VP current_page_table = NULL;
+static thread_t *fpu_holder = NULL;
 
 static void api_set_kernel_sp(const VP);
 static VP_INT *context_create_kernel(VP_INT *, const UW, const FP);
@@ -141,28 +142,31 @@ static VP_INT *context_create_user(VP_INT *sp, const UW eflags, const FP eip,
 	return sp;
 }
 
+void context_release(const thread_t *th)
+{
+	if (th == fpu_holder)
+		fpu_holder = NULL;
+}
+
 void context_switch(thread_t *prev, thread_t *next)
 {
-	if (!is_kthread(next))
+	if (!is_kthread(next)) {
 		if (next->mpu.cr3 != current_page_table) {
 			paging_set_directory(next->mpu.cr3);
 			current_page_table = next->mpu.cr3;
 			api_set_kernel_sp(next->attr.kstack_tail);
 		}
 
-	if (!is_kthread(prev))
-		fpu_save(&prev);
+		if (next != fpu_holder) {
+			if (fpu_holder)
+				fpu_save(&fpu_holder);
+
+			fpu_restore(&next);
+			fpu_holder = next;
+		}
+	}
 
 	stack_switch_wrapper(&(prev->mpu.esp0), &(next->mpu.esp0));
-
-	if (!is_kthread(prev))
-		fpu_restore(&prev);
-}
-
-void context_reset_page_table(void)
-{
-	paging_set_directory((VP) KTHREAD_DIR_ADDR);
-	current_page_table = NULL;
 }
 
 void create_context(thread_t *th)

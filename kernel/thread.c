@@ -233,6 +233,7 @@ ER thread_destroy(ID tskid)
 			break;
 		}
 
+		context_release(th);
 		release_resources(th);
 		node_t *node = tree_remove(&thread_tree, tskid);
 		if (node)

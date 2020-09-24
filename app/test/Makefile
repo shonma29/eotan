@@ -35,6 +35,7 @@ include Makefile.in
 # -march=$(ARCH) \
 # -I $(WD) -I include \
 # -DUSE_VESA \
+# -O0 \
 # -fno-asynchronous-unwind-tables
 
 ENTRY_ADDR = 0x00001000
