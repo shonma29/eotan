@@ -38,6 +38,9 @@ static noreturn void idle_start(VP_INT);
 
 void kern_start(void (*callback)(void))
 {
+	sysinfo->sync.state.interrupt_nest = 0;
+	sysinfo->sync.state.no_request = 1;
+	sysinfo->sync.state.serializing = 0;
 	sysinfo->delay_thread_start = false;
 
 	context_initialize();
