@@ -34,8 +34,6 @@ For more information, please refer to <http://unlicense.org/>
 #define INTERRUPT_QUEUE_SIZE (1024)
 #define REQUEST_QUEUE_SIZE (256)
 
-#define MAX_WINDOW (4)
-
 typedef struct _hmi_interrupt_t {
 	int type;
 	int data;
@@ -46,6 +44,7 @@ typedef struct _request_message_t {
 	fsmsg_t message;
 } request_message_t;
 
+extern device_info_t *info;
 extern void hmi_handle(const int, const int);
 
 #endif

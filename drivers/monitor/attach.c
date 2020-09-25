@@ -25,13 +25,18 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <major.h>
-#include <vesa.h>
 #include <dev/device.h>
 #include "../../lib/libserv/libserv.h"
-#include "font.h"
 #include "monitor.h"
 
-static vdriver_unit_t vesa = {
+#ifdef USE_VESA
+#include <vesa.h>
+#include "font.h"
+#else
+#include <cga.h>
+#endif
+
+static vdriver_unit_t monitor = {
 	{ NULL, NULL },
 	MYNAME,
 	window
@@ -55,17 +60,14 @@ static void console_initialize(void);
 const vdriver_t *attach(system_info_t *info)
 {
 	list_initialize(&(driver_mine.units));
-#ifdef USE_VESA
 	console_initialize();
-	list_append(&(driver_mine.units), &(vesa.bros));
+	list_append(&(driver_mine.units), &(monitor.bros));
 	return &driver_mine;
-#else
-	return NULL;
-#endif
 }
 
 static void console_initialize(void)
 {
+#ifdef USE_VESA
 	cns = getVesaConsole(&(window[0]), &default_font);
 	Screen *s = &(window[0]);
 	s->width /= 2;
@@ -113,4 +115,10 @@ static void console_initialize(void)
 	s->bgcolor.rgb.r = 0xfc;
 	cns->cls(s);
 	cns->locate(s, 0, 0);
+#else
+	cns = getCgaConsole(&(window[0]),
+			(const uint16_t *) kern_p2v((void *) CGA_VRAM_ADDR));
+	cns->cls(&(window[0]));
+	cns->locate(&(window[0]), 0, 0);
+#endif
 }

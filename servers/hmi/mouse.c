@@ -25,11 +25,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#ifdef USE_VESA
-#include <vesa.h>
-#else
-#include <cga.h>
-#endif
 #include <core/packets.h>
 #include <mpu/memory.h>
 #include "../../kernel/arch/8259a.h"
@@ -37,33 +32,40 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../lib/libserv/libserv.h"
 #include "mouse.h"
 
-static W width;
-static W height;
-static W x;
-static W y;
-static W buttons;
+#ifdef USE_VESA
+#include <vesa.h>
+#else
+#include <cga.h>
+#endif
 
+static int width;
+static int height;
+static int x;
+static int y;
+static int buttons;
+
+#ifdef USE_VESA
 extern void pset(Screen *s, unsigned int x, unsigned int y, int color);
-extern Screen window[];
+#endif
 
 void mouse_process(const int type, const int d)
 {
-	int dx, dy;
+	buttons = (uint8_t) ((d >> 16) & 0x07);
 
-	buttons = (UB)((d >> 16) & 0x07);
-
-	dx = (UB)((d >> 8) & 0xff);
+	int dx = (uint8_t) ((d >> 8) & 0xff);
 	if (d & 0x100000)
 		dx |= 0xffffff00;
+
 	x += dx;
 	if (x < 0)
 		x = 0;
 	else if (x >= width)
 		x = width - 1;
 
-	dy = (UB)(d & 0xff);
+	int dy = (uint8_t) (d & 0xff);
 	if (d & 0x200000)
 		dy |= 0xffffff00;
+
 	y -= dy;
 	if (y < 0)
 		y = 0;
@@ -71,18 +73,18 @@ void mouse_process(const int type, const int d)
 		y = height - 1;
 #ifdef USE_VESA
 	if (buttons & 1)
-		pset(&(window[0]), x, y, 0xff0000);
+		pset((Screen *) (info->unit), x, y, 0xff0000);
 	else if (buttons & 2)
-		pset(&(window[0]), x, y, 0x00ff00);
+		pset((Screen *) (info->unit), x, y, 0x00ff00);
 	else if (buttons & 4)
-		pset(&(window[0]), x, y, 0xffff00);
+		pset((Screen *) (info->unit), x, y, 0xffff00);
 #endif
 }
 
 ER mouse_initialize(void)
 {
 #ifdef USE_VESA
-	VesaInfo *v = (VesaInfo*)kern_p2v((void*)VESA_INFO_ADDR);
+	VesaInfo *v = (VesaInfo *) kern_p2v((void *) VESA_INFO_ADDR);
 	width = v->width;
 	height = v->height;
 #else
@@ -105,7 +107,7 @@ ER mouse_initialize(void)
 		return id;
 	}
 
-	W result = enable_interrupt(ir_mouse);
+	int result = enable_interrupt(ir_mouse);
 	if (result) {
 		log_err("mouse: enable error=%d\n", result);
 		destroy_isr(id);

@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <console.h>
 #include <errno.h>
 #include <event.h>
+#include <major.h>
 #include <services.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -45,18 +46,10 @@ For more information, please refer to <http://unlicense.org/>
 #include "keyboard.h"
 #include "mouse.h"
 
-#ifdef USE_VESA
-#include <vesa.h>
-#include "font.h"
-
-extern void put(Screen *, const unsigned int, const size_t, const char *);
-extern void pset(Screen *, unsigned int, unsigned int, int);
-#else
-#include <cga.h>
-#endif
+device_info_t *info;
+static vdriver_t *driver;
 
 static char line[4096];
-Screen window[MAX_WINDOW];
 static ER_ID receiver_tid = 0;
 //static ER_ID hmi_tid = 0;
 static request_message_t *current_req = NULL;
@@ -74,7 +67,11 @@ volatile lfq_t hmi_queue;
 static char int_buf[
 		lfq_buf_size(sizeof(hmi_interrupt_t), INTERRUPT_QUEUE_SIZE)
 ];
-static Console *cns;
+
+#ifdef USE_VESA
+extern void put(Screen *, const unsigned int, const size_t, const char *);
+extern void pset(Screen *, unsigned int, unsigned int, int);
+#endif
 
 static void process(const int);
 static ER check_param(const UW, const UW);
@@ -163,7 +160,7 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 	switch (dd) {
 #ifdef USE_VESA
 	case 4:
-		put(&(window[0]), start, size, inbuf);
+		put((Screen *) (info->unit), start, size, inbuf);
 		break;
 	case 5:
 		if (size != sizeof(int) * 3)
@@ -172,19 +169,14 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 			unsigned int x = ((int *) inbuf)[0];
 			unsigned int y = ((int *) inbuf)[1];
 			int color = ((int *) inbuf)[2];
-			pset(&(window[0]), x, y, color);
+			pset((Screen *) (info->unit), x, y, color);
 		}
 		break;
 	default:
-		if (dd >= sizeof(window) / sizeof(window[0]))
-			return E_PAR;
-
-		for (int i = 0; i < size; i++)
-			cns->putc(&(window[dd]), inbuf[i]);
+		driver->write((char *) inbuf, dd, 0, size);
 #else
 	default:
-		for (int i = 0; i < size; i++)
-			cns->putc(&(window[0]), inbuf[i]);
+		driver->write((char *) inbuf, 0, 0, size);
 #endif
 		break;
 	}
@@ -340,58 +332,10 @@ static ER initialize(void)
 		request_message_t *p = &(requests[i]);
 		lfq_enqueue(&unused_queue, &p);
 	}
-#ifdef USE_VESA
-	cns = getVesaConsole(&(window[0]), &default_font);
-	Screen *s = &(window[0]);
-	s->width /= 2;
-	s->height /= 2;
-	s->chr_width = s->width / s->font.width;
-	s->chr_height = s->height / s->font.height;
 
-	window[1] = window[0];
-	s = &(window[1]);
-	s->base += s->width * 3;
-	s->p = (uint8_t *) (s->base);
-	s->fgcolor.rgb.b = 31;
-	s->fgcolor.rgb.g = 223;
-	s->fgcolor.rgb.r = 0;
-	s->bgcolor.rgb.b = 0;
-	s->bgcolor.rgb.g = 31;
-	s->bgcolor.rgb.r = 0;
-	cns->cls(s);
-	cns->locate(s, 0, 0);
-
-	window[2] = window[0];
-	s = &(window[2]);
-	s->base += s->height * s->bpl;
-	s->p = (uint8_t *) (s->base);
-	s->fgcolor.rgb.b = 0;
-	s->fgcolor.rgb.g = 127;
-	s->fgcolor.rgb.r = 255;
-	s->bgcolor.rgb.b = 0;
-	s->bgcolor.rgb.g = 0;
-	s->bgcolor.rgb.r = 31;
-	cns->cls(s);
-	cns->locate(s, 0, 0);
-
-	window[3] = window[0];
-	s = &(window[3]);
-	s->base += s->height * s->bpl + s->width * 3;
-	s->p = (uint8_t *) (s->base);
-	s->fgcolor.rgb.b = 0x30;
-	s->fgcolor.rgb.g = 0x30;
-	s->fgcolor.rgb.r = 0x30;
-	s->bgcolor.rgb.b = 0xfc;
-	s->bgcolor.rgb.g = 0xfc;
-	s->bgcolor.rgb.r = 0xfc;
-	cns->cls(s);
-	cns->locate(s, 0, 0);
-#else
-	cns = getCgaConsole(&(window[0]),
-			(const UH *) kern_p2v((void *) CGA_VRAM_ADDR));
-#endif
-	cns->cls(&(window[0]));
-	cns->locate(&(window[0]), 0, 0);
+	info = device_find(DEVICE_CONTROLLER_MONITOR);
+	if (info)
+		driver = (vdriver_t *) (info->driver);
 //TODO create mutex
 	T_CPOR pk_cpor = {
 		TA_TFIFO,
