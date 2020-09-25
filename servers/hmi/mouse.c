@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../kernel/arch/8259a.h"
 #include "../../kernel/arch/archfunc.h"
 #include "../../lib/libserv/libserv.h"
+#include "hmi.h"
 #include "mouse.h"
 
 #ifdef USE_VESA

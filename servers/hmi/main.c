@@ -33,7 +33,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
-#include <dev/device.h>
 #include <fs/protocol.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
