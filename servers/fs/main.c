@@ -48,7 +48,6 @@ static ID worker_id;
 static slab_t request_slab;
 static volatile lfq_t req_queue;
 static char req_buf[lfq_buf_size(sizeof(fs_request *), MAX_REQUEST)];
-static srv_unit_t unit;
 static struct fs_func func_table[] = {
 	{ if_attach, MESSAGE_SIZE(Tattach) },
 	{ if_walk, MESSAGE_SIZE(Twalk) },
@@ -128,13 +127,6 @@ static ER_ID worker_initialize(void)
 
 	lfq_initialize(&req_queue, req_buf, sizeof(fs_request *), MAX_REQUEST);
 
-	const char *server = DEVICE_CONTROLLER_SERVER;
-	device_info_t *info = device_find(server);
-	if (!info) {
-		log_err(MYNAME ": not found %s\n", server);
-		return (-1);
-	}
-
 	T_CTSK pk_ctsk = {
 		TA_HLNG | TA_ACT,
 		(VP_INT) NULL,
@@ -145,20 +137,7 @@ static ER_ID worker_initialize(void)
 		NULL,
 		NULL
 	};
-	int thread_id = kcall->thread_create_auto(&pk_ctsk);
-	if (thread_id >= 0) {
-		unit.name = MYNAME;
-		unit.queue = &req_queue;
-		unit.thread_id = thread_id;
-		if (info->driver->create(&unit)) {
-			log_err(MYNAME ": cannot create in %s\n", server);
-			kcall->thread_destroy(worker_id);
-			return (-1);
-		} else
-			log_info(MYNAME ": created in %s\n", server);
-	}
-
-	return thread_id;
+	return kcall->thread_create_auto(&pk_ctsk);
 }
 
 static void worker(void)

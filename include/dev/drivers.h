@@ -32,8 +32,6 @@ For more information, please refer to <http://unlicense.org/>
 static vdriver_t *(*drivers[])(system_info_t *) = {
 	// ramdisk
 	(vdriver_t *(*)(system_info_t *)) (0x80150000),
-	// srv
-	(vdriver_t *(*)(system_info_t *)) (0x80152000),
 	// monitor
 	(vdriver_t *(*)(system_info_t *)) (0x80154000)
 };
