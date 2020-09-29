@@ -24,14 +24,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <event.h>
-#include <major.h>
 #include <services.h>
-#include <dev/units.h>
-#include <fs/config.h>
 #include <nerve/global.h>
 #include <nerve/kcall.h>
-#include <set/lf_queue.h>
 #include <sys/errno.h>
 #include "api.h"
 #include "fs.h"
@@ -43,11 +38,6 @@ struct fs_func {
 	size_t max;
 };
 
-static ID receiver_id;
-static ID worker_id;
-static slab_t request_slab;
-static volatile lfq_t req_queue;
-static char req_buf[lfq_buf_size(sizeof(fs_request *), MAX_REQUEST)];
 static struct fs_func func_table[] = {
 	{ if_attach, MESSAGE_SIZE(Tattach) },
 	{ if_walk, MESSAGE_SIZE(Twalk) },
@@ -62,9 +52,9 @@ static struct fs_func func_table[] = {
 };
 #define NUM_OF_FUNC (sizeof(func_table) / sizeof(func_table[0]))
 
+static fs_request req;
+
 static int initialize(void);
-static ER_ID worker_initialize(void);
-static void worker(void);
 
 
 static int initialize(void)
@@ -83,23 +73,6 @@ static int initialize(void)
 	log_info(MYNAME ": fs_mount(%s, %d)\n",
 			sysinfo->root.device, sysinfo->root.fstype);
 
-	receiver_id = kcall->thread_get_id();
-	T_CMTX pk_cmtx = {
-		TA_CEILING,
-		pri_server_high
-	};
-	result = kcall->mutex_create(receiver_id, &pk_cmtx);
-	if (result) {
-		log_err(MYNAME ": mutex_create failed %d\n", result);
-		return -1;
-	}
-
-	worker_id = worker_initialize();
-	if (worker_id < 0) {
-		log_err(MYNAME ": worker_initialize failed %d\n", worker_id);
-		return -1;
-	}
-
 	struct t_cpor pk_cpor = {
 		TA_TFIFO,
 		sizeof(fsmsg_t),
@@ -114,60 +87,6 @@ static int initialize(void)
 	return 0;
 }
 
-static ER_ID worker_initialize(void)
-{
-	request_slab.unit_size = sizeof(fs_request);
-	request_slab.block_size = PAGE_SIZE;
-	request_slab.min_block = 1;
-	request_slab.max_block = slab_max_block(MAX_REQUEST, PAGE_SIZE,
-			sizeof(fs_request));
-	request_slab.palloc = kcall->palloc;
-	request_slab.pfree = kcall->pfree;
-	slab_create(&request_slab);
-
-	lfq_initialize(&req_queue, req_buf, sizeof(fs_request *), MAX_REQUEST);
-
-	T_CTSK pk_ctsk = {
-		TA_HLNG | TA_ACT,
-		(VP_INT) NULL,
-		(FP) worker,
-		pri_server_middle,
-		KTHREAD_STACK_SIZE,
-		NULL,
-		NULL,
-		NULL
-	};
-	return kcall->thread_create_auto(&pk_ctsk);
-}
-
-static void worker(void)
-{
-	for (;;) {
-		fs_request *req;
-		if (lfq_dequeue(&req_queue, &req) == QUEUE_OK) {
-			func_table[req->packet.header.type].call(req);
-			kcall->mutex_lock(receiver_id, TMO_FEVR);
-			slab_free(&request_slab, req);
-			kcall->mutex_unlock(receiver_id);
-			kcall->ipc_notify(receiver_id, EVENT_SERVICE);
-		} else
-			kcall->ipc_listen();
-	}
-}
-
-static int worker_enqueue(fs_request **req)
-{
-	 if (lfq_enqueue(&req_queue, req) == QUEUE_OK) {
-		kcall->ipc_notify(worker_id, EVENT_SERVICE);
-		kcall->mutex_lock(receiver_id, TMO_FEVR);
-		*req = slab_alloc(&request_slab);
-		kcall->mutex_unlock(receiver_id);
-		return 0;
-	}
-
-	return ENOMEM;
-}
-
 void start(VP_INT exinf)
 {
 	if (initialize()) {
@@ -177,53 +96,46 @@ void start(VP_INT exinf)
 
 	log_info(MYNAME ": start\n");
 
-	for (fs_request *req = slab_alloc(&request_slab);;) {
-		if (!req) {
-			kcall->ipc_listen();
-			kcall->mutex_lock(receiver_id, TMO_FEVR);
-			req = slab_alloc(&request_slab);
-			kcall->mutex_unlock(receiver_id);
-			continue;
-		}
-
-		ER_UINT size = kcall->ipc_receive(PORT_FS, &(req->tag),
-				&(req->packet));
+	for (;;) {
+		ER_UINT size = kcall->ipc_receive(PORT_FS, &(req.tag),
+				&(req.packet));
 		if (size < 0) {
 			log_err(MYNAME ": receive failed %d\n", size);
 			continue;
 		}
 
-		if (size < sizeof(req->packet.header)) {
+		if (size < sizeof(req.packet.header)) {
 			//TODO what is tag?
-			reply_error(req->tag, 0, 0, EPROTO);
+			reply_error(req.tag, 0, 0, EPROTO);
 			continue;
 		}
 /*
 		//TODO validate session
-		pid_t pid = thread_find(unpack_tid(req));
+		pid_t pid = thread_find(unpack_tid(&req));
 		if (pid == -1) {
 			log_err(MYNAME ": find failed %d\n", pid);
 			//TODO what to do?
-			reply2(req->tag, EINVAL, -1, 0);
+			reply2(req.tag, EINVAL, -1, 0);
 			continue;
 		}
 */
 
 		int result;
-		if (req->packet.header.ident != IDENT)
+		if (req.packet.header.ident != IDENT)
 			result = EPROTO;
-		else if (req->packet.header.type >= NUM_OF_FUNC)
+		else if (req.packet.header.type >= NUM_OF_FUNC)
 			result = ENOTSUP;
 		else {
-			if (size == func_table[req->packet.header.type].max)
-				result = worker_enqueue(&req);
-			else
+			if (size == func_table[req.packet.header.type].max) {
+				func_table[req.packet.header.type].call(&req);
+				result = 0;
+			} else
 				result = EPROTO;
 		}
 
 		if (result)
 			//TODO what is tag?
-			reply_error(req->tag, req->packet.header.token, 0,
+			reply_error(req.tag, req.packet.header.token, 0,
 					result);
 	}
 }
