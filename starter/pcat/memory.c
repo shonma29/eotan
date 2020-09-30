@@ -77,7 +77,9 @@ void memory_initialize(void)
 			pages(CORE_STACK_SIZE));
 	/* keep runner and modules */
 	map_set_using(kern_v2p((void *) BOOT_ADDR),
-			pages((uintptr_t) set_modules() - MODULES_ADDR) + 1);
+			pages((uintptr_t) set_modules()
+					- (uintptr_t) kern_v2p(
+							(void *) BOOT_ADDR)));
 #ifdef DEBUG
 	map_print();
 #endif
