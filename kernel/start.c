@@ -86,6 +86,8 @@ static noreturn void idle_start(VP_INT exinf)
 	void (*callback)(void) = (void (*)(void)) exinf;
 	callback();
 
+	//TODO ugly. boot codes were released while di
+	ei();
 	for (;;)
 		halt();
 }
