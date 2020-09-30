@@ -24,9 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <elf.h>
 #include <major.h>
-#include <stddef.h>
 #include <string.h>
 #include <arch/archfunc.h>
 #include <fs/fstype.h>
@@ -41,18 +39,17 @@ For more information, please refer to <http://unlicense.org/>
 static MemoryMap *mm = &(sysinfo->memory_map);
 
 extern int printk(const char *, ...);
-extern int decode(unsigned char *, const size_t);
+extern int decode(void *, void *, const size_t, const size_t);
 
-static int map_initialize(const size_t pages);
-int map_set_using(const void *addr, const size_t pages);
+static int map_initialize(const size_t);
+int map_set_using(const void *, const size_t);
 #ifdef DEBUG
 static void map_print(void);
 #endif
 
 static void *set_modules(void);
-static size_t dup_module(char **to, Elf32_Ehdr *eHdr);
 static void initialize_initrd_info(void);
-static void set_initrd_info(void);
+static void set_initrd_info(const ModuleHeader *);
 
 
 void memory_initialize(void)
@@ -67,19 +64,20 @@ void memory_initialize(void)
 			mm->clock_block, mm->num_blocks);
 
 	/* keep boot infomation */
-	map_set_using(kern_v2p((void*)BOOT_INFO_ADDR), 1);
+	map_set_using(kern_v2p((void *) BOOT_INFO_ADDR), 1);
 	/* keep memory map */
 	map_set_using(kern_v2p(mm->map),
 			pages(mm->num_blocks * sizeof(mm->map[0])));
 	/* keep kernel log */
-	map_set_using(kern_v2p((void*)KERNEL_LOG_ADDR), pages(KERNEL_LOG_SIZE));
+	map_set_using(kern_v2p((void *) KERNEL_LOG_ADDR),
+			pages(KERNEL_LOG_SIZE));
 
 	/* keep kernel stack */
-	map_set_using(kern_v2p((void*)(CORE_STACK_ADDR - CORE_STACK_SIZE)),
+	map_set_using(kern_v2p((void *) (CORE_STACK_ADDR - CORE_STACK_SIZE)),
 			pages(CORE_STACK_SIZE));
 	/* keep runner and modules */
-	map_set_using(kern_v2p((void*)BOOT_ADDR),
-			pages((unsigned int)set_modules() - MODULES_ADDR) + 1);
+	map_set_using(kern_v2p((void *) BOOT_ADDR),
+			pages((uintptr_t) set_modules() - MODULES_ADDR) + 1);
 #ifdef DEBUG
 	map_print();
 #endif
@@ -91,7 +89,7 @@ static int map_initialize(const size_t pages)
 	mm->clock_block = 0;
 	mm->num_blocks = (mm->rest_pages + INT_BIT - 1) >> MPU_LOG_INT;
 	mm->max_pages = mm->rest_pages;
-	mm->map = (unsigned int*)MEMORY_MAP_ADDR;
+	mm->map = (unsigned int *) MEMORY_MAP_ADDR;
 
 	unsigned int i;
 	for (i = 0; i < mm->num_blocks; i++)
@@ -112,7 +110,7 @@ int map_set_using(const void *addr, const size_t pages)
 	if (!pages)
 		return E_PAR;
 
-	unsigned int i = (unsigned int)addr >> BITS_OFFSET;
+	unsigned int i = (uintptr_t) addr >> BITS_OFFSET;
 	if (i >= mm->max_pages)
 		return E_PAR;
 
@@ -166,80 +164,38 @@ static void *set_modules(void)
 {
 	initialize_initrd_info();
 
-	ModuleHeader *h = (ModuleHeader*)MODULES_ADDR;
-	for (int i = 0; h->type != mod_end; i++) {
-		printk("module type=%x length=%x bytes=%x zBytes=%x\n",
-				h->type, h->length, h->bytes, h->zBytes);
+	ModuleHeader *h = (ModuleHeader *) MODULES_ADDR;
+	while (h->type != mod_end) {
+		printk("module type=%x length=%x bytes=%x\n",
+				h->type, h->length, h->bytes);
 
 		switch (h->type) {
 		case mod_kernel:
 		case mod_driver:
 		case mod_server:
-		{
-			Elf32_Ehdr *eHdr = (Elf32_Ehdr*)&(h[1]);
-			char *to = NULL;
-			size_t size = dup_module(&to, eHdr);
-			if (size)
-				map_set_using(kern_v2p(to), pages(size));
-		}
-			break;
 		case mod_initrd:
 		{
-			int result = decode((unsigned char*)&(h[1]), h->bytes);
+			int result = decode(h->address, &(h[1]), h->bytes,
+					h->pages * PAGE_SIZE);
 			if (result)
-				printk("failed to decode initrd %d\n", result);
+				printk("failed to decode module %d\n", result);
 			else {
-				set_initrd_info();
-				map_set_using(kern_v2p((void*)INITRD_ADDR),
-						pages(INITRD_SIZE));
+				if (h->type == mod_initrd)
+					set_initrd_info(h);
+
+				map_set_using(kern_v2p(h->address), h->pages);
 			}
 		}
 			break;
-		case mod_user:
 		default:
 			break;
 		}
 
-		unsigned int addr = (unsigned int)h + sizeof(*h) + h->length;
-		h = (ModuleHeader*)addr;
+		h = (ModuleHeader *) ((uintptr_t) h + sizeof(*h) + h->length);
 	}
 
 	//TODO driver and initrd headers are not needed
-	return (void*)((unsigned int)h + sizeof(*h));
-}
-
-static size_t dup_module(char **to, Elf32_Ehdr *eHdr)
-{
-	size_t size = 0;
-
-	if (!isValidModule(eHdr))
-		panic("bad ELF");
-
-	char *p = (char*)eHdr;
-	Elf32_Phdr *pHdr = (Elf32_Phdr*)&(p[eHdr->e_phoff]);
-	for (int i = 0; i < eHdr->e_phnum; pHdr++, i++) {
-#ifdef DEBUG
-		printk("t=%d o=%p v=%p p=%p"
-				", f=%d, m=%d\n",
-				pHdr->p_type, pHdr->p_offset,
-				pHdr->p_vaddr, pHdr->p_paddr,
-				pHdr->p_filesz, pHdr->p_memsz);
-#endif
-		if (pHdr->p_type != PT_LOAD)
-			continue;
-
-		char *w = (char*)(pHdr->p_vaddr);
-		if (!i)
-			*to = w;
-
-		char *r = (char*)eHdr + pHdr->p_offset;
-		//TODO fill a gap with zero
-		memcpy(w, r, pHdr->p_filesz);
-		memset(w + pHdr->p_filesz, 0, pHdr->p_memsz - pHdr->p_filesz);
-		size = pHdr->p_vaddr - (unsigned int)(*to) + pHdr->p_memsz;
-	}
-
-	return size;
+	return (void *) ((uintptr_t) h + sizeof(*h));
 }
 
 static void initialize_initrd_info(void)
@@ -252,12 +208,12 @@ static void initialize_initrd_info(void)
 	info->initrd.size = 0;
 }
 
-static void set_initrd_info(void)
+static void set_initrd_info(const ModuleHeader *header)
 {
 	system_info_t *info = kern_v2p(sysinfo);
 	strcpy(info->root.device, DEVICE_CONTROLLER_RAMDISK0);
 	info->root.fstype = INITRD_FS;
 	info->root.block_size = INITRD_BLOCK_SIZE;
-	info->initrd.address = (void *) INITRD_ADDR;
-	info->initrd.size = INITRD_SIZE;
+	info->initrd.address = header->address;
+	info->initrd.size = header->pages * PAGE_SIZE;
 }

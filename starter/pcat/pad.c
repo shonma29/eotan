@@ -26,7 +26,6 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <sys/stat.h>
 #include <errno.h>
 
@@ -36,62 +35,60 @@ For more information, please refer to <http://unlicense.org/>
 
 #define HELP "usage:\n\tpad filename size\n"
 
-static int pad(const char *fileName, const int blkSize);
+static int pad(const char *, const unsigned int);
 
 
 int main(int argc, char **argv)
 {
-	if (argc == 3)	return pad(argv[1], atoi(argv[2]));
-	else {
-		fprintf(stderr, HELP);
-		return ERR_ARG;
+	if (argc == 3) {
+		int block_size = atoi(argv[2]);
+		if (block_size > 0)
+			return pad(argv[1], block_size);
 	}
+
+	fprintf(stderr, HELP);
+	return ERR_ARG;
 }
 
-static int pad(const char *fileName, const int blkSize)
+static int pad(const char *file_name, const unsigned int block_size)
 {
-	int ret = ERR_OK;
+	int result = ERR_OK;
 	FILE *fp = NULL;
 
 	do {
 		struct stat buf;
-		size_t size;
-
-		/* get file size */
-		if (stat(fileName, &buf)) {
+		if (stat(file_name, &buf)) {
 			fprintf(stderr, "%s cannot stat(%d)\n",
-					fileName, errno);
-			ret = ERR_FILE;
+					file_name, errno);
+			result = ERR_FILE;
 			break;
 		}
 
-		/* not need padding */
-		if (!(size = (buf.st_size % blkSize)))	break;
+		size_t gap = buf.st_size % block_size;
+		if (!gap)
+			break;
 
-		fp = fopen(fileName, "a");
+		fp = fopen(file_name, "a");
 		if (!fp) {
 			fprintf(stderr, "%s cannot open(%d)\n",
-					fileName, errno);
-			ret = ERR_FILE;
+					file_name, errno);
+			result = ERR_FILE;
 			break;
 		}
 
-		for (size = blkSize - size; size > 0; size--) {
+		for (gap = block_size - gap; gap > 0; gap--)
 			if (fputc(0, fp) == EOF) {
 				fprintf(stderr, "%s cannot write(%d)\n",
-						fileName, errno);
-				ret = ERR_FILE;
+						file_name, errno);
+				result = ERR_FILE;
 				break;
 			}
-		}
 	} while (0);
 
-	if (fp) {
-		if (fclose(fp)) {
+	if (fp)
+		if (fclose(fp))
 			fprintf(stderr, "%s cannot close(%d)\n",
-					fileName, errno);
-		}
-	}
+					file_name, errno);
 
-	return ret;
+	return result;
 }

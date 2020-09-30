@@ -32,19 +32,17 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 #include <starter/modules.h>
 
-static ER run_module(const enum ModuleType type, const int tid,
-		const Elf32_Ehdr *eHdr);
-static void release_pages(const void *head, const void *end);
+static ER run_module(const int, const void *);
+static void release_pages(const void *, const void *);
 
 
 void _start(void)
 {
-	ModuleHeader *h = (ModuleHeader*)(kern_p2v((void*)MODULES_ADDR));
-
+	ModuleHeader *h = (ModuleHeader *) (kern_p2v((void *) MODULES_ADDR));
 	while (h->type != mod_end) {
 		switch (h->type) {
 		case mod_server:
-			run_module(h->type, h->arg, (Elf32_Ehdr*)&(h[1]));
+			run_module(h->arg, h->entry);
 			break;
 		default:
 //TODO set device names
@@ -54,24 +52,21 @@ void _start(void)
 			break;
 		}
 
-		h = (ModuleHeader*)((unsigned int)h + sizeof(*h) + h->length);
+		h = (ModuleHeader *) ((uintptr_t) h + sizeof(*h) + h->length);
 	}
 
 	di();
-	release_pages((void*)(CORE_STACK_ADDR - CORE_STACK_SIZE),
-			(void*)CORE_STACK_ADDR);
-	release_pages((void*)BOOT_ADDR,
-			(void*)((unsigned int)h + sizeof(*h)));
-	ei();
+	release_pages((void *) (CORE_STACK_ADDR - CORE_STACK_SIZE),
+			(void *) CORE_STACK_ADDR);
+	release_pages((void *) BOOT_ADDR, (void *) ((uintptr_t) h + sizeof(*h)));
 }
 
-static ER run_module(const enum ModuleType type, const int tid,
-		const Elf32_Ehdr *eHdr)
+static ER run_module(const int tid, const void *entry)
 {
 	T_CTSK pk_ctsk = {
 		TA_HLNG | TA_ACT,
-		(VP_INT)NULL,
-		(FP)(eHdr->e_entry),
+		(VP_INT) NULL,
+		(FP) entry,
 		pri_server_middle,
 		KTHREAD_STACK_SIZE,
 		NULL,
@@ -88,13 +83,13 @@ static ER run_module(const enum ModuleType type, const int tid,
 
 static void release_pages(const void *head, const void *end)
 {
-	unsigned int addr = (unsigned int)head & ~((1 << BITS_OFFSET) - 1);
-	size_t max = pages((unsigned int)end - addr);
+	uintptr_t addr = (uintptr_t) head & ~((1 << BITS_OFFSET) - 1);
+	size_t max = pages((uintptr_t) end - addr);
 
-	kcall->printk("release addr=%p pages=%d\n", addr, max);
+	kcall->printk("release addr=%p pages=%d\n", (void *) addr, max);
 
 	for (int i = 0; i < max; i++) {
-		kcall->pfree((void*)addr);
+		kcall->pfree((void *) addr);
 		addr += PAGE_SIZE;
 	}
 }

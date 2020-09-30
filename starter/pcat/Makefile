@@ -41,7 +41,7 @@ BOOT_SIZE = 4096
 BIN_SIZE = `echo "$(STARTER_SIZE) + $(BOOT_SIZE)" | bc`
 MAX_KERNEL = `echo "(640 - 32 - 20 - 4) * 1024" | bc`
 
-OBJS = build/boot.img $(WD)/pad $(WD)/append \
+OBJS = build/boot.img $(WD)/pad $(WD)/append $(WD)/elf2module \
 	$(WD)/loader $(WD)/loader.o $(WD)/loader.inc \
 	$(WD)/kernel.img \
 	$(WD)/starter.bin $(WD)/starter $(WD)/protect.o $(WD)/starter.o \
@@ -89,9 +89,12 @@ $(WD)/pad: $(WD)/pad.c
 	$(CC) -o $@ $^
 
 $(WD)/append: $(WD)/append.c
+	$(CC) -o $@ $^ lib/libnc.a lib/librc.a
+
+$(WD)/elf2module: $(WD)/elf2module.c
 	$(CC) -o $@ $^ lib/libnc.a
 
-$(WD)/kernel.img: $(WD)/append \
+$(WD)/kernel.img: $(WD)/append $(WD)/elf2module \
 		$(WD)/starter.bin kernel/core.bin \
 		servers/kernlog/kernlog \
 		servers/interrupt/interrupt \
@@ -103,18 +106,18 @@ $(WD)/kernel.img: $(WD)/append \
 		drivers/ramdisk/ramdisk \
 		drivers/srv/srv \
 		drivers/monitor/monitor \
-		initrd.img.rc
+		initrd.img
 	[ `wc -c < $(WD)/starter.bin` -le $(BIN_SIZE) ]
 	cp $(WD)/starter.bin $@
-	$(WD)/append 1 kernel/core.bin 4 >> $@
-	$(WD)/append 3 servers/interrupt/interrupt 4 3 >> $@
-	$(WD)/append 3 servers/timer/timer 4 4 >> $@
-	$(WD)/append 3 servers/kernlog/kernlog 4 5 >> $@
-	$(WD)/append 3 servers/dev/dev 4 6 >> $@
-	$(WD)/append 3 servers/hmi/hmi 4 9 >> $@
-	$(WD)/append 3 servers/fs/fs 4 8 >> $@
-	$(WD)/append 3 servers/mm/mm 4 7 >> $@
-	$(WD)/append 2 drivers/ramdisk/ramdisk 4 >> $@
-	$(WD)/append 2 drivers/monitor/monitor 4 >> $@
-	$(WD)/append 5 initrd.img.rc 4 >> $@
-	$(WD)/append 0 >> $@
+	$(WD)/elf2module kernel/core.bin | $(WD)/append $@ 1
+	$(WD)/elf2module servers/interrupt/interrupt | $(WD)/append $@ 3 3
+	$(WD)/elf2module servers/timer/timer | $(WD)/append $@ 3 4
+	$(WD)/elf2module servers/kernlog/kernlog | $(WD)/append $@ 3 5
+	$(WD)/elf2module servers/dev/dev | $(WD)/append $@ 3 6
+	$(WD)/elf2module servers/hmi/hmi | $(WD)/append $@ 3 9
+	$(WD)/elf2module servers/fs/fs | $(WD)/append $@ 3 8
+	$(WD)/elf2module servers/mm/mm | $(WD)/append $@ 3 7
+	$(WD)/elf2module drivers/ramdisk/ramdisk | $(WD)/append $@ 2
+	$(WD)/elf2module drivers/monitor/monitor | $(WD)/append $@ 2
+	cat initrd.img | $(WD)/append $@ 5
+	$(WD)/append $@ 0

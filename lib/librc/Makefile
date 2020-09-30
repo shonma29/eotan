@@ -23,7 +23,7 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = $(WD).a $(WD)/encode $(WD)/decode
+TARGET = $(WD).a
 
 include Makefile.in
 
@@ -33,9 +33,3 @@ $(WD).a: $(WD)/drc_common.o $(WD)/drc_encode.o $(WD)/drc_decode.o \
 		$(WD)/bit_common.o $(WD)/bit_encode.o \
 		$(WD)/bit_decode.o $(WD)/zle_encode.o $(WD)/zle_decode.o
 	$(AR) rsv $@ $?
-
-$(WD)/encode: $(WD)/encode.o $(WD).a
-	$(CC) -o $@ $^
-
-$(WD)/decode: $(WD)/decode.o $(WD).a
-	$(CC) -o $@ $^

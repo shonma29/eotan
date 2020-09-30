@@ -27,254 +27,224 @@ For more information, please refer to <http://unlicense.org/>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/stat.h>
-#include "../../include/elf.h"
+#include "../../include/mpu/memory.h"
 #include "../../include/starter/initrd.h"
 #include "../../include/starter/modules.h"
+//TODO move to include
+#include "../../lib/librc/rangecoder.h"
+#include "../../lib/librc/bit.h"
+#include "m_out.h"
 
-#define ERR_OK (0)
-#define ERR_ARG (1)
-#define ERR_FILE (2)
-#define ERR_DATA (3)
+#define HELP "usage:\n\tappend outfile type infile [id]\nServers need their id.\n"
 
-#define HELP "usage:\n\tappend moduleType filename alignment [id]\nServers need their id.\n"
-#define BAD_ELF "bad ELF\n"
+static FILE *in = stdin;
+static FILE *out = NULL;
 
-static int show_elf_info(FILE *out, const int moduleType, const char *fileName);
-static int append(FILE *out, const int moduleType, const char *fileName,
-		const int blkSize, const int arg);
-static int dup(FILE *out, size_t size, FILE *in);
-static int pad(FILE *out, size_t size);
-static int appendEnd(FILE *out);
+static int append(FILE *, const int, FILE *, const int);
+static int pad(FILE *, const size_t);
+static int appendEnd(FILE *);
+
+static int bgetc(RangeCoder *);
+static int bputc(unsigned char, RangeCoder *);
+static int bputc_1st(unsigned char, RangeCoder *);
+static int encode(FILE *, FILE *);
 
 
 int main(int argc, char **argv)
 {
+	if (argc >= 3) {
+		out = fopen(argv[1], "rb+");
+		if (!out) {
+			fprintf(stderr, "open error(%d)\n", errno);
+			return ERR_FILE;
+		}
+	}
+
 	int type;
-	int result;
-
+	int result = ERR_ARG;
 	switch (argc) {
-	case 2:
-		type = atoi(argv[1]);
-
-		if (type == mod_end)	return appendEnd(stdout);
-
-		break;
-
-	case 4:
-		type = atoi(argv[1]);
-
+	case 3:
+		type = atoi(argv[2]);
 		switch (type) {
+		case mod_end:
+			result = appendEnd(out);
+			break;
 		case mod_kernel:
 		case mod_driver:
 		case mod_user:
-			result = show_elf_info(stderr, type, argv[2]);
-			if (result)
-				return result;
-
 		case mod_initrd:
-			return append(stdout, type, argv[2], atoi(argv[3]), 0);
-
+			result = append(out, type, in, 0);
+			break;
 		default:
 			break;
 		}
-
 		break;
-
-	case 5:
-		type = atoi(argv[1]);
-
+	case 4:
+		type = atoi(argv[2]);
 		switch (type) {
 		case mod_server:
-			result = show_elf_info(stderr, type, argv[2]);
-			if (result)
-				return result;
-
-			return append(stdout, type, argv[2], atoi(argv[3]),
-					atoi(argv[4]));
-
+			result = append(out, type, in, atoi(argv[3]));
+			break;
 		default:
 			break;
 		}
 
 		break;
-
 	default:
 		break;
 	}
 
-	fprintf(stderr, HELP);
-	return ERR_ARG;
-}
-
-static int show_elf_info(FILE *out, const int moduleType, const char *fileName)
-{
-	int ret = ERR_OK;
-	FILE *fp = NULL;
-
-	do {
-		Elf32_Ehdr eHdr;
-		Elf32_Shdr sHdr;
-		int i;
-		void *first = (void*)(-1);
-		void *last = 0;
-		size_t len = 0;
-
-		fp = fopen(fileName, "rb");
-		if (!fp) {
-			fprintf(stderr, "open error(%d)\n", errno);
-			ret = ERR_FILE;
-			break;
-		}
-
-		if (fread(&eHdr, 1, sizeof(eHdr), fp) != sizeof(eHdr)) {
-			fprintf(stderr, "read error(%d)\n", errno);
-			ret = ERR_FILE;
-			break;
-		}
-
-		if (!isValidModule(&eHdr)) {
-			fprintf(stderr, BAD_ELF);
-			ret = ERR_DATA;
-			break;
-		}
-
-		if (fseek(fp, eHdr.e_shoff, SEEK_SET)) {
-			fprintf(stderr, BAD_ELF);
-			ret = ERR_DATA;
-			break;
-		}
-
-		for (i = 0; i < eHdr.e_shnum; i++) {
-			if (fread(&sHdr, 1, sizeof(sHdr), fp) != sizeof(sHdr)) {
-				fprintf(stderr, BAD_ELF);
-				ret = ERR_DATA;
-				break;
-			}
-
-			if (sHdr.sh_addr)
-				if ((size_t)(sHdr.sh_addr) < (size_t)first)
-					first = (void*)(sHdr.sh_addr);
-
-			if ((size_t)(sHdr.sh_addr) > (size_t)last) {
-				last = (void*)(sHdr.sh_addr);
-				len = 0;
-			}
-
-			if ((size_t)(sHdr.sh_addr) == (size_t)last)
-				if (sHdr.sh_size > len)
-					len = sHdr.sh_size;
-		}
-
-		fprintf(out, "%p: %p\n",
-				first, (void*)((size_t)last + len - 1));
-
-	} while (0);
-
-	if (fp) {
-		if (fclose(fp)) {
+	if (out)
+		if (fclose(out))
 			fprintf(stderr, "close error(%d)\n", errno);
-		}
-	}
 
-	return ret;
+	if (result == ERR_ARG)
+		fprintf(stderr, HELP);
+
+	return result;
 }
 
-static int append(FILE *out, const int moduleType, const char *fileName,
-		const int alingment, const int arg)
+static int append(FILE *out, const int type, FILE *in, const int arg)
 {
-	int ret = ERR_OK;
-	FILE *fp = NULL;
-	ModuleHeader h;
+	int result = ERR_OK;
 
 	do {
-		struct stat buf;
-		size_t size;
-
-		/* get file size */
-		if (stat(fileName, &buf)) {
-			fprintf(stderr, "stat error(%d)\n", errno);
-			ret = ERR_FILE;
+		if (fseek(out, 0, SEEK_END)) {
+			fprintf(stderr, "seek error(%d)\n", errno);
+			result = ERR_FILE;
 			break;
 		}
 
-		if (moduleType == mod_initrd)
-			fprintf(stderr, "size %x\n", INITRD_SIZE);
+		long start_pos = ftell(out);
+		if (start_pos < 0) {
+			fprintf(stderr, "ftell error(%d)\n", errno);
+			result = ERR_FILE;
+			break;
+		}
 
-		h.type = moduleType;
-		h.length = (buf.st_size + (alingment - 1)) & ~(alingment - 1);
-		h.bytes = buf.st_size;
-		h.zBytes = 0;
-		h.arg = arg;
+		ModuleHeader h = { type, 0, 0, NULL, 0, NULL, arg };
+		if (fwrite(&h, 1, sizeof(h), out) != sizeof(h)) {
+			fprintf(stderr, "write error(%d)\n", errno);
+			result = ERR_FILE;
+			break;
+		}
+
+		if (type == mod_initrd) {
+			h.address = (void *) INITRD_ADDR;
+			h.pages = pages(INITRD_SIZE);
+			fprintf(stderr, "size %x\n", INITRD_SIZE);
+		} else {
+			m_out_t m;
+			if (fread(&m, 1, sizeof(m), in) != sizeof(m)) {
+				fprintf(stderr, "read error(%d)\n", errno);
+				result = ERR_FILE;
+				break;
+			} else {
+				h.address = m.address;
+				h.pages = pages(m.length);
+				h.entry = m.entry;
+			}
+		}
+
+		result = encode(out, in);
+		if (result)
+			break;
+
+		long end_pos = ftell(out);
+		if (end_pos < 0) {
+			fprintf(stderr, "ftell error(%d)\n", errno);
+			result = ERR_FILE;
+			break;
+		}
+
+		size_t len = end_pos - start_pos - sizeof(h);
+		h.length = (len + (MODULE_ALIGNMENT - 1))
+				& ~(MODULE_ALIGNMENT - 1);
+		h.bytes = len;
+		result = pad(out, h.length - h.bytes);
+		if (result)
+			break;
+
+		if (fseek(out, start_pos, SEEK_SET)) {
+			fprintf(stderr, "seek error(%d)\n", errno);
+			result = ERR_FILE;
+			break;
+		}
 
 		if (fwrite(&h, 1, sizeof(h), out) != sizeof(h)) {
 			fprintf(stderr, "write error(%d)\n", errno);
-			ret = ERR_FILE;
+			result = ERR_FILE;
 			break;
 		}
+	} while (false);
 
-		fp = fopen(fileName, "rb");
-		if (!fp) {
-			fprintf(stderr, "open error(%d)\n", errno);
-			ret = ERR_FILE;
-			break;
-		}
-
-		ret = dup(out, h.bytes, fp);
-		if (ret)	break;
-
-		ret = pad(out, h.length - h.bytes);
-
-	} while (0);
-
-	if (fp) {
-		if (fclose(fp)) {
-			fprintf(stderr, "close error(%d)\n", errno);
-		}
-	}
-
-	return ret;
+	return result;
 }
 
-static int dup(FILE *out, size_t size, FILE *in)
+static int pad(FILE *out, const size_t gap)
 {
-	for (; size > 0; size--) {
-		int c = fgetc(in);
-
-		if (c == EOF) {
-			fprintf(stderr, "read error(%d)\n", errno);
-			return ERR_FILE;
-		}
-
-		if (fputc(c, out) == EOF) {
-			fprintf(stderr, "write error(%d)\n", errno);
-			return ERR_FILE;
-		}
-	}
-
-	return ERR_OK;
-}
-
-static int pad(FILE *out, size_t size)
-{
-	for (; size > 0; size--) {
+	for (size_t rest = gap; rest > 0; rest--)
 		if (fputc(0, out) == EOF) {
 			fprintf(stderr, "write error(%d)\n", errno);
 			return ERR_FILE;
 		}
-	}
 
 	return ERR_OK;
 }
 
 static int appendEnd(FILE *out)
 {
-	ModuleHeader h = { mod_end, 0, 0, 0, 0 };
+	if (fseek(out, 0, SEEK_END)) {
+		fprintf(stderr, "seek error(%d)\n", errno);
+		return ERR_FILE;
+	}
 
+	ModuleHeader h = { mod_end, 0, 0, NULL, 0, NULL, 0 };
 	if (fwrite(&h, 1, sizeof(h), out) != sizeof(h)) {
 		fprintf(stderr, "write error(%d)\n", errno);
 		return ERR_FILE;
 	}
 
 	return ERR_OK;
+}
+
+static int bgetc(RangeCoder *rc)
+{
+	return fgetc(in);
+}
+
+static int bputc(unsigned char ch, RangeCoder *rc)
+{
+	return fputc(ch, out);
+}
+
+static int bputc_1st(unsigned char ch, RangeCoder *rc)
+{
+	rc->put = bputc;
+	return 0;
+}
+
+static int encode(FILE *out, FILE *in)
+{
+	int result = ERR_OK;
+	Frequency *freq = NULL;
+
+	do {
+		freq = (Frequency*) malloc(sizeof(Frequency));
+		if (!freq) {
+			fputs("cannot allocate memory\n", stderr);
+			result = ERR_MEMORY;
+			break;
+		}
+
+		RangeCoder rc;
+		rc_initialize(&rc, bgetc, bputc_1st);
+		frequency_initialize(freq);
+		result = rc_encode(freq, &rc);
+	} while (false);
+
+	if (freq)
+		free(freq);
+
+	return result;
 }

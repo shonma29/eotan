@@ -1,3 +1,6 @@
+#ifndef _M_OUT_H_
+#define _M_OUT_H_
+
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,48 +27,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "../../lib/librc/rangecoder.h"
-#include "../../lib/librc/bit.h"
+#include <stddef.h>
 
-#define EOF (-1)
+typedef struct {
+	void *address;
+	size_t length;
+	void *entry;
+} m_out_t;
 
-static unsigned char *in;
-static unsigned char *out;
-static size_t in_size;
-static size_t out_size;
-static unsigned int rpos;
-static unsigned int wpos;
-
-static int bgetc(RangeCoder *);
-static int bputc(unsigned char ch, RangeCoder *);
-
-
-static int bgetc(RangeCoder *rc)
-{
-	return ((rpos < in_size) ? (in[rpos++]) : EOF);
-}
-
-static int bputc(unsigned char ch, RangeCoder *rc)
-{
-	if (wpos < out_size) {
-		out[wpos++] = ch;
-		return ch;
-	} else
-		return EOF;
-}
-
-int decode(void *dest, void *src, const size_t len, const size_t max)
-{
-	out = dest;
-	in = src;
-	in_size = len;
-	out_size = max;
-	rpos = 0;
-	wpos = 0;
-
-	Frequency freq;
-	RangeCoder rc;
-	rc_initialize(&rc, bgetc, bputc);
-	frequency_initialize(&freq);
-	return rc_decode(&freq, &rc);
-}
+#endif

@@ -71,7 +71,6 @@ data: motd bees.p6
 
 starter:
 	$(WRITER) $(INITRD) $(BLKSIZE) ls /
-	lib/librc/encode < $(INITRD) > $(INITRD).rc
 	mkdir -p build
 	$(MAKE) -f starter/arch/Makefile WD=starter/arch
 
@@ -89,6 +88,6 @@ clean:
 	$(MAKE) -f servers/Makefile clean
 	$(MAKE) -f app/bin/Makefile WD=app/bin clean
 	$(MAKE) -f app/test/Makefile WD=app/test clean
-	$(RM) $(INITRD) $(INITRD).rc motd
+	$(RM) $(INITRD) motd
 	$(MAKE) -f starter/arch/Makefile WD=starter/arch clean
 	$(RM) -rf build

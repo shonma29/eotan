@@ -46,8 +46,12 @@ typedef struct _ModuleHeader
 	enum ModuleType type;
 	size_t length;
 	size_t bytes;
-	size_t zBytes;
+	void *address;
+	size_t pages;
+	void *entry;
 	int arg;
 } ModuleHeader;
+
+#define MODULE_ALIGNMENT (sizeof(int))
 
 #endif

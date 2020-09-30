@@ -24,15 +24,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <elf.h>
 #include <stdarg.h>
 #include <stdnoreturn.h>
 #include <string.h>
 #include <vesa.h>
 #include <arch/archfunc.h>
 #include <mpu/mpufunc.h>
-#include <nerve/config.h>
-#include <nerve/memory_map.h>
 #include <set/lf_queue.h>
 #include <starter/modules.h>
 
@@ -53,22 +50,20 @@ static void console_initialize(void);
 
 extern void memory_initialize(void);
 
-static void _putc(const char ch);
-void printk(const char *format, ...);
-static void run_kernel(const ModuleHeader *h);
+static void _putc(const char);
+void printk(const char *, ...);
+static void run_kernel(const ModuleHeader *);
 
 
 noreturn void _main(void)
 {
-	VesaInfo *v = (VesaInfo*)VESA_INFO_ADDR;
-
 	pic_mask_all();
 #ifndef USE_VESA
 	console_initialize();
 #endif
 	paging_initialize();
-	lfq_initialize((volatile lfq_t*)KERNEL_LOG_ADDR,
-			(void*)((unsigned int)KERNEL_LOG_ADDR + sizeof(lfq_t)),
+	lfq_initialize((volatile lfq_t *) KERNEL_LOG_ADDR,
+			(void *) ((uintptr_t) KERNEL_LOG_ADDR + sizeof(lfq_t)),
 			sizeof(int),
 			KERNLOG_UNITS);
 	printk("Starter has woken up.\n");
@@ -76,25 +71,26 @@ noreturn void _main(void)
 	mpu_initialize();
 	memory_initialize();
 
+	VesaInfo *v = (VesaInfo *) VESA_INFO_ADDR;
 	printk("VESA mode=%x fb=%p width=%d height=%d bpl=%d bpp=%d\n",
 			v->mode_attr, v->buffer_addr, v->width, v->height,
 			v->bytes_per_line, v->bits_per_pixel);
 	printk("VESA mm=%d, red=%d,%d green=%d,%d blue=%d,%d dcm=%d\n",
-		v->memory_model, v->red_position, v->red_size, 
-		v->green_position, v->green_size, 
-		v->blue_position, v->blue_size, v->direct_color_mode);
+			v->memory_model, v->red_position, v->red_size,
+			v->green_position, v->green_size,
+			v->blue_position, v->blue_size, v->direct_color_mode);
 
-	run_kernel((ModuleHeader*)MODULES_ADDR);
+	run_kernel((ModuleHeader *) MODULES_ADDR);
 	for (;;);
 }
 
 #ifndef USE_VESA
 static void console_initialize(void)
 {
-	UB *x = (UB*)BIOS_CURSOR_COL;
-	UB *y = (UB*)BIOS_CURSOR_ROW;
+	cns = getCgaConsole(&window, (const uint16_t *) CGA_VRAM_ADDR);
 
-	cns = getCgaConsole(&window, (const UH*)CGA_VRAM_ADDR);
+	uint8_t *x = (uint8_t *) BIOS_CURSOR_COL;
+	uint8_t *y = (uint8_t *) BIOS_CURSOR_ROW;
 	cns->locate(&window, *x, *y);
 }
 #endif
@@ -105,35 +101,28 @@ static void _putc(const char ch)
 #ifndef USE_VESA
 	cns->putc(&window, ch);
 #endif
-	while (lfq_enqueue((volatile lfq_t*)KERNEL_LOG_ADDR, &w) != QUEUE_OK) {
+	while (lfq_enqueue((volatile lfq_t *) KERNEL_LOG_ADDR, &w) != QUEUE_OK) {
 		int trash;
-
-		lfq_dequeue((volatile lfq_t*)KERNEL_LOG_ADDR, &trash);
+		lfq_dequeue((volatile lfq_t *) KERNEL_LOG_ADDR, &trash);
 	}
 }
 
 void printk(const char *format, ...)
 {
 	va_list ap;
-
 	va_start(ap, format);
-	vnprintf(_putc, (char*)format, ap);
-};
+	vnprintf(_putc, (char *) format, ap);
+}
 
 static void run_kernel(const ModuleHeader *h)
 {
 	while (h->type != mod_end) {
-		UW addr;
-
 		if (h->type == mod_kernel) {
-			Elf32_Ehdr *eHdr = (Elf32_Ehdr*)&(h[1]);
-			void (*entry)(void*) = (void*)(eHdr->e_entry);
-
-			entry((void*)BOOT_ADDR);
+			void (*entry)(void *) = (void *) (h->entry);
+			entry((void *) BOOT_ADDR);
 			break;
 		}
 
-		addr = (unsigned int)h + sizeof(*h) + h->length;
-		h = (ModuleHeader*)addr;
+		h = (ModuleHeader *) ((uintptr_t) h + sizeof(*h) + h->length);
 	}
 }
