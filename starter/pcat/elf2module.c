@@ -37,7 +37,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #define BAD_ELF "bad ELF\n"
 
-#define DEBUG (1)
+#define DEBUG (0)
 
 typedef struct {
 	FILE *in;
@@ -101,11 +101,11 @@ static int read_header(buf_t *b)
 
 				file_head = pHdr.p_vaddr;
 				section_tail = pHdr.p_vaddr;
-#ifdef DEBUG
+#if DEBUG
 				fprintf(stderr, "file_head: %x\n", file_head);
 #endif
 			}
-#ifdef DEBUG
+#if DEBUG
 			if (section_tail != (uintptr_t) (pHdr.p_vaddr)) {
 				size_t gap = (uintptr_t) (pHdr.p_vaddr)
 						- section_tail;
@@ -117,24 +117,26 @@ static int read_header(buf_t *b)
 					+ ((tail + (PAGE_SIZE - 1))
 							& ~(PAGE_SIZE - 1))
 					- tail;
+#if DEBUG
 			fprintf(stderr, "t=%d o=%x v=%x p=%x f=%x m=%x, g=%x\n",
 					pHdr.p_type, pHdr.p_offset,
 					pHdr.p_vaddr, pHdr.p_paddr,
 					pHdr.p_filesz, pHdr.p_memsz,
 					segment_gap);
-
-			section_tail = pHdr.p_vaddr + pHdr.p_filesz + segment_gap;
-#ifdef DEBUG
+#endif
+			section_tail = pHdr.p_vaddr + pHdr.p_filesz
+					+ segment_gap;
+#if DEBUG
 			fprintf(stderr, "section_tail: %x\n", section_tail);
 #endif
 		}
-#ifdef DEBUG
-		fprintf(stderr, "module: %x %x %x\n", file_head,
-				section_tail - file_head, b->eHdr.e_entry);
-#endif
+
 		b->header.address = (void *) file_head;
 		b->header.length = section_tail - file_head;
 		b->header.entry = (void *) (b->eHdr.e_entry);
+
+		fprintf(stderr, "module: %p %x %p\n", b->header.address,
+				b->header.length, b->header.entry);
 	} while (false);
 
 	return result;
