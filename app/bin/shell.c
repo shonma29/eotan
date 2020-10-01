@@ -659,8 +659,6 @@ int main(int argc, char **argv, char **env)
 
 		do {
 			c = getchar();
-			putchar(c);
-
 		} while (!line_putc(&line, c));
 
 	} while (!line_evaluate(&line, vars));

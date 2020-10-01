@@ -49,22 +49,24 @@ device_info_t *info;
 static vdriver_t *driver;
 
 static char line[4096];
+static volatile bool raw_mode;
 static ER_ID receiver_tid = 0;
 //static ER_ID hmi_tid = 0;
+static ID cons_mid;
 static request_message_t *current_req = NULL;
 static request_message_t requests[REQUEST_QUEUE_SIZE];
 static volatile lfq_t req_queue;
 static char req_buf[
-		lfq_buf_size(sizeof(request_message_t *), REQUEST_QUEUE_SIZE)
+	lfq_buf_size(sizeof(request_message_t *), REQUEST_QUEUE_SIZE)
 ];
 static volatile lfq_t unused_queue;
 static char unused_buf[
-		lfq_buf_size(sizeof(request_message_t *), REQUEST_QUEUE_SIZE)
+	lfq_buf_size(sizeof(request_message_t *), REQUEST_QUEUE_SIZE)
 ];
 volatile lfq_t hmi_queue;
 
 static char int_buf[
-		lfq_buf_size(sizeof(hmi_interrupt_t), INTERRUPT_QUEUE_SIZE)
+	lfq_buf_size(sizeof(hmi_interrupt_t), INTERRUPT_QUEUE_SIZE)
 ];
 
 #ifdef USE_VESA
@@ -124,7 +126,20 @@ static void process(const int data)
 //			(unsigned char) (d & 0xff);
 	unsigned char buf = (unsigned char) (d & 0xff);
 
-	//TODO loop
+	if (!raw_mode) {
+		int result = kcall->mutex_lock(cons_mid, TMO_FEVR);
+		if (result)
+			kcall->printk("hmi: handler cannot lock %d\n", result);
+		else {
+			driver->write((char *) &buf, 0, 0, 1);
+			result = kcall->mutex_unlock(cons_mid);
+			if (result)
+				kcall->printk("hmi: handler cannot unlock %d\n",
+						result);
+		}
+	}
+
+	//TODO loop or buffering (flush when user switches window, or LF)
 	//TODO error check
 	uintptr_t addr = ((uintptr_t) (message->Tread.data)
 			+ message->Tread.offset);
@@ -171,8 +186,26 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 			pset((Screen *) (info->unit), x, y, color);
 		}
 		break;
-	default:
-		driver->write((char *) inbuf, dd, 0, size);
+	case 6:
+		if ((size == 5)
+				&& !memcmp(inbuf, "rawon", 5))
+			raw_mode = true;
+		else if ((size == 6)
+				&& !memcmp(inbuf, "rawoff", 6))
+			raw_mode = false;
+		break;
+	default: {
+		int result = kcall->mutex_lock(cons_mid, TMO_FEVR);
+		if (result)
+			kcall->printk("hmi: main cannot lock %d\n", result);
+		else {
+			driver->write((char *) inbuf, dd, 0, size);
+			result = kcall->mutex_unlock(cons_mid);
+			if (result)
+				kcall->printk("hmi: main cannot unlock %d\n",
+						result);
+		}
+	}
 #else
 	default:
 		driver->write((char *) inbuf, 0, 0, size);
@@ -321,11 +354,11 @@ static ER accept(void)
 static ER initialize(void)
 {
 	lfq_initialize(&hmi_queue, int_buf, sizeof(hmi_interrupt_t),
-				INTERRUPT_QUEUE_SIZE);
+			INTERRUPT_QUEUE_SIZE);
 	lfq_initialize(&req_queue, req_buf, sizeof(request_message_t *),
-				REQUEST_QUEUE_SIZE);
+			REQUEST_QUEUE_SIZE);
 	lfq_initialize(&unused_queue, unused_buf, sizeof(request_message_t *),
-				REQUEST_QUEUE_SIZE);
+			REQUEST_QUEUE_SIZE);
 
 	for (int i = 0; i < sizeof(requests) / sizeof(requests[0]); i++) {
 		request_message_t *p = &(requests[i]);
@@ -335,13 +368,25 @@ static ER initialize(void)
 	info = device_find(DEVICE_CONTROLLER_MONITOR);
 	if (info)
 		driver = (vdriver_t *) (info->driver);
-//TODO create mutex
+
+	T_CMTX pk_cmtx = {
+		TA_TFIFO | TA_CEILING,
+		pri_dispatcher
+	};
+
+	int result = kcall->mutex_create(receiver_tid, &pk_cmtx);
+	if (result) {
+		log_err("hmi: mutex error=%d\n", result);
+		return result;
+	} else
+		cons_mid = receiver_tid;
+
 	T_CPOR pk_cpor = {
 		TA_TFIFO,
 		sizeof(fsmsg_t),
 		sizeof(fsmsg_t)
 	};
-	int result = kcall->ipc_open(&pk_cpor);
+	result = kcall->ipc_open(&pk_cpor);
 	if (result) {
 		log_err("hmi: open error=%d\n", result);
 		return result;
@@ -386,5 +431,7 @@ void start(VP_INT exinf)
 		log_info("hmi: end\n");
 	}
 
+	//TODO close port
+	//TODO release mutex
 	kcall->thread_end_and_destroy();
 }

@@ -24,10 +24,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 
 #define DEFAULT_COLUMNS (80)
 #define DEFAULT_LINES (25)
@@ -38,8 +36,11 @@ static char *linebuf;
 
 static int get_columns(void);
 static int get_lines(void);
-static bool show(FILE *fp);
+static bool show(FILE *);
 static bool process(void);
+
+extern int rawon(void);
+extern int rawoff(void);
 
 
 int main(int argc, char **argv)
@@ -60,7 +61,6 @@ int main(int argc, char **argv)
 	case 1:
 		fp = stdin;
 		break;
-
 	case 2:
 		argv++;
 		fp = fopen(*argv, "r");
@@ -70,11 +70,12 @@ int main(int argc, char **argv)
 		}
 
 		break;
-
 	default:
 		fprintf(stderr, "Missing filename\n");
 		return EXIT_FAILURE;
 	}
+
+	rawon();
 
 	for (;;) {
 		bool done = show(fp);
@@ -87,8 +88,8 @@ int main(int argc, char **argv)
 			break;
 	}
 
+	rawoff();
 	fclose(fp);
-
 	return 0;
 }
 
@@ -106,9 +107,7 @@ static int get_lines(void)
 
 static bool show(FILE *fp)
 {
-	int n;
-
-	for (n = 0; n < lines; n++) {
+	for (int n = 0; n < lines; n++) {
 //TODO cut LF when maximum length
 		if (!fgets(linebuf, columns, fp))
 			return true;
@@ -126,10 +125,8 @@ static bool process(void)
 		case 'q':
 		case 'Q':
 			return true;
-
 		case ' ':
 			return false;
-
 		default:
 			break;
 		}

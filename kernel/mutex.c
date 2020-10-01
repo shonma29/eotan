@@ -173,7 +173,7 @@ ER mutex_lock(ID mtxid, TMO tmout)
 		return E_NOEXS;
 	}
 
-	if (q->ceilpri < running->attr.priority) {
+	if (q->ceilpri > running->attr.priority) {
 		leave_serialize();
 		return E_ILUSE;
 	}
