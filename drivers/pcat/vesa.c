@@ -32,21 +32,21 @@ For more information, please refer to <http://unlicense.org/>
 #include <vesa.h>
 #include <mpu/memory.h>
 
-static void _cls(Screen *s);
-static int _locate(Screen *s, const int x, const int y);
-static int _color(Screen *s, const int color);
-static void _putc(Screen *s, const uint8_t ch);
-static void __putc(Screen *s, const uint8_t ch);
-static void _newline(Screen *s);
-static void _cursor(Screen *s);
-static int _rollup(Screen *s, const int lines);
-static void _fill(Screen *s, const unsigned int x1, const unsigned int y1,
-		const unsigned int x2, const unsigned int y2,
-		const Color *color);
-static void _copy_up(Screen *s, unsigned int x1, unsigned int y1,
-		unsigned int x2, unsigned int y2, unsigned int height);
-static void _copy_left(Screen *s, unsigned int x1, unsigned int y1,
-		unsigned int x2, unsigned int y2, unsigned int width);
+static void _cls(Screen *);
+static int _locate(Screen *, const int, const int);
+static int _color(Screen *, const int);
+static void _putc(Screen *, const uint8_t);
+static void __putc(Screen *, const uint8_t);
+static void _newline(Screen *);
+static void _cursor(Screen *);
+static int _rollup(Screen *, const int);
+static void _fill(Screen *, const unsigned int, const unsigned int,
+		const unsigned int, const unsigned int,
+		const Color *);
+static void _copy_up(Screen *, unsigned int, unsigned int,
+		unsigned int, unsigned int, unsigned int);
+static void _copy_left(Screen *, unsigned int, unsigned int,
+		unsigned int, unsigned int, unsigned int);
 
 static Console _cns = {
 	_cls, _locate, _color, _putc, _rollup
@@ -55,7 +55,7 @@ static Console _cns = {
 
 Console *getVesaConsole(Screen *s, const Font *default_font)
 {
-	VesaInfo *v = (VesaInfo*)kern_p2v((void*)VESA_INFO_ADDR);
+	VesaInfo *v = (VesaInfo *) kern_p2v((void *) VESA_INFO_ADDR);
 
 	if ((v->bits_per_pixel != 24)
 			|| (v->red_position != 16)
@@ -68,8 +68,8 @@ Console *getVesaConsole(Screen *s, const Font *default_font)
 	s->y = 0;
 	s->width = v->width;
 	s->height = v->height;
-	s->base = (const void*)(v->buffer_addr);
-	s->p = (uint8_t*)(s->base);
+	s->base = (const void *) (v->buffer_addr);
+	s->p = (uint8_t *) (s->base);
 	s->bpl = v->bytes_per_line;
 
 	s->fgcolor.rgb.b = 0xff;
@@ -90,7 +90,7 @@ Console *getVesaConsole(Screen *s, const Font *default_font)
 static void _cls(Screen *s)
 {
 	s->x = s->y = 0;
-	s->p = (uint8_t*)(s->base);
+	s->p = (uint8_t *) (s->base);
 
 	_fill(s, 0, 0, s->width, s->height, &(s->bgcolor));
 	_cursor(s);
@@ -104,13 +104,15 @@ static int _locate(Screen *s, const int x, const int y)
 			|| (y >= s->chr_height))
 		return false;
 
-	s->x = x;
-	s->y = y;
-	s->p = ((uint8_t*)(s->base)
-			+ y * s->font.height * s->bpl
-			+ x * s->font.width * sizeof(Color_Rgb));
 	_cursor(s);
 
+	s->x = x;
+	s->y = y;
+	s->p = ((uint8_t *) (s->base)
+			+ y * s->font.height * s->bpl
+			+ x * s->font.width * sizeof(Color_Rgb));
+
+	_cursor(s);
 	return true;
 }
 
@@ -120,15 +122,20 @@ static int _color(Screen *s, const int color)
 			|| (color > MAX_COLOR))
 		return false;
 
+	_cursor(s);
+
 	s->fgcolor.rgb.r = (color >> 16) & 0xff;
 	s->fgcolor.rgb.g = (color >> 8) & 0xff;
 	s->fgcolor.rgb.b = color & 0xff;
 
+	_cursor(s);
 	return true;
 }
 
 static void _putc(Screen *s, const uint8_t ch)
 {
+	_cursor(s);
+
 	switch(ch) {
 	case 0x08:
 		if (s->x > 0) {
@@ -146,7 +153,6 @@ static void _putc(Screen *s, const uint8_t ch)
 			s->p -= s->font.width * sizeof(Color_Rgb);
 		}
 		break;
-
 	case '\t':
 		{
 			int len = CONSOLE_TAB_COLUMNS
@@ -162,17 +168,13 @@ static void _putc(Screen *s, const uint8_t ch)
 			}
 		}
 		break;
-
 	case '\n':
 		_newline(s);
 		break;
-
 	case '\r':
 		break;
-
 	case '\x7f':
 		break;
-
 	default:
 		__putc(s, (ch > ' ') ? ch : ' ');
 
@@ -190,7 +192,7 @@ static void _putc(Screen *s, const uint8_t ch)
 
 static void __putc(Screen *s, const uint8_t ch)
 {
-	uint8_t *line = (uint8_t*)(s->p);
+	uint8_t *line = (uint8_t *) (s->p);
 	uint8_t c = ((ch < s->font.min_char) || (ch > s->font.max_char)) ?
 			' ' : ch;
 	uint8_t *q = &(s->font.buf[(c - s->font.min_char)
@@ -228,12 +230,37 @@ static void _newline(Screen *s)
 
 	s->x = 0;
 	s->y++;
-	s->p = ((uint8_t*)(s->base)
+	s->p = ((uint8_t *) (s->base)
 			+ s->y * s->font.height * s->bpl);
 }
 
 static void _cursor(Screen *s)
 {
+	Color *fg = &(s->fgcolor);
+	Color *bg = &(s->bgcolor);
+	uint8_t *line = (uint8_t *) (s->p);
+	for (unsigned int i = s->font.height; i > 0; i--) {
+		uint8_t *p = line;
+		for (unsigned int j = s->font.width; j > 0; j--) {
+			if ((p[0] == bg->rgb.b)
+					&& (p[1] == bg->rgb.g)
+					&& (p[2] == bg->rgb.r)) {
+				p[0] = fg->rgb.b;
+				p[1] = fg->rgb.g;
+				p[2] = fg->rgb.r;
+			} else if ((p[0] == fg->rgb.b)
+					&& (p[1] == fg->rgb.g)
+					&& (p[2] == fg->rgb.r)) {
+				p[0] = bg->rgb.b;
+				p[1] = bg->rgb.g;
+				p[2] = bg->rgb.r;
+			}
+
+			p += sizeof(Color_Rgb);
+		}
+
+		line += s->bpl;
+	}
 }
 
 static int _rollup(Screen *s, const int lines)
@@ -241,6 +268,8 @@ static int _rollup(Screen *s, const int lines)
 	if ((lines <= 0)
 			|| (lines >= s->chr_height))
 		return false;
+
+	_cursor(s);
 
 	_copy_up(s, 0,
 			lines * s->font.height,
@@ -255,11 +284,12 @@ static int _rollup(Screen *s, const int lines)
 
 	if ((s->y -= lines) < 0) {
 		s->y = s->x = 0;
-		s->p = (uint8_t*)(s->base);
+		s->p = (uint8_t *) (s->base);
 	} else
-		s->p = ((uint8_t*)(s->p)
+		s->p = ((uint8_t *) (s->p)
 				- lines * s->font.height * s->bpl);
 
+	_cursor(s);
 	return true;
 }
 
@@ -267,7 +297,7 @@ static void _fill(Screen *s, const unsigned int x1, const unsigned int y1,
 		const unsigned int x2, const unsigned int y2,
 		const Color *color)
 {
-	uint8_t *p = (uint8_t*)(s->base)
+	uint8_t *p = (uint8_t *) (s->base)
 			+ y1 * s->bpl
 			+ x1 * sizeof(Color_Rgb);
 	Color_Rgb c = color->rgb;
@@ -275,7 +305,7 @@ static void _fill(Screen *s, const unsigned int x1, const unsigned int y1,
 	for (unsigned int i = 0; i < sizeof(uint32_t); i++)
 		buf[i] = c;
 
-	uint32_t *rword = (uint32_t*)buf;
+	uint32_t *rword = (uint32_t *) buf;
 	size_t len = x2 - x1;
 	size_t skip = s->bpl - len * sizeof(Color_Rgb);
 	size_t left = x1 % sizeof(uint32_t);
@@ -293,7 +323,7 @@ static void _fill(Screen *s, const unsigned int x1, const unsigned int y1,
 			p += sizeof(Color_Rgb);
 		}
 
-		uint32_t *wword = (uint32_t*)p;
+		uint32_t *wword = (uint32_t *) p;
 		for (size_t j = middle; j > 0; j--) {
 			wword[0] = rword[0];
 			wword[1] = rword[1];
@@ -301,7 +331,7 @@ static void _fill(Screen *s, const unsigned int x1, const unsigned int y1,
 			wword += sizeof(Color_Rgb);
 		}
 
-		p = (uint8_t*)wword;
+		p = (uint8_t *) wword;
 		for (size_t j = right; j > 0; j--) {
 			p[0] = c.b;
 			p[1] = c.g;
@@ -316,7 +346,7 @@ static void _fill(Screen *s, const unsigned int x1, const unsigned int y1,
 static void _copy_up(Screen *s, unsigned int x1, unsigned int y1,
 		unsigned int x2, unsigned int y2, unsigned int height)
 {
-	uint8_t *w = (uint8_t*)(s->base);
+	uint8_t *w = (uint8_t *) (s->base);
 	uint8_t *r = w + height * s->bpl;
 	size_t len = (x2 - x1) * sizeof(Color_Rgb);
 	size_t left = x1 % sizeof(uint32_t);
@@ -334,16 +364,16 @@ static void _copy_up(Screen *s, unsigned int x1, unsigned int y1,
 			w++;
 		}
 
-		uint32_t *wword = (uint32_t*)w;
-		uint32_t *rword = (uint32_t*)r;
+		uint32_t *wword = (uint32_t *) w;
+		uint32_t *rword = (uint32_t *) r;
 		for (size_t j = middle; j > 0; j--) {
 			*wword = *rword;
 			rword++;
 			wword++;
 		}
 
-		w = (uint8_t*)wword;
-		r = (uint8_t*)rword;
+		w = (uint8_t *) wword;
+		r = (uint8_t *) rword;
 		for (size_t j = right; j > 0; j--) {
 			*w = *r;
 			r++;
@@ -358,7 +388,7 @@ static void _copy_up(Screen *s, unsigned int x1, unsigned int y1,
 static void _copy_left(Screen *s, unsigned int x1, unsigned int y1,
 		unsigned int x2, unsigned int y2, unsigned int width)
 {
-	uint8_t *r = (uint8_t*)(s->base)
+	uint8_t *r = (uint8_t *) (s->base)
 			+ y1 * s->bpl
 			+ x1 * sizeof(Color_Rgb);
 	uint8_t *w = r - width * sizeof(Color_Rgb);
@@ -381,7 +411,7 @@ static void _copy_left(Screen *s, unsigned int x1, unsigned int y1,
 void put(Screen *s, const unsigned int start, const size_t size,
 		const int8_t *buf)
 {
-	int8_t *w = (int8_t*)(s->base) + start;
+	int8_t *w = (int8_t *) (s->base) + start;
 
 	for (size_t i = 0; i < size; i++)
 		w[i] = buf[i];
@@ -389,7 +419,7 @@ void put(Screen *s, const unsigned int start, const size_t size,
 
 void pset(Screen *s, unsigned int x, unsigned int y, int color)
 {
-	uint8_t *r = (uint8_t*)(s->base)
+	uint8_t *r = (uint8_t *) (s->base)
 			+ y * s->bpl
 			+ x * sizeof(Color_Rgb);
 
