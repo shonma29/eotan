@@ -24,7 +24,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <elf.h>
 #include <stddef.h>
 #include <mpu/io.h>
 #include <mpu/memory.h>

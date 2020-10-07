@@ -32,9 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 
 noreturn void exit(int status)
 {
-	int i;
-
-	for (i = 0; i < FOPEN_MAX; i++)
+	for (int i = 0; i < FOPEN_MAX; i++)
 		fclose(&(__libc_files[i]));
 
 	_exit(status);

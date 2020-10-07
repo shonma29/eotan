@@ -37,7 +37,7 @@ FILE *stdout;
 FILE *stderr;
 char **environ;
 
-extern int main(int argc, char *argv[], char *envp[]);
+extern int main(int, char *[], char *[]);
 extern void __malloc_initialize(void);
 
 static void __libc_initialize(void);

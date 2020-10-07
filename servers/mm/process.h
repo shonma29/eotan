@@ -126,9 +126,6 @@ extern mm_file_t *session_create_file(mm_session_t *);
 extern int session_destroy_file(mm_session_t *, mm_file_t *);
 extern void session_deallocate_file(mm_file_t *);
 
-extern int process_exec(sys_reply_t *, mm_process_t *, const int,
-		sys_args_t *, char *);
-
 extern void init(void);
 
 extern void default_handler(VP_INT);

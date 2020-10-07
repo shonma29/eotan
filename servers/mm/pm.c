@@ -82,29 +82,19 @@ int mm_exec(mm_request *req)
 		}
 
 		mm_process_t *process = get_process(th);
-		return process_exec(reply, process, th->node.key,
-				&(req->args), req->walkpath);
-	} while (false);
-
-	reply->result = -1;
-	return reply_failure;
-}
-
-int process_exec(sys_reply_t *reply, mm_process_t *process,
-		const int thread_id, sys_args_t *args, char *pathbuf)
-{
-	do {
 		mm_file_t *file;
-		fsmsg_t message;
-		int result = _walk(&file, process, thread_id,
-				(char*)(args->arg1), &message, pathbuf);
+		fsmsg_t *message = &(req->message);
+		int result = _walk(&file, process, th->node.key,
+				(char *) (req->args.arg1), message,
+				req->walkpath);
 		if (result) {
 			reply->data[0] = result;
 			break;
 		}
 
-		result = _open(file, create_token(thread_id, process->session),
-				O_EXEC, &message);
+		result = _open(file,
+				create_token(th->node.key, process->session),
+				O_EXEC, message);
 		if (result) {
 			reply->data[0] = result;
 //TODO clunk
@@ -114,15 +104,15 @@ int process_exec(sys_reply_t *reply, mm_process_t *process,
 		int token = create_token(kcall->thread_get_id(),
 				process->session);
 		Elf32_Ehdr ehdr;
-		result = _read(file, token, 0, sizeof(ehdr), (char*)&ehdr,
-				&message);
+		result = _read(file, token, 0, sizeof(ehdr), (char *) &ehdr,
+				message);
 		if (result) {
 			log_err("ehdr0\n");
 			reply->data[0] = result;
 //TODO clunk
 			break;
 		} else {
-			if (message.Rread.count == sizeof(ehdr)) {
+			if (message->Rread.count == sizeof(ehdr)) {
 				if (isValidModule(&ehdr)) {
 //					log_info("ehdr ok\n");
 				} else {
@@ -146,14 +136,14 @@ int process_exec(sys_reply_t *reply, mm_process_t *process,
 		for (int i = 0; i < ehdr.e_phnum; i++) {
 			Elf32_Phdr phdr;
 			result = _read(file, token, offset, sizeof(phdr),
-					(char*)&phdr, &message);
+					(char *) &phdr, message);
 			if (result) {
 //TODO clunk
 //				return result;
 				log_err("phdr0\n");
 				break;
 			} else {
-				if (message.Rread.count == sizeof(phdr)) {
+				if (message->Rread.count == sizeof(phdr)) {
 //					log_info("phdr ok\n");
 					if (phdr.p_type != PT_LOAD)
 						continue;
@@ -186,10 +176,11 @@ int process_exec(sys_reply_t *reply, mm_process_t *process,
 		int new_thread_id;
 //		log_info("replace\n");
 		result = process_replace(process,
-				(void*)(ro.p_vaddr),
+				(void *) (ro.p_vaddr),
 				rw.p_vaddr + rw.p_memsz - ro.p_vaddr,
-				(void*)ehdr.e_entry, (void*)(args->arg2),
-				args->arg3,
+				(void *) ehdr.e_entry,
+				(void *) (req->args.arg2),
+				req->args.arg3,
 				&new_thread_id);
 		if (result) {
 			log_err("replace0 %d\n", result);
@@ -198,11 +189,11 @@ int process_exec(sys_reply_t *reply, mm_process_t *process,
 
 		token = create_token(new_thread_id, process->session);
 		result = _read(file, token, ro.p_offset, ro.p_filesz,
-				(char*)(ro.p_vaddr), &message);
+				(char *) (ro.p_vaddr), message);
 		if (result) {
 			log_err("tread0 %d\n", result);
 		} else {
-			if (message.Rread.count == ro.p_filesz) {
+			if (message->Rread.count == ro.p_filesz) {
 //				log_info("tread1\n");
 			} else {
 				log_err("tread2\n");
@@ -211,11 +202,11 @@ int process_exec(sys_reply_t *reply, mm_process_t *process,
 
 		if (rw.p_filesz) {
 			result = _read(file, token, rw.p_offset, rw.p_filesz,
-					(char*)(rw.p_vaddr), &message);
+					(char *) (rw.p_vaddr), message);
 			if (result) {
 				log_err("dread0 %d\n", result);
 			} else {
-				if (message.Rread.count == rw.p_filesz) {
+				if (message->Rread.count == rw.p_filesz) {
 //					log_info("dread1\n");
 				} else {
 					log_err("dread2\n");
@@ -226,7 +217,7 @@ int process_exec(sys_reply_t *reply, mm_process_t *process,
 		kcall->thread_start(new_thread_id);
 
 		//TODO recreate token (not must)
-		result = _clunk(process->session, file, token, &message);
+		result = _clunk(process->session, file, token, message);
 		if (result) {
 			log_err("mm: exec close1 %d\n", result);
 			//TODO what to do?
@@ -237,7 +228,6 @@ int process_exec(sys_reply_t *reply, mm_process_t *process,
 		return reply_success;
 	} while (false);
 
-	//TODO clunk
 	reply->result = -1;
 	return reply_failure;
 }
@@ -322,7 +312,7 @@ int mm_chdir(mm_request *req)
 
 		mm_process_t *process = get_process(th);
 		ER_UINT len = kcall->region_copy(th->node.key,
-				(char*)(req->args.arg1), PATH_MAX,
+				(char *) (req->args.arg1), PATH_MAX,
 				req->walkpath);
 		if (len < 0) {
 			reply->data[0] = EFAULT;
@@ -345,7 +335,7 @@ int mm_chdir(mm_request *req)
 		mm_file_t *file;
 		fsmsg_t message;
 		int result = _walk(&file, process, th->node.key,
-				(char*)(req->args.arg1), &message,
+				(char *) (req->args.arg1), &message,
 				req->walkpath);
 		if (result) {
 			reply->data[0] = result;
@@ -413,7 +403,7 @@ static size_t calc_path(char *dest, char *src, const size_t size)
 			}
 		}
 
-		size_t len = (size_t)r - (size_t)word;
+		size_t len = (size_t) r - (size_t) word;
 		r++;
 
 		if (!len)
@@ -431,7 +421,7 @@ static size_t calc_path(char *dest, char *src, const size_t size)
 					break;
 			}
 
-			rest = size - ((size_t)w - (size_t)dest);
+			rest = size - ((size_t) w - (size_t) dest);
 			continue;
 		}
 
@@ -549,21 +539,21 @@ int mm_lseek(mm_request *req)
 
 //		log_info("mm: %d seek\n", process->node.key);
 
-		off_t *offset = (off_t*)reply;
+		off_t *offset = (off_t *) reply;
 		*offset = desc->file->f_offset;
 
 		reply->data[1] = 0;
 		return reply_success;
 	} while (false);
 
-	off_t *offset = (off_t*)reply;
-	*offset = (off_t)(-1);
+	off_t *offset = (off_t *) reply;
+	*offset = (off_t) (-1);
 	return reply_failure;
 }
 
 static int _seek(mm_process_t *process, mm_file_t *file, sys_args_t *args)
 {
-	off_t *offset = (off_t*)&(args->arg2);
+	off_t *offset = (off_t *) &(args->arg2);
 	off_t next = *offset;
 
 	switch (args->arg4) {

@@ -67,16 +67,16 @@ int mm_attach(mm_request *req)
 			break;
 		}
 
-		fsmsg_t message;
-		message.header.type = Tattach;
-		message.header.token = create_token(th->node.key, session);
-		message.Tattach.tag = create_tag();
-		message.Tattach.fid = file->node.key;
-		message.Tattach.afid = NOFID;
-		message.Tattach.uname = (char *) (process->uid);
-		message.Tattach.aname = (char *) "/";
+		fsmsg_t *message = &(req->message);
+		message->header.type = Tattach;
+		message->header.token = create_token(th->node.key, session);
+		message->Tattach.tag = create_tag();
+		message->Tattach.fid = file->node.key;
+		message->Tattach.afid = NOFID;
+		message->Tattach.uname = (char *) (process->uid);
+		message->Tattach.aname = (char *) "/";
 
-		int result = call_device(PORT_FS, &message,
+		int result = call_device(PORT_FS, message,
 				MESSAGE_SIZE(Tattach),
 				Rattach, MESSAGE_SIZE(Rattach));
 		//log_info("mm: attach[sid=%d fid=%d] %d\n", session->node.key,

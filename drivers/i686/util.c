@@ -34,30 +34,27 @@ For more information, please refer to <http://unlicense.org/>
 
 ER memcpy_k2u(thread_t *th, void *to, const void *from, const size_t bytes)
 {
-	PTE *dir;
-	void *p;
-
 	if (is_kthread(th)) {
 		memcpy(to, from, bytes);
 		return E_OK;
 	}
 
-	dir = (PTE*)kern_p2v(th->mpu.cr3);
-	p = getPageAddress(dir, to);
+	PTE *dir = (PTE *) kern_p2v(th->mpu.cr3);
+	void *p = getPageAddress(dir, to);
 	if (p) {
-		UB *w = (UB*)to;
-		UB *r = (UB*)from;
-		size_t left = bytes;
+		char *w = (char *) to;
+		char *r = (char *) from;
+		size_t rest = bytes;
 		size_t offset = getOffset(w);
 		size_t len = PAGE_SIZE - offset;
 
 		p += offset;
 
 		do {
-			len = (left < len) ? left : len;
+			len = (rest < len) ? rest : len;
 			memcpy(p, r, len);
 
-			if (!(left -= len))
+			if (!(rest -= len))
 				return E_OK;
 
 			w += len;
@@ -71,30 +68,27 @@ ER memcpy_k2u(thread_t *th, void *to, const void *from, const size_t bytes)
 
 ER memcpy_u2k(thread_t *th, void *to, const void *from, const size_t bytes)
 {
-	PTE *dir;
-	void *p;
-
 	if (is_kthread(th)) {
 		memcpy(to, from, bytes);
 		return E_OK;
 	}
 
-	dir = (PTE*)kern_p2v(th->mpu.cr3);
-	p = getPageAddress(dir, from);
+	PTE *dir = (PTE *) kern_p2v(th->mpu.cr3);
+	void *p = getPageAddress(dir, from);
 	if (p) {
-		UB *w = (UB*)to;
-		UB *r = (UB*)from;
-		size_t left = bytes;
+		char *w = (char *) to;
+		char *r = (char *) from;
+		size_t rest = bytes;
 		size_t offset = getOffset(r);
 		size_t len = PAGE_SIZE - offset;
 
 		p += offset;
 
 		do {
-			len = (left < len) ? left : len;
+			len = (rest < len) ? rest : len;
 			memcpy(w, p, len);
 
-			if (!(left -= len))
+			if (!(rest -= len))
 				return E_OK;
 
 			w += len;

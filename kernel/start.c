@@ -67,12 +67,7 @@ static ER create_idle_thread(const VP_INT exinf)
 	};
 	pk_ctsk.exinf = exinf;
 
-	//TODO ugly
-#if __i386__
-	alignas(16) thread_t dummy;
-#else
 	thread_t dummy;
-#endif
 	dummy.status = TTS_DMT;
 	running = &dummy;
 
