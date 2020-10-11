@@ -111,8 +111,12 @@ ER kbc_initialize(void)
 
 	_writeCommand(KBC_WRITE_CMD);
 	_writeData(b);
+	log_info("kbc: status=%x, BAT=%x\n", c, _read());
 
-	log_info("kbc: status=%x\n", c);
+	// set keyboard repeat
+	_writeData(KBD_SET_DELAY);
+	if (isAck())
+		_writeData(0x20);
 
 	return E_OK;
 }
