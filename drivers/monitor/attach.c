@@ -74,7 +74,7 @@ static void console_initialize(void)
 	s->height /= 2;
 	s->chr_width = s->width / s->font.width;
 	s->chr_height = s->height / s->font.height;
-	cns->cls(s);
+	cns->erase(s, EraseScreenEntire);
 	cns->locate(s, 0, 0);
 
 	window[1] = window[0];
@@ -87,7 +87,7 @@ static void console_initialize(void)
 	s->bgcolor.rgb.b = 0;
 	s->bgcolor.rgb.g = 31;
 	s->bgcolor.rgb.r = 0;
-	cns->cls(s);
+	cns->erase(s, EraseScreenEntire);
 	cns->locate(s, 0, 0);
 
 	window[2] = window[0];
@@ -100,7 +100,7 @@ static void console_initialize(void)
 	s->bgcolor.rgb.b = 0;
 	s->bgcolor.rgb.g = 0;
 	s->bgcolor.rgb.r = 31;
-	cns->cls(s);
+	cns->erase(s, EraseScreenEntire);
 	cns->locate(s, 0, 0);
 
 	window[3] = window[0];
@@ -113,12 +113,12 @@ static void console_initialize(void)
 	s->bgcolor.rgb.b = 0xfc;
 	s->bgcolor.rgb.g = 0xfc;
 	s->bgcolor.rgb.r = 0xfc;
-	cns->cls(s);
+	cns->erase(s, EraseScreenEntire);
 	cns->locate(s, 0, 0);
 #else
 	cns = getCgaConsole(&(window[0]),
 			(const uint16_t *) kern_p2v((void *) CGA_VRAM_ADDR));
-	cns->cls(&(window[0]));
+	cns->erase(&(window[0]), EraseScreenEntire);
 	cns->locate(&(window[0]), 0, 0);
 #endif
 }

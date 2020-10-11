@@ -172,6 +172,19 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 		const char *inbuf)
 {
 	switch (dd) {
+	case 6:
+		if ((size == 5)
+				&& !memcmp(inbuf, "rawon", 5)) {
+			Screen *s = (Screen *) (info->unit);
+			s->wrap = false;
+			raw_mode = true;
+		} else if ((size == 6)
+				&& !memcmp(inbuf, "rawoff", 6)) {
+			Screen *s = (Screen *) (info->unit);
+			s->wrap = true;
+			raw_mode = false;
+		}
+		break;
 #ifdef USE_VESA
 	case 4:
 		put((Screen *) (info->unit), start, size, inbuf);
@@ -186,14 +199,6 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 			pset((Screen *) (info->unit), x, y, color);
 		}
 		break;
-	case 6:
-		if ((size == 5)
-				&& !memcmp(inbuf, "rawon", 5))
-			raw_mode = true;
-		else if ((size == 6)
-				&& !memcmp(inbuf, "rawoff", 6))
-			raw_mode = false;
-		break;
 	default: {
 		int result = kcall->mutex_lock(cons_mid, TMO_FEVR);
 		if (result)
@@ -207,8 +212,18 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 		}
 	}
 #else
-	default:
-		driver->write((char *) inbuf, 0, 0, size);
+	default: {
+		int result = kcall->mutex_lock(cons_mid, TMO_FEVR);
+		if (result)
+			kcall->printk("hmi: main cannot lock %d\n", result);
+		else {
+			driver->write((char *) inbuf, 0, 0, size);
+			result = kcall->mutex_unlock(cons_mid);
+			if (result)
+				kcall->printk("hmi: main cannot unlock %d\n",
+						result);
+		}
+	}
 #endif
 		break;
 	}
@@ -262,7 +277,6 @@ static void execute(request_message_t *req)
 		}
 		break;
 	case Twrite:
-#ifdef USE_VESA
 		if (message->Twrite.fid) {
 			if (message->Twrite.count > sizeof(line))
 				result = E_PAR;
@@ -277,10 +291,6 @@ static void execute(request_message_t *req)
 						message->Twrite.count,
 						line);
 		} else {
-#else
-		{
-#endif
-			//TODO loop by bufsize
 			unsigned int pos = 0;
 			result = 0;
 			for (size_t rest = message->Twrite.count; rest > 0;) {

@@ -26,6 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdbool.h>
 #include <stdint.h>
 
 #define MAX_COLOR 0x00ffffff
@@ -63,6 +64,7 @@ typedef struct _screen {
 	Font font;
 	unsigned int chr_width;
 	unsigned int chr_height;
+	bool wrap;
 } Screen;
 
 #endif

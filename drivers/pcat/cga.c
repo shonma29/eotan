@@ -36,18 +36,21 @@ For more information, please refer to <http://unlicense.org/>
 #define CRTC_CURSOR_HIGH 0x0e
 #define CRTC_CURSOR_LOW 0x0f
 
-static uint16_t _combine_chr(int color, uint8_t ch);
-static void _cls(Screen *s);
-static int _locate(Screen *s, const int x, const int y);
-static int _color(Screen *s, const int color);
-static void _putc(Screen *s, const uint8_t ch);
-static void __putc(Screen *s, const uint8_t ch);
-static void _newline(Screen *s);
-static void _cursor(Screen *s);
-static int _rollup(Screen *s, const int lines);
+static uint16_t _combine_chr(int, uint8_t);
+static void _erase(Screen *, const erase_type_e);
+static int _locate(Screen *, const int x, const int);
+static int _color(Screen *, const int);
+static void _putc(Screen *, const uint8_t);
+static void __putc(Screen *, const uint8_t);
+static void _newline(Screen *);
+static void _cursor(Screen *);
+static int _rollup(Screen *, const int);
+static void _fill(Screen *, const unsigned int, const unsigned int,
+		const unsigned int, const unsigned int);
+
 
 static Console _cns = {
-	_cls, _locate, _color, _putc, _rollup
+	_erase, _locate, _color, _putc, _rollup
 };
 
 
@@ -55,7 +58,7 @@ Console *getCgaConsole(Screen *s, const void *base)
 {
 	s->fgcolor.palet = CGA_DEFAULT_COLOR;
 	s->base = base;
-
+	s->wrap = true;
 	return &_cns;
 }
 
@@ -64,17 +67,32 @@ static uint16_t _combine_chr(int color, uint8_t ch)
 	return ((color << 8) | ch);
 }
 
-static void _cls(Screen *s)
+static void _erase(Screen *s, const erase_type_e type)
 {
-	uint16_t *p = (uint16_t*)(s->base);
-	uint16_t c = _combine_chr(s->fgcolor.palet, ' ');
+	switch (type) {
+	case EraseScreenFromCursor:
+		_fill(s, s->x, s->y, CGA_COLUMNS, s->y + 1);
+		if (s->y + 1 < CGA_COLUMNS)
+			_fill(s, 0, s->y + 1, CGA_COLUMNS, CGA_ROWS);
+		break;
+	case EraseScreenToCursor:
+		if (s->y > 0)
+			_fill(s, 0, 0, CGA_COLUMNS, s->y);
 
-	s->x = s->y = 0;
-	s->p = (uint8_t*)p;
-
-	for (size_t i = CGA_COLUMNS * CGA_ROWS; i > 0; i--) {
-		*p = c;
-		p++;
+		_fill(s, 0, s->y, s->x + 1, s->y + 1);
+		break;
+	case EraseScreenEntire:
+		_fill(s, 0, 0, CGA_COLUMNS, CGA_ROWS);
+		break;
+	case EraseLineFromCursor:
+		_fill(s, s->x, s->y, CGA_COLUMNS, s->y + 1);
+		break;
+	case EraseLineToCursor:
+		_fill(s, 0, s->y, s->x + 1, s->y + 1);
+		break;
+	case EraseLineEntire:
+		_fill(s, 0, s->y, CGA_COLUMNS, s->y + 1);
+		break;
 	}
 
 	_cursor(s);
@@ -90,9 +108,8 @@ static int _locate(Screen *s, const int x, const int y)
 
 	s->x = x;
 	s->y = y;
-	s->p = (uint8_t*)((uint16_t*)(s->base) + y * CGA_COLUMNS + x);
+	s->p = (uint8_t *) ((uint16_t *) (s->base) + y * CGA_COLUMNS + x);
 	_cursor(s);
-
 	return true;
 }
 
@@ -103,7 +120,6 @@ static int _color(Screen *s, const int color)
 		return false;
 
 	s->fgcolor.palet = color;
-
 	return true;
 }
 
@@ -114,49 +130,47 @@ static void _putc(Screen *s, const uint8_t ch)
 		if (s->x > 0) {
 			s->p -= sizeof(uint16_t);
 
-			uint16_t *p = (uint16_t*)(s->p);
+			uint16_t *p = (uint16_t *) (s->p);
 			uint16_t *q = p;
-			for(int len = CGA_COLUMNS - s->x; len > 0; len--) {
+			for(size_t rest = CGA_COLUMNS - s->x; rest > 0; rest--) {
 				q[0] = q[1];
 				q++;
 			}
 
 			__putc(s, ' ');
 			s->x--;
-			s->p = (uint8_t*)p;
+			s->p = (uint8_t *) p;
 		}
 		break;
-
 	case '\t':
 		{
-			int len = CONSOLE_TAB_COLUMNS
+			size_t len = CONSOLE_TAB_COLUMNS
 					- (s->x % CONSOLE_TAB_COLUMNS);
-			for (int i = 0; i < len; i++)
+			for (size_t rest = len; rest > 0; rest--)
 				__putc(s, ' ');
 
-			if (s->x + len >= CGA_COLUMNS)
+			if (s->x + len >= CGA_COLUMNS) {
+				len = CGA_COLUMNS - 1 - s->x;
+				s->x += len;
+				s->p += len * sizeof(uint16_t);
 				_newline(s);
-			else {
+			} else {
 				s->x += len;
 				s->p += len * sizeof(uint16_t);
 			}
 		}
 		break;
-
 	case '\n':
 		_newline(s);
 		break;
-
 	case '\r':
 		break;
-
 	case '\x7f':
 		break;
-
 	default:
 		__putc(s, (ch > ' ') ? ch : ' ');
 
-		if (s->x >= (CGA_COLUMNS - 1))
+		if (s->x >= CGA_COLUMNS - 1)
 			_newline(s);
 		else {
 			s->x++;
@@ -170,54 +184,67 @@ static void _putc(Screen *s, const uint8_t ch)
 
 static void __putc(Screen *s, const uint8_t ch)
 {
-	uint16_t *q = (uint16_t*)(s->p);
+	uint16_t *q = (uint16_t *) (s->p);
 	*q = _combine_chr(s->fgcolor.palet, ch);
 }
 
 static void _newline(Screen *s)
 {
-	if (s->y >= (CGA_ROWS - 1))
-		_rollup(s, 1);
+	if (s->y >= CGA_ROWS - 1) {
+		if (s->wrap)
+			_rollup(s, 1);
+		else
+			return;
+	}
 
 	s->x = 0;
 	s->y++;
-	s->p = (uint8_t*)((uint16_t*)(s->base) + s->y * CGA_COLUMNS);
+	s->p = (uint8_t *) ((uint16_t *) (s->base) + s->y * CGA_COLUMNS);
 }
 
 static void _cursor(Screen *s)
 {
 	unsigned int pos = s->y * CGA_COLUMNS + s->x;
-
 	outw(PORT_CRTC, (pos & 0xff00) | CRTC_CURSOR_HIGH);
 	outw(PORT_CRTC, ((pos & 0xff) << 8) | CRTC_CURSOR_LOW);
 }
 
 static int _rollup(Screen *s, const int lines)
 {
-	uint16_t *w = (uint16_t*)(s->base);
-	uint16_t *r = w + lines * CGA_COLUMNS;
-	uint16_t space = _combine_chr(s->fgcolor.palet, ' ');
-
 	if ((lines <= 0)
 			|| (lines >= CGA_ROWS))
 		return false;
 
-	for (size_t i = CGA_COLUMNS * (CGA_ROWS - lines); i > 0; i--) {
+	uint16_t *w = (uint16_t *) (s->base);
+	uint16_t *r = w + lines * CGA_COLUMNS;
+	for (size_t rest = CGA_COLUMNS * (CGA_ROWS - lines); rest > 0; rest--) {
 		*w = *r++;
 		w++;
 	}
 
-	for (size_t i = CGA_COLUMNS * lines; i > 0; i--) {
+	uint16_t space = _combine_chr(s->fgcolor.palet, ' ');
+	for (size_t rest = CGA_COLUMNS * lines; rest > 0; rest--) {
 		*w = space;
 		w++;
 	}
 
 	if ((s->y -= lines) < 0) {
 		s->y = s->x = 0;
-		s->p = (void*)(s->base);
-	}
-	else
+		s->p = (void *) (s->base);
+	} else
 		s->p -= lines * CGA_COLUMNS * sizeof(uint16_t);
 
 	return true;
+}
+
+static void _fill(Screen *s, const unsigned int x1, const unsigned int y1,
+		const unsigned int x2, const unsigned int y2)
+{
+	uint16_t *p = (uint16_t *) (s->base) + y1 * CGA_COLUMNS + x1;
+	uint16_t c = _combine_chr(s->fgcolor.palet, ' ');
+	for (size_t rest = (y2 - y1 - 1) * CGA_COLUMNS + (x2 - x1); rest > 0;
+			rest--) {
+		*p = c;
+		p++;
+	}
 }

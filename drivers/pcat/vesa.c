@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <vesa.h>
 #include <mpu/memory.h>
 
-static void _cls(Screen *);
+static void _erase(Screen *, const erase_type_e);
 static int _locate(Screen *, const int, const int);
 static int _color(Screen *, const int);
 static void _putc(Screen *, const uint8_t);
@@ -49,7 +49,7 @@ static void _copy_left(Screen *, unsigned int, unsigned int,
 		unsigned int, unsigned int, unsigned int);
 
 static Console _cns = {
-	_cls, _locate, _color, _putc, _rollup
+	_erase, _locate, _color, _putc, _rollup
 };
 
 
@@ -84,15 +84,49 @@ Console *getVesaConsole(Screen *s, const Font *default_font)
 	s->chr_width = s->width / s->font.width;
 	s->chr_height = s->height / s->font.height;
 
+	s->wrap = true;
 	return &_cns;
 }
 
-static void _cls(Screen *s)
+static void _erase(Screen *s, const erase_type_e type)
 {
-	s->x = s->y = 0;
-	s->p = (uint8_t *) (s->base);
+	_cursor(s);
 
-	_fill(s, 0, 0, s->width, s->height, &(s->bgcolor));
+	switch (type) {
+	case EraseScreenFromCursor:
+		_fill(s, s->x * s->font.width, s->y * s->font.height,
+				s->width, (s->y + 1) * s->font.height,
+				&(s->bgcolor));
+		if ((s->y + 1) * s->font.height < s->height)
+			_fill(s, 0, (s->y + 1) * s->font.height, s->width,
+					s->height, &(s->bgcolor));
+		break;
+	case EraseScreenToCursor:
+		if (s->y > 0)
+			_fill(s, 0, 0, s->width, s->y * s->font.height,
+					&(s->bgcolor));
+
+		_fill(s, 0, s->y * s->font.height, (s->x + 1) * s->font.width,
+				(s->y + 1) * s->font.height, &(s->bgcolor));
+		break;
+	case EraseScreenEntire:
+		_fill(s, 0, 0, s->width, s->height, &(s->bgcolor));
+		break;
+	case EraseLineFromCursor:
+		_fill(s, s->x * s->font.width, s->y * s->font.height,
+				s->width, (s->y + 1) * s->font.height,
+				&(s->bgcolor));
+		break;
+	case EraseLineToCursor:
+		_fill(s, 0, s->y * s->font.height, (s->x + 1) * s->font.width,
+				(s->y + 1) * s->font.height, &(s->bgcolor));
+		break;
+	case EraseLineEntire:
+		_fill(s, 0, s->y * s->font.height, s->width,
+				(s->y + 1) * s->font.height, &(s->bgcolor));
+		break;
+	}
+
 	_cursor(s);
 }
 
@@ -155,14 +189,17 @@ static void _putc(Screen *s, const uint8_t ch)
 		break;
 	case '\t':
 		{
-			int len = CONSOLE_TAB_COLUMNS
+			size_t len = CONSOLE_TAB_COLUMNS
 					- (s->x % CONSOLE_TAB_COLUMNS);
-			for (int i = 0; i < len; i++)
+			for (size_t rest = len; rest > 0; rest--)
 				__putc(s, ' ');
 
-			if (s->x + len >= s->chr_width)
+			if (s->x + len >= s->chr_width) {
+				len = s->chr_width - 1 - s->x;
+				s->x += len;
+				s->p += len * s->font.width * sizeof(Color_Rgb);
 				_newline(s);
-			else {
+			} else {
 				s->x += len;
 				s->p += len * s->font.width * sizeof(Color_Rgb);
 			}
@@ -178,9 +215,9 @@ static void _putc(Screen *s, const uint8_t ch)
 	default:
 		__putc(s, (ch > ' ') ? ch : ' ');
 
-		if (s->x >= (s->chr_width - 1))
+		if (s->x >= (s->chr_width - 1)) {
 			_newline(s);
-		else {
+		} else {
 			s->x++;
 			s->p += s->font.width * sizeof(Color_Rgb);
 		}
@@ -225,13 +262,16 @@ static void __putc(Screen *s, const uint8_t ch)
 
 static void _newline(Screen *s)
 {
-	if (s->y >= (s->chr_height - 1))
-		_rollup(s, 1);
+	if (s->y >= (s->chr_height - 1)) {
+		if (s->wrap)
+			_rollup(s, 1);
+		else
+			return;
+	}
 
 	s->x = 0;
 	s->y++;
-	s->p = ((uint8_t *) (s->base)
-			+ s->y * s->font.height * s->bpl);
+	s->p = ((uint8_t *) (s->base) + s->y * s->font.height * s->bpl);
 }
 
 static void _cursor(Screen *s)

@@ -30,12 +30,22 @@ For more information, please refer to <http://unlicense.org/>
 
 #define CONSOLE_TAB_COLUMNS (8)
 
+typedef enum {
+	EraseScreenFromCursor,
+	EraseScreenToCursor,
+	EraseScreenEntire,
+	EraseLineFromCursor,
+	EraseLineToCursor,
+	EraseLineEntire
+} erase_type_e;
+
 typedef struct {
-	void (*cls)(Screen *);
+	void (*erase)(Screen *, const erase_type_e);
 	int (*locate)(Screen *, const int, const int);
 	int (*color)(Screen *, const int);
 	void (*putc)(Screen *, const unsigned char);
 	int (*rollup)(Screen *, const int);
 } Console;
+
 
 #endif
