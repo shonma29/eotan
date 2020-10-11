@@ -1,5 +1,3 @@
-#ifndef _FCNTL_H_
-#define _FCNTL_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,19 +24,20 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <sys/types.h>
+#include <fcntl.h>
+#include <errno.h>
+#include "sys.h"
 
-#define O_RDONLY 0x00
-#define O_WRONLY 0x01
-#define O_RDWR 0x02
-#define O_ACCMODE 0x03
-#define O_EXEC 0x04
 
-#define O_APPEND 0x0100
-#define O_CREAT 0x0200
-#define O_TRUNC 0x0400
+int creat(const char *path, mode_t mode)
+{
+	int fd = open(path, O_CREAT | O_WRONLY | O_TRUNC, mode);
+	//TODO do in mm
+	if (fd == -1) {
+		int e = errno;
+		if (e == EEXIST)
+			return open(path, O_WRONLY | O_TRUNC);
+	}
 
-extern int open(const char *, int, ...);
-extern int creat(const char *, mode_t);
-
-#endif
+	return fd;
+}
