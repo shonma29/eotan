@@ -53,7 +53,7 @@ drivers:
 servers:
 	$(MAKE) -f servers/Makefile
 
-apps: bin test
+apps: bin test ne
 
 bin:
 	$(WRITER) $(INITRD) $(BLKSIZE) mkdir /bin
@@ -62,7 +62,10 @@ bin:
 test:
 	$(MAKE) -f app/test/Makefile WD=app/test
 
-data: motd bees.p6
+ne:
+	$(MAKE) -f app/ne/Makefile WD=app/ne
+
+data: motd bees.p6 fib love
 	./motd.sh > motd
 	for I in $^; do \
 		$(WRITER) $(INITRD) $(BLKSIZE) create /$$I $$I; \
@@ -88,6 +91,7 @@ clean:
 	$(MAKE) -f servers/Makefile clean
 	$(MAKE) -f app/bin/Makefile WD=app/bin clean
 	$(MAKE) -f app/test/Makefile WD=app/test clean
+	$(MAKE) -f app/ne/Makefile WD=app/ne clean
 	$(RM) $(INITRD) motd
 	$(MAKE) -f starter/arch/Makefile WD=starter/arch clean
 	$(RM) -rf build
