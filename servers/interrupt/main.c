@@ -35,7 +35,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <arch/archfunc.h>
 #include <mpu/mpufunc.h>
 #include <set/lf_queue.h>
-#include "../../lib/libserv/libserv.h"
 #include "interrupt_service.h"
 
 static char kqbuf[lfq_buf_size(sizeof(delay_param_t), KQUEUE_SIZE)];
@@ -103,7 +102,7 @@ static ER delay_initialize(void)
 	};
 	ER result = kcall->thread_create(PORT_DELAY, &pk_ctsk);
 	if (result) {
-		log_err(MYNAME ": create error=%d\n", result);
+		kcall->printk(MYNAME ": create error=%d\n", result);
 		return result;
 	}
 
@@ -122,7 +121,7 @@ static ER port_initialize(void)
 	};
 	W result = kcall->ipc_open(&pk_cpor);
 	if (result) {
-		log_err("interrupt: open error=%d\n", result);
+		kcall->printk("interrupt: open error=%d\n", result);
 		return result;
 	}
 
@@ -151,7 +150,7 @@ static ER accept(void)
 	int tag;
 	int size = kcall->ipc_receive(PORT_INTERRUPT, &tag, &args);
 	if (size < 0) {
-		log_err("interrupt: receive error=%d\n", size);
+		kcall->printk("interrupt: receive error=%d\n", size);
 		return size;
 	}
 
@@ -160,7 +159,7 @@ static ER accept(void)
 
 	int result = kcall->ipc_send(tag, &args, sizeof(*reply));
 	if (result)
-		log_err("interrupt: reply error=%d\n", result);
+		kcall->printk("interrupt: reply error=%d\n", result);
 
 	return result;
 }
@@ -169,12 +168,12 @@ void start(VP_INT exinf)
 {
 	if (delay_initialize() == E_OK)
 		if (port_initialize() == E_OK) {
-			log_info(MYNAME ": start\n");
+			kcall->printk(MYNAME ": start\n");
 
 			for (;;)
 				accept();
 
-			log_info(MYNAME ": end\n");
+			kcall->printk(MYNAME ": end\n");
 		}
 
 	kcall->thread_end_and_destroy();

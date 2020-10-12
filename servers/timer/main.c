@@ -110,7 +110,7 @@ static void wakeup(list_t *w, int dummy)
 		sleeper_t *s = getSleeperParent(w);
 		ER result = kcall->ipc_send(s->tag, &reply, sizeof(reply));
 		if (result != E_OK)
-			log_err(MYNAME ": reply(0x%x) failed %d\n",
+			kcall->printk(MYNAME ": reply(0x%x) failed %d\n",
 					s->tag, result);
 
 		slab_free(&sleeper_slab, s);
@@ -206,7 +206,7 @@ static void doit(void)
 		int tag;
 		int size = kcall->ipc_receive(PORT_TIMER, &tag, &arg);
 		if (size < 0) {
-			log_err(MYNAME ": receive failed %d\n", size);
+			kcall->printk(MYNAME ": receive failed %d\n", size);
 			break;
 		}
 
@@ -216,7 +216,7 @@ static void doit(void)
 			int result = kcall->ipc_send(tag, &reply,
 					sizeof(reply));
 			if (result != E_OK)
-				log_err(MYNAME ": reply(0x%x) failed %d\n",
+				kcall->printk(MYNAME ": reply(0x%x) failed %d\n",
 						tag, result);
 		}
 	}
@@ -253,7 +253,7 @@ static ER init(void)
 	};
 	ER_ID id = create_isr(&pk_cisr);
 	if (id < 0) {
-		log_err(MYNAME ": define_handler error=%d\n", id);
+		kcall->printk(MYNAME ": define_handler error=%d\n", id);
 		return id;
 	}
 
@@ -261,7 +261,7 @@ static ER init(void)
 
 	ER result = enable_interrupt(ir_pit);
 	if (result != E_OK) {
-		log_err(MYNAME ": interrupt_enable error=%d\n", result);
+		kcall->printk(MYNAME ": interrupt_enable error=%d\n", result);
 		destroy_isr(id);
 		return result;
 	}
@@ -269,7 +269,7 @@ static ER init(void)
 	T_CPOR pk_cpor = { TA_TFIFO, sizeof(struct timespec), sizeof(ER) };
 	result = kcall->ipc_open(&pk_cpor);
 	if (result != E_OK) {
-		log_err(MYNAME ": open failed %d\n", result);
+		kcall->printk(MYNAME ": open failed %d\n", result);
 		destroy_isr(id);
 		return result;
 	}
@@ -280,13 +280,13 @@ static ER init(void)
 void start(VP_INT exinf)
 {
 	if (init() == E_OK) {
-		log_info(MYNAME ": start\n");
+		kcall->printk(MYNAME ": start\n");
 		doit();
-		log_info(MYNAME ": end\n");
+		kcall->printk(MYNAME ": end\n");
 
 		ER error = kcall->ipc_close();
 		if (error != E_OK)
-			log_err(MYNAME ": close failed %d\n", error);
+			kcall->printk(MYNAME ": close failed %d\n", error);
 	}
 
 	kcall->thread_end_and_destroy();
