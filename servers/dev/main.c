@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <services.h>
 #include <nerve/kcall.h>
 #include "../../lib/libserv/libserv.h"
+#include "../../kernel/arch/archfunc.h"
 #include "dev.h"
 #include "table.h"
 
@@ -79,6 +80,8 @@ static void doit(void)
 
 static ER initialize(void)
 {
+	peripheral_set_map();
+
 	if (!dev_initialize())
 		return E_NOMEM;
 

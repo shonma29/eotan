@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #define BOOT_INFO_ADDR 0x80003000
 #define SYSTEM_INFO_ADDR 0x80003e00
+#define PERIPHERAL_INFO_ADDR 0x80003ff0
 #define MEMORY_MAP_ADDR 0x80180000
 
 #define CORE_STACK_ADDR 0x80008000
@@ -82,5 +83,6 @@ typedef enum {
 #define MAX_DEVICE_NAME (31)
 
 #define MAX_INTERRUPT_SERVICE (64)
+#define MAX_PERIPHERAL (32)
 
 #endif

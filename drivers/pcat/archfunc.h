@@ -59,4 +59,7 @@ extern void keyboard_interrupt(VP_INT);
 /* mouse.c */
 extern void mouse_interrupt(VP_INT);
 
+/* pci.c */
+void peripheral_set_map(void);
+
 #endif

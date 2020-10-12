@@ -31,6 +31,6 @@ ENTRY_ADDR = 0x80140000
 ENTRY_FUNC = start
 
 $(TARGET): $(OBJS) \
-		 lib/libserv.a lib/libnc.a
+		 lib/libserv.a lib/libnc.a kernel/arch/libarch.a
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
 	$(STRIP) $@

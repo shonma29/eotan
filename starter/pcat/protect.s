@@ -42,6 +42,7 @@ For more information, please refer to <http://unlicense.org/>
 
 .set STACK_ADDR, 0x00008000
 .set MEMORY_INFO_ADDR, 0x3000
+.set PERIPHERAL_INFO_ADDR, 0x3ff0
 
 .ifdef USE_VESA
 .set VESA_INFO_ADDR, 0x3c00
@@ -91,6 +92,12 @@ memory_loop:
 	xorl %eax, %eax
 	movw %di, %ax
 	movl %eax, MEMORY_INFO_ADDR
+
+	/* check PCI */
+	movw $0xb101, %ax
+	int $0x1a
+	movw $PERIPHERAL_INFO_ADDR, %si
+	movw %ax, (%si)
 
 .ifdef USE_VESA
 	/* check if supports VESA */
