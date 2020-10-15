@@ -92,6 +92,7 @@ static inline lldiv_t lldiv(long long numerator, long long denominator)
 
 extern int atoi(const char *);
 extern long atol(const char *);
+extern long strtol(const char *restrict, char **restrict, int);
 extern void *bsearch(const void *, const void *, size_t,
 		size_t, int (*)(const void *, const void *));
 extern void qsort(void *, size_t, size_t, int (*)(const void *, const void *));

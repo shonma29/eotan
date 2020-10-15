@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <errno.h>
 #include <local.h>
 #include <math.h>
 #include <stdio.h>
@@ -31,7 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <unistd.h>
 #include <sys/wait.h>
 
-
+#if 0
 static int recursion(int v)
 {
 	if ((v % 1000) == 0)
@@ -59,101 +60,8 @@ static double pop(void)
 	return y;
 }
 
-#if 0
-static void teststrtol(void)
+static void test_fork_fpu(void)
 {
-	char *x;
-	char *y;
-
-	x = "  -0xa";
-	printf("%s %ld %p %p\n", x, strtol(x, &y, 10), x, y);
-
-	x = "  -1234a";
-	printf("%s %ld %p %p\n", x, strtol(x, &y, 10), x, y);
-
-	x = "-1f42";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 16), x, y);
-
-	x = "1F42";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 16), x, y);
-
-	x = "0755";
-	printf("%s %lo %p %p\n", x, strtol(x, &y, 8), x, y);
-
-	x = "0755";
-	printf("%s %lo %p %p\n", x, strtol(x, &y, 0), x, y);
-
-	x = "0x3122";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
-
-	x = "0x0";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
-
-	x = "0x7FFFFFFF";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
-
-	x = "0x80000000";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
-
-	x = "0x80000001";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
-
-	x = "0xFFFFFFFF";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
-
-	x = "0x100000000";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
-
-	x = "-0x0";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
-
-	x = "-0x7FFFFFFF";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
-
-	x = "-0x80000000";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
-
-	x = "-0x80000001";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
-
-	x = "-0xFFFFFFFF";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
-
-	x = "-0x100000000";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
-}
-#endif
-
-int main(int argc, char **argv)
-{
-	double x = 1.0;
-	printf("%f\n", 0.0175);
-	printf("%f\n", 0.175);
-	printf("%f\n", 1.75);
-	printf("%f\n", -17.5);
-	printf("%f\n", sin(x));
-	printf("%f\n", cos(x));
-
-	long lx = 15;
-	printf("%ld\n", lx);
-	printf("%lo\n", lx);
-	printf("%lx\n", lx);
-#if 0
-	printf("%lld\n", (long long) lx);
-
-	// test exception
-	int i = 1;
-	int j = 0;
-	printf("div %d\n", i / j);
-#endif
-	// test thread local
-	thread_local_t *local = _get_thread_local();
-	printf("thread_local=%p, error_no=%d, thread_id=%d\n",
-			local, local->error_no, local->thread_id);
-
-	// test stack expansion (need no optimizer)
-	printf("%d\n", recursion(1024));
-
 	// test fpu
 	double v = 2.48;
 	double w;
@@ -189,10 +97,160 @@ int main(int argc, char **argv)
 		w = pop();
 		printf("parent: %f %f\n", v, w);
 	}
+}
 
+static void teststrtol(void)
+{
+	char *x;
+	char *y;
+
+	x = "  -1/3";
+	printf("%s %ld %p %p\n", x, strtol(x, &y, 36), x, y);
+
+	x = "  -1:3";
+	printf("%s %ld %p %p\n", x, strtol(x, &y, 36), x, y);
+
+	x = "  -1@3";
+	printf("%s %ld %p %p\n", x, strtol(x, &y, 36), x, y);
+
+	x = "  -1[3";
+	printf("%s %ld %p %p\n", x, strtol(x, &y, 36), x, y);
+
+	x = "  -0xa";
+	printf("%s %ld %p %p\n", x, strtol(x, &y, 10), x, y);
+
+	x = "  -1239A";
+	printf("%s %ld %p %p\n", x, strtol(x, &y, 10), x, y);
+
+	x = "-1af2";
+	printf("%s %lx %p %p\n", x, strtol(x, &y, 16), x, y);
+
+	x = "  +1239A";
+	printf("%s %ld %p %p\n", x, strtol(x, &y, 10), x, y);
+
+	x = "0AZ9";
+	printf("%s %ld %p %p\n", x, strtol(x, &y, 36), x, y);
+
+	x = "0az9";
+	printf("%s %ld %p %p\n", x, strtol(x, &y, 36), x, y);
+
+	x = "1234";
+	printf("%s %ld %p %p\n", x, strtol(x, &y, 10), x, y);
+
+	x = "0x1234";
+	printf("%s %ld %p %p\n", x, strtol(x, &y, 10), x, y);
+
+	x = "1AF2";
+	printf("%s %lx %p %p\n", x, strtol(x, &y, 16), x, y);
+
+	x = "0x1AF2";
+	printf("%s %lx %p %p\n", x, strtol(x, &y, 16), x, y);
+
+	x = "0X1AF2";
+	printf("%s %lx %p %p\n", x, strtol(x, &y, 16), x, y);
+
+	x = "1x1AF2";
+	printf("%s %lx %p %p\n", x, strtol(x, &y, 16), x, y);
+
+	x = "0y1AF2";
+	printf("%s %lx %p %p\n", x, strtol(x, &y, 16), x, y);
+
+	x = "01";
+	printf("%s %ld %p %p %d\n", x, strtol(x, &y, 1), x, y, errno);
+
+	x = "01";
+	printf("%s %ld %p %p\n", x, strtol(x, &y, 2), x, y);
+
+	x = "01";
+	printf("%s %ld %p %p\n", x, strtol(x, &y, 36), x, y);
+
+	x = "01";
+	printf("%s %ld %p %p %d\n", x, strtol(x, &y, 37), x, y, errno);
+
+	x = "0750";
+	printf("%s %lo %p %p\n", x, strtol(x, &y, 8), x, y);
+
+	x = "0x3122";
+	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
+
+	x = "0X3122";
+	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
+
+	x = "0y3122";
+	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
+
+	x = "1x3122";
+	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
+
+	x = "0750";
+	printf("%s %lo %p %p\n", x, strtol(x, &y, 0), x, y);
+
+	x = "750";
+	printf("%s %ld %p %p\n", x, strtol(x, &y, 0), x, y);
+
+	x = "0x0";
+	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
+
+	x = "0x7FFFFFFF0";
+	printf("%s %lx %p %p %d\n", x, strtol(x, &y, 0), x, y, errno);
+
+	x = "0x7FFFFFFF";
+	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
+
+	x = "0x80000000";
+	printf("%s %lx %p %p %d\n", x, strtol(x, &y, 0), x, y, errno);
+
+	x = "-0x80000000";
+	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
+
+	x = "-0x80000001";
+	printf("%s %lx %p %p %d\n", x, strtol(x, &y, 0), x, y, errno);
+}
+
+static void test_local(void)
+{
+	// test thread local
+	thread_local_t *local = _get_thread_local();
+	printf("thread_local=%p, error_no=%d, thread_id=%d\n",
+			local, local->error_no, local->thread_id);
+}
+
+static void test_printf(void)
+{
+	double x = 1.0;
+	printf("%f\n", 0.0175);
+	printf("%f\n", 0.175);
+	printf("%f\n", 1.75);
+	printf("%f\n", -17.5);
+	printf("%f\n", sin(x));
+	printf("%f\n", cos(x));
+
+	long lx = 15;
+	printf("%ld\n", lx);
+	printf("%lo\n", lx);
+	printf("%lx\n", lx);
+
+	printf("%lld\n", (long long) lx);
+}
+#endif
+
+int main(int argc, char **argv)
+{
 #if 0
+	test_printf();
+	test_local();
+	test_fork_fpu();
+
 	// test strtol
 	teststrtol();
+
+	// test exception
+	int i = 1;
+	int j = 0;
+	printf("div %d\n", i / j);
+
+	// test stack expansion (need no optimizer)
+	printf("%d\n", recursion(1024));
 #endif
 	return 0;
 }
