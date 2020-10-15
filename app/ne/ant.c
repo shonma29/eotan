@@ -16,6 +16,7 @@ static long index;
 static long page;
 static long epage;
 static char buf[BUF];
+static char copy_buf[BUF];
 static char *ebuf;
 static char *gap = buf;
 static char *egap;
@@ -86,17 +87,22 @@ static void top(void);
 static void up(void);
 static void wleft(void);
 static void wright(void);
+static void paste(void);
+static void cut_to_eol(void);
+static void newline(void);
+
 
 static char *key;
 static void (**func)();
 
-static char key_normal[] = "\x02\x0e\x10\x06\x16\x1a\x01\x05\x04\x0c\x1b\x18";
+static char key_normal[] = "\x02\x0e\x10\x06\x16\x1a\x01\x05\x04\x0c\x1b\x18\x0b\x19\x0f";
 static void (*func_normal[])() = {
 	left, down, up, right,
 	pgdown, pgup,
 	lnbegin, lnend,
 	delete, redraw,
-	to_esc, to_x
+	to_esc, to_x,
+	cut_to_eol, paste, newline
 };
 
 static char key_esc[] = "\x07" "bf<>";
@@ -287,12 +293,32 @@ static void insert(const char ch)
 	if (ch == '\b') {
 		if (buf < gap)
 			--gap;
-	} else if (gap < egap) {
-		*gap++ = ch == '\r' ? '\n' : ch;
-	}
+	} else if (gap < egap)
+		*gap++ = (ch == '\r') ? '\n' : ch;
 
 	index = pos(egap);
-	display();
+}
+
+static void newline(void)
+{
+	insert('\n');
+	left();
+}
+
+static void paste(void)
+{
+	for (char *p = copy_buf; *p; p++) {
+		movegap();
+
+		char ch = *p;
+		if (ch == '\b') {
+			if (buf < gap)
+				--gap;
+		} else if (gap < egap)
+			*gap++ = (ch == '\r') ? '\n' : ch;
+
+		index = pos(egap);
+	}
 }
 
 static void delete(void)
@@ -301,6 +327,18 @@ static void delete(void)
 
 	if (egap < ebuf)
 		index = pos(++egap);
+}
+
+static void cut_to_eol(void)
+{
+	movegap();
+
+	unsigned long offset;
+	for (offset = 0; (egap < ebuf) && (*egap != '\n'); offset++, egap++)
+		copy_buf[offset] = *egap;
+
+	copy_buf[offset] = '\0';
+	index = pos(egap);
 }
 
 static void file(void)
@@ -402,6 +440,7 @@ int main(int argc, char **argv)
 		close(fd);
 	}
 
+	copy_buf[0] = '\0';
 	top();
 	to_normal();
 
