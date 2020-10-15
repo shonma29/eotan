@@ -4,7 +4,7 @@
  *	Public Domain 1991 by Anthony Howe.  All rights released.
  */
 #include <ctype.h>
-#include "curses.h"
+#include <curses.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdio.h>

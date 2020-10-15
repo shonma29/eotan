@@ -38,10 +38,9 @@ all: $(TARGET)
 		$(WRITER) $(INITRD) $(BLKSIZE) chmod 755 /bin/$$I; \
 	done
 
-$(TARGET): $(WD)/ant.o $(WD)/curses.o
+$(TARGET): $(WD)/ant.o lib/libcurses.a
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^ \
-		lib/libc.a lib/libnc.a #-lcurses -ltermcap
+		lib/libcurses.a lib/libc.a lib/libnc.a #-lcurses -ltermcap
 	$(STRIP) $@
 
 $(WD)/ant.o: $(WD)/ant.c
-$(WD)/curses.o: $(WD)/curses.c
