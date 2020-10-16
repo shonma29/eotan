@@ -28,29 +28,30 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <sys/types.h>
 
+//TODO mpu specific
 #define TIMESPEC_OFFSET_NSEC (0x7fffffff - (1000 * 1000 * 1000) + 1)
 
 typedef int clockid_t;
 
 struct timespec {
 	time_t tv_sec;
-	long tv_nsec;
+	int32_t tv_nsec;
 };
 
 
 static inline void timespec_set(volatile struct timespec *t,
-		const long long *sec, const long *nsec)
+		const int64_t *sec, const int32_t *nsec)
 {
 	t->tv_sec = *sec;
 	t->tv_nsec = *nsec + TIMESPEC_OFFSET_NSEC;
 }
 
-static inline void timespec_get_sec(long long *sec, const struct timespec *t)
+static inline void timespec_get_sec(int64_t *sec, const struct timespec *t)
 {
 	*sec = t->tv_sec;
 }
 
-static inline void timespec_get_nsec(long *nsec, const struct timespec *t)
+static inline void timespec_get_nsec(int32_t *nsec, const struct timespec *t)
 {
 	*nsec = t->tv_nsec - TIMESPEC_OFFSET_NSEC;
 }

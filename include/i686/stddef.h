@@ -27,18 +27,18 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-typedef int ptrdiff_t;
-typedef unsigned int size_t;
+typedef __PTRDIFF_TYPE__ ptrdiff_t;
+typedef __SIZE_TYPE__ size_t;
 
 #define __STDC_ISO_10646__
-#define MB_CUR_MAX (4)
+#define MB_CUR_MAX (__SIZEOF_WCHAR_T__)
 
-typedef unsigned int wchar_t;
+typedef __WCHAR_TYPE__ wchar_t;
 
 #ifndef NULL
-#define NULL ((void*)0)
+#define NULL ((void *) 0)
 #endif
 
-#define offsetof(type, member) (size_t)&(((type*)0)->member)
+#define offsetof(type, member) (size_t) &(((type *) 0)->member)
 
 #endif

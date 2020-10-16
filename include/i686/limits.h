@@ -27,30 +27,30 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-#define CHAR_BIT 8
+#define CHAR_BIT (__CHAR_BIT__)
 
 #define MB_LEN_MAX 6
 
-#define CHAR_MAX 0x7f
-#define CHAR_MIN (-0x7f - 1)
-#define SCHAR_MAX 0x7f
-#define SCHAR_MIN (-0x7f - 1)
-#define UCHAR_MAX 0xffU
+#define SCHAR_MAX (__SCHAR_MAX__)
+#define SCHAR_MIN (-SCHAR_MAX - 1)
+#define UCHAR_MAX ((unsigned char) SCHAR_MAX * 2 + 1)
+#define CHAR_MAX SCHAR_MAX
+#define CHAR_MIN SCHAR_MIN
 
-#define SHRT_MAX 0x7fff
-#define SHRT_MIN (-0x7fff - 1)
-#define USHRT_MAX 0xffffU
+#define SHRT_MAX (__SHRT_MAX__)
+#define SHRT_MIN (-SHRT_MAX - 1)
+#define USHRT_MAX ((unsigned short) SHRT_MAX * 2 + 1)
 
-#define INT_MAX 0x7fffffff
-#define INT_MIN (-0x7fffffff - 1)
-#define UINT_MAX 0xffffffffU
+#define INT_MAX (__INT_MAX__)
+#define INT_MIN (-INT_MAX - 1)
+#define UINT_MAX ((unsigned int) INT_MAX * 2 + + 1)
 
-#define LONG_MAX 0x7fffffffL
-#define LONG_MIN (-0x7fffffffL - 1)
-#define ULONG_MAX 0xffffffffUL
+#define LONG_MAX (__LONG_MAX__)
+#define LONG_MIN (-LONG_MAX - 1)
+#define ULONG_MAX ((unsigned long) LONG_MAX * 2 + 1)
 
-#define LLONG_MAX 0x7fffffffffffffffLL
-#define LLONG_MIN (-0x7fffffffffffffffLL - 1)
-#define ULLONG_MAX 0xffffffffffffffffULL
+#define LLONG_MAX (__LONG_LONG_MAX__)
+#define LLONG_MIN (-LLONG_MAX - 1)
+#define ULLONG_MAX ((unsigned long long) LLONG_MAX * 2 + 1)
 
 #endif

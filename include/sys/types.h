@@ -56,6 +56,7 @@ typedef bool boolean_t;
 typedef uint64_t fsblkcnt_t;
 typedef uint64_t fsfilcnt_t;
 
-typedef int ssize_t;
+//TODO mpu specific
+typedef __PTRDIFF_TYPE__ ssize_t;
 
 #endif

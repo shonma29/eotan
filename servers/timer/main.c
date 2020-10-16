@@ -81,7 +81,7 @@ static inline sleeper_t *getSleeperParent(const list_t *p)
 
 static void time_initialize(void)
 {
-	const static long nsec = 0;
+	const static int32_t nsec = 0;
 	time_t seconds;
 	rtc_get_time(&seconds);
 	timespec_set(&system_time, &seconds, &nsec);
