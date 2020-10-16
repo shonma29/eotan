@@ -175,7 +175,7 @@ static void teststrtol(void)
 	printf("%s %lx %d\n", x, strtol(x, &y, 16),
 			(uintptr_t) y - (uintptr_t) x);
 
-	_set_local_errno(0);
+	errno = 0;
 	x = "01";
 	printf("%s %ld %d %d\n", x, strtol(x, &y, 1),
 			(uintptr_t) y - (uintptr_t) x, errno);
@@ -188,7 +188,7 @@ static void teststrtol(void)
 	printf("%s %ld %d\n", x, strtol(x, &y, 36),
 			(uintptr_t) y - (uintptr_t) x);
 
-	_set_local_errno(0);
+	errno = 0;
 	x = "01";
 	printf("%s %ld %d %d\n", x, strtol(x, &y, 37),
 			(uintptr_t) y - (uintptr_t) x, errno);
@@ -225,7 +225,7 @@ static void teststrtol(void)
 	printf("%s %lx %d\n", x, strtol(x, &y, 0),
 			(uintptr_t) y - (uintptr_t) x);
 
-	_set_local_errno(0);
+	errno = 0;
 	x = "0x7FFFFFFF00";
 	printf("%s %lx %d %d\n", x, strtol(x, &y, 0),
 			(uintptr_t) y - (uintptr_t) x, errno);
@@ -234,7 +234,7 @@ static void teststrtol(void)
 	printf("%s %lx %d\n", x, strtol(x, &y, 0),
 			(uintptr_t) y - (uintptr_t) x);
 
-	_set_local_errno(0);
+	errno = 0;
 	x = "0x80000000";
 	printf("%s %lx %d %d\n", x, strtol(x, &y, 0),
 			(uintptr_t) y - (uintptr_t) x, errno);
@@ -243,17 +243,17 @@ static void teststrtol(void)
 	printf("%s %lx %d\n", x, strtol(x, &y, 0),
 			(uintptr_t) y - (uintptr_t) x);
 
-	_set_local_errno(0);
+	errno = 0;
 	x = "-0x80000001";
 	printf("%s %lx %d %d\n", x, strtol(x, &y, 0),
 			(uintptr_t) y - (uintptr_t) x, errno);
 
-	_set_local_errno(0);
+	errno = 0;
 	x = "0xffffffff";
 	printf("%s %lx %d %d\n", x, strtol(x, &y, 0),
 			(uintptr_t) y - (uintptr_t) x, errno);
 
-	_set_local_errno(0);
+	errno = 0;
 	x = "-0xffffffff";
 	printf("%s %lx %d %d\n", x, strtol(x, &y, 0),
 			(uintptr_t) y - (uintptr_t) x, errno);

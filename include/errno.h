@@ -29,6 +29,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <local.h>
 #include <sys/errno.h>
 
-#define errno _get_local_errno()
+#define errno (_get_thread_local())->error_no
 
 #endif

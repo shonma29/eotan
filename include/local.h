@@ -54,11 +54,6 @@ static inline process_local_t *_get_process_local(void)
 	return ((process_local_t *) PROCESS_LOCAL_ADDR);
 }
 
-static inline int _get_local_errno(void)
-{
-	return (_get_thread_local())->error_no;
-}
-
 static inline void _set_local_errno(const int error_no)
 {
 
