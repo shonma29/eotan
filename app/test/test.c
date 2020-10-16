@@ -105,109 +105,158 @@ static void teststrtol(void)
 	char *y;
 
 	x = "  -1/3";
-	printf("%s %ld %p\n", x, strtol(x, NULL, 36), x);
+	printf("%s %ld\n", x, strtol(x, NULL, 36));
 
 	x = "  -1/3";
-	printf("%s %ld %p %p\n", x, strtol(x, &y, 36), x, y);
+	printf("%s %ld %ld\n", x, strtol(x, &y, 36),
+			(uintptr_t) y - (uintptr_t) x);
 
 	x = "  -1:3";
-	printf("%s %ld %p %p\n", x, strtol(x, &y, 36), x, y);
+	printf("%s %ld %ld\n", x, strtol(x, &y, 36),
+			(uintptr_t) y - (uintptr_t) x);
 
 	x = "  -1@3";
-	printf("%s %ld %p %p\n", x, strtol(x, &y, 36), x, y);
+	printf("%s %ld %ld\n", x, strtol(x, &y, 36),
+			(uintptr_t) y - (uintptr_t) x);
 
 	x = "  -1[3";
-	printf("%s %ld %p %p\n", x, strtol(x, &y, 36), x, y);
+	printf("%s %ld %ld\n", x, strtol(x, &y, 36),
+			(uintptr_t) y - (uintptr_t) x);
 
 	x = "  -0xa";
-	printf("%s %ld %p %p\n", x, strtol(x, &y, 10), x, y);
+	printf("%s %ld %ld\n", x, strtol(x, &y, 10),
+			(uintptr_t) y - (uintptr_t) x);
 
 	x = "  -1239A";
-	printf("%s %ld %p %p\n", x, strtol(x, &y, 10), x, y);
+	printf("%s %ld %ld\n", x, strtol(x, &y, 10),
+			(uintptr_t) y - (uintptr_t) x);
 
 	x = "-1af2";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 16), x, y);
+	printf("%s %lx %ld\n", x, strtol(x, &y, 16),
+			(uintptr_t) y - (uintptr_t) x);
 
 	x = "  +1239A";
-	printf("%s %ld %p %p\n", x, strtol(x, &y, 10), x, y);
+	printf("%s %ld %ld\n", x, strtol(x, &y, 10),
+			(uintptr_t) y - (uintptr_t) x);
 
 	x = "0AZ9";
-	printf("%s %ld %p %p\n", x, strtol(x, &y, 36), x, y);
+	printf("%s %ld %ld\n", x, strtol(x, &y, 36),
+			(uintptr_t) y - (uintptr_t) x);
 
 	x = "0az9";
-	printf("%s %ld %p %p\n", x, strtol(x, &y, 36), x, y);
+	printf("%s %ld %ld\n", x, strtol(x, &y, 36),
+			(uintptr_t) y - (uintptr_t) x);
 
 	x = "1234";
-	printf("%s %ld %p %p\n", x, strtol(x, &y, 10), x, y);
+	printf("%s %ld %ld\n", x, strtol(x, &y, 10),
+			(uintptr_t) y - (uintptr_t) x);
 
 	x = "0x1234";
-	printf("%s %ld %p %p\n", x, strtol(x, &y, 10), x, y);
+	printf("%s %ld %ld\n", x, strtol(x, &y, 10),
+			(uintptr_t) y - (uintptr_t) x);
 
 	x = "1AF2";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 16), x, y);
+	printf("%s %lx %ld\n", x, strtol(x, &y, 16),
+			(uintptr_t) y - (uintptr_t) x);
 
 	x = "0x1AF2";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 16), x, y);
+	printf("%s %lx %ld\n", x, strtol(x, &y, 16),
+			(uintptr_t) y - (uintptr_t) x);
 
 	x = "0X1AF2";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 16), x, y);
+	printf("%s %lx %ld\n", x, strtol(x, &y, 16),
+			(uintptr_t) y - (uintptr_t) x);
 
 	x = "1x1AF2";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 16), x, y);
+	printf("%s %lx %ld\n", x, strtol(x, &y, 16),
+			(uintptr_t) y - (uintptr_t) x);
 
 	x = "0y1AF2";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 16), x, y);
+	printf("%s %lx %ld\n", x, strtol(x, &y, 16),
+			(uintptr_t) y - (uintptr_t) x);
+
+	_set_local_errno(0);
+	x = "01";
+	printf("%s %ld %ld %d\n", x, strtol(x, &y, 1),
+			(uintptr_t) y - (uintptr_t) x, errno);
 
 	x = "01";
-	printf("%s %ld %p %p %d\n", x, strtol(x, &y, 1), x, y, errno);
+	printf("%s %ld %ld\n", x, strtol(x, &y, 2),
+			(uintptr_t) y - (uintptr_t) x);
 
 	x = "01";
-	printf("%s %ld %p %p\n", x, strtol(x, &y, 2), x, y);
+	printf("%s %ld %ld\n", x, strtol(x, &y, 36),
+			(uintptr_t) y - (uintptr_t) x);
 
+	_set_local_errno(0);
 	x = "01";
-	printf("%s %ld %p %p\n", x, strtol(x, &y, 36), x, y);
-
-	x = "01";
-	printf("%s %ld %p %p %d\n", x, strtol(x, &y, 37), x, y, errno);
+	printf("%s %ld %ld %d\n", x, strtol(x, &y, 37),
+			(uintptr_t) y - (uintptr_t) x, errno);
 
 	x = "0750";
-	printf("%s %lo %p %p\n", x, strtol(x, &y, 8), x, y);
+	printf("%s %lo %ld\n", x, strtol(x, &y, 8),
+			(uintptr_t) y - (uintptr_t) x);
 
 	x = "0x3122";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
+	printf("%s %lx %ld\n", x, strtol(x, &y, 0),
+			(uintptr_t) y - (uintptr_t) x);
 
 	x = "0X3122";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
+	printf("%s %lx %ld\n", x, strtol(x, &y, 0),
+			(uintptr_t) y - (uintptr_t) x);
 
 	x = "0y3122";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
+	printf("%s %lx %ld\n", x, strtol(x, &y, 0),
+			(uintptr_t) y - (uintptr_t) x);
 
 	x = "1x3122";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
+	printf("%s %lx %ld\n", x, strtol(x, &y, 0),
+			(uintptr_t) y - (uintptr_t) x);
 
 	x = "0750";
-	printf("%s %lo %p %p\n", x, strtol(x, &y, 0), x, y);
+	printf("%s %lo %ld\n", x, strtol(x, &y, 0),
+			(uintptr_t) y - (uintptr_t) x);
 
 	x = "750";
-	printf("%s %ld %p %p\n", x, strtol(x, &y, 0), x, y);
+	printf("%s %ld %ld\n", x, strtol(x, &y, 0),
+			(uintptr_t) y - (uintptr_t) x);
 
 	x = "0x0";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
+	printf("%s %lx %ld\n", x, strtol(x, &y, 0),
+			(uintptr_t) y - (uintptr_t) x);
 
+	_set_local_errno(0);
 	x = "0x7FFFFFFF00";
-	printf("%s %lx %p %p %d\n", x, strtol(x, &y, 0), x, y, errno);
+	printf("%s %lx %ld %d\n", x, strtol(x, &y, 0),
+			(uintptr_t) y - (uintptr_t) x, errno);
 
 	x = "0x7FFFFFFF";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
+	printf("%s %lx %ld\n", x, strtol(x, &y, 0),
+			(uintptr_t) y - (uintptr_t) x);
 
+	_set_local_errno(0);
 	x = "0x80000000";
-	printf("%s %lx %p %p %d\n", x, strtol(x, &y, 0), x, y, errno);
+	printf("%s %lx %ld %d\n", x, strtol(x, &y, 0),
+			(uintptr_t) y - (uintptr_t) x, errno);
 
 	x = "-0x80000000";
-	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
+	printf("%s %lx %ld\n", x, strtol(x, &y, 0),
+			(uintptr_t) y - (uintptr_t) x);
 
+	_set_local_errno(0);
 	x = "-0x80000001";
-	printf("%s %lx %p %p %d\n", x, strtol(x, &y, 0), x, y, errno);
+	printf("%s %lx %ld %d\n", x, strtol(x, &y, 0),
+			(uintptr_t) y - (uintptr_t) x, errno);
+
+	_set_local_errno(0);
+	x = "0xffffffff";
+	printf("%s %lx %ld %d\n", x, strtol(x, &y, 0),
+			(uintptr_t) y - (uintptr_t) x, errno);
+
+	_set_local_errno(0);
+	x = "-0xffffffff";
+	printf("%s %lx %ld %d\n", x, strtol(x, &y, 0),
+			(uintptr_t) y - (uintptr_t) x, errno);
 }
 
 static void test_local(void)
