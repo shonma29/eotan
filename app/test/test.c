@@ -105,6 +105,9 @@ static void teststrtol(void)
 	char *y;
 
 	x = "  -1/3";
+	printf("%s %ld %p\n", x, strtol(x, NULL, 36), x);
+
+	x = "  -1/3";
 	printf("%s %ld %p %p\n", x, strtol(x, &y, 36), x, y);
 
 	x = "  -1:3";
@@ -191,7 +194,7 @@ static void teststrtol(void)
 	x = "0x0";
 	printf("%s %lx %p %p\n", x, strtol(x, &y, 0), x, y);
 
-	x = "0x7FFFFFFF0";
+	x = "0x7FFFFFFF00";
 	printf("%s %lx %p %p %d\n", x, strtol(x, &y, 0), x, y, errno);
 
 	x = "0x7FFFFFFF";

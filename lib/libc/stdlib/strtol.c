@@ -39,9 +39,14 @@ For more information, please refer to <http://unlicense.org/>
 
 static inline bool is_hex(const unsigned char *r)
 {
-	return (r[0] == '0'
-			&& ((r[1] == 'x')
-					|| (r[1] == 'X')));
+	return ((r[0] == '0')
+			&& (toupper(r[1]) == 'X'));
+}
+
+static inline void set_endptr(char **restrict endptr, const unsigned char *str)
+{
+	if (endptr)
+		*endptr = (char *) str;
 }
 
 static long get_num(const int, const int);
@@ -50,17 +55,18 @@ static long get_num(const int, const int);
 static long get_num(const int chr, const int base)
 {
 	long n;
+
 	if ((chr >= '0')
 			&& (chr <= '9'))
 		n = chr - '0';
-	else if ((chr >= 'A')
-			&& (chr <= 'Z'))
-		n = chr - 'A' + 10;
-	else if ((chr >= 'a')
-			&& (chr <= 'z'))
-		n = chr - 'a' + 10;
-	else
-		return (-1);
+	else {
+		int c = toupper(chr);
+		if ((c >= 'A')
+				&& (c <= 'Z'))
+			n = c - 'A' + 10;
+		else
+			return (-1);
+	}
 
 	return ((base <= n) ? (-1) : n);
 }
@@ -69,7 +75,7 @@ long strtol(const char *restrict str, char **restrict endptr, int base)
 {
 	bool minus = false;
 	unsigned char *r = (unsigned char *) str;
-	*endptr = (char *) str;
+	set_endptr(endptr, r);
 
 	for (; isspace(*r); r++);
 
@@ -93,8 +99,7 @@ long strtol(const char *restrict str, char **restrict endptr, int base)
 				&& is_hex(r))
 			r += 2;
 	} else if (r[0] == '0') {
-		if ((r[1] == 'x')
-				|| (r[1] == 'X')) {
+		if (toupper(r[1]) == 'X') {
 			r += 2;
 			base = BASE_HEX;
 		} else {
@@ -111,14 +116,12 @@ long strtol(const char *restrict str, char **restrict endptr, int base)
 		if (__builtin_umull_overflow(v, base, &y)
 				|| (y > max)
 				|| ((unsigned long) n > max - y)) {
-			*endptr = (char *) r;
 			_set_local_errno(ERANGE);
-			return max;
-		}
-
-		v = y + (unsigned long) n;
+			v = max;
+		} else
+			v = y + (unsigned long) n;
 	}
 
-	*endptr = (char *) r;
+	set_endptr(endptr, r);
 	return (minus ? (-v) : v);
 }
