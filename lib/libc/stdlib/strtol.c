@@ -96,18 +96,21 @@ long strtol(const char *restrict str, char **restrict endptr, int base)
 		}
 
 		if ((base == BASE_HEX)
-				&& is_hex(r))
+				&& is_hex(r)
+				&& (get_num(r[2], BASE_HEX) >= 0))
 			r += 2;
 	} else if (r[0] == '0') {
-		if (toupper(r[1]) == 'X') {
+		if ((toupper(r[1]) == 'X')
+				&& (get_num(r[2], BASE_HEX) >= 0)) {
 			r += 2;
 			base = BASE_HEX;
-		} else {
-			r++;
+		} else
 			base = BASE_OCT;
-		}
 	} else
 		base = BASE_DEC;
+
+	if (get_num(*r, base) < 0)
+		return 0;
 
 	unsigned long v = 0;
 	unsigned long max = minus ? LONG_MIN : LONG_MAX;

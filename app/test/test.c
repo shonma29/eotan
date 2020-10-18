@@ -104,6 +104,14 @@ static void teststrtol(void)
 	char *x;
 	char *y;
 
+	x = "";
+	printf("%s %ld %ld\n", x, strtol(x, &y, 0),
+			(unsigned long) y - (unsigned long) x);
+
+	x = "-";
+	printf("%s %ld %ld\n", x, strtol(x, &y, 0),
+			(unsigned long) y - (unsigned long) x);
+
 	x = "  -1/3";
 	printf("%s %ld\n", x, strtol(x, NULL, 36));
 
@@ -205,9 +213,29 @@ static void teststrtol(void)
 	printf("%s %lx %d\n", x, strtol(x, &y, 0),
 			(uintptr_t) y - (uintptr_t) x);
 
-	x = "0y3122";
+	x = "0y3123";
 	printf("%s %lx %d\n", x, strtol(x, &y, 0),
 			(uintptr_t) y - (uintptr_t) x);
+
+	x = "0xy3123";
+	printf("%s %lx %d\n", x, strtol(x, &y, 0),
+			(uintptr_t) y - (uintptr_t) x);
+
+	x = "0y3124";
+	printf("%s %lx %ld\n", x, strtol(x, &y, 8),
+			(unsigned long) y - (unsigned long) x);
+
+	x = "0xy3124";
+	printf("%s %lx %ld\n", x, strtol(x, &y, 8),
+			(unsigned long) y - (unsigned long) x);
+
+	x = "0y3125";
+	printf("%s %lx %ld\n", x, strtol(x, &y, 16),
+			(unsigned long) y - (unsigned long) x);
+
+	x = "0xy3125";
+	printf("%s %lx %ld\n", x, strtol(x, &y, 16),
+			(unsigned long) y - (unsigned long) x);
 
 	x = "1x3122";
 	printf("%s %lx %d\n", x, strtol(x, &y, 0),
