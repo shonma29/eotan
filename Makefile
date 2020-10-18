@@ -53,7 +53,7 @@ drivers:
 servers:
 	$(MAKE) -f servers/Makefile
 
-apps: bin test ne
+apps: bin test nscm ne
 
 bin:
 	$(WRITER) $(INITRD) $(BLKSIZE) mkdir /bin
@@ -61,6 +61,9 @@ bin:
 
 test:
 	$(MAKE) -f app/test/Makefile WD=app/test
+
+nscm:
+	$(MAKE) -f app/nscm/Makefile WD=app/nscm
 
 ne:
 	$(MAKE) -f app/ne/Makefile WD=app/ne
@@ -91,6 +94,7 @@ clean:
 	$(MAKE) -f servers/Makefile clean
 	$(MAKE) -f app/bin/Makefile WD=app/bin clean
 	$(MAKE) -f app/test/Makefile WD=app/test clean
+	$(MAKE) -f app/nscm/Makefile WD=app/nscm clean
 	$(MAKE) -f app/ne/Makefile WD=app/ne clean
 	$(RM) $(INITRD) motd
 	$(MAKE) -f starter/arch/Makefile WD=starter/arch clean
