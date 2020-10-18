@@ -133,13 +133,18 @@ static void _putd(State *s, const int v, const int radix)
 
 static void _puth(State *s, const int x)
 {
-	int shift;
+	bool show = false;
 
-	for (shift = INT_BIT - 4; shift >= 0; shift -= 4) {
+	for (int shift = INT_BIT - 4; shift >= 0; shift -= 4) {
 		int c = (x >> shift) & 0xf;
-
-		_putchar(s, c + ((c >= 10) ? ('a' - 10) : '0'));
+		if (c) {
+			_putchar(s, c + ((c >= 10) ? ('a' - 10) : '0'));
+			show = true;
+		}
 	}
+
+	if (!show)
+		_putchar(s, '0');
 }
 
 #ifdef USE_FLOAT
