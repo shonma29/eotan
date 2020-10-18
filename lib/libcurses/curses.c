@@ -175,8 +175,6 @@ static int _puts(char *str)
 //TODO optimize csi
 int refresh(void)
 {
-	pos_transmit = 0;
-
 	char buf[16];
 	if (dirty) {
 		unsigned int lastx = 0xffffffff;
@@ -310,7 +308,7 @@ int initscr(void)
 		dirty = false;
 
 		pos_transmit = 0;
-		if (_send_str("\x1b[0m\x1b[2J\x1b[1;1H"))
+		if (_send_str("\x1b[?7l\x1b[0m\x1b[2J\x1b[1;1H"))
 			return ERR;
 
 		return _flush();
@@ -337,8 +335,11 @@ static void _release(void)
 int endwin(void)
 {
 	//TODO reset mode, attr, color
-	int result = ((clear() | move(0, 0) | refresh() | rawoff()) ?
-			ERR : OK);
+	pos_transmit = 0;
+	int result = (_send_str("\x1b[?7h\x1b[0m\x1b[2J\x1b[1;1H")
+			| _flush() | rawoff()) ?
+			ERR : OK;
+
 	_release();
 	return result;
 }

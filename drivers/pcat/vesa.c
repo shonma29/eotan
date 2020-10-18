@@ -198,7 +198,9 @@ static void _putc(Screen *s, const uint8_t ch)
 				len = s->chr_width - 1 - s->x;
 				s->x += len;
 				s->p += len * s->font.width * sizeof(Color_Rgb);
-				_newline(s);
+
+				if (s->wrap)
+					_newline(s);
 			} else {
 				s->x += len;
 				s->p += len * s->font.width * sizeof(Color_Rgb);
@@ -216,7 +218,8 @@ static void _putc(Screen *s, const uint8_t ch)
 		__putc(s, (ch > ' ') ? ch : ' ');
 
 		if (s->x >= (s->chr_width - 1)) {
-			_newline(s);
+			if (s->wrap)
+				_newline(s);
 		} else {
 			s->x++;
 			s->p += s->font.width * sizeof(Color_Rgb);
@@ -262,12 +265,8 @@ static void __putc(Screen *s, const uint8_t ch)
 
 static void _newline(Screen *s)
 {
-	if (s->y >= (s->chr_height - 1)) {
-		if (s->wrap)
-			_rollup(s, 1);
-		else
-			return;
-	}
+	if (s->y >= (s->chr_height - 1))
+		_rollup(s, 1);
 
 	s->x = 0;
 	s->y++;

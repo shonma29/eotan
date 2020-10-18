@@ -61,6 +61,7 @@ static void _push(esc_state_t *, const char);
 static void state_null(esc_state_t *, const char);
 static void state_esc(esc_state_t *, const char);
 static void state_csi(esc_state_t *, const char);
+static void state_csi_private(esc_state_t *, const char);
 static void state_exec_csi(esc_state_t *);
 static void eputc(esc_state_t *, const char);
 
@@ -192,6 +193,12 @@ static void state_csi(esc_state_t *state, const char ch)
 			state->columns = 0;
 			return;
 		}
+	} else if (ch == '?') {
+		if ((state->num_of_params == 0)
+				&& (state->columns == 0)) {
+			state->func = state_csi_private;
+			return;
+		}
 	} else if (is_decimal(ch)) {
 		if (state->columns < ESC_MAX_COLUMNS) {
 			state->columns++;
@@ -199,11 +206,38 @@ static void state_csi(esc_state_t *state, const char ch)
 			state->params[state->num_of_params] += ch - '0';
 			return;
 		}
-	} else {
+	} else
 		state_exec_csi(state);
-		state->func = state_null;
-		return;
-	}
+
+	state->func = state_null;
+}
+
+static void state_csi_private(esc_state_t *state, const char ch)
+{
+	_push(state, ch);
+
+	if (is_decimal(ch)) {
+		if (state->columns < ESC_MAX_COLUMNS) {
+			state->columns++;
+			state->params[state->num_of_params] *= 10;
+			state->params[state->num_of_params] += ch - '0';
+			return;
+		}
+	} else
+		switch (state->buf[state->len - 1]) {
+		case 'h':
+			if (state->params[0] == 7)
+				state->screen->wrap = false;
+
+			break;
+		case 'l':
+			if (state->params[0] == 7)
+				state->screen->wrap = true;
+
+			break;
+		default:
+			break;
+		}
 
 	state->func = state_null;
 }
@@ -233,6 +267,22 @@ static void state_exec_csi(esc_state_t *state)
 				break;
 			case 2:
 				cns->erase(state->screen, EraseScreenEntire);
+				break;
+			default:
+				break;
+			}
+		break;
+	case 'K':
+		if (state->num_of_params < 1)
+			switch (state->params[0]) {
+			case 0:
+				cns->erase(state->screen, EraseLineFromCursor);
+				break;
+			case 1:
+				cns->erase(state->screen, EraseLineToCursor);
+				break;
+			case 2:
+				cns->erase(state->screen, EraseLineEntire);
 				break;
 			default:
 				break;

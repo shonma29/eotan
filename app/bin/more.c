@@ -77,16 +77,7 @@ int main(int argc, char **argv)
 
 	rawon();
 
-	for (;;) {
-		bool done = show(fp);
-
-		fputs("--More--", stdout);
-		done |= process();
-		putchar('\n');
-
-		if (done)
-			break;
-	}
+	while (!show(fp) && !process());
 
 	rawoff();
 	fclose(fp);

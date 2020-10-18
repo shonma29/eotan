@@ -153,7 +153,9 @@ static void _putc(Screen *s, const uint8_t ch)
 				len = CGA_COLUMNS - 1 - s->x;
 				s->x += len;
 				s->p += len * sizeof(uint16_t);
-				_newline(s);
+
+				if (s->wrap)
+					_newline(s);
 			} else {
 				s->x += len;
 				s->p += len * sizeof(uint16_t);
@@ -170,9 +172,10 @@ static void _putc(Screen *s, const uint8_t ch)
 	default:
 		__putc(s, (ch > ' ') ? ch : ' ');
 
-		if (s->x >= CGA_COLUMNS - 1)
-			_newline(s);
-		else {
+		if (s->x >= CGA_COLUMNS - 1) {
+			if (s->wrap)
+				_newline(s);
+		} else {
 			s->x++;
 			s->p += sizeof(uint16_t);
 		}
@@ -190,12 +193,8 @@ static void __putc(Screen *s, const uint8_t ch)
 
 static void _newline(Screen *s)
 {
-	if (s->y >= CGA_ROWS - 1) {
-		if (s->wrap)
-			_rollup(s, 1);
-		else
-			return;
-	}
+	if (s->y >= CGA_ROWS - 1)
+		_rollup(s, 1);
 
 	s->x = 0;
 	s->y++;

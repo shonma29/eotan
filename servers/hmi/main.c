@@ -173,16 +173,12 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 {
 	switch (dd) {
 	case 6:
-		if ((size == 5)
-				&& !memcmp(inbuf, "rawon", 5)) {
-			Screen *s = (Screen *) (info->unit);
-			s->wrap = false;
-			raw_mode = true;
-		} else if ((size == 6)
-				&& !memcmp(inbuf, "rawoff", 6)) {
-			Screen *s = (Screen *) (info->unit);
-			s->wrap = true;
-			raw_mode = false;
+		if (size == 5) {
+			if (!memcmp(inbuf, "rawon", 5))
+				raw_mode = true;
+		} else if (size == 6) {
+			if (!memcmp(inbuf, "rawoff", 6))
+				raw_mode = false;
 		}
 		break;
 #ifdef USE_VESA
