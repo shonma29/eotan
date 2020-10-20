@@ -137,7 +137,7 @@ static void _puth(State *s, const int x)
 
 	for (int shift = INT_BIT - 4; shift >= 0; shift -= 4) {
 		int c = (x >> shift) & 0xf;
-		if (c) {
+		if (show || c) {
 			_putchar(s, c + ((c >= 10) ? ('a' - 10) : '0'));
 			show = true;
 		}
