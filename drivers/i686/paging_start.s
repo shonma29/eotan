@@ -24,51 +24,24 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stddef.h>
-#include <set/list.h>
+
+.text
+
+.globl paging_start
 
 
-void list_initialize(list_t *entry)
-{
-	entry->prev = entry->next = entry;
-}
+paging_start:
+	movl %cr4, %eax
+	/* set PSE, PGE */
+	orb $0x90, %al
+	movl %eax, %cr4
 
-void list_append(list_t *to, list_t *entry)
-{
-	list_t *prev = to->prev;
-
-	entry->next = to;
-	entry->prev = prev;
-	prev->next = to->prev = entry;
-}
-
-void list_insert(list_t *to, list_t *entry)
-{
-	list_t *next = to->next;
-
-	entry->next = next;
-	entry->prev = to;
-	next->prev = to->next = entry;
-}
-
-void list_remove(list_t *entry)
-{
-	list_t *next = entry->next;
-	list_t *prev = entry->prev;
-
-	next->prev = prev;
-	prev->next = next;
-	list_initialize(entry);
-}
-
-list_t *list_pick(list_t *guard)
-{
-	list_t *entry = guard->next;
-
-	if (list_is_edge(guard, entry))
-		entry = NULL;
-	else
-		list_remove(entry);
-
-	return entry;
-}
+	movl %cr0, %eax
+	/* set PG, AM, WP, MP */
+	orl $0x80050002, %eax
+	/* clear CD, NW, TS, EM */
+	andl $0x9ffffff3, %eax
+	movl %eax, %cr0
+	movl %cr3, %eax
+	movl %eax, %cr3
+	ret

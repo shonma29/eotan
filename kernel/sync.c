@@ -30,8 +30,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "thread.h"
 #include "ready.h"
 
-volatile bool sync_blocking = true;
-
 
 void wait(thread_t *task)
 {

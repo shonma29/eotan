@@ -166,7 +166,7 @@ void context_switch(thread_t *prev, thread_t *next)
 		}
 	}
 
-	stack_switch_wrapper(&(prev->mpu.esp0), &(next->mpu.esp0));
+	stack_switch(&(prev->mpu.esp0), &(next->mpu.esp0));
 }
 
 void create_context(thread_t *th)

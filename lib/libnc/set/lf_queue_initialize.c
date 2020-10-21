@@ -25,50 +25,21 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stddef.h>
-#include <set/list.h>
+#include <set/lf_queue.h>
+#include <set/lf_stack.h>
 
 
-void list_initialize(list_t *entry)
+int lfq_initialize(volatile lfq_t *q, void *buf, size_t size, size_t node_num)
 {
-	entry->prev = entry->next = entry;
-}
+	lfs_initialize(&(q->stack), buf,
+			lfq_node_size(size) - sizeof(lfs_entry_t), node_num);
 
-void list_append(list_t *to, list_t *entry)
-{
-	list_t *prev = to->prev;
+	lfq_node_t *node = (lfq_node_t *) lfs_pop(&(q->stack));
+	if (!node)
+		return QUEUE_MEMORY;
 
-	entry->next = to;
-	entry->prev = prev;
-	prev->next = to->prev = entry;
-}
-
-void list_insert(list_t *to, list_t *entry)
-{
-	list_t *next = to->next;
-
-	entry->next = next;
-	entry->prev = to;
-	next->prev = to->next = entry;
-}
-
-void list_remove(list_t *entry)
-{
-	list_t *next = entry->next;
-	list_t *prev = entry->prev;
-
-	next->prev = prev;
-	prev->next = next;
-	list_initialize(entry);
-}
-
-list_t *list_pick(list_t *guard)
-{
-	list_t *entry = guard->next;
-
-	if (list_is_edge(guard, entry))
-		entry = NULL;
-	else
-		list_remove(entry);
-
-	return entry;
+	node->next.ptr = NULL;
+	q->tail.ptr = q->head.ptr = node;
+	q->size = size;
+	return QUEUE_OK;
 }

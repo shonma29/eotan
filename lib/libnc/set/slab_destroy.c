@@ -24,51 +24,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stddef.h>
-#include <set/list.h>
+#include <set/slab.h>
 
 
-void list_initialize(list_t *entry)
+void slab_destroy(slab_t *slab)
 {
-	entry->prev = entry->next = entry;
-}
-
-void list_append(list_t *to, list_t *entry)
-{
-	list_t *prev = to->prev;
-
-	entry->next = to;
-	entry->prev = prev;
-	prev->next = to->prev = entry;
-}
-
-void list_insert(list_t *to, list_t *entry)
-{
-	list_t *next = to->next;
-
-	entry->next = next;
-	entry->prev = to;
-	next->prev = to->next = entry;
-}
-
-void list_remove(list_t *entry)
-{
-	list_t *next = entry->next;
-	list_t *prev = entry->prev;
-
-	next->prev = prev;
-	prev->next = next;
-	list_initialize(entry);
-}
-
-list_t *list_pick(list_t *guard)
-{
-	list_t *entry = guard->next;
-
-	if (list_is_edge(guard, entry))
-		entry = NULL;
-	else
-		list_remove(entry);
-
-	return entry;
+	list_t *q = &(slab->blocks);
+	for (list_t *p = list_dequeue(q); p; p = list_dequeue(q))
+		slab->pfree((void *) ((uintptr_t) p
+				- offsetof(slab_block_t, blocks)));
 }

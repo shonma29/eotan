@@ -54,18 +54,7 @@ static inline void tr_set(const unsigned short selector)
 			:"r"(selector));
 }
 
-static inline void stack_switch_wrapper(void *prev, void *next)
-{
-	__asm__ __volatile__ ( \
-			"movl %0, %%ecx\n\t" \
-			"movl %1, %%edx\n\t" \
-			"call stack_switch\n\t" \
-			: \
-			:"g"(prev), "g"(next)
-			:"%eax","%ecx","%edx");
-}
-
 /* switch.s */
-extern void stack_switch(void);
+extern void stack_switch(void **, void **);
 
 #endif

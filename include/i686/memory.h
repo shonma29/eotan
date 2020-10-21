@@ -91,4 +91,44 @@ static inline size_t pages(const size_t bytes)
 	return (bytes + PAGE_SIZE - 1) >> BITS_OFFSET;
 }
 
+static inline void *fault_get_addr(void)
+{
+	void *address;
+	__asm__ __volatile__ (
+		"movl %%cr2, %0\n\t"
+		:"=a"(address)
+		:
+		:);
+	return address;
+}
+
+static inline void paging_set_directory(void *address)
+{
+	__asm__ __volatile__ (
+		"movl %0, %%eax\n\t"
+		"movl %%eax, %%cr3\n\t"
+		:
+		:"m"(address)
+		:"%eax");
+}
+
+static inline void tlb_flush(void *address)
+{
+	__asm__ __volatile__ (
+		"invlpg %0\n\t"
+		:
+		:"m"(address)
+		:);
+}
+
+static inline void tlb_flush_all(void)
+{
+	__asm__ __volatile__ (
+		"movl %%cr3, %%eax\n\t"
+		"movl %%eax, %%cr3\n\t"
+		:
+		:
+		:"%eax");
+}
+
 #endif

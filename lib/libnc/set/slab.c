@@ -81,14 +81,6 @@ int slab_create(slab_t *slab)
 	return SLAB_OK;
 }
 
-void slab_destroy(slab_t *slab)
-{
-	list_t *q = &(slab->blocks);
-	for (list_t *p = list_dequeue(q); p; p = list_dequeue(q))
-		slab->pfree((void *) ((uintptr_t) p
-				- offsetof(slab_block_t, blocks)));
-}
-
 void *slab_alloc(slab_t *slab)
 {
 	slab_block_t *block = (slab_block_t *) list_head(&(slab->empties));
@@ -105,7 +97,7 @@ void *slab_alloc(slab_t *slab)
 		slab->empty_num--;
 	}
 
-	return list_dequeue(&(block->entries));
+	return list_pop(&(block->entries));
 }
 
 void slab_free(slab_t *slab, void *p)
@@ -127,6 +119,6 @@ void slab_free(slab_t *slab, void *p)
 		slab->block_num--;
 		slab->pfree(block);
 	} else
-		list_enqueue(&(block->entries),
+		list_push(&(block->entries),
 				&(((slab_entry_t *) p)->entries));
 }

@@ -31,6 +31,8 @@ For more information, please refer to <http://unlicense.org/>
 
 stack_switch:
 	popl %eax
+	movl (%esp), %ecx
+	movl 4(%esp), %edx
 	pushfl
 	pushl %cs
 	pushl %eax

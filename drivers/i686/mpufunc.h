@@ -91,12 +91,8 @@ extern ER move_stack(const PTE *, void *, const void *,
 extern void gdt_load(void);
 extern void idt_load(void);
 
-/* paging.s */
-extern void *fault_get_addr(void);
-extern void paging_set_directory(void *);
+/* paging_start.s */
 extern void paging_start(void);
-extern void tlb_flush_all(void);
-extern void tlb_flush(VP);
 
 /* service_handler.s */
 extern void service_handler(void);

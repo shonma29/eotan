@@ -1,5 +1,5 @@
-#ifndef SET_LIST_H
-#define SET_LIST_H
+#ifndef _SET_LIST_H_
+#define _SET_LIST_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -58,20 +58,27 @@ static inline bool list_is_edge(const list_t *guard, const list_t *entry)
 static inline list_t *list_edge_to_null(const list_t *guard,
 		const list_t *entry)
 {
-	return ((guard == entry) ? NULL : ((list_t*)entry));
+	return ((guard == entry) ? NULL : ((list_t *) entry));
 }
 
-extern void list_initialize(list_t *entry);
-extern void list_release(list_t *guard);
+static inline list_t *list_head(const list_t *guard)
+{
+	return list_edge_to_null(guard, guard->next);
+}
 
-extern list_t *list_head(const list_t *guard);
-extern list_t *list_tail(const list_t *guard);
+static inline list_t *list_tail(const list_t *guard)
+{
+	return list_edge_to_null(guard, guard->prev);
+}
 
-extern void list_append(list_t *to, list_t *entry);
-extern void list_insert(list_t *to, list_t *entry);
-extern void list_remove(list_t *entry);
+extern void list_initialize(list_t *);
+extern void list_release(list_t *);
 
-extern list_t *list_pick(list_t *guard);
+extern void list_append(list_t *, list_t *);
+extern void list_insert(list_t *, list_t *);
+extern void list_remove(list_t *);
+
+extern list_t *list_pick(list_t *);
 
 static inline void list_push(list_t *guard, list_t *entry)
 {

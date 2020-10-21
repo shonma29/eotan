@@ -33,7 +33,7 @@ static inline int count_ntz(const int d)
 		return 32;
 
 	int cnt;
-	__asm__( \
+	__asm__ __volatile__ ( \
 		"bsfl %1, %0\n\t" \
 		:"=r"(cnt) \
 		:"r"(d));

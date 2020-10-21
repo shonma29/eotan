@@ -31,33 +31,14 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/lf_stack.h>
 
 
-int lfq_initialize(volatile lfq_t *q, void *buf, size_t size, size_t node_num)
-{
-	lfq_node_t *node;
-
-	lfs_initialize(&(q->stack), buf,
-			lfq_node_size(size) - sizeof(lfs_entry_t), node_num);
-	node = (lfq_node_t*)lfs_pop(&(q->stack));
-
-	if (!node)
-		return QUEUE_MEMORY;
-
-	node->next.ptr = NULL;
-	q->tail.ptr = q->head.ptr = node;
-	q->size = size;
-
-	return QUEUE_OK;
-}
-
 int lfq_enqueue(volatile lfq_t *q, void *value)
 {
-	lfq_node_t *node = (lfq_node_t*)lfs_pop(&(q->stack));
-
+	lfq_node_t *node = (lfq_node_t *) lfs_pop(&(q->stack));
 	if (!node)
 		return QUEUE_MEMORY;
 
 	node->next.ptr = NULL;
-	memcpy(node->value, (char*)value, q->size);
+	memcpy(node->value, (char *) value, q->size);
 
 	for (;;) {
 		lfq_pointer_t tail = q->tail;
@@ -66,21 +47,21 @@ int lfq_enqueue(volatile lfq_t *q, void *value)
 		if ((tail.ptr == q->tail.ptr)
 				&& (tail.count == q->tail.count)) {
 			if (next.ptr)
-				cas64((char*)&(q->tail),
+				cas64((char *) &(q->tail),
 					tail.count,
-					(unsigned int)tail.ptr,
+					(unsigned int) tail.ptr,
 					tail.count + 1,
-					(unsigned int)next.ptr);
-			else if (cas64((char*)&(tail.ptr->next),
+					(unsigned int) next.ptr);
+			else if (cas64((char *) &(tail.ptr->next),
 					next.count,
-					(unsigned int)next.ptr,
+					(unsigned int) next.ptr,
 					next.count + 1,
-					(unsigned int)node)) {
-				cas64((char*)&(q->tail),
+					(unsigned int) node)) {
+				cas64((char *) &(q->tail),
 						tail.count,
-						(unsigned int)tail.ptr,
+						(unsigned int) tail.ptr,
 						tail.count + 1,
-						(unsigned int)node);
+						(unsigned int) node);
 				return QUEUE_OK;
 			}
 		}
@@ -100,19 +81,20 @@ int lfq_dequeue(volatile lfq_t *q, void *value)
 				if (!next.ptr)
 					return QUEUE_EMPTY;
 
-				cas64((char*)&(q->tail),
+				cas64((char *) &(q->tail),
 						tail.count,
-						(unsigned int)tail.ptr,
+						(unsigned int) tail.ptr,
 						tail.count + 1,
-						(unsigned int)next.ptr);
+						(unsigned int) next.ptr);
 			} else {
-				memcpy((char*)value, next.ptr->value, q->size);
+				memcpy((char *) value, next.ptr->value,
+						q->size);
 
-				if (cas64((char*)&(q->head),
+				if (cas64((char *) &(q->head),
 						head.count,
-						(unsigned int)head.ptr,
+						(unsigned int) head.ptr,
 						head.count + 1,
-						(unsigned int)next.ptr)) {
+						(unsigned int) next.ptr)) {
 					lfs_push(&(q->stack), head.ptr);
 					return QUEUE_OK;
 				}

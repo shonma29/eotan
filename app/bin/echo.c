@@ -1,4 +1,4 @@
-#/*
+/*
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -24,44 +24,37 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
 	int i = 1;
-	int out_count = 0;
 	bool print_newline = true;
 
 	//TODO omit if POSIX
-	// parse options
 	if (argc > 1) {
-		char *p = argv[1];
-
 		// option
-		if (p[0] == '-') {
+		char *p = argv[1];
+		if (p[0] == '-')
 			switch (p[1]) {
 			case 'n':
 				print_newline = false;
 				i++;
 				break;
-
 			default:
 				break;
 			}
-		}
 	}
 
-	// parse arguments
+	bool out_1st = true;
 	for (; i < argc; i++) {
-		char *p = argv[i];
-
-		if (out_count > 0)
+		if (!out_1st)
 			fputc(' ', stdout);
 
-		fputs(p, stdout);
-		out_count++;
+		fputs((char *) argv[i], stdout);
+		out_1st = false;
 	}
 
 	if (print_newline)

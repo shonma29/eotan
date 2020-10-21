@@ -24,43 +24,17 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-
-.text
-
-.globl fault_get_addr
-.globl paging_set_directory
-.globl paging_start
-.globl tlb_flush_all
-.globl tlb_flush
+#include <set/list.h>
 
 
-fault_get_addr:
-	movl %cr2, %eax
-	ret
+void list_release(list_t *guard)
+{
+	list_t *entry = guard;
 
-paging_set_directory:
-	movl 4(%esp), %eax
-	movl %eax, %cr3
-	ret
+	do {
+		list_t *next = entry->next;
 
-paging_start:
-	movl %cr4, %eax
-	/* set PSE, PGE */
-	orb $0x90, %al
-	movl %eax, %cr4
-
-	movl %cr0, %eax
-	/* set PG, AM, WP, MP */
-	orl $0x80050002, %eax
-	/* clear CD, NW, TS, EM */
-	andl $0x9ffffff3, %eax
-	movl %eax, %cr0
-
-tlb_flush_all:
-	movl %cr3, %eax
-	movl %eax, %cr3
-	ret
-
-tlb_flush:
-	invlpg 4(%esp)
-	ret
+		list_initialize(entry);
+		entry = next;
+	} while (!list_is_edge(guard, entry));
+}
