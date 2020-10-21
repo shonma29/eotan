@@ -68,7 +68,7 @@ nscm:
 ne:
 	$(MAKE) -f app/ne/Makefile WD=app/ne
 
-data: motd bees.p6 fib love
+data: motd bees.p6
 	./motd.sh > motd
 	for I in $^; do \
 		$(WRITER) $(INITRD) $(BLKSIZE) create /$$I $$I; \
