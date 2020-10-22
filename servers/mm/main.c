@@ -58,7 +58,8 @@ static int (*funcs[])(mm_request_t *) = {
 	mm_fstat,
 	mm_chmod,
 	mm_clock_gettime,
-	mm_thread_find
+	mm_thread_find,
+	mm_kill
 };
 
 #define BUFSIZ (sizeof(sys_args_t))

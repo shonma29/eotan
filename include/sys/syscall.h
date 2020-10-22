@@ -49,7 +49,8 @@ typedef enum {
 	syscall_fstat = 18,
 	syscall_chmod = 19,
 	syscall_clock_gettime = 20,
-	syscall_thread_find = 21
+	syscall_thread_find = 21,
+	syscall_kill = 22
 } syscall_e;
 
 typedef struct {

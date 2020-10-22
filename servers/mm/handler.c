@@ -25,13 +25,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <stdint.h>
 #include <services.h>
-#include <mpu/memory.h>
 #include <nerve/icall.h>
 #include <nerve/kcall.h>
 #include "../../kernel/mpu/mpufunc.h"
-#include "../../lib/libserv/libserv.h"
 #include "process.h"
 
 static void expand_stack(const int, const int);
@@ -40,7 +37,8 @@ static void kill(const int, const int);
 
 void default_handler(VP_INT exinf)
 {
-	if (icall->handle(kill, icall->thread_get_id(), 0))
+	//TODO map to signal no
+	if (icall->handle(kill, icall->thread_get_id(), (int) exinf))
 		//TODO test
 		panic("mm: full kqueue");
 }
@@ -79,33 +77,26 @@ static void expand_stack(const int tid, const int addr)
 				unmap_user_pages(p->directory, start, size);
 			else {
 				s->len += end - (uintptr_t) start;
+				//TODO optimize
 				tlb_flush_all();
 				return;
 			}
 		}
 
 		//TODO test
+		//TODO define signal no
 		kill(tid, 0);
 	} else
 		//TODO test
-		kcall->printk("mm: expand unknown thread=%d\n", tid);
+		kcall->printk("mm: expand unknown thread=%d addr=%p\n",
+				tid, addr);
 }
 
-static void kill(const int tid, const int dummy)
+static void kill(const int tid, const int no)
 {
 	kcall->thread_suspend(tid);
 
-	mm_thread_t *th = thread_find(tid);
-	if (!th) {
-		//TODO test
-		kcall->printk("mm: kill unknown thread=%d\n", tid);
-		return;
-	}
-
-	mm_process_t *p = get_process(th);
-	if (p) {
-		//TODO test
-		kcall->printk("mm: killed %d\n", p->node.key);
-		process_destroy(p, 9);
-	}
+	//TODO use not thread id but process id
+	sys_args_t args = { syscall_kill, tid, no };
+	kcall->ipc_send(PORT_MM, &args, sizeof(args));
 }

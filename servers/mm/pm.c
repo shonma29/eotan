@@ -27,7 +27,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <elf.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <services.h>
 #include <string.h>
 #include <nerve/ipc_utils.h>
 #include <nerve/kcall.h>
@@ -35,6 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../lib/libserv/libserv.h"
 #include "proxy.h"
 
+static int cleanup(mm_process_t *, mm_thread_t *, mm_request_t *);
 static int _seek(mm_process_t *, mm_file_t *, sys_args_t *, mm_request_t *);
 static size_t calc_path(char *, char *, const size_t);
 
@@ -269,26 +269,62 @@ int mm_exit(mm_request_t *req)
 		}
 
 		mm_process_t *process = get_process(th);
-		for (node_t *n; (n = tree_root(&(process->descriptors)));) {
-			mm_descriptor_t *desc = (mm_descriptor_t *) n;
-			mm_file_t *file = desc->file;
-			desc->file = NULL;
-			if (process_destroy_desc(process, n->key)) {
-				//TODO what to do?
-			}
-
-			int result = _clunk(process->session, file,
-					create_token(th->node.key,
-							process->session),
-					req);
-			if (result)
-				log_err("pm: %d close[%d:] err %d\n",
-						process->node.key, n->key,
-						result);
-		}
-
+		cleanup(process, th, req);
 		process_destroy(process, req->args.arg1);
 //		log_info("mm: %d exit\n", process->node.key);
+
+		reply->result = 0;
+		reply->data[0] = 0;
+		return reply_success;
+	} while (false);
+
+	reply->result = -1;
+	return reply_failure;
+}
+
+static int cleanup(mm_process_t *process, mm_thread_t *th, mm_request_t *req)
+{
+	for (node_t *n; (n = tree_root(&(process->descriptors)));) {
+		mm_descriptor_t *desc = (mm_descriptor_t *) n;
+		mm_file_t *file = desc->file;
+		desc->file = NULL;
+		if (process_destroy_desc(process, n->key)) {
+			//TODO what to do?
+		}
+
+		int result = _clunk(process->session, file,
+				create_token(th->node.key, process->session),
+				req);
+		if (result)
+			log_err("pm: %d close[%d:] err %d\n",
+					process->node.key, n->key, result);
+	}
+
+	return 0;
+}
+
+int mm_kill(mm_request_t *req)
+{
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
+	do {
+		mm_thread_t *th = thread_find(req->args.arg1);
+		if (!th) {
+			reply->data[1] = EPERM;
+			break;
+		}
+
+		mm_process_t *process = get_process(th);
+		mm_thread_t *caller = thread_find(port_of_ipc(req->node.key));
+		if (caller) {
+			//TODO check privilege of caller
+//			mm_process_t *caller_process = get_process(caller);
+			reply->data[1] = EACCES;
+			break;
+		}
+
+		log_info("mm: %d kill %d\n", process->node.key, req->args.arg2);
+		cleanup(process, th, req);
+		process_destroy(process, req->args.arg1);
 
 		reply->result = 0;
 		reply->data[0] = 0;
