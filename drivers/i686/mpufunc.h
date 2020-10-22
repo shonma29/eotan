@@ -114,9 +114,8 @@ static inline void fpu_restore(thread_t **th)
 			:"=m" ((*th)->mpu.fpu_state));
 }
 
-/* fiber_switch.s */
-extern void *fiber_initialize(void *, void *, void *, void **, void **);
-extern void fiber_start(void **);
-extern void fiber_switch(void **, void **);
+/* fiber.s */
+extern bool fiber_start(void *, void *, void *, void **, void **);
+extern bool fiber_switch(void **, void **);
 
 #endif

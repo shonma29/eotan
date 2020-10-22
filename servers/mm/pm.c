@@ -35,11 +35,11 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../lib/libserv/libserv.h"
 #include "proxy.h"
 
-static int _seek(mm_process_t *, mm_file_t *, sys_args_t *);
+static int _seek(mm_process_t *, mm_file_t *, sys_args_t *, mm_request_t *);
 static size_t calc_path(char *, char *, const size_t);
 
 
-int mm_fork(mm_request *req)
+int mm_fork(mm_request_t *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
@@ -71,7 +71,7 @@ int mm_fork(mm_request *req)
 	return reply_failure;
 }
 
-int mm_exec(mm_request *req)
+int mm_exec(mm_request_t *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
@@ -85,7 +85,7 @@ int mm_exec(mm_request *req)
 		mm_file_t *file;
 		fsmsg_t *message = &(req->message);
 		int result = _walk(&file, process, th->node.key,
-				(char *) (req->args.arg1), message,
+				(char *) (req->args.arg1), req,
 				req->walkpath);
 		if (result) {
 			reply->data[0] = result;
@@ -94,7 +94,7 @@ int mm_exec(mm_request *req)
 
 		result = _open(file,
 				create_token(th->node.key, process->session),
-				O_EXEC, message);
+				O_EXEC, req);
 		if (result) {
 			reply->data[0] = result;
 //TODO clunk
@@ -105,7 +105,7 @@ int mm_exec(mm_request *req)
 				process->session);
 		Elf32_Ehdr ehdr;
 		result = _read(file, token, 0, sizeof(ehdr), (char *) &ehdr,
-				message);
+				req);
 		if (result) {
 			log_err("ehdr0\n");
 			reply->data[0] = result;
@@ -136,7 +136,7 @@ int mm_exec(mm_request *req)
 		for (int i = 0; i < ehdr.e_phnum; i++) {
 			Elf32_Phdr phdr;
 			result = _read(file, token, offset, sizeof(phdr),
-					(char *) &phdr, message);
+					(char *) &phdr, req);
 			if (result) {
 //TODO clunk
 //				return result;
@@ -189,7 +189,7 @@ int mm_exec(mm_request *req)
 
 		token = create_token(new_thread_id, process->session);
 		result = _read(file, token, ro.p_offset, ro.p_filesz,
-				(char *) (ro.p_vaddr), message);
+				(char *) (ro.p_vaddr), req);
 		if (result) {
 			log_err("tread0 %d\n", result);
 		} else {
@@ -202,7 +202,7 @@ int mm_exec(mm_request *req)
 
 		if (rw.p_filesz) {
 			result = _read(file, token, rw.p_offset, rw.p_filesz,
-					(char *) (rw.p_vaddr), message);
+					(char *) (rw.p_vaddr), req);
 			if (result) {
 				log_err("dread0 %d\n", result);
 			} else {
@@ -217,7 +217,7 @@ int mm_exec(mm_request *req)
 		kcall->thread_start(new_thread_id);
 
 		//TODO recreate token (not must)
-		result = _clunk(process->session, file, token, message);
+		result = _clunk(process->session, file, token, req);
 		if (result) {
 			log_err("mm: exec close1 %d\n", result);
 			//TODO what to do?
@@ -232,7 +232,7 @@ int mm_exec(mm_request *req)
 	return reply_failure;
 }
 
-int mm_wait(mm_request *req)
+int mm_wait(mm_request_t *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
@@ -258,7 +258,7 @@ int mm_wait(mm_request *req)
 	return reply_failure;
 }
 
-int mm_exit(mm_request *req)
+int mm_exit(mm_request_t *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
@@ -277,11 +277,10 @@ int mm_exit(mm_request *req)
 				//TODO what to do?
 			}
 
-			fsmsg_t *message = &(req->message);
 			int result = _clunk(process->session, file,
 					create_token(th->node.key,
 							process->session),
-					message);
+					req);
 			if (result)
 				log_err("pm: %d close[%d:] err %d\n",
 						process->node.key, n->key,
@@ -300,7 +299,7 @@ int mm_exit(mm_request *req)
 	return reply_failure;
 }
 
-int mm_chdir(mm_request *req)
+int mm_chdir(mm_request_t *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
@@ -333,9 +332,8 @@ int mm_chdir(mm_request *req)
 
 //		int old = (process->wd) ? process->wd->node.key : 0;
 		mm_file_t *file;
-		fsmsg_t message;
 		int result = _walk(&file, process, th->node.key,
-				(char *) (req->args.arg1), &message,
+				(char *) (req->args.arg1), req,
 				req->walkpath);
 		if (result) {
 			reply->data[0] = result;
@@ -349,7 +347,7 @@ int mm_chdir(mm_request *req)
 			result = _clunk(process->session, process->wd,
 					create_token(th->node.key,
 							process->session),
-					&message);
+					req);
 //			log_info("mm_chdir: close[:%d] %d\n", old, result);
 			if (result) {
 				//TODO what to do?
@@ -445,7 +443,7 @@ static size_t calc_path(char *dest, char *src, const size_t size)
 	}
 }
 
-int mm_dup(mm_request *req)
+int mm_dup(mm_request_t *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
@@ -472,12 +470,11 @@ int mm_dup(mm_request *req)
 			mm_descriptor_t *d2 = process_find_desc(process,
 					req->args.arg2);
 			if (d2) {
-				fsmsg_t message;
 				int error_no = _clunk(process->session,
 						d2->file,
 						create_token(th->node.key,
 								process->session),
-						&message);
+						req);
 				if (error_no) {
 					//TODO what to do?
 				}
@@ -511,7 +508,7 @@ int mm_dup(mm_request *req)
 	return reply_failure;
 }
 
-int mm_lseek(mm_request *req)
+int mm_lseek(mm_request_t *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
@@ -531,7 +528,7 @@ int mm_lseek(mm_request *req)
 
 		//TODO return error if directory
 		//TODO do nothing if pipe
-		int result = _seek(process, desc->file, &(req->args));
+		int result = _seek(process, desc->file, &(req->args), req);
 		if (result) {
 			reply->data[1] = result;
 			break;
@@ -551,7 +548,8 @@ int mm_lseek(mm_request *req)
 	return reply_failure;
 }
 
-static int _seek(mm_process_t *process, mm_file_t *file, sys_args_t *args)
+static int _seek(mm_process_t *process, mm_file_t *file, sys_args_t *args,
+		mm_request_t *req)
 {
 	off_t *offset = (off_t *) &(args->arg2);
 	off_t next = *offset;
@@ -571,11 +569,10 @@ static int _seek(mm_process_t *process, mm_file_t *file, sys_args_t *args)
 	case SEEK_END:
 	{
 		struct stat st;
-		fsmsg_t message;
 		int result = _fstat(&st, file,
 				create_token(kcall->thread_get_id(),
 						process->session),
-				&message);
+				req);
 		if (result)
 			return result;
 

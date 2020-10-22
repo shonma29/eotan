@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../kernel/mpu/mpufunc.h"
 
 
-int mm_vmap(mm_request *req)
+int mm_vmap(mm_request_t *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
@@ -70,7 +70,7 @@ int mm_vmap(mm_request *req)
 	return reply_failure;
 }
 
-int mm_vunmap(mm_request *req)
+int mm_vunmap(mm_request_t *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
@@ -107,7 +107,7 @@ int mm_vunmap(mm_request *req)
 	return reply_failure;
 }
 
-int mm_sbrk(mm_request *req)
+int mm_sbrk(mm_request_t *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {

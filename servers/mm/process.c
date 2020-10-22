@@ -294,6 +294,8 @@ int process_replace(mm_process_t *process,
 	process->segments.stack.len = 0;
 	process->segments.stack.attr = type_heap;
 
+	//TODO check if directory is current PDE
+	tlb_flush_all();
 	return create_thread(thread_id, process, (FP) entry,
 			(VP) (stack_top - sizeof(int)));
 }
@@ -564,7 +566,7 @@ static int set_local(mm_process_t *process, char *wd, const size_t wd_len)
 	return 0;
 }
 
-int mm_thread_find(mm_request *req)
+int mm_thread_find(mm_request_t *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {

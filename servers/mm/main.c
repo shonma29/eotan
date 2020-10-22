@@ -29,13 +29,14 @@ For more information, please refer to <http://unlicense.org/>
 #include <services.h>
 #include <string.h>
 #include <mm/config.h>
+#include <nerve/ipc_utils.h>
 #include <nerve/kcall.h>
 #include "../../kernel/mpu/mpufunc.h"
 #include "../../lib/libserv/libserv.h"
 #include "api.h"
 #include "proxy.h"
 
-static int (*funcs[])(mm_request *) = {
+static int (*funcs[])(mm_request_t *) = {
 	mm_fork,
 	mm_exec,
 	mm_wait,
@@ -66,10 +67,14 @@ static int (*funcs[])(mm_request *) = {
 static slab_t request_slab;
 static tree_t tag_tree;
 ID receiver_id;
+static void *receiver_sp;
 
 static int initialize(void);
-static void execute(mm_request *);
+static void execute(mm_request_t *);
 static void accept(void);
+static mm_request_t *find_request(const int);
+static int add_request(const int, mm_request_t *);
+static int remove_request(const int, mm_request_t *);
 
 
 static int initialize(void)
@@ -78,11 +83,11 @@ static int initialize(void)
 	file_initialize();
 	define_mpu_handlers(default_handler, page_fault_handler);
 
-	request_slab.unit_size = sizeof(mm_request);
+	request_slab.unit_size = sizeof(mm_request_t);
 	request_slab.block_size = PAGE_SIZE;
 	request_slab.min_block = 1;
 	request_slab.max_block = slab_max_block(REQUEST_MAX, PAGE_SIZE,
-			sizeof(mm_request));
+			sizeof(mm_request_t));
 	request_slab.palloc = kcall->palloc;
 	request_slab.pfree = kcall->pfree;
 	slab_create(&request_slab);
@@ -99,7 +104,7 @@ static int initialize(void)
 	return 0;
 }
 
-static void execute(mm_request *req)
+static void execute(mm_request_t *req)
 {
 	if (add_request(req->node.key, req)) {
 		log_err(MYNAME ": add tree failed %d\n", req->node.key);
@@ -129,27 +134,87 @@ static void accept(void)
 	int rdvno;
 	sys_args_t args;
 	int size = kcall->ipc_receive(PORT_MM, &rdvno, &args);
-	if (size < 0) {
+	if (size < sizeof(args.syscall_no)) {
 		log_err(MYNAME ": receive failed %d\n", size);
 		return;
 	}
 
-	int result;
-	if (size != sizeof(args))
-		result = EPROTO;
-	else if (args.syscall_no > NUM_OF_FUNCS)
-		result = ENOTSUP;
-	else {
-		mm_request *req = slab_alloc(&request_slab);
-		if (req) {
-			req->node.key = rdvno;
-			memcpy(&(req->args), &args, sizeof(args));
-			execute(req);
-			slab_free(&request_slab, req);
-			return;
-		} else
-			result = ENOMEM;
+	fsmsg_t *message = (fsmsg_t *) &args;
+	if (message->header.ident == IDENT) {
+		do {
+			if (size < sizeof(message->header)
+					+ sizeof(message->Rerror.tag)) {
+				//TODO debug
+				log_warning("9p: bad size %d\n", size);
+				break;
+			}
+
+			mm_request_t *req = find_request(message->Rerror.tag);
+			if (!req) {
+				//TODO debug
+				log_warning("9p: cannot find %d\n",
+						message->Rerror.tag);
+				break;
+			}
+
+			if (port_of_ipc(rdvno) != req->callee) {
+				//TODO debug
+				//log_warning("9p: not same %d %d\n",
+				//		port_of_ipc(rdvno),
+				//		req->callee);
+				//TODO hmi handler reply
+				//break;
+			}
+
+			req->size = size;
+			memcpy(&(req->message), message, size);
+			if (fiber_switch(&receiver_sp, &(req->fiber_sp))) {
+				kcall->pfree(req->stack);
+				slab_free(&request_slab, req);
+			}
+		} while (false);
+
+		return;
 	}
+
+	int result;
+	do {
+		if (size != sizeof(args)) {
+			result = EPROTO;
+			break;
+		}
+
+		if (args.syscall_no > NUM_OF_FUNCS) {
+			result = ENOTSUP;
+			break;
+		}
+
+		mm_request_t *req = slab_alloc(&request_slab);
+		if (!req) {
+			result = ENOMEM;
+			break;
+		}
+
+		req->stack = kcall->palloc();
+		if (!(req->stack)) {
+			slab_free(&request_slab, req);
+			result = E_NOMEM;
+			break;
+		}
+
+		req->node.key = rdvno;
+		//TODO optimize
+		memcpy(&(req->args), &args, sizeof(args));
+
+		req->receiver_sp = &receiver_sp;
+		if (fiber_start((void *) (((uintptr_t) req->stack) + PAGE_SIZE),
+				execute, req, &receiver_sp, &(req->fiber_sp))) {
+			kcall->pfree(req->stack);
+			slab_free(&request_slab, req);
+		}
+
+		return;
+	} while (false);
 
 	sys_reply_t *reply = (sys_reply_t *) &args;
 	reply->result = -1;
@@ -166,10 +231,11 @@ void start(VP_INT exinf)
 		log_err(MYNAME ": open failed %d\n", error);
 	else {
 		log_info(MYNAME ": start\n");
+
 		for (;;)
 			accept();
-		log_info(MYNAME ": end\n");
 
+		log_info(MYNAME ": end\n");
 		error = kcall->ipc_close();
 		if (error)
 			log_err(MYNAME ": close failed %d\n", error);
@@ -178,14 +244,14 @@ void start(VP_INT exinf)
 	kcall->thread_end_and_destroy();
 }
 
-mm_request *find_request(const int tag)
+mm_request_t *find_request(const int tag)
 {
 	node_t *node = tree_get(&tag_tree, tag);
 	//TODO define getParent macro
-	return ((mm_request *) node);
+	return ((mm_request_t *) node);
 }
 
-int add_request(const int tag, mm_request *req)
+int add_request(const int tag, mm_request_t *req)
 {
 	//TODO remove this code after test
 	if (tree_get(&tag_tree, tag))
@@ -194,7 +260,7 @@ int add_request(const int tag, mm_request *req)
 	return (tree_put(&tag_tree, tag, &(req->node)) ? 0 : (-1));
 }
 
-int remove_request(const int tag, mm_request *req)
+int remove_request(const int tag, mm_request_t *req)
 {
 	return (tree_remove(&tag_tree, req->node.key) ? 0 : (-1));
 }

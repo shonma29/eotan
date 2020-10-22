@@ -36,7 +36,7 @@ For more information, please refer to <http://unlicense.org/>
 #define SESSION_MAX (32768)
 #define FILES_PER_SESSION (32768)
 
-#define REQUEST_MAX (1024)
+#define REQUEST_MAX (16)
 
 #define USER_STACK_INITIAL_SIZE (16 * 1024)
 #define USER_STACK_MAX_SIZE (1 * 1024 * 1024)

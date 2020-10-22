@@ -47,7 +47,7 @@ static bool get_timespec(struct timespec *tspec)
 	return true;
 }
 
-int mm_clock_gettime(mm_request *req)
+int mm_clock_gettime(mm_request_t *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {

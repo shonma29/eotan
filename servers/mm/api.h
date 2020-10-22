@@ -41,37 +41,50 @@ typedef struct {
 	node_t node;
 	sys_args_t args;
 	fsmsg_t message;
+	size_t size;
+	int callee;
+	void *stack;
+	void *fiber_sp;
+	void **receiver_sp;
 	char walkpath[PATH_MAX];
 	char pathbuf[PATH_MAX];
 //	mm_thread_t *caller;
 	/* callback parameters */
-} mm_request;
+#if 0
+	union {
+		struct {
+			mm_process_t *process;
+			mm_session_t *session;
+			mm_file_t *file;
+		} attach;
+		struct {
+			mm_file_t *file;
+		} write;
+	};
+#endif
+} mm_request_t;
 
-extern int mm_fork(mm_request *);
-extern int mm_exec(mm_request *);
-extern int mm_wait(mm_request *);
-extern int mm_exit(mm_request *);
-extern int mm_vmap(mm_request *);
-extern int mm_vunmap(mm_request *);
-extern int mm_sbrk(mm_request *);
-extern int mm_chdir(mm_request *);
-extern int mm_dup(mm_request *);
-extern int mm_lseek(mm_request *);
-extern int mm_attach(mm_request *);
-extern int mm_open(mm_request *);
-extern int mm_create(mm_request *);
-extern int mm_read(mm_request *);
-extern int mm_write(mm_request *);
-extern int mm_close(mm_request *);
-extern int mm_remove(mm_request *);
-extern int mm_stat(mm_request *);
-extern int mm_fstat(mm_request *);
-extern int mm_chmod(mm_request *);
-extern int mm_clock_gettime(mm_request *);
-extern int mm_thread_find(mm_request *);
-
-extern mm_request *find_request(const int);
-extern int add_request(const int, mm_request *);
-extern int remove_request(const int, mm_request *);
+extern int mm_fork(mm_request_t *);
+extern int mm_exec(mm_request_t *);
+extern int mm_wait(mm_request_t *);
+extern int mm_exit(mm_request_t *);
+extern int mm_vmap(mm_request_t *);
+extern int mm_vunmap(mm_request_t *);
+extern int mm_sbrk(mm_request_t *);
+extern int mm_chdir(mm_request_t *);
+extern int mm_dup(mm_request_t *);
+extern int mm_lseek(mm_request_t *);
+extern int mm_attach(mm_request_t *);
+extern int mm_open(mm_request_t *);
+extern int mm_create(mm_request_t *);
+extern int mm_read(mm_request_t *);
+extern int mm_write(mm_request_t *);
+extern int mm_close(mm_request_t *);
+extern int mm_remove(mm_request_t *);
+extern int mm_stat(mm_request_t *);
+extern int mm_fstat(mm_request_t *);
+extern int mm_chmod(mm_request_t *);
+extern int mm_clock_gettime(mm_request_t *);
+extern int mm_thread_find(mm_request_t *);
 
 #endif

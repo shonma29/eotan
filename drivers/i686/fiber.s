@@ -25,13 +25,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-.globl fiber_initialize
 .globl fiber_start
 .globl fiber_switch
 
 .text
 
-fiber_initialize:
+fiber_start:
 	movl 4(%esp), %eax
 	movl 8(%esp), %ecx
 	subl $20, %eax
@@ -44,33 +43,35 @@ fiber_initialize:
 	movl %edx, 12(%eax)
 	movl 20(%esp), %ecx
 	movl %ecx, 16(%eax)
+	pushfl
+	pushl %edi
+	pushl %esi
+	pushl %ebp
+	pushl %ebx
+	movl %esp, (%edx)
+	movl %eax, %esp
 	ret
 
-fiber_start:
-	movl $12, %ecx
+fiber_end:
 	movl 4(%esp), %edx
-	addl (%edx), %ecx
-	pushfl
-	movl (%ecx), %ecx
-	pushal
-	movl %esp, (%ecx)
-	movl (%edx), %esp
-	ret
+	movl $1, %eax
+	jmp resume
 
 fiber_switch:
 	movl 4(%esp), %ecx
 	movl 8(%esp), %edx
 	pushfl
-	pushal
+	pushl %edi
+	pushl %esi
+	pushl %ebp
+	pushl %ebx
 	movl %esp, (%ecx)
+	xorl %eax, %eax
+resume:
 	movl (%edx), %esp
-	popal
-	popfl
-	ret
-
-fiber_end:
-	movl 4(%esp), %edx
-	movl (%edx), %esp
-	popal
+	popl %ebx
+	popl %ebp
+	popl %esi
+	popl %edi
 	popfl
 	ret
