@@ -80,4 +80,8 @@ static inline void kbc_wait_to_read(void)
 	while (!(inb(KBC_PORT_CMD) & KBC_STATUS_OBF));
 }
 
+static inline uint8_t kbc_read_data(void)
+{
+	return inb(KBC_PORT_DATA);
+}
 #endif

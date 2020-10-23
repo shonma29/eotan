@@ -31,22 +31,18 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/icall.h>
 #include <set/lf_queue.h>
 #include "8042.h"
-#include "archfunc.h"
 #include "scan2key.h"
 #include "../../servers/hmi/hmi.h"
 
 extern volatile lfq_t hmi_queue;
 
 static hmi_interrupt_t message = { event_keyboard, 0 };
-static unsigned char state = scan_normal;
+static uint8_t state = scan_normal;
 
 
 void keyboard_interrupt(VP_INT exinf)
 {
-	unsigned char b;
-
-	kbc_wait_to_read();
-	b = inb(KBC_PORT_DATA);
+	uint8_t b = kbc_read_data();
 
 	switch (state) {
 	case scan_normal:

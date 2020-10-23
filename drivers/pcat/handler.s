@@ -36,36 +36,9 @@ For more information, please refer to <http://unlicense.org/>
 .globl handle44
 
 
-/* timer */
-handle32:
-	pushl $32
-	jmp interrupt_master
-
-/* keyboard */
-handle33:
-	pushl $33
-	jmp interrupt_master
-
 /* psaux */
 handle44:
 	pushl $44
-	jmp interrupt_slave
-
-interrupt_master:
-	pushl %ds
-	pushal
-	movw $SELECTOR_KERN_DATA, %ax
-	movw %ax,%ds
-	call interrupt
-	movl 36(%esp), %eax
-	orb $0x60, %al
-	outb %al, $PIC_MASTER1
-
-ret_interrupt:
-	popal
-	popl %ds
-	addl $4, %esp
-	iret
 
 interrupt_slave:
 	pushl %ds
@@ -73,9 +46,30 @@ interrupt_slave:
 	movw $SELECTOR_KERN_DATA, %ax
 	movw %ax,%ds
 	call interrupt
-	movl 36(%esp), %eax
-	xorb $0x48, %al
+	movb $0x20, %al
 	outb %al, $PIC_SLAVE1
-	movb $0x62, %al
-	outb %al, $PIC_MASTER1
 	jmp ret_interrupt
+
+/* keyboard */
+handle33:
+	pushl $33
+	jmp interrupt_master
+
+/* timer */
+handle32:
+	pushl $32
+
+interrupt_master:
+	pushl %ds
+	pushal
+	movw $SELECTOR_KERN_DATA, %ax
+	movw %ax,%ds
+	call interrupt
+	movb $0x20, %al
+
+ret_interrupt:
+	outb %al, $PIC_MASTER1
+	popal
+	popl %ds
+	addl $4, %esp
+	iret
