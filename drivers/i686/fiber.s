@@ -43,7 +43,6 @@ fiber_start:
 	movl %edx, 12(%eax)
 	movl 20(%esp), %ecx
 	movl %ecx, 16(%eax)
-	pushfl
 	pushl %edi
 	pushl %esi
 	pushl %ebp
@@ -60,7 +59,6 @@ fiber_end:
 fiber_switch:
 	movl 4(%esp), %ecx
 	movl 8(%esp), %edx
-	pushfl
 	pushl %edi
 	pushl %esi
 	pushl %ebp
@@ -73,5 +71,4 @@ resume:
 	popl %ebp
 	popl %esi
 	popl %edi
-	popfl
 	ret
