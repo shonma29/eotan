@@ -1,5 +1,5 @@
-#ifndef _HMI_MOUSE_H_
-#define _HMI_MOUSE_H_
+#ifndef _HMI_POINTER_H_
+#define _HMI_POINTER_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,16 +26,38 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <hmi/pointer.h>
+#include <stdint.h>
 
-#ifdef USE_VESA
-extern pointer_pattern_t pointer[NUM_OF_POINTER_STYLE];
-#endif
+#define POINTER_WIDTH (24)
+#define POINTER_HEIGHT (24)
+#define POINTER_NUM_PER_LINE (((POINTER_WIDTH * 2) + (32 - 1)) / 32)
 
-extern ER mouse_initialize(void);
-extern void mouse_process(const int, const int);
-extern void mouse_show(void);
-extern void mouse_hide(void);
+typedef struct {
+	uint32_t point_x;
+	uint32_t point_y;
+	// 0: transparent, 1: xor, 2: bg, 3: fg
+	uint32_t buf[POINTER_NUM_PER_LINE * POINTER_HEIGHT];
+} pointer_pattern_t;
+
+enum pointer_style {
+	pointer_select,
+	pointer_modify,
+	pointer_movable,
+	pointer_vmovable,
+	pointer_hmovable,
+	pointer_move,
+	pointer_vmove,
+	pointer_hmove,
+	pointer_resizable,
+	pointer_vresizable,
+	pointer_hresizable,
+	pointer_resize,
+	pointer_vresize,
+	pointer_hresize,
+	pointer_busy,
+	pointer_menu
+};
+
+#define NUM_OF_POINTER_STYLE (16)
 
 #endif

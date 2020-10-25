@@ -35,6 +35,10 @@ For more information, please refer to <http://unlicense.org/>
 
 #ifdef USE_VESA
 #include <vesa.h>
+
+extern void pointer_put(Screen *, const int, const int,
+		const pointer_pattern_t *);
+extern void pointer_restore(Screen *);
 #else
 #include <cga.h>
 #endif
@@ -45,9 +49,6 @@ static int x;
 static int y;
 static int buttons;
 
-#ifdef USE_VESA
-extern void pset(Screen *s, unsigned int x, unsigned int y, int color);
-#endif
 
 void mouse_process(const int type, const int d)
 {
@@ -73,12 +74,32 @@ void mouse_process(const int type, const int d)
 	else if (y >= height)
 		y = height - 1;
 #ifdef USE_VESA
+#if 0
 	if (buttons & 1)
 		pset((Screen *) (info->unit), x, y, 0xff0000);
 	else if (buttons & 2)
 		pset((Screen *) (info->unit), x, y, 0x00ff00);
 	else if (buttons & 4)
 		pset((Screen *) (info->unit), x, y, 0xffff00);
+#endif
+	if (dx || dy) {
+		mouse_hide();
+		mouse_show();
+	}
+#endif
+}
+
+void mouse_show(void)
+{
+#ifdef USE_VESA
+	pointer_put((Screen *) (info->unit), x, y, &(pointer[pointer_select]));
+#endif
+}
+
+void mouse_hide(void)
+{
+#ifdef USE_VESA
+	pointer_restore((Screen *) (info->unit));
 #endif
 }
 

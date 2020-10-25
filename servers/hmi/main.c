@@ -131,7 +131,9 @@ static void process(const int data)
 		if (result)
 			kcall->printk("hmi: handler cannot lock %d\n", result);
 		else {
+			mouse_hide();
 			driver->write((char *) &buf, 0, 0, 1);
+			mouse_show();
 			result = kcall->mutex_unlock(cons_mid);
 			if (result)
 				kcall->printk("hmi: handler cannot unlock %d\n",
@@ -183,16 +185,20 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 		break;
 #ifdef USE_VESA
 	case 4:
+		mouse_hide();
 		put((Screen *) (info->unit), start, size, inbuf);
+		mouse_show();
 		break;
 	case 5:
 		if (size != sizeof(int) * 3)
 			return E_PAR;
 		else {
+			mouse_hide();
 			unsigned int x = ((int *) inbuf)[0];
 			unsigned int y = ((int *) inbuf)[1];
 			int color = ((int *) inbuf)[2];
 			pset((Screen *) (info->unit), x, y, color);
+			mouse_show();
 		}
 		break;
 	default: {
@@ -200,7 +206,9 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 		if (result)
 			kcall->printk("hmi: main cannot lock %d\n", result);
 		else {
+			mouse_hide();
 			driver->write((char *) inbuf, dd, 0, size);
+			mouse_show();
 			result = kcall->mutex_unlock(cons_mid);
 			if (result)
 				kcall->printk("hmi: main cannot unlock %d\n",
