@@ -35,16 +35,11 @@ For more information, please refer to <http://unlicense.org/>
 
 #ifdef USE_VESA
 #include <vesa.h>
-
-extern void pointer_put(Screen *, const int, const int,
-		const pointer_pattern_t *);
-extern void pointer_restore(Screen *);
+#include <hmi/pointer.h>
 #else
 #include <cga.h>
 #endif
 
-static int width;
-static int height;
 static int x;
 static int y;
 static int buttons;
@@ -61,9 +56,13 @@ void mouse_process(const int type, const int d)
 	x += dx;
 	if (x < 0)
 		x = 0;
-	else if (x >= width)
-		x = width - 1;
-
+#ifdef USE_VESA
+	else if (x >= screen->width)
+		x = screen->width - 1;
+#else
+	else if (x >= CGA_COLUMNS)
+		x = CGA_COLUMNS - 1;
+#endif
 	int dy = (uint8_t) (d & 0xff);
 	if (d & 0x200000)
 		dy |= 0xffffff00;
@@ -71,8 +70,13 @@ void mouse_process(const int type, const int d)
 	y -= dy;
 	if (y < 0)
 		y = 0;
-	else if (y >= height)
-		y = height - 1;
+#ifdef USE_VESA
+	else if (y >= screen->height)
+		y = screen->height - 1;
+#else
+	else if (y >= CGA_ROWS)
+		y = CGA_ROWS - 1;
+#endif
 #ifdef USE_VESA
 #if 0
 	if (buttons & 1)
@@ -92,27 +96,19 @@ void mouse_process(const int type, const int d)
 void mouse_show(void)
 {
 #ifdef USE_VESA
-	pointer_put((Screen *) (info->unit), x, y, &(pointer[pointer_select]));
+	pointer_put(screen, x, y, &(pointer[pointer_select]));
 #endif
 }
 
 void mouse_hide(void)
 {
 #ifdef USE_VESA
-	pointer_restore((Screen *) (info->unit));
+	pointer_restore(screen);
 #endif
 }
 
 ER mouse_initialize(void)
 {
-#ifdef USE_VESA
-	VesaInfo *v = (VesaInfo *) kern_p2v((void *) VESA_INFO_ADDR);
-	width = v->width;
-	height = v->height;
-#else
-	width = CGA_COLUMNS;
-	height = CGA_ROWS;
-#endif
 	x = 0;
 	y = 0;
 	buttons = 0;

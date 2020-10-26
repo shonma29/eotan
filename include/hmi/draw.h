@@ -1,5 +1,5 @@
-#ifndef _HMI_POINTER_H_
-#define _HMI_POINTER_H_
+#ifndef _HMI_DRAW_H_
+#define _HMI_DRAW_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,43 +26,44 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stdint.h>
-#include <hmi/draw.h>
-
-#define POINTER_WIDTH (24)
-#define POINTER_HEIGHT (24)
-#define POINTER_NUM_PER_LINE (((POINTER_WIDTH * 2) + (32 - 1)) / 32)
+#include <stddef.h>
 
 typedef struct {
-	uint32_t point_x;
-	uint32_t point_y;
-	// 0: transparent, 1: xor, 2: bg, 3: fg
-	uint32_t buf[POINTER_NUM_PER_LINE * POINTER_HEIGHT];
-} pointer_pattern_t;
+	int x;
+	int y;
+} Point;
 
-enum pointer_style {
-	pointer_select,
-	pointer_modify,
-	pointer_movable,
-	pointer_vmovable,
-	pointer_hmovable,
-	pointer_move,
-	pointer_vmove,
-	pointer_hmove,
-	pointer_resizable,
-	pointer_vresizable,
-	pointer_hresizable,
-	pointer_resize,
-	pointer_vresize,
-	pointer_hresize,
-	pointer_busy,
-	pointer_menu
+typedef struct {
+	Point min;
+	Point max;
+} Rectangle;
+
+typedef struct {
+	int type1;
+	int type2;
+	Rectangle r;
+	unsigned char buf[0];
+} Image;
+
+#define IMAGE_TYPE_B8R8 0x62386738
+#define IMAGE_TYPE_G8NL 0x72380000
+
+typedef struct {
+	int type1;
+	int type2;
+	int width;
+	int height;
+	void *base;
+	int bpl;
+} Frame;
+
+enum draw_operation {
+	draw_put,
+	draw_pset
 };
 
-#define NUM_OF_POINTER_STYLE (16)
-
-extern void pointer_put(const Frame *, const int, const int,
-		const pointer_pattern_t *);
-extern void pointer_restore(const Frame *);
-
+extern Frame *get_screen(void);
+extern void put(Frame *, const unsigned int, const size_t, const uint8_t *);
+extern void pset(Frame *, const unsigned int, const unsigned int,
+		const int);
 #endif

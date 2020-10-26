@@ -70,8 +70,7 @@ static char int_buf[
 ];
 
 #ifdef USE_VESA
-extern void put(Screen *, const unsigned int, const size_t, const char *);
-extern void pset(Screen *, unsigned int, unsigned int, int);
+Frame *screen;
 #endif
 
 static void process(const int);
@@ -186,7 +185,7 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 #ifdef USE_VESA
 	case 4:
 		mouse_hide();
-		put((Screen *) (info->unit), start, size, inbuf);
+		put(screen, start, size, (uint8_t *) inbuf);
 		mouse_show();
 		break;
 	case 5:
@@ -197,7 +196,7 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 			unsigned int x = ((int *) inbuf)[0];
 			unsigned int y = ((int *) inbuf)[1];
 			int color = ((int *) inbuf)[2];
-			pset((Screen *) (info->unit), x, y, color);
+			pset(screen, x, y, color);
 			mouse_show();
 		}
 		break;
@@ -367,6 +366,11 @@ static ER accept(void)
 
 static ER initialize(void)
 {
+#ifdef USE_VESA
+	screen = get_screen();
+	if (!screen)
+		return E_SYS;
+#endif
 	lfq_initialize(&hmi_queue, int_buf, sizeof(hmi_interrupt_t),
 			INTERRUPT_QUEUE_SIZE);
 	lfq_initialize(&req_queue, req_buf, sizeof(request_message_t *),
@@ -387,7 +391,6 @@ static ER initialize(void)
 		TA_TFIFO | TA_CEILING,
 		pri_dispatcher
 	};
-
 	int result = kcall->mutex_create(receiver_tid, &pk_cmtx);
 	if (result) {
 		log_err("hmi: mutex error=%d\n", result);

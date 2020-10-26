@@ -25,9 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <console.h>
 #include <screen.h>
-#include <stdbool.h>
 #include <stddef.h>
 #include <vesa.h>
 #include <mpu/memory.h>
@@ -445,25 +443,5 @@ static void _copy_left(Screen *s, unsigned int x1, unsigned int y1,
 		w += skip;
 		r += skip;
 	}
-}
-
-void put(Screen *s, const unsigned int start, const size_t size,
-		const int8_t *buf)
-{
-	int8_t *w = (int8_t *) (s->base) + start;
-
-	for (size_t i = 0; i < size; i++)
-		w[i] = buf[i];
-}
-
-void pset(Screen *s, unsigned int x, unsigned int y, int color)
-{
-	uint8_t *r = (uint8_t *) (s->base)
-			+ y * s->bpl
-			+ x * sizeof(Color_Rgb);
-
-	r[0] = color & 0xff;
-	r[1] = (color >> 8) & 0xff;
-	r[2] = (color >> 16) & 0xff;
 }
 #endif
