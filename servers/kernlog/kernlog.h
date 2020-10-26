@@ -31,8 +31,4 @@ For more information, please refer to <http://unlicense.org/>
 
 #define MYNAME "kernlog"
 
-#if USE_VESA
-#define USE_MONITOR 0
-#endif
-
 #endif

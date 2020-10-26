@@ -76,7 +76,7 @@ static void console_initialize(void)
 	s->chr_height = s->height / s->font.height;
 	cns->erase(s, EraseScreenEntire);
 	cns->locate(s, 0, 0);
-
+#if USE_MONITOR
 	window[1] = window[0];
 	s = &(window[1]);
 	s->base += s->width * 3;
@@ -115,6 +115,7 @@ static void console_initialize(void)
 	s->bgcolor.rgb.r = 0xfc;
 	cns->erase(s, EraseScreenEntire);
 	cns->locate(s, 0, 0);
+#endif
 #else
 	cns = getCgaConsole(&(window[0]),
 			(const uint16_t *) kern_p2v((void *) CGA_VRAM_ADDR));

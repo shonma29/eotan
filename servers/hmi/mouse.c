@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <core/packets.h>
 #include <mpu/memory.h>
+#include <nerve/config.h>
 #include "../../kernel/arch/8259a.h"
 #include "../../kernel/arch/archfunc.h"
 #include "../../lib/libserv/libserv.h"
@@ -109,8 +110,13 @@ void mouse_hide(void)
 
 ER mouse_initialize(void)
 {
+#ifdef USE_VESA
+	x = screen->width / 2;
+	y = screen->height / 2;
+#else
 	x = 0;
 	y = 0;
+#endif
 	buttons = 0;
 
 	T_CISR pk_cisr = {

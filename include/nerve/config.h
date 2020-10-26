@@ -85,4 +85,8 @@ typedef enum {
 #define MAX_INTERRUPT_SERVICE (64)
 #define MAX_PERIPHERAL (32)
 
+#if USE_VESA
+#define USE_MONITOR 0
+#endif
+
 #endif

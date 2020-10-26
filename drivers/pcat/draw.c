@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <stddef.h>
 #include <vesa.h>
 #include <hmi/draw.h>
+#include <nerve/config.h>
 #include <mpu/memory.h>
 
 static Frame screen;
@@ -46,7 +47,11 @@ Frame *get_screen(void)
 
 	screen.type1 = IMAGE_TYPE_B8R8;
 	screen.type2 = IMAGE_TYPE_G8NL;
+#if USE_MONITOR
+	screen.width = v->width / 2;
+#else
 	screen.width = v->width;
+#endif
 	screen.height = v->height;
 	screen.base = (void *) (v->buffer_addr);
 	screen.bpl = v->bytes_per_line;

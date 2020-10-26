@@ -28,11 +28,16 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <console.h>
 #include <dev/device.h>
+#include <nerve/config.h>
 #include <sys/types.h>
 
 #define MYNAME DEVICE_CONTROLLER_MONITOR
 
+#if USE_MONITOR
 #define MAX_WINDOW (4)
+#else
+#define MAX_WINDOW (1)
+#endif
 
 extern Screen window[];
 extern Console *cns;
