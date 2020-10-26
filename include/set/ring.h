@@ -28,30 +28,19 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <stddef.h>
 
-#define RING_MAX_LEN 1024
-
-#define RING_OK (0)
-#define RING_EMPTY (-1)
-#define RING_FULL (-2)
-#define RING_TOO_LONG (-3)
-
 typedef unsigned int ring_pos_t;
-typedef unsigned int counter_t;
 typedef char ring_chr_t;
 
-typedef struct
-{
+typedef struct {
 	ring_pos_t read;
 	ring_pos_t write;
-	counter_t cycle;
-	size_t left;
-	size_t max;
+	size_t size;
 	ring_chr_t buf[0];
 } ring_t;
 
-extern ring_t *ring_create(void *buf, size_t size);
-extern int ring_peak_len(ring_t *r);
-extern int ring_get(ring_t *r, ring_chr_t *buf);
-extern int ring_put(ring_t *r, const ring_chr_t *buf, const size_t len);
+extern ring_t *ring_create(void *, const size_t);
+extern size_t ring_get_rest(const ring_t *);
+extern size_t ring_get(ring_t *, ring_chr_t *, const size_t);
+extern size_t ring_put(ring_t *, const ring_chr_t *, const size_t);
 
 #endif

@@ -38,7 +38,6 @@ static char buf[SYSLOG_SIZE];
 
 static ER check_param(const size_t);
 static size_t lfcopy(char *, volatile lfq_t*, const size_t);
-static size_t rcopy(char *, ring_t *, const size_t);
 static ssize_t read(char *, const int, const size_t);
 static ssize_t write(const int priority, char *, const size_t);
 static size_t execute(syslog_t *);
@@ -76,25 +75,6 @@ static size_t lfcopy(char *outbuf, volatile lfq_t *q, const size_t size)
 	return (size - left);
 }
 
-static size_t rcopy(char *outbuf, ring_t *r, const size_t size)
-{
-	size_t left = size;
-
-	while (left > 0) {
-		int len = ring_peak_len(r);
-
-		if ((len < 0)
-				|| (left < len))
-			break;
-
-		left -= len;
-		ring_get(r, outbuf);
-		outbuf += len;
-	}
-
-	return (size - left);
-}
-
 static ssize_t read(char *outbuf, const int channel, const size_t size)
 {
 	ER result = check_param(size);
@@ -105,7 +85,7 @@ static ssize_t read(char *outbuf, const int channel, const size_t size)
 	case channel_kernlog:
 		return lfcopy(outbuf, (volatile lfq_t *) KERNEL_LOG_ADDR, size);
 	case channel_syslog:
-		return rcopy(outbuf, (ring_t *) buf, size);
+		return ring_get((ring_t *) buf, outbuf, size);
 	default:
 		return E_PAR;
 	}
@@ -117,19 +97,20 @@ static ssize_t write(const int priority, char *inbuf, const size_t size)
 	if (result)
 		return result;
 
-	if (size + LEN_PRIORITY > RING_MAX_LEN)
-		return E_PAR;
+	if ((size + LEN_PRIORITY) > ring_get_rest((ring_t *) buf))
+		return E_SYS;
 
 	//TODO put current time
 	//TODO put priority name
 	char pri_msg[2] = {
 		'0' + ((priority > LOG_DEBUG) ? 9 : priority), ' '
 	};
-	if (ring_put((ring_t *) buf, pri_msg, sizeof(pri_msg)) < 0)
+	if (ring_put((ring_t *) buf, pri_msg, sizeof(pri_msg))
+			!= sizeof(pri_msg))
 		return E_SYS;
 
 	result = ring_put((ring_t *) buf, inbuf, size);
-	if (result < 0)
+	if (result != size)
 		return E_SYS;
 
 	return result;
@@ -248,7 +229,7 @@ static void monitor(void)
 			driver->write(outbuf, 3, 0, len);
 
 		for (size_t len;
-				(len = rcopy(outbuf, (ring_t *) buf,
+				(len = ring_get((ring_t *) buf, outbuf,
 						sizeof(outbuf)));)
 			driver->write(outbuf, 1, 0, len);
 	}
