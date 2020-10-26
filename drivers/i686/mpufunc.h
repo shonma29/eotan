@@ -34,6 +34,9 @@ For more information, please refer to <http://unlicense.org/>
 #include "paging.h"
 #include "thread.h"
 
+/* set_selector.s */
+extern noreturn void set_selector(void);
+
 /* context.c */
 extern void create_context(thread_t *);
 extern void context_initialize(void);

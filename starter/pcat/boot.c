@@ -25,17 +25,35 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stddef.h>
+#include <stdnoreturn.h>
 #include <mpu/io.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
 #include <starter/modules.h>
 
+static void callback(void);
 static ER run_module(const int, const void *);
 static void release_pages(const void *, const void *);
 
 
-void _start(void)
+noreturn void run_kernel(void)
+{
+	for (ModuleHeader *h = (ModuleHeader *) MODULES_ADDR;
+			h->type != mod_end;) {
+		if (h->type == mod_kernel) {
+			void (*entry)(void *) = (void *) (h->entry);
+			entry((void *) callback);
+			break;
+		}
+
+		h = (ModuleHeader *) ((uintptr_t) h + sizeof(*h) + h->length);
+	}
+
+	for (;;);
+}
+
+static void callback(void)
 {
 	ModuleHeader *h = (ModuleHeader *) (kern_p2v((void *) MODULES_ADDR));
 	while (h->type != mod_end) {

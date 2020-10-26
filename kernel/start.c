@@ -36,7 +36,7 @@ static ER create_idle_thread(const VP_INT);
 static noreturn void idle_start(VP_INT);
 
 
-void kern_start(void (*callback)(void))
+void start(void (*callback)(void))
 {
 	sysinfo->sync.state.interrupt_nest = 0;
 	sysinfo->sync.state.no_request = 1;

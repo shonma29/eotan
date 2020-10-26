@@ -27,15 +27,17 @@ For more information, please refer to <http://unlicense.org/>
 
 .text
 
-.globl startup
+.globl set_selector
 
 .set SELECTOR_KERN_CODE, 0x08
 .set SELECTOR_KERN_DATA, 0x10
 
 .set CORE_STACK_ADDR, 0x80008000
 
+.set BOOT_ADDR, 0x8000c000
 
-startup:
+
+set_selector:
 	movw $SELECTOR_KERN_DATA, %ax
 	movw %ax, %ds
 	movw %ax, %es
@@ -48,8 +50,7 @@ startup:
 
 .align 4
 enter_world:
-	pushl %eax
-	call kern_start
+	jmp BOOT_ADDR
 
 
 .data

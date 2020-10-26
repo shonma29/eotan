@@ -52,7 +52,6 @@ extern void memory_initialize(void);
 
 static void _putc(const char);
 void printk(const char *, ...);
-static void run_kernel(const ModuleHeader *);
 
 
 noreturn void _main(void)
@@ -80,8 +79,7 @@ noreturn void _main(void)
 			v->green_position, v->green_size,
 			v->blue_position, v->blue_size, v->direct_color_mode);
 
-	run_kernel((ModuleHeader *) MODULES_ADDR);
-	for (;;);
+	set_selector();
 }
 
 #ifndef USE_VESA
@@ -112,17 +110,4 @@ void printk(const char *format, ...)
 	va_list ap;
 	va_start(ap, format);
 	vnprintf(_putc, (char *) format, ap);
-}
-
-static void run_kernel(const ModuleHeader *h)
-{
-	while (h->type != mod_end) {
-		if (h->type == mod_kernel) {
-			void (*entry)(void *) = (void *) (h->entry);
-			entry((void *) BOOT_ADDR);
-			break;
-		}
-
-		h = (ModuleHeader *) ((uintptr_t) h + sizeof(*h) + h->length);
-	}
 }

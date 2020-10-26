@@ -30,7 +30,7 @@ include Makefile.in
 CFLAGS += -I $(WD)
 
 ENTRY_ADDR = 0x80100000
-ENTRY_FUNC = startup
+ENTRY_FUNC = start
 
 kernel/core.bin: $(OBJS) \
 		kernel/mpu/libmpu.a kernel/arch/libarch.a \
