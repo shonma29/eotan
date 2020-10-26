@@ -24,8 +24,26 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <limits.h>
+#include <screen.h>
 
-unsigned char monitor_default_font[] = {
+#define CHR_WIDTH (6)
+#define CHR_HEIGHT (12)
+#define MIN_CHAR (32)
+#define MAX_CHAR (126)
+
+static unsigned char monitor_default_font[];
+
+Font default_font = {
+	CHR_WIDTH,
+	CHR_HEIGHT,
+	((CHR_WIDTH + CHAR_BIT - 1) / CHAR_BIT) * CHR_HEIGHT,
+	MIN_CHAR,
+	MAX_CHAR,
+	monitor_default_font
+};
+
+static unsigned char monitor_default_font[] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x00, 0x00, 0x04, 0x04, 0x00, 0x00,
 	0x1b, 0x1b, 0x09, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,

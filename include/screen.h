@@ -67,4 +67,6 @@ typedef struct _screen {
 	bool wrap;
 } Screen;
 
+extern Font default_font;
+
 #endif

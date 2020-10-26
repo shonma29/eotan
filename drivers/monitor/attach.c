@@ -31,7 +31,6 @@ For more information, please refer to <http://unlicense.org/>
 
 #ifdef USE_VESA
 #include <vesa.h>
-#include "font.h"
 #else
 #include <cga.h>
 #endif
