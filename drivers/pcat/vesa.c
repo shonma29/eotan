@@ -345,12 +345,10 @@ static void _fill(Screen *s, const unsigned int x1, const unsigned int y1,
 	uint32_t *rword = (uint32_t *) buf;
 	size_t len = x2 - x1;
 	size_t skip = s->bpl - len * sizeof(Color_Rgb);
-	size_t left = x1 % sizeof(uint32_t);
-	if (left)
-		left = sizeof(uint32_t) - left;
-
-	size_t right = x2 % sizeof(uint32_t);
-	size_t middle = (len - left - right) / sizeof(uint32_t);
+	size_t left = (sizeof(uint32_t) - (x1 & (sizeof(uint32_t) - 1)))
+			& (sizeof(uint32_t) - 1);
+	size_t right = x2 & (sizeof(uint32_t) - 1);
+	size_t middle = (len - left - right) >> 2;
 
 	for (unsigned int i = y1; i < y2; i++) {
 		for (size_t j = left; j > 0; j--) {
@@ -386,12 +384,10 @@ static void _copy_up(Screen *s, unsigned int x1, unsigned int y1,
 	uint8_t *w = (uint8_t *) (s->base);
 	uint8_t *r = w + height * s->bpl;
 	size_t len = (x2 - x1) * sizeof(Color_Rgb);
-	size_t left = x1 % sizeof(uint32_t);
-	if (left)
-		left = sizeof(uint32_t) - left;
-
-	size_t right = x2 % sizeof(uint32_t);
-	size_t middle = (len - left - right) / sizeof(uint32_t);
+	size_t left = (sizeof(uint32_t) - (x1 & (sizeof(uint32_t) - 1)))
+			& (sizeof(uint32_t) - 1);
+	size_t right = x2 & (sizeof(uint32_t) - 1);
+	size_t middle = (len - left - right) >> 2;
 	size_t skip = s->bpl - len;
 
 	for (size_t i = y2 - y1; i > 0; i--) {

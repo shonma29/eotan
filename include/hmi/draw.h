@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stddef.h>
+#include <screen.h>
 
 typedef struct {
 	int x;
@@ -66,4 +67,8 @@ extern Frame *get_screen(void);
 extern void put(Frame *, const unsigned int, const size_t, const uint8_t *);
 extern void pset(Frame *, const unsigned int, const unsigned int,
 		const int);
+extern void fill(const Frame *, const int, const int, const int,
+		const int, const int);
+extern void string(const Frame *, const int, const int, const int,
+		Font *, const uint8_t *);
 #endif

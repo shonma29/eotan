@@ -74,24 +74,20 @@ void pointer_put(const Frame *s, const int x, const int y,
 
 	size_t len_x = x2 - x1;
 	size_t len_y = y2 - y1;
-	uint8_t *line = (uint8_t *) (s->base)
-			+ y1 * s->bpl
-			+ x1 * sizeof(Color_Rgb);
-	pointer_save(s, line, len_x, len_y);
+	size_t skip = s->bpl - len_x * sizeof(Color_Rgb);
+	uint8_t *out = (uint8_t *) (s->base)
+			+ y1 * s->bpl+ x1 * sizeof(Color_Rgb);
+	pointer_save(s, out, len_x, len_y);
 
 	const uint32_t *in = &(p->buf[start_y * POINTER_NUM_PER_LINE]);
 	size_t skip_in = 0;
-	for (start_x += start_x; start_x >= 32; start_x -= 32) {
-		in++;
+	for (start_x += start_x; start_x >= 32; start_x -= 32)
 		skip_in++;
-	}
 
 	for (; len_y > 0; len_y--) {
-		uint8_t *out = line;
 		const uint32_t *q = in + skip_in;
-
-		int shift = 32 - 2 - start_x;
 		uint32_t pattern = *q++;
+		int shift = 32 - 2 - start_x;
 
 		for (size_t j = len_x; j > 0; j--) {
 			char c = (pattern >> shift) & 3;
@@ -110,7 +106,7 @@ void pointer_put(const Frame *s, const int x, const int y,
 			}
 		}
 
-		line += s->bpl;
+		out += skip;
 		in += POINTER_NUM_PER_LINE;
 	}
 }
