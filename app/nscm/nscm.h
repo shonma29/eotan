@@ -65,8 +65,10 @@ typedef enum {
 #endif
 	CELL_STRING = 28,
 	CELL_VECTOR = 32,
-	CELL_TAIL = 36,
-	CELL_REFER_GLOBAL = 40,
+	CELL_BYTEVECTOR = 36,
+	CELL_FILE = 40,
+	CELL_TAIL = 44,
+	CELL_REFER_GLOBAL = 48,
 	CELL_REFER_LOCAL = 3
 } cell_tag_e;
 
@@ -135,9 +137,11 @@ typedef struct _cell {
 		bool boolean;
 		long integer;
 		const struct _cell **vector;
+		uint8_t *bytevector;
 #ifdef USE_FLONUM
 		double flonum;
 #endif
+		long mode;
 	};
 	union {
 		const struct _cell *rest;
@@ -145,16 +149,18 @@ typedef struct _cell {
 		long length;
 		unsigned long hash_key;
 		bool inner;
+		int fd;
 	};
 	long protect_count;//TODO release not referred. unify to tag (add 2 each)?
 	list_t hash;//TODO used by only symbol/pair(env). split or use single list
-	list_t cells;//TODO sigle list for GC, or dual list for protect.
+	list_t cells;//TODO single list for GC, or dual list for protect.
 } cell_t;
 
 extern cell_t *null_cell;
 extern cell_t *unspecified_cell;
 extern cell_t *true_cell;
 extern cell_t *false_cell;
+extern cell_t *command_line;
 
 static inline const cell_t *car(const cell_t *pair)
 {
@@ -190,6 +196,8 @@ static inline long integer_value_of(const cell_t *cell)
 extern  cell_t *create_cell(const cell_tag_e);
 extern const cell_t *find_global(const cell_t *);
 extern const cell_t **find_env(const cell_t *, const cell_t *);
+extern cell_t *set_global(const char *, const cell_t *);
+extern cell_t *create_symbol(const char *);
 extern cell_t *create_integer(const long);
 #ifdef USE_FLONUM
 extern cell_t *create_flonum(const double);

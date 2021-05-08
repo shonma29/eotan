@@ -57,6 +57,12 @@ static void display(FILE *out, const cell_t *cell)
 			fputc('}', out);
 		}
 		break;
+	case CELL_BYTEVECTOR:
+		fputs("<bytevector>", out);
+		break;
+	case CELL_FILE:
+		fputs("<file>", out);
+		break;
 	default:
 		fputs("<unknown>", out);
 		break;

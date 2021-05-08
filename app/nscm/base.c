@@ -1,19 +1,37 @@
+#include <fcntl.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 #include "nscm.h"
+#ifdef USE_FLONUM
+#include <math.h>
+#endif
 
 #ifdef USE_BASE
+#define PORT_INPUT (1)
+#define PORT_OUTPUT (2)
+#define PORT_TEXT (4)
+#define PORT_MASK (PORT_INPUT | PORT_OUTPUT | PORT_TEXT)
+
+static cell_t *eof_object;
 
 static cell_t *create_vector(const long);
+static cell_t *create_bytevector(const long);
+static cell_t *create_file(const long, const int);
 #if 0
 static bool is_eqv(const cell_t *, const cell_t *);
 #endif
 
 static void validate_integer(const cell_t *);
+#ifdef USE_FLONUM
+static void validate_flonum(const cell_t *);
+#endif
 static void validate_string(const cell_t *);
 static void validate_vector(const cell_t *);
+static void validate_bytevector(const cell_t *);
+static void validate_file(const cell_t *);
 
 static const cell_t *lib_set(const cell_t *, const cell_t *);
 static const cell_t *lib_begin(const cell_t *, const cell_t *);
@@ -59,18 +77,39 @@ static const cell_t *lib_string_copy(const long, const cell_t **);
 static const cell_t *lib_make_vector(const long, const cell_t **);
 static const cell_t *lib_vector_ref(const long, const cell_t **);
 static const cell_t *lib_vector_set(const long, const cell_t **);
+static const cell_t *lib_make_bytevector(const long, const cell_t **);
+static const cell_t *lib_bytevector_ref(const long, const cell_t **);
+static const cell_t *lib_bytevector_set(const long, const cell_t **);
+static const cell_t *lib_close_port(const long, const cell_t **);
 static const cell_t *lib_read_line(const long, const cell_t **);
+static const cell_t *lib_is_eof_object(const long, const cell_t **);
+static const cell_t *lib_read_bytevector(const long, const cell_t **);
 static const cell_t *lib_write_string(const long, const cell_t **);
+static const cell_t *lib_write_bytevector(const long, const cell_t **);
+static const cell_t *lib_command_line(const long, const cell_t **);
 #if 0
 static _Noreturn const cell_t *lib_exit(const long, const cell_t **);
 #endif
 static const cell_t *lib_random_integer(const long, const cell_t **);
+static const cell_t *lib_abs(const long, const cell_t **);
+#ifdef USE_FLONUM
+static double integer_to_flonum(const cell_t *);
+static const cell_t *lib_floor(const long, const cell_t **);
+static const cell_t *lib_expt(const long, const cell_t **);
+static const cell_t *lib_exp(const long, const cell_t **);
+static const cell_t *lib_log(const long, const cell_t **);
+static const cell_t *lib_sin(const long, const cell_t **);
+static const cell_t *lib_cos(const long, const cell_t **);
+static const cell_t *lib_tan(const long, const cell_t **);
+static const cell_t *lib_atan(const long, const cell_t **);
+static const cell_t *lib_sqrt(const long, const cell_t **);
+#endif
+static const cell_t *lib_open_file(const long, const cell_t **);
 
-
-static cell_t *create_vector(const long size)//TODO move to 'base.c'
+static cell_t *create_vector(const long size)
 {
 	cell_t *cell = create_cell(CELL_VECTOR);
-	cell->vector = (const cell_t **) malloc(size * sizeof(cell));
+	cell->vector = (const cell_t **) malloc(size * sizeof(cell->vector[0]));
 	if (!(cell->vector))
 		throw("no memory", NULL);
 
@@ -80,6 +119,26 @@ static cell_t *create_vector(const long size)//TODO move to 'base.c'
 
 	return cell;
 }
+
+static cell_t *create_bytevector(const long size)
+{
+	cell_t *cell = create_cell(CELL_BYTEVECTOR);
+	cell->bytevector = (uint8_t *) malloc(size * sizeof(cell->bytevector[0]));
+	if (!(cell->vector))
+		throw("no memory", NULL);
+
+	cell->length = size;
+	return cell;
+}
+
+static cell_t *create_file(const long mode, const int fd)
+{
+	cell_t *cell = create_cell(CELL_FILE);
+	cell->mode = mode;
+	cell->fd = fd;
+	return cell;
+}
+
 #if 0
 static bool is_eqv(const cell_t *cell1, const cell_t *cell2)
 {
@@ -103,7 +162,13 @@ static void validate_integer(const cell_t *arg)
 	if (tag_of(arg) != CELL_INTEGER)
 		throw("not integer", arg);
 }
-
+#ifdef USE_FLONUM
+static void validate_flonum(const cell_t *arg)
+{
+	if (tag_of(arg) != CELL_FLONUM)
+		throw("not flonum", arg);
+}
+#endif
 static void validate_string(const cell_t *arg)
 {
 	if (tag_of(arg) != CELL_STRING)
@@ -114,6 +179,18 @@ static void validate_vector(const cell_t *arg)
 {
 	if (tag_of(arg) != CELL_VECTOR)
 		throw("not vector", arg);
+}
+
+static void validate_bytevector(const cell_t *arg)
+{
+	if (tag_of(arg) != CELL_BYTEVECTOR)
+		throw("not bytevector", arg);
+}
+
+static void validate_file(const cell_t *arg)
+{
+	if (tag_of(arg) != CELL_FILE)
+		throw("not file", arg);
 }
 
 void import_base(void)
@@ -131,8 +208,8 @@ void import_base(void)
 	bind_procedure("-", lib_subtract);
 	bind_procedure("*", lib_multiply);
 	bind_procedure("/", lib_divide);
-	bind_procedure("truncate-quotient", lib_truncate_quotient);
-	bind_procedure("truncate-remainder", lib_truncate_remainder);
+	bind_procedure("truncate-quotient", lib_truncate_quotient);//TODO not tiny
+	bind_procedure("truncate-remainder", lib_truncate_remainder);//TODO not tiny
 	bind_procedure("=", lib_equal);
 	bind_procedure("<", lib_less);
 	bind_procedure(">", lib_greater);//TODO not(<=)
@@ -140,19 +217,50 @@ void import_base(void)
 	bind_procedure(">=", lib_greater_or_equal);//TODO not(<)
 	bind_procedure("number->string", lib_number_string);
 	bind_procedure("string->number", lib_string_number);
-	bind_procedure("string-length", lib_string_length);
+	bind_procedure("string-length", lib_string_length);//TODO not tiny
 	bind_procedure("string=?", lib_string_equal);
-	bind_procedure("string-copy", lib_string_copy);
+	bind_procedure("string-copy", lib_string_copy);//TODO not tiny
 	bind_procedure("make-vector", lib_make_vector);
 	bind_procedure("vector-ref", lib_vector_ref);
 	bind_procedure("vector-set!", lib_vector_set);
+	bind_procedure("make-bytevector", lib_make_bytevector);
+	bind_procedure("bytevector-u8-ref", lib_bytevector_ref);
+	bind_procedure("bytevector-u8-set!", lib_bytevector_set);
+	bind_procedure("close-port", lib_close_port);
 	bind_procedure("read-line", lib_read_line);
+	eof_object = create_symbol("");
+	set_global("#eof", eof_object);
+	bind_procedure("eof-object?", lib_is_eof_object);
+	bind_procedure("read-bytevector!", lib_read_bytevector);
 	bind_procedure("write-string", lib_write_string);
+	bind_procedure("write-bytevector", lib_write_bytevector);
+	bind_procedure("command-line", lib_command_line);
 #if 0
 	bind_procedure("exit", lib_exit);
 #endif
 	bind_procedure("random-integer", lib_random_integer);
 	srand(time(NULL));
+	bind_procedure("abs", lib_abs);//TODO not tiny
+#ifdef USE_FLONUM
+	bind_procedure("floor", lib_floor);//TODO not tiny
+	bind_procedure("expt", lib_expt);//TODO not tiny
+	bind_procedure("exp", lib_exp);//TODO not tiny
+	bind_procedure("log", lib_log);//TODO not tiny
+	bind_procedure("sin", lib_sin);//TODO not tiny
+	bind_procedure("cos", lib_cos);//TODO not tiny
+	bind_procedure("tan", lib_tan);//TODO not tiny
+	bind_procedure("atan", lib_atan);//TODO not tiny
+	bind_procedure("sqrt", lib_sqrt);//TODO not tiny
+#endif
+	set_global("binary-input", create_integer(PORT_INPUT));
+	set_global("textual-input", create_integer(PORT_TEXT | PORT_INPUT));
+	set_global("binary-output", create_integer(PORT_OUTPUT));
+	set_global("textual-output", create_integer(PORT_TEXT | PORT_OUTPUT));
+	set_global("binary-input/output", create_integer(PORT_INPUT | PORT_OUTPUT));
+	set_global("open/append", create_integer(O_APPEND));
+	set_global("open/create", create_integer(O_CREAT));
+	set_global("open/truncate", create_integer(O_TRUNC));
+	bind_procedure("open-file", lib_open_file);
 }
 
 static const cell_t *lib_set(const cell_t *env, const cell_t *args)
@@ -479,6 +587,22 @@ static const cell_t *lib_truncate_remainder(const long argc, const cell_t **argv
 static const cell_t *lib_equal(const long argc, const cell_t **argv)
 {
 	const cell_t *cell = argv[0];
+#ifdef USE_FLONUM
+	if (tag_of(cell) == CELL_FLONUM) {
+		double prev = cell->flonum;
+		for (long i = 1; i < argc; i++) {//TODO check if args >= 1
+			cell = argv[i];
+			validate_flonum(cell);
+
+			if (prev != cell->flonum)
+				return false_cell;
+
+			prev = cell->flonum;
+		}
+
+		return true_cell;
+	}
+#endif
 	validate_integer(cell);
 
 	long prev = integer_value_of(cell);
@@ -498,6 +622,22 @@ static const cell_t *lib_equal(const long argc, const cell_t **argv)
 static const cell_t *lib_less(const long argc, const cell_t **argv)
 {
 	const cell_t *cell = argv[0];
+#ifdef USE_FLONUM
+	if (tag_of(cell) == CELL_FLONUM) {
+		double prev = cell->flonum;
+		for (long i = 1; i < argc; i++) {//TODO check if args >= 1
+			cell = argv[i];
+			validate_flonum(cell);
+
+			if (prev >= cell->flonum)
+				return false_cell;
+
+			prev = cell->flonum;
+		}
+
+		return true_cell;
+	}
+#endif
 	validate_integer(cell);//TODO apply for float
 
 	long prev = integer_value_of(cell);
@@ -517,6 +657,22 @@ static const cell_t *lib_less(const long argc, const cell_t **argv)
 static const cell_t *lib_greater(const long argc, const cell_t **argv)
 {
 	const cell_t *cell = argv[0];
+#ifdef USE_FLONUM
+	if (tag_of(cell) == CELL_FLONUM) {
+		double prev = cell->flonum;
+		for (long i = 1; i < argc; i++) {//TODO check if args >= 1
+			cell = argv[i];
+			validate_flonum(cell);
+
+			if (prev <= cell->flonum)
+				return false_cell;
+
+			prev = cell->flonum;
+		}
+
+		return true_cell;
+	}
+#endif
 	validate_integer(cell);//TODO apply for float
 
 	long prev = integer_value_of(cell);
@@ -536,6 +692,22 @@ static const cell_t *lib_greater(const long argc, const cell_t **argv)
 static const cell_t *lib_less_or_equal(const long argc, const cell_t **argv)
 {
 	const cell_t *cell = argv[0];
+#ifdef USE_FLONUM
+	if (tag_of(cell) == CELL_FLONUM) {
+		double prev = cell->flonum;
+		for (long i = 1; i < argc; i++) {//TODO check if args >= 1
+			cell = argv[i];
+			validate_flonum(cell);
+
+			if (prev > cell->flonum)
+				return false_cell;
+
+			prev = cell->flonum;
+		}
+
+		return true_cell;
+	}
+#endif
 	validate_integer(cell);//TODO apply for float
 
 	long prev = integer_value_of(cell);
@@ -555,6 +727,22 @@ static const cell_t *lib_less_or_equal(const long argc, const cell_t **argv)
 static const cell_t *lib_greater_or_equal(const long argc, const cell_t **argv)
 {
 	const cell_t *cell = argv[0];
+#ifdef USE_FLONUM
+	if (tag_of(cell) == CELL_FLONUM) {
+		double prev = cell->flonum;
+		for (long i = 1; i < argc; i++) {//TODO check if args >= 1
+			cell = argv[i];
+			validate_flonum(cell);
+
+			if (prev < cell->flonum)
+				return false_cell;
+
+			prev = cell->flonum;
+		}
+
+		return true_cell;
+	}
+#endif
 	validate_integer(cell);//TODO apply for float
 
 	long prev = integer_value_of(cell);
@@ -722,10 +910,92 @@ static const cell_t *lib_vector_set(const long argc, const cell_t **argv)
 	return unspecified_cell;
 }
 
+static const cell_t *lib_make_bytevector(const long argc, const cell_t **argv)
+{
+	//TODO support fill
+	validate_length(argc, 1);
+
+	const cell_t *size = argv[0];
+	validate_integer(size);
+
+	return create_bytevector(integer_value_of(size));
+}
+
+static const cell_t *lib_bytevector_ref(const long argc, const cell_t **argv)
+{
+	validate_length(argc, 2);
+
+	const cell_t *vector = argv[0];
+	validate_bytevector(vector);
+
+	const cell_t *index = argv[1];
+	validate_integer(index);
+	long n = integer_value_of(index);
+	if (n < 0 || n >= vector->length)
+		throw("out of bound", index);
+
+	return create_integer(vector->bytevector[n]);
+}
+
+static const cell_t *lib_bytevector_set(const long argc, const cell_t **argv)
+{
+	validate_length(argc, 3);
+
+	const cell_t *vector = argv[0];
+	validate_bytevector(vector);
+
+	const cell_t *index = argv[1];
+	validate_integer(index);
+	long n = integer_value_of(index);
+	if (n < 0 || n >= vector->length)
+		throw("out of bound", index);
+
+	validate_integer(argv[2]);
+	vector->bytevector[n] = integer_value_of(argv[2]) & 0xff;//TODO check range?
+	return unspecified_cell;
+}
+
+static const cell_t *lib_close_port(const long argc, const cell_t **argv)
+{
+	validate_length(argc, 1);
+
+	cell_t *cell = (cell_t *) (argv[0]);
+	validate_file(cell);
+
+	if (cell->mode & (PORT_INPUT | PORT_OUTPUT)) {
+		close(cell->fd);
+		cell->mode = 0;
+		cell->fd = -1;
+	}
+
+	return unspecified_cell;
+}
+
+static const cell_t *lib_is_eof_object(const long argc, const cell_t **argv)
+{
+	validate_length(argc, 1);
+
+	return ((argv[0] == eof_object) ? true_cell : false_cell);
+}
+
 static const cell_t *lib_read_line(const long argc, const cell_t **argv)
 {
-	//TODO support port
-	validate_length(argc, 0);
+	int fd;
+	switch (argc) {
+	case 0:
+		fd = STDIN_FILENO;
+		break;
+	case 1:
+		validate_file(argv[0]);
+		if ((argv[0]->mode & (PORT_INPUT | PORT_TEXT))
+				!= (PORT_INPUT | PORT_TEXT))
+			throw("bad port", argv[0]);
+
+		fd = argv[0]->fd;
+		break;
+	default:
+		throw("too many arguments", NULL);
+	}
 
 	size_t size = 32;//TODO define constant
 	char *buf = (char *) malloc(size);
@@ -734,10 +1004,15 @@ static const cell_t *lib_read_line(const long argc, const cell_t **argv)
 
 	long pos = 0;
 	for (;;) {
-		int c = fgetc(stdin);
-		if (c == EOF)
-			//TODO return EOF object
-			break;
+		char c;
+		if (read(fd, &c, 1) != 1) {//TODO throw on error
+			if (pos)
+				break;
+			else {
+				free(buf);
+				return eof_object;
+			}
+		}
 
 		if (c == LF) {
 			//TODO support CR
@@ -763,19 +1038,109 @@ static const cell_t *lib_read_line(const long argc, const cell_t **argv)
 	return cell;
 }
 
+static const cell_t *lib_read_bytevector(const long argc, const cell_t **argv)
+{
+	validate_length(argc, 4);
+	validate_bytevector(argv[0]);
+
+	validate_file(argv[1]);
+	if ((argv[1]->mode & (PORT_INPUT | PORT_TEXT)) != PORT_INPUT)
+		throw("bad port", argv[1]);
+
+	validate_integer(argv[2]);
+	int start = integer_value_of(argv[2]);
+	if ((start < 0)
+			|| (argv[0]->length <= start))
+		throw("invalid start", argv[2]);
+
+	validate_integer(argv[3]);
+	int end = integer_value_of(argv[3]);
+	if ((end < start)
+			|| (argv[0]->length < end))
+		throw("invalid end", argv[3]);
+
+	ssize_t len = end - start;
+	if (!len)
+		return create_integer(0);
+
+	len = read(argv[1]->fd, &(argv[0]->bytevector[start]), len);
+	if (len == (-1))
+		throw("read error", argv[1]);
+
+	return (len ? create_integer(len) : eof_object);
+}
+
 static const cell_t *lib_write_string(const long argc, const cell_t **argv)
 {
-	//TODO support port
-	validate_length(argc, 1);
+	int fd;
+	const cell_t *cell;
 
-	const cell_t *cell = argv[0];
+	switch (argc) {
+	case 0:
+		throw("no argument", NULL);
+	case 1:
+		fd = STDOUT_FILENO;
+		cell = argv[0];
+		break;
+	case 2:
+		validate_file(argv[0]);
+		if ((argv[0]->mode & (PORT_OUTPUT | PORT_TEXT))
+				!= (PORT_OUTPUT | PORT_TEXT))
+			throw("bad port", argv[0]);
+
+		fd = argv[0]->fd;
+		cell = argv[1];
+		break;
+	default:
+		throw("too many arguments", NULL);
+	}
+
 	validate_string(cell);
 
-	fputs(cell->name, stdout);
+	for (char *p = cell->name; *p; p++)
+		write(fd, p, 1);//TODO throw on error
+
 	return unspecified_cell;
 }
-#if 0
+
+static const cell_t *lib_write_bytevector(const long argc, const cell_t **argv)
+{
+	validate_length(argc, 4);
+	validate_bytevector(argv[0]);
+
+	validate_file(argv[1]);
+	if ((argv[1]->mode & (PORT_OUTPUT | PORT_TEXT)) != PORT_OUTPUT)
+		throw("bad port", argv[1]);
+
+	validate_integer(argv[2]);
+	int start = integer_value_of(argv[2]);
+	if ((start < 0)
+			|| (argv[0]->length <= start))
+		throw("invalid start", argv[2]);
+
+	validate_integer(argv[3]);
+	int end = integer_value_of(argv[3]);
+	if ((end < start)
+			|| (argv[0]->length < end))
+		throw("invalid end", argv[3]);
+
+	ssize_t len = end - start;
+	if (len) {
+		len = write(argv[1]->fd, &(argv[0]->bytevector[start]), len);
+		if (len != (end - start))
+			throw("write error", argv[1]);
+	}
+
+	return unspecified_cell;
+}
+
 //TODO process-context library
+static const cell_t *lib_command_line(const long argc, const cell_t **argv)
+{
+	validate_length(argc, 0);
+	return command_line;
+}
+#if 0
 static _Noreturn const cell_t *lib_exit(const long argc, const cell_t **argv)
 {
 	switch (argc) {
@@ -818,5 +1183,140 @@ static const cell_t *lib_random_integer(const long argc, const cell_t **argv)
 	}
 
 	return create_integer(n1 % n2);
+}
+
+static const cell_t *lib_abs(const long argc, const cell_t **argv)
+{
+	validate_length(argc, 1);
+
+	const cell_t *cell = argv[0];
+	if (tag_of(cell) == CELL_INTEGER) {
+		return create_integer(labs(integer_value_of(cell)));
+	} else {
+#ifdef USE_FLONUM
+		validate_flonum(cell);
+		return create_flonum(fabs(cell->flonum));
+#else
+		throw("not integer", cell);
+#endif
+	}
+}
+
+#ifdef USE_FLONUM
+static double integer_to_flonum(const cell_t *cell)
+{
+	if (tag_of(cell) == CELL_INTEGER) {
+		return (double) integer_value_of(cell);
+	} else {
+		validate_flonum(cell);//TODO support complex
+		return cell->flonum;
+	}
+}
+
+static const cell_t *lib_floor(const long argc, const cell_t **argv)
+{
+	validate_length(argc, 1);
+
+	const cell_t *cell = argv[0];
+	if (tag_of(cell) == CELL_INTEGER)
+		return cell;
+
+	validate_flonum(cell);
+	return create_integer(floor(cell->flonum));
+}
+
+static const cell_t *lib_expt(const long argc, const cell_t **argv)
+{
+	validate_length(argc, 2);
+
+	double arg1 = integer_to_flonum(argv[0]);
+	double arg2 = integer_to_flonum(argv[1]);
+	return create_flonum(pow(arg1, arg2));//TODO support integer
+}
+
+//TODO inexact library
+static const cell_t *lib_exp(const long argc, const cell_t **argv)
+{
+	validate_length(argc, 1);
+
+	return create_flonum(exp(integer_to_flonum(argv[0])));
+}
+
+static const cell_t *lib_log(const long argc, const cell_t **argv)
+{
+	validate_length(argc, 1);
+
+	return create_flonum(log(integer_to_flonum(argv[0])));
+}
+
+static const cell_t *lib_sin(const long argc, const cell_t **argv)
+{
+	validate_length(argc, 1);
+
+	return create_flonum(sin(integer_to_flonum(argv[0])));
+}
+
+static const cell_t *lib_cos(const long argc, const cell_t **argv)
+{
+	validate_length(argc, 1);
+
+	return create_flonum(cos(integer_to_flonum(argv[0])));
+}
+
+static const cell_t *lib_tan(const long argc, const cell_t **argv)
+{
+	validate_length(argc, 1);
+
+	return create_flonum(tan(integer_to_flonum(argv[0])));
+}
+
+static const cell_t *lib_atan(const long argc, const cell_t **argv)
+{
+	validate_length(argc, 1);
+
+	return create_flonum(atan(integer_to_flonum(argv[0])));
+}
+
+static const cell_t *lib_sqrt(const long argc, const cell_t **argv)
+{
+	validate_length(argc, 1);
+
+	return create_flonum(sqrt(integer_to_flonum(argv[0])));
+}
+#endif
+//TODO SRFI-170
+static const cell_t *lib_open_file(const long argc, const cell_t **argv)
+{
+	//TODO support permission-bits
+	//TODO support buffer-mode
+	validate_length(argc, 3);
+	validate_string(argv[0]);
+	validate_integer(argv[1]);
+	validate_integer(argv[2]);
+
+	int mode = integer_value_of(argv[1]);
+	if ((mode & PORT_MASK) != mode)
+		throw("bad mode", NULL);
+
+	int posix_mode;
+	switch (mode & (PORT_INPUT | PORT_OUTPUT)) {
+	case PORT_INPUT:
+		posix_mode = O_RDONLY;
+		break;
+	case PORT_OUTPUT:
+		posix_mode = O_WRONLY;
+		break;
+	case (PORT_INPUT | PORT_OUTPUT):
+		posix_mode = O_RDWR;
+		break;
+	default:
+		throw("bad mode", NULL);
+	}
+
+	int fd = open(argv[0]->name, posix_mode | integer_value_of(argv[2]), 0666);
+	if (fd == (-1))
+		throw("cannot open", argv[0]);
+
+	return create_file(mode, fd);
 }
 #endif

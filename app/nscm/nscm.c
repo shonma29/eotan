@@ -6,6 +6,7 @@ written by kenichi sasagawa 2016/1
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "nscm.h"
 
 #ifdef USE_FLONUM
@@ -70,7 +71,7 @@ cell_t *null_cell;
 cell_t *unspecified_cell;
 cell_t *true_cell;
 cell_t *false_cell;
-
+cell_t *command_line;
 
 static inline cell_t *getHashParent(const list_t *p)
 {
@@ -137,11 +138,9 @@ static void hash_remove(cell_t *);
 
 static void destroy_cell(cell_t *);
 
-static cell_t *set_global(const char *, const cell_t *);
 static const cell_t *get_value(const cell_t *, const cell_t *);
 static long get_index(const cell_t *, const cell_t *);
 
-static cell_t *create_symbol(const char *);
 static const cell_t *create_pair(const cell_t *, const cell_t *);
 static const cell_t *create_lambda(const cell_t *, const cell_t *);
 static cell_t *create_boolean(const bool);
@@ -152,6 +151,7 @@ static const cell_t *token_parse_list(token_t *);
 static void token_get_token(token_t *);
 static int token_getc(token_t *);
 static void token_get_until(token_t *, const char);
+static void token_get_string(token_t *, const char);
 
 static const cell_t *eval_item(const cell_t *, const cell_t *);
 static const cell_t *get_and_replace_symbol(const cell_t *, const cell_t *);
@@ -179,12 +179,9 @@ static void gc_mark(void);
 static void gc_mark_cell(cell_t *);
 static void gc_sweep(void);
 
-#ifdef USE_TRACE
 static const cell_t *find_symbol_by_procedure(const cell_t *);
-#endif
-#if !defined(USE_REPL) || defined(USE_TRACE)
 static void simple_print(FILE *, const cell_t *);
-#endif
+
 static void validate_pair(const cell_t *);
 
 static void import_core(void);
@@ -285,6 +282,16 @@ int main(int argc, char **argv)
 	hash_initialize(&hash_symbol, hash_calc_symbol, hash_compare_symbol);
 
 	import_core();
+
+	//TODO set read-only
+	command_line = null_cell;
+	for (int i = argc - 1; i >= 0; i--) {
+		const cell_t *value = create_string((const char *) (argv[i]));
+		command_line = (cell_t *) create_pair(value, command_line);
+		protect_cell((cell_t *) value);
+		protect_cell(command_line);
+	}
+
 	IMPORT_BASE();//TODO test duplicate fields in symbol and env
 	num_of_cells_on_last_gc = num_of_cells;
 #ifdef USE_TRACE
@@ -356,7 +363,14 @@ static void destroy_cell(cell_t *cell)
 		hash_remove(cell);
 	case CELL_STRING:
 	case CELL_VECTOR:
+	case CELL_BYTEVECTOR:
 		free(cell->name);
+		break;
+	case CELL_FILE:
+		if (cell->mode) {
+			close(cell->fd);
+			cell->mode = 0;
+		}
 		break;
 	default:
 		break;
@@ -375,7 +389,7 @@ const cell_t *find_global(const cell_t *symbol)
 	return hash_get(&hash_global, symbol->hash_key, &pair);
 }
 
-static cell_t *set_global(const char *name, const cell_t *value)
+cell_t *set_global(const char *name, const cell_t *value)
 {
 	cell_t *key = create_symbol(name);
 	cell_t *pair = (cell_t *) find_global(key);
@@ -433,7 +447,7 @@ static long get_index(const cell_t *vars, const cell_t *symbol)
 	return (-1);
 }
 
-static cell_t *create_symbol(const char *name)
+cell_t *create_symbol(const char *name)
 {
 	cell_t symbol;
 	symbol.name = (char *) name;
@@ -589,7 +603,7 @@ static void token_get_token(token_t *token)
 			token->value = create_symbol(token->buf);
 			return;
 		case '"':
-			token_get_until(token, '"');
+			token_get_string(token, '"');
 			token->type = TOKEN_VALUE;
 			token->value = create_string(token->buf);//TODO save to constant hash?
 			return;
@@ -671,7 +685,52 @@ static void token_get_until(token_t *token, const char last)
 		else if (c == last)
 			break;
 
-		token->buf[pos++] = c;//TODO process escape a, b, t, n, r, ", \, |, *, x;
+		token->buf[pos++] = c;
+	}
+
+	token->buf[pos] = NUL;
+}
+
+static void token_get_string(token_t *token, const char last)
+{
+	bool escaping = false;
+	long pos = 0;
+	for (;;) {
+		int c = fgetc(token->in);
+		if (c == EOF)
+			exit(EXIT_SUCCESS);
+
+		if (escaping) {
+			escaping = false;
+			switch (c) {
+			case 'a':
+				c = 0x7;
+				break;
+			case 'b':
+				c = 0x8;
+				break;
+			case 't':
+				c = 0x9;
+				break;
+			case 'n':
+				c = 0xa;
+				break;
+			case 'r':
+				c = 0xd;
+				break;
+			default:
+				//TODO process escape *, x;
+				break;
+			}
+		} else {
+			if (c == '\\') {
+				escaping = true;
+				continue;
+			} else if (c == last)
+				break;
+		}
+
+		token->buf[pos++] = c;
 	}
 
 	token->buf[pos] = NUL;
@@ -680,7 +739,7 @@ static void token_get_until(token_t *token, const char last)
 const cell_t *eval(const cell_t *env, const cell_t *cell, const bool tail)
 {
 	return (is_list(cell) ?//TODO slow. if null?
-		 eval_list(env, cell, tail) : eval_item(env, cell));
+			eval_list(env, cell, tail) : eval_item(env, cell));
 }
 
 static const cell_t *eval_item(const cell_t *env, const cell_t *cell)
@@ -702,6 +761,8 @@ static const cell_t *eval_item(const cell_t *env, const cell_t *cell)
 #endif
 	case CELL_STRING:
 	case CELL_VECTOR:
+	case CELL_BYTEVECTOR:
+	case CELL_FILE:
 		return cell;
 	case CELL_REFER_GLOBAL:
 		return cdr(car(cell));
@@ -745,6 +806,7 @@ static const cell_t *eval_list(const cell_t *env, const cell_t *list,
 	case CELL_LAMBDA: {
 			if (tail)
 				for (const cell_t **p = call_top; (*p)->tag == CELL_LAMBDA; p++)
+					//TODO check if call is tail
 					if (*p == f)
 						return create_tail(env, list, f);
 
@@ -762,10 +824,11 @@ static const cell_t *eval_list(const cell_t *env, const cell_t *list,
 				const cell_t **argv = (const cell_t **) (result->rest);
 				for (int i = 0; i < argc; i++)
 					parameter_top[i + OFFSET_ARGV] = argv[i + OFFSET_ARGV];
-					parameter_top++;
-					unprotect_cell((cell_t *) result);
-					destroy_cell((cell_t *) result);//TODO either unprotect or destroy?
-				}
+
+				parameter_top++;
+				unprotect_cell((cell_t *) result);
+				destroy_cell((cell_t *) result);//TODO either unprotect or destroy?
+			}
 
 			unprotect_cell((cell_t *) f);
 			pop_parameter();
@@ -818,7 +881,7 @@ static const cell_t *get_and_replace_symbol(const cell_t *env, const cell_t *lis
 
 	const cell_t *pair = find_global(symbol);
 	if (!pair)
-		throw("list symbol not found", symbol);
+		throw("symbol in list not found", symbol);
 
 	cell_t *refer = create_cell(CELL_REFER_GLOBAL);
 	refer->first = pair;
@@ -861,7 +924,7 @@ static const cell_t *eval_and_replace(const cell_t *env, const cell_t *list,
 {
 	const cell_t *cell = car(list);
 	return ((tag_of(cell) == CELL_SYMBOL) ?
-		get_and_replace_symbol(env, list) : eval(env, cell, tail));//TODO !recursive
+			get_and_replace_symbol(env, list) : eval(env, cell, tail));//TODO !recursive
 }
 
 static const cell_t *apply(const cell_t *lambda)
@@ -1077,17 +1140,16 @@ _Noreturn void throw(const char *message,
 	} else
 #endif
 		fputc('\n', stderr);
-#ifdef USE_TRACE
+
 	for (const cell_t **p = call_top; !is_null(*p); p++) {
 		const cell_t *symbol = find_symbol_by_procedure(*p);
 		fputs(" at ", stderr);
 		simple_print(stderr, symbol ? symbol : *p);
 	}
-#endif
+
 	exit(EXIT_FAILURE);
 }
 
-#ifdef USE_TRACE
 static const cell_t *find_symbol_by_procedure(const cell_t *f)
 {
 	for (long i = 0; i < HASH_SIZE; i++) {
@@ -1102,9 +1164,7 @@ static const cell_t *find_symbol_by_procedure(const cell_t *f)
 
 	return NULL;
 }
-#endif
 
-#if !defined(USE_REPL) || defined(USE_TRACE)
 static void simple_print(FILE *out, const cell_t *cell)
 {//TODO unify printf (repl.c)
 	long tag = tag_of(cell);
@@ -1120,12 +1180,25 @@ static void simple_print(FILE *out, const cell_t *cell)
 		fprintf(out, "%f\n", cell->flonum);
 		break;
 #endif
+	case CELL_LAMBDA:
+		fputs("<lambda (", out);
+		{
+			const cell_t *head = car(car(cell));
+			if (is_list(head))
+				for (const cell_t *p = head; !is_null(p); p = cdr(p)) {
+					if (p != head)
+						fputs(", ", out);
+
+					fprintf(out, "%s", car(p)->name);
+				}
+		}
+		fputs(")>\n", out);
+		break;
 	default:
 		fprintf(out, "<%ld:%p>\n", tag, cell->first);
 		break;
 	}
 }
-#endif
 
 void validate_symbol(const cell_t *arg)
 {
