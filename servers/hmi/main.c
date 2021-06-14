@@ -74,7 +74,6 @@ Frame *screen;
 #endif
 
 static void process(const int);
-static ER check_param(const UW, const UW);
 static ER_UINT write(const UW, const UW, const UW, const char *);
 static void reply(request_message_t *, const size_t);
 static void execute(request_message_t *);
@@ -155,18 +154,6 @@ static void process(const int data)
 		reply(current_req, MESSAGE_SIZE(Rread));
 		current_req = NULL;
 	}
-}
-
-static ER check_param(const UW start, const UW size)
-{
-/*
-	if (start)
-		return E_PAR;
-*/
-	if (size > DEV_BUF_SIZE)
-		return E_PAR;
-
-	return E_OK;
 }
 
 static ER_UINT write(const UW dd, const UW start, const UW size,
@@ -261,16 +248,7 @@ static void execute(request_message_t *req)
 //TODO cancel request
 	switch (message->header.type) {
 	case Tread:
-		result = check_param(message->Tread.offset,
-				message->Tread.count);
-		if (result) {
-//			message->header.token = message->head.token;
-			message->header.type = Rread;
-//			message->Rread.tag = message->Tread.tag;
-			message->Rread.count = result;
-			reply(req, MESSAGE_SIZE(Rread));
-
-		} else if (lfq_enqueue(&req_queue, &req) != QUEUE_OK) {
+		if (lfq_enqueue(&req_queue, &req) != QUEUE_OK) {
 			log_debug("hmi: req_queue is full\n");
 //			message->header.token = message->head.token;
 			message->header.type = Rerror;
