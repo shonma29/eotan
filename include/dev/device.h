@@ -32,7 +32,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/types.h>
 
 #define MAX_DEVICE (32)
-#define DEV_BUF_SIZE (1024)
 
 typedef enum {
 	devmsg_find = 0
