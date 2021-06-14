@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <string.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
 #include <arch/archfunc.h>
@@ -32,10 +33,28 @@ For more information, please refer to <http://unlicense.org/>
 #define PCI_CONFIG_MECHANISM1_OK 0x0001
 #define PCI_CONFIG_HEADER_MULTIPLE 0x00800000
 
-static uint32_t peripherals[MAX_PERIPHERAL];
+typedef struct {
+	union {
+		uint32_t field2;
+		struct {
+			uint8_t revisionId;
+			uint8_t progIf;
+			uint8_t subClass;
+			uint8_t classCode;
+		} type;
+	};
+	uint8_t bus;
+	uint8_t device;
+	uint8_t func;
+	uint8_t pad;
+} peripheral_t;
+
+static peripheral_t peripherals[MAX_PERIPHERAL];
 static int num_of_peripherals;
 
-static bool add_peripheral(const uint32_t);
+static bool add_peripheral(const uint8_t, const uint8_t,
+		const uint8_t, const uint32_t);
+static peripheral_t *get_peripheral(const uint8_t, const uint8_t);
 static uint32_t get_config(const uint8_t, const uint8_t,
 		const uint8_t, const uint8_t);
 static bool is_valid_vendor(const uint32_t);
@@ -45,15 +64,34 @@ static uint8_t get_secondary_bus_number(const uint32_t);
 static void walk_config(const uint8_t);
 
 
-static bool add_peripheral(const uint32_t field2)
+static bool add_peripheral(const uint8_t bus, const uint8_t device,
+		const uint8_t func, const uint32_t field2)
 {
 	if (num_of_peripherals >= MAX_PERIPHERAL) {
 		kcall->printk("PCI: too many peripheral\n");
 		return false;
 	}
 
-	peripherals[num_of_peripherals++] = field2;
+	//TODO heap sort
+	peripheral_t *p = &(peripherals[num_of_peripherals++]);
+	p->field2 = field2;
+	p->bus = bus;
+	p->device = device;
+	p->func = func;
 	return true;
+}
+
+static peripheral_t *get_peripheral(const uint8_t classCode,
+		const uint8_t subClass)
+{
+	for (int i = 0; i < num_of_peripherals; i++) {
+		peripheral_t *p = &(peripherals[i]);
+		if ((p->type.classCode == classCode)
+				&& (p->type.subClass == subClass))
+			return p;
+	}
+
+	return NULL;
 }
 
 static uint32_t get_config(const uint8_t bus, const uint8_t device,
@@ -100,7 +138,7 @@ static void walk_config(const uint8_t bus)
 		kcall->printk("PCI: (%d, %d, 0) %x %x %x %x\n",
 					bus, device, field,
 					field1, field2, field3);
-		add_peripheral(field2);
+		add_peripheral(bus, device, 0, field2);
 
 		if (is_pci_bridge(field2)) {
 //			kcall->printk("PCI: bridge %d 0\n", device);
@@ -123,7 +161,7 @@ static void walk_config(const uint8_t bus)
 			kcall->printk("PCI: (%d, %d, %d) %x %x %x %x\n",
 					bus, device, func, field,
 					field1, field2, field3);
-			add_peripheral(field2);
+			add_peripheral(bus, device, func, field2);
 
 			if (is_pci_bridge(field2)) {
 //				kcall->printk("PCI: bridge %d %d\n",
@@ -137,8 +175,7 @@ static void walk_config(const uint8_t bus)
 
 void peripheral_set_map(void)
 {
-	for (int i = 0; i < sizeof(peripherals) / sizeof(peripherals[0]); i++)
-		peripherals[i] = 0;
+	memset(peripherals, 0, sizeof(sizeof(peripherals)));
 
 	uint16_t *info = (void *) PERIPHERAL_INFO_ADDR;
 //	kcall->printk("PERIPHERAL_INFO: %x\n", *info);
@@ -161,4 +198,23 @@ void peripheral_set_map(void)
 		}
 	else
 		walk_config(0);
+
+	// IDE
+	peripheral_t *p = get_peripheral(0x01, 0x01);
+	if (p) {
+		field = get_config(p->bus, p->device, p->func, 15);
+		outb(0xcfc, 0xfe);
+		field = get_config(p->bus, p->device, p->func, 15);
+		if ((field & 0xff) == 0xfe) {
+			kcall->printk("IDE: need IRQ\n");
+		} else if ((p->type.progIf == 0x8a)
+				|| (p->type.progIf == 0x80)) {
+			kcall->printk("IDE: parallel\n");
+		}
+
+		for (int i = 0; i < 5; i++) {
+			field = get_config(p->bus, p->device, p->func, i + 4);
+			kcall->printk("IDE: bar%d = %x\n", i, field);
+		}
+	}
 }
