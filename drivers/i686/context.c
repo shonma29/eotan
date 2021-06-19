@@ -154,7 +154,6 @@ void context_switch(thread_t *prev, thread_t *next)
 		if (next->mpu.cr3 != current_page_table) {
 			paging_set_directory(next->mpu.cr3);
 			current_page_table = next->mpu.cr3;
-			api_set_kernel_sp(next->attr.kstack_tail);
 		}
 
 		if (next != fpu_holder) {
@@ -163,6 +162,7 @@ void context_switch(thread_t *prev, thread_t *next)
 
 			fpu_restore(&next);
 			fpu_holder = next;
+			api_set_kernel_sp(next->attr.kstack_tail);
 		}
 	}
 
