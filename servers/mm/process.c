@@ -86,7 +86,7 @@ static inline mm_process_group_t *getProcessGroupFromMembers(const list_t *p)
 static node_t **thread_lookup_selector(const tree_t *, const int);
 static int process_find_new_pid(void);
 static int process_create(mm_process_t **, const int);
-static int set_local(mm_process_t *, char *, const size_t);
+static void set_local(mm_process_t *, const char *, const size_t);
 static int map_user_stack(mm_process_t *);
 static int release_memory(mm_process_t *);
 static int create_thread(int *, mm_process_t *, FP, VP);
@@ -163,6 +163,7 @@ mm_process_t *process_duplicate(mm_process_t *src, void *entry, void *stack)
 //				pageRoundUp((uintptr_t) (src->segments.heap.addr)
 //						+ src->segments.heap.len)
 						>> BITS_OFFSET))
+			//TODO release process
 			break;
 
 		dest->segments.exec = src->segments.exec;
@@ -203,9 +204,7 @@ mm_process_t *process_duplicate(mm_process_t *src, void *entry, void *stack)
 			dest->wd->f_count++;
 
 		strcpy(dest->name, src->name);
-
-		if (set_local(dest, src->local->wd, src->local->wd_len))
-			break;
+		set_local(dest, src->local->wd, src->local->wd_len);
 
 		log_info("d %d %x->%x, %x->%x pp=%d pg=%d u=%d g=%d n=%s %x\n",
 				dest->node.key,
@@ -218,6 +217,7 @@ mm_process_t *process_duplicate(mm_process_t *src, void *entry, void *stack)
 		error_no = map_user_stack(dest);
 		if (error_no) {
 			log_err("mm: th map err\n");
+			//TODO release process
 			break;
 		}
 
@@ -225,12 +225,13 @@ mm_process_t *process_duplicate(mm_process_t *src, void *entry, void *stack)
 		error_no = create_thread(&thread_id, dest,
 				(FP) entry, (VP) stack);
 		if (error_no) {
-			//TODO unmap
+			//TODO release process
 			break;
 		}
 
 		if (kcall->thread_start(thread_id) < 0) {
 			log_err("mm: th start err\n");
+			//TODO release process
 			break;
 		}
 
@@ -412,6 +413,11 @@ int create_init(const pid_t pid, const FP entry)
 	if (error_no)
 		return error_no;
 
+	if (map_user_pages(p->directory, (void *) PROCESS_LOCAL_ADDR,
+			pages(sizeof(*(p->local)))))
+		//TODO release process
+		return ENOMEM;
+
 	p->segments.exec.addr = (void *) 0;
 	p->segments.exec.len = 0;
 	p->segments.exec.max = 0;
@@ -443,8 +449,7 @@ int create_init(const pid_t pid, const FP entry)
 		}
 	}
 
-	if (set_local(p, "/", 1))
-		return ENOMEM;
+	set_local(p, "/", 1);
 
 	//TODO open cons
 	mm_descriptor_t *d = process_create_dummy_file();
@@ -548,12 +553,9 @@ static int process_create(mm_process_t **process, const int pid)
 	return error_no;
 }
 
-static int set_local(mm_process_t *process, char *wd, const size_t wd_len)
+static void set_local(mm_process_t *process, const char *wd,
+		const size_t wd_len)
 {
-	if (map_user_pages(process->directory, (void *) PROCESS_LOCAL_ADDR,
-			pages(sizeof(*(process->local)))))
-		return ENOMEM;
-
 	process->local = getPageAddress(kern_p2v(process->directory),
 			(void *) PROCESS_LOCAL_ADDR);
 	memset(process->local, 0, sizeof(*(process->local)));
@@ -563,7 +565,6 @@ static int set_local(mm_process_t *process, char *wd, const size_t wd_len)
 	process->local->gid = process->gid;
 	process->local->wd_len = wd_len;
 	strcpy(process->local->wd, wd);
-	return 0;
 }
 
 int mm_thread_find(mm_request_t *req)

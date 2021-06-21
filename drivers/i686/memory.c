@@ -146,7 +146,6 @@ ER map_user_pages(PTE *dir, VP addr, size_t cnt)
 			page = (PTE *) ((PTE) page & PAGE_ADDR_MASK);
 
 		else {
-//TODO check null
 			page = (PTE *) kern_v2p(kcall->palloc());
 			if (!page)
 				return E_NOMEM;
@@ -164,7 +163,6 @@ ER map_user_pages(PTE *dir, VP addr, size_t cnt)
 //				memset(kern_p2v(p), 0, PAGE_SIZE);
 
 			} else {
-//TODO check null
 				p = (char *) kern_v2p(kcall->palloc());
 				if (!p)
 					return E_NOMEM;
@@ -194,29 +192,42 @@ ER unmap_user_pages(PTE *dir, VP addr, size_t cnt)
 
 	for (; n > 0; j = 0, i++) {
 		PTE *page = (PTE *) (dir[i]);
-
 		if (!is_present((PTE) page)) {
+			//TODO really?
 			if (n <= PTE_PER_PAGE)
 				break;
 
+			//TODO really?
 			n -= PTE_PER_PAGE;
 			continue;
 		}
 
-		page = (PTE *) ((PTE) page & PAGE_ADDR_MASK);
-		page = (PTE *) (kern_p2v(page));
+		page = kern_p2v((void *) (((PTE) page) & PAGE_ADDR_MASK));
+
+		size_t zero_count = 0;
+		unsigned int k = 0;
+		for (; k < j; k++)
+			if (!(page[k]))
+				zero_count++;
 
 		for (; (j < PTE_PER_PAGE) && (n > 0); n--, j++) {
-			char *p = (char *) (page[j]);
-
-			if (is_present((PTE) p)) {
-				p = (char *) ((PTE) p & PAGE_ADDR_MASK);
-				kcall->pfree(p);
+			PTE p = page[j];
+			if (is_present(p)) {
 				page[j] = 0;
+				kcall->pfree((void *) (p & PAGE_ADDR_MASK));
 //TODO reset page cache
 			}
 		}
-//TODO release upper page table
+
+		zero_count += j - k;
+		for (k = j; k < PTE_PER_PAGE; k++)
+			if (!(page[k]))
+				zero_count++;
+
+		if (zero_count == PTE_PER_PAGE) {
+			dir[i] = 0;
+			kcall->pfree((void *) (((PTE) page) & PAGE_ADDR_MASK));
+		}
 	}
 
 	return E_OK;
