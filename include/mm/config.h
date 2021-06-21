@@ -45,4 +45,6 @@ For more information, please refer to <http://unlicense.org/>
 
 #define USER_HEAP_MAX_ADDR (1 * 1024 * 1024 * 1024)
 
+#define FIBER_POOL_MAX (2)
+
 #endif

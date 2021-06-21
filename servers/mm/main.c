@@ -69,6 +69,8 @@ static slab_t request_slab;
 static tree_t tag_tree;
 ID receiver_id;
 static void *receiver_sp;
+static void *fiber_stacks_head = NULL;
+static size_t fiber_stacks_count = 0;
 
 static int initialize(void);
 static void execute(mm_request_t *);
@@ -76,6 +78,8 @@ static void accept(void);
 static mm_request_t *find_request(const int);
 static int add_request(const int, mm_request_t *);
 static int remove_request(const int, mm_request_t *);
+static void *getFiberStack(void);
+static void giveBackFiberStack(void *);
 
 
 static int initialize(void)
@@ -170,7 +174,7 @@ static void accept(void)
 			req->size = size;
 			memcpy(&(req->message), message, size);
 			if (fiber_switch(&receiver_sp, &(req->fiber_sp))) {
-				kcall->pfree(req->stack);
+				giveBackFiberStack(req->stack);
 				slab_free(&request_slab, req);
 			}
 		} while (false);
@@ -196,7 +200,7 @@ static void accept(void)
 			break;
 		}
 
-		req->stack = kcall->palloc();
+		req->stack = getFiberStack();
 		if (!(req->stack)) {
 			slab_free(&request_slab, req);
 			result = E_NOMEM;
@@ -210,7 +214,7 @@ static void accept(void)
 		req->receiver_sp = &receiver_sp;
 		if (fiber_start((void *) (((uintptr_t) req->stack) + PAGE_SIZE),
 				execute, req, &receiver_sp, &(req->fiber_sp))) {
-			kcall->pfree(req->stack);
+			giveBackFiberStack(req->stack);
 			slab_free(&request_slab, req);
 		}
 
@@ -264,4 +268,30 @@ int add_request(const int tag, mm_request_t *req)
 int remove_request(const int tag, mm_request_t *req)
 {
 	return (tree_remove(&tag_tree, req->node.key) ? 0 : (-1));
+}
+
+static void *getFiberStack(void)
+{
+	void *p;
+
+	if (fiber_stacks_count) {
+		p = fiber_stacks_head;
+		fiber_stacks_head = (void *) (*((uintptr_t *) p));
+		fiber_stacks_count--;
+	} else
+		p = kcall->palloc();
+
+	return p;
+}
+
+static void giveBackFiberStack(void *p)
+{
+	if (fiber_stacks_count >= FIBER_POOL_MAX) {
+		kcall->pfree(p);
+	} else {
+		uintptr_t *block = (uintptr_t *) p;
+		*block = (uintptr_t) fiber_stacks_head;
+		fiber_stacks_head = block;
+		fiber_stacks_count++;
+	}
 }
