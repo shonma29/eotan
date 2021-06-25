@@ -132,6 +132,7 @@ int mm_exec(mm_request_t *req)
 		int x = 0;
 		Elf32_Phdr ro;
 		Elf32_Phdr rw;
+		memset(&rw, 0, sizeof(rw));
 		unsigned int offset = ehdr.e_phoff;
 		for (int i = 0; i < ehdr.e_phnum; i++) {
 			Elf32_Phdr phdr;
@@ -177,7 +178,9 @@ int mm_exec(mm_request_t *req)
 //		log_info("replace\n");
 		result = process_replace(process,
 				(void *) (ro.p_vaddr),
-				rw.p_vaddr + rw.p_memsz - ro.p_vaddr,
+				rw.p_memsz ? (rw.p_vaddr + rw.p_memsz
+								- ro.p_vaddr)
+						: ro.p_memsz,
 				(void *) ehdr.e_entry,
 				(void *) (req->args.arg2),
 				req->args.arg3,
@@ -323,6 +326,8 @@ int mm_kill(mm_request_t *req)
 		}
 
 		log_info("mm: %d kill %d\n", process->node.key, req->args.arg2);
+
+		//TODO write message to stderr
 		cleanup(process, th, req);
 		process_destroy(process, req->args.arg1);
 

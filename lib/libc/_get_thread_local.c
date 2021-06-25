@@ -24,30 +24,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stdbool.h>
-#include <stdlib.h>
-#include <time.h>
-#include <unistd.h>
+#include <local.h>
+#include <mm/config.h>
 
 
-void _main(int argc, char *argv[], char *envp[])
+thread_local_t *_get_thread_local(void)
 {
-	//TODO support options
-	//TODO support parameter
-
-	do {
-		time_t t = time(NULL);
-		struct tm tm;
-		gmtime_r(&t, &tm);
-
-		char buf[256];
-		size_t len = strftime(buf, sizeof(buf),
-				"%a %b %d %H:%M:%S %Z %Y\n", &tm);
-		if (!len)
-			_exit(EXIT_FAILURE);
-
-		write(STDOUT_FILENO, buf, len);
-	} while (false);
-
-	_exit(EXIT_SUCCESS);
+	uintptr_t addr = (uintptr_t) __builtin_frame_address(0);
+	addr &= USER_STACK_ADDR_MASK;
+	addr += USER_STACK_MAX_SIZE - sizeof(thread_local_t);
+	return ((thread_local_t *) addr);
 }
