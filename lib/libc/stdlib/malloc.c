@@ -107,13 +107,13 @@ static void block_append(Fragment *to, Fragment *entry)
 
 void __malloc_initialize(void)
 {
-	heap_end = heap_start = (Fragment *) sbrk(0);
 	list_initialize(&free_fragments);
 
-	if (((uintptr_t) sbrk(INITIAL_SIZE)) == -1)
+	heap_start = (Fragment *) sbrk(INITIAL_SIZE);
+	if (((uintptr_t) heap_start) == -1)
 		return;
 
-	heap_end = (Fragment *) (((uintptr_t) heap_end) + INITIAL_SIZE);
+	heap_end = (Fragment *) (((uintptr_t) heap_start) + INITIAL_SIZE);
 	list_initialize(heap_start);
 	list_insert(heap_start, &(heap_start[1]));
 	set_using(heap_start);
@@ -129,7 +129,7 @@ void *malloc(size_t size)
 
 	void *p;
 	for (; !(p = find(size));)
-		if (!expand(size)) {
+		if (!heap_end || !expand(size)) {
 			_set_local_errno(ENOMEM);
 			break;
 		}
