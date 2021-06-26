@@ -40,7 +40,7 @@ For more information, please refer to <http://unlicense.org/>
 #define KTHREAD_STACK_SIZE (4 * 1024)
 
 #define KERNEL_LOG_ADDR 0x80170000
-#define KERNEL_LOG_SIZE (32 * 1024)
+#define KERNEL_LOG_SIZE (16 * 1024)
 
 #define KCALL_ADDR 0x80003f00
 #define ICALL_ADDR 0x80003fc0
