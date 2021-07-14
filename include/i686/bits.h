@@ -40,24 +40,16 @@ static inline int count_ntz(const int d)
 	return cnt;
 }
 
-static inline int count_bits(int d)
+static inline int count_nlz(const int d)
 {
-	d -= ((d >> 1) & 0x55555555);
-	d = (d & 0x33333333) + ((d >> 2) & 0x33333333);
-	d = (d + (d >> 4)) & 0x0f0f0f0f;
+	if (!d)
+		return 32;
 
-	return (d * 0x01010101) >> 24;
+	int cnt;
+	__asm__ __volatile__ ( \
+		"bsrl %1, %0\n\t" \
+		:"=r"(cnt) \
+		:"r"(d));
+	return cnt;
 }
-
-static inline int count_nlz(int d)
-{
-	d |= d >> 1;
-	d |= d >> 2;
-	d |= d >> 4;
-	d |= d >> 8;
-	d |= d >> 16;
-
-	return count_bits(~d);
-}
-
 #endif

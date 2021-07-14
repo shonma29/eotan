@@ -1,5 +1,3 @@
-#ifndef _MATH_H_
-#define _MATH_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,17 +24,46 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <limits.h>
+#include <math.h>
+#include <mpu/bits.h>
+#include <mpu/ieee754.h>
 
-#define NAN (__builtin_nan(""))
-#define INFINITY (__builtin_inf())
-#define HUGE_VAL (__builtin_huge_val())
+#define INT_BITS (CHAR_BIT * sizeof(int))
+#define SIGN_MASK_U (1 << (INT_BITS - 1))
+#define EXP_MAX B64_EXPONENT_SPECIAL
+#define EXP_SHIFT_U (B64_SIGNIFICANT_BITS - INT_BITS)
+#define EXP_MASK_U (EXP_MAX << EXP_SHIFT_U)
+#define EXP_BIAS_ZERO (B64_EXPONENT_BIAS - 1)
+#define SIG_MASK_U ((1 << EXP_SHIFT_U) - 1)
 
-#define M_PI (3.14159265358979323846)
 
-extern double sin(double);
-extern double cos(double);
-extern double fabs(double);
-extern double frexp(double, int *);
-extern double ldexp(double, int);
+double frexp(double num, int *exp)
+{
+	if (num) {
+		int *p = (int *) &num;
+		int e = (p[1] >> EXP_SHIFT_U) & EXP_MAX;
+		if (!e) {
+			int shift = count_nlz(p[1] & SIG_MASK_U);
+			if (shift == INT_BITS) {
+				shift = count_nlz(p[0]);
+				if (shift == INT_BITS)
+					return num;
+			} else
+				shift += INT_BITS;
 
-#endif
+			*exp = e - EXP_BIAS_ZERO
+					- (B64_SIGNIFICANT_BITS - 1 - shift);
+			p[0] = 0;
+			p[1] = (p[1] & SIGN_MASK_U)
+					| (EXP_BIAS_ZERO << EXP_SHIFT_U);
+		} else if (e != EXP_MAX) {
+			*exp = e - EXP_BIAS_ZERO;
+			p[1] = (p[1] & ~EXP_MASK_U)
+					| (EXP_BIAS_ZERO << EXP_SHIFT_U);
+		}
+	} else
+		*exp = 0;
+
+	return num;
+}

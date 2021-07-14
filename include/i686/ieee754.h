@@ -1,5 +1,5 @@
-#ifndef _MATH_H_
-#define _MATH_H_
+#ifndef _MPU_IEEE754_H_
+#define _MPU_IEEE754_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,16 +27,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-#define NAN (__builtin_nan(""))
-#define INFINITY (__builtin_inf())
-#define HUGE_VAL (__builtin_huge_val())
+#define B64_EXPONENT_BITS (11)
+#define B64_SIGNIFICANT_BITS (52)
 
-#define M_PI (3.14159265358979323846)
+#define B64_EXPONENT_BIAS (1023)
+#define B64_EXPONENT_SPECIAL (2047)
+#define B64_EXPONENT_DENORMAL (0)
 
-extern double sin(double);
-extern double cos(double);
-extern double fabs(double);
-extern double frexp(double, int *);
-extern double ldexp(double, int);
+#define B64_EXPONENT_MAX_R10 (308)
+#define B64_SIGNIFICANT_FIGURES (16)
 
 #endif

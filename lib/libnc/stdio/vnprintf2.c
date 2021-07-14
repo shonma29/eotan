@@ -32,6 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <mpu/ieee754.h>
 #endif
 
 #define MAX_INT_COLUMN (10)
@@ -40,15 +41,10 @@ For more information, please refer to <http://unlicense.org/>
 #ifdef USE_FLOAT
 #define NUMBER_MIN_UNITS (4)
 #define NUMBER_CARRY_BIT (INT_BIT - 1)
-#define NUMBER_CARRY_MASK ((uint32_t)(1 << NUMBER_CARRY_BIT))
-#define NUMBER_VALUE_MASK ((uint32_t)(NUMBER_CARRY_MASK - 1))
+#define NUMBER_CARRY_MASK ((uint32_t) (1 << NUMBER_CARRY_BIT))
+#define NUMBER_VALUE_MASK ((uint32_t) (NUMBER_CARRY_MASK - 1))
 
-#define B64_EXPONENT_BIAS (1023)
-#define B64_EXPONENT_SPECIAL (0x7ff)
-#define B64_EXPONENT_MAX_R10 (308)
-#define B64_SIGNIFICANT_BITS (52)
-#define B64_SIGNIFICANT_MASK (((uint64_t)1 << B64_SIGNIFICANT_BITS) - 1)
-#define B64_SIGNIFICANT_FIGURES (16)
+#define B64_SIGNIFICANT_MASK (((uint64_t) 1 << B64_SIGNIFICANT_BITS) - 1)
 
 typedef struct {
 	bool minus;
@@ -59,7 +55,7 @@ typedef struct {
 #endif
 
 typedef struct _State {
-	bool (*handler)(struct _State*);
+	bool (*handler)(struct _State *);
 	const char *format;
 	va_list ap;
 	int (*out)(const char, void *);
@@ -97,29 +93,27 @@ static void _putchar(State *s, const char c)
 static void _puts(State *s, const char *str)
 {
 	char c;
-
-	for (; (c = *str); str++)	_putchar(s, c);
+	for (; (c = *str); str++)
+		_putchar(s, c);
 }
 
 static void _putd(State *s, const int v, const int radix)
 {
-	char buf[MAX_INT_COLUMN];
-	char *p = &buf[sizeof(buf) - 1];
-	int x = v;
 	int carry = 0;
-
+	int x = v;
 	if (x < 0) {
-		unsigned int y = (unsigned int)x;
-
-		if ((unsigned int)y == INT_MIN) {
+		unsigned int y = (unsigned int) x;
+		if (y == (unsigned int) INT_MIN) {
 			carry = 1;
-			x = (int)(y + 1);
+			x = (int) (y + 1);
 		}
 
 		_putchar(s, '-');
 		x = -x;
 	}
 
+	char buf[MAX_INT_COLUMN];
+	char *p = &buf[sizeof(buf) - 1];
 	for (*p-- = '\0';; p--) {
 		*p = (x % radix) + carry + '0';
 		carry = 0;
@@ -151,26 +145,21 @@ static void _puth(State *s, const int x)
 static number_t *number_create(const uint32_t *x, const size_t len,
 		const bool minus)
 {
-	number_t *p = (number_t*)malloc(sizeof(*p));
-
+	number_t *p = (number_t *) malloc(sizeof(*p));
 	if (p) {
-		int i;
-		int last;
 		size_t max = ((len + NUMBER_MIN_UNITS - 1) / NUMBER_MIN_UNITS)
 				* NUMBER_MIN_UNITS;
-		uint32_t *buf = (uint32_t*)malloc(max * sizeof(*buf));
-
+		uint32_t *buf = (uint32_t *) malloc(max * sizeof(*buf));
 		if (!buf) {
 			free(p);
 			return NULL;
 		}
 
-		last = 0;
+		int last = 0;
+		int i;
 		for (i = 0; i < len; i++) {
 			uint32_t v = x[i];
-
 			buf[len - i - 1] = v;
-
 			if (!last && v)
 				last = len - i - 1;
 		}
@@ -197,38 +186,30 @@ static void number_destroy(number_t *p)
 
 static int number_multiply(number_t *p, const uint32_t n)
 {
-	int i;
-	int last;
-	size_t len;
-	size_t max;
-	uint32_t *buf;
-	uint32_t carry;
-
 	if (!p)
 		return -1;
 
-	len = p->len + 1;
+	size_t max;
+	uint32_t *buf;
+	size_t len = p->len + 1;
 	if (p->max < len) {
 		max = ((len + NUMBER_MIN_UNITS - 1) / NUMBER_MIN_UNITS)
 				* NUMBER_MIN_UNITS;
-		buf = (uint32_t*)malloc(max * sizeof(uint32_t));
-
+		buf = (uint32_t *) malloc(max * sizeof(uint32_t));
 		if (!buf)
 			return -1;
 
-		for (i = len; i < max; i++)
+		for (int i = len; i < max; i++)
 			buf[i] = 0;
-
 	} else {
 		max = p->max;
 		buf = p->buf;
 	}
 
-	last = 0;
-	carry = 0;
-	for (i = 0; i < len; i++) {
-		uint64_t v = (i < p->len) ? ((uint64_t)(p->buf[i]) * n) : 0;
-
+	int last = 0;
+	uint32_t carry = 0;
+	for (int i = 0; i < len; i++) {
+		uint64_t v = (i < p->len) ? ((uint64_t) (p->buf[i]) * n) : 0;
 		v += carry;
 		carry = (v >> NUMBER_CARRY_BIT) & NUMBER_VALUE_MASK;
 		buf[i] = v & NUMBER_VALUE_MASK;
@@ -250,28 +231,23 @@ static int number_multiply(number_t *p, const uint32_t n)
 
 static int number_shift(number_t *p, const int n)
 {
-	int i;
-	int j;
-	int last;
-	size_t len;
-	uint32_t carry;
-
 	if (!p || n < 0)
 		return -1;
 
 	if (!n)
 		return 0;
 
-	len = p->len + ((abs(n) + (NUMBER_CARRY_BIT - 1)) / NUMBER_CARRY_BIT)
+	size_t len = p->len
+			+ ((abs(n) + (NUMBER_CARRY_BIT - 1)) / NUMBER_CARRY_BIT)
 			+ 1;
 	if (p->max < len) {
 		size_t max = ((len + NUMBER_MIN_UNITS - 1) / NUMBER_MIN_UNITS)
 				* NUMBER_MIN_UNITS;
-		uint32_t *buf = (uint32_t*)malloc(max * sizeof(uint32_t));
-
+		uint32_t *buf = (uint32_t *) malloc(max * sizeof(uint32_t));
 		if (!buf)
 			return -1;
 
+		int i;
 		for (i = 0; i < len; i++)
 			buf[i] = p->buf[i];
 
@@ -283,12 +259,11 @@ static int number_shift(number_t *p, const int n)
 		p->buf = buf;
 	}
 
-	last = 0;
-	carry = 0;
-	for (i = 0; i < n; i++)
-		for (j = 0; j < len; j++) {
+	int last = 0;
+	uint32_t carry = 0;
+	for (int i = 0; i < n; i++)
+		for (int j = 0; j < len; j++) {
 			uint32_t v = (p->buf[j] << 1) | carry;
-
 			carry = (v >> NUMBER_CARRY_BIT) & 1;
 			p->buf[j] = v & NUMBER_VALUE_MASK;
 
@@ -297,31 +272,24 @@ static int number_shift(number_t *p, const int n)
 		}
 
 	p->len = last + 1;
-
 	return 0;
 }
 
 static int number_divide(number_t *p, const uint32_t n)
 {
-	int i;
-	int last;
-	uint32_t reminder;
-
 	if (!p || !n)
 		return -1;
 
 	if (n == 1)
 		return 0;
 
-	last = 0;
-	reminder = 0;
-	for (i = p->len; i > 0; i--) {
+	int last = 0;
+	uint32_t reminder = 0;
+	for (int i = p->len; i > 0; i--) {
 		uint32_t x = (reminder << ((INT_BIT / 2) - 1))
 				| (p->buf[i - 1] >> (INT_BIT / 2));
-		uint32_t q;
 		ldiv_t v = ldiv(x, n);
-
-		q = v.quot << (INT_BIT / 2);
+		uint32_t q = v.quot << (INT_BIT / 2);
 		x = (v.rem << (INT_BIT / 2))
 				| (p->buf[i - 1]
 				& ((1 << (INT_BIT / 2)) - 1));
@@ -335,29 +303,23 @@ static int number_divide(number_t *p, const uint32_t n)
 	}
 
 	p->len = last + 1;
-
 	return reminder;
 }
 
 static void putdouble(State *s, const bool minus, uint64_t sig, const int exp)
 {
-	number_t *num;
-	int i;
-	int figures;
-	int dot;
-	uint32_t v[2];
 	uint64_t x = 1;
-	unsigned char buf[B64_EXPONENT_MAX_R10 + 3];
-	unsigned char *p;
-
+	int i;
 	for (i = 0; sig; i++) {
 		x = (x << 1) | (sig >> (B64_SIGNIFICANT_BITS - 1));
 		sig = (sig << 1) & B64_SIGNIFICANT_MASK;
 	}
 
-	v[0] = (uint32_t)(x >> NUMBER_CARRY_BIT);
-	v[1] = (uint32_t)(x & NUMBER_VALUE_MASK);
-	num = number_create(v, sizeof(v) / sizeof(v[0]), false);
+	uint32_t v[2];
+	v[0] = (uint32_t) (x >> NUMBER_CARRY_BIT);
+	v[1] = (uint32_t) (x & NUMBER_VALUE_MASK);
+
+	number_t *num = number_create(v, sizeof(v) / sizeof(v[0]), false);
 	if (!num)
 		return;
 
@@ -366,32 +328,35 @@ static void putdouble(State *s, const bool minus, uint64_t sig, const int exp)
 	if (exp < 0)
 		i -= exp;
 
-	dot = i;
+	int dot = i;
 	for (; i > 0; i--)
 		number_multiply(num, 5);
 
+	unsigned char buf[B64_EXPONENT_MAX_R10 + 3];
 	memset(buf, '\0', sizeof(buf));
-	figures = 0;
+
+	int figures = 0;
 	for (i = sizeof(buf) - 2; num->len > 1 || num->buf[0]; i--) {
 		buf[i] = number_divide(num, 10) + '0';
 		figures++;
 	}
 
 	dot = figures - dot;
-	p = &(buf[i + 1]);
 
+	unsigned char *p = &(buf[i + 1]);
+#if 0
+	//TODO fix round
 	if (p[B64_SIGNIFICANT_FIGURES] >= '5') {
 		bool carry = true;
 
 		for (i = B64_SIGNIFICANT_FIGURES - 1; i >= 0; i--)
 			if (carry) {
 				unsigned char c = p[i];
-
 				carry = (c == '9');
 				p[i] = carry ? '0' : (c + 1);
 			}
 	}
-
+#endif
 	if (dot <= 0) {
 		_puts(s, "0.");
 
@@ -417,8 +382,7 @@ static void putdouble(State *s, const bool minus, uint64_t sig, const int exp)
 
 static void _putf(State *s, const double x)
 {
-	unsigned char *p = (unsigned char*)&x;
-	bool minus = (p[7] & 0x80) ? true : false;
+	unsigned char *p = (unsigned char *) &x;
 	int exp = ((p[7] << 4) & 0x7f0) | ((p[6] >> 4) & 0x00f);
 	uint64_t sig = (p[6] << 16) & 0x000f0000;
 
@@ -431,12 +395,18 @@ static void _putf(State *s, const double x)
 	sig |= (p[1] << 8) & 0x0000ff00;
 	sig |= p[0] & 0x000000ff;
 
+	if (sig && (exp == B64_EXPONENT_SPECIAL)) {
+		_puts(s, "NaN");
+		return;
+	}
+
+	bool minus = (p[7] & 0x80) ? true : false;
 	if (minus)
 		_putchar(s, '-');
 
 	if (exp == B64_EXPONENT_SPECIAL)
-		_puts(s, sig ? "NaN" : "oo");
-	else if (!sig)
+		_puts(s, "oo");
+	else if (!exp && !sig)
 		_puts(s, "0.0");
 	else
 		putdouble(s, minus, sig, exp - B64_EXPONENT_BIAS);
@@ -467,7 +437,6 @@ static bool _immediate(State *s)
 static bool _format(State *s)
 {
 	char c = *(s->format)++;
-
 	switch (c) {
 	case '\0':
 		_putchar(s, '%');
@@ -513,7 +482,7 @@ static bool _format(State *s)
 		_puth(s, va_arg(s->ap, int));
 		break;
 	case 's':
-		_puts(s, va_arg(s->ap, char*));
+		_puts(s, va_arg(s->ap, char *));
 		break;
 	default:
 		_putchar(s, '%');
@@ -522,7 +491,6 @@ static bool _format(State *s)
 	}
 
 	s->handler = _immediate;
-
 	return true;
 }
 
@@ -552,10 +520,9 @@ static bool _escape(State *s)
 	return true;
 }
 
-int vnprintf2(int (*out)(const char, void*), void *env,
+int vnprintf2(int (*out)(const char, void *), void *env,
 		const char *format, va_list ap) {
 	State s = { _immediate, format, ap, out, env, 0 };
-
 	while (s.handler(&s));
 
 	return s.len;

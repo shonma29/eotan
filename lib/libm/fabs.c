@@ -1,5 +1,3 @@
-#ifndef _MATH_H_
-#define _MATH_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,17 +24,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <limits.h>
+#include <math.h>
 
-#define NAN (__builtin_nan(""))
-#define INFINITY (__builtin_inf())
-#define HUGE_VAL (__builtin_huge_val())
+#define INT_BITS (CHAR_BIT * sizeof(int))
+#define SIGN_MASK_U (1 << (INT_BITS - 1))
 
-#define M_PI (3.14159265358979323846)
 
-extern double sin(double);
-extern double cos(double);
-extern double fabs(double);
-extern double frexp(double, int *);
-extern double ldexp(double, int);
-
-#endif
+double fabs(double x)
+{
+	int *p = (int *) &x;
+	p[1] &= ~SIGN_MASK_U;
+	return x;
+}
