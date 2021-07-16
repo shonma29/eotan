@@ -29,38 +29,39 @@ For more information, please refer to <http://unlicense.org/>
 #include <stddef.h>
 #include <sys/stat.h>
 
+//TODO ENDIAN
 #define IDENT 0x5039
 
 #define NOFID (0)
 
 enum fs_message_type {
-	Tversion = 0xff01,
-	Rversion = 0xff02,
-	Tauth = 0xff03,
-	Rauth = 0xff04,
-	Tattach = 0,
-	Rattach = 0xff06,
-	Rerror = 0xff07,
-	Tflush = 0xff08,
-	Rflush = 0xff09,
-	Twalk = 1,
-	Rwalk = 0xff0b,
-	Topen = 2,
-	Ropen = 0xff0d,
-	Tcreate = 3,
-	Rcreate = 0xff0f,
-	Tread = 4,
-	Rread = 0xff11,
-	Twrite = 5,
-	Rwrite = 0xff13,
-	Tclunk = 6,
-	Rclunk = 0xff15,
-	Tremove = 7,
-	Rremove = 0xff17,
-	Tstat = 8,
-	Rstat = 0xff19,
-	Twstat = 9,
-	Rwstat = 0xff1b
+	Tversion = 0x0a,
+	Rversion = 0xff0a,
+	Tauth = 0x0b,
+	Rauth = 0xff0b,
+	Tattach = 0x00,
+	Rattach = 0xff00,
+	Rerror = 0xff0d,
+	Tflush = 0x0c,
+	Rflush = 0xff0c,
+	Twalk = 0x01,
+	Rwalk = 0xff01,
+	Topen = 0x02,
+	Ropen = 0xff02,
+	Tcreate = 0x03,
+	Rcreate = 0xff03,
+	Tread = 0x04,
+	Rread = 0xff04,
+	Twrite = 0x05,
+	Rwrite = 0xff05,
+	Tclunk = 0x06,
+	Rclunk = 0xff06,
+	Tremove = 0x07,
+	Rremove = 0xff07,
+	Tstat = 0x08,
+	Rstat = 0xff08,
+	Twstat = 0x09,
+	Rwstat = 0xff09
 };
 
 struct _Tversion {

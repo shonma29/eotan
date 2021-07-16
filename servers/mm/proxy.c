@@ -38,8 +38,26 @@ For more information, please refer to <http://unlicense.org/>
 
 #define MYNAME "mm"
 
-static int call_device(const int, mm_request_t *, const size_t, const int,
-		const size_t);
+typedef struct {
+	unsigned short tsize;
+	unsigned short rtype;
+	unsigned short rsize;
+} fspacket_definition_t;
+
+static fspacket_definition_t packet_def[] = {
+	{ MESSAGE_SIZE(Tattach), Rattach, MESSAGE_SIZE(Rattach) },
+	{ MESSAGE_SIZE(Twalk), Rwalk, MESSAGE_SIZE(Rwalk) },
+	{ MESSAGE_SIZE(Topen), Ropen, MESSAGE_SIZE(Ropen) },
+	{ MESSAGE_SIZE(Tcreate), Rcreate, MESSAGE_SIZE(Rcreate) },
+	{ MESSAGE_SIZE(Tread), Rread, MESSAGE_SIZE(Rread) },
+	{ MESSAGE_SIZE(Twrite), Rwrite, MESSAGE_SIZE(Rwrite) },
+	{ MESSAGE_SIZE(Tclunk), Rclunk, MESSAGE_SIZE(Rclunk) },
+	{ MESSAGE_SIZE(Tremove), Rremove, MESSAGE_SIZE(Rremove) },
+	{ MESSAGE_SIZE(Tstat), Rstat, MESSAGE_SIZE(Rstat) },
+	{ MESSAGE_SIZE(Twstat), Rwstat, MESSAGE_SIZE(Rwstat) }
+};
+
+static int call_device(const mm_file_t *, mm_request_t *);
 static int create_tag(const mm_request_t *);
 static int compact_path(char *);
 
@@ -77,9 +95,8 @@ int mm_attach(mm_request_t *req)
 		message->Tattach.uname = (char *) (process->uid);
 		message->Tattach.aname = (char *) "/";
 
-		int result = call_device(PORT_FS, req,
-				MESSAGE_SIZE(Tattach),
-				Rattach, MESSAGE_SIZE(Rattach));
+		file->server_id = PORT_FS;
+		int result = call_device(file, req);
 		//log_info("mm: attach[sid=%d fid=%d] %d\n", session->node.key,
 		//		file->node.key, result);
 
@@ -91,7 +108,6 @@ int mm_attach(mm_request_t *req)
 			break;
 		}
 
-		file->server_id = PORT_FS;
 		file->f_flag = O_ACCMODE;
 		file->f_count = 1;
 		file->f_offset = 0;
@@ -213,6 +229,7 @@ int mm_create(mm_request_t *req)
 			break;
 		}
 
+		//TODO open first
 		int fid = file->node.key;
 		int oflag = req->args.arg2;
 		int token = create_token(kcall->thread_get_id(),
@@ -224,14 +241,12 @@ int mm_create(mm_request_t *req)
 		message->Tcreate.name = head;
 		message->Tcreate.perm = req->args.arg3;
 		message->Tcreate.mode = oflag;
-		result = call_device(file->server_id, req,
-				MESSAGE_SIZE(Tcreate),
-				Rcreate, MESSAGE_SIZE(Rcreate));
+		result = call_device(file, req);
 //		log_info("proxy: %d create[%d:%d] %d\n",
 //				process->node.key, fd, fid, result);
 
 		if (result) {
-			//TODO retry open/create
+			//TODO retry open
 			process_destroy_desc(process, fd);
 
 			int error_no = _clunk(process->session, file, token,
@@ -329,9 +344,7 @@ int mm_write(mm_request_t *req)
 		message->Twrite.count = req->args.arg3;
 		message->Twrite.data = (char*)(req->args.arg2);
 
-		int result = call_device(file->server_id, req,
-				MESSAGE_SIZE(Twrite),
-				Rwrite, MESSAGE_SIZE(Rwrite));
+		int result = call_device(file, req);
 		if (result) {
 			reply->data[0] = result;
 			break;
@@ -420,9 +433,7 @@ int mm_remove(mm_request_t *req)
 				process->session);
 		message->Tremove.tag = create_tag(req);
 		message->Tremove.fid = file->node.key;
-		result = call_device(file->server_id, req,
-				MESSAGE_SIZE(Tremove),
-				Rremove, MESSAGE_SIZE(Rremove));
+		result = call_device(file, req);
 
 //		log_info("proxy: %d remove[:%d] %d\n",
 //				process->node.key, file->node.key, result);
@@ -555,9 +566,7 @@ int mm_chmod(mm_request_t *req)
 		message->Twstat.tag = create_tag(req);
 		message->Twstat.fid = file->node.key;
 		message->Twstat.stat = &st;
-		result = call_device(file->server_id, req,
-				MESSAGE_SIZE(Twstat),
-				Rwstat, MESSAGE_SIZE(Rwstat));
+		result = call_device(file, req);
 
 		int error_no = _clunk(process->session, file, token, req);
 		if (error_no) {
@@ -614,8 +623,7 @@ int _walk(mm_file_t **file, mm_process_t *process, const int thread_id,
 //			message->Twalk.fid, message->Twalk.wname,
 //			message->Twalk.newfid);
 
-	int result = call_device(process->wd->server_id, req,
-			MESSAGE_SIZE(Twalk), Rwalk, MESSAGE_SIZE(Rwalk));
+	int result = call_device(process->wd, req);
 	if (result)
 		session_destroy_file(process->session, f);
 	else {
@@ -638,8 +646,7 @@ int _open(const mm_file_t *file, const int token, const int mode,
 	message->Topen.tag = create_tag(req);
 	message->Topen.fid = file->node.key;
 	message->Topen.mode = mode;
-	return call_device(file->server_id, req, MESSAGE_SIZE(Topen),
-			Ropen, MESSAGE_SIZE(Ropen));
+	return call_device(file, req);
 }
 
 int _read(const mm_file_t *file, const int token, const off_t offset,
@@ -653,8 +660,7 @@ int _read(const mm_file_t *file, const int token, const off_t offset,
 	message->Tread.offset = offset;
 	message->Tread.count = count;
 	message->Tread.data = data;
-	return call_device(file->server_id, req, MESSAGE_SIZE(Tread),
-			Rread, MESSAGE_SIZE(Rread));
+	return call_device(file, req);
 }
 
 int _clunk(mm_session_t *session, mm_file_t *file, const int token,
@@ -672,8 +678,7 @@ int _clunk(mm_session_t *session, mm_file_t *file, const int token,
 	message->Tclunk.tag = create_tag(req);
 	message->Tclunk.fid = file->node.key;
 
-	int result = call_device(file->server_id, req,
-			MESSAGE_SIZE(Tclunk), Rclunk, MESSAGE_SIZE(Rclunk));
+	int result = call_device(file, req);
 
 	if (session_destroy_file(session, file)) {
 		//TODO what to do?
@@ -691,26 +696,25 @@ int _fstat(struct stat *st, const mm_file_t *file, const int token,
 	message->Tstat.tag = create_tag(req);
 	message->Tstat.fid = file->node.key;
 	message->Tstat.stat = st;
-	return call_device(file->server_id, req, MESSAGE_SIZE(Tstat),
-			Rstat, MESSAGE_SIZE(Rstat));
+	return call_device(file, req);
 }
 
-static int call_device(const int server_id, mm_request_t *req,
-	const size_t tsize, const int rtype, const size_t rsize)
+static int call_device(const mm_file_t *file, mm_request_t *req)
 {
 	fsmsg_t *message = &(req->message);
 	message->header.ident = IDENT;
-	ER_UINT size = kcall->ipc_send(server_id, message, tsize);
+	fspacket_definition_t *def = &(packet_def[message->header.type]);
+	ER_UINT size = kcall->ipc_send(file->server_id, message, def->tsize);
 	if (size)
 		return ECONNREFUSED;
 
-	req->callee = server_id;
+	req->callee = file->server_id;
 	fiber_switch(&(req->fiber_sp), req->receiver_sp);
 
 	size = req->size;
 	if (size >= MIN_MESSAGE_SIZE) {
-		if (message->header.type == rtype) {
-			if (size == rsize)
+		if (message->header.type == def->rtype) {
+			if (size == def->rsize)
 				return 0;
 		} else if (message->header.type == Rerror) {
 			if (size == MESSAGE_SIZE(Rerror))
