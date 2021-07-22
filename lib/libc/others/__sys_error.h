@@ -1,3 +1,5 @@
+#ifndef __SYS_ERROR_H__
+#define __SYS_ERROR_H__
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,17 +26,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <errno.h>
-#include <stdio.h>
-#include <string.h>
 
+#define UNKNOWN "Unknown error"
 
-void perror(const char *s)
-{
-	int n = errno;
+extern const char * const __sys_error_list[];
 
-	if (s && *s)
-		fprintf(stderr, "%s: ", s);
+#define __sys_nerror (80)
 
-	fprintf(stderr, "%s\n", strerror(n));
-}
+#endif

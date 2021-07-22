@@ -25,16 +25,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
-#include <stdio.h>
-#include <string.h>
+#include "__sys_error.h"
 
 
-void perror(const char *s)
+char *strerror(int errnum)
 {
-	int n = errno;
-
-	if (s && *s)
-		fprintf(stderr, "%s: ", s);
-
-	fprintf(stderr, "%s\n", strerror(n));
+	if ((errnum >= 0)
+			&& (errnum < __sys_nerror))
+		return ((char *) __sys_error_list[errnum]);
+	else {
+		errno = EINVAL;
+		return UNKNOWN;
+	}
 }

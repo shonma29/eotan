@@ -24,17 +24,86 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <errno.h>
-#include <stdio.h>
-#include <string.h>
 
-
-void perror(const char *s)
-{
-	int n = errno;
-
-	if (s && *s)
-		fprintf(stderr, "%s: ", s);
-
-	fprintf(stderr, "%s\n", strerror(n));
-}
+const char * const __sys_error_list[] = {
+	"",
+	"E2BIG",
+	"EACCES",
+	"EADDRINUSE",
+	"EADDRNOTAVAIL",
+	"EAFNOSUPPORT",
+	"EAGAIN",
+	"EALREADY",
+	"EBADF",
+	"EBADMSG",
+	"EBUSY",
+	"ECANCELED",
+	"ECHILD",
+	"ECONNABORTED",
+	"ECONNREFUSED",
+	"ECONNRESET",
+	"EDEADLK",
+	"EDESTADDRREQ",
+	"EDOM",
+	"EDQUOT",
+	"EEXIST",
+	"EFAULT",
+	"EFBIG",
+	"EHOSTUNREACH",
+	"EIDRM",
+	"EILSEQ",
+	"EINPROGRESS",
+	"EINTR",
+	"EINVAL",
+	"EIO",
+	"EISCONN",
+	"EISDIR",
+	"ELOOP",
+	"EMFILE",
+	"EMLINK",
+	"EMSGSIZE",
+	"EMULTIHOP",
+	"ENAMETOOLONG",
+	"ENETDOWN",
+	"ENETRESET",
+	"ENETUNREACH",
+	"ENFILE",
+	"ENOBUFS",
+	"ENODATA",
+	"ENODEV",
+	"ENOENT",
+	"ENOEXEC",
+	"ENOLCK",
+	"ENOLINK",
+	"ENOMEM",
+	"ENOMSG",
+	"ENOPROTOOPT",
+	"ENOSPC",
+	"ENOSR",
+	"ENOSTR",
+	"ENOSYS",
+	"ENOTCONN",
+	"ENOTDIR",
+	"ENOTEMPTY",
+	"ENOTSOCK",
+	"ENOTSUP",
+	"ENOTTY",
+	"ENXIO",
+	"EOPNOTSUPP",
+	"EOVERFLOW",
+	"EPERM",
+	"EPIPE",
+	"EPROTO",
+	"EPROTONOSUPPORT",
+	"EPROTOTYPE",
+	"ERANGE",
+	"EROFS",
+	"ESPIPE",
+	"ESRCH",
+	"ESTALE",
+	"ETIME",
+	"ETIMEDOUT",
+	"ETXTBSY",
+	"EWOULDBLOCK",
+	"EXDEV"
+};
