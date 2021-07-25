@@ -42,6 +42,7 @@ For more information, please refer to <http://unlicense.org/>
 #define MSG_CLOSE "failed to close"
 #define MSG_STAT "failed to get status"
 #define MSG_MALLOC "No memory"
+#define MSG_NOT_DIR "Not a directory"
 
 #define DIRENT_BUFSIZ 16348
 
@@ -52,7 +53,7 @@ static char dir_buf[DIRENT_BUFSIZ];
 
 static void puterror(const char *, const char *);
 static void format(FILE *, const char *, const char *);
-static int exec(FILE *, const char *, const int, bool *);
+static int process(FILE *, const char *, const int, bool *);
 
 
 static void puterror(const char *name, const char *message)
@@ -82,7 +83,7 @@ static void format(FILE *out, const char *path, const char *name)
 			size_buf[0], time_buf, name);
 }
 
-static int exec(FILE *out, const char *name, const int argc, bool *is_block)
+static int process(FILE *out, const char *name, const int argc, bool *is_block)
 {
 	*is_block = false;
 
@@ -100,8 +101,11 @@ static int exec(FILE *out, const char *name, const int argc, bool *is_block)
 	}
 
 	int result = OK;
+	size_t path_len = strlen(name);
 	if (st.st_mode & S_IFDIR) {
-		size_t path_len = strlen(name);
+		if (name[path_len - 1] == '/')
+			path_len--;
+
 		char *buf = malloc(path_len + 1 + PATH_MAX + 1);
 		if (!buf) {
 			close(in);
@@ -134,6 +138,9 @@ static int exec(FILE *out, const char *name, const int argc, bool *is_block)
 		}
 
 		free(buf);
+	} else if (name[path_len - 1] == '/') {
+		puterror(name, MSG_NOT_DIR);
+		result = NG;
 	} else
 		format(out, name, name);
 
@@ -151,14 +158,13 @@ int main(int argc, char **argv)
 	bool is_block = false;
 
 	if (argc == 1)
-		result |= exec(stdout, ".", argc, &is_block);
+		result |= process(stdout, ".", argc, &is_block);
 	else
 		for (int i = 1; i < argc; i++) {
 			if (is_block)
 				fprintf(stdout, "\n");
 
-			argv++;
-			result |= exec(stdout, *argv, argc, &is_block);
+			result |= process(stdout, argv[i], argc, &is_block);
 		}
 
 	return (result ? EXIT_FAILURE : EXIT_SUCCESS);
