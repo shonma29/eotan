@@ -304,7 +304,6 @@ int vfs_remove(vnode_t *node, const struct permission *permission)
 	}
 
 	//TODO here?
-	vnodes_remove(parent);
 	vnodes_remove(node);
 	return 0;
 }

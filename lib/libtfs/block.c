@@ -177,9 +177,7 @@ int tfs_deallocate_block(vfs_t *fs, const blkno_t block_no)
 	if (!cache_release(buf, true))
 		return EIO;
 
-	if (!cache_invalidate(&(fs->device), block_no))
-		return EIO;
-
+	cache_invalidate(&(fs->device), block_no);
 	tfs->fs_free_blocks++;
 
 	if (block_no < tfs->fs_block_hand)

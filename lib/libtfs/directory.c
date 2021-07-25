@@ -293,6 +293,7 @@ static int tfs_remove_entry(vnode_t *parent, vnode_t *node)
 
 	//TODO optimize
 	for (;;) {
+		copier.buf = buf;
 		size_t len;
 		int error_no = vfs_read(parent, &copier, offset + delta,
 				sizeof(buf), &len);
@@ -311,9 +312,10 @@ static int tfs_remove_entry(vnode_t *parent, vnode_t *node)
 			return EINVAL;
 
 		copier_t writer = {
-			copy_to,
+			copy_from,
 			buf
 		};
+
 		error_no = tfs_write(parent, &writer, offset, real_len, &len);
 		if (error_no)
 			return error_no;
