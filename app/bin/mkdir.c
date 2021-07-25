@@ -24,27 +24,30 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <sys/stat.h>
+#include "_perror.h"
 
 #define MSG_ARG "usage: mkdir dirname ...\n"
 
 
-int main(int argc, char **argv)
+void _main(int argc, char *argv[], char *envp[])
 {
 	int result = EXIT_SUCCESS;
 
-	if (argc == 1)
-		fputs(MSG_ARG, stderr);
-	else
-		for (int i = 1; i < argc; i++) {
-			argv++;
-
-			result = mkdir(*argv, 0777);
-			if (result)
+	if (argc == 1) {
+		_put_error(MSG_ARG);
+		result = EXIT_FAILURE;
+	} else
+		//TODO support -m option
+		//TODO support -p option
+		for (int i = 1; i < argc; i++)
+			if (mkdir(argv[i], 0777)) {
+				_perror(argv[i]);
+				result = EXIT_FAILURE;
 				break;
-		}
+			}
 
-	return result;
+	_exit(result);
 }

@@ -37,17 +37,23 @@ void _main(int argc, char *argv[], char *envp[])
 
 	do {
 		time_t t = time(NULL);
+		if (t == -1)
+			break;
+
 		struct tm tm;
-		gmtime_r(&t, &tm);
+		if (!gmtime_r(&t, &tm))
+			//TODO show error, while it does not ocuur
+			break;
 
 		char buf[256];
 		size_t len = strftime(buf, sizeof(buf),
 				"%a %b %d %H:%M:%S %Z %Y\n", &tm);
 		if (!len)
-			_exit(EXIT_FAILURE);
+			break;
 
 		write(STDOUT_FILENO, buf, len);
+		_exit(EXIT_SUCCESS);
 	} while (false);
 
-	_exit(EXIT_SUCCESS);
+	_exit(EXIT_FAILURE);
 }

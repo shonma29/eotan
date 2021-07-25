@@ -1,3 +1,5 @@
+#ifndef __PERROR_H__
+#define __PERROR_H__
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,44 +26,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <errno.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include "_perror.h"
 
-#define MSG_ARG "usage: sleep seconds\n"
+extern void _put_error(const char *);
+extern void _perror(const char *);
 
-
-void _main(int argc, char *argv[], char *envp[])
-{
-	do {
-		if (argc != 2)
-			break;
-
-		if (!(argv[1][0]))
-			break;
-
-		errno = 0;
-
-		char *end;
-		//TODO support float
-		int n = strtol(argv[1], &end, 10);
-
-		if (*end)
-			break;
-
-		if (errno) {
-			_perror("sleep");
-			_exit(EXIT_FAILURE);
-		}
-
-		if (n < 0)
-			break;
-
-		sleep(n);
-		_exit(EXIT_SUCCESS);
-	} while (false);
-
-	_put_error(MSG_ARG);
-	_exit(EXIT_FAILURE);
-}
+#endif

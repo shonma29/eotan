@@ -41,5 +41,5 @@ all: $(TARGET)
 $(TARGET): $(OBJS) \
 		lib/libc.a lib/libnc.a
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $(@).o \
-		lib/libc.a lib/libnc.a
+		$(WD)/_perror.o $(WD)/_put_error.o lib/libc.a lib/libnc.a
 	$(STRIP) $@

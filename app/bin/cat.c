@@ -25,10 +25,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <fcntl.h>
-#include <stdbool.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "_perror.h"
+
+#define BUFSIZ (8192)
 
 static int print(const int, const int, const char *);
 static int process(const int, const char *);
@@ -40,7 +41,7 @@ static int print(const int out, const int in, const char *name)
 		char buf[BUFSIZ];
 		int len = read(in, buf, sizeof(buf));
 		if (len == -1) {
-			perror(name);
+			_perror(name);
 			return EXIT_FAILURE;
 		}
 
@@ -48,7 +49,7 @@ static int print(const int out, const int in, const char *name)
 			break;
 
 		if (write(out, buf, len) == -1) {
-			perror(name);
+			_perror(name);
 			return EXIT_FAILURE;
 		}
 	}
@@ -71,21 +72,19 @@ static int process(const int out, const char *name)
 		return result;
 	} while (false);
 
-	perror(name);
+	_perror(name);
 	return EXIT_FAILURE;
 }
 
-int main(int argc, char **argv)
+void _main(int argc, char *argv[], char *envp[])
 {
 	int result = EXIT_SUCCESS;
 
 	if (argc == 1)
 		result = print(STDOUT_FILENO, STDIN_FILENO, "stdin");
 	else
-		for (int i = 1; i < argc; i++) {
-			argv++;
-			result |= process(STDOUT_FILENO, *argv);
-		}
+		for (int i = 1; i < argc; i++)
+			result |= process(STDOUT_FILENO, argv[i]);
 
-	return result;
+	_exit(result);
 }
