@@ -25,7 +25,7 @@
 
 TARGET = $(WD)/cat $(WD)/shell \
 		$(WD)/date $(WD)/echo $(WD)/ls $(WD)/pwd $(WD)/sleep \
-		$(WD)/mkdir $(WD)/rm $(WD)/chmod $(WD)/cp \
+		$(WD)/mkdir $(WD)/rm $(WD)/chmod $(WD)/cp $(WD)/mv \
 		$(WD)/more $(WD)/cal $(WD)/ncalc
 
 include Makefile.in

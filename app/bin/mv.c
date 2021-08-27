@@ -34,7 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #define BUFSIZ (8192)
 
-#define MSG_ARG "usage: cp file1 file2\n       cp file ... directory\n"
+#define MSG_ARG "usage: mv file1 file2\n       mv file ... directory\n"
 #define MSG_TOO_LONG_PATH ": too long path\n"
 #define MSG_BAD_PATH ": bad path\n"
 #define MSG_IS_DIRECTORY ": is directory\n"
@@ -133,6 +133,11 @@ static int process_file(const char *dest_name, const char *src_name)
 			break;
 		}
 
+		if (unlink(src_name)) {
+			_perror(src_name);
+			break;
+		}
+
 		return result;
 	} while (false);
 
@@ -170,9 +175,10 @@ void _main(int argc, char *argv[], char *envp[])
 		if (argc <= 2)
 			break;
 
-		//TODO support -x
-		//TODO support -g
-		//TODO support -u
+		//TODO delete src
+		//TODO set mode and time from src if dest exists
+		//TODO support rename file
+		//TODO support rename directory
 
 		int dest = argc - 1;
 		int result = EXIT_SUCCESS;
