@@ -25,19 +25,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <fcntl.h>
-#include <errno.h>
 #include "sys.h"
 
 
 int creat(const char *path, mode_t mode)
 {
-	int fd = open(path, O_CREAT | O_WRONLY | O_TRUNC, mode);
-	//TODO do in mm
-	if (fd == -1) {
-		int e = errno;
-		if (e == EEXIST)
-			return open(path, O_WRONLY | O_TRUNC);
-	}
-
-	return fd;
+	sys_args_t args = {
+		syscall_create,
+		(int) path,
+		O_WRONLY | O_TRUNC,
+		mode
+	};
+	return _syscall(&args, sizeof(args));
 }

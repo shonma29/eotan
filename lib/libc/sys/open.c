@@ -34,6 +34,7 @@ int open(const char *path, int oflag, ...)
 	sys_args_t args;
 	args.arg1 = (int) path;
 
+	//TODO O_CREATE does not exist in plan9
 	if (oflag & O_CREAT) {
 		args.syscall_no = syscall_create;
 		args.arg2 = oflag & ~O_CREAT;
@@ -41,7 +42,6 @@ int open(const char *path, int oflag, ...)
 		va_list list;
 		va_start(list, oflag);
 		args.arg3 = va_arg(list, int);
-//TODO 9p create sequence
 	} else {
 		args.syscall_no = syscall_open;
 		args.arg2 = oflag;

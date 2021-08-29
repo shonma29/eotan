@@ -57,6 +57,8 @@ static fspacket_definition_t packet_def[] = {
 	{ MESSAGE_SIZE(Twstat), Rwstat, MESSAGE_SIZE(Rwstat) }
 };
 
+static int _walk_child(mm_file_t *, mm_process_t *, const char *,
+		mm_request_t *);
 static int call_device(const mm_file_t *, mm_request_t *);
 static int create_tag(const mm_request_t *);
 static int compact_path(char *);
@@ -223,30 +225,38 @@ int mm_create(mm_request_t *req)
 		int result = _walk(&file, process, kcall->thread_get_id(),
 				parent_path, req, req->walkpath);
 		if (result) {
-			//TODO retry open
 			process_destroy_desc(process, fd);
 			reply->data[0] = result;
 			break;
 		}
 
-		//TODO open first
-		int fid = file->node.key;
 		int oflag = req->args.arg2;
 		int token = create_token(kcall->thread_get_id(),
 				process->session);
-		message->header.type = Tcreate;
-		message->header.token = token;
-		message->Tcreate.tag = create_tag(req);
-		message->Tcreate.fid = fid;
-		message->Tcreate.name = head;
-		message->Tcreate.perm = req->args.arg3;
-		message->Tcreate.mode = oflag;
-		result = call_device(file, req);
-//		log_info("proxy: %d create[%d:%d] %d\n",
-//				process->node.key, fd, fid, result);
+		if (_walk_child(file, process, head, req)) {
+			int fid = file->node.key;
+			message->header.type = Tcreate;
+			message->header.token = token;
+			message->Tcreate.tag = create_tag(req);
+			message->Tcreate.fid = fid;
+			message->Tcreate.name = head;
+			message->Tcreate.perm = req->args.arg3;
+			message->Tcreate.mode = oflag;
+			result = call_device(file, req);
+//			log_info("proxy: %d create[%d:%d] %d\n",
+//					process->node.key, fd, fid, result);
+
+			if (result) {
+				//TODO test
+				if (!_walk_child(file, process, head, req))
+					result = _open(file, token,
+							oflag | O_TRUNC, req);
+			}
+		} else
+			result = _open(file, token, oflag | O_TRUNC, req);
 
 		if (result) {
-			//TODO retry open
+			//TODO test
 			process_destroy_desc(process, fd);
 
 			int error_no = _clunk(process->session, file, token,
@@ -635,6 +645,31 @@ int _walk(mm_file_t **file, mm_process_t *process, const int thread_id,
 	}
 
 	return result;
+}
+
+static int _walk_child(mm_file_t *file, mm_process_t *process,
+		const char *name, mm_request_t *req)
+{
+	if (!(process->wd))
+		//TODO test
+		//TODO what to do?
+		return ECONNREFUSED;
+
+	size_t len = strlen(name);
+	if (len >= PATH_MAX)
+		//TODO test
+		return ENAMETOOLONG;
+
+	fsmsg_t *message = &(req->message);
+	message->header.type = Twalk;
+	message->header.token =
+			create_token(kcall->thread_get_id(), process->session);
+	message->Twalk.tag = create_tag(req);
+	message->Twalk.fid = file->node.key;
+	message->Twalk.newfid = file->node.key;
+	message->Twalk.nwname = len;
+	message->Twalk.wname = (char *) name;
+	return call_device(file, req);
 }
 
 int _open(const mm_file_t *file, const int token, const int mode,
