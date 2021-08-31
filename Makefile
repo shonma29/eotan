@@ -31,7 +31,7 @@ INITRD = initrd.img
 BLKSIZE = 512
 
 .PHONY: tools libs kern core drivers servers \
-	apps bin test data starter initrd
+	apps bin rclib test data starter initrd
 
 all: libs tools kern initrd apps data starter
 
@@ -53,11 +53,16 @@ drivers:
 servers:
 	$(MAKE) -f servers/Makefile
 
-apps: bin test nscm ne
+apps: bin rclib test nscm ne
 
 bin:
 	$(WRITER) $(INITRD) $(BLKSIZE) mkdir /bin
 	$(MAKE) -f app/bin/Makefile WD=app/bin
+
+rclib:
+	$(WRITER) $(INITRD) $(BLKSIZE) mkdir /rc
+	$(WRITER) $(INITRD) $(BLKSIZE) mkdir /rc/lib
+	$(WRITER) $(INITRD) $(BLKSIZE) create /rc/lib/rcmain rcmain
 
 test:
 	$(MAKE) -f app/test/Makefile WD=app/test

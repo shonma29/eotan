@@ -52,6 +52,7 @@ For more information, please refer to <http://unlicense.org/>
 #define MAX_VAR (256)
 
 #define PROMPT "$"
+#define DEFAULT_MAIN "/rc/lib/rcmain"
 
 typedef struct {
 	int files[3];
@@ -81,6 +82,7 @@ static Line line = {
 	DEFAULT_ARRAY_SIZE >> 1,
 	NULL
 };
+static bool interactive = true;
 
 static int get_path(Token *);
 static bool get_size(size_t *, const unsigned char *);
@@ -99,16 +101,15 @@ static unsigned char *var_get(hash_t *, const unsigned char *);
 static bool var_put(hash_t *, const unsigned char *);
 static hash_t *var_create(void);
 static unsigned char **var_expand(hash_t *);
+static void interpret(hash_t *, FILE *);
 
 
 static int get_path(Token *token)
 {
 	unsigned char *head = token->head;
 	unsigned char *p;
-
 	for (p = head;; p++) {
 		unsigned char c = *p;
-
 		if (c == DIRS_DELIMITER) {
 			token->head = p + 1;
 			break;
@@ -121,7 +122,7 @@ static int get_path(Token *token)
 		}
 	}
 
-	token->len = (size_t)p - (size_t)head;
+	token->len = (size_t) p - (size_t) head;
 	if (!token->len)
 		return 1;
 
@@ -130,7 +131,6 @@ static int get_path(Token *token)
 			return 1;
 
 		memcpy(token->buf, head, token->len);
-
 	} else {
 		if (token->len >= token->max)
 			return 1;
@@ -147,32 +147,28 @@ static bool get_size(size_t *len, const unsigned char *head)
 {
 	bool has_path = false;
 	const unsigned char *p;
-
 	for (p = head; *p; p++)
 		if (*p == PATH_DELIMITER)
 			has_path = true;
 
-	*len = (size_t)p - (size_t)head;
-
+	*len = (size_t) p - (size_t) head;
 	return has_path;
 }
 
 static void execute(unsigned char **array, unsigned char **env,
 		const unsigned char *path, const ExecOptions *opts)
 {
-	unsigned int i;
 	pid_t pid = fork();
-
-	/* child */
 	if (pid == 0) {
+		// child
 		Token token;
 		bool has_path = get_size(&(token.len), array[0]);
-
 		//TODO is safe?
 		if (++token.len > MAXPATHLEN)
 			exit(ENAMETOOLONG);
 
-		for (i = 0; i < sizeof(opts->files) / sizeof(opts->files[0]);
+		for (unsigned int i = 0;
+				i < sizeof(opts->files) / sizeof(opts->files[0]);
 				i++)
 			if (opts->files[i] != -1) {
 				close(i);
@@ -185,8 +181,8 @@ static void execute(unsigned char **array, unsigned char **env,
 			close(0);
 
 		if (has_path) {
-			if (execve((char*)(array[0]), (char**)(array),
-					(char**)env) == ERR) {
+			if (execve((char *) (array[0]), (char **) array,
+					(char **) env) == ERR) {
 				if (errno == ENOENT)
 					fprintf(stderr, "%s not found\n",
 							array[0]);
@@ -196,12 +192,10 @@ static void execute(unsigned char **array, unsigned char **env,
 
 				exit(errno);
 			}
-
 		} else if (!path)
 			exit(ENOENT);
-
 		else {
-			token.head = (unsigned char*)path;
+			token.head = (unsigned char *) path;
 			token.max = MAXPATHLEN - token.len;
 			token.last = false;
 
@@ -211,38 +205,35 @@ static void execute(unsigned char **array, unsigned char **env,
 					break;
 				}
 
-				strcpy((char*)&(token.buf[token.len]),
-						(char*)(array[0]));
-				if (execve((char*)(token.buf),
-						(char**)(array),
-						(char**)env) == ERR)
+				strcpy((char *) &(token.buf[token.len]),
+						(char *) (array[0]));
+				if (execve((char *) (token.buf),
+						(char **) array,
+						(char **) env) == ERR)
 					if (errno != ENOENT) {
 						fprintf(stderr,
 								"exec error %d\n",
 								errno);
 						exit(errno);
 					}
-
 			} while (!(token.last));
 
 			fprintf(stderr, "%s not found\n", array[0]);
 			exit(ENOENT);
 		}
-
 	} else {
-		for (i = 0; i < sizeof(opts->files) / sizeof(opts->files[0]);
+		for (unsigned int i = 0;
+				i < sizeof(opts->files) / sizeof(opts->files[0]);
 				i++)
 			if (opts->files[i] != -1)
 				close(opts->files[i]);
 
-		/* error */
 		if (pid == ERR)
+			// error
 			fprintf(stderr, "fork error %d\n", pid);
-
-		/* parent */
 		else if (!opts->background) {
+			// parent
 			int status;
-
 			if (wait(&status) == -1)
 				fprintf(stderr, "wait error %d\n", errno);
 			else
@@ -254,9 +245,8 @@ static void execute(unsigned char **array, unsigned char **env,
 static void line_realloc_buf(Line *p)
 {
 	size_t next_size = p->bufsize << SHIFT_BUF_SIZE;
-	unsigned char *buf = (unsigned char*)malloc(
+	unsigned char *buf = (unsigned char *) malloc(
 			sizeof(unsigned char) * next_size);
-
 	if (buf) {
 		if (p->buf) {
 			memcpy(buf, p->buf, p->bufsize);
@@ -265,7 +255,6 @@ static void line_realloc_buf(Line *p)
 
 		p->buf = buf;
 		p->bufsize = next_size;
-
 	} else {
 		fprintf(stderr, "memory exhausted\n");
 		exit(ERR_MEMORY);
@@ -288,22 +277,20 @@ static void line_clear(Line *p)
 
 static bool line_putc(Line *p, const unsigned char c)
 {
+	//TODO escape LF
 	switch (c) {
 	case '\n':
 		p->buf[p->pos] = '\0';
 		p->pos++;
 		return true;
-
 	case 0x08:
 		if (p->pos)
 			p->pos--;
 
 		break;
-
 	default:
 		p->buf[p->pos] = c;
 		p->pos++;
-
 		if (p->pos >= p->bufsize)
 			line_realloc_buf(p);
 
@@ -316,19 +303,17 @@ static bool line_putc(Line *p, const unsigned char c)
 static void line_realloc_array(Line *p)
 {
 	size_t next_size = p->arraysize << SHIFT_ARRAY_SIZE;
-	unsigned char **array = (unsigned char**)malloc(sizeof(unsigned char*)
+	unsigned char **array = (unsigned char **) malloc(sizeof(unsigned char *)
 			* next_size);
-
 	if (array) {
 		if (p->array) {
 			memcpy(array, p->array,
-					sizeof(unsigned char*) * p->arraysize);
+					sizeof(unsigned char *) * p->arraysize);
 			free(p->array);
 		}
 
 		p->array = array;
 		p->arraysize = next_size;
-
 	} else {
 		fprintf(stderr, "memory exhausted\n");
 		exit(ERR_MEMORY);
@@ -337,12 +322,10 @@ static void line_realloc_array(Line *p)
 
 static bool line_parse(Line *p)
 {
-	unsigned int i;
 	unsigned int pos = 0;
-
-	for (i = 0;; i++) {
+	for (unsigned int i = 0;; i++) {
 		for (; (p->buf[i] > 0) && (p->buf[i] <= ' '); i++);
-		if (!p->buf[i])
+		if (!p->buf[i] || p->buf[i] == '#')
 			break;
 
 		p->array[pos] = &(p->buf[i]);
@@ -360,13 +343,12 @@ static bool line_parse(Line *p)
 					return false;
 				}
 
+				//TODO escape quote
 				if (escape)
 					escape = false;
-
 				else if (p->buf[i] == '\\') {
 					escape = true;
 					continue;
-
 				} else if (p->buf[i] == '\"')
 					break;
 
@@ -375,7 +357,6 @@ static bool line_parse(Line *p)
 			}
 
 			*w = '\0';
-
 		} else if (p->buf[i] == '\'') {
 			for (i++; p->buf[i] != '\''; i++)
 				if (!p->buf[i]) {
@@ -385,20 +366,19 @@ static bool line_parse(Line *p)
 
 			p->buf[i] = '\0';
 			p->array[pos - 1]++;
-
 		} else {
 			unsigned char c;
 			unsigned char *w = &(p->buf[i]);
 			bool escape = false;
-
 			for (; p->buf[i]; i++) {
 				if (escape)
 					escape = false;
-
 				else if (p->buf[i] == '\\') {
 					escape = true;
 					continue;
-
+				} else if (p->buf[i] == '#') {
+					p->buf[i] = '\0';
+					break;
 				} else if (p->buf[i] <= ' ')
 					break;
 
@@ -420,7 +400,6 @@ static bool line_parse(Line *p)
 	}
 
 	p->array[pos] = NULL;
-
 	return (p->array[0] ? true : false);
 }
 
@@ -429,33 +408,30 @@ static bool line_evaluate(Line *p, hash_t *vars)
 	ExecOptions opts = { { -1, -1, -1 }, false };
 
 	if (line_parse(p)) {
-		unsigned int i;
 		unsigned int j = 0;
-
-		for (i = 0; p->array[i]; i++) {
-			if (!strcmp((char*)(p->array[i]), "<")) {
+		for (unsigned int i = 0; p->array[i]; i++) {
+			if (!strcmp((char *) (p->array[i]), "<")) {
 				i++;
 				if (!p->array[i]) {
 					fprintf(stderr, "redirect what?\n");
 					return false;
 				}
 
-				opts.files[0] = open((char*)(p->array[i]),
+				opts.files[0] = open((char *) (p->array[i]),
 						O_RDONLY);
 				if (opts.files[0] == -1) {
 					fprintf(stderr, "%s cannot open (%d)\n",
 							p->array[i], errno);
 					return false;
 				}
-
-			} else if (!strcmp((char*)(p->array[i]), ">")) {
+			} else if (!strcmp((char *) (p->array[i]), ">")) {
 				i++;
 				if (!p->array[i]) {
 					fprintf(stderr, "redirect what?\n");
 					return false;
 				}
 
-				opts.files[1] = open((char*)(p->array[i]),
+				opts.files[1] = open((char *) (p->array[i]),
 						O_WRONLY | O_CREAT | O_TRUNC,
 						//TODO adhoc
 						S_IRUSR | S_IWUSR | S_IRGRP
@@ -465,11 +441,9 @@ static bool line_evaluate(Line *p, hash_t *vars)
 							p->array[i], errno);
 					return false;
 				}
-
-			} else if (!strcmp((char*)(p->array[i]), "&")) {
+			} else if (!strcmp((char *) (p->array[i]), "&")) {
 				opts.background = true;
 				break;
-
 			} else {
 				p->array[j] = p->array[i];
 				j++;
@@ -479,30 +453,22 @@ static bool line_evaluate(Line *p, hash_t *vars)
 		p->array[j] = NULL;
 
 		//TODO execute inner commands in background
-		if (!strcmp((char*)(p->array[0]), "cd")) {
-			if (chdir(p->array[1] ? (char*)(p->array[1]) : "/"))
+		if (!strcmp((char *) (p->array[0]), "cd")) {
+			if (chdir(p->array[1] ? (char *) (p->array[1]) : "/"))
 				fprintf(stderr, "chdir error=%d\n", errno);
-
-		} else if (!strcmp((char*)(p->array[0]), "exit"))
+		} else if (!strcmp((char *) (p->array[0]), "exit"))
 			return true;
-
-		else if (!strcmp((char*)(p->array[0]), "env")) {
-			if (environ) {
-				unsigned char **envp;
-
-				for (envp = (unsigned char**)environ; *envp;
+		else if (!strcmp((char *) (p->array[0]), "env")) {
+			if (environ)
+				for (unsigned char **envp = (unsigned char **) environ; *envp;
 						envp++)
 					printf("%s\n", *envp);
-			}
-
-		} else if (!strcmp((char*)(p->array[0]), "export"))
+		} else if (!strcmp((char *) (p->array[0]), "export"))
 			var_put(vars, p->array[1]);
-
 		else {
 			unsigned char **envp = var_expand(vars);
-
 			execute(p->array, envp, var_get(
-					vars, (unsigned char*)("PATH")), &opts);
+					vars, (unsigned char *) ("PATH")), &opts);
 			free(envp);
 		}
 	}
@@ -513,9 +479,7 @@ static bool line_evaluate(Line *p, hash_t *vars)
 static unsigned int var_calc_hash(const void *key, const size_t size)
 {
 	unsigned int v = 0;
-	unsigned char *p;
-
-	for (p = (unsigned char*)key; *p && (*p != '='); p++)
+	for (unsigned char *p = (unsigned char *) key; *p && (*p != '='); p++)
 		v = ((v << CHAR_BIT) | *p) % size;
 
 	return v;
@@ -523,9 +487,8 @@ static unsigned int var_calc_hash(const void *key, const size_t size)
 
 static int var_compare(const void *a, const void *b)
 {
-	unsigned char *x = (unsigned char*)a;
-	unsigned char *y = (unsigned char*)b;
-
+	unsigned char *x = (unsigned char *) a;
+	unsigned char *y = (unsigned char *) b;
 	for (; *x && (*x != '='); y++, x++)
 		if (*x != *y)
 			return 1;
@@ -535,15 +498,13 @@ static int var_compare(const void *a, const void *b)
 
 static unsigned char *var_get(hash_t *vars, const unsigned char *key)
 {
-	unsigned char *p;
-
 	if (!key)
 		return NULL;
 
 	if (!key[0])
 		return NULL;
 
-	p = (unsigned char*)strchr((char*)key, '=');
+	unsigned char *p = (unsigned char *) strchr((char *) key, '=');
 	if (p)
 		return NULL;
 
@@ -551,7 +512,7 @@ static unsigned char *var_get(hash_t *vars, const unsigned char *key)
 	if (!p)
 		return NULL;
 
-	p = (unsigned char*)strchr((char*)p, '=');
+	p = (unsigned char *) strchr((char *) p, '=');
 	if (!p)
 		return NULL;
 
@@ -561,13 +522,12 @@ static unsigned char *var_get(hash_t *vars, const unsigned char *key)
 static bool var_put(hash_t *vars, const unsigned char *var)
 {
 	unsigned char *p = hash_get(vars, var);
-
 	if (p) {
 		hash_remove(vars, p);
 		free(p);
 	}
 
-	p = (unsigned char*)strchr((char*)var, '=');
+	p = (unsigned char *) strchr((char *) var, '=');
 	if (!p)
 		return true;
 
@@ -577,13 +537,13 @@ static bool var_put(hash_t *vars, const unsigned char *var)
 	if (!p[1])
 		return true;
 
-	p = (unsigned char*)malloc(strlen((char*)var));
+	p = (unsigned char *) malloc(strlen((char *) var));
 	if (!p) {
 		fprintf(stderr, "no memory\n");
 		return false;
 	}
 
-	strcpy((char*)p, (char*)var);
+	strcpy((char *) p, (char *) var);
 
 	if (hash_put(vars, p, p)) {
 		free(p);
@@ -597,38 +557,30 @@ static bool var_put(hash_t *vars, const unsigned char *var)
 static hash_t *var_create(void)
 {
 	hash_t *vars = hash_create(MAX_VAR, var_calc_hash, var_compare);
-
 	if (!vars)
 		return NULL;
 
-	if (environ) {
-		unsigned char **envp;
-
-		for (envp = (unsigned char**)environ; *envp; envp++)
+	if (environ)
+		for (unsigned char **envp = (unsigned char **) environ;
+				*envp; envp++)
 			if (!var_put(vars, *envp))
 				break;
-	}
 
 	return vars;
 }
 
 static unsigned char **var_expand(hash_t *vars)
 {
-	unsigned char **array = (unsigned char**)malloc(
+	unsigned char **array = (unsigned char **) malloc(
 			(vars->num + 1) * sizeof(uintptr_t));
-
 	if (array) {
-		unsigned int i;
 		unsigned char **p = array;
-
-		for (i = 0; i < vars->size; i++) {
+		for (unsigned int i = 0; i < vars->size; i++) {
 			list_t *head = &(vars->tbl[i]);
-			list_t *entry;
-
-			for (entry = list_next(head);
+			for (list_t *entry = list_next(head);
 					!list_is_edge(head, entry);
 					entry = entry->next) {
-				*p = ((hash_entry_t*)entry)->value;
+				*p = ((hash_entry_t *) entry)->value;
 				p++;
 			}
 		}
@@ -639,10 +591,28 @@ static unsigned char **var_expand(hash_t *vars)
 	return array;
 }
 
+static void interpret(hash_t *vars, FILE *in)
+{
+	do {
+		if (interactive)
+			printf(PROMPT " ");
+
+		line_clear(&line);
+
+		int c;
+		do {
+			c = fgetc(in);
+			if (c == EOF)
+				goto last;
+		} while (!line_putc(&line, c & 0xff));
+	} while (!line_evaluate(&line, vars));
+last:
+	return;
+}
+
 int main(int argc, char **argv, char **env)
 {
 	hash_t *vars = var_create();
-
 	if (!vars) {
 		fprintf(stderr, "no memory\n");
 		return ERR_MEMORY;
@@ -651,20 +621,27 @@ int main(int argc, char **argv, char **env)
 	line_realloc_buf(&line);
 	line_realloc_array(&line);
 
-	do {
-		unsigned char c;
+	FILE *in = fopen(DEFAULT_MAIN, "r");
+	if (in) {
+		interactive = false;
+		interpret(vars, in);
+		fclose(in);
+	}
 
-		printf(PROMPT " ");
-		line_clear(&line);
+	in = stdin;
+	interactive = true;
 
-		do {
-			c = getchar();
-		} while (!line_putc(&line, c));
+	if (argc > 1) {
+		FILE *file = fopen(argv[1], "r");
+		if (file) {
+			in = file;
+			interactive = false;
+		}
+	}
 
-	} while (!line_evaluate(&line, vars));
-
+	interpret(vars, in);
+	fclose(in);
 	line_destroy(&line);
 	hash_destroy(vars);
-
 	return ERR_OK;
 }

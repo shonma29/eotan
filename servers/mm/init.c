@@ -34,7 +34,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../lib/libserv/libserv.h"
 
 #define STACK_TAIL USER_STACK_END_ADDR
-#define MAX_ENV (10)
 
 typedef struct {
 	int argc;
@@ -43,14 +42,10 @@ typedef struct {
 	char *arg0;
 	char *arg1;
 	char *env0;
-	char *env1;
 	char buf[0];
 } init_arg_t;
 
-//TODO where to define?
-static char envpath[] = "PATH=/bin";
-static char buf[sizeof(init_arg_t) + PATH_MAX + 1 + MAX_ENV
-		+ sizeof(thread_local_t)];
+static char buf[sizeof(init_arg_t) + PATH_MAX + 1 + sizeof(thread_local_t)];
 
 
 void init(void)
@@ -80,8 +75,7 @@ void init(void)
 
 		pathlen++;
 
-		args.arg3 = roundUp(sizeof(init_arg_t) + pathlen
-				+ strlen(envpath) + 1, sizeof(int))
+		args.arg3 = roundUp(sizeof(init_arg_t) + pathlen, sizeof(int))
 				+ sizeof(thread_local_t);
 		if (args.arg3 > sizeof(buf)) {
 			log_err("init: ENOMEM\n");
@@ -95,10 +89,8 @@ void init(void)
 		p->envp = (char **) (offsetof(init_arg_t, env0) + offset);
 		p->arg0 = (char *) (offsetof(init_arg_t, buf) + offset);
 		p->arg1 = NULL;
-		p->env0 = (char *) (sizeof(init_arg_t) + pathlen + offset);
-		p->env1 = NULL;
+		p->env0 = NULL;
 		strcpy(p->buf, pathname);
-		strcpy(&(buf[sizeof(init_arg_t) + pathlen]), envpath);
 
 		args.syscall_no = syscall_exec;
 		args.arg1 = (int) pathname;
