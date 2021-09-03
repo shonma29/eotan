@@ -87,6 +87,12 @@ static int process(FILE *out, const char *name, const int argc, bool *is_block)
 {
 	*is_block = false;
 
+	size_t path_len = strlen(name);
+	if (!path_len) {
+		puterror(name, MSG_OPEN);
+		return NG;
+	}
+
 	int in = open(name, O_RDONLY);
 	if (in == -1) {
 		puterror(name, MSG_OPEN);
@@ -101,7 +107,6 @@ static int process(FILE *out, const char *name, const int argc, bool *is_block)
 	}
 
 	int result = OK;
-	size_t path_len = strlen(name);
 	if (st.st_mode & S_IFDIR) {
 		if (name[path_len - 1] == '/')
 			path_len--;
