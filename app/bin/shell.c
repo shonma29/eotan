@@ -69,6 +69,8 @@ typedef struct {
 
 typedef struct {
 	unsigned int pos;
+	unsigned int head;
+	bool quoting;
 	size_t bufsize;
 	unsigned char *buf;
 	size_t arraysize;
@@ -77,6 +79,8 @@ typedef struct {
 
 static Line line = {
 	0,
+	0,
+	false,
 	DEFAULT_BUF_SIZE >> 1,
 	NULL,
 	DEFAULT_ARRAY_SIZE >> 1,
@@ -91,6 +95,7 @@ static void execute(unsigned char **, unsigned char **, const unsigned char *,
 static void line_realloc_buf(Line *);
 static void line_destroy(Line *);
 static void line_clear(Line *);
+static bool line_preprocess(Line *);
 static bool line_putc(Line *, const unsigned char);
 static void line_realloc_array(Line *);
 static bool line_parse(Line *);
@@ -237,6 +242,7 @@ static void execute(unsigned char **array, unsigned char **env,
 			if (wait(&status) == -1)
 				fprintf(stderr, "wait error %d\n", errno);
 			else
+				//TODO omit print, and set $status
 				fprintf(stderr, "wait success %d\n", status);
 		}
 	}
@@ -272,19 +278,53 @@ static void line_destroy(Line *p)
 
 static void line_clear(Line *p)
 {
-	p->pos = 0;
+	p->head = p->pos = 0;
+	p->quoting = false;
+}
+
+static bool line_preprocess(Line *p)
+{
+	unsigned char c;
+	for (unsigned int i = p->head; (c = p->buf[i]); i++) {
+		if (c == '\'')
+			p->quoting = !(p->quoting);
+		else if ((c == '\\')
+				&& (p->buf[i + 1] == '\n')) {
+			if (p->quoting)
+				p->pos = i + 2;
+			else {
+				p->buf[i] = ' ';
+				p->pos = i + 1;
+			}
+
+			p->head = p->pos;
+			return false;
+		} else if ((c == '\n')
+				|| ((c == '#')
+						&& !(p->quoting))) {
+			p->buf[i] = '\0';
+			p->pos = i + 1;
+			break;
+		}
+	}
+
+	return true;
 }
 
 static bool line_putc(Line *p, const unsigned char c)
 {
-	//TODO escape LF
 	switch (c) {
 	case '\n':
+		p->buf[p->pos] = c;
+		p->pos++;
+		if (p->pos >= p->bufsize)
+			line_realloc_buf(p);
+
 		p->buf[p->pos] = '\0';
 		p->pos++;
-		return true;
+		return line_preprocess(p);
 	case 0x08:
-		if (p->pos)
+		if (p->pos > p->head)
 			p->pos--;
 
 		break;
@@ -325,7 +365,7 @@ static bool line_parse(Line *p)
 	unsigned int pos = 0;
 	for (unsigned int i = 0;; i++) {
 		for (; (p->buf[i] > 0) && (p->buf[i] <= ' '); i++);
-		if (!p->buf[i] || p->buf[i] == '#')
+		if (!p->buf[i])
 			break;
 
 		p->array[pos] = &(p->buf[i]);
@@ -333,70 +373,41 @@ static bool line_parse(Line *p)
 		if (pos >= p->arraysize)
 			line_realloc_array(p);
 
-		if (p->buf[i] == '\"') {
-			unsigned char *w = &(p->buf[i]);
-			bool escape = false;
-
-			for (i++;; i++) {
-				if (!p->buf[i]) {
-					fprintf(stderr, "quote not closed\n");
-					return false;
+		unsigned char c;
+		unsigned char *w = &(p->buf[i]);
+		bool quoting = false;
+		for (; (c = p->buf[i]); i++) {
+			if (quoting) {
+				if (c == '\'') {
+					if (p->buf[i + 1] == '\'')
+						i++;
+					else {
+						quoting = false;
+						continue;
+					}
 				}
-
-				//TODO escape quote
-				if (escape)
-					escape = false;
-				else if (p->buf[i] == '\\') {
-					escape = true;
-					continue;
-				} else if (p->buf[i] == '\"')
-					break;
-
-				*w = p->buf[i];
-				w++;
-			}
-
-			*w = '\0';
-		} else if (p->buf[i] == '\'') {
-			for (i++; p->buf[i] != '\''; i++)
-				if (!p->buf[i]) {
-					fprintf(stderr, "quote not closed\n");
-					return false;
-				}
-
-			p->buf[i] = '\0';
-			p->array[pos - 1]++;
-		} else {
-			unsigned char c;
-			unsigned char *w = &(p->buf[i]);
-			bool escape = false;
-			for (; p->buf[i]; i++) {
-				if (escape)
-					escape = false;
-				else if (p->buf[i] == '\\') {
-					escape = true;
-					continue;
-				} else if (p->buf[i] == '#') {
-					p->buf[i] = '\0';
-					break;
-				} else if (p->buf[i] <= ' ')
-					break;
-
-				*w = p->buf[i];
-				w++;
-			}
-
-			if (escape) {
-				fprintf(stderr, "bad escape\n");
-				return false;
-			}
-
-			c = p->buf[i];
-			*w = '\0';
-
-			if (!c)
+			} else if (c == '\'') {
+				quoting = true;
+				continue;
+			} else if (c <= ' ')
 				break;
+
+			*w = p->buf[i];
+			w++;
 		}
+
+		if (quoting) {
+			fprintf(stderr, "bad quote\n");
+			return false;
+		}
+
+		//TODO expand wild card
+
+		c = p->buf[i];
+		*w = '\0';
+
+		if (!c)
+			break;
 	}
 
 	p->array[pos] = NULL;
@@ -464,6 +475,7 @@ static bool line_evaluate(Line *p, hash_t *vars)
 						envp++)
 					printf("%s\n", *envp);
 		} else if (!strcmp((char *) (p->array[0]), "export"))
+			//TODO omit 'export' keyword
 			var_put(vars, p->array[1]);
 		else {
 			unsigned char **envp = var_expand(vars);
