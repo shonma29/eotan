@@ -1,5 +1,3 @@
-#ifndef _MATH_H_
-#define _MATH_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,18 +24,54 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <errno.h>
+#include <math.h>
+#include <mpu/ieee754.h>
 
-#define NAN (__builtin_nan(""))
-#define INFINITY (__builtin_inf())
-#define HUGE_VAL (__builtin_huge_val())
+#define LOG_2 0.6931471805599453094172321214581765680755L
+#define SQRT_2 1.4142135623730950488016887242096980785696L
 
-#define M_PI (3.14159265358979323846)
+#define INT_BITS (CHAR_BIT * sizeof(int))
+#define SIGN_MASK_U (1 << (INT_BITS - 1))
+#define EXP_MAX B64_EXPONENT_SPECIAL
+#define EXP_SHIFT_U (B64_SIGNIFICANT_BITS - INT_BITS)
 
-extern double sin(double);
-extern double cos(double);
-extern double fabs(double);
-extern double log(double);
-extern double frexp(double, int *);
-extern double ldexp(double, int);
 
-#endif
+double log(double x)
+{
+	int *p = (int *) &x;
+	int e = (p[1] >> EXP_SHIFT_U) & EXP_MAX;
+	if (e == 0) {
+		errno = ERANGE;
+		return (-HUGE_VAL);
+	}
+
+	if (p[1] & SIGN_MASK_U) {
+		errno = EDOM;
+		return NAN;
+	}
+
+	if (e == EXP_MAX)
+		return x;
+
+	if (x == 1.0)
+		return (+0.0);
+
+	int k;
+	frexp(x / SQRT_2, &k);
+	x /= ldexp(1, k);
+	x = (x - 1) / (x + 1);
+
+	double x2 = x * x;
+	double sum = x;
+	double prev;
+	int i = 1;
+	do {
+		prev = sum;
+		x *= x2;
+		i += 2;
+		sum += x / i;
+	} while (prev != sum);
+
+	return (LOG_2 * k + 2 * sum);
+}

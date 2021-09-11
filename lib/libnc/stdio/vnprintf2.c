@@ -69,6 +69,12 @@ static void _putd(State *, const int, const int);
 static void _puth(State *, const int);
 
 #ifdef USE_FLOAT
+static uint32_t power5[] = {
+	5, 25, 125, 625, 3125, 15625, 78125, 390625,
+	1953125, 9765625, 48828125, 244140625, 1220703125
+};
+#define NUM_OF_POWER5 (sizeof(power5) / sizeof(power5[0]))
+
 static number_t *number_create(const uint32_t *, const size_t,
 		const bool);
 static void number_destroy(number_t *);
@@ -329,8 +335,11 @@ static void putdouble(State *s, const bool minus, uint64_t sig, const int exp)
 		i -= exp;
 
 	int dot = i;
-	for (; i > 0; i--)
-		number_multiply(num, 5);
+	for (; i > NUM_OF_POWER5; i -= NUM_OF_POWER5)
+		number_multiply(num, power5[NUM_OF_POWER5 - 1]);
+
+	if (i > 0)
+		number_multiply(num, power5[i - 1]);
 
 	unsigned char buf[B64_EXPONENT_MAX_R10 + 3];
 	memset(buf, '\0', sizeof(buf));
