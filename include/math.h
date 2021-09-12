@@ -33,12 +33,15 @@ For more information, please refer to <http://unlicense.org/>
 
 #define M_PI (3.14159265358979323846)
 
-extern double sin(double);
-extern double cos(double);
 extern double fabs(double);
-extern double exp(double);
-extern double log(double);
 extern double frexp(double, int *);
 extern double ldexp(double, int);
+
+extern double exp(double);
+extern double log(double);
+extern double sqrt(double);
+
+extern double sin(double);
+extern double cos(double);
 
 #endif

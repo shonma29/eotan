@@ -27,9 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <errno.h>
 #include <math.h>
 #include <mpu/ieee754.h>
-
-#define LOG_2 0.6931471805599453094172321214581765680755L
-#define SQRT_2 1.4142135623730950488016887242096980785696L
+#include <mpu/limits.h>
 
 #define INT_BITS (CHAR_BIT * sizeof(int))
 #define SIGN_MASK_U (1 << (INT_BITS - 1))
@@ -38,15 +36,10 @@ For more information, please refer to <http://unlicense.org/>
 #define SIG_MASK_U ((1 << EXP_SHIFT_U) - 1)
 
 
-double log(double x)
+double sqrt(double x)
 {
-	if (x == 0) {
-		errno = ERANGE;
-		return (-HUGE_VAL);
-	}
-
-	if (x == 1.0)
-		return (+0.0);
+	if (!x)
+		return x;
 
 	int *p = (int *) &x;
 	int e = (p[1] >> EXP_SHIFT_U) & EXP_MAX;
@@ -61,21 +54,11 @@ double log(double x)
 		return NAN;
 	}
 
-	int k;
-	frexp(x / SQRT_2, &k);
-	x /= ldexp(1, k);
-	x = (x - 1) / (x + 1);
+	for (double sum = (x > 1) ? x : 1;;) {
+		double prev = sum;
 
-	double x2 = x * x;
-	double sum = x;
-	double prev;
-	int i = 1;
-	do {
-		prev = sum;
-		x *= x2;
-		i += 2;
-		sum += x / i;
-	} while (prev != sum);
-
-	return (LOG_2 * k + 2 * sum);
+		sum = (x / sum + sum) / 2;
+		if (sum >= prev)
+			return prev;
+	}
 }
