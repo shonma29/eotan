@@ -43,5 +43,6 @@ extern double sqrt(double);
 
 extern double sin(double);
 extern double cos(double);
+extern double tan(double);
 
 #endif
