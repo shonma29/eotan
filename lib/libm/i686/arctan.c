@@ -1,5 +1,3 @@
-#ifndef _MATH_H_
-#define _MATH_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,24 +24,57 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <limits.h>
+#include <math.h>
+#include <mpu/ieee754.h>
 
-#define NAN (__builtin_nan(""))
-#define INFINITY (__builtin_inf())
-#define HUGE_VAL (__builtin_huge_val())
+#define INT_BITS (CHAR_BIT * sizeof(int))
+#define SIGN_MASK_U (1 << (INT_BITS - 1))
+#define EXP_MAX B64_EXPONENT_SPECIAL
+#define EXP_SHIFT_U (B64_SIGNIFICANT_BITS - INT_BITS)
+#define SIG_MASK_U ((1 << EXP_SHIFT_U) - 1)
 
-#define M_PI (3.14159265358979323846)
+#define DEGREE (21)
 
-extern double fabs(double);
-extern double frexp(double, int *);
-extern double ldexp(double, int);
 
-extern double exp(double);
-extern double log(double);
-extern double sqrt(double);
+double atan(double x)
+{
+	if (x == 0.0)
+		return x;
 
-extern double sin(double);
-extern double cos(double);
-extern double tan(double);
-extern double atan(double);
+	int *p = (int *) &x;
+	int e = (p[1] >> EXP_SHIFT_U) & EXP_MAX;
+	if (e == EXP_MAX) {
+		if (p[0]
+				|| (p[1] & SIG_MASK_U))
+			return NAN;
 
-#endif
+		int sign_bit = p[1] & SIGN_MASK_U;
+		x = M_PI / 2;
+		p[1] |= sign_bit;
+		return x;
+	}
+
+	int sign;
+	if (x > 1) {
+		sign = 1;
+		x = 1 / x;
+	} else if (x < -1) {
+		sign = -1;
+		x = 1 / x;
+	} else
+		sign = 0;
+
+	double sum = 0;
+	for (int i = DEGREE; i > 0; i--)
+		sum = (i * i * x * x) / (2 * i + 1 + sum);
+
+	sum = x / (1 + sum);
+
+	if (!sign)
+		return sum;
+	else if (sign > 0)
+		return (M_PI / 2 - sum);
+	else
+		return (-M_PI / 2 - sum);
+}
