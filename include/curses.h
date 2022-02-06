@@ -41,7 +41,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #define stdscr NULL
 
-enum {
+typedef enum {
 	A_REVERSE = 7
 } curses_attr_t;
 

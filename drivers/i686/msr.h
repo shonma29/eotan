@@ -29,7 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #include "core.h"
 
-enum {
+typedef enum {
 	sysenter_cs_msr = 0x0174,
 	sysenter_esp_msr = 0x0175,
 	sysenter_eip_msr = 0x0176

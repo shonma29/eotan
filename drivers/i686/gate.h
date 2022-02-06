@@ -34,7 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #define ATTR_PRESENT 0x80
 
-enum {
+typedef enum {
 	kern_code = 0x08,
 	kern_data = 0x10,
 	user_code = 0x18,
@@ -42,7 +42,7 @@ enum {
 	dummy_tss = 0x28
 } Selector;
 
-enum {
+typedef enum {
 	dpl_kern = 0,
 /*	dpl_driver = 1,*/
 	dpl_server = 2,
