@@ -163,6 +163,8 @@ static bool get_size(size_t *len, const unsigned char *head)
 static void execute(unsigned char **array, unsigned char **env,
 		const unsigned char *path, const ExecOptions *opts)
 {
+	for (int status; wait(&status) != -1;);
+
 	pid_t pid = fork();
 	if (pid == 0) {
 		// child
