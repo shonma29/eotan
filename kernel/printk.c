@@ -54,7 +54,7 @@ void printk(const char *format, ...)
 		initialized = 1;
 		cns = getCgaConsole(&window,
 				(const UH *) kern_p2v((void *) CGA_VRAM_ADDR));
-		cns->cls(&window);
+		cns->erase(&window, EraseScreenEntire);
 		cns->locate(&window, 0, 0);
 	}
 #endif

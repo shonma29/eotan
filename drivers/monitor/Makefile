@@ -33,5 +33,5 @@ ENTRY_FUNC = attach
 $(TARGET): $(OBJS) \
 		lib/libserv.a lib/libnc.a lib/libfonts.a
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^ \
-		kernel/arch/libarch.a
+		kernel/arch/libarch.a lib/libnc.a
 	$(STRIP) $@
