@@ -199,7 +199,7 @@ int mm_create(mm_request_t *req)
 
 		mm_process_t *process = get_process(th);
 		ER_UINT len = kcall->region_copy(th->node.key,
-				(char*)(req->args.arg1), PATH_MAX,
+				(char *) (req->args.arg1), PATH_MAX,
 				req->pathbuf);
 		if (len < 0) {
 			reply->data[0] = EFAULT;
@@ -308,7 +308,7 @@ int mm_read(mm_request_t *req)
 		int result = _read(file,
 				create_token(th->node.key, process->session),
 				file->f_offset, req->args.arg3,
-				(char*)(req->args.arg2), req);
+				(char *) (req->args.arg2), req);
 		if (result) {
 			reply->data[0] = result;
 			break;
@@ -352,7 +352,7 @@ int mm_write(mm_request_t *req)
 		message->Twrite.fid = file->node.key;
 		message->Twrite.offset = file->f_offset;
 		message->Twrite.count = req->args.arg3;
-		message->Twrite.data = (char*)(req->args.arg2);
+		message->Twrite.data = (char *) (req->args.arg2);
 
 		int result = call_device(file, req);
 		if (result) {
@@ -431,7 +431,7 @@ int mm_remove(mm_request_t *req)
 		mm_file_t *file;
 		fsmsg_t *message = &(req->message);
 		int result = _walk(&file, process, th->node.key,
-				(char*)(req->args.arg1), req,
+				(char *) (req->args.arg1), req,
 				req->walkpath);
 		if (result) {
 			reply->data[0] = result;
@@ -479,7 +479,7 @@ int mm_stat(mm_request_t *req)
 		mm_process_t *process = get_process(th);
 		mm_file_t *file;
 		int result = _walk(&file, process, th->node.key,
-				(char*)(req->args.arg1), req,
+				(char *) (req->args.arg1), req,
 				req->walkpath);
 		if (result) {
 			reply->data[0] = result;
@@ -557,7 +557,7 @@ int mm_chmod(mm_request_t *req)
 		mm_file_t *file;
 		fsmsg_t *message = &(req->message);
 		int result = _walk(&file, process, th->node.key,
-				(char*)(req->args.arg1), req,
+				(char *) (req->args.arg1), req,
 				req->walkpath);
 		if (result) {
 			reply->data[0] = result;

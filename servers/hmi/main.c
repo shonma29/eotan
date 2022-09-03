@@ -143,7 +143,7 @@ static void process(const int data)
 	//TODO error check
 	uintptr_t addr = ((uintptr_t) (message->Tread.data)
 			+ message->Tread.offset);
-	kcall->region_put(port_of_ipc(message->header.token),
+	kcall->region_put((message->header.token >> 16) & 0xffff,
 			(char *) addr, 1, &buf);
 	message->Tread.offset++;
 	if (message->Tread.count <= message->Tread.offset) {
@@ -278,7 +278,7 @@ static void execute(request_message_t *req)
 				size_t len = (rest > sizeof(line)) ?
 						sizeof(line) : rest;
 				if (kcall->region_get(
-						port_of_ipc(message->header.token),
+						(message->header.token >> 16) & 0xffff,
 						(char *) ((unsigned int) (message->Twrite.data) + pos),
 						len,
 						line)) {

@@ -356,6 +356,10 @@ int process_destroy(mm_process_t *process, const int status)
 
 	if (unmap_user_pages(process->directory, (void *) PROCESS_LOCAL_ADDR,
 			pages(sizeof(*(process->local))))) {
+		log_err("mm: unmap error %p,%x\n",
+				(void *) PROCESS_LOCAL_ADDR,
+				pages(sizeof(*(process->local))));
+
 		//TODO what to do?
 	}
 
@@ -688,9 +692,16 @@ static void destroy_threads(mm_process_t *process)
 	for (list_t *p; (p = list_pick(&(process->threads)));) {
 		mm_thread_t *th = getMyThread(p);
 		//TODO check error
-		kcall->thread_terminate(th->node.key);
+		ER result = kcall->thread_terminate(th->node.key);
+		if (result)
+			log_err("mm: failed to terminate(%d) %d\n",
+					th->node.key, result);
 		//TODO check error
-		kcall->thread_destroy(th->node.key);
+		result = kcall->thread_destroy(th->node.key);
+		if (result)
+			log_err("mm: failed to destroy(%d) %d\n",
+					th->node.key, result);
+
 		//TODO check error
 		tree_remove(&thread_tree, th->node.key);
 
