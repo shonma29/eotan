@@ -31,6 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/ipc_utils.h>
 #include <nerve/kcall.h>
 #include <sys/unistd.h>
+#include <sys/wait.h>
 #include "../../lib/libserv/libserv.h"
 #include "proxy.h"
 
@@ -239,6 +240,19 @@ int mm_wait(mm_request_t *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
+		//TODO support process group
+		if ((req->args.arg1 < 0)
+				&& (req->args.arg1 != (-1))) {
+			reply->data[0] = EINVAL;
+			break;
+		}
+
+		if (req->args.arg2
+				&& (req->args.arg2 != WNOHANG)) {
+			reply->data[0] = EINVAL;
+			break;
+		}
+
 		mm_thread_t *th = thread_find(port_of_ipc(req->node.key));
 		if (!th) {
 			reply->data[0] = EPERM;
@@ -247,8 +261,9 @@ int mm_wait(mm_request_t *req)
 
 		mm_process_t *process = get_process(th);
 		process->tag = req->node.key;
+		process->wpid = req->args.arg1;
 
-		int result = process_release_body(process);
+		int result = process_release_body(process, req->args.arg2);
 		if (result) {
 			reply->data[0] = result;
 			break;

@@ -35,6 +35,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
 #include <sys/syscall.h>
+#include <sys/wait.h>
 #include "api.h"
 #include "process.h"
 #include "../../kernel/mpu/mpufunc.h"
@@ -301,7 +302,7 @@ int process_replace(mm_process_t *process,
 			(VP) (stack_top - sizeof(int)));
 }
 
-int process_release_body(mm_process_t *proc)
+int process_release_body(mm_process_t *proc, const int options)
 {
 //TODO list_insert dead child on exit
 	if (list_is_empty(&(proc->children))) {
@@ -316,6 +317,10 @@ int process_release_body(mm_process_t *proc)
 		if (!list_is_empty(&(p->threads)))
 			continue;
 
+		if ((proc->wpid != (-1))
+				&& (proc->wpid != p->node.key))
+			continue;
+
 		int tag = proc->tag;
 		sys_reply_t reply = {
 			p->node.key,
@@ -323,6 +328,7 @@ int process_release_body(mm_process_t *proc)
 		};
 
 		proc->tag = 0;
+		proc->wpid = 0;
 		list_remove(&(p->members));
 		list_remove(child);
 		if (!tree_remove(&process_tree, p->node.key)) {
@@ -338,6 +344,17 @@ int process_release_body(mm_process_t *proc)
 
 		log_info("mm: %d success release body\n", proc->node.key);
 		return 0;
+	}
+
+	if (options & WNOHANG) {
+		int tag = proc->tag;
+		proc->tag = 0;
+		proc->wpid = 0;
+		sys_reply_t reply = { 0, { 0 } };
+		ER result = kcall->ipc_send(tag, &reply, sizeof(reply));
+		if (result)
+			log_err("mm: %d failed to release body(%d)\n",
+					proc->node.key, result);
 	}
 
 	log_info("mm: %d not found release body\n", proc->node.key);
@@ -372,7 +389,7 @@ int process_destroy(mm_process_t *process, const int status)
 		if (parent->tag) {
 			log_info("mm: %d release parent %d\n",
 					process->node.key, process->ppid);
-			process_release_body(parent);
+			process_release_body(parent, 0);
 		} else {
 			log_info("mm: %d parent not waiting\n",
 					process->node.key);
@@ -400,7 +417,7 @@ int process_destroy(mm_process_t *process, const int status)
 
 		if (found) {
 			if (parent->tag)
-				process_release_body(parent);
+				process_release_body(parent, 0);
 		}
 	} else {
 		//TODO what to do?
@@ -546,6 +563,7 @@ static int process_create(mm_process_t **process, const int pid)
 		list_initialize(&(p->members));
 		p->local = NULL;
 		p->tag = 0;
+		p->wpid = 0;
 		p->name[0] = '\0';
 
 		//TODO check NULL

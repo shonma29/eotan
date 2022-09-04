@@ -193,7 +193,9 @@ char *testmm(void)
 		sleep(1);
 		printf("parent's pid = %d, ppid = %d\n",
 				getpid(), getppid());
-		wait(&pid);
+
+		int status;
+		waitpid(pid, &status, 0);
 	}
 
 	time_t t1;

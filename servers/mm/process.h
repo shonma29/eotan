@@ -93,6 +93,7 @@ typedef struct {
 	process_local_t *local;
 	int exit_status;
 	int tag;
+	pid_t wpid;
 	char name[32];//TODO set on fork/exec
 } mm_process_t;
 
@@ -107,7 +108,7 @@ extern mm_process_t *process_duplicate(mm_process_t *, void *, void *);
 extern int process_replace(mm_process_t *process, void *address,
 		const size_t size, void *entry, const void *args,
 		const size_t stack_size, int *);
-extern int process_release_body(mm_process_t *);
+extern int process_release_body(mm_process_t *, const int);
 extern int process_destroy(mm_process_t *, const int);
 extern int create_init(const pid_t, const FP);
 extern mm_thread_t *thread_find(const ID);
