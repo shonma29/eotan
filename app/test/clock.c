@@ -1,5 +1,3 @@
-#ifndef _TIME_H_
-#define _TIME_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,32 +24,57 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stddef.h>
-#include <sys/time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
+#include <ipc.h>
+#include <services.h>
+#include <fs/protocol.h>
 
-#define CLOCK_REALTIME (0)
-#define CLOCK_MONOTONIC (1)
+static int putline(char *);
 
-struct tm {
-	int tm_sec;
-	int tm_min;
-	int tm_hour;
-	int tm_mday;
-	int tm_mon;
-	int tm_year;
-	int tm_wday;
-	int tm_yday;
-	int tm_isdst;
-};
 
-static inline double difftime(time_t time1, time_t time0)
+static int putline(char *buf)
 {
-	return (double) (time1 - time0);
+	fsmsg_t message;
+	message.header.ident = IDENT;
+	message.header.type = Twrite;
+	message.Twrite.fid = 2;
+	message.Twrite.offset = 0;
+	message.Twrite.count = strlen(buf);
+	message.Twrite.data = buf;
+
+	int err = ipc_call(PORT_CONSOLE, &message, MESSAGE_SIZE(Twrite));
+	if (err < 0)
+		fprintf(stderr, "call error %d\n", err);
+
+	return err;
 }
 
-extern time_t time(time_t *);
-extern int clock_gettime(clockid_t, struct timespec *);
-extern struct tm *gmtime_r(const time_t *, struct tm *);
-extern size_t strftime(char *, size_t, const char *, const struct tm *);
+int main(int argc, char **argv)
+{
+	
+	do {
+		time_t t = time(NULL);
+		if (t == -1)
+			break;//TODO show error
 
-#endif
+		struct tm tm;
+		if (!gmtime_r(&t, &tm))
+			break;//TODO show error
+
+		char buf[256];//TODO ugly
+		size_t len = strftime(buf, sizeof(buf),
+				"%a %b %d %H:%M\n", &tm);
+		if (!len)
+			break;//TODO show error
+
+		putline(buf);
+
+		if (tm.tm_sec < 60)
+			sleep(60 - tm.tm_sec);
+	} while (true);
+	_exit(EXIT_FAILURE);
+}
