@@ -70,7 +70,11 @@ static char int_buf[
 ];
 
 #ifdef USE_VESA
+#include <screen.h>
+
 Frame *screen;
+static Screen screen0;
+static Screen screen2;
 #endif
 
 static void process(const int);
@@ -130,7 +134,7 @@ static void process(const int data)
 			kcall->printk("hmi: handler cannot lock %d\n", result);
 		else {
 			mouse_hide();
-			driver->write((char *) &buf, 0, 0, 1);
+			driver->write((char *) &buf, (int) &screen0, 0, 1);
 			mouse_show();
 			result = kcall->mutex_unlock(cons_mid);
 			if (result)
@@ -193,7 +197,9 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 			kcall->printk("hmi: main cannot lock %d\n", result);
 		else {
 			mouse_hide();
-			driver->write((char *) inbuf, dd, 0, size);
+			driver->write((char *) inbuf,
+					(int) (dd ? &screen2 : &screen0),
+					0, size);
 			mouse_show();
 			result = kcall->mutex_unlock(cons_mid);
 			if (result)
@@ -207,7 +213,7 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 		if (result)
 			kcall->printk("hmi: main cannot lock %d\n", result);
 		else {
-			driver->write((char *) inbuf, 0, 0, size);
+			driver->write((char *) inbuf, &screen0, 0, size);
 			result = kcall->mutex_unlock(cons_mid);
 			if (result)
 				kcall->printk("hmi: main cannot unlock %d\n",
@@ -362,8 +368,31 @@ static ER initialize(void)
 	}
 
 	info = device_find(DEVICE_CONTROLLER_MONITOR);
-	if (info)
+	if (info) {
 		driver = (vdriver_t *) (info->driver);
+		Screen *s = (Screen *) (info->unit);
+		screen0 = *s;
+		screen0.base += 20 * s->bpl;
+		screen0.p = (uint8_t *) (screen0.base);
+		screen0.width /= 2;
+		screen0.height = (s->height - 20) / 2;
+		screen0.chr_width = (screen0.width - 16) / s->font.width;
+		screen0.chr_height = (screen0.height - (20 + 16)) / s->font.height;
+		driver->create(&screen0);
+
+		screen2 = screen0;
+		screen2.base += screen0.height * s->bpl;
+		screen2.p = (uint8_t *) (screen2.base);
+		screen2.fgcolor.rgb.b = 0;
+		screen2.fgcolor.rgb.g = 127;
+		screen2.fgcolor.rgb.r = 255;
+		screen2.bgcolor.rgb.b = 0;
+		screen2.bgcolor.rgb.g = 0;
+		screen2.bgcolor.rgb.r = 31;
+		driver->create(&screen2);
+	} else {
+		//TODO what to do?
+	}
 
 	T_CMTX pk_cmtx = {
 		TA_TFIFO | TA_CEILING,

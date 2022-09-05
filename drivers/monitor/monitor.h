@@ -33,16 +33,11 @@ For more information, please refer to <http://unlicense.org/>
 
 #define MYNAME DEVICE_CONTROLLER_MONITOR
 
-#if USE_MONITOR
-#define MAX_WINDOW (4)
-#else
-#define MAX_WINDOW (1)
-#endif
-
-extern Screen window[];
+extern Screen root;
 extern Console *cns;
 
 extern int detach(void);
+extern int create(const void *);
 extern int open(const char *);
 extern int close(const int);
 extern int read(char *, const int, const off_t, const size_t);

@@ -38,14 +38,14 @@ For more information, please refer to <http://unlicense.org/>
 static vdriver_unit_t monitor = {
 	{ NULL, NULL },
 	MYNAME,
-	window
+	&root
 };
 
 static vdriver_t driver_mine = {
 	DEVICE_CLASS_CONSOLE,
 	{ NULL, NULL },
 	detach,
-	NULL,
+	create,
 	NULL,
 	open,
 	close,
@@ -67,58 +67,11 @@ const vdriver_t *attach(system_info_t *info)
 static void console_initialize(void)
 {
 #ifdef USE_VESA
-	cns = getVesaConsole(&(window[0]), &default_font);
-	Screen *s = &(window[0]);
-	s->width /= 2;
-	s->height /= 2;
-	s->chr_width = s->width / s->font.width;
-	s->chr_height = s->height / s->font.height;
-	cns->erase(s, EraseScreenEntire);
-	cns->locate(s, 0, 0);
-#if USE_MONITOR
-	window[1] = window[0];
-	s = &(window[1]);
-	s->base += s->width * 3;
-	s->p = (uint8_t *) (s->base);
-	s->fgcolor.rgb.b = 31;
-	s->fgcolor.rgb.g = 223;
-	s->fgcolor.rgb.r = 0;
-	s->bgcolor.rgb.b = 0;
-	s->bgcolor.rgb.g = 31;
-	s->bgcolor.rgb.r = 0;
-	cns->erase(s, EraseScreenEntire);
-	cns->locate(s, 0, 0);
-
-	window[2] = window[0];
-	s = &(window[2]);
-	s->base += s->height * s->bpl;
-	s->p = (uint8_t *) (s->base);
-	s->fgcolor.rgb.b = 0;
-	s->fgcolor.rgb.g = 127;
-	s->fgcolor.rgb.r = 255;
-	s->bgcolor.rgb.b = 0;
-	s->bgcolor.rgb.g = 0;
-	s->bgcolor.rgb.r = 31;
-	cns->erase(s, EraseScreenEntire);
-	cns->locate(s, 0, 0);
-
-	window[3] = window[0];
-	s = &(window[3]);
-	s->base += s->height * s->bpl + s->width * 3;
-	s->p = (uint8_t *) (s->base);
-	s->fgcolor.rgb.b = 0x30;
-	s->fgcolor.rgb.g = 0x30;
-	s->fgcolor.rgb.r = 0x30;
-	s->bgcolor.rgb.b = 0xfc;
-	s->bgcolor.rgb.g = 0xfc;
-	s->bgcolor.rgb.r = 0xfc;
-	cns->erase(s, EraseScreenEntire);
-	cns->locate(s, 0, 0);
-#endif
+	cns = getVesaConsole(&root, &default_font);
 #else
-	cns = getCgaConsole(&(window[0]),
+	cns = getCgaConsole(&root,
 			(const uint16_t *) kern_p2v((void *) CGA_VRAM_ADDR));
-	cns->erase(&(window[0]), EraseScreenEntire);
-	cns->locate(&(window[0]), 0, 0);
+	cns->erase(&root, EraseScreenEntire);
+	cns->locate(&root, 0, 0);
 #endif
 }

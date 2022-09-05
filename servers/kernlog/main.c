@@ -45,6 +45,11 @@ static ER accept(const ID);
 static ER_ID initialize(void);
 
 #if USE_MONITOR
+#include <screen.h>
+
+static Screen screen1;
+static Screen screen3;
+
 static ER monitor_initialize(void);
 static void monitor(void);
 static unsigned int sleep(unsigned int);
@@ -215,9 +220,35 @@ static void monitor(void)
 		if (!driver) {
 			device_info_t *info = device_find(
 					DEVICE_CONTROLLER_MONITOR);
-			if (info)
+			if (info) {
 				driver = (vdriver_t *) (info->driver);
-			else
+				Screen *s = (Screen *) (info->unit);
+				screen1 = *s;
+				screen1.width /= 2;
+				screen1.height = (s->height - 20) / 2;
+				screen1.chr_width = (screen1.width - 16) / s->font.width;
+				screen1.chr_height = (screen1.height - (20 + 16)) / s->font.height;
+				screen1.base += 20 * s->bpl + screen1.width * 3;
+				screen1.p = (uint8_t *) (screen1.base);
+				screen1.fgcolor.rgb.b = 31;
+				screen1.fgcolor.rgb.g = 223;
+				screen1.fgcolor.rgb.r = 0;
+				screen1.bgcolor.rgb.b = 0;
+				screen1.bgcolor.rgb.g = 31;
+				screen1.bgcolor.rgb.r = 0;
+				driver->create(&screen1);
+
+				screen3 = screen1;
+				screen3.base += screen1.height * s->bpl;
+				screen3.p = (uint8_t *) (screen3.base);
+				screen3.fgcolor.rgb.b = 0x30;
+				screen3.fgcolor.rgb.g = 0x30;
+				screen3.fgcolor.rgb.r = 0x30;
+				screen3.bgcolor.rgb.b = 0xfc;
+				screen3.bgcolor.rgb.g = 0xfc;
+				screen3.bgcolor.rgb.r = 0xfc;
+				driver->create(&screen3);
+			} else
 				continue;
 		}
 
@@ -226,12 +257,12 @@ static void monitor(void)
 				(len  = lfcopy(outbuf,
 						(volatile lfq_t *) KERNEL_LOG_ADDR,
 						sizeof(outbuf)));)
-			driver->write(outbuf, 3, 0, len);
+			driver->write(outbuf, (int) &screen3, 0, len);
 
 		for (size_t len;
 				(len = ring_get((ring_t *) buf, outbuf,
 						sizeof(outbuf)));)
-			driver->write(outbuf, 1, 0, len);
+			driver->write(outbuf, (int) &screen1, 0, len);
 	}
 }
 

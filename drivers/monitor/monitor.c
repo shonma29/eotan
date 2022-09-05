@@ -44,7 +44,7 @@ typedef struct _esc_state {
 	char buf[ESC_BUF_SIZE];
 } esc_state_t;
 
-Screen window[MAX_WINDOW];
+Screen root;
 Console *cns;
 
 static inline bool is_decimal(const char ch)
@@ -73,6 +73,13 @@ int detach(void)
 	return 0;
 }
 
+int create(const void *unit)
+{
+	cns->erase((Screen *) unit, EraseScreenEntire);
+	cns->locate((Screen *) unit, 0, 0);
+	return 0;
+}
+
 int open(const char *name)
 {
 	return 0;
@@ -93,23 +100,17 @@ int write(char *inbuf, const int channel, const off_t offset, const size_t size)
 	if (!check_param(channel, offset, size))
 		return (-1);
 
-	Screen *s = &(window[channel]);
-	if (channel)
-		for (int i = 0; i < size; i++)
-			cns->putc(s, inbuf[i]);
-	else {
-		state.screen = s;
-		for (int i = 0; i < size; i++)
-			eputc(&state, inbuf[i]);
-	}
+	Screen *s = (Screen *) channel;
+	state.screen = s;
+	for (int i = 0; i < size; i++)
+		eputc(&state, inbuf[i]);
 
 	return size;
 }
 
 static bool check_channel(const int channel)
 {
-	if ((channel < 0)
-			|| (channel >= sizeof(window) / sizeof(window[0])))
+	if (!channel)
 		return false;
 
 	return true;
