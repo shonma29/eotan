@@ -27,7 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-#define INIT_PATH_NAME "/bin/shell"
+#define INIT_PATH_NAME "/bin/init"
 
 #define INIT_PID (1)
 #define INIT_PPID (1)

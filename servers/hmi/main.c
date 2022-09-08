@@ -396,12 +396,12 @@ static ER initialize(void)
 		screen7 = *s;
 		screen7.height = 20;
 		screen7.chr_height = screen7.height / s->font.height;
-		screen7.fgcolor.rgb.b = 0;
-		screen7.fgcolor.rgb.g = 127;
-		screen7.fgcolor.rgb.r = 255;
-		screen7.bgcolor.rgb.b = 0;
-		screen7.bgcolor.rgb.g = 0;
-		screen7.bgcolor.rgb.r = 31;
+		screen7.fgcolor.rgb.b = 40;
+		screen7.fgcolor.rgb.g = 66;
+		screen7.fgcolor.rgb.r = 30;
+		screen7.bgcolor.rgb.b = 228;
+		screen7.bgcolor.rgb.g = 227;
+		screen7.bgcolor.rgb.r = 223;
 		driver->create(&screen7);
 	} else {
 		//TODO what to do?
