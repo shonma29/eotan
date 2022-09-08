@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <errno.h>
 #include <event.h>
 #include <major.h>
+#include <screen.h>
 #include <services.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -69,13 +70,14 @@ static char int_buf[
 	lfq_buf_size(sizeof(hmi_interrupt_t), INTERRUPT_QUEUE_SIZE)
 ];
 
-#ifdef USE_VESA
-#include <screen.h>
 
+#ifdef USE_VESA
 Frame *screen;
 static Screen screen0;
 static Screen screen2;
 static Screen screen7;
+#else
+static Screen *screen0;
 #endif
 
 static void process(const int);
@@ -135,7 +137,11 @@ static void process(const int data)
 			kcall->printk("hmi: handler cannot lock %d\n", result);
 		else {
 			mouse_hide();
+#ifdef USE_VESA
 			driver->write((char *) &buf, (int) &screen0, 0, 1);
+#else
+			driver->write((char *) &buf, (int) screen0, 0, 1);
+#endif
 			mouse_show();
 			result = kcall->mutex_unlock(cons_mid);
 			if (result)
@@ -215,7 +221,7 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 		if (result)
 			kcall->printk("hmi: main cannot lock %d\n", result);
 		else {
-			driver->write((char *) inbuf, &screen0, 0, size);
+			driver->write((char *) inbuf, (int) screen0, 0, size);
 			result = kcall->mutex_unlock(cons_mid);
 			if (result)
 				kcall->printk("hmi: main cannot unlock %d\n",
@@ -372,6 +378,7 @@ static ER initialize(void)
 	info = device_find(DEVICE_CONTROLLER_MONITOR);
 	if (info) {
 		driver = (vdriver_t *) (info->driver);
+#ifdef USE_VESA
 		Screen *s = (Screen *) (info->unit);
 		screen0 = *s;
 		screen0.base += 20 * s->bpl;
@@ -381,7 +388,6 @@ static ER initialize(void)
 		screen0.chr_width = (screen0.width - 16) / s->font.width;
 		screen0.chr_height = (screen0.height - (20 + 16)) / s->font.height;
 		driver->create(&screen0);
-
 		screen2 = screen0;
 		screen2.base += screen0.height * s->bpl;
 		screen2.p = (uint8_t *) (screen2.base);
@@ -403,6 +409,14 @@ static ER initialize(void)
 		screen7.bgcolor.rgb.g = 227;
 		screen7.bgcolor.rgb.r = 223;
 		driver->create(&screen7);
+#else
+		if (sysinfo->cga)
+			screen0 = sysinfo->cga;
+		else {
+			screen0 = (Screen *) (info->unit);
+			driver->create(screen0);
+		}
+#endif
 	} else {
 		//TODO what to do?
 	}

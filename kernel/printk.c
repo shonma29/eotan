@@ -33,12 +33,16 @@ For more information, please refer to <http://unlicense.org/>
 
 #define DEBUG 0
 
+#ifndef USE_VESA
+#include <nerve/global.h>
+static bool initialized;
+
 #if DEBUG
 #include <cga.h>
 
 static Screen window;
 static Console *cns;
-static int initialized;
+#endif
 #endif
 
 static void _putc(const char ch);
@@ -49,13 +53,18 @@ void printk(const char *format, ...)
 	va_list ap;
 
 	va_start(ap, format);
-#if DEBUG
+#ifndef USE_VESA
 	if (!initialized){
-		initialized = 1;
+		initialized = true;
+#if DEBUG
 		cns = getCgaConsole(&window,
 				(const UH *) kern_p2v((void *) CGA_VRAM_ADDR));
 		cns->erase(&window, EraseScreenEntire);
 		cns->locate(&window, 0, 0);
+		sysinfo->cga = &window;
+#else
+		sysinfo->cga = NULL;
+#endif
 	}
 #endif
 	vnprintf(_putc, (char*)format, ap);
@@ -64,8 +73,10 @@ void printk(const char *format, ...)
 static void _putc(char ch)
 {
 	int w = ch;
+#ifndef USE_VESA
 #if DEBUG
 	cns->putc(&window, ch);
+#endif
 #endif
 	while (lfq_enqueue((volatile lfq_t*)KERNEL_LOG_ADDR, &w) != QUEUE_OK) {
 		int trash;

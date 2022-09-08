@@ -71,7 +71,5 @@ static void console_initialize(void)
 #else
 	cns = getCgaConsole(&root,
 			(const uint16_t *) kern_p2v((void *) CGA_VRAM_ADDR));
-	cns->erase(&root, EraseScreenEntire);
-	cns->locate(&root, 0, 0);
 #endif
 }
