@@ -75,6 +75,7 @@ static char int_buf[
 Frame *screen;
 static Screen screen0;
 static Screen screen2;
+static Screen screen7;
 #endif
 
 static void process(const int);
@@ -191,6 +192,7 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 			mouse_show();
 		}
 		break;
+	case 7:
 	default: {
 		int result = kcall->mutex_lock(cons_mid, TMO_FEVR);
 		if (result)
@@ -198,7 +200,7 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 		else {
 			mouse_hide();
 			driver->write((char *) inbuf,
-					(int) (dd ? &screen2 : &screen0),
+					(int) (dd ? ((dd == 7) ? &screen7 : &screen2) : &screen0),
 					0, size);
 			mouse_show();
 			result = kcall->mutex_unlock(cons_mid);
@@ -390,6 +392,17 @@ static ER initialize(void)
 		screen2.bgcolor.rgb.g = 0;
 		screen2.bgcolor.rgb.r = 31;
 		driver->create(&screen2);
+
+		screen7 = *s;
+		screen7.height = 20;
+		screen7.chr_height = screen7.height / s->font.height;
+		screen7.fgcolor.rgb.b = 0;
+		screen7.fgcolor.rgb.g = 127;
+		screen7.fgcolor.rgb.r = 255;
+		screen7.bgcolor.rgb.b = 0;
+		screen7.bgcolor.rgb.g = 0;
+		screen7.bgcolor.rgb.r = 31;
+		driver->create(&screen7);
 	} else {
 		//TODO what to do?
 	}

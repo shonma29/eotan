@@ -41,7 +41,7 @@ static int putline(char *buf)
 	fsmsg_t message;
 	message.header.ident = IDENT;
 	message.header.type = Twrite;
-	message.Twrite.fid = 2;
+	message.Twrite.fid = 7;
 	message.Twrite.offset = 0;
 	message.Twrite.count = strlen(buf);
 	message.Twrite.data = buf;
@@ -67,7 +67,7 @@ int main(int argc, char **argv)
 
 		char buf[256];//TODO ugly
 		size_t len = strftime(buf, sizeof(buf),
-				"%a %b %d %H:%M\n", &tm);
+				"\x1b[1K\x1b[H%a %b %d %H:%M", &tm);
 		if (!len)
 			break;//TODO show error
 
