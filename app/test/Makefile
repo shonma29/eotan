@@ -31,7 +31,7 @@ TARGET = $(WD)/test $(WD)/systest \
 include Makefile.in
 
 # when no optimize
-#CFLAGS = -Wall -Werror -std=c11 \
+#CFLAGS = -Wall -Werror -std=c17 \
 # -march=$(ARCH) \
 # -I $(WD) -I include \
 # -DUSE_VESA \

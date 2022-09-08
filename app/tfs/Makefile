@@ -27,7 +27,7 @@ TARGET = $(WD)/mkfs $(WD)/writer
 
 include Makefile.in
 
-CFLAGS = -Wall -Werror -O2 -std=c11 -D HOST_APP
+CFLAGS = -Wall -Werror -O2 -std=c17 -D HOST_APP
 
 $(WD)/block.o: $(WD)/block.c
 	$(CC) $(CFLAGS) -c -o $@ $<
