@@ -46,16 +46,12 @@ typedef struct {
 	unsigned char buf[0];
 } Image;
 
-#define IMAGE_TYPE_B8R8 0x62386738
-#define IMAGE_TYPE_G8NL 0x72380000
-
 typedef struct {
-	int type1;
-	int type2;
 	int width;
 	int height;
 	void *base;
 	int bpl;
+	char *type;
 } Frame;
 
 enum draw_operation {
