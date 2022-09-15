@@ -104,7 +104,6 @@ $(WD)/kernel.img: $(WD)/append $(WD)/elf2module \
 		servers/fs/fs \
 		servers/hmi/hmi \
 		drivers/ramdisk/ramdisk \
-		drivers/srv/srv \
 		drivers/monitor/monitor \
 		initrd.img
 	[ `wc -c < $(WD)/starter.bin` -le $(BIN_SIZE) ]

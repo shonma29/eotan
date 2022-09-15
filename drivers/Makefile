@@ -23,7 +23,7 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-DRIVERS = ramdisk srv monitor
+DRIVERS = ramdisk monitor
 
 all: $(DRIVERS)
 
