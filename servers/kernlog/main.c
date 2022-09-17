@@ -236,7 +236,8 @@ static void monitor(void)
 				screen1.bgcolor.rgb.b = 0;
 				screen1.bgcolor.rgb.g = 31;
 				screen1.bgcolor.rgb.r = 0;
-				driver->create(&screen1);
+				driver->write(STR_CONS_INIT, (int) &screen1,
+						0, LEN_CONS_INIT);
 
 				screen3 = screen1;
 				screen3.base += screen1.height * s->bpl;
@@ -247,7 +248,8 @@ static void monitor(void)
 				screen3.bgcolor.rgb.b = 0xfc;
 				screen3.bgcolor.rgb.g = 0xfc;
 				screen3.bgcolor.rgb.r = 0xfc;
-				driver->create(&screen3);
+				driver->write(STR_CONS_INIT, (int) &screen3,
+						0, LEN_CONS_INIT);
 			} else
 				continue;
 		}

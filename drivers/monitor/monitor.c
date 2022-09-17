@@ -64,9 +64,6 @@ static inline bool is_decimal(const char ch)
 
 static void console_initialize(void);
 static int detach(void);
-static int create(const void *);
-static int open(const char *);
-static int close(const int);
 static int read(char *, const int, const off_t, const size_t);
 static int write(char *, const int, const off_t, const size_t);
 //TODO return adequate error code
@@ -90,10 +87,6 @@ static vdriver_t driver_mine = {
 	DEVICE_CLASS_CONSOLE,
 	{ NULL, NULL },
 	detach,
-	create,
-	NULL,
-	open,
-	close,
 	read,
 	write
 };
@@ -121,23 +114,6 @@ static void console_initialize(void)
 static int detach(void)
 {
 	return 0;
-}
-
-static int create(const void *unit)
-{
-	cns->erase((Screen *) unit, EraseScreenEntire);
-	cns->locate((Screen *) unit, 0, 0);
-	return 0;
-}
-
-static int open(const char *name)
-{
-	return 0;
-}
-
-static int close(const int channel)
-{
-	return (check_channel(channel) ? 0 : (-1));
 }
 
 static int read(char *outbuf, const int channel, const off_t offset,
@@ -179,23 +155,6 @@ static bool check_param(const int channel, const off_t offset,
 
 	return true;
 }
-
-#if 0
-int console_panic(const int dd)
-{
-	if (dd >= sizeof(window) / sizeof(window[0]))
-		return E_PAR;
-
-	Screen *s = &(window[dd]);
-	s->fgcolor.rgb.b = 0;
-	s->fgcolor.rgb.g = 0;
-	s->fgcolor.rgb.r = 255;
-	s->bgcolor.rgb.b = 0;
-	s->bgcolor.rgb.g = 0;
-	s->bgcolor.rgb.r = 0;
-	return E_OK;
-}
-#endif
 
 static void _putc(esc_state_t *state, const char ch)
 {

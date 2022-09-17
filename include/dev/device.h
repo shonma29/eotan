@@ -54,10 +54,6 @@ typedef struct _vdriver_t {
 	const char *class;
 	list_t units;
 	int (*detach)(void);
-	int (*create)(const void *);
-	int (*remove)(const char *);
-	int (*open)(const char *);
-	int (*close)(const int);
 	int (*read)(char *, const int, const off_t, const size_t);
 	int (*write)(char *, const int, const off_t, const size_t);
 } vdriver_t;

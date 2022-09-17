@@ -387,7 +387,8 @@ static ER initialize(void)
 		screen0.height = (s->height - 20) / 2;
 		screen0.chr_width = (screen0.width - 16) / s->font.width;
 		screen0.chr_height = (screen0.height - (20 + 16)) / s->font.height;
-		driver->create(&screen0);
+		driver->write(STR_CONS_INIT, (int) &screen0, 0, LEN_CONS_INIT);
+
 		screen2 = screen0;
 		screen2.base += screen0.height * s->bpl;
 		screen2.p = (uint8_t *) (screen2.base);
@@ -397,7 +398,7 @@ static ER initialize(void)
 		screen2.bgcolor.rgb.b = 0;
 		screen2.bgcolor.rgb.g = 0;
 		screen2.bgcolor.rgb.r = 31;
-		driver->create(&screen2);
+		driver->write(STR_CONS_INIT, (int) &screen2, 0, LEN_CONS_INIT);
 
 		screen7 = *s;
 		screen7.height = 20;
@@ -408,7 +409,7 @@ static ER initialize(void)
 		screen7.bgcolor.rgb.b = 228;
 		screen7.bgcolor.rgb.g = 227;
 		screen7.bgcolor.rgb.r = 223;
-		driver->create(&screen7);
+		driver->write(STR_CONS_INIT, (int) &screen7, 0, LEN_CONS_INIT);
 #else
 		if (sysinfo->cga)
 			screen0 = sysinfo->cga;

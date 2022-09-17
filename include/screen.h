@@ -31,6 +31,9 @@ For more information, please refer to <http://unlicense.org/>
 
 #define MAX_COLOR 0x00ffffff
 
+#define STR_CONS_INIT "\x1b[2J\x1b[1;1H"
+#define LEN_CONS_INIT (10)
+
 typedef struct {
 	uint8_t b;
 	uint8_t g;
