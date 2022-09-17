@@ -25,31 +25,72 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <string.h>
+#include <major.h>
+#include <dev/device.h>
+#include "../../lib/libserv/libserv.h"
 #include "ramdisk.h"
 
-memory_range_t ranges[1];
+static memory_range_t ranges[1];
 
+static int detach(void);
+static int open(const char *);
+static int close(const int);
+static int read(char *, const int, const off_t, const size_t);
+static int write(char *, const int, const off_t, const size_t);
 //TODO return adequate error code
 static bool check_channel(const int);
 static bool check_param(const int, const off_t, const size_t);
 
+static vdriver_unit_t initrd = {
+	{ NULL, NULL },
+	MYNAME,
+	&(ranges[0])
+};
+static vdriver_t driver_mine = {
+	DEVICE_CLASS_STORAGE,
+	{ NULL, NULL },
+	detach,
+	NULL,
+	NULL,
+	open,
+	close,
+	read,
+	write
+};
 
-int detach(void)
+
+const vdriver_t *ramdisk_attach(system_info_t *info)
+{
+	list_initialize(&(driver_mine.units));
+
+	if (info->initrd.size) {
+		log_info(MYNAME ": addr=%p size=%x\n",
+				info->initrd.address, info->initrd.size);
+		ranges[0] = info->initrd;
+		list_append(&(driver_mine.units), &(initrd.bros));
+		return &driver_mine;
+	}
+
+	return NULL;
+}
+
+static int detach(void)
 {
 	return 0;
 }
 
-int open(const char *name)
+static int open(const char *name)
 {
 	return 0;
 }
 
-int close(const int channel)
+static int close(const int channel)
 {
 	return (check_channel(channel) ? 0 : (-1));
 }
 
-int read(char *outbuf, const int channel, const off_t offset, const size_t size)
+static int read(char *outbuf, const int channel, const off_t offset,
+		const size_t size)
 {
 	if (!check_param(channel, offset, size))
 		return (-1);
@@ -59,7 +100,8 @@ int read(char *outbuf, const int channel, const off_t offset, const size_t size)
 	return size;
 }
 
-int write(char *inbuf, const int channel, const off_t offset, const size_t size)
+static int write(char *inbuf, const int channel, const off_t offset,
+		const size_t size)
 {
 	if (!check_param(channel, offset, size))
 		return (-1);

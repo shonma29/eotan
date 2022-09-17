@@ -24,7 +24,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <major.h>
+#include <dev/device.h>
+#include "../../lib/libserv/libserv.h"
 #include "monitor.h"
+
+#ifdef USE_VESA
+#include <vesa.h>
+#else
+#include <cga.h>
+#endif
 
 #define ESC 0x1b
 #define CSI '['
@@ -44,8 +53,8 @@ typedef struct _esc_state {
 	char buf[ESC_BUF_SIZE];
 } esc_state_t;
 
-Screen root;
-Console *cns;
+static Screen root;
+static Console *cns;
 
 static inline bool is_decimal(const char ch)
 {
@@ -53,6 +62,13 @@ static inline bool is_decimal(const char ch)
 			&& (ch <= '9'));
 }
 
+static void console_initialize(void);
+static int detach(void);
+static int create(const void *);
+static int open(const char *);
+static int close(const int);
+static int read(char *, const int, const off_t, const size_t);
+static int write(char *, const int, const off_t, const size_t);
 //TODO return adequate error code
 static bool check_channel(const int);
 static bool check_param(const int, const off_t, const size_t);
@@ -65,37 +81,73 @@ static void state_csi_private(esc_state_t *, const char);
 static void state_exec_csi(esc_state_t *);
 static void eputc(esc_state_t *, const char);
 
+static vdriver_unit_t monitor = {
+	{ NULL, NULL },
+	MYNAME,
+	&root
+};
+static vdriver_t driver_mine = {
+	DEVICE_CLASS_CONSOLE,
+	{ NULL, NULL },
+	detach,
+	create,
+	NULL,
+	open,
+	close,
+	read,
+	write
+};
 static esc_state_t state = { state_null };
 
 
-int detach(void)
+const vdriver_t *monitor_attach(system_info_t *info)
+{
+	list_initialize(&(driver_mine.units));
+	console_initialize();
+	list_append(&(driver_mine.units), &(monitor.bros));
+	return &driver_mine;
+}
+
+static void console_initialize(void)
+{
+#ifdef USE_VESA
+	cns = getVesaConsole(&root, &default_font);
+#else
+	cns = getCgaConsole(&root,
+			(const uint16_t *) kern_p2v((void *) CGA_VRAM_ADDR));
+#endif
+}
+
+static int detach(void)
 {
 	return 0;
 }
 
-int create(const void *unit)
+static int create(const void *unit)
 {
 	cns->erase((Screen *) unit, EraseScreenEntire);
 	cns->locate((Screen *) unit, 0, 0);
 	return 0;
 }
 
-int open(const char *name)
+static int open(const char *name)
 {
 	return 0;
 }
 
-int close(const int channel)
+static int close(const int channel)
 {
 	return (check_channel(channel) ? 0 : (-1));
 }
 
-int read(char *outbuf, const int channel, const off_t offset, const size_t size)
+static int read(char *outbuf, const int channel, const off_t offset,
+		const size_t size)
 {
 	return (-1);
 }
 
-int write(char *inbuf, const int channel, const off_t offset, const size_t size)
+static int write(char *inbuf, const int channel, const off_t offset,
+		const size_t size)
 {
 	if (!check_param(channel, offset, size))
 		return (-1);

@@ -31,12 +31,4 @@ For more information, please refer to <http://unlicense.org/>
 
 #define MYNAME DEVICE_CONTROLLER_RAMDISK0
 
-extern memory_range_t ranges[];
-
-extern int detach(void);
-extern int open(const char *);
-extern int close(const int);
-extern int read(char *, const int, const off_t, const size_t);
-extern int write(char *, const int, const off_t, const size_t);
-
 #endif

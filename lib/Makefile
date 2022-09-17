@@ -25,7 +25,7 @@
 
 LIBS = lib/libc.a lib/libnc.a lib/libserv.a lib/libm.a \
 	lib/libvfs.a lib/libtfs.a lib/libcurses.a lib/libfonts.a
-KLIBS = kernel/mpu/libmpu.a kernel/arch/libarch.a
+KLIBS = kernel/mpu/libmpu.a kernel/arch/libarch.a drivers/libdrivers.a
 
 all: $(LIBS) $(KLIBS)
 

@@ -28,12 +28,14 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <dev/device.h>
 
+extern const vdriver_t *ramdisk_attach(system_info_t *);
+extern const vdriver_t *monitor_attach(system_info_t *);
 
 static vdriver_t *(*drivers[])(system_info_t *) = {
 	// ramdisk
-	(vdriver_t *(*)(system_info_t *)) (0x80150000),
+	(vdriver_t *(*)(system_info_t *)) ramdisk_attach,
 	// monitor
-	(vdriver_t *(*)(system_info_t *)) (0x80154000)
+	(vdriver_t *(*)(system_info_t *)) monitor_attach
 };
 
 #endif

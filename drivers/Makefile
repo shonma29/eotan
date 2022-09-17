@@ -23,14 +23,12 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-DRIVERS = ramdisk monitor
+TARGET = drivers/libdrivers.a
 
-all: $(DRIVERS)
+include Makefile.in
 
-$(DRIVERS):
-	$(MAKE) -f drivers/$@/Makefile WD=drivers/$@
+CSRCS += $(wildcard $(WD)/monitor/*.c)
+CSRCS += $(wildcard $(WD)/ramdisk/*.c)
 
-clean:
-	$(SHELL) -ec 'for L in $(DRIVERS); do \
-		$(MAKE) -f drivers/$$L/Makefile WD=drivers/$$L clean; \
-		done'
+$(TARGET): $(OBJS)
+	$(AR) rsv $@ $?

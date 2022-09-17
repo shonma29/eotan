@@ -103,8 +103,6 @@ $(WD)/kernel.img: $(WD)/append $(WD)/elf2module \
 		servers/mm/mm \
 		servers/fs/fs \
 		servers/hmi/hmi \
-		drivers/ramdisk/ramdisk \
-		drivers/monitor/monitor \
 		initrd.img
 	[ `wc -c < $(WD)/starter.bin` -le $(BIN_SIZE) ]
 	cp $(WD)/starter.bin $@
@@ -116,7 +114,5 @@ $(WD)/kernel.img: $(WD)/append $(WD)/elf2module \
 	$(WD)/elf2module servers/hmi/hmi | $(WD)/append $@ 3 9
 	$(WD)/elf2module servers/fs/fs | $(WD)/append $@ 3 8
 	$(WD)/elf2module servers/mm/mm | $(WD)/append $@ 3 7
-	$(WD)/elf2module drivers/ramdisk/ramdisk | $(WD)/append $@ 2
-	$(WD)/elf2module drivers/monitor/monitor | $(WD)/append $@ 2
 	cat initrd.img | $(WD)/append $@ 5
 	$(WD)/append $@ 0
