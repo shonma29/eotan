@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 #include <sys/unistd.h>
 #include <sys/wait.h>
-#include "../../lib/libserv/libserv.h"
+#include "mm.h"
 #include "proxy.h"
 
 static int cleanup(mm_process_t *, mm_thread_t *, mm_request_t *);
@@ -55,12 +55,12 @@ int mm_fork(mm_request_t *req)
 				(void *) (req->args.arg2),
 				(void *) (req->args.arg1));
 		if (!child) {
-			log_err("mm: duplicate err\n");
+			log_err("pm: duplicate err\n");
 			reply->data[0] = ENOMEM;
 			break;
 		}
 
-//		log_info("proxy: %d fork %d\n",
+//		log_info("pm: %d fork %d\n",
 //				process->node.key, child->node.key);
 
 		reply->result = child->node.key;
@@ -108,22 +108,22 @@ int mm_exec(mm_request_t *req)
 		result = _read(file, token, 0, sizeof(ehdr), (char *) &ehdr,
 				req);
 		if (result) {
-			log_err("ehdr0\n");
+			log_err("pm: ehdr0\n");
 			reply->data[0] = result;
 //TODO clunk
 			break;
 		} else {
 			if (message->Rread.count == sizeof(ehdr)) {
 				if (isValidModule(&ehdr)) {
-//					log_info("ehdr ok\n");
+//					log_info("pm: ehdr ok\n");
 				} else {
-					log_err("ehdr1\n");
+					log_err("pm: ehdr1\n");
 					reply->data[0] = ENOEXEC;
 //TODO clunk
 					break;
 				}
 			} else {
-				log_err("ehdr2\n");
+				log_err("pm: ehdr2\n");
 				reply->data[0] = ENOEXEC;
 //TODO clunk
 				break;
@@ -142,11 +142,11 @@ int mm_exec(mm_request_t *req)
 			if (result) {
 //TODO clunk
 //				return result;
-				log_err("phdr0\n");
+				log_err("pm: phdr0\n");
 				break;
 			} else {
 				if (message->Rread.count == sizeof(phdr)) {
-//					log_info("phdr ok\n");
+//					log_info("pm: phdr ok\n");
 					if (phdr.p_type != PT_LOAD)
 						continue;
 					switch (phdr.p_flags) {
@@ -160,11 +160,11 @@ int mm_exec(mm_request_t *req)
 						break;
 					}
 					if (x == 3) {
-//						log_info("phdr all ok\n");
+//						log_info("pm: phdr all ok\n");
 						break;
 					}
 				} else {
-					log_err("phdr2\n");
+					log_err("pm: phdr2\n");
 					//ENOEXEC
 					break;
 				}
@@ -176,7 +176,7 @@ int mm_exec(mm_request_t *req)
 //			return ENOEXEC;
 
 		int new_thread_id;
-//		log_info("replace\n");
+//		log_info("pm: replace\n");
 		result = process_replace(process,
 				(void *) (ro.p_vaddr),
 				rw.p_memsz ? (rw.p_vaddr + rw.p_memsz
@@ -187,7 +187,7 @@ int mm_exec(mm_request_t *req)
 				req->args.arg3,
 				&new_thread_id);
 		if (result) {
-			log_err("replace0 %d\n", result);
+			log_err("pm: replace0 %d\n", result);
 			//TODO check error
 		}
 
@@ -195,12 +195,12 @@ int mm_exec(mm_request_t *req)
 		result = _read(file, token, ro.p_offset, ro.p_filesz,
 				(char *) (ro.p_vaddr), req);
 		if (result) {
-			log_err("tread0 %d\n", result);
+			log_err("pm: tread0 %d\n", result);
 		} else {
 			if (message->Rread.count == ro.p_filesz) {
-//				log_info("tread1\n");
+//				log_info("pm: tread1\n");
 			} else {
-				log_err("tread2\n");
+				log_err("pm: tread2\n");
 			}
 		}
 
@@ -208,12 +208,12 @@ int mm_exec(mm_request_t *req)
 			result = _read(file, token, rw.p_offset, rw.p_filesz,
 					(char *) (rw.p_vaddr), req);
 			if (result) {
-				log_err("dread0 %d\n", result);
+				log_err("pm: dread0 %d\n", result);
 			} else {
 				if (message->Rread.count == rw.p_filesz) {
-//					log_info("dread1\n");
+//					log_info("pm: dread1\n");
 				} else {
-					log_err("dread2\n");
+					log_err("pm: dread2\n");
 				}
 			}
 		}
@@ -223,7 +223,7 @@ int mm_exec(mm_request_t *req)
 		//TODO recreate token (not must)
 		result = _clunk(process->session, file, token, req);
 		if (result) {
-			log_err("mm: exec close1 %d\n", result);
+			log_err("pm: exec close1 %d\n", result);
 			//TODO what to do?
 		}
 
@@ -289,7 +289,7 @@ int mm_exit(mm_request_t *req)
 		mm_process_t *process = get_process(th);
 		cleanup(process, th, req);
 		process_destroy(process, req->args.arg1);
-//		log_info("mm: %d exit\n", process->node.key);
+//		log_info("pm: %d exit\n", process->node.key);
 
 		reply->result = 0;
 		reply->data[0] = 0;
@@ -340,7 +340,7 @@ int mm_kill(mm_request_t *req)
 			break;
 		}
 
-		log_info("mm: %d kill %d\n", process->node.key, req->args.arg2);
+		log_info("pm: %d kill %d\n", process->node.key, req->args.arg2);
 
 		//TODO write message to stderr
 		cleanup(process, th, req);
@@ -404,14 +404,14 @@ int mm_chdir(mm_request_t *req)
 					create_token(th->node.key,
 							process->session),
 					req);
-//			log_info("mm_chdir: close[:%d] %d\n", old, result);
+//			log_info("pm: chdir close[:%d] %d\n", old, result);
 			if (result) {
 				//TODO what to do?
 			}
 		}
 
 		process->wd = file;
-//		log_info("proxy: %d chdir %d->%d %s\n",
+//		log_info("pm: %d chdir %d->%d %s\n",
 //				process->node.key, old, process->wd->node.key,
 //				process->local->wd);
 
@@ -590,7 +590,7 @@ int mm_lseek(mm_request_t *req)
 			break;
 		}
 
-//		log_info("mm: %d seek\n", process->node.key);
+//		log_info("pm: %d seek\n", process->node.key);
 
 		off_t *offset = (off_t *) reply;
 		*offset = desc->file->f_offset;

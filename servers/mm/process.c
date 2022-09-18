@@ -36,10 +36,10 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 #include <sys/syscall.h>
 #include <sys/wait.h>
+#include "mm.h"
 #include "api.h"
 #include "process.h"
 #include "../../kernel/mpu/mpufunc.h"
-#include "../../lib/libserv/libserv.h"
 
 #define THREAD_LOOKUP_SIZE (16)
 

@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <mm/config.h>
 #include <nerve/kcall.h>
 #include <sys/syscall.h>
-#include "../../lib/libserv/libserv.h"
+#include "mm.h"
 
 #define STACK_TAIL USER_STACK_END_ADDR
 

@@ -28,7 +28,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <mm/config.h>
 #include <nerve/kcall.h>
 #include "process.h"
-#include "../../lib/libserv/libserv.h"
 
 #define MIN_SID (1)
 #define MIN_FID (1)

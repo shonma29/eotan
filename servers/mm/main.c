@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/ipc_utils.h>
 #include <nerve/kcall.h>
 #include "../../kernel/mpu/mpufunc.h"
-#include "../../lib/libserv/libserv.h"
+#include "mm.h"
 #include "api.h"
 #include "proxy.h"
 

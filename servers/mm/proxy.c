@@ -33,7 +33,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 #include <sys/syscall.h>
 #include "../../kernel/mpu/mpufunc.h"
-#include "../../lib/libserv/libserv.h"
+#include "mm.h"
 #include "proxy.h"
 
 #define MYNAME "mm"
@@ -99,11 +99,11 @@ int mm_attach(mm_request_t *req)
 
 		file->server_id = PORT_FS;
 		int result = call_device(file, req);
-		//log_info("mm: attach[sid=%d fid=%d] %d\n", session->node.key,
+		//log_info("proxy: attach[sid=%d fid=%d] %d\n", session->node.key,
 		//		file->node.key, result);
 
 		if (result) {
-			log_err("mm: attach(%x) %d\n", file->node.key, result);
+			log_err("proxy: attach(%x) %d\n", file->node.key, result);
 			session_destroy_file(session, file);
 			session_destroy(session);
 			reply->data[0] = result;
@@ -629,7 +629,7 @@ int _walk(mm_file_t **file, mm_process_t *process, const int thread_id,
 	message->Twalk.newfid = f->node.key;
 	message->Twalk.nwname = len;
 	message->Twalk.wname = buf;
-//	log_info(MYNAME ": walk %d %d [%s] %d\n", process->session->node.key,
+//	log_info("proxy: walk %d %d [%s] %d\n", process->session->node.key,
 //			message->Twalk.fid, message->Twalk.wname,
 //			message->Twalk.newfid);
 
