@@ -26,7 +26,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <nerve/kcall.h>
 
 #define MYNAME "dev"
+
+#define log_err kcall->printk
+#define log_warning kcall->printk
+#define log_info kcall->printk
 
 #endif

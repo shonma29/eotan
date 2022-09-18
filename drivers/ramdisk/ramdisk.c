@@ -27,7 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 #include <major.h>
 #include <dev/device.h>
-#include "../../lib/libserv/libserv.h"
+#include <nerve/kcall.h>
 #include "ramdisk.h"
 
 static memory_range_t ranges[1];
@@ -58,7 +58,7 @@ const vdriver_t *ramdisk_attach(system_info_t *info)
 	list_initialize(&(driver_mine.units));
 
 	if (info->initrd.size) {
-		log_info(MYNAME ": addr=%p size=%x\n",
+		kcall->printk(MYNAME ": addr=%p size=%x\n",
 				info->initrd.address, info->initrd.size);
 		ranges[0] = info->initrd;
 		list_append(&(driver_mine.units), &(initrd.bros));

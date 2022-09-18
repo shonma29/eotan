@@ -27,7 +27,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <services.h>
 #include <nerve/kcall.h>
-#include "../../lib/libserv/libserv.h"
 #include "../../kernel/arch/archfunc.h"
 #include "dev.h"
 #include "table.h"

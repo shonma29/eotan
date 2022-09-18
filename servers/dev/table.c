@@ -28,7 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <dev/drivers.h>
 #include <nerve/kcall.h>
 #include <set/hash.h>
-#include "../../lib/libserv/libserv.h"
+#include "dev.h"
 #include "table.h"
 
 static hash_t *hash;
