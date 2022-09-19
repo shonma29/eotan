@@ -59,30 +59,31 @@ static int initialize(void);
 
 static int initialize(void)
 {
-	session_initialize();
-
-	int result = fs_initialize((int) (sysinfo->root.device),
-			sysinfo->root.block_size);
-	if (result) {
-		log_err(MYNAME ": fs_initialize(%s, %d) failed %d\n",
-				sysinfo->root.device, sysinfo->root.fstype,
-				result);
-		return -1;
-	}
-
-	log_info(MYNAME ": fs_mount(%s, %d)\n",
-			sysinfo->root.device, sysinfo->root.fstype);
-
 	struct t_cpor pk_cpor = {
 		TA_TFIFO,
 		sizeof(fsmsg_t),
 		sizeof(fsmsg_t)
 	};
-	result = kcall->ipc_open(&pk_cpor);
+	int result = kcall->ipc_open(&pk_cpor);
 	if (result) {
 		log_err(MYNAME ": ipc_open failed %d\n", result);
-		return -1;
+		return (-1);
 	}
+
+	session_initialize();
+
+	result = fs_initialize((int) (sysinfo->root.device),
+			sysinfo->root.block_size);
+	if (result) {
+		log_err(MYNAME ": fs_initialize(%s, %d) failed %d\n",
+				sysinfo->root.device, sysinfo->root.fstype,
+				result);
+		kcall->ipc_close();
+		return (-1);
+	}
+
+	log_info(MYNAME ": fs_mount(%s, %d)\n",
+			sysinfo->root.device, sysinfo->root.fstype);
 
 	return 0;
 }

@@ -173,7 +173,7 @@ static void *set_modules(void)
 
 		switch (h->type) {
 		case mod_kernel:
-		case mod_driver:
+		case mod_kthread:
 		case mod_server:
 		case mod_initrd:
 		{

@@ -79,17 +79,19 @@ static void doit(void)
 
 static ER initialize(void)
 {
-	peripheral_set_map();
-
-	if (!dev_initialize())
-		return E_NOMEM;
-
 	T_CPOR pk_cpor = { TA_TFIFO, sizeof(devmsg_t), sizeof(devmsg_t) };
 	ER result = kcall->ipc_open(&pk_cpor);
 	if (result) {
 		log_err(MYNAME ": open failed %d\n", result);
 		return result;
 	}
+
+	if (!dev_initialize()) {
+		kcall->ipc_close();
+		return E_NOMEM;
+	}
+
+	peripheral_set_map();
 	return result;
 }
 

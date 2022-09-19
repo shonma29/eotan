@@ -70,7 +70,6 @@ int main(int argc, char **argv)
 			result = appendEnd(out);
 			break;
 		case mod_kernel:
-		case mod_driver:
 		case mod_user:
 		case mod_initrd:
 			result = append(out, type, in, 0);
@@ -82,6 +81,7 @@ int main(int argc, char **argv)
 	case 4:
 		type = atoi(argv[2]);
 		switch (type) {
+		case mod_kthread:
 		case mod_server:
 			result = append(out, type, in, atoi(argv[3]));
 			break;

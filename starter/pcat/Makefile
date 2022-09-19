@@ -107,10 +107,10 @@ $(WD)/kernel.img: $(WD)/append $(WD)/elf2module \
 	[ `wc -c < $(WD)/starter.bin` -le $(BIN_SIZE) ]
 	cp $(WD)/starter.bin $@
 	$(WD)/elf2module kernel/core.bin | $(WD)/append $@ 1
-	$(WD)/elf2module servers/interrupt/interrupt | $(WD)/append $@ 3 3
-	$(WD)/elf2module servers/timer/timer | $(WD)/append $@ 3 4
+	$(WD)/elf2module servers/interrupt/interrupt | $(WD)/append $@ 2 3
+	$(WD)/elf2module servers/timer/timer | $(WD)/append $@ 2 4
+	$(WD)/elf2module servers/dev/dev | $(WD)/append $@ 2 6
 	$(WD)/elf2module servers/kernlog/kernlog | $(WD)/append $@ 3 5
-	$(WD)/elf2module servers/dev/dev | $(WD)/append $@ 3 6
 	$(WD)/elf2module servers/hmi/hmi | $(WD)/append $@ 3 9
 	$(WD)/elf2module servers/fs/fs | $(WD)/append $@ 3 8
 	$(WD)/elf2module servers/mm/mm | $(WD)/append $@ 3 7

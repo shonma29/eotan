@@ -33,7 +33,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <starter/modules.h>
 
 static void callback(void);
-static ER run_module(const int, const void *);
+static ER run_module(const int, const void *, const PRI);
 static void release_pages(const void *, const void *);
 
 
@@ -58,8 +58,11 @@ static void callback(void)
 	ModuleHeader *h = (ModuleHeader *) (kern_p2v((void *) MODULES_ADDR));
 	while (h->type != mod_end) {
 		switch (h->type) {
+		case mod_kthread:
+			run_module(h->arg, h->entry, pri_server_high);
+			break;
 		case mod_server:
-			run_module(h->arg, h->entry);
+			run_module(h->arg, h->entry, pri_server_middle);
 			break;
 		default:
 //TODO set device names
@@ -78,13 +81,13 @@ static void callback(void)
 	release_pages((void *) BOOT_ADDR, (void *) ((uintptr_t) h + sizeof(*h)));
 }
 
-static ER run_module(const int tid, const void *entry)
+static ER run_module(const int tid, const void *entry, const PRI priority)
 {
 	T_CTSK pk_ctsk = {
 		TA_HLNG | TA_ACT,
 		(VP_INT) NULL,
 		(FP) entry,
-		pri_server_middle,
+		priority,
 		KTHREAD_STACK_SIZE,
 		NULL,
 		NULL,

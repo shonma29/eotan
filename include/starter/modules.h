@@ -35,7 +35,7 @@ enum ModuleType
 {
 	mod_end = 0,
 	mod_kernel = 1,
-	mod_driver = 2,
+	mod_kthread = 2,
 	mod_server = 3,
 	mod_user = 4,
 	mod_initrd = 5
