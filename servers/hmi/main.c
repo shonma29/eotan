@@ -41,6 +41,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 #include <set/lf_queue.h>
 #include <set/list.h>
+#include <set/tree.h>
 #include <libserv.h>
 #include "hmi.h"
 #include "keyboard.h"
@@ -70,7 +71,6 @@ static char int_buf[
 	lfq_buf_size(sizeof(hmi_interrupt_t), INTERRUPT_QUEUE_SIZE)
 ];
 
-
 #ifdef USE_VESA
 Frame *screen;
 static Screen screen0;
@@ -80,11 +80,29 @@ static Screen screen7;
 static Screen *screen0;
 #endif
 
+#define WINDOW_MAX (32)
+#define getParent(type, p) ((uintptr_t) p - offsetof(type, node))
+
+typedef struct {
+	node_t node;
+	list_t brothers;
+	Screen *screen;
+} window_t;
+
+static slab_t window_slab;
+static tree_t window_tree;
+static list_t window_list;
+
 static void process(const int);
 static ER_UINT write(const UW, const UW, const UW, const char *);
 static void reply(request_message_t *, const size_t);
 static void execute(request_message_t *);
 static ER accept(void);
+static int create_window(window_t **w, Screen *);
+#if 0
+static window_t *find_window(const int);
+static int remove_window(const int);
+#endif
 static ER initialize(void);
 static ER_UINT dummy_read(const int);
 
@@ -356,6 +374,69 @@ static ER accept(void)
 	return E_OK;
 }
 
+static int create_window(window_t **w, Screen *s)
+{
+	int error_no = 0;
+	do {
+		int wid;
+		for (wid = 1; wid <= WINDOW_MAX; wid++)
+			if (!tree_get(&window_tree, wid))
+				break;
+
+		if (wid >= WINDOW_MAX) {
+			error_no = ENOMEM;
+			break;
+		}
+
+		window_t *p = (window_t *) slab_alloc(&window_slab);
+		if (!p) {
+			error_no = ENOMEM;
+			break;
+		}
+
+		if (!tree_put(&window_tree, wid, (node_t *) p)) {
+			slab_free(&window_slab, p);
+			error_no = EBUSY;
+			break;
+		}
+
+		p->screen = s;
+		list_initialize(&(p->brothers));
+		list_insert(&window_list, &(p->brothers));
+		*w = p;
+	} while (false);
+
+	return error_no;
+}
+#if 0
+static window_t *find_window(const int wid)
+{
+	node_t *node = tree_get(&window_tree, wid);
+	return (node ? (window_t *) getParent(window_t, node) : NULL);
+}
+
+static int remove_window(const int wid)
+{
+	int error_no = 0;
+	do {
+		window_t *p = find_window(wid);
+		if (!p) {
+			//TODO really?
+			error_no = EPERM;
+			break;
+		}
+
+		list_remove(&(p->brothers));
+		if (!tree_remove(&window_tree, p->node.key)) {
+			//TODO what to do?
+		}
+
+		slab_free(&window_slab, p);
+	} while (false);
+
+	return error_no;
+}
+#endif
 static ER initialize(void)
 {
 #ifdef USE_VESA
@@ -375,10 +456,23 @@ static ER initialize(void)
 		lfq_enqueue(&unused_queue, &p);
 	}
 
+	window_slab.unit_size = sizeof(window_t);
+	window_slab.block_size = PAGE_SIZE;
+	window_slab.min_block = 1;
+	window_slab.max_block = slab_max_block(WINDOW_MAX, PAGE_SIZE,
+			sizeof(window_t));
+	window_slab.palloc = kcall->palloc;
+	window_slab.pfree = kcall->pfree;
+	slab_create(&window_slab);
+	tree_create(&window_tree, NULL, NULL);
+	list_initialize(&window_list);
+
 	info = device_find(DEVICE_CONTROLLER_MONITOR);
 	if (info) {
 		driver = (vdriver_t *) (info->driver);
 #ifdef USE_VESA
+		//int result;
+		window_t *w;
 		Screen *s = (Screen *) (info->unit);
 		screen0 = *s;
 		screen0.base += 20 * s->bpl;
@@ -388,6 +482,8 @@ static ER initialize(void)
 		screen0.chr_width = (screen0.width - 16) / s->font.width;
 		screen0.chr_height = (screen0.height - (20 + 16)) / s->font.height;
 		driver->write(STR_CONS_INIT, (int) &screen0, 0, LEN_CONS_INIT);
+		//result = create_window(&w, &screen0);
+		create_window(&w, &screen0);
 
 		screen2 = screen0;
 		screen2.base += screen0.height * s->bpl;
@@ -399,6 +495,8 @@ static ER initialize(void)
 		screen2.bgcolor.rgb.g = 0;
 		screen2.bgcolor.rgb.r = 31;
 		driver->write(STR_CONS_INIT, (int) &screen2, 0, LEN_CONS_INIT);
+		//result = create_window(&w, &screen2);
+		create_window(&w, &screen2);
 
 		screen7 = *s;
 		screen7.height = 20;
@@ -410,6 +508,8 @@ static ER initialize(void)
 		screen7.bgcolor.rgb.g = 227;
 		screen7.bgcolor.rgb.r = 223;
 		driver->write(STR_CONS_INIT, (int) &screen7, 0, LEN_CONS_INIT);
+		//result = create_window(&w, &screen7);
+		create_window(&w, &screen7);
 #else
 		if (sysinfo->cga)
 			screen0 = sysinfo->cga;
