@@ -26,7 +26,6 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <major.h>
 #include <dev/device.h>
-#include "../../lib/libserv/libserv.h"
 #include "monitor.h"
 
 #ifdef USE_VESA

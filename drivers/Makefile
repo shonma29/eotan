@@ -29,6 +29,8 @@ include Makefile.in
 
 CSRCS += $(wildcard $(WD)/monitor/*.c)
 CSRCS += $(wildcard $(WD)/ramdisk/*.c)
+CSRCS += $(wildcard $(WD)/null/*.c)
+CSRCS += $(wildcard $(WD)/zero/*.c)
 
 $(TARGET): $(OBJS)
 	$(AR) rsv $@ $?

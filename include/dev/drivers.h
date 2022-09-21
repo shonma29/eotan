@@ -30,12 +30,14 @@ For more information, please refer to <http://unlicense.org/>
 
 extern const vdriver_t *ramdisk_attach(system_info_t *);
 extern const vdriver_t *monitor_attach(system_info_t *);
+extern const vdriver_t *null_attach(system_info_t *);
+extern const vdriver_t *zero_attach(system_info_t *);
 
 static vdriver_t *(*drivers[])(system_info_t *) = {
-	// ramdisk
 	(vdriver_t *(*)(system_info_t *)) ramdisk_attach,
-	// monitor
-	(vdriver_t *(*)(system_info_t *)) monitor_attach
+	(vdriver_t *(*)(system_info_t *)) monitor_attach,
+	(vdriver_t *(*)(system_info_t *)) null_attach,
+	(vdriver_t *(*)(system_info_t *)) zero_attach
 };
 
 #endif
