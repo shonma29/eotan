@@ -302,6 +302,7 @@ static bool line_preprocess(Line *p)
 			p->head = p->pos;
 			return false;
 		} else if ((c == '\n')
+				|| (c == 0x1a)
 				|| ((c == '#')
 						&& !(p->quoting))) {
 			p->buf[i] = '\0';
@@ -317,6 +318,7 @@ static bool line_putc(Line *p, const unsigned char c)
 {
 	switch (c) {
 	case '\n':
+	case 0x1a:
 		p->buf[p->pos] = c;
 		p->pos++;
 		if (p->pos >= p->bufsize)
@@ -616,12 +618,14 @@ static void interpret(hash_t *vars, FILE *in)
 		int c;
 		do {
 			c = fgetc(in);
-			if (c == EOF)
-				goto last;
+			if (c == EOF) {
+				if (line_putc(&line, 0x1a))
+					line_evaluate(&line, vars);
+
+				return;
+			}
 		} while (!line_putc(&line, c & 0xff));
 	} while (!line_evaluate(&line, vars));
-last:
-	return;
 }
 
 int main(int argc, char **argv, char **env)
