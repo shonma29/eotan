@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <sys/types.h>
+#include <sys/signal.h>
 
 extern int kill(pid_t, int);
 

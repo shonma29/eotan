@@ -102,6 +102,12 @@ static inline mm_process_t *get_process(const mm_thread_t *thread)
 	return ((mm_process_t *) (thread->process));
 }
 
+static inline mm_thread_t *getMyThread(const list_t *p)
+{
+	return ((mm_thread_t *) ((uintptr_t) p
+			- offsetof(mm_thread_t, brothers)));
+}
+
 extern void process_initialize(void);
 extern mm_process_t *process_find(const ID);
 extern mm_process_t *process_duplicate(mm_process_t *, void *, void *);

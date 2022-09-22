@@ -42,6 +42,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/lf_queue.h>
 #include <set/list.h>
 #include <set/tree.h>
+#include <sys/signal.h>
+#include <sys/syscall.h>
 #include <libserv.h>
 #include "hmi.h"
 #include "keyboard.h"
@@ -150,7 +152,22 @@ static void process(const int data)
 	unsigned char buf = (unsigned char) (d & 0xff);
 
 	if (!raw_mode) {
-		int result = kcall->mutex_lock(cons_mid, TMO_FEVR);
+		int result;
+		// ^c
+		if (buf == 0x03) {
+			sys_args_t args = {
+				syscall_kill,
+				CURRENT_PROCESS,
+				SIGINT
+			};
+			result = kcall->ipc_send(PORT_MM, &args, sizeof(args));
+			if (result)
+				log_err("hmi: kill error=%d\n", result);
+
+			return;
+		}
+
+		result = kcall->mutex_lock(cons_mid, TMO_FEVR);
 		if (result)
 			kcall->printk("hmi: handler cannot lock %d\n", result);
 		else {

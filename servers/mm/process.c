@@ -53,11 +53,6 @@ static node_t *thread_lookup[THREAD_LOOKUP_SIZE];
 static slab_t process_group_slab;
 static tree_t process_group_tree;
 
-static inline mm_thread_t *getMyThread(const list_t *p)
-{
-	return ((mm_thread_t *) ((uintptr_t) p
-			- offsetof(mm_thread_t, brothers)));
-}
 /*
 static inline mm_process_t *getProcessFromChildren(const list_t *p)
 {

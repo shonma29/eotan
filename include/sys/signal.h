@@ -1,5 +1,5 @@
-#ifndef _SYS_SYSCALL_H_
-#define _SYS_SYSCALL_H_
+#ifndef _SYS_SIGNAL_H_
+#define _SYS_SIGNAL_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,46 +27,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-typedef enum {
-	syscall_fork = 0,
-	syscall_exec = 1,
-	syscall_wait = 2,
-	syscall_exit = 3,
-	syscall_vmap = 4,
-	syscall_vunmap = 5,
-	syscall_sbrk = 6,
-	syscall_chdir = 7,
-	syscall_dup = 8,
-	syscall_lseek = 9,
-	syscall_attach = 10,
-	syscall_open = 11,
-	syscall_create = 12,
-	syscall_read = 13,
-	syscall_write = 14,
-	syscall_close = 15,
-	syscall_remove = 16,
-	syscall_stat = 17,
-	syscall_fstat = 18,
-	syscall_chmod = 19,
-	syscall_clock_gettime = 20,
-	syscall_thread_find = 21,
-	syscall_kill = 22
-} syscall_e;
-
-typedef struct {
-	syscall_e syscall_no;
-	int arg1;
-	int arg2;
-	int arg3;
-	int arg4;
-	int arg5;
-} sys_args_t;
-
-typedef struct {
-	int result;
-	int data[2];
-} sys_reply_t;
-
-#define CURRENT_PROCESS (-3)
+#define SIGINT (2)
 
 #endif

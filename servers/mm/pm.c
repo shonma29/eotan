@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <elf.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <init.h>
 #include <string.h>
 #include <nerve/ipc_utils.h>
 #include <nerve/kcall.h>
@@ -325,7 +326,22 @@ int mm_kill(mm_request_t *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(req->args.arg1);
+		mm_thread_t *th = NULL;
+		if (req->args.arg1 == CURRENT_PROCESS)
+			for (mm_process_t *p = process_find(INIT_PID); p;) {
+				if (p->wpid)
+					p = process_find(p->wpid);
+				else {
+					list_t *head = list_head(&(p->threads));
+					if (head) {
+						th = getMyThread(head);
+						break;
+					}
+				}
+			}
+		else
+			th = thread_find(req->args.arg1);
+
 		if (!th) {
 			reply->data[1] = EPERM;
 			break;
