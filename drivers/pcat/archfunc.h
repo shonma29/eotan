@@ -60,6 +60,10 @@ extern void keyboard_interrupt(VP_INT);
 extern void mouse_interrupt(VP_INT);
 
 /* pci.c */
-void peripheral_set_map(void);
+extern void peripheral_set_map(void);
+
+/* ata.c */
+extern int ata_set_bar(const int, const uint32_t);
+extern void ata_initialize(void);
 
 #endif
