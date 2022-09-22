@@ -34,7 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 
 .global _start
 
-.equ USE_VESA, 1
+.include "starter/arch/protect.inc"
 
 .set SELECTOR_CODE, 0x08
 .set SELECTOR_DATA, 0x10
@@ -44,7 +44,7 @@ For more information, please refer to <http://unlicense.org/>
 .set MEMORY_INFO_ADDR, 0x3000
 .set PERIPHERAL_INFO_ADDR, 0x3ff0
 
-.ifdef USE_VESA
+.ifdef INITIALIZE_VESA
 .set VESA_INFO_ADDR, 0x3c00
 .set VESA_MODE, 0x0118
 .endif
@@ -99,7 +99,7 @@ memory_loop:
 	movw $PERIPHERAL_INFO_ADDR, %si
 	movw %ax, (%si)
 
-.ifdef USE_VESA
+.ifdef INITIALIZE_VESA
 	/* check if supports VESA */
 	xorw %ax, %ax
 	movw %ax, %es
@@ -174,7 +174,7 @@ error_memory:
 	movw $message_memory_error, %ax
 	jmp die
 
-.ifdef USE_VESA
+.ifdef INITIALIZE_VESA
 error_vesa:
 	movw $message_vesa_error, %ax
 	jmp die
@@ -259,7 +259,7 @@ message_cpu_error:
 message_memory_error:
 	.asciz "cannot get memory map"
 
-.ifdef USE_VESA
+.ifdef INITIALIZE_VESA
 message_vesa_error:
 	.asciz "cannot use VESA"
 .endif

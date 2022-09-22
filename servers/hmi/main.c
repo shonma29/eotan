@@ -100,7 +100,9 @@ static ER_UINT write(const UW, const UW, const UW, const char *);
 static void reply(request_message_t *, const size_t);
 static void execute(request_message_t *);
 static ER accept(void);
+#ifdef USE_VESA
 static int create_window(window_t **w, Screen *);
+#endif
 #if 0
 static window_t *find_window(const int);
 static int remove_window(const int);
@@ -390,7 +392,7 @@ static ER accept(void)
 	execute(req);
 	return E_OK;
 }
-
+#ifdef USE_VESA
 static int create_window(window_t **w, Screen *s)
 {
 	int error_no = 0;
@@ -425,6 +427,7 @@ static int create_window(window_t **w, Screen *s)
 
 	return error_no;
 }
+#endif
 #if 0
 static window_t *find_window(const int wid)
 {
@@ -532,7 +535,8 @@ static ER initialize(void)
 			screen0 = sysinfo->cga;
 		else {
 			screen0 = (Screen *) (info->unit);
-			driver->create(screen0);
+			driver->write(STR_CONS_INIT, (int) screen0, 0,
+					LEN_CONS_INIT);
 		}
 #endif
 	} else {

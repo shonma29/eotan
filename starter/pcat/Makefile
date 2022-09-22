@@ -44,7 +44,8 @@ MAX_KERNEL = `echo "(640 - 32 - 20 - 4) * 1024" | bc`
 OBJS = build/boot.img $(WD)/pad $(WD)/append $(WD)/elf2module \
 	$(WD)/loader $(WD)/loader.o $(WD)/loader.inc \
 	$(WD)/kernel.img \
-	$(WD)/starter.bin $(WD)/starter $(WD)/protect.o $(WD)/starter.o \
+	$(WD)/starter.bin $(WD)/starter $(WD)/starter.o \
+	$(WD)/protect.o $(WD)/protect.inc \
 	$(WD)/memory.o $(WD)/decode.o \
 	$(WD)/boot $(WD)/boot.o
 
@@ -66,6 +67,11 @@ $(WD)/loader.inc: $(WD)/kernel.img
 	echo ".set STARTER_ADDRESS, $(STARTER_ADDR)" >> $@
 	echo -n ".set STARTER_SECTORS, " >> $@
 	echo "(`wc -c < $(WD)/kernel.img` + $(BLK_SIZE) - 1) / $(BLK_SIZE)" | bc >> $@
+
+$(WD)/protect.o: $(WD)/protect.s $(WD)/protect.inc
+
+$(WD)/protect.inc: $(WD)/protect.h
+	$(CPP) -P $(CFLAGS) $^ > $@
 
 $(WD)/starter: $(WD)/protect.o $(WD)/starter.o $(WD)/memory.o $(WD)/decode.o \
 		kernel/arch/libarch.a lib/librc.a \
