@@ -34,10 +34,9 @@ static int columns;
 static int lines;
 static char *linebuf;
 
-static int get_columns(void);
-static int get_lines(void);
 static bool show(FILE *);
 static bool process(void);
+static int _get_env_value(const char *, const int);
 
 extern int rawon(void);
 extern int rawoff(void);
@@ -47,8 +46,8 @@ int main(int argc, char **argv)
 {
 	FILE *fp;
 
-	columns = get_columns() + 1;
-	lines = get_lines() - 1;
+	columns = _get_env_value("COLUMNS", DEFAULT_COLUMNS) + 1;
+	lines = _get_env_value("LINES", DEFAULT_LINES) - 1;
 
 	//TODO UTF-8
 	linebuf = malloc(columns);
@@ -84,18 +83,6 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-static int get_columns(void)
-{
-	//TODO getenv -> atoi
-	return DEFAULT_COLUMNS;
-}
-
-static int get_lines(void)
-{
-	//TODO getenv -> atoi
-	return DEFAULT_LINES;
-}
-
 static bool show(FILE *fp)
 {
 	for (int n = 0; n < lines; n++) {
@@ -122,4 +109,16 @@ static bool process(void)
 			break;
 		}
 	}
+}
+
+static int _get_env_value(const char *var_name, const int default_value)
+{
+	char *value = getenv(var_name);
+	if (value) {
+		int n = atoi(value);
+		if (n > 0)
+			return n;
+	}
+
+	return default_value;
 }

@@ -31,13 +31,8 @@ For more information, please refer to <http://unlicense.org/>
 #define OK (0)
 #define ERR (-1)
 
-#ifdef USE_VESA
-#define COLS (85)
-#define LINES (32)
-#else
-#define COLS (80)
-#define LINES (25)
-#endif
+#define DEFAULT_COLUMNS (80)
+#define DEFAULT_LINES (25)
 
 #define stdscr NULL
 
@@ -46,7 +41,10 @@ typedef enum {
 } curses_attr_t;
 
 typedef char chtype;
-typedef void WINDOW;
+typedef struct {
+	int columns;
+	int lines;
+} WINDOW;
 
 extern int getch(void);
 
@@ -63,9 +61,11 @@ extern int attroff(chtype);
 
 extern int refresh(void);
 
-extern int initscr(void);
+extern WINDOW *initscr(void);
 extern int endwin(void);
 extern int raw(void);
+
+#define getmaxyx(w, y, x) { y = w->lines; x = w->columns; }
 
 static inline int noecho(void)
 {

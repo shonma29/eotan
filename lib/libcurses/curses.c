@@ -34,6 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #define TRANSMIT_MAX (4096)
 
+static WINDOW default_window;
 static chtype *buf_front;
 static chtype *buf_back;
 static chtype *buf_transmit;
@@ -53,6 +54,7 @@ static int _puts(char *);
 static int _send_str(const char *);
 static int _send_char(const char);
 static int _flush(void);
+static int _get_env_value(const char *, const int);
 static void _release(void);
 
 
@@ -74,33 +76,34 @@ int addch(chtype ch)
 {
 	//TODO save min {x, y} and max {x, y}
 	if (ch == '\n') {
-		unsigned int offset = cursor_y * COLS;
-		for (unsigned int i = cursor_x; i < COLS; i++)
+		unsigned int offset = cursor_y * default_window.columns;
+		for (unsigned int i = cursor_x; i < default_window.columns; i++)
 			buf_back[offset + i] = NUL;
 
-		if (cursor_y != LINES - 1) {
+		if (cursor_y != default_window.lines - 1) {
 			cursor_x = 0;
 			cursor_y++;
 		}
 	} else if (ch == '\t') {
 		unsigned int len = 8 - (cursor_x & 7);
-		if (COLS - cursor_x < len)
-			len = COLS - cursor_x;
+		if (default_window.columns - cursor_x < len)
+			len = default_window.columns - cursor_x;
 
-		unsigned int offset = cursor_y * COLS;
+		unsigned int offset = cursor_y * default_window.columns;
 		for (; len; len--)
 			buf_back[offset + cursor_x++] = ' ';
 
-		if (cursor_x == COLS) {
-			if (cursor_y != LINES - 1) {
+		if (cursor_x == default_window.columns) {
+			if (cursor_y != default_window.lines - 1) {
 				cursor_x = 0;
 				cursor_y++;
 			}
 		}
 	} else {
-		buf_back[cursor_y * COLS + cursor_x] = ch & 0xff;
-		if (cursor_x == COLS - 1) {
-			if (cursor_y != LINES - 1) {
+		buf_back[cursor_y * default_window.columns + cursor_x] =
+				ch & 0xff;
+		if (cursor_x == default_window.columns - 1) {
+			if (cursor_y != default_window.lines - 1) {
 				cursor_x = 0;
 				cursor_y++;
 			}
@@ -146,7 +149,7 @@ int attroff(chtype ch)
 
 int clear(void)
 {
-	size_t size = COLS * LINES;
+	size_t size = default_window.columns * default_window.lines;
 	for (unsigned int i = 0; i < size; i++)
 		buf_back[i] = NUL;
 
@@ -156,8 +159,9 @@ int clear(void)
 
 int clrtobot(void)
 {
-	size_t size = COLS * LINES;
-	for (unsigned int i = cursor_y * COLS + cursor_x; i < size; i++)
+	size_t size = default_window.columns * default_window.lines;
+	for (unsigned int i = cursor_y * default_window.columns + cursor_x;
+			i < size; i++)
 		buf_back[i] = NUL;
 
 	dirty = true;
@@ -182,7 +186,7 @@ int refresh(void)
 		unsigned int x = 0;
 		unsigned int y = 0;
 		unsigned int i = 0;
-		size_t size = COLS * LINES;
+		size_t size = default_window.columns * default_window.lines;
 
 		do {
 			for (; i < size; i++) {
@@ -192,11 +196,11 @@ int refresh(void)
 				if (!buf_back[i]) {
 					x = 0;
 					y++;
-					i = y * COLS;
+					i = y * default_window.columns;
 					break;
 				}
 
-				if (++x == COLS) {
+				if (++x == default_window.columns) {
 					x = 0;
 					y++;
 				}
@@ -227,7 +231,7 @@ int refresh(void)
 				//TODO use clear to eol
 				//TODO put spaces if gap is smaller than 3
 				//TODO convert speces to tab or clear from head
-				if (++x == COLS) {
+				if (++x == default_window.columns) {
 					x = 0;
 					y++;
 				}
@@ -282,10 +286,13 @@ static int _flush(void)
 	return result;
 }
 
-int initscr(void)
+WINDOW *initscr(void)
 {
+	default_window.columns = _get_env_value("COLUMNS", DEFAULT_COLUMNS);
+	default_window.lines = _get_env_value("LINES", DEFAULT_LINES);
+
 	do {
-		size_t size = COLS * LINES;
+		size_t size = default_window.columns * default_window.lines;
 		buf_front = (char *) malloc(sizeof(chtype) * size);
 		if (!buf_front)
 			break;
@@ -309,13 +316,28 @@ int initscr(void)
 
 		pos_transmit = 0;
 		if (_send_str("\x1b[?7l\x1b[0m\x1b[2J\x1b[1;1H"))
-			return ERR;
+			break;
 
-		return _flush();
+		if (_flush() != OK)
+			break;
+
+		return &default_window;
 	} while (false);
 
 	_release();
-	return ERR;
+	exit(EXIT_FAILURE);
+}
+
+static int _get_env_value(const char *var_name, const int default_value)
+{
+	char *value = getenv(var_name);
+	if (value) {
+		int n = atoi(value);
+		if (n > 0)
+			return n;
+	}
+
+	return default_value;
 }
 
 static void _release(void)

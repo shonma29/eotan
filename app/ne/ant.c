@@ -9,6 +9,9 @@
 #include <unistd.h>
 #include <stdio.h>
 
+static int columns;
+static int lines;
+
 static bool done;
 static long row;
 static long col;
@@ -269,7 +272,7 @@ static void pgdown(void)
 
 static void pgup(void)
 {
-	for (long i = LINES - 2; 0 < --i;) {
+	for (long i = lines - 2; 0 < --i;) {
 		page = prevline(page - 1);
 		up();
 	}
@@ -364,7 +367,7 @@ static void display(void)
 
 	if (epage <= index) {
 		page = nextline(index);
-		i = ((page == pos(ebuf)) ? (LINES - 4) : (LINES - 2));
+		i = ((page == pos(ebuf)) ? (lines - 4) : (lines - 2));
 		while (0 < i--)
 			page = prevline(page - 1);
 	}
@@ -380,7 +383,7 @@ static void display(void)
 		}
 
 		char *p = ptr(epage);
-		if (LINES - 2 <= i || ebuf <= p)
+		if (lines - 2 <= i || ebuf <= p)
 			break;
 
 		if (*p != '\r') {
@@ -388,7 +391,7 @@ static void display(void)
 			j += *p == '\t' ? 8 - (j & 7) : 1;
 		}
 
-		if (*p == '\n' || COLS <= j) {
+		if (*p == '\n' || columns <= j) {
 			++i;
 			j = 0;
 		}
@@ -398,22 +401,23 @@ static void display(void)
 
 	clrtobot();
 
-	if (++i < LINES - 2)
+	if (++i < lines - 2)
 		mvaddstr(i, 0, "<< EOF >>");
 
 	// mode line
 	char strbuf[128];
-	j = snprintf(strbuf, COLS, "%ld, %ld <%d> %s", row, col, lastkey, filename);
+	j = snprintf(strbuf, columns, "%ld, %ld <%d> %s",
+			row, col, lastkey, filename);
 	attron(A_REVERSE);
-	mvaddstr(LINES - 2, 0, strbuf);
-	for (; j < COLS; j++)
+	mvaddstr(lines - 2, 0, strbuf);
+	for (; j < columns; j++)
 		addch(' ');
 
 	attroff(A_REVERSE);
 
 	// mini buffer
 	sprintf(strbuf, "%ld, %ld", i, j);
-	mvaddstr(LINES - 1, 0, strbuf);
+	mvaddstr(lines - 1, 0, strbuf);
 
 	move(row, col);
 	refresh();
@@ -426,7 +430,9 @@ int main(int argc, char **argv)
 	if (argc < 2)
 		return 2;
 
-	initscr();
+	WINDOW *w = initscr();
+	getmaxyx(w, lines, columns);
+
 	raw();
 	noecho();
 	idlok(stdscr, 1);
