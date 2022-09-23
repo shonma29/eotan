@@ -29,17 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdlib.h>
 #include <unistd.h>
 #include <mpu/memory.h>
-
-#define INITIAL_SIZE (PAGE_SIZE * 8)
-#define MASK_USING (1)
-
-typedef struct _Fragment {
-	struct _Fragment *next;
-	struct _Fragment *prev;
-	char buf[0];
-} Fragment;
-
-#define MIN_SIZE sizeof(Fragment)
+#include "malloc.h"
 
 static Fragment free_fragments;
 static Fragment *heap_start = NULL;
@@ -51,29 +41,6 @@ static void block_append(Fragment *, Fragment *);
 static void *find(const size_t);
 static bool expand(const size_t);
 
-
-static inline void set_using(Fragment *entry)
-{
-	uintptr_t *p = (uintptr_t *) &(entry->next);
-	*p |= MASK_USING;
-}
-
-static inline void unset_using(Fragment *entry)
-{
-	uintptr_t *p = (uintptr_t *) &(entry->next);
-	*p &= ~MASK_USING;
-}
-
-static inline bool is_using(const Fragment *entry)
-{
-	uintptr_t *p = ((uintptr_t *) &(entry->next));
-	return (*p & MASK_USING);
-}
-
-static inline void list_initialize(Fragment *entry)
-{
-	entry->prev = entry->next = entry;
-}
 
 static void list_insert(Fragment *to, Fragment *entry)
 {
@@ -178,6 +145,7 @@ static bool expand(const size_t size)
 void free(void *p)
 {
 	if ((((uintptr_t) p) & (MIN_SIZE - 1))
+			|| !heap_end
 			|| ((uintptr_t) p < (uintptr_t) &(heap_start[2]))
 			|| ((uintptr_t) heap_end <= (uintptr_t) p))
 		return;
