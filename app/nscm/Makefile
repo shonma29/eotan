@@ -36,12 +36,16 @@ all: $(TARGET)
 		$(WRITER) $(INITRD) $(BLKSIZE) chmod 755 /bin/$$I; \
 	done
 
-$(TARGET): $(WD)/nscm.o $(WD)/base.o $(WD)/repl.o \
+$(TARGET): $(WD)/nscm.o $(WD)/parse.o $(WD)/interpret.o $(WD)/base.o \
+		$(WD)/repl.o $(WD)/pcompile.o \
 		lib/libc.a lib/libnc.a
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^ \
 		lib/libc.a lib/libnc.a
 	$(STRIP) $@
 
-$(WD)/nscm.o: $(WD)/nscm.c $(WD)/nscm.h
-$(WD)/base.o: $(WD)/base.c $(WD)/nscm.h
-$(WD)/repl.o: $(WD)/repl.c $(WD)/nscm.h
+$(WD)/nscm.o: $(WD)/nscm.c $(WD)/nscm.h $(WD)/parse.h $(WD)/vm.h
+$(WD)/parse.o: $(WD)/parse.c $(WD)/parse.h $(WD)/nscm.h
+$(WD)/interpret.o: $(WD)/interpret.c $(WD)/nscm.h $(WD)/vm.h
+$(WD)/base.o: $(WD)/base.c $(WD)/nscm.h $(WD)/vm.h
+$(WD)/repl.o: $(WD)/repl.c $(WD)/nscm.h $(WD)/vm.h
+$(WD)/pcompile.o: $(WD)/pcompile.c $(WD)/nscm.h $(WD)/vm.h

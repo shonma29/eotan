@@ -2,20 +2,32 @@
 written by kenichi sasagawa 2016/1
 
 */
-#include <ctype.h>
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include "nscm.h"
+#include "parse.h"
+#include "vm.h"
 
 #ifdef USE_FLONUM
 #include <math.h>
 #endif
 
-#define OFFSET_CALLEE (0)
-#define OFFSET_ARGC (1)
-#define OFFSET_ARGV (2)
+#ifdef USE_ANALYSIS
+#ifdef __MACH__
+#include <malloc/malloc.h>
+#define MALLOC_SIZE malloc_size
+#else
+#ifdef __linux__
+#include <malloc.h>
+#define MALLOC_SIZE malloc_usable_size
+#else
+#include <malloc.h>
+#define MALLOC_SIZE(p) (0)
+#endif
+#endif
+#endif
 
 #define USING_BIT (1)
 #define MASK_MARK MASK_TAG_OF_POINTER
@@ -26,52 +38,34 @@ typedef struct _hash {
 	list_t table[HASH_SIZE];
 } hash_t;
 
-typedef enum {
-	TOKEN_UNKNOWN,
-	TOKEN_LPAREN,
-	TOKEN_RPAREN,
-	TOKEN_QUOTE,
-	TOKEN_DOT,
-	TOKEN_VALUE
-} token_type_e;
-
-typedef struct _token {
-	FILE *in;
-	bool has_last;
-	char last;
-	token_type_e type;
-	const cell_t *value;
-	char buf[BUFSIZ];//TODO use malloc
-	long line;
-} token_t;
-
 static token_t token = {
-	NULL, false, NUL, TOKEN_UNKNOWN, NULL, { NUL }, 1
+	NULL, false, TOKEN_UNKNOWN, NULL, 1, 0, 0, 0
 };
 static list_t protect_guard;
 static list_t cells_guard;
 static list_t free_guard;
 static long num_of_cells;
 static long num_of_cells_on_last_gc;
-
-//TODO per context
-static const cell_t *call_stack[CALL_STACK_SIZE];
-static const cell_t **call_top;
-static const cell_t *parameter_stack[PARAMETER_STACK_SIZE];
-static const cell_t **parameter_top;
-#ifdef USE_TRACE
-long trace_max_call = 0;
-long trace_max_param = 0;
+static long num_of_spare_cells;
+#ifdef USE_ANALYSIS
+static size_t size_of_memory;
+static size_t max_memory;
+static size_t num_of_malloc;
+static size_t num_of_free;
 #endif
 
 static hash_t hash_global;
 static hash_t hash_symbol;
+static hash_t hash_module;
 
 cell_t *null_cell;
 cell_t *unspecified_cell;
 cell_t *true_cell;
 cell_t *false_cell;
+cell_t *empty_vector_cell;
 cell_t *command_line;
+
+static context_t current_context;
 
 static inline cell_t *getHashParent(const list_t *p)
 {
@@ -81,11 +75,6 @@ static inline cell_t *getHashParent(const list_t *p)
 static inline cell_t *getCellsParent(const list_t *p)
 {
     return ((cell_t *) ((uintptr_t) p - offsetof(cell_t, cells)));
-}
-
-static inline long words_of_frame(const long argc)
-{
-	return (argc + 2);
 }
 
 static inline bool is_eq(const cell_t *cell1, const cell_t *cell2)
@@ -118,11 +107,6 @@ static inline bool list_is_edge(list_t *guard, list_t *p)
 	return (p == guard);
 }
 
-static inline cell_t *create_refer_local(const long offset)
-{
-	return ((cell_t *) ((offset << FIX_TAG_BITS) | CELL_REFER_LOCAL));
-}
-
 static void list_initialize(list_t *);
 static void list_insert(list_t *, list_t *);
 static void list_remove(list_t *);
@@ -136,60 +120,26 @@ static const cell_t *hash_get(hash_t *, const long, const cell_t *);
 static void hash_put(hash_t *, const long, cell_t *);
 static void hash_remove(cell_t *);
 
-static void destroy_cell(cell_t *);
+#ifdef USE_ANALYSIS
+static void show_analysis(void);
+#endif
+static const cell_t *evaluate(context_t *, const cell_t *);
 
-static const cell_t *get_value(const cell_t *, const cell_t *);
-static long get_index(const cell_t *, const cell_t *);
-
-static const cell_t *create_pair(const cell_t *, const cell_t *);
-static const cell_t *create_lambda(const cell_t *, const cell_t *);
 static cell_t *create_boolean(const bool);
 
-static const cell_t *load(token_t *);
-static const cell_t *token_parse_value(token_t *);
-static const cell_t *token_parse_list(token_t *);
-static void token_get_token(token_t *);
-static int token_getc(token_t *);
-static void token_get_until(token_t *, const char);
-static void token_get_string(token_t *, const char);
-
-static const cell_t *eval_item(const cell_t *, const cell_t *);
-static const cell_t *get_and_replace_symbol(const cell_t *, const cell_t *);
-static const cell_t *eval_list(const cell_t *, const cell_t *,
-		const bool);
-static const cell_t *eval_first(const cell_t *, const cell_t *);
-static long eval_rest(const cell_t *, const cell_t *);
-static long eval_reverse(const cell_t *, const cell_t *);
-static const cell_t *eval_and_replace(const cell_t *, const cell_t *,
-		const bool);
-static const cell_t *apply(const cell_t *);
-static void parameter_to_list(void);
-static const cell_t *create_tail(const cell_t *, const cell_t *,
-		const cell_t *);
-
-static void push_call(const cell_t *);
-static void pop_call(void);
-static void push_parameter(const cell_t *);
-static void pop_parameter(void);
-
-static void protect_cell(cell_t *);
-static void unprotect_cell(cell_t *);
-static void gc(void);
 static void gc_mark(void);
 static void gc_mark_cell(cell_t *);
 static void gc_sweep(void);
 
-static const cell_t *find_symbol_by_procedure(const cell_t *);
+static const cell_t *find_symbol_from_table(hash_t *, const cell_t *);
+#ifndef USE_REPL
 static void simple_print(FILE *, const cell_t *);
+#endif
 
 static void validate_pair(const cell_t *);
 
 static void import_core(void);
 
-static const cell_t *lib_quote(const cell_t *, const cell_t *);
-static const cell_t *lib_lambda(const cell_t *, const cell_t *);
-static const cell_t *lib_define(const cell_t *, const cell_t *);
-static const cell_t *lib_if(const cell_t *, const cell_t *);
 static const cell_t *lib_car(const long, const cell_t **);
 static const cell_t *lib_cdr(const long, const cell_t **);
 static const cell_t *lib_cons(const long, const cell_t **);
@@ -280,6 +230,7 @@ int main(int argc, char **argv)
 	list_initialize(&free_guard);
 	hash_initialize(&hash_global, hash_calc_symbol, hash_compare_global);
 	hash_initialize(&hash_symbol, hash_calc_symbol, hash_compare_symbol);
+	hash_initialize(&hash_module, hash_calc_symbol, hash_compare_global);
 
 	import_core();
 
@@ -293,16 +244,14 @@ int main(int argc, char **argv)
 	}
 
 	IMPORT_BASE();//TODO test duplicate fields in symbol and env
+	preprocess_initialize();
 	num_of_cells_on_last_gc = num_of_cells;
-#ifdef USE_TRACE
-	fprintf(stderr, "TRACE: num_of_cells=%ld\n", num_of_cells);
+#ifdef USE_ANALYSIS
+	fprintf(stderr, "ANALYSIS: num_of_cells=%ld\n", num_of_cells);
 #endif
 
-	call_top = &(call_stack[CALL_STACK_SIZE - 1]);
-	*call_top = null_cell;
-	call_stack[0] = null_cell;
-	parameter_top = &(parameter_stack[PARAMETER_STACK_SIZE - 1]);
-	*parameter_top = null_cell;
+	vm_initialize(&current_context);
+	pcompile_initialize((const void **) vm_start(NULL, NULL));
 
 	if (argc > 1) {
 		token.in = fopen(argv[1], "r");
@@ -312,19 +261,58 @@ int main(int argc, char **argv)
 		token.in = stdin;
 
 	for (;;) {
-		const cell_t *cell = load(&token);
-		protect_cell((cell_t *) cell);
-		PRINT(stdout, eval(null_cell, cell, false));
-#ifdef USE_TRACE
-		fprintf(stderr, "\nTRACE: max_call=%ld\n", trace_max_call);
-		fprintf(stderr, "TRACE: max_param=%ld\n", trace_max_param);
-		fprintf(stderr, "TRACE: num_of_cells=%ld\n", num_of_cells);
-		fprintf(stderr, "TRACE: num_of_cells_on_last_gc=%ld\n", num_of_cells_on_last_gc);
+		PRINT(stdout, evaluate(&current_context, load(&token)));
+#ifdef USE_ANALYSIS
+		show_analysis();
 #endif
-		unprotect_cell((cell_t *) cell);
 	}
 
 	return 0;
+}
+
+#ifdef USE_ANALYSIS
+static void show_analysis(void)
+{
+	fprintf(stderr, "\nANALYSIS: max_call=%ld\n", current_context.analysis_max_call);
+	fprintf(stderr, "ANALYSIS: max_param=%ld\n", current_context.analysis_max_param);
+	fprintf(stderr, "ANALYSIS: num_of_cells=%ld\n", num_of_cells);
+	fprintf(stderr, "ANALYSIS: num_of_cells_on_last_gc=%ld\n", num_of_cells_on_last_gc);
+	fprintf(stderr, "ANALYSIS: num_of_spare_cells=%ld\n", num_of_spare_cells);
+	fprintf(stderr, "ANALYSIS: max_memory=%zu\n", max_memory);
+	fprintf(stderr, "ANALYSIS: size_of_memory=%zu\n", size_of_memory);
+	fprintf(stderr, "ANALYSIS: num_of_malloc=%zu\n", num_of_malloc);
+	fprintf(stderr, "ANALYSIS: num_of_free=%zu\n", num_of_free);
+}
+#endif
+
+static const cell_t *evaluate(context_t *cc, const cell_t *cell)
+{
+#ifdef USE_REPL
+	if (!is_null(cell)) {
+		if (tag_of(cell) == CELL_SYMBOL) {
+			const cell_t *value = find_global(cell);
+			if (value)
+				return cdr(value);
+
+			value = find_module(cell);
+			if (value)
+				return cdr(value);
+
+			throw("symbol not defined", cell);
+		} else if (tag_of(cell) != CELL_PAIR)
+			return cell;
+	}
+#endif
+	//TODO is needed to protect S expression?
+		//TODO can destroy structure on pcompile?
+	const cell_t *code = pcompile(cell);
+	protect_cell((cell_t *) code);
+
+	//TODO dependent on vm
+	const cell_t *result = vm_start(cc, code);
+	unprotect_cell((cell_t *) code);
+	destroy_cell((cell_t *) code);
+	return result;
 }
 
 cell_t *create_cell(const cell_tag_e tag)
@@ -332,10 +320,12 @@ cell_t *create_cell(const cell_tag_e tag)
 	cell_t *cell;
 	list_t *p = list_head(&free_guard);
 	if (list_is_edge(&free_guard, p))
-		cell = (cell_t *) malloc(sizeof(*cell));
+		cell = (cell_t *) nmalloc(sizeof(*cell));
 	else {
 		free_guard.next = p->next;
 		cell = getCellsParent(p);
+		if (cell)
+			num_of_spare_cells--;
 	}
 
 	if (!cell)
@@ -343,7 +333,7 @@ cell_t *create_cell(const cell_tag_e tag)
 
 	cell->tag = tag;
 	cell->first = NULL;
-	cell->rest = NULL;//TODO NULL or null_cell?
+	cell->rest = NULL;
 	cell->protect_count = 0;
 	cell->hash.next = NULL;
 	cell->hash.prev = NULL;
@@ -353,18 +343,24 @@ cell_t *create_cell(const cell_tag_e tag)
 	return cell;
 }
 
-static void destroy_cell(cell_t *cell)
+void destroy_cell(cell_t *cell)
 {
 	switch (tag_of(cell)) {
 	case CELL_INTEGER:
-	case CELL_REFER_LOCAL:
+	case CELL_OPCODE:
+	case CELL_REFER_RELATIVE:
 		return;
 	case CELL_SYMBOL:
 		hash_remove(cell);
-	case CELL_STRING:
+	case CELL_CODE://TODO empty is allowed?
+	case CELL_STRING://TODO empty is allowed?
+	case CELL_BYTEVECTOR://TODO empty is allowed?
+		nfree(cell->name);
+		break;
 	case CELL_VECTOR:
-	case CELL_BYTEVECTOR:
-		free(cell->name);
+		if (cell->vector)
+			nfree(cell->vector);
+
 		break;
 	case CELL_FILE:
 		if (cell->mode) {
@@ -377,9 +373,15 @@ static void destroy_cell(cell_t *cell)
 	}
 
 	list_remove(&(cell->cells));
-	cell->cells.next = free_guard.next;
-	free_guard.next = &(cell->cells);
 	num_of_cells--;
+
+	if (num_of_spare_cells >= MAX_SPARE_CELLS) {
+		nfree(cell);
+	} else {
+		cell->cells.next = free_guard.next;
+		free_guard.next = &(cell->cells);
+		num_of_spare_cells++;
+	}
 }
 
 const cell_t *find_global(const cell_t *symbol)
@@ -396,55 +398,12 @@ cell_t *set_global(const char *name, const cell_t *value)
 	if (pair)
 		pair->rest = value;
 	else {
-		pair = (cell_t *) create_pair(key, value);
+		pair = create_refer_indirect(key, value);
+		//TODO rehash
 		hash_put(&hash_global, key->hash_key, pair);
 	}
 
-	return key;
-}
-
-static const cell_t *get_value(const cell_t *env, const cell_t *symbol)
-{//TODO combine to 'set!'
-	const cell_t **reference = find_env(env, symbol);
-	if (reference)
-		return *reference;
-
-	const cell_t *pair = find_global(symbol);
-	return (pair ? cdr(pair) : NULL);
-}
-
-const cell_t **find_env(const cell_t *env, const cell_t *symbol)
-{
-	for (const cell_t **p = parameter_top;;) {
-		for (;; p += words_of_frame(integer_value_of(p[OFFSET_ARGC]))) {
-			if (is_null(p[OFFSET_CALLEE]))
-				return NULL;
-
-			if (p[OFFSET_CALLEE] == env)
-				break;
-		}
-
-		long index = get_index(car(env->lambda), symbol);
-		if (index >= 0)
-			return &(p[index + OFFSET_ARGV]);
-
-		env = env->env;
-		if (is_null(env))
-			return NULL;
-	}
-}
-
-static long get_index(const cell_t *vars, const cell_t *symbol)
-{
-	if (vars->tag == CELL_SYMBOL) {
-		if (vars == symbol)
-			return 0;
-	} else
-		for (long index = 0; !is_null(vars); index++, vars = cdr(vars))//TODO check if list
-			if (car(vars) == symbol)
-				return index;
-
-	return (-1);
+	return pair;
 }
 
 cell_t *create_symbol(const char *name)
@@ -452,12 +411,13 @@ cell_t *create_symbol(const char *name)
 	cell_t symbol;
 	symbol.name = (char *) name;
 	symbol.hash_key = hash_symbol.calc(&symbol);
+	//TODO delete hash_symbol after precompile? (excluding repl)
 	cell_t *cell = (cell_t *) hash_get(&hash_symbol, symbol.hash_key, &symbol);
 	if (cell)
 		return cell;
 
 	cell = create_cell(CELL_SYMBOL);
-	cell->name = (char *) malloc(strlen(name) + 1);
+	cell->name = (char *) nmalloc(strlen(name) + 1);
 	if (!(cell->name))
 		throw("no memory", NULL);
 
@@ -467,7 +427,7 @@ cell_t *create_symbol(const char *name)
 	return cell;
 }
 
-static const cell_t *create_pair(const cell_t *first, const cell_t *rest)
+const cell_t *create_pair(const cell_t *first, const cell_t *rest)
 {
 	cell_t *cell = create_cell(CELL_PAIR);
 	cell->first = first;
@@ -475,10 +435,10 @@ static const cell_t *create_pair(const cell_t *first, const cell_t *rest)
 	return cell;
 }
 
-static const cell_t *create_lambda(const cell_t *env, const cell_t *lambda)
+const cell_t *create_lambda(const cell_t *env, const cell_t *code)
 {
 	cell_t *cell = create_cell(CELL_LAMBDA);
-	cell->lambda = lambda;
+	cell->code = code;
 	cell->env = env;
 	return cell;
 }
@@ -492,7 +452,8 @@ static cell_t *create_boolean(const bool boolean)
 
 cell_t *create_integer(const long integer)
 {
-	return ((cell_t *) ((integer << FIX_TAG_BITS) | CELL_INTEGER));
+	//TODO check overflow
+	return to_integer(integer);
 }
 #ifdef USE_FLONUM
 cell_t *create_flonum(const double flonum)
@@ -508,7 +469,7 @@ cell_t *create_flonum(const double flonum)
 cell_t *create_string(const char *str)
 {
 	cell_t *cell = create_cell(CELL_STRING);
-	cell->name = (char *) malloc(strlen(str) + 1);
+	cell->name = (char *) nmalloc(strlen(str) + 1);
 	if (!(cell->name))
 		throw("no memory", NULL);
 
@@ -516,514 +477,43 @@ cell_t *create_string(const char *str)
 	return cell;
 }
 
-const cell_t *cadr(const cell_t *pair)
+cell_t *create_vector(const long size)
 {
-	return car(cdr(pair));
+	if (!size)
+		return empty_vector_cell;
+
+	cell_t *cell = create_cell(CELL_VECTOR);
+	cell->vector = (const cell_t **) nmalloc(size * sizeof(cell->vector[0]));
+	if (!(cell->vector))
+		throw("no memory", NULL);
+
+	cell->length = size;
+	return cell;
 }
 
-long length(const cell_t *list)//TODO slow. use array
+cell_t *create_refer_indirect(const cell_t *key, const cell_t *value)
+{
+	cell_t *refer = create_cell(CELL_REFER_INDIRECT);
+	refer->first = key;
+	refer->rest = value;
+	return refer;
+}
+
+long list_length(const cell_t *list)
 {
 	long len = 0;
 
-	for (const cell_t *pair = list; !is_null(pair); pair = cdr(pair))
+	for (const cell_t *pair = list; !is_null(pair); pair = cdr(pair)) {
+		if (tag_of(pair) != CELL_PAIR)
+			return (-1);
+
 		len++;
+	}
 
 	return len;
 }
 
-bool is_list(const cell_t *cell)
-{
-	for (; !is_null(cell); cell = cdr(cell))
-		if (tag_of(cell) != CELL_PAIR)
-			return false;
-
-	return true;
-}
-
-static const cell_t *load(token_t *token)
-{
-	token_get_token(token);
-	return token_parse_value(token);
-}
-
-static const cell_t *token_parse_value(token_t *token)
-{
-	switch (token->type) {
-	case TOKEN_LPAREN:
-		return token_parse_list(token);
-	case TOKEN_QUOTE:
-		token_get_token(token);
-		return create_pair(create_symbol("quote"),
-				create_pair(token_parse_value(token), null_cell));
-	case TOKEN_VALUE:
-		return token->value;
-	default:
-		throw("cannot read", NULL);
-	}
-}
-
-static const cell_t *token_parse_list(token_t *token)
-{
-	token_get_token(token);
-	switch (token->type) {
-	case TOKEN_RPAREN:
-		return null_cell;
-	case TOKEN_DOT: {
-			token_get_token(token);
-			const cell_t *next = token_parse_value(token);
-			token_get_token(token);
-			if (token->type != TOKEN_RPAREN)
-				throw("bad dot", NULL);
-
-			return next;
-		}
-	default:
-		return create_pair(token_parse_value(token), token_parse_list(token));
-	}
-}
-
-static void token_get_token(token_t *token)
-{
-	int c;
-	do {
-		c = token_getc(token);
-		switch (c) {
-		case EOF:
-			exit(EXIT_SUCCESS);
-		case ';':
-			do {
-				c = token_getc(token);
-				if (c == EOF)
-					exit(EXIT_SUCCESS);
-			} while (c != LF);
-			break;
-		case '|':
-			token_get_until(token, '|');
-			token->type = TOKEN_VALUE;
-			token->value = create_symbol(token->buf);
-			return;
-		case '"':
-			token_get_string(token, '"');
-			token->type = TOKEN_VALUE;
-			token->value = create_string(token->buf);//TODO save to constant hash?
-			return;
-		default:
-			break;
-		}
-	} while (isspace(c));//TODO skip 0?
-
-	switch (c) {
-	case '(':
-		token->type = TOKEN_LPAREN;
-		break;
-	case ')':
-		token->type = TOKEN_RPAREN;
-		break;
-	case '\'':
-		token->type = TOKEN_QUOTE;
-		break;
-	default:{
-			long pos = 0;
-			token->buf[pos++] = c;//TODO use pointer
-
-			while (((c = token_getc(token)) != EOF)//TODO skip 0?
-					&& (!isspace(c))
-					&& (pos < sizeof(token->buf))//TODO realloc buf
-					&& (c != ';')//TODO use map
-					&& (c != '(')
-					&& (c != ')'))
-				token->buf[pos++] = c;
-
-			token->buf[pos] = NUL;
-			token->has_last = true;
-			token->last = c;
-			token->type = TOKEN_VALUE;
-
-			if (!strcmp(token->buf, ".")) {
-				token->type = TOKEN_DOT;
-				break;
-			}
-
-			char *end;
-			long integer = strtol(token->buf, &end, 10);
-			if (token->buf[0] && !(*end))
-				token->value = create_integer(integer);//TODO save to constant hash?
-			else {
-#ifdef USE_FLONUM
-				double flonum = strtod(token->buf, &end);
-				if (token->buf[0] && !(*end)) {
-					token->value = create_flonum(flonum);
-				} else
-#endif
-					token->value = create_symbol(token->buf);
-			}
-		}
-	}
-}
-
-static int token_getc(token_t *token)
-{
-	if (token->has_last) {
-		token->has_last = false;
-		return token->last;
-	}
-
-	int c = fgetc(token->in);
-	if (c == LF)
-		token->line++;
-
-	return c;
-}
-
-static void token_get_until(token_t *token, const char last)
-{
-	long pos = 0;
-	for (;;) {
-		int c = fgetc(token->in);
-		if (c == EOF)
-			exit(EXIT_SUCCESS);
-		else if (c == last)
-			break;
-
-		token->buf[pos++] = c;
-	}
-
-	token->buf[pos] = NUL;
-}
-
-static void token_get_string(token_t *token, const char last)
-{
-	bool escaping = false;
-	long pos = 0;
-	for (;;) {
-		int c = fgetc(token->in);
-		if (c == EOF)
-			exit(EXIT_SUCCESS);
-
-		if (escaping) {
-			escaping = false;
-			switch (c) {
-			case 'a':
-				c = 0x7;
-				break;
-			case 'b':
-				c = 0x8;
-				break;
-			case 't':
-				c = 0x9;
-				break;
-			case 'n':
-				c = 0xa;
-				break;
-			case 'r':
-				c = 0xd;
-				break;
-			default:
-				//TODO process escape *, x;
-				break;
-			}
-		} else {
-			if (c == '\\') {
-				escaping = true;
-				continue;
-			} else if (c == last)
-				break;
-		}
-
-		token->buf[pos++] = c;
-	}
-
-	token->buf[pos] = NUL;
-}
-
-const cell_t *eval(const cell_t *env, const cell_t *cell, const bool tail)
-{
-	return (is_list(cell) ?//TODO slow. if null?
-			eval_list(env, cell, tail) : eval_item(env, cell));
-}
-
-static const cell_t *eval_item(const cell_t *env, const cell_t *cell)
-{
-	long tag = tag_of(cell);
-	switch (tag) {
-	case CELL_SYMBOL: {//TODO when null?
-			const cell_t *value = get_value(env, cell);
-			if (value)
-				return value;
-			else
-				throw("symbol not found", cell);
-		}
-		break;
-	case CELL_BOOLEAN:
-	case CELL_INTEGER:
-#ifdef USE_FLONUM
-	case CELL_FLONUM:
-#endif
-	case CELL_STRING:
-	case CELL_VECTOR:
-	case CELL_BYTEVECTOR:
-	case CELL_FILE:
-		return cell;
-	case CELL_REFER_GLOBAL:
-		return cdr(car(cell));
-	case CELL_REFER_LOCAL: {
-			const cell_t **p = (const cell_t **) ((uintptr_t) parameter_top
-					+ integer_value_of(cell));
-			return *p;
-		}
-	default://TODO other types? (dot pair, null, executable)
-		break;
-	}
-
-	throw("cannot evaluate", cell);
-}
-
-static const cell_t *eval_list(const cell_t *env, const cell_t *list,
-		const bool tail)
-{
-	const cell_t *f = eval_first(env, list);
-	switch (tag_of(f)) {
-	case CELL_SYNTAX: {
-			if (!(f->inner))//TODO push to call_stack if skip in tail recursion
-				push_call(f);
-
-			const cell_t *result = f->syntax(env, cdr(list));//TODO !!recursive (rest parameters)
-			if (!(f->inner))
-				pop_call();
-
-			return result;
-		}
-	case CELL_PROCEDURE: {
-			push_call(f);
-			long argc = eval_rest(env, cdr(list));//TODO !recursive (rest parameters)
-			push_parameter(f);
-
-			const cell_t *result = f->procedure(argc, &(parameter_top[OFFSET_ARGV]));
-			pop_parameter();
-			pop_call();
-			return result;
-		}
-	case CELL_LAMBDA: {
-			if (tail)
-				for (const cell_t **p = call_top; (*p)->tag == CELL_LAMBDA; p++)
-					//TODO check if call is tail
-					if (*p == f)
-						return create_tail(env, list, f);
-
-			push_call(f);
-			protect_cell((cell_t *) f);
-
-			long argc = eval_rest(env, cdr(list));//TODO !recursive (rest parameters)
-			const cell_t *result = null_cell;
-			for (;;) {
-				result = apply(f);//TODO !!recursive (lambda execution)
-				if ((tag_of(result) != CELL_TAIL)
-						|| (result->first != f))
-					break;
-
-				const cell_t **argv = (const cell_t **) (result->rest);
-				for (int i = 0; i < argc; i++)
-					parameter_top[i + OFFSET_ARGV] = argv[i + OFFSET_ARGV];
-
-				parameter_top++;
-				unprotect_cell((cell_t *) result);
-				destroy_cell((cell_t *) result);//TODO either unprotect or destroy?
-			}
-
-			unprotect_cell((cell_t *) f);
-			pop_parameter();
-			pop_call();
-			return result;
-		}
-	default:
-		break;
-	}
-
-	throw("cannot evaluate", list);
-}
-
-static const cell_t *eval_first(const cell_t *env, const cell_t *list)
-{
-	const cell_t *in = car(list);
-	const cell_t *f = in;
-	switch (tag_of(in)) {
-	case CELL_SYMBOL:
-		f = get_and_replace_symbol(env, list);
-		break;
-	case CELL_PAIR:
-		f = eval(env, in, false);//TODO !recursive (first parameter)
-		break;
-	case CELL_REFER_GLOBAL:
-		f = cdr(car(in));
-		break;
-	case CELL_REFER_LOCAL: {
-			const cell_t **p = (const cell_t **) ((uintptr_t) parameter_top
-					+ integer_value_of(in));
-			f = *p;
-		}
-		break;
-	default://TODO return if error
-		break;
-	}
-
-	return f;
-}
-
-static const cell_t *get_and_replace_symbol(const cell_t *env, const cell_t *list)
-{
-	const cell_t *symbol = car(list);
-	const cell_t **p = find_env(env, symbol);
-	if (p) {
-		((cell_t *) list)->first = create_refer_local(
-				(uintptr_t) p - (uintptr_t) parameter_top);
-		return *p;
-	}
-
-	const cell_t *pair = find_global(symbol);
-	if (!pair)
-		throw("symbol in list not found", symbol);
-
-	cell_t *refer = create_cell(CELL_REFER_GLOBAL);
-	refer->first = pair;
-	((cell_t *) list)->first = refer;
-	return cdr(pair);
-}
-
-static long eval_rest(const cell_t *env, const cell_t *list)
-{
-	if (is_null(list)) {//TODO may be not needed
-		push_parameter(create_integer(0));
-		return 0;
-	}
-
-	protect_cell((cell_t *) list);
-	gc();
-
-	long len = eval_reverse(env, list);//TODO !recursive
-	unprotect_cell((cell_t *) list);
-	push_parameter(create_integer(len));
-	return len;
-}
-
-static long eval_reverse(const cell_t *env, const cell_t *list)
-{
-	if (is_null(list))
-		return 0;
-
-	const cell_t *arg = eval_and_replace(env, list, false);//TODO !recursive
-	protect_cell((cell_t *) arg);
-
-	long len = eval_reverse(env, cdr(list));
-	unprotect_cell((cell_t *) arg);
-	push_parameter(arg);
-	return (len + 1);
-}
-
-static const cell_t *eval_and_replace(const cell_t *env, const cell_t *list,
-		const bool tail)
-{
-	const cell_t *cell = car(list);
-	return ((tag_of(cell) == CELL_SYMBOL) ?
-			get_and_replace_symbol(env, list) : eval(env, cell, tail));//TODO !recursive
-}
-
-static const cell_t *apply(const cell_t *lambda)
-{
-	const cell_t *vars = car(lambda->lambda);
-	if (vars->tag == CELL_SYMBOL)//TODO tag_of is not used since checked in lib_lambda
-		parameter_to_list();
-	else
-		validate_length(integer_value_of(parameter_top[OFFSET_ARGC - 1]), length(vars));
-
-	push_parameter(lambda);
-
-	const cell_t *result = null_cell;
-	for (const cell_t *p = cdr(lambda->lambda); !is_null(p); p = cdr(p))
-		result = eval(lambda, car(p), is_null(cdr(p)));//TODO !recursive (only syntax modify env and tail)
-
-	return result;
-}
-
-static void parameter_to_list(void)
-{
-	long len = integer_value_of(parameter_top[OFFSET_ARGC - 1]);
-	if (len) {
-		const cell_t *head = create_pair(parameter_top[OFFSET_ARGV - 1], null_cell);
-		cell_t *y = (cell_t *) head;
-		for (int i = 1; i < len; i++) {
-			y->rest = create_pair(parameter_top[i + OFFSET_ARGV - 1], null_cell);
-			y = (cell_t *) (y->rest);
-		}
-
-		parameter_top += len;
-		parameter_top[OFFSET_ARGC - 1] = head;
-	} else
-		parameter_top[OFFSET_ARGC - 1] = null_cell;
-
-	push_parameter(create_integer(1));
-}
-
-static const cell_t *create_tail(const cell_t *env, const cell_t *list,
-		const cell_t *f)
-{
-	cell_t *result = create_cell(CELL_TAIL);
-	protect_cell(result);//TODO save to global? unless multi threading
-	eval_rest(env, cdr(list));//TODO !recursive (rest parameters)
-	push_parameter(f);
-	result->first = f;
-	result->rest = (const cell_t *) parameter_top;
-	pop_parameter();
-	return result;
-}
-
-static void push_call(const cell_t *f)
-{
-	call_top--;
-	if (*call_top == null_cell)//TODO slow
-		throw("call stack overflow", f);
-#ifdef USE_TRACE
-	long depth = ((uintptr_t) &(call_stack[CALL_STACK_SIZE - 1])
-					- (uintptr_t) call_top)
-			/ sizeof(uintptr_t);
-	if (depth > trace_max_call)
-		trace_max_call = depth;
-#endif
-	*call_top = f;
-}
-
-static void pop_call(void)
-{
-	if (*call_top == null_cell)//TODO slow
-		throw("call stack underflow", null_cell);
-
-	call_top++;
-}
-
-static void push_parameter(const cell_t *cell)
-{
-	if ((uintptr_t) parameter_top <= (uintptr_t) parameter_stack)//TODO slow
-		throw("param stack overflow", cell);
-
-	parameter_top--;
-#ifdef USE_TRACE
-	long depth = ((uintptr_t) &(parameter_stack[PARAMETER_STACK_SIZE - 1])
-					- (uintptr_t) parameter_top)
-			/ sizeof(uintptr_t);
-	if (depth > trace_max_param)
-		trace_max_param = depth;
-#endif
-	*parameter_top = cell;
-}
-
-static void pop_parameter(void)
-{
-	if ((uintptr_t) parameter_top >= (uintptr_t) &(parameter_stack[PARAMETER_STACK_SIZE - 1]))//TODO slow
-		throw("param stack underflow", null_cell);
-
-	parameter_top += words_of_frame(integer_value_of(parameter_top[OFFSET_ARGC]));
-}
-
-static void protect_cell(cell_t *cell)
+void protect_cell(cell_t *cell)
 {
 	if (get_fix_tag(cell))
 		return;
@@ -1033,22 +523,22 @@ static void protect_cell(cell_t *cell)
 		list_insert(&protect_guard, &(cell->cells));
 	}
 
-	cell->protect_count++;
+	cell->protect_count++;//TODO check overflow
 }
 
-static void unprotect_cell(cell_t *cell)
+void unprotect_cell(cell_t *cell)
 {
 	if (get_fix_tag(cell))
 		return;
 
-	cell->protect_count--;
+	cell->protect_count--;//TODO check underflow
 	if (!(cell->protect_count)) {
 		list_remove(&(cell->cells));
 		list_insert(&cells_guard, &(cell->cells));
 	}
 }
 
-static void gc(void)
+void gc(void)
 {
 	if (num_of_cells - num_of_cells_on_last_gc >= GC_THRESHOLD) {
 		GC_MESSAGE(stderr, "enter GC cells=%ld\n", num_of_cells);
@@ -1061,6 +551,12 @@ static void gc(void)
 
 static void gc_mark(void)
 {
+	for (long i = 0; i < HASH_SIZE; i++) {//TODO extract common logic
+		list_t *guard = &(hash_module.table[i]);
+		for (list_t *p = list_head(guard); !list_is_edge(guard, p); p = p->next)
+			gc_mark_cell((cell_t *) getHashParent(p));
+	}
+
 	for (long i = 0; i < HASH_SIZE; i++) {
 		list_t *guard = &(hash_global.table[i]);
 		for (list_t *p = list_head(guard); !list_is_edge(guard, p); p = p->next)
@@ -1071,8 +567,11 @@ static void gc_mark(void)
 			p = p->next)
 		gc_mark_cell(getCellsParent(p));
 
-	for (const cell_t **p = parameter_top; !is_null(p[OFFSET_CALLEE]);) {//TODO really?
-		//gc_mark_cell(p[0]);//TODO lambda is marked befor 'apply'
+	gc_mark_cell((cell_t *) (current_context.d1));
+
+	//TODO can guard on interrupt (may push null)?
+	for (const cell_t **p = current_context.sp; !is_null(p[OFFSET_CALLEE]);) {//TODO really?
+		gc_mark_cell((cell_t *) (p[OFFSET_CALLEE]));
 
 		long len = integer_value_of(p[OFFSET_ARGC]);
 		for (long i = 0; i < len; i++)
@@ -1091,10 +590,15 @@ static void gc_mark_cell(cell_t *cell)
 	set_using(cell);
 
 	switch (tag) {
-	case CELL_PAIR:
+	case CELL_REFER_INDIRECT:
 	case CELL_LAMBDA:
+	case CELL_PAIR:
 		gc_mark_cell((cell_t *) car(cell));
 		gc_mark_cell((cell_t *) cdr(cell));
+		break;
+	case CELL_CODE://TODO skip children of closure/indirect
+		for (long i = 0; i < OFFSET_OPCODE; i++)
+			gc_mark_cell((cell_t *) (cell->vector[i]));
 		break;
 	case CELL_VECTOR:
 		for (long i = 0; i < cell->length; i++)
@@ -1141,19 +645,34 @@ _Noreturn void throw(const char *message,
 #endif
 		fputc('\n', stderr);
 
-	for (const cell_t **p = call_top; !is_null(*p); p++) {
-		const cell_t *symbol = find_symbol_by_procedure(*p);
+	for (const cell_t **p = current_context.sp; !is_null(p[OFFSET_CALLEE]);
+			p += words_of_frame(integer_value_of(p[OFFSET_ARGC]))) {
+		const cell_t *symbol = (tag_of(p[OFFSET_CALLEE]) == CELL_PROCEDURE) ?
+				find_symbol_by_procedure(p[OFFSET_CALLEE]) : NULL;
 		fputs(" at ", stderr);
-		simple_print(stderr, symbol ? symbol : *p);
+#ifdef USE_REPL
+		print(stderr, symbol ? symbol : p[OFFSET_CALLEE]);
+#else
+		simple_print(stderr, symbol ? symbol : p[OFFSET_CALLEE]);
+#endif
 	}
 
 	exit(EXIT_FAILURE);
 }
 
-static const cell_t *find_symbol_by_procedure(const cell_t *f)
+const cell_t *find_symbol_by_procedure(const cell_t *f)
+{
+	const cell_t *symbol = find_symbol_from_table(&hash_module, f);
+	if (!symbol)
+		symbol = find_symbol_from_table(&hash_global, f);
+
+	return symbol;
+}
+
+static const cell_t *find_symbol_from_table(hash_t *hash, const cell_t *f)
 {
 	for (long i = 0; i < HASH_SIZE; i++) {
-		list_t *guard = &(hash_global.table[i]);
+		list_t *guard = &(hash->table[i]);
 		for (list_t *p = list_head(guard); !list_is_edge(guard, p);
 				p = p->next) {
 			cell_t *cell = getHashParent(p);
@@ -1165,6 +684,7 @@ static const cell_t *find_symbol_by_procedure(const cell_t *f)
 	return NULL;
 }
 
+#ifndef USE_REPL
 static void simple_print(FILE *out, const cell_t *cell)
 {//TODO unify printf (repl.c)
 	long tag = tag_of(cell);
@@ -1180,25 +700,43 @@ static void simple_print(FILE *out, const cell_t *cell)
 		fprintf(out, "%f\n", cell->flonum);
 		break;
 #endif
-	case CELL_LAMBDA:
-		fputs("<lambda (", out);
+	case CELL_LAMBDA://TODO redefine
+		fputs("<lambda ", out);
 		{
-			const cell_t *head = car(car(cell));
-			if (is_list(head))
-				for (const cell_t *p = head; !is_null(p); p = cdr(p)) {
-					if (p != head)
-						fputs(", ", out);
+			const cell_t *head = cell->code->vector[OFFSET_VARS];
+			switch (tag_of(head)) {
+			case CELL_SYMBOL:
+				fprintf(out, "%s", head->name);
+				break;
+			case CELL_VECTOR:
+				fputc('(', out);
+				for (long i = 0; i < head->length; i++) {
+					if (i)
+						fputs(" ", out);
 
-					fprintf(out, "%s", car(p)->name);
+					fprintf(out, "%s", head->vector[i]->name);
 				}
+				fputc(')', out);
+				break;
+			default:
+				break;
+			}
 		}
-		fputs(")>\n", out);
+		fputs(">\n", out);
+		break;
+	case CELL_CODE:
+		//TODO show variables? like display
+		fprintf(out, "<code %p>\n", cell);
+		break;
+	case CELL_REFER_RELATIVE:
+		fprintf(out, "<relative %ld>\n", integer_value_of(cell));
 		break;
 	default:
 		fprintf(out, "<%ld:%p>\n", tag, cell->first);
 		break;
 	}
 }
+#endif
 
 void validate_symbol(const cell_t *arg)
 {
@@ -1221,25 +759,53 @@ void validate_length(const long argc, const long n)
 	}
 }
 
+const cell_t *find_module(const cell_t *symbol)
+{
+	cell_t pair;
+	pair.first = symbol;
+	return hash_get(&hash_module, symbol->hash_key, &pair);
+}
+
+cell_t *set_module(const char *name, const cell_t *value)
+{
+	cell_t *key = create_symbol(name);
+	cell_t *pair = (cell_t *) find_module(key);
+	if (pair)
+		pair->rest = value;
+	else {
+		pair = create_refer_indirect(key, value);
+		hash_put(&hash_module, key->hash_key, pair);
+	}
+
+	return key;
+}
+
 static void import_core(void)//TODO forbid overwriting module
 {
 	null_cell = create_symbol("()");
-	set_global("null", null_cell);
+	set_module("null", null_cell);
 	unspecified_cell = create_string("");
-	set_global("#<unspecified>", unspecified_cell);//TODO is needed to protect as symbol?
+	set_module("#<unspecified>", unspecified_cell);//TODO is needed to protect as symbol?
+	empty_vector_cell = create_cell(CELL_VECTOR);
+	set_module("#()", empty_vector_cell);
 
 	true_cell = create_boolean(true);
-	set_global("#t", true_cell);
-	set_global("#true", true_cell);
+	set_module("#t", true_cell);
+	set_module("#true", true_cell);
 	false_cell = create_boolean(false);
-	set_global("#f", false_cell);
-	set_global("#false", false_cell);
+	set_module("#f", false_cell);
+	set_module("#false", false_cell);
 
-	bind_syntax("quote", lib_quote, false);
-	bind_syntax("lambda", lib_lambda, false);
-	bind_syntax("define", lib_define, false);
-	bind_syntax("if", lib_if, true);
+	//TODO useless, but needed in pcompile
+	bind_syntax("quote", lib_quote);
+	bind_syntax("lambda", lib_lambda);
+	bind_syntax("if", lib_if);
 
+	bind_syntax("define", lib_define);
+	bind_syntax("set!", lib_set);
+
+	//TODO move to base.c
+	bind_procedure("import", lib_import);
 	bind_procedure("car", lib_car);
 	bind_procedure("cdr", lib_cdr);
 	bind_procedure("cons", lib_cons);
@@ -1248,13 +814,12 @@ static void import_core(void)//TODO forbid overwriting module
 }
 
 void bind_syntax(char *name,
-		const cell_t *(*syntax) (const cell_t *, const cell_t *),
-		const bool inner)
+		const cell_t *(*syntax) (const long, const cell_t **))
 {
-	cell_t *cell = create_cell(CELL_SYNTAX);
-	cell->syntax = syntax;
-	cell->inner = inner;
-	set_global(name, cell);
+	cell_t *cell = create_cell(CELL_PROCEDURE);
+	cell->procedure = syntax;
+	cell->syntax = true;
+	set_module(name, cell);
 }
 
 void bind_procedure(char *name,
@@ -1262,49 +827,83 @@ void bind_procedure(char *name,
 {
 	cell_t *cell = create_cell(CELL_PROCEDURE);
 	cell->procedure = procedure;
-	set_global(name, cell);
+	set_module(name, cell);
 }
 
-static const cell_t *lib_quote(const cell_t *env, const cell_t *args)
+const cell_t *lib_quote(const long argc, const cell_t **argv)
 {
-	validate_length(length(args), 1);
-
-	return car(args);
+	throw("is syntax", null_cell);
 }
 
-static const cell_t *lib_lambda(const cell_t *env, const cell_t *args)
+const cell_t *lib_lambda(const long argc, const cell_t **argv)
 {
-	long argc = length(args);
-	if (argc < 2) {
-		char buf[256];//TODO ugly
-		sprintf(buf, "requires %ld argument, but %ld", (long) 2, argc);
-		throw(buf, args);
+	throw("is syntax", null_cell);
+}
+
+const cell_t *lib_if(const long argc, const cell_t **argv)
+{
+	throw("is syntax", null_cell);
+}
+//TODO move to interpret?
+const cell_t *lib_define(const long argc, const cell_t **argv)
+{
+#ifdef CHECK_SYNTAX_ON_EXECUTING
+	validate_length(argc, 2);//TODO support syntax sugar
+	//validate_symbol(argv[0]);//TODO create pair before define (for recursion). create lambda in local
+	//TODO error when there is the symbol in modules
+#endif
+	const cell_t *cell = argv[0];
+	switch (tag_of(cell)) {
+	case CELL_REFER_INDIRECT: {
+			cell_t *pair = (cell_t *) cell;
+			pair->rest = argv[1];
+		}
+		break;
+	default:
+		throw("not found", cell);
 	}
 
-	if ((tag_of(car(args)) != CELL_SYMBOL)
-			&& !is_list(car(args)))//TODO allow variable list
-		throw("not symbol and list", car(args));
-
-	return create_lambda(env, args);
+	return unspecified_cell;
 }
-
-static const cell_t *lib_define(const cell_t *env, const cell_t *args)
+//TODO move to interpret? referring context
+const cell_t *lib_set(const long argc, const cell_t **argv)
 {
-	validate_length(length(args), 2);//TODO support syntax sugar
+#ifdef CHECK_SYNTAX_ON_EXECUTING
+	validate_length(argc, 2);
+#endif
+	const cell_t *cell = argv[0];
+	switch (tag_of(cell)) {
+	case CELL_INTEGER: {
+			long offset = integer_value_of(cell);
+			uintptr_t base = (uintptr_t) ((offset & RELATIVE_MASK) ?
+					(current_context.ep) : (current_context.sp));
+			const cell_t **p = (const cell_t **) base;
+			p = &(p[offset >> RELATIVE_BITS]);
+			if (tag_of(*p) == CELL_REFER_INDIRECT)
+				((cell_t *) *p)->rest = argv[1];
+			else
+				*p = argv[1];
+		}
+		break;
+	case CELL_REFER_INDIRECT: {
+			cell_t *pair = (cell_t *) cell;
+			if (pair->rest == unspecified_cell)
+				throw("not found", pair->first);
 
-	const cell_t *arg1 = car(args);
-	validate_symbol(arg1);//TODO create pair before define (for recursion). create lambda in local
+			pair->rest = argv[1];
+		}
+		break;
+	default:
+		throw("not found", cell);
+	}
 
-	set_global(arg1->name, eval(env, cadr(args), false));
 	return unspecified_cell;
 }
 
-static const cell_t *lib_if(const cell_t *env, const cell_t *args)
+const cell_t *lib_import(const long argc, const cell_t **argv)
 {
-	validate_length(length(args), 3);//TODO allow 2 parameters?
-
-	return ((eval_and_replace(env, args, false) == false_cell) ?
-			eval_and_replace(env, cdr(cdr(args)), true) : eval_and_replace(env, cdr(args), true));
+	//TODO define operation
+	throw("nop", null_cell);
 }
 
 static const cell_t *lib_car(const long argc, const cell_t **argv)
@@ -1343,3 +942,41 @@ static const cell_t *lib_is_pair(const long argc, const cell_t **argv)
 
 	return ((tag_of(argv[0]) == CELL_PAIR) ? true_cell : false_cell);
 }
+
+#ifdef USE_ANALYSIS
+void *nmalloc(size_t size) {
+	void *ptr = malloc(size);
+#ifdef USE_ANALYSIS
+	size_of_memory += MALLOC_SIZE(ptr);
+	if (size_of_memory > max_memory)
+		max_memory = size_of_memory;
+
+	num_of_malloc++;
+#endif
+	return ptr;
+}
+
+void nfree(void *ptr) {
+#ifdef USE_ANALYSIS
+	size_of_memory -= MALLOC_SIZE(ptr);
+	num_of_free++;
+#endif
+	free(ptr);
+}
+
+void *nrealloc(void *ptr, size_t size) {
+#ifdef USE_ANALYSIS
+	size_of_memory -= MALLOC_SIZE(ptr);
+	num_of_free++;
+#endif
+	ptr = realloc(ptr, size);
+#ifdef USE_ANALYSIS
+	size_of_memory += MALLOC_SIZE(ptr);
+	if (size_of_memory > max_memory)
+		max_memory = size_of_memory;
+
+	num_of_malloc++;
+#endif
+	return ptr;
+}
+#endif

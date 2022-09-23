@@ -5,6 +5,7 @@
 #include <time.h>
 #include <unistd.h>
 #include "nscm.h"
+#include "vm.h"
 #ifdef USE_FLONUM
 #include <math.h>
 #endif
@@ -17,7 +18,6 @@
 
 static cell_t *eof_object;
 
-static cell_t *create_vector(const long);
 static cell_t *create_bytevector(const long);
 static cell_t *create_file(const long, const int);
 #if 0
@@ -32,32 +32,23 @@ static void validate_string(const cell_t *);
 static void validate_vector(const cell_t *);
 static void validate_bytevector(const cell_t *);
 static void validate_file(const cell_t *);
-
-static const cell_t *lib_set(const cell_t *, const cell_t *);
-static const cell_t *lib_begin(const cell_t *, const cell_t *);
-static const cell_t *lib_and(const cell_t *, const cell_t *);
-static const cell_t *lib_or(const cell_t *, const cell_t *);
 #if 0
 static const cell_t *lib_is_eqv(const long, const cell_t **);
 static const cell_t *lib_is_list(const long, const cell_t **);
 #endif
 static const cell_t *lib_not(const long, const cell_t **);
-static const cell_t *lib_add(const long, const cell_t **);
 #ifdef USE_FLONUM
 static const cell_t *flonum_add(const long, const cell_t **,
 		const double, const long);
 #endif
-static const cell_t *lib_subtract(const long, const cell_t **);
 #ifdef USE_FLONUM
 static const cell_t *flonum_subtract(const long, const cell_t **,
 		const double, const long);
 #endif
-static const cell_t *lib_multiply(const long, const cell_t **);//TODO unused
 #ifdef USE_FLONUM
 static const cell_t *flonum_multiply(const long, const cell_t **,
 		const double, const long);
 #endif
-static const cell_t *lib_divide(const long, const cell_t **);//TODO unused
 #ifdef USE_FLONUM
 static const cell_t *flonum_divide(const long, const cell_t **,
 		const double, const long);
@@ -91,6 +82,7 @@ static const cell_t *lib_command_line(const long, const cell_t **);
 static _Noreturn const cell_t *lib_exit(const long, const cell_t **);
 #endif
 static const cell_t *lib_random_integer(const long, const cell_t **);
+static int combine_random(void);
 static const cell_t *lib_abs(const long, const cell_t **);
 #ifdef USE_FLONUM
 static double integer_to_flonum(const cell_t *);
@@ -106,24 +98,11 @@ static const cell_t *lib_sqrt(const long, const cell_t **);
 #endif
 static const cell_t *lib_open_file(const long, const cell_t **);
 
-static cell_t *create_vector(const long size)
-{
-	cell_t *cell = create_cell(CELL_VECTOR);
-	cell->vector = (const cell_t **) malloc(size * sizeof(cell->vector[0]));
-	if (!(cell->vector))
-		throw("no memory", NULL);
-
-	cell->length = size;
-	for (long i = 0; i < size; i++)
-		cell->vector[i] = null_cell;
-
-	return cell;
-}
 
 static cell_t *create_bytevector(const long size)
 {
 	cell_t *cell = create_cell(CELL_BYTEVECTOR);
-	cell->bytevector = (uint8_t *) malloc(size * sizeof(cell->bytevector[0]));
+	cell->bytevector = (uint8_t *) nmalloc(size * sizeof(cell->bytevector[0]));
 	if (!(cell->vector))
 		throw("no memory", NULL);
 
@@ -195,10 +174,11 @@ static void validate_file(const cell_t *arg)
 
 void import_base(void)
 {
-	bind_syntax("set!", lib_set, false);
-	bind_syntax("begin", lib_begin, true);
-	bind_syntax("and", lib_and, true);
-	bind_syntax("or", lib_or, true);
+#if 0
+	bind_syntax("begin", lib_begin);
+	bind_syntax("and", lib_and);
+	bind_syntax("or", lib_or);
+#endif
 #if 0
 	bind_procedure("eqv?", lib_is_eqv);
 	bind_procedure("list?", lib_is_list);
@@ -229,7 +209,7 @@ void import_base(void)
 	bind_procedure("close-port", lib_close_port);
 	bind_procedure("read-line", lib_read_line);
 	eof_object = create_symbol("");
-	set_global("#eof", eof_object);
+	set_module("#eof", eof_object);
 	bind_procedure("eof-object?", lib_is_eof_object);
 	bind_procedure("read-bytevector!", lib_read_bytevector);
 	bind_procedure("write-string", lib_write_string);
@@ -252,71 +232,16 @@ void import_base(void)
 	bind_procedure("atan", lib_atan);//TODO not tiny
 	bind_procedure("sqrt", lib_sqrt);//TODO not tiny
 #endif
-	set_global("binary-input", create_integer(PORT_INPUT));
-	set_global("textual-input", create_integer(PORT_TEXT | PORT_INPUT));
-	set_global("binary-output", create_integer(PORT_OUTPUT));
-	set_global("textual-output", create_integer(PORT_TEXT | PORT_OUTPUT));
-	set_global("binary-input/output", create_integer(PORT_INPUT | PORT_OUTPUT));
-	set_global("open/append", create_integer(O_APPEND));
-	set_global("open/create", create_integer(O_CREAT));
-	set_global("open/truncate", create_integer(O_TRUNC));
+	set_module("binary-input", create_integer(PORT_INPUT));
+	set_module("textual-input", create_integer(PORT_TEXT | PORT_INPUT));
+	set_module("binary-output", create_integer(PORT_OUTPUT));
+	set_module("textual-output", create_integer(PORT_TEXT | PORT_OUTPUT));
+	set_module("binary-input/output", create_integer(PORT_INPUT | PORT_OUTPUT));
+	set_module("open/append", create_integer(O_APPEND));
+	set_module("open/create", create_integer(O_CREAT));
+	set_module("open/truncate", create_integer(O_TRUNC));
 	bind_procedure("open-file", lib_open_file);
 }
-
-static const cell_t *lib_set(const cell_t *env, const cell_t *args)
-{
-	validate_length(length(args), 2);
-
-	const cell_t *symbol = car(args);
-	validate_symbol(symbol);//TODO replace to CELL_REFER. but slow in interpreter
-
-	const cell_t **reference = find_env(env, symbol);
-	if (reference)
-		*reference = eval(env, cadr(args), false);//TODO replace to CELL_REFER. but slow in interpreter
-	else {
-		cell_t *pair = (cell_t *) find_global(symbol);
-		if (!pair)
-			throw("not found", symbol);
-
-		pair->rest = eval(env, cadr(args), false);//TODO replace to CELL_REFER. but slow in interpreter
-	}
-
-	return unspecified_cell;
-}
-
-static const cell_t *lib_begin(const cell_t *env, const cell_t *args)
-{
-	const cell_t *result = null_cell;//TODO really?
-	for (; !is_null(args); args = cdr(args))//TODO check if args >= 1
-		result = eval(env, car(args), is_null(cdr(args)));
-
-	return result;
-}
-
-static const cell_t *lib_and(const cell_t *env, const cell_t *args)
-{
-	const cell_t *result = true_cell;
-	for (; !is_null(args); args = cdr(args)) {
-		result = eval(env, car(args), is_null(cdr(args)));
-		if (result == false_cell)
-			break;
-	}
-
-	return result;
-}
-
-static const cell_t *lib_or(const cell_t *env, const cell_t *args)
-{
-	const cell_t *result = false_cell;
-	for (; !is_null(args); args = cdr(args)) {
-		result = eval(env, car(args), is_null(cdr(args)));
-		if (result != false_cell)
-			break;
-	}
-
-	return result;
-}
-
 #if 0
 static const cell_t *lib_is_eqv(const long argc, const cell_t **argv)
 {
@@ -339,7 +264,7 @@ static const cell_t *lib_not(const long argc, const cell_t **argv)
 	return ((argv[0] == false_cell) ? true_cell : false_cell);
 }
 
-static const cell_t *lib_add(const long argc, const cell_t **argv)
+const cell_t *lib_add(const long argc, const cell_t **argv)
 {
 	long result = 0;
 	for (long i = 0; i < argc; i++) {//TODO check if args >= 1
@@ -383,7 +308,7 @@ static const cell_t *flonum_add(const long argc, const cell_t **argv,
 	return create_flonum(result);
 }
 #endif
-static const cell_t *lib_subtract(const long argc, const cell_t **argv)
+const cell_t *lib_subtract(const long argc, const cell_t **argv)
 {
 	const cell_t *cell = argv[0];
 	if (argc == 1) {//TODO check if args >= 1
@@ -445,7 +370,7 @@ static const cell_t *flonum_subtract(const long argc, const cell_t **argv,
 	return create_flonum(result);
 }
 #endif
-static const cell_t *lib_multiply(const long argc, const cell_t **argv)
+const cell_t *lib_multiply(const long argc, const cell_t **argv)
 {
 	const cell_t *cell = argv[0];
 #ifdef USE_FLONUM
@@ -494,7 +419,7 @@ static const cell_t *flonum_multiply(const long argc, const cell_t **argv,
 	return create_flonum(result);
 }
 #endif
-static const cell_t *lib_divide(const long argc, const cell_t **argv)
+const cell_t *lib_divide(const long argc, const cell_t **argv)
 {
 	const cell_t *cell = argv[0];
 	if (argc == 1) {//TODO check if args >= 1
@@ -855,14 +780,14 @@ static const cell_t *lib_string_copy(const long argc, const cell_t **argv)
 		throw("invalid end", end);
 
 	size_t size = integer_value_of(end) - integer_value_of(start);
-	char *buf = (char *) malloc(size + 1);
+	char *buf = (char *) nmalloc(size + 1);
 	if (!buf)
 		throw("no memory", NULL);
 
 	memcpy(buf, (void *) ((uintptr_t) (str->name) + integer_value_of(start)), size);
 	buf[size] = NUL;
 	const cell_t *cell = create_string(buf);
-	free(buf);
+	nfree(buf);
 	return cell;
 }
 
@@ -870,11 +795,14 @@ static const cell_t *lib_make_vector(const long argc, const cell_t **argv)
 {
 	//TODO support fill
 	validate_length(argc, 1);
+	validate_integer(argv[0]);
 
-	const cell_t *size = argv[0];
-	validate_integer(size);
+	long len = integer_value_of(argv[0]);
+	const cell_t *cell = create_vector(len);
+	for (long i = 0; i < len; i++)
+		cell->vector[i] = null_cell;
 
-	return create_vector(integer_value_of(size));
+	return cell;
 }
 
 static const cell_t *lib_vector_ref(const long argc, const cell_t **argv)
@@ -998,7 +926,7 @@ static const cell_t *lib_read_line(const long argc, const cell_t **argv)
 	}
 
 	size_t size = 32;//TODO define constant
-	char *buf = (char *) malloc(size);
+	char *buf = (char *) nmalloc(size);
 	if (!buf)
 		throw("no memory", NULL);
 
@@ -1009,7 +937,7 @@ static const cell_t *lib_read_line(const long argc, const cell_t **argv)
 			if (pos)
 				break;
 			else {
-				free(buf);
+				nfree(buf);
 				return eof_object;
 			}
 		}
@@ -1022,19 +950,19 @@ static const cell_t *lib_read_line(const long argc, const cell_t **argv)
 		buf[pos++] = c & 0xff;
 		if (pos >= size) {
 			size <<= 2;
-			char *next_buf = (char *) malloc(size);
+			char *next_buf = (char *) nmalloc(size);
 			if (!next_buf)
 				throw("no memory", NULL);
 
 			memcpy(next_buf, buf, pos);
-			free(buf);
+			nfree(buf);
 			buf = next_buf;
 		}
 	}
 
 	buf[pos] = NUL;
 	const cell_t *cell = create_string(buf);
-	free(buf);
+	nfree(buf);
 	return cell;
 }
 
@@ -1171,18 +1099,23 @@ static const cell_t *lib_random_integer(const long argc, const cell_t **argv)
 
 	int n1;
 	if (INT_MAX < n2)//TODO is error? use another generator
-		n1 = rand();
+		n1 = combine_random();
 	else {
 		int max = (INT_MAX / n2) * n2;
 		if ((INT_MAX - max) == (n2 - 1))
-			n1 = rand();
+			n1 = combine_random();
 		else
 			do {
-				n1 = rand();
+				n1 = combine_random();
 			} while (max <= n1);
 	}
 
 	return create_integer(n1 % n2);
+}
+
+static int combine_random(void)
+{
+	return ((rand() & 0xffff0000) | ((rand() >> 15) & 0xffff));
 }
 
 static const cell_t *lib_abs(const long argc, const cell_t **argv)
