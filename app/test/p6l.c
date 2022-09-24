@@ -31,18 +31,21 @@ For more information, please refer to <http://unlicense.org/>
 #include <unistd.h>
 #include <fs/protocol.h>
 
-#define BUF_SIZE (341 * 3)
+#define DRAW_METHOD_SIZE (sizeof(int))
+#define DRAW_PUT (1)
+
+#define BUF_SIZE (DRAW_METHOD_SIZE + (340 * 3))
 
 static unsigned char buf[BUF_SIZE];
 
-static void swap(const size_t);
+static void to_bgr(const size_t);
 static int putline(const unsigned int, const size_t, unsigned char *);
 static int process(const int);
 
 
-static void swap(const size_t size)
+static void to_bgr(const size_t size)
 {
-	unsigned char *p = buf;
+	unsigned char *p = &buf[DRAW_METHOD_SIZE];
 	for (size_t i = size / 3; i > 0; i--) {
 		unsigned char c = p[0];
 
@@ -61,7 +64,7 @@ static int putline(const unsigned int start, const size_t size,
 	message.Twrite.fid = 4;
 	message.Twrite.offset = start;
 	message.Twrite.count = size;
-	swap(size);
+	to_bgr(size - DRAW_METHOD_SIZE);
 	message.Twrite.data = (char *) buf;
 
 	int err = ipc_call(PORT_CONSOLE, &message, MESSAGE_SIZE(Twrite));
@@ -150,13 +153,17 @@ static int process(const int fd)
 		return (-2);
 	}
 
+	size_t max = sizeof(buf) - DRAW_METHOD_SIZE;
+	unsigned char *data = &(buf[DRAW_METHOD_SIZE]);
+	int *method = (int *) buf;
+	*method = DRAW_PUT;
+
 	unsigned int pos = 0;
 	for (size_t i = 0; i < height; i++) {
 		size_t rest = width * 3;
 		unsigned int j = 0;
-
-		while (rest > sizeof(buf)) {
-			if (read(fd, buf, sizeof(buf)) != sizeof(buf)) {
+		while (rest > max) {
+			if (read(fd, data, max) != max) {
 				printf("read err[block]\n");
 				return (-1);
 			}
@@ -164,17 +171,18 @@ static int process(const int fd)
 			if (putline(pos + j, sizeof(buf), buf) < 0)
 				return (-3);
 
-			j += sizeof(buf);
-			rest -= sizeof(buf);
+			j += max;
+			rest -= max;
 		}
 
 		if (rest) {
-			if (read(fd, buf, rest) != rest) {
+			if (read(fd, data, rest) != rest) {
 				printf("read err[rest]\n");
 				return (-1);
 			}
 
-			if (putline(pos + j, rest, buf) < 0)
+			if (putline(pos + j, DRAW_METHOD_SIZE + rest, buf)
+					< 0)
 				return (-3);
 		}
 

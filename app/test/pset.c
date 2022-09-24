@@ -31,6 +31,9 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdio.h>
 #include <fs/protocol.h>
 
+#define DRAW_METHOD_SIZE (sizeof(int))
+#define DRAW_PSET (2)
+
 #define SPLIT (360)
 
 typedef struct {
@@ -53,18 +56,22 @@ static int pset(const unsigned int x, const unsigned int y, const int color)
 	if (y >= height)
 		return EINVAL;
 
-	point_t buf;
-	buf.x = x;
-	buf.y = y;
-	buf.color = color;
+	char buf[DRAW_METHOD_SIZE + sizeof(point_t)];
+	int *method = (int *) buf;
+	*method = DRAW_PSET;
+
+	point_t *point = (point_t *) &(buf[DRAW_METHOD_SIZE]);
+	point->x = x;
+	point->y = y;
+	point->color = color;
 
 	fsmsg_t message;
 	message.header.ident = IDENT;
 	message.header.type = Twrite;
-	message.Twrite.fid = 5;
+	message.Twrite.fid = 4;
 	message.Twrite.offset = 0;
 	message.Twrite.count = sizeof(buf);
-	message.Twrite.data = (char *) &buf;
+	message.Twrite.data = buf;
 
 	int err = ipc_call(PORT_CONSOLE, &message, MESSAGE_SIZE(Twrite));
 	if (err < 0)

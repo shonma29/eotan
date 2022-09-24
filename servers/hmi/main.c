@@ -78,6 +78,10 @@ Frame *screen;
 static Screen screen0;
 static Screen screen2;
 static Screen screen7;
+
+#define DRAW_METHOD_SIZE (sizeof(int))
+#define DRAW_PUT (1)
+#define DRAW_PSET (2)
 #else
 static Screen *screen0;
 #endif
@@ -219,23 +223,28 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 		break;
 #ifdef USE_VESA
 	case 4:
-		mouse_hide();
-		put(screen, start, size, (uint8_t *) inbuf);
-		mouse_show();
-		break;
-	case 5:
-		if (size != sizeof(int) * 3)
+		if (size < DRAW_METHOD_SIZE)
 			return E_PAR;
-		else {
+
+		int *method = (int *) inbuf;
+		if (*method == DRAW_PUT) {
 			mouse_hide();
-			unsigned int x = ((int *) inbuf)[0];
-			unsigned int y = ((int *) inbuf)[1];
-			int color = ((int *) inbuf)[2];
+			put(screen, start, size - DRAW_METHOD_SIZE,
+					(uint8_t *) &(inbuf[DRAW_METHOD_SIZE]));
+			mouse_show();
+		} else if (*method == DRAW_PSET) {
+			if (size != DRAW_METHOD_SIZE + sizeof(int) * 3)
+				return E_PAR;
+
+			mouse_hide();
+			unsigned int x = ((int *) inbuf)[1 + 0];
+			unsigned int y = ((int *) inbuf)[1 + 1];
+			int color = ((int *) inbuf)[1 + 2];
 			pset(screen, x, y, color);
 			mouse_show();
-		}
+		} else
+			return E_PAR;
 		break;
-	case 7:
 	default: {
 		int result = kcall->mutex_lock(cons_mid, TMO_FEVR);
 		if (result)
@@ -420,7 +429,6 @@ static int create_window(window_t **w, Screen *s)
 		}
 
 		p->screen = s;
-		list_initialize(&(p->brothers));
 		list_insert(&window_list, &(p->brothers));
 		*w = p;
 	} while (false);
