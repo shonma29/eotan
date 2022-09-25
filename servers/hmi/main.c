@@ -78,10 +78,6 @@ Frame *screen;
 static Screen screen0;
 static Screen screen2;
 static Screen screen7;
-
-#define DRAW_METHOD_SIZE (sizeof(int))
-#define DRAW_PUT (1)
-#define DRAW_PSET (2)
 #else
 static Screen *screen0;
 #endif
@@ -92,7 +88,7 @@ static Screen *screen0;
 typedef struct {
 	node_t node;
 	list_t brothers;
-	Screen *screen;
+	Frame frame;
 } window_t;
 
 static slab_t window_slab;
@@ -107,8 +103,8 @@ static ER accept(void);
 #ifdef USE_VESA
 static int create_window(window_t **w, Screen *);
 #endif
-#if 0
 static window_t *find_window(const int);
+#if 0
 static int remove_window(const int);
 #endif
 static ER initialize(void);
@@ -223,24 +219,28 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 		break;
 #ifdef USE_VESA
 	case 4:
-		if (size < DRAW_METHOD_SIZE)
+		if (size < DRAW_OPE_SIZE)
 			return E_PAR;
 
-		int *method = (int *) inbuf;
-		if (*method == DRAW_PUT) {
+		window_t *wp = find_window(2);
+		if (!wp)
+			return E_PAR;
+
+		draw_operation_e *ope = (draw_operation_e *) inbuf;
+		if (*ope == draw_put) {
 			mouse_hide();
-			put(screen, start, size - DRAW_METHOD_SIZE,
-					(uint8_t *) &(inbuf[DRAW_METHOD_SIZE]));
+			put(&(wp->frame), start, size - DRAW_OPE_SIZE,
+					(uint8_t *) &(inbuf[DRAW_OPE_SIZE]));
 			mouse_show();
-		} else if (*method == DRAW_PSET) {
-			if (size != DRAW_METHOD_SIZE + sizeof(int) * 3)
+		} else if (*ope == draw_pset) {
+			if (size != DRAW_OPE_SIZE + sizeof(int) * 3)
 				return E_PAR;
 
 			mouse_hide();
 			unsigned int x = ((int *) inbuf)[1 + 0];
 			unsigned int y = ((int *) inbuf)[1 + 1];
 			int color = ((int *) inbuf)[1 + 2];
-			pset(screen, x, y, color);
+			pset(&(wp->frame), x, y, color);
 			mouse_show();
 		} else
 			return E_PAR;
@@ -428,7 +428,14 @@ static int create_window(window_t **w, Screen *s)
 			break;
 		}
 
-		p->screen = s;
+		p->frame.point.x = s->x;
+		p->frame.point.y = s->y;
+		p->frame.width = s->width;
+		p->frame.height = s->height;
+		p->frame.base = (void *) (s->base);//TODO calculate here
+		p->frame.bpl = s->bpl;//TODO copy from root screen
+		p->frame.type = TYPE_B8G8R8;//TODO copy from root screen
+		p->frame.screen = s;
 		list_insert(&window_list, &(p->brothers));
 		*w = p;
 	} while (false);
@@ -436,13 +443,12 @@ static int create_window(window_t **w, Screen *s)
 	return error_no;
 }
 #endif
-#if 0
 static window_t *find_window(const int wid)
 {
 	node_t *node = tree_get(&window_tree, wid);
 	return (node ? (window_t *) getParent(window_t, node) : NULL);
 }
-
+#if 0
 static int remove_window(const int wid)
 {
 	int error_no = 0;

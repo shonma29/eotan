@@ -30,11 +30,9 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdio.h>
 #include <unistd.h>
 #include <fs/protocol.h>
+#include <hmi/draw.h>
 
-#define DRAW_METHOD_SIZE (sizeof(int))
-#define DRAW_PUT (1)
-
-#define BUF_SIZE (DRAW_METHOD_SIZE + (340 * 3))
+#define BUF_SIZE (DRAW_OPE_SIZE + (340 * 3))
 
 static unsigned char buf[BUF_SIZE];
 
@@ -45,7 +43,7 @@ static int process(const int);
 
 static void to_bgr(const size_t size)
 {
-	unsigned char *p = &buf[DRAW_METHOD_SIZE];
+	unsigned char *p = &buf[DRAW_OPE_SIZE];
 	for (size_t i = size / 3; i > 0; i--) {
 		unsigned char c = p[0];
 
@@ -64,7 +62,7 @@ static int putline(const unsigned int start, const size_t size,
 	message.Twrite.fid = 4;
 	message.Twrite.offset = start;
 	message.Twrite.count = size;
-	to_bgr(size - DRAW_METHOD_SIZE);
+	to_bgr(size - DRAW_OPE_SIZE);
 	message.Twrite.data = (char *) buf;
 
 	int err = ipc_call(PORT_CONSOLE, &message, MESSAGE_SIZE(Twrite));
@@ -153,10 +151,10 @@ static int process(const int fd)
 		return (-2);
 	}
 
-	size_t max = sizeof(buf) - DRAW_METHOD_SIZE;
-	unsigned char *data = &(buf[DRAW_METHOD_SIZE]);
-	int *method = (int *) buf;
-	*method = DRAW_PUT;
+	size_t max = sizeof(buf) - DRAW_OPE_SIZE;
+	unsigned char *data = &(buf[DRAW_OPE_SIZE]);
+	draw_operation_e *ope = (draw_operation_e *) buf;
+	*ope = draw_put;
 
 	unsigned int pos = 0;
 	for (size_t i = 0; i < height; i++) {
@@ -181,8 +179,7 @@ static int process(const int fd)
 				return (-1);
 			}
 
-			if (putline(pos + j, DRAW_METHOD_SIZE + rest, buf)
-					< 0)
+			if (putline(pos + j, DRAW_OPE_SIZE + rest, buf) < 0)
 				return (-3);
 		}
 

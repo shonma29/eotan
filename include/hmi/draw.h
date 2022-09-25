@@ -47,17 +47,23 @@ typedef struct {
 } Image;
 
 typedef struct {
+	Point point;
 	int width;
 	int height;
 	void *base;
 	int bpl;
 	char *type;
+	Screen *screen;
 } Frame;
 
-enum draw_operation {
-	draw_put,
-	draw_pset
-};
+#define TYPE_B8G8R8 "b8g8r8"
+
+typedef enum draw_operation {
+	draw_put = 1,
+	draw_pset = 2
+} draw_operation_e;
+
+#define DRAW_OPE_SIZE (sizeof(draw_operation_e))
 
 extern Frame *get_screen(void);
 extern void put(Frame *, const unsigned int, const size_t, const uint8_t *);

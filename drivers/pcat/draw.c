@@ -33,7 +33,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/memory.h>
 
 #define FONT_BITS CHAR_BIT
-#define TYPE_B8G8R8 "b8g8r8"
 
 static Frame screen;
 
@@ -57,6 +56,8 @@ Frame *get_screen(void)
 			|| (v->blue_position != 0))
 		return NULL;
 
+	screen.point.x = 0;
+	screen.point.y = 0;
 #if USE_MONITOR
 	screen.width = v->width / 2;
 #else
@@ -66,6 +67,7 @@ Frame *get_screen(void)
 	screen.base = (void *) (v->buffer_addr);
 	screen.bpl = v->bytes_per_line;
 	screen.type = TYPE_B8G8R8;
+	screen.screen = NULL;
 	return &screen;
 }
 

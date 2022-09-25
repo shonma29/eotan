@@ -30,9 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <services.h>
 #include <stdio.h>
 #include <fs/protocol.h>
-
-#define DRAW_METHOD_SIZE (sizeof(int))
-#define DRAW_PSET (2)
+#include <hmi/draw.h>
 
 #define SPLIT (360)
 
@@ -45,10 +43,10 @@ typedef struct {
 static size_t width = 640;
 static size_t height = 480;
 
-static int pset(const unsigned int, const unsigned int, const int);
+static int _pset(const unsigned int, const unsigned int, const int);
 
 
-static int pset(const unsigned int x, const unsigned int y, const int color)
+static int _pset(const unsigned int x, const unsigned int y, const int color)
 {
 	if (x >= width)
 		return EINVAL;
@@ -56,11 +54,11 @@ static int pset(const unsigned int x, const unsigned int y, const int color)
 	if (y >= height)
 		return EINVAL;
 
-	char buf[DRAW_METHOD_SIZE + sizeof(point_t)];
-	int *method = (int *) buf;
-	*method = DRAW_PSET;
+	char buf[DRAW_OPE_SIZE + sizeof(point_t)];
+	draw_operation_e *ope = (draw_operation_e *) buf;
+	*ope = draw_pset;
 
-	point_t *point = (point_t *) &(buf[DRAW_METHOD_SIZE]);
+	point_t *point = (point_t *) &(buf[DRAW_OPE_SIZE]);
 	point->x = x;
 	point->y = y;
 	point->color = color;
@@ -85,7 +83,7 @@ int main(int argc, char **argv)
 	int deg = 0;
 	for (int i = 0; i < SPLIT; i++) {
 		double rad = deg * M_PI / 180;
-		pset(height / 3 * cos(rad) + width / 2,
+		_pset(height / 3 * cos(rad) + width / 2,
 				height / 3 * sin(rad) + height / 2,
 				0xff00ff);
 		deg += 360 / SPLIT;
