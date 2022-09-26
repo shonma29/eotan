@@ -220,30 +220,37 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 #ifdef USE_VESA
 	case 4:
 		if (size < DRAW_OPE_SIZE)
-			return E_PAR;
+			return E_PAR;//TODO return POSIX error
 
 		window_t *wp = find_window(2);
 		if (!wp)
-			return E_PAR;
+			return E_NOEXS;//TODO return POSIX error
 
 		draw_operation_e *ope = (draw_operation_e *) inbuf;
 		if (*ope == draw_put) {
+			if (size < DRAW_PUT_PACKET_SIZE)
+				return E_PAR;//TODO return POSIX error
+
+			unsigned int x = ((int *) inbuf)[1 + 0];
+			unsigned int y = ((int *) inbuf)[1 + 1];
 			mouse_hide();
-			put(&(wp->frame), start, size - DRAW_OPE_SIZE,
-					(uint8_t *) &(inbuf[DRAW_OPE_SIZE]));
+			put(&(wp->frame), x, y,
+					(size - DRAW_PUT_PACKET_SIZE)
+							/ sizeof(Color_Rgb),
+					(uint8_t *) &(inbuf[DRAW_PUT_PACKET_SIZE]));
 			mouse_show();
 		} else if (*ope == draw_pset) {
-			if (size != DRAW_OPE_SIZE + sizeof(int) * 3)
-				return E_PAR;
+			if (size != DRAW_PSET_PACKET_SIZE)
+				return E_PAR;//TODO return POSIX error
 
-			mouse_hide();
 			unsigned int x = ((int *) inbuf)[1 + 0];
 			unsigned int y = ((int *) inbuf)[1 + 1];
 			int color = ((int *) inbuf)[1 + 2];
+			mouse_hide();
 			pset(&(wp->frame), x, y, color);
 			mouse_show();
 		} else
-			return E_PAR;
+			return E_PAR;//TODO return POSIX error
 		break;
 	default: {
 		int result = kcall->mutex_lock(cons_mid, TMO_FEVR);
@@ -360,7 +367,7 @@ static void execute(request_message_t *req)
 			if (result >= 0)
 				result = message->Twrite.count;
 		}
-
+		//TODO return Rerror if result is error
 //		message->header.token = message->head.token;
 		message->header.type = Rwrite;
 //		message->Rwrite.tag = message->Twrite.tag;
@@ -428,10 +435,10 @@ static int create_window(window_t **w, Screen *s)
 			break;
 		}
 
-		p->frame.point.x = s->x;
-		p->frame.point.y = s->y;
-		p->frame.width = s->width;
-		p->frame.height = s->height;
+		p->frame.r.min.x = s->x;
+		p->frame.r.min.y = s->y;
+		p->frame.r.max.x = s->x + s->width;
+		p->frame.r.max.y = s->y + s->height;
 		p->frame.base = (void *) (s->base);//TODO calculate here
 		p->frame.bpl = s->bpl;//TODO copy from root screen
 		p->frame.type = TYPE_B8G8R8;//TODO copy from root screen

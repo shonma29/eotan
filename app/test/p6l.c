@@ -32,52 +32,49 @@ For more information, please refer to <http://unlicense.org/>
 #include <fs/protocol.h>
 #include <hmi/draw.h>
 
-#define BUF_SIZE (DRAW_OPE_SIZE + (340 * 3))
+#define MAX_PIXEL (337)
+#define MAX_BYTES (MAX_PIXEL * sizeof(Color_Rgb))
+#define BUF_SIZE (DRAW_PUT_PACKET_SIZE + MAX_BYTES)
 
-static unsigned char buf[BUF_SIZE];
+static uint8_t buf[BUF_SIZE];
 
 static void to_bgr(const size_t);
-static int putline(const unsigned int, const size_t, unsigned char *);
+static int putline(const size_t, uint8_t *);
 static int process(const int);
 
 
-static void to_bgr(const size_t size)
+static void to_bgr(const size_t pixels)
 {
-	unsigned char *p = &buf[DRAW_OPE_SIZE];
-	for (size_t i = size / 3; i > 0; i--) {
-		unsigned char c = p[0];
-
+	uint8_t *p = &buf[DRAW_PUT_PACKET_SIZE];
+	for (size_t i = pixels; i > 0; i--) {
+		uint8_t c = p[0];
 		p[0] = p[2];
 		p[2] = c;
-		p += 3;
+		p += sizeof(Color_Rgb);
 	}
 }
 
-static int putline(const unsigned int start, const size_t size,
-		unsigned char *buf)
+static int putline(const size_t bytes, uint8_t *buf)
 {
 	fsmsg_t message;
 	message.header.ident = IDENT;
 	message.header.type = Twrite;
-	message.Twrite.fid = 4;
-	message.Twrite.offset = start;
-	message.Twrite.count = size;
-	to_bgr(size - DRAW_OPE_SIZE);
+	message.Twrite.fid = DRAW_FID;
+	message.Twrite.offset = 0;
+	message.Twrite.count = bytes;
 	message.Twrite.data = (char *) buf;
 
 	int err = ipc_call(PORT_CONSOLE, &message, MESSAGE_SIZE(Twrite));
 	if (err < 0)
 		printf("call error %d\n", err);
+	else if (message.Rwrite.count < 0)
+		printf("draw error %d\n", message.Rwrite.count);
 
 	return err;
 }
 
 static int process(const int fd)
 {
-	size_t width = 0;
-	size_t height = 0;
-	unsigned int c = 0;
-
 	if (read(fd, buf, 3) != 3) {
 		printf("read err[desc]\n");
 		return (-1);
@@ -88,6 +85,7 @@ static int process(const int fd)
 		return (-2);
 	}
 
+	size_t width = 0;
 	for (;;) {
 		if (read(fd, buf, 1) != 1) {
 			printf("read err[width]\n");
@@ -105,6 +103,7 @@ static int process(const int fd)
 		width = width * 10 + buf[0] - '0';
 	}
 
+	size_t height = 0;
 	for (;;) {
 		if (read(fd, buf, 1) != 1) {
 			printf("read err[height]\n");
@@ -122,6 +121,7 @@ static int process(const int fd)
 		height = height * 10 + buf[0] - '0';
 	}
 
+	//TODO check overflow of width, height, color_max
 	if (width == 0 || width >= 640 || height == 0 || height >= 480) {
 		printf("bad size %d, %d\n", width, height);
 		return (-2);
@@ -129,6 +129,7 @@ static int process(const int fd)
 
 	printf("size %d, %d\n", width, height);
 
+	unsigned int color_max = 0;
 	for (;;) {
 		if (read(fd, buf, 1) != 1) {
 			printf("read err[color]\n");
@@ -143,47 +144,53 @@ static int process(const int fd)
 			return (-2);
 		}
 
-		c = c * 10 + buf[0] - '0';
+		color_max = color_max * 10 + buf[0] - '0';
 	}
 
-	if (c != 255) {
-		printf("bad color %d\n", c);
+	if (color_max != 255) {
+		printf("bad color %d\n", color_max);
 		return (-2);
 	}
 
-	size_t max = sizeof(buf) - DRAW_OPE_SIZE;
-	unsigned char *data = &(buf[DRAW_OPE_SIZE]);
+	unsigned char *data = &(buf[DRAW_PUT_PACKET_SIZE]);
+	int *packet = (int *) &(buf[DRAW_OPE_SIZE]);
 	draw_operation_e *ope = (draw_operation_e *) buf;
 	*ope = draw_put;
 
-	unsigned int pos = 0;
-	for (size_t i = 0; i < height; i++) {
-		size_t rest = width * 3;
-		unsigned int j = 0;
-		while (rest > max) {
-			if (read(fd, data, max) != max) {
+	for (int i = 0; i < height; i++) {
+		size_t rest = width;
+		int j = 0;
+		while (rest > MAX_PIXEL) {
+			if (read(fd, data, MAX_BYTES) != MAX_BYTES) {
 				printf("read err[block]\n");
 				return (-1);
 			}
 
-			if (putline(pos + j, sizeof(buf), buf) < 0)
+			to_bgr(MAX_PIXEL);
+
+			packet[0] = j;
+			packet[1] = i;
+			if (putline(sizeof(buf), buf) < 0)
 				return (-3);
 
-			j += max;
-			rest -= max;
+			j += MAX_PIXEL;
+			rest -= MAX_PIXEL;
 		}
 
 		if (rest) {
-			if (read(fd, data, rest) != rest) {
+			size_t bytes = rest * sizeof(Color_Rgb);
+			if (read(fd, data, bytes) != bytes) {
 				printf("read err[rest]\n");
 				return (-1);
 			}
 
-			if (putline(pos + j, DRAW_OPE_SIZE + rest, buf) < 0)
+			to_bgr(rest);
+
+			packet[0] = j;
+			packet[1] = i;
+			if (putline(DRAW_PUT_PACKET_SIZE + bytes, buf) < 0)
 				return (-3);
 		}
-
-		pos += 3072;
 	}
 
 	printf("done\n");

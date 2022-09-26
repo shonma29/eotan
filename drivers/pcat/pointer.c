@@ -43,9 +43,13 @@ void pointer_put(const Frame *s, const int x, const int y,
 		const pointer_pattern_t *p)
 {
 	int x1 = x - p->point_x;
+	int width = s->r.max.x - s->r.min.x;
+	if (x1 >= width)
+		return;
+
 	int y1 = y - p->point_y;
-	if ((x1 >= (int) (s->width))
-			|| (y1 >= (int) (s->height)))
+	int height = s->r.max.y - s->r.min.y;
+	if (y1 >= height)
 		return;
 
 	int x2 = x1 + POINTER_WIDTH;
@@ -66,11 +70,11 @@ void pointer_put(const Frame *s, const int x, const int y,
 		y1 = 0;
 	}
 
-	if (x2 > s->width)
-		x2 = s->width;
+	if (x2 > width)
+		x2 = width;
 
-	if (y2 > s->height)
-		y2 = s->height;
+	if (y2 > height)
+		y2 = height;
 
 	size_t len_x = x2 - x1;
 	size_t len_y = y2 - y1;

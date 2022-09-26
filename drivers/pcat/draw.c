@@ -35,7 +35,7 @@ For more information, please refer to <http://unlicense.org/>
 #define FONT_BITS CHAR_BIT
 
 static Frame screen;
-
+#if 0
 static inline size_t font_bytes(const size_t width)
 {
 	return ((width + (CHAR_BIT - 1)) / CHAR_BIT);
@@ -44,7 +44,7 @@ static inline size_t font_bytes(const size_t width)
 static bool _putc(const Frame *, uint8_t *, int *, const int,
 		Font *, const uint8_t, unsigned int, size_t);
 static uint8_t *get_font_address(const Font *, const uint8_t);
-
+#endif
 
 Frame *get_screen(void)
 {
@@ -56,14 +56,14 @@ Frame *get_screen(void)
 			|| (v->blue_position != 0))
 		return NULL;
 
-	screen.point.x = 0;
-	screen.point.y = 0;
+	screen.r.min.x = 0;
+	screen.r.min.y = 0;
 #if USE_MONITOR
-	screen.width = v->width / 2;
+	screen.r.max.x = v->width / 2;
 #else
-	screen.width = v->width;
+	screen.r.max.x = v->width;
 #endif
-	screen.height = v->height;
+	screen.r.max.y = v->height;
 	screen.base = (void *) (v->buffer_addr);
 	screen.bpl = v->bytes_per_line;
 	screen.type = TYPE_B8G8R8;
@@ -71,27 +71,52 @@ Frame *get_screen(void)
 	return &screen;
 }
 
-void put(Frame *s, const unsigned int start, const size_t size,
+void put(Frame *s, const int x, const int y, const size_t size,
 		const uint8_t *buf)
 {
-	size_t max = s->height * s->bpl;
-	if (start >= max)
+	int height = s->r.max.y - s->r.min.y;
+	if ((y < 0)
+			|| (y >= height))
 		return;
 
-	uint8_t *w = (uint8_t *) (s->base) + start;
-	size_t rest = max - start;
-	rest = (size > rest) ? rest : size;
-	for (int i = 0; i < rest; i++)
-		w[i] = buf[i];
+	int width = s->r.max.x - s->r.min.x;
+	if (x >= width)
+		return;
+
+	int offset;
+	int start_x;
+	int rest;
+	if (x < 0) {
+		offset = -x * sizeof(Color_Rgb);
+		start_x = 0;
+		rest = size + x;
+	} else {
+		offset = 0;
+		start_x = x;
+		rest = size;
+	}
+
+	if (start_x + rest > width)
+		rest = width - start_x;
+
+	uint8_t *w = (uint8_t *) ((uintptr_t) (s->base) + screen.bpl * y
+			+ start_x * sizeof(Color_Rgb));
+	for (int i = 0; i < rest * sizeof(Color_Rgb); i++)
+		w[i] = buf[offset + i];
 }
 
-void pset(Frame *s, const unsigned int x, const unsigned int y,
-		const int color)
+void pset(Frame *s, const int x, const int y, const int color)
 {
 	if ((x < 0)
-			|| (x >= s->width)
-			|| (y < 0)
-			|| (y >= s->height))
+			|| (y < 0))
+		return;
+
+	int width = s->r.max.x - s->r.min.x;
+	if (x >= width)
+		return;
+
+	int height = s->r.max.y - s->r.min.y;
+	if (y >= height)
 		return;
 
 	uint8_t *r = (uint8_t *) (s->base)
@@ -101,7 +126,7 @@ void pset(Frame *s, const unsigned int x, const unsigned int y,
 	r[1] = (color >> 8) & 0xff;
 	r[2] = (color >> 16) & 0xff;
 }
-
+#if 0
 void fill(const Frame *s, const int min_x, const int min_y, const int max_x,
 		const int max_y, const int color)
 {
@@ -282,4 +307,5 @@ static uint8_t *get_font_address(const Font *font, const uint8_t ch)
 	uint8_t c = ((ch < font->min_char) || (ch > font->max_char)) ? ' ' : ch;
 	return &(font->buf[(c - font->min_char) * font->bytes_per_chr]);
 }
+#endif
 #endif

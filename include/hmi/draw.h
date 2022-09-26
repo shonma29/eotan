@@ -29,27 +29,24 @@ For more information, please refer to <http://unlicense.org/>
 #include <stddef.h>
 #include <screen.h>
 
-typedef struct {
+typedef struct Point {
 	int x;
 	int y;
 } Point;
 
-typedef struct {
+typedef struct Rectangle {
 	Point min;
 	Point max;
 } Rectangle;
 
 typedef struct {
-	int type1;
-	int type2;
 	Rectangle r;
+	char *type;
 	unsigned char buf[0];
 } Image;
 
 typedef struct {
-	Point point;
-	int width;
-	int height;
+	Rectangle r;
 	void *base;
 	int bpl;
 	char *type;
@@ -64,11 +61,14 @@ typedef enum draw_operation {
 } draw_operation_e;
 
 #define DRAW_OPE_SIZE (sizeof(draw_operation_e))
+#define DRAW_PUT_PACKET_SIZE (DRAW_OPE_SIZE + sizeof(int) * 2)
+#define DRAW_PSET_PACKET_SIZE (DRAW_OPE_SIZE + sizeof(int) * 3)
+
+#define DRAW_FID (4)
 
 extern Frame *get_screen(void);
-extern void put(Frame *, const unsigned int, const size_t, const uint8_t *);
-extern void pset(Frame *, const unsigned int, const unsigned int,
-		const int);
+extern void put(Frame *, const int, const int, const size_t, const uint8_t *);
+extern void pset(Frame *, const int, const int, const int);
 extern void fill(const Frame *, const int, const int, const int,
 		const int, const int);
 extern void string(const Frame *, const int, const int, const int,

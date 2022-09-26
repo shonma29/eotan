@@ -40,21 +40,16 @@ typedef struct {
 	int color;
 } point_t;
 
-static size_t width = 640;
-static size_t height = 480;
+#define WIDTH (640)
+#define HEIGHT (480)
 
 static int _pset(const unsigned int, const unsigned int, const int);
+static void _circle(const int, const int, const int);
 
 
 static int _pset(const unsigned int x, const unsigned int y, const int color)
 {
-	if (x >= width)
-		return EINVAL;
-
-	if (y >= height)
-		return EINVAL;
-
-	char buf[DRAW_OPE_SIZE + sizeof(point_t)];
+	char buf[DRAW_PSET_PACKET_SIZE];
 	draw_operation_e *ope = (draw_operation_e *) buf;
 	*ope = draw_pset;
 
@@ -66,7 +61,7 @@ static int _pset(const unsigned int x, const unsigned int y, const int color)
 	fsmsg_t message;
 	message.header.ident = IDENT;
 	message.header.type = Twrite;
-	message.Twrite.fid = 4;
+	message.Twrite.fid = DRAW_FID;
 	message.Twrite.offset = 0;
 	message.Twrite.count = sizeof(buf);
 	message.Twrite.data = buf;
@@ -74,20 +69,25 @@ static int _pset(const unsigned int x, const unsigned int y, const int color)
 	int err = ipc_call(PORT_CONSOLE, &message, MESSAGE_SIZE(Twrite));
 	if (err < 0)
 		printf("call error %d\n", err);
+	else if (message.Rwrite.count < 0)
+		printf("draw error %d\n", message.Rwrite.count);
 
 	return err;
 }
 
-int main(int argc, char **argv)
+static void _circle(const int x, const int y, const int radius)
 {
 	int deg = 0;
 	for (int i = 0; i < SPLIT; i++) {
 		double rad = deg * M_PI / 180;
-		_pset(height / 3 * cos(rad) + width / 2,
-				height / 3 * sin(rad) + height / 2,
-				0xff00ff);
+		_pset(radius * cos(rad) + x, radius * sin(rad) + y, 0xff00ff);
 		deg += 360 / SPLIT;
 	}
+}
 
+int main(int argc, char **argv)
+{
+
+	_circle(WIDTH / 2, HEIGHT / 2, HEIGHT / 3);
 	return 0;
 }

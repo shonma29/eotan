@@ -54,12 +54,13 @@ void mouse_process(const int type, const int d)
 	if (d & 0x100000)
 		dx |= 0xffffff00;
 
+	int width = screen->r.max.x - screen->r.min.x;
 	x += dx;
 	if (x < 0)
 		x = 0;
 #ifdef USE_VESA
-	else if (x >= screen->width)
-		x = screen->width - 1;
+	else if (x >= width)
+		x = width - 1;
 #else
 	else if (x >= CGA_COLUMNS)
 		x = CGA_COLUMNS - 1;
@@ -68,25 +69,18 @@ void mouse_process(const int type, const int d)
 	if (d & 0x200000)
 		dy |= 0xffffff00;
 
+	int height = screen->r.max.y - screen->r.min.y;
 	y -= dy;
 	if (y < 0)
 		y = 0;
 #ifdef USE_VESA
-	else if (y >= screen->height)
-		y = screen->height - 1;
+	else if (y >= height)
+		y = height - 1;
 #else
 	else if (y >= CGA_ROWS)
 		y = CGA_ROWS - 1;
 #endif
 #ifdef USE_VESA
-#if 0
-	if (buttons & 1)
-		pset((Screen *) (info->unit), x, y, 0xff0000);
-	else if (buttons & 2)
-		pset((Screen *) (info->unit), x, y, 0x00ff00);
-	else if (buttons & 4)
-		pset((Screen *) (info->unit), x, y, 0xffff00);
-#endif
 	if (dx || dy) {
 		mouse_hide();
 		mouse_show();
@@ -111,8 +105,8 @@ void mouse_hide(void)
 ER mouse_initialize(void)
 {
 #ifdef USE_VESA
-	x = screen->width / 2;
-	y = screen->height / 2;
+	x = (screen->r.max.x - screen->r.min.x) / 2;
+	y = (screen->r.max.y - screen->r.min.y) / 2;
 #else
 	x = 0;
 	y = 0;
