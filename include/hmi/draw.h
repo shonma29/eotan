@@ -49,6 +49,7 @@ typedef struct {
 	Rectangle r;
 	void *base;
 	int bpl;
+	int bpp;
 	char *type;
 	Screen *screen;
 } Frame;

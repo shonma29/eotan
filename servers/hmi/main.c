@@ -85,10 +85,25 @@ static Screen *screen0;
 #define WINDOW_MAX (32)
 #define getParent(type, p) ((uintptr_t) p - offsetof(type, node))
 
+#define WINDOW_ATTR_HAS_BORDER (0x0001)
+#define WINDOW_ATTR_HAS_TITLE (0x0002)
+#define WINDOW_ATTR_SCROLLABLE_X (0x0004)
+#define WINDOW_ATTR_SCROLLABLE_Y (0x0008)
+#define WINDOW_ATTR_MOVABLE (0x0010)
+#define WINDOW_ATTR_RESIZABLE (0x0020)
+#define WINDOW_ATTR_ICONIFIABLE (0x0040)
+#define WINDOW_ATTR_MAXIMIZABLE (0x0080)
+#define WINDOW_ATTR_IS_DIALOG (0x0100)
+
+#define SCREEN7_HEIGHT (20)
+
 typedef struct {
 	node_t node;
 	list_t brothers;
-	Frame frame;
+	uint32_t attr;
+	Frame outer;
+	Frame inner;
+	Rectangle viewport;
 } window_t;
 
 static slab_t window_slab;
@@ -101,7 +116,8 @@ static void reply(request_message_t *, const size_t);
 static void execute(request_message_t *);
 static ER accept(void);
 #ifdef USE_VESA
-static int create_window(window_t **w, Screen *);
+static int create_window(window_t **w, const int, const int,
+		const int, const int, const int, Screen *);
 #endif
 static window_t *find_window(const int);
 #if 0
@@ -234,7 +250,7 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 			unsigned int x = ((int *) inbuf)[1 + 0];
 			unsigned int y = ((int *) inbuf)[1 + 1];
 			mouse_hide();
-			put(&(wp->frame), x, y,
+			put(&(wp->inner), x, y,
 					(size - DRAW_PUT_PACKET_SIZE)
 							/ sizeof(Color_Rgb),
 					(uint8_t *) &(inbuf[DRAW_PUT_PACKET_SIZE]));
@@ -247,7 +263,7 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 			unsigned int y = ((int *) inbuf)[1 + 1];
 			int color = ((int *) inbuf)[1 + 2];
 			mouse_hide();
-			pset(&(wp->frame), x, y, color);
+			pset(&(wp->inner), x, y, color);
 			mouse_show();
 		} else
 			return E_PAR;//TODO return POSIX error
@@ -409,7 +425,8 @@ static ER accept(void)
 	return E_OK;
 }
 #ifdef USE_VESA
-static int create_window(window_t **w, Screen *s)
+static int create_window(window_t **w, const int x1, const int y1,
+		const int x2, const int y2, const int attr, Screen *s)
 {
 	int error_no = 0;
 	do {
@@ -435,14 +452,61 @@ static int create_window(window_t **w, Screen *s)
 			break;
 		}
 
-		p->frame.r.min.x = s->x;
-		p->frame.r.min.y = s->y;
-		p->frame.r.max.x = s->x + s->width;
-		p->frame.r.max.y = s->y + s->height;
-		p->frame.base = (void *) (s->base);//TODO calculate here
-		p->frame.bpl = s->bpl;//TODO copy from root screen
-		p->frame.type = TYPE_B8G8R8;//TODO copy from root screen
-		p->frame.screen = s;
+		p->outer.r.min.x = x1;
+		p->outer.r.min.y = y1;
+		p->outer.r.max.x = x2;
+		p->outer.r.max.y = y2;
+		p->outer.base = (void *) ((uintptr_t) screen->base
+				+ y1 * screen->bpl + x1 * screen->bpp);
+		p->outer.bpl = screen->bpl;
+		p->outer.bpp = screen->bpp;
+		p->outer.type = screen->type;
+		p->outer.screen = NULL;
+
+		int padding_left = 0;
+		int padding_right = 0;
+		int padding_top = 0;
+		int padding_bottom = 0;
+		if (attr & WINDOW_ATTR_HAS_BORDER) {
+			padding_left += 2;
+			padding_right += 2;
+			padding_top += 2;
+			padding_bottom += 2;
+		}
+
+		if (attr & WINDOW_ATTR_HAS_TITLE)
+			padding_top += 12;
+
+		if (attr & WINDOW_ATTR_SCROLLABLE_Y)
+			padding_right += 12;
+
+		if (attr & WINDOW_ATTR_SCROLLABLE_X)
+			padding_bottom += 12;
+
+		p->inner.r.min.x = padding_left;
+		p->inner.r.min.y = padding_top;
+		p->inner.r.max.x = p->inner.r.min.x
+				+ x2 - x1
+				- (padding_left + padding_right);
+		p->inner.r.max.y = p->inner.r.min.y
+				+ y2 - y1
+				- (padding_top + padding_bottom);
+		p->inner.base = (void *) ((uintptr_t) screen->base
+				+ (padding_top + y1) * screen->bpl
+				+ (padding_left + x1) * screen->bpp);
+		p->inner.bpl = screen->bpl;
+		p->inner.bpp = screen->bpp;
+		p->inner.type = screen->type;
+		p->inner.screen = s;
+
+		s->base = p->inner.base;
+		s->p = (uint8_t *) (s->base);
+		s->width = p->inner.r.max.x - p->inner.r.min.x;
+		s->height = p->inner.r.max.y - p->inner.r.min.y;
+		s->chr_width = s->width / s->font.width;
+		s->chr_height = s->height / s->font.height;
+
+		s->viewport = &(p->inner);
 		list_insert(&window_list, &(p->brothers));
 		*w = p;
 	} while (false);
@@ -516,41 +580,43 @@ static ER initialize(void)
 		window_t *w;
 		Screen *s = (Screen *) (info->unit);
 		screen0 = *s;
-		screen0.base += 20 * s->bpl;
-		screen0.p = (uint8_t *) (screen0.base);
-		screen0.width /= 2;
-		screen0.height = (s->height - 20) / 2;
-		screen0.chr_width = (screen0.width - 16) / s->font.width;
-		screen0.chr_height = (screen0.height - (20 + 16)) / s->font.height;
-		driver->write(STR_CONS_INIT, (int) &screen0, 0, LEN_CONS_INIT);
 		//result = create_window(&w, &screen0);
-		create_window(&w, &screen0);
+		create_window(&w, 0, SCREEN7_HEIGHT, s->width / 2,
+				SCREEN7_HEIGHT + (s->height - SCREEN7_HEIGHT) / 2,
+				WINDOW_ATTR_HAS_BORDER | WINDOW_ATTR_HAS_TITLE
+						| WINDOW_ATTR_SCROLLABLE_Y,
+				&screen0);
+		driver->write(STR_CONS_INIT, (int) &screen0, 0, LEN_CONS_INIT);
 
 		screen2 = screen0;
-		screen2.base += screen0.height * s->bpl;
-		screen2.p = (uint8_t *) (screen2.base);
 		screen2.fgcolor.rgb.b = 0;
 		screen2.fgcolor.rgb.g = 127;
 		screen2.fgcolor.rgb.r = 255;
 		screen2.bgcolor.rgb.b = 0;
 		screen2.bgcolor.rgb.g = 0;
 		screen2.bgcolor.rgb.r = 31;
-		driver->write(STR_CONS_INIT, (int) &screen2, 0, LEN_CONS_INIT);
 		//result = create_window(&w, &screen2);
-		create_window(&w, &screen2);
+		create_window(&w, 0,
+				SCREEN7_HEIGHT + (s->height - SCREEN7_HEIGHT) / 2,
+				s->width / 2,
+				SCREEN7_HEIGHT + ((s->height - SCREEN7_HEIGHT) / 2) * 2,
+				WINDOW_ATTR_HAS_BORDER | WINDOW_ATTR_HAS_TITLE
+						| WINDOW_ATTR_SCROLLABLE_Y,
+				&screen2);
+		driver->write(STR_CONS_INIT, (int) &screen2, 0, LEN_CONS_INIT);
 
 		screen7 = *s;
-		screen7.height = 20;
-		screen7.chr_height = screen7.height / s->font.height;
 		screen7.fgcolor.rgb.b = 40;
 		screen7.fgcolor.rgb.g = 66;
 		screen7.fgcolor.rgb.r = 30;
 		screen7.bgcolor.rgb.b = 228;
 		screen7.bgcolor.rgb.g = 227;
 		screen7.bgcolor.rgb.r = 223;
-		driver->write(STR_CONS_INIT, (int) &screen7, 0, LEN_CONS_INIT);
 		//result = create_window(&w, &screen7);
-		create_window(&w, &screen7);
+		create_window(&w, 0, 0, 1024, 20,
+				WINDOW_ATTR_HAS_BORDER,
+				&screen7);
+		driver->write(STR_CONS_INIT, (int) &screen7, 0, LEN_CONS_INIT);
 #else
 		if (sysinfo->cga)
 			screen0 = sysinfo->cga;

@@ -80,7 +80,7 @@ int main(int argc, char **argv, char **env)
 {
 	char *array[] = { NULL, NULL };
 #ifdef USE_VESA
-	char *envp[] = { "COLUMNS=82", "LINES=28", NULL };
+	char *envp[] = { "COLUMNS=82", "LINES=29", NULL };
 #else
 	char *envp[] = { "COLUMNS=80", "LINES=25", NULL };
 #endif

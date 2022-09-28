@@ -68,6 +68,7 @@ typedef struct _screen {
 	unsigned int chr_width;
 	unsigned int chr_height;
 	bool wrap;
+	void *viewport;
 } Screen;
 
 extern Font default_font;

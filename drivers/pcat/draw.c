@@ -66,6 +66,7 @@ Frame *get_screen(void)
 	screen.r.max.y = v->height;
 	screen.base = (void *) (v->buffer_addr);
 	screen.bpl = v->bytes_per_line;
+	screen.bpp = sizeof(Color_Rgb);
 	screen.type = TYPE_B8G8R8;
 	screen.screen = NULL;
 	return &screen;
@@ -87,7 +88,7 @@ void put(Frame *s, const int x, const int y, const size_t size,
 	int start_x;
 	int rest;
 	if (x < 0) {
-		offset = -x * sizeof(Color_Rgb);
+		offset = -x * screen.bpp;
 		start_x = 0;
 		rest = size + x;
 	} else {
@@ -100,8 +101,8 @@ void put(Frame *s, const int x, const int y, const size_t size,
 		rest = width - start_x;
 
 	uint8_t *w = (uint8_t *) ((uintptr_t) (s->base) + screen.bpl * y
-			+ start_x * sizeof(Color_Rgb));
-	for (int i = 0; i < rest * sizeof(Color_Rgb); i++)
+			+ start_x * screen.bpp);
+	for (int i = 0; i < rest * screen.bpp; i++)
 		w[i] = buf[offset + i];
 }
 
@@ -120,8 +121,8 @@ void pset(Frame *s, const int x, const int y, const int color)
 		return;
 
 	uint8_t *r = (uint8_t *) (s->base)
-			+ y * s->bpl
-			+ x * sizeof(Color_Rgb);
+			+ y * screen.bpl
+			+ x * screen.bpp;
 	r[0] = color & 0xff;
 	r[1] = (color >> 8) & 0xff;
 	r[2] = (color >> 16) & 0xff;
