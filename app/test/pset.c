@@ -51,9 +51,9 @@ static int _pset(const unsigned int x, const unsigned int y, const int color)
 {
 	char buf[DRAW_PSET_PACKET_SIZE];
 	draw_operation_e *ope = (draw_operation_e *) buf;
-	*ope = draw_pset;
+	*ope = draw_op_pset;
 
-	point_t *point = (point_t *) &(buf[DRAW_OPE_SIZE]);
+	point_t *point = (point_t *) &(buf[DRAW_OP_SIZE]);
 	point->x = x;
 	point->y = y;
 	point->color = color;

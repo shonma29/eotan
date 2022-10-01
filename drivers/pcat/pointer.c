@@ -25,30 +25,30 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stddef.h>
-#include <vesa.h>
 #include <hmi/draw.h>
 #include <hmi/pointer.h>
 
 static uint8_t *pointer_prev_start = NULL;
 static size_t pointer_prev_width;
 static size_t pointer_prev_height;
+//TODO only 24 bit color?
 static uint8_t pointer_backup[
 		POINTER_WIDTH * sizeof(Color_Rgb) * POINTER_HEIGHT];
 
-static void pointer_save(const Frame *, uint8_t *, const size_t, const size_t);
+static void pointer_save(const Display *, uint8_t *, const size_t,
+		const size_t);
 
 
-void pointer_put(const Frame *s, const int x, const int y,
+void pointer_put(const Display *d, const int x, const int y,
 		const pointer_pattern_t *p)
 {
 	int x1 = x - p->point_x;
-	int width = s->r.max.x - s->r.min.x;
+	int width = d->r.max.x - d->r.min.x;
 	if (x1 >= width)
 		return;
 
 	int y1 = y - p->point_y;
-	int height = s->r.max.y - s->r.min.y;
+	int height = d->r.max.y - d->r.min.y;
 	if (y1 >= height)
 		return;
 
@@ -78,10 +78,10 @@ void pointer_put(const Frame *s, const int x, const int y,
 
 	size_t len_x = x2 - x1;
 	size_t len_y = y2 - y1;
-	size_t skip = s->bpl - len_x * sizeof(Color_Rgb);
-	uint8_t *out = (uint8_t *) (s->base)
-			+ y1 * s->bpl+ x1 * sizeof(Color_Rgb);
-	pointer_save(s, out, len_x, len_y);
+	size_t skip = d->bpl - len_x * sizeof(Color_Rgb);
+	uint8_t *out = (uint8_t *) (d->base)
+			+ y1 * d->bpl+ x1 * sizeof(Color_Rgb);
+	pointer_save(d, out, len_x, len_y);
 
 	const uint32_t *in = &(p->buf[start_y * POINTER_NUM_PER_LINE]);
 	size_t skip_in = 0;
@@ -115,7 +115,7 @@ void pointer_put(const Frame *s, const int x, const int y,
 	}
 }
 
-static void pointer_save(const Frame *s, uint8_t *start, const size_t width,
+static void pointer_save(const Display *d, uint8_t *start, const size_t width,
 		const size_t height)
 {
 	pointer_prev_start = start;
@@ -129,11 +129,11 @@ static void pointer_save(const Frame *s, uint8_t *start, const size_t width,
 			dest[j] = line[j];
 
 		dest += pointer_prev_width;
-		line += s->bpl;
+		line += d->bpl;
 	}
 }
 
-void pointer_restore(const Frame *s)
+void pointer_restore(const Display *d)
 {
 	if (!pointer_prev_start)
 		return;
@@ -145,7 +145,7 @@ void pointer_restore(const Frame *s)
 			line[j] = source[j];
 
 		source += pointer_prev_width;
-		line += s->bpl;
+		line += d->bpl;
 	}
 
 	pointer_prev_start = NULL;

@@ -27,7 +27,22 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stddef.h>
-#include <screen.h>
+#include <stdint.h>
+
+typedef struct {
+	uint8_t b;
+	uint8_t g;
+	uint8_t r;
+} Color_Rgb;
+
+typedef struct {
+	unsigned int width;
+	unsigned int height;
+	unsigned int bytes_per_chr;
+	unsigned int min_char;
+	unsigned int max_char;
+	uint8_t *buf;
+} Font;
 
 typedef struct Point {
 	int x;
@@ -51,27 +66,32 @@ typedef struct {
 	int bpl;
 	int bpp;
 	char *type;
-	Screen *screen;
+} Display;
+
+typedef struct {
+	Rectangle r;
+	Rectangle viewport;
 } Frame;
 
 #define TYPE_B8G8R8 "b8g8r8"
 
 typedef enum draw_operation {
-	draw_put = 1,
-	draw_pset = 2
+	draw_op_put = 1,
+	draw_op_pset = 2
 } draw_operation_e;
 
-#define DRAW_OPE_SIZE (sizeof(draw_operation_e))
-#define DRAW_PUT_PACKET_SIZE (DRAW_OPE_SIZE + sizeof(int) * 2)
-#define DRAW_PSET_PACKET_SIZE (DRAW_OPE_SIZE + sizeof(int) * 3)
+#define DRAW_OP_SIZE (sizeof(draw_operation_e))
+#define DRAW_PUT_PACKET_SIZE (DRAW_OP_SIZE + sizeof(int) * 2)
+#define DRAW_PSET_PACKET_SIZE (DRAW_OP_SIZE + sizeof(int) * 3)
 
 #define DRAW_FID (4)
 
-extern Frame *get_screen(void);
-extern void put(Frame *, const int, const int, const size_t, const uint8_t *);
-extern void pset(Frame *, const int, const int, const int);
-extern void fill(const Frame *, const int, const int, const int,
+extern Display *get_display(void);
+extern void draw_put(Frame *, const int, const int, const size_t,
+		const uint8_t *);
+extern void draw_pset(Frame *, const int, const int, const int);
+extern void draw_fill(const Frame *, const int, const int, const int,
 		const int, const int);
-extern void string(const Frame *, const int, const int, const int,
+extern void draw_string(const Frame *, const int, const int, const int,
 		Font *, const uint8_t *);
 #endif

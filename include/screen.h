@@ -28,31 +28,17 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <stdbool.h>
 #include <stdint.h>
+#include <hmi/draw.h>
 
 #define MAX_COLOR 0x00ffffff
 
 #define STR_CONS_INIT "\x1b[2J\x1b[1;1H"
 #define LEN_CONS_INIT (10)
 
-typedef struct {
-	uint8_t b;
-	uint8_t g;
-	uint8_t r;
-} Color_Rgb;
-
 typedef union {
 	uint32_t palet;
 	Color_Rgb rgb;
 } Color;
-
-typedef struct {
-	unsigned int width;
-	unsigned int height;
-	unsigned int bytes_per_chr;
-	unsigned int min_char;
-	unsigned int max_char;
-	uint8_t *buf;
-} Font;
 
 typedef struct _screen {
 	int x;
@@ -68,7 +54,7 @@ typedef struct _screen {
 	unsigned int chr_width;
 	unsigned int chr_height;
 	bool wrap;
-	void *viewport;
+	Frame *frame;
 } Screen;
 
 extern Font default_font;

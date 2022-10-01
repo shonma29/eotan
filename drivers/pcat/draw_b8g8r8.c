@@ -25,16 +25,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <screen.h>
-#include <stddef.h>
 #include <vesa.h>
 #include <hmi/draw.h>
-#include <nerve/config.h>
 #include <mpu/memory.h>
 
 #define FONT_BITS CHAR_BIT
 
-static Frame screen;
+static Display display;
 #if 0
 static inline size_t font_bytes(const size_t width)
 {
@@ -46,7 +43,7 @@ static bool _putc(const Frame *, uint8_t *, int *, const int,
 static uint8_t *get_font_address(const Font *, const uint8_t);
 #endif
 
-Frame *get_screen(void)
+Display *get_display(void)
 {
 	VesaInfo *v = (VesaInfo *) kern_p2v((void *) VESA_INFO_ADDR);
 
@@ -56,23 +53,23 @@ Frame *get_screen(void)
 			|| (v->blue_position != 0))
 		return NULL;
 
-	screen.r.min.x = 0;
-	screen.r.min.y = 0;
+	display.r.min.x = 0;
+	display.r.min.y = 0;
 #if USE_MONITOR
-	screen.r.max.x = v->width / 2;
+	display.r.max.x = v->width / 2;
 #else
-	screen.r.max.x = v->width;
+	display.r.max.x = v->width;
 #endif
-	screen.r.max.y = v->height;
-	screen.base = (void *) (v->buffer_addr);
-	screen.bpl = v->bytes_per_line;
-	screen.bpp = sizeof(Color_Rgb);
-	screen.type = TYPE_B8G8R8;
-	screen.screen = NULL;
-	return &screen;
+	display.r.max.y = v->height;
+	display.base = (void *) (v->buffer_addr);
+	display.bpl = v->bytes_per_line;
+	display.bpp = sizeof(Color_Rgb);
+	display.type = TYPE_B8G8R8;
+	return &display;
 }
 
-void put(Frame *s, const int x, const int y, const size_t size,
+//TODO calcurate absolute position
+void draw_put(Frame *s, const int x, const int y, const size_t size,
 		const uint8_t *buf)
 {
 	int height = s->r.max.y - s->r.min.y;
@@ -88,7 +85,7 @@ void put(Frame *s, const int x, const int y, const size_t size,
 	int start_x;
 	int rest;
 	if (x < 0) {
-		offset = -x * screen.bpp;
+		offset = -x * display.bpp;
 		start_x = 0;
 		rest = size + x;
 	} else {
@@ -100,29 +97,28 @@ void put(Frame *s, const int x, const int y, const size_t size,
 	if (start_x + rest > width)
 		rest = width - start_x;
 
-	uint8_t *w = (uint8_t *) ((uintptr_t) (s->base) + screen.bpl * y
-			+ start_x * screen.bpp);
-	for (int i = 0; i < rest * screen.bpp; i++)
+	uint8_t *w = (uint8_t *) ((uintptr_t) (display.base)
+			+ (s->r.min.y + y) * display.bpl
+			+ (s->r.min.x + start_x) * display.bpp);
+	for (int i = 0; i < rest * display.bpp; i++)
 		w[i] = buf[offset + i];
 }
 
-void pset(Frame *s, const int x, const int y, const int color)
+void draw_pset(Frame *s, const int x, const int y, const int color)
 {
-	if ((x < 0)
-			|| (y < 0))
+	int absolute_x = s->r.min.x + x;
+	if ((absolute_x < s->viewport.min.x)
+			|| (absolute_x >= s->viewport.max.x))
 		return;
 
-	int width = s->r.max.x - s->r.min.x;
-	if (x >= width)
+	int absolute_y = s->r.min.y + y;
+	if ((absolute_y < s->viewport.min.y)
+			|| (absolute_y >= s->viewport.max.y))
 		return;
 
-	int height = s->r.max.y - s->r.min.y;
-	if (y >= height)
-		return;
-
-	uint8_t *r = (uint8_t *) (s->base)
-			+ y * screen.bpl
-			+ x * screen.bpp;
+	uint8_t *r = (uint8_t *) ((uintptr_t) (display.base)
+			+ absolute_y * display.bpl
+			+ absolute_x * display.bpp);
 	r[0] = color & 0xff;
 	r[1] = (color >> 8) & 0xff;
 	r[2] = (color >> 16) & 0xff;

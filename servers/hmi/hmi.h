@@ -26,7 +26,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
 #include <dev/device.h>
 #include <fs/protocol.h>
 #include <hmi/draw.h>
@@ -46,7 +45,7 @@ typedef struct _request_message_t {
 	fsmsg_t message;
 } request_message_t;
 
-extern Frame *screen;
+extern Display *display;
 
 extern device_info_t *info;
 extern void hmi_handle(const int, const int);

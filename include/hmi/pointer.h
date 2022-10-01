@@ -61,8 +61,8 @@ enum pointer_style {
 
 #define NUM_OF_POINTER_STYLE (16)
 
-extern void pointer_put(const Frame *, const int, const int,
+extern void pointer_put(const Display *, const int, const int,
 		const pointer_pattern_t *);
-extern void pointer_restore(const Frame *);
+extern void pointer_restore(const Display *);
 
 #endif

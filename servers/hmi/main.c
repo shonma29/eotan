@@ -74,7 +74,7 @@ static char int_buf[
 ];
 
 #ifdef USE_VESA
-Frame *screen;
+Display *display;
 static Screen screen0;
 static Screen screen2;
 static Screen screen7;
@@ -103,7 +103,6 @@ typedef struct {
 	uint32_t attr;
 	Frame outer;
 	Frame inner;
-	Rectangle viewport;
 } window_t;
 
 static slab_t window_slab;
@@ -235,27 +234,27 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 		break;
 #ifdef USE_VESA
 	case 4:
-		if (size < DRAW_OPE_SIZE)
+		if (size < DRAW_OP_SIZE)
 			return E_PAR;//TODO return POSIX error
 
 		window_t *wp = find_window(2);
 		if (!wp)
 			return E_NOEXS;//TODO return POSIX error
 
-		draw_operation_e *ope = (draw_operation_e *) inbuf;
-		if (*ope == draw_put) {
+		draw_operation_e *op = (draw_operation_e *) inbuf;
+		if (*op == draw_op_put) {
 			if (size < DRAW_PUT_PACKET_SIZE)
 				return E_PAR;//TODO return POSIX error
 
 			unsigned int x = ((int *) inbuf)[1 + 0];
 			unsigned int y = ((int *) inbuf)[1 + 1];
 			mouse_hide();
-			put(&(wp->inner), x, y,
+			draw_put(&(wp->inner), x, y,
 					(size - DRAW_PUT_PACKET_SIZE)
 							/ sizeof(Color_Rgb),
 					(uint8_t *) &(inbuf[DRAW_PUT_PACKET_SIZE]));
 			mouse_show();
-		} else if (*ope == draw_pset) {
+		} else if (*op == draw_op_pset) {
 			if (size != DRAW_PSET_PACKET_SIZE)
 				return E_PAR;//TODO return POSIX error
 
@@ -263,7 +262,7 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 			unsigned int y = ((int *) inbuf)[1 + 1];
 			int color = ((int *) inbuf)[1 + 2];
 			mouse_hide();
-			pset(&(wp->inner), x, y, color);
+			draw_pset(&(wp->inner), x, y, color);
 			mouse_show();
 		} else
 			return E_PAR;//TODO return POSIX error
@@ -456,12 +455,6 @@ static int create_window(window_t **w, const int x1, const int y1,
 		p->outer.r.min.y = y1;
 		p->outer.r.max.x = x2;
 		p->outer.r.max.y = y2;
-		p->outer.base = (void *) ((uintptr_t) screen->base
-				+ y1 * screen->bpl + x1 * screen->bpp);
-		p->outer.bpl = screen->bpl;
-		p->outer.bpp = screen->bpp;
-		p->outer.type = screen->type;
-		p->outer.screen = NULL;
 
 		int padding_left = 0;
 		int padding_right = 0;
@@ -483,30 +476,25 @@ static int create_window(window_t **w, const int x1, const int y1,
 		if (attr & WINDOW_ATTR_SCROLLABLE_X)
 			padding_bottom += 12;
 
-		p->inner.r.min.x = padding_left;
-		p->inner.r.min.y = padding_top;
-		p->inner.r.max.x = p->inner.r.min.x
-				+ x2 - x1
-				- (padding_left + padding_right);
-		p->inner.r.max.y = p->inner.r.min.y
-				+ y2 - y1
-				- (padding_top + padding_bottom);
-		p->inner.base = (void *) ((uintptr_t) screen->base
-				+ (padding_top + y1) * screen->bpl
-				+ (padding_left + x1) * screen->bpp);
-		p->inner.bpl = screen->bpl;
-		p->inner.bpp = screen->bpp;
-		p->inner.type = screen->type;
-		p->inner.screen = s;
+		p->inner.r.min.x = x1 + padding_left;
+		p->inner.r.min.y = y1 + padding_top;
+		p->inner.r.max.x = x2 - padding_right;
+		p->inner.r.max.y = y2 - padding_bottom;
+		p->inner.viewport.min.x = p->inner.r.min.x;
+		p->inner.viewport.min.y = p->inner.r.min.y;
+		p->inner.viewport.max.x = p->inner.r.max.x;
+		p->inner.viewport.max.y = p->inner.r.max.y;
 
-		s->base = p->inner.base;
+		s->base = (void *) ((uintptr_t) display->base
+				+ p->inner.r.min.y * display->bpl
+				+ p->inner.r.min.x * display->bpp);
 		s->p = (uint8_t *) (s->base);
 		s->width = p->inner.r.max.x - p->inner.r.min.x;
 		s->height = p->inner.r.max.y - p->inner.r.min.y;
 		s->chr_width = s->width / s->font.width;
 		s->chr_height = s->height / s->font.height;
 
-		s->viewport = &(p->inner);
+		s->frame = &(p->inner);
 		list_insert(&window_list, &(p->brothers));
 		*w = p;
 	} while (false);
@@ -545,8 +533,8 @@ static int remove_window(const int wid)
 static ER initialize(void)
 {
 #ifdef USE_VESA
-	screen = get_screen();
-	if (!screen)
+	display = get_display();
+	if (!display)
 		return E_SYS;
 #endif
 	lfq_initialize(&hmi_queue, int_buf, sizeof(hmi_interrupt_t),

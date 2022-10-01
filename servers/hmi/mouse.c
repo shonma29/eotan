@@ -54,7 +54,7 @@ void mouse_process(const int type, const int d)
 	if (d & 0x100000)
 		dx |= 0xffffff00;
 
-	int width = screen->r.max.x - screen->r.min.x;
+	int width = display->r.max.x - display->r.min.x;
 	x += dx;
 	if (x < 0)
 		x = 0;
@@ -69,7 +69,7 @@ void mouse_process(const int type, const int d)
 	if (d & 0x200000)
 		dy |= 0xffffff00;
 
-	int height = screen->r.max.y - screen->r.min.y;
+	int height = display->r.max.y - display->r.min.y;
 	y -= dy;
 	if (y < 0)
 		y = 0;
@@ -91,22 +91,22 @@ void mouse_process(const int type, const int d)
 void mouse_show(void)
 {
 #ifdef USE_VESA
-	pointer_put(screen, x, y, &(pointer[pointer_select]));
+	pointer_put(display, x, y, &(pointer[pointer_select]));
 #endif
 }
 
 void mouse_hide(void)
 {
 #ifdef USE_VESA
-	pointer_restore(screen);
+	pointer_restore(display);
 #endif
 }
 
 ER mouse_initialize(void)
 {
 #ifdef USE_VESA
-	x = (screen->r.max.x - screen->r.min.x) / 2;
-	y = (screen->r.max.y - screen->r.min.y) / 2;
+	x = (display->r.max.x - display->r.min.x) / 2;
+	y = (display->r.max.y - display->r.min.y) / 2;
 #else
 	x = 0;
 	y = 0;

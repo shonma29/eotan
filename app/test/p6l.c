@@ -153,9 +153,9 @@ static int process(const int fd)
 	}
 
 	unsigned char *data = &(buf[DRAW_PUT_PACKET_SIZE]);
-	int *packet = (int *) &(buf[DRAW_OPE_SIZE]);
+	int *packet = (int *) &(buf[DRAW_OP_SIZE]);
 	draw_operation_e *ope = (draw_operation_e *) buf;
-	*ope = draw_put;
+	*ope = draw_op_put;
 
 	for (int i = 0; i < height; i++) {
 		size_t rest = width;
