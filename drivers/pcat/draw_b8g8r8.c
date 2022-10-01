@@ -68,38 +68,36 @@ Display *get_display(void)
 	return &display;
 }
 
-//TODO calcurate absolute position
 void draw_put(Frame *s, const int x, const int y, const size_t size,
 		const uint8_t *buf)
 {
-	int height = s->r.max.y - s->r.min.y;
-	if ((y < 0)
-			|| (y >= height))
+	int absolute_y = s->r.min.y + y;
+	if ((absolute_y < s->viewport.min.y)
+			|| (absolute_y >= s->viewport.max.y))
 		return;
 
-	int width = s->r.max.x - s->r.min.x;
-	if (x >= width)
+	int absolute_x = s->r.min.x + x;
+	if (absolute_x >= s->viewport.max.x)
 		return;
 
 	int offset;
-	int start_x;
 	int rest;
-	if (x < 0) {
-		offset = -x * display.bpp;
-		start_x = 0;
-		rest = size + x;
+	if (absolute_x < s->viewport.min.x) {
+		int skip = s->viewport.min.x - absolute_x;
+		offset = skip * display.bpp;
+		absolute_x = s->viewport.min.x;
+		rest = size - skip;
 	} else {
 		offset = 0;
-		start_x = x;
 		rest = size;
 	}
 
-	if (start_x + rest > width)
-		rest = width - start_x;
+	if (absolute_x + rest > s->viewport.max.x)
+		rest = s->viewport.max.x - absolute_x;
 
 	uint8_t *w = (uint8_t *) ((uintptr_t) (display.base)
-			+ (s->r.min.y + y) * display.bpl
-			+ (s->r.min.x + start_x) * display.bpp);
+			+ absolute_y * display.bpl
+			+ absolute_x * display.bpp);
 	for (int i = 0; i < rest * display.bpp; i++)
 		w[i] = buf[offset + i];
 }
