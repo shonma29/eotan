@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <stddef.h>
 #include <stdint.h>
 
+//TODO BGR order?
 typedef struct {
 	uint8_t b;
 	uint8_t g;
@@ -87,9 +88,9 @@ typedef enum draw_operation {
 #define DRAW_FID (4)
 
 extern Display *get_display(void);
-extern void draw_put(Frame *, const int, const int, const size_t,
+extern void draw_put(const Frame *, const int, const int, const size_t,
 		const uint8_t *);
-extern void draw_pset(Frame *, const int, const int, const int);
+extern void draw_pset(const Frame *, const int, const int, const int);
 extern void draw_fill(const Frame *, const int, const int, const int,
 		const int, const int);
 extern void draw_string(const Frame *, const int, const int, const int,

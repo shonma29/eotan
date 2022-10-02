@@ -31,6 +31,9 @@ For more information, please refer to <http://unlicense.org/>
 
 #define FONT_BITS CHAR_BIT
 
+#define INT_MOD_MASK (sizeof(uint32_t) - 1)
+#define INT_SHIFT_BITS (2)
+
 static Display display;
 #if 0
 static inline size_t font_bytes(const size_t width)
@@ -68,7 +71,7 @@ Display *get_display(void)
 	return &display;
 }
 
-void draw_put(Frame *s, const int x, const int y, const size_t size,
+void draw_put(const Frame *s, const int x, const int y, const size_t size,
 		const uint8_t *buf)
 {
 	int absolute_y = s->r.min.y + y;
@@ -84,7 +87,7 @@ void draw_put(Frame *s, const int x, const int y, const size_t size,
 	int rest;
 	if (absolute_x < s->viewport.min.x) {
 		int skip = s->viewport.min.x - absolute_x;
-		offset = skip * display.bpp;
+		offset = skip * sizeof(Color_Rgb);;
 		absolute_x = s->viewport.min.x;
 		rest = size - skip;
 	} else {
@@ -97,12 +100,12 @@ void draw_put(Frame *s, const int x, const int y, const size_t size,
 
 	uint8_t *w = (uint8_t *) ((uintptr_t) (display.base)
 			+ absolute_y * display.bpl
-			+ absolute_x * display.bpp);
-	for (int i = 0; i < rest * display.bpp; i++)
+			+ absolute_x * sizeof(Color_Rgb));
+	for (int i = 0; i < rest * sizeof(Color_Rgb); i++)
 		w[i] = buf[offset + i];
 }
 
-void draw_pset(Frame *s, const int x, const int y, const int color)
+void draw_pset(const Frame *s, const int x, const int y, const int color)
 {
 	int absolute_x = s->r.min.x + x;
 	if ((absolute_x < s->viewport.min.x)
@@ -116,66 +119,86 @@ void draw_pset(Frame *s, const int x, const int y, const int color)
 
 	uint8_t *r = (uint8_t *) ((uintptr_t) (display.base)
 			+ absolute_y * display.bpl
-			+ absolute_x * display.bpp);
+			+ absolute_x * sizeof(Color_Rgb));
+	//TODO color order is BGR?
 	r[0] = color & 0xff;
 	r[1] = (color >> 8) & 0xff;
 	r[2] = (color >> 16) & 0xff;
 }
-#if 0
-void fill(const Frame *s, const int min_x, const int min_y, const int max_x,
-		const int max_y, const int color)
+
+void draw_fill(const Frame *s, const int x1, const int y1,
+		const int x2, const int y2, const int color)
 {
-	int x1 = min_x;
-	int y1 = min_y;
-	if ((x1 >= (int) (s->width))
-			|| (y1 >= (int) (s->height)))
+	//TODO normalize param
+
+	int absolute_x1 = s->r.min.x + x1;
+	if (absolute_x1 >= s->viewport.max.x)
 		return;
 
-	int x2 = max_x;
-	int y2 = max_y;
-	if ((x2 <= 0)
-			|| (y2 <= 0))
+	int absolute_y1 = s->r.min.y + y1;
+	if (absolute_y1 >= s->viewport.max.y)
 		return;
 
-	if (x1 < 0)
-		x1 = 0;
-
-	if (y1 < 0)
-		y1 = 0;
-
-	if (x2 > s->width)
-		x2 = s->width;
-
-	if (y2 > s->height)
-		y2 = s->height;
-
-	if ((x1 >= x2)
-			|| (y1 >= y2))
+	int absolute_x2 = s->r.min.x + x2;
+	if (absolute_x2 <= s->viewport.min.x)
 		return;
 
-	size_t len_x = x2 - x1;
+	int absolute_y2 = s->r.min.y + y2;
+	if (absolute_y2 <= s->viewport.min.y)
+		return;
+
+	if (absolute_x1 < s->viewport.min.x)
+		absolute_x1 = s->viewport.min.x;
+
+	if (absolute_x2 > s->viewport.max.x)
+		absolute_x2 = s->viewport.max.x;
+
+	if (absolute_x1 >= absolute_x2)
+		return;
+
+	if (absolute_y1 < s->viewport.min.y)
+		absolute_y1 = s->viewport.min.y;
+
+	if (absolute_y2 > s->viewport.max.y)
+		absolute_y2 = s->viewport.max.y;
+
+	if (absolute_y1 >= absolute_y2)
+		return;
+
+	size_t len_x = absolute_x2 - absolute_x1;
 	uint32_t buf[sizeof(Color_Rgb)];
-	uint8_t *p = (uint8_t *) buf;
+	uint8_t *p;
+	//TODO color order is BGR?
 	uint8_t b = color & 0xff;
 	uint8_t g = (color >> 8) & 0xff;
 	uint8_t r = (color >> 16) & 0xff;
-	for (size_t i = 4; i > 0; i--) {
-		p[0] = b;
-		p[1] = g;
-		p[2] = r;
-		p += sizeof(Color_Rgb);
+	size_t skip = display.bpl - len_x * sizeof(Color_Rgb);
+	size_t right = absolute_x2 & INT_MOD_MASK;
+	size_t left = absolute_x1 & INT_MOD_MASK;
+	if (left) {
+		if ((absolute_x1 >> INT_SHIFT_BITS)
+				== (absolute_x2 >> INT_SHIFT_BITS)) {
+			left = right - left;
+			right = 0;
+		} else
+			left = sizeof(uint32_t) - left;
 	}
 
-	size_t skip = s->bpl - len_x * sizeof(Color_Rgb);
-	size_t left = (sizeof(uint32_t) - (x1 & (sizeof(uint32_t) - 1)))
-			& (sizeof(uint32_t) - 1);
-	size_t right = x2 & (sizeof(uint32_t) - 1);
-	size_t middle = (len_x - left - right) >> 2;
-	p = (uint8_t *) (s->base)
-			+ y1 * s->bpl
-			+ x1 * sizeof(Color_Rgb);
+	size_t middle = (len_x - left - right) >> INT_SHIFT_BITS;
+	if (middle) {
+		p = (uint8_t *) buf;
+		for (size_t i = sizeof(uint32_t); i > 0; i--) {
+			p[0] = b;
+			p[1] = g;
+			p[2] = r;
+			p += sizeof(Color_Rgb);
+		}
+	}
 
-	for (y2 -= y1; y2 > 0; y2--) {
+	p = (uint8_t *) ((uintptr_t) (display.base)
+			+ absolute_y1 * display.bpl
+			+ absolute_x1 * sizeof(Color_Rgb));
+	for (absolute_y2 -= absolute_y1; absolute_y2 > 0; absolute_y2--) {
 		for (size_t i = left; i > 0; i--) {
 			p[0] = b;
 			p[1] = g;
@@ -202,7 +225,7 @@ void fill(const Frame *s, const int min_x, const int min_y, const int max_x,
 		p += skip;
 	}
 }
-
+#if 0
 void string(const Frame *s, const int x, const int y, const int color,
 		Font *font, const uint8_t *str)
 {
@@ -267,6 +290,7 @@ static bool _putc(const Frame *s, uint8_t *out, int *x, const int color,
 		//TODO test with large font
 		skip_in++;
 
+	//TODO color order is BGR?
 	uint8_t b = color & 0xff;
 	uint8_t g = (color >> 8) & 0xff;
 	uint8_t r = (color >> 16) & 0xff;

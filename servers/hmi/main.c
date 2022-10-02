@@ -451,10 +451,15 @@ static int create_window(window_t **w, const int x1, const int y1,
 			break;
 		}
 
+		p->attr = attr;
 		p->outer.r.min.x = x1;
 		p->outer.r.min.y = y1;
 		p->outer.r.max.x = x2;
 		p->outer.r.max.y = y2;
+		p->outer.viewport.min.x = p->outer.r.min.x;
+		p->outer.viewport.min.y = p->outer.r.min.y;
+		p->outer.viewport.max.x = p->outer.r.max.x;
+		p->outer.viewport.max.y = p->outer.r.max.y;
 
 		int padding_left = 0;
 		int padding_right = 0;
@@ -462,13 +467,13 @@ static int create_window(window_t **w, const int x1, const int y1,
 		int padding_bottom = 0;
 		if (attr & WINDOW_ATTR_HAS_BORDER) {
 			padding_left += 2;
-			padding_right += 2;
+			padding_right += 3;
 			padding_top += 2;
-			padding_bottom += 2;
+			padding_bottom += 3;
 		}
 
 		if (attr & WINDOW_ATTR_HAS_TITLE)
-			padding_top += 12;
+			padding_top += 13;
 
 		if (attr & WINDOW_ATTR_SCROLLABLE_Y)
 			padding_right += 12;
@@ -497,6 +502,71 @@ static int create_window(window_t **w, const int x1, const int y1,
 		s->frame = &(p->inner);
 		list_insert(&window_list, &(p->brothers));
 		*w = p;
+
+		int outer_width = p->outer.r.max.x - p->outer.r.min.x;
+		int outer_height = p->outer.r.max.y - p->outer.r.min.y;
+
+		if (padding_top) {
+			if (attr & WINDOW_ATTR_HAS_TITLE) {
+				draw_fill(&(p->outer),
+						0,
+						0,
+						outer_width,
+						padding_top - 1,
+						0xdfe3e4);
+				draw_fill(&(p->outer),
+						0,
+						padding_top - 1,
+						outer_width,
+						padding_top,
+						0x24130d);
+			} else {
+				draw_fill(&(p->outer),
+						0,
+						0,
+						outer_width,
+						padding_top,
+						0xdfe3e4);
+			}
+		}
+
+		if (padding_left)
+			draw_fill(&(p->outer),
+					0,
+					padding_top,
+					padding_left,
+					outer_height - padding_bottom,
+					0xdfe3e4);
+
+		if (padding_bottom) {
+			draw_fill(&(p->outer),
+					0,
+					outer_height - padding_bottom,
+					outer_width - 1,
+					outer_height - 1,
+					0xdfe3e4);
+			draw_fill(&(p->outer),
+					0,
+					outer_height - 1,
+					outer_width - 1,
+					outer_height,
+					0x24130d);
+		}
+
+		if (padding_right) {
+			draw_fill(&(p->outer),
+					outer_width - padding_right,
+					padding_top,
+					outer_width - 1,
+					outer_height - padding_bottom,
+					0xdfe3e4);
+			draw_fill(&(p->outer),
+					outer_width - 1,
+					0,
+					outer_width,
+					outer_height,
+					0x24130d);
+		}
 	} while (false);
 
 	return error_no;
@@ -571,8 +641,7 @@ static ER initialize(void)
 		//result = create_window(&w, &screen0);
 		create_window(&w, 0, SCREEN7_HEIGHT, s->width / 2,
 				SCREEN7_HEIGHT + (s->height - SCREEN7_HEIGHT) / 2,
-				WINDOW_ATTR_HAS_BORDER | WINDOW_ATTR_HAS_TITLE
-						| WINDOW_ATTR_SCROLLABLE_Y,
+				WINDOW_ATTR_HAS_BORDER | WINDOW_ATTR_HAS_TITLE,
 				&screen0);
 		driver->write(STR_CONS_INIT, (int) &screen0, 0, LEN_CONS_INIT);
 
@@ -588,8 +657,7 @@ static ER initialize(void)
 				SCREEN7_HEIGHT + (s->height - SCREEN7_HEIGHT) / 2,
 				s->width / 2,
 				SCREEN7_HEIGHT + ((s->height - SCREEN7_HEIGHT) / 2) * 2,
-				WINDOW_ATTR_HAS_BORDER | WINDOW_ATTR_HAS_TITLE
-						| WINDOW_ATTR_SCROLLABLE_Y,
+				WINDOW_ATTR_HAS_BORDER | WINDOW_ATTR_HAS_TITLE,
 				&screen2);
 		driver->write(STR_CONS_INIT, (int) &screen2, 0, LEN_CONS_INIT);
 
@@ -601,7 +669,7 @@ static ER initialize(void)
 		screen7.bgcolor.rgb.g = 227;
 		screen7.bgcolor.rgb.r = 223;
 		//result = create_window(&w, &screen7);
-		create_window(&w, 0, 0, 1024, 20,
+		create_window(&w, 0, 0, s->width, SCREEN7_HEIGHT,
 				WINDOW_ATTR_HAS_BORDER,
 				&screen7);
 		driver->write(STR_CONS_INIT, (int) &screen7, 0, LEN_CONS_INIT);
