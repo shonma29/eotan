@@ -35,16 +35,16 @@ For more information, please refer to <http://unlicense.org/>
 #define INT_SHIFT_BITS (2)
 
 static Display display;
-#if 0
+
 static inline size_t font_bytes(const size_t width)
 {
 	return ((width + (CHAR_BIT - 1)) / CHAR_BIT);
 }
 
-static bool _putc(const Frame *, uint8_t *, int *, const int,
-		Font *, const uint8_t, unsigned int, size_t);
+static bool _putc(const Frame *, uint8_t *, int *, const Color_Rgb *,
+		Font *, const uint8_t, int, size_t);
 static uint8_t *get_font_address(const Font *, const uint8_t);
-#endif
+
 
 Display *get_display(void)
 {
@@ -225,84 +225,96 @@ void draw_fill(const Frame *s, const int x1, const int y1,
 		p += skip;
 	}
 }
-#if 0
-void string(const Frame *s, const int x, const int y, const int color,
-		Font *font, const uint8_t *str)
+
+void draw_string(const Frame *s, const int x, const int y,
+		const Color_Rgb *color, Font *font, const uint8_t *str)
 {
-	int y1 = y;
-	if (y1 >= (int) (s->height))
+	int absolute_y1 = s->r.min.y + y;
+	if (absolute_y1 >= s->viewport.max.y)
 		return;
 
-	int y2 = y1 + font->height;
-	if (y2 <= 0)
+	int absolute_y2 = absolute_y1 + font->height;
+	if (absolute_y2 <= s->viewport.min.y)
 		return;
 
-	unsigned int start_y = 0;
-	if (y1 < 0) {
-		start_y = -y1;
-		y1 = 0;
-	}
+	int start_y;
+	if (absolute_y1 < s->viewport.min.y) {
+		start_y = s->viewport.min.y - absolute_y1;
+		absolute_y1 = s->viewport.min.y;
+	} else
+		start_y = 0;
 
-	if (y2 > s->height)
-		y2 = s->height;
+	if (absolute_y2 > s->viewport.max.y)
+		absolute_y2 = s->viewport.max.y;
 
-	uint8_t *line = (uint8_t *) (s->base) + y1 * s->bpl;
-	y2 -= y1;
+	if (absolute_y1 >= absolute_y2)
+		return;
 
-	int x1 = x;
+	uint8_t *line = (uint8_t *) ((uintptr_t) (display.base)
+			+ absolute_y1 * display.bpl);
+	absolute_y2 -= absolute_y1;
+
+	int absolute_x1 = s->r.min.x + x;
 	for (uint8_t *p = (uint8_t *) str; *p; p++)
-		if (_putc(s, line, &x1, color, font, *p, start_y, y2))
+		if (_putc(s, line, &absolute_x1, color, font, *p,
+				start_y, absolute_y2))
 			break;
 }
 
-static bool _putc(const Frame *s, uint8_t *out, int *x, const int color,
-		Font *font, const uint8_t ch, unsigned int start_y,
-		size_t len_y)
+static bool _putc(const Frame *s, uint8_t *out, int *x, const Color_Rgb *c,
+		Font *font, const uint8_t ch, int start_y, size_t len_y)
 {
-	int x1 = *x;
-	if (x1 >= (int) (s->width))
+	int absolute_x1 = *x;
+	if (absolute_x1 >= s->viewport.max.x)
 		return true;
 
-	int x2 = x1 + font->width;
-	if (x2 <= 0) {
-		*x = x2;
+	//TODO all glyph has same width?
+	int absolute_x2 = absolute_x1 + font->width;
+	if (absolute_x2 <= s->viewport.min.x) {
+		*x = absolute_x2;
 		return false;
 	}
 
-	unsigned int start_x = 0;
-	if (x1 < 0) {
-		start_x = -x1;
-		x1 = 0;
-	}
+	int start_x;
+	if (absolute_x1 < s->viewport.min.x) {
+		start_x = s->viewport.min.x - absolute_x1;
+		absolute_x1 = s->viewport.min.x;
+	} else
+		start_x = 0;
 
-	if (x2 > s->width)
-		x2 = s->width;
+	if (absolute_x2 > s->viewport.max.x)
+		absolute_x2 = s->viewport.max.x;
 
-	size_t len_x = x2 - x1;
-	size_t skip = s->bpl - len_x * sizeof(Color_Rgb);
-	out += x1 * sizeof(Color_Rgb);
-	*x = x2;
+	if (absolute_x1 >= absolute_x2)
+		return false;
+
+	size_t len_x = absolute_x2 - absolute_x1;
+	size_t skip = display.bpl - len_x * sizeof(Color_Rgb);
+	out += absolute_x1 * sizeof(Color_Rgb);
+	*x = absolute_x2;
 
 	size_t bytes = font_bytes(font->width);
 	const uint8_t *in = get_font_address(font, ch) + start_y * bytes;
 	size_t skip_in = 0;
 	for (; start_x >= FONT_BITS; start_x -= FONT_BITS)
 		//TODO test with large font
+		//TODO divide is faster?
 		skip_in++;
 
-	//TODO color order is BGR?
-	uint8_t b = color & 0xff;
-	uint8_t g = (color >> 8) & 0xff;
-	uint8_t r = (color >> 16) & 0xff;
 	for (; len_y > 0; len_y--) {
 		const uint8_t *q = in + skip_in;
 		uint8_t pattern = *q++;
 		unsigned int mask = 1 << start_x;
 		for (size_t j = len_x; j > 0; j--) {
+			//TODO color order is BGR?
 			if (pattern & mask) {
-				out[0] = b;
-				out[1] = g;
-				out[2] = r;
+				out[0] = c[1].b;
+				out[1] = c[1].g;
+				out[2] = c[1].r;
+			} else {
+				out[0] = c[0].b;
+				out[1] = c[0].g;
+				out[2] = c[0].r;
 			}
 
 			out += sizeof(Color_Rgb);
@@ -326,5 +338,4 @@ static uint8_t *get_font_address(const Font *font, const uint8_t ch)
 	uint8_t c = ((ch < font->min_char) || (ch > font->max_char)) ? ' ' : ch;
 	return &(font->buf[(c - font->min_char) * font->bytes_per_chr]);
 }
-#endif
 #endif

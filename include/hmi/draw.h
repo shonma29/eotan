@@ -93,6 +93,6 @@ extern void draw_put(const Frame *, const int, const int, const size_t,
 extern void draw_pset(const Frame *, const int, const int, const int);
 extern void draw_fill(const Frame *, const int, const int, const int,
 		const int, const int);
-extern void draw_string(const Frame *, const int, const int, const int,
+extern void draw_string(const Frame *, const int, const int, const Color_Rgb *,
 		Font *, const uint8_t *);
 #endif

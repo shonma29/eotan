@@ -116,7 +116,7 @@ static void execute(request_message_t *);
 static ER accept(void);
 #ifdef USE_VESA
 static int create_window(window_t **w, const int, const int,
-		const int, const int, const int, Screen *);
+		const int, const int, const int, const char *, Screen *);
 #endif
 static window_t *find_window(const int);
 #if 0
@@ -425,7 +425,8 @@ static ER accept(void)
 }
 #ifdef USE_VESA
 static int create_window(window_t **w, const int x1, const int y1,
-		const int x2, const int y2, const int attr, Screen *s)
+		const int x2, const int y2, const int attr, const char *title,
+		Screen *s)
 {
 	int error_no = 0;
 	do {
@@ -567,6 +568,16 @@ static int create_window(window_t **w, const int x1, const int y1,
 					outer_height,
 					0x24130d);
 		}
+
+		if ((attr & WINDOW_ATTR_HAS_TITLE)
+				&& title) {
+			Color_Rgb c[] = {
+				{ 0xe4, 0xe3, 0xdf },
+				{ 0x00, 0x00, 0x00 }
+			};
+			draw_string(&(p->outer), 2, 2, c,
+					&default_font, (uint8_t *) title);
+		}
 	} while (false);
 
 	return error_no;
@@ -642,7 +653,7 @@ static ER initialize(void)
 		create_window(&w, 0, SCREEN7_HEIGHT, s->width / 2,
 				SCREEN7_HEIGHT + (s->height - SCREEN7_HEIGHT) / 2,
 				WINDOW_ATTR_HAS_BORDER | WINDOW_ATTR_HAS_TITLE,
-				&screen0);
+				"Console", &screen0);
 		driver->write(STR_CONS_INIT, (int) &screen0, 0, LEN_CONS_INIT);
 
 		screen2 = screen0;
@@ -658,7 +669,7 @@ static ER initialize(void)
 				s->width / 2,
 				SCREEN7_HEIGHT + ((s->height - SCREEN7_HEIGHT) / 2) * 2,
 				WINDOW_ATTR_HAS_BORDER | WINDOW_ATTR_HAS_TITLE,
-				&screen2);
+				"Draw", &screen2);
 		driver->write(STR_CONS_INIT, (int) &screen2, 0, LEN_CONS_INIT);
 
 		screen7 = *s;
@@ -671,7 +682,7 @@ static ER initialize(void)
 		//result = create_window(&w, &screen7);
 		create_window(&w, 0, 0, s->width, SCREEN7_HEIGHT,
 				WINDOW_ATTR_HAS_BORDER,
-				&screen7);
+				NULL, &screen7);
 		driver->write(STR_CONS_INIT, (int) &screen7, 0, LEN_CONS_INIT);
 #else
 		if (sysinfo->cga)
