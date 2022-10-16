@@ -26,6 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -91,8 +92,11 @@ extern Display *get_display(void);
 extern void draw_put(const Frame *, const int, const int, const size_t,
 		const uint8_t *);
 extern void draw_pset(const Frame *, const int, const int, const int);
-extern void draw_fill(const Frame *, const int, const int, const int,
-		const int, const int);
+extern void draw_fill(const Frame *, Rectangle *, const int);
 extern void draw_string(const Frame *, const int, const int, const Color_Rgb *,
 		Font *, const uint8_t *);
+
+extern void rect_normalize(Rectangle *);
+extern bool rect_intersect(Rectangle *, Rectangle *, Rectangle *);
+
 #endif

@@ -457,10 +457,8 @@ static int create_window(window_t **w, const int x1, const int y1,
 		p->outer.r.min.y = y1;
 		p->outer.r.max.x = x2;
 		p->outer.r.max.y = y2;
-		p->outer.viewport.min.x = p->outer.r.min.x;
-		p->outer.viewport.min.y = p->outer.r.min.y;
-		p->outer.viewport.max.x = p->outer.r.max.x;
-		p->outer.viewport.max.y = p->outer.r.max.y;
+		rect_normalize(&(p->outer.r));
+		p->outer.viewport = p->outer.r;
 
 		int padding_left = 0;
 		int padding_right = 0;
@@ -482,14 +480,12 @@ static int create_window(window_t **w, const int x1, const int y1,
 		if (attr & WINDOW_ATTR_SCROLLABLE_X)
 			padding_bottom += 12;
 
-		p->inner.r.min.x = x1 + padding_left;
-		p->inner.r.min.y = y1 + padding_top;
-		p->inner.r.max.x = x2 - padding_right;
-		p->inner.r.max.y = y2 - padding_bottom;
-		p->inner.viewport.min.x = p->inner.r.min.x;
-		p->inner.viewport.min.y = p->inner.r.min.y;
-		p->inner.viewport.max.x = p->inner.r.max.x;
-		p->inner.viewport.max.y = p->inner.r.max.y;
+		p->inner.r = p->outer.r;
+		p->inner.r.min.x += padding_left;
+		p->inner.r.min.y += padding_top;
+		p->inner.r.max.x -= padding_right;
+		p->inner.r.max.y -= padding_bottom;
+		p->inner.viewport = p->inner.r;
 
 		s->base = (void *) ((uintptr_t) display->base
 				+ p->inner.r.min.y * display->bpl
@@ -509,64 +505,65 @@ static int create_window(window_t **w, const int x1, const int y1,
 
 		if (padding_top) {
 			if (attr & WINDOW_ATTR_HAS_TITLE) {
-				draw_fill(&(p->outer),
-						0,
-						0,
-						outer_width,
-						padding_top - 1,
-						0xdfe3e4);
-				draw_fill(&(p->outer),
-						0,
-						padding_top - 1,
-						outer_width,
-						padding_top,
-						0x24130d);
+				Rectangle r;
+				r.min.x = 0;
+				r.min.y = 0;
+				r.max.x = outer_width;
+				r.max.y = padding_top - 1;
+				draw_fill(&(p->outer), &r, 0xdfe3e4);
+
+				r.min.x = 0;
+				r.min.y = padding_top - 1;
+				r.max.x = outer_width;
+				r.max.y = padding_top;
+				draw_fill(&(p->outer), &r, 0x24130d);
 			} else {
-				draw_fill(&(p->outer),
-						0,
-						0,
-						outer_width,
-						padding_top,
-						0xdfe3e4);
+				Rectangle r;
+				r.min.x = 0;
+				r.min.y = 0;
+				r.max.x = outer_width;
+				r.max.y = padding_top;
+				draw_fill(&(p->outer), &r, 0xdfe3e4);
 			}
 		}
 
-		if (padding_left)
-			draw_fill(&(p->outer),
-					0,
-					padding_top,
-					padding_left,
-					outer_height - padding_bottom,
-					0xdfe3e4);
+		if (padding_left) {
+			Rectangle r;
+			r.min.x = 0;
+			r.min.y = padding_top;
+			r.max.x = padding_left;
+			r.max.y = outer_height - padding_bottom;
+			draw_fill(&(p->outer), &r, 0xdfe3e4);
+		}
 
 		if (padding_bottom) {
-			draw_fill(&(p->outer),
-					0,
-					outer_height - padding_bottom,
-					outer_width - 1,
-					outer_height - 1,
-					0xdfe3e4);
-			draw_fill(&(p->outer),
-					0,
-					outer_height - 1,
-					outer_width - 1,
-					outer_height,
-					0x24130d);
+			Rectangle r;
+			r.min.x = 0;
+			r.min.y = outer_height - padding_bottom;
+			r.max.x = outer_width - 1;
+			r.max.y = outer_height - 1;
+			draw_fill(&(p->outer), &r, 0xdfe3e4);
+
+			r.min.x = 0;
+			r.min.y = outer_height - 1;
+			r.max.x = outer_width - 1;
+			r.max.y = outer_height;
+			draw_fill(&(p->outer), &r, 0x24130d);
 		}
 
 		if (padding_right) {
-			draw_fill(&(p->outer),
-					outer_width - padding_right,
-					padding_top,
-					outer_width - 1,
-					outer_height - padding_bottom,
-					0xdfe3e4);
-			draw_fill(&(p->outer),
-					outer_width - 1,
-					0,
-					outer_width,
-					outer_height,
-					0x24130d);
+			Rectangle r;
+			r.min.x = outer_width - padding_right;
+			r.min.y = padding_top;
+			r.max.x = outer_width - 1;
+			r.max.y = outer_height - padding_bottom;
+			draw_fill(&(p->outer), &r, 0xdfe3e4);
+
+			r.min.x = outer_width - 1;
+			r.min.y = 0;
+			r.max.x = outer_width;
+			r.max.y = outer_height;
+			draw_fill(&(p->outer), &r, 0x24130d);
 		}
 
 		if ((attr & WINDOW_ATTR_HAS_TITLE)

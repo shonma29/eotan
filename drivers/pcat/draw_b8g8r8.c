@@ -126,24 +126,23 @@ void draw_pset(const Frame *s, const int x, const int y, const int color)
 	r[2] = (color >> 16) & 0xff;
 }
 
-void draw_fill(const Frame *s, const int x1, const int y1,
-		const int x2, const int y2, const int color)
+void draw_fill(const Frame *s, Rectangle *rect, const int color)
 {
-	//TODO normalize param
+	rect_normalize(rect);
 
-	int absolute_x1 = s->r.min.x + x1;
+	int absolute_x1 = s->r.min.x + rect->min.x;
 	if (absolute_x1 >= s->viewport.max.x)
 		return;
 
-	int absolute_y1 = s->r.min.y + y1;
+	int absolute_y1 = s->r.min.y + rect->min.y;
 	if (absolute_y1 >= s->viewport.max.y)
 		return;
 
-	int absolute_x2 = s->r.min.x + x2;
+	int absolute_x2 = s->r.min.x + rect->max.x;
 	if (absolute_x2 <= s->viewport.min.x)
 		return;
 
-	int absolute_y2 = s->r.min.y + y2;
+	int absolute_y2 = s->r.min.y + rect->max.y;
 	if (absolute_y2 <= s->viewport.min.y)
 		return;
 
