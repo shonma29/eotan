@@ -128,43 +128,15 @@ void draw_pset(const Frame *s, const int x, const int y, const int color)
 
 void draw_fill(const Frame *s, Rectangle *rect, const int color)
 {
-	rect_normalize(rect);
+	Rectangle src = *rect;
+	rect_normalize(&src);
+	rect_transform(&src, &(s->r.min));
 
-	int absolute_x1 = s->r.min.x + rect->min.x;
-	if (absolute_x1 >= s->viewport.max.x)
+	Rectangle dest;
+	if (!rect_intersect(&dest, &src, &(s->viewport)))
 		return;
 
-	int absolute_y1 = s->r.min.y + rect->min.y;
-	if (absolute_y1 >= s->viewport.max.y)
-		return;
-
-	int absolute_x2 = s->r.min.x + rect->max.x;
-	if (absolute_x2 <= s->viewport.min.x)
-		return;
-
-	int absolute_y2 = s->r.min.y + rect->max.y;
-	if (absolute_y2 <= s->viewport.min.y)
-		return;
-
-	if (absolute_x1 < s->viewport.min.x)
-		absolute_x1 = s->viewport.min.x;
-
-	if (absolute_x2 > s->viewport.max.x)
-		absolute_x2 = s->viewport.max.x;
-
-	if (absolute_x1 >= absolute_x2)
-		return;
-
-	if (absolute_y1 < s->viewport.min.y)
-		absolute_y1 = s->viewport.min.y;
-
-	if (absolute_y2 > s->viewport.max.y)
-		absolute_y2 = s->viewport.max.y;
-
-	if (absolute_y1 >= absolute_y2)
-		return;
-
-	size_t len_x = absolute_x2 - absolute_x1;
+	size_t len_x = dest.max.x - dest.min.x;
 	uint32_t buf[sizeof(Color_Rgb)];
 	uint8_t *p;
 	//TODO color order is BGR?
@@ -172,11 +144,11 @@ void draw_fill(const Frame *s, Rectangle *rect, const int color)
 	uint8_t g = (color >> 8) & 0xff;
 	uint8_t r = (color >> 16) & 0xff;
 	size_t skip = display.bpl - len_x * sizeof(Color_Rgb);
-	size_t right = absolute_x2 & INT_MOD_MASK;
-	size_t left = absolute_x1 & INT_MOD_MASK;
+	size_t right = dest.max.x & INT_MOD_MASK;
+	size_t left = dest.min.x & INT_MOD_MASK;
 	if (left) {
-		if ((absolute_x1 >> INT_SHIFT_BITS)
-				== (absolute_x2 >> INT_SHIFT_BITS)) {
+		if ((dest.min.x >> INT_SHIFT_BITS)
+				== (dest.max.x >> INT_SHIFT_BITS)) {
 			left = right - left;
 			right = 0;
 		} else
@@ -195,9 +167,9 @@ void draw_fill(const Frame *s, Rectangle *rect, const int color)
 	}
 
 	p = (uint8_t *) ((uintptr_t) (display.base)
-			+ absolute_y1 * display.bpl
-			+ absolute_x1 * sizeof(Color_Rgb));
-	for (absolute_y2 -= absolute_y1; absolute_y2 > 0; absolute_y2--) {
+			+ dest.min.y * display.bpl
+			+ dest.min.x * sizeof(Color_Rgb));
+	for (dest.max.y -= dest.min.y; dest.max.y > 0; dest.max.y--) {
 		for (size_t i = left; i > 0; i--) {
 			p[0] = b;
 			p[1] = g;

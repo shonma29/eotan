@@ -97,6 +97,7 @@ extern void draw_string(const Frame *, const int, const int, const Color_Rgb *,
 		Font *, const uint8_t *);
 
 extern void rect_normalize(Rectangle *);
-extern bool rect_intersect(Rectangle *, Rectangle *, Rectangle *);
+extern void rect_transform(Rectangle *, const Point *);
+extern bool rect_intersect(Rectangle *, const Rectangle *, const Rectangle *);
 
 #endif

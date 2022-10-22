@@ -26,37 +26,12 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <hmi/draw.h>
 
-static inline int min(const int x, const int y)
+
+void rect_transform(Rectangle *r, const Point *origin)
 {
-	return ((x < y) ? x : y);
-}
-
-static inline int max(const int x, const int y)
-{
-	return ((x > y) ? x : y);
-}
-
-
-bool rect_intersect(Rectangle *dest, const Rectangle *src1,
-		const Rectangle *src2)
-{
-	do {
-		dest->min.x = max(src1->min.x, src2->min.x);
-		dest->max.x = min(src1->max.x, src2->max.x);
-		if (dest->min.x >= dest->max.x)
-			break;
-
-		dest->min.y = max(src1->min.y, src2->min.y);
-		dest->max.y = min(src1->max.y, src2->max.y);
-		if (dest->min.y >= dest->max.y)
-			break;
-
-		return true;
-	} while (false);
-
-	dest->min.x = 0;
-	dest->min.y = 0;
-	dest->max.x = 0;
-	dest->max.y = 0;
-	return false;
+	//TODO check overflow
+	r->min.x += origin->x;
+	r->min.y += origin->y;
+	r->max.x += origin->x;
+	r->max.y += origin->y;
 }
