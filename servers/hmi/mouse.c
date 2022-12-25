@@ -53,8 +53,9 @@ void mouse_process(const int type, const int d)
 	int dx = (uint8_t) ((d >> 8) & 0xff);
 	if (d & 0x100000)
 		dx |= 0xffffff00;
-
+#ifdef USE_VESA
 	int width = display->r.max.x - display->r.min.x;
+#endif
 	x += dx;
 	if (x < 0)
 		x = 0;
@@ -68,8 +69,9 @@ void mouse_process(const int type, const int d)
 	int dy = (uint8_t) (d & 0xff);
 	if (d & 0x200000)
 		dy |= 0xffffff00;
-
+#ifdef USE_VESA
 	int height = display->r.max.y - display->r.min.y;
+#endif
 	y -= dy;
 	if (y < 0)
 		y = 0;

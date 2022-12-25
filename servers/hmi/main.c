@@ -117,8 +117,8 @@ static ER accept(void);
 #ifdef USE_VESA
 static int create_window(window_t **w, const int, const int,
 		const int, const int, const int, const char *, Screen *);
-#endif
 static window_t *find_window(const int);
+#endif
 #if 0
 static int remove_window(const int);
 #endif
@@ -579,12 +579,13 @@ static int create_window(window_t **w, const int x1, const int y1,
 
 	return error_no;
 }
-#endif
+
 static window_t *find_window(const int wid)
 {
 	node_t *node = tree_get(&window_tree, wid);
 	return (node ? (window_t *) getParent(window_t, node) : NULL);
 }
+#endif
 #if 0
 static int remove_window(const int wid)
 {
