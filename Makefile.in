@@ -27,7 +27,7 @@ ARCH = i686
 
 MAKE = gmake
 CC = clang
-CPP = clang-cpp
+CPP = $(CC) -E
 CFLAGS = -Wall -Werror -O2 -std=c17 \
  -march=$(ARCH) \
  -I include \
