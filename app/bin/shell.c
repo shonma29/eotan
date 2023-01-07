@@ -610,8 +610,10 @@ static unsigned char **var_expand(hash_t *vars)
 static void interpret(hash_t *vars, FILE *in)
 {
 	do {
-		if (interactive)
+		if (interactive) {
 			printf(PROMPT " ");
+			fflush(stdout);
+		}
 
 		line_clear(&line);
 

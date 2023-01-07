@@ -49,7 +49,8 @@ int fputc(int c, FILE *stream)
 	if (stream->pos > stream->len)
 		stream->len = stream->pos;
 
-	if (!isBlock(stream))
+	if ((c == __CHR_LF)
+			&& isLineBuffered(stream))
 		if (__sweep_buffer(stream))
 			return EOF;
 

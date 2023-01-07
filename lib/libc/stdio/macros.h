@@ -26,6 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdbool.h>
 #include <stdio.h>
 
 typedef struct {
@@ -54,9 +55,9 @@ static inline int isAppend(const FILE *stream)
 	return stream->mode & __FILE_MODE_APPEND;
 }
 
-static inline int isBlock(const FILE *stream)
+static inline bool isLineBuffered(const FILE *stream)
 {
-	return stream->mode & __FILE_MODE_BLOCK;
+	return ((stream->mode & __MASK_BUFFERED) == _IOLBF);
 }
 
 static inline int isDirty(const FILE *stream)

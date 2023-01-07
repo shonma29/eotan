@@ -169,6 +169,9 @@ static void process(const int data)
 	unsigned char buf = (unsigned char) (d & 0xff);
 
 	if (!raw_mode) {
+		if (buf == 0x0d)
+			buf = 0x0a;
+
 		int result;
 		// ^c
 		if (buf == 0x03) {
@@ -209,11 +212,12 @@ static void process(const int data)
 	kcall->region_put((message->header.token >> 16) & 0xffff,
 			(char *) addr, 1, &buf);
 	message->Tread.offset++;
-	if (message->Tread.count <= message->Tread.offset) {
+	if ((message->Tread.count <= message->Tread.offset)
+			|| (buf == 0x0a)) {
 //		message->header.token = message->head.token;
 		message->header.type = Rread;
 //		message->Rread.tag = message->Tread.tag;
-		message->Rread.count = message->Tread.count;
+		message->Rread.count = message->Tread.offset;
 		reply(current_req, MESSAGE_SIZE(Rread));
 		current_req = NULL;
 	}

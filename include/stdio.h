@@ -46,17 +46,24 @@ typedef unsigned long long int fpos_t;
 #define __FILE_MODE_READABLE (0x04)
 #define __FILE_MODE_WRITABLE (0x08)
 #define __FILE_MODE_APPEND (0x10)
-#define __FILE_MODE_BLOCK (0x20)
-#define __FILE_MODE_DIRTY (0x40)
+#define __FILE_MODE_UNBUFFERED (0x20)
+#define __FILE_MODE_LINE_BUFFERED (0x40)
+#define __FILE_MODE_DIRTY (0x80)
+
+#define _IONBF (__FILE_MODE_UNBUFFERED)
+#define _IOFBF (0)
+#define _IOLBF (__FILE_MODE_LINE_BUFFERED)
+#define __MASK_BUFFERED (__FILE_MODE_UNBUFFERED | __FILE_MODE_LINE_BUFFERED)
 
 typedef struct {
 	unsigned int mode;
-	size_t pos;
+	size_t pos;//TODO why size_t?
 	size_t len;
 	int fd;
-	size_t buf_size;
+	size_t buf_size;//TODO what if no buffering
 	fpos_t seek_pos;
-	unsigned char *buf;
+	unsigned char *buf;//TODO what if no buffering
+int cnt;
 } FILE;
 
 extern FILE __libc_files[];

@@ -56,15 +56,6 @@ static void __libc_initialize(void)
 	__malloc_initialize();
 
 	stdin = fdopen(STDIN_FILENO, "r");
-	//TODO fix when you can discriminate terminal
-	if (stdin)
-		stdin->buf_size = 1;
-
 	stdout = fdopen(STDOUT_FILENO, "w");
-	if (stdout)
-		stdout->buf_size = 1;
-
 	stderr = fdopen(STDERR_FILENO, "w");
-	if (stderr)
-		stderr->buf_size = 1;
 }

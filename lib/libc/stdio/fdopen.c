@@ -77,6 +77,10 @@ static FILE *_fdopen(FILE *stream, const int fd, const char *mode)
 	stream->len = 0;
 	stream->fd = fd;
 	stream->buf_size = BUFSIZ;
+
+	if (fd == STDERR_FILENO)
+		stream->mode |= _IOLBF;
+
 	stream->seek_pos = offset;
 	stream->buf = buf;
 	return stream;
