@@ -25,6 +25,7 @@
 
 ARCH = i686
 
+SHELL = /bin/sh
 MAKE = gmake
 CC = clang
 CPP = $(CC) -E

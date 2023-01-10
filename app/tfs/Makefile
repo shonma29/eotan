@@ -29,9 +29,6 @@ include Makefile.in
 
 CFLAGS = -Wall -Werror -O2 -std=c17 -D HOST_APP
 
-$(WD)/block.o: $(WD)/block.c
-	$(CC) $(CFLAGS) -c -o $@ $<
-
 $(TARGET): $(OBJS)
 	$(CC) -o $@ $(@).o $(WD)/block.o lib/libvfs.a lib/libtfs.a \
 		lib/libnc.a
