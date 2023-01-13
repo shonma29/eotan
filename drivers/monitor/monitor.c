@@ -38,20 +38,6 @@ For more information, please refer to <http://unlicense.org/>
 #define CSI '['
 #define DELIM ';'
 
-#define ESC_MAX_PARAMS (2)
-#define ESC_MAX_COLUMNS (5)
-#define ESC_BUF_SIZE (16)
-
-typedef struct _esc_state {
-	void (*func)(struct _esc_state *, const char);
-	Screen *screen;
-	int len;
-	int num_of_params;
-	int columns;
-	int params[ESC_MAX_PARAMS];
-	char buf[ESC_BUF_SIZE];
-} esc_state_t;
-
 static Screen root;
 static Console *cns;
 
@@ -89,7 +75,6 @@ static vdriver_t driver_mine = {
 	read,
 	write
 };
-static esc_state_t state = { state_null };
 
 
 const vdriver_t *monitor_attach(system_info_t *info)
@@ -127,10 +112,12 @@ static int write(char *inbuf, const int channel, const off_t offset,
 	if (!check_param(channel, offset, size))
 		return (-1);
 
-	Screen *s = (Screen *) channel;
-	state.screen = s;
+	esc_state_t *state = (esc_state_t *) channel;
+	if (!(state->func))
+		state->func = state_null;
+
 	for (int i = 0; i < size; i++)
-		eputc(&state, inbuf[i]);
+		eputc(state, inbuf[i]);
 
 	return size;
 }

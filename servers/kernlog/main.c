@@ -45,10 +45,12 @@ static ER accept(const ID);
 static ER_ID initialize(void);
 
 #if USE_MONITOR
-#include <screen.h>
+#include <console.h>
 
 static Screen screen1;
 static Screen screen3;
+static esc_state_t state1;
+static esc_state_t state3;
 
 static ER monitor_initialize(void);
 static void monitor(void);
@@ -203,6 +205,7 @@ void start(VP_INT exinf)
 }
 
 #if USE_MONITOR
+
 static ER monitor_initialize(void)
 {
 	T_CTSK pk_ctsk = {
@@ -236,7 +239,9 @@ static void monitor(void)
 				screen1.bgcolor.rgb.b = 0;
 				screen1.bgcolor.rgb.g = 31;
 				screen1.bgcolor.rgb.r = 0;
-				driver->write(STR_CONS_INIT, (int) &screen1,
+				state1.func = NULL;
+				state1.screen = &screen1;
+				driver->write(STR_CONS_INIT, (int) &state1,
 						0, LEN_CONS_INIT);
 
 				screen3 = screen1;
@@ -248,7 +253,9 @@ static void monitor(void)
 				screen3.bgcolor.rgb.b = 0xfc;
 				screen3.bgcolor.rgb.g = 0xfc;
 				screen3.bgcolor.rgb.r = 0xfc;
-				driver->write(STR_CONS_INIT, (int) &screen3,
+				state3.func = NULL;
+				state3.screen = &screen3;
+				driver->write(STR_CONS_INIT, (int) &state3,
 						0, LEN_CONS_INIT);
 			} else
 				continue;
@@ -259,12 +266,12 @@ static void monitor(void)
 				(len  = lfcopy(outbuf,
 						(volatile lfq_t *) KERNEL_LOG_ADDR,
 						sizeof(outbuf)));)
-			driver->write(outbuf, (int) &screen3, 0, len);
+			driver->write(outbuf, (int) &state3, 0, len);
 
 		for (size_t len;
 				(len = ring_get((ring_t *) buf, outbuf,
 						sizeof(outbuf)));)
-			driver->write(outbuf, (int) &screen1, 0, len);
+			driver->write(outbuf, (int) &state1, 0, len);
 	}
 }
 

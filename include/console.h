@@ -30,6 +30,10 @@ For more information, please refer to <http://unlicense.org/>
 
 #define CONSOLE_TAB_COLUMNS (8)
 
+#define ESC_MAX_PARAMS (2)
+#define ESC_MAX_COLUMNS (5)
+#define ESC_BUF_SIZE (16)
+
 typedef enum {
 	EraseScreenFromCursor,
 	EraseScreenToCursor,
@@ -47,5 +51,14 @@ typedef struct {
 	int (*rollup)(Screen *, const int);
 } Console;
 
+typedef struct _esc_state {
+	void (*func)(struct _esc_state *, const char);
+	Screen *screen;
+	int len;
+	int num_of_params;
+	int columns;
+	int params[ESC_MAX_PARAMS];
+	char buf[ESC_BUF_SIZE];
+} esc_state_t;
 
 #endif
