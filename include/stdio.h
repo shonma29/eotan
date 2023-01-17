@@ -63,7 +63,6 @@ typedef struct {
 	size_t buf_size;//TODO what if no buffering
 	fpos_t seek_pos;
 	unsigned char *buf;//TODO what if no buffering
-int cnt;
 } FILE;
 
 extern FILE __libc_files[];
