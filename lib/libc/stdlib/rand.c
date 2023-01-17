@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <limits.h>
 #include <stdint.h>
 #include <stdlib.h>
 

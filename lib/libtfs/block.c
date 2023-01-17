@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <limits.h>
 #include <mpu/bits.h>
 #include <sys/errno.h>
 #include "funcs.h"

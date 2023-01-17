@@ -26,7 +26,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <mpu/limits.h>
 
 typedef __INT8_TYPE__ int8_t;
 typedef __UINT8_TYPE__ uint8_t;
