@@ -32,7 +32,6 @@ For more information, please refer to <http://unlicense.org/>
 
 static void _erase(Screen *, const erase_type_e);
 static int _locate(Screen *, const int, const int);
-static int _color(Screen *, const int);
 static void _putc(Screen *, const uint8_t);
 static void __putc(Screen *, const uint8_t);
 static void _newline(Screen *);
@@ -47,7 +46,7 @@ static void _copy_left(Screen *, unsigned int, unsigned int,
 		unsigned int, unsigned int, unsigned int);
 
 static Console _cns = {
-	_erase, _locate, _color, _putc, _rollup
+	_erase, _locate, _putc
 };
 
 
@@ -143,22 +142,6 @@ static int _locate(Screen *s, const int x, const int y)
 	s->p = ((uint8_t *) (s->base)
 			+ y * s->font.height * s->bpl
 			+ x * s->font.width * sizeof(Color_Rgb));
-
-	_cursor(s);
-	return true;
-}
-
-static int _color(Screen *s, const int color)
-{
-	if ((color < 0)
-			|| (color > MAX_COLOR))
-		return false;
-
-	_cursor(s);
-
-	s->fgcolor.rgb.r = (color >> 16) & 0xff;
-	s->fgcolor.rgb.g = (color >> 8) & 0xff;
-	s->fgcolor.rgb.b = color & 0xff;
 
 	_cursor(s);
 	return true;

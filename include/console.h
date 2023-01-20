@@ -46,9 +46,7 @@ typedef enum {
 typedef struct {
 	void (*erase)(Screen *, const erase_type_e);
 	int (*locate)(Screen *, const int, const int);
-	int (*color)(Screen *, const int);
 	void (*putc)(Screen *, const unsigned char);
-	int (*rollup)(Screen *, const int);
 } Console;
 
 typedef struct _esc_state {

@@ -39,7 +39,6 @@ For more information, please refer to <http://unlicense.org/>
 static uint16_t _combine_chr(int, uint8_t);
 static void _erase(Screen *, const erase_type_e);
 static int _locate(Screen *, const int x, const int);
-static int _color(Screen *, const int);
 static void _putc(Screen *, const uint8_t);
 static void __putc(Screen *, const uint8_t);
 static void _newline(Screen *);
@@ -50,7 +49,7 @@ static void _fill(Screen *, const unsigned int, const unsigned int,
 
 
 static Console _cns = {
-	_erase, _locate, _color, _putc, _rollup
+	_erase, _locate, _putc
 };
 
 
@@ -110,16 +109,6 @@ static int _locate(Screen *s, const int x, const int y)
 	s->y = y;
 	s->p = (uint8_t *) ((uint16_t *) (s->base) + y * CGA_COLUMNS + x);
 	_cursor(s);
-	return true;
-}
-
-static int _color(Screen *s, const int color)
-{
-	if ((color < 0)
-			|| (color >= CGA_COLORS))
-		return false;
-
-	s->fgcolor.palet = color;
 	return true;
 }
 
