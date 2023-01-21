@@ -504,7 +504,6 @@ static int create_window(window_t **w, const int x1, const int y1,
 		s->chr_width = s->width / s->font.width;
 		s->chr_height = s->height / s->font.height;
 
-		s->frame = &(p->inner);
 		list_insert(&window_list, &(p->brothers));
 		*w = p;
 
