@@ -48,9 +48,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "hmi.h"
 #include "keyboard.h"
 #include "mouse.h"
-
-device_info_t *info;
-static vdriver_t *driver;
+#include "terminal.h"
 
 static char line[4096];
 static volatile bool raw_mode;
@@ -73,17 +71,15 @@ static char int_buf[
 	lfq_buf_size(sizeof(hmi_interrupt_t), INTERRUPT_QUEUE_SIZE)
 ];
 
+static Screen screen0;
+static esc_state_t state0;
+
 #ifdef USE_VESA
 Display *display;
-static Screen screen0;
 static Screen screen2;
 static Screen screen7;
-static esc_state_t state0;
 static esc_state_t state2;
 static esc_state_t state7;
-#else
-static Screen *screen0;
-static esc_state_t state0;
 #endif
 
 #define WINDOW_MAX (32)
@@ -197,9 +193,9 @@ static void process(const int data)
 		else {
 			mouse_hide();
 #ifdef USE_VESA
-			driver->write((char *) &buf, (int) &state0, 0, 1);
+			terminal_write((char *) &buf, &state0, 0, 1);
 #else
-			driver->write((char *) &buf, (int) &state0, 0, 1);
+			terminal_write((char *) &buf, &state0, 0, 1);
 #endif
 			mouse_show();
 			result = kcall->mutex_unlock(cons_mid);
@@ -281,8 +277,8 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 			kcall->printk("hmi: main cannot lock %d\n", result);
 		else {
 			mouse_hide();
-			driver->write((char *) inbuf,
-					(int) (dd ? ((dd == 7) ? &state7 : &state2) : &state0),
+			terminal_write((char *) inbuf,
+					(dd ? ((dd == 7) ? &state7 : &state2) : &state0),
 					0, size);
 			mouse_show();
 			result = kcall->mutex_unlock(cons_mid);
@@ -297,7 +293,7 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 		if (result)
 			kcall->printk("hmi: main cannot lock %d\n", result);
 		else {
-			driver->write((char *) inbuf, (int) &state0, 0, size);
+			terminal_write((char *) inbuf, &state0, 0, size);
 			result = kcall->mutex_unlock(cons_mid);
 			if (result)
 				kcall->printk("hmi: main cannot unlock %d\n",
@@ -646,70 +642,50 @@ static ER initialize(void)
 	tree_create(&window_tree, NULL, NULL);
 	list_initialize(&window_list);
 
-	info = device_find(DEVICE_CONTROLLER_MONITOR);
-	if (info) {
-		driver = (vdriver_t *) (info->driver);
+	state0.screen = &screen0;
+	terminal_initialize(&state0);
 #ifdef USE_VESA
-		//int result;
-		window_t *w;
-		Screen *s = (Screen *) (info->unit);
-		screen0 = *s;
-		state0.func = NULL;
-		state0.screen = &screen0;
-		//result = create_window(&w, &screen0);
-		create_window(&w, 0, SCREEN7_HEIGHT, s->width / 2,
-				SCREEN7_HEIGHT + (s->height - SCREEN7_HEIGHT) / 2,
-				WINDOW_ATTR_HAS_BORDER | WINDOW_ATTR_HAS_TITLE,
-				"Console", &screen0);
-		driver->write(STR_CONS_INIT, (int) &state0, 0, LEN_CONS_INIT);
+	window_t *w;
+	create_window(&w, 0, SCREEN7_HEIGHT, screen0.width / 2,
+			SCREEN7_HEIGHT + (screen0.height - SCREEN7_HEIGHT) / 2,
+			WINDOW_ATTR_HAS_BORDER | WINDOW_ATTR_HAS_TITLE,
+			"Console", &screen0);
+	terminal_write(STR_CONS_INIT, &state0, 0, LEN_CONS_INIT);
 
-		screen2 = screen0;
-		screen2.fgcolor.rgb.b = 0;
-		screen2.fgcolor.rgb.g = 127;
-		screen2.fgcolor.rgb.r = 255;
-		screen2.bgcolor.rgb.b = 0;
-		screen2.bgcolor.rgb.g = 0;
-		screen2.bgcolor.rgb.r = 31;
-		state2.func = NULL;
-		state2.screen = &screen2;
-		//result = create_window(&w, &screen2);
-		create_window(&w, 0,
-				SCREEN7_HEIGHT + (s->height - SCREEN7_HEIGHT) / 2,
-				s->width / 2,
-				SCREEN7_HEIGHT + ((s->height - SCREEN7_HEIGHT) / 2) * 2,
-				WINDOW_ATTR_HAS_BORDER | WINDOW_ATTR_HAS_TITLE,
-				"Draw", &screen2);
-		driver->write(STR_CONS_INIT, (int) &state2, 0, LEN_CONS_INIT);
+	state2.screen = &screen2;
+	terminal_initialize(&state2);
+	screen2.fgcolor.rgb.b = 0;
+	screen2.fgcolor.rgb.g = 127;
+	screen2.fgcolor.rgb.r = 255;
+	screen2.bgcolor.rgb.b = 0;
+	screen2.bgcolor.rgb.g = 0;
+	screen2.bgcolor.rgb.r = 31;
+	create_window(&w, 0,
+			SCREEN7_HEIGHT + (screen2.height - SCREEN7_HEIGHT) / 2,
+			screen2.width / 2,
+			SCREEN7_HEIGHT + ((screen2.height - SCREEN7_HEIGHT) / 2) * 2,
+			WINDOW_ATTR_HAS_BORDER | WINDOW_ATTR_HAS_TITLE,
+			"Draw", &screen2);
+	terminal_write(STR_CONS_INIT, &state2, 0, LEN_CONS_INIT);
 
-		screen7 = *s;
-		screen7.fgcolor.rgb.b = 40;
-		screen7.fgcolor.rgb.g = 66;
-		screen7.fgcolor.rgb.r = 30;
-		screen7.bgcolor.rgb.b = 228;
-		screen7.bgcolor.rgb.g = 227;
-		screen7.bgcolor.rgb.r = 223;
-		state7.func = NULL;
-		state7.screen = &screen7;
-		//result = create_window(&w, &screen7);
-		create_window(&w, 0, 0, s->width, SCREEN7_HEIGHT,
-				WINDOW_ATTR_HAS_BORDER,
-				NULL, &screen7);
-		driver->write(STR_CONS_INIT, (int) &state7, 0, LEN_CONS_INIT);
+	state7.screen = &screen7;
+	terminal_initialize(&state7);
+	screen7.fgcolor.rgb.b = 40;
+	screen7.fgcolor.rgb.g = 66;
+	screen7.fgcolor.rgb.r = 30;
+	screen7.bgcolor.rgb.b = 228;
+	screen7.bgcolor.rgb.g = 227;
+	screen7.bgcolor.rgb.r = 223;
+	create_window(&w, 0, 0, screen7.width, SCREEN7_HEIGHT,
+			WINDOW_ATTR_HAS_BORDER,
+			NULL, &screen7);
+	terminal_write(STR_CONS_INIT, &state7, 0, LEN_CONS_INIT);
 #else
-		if (sysinfo->cga)
-			screen0 = sysinfo->cga;
-		else {
-			screen0 = (Screen *) (info->unit);
-			state0.func = NULL;
-			state0.screen = screen0;
-			driver->write(STR_CONS_INIT, (int) &state0, 0,
-					LEN_CONS_INIT);
-		}
+	if (sysinfo->cga)
+		screen0 = *(sysinfo->cga);
+	else
+		terminal_write(STR_CONS_INIT, &state0, 0, LEN_CONS_INIT);
 #endif
-	} else {
-		//TODO what to do?
-	}
-
 	T_CMTX pk_cmtx = {
 		TA_TFIFO | TA_CEILING,
 		pri_dispatcher

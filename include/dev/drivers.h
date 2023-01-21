@@ -35,7 +35,6 @@ extern const vdriver_t *zero_attach(system_info_t *);
 
 static vdriver_t *(*drivers[])(system_info_t *) = {
 	(vdriver_t *(*)(system_info_t *)) ramdisk_attach,
-	(vdriver_t *(*)(system_info_t *)) monitor_attach,
 	(vdriver_t *(*)(system_info_t *)) null_attach,
 	(vdriver_t *(*)(system_info_t *)) zero_attach
 };

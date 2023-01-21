@@ -1,5 +1,5 @@
-#ifndef __DRIVERS_MONITOR_H__
-#define __DRIVERS_MONITOR_H__
+#ifndef __TERMINAL_H__
+#define __TERMINAL_H__
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,11 +26,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <console.h>
-#include <dev/device.h>
-#include <nerve/config.h>
 #include <sys/types.h>
 
-#define MYNAME DEVICE_CONTROLLER_MONITOR
+extern void terminal_initialize(esc_state_t *);
+extern int terminal_write(char *, esc_state_t *, const off_t, const size_t);
 
 #endif

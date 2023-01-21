@@ -24,9 +24,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <major.h>
-#include <dev/device.h>
-#include "monitor.h"
+#include <console.h>
+#include <mpu/memory.h>
+#include "terminal.h"
 
 #ifdef USE_VESA
 #include <vesa.h>
@@ -39,7 +39,7 @@ For more information, please refer to <http://unlicense.org/>
 #define DELIM ';'
 
 static Screen root;
-static Console *cns;
+static Console *cns = NULL;
 
 static inline bool is_decimal(const char ch)
 {
@@ -47,14 +47,7 @@ static inline bool is_decimal(const char ch)
 			&& (ch <= '9'));
 }
 
-static void console_initialize(void);
-static int detach(void);
-static int read(char *, const int, const off_t, const size_t);
-static int write(char *, const int, const off_t, const size_t);
 //TODO return adequate error code
-static bool check_channel(const int);
-static bool check_param(const int, const off_t, const size_t);
-static void _putc(esc_state_t *, const char);
 static void _push(esc_state_t *, const char);
 static void state_null(esc_state_t *, const char);
 static void state_esc(esc_state_t *, const char);
@@ -63,88 +56,34 @@ static void state_csi_private(esc_state_t *, const char);
 static void state_exec_csi(esc_state_t *);
 static void eputc(esc_state_t *, const char);
 
-static vdriver_unit_t monitor = {
-	{ NULL, NULL },
-	MYNAME,
-	&root
-};
-static vdriver_t driver_mine = {
-	DEVICE_CLASS_CONSOLE,
-	{ NULL, NULL },
-	detach,
-	read,
-	write
-};
 
-
-const vdriver_t *monitor_attach(system_info_t *info)
+void terminal_initialize(esc_state_t *state)
 {
-	list_initialize(&(driver_mine.units));
-	console_initialize();
-	list_append(&(driver_mine.units), &(monitor.bros));
-	return &driver_mine;
-}
-
-static void console_initialize(void)
-{
+	if (!cns) {
 #ifdef USE_VESA
-	cns = getVesaConsole(&root, &default_font);
+		cns = getVesaConsole(&root, &default_font);
 #else
-	cns = getCgaConsole(&root,
-			(const uint16_t *) kern_p2v((void *) CGA_VRAM_ADDR));
+		cns = getCgaConsole(&root,
+				(const uint16_t *) kern_p2v((void *) CGA_VRAM_ADDR));
 #endif
+	}
+
+	state->func = state_null;
+	*(state->screen) = root;
 }
 
-static int detach(void)
-{
-	return 0;
-}
-
-static int read(char *outbuf, const int channel, const off_t offset,
+int terminal_write(char *inbuf, esc_state_t *state, const off_t offset,
 		const size_t size)
 {
-	return (-1);
-}
-
-static int write(char *inbuf, const int channel, const off_t offset,
-		const size_t size)
-{
-	if (!check_param(channel, offset, size))
+	if (!state
+			|| (offset < 0))
 		return (-1);
-
-	esc_state_t *state = (esc_state_t *) channel;
-	if (!(state->func))
-		state->func = state_null;
 
 	for (int i = 0; i < size; i++)
 		eputc(state, inbuf[i]);
 
+	//TODO signed int?
 	return size;
-}
-
-static bool check_channel(const int channel)
-{
-	if (!channel)
-		return false;
-
-	return true;
-}
-
-static bool check_param(const int channel, const off_t offset,
-		const size_t size)
-{
-	if (!check_channel(channel))
-		return false;
-
-	if (offset < 0)
-		return false;
-
-	return true;
-}
-
-static void _putc(esc_state_t *state, const char ch)
-{
-	cns->putc(state->screen, ch);
 }
 
 static void _push(esc_state_t *state, const char ch)
@@ -161,7 +100,7 @@ static void state_null(esc_state_t *state, const char ch)
 		return;
 	}
 
-	_putc(state, ch);
+	cns->putc(state->screen, ch);
 }
 
 static void state_esc(esc_state_t *state, const char ch)
