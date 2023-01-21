@@ -26,13 +26,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <screen.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <hmi/draw.h>
+
+#define MAX_COLOR 0x00ffffff
 
 #define CONSOLE_TAB_COLUMNS (8)
-
-#define ESC_MAX_PARAMS (2)
-#define ESC_MAX_COLUMNS (5)
-#define ESC_BUF_SIZE (16)
 
 typedef enum {
 	EraseScreenFromCursor,
@@ -43,20 +43,45 @@ typedef enum {
 	EraseLineEntire
 } erase_type_e;
 
+typedef union {
+	uint32_t palet;
+	Color_Rgb rgb;
+} Color;
+
+typedef struct _screen {
+	int x;
+	int y;
+#ifdef USE_VESA
+	unsigned int width;
+	unsigned int height;
+#endif
+	uint8_t *p;
+	const uint8_t *base;
+#ifdef USE_VESA
+	unsigned int bpl;
+#endif
+	Color fgcolor;
+#ifdef USE_VESA
+	Color bgcolor;
+	Font font;
+	unsigned int chr_width;
+	unsigned int chr_height;
+#endif
+	bool wrap;
+} Screen;
+
 typedef struct {
 	void (*erase)(Screen *, const erase_type_e);
 	int (*locate)(Screen *, const int, const int);
 	void (*putc)(Screen *, const unsigned char);
 } Console;
 
-typedef struct _esc_state {
-	void (*func)(struct _esc_state *, const char);
-	Screen *screen;
-	int len;
-	int num_of_params;
-	int columns;
-	int params[ESC_MAX_PARAMS];
-	char buf[ESC_BUF_SIZE];
-} esc_state_t;
+#ifdef USE_VESA
+extern Console *getVesaConsole(Screen *, const Font *);
+#else
+extern Console *getCgaConsole(Screen *, const void *);
+#endif
+
+extern Font default_font;
 
 #endif

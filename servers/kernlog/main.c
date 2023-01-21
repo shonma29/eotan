@@ -46,7 +46,6 @@ static ER_ID initialize(void);
 
 #if USE_MONITOR
 #include <console.h>
-#include <vesa.h>
 
 static Screen screen1;
 static Screen screen3;

@@ -25,7 +25,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <hmi/draw.h>
 #include <hmi/pointer.h>
 
 static uint8_t *pointer_prev_start = NULL;

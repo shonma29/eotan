@@ -25,11 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <console.h>
 #include <errno.h>
 #include <event.h>
 #include <major.h>
-#include <screen.h>
 #include <services.h>
 #include <stdbool.h>
 #include <stddef.h>

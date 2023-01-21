@@ -28,6 +28,23 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <sys/types.h>
 
+#define STR_CONS_INIT "\x1b[2J\x1b[1;1H"
+#define LEN_CONS_INIT (10)
+
+#define ESC_MAX_PARAMS (2)
+#define ESC_MAX_COLUMNS (5)
+#define ESC_BUF_SIZE (16)
+
+typedef struct _esc_state {
+	void (*func)(struct _esc_state *, const char);
+	Screen *screen;
+	int len;
+	int num_of_params;
+	int columns;
+	int params[ESC_MAX_PARAMS];
+	char buf[ESC_BUF_SIZE];
+} esc_state_t;
+
 extern void terminal_initialize(esc_state_t *);
 extern int terminal_write(char *, esc_state_t *, const off_t, const size_t);
 

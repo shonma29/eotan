@@ -35,7 +35,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "mouse.h"
 
 #ifdef USE_VESA
-#include <vesa.h>
 #include <hmi/pointer.h>
 #else
 #include <cga.h>

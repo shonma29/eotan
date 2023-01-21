@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <limits.h>
-#include <screen.h>
+#include <hmi/draw.h>
 
 #define CHR_WIDTH (6)
 #define CHR_HEIGHT (12)

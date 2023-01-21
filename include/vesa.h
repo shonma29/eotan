@@ -26,8 +26,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <console.h>
-#include <screen.h>
 
 #define VESA_INFO_ADDR 0x00003c00
 
@@ -83,7 +81,5 @@ typedef struct
 	unsigned int max_clock;
 	unsigned char reserved2[190];
 } VesaInfo;
-
-extern Console *getVesaConsole(Screen *, const Font *);
 
 #endif

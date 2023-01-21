@@ -28,9 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/memory.h>
 #include "terminal.h"
 
-#ifdef USE_VESA
-#include <vesa.h>
-#else
+#ifndef USE_VESA
 #include <cga.h>
 #endif
 

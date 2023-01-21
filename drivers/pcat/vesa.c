@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <screen.h>
+#include <console.h>
 #include <stddef.h>
 #include <vesa.h>
 #include <mpu/memory.h>

@@ -26,7 +26,6 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <cga.h>
 #include <console.h>
-#include <screen.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
