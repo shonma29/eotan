@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <dev/device.h>
 #include <fs/protocol.h>
 #include <hmi/draw.h>
+#include <hmi/window.h>
 
 #define MYNAME "cons"
 
@@ -49,5 +50,17 @@ extern Display *display;
 
 extern device_info_t *info;
 extern void hmi_handle(const int, const int);
+
+#ifdef USE_VESA
+// window.c
+extern void window_initialize(void);
+extern int create_window(window_t **, const int, const int,
+		const int, const int, const int, const char *,
+		Screen *);
+extern window_t *find_window(const int);
+#if 0
+extern int remove_window(const int);
+#endif
+#endif
 
 #endif

@@ -101,6 +101,8 @@ ER_UINT get_char(int b)
 		if (!b)
 			return -1;
 
+	//TODO return (base | 0x80) when modifier is 'alt'
+
 	} else {
 		b = key2char[key_base][b];
 		if (!b)
