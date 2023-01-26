@@ -1,5 +1,3 @@
-#ifndef __HMI_H__
-#define __HMI_H__
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,57 +24,43 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <dev/device.h>
-#include <fs/protocol.h>
-#include <hmi/draw.h>
-#include <hmi/window.h>
-#include "terminal.h"
+#include "hmi.h"
+#include "mouse.h"
 
-#define MYNAME "cons"
+ER_UINT draw_write(const UW size, const char *inbuf)
+{
+	if (size < DRAW_OP_SIZE)
+		return E_PAR;//TODO return POSIX error
 
-#define INTERRUPT_QUEUE_SIZE (1024)
-#define REQUEST_QUEUE_SIZE (256)
+	window_t *wp = find_window(2);
+	if (!wp)
+		return E_NOEXS;//TODO return POSIX error
 
-typedef struct _hmi_interrupt_t {
-	int type;
-	int data;
-} hmi_interrupt_t;
+	draw_operation_e *op = (draw_operation_e *) inbuf;
+	if (*op == draw_op_put) {
+		if (size < DRAW_PUT_PACKET_SIZE)
+			return E_PAR;//TODO return POSIX error
 
-typedef struct _request_message_t {
-	int tag;
-	fsmsg_t message;
-} request_message_t;
+		unsigned int x = ((int *) inbuf)[1 + 0];
+		unsigned int y = ((int *) inbuf)[1 + 1];
+		mouse_hide();
+		draw_put(&(wp->inner), x, y,
+				(size - DRAW_PUT_PACKET_SIZE)
+						/ sizeof(Color_Rgb),
+				(uint8_t *) &(inbuf[DRAW_PUT_PACKET_SIZE]));
+		mouse_show();
+	} else if (*op == draw_op_pset) {
+		if (size != DRAW_PSET_PACKET_SIZE)
+			return E_PAR;//TODO return POSIX error
 
-extern volatile lfq_t hmi_queue;
-extern volatile lfq_t req_queue;
-extern volatile bool raw_mode;
-extern ID cons_mid;
-extern ER_UINT (*reader)(const int);
+		unsigned int x = ((int *) inbuf)[1 + 0];
+		unsigned int y = ((int *) inbuf)[1 + 1];
+		int color = ((int *) inbuf)[1 + 2];
+		mouse_hide();
+		draw_pset(&(wp->inner), x, y, color);
+		mouse_show();
+	} else
+		return E_PAR;//TODO return POSIX error
 
-extern Screen screen0;
-extern esc_state_t state0;
-#ifdef USE_VESA
-extern Display *display;
-extern esc_state_t state2;
-extern esc_state_t state7;
-#endif
-
-extern void hmi_handle(const int, const int);
-extern void reply(request_message_t *, const size_t);
-
-#ifdef USE_VESA
-// window.c
-extern void window_initialize(void);
-extern int create_window(window_t **, const int, const int,
-		const int, const int, const int, const char *,
-		Screen *);
-extern window_t *find_window(const int);
-#if 0
-extern int remove_window(const int);
-#endif
-// draw.c
-extern ER_UINT draw_write(const UW, const char *);
-#endif
-
-#endif
+	return size;
+}

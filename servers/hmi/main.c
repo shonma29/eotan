@@ -24,37 +24,24 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
 #include <errno.h>
 #include <event.h>
-#include <major.h>
 #include <services.h>
-#include <stdbool.h>
-#include <stddef.h>
 #include <string.h>
-#include <fs/protocol.h>
-#include <mpu/memory.h>
-#include <nerve/config.h>
 #include <nerve/ipc_utils.h>
 #include <nerve/kcall.h>
-#include <set/lf_queue.h>
-#include <set/list.h>
-#include <sys/signal.h>
-#include <sys/syscall.h>
 #include <libserv.h>
 #include "hmi.h"
 #include "keyboard.h"
 #include "mouse.h"
-#include "terminal.h"
 
 static char line[4096];
-static volatile bool raw_mode;
+volatile bool raw_mode;
 static ER_ID receiver_tid = 0;
 //static ER_ID hmi_tid = 0;
-static ID cons_mid;
-static request_message_t *current_req = NULL;
+ID cons_mid;
 static request_message_t requests[REQUEST_QUEUE_SIZE];
-static volatile lfq_t req_queue;
+volatile lfq_t req_queue;
 static char req_buf[
 	lfq_buf_size(sizeof(request_message_t *), REQUEST_QUEUE_SIZE)
 ];
@@ -68,120 +55,23 @@ static char int_buf[
 	lfq_buf_size(sizeof(hmi_interrupt_t), INTERRUPT_QUEUE_SIZE)
 ];
 
-static Screen screen0;
-static esc_state_t state0;
+Screen screen0;
+esc_state_t state0;
 
 #ifdef USE_VESA
 Display *display;
-static Screen screen2;
-static Screen screen7;
-static esc_state_t state2;
-static esc_state_t state7;
+esc_state_t state2;
+esc_state_t state7;
 #endif
 
-#define SCREEN7_HEIGHT (20)
-
-static void process(const int);
 static ER_UINT write(const UW, const UW, const UW, const char *);
-static void reply(request_message_t *, const size_t);
 static void execute(request_message_t *);
 static ER accept(void);
 static ER initialize(void);
 static ER_UINT dummy_read(const int);
 
-static ER_UINT (*reader)(const int) = dummy_read;
+ER_UINT (*reader)(const int) = dummy_read;
 
-
-void hmi_handle(const int type, const int data)
-{
-	for (;;) {
-		hmi_interrupt_t in;
-		if (lfq_dequeue(&hmi_queue, &in) == QUEUE_OK)
-			switch (in.type) {
-			case event_keyboard:
-//				kcall->ipc_notify(hmi_tid, EVENT_IO);
-				process(in.data);
-				break;
-			case event_mouse:
-				mouse_process(in.type, in.data);
-				break;
-			default:
-				break;
-			}
-		else
-//			kcall->ipc_listen();
-			break;
-	}
-}
-
-static void process(const int data)
-{
-	ER_UINT d = reader(data);
-	if (d < 0)
-		return;
-
-	if (!current_req) {
-		if (lfq_dequeue(&req_queue, &current_req) == QUEUE_OK)
-			current_req->message.Tread.offset = 0;
-		else
-			return;
-	}
-
-	fsmsg_t *message = &(current_req->message);
-//	message->Tread.data[message->Tread.offset++] =
-//			(unsigned char) (d & 0xff);
-	unsigned char buf = (unsigned char) (d & 0xff);
-
-	if (!raw_mode) {
-		if (buf == 0x0d)
-			buf = 0x0a;
-
-		int result;
-		// ^c
-		if (buf == 0x03) {
-			sys_args_t args = {
-				syscall_kill,
-				CURRENT_PROCESS,
-				SIGINT
-			};
-			result = kcall->ipc_send(PORT_MM, &args, sizeof(args));
-			if (result)
-				log_err("hmi: kill error=%d\n", result);
-
-			return;
-		}
-
-		result = kcall->mutex_lock(cons_mid, TMO_FEVR);
-		if (result)
-			kcall->printk("hmi: handler cannot lock %d\n", result);
-		else {
-			mouse_hide();
-			terminal_write((char *) &buf, &state0, 0, 1);
-			mouse_show();
-			result = kcall->mutex_unlock(cons_mid);
-			if (result)
-				kcall->printk("hmi: handler cannot unlock %d\n",
-						result);
-		}
-	}
-
-	//TODO loop or buffering (flush when user switches window, or LF)
-	//TODO error check
-	uintptr_t addr = ((uintptr_t) (message->Tread.data)
-			+ message->Tread.offset);
-	kcall->region_put((message->header.token >> 16) & 0xffff,
-			(char *) addr, 1, &buf);
-	message->Tread.offset++;
-	if ((message->Tread.count <= message->Tread.offset)
-			|| (buf == 0x0a)) {
-//		message->header.token = message->head.token;
-		message->header.type = Rread;
-//		message->Rread.tag = message->Tread.tag;
-		message->Rread.count = message->Tread.offset;
-		reply(current_req, MESSAGE_SIZE(Rread));
-		current_req = NULL;
-	}
-}
 
 static ER_UINT write(const UW dd, const UW start, const UW size,
 		const char *inbuf)
@@ -198,39 +88,7 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 		break;
 #ifdef USE_VESA
 	case 4:
-		if (size < DRAW_OP_SIZE)
-			return E_PAR;//TODO return POSIX error
-
-		window_t *wp = find_window(2);
-		if (!wp)
-			return E_NOEXS;//TODO return POSIX error
-
-		draw_operation_e *op = (draw_operation_e *) inbuf;
-		if (*op == draw_op_put) {
-			if (size < DRAW_PUT_PACKET_SIZE)
-				return E_PAR;//TODO return POSIX error
-
-			unsigned int x = ((int *) inbuf)[1 + 0];
-			unsigned int y = ((int *) inbuf)[1 + 1];
-			mouse_hide();
-			draw_put(&(wp->inner), x, y,
-					(size - DRAW_PUT_PACKET_SIZE)
-							/ sizeof(Color_Rgb),
-					(uint8_t *) &(inbuf[DRAW_PUT_PACKET_SIZE]));
-			mouse_show();
-		} else if (*op == draw_op_pset) {
-			if (size != DRAW_PSET_PACKET_SIZE)
-				return E_PAR;//TODO return POSIX error
-
-			unsigned int x = ((int *) inbuf)[1 + 0];
-			unsigned int y = ((int *) inbuf)[1 + 1];
-			int color = ((int *) inbuf)[1 + 2];
-			mouse_hide();
-			draw_pset(&(wp->inner), x, y, color);
-			mouse_show();
-		} else
-			return E_PAR;//TODO return POSIX error
-		break;
+		return draw_write(size, inbuf);
 	default: {
 		int result = kcall->mutex_lock(cons_mid, TMO_FEVR);
 		if (result)
@@ -267,7 +125,7 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 	return size;
 }
 
-static void reply(request_message_t *req, const size_t size)
+void reply(request_message_t *req, const size_t size)
 {
 	ER_UINT result = kcall->ipc_send(req->tag, &(req->message), size);
 	if (result)
@@ -410,41 +268,6 @@ static ER initialize(void)
 	terminal_initialize(&state0);
 #ifdef USE_VESA
 	window_initialize();
-	window_t *w;
-	create_window(&w, 0, SCREEN7_HEIGHT, screen0.width / 2,
-			SCREEN7_HEIGHT + (screen0.height - SCREEN7_HEIGHT) / 2,
-			WINDOW_ATTR_HAS_BORDER | WINDOW_ATTR_HAS_TITLE,
-			"Console", &screen0);
-	terminal_write(STR_CONS_INIT, &state0, 0, LEN_CONS_INIT);
-
-	state2.screen = &screen2;
-	terminal_initialize(&state2);
-	screen2.fgcolor.rgb.b = 0;
-	screen2.fgcolor.rgb.g = 127;
-	screen2.fgcolor.rgb.r = 255;
-	screen2.bgcolor.rgb.b = 0;
-	screen2.bgcolor.rgb.g = 0;
-	screen2.bgcolor.rgb.r = 31;
-	create_window(&w, 0,
-			SCREEN7_HEIGHT + (screen2.height - SCREEN7_HEIGHT) / 2,
-			screen2.width / 2,
-			SCREEN7_HEIGHT + ((screen2.height - SCREEN7_HEIGHT) / 2) * 2,
-			WINDOW_ATTR_HAS_BORDER | WINDOW_ATTR_HAS_TITLE,
-			"Draw", &screen2);
-	terminal_write(STR_CONS_INIT, &state2, 0, LEN_CONS_INIT);
-
-	state7.screen = &screen7;
-	terminal_initialize(&state7);
-	screen7.fgcolor.rgb.b = 40;
-	screen7.fgcolor.rgb.g = 66;
-	screen7.fgcolor.rgb.r = 30;
-	screen7.bgcolor.rgb.b = 228;
-	screen7.bgcolor.rgb.g = 227;
-	screen7.bgcolor.rgb.r = 223;
-	create_window(&w, 0, 0, screen7.width, SCREEN7_HEIGHT,
-			WINDOW_ATTR_HAS_BORDER,
-			NULL, &screen7);
-	terminal_write(STR_CONS_INIT, &state7, 0, LEN_CONS_INIT);
 #else
 	if (sysinfo->cga)
 		screen0 = *(sysinfo->cga);

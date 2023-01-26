@@ -30,12 +30,16 @@ For more information, please refer to <http://unlicense.org/>
 #include "hmi.h"
 
 #define WINDOW_MAX (32)
+#define SCREEN7_HEIGHT (20)
 
 #define getParent(type, p) ((uintptr_t) p - offsetof(type, node))
 
 static slab_t window_slab;
 static tree_t window_tree;
 static list_t window_list;
+
+static Screen screen2;
+static Screen screen7;
 
 
 void window_initialize(void)
@@ -50,6 +54,42 @@ void window_initialize(void)
 	slab_create(&window_slab);
 	tree_create(&window_tree, NULL, NULL);
 	list_initialize(&window_list);
+
+	window_t *w;
+	create_window(&w, 0, SCREEN7_HEIGHT, screen0.width / 2,
+			SCREEN7_HEIGHT + (screen0.height - SCREEN7_HEIGHT) / 2,
+			WINDOW_ATTR_HAS_BORDER | WINDOW_ATTR_HAS_TITLE,
+			"Console", &screen0);
+	terminal_write(STR_CONS_INIT, &state0, 0, LEN_CONS_INIT);
+
+	state2.screen = &screen2;
+	terminal_initialize(&state2);
+	screen2.fgcolor.rgb.b = 0;
+	screen2.fgcolor.rgb.g = 127;
+	screen2.fgcolor.rgb.r = 255;
+	screen2.bgcolor.rgb.b = 0;
+	screen2.bgcolor.rgb.g = 0;
+	screen2.bgcolor.rgb.r = 31;
+	create_window(&w, 0,
+			SCREEN7_HEIGHT + (screen2.height - SCREEN7_HEIGHT) / 2,
+			screen2.width / 2,
+			SCREEN7_HEIGHT + ((screen2.height - SCREEN7_HEIGHT) / 2) * 2,
+			WINDOW_ATTR_HAS_BORDER | WINDOW_ATTR_HAS_TITLE,
+			"Draw", &screen2);
+	terminal_write(STR_CONS_INIT, &state2, 0, LEN_CONS_INIT);
+
+	state7.screen = &screen7;
+	terminal_initialize(&state7);
+	screen7.fgcolor.rgb.b = 40;
+	screen7.fgcolor.rgb.g = 66;
+	screen7.fgcolor.rgb.r = 30;
+	screen7.bgcolor.rgb.b = 228;
+	screen7.bgcolor.rgb.g = 227;
+	screen7.bgcolor.rgb.r = 223;
+	create_window(&w, 0, 0, screen7.width, SCREEN7_HEIGHT,
+			WINDOW_ATTR_HAS_BORDER,
+			NULL, &screen7);
+	terminal_write(STR_CONS_INIT, &state7, 0, LEN_CONS_INIT);
 }
 
 int create_window(window_t **w, const int x1, const int y1,
