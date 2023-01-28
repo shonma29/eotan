@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <event.h>
 #include <services.h>
+#include <string.h>
 #include <nerve/kcall.h>
 #include <sys/signal.h>
 #include <sys/syscall.h>
@@ -33,9 +34,17 @@ For more information, please refer to <http://unlicense.org/>
 #include "hmi.h"
 #include "mouse.h"
 
-static request_message_t *current_req = NULL;
+static fs_request *current_req = NULL;
+static volatile bool raw_mode;
+volatile lfq_t hmi_queue;
+static char int_buf[
+	lfq_buf_size(sizeof(hmi_interrupt_t), INTERRUPT_QUEUE_SIZE)
+];
 
 static void process(const int);
+static ER_UINT dummy_read(const int);
+
+ER_UINT (*reader)(const int) = dummy_read;
 
 
 void hmi_handle(const int type, const int data)
@@ -68,12 +77,12 @@ static void process(const int data)
 
 	if (!current_req) {
 		if (lfq_dequeue(&req_queue, &current_req) == QUEUE_OK)
-			current_req->message.Tread.offset = 0;
+			current_req->packet.Tread.offset = 0;
 		else
 			return;
 	}
 
-	fsmsg_t *message = &(current_req->message);
+	fsmsg_t *message = &(current_req->packet);
 //	message->Tread.data[message->Tread.offset++] =
 //			(unsigned char) (d & 0xff);
 	unsigned char buf = (unsigned char) (d & 0xff);
@@ -127,4 +136,29 @@ static void process(const int data)
 		reply(current_req, MESSAGE_SIZE(Rread));
 		current_req = NULL;
 	}
+}
+
+static ER_UINT dummy_read(const int arg)
+{
+	return E_NOSPT;
+}
+
+ER_UINT consctl_write(const UW size, const char *inbuf)
+{
+	if (size == 5) {
+		if (!memcmp(inbuf, "rawon", 5))
+			raw_mode = true;
+	} else if (size == 6) {
+		if (!memcmp(inbuf, "rawoff", 6))
+			raw_mode = false;
+	}
+
+	return size;
+}
+
+int event_initialize(void)
+{
+	lfq_initialize(&hmi_queue, int_buf, sizeof(hmi_interrupt_t),
+			INTERRUPT_QUEUE_SIZE);
+	return 0;
 }

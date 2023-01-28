@@ -24,46 +24,40 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#ifdef USE_VESA
+#include <event.h>
+#include <services.h>
+#include <nerve/kcall.h>
+#include <sys/errno.h>
+#include <libserv.h>
 #include "hmi.h"
-#include "mouse.h"
+
+static int _reply(fs_request *req, fsmsg_t *, const size_t);
 
 
-ER_UINT draw_write(const UW size, const char *inbuf)
+int reply(fs_request *req, const size_t size)
 {
-	if (size < DRAW_OP_SIZE)
-		return E_PAR;//TODO return POSIX error
-
-	window_t *wp = find_window(2);
-	if (!wp)
-		return E_NOEXS;//TODO return POSIX error
-
-	draw_operation_e *op = (draw_operation_e *) inbuf;
-	if (*op == draw_op_put) {
-		if (size < DRAW_PUT_PACKET_SIZE)
-			return E_PAR;//TODO return POSIX error
-
-		unsigned int x = ((int *) inbuf)[1 + 0];
-		unsigned int y = ((int *) inbuf)[1 + 1];
-		mouse_hide();
-		draw_put(&(wp->inner), x, y,
-				(size - DRAW_PUT_PACKET_SIZE)
-						/ sizeof(Color_Rgb),
-				(uint8_t *) &(inbuf[DRAW_PUT_PACKET_SIZE]));
-		mouse_show();
-	} else if (*op == draw_op_pset) {
-		if (size != DRAW_PSET_PACKET_SIZE)
-			return E_PAR;//TODO return POSIX error
-
-		unsigned int x = ((int *) inbuf)[1 + 0];
-		unsigned int y = ((int *) inbuf)[1 + 1];
-		int color = ((int *) inbuf)[1 + 2];
-		mouse_hide();
-		draw_pset(&(wp->inner), x, y, color);
-		mouse_show();
-	} else
-		return E_PAR;//TODO return POSIX error
-
-	return size;
+	return _reply(req, &(req->packet), size);
 }
-#endif
+
+int reply_error(fs_request *req, const int token, const int caller_tag,
+		const int error_no)
+{
+	fsmsg_t response;
+	response.header.ident = IDENT;
+	response.header.type = Rerror;
+	response.header.token = (PORT_CONSOLE << 16) | (token & 0xffff);
+	response.Rerror.tag = caller_tag;
+	response.Rerror.ename = error_no;
+	return _reply(req, &response, MESSAGE_SIZE(Rerror));
+}
+
+static int _reply(fs_request *req, fsmsg_t *response, const size_t size)
+{
+	ER_UINT result = kcall->ipc_send(req->tag, (void *) response, size);
+	if (result)
+		log_err("hmi: reply error=%d\n", result);
+
+	lfq_enqueue(&unused_queue, &req);
+	kcall->ipc_notify(accept_tid, EVENT_SERVICE);
+	return (result ? ECONNREFUSED : 0);
+}

@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <dev/device.h>
 #include <fs/protocol.h>
+#include <sys/syslimits.h>
 #include <hmi/draw.h>
 #include <hmi/window.h>
 #include "terminal.h"
@@ -43,31 +44,30 @@ typedef struct _hmi_interrupt_t {
 	int data;
 } hmi_interrupt_t;
 
-typedef struct _request_message_t {
+typedef struct {
+	fsmsg_t packet;
 	int tag;
-	fsmsg_t message;
-} request_message_t;
+} fs_request;
 
-extern volatile lfq_t hmi_queue;
-extern volatile lfq_t req_queue;
-extern volatile bool raw_mode;
+extern ER_ID accept_tid;
 extern ID cons_mid;
-extern ER_UINT (*reader)(const int);
+extern volatile lfq_t req_queue;
+extern volatile lfq_t unused_queue;
 
 extern Screen screen0;
 extern esc_state_t state0;
-#ifdef USE_VESA
-extern Display *display;
-extern esc_state_t state2;
-extern esc_state_t state7;
-#endif
 
-extern void hmi_handle(const int, const int);
-extern void reply(request_message_t *, const size_t);
+// reply.c
+extern int reply(fs_request *, const size_t);
+extern int reply_error(fs_request *, const int, const int, const int);
 
 #ifdef USE_VESA
 // window.c
-extern void window_initialize(void);
+extern Display *display;
+extern esc_state_t state2;
+extern esc_state_t state7;
+
+extern int window_initialize(void);
 extern int create_window(window_t **, const int, const int,
 		const int, const int, const int, const char *,
 		Screen *);
@@ -78,5 +78,18 @@ extern int remove_window(const int);
 // draw.c
 extern ER_UINT draw_write(const UW, const char *);
 #endif
+
+// event.c
+extern volatile lfq_t hmi_queue;
+extern ER_UINT (*reader)(const int);
+
+extern void hmi_handle(const int, const int);
+extern ER_UINT consctl_write(const UW, const char *);
+extern int event_initialize(void);
+
+// file.c
+extern void if_read(fs_request *);
+extern void if_write(fs_request *);
+extern void if_clunk(fs_request *);
 
 #endif

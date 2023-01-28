@@ -38,12 +38,19 @@ static slab_t window_slab;
 static tree_t window_tree;
 static list_t window_list;
 
+Display *display;
 static Screen screen2;
 static Screen screen7;
+esc_state_t state2;
+esc_state_t state7;
 
 
-void window_initialize(void)
+int window_initialize(void)
 {
+	display = get_display();
+	if (!display)
+		return E_SYS;
+
 	window_slab.unit_size = sizeof(window_t);
 	window_slab.block_size = PAGE_SIZE;
 	window_slab.min_block = 1;
@@ -56,8 +63,10 @@ void window_initialize(void)
 	list_initialize(&window_list);
 
 	window_t *w;
-	create_window(&w, 0, SCREEN7_HEIGHT, screen0.width / 2,
-			SCREEN7_HEIGHT + (screen0.height - SCREEN7_HEIGHT) / 2,
+	int width = display->r.max.x - display->r.min.x;
+	int height = display->r.max.y - display->r.min.y;
+	create_window(&w, 0, SCREEN7_HEIGHT, width / 2,
+			SCREEN7_HEIGHT + (height - SCREEN7_HEIGHT) / 2,
 			WINDOW_ATTR_HAS_BORDER | WINDOW_ATTR_HAS_TITLE,
 			"Console", &screen0);
 	terminal_write(STR_CONS_INIT, &state0, 0, LEN_CONS_INIT);
@@ -71,9 +80,9 @@ void window_initialize(void)
 	screen2.bgcolor.rgb.g = 0;
 	screen2.bgcolor.rgb.r = 31;
 	create_window(&w, 0,
-			SCREEN7_HEIGHT + (screen2.height - SCREEN7_HEIGHT) / 2,
-			screen2.width / 2,
-			SCREEN7_HEIGHT + ((screen2.height - SCREEN7_HEIGHT) / 2) * 2,
+			SCREEN7_HEIGHT + (height - SCREEN7_HEIGHT) / 2,
+			width / 2,
+			SCREEN7_HEIGHT + ((height - SCREEN7_HEIGHT) / 2) * 2,
 			WINDOW_ATTR_HAS_BORDER | WINDOW_ATTR_HAS_TITLE,
 			"Draw", &screen2);
 	terminal_write(STR_CONS_INIT, &state2, 0, LEN_CONS_INIT);
@@ -86,10 +95,11 @@ void window_initialize(void)
 	screen7.bgcolor.rgb.b = 228;
 	screen7.bgcolor.rgb.g = 227;
 	screen7.bgcolor.rgb.r = 223;
-	create_window(&w, 0, 0, screen7.width, SCREEN7_HEIGHT,
+	create_window(&w, 0, 0, width, SCREEN7_HEIGHT,
 			WINDOW_ATTR_HAS_BORDER,
 			NULL, &screen7);
 	terminal_write(STR_CONS_INIT, &state7, 0, LEN_CONS_INIT);
+	return 0;
 }
 
 int create_window(window_t **w, const int x1, const int y1,

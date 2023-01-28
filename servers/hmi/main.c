@@ -25,245 +25,109 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
-#include <event.h>
 #include <services.h>
-#include <string.h>
-#include <nerve/ipc_utils.h>
 #include <nerve/kcall.h>
 #include <libserv.h>
 #include "hmi.h"
 #include "keyboard.h"
 #include "mouse.h"
 
-static char line[4096];
-volatile bool raw_mode;
-static ER_ID receiver_tid = 0;
+struct fs_func {
+	void (*call)(fs_request *);
+	size_t max;
+};
+
+ER_ID accept_tid = 0;
 //static ER_ID hmi_tid = 0;
 ID cons_mid;
-static request_message_t requests[REQUEST_QUEUE_SIZE];
+
+static fs_request requests[REQUEST_QUEUE_SIZE];
 volatile lfq_t req_queue;
 static char req_buf[
-	lfq_buf_size(sizeof(request_message_t *), REQUEST_QUEUE_SIZE)
+	lfq_buf_size(sizeof(fs_request *), REQUEST_QUEUE_SIZE)
 ];
-static volatile lfq_t unused_queue;
+volatile lfq_t unused_queue;
 static char unused_buf[
-	lfq_buf_size(sizeof(request_message_t *), REQUEST_QUEUE_SIZE)
-];
-volatile lfq_t hmi_queue;
-
-static char int_buf[
-	lfq_buf_size(sizeof(hmi_interrupt_t), INTERRUPT_QUEUE_SIZE)
+	lfq_buf_size(sizeof(fs_request *), REQUEST_QUEUE_SIZE)
 ];
 
 Screen screen0;
 esc_state_t state0;
 
-#ifdef USE_VESA
-Display *display;
-esc_state_t state2;
-esc_state_t state7;
-#endif
-
-static ER_UINT write(const UW, const UW, const UW, const char *);
-static void execute(request_message_t *);
+static void no_support(fs_request *);
 static ER accept(void);
 static ER initialize(void);
-static ER_UINT dummy_read(const int);
 
-ER_UINT (*reader)(const int) = dummy_read;
+//TODO cancel request?
+static struct fs_func func_table[] = {
+	{ no_support, MESSAGE_SIZE(Tattach) },
+	{ no_support, MESSAGE_SIZE(Twalk) },
+	{ no_support, MESSAGE_SIZE(Topen) },
+	{ no_support, MESSAGE_SIZE(Tcreate) },
+	{ if_read, MESSAGE_SIZE(Tread) },
+	{ if_write, MESSAGE_SIZE(Twrite) },
+	{ if_clunk, MESSAGE_SIZE(Tclunk) },
+	{ no_support, MESSAGE_SIZE(Tremove) },
+	{ no_support, MESSAGE_SIZE(Tstat) },
+	{ no_support, MESSAGE_SIZE(Twstat) }
+};
+#define NUM_OF_FUNC (sizeof(func_table) / sizeof(func_table[0]))
 
 
-static ER_UINT write(const UW dd, const UW start, const UW size,
-		const char *inbuf)
+static void no_support(fs_request *req)
 {
-	switch (dd) {
-	case 6:
-		if (size == 5) {
-			if (!memcmp(inbuf, "rawon", 5))
-				raw_mode = true;
-		} else if (size == 6) {
-			if (!memcmp(inbuf, "rawoff", 6))
-				raw_mode = false;
-		}
-		break;
-#ifdef USE_VESA
-	case 4:
-		return draw_write(size, inbuf);
-	default: {
-		int result = kcall->mutex_lock(cons_mid, TMO_FEVR);
-		if (result)
-			kcall->printk("hmi: main cannot lock %d\n", result);
-		else {
-			mouse_hide();
-			terminal_write((char *) inbuf,
-					(dd ? ((dd == 7) ? &state7 : &state2) : &state0),
-					0, size);
-			mouse_show();
-			result = kcall->mutex_unlock(cons_mid);
-			if (result)
-				kcall->printk("hmi: main cannot unlock %d\n",
-						result);
-		}
-	}
-#else
-	default: {
-		int result = kcall->mutex_lock(cons_mid, TMO_FEVR);
-		if (result)
-			kcall->printk("hmi: main cannot lock %d\n", result);
-		else {
-			terminal_write((char *) inbuf, &state0, 0, size);
-			result = kcall->mutex_unlock(cons_mid);
-			if (result)
-				kcall->printk("hmi: main cannot unlock %d\n",
-						result);
-		}
-	}
-#endif
-		break;
-	}
-
-	return size;
-}
-
-void reply(request_message_t *req, const size_t size)
-{
-	ER_UINT result = kcall->ipc_send(req->tag, &(req->message), size);
-	if (result)
-		log_err("hmi: reply error=%d\n", result);
-
-	lfq_enqueue(&unused_queue, &req);
-	kcall->ipc_notify(receiver_tid, EVENT_SERVICE);
-}
-
-static void execute(request_message_t *req)
-{
-	fsmsg_t *message = &(req->message);
-	if (message->header.ident != IDENT) {
-		message->header.ident = IDENT;
-//		message->header.token = message->head.token;
-		message->header.type = Rerror;
-		message->Rerror.tag = 0;
-		message->Rerror.ename = EPROTO;
-		reply(req, MESSAGE_SIZE(Rerror));
-		return;
-	}
-
-	ER_UINT result;
-//TODO cancel request
-	switch (message->header.type) {
-	case Tread:
-		if (lfq_enqueue(&req_queue, &req) != QUEUE_OK) {
-			log_debug("hmi: req_queue is full\n");
-//			message->header.token = message->head.token;
-			message->header.type = Rerror;
-//			message->Rerror.tag = message->Tread.tag;
-			message->Rerror.ename = ENOMEM;
-			reply(req, MESSAGE_SIZE(Rerror));
-		}
-		break;
-	case Twrite:
-		if (message->Twrite.fid) {
-			if (message->Twrite.count > sizeof(line))
-				result = E_PAR;
-			else if (kcall->region_get(port_of_ipc(req->tag),
-					message->Twrite.data,
-					message->Twrite.count,
-					line))
-				result = E_SYS;
-			else
-				result = write(message->Twrite.fid,
-						message->Twrite.offset,
-						message->Twrite.count,
-						line);
-		} else {
-			unsigned int pos = 0;
-			result = 0;
-			for (size_t rest = message->Twrite.count; rest > 0;) {
-				size_t len = (rest > sizeof(line)) ?
-						sizeof(line) : rest;
-				if (kcall->region_get(
-						(message->header.token >> 16) & 0xffff,
-						(char *) ((unsigned int) (message->Twrite.data) + pos),
-						len,
-						line)) {
-					result = E_SYS;
-					break;
-				} else {
-					result = write(message->Twrite.fid,
-							message->Twrite.offset,
-							len,
-							line);
-					if (result < 0)
-						break;
-				}
-				rest -= len;
-				pos += len;
-				message->Twrite.offset += len;
-			}
-//TODO return Rerror
-			if (result >= 0)
-				result = message->Twrite.count;
-		}
-		//TODO return Rerror if result is error
-//		message->header.token = message->head.token;
-		message->header.type = Rwrite;
-//		message->Rwrite.tag = message->Twrite.tag;
-		message->Rwrite.count = result;
-		reply(req, MESSAGE_SIZE(Rwrite));
-		break;
-	case Tclunk:
-//		message->header.token = message->head.token;
-		message->header.type = Rclunk;
-//		message->Rclunk.tag = message->Tclunk.tag;
-		reply(req, MESSAGE_SIZE(Rclunk));
-		break;
-	default:
-//		message->header.token = message->head.token;
-		message->header.type = Rerror;
-		message->Rerror.tag = 0;
-		message->Rerror.ename = ENOTSUP;
-		reply(req, MESSAGE_SIZE(Rerror));
-		break;
-	}
+	//TODO what is tag?
+	reply_error(req, req->packet.header.token, 0, ENOTSUP);
 }
 
 static ER accept(void)
 {
-	request_message_t *req;
-	ER_UINT size;
-
 //TODO multiple interrupt is needed on mouse / keyboard?
+	fs_request *req;
 	while (lfq_dequeue(&unused_queue, &req) != QUEUE_OK)
 		kcall->ipc_listen();
 
-	size = kcall->ipc_receive(PORT_CONSOLE, &(req->tag), &(req->message));
+	ER_UINT size = kcall->ipc_receive(PORT_CONSOLE, &(req->tag),
+			&(req->packet));
 	if (size < 0) {
 		log_err("hmi: receive error=%d\n", size);
 		return size;
 	}
 
-	execute(req);
-	return E_OK;
-}
-static ER initialize(void)
-{
-#ifdef USE_VESA
-	display = get_display();
-	if (!display)
-		return E_SYS;
-#endif
-	lfq_initialize(&hmi_queue, int_buf, sizeof(hmi_interrupt_t),
-			INTERRUPT_QUEUE_SIZE);
-	lfq_initialize(&req_queue, req_buf, sizeof(request_message_t *),
-			REQUEST_QUEUE_SIZE);
-	lfq_initialize(&unused_queue, unused_buf, sizeof(request_message_t *),
-			REQUEST_QUEUE_SIZE);
-
-	for (int i = 0; i < sizeof(requests) / sizeof(requests[0]); i++) {
-		request_message_t *p = &(requests[i]);
-		lfq_enqueue(&unused_queue, &p);
+	if (size < sizeof(req->packet.header)) {
+		//TODO what is tag?
+		reply_error(req, 0, 0, EPROTO);
+		return E_OK;
 	}
 
+	int result;
+	do {
+		if (req->packet.header.ident != IDENT) {
+			result = EPROTO;
+			break;
+		}
+
+		if (req->packet.header.type >= NUM_OF_FUNC) {
+			result = ENOTSUP;
+			break;
+		}
+
+		if (size != func_table[req->packet.header.type].max) {
+			result = EPROTO;
+			break;
+		}
+
+		func_table[req->packet.header.type].call(req);
+		return E_OK;
+	} while (false);
+
+	//TODO what is tag?
+	reply_error(req, req->packet.header.token, 0, result);
+	return E_OK;
+}
+
+static ER initialize(void)
+{
 	state0.screen = &screen0;
 	terminal_initialize(&state0);
 #ifdef USE_VESA
@@ -274,16 +138,29 @@ static ER initialize(void)
 	else
 		terminal_write(STR_CONS_INIT, &state0, 0, LEN_CONS_INIT);
 #endif
+	if (event_initialize())
+		return E_SYS;
+
+	lfq_initialize(&req_queue, req_buf, sizeof(fs_request *),
+			REQUEST_QUEUE_SIZE);
+	lfq_initialize(&unused_queue, unused_buf, sizeof(fs_request *),
+			REQUEST_QUEUE_SIZE);
+
+	for (int i = 0; i < sizeof(requests) / sizeof(requests[0]); i++) {
+		fs_request *p = &(requests[i]);
+		lfq_enqueue(&unused_queue, &p);
+	}
+
 	T_CMTX pk_cmtx = {
 		TA_TFIFO | TA_CEILING,
 		pri_dispatcher
 	};
-	int result = kcall->mutex_create(receiver_tid, &pk_cmtx);
+	int result = kcall->mutex_create(accept_tid, &pk_cmtx);
 	if (result) {
 		log_err("hmi: mutex error=%d\n", result);
 		return result;
 	} else
-		cons_mid = receiver_tid;
+		cons_mid = accept_tid;
 
 	T_CPOR pk_cpor = {
 		TA_TFIFO,
@@ -311,14 +188,9 @@ static ER initialize(void)
 	return E_OK;
 }
 
-static ER_UINT dummy_read(const int arg)
-{
-	return E_NOSPT;
-}
-
 void start(VP_INT exinf)
 {
-	receiver_tid = kcall->thread_get_id();
+	accept_tid = kcall->thread_get_id();
 
 	if (initialize() == E_OK) {
 		log_info("hmi: start\n");
