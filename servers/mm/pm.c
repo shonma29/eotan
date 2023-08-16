@@ -38,7 +38,6 @@ For more information, please refer to <http://unlicense.org/>
 
 static int cleanup(mm_process_t *, mm_thread_t *, mm_request_t *);
 static int _seek(mm_process_t *, mm_file_t *, sys_args_t *, mm_request_t *);
-static size_t calc_path(char *, char *, const size_t);
 
 
 int mm_fork(mm_request_t *req)
@@ -87,8 +86,7 @@ int mm_exec(mm_request_t *req)
 		mm_file_t *file;
 		fsmsg_t *message = &(req->message);
 		int result = _walk(&file, process, th->node.key,
-				(char *) (req->args.arg1), req,
-				req->walkpath);
+				(char *) (req->args.arg1), req);
 		if (result) {
 			reply->data[0] = result;
 			break;
@@ -303,20 +301,34 @@ int mm_exit(mm_request_t *req)
 
 static int cleanup(mm_process_t *process, mm_thread_t *th, mm_request_t *req)
 {
-	for (node_t *n; (n = tree_root(&(process->descriptors)));) {
-		mm_descriptor_t *desc = (mm_descriptor_t *) n;
+	int token = create_token(th->node.key, process->session);
+	for (node_t *node; (node = tree_root(&(process->descriptors)));) {
+		int d = node->key;
+		//TODO use getParent macro
+		mm_descriptor_t *desc = (mm_descriptor_t *) node;
 		mm_file_t *file = desc->file;
 		desc->file = NULL;
-		if (process_destroy_desc(process, n->key)) {
+
+		if (process_destroy_desc(process, d)) {
 			//TODO what to do?
 		}
 
-		int result = _clunk(process->session, file,
-				create_token(th->node.key, process->session),
-				req);
+		int fid = file->node.key;
+		int result = _clunk(process->session, file, token, req);
 		if (result)
-			log_err("pm: %d close[%d:] err %d\n",
-					process->node.key, n->key, result);
+			log_err("pm: %d cleanup[%d:%d] error=%d\n",
+					process->node.key, d, fid, result);
+	}
+
+	if (process->wd) {
+		mm_file_t *file = process->wd;
+		process->wd = NULL;
+
+		int fid = file->node.key;
+		int result = _clunk(process->session, file, token, req);
+		if (result)
+			log_err("pm: %d cleanup[wd:%d] error=%d\n",
+					process->node.key, fid, result);
 	}
 
 	return 0;
@@ -382,54 +394,45 @@ int mm_chdir(mm_request_t *req)
 		}
 
 		mm_process_t *process = get_process(th);
-		ER_UINT len = kcall->region_copy(th->node.key,
-				(char *) (req->args.arg1), PATH_MAX,
-				req->walkpath);
-		if (len < 0) {
-			reply->data[0] = EFAULT;
-			break;
-		}
-
-	 	if (len >= PATH_MAX) {
-			reply->data[0] = ENAMETOOLONG;
-			break;
-		}
-
-		strcpy(req->pathbuf, process->local->wd);
-		len = calc_path(req->pathbuf, req->walkpath, PATH_MAX);
-		if (!len) {
-			reply->data[0] = ENAMETOOLONG;
-			break;
-		}
-
-//		int old = (process->wd) ? process->wd->node.key : 0;
 		mm_file_t *file;
 		int result = _walk(&file, process, th->node.key,
-				(char *) (req->args.arg1), req,
-				req->walkpath);
+				(char *) (req->args.arg1), req);
 		if (result) {
 			reply->data[0] = result;
 			break;
 		}
 
-		process->local->wd_len = len;
-		strcpy(process->local->wd, req->pathbuf);
+		struct stat st;
+		result = _fstat(&st, file,
+				create_token(kcall->thread_get_id(),
+						process->session),
+				req);
 
-		if (process->wd) {
-			result = _clunk(process->session, process->wd,
-					create_token(th->node.key,
-							process->session),
-					req);
-//			log_info("pm: chdir close[:%d] %d\n", old, result);
-			if (result) {
-				//TODO what to do?
-			}
+		int fid = file->node.key;
+		int clunk_result = _clunk(process->session, file,
+				create_token(th->node.key,
+						process->session),
+				req);
+		if (clunk_result)
+			//TODO what to do?
+			log_err("pm: chdir close[:%d] error=%d\n",
+					fid, clunk_result);
+
+		if (result) {
+			reply->data[0] = result;
+			break;
 		}
 
-		process->wd = file;
-//		log_info("pm: %d chdir %d->%d %s\n",
-//				process->node.key, old, process->wd->node.key,
-//				process->local->wd);
+		if (!(st.st_mode & S_IFDIR)) {
+			reply->data[0] = ENOTDIR;
+			break;
+		}
+
+		process->local->wd_len = strlen(req->walkpath);
+		strcpy(process->local->wd, req->walkpath);
+
+//		log_info("pm: %d chdir %s\n",
+//				process->node.key, process->local->wd);
 
 		reply->result = 0;
 		reply->data[0] = 0;
@@ -438,81 +441,6 @@ int mm_chdir(mm_request_t *req)
 
 	reply->result = -1;
 	return reply_failure;
-}
-
-static size_t calc_path(char *dest, char *src, const size_t size)
-{
-	char *w;
-	char *r = src;
-	size_t rest = size;
-
-	if (*r == '/') {
-		w = dest;
-		r++;
-	} else {
-		size_t last = strlen(dest);
-		if (last == 1)
-			last = 0;
-
-		w = &(dest[last]);
-		rest -= last;
-	}
-
-	bool last = false;
-	do {
-		char *word = r;
-		for (;; r++) {
-			if (!*r) {
-				last = true;
-				break;
-			}
-
-			if (*r == '/') {
-				*r = '\0';
-				break;
-			}
-		}
-
-		size_t len = (size_t) r - (size_t) word;
-		r++;
-
-		if (!len)
-			continue;
-
-		if (!strcmp(word, "."))
-			continue;
-
-		if (!strcmp(word, "..")) {
-			for (;;) {
-				if (w == dest)
-					break;
-				w--;
-				if (*w == '/')
-					break;
-			}
-
-			rest = size - ((size_t) w - (size_t) dest);
-			continue;
-		}
-
-		if (rest < len + 2)
-			return 0;
-
-		w[0] = '/';
-		len++;
-		strcpy(&(w[1]), word);
-		w = &(w[len]);
-		rest -= len;
-	} while (!last);
-
-	size_t total = size - rest;
-	if (total)
-		return total;
-	else {
-		dest[0] = '/';
-		dest[1] = '\0';
-		return 1;
-	}
 }
 
 int mm_dup(mm_request_t *req)

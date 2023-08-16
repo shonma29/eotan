@@ -38,6 +38,13 @@ For more information, please refer to <http://unlicense.org/>
 
 #define MYNAME "mm"
 
+#define ERR_INSUFFICIENT_BUFFER (-1)
+#define ERR_BAD_PATH (-2)
+
+#define PATH_DELIMITER '/'
+#define PATH_DOT '.'
+#define PATH_NUL '\0'
+
 typedef struct {
 	unsigned short tsize;
 	unsigned short rtype;
@@ -61,7 +68,9 @@ static int _walk_child(mm_file_t *, mm_process_t *, const char *,
 		mm_request_t *);
 static int call_device(const mm_file_t *, mm_request_t *);
 static int create_tag(const mm_request_t *);
-static int compact_path(char *);
+static int calc_path(char *, const char *, const char *, const long);
+static long copy_path(char *, const char *, const long);
+static char *omit_previous_entry(long *, char *, char *);
 
 
 int mm_attach(mm_request_t *req)
@@ -145,8 +154,7 @@ int mm_open(mm_request_t *req)
 		int fd = desc->node.key;
 		mm_file_t *file;
 		int result = _walk(&file, process, th->node.key,
-				(char *) (req->args.arg1), req,
-				req->walkpath);
+				(char *) (req->args.arg1), req);
 		if (result) {
 			process_destroy_desc(process, fd);
 			reply->data[0] = result;
@@ -211,6 +219,30 @@ int mm_create(mm_request_t *req)
 			break;
 		}
 
+		len = calc_path(req->walkpath, process->local->wd, req->pathbuf,
+				PATH_MAX);
+//TODO test
+		if (len == ERR_INSUFFICIENT_BUFFER)
+			return ENAMETOOLONG;
+//TODO test
+		else if (len < 0)
+			return EINVAL;
+
+		bool in_root;
+		char *name = strrchr(req->walkpath, '/');//TODO slow
+		if (name == req->walkpath)
+			in_root = true;
+		else {
+			//TODO test
+			//TODO is needed?
+//			if (!name)
+//				return EINVAL;
+
+			in_root = false;
+			*name = '\0';
+		}
+		name++;
+
 		mm_descriptor_t *desc = process_create_desc(process);
 		if (!desc) {
 			reply->data[0] = ENOMEM;
@@ -218,12 +250,10 @@ int mm_create(mm_request_t *req)
 		}
 
 		int fd = desc->node.key;
-		char *parent_path = "";
-		char *head = vfs_split_path(req->pathbuf, &parent_path);
 		mm_file_t *file;
 		fsmsg_t *message = &(req->message);
 		int result = _walk(&file, process, kcall->thread_get_id(),
-				parent_path, req, req->walkpath);
+				in_root ? NULL : req->walkpath, req);
 		if (result) {
 			process_destroy_desc(process, fd);
 			reply->data[0] = result;
@@ -233,22 +263,22 @@ int mm_create(mm_request_t *req)
 		int oflag = req->args.arg2;
 		int token = create_token(kcall->thread_get_id(),
 				process->session);
-		if (_walk_child(file, process, head, req)) {
+
+		if (_walk_child(file, process, name, req)) {
 			int fid = file->node.key;
 			message->header.type = Tcreate;
 			message->header.token = token;
 			message->Tcreate.tag = create_tag(req);
 			message->Tcreate.fid = fid;
-			message->Tcreate.name = head;
+			message->Tcreate.name = name;
 			message->Tcreate.perm = req->args.arg3;
 			message->Tcreate.mode = oflag;
 			result = call_device(file, req);
 //			log_info("proxy: %d create[%d:%d] %d\n",
 //					process->node.key, fd, fid, result);
-
 			if (result) {
 				//TODO test
-				if (!_walk_child(file, process, head, req))
+				if (!_walk_child(file, process, name, req))
 					result = _open(file, token,
 							oflag | O_TRUNC, req);
 			}
@@ -431,8 +461,7 @@ int mm_remove(mm_request_t *req)
 		mm_file_t *file;
 		fsmsg_t *message = &(req->message);
 		int result = _walk(&file, process, th->node.key,
-				(char *) (req->args.arg1), req,
-				req->walkpath);
+				(char *) (req->args.arg1), req);
 		if (result) {
 			reply->data[0] = result;
 			break;
@@ -479,8 +508,7 @@ int mm_stat(mm_request_t *req)
 		mm_process_t *process = get_process(th);
 		mm_file_t *file;
 		int result = _walk(&file, process, th->node.key,
-				(char *) (req->args.arg1), req,
-				req->walkpath);
+				(char *) (req->args.arg1), req);
 		if (result) {
 			reply->data[0] = result;
 			break;
@@ -557,8 +585,7 @@ int mm_chmod(mm_request_t *req)
 		mm_file_t *file;
 		fsmsg_t *message = &(req->message);
 		int result = _walk(&file, process, th->node.key,
-				(char *) (req->args.arg1), req,
-				req->walkpath);
+				(char *) (req->args.arg1), req);
 		if (result) {
 			reply->data[0] = result;
 			break;
@@ -598,23 +625,36 @@ int mm_chmod(mm_request_t *req)
 }
 
 int _walk(mm_file_t **file, mm_process_t *process, const int thread_id,
-		const char *path, mm_request_t *req, char *buf)
+		const char *path, mm_request_t *req)
 {
 	if (!(process->wd))
 		//TODO what to do?
+		//TODO check process->local->wd_len?
 		return ECONNREFUSED;
 
-	//TODO omit copy
-	ER_UINT len = kcall->region_copy(thread_id, path, PATH_MAX, buf);
-	if (len < 0)
-		return EFAULT;
+	ER_UINT len;
+	if (!path)
+		len = 0;
+	else if (path == req->walkpath)
+		len = strlen(req->walkpath);//TODO slow
+	else {
+		len = kcall->region_copy(thread_id, path, PATH_MAX,
+				req->pathbuf);
+		if (len < 0)
+			return EFAULT;
 
-	if (len >= PATH_MAX)
-		return ENAMETOOLONG;
+		if (len >= PATH_MAX)
+			return ENAMETOOLONG;
 
-	len = compact_path(buf);
-	if (len < 0)
-		return ENOENT;
+		len = calc_path(req->walkpath, process->local->wd, req->pathbuf,
+				PATH_MAX);
+//TODO test
+		if (len == ERR_INSUFFICIENT_BUFFER)
+			return ENAMETOOLONG;
+//TODO test
+		else if (len < 0)
+			return EINVAL;
+	}
 
 	mm_file_t *f = session_create_file(process->session);
 	if (!f)
@@ -628,7 +668,7 @@ int _walk(mm_file_t **file, mm_process_t *process, const int thread_id,
 	message->Twalk.fid = process->wd->node.key;
 	message->Twalk.newfid = f->node.key;
 	message->Twalk.nwname = len;
-	message->Twalk.wname = buf;
+	message->Twalk.wname = req->walkpath;
 //	log_info("proxy: walk %d %d [%s] %d\n", process->session->node.key,
 //			message->Twalk.fid, message->Twalk.wname,
 //			message->Twalk.newfid);
@@ -765,50 +805,139 @@ static int create_tag(const mm_request_t *req)
 	return req->node.key;
 }
 
-static int compact_path(char *src)
+static int calc_path(char *dest, const char *wd, const char *src,
+		const long size)
 {
-	char *r = src;
-	if (*r == '/')
+	if (size < 2)
+		return ERR_INSUFFICIENT_BUFFER;
+
+	if (!*src)
+		return ERR_BAD_PATH;
+
+	long rest = (long) size - 1;
+	char *w;
+	char *r = (char *) src;
+	if (*r == PATH_DELIMITER) {
+		w = dest;
+		*w++ = PATH_DELIMITER;
 		r++;
+		rest--;
+	} else {
+		//TODO check format of wd. (should start with '/')
+		long len = copy_path(dest, wd, rest);
+		if (!len)
+			return ERR_BAD_PATH;
+		else if (len < 0)
+			return ERR_INSUFFICIENT_BUFFER;
 
-	char *w = r;
-	for (;; r++) {
-		if (*r == '/')
-			return (-1);
+		w = &dest[len];
+		rest -= len;
 
-		bool last = false;
-		char *word = r;
-		for (;; w++, r++) {
-			if (!*r) {
-				last = true;
-				break;
-			}
+		if (w[-1] != PATH_DELIMITER) {
+			if (rest <= 0)
+				return ERR_INSUFFICIENT_BUFFER;
 
-			if (*r == '/')
-				break;
-
-			*w = *r;
+			*w++ = PATH_DELIMITER;
+			rest--;
 		}
-
-		if (((size_t) r - (size_t) word == 1)
-				&& (*word == '.')) {
-			w--;
-
-			if (!last)
-				continue;
-		}
-
-		if (last)
-			break;
-
-		*w = '/';
-		w++;
 	}
 
-	if (((size_t) w - (size_t) src > 1)
-			&& (w[-1] == '/'))
-		w--;
+	for (;;) {
+		switch (r[0]) {
+		case PATH_NUL:
+			goto end_of_src;
+		case PATH_DELIMITER:
+			r++;
+			continue;
+		case PATH_DOT:
+			switch (r[1]) {
+			case PATH_NUL:
+				goto end_of_src;
+			case PATH_DELIMITER:
+				r += 2;
+				continue;
+			case PATH_DOT:
+				switch (r[2]) {
+				case PATH_NUL:
+					w = omit_previous_entry(&rest, dest, w);
+					if (w)
+						goto end_of_src;
+					else
+						return ERR_BAD_PATH;
+				case PATH_DELIMITER:
+					w = omit_previous_entry(&rest, dest, w);
+					if (w) {
+						r += 3;
+						continue;
+					} else
+						return ERR_BAD_PATH;
+				default:
+					break;
+				}
+				break;
+			default:
+				break;
+			}
+			break;
+		default:
+			break;
+		}
 
-	*w = '\0';
-	return ((size_t) w - (size_t) src);
+		for (;;) {
+			char c = *r;
+			if (!c)
+				goto end_of_src;
+
+			if (rest <= 0)
+				return ERR_INSUFFICIENT_BUFFER;
+
+			*w++ = c;
+			r++;
+			rest--;
+
+			if (c == PATH_DELIMITER)
+				break;
+		}
+	}
+end_of_src:
+
+	{
+		long len = (long) ((uintptr_t) w - (uintptr_t) dest);
+		if ((len > 1)
+				&& (w[-1] == PATH_DELIMITER)) {
+			w--;
+			len--;
+		}
+
+		*w = PATH_NUL;
+		return len;
+	}
+}
+
+static long copy_path(char *dest, const char *src, const long size)
+{
+	char *w = dest;
+	char *r = (char *) src;
+	for (long rest = size; *r; rest--) {
+		if (rest <= 0)
+			return ERR_INSUFFICIENT_BUFFER;
+
+		*w++ = *r++;
+	}
+
+	return ((uintptr_t) w - (uintptr_t) dest);
+}
+
+static char *omit_previous_entry(long *rest, char *head, char *tail)
+{
+	long len = (long) ((uintptr_t) tail - (uintptr_t) head);
+	if (len <= 1)
+		return NULL;
+
+	char *p = (char *) tail - 3;
+	for (; *p != PATH_DELIMITER; p--);
+
+	len = (long) (((uintptr_t) tail - (uintptr_t) p)) - 1;
+	*rest += len;
+	return (tail - len);
 }

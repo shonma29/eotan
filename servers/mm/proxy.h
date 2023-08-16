@@ -30,13 +30,14 @@ For more information, please refer to <http://unlicense.org/>
 
 extern ID receiver_id;
 
-static inline int create_token(const int thread_id, const mm_session_t *session)
+static inline int create_token(const int thread_id,
+		const mm_session_t *session)
 {
 	return ((thread_id << 16) | session->node.key);
 }
 
 extern int _walk(mm_file_t **, mm_process_t *, const int, const char *,
-		mm_request_t *, char *);
+		mm_request_t *);
 extern int _open(const mm_file_t *, const int, const int, mm_request_t *);
 extern int _read(const mm_file_t *, const int, const off_t, const size_t,
 		char *, mm_request_t *);

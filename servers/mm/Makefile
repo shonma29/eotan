@@ -33,7 +33,6 @@ ENTRY_FUNC = start
 
 $(TARGET): $(OBJS) \
 		kernel/mpu/libmpu.a \
-		lib/libserv.a lib/libvfs.a lib/libnc.a
+		lib/libserv.a lib/libnc.a
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
 	$(STRIP) $@
-
