@@ -97,6 +97,8 @@ int mm_attach(mm_request_t *req)
 			break;
 		}
 
+		session->server_id = PORT_FS;
+
 		fsmsg_t *message = &(req->message);
 		message->header.type = Tattach;
 		message->header.token = create_token(th->node.key, session);
@@ -106,24 +108,21 @@ int mm_attach(mm_request_t *req)
 		message->Tattach.uname = (char *) (process->uid);
 		message->Tattach.aname = (char *) "/";
 
-		file->server_id = PORT_FS;
 		int result = call_device(file, req);
 		//log_info("proxy: attach[sid=%d fid=%d] %d\n", session->node.key,
 		//		file->node.key, result);
 
 		if (result) {
 			log_err("proxy: attach(%x) %d\n", file->node.key, result);
-			session_destroy_file(session, file);
-			session_destroy(session);
+			session_destroy_file(file);
 			reply->data[0] = result;
 			break;
 		}
 
+		file->f_offset = 0;
 		file->f_flag = O_ACCMODE;
 		file->f_count = 1;
-		file->f_offset = 0;
-		process->wd = file;
-		process->session = session;
+		process->root = file;
 
 		reply->result = 0;
 		reply->data[0] = 0;
@@ -163,7 +162,7 @@ int mm_open(mm_request_t *req)
 
 		desc->file = file;
 
-		int token = create_token(th->node.key, process->session);
+		int token = create_token(th->node.key, file->session);
 		int oflag = req->args.arg2;
 		result = _open(file, token, oflag, req);
 //		log_info("proxy: %d open[%d:%d] %d\n",
@@ -172,8 +171,7 @@ int mm_open(mm_request_t *req)
 			desc->file = NULL;
 			process_destroy_desc(process, fd);
 
-			int error_no = _clunk(process->session, file, token,
-					req);
+			int error_no = _clunk(file, token, req);
 			if (error_no) {
 				//TODO what to do?
 			}
@@ -182,9 +180,9 @@ int mm_open(mm_request_t *req)
 			break;
 		}
 
-		file->f_flag = oflag;
 		//TODO set at last if append mode
 		file->f_offset = 0;
+		file->f_flag = oflag;
 
 		reply->result = fd;
 		reply->data[0] = 0;
@@ -261,9 +259,7 @@ int mm_create(mm_request_t *req)
 		}
 
 		int oflag = req->args.arg2;
-		int token = create_token(kcall->thread_get_id(),
-				process->session);
-
+		int token = create_token(kcall->thread_get_id(), file->session);
 		if (_walk_child(file, process, name, req)) {
 			int fid = file->node.key;
 			message->header.type = Tcreate;
@@ -289,8 +285,7 @@ int mm_create(mm_request_t *req)
 			//TODO test
 			process_destroy_desc(process, fd);
 
-			int error_no = _clunk(process->session, file, token,
-					req);
+			int error_no = _clunk(file, token, req);
 			if (error_no) {
 				//TODO what to do?
 			}
@@ -300,11 +295,11 @@ int mm_create(mm_request_t *req)
 		}
 
 		desc->file = file;
+		//TODO set at last if append mode
+		file->f_offset = 0;
 		//TODO really?
 		file->f_flag = oflag & O_ACCMODE;
 		file->f_count = 1;
-		//TODO set at last if append mode
-		file->f_offset = 0;
 
 		reply->result = fd;
 		reply->data[0] = 0;
@@ -336,7 +331,7 @@ int mm_read(mm_request_t *req)
 		mm_file_t *file = desc->file;
 		fsmsg_t *message = &(req->message);
 		int result = _read(file,
-				create_token(th->node.key, process->session),
+				create_token(th->node.key, file->session),
 				file->f_offset, req->args.arg3,
 				(char *) (req->args.arg2), req);
 		if (result) {
@@ -377,7 +372,7 @@ int mm_write(mm_request_t *req)
 		fsmsg_t *message = &(req->message);
 		message->header.type = Twrite;
 		message->header.token = create_token(th->node.key,
-				process->session);
+				file->session);
 		message->Twrite.tag = create_tag(req);
 		message->Twrite.fid = file->node.key;
 		message->Twrite.offset = file->f_offset;
@@ -425,9 +420,8 @@ int mm_close(mm_request_t *req)
 			//TODO what to do?
 		}
 
-		int result = _clunk(process->session, file,
-				create_token(th->node.key, process->session),
-				req);
+		int result = _clunk(file,
+				create_token(th->node.key, file->session), req);
 		if (result) {
 			log_err("proxy: %d close[%d:] err %d\n",
 					process->node.key, fd, result);
@@ -469,7 +463,7 @@ int mm_remove(mm_request_t *req)
 
 		message->header.type = Tremove;
 		message->header.token = create_token(th->node.key,
-				process->session);
+				file->session);
 		message->Tremove.tag = create_tag(req);
 		message->Tremove.fid = file->node.key;
 		result = call_device(file, req);
@@ -477,7 +471,7 @@ int mm_remove(mm_request_t *req)
 //		log_info("proxy: %d remove[:%d] %d\n",
 //				process->node.key, file->node.key, result);
 
-		if (session_destroy_file(process->session, file)) {
+		if (session_destroy_file(file)) {
 			//TODO what to do?
 		}
 
@@ -514,10 +508,10 @@ int mm_stat(mm_request_t *req)
 			break;
 		}
 
-		int token = create_token(th->node.key, process->session);
+		int token = create_token(th->node.key, file->session);
 		result = _fstat((struct stat *) req->args.arg2, file,
 				token, req);
-		int error_no = _clunk(process->session, file, token, req);
+		int error_no = _clunk(file, token, req);
 		if (error_no) {
 			//TODO what to do?
 		}
@@ -555,7 +549,7 @@ int mm_fstat(mm_request_t *req)
 		}
 
 		int result = _fstat((struct stat *) req->args.arg2, desc->file,
-				create_token(th->node.key, process->session),
+				create_token(th->node.key, desc->file->session),
 				req);
 		if (result) {
 			reply->data[0] = result;
@@ -597,7 +591,7 @@ int mm_chmod(mm_request_t *req)
 		st.st_size = -1;
 		st.st_mtime = -1;
 
-		int token = create_token(th->node.key, process->session);
+		int token = create_token(th->node.key, file->session);
 		message->header.type = Twstat;
 		message->header.token = token;
 		message->Twstat.tag = create_tag(req);
@@ -605,7 +599,7 @@ int mm_chmod(mm_request_t *req)
 		message->Twstat.stat = &st;
 		result = call_device(file, req);
 
-		int error_no = _clunk(process->session, file, token, req);
+		int error_no = _clunk(file, token, req);
 		if (error_no) {
 			//TODO what to do?
 		}
@@ -627,7 +621,7 @@ int mm_chmod(mm_request_t *req)
 int _walk(mm_file_t **file, mm_process_t *process, const int thread_id,
 		const char *path, mm_request_t *req)
 {
-	if (!(process->wd))
+	if (!(process->root))
 		//TODO what to do?
 		//TODO check process->local->wd_len?
 		return ECONNREFUSED;
@@ -656,16 +650,17 @@ int _walk(mm_file_t **file, mm_process_t *process, const int thread_id,
 			return EINVAL;
 	}
 
-	mm_file_t *f = session_create_file(process->session);
+	mm_file_t *f = session_create_file(process->root->session);
 	if (!f)
 		return ENOMEM;
 
 	fsmsg_t *message = &(req->message);
 	message->header.type = Twalk;
 	message->header.token =
-			create_token(kcall->thread_get_id(), process->session);
+			create_token(kcall->thread_get_id(),
+					process->root->session);
 	message->Twalk.tag = create_tag(req);
-	message->Twalk.fid = process->wd->node.key;
+	message->Twalk.fid = process->root->node.key;
 	message->Twalk.newfid = f->node.key;
 	message->Twalk.nwname = len;
 	message->Twalk.wname = req->walkpath;
@@ -673,15 +668,14 @@ int _walk(mm_file_t **file, mm_process_t *process, const int thread_id,
 //			message->Twalk.fid, message->Twalk.wname,
 //			message->Twalk.newfid);
 
-	int result = call_device(process->wd, req);
+	int result = call_device(process->root, req);
 	if (result)
-		session_destroy_file(process->session, f);
+		session_destroy_file(f);
 	else {
 		*file = f;
-		f->server_id = process->wd->server_id;
+		f->f_offset = 0;
 		f->f_flag = O_ACCMODE;
 		f->f_count = 1;
-		f->f_offset = 0;
 	}
 
 	return result;
@@ -690,7 +684,7 @@ int _walk(mm_file_t **file, mm_process_t *process, const int thread_id,
 static int _walk_child(mm_file_t *file, mm_process_t *process,
 		const char *name, mm_request_t *req)
 {
-	if (!(process->wd))
+	if (!(process->root))
 		//TODO test
 		//TODO what to do?
 		return ECONNREFUSED;
@@ -703,7 +697,7 @@ static int _walk_child(mm_file_t *file, mm_process_t *process,
 	fsmsg_t *message = &(req->message);
 	message->header.type = Twalk;
 	message->header.token =
-			create_token(kcall->thread_get_id(), process->session);
+			create_token(kcall->thread_get_id(), file->session);
 	message->Twalk.tag = create_tag(req);
 	message->Twalk.fid = file->node.key;
 	message->Twalk.newfid = file->node.key;
@@ -738,8 +732,7 @@ int _read(const mm_file_t *file, const int token, const off_t offset,
 	return call_device(file, req);
 }
 
-int _clunk(mm_session_t *session, mm_file_t *file, const int token,
-		mm_request_t *req)
+int _clunk(mm_file_t *file, const int token, mm_request_t *req)
 {
 	file->f_count--;
 	if (file->f_count > 0) {
@@ -755,7 +748,7 @@ int _clunk(mm_session_t *session, mm_file_t *file, const int token,
 
 	int result = call_device(file, req);
 
-	if (session_destroy_file(session, file)) {
+	if (session_destroy_file(file)) {
 		//TODO what to do?
 	}
 
@@ -779,11 +772,12 @@ static int call_device(const mm_file_t *file, mm_request_t *req)
 	fsmsg_t *message = &(req->message);
 	message->header.ident = IDENT;
 	fspacket_definition_t *def = &(packet_def[message->header.type]);
-	ER_UINT size = kcall->ipc_send(file->server_id, message, def->tsize);
+	ER_UINT size = kcall->ipc_send(file->session->server_id, message,
+			def->tsize);
 	if (size)
 		return ECONNREFUSED;
 
-	req->callee = file->server_id;
+	req->callee = file->session->server_id;
 	fiber_switch(&(req->fiber_sp), req->receiver_sp);
 
 	size = req->size;

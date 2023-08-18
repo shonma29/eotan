@@ -42,9 +42,15 @@ For more information, please refer to <http://unlicense.org/>
 typedef struct {
 	node_t node;
 	int server_id;
+	tree_t files;
+} mm_session_t;
+
+typedef struct {
+	node_t node;
+	mm_session_t *session;
+	off_t f_offset;
 	int f_flag;
 	int f_count;
-	off_t f_offset;
 } mm_file_t;
 
 typedef struct {
@@ -61,12 +67,6 @@ typedef struct {
 
 typedef struct {
 	node_t node;
-	tree_t files;
-	int refer_count;
-} mm_session_t;
-
-typedef struct {
-	node_t node;
 	list_t members;
 } mm_process_group_t;
 
@@ -80,7 +80,6 @@ typedef struct {
 	void *directory;
 	list_t threads;
 	tree_t descriptors;
-	tree_t sessions;//TODO attach on fork/walk
 	list_t brothers;
 	list_t children;
 	list_t members;
@@ -88,8 +87,7 @@ typedef struct {
 	pid_t pgid;
 	uid_t uid;
 	gid_t gid;
-	mm_session_t *session;
-	mm_file_t *wd;
+	mm_file_t *root;
 	process_local_t *local;
 	int exit_status;
 	int tag;
@@ -122,7 +120,7 @@ extern mm_thread_t *thread_find(const ID);
 extern void file_initialize(void);
 extern mm_session_t *session_create(void);
 extern int session_destroy(mm_session_t *);
-extern mm_descriptor_t *process_create_dummy_file(void);
+extern mm_descriptor_t *process_create_dummy_file(mm_session_t *);
 extern mm_descriptor_t *process_create_desc(mm_process_t *);
 extern int process_destroy_desc(mm_process_t *, const int);
 extern int process_set_desc(mm_process_t *, const int, mm_descriptor_t *);
@@ -130,8 +128,7 @@ extern mm_descriptor_t *process_find_desc(const mm_process_t *, const int);
 extern mm_descriptor_t *process_allocate_desc(void);
 extern void process_deallocate_desc(mm_descriptor_t *);
 extern mm_file_t *session_create_file(mm_session_t *);
-extern int session_destroy_file(mm_session_t *, mm_file_t *);
-extern void session_deallocate_file(mm_file_t *);
+extern int session_destroy_file(mm_file_t *);
 
 extern void init(void);
 

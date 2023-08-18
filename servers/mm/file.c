@@ -41,6 +41,7 @@ static tree_t session_tree;
 static int process_find_new_fd(const mm_process_t *);
 static int session_find_new_fid(mm_session_t *);
 static mm_file_t *session_allocate_file(void);
+static void session_deallocate_file(mm_file_t *);
 
 
 void file_initialize(void)
@@ -88,14 +89,13 @@ mm_session_t *session_create(void)
 	if (sid == SESSION_MAX)
 		return NULL;
 
-	mm_session_t *session = (mm_session_t*)slab_alloc(&session_slab);
+	mm_session_t *session = (mm_session_t *) slab_alloc(&session_slab);
 	if (session) {
 		if (!tree_put(&session_tree, sid, &(session->node))) {
 			//TODO what to do?
 		}
 
 		tree_create(&(session->files), NULL, NULL);
-		session->refer_count = 1;
 	}
 
 	return session;
@@ -103,28 +103,21 @@ mm_session_t *session_create(void)
 
 int session_destroy(mm_session_t *session)
 {
-	session->refer_count--;
-	if (!(session->refer_count)) {
-		//TODO warn and release opened files
-		//TODO clunk root fid if opened
-
-		if (!tree_remove(&session_tree, session->node.key)) {
-			//TODO what to do?
-		}
-
-		slab_free(&session_slab, session);
+	if (!tree_remove(&session_tree, session->node.key)) {
+		//TODO what to do?
 	}
 
+	slab_free(&session_slab, session);
 	return 0;
 }
 
-mm_descriptor_t *process_create_dummy_file(void)
+mm_descriptor_t *process_create_dummy_file(mm_session_t *session)
 {
-	mm_descriptor_t *desc = (mm_descriptor_t*)slab_alloc(&descriptor_slab);
+	mm_descriptor_t *desc = process_allocate_desc();
 	if (desc) {
-		mm_file_t *file = session_allocate_file();
+		mm_file_t *file = session_create_file(session);
 		if (!file) {
-			slab_free(&descriptor_slab, desc);
+			process_deallocate_desc(desc);
 			return NULL;
 		}
 
@@ -155,14 +148,14 @@ mm_descriptor_t *process_create_desc(mm_process_t *process)
 int process_destroy_desc(mm_process_t *process, const int fd)
 {
 	mm_descriptor_t *desc =
-			(mm_descriptor_t*)tree_remove(&(process->descriptors),
+			(mm_descriptor_t *) tree_remove(&(process->descriptors),
 					fd);
 	if (!desc)
 		return EBADF;
 
 	if (desc->file)
 		//TODO close here?
-		session_deallocate_file(desc->file);
+		session_destroy_file(desc->file);
 
 	process_deallocate_desc(desc);
 	return 0;
@@ -175,7 +168,7 @@ int process_set_desc(mm_process_t *process, const int fd, mm_descriptor_t *desc)
 
 mm_descriptor_t *process_find_desc(const mm_process_t *process, const int fd)
 {
-	return (mm_descriptor_t*)tree_get(&(process->descriptors), fd);
+	return (mm_descriptor_t *) tree_get(&(process->descriptors), fd);
 }
 
 static int process_find_new_fd(const mm_process_t *process)
@@ -189,11 +182,8 @@ static int process_find_new_fd(const mm_process_t *process)
 
 mm_descriptor_t *process_allocate_desc(void)
 {
-	mm_descriptor_t *desc = (mm_descriptor_t*)slab_alloc(&descriptor_slab);
-	if (desc)
-		//TODO is needed?
-		desc->file = NULL;
-
+	mm_descriptor_t *desc = (mm_descriptor_t *) slab_alloc(&descriptor_slab);
+	desc->file = NULL;
 	return desc;
 }
 
@@ -217,6 +207,7 @@ mm_file_t *session_create_file(mm_session_t *session)
 		return NULL;
 	}
 
+	file->session = session;
 	return file;
 }
 
@@ -229,10 +220,14 @@ static int session_find_new_fid(mm_session_t *session)
 	return -1;
 }
 
-int session_destroy_file(mm_session_t *session, mm_file_t *file)
+int session_destroy_file(mm_file_t *file)
 {
 	//TODO use other errno
-	int result = tree_remove(&(session->files), file->node.key) ? 0 : EBADF;
+	int result = tree_remove(&(file->session->files), file->node.key) ?
+			0 : EBADF;
+
+	if (!tree_size(&(file->session->files)))
+		session_destroy(file->session);
 
 	session_deallocate_file(file);
 	return result;
@@ -240,10 +235,10 @@ int session_destroy_file(mm_session_t *session, mm_file_t *file)
 
 static mm_file_t *session_allocate_file(void)
 {
-	return (mm_file_t*)slab_alloc(&file_slab);
+	return (mm_file_t *) slab_alloc(&file_slab);
 }
 
-void session_deallocate_file(mm_file_t *file)
+static void session_deallocate_file(mm_file_t *file)
 {
 	slab_free(&file_slab, file);
 }

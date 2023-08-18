@@ -93,7 +93,7 @@ int mm_exec(mm_request_t *req)
 		}
 
 		result = _open(file,
-				create_token(th->node.key, process->session),
+				create_token(th->node.key, file->session),
 				O_EXEC, req);
 		if (result) {
 			reply->data[0] = result;
@@ -102,7 +102,7 @@ int mm_exec(mm_request_t *req)
 		}
 
 		int token = create_token(kcall->thread_get_id(),
-				process->session);
+				file->session);
 		Elf32_Ehdr ehdr;
 		result = _read(file, token, 0, sizeof(ehdr), (char *) &ehdr,
 				req);
@@ -190,7 +190,7 @@ int mm_exec(mm_request_t *req)
 			//TODO check error
 		}
 
-		token = create_token(new_thread_id, process->session);
+		token = create_token(new_thread_id, file->session);
 		result = _read(file, token, ro.p_offset, ro.p_filesz,
 				(char *) (ro.p_vaddr), req);
 		if (result) {
@@ -220,7 +220,7 @@ int mm_exec(mm_request_t *req)
 		kcall->thread_start(new_thread_id);
 
 		//TODO recreate token (not must)
-		result = _clunk(process->session, file, token, req);
+		result = _clunk(file, token, req);
 		if (result) {
 			log_err("pm: exec close1 %d\n", result);
 			//TODO what to do?
@@ -301,7 +301,6 @@ int mm_exit(mm_request_t *req)
 
 static int cleanup(mm_process_t *process, mm_thread_t *th, mm_request_t *req)
 {
-	int token = create_token(th->node.key, process->session);
 	for (node_t *node; (node = tree_root(&(process->descriptors)));) {
 		int d = node->key;
 		//TODO use getParent macro
@@ -314,20 +313,22 @@ static int cleanup(mm_process_t *process, mm_thread_t *th, mm_request_t *req)
 		}
 
 		int fid = file->node.key;
-		int result = _clunk(process->session, file, token, req);
+		int token = create_token(th->node.key, file->session);
+		int result = _clunk(file, token, req);
 		if (result)
 			log_err("pm: %d cleanup[%d:%d] error=%d\n",
 					process->node.key, d, fid, result);
 	}
 
-	if (process->wd) {
-		mm_file_t *file = process->wd;
-		process->wd = NULL;
+	if (process->root) {
+		mm_file_t *file = process->root;
+		process->root = NULL;
 
 		int fid = file->node.key;
-		int result = _clunk(process->session, file, token, req);
+		int token = create_token(th->node.key, file->session);
+		int result = _clunk(file, token, req);
 		if (result)
-			log_err("pm: %d cleanup[wd:%d] error=%d\n",
+			log_err("pm: %d cleanup[root:%d] error=%d\n",
 					process->node.key, fid, result);
 	}
 
@@ -405,14 +406,12 @@ int mm_chdir(mm_request_t *req)
 		struct stat st;
 		result = _fstat(&st, file,
 				create_token(kcall->thread_get_id(),
-						process->session),
+						file->session),
 				req);
 
 		int fid = file->node.key;
-		int clunk_result = _clunk(process->session, file,
-				create_token(th->node.key,
-						process->session),
-				req);
+		int clunk_result = _clunk(file,
+				create_token(th->node.key, file->session), req);
 		if (clunk_result)
 			//TODO what to do?
 			log_err("pm: chdir close[:%d] error=%d\n",
@@ -470,10 +469,9 @@ int mm_dup(mm_request_t *req)
 			mm_descriptor_t *d2 = process_find_desc(process,
 					req->args.arg2);
 			if (d2) {
-				int error_no = _clunk(process->session,
-						d2->file,
+				int error_no = _clunk(d2->file,
 						create_token(th->node.key,
-								process->session),
+								d2->file->session),
 						req);
 				if (error_no) {
 					//TODO what to do?
@@ -571,7 +569,7 @@ static int _seek(mm_process_t *process, mm_file_t *file, sys_args_t *args,
 		struct stat st;
 		int result = _fstat(&st, file,
 				create_token(kcall->thread_get_id(),
-						process->session),
+						file->session),
 				req);
 		if (result)
 			return result;

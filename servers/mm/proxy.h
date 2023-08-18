@@ -41,7 +41,7 @@ extern int _walk(mm_file_t **, mm_process_t *, const int, const char *,
 extern int _open(const mm_file_t *, const int, const int, mm_request_t *);
 extern int _read(const mm_file_t *, const int, const off_t, const size_t,
 		char *, mm_request_t *);
-extern int _clunk(mm_session_t *, mm_file_t *, const int, mm_request_t *);
+extern int _clunk(mm_file_t *, const int, mm_request_t *);
 extern int _fstat(struct stat *, const mm_file_t *, const int, mm_request_t *);
 
 #endif

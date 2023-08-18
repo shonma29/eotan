@@ -194,10 +194,9 @@ mm_process_t *process_duplicate(mm_process_t *src, void *entry, void *stack)
 		dest->pgid = src->pgid;
 		dest->uid = src->uid;
 		dest->gid = src->gid;
-		dest->session = src->session;
-		dest->wd = src->wd;
-		if (dest->wd)
-			dest->wd->f_count++;
+		dest->root = src->root;
+		if (dest->root)
+			dest->root->f_count++;
 
 		strcpy(dest->name, src->name);
 		set_local(dest, src->local->wd, src->local->wd_len);
@@ -208,7 +207,7 @@ mm_process_t *process_duplicate(mm_process_t *src, void *entry, void *stack)
 				&dest->members, dest->members.next,
 				dest->ppid, dest->pgid, dest->uid, dest->gid,
 				dest->name,
-				(dest->wd) ? dest->wd->node.key : (-1));
+				(dest->root) ? dest->root->node.key : (-1));
 
 		error_no = map_user_stack(dest);
 		if (error_no) {
@@ -359,7 +358,6 @@ int process_release_body(mm_process_t *proc, const int options)
 int process_destroy(mm_process_t *process, const int status)
 {
 	process->exit_status = status;
-	process->session = NULL;
 	destroy_threads(process);
 
 	if (release_memory(process)) {
@@ -453,8 +451,7 @@ int create_init(const pid_t pid, const FP entry)
 	p->pgid = INIT_PID;
 	p->uid = INIT_UID;
 	p->gid = INIT_GID;
-	p->session = NULL;
-	p->wd = NULL;
+	p->root = NULL;
 
 	mm_process_group_t *pg = slab_alloc(&process_group_slab);
 	if (pg) {
@@ -467,34 +464,38 @@ int create_init(const pid_t pid, const FP entry)
 
 	set_local(p, "/", 1);
 
+	mm_session_t *session = session_create();
+	if (!session)
+		//TODO release process
+		//TODO release pages
+		return ENOMEM;
+
+	session->server_id = PORT_CONSOLE;
+
 	//TODO open cons
-	mm_descriptor_t *d = process_create_dummy_file();
+	mm_descriptor_t *d = process_create_dummy_file(session);
 	if (d) {
 		mm_file_t *f = d->file;
-		f->server_id = PORT_CONSOLE;
-		f->node.key = 0;
+		f->f_offset = 0;
 		f->f_flag = O_RDONLY;
 		f->f_count = 1;
-		f->f_offset = 0;
+
 		if (process_set_desc(p, STDIN_FILENO, d)) {
 			//TODO what to do?
-			session_deallocate_file(f);
+			session_destroy_file(f);
 			process_deallocate_desc(d);
 		}
 	}
 
-	//TODO create dummy session
-	d = process_create_dummy_file();
+	d = process_create_dummy_file(session);
 	if (d) {
 		mm_file_t *f = d->file;
-		f->server_id = PORT_CONSOLE;
-		f->node.key = 0;
+		f->f_offset = 0;
 		f->f_flag = O_WRONLY;
 		f->f_count = 1;
-		f->f_offset = 0;
 		if (process_set_desc(p, STDOUT_FILENO, d)) {
 			//TODO what to do?
-			session_deallocate_file(f);
+			session_destroy_file(f);
 			process_deallocate_desc(d);
 		}
 
@@ -552,7 +553,6 @@ static int process_create(mm_process_t **process, const int pid)
 		list_initialize(&(p->threads));
 		//TODO leave on exec
 		tree_create(&(p->descriptors), NULL, NULL);
-		tree_create(&(p->sessions), NULL, NULL);
 		list_initialize(&(p->brothers));
 		list_initialize(&(p->children));
 		list_initialize(&(p->members));
