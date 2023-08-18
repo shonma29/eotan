@@ -46,15 +46,15 @@ For more information, please refer to <http://unlicense.org/>
 
 // commands
 #define ATA_COMMAND_READ_PIO 0x20
-#define ATA_COMMAND_READ_PIO_EX 0x24
+#define ATA_COMMAND_READ_PIO_EXT 0x24
 #define ATA_COMMAND_WRITE_PIO 0x30
-#define ATA_COMMAND_WRITE_PIO_EX 0x34
+#define ATA_COMMAND_WRITE_PIO_EXT 0x34
 #define ATA_COMMAND_READ_DMA 0xc8
-#define ATA_COMMAND_READ_DMA_EX 0x25
+#define ATA_COMMAND_READ_DMA_EXT 0x25
 #define ATA_COMMAND_WRITE_DMA 0xca
-#define ATA_COMMAND_WRITE_DMA_EX 0x35
+#define ATA_COMMAND_WRITE_DMA_EXT 0x35
 #define ATA_COMMAND_FLUSH 0xe7
-#define ATA_COMMAND_FLUSH_EX 0xea
+#define ATA_COMMAND_FLUSH_EXT 0xea
 #define ATA_COMMAND_PACKET 0xa0
 #define ATA_COMMAND_IDENTIFY_PACKET 0xa1
 #define ATA_COMMAND_IDENTIFY 0xec
@@ -73,7 +73,7 @@ For more information, please refer to <http://unlicense.org/>
 #define ATA_IDENTIFY_FIELD_VALID (106)
 #define ATA_IDENTIFY_MAX_LBA (120)
 #define ATA_IDENTIFY_COMMAND_SETS (164)
-#define ATA_IDENTIFY_MAX_LBA_EX (200)
+#define ATA_IDENTIFY_MAX_LBA_EXT (200)
 
 // types
 #define ATA_TYPE_ATA 0x01

@@ -216,7 +216,7 @@ static void identify(const int channel, const int controller, ata_device_t *dev)
 			*((uint32_t *) &(ata_buf[ATA_IDENTIFY_COMMAND_SETS]));
 	dev->size = *((uint32_t *) &(ata_buf[
 			(dev->command_sets & (1 << 26)) ?
-					ATA_IDENTIFY_MAX_LBA_EX
+					ATA_IDENTIFY_MAX_LBA_EXT
 					: ATA_IDENTIFY_MAX_LBA]));
 
 	for (int k = 0; k < sizeof(dev->model) - 1; k += 2) {
