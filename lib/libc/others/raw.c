@@ -43,7 +43,7 @@ static int consctl(const char *str)
 	message.Twrite.count = len;
 	message.Twrite.data = (char *) str;
 
-	int result = ipc_call(PORT_CONSOLE, &message, MESSAGE_SIZE(Twrite));
+	int result = ipc_call(PORT_WINDOW, &message, MESSAGE_SIZE(Twrite));
 	if ((result == MESSAGE_SIZE(Rwrite))
 			&& (message.header.type == Rwrite)
 			&& (message.Rwrite.count == len))

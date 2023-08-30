@@ -45,7 +45,7 @@ int reply_error(fs_request *req, const int token, const int caller_tag,
 	fsmsg_t response;
 	response.header.ident = IDENT;
 	response.header.type = Rerror;
-	response.header.token = (PORT_CONSOLE << 16) | (token & 0xffff);
+	response.header.token = (PORT_WINDOW << 16) | (token & 0xffff);
 	response.Rerror.tag = caller_tag;
 	response.Rerror.ename = error_no;
 	return _reply(req, &response, MESSAGE_SIZE(Rerror));

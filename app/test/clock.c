@@ -46,7 +46,7 @@ static int putline(char *buf)
 	message.Twrite.count = strlen(buf);
 	message.Twrite.data = buf;
 
-	int err = ipc_call(PORT_CONSOLE, &message, MESSAGE_SIZE(Twrite));
+	int err = ipc_call(PORT_WINDOW, &message, MESSAGE_SIZE(Twrite));
 	if (err < 0)
 		fprintf(stderr, "call error %d\n", err);
 

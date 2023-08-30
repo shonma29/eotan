@@ -87,7 +87,7 @@ static ER accept(void)
 	while (lfq_dequeue(&unused_queue, &req) != QUEUE_OK)
 		kcall->ipc_listen();
 
-	ER_UINT size = kcall->ipc_receive(PORT_CONSOLE, &(req->tag),
+	ER_UINT size = kcall->ipc_receive(PORT_WINDOW, &(req->tag),
 			&(req->packet));
 	if (size < 0) {
 		log_err("hmi: receive error=%d\n", size);

@@ -117,7 +117,7 @@ $(WD)/kernel.img: $(WD)/append $(WD)/elf2module \
 	$(WD)/elf2module servers/timer/timer | $(WD)/append $@ 2 4
 	$(WD)/elf2module servers/dev/dev | $(WD)/append $@ 2 6
 	$(WD)/elf2module servers/kernlog/kernlog | $(WD)/append $@ 3 5
-	$(WD)/elf2module servers/hmi/hmi | $(WD)/append $@ 3 9
+	$(WD)/elf2module servers/hmi/hmi | $(WD)/append $@ 3 11
 	$(WD)/elf2module servers/fs/fs | $(WD)/append $@ 3 8
 	$(WD)/elf2module servers/mm/mm | $(WD)/append $@ 3 7
 	cat initrd.img | $(WD)/append $@ 5

@@ -66,7 +66,7 @@ static int _pset(const unsigned int x, const unsigned int y, const int color)
 	message.Twrite.count = sizeof(buf);
 	message.Twrite.data = buf;
 
-	int err = ipc_call(PORT_CONSOLE, &message, MESSAGE_SIZE(Twrite));
+	int err = ipc_call(PORT_WINDOW, &message, MESSAGE_SIZE(Twrite));
 	if (err < 0)
 		printf("call error %d\n", err);
 	else if (message.Rwrite.count < 0)

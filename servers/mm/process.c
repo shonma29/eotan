@@ -470,7 +470,7 @@ int create_init(const pid_t pid, const FP entry)
 		//TODO release pages
 		return ENOMEM;
 
-	session->server_id = PORT_CONSOLE;
+	session->server_id = PORT_WINDOW;
 
 	//TODO open cons
 	mm_descriptor_t *d = process_create_dummy_file(session);
