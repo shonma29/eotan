@@ -33,7 +33,7 @@ extern ID receiver_id;
 static inline int create_token(const int thread_id,
 		const mm_session_t *session)
 {
-	return ((thread_id << 16) | session->node.key);
+	return ((thread_id << 16) | (session->node.key & 0xffff));
 }
 
 extern int _walk(mm_file_t **, mm_process_t *, const int, const char *,

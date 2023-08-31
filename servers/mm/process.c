@@ -43,8 +43,6 @@ For more information, please refer to <http://unlicense.org/>
 
 #define THREAD_LOOKUP_SIZE (16)
 
-#define getParent(type, p) ((uintptr_t) p - offsetof(type, node))
-
 static slab_t process_slab;
 static tree_t process_tree;
 static slab_t thread_slab;
@@ -200,7 +198,7 @@ mm_process_t *process_duplicate(mm_process_t *src, void *entry, void *stack)
 
 		strcpy(dest->name, src->name);
 		set_local(dest, src->local->wd, src->local->wd_len);
-
+#if 0
 		log_info("d %d %x->%x, %x->%x pp=%d pg=%d u=%d g=%d n=%s %x\n",
 				dest->node.key,
 				&dest->brothers, dest->brothers.next,
@@ -208,7 +206,7 @@ mm_process_t *process_duplicate(mm_process_t *src, void *entry, void *stack)
 				dest->ppid, dest->pgid, dest->uid, dest->gid,
 				dest->name,
 				(dest->root) ? dest->root->node.key : (-1));
-
+#endif
 		error_no = map_user_stack(dest);
 		if (error_no) {
 			log_err("mm: th map err\n");
@@ -300,7 +298,7 @@ int process_release_body(mm_process_t *proc, const int options)
 {
 //TODO list_insert dead child on exit
 	if (list_is_empty(&(proc->children))) {
-		log_info("mm: %d no child release body\n", proc->node.key);
+		//log_info("mm: %d no child release body\n", proc->node.key);
 		return ECHILD;
 	}
 
@@ -336,7 +334,7 @@ int process_release_body(mm_process_t *proc, const int options)
 			log_err("mm: %d failed to release body(%d)\n",
 					proc->node.key, result);
 
-		log_info("mm: %d success release body\n", proc->node.key);
+		//log_info("mm: %d success release body\n", proc->node.key);
 		return 0;
 	}
 
@@ -351,7 +349,7 @@ int process_release_body(mm_process_t *proc, const int options)
 					proc->node.key, result);
 	}
 
-	log_info("mm: %d not found release body\n", proc->node.key);
+	//log_info("mm: %d not found release body\n", proc->node.key);
 	return 0;
 }
 
@@ -380,8 +378,8 @@ int process_destroy(mm_process_t *process, const int status)
 	mm_process_t *parent = process_find(process->ppid);
 	if (parent) {
 		if (parent->tag) {
-			log_info("mm: %d release parent %d\n",
-					process->node.key, process->ppid);
+			//log_info("mm: %d release parent %d\n",
+			//		process->node.key, process->ppid);
 			process_release_body(parent, 0);
 		} else {
 			log_info("mm: %d parent not waiting\n",
@@ -464,7 +462,7 @@ int create_init(const pid_t pid, const FP entry)
 
 	set_local(p, "/", 1);
 
-	mm_session_t *session = session_create();
+	mm_session_t *session = session_create(create_sid(PORT_WINDOW, pid));
 	if (!session)
 		//TODO release process
 		//TODO release pages

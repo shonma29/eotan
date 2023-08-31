@@ -106,6 +106,16 @@ static inline mm_thread_t *getMyThread(const list_t *p)
 			- offsetof(mm_thread_t, brothers)));
 }
 
+static inline int create_sid(const int server_id, const pid_t pid)
+{
+	return ((server_id << 16) | pid);
+}
+
+static inline int server_id_from_sid(const int server_id)
+{
+	return ((server_id >> 16) & 0xffff);
+}
+
 extern void process_initialize(void);
 extern mm_process_t *process_find(const ID);
 extern mm_process_t *process_duplicate(mm_process_t *, void *, void *);
@@ -118,7 +128,7 @@ extern int create_init(const pid_t, const FP);
 extern mm_thread_t *thread_find(const ID);
 
 extern void file_initialize(void);
-extern mm_session_t *session_create(void);
+extern mm_session_t *session_create(const int);
 extern int session_destroy(mm_session_t *);
 extern mm_descriptor_t *process_create_dummy_file(mm_session_t *);
 extern mm_descriptor_t *process_create_desc(mm_process_t *);

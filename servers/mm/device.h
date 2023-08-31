@@ -1,5 +1,5 @@
-#ifndef _MM_H_
-#define _MM_H_
+#ifndef _MM_DEVICE_H_
+#define _MM_DEVICE_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,14 +26,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <nerve/kcall.h>
+#include "process.h"
 
-#define MYNAME "mm"
+typedef struct {
+	node_t node;
+	mm_file_t *root;
+	int server_id;
+} mm_device_t;
 
-#define log_err kcall->printk
-#define log_warning kcall->printk
-#define log_info kcall->printk
-
-#define getParent(type, p) ((uintptr_t) p - offsetof(type, node))
+extern void device_initialize(void);
+extern mm_device_t *device_get(const int);
 
 #endif

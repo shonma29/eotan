@@ -35,6 +35,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "mm.h"
 #include "api.h"
 #include "proxy.h"
+#include "device.h"
 
 static int (*funcs[])(mm_request_t *) = {
 	mm_fork,
@@ -86,6 +87,7 @@ static int initialize(void)
 {
 	process_initialize();
 	file_initialize();
+	device_initialize();
 	define_mpu_handlers(default_handler, page_fault_handler);
 
 	request_slab.unit_size = sizeof(mm_request_t);
@@ -116,13 +118,15 @@ static void execute(mm_request_t *req)
 		return;
 	}
 
-	switch (funcs[req->args.syscall_no](req)) {
+	int func_result = funcs[req->args.syscall_no](req);
+	switch (func_result) {
 	case reply_success:
 	case reply_failure: {
 			sys_reply_t *reply = (sys_reply_t *) &(req->args);
 			int result = kcall->ipc_send(req->node.key,
 					reply, sizeof(*reply));
-			if (result)
+			if (result
+					&& (func_result != reply_no_caller))
 				log_err(MYNAME ": reply failed %d\n", result);
 		}
 		break;
@@ -252,8 +256,7 @@ void start(VP_INT exinf)
 mm_request_t *find_request(const int tag)
 {
 	node_t *node = tree_get(&tag_tree, tag);
-	//TODO define getParent macro
-	return ((mm_request_t *) node);
+	return (node ? (mm_request_t *) getParent(mm_request_t, node) : NULL);
 }
 
 int add_request(const int tag, mm_request_t *req)

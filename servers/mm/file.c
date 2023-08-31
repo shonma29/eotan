@@ -79,20 +79,16 @@ void file_initialize(void)
 	tree_create(&session_tree, NULL, NULL);
 }
 
-mm_session_t *session_create(void)
+mm_session_t *session_create(const int sid)
 {
-	int sid;
-	for (sid = MIN_SID; sid < SESSION_MAX; sid++)
-		if (!tree_get(&session_tree, sid))
-			break;
-
-	if (sid == SESSION_MAX)
+	if (tree_get(&session_tree, sid))
 		return NULL;
 
 	mm_session_t *session = (mm_session_t *) slab_alloc(&session_slab);
 	if (session) {
 		if (!tree_put(&session_tree, sid, &(session->node))) {
-			//TODO what to do?
+			slab_free(&session_slab, session);
+			return NULL;
 		}
 
 		tree_create(&(session->files), NULL, NULL);

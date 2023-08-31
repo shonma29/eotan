@@ -228,7 +228,7 @@ int mm_exec(mm_request_t *req)
 
 		reply->result = 0;
 		reply->data[0] = 0;
-		return reply_success;
+		return reply_no_caller;
 	} while (false);
 
 	reply->result = -1;
@@ -292,7 +292,7 @@ int mm_exit(mm_request_t *req)
 
 		reply->result = 0;
 		reply->data[0] = 0;
-		return reply_success;
+		return reply_no_caller;
 	} while (false);
 
 	reply->result = -1;
@@ -303,8 +303,8 @@ static int cleanup(mm_process_t *process, mm_thread_t *th, mm_request_t *req)
 {
 	for (node_t *node; (node = tree_root(&(process->descriptors)));) {
 		int d = node->key;
-		//TODO use getParent macro
-		mm_descriptor_t *desc = (mm_descriptor_t *) node;
+		mm_descriptor_t *desc = node ? (mm_descriptor_t *)
+				getParent(mm_descriptor_t, node) : NULL;
 		mm_file_t *file = desc->file;
 		desc->file = NULL;
 

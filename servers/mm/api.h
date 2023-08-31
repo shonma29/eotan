@@ -34,7 +34,8 @@ For more information, please refer to <http://unlicense.org/>
 typedef enum {
 	reply_success = 0,
 	reply_failure = 1,
-	reply_wait = 2
+	reply_wait = 2,
+	reply_no_caller = 3
 } mm_reply_type_e;
 
 typedef struct {

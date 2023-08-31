@@ -35,6 +35,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../kernel/mpu/mpufunc.h"
 #include "mm.h"
 #include "proxy.h"
+#include "device.h"
 
 #define MYNAME "mm"
 
@@ -44,6 +45,7 @@ For more information, please refer to <http://unlicense.org/>
 #define PATH_DELIMITER '/'
 #define PATH_DOT '.'
 #define PATH_NUL '\0'
+#define PATH_DEVICE '#'
 
 typedef struct {
 	unsigned short tsize;
@@ -64,8 +66,8 @@ static fspacket_definition_t packet_def[] = {
 	{ MESSAGE_SIZE(Twstat), Rwstat, MESSAGE_SIZE(Rwstat) }
 };
 
-static int _walk_child(mm_file_t *, mm_process_t *, const char *,
-		mm_request_t *);
+static int _attach(mm_file_t **, mm_request_t *, mm_process_t *, const int);
+static int _walk_child(mm_file_t *, const char *, mm_request_t *);
 static int call_device(const mm_file_t *, mm_request_t *);
 static int create_tag(const mm_request_t *);
 static int calc_path(char *, const char *, const char *, const long);
@@ -84,46 +86,15 @@ int mm_attach(mm_request_t *req)
 		}
 
 		mm_process_t *process = get_process(th);
-		mm_session_t *session = session_create();
-		if (!session) {
-			reply->data[0] = ENOMEM;
-			break;
-		}
-
-		mm_file_t *file = session_create_file(session);
-		if (!file) {
-			session_destroy(session);
-			reply->data[0] = ENOMEM;
-			break;
-		}
-
-		session->server_id = PORT_FS;
-
-		fsmsg_t *message = &(req->message);
-		message->header.type = Tattach;
-		message->header.token = create_token(th->node.key, session);
-		message->Tattach.tag = create_tag(req);
-		message->Tattach.fid = file->node.key;
-		message->Tattach.afid = NOFID;
-		message->Tattach.uname = (char *) (process->uid);
-		message->Tattach.aname = (char *) "/";
-
-		int result = call_device(file, req);
-		//log_info("proxy: attach[sid=%d fid=%d] %d\n", session->node.key,
-		//		file->node.key, result);
-
+		mm_file_t *file;
+		int result = _attach(&file, req, process,
+				create_sid(PORT_FS, process->node.key));
 		if (result) {
-			log_err("proxy: attach(%x) %d\n", file->node.key, result);
-			session_destroy_file(file);
 			reply->data[0] = result;
 			break;
 		}
 
-		file->f_offset = 0;
-		file->f_flag = O_ACCMODE;
-		file->f_count = 1;
 		process->root = file;
-
 		reply->result = 0;
 		reply->data[0] = 0;
 		return reply_success;
@@ -131,6 +102,47 @@ int mm_attach(mm_request_t *req)
 
 	reply->result = -1;
 	return reply_failure;
+}
+
+int _attach(mm_file_t **root, mm_request_t *req, mm_process_t *process,
+		const int sid)
+{
+	mm_session_t *session = session_create(sid);
+	if (!session)
+		return ENOMEM;
+
+	mm_file_t *file = session_create_file(session);
+	if (!file) {
+		session_destroy(session);
+		return ENOMEM;
+	}
+
+	session->server_id = server_id_from_sid(sid);
+
+	fsmsg_t *message = &(req->message);
+	message->header.type = Tattach;
+	message->header.token = create_token(kcall->thread_get_id(), session);
+	message->Tattach.tag = create_tag(req);
+	message->Tattach.fid = file->node.key;
+	message->Tattach.afid = NOFID;
+	message->Tattach.uname = (char *) (process->uid);
+	message->Tattach.aname = (char *) "/";
+
+	int result = call_device(file, req);
+	//log_info("proxy: attach[sid=%x fid=%d] %d\n", session->node.key,
+	//		file->node.key, result);
+
+	if (result) {
+		log_err("proxy: attach(%x) %d\n", file->node.key, result);
+		session_destroy_file(file);
+		return result;
+	}
+
+	file->f_offset = 0;
+	file->f_flag = O_ACCMODE;
+	file->f_count = 1;
+	*root = file;
+	return 0;
 }
 
 int mm_open(mm_request_t *req)
@@ -230,6 +242,10 @@ int mm_create(mm_request_t *req)
 		char *name = strrchr(req->walkpath, '/');//TODO slow
 		if (name == req->walkpath)
 			in_root = true;
+		else if ((name == &(req->walkpath[2]))
+				&& (req->walkpath[0] == PATH_DEVICE))
+			//TODO test
+			in_root = true;
 		else {
 			//TODO test
 			//TODO is needed?
@@ -260,7 +276,7 @@ int mm_create(mm_request_t *req)
 
 		int oflag = req->args.arg2;
 		int token = create_token(kcall->thread_get_id(), file->session);
-		if (_walk_child(file, process, name, req)) {
+		if (_walk_child(file, name, req)) {
 			int fid = file->node.key;
 			message->header.type = Tcreate;
 			message->header.token = token;
@@ -274,7 +290,7 @@ int mm_create(mm_request_t *req)
 //					process->node.key, fd, fid, result);
 			if (result) {
 				//TODO test
-				if (!_walk_child(file, process, name, req))
+				if (!_walk_child(file, name, req))
 					result = _open(file, token,
 							oflag | O_TRUNC, req);
 			}
@@ -621,11 +637,6 @@ int mm_chmod(mm_request_t *req)
 int _walk(mm_file_t **file, mm_process_t *process, const int thread_id,
 		const char *path, mm_request_t *req)
 {
-	if (!(process->root))
-		//TODO what to do?
-		//TODO check process->local->wd_len?
-		return ECONNREFUSED;
-
 	ER_UINT len;
 	if (!path)
 		len = 0;
@@ -650,25 +661,52 @@ int _walk(mm_file_t **file, mm_process_t *process, const int thread_id,
 			return EINVAL;
 	}
 
-	mm_file_t *f = session_create_file(process->root->session);
+	int offset;
+	mm_file_t *root;
+	if (req->walkpath[0] == PATH_DEVICE) {
+		mm_device_t *device = device_get((int) req->walkpath[1]);
+		if (!device)
+			return ENODEV;
+		else if (device->root)
+			root = device->root;
+		else {
+			int result = _attach(&root, req, process,
+					create_sid(device->server_id, 0));
+			if (result)
+				return result;
+
+			device->root = root;
+		}
+
+		offset = 2;
+	} else {
+		root = process->root;
+		offset = 0;
+	}
+
+	if (!root)
+		//TODO what to do?
+		//TODO check process->local->wd_len?
+		return ECONNREFUSED;
+
+	mm_file_t *f = session_create_file(root->session);
 	if (!f)
 		return ENOMEM;
 
 	fsmsg_t *message = &(req->message);
 	message->header.type = Twalk;
 	message->header.token =
-			create_token(kcall->thread_get_id(),
-					process->root->session);
+			create_token(kcall->thread_get_id(), root->session);
 	message->Twalk.tag = create_tag(req);
-	message->Twalk.fid = process->root->node.key;
+	message->Twalk.fid = root->node.key;
 	message->Twalk.newfid = f->node.key;
 	message->Twalk.nwname = len;
-	message->Twalk.wname = req->walkpath;
-//	log_info("proxy: walk %d %d [%s] %d\n", process->session->node.key,
+	message->Twalk.wname = &(req->walkpath[offset]);
+//	log_info("proxy: walk %x %d [%s] %d\n", root->session->node.key,
 //			message->Twalk.fid, message->Twalk.wname,
 //			message->Twalk.newfid);
 
-	int result = call_device(process->root, req);
+	int result = call_device(root, req);
 	if (result)
 		session_destroy_file(f);
 	else {
@@ -681,14 +719,8 @@ int _walk(mm_file_t **file, mm_process_t *process, const int thread_id,
 	return result;
 }
 
-static int _walk_child(mm_file_t *file, mm_process_t *process,
-		const char *name, mm_request_t *req)
+static int _walk_child(mm_file_t *file, const char *name, mm_request_t *req)
 {
-	if (!(process->root))
-		//TODO test
-		//TODO what to do?
-		return ECONNREFUSED;
-
 	size_t len = strlen(name);
 	if (len >= PATH_MAX)
 		//TODO test
@@ -816,8 +848,26 @@ static int calc_path(char *dest, const char *wd, const char *src,
 		*w++ = PATH_DELIMITER;
 		r++;
 		rest--;
+	} else if (*r == PATH_DEVICE) {
+		if (!(r[1])
+				|| (r[1] == PATH_DELIMITER))
+			return ERR_BAD_PATH;
+
+		rest -= 3;
+		if (rest < 0)
+			return ERR_INSUFFICIENT_BUFFER;
+
+		w = dest;
+		*w++ = *r++;
+		*w++ = *r++;
+		*w++ = PATH_DELIMITER;
+
+		if (*r == PATH_DELIMITER)
+			r++;
+		else if (*r)
+			return ERR_BAD_PATH;
 	} else {
-		//TODO check format of wd. (should start with '/')
+		//TODO check format of wd. (should start with '/' or '#')
 		long len = copy_path(dest, wd, rest);
 		if (!len)
 			return ERR_BAD_PATH;
@@ -897,10 +947,12 @@ end_of_src:
 
 	{
 		long len = (long) ((uintptr_t) w - (uintptr_t) dest);
-		if ((len > 1)
-				&& (w[-1] == PATH_DELIMITER)) {
-			w--;
-			len--;
+		if (w[-1] == PATH_DELIMITER) {
+			long min = (*dest == PATH_DEVICE) ? 3 : 1;
+			if (len > min) {
+				w--;
+				len--;
+			}
 		}
 
 		*w = PATH_NUL;
@@ -925,7 +977,8 @@ static long copy_path(char *dest, const char *src, const long size)
 static char *omit_previous_entry(long *rest, char *head, char *tail)
 {
 	long len = (long) ((uintptr_t) tail - (uintptr_t) head);
-	if (len <= 1)
+	long min = (*head == PATH_DEVICE) ? 3 : 1;
+	if (len <= min)
 		return NULL;
 
 	char *p = (char *) tail - 3;
