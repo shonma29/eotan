@@ -49,18 +49,24 @@ typedef struct _block_device_t {
 	int (*invalidate)(struct _block_device_t *, const int);
 } block_device_t;
 
+struct _vfs_t;
+struct _vnode_t;
+
 typedef struct _vfs_operation_t {
-	int (*mount)();
-	int (*unmount)();
-	int (*getdents)();
-	int (*walk)();
-	int (*remove)();
-	int (*stat)();
-	int (*wstat)();
-	int (*create)();
-	int (*close)();
-	int (*read)();
-	int (*write)();
+	int (*mount)(struct _vfs_t *, struct _vnode_t *);
+	int (*unmount)(struct _vfs_t *);
+	int (*getdents)(struct _vnode_t *, copier_t *, const unsigned int,
+			const size_t, size_t *);
+	int (*walk)(struct _vnode_t *, const char *, struct _vnode_t **);
+	int (*remove)(struct _vnode_t *, struct _vnode_t *);
+	int (*stat)(struct _vnode_t *, struct stat *);
+	int (*wstat)(struct _vnode_t *, const struct stat *);
+	int (*create)(struct _vnode_t *, const char *, struct _vnode_t **);
+	int (*close)(struct _vnode_t *);
+	int (*read)(struct _vnode_t *, copier_t *, const unsigned int,
+			const size_t, size_t *);
+	int (*write)(struct _vnode_t *, copier_t *, const unsigned int,
+			const size_t, size_t *);
 } vfs_operation_t;
 
 typedef struct _vfs_t {
