@@ -175,7 +175,7 @@ static int do_stat(vnode_t *vnode, const char *path)
 {
 	//TODO use struct definition of guest
 	vstat_t st;
-	int result = vnode->fs->operations.stat(vnode, &st);
+	int result = vnode->fs->operations.stat(vnode, (struct stat *) &st);
 	if (result) {
 		printf("stat(%d) failed %d\n", vnode->index, result);
 		return ERR_UNKNOWN;
@@ -449,7 +449,7 @@ static int do_chmod(vfs_t *fs, const char *mode, char *path,
 	st.gid = (uint32_t) (-1);
 	st.size = -1;
 	st.mtime = -1;
-	result = vnode->fs->operations.wstat(vnode, &st);
+	result = vnode->fs->operations.wstat(vnode, (struct stat *) &st);
 	vnodes_remove(vnode);
 
 	if (result) {
