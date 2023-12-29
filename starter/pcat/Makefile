@@ -41,26 +41,38 @@ BOOT_SIZE = 4096
 BIN_SIZE = `echo "$(STARTER_SIZE) + $(BOOT_SIZE)" | bc`
 MAX_KERNEL = `echo "(640 - 32 - 20 - 4) * 1024" | bc`
 
-OBJS = build/boot.img $(WD)/pad $(WD)/append $(WD)/elf2module \
-	$(WD)/loader $(WD)/loader.o $(WD)/loader.inc \
+OBJS = build/boot.img $(WD)/hdboot.img \
+	$(WD)/pad $(WD)/append $(WD)/elf2module \
+	$(WD)/fdloader $(WD)/fdloader.o $(WD)/loader.inc \
+	$(WD)/hdloader $(WD)/hdloader.o \
 	$(WD)/kernel.img \
 	$(WD)/starter.bin $(WD)/starter $(WD)/starter.o \
 	$(WD)/protect.o $(WD)/protect.inc \
 	$(WD)/memory.o $(WD)/decode.o \
 	$(WD)/boot $(WD)/boot.o
 
-$(TARGET): build/boot.img
+$(TARGET): build/boot.img $(WD)/hdboot.img
 	mkisofs -R -b boot.img -o $(TARGET) build
 
-build/boot.img: $(WD)/pad $(WD)/loader $(WD)/kernel.img
+build/boot.img: $(WD)/pad $(WD)/fdloader $(WD)/kernel.img
 	[ `wc -c < $(WD)/kernel.img` -le $(MAX_KERNEL) ]
-	cat $(WD)/loader $(WD)/kernel.img > $@
+	cat $(WD)/fdloader $(WD)/kernel.img > $@
 	$(WD)/pad $@ 1474560
 
-$(WD)/loader: $(WD)/loader.o
+$(WD)/fdloader: $(WD)/fdloader.o
 	$(LD) $(LDFLAGS) -L$(LIB) -Ttext $(LOADER_ADDR) -o $@ $^
 
-$(WD)/loader.o: $(WD)/loader.s $(WD)/loader.inc
+$(WD)/fdloader.o: $(WD)/fdloader.s $(WD)/loader.inc
+
+$(WD)/hdboot.img: $(WD)/pad $(WD)/hdloader $(WD)/kernel.img
+	[ `wc -c < $(WD)/kernel.img` -le $(MAX_KERNEL) ]
+	cat $(WD)/hdloader $(WD)/kernel.img > $@
+	$(WD)/pad $@ 1474560
+
+$(WD)/hdloader: $(WD)/hdloader.o
+	$(LD) $(LDFLAGS) -L$(LIB) -Ttext $(LOADER_ADDR) -o $@ $^
+
+$(WD)/hdloader.o: $(WD)/hdloader.s $(WD)/loader.inc
 
 $(WD)/loader.inc: $(WD)/kernel.img
 	echo ".set STARTER_SEGMENT, $(STARTER_SEG)" > $@

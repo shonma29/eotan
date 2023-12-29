@@ -298,7 +298,7 @@ puth:
  * @since 1.0
  */
 message_product:
-	.asciz "fdboot 1.0"
+	.asciz "fdloader 1.0"
 eol:
 	.asciz "\r\n"
 
