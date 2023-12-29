@@ -44,7 +44,7 @@ void syslog(const int priority, const char *message, ...)
 
 	va_list ap;
 	va_start(ap, message);
-	vnprintf2((int (*)(char, void *)) _putc, &packet, message, ap);
+	vnprintf2((int (*)(char, void *)) _putc, &packet, message, &ap);
 
 	if (packet.Twrite.count)
 		send(&packet);

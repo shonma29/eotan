@@ -30,5 +30,5 @@ For more information, please refer to <http://unlicense.org/>
 
 int vfprintf(FILE *stream, const char *format, va_list ap)
 {
-	return vnprintf2((int (*)(char, void*))fputc, stream, format, ap);
+	return vnprintf2((int (*)(char, void*))fputc, stream, format, &ap);
 }

@@ -58,7 +58,7 @@ typedef struct {
 typedef struct _State {
 	bool (*handler)(struct _State *);
 	const char *format;
-	va_list ap;
+	va_list *ap;
 	int (*out)(const char, void *);
 	void *env;
 	int len;
@@ -452,27 +452,27 @@ static bool _format(State *s)
 		_putchar(s, '%');
 		return false;
 	case 'c':
-		_putchar(s, va_arg(s->ap, int) & 0xff);
+		_putchar(s, va_arg(*(s->ap), int) & 0xff);
 		break;
 	case 'd':
-		_putd(s, va_arg(s->ap, int), 10);
+		_putd(s, va_arg(*(s->ap), int), 10);
 		break;
 #ifdef USE_FLOAT
 	case 'f':
-		_putf(s, va_arg(s->ap, double));
+		_putf(s, va_arg(*(s->ap), double));
 		break;
 #endif
 	case 'l': {
 			char c2 = *(s->format)++;
 			switch (c2) {
 			case 'd':
-				_putd(s, va_arg(s->ap, long), 10);
+				_putd(s, va_arg(*(s->ap), long), 10);
 				break;
 			case 'o':
-				_putd(s, va_arg(s->ap, long), 8);
+				_putd(s, va_arg(*(s->ap), long), 8);
 				break;
 			case 'x':
-				_puth(s, va_arg(s->ap, long));
+				_puth(s, va_arg(*(s->ap), long));
 				break;
 			default:
 				_putchar(s, '%');
@@ -483,16 +483,16 @@ static bool _format(State *s)
 		}
 		break;
 	case 'o':
-		_putd(s, va_arg(s->ap, int), 8);
+		_putd(s, va_arg(*(s->ap), int), 8);
 		break;
 	case 'p':
 		_putchar(s, '0');
 		_putchar(s, 'x');
 	case 'x':
-		_puth(s, va_arg(s->ap, int));
+		_puth(s, va_arg(*(s->ap), int));
 		break;
 	case 's':
-		_puts(s, va_arg(s->ap, char *));
+		_puts(s, va_arg(*(s->ap), char *));
 		break;
 	default:
 		_putchar(s, '%');
@@ -531,7 +531,7 @@ static bool _escape(State *s)
 }
 
 int vnprintf2(int (*out)(const char, void *), void *env,
-		const char *format, va_list ap) {
+		const char *format, va_list *ap) {
 	State s = { _immediate, format, ap, out, env, 0 };
 	while (s.handler(&s));
 

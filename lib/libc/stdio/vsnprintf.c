@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 int vsnprintf(char *str, size_t size, const char *format, va_list ap)
 {
 	CharBuffer buf = { 0, size ? (size - 1) : 0, str };
-	int len = vnprintf2((int (*)(char, void*))__putc, &buf, format, ap);
+	int len = vnprintf2((int (*)(char, void*))__putc, &buf, format, &ap);
 
 	if (size)
 		str[buf.len] = '\0';

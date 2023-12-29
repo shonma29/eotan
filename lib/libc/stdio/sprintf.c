@@ -34,7 +34,7 @@ int sprintf(char *str, const char *format, ...)
 	va_start(ap, format);
 
 	CharBuffer buf = { 0, 0xffffffff, str };
-	int len = vnprintf2((int (*)(char, void*))__putc, &buf, format, ap);
+	int len = vnprintf2((int (*)(char, void*))__putc, &buf, format, &ap);
 	str[buf.len] = '\0';
 	return len;
 }

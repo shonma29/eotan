@@ -109,5 +109,5 @@ void printk(const char *format, ...)
 {
 	va_list ap;
 	va_start(ap, format);
-	vnprintf(_putc, (char *) format, ap);
+	vnprintf(_putc, (char *) format, &ap);
 }

@@ -72,6 +72,6 @@ extern int __sweep_buffer(FILE *);
 extern int __parse_file_mode(const char *, int *, int *);
 
 extern int vnprintf2(int (*)(const char, void*), void *,
-		const char *, va_list);
+		const char *, va_list *);
 
 #endif

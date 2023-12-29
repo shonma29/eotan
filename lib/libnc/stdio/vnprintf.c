@@ -34,7 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 typedef struct _State {
 	bool (*handler)(struct _State*);
 	char *format;
-	va_list ap;
+	va_list *ap;
 	void (*out)(const char);
 	int len;
 } State;
@@ -137,19 +137,19 @@ static bool _format(State *s)
 		_putchar(s, '%');
 		return false;
 	case 'c':
-		_putchar(s, va_arg(s->ap, int) & 0xff);
+		_putchar(s, va_arg(*(s->ap), int) & 0xff);
 		break;
 	case 'd':
-		_putd(s, va_arg(s->ap, int));
+		_putd(s, va_arg(*(s->ap), int));
 		break;
 	case 'p':
 		_putchar(s, '0');
 		_putchar(s, 'x');
 	case 'x':
-		_puth(s, va_arg(s->ap, int));
+		_puth(s, va_arg(*(s->ap), int));
 		break;
 	case 's':
-		_puts(s, va_arg(s->ap, char*));
+		_puts(s, va_arg(*(s->ap), char*));
 		break;
 	default:
 		_putchar(s, '%');
@@ -188,7 +188,7 @@ static bool _escape(State *s)
 	return true;
 }
 
-int vnprintf(void (*out)(char), char *format, va_list ap)
+int vnprintf(void (*out)(char), char *format, va_list *ap)
 {
 	State s = { _immediate, format, ap, out, 0 };
 

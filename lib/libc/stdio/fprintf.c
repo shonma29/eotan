@@ -32,5 +32,5 @@ int fprintf(FILE *stream, const char *format, ...)
 {
 	va_list ap;
 	va_start(ap, format);
-	return vnprintf2((int (*)(char, void*))fputc, stream, format, ap);
+	return vnprintf2((int (*)(char, void*))fputc, stream, format, &ap);
 }

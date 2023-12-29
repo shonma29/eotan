@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 int vsprintf(char *str, const char *format, va_list ap)
 {
 	CharBuffer buf = { 0, 0xffffffff, str };
-	int len = vnprintf2((int (*)(char, void*))__putc, &buf, format, ap);
+	int len = vnprintf2((int (*)(char, void*))__putc, &buf, format, &ap);
 
 	str[buf.len] = '\0';
 	return len;

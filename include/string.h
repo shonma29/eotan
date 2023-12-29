@@ -53,8 +53,9 @@ extern void *memcpy(void *restrict, const void *restrict, size_t);
 extern void *memmove(void *, const void *, size_t);
 extern void *memset(void *, int, size_t);
 
-extern int vnprintf(void (*)(char), const char *, va_list);
-extern int vnprintf2(int (*)(const char, void*), void *, const char *, va_list);
+extern int vnprintf(void (*)(char), const char *, va_list *);
+extern int vnprintf2(int (*)(const char, void*), void *, const char *,
+		va_list *);
 
 extern char *strerror(int);
 

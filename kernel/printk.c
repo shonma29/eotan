@@ -67,7 +67,7 @@ void printk(const char *format, ...)
 #endif
 	}
 #endif
-	vnprintf(_putc, (char*)format, ap);
+	vnprintf(_putc, (char*)format, &ap);
 }
 
 static void _putc(char ch)
