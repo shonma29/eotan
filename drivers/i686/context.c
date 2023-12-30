@@ -175,7 +175,7 @@ void create_context(thread_t *th)
 
 	if (is_kthread(th)) {
 		*--sp = th->attr.arg;
-		*--sp = (INT) thread_end;
+		*--sp = (VP_INT) thread_end;
 		th->mpu.esp0 = context_create_kernel(
 				sp,
 				EFLAGS_INTERRUPT_ENABLE | EFLAGS_IOPL_3,
