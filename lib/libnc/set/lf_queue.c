@@ -47,21 +47,21 @@ int lfq_enqueue(volatile lfq_t *q, void *value)
 		if ((tail.ptr == q->tail.ptr)
 				&& (tail.count == q->tail.count)) {
 			if (next.ptr)
-				cas64((char *) &(q->tail),
+				cas2((char *) &(q->tail),
 					tail.count,
-					(unsigned int) tail.ptr,
+					(uintptr_t) tail.ptr,
 					tail.count + 1,
-					(unsigned int) next.ptr);
-			else if (cas64((char *) &(tail.ptr->next),
+					(uintptr_t) next.ptr);
+			else if (cas2((char *) &(tail.ptr->next),
 					next.count,
-					(unsigned int) next.ptr,
+					(uintptr_t) next.ptr,
 					next.count + 1,
-					(unsigned int) node)) {
-				cas64((char *) &(q->tail),
+					(uintptr_t) node)) {
+				cas2((char *) &(q->tail),
 						tail.count,
-						(unsigned int) tail.ptr,
+						(uintptr_t) tail.ptr,
 						tail.count + 1,
-						(unsigned int) node);
+						(uintptr_t) node);
 				return QUEUE_OK;
 			}
 		}
@@ -81,20 +81,20 @@ int lfq_dequeue(volatile lfq_t *q, void *value)
 				if (!next.ptr)
 					return QUEUE_EMPTY;
 
-				cas64((char *) &(q->tail),
+				cas2((char *) &(q->tail),
 						tail.count,
-						(unsigned int) tail.ptr,
+						(uintptr_t) tail.ptr,
 						tail.count + 1,
-						(unsigned int) next.ptr);
+						(uintptr_t) next.ptr);
 			} else {
 				memcpy((char *) value, next.ptr->value,
 						q->size);
 
-				if (cas64((char *) &(q->head),
+				if (cas2((char *) &(q->head),
 						head.count,
-						(unsigned int) head.ptr,
+						(uintptr_t) head.ptr,
 						head.count + 1,
-						(unsigned int) next.ptr)) {
+						(uintptr_t) next.ptr)) {
 					lfs_push(&(q->stack), head.ptr);
 					return QUEUE_OK;
 				}

@@ -26,6 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdint.h>
 
 static inline int mutex_get(volatile char *mtx) {
 	char v;
@@ -46,9 +47,9 @@ static inline void mutex_release(volatile char *mtx) {
 			:"%al");
 }
 
-static inline int cas64(char *p,
-		unsigned int old_high, unsigned int old_low,
-		unsigned int new_high, unsigned int new_low) {
+static inline int cas2(char *p,
+		uintptr_t old_high, uintptr_t old_low,
+		uintptr_t new_high, uintptr_t new_low) {
 	char eq;
 
 	__asm__ __volatile__ ( \
@@ -58,7 +59,7 @@ static inline int cas64(char *p,
 			:"d"(old_high), "a"(old_low), \
 					"c"(new_high), "b"(new_low) \
 			:);
-	return (int)eq;
+	return (int) eq;
 }
 
 #endif

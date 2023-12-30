@@ -29,20 +29,16 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/lf_stack.h>
 
 
-void lfs_initialize(volatile lfs_t *stack, void *buf,
-		size_t size, size_t entry_num)
+void lfs_initialize(volatile lfs_t *stack, void *buf, size_t size,
+		size_t entry_num)
 {
-	size_t i;
-	lfs_entry_t *p = (lfs_entry_t*)buf;
-
+	lfs_entry_t *p = (lfs_entry_t *) buf;
 	stack->head.next = p;
 	stack->entry_size = lfs_entry_size(size);
 
-	for (i = 0; i < entry_num - 1; i++) {
-		char *q = (char*)p;
-		lfs_entry_t *next =
-				(lfs_entry_t*)(q + stack->entry_size);
-
+	for (unsigned long i = 0; i < entry_num - 1; i++) {
+		char *q = (char *) p;
+		lfs_entry_t *next = (lfs_entry_t *) (q + stack->entry_size);
 		p->next = next;
 		p = next;
 	}
@@ -52,26 +48,23 @@ void lfs_initialize(volatile lfs_t *stack, void *buf,
 
 void lfs_push(volatile lfs_t *stack, void *p)
 {
-	lfs_entry_t *entry = (lfs_entry_t*)p;
+	lfs_entry_t *entry = (lfs_entry_t *) p;
 	lfs_head_t newhead;
-
 	newhead.next = entry;
 
 	for (;;) {
 		lfs_head_t oldhead = stack->head;
-
 		if ((oldhead.next == stack->head.next)
 				&& (oldhead.count == stack->head.count)) {
 			entry->next = oldhead.next;
 			newhead.count = oldhead.count + 1;
 
-			if (cas64((char*)&(stack->head),
-					(unsigned int)oldhead.count,
-					(unsigned int)oldhead.next,
-					(unsigned int)newhead.count,
-					(unsigned int)newhead.next)) {
+			if (cas2((char *) &(stack->head),
+					oldhead.count,
+					(uintptr_t) oldhead.next,
+					newhead.count,
+					(uintptr_t) newhead.next))
 				break;
-			}
 		}
 	}
 }
@@ -80,21 +73,19 @@ void *lfs_pop(volatile lfs_t *stack) {
 	for (;;) {
 		lfs_head_t oldhead = stack->head;
 		lfs_head_t newhead;
-
 		if ((oldhead.next == stack->head.next)
 				&& (oldhead.count == stack->head.count)) {
-			if (!oldhead.next)	return NULL;
+			if (!oldhead.next)
+				return NULL;
 
 			newhead.next = oldhead.next->next;
 			newhead.count = oldhead.count + 1;
-
-			if (cas64((char*)&(stack->head),
-					(unsigned int)oldhead.count,
-					(unsigned int)oldhead.next,
-					(unsigned int)newhead.count,
-					(unsigned int)newhead.next)) {
+			if (cas2((char *) &(stack->head),
+					oldhead.count,
+					(uintptr_t) oldhead.next,
+					newhead.count,
+					(uintptr_t) newhead.next))
 				return oldhead.next;
-			}
 		}
 	}
 }

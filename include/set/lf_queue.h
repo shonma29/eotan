@@ -34,7 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 
 typedef struct _lfq_pointer_t {
 	struct _lfq_node_t *ptr;
-	unsigned int count;
+	unsigned long count;
 } lfq_pointer_t;
 
 typedef struct _lfq_node_t {

@@ -36,7 +36,7 @@ typedef struct _lfs_entry_t {
 
 typedef struct _lfs_head_t {
 	lfs_entry_t *next;
-	size_t count;
+	unsigned long count;
 } lfs_head_t;
 
 typedef struct _lfs_t {
