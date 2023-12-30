@@ -72,7 +72,7 @@ typedef struct {
 
 typedef uint_fast32_t INTNO;
 
-typedef int_fast32_t VP_INT;
+typedef intptr_t VP_INT;
 
 typedef int_fast32_t ER_BOOL;
 typedef int_fast32_t ER_ID;
