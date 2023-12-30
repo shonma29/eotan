@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdint.h>
 
 #define EI_MAG0 (0)
 #define EI_MAG1 (1)
@@ -72,16 +73,16 @@ For more information, please refer to <http://unlicense.org/>
 #define ELFDATA2LSB (1)
 #define ELFDATA2MSB (2)
 
-typedef unsigned int Elf32_Addr;
-typedef unsigned int Elf32_Off;
-typedef unsigned short Elf32_Section;
-typedef unsigned short Elf32_Versym;
-typedef unsigned char Elf_Byte;
-typedef unsigned short Elf32_Half;
-typedef int Elf32_Sword;
-typedef unsigned int Elf32_Word;
-typedef long long Elf32_Sxword;
-typedef unsigned long long Elf32_Xword;
+typedef uint32_t Elf32_Addr;
+typedef uint32_t Elf32_Off;
+typedef uint16_t Elf32_Section;
+typedef uint16_t Elf32_Versym;
+typedef uint8_t Elf_Byte;
+typedef uint16_t Elf32_Half;
+typedef int32_t Elf32_Sword;
+typedef uint32_t Elf32_Word;
+typedef int64_t Elf32_Sxword;
+typedef uint64_t Elf32_Xword;
 
 typedef struct {
 	unsigned char e_ident[EI_NIDENT];

@@ -26,60 +26,61 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdint.h>
 
 #define VESA_INFO_ADDR 0x00003c00
 
 typedef struct
 {
-	unsigned short mode_attr;
-	unsigned char window_a_attr;
-	unsigned char window_b_attr;
-	unsigned short window_granularity;
-	unsigned short window_size;
-	unsigned short window_a_segment;
-	unsigned short window_b_segment;
-	unsigned int function;
-	unsigned short bytes_per_line;
+	uint16_t mode_attr;
+	uint8_t window_a_attr;
+	uint8_t window_b_attr;
+	uint16_t window_granularity;
+	uint16_t window_size;
+	uint16_t window_a_segment;
+	uint16_t window_b_segment;
+	uint32_t function;
+	uint16_t bytes_per_line;
 	/* option VESA 1.0/1.1 */
-	unsigned short width;
-	unsigned short height;
-	unsigned char chr_width;
-	unsigned char chr_height;
-	unsigned char num_of_planes;
-	unsigned char bits_per_pixel;
-	unsigned char num_of_banks;
-	unsigned char memory_model;
-	unsigned char size_of_bank;
-	unsigned char num_of_images;
-	unsigned char reserved1;
+	uint16_t width;
+	uint16_t height;
+	uint8_t chr_width;
+	uint8_t chr_height;
+	uint8_t num_of_planes;
+	uint8_t bits_per_pixel;
+	uint8_t num_of_banks;
+	uint8_t memory_model;
+	uint8_t size_of_bank;
+	uint8_t num_of_images;
+	uint8_t reserved1;
 	/* VBE 1.2 */
-	unsigned char red_size;
-	unsigned char red_position;
-	unsigned char green_size;
-	unsigned char green_position;
-	unsigned char blue_size;
-	unsigned char blue_position;
-	unsigned char reserved_size;
-	unsigned char reserved_position;
-	unsigned char direct_color_mode;
+	uint8_t red_size;
+	uint8_t red_position;
+	uint8_t green_size;
+	uint8_t green_position;
+	uint8_t blue_size;
+	uint8_t blue_position;
+	uint8_t reserved_size;
+	uint8_t reserved_position;
+	uint8_t direct_color_mode;
 	/* VBE 2.0 */
-	unsigned int buffer_addr;
-	unsigned int offscreen_position;
-	unsigned short offscreen_size;
+	uint32_t buffer_addr;
+	uint32_t offscreen_position;
+	uint16_t offscreen_size;
 	/* VBE 3.0 */
-	unsigned short bytes_per_scan_line_linear;
-	unsigned char num_of_images_banked;
-	unsigned char num_of_images_linear;
-	unsigned char red_size_linear;
-	unsigned char red_position_linear;
-	unsigned char green_size_linear;
-	unsigned char green_position_linear;
-	unsigned char blue_size_linear;
-	unsigned char blue_position_linear;
-	unsigned char reserved_size_linear;
-	unsigned char reserved_position_linear;
-	unsigned int max_clock;
-	unsigned char reserved2[190];
+	uint16_t bytes_per_scan_line_linear;
+	uint8_t num_of_images_banked;
+	uint8_t num_of_images_linear;
+	uint8_t red_size_linear;
+	uint8_t red_position_linear;
+	uint8_t green_size_linear;
+	uint8_t green_position_linear;
+	uint8_t blue_size_linear;
+	uint8_t blue_position_linear;
+	uint8_t reserved_size_linear;
+	uint8_t reserved_position_linear;
+	uint32_t max_clock;
+	uint8_t reserved2[190];
 } VesaInfo;
 
 #endif
