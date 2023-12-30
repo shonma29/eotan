@@ -72,12 +72,12 @@ void lfs_push(volatile lfs_t *stack, void *p)
 void *lfs_pop(volatile lfs_t *stack) {
 	for (;;) {
 		lfs_head_t oldhead = stack->head;
-		lfs_head_t newhead;
 		if ((oldhead.next == stack->head.next)
 				&& (oldhead.count == stack->head.count)) {
 			if (!oldhead.next)
 				return NULL;
 
+			lfs_head_t newhead;
 			newhead.next = oldhead.next->next;
 			newhead.count = oldhead.count + 1;
 			if (cas2((char *) &(stack->head),
