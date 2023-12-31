@@ -40,6 +40,7 @@ AS = as
 ASFLAGS = -march=$(ARCH)
 LD = ld
 STRIP = strip -s -R .comment -R .note -R .note.ABI-tag
+ECHO = /bin/echo
 
 CSRCS = $(wildcard $(WD)/*.c)
 SSRCS += $(wildcard $(WD)/*.s)
