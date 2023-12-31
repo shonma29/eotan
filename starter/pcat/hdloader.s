@@ -89,7 +89,7 @@ check_extension:
 	cmpw $0xaa55, %bx
 	jne not_support_LBA
 
-	andb $1, %cx
+	andw $1, %cx
 	jne read_entry
 
 not_support_LBA:
