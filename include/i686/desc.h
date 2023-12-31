@@ -27,10 +27,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-#define GDT_ADDR 0x80001000
+#define GDT_ADDR 0x80000000
 #define GDT_MAX_ENTRY (6)
 
-#define IDT_ADDR 0x80001800
+#define IDT_ADDR 0x80000800
 #define IDT_MAX_ENTRY (48)
 
 #endif

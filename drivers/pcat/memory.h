@@ -28,8 +28,8 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <stdint.h>
 
-#define MEMORY_INFO_END 0x00003000
-#define MEMORY_INFO_ADDR 0x00003004
+#define MEMORY_INFO_END 0x00001000
+#define MEMORY_INFO_ADDR 0x00001004
 
 #define MEMORY_PRESENT (1)
 

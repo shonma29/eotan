@@ -41,11 +41,11 @@ For more information, please refer to <http://unlicense.org/>
 .set SELECTOR_STACK, 0x18
 
 .set STACK_ADDR, 0x00008000
-.set MEMORY_INFO_ADDR, 0x3000
-.set PERIPHERAL_INFO_ADDR, 0x3ff0
+.set MEMORY_INFO_ADDR, 0x1000
+.set PERIPHERAL_INFO_ADDR, 0x1ff0
 
 .ifdef INITIALIZE_VESA
-.set VESA_INFO_ADDR, 0x3c00
+.set VESA_INFO_ADDR, 0x1c00
 .set VESA_MODE, 0x0118
 .endif
 

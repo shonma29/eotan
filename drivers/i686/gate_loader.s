@@ -33,8 +33,8 @@ For more information, please refer to <http://unlicense.org/>
 .set GDT_MAX_ENTRY, 6
 .set IDT_MAX_ENTRY, 48
 
-.set GDT_ADDR, 0x80001000
-.set IDT_ADDR, 0x80001800
+.set GDT_ADDR, 0x80000000
+.set IDT_ADDR, 0x80000800
 
 
 gdt_load:

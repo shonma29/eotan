@@ -28,7 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <stdint.h>
 
-#define VESA_INFO_ADDR 0x00003c00
+#define VESA_INFO_ADDR 0x00001c00
 
 typedef struct
 {
