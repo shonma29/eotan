@@ -37,7 +37,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #define HELP "usage:\n\tappend outfile type infile [id]\nServers need their id.\n"
 
-static FILE *in = stdin;
+static FILE *in;
 static FILE *out = NULL;
 
 static int append(FILE *, const int, FILE *, const int);
@@ -62,6 +62,8 @@ int main(int argc, char **argv)
 
 	int type;
 	int result = ERR_ARG;
+	in = stdin;
+
 	switch (argc) {
 	case 3:
 		type = atoi(argv[2]);
