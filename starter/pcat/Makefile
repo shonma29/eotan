@@ -39,7 +39,7 @@ STARTER_SIZE = 16384
 BOOT_ADDR = 0x8000c000
 BOOT_SIZE = 4096
 BIN_SIZE = `echo "$(STARTER_SIZE) + $(BOOT_SIZE)" | bc`
-MAX_KERNEL = `echo "(640 - 32 - 20 - 4) * 1024" | bc`
+MAX_KERNEL = `$(ECHO) "(640 - 32 - 20 - 4) * 1024" | bc`
 
 OBJS = boot.iso build/fdboot.img hdboot.img \
 	$(WD)/pad $(WD)/append $(WD)/elf2module \
@@ -75,10 +75,10 @@ $(WD)/hdloader: $(WD)/hdloader.o
 $(WD)/hdloader.o: $(WD)/hdloader.s $(WD)/loader.inc
 
 $(WD)/loader.inc: $(WD)/kernel.img
-	echo ".set STARTER_SEGMENT, $(STARTER_SEG)" > $@
-	echo ".set STARTER_ADDRESS, $(STARTER_ADDR)" >> $@
-	echo -n ".set STARTER_SECTORS, " >> $@
-	echo "(`wc -c < $(WD)/kernel.img` + $(BLK_SIZE) - 1) / $(BLK_SIZE)" | bc >> $@
+	$(ECHO) ".set STARTER_SEGMENT, $(STARTER_SEG)" > $@
+	$(ECHO) ".set STARTER_ADDRESS, $(STARTER_ADDR)" >> $@
+	$(ECHO) -n ".set STARTER_SECTORS, " >> $@
+	$(ECHO) "(`wc -c < $(WD)/kernel.img` + $(BLK_SIZE) - 1) / $(BLK_SIZE)" | bc >> $@
 
 $(WD)/protect.o: $(WD)/protect.s $(WD)/protect.inc
 
