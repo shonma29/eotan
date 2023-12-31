@@ -185,7 +185,7 @@ puts_entry:
 
 	popw %si
 	ret
- 
+
 /**
  * Print decimal to console by BIOS.
  * destroyed: ax, bx, dx

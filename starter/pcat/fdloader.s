@@ -80,6 +80,7 @@ _start:
 	movw $message_too_large, %ax
 	call putsn
 	jmp die
+
 read_lp:
 	/* check track_offset */
 	movw $TRACK_NUM, %ax
@@ -237,7 +238,7 @@ puts_entry:
 
 	popw %si
 	ret
- 
+
 /**
  * Print decimal to console by BIOS.
  * destroyed: ax, bx, dx
