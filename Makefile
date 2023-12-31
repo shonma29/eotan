@@ -23,8 +23,6 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = boot.iso
-
 MKFS = app/tfs/mkfs
 WRITER = app/tfs/writer
 INITRD = initrd.img
