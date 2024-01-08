@@ -41,9 +41,8 @@ For more information, please refer to <http://unlicense.org/>
 
 #ifdef USE_FLOAT
 #define NUMBER_MIN_UNITS (4)
-#define NUMBER_CARRY_BIT (INT_BIT - 1)
-#define NUMBER_CARRY_MASK ((uint32_t) (1 << NUMBER_CARRY_BIT))
-#define NUMBER_VALUE_MASK ((uint32_t) (NUMBER_CARRY_MASK - 1))
+#define NUMBER_CARRY_BIT (INT_BIT)
+#define NUMBER_VALUE_MASK 0xffffffff
 
 #define B64_SIGNIFICANT_MASK (((uint64_t) 1 << B64_SIGNIFICANT_BITS) - 1)
 
@@ -216,7 +215,7 @@ static int number_multiply(number_t *p, const uint32_t n)
 	int last = 0;
 	uint32_t carry = 0;
 	for (int i = 0; i < len; i++) {
-		uint64_t v = (i < p->len) ? ((uint64_t) (p->buf[i]) * n) : 0;
+		uint64_t v = (i < p->len) ? (((uint64_t) p->buf[i]) * n) : 0;
 		v += carry;
 		carry = (v >> NUMBER_CARRY_BIT) & NUMBER_VALUE_MASK;
 		buf[i] = v & NUMBER_VALUE_MASK;
@@ -255,7 +254,7 @@ static int number_shift(number_t *p, const int n)
 			return -1;
 
 		int i;
-		for (i = 0; i < len; i++)
+		for (i = 0; i < p->len; i++)
 			buf[i] = p->buf[i];
 
 		for (; i < max; i++)
@@ -267,16 +266,17 @@ static int number_shift(number_t *p, const int n)
 	}
 
 	int last = 0;
-	uint32_t carry = 0;
-	for (int i = 0; i < n; i++)
+	for (int i = 0; i < n; i++) {
+		uint32_t carry = 0;
 		for (int j = 0; j < len; j++) {
 			uint32_t v = (p->buf[j] << 1) | carry;
-			carry = (v >> NUMBER_CARRY_BIT) & 1;
-			p->buf[j] = v & NUMBER_VALUE_MASK;
+			carry = (p->buf[j] >> (NUMBER_CARRY_BIT - 1)) & 1;
+			p->buf[j] = v;
 
 			if (v)
 				last = j;
 		}
+	}
 
 	p->len = last + 1;
 	return 0;
@@ -293,7 +293,7 @@ static int number_divide(number_t *p, const uint32_t n)
 	int last = 0;
 	uint32_t reminder = 0;
 	for (int i = p->len; i > 0; i--) {
-		uint32_t x = (reminder << ((INT_BIT / 2) - 1))
+		uint32_t x = (reminder << ((INT_BIT / 2)))
 				| (p->buf[i - 1] >> (INT_BIT / 2));
 		ldiv_t v = ldiv(x, n);
 		uint32_t q = v.quot << (INT_BIT / 2);
@@ -323,14 +323,12 @@ static void putdouble(State *s, const bool minus, uint64_t sig, const int exp)
 	}
 
 	uint32_t v[2];
-	v[0] = (uint32_t) (x >> NUMBER_CARRY_BIT);
+	v[0] = (uint32_t) ((x >> NUMBER_CARRY_BIT) & NUMBER_VALUE_MASK);
 	v[1] = (uint32_t) (x & NUMBER_VALUE_MASK);
 
 	number_t *num = number_create(v, sizeof(v) / sizeof(v[0]), false);
 	if (!num)
 		return;
-
-	number_shift(num, exp);
 
 	if (exp < 0)
 		i -= exp;
@@ -341,6 +339,8 @@ static void putdouble(State *s, const bool minus, uint64_t sig, const int exp)
 
 	if (i > 0)
 		number_multiply(num, power5[i - 1]);
+
+	number_shift(num, exp);
 
 	unsigned char buf[B64_EXPONENT_MAX_R10 + 3];
 	memset(buf, '\0', sizeof(buf));
