@@ -81,7 +81,7 @@ static void number_destroy(number_t *);
 static int number_multiply(number_t *, const uint32_t);
 static int number_shift(number_t *, const int);
 static int number_divide(number_t *, const uint32_t);
-static void putdouble(State *, const bool, uint64_t, const int);
+static void putdouble(State *, const bool, uint64_t, int);
 static void _putf(State *, const double);
 #endif
 
@@ -313,13 +313,20 @@ static int number_divide(number_t *p, const uint32_t n)
 	return reminder;
 }
 
-static void putdouble(State *s, const bool minus, uint64_t sig, const int exp)
+static void putdouble(State *s, const bool minus, uint64_t sig, int exp)
 {
-	uint64_t x = 1;
+	uint64_t x;
 	int i;
-	for (i = 0; sig; i++) {
-		x = (x << 1) | (sig >> (B64_SIGNIFICANT_BITS - 1));
-		sig = (sig << 1) & B64_SIGNIFICANT_MASK;
+	if (exp == -B64_EXPONENT_BIAS) {
+		x = sig;
+		exp++;
+		i = B64_SIGNIFICANT_BITS;
+	} else {
+		x = 1;
+		for (i = 0; sig; i++) {
+			x = (x << 1) | (sig >> (B64_SIGNIFICANT_BITS - 1));
+			sig = (sig << 1) & B64_SIGNIFICANT_MASK;
+		}
 	}
 
 	uint32_t v[2];
