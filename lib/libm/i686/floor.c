@@ -1,5 +1,3 @@
-#ifndef _MATH_H_
-#define _MATH_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,26 +24,55 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <limits.h>
+#include <math.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <mpu/ieee754.h>
 
-#define NAN (__builtin_nan(""))
-#define INFINITY (__builtin_inf())
-#define HUGE_VAL (__builtin_huge_val())
+#define INT_BITS (CHAR_BIT * sizeof(int))
+#define EXP_MAX B64_EXPONENT_SPECIAL
+#define EXP_SHIFT_U (B64_SIGNIFICANT_BITS - INT_BITS)
+#define SIG_MASK_U ((1 << EXP_SHIFT_U) - 1)
 
-#define M_PI (3.14159265358979323846)
 
-extern double fabs(double);
-extern double frexp(double, int *);
-extern double ldexp(double, int);
+double floor(double x)
+{
+	if (!x)
+		return x;
 
-extern double exp(double);
-extern double log(double);
-extern double sqrt(double);
+	uint32_t *p = (uint32_t *) &x;
+	int exp = (p[1] >> EXP_SHIFT_U) & EXP_MAX;
+	if (exp == B64_EXPONENT_SPECIAL)
+		return x;
 
-extern double sin(double);
-extern double cos(double);
-extern double tan(double);
-extern double atan(double);
+	bool minus = ((int32_t) p[1]) < 0;
+	exp -= B64_EXPONENT_BIAS;
+	if (exp <  0)
+		return (minus ? (-1) : 0);
 
-extern double floor(double);
+	if (exp >= B64_SIGNIFICANT_BITS)
+		return x;
 
-#endif
+	double result;
+	uint32_t *q = (uint32_t *) &result;
+	if (exp <= EXP_SHIFT_U) {
+		uint32_t mask1 = (1 << (EXP_SHIFT_U - exp)) - 1;
+		q[0] = 0;
+		q[1] = p[1] & ~mask1;
+
+		if (minus
+				&& (p[0] || (p[1] & mask1)))
+			result -= 1;
+	} else {
+		uint32_t mask0 = ((1 << (B64_SIGNIFICANT_BITS - exp)) - 1);
+		q[0] = p[0] & ~mask0;
+		q[1] = p[1];
+
+		if (minus
+				&& (p[0] & mask0))
+			result -= 1;
+	}
+
+	return result;
+}
