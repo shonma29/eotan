@@ -33,7 +33,6 @@ For more information, please refer to <http://unlicense.org/>
 #define INT_BITS (CHAR_BIT * sizeof(int))
 #define EXP_MAX B64_EXPONENT_SPECIAL
 #define EXP_SHIFT_U (B64_SIGNIFICANT_BITS - INT_BITS)
-#define SIG_MASK_U ((1 << EXP_SHIFT_U) - 1)
 
 
 double floor(double x)
@@ -48,7 +47,7 @@ double floor(double x)
 
 	bool minus = ((int32_t) p[1]) < 0;
 	exp -= B64_EXPONENT_BIAS;
-	if (exp <  0)
+	if (exp < 0)
 		return (minus ? (-1) : 0);
 
 	if (exp >= B64_SIGNIFICANT_BITS)
