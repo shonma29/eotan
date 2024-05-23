@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <features.h>
-#ifdef USE_VESA
+#ifdef USE_FB
 #include <starter/vesa.h>
 #endif
 #include <arch/archfunc.h>
@@ -49,7 +49,7 @@ static size_t calc_length(const MemoryInfo *);
 size_t get_max_address(void)
 {
 	unsigned int prevEnd = 0;
-#ifdef USE_VESA
+#ifdef USE_FB
 	VesaInfo *v = (VesaInfo *) VESA_INFO_ADDR;
 #endif
 	size_t max = *((uint32_t *) MEMORY_INFO_END);
@@ -63,7 +63,7 @@ size_t get_max_address(void)
 			continue;
 
 		unsigned int head = p->baseLow;
-#ifdef USE_VESA
+#ifdef USE_FB
 		if (head == v->buffer_addr) {
 			p->type = TYPE_SKIP;
 			continue;

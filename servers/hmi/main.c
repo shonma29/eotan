@@ -25,7 +25,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
-#include <features.h>
 #include <services.h>
 #include <nerve/kcall.h>
 #include <libserv.h>
@@ -131,14 +130,8 @@ static ER initialize(void)
 {
 	state0.screen = &screen0;
 	terminal_initialize(&state0);
-#ifdef USE_VESA
 	window_initialize();
-#else
-	if (sysinfo->cga)
-		screen0 = *(sysinfo->cga);
-	else
-		terminal_write(STR_CONS_INIT, &state0, 0, LEN_CONS_INIT);
-#endif
+
 	if (event_initialize())
 		return E_SYS;
 

@@ -26,7 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <features.h>
 
-#ifdef USE_VESA
+#ifndef USE_UEFI
 #include <limits.h>
 #include <starter/vesa.h>
 #include <hmi/draw.h>

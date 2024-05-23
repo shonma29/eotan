@@ -24,9 +24,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <features.h>
-
-#ifdef USE_VESA
 #include <hmi/pointer.h>
 
 static uint8_t *pointer_prev_start = NULL;
@@ -151,4 +148,3 @@ void pointer_restore(const Display *d)
 
 	pointer_prev_start = NULL;
 }
-#endif

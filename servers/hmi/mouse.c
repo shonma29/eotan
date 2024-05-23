@@ -25,8 +25,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <features.h>
 #include <core/packets.h>
+#include <hmi/pointer.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
 #include "../../kernel/arch/8259a.h"
@@ -34,12 +34,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "../../lib/libserv/libserv.h"
 #include "hmi.h"
 #include "mouse.h"
-
-#ifdef USE_VESA
-#include <hmi/pointer.h>
-#else
-#include <cga.h>
-#endif
 
 static int x;
 static int y;
@@ -53,66 +47,47 @@ void mouse_process(const int type, const int d)
 	int dx = (uint8_t) ((d >> 8) & 0xff);
 	if (d & 0x100000)
 		dx |= 0xffffff00;
-#ifdef USE_VESA
+
 	int width = display->r.max.x - display->r.min.x;
-#endif
+
 	x += dx;
 	if (x < 0)
 		x = 0;
-#ifdef USE_VESA
 	else if (x >= width)
 		x = width - 1;
-#else
-	else if (x >= CGA_COLUMNS)
-		x = CGA_COLUMNS - 1;
-#endif
+
 	int dy = (uint8_t) (d & 0xff);
 	if (d & 0x200000)
 		dy |= 0xffffff00;
-#ifdef USE_VESA
+
 	int height = display->r.max.y - display->r.min.y;
-#endif
+
 	y -= dy;
 	if (y < 0)
 		y = 0;
-#ifdef USE_VESA
 	else if (y >= height)
 		y = height - 1;
-#else
-	else if (y >= CGA_ROWS)
-		y = CGA_ROWS - 1;
-#endif
-#ifdef USE_VESA
+
 	if (dx || dy) {
 		mouse_hide();
 		mouse_show();
 	}
-#endif
 }
 
 void mouse_show(void)
 {
-#ifdef USE_VESA
 	pointer_put(display, x, y, &(pointer[pointer_select]));
-#endif
 }
 
 void mouse_hide(void)
 {
-#ifdef USE_VESA
 	pointer_restore(display);
-#endif
 }
 
 ER mouse_initialize(void)
 {
-#ifdef USE_VESA
 	x = (display->r.max.x - display->r.min.x) / 2;
 	y = (display->r.max.y - display->r.min.y) / 2;
-#else
-	x = 0;
-	y = 0;
-#endif
 	buttons = 0;
 
 	T_CISR pk_cisr = {

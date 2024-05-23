@@ -25,7 +25,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
-#include <features.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -80,17 +79,13 @@ static void execute(char **array, char **env, const ExecOptions *opts)
 int main(int argc, char **argv, char **env)
 {
 	char *array[] = { NULL, NULL };
-#ifdef USE_VESA
 	char *envp[] = { "COLUMNS=82", "LINES=29", NULL };
-#else
-	char *envp[] = { "COLUMNS=80", "LINES=25", NULL };
-#endif
 	ExecOptions opts = { { -1, -1, -1 }, false };
-#ifdef USE_VESA
+
 	array[0] = "/clock";
 	opts.background = true;
 	execute(array, envp, &opts);
-#endif
+
 	array[0] = "/bin/shell";
 	opts.background = false;
 	for (;;)

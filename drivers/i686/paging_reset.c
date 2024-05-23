@@ -35,7 +35,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <func.h>
 #include "paging.h"
 
-#ifdef USE_VESA
+#ifdef USE_FB
 #include <starter/vesa.h>
 
 static void set_frame_buffer(PTE *);
@@ -78,12 +78,12 @@ void paging_reset(void)
 	}
 
 	tlb_flush_all();
-#ifdef USE_VESA
+#ifdef USE_FB
 	set_frame_buffer(dir);
 #endif
 }
 
-#ifdef USE_VESA
+#ifdef USE_FB
 static void set_frame_buffer(PTE *dir)
 {
 	VesaInfo *v = (VesaInfo *) kern_p2v((void *) VESA_INFO_ADDR);

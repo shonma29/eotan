@@ -47,7 +47,7 @@ OBJS = boot.iso build/fdboot.img hdboot.img \
 	$(WD)/hdloader $(WD)/hdloader.o \
 	$(WD)/kernel.img \
 	$(WD)/starter.bin $(WD)/starter $(WD)/starter.o \
-	$(WD)/protect.o $(WD)/protect.inc \
+	$(WD)/protect.o \
 	$(WD)/memory.o $(WD)/decode.o \
 	$(WD)/boot $(WD)/boot.o
 
@@ -80,10 +80,7 @@ $(WD)/loader.inc: $(WD)/kernel.img
 	$(ECHO) -n ".set STARTER_SECTORS, " >> $@
 	$(ECHO) "(`wc -c < $(WD)/kernel.img` + $(BLK_SIZE) - 1) / $(BLK_SIZE)" | bc >> $@
 
-$(WD)/protect.o: $(WD)/protect.s $(WD)/protect.inc
-
-$(WD)/protect.inc: $(WD)/protect.h
-	$(CPP) -P $(CFLAGS) $^ > $@
+$(WD)/protect.o: $(WD)/protect.s
 
 $(WD)/starter: $(WD)/protect.o $(WD)/starter.o $(WD)/memory.o $(WD)/decode.o \
 		kernel/arch/libarch.a lib/librc.a \

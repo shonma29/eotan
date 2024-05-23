@@ -25,13 +25,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <console.h>
-#include <features.h>
 #include <mpu/memory.h>
 #include "terminal.h"
-
-#ifndef USE_VESA
-#include <cga.h>
-#endif
 
 #define ESC 0x1b
 #define CSI '['
@@ -58,14 +53,8 @@ static void eputc(esc_state_t *, const char);
 
 void terminal_initialize(esc_state_t *state)
 {
-	if (!cns) {
-#ifdef USE_VESA
+	if (!cns)
 		cns = getVesaConsole(&root, &default_font);
-#else
-		cns = getCgaConsole(&root,
-				(const uint16_t *) kern_p2v((void *) CGA_VRAM_ADDR));
-#endif
-	}
 
 	state->func = state_null;
 	*(state->screen) = root;

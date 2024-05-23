@@ -27,12 +27,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <features.h>
 #include <hmi/pointer.h>
 
-#ifdef USE_VESA
 extern pointer_pattern_t pointer[NUM_OF_POINTER_STYLE];
-#endif
 
 extern ER mouse_initialize(void);
 extern void mouse_process(const int, const int);

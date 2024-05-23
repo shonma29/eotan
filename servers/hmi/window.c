@@ -24,8 +24,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <features.h>
-#ifdef USE_VESA
 #include <errno.h>
 #include <nerve/kcall.h>
 #include "hmi.h"
@@ -285,5 +283,4 @@ int remove_window(const int wid)
 
 	return error_no;
 }
-#endif
 #endif

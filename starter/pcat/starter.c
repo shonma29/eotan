@@ -24,7 +24,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <features.h>
 #include <stdarg.h>
 #include <stdnoreturn.h>
 #include <string.h>
@@ -34,20 +33,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/lf_queue.h>
 #include <starter/modules.h>
 
-#ifndef USE_VESA
-#include <cga.h>
-#include <console.h>
-#endif
-
 #define KERNLOG_UNITS ((KERNEL_LOG_SIZE - sizeof(lfq_t)) \
 		/ lfq_node_size(sizeof(int)))
-
-#ifndef USE_VESA
-static Screen window;
-static Console *cns;
-
-static void console_initialize(void);
-#endif
 
 extern void memory_initialize(void);
 
@@ -58,9 +45,6 @@ void printk(const char *, ...);
 noreturn void _main(void)
 {
 	pic_mask_all();
-#ifndef USE_VESA
-	console_initialize();
-#endif
 	paging_initialize();
 	lfq_initialize((volatile lfq_t *) KERNEL_LOG_ADDR,
 			(void *) ((uintptr_t) KERNEL_LOG_ADDR + sizeof(lfq_t)),
@@ -83,23 +67,9 @@ noreturn void _main(void)
 	set_selector();
 }
 
-#ifndef USE_VESA
-static void console_initialize(void)
-{
-	cns = getCgaConsole(&window, (const uint16_t *) CGA_VRAM_ADDR);
-
-	uint8_t *x = (uint8_t *) BIOS_CURSOR_COL;
-	uint8_t *y = (uint8_t *) BIOS_CURSOR_ROW;
-	cns->locate(&window, *x, *y);
-}
-#endif
-
 static void _putc(const char ch)
 {
 	int w = ch;
-#ifndef USE_VESA
-	cns->putc(&window, ch);
-#endif
 	while (lfq_enqueue((volatile lfq_t *) KERNEL_LOG_ADDR, &w) != QUEUE_OK) {
 		int trash;
 		lfq_dequeue((volatile lfq_t *) KERNEL_LOG_ADDR, &trash);

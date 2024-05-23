@@ -52,22 +52,16 @@ typedef union {
 typedef struct _screen {
 	int x;
 	int y;
-#ifdef USE_VESA
 	unsigned int width;
 	unsigned int height;
-#endif
 	uint8_t *p;
 	const uint8_t *base;
-#ifdef USE_VESA
 	unsigned int bpl;
-#endif
 	Color fgcolor;
-#ifdef USE_VESA
 	Color bgcolor;
 	Font font;
 	unsigned int chr_width;
 	unsigned int chr_height;
-#endif
 	bool wrap;
 } Screen;
 
@@ -77,10 +71,8 @@ typedef struct {
 	void (*putc)(Screen *, const unsigned char);
 } Console;
 
-#ifdef USE_VESA
+#ifndef USE_UEFI
 extern Console *getVesaConsole(Screen *, const Font *);
-#else
-extern Console *getCgaConsole(Screen *, const void *);
 #endif
 
 extern Font default_font;

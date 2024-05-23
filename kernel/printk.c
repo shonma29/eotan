@@ -24,64 +24,26 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <features.h>
 #include <stdarg.h>
 #include <string.h>
 #include <nerve/config.h>
-#include "func.h"
-#include "sync.h"
+#include <set/lf_queue.h>
 
-#define DEBUG 0
-
-#ifndef USE_VESA
-#include <nerve/global.h>
-static bool initialized;
-
-#if DEBUG
-#include <cga.h>
-
-static Screen window;
-static Console *cns;
-#endif
-#endif
-
-static void _putc(const char ch);
+static void _putc(const char);
 
 
 void printk(const char *format, ...)
 {
 	va_list ap;
-
 	va_start(ap, format);
-#ifndef USE_VESA
-	if (!initialized){
-		initialized = true;
-#if DEBUG
-		cns = getCgaConsole(&window,
-				(const UH *) kern_p2v((void *) CGA_VRAM_ADDR));
-		cns->erase(&window, EraseScreenEntire);
-		cns->locate(&window, 0, 0);
-		sysinfo->cga = &window;
-#else
-		sysinfo->cga = NULL;
-#endif
-	}
-#endif
-	vnprintf(_putc, (char*)format, &ap);
+	vnprintf(_putc, format, &ap);
 }
 
-static void _putc(char ch)
+static void _putc(const char ch)
 {
 	int w = ch;
-#ifndef USE_VESA
-#if DEBUG
-	cns->putc(&window, ch);
-#endif
-#endif
-	while (lfq_enqueue((volatile lfq_t*)KERNEL_LOG_ADDR, &w) != QUEUE_OK) {
+	while (lfq_enqueue((volatile lfq_t *) KERNEL_LOG_ADDR, &w) != QUEUE_OK) {
 		int trash;
-
-		lfq_dequeue((volatile lfq_t*)KERNEL_LOG_ADDR, &trash);
+		lfq_dequeue((volatile lfq_t *) KERNEL_LOG_ADDR, &trash);
 	}
 }

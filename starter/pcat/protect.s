@@ -34,8 +34,6 @@ For more information, please refer to <http://unlicense.org/>
 
 .global _start
 
-.include "starter/arch/protect.inc"
-
 .set SELECTOR_CODE, 0x08
 .set SELECTOR_DATA, 0x10
 .set SELECTOR_STACK, 0x18
@@ -44,10 +42,8 @@ For more information, please refer to <http://unlicense.org/>
 .set MEMORY_INFO_ADDR, 0x1000
 .set PERIPHERAL_INFO_ADDR, 0x1ff0
 
-.ifdef INITIALIZE_VESA
 .set VESA_INFO_ADDR, 0x1c00
 .set VESA_MODE, 0x0118
-.endif
 
 /**
  * start on segment 0x0800.
@@ -99,7 +95,6 @@ memory_loop:
 	movw $PERIPHERAL_INFO_ADDR, %si
 	movw %ax, (%si)
 
-.ifdef INITIALIZE_VESA
 	/* check if supports VESA */
 	xorw %ax, %ax
 	movw %ax, %es
@@ -128,7 +123,6 @@ memory_loop:
 
 	cmpw $0x004f, %ax
 	jne error_vesa
-.endif
 
 	/* enable A20 */
 	call a20_wait
@@ -174,11 +168,9 @@ error_memory:
 	movw $message_memory_error, %ax
 	jmp die
 
-.ifdef INITIALIZE_VESA
 error_vesa:
 	movw $message_vesa_error, %ax
 	jmp die
-.endif
 
 /**
  * wait KBC
@@ -259,9 +251,7 @@ message_cpu_error:
 message_memory_error:
 	.asciz "cannot get memory map"
 
-.ifdef INITIALIZE_VESA
 message_vesa_error:
 	.asciz "cannot use VESA"
-.endif
 
 .org 256, 0

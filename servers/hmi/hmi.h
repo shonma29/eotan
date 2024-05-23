@@ -27,7 +27,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <features.h>
 #include <dev/device.h>
 #include <fs/protocol.h>
 #include <sys/syslimits.h>
@@ -62,7 +61,6 @@ extern esc_state_t state0;
 extern int reply(fs_request *, const size_t);
 extern int reply_error(fs_request *, const int, const int, const int);
 
-#ifdef USE_VESA
 // window.c
 extern Display *display;
 extern esc_state_t state2;
@@ -78,7 +76,6 @@ extern int remove_window(const int);
 #endif
 // draw.c
 extern ER_UINT draw_write(const UW, const char *);
-#endif
 
 // event.c
 extern volatile lfq_t hmi_queue;

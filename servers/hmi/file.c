@@ -25,7 +25,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
-#include <features.h>
 #include <nerve/kcall.h>
 #include <nerve/ipc_utils.h>
 #include <libserv.h>
@@ -115,10 +114,8 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 		const char *inbuf)
 {
 	switch (dd) {
-#ifdef USE_VESA
 	case 4:
 		return draw_write(size, inbuf);
-#endif
 	case 6:
 		return consctl_write(size, inbuf);
 	default:
@@ -129,16 +126,12 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 	if (result)
 		kcall->printk("hmi: main cannot lock %d\n", result);
 	else {
-#ifdef USE_VESA
 		mouse_hide();
 		terminal_write((char *) inbuf,
 				((dd > 2) ? ((dd == 7) ? &state7 : &state2)
 						: &state0),
 				0, size);
 		mouse_show();
-#else
-		terminal_write((char *) inbuf, &state0, 0, size);
-#endif
 		result = kcall->mutex_unlock(cons_mid);
 		if (result)
 			kcall->printk("hmi: main cannot unlock %d\n", result);
