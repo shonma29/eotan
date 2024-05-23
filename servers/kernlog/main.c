@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <features.h>
 #include <major.h>
 #include <services.h>
 #include <nerve/kcall.h>
@@ -44,7 +45,7 @@ static size_t execute(syslog_t *);
 static ER accept(const ID);
 static ER_ID initialize(void);
 
-#if USE_MONITOR
+#ifdef USE_MONITOR
 #include <console.h>
 
 static Screen screen1;
@@ -191,7 +192,7 @@ void start(VP_INT exinf)
 	ER_ID port = initialize();
 	if (port >= 0) {
 		kcall->printk(MYNAME ": start port=%d\n", port);
-#if USE_MONITOR
+#ifdef USE_MONITOR
 		monitor_initialize();
 #endif
 		while (accept(port) == E_OK);
@@ -203,7 +204,7 @@ void start(VP_INT exinf)
 	kcall->thread_end_and_destroy();
 }
 
-#if USE_MONITOR
+#ifdef USE_MONITOR
 
 static ER monitor_initialize(void)
 {

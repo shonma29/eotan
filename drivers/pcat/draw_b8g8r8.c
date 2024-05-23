@@ -59,11 +59,7 @@ Display *get_display(void)
 
 	display.r.min.x = 0;
 	display.r.min.y = 0;
-#if USE_MONITOR
-	display.r.max.x = v->width / 2;
-#else
 	display.r.max.x = v->width;
-#endif
 	display.r.max.y = v->height;
 	display.base = (void *) (v->buffer_addr);
 	display.bpl = v->bytes_per_line;
