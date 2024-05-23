@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <console.h>
+#include <features.h>
 #include <mpu/memory.h>
 #include "terminal.h"
 

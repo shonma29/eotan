@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include "features.h"
 #ifdef USE_VESA
 #include "hmi.h"
 #include "mouse.h"

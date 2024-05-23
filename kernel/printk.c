@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <features.h>
 #include <stdarg.h>
 #include <string.h>
 #include <nerve/config.h>

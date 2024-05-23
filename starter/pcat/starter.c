@@ -24,10 +24,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <features.h>
 #include <stdarg.h>
 #include <stdnoreturn.h>
 #include <string.h>
-#include <vesa.h>
+#include <starter/vesa.h>
 #include <arch/archfunc.h>
 #include <mpu/mpufunc.h>
 #include <set/lf_queue.h>

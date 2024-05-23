@@ -32,7 +32,6 @@ CPP = $(CC) -E
 CFLAGS = -Wall -Werror -O2 -std=c17 \
  -march=$(ARCH) \
  -I include \
- -DUSE_VESA \
  -fno-asynchronous-unwind-tables
 # -fno-stack-protector
 # -fno-builtin

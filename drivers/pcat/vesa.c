@@ -1,4 +1,3 @@
-#ifdef USE_VESA
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -25,9 +24,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <features.h>
+
+#ifdef USE_VESA
 #include <console.h>
 #include <stddef.h>
-#include <vesa.h>
+#include <starter/vesa.h>
 #include <mpu/memory.h>
 
 static void _erase(Screen *, const erase_type_e);

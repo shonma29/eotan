@@ -1,4 +1,3 @@
-#ifdef USE_VESA
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -25,8 +24,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <features.h>
+
+#ifdef USE_VESA
 #include <limits.h>
-#include <vesa.h>
+#include <starter/vesa.h>
 #include <hmi/draw.h>
 #include <mpu/memory.h>
 

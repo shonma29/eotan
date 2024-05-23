@@ -24,8 +24,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <features.h>
 #ifdef USE_VESA
-#include <vesa.h>
+#include <starter/vesa.h>
 #endif
 #include <arch/archfunc.h>
 #include <arch/memory.h>
@@ -42,18 +43,18 @@ For more information, please refer to <http://unlicense.org/>
 extern int printk(const char *, ...);
 extern int map_set_using(const void *, const size_t);
 
-static size_t calc_length(const MemoryInfo *p);
+static size_t calc_length(const MemoryInfo *);
 
 
 size_t get_max_address(void)
 {
 	unsigned int prevEnd = 0;
 #ifdef USE_VESA
-	VesaInfo *v = (VesaInfo*)VESA_INFO_ADDR;
+	VesaInfo *v = (VesaInfo *) VESA_INFO_ADDR;
 #endif
-	size_t max = *((uint32_t*)MEMORY_INFO_END);
-	for (MemoryInfo *p = (MemoryInfo*)MEMORY_INFO_ADDR;
-			(size_t)p < max; p++) {
+	size_t max = *((uint32_t *) MEMORY_INFO_END);
+	for (MemoryInfo *p = (MemoryInfo *) MEMORY_INFO_ADDR;
+			(size_t) p < max; p++) {
 		printk("memory type=%x base=%x %x size=%x %x\n",
 				p->type, p->baseHigh, p->baseLow,
 				p->sizeHigh, p->sizeLow);
@@ -83,9 +84,9 @@ size_t get_max_address(void)
 void set_reserved_pages(void)
 {
 	unsigned int prevEnd = 0;
-	size_t max = *((size_t*)MEMORY_INFO_END);
-	for (MemoryInfo *p = (MemoryInfo*)MEMORY_INFO_ADDR;
-			(size_t)p < max; p++) {
+	size_t max = *((size_t *) MEMORY_INFO_END);
+	for (MemoryInfo *p = (MemoryInfo *) MEMORY_INFO_ADDR;
+			(size_t) p < max; p++) {
 		if (p->type != MEMORY_PRESENT)
 			continue;
 
@@ -94,16 +95,16 @@ void set_reserved_pages(void)
 			head++;
 
 		if (head != prevEnd)
-			map_set_using((void*)(prevEnd << BITS_OFFSET),
+			map_set_using((void *) (prevEnd << BITS_OFFSET),
 					head - prevEnd);
 
 		prevEnd = head + calc_length(p);
 	}
 
 	/* keep GDT, IDT */
-	map_set_using(kern_v2p((void*)GDT_ADDR), 1);
+	map_set_using(kern_v2p((void *) GDT_ADDR), 1);
 	/* keep page directory */
-	map_set_using((void*)KTHREAD_DIR_ADDR, 1);
+	map_set_using((void *) KTHREAD_DIR_ADDR, 1);
 }
 
 static size_t calc_length(const MemoryInfo *p)
@@ -111,10 +112,10 @@ static size_t calc_length(const MemoryInfo *p)
 	if (p->baseHigh)
 		return 0;
 
-	uint_fast64_t base = (uint_fast64_t)(p->baseLow);
+	uint_fast64_t base = (uint_fast64_t) (p->baseLow);
 	uint_fast64_t rest = OVER_INT - base;
-	uint_fast64_t size = ((uint_fast64_t)(p->sizeHigh) << 32)
-			| (uint_fast64_t)(p->sizeLow);
+	uint_fast64_t size = ((uint_fast64_t) (p->sizeHigh) << 32)
+			| (uint_fast64_t) (p->sizeLow);
 	if (size > rest)
 		size = rest;
 

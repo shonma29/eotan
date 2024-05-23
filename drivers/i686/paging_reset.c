@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <features.h>
 #include <stddef.h>
 #include <mpu/memory.h>
 #include <mpu/mpufunc.h>
@@ -35,9 +36,9 @@ For more information, please refer to <http://unlicense.org/>
 #include "paging.h"
 
 #ifdef USE_VESA
-#include <vesa.h>
+#include <starter/vesa.h>
 
-static void set_frame_buffer(PTE *dir);
+static void set_frame_buffer(PTE *);
 #endif
 
 //TODO unify paging_init
@@ -45,8 +46,8 @@ static void set_frame_buffer(PTE *dir);
 void paging_reset(void)
 {
 	MemoryMap *mm = &(sysinfo->memory_map);
-	PTE *dir = (PTE*)kern_p2v((void*)KTHREAD_DIR_ADDR);
-	UB *addr = (UB*)0;
+	PTE *dir = (PTE *) kern_p2v((void *) KTHREAD_DIR_ADDR);
+	UB *addr = (UB *) 0;
 	size_t i;
 	size_t max = (mm->max_pages + PTE_PER_PAGE - 1) / PTE_PER_PAGE;
 	size_t left = mm->max_pages;
@@ -85,7 +86,7 @@ void paging_reset(void)
 #ifdef USE_VESA
 static void set_frame_buffer(PTE *dir)
 {
-	VesaInfo *v = (VesaInfo*)kern_p2v((void*)VESA_INFO_ADDR);
+	VesaInfo *v = (VesaInfo *) kern_p2v((void *) VESA_INFO_ADDR);
 	UW start = v->buffer_addr >> BITS_OFFSET;
 	UW last = v->buffer_addr + v->bytes_per_line * v->height;
 	size_t i;
@@ -97,7 +98,7 @@ static void set_frame_buffer(PTE *dir)
 			i < (last >> BITS_PAGE) + ((last & MASK_PAGE) ? 1 : 0);
 			i++) {
 		if (!(dir[i] & PAGE_PRESENT)) {
-			UB *p = (UB*)palloc();
+			UB *p = (UB *) palloc();
 
 			/* memset(p, 0, PAGE_SIZE); */
 			dir[i] = calc_pte(kern_v2p(p), ATTR_INITIAL);
@@ -107,14 +108,14 @@ static void set_frame_buffer(PTE *dir)
 	for (i = start; i < last; i++) {
 		size_t offset_dir = i >> BITS_PAGE;
 		size_t offset_page = i & MASK_PAGE;
-		PTE *entry = (PTE*)kern_p2v((void*)(dir[offset_dir]
+		PTE *entry = (PTE *) kern_p2v((void *) (dir[offset_dir]
 				& (~MASK_OFFSET)));
 /*
 		if (entry[offset_page] & PAGE_PRESENT) {
 			//TODO release page
 		}
 */
-		entry[offset_page] = calc_pte((void*)(i << BITS_OFFSET),
+		entry[offset_page] = calc_pte((void *) (i << BITS_OFFSET),
 				ATTR_INITIAL);
 	}
 

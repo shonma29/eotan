@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <features.h>
 
 #ifdef USE_VESA
 .equ INITIALIZE_VESA, 1

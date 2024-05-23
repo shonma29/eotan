@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <features.h>
 #include <dev/device.h>
 #include <fs/protocol.h>
 #include <sys/syslimits.h>

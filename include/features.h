@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #define TARGET_MPU i686
 #define TARGET_ARCH pcat
 
+#define USE_VESA
 //#define USE_MONITOR
 
 #endif

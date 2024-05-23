@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
+#include <features.h>
 #include <services.h>
 #include <nerve/kcall.h>
 #include <libserv.h>
