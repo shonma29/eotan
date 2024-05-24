@@ -218,7 +218,7 @@ static ER monitor_initialize(void)
 static void monitor(void)
 {
 	kcall->printk("monitor: start\n");
-	cns = getVesaConsole(&screen1, &default_font);
+	cns = getConsole(&screen1, &default_font);
 
 	screen1.width /= 2;
 	screen1.height = (screen1.height - 20) / 2;

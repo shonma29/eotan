@@ -54,7 +54,7 @@ static void eputc(esc_state_t *, const char);
 void terminal_initialize(esc_state_t *state)
 {
 	if (!cns)
-		cns = getVesaConsole(&root, &default_font);
+		cns = getConsole(&root, &default_font);
 
 	state->func = state_null;
 	*(state->screen) = root;

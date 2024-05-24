@@ -27,11 +27,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <time.h>
-#include <console.h>
 #include <stddef.h>
 #include <nerve/config.h>
 #include <nerve/memory_map.h>
 #include <set/lf_queue.h>
+#include <hmi/draw.h>
 
 typedef struct {
 	char device[MAX_DEVICE_NAME + 1];
@@ -59,7 +59,7 @@ typedef struct {
 	MemoryMap memory_map;
 	mount_node_t root;
 	memory_range_t initrd;
-	Screen *cga;
+	Display display;
 } system_info_t;
 
 #define sysinfo ((system_info_t *) SYSTEM_INFO_ADDR)

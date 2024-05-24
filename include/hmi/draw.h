@@ -67,15 +67,12 @@ typedef struct {
 	void *base;
 	int bpl;
 	int bpp;
-	char *type;
 } Display;
 
 typedef struct {
 	Rectangle r;
 	Rectangle viewport;
 } Frame;
-
-#define TYPE_B8G8R8 "b8g8r8"
 
 typedef enum draw_operation {
 	draw_op_put = 1,
@@ -88,7 +85,6 @@ typedef enum draw_operation {
 
 #define DRAW_FID (4)
 
-extern Display *get_display(void);
 extern void draw_put(const Frame *, const int, const int, const size_t,
 		const uint8_t *);
 extern void draw_pset(const Frame *, const int, const int, const int);

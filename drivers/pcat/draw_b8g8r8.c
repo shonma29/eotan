@@ -28,16 +28,16 @@ For more information, please refer to <http://unlicense.org/>
 
 #ifndef USE_UEFI
 #include <limits.h>
-#include <starter/vesa.h>
 #include <hmi/draw.h>
 #include <mpu/memory.h>
+#include <nerve/global.h>
 
 #define FONT_BITS CHAR_BIT
 
 #define INT_MOD_MASK (sizeof(uint32_t) - 1)
 #define INT_SHIFT_BITS (2)
 
-static Display display;
+static Display *display = &(sysinfo->display);
 
 static inline size_t font_bytes(const size_t width)
 {
@@ -48,27 +48,6 @@ static bool _putc(const Frame *, uint8_t *, int *, const Color_Rgb *,
 		Font *, const uint8_t, int, size_t);
 static uint8_t *get_font_address(const Font *, const uint8_t);
 
-
-Display *get_display(void)
-{
-	VesaInfo *v = (VesaInfo *) kern_p2v((void *) VESA_INFO_ADDR);
-
-	if ((v->bits_per_pixel != 24)
-			|| (v->red_position != 16)
-			|| (v->green_position != 8)
-			|| (v->blue_position != 0))
-		return NULL;
-
-	display.r.min.x = 0;
-	display.r.min.y = 0;
-	display.r.max.x = v->width;
-	display.r.max.y = v->height;
-	display.base = (void *) (v->buffer_addr);
-	display.bpl = v->bytes_per_line;
-	display.bpp = sizeof(Color_Rgb);
-	display.type = TYPE_B8G8R8;
-	return &display;
-}
 
 void draw_put(const Frame *s, const int x, const int y, const size_t size,
 		const uint8_t *buf)
@@ -97,8 +76,8 @@ void draw_put(const Frame *s, const int x, const int y, const size_t size,
 	if (absolute_x + rest > s->viewport.max.x)
 		rest = s->viewport.max.x - absolute_x;
 
-	uint8_t *w = (uint8_t *) ((uintptr_t) (display.base)
-			+ absolute_y * display.bpl
+	uint8_t *w = (uint8_t *) ((uintptr_t) (display->base)
+			+ absolute_y * display->bpl
 			+ absolute_x * sizeof(Color_Rgb));
 	for (int i = 0; i < rest * sizeof(Color_Rgb); i++)
 		w[i] = buf[offset + i];
@@ -116,8 +95,8 @@ void draw_pset(const Frame *s, const int x, const int y, const int color)
 			|| (absolute_y >= s->viewport.max.y))
 		return;
 
-	uint8_t *r = (uint8_t *) ((uintptr_t) (display.base)
-			+ absolute_y * display.bpl
+	uint8_t *r = (uint8_t *) ((uintptr_t) (display->base)
+			+ absolute_y * display->bpl
 			+ absolute_x * sizeof(Color_Rgb));
 	//TODO color order is BGR?
 	r[0] = color & 0xff;
@@ -142,7 +121,7 @@ void draw_fill(const Frame *s, Rectangle *rect, const int color)
 	uint8_t b = color & 0xff;
 	uint8_t g = (color >> 8) & 0xff;
 	uint8_t r = (color >> 16) & 0xff;
-	size_t skip = display.bpl - len_x * sizeof(Color_Rgb);
+	size_t skip = display->bpl - len_x * sizeof(Color_Rgb);
 	size_t right = dest.max.x & INT_MOD_MASK;
 	size_t left = dest.min.x & INT_MOD_MASK;
 	if (left) {
@@ -165,8 +144,8 @@ void draw_fill(const Frame *s, Rectangle *rect, const int color)
 		}
 	}
 
-	p = (uint8_t *) ((uintptr_t) (display.base)
-			+ dest.min.y * display.bpl
+	p = (uint8_t *) ((uintptr_t) (display->base)
+			+ dest.min.y * display->bpl
 			+ dest.min.x * sizeof(Color_Rgb));
 	for (dest.max.y -= dest.min.y; dest.max.y > 0; dest.max.y--) {
 		for (size_t i = left; i > 0; i--) {
@@ -220,8 +199,8 @@ void draw_string(const Frame *s, const int x, const int y,
 	if (absolute_y1 >= absolute_y2)
 		return;
 
-	uint8_t *line = (uint8_t *) ((uintptr_t) (display.base)
-			+ absolute_y1 * display.bpl);
+	uint8_t *line = (uint8_t *) ((uintptr_t) (display->base)
+			+ absolute_y1 * display->bpl);
 	absolute_y2 -= absolute_y1;
 
 	int absolute_x1 = s->r.min.x + x;
@@ -259,7 +238,7 @@ static bool _putc(const Frame *s, uint8_t *out, int *x, const Color_Rgb *c,
 		return false;
 
 	size_t len_x = absolute_x2 - absolute_x1;
-	size_t skip = display.bpl - len_x * sizeof(Color_Rgb);
+	size_t skip = display->bpl - len_x * sizeof(Color_Rgb);
 	out += absolute_x1 * sizeof(Color_Rgb);
 	*x = absolute_x2;
 

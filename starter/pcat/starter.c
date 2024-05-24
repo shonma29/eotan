@@ -24,14 +24,18 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <features.h>
 #include <stdarg.h>
 #include <stdnoreturn.h>
 #include <string.h>
-#include <starter/vesa.h>
 #include <arch/archfunc.h>
 #include <mpu/mpufunc.h>
+#include <nerve/global.h>
 #include <set/lf_queue.h>
 #include <starter/modules.h>
+#ifndef USE_UEFI
+#include <starter/vesa.h>
+#endif
 
 #define KERNLOG_UNITS ((KERNEL_LOG_SIZE - sizeof(lfq_t)) \
 		/ lfq_node_size(sizeof(int)))
@@ -40,6 +44,9 @@ extern void memory_initialize(void);
 
 static void _putc(const char);
 void printk(const char *, ...);
+#ifndef USE_UEFI
+static void set_display(void);
+#endif
 
 
 noreturn void _main(void)
@@ -51,18 +58,15 @@ noreturn void _main(void)
 			sizeof(int),
 			KERNLOG_UNITS);
 	printk("Starter has woken up.\n");
-
+#ifndef USE_UEFI
+	set_display();
+#endif
 	mpu_initialize();
 	memory_initialize();
 
-	VesaInfo *v = (VesaInfo *) VESA_INFO_ADDR;
-	printk("VESA mode=%x fb=%p width=%d height=%d bpl=%d bpp=%d\n",
-			v->mode_attr, v->buffer_addr, v->width, v->height,
-			v->bytes_per_line, v->bits_per_pixel);
-	printk("VESA mm=%d, red=%d,%d green=%d,%d blue=%d,%d dcm=%d\n",
-			v->memory_model, v->red_position, v->red_size,
-			v->green_position, v->green_size,
-			v->blue_position, v->blue_size, v->direct_color_mode);
+	Display *d = &(sysinfo->display);
+	printk("display fb=%p width=%d height=%d bpl=%d bpp=%d\n",
+			d->base, d->r.max.x, d->r.max.y, d->bpl, d->bpp);
 
 	set_selector();
 }
@@ -82,3 +86,17 @@ void printk(const char *format, ...)
 	va_start(ap, format);
 	vnprintf(_putc, (char *) format, &ap);
 }
+#ifndef USE_UEFI
+static void set_display(void)
+{
+	VesaInfo *v = (VesaInfo *) VESA_INFO_ADDR;
+	Display *d = &(sysinfo->display);
+	d->r.min.x = 0;
+	d->r.min.y = 0;
+	d->r.max.x = v->width;
+	d->r.max.y = v->height;
+	d->base = (void *) (v->buffer_addr);
+	d->bpl = v->bytes_per_line;
+	d->bpp = sizeof(Color_Rgb);
+}
+#endif

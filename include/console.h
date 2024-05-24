@@ -71,9 +71,7 @@ typedef struct {
 	void (*putc)(Screen *, const unsigned char);
 } Console;
 
-#ifndef USE_UEFI
-extern Console *getVesaConsole(Screen *, const Font *);
-#endif
+extern Console *getConsole(Screen *, const Font *);
 
 extern Font default_font;
 

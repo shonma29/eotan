@@ -27,8 +27,8 @@ For more information, please refer to <http://unlicense.org/>
 #ifndef USE_UEFI
 #include <console.h>
 #include <stddef.h>
-#include <starter/vesa.h>
 #include <mpu/memory.h>
+#include <nerve/global.h>
 
 static void _erase(Screen *, const erase_type_e);
 static int _locate(Screen *, const int, const int);
@@ -50,24 +50,16 @@ static Console _cns = {
 };
 
 
-Console *getVesaConsole(Screen *s, const Font *default_font)
+Console *getConsole(Screen *s, const Font *default_font)
 {
-	VesaInfo *v = (VesaInfo *) kern_p2v((void *) VESA_INFO_ADDR);
-
-	if ((v->bits_per_pixel != 24)
-			|| (v->red_position != 16)
-			|| (v->green_position != 8)
-			|| (v->blue_position != 0)) {
-		return NULL;
-	}
-
+	Display *d = &(sysinfo->display);
 	s->x = 0;
 	s->y = 0;
-	s->width = v->width;
-	s->height = v->height;
-	s->base = (const void *) (v->buffer_addr);
+	s->width = d->r.max.x;
+	s->height = d->r.max.y;
+	s->base = (const void *) (d->base);
 	s->p = (uint8_t *) (s->base);
-	s->bpl = v->bytes_per_line;
+	s->bpl = d->bpl;
 
 	s->fgcolor.rgb.b = 0xff;
 	s->fgcolor.rgb.g = 0xff;

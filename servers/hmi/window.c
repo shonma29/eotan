@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
+#include <nerve/global.h>
 #include <nerve/kcall.h>
 #include "hmi.h"
 
@@ -37,7 +38,7 @@ static slab_t window_slab;
 static tree_t window_tree;
 static list_t window_list;
 
-Display *display;
+Display *display = &(sysinfo->display);
 static Screen screen2;
 static Screen screen7;
 esc_state_t state2;
@@ -46,10 +47,6 @@ esc_state_t state7;
 
 int window_initialize(void)
 {
-	display = get_display();
-	if (!display)
-		return E_SYS;
-
 	window_slab.unit_size = sizeof(window_t);
 	window_slab.block_size = PAGE_SIZE;
 	window_slab.min_block = 1;
