@@ -34,6 +34,8 @@ For more information, please refer to <http://unlicense.org/>
 
 .global _start
 
+.set X86_64, 0
+
 .set SELECTOR_CODE, 0x08
 .set SELECTOR_DATA, 0x10
 .set SELECTOR_STACK, 0x18
@@ -45,6 +47,11 @@ For more information, please refer to <http://unlicense.org/>
 .set VESA_INFO_ADDR, 0x1c00
 .set VESA_MODE, 0x0118
 
+.if X86_64
+.set KTHREAD_DIR_ADDR, 0x00002000
+.set MIN_MEMORY_MB, 8
+.endif
+
 /**
  * start on segment 0x0800.
  * @since 1.0
@@ -54,10 +61,34 @@ _start:
 
 	xorl %eax, %eax
 	cpuid
+.if X86_64
+	cmpl $0, %eax
+.else
 	xorl %ebx, %ebx
 	cmpl %ebx, %eax
+.endif
 	jle error_cpu
+.if X86_64
+	/* check x86_64 */
+	movl $0x80000001, %eax
+	cpuid
+	movl $0x20000000, %eax
+	andl %eax, %edx
+	cmpl %eax, %edx
+	jne error_cpu
 
+	/* check LAHF */
+	movl $0x00000001, %eax
+	andl %eax, %ecx
+	cmpl %eax, %ecx
+	jne error_cpu
+
+	/* check SSE3/SSSE3/CX16/SSE4_1/SSE4_2/POPCNT */
+	cpuid
+	movl $0x00982201, %eax
+	andl %eax, %ecx
+	cmpl %eax, %ecx
+.else
 	movl %ebx, %eax
 	incb %al
 	cpuid
@@ -66,6 +97,7 @@ _start:
 	movl $0x03803b29, %eax
 	andl %eax, %edx
 	cmpl %eax, %edx
+.endif
 	jne error_cpu
 
 	/* get memory map */
@@ -158,8 +190,60 @@ flush_op:
 	movw %ax, %fs
 	movw %ax, %gs
 	lssl stack_ptr, %esp
-	ljmp $SELECTOR_CODE, $_main
+.if X86_64
+	ljmp $SELECTOR_CODE, $enter_32bit_segment
 
+.code32
+enter_32bit_segment:
+	/* enable PAE */
+	movl %cr4, %eax
+	orl $0x20, %eax	/*TODO review setting */
+	movl %eax, %cr4
+
+	/* set page table */
+	movl $KTHREAD_DIR_ADDR, %edx
+	xorl %eax, %eax
+	movl %edx, %edi
+	movl $(4096 / 4 * 3), %ecx
+	rep stosl
+
+	leal (4096 + 7)(%edx), %edi
+	movl %edi, (%edx)
+
+	leal (8192 + 7)(%edx), %edi
+	movl %edi, 4096(%edx)
+
+	leal 8192(%edx), %edi
+	movl $0x83, %eax
+	movl $0x200000, %ebx
+	movl $(MIN_MEMORY_MB / 2), %ecx
+
+pte_lp:
+	movl %eax, (%edi)
+	addl %ebx, %eax
+	addl $8, %edi
+	loopne pte_lp
+
+	movl %edx, %cr3
+
+	/* go to long mode */
+	movl $0xc0000080, %ecx	/*TODO review setting */
+	rdmsr
+	orl $0x100, %eax
+	wrmsr
+
+	/* start paging */
+	movl %cr0, %eax
+	orl $0x80000001, %eax	/*TODO review setting */
+	movl %eax, %cr0
+
+	/* enter 64bit segment */
+	pushl $0x20
+	pushl $_main
+	lret
+.else
+	ljmp $SELECTOR_CODE, $_main
+.endif
 error_cpu:
 	movw $message_cpu_error, %ax
 	jmp die
@@ -222,7 +306,7 @@ puts_entry:
 
 	popw %si
 	ret
- 
+
 
 .data
 .align 2
@@ -231,7 +315,11 @@ stack_ptr:
 	.word SELECTOR_STACK
 
 gdt_ptr:
+.if X86_64
+	.word 5 * 8 - 1
+.else
 	.word 4 * 8 - 1
+.endif
 	.long gdt_table
 
 .align 8
@@ -244,7 +332,10 @@ gdt_table:
 	.byte 0xff, 0xff, 0x00, 0x00, 0x00, 0x92, 0xcf, 0x00
 	/* 0x18: kernel stack */
 	.byte 0x00, 0x00, 0x00, 0x00, 0x00, 0x96, 0xc0, 0x00
-
+.if X86_64
+	/* 0x20: 64bit code */
+	.byte 0xff, 0xff, 0x00, 0x00, 0x00, 0x9a, 0xaf, 0x00
+.endif
 message_cpu_error:
 	.asciz "unsupported cpu"
 
