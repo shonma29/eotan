@@ -36,8 +36,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "paging.h"
 
 #ifdef USE_FB
-#include <starter/vesa.h>
-
 static void set_frame_buffer(PTE *);
 #endif
 
@@ -86,13 +84,13 @@ void paging_reset(void)
 #ifdef USE_FB
 static void set_frame_buffer(PTE *dir)
 {
-	VesaInfo *v = (VesaInfo *) kern_p2v((void *) VESA_INFO_ADDR);
-	UW start = v->buffer_addr >> BITS_OFFSET;
-	UW last = v->buffer_addr + v->bytes_per_line * v->height;
+	Display *d = &(sysinfo->display);
+	UW start = (uintptr_t) (d->base) >> BITS_OFFSET;
+	UW last = (uintptr_t) (d->base) + d->bpl * d->r.max.y;
 	size_t i;
 
 	last = (last >> BITS_OFFSET) + ((last & MASK_OFFSET) ? 1 : 0);
-	printk("VESA start=%x last=%x\n", start, last);
+	printk("display start=%x last=%x\n", start, last);
 
 	for (i = start >> BITS_PAGE;
 			i < (last >> BITS_PAGE) + ((last & MASK_PAGE) ? 1 : 0);

@@ -25,14 +25,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <features.h>
-#ifdef USE_FB
-#include <starter/vesa.h>
-#endif
 #include <arch/archfunc.h>
 #include <arch/memory.h>
 #include <mpu/desc.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
+#ifdef USE_FB
+#include <nerve/global.h>
+#endif
 
 #define TYPE_SKIP (-1)
 
@@ -50,7 +50,7 @@ size_t get_max_address(void)
 {
 	unsigned int prevEnd = 0;
 #ifdef USE_FB
-	VesaInfo *v = (VesaInfo *) VESA_INFO_ADDR;
+	uintptr_t fb = (uintptr_t) (sysinfo->display.base);
 #endif
 	size_t max = *((uint32_t *) MEMORY_INFO_END);
 	for (MemoryInfo *p = (MemoryInfo *) MEMORY_INFO_ADDR;
@@ -64,7 +64,7 @@ size_t get_max_address(void)
 
 		unsigned int head = p->baseLow;
 #ifdef USE_FB
-		if (head == v->buffer_addr) {
+		if (head == fb) {
 			p->type = TYPE_SKIP;
 			continue;
 		}

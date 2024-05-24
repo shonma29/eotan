@@ -26,7 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <features.h>
 
-#ifndef USE_UEFI
+#ifdef PIXEL_BGR
 #include <limits.h>
 #include <hmi/draw.h>
 #include <mpu/memory.h>

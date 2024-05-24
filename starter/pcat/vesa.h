@@ -1,5 +1,5 @@
-#ifndef _STARTER_VESA_H_
-#define _STARTER_VESA_H_
+#ifndef _VESA_H_
+#define _VESA_H_
 /*
 This is free and unencumbered software released into the public domain.
 

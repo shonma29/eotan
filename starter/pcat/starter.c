@@ -34,7 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/lf_queue.h>
 #include <starter/modules.h>
 #ifndef USE_UEFI
-#include <starter/vesa.h>
+#include "vesa.h"
 #endif
 
 #define KERNLOG_UNITS ((KERNEL_LOG_SIZE - sizeof(lfq_t)) \

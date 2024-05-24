@@ -24,7 +24,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#ifndef USE_UEFI
+#include <features.h>
+
+#ifdef PIXEL_BGR
 #include <console.h>
 #include <stddef.h>
 #include <mpu/memory.h>
