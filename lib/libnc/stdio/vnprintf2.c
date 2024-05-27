@@ -39,6 +39,10 @@ For more information, please refer to <http://unlicense.org/>
 
 #define MAX_INT_COLUMN (10)
 #define INT_BIT ((CHAR_BIT) * sizeof(int))
+#ifdef _LP64
+#define MAX_LONG_COLUMN (20)
+#define LONG_BIT ((CHAR_BIT) * sizeof(long))
+#endif
 
 #ifdef USE_FLOAT
 #define NUMBER_MIN_UNITS (4)
@@ -67,7 +71,13 @@ typedef struct _State {
 static void _putchar(State *, const char);
 static void _puts(State *, const char *);
 static void _putd(State *, const int, const int);
+#ifdef _LP64
+static void _putld(State *, const long, const int);
+#endif
 static void _putx(State *, const unsigned int);
+#ifdef _LP64
+static void _putlx(State *, const unsigned long);
+#endif
 
 #ifdef USE_FLOAT
 static uint32_t power5[] = {
@@ -122,11 +132,31 @@ static void _putd(State *s, const int v, const int radix)
 
 	_puts(s, p);
 }
+#ifdef _LP64
+static void _putld(State *s, const long v, const int radix)
+{
+	unsigned long u;
+	if (v < 0) {
+		_putchar(s, '-');
+		u = -v;
+	} else
+		u = v;
 
+	char buf[MAX_LONG_COLUMN + 1];
+	char *p = &buf[sizeof(buf) - 1];
+	*p = '\0';
+
+	do {
+		*--p = (u % radix) + '0';
+	} while (u /= radix);
+
+	_puts(s, p);
+}
+#endif
 static void _putx(State *s, const unsigned int u)
 {
 	int shift = count_nlz(u);
-	if (shift < 32) {
+	if (shift < INT_BIT) {
 		shift &= 0x1c;
 		do {
 			int c = (u >> shift) & 0xf;
@@ -135,7 +165,20 @@ static void _putx(State *s, const unsigned int u)
 	} else
 		_putchar(s, '0');
 }
-
+#ifdef _LP64
+static void _putlx(State *s, const unsigned long u)
+{
+	long shift = count_nlz(u);
+	if (shift < LONG_BIT) {
+		shift &= 0x1c;
+		do {
+			int c = (u >> shift) & 0xf;
+			_putchar(s, c + ((c >= 10) ? ('a' - 10) : '0'));
+		} while ((shift -= 4) >= 0);
+	} else
+		_putchar(s, '0');
+}
+#endif
 #ifdef USE_FLOAT
 static number_t *number_create(const uint32_t *x, const size_t len,
 		const bool minus)
@@ -461,13 +504,25 @@ static bool _format(State *s)
 			char c2 = *(s->format)++;
 			switch (c2) {
 			case 'd':
+#ifdef _LP64
+				_putld(s, va_arg(*(s->ap), long), 10);
+#else
 				_putd(s, va_arg(*(s->ap), long), 10);
+#endif
 				break;
 			case 'o':
+#ifdef _LP64
+				_putld(s, va_arg(*(s->ap), long), 8);
+#else
 				_putd(s, va_arg(*(s->ap), long), 8);
+#endif
 				break;
 			case 'x':
+#ifdef _LP64
+				_putlx(s, va_arg(*(s->ap), unsigned long));
+#else
 				_putx(s, va_arg(*(s->ap), unsigned long));
+#endif
 				break;
 			default:
 				_putchar(s, '%');
@@ -483,6 +538,8 @@ static bool _format(State *s)
 	case 'p':
 		_putchar(s, '0');
 		_putchar(s, 'x');
+		_putx(s, va_arg(*(s->ap), uintptr_t));
+		break;
 	case 'x':
 		_putx(s, va_arg(*(s->ap), unsigned int));
 		break;
