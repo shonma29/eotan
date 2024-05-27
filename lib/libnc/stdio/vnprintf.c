@@ -116,7 +116,7 @@ static void _putx(State *s, const unsigned int u)
 {
 	int shift = count_nlz(u);
 	if (shift < INT_BIT) {
-		shift &= 0x1c;
+		shift &= INT_BIT - 1 - 3;
 		do {
 			int c = (u >> shift) & 0xf;
 			_putchar(s, c + ((c >= 10) ? ('a' - 10) : '0'));
@@ -129,7 +129,7 @@ static void _putlx(State *s, const unsigned long u)
 {
 	long shift = count_nlz(u);
 	if (shift < LONG_BIT) {
-		shift &= 0x1c;
+		shift &= LONG_BIT - 1 - 3;
 		do {
 			int c = (u >> shift) & 0xf;
 			_putchar(s, c + ((c >= 10) ? ('a' - 10) : '0'));
@@ -199,7 +199,11 @@ static bool _format(State *s)
 	case 'p':
 		_putchar(s, '0');
 		_putchar(s, 'x');
+#ifdef _LP64
+		_putlx(s, va_arg(*(s->ap), uintptr_t));
+#else
 		_putx(s, va_arg(*(s->ap), uintptr_t));
+#endif
 		break;
 	case 'x':
 		_putx(s, va_arg(*(s->ap), unsigned int));
