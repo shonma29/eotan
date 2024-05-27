@@ -26,10 +26,11 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <limits.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <sys/types.h>
+#include <mpu/bits.h>
 
 #ifdef USE_FLOAT
-#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -66,7 +67,7 @@ typedef struct _State {
 static void _putchar(State *, const char);
 static void _puts(State *, const char *);
 static void _putd(State *, const int, const int);
-static void _puth(State *, const int);
+static void _putx(State *, const unsigned int);
 
 #ifdef USE_FLOAT
 static uint32_t power5[] = {
@@ -98,52 +99,40 @@ static void _putchar(State *s, const char c)
 
 static void _puts(State *s, const char *str)
 {
-	char c;
-	for (; (c = *str); str++)
+	for (char c; (c = *str); str++)
 		_putchar(s, c);
 }
 
 static void _putd(State *s, const int v, const int radix)
 {
-	int carry = 0;
-	int x = v;
-	if (x < 0) {
-		unsigned int y = (unsigned int) x;
-		if (y == (unsigned int) INT_MIN) {
-			carry = 1;
-			x = (int) (y + 1);
-		}
-
+	unsigned int u;
+	if ((radix == 10) && v < 0) {
 		_putchar(s, '-');
-		x = -x;
-	}
+		u = -v;
+	} else
+		u = v;
 
-	char buf[MAX_INT_COLUMN];
+	char buf[MAX_INT_COLUMN + 1];
 	char *p = &buf[sizeof(buf) - 1];
-	for (*p-- = '\0';; p--) {
-		*p = (x % radix) + carry + '0';
-		carry = 0;
+	*p = '\0';
 
-		if (!(x /= radix)) {
-			_puts(s, p);
-			break;
-		}
-	}
+	do {
+		*--p = (u % radix) + '0';
+	} while (u /= radix);
+
+	_puts(s, p);
 }
 
-static void _puth(State *s, const int x)
+static void _putx(State *s, const unsigned int u)
 {
-	bool show = false;
-
-	for (int shift = INT_BIT - 4; shift >= 0; shift -= 4) {
-		int c = (x >> shift) & 0xf;
-		if (show || c) {
+	int shift = count_nlz(u);
+	if (shift < 32) {
+		shift &= 0x1c;
+		do {
+			int c = (u >> shift) & 0xf;
 			_putchar(s, c + ((c >= 10) ? ('a' - 10) : '0'));
-			show = true;
-		}
-	}
-
-	if (!show)
+		} while ((shift -= 4) >= 0);
+	} else
 		_putchar(s, '0');
 }
 
@@ -433,7 +422,6 @@ static void _putf(State *s, const double x)
 static bool _immediate(State *s)
 {
 	char c = *(s->format)++;
-
 	switch (c) {
 	case '\0':
 		return false;
@@ -479,7 +467,7 @@ static bool _format(State *s)
 				_putd(s, va_arg(*(s->ap), long), 8);
 				break;
 			case 'x':
-				_puth(s, va_arg(*(s->ap), long));
+				_putx(s, va_arg(*(s->ap), unsigned long));
 				break;
 			default:
 				_putchar(s, '%');
@@ -496,7 +484,7 @@ static bool _format(State *s)
 		_putchar(s, '0');
 		_putchar(s, 'x');
 	case 'x':
-		_puth(s, va_arg(*(s->ap), int));
+		_putx(s, va_arg(*(s->ap), unsigned int));
 		break;
 	case 's':
 		_puts(s, va_arg(*(s->ap), char *));
@@ -514,7 +502,6 @@ static bool _format(State *s)
 static bool _escape(State *s)
 {
 	char c = *(s->format)++;
-
 	switch (c) {
 	case '\0':
 		_putchar(s, '\\');
