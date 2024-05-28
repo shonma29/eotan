@@ -27,8 +27,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
+//#define USE_UEFI
+
 #define USE_FB
 #define PIXEL_BGR
+//#define PIXEL_BGRD
 
 //#define USE_MONITOR
 

@@ -26,7 +26,6 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <features.h>
 
-#ifdef PIXEL_BGR
 #include <console.h>
 #include <stddef.h>
 #include <mpu/memory.h>
@@ -62,6 +61,7 @@ Console *getConsole(Screen *s, const Font *default_font)
 	s->base = (const void *) (d->base);
 	s->p = (uint8_t *) (s->base);
 	s->bpl = d->bpl;
+	s->bpp = d->bpp;
 
 	s->fgcolor.rgb.b = 0xff;
 	s->fgcolor.rgb.g = 0xff;
@@ -135,7 +135,7 @@ static int _locate(Screen *s, const int x, const int y)
 	s->y = y;
 	s->p = ((uint8_t *) (s->base)
 			+ y * s->font.height * s->bpl
-			+ x * s->font.width * sizeof(Color_Rgb));
+			+ x * s->font.width * s->bpp);
 
 	_cursor(s);
 	return true;
@@ -159,7 +159,7 @@ static void _putc(Screen *s, const uint8_t ch)
 					(s->y + 1) * s->font.height,
 					&(s->bgcolor));
 			s->x--;
-			s->p -= s->font.width * sizeof(Color_Rgb);
+			s->p -= s->font.width * s->bpp;
 		}
 		break;
 	case '\t':
@@ -172,13 +172,13 @@ static void _putc(Screen *s, const uint8_t ch)
 			if (s->x + len >= s->chr_width) {
 				len = s->chr_width - 1 - s->x;
 				s->x += len;
-				s->p += len * s->font.width * sizeof(Color_Rgb);
+				s->p += len * s->font.width * s->bpp;
 
 				if (s->wrap)
 					_newline(s);
 			} else {
 				s->x += len;
-				s->p += len * s->font.width * sizeof(Color_Rgb);
+				s->p += len * s->font.width * s->bpp;
 			}
 		}
 		break;
@@ -197,7 +197,7 @@ static void _putc(Screen *s, const uint8_t ch)
 				_newline(s);
 		} else {
 			s->x++;
-			s->p += s->font.width * sizeof(Color_Rgb);
+			s->p += s->font.width * s->bpp;
 		}
 		break;
 	}
@@ -229,7 +229,7 @@ static void __putc(Screen *s, const uint8_t ch)
 			p[0] = color->rgb.b;
 			p[1] = color->rgb.g;
 			p[2] = color->rgb.r;
-			p += sizeof(Color_Rgb);
+			p += s->bpp;
 			b <<= 1;
 		}
 
@@ -270,7 +270,7 @@ static void _cursor(Screen *s)
 				p[2] = bg->rgb.r;
 			}
 
-			p += sizeof(Color_Rgb);
+			p += s->bpp;
 		}
 
 		line += s->bpl;
@@ -313,7 +313,7 @@ static void _fill(Screen *s, const unsigned int x1, const unsigned int y1,
 {
 	uint8_t *p = (uint8_t *) (s->base)
 			+ y1 * s->bpl
-			+ x1 * sizeof(Color_Rgb);
+			+ x1 * s->bpp;
 	Color_Rgb c = color->rgb;
 	Color_Rgb buf[sizeof(uint32_t)];
 	for (unsigned int i = 0; i < sizeof(uint32_t); i++)
@@ -321,7 +321,7 @@ static void _fill(Screen *s, const unsigned int x1, const unsigned int y1,
 
 	uint32_t *rword = (uint32_t *) buf;
 	size_t len = x2 - x1;
-	size_t skip = s->bpl - len * sizeof(Color_Rgb);
+	size_t skip = s->bpl - len * s->bpp;
 	size_t left = (sizeof(uint32_t) - (x1 & (sizeof(uint32_t) - 1)))
 			& (sizeof(uint32_t) - 1);
 	size_t right = x2 & (sizeof(uint32_t) - 1);
@@ -332,7 +332,7 @@ static void _fill(Screen *s, const unsigned int x1, const unsigned int y1,
 			p[0] = c.b;
 			p[1] = c.g;
 			p[2] = c.r;
-			p += sizeof(Color_Rgb);
+			p += s->bpp;
 		}
 
 		uint32_t *wword = (uint32_t *) p;
@@ -340,7 +340,7 @@ static void _fill(Screen *s, const unsigned int x1, const unsigned int y1,
 			wword[0] = rword[0];
 			wword[1] = rword[1];
 			wword[2] = rword[2];
-			wword += sizeof(Color_Rgb);
+			wword += s->bpp;
 		}
 
 		p = (uint8_t *) wword;
@@ -348,7 +348,7 @@ static void _fill(Screen *s, const unsigned int x1, const unsigned int y1,
 			p[0] = c.b;
 			p[1] = c.g;
 			p[2] = c.r;
-			p += sizeof(Color_Rgb);
+			p += s->bpp;
 		}
 
 		p += skip;
@@ -360,7 +360,7 @@ static void _copy_up(Screen *s, unsigned int x1, unsigned int y1,
 {
 	uint8_t *w = (uint8_t *) (s->base);
 	uint8_t *r = w + height * s->bpl;
-	size_t len = (x2 - x1) * sizeof(Color_Rgb);
+	size_t len = (x2 - x1) * s->bpp;
 	size_t left = (sizeof(uint32_t) - (x1 & (sizeof(uint32_t) - 1)))
 			& (sizeof(uint32_t) - 1);
 	size_t right = x2 & (sizeof(uint32_t) - 1);
@@ -400,9 +400,9 @@ static void _copy_left(Screen *s, unsigned int x1, unsigned int y1,
 {
 	uint8_t *r = (uint8_t *) (s->base)
 			+ y1 * s->bpl
-			+ x1 * sizeof(Color_Rgb);
-	uint8_t *w = r - width * sizeof(Color_Rgb);
-	size_t len = (x2 - x1) * sizeof(Color_Rgb);
+			+ x1 * s->bpp;
+	uint8_t *w = r - width * s->bpp;
+	size_t len = (x2 - x1) * s->bpp;
 	size_t i;
 	size_t skip = s->bpl - len;
 
@@ -417,4 +417,3 @@ static void _copy_left(Screen *s, unsigned int x1, unsigned int y1,
 		r += skip;
 	}
 }
-#endif

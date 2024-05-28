@@ -1,5 +1,5 @@
-#ifndef _CONSOLE_H_
-#define _CONSOLE_H_
+#ifndef _STARTER_BOOT_H_
+#define _STARTER_BOOT_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,53 +26,19 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stdbool.h>
+#include <features.h>
 #include <stdint.h>
-#include <hmi/draw.h>
 
-#define MAX_COLOR 0x00ffffff
+#define STARTER_ADDR (0x8000)
 
-#define CONSOLE_TAB_COLUMNS (8)
-
-typedef enum {
-	EraseScreenFromCursor,
-	EraseScreenToCursor,
-	EraseScreenEntire,
-	EraseLineFromCursor,
-	EraseLineToCursor,
-	EraseLineEntire
-} erase_type_e;
-
-typedef union {
-	uint32_t palet;
-	Color_Rgb rgb;
-} Color;
-
-typedef struct _screen {
-	int x;
-	int y;
-	unsigned int width;
-	unsigned int height;
-	uint8_t *p;
-	const uint8_t *base;
-	unsigned int bpl;
-	unsigned int bpp;
-	Color fgcolor;
-	Color bgcolor;
-	Font font;
-	unsigned int chr_width;
-	unsigned int chr_height;
-	bool wrap;
-} Screen;
+#ifdef USE_UEFI
+#define MEMORY_INFO_ADDR 0x00001000
 
 typedef struct {
-	void (*erase)(Screen *, const erase_type_e);
-	int (*locate)(Screen *, const int, const int);
-	void (*putc)(Screen *, const unsigned char);
-} Console;
-
-extern Console *getConsole(Screen *, const Font *);
-
-extern Font default_font;
+	char *map_buf;
+	uintptr_t map_size;
+	uintptr_t descriptor_size;
+} MemoryInfo;
+#endif
 
 #endif

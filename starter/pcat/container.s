@@ -1,5 +1,3 @@
-#ifndef _CONSOLE_H_
-#define _CONSOLE_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,53 +24,17 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stdbool.h>
-#include <stdint.h>
-#include <hmi/draw.h>
+.section ".rodata"
 
-#define MAX_COLOR 0x00ffffff
+.balign 4
+.global KernelImage
+KernelImage:
+	.incbin "starter/pcat/kernel.img"
+_last_KernelImage:
 
-#define CONSOLE_TAB_COLUMNS (8)
+.balign 4
+.global Len_KernelImage
+Len_KernelImage:
+	.long _last_KernelImage - KernelImage
 
-typedef enum {
-	EraseScreenFromCursor,
-	EraseScreenToCursor,
-	EraseScreenEntire,
-	EraseLineFromCursor,
-	EraseLineToCursor,
-	EraseLineEntire
-} erase_type_e;
-
-typedef union {
-	uint32_t palet;
-	Color_Rgb rgb;
-} Color;
-
-typedef struct _screen {
-	int x;
-	int y;
-	unsigned int width;
-	unsigned int height;
-	uint8_t *p;
-	const uint8_t *base;
-	unsigned int bpl;
-	unsigned int bpp;
-	Color fgcolor;
-	Color bgcolor;
-	Font font;
-	unsigned int chr_width;
-	unsigned int chr_height;
-	bool wrap;
-} Screen;
-
-typedef struct {
-	void (*erase)(Screen *, const erase_type_e);
-	int (*locate)(Screen *, const int, const int);
-	void (*putc)(Screen *, const unsigned char);
-} Console;
-
-extern Console *getConsole(Screen *, const Font *);
-
-extern Font default_font;
-
-#endif
+.section ".text"

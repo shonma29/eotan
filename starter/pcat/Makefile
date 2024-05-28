@@ -41,7 +41,7 @@ BOOT_SIZE = 4096
 BIN_SIZE = `echo "$(STARTER_SIZE) + $(BOOT_SIZE)" | bc`
 MAX_KERNEL = `$(ECHO) "(640 - 32 - 20 - 4) * 1024" | bc`
 
-OBJS = boot.iso build/fdboot.img hdboot.img \
+OBJS = boot.iso build/fdboot.img hdboot.img BOOTX64.EFI \
 	$(WD)/pad $(WD)/append $(WD)/elf2module \
 	$(WD)/fdloader $(WD)/fdloader.o $(WD)/loader.inc \
 	$(WD)/hdloader $(WD)/hdloader.o \
@@ -49,7 +49,9 @@ OBJS = boot.iso build/fdboot.img hdboot.img \
 	$(WD)/starter.bin $(WD)/starter $(WD)/starter.o \
 	$(WD)/protect.o \
 	$(WD)/memory.o $(WD)/decode.o \
-	$(WD)/boot $(WD)/boot.o
+	$(WD)/boot $(WD)/boot.o \
+	$(WD)/BOOTX64.EFI $(WD)/uefiloader.o \
+	$(WD)/container.o
 
 boot.iso: build/fdboot.img
 	mkisofs -R -b fdboot.img -o $@ build
@@ -131,3 +133,17 @@ $(WD)/kernel.img: $(WD)/append $(WD)/elf2module \
 	$(WD)/elf2module servers/mm/mm | $(WD)/append $@ 3 7
 	cat initrd.img | $(WD)/append $@ 5
 	$(WD)/append $@ 0
+
+EFI_CFLAGS = -Wall -Werror -target x86_64-pc-win32-coff -O2 -I include
+EFI_ASFLAGS = --target=x86_64-pc-win32-coff
+EFI_LD = /usr/local/opt/llvm/bin/ld.lld
+EFI_LDFLAGS = -flavor link -subsystem:efi_application
+
+BOOTX64.EFI: $(WD)/uefiloader.o $(WD)/container.o
+	$(EFI_LD) $(EFI_LDFLAGS) -entry:start -out:$@ $^
+
+$(WD)/uefiloader.o: $(WD)/uefiloader.c
+	$(CC) $(EFI_CFLAGS) -o $@ -c $^
+
+$(WD)/container.o: $(WD)/container.s $(WD)/kernel.img
+	$(AS) $(EFI_ASFLAGS) -o $@ $(WD)/container.s
