@@ -25,7 +25,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stddef.h>
-#include <mpu/io.h>
+#include <mpu/memory.h>
+#include <nerve/config.h>
 #include <nerve/global.h>
 #include <starter/boot.h>
 #include <starter/uefi.h>
@@ -49,15 +50,17 @@ static char character_table[] = {
 	'a', 'b', 'c', 'd', 'e', 'f'
 };
 static memory_info_t memory_info = { 0, NULL, 0, 0, 0 };
+static efi_system_table_t *sys;
 
-static void puth(efi_system_table_t *, const int64_t);
-static void puts(efi_system_table_t *, const char *);
-static bool set_gop(efi_system_table_t *);
-static void copy_starter(void);
-static bool get_memory_map(efi_system_table_t *);
+static void _putx(const int64_t);
+static void _puts(const char *);
+static bool set_gop(void);
+static bool copy_starter(void);
+static bool get_memory_map(void);
+static bool check_space(void);
 
 
-static void puth(efi_system_table_t *sys, const int64_t n)
+static void _putx(const int64_t n)
 {
 	wchar_t buf[16 + 1];
 	wchar_t *w = &(buf[sizeof(buf) /sizeof(buf[0]) - 1]);
@@ -72,7 +75,7 @@ static void puth(efi_system_table_t *sys, const int64_t n)
 	sys->ConOut->OutputString(sys->ConOut, w);
 }
 
-static void puts(efi_system_table_t *sys, const char *s)
+static void _puts(const char *s)
 {
 	wchar_t buf[PUT_BUF_SIZE];
 	wchar_t *w = buf;
@@ -99,26 +102,26 @@ static void puts(efi_system_table_t *sys, const char *s)
 	sys->ConOut->OutputString(sys->ConOut, buf);
 }
 
-static bool set_gop(efi_system_table_t *sys)
+static bool set_gop(void)
 {
 	efi_graphics_output_protocol_t *gop;
 	efi_status_t result = sys->BootServices->LocateProtocol(
 			&gop_guid, NULL, (void **) &gop);
 	if (result != EFI_SUCCESS) {
-		puts(sys, "locateProtocol failed ");
-		puth(sys, result);
+		_puts("locateProtocol failed ");
+		_putx(result);
 		return false;
 	}
 
 	efi_graphics_output_protocol_mode_t *gop_mode = gop->Mode;
 	if (gop_mode->MaxMode == 0) {
-		puts(sys, "No graphic mode");
+		_puts("No graphic mode");
 		return false;
 	}
 
 	if (gop_mode->Info->PixelFormat != PixelBlueGreenRedReserved8BitPerColor) {
-		puts(sys, "Unsupported graphic mode ");
-		puth(sys, gop_mode->Info->PixelFormat);
+		_puts("Unsupported graphic mode ");
+		_putx(gop_mode->Info->PixelFormat);
 		return false;
 	}
 
@@ -133,15 +136,22 @@ static bool set_gop(efi_system_table_t *sys)
 	return true;
 }
 
-static void copy_starter(void)
+static bool copy_starter(void)
 {
+	if (MAX_IMAGE_SIZE < Len_KernelImage) {
+		_puts("Too large image\n");
+		return false;
+	}
+
 	int64_t *r = (int64_t *) KernelImage;
 	int64_t *w = (int64_t *) STARTER_ADDR;
 	for (long i = 0; i < Len_KernelImage / sizeof(*r); i++)
 		*w++ = *r++;
+
+	return true;
 }
 
-static bool get_memory_map(efi_system_table_t *sys)
+static bool get_memory_map(void)
 {
 	efi_status_t result;
 	for (;;) {
@@ -159,7 +169,7 @@ static bool get_memory_map(efi_system_table_t *sys)
 			if (memory_info.map_buf) {
 				result = sys->BootServices->FreePool(&(memory_info.map_buf));
 				if (result != EFI_SUCCESS) {
-					puts(sys, "FreePool failed ");
+					_puts("FreePool failed ");
 					break;
 				}
 
@@ -169,30 +179,93 @@ static bool get_memory_map(efi_system_table_t *sys)
 			result = sys->BootServices->AllocatePool(0, memory_info.map_size * 2,
 					&(memory_info.map_buf));
 			if (result != EFI_SUCCESS) {
-				puts(sys, "AllocatePool failed ");
+				_puts("AllocatePool failed ");
 				break;
 			}
 		} else {
-			puts(sys, "GetMemoryMap failed ");
+			_puts("GetMemoryMap failed ");
 			break;
 		}
 	}
 
-	puth(sys, result);
+	_putx(result);
 	return false;
 }
 
-void start(efi_handle_t *image, efi_system_table_t *sys)
+static bool check_space(void)
 {
-	puts(sys, "uefiloader 1.0\n");
+	bool low_is_empty = false;
+	bool high_is_empty = false;
+	bool map_is_containable = false;
+	efi_memory_descriptor_t *p =
+			(efi_memory_descriptor_t *) memory_info.map_buf;
+	long numOfDesc = memory_info.map_size / memory_info.descriptor_size;
+	uintptr_t last = 0;
+	for (long i = 0; i < numOfDesc; i++) {
+		uintptr_t end = p->PhysicalStart + p->NumberOfPages * PAGE_SIZE - 1;
+		if (last < end)
+			last = end;
+
+		if (p->Type == EfiConventionalMemory) {
+			if ((p->PhysicalStart <= 0) && (0x9ffff <= end))
+				low_is_empty = true;
+
+			if ((p->PhysicalStart <= 0x100000)
+					&& (MIN_MEMORY_MB * 1024 * 1024 - 1 <= end))
+				high_is_empty = true;
+		}
+
+		p = (efi_memory_descriptor_t *) (((uintptr_t) p)
+				+ memory_info.descriptor_size);
+	}
+
+	if (last) {
+		// It may be right under 2TB.
+		size_t len_memory_bitmap = (last + PAGE_SIZE) / PAGE_SIZE / 8;
+		p = (efi_memory_descriptor_t *) memory_info.map_buf;
+		for (long i = 0; i < numOfDesc; i++) {
+			if (p->Type == EfiConventionalMemory) {
+				uintptr_t start = p->PhysicalStart;
+				uintptr_t next = start + p->NumberOfPages * PAGE_SIZE;
+				if (START_DATA_ADDR < next) {
+					if (start < START_DATA_ADDR)
+						start = START_DATA_ADDR;
+
+					if (next - start >= len_memory_bitmap) {
+						map_is_containable = true;
+						break;
+					}
+				}
+			}
+
+			p = (efi_memory_descriptor_t *) (((uintptr_t) p)
+					+ memory_info.descriptor_size);
+		}
+	}
+
+	if (!low_is_empty || !high_is_empty || !map_is_containable) {
+		_puts("Memory exhausted\n");
+		return false;
+	} else
+		return true;
+}
+
+void start(efi_handle_t *image, efi_system_table_t *system_table)
+{
+	sys = system_table;
+	_puts("uefiloader 1.0\n");
 
 	do {
-		if (!set_gop(sys))
+		if (!set_gop())
 			break;
 
-		copy_starter();
+		if (!copy_starter())
+			break;
 
-		if (!get_memory_map(sys))
+		if (!get_memory_map())
+			break;
+
+		if (!check_space())
 			break;
 
 		efi_status_t result = sys->BootServices->ExitBootServices(
@@ -201,8 +274,8 @@ void start(efi_handle_t *image, efi_system_table_t *sys)
 			void (*starter)(void) = (void (*)(void)) STARTER_ADDR;
 			starter();
 		} else {
-			puts(sys, "ExitBootServices failed ");
-			puth(sys, result);
+			_puts("ExitBootServices failed ");
+			_putx(result);
 		}
 	} while (false);
 

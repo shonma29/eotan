@@ -30,6 +30,9 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdint.h>
 
 #define STARTER_ADDR (0x8000)
+#define START_DATA_ADDR 0x400000
+
+#define MAX_IMAGE_SIZE (480 * 1024)
 
 #ifdef USE_UEFI
 #define MEMORY_INFO_ADDR 0x00001000
