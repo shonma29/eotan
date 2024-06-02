@@ -67,8 +67,14 @@ _start:
 	xorl %ebx, %ebx
 	cmpl %ebx, %eax
 .endif
-	jle error_cpu
+	jbe error_cpu
 .if X86_64
+	movl $0x80000000, %esi
+	movl %esi, %eax
+	cpuid
+	cmpl %esi, %eax
+	jbe error_cpu
+
 	/* check x86_64 */
 	movl $0x80000001, %eax
 	cpuid
@@ -192,55 +198,6 @@ flush_op:
 	lssl stack_ptr, %esp
 .if X86_64
 	ljmp $SELECTOR_CODE, $enter_32bit_segment
-
-.code32
-enter_32bit_segment:
-	/* enable PAE */
-	movl %cr4, %eax
-	orl $0x20, %eax	/*TODO review setting */
-	movl %eax, %cr4
-
-	/* set page table */
-	movl $KTHREAD_DIR_ADDR, %edx
-	xorl %eax, %eax
-	movl %edx, %edi
-	movl $(4096 / 4 * 3), %ecx
-	rep stosl
-
-	leal (4096 + 7)(%edx), %edi
-	movl %edi, (%edx)
-
-	leal (8192 + 7)(%edx), %edi
-	movl %edi, 4096(%edx)
-
-	leal 8192(%edx), %edi
-	movl $0x83, %eax
-	movl $0x200000, %ebx
-	movl $(MIN_MEMORY_MB / 2), %ecx
-
-pte_lp:
-	movl %eax, (%edi)
-	addl %ebx, %eax
-	addl $8, %edi
-	loopne pte_lp
-
-	movl %edx, %cr3
-
-	/* go to long mode */
-	movl $0xc0000080, %ecx	/*TODO review setting */
-	rdmsr
-	orl $0x100, %eax
-	wrmsr
-
-	/* start paging */
-	movl %cr0, %eax
-	orl $0x80000001, %eax	/*TODO review setting */
-	movl %eax, %cr0
-
-	/* enter 64bit segment */
-	pushl $0x20
-	pushl $_main
-	lret
 .else
 	ljmp $SELECTOR_CODE, $_main
 .endif
@@ -307,6 +264,56 @@ puts_entry:
 	popw %si
 	ret
 
+.if X86_64
+.code32
+enter_32bit_segment:
+	/* enable PAE */
+	movl %cr4, %eax
+	orl $0x20, %eax	/*TODO review setting */
+	movl %eax, %cr4
+
+	/* set page table */
+	movl $KTHREAD_DIR_ADDR, %edx
+	xorl %eax, %eax
+	movl %edx, %edi
+	movl $(4096 / 4 * 3), %ecx
+	rep stosl
+
+	leal (4096 + 7)(%edx), %edi
+	movl %edi, (%edx)
+
+	leal (8192 + 7)(%edx), %edi
+	movl %edi, 4096(%edx)
+
+	leal 8192(%edx), %edi
+	movl $0x83, %eax
+	movl $0x200000, %ebx
+	movl $(MIN_MEMORY_MB / 2), %ecx
+
+pte_lp:
+	movl %eax, (%edi)
+	addl %ebx, %eax
+	addl $8, %edi
+	loopne pte_lp
+
+	movl %edx, %cr3
+
+	/* go to long mode */
+	movl $0xc0000080, %ecx	/*TODO review setting */
+	rdmsr
+	orl $0x100, %eax
+	wrmsr
+
+	/* start paging */
+	movl %cr0, %eax
+	orl $0x80000001, %eax	/*TODO review setting */
+	movl %eax, %cr0
+
+	/* enter 64bit segment */
+	pushl $0x20
+	pushl $_main
+	lret
+.endif
 
 .data
 .align 2

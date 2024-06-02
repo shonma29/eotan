@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stddef.h>
+#include <mpu/io.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
 #include <nerve/global.h>
@@ -32,6 +33,20 @@ For more information, please refer to <http://unlicense.org/>
 #include <starter/uefi.h>
 
 #define PUT_BUF_SIZE (128)
+
+// cpuid: x86_64
+#define BITS_CPUID_x86_64 0x20000000
+// cpuid: 64bit LAHF
+#define BITS_CPUID_LAHF_64 0x00000001
+// cpuid: SSE3/SSSE3/CX16/SSE4_1/SSE4_2/POPCNT
+#define BITS_CPUID_FEATURES 0x00982201
+
+typedef struct {
+	uint32_t eax;
+	uint32_t ebx;
+	uint32_t ecx;
+	uint32_t edx;
+} cpuid_t;
 
 typedef struct {
 	uintn_t map_key;
@@ -52,13 +67,24 @@ static char character_table[] = {
 static memory_info_t memory_info = { 0, NULL, 0, 0, 0 };
 static efi_system_table_t *sys;
 
+static void cpuid(cpuid_t *, const int);
 static void _putx(const int64_t);
 static void _puts(const char *);
+static bool check_mpu(void);
 static bool set_gop(void);
 static bool copy_starter(void);
 static bool get_memory_map(void);
 static bool check_space(void);
 
+
+static void cpuid(cpuid_t *p, const int eax)
+{
+	__asm__ __volatile__ ( \
+		"cpuid;" \
+		:"=a"(p->eax), "=b"(p->ebx), "=c"(p->ecx), "=d"(p->edx) \
+		:"a"(eax) \
+		:);
+}
 
 static void _putx(const int64_t n)
 {
@@ -100,6 +126,37 @@ static void _puts(const char *s)
 
 	*w = L'\0';
 	sys->ConOut->OutputString(sys->ConOut, buf);
+}
+
+// check if x86_64-v2
+static bool check_mpu(void)
+{
+	do {
+		cpuid_t buf;
+		cpuid(&buf, 0x80000000);
+		if (buf.eax < 0x80000001)
+			break;
+
+		cpuid(&buf, 0x80000001);
+		if ((buf.edx & BITS_CPUID_x86_64) != BITS_CPUID_x86_64)
+			break;
+
+		if ((buf.ecx & BITS_CPUID_LAHF_64) != BITS_CPUID_LAHF_64)
+			break;
+
+		cpuid(&buf, 0);
+		if (buf.eax < 0x1)
+			break;
+
+		cpuid(&buf, 0x1);
+		if ((buf.ecx & BITS_CPUID_FEATURES) != BITS_CPUID_FEATURES)
+			break;
+
+		return true;
+	} while (false);
+
+	_puts("Unsupported mpu");
+	return false;
 }
 
 static bool set_gop(void)
@@ -256,6 +313,9 @@ void start(efi_handle_t *image, efi_system_table_t *system_table)
 	_puts("uefiloader 1.0\n");
 
 	do {
+		if (!check_mpu())
+			break;
+
 		if (!set_gop())
 			break;
 
@@ -271,6 +331,7 @@ void start(efi_handle_t *image, efi_system_table_t *system_table)
 		efi_status_t result = sys->BootServices->ExitBootServices(
 				image, memory_info.map_key);
 		if (result == EFI_SUCCESS) {
+			di();
 			void (*starter)(void) = (void (*)(void)) STARTER_ADDR;
 			starter();
 		} else {
