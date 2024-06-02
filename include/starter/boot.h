@@ -35,12 +35,19 @@ For more information, please refer to <http://unlicense.org/>
 #define MAX_IMAGE_SIZE (480 * 1024)
 
 #ifdef USE_UEFI
+#include <starter/uefi.h>
+
+#define EFIAPI __attribute__((ms_abi))
+
 #define MEMORY_INFO_ADDR 0x00001000
 
 typedef struct {
 	char *map_buf;
 	uintptr_t map_size;
 	uintptr_t descriptor_size;
+	void *acpi_rsdp;
+	EFIAPI void (*ResetSystem)(const efi_reset_type_t, const efi_status_t,
+			const uintn_t, const void *);
 } MemoryInfo;
 #endif
 

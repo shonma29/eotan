@@ -1,4 +1,5 @@
 #ifndef _STARTER_UEFI_H_
+#define _STARTER_UEFI_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -28,7 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdbool.h>
 #include <stdint.h>
 
-typedef uint16_t wchar_t;
+typedef uint16_t efi_wchar_t;
 
 typedef uintptr_t uintn_t;
 typedef uintn_t efi_status_t;
@@ -37,7 +38,7 @@ typedef struct efi_simple_text_output_protocol {
 	char _padding1[8];
 	efi_status_t (*OutputString)(
 			const struct efi_simple_text_output_protocol *,
-			const wchar_t *);
+			const efi_wchar_t *);
 } efi_simple_text_output_protocol_t;
 
 typedef struct {
@@ -136,17 +137,32 @@ typedef struct {
 	efi_status_t (*LocateProtocol)(efi_guid_t *, void *, void **);
 } efi_boot_services_t;
 
+typedef struct{
+	efi_guid_t VendorGuid;
+	void *VendorTable;
+} efi_configuration_table_t;
+
 typedef struct {
 	char _padding1[60];
 	efi_simple_text_output_protocol_t *ConOut;
 	char _padding2[16];
 	efi_runtime_services_t *RuntimeServices;
 	efi_boot_services_t *BootServices;
+	uintn_t NumberOfTableEntries;
+	efi_configuration_table_t *ConfigurationTable;
 } efi_system_table_t;
 
 #define EFI_SUCCESS (0)
 #define EFI_INVALID_PARAMETER (0x8000000000000002)
 #define EFI_BUFFER_TOO_SMALL (0x8000000000000005)
+
+#define EFI_ACPI_TABLE_GUID \
+{0x8868e871,0xe4f1,0x11d3,\
+{0xbc,0x22,0x00,0x80,0xc7,0x3c,0x88,0x81}}
+
+#define EFI_PCI_ROOT_BRIDGE_IO_PROTOCOL_GUID \
+{0x2F707EBB,0x4A1A,0x11d4,\
+{0x9A,0x38,0x00,0x90,0x27,0x3F,0xC1,0x4D}}
 
 #define EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID { \
 	0x9042a9de, 0x23dc, 0x4a38, \

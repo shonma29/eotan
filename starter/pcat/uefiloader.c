@@ -60,6 +60,8 @@ extern const char KernelImage[];
 extern const int32_t Len_KernelImage;
 
 static efi_guid_t gop_guid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
+static efi_guid_t acpi_guid = EFI_ACPI_TABLE_GUID;
+static efi_guid_t pci_guid = EFI_PCI_ROOT_BRIDGE_IO_PROTOCOL_GUID;
 static char character_table[] = {
 	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 	'a', 'b', 'c', 'd', 'e', 'f'
@@ -70,11 +72,14 @@ static efi_system_table_t *sys;
 static void cpuid(cpuid_t *, const int);
 static void _putx(const int64_t);
 static void _puts(const char *);
+static int _bcmp(const void *, const void *, size_t);
 static bool check_mpu(void);
-static bool set_gop(void);
-static bool copy_starter(void);
+static void get_acpi(void);
+static void get_pci(void);
+static bool get_gop(void);
 static bool get_memory_map(void);
 static bool check_space(void);
+static bool copy_starter(void);
 
 
 static void cpuid(cpuid_t *p, const int eax)
@@ -128,6 +133,17 @@ static void _puts(const char *s)
 	sys->ConOut->OutputString(sys->ConOut, buf);
 }
 
+static int _bcmp(const void *s1, const void *s2, size_t n)
+{
+	unsigned char *a = (unsigned char *) s1;
+	unsigned char *b = (unsigned char *) s2;
+	for (unsigned long i = 0; i < n; i++)
+		if (a[i] != b[i])
+			return (-1);
+
+	return 0;
+}
+
 // check if x86_64-v2
 static bool check_mpu(void)
 {
@@ -159,7 +175,33 @@ static bool check_mpu(void)
 	return false;
 }
 
-static bool set_gop(void)
+static void get_acpi(void)
+{
+	MemoryInfo *m = (MemoryInfo *) MEMORY_INFO_ADDR;
+	m->acpi_rsdp = NULL;
+
+	for (uintn_t i = 0; i < sys->NumberOfTableEntries; i++) {
+		efi_guid_t *id = &(sys->ConfigurationTable[i].VendorGuid);
+		if ((id->Data1 == acpi_guid.Data1)
+				&& (id->Data2 == acpi_guid.Data2)
+				&& (id->Data3 == acpi_guid.Data3)
+				&& !_bcmp(id->Data4, acpi_guid.Data4, sizeof(acpi_guid.Data4))) {
+			m->acpi_rsdp = sys->ConfigurationTable[i].VendorTable;
+			break;
+		}
+	}
+}
+
+static void get_pci(void)
+{
+	void *dummy;
+	efi_status_t result = sys->BootServices->LocateProtocol(
+			&pci_guid, NULL, (void **) &dummy);
+	uint16_t *pci_info = (uint16_t *) PERIPHERAL_INFO_ADDR;
+	*pci_info = (result == EFI_SUCCESS) ? 0x0001 : 0xff00;
+}
+
+static bool get_gop(void)
 {
 	efi_graphics_output_protocol_t *gop;
 	efi_status_t result = sys->BootServices->LocateProtocol(
@@ -193,21 +235,6 @@ static bool set_gop(void)
 	return true;
 }
 
-static bool copy_starter(void)
-{
-	if (MAX_IMAGE_SIZE < Len_KernelImage) {
-		_puts("Too large image\n");
-		return false;
-	}
-
-	int64_t *r = (int64_t *) KernelImage;
-	int64_t *w = (int64_t *) STARTER_ADDR;
-	for (long i = 0; i < Len_KernelImage / sizeof(*r); i++)
-		*w++ = *r++;
-
-	return true;
-}
-
 static bool get_memory_map(void)
 {
 	efi_status_t result;
@@ -221,6 +248,7 @@ static bool get_memory_map(void)
 			m->map_buf = memory_info.map_buf;
 			m->map_size = memory_info.map_size;
 			m->descriptor_size = memory_info.descriptor_size;
+			m->ResetSystem = sys->RuntimeServices->ResetSystem;
 			return true;
 		} else if (result == EFI_BUFFER_TOO_SMALL) {
 			if (memory_info.map_buf) {
@@ -307,6 +335,21 @@ static bool check_space(void)
 		return true;
 }
 
+static bool copy_starter(void)
+{
+	if (MAX_IMAGE_SIZE < Len_KernelImage) {
+		_puts("Too large image\n");
+		return false;
+	}
+
+	int64_t *r = (int64_t *) KernelImage;
+	int64_t *w = (int64_t *) STARTER_ADDR;
+	for (long i = 0; i < Len_KernelImage / sizeof(*r); i++)
+		*w++ = *r++;
+
+	return true;
+}
+
 void start(efi_handle_t *image, efi_system_table_t *system_table)
 {
 	sys = system_table;
@@ -316,16 +359,19 @@ void start(efi_handle_t *image, efi_system_table_t *system_table)
 		if (!check_mpu())
 			break;
 
-		if (!set_gop())
-			break;
+		get_acpi();
+		get_pci();
 
-		if (!copy_starter())
+		if (!get_gop())
 			break;
 
 		if (!get_memory_map())
 			break;
 
 		if (!check_space())
+			break;
+
+		if (!copy_starter())
 			break;
 
 		efi_status_t result = sys->BootServices->ExitBootServices(
