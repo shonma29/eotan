@@ -24,6 +24,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+.include "starter/pcat/protect.inc"
+
+.ifdef USE_BIOS
 /**
  * Start kernel
  * @version 1.0
@@ -33,8 +36,6 @@ For more information, please refer to <http://unlicense.org/>
 .code16
 
 .global _start
-
-.set X86_64, 0
 
 .set SELECTOR_CODE, 0x08
 .set SELECTOR_DATA, 0x10
@@ -47,7 +48,7 @@ For more information, please refer to <http://unlicense.org/>
 .set VESA_INFO_ADDR, 0x1c00
 .set VESA_MODE, 0x0118
 
-.if X86_64
+.ifdef X86_64
 .set KTHREAD_DIR_ADDR, 0x00002000
 .set MIN_MEMORY_MB, 8
 .endif
@@ -61,14 +62,14 @@ _start:
 
 	xorl %eax, %eax
 	cpuid
-.if X86_64
+.ifdef X86_64
 	cmpl $0, %eax
 .else
 	xorl %ebx, %ebx
 	cmpl %ebx, %eax
 .endif
 	jbe error_cpu
-.if X86_64
+.ifdef X86_64
 	movl $0x80000000, %esi
 	movl %esi, %eax
 	cpuid
@@ -196,7 +197,7 @@ flush_op:
 	movw %ax, %fs
 	movw %ax, %gs
 	lssl stack_ptr, %esp
-.if X86_64
+.ifdef X86_64
 	ljmp $SELECTOR_CODE, $enter_32bit_segment
 .else
 	ljmp $SELECTOR_CODE, $_main
@@ -264,7 +265,7 @@ puts_entry:
 	popw %si
 	ret
 
-.if X86_64
+.ifdef X86_64
 .code32
 enter_32bit_segment:
 	/* enable PAE */
@@ -322,7 +323,7 @@ stack_ptr:
 	.word SELECTOR_STACK
 
 gdt_ptr:
-.if X86_64
+.ifdef X86_64
 	.word 5 * 8 - 1
 .else
 	.word 4 * 8 - 1
@@ -339,7 +340,7 @@ gdt_table:
 	.byte 0xff, 0xff, 0x00, 0x00, 0x00, 0x92, 0xcf, 0x00
 	/* 0x18: kernel stack */
 	.byte 0x00, 0x00, 0x00, 0x00, 0x00, 0x96, 0xc0, 0x00
-.if X86_64
+.ifdef X86_64
 	/* 0x20: 64bit code */
 	.byte 0xff, 0xff, 0x00, 0x00, 0x00, 0x9a, 0xaf, 0x00
 .endif
@@ -353,3 +354,4 @@ message_vesa_error:
 	.asciz "cannot use VESA"
 
 .org 256, 0
+.endif
