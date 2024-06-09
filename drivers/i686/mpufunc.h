@@ -45,7 +45,7 @@ extern void context_switch(thread_t *, thread_t *);
 
 /* gate.c */
 extern void mpu_initialize(void);
-extern void idt_set(UB no, void (*)(void));
+extern void idt_set(unsigned int no, void (*)(void));
 
 /* interrupt.c */
 extern ER interrupt_initialize(void);

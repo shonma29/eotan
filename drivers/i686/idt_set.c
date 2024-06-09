@@ -24,16 +24,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
 #include <stdint.h>
 #include <mpu/desc.h>
 #include "gate.h"
 #include "mpufunc.h"
 
-static void gate_set(GateDescriptor *, UH, void (*)(void), UB);
+static void gate_set(GateDescriptor *, uint16_t, void (*)(void), uint8_t);
 
 
-void idt_set(UB no, void (*handler)(void))
+void idt_set(unsigned int no, void (*handler)(void))
 {
 	GateDescriptor *p = (GateDescriptor *) IDT_ADDR;
 
@@ -43,7 +42,7 @@ void idt_set(UB no, void (*handler)(void))
 }
 
 static void gate_set(GateDescriptor *p,
-		UH selector, void (*handler)(void), UB attr)
+		uint16_t selector, void (*handler)(void), uint8_t attr)
 {
 	//TODO error check
 	p->offsetLow = ((uintptr_t) handler) & 0xffff;

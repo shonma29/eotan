@@ -71,10 +71,9 @@ static service_t *get_unmapped_entry(void)
 //TODO test
 ER interrupt_initialize(void)
 {
-	int i;
-
 	kcall->printk("interrupt_initialize\n");
 
+	unsigned int i;
 	// MPU exceptions
 	for (i = 0; i < sizeof(handlers) / sizeof(handlers[0]); i++) {
 		service_t *entry = &(entries[i]);

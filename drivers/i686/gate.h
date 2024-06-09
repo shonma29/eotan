@@ -1,5 +1,5 @@
 #ifndef __MPU_GATE_H__
-#define __MPU_GATE_H__ 1
+#define __MPU_GATE_H__
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,8 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-
-#include "core.h"
+#include <stdint.h>
 
 #define ATTR_G_PAGE 0x80
 #define ATTR_DB_32 0x40
@@ -75,21 +74,21 @@ enum SegmentType {
 	segmentCode = 0x1a
 };
 
-typedef struct {
-	UH offsetLow;
-	UH selector;
-	UB copyCount;
-	UB attr;
-	UH offsetHigh;
+typedef struct __attribute__ ((packed)) {
+	uint16_t offsetLow;
+	uint16_t selector;
+	uint8_t copyCount;
+	uint8_t attr;
+	uint16_t offsetHigh;
 } GateDescriptor;
 
-typedef struct {
-	UH limitLow;
-	UH baseLow;
-	UB baseMiddle;
-	UB type;
-	UB limitHigh;
-	UB baseHigh;
+typedef struct __attribute__ ((packed)) {
+	uint16_t limitLow;
+	uint16_t baseLow;
+	uint8_t baseMiddle;
+	uint8_t type;
+	uint8_t limitHigh;
+	uint8_t baseHigh;
 } SegmentDescriptor;
 
 #endif

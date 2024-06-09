@@ -46,7 +46,7 @@ extern int map_set_using(const void *, const size_t);
 static size_t calc_length(const MemoryInfo *);
 
 
-size_t get_max_address(void)
+size_t get_num_of_pages(void)
 {
 	unsigned int prevEnd = 0;
 #ifdef USE_FB

@@ -56,7 +56,7 @@ void memory_initialize(void)
 {
 	/* create memory map */
 	//TODO optimize
-	map_initialize(get_max_address());
+	map_initialize(get_num_of_pages());
 	set_reserved_pages();
 
 	printk("memory_initialize pages=%d/%d clock=%d/%d\n",

@@ -26,7 +26,6 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <stdint.h>
 #include <string.h>
-#include <core.h>
 #include <mpu/desc.h>
 #include <mpu/setting.h>
 #include "gate.h"
@@ -36,9 +35,9 @@ For more information, please refer to <http://unlicense.org/>
 
 static void idt_initialize(void);
 static void gdt_initialize(void);
-static void gdt_set_segment(const UH selector,
-		const UW base, const UW limit,
-		const UB type, const UB dpl, const UB option);
+static void gdt_set_segment(const uint16_t selector,
+		const uint32_t base, const uint32_t limit,
+		const uint8_t type, const uint8_t dpl, const uint8_t option);
 
 
 void mpu_initialize(void)
@@ -49,7 +48,6 @@ void mpu_initialize(void)
 
 static void idt_initialize(void)
 {
-	UW i;
 	GateDescriptor desc;
 	GateDescriptor *p = (GateDescriptor *) IDT_ADDR;
 
@@ -59,7 +57,7 @@ static void idt_initialize(void)
 	desc.attr = (dpl_kern << 5) | interruptGate32;
 	desc.offsetHigh = 0;
 
-	for (i = 0; i < IDT_MAX_ENTRY; i++) {
+	for (unsigned int i = 0; i < IDT_MAX_ENTRY; i++) {
 		*p = desc;
 		p++;
 	}
@@ -93,9 +91,9 @@ static void gdt_initialize(void)
 	msr_write(sysenter_cs_msr, kern_code);
 }
 
-static void gdt_set_segment(const UH selector,
-		const UW base, const UW limit,
-		const UB type, const UB dpl, const UB option)
+static void gdt_set_segment(const uint16_t selector,
+		const uint32_t base, const uint32_t limit,
+		const uint8_t type, const uint8_t dpl, const uint8_t option)
 {
 	SegmentDescriptor *p = (SegmentDescriptor *) GDT_ADDR;
 
