@@ -149,7 +149,7 @@ int ipc_call(const int port_id, void *message, const size_t size)
 
 	if (size > port->max_call) {
 		warn("ipc_call[%d] size %d > %d\n",
-				port_id, size, port->maxcmsz);
+				port_id, size, port->max_call);
 		leave_serialize();
 		return E_PAR;
 	}
@@ -306,7 +306,7 @@ static int _reply(const int key, const void *message, const size_t size)
 	reply_t *r = getReplyParent(node);
 	if (size > r->max_reply) {
 		warn("ipc_send[%d] size %d > %d\n",
-				key, size, r->maxrmsz);
+				key, size, r->max_reply);
 		release_rendezvous(key);
 		leave_serialize();
 		return E_PAR;
@@ -361,7 +361,7 @@ static int _send(const int port_id, const void *message, const size_t size)
 	if (size > port->max_call) {
 //TODO test
 		warn("ipc_send[%d] size %d > %d\n",
-				port_id, size, port->maxcmsz);
+				port_id, size, port->max_call);
 		leave_serialize();
 		return E_PAR;
 	}
