@@ -35,6 +35,7 @@ For more information, please refer to <http://unlicense.org/>
 #define MPU_LOG_INT (5)
 
 typedef uintptr_t PTE;
+typedef uintptr_t PDE;
 
 #define PTE_PER_PAGE (PAGE_SIZE / sizeof(PTE))
 
@@ -102,7 +103,7 @@ static inline void *fault_get_addr(void)
 	return address;
 }
 
-static inline void paging_set_directory(void *address)
+static inline void paging_set_directory(PDE *address)
 {
 	__asm__ __volatile__ (
 		"movl %0, %%eax\n\t"

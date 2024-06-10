@@ -36,14 +36,12 @@ For more information, please refer to <http://unlicense.org/>
 #ifndef USE_UEFI
 #include "vesa.h"
 #endif
+#include "starter.h"
 
 #define KERNLOG_UNITS ((KERNEL_LOG_SIZE - sizeof(lfq_t)) \
 		/ lfq_node_size(sizeof(int)))
 
-extern void memory_initialize(void);
-
 static void _putc(const char);
-void printk(const char *, ...);
 #ifndef USE_UEFI
 static void set_display(void);
 #endif
@@ -52,17 +50,18 @@ static void set_display(void);
 noreturn void _main(void)
 {
 	pic_mask_all();
-	paging_initialize();
+#ifndef USE_UEFI
+	set_display();
+#endif
+	size_t num_of_pages = get_num_of_pages();
+	paging_initialize(num_of_pages);
 	lfq_initialize((volatile lfq_t *) KERNEL_LOG_ADDR,
 			(void *) ((uintptr_t) KERNEL_LOG_ADDR + sizeof(lfq_t)),
 			sizeof(int),
 			KERNLOG_UNITS);
-	printk("Starter has woken up.\n");
-#ifndef USE_UEFI
-	set_display();
-#endif
+	printk("Starter has woken up.%x\n", pages);
 	mpu_initialize();
-	memory_initialize();
+	memory_initialize(num_of_pages);
 
 	Display *d = &(sysinfo->display);
 	printk("display fb=%p width=%d height=%d bpl=%d bpp=%d\n",
@@ -90,12 +89,12 @@ void printk(const char *format, ...)
 static void set_display(void)
 {
 	VesaInfo *v = (VesaInfo *) VESA_INFO_ADDR;
-	Display *d = &(sysinfo->display);
+	Display *d = &(((system_info_t *) kern_v2p(sysinfo))->display);
 	d->r.min.x = 0;
 	d->r.min.y = 0;
 	d->r.max.x = v->width;
 	d->r.max.y = v->height;
-	d->base = (void *) (v->buffer_addr);
+	d->base = (void *) ((uintptr_t) (v->buffer_addr));
 	d->bpl = v->bytes_per_line;
 	d->bpp = sizeof(Color_Rgb);
 }

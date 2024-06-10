@@ -29,8 +29,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/memory.h>
 #include <nerve/config.h>
 #include <nerve/global.h>
-#include <starter/boot.h>
 #include <starter/uefi.h>
+#include "starter.h"
 
 #define PUT_BUF_SIZE (128)
 
@@ -55,9 +55,6 @@ typedef struct {
 	uintn_t descriptor_size;
 	uint32_t descriptor_version;
 } memory_info_t;
-
-extern const char KernelImage[];
-extern const int32_t Len_KernelImage;
 
 static efi_guid_t gop_guid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
 static efi_guid_t acpi_guid = EFI_ACPI_TABLE_GUID;

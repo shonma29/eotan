@@ -64,7 +64,7 @@ ER interrupt_unbind(ID);
 void define_mpu_handlers(void (*)(VP_INT), void (*)(VP_INT));
 
 /* paging_init.c */
-extern void paging_initialize(void);
+extern void paging_initialize(const size_t);
 
 /* paging_reset.c */
 extern void paging_reset(void);

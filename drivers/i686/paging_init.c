@@ -30,33 +30,30 @@ For more information, please refer to <http://unlicense.org/>
 #include "mpufunc.h"
 #include "paging.h"
 
-static void set_initial_directories(void);
+static void set_initial_pages(const size_t);
 static PTE calc_kern_pte(const void *);
 
 
-void paging_initialize(void)
+void paging_initialize(const size_t num_of_pages)
 {
-	set_initial_directories();
-	paging_set_directory((PTE *) KTHREAD_DIR_ADDR);
+	set_initial_pages(num_of_pages);
+	paging_set_directory((PDE *) KTHREAD_DIR_ADDR);
 	paging_start();
 }
 
-static void set_initial_directories(void)
+static void set_initial_pages(const size_t num_of_pages)
 {
-	size_t i;
-	PTE *dir = (PTE *) KTHREAD_DIR_ADDR;
-	UB *addr = (UB *) 0;
-
-	for (i = 0; i < NUM_OF_INITIAL_DIR; i++) {
-		dir[i] = calc_kern_pte(addr);
-		dir[OFFSET_KERN + i] = calc_kern_pte(addr);
+	size_t pse_pages = (num_of_pages + MASK_PAGE) >> BITS_PAGE;
+	PDE *dir = (PDE *) KTHREAD_DIR_ADDR;
+	uintptr_t addr = 0;
+	unsigned int i;
+	for (i = 0; i < pse_pages; i++) {
+		dir[OFFSET_KERN + i] = dir[i] = calc_kern_pte((void *) addr);
 		addr += PAGE_SIZE * PTE_PER_PAGE;
 	}
 
-	for (; i < PTE_PER_PAGE / 2; i++) {
-		dir[i] = 0;
-		dir[OFFSET_KERN + i] = 0;
-	}
+	for (; i < PTE_PER_PAGE / 2; i++)
+		dir[OFFSET_KERN + i] = dir[i] = 0;
 }
 
 static PTE calc_kern_pte(const void *addr)

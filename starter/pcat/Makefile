@@ -48,7 +48,7 @@ OBJS = boot.iso build/fdboot.img hdboot.img BOOTX64.EFI \
 	$(WD)/kernel.img \
 	$(WD)/starter.bin $(WD)/starter $(WD)/starter.o \
 	$(WD)/protect.o $(WD)/protect.inc \
-	$(WD)/memory.o $(WD)/decode.o \
+	$(WD)/memory.o $(WD)/memory_info.o $(WD)/decode.o \
 	$(WD)/boot $(WD)/boot.o \
 	$(WD)/BOOTX64.EFI $(WD)/uefiloader.o \
 	$(WD)/container.o
@@ -87,7 +87,8 @@ $(WD)/protect.o: $(WD)/protect.s $(WD)/protect.inc
 $(WD)/protect.inc: $(WD)/protect.h
 	$(CPP) -P $(CFLAGS) $^ > $@
 
-$(WD)/starter: $(WD)/protect.o $(WD)/starter.o $(WD)/memory.o $(WD)/decode.o \
+$(WD)/starter: $(WD)/protect.o $(WD)/starter.o $(WD)/memory.o \
+		$(WD)/memory_info.o $(WD)/decode.o \
 		kernel/arch/libarch.a lib/librc.a \
 		kernel/mpu/libmpu.a lib/libnc.a
 	$(LD) $(LDFLAGS) -Ttext $(STARTER_ADDR) -L$(LIB) -o $@ $^

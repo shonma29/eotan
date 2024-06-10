@@ -28,18 +28,18 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 #include <arch/archfunc.h>
 #include <fs/fstype.h>
+#include <mpu/desc.h>
 #include <mpu/memory.h>
 #include <mpu/mpufunc.h>
+#include <nerve/config.h>
 #include <nerve/global.h>
 #include <starter/initrd.h>
 #include <starter/modules.h>
+#include "starter.h"
 
 #define INT_BIT ((CHAR_BIT) * sizeof(int))
 
 static MemoryMap *mm = &(sysinfo->memory_map);
-
-extern int printk(const char *, ...);
-extern int decode(void *, void *, const size_t, const size_t);
 
 static int map_initialize(const size_t);
 int map_set_using(const void *, const size_t);
@@ -52,30 +52,35 @@ static void initialize_initrd_info(void);
 static void set_initrd_info(const ModuleHeader *);
 
 
-void memory_initialize(void)
+void memory_initialize(const size_t num_of_pages)
 {
-	/* create memory map */
+	// create memory map
 	//TODO optimize
-	map_initialize(get_num_of_pages());
-	set_reserved_pages();
+	map_initialize(num_of_pages);
+	set_holes();
 
 	printk("memory_initialize pages=%d/%d clock=%d/%d\n",
 			mm->rest_pages, mm->max_pages,
 			mm->clock_block, mm->num_blocks);
 
-	/* keep boot infomation */
+	// keep GDT, IDT
+	map_set_using(kern_v2p((void *) GDT_ADDR), 1);
+	// keep page directory
+	map_set_using((void *) KTHREAD_DIR_ADDR, 1);
+
+	// keep boot infomation
 	map_set_using(kern_v2p((void *) BOOT_INFO_ADDR), 1);
-	/* keep memory map */
+	// keep memory map
 	map_set_using(kern_v2p(mm->map),
 			pages(mm->num_blocks * sizeof(mm->map[0])));
-	/* keep kernel log */
+	// keep kernel log
 	map_set_using(kern_v2p((void *) KERNEL_LOG_ADDR),
 			pages(KERNEL_LOG_SIZE));
 
-	/* keep kernel stack */
+	// keep kernel stack
 	map_set_using(kern_v2p((void *) (CORE_STACK_ADDR - CORE_STACK_SIZE)),
 			pages(CORE_STACK_SIZE));
-	/* keep runner and modules */
+	// keep runner and modules
 	map_set_using(kern_v2p((void *) BOOT_ADDR),
 			pages((uintptr_t) set_modules()
 					- (uintptr_t) kern_v2p(

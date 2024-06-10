@@ -25,14 +25,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <features.h>
-#include <arch/archfunc.h>
-#include <arch/memory.h>
-#include <mpu/desc.h>
-#include <mpu/memory.h>
-#include <nerve/config.h>
 #ifdef USE_FB
 #include <nerve/global.h>
 #endif
+#include "starter.h"
 
 #define TYPE_SKIP (-1)
 
@@ -40,29 +36,23 @@ For more information, please refer to <http://unlicense.org/>
 #define DPAGE_ADDR_MASK ~(4096ULL - 1ULL)
 #define OVER_INT 0x100000000ULL
 
-extern int printk(const char *, ...);
-extern int map_set_using(const void *, const size_t);
-
 static size_t calc_length(const MemoryInfo *);
 
 
 size_t get_num_of_pages(void)
 {
-	unsigned int prevEnd = 0;
+	uintptr_t prevEnd = 0;
 #ifdef USE_FB
-	uintptr_t fb = (uintptr_t) (sysinfo->display.base);
+	uintptr_t fb = (uintptr_t) (((system_info_t *) kern_v2p(sysinfo))
+			->display.base);
 #endif
 	size_t max = *((uint32_t *) MEMORY_INFO_END);
 	for (MemoryInfo *p = (MemoryInfo *) MEMORY_INFO_ADDR;
 			(size_t) p < max; p++) {
-		printk("memory type=%x base=%x %x size=%x %x\n",
-				p->type, p->baseHigh, p->baseLow,
-				p->sizeHigh, p->sizeLow);
-
 		if (p->type != MEMORY_PRESENT)
 			continue;
 
-		unsigned int head = p->baseLow;
+		uintptr_t head = p->baseLow;
 #ifdef USE_FB
 		if (head == fb) {
 			p->type = TYPE_SKIP;
@@ -81,16 +71,20 @@ size_t get_num_of_pages(void)
 	return prevEnd;
 }
 
-void set_reserved_pages(void)
+void set_holes(void)
 {
-	unsigned int prevEnd = 0;
+	uintptr_t prevEnd = 0;
 	size_t max = *((size_t *) MEMORY_INFO_END);
 	for (MemoryInfo *p = (MemoryInfo *) MEMORY_INFO_ADDR;
 			(size_t) p < max; p++) {
+		printk("memory type=%x base=%x %x size=%x %x\n",
+				p->type, p->baseHigh, p->baseLow,
+				p->sizeHigh, p->sizeLow);
+
 		if (p->type != MEMORY_PRESENT)
 			continue;
 
-		unsigned int head = p->baseLow >> BITS_OFFSET;
+		uintptr_t head = p->baseLow >> BITS_OFFSET;
 		if (p->baseLow & MASK_OFFSET)
 			head++;
 
@@ -100,11 +94,6 @@ void set_reserved_pages(void)
 
 		prevEnd = head + calc_length(p);
 	}
-
-	/* keep GDT, IDT */
-	map_set_using(kern_v2p((void *) GDT_ADDR), 1);
-	/* keep page directory */
-	map_set_using((void *) KTHREAD_DIR_ADDR, 1);
 }
 
 static size_t calc_length(const MemoryInfo *p)
