@@ -44,6 +44,8 @@ typedef uintptr_t PDE;
 #define MASK_PAGE ((1 << BITS_PAGE) - 1)
 #define BITS_OFFSET (12)
 #define MASK_OFFSET ((1 << BITS_OFFSET) - 1)
+#define BITS_PSE (BITS_PAGE + BITS_OFFSET)
+#define MASK_PSE ((1 << BITS_PSE) - 1)
 
 #define SUPERVISOR_START 0x80000000
 

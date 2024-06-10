@@ -54,12 +54,15 @@ noreturn void _main(void)
 	set_display();
 #endif
 	size_t num_of_pages = get_num_of_pages();
+	num_of_pages = (num_of_pages > MAX_PAGES) ? MAX_PAGES : num_of_pages;
+
 	paging_initialize(num_of_pages);
 	lfq_initialize((volatile lfq_t *) KERNEL_LOG_ADDR,
 			(void *) ((uintptr_t) KERNEL_LOG_ADDR + sizeof(lfq_t)),
 			sizeof(int),
 			KERNLOG_UNITS);
-	printk("Starter has woken up.%x\n", pages);
+	printk("Starter has woken up.\n");
+
 	mpu_initialize();
 	memory_initialize(num_of_pages);
 

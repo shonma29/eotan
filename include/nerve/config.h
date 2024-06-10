@@ -49,6 +49,7 @@ For more information, please refer to <http://unlicense.org/>
 #define PROCESS_LOCAL_ADDR 0x7e001000
 
 #define MAX_PAGES (1024 * 1024 / 2)
+#define MAX_PSE_PAGES (1024 / 2)
 
 // MIN_MEMORY_MB should be a multiple of 4 MB.
 #define MIN_MEMORY_MB (8)

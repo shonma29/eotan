@@ -24,45 +24,35 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <features.h>
 #include <stddef.h>
 #include <mpu/memory.h>
-#include <mpu/mpufunc.h>
 #include <nerve/config.h>
-#include <nerve/global.h>
 #include <nerve/memory_map.h>
 #include <func.h>
 #include "paging.h"
 
-#ifdef USE_FB
-static void set_frame_buffer(PTE *);
-#endif
 
 //TODO unify paging_init
 //TODO skip memory hole
 void paging_reset(void)
 {
+	PDE *dir = (PDE *) kern_p2v((void *) KTHREAD_DIR_ADDR);
+	uintptr_t addr = 0;
 	MemoryMap *mm = &(sysinfo->memory_map);
-	PTE *dir = (PTE *) kern_p2v((void *) KTHREAD_DIR_ADDR);
-	UB *addr = (UB *) 0;
-	size_t i;
 	size_t max = (mm->max_pages + PTE_PER_PAGE - 1) / PTE_PER_PAGE;
 	size_t left = mm->max_pages;
+	printk("reset max=%x left=%x\n", max, left);
 
-	printk("reset addr=%p max=%x left=%x\n", addr, max, left);
-
-	for (i = 0; i < max; i++) {
-		size_t j;
+	for (unsigned int i = 0; i < max; i++) {
 		PTE *p = palloc();
-
 		if (!p) {
 			printk("no memory for PTE");
 			break;
 		}
 
+		unsigned int j;
 		for (j = 0; left && (j < PTE_PER_PAGE); j++) {
-			p[j] = calc_pte(addr, ATTR_INITIAL);
+			p[j] = calc_pte((void *) addr, ATTR_INITIAL);
 			addr += PAGE_SIZE;
 			left--;
 		}
@@ -76,47 +66,4 @@ void paging_reset(void)
 	}
 
 	tlb_flush_all();
-#ifdef USE_FB
-	set_frame_buffer(dir);
-#endif
 }
-
-#ifdef USE_FB
-static void set_frame_buffer(PTE *dir)
-{
-	Display *d = &(sysinfo->display);
-	UW start = (uintptr_t) (d->base) >> BITS_OFFSET;
-	UW last = (uintptr_t) (d->base) + d->bpl * d->r.max.y;
-	size_t i;
-
-	last = (last >> BITS_OFFSET) + ((last & MASK_OFFSET) ? 1 : 0);
-	printk("display start=%x last=%x\n", start, last);
-
-	for (i = start >> BITS_PAGE;
-			i < (last >> BITS_PAGE) + ((last & MASK_PAGE) ? 1 : 0);
-			i++) {
-		if (!(dir[i] & PAGE_PRESENT)) {
-			UB *p = (UB *) palloc();
-
-			/* memset(p, 0, PAGE_SIZE); */
-			dir[i] = calc_pte(kern_v2p(p), ATTR_INITIAL);
-		}
-	}
-
-	for (i = start; i < last; i++) {
-		size_t offset_dir = i >> BITS_PAGE;
-		size_t offset_page = i & MASK_PAGE;
-		PTE *entry = (PTE *) kern_p2v((void *) (dir[offset_dir]
-				& (~MASK_OFFSET)));
-/*
-		if (entry[offset_page] & PAGE_PRESENT) {
-			//TODO release page
-		}
-*/
-		entry[offset_page] = calc_pte((void *) (i << BITS_OFFSET),
-				ATTR_INITIAL);
-	}
-
-	tlb_flush_all();
-}
-#endif

@@ -24,19 +24,27 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <features.h>
 #include <stdint.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
+#include <nerve/global.h>
 #include "mpufunc.h"
 #include "paging.h"
 
 static void set_initial_pages(const size_t);
+#ifdef USE_FB
+static void set_frame_buffer(void);
+#endif
 static PTE calc_kern_pte(const void *);
 
 
 void paging_initialize(const size_t num_of_pages)
 {
 	set_initial_pages(num_of_pages);
+#ifdef USE_FB
+	set_frame_buffer();
+#endif
 	paging_set_directory((PDE *) KTHREAD_DIR_ADDR);
 	paging_start();
 }
@@ -55,6 +63,30 @@ static void set_initial_pages(const size_t num_of_pages)
 	for (; i < PTE_PER_PAGE / 2; i++)
 		dir[OFFSET_KERN + i] = dir[i] = 0;
 }
+
+#ifdef USE_FB
+static void set_frame_buffer(void)
+{
+	Display *d = &(((system_info_t *) kern_v2p(sysinfo))->display);
+	uintptr_t start = (uintptr_t) (d->base) >> BITS_PSE;
+	uintptr_t end = (uintptr_t) (d->base) + d->bpl * d->r.max.y;
+	end = (end + MASK_PSE) >> BITS_PSE;
+	if ((start < MAX_PSE_PAGES)
+			&& (MAX_PSE_PAGES <= end))
+		return;
+
+	PDE *dir = (PDE *) KTHREAD_DIR_ADDR;
+	unsigned int i = start | MAX_PSE_PAGES;
+	end |= MAX_PSE_PAGES;
+	start <<= BITS_PSE;
+	for (; i < end; i++) {
+		dir[i] = calc_kern_pte((void *) (start));
+		start += 1 << BITS_PSE;
+	}
+
+	d->base = kern_p2v(d->base);
+}
+#endif
 
 static PTE calc_kern_pte(const void *addr)
 {

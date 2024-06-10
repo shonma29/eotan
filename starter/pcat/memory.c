@@ -92,7 +92,7 @@ void memory_initialize(const size_t num_of_pages)
 
 static int map_initialize(const size_t pages)
 {
-	mm->rest_pages = (pages > MAX_PAGES) ? MAX_PAGES : pages;
+	mm->rest_pages = pages;
 	mm->clock_block = 0;
 	mm->num_blocks = (mm->rest_pages + INT_BIT - 1) >> MPU_LOG_INT;
 	mm->max_pages = mm->rest_pages;
