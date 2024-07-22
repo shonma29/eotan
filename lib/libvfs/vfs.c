@@ -40,8 +40,6 @@ static int modes[] = {
 	F_OK
 };
 
-static bool check_flags(const int flags);
-
 
 //TODO split this file per function
 int vfs_mount(const int device, vfs_t *fs, const size_t block_size)
@@ -157,7 +155,7 @@ int vfs_open(vnode_t *vnode, const int flags, struct permission *permission)
 {
 	//TODO ad-hoc
 	int f = (flags == O_EXEC) ? O_RDONLY : flags;
-	if (!check_flags(f)) {
+	if (!vfs_check_flags(f)) {
 		log_debug("vfs_open: bad flags %x\n", flags);
 		return EINVAL;
 	}
@@ -187,25 +185,6 @@ int vfs_open(vnode_t *vnode, const int flags, struct permission *permission)
 	}
 
 	return 0;
-}
-
-static bool check_flags(const int flags)
-{
-	switch (flags & O_ACCMODE) {
-	case O_RDONLY:
-	case O_WRONLY:
-	case O_RDWR:
-		break;
-	default:
-		return false;
-	}
-
-	//TODO unknown bits check is needed?
-	//TODO ORCLOSE
-	if (flags & ~(O_ACCMODE | O_APPEND | O_TRUNC))
-		return false;
-
-	return true;
 }
 
 int vfs_create(vnode_t *parent, char *name, const int flags, const mode_t mode,

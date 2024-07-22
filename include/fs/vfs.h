@@ -155,4 +155,6 @@ extern int vfs_read(vnode_t *, copier_t *, const unsigned int, const size_t,
 extern char *vfs_split_path(const char *, char **);
 extern bool vfs_is_valid_name(const char *);
 
+extern bool vfs_check_flags(const int);
+
 #endif

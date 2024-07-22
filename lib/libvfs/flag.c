@@ -1,5 +1,3 @@
-#ifndef _LIBSERV_H_
-#define _LIBSERV_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,37 +24,25 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <interrupt.h>
-#include <syslog.h>
-#include <dev/device.h>
-#include <sys/time.h>
+#include <fcntl.h>
+#include <fs/vfs.h>
 
-#define log_emerg(...) syslog(LOG_EMERG, __VA_ARGS__)
-#define log_alert(...) syslog(LOG_ALERT, __VA_ARGS__)
-#define log_crit(...) syslog(LOG_CRIT, __VA_ARGS__)
-#define log_err(...) syslog(LOG_ERR, __VA_ARGS__)
-#define log_warning(...) syslog(LOG_WARNING, __VA_ARGS__)
-#define log_notice(...) syslog(LOG_NOTICE, __VA_ARGS__)
-#define log_info(...) syslog(LOG_INFO, __VA_ARGS__)
 
-#ifdef DEBUG
-#define log_debug(...) syslog(LOG_DEBUG, __VA_ARGS__)
-#else
-#define log_debug(...)
-#endif
+bool vfs_check_flags(const int flags)
+{
+	switch (flags & O_ACCMODE) {
+	case O_RDONLY:
+	case O_WRONLY:
+	case O_RDWR:
+		break;
+	default:
+		return false;
+	}
 
-extern void time_get_raw(struct timespec *);
-extern ER time_get(SYSTIM *);
-extern ER time_set(SYSTIM *);
+	//TODO unknown bits check is needed?
+	//TODO ORCLOSE
+	if (flags & ~(O_ACCMODE | O_APPEND | O_TRUNC))
+		return false;
 
-extern ER_ID create_isr(T_CISR *);
-extern ER destroy_isr(ID);
-extern ER enable_interrupt(INTNO);
-
-extern device_info_t *device_find(const char *);
-
-extern int copy_from_user(void *, void *, const size_t);
-extern int copy_to_user(void *, void *, const size_t);
-
-#endif
+	return true;
+}

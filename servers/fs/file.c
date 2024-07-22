@@ -26,14 +26,11 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <fcntl.h>
 #include <string.h>
-#include <nerve/kcall.h>
 #include <sys/errno.h>
+#include "../../lib/libserv/libserv.h"
 #include "api.h"
 #include "fs.h"
 #include "session.h"
-
-static int copy_from_user(void *, void *, const size_t);
-static int copy_to_user(void *, void *, const size_t);
 
 
 void if_open(fs_request *req)
@@ -231,26 +228,4 @@ void if_write(fs_request *req)
 
 	reply_error(req->tag, req->packet.header.token, request->tag,
 			error_no);
-}
-
-static int copy_from_user(void *dest, void *src, const size_t len)
-{
-	copier_t *cp = (copier_t*)src;
-	int error_no = kcall->region_get(cp->caller, cp->buf, len, dest);
-	if (error_no)
-		return error_no;
-
-	cp->buf += len;
-	return 0;
-}
-
-static int copy_to_user(void *dest, void *src, const size_t len)
-{
-	copier_t *cp = (copier_t*)dest;
-	int error_no = kcall->region_put(cp->caller, cp->buf, len, src);
-	if (error_no)
-		return error_no;
-
-	cp->buf += len;
-	return 0;
 }
