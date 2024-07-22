@@ -23,7 +23,7 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-SERVERS = kernlog interrupt timer dev mm fs hmi
+SERVERS = kernlog interrupt timer dev mm fs hmi console
 
 all: $(SERVERS)
 

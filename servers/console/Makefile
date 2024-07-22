@@ -23,11 +23,16 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = drivers/libdrivers.a
+TARGET = $(WD)/console
 
 include Makefile.in
 
-CSRCS += $(wildcard $(WD)/ramdisk/*.c)
+CFLAGS += -I kernel
 
-$(TARGET): $(OBJS)
-	$(AR) rsv $@ $?
+ENTRY_ADDR = 0x80260000
+ENTRY_FUNC = start
+
+$(TARGET): $(OBJS) \
+		lib/libvfs.a lib/libserv.a lib/libnc.a
+	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
+	$(STRIP) $@

@@ -1,5 +1,5 @@
-#ifndef __DRIVERS_NULL_H__
-#define __DRIVERS_NULL_H__
+#ifndef _CONSOLE_CONSOLE_H_
+#define _CONSOLE_CONSOLE_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,9 +26,29 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <dev/device.h>
+#include <copier.h>
 #include <sys/types.h>
+#include <set/tree.h>
+#include "../../lib/libserv/libserv.h"
 
-#define MYNAME DEVICE_CONTROLLER_NULL
+#define MYNAME "console"
+
+struct file {
+	node_t node;
+	uint_fast32_t f_flag;
+	size_t size;
+	void *driver;
+};
+
+typedef struct _driver_t {
+	bool endless;
+	int (*read)(struct file *, copier_t *, const off_t, const size_t,
+			size_t *);
+	int (*write)(struct file *, copier_t *, const off_t, const size_t,
+			size_t *);
+} driver_t;
+
+extern int device_initialize(void);
+extern driver_t *device_lookup(const char *);
 
 #endif

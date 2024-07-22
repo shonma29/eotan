@@ -1,3 +1,5 @@
+#ifndef _CONSOLE_SESSION_H_
+#define _CONSOLE_SESSION_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,62 +26,24 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <major.h>
-#include <dev/device.h>
-#include "null.h"
+#include "console.h"
 
-static int detach(void);
-static int read(char *, const int, const off_t, const size_t);
-static int write(char *, const int, const off_t, const size_t);
-//TODO return adequate error code
-static bool check_param(const int, const off_t, const size_t);
+typedef struct _session_t {
+	pid_t pid;
+	tree_t files;
+} session_t;
 
-static vdriver_unit_t null = {
-	{ NULL, NULL },
-	MYNAME,
-	NULL
-};
-static vdriver_t driver_mine = {
-	DEVICE_CLASS_CONSOLE,
-	{ NULL, NULL },
-	detach,
-	read,
-	write
-};
+extern void session_initialize(void);
 
+extern session_t *session_create(const pid_t);
+extern void session_destroy(session_t *);
+extern session_t *session_find(const pid_t);
 
-const vdriver_t *null_attach(system_info_t *info)
-{
-	list_initialize(&(driver_mine.units));
-	list_append(&(driver_mine.units), &(null.bros));
-	return &driver_mine;
-}
+extern int session_create_file(struct file **, session_t *, const int);
+extern int session_destroy_file(session_t *, const int);
+extern struct file *session_find_file(const session_t *, const int);
 
-static int detach(void)
-{
-	return 0;
-}
+extern int session_get_path(char *, const session_t *, const int,
+		const char *);
 
-static int read(char *outbuf, const int channel, const off_t offset,
-		const size_t size)
-{
-	if (!check_param(channel, offset, size))
-		return (-1);
-
-	return 0;
-}
-
-static int write(char *inbuf, const int channel, const off_t offset,
-		const size_t size)
-{
-	if (!check_param(channel, offset, size))
-		return (-1);
-
-	return size;
-}
-
-static bool check_param(const int channel, const off_t offset,
-		const size_t size)
-{
-	return (channel ? false : true);
-}
+#endif
