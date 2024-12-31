@@ -79,7 +79,7 @@ static void execute(char **array, char **env, const ExecOptions *opts)
 int main(int argc, char **argv, char **env)
 {
 	char *array[] = { NULL, NULL };
-	char *envp[] = { "COLUMNS=82", "LINES=29", NULL };
+	char *envp[] = { "COLUMNS=84", "LINES=29", NULL };
 	ExecOptions opts = { { -1, -1, -1 }, false };
 
 	array[0] = "/clock";

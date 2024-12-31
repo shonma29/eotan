@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #define DEFAULT_COLUMNS (80)
 #define DEFAULT_LINES (25)
@@ -44,22 +45,24 @@ extern int rawoff(void);
 
 int main(int argc, char **argv)
 {
-	FILE *fp;
-
-	columns = _get_env_value("COLUMNS", DEFAULT_COLUMNS) + 1;
+	columns = _get_env_value("COLUMNS", DEFAULT_COLUMNS);
 	lines = _get_env_value("LINES", DEFAULT_LINES) - 1;
 
 	//TODO UTF-8
-	linebuf = malloc(columns);
+	linebuf = malloc(columns + 1);
 	if (!linebuf) {
 		perror(NULL);
 		return EXIT_FAILURE;
 	}
 
+	FILE *fp;
 	switch (argc) {
+#if 0
+	//TODO do not use 'stdin' until read "/cons"
 	case 1:
 		fp = stdin;
 		break;
+#endif
 	case 2:
 		argv++;
 		fp = fopen(*argv, "r");
@@ -86,20 +89,25 @@ int main(int argc, char **argv)
 static bool show(FILE *fp)
 {
 	for (int n = 0; n < lines; n++) {
-//TODO cut LF when maximum length
-		if (!fgets(linebuf, columns, fp))
+		if (!fgets(linebuf, columns + 1, fp))
 			return true;
 
 		fputs(linebuf, stdout);
 	}
 
+	fflush(stdout);
 	return false;
 }
 
 static bool process(void)
 {
 	for (;;) {
-		switch (getchar()) {
+		char buf[1];
+		//TODO read "/cons"
+		if (read(STDIN_FILENO, buf, sizeof(buf)) != sizeof(buf))
+			return true;
+
+		switch (buf[0]) {
 		case 'q':
 		case 'Q':
 			return true;
