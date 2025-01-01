@@ -27,6 +27,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
+#define MATH_ERRNO (1)
+#define MATH_ERREXCEPT (2)
+#define math_errhandling (MATH_ERRNO)
+
 #define NAN (__builtin_nan(""))
 #define INFINITY (__builtin_inf())
 #define HUGE_VAL (__builtin_huge_val())
