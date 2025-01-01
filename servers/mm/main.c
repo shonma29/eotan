@@ -166,15 +166,7 @@ static void accept(void)
 				break;
 			}
 
-			if (port_of_ipc(rdvno) != req->callee) {
-				//TODO debug
-				//log_warning("9p: not same %d %d\n",
-				//		port_of_ipc(rdvno),
-				//		req->callee);
-				//TODO hmi handler reply
-				//break;
-			}
-
+			//TODO check callee
 			req->size = size;
 			memcpy(&(req->message), message, size);
 			if (fiber_switch(&receiver_sp, &(req->fiber_sp))) {

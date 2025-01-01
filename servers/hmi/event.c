@@ -88,22 +88,20 @@ static void process(const int data)
 	unsigned char buf = (unsigned char) (d & 0xff);
 
 	if (!raw_mode) {
-		if (buf == 0x0d)
-			buf = 0x0a;
-
 		int result;
 		// ^c
 		if (buf == 0x03) {
 			sys_args_t args = {
 				syscall_kill,
-				CURRENT_PROCESS,
+				thread_id_of_token(message->header.token),
 				SIGINT
 			};
+
 			result = kcall->ipc_send(PORT_MM, &args, sizeof(args));
 			if (result)
 				log_err("hmi: kill error=%d\n", result);
 
-			return;
+			goto terminate;
 		}
 
 		result = kcall->mutex_lock(cons_mid, TMO_FEVR);
@@ -118,17 +116,22 @@ static void process(const int data)
 				kcall->printk("hmi: handler cannot unlock %d\n",
 						result);
 		}
+
+		// ^d
+		if (buf == 0x04)
+			goto terminate;
 	}
 
 	//TODO loop or buffering (flush when user switches window, or LF)
 	//TODO error check
 	uintptr_t addr = ((uintptr_t) (message->Tread.data)
 			+ message->Tread.offset);
-	kcall->region_put((message->header.token >> 16) & 0xffff,
+	kcall->region_put(thread_id_of_token(message->header.token),
 			(char *) addr, 1, &buf);
 	message->Tread.offset++;
 	if ((message->Tread.count <= message->Tread.offset)
 			|| (buf == 0x0a)) {
+terminate:
 //		message->header.token = message->head.token;
 		message->header.type = Rread;
 //		message->Rread.tag = message->Tread.tag;

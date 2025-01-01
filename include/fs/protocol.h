@@ -260,4 +260,9 @@ typedef struct {
 	(sizeof(((fsmsg_t*)0)->header) + sizeof(((fsmsg_t*)0)->t))
 #define MIN_MESSAGE_SIZE (sizeof(((fsmsg_t*)0)->header) + sizeof(int))
 
+static inline int thread_id_of_token(const int token)
+{
+	return ((token >> 16) & 0xffff);
+}
+
 #endif

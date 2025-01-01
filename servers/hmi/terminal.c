@@ -88,6 +88,7 @@ static void state_null(esc_state_t *state, const char ch)
 		return;
 	}
 
+	//TODO show control char if buf < ' '
 	cns->putc(state->screen, ch);
 }
 

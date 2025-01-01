@@ -301,6 +301,7 @@ int mm_exit(mm_request_t *req)
 
 static int cleanup(mm_process_t *process, mm_thread_t *th, mm_request_t *req)
 {
+	//TODO disable fibers
 	for (node_t *node; (node = tree_root(&(process->descriptors)));) {
 		int d = node->key;
 		mm_descriptor_t *desc = node ? (mm_descriptor_t *)
@@ -335,26 +336,15 @@ static int cleanup(mm_process_t *process, mm_thread_t *th, mm_request_t *req)
 	return 0;
 }
 
+/**
+ * This function is designed for pseudo signal.
+ * Application must not call it.
+ */
 int mm_kill(mm_request_t *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = NULL;
-		if (req->args.arg1 == CURRENT_PROCESS)
-			for (mm_process_t *p = process_find(INIT_PID); p;) {
-				if (p->wpid)
-					p = process_find(p->wpid);
-				else {
-					list_t *head = list_head(&(p->threads));
-					if (head) {
-						th = getMyThread(head);
-						break;
-					}
-				}
-			}
-		else
-			th = thread_find(req->args.arg1);
-
+		mm_thread_t *th = thread_find(req->args.arg1);
 		if (!th) {
 			reply->data[1] = EPERM;
 			break;
@@ -363,7 +353,7 @@ int mm_kill(mm_request_t *req)
 		mm_process_t *process = get_process(th);
 		mm_thread_t *caller = thread_find(port_of_ipc(req->node.key));
 		if (caller) {
-			//TODO check privilege of caller
+			//TODO check privilege of caller (kthread only now)
 //			mm_process_t *caller_process = get_process(caller);
 			reply->data[1] = EACCES;
 			break;
@@ -377,7 +367,7 @@ int mm_kill(mm_request_t *req)
 
 		reply->result = 0;
 		reply->data[0] = 0;
-		return reply_success;
+		return reply_no_caller;
 	} while (false);
 
 	reply->result = -1;

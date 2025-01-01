@@ -80,7 +80,7 @@ void if_write(fs_request *req)
 			size_t len = (rest > sizeof(line)) ?
 					sizeof(line) : rest;
 			if (kcall->region_get(
-					(message->header.token >> 16) & 0xffff,
+					thread_id_of_token(message->header.token),
 					(char *) ((unsigned int) (message->Twrite.data) + pos),
 					len,
 					line)) {

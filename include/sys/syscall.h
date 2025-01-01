@@ -67,6 +67,4 @@ typedef struct {
 	int data[2];
 } sys_reply_t;
 
-#define CURRENT_PROCESS (-3)
-
 #endif
