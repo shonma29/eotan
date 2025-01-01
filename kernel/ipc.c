@@ -206,7 +206,9 @@ int ipc_call(const int port_id, void *message, const size_t size)
 	running->wait.detail.ipc.message = message;
 	wait(running);
 	if (running->wait.result) {
+		enter_serialize();
 		release_rendezvous(reply_key);
+		leave_serialize();
 		return running->wait.result;
 	} else
 		return running->wait.detail.ipc.size;
