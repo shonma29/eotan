@@ -60,9 +60,9 @@ static ER initialize(void);
 
 //TODO cancel request?
 static struct fs_func func_table[] = {
-	{ no_support, MESSAGE_SIZE(Tattach) },
-	{ no_support, MESSAGE_SIZE(Twalk) },
-	{ no_support, MESSAGE_SIZE(Topen) },
+	{ if_attach, MESSAGE_SIZE(Tattach) },
+	{ if_walk, MESSAGE_SIZE(Twalk) },
+	{ if_open, MESSAGE_SIZE(Topen) },
 	{ no_support, MESSAGE_SIZE(Tcreate) },
 	{ if_read, MESSAGE_SIZE(Tread) },
 	{ if_write, MESSAGE_SIZE(Twrite) },

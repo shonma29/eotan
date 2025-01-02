@@ -25,10 +25,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
-#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/wait.h>
+#include "_perror.h"
 
 #define ERR (-1)
 
@@ -36,6 +38,8 @@ typedef struct {
 	int files[3];
 	bool background;
 } ExecOptions;
+
+extern void __malloc_initialize(void);
 
 static void execute(char **, char **, const ExecOptions *);
 
@@ -49,35 +53,49 @@ static void execute(char **array, char **env, const ExecOptions *opts)
 		// child
 		if (opts->background
 				&& (opts->files[0] == -1))
-			close(0);
+			close(STDIN_FILENO);
 
 		if (execve(array[0], array, env) == ERR) {
-			if (errno == ENOENT)
-				fprintf(stderr, "%s not found\n", array[0]);
-			else
-				fprintf(stderr, "exec error %d\n", errno);
+			_put_error(array[0]);
+			_put_error(" exec error ");
+			_put_error(strerror(errno));
+			_put_error("\n");
+		}
 
-			exit(errno);
-		} else
-			exit(ENOENT);
+		for (;;);
 	} else {
-		if (pid == ERR)
+		if (pid == ERR) {
 			// error
-			fprintf(stderr, "fork error %d\n", pid);
-		else if (!opts->background) {
+			_put_error("fork error ");
+			_put_error(strerror(errno));
+			_put_error("\n");
+			for (;;);
+		} else if (!opts->background) {
 			// parent
 			int status;
-			if (waitpid(pid, &status, 0) == -1)
-				fprintf(stderr, "wait error %d\n", errno);
-			else
-				//TODO omit print, and set $status
-				fprintf(stderr, "wait success %d\n", status);
+			if (waitpid(pid, &status, 0) == ERR) {
+				_put_error("wait error ");
+				_put_error(strerror(errno));
+				_put_error("\n");
+				for (;;);
+			}
 		}
 	}
 }
 
-int main(int argc, char **argv, char **env)
+void _main(int argc, char **argv, char **env)
 {
+	_set_local_errno(0);
+	// 'execve' uses 'malloc'
+	__malloc_initialize();
+
+	// STDIN
+	open("#i/cons", O_RDONLY);
+	// STDOUT
+	open("#i/cons", O_WRONLY);
+	// STDERR
+	dup2(STDOUT_FILENO, STDERR_FILENO);
+
 	char *array[] = { NULL, NULL };
 	char *envp[] = { "COLUMNS=84", "LINES=29", NULL };
 	ExecOptions opts = { { -1, -1, -1 }, false };
@@ -90,6 +108,4 @@ int main(int argc, char **argv, char **env)
 	opts.background = false;
 	for (;;)
 		execute(array, envp, &opts);
-
-	return EXIT_SUCCESS;
 }

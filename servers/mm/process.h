@@ -130,7 +130,6 @@ extern mm_thread_t *thread_find(const ID);
 extern void file_initialize(void);
 extern mm_session_t *session_create(const int);
 extern int session_destroy(mm_session_t *);
-extern mm_descriptor_t *process_create_dummy_file(mm_session_t *);
 extern mm_descriptor_t *process_create_desc(mm_process_t *);
 extern int process_destroy_desc(mm_process_t *, const int);
 extern int process_set_desc(mm_process_t *, const int, mm_descriptor_t *);

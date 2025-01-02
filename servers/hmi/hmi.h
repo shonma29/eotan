@@ -87,6 +87,9 @@ extern ER_UINT consctl_write(const UW, const char *);
 extern int event_initialize(void);
 
 // file.c
+extern void if_attach(fs_request *);
+extern void if_walk(fs_request *);
+extern void if_open(fs_request *);
 extern void if_read(fs_request *);
 extern void if_write(fs_request *);
 extern void if_clunk(fs_request *);

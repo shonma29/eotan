@@ -34,7 +34,8 @@ For more information, please refer to <http://unlicense.org/>
 static slab_t file_slab;
 static tree_t device_tree;
 static mm_device_t devices[] = {
-	{ { (int) 'c' }, NULL, PORT_CONSOLE }
+	{ { (int) 'c' }, NULL, PORT_CONSOLE },
+	{ { (int) 'i' }, NULL, PORT_WINDOW }
 };
 
 #define NUM_OF_DEVICES (sizeof(devices) / sizeof(devices[0]))

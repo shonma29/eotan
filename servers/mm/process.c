@@ -461,53 +461,6 @@ int create_init(const pid_t pid, const FP entry)
 	}
 
 	set_local(p, "/", 1);
-
-	mm_session_t *session = session_create(create_sid(PORT_WINDOW, pid));
-	if (!session)
-		//TODO release process
-		//TODO release pages
-		return ENOMEM;
-
-	session->server_id = PORT_WINDOW;
-
-	//TODO open cons
-	mm_descriptor_t *d = process_create_dummy_file(session);
-	if (d) {
-		mm_file_t *f = d->file;
-		f->f_offset = 0;
-		f->f_flag = O_RDONLY;
-		f->f_count = 1;
-
-		if (process_set_desc(p, STDIN_FILENO, d)) {
-			//TODO what to do?
-			session_destroy_file(f);
-			process_deallocate_desc(d);
-		}
-	}
-
-	d = process_create_dummy_file(session);
-	if (d) {
-		mm_file_t *f = d->file;
-		f->f_offset = 0;
-		f->f_flag = O_WRONLY;
-		f->f_count = 1;
-		if (process_set_desc(p, STDOUT_FILENO, d)) {
-			//TODO what to do?
-			session_destroy_file(f);
-			process_deallocate_desc(d);
-		}
-
-		d = process_allocate_desc();
-		if (d) {
-			if (process_set_desc(p, STDERR_FILENO, d))
-				//TODO what to do?
-				process_deallocate_desc(d);
-			else {
-				d->file = f;
-				f->f_count++;
-			}
-		}
-	}
 #if 0
 	log_info("c %d %x->%x, %x->%x pp=%d pg=%d u=%d g=%d n=%s\n",
 			p->node.key,

@@ -36,6 +36,35 @@ static char line[4096];
 static ER_UINT write(const UW, const UW, const UW, const char *);
 
 
+void if_attach(fs_request *req)
+{
+	fsmsg_t *message = &(req->packet);
+	message->header.type = Rattach;
+	//message->Rattach.tag = message->Tattach.tag;
+	//message->Rattach.qid = 0;//TODO set value
+	reply(req, MESSAGE_SIZE(Rattach));
+}
+
+void if_walk(fs_request *req)
+{
+	fsmsg_t *message = &(req->packet);
+	message->header.type = Rwalk;
+	//message->Rwalk.tag = message->Twalk.tag;
+	//message->Rwalk.nwqid = 0;//TODO set value
+	//message->Rwalk.wqui = NULL;//TODO set value
+	reply(req, MESSAGE_SIZE(Rwalk));
+}
+
+void if_open(fs_request *req)
+{
+	fsmsg_t *message = &(req->packet);
+	message->header.type = Ropen;
+	//message->Ropen.tag = message->Topen.tag;
+	//message->Ropen.qid = 0;//TODO set value
+	//message->Ropen.iounit = 0;//TODO set value
+	reply(req, MESSAGE_SIZE(Ropen));
+}
+
 void if_clunk(fs_request *req)
 {
 	fsmsg_t *message = &(req->packet);
@@ -128,7 +157,7 @@ static ER_UINT write(const UW dd, const UW start, const UW size,
 	else {
 		mouse_hide();
 		terminal_write((char *) inbuf,
-				((dd > 2) ? ((dd == 7) ? &state7 : &state2)
+				((dd >= 4) ? ((dd == 7) ? &state7 : &state2)
 						: &state0),
 				0, size);
 		mouse_show();

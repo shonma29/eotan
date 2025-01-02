@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #define MIN_SID (1)
 #define MIN_FID (1)
-#define MIN_AUTO_FD (3)
+#define MIN_AUTO_FD (0)
 
 static slab_t file_slab;
 static slab_t descriptor_slab;
@@ -105,22 +105,6 @@ int session_destroy(mm_session_t *session)
 
 	slab_free(&session_slab, session);
 	return 0;
-}
-
-mm_descriptor_t *process_create_dummy_file(mm_session_t *session)
-{
-	mm_descriptor_t *desc = process_allocate_desc();
-	if (desc) {
-		mm_file_t *file = session_create_file(session);
-		if (!file) {
-			process_deallocate_desc(desc);
-			return NULL;
-		}
-
-		desc->file = file;
-	}
-
-	return desc;
 }
 
 mm_descriptor_t *process_create_desc(mm_process_t *process)
