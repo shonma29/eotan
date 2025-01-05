@@ -1,5 +1,5 @@
-#ifndef _CORE_SYNC_H_
-#define _CORE_SYNC_H_
+#ifndef _NERVE_SYNC_H_
+#define _NERVE_SYNC_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -28,8 +28,8 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <mpu/io.h>
 #include <nerve/global.h>
+#include <nerve/thread.h>
 #include <set/list.h>
-#include "thread.h"
 
 static inline void enter_serialize(void)
 {

@@ -1,5 +1,5 @@
-#ifndef _CORE_THREAD_H_
-#define _CORE_THREAD_H_
+#ifndef _NERVE_WAIT_H_
+#define _NERVE_WAIT_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,43 +26,30 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <mm/segment.h>
+#include <stddef.h>
 #include <set/list.h>
-#include <set/tree.h>
-#include "ipc.h"
-#include "wait.h"
-#include "mpu/context.h"
+
+typedef enum {
+	wait_none,
+	wait_flag,
+	wait_mutex,
+	wait_call,
+	wait_reply,
+	wait_receive,
+	wait_send
+} wait_type_e;
 
 typedef struct {
-	node_t node;
-	list_t queue;
-	STAT status;
-	wait_reason_t wait;
-	list_t locking;
-	PRI priority;
-	unsigned int quantum;
-	struct {
-		PRI priority;
-		VP kstack_tail;
-		// kthread is NULL
-		VP ustack_top;
-		FP entry;
-		VP_INT arg;
-	} attr;
-	ipc_t port;
-	mpu_context_t mpu;
-} thread_t;
-
-static inline ID thread_id(thread_t *th)
-{
-	return ((ID) (th->node.key));
-}
-
-static inline thread_t *getThreadWaiting(const list_t *p)
-{
-	return ((thread_t *) ((uintptr_t) p
-			- offsetof(thread_t, wait.waiting)));
-}
+	wait_type_e type;
+	list_t waiting;
+	int result;
+	union {
+		struct {
+			size_t size;
+			void *message;
+			int key;
+		} ipc;
+	} detail;
+} wait_reason_t;
 
 #endif

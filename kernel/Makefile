@@ -27,13 +27,11 @@ TARGET = kernel/core.bin
 
 include Makefile.in
 
-CFLAGS += -I $(WD)
-
 ENTRY_ADDR = 0x80100000
 ENTRY_FUNC = start
 
 kernel/core.bin: $(OBJS) \
-		kernel/mpu/libmpu.a kernel/arch/libarch.a \
+		drivers/mpu/libmpu.a kernel/arch/libarch.a \
 		lib/libnc.a lib/libserv.a
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
 	$(STRIP) $@

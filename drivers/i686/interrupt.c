@@ -25,14 +25,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <mpufunc.h>
 #include <interrupt.h>
 #include <mpu/desc.h>
 #include <nerve/kcall.h>
-#include "func.h"
-#include "sync.h"
-#include "mpu/handler.h"
-#include "mpu/interrupt.h"
-#include "mpu/mpufunc.h"
+#include <nerve/func.h>
+#include <nerve/sync.h>
+#include "handler.h"
+#include "interrupt.h"
 
 typedef struct _service {
 	void (*isr)(VP_INT);

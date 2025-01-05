@@ -27,8 +27,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdnoreturn.h>
 #include <mpu/io.h>
 #include <nerve/kcall.h>
-#include "func.h"
-#include "sync.h"
+#include <nerve/func.h>
+#include <nerve/sync.h>
 
 noreturn void panic(char *msg)
 {

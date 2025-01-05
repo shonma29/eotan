@@ -27,10 +27,10 @@ For more information, please refer to <http://unlicense.org/>
 #include <services.h>
 #include <stdalign.h>
 #include <stdnoreturn.h>
+#include <mpufunc.h>
 #include <nerve/global.h>
-#include "func.h"
+#include <nerve/func.h>
 #include "ready.h"
-#include "mpu/mpufunc.h"
 
 static ER create_idle_thread(const VP_INT);
 static noreturn void idle_start(VP_INT);

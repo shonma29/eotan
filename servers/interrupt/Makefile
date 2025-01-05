@@ -33,7 +33,7 @@ ENTRY_ADDR = 0x80120000
 ENTRY_FUNC = start
 
 $(TARGET): $(OBJS) \
-		kernel/mpu/libmpu.a kernel/arch/libarch.a \
+		drivers/mpu/libmpu.a kernel/arch/libarch.a \
 		lib/libserv.a lib/libnc.a
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
 	$(STRIP) $@

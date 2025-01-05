@@ -26,11 +26,11 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <stdint.h>
 #include <string.h>
+#include <mpufunc.h>
 #include <mpu/desc.h>
 #include <mpu/setting.h>
 #include "gate.h"
 #include "msr.h"
-#include "mpufunc.h"
 #include "tss.h"
 
 static void idt_initialize(void);

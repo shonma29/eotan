@@ -31,6 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
+#include <mpufunc.h>
 #include <mm/config.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
@@ -39,7 +40,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "mm.h"
 #include "api.h"
 #include "process.h"
-#include "../../kernel/mpu/mpufunc.h"
 
 #define THREAD_LOOKUP_SIZE (16)
 

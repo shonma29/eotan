@@ -26,9 +26,9 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <services.h>
+#include <mpufunc.h>
 #include <nerve/icall.h>
 #include <nerve/kcall.h>
-#include "../../kernel/mpu/mpufunc.h"
 #include "process.h"
 
 static void expand_stack(const int, const int);

@@ -25,14 +25,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <mpufunc.h>
 #include <nerve/config.h>
+#include <nerve/func.h>
+#include <nerve/sync.h>
+#include <nerve/thread.h>
 #include <set/list.h>
 #include <set/tree.h>
-#include "func.h"
 #include "ready.h"
-#include "sync.h"
-#include "thread.h"
-#include "mpu/mpufunc.h"
 
 typedef struct {
 	node_t node;

@@ -27,13 +27,13 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <interrupt.h>
 #include <services.h>
+#include <mpufunc.h>
 #include <nerve/config.h>
 #include <nerve/delay.h>
 #include <nerve/global.h>
 #include <nerve/icall.h>
 #include <nerve/kcall.h>
 #include <arch/archfunc.h>
-#include <mpu/mpufunc.h>
 #include <set/lf_queue.h>
 #include "interrupt_service.h"
 

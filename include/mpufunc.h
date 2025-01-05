@@ -1,5 +1,5 @@
-#ifndef _MPU_MPUFUNC_H__
-#define _MPU_MPUFUNC_H__
+#ifndef _MPUFUNC_H__
+#define _MPUFUNC_H__
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -30,9 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <interrupt.h>
 #include <stdnoreturn.h>
 #include <mm/segment.h>
-#include "gate.h"
-#include "paging.h"
-#include "thread.h"
+#include <nerve/thread.h>
 
 /* set_selector.s */
 extern noreturn void set_selector(void);

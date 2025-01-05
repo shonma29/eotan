@@ -27,11 +27,11 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <stdint.h>
 #include <string.h>
+#include <mpufunc.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
-#include "func.h"
-#include "mpufunc.h"
+#include <nerve/func.h>
 #include "paging.h"
 
 static void memrcpy(char *, const char *, const size_t);

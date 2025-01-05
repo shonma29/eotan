@@ -25,9 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <mpufunc.h>
 #include <mpu/memory.h>
-#include <thread.h>
-#include "mpufunc.h"
+#include <nerve/thread.h>
 
 static bool copy(UB *, UB *, size_t *);
 

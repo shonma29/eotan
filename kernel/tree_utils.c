@@ -25,8 +25,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <nerve/config.h>
+#include <nerve/func.h>
 #include <set/tree.h>
-#include "func.h"
 
 
 void create_tree(tree_t *tree, slab_t *slab, size_t entry_size,

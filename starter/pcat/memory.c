@@ -26,11 +26,11 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <major.h>
 #include <string.h>
+#include <mpufunc.h>
 #include <arch/archfunc.h>
 #include <fs/fstype.h>
 #include <mpu/desc.h>
 #include <mpu/memory.h>
-#include <mpu/mpufunc.h>
 #include <nerve/config.h>
 #include <nerve/global.h>
 #include <starter/initrd.h>

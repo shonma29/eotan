@@ -25,9 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stdint.h>
+#include <mpufunc.h>
 #include <mpu/desc.h>
 #include "gate.h"
-#include "mpufunc.h"
 
 static void gate_set(GateDescriptor *, uint16_t, void (*)(void), uint8_t);
 

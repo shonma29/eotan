@@ -25,10 +25,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <mpufunc.h>
 #include <mpu/io.h>
-#include "../../kernel/sync.h"
-#include "../../kernel/mpu/mpufunc.h"
-#include "func.h"
+#include <nerve/func.h>
+#include <nerve/sync.h>
 #include "archfunc.h"
 #include "handler.h"
 #include "8254.h"

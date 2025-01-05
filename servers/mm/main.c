@@ -28,10 +28,10 @@ For more information, please refer to <http://unlicense.org/>
 #include <init.h>
 #include <services.h>
 #include <string.h>
+#include <mpufunc.h>
 #include <mm/config.h>
 #include <nerve/ipc_utils.h>
 #include <nerve/kcall.h>
-#include "../../kernel/mpu/mpufunc.h"
 #include "mm.h"
 #include "api.h"
 #include "proxy.h"

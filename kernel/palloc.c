@@ -27,7 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/bits.h>
 #include <nerve/global.h>
 #include <nerve/memory_map.h>
-#include "func.h"
+#include <nerve/func.h>
 
 static void pzero(unsigned int *p);
 

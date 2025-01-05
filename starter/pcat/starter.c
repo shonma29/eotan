@@ -28,8 +28,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdarg.h>
 #include <stdnoreturn.h>
 #include <string.h>
+#include <mpufunc.h>
 #include <arch/archfunc.h>
-#include <mpu/mpufunc.h>
 #include <nerve/global.h>
 #include <set/lf_queue.h>
 #include <starter/modules.h>

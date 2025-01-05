@@ -26,8 +26,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <nerve/thread.h>
 #include <set/list.h>
-#include "thread.h"
 
 extern thread_t *running;
 

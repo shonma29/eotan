@@ -26,10 +26,10 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <features.h>
 #include <stdint.h>
+#include <mpufunc.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
 #include <nerve/global.h>
-#include "mpufunc.h"
 #include "paging.h"
 
 static void set_initial_pages(const size_t);

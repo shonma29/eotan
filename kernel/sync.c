@@ -25,9 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stdbool.h>
-#include "func.h"
-#include "sync.h"
-#include "thread.h"
+#include <nerve/func.h>
+#include <nerve/sync.h>
+#include <nerve/thread.h>
 #include "ready.h"
 
 

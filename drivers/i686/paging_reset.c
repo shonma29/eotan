@@ -28,7 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/memory.h>
 #include <nerve/config.h>
 #include <nerve/memory_map.h>
-#include <func.h>
+#include <nerve/func.h>
 #include "paging.h"
 
 

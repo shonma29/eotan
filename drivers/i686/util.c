@@ -26,10 +26,10 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <string.h>
+#include <mpufunc.h>
 #include <mpu/memory.h>
-#include <func.h>
-#include <thread.h>
-#include "mpufunc.h"
+#include <nerve/func.h>
+#include <nerve/thread.h>
 
 
 ER memcpy_k2u(thread_t *th, void *to, const void *from, const size_t bytes)

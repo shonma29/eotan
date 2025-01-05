@@ -25,11 +25,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <mpufunc.h>
 #include <nerve/global.h>
 #include <nerve/kcall.h>
-#include "func.h"
+#include <nerve/func.h>
 #include "ready.h"
-#include "mpu/mpufunc.h"
 
 typedef struct {
 	VP_INT arg1;

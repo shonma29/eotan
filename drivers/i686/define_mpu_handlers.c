@@ -25,8 +25,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include "mpu/interrupt.h"
-#include "mpu/mpufunc.h"
+#include <mpufunc.h>
+#include "interrupt.h"
 #include "../../lib/libserv/libserv.h"
 
 

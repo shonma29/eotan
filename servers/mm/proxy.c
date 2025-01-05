@@ -28,11 +28,11 @@ For more information, please refer to <http://unlicense.org/>
 #include <fcntl.h>
 #include <services.h>
 #include <string.h>
+#include <mpufunc.h>
 #include <fs/vfs.h>
 #include <nerve/ipc_utils.h>
 #include <nerve/kcall.h>
 #include <sys/syscall.h>
-#include "../../kernel/mpu/mpufunc.h"
 #include "mm.h"
 #include "proxy.h"
 #include "device.h"

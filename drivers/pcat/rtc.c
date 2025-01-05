@@ -26,8 +26,8 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <mpu/io.h>
 #include <sys/types.h>
-#include "func.h"
-#include "sync.h"
+#include <nerve/func.h>
+#include <nerve/sync.h>
 
 #define EPOCH_DAYS (719163)
 

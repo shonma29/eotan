@@ -25,8 +25,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stdint.h>
-#include "context.h"
-#include "mpufunc.h"
+#include <mpufunc.h>
+#include <mpu/context.h>
 #include "gate.h"
 #include "msr.h"
 

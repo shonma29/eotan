@@ -1,5 +1,5 @@
-#ifndef _CORE_IPC_H_
-#define _CORE_IPC_H_
+#ifndef _NERVE_IPC_H_
+#define _NERVE_IPC_H_
 /*
 This is free and unencumbered software released into the public domain.
 

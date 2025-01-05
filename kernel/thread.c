@@ -27,15 +27,15 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <stdint.h>
 #include <string.h>
+#include <mpufunc.h>
 #include <nerve/config.h>
+#include <nerve/func.h>
+#include <nerve/sync.h>
+#include <nerve/thread.h>
 #include <nerve/icall.h>
 #include <set/list.h>
 #include <set/tree.h>
-#include "func.h"
 #include "ready.h"
-#include "sync.h"
-#include "thread.h"
-#include "mpu/mpufunc.h"
 
 static slab_t thread_slab;
 static tree_t thread_tree;

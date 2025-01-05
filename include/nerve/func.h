@@ -1,5 +1,5 @@
-#ifndef _CORE_FUNC_H_
-#define _CORE_FUNC_H_
+#ifndef _NERVE_FUNC_H_
+#define _NERVE_FUNC_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -28,11 +28,11 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <nerve/config.h>
+#include <nerve/sync.h>
+#include <nerve/thread.h>
 #include <set/lf_queue.h>
 #include <set/list.h>
 #include <set/tree.h>
-#include "sync.h"
-#include "thread.h"
 
 #define SHOW_WARN 0
 

@@ -26,14 +26,14 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <event.h>
 #include <services.h>
+#include <mpufunc.h>
 #include <mpu/bits.h>
 #include <nerve/global.h>
 #include <nerve/config.h>
+#include <nerve/func.h>
+#include <nerve/thread.h>
 #include <nerve/icall.h>
 #include <set/list.h>
-#include "func.h"
-#include "thread.h"
-#include "mpu/mpufunc.h"
 
 thread_t *running;
 

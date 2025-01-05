@@ -26,9 +26,9 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
 #include <stdint.h>
+#include <mpufunc.h>
 #include <nerve/ipc_utils.h>
 #include "process.h"
-#include "../../kernel/mpu/mpufunc.h"
 
 
 int mm_vmap(mm_request_t *req)
