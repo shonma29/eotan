@@ -27,7 +27,7 @@ TARGET = $(WD).a
 
 include Makefile.in
 
-CFLAGS += -I kernel -I servers/fs -DUSE_FLOAT
+CFLAGS += -I servers/fs -DUSE_FLOAT
 CSRCS += $(wildcard $(WD)/ctype/*.c)
 CSRCS += $(wildcard $(WD)/stdio/*.c)
 CSRCS += $(wildcard $(WD)/stdlib/*.c)

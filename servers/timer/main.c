@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <interrupt.h>
 #include <services.h>
+#include <archfunc.h>
 #include <nerve/config.h>
 #include <nerve/delay.h>
 #include <nerve/global.h>
@@ -37,7 +38,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/slab.h>
 #include <set/tree.h>
 #include <arch/8259a.h>
-#include <arch/archfunc.h>
 #include "../../lib/libserv/libserv.h"
 #include "timer.h"
 

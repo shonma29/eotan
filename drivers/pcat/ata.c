@@ -24,14 +24,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-//#include <string.h>
-//#include <nerve/config.h>
+#include <archfunc.h>
 #include <nerve/kcall.h>
-#include <arch/archfunc.h>
-#include <arch/ata.h>
 #include <mpu/io.h>
 #include <time.h>
 #include <services.h>
+#include "ata.h"
 
 #define POLLING_WAIT_COUNT (4)
 #define POLLING_FAULT (1)

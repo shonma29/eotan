@@ -27,7 +27,6 @@ all: boot.iso hdboot.img
 
 include Makefile.in
 
-CFLAGS += -I kernel
 LDFLAGS = --oformat binary
 LIB = libc
 
@@ -89,7 +88,7 @@ $(WD)/protect.inc: $(WD)/protect.h
 
 $(WD)/starter: $(WD)/protect.o $(WD)/starter.o $(WD)/memory.o \
 		$(WD)/memory_info.o $(WD)/decode.o \
-		kernel/arch/libarch.a lib/librc.a \
+		drivers/arch/libarch.a lib/librc.a \
 		drivers/mpu/libmpu.a lib/libnc.a
 	$(LD) $(LDFLAGS) -Ttext $(STARTER_ADDR) -L$(LIB) -o $@ $^
 

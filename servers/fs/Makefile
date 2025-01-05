@@ -27,8 +27,6 @@ TARGET = $(WD)/fs
 
 include Makefile.in
 
-CFLAGS += -I kernel
-
 ENTRY_ADDR = 0x80240000
 ENTRY_FUNC = start
 

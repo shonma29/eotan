@@ -29,7 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdnoreturn.h>
 #include <string.h>
 #include <mpufunc.h>
-#include <arch/archfunc.h>
+#include <archfunc.h>
 #include <nerve/global.h>
 #include <set/lf_queue.h>
 #include <starter/modules.h>

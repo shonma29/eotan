@@ -27,7 +27,5 @@ TARGET = $(WD)/libarch.a
 
 include Makefile.in
 
-CFLAGS += -I kernel
-
 $(TARGET): $(OBJS)
 	$(AR) rsv $@ $?

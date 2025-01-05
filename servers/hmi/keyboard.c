@@ -26,9 +26,9 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <keycode.h>
+#include <archfunc.h>
 #include <core/packets.h>
-#include "../../kernel/arch/8259a.h"
-#include "../../kernel/arch/archfunc.h"
+#include <arch/8259a.h>
 #include "../../lib/libserv/libserv.h"
 #include "key2char.h"
 #include "keyboard.h"

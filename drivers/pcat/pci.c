@@ -25,9 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <string.h>
+#include <archfunc.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
-#include <arch/archfunc.h>
 #include <mpu/io.h>
 
 #define PCI_CONFIG_MECHANISM1_OK 0x0001

@@ -26,13 +26,13 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <mpufunc.h>
+#include <archfunc.h>
 #include <mpu/io.h>
+#include <arch/8259a.h>
 #include <nerve/func.h>
 #include <nerve/sync.h>
-#include "archfunc.h"
 #include "handler.h"
 #include "8254.h"
-#include "8259a.h"
 
 static void pit_set(const UH n);
 

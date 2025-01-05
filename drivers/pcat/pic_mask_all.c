@@ -25,9 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <archfunc.h>
 #include <mpu/io.h>
-#include "8259a.h"
-#include "archfunc.h"
+#include <arch/8259a.h>
 
 void pic_mask_all(void)
 {

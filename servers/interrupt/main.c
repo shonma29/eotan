@@ -28,12 +28,12 @@ For more information, please refer to <http://unlicense.org/>
 #include <interrupt.h>
 #include <services.h>
 #include <mpufunc.h>
+#include <archfunc.h>
 #include <nerve/config.h>
 #include <nerve/delay.h>
 #include <nerve/global.h>
 #include <nerve/icall.h>
 #include <nerve/kcall.h>
-#include <arch/archfunc.h>
 #include <set/lf_queue.h>
 #include "interrupt_service.h"
 

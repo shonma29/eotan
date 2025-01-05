@@ -27,11 +27,11 @@ TARGET = $(WD)/kernlog
 
 include Makefile.in
 
-CFLAGS += -I kernel -I lib/libserv
+CFLAGS += -I lib/libserv
 ENTRY_ADDR = 0x80110000
 ENTRY_FUNC = start
 
 $(TARGET): $(OBJS) \
-		lib/libserv.a lib/libnc.a kernel/arch/libarch.a lib/libfonts.a
+		lib/libserv.a lib/libnc.a drivers/arch/libarch.a lib/libfonts.a
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
 	$(STRIP) $@

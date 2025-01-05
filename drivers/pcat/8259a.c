@@ -26,11 +26,11 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <mpufunc.h>
+#include <archfunc.h>
 #include <mpu/io.h>
+#include <arch/8259a.h>
 #include <nerve/sync.h>
 #include "handler.h"
-#include "8259a.h"
-#include "archfunc.h"
 
 static UH ports[] = {
 	pic_master2, pic_slave2
