@@ -34,7 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 #define B64_EXPONENT_SPECIAL (2047)
 #define B64_EXPONENT_DENORMAL (0)
 
-#define B64_EXPONENT_MAX_R10 (765)
+#define B64_EXPONENT_MAX_R10 (1074)
 #define B64_SIGNIFICANT_FIGURES (16)
 
 #endif

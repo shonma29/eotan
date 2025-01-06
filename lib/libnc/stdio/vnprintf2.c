@@ -34,6 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include <mpu/ieee754.h>
 #endif
 
@@ -48,13 +49,17 @@ For more information, please refer to <http://unlicense.org/>
 #define NUMBER_MIN_UNITS (4)
 #define NUMBER_CARRY_BIT (INT_BIT)
 #define NUMBER_VALUE_MASK 0xffffffff
+#define NUMBER_ARRAY_INITIAL_LEN (sizeof(uint64_t) / sizeof(uint32_t))
+#define NUMBER_ARRAY_MAX (((NUMBER_ARRAY_INITIAL_LEN + NUMBER_MIN_UNITS - 1) \
+		/ NUMBER_MIN_UNITS) \
+		* NUMBER_MIN_UNITS)
 
 #define B64_SIGNIFICANT_MASK (((uint64_t) 1 << B64_SIGNIFICANT_BITS) - 1)
 
 typedef struct {
 	bool minus;
-	size_t len;
-	size_t max;
+	int len;
+	int max;
 	uint32_t *buf;
 } number_t;
 #endif
@@ -66,6 +71,7 @@ typedef struct _State {
 	int (*out)(const char, void *);
 	void *env;
 	int len;
+	bool has_error;
 } State;
 
 static void _putchar(State *, const char);
@@ -86,14 +92,14 @@ static uint32_t power5[] = {
 };
 #define NUM_OF_POWER5 (sizeof(power5) / sizeof(power5[0]))
 
-static number_t *number_create(const uint32_t *, const size_t,
-		const bool);
+static number_t *number_create(const uint64_t *, const bool);
 static void number_destroy(number_t *);
 static int number_multiply(number_t *, const uint32_t);
 static int number_shift(number_t *, const int);
-static int number_divide(number_t *, const uint32_t);
-static void putdouble(State *, const bool, uint64_t, int);
-static void _putf(State *, const double);
+static int number_divide_10(number_t *);
+static int _number_to_decimal(char *, number_t *, const int);
+static int putdouble(State *, const bool, uint64_t, int);
+static int _putf(State *, const double);
 #endif
 
 static bool _immediate(State *);
@@ -180,33 +186,31 @@ static void _putlx(State *s, const unsigned long u)
 }
 #endif
 #ifdef USE_FLOAT
-static number_t *number_create(const uint32_t *x, const size_t len,
-		const bool minus)
+static number_t *number_create(const uint64_t *x, const bool minus)
 {
 	number_t *p = (number_t *) malloc(sizeof(*p));
 	if (p) {
-		size_t max = ((len + NUMBER_MIN_UNITS - 1) / NUMBER_MIN_UNITS)
-				* NUMBER_MIN_UNITS;
-		uint32_t *buf = (uint32_t *) malloc(max * sizeof(*buf));
+		uint32_t *buf = (uint32_t *) malloc(NUMBER_ARRAY_MAX * sizeof(*buf));
 		if (!buf) {
 			free(p);
 			return NULL;
 		}
 
+		uint32_t *int_ptr = (uint32_t *) x;
 		int last = 0;
 		int i;
-		for (i = 0; i < len; i++) {
-			uint32_t v = x[i];
-			buf[len - i - 1] = v;
-			if (!last && v)
-				last = len - i - 1;
+		for (i = 0; i < NUMBER_ARRAY_INITIAL_LEN; i++) {
+			uint32_t v = int_ptr[i];
+			buf[i] = v;
+			if (v)
+				last = i;
 		}
 
-		for (; i < max; i++)
+		for (; i < NUMBER_ARRAY_MAX; i++)
 			buf[i] = 0;
 
 		p->minus = minus;
-		p->max = max;
+		p->max = NUMBER_ARRAY_MAX;
 		p->buf = buf;
 		p->len = last + 1;
 	}
@@ -227,9 +231,9 @@ static int number_multiply(number_t *p, const uint32_t n)
 	if (!p)
 		return -1;
 
-	size_t max;
+	int max;
 	uint32_t *buf;
-	size_t len = p->len + 1;
+	int len = p->len + 1;
 	if (p->max < len) {
 		max = ((len + NUMBER_MIN_UNITS - 1) / NUMBER_MIN_UNITS)
 				* NUMBER_MIN_UNITS;
@@ -275,13 +279,21 @@ static int number_shift(number_t *p, const int n)
 	if (!n)
 		return 0;
 
-	size_t len = p->len
-			+ ((abs(n) + (NUMBER_CARRY_BIT - 1)) / NUMBER_CARRY_BIT)
-			+ 1;
+	int first_block = -1;
+	for (int i = 0; i < p->len; i++)
+		if (p->buf[i]) {
+			first_block = i;
+			break;
+		}
+
+	if (first_block < 0)
+		return 0;
+
+	int len = p->len + ((n + (INT_BIT - 1)) / INT_BIT);
 	if (p->max < len) {
-		size_t max = ((len + NUMBER_MIN_UNITS - 1) / NUMBER_MIN_UNITS)
+		int max = (len + NUMBER_MIN_UNITS - 1) / NUMBER_MIN_UNITS
 				* NUMBER_MIN_UNITS;
-		uint32_t *buf = (uint32_t *) malloc(max * sizeof(uint32_t));
+		uint32_t *buf = (uint32_t *) malloc(max * sizeof(*buf));
 		if (!buf)
 			return -1;
 
@@ -297,42 +309,52 @@ static int number_shift(number_t *p, const int n)
 		p->buf = buf;
 	}
 
-	int last = 0;
-	for (int i = 0; i < n; i++) {
-		uint32_t carry = 0;
-		for (int j = 0; j < len; j++) {
-			uint32_t v = (p->buf[j] << 1) | carry;
-			carry = (p->buf[j] >> (NUMBER_CARRY_BIT - 1)) & 1;
-			p->buf[j] = v;
+	len = p->len;
 
-			if (v)
-				last = j;
-		}
+	int q = n / INT_BIT;
+	int r = n - q * INT_BIT;
+	if (r == 0) {
+		int i = len - 1;
+		do {
+			p->buf[i + q] = p->buf[i];
+		} while (--i >= first_block);
+
+		p->len += q;
+	} else {
+		uint32_t rest = 0;
+		int i = len - 1;
+		do {
+			p->buf[i + q + 1] = rest | (p->buf[i] >> (INT_BIT - r));
+			rest = p->buf[i] << r;
+		} while (--i >= first_block);
+
+		p->buf[i + q + 1] = rest;
+		p->len = p->buf[len + q] ? (len + q + 1) : (len + q);
 	}
 
-	p->len = last + 1;
+	len = ((first_block + q) < len) ? (first_block + q) : len;
+	for (int i = first_block; i < len; i++)
+		p->buf[i] = 0;
+
 	return 0;
 }
 
-static int number_divide(number_t *p, const uint32_t n)
+static int number_divide_10(number_t *p)
 {
-	if (!p || !n)
+	if (!p)
 		return -1;
-
-	if (n == 1)
-		return 0;
 
 	int last = 0;
 	uint32_t reminder = 0;
 	for (int i = p->len; i > 0; i--) {
 		uint32_t x = (reminder << ((INT_BIT / 2)))
 				| (p->buf[i - 1] >> (INT_BIT / 2));
-		ldiv_t v = ldiv(x, n);
+		ldiv_t v = ldiv(x, 10);
 		uint32_t q = v.quot << (INT_BIT / 2);
 		x = (v.rem << (INT_BIT / 2))
 				| (p->buf[i - 1]
 				& ((1 << (INT_BIT / 2)) - 1));
-		v = ldiv(x, n);
+		v = ldiv(x, 10);
 		reminder = v.rem;
 		q |= v.quot;
 		p->buf[i - 1] = q;
@@ -345,120 +367,101 @@ static int number_divide(number_t *p, const uint32_t n)
 	return reminder;
 }
 
-static void putdouble(State *s, const bool minus, uint64_t sig, int exp)
+static int _number_to_decimal(char *p, number_t *num, const int max)
+{
+	int i = max - 1;
+	for (p[i] = '\0'; num->len > 1 || num->buf[0];)
+		p[--i] = number_divide_10(num) + '0';
+
+	return i;
+}
+
+static int putdouble(State *s, const bool minus, uint64_t sig, int exp)
 {
 	uint64_t x;
-	int i;
+	int decimal_shift;
 	if (exp == -B64_EXPONENT_BIAS) {
 		x = sig;
-		exp++;
-		i = B64_SIGNIFICANT_BITS;
+		decimal_shift = B64_SIGNIFICANT_BITS + B64_EXPONENT_BIAS - 1;
 	} else {
+		//TODO use count_nlz
+		int i;
 		x = 1;
 		for (i = 0; sig; i++) {
 			x = (x << 1) | (sig >> (B64_SIGNIFICANT_BITS - 1));
 			sig = (sig << 1) & B64_SIGNIFICANT_MASK;
 		}
+
+		decimal_shift = i - exp;
 	}
 
-	uint32_t v[2];
-	v[0] = (uint32_t) ((x >> NUMBER_CARRY_BIT) & NUMBER_VALUE_MASK);
-	v[1] = (uint32_t) (x & NUMBER_VALUE_MASK);
-
-	number_t *num = number_create(v, sizeof(v) / sizeof(v[0]), false);
-	if (!num)
-		return;
-
-	if (exp < 0)
-		i -= exp;
-
-	int dot = i;
-	for (; i > NUM_OF_POWER5; i -= NUM_OF_POWER5)
-		number_multiply(num, power5[NUM_OF_POWER5 - 1]);
-
-	if (i > 0)
-		number_multiply(num, power5[i - 1]);
-
-	number_shift(num, exp);
-
-	unsigned char buf[B64_EXPONENT_MAX_R10 + 3];
-	memset(buf, '\0', sizeof(buf));
-
-	int figures = 0;
-	for (i = sizeof(buf) - 2; num->len > 1 || num->buf[0]; i--) {
-		buf[i] = number_divide(num, 10) + '0';
-		figures++;
+	number_t *num = number_create((uint64_t *) &x, false);
+	if (!num) {
+		errno = ENOMEM;
+		s->has_error = true;
+		return (-1);
 	}
 
-	dot = figures - dot;
+	if (decimal_shift > 0) {
+		int i = decimal_shift;
+		for (; i >= (int) NUM_OF_POWER5; i -= NUM_OF_POWER5)
+			number_multiply(num, power5[NUM_OF_POWER5 - 1]);
 
-	unsigned char *p = &(buf[i + 1]);
-#if 0
-	//TODO fix round
-	if (p[B64_SIGNIFICANT_FIGURES] >= '5') {
-		bool carry = true;
-
-		for (i = B64_SIGNIFICANT_FIGURES - 1; i >= 0; i--)
-			if (carry) {
-				unsigned char c = p[i];
-				carry = (c == '9');
-				p[i] = carry ? '0' : (c + 1);
-			}
+		if (i > 0)
+			number_multiply(num, power5[i - 1]);
+	} else {
+		number_shift(num, - decimal_shift);
+		decimal_shift = 0;
 	}
-#endif
-	if (dot <= 0) {
+
+	char buf[B64_EXPONENT_MAX_R10 + 1];
+	int head = _number_to_decimal(buf, num, sizeof(buf));
+	int integer_len = sizeof(buf) - 1 - head - decimal_shift;
+	if (integer_len <= 0) {
 		_puts(s, "0.");
 
-		for (; dot < 0; dot++)
+		for (int i = 0; i < - integer_len; i++)
 			_putchar(s, '0');
+	} else {
+		for (int i = 0; i < integer_len; i++)
+			_putchar(s, buf[head + i]);
 
-		dot = -1;
-	}
+		_putchar(s, '.');
+		head += integer_len;
 
-	for (i = 0; i < B64_SIGNIFICANT_FIGURES; i++) {
-		if (i == dot)
-			_putchar(s, '.');
-
-		if (*p) {
-			_putchar(s, *p);
-			p++;
-		} else
+		if (!decimal_shift)
 			_putchar(s, '0');
 	}
 
+	_puts(s, &(buf[head]));
 	number_destroy(num);
+	return 0;
 }
 
-static void _putf(State *s, const double x)
+static int _putf(State *s, const double x)
 {
-	unsigned char *p = (unsigned char *) &x;
-	int exp = ((p[7] << 4) & 0x7f0) | ((p[6] >> 4) & 0x00f);
-	uint64_t sig = (p[6] << 16) & 0x000f0000;
-
-	sig |= (p[5] << 8) & 0x0000ff00;
-	sig |= p[4] & 0x000000ff;
-	sig <<= 32;
-
-	sig |= (p[3] << 24) & 0xff000000;
-	sig |= (p[2] << 16) & 0x00ff0000;
-	sig |= (p[1] << 8) & 0x0000ff00;
-	sig |= p[0] & 0x000000ff;
-
+	uint64_t *long_ptr = (uint64_t *) &x;
+	uint64_t sig = *long_ptr & B64_SIGNIFICANT_MASK;
+	int *int_ptr = (int *) &x;
+	int exp = (int_ptr[1] >> (INT_BIT - 1 - B64_EXPONENT_BITS))
+			& B64_EXPONENT_SPECIAL;
 	if (sig && (exp == B64_EXPONENT_SPECIAL)) {
-		_puts(s, "NaN");
-		return;
+		_puts(s, "nan");
+		return 0;
 	}
 
-	bool minus = (p[7] & 0x80) ? true : false;
+	bool minus = int_ptr[1] < 0;
 	if (minus)
 		_putchar(s, '-');
 
 	if (exp == B64_EXPONENT_SPECIAL)
-		_puts(s, "oo");
+		_puts(s, "inf");
 	else if (!exp && !sig)
 		_puts(s, "0.0");
 	else
-		putdouble(s, minus, sig, exp - B64_EXPONENT_BIAS);
+		return putdouble(s, minus, sig, exp - B64_EXPONENT_BIAS);
+
+	return 0;
 }
 #endif
 
@@ -497,7 +500,9 @@ static bool _format(State *s)
 		break;
 #ifdef USE_FLOAT
 	case 'f':
-		_putf(s, va_arg(*(s->ap), double));
+		if (_putf(s, va_arg(*(s->ap), double)))
+			return false;
+
 		break;
 #endif
 	case 'l': {
@@ -587,8 +592,8 @@ static bool _escape(State *s)
 
 int vnprintf2(int (*out)(const char, void *), void *env,
 		const char *format, va_list *ap) {
-	State s = { _immediate, format, ap, out, env, 0 };
+	State s = { _immediate, format, ap, out, env, 0, false };
 	while (s.handler(&s));
 
-	return s.len;
+	return s.has_error ? (-1) : s.len;
 }
