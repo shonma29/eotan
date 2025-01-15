@@ -33,11 +33,11 @@ For more information, please refer to <http://unlicense.org/>
 static memory_range_t ranges[1];
 
 static int detach(void);
-static int read(char *, const int, const off_t, const size_t);
-static int write(char *, const int, const off_t, const size_t);
+static int read(char *, const void *, const off_t, const size_t);
+static int write(char *, const void *, const off_t, const size_t);
 //TODO return adequate error code
-static bool check_channel(const int);
-static bool check_param(const int, const off_t, const size_t);
+static bool check_unit(const void *);
+static bool check_param(const void *, const off_t, const size_t);
 
 static vdriver_unit_t initrd = {
 	{ NULL, NULL },
@@ -73,46 +73,46 @@ static int detach(void)
 	return 0;
 }
 
-static int read(char *outbuf, const int channel, const off_t offset,
+static int read(char *outbuf, const void *unit, const off_t offset,
 		const size_t size)
 {
-	if (!check_param(channel, offset, size))
+	if (!check_param(unit, offset, size))
 		return (-1);
 
-	memory_range_t *r = (memory_range_t *) channel;
+	memory_range_t *r = (memory_range_t *) unit;
 	memcpy(outbuf, &(((char *) (r->address))[offset]), size);
 	return size;
 }
 
-static int write(char *inbuf, const int channel, const off_t offset,
+static int write(char *inbuf, const void *unit, const off_t offset,
 		const size_t size)
 {
-	if (!check_param(channel, offset, size))
+	if (!check_param(unit, offset, size))
 		return (-1);
 
-	memory_range_t *r = (memory_range_t *) channel;
+	memory_range_t *r = (memory_range_t *) unit;
 	memcpy(&(((char *) (r->address))[offset]), inbuf, size);
 	return size;
 }
 
-static bool check_channel(const int channel)
+static bool check_unit(const void *unit)
 {
-	if (((memory_range_t *) channel) != &(ranges[0]))
+	if (unit != &(ranges[0]))
 		return false;
 
 	return true;
 }
 
-static bool check_param(const int channel, const off_t offset,
+static bool check_param(const void *unit, const off_t offset,
 		const size_t size)
 {
-	if (!check_channel(channel))
+	if (!check_unit(unit))
 		return false;
 
 	if (offset < 0)
 		return false;
 
-	memory_range_t *r = (memory_range_t *) channel;
+	memory_range_t *r = (memory_range_t *) unit;
 	if (offset >= r->size)
 		return false;
 
