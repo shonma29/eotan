@@ -86,12 +86,13 @@ static ER initialize(void)
 		return result;
 	}
 
+	peripheral_set_map();
+
 	if (!dev_initialize()) {
 		kcall->ipc_close();
 		return E_NOMEM;
 	}
 
-	peripheral_set_map();
 	return result;
 }
 

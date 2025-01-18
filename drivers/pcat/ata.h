@@ -107,9 +107,12 @@ typedef enum {
 #define ATA_COMMAND_SETS_FLUSH_CACHE_EXT 0x20000000
 
 // others
+#define ATA_CONTROL_NLEN 0x2
+
 #define ATA_DEVICE_LBA 0x40
 
 #define ATA_DEFAULT_SECTOR_SIZE (512)
+#define ATA_DEFAULT_SECTOR_SHIFT (9)
 
 // types
 typedef enum {

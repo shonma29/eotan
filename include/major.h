@@ -34,7 +34,4 @@ For more information, please refer to <http://unlicense.org/>
 #define DEVICE_CONTROLLER_ATA0 "sdC0"
 #define DEVICE_CONTROLLER_RAMDISK0 "sdG0"
 
-#define DEVICE_CONTROLLER_NULL "null"
-#define DEVICE_CONTROLLER_ZERO "zero"
-
 #endif

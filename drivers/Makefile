@@ -27,7 +27,7 @@ TARGET = drivers/libdrivers.a
 
 include Makefile.in
 
-CSRCS += $(wildcard $(WD)/ramdisk/*.c)
+CSRCS += $(wildcard $(WD)/ata/*.c $(WD)/ramdisk/*.c)
 
 $(TARGET): $(OBJS)
 	$(AR) rsv $@ $?

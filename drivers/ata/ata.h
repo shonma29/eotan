@@ -1,5 +1,5 @@
-#ifndef _DEV_DRIVERS_H_
-#define _DEV_DRIVERS_H_
+#ifndef __DRIVERS_ATA_H__
+#define __DRIVERS_ATA_H__
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,14 +26,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <dev/device.h>
+#include <major.h>
 
-extern const vdriver_t *ata_attach(system_info_t *);
-extern const vdriver_t *ramdisk_attach(system_info_t *);
-
-static vdriver_t *(*drivers[])(system_info_t *) = {
-	(vdriver_t *(*)(system_info_t *)) ramdisk_attach,
-	(vdriver_t *(*)(system_info_t *)) ata_attach
-};
+#define MYNAME DEVICE_CONTROLLER_ATA0
 
 #endif

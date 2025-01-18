@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <interrupt.h>
 #include <stddef.h>
 #include <sys/types.h>
+#include <arch/peripheral.h>
 
 /* 8259a.c */
 extern void pic_initialize(void);
@@ -56,10 +57,15 @@ extern void keyboard_interrupt(VP_INT);
 extern void mouse_interrupt(VP_INT);
 
 /* pci.c */
+extern peripheral_t *peripheral_find(const uint8_t, const uint8_t);
+extern uint32_t peripheral_get_config(const uint8_t, const uint8_t,
+		const uint8_t, const uint8_t);
 extern void peripheral_set_map(void);
 
 /* ata.c */
-extern int ata_set_bar(const int, const uint32_t);
-extern void ata_initialize(void);
+extern int ata_initialize(void);
+extern void *ata_open(const int);
+extern int ata_read(char *, const void *, const off_t, const size_t);
+extern int ata_write(char *, const void *, const off_t, const size_t);
 
 #endif

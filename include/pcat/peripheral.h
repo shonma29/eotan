@@ -1,5 +1,5 @@
-#ifndef _DEV_DRIVERS_H_
-#define _DEV_DRIVERS_H_
+#ifndef __ARCH_PERIPHERAL_H__
+#define __ARCH_PERIPHERAL_H__ 1
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,14 +26,22 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <dev/device.h>
+#include <stdint.h>
 
-extern const vdriver_t *ata_attach(system_info_t *);
-extern const vdriver_t *ramdisk_attach(system_info_t *);
-
-static vdriver_t *(*drivers[])(system_info_t *) = {
-	(vdriver_t *(*)(system_info_t *)) ramdisk_attach,
-	(vdriver_t *(*)(system_info_t *)) ata_attach
-};
+typedef struct {
+	union {
+		uint32_t field2;
+		struct {
+			uint8_t revisionId;
+			uint8_t progIf;
+			uint8_t subClass;
+			uint8_t classCode;
+		} type;
+	};
+	uint8_t bus;
+	uint8_t device;
+	uint8_t func;
+	uint8_t pad;
+} peripheral_t;
 
 #endif

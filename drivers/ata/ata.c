@@ -1,5 +1,3 @@
-#ifndef _DEV_DRIVERS_H_
-#define _DEV_DRIVERS_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,14 +24,44 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <archfunc.h>
 #include <dev/device.h>
+#include <nerve/global.h>
+#include "ata.h"
 
-extern const vdriver_t *ata_attach(system_info_t *);
-extern const vdriver_t *ramdisk_attach(system_info_t *);
+static int detach(void);
 
-static vdriver_t *(*drivers[])(system_info_t *) = {
-	(vdriver_t *(*)(system_info_t *)) ramdisk_attach,
-	(vdriver_t *(*)(system_info_t *)) ata_attach
+static vdriver_unit_t primary_0 = {
+	{ NULL, NULL },
+	MYNAME,
+	NULL
+};
+static vdriver_t driver_mine = {
+	DEVICE_CLASS_STORAGE,
+	{ NULL, NULL },
+	detach,
+	ata_read,
+	ata_write
 };
 
-#endif
+
+const vdriver_t *ata_attach(system_info_t *info)
+{
+	list_initialize(&(driver_mine.units));
+
+	if (!ata_initialize()) {
+		void *unit = ata_open(0);
+		if (unit) {
+			primary_0.unit = unit;
+			list_append(&(driver_mine.units), &(primary_0.bros));
+			return &driver_mine;
+		}
+	}
+
+	return NULL;
+}
+
+static int detach(void)
+{
+	return 0;
+}

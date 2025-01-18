@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <time.h>
 #include <services.h>
 #include "ata.h"
+#include "pci.h"
 
 // ports
 #define PORT_PRIMARY 0x00
@@ -52,10 +53,9 @@ For more information, please refer to <http://unlicense.org/>
 #define LBA48_COMMAND_SETS_MASK (ATA_COMMAND_SETS_48BIT_ADDRESS \
 			| ATA_COMMAND_SETS_FLUSH_CACHE_EXT)
 
-// results of poll
-#define POLL_FAULT (1)
-#define POLL_ERROR (2)
-#define POLL_NOT_READY (3)
+#define MASK_LBA48_OFFSET 0x01fffffffffffe00
+#define MASK_LBA48_SIZE 0x01fffe00
+
 #define POLL_WAIT_COUNT (4)
 
 typedef struct {
@@ -72,13 +72,12 @@ typedef struct {
 	uint16_t signature;
 	uint16_t capabilities;
 	uint32_t command_sets;
-	uint32_t size;
+	uint64_t size;
 	uint8_t model[41];
-} ata_device_t;
+} ata_unit_t;
 
-static int default_channel = -1;
 static ata_port_t ports[2];
-static ata_device_t devices[4];
+static ata_unit_t units[4];
 #if 0
 volatile uint8_t irq_invoked = 0;
 static uint8_t atapi_packet[12] = { 0xa8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -86,22 +85,26 @@ static uint8_t atapi_packet[12] = { 0xa8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 static uint32_t bar[5];
 static uint8_t data_buf[2048];
 
-static uint8_t _read_data(const uint8_t, const uint8_t);
-static uint8_t _read_control(const uint8_t, const uint8_t);
-static void _write_data(const uint8_t, const uint8_t, const uint8_t);
-static void _write_control(const uint8_t, const uint8_t, const uint8_t);
-static void _read_buf(uint32_t *, const uint8_t, const uint8_t, const size_t);
+static int _set_bar(const int, const uint32_t);
+static uint8_t _read_data(const ata_port_t *, const uint8_t);
+static uint8_t _read_control(const ata_port_t *, const uint8_t);
+static void _write_data(const ata_port_t *, const uint8_t, const uint8_t);
+static void _write_control(const ata_port_t *, const uint8_t, const uint8_t);
+static void _read_buf(uint32_t *, const ata_port_t *, const uint8_t,
+		const size_t);
+#if 0
 static uint8_t _read_error(const uint8_t);
-static uint8_t _poll(const uint8_t, const bool);
-static void _identify(ata_device_t *dev, const int, const int);
-static void _set_address(const int, const int, const int, const int);
-int ata_read(void *, const int, const int, const int);
-int ata_write(const void *, const int, const int, const int);
-static void _test(void);
+#endif
+static int _poll(const ata_port_t *);
+static void _identify(ata_unit_t *, const int, const int);
+static bool _check_unit(const void *);
+static bool _check_param(const void *, off_t *, size_t *);
+static void _set_address(const ata_port_t *, const int, const off_t,
+		const size_t);
 static unsigned int _msleep(const unsigned int);
 
 
-int ata_set_bar(const int index, const uint32_t value)
+static int _set_bar(const int index, const uint32_t value)
 {
 	if ((index >= 0)
 			&& (index < sizeof(bar) / sizeof(bar[0]))) {
@@ -111,88 +114,80 @@ int ata_set_bar(const int index, const uint32_t value)
 		return (-1);
 }
 
-static uint8_t _read_data(const uint8_t port, const uint8_t reg)
+static uint8_t _read_data(const ata_port_t *p, const uint8_t reg)
 {
-	return inb(ports[port].data + reg);
+	return inb(p->data + reg);
 }
 
-static uint8_t _read_control(const uint8_t port, const uint8_t reg)
+static uint8_t _read_control(const ata_port_t *p, const uint8_t reg)
 {
-	return inb(ports[port].control + reg);
+	return inb(p->control + reg);
 }
 
-static void _write_data(const uint8_t port, const uint8_t reg,
+static void _write_data(const ata_port_t *p, const uint8_t reg,
 		const uint8_t data)
 {
-	outb(ports[port].data + reg, data);
+	outb(p->data + reg, data);
 }
 
-static void _write_control(const uint8_t port, const uint8_t reg,
+static void _write_control(const ata_port_t *p, const uint8_t reg,
 		const uint8_t data)
 {
-	outb(ports[port].control + reg, data);
+	outb(p->control + reg, data);
 }
 
-static void _read_buf(uint32_t *buf, const uint8_t port, const uint8_t reg,
+static void _read_buf(uint32_t *buf, const ata_port_t *p, const uint8_t reg,
 		const size_t cnt)
 {
-	uint16_t address = ports[port].data + reg;
+	uint16_t address = p->data + reg;
 	for (int i = 0; i < cnt; i++)
 		buf[i] = inl(address);
 }
-
-static uint8_t _read_error(const uint8_t port)
+#if 0
+static uint8_t _read_error(const ata_port_t *p)
 {
-	return _read_data(port, ATA_REGISTER_ERROR);
+	return _read_data(p, ATA_REGISTER_ERROR);
 }
-
-static uint8_t _poll(const uint8_t port, const bool check)
+#endif
+static int _poll(const ata_port_t *p)
 {
 	for (int i = 0; i < POLL_WAIT_COUNT; i++)
-		_read_control(port, ATA_REGISTER_ALTERNATE_STATUS);
+		_read_control(p, ATA_REGISTER_ALTERNATE_STATUS);
 
-	while (_read_data(port, ATA_REGISTER_STATUS) & ATA_STATUS_BSY);
+	while (_read_data(p, ATA_REGISTER_STATUS) & ATA_STATUS_BSY);
 
-	if (check) {
-		uint8_t status = _read_data(port, ATA_REGISTER_STATUS);
-		if (status & ATA_STATUS_ERRCHK)
-			return POLL_ERROR;
-
-		if (status & ATA_STATUS_DFSE)
-			return POLL_FAULT;
-
-		if (!(status & ATA_STATUS_DRQ))
-			return POLL_NOT_READY;
-	}
-
-	return 0;
+	return (_read_data(p, ATA_REGISTER_STATUS)
+			& (ATA_STATUS_ERRCHK | ATA_STATUS_DFSE)) ?
+			(-1) : 0;
 }
 
-static void _identify(ata_device_t *dev, const int port, const int device)
+static void _identify(ata_unit_t *unit, const int port, const int device)
 {
-	dev->type = 0;
-	dev->port = port;
-	dev->device = device;
-	_write_data(port, ATA_REGISTER_DEVICE, 0xa0 | (device << 4));
+	unit->type = 0;
+	unit->port = port;
+	unit->device = device;
+
+	ata_port_t *p = &(ports[port]);
+	_write_data(p, ATA_REGISTER_DEVICE, 0xa0 | (device << 4));
 	_msleep(1);
-	_write_data(port, ATA_REGISTER_COMMAND, IDENTIFY_DEVICE);
+	_write_data(p, ATA_REGISTER_COMMAND, IDENTIFY_DEVICE);
 	_msleep(1);
 
-	if (!_read_data(port, ATA_REGISTER_STATUS))
+	if (!_read_data(p, ATA_REGISTER_STATUS))
 		return;
 
 	for (;;) {
-		uint8_t status = _read_data(port, ATA_REGISTER_STATUS);
+		uint8_t status = _read_data(p, ATA_REGISTER_STATUS);
 		if (status & ATA_STATUS_ERRCHK) {
-			uint8_t bl = _read_data(port, ATA_REGISTER_LBA_MID);
-			uint8_t bh = _read_data(port, ATA_REGISTER_LBA_HIGH);
+			uint8_t bl = _read_data(p, ATA_REGISTER_LBA_MID);
+			uint8_t bh = _read_data(p, ATA_REGISTER_LBA_HIGH);
 			if (((bl == 0x14) && (bh == 0xeb))
 					|| ((bl == 0x69) && (bh == 0x96)))
-				dev->type = ATAPI;
+				unit->type = ATAPI;
 			else
 				return;
 
-			_write_data(port, ATA_REGISTER_COMMAND,
+			_write_data(p, ATA_REGISTER_COMMAND,
 					IDENTIFY_PACKET_DEVICE);
 			_msleep(1);
 			break;
@@ -200,164 +195,227 @@ static void _identify(ata_device_t *dev, const int port, const int device)
 
 		if (!(status & ATA_STATUS_BSY)
 				&& (status & ATA_STATUS_DRQ)) {
-			dev->type = ATA;
+			unit->type = ATA;
 			break;
 		}
 	}
 
-	_read_buf((uint32_t *) &data_buf, port, ATA_REGISTER_DATA,
+	_read_buf((uint32_t *) &data_buf, p, ATA_REGISTER_DATA,
 			ATA_SIZE_OF_IDENTIFY / sizeof(uint32_t));
-	dev->signature = *((uint16_t *) &(data_buf[ATA_IDENTIFY_GENERAL_CONFIGURATION]));
-	dev->capabilities =
+	unit->signature = *((uint16_t *) &(data_buf[ATA_IDENTIFY_GENERAL_CONFIGURATION]));
+	unit->capabilities =
 			*((uint16_t *) &(data_buf[ATA_IDENTIFY_CAPABILITIES]));
-	dev->command_sets =
+	unit->command_sets =
 			*((uint32_t *) &(data_buf[ATA_IDENTIFY_COMMAND_SETS_SUPPORTED]));
-	dev->size = *((uint32_t *) &(data_buf[
-			(dev->command_sets & ATA_COMMAND_SETS_48BIT_ADDRESS) ?
-					ATA_IDENTIFY_MAX_LBA48
-					: ATA_IDENTIFY_TOTAL_NUMBER]));
+	unit->size = (unit->command_sets & ATA_COMMAND_SETS_48BIT_ADDRESS) ?
+			*((uint64_t *) &(data_buf[ATA_IDENTIFY_MAX_LBA48]))
+			: *((uint32_t *) &(data_buf[ATA_IDENTIFY_TOTAL_NUMBER]));
 
-	for (int k = 0; k < sizeof(dev->model) - 1; k += 2) {
-		dev->model[k] = data_buf[ATA_IDENTIFY_MODEL_NUMBER + k + 1];
-		dev->model[k + 1] = data_buf[ATA_IDENTIFY_MODEL_NUMBER + k];
+	for (int k = 0; k < sizeof(unit->model) - 1; k += 2) {
+		unit->model[k] = data_buf[ATA_IDENTIFY_MODEL_NUMBER + k + 1];
+		unit->model[k + 1] = data_buf[ATA_IDENTIFY_MODEL_NUMBER + k];
 	}
-	dev->model[sizeof(dev->model) - 1] = '\0';
+	unit->model[sizeof(unit->model) - 1] = '\0';
 }
 
-static void _set_address(const int port, const int device,
-		const int address, const int n)
+static bool _check_unit(const void *unit)
 {
-	while (_read_data(port, ATA_REGISTER_STATUS) & ATA_STATUS_BSY);
+	//TODO check more strictly
+	return (unit ? true : false);
+}
 
-	_write_data(port, ATA_REGISTER_DEVICE,
+static bool _check_param(const void *unit, off_t *offset, size_t *size)
+{
+	if (!_check_unit(unit))
+		return false;
+
+	if (*offset & (~MASK_LBA48_OFFSET))
+		return false;
+
+	if (*size & (~MASK_LBA48_SIZE))
+		return false;
+
+	ata_unit_t *u = (ata_unit_t *) unit;
+	*offset &= MASK_LBA48_OFFSET;
+	*offset >>= ATA_DEFAULT_SECTOR_SHIFT;
+	if (*offset >= u->size)
+		return false;
+
+	size_t rest = u->size - *offset;
+	*size &= MASK_LBA48_SIZE;
+	*size >>= ATA_DEFAULT_SECTOR_SHIFT;
+	if (*size > rest)
+		return false;
+
+	return true;
+}
+
+static void _set_address(const ata_port_t *p, const int device,
+		const off_t address, const size_t n)
+{
+	while (_read_data(p, ATA_REGISTER_STATUS) & ATA_STATUS_BSY);
+
+	_write_data(p, ATA_REGISTER_DEVICE,
 			// use 0xa0 for old device
 			0xa0 | ATA_DEVICE_LBA | (device << 4));
-	_write_data(port, ATA_REGISTER_SECTOR_COUNT, (n >> 16) & 0xff);
-	_write_data(port, ATA_REGISTER_LBA_LOW, (address >> 24) & 0xff);
-	_write_data(port, ATA_REGISTER_LBA_MID, 0);
-	_write_data(port, ATA_REGISTER_LBA_HIGH, 0);
-	_write_data(port, ATA_REGISTER_SECTOR_COUNT, n & 0xff);
-	_write_data(port, ATA_REGISTER_LBA_LOW, address & 0xff);
-	_write_data(port, ATA_REGISTER_LBA_MID, (address >> 8) & 0xff);
-	_write_data(port, ATA_REGISTER_LBA_HIGH, (address >> 16) & 0xff);
+	_write_data(p, ATA_REGISTER_SECTOR_COUNT, (n >> 8) & 0xff);
+	_write_data(p, ATA_REGISTER_LBA_LOW, (address >> 24) & 0xff);
+	_write_data(p, ATA_REGISTER_LBA_MID, (address >> 32) & 0xff);
+	_write_data(p, ATA_REGISTER_LBA_HIGH, (address >> 40) & 0xff);
+	_write_data(p, ATA_REGISTER_SECTOR_COUNT, n & 0xff);
+	_write_data(p, ATA_REGISTER_LBA_LOW, address & 0xff);
+	_write_data(p, ATA_REGISTER_LBA_MID, (address >> 8) & 0xff);
+	_write_data(p, ATA_REGISTER_LBA_HIGH, (address >> 16) & 0xff);
 }
 
-int ata_read(void *buf, const int channel, const int address, const int n)
+int ata_read(char *buf, const void *unit, const off_t offset, const size_t size)
 {
-	if (channel != default_channel)
+	off_t o = offset;
+	size_t s = size;
+	if (!_check_param(unit, &o, &s))
 		return (-1);
 
-	ata_device_t *d = &(devices[channel]);
-	int port = d->port;
-	int device = d->device;
-	kcall->printk("read %x %x %x %x\n", address, n, port, device);
-	_set_address(port, device, address, n);
-	_write_data(port, ATA_REGISTER_COMMAND, READ_SECTORS_EXT);
+	if (!s)
+		return 0;
 
-	for (int i = 0; i < n; i++) {
-		int result = _poll(port, true);
-		if (result) {
-			if (result == POLL_ERROR)
-				result = (_read_error(port) << 16) | result;
+	ata_unit_t *u = (ata_unit_t *) unit;
+	ata_port_t *p = &(ports[u->port]);
+	_set_address(p, u->device, o, s);
+	_write_data(p, ATA_REGISTER_COMMAND, READ_SECTORS_EXT);
 
-			kcall->printk("ata: read error=%x\n", result);
-			break;
+	uint16_t *w = (uint16_t *) buf;
+	for (int i = 0; i < s; i++) {
+		if (_poll(p)) {
+#if 0
+			kcall->printk("ata: read error\n");
+#endif
+			return (-1);
 		}
 
-		uint16_t *w = (uint16_t *) buf;
-		for (int j = 0; j < ATA_DEFAULT_SECTOR_SIZE / 2; j++)
-			w[j] = inw(ports[port].data + ATA_REGISTER_DATA);
+		for (int j = 0; j < ATA_DEFAULT_SECTOR_SIZE / 2; j++) {
+			*w = inw(p->data + ATA_REGISTER_DATA);
+			w++;
+		}
 	}
 
-	return 0;
+	return size;
 }
 
-int ata_write(const void *buf, const int channel, const int address,
-		const int n)
+int ata_write(char *buf, const void *unit, const off_t offset,
+		const size_t size)
 {
-	if (channel != default_channel)
+	off_t o = offset;
+	size_t s = size;
+	if (!_check_param(unit, &o, &s))
 		return (-1);
 
-	ata_device_t *d = &(devices[channel]);
-	int port = d->port;
-	int device = d->device;
-	kcall->printk("write %x %x %x %x\n", address, n, port, device);
-	_set_address(port, device, address, n);
-	_write_data(port, ATA_REGISTER_COMMAND, WRITE_SECTORS_EXT);
+	if (!s)
+		return 0;
 
-	for (int i = 0; i < n; i++) {
-		_poll(port, false);
+	ata_unit_t *u = (ata_unit_t *) unit;
+	ata_port_t *p = &(ports[u->port]);
+	_set_address(p, u->device, o, s);
+	_write_data(p, ATA_REGISTER_COMMAND, WRITE_SECTORS_EXT);
 
-		uint16_t *w = (uint16_t *) buf;
-		for (int j = 0; j < ATA_DEFAULT_SECTOR_SIZE / 2; j++)
-			outw(ports[port].data + ATA_REGISTER_DATA, w[j]);
+	uint16_t *w = (uint16_t *) buf;
+	for (int i = 0; i < s; i++) {
+		if (_poll(p)) {
+#if 0
+			kcall->printk("ata: write error\n");
+#endif
+			return (-1);
+		}
+
+		for (int j = 0; j < ATA_DEFAULT_SECTOR_SIZE / 2; j++) {
+			outw(p->data + ATA_REGISTER_DATA, *w);
+			w++;
+		}
 	}
 
-	_write_data(port, ATA_REGISTER_COMMAND, FLUSH_CACHE_EXT);
-	_poll(port, false);
+	_write_data(p, ATA_REGISTER_COMMAND, FLUSH_CACHE_EXT);
+	if (_poll(p)) {
+#if 0
+		kcall->printk("ata: flush error\n");
+#endif
+		return (-1);
+	}
+
+	return size;
+}
+
+void *ata_open(const int channel)
+{
+	if ((channel < 0)
+			|| (channel >= sizeof(units) / sizeof(units[0])))
+		return NULL;
+
+	ata_unit_t *unit = &(units[channel]);
+	if ((unit->type == ATA)
+			&& (unit->capabilities & ATA_CAPABILITY_LBA)
+			&& ((unit->command_sets & LBA48_COMMAND_SETS_MASK)
+					== LBA48_COMMAND_SETS_MASK))
+		return &(units[channel]);
+
+	return NULL;
+}
+
+int ata_initialize(void)
+{
+	peripheral_t *p = peripheral_find(PCI_CLASS_MASS_STORAGE_CONTROLLER,
+			PCI_SUBCLASS_IDE_CONTROLLER);
+	if (!p)
+		return (-1);
+#if 0
+	field = peripheral_get_config(p->bus, p->device, p->func, 15);
+	outb(0xcfc, 0xfe);
+	field = peripheral_get_config(p->bus, p->device, p->func, 15);
+	if ((field & 0xff) == 0xfe)
+		kcall->printk("ata: need IRQ\n");
+	else if ((p->type.progIf == 0x8a)
+			|| (p->type.progIf == 0x80))
+		kcall->printk("ata: parallel\n");
+#endif
+	if (!(p->type.progIf & PCI_PROGIF_BUS_MASTER))
+		return (-1);
+
+	for (int i = 0; i < 5; i++) {
+		uint32_t field = peripheral_get_config(p->bus, p->device,
+				p->func, i + 4);
+#if 0
+		kcall->printk("ata: bar%d = %x\n", i, field);
+#endif
+		_set_bar(i, field);
+	}
+
+	ata_port_t *port = &(ports[PORT_PRIMARY]);
+	port->data = bar[0] ? (bar[0] & BAR_PORT_MASK) : PORT1_DATA;
+	port->control = bar[1] ? (bar[1] & BAR_PORT_MASK) : PORT1_CONTROL;
+	port->bus_master = bar[4] & BAR_PORT_MASK;
+	_write_control(&(ports[PORT_PRIMARY]), ATA_REGISTER_DEVICE_CONTROL,
+			ATA_CONTROL_NLEN);
+	_identify(&(units[0]), PORT_PRIMARY, DEVICE0);
+	_identify(&(units[1]), PORT_PRIMARY, DEVICE1);
+
+	port = &(ports[PORT_SECONDARY]);
+	port->data = bar[2] ? (bar[2] & BAR_PORT_MASK) : PORT2_DATA;
+	port->control = bar[3] ? (bar[3] & BAR_PORT_MASK) : PORT2_CONTROL;
+	port->bus_master = (bar[4] & BAR_PORT_MASK) + 8;
+	_write_control(&(ports[PORT_SECONDARY]), ATA_REGISTER_DEVICE_CONTROL,
+			ATA_CONTROL_NLEN);
+	_identify(&(units[2]), PORT_SECONDARY, DEVICE0);
+	_identify(&(units[3]), PORT_SECONDARY, DEVICE1);
+
+	for (int i = 0; i < sizeof(units) / sizeof(units[0]); i++) {
+		ata_unit_t *unit = &(units[i]);
+		if (unit->type)
+			kcall->printk("ata: (%d, %d) %d, %x %x, %x, %s\n",
+					unit->port, unit->device, unit->type,
+					((int32_t *) &(unit->size))[1],
+					((int32_t *) &(unit->size))[0],
+					unit->command_sets, unit->model);
+	}
+
 	return 0;
-}
-
-static void _test(void)
-{
-	ata_read(data_buf, default_channel, 0, 1);
-	kcall->printk("%x %x\n", data_buf[0], data_buf[1]);
-	kcall->printk("%x %x\n", data_buf[510], data_buf[511]);
-
-	uint16_t *w = (uint16_t *) data_buf;
-	for (int i = 0; i < ATA_DEFAULT_SECTOR_SIZE / 2; i++)
-		w[i] = i + 1;
-
-	ata_write(data_buf, default_channel, devices[default_channel].size - 1,
-			1);
-	kcall->printk("%x %x\n", data_buf[0], data_buf[1]);
-	kcall->printk("%x %x\n", data_buf[510], data_buf[511]);
-
-	for (int i = 0; i < ATA_DEFAULT_SECTOR_SIZE; i++)
-		data_buf[i] = 0;
-
-	kcall->printk("%x %x\n", data_buf[0], data_buf[1]);
-	kcall->printk("%x %x\n", data_buf[510], data_buf[511]);
-
-	ata_read(data_buf, default_channel, devices[default_channel].size - 1,
-			1);
-	kcall->printk("%x %x\n", data_buf[0], data_buf[1]);
-	kcall->printk("%x %x\n", data_buf[510], data_buf[511]);
-}
-
-void ata_initialize(void)
-{
-	ata_port_t *p = &(ports[PORT_PRIMARY]);
-	p->data = bar[0] ? (bar[0] & BAR_PORT_MASK) : PORT1_DATA;
-	p->control = bar[1] ? (bar[1] & BAR_PORT_MASK) : PORT1_CONTROL;
-	p->bus_master = bar[4] & BAR_PORT_MASK;
-	_write_control(PORT_PRIMARY, ATA_REGISTER_DEVICE_CONTROL, 2);
-	_identify(&(devices[0]), PORT_PRIMARY, DEVICE0);
-	_identify(&(devices[1]), PORT_PRIMARY, DEVICE1);
-
-	p = &(ports[PORT_SECONDARY]);
-	p->data = bar[2] ? (bar[2] & BAR_PORT_MASK) : PORT2_DATA;
-	p->control = bar[3] ? (bar[3] & BAR_PORT_MASK) : PORT2_CONTROL;
-	p->bus_master = (bar[4] & BAR_PORT_MASK) + 8;
-	_write_control(PORT_SECONDARY, ATA_REGISTER_DEVICE_CONTROL, 2);
-	_identify(&(devices[2]), PORT_SECONDARY, DEVICE0);
-	_identify(&(devices[3]), PORT_SECONDARY, DEVICE1);
-
-	for (int i = 0; i < sizeof(devices) / sizeof(devices[0]); i++) {
-		ata_device_t *p = &(devices[i]);
-		if (p->type)
-			kcall->printk("ata: (%d, %d) %d, %x, %d, %s\n",
-					p->port, p->device, p->type, p->size,
-					p->command_sets, p->model);
-		if ((default_channel < 0)
-				&& (p->type == ATA)
-				&& (p->capabilities & ATA_CAPABILITY_LBA)
-				&& ((p->command_sets & LBA48_COMMAND_SETS_MASK)
-						== LBA48_COMMAND_SETS_MASK))
-			default_channel = i;
-	}
-	kcall->printk("ata: default_channel=%d\n", default_channel);
-	_test();
 }
 
 static unsigned int _msleep(const unsigned int ms)
