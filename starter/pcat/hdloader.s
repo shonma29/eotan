@@ -34,7 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 
 .global _start
 
-.include "starter/arch/loader.inc"
+.include "starter/arch/hdloader.inc"
 
 .set BIOS_MEMORY_KB, 32
 
@@ -321,7 +321,17 @@ position_to_read:
  * padding
  * @since 1.0
  */
-.org 510, 0
+.org 446, 0
+.long 0
+.byte PARTITION_BOOT_TYPE, 0, 0, 0
+.long 1, PARTITION_BOOT_SECTORS
+
+.long 0
+.byte PARTITION_TFS_TYPE, 0, 0, 0
+.long 1 + PARTITION_BOOT_SECTORS, PARTITION_TFS_SECTORS
+
+.long 0, 0, 0, 0
+.long 0, 0, 0, 0
 
 /**
  * signature

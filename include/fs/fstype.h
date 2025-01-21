@@ -27,6 +27,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-#define FS_TFS (0)
+#define FS_TFS 0xfa
 
 #endif

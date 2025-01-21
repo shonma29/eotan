@@ -29,7 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/io.h>
 #include <time.h>
 #include <services.h>
-#include "ata.h"
+#include <ata.h>
 #include "pci.h"
 
 // ports
@@ -76,14 +76,22 @@ typedef struct {
 	uint8_t model[41];
 } ata_unit_t;
 
+typedef struct {
+	const ata_unit_t *unit;
+	uint64_t lba;
+	uint64_t size;
+	uint8_t type;
+} ata_partition_t;
+
 static ata_port_t ports[2];
 static ata_unit_t units[4];
+static ata_partition_t partitions[1];
 #if 0
 volatile uint8_t irq_invoked = 0;
 static uint8_t atapi_packet[12] = { 0xa8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 #endif
 static uint32_t bar[5];
-static uint8_t data_buf[2048];
+static char data_buf[2048];
 
 static int _set_bar(const int, const uint32_t);
 static uint8_t _read_data(const ata_port_t *, const uint8_t);
@@ -97,10 +105,11 @@ static uint8_t _read_error(const uint8_t);
 #endif
 static int _poll(const ata_port_t *);
 static void _identify(ata_unit_t *, const int, const int);
-static bool _check_unit(const void *);
+static bool _check_partition(const void *);
 static bool _check_param(const void *, off_t *, size_t *);
 static void _set_address(const ata_port_t *, const int, const off_t,
 		const size_t);
+static void *_find_partition(const ata_unit_t *, const uint8_t);
 static unsigned int _msleep(const unsigned int);
 
 
@@ -218,15 +227,15 @@ static void _identify(ata_unit_t *unit, const int port, const int device)
 	unit->model[sizeof(unit->model) - 1] = '\0';
 }
 
-static bool _check_unit(const void *unit)
+static bool _check_partition(const void *partition)
 {
 	//TODO check more strictly
-	return (unit ? true : false);
+	return (partition ? true : false);
 }
 
-static bool _check_param(const void *unit, off_t *offset, size_t *size)
+static bool _check_param(const void *partition, off_t *offset, size_t *size)
 {
-	if (!_check_unit(unit))
+	if (!_check_partition(partition))
 		return false;
 
 	if (*offset & (~MASK_LBA48_OFFSET))
@@ -235,18 +244,19 @@ static bool _check_param(const void *unit, off_t *offset, size_t *size)
 	if (*size & (~MASK_LBA48_SIZE))
 		return false;
 
-	ata_unit_t *u = (ata_unit_t *) unit;
+	ata_partition_t *p = (ata_partition_t *) partition;
 	*offset &= MASK_LBA48_OFFSET;
 	*offset >>= ATA_DEFAULT_SECTOR_SHIFT;
-	if (*offset >= u->size)
+	if (*offset >= p->size)
 		return false;
 
-	size_t rest = u->size - *offset;
+	size_t rest = p->size - *offset;
 	*size &= MASK_LBA48_SIZE;
 	*size >>= ATA_DEFAULT_SECTOR_SHIFT;
 	if (*size > rest)
 		return false;
 
+	*offset += p->lba;
 	return true;
 }
 
@@ -268,17 +278,19 @@ static void _set_address(const ata_port_t *p, const int device,
 	_write_data(p, ATA_REGISTER_LBA_HIGH, (address >> 16) & 0xff);
 }
 
-int ata_read(char *buf, const void *unit, const off_t offset, const size_t size)
+int ata_read(char *buf, const void *partition, const off_t offset,
+		const size_t size)
 {
 	off_t o = offset;
 	size_t s = size;
-	if (!_check_param(unit, &o, &s))
+	if (!_check_param(partition, &o, &s))
 		return (-1);
 
 	if (!s)
 		return 0;
 
-	ata_unit_t *u = (ata_unit_t *) unit;
+
+	ata_unit_t *u = (ata_unit_t *) ((ata_partition_t *) partition)->unit;
 	ata_port_t *p = &(ports[u->port]);
 	_set_address(p, u->device, o, s);
 	_write_data(p, ATA_REGISTER_COMMAND, READ_SECTORS_EXT);
@@ -301,18 +313,18 @@ int ata_read(char *buf, const void *unit, const off_t offset, const size_t size)
 	return size;
 }
 
-int ata_write(char *buf, const void *unit, const off_t offset,
+int ata_write(char *buf, const void *partition, const off_t offset,
 		const size_t size)
 {
 	off_t o = offset;
 	size_t s = size;
-	if (!_check_param(unit, &o, &s))
+	if (!_check_param(partition, &o, &s))
 		return (-1);
 
 	if (!s)
 		return 0;
 
-	ata_unit_t *u = (ata_unit_t *) unit;
+	ata_unit_t *u = (ata_unit_t *) ((ata_partition_t *) partition)->unit;
 	ata_port_t *p = &(ports[u->port]);
 	_set_address(p, u->device, o, s);
 	_write_data(p, ATA_REGISTER_COMMAND, WRITE_SECTORS_EXT);
@@ -343,7 +355,43 @@ int ata_write(char *buf, const void *unit, const off_t offset,
 	return size;
 }
 
-void *ata_open(const int channel)
+static void *_find_partition(const ata_unit_t *unit, const uint8_t type)
+{
+	// set dummy partition
+	partitions[0].unit = unit;
+	partitions[0].lba = 0;
+	partitions[0].size = unit->size;
+	partitions[0].type = 0;
+
+	// read MBR
+	int result = ata_read(data_buf, &(partitions[0]), 0,
+			ATA_DEFAULT_SECTOR_SIZE);
+	if (result != ATA_DEFAULT_SECTOR_SIZE) {
+		kcall->printk("ata: failed to read MBR\n");
+		return NULL;
+	}
+
+	// scan partition table
+	mbr_partition_t *p =
+			(mbr_partition_t *) &(data_buf[MBR_PARTITION_OFFSET]);
+	for (int i = 0; (i < MBR_NUM_OF_PARTITION) && p[i].type; i++) {
+		kcall->printk("ata: partition[%d] %x %x %x %x\n", i,
+				p[i].attribute, p[i].type, p[i].lba, p[i].size);
+
+		if (p[i].type != type)
+			continue;
+
+		partitions[0].unit = unit;
+		partitions[0].lba = p[i].lba;
+		partitions[0].size = p[i].size;
+		partitions[0].type = p[i].type;
+		return &(partitions[0]);
+	}
+
+	return NULL;
+}
+
+void *ata_open(const int channel, const uint8_t type)
 {
 	if ((channel < 0)
 			|| (channel >= sizeof(units) / sizeof(units[0])))
@@ -354,7 +402,7 @@ void *ata_open(const int channel)
 			&& (unit->capabilities & ATA_CAPABILITY_LBA)
 			&& ((unit->command_sets & LBA48_COMMAND_SETS_MASK)
 					== LBA48_COMMAND_SETS_MASK))
-		return &(units[channel]);
+		return _find_partition(unit, type);
 
 	return NULL;
 }

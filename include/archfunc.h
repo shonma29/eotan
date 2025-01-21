@@ -64,7 +64,7 @@ extern void peripheral_set_map(void);
 
 /* ata.c */
 extern int ata_initialize(void);
-extern void *ata_open(const int);
+extern void *ata_open(const int, const uint8_t);
 extern int ata_read(char *, const void *, const off_t, const size_t);
 extern int ata_write(char *, const void *, const off_t, const size_t);
 

@@ -50,7 +50,7 @@ const vdriver_t *ata_attach(system_info_t *info)
 	list_initialize(&(driver_mine.units));
 
 	if (!ata_initialize()) {
-		void *unit = ata_open(0);
+		void *unit = ata_open(0, info->root.fstype);
 		if (unit) {
 			primary_0.unit = unit;
 			list_append(&(driver_mine.units), &(primary_0.bros));

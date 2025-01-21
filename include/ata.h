@@ -1,5 +1,5 @@
-#ifndef __ARCH_ATA_H__
-#define __ARCH_ATA_H__
+#ifndef __ATA_H__
+#define __ATA_H__
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -119,5 +119,18 @@ typedef enum {
 	ATA = 0x01,
 	ATAPI = 0x02
 } ata_type_e;
+
+// MBR
+#define MBR_PARTITION_OFFSET 0x1be
+#define MBR_NUM_OF_PARTITION (4)
+
+typedef struct {
+	uint8_t attribute;
+	uint8_t chs_start[3];
+	uint8_t type;
+	uint8_t chs_end[3];
+	uint32_t lba;
+	uint32_t size;
+} mbr_partition_t;
 
 #endif

@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 #include <mpufunc.h>
 #include <archfunc.h>
+#include <ata.h>
 #include <fs/fstype.h>
 #include <mpu/desc.h>
 #include <mpu/memory.h>
@@ -210,7 +211,7 @@ static void initialize_initrd_info(void)
 	system_info_t *info = kern_v2p(sysinfo);
 	strcpy(info->root.device, DEVICE_CONTROLLER_ATA0);
 	info->root.fstype = FS_TFS;
-	info->root.block_size = 0;
+	info->root.block_size = ATA_DEFAULT_SECTOR_SIZE;
 	info->initrd.address = NULL;
 	info->initrd.size = 0;
 }

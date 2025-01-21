@@ -37,14 +37,20 @@ STARTER_ADDR = 0x8000
 STARTER_SIZE = 16384
 BOOT_ADDR = 0x8000c000
 BOOT_SIZE = 4096
-BIN_SIZE = `echo "$(STARTER_SIZE) + $(BOOT_SIZE)" | bc`
+BIN_SIZE = `$(ECHO) "$(STARTER_SIZE) + $(BOOT_SIZE)" | bc`
 MAX_KERNEL = `$(ECHO) "(640 - 32 - 20 - 4) * 1024" | bc`
+PARTITION_BOOT_TYPE = 0x0d
+PARTITION_BOOT_SECTORS = `$(ECHO) "(640 * 1024) / $(BLK_SIZE)" | bc`
+SIZE_UNTIL_BOOT = `$(ECHO) "640 * 1024 + $(BLK_SIZE)" | bc`
+PARTITION_TFS_TYPE = 0xfa
+PARTITION_TFS_SECTORS = `$(ECHO) "(512 * 1024) / $(BLK_SIZE)" | bc`
+SIZE_UNTIL_TFS = `$(ECHO) "(640 + 512) * 1024 + $(BLK_SIZE)" | bc`
 
 OBJS = boot.iso build/fdboot.img hdboot.img BOOTX64.EFI \
 	$(WD)/pad $(WD)/append $(WD)/elf2module \
-	$(WD)/fdloader $(WD)/fdloader.o $(WD)/loader.inc \
+	$(WD)/fdloader $(WD)/fdloader.o $(WD)/loader.inc $(WD)/hdloader.inc \
 	$(WD)/hdloader $(WD)/hdloader.o \
-	$(WD)/kernel.img \
+	$(WD)/kernel.img $(WD)/hdkernel.img \
 	$(WD)/starter.bin $(WD)/starter $(WD)/starter.o \
 	$(WD)/protect.o $(WD)/protect.inc \
 	$(WD)/memory.o $(WD)/memory_info.o $(WD)/decode.o \
@@ -65,21 +71,33 @@ $(WD)/fdloader: $(WD)/fdloader.o
 
 $(WD)/fdloader.o: $(WD)/fdloader.s $(WD)/loader.inc
 
-hdboot.img: $(WD)/pad $(WD)/hdloader $(WD)/kernel.img
-	[ `wc -c < $(WD)/kernel.img` -le $(MAX_KERNEL) ]
-	cat $(WD)/hdloader $(WD)/kernel.img > $@
-	$(WD)/pad $@ 524288
+hdboot.img: $(WD)/pad $(WD)/hdloader $(WD)/hdkernel.img initrd.img
+	[ `wc -c < $(WD)/hdkernel.img` -le $(MAX_KERNEL) ]
+	cat $(WD)/hdloader $(WD)/hdkernel.img > $@
+	$(WD)/pad $@ $(SIZE_UNTIL_BOOT)
+	cat initrd.img >> $@
+	$(WD)/pad $@ $(SIZE_UNTIL_TFS)
 
 $(WD)/hdloader: $(WD)/hdloader.o
 	$(LD) $(LDFLAGS) -L$(LIB) -Ttext $(LOADER_ADDR) -o $@ $^
 
-$(WD)/hdloader.o: $(WD)/hdloader.s $(WD)/loader.inc
+$(WD)/hdloader.o: $(WD)/hdloader.s $(WD)/hdloader.inc
 
 $(WD)/loader.inc: $(WD)/kernel.img
 	$(ECHO) ".set STARTER_SEGMENT, $(STARTER_SEG)" > $@
 	$(ECHO) ".set STARTER_ADDRESS, $(STARTER_ADDR)" >> $@
 	$(ECHO) -n ".set STARTER_SECTORS, " >> $@
 	$(ECHO) "(`wc -c < $(WD)/kernel.img` + $(BLK_SIZE) - 1) / $(BLK_SIZE)" | bc >> $@
+
+$(WD)/hdloader.inc: $(WD)/hdkernel.img
+	$(ECHO) ".set STARTER_SEGMENT, $(STARTER_SEG)" > $@
+	$(ECHO) ".set STARTER_ADDRESS, $(STARTER_ADDR)" >> $@
+	$(ECHO) -n ".set STARTER_SECTORS, " >> $@
+	$(ECHO) "(`wc -c < $(WD)/hdkernel.img` + $(BLK_SIZE) - 1) / $(BLK_SIZE)" | bc >> $@
+	$(ECHO) ".set PARTITION_BOOT_TYPE, $(PARTITION_BOOT_TYPE)" >> $@
+	$(ECHO) ".set PARTITION_BOOT_SECTORS, $(PARTITION_BOOT_SECTORS)" >> $@
+	$(ECHO) ".set PARTITION_TFS_TYPE, $(PARTITION_TFS_TYPE)" >> $@
+	$(ECHO) ".set PARTITION_TFS_SECTORS, $(PARTITION_TFS_SECTORS)" >> $@
 
 $(WD)/protect.o: $(WD)/protect.s $(WD)/protect.inc
 
@@ -137,6 +155,29 @@ $(WD)/kernel.img: $(WD)/append $(WD)/elf2module \
 	$(WD)/elf2module servers/fs/fs | $(WD)/append $@ 3 8
 	$(WD)/elf2module servers/mm/mm | $(WD)/append $@ 3 7
 	cat initrd.img | $(WD)/append $@ 5
+	$(WD)/append $@ 0
+
+$(WD)/hdkernel.img: $(WD)/append $(WD)/elf2module \
+		$(WD)/starter.bin kernel/core.bin \
+		servers/kernlog/kernlog \
+		servers/interrupt/interrupt \
+		servers/timer/timer \
+		servers/dev/dev \
+		servers/mm/mm \
+		servers/fs/fs \
+		servers/hmi/hmi \
+		servers/console/console
+	[ `wc -c < $(WD)/starter.bin` -le $(BIN_SIZE) ]
+	cp $(WD)/starter.bin $@
+	$(WD)/elf2module kernel/core.bin | $(WD)/append $@ 1
+	$(WD)/elf2module servers/interrupt/interrupt | $(WD)/append $@ 2 3
+	$(WD)/elf2module servers/timer/timer | $(WD)/append $@ 2 4
+	$(WD)/elf2module servers/dev/dev | $(WD)/append $@ 2 6
+	$(WD)/elf2module servers/kernlog/kernlog | $(WD)/append $@ 3 5
+	$(WD)/elf2module servers/hmi/hmi | $(WD)/append $@ 3 11
+	$(WD)/elf2module servers/console/console | $(WD)/append $@ 3 9
+	$(WD)/elf2module servers/fs/fs | $(WD)/append $@ 3 8
+	$(WD)/elf2module servers/mm/mm | $(WD)/append $@ 3 7
 	$(WD)/append $@ 0
 
 EFI_CFLAGS = -Wall -Werror -target x86_64-pc-win32-coff -O2 -I include
