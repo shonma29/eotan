@@ -24,14 +24,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <mpu/ieee754.h>
 #include <limits.h>
-#include <math.h>
 #include "funcs.h"
 
+#define INF_MASK_U (EXP_MASK_U | SIG_MASK_U)
 
-double fabs(double x)
+
+int __isinf_double(const double x)
 {
-	int *p = (int *) &x;
-	p[1] &= ~SIGN_MASK_U;
-	return x;
+	unsigned int *p = (unsigned int *) &x;
+	return (((p[1] & INF_MASK_U) == EXP_MASK_U)
+			&& !(p[0]));
 }

@@ -24,14 +24,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <mpu/ieee754.h>
 #include <limits.h>
-#include <math.h>
 #include "funcs.h"
 
 
-double fabs(double x)
+int __isnan_double(const double x)
 {
-	int *p = (int *) &x;
-	p[1] &= ~SIGN_MASK_U;
-	return x;
+	unsigned int *p = (unsigned int *) &x;
+	return (((p[1] & EXP_MASK_U) == EXP_MASK_U)
+			&& ((p[1] << (B64_EXPONENT_BITS + 1))
+					|| p[0]));
 }

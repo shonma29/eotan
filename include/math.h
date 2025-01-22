@@ -35,7 +35,19 @@ For more information, please refer to <http://unlicense.org/>
 #define INFINITY (__builtin_inf())
 #define HUGE_VAL (__builtin_huge_val())
 
-#define M_PI (3.14159265358979323846)
+#define M_PI (3.1415926535897932384626433832795028841971L)
+#define M_LN2 (0.6931471805599453094172321214581765680755L)
+#define M_SQRT2 (1.4142135623730950488016887242096980785696L)
+
+extern int __isinf_double(const double);
+extern int __isnan_double(const double);
+
+#define isinf(x) _Generic((x), \
+	double: __isinf_double \
+)(x)
+#define isnan(x) _Generic((x), \
+	double: __isnan_double \
+)(x)
 
 extern double fabs(double);
 extern double frexp(double, int *);

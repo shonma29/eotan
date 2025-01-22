@@ -28,14 +28,9 @@ For more information, please refer to <http://unlicense.org/>
 #include <math.h>
 #include <mpu/bits.h>
 #include <mpu/ieee754.h>
+#include "funcs.h"
 
-#define INT_BITS (CHAR_BIT * sizeof(int))
-#define SIGN_MASK_U (1 << (INT_BITS - 1))
-#define EXP_MAX B64_EXPONENT_SPECIAL
-#define EXP_SHIFT_U (B64_SIGNIFICANT_BITS - INT_BITS)
-#define EXP_MASK_U (EXP_MAX << EXP_SHIFT_U)
 #define EXP_BIAS_ZERO (B64_EXPONENT_BIAS - 1)
-#define SIG_MASK_U ((1 << EXP_SHIFT_U) - 1)
 
 
 double frexp(double num, int *exp)

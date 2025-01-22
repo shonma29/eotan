@@ -24,24 +24,20 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <errno.h>
 #include <math.h>
 #include <mpu/ieee754.h>
+#include "funcs.h"
 
-#define LOG_2 0.6931471805599453094172321214581765680755L
-#define SQRT_2 1.4142135623730950488016887242096980785696L
-
-#define INT_BITS (CHAR_BIT * sizeof(int))
-#define SIGN_MASK_U (1 << (INT_BITS - 1))
-#define EXP_MAX B64_EXPONENT_SPECIAL
-#define EXP_SHIFT_U (B64_SIGNIFICANT_BITS - INT_BITS)
-#define SIG_MASK_U ((1 << EXP_SHIFT_U) - 1)
-
+#if math_errhandling & MATH_ERRNO
+#include <errno.h>
+#endif
 
 double log(double x)
 {
 	if (x == 0) {
+#if math_errhandling & MATH_ERRNO
 		errno = ERANGE;
+#endif
 		return (-HUGE_VAL);
 	}
 
@@ -57,13 +53,23 @@ double log(double x)
 		return x;
 
 	if (p[1] & SIGN_MASK_U) {
+#if math_errhandling & MATH_ERRNO
 		errno = EDOM;
+#endif
 		return NAN;
 	}
 
 	int k;
-	frexp(x / SQRT_2, &k);
-	x /= ldexp(1, k);
+	frexp(x / M_SQRT2, &k);
+
+	int prev_error = errno;
+	double b = ldexp(1, k);
+	if (isinf(b)) {
+		errno = prev_error;
+		return (M_LN2 * k);
+	}
+
+	x /= b;
 	x = (x - 1) / (x + 1);
 
 	double x2 = x * x;
@@ -77,5 +83,5 @@ double log(double x)
 		sum += x / i;
 	} while (prev != sum);
 
-	return (LOG_2 * k + 2 * sum);
+	return (M_LN2 * k + 2 * sum);
 }

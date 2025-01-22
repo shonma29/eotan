@@ -27,14 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <math.h>
 #include <mpu/ieee754.h>
 #include <mpu/limits.h>
-
-#define LOG_2 0.6931471805599453094172321214581765680755L
-
-#define INT_BITS (CHAR_BIT * sizeof(int))
-#define SIGN_MASK_U (1 << (INT_BITS - 1))
-#define EXP_MAX B64_EXPONENT_SPECIAL
-#define EXP_SHIFT_U (B64_SIGNIFICANT_BITS - INT_BITS)
-#define SIG_MASK_U ((1 << EXP_SHIFT_U) - 1)
+#include "funcs.h"
 
 
 double exp(double x)
@@ -49,8 +42,8 @@ double exp(double x)
 				&& ((p[1] & (SIGN_MASK_U | SIG_MASK_U))
 						== SIGN_MASK_U)) ? (+0.0) : x;
 
-	int k = (int) (x / LOG_2 + ((x >= 0) ? 0.5 : (-0.5)));
-	x -= k * LOG_2;
+	int k = (int) (x / M_LN2 + ((x >= 0) ? 0.5 : (-0.5)));
+	x -= k * M_LN2;
 
 	double x2 = x * x;
 	double sum = x2 / 22;

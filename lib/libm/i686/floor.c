@@ -29,10 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdint.h>
 #include <stdbool.h>
 #include <mpu/ieee754.h>
-
-#define INT_BITS (CHAR_BIT * sizeof(int))
-#define EXP_MAX B64_EXPONENT_SPECIAL
-#define EXP_SHIFT_U (B64_SIGNIFICANT_BITS - INT_BITS)
+#include "funcs.h"
 
 
 double floor(double x)

@@ -25,13 +25,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <limits.h>
-#include <math.h>
 #include "funcs.h"
 
 
-double fabs(double x)
+int __is_integer(const double x)
 {
-	int *p = (int *) &x;
-	p[1] &= ~SIGN_MASK_U;
-	return x;
+	return (x <= LONG_MAX)
+			&& (x >= LONG_MIN)
+			&& (x == (long) x);
 }
