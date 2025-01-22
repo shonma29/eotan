@@ -25,8 +25,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <services.h>
+#include <pseudo_signal.h>
 #include <nerve/global.h>
 #include <nerve/kcall.h>
+#include <nerve/ipc_utils.h>
 #include <sys/errno.h>
 #include "api.h"
 #include "fs.h"
@@ -106,6 +108,14 @@ void start(VP_INT exinf)
 		}
 
 		if (size < sizeof(req.packet.header)) {
+			//TODO ad-hoc
+			if ((size == sizeof(int))
+					&& (*((int *) &(req.packet)) == SIGNAL_SYNC)) {
+				cache_synchronize(&(rootfs.device), false);
+				if (!key_of_ipc(req.tag))
+					continue;
+			}
+
 			//TODO what is tag?
 			reply_error(req.tag, 0, 0, EPROTO);
 			continue;

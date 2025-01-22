@@ -229,6 +229,9 @@ bool cache_invalidate(block_device_t *dev, const unsigned int block_no)
 
 int cache_synchronize(block_device_t *dev, const bool unmount)
 {
+#ifdef DEBUG
+	long flushed_blocks = 0;
+#endif
 	for (list_t *p = list_next(&lru_list); !list_is_edge(&lru_list, p);) {
 		cache_t *cp = getLruParent(p);
 
@@ -246,6 +249,9 @@ int cache_synchronize(block_device_t *dev, const bool unmount)
 				return error_no;
 
 			cp->dirty = false;
+#ifdef DEBUG
+			flushed_blocks++;
+#endif
 		}
 
 		p = list_next(p);
@@ -253,7 +259,11 @@ int cache_synchronize(block_device_t *dev, const bool unmount)
 		if (unmount)
 			dispose(cp);
 	}
-
+#ifdef DEBUG
+	if (flushed_blocks)
+		log_info("cache_synchronize: flushed %d blocks\n",
+				flushed_blocks);
+#endif
 	return 0;
 }
 

@@ -30,6 +30,9 @@ For more information, please refer to <http://unlicense.org/>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/wait.h>
+#include <ipc.h>
+#include <services.h>
+#include <pseudo_signal.h>
 #include "_perror.h"
 
 #define ERR (-1)
@@ -38,6 +41,10 @@ typedef struct {
 	int files[3];
 	bool background;
 } ExecOptions;
+
+static char shutdown_message[] = {
+	's', 'h', 'u', 't', 'd', 'o', 'w', 'n', '\n'
+};
 
 extern void __malloc_initialize(void);
 
@@ -106,6 +113,11 @@ void _main(int argc, char **argv, char **env)
 
 	array[0] = "/bin/shell";
 	opts.background = false;
-	for (;;)
-		execute(array, envp, &opts);
+	execute(array, envp, &opts);
+
+	write(STDOUT_FILENO, shutdown_message, sizeof(shutdown_message));
+
+	int signal = SIGNAL_SYNC;
+	ipc_call(PORT_FS, &signal, sizeof(signal));
+	for (;;);
 }

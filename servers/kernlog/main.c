@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <features.h>
 #include <major.h>
 #include <services.h>
+#include <pseudo_signal.h>
 #include <nerve/kcall.h>
 #include <set/lf_queue.h>
 #include <set/ring.h>
@@ -48,6 +49,9 @@ static ER_ID initialize(void);
 #ifdef USE_MONITOR
 #include <console.h>
 
+#define SYNC_INTERVAL_SECONDS (60)
+
+static int until_sync = SYNC_INTERVAL_SECONDS;
 static Screen screen1;
 static Screen screen3;
 static Console *cns;
@@ -205,7 +209,6 @@ void start(VP_INT exinf)
 }
 
 #ifdef USE_MONITOR
-
 static ER monitor_initialize(void)
 {
 	T_CTSK pk_ctsk = {
@@ -248,6 +251,17 @@ static void monitor(void)
 	cns->locate(&screen3, 0, 0);
 
 	while (!sleep(1)) {
+		if (--until_sync <= 0) {
+			int signal = SIGNAL_SYNC;
+			ER_UINT reply_size = kcall->ipc_send(PORT_FS, &signal,
+					sizeof(signal));
+			if (reply_size)
+				kcall->printk("monitor: failed to sync %d\n",
+						reply_size);
+
+			until_sync = SYNC_INTERVAL_SECONDS;
+		}
+
 		char outbuf[1024];
 		for (size_t len;
 				(len  = lfcopy(outbuf,
