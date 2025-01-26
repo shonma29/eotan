@@ -26,6 +26,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <limits.h>
+#include <mpu/ieee754.h>
 
 #define INT_BITS (CHAR_BIT * sizeof(int))
 #define SIGN_MASK_U (1 << (INT_BITS - 1))

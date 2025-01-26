@@ -27,12 +27,38 @@ For more information, please refer to <http://unlicense.org/>
 #include <errno.h>
 #include <limits.h>
 #include <math.h>
-#include <stdbool.h>
 #include <mpu/ieee754.h>
+#include <mpu/bits.h>
 #include "funcs.h"
 
 #define EXTRA_BIT_U (1 << EXP_SHIFT_U)
 
+static int _count_sig_nlz(const double *);
+static int _count_sig_ntz(const double *);
+
+/**
+ * Count leading zeros of denormalized number.
+ * @param p pointer to 'double' value
+ * @return number of leading zero
+ */
+static int _count_sig_nlz(const double *ptr_to_x)
+{
+	uint32_t *p = (uint32_t *) ptr_to_x;
+	int nlz = count_nlz(p[1]);
+	return ((nlz == INT_BITS) ? count_nlz(p[0]) : (INT_BITS + nlz));
+}
+
+/**
+ * Count trailing zeros of denormalized number.
+ * @param p pointer to 'double' value
+ * @return number of leading zero
+ */
+static int _count_sig_ntz(const double *ptr_to_x)
+{
+	uint32_t *p = (uint32_t *) ptr_to_x;
+	int ntz = count_ntz(p[0]);
+	return ((ntz == INT_BITS) ? (INT_BITS + count_ntz(p[1])) : ntz);
+}
 
 double ldexp(double x, int exp)
 {
@@ -40,47 +66,71 @@ double ldexp(double x, int exp)
 		if (!exp || !x)
 			break;
 
-		int *p = (int *) &x;
+		uint64_t *q = (uint64_t *) &x;
+		uint32_t *p = (uint32_t *) &x;
 		int e = (p[1] >> EXP_SHIFT_U) & EXP_MAX;
 		if (e == EXP_MAX)
 			break;
 
-		if (exp > 0) {
-			if (exp >= (EXP_MAX - e)) {
-				errno = ERANGE;
-				x = ((p[1] & SIGN_MASK_U) ?
-						-HUGE_VAL : HUGE_VAL);
-				break;
-			}
+		int nlz = 0;
+		uint32_t sign = p[1] & SIGN_MASK_U;
+		p[1] &= SIG_MASK_U;
 
-		} else if (exp <= (-e - B64_SIGNIFICANT_BITS)) {
-			errno = ERANGE;
-			x = 0;
-			break;
+		if (e) {
+			if (exp <= -e) {
+				// denormalize
+				nlz = B64_SIGNIFICANT_BITS - 1;
+				exp += e;
+				e = 0;
+				p[1] |= EXTRA_BIT_U;
+				*q >>= 1;
+			}
+		} else {
+			nlz = _count_sig_nlz(&x);
+			if ((B64_SIGNIFICANT_BITS - 1 - nlz) < exp) {
+				// normalize
+				nlz = B64_SIGNIFICANT_BITS - nlz;
+				exp -= nlz;
+				e = 1;
+				*q <<= nlz;
+				p[1] &= SIG_MASK_U;
+			}
 		}
 
-		e += exp;
-		if (e <= 0) {
-			int v;
-			int w = (p[1] & SIG_MASK_U) + EXTRA_BIT_U;
-			int shift = 1 - e;
-			if (shift < INT_BITS) {
-				v = p[0] >> shift;
-				v &= (1 << (INT_BITS - shift)) - 1;
-				v |= w << (INT_BITS - shift);
-				w >>= shift;
-			} else {
-				v = w >> (shift - INT_BITS);
-				if (shift != B64_SIGNIFICANT_BITS)
-					v++;
-
-				w = 0;
+		if (e) {
+			if (exp >= (EXP_MAX - e)) {
+#if math_errhandling & MATH_ERRNO
+				errno = ERANGE;
+#endif
+				x = HUGE_VAL;
+			} else
+				p[1] |= (e + exp) << EXP_SHIFT_U;
+		} else if (exp >= 0) {
+			*q <<= exp;
+		} else {
+			if (exp < -_count_sig_ntz(&x)) {
+#if math_errhandling & MATH_ERRNO
+				errno = ERANGE;
+#endif
 			}
 
-			p[0] = v;
-			p[1] = (p[1] & SIGN_MASK_U) | w;
-		} else
-			p[1] = (p[1] & ~EXP_MASK_U) | (e << EXP_SHIFT_U);
+			if (exp < -(nlz + 1))
+				x = 0.0;
+			else {
+				// round
+				int t = - exp - 1;
+				if (*q & (1 << t)) {
+					if (*q & (1 << (t + 1)))
+						*q += 1 << t;
+					else if (t)
+						*q += 1 << (t - 1);
+				}
+
+				*q >>= -exp;
+			}
+		}
+
+		p[1] |= sign;
 	} while (false);
 
 	return x;
