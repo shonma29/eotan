@@ -25,8 +25,8 @@
 # For more information, please refer to <http://unlicense.org/>
 
 LAST_TAG=`git describe`
-ARCH=`ls -l kernel/arch | sed -e 's/^.*\/\([^\/]\{1,\}\)$/\1/g'`
-MPU=`ls -l kernel/mpu | sed -e 's/^.*\/\([^\/]\{1,\}\)$/\1/g'`
+ARCH=`ls -l drivers/arch | sed -e 's/^.* -\> \(.*\)$/\1/g'`
+MPU=`ls -l drivers/mpu | sed -e 's/^.* -\> \(.*\)$/\1/g'`
 
 cat <<EOT
 kernel ${LAST_TAG} (${MPU}/${ARCH})
