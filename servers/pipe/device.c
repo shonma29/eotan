@@ -1,5 +1,3 @@
-#ifndef _MM_PROXY_H_
-#define _MM_PROXY_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,24 +24,25 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "process.h"
+#include <string.h>
+#include "pipe.h"
 
-extern ID receiver_id;
+typedef struct {
+	char *name;
+	driver_t driver;
+} driver_table_t;
 
-static inline int create_token(const int thread_id,
-		const mm_session_t *session)
+static driver_table_t table[] = {
+	{ "data", { 0 } },
+	{ "data1", { 1 } }
+};
+
+
+driver_t *device_lookup(const char *name)
 {
-	return ((thread_id << 16) | (session->node.key & 0xffff));
+	for (int i = 0; i < sizeof(table) / sizeof(table[0]); i++)
+		if (!strcmp(name, table[i].name))
+			return &(table[i].driver);
+
+	return NULL;
 }
-
-extern int _attach(mm_file_t **, mm_request_t *, mm_process_t *, const int);
-extern int _walk(mm_file_t **, mm_process_t *, const int, const char *,
-		mm_request_t *);
-extern int _walk_child(mm_file_t *, mm_file_t *, const char *, mm_request_t *);
-extern int _open(const mm_file_t *, const int, const int, mm_request_t *);
-extern int _read(const mm_file_t *, const int, const off_t, const size_t,
-		char *, mm_request_t *);
-extern int _clunk(mm_file_t *, const int, mm_request_t *);
-extern int _fstat(struct stat *, const mm_file_t *, const int, mm_request_t *);
-
-#endif

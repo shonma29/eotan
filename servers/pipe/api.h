@@ -1,5 +1,5 @@
-#ifndef _MM_PROXY_H_
-#define _MM_PROXY_H_
+#ifndef _CONSOLE_API_H_
+#define _CONSOLE_API_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,24 +26,44 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "process.h"
+#include <limits.h>
+#include <fs/protocol.h>
+#include <set/list.h>
 
-extern ID receiver_id;
+typedef struct {
+	list_t brothers;
+	unsigned int position;
+	fsmsg_t packet;
+	int tag;
+	int tid;
+	char buf[PATH_MAX + 1];
+} fs_request_t;
 
-static inline int create_token(const int thread_id,
-		const mm_session_t *session)
+#define getRequestFromList(p) ((uintptr_t) p - offsetof(fs_request_t, brothers))
+
+extern int if_attach(fs_request_t *);
+extern int if_walk(fs_request_t *);
+extern int if_open(fs_request_t *);
+extern int if_read(fs_request_t *);
+extern int if_write(fs_request_t *);
+extern int if_clunk(fs_request_t *);
+
+static inline int unpack_sid(const fs_request_t *req)
 {
-	return ((thread_id << 16) | (session->node.key & 0xffff));
+	return (req->packet.header.token & 0xffff);
 }
 
-extern int _attach(mm_file_t **, mm_request_t *, mm_process_t *, const int);
-extern int _walk(mm_file_t **, mm_process_t *, const int, const char *,
-		mm_request_t *);
-extern int _walk_child(mm_file_t *, mm_file_t *, const char *, mm_request_t *);
-extern int _open(const mm_file_t *, const int, const int, mm_request_t *);
-extern int _read(const mm_file_t *, const int, const off_t, const size_t,
-		char *, mm_request_t *);
-extern int _clunk(mm_file_t *, const int, mm_request_t *);
-extern int _fstat(struct stat *, const mm_file_t *, const int, mm_request_t *);
+static inline int unpack_tid(const fs_request_t *req)
+{
+	return ((req->packet.header.token >> 16) & 0xffff);
+}
+
+extern fs_request_t *enqueue_request(list_t *, const fs_request_t *);
+extern void dequeue_request(fs_request_t *);
+
+extern int reply(const int, fsmsg_t *, const size_t);
+extern int reply_error(const int, const int, const int, const int);
+extern void reply_read(const fs_request_t *);
+extern void reply_write(const fs_request_t *);
 
 #endif

@@ -66,8 +66,6 @@ static fspacket_definition_t packet_def[] = {
 	{ MESSAGE_SIZE(Twstat), Rwstat, MESSAGE_SIZE(Rwstat) }
 };
 
-static int _attach(mm_file_t **, mm_request_t *, mm_process_t *, const int);
-static int _walk_child(mm_file_t *, const char *, mm_request_t *);
 static int call_device(const mm_file_t *, mm_request_t *);
 static int create_tag(const mm_request_t *);
 static int calc_path(char *, const char *, const char *, const long);
@@ -276,7 +274,7 @@ int mm_create(mm_request_t *req)
 
 		int oflag = req->args.arg2;
 		int token = create_token(kcall->thread_get_id(), file->session);
-		if (_walk_child(file, name, req)) {
+		if (_walk_child(file, file, name, req)) {
 			int fid = file->node.key;
 			message->header.type = Tcreate;
 			message->header.token = token;
@@ -289,8 +287,7 @@ int mm_create(mm_request_t *req)
 //			log_info("proxy: %d create[%d:%d] %d\n",
 //					process->node.key, fd, fid, result);
 			if (result) {
-				//TODO test
-				if (!_walk_child(file, name, req))
+				if (!_walk_child(file, file, name, req))
 					result = _open(file, token,
 							oflag | O_TRUNC, req);
 			}
@@ -719,7 +716,8 @@ int _walk(mm_file_t **file, mm_process_t *process, const int thread_id,
 	return result;
 }
 
-static int _walk_child(mm_file_t *file, const char *name, mm_request_t *req)
+int _walk_child(mm_file_t *root, mm_file_t *file, const char *name,
+		mm_request_t *req)
 {
 	size_t len = strlen(name);
 	if (len >= PATH_MAX)
@@ -729,13 +727,13 @@ static int _walk_child(mm_file_t *file, const char *name, mm_request_t *req)
 	fsmsg_t *message = &(req->message);
 	message->header.type = Twalk;
 	message->header.token =
-			create_token(kcall->thread_get_id(), file->session);
+			create_token(kcall->thread_get_id(), root->session);
 	message->Twalk.tag = create_tag(req);
-	message->Twalk.fid = file->node.key;
+	message->Twalk.fid = root->node.key;
 	message->Twalk.newfid = file->node.key;
 	message->Twalk.nwname = len;
 	message->Twalk.wname = (char *) name;
-	return call_device(file, req);
+	return call_device(root, req);
 }
 
 int _open(const mm_file_t *file, const int token, const int mode,

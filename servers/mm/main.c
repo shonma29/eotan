@@ -48,6 +48,7 @@ static int (*funcs[])(mm_request_t *) = {
 	mm_chdir,
 	mm_dup,
 	mm_lseek,
+	mm_pipe,
 	mm_attach,
 	mm_open,
 	mm_create,
@@ -163,6 +164,9 @@ static void accept(void)
 				//TODO debug
 				log_warning("9p: cannot find %d\n",
 						message->Rerror.tag);
+				if (message->header.type == Rerror)
+					log_warning("9p: error %d\n",
+							message->Rerror.ename);
 				break;
 			}
 

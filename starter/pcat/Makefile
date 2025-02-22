@@ -142,6 +142,7 @@ $(WD)/kernel.img: $(WD)/append $(WD)/elf2module \
 		servers/fs/fs \
 		servers/hmi/hmi \
 		servers/console/console \
+		servers/pipe/pipe \
 		initrd.img
 	[ `wc -c < $(WD)/starter.bin` -le $(BIN_SIZE) ]
 	cp $(WD)/starter.bin $@
@@ -154,6 +155,7 @@ $(WD)/kernel.img: $(WD)/append $(WD)/elf2module \
 	$(WD)/elf2module servers/console/console | $(WD)/append $@ 3 9
 	$(WD)/elf2module servers/fs/fs | $(WD)/append $@ 3 8
 	$(WD)/elf2module servers/mm/mm | $(WD)/append $@ 3 7
+	$(WD)/elf2module servers/pipe/pipe | $(WD)/append $@ 3 10
 	cat initrd.img | $(WD)/append $@ 5
 	$(WD)/append $@ 0
 
@@ -166,7 +168,8 @@ $(WD)/hdkernel.img: $(WD)/append $(WD)/elf2module \
 		servers/mm/mm \
 		servers/fs/fs \
 		servers/hmi/hmi \
-		servers/console/console
+		servers/console/console \
+		servers/pipe/pipe
 	[ `wc -c < $(WD)/starter.bin` -le $(BIN_SIZE) ]
 	cp $(WD)/starter.bin $@
 	$(WD)/elf2module kernel/core.bin | $(WD)/append $@ 1
@@ -178,6 +181,7 @@ $(WD)/hdkernel.img: $(WD)/append $(WD)/elf2module \
 	$(WD)/elf2module servers/console/console | $(WD)/append $@ 3 9
 	$(WD)/elf2module servers/fs/fs | $(WD)/append $@ 3 8
 	$(WD)/elf2module servers/mm/mm | $(WD)/append $@ 3 7
+	$(WD)/elf2module servers/pipe/pipe | $(WD)/append $@ 3 10
 	$(WD)/append $@ 0
 
 EFI_CFLAGS = -Wall -Werror -target x86_64-pc-win32-coff -O2 -I include

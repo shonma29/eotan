@@ -38,6 +38,7 @@ For more information, please refer to <http://unlicense.org/>
 #define PORT_FS (8)
 
 #define PORT_CONSOLE (9)
+#define PORT_PIPE (10)
 #define PORT_WINDOW (11)
 #define PORT_NET (12)
 

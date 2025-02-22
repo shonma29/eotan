@@ -38,19 +38,20 @@ typedef enum {
 	syscall_chdir = 7,
 	syscall_dup = 8,
 	syscall_lseek = 9,
-	syscall_attach = 10,
-	syscall_open = 11,
-	syscall_create = 12,
-	syscall_read = 13,
-	syscall_write = 14,
-	syscall_close = 15,
-	syscall_remove = 16,
-	syscall_stat = 17,
-	syscall_fstat = 18,
-	syscall_chmod = 19,
-	syscall_clock_gettime = 20,
-	syscall_thread_find = 21,
-	syscall_kill = 22
+	syscall_pipe = 10,
+	syscall_attach = 11,
+	syscall_open = 12,
+	syscall_create = 13,
+	syscall_read = 14,
+	syscall_write = 15,
+	syscall_close = 16,
+	syscall_remove = 17,
+	syscall_stat = 18,
+	syscall_fstat = 19,
+	syscall_chmod = 20,
+	syscall_clock_gettime = 21,
+	syscall_thread_find = 22,
+	syscall_kill = 23
 } syscall_e;
 
 typedef struct {

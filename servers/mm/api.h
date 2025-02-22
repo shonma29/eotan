@@ -75,6 +75,7 @@ extern int mm_sbrk(mm_request_t *);
 extern int mm_chdir(mm_request_t *);
 extern int mm_dup(mm_request_t *);
 extern int mm_lseek(mm_request_t *);
+extern int mm_pipe(mm_request_t *);
 extern int mm_attach(mm_request_t *);
 extern int mm_open(mm_request_t *);
 extern int mm_create(mm_request_t *);

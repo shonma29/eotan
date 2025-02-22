@@ -23,14 +23,14 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-SERVERS = kernlog interrupt timer dev mm fs hmi console pipe
+TARGET = $(WD)/pipe
 
-all: $(SERVERS)
+include Makefile.in
 
-$(SERVERS):
-	$(MAKE) -f servers/$@/Makefile WD=servers/$@
+ENTRY_ADDR = 0x80270000
+ENTRY_FUNC = start
 
-clean:
-	$(SHELL) -ec 'for L in $(SERVERS); do \
-		$(MAKE) -f servers/$$L/Makefile WD=servers/$$L clean; \
-		done'
+$(TARGET): $(OBJS) \
+		lib/libvfs.a lib/libserv.a lib/libnc.a
+	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
+	$(STRIP) $@

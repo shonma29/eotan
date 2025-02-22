@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <errno.h>
 #include <fcntl.h>
 #include <init.h>
+#include <services.h>
 #include <string.h>
 #include <nerve/ipc_utils.h>
 #include <nerve/kcall.h>
@@ -582,4 +583,108 @@ static int _seek(mm_process_t *process, mm_file_t *file, sys_args_t *args,
 
 	file->f_offset = next;
 	return 0;
+}
+
+int mm_pipe(mm_request_t *req)
+{
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
+	mm_process_t *process = NULL;
+	mm_descriptor_t *d1 = NULL;
+	mm_descriptor_t *d2 = NULL;
+	int token = 0;
+	do {
+		mm_thread_t *th = thread_find(port_of_ipc(req->node.key));
+		if (!th) {
+			reply->data[0] = EPERM;
+			break;
+		}
+
+		process = get_process(th);
+		d1 = process_create_desc(process);
+		if (!d1) {
+			reply->data[0] = EMFILE;
+			break;
+		}
+
+		d2 = process_create_desc(process);
+		if (!d2) {
+			reply->data[0] = EMFILE;
+			break;
+		}
+
+		mm_file_t *f1;
+		int result = _attach(&f1, req, process,
+				create_sid(PORT_PIPE, process->node.key));
+		if (result) {
+			reply->data[0] = result;
+			break;
+		}
+
+		d1->file = f1;
+		token = create_token(th->node.key, f1->session);
+
+		mm_file_t *f2 = session_create_file(f1->session);
+		if (!f2) {
+			reply->data[0] = EMFILE;
+			break;
+		}
+
+		result = _walk_child(f1, f2, "data1", req);
+		if (result) {
+			reply->data[0] = result;
+			session_destroy_file(f2);
+			break;
+		}
+
+		d2->file = f2;
+
+		int oflag = O_RDWR;
+		result = _open(f2, token, oflag, req);
+		if (result) {
+			reply->data[0] = result;
+			break;
+		}
+
+		result = _walk_child(f1, f1, "data", req);
+		if (result) {
+			reply->data[0] = result;
+			break;
+		}
+
+		result = _open(f1, token, oflag, req);
+		if (result) {
+			reply->data[0] = result;
+			break;
+		}
+
+		f2->f_offset = f1->f_offset = 0;
+		f2->f_flag = f1->f_flag = oflag;
+		f2->f_count = f1->f_count = 1;
+
+		reply->result = 0;
+		reply->data[0] = d1->node.key;
+		reply->data[1] = d2->node.key;
+		return reply_success;
+	} while (false);
+
+	if (d1) {
+		if (d1->file) {
+			_clunk(d1->file, token, req);
+			d1->file = NULL;
+		}
+
+		process_destroy_desc(process, d1->node.key);
+	}
+
+	if (d2) {
+		if (d2->file) {
+			_clunk(d2->file, token, req);
+			d2->file = NULL;
+		}
+
+		process_destroy_desc(process, d2->node.key);
+	}
+
+	reply->result = -1;
+	return reply_failure;
 }

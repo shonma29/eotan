@@ -1,5 +1,3 @@
-#ifndef _MM_PROXY_H_
-#define _MM_PROXY_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,24 +24,28 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "process.h"
+#include <errno.h>
+#include <ipc.h>
+#include <services.h>
+#include <sys/syscall.h>
 
-extern ID receiver_id;
 
-static inline int create_token(const int thread_id,
-		const mm_session_t *session)
+int pipe(int fildes[2])
 {
-	return ((thread_id << 16) | (session->node.key & 0xffff));
+	sys_args_t args = { syscall_pipe };
+	int reply_size = ipc_call(PORT_MM, &args, sizeof(args));
+	sys_reply_t *reply = (sys_reply_t *) &args;
+	if (reply_size == sizeof(*reply)) {
+		if (reply->result == (-1))
+			errno = reply->data[0];
+		else {
+			fildes[0] = reply->data[0];
+			fildes[1] = reply->data[1];
+		}
+
+		return reply->result;
+	} else {
+		errno = ECONNREFUSED;
+		return (-1);
+	}
 }
-
-extern int _attach(mm_file_t **, mm_request_t *, mm_process_t *, const int);
-extern int _walk(mm_file_t **, mm_process_t *, const int, const char *,
-		mm_request_t *);
-extern int _walk_child(mm_file_t *, mm_file_t *, const char *, mm_request_t *);
-extern int _open(const mm_file_t *, const int, const int, mm_request_t *);
-extern int _read(const mm_file_t *, const int, const off_t, const size_t,
-		char *, mm_request_t *);
-extern int _clunk(mm_file_t *, const int, mm_request_t *);
-extern int _fstat(struct stat *, const mm_file_t *, const int, mm_request_t *);
-
-#endif
