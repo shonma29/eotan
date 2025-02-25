@@ -31,5 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 extern void handle32(void);
 extern void handle33(void);
 extern void handle44(void);
+extern void handle46(void);
+extern void handle47(void);
 
 #endif

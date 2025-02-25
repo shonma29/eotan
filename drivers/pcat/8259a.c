@@ -56,6 +56,8 @@ void pic_initialize(void)
 	idt_set(PIC_IR_VECTOR(ir_pit), handle32);
 	idt_set(PIC_IR_VECTOR(ir_keyboard), handle33);
 	idt_set(PIC_IR_VECTOR(ir_mouse), handle44);
+	idt_set(PIC_IR_VECTOR(ir_ide_primary), handle46);
+	idt_set(PIC_IR_VECTOR(ir_ide_secondary), handle47);
 }
 
 ER pic_reset_mask(const UB ir)

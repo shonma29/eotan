@@ -34,7 +34,19 @@ For more information, please refer to <http://unlicense.org/>
 .globl handle32
 .globl handle33
 .globl handle44
+.globl handle46
+.globl handle47
 
+
+/* primary ata */
+handle46:
+	pushl $46
+	jmp interrupt_slave
+
+/* secondary ata */
+handle47:
+	pushl $47
+	jmp interrupt_slave
 
 /* psaux */
 handle44:
