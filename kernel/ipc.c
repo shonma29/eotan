@@ -439,8 +439,12 @@ int ipc_notify(const int port_id, const unsigned int flag)
 			break;
 		case TTS_WAI:
 		case TTS_WAS:
-			if (th->wait.type == wait_flag)
+			if (th->wait.type == wait_flag) {
+				th->port.flag = 0;
 				release(th);
+				result = E_OK;
+				break;
+			}
 		default:
 			th->port.flag |= flag;
 			result = E_OK;
