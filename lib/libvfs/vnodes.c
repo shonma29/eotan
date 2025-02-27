@@ -114,3 +114,11 @@ vnode_t *vnodes_find(const vfs_t *fsp, const int index)
 
 	return NULL;
 }
+
+void vnodes_synchronize(vfs_t *fsp)
+{
+	const list_t *vnodes = &(fsp->vnodes);
+	for (list_t *p = list_next(vnodes); !list_is_edge(vnodes, p);
+			p = list_next(p))
+		vfs_synchronize(getINodeParent(p));
+}

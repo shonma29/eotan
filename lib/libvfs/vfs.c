@@ -79,7 +79,7 @@ int vfs_unmount(vfs_t *fs)
 	if (error_no)
 		return error_no;
 
-	return cache_synchronize(&(fs->device), true);
+	return cache_flush(&(fs->device), true);
 }
 
 int vfs_walk(vnode_t *parent, char *path, const int flags,

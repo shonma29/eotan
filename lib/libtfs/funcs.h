@@ -54,6 +54,7 @@ extern int tfs_shorten(vnode_t *, const size_t);
 /* file.c */
 extern int tfs_open(vfs_t *, const ino_t, vnode_t *);
 extern int tfs_close(vnode_t *);
+extern int tfs_synchronize(vnode_t *);
 //TODO use off_t
 extern int tfs_read(vnode_t *, copier_t *, const unsigned int, const size_t,
 		size_t *);

@@ -111,7 +111,11 @@ void start(VP_INT exinf)
 			//TODO ad-hoc
 			if ((size == sizeof(int))
 					&& (*((int *) &(req.packet)) == SIGNAL_SYNC)) {
-				cache_synchronize(&(rootfs.device), false);
+				vnodes_synchronize(&rootfs);
+				int result = cache_flush(&(rootfs.device), false);
+				if (result)
+					log_warning("flush %d\n", result);
+
 				if (!key_of_ipc(req.tag))
 					continue;
 			}

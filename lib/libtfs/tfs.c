@@ -41,7 +41,8 @@ vfs_operation_t vfs_fsops = {
 	tfs_create,
 	tfs_close,
 	tfs_read,
-	tfs_write
+	tfs_write,
+	tfs_synchronize
 };
 
 

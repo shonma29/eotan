@@ -29,6 +29,8 @@ For more information, please refer to <http://unlicense.org/>
 #include "../libserv/libserv.h"
 #include "funcs.h"
 
+static int _synchronize_vnode(vnode_t *);
+
 
 int tfs_open(vfs_t *fs, const ino_t ino, vnode_t *vnode)
 {
@@ -55,7 +57,25 @@ int tfs_close(vnode_t *vnode)
 	if (!inode)
 		return 0;
 
+	int result = _synchronize_vnode(vnode);
+	if (result)
+		return result;
+
+	if (!cache_release(inode, false))
+		return EIO;
+
+	return 0;
+}
+
+int tfs_synchronize(vnode_t *vnode)
+{
+	return ((vnode->private) ? _synchronize_vnode(vnode) : 0);
+}
+
+static int _synchronize_vnode(vnode_t *vnode)
+{
 	if (vnode->dirty) {
+		struct tfs_inode *inode = vnode->private;
 		inode->i_inumber = vnode->index;
 		inode->i_mode = vnode->mode;
 		inode->i_uid = vnode->uid;
@@ -67,9 +87,6 @@ int tfs_close(vnode_t *vnode)
 
 		vnode->dirty = false;
 	}
-
-	if (!cache_release(inode, false))
-		return EIO;
 
 	return 0;
 }

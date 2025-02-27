@@ -67,6 +67,7 @@ typedef struct _vfs_operation_t {
 			const size_t, size_t *);
 	int (*write)(struct _vnode_t *, copier_t *, const unsigned int,
 			const size_t, size_t *);
+	int (*synchronize)(struct _vnode_t *);
 } vfs_operation_t;
 
 typedef struct _vfs_t {
@@ -118,6 +119,11 @@ static inline int vfs_wstat(vnode_t *vnode, const struct stat *st)
 	return vnode->fs->operations.wstat(vnode, st);
 }
 
+static inline int vfs_synchronize(vnode_t *vnode)
+{
+	return vnode->fs->operations.synchronize(vnode);
+}
+
 extern vfs_operation_t vfs_fsops;
 
 extern int copy_from(void *, void *, const size_t);
@@ -131,13 +137,14 @@ extern void *cache_get(block_device_t *, const unsigned int);
 extern bool cache_modify(const void *);
 extern bool cache_release(const void *, const bool);
 extern bool cache_invalidate(block_device_t *, const unsigned int);
-extern int cache_synchronize(block_device_t *, const bool);
+extern int cache_flush(block_device_t *, const bool);
 
 extern int vnodes_initialize(void *(*)(void), void (*)(void *),	const size_t);
 extern vnode_t *vnodes_create(vnode_t *);
 extern int vnodes_append(vnode_t *);
 extern int vnodes_remove(vnode_t *);
 extern vnode_t *vnodes_find(const vfs_t *, const int);
+extern void vnodes_synchronize(vfs_t *);
 
 extern int vfs_mount(const int, vfs_t *, const size_t);
 extern int vfs_unmount(vfs_t *);
