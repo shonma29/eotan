@@ -4,3 +4,13 @@ include/arch
 include/mpu
 lib/libm/mpu
 starter/arch
+
+motd
+*.inc
+*.o
+*.a
+*.bin
+*.img
+*.iso
+
+._*
