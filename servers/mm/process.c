@@ -535,25 +535,6 @@ static void set_local(mm_process_t *process, const char *wd,
 	strcpy(process->local->wd, wd);
 }
 
-int mm_thread_find(mm_request_t *req)
-{
-	sys_reply_t *reply = (sys_reply_t *) &(req->args);
-	do {
-		mm_thread_t *th = thread_find((ID) (req->args.arg1));
-		if (!th) {
-			reply->data[0] = ESRCH;
-			break;
-		}
-
-		reply->data[0] = 0;
-		reply->result = ((mm_process_t *) (th->process))->node.key;
-		return reply_success;
-	} while (false);
-
-	reply->result = -1;
-	return reply_failure;
-}
-
 mm_thread_t *thread_find(const ID tid)
 {
 	node_t *node = tree_get(&thread_tree, tid);

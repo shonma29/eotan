@@ -87,7 +87,6 @@ extern int mm_stat(mm_request_t *);
 extern int mm_fstat(mm_request_t *);
 extern int mm_chmod(mm_request_t *);
 extern int mm_clock_gettime(mm_request_t *);
-extern int mm_thread_find(mm_request_t *);
 extern int mm_kill(mm_request_t *);
 
 #endif

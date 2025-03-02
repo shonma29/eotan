@@ -124,16 +124,6 @@ void start(VP_INT exinf)
 			reply_error(req.tag, 0, 0, EPROTO);
 			continue;
 		}
-/*
-		//TODO validate session
-		pid_t pid = thread_find(unpack_tid(&req));
-		if (pid == -1) {
-			log_err(MYNAME ": find failed %d\n", pid);
-			//TODO what to do?
-			reply2(req.tag, EINVAL, -1, 0);
-			continue;
-		}
-*/
 
 		int result;
 		if (req.packet.header.ident != IDENT)
