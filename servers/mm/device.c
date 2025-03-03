@@ -31,7 +31,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "mm.h"
 #include "device.h"
 
-static slab_t file_slab;
 static tree_t device_tree;
 static mm_device_t devices[] = {
 	{ { (int) 'c' }, NULL, PORT_CONSOLE },
@@ -43,16 +42,6 @@ static mm_device_t devices[] = {
 
 void device_initialize(void)
 {
-	// initialize file table
-	file_slab.unit_size = sizeof(mm_file_t);
-	file_slab.block_size = PAGE_SIZE;
-	file_slab.min_block = 1;
-	file_slab.max_block = slab_max_block(FILE_MAX, PAGE_SIZE,
-			sizeof(mm_file_t));
-	file_slab.palloc = kcall->palloc;
-	file_slab.pfree = kcall->pfree;
-	slab_create(&file_slab);
-
 	tree_create(&device_tree, NULL, NULL);
 	for (int i = 0; i < NUM_OF_DEVICES; i++) {
 		int name = devices[i].node.key;

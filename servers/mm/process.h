@@ -67,11 +67,6 @@ typedef struct {
 
 typedef struct {
 	node_t node;
-	list_t members;
-} mm_process_group_t;
-
-typedef struct {
-	node_t node;
 	struct {
 		mm_segment_t exec;
 		mm_segment_t heap;

@@ -48,8 +48,6 @@ static tree_t process_tree;
 static slab_t thread_slab;
 static tree_t thread_tree;
 static node_t *thread_lookup[THREAD_LOOKUP_SIZE];
-static slab_t process_group_slab;
-static tree_t process_group_tree;
 
 /*
 static inline mm_process_t *getProcessFromChildren(const list_t *p)
@@ -68,12 +66,6 @@ static inline mm_process_t *getProcessFromMembers(const list_t *p)
 {
 	return ((mm_process_t *) ((uintptr_t) p
 			- offsetof(mm_process_t, members)));
-}
-
-static inline mm_process_group_t *getProcessGroupFromMembers(const list_t *p)
-{
-	return ((mm_process_group_t *) ((uintptr_t) p
-			- offsetof(mm_process_group_t, members));
 }
 */
 
@@ -119,18 +111,6 @@ void process_initialize(void)
 
 	tree_create(&thread_tree, NULL, thread_lookup_selector);
 	tree_initialize_lookup(&thread_tree, thread_lookup, THREAD_LOOKUP_SIZE);
-
-	// initialize process group table
-	process_group_slab.unit_size = sizeof(mm_process_group_t);
-	process_group_slab.block_size = PAGE_SIZE;
-	process_group_slab.min_block = 1;
-	process_group_slab.max_block = slab_max_block(PROCESS_GROUP_MAX,
-			PAGE_SIZE, sizeof(mm_process_group_t));
-	process_group_slab.palloc = kcall->palloc;
-	process_group_slab.pfree = kcall->pfree;
-	slab_create(&process_group_slab);
-
-	tree_create(&process_group_tree, NULL, NULL);
 }
 
 mm_process_t *process_find(const ID pid)
@@ -183,11 +163,10 @@ mm_process_t *process_duplicate(mm_process_t *src, void *entry, void *stack)
 		}
 
 		list_append(&(src->children), &(dest->brothers));
-		node_t *leader = tree_get(&process_group_tree, INIT_PID);
-		if (leader) {
-			list_append(&((mm_process_group_t *) leader)->members,
-					&(dest->members));
-		}
+		mm_process_t *leader = process_find(src->pgid);
+		if (leader)
+			list_append(&(leader->members), &(dest->members));
+
 		dest->ppid = src->node.key;
 		dest->pgid = src->pgid;
 		dest->uid = src->uid;
@@ -450,15 +429,6 @@ int create_init(const pid_t pid, const FP entry)
 	p->uid = INIT_UID;
 	p->gid = INIT_GID;
 	p->root = NULL;
-
-	mm_process_group_t *pg = slab_alloc(&process_group_slab);
-	if (pg) {
-		list_initialize(&(pg->members));
-		if (!tree_put(&process_group_tree, INIT_PID, (node_t *) pg)) {
-			//TODO what to do?
-			slab_free(&process_group_slab, pg);
-		}
-	}
 
 	set_local(p, "/", 1);
 #if 0
