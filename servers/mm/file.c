@@ -81,9 +81,6 @@ void file_initialize(void)
 
 mm_session_t *session_create(const int sid)
 {
-	if (tree_get(&session_tree, sid))
-		return NULL;
-
 	mm_session_t *session = (mm_session_t *) slab_alloc(&session_slab);
 	if (session) {
 		if (!tree_put(&session_tree, sid, &(session->node))) {

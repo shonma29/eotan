@@ -256,10 +256,6 @@ mm_request_t *find_request(const int tag)
 
 int add_request(const int tag, mm_request_t *req)
 {
-	//TODO remove this code after test
-	if (tree_get(&tag_tree, tag))
-		return (-1);
-
 	return (tree_put(&tag_tree, tag, &(req->node)) ? 0 : (-1));
 }
 

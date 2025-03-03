@@ -114,14 +114,9 @@ void session_initialize(void)
 
 session_t *session_create(const pid_t pid)
 {
-	//TODO error when exists?
-	session_t *session = (session_t*)tree_get(&session_tree, pid);
-
-	if (!session) {
-		session = slab_alloc(&session_slab);
-		if (!session)
-			return NULL;
-	}
+	session_t *session = slab_alloc(&session_slab);
+	if (!session)
+		return NULL;
 
 	if (!tree_put(&session_tree, pid, &(session->node))) {
 		slab_free(&session_slab, session);
@@ -130,7 +125,6 @@ session_t *session_create(const pid_t pid)
 
 	session->root = NULL;
 	tree_create(&(session->files), NULL, NULL);
-
 	return session;
 }
 
