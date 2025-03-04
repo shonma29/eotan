@@ -32,7 +32,6 @@ For more information, please refer to <http://unlicense.org/>
 #define THREADS_PER_PROCESS (32)
 #define FILE_MAX (65536)
 #define FILES_PER_PROCESS (1024)
-#define PROCESS_GROUP_MAX (32768)
 #define SESSION_MAX (32768)
 #define FILES_PER_SESSION (32768)
 
