@@ -85,8 +85,7 @@ int mm_attach(mm_request_t *req)
 
 		mm_process_t *process = get_process(th);
 		mm_file_t *file;
-		int result = _attach(&file, req, process,
-				create_sid(PORT_FS, process->node.key));
+		int result = _attach(&file, req, process, PORT_FS);
 		if (result) {
 			reply->data[0] = result;
 			break;
@@ -103,9 +102,9 @@ int mm_attach(mm_request_t *req)
 }
 
 int _attach(mm_file_t **root, mm_request_t *req, mm_process_t *process,
-		const int sid)
+		const int server_id)
 {
-	mm_session_t *session = session_create(sid);
+	mm_session_t *session = session_create(server_id);
 	if (!session)
 		return ENOMEM;
 
@@ -115,7 +114,7 @@ int _attach(mm_file_t **root, mm_request_t *req, mm_process_t *process,
 		return ENOMEM;
 	}
 
-	session->server_id = server_id_from_sid(sid);
+	session->server_id = server_id;
 
 	fsmsg_t *message = &(req->message);
 	message->header.type = Tattach;
@@ -668,7 +667,7 @@ int _walk(mm_file_t **file, mm_process_t *process, const int thread_id,
 			root = device->root;
 		else {
 			int result = _attach(&root, req, process,
-					create_sid(device->server_id, 0));
+					device->server_id);
 			if (result)
 				return result;
 

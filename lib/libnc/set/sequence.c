@@ -38,7 +38,8 @@ int sequence_initialize(sequence_t *s, size_t max, void *buf)
 {
 	if (!max
 			|| (max > INT_MAX)
-			|| (max & BITS_MASK))
+			|| (max & BITS_MASK)
+			|| !buf)
 		return (-1);
 
 	s->rest = max;

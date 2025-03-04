@@ -43,12 +43,17 @@ For more information, please refer to <http://unlicense.org/>
 
 #define THREAD_LOOKUP_SIZE (16)
 
+enum {
+	PROCESS_SLAB = 0x01,
+	THREAD_SLAB = 0x02
+};
+
 static slab_t process_slab;
 static tree_t process_tree;
 static slab_t thread_slab;
 static tree_t thread_tree;
 static node_t *thread_lookup[THREAD_LOOKUP_SIZE];
-
+static int initialized_resources = 0;
 /*
 static inline mm_process_t *getProcessFromChildren(const list_t *p)
 {
@@ -85,7 +90,7 @@ static node_t **thread_lookup_selector(const tree_t *tree, const int key)
 	return &(((node_t **) tree->root)[key & (THREAD_LOOKUP_SIZE - 1)]);
 }
 
-void process_initialize(void)
+int process_initialize(void)
 {
 	// initialize process table
 	process_slab.unit_size = sizeof(mm_process_t);
@@ -95,7 +100,10 @@ void process_initialize(void)
 			sizeof(mm_process_t));
 	process_slab.palloc = kcall->palloc;
 	process_slab.pfree = kcall->pfree;
-	slab_create(&process_slab);
+	if (slab_create(&process_slab))
+		return PROCESS_SLAB;
+	else
+		initialized_resources |= PROCESS_SLAB;
 
 	tree_create(&process_tree, NULL, NULL);
 
@@ -107,10 +115,14 @@ void process_initialize(void)
 			sizeof(mm_thread_t));
 	thread_slab.palloc = kcall->palloc;
 	thread_slab.pfree = kcall->pfree;
-	slab_create(&thread_slab);
+	if (slab_create(&thread_slab))
+		return THREAD_SLAB;
+	else
+		initialized_resources |= THREAD_SLAB;
 
 	tree_create(&thread_tree, NULL, thread_lookup_selector);
 	tree_initialize_lookup(&thread_tree, thread_lookup, THREAD_LOOKUP_SIZE);
+	return 0;
 }
 
 mm_process_t *process_find(const ID pid)

@@ -84,6 +84,7 @@ typedef struct {
 	gid_t gid;
 	mm_file_t *root;
 	process_local_t *local;
+	int status;
 	int exit_status;
 	int tag;
 	pid_t wpid;
@@ -111,7 +112,7 @@ static inline int server_id_from_sid(const int server_id)
 	return ((server_id >> 16) & 0xffff);
 }
 
-extern void process_initialize(void);
+extern int process_initialize(void);
 extern mm_process_t *process_find(const ID);
 extern mm_process_t *process_duplicate(mm_process_t *, void *, void *);
 extern int process_replace(mm_process_t *process, void *address,
@@ -122,7 +123,7 @@ extern int process_destroy(mm_process_t *, const int);
 extern int create_init(const pid_t, const FP);
 extern mm_thread_t *thread_find(const ID);
 
-extern void file_initialize(void);
+extern int file_initialize(void);
 extern mm_session_t *session_create(const int);
 extern int session_destroy(mm_session_t *);
 extern mm_descriptor_t *process_create_desc(mm_process_t *);

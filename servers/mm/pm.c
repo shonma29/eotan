@@ -34,6 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 #include <sys/unistd.h>
 #include <sys/wait.h>
+#include <mm/status.h>
 #include "mm.h"
 #include "proxy.h"
 
@@ -302,6 +303,8 @@ int mm_exit(mm_request_t *req)
 
 static int cleanup(mm_process_t *process, mm_thread_t *th, mm_request_t *req)
 {
+	process->status |= PROCESS_STATUS_DISABLED;
+
 	//TODO disable fibers
 	for (node_t *node; (node = tree_root(&(process->descriptors)));) {
 		int d = node->key;

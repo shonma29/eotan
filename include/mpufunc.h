@@ -59,7 +59,7 @@ ER_ID interrupt_bind(T_CISR *);
 ER interrupt_unbind(ID);
 
 /* define_mpu_handlers */
-void define_mpu_handlers(void (*)(VP_INT), void (*)(VP_INT));
+int define_mpu_handlers(void (*)(VP_INT), void (*)(VP_INT));
 
 /* paging_init.c */
 extern void paging_initialize(const size_t);

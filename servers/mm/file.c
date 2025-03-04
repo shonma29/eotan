@@ -27,16 +27,25 @@ For more information, please refer to <http://unlicense.org/>
 #include <errno.h>
 #include <mm/config.h>
 #include <nerve/kcall.h>
+#include <set/sequence.h>
 #include "process.h"
 
-#define MIN_SID (1)
 #define MIN_FID (1)
 #define MIN_AUTO_FD (0)
+
+enum {
+	FILE_SLAB = 0x01,
+	DESCRIPTOR_SLAB = 0x02,
+	SESSION_SLAB = 0x04,
+	SESSION_SEQUENCE = 0x08
+};
 
 static slab_t file_slab;
 static slab_t descriptor_slab;
 static slab_t session_slab;
 static tree_t session_tree;
+static sequence_t session_sequence;
+static int initialized_resources = 0;
 
 static int process_find_new_fd(const mm_process_t *);
 static int session_find_new_fid(mm_session_t *);
@@ -44,7 +53,7 @@ static mm_file_t *session_allocate_file(void);
 static void session_deallocate_file(mm_file_t *);
 
 
-void file_initialize(void)
+int file_initialize(void)
 {
 	// initialize file table
 	file_slab.unit_size = sizeof(mm_file_t);
@@ -54,7 +63,10 @@ void file_initialize(void)
 			sizeof(mm_file_t));
 	file_slab.palloc = kcall->palloc;
 	file_slab.pfree = kcall->pfree;
-	slab_create(&file_slab);
+	if (slab_create(&file_slab))
+		return FILE_SLAB;
+	else
+		initialized_resources |= FILE_SLAB;
 
 	// initialize descriptor table
 	descriptor_slab.unit_size = sizeof(mm_descriptor_t);
@@ -64,7 +76,10 @@ void file_initialize(void)
 			sizeof(mm_descriptor_t));
 	descriptor_slab.palloc = kcall->palloc;
 	descriptor_slab.pfree = kcall->pfree;
-	slab_create(&descriptor_slab);
+	if (slab_create(&descriptor_slab))
+		return DESCRIPTOR_SLAB;
+	else
+		initialized_resources |= DESCRIPTOR_SLAB;
 
 	// initialize session table
 	session_slab.unit_size = sizeof(mm_session_t);
@@ -74,13 +89,32 @@ void file_initialize(void)
 			sizeof(mm_session_t));
 	session_slab.palloc = kcall->palloc;
 	session_slab.pfree = kcall->pfree;
-	slab_create(&session_slab);
+	if (slab_create(&session_slab))
+		return SESSION_SLAB;
+	else
+		initialized_resources |= SESSION_SLAB;
 
 	tree_create(&session_tree, NULL, NULL);
+
+	if (sequence_initialize(&session_sequence, SESSION_MAX, kcall->palloc()))
+		return SESSION_SEQUENCE;
+	else
+		initialized_resources |= SESSION_SEQUENCE;
+
+	// skip 0 as session id
+	if (sequence_get(&session_sequence) < 0)
+		return SESSION_SEQUENCE;
+
+	return 0;
 }
 
-mm_session_t *session_create(const int sid)
+mm_session_t *session_create(const int server_id)
 {
+	int sequence = sequence_get(&session_sequence);
+	if (sequence < 0)
+		return NULL;
+
+	int sid = create_sid(server_id, sequence);
 	mm_session_t *session = (mm_session_t *) slab_alloc(&session_slab);
 	if (session) {
 		if (!tree_put(&session_tree, sid, &(session->node))) {

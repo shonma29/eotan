@@ -1,3 +1,5 @@
+#ifndef _MM_STATUS_H_
+#define _MM_STATUS_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,49 +26,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <mpufunc.h>
-#include <nerve/kcall.h>
-#include "interrupt.h"
-#include "../../lib/libserv/libserv.h"
 
-static int _set(T_CISR *pk_cisr, const int);
+#define PROCESS_STATUS_NORMAL (0)
+#define PROCESS_STATUS_DISABLED (1)
 
-
-static int _set(T_CISR *pk_cisr, const int n)
-{
-	pk_cisr->exinf = n;
-	pk_cisr->intno = n;
-
-	ER_ID error_no = create_isr(pk_cisr);
-	if (error_no < 0) {
-		kcall->printk("create_isr %d failed %d\n", n, error_no);
-		return error_no;
-	}
-
-	return 0;
-}
-
-
-int define_mpu_handlers(void (*default_handler)(VP_INT exinf),
-		void (*page_fault_handler)(VP_INT exinf))
-{
-	int result = 0;
-	T_CISR pk_cisr;
-	pk_cisr.isratr = TA_HLNG,
-	pk_cisr.isr = default_handler;
-
-	for (INTNO i = int_division_error; i <= int_protection; i++)
-		if (_set(&pk_cisr, i))
-			result = -1;
-
-	for (INTNO i = int_reserved_15; i <= int_reserved_31; i++) {
-		if (_set(&pk_cisr, i))
-			result = -1;
-	}
-	pk_cisr.isr = page_fault_handler;
-	if (_set(&pk_cisr, int_page_fault))
-		result = -1;
-
-	return result;
-}
+#endif

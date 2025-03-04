@@ -37,6 +37,15 @@ For more information, please refer to <http://unlicense.org/>
 #include "proxy.h"
 #include "device.h"
 
+enum {
+	PROCESSES = 0x01,
+	FILES = 0x02,
+	REQUEST_SLAB = 0x04,
+	PORT = 0x08,
+	HANDLERS = 0x10,
+	INIT = 0x20
+};
+
 static int (*funcs[])(mm_request_t *) = {
 	mm_fork,
 	mm_exec,
@@ -68,10 +77,10 @@ static int (*funcs[])(mm_request_t *) = {
 
 static slab_t request_slab;
 static tree_t tag_tree;
-ID receiver_id;
 static void *receiver_sp;
 static void *fiber_stacks_head = NULL;
 static size_t fiber_stacks_count = 0;
+static int initialized_resources = 0;
 
 static int initialize(void);
 static void execute(mm_request_t *);
@@ -85,10 +94,17 @@ static void giveBackFiberStack(void *);
 
 static int initialize(void)
 {
-	process_initialize();
-	file_initialize();
+	if (process_initialize())
+		return PROCESSES;
+	else
+		initialized_resources |= PROCESSES;
+
+	if (file_initialize())
+		return FILES;
+	else
+		initialized_resources |= FILES;
+
 	device_initialize();
-	define_mpu_handlers(default_handler, page_fault_handler);
 
 	request_slab.unit_size = sizeof(mm_request_t);
 	request_slab.block_size = PAGE_SIZE;
@@ -97,17 +113,33 @@ static int initialize(void)
 			sizeof(mm_request_t));
 	request_slab.palloc = kcall->palloc;
 	request_slab.pfree = kcall->pfree;
-	slab_create(&request_slab);
-	tree_create(&tag_tree, NULL, NULL);
+	if (slab_create(&request_slab))
+		return REQUEST_SLAB;
+	else
+		initialized_resources |= REQUEST_SLAB;
 
-	receiver_id = kcall->thread_get_id();
+	tree_create(&tag_tree, NULL, NULL);
 
 	T_CPOR pk_cpor = { TA_TFIFO, BUFSIZ, BUFSIZ };
 	int result = kcall->ipc_open(&pk_cpor);
-	if (result)
-		return result;
+	if (result) {
+		log_err(MYNAME ": open failed %d\n", result);
+		return PORT;
+	} else
+		initialized_resources |= PORT;
 
-	create_init(INIT_PID, init);
+	if (define_mpu_handlers(default_handler, page_fault_handler))
+		return HANDLERS;
+	else
+		initialized_resources |= HANDLERS;
+
+	result = create_init(INIT_PID, init);
+	if (result) {
+		log_err(MYNAME ": init failed %d\n", result);
+		return INIT;
+	} else
+		initialized_resources |= INIT;
+
 	return 0;
 }
 
@@ -230,9 +262,9 @@ static void accept(void)
 
 void start(VP_INT exinf)
 {
-	ER error = initialize();
+	int error = initialize();
 	if (error)
-		log_err(MYNAME ": open failed %d\n", error);
+		log_err(MYNAME ": initialize failed %d\n", error);
 	else {
 		log_info(MYNAME ": start\n");
 
