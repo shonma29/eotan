@@ -52,6 +52,8 @@ extern pid_t getppid(void);
 extern uid_t getuid(void);
 extern off_t lseek(int, off_t, int);
 extern int pipe(int fildes[2]);
+extern int bind(const char *, const char *, int);
+extern int unmount(const char *, const char *);
 extern ssize_t read(int, void *, size_t);
 extern int rmdir(const char *);
 extern unsigned int sleep(unsigned int);

@@ -35,17 +35,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/syscall.h>
 #include "mm.h"
 #include "proxy.h"
-#include "device.h"
 
 #define MYNAME "mm"
-
-#define ERR_INSUFFICIENT_BUFFER (-1)
-#define ERR_BAD_PATH (-2)
-
-#define PATH_DELIMITER '/'
-#define PATH_DOT '.'
-#define PATH_NUL '\0'
-#define PATH_DEVICE '#'
 
 typedef struct {
 	unsigned short tsize;
@@ -68,38 +59,9 @@ static fspacket_definition_t packet_def[] = {
 
 static int call_device(const mm_file_t *, mm_request_t *);
 static int create_tag(const mm_request_t *);
-static int calc_path(char *, const char *, const char *, const long);
 static long copy_path(char *, const char *, const long);
 static char *omit_previous_entry(long *, char *, char *);
 
-
-int mm_attach(mm_request_t *req)
-{
-	sys_reply_t *reply = (sys_reply_t *) &(req->args);
-	do {
-		mm_thread_t *th = thread_find(port_of_ipc(req->node.key));
-		if (!th) {
-			reply->data[0] = EPERM;
-			break;
-		}
-
-		mm_process_t *process = get_process(th);
-		mm_file_t *file;
-		int result = _attach(&file, req, process, PORT_FS);
-		if (result) {
-			reply->data[0] = result;
-			break;
-		}
-
-		process->root = file;
-		reply->result = 0;
-		reply->data[0] = 0;
-		return reply_success;
-	} while (false);
-
-	reply->result = -1;
-	return reply_failure;
-}
 
 int _attach(mm_file_t **root, mm_request_t *req, mm_process_t *process,
 		const int server_id)
@@ -123,7 +85,7 @@ int _attach(mm_file_t **root, mm_request_t *req, mm_process_t *process,
 	message->Tattach.fid = file->node.key;
 	message->Tattach.afid = NOFID;
 	message->Tattach.uname = (char *) (process->uid);
-	message->Tattach.aname = (char *) "/";
+	message->Tattach.aname = (char *) PATH_ROOT;
 
 	int result = call_device(file, req);
 	//log_info("proxy: attach[sid=%x fid=%d] %d\n", session->node.key,
@@ -238,10 +200,6 @@ int mm_create(mm_request_t *req)
 		bool in_root;
 		char *name = strrchr(req->walkpath, '/');//TODO slow
 		if (name == req->walkpath)
-			in_root = true;
-		else if ((name == &(req->walkpath[2]))
-				&& (req->walkpath[0] == PATH_DEVICE))
-			//TODO test
 			in_root = true;
 		else {
 			//TODO test
@@ -657,27 +615,28 @@ int _walk(mm_file_t **file, mm_process_t *process, const int thread_id,
 			return EINVAL;
 	}
 
-	int offset;
-	mm_file_t *root;
-	if (req->walkpath[0] == PATH_DEVICE) {
-		mm_device_t *device = device_get((int) req->walkpath[1]);
-		if (!device)
-			return ENODEV;
-		else if (device->root)
-			root = device->root;
-		else {
-			int result = _attach(&root, req, process,
-					device->server_id);
-			if (result)
-				return result;
+	int offset = 0;
+	mm_file_t *root = process->root;
+	for (list_t *p = process->namespaces.next;
+			!list_is_edge(&(process->namespaces), p); p = p->next) {
+		mm_namespace_t *ns = getNamespaceFromBrothers(p);
+		int i;
+		for (i = 0; req->walkpath[i] == ns->name[i]; i++)
+			if (!(ns->name[i]))
+				break;
 
-			device->root = root;
+		if (!(ns->name[i])) {
+			if (req->walkpath[i] == PATH_DELIMITER) {
+				offset = i;
+				root = ns->root;
+				break;
+			} else if (!(req->walkpath[i])) {
+				req->walkpath[0] = PATH_DELIMITER;
+				req->walkpath[1] = PATH_NUL;
+				root = ns->root;
+				break;
+			}
 		}
-
-		offset = 2;
-	} else {
-		root = process->root;
-		offset = 0;
 	}
 
 	if (!root)
@@ -828,8 +787,7 @@ static int create_tag(const mm_request_t *req)
 	return req->node.key;
 }
 
-static int calc_path(char *dest, const char *wd, const char *src,
-		const long size)
+int calc_path(char *dest, const char *wd, const char *src, const long size)
 {
 	if (size < 2)
 		return ERR_INSUFFICIENT_BUFFER;
@@ -845,26 +803,8 @@ static int calc_path(char *dest, const char *wd, const char *src,
 		*w++ = PATH_DELIMITER;
 		r++;
 		rest--;
-	} else if (*r == PATH_DEVICE) {
-		if (!(r[1])
-				|| (r[1] == PATH_DELIMITER))
-			return ERR_BAD_PATH;
-
-		rest -= 3;
-		if (rest < 0)
-			return ERR_INSUFFICIENT_BUFFER;
-
-		w = dest;
-		*w++ = *r++;
-		*w++ = *r++;
-		*w++ = PATH_DELIMITER;
-
-		if (*r == PATH_DELIMITER)
-			r++;
-		else if (*r)
-			return ERR_BAD_PATH;
 	} else {
-		//TODO check format of wd. (should start with '/' or '#')
+		//TODO check format of wd. (should start with '/')
 		long len = copy_path(dest, wd, rest);
 		if (!len)
 			return ERR_BAD_PATH;
@@ -944,13 +884,11 @@ end_of_src:
 
 	{
 		long len = (long) ((uintptr_t) w - (uintptr_t) dest);
-		if (w[-1] == PATH_DELIMITER) {
-			long min = (*dest == PATH_DEVICE) ? 3 : 1;
-			if (len > min) {
+		if (w[-1] == PATH_DELIMITER)
+			if (len > 1) {
 				w--;
 				len--;
 			}
-		}
 
 		*w = PATH_NUL;
 		return len;
@@ -974,8 +912,7 @@ static long copy_path(char *dest, const char *src, const long size)
 static char *omit_previous_entry(long *rest, char *head, char *tail)
 {
 	long len = (long) ((uintptr_t) tail - (uintptr_t) head);
-	long min = (*head == PATH_DEVICE) ? 3 : 1;
-	if (len <= min)
+	if (len <= 1)
 		return NULL;
 
 	char *p = (char *) tail - 3;

@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <errno.h>
 #include <fcntl.h>
 #include <init.h>
+#include <libc.h>
 #include <services.h>
 #include <string.h>
 #include <nerve/ipc_utils.h>
@@ -37,9 +38,14 @@ For more information, please refer to <http://unlicense.org/>
 #include <mm/status.h>
 #include "mm.h"
 #include "proxy.h"
+#include "device.h"
+
+#define MASK_BIND_MODE (MBEFORE | MAFTER)
 
 static int cleanup(mm_process_t *, mm_thread_t *, mm_request_t *);
 static int _seek(mm_process_t *, mm_file_t *, sys_args_t *, mm_request_t *);
+static void _remove_namespace(mm_process_t *, const char *,
+		const mm_thread_t *, mm_request_t *);
 
 
 int mm_fork(mm_request_t *req)
@@ -335,6 +341,18 @@ static int cleanup(mm_process_t *process, mm_thread_t *th, mm_request_t *req)
 		if (result)
 			log_err("pm: %d cleanup[root:%d] error=%d\n",
 					process->node.key, fid, result);
+	}
+
+	for (list_t *p; (p = list_dequeue(&(process->namespaces)));) {
+		mm_namespace_t *ns = getNamespaceFromBrothers(p);
+		int fid = ns->root->node.key;
+		int token = create_token(th->node.key, ns->root->session);
+		int result = _clunk(ns->root, token, req);
+		if (result)
+			log_err(MYNAME ": %d cleanup[ns:%d] error=%d\n",
+					process->node.key, fid, result);
+
+		process_deallocate_ns(ns);
 	}
 
 	return 0;
@@ -687,6 +705,193 @@ int mm_pipe(mm_request_t *req)
 
 		process_destroy_desc(process, d2->node.key);
 	}
+
+	reply->result = -1;
+	return reply_failure;
+}
+
+int mm_bind(mm_request_t *req)
+{
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
+	do {
+		mm_thread_t *th = thread_find(port_of_ipc(req->node.key));
+		if (!th) {
+			reply->data[0] = EPERM;
+			break;
+		}
+
+		ER_UINT len;
+		len = kcall->region_copy(th->node.key, (char *) (req->args.arg1),
+				PATH_MAX, req->pathbuf);
+		if (len < 0) {
+			reply->data[0] = EFAULT;
+			break;
+		} else if ((len != 2)
+				|| (req->pathbuf[0] != PATH_DEVICE)) {
+			//TODO support normal path
+			//TODO support directory of device?
+			reply->data[0] = EINVAL;
+			break;
+		}
+
+		mm_device_t *device = device_get((int) req->pathbuf[1]);
+		if (!device) {
+			reply->data[0] = ENODEV;
+			break;
+		}
+
+		len = kcall->region_copy(th->node.key, (char *) (req->args.arg2),
+				PATH_MAX, req->pathbuf);
+		if (len < 0) {
+			reply->data[0] = EFAULT;
+			break;
+		} else if (!len
+				//TODO support normal path
+				|| (len >= SIZE_NAMESPACE)
+				|| (req->pathbuf[0] != PATH_DELIMITER)) {
+			reply->data[0] = EINVAL;
+			break;
+		}
+
+		len = calc_path(req->walkpath, NULL, req->pathbuf, PATH_MAX);
+		if (len == ERR_INSUFFICIENT_BUFFER) {
+			reply->data[0] = ENAMETOOLONG;
+			break;
+		} else if (len < 0) {
+			reply->data[0] = EINVAL;
+			break;
+		}
+		//TODO check if the path exists?
+
+		if (req->args.arg3 != MREPL) {
+			//TODO support other flags
+			reply->data[0] = EINVAL;
+			break;
+		}
+
+		mm_process_t *process = get_process(th);
+		mm_namespace_t *ns = NULL;
+		if (strcmp(req->walkpath, PATH_ROOT)) {
+			ns = process_allocate_ns();
+			if (!ns) {
+				//TODO really?
+				reply->data[0] = ENOMEM;
+				break;
+			}
+		}
+
+		mm_file_t *file;
+		int result = _attach(&file, req, process, device->server_id);
+		if (result) {
+			if (ns)
+				process_deallocate_ns(ns);
+
+			reply->data[0] = result;
+			break;
+		}
+
+		if (ns) {
+			_remove_namespace(process, req->walkpath, th, req);
+			ns->root = file;
+			//TODO omit last successive '/'. call 'calc_path'
+			strcpy(ns->name, req->walkpath);
+			//TODO !check if the same name is appended
+			list_append(&(process->namespaces), &(ns->brothers));
+		} else {
+			if (process->root) {
+				//TODO really?
+				int fid = process->root->node.key;
+				int token = create_token(th->node.key,
+						process->root->session);
+				int result = _clunk(process->root, token, req);
+				if (result)
+					log_err(MYNAME ": %d clunk[%d] error=%d\n",
+							process->node.key,
+							fid, result);
+			}
+
+			process->root = file;
+		}
+
+		reply->result = 0;
+		reply->data[0] = 0;
+		return reply_success;
+	} while (false);
+
+	reply->result = -1;
+	return reply_failure;
+}
+
+static void _remove_namespace(mm_process_t *process, const char *old,
+		const mm_thread_t *th, mm_request_t *req)
+{
+	for (list_t *p = process->namespaces.next;
+			!list_is_edge(&(process->namespaces), p);) {
+		mm_namespace_t *ns = getNamespaceFromBrothers(p);
+		p = p->next;
+
+		if (strcmp(ns->name, old))
+			continue;
+
+		int fid = ns->root->node.key;
+		int token = create_token(th->node.key, ns->root->session);
+		int result = _clunk(ns->root, token, req);
+		if (result)
+			log_err(MYNAME ": %d remove[ns:%d] error=%d\n",
+					process->node.key, fid, result);
+
+		list_remove(&(ns->brothers));
+		process_deallocate_ns(ns);
+	}
+}
+
+int mm_unmount(mm_request_t *req)
+{
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
+	do {
+		mm_thread_t *th = thread_find(port_of_ipc(req->node.key));
+		if (!th) {
+			reply->data[0] = EPERM;
+			break;
+		}
+
+		if (req->args.arg1) {
+			//TODO support normal path
+			reply->data[0] = EINVAL;
+			break;
+		}
+
+		ER_UINT len = kcall->region_copy(th->node.key,
+				(char *) (req->args.arg2),
+				PATH_MAX, req->pathbuf);
+		if (len < 0) {
+			reply->data[0] = EFAULT;
+			break;
+		} else if (!len
+				//TODO support normal path
+				|| (len >= SIZE_NAMESPACE)
+				|| (req->pathbuf[0] != PATH_DELIMITER)) {
+			//TODO support normal path
+			reply->data[0] = EINVAL;
+			break;
+		}
+
+		len = calc_path(req->walkpath, NULL, req->pathbuf, PATH_MAX);
+		if (len == ERR_INSUFFICIENT_BUFFER) {
+			reply->data[0] = ENAMETOOLONG;
+			break;
+		} else if (len < 0) {
+			reply->data[0] = EINVAL;
+			break;
+		}
+
+		mm_process_t *process = get_process(th);
+		_remove_namespace(process, req->walkpath, th, req);
+		//TODO error if not exists?
+		reply->result = 0;
+		reply->data[0] = 0;
+		return reply_success;
+	} while (false);
 
 	reply->result = -1;
 	return reply_failure;

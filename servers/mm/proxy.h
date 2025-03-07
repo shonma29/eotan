@@ -28,6 +28,16 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include "process.h"
 
+#define ERR_INSUFFICIENT_BUFFER (-1)
+#define ERR_BAD_PATH (-2)
+
+#define PATH_DELIMITER '/'
+#define PATH_DOT '.'
+#define PATH_NUL '\0'
+#define PATH_DEVICE '#'
+
+#define PATH_ROOT "/"
+
 static inline int create_token(const int thread_id,
 		const mm_session_t *session)
 {
@@ -43,5 +53,6 @@ extern int _read(const mm_file_t *, const int, const off_t, const size_t,
 		char *, mm_request_t *);
 extern int _clunk(mm_file_t *, const int, mm_request_t *);
 extern int _fstat(struct stat *, const mm_file_t *, const int, mm_request_t *);
+extern int calc_path(char *, const char *, const char *, const long);
 
 #endif

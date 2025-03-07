@@ -25,29 +25,32 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <services.h>
-#include <mm/config.h>
-#include <nerve/kcall.h>
-#include <set/slab.h>
 #include "mm.h"
 #include "device.h"
 
 static tree_t device_tree;
 static mm_device_t devices[] = {
-	{ { (int) 'c' }, NULL, PORT_CONSOLE },
-	{ { (int) 'i' }, NULL, PORT_WINDOW }
+	{ { (int) 'c' }, PORT_CONSOLE },
+	{ { (int) 'i' }, PORT_WINDOW },
+	{ { (int) 's' }, PORT_FS }
 };
 
 #define NUM_OF_DEVICES (sizeof(devices) / sizeof(devices[0]))
 
 
-void device_initialize(void)
+int device_initialize(void)
 {
 	tree_create(&device_tree, NULL, NULL);
+
 	for (int i = 0; i < NUM_OF_DEVICES; i++) {
 		int name = devices[i].node.key;
-		if (!tree_put(&device_tree, name, &(devices[i].node)))
-			log_err("pm: failed to register %c\n", name);
+		if (!tree_put(&device_tree, name, &(devices[i].node))) {
+			log_err(MYNAME ": failed to register %c\n", name);
+			return (-1);
+		}
 	}
+
+	return 0;
 }
 
 mm_device_t *device_get(const int key)

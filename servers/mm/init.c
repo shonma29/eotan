@@ -25,7 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <init.h>
+#include <libc.h>
 #include <local.h>
+#include <major.h>
 #include <services.h>
 #include <string.h>
 #include <mm/config.h>
@@ -52,7 +54,10 @@ void init(void)
 {
 	do {
 		sys_args_t args;
-		args.syscall_no = syscall_attach;
+		args.syscall_no = syscall_bind;
+		args.arg1 = (int) DEVICE_CLASS_SERVER;
+		args.arg2 = (int) "/";
+		args.arg3 = MREPL;
 		if (kcall->ipc_call(PORT_MM, &args, sizeof(args))
 				!= sizeof(sys_reply_t)) {
 			log_info("init: call failed\n");

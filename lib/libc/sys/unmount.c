@@ -1,5 +1,3 @@
-#ifndef _MM_DEVICE_H_
-#define _MM_DEVICE_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,14 +24,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <set/tree.h>
+#include <unistd.h>
+#include "sys.h"
 
-typedef struct {
-	node_t node;
-	int server_id;
-} mm_device_t;
 
-extern int device_initialize(void);
-extern mm_device_t *device_get(const int);
-
-#endif
+int unmount(const char *name, const char *old)
+{
+	sys_args_t args = {
+		syscall_unmount,
+		(int) name,
+		(int) old
+	};
+	return _syscall(&args, sizeof(args));
+}

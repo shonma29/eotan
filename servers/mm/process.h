@@ -39,6 +39,8 @@ For more information, please refer to <http://unlicense.org/>
 
 #define MYNAME "mm"
 
+#define SIZE_NAMESPACE (8)
+
 typedef struct {
 	node_t node;
 	int server_id;
@@ -57,6 +59,12 @@ typedef struct {
 	node_t node;
 	mm_file_t *file;
 } mm_descriptor_t;
+
+typedef struct {
+	list_t brothers;
+	mm_file_t *root;
+	char name[SIZE_NAMESPACE];
+} mm_namespace_t;
 
 typedef struct {
 	node_t node;
@@ -78,6 +86,7 @@ typedef struct {
 	list_t brothers;
 	list_t children;
 	list_t members;
+	list_t namespaces;
 	pid_t ppid;
 	pid_t pgid;
 	uid_t uid;
@@ -100,6 +109,12 @@ static inline mm_thread_t *getMyThread(const list_t *p)
 {
 	return ((mm_thread_t *) ((uintptr_t) p
 			- offsetof(mm_thread_t, brothers)));
+}
+
+static inline mm_namespace_t *getNamespaceFromBrothers(const list_t *p)
+{
+	return ((mm_namespace_t *) ((uintptr_t) p
+			- offsetof(mm_namespace_t, brothers)));
 }
 
 static inline int create_sid(const int server_id, const pid_t pid)
@@ -134,6 +149,8 @@ extern mm_descriptor_t *process_allocate_desc(void);
 extern void process_deallocate_desc(mm_descriptor_t *);
 extern mm_file_t *session_create_file(mm_session_t *);
 extern int session_destroy_file(mm_file_t *);
+extern mm_namespace_t *process_allocate_ns(void);
+extern void process_deallocate_ns(mm_namespace_t *);
 
 extern void init(void);
 

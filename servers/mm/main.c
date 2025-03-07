@@ -40,10 +40,11 @@ For more information, please refer to <http://unlicense.org/>
 enum {
 	PROCESSES = 0x01,
 	FILES = 0x02,
-	REQUEST_SLAB = 0x04,
-	PORT = 0x08,
-	HANDLERS = 0x10,
-	INIT = 0x20
+	DEVICES = 0x04,
+	REQUEST_SLAB = 0x08,
+	PORT = 0x10,
+	HANDLERS = 0x20,
+	INIT = 0x40
 };
 
 static int (*funcs[])(mm_request_t *) = {
@@ -58,7 +59,8 @@ static int (*funcs[])(mm_request_t *) = {
 	mm_dup,
 	mm_lseek,
 	mm_pipe,
-	mm_attach,
+	mm_bind,
+	mm_unmount,
 	mm_open,
 	mm_create,
 	mm_read,
@@ -104,7 +106,10 @@ static int initialize(void)
 	else
 		initialized_resources |= FILES;
 
-	device_initialize();
+	if (device_initialize())
+		return DEVICES;
+	else
+		initialized_resources |= DEVICES;
 
 	request_slab.unit_size = sizeof(mm_request_t);
 	request_slab.block_size = PAGE_SIZE;

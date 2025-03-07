@@ -1,5 +1,5 @@
-#ifndef _MM_DEVICE_H_
-#define _MM_DEVICE_H_
+#ifndef _LIBC_H_
+#define _LIBC_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,14 +26,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <set/tree.h>
 
-typedef struct {
-	node_t node;
-	int server_id;
-} mm_device_t;
-
-extern int device_initialize(void);
-extern mm_device_t *device_get(const int);
+// bind
+#define MREPL (0)
+#define MBEFORE (1)
+#define MAFTER (2)
+#define MCREATE (4)
+#define MCACHE (8)
 
 #endif

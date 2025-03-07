@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <libc.h>
 #include <fcntl.h>
 #include <sys/wait.h>
 #include <ipc.h>
@@ -96,10 +97,12 @@ void _main(int argc, char **argv, char **env)
 	// 'execve' uses 'malloc'
 	__malloc_initialize();
 
+	bind("#i", "/dev", MREPL);
+
 	// STDIN
-	open("#i/cons", O_RDONLY);
+	open("/dev/cons", O_RDONLY);
 	// STDOUT
-	open("#i/cons", O_WRONLY);
+	open("/dev/cons", O_WRONLY);
 	// STDERR
 	dup2(STDOUT_FILENO, STDERR_FILENO);
 

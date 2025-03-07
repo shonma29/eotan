@@ -45,7 +45,8 @@ For more information, please refer to <http://unlicense.org/>
 
 enum {
 	PROCESS_SLAB = 0x01,
-	THREAD_SLAB = 0x02
+	THREAD_SLAB = 0x02,
+	NAMESPACE_SLAB = 0x04
 };
 
 static slab_t process_slab;
@@ -53,6 +54,7 @@ static tree_t process_tree;
 static slab_t thread_slab;
 static tree_t thread_tree;
 static node_t *thread_lookup[THREAD_LOOKUP_SIZE];
+static slab_t namespace_slab;
 static int initialized_resources = 0;
 /*
 static inline mm_process_t *getProcessFromChildren(const list_t *p)
@@ -122,6 +124,20 @@ int process_initialize(void)
 
 	tree_create(&thread_tree, NULL, thread_lookup_selector);
 	tree_initialize_lookup(&thread_tree, thread_lookup, THREAD_LOOKUP_SIZE);
+
+	// initialize namespace table
+	namespace_slab.unit_size = sizeof(mm_namespace_t);
+	namespace_slab.block_size = PAGE_SIZE;
+	namespace_slab.min_block = 1;
+	namespace_slab.max_block = slab_max_block(NAMESPACE_MAX, PAGE_SIZE,
+			sizeof(mm_namespace_t));
+	namespace_slab.palloc = kcall->palloc;
+	namespace_slab.pfree = kcall->pfree;
+	if (slab_create(&namespace_slab))
+		return NAMESPACE_SLAB;
+	else
+		initialized_resources |= NAMESPACE_SLAB;
+
 	return 0;
 }
 
@@ -178,6 +194,23 @@ mm_process_t *process_duplicate(mm_process_t *src, void *entry, void *stack)
 		mm_process_t *leader = process_find(src->pgid);
 		if (leader)
 			list_append(&(leader->members), &(dest->members));
+
+		for (list_t *p = src->namespaces.next;
+				!list_is_edge(&(src->namespaces), p);
+				p = p->next) {
+			mm_namespace_t *s = getNamespaceFromBrothers(p);
+			mm_namespace_t *d = process_allocate_ns();
+			if (!d) {
+				log_err("mm: ns alloc err\n");
+				//TODO release process
+				break;
+			}
+
+			d->root = s->root;
+			strcpy(d->name, s->name);
+			list_append(&(dest->namespaces), &(d->brothers));
+			d->root->f_count++;
+		}
 
 		dest->ppid = src->node.key;
 		dest->pgid = src->pgid;
@@ -489,6 +522,7 @@ static int process_create(mm_process_t **process, const int pid)
 		list_initialize(&(p->brothers));
 		list_initialize(&(p->children));
 		list_initialize(&(p->members));
+		list_initialize(&(p->namespaces));
 		p->local = NULL;
 		p->tag = 0;
 		p->wpid = 0;
@@ -677,4 +711,14 @@ static int create_init_thread(mm_process_t *process, const FP entry)
 	list_append(&(process->threads), &(th->brothers));
 	th->process = process;
 	return 0;
+}
+
+mm_namespace_t *process_allocate_ns(void)
+{
+	return (mm_namespace_t *) slab_alloc(&namespace_slab);
+}
+
+void process_deallocate_ns(mm_namespace_t *ns)
+{
+	slab_free(&namespace_slab, ns);
 }

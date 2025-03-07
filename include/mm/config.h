@@ -34,6 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 #define FILES_PER_PROCESS (1024)
 #define SESSION_MAX (32768)
 #define FILES_PER_SESSION (32768)
+#define NAMESPACE_MAX (32768)
 
 #define REQUEST_MAX (16)
 
