@@ -634,8 +634,7 @@ int mm_pipe(mm_request_t *req)
 		}
 
 		mm_file_t *f1;
-		int result = _attach(&f1, req, process,
-				create_sid(PORT_PIPE, process->node.key));
+		int result = _attach(&f1, req, process, PORT_PIPE);
 		if (result) {
 			reply->data[0] = result;
 			break;
