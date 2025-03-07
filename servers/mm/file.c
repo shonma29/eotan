@@ -118,6 +118,7 @@ mm_session_t *session_create(const int server_id)
 	mm_session_t *session = (mm_session_t *) slab_alloc(&session_slab);
 	if (session) {
 		if (!tree_put(&session_tree, sid, &(session->node))) {
+			sequence_release(&session_sequence, sequence);
 			slab_free(&session_slab, session);
 			return NULL;
 		}
@@ -134,6 +135,8 @@ int session_destroy(mm_session_t *session)
 		//TODO what to do?
 	}
 
+	sequence_release(&session_sequence,
+			sequence_from_sid(session->node.key));
 	slab_free(&session_slab, session);
 	return 0;
 }

@@ -122,9 +122,14 @@ static inline int create_sid(const int server_id, const pid_t pid)
 	return ((server_id << 16) | pid);
 }
 
-static inline int server_id_from_sid(const int server_id)
+static inline int server_id_from_sid(const int sid)
 {
-	return ((server_id >> 16) & 0xffff);
+	return ((sid >> 16) & 0xffff);
+}
+
+static inline int sequence_from_sid(const int sid)
+{
+	return (sid & 0xffff);
 }
 
 extern int process_initialize(void);
