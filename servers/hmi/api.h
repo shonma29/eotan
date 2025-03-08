@@ -1,3 +1,5 @@
+#ifndef _HMI_API_H_
+#define _HMI_API_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -24,41 +26,31 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <event.h>
-#include <services.h>
-#include <nerve/kcall.h>
-#include <sys/errno.h>
-#include <libserv.h>
-#include "hmi.h"
-#include "api.h"
+#include <fs/protocol.h>
 
-static int _reply(fs_request_t *req, fsmsg_t *, const size_t);
+typedef struct {
+	fsmsg_t packet;
+	int tag;
+} fs_request_t;
 
+extern int if_attach(fs_request_t *);
+extern int if_walk(fs_request_t *);
+extern int if_open(fs_request_t *);
+extern int if_read(fs_request_t *);
+extern int if_write(fs_request_t *);
+extern int if_clunk(fs_request_t *);
 
-int reply(fs_request_t *req, const size_t size)
+static inline int unpack_sid(const fs_request_t *req)
 {
-	return _reply(req, &(req->packet), size);
+	return (req->packet.header.token & 0xffff);
 }
 
-int reply_error(fs_request_t *req, const int token, const int caller_tag,
-		const int error_no)
+static inline int unpack_tid(const fs_request_t *req)
 {
-	fsmsg_t response;
-	response.header.ident = IDENT;
-	response.header.type = Rerror;
-	response.header.token = (MYPORT << 16) | (token & 0xffff);
-	response.Rerror.tag = caller_tag;
-	response.Rerror.ename = error_no;
-	return _reply(req, &response, MESSAGE_SIZE(Rerror));
+	return ((req->packet.header.token >> 16) & 0xffff);
 }
 
-static int _reply(fs_request_t *req, fsmsg_t *response, const size_t size)
-{
-	ER_UINT result = kcall->ipc_send(req->tag, (void *) response, size);
-	if (result)
-		log_err("hmi: reply error=%d\n", result);
+extern int reply(fs_request_t *, const size_t);
+extern int reply_error(fs_request_t *, const int, const int, const int);
 
-	lfq_enqueue(&unused_queue, &req);
-	kcall->ipc_notify(accept_tid, EVENT_SERVICE);
-	return (result ? ECONNREFUSED : 0);
-}
+#endif

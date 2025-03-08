@@ -24,87 +24,162 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <fcntl.h>
 #include <errno.h>
+#include <fs/vfs.h>
 #include <nerve/kcall.h>
-#include <nerve/ipc_utils.h>
 #include <libserv.h>
 #include "hmi.h"
+#include "api.h"
+#include "session.h"
 #include "mouse.h"
+
+#define MASK_UNSUPPORTED_MODE (O_APPEND | O_TRUNC)
 
 static char line[4096];
 
-static ER_UINT write(const UW, const UW, const UW, const char *);
+static ER_UINT write(struct file *, const UW, const UW, const char *);
 
 
-void if_attach(fs_request *req)
+int if_open(fs_request_t *req)
 {
-	fsmsg_t *message = &(req->packet);
-	message->header.type = Rattach;
-	//message->Rattach.tag = message->Tattach.tag;
-	//message->Rattach.qid = 0;//TODO set value
-	reply(req, MESSAGE_SIZE(Rattach));
+	int error_no;
+	struct _Topen *request = &(req->packet.Topen);
+	do {
+		session_t *session = session_find_by_request(req);
+		if (!session) {
+			error_no = EPERM;
+			break;
+		}
+
+		struct file *file = session_find_file(session, request->fid);
+		if (!file) {
+			error_no = EBADF;
+			break;
+		}
+
+		//TODO support access to directory
+		if (file->f_channel < 0) {
+			error_no = EISDIR;
+			break;
+		}
+
+		if (file->f_flag != O_ACCMODE) {
+			error_no = EBUSY;
+			break;
+		}
+
+		if (request->mode & O_EXEC) {
+			error_no = EACCES;
+			break;
+		}
+
+		if (!vfs_check_flags(request->mode)
+				|| (request->mode & MASK_UNSUPPORTED_MODE)) {
+			error_no = EINVAL;
+			break;
+		}
+
+		file->f_flag = request->mode & O_ACCMODE;
+
+		fsmsg_t *response = &(req->packet);
+		response->header.token = req->packet.header.token;
+		response->header.type = Ropen;
+		response->Ropen.tag = request->tag;
+		response->Ropen.qid = file->node.key;
+		response->Ropen.iounit = 0;
+		reply(req, MESSAGE_SIZE(Ropen));
+		return 0;
+	} while (false);
+
+	return error_no;
 }
 
-void if_walk(fs_request *req)
+int if_clunk(fs_request_t *req)
 {
-	fsmsg_t *message = &(req->packet);
-	message->header.type = Rwalk;
-	//message->Rwalk.tag = message->Twalk.tag;
-	//message->Rwalk.nwqid = 0;//TODO set value
-	//message->Rwalk.wqui = NULL;//TODO set value
-	reply(req, MESSAGE_SIZE(Rwalk));
+	int error_no;
+	struct _Tclunk *request = &(req->packet.Tclunk);
+	do {
+		session_t *session = session_find_by_request(req);
+		if (!session) {
+			error_no = EPERM;
+			break;
+		}
+
+		error_no = session_destroy_file(session, request->fid);
+		if (error_no)
+			break;
+
+		fsmsg_t *response = &(req->packet);
+		response->header.token = req->packet.header.token;
+		response->header.type = Rclunk;
+		response->Rclunk.tag = request->tag;
+		reply(req, MESSAGE_SIZE(Rclunk));
+		return 0;
+	} while (false);
+
+	return error_no;
 }
 
-void if_open(fs_request *req)
+int if_read(fs_request_t *req)
 {
-	fsmsg_t *message = &(req->packet);
-	message->header.type = Ropen;
-	//message->Ropen.tag = message->Topen.tag;
-	//message->Ropen.qid = 0;//TODO set value
-	//message->Ropen.iounit = 0;//TODO set value
-	reply(req, MESSAGE_SIZE(Ropen));
+	int error_no;
+	struct _Tread *request = &(req->packet.Tread);
+	do {
+		session_t *session = session_find_by_request(req);
+		if (!session) {
+			error_no = EPERM;
+			break;
+		}
+
+		struct file *file = session_find_file(session, request->fid);
+		if (!file
+				|| (file->f_flag == O_WRONLY)
+				|| (file->f_flag == O_ACCMODE)) {
+			error_no = EBADF;
+			break;
+		}
+
+		if (lfq_enqueue(&req_queue, &req) != QUEUE_OK) {
+			log_warning("hmi: req_queue is full\n");
+			reply_error(req, req->packet.header.token,
+					req->packet.Tread.tag, ENOMEM);
+		}
+
+		return 0;
+	} while (false);
+
+	return error_no;
 }
 
-void if_clunk(fs_request *req)
+int if_write(fs_request_t *req)
 {
-	fsmsg_t *message = &(req->packet);
+	int error_no;
+	struct _Twrite *request = &(req->packet.Twrite);
+	do {
+		session_t *session = session_find_by_request(req);
+		if (!session) {
+			error_no = EPERM;
+			break;
+		}
 
-//	message->header.token = message->head.token;
-	message->header.type = Rclunk;
-//	message->Rclunk.tag = message->Tclunk.tag;
-	reply(req, MESSAGE_SIZE(Rclunk));
-}
+		struct file *file;
+		file = session_find_file(session, request->fid);
+		if (!file
+				|| (file->f_flag == O_RDONLY)
+				|| (file->f_flag == O_ACCMODE)) {
+			error_no = EBADF;
+			break;
+		}
 
-void if_read(fs_request *req)
-{
-	if (lfq_enqueue(&req_queue, &req) != QUEUE_OK) {
-		log_warning("hmi: req_queue is full\n");
-		reply_error(req, req->packet.header.token,
-				req->packet.Tread.tag, ENOMEM);
-	}
-}
+		if (file->f_channel) {
+			error_no = EBADF;
+			break;
+		}
 
-void if_write(fs_request *req)
-{
-	ER_UINT result;
-	fsmsg_t *message = &(req->packet);
-	if ((message->Twrite.fid < 0)
-			|| (message->Twrite.fid > 3)) {
-		if (message->Twrite.count > sizeof(line))
-			result = E_PAR;
-		else if (kcall->region_get(port_of_ipc(req->tag),
-				message->Twrite.data,
-				message->Twrite.count,
-				line))
-			result = E_SYS;
-		else
-			result = write(message->Twrite.fid,
-					message->Twrite.offset,
-					message->Twrite.count,
-					line);
-	} else {
+		fsmsg_t *message = &(req->packet);
 		unsigned int pos = 0;
-		result = 0;
+		ER_UINT result = 0;
 		for (size_t rest = message->Twrite.count; rest > 0;) {
 			size_t len = (rest > sizeof(line)) ?
 					sizeof(line) : rest;
@@ -116,13 +191,14 @@ void if_write(fs_request *req)
 				result = E_SYS;
 				break;
 			} else {
-				result = write(message->Twrite.fid,
+				result = write(file,
 						message->Twrite.offset,
 						len,
 						line);
 				if (result < 0)
 					break;
 			}
+
 			rest -= len;
 			pos += len;
 			message->Twrite.offset += len;
@@ -130,36 +206,31 @@ void if_write(fs_request *req)
 //TODO return Rerror
 		if (result >= 0)
 			result = message->Twrite.count;
-	}
-	//TODO return Rerror if result is error
-//	message->header.token = message->head.token;
-	message->header.type = Rwrite;
-//	message->Rwrite.tag = message->Twrite.tag;
-	message->Rwrite.count = result;
-	reply(req, MESSAGE_SIZE(Rwrite));
+
+		//TODO return Rerror if result is error
+		//message->header.token = message->head.token;
+		message->header.type = Rwrite;
+		//message->Rwrite.tag = message->Twrite.tag;
+		message->Rwrite.count = result;
+		reply(req, MESSAGE_SIZE(Rwrite));
+		return 0;
+	} while (false);
+
+	return error_no;
 }
 
-static ER_UINT write(const UW dd, const UW start, const UW size,
+static ER_UINT write(struct file *file, const UW start, const UW size,
 		const char *inbuf)
 {
-	switch (dd) {
-	case 4:
-		return draw_write(size, inbuf);
-	case 6:
-		return consctl_write(size, inbuf);
-	default:
-		break;
-	}
+	//TODO select device from file->f_channel
+	//TODO select target from file->session->window
 
 	int result = kcall->mutex_lock(cons_mid, TMO_FEVR);
 	if (result)
 		kcall->printk("hmi: main cannot lock %d\n", result);
 	else {
 		mouse_hide();
-		terminal_write((char *) inbuf,
-				((dd >= 4) ? ((dd == 7) ? &state7 : &state2)
-						: &state0),
-				0, size);
+		terminal_write((char *) inbuf, &state0, 0, size);
 		mouse_show();
 		result = kcall->mutex_unlock(cons_mid);
 		if (result)

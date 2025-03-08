@@ -24,41 +24,27 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <event.h>
-#include <services.h>
-#include <nerve/kcall.h>
-#include <sys/errno.h>
-#include <libserv.h>
+#include <string.h>
 #include "hmi.h"
-#include "api.h"
 
-static int _reply(fs_request_t *req, fsmsg_t *, const size_t);
+typedef struct {
+	char *name;
+	driver_t driver;
+} driver_table_t;
+
+static driver_table_t table[] = {
+	{ "cons", { 0 } },
+	{ "consctl", { 1 } },
+	{ "draw", { 2 } },
+	{ "event", { 3 } }
+};
 
 
-int reply(fs_request_t *req, const size_t size)
+driver_t *device_lookup(const char *name)
 {
-	return _reply(req, &(req->packet), size);
-}
+	for (int i = 0; i < sizeof(table) / sizeof(table[0]); i++)
+		if (!strcmp(name, table[i].name))
+			return &(table[i].driver);
 
-int reply_error(fs_request_t *req, const int token, const int caller_tag,
-		const int error_no)
-{
-	fsmsg_t response;
-	response.header.ident = IDENT;
-	response.header.type = Rerror;
-	response.header.token = (MYPORT << 16) | (token & 0xffff);
-	response.Rerror.tag = caller_tag;
-	response.Rerror.ename = error_no;
-	return _reply(req, &response, MESSAGE_SIZE(Rerror));
-}
-
-static int _reply(fs_request_t *req, fsmsg_t *response, const size_t size)
-{
-	ER_UINT result = kcall->ipc_send(req->tag, (void *) response, size);
-	if (result)
-		log_err("hmi: reply error=%d\n", result);
-
-	lfq_enqueue(&unused_queue, &req);
-	kcall->ipc_notify(accept_tid, EVENT_SERVICE);
-	return (result ? ECONNREFUSED : 0);
+	return NULL;
 }

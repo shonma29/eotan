@@ -33,6 +33,6 @@ ENTRY_FUNC = start
 
 $(TARGET): $(OBJS) \
 		lib/libserv.a drivers/arch/libarch.a lib/libdraw.a lib/libnc.a \
-		lib/libfonts.a
+		lib/libfonts.a lib/libvfs.a
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
 	$(STRIP) $@

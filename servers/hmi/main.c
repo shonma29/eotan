@@ -29,11 +29,13 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 #include <libserv.h>
 #include "hmi.h"
+#include "api.h"
+#include "session.h"
 #include "keyboard.h"
 #include "mouse.h"
 
 struct fs_func {
-	void (*call)(fs_request *);
+	int (*call)(fs_request_t *);
 	size_t max;
 };
 
@@ -41,20 +43,17 @@ ER_ID accept_tid = 0;
 //static ER_ID hmi_tid = 0;
 ID cons_mid;
 
-static fs_request requests[REQUEST_QUEUE_SIZE];
+static fs_request_t requests[REQUEST_QUEUE_SIZE];
 volatile lfq_t req_queue;
 static char req_buf[
-	lfq_buf_size(sizeof(fs_request *), REQUEST_QUEUE_SIZE)
+	lfq_buf_size(sizeof(fs_request_t *), REQUEST_QUEUE_SIZE)
 ];
 volatile lfq_t unused_queue;
 static char unused_buf[
-	lfq_buf_size(sizeof(fs_request *), REQUEST_QUEUE_SIZE)
+	lfq_buf_size(sizeof(fs_request_t *), REQUEST_QUEUE_SIZE)
 ];
 
-Screen screen0;
-esc_state_t state0;
-
-static void no_support(fs_request *);
+static int no_support(fs_request_t *);
 static ER accept(void);
 static ER initialize(void);
 
@@ -74,16 +73,17 @@ static struct fs_func func_table[] = {
 #define NUM_OF_FUNC (sizeof(func_table) / sizeof(func_table[0]))
 
 
-static void no_support(fs_request *req)
+static int no_support(fs_request_t *req)
 {
 	//TODO what is tag?
 	reply_error(req, req->packet.header.token, 0, ENOTSUP);
+	return 0;
 }
 
 static ER accept(void)
 {
 //TODO multiple interrupt is needed on mouse / keyboard?
-	fs_request *req;
+	fs_request_t *req;
 	while (lfq_dequeue(&unused_queue, &req) != QUEUE_OK)
 		kcall->ipc_listen();
 
@@ -128,20 +128,19 @@ static ER accept(void)
 
 static ER initialize(void)
 {
-	state0.screen = &screen0;
-	terminal_initialize(&state0);
+	session_initialize();
 	window_initialize();
 
 	if (event_initialize())
 		return E_SYS;
 
-	lfq_initialize(&req_queue, req_buf, sizeof(fs_request *),
+	lfq_initialize(&req_queue, req_buf, sizeof(fs_request_t *),
 			REQUEST_QUEUE_SIZE);
-	lfq_initialize(&unused_queue, unused_buf, sizeof(fs_request *),
+	lfq_initialize(&unused_queue, unused_buf, sizeof(fs_request_t *),
 			REQUEST_QUEUE_SIZE);
 
 	for (int i = 0; i < sizeof(requests) / sizeof(requests[0]); i++) {
-		fs_request *p = &(requests[i]);
+		fs_request_t *p = &(requests[i]);
 		lfq_enqueue(&unused_queue, &p);
 	}
 

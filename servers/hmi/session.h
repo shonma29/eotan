@@ -1,5 +1,5 @@
-#ifndef __HMI_H__
-#define __HMI_H__
+#ifndef _HMI_SESSION_H_
+#define _HMI_SESSION_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,62 +26,32 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <console.h>
-#include <dev/device.h>
-#include <sys/syslimits.h>
-#include <hmi/draw.h>
+#include <set/tree.h>
 #include <hmi/window.h>
-#include "terminal.h"
 
-#define MYNAME "cons"
-#define MYPORT PORT_WINDOW
+typedef struct _session_t {
+	node_t node;
+	tree_t files;
+	window_t *window;
+	int tid;
+} session_t;
 
-#define WINDOW_MAX (32)
+struct file {
+	node_t node;
+	uint_fast32_t f_flag;
+	session_t *session;
+	int f_channel;
+};
 
-#define INTERRUPT_QUEUE_SIZE (1024)
-#define REQUEST_QUEUE_SIZE (256)
+#define getSessionPtr(p) ((uintptr_t) p - offsetof(session_t, node))
 
-typedef struct _hmi_interrupt_t {
-	int type;
-	int data;
-} hmi_interrupt_t;
+extern void session_initialize(void);
 
-typedef struct _driver_t {
-	int channel;
-} driver_t;
+extern session_t *session_find_by_request(const fs_request_t *);
 
-extern ER_ID accept_tid;
-extern ID cons_mid;
-extern volatile lfq_t req_queue;
-extern volatile lfq_t unused_queue;
-
-extern Screen screen0;
-extern esc_state_t state0;
-
-// window.c
-extern Display *display;
-
-extern int window_initialize(void);
-extern int create_window(window_t **, const int, const int,
-		const int, const int, const int, const char *,
-		Screen *);
-extern window_t *find_window(const int);
-#if 0
-extern int remove_window(const int);
-#endif
-// draw.c
-extern ER_UINT draw_write(const UW, const char *);
-
-// event.c
-extern volatile lfq_t hmi_queue;
-extern ER_UINT (*reader)(const int);
-
-extern void hmi_handle(const int, const int);
-extern ER_UINT consctl_write(const UW, const char *);
-extern int event_initialize(void);
-
-// device.c
-extern driver_t *device_lookup(const char *);
+extern int session_create_file(struct file **, session_t *, const int);
+extern int session_destroy_file(session_t *, const int);
+extern void session_destroy_all_files(void);
+extern struct file *session_find_file(const session_t *, const int);
 
 #endif

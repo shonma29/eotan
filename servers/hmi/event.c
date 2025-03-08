@@ -32,9 +32,10 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/syscall.h>
 #include <libserv.h>
 #include "hmi.h"
+#include "api.h"
 #include "mouse.h"
 
-static fs_request *current_req = NULL;
+static fs_request_t *current_req = NULL;
 static volatile bool raw_mode;
 volatile lfq_t hmi_queue;
 static char int_buf[
