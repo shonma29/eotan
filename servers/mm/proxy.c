@@ -63,7 +63,7 @@ static long copy_path(char *, const char *, const long);
 static char *omit_previous_entry(long *, char *, char *);
 
 
-int _attach(mm_file_t **root, mm_request_t *req, mm_process_t *process,
+int _attach(mm_file_t **root, mm_request_t *req, mm_thread_t *th,
 		const int server_id)
 {
 	mm_session_t *session = session_create(server_id);
@@ -80,11 +80,11 @@ int _attach(mm_file_t **root, mm_request_t *req, mm_process_t *process,
 
 	fsmsg_t *message = &(req->message);
 	message->header.type = Tattach;
-	message->header.token = create_token(kcall->thread_get_id(), session);
+	message->header.token = create_token(th->node.key, session);
 	message->Tattach.tag = create_tag(req);
 	message->Tattach.fid = file->node.key;
 	message->Tattach.afid = NOFID;
-	message->Tattach.uname = (char *) (process->uid);
+	message->Tattach.uname = (char *) (get_process(th)->uid);
 	message->Tattach.aname = (char *) PATH_ROOT;
 
 	int result = call_device(file, req);

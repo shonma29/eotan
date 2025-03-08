@@ -634,7 +634,7 @@ int mm_pipe(mm_request_t *req)
 		}
 
 		mm_file_t *f1;
-		int result = _attach(&f1, req, process, PORT_PIPE);
+		int result = _attach(&f1, req, th, PORT_PIPE);
 		if (result) {
 			reply->data[0] = result;
 			break;
@@ -780,7 +780,7 @@ int mm_bind(mm_request_t *req)
 		}
 
 		mm_file_t *file;
-		int result = _attach(&file, req, process, device->server_id);
+		int result = _attach(&file, req, th, device->server_id);
 		if (result) {
 			if (ns)
 				process_deallocate_ns(ns);
