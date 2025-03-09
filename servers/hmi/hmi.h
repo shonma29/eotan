@@ -34,7 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <hmi/window.h>
 #include "terminal.h"
 
-#define MYNAME "cons"
+#define MYNAME "hmi"
 #define MYPORT PORT_WINDOW
 
 #define WINDOW_MAX (32)
@@ -42,13 +42,20 @@ For more information, please refer to <http://unlicense.org/>
 #define INTERRUPT_QUEUE_SIZE (1024)
 #define REQUEST_QUEUE_SIZE (256)
 
+typedef enum {
+	CONS = 1,
+	CONSCTL = 2,
+	DRAW = 3,
+	EVENT = 4
+} channel_e;
+
 typedef struct _hmi_interrupt_t {
 	int type;
 	int data;
 } hmi_interrupt_t;
 
 typedef struct _driver_t {
-	int channel;
+	channel_e channel;
 } driver_t;
 
 extern ER_ID accept_tid;

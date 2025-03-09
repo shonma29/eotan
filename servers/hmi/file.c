@@ -38,7 +38,7 @@ For more information, please refer to <http://unlicense.org/>
 
 static char line[4096];
 
-static ER_UINT write(struct file *, const UW, const UW, const char *);
+static ER_UINT _write(struct file *, const UW, const UW, const char *);
 
 
 int if_open(fs_request_t *req)
@@ -59,7 +59,7 @@ int if_open(fs_request_t *req)
 		}
 
 		//TODO support access to directory
-		if (file->f_channel < 0) {
+		if (!(file->f_channel)) {
 			error_no = EISDIR;
 			break;
 		}
@@ -83,9 +83,9 @@ int if_open(fs_request_t *req)
 		file->f_flag = request->mode & O_ACCMODE;
 
 		fsmsg_t *response = &(req->packet);
-		response->header.token = req->packet.header.token;
+		//response->header.token = req->packet.header.token;
 		response->header.type = Ropen;
-		response->Ropen.tag = request->tag;
+		//response->Ropen.tag = request->tag;
 		response->Ropen.qid = file->node.key;
 		response->Ropen.iounit = 0;
 		reply(req, MESSAGE_SIZE(Ropen));
@@ -111,9 +111,9 @@ int if_clunk(fs_request_t *req)
 			break;
 
 		fsmsg_t *response = &(req->packet);
-		response->header.token = req->packet.header.token;
+		//response->header.token = req->packet.header.token;
 		response->header.type = Rclunk;
-		response->Rclunk.tag = request->tag;
+		//response->Rclunk.tag = request->tag;
 		reply(req, MESSAGE_SIZE(Rclunk));
 		return 0;
 	} while (false);
@@ -141,7 +141,7 @@ int if_read(fs_request_t *req)
 		}
 
 		if (lfq_enqueue(&req_queue, &req) != QUEUE_OK) {
-			log_warning("hmi: req_queue is full\n");
+			log_warning(MYNAME ": req_queue is full\n");
 			reply_error(req, req->packet.header.token,
 					req->packet.Tread.tag, ENOMEM);
 		}
@@ -172,11 +172,6 @@ int if_write(fs_request_t *req)
 			break;
 		}
 
-		if (file->f_channel) {
-			error_no = EBADF;
-			break;
-		}
-
 		fsmsg_t *message = &(req->packet);
 		unsigned int pos = 0;
 		ER_UINT result = 0;
@@ -191,8 +186,7 @@ int if_write(fs_request_t *req)
 				result = E_SYS;
 				break;
 			} else {
-				result = write(file,
-						message->Twrite.offset,
+				result = _write(file, message->Twrite.offset,
 						len,
 						line);
 				if (result < 0)
@@ -219,7 +213,7 @@ int if_write(fs_request_t *req)
 	return error_no;
 }
 
-static ER_UINT write(struct file *file, const UW start, const UW size,
+static ER_UINT _write(struct file *file, const UW start, const UW size,
 		const char *inbuf)
 {
 	//TODO select device from file->f_channel

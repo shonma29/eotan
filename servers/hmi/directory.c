@@ -59,16 +59,22 @@ int if_walk(fs_request_t *req)
 			break;
 		}
 
+		if (request->nwname)
+			if (parent->f_channel) {
+				error_no = ENOTDIR;
+				break;
+			}
+
 		struct file *file = NULL;
 		int newfid = request->newfid;
 		if (newfid == fid) {
 			if (request->nwname == 0) {
 				//TODO really?
 				fsmsg_t *response = &(req->packet);
-				response->header.token =
-						req->packet.header.token;
+				//response->header.token =
+				//		req->packet.header.token;
 				response->header.type = Rwalk;
-				response->Rwalk.tag = request->tag;
+				//response->Rwalk.tag = request->tag;
 				//TODO return nwqid and wqid
 				reply(req, MESSAGE_SIZE(Rwalk));
 				return 0;
@@ -95,11 +101,6 @@ int if_walk(fs_request_t *req)
 			if (*p == '/')
 				p++;
 
-			if (*p == '\0') {
-				error_no = ENOTDIR;
-				break;
-			}
-
 			driver = device_lookup(p);
 			if (!driver) {
 				if (file)
@@ -119,9 +120,9 @@ int if_walk(fs_request_t *req)
 			file->f_channel = driver->channel;
 
 		fsmsg_t *response = &(req->packet);
-		response->header.token = req->packet.header.token;
+		//response->header.token = req->packet.header.token;
 		response->header.type = Rwalk;
-		response->Rwalk.tag = request->tag;
+		//response->Rwalk.tag = request->tag;
 		//TODO return nwqid and wqid
 		reply(req, MESSAGE_SIZE(Rwalk));
 		return 0;

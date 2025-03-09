@@ -39,6 +39,11 @@ For more information, please refer to <http://unlicense.org/>
 #define CONSOLE_HEIGHT (20)
 #define CONSOLE_TITLE "Console"
 
+enum {
+	SESSION_SLAB = 0x01,
+	FILE_SLAB = 0x02
+};
+
 Display *display = &(sysinfo->display);
 //TODO get dinamically
 Screen screen0;
@@ -47,6 +52,7 @@ esc_state_t state0;
 static tree_t sessions;
 static slab_t session_slab;
 static slab_t file_slab;
+static int initialized_resources = 0;
 
 static session_t *_create(const int);
 static void _destroy(session_t *);
@@ -64,7 +70,7 @@ int if_attach(fs_request_t *req)
 
 		session_t *session = _create(unpack_sid(req));
 		if (!session) {
-			error_no = ENOSPC;//TODO ENOBUFS?
+			error_no = ENOSPC;
 			break;
 		}
 
@@ -95,7 +101,6 @@ int if_attach(fs_request_t *req)
 		terminal_write(STR_CONS_INIT, &state0, 0, LEN_CONS_INIT);
 		session->window = w;
 
-		//TODO use req->packet
 		fsmsg_t *response = &(req->packet);
 		//response->header.token = req->packet.header.token;
 		response->header.type = Rattach;
@@ -108,7 +113,7 @@ int if_attach(fs_request_t *req)
 	return error_no;
 }
 
-void session_initialize(void)
+int session_initialize(void)
 {
 	tree_create(&sessions, NULL, NULL);
 
@@ -119,8 +124,11 @@ void session_initialize(void)
 			sizeof(session_t));
 	session_slab.palloc = kcall->palloc;
 	session_slab.pfree = kcall->pfree;
-	//TODO check error
-	slab_create(&session_slab);
+
+	if (slab_create(&session_slab))
+		return SESSION_SLAB;
+	else
+		initialized_resources |= SESSION_SLAB;
 
 	file_slab.unit_size = sizeof(struct file);
 	file_slab.block_size = PAGE_SIZE;
@@ -129,20 +137,25 @@ void session_initialize(void)
 			sizeof(struct file));
 	file_slab.palloc = kcall->palloc;
 	file_slab.pfree = kcall->pfree;
-	//TODO check error
-	slab_create(&file_slab);
+
+	if (slab_create(&file_slab))
+		return FILE_SLAB;
+	else
+		initialized_resources |= FILE_SLAB;
+
+	return 0;
 }
 
 static session_t *_create(const int sid)
 {
 	session_t *session = slab_alloc(&session_slab);
-	if (!session) {kcall->printk("hmi: _cre alloc err\n");
+	if (!session)
 		return NULL;
-	}
+
 	tree_create(&(session->files), NULL, NULL);
 
 	if (!tree_put(&sessions, sid, &(session->node))) {
-		slab_free(&session_slab, session);kcall->printk("hmi: _cre put err\n");
+		slab_free(&session_slab, session);
 		//TODO return EADDRINUSE
 		return NULL;
 	}
@@ -175,9 +188,9 @@ int session_create_file(struct file **file, session_t *session, const int fid)
 		return EADDRINUSE;
 	}
 
+	f->f_session = session;
 	f->f_flag = 0;
-	f->session = session;
-	f->f_channel = (-1);
+	f->f_channel = 0;
 	*file = f;
 	return 0;
 }

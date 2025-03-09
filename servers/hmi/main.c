@@ -34,6 +34,16 @@ For more information, please refer to <http://unlicense.org/>
 #include "keyboard.h"
 #include "mouse.h"
 
+enum {
+	SESSIONS = 0x01,
+	WINDOWS = 0x02,
+	EVENTS = 0x04,
+	REQ_QUEUE = 0x08,
+	UNUSED_QUEUE = 0x10,
+	MUTEX = 0x20,
+	PORT = 0x40
+};
+
 struct fs_func {
 	int (*call)(fs_request_t *);
 	size_t max;
@@ -52,6 +62,7 @@ volatile lfq_t unused_queue;
 static char unused_buf[
 	lfq_buf_size(sizeof(fs_request_t *), REQUEST_QUEUE_SIZE)
 ];
+static int initialized_resources = 0;
 
 static int no_support(fs_request_t *);
 static ER accept(void);
@@ -90,7 +101,7 @@ static ER accept(void)
 	ER_UINT size = kcall->ipc_receive(PORT_WINDOW, &(req->tag),
 			&(req->packet));
 	if (size < 0) {
-		log_err("hmi: receive error=%d\n", size);
+		log_err(MYNAME ": receive error=%d\n", size);
 		return size;
 	}
 
@@ -128,16 +139,32 @@ static ER accept(void)
 
 static ER initialize(void)
 {
-	session_initialize();
-	window_initialize();
+	if (session_initialize())
+		return SESSIONS;
+	else
+		initialized_resources |= SESSIONS;
+
+	if (window_initialize())
+		return WINDOWS;
+	else
+		initialized_resources |= WINDOWS;
 
 	if (event_initialize())
-		return E_SYS;
+		return EVENTS;
+	else
+		initialized_resources |= EVENTS;
 
-	lfq_initialize(&req_queue, req_buf, sizeof(fs_request_t *),
-			REQUEST_QUEUE_SIZE);
-	lfq_initialize(&unused_queue, unused_buf, sizeof(fs_request_t *),
-			REQUEST_QUEUE_SIZE);
+	if (lfq_initialize(&req_queue, req_buf, sizeof(fs_request_t *),
+			REQUEST_QUEUE_SIZE))
+		return REQ_QUEUE;
+	else
+		initialized_resources |= REQ_QUEUE;
+
+	if (lfq_initialize(&unused_queue, unused_buf, sizeof(fs_request_t *),
+			REQUEST_QUEUE_SIZE))
+		return UNUSED_QUEUE;
+	else
+		initialized_resources |= UNUSED_QUEUE;
 
 	for (int i = 0; i < sizeof(requests) / sizeof(requests[0]); i++) {
 		fs_request_t *p = &(requests[i]);
@@ -150,10 +177,12 @@ static ER initialize(void)
 	};
 	int result = kcall->mutex_create(accept_tid, &pk_cmtx);
 	if (result) {
-		log_err("hmi: mutex error=%d\n", result);
-		return result;
-	} else
+		log_err(MYNAME ": mutex error=%d\n", result);
+		return MUTEX;
+	} else {
 		cons_mid = accept_tid;
+		initialized_resources |= MUTEX;
+	}
 
 	T_CPOR pk_cpor = {
 		TA_TFIFO,
@@ -162,9 +191,10 @@ static ER initialize(void)
 	};
 	result = kcall->ipc_open(&pk_cpor);
 	if (result) {
-		log_err("hmi: open error=%d\n", result);
-		return result;
-	}
+		log_err(MYNAME ": open error=%d\n", result);
+		return PORT;
+	} else
+		initialized_resources |= PORT;
 
 //	T_CTSK pk_ctsk = {
 //		TA_HLNG | TA_ACT, 0, process, pri_server_middle,
@@ -185,8 +215,11 @@ void start(VP_INT exinf)
 {
 	accept_tid = kcall->thread_get_id();
 
-	if (initialize() == E_OK) {
-		log_info("hmi: start\n");
+	int error = initialize();
+	if (error)
+		log_err(MYNAME ": initialize failed %d\n", error);
+	else {
+		log_info(MYNAME ": start\n");
 
 		if (keyboard_initialize() == E_OK)
 			reader = get_char;
@@ -197,7 +230,7 @@ void start(VP_INT exinf)
 
 //		kcall->thread_destroy(hmi_tid);
 		kcall->ipc_close();
-		log_info("hmi: end\n");
+		log_info(MYNAME ": end\n");
 	}
 
 	//TODO close port

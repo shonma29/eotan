@@ -38,14 +38,14 @@ typedef struct _session_t {
 
 struct file {
 	node_t node;
+	session_t *f_session;
 	uint_fast32_t f_flag;
-	session_t *session;
-	int f_channel;
+	channel_e f_channel;
 };
 
 #define getSessionPtr(p) ((uintptr_t) p - offsetof(session_t, node))
 
-extern void session_initialize(void);
+extern int session_initialize(void);
 
 extern session_t *session_find_by_request(const fs_request_t *);
 

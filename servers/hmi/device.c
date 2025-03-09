@@ -33,10 +33,10 @@ typedef struct {
 } driver_table_t;
 
 static driver_table_t table[] = {
-	{ "cons", { 0 } },
-	{ "consctl", { 1 } },
-	{ "draw", { 2 } },
-	{ "event", { 3 } }
+	{ "cons", { CONS } },
+	{ "consctl", { CONSCTL } },
+	{ "draw", { DRAW } },
+	{ "event", { EVENT } }
 };
 
 
