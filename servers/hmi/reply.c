@@ -25,9 +25,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <event.h>
-#include <services.h>
 #include <nerve/kcall.h>
-#include <sys/errno.h>
+#include <errno.h>
 #include <libserv.h>
 #include "hmi.h"
 #include "api.h"

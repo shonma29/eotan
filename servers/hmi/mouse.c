@@ -24,13 +24,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
 #include <archfunc.h>
-#include <core/packets.h>
-#include <hmi/pointer.h>
-#include <mpu/memory.h>
 #include <arch/8259a.h>
-#include <nerve/config.h>
 #include "../../lib/libserv/libserv.h"
 #include "hmi.h"
 #include "mouse.h"

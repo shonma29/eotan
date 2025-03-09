@@ -25,7 +25,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <event.h>
-#include <services.h>
 #include <string.h>
 #include <nerve/kcall.h>
 #include <sys/signal.h>

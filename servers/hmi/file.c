@@ -24,8 +24,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <fcntl.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <fs/vfs.h>
 #include <nerve/kcall.h>
 #include <libserv.h>

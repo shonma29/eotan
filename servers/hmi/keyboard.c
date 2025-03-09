@@ -24,10 +24,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
 #include <keycode.h>
 #include <archfunc.h>
-#include <core/packets.h>
 #include <arch/8259a.h>
 #include "../../lib/libserv/libserv.h"
 #include "key2char.h"

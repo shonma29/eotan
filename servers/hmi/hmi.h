@@ -28,9 +28,8 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <console.h>
-#include <dev/device.h>
-#include <sys/syslimits.h>
-#include <hmi/draw.h>
+#include <services.h>
+#include <set/lf_queue.h>
 #include <hmi/window.h>
 #include "terminal.h"
 

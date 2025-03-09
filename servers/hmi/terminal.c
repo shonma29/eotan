@@ -25,7 +25,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <console.h>
-#include <mpu/memory.h>
 #include "terminal.h"
 
 #define ESC 0x1b

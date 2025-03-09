@@ -24,8 +24,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <errno.h>
 #include <fcntl.h>
-#include <sys/errno.h>
 #include <nerve/kcall.h>
 #include "hmi.h"
 #include "api.h"

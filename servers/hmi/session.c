@@ -26,10 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <fcntl.h>
 #include <sys/errno.h>
-#include <set/slab.h>
-#include <set/tree.h>
 #include <fs/config.h>
-#include <mpu/memory.h>
 #include <nerve/global.h>
 #include <nerve/kcall.h>
 #include "hmi.h"
