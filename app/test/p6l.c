@@ -24,12 +24,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <errno.h>
 #include <fcntl.h>
-#include <ipc.h>
-#include <services.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <fs/protocol.h>
 #include <hmi/draw.h>
 
 #define MAX_PIXEL (337)
@@ -39,8 +37,8 @@ For more information, please refer to <http://unlicense.org/>
 static uint8_t buf[BUF_SIZE];
 
 static void to_bgr(const size_t);
-static int putline(const size_t, uint8_t *);
-static int process(const int);
+static int putline(const int, const size_t, uint8_t *);
+static int process(const int, const int);
 
 
 static void to_bgr(const size_t pixels)
@@ -54,28 +52,22 @@ static void to_bgr(const size_t pixels)
 	}
 }
 
-static int putline(const size_t bytes, uint8_t *buf)
+static int putline(const int out, const size_t bytes, uint8_t *buf)
 {
-	fsmsg_t message;
-	message.header.ident = IDENT;
-	message.header.type = Twrite;
-	message.Twrite.fid = DRAW_FID;
-	message.Twrite.offset = 0;
-	message.Twrite.count = bytes;
-	message.Twrite.data = (char *) buf;
+	errno = 0;
 
-	int err = ipc_call(PORT_WINDOW, &message, MESSAGE_SIZE(Twrite));
-	if (err < 0)
-		printf("call error %d\n", err);
-	else if (message.Rwrite.count < 0)
-		printf("draw error %d\n", message.Rwrite.count);
+	int result = write(out, buf, bytes);
+	if (result != bytes) {
+		fprintf(stderr, "write err %d %d\n", result, errno);
+		return (-1);
+	}
 
-	return err;
+	return 0;
 }
 
-static int process(const int fd)
+static int process(const int out, const int in)
 {
-	if (read(fd, buf, 3) != 3) {
+	if (read(in, buf, 3) != 3) {
 		printf("read err[desc]\n");
 		return (-1);
 	}
@@ -87,7 +79,7 @@ static int process(const int fd)
 
 	size_t width = 0;
 	for (;;) {
-		if (read(fd, buf, 1) != 1) {
+		if (read(in, buf, 1) != 1) {
 			printf("read err[width]\n");
 			return (-1);
 		}
@@ -105,7 +97,7 @@ static int process(const int fd)
 
 	size_t height = 0;
 	for (;;) {
-		if (read(fd, buf, 1) != 1) {
+		if (read(in, buf, 1) != 1) {
 			printf("read err[height]\n");
 			return (-1);
 		}
@@ -131,7 +123,7 @@ static int process(const int fd)
 
 	unsigned int color_max = 0;
 	for (;;) {
-		if (read(fd, buf, 1) != 1) {
+		if (read(in, buf, 1) != 1) {
 			printf("read err[color]\n");
 			return (-1);
 		}
@@ -161,7 +153,7 @@ static int process(const int fd)
 		size_t rest = width;
 		int j = 0;
 		while (rest > MAX_PIXEL) {
-			if (read(fd, data, MAX_BYTES) != MAX_BYTES) {
+			if (read(in, data, MAX_BYTES) != MAX_BYTES) {
 				printf("read err[block]\n");
 				return (-1);
 			}
@@ -170,7 +162,7 @@ static int process(const int fd)
 
 			packet[0] = j;
 			packet[1] = i;
-			if (putline(sizeof(buf), buf) < 0)
+			if (putline(out, sizeof(buf), buf) < 0)
 				return (-3);
 
 			j += MAX_PIXEL;
@@ -179,7 +171,7 @@ static int process(const int fd)
 
 		if (rest) {
 			size_t bytes = rest * sizeof(Color_Rgb);
-			if (read(fd, data, bytes) != bytes) {
+			if (read(in, data, bytes) != bytes) {
 				printf("read err[rest]\n");
 				return (-1);
 			}
@@ -188,7 +180,7 @@ static int process(const int fd)
 
 			packet[0] = j;
 			packet[1] = i;
-			if (putline(DRAW_PUT_PACKET_SIZE + bytes, buf) < 0)
+			if (putline(out, DRAW_PUT_PACKET_SIZE + bytes, buf) < 0)
 				return (-3);
 		}
 	}
@@ -200,12 +192,21 @@ static int process(const int fd)
 int main(int argc, char **argv)
 {
 	if (argc == 2) {
-		int fd = open(argv[1], O_RDONLY);
-		if (fd > 0) {
-			process(fd);
-			close(fd);
+		errno = 0;
+
+		int in = open(argv[1], O_RDONLY);
+		if (in >= 0) {
+			int out = open("/dev/draw", O_WRONLY);
+			if (out < 0)
+				fprintf(stderr, "open 'draw' err %d\n", errno);
+			else {
+				process(out, in);
+				close(in);
+			}
+
+			close(out);
 		} else
-			printf("open err %d\n", fd);
+			printf("open %s err %d\n", argv[1], errno);
 	} else
 		printf("arg err\n");
 

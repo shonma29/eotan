@@ -24,32 +24,32 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <errno.h>
 #include <fcntl.h>
-#include <sys/errno.h>
 #include <fs/config.h>
-#include <nerve/global.h>
 #include <nerve/kcall.h>
 #include "hmi.h"
-#include "api.h"
 #include "session.h"
 
 #define CONSOLE_HEIGHT (20)
 #define CONSOLE_TITLE "Console"
+#define DEFAULT_WIDTH (1024 / 2)
+#define DEFAULT_HEIGHT ((768 - CONSOLE_HEIGHT) / 2)
 
 enum {
 	SESSION_SLAB = 0x01,
-	FILE_SLAB = 0x02
+	FILE_SLAB = 0x02,
+	SCREEN_SLAB = 0x04,
+	ESC_SLAB = 0x08
 };
-
-Display *display = &(sysinfo->display);
-//TODO get dinamically
-Screen screen0;
-esc_state_t state0;
 
 static tree_t sessions;
 static slab_t session_slab;
 static slab_t file_slab;
+static slab_t screen_slab;
+static slab_t esc_slab;
 static int initialized_resources = 0;
+static int num_of_window = 0;
 
 static session_t *_create(const int);
 static void _destroy(session_t *);
@@ -67,7 +67,22 @@ int if_attach(fs_request_t *req)
 
 		session_t *session = _create(unpack_sid(req));
 		if (!session) {
-			error_no = ENOSPC;
+			error_no = ENOMEM;
+			break;
+		}
+
+		session->tid = unpack_tid(req);
+		session->state = (esc_state_t *) slab_alloc(&esc_slab);
+		if (!(session->state)) {
+			_destroy(session);
+			error_no = ENOMEM;
+			break;
+		}
+
+		session->state->screen = (Screen *) slab_alloc(&screen_slab);
+		if (!(session->state->screen)) {
+			_destroy(session);
+			error_no = ENOMEM;
 			break;
 		}
 
@@ -83,20 +98,24 @@ int if_attach(fs_request_t *req)
 		//TODO can not walk to the parent of aname
 		//TODO bind fid to with session type (for use to close session)
 		file->f_flag = O_ACCMODE;
-		session->tid = unpack_tid(req);
-
-		state0.screen = &screen0;
-		terminal_initialize(&state0);
+		terminal_initialize(session->state);
 
 		window_t *w;
-		int width = display->r.max.x - display->r.min.x;
-		int height = display->r.max.y - display->r.min.y;
-		create_window(&w, 0, CONSOLE_HEIGHT, width / 2,
-				CONSOLE_HEIGHT + (height - CONSOLE_HEIGHT) / 2,
+		//TODO !define function to calculate position
+		error_no = create_window(&w, 0,
+				CONSOLE_HEIGHT + DEFAULT_HEIGHT * num_of_window,
+				DEFAULT_WIDTH,
+				CONSOLE_HEIGHT + DEFAULT_HEIGHT * (num_of_window + 1),
 				WINDOW_ATTR_HAS_BORDER | WINDOW_ATTR_HAS_TITLE,
-				CONSOLE_TITLE, &screen0);
-		terminal_write(STR_CONS_INIT, &state0, 0, LEN_CONS_INIT);
+				CONSOLE_TITLE, session->state->screen);
+		if (error_no) {
+			session_destroy_file(session, file->node.key);
+			break;
+		}
+
+		terminal_write(STR_CONS_INIT, session->state, 0, LEN_CONS_INIT);
 		session->window = w;
+		num_of_window++;
 
 		fsmsg_t *response = &(req->packet);
 		//response->header.token = req->packet.header.token;
@@ -140,6 +159,32 @@ int session_initialize(void)
 	else
 		initialized_resources |= FILE_SLAB;
 
+	screen_slab.unit_size = sizeof(Screen);
+	screen_slab.block_size = PAGE_SIZE;
+	screen_slab.min_block = 1;
+	screen_slab.max_block = slab_max_block(MAX_FILE, PAGE_SIZE,
+			sizeof(Screen));
+	screen_slab.palloc = kcall->palloc;
+	screen_slab.pfree = kcall->pfree;
+
+	if (slab_create(&screen_slab))
+		return SCREEN_SLAB;
+	else
+		initialized_resources |= SCREEN_SLAB;
+
+	esc_slab.unit_size = sizeof(esc_state_t);
+	esc_slab.block_size = PAGE_SIZE;
+	esc_slab.min_block = 1;
+	esc_slab.max_block = slab_max_block(MAX_FILE, PAGE_SIZE,
+			sizeof(esc_state_t));
+	esc_slab.palloc = kcall->palloc;
+	esc_slab.pfree = kcall->pfree;
+
+	if (slab_create(&esc_slab))
+		return ESC_SLAB;
+	else
+		initialized_resources |= ESC_SLAB;
+
 	return 0;
 }
 
@@ -157,6 +202,8 @@ static session_t *_create(const int sid)
 		return NULL;
 	}
 
+	session->window = NULL;
+	session->state = NULL;
 	return session;
 }
 
@@ -164,6 +211,18 @@ static void _destroy(session_t *session)
 {
 	if (!tree_remove(&sessions, session->node.key))
 		return;
+
+	if (session->window) {
+		//TODO !release window
+		num_of_window--;
+	}
+
+	if (session->state) {
+		if (session->state->screen)
+			slab_free(&screen_slab, session->state->screen);
+
+		slab_free(&esc_slab, session->state);
+	}
 
 	slab_free(&session_slab, session);
 }

@@ -1,5 +1,5 @@
-#ifndef __HMI_H__
-#define __HMI_H__
+#ifndef _HMI_HMI_H_
+#define _HMI_HMI_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -31,12 +31,11 @@ For more information, please refer to <http://unlicense.org/>
 #include <services.h>
 #include <set/lf_queue.h>
 #include <hmi/window.h>
-#include "terminal.h"
 
 #define MYNAME "hmi"
 #define MYPORT PORT_WINDOW
 
-#define WINDOW_MAX (32)
+#define WINDOW_MAX (2)
 
 #define INTERRUPT_QUEUE_SIZE (1024)
 #define REQUEST_QUEUE_SIZE (256)
@@ -62,9 +61,6 @@ extern ID cons_mid;
 extern volatile lfq_t req_queue;
 extern volatile lfq_t unused_queue;
 
-extern Screen screen0;
-extern esc_state_t state0;
-
 // window.c
 extern Display *display;
 
@@ -77,7 +73,7 @@ extern window_t *find_window(const int);
 extern int remove_window(const int);
 #endif
 // draw.c
-extern ER_UINT draw_write(const UW, const char *);
+extern ER_UINT draw_write(const window_t *, const UW, const char *);
 
 // event.c
 extern volatile lfq_t hmi_queue;

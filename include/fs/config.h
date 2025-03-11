@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #define MAX_CACHE (128)
 
 #define MAX_SESSION (256)
-#define MAX_FILE (65536)
+#define MAX_FILE (32768)
 #define MAX_TOTAL_FILE (MAX_SESSION * MAX_FILE)
 #define DEFAULT_BLOCK_SIZE (512)
 

@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/syscall.h>
 #include <libserv.h>
 #include "hmi.h"
-#include "api.h"
+#include "session.h"
 #include "mouse.h"
 
 static fs_request_t *current_req = NULL;
@@ -109,7 +109,8 @@ static void process(const int data)
 			kcall->printk("hmi: handler cannot lock %d\n", result);
 		else {
 			mouse_hide();
-			terminal_write((char *) &buf, &state0, 0, 1);
+			session_t *session = (session_t *) current_req->session;
+			terminal_write((char *) &buf, session->state, 0, 1);
 			mouse_show();
 			result = kcall->mutex_unlock(cons_mid);
 			if (result)

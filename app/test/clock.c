@@ -24,38 +24,31 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
 #include <unistd.h>
-#include <ipc.h>
-#include <services.h>
-#include <fs/protocol.h>
+#include <fcntl.h>
+#include <libc.h>
 
-static int putline(char *);
-
-
-static int putline(char *buf)
-{
-	fsmsg_t message;
-	message.header.ident = IDENT;
-	message.header.type = Twrite;
-	message.Twrite.fid = 7;
-	message.Twrite.offset = 0;
-	message.Twrite.count = strlen(buf);
-	message.Twrite.data = buf;
-
-	int err = ipc_call(PORT_WINDOW, &message, MESSAGE_SIZE(Twrite));
-	if (err < 0)
-		fprintf(stderr, "call error %d\n", err);
-
-	return err;
-}
 
 int main(int argc, char **argv)
 {
-	
+	close(STDIN_FILENO);
+	close(STDOUT_FILENO);
+	close(STDERR_FILENO);
+
+	if (bind("#i", "/dev", MREPL) < 0)
+		return EXIT_FAILURE;
+
+	if (open("/dev/cons", O_RDONLY) < 0)
+		return EXIT_FAILURE;
+
+	if (open("/dev/cons", O_WRONLY) < 0)
+		return EXIT_FAILURE;
+
+	if (dup2(STDOUT_FILENO, STDERR_FILENO) < 0)
+		return EXIT_FAILURE;
+
 	do {
 		time_t t = time(NULL);
 		if (t == -1)
@@ -71,10 +64,13 @@ int main(int argc, char **argv)
 		if (!len)
 			break;//TODO show error
 
-		putline(buf);
+		len++;
+		if (write(STDOUT_FILENO, buf, len) != len)
+			break;//TODO show error
 
 		if (tm.tm_sec < 60)
 			sleep(60 - tm.tm_sec);
 	} while (true);
+
 	_exit(EXIT_FAILURE);
 }

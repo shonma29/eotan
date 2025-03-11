@@ -31,6 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 typedef struct {
 	fsmsg_t packet;
 	int tag;
+	void *session;//TODO ad-hoc
 } fs_request_t;
 
 extern int if_attach(fs_request_t *);

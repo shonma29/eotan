@@ -28,11 +28,14 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <set/tree.h>
 #include <hmi/window.h>
+#include "api.h"
+#include "terminal.h"
 
 typedef struct _session_t {
 	node_t node;
 	tree_t files;
 	window_t *window;
+	esc_state_t *state;
 	int tid;
 } session_t;
 

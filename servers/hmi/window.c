@@ -49,7 +49,7 @@ int window_initialize(void)
 	list_initialize(&window_list);
 	return 0;
 }
-
+//TODO !split window design
 int create_window(window_t **w, const int x1, const int y1,
 		const int x2, const int y2, const int attr, const char *title,
 		Screen *s)
@@ -61,7 +61,7 @@ int create_window(window_t **w, const int x1, const int y1,
 			if (!tree_get(&window_tree, wid))
 				break;
 
-		if (wid >= WINDOW_MAX) {
+		if (wid > WINDOW_MAX) {
 			error_no = ENOMEM;
 			break;
 		}

@@ -30,7 +30,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 #include <libserv.h>
 #include "hmi.h"
-#include "api.h"
 #include "session.h"
 #include "mouse.h"
 
@@ -73,6 +72,8 @@ int if_open(fs_request_t *req)
 			error_no = EACCES;
 			break;
 		}
+
+		//TODO !check if the mode is allowed to the channel
 
 		if (!vfs_check_flags(request->mode)
 				|| (request->mode & MASK_UNSUPPORTED_MODE)) {
@@ -139,6 +140,8 @@ int if_read(fs_request_t *req)
 			error_no = EBADF;
 			break;
 		}
+
+		req->session = session;
 
 		if (lfq_enqueue(&req_queue, &req) != QUEUE_OK) {
 			log_warning(MYNAME ": req_queue is full\n");
@@ -212,19 +215,28 @@ int if_write(fs_request_t *req)
 
 	return error_no;
 }
-
+//TODO !define callback function to driver_t
 static ER_UINT _write(struct file *file, const UW start, const UW size,
 		const char *inbuf)
 {
-	//TODO select device from file->f_channel
-	//TODO select target from file->session->window
+	switch (file->f_channel) {
+	case CONS:
+		break;
+	case CONSCTL:
+		return consctl_write(size, inbuf);
+	case DRAW:
+		return draw_write(file->f_session->window, size, inbuf);
+	case EVENT:
+	default:
+		return (-1);
+	}
 
 	int result = kcall->mutex_lock(cons_mid, TMO_FEVR);
 	if (result)
 		kcall->printk("hmi: main cannot lock %d\n", result);
 	else {
 		mouse_hide();
-		terminal_write((char *) inbuf, &state0, 0, size);
+		terminal_write((char *) inbuf, file->f_session->state, 0, size);
 		mouse_show();
 		result = kcall->mutex_unlock(cons_mid);
 		if (result)

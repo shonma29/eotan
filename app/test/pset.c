@@ -24,13 +24,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <errno.h>
-#include <ipc.h>
-#include <math.h>
-#include <services.h>
+#include <stdlib.h>
 #include <stdio.h>
-#include <fs/protocol.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <math.h>
+#include <unistd.h>
 #include <hmi/draw.h>
+
+#define ERR (-1)
 
 #define SPLIT (360)
 
@@ -43,11 +45,12 @@ typedef struct {
 #define WIDTH (640)
 #define HEIGHT (480)
 
-static int _pset(const unsigned int, const unsigned int, const int);
-static void _circle(const int, const int, const int);
+static int _pset(const int, const unsigned int, const unsigned int, const int);
+static int _circle(const int, const int, const int, const int);
 
 
-static int _pset(const unsigned int x, const unsigned int y, const int color)
+static int _pset(const int fd, const unsigned int x, const unsigned int y,
+		const int color)
 {
 	char buf[DRAW_PSET_PACKET_SIZE];
 	draw_operation_e *ope = (draw_operation_e *) buf;
@@ -58,36 +61,40 @@ static int _pset(const unsigned int x, const unsigned int y, const int color)
 	point->y = y;
 	point->color = color;
 
-	fsmsg_t message;
-	message.header.ident = IDENT;
-	message.header.type = Twrite;
-	message.Twrite.fid = DRAW_FID;
-	message.Twrite.offset = 0;
-	message.Twrite.count = sizeof(buf);
-	message.Twrite.data = buf;
+	errno = 0;
+	int result = write(fd, buf, sizeof(buf));
+	if (result != sizeof(buf)) {
+		fprintf(stderr, "write error %d %d\n", result, errno);
+		return ERR;
+	}
 
-	int err = ipc_call(PORT_WINDOW, &message, MESSAGE_SIZE(Twrite));
-	if (err < 0)
-		printf("call error %d\n", err);
-	else if (message.Rwrite.count < 0)
-		printf("draw error %d\n", message.Rwrite.count);
-
-	return err;
+	return 0;
 }
 
-static void _circle(const int x, const int y, const int radius)
+static int _circle(const int fd, const int x, const int y, const int radius)
 {
 	int deg = 0;
 	for (int i = 0; i < SPLIT; i++) {
 		double rad = deg * M_PI / 180;
-		_pset(radius * cos(rad) + x, radius * sin(rad) + y, 0xff00ff);
+		if (_pset(fd, radius * cos(rad) + x, radius * sin(rad) + y,
+				0xff00ff))
+			return ERR;
+
 		deg += 360 / SPLIT;
 	}
+
+	return 0;
 }
 
 int main(int argc, char **argv)
 {
+	int fd = open("/dev/draw", O_WRONLY);
+	if (fd < 0) {
+		fprintf(stderr, "open error %d\n", errno);
+		return EXIT_FAILURE;
+	}
 
-	_circle(WIDTH / 2, HEIGHT / 2, HEIGHT / 3);
-	return 0;
+	int result = _circle(fd, WIDTH / 2, HEIGHT / 2, HEIGHT / 3);
+	close(fd);
+	return (result? EXIT_FAILURE : EXIT_SUCCESS);
 }

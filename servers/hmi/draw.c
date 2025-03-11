@@ -28,14 +28,10 @@ For more information, please refer to <http://unlicense.org/>
 #include "mouse.h"
 
 
-ER_UINT draw_write(const UW size, const char *inbuf)
+ER_UINT draw_write(const window_t *wp, const UW size, const char *inbuf)
 {
 	if (size < DRAW_OP_SIZE)
 		return E_PAR;//TODO return POSIX error
-
-	window_t *wp = find_window(2);
-	if (!wp)
-		return E_NOEXS;//TODO return POSIX error
 
 	draw_operation_e *op = (draw_operation_e *) inbuf;
 	if (*op == draw_op_put) {

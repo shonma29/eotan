@@ -24,40 +24,34 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <ipc.h>
-#include <services.h>
-#include <string.h>
-#include <fs/protocol.h>
+#include <unistd.h>
+#include <fcntl.h>
 
-static int consctl(const char *);
+#define ERR (-1)
+
+static char RAWON[] = { 'r', 'a', 'w', 'o', 'n' };
+static char RAWOFF[] = { 'r', 'a', 'w', 'o', 'f', 'f' };
+
+static int consctl(const char *, const size_t);
 
 
-static int consctl(const char *str)
+static int consctl(const char *str, const size_t size)
 {
-	size_t len = strlen(str);
-	fsmsg_t message;
-	message.header.ident = IDENT;
-	message.header.type = Twrite;
-	message.Twrite.fid = 6;
-	message.Twrite.offset = 0;
-	message.Twrite.count = len;
-	message.Twrite.data = (char *) str;
+	int fd = open("/dev/consctl", O_WRONLY);
+	if (fd < 0)
+		return ERR;
 
-	int result = ipc_call(PORT_WINDOW, &message, MESSAGE_SIZE(Twrite));
-	if ((result == MESSAGE_SIZE(Rwrite))
-			&& (message.header.type == Rwrite)
-			&& (message.Rwrite.count == len))
-		return 0;
-
-	return (-1);
+	int result = (write(fd, str, size) == size) ? 0 : ERR;
+	close(fd);
+	return result;
 }
 
 int rawon(void)
 {
-	return consctl("rawon");
+	return consctl(RAWON, sizeof(RAWON));
 }
 
 int rawoff(void)
 {
-	return consctl("rawoff");
+	return consctl(RAWOFF, sizeof(RAWOFF));
 }

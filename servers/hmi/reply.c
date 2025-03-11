@@ -24,9 +24,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <errno.h>
 #include <event.h>
 #include <nerve/kcall.h>
-#include <errno.h>
 #include <libserv.h>
 #include "hmi.h"
 #include "api.h"
@@ -55,7 +55,7 @@ static int _reply(fs_request_t *req, fsmsg_t *response, const size_t size)
 {
 	ER_UINT result = kcall->ipc_send(req->tag, (void *) response, size);
 	if (result)
-		log_err("hmi: reply error=%d\n", result);
+		log_err(MYNAME ": reply error=%d\n", result);
 
 	lfq_enqueue(&unused_queue, &req);
 	kcall->ipc_notify(accept_tid, EVENT_SERVICE);

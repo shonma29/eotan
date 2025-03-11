@@ -25,10 +25,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
+#include <nerve/global.h>
 #include <nerve/kcall.h>
 #include <libserv.h>
 #include "hmi.h"
-#include "api.h"
 #include "session.h"
 #include "keyboard.h"
 #include "mouse.h"
@@ -48,6 +48,7 @@ struct fs_func {
 	size_t max;
 };
 
+Display *display = &(sysinfo->display);
 ER_ID accept_tid = 0;
 //static ER_ID hmi_tid = 0;
 ID cons_mid;
@@ -64,8 +65,8 @@ static char unused_buf[
 static int initialized_resources = 0;
 
 static int no_support(fs_request_t *);
-static ER accept(void);
-static ER initialize(void);
+static int accept(void);
+static int initialize(void);
 
 //TODO cancel request?
 static struct fs_func func_table[] = {
@@ -90,12 +91,13 @@ static int no_support(fs_request_t *req)
 	return 0;
 }
 
-static ER accept(void)
+static int accept(void)
 {
-//TODO multiple interrupt is needed on mouse / keyboard?
 	fs_request_t *req;
 	while (lfq_dequeue(&unused_queue, &req) != QUEUE_OK)
 		kcall->ipc_listen();
+
+	req->session = NULL;
 
 	ER_UINT size = kcall->ipc_receive(PORT_WINDOW, &(req->tag),
 			&(req->packet));
@@ -105,9 +107,8 @@ static ER accept(void)
 	}
 
 	if (size < sizeof(req->packet.header)) {
-		//TODO what is tag?
 		reply_error(req, 0, 0, EPROTO);
-		return E_OK;
+		return 0;
 	}
 
 	int result;
@@ -127,20 +128,25 @@ static ER accept(void)
 			break;
 		}
 
-		func_table[req->packet.header.type].call(req);
-		return E_OK;
+		int result = func_table[req->packet.header.type].call(req);
+		if (result)
+			reply_error(req, req->packet.header.token,
+					req->packet.Rerror.tag, result);
+
+		return 0;
 	} while (false);
 
-	//TODO what is tag?
 	reply_error(req, req->packet.header.token, 0, result);
-	return E_OK;
+	return 0;
 }
 
-static ER initialize(void)
+static int initialize(void)
 {
-	if (session_initialize())
+	int result = session_initialize();
+	if (result) {
+		log_err(MYNAME ": session error %d\n", result);
 		return SESSIONS;
-	else
+	} else
 		initialized_resources |= SESSIONS;
 
 	if (window_initialize())
@@ -174,9 +180,9 @@ static ER initialize(void)
 		TA_TFIFO | TA_CEILING,
 		pri_dispatcher
 	};
-	int result = kcall->mutex_create(accept_tid, &pk_cmtx);
+	result = kcall->mutex_create(accept_tid, &pk_cmtx);
 	if (result) {
-		log_err(MYNAME ": mutex error=%d\n", result);
+		log_err(MYNAME ": mutex error %d\n", result);
 		return MUTEX;
 	} else {
 		cons_mid = accept_tid;
@@ -190,7 +196,7 @@ static ER initialize(void)
 	};
 	result = kcall->ipc_open(&pk_cpor);
 	if (result) {
-		log_err(MYNAME ": open error=%d\n", result);
+		log_err(MYNAME ": failed to open %d\n", result);
 		return PORT;
 	} else
 		initialized_resources |= PORT;
@@ -207,29 +213,32 @@ static ER initialize(void)
 //	}
 
 //	hmi_tid = result;
-	return E_OK;
+	return 0;
 }
 
 void start(VP_INT exinf)
 {
 	accept_tid = kcall->thread_get_id();
 
-	int error = initialize();
-	if (error)
-		log_err(MYNAME ": initialize failed %d\n", error);
+	int result = initialize();
+	if (result)
+		log_err(MYNAME ": failed to initialize %d\n", result);
 	else {
 		log_info(MYNAME ": start\n");
 
-		if (keyboard_initialize() == E_OK)
+		if (!keyboard_initialize())
 			reader = get_char;
 
 		mouse_initialize();
 
-		while (accept() == E_OK);
+		while (!accept());
 
-//		kcall->thread_destroy(hmi_tid);
-		kcall->ipc_close();
 		log_info(MYNAME ": end\n");
+//		kcall->thread_destroy(hmi_tid);
+		result = kcall->ipc_close();
+		if (result)
+			log_err(MYNAME ": failed to close %d\n", result);
+
 	}
 
 	//TODO close port

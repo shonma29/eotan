@@ -83,8 +83,6 @@ typedef enum draw_operation {
 #define DRAW_PUT_PACKET_SIZE (DRAW_OP_SIZE + sizeof(int) * 2)
 #define DRAW_PSET_PACKET_SIZE (DRAW_OP_SIZE + sizeof(int) * 3)
 
-#define DRAW_FID (4)
-
 extern void draw_put(const Frame *, const int, const int, const size_t,
 		const uint8_t *);
 extern void draw_pset(const Frame *, const int, const int, const int);
