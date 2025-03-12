@@ -27,23 +27,17 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <event.h>
 #include <keycode.h>
-#include <mpu/io.h>
 #include <nerve/icall.h>
-#include <set/lf_queue.h>
 #include "8042.h"
 #include "scan2key.h"
 #include "../../servers/hmi/hmi.h"
 
-extern volatile lfq_t hmi_queue;
-
-static hmi_interrupt_t message = { event_keyboard, 0 };
 static uint8_t state = scan_normal;
 
 
 void keyboard_interrupt(VP_INT exinf)
 {
 	uint8_t b = kbc_read_data();
-
 	switch (state) {
 	case scan_normal:
 		switch (b) {
@@ -62,10 +56,8 @@ void keyboard_interrupt(VP_INT exinf)
 		break;
 	}
 
-	message.data = (is_break(b) ?
-			(BREAK | scan2key[state][strip_break(b)])
-			: scan2key[state][b]);
-	if (lfq_enqueue(&hmi_queue, &message) == QUEUE_OK)
-		//TODO error check
-		icall->handle(hmi_handle, 0, 0);
+	icall->handle(hmi_handle, event_keyboard,
+			//TODO ((b & 0x80) << 2) | scan2key[b & 0x7f]
+			is_break(b) ? (BREAK | scan2key[state][strip_break(b)])
+					: scan2key[state][b]);
 }

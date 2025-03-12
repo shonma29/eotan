@@ -76,7 +76,6 @@ extern int remove_window(const int);
 extern ER_UINT draw_write(const window_t *, const UW, const char *);
 
 // event.c
-extern volatile lfq_t hmi_queue;
 extern ER_UINT (*reader)(const int);
 
 extern void hmi_handle(const int, const int);

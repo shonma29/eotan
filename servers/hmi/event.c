@@ -24,7 +24,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <event.h>
 #include <string.h>
 #include <nerve/kcall.h>
 #include <sys/signal.h>
@@ -34,39 +33,25 @@ For more information, please refer to <http://unlicense.org/>
 #include "session.h"
 #include "mouse.h"
 
+#define MASK_EVENT_TYPE (1)
+
 static fs_request_t *current_req = NULL;
 static volatile bool raw_mode;
-volatile lfq_t hmi_queue;
-static char int_buf[
-	lfq_buf_size(sizeof(hmi_interrupt_t), INTERRUPT_QUEUE_SIZE)
-];
 
 static void process(const int);
 static ER_UINT dummy_read(const int);
 
+static void (*processors[])(const int) = {
+	process,
+	mouse_process
+};
 ER_UINT (*reader)(const int) = dummy_read;
 
 
 void hmi_handle(const int type, const int data)
 {
-	for (;;) {
-		hmi_interrupt_t in;
-		if (lfq_dequeue(&hmi_queue, &in) == QUEUE_OK)
-			switch (in.type) {
-			case event_keyboard:
-//				kcall->ipc_notify(hmi_tid, EVENT_IO);
-				process(in.data);
-				break;
-			case event_mouse:
-				mouse_process(in.type, in.data);
-				break;
-			default:
-				break;
-			}
-		else
-//			kcall->ipc_listen();
-			break;
-	}
+	if (!(type & (~MASK_EVENT_TYPE)))
+		processors[type](data);
 }
 
 static void process(const int data)
@@ -162,7 +147,5 @@ ER_UINT consctl_write(const UW size, const char *inbuf)
 
 int event_initialize(void)
 {
-	lfq_initialize(&hmi_queue, int_buf, sizeof(hmi_interrupt_t),
-			INTERRUPT_QUEUE_SIZE);
 	return 0;
 }

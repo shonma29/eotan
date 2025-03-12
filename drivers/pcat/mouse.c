@@ -26,15 +26,11 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <event.h>
-#include <mpu/io.h>
 #include <nerve/icall.h>
-#include <set/lf_queue.h>
 #include "8042.h"
 #include "../../servers/hmi/hmi.h"
 
-extern volatile lfq_t hmi_queue;
-
-static hmi_interrupt_t message = { event_mouse, 0 };
+static int data;
 static int state = 0;
 
 
@@ -42,22 +38,17 @@ void mouse_interrupt(VP_INT exinf)
 {
 	switch (state) {
 	case 0:
-		message.data = kbc_read_data() << 16;
+		data = kbc_read_data() << 16;
 		state = 1;
 		break;
 	case 1:
-		message.data |= kbc_read_data() << 8;
+		data |= kbc_read_data() << 8;
 		state = 2;
 		break;
 	case 2:
-		message.data |= kbc_read_data();
+		data |= kbc_read_data();
 		state = 0;
-		//TODO error check
-
-		if (lfq_enqueue(&hmi_queue, &message) == QUEUE_OK)
-			//TODO error check
-			icall->handle(hmi_handle, 0, 0);
-
+		icall->handle(hmi_handle, event_mouse, data);
 		break;
 	}
 }

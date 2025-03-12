@@ -35,7 +35,7 @@ static int y;
 static int buttons;
 
 
-void mouse_process(const int type, const int d)
+void mouse_process(const int d)
 {
 	buttons = (uint8_t) ((d >> 16) & 0x07);
 
