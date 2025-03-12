@@ -28,7 +28,10 @@ For more information, please refer to <http://unlicense.org/>
 #include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <libc.h>
 #include "cunit.h"
+
+#define BIND_PATH "/d"
 
 static char *test_null(void);
 static char *test_zero(void);
@@ -37,7 +40,7 @@ static char *test_zero(void);
 static char *test_null(void)
 {
 	char buf[16];
-	int fd = open("#c/null", O_WRONLY);
+	int fd = open(BIND_PATH "/null", O_WRONLY);
 	assert_eq("WRONLY open", 3, fd);
 	errno = 0;
 	assert_eq("WRONLY read", -1, read(fd, buf, 8));
@@ -45,7 +48,7 @@ static char *test_null(void)
 	assert_eq("WRONLY write", 8, write(fd, buf, 8));
 	close(fd);
 
-	fd = open("#c/null", O_RDONLY);
+	fd = open(BIND_PATH "/null", O_RDONLY);
 	assert_eq("RDONLY open", 3, fd);
 	assert_eq("RDONLY read", 0, read(fd, buf, 8));
 	errno = 0;
@@ -53,7 +56,7 @@ static char *test_null(void)
 	assert_eq("RDONLY write errno", EBADF, errno);
 	close(fd);
 
-	fd = open("#c/null", O_RDWR);
+	fd = open(BIND_PATH "/null", O_RDWR);
 	assert_eq("RDWR open", 3, fd);
 	assert_eq("RDWR read", 0, read(fd, buf, 8));
 	assert_eq("RDWR write", 8, write(fd, buf, 8));
@@ -68,7 +71,7 @@ static char *test_zero(void)
 	for (int i = 0; i < sizeof(buf); i++)
 		buf[i] = 'a';
 
-	int fd = open("#c/zero", O_RDWR);
+	int fd = open(BIND_PATH "/zero", O_RDWR);
 	assert_eq("open", 3, fd);
 	assert_eq("read", sizeof(buf), read(fd, buf, sizeof(buf)));
 	assert_eq("write", 8, write(fd, buf, 8));
@@ -82,6 +85,7 @@ static char *test_zero(void)
 
 int main(int argc, char **argv)
 {
+	bind("#c", BIND_PATH, MREPL);
 	test(test_null);
 	test(test_zero);
 	return 0;
