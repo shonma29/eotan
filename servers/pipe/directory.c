@@ -31,6 +31,8 @@ For more information, please refer to <http://unlicense.org/>
 #include "api.h"
 #include "session.h"
 
+static char path_buf[PATH_MAX + 1];
+
 static int _get_path(char *, const int, const char *);
 
 
@@ -68,13 +70,13 @@ int if_walk(fs_request_t *req)
 		if (newfid == fid) {
 			if (request->nwname == 0) {
 				//TODO really?
-				fsmsg_t response;
-				response.header.token =
-						req->packet.header.token;
-				response.header.type = Rwalk;
-				response.Rwalk.tag = request->tag;
+				fsmsg_t *response = &(req->packet);
+				//response->header.token =
+				//		req->packet.header.token;
+				response->header.type = Rwalk;
+				//response->Rwalk.tag = request->tag;
 				//TODO return nwqid and wqid
-				reply(req->tag, &response, MESSAGE_SIZE(Rwalk));
+				reply(req->tag, response, MESSAGE_SIZE(Rwalk));
 				return 0;
 			}
 		} else {
@@ -85,7 +87,7 @@ int if_walk(fs_request_t *req)
 
 		driver_t *driver = NULL;
 		if (request->nwname) {
-			error_no = _get_path(req->buf, unpack_tid(req),
+			error_no = _get_path(path_buf, unpack_tid(req),
 					request->wname);
 			if (error_no) {
 				if (file)
@@ -94,7 +96,8 @@ int if_walk(fs_request_t *req)
 				break;
 			}
 
-			char *p = req->buf;
+			char *p = path_buf;
+
 			//TODO support walk '/'
 			if (*p == '/')
 				p++;
@@ -120,12 +123,12 @@ int if_walk(fs_request_t *req)
 		if (driver)
 			file->f_channel = &(session->pair[driver->channel]);
 
-		fsmsg_t response;
-		response.header.token = req->packet.header.token;
-		response.header.type = Rwalk;
-		response.Rwalk.tag = request->tag;
+		fsmsg_t *response = &(req->packet);
+		//response->header.token = req->packet.header.token;
+		response->header.type = Rwalk;
+		//response->Rwalk.tag = request->tag;
 		//TODO return nwqid and wqid
-		reply(req->tag, &response, MESSAGE_SIZE(Rwalk));
+		reply(req->tag, response, MESSAGE_SIZE(Rwalk));
 		return 0;
 	} while (false);
 

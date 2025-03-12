@@ -34,9 +34,15 @@ For more information, please refer to <http://unlicense.org/>
 #include "api.h"
 #include "session.h"
 
+enum {
+	SESSION_SLAB = 0x01,
+	FILE_SLAB = 0x02
+};
+
 static tree_t sessions;
 static slab_t session_slab;
 static slab_t file_slab;
+static int initialized_resources = 0;
 
 static session_t *_create(const int);
 static void _destroy(session_t *);
@@ -55,7 +61,7 @@ int if_attach(fs_request_t *req)
 
 		session_t *session = _create(unpack_sid(req));
 		if (!session) {
-			error_no = ENOSPC;
+			error_no = ENOMEM;
 			break;
 		}
 
@@ -72,19 +78,19 @@ int if_attach(fs_request_t *req)
 		//TODO bind fid to with session type (for use to close session)
 		file->f_flag = O_ACCMODE;
 
-		fsmsg_t response;
-		response.header.token = req->packet.header.token;
-		response.header.type = Rattach;
-		response.Rattach.tag = request->tag;
-		response.Rattach.qid = session->node.key;
-		reply(req->tag, &response, MESSAGE_SIZE(Rattach));
+		fsmsg_t *response = &(req->packet);
+		//response->header.token = req->packet.header.token;
+		response->header.type = Rattach;
+		//response->Rattach.tag = request->tag;
+		response->Rattach.qid = session->node.key;
+		reply(req->tag, response, MESSAGE_SIZE(Rattach));
 		return 0;
 	} while (false);
 
 	return error_no;
 }
 
-void session_initialize(void)
+int session_initialize(void)
 {
 	tree_create(&sessions, NULL, NULL);
 
@@ -95,7 +101,11 @@ void session_initialize(void)
 			sizeof(session_t));
 	session_slab.palloc = kcall->palloc;
 	session_slab.pfree = kcall->pfree;
-	slab_create(&session_slab);
+
+	if (slab_create(&session_slab))
+		return SESSION_SLAB;
+	else
+		initialized_resources |= SESSION_SLAB;
 
 	file_slab.unit_size = sizeof(struct file);
 	file_slab.block_size = PAGE_SIZE;
@@ -104,7 +114,13 @@ void session_initialize(void)
 			sizeof(struct file));
 	file_slab.palloc = kcall->palloc;
 	file_slab.pfree = kcall->pfree;
-	slab_create(&file_slab);
+
+	if (slab_create(&file_slab))
+		return FILE_SLAB;
+	else
+		initialized_resources |= FILE_SLAB;
+
+	return 0;
 }
 
 static session_t *_create(const int sid)

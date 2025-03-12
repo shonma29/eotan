@@ -60,7 +60,7 @@ struct file {
 
 #define getSessionPtr(p) ((uintptr_t) p - offsetof(session_t, node))
 
-extern void session_initialize(void);
+extern int session_initialize(void);
 
 extern session_t *session_find_by_request(const fs_request_t *);
 

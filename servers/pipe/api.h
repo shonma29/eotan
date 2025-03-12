@@ -36,7 +36,6 @@ typedef struct {
 	fsmsg_t packet;
 	int tag;
 	int tid;
-	char buf[PATH_MAX + 1];
 } fs_request_t;
 
 #define getRequestFromList(p) ((uintptr_t) p - offsetof(fs_request_t, brothers))
@@ -63,7 +62,7 @@ extern void dequeue_request(fs_request_t *);
 
 extern int reply(const int, fsmsg_t *, const size_t);
 extern int reply_error(const int, const int, const int, const int);
-extern void reply_read(const fs_request_t *);
-extern void reply_write(const fs_request_t *);
+extern void reply_read(fs_request_t *);
+extern void reply_write(fs_request_t *);
 
 #endif

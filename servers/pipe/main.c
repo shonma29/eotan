@@ -33,12 +33,24 @@ For more information, please refer to <http://unlicense.org/>
 
 #define REQUEST_MAX (16)
 
+enum {
+	PORT = 0x01,
+	SESSIONS = 0x02,
+	REQUEST_SLAB = 0x04
+};
+
 struct fs_func {
 	int (*call)(fs_request_t *);
 	size_t max;
 };
 
+static slab_t request_slab;
+static fs_request_t req;
+static int initialized_resources = 0;
+
 static int no_support(fs_request_t *);
+static int initialize(void);
+static int accept(void);
 
 static struct fs_func func_table[] = {
 	{ if_attach, MESSAGE_SIZE(Tattach) },
@@ -53,12 +65,6 @@ static struct fs_func func_table[] = {
 	{ no_support, MESSAGE_SIZE(Twstat) }
 };
 #define NUM_OF_FUNC (sizeof(func_table) / sizeof(func_table[0]))
-
-static slab_t request_slab;
-static fs_request_t req;
-
-static int initialize(void);
-static int accept(void);
 
 
 fs_request_t *enqueue_request(list_t *queue, const fs_request_t *req)
@@ -96,10 +102,16 @@ static int initialize(void)
 	int result = kcall->ipc_open(&pk_cpor);
 	if (result) {
 		log_err(MYNAME ": failed to open %d\n", result);
-		return (-1);
-	}
+		return PORT;
+	} else
+		initialized_resources |= PORT;
 
-	session_initialize();
+	result = session_initialize();
+	if (result) {
+		log_err(MYNAME ": session error %d\n", result);
+		return SESSIONS;
+	} else
+		initialized_resources |= SESSIONS;
 
 	request_slab.unit_size = sizeof(fs_request_t);
 	request_slab.block_size = PAGE_SIZE;
@@ -108,7 +120,12 @@ static int initialize(void)
 			sizeof(fs_request_t));
 	request_slab.palloc = kcall->palloc;
 	request_slab.pfree = kcall->pfree;
-	slab_create(&request_slab);
+
+	if (slab_create(&request_slab))
+		return REQUEST_SLAB;
+	else
+		initialized_resources |= REQUEST_SLAB;
+
 	return 0;
 }
 
@@ -154,12 +171,15 @@ static int accept(void)
 
 void start(VP_INT exinf)
 {
-	if (!initialize()) {
+	int result = initialize();
+	if (result)
+		log_err(MYNAME ": failed to initialize %d\n", result);
+	else {
 		log_info(MYNAME ": start\n");
 		while (!accept());
 		log_info(MYNAME ": end\n");
 
-		int result = kcall->ipc_close();
+		result = kcall->ipc_close();
 		if (result)
 			log_err(MYNAME ": failed to close %d\n", result);
 

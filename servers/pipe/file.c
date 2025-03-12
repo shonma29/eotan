@@ -81,13 +81,13 @@ int if_open(fs_request_t *req)
 		file->f_flag = request->mode & O_ACCMODE;
 		file->f_channel->refer_count++;
 
-		fsmsg_t response;
-		response.header.token = req->packet.header.token;
-		response.header.type = Ropen;
-		response.Ropen.tag = request->tag;
-		response.Ropen.qid = file->node.key;
-		response.Ropen.iounit = 0;
-		reply(req->tag, &response, MESSAGE_SIZE(Ropen));
+		fsmsg_t *response = &(req->packet);
+		//response->header.token = req->packet.header.token;
+		response->header.type = Ropen;
+		//response->Ropen.tag = request->tag;
+		response->Ropen.qid = file->node.key;
+		response->Ropen.iounit = 0;
+		reply(req->tag, response, MESSAGE_SIZE(Ropen));
 		return 0;
 	} while (false);
 
@@ -109,11 +109,11 @@ int if_clunk(fs_request_t *req)
 		if (error_no)
 			break;
 
-		fsmsg_t response;
-		response.header.token = req->packet.header.token;
-		response.header.type = Rclunk;
-		response.Rclunk.tag = request->tag;
-		reply(req->tag, &response, MESSAGE_SIZE(Rclunk));
+		fsmsg_t *response = &(req->packet);
+		//response->header.token = req->packet.header.token;
+		response->header.type = Rclunk;
+		//response->Rclunk.tag = request->tag;
+		reply(req->tag, response, MESSAGE_SIZE(Rclunk));
 		return 0;
 	} while (false);
 

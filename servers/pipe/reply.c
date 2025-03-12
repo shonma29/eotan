@@ -32,7 +32,6 @@ For more information, please refer to <http://unlicense.org/>
 
 int reply(const int tag, fsmsg_t *response, const size_t size)
 {
-	response->header.ident = IDENT;
 	return (kcall->ipc_send(tag, (void *) response, size) ?
 			ECONNREFUSED : 0);
 }
@@ -50,28 +49,28 @@ int reply_error(const int ipc_tag, const int token, const int caller_tag,
 			ECONNREFUSED : 0);
 }
 
-void reply_read(const fs_request_t *req)
+void reply_read(fs_request_t *req)
 {
-	fsmsg_t response;
-	response.header.token = req->packet.header.token;
-	response.header.type = Rread;
-	response.Rread.tag = req->packet.Tread.tag;
-	response.Rread.count = req->position;
+	fsmsg_t *response = &(req->packet);
+	//response->header.token = req->packet.header.token;
+	response->header.type = Rread;
+	//response->Rread.tag = req->packet.Tread.tag;
+	response->Rread.count = req->position;
 
-	int result = reply(req->tag, &response, MESSAGE_SIZE(Rread));
+	int result = reply(req->tag, response, MESSAGE_SIZE(Rread));
 	if (result)
 		log_warning(MYNAME ": failed to reply %d\n", result);
 }
 
-void reply_write(const fs_request_t *req)
+void reply_write(fs_request_t *req)
 {
-	fsmsg_t response;
-	response.header.token = req->packet.header.token;
-	response.header.type = Rwrite;
-	response.Rwrite.tag = req->packet.Twrite.tag;
-	response.Rwrite.count = req->position;
+	fsmsg_t *response = &(req->packet);
+	//response->header.token = req->packet.header.token;
+	response->header.type = Rwrite;
+	//response->Rwrite.tag = req->packet.Twrite.tag;
+	response->Rwrite.count = req->position;
 
-	int result = reply(req->tag, &response, MESSAGE_SIZE(Rwrite));
+	int result = reply(req->tag, response, MESSAGE_SIZE(Rwrite));
 	if (result)
 		log_warning(MYNAME ": failed to reply %d\n", result);
 }
