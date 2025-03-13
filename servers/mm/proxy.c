@@ -221,7 +221,7 @@ int mm_create(mm_request_t *req)
 		int fd = desc->node.key;
 		mm_file_t *file;
 		fsmsg_t *message = &(req->message);
-		int result = _walk(&file, process, kcall->thread_get_id(),
+		int result = _walk(&file, process, 0,
 				in_root ? NULL : req->walkpath, req);
 		if (result) {
 			process_destroy_desc(process, fd);
