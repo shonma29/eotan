@@ -34,7 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 typedef struct {
 	fsmsg_t packet;
 	int tag;
-	char buf[PATH_MAX + 1];
+	char buf[PATH_MAX];
 } fs_request;
 
 extern void if_attach(fs_request*);

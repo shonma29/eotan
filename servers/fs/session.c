@@ -32,6 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 #include <sys/errno.h>
 #include <sys/unistd.h>
+#include "../../lib/libserv/libserv.h"
 #include "api.h"
 #include "fs.h"
 #include "session.h"
@@ -194,12 +195,9 @@ struct file *session_find_file(const session_t *session, const int fd)
 int session_get_path(char *dest, vnode_t **vnode, const session_t *session,
 		vnode_t *parent, const int tid, const char *src)
 {
-	ER_UINT len = kcall->region_copy(tid, src, PATH_MAX + 1, dest);
-	if (len <= 0)
-		return EFAULT;
-
-	if (len > PATH_MAX)
-		return ENAMETOOLONG;
+	int result = get_path(dest, tid, src);
+	if (result)
+		return result;
 
 	*vnode = (*dest == '/') ? session->root : parent;
 	return 0;

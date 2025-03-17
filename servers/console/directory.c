@@ -85,8 +85,8 @@ void if_walk(fs_request *req)
 
 		driver_t *driver = NULL;
 		if (request->nwname) {
-			error_no = session_get_path(req->buf, session,
-					unpack_tid(req), request->wname);
+			error_no = get_path(req->buf, unpack_tid(req),
+					request->wname);
 			if (error_no) {
 				if (file)
 					session_destroy_file(session, newfid);

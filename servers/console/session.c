@@ -168,16 +168,3 @@ struct file *session_find_file(const session_t *session, const int fd)
 {
 	return (struct file *) tree_get(&(session->files), fd);
 }
-
-int session_get_path(char *dest, const session_t *session, const int tid,
-		const char *src)
-{
-	ER_UINT len = kcall->region_copy(tid, src, PATH_MAX + 1, dest);
-	if (len <= 0)
-		return EFAULT;
-
-	if (len > PATH_MAX)
-		return ENAMETOOLONG;
-
-	return 0;
-}

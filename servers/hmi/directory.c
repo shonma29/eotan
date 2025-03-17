@@ -27,13 +27,11 @@ For more information, please refer to <http://unlicense.org/>
 #include <errno.h>
 #include <fcntl.h>
 #include <nerve/kcall.h>
+#include "../../lib/libserv/libserv.h"
 #include "hmi.h"
-#include "api.h"
 #include "session.h"
 
 static char path_buf[PATH_MAX];
-
-static int _get_path(char *, const int, const char *);
 
 
 int if_walk(fs_request_t *req)
@@ -87,7 +85,7 @@ int if_walk(fs_request_t *req)
 
 		driver_t *driver = NULL;
 		if (request->nwname) {
-			error_no = _get_path(path_buf, unpack_tid(req),
+			error_no = get_path(path_buf, unpack_tid(req),
 					request->wname);
 			if (error_no) {
 				if (file)
@@ -130,16 +128,4 @@ int if_walk(fs_request_t *req)
 
 	//TODO return nwqid and wqid
 	return error_no;
-}
-
-static int _get_path(char *dest, const int tid, const char *src)
-{
-	ER_UINT len = kcall->region_copy(tid, src, PATH_MAX + 1, dest);
-	if (len <= 0)
-		return EFAULT;
-
-	if (len > PATH_MAX)
-		return ENAMETOOLONG;
-
-	return 0;
 }

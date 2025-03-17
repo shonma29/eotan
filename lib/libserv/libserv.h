@@ -59,4 +59,6 @@ extern device_info_t *device_find(const char *);
 extern int copy_from_user(void *, void *, const size_t);
 extern int copy_to_user(void *, void *, const size_t);
 
+extern int get_path(char *, const int, const char *);
+
 #endif
