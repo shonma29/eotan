@@ -218,6 +218,13 @@ int ipc_receive(const int port_id, int *tag, void *message)
 {
 /* TODO validate message */
 	enter_serialize();
+
+	if (running->port.flag) {
+		running->port.flag = 0;
+		leave_serialize();
+		return E_RLWAI;
+	}
+
 	thread_t *th = get_thread_ptr(port_id);
 	if (!th) {
 		leave_serialize();
@@ -439,8 +446,10 @@ int ipc_notify(const int port_id, const unsigned int flag)
 			break;
 		case TTS_WAI:
 		case TTS_WAS:
-			if (th->wait.type == wait_flag) {
+			if ((th->wait.type == wait_flag)
+					|| (th->wait.type == wait_receive)) {
 				th->port.flag = 0;
+				th->wait.result = E_RLWAI;
 				release(th);
 				result = E_OK;
 				break;
