@@ -98,9 +98,12 @@ static int accept(void)
 		kcall->ipc_listen();
 
 	req->session = NULL;
-
+retry:;
 	ER_UINT size = kcall->ipc_receive(PORT_WINDOW, &(req->tag),
 			&(req->packet));
+	if (size == E_RLWAI)
+		goto retry;
+
 	if (size < 0) {
 		log_err(MYNAME ": receive error=%d\n", size);
 		return size;
