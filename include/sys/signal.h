@@ -28,5 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 
 #define SIGINT (2)
+#define SIGSEGV (11)
+#define SIGPIPE (13)
 
 #endif
