@@ -35,11 +35,12 @@ For more information, please refer to <http://unlicense.org/>
 #define PORT_SYSLOG (5)
 #define PORT_DEV (6)
 #define PORT_MM (7)
-#define PORT_FS (8)
+#define PORT_MNT (8)
+#define PORT_FS (9)
 
-#define PORT_CONSOLE (9)
-#define PORT_PIPE (10)
-#define PORT_WINDOW (11)
-#define PORT_NET (12)
+#define PORT_CONSOLE (10)
+#define PORT_PIPE (11)
+#define PORT_WINDOW (12)
+#define PORT_NET (13)
 
 #endif

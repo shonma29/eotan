@@ -53,7 +53,7 @@ int reply_error(fs_request_t *req, const int token, const int caller_tag,
 
 static int _reply(fs_request_t *req, fsmsg_t *response, const size_t size)
 {
-	ER_UINT result = kcall->ipc_send(req->tag, (void *) response, size);
+	ER_UINT result = kcall->ipc_send(PORT_MNT, (void *) response, size);
 	if (result)
 		log_err(MYNAME ": reply error=%d\n", result);
 

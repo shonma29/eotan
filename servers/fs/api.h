@@ -37,16 +37,16 @@ typedef struct {
 	char buf[PATH_MAX];
 } fs_request;
 
-extern void if_attach(fs_request*);
-extern void if_walk(fs_request*);
-extern void if_open(fs_request*);
-extern void if_create(fs_request*);
-extern void if_read(fs_request*);
-extern void if_write(fs_request*);
-extern void if_clunk(fs_request*);
-extern void if_remove(fs_request*);
-extern void if_stat(fs_request*);
-extern void if_wstat(fs_request*);
+extern void if_attach(fs_request *);
+extern void if_walk(fs_request *);
+extern void if_open(fs_request *);
+extern void if_create(fs_request *);
+extern void if_read(fs_request *);
+extern void if_write(fs_request *);
+extern void if_clunk(fs_request *);
+extern void if_remove(fs_request *);
+extern void if_stat(fs_request *);
+extern void if_wstat(fs_request *);
 
 static inline int unpack_sid(const fs_request *req)
 {

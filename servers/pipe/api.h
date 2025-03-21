@@ -1,5 +1,5 @@
-#ifndef _CONSOLE_API_H_
-#define _CONSOLE_API_H_
+#ifndef _PIPE_API_H_
+#define _PIPE_API_H_
 /*
 This is free and unencumbered software released into the public domain.
 

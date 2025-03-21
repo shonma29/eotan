@@ -177,11 +177,11 @@ $(WD)/hdkernel.img: $(WD)/append $(WD)/elf2module \
 	$(WD)/elf2module servers/timer/timer | $(WD)/append $@ 2 4
 	$(WD)/elf2module servers/dev/dev | $(WD)/append $@ 2 6
 	$(WD)/elf2module servers/kernlog/kernlog | $(WD)/append $@ 3 5
-	$(WD)/elf2module servers/hmi/hmi | $(WD)/append $@ 3 11
-	$(WD)/elf2module servers/console/console | $(WD)/append $@ 3 9
-	$(WD)/elf2module servers/fs/fs | $(WD)/append $@ 3 8
+	$(WD)/elf2module servers/hmi/hmi | $(WD)/append $@ 3 12
+	$(WD)/elf2module servers/console/console | $(WD)/append $@ 3 10
+	$(WD)/elf2module servers/pipe/pipe | $(WD)/append $@ 3 11
+	$(WD)/elf2module servers/fs/fs | $(WD)/append $@ 3 9
 	$(WD)/elf2module servers/mm/mm | $(WD)/append $@ 3 7
-	$(WD)/elf2module servers/pipe/pipe | $(WD)/append $@ 3 10
 	$(WD)/append $@ 0
 
 EFI_CFLAGS = -Wall -Werror -target x86_64-pc-win32-coff -O2 -I include

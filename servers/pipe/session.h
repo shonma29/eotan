@@ -1,5 +1,5 @@
-#ifndef _CONSOLE_SESSION_H_
-#define _CONSOLE_SESSION_H_
+#ifndef _PIPE_SESSION_H_
+#define _PIPE_SESSION_H_
 /*
 This is free and unencumbered software released into the public domain.
 

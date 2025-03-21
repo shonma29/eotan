@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 
 int reply(const int tag, fsmsg_t *response, const size_t size)
 {
-	return (kcall->ipc_send(tag, (void *) response, size) ?
+	return (kcall->ipc_send(PORT_MNT, (void *) response, size) ?
 			ECONNREFUSED : 0);
 }
 
@@ -45,7 +45,7 @@ int reply_error(const int ipc_tag, const int token, const int caller_tag,
 	response.header.token = (MYPORT << 16) | (token & 0xffff);
 	response.Rerror.tag = caller_tag;
 	response.Rerror.ename = error_no;
-	return (kcall->ipc_send(ipc_tag, &response, MESSAGE_SIZE(Rerror)) ?
+	return (kcall->ipc_send(PORT_MNT, &response, MESSAGE_SIZE(Rerror)) ?
 			ECONNREFUSED : 0);
 }
 
