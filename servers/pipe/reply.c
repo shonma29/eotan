@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <nerve/kcall.h>
 #include <sys/errno.h>
+#include <sys/syscall.h>
 #include "pipe.h"
 #include "api.h"
 
@@ -73,4 +74,16 @@ void reply_write(fs_request_t *req)
 	int result = reply(req->tag, response, MESSAGE_SIZE(Rwrite));
 	if (result)
 		log_warning(MYNAME ": failed to reply %d\n", result);
+}
+
+void kill(const int thread_id, const int signal)
+{
+	sys_args_t args = {
+		syscall_kill,
+		thread_id,
+		signal
+	};
+	int error_no = kcall->ipc_send(PORT_MM, &args, sizeof(args));
+	if (error_no)
+		log_err(MYNAME ": kill error %d\n", error_no);
 }

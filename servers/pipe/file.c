@@ -25,13 +25,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <fcntl.h>
-#include <services.h>
 #include <sys/errno.h>
 #include <sys/signal.h>
-#include <sys/syscall.h>
 #include <fs/vfs.h>
 #include <nerve/kcall.h>
-#include "pipe.h"
 #include "api.h"
 #include "session.h"
 
@@ -41,7 +38,6 @@ static bool _read(pipe_channel_t *);
 static int _put(pipe_channel_t *, fs_request_t *, const int);
 static bool _write(pipe_channel_t *);
 static int _get(pipe_channel_t *, fs_request_t *, const int);
-static void _kill(const int, const int);
 
 
 int if_open(fs_request_t *req)
@@ -189,8 +185,12 @@ int if_write(fs_request_t *req)
 		}
 
 		pipe_channel_t *channel = file->f_channel;
-		if (request->count
-				&& (channel->partner->refer_count > 0)) {
+		if (!(channel->partner->refer_count)) {
+			kill(thread_id_of_token(req->packet.header.token),
+					SIGPIPE);
+			req->position = 0;
+			reply_write(req);
+		} else if (request->count) {
 			if (!enqueue_request(&(channel->partner->writers), req)) {
 				error_no = ENOBUFS;
 				break;
@@ -275,7 +275,7 @@ static int _put(pipe_channel_t *p, fs_request_t *req, const int len)
 			&(req->packet.Tread.data[req->position]), len,
 			&(p->buf[p->read_position]));
 	if (result) {
-		_kill(req->tid, SIGSEGV);
+		kill(req->tid, SIGSEGV);
 		reply_error(req->tag, req->packet.header.token,
 				req->packet.Tread.tag, EFAULT);
 		dequeue_request(req);
@@ -348,7 +348,7 @@ static int _get(pipe_channel_t *p, fs_request_t *req, const int len)
 			&(req->packet.Twrite.data[req->position]), len,
 			&(p->buf[p->write_position]));
 	if (result) {
-		_kill(req->tid, SIGSEGV);
+		kill(req->tid, SIGSEGV);
 		reply_error(req->tag, req->packet.header.token,
 				req->packet.Twrite.tag, EFAULT);
 		dequeue_request(req);
@@ -358,16 +358,4 @@ static int _get(pipe_channel_t *p, fs_request_t *req, const int len)
 	req->position += len;
 	p->write_position = (p->write_position + len) & p->position_mask;
 	return 0;
-}
-
-static void _kill(const int thread_id, const int signal)
-{
-	sys_args_t args = {
-		syscall_kill,
-		thread_id,
-		signal
-	};
-	int error_no = kcall->ipc_send(PORT_MM, &args, sizeof(args));
-	if (error_no)
-		log_err(MYNAME ": kill error %d\n", error_no);
 }

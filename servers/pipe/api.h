@@ -64,5 +64,6 @@ extern int reply(const int, fsmsg_t *, const size_t);
 extern int reply_error(const int, const int, const int, const int);
 extern void reply_read(fs_request_t *);
 extern void reply_write(fs_request_t *);
+extern void kill(const int, const int);
 
 #endif

@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <fcntl.h>
 #include <sys/errno.h>
+#include <sys/signal.h>
 #include <set/slab.h>
 #include <set/tree.h>
 #include <fs/config.h>
@@ -252,7 +253,7 @@ static void _release_requests(pipe_channel_t *p)
 			!list_is_edge(&(p->writers), head);) {
 		fs_request_t *req = (fs_request_t *) getRequestFromList(head);
 		head = list_next(head);
-		//TODO kill
+		kill(req->tid, SIGPIPE);
 		reply_write(req);
 		dequeue_request(req);
 	}
