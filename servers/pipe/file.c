@@ -219,6 +219,7 @@ static bool _read(pipe_channel_t *p)
 	for (list_t *head;
 			!list_is_edge(&(p->readers),
 					head = list_next(&(p->readers)));) {
+		bool is_dirty = false;
 		fs_request_t *req = (fs_request_t *) getRequestFromList(head);
 		if (p->write_position < p->read_position) {
 			size_t rest = req->packet.Tread.count - req->position;
@@ -236,6 +237,7 @@ static bool _read(pipe_channel_t *p)
 					continue;
 
 				has_read = true;
+				is_dirty = true;
 			}
 		}
 
@@ -255,10 +257,15 @@ static bool _read(pipe_channel_t *p)
 					continue;
 
 				has_read = true;
+				is_dirty = true;
 			}
 		}
 
-		if (p->partner->refer_count <= 0) {
+		if (!list_is_empty(&(p->writers)))
+			break;
+
+		if (is_dirty
+				|| (p->partner->refer_count <= 0)) {
 			reply_read(req);
 			dequeue_request(req);
 		}
