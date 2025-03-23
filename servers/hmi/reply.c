@@ -30,8 +30,17 @@ For more information, please refer to <http://unlicense.org/>
 #include <libserv.h>
 #include "hmi.h"
 #include "api.h"
+#include "session.h"
+
+typedef struct {
+	fsmsg_t *message;
+	event_buf_t *ev;
+	ssize_t offset;
+	int thread_id;
+} read_param_t;
 
 static int _reply(fs_request_t *req, fsmsg_t *, const size_t);
+static int _put(read_param_t *, int);
 
 
 int reply(fs_request_t *req, const size_t size)
@@ -57,7 +66,66 @@ static int _reply(fs_request_t *req, fsmsg_t *response, const size_t size)
 	if (result)
 		log_err(MYNAME ": reply error=%d\n", result);
 
-	lfq_enqueue(&unused_queue, &req);
-	kcall->ipc_notify(accept_tid, EVENT_SERVICE);
+	list_remove(&(req->brothers));
+	list_remove(&(req->replies));
+	slab_free(&request_slab, req);
+	kcall->ipc_notify(MYPORT, EVENT_SERVICE);
 	return (result ? ECONNREFUSED : 0);
+}
+
+int reply_read(fs_request_t *req)
+{
+	read_param_t par;
+	par.message = &(req->packet);
+	par.offset = 0;
+	do {
+		if (!(par.message->Tread.count))
+			break;
+
+		session_t *s = (session_t *) (req->session);
+		par.ev = &(s->event);
+		par.thread_id = thread_id_of_token(par.message->header.token);
+		if (par.ev->write_position < par.ev->read_position) {
+			int n = par.ev->size - par.ev->read_position;
+			if (par.message->Tread.count < n)
+				n = par.message->Tread.count;
+
+			int error_no = _put(&par, n);
+			if (error_no)
+				return error_no;
+
+			if (!(par.message->Tread.count))
+				break;
+		}
+
+		if (par.ev->read_position < par.ev->write_position) {
+			int n = par.ev->write_position - par.ev->read_position;
+			if (par.message->Tread.count < n)
+				n = par.message->Tread.count;
+
+			int error_no = _put(&par, n);
+			if (error_no)
+				return error_no;
+		}
+	} while (false);
+
+	par.message->header.type = Rread;
+	par.message->Rread.count = par.offset;
+	return reply(req, MESSAGE_SIZE(Rread));
+}
+
+static int _put(read_param_t *p, int len)
+{
+	if (kcall->region_put(p->thread_id,
+			(char *) &(p->message->Tread.data[p->offset]),
+			len, &(p->ev->buf[p->ev->read_position]))) {
+		//TODO send SIGSEGV
+		return EFAULT;
+	}
+
+	p->message->Tread.count -= len;
+	p->ev->read_position += len;
+	p->ev->read_position &= p->ev->position_mask;
+	p->offset += len;
+	return 0;
 }

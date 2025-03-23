@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <string.h>
 #include <nerve/kcall.h>
+#include <sys/errno.h>
 #include <sys/signal.h>
 #include <sys/syscall.h>
 #include <libserv.h>
@@ -33,103 +34,94 @@ For more information, please refer to <http://unlicense.org/>
 #include "session.h"
 #include "mouse.h"
 
-#define MASK_EVENT_TYPE (1)
+static bool raw_mode;
 
-static fs_request_t *current_req = NULL;
-static volatile bool raw_mode;
+volatile lfq_t interrupt_queue;
+static char interrupt_buf[
+	lfq_buf_size(sizeof(hmi_interrupt_t), INTERRUPT_QUEUE_SIZE)
+];
 
-static void process(const int);
-static ER_UINT dummy_read(const int);
-
-static void (*processors[])(const int) = {
-	process,
-	mouse_process
-};
-ER_UINT (*reader)(const int) = dummy_read;
+static bool _event_is_full(event_buf_t *);
+static void _event_putc(event_buf_t *, const char);
 
 
-void hmi_handle(const int type, const int data)
+void event_write(const int d)
 {
-	if (!(type & (~MASK_EVENT_TYPE)))
-		processors[type](data);
-}
-
-static void process(const int data)
-{
-	ER_UINT d = reader(data);
-	if (d < 0)
+	if (!focused_session)
 		return;
 
-	if (!current_req) {
-		if (lfq_dequeue(&req_queue, &current_req) == QUEUE_OK)
-			current_req->packet.Tread.offset = 0;
-		else
-			return;
-	}
-
-	fsmsg_t *message = &(current_req->packet);
-//	message->Tread.data[message->Tread.offset++] =
-//			(unsigned char) (d & 0xff);
 	unsigned char buf = (unsigned char) (d & 0xff);
 
 	if (!raw_mode) {
-		int result;
-		// ^c
 		if (buf == 0x03) {
+			// ^c
 			sys_args_t args = {
 				syscall_kill,
-				thread_id_of_token(message->header.token),
+				focused_session->tid,
 				SIGINT
 			};
+			int error_no = kcall->ipc_send(PORT_MM, &args,
+					sizeof(args));
+			if (error_no)
+				log_err(MYNAME ": kill error %d\n",
+						error_no);
 
-			result = kcall->ipc_send(PORT_MM, &args, sizeof(args));
-			if (result)
-				log_err("hmi: kill error=%d\n", result);
+			return;
+		} else if (buf == 0x04) {
+			// ^d
+			event_buf_t *p = &(focused_session->event);
+			list_t *head = list_dequeue(&(p->readers));
+			if (head) {
+				fs_request_t *req = getRequestFromQueue(head);
+				int error_no = reply_read(req);
+				if (error_no)
+					log_warning(MYNAME ": reply error %d\n",
+							error_no);
+			}
 
-			goto terminate;
+			return;
 		}
 
-		result = kcall->mutex_lock(cons_mid, TMO_FEVR);
-		if (result)
-			kcall->printk("hmi: handler cannot lock %d\n", result);
-		else {
-			mouse_hide();
-			session_t *session = (session_t *) current_req->session;
-			terminal_write((char *) &buf, session->state, 0, 1);
-			mouse_show();
-			result = kcall->mutex_unlock(cons_mid);
-			if (result)
-				kcall->printk("hmi: handler cannot unlock %d\n",
-						result);
-		}
-
-		// ^d
-		if (buf == 0x04)
-			goto terminate;
+		mouse_hide();
+		terminal_write((char *) &buf, focused_session->state, 0, 1);
+		mouse_show();
 	}
 
-	//TODO loop or buffering (flush when user switches window, or LF)
-	//TODO error check
-	uintptr_t addr = ((uintptr_t) (message->Tread.data)
-			+ message->Tread.offset);
-	kcall->region_put(thread_id_of_token(message->header.token),
-			(char *) addr, 1, &buf);
-	message->Tread.offset++;
-	if ((message->Tread.count <= message->Tread.offset)
-			|| (buf == 0x0a)) {
-terminate:
-//		message->header.token = message->head.token;
-		message->header.type = Rread;
-//		message->Rread.tag = message->Tread.tag;
-		message->Rread.count = message->Tread.offset;
-		reply(current_req, MESSAGE_SIZE(Rread));
-		current_req = NULL;
+	event_buf_t *p = &(focused_session->event);
+	if (list_is_empty(&(p->readers))) {
+		if (_event_is_full(p)) {
+			log_warning(MYNAME ": event overflow %d\n",
+					focused_session->node.key);
+			//TODO notify 'overflow'
+			p->write_position = p->read_position;
+		}
+
+		_event_putc(p, buf);
+	} else {
+		//TODO !enqueue to reply list if less than size
+		_event_putc(p, buf);
+
+		list_t *head = list_dequeue(&(p->readers));
+		fs_request_t *req = getRequestFromQueue(head);
+		int error_no = reply_read(req);
+		if (error_no)
+			log_warning(MYNAME ": reply error %d\n", error_no);
 	}
 }
 
-static ER_UINT dummy_read(const int arg)
+static bool _event_is_full(event_buf_t *p)
 {
-	return E_NOSPT;
+	if (p->read_position)
+		return (p->write_position == (p->read_position - 1));
+	else
+		return (p->write_position == (p->size - 1));
+}
+
+static void _event_putc(event_buf_t *p, const char c)
+{
+	p->buf[p->write_position] = c;
+	p->write_position++;
+	p->write_position &= p->position_mask;
 }
 
 ER_UINT consctl_write(const UW size, const char *inbuf)
@@ -147,5 +139,7 @@ ER_UINT consctl_write(const UW size, const char *inbuf)
 
 int event_initialize(void)
 {
+	lfq_initialize(&interrupt_queue, interrupt_buf, sizeof(hmi_interrupt_t),
+			INTERRUPT_QUEUE_SIZE);
 	return 0;
 }

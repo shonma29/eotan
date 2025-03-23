@@ -143,10 +143,13 @@ int if_read(fs_request_t *req)
 
 		req->session = session;
 
-		if (lfq_enqueue(&req_queue, &req) != QUEUE_OK) {
-			log_warning(MYNAME ": req_queue is full\n");
-			reply_error(req, req->packet.header.token,
-					req->packet.Tread.tag, ENOMEM);
+		event_buf_t *e = &(session->event);
+		if (e->write_position == e->read_position)
+			list_enqueue(&(session->event.readers), &(req->queue));
+		else {
+			error_no = reply_read(req);
+			if (error_no)
+				break;
 		}
 
 		return 0;
@@ -231,17 +234,8 @@ static ER_UINT _write(struct file *file, const UW start, const UW size,
 		return (-1);
 	}
 
-	int result = kcall->mutex_lock(cons_mid, TMO_FEVR);
-	if (result)
-		kcall->printk("hmi: main cannot lock %d\n", result);
-	else {
-		mouse_hide();
-		terminal_write((char *) inbuf, file->f_session->state, 0, size);
-		mouse_show();
-		result = kcall->mutex_unlock(cons_mid);
-		if (result)
-			kcall->printk("hmi: main cannot unlock %d\n", result);
-	}
-
+	mouse_hide();
+	terminal_write((char *) inbuf, file->f_session->state, 0, size);
+	mouse_show();
 	return size;
 }

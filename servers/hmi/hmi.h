@@ -27,7 +27,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
-#include <console.h>
 #include <services.h>
 #include <set/lf_queue.h>
 #include <hmi/window.h>
@@ -38,7 +37,7 @@ For more information, please refer to <http://unlicense.org/>
 #define WINDOW_MAX (2)
 
 #define INTERRUPT_QUEUE_SIZE (1024)
-#define REQUEST_QUEUE_SIZE (256)
+#define REQUEST_QUEUE_SIZE (64)
 
 typedef enum {
 	CONS = 1,
@@ -56,29 +55,27 @@ typedef struct _driver_t {
 	channel_e channel;
 } driver_t;
 
-extern ER_ID accept_tid;
-extern ID cons_mid;
-extern volatile lfq_t req_queue;
-extern volatile lfq_t unused_queue;
-
-// window.c
+extern slab_t request_slab;
 extern Display *display;
 
+// window.c
 extern int window_initialize(void);
-extern int create_window(window_t **, const int, const int,
-		const int, const int, const int, const char *,
-		Screen *);
-extern window_t *find_window(const int);
+extern int window_create(window_t **, const int, const int,
+		const int, const int, const int);
+extern void window_set_title(window_t *, const char *);
+extern window_t *window_find(const int);
 #if 0
 extern int remove_window(const int);
 #endif
+extern int window_focus(const int);
+
 // draw.c
 extern ER_UINT draw_write(const window_t *, const UW, const char *);
 
 // event.c
-extern ER_UINT (*reader)(const int);
+extern volatile lfq_t interrupt_queue;
 
-extern void hmi_handle(const int, const int);
+extern void event_write(const int);
 extern ER_UINT consctl_write(const UW, const char *);
 extern int event_initialize(void);
 

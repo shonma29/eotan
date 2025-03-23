@@ -31,22 +31,42 @@ For more information, please refer to <http://unlicense.org/>
 #include "api.h"
 #include "terminal.h"
 
+typedef struct {
+	list_t readers;
+	char *buf;
+	size_t size;
+	int read_position;
+	int write_position;
+	unsigned long position_mask;
+} event_buf_t;
+
 typedef struct _session_t {
 	node_t node;
+	list_t brothers;
 	tree_t files;
 	window_t *window;
 	esc_state_t *state;
 	int tid;
+	event_buf_t event;
 } session_t;
 
 struct file {
 	node_t node;
+	list_t requests;
 	session_t *f_session;
 	uint_fast32_t f_flag;
 	channel_e f_channel;
 };
 
 #define getSessionPtr(p) ((uintptr_t) p - offsetof(session_t, node))
+
+static inline session_t *getSessionFromList(const list_t *p)
+{
+	return ((session_t *) ((uintptr_t) p - offsetof(session_t, brothers)));
+}
+
+extern list_t session_list;
+extern session_t *focused_session;
 
 extern int session_initialize(void);
 

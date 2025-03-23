@@ -30,7 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/icall.h>
 #include "8042.h"
 #include "scan2key.h"
-#include "../../servers/hmi/hmi.h"
+#include "../../servers/hmi/keyboard.h"
 
 static uint8_t state = scan_normal;
 
@@ -56,7 +56,7 @@ void keyboard_interrupt(VP_INT exinf)
 		break;
 	}
 
-	icall->handle(hmi_handle, event_keyboard,
+	icall->handle(keyboard_handle, event_keyboard,
 			//TODO ((b & 0x80) << 2) | scan2key[b & 0x7f]
 			is_break(b) ? (BREAK | scan2key[state][strip_break(b)])
 					: scan2key[state][b]);

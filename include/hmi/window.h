@@ -41,10 +41,10 @@ For more information, please refer to <http://unlicense.org/>
 
 typedef struct {
 	node_t node;
-	list_t brothers;
 	uint32_t attr;
 	Frame outer;
 	Frame inner;
+	const char *title;
 } window_t;
 
 #endif

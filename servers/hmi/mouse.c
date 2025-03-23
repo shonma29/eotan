@@ -24,25 +24,33 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <event.h>
+#include <nerve/kcall.h>
 #include <archfunc.h>
 #include <arch/8259a.h>
 #include "../../lib/libserv/libserv.h"
 #include "hmi.h"
 #include "mouse.h"
 
+static hmi_interrupt_t message = { event_mouse, 0 };
 static int x;
 static int y;
-static int buttons;
+static int buttons = 0;
+static int last_sent;
+
+static int _encode_data(void);
 
 
-void mouse_process(const int d)
+void mouse_handle(const int type, const int d)
 {
 	buttons = (uint8_t) ((d >> 16) & 0x07);
 
 	int dx = (uint8_t) ((d >> 8) & 0xff);
+	//TODO use table by bit mask
 	if (d & 0x100000)
 		dx |= 0xffffff00;
 
+	//TODO store as static variable
 	int width = display->r.max.x - display->r.min.x;
 
 	x += dx;
@@ -52,9 +60,11 @@ void mouse_process(const int d)
 		x = width - 1;
 
 	int dy = (uint8_t) (d & 0xff);
+	//TODO use table by bit mask
 	if (d & 0x200000)
 		dy |= 0xffffff00;
 
+	//TODO store as static variable
 	int height = display->r.max.y - display->r.min.y;
 
 	y -= dy;
@@ -63,10 +73,26 @@ void mouse_process(const int d)
 	else if (y >= height)
 		y = height - 1;
 
-	if (dx || dy) {
-		mouse_hide();
-		mouse_show();
+	int data = _encode_data();
+	if (data != last_sent) {
+		message.data = data;
+
+		if (dx || dy)
+			message.data |= 0x40000000;
+
+		if (lfq_enqueue(&interrupt_queue, &message))
+			//TODO more intelligent skip logic is necessary
+			log_warning("interrupt_queue full\n");
+		else {
+			kcall->ipc_notify(MYPORT, EVENT_INTERRUPT);
+			last_sent = data;
+		}
 	}
+}
+
+static int _encode_data(void)
+{
+	return (buttons << 24) | (x << 12) | y;
 }
 
 void mouse_show(void)
@@ -81,9 +107,11 @@ void mouse_hide(void)
 
 ER mouse_initialize(void)
 {
-	x = (display->r.max.x - display->r.min.x) / 2;
-	y = (display->r.max.y - display->r.min.y) / 2;
-	buttons = 0;
+	x = (display->r.max.x - display->r.min.x) / 2 - POINTER_WIDTH;
+	y = (display->r.max.y - display->r.min.y) / 2 - POINTER_HEIGHT;
+	mouse_show();
+	last_sent = _encode_data();
+	window_focus(last_sent);
 
 	T_CISR pk_cisr = {
 		TA_HLNG,

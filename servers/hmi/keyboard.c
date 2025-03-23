@@ -24,18 +24,34 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <event.h>
 #include <keycode.h>
+#include <nerve/kcall.h>
 #include <archfunc.h>
 #include <arch/8259a.h>
 #include "../../lib/libserv/libserv.h"
+#include "hmi.h"
 #include "key2char.h"
 #include "keyboard.h"
 
+static hmi_interrupt_t message = { event_keyboard, 0 };
 static unsigned short modifiers = 0;
 
 static unsigned int get_modifier(int);
 
 
+void keyboard_handle(const int type, const int data)
+{
+	message.data = data;
+
+	if (lfq_enqueue(&interrupt_queue, &message))
+		//TODO more intelligent skip logic is necessary
+		log_warning("interrupt_queue full\n");
+	else
+		kcall->ipc_notify(MYPORT, EVENT_INTERRUPT);
+}
+
+//TODO process in scan2key
 static unsigned int get_modifier(int b)
 {
 	switch (b) {
@@ -68,8 +84,9 @@ static unsigned int get_modifier(int b)
 	return b;
 }
 
-ER_UINT get_char(int b)
+int keyboard_convert(const int key_code)
 {
+	int b = key_code;
 	int m;
 
 	if (b == 0)

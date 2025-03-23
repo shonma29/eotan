@@ -29,6 +29,9 @@ For more information, please refer to <http://unlicense.org/>
 #include <fs/protocol.h>
 
 typedef struct {
+	list_t queue;
+	list_t brothers;
+	list_t replies;
 	fsmsg_t packet;
 	int tag;
 	void *session;//TODO ad-hoc
@@ -51,7 +54,13 @@ static inline int unpack_tid(const fs_request_t *req)
 	return ((req->packet.header.token >> 16) & 0xffff);
 }
 
+static inline fs_request_t *getRequestFromQueue(const list_t *p)
+{
+	return ((fs_request_t *) ((uintptr_t) p - offsetof(fs_request_t, queue)));
+}
+
 extern int reply(fs_request_t *, const size_t);
 extern int reply_error(fs_request_t *, const int, const int, const int);
+extern int reply_read(fs_request_t *);
 
 #endif

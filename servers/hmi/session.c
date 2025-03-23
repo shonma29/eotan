@@ -30,11 +30,12 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 #include "hmi.h"
 #include "session.h"
+#include "mouse.h"
 
-#define CONSOLE_HEIGHT (20)
+#define BAR_HEIGHT (20)
 #define CONSOLE_TITLE "Console"
 #define DEFAULT_WIDTH (1024 / 2)
-#define DEFAULT_HEIGHT ((768 - CONSOLE_HEIGHT) / 2)
+#define DEFAULT_HEIGHT ((768 - BAR_HEIGHT) / 2)
 
 enum {
 	SESSION_SLAB = 0x01,
@@ -48,9 +49,12 @@ static slab_t session_slab;
 static slab_t file_slab;
 static slab_t screen_slab;
 static slab_t esc_slab;
+list_t session_list;
+session_t *focused_session = NULL;
 static int initialized_resources = 0;
 static int num_of_window = 0;
 
+static void _bind_terminal(esc_state_t *, const window_t *);
 static session_t *_create(const int);
 static void _destroy(session_t *);
 
@@ -98,24 +102,25 @@ int if_attach(fs_request_t *req)
 		//TODO can not walk to the parent of aname
 		//TODO bind fid to with session type (for use to close session)
 		file->f_flag = O_ACCMODE;
-		terminal_initialize(session->state);
 
 		window_t *w;
 		//TODO !define function to calculate position
-		error_no = create_window(&w, 0,
-				CONSOLE_HEIGHT + DEFAULT_HEIGHT * num_of_window,
+		error_no = window_create(&w, 0,
+				BAR_HEIGHT + DEFAULT_HEIGHT * num_of_window,
 				DEFAULT_WIDTH,
-				CONSOLE_HEIGHT + DEFAULT_HEIGHT * (num_of_window + 1),
-				WINDOW_ATTR_HAS_BORDER | WINDOW_ATTR_HAS_TITLE,
-				CONSOLE_TITLE, session->state->screen);
+				BAR_HEIGHT + DEFAULT_HEIGHT * (num_of_window + 1),
+				WINDOW_ATTR_HAS_BORDER | WINDOW_ATTR_HAS_TITLE);
 		if (error_no) {
 			session_destroy_file(session, file->node.key);
 			break;
 		}
 
-		terminal_write(STR_CONS_INIT, session->state, 0, LEN_CONS_INIT);
 		session->window = w;
 		num_of_window++;
+		list_insert(&session_list, &(session->brothers));
+		window_focus(-1);
+		window_set_title(w, CONSOLE_TITLE);
+		_bind_terminal(session->state, w);
 
 		fsmsg_t *response = &(req->packet);
 		//response->header.token = req->packet.header.token;
@@ -129,9 +134,29 @@ int if_attach(fs_request_t *req)
 	return error_no;
 }
 
+static void _bind_terminal(esc_state_t *state, const window_t *w)
+{
+	terminal_initialize(state);
+
+	Screen *s = state->screen;
+	s->base = (void *) ((uintptr_t) display->base
+			+ w->inner.r.min.y * display->bpl
+			+ w->inner.r.min.x * display->bpp);
+	s->p = (uint8_t *) (s->base);
+	s->width = w->inner.r.max.x - w->inner.r.min.x;
+	s->height = w->inner.r.max.y - w->inner.r.min.y;
+	s->chr_width = s->width / s->font.width;
+	s->chr_height = s->height / s->font.height;
+
+	mouse_hide();
+	terminal_write(STR_CONS_INIT, state, 0, LEN_CONS_INIT);
+	mouse_show();
+}
+
 int session_initialize(void)
 {
 	tree_create(&sessions, NULL, NULL);
+	list_initialize(&session_list);
 
 	session_slab.unit_size = sizeof(session_t);
 	session_slab.block_size = PAGE_SIZE;
@@ -194,6 +219,12 @@ static session_t *_create(const int sid)
 	if (!session)
 		return NULL;
 
+	session->event.buf = kcall->palloc();
+	if (!(session->event.buf)) {
+		slab_free(&session_slab, session);
+		return NULL;
+	}
+
 	tree_create(&(session->files), NULL, NULL);
 
 	if (!tree_put(&sessions, sid, &(session->node))) {
@@ -202,8 +233,16 @@ static session_t *_create(const int sid)
 		return NULL;
 	}
 
+	list_initialize(&(session->brothers));
 	session->window = NULL;
 	session->state = NULL;
+
+	list_initialize(&(session->event.readers));
+	// buffer size must be power of 2
+	session->event.size = PAGE_SIZE;
+	session->event.read_position = 0;
+	session->event.write_position = 0;
+	session->event.position_mask = session->event.size - 1;
 	return session;
 }
 
@@ -211,6 +250,9 @@ static void _destroy(session_t *session)
 {
 	if (!tree_remove(&sessions, session->node.key))
 		return;
+
+	list_remove(&(session->brothers));
+	window_focus(-1);
 
 	if (session->window) {
 		//TODO !release window
@@ -224,9 +266,22 @@ static void _destroy(session_t *session)
 		slab_free(&esc_slab, session->state);
 	}
 
+	//TODO !event.readers should be released
+	kcall->pfree(session->event.buf);
 	slab_free(&session_slab, session);
 }
-
+#if 0
+static void _release_requests(session_t *p)
+{
+	for (list_t *head = list_next(&(p->event.readers));
+			!list_is_edge(&(p->event.readers), head);) {
+		fs_request_t *req = (fs_request_t *) getRequestFromList(head);
+		head = list_next(head);
+		reply_read(req);
+		dequeue_request(req);
+	}
+}
+#endif
 session_t *session_find_by_request(const fs_request_t *req)
 {
 	node_t *node = tree_get(&sessions, unpack_sid(req));
@@ -244,6 +299,7 @@ int session_create_file(struct file **file, session_t *session, const int fid)
 		return EADDRINUSE;
 	}
 
+	list_initialize(&(f->requests));
 	f->f_session = session;
 	f->f_flag = 0;
 	f->f_channel = 0;
@@ -257,6 +313,7 @@ int session_destroy_file(session_t *session, const int fid)
 	if (!file)
 		return EBADF;
 
+	//TODO !requests should be released
 	slab_free(&file_slab, file);
 
 	if (!tree_size(&(session->files)))

@@ -27,12 +27,29 @@ For more information, please refer to <http://unlicense.org/>
 #include <errno.h>
 #include <nerve/kcall.h>
 #include "hmi.h"
+#include "mouse.h"
+#include "session.h"
+#include "terminal.h"
+
+#define COLOR_FOCUSED 0x0
+#define COLOR_UNFOCUSED 0xdfe3e4
 
 #define getParent(type, p) ((uintptr_t) p - offsetof(type, node))
 
+static Color_Rgb colors_focused[] = {
+	{ 0x00, 0x00, 0x00 },
+	{ 0xe4, 0xe3, 0xdf }
+};
+static Color_Rgb colors_unfocused[] = {
+	{ 0xe4, 0xe3, 0xdf },
+	{ 0x00, 0x00, 0x00 }
+};
+
 static slab_t window_slab;
 static tree_t window_tree;
-static list_t window_list;
+static Point last_point = { -1, -1 };
+
+static void _draw_title_bar(const window_t *, const bool);
 
 
 int window_initialize(void)
@@ -46,13 +63,11 @@ int window_initialize(void)
 	window_slab.pfree = kcall->pfree;
 	slab_create(&window_slab);
 	tree_create(&window_tree, NULL, NULL);
-	list_initialize(&window_list);
 	return 0;
 }
 //TODO !split window design
-int create_window(window_t **w, const int x1, const int y1,
-		const int x2, const int y2, const int attr, const char *title,
-		Screen *s)
+int window_create(window_t **w, const int x1, const int y1,
+		const int x2, const int y2, const int attr)
 {
 	int error_no = 0;
 	do {
@@ -112,21 +127,12 @@ int create_window(window_t **w, const int x1, const int y1,
 		p->inner.r.max.x -= padding_right;
 		p->inner.r.max.y -= padding_bottom;
 		p->inner.viewport = p->inner.r;
-
-		s->base = (void *) ((uintptr_t) display->base
-				+ p->inner.r.min.y * display->bpl
-				+ p->inner.r.min.x * display->bpp);
-		s->p = (uint8_t *) (s->base);
-		s->width = p->inner.r.max.x - p->inner.r.min.x;
-		s->height = p->inner.r.max.y - p->inner.r.min.y;
-		s->chr_width = s->width / s->font.width;
-		s->chr_height = s->height / s->font.height;
-
-		list_insert(&window_list, &(p->brothers));
+		p->title = NULL;
 		*w = p;
 
 		int outer_width = p->outer.r.max.x - p->outer.r.min.x;
 		int outer_height = p->outer.r.max.y - p->outer.r.min.y;
+		mouse_hide();
 
 		if (padding_top) {
 			if (attr & WINDOW_ATTR_HAS_TITLE) {
@@ -191,21 +197,19 @@ int create_window(window_t **w, const int x1, const int y1,
 			draw_fill(&(p->outer), &r, 0x24130d);
 		}
 
-		if ((attr & WINDOW_ATTR_HAS_TITLE)
-				&& title) {
-			Color_Rgb c[] = {
-				{ 0xe4, 0xe3, 0xdf },
-				{ 0x00, 0x00, 0x00 }
-			};
-			draw_string(&(p->outer), 2, 2, c,
-					&default_font, (uint8_t *) title);
-		}
+		mouse_show();
 	} while (false);
 
 	return error_no;
 }
 
-window_t *find_window(const int wid)
+void window_set_title(window_t *w, const char *title)
+{
+	w->title = title;
+	_draw_title_bar(w, (focused_session) && (w == focused_session->window));
+}
+
+window_t *window_find(const int wid)
 {
 	node_t *node = tree_get(&window_tree, wid);
 	return (node ? (window_t *) getParent(window_t, node) : NULL);
@@ -215,7 +219,7 @@ int remove_window(const int wid)
 {
 	int error_no = 0;
 	do {
-		window_t *p = find_window(wid);
+		window_t *p = window_find(wid);
 		if (!p) {
 			//TODO really?
 			error_no = EPERM;
@@ -233,3 +237,77 @@ int remove_window(const int wid)
 	return error_no;
 }
 #endif
+static void _draw_title_bar(const window_t *w, const bool focus)
+{
+	if (!(w->attr & WINDOW_ATTR_HAS_TITLE))
+		return;
+
+	Rectangle r;
+	r.min.x = 0;
+	r.min.y = 0;
+	r.max.x = w->outer.r.max.x - w->outer.r.min.x;
+	r.max.y = 14;
+	draw_fill(&(w->outer), &r, focus ? COLOR_FOCUSED : COLOR_UNFOCUSED);
+
+	if (w->title)
+		draw_string(&(w->outer), 2, 2,
+				focus ? colors_focused : colors_unfocused,
+				&default_font, (uint8_t *) (w->title));
+}
+
+int window_focus(const int data)
+{
+	if (data >= 0) {
+#if 0
+		int buttons = (data >> 24) & 7;
+		if (buttons & 1)
+			kcall->printk("<left>");
+		else if (buttons & 2)
+			kcall->printk("<right>");
+		else if (buttons & 4)
+			kcall->printk("<middle>");
+#endif
+		if (data & 0x40000000) {
+			mouse_hide();
+			mouse_show();
+		}
+
+		last_point.x = (data >> 12) & 0xfff;
+		last_point.y = data & 0xfff;
+	}
+
+	for (list_t *p = list_next(&session_list);
+			!list_is_edge(&session_list, p); p = p->next) {
+		session_t *s = getSessionFromList(p);
+		window_t *w = s->window;
+		if ((w->outer.r.min.x <= last_point.x)
+			&& (w->outer.r.min.y <= last_point.y)
+			&& (last_point.x < w->outer.r.max.x)
+			&& (last_point.y < w->outer.r.max.y)
+		) {
+			if (focused_session != s) {
+				mouse_hide();
+				if (focused_session)
+					_draw_title_bar(focused_session->window,
+							false);
+
+				_draw_title_bar(w, true);
+				mouse_show();
+				focused_session = s;
+			}
+
+			//TODO write to event buf
+			//return data;
+			return (-1);
+		}
+	}
+
+	if (focused_session) {
+		mouse_hide();
+		_draw_title_bar(focused_session->window, false);
+		mouse_show();
+		focused_session = NULL;
+	}
+
+	return (-1);
+}

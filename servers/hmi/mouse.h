@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 extern pointer_pattern_t pointer[NUM_OF_POINTER_STYLE];
 
 extern ER mouse_initialize(void);
-extern void mouse_process(const int);
+extern void mouse_handle(const int, const int);
 extern void mouse_show(void);
 extern void mouse_hide(void);
 

@@ -28,6 +28,8 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 
+extern void keyboard_handle(const int, const int);
+extern int keyboard_convert(const int);
 extern ER_UINT get_char(int);
 extern ER keyboard_initialize(void);
 

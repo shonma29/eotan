@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <sys/types.h>
+#include <console.h>
 
 #define STR_CONS_INIT "\x1b[2J\x1b[1;1H"
 #define LEN_CONS_INIT (10)

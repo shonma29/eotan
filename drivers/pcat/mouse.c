@@ -28,7 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <event.h>
 #include <nerve/icall.h>
 #include "8042.h"
-#include "../../servers/hmi/hmi.h"
+#include "../../servers/hmi/mouse.h"
 
 static int data;
 static int state = 0;
@@ -48,7 +48,7 @@ void mouse_interrupt(VP_INT exinf)
 	case 2:
 		data |= kbc_read_data();
 		state = 0;
-		icall->handle(hmi_handle, event_mouse, data);
+		icall->handle(mouse_handle, event_mouse, data);
 		break;
 	}
 }

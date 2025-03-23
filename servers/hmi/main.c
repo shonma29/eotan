@@ -33,14 +33,14 @@ For more information, please refer to <http://unlicense.org/>
 #include "keyboard.h"
 #include "mouse.h"
 
+#define MASK_EVENT_TYPE (1)
+
 enum {
 	SESSIONS = 0x01,
 	WINDOWS = 0x02,
 	EVENTS = 0x04,
-	REQ_QUEUE = 0x08,
-	UNUSED_QUEUE = 0x10,
-	MUTEX = 0x20,
-	PORT = 0x40
+	REQUEST_SLAB = 0x08,
+	PORT = 0x10
 };
 
 struct fs_func {
@@ -49,22 +49,16 @@ struct fs_func {
 };
 
 Display *display = &(sysinfo->display);
-ER_ID accept_tid = 0;
-//static ER_ID hmi_tid = 0;
-ID cons_mid;
 
-static fs_request_t requests[REQUEST_QUEUE_SIZE];
-volatile lfq_t req_queue;
-static char req_buf[
-	lfq_buf_size(sizeof(fs_request_t *), REQUEST_QUEUE_SIZE)
-];
-volatile lfq_t unused_queue;
-static char unused_buf[
-	lfq_buf_size(sizeof(fs_request_t *), REQUEST_QUEUE_SIZE)
-];
+slab_t request_slab;
 static int initialized_resources = 0;
+static int (*processors[])(const int) = {
+	keyboard_convert,
+	window_focus
+};
 
 static int no_support(fs_request_t *);
+static void _process_interrupt(void);
 static int accept(void);
 static int initialize(void);
 
@@ -91,31 +85,53 @@ static int no_support(fs_request_t *req)
 	return 0;
 }
 
+static void _process_interrupt(void)
+{
+	for (hmi_interrupt_t event; !lfq_dequeue(&interrupt_queue, &event);) {
+		if ((event.type & (~MASK_EVENT_TYPE))) {
+			continue;
+		}
+
+		int d = processors[event.type & MASK_EVENT_TYPE](event.data);
+		if (d >= 0)
+			event_write(d);
+	}
+}
+
 static int accept(void)
 {
-	fs_request_t *req;
-	while (lfq_dequeue(&unused_queue, &req) != QUEUE_OK)
+	fs_request_t *req = slab_alloc(&request_slab);
+	if (!req) {
 		kcall->ipc_listen();
-
-	req->session = NULL;
-retry:;
-	ER_UINT size = kcall->ipc_receive(PORT_WINDOW, &(req->tag),
-			&(req->packet));
-	if (size == E_RLWAI)
-		goto retry;
-
-	if (size < 0) {
-		log_err(MYNAME ": receive error=%d\n", size);
-		return size;
-	}
-
-	if (size < sizeof(req->packet.header)) {
-		reply_error(req, 0, 0, EPROTO);
+		_process_interrupt();
 		return 0;
 	}
 
+	list_initialize(&(req->queue));
+	list_initialize(&(req->brothers));
+	list_initialize(&(req->replies));
+	req->session = NULL;
+
 	int result;
-	do {
+	for (;;) {
+		ER_UINT size = kcall->ipc_receive(PORT_WINDOW, &(req->tag),
+				&(req->packet));
+		if (size == E_RLWAI) {
+			_process_interrupt();
+			continue;
+		}
+
+		if (size < 0) {
+			log_err(MYNAME ": receive error %d\n", size);
+			slab_free(&request_slab, req);
+			return size;
+		}
+
+		if (size < sizeof(req->packet.header)) {
+			reply_error(req, 0, 0, EPROTO);
+			return 0;
+		}
+
 		if (req->packet.header.ident != IDENT) {
 			result = EPROTO;
 			break;
@@ -137,7 +153,7 @@ retry:;
 					req->packet.Rerror.tag, result);
 
 		return 0;
-	} while (false);
+	}
 
 	reply_error(req, req->packet.header.token, 0, result);
 	return 0;
@@ -162,35 +178,18 @@ static int initialize(void)
 	else
 		initialized_resources |= EVENTS;
 
-	if (lfq_initialize(&req_queue, req_buf, sizeof(fs_request_t *),
-			REQUEST_QUEUE_SIZE))
-		return REQ_QUEUE;
+	request_slab.unit_size = sizeof(fs_request_t);
+	request_slab.block_size = PAGE_SIZE;
+	request_slab.min_block = 1;
+	request_slab.max_block = slab_max_block(REQUEST_QUEUE_SIZE, PAGE_SIZE,
+		sizeof(fs_request_t));
+	request_slab.palloc = kcall->palloc;
+	request_slab.pfree = kcall->pfree;
+
+	if (slab_create(&request_slab))
+		return REQUEST_SLAB;
 	else
-		initialized_resources |= REQ_QUEUE;
-
-	if (lfq_initialize(&unused_queue, unused_buf, sizeof(fs_request_t *),
-			REQUEST_QUEUE_SIZE))
-		return UNUSED_QUEUE;
-	else
-		initialized_resources |= UNUSED_QUEUE;
-
-	for (int i = 0; i < sizeof(requests) / sizeof(requests[0]); i++) {
-		fs_request_t *p = &(requests[i]);
-		lfq_enqueue(&unused_queue, &p);
-	}
-
-	T_CMTX pk_cmtx = {
-		TA_TFIFO | TA_CEILING,
-		pri_dispatcher
-	};
-	result = kcall->mutex_create(accept_tid, &pk_cmtx);
-	if (result) {
-		log_err(MYNAME ": mutex error %d\n", result);
-		return MUTEX;
-	} else {
-		cons_mid = accept_tid;
-		initialized_resources |= MUTEX;
-	}
+		initialized_resources |= REQUEST_SLAB;
 
 	T_CPOR pk_cpor = {
 		TA_TFIFO,
@@ -204,40 +203,23 @@ static int initialize(void)
 	} else
 		initialized_resources |= PORT;
 
-//	T_CTSK pk_ctsk = {
-//		TA_HLNG | TA_ACT, 0, process, pri_server_middle,
-//		KTHREAD_STACK_SIZE, NULL, NULL, NULL
-//	};
-//	result = kcall->thread_create_auto(&pk_ctsk);
-//	if (result < 0) {
-//		log_err("hmi: create error=%d\n", result);
-//		kcall->ipc_close();
-//		return result;
-//	}
-
-//	hmi_tid = result;
 	return 0;
 }
 
 void start(VP_INT exinf)
 {
-	accept_tid = kcall->thread_get_id();
-
 	int result = initialize();
 	if (result)
 		log_err(MYNAME ": failed to initialize %d\n", result);
 	else {
 		log_info(MYNAME ": start\n");
 
-		if (!keyboard_initialize())
-			reader = get_char;
-
+		keyboard_initialize();
 		mouse_initialize();
 
 		while (!accept());
 
 		log_info(MYNAME ": end\n");
-//		kcall->thread_destroy(hmi_tid);
 		result = kcall->ipc_close();
 		if (result)
 			log_err(MYNAME ": failed to close %d\n", result);
