@@ -30,33 +30,34 @@ For more information, please refer to <http://unlicense.org/>
 #include <interrupt.h>
 #include <syslog.h>
 #include <dev/device.h>
+#include <nerve/kcall.h>
 #include <sys/time.h>
 
 #ifndef log_emerg
-#define log_emerg(...) syslog(LOG_EMERG, __VA_ARGS__)
+#define log_emerg(...) kcall->printk(__VA_ARGS__)
 #endif
 #ifndef log_alert
-#define log_alert(...) syslog(LOG_ALERT, __VA_ARGS__)
+#define log_alert(...) kcall->printk(__VA_ARGS__)
 #endif
 #ifndef log_crit
-#define log_crit(...) syslog(LOG_CRIT, __VA_ARGS__)
+#define log_crit(...) kcall->printk(__VA_ARGS__)
 #endif
 #ifndef log_err
-#define log_err(...) syslog(LOG_ERR, __VA_ARGS__)
+#define log_err(...) kcall->printk(__VA_ARGS__)
 #endif
 #ifndef log_warning
-#define log_warning(...) syslog(LOG_WARNING, __VA_ARGS__)
+#define log_warning(...) kcall->printk(__VA_ARGS__)
 #endif
 #ifndef log_notice
-#define log_notice(...) syslog(LOG_NOTICE, __VA_ARGS__)
+#define log_notice(...) kcall->printk(__VA_ARGS__)
 #endif
 #ifndef log_info
-#define log_info(...) syslog(LOG_INFO, __VA_ARGS__)
+#define log_info(...) kcall->printk(__VA_ARGS__)
 #endif
 
 #ifndef log_debug
 #ifdef DEBUG
-#define log_debug(...) syslog(LOG_DEBUG, __VA_ARGS__)
+#define log_debug(...) kcall->printk(__VA_ARGS__)
 #else
 #define log_debug(...)
 #endif

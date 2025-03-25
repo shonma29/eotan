@@ -26,13 +26,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <nerve/kcall.h>
+#include "../../lib/libserv/libserv.h"
 
 #define MYNAME "mm"
-
-#define log_err kcall->printk
-#define log_warning kcall->printk
-#define log_info kcall->printk
 
 #define getParent(type, p) ((uintptr_t) p - offsetof(type, node))
 

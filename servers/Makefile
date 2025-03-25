@@ -23,7 +23,7 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-SERVERS = syslog interrupt timer dev mm fs hmi console pipe monitor
+SERVERS = interrupt timer dev mm fs hmi console pipe monitor
 
 all: $(SERVERS)
 

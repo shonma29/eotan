@@ -45,7 +45,7 @@ static void initialize(void)
 {
 	cns = getConsole(&screen1, &default_font);
 	screen1.width /= 2;
-	screen1.height = (screen1.height - 20) / 2;
+	screen1.height = screen1.height - 20;
 	screen1.chr_width = screen1.width / screen1.font.width;
 	screen1.chr_height = screen1.height / screen1.font.height;
 	screen1.base += 20 * screen1.bpl + screen1.width * 3;
