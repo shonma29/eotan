@@ -82,10 +82,9 @@ void if_attach(fs_request *req)
 		response.Rattach.tag = request->tag;
 		response.Rattach.qid = session->pid;
 		reply(req->tag, &response, MESSAGE_SIZE(Rattach));
-log_info("console: attach success %d\n", session->pid);
 		return;
 	} while (false);
-log_info("console: attach failed %d\n", error_no);
+
 	reply_error(req->tag, req->packet.header.token, request->tag,
 			error_no);
 }

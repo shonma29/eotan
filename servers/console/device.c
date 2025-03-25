@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <string.h>
+#include <nerve/kcall.h>
 #include "console.h"
 
 typedef struct {
@@ -32,6 +33,8 @@ typedef struct {
 	driver_t driver;
 } driver_table_t;
 
+static int cons_write(struct file *, copier_t *, const off_t, const size_t,
+		size_t *);
 static int null_read(struct file *, copier_t *, const off_t, const size_t,
 		size_t *);
 static int null_write(struct file *, copier_t *, const off_t, const size_t,
@@ -40,16 +43,21 @@ static int zero_read(struct file *, copier_t *, const off_t, const size_t,
 		size_t *);
 
 driver_table_t table[] = {
+	{ "cons", { true, null_read, cons_write } },
 	{ "null", { true, null_read, null_write } },
 	{ "zero", { true, zero_read, null_write } }
 };
 
 static char zero_buf[1024];
+static char cons_buf[1024];
+
+#define CONS_MAX (sizeof(cons_buf) - 1)
 
 
 int device_initialize(void)
 {
 	memset(zero_buf, 0, sizeof(zero_buf));
+	cons_buf[CONS_MAX] = '\0';
 	return 0;
 }
 
@@ -60,6 +68,25 @@ driver_t *device_lookup(const char *name)
 			return &(table[i].driver);
 
 	return NULL;
+}
+
+static int cons_write(struct file *file, copier_t *copier, const off_t offset,
+		const size_t size, size_t *wrote_len)
+{
+	int result = 0;
+	size_t rest = size;
+	while (rest) {
+		size_t len = (rest > CONS_MAX) ? CONS_MAX : rest;
+		result = copier->copy(cons_buf, copier, len);
+		if (result)
+			break;
+
+		kcall->printk("%s", cons_buf);
+		rest -= len;
+	}
+
+	*wrote_len = size - rest;
+	return 0;
 }
 
 static int null_read(struct file *file, copier_t *copier, const off_t offset,

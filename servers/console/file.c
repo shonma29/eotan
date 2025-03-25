@@ -151,7 +151,6 @@ void if_read(fs_request *req)
 		response.header.type = Rread;
 		response.Rread.tag = request->tag;
 		response.Rread.count = count;
-log_info("console: read %d\n", count);
 		reply(req->tag, &response, MESSAGE_SIZE(Rread));
 		return;
 	} while (false);

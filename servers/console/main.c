@@ -62,7 +62,6 @@ static void no_support(fs_request *req)
 	struct _Topen *request = &(req->packet.Topen);
 	reply_error(req->tag, req->packet.header.token, request->tag,
 			ENOTSUP);
-log_info("console: no_support enotsup\n");
 }
 
 static int initialize(void)
@@ -109,10 +108,9 @@ void start(VP_INT exinf)
 		int result;
 		if (req.packet.header.ident != IDENT)
 			result = EPROTO;
-		else if (req.packet.header.type >= NUM_OF_FUNC) {
-log_info("console: main unknown type %d\n", req.packet.header.type);
+		else if (req.packet.header.type >= NUM_OF_FUNC)
 			result = ENOTSUP;
-		} else {
+		else {
 			if (size == func_table[req.packet.header.type].max) {
 				func_table[req.packet.header.type].call(&req);
 				result = 0;
