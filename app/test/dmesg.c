@@ -24,27 +24,35 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <ipc.h>
-#include <services.h>
+#include <stdlib.h>
 #include <string.h>
-#include <syslog.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <libc.h>
 
 #undef FORCE_NEWLINE
 
 #define MYNAME "dmesg"
 
-#define MSG_IPC "ipc error"
-#define MSG_BUF "buffer error"
+#define MSG_BIND "failed to bind"
+#define MSG_OPEN "failed to open"
+#define MSG_READ "failed to read"
+#define MSG_WRITE "failed to write"
 #define DELIMITER ": "
 #define NEWLINE "\n"
+
+#define CHR_NEWLINE '\n'
 
 #define OK (0)
 #define NG (1)
 
+static char kprint_buf[1024];
+
+#define KPRINT_MAX (sizeof(kprint_buf) - 1)
+
 static void pute(const char *);
 static void puterror(const char *);
-static int exec(const int);
+static int relay(const int in, const int);
 
 
 static void pute(const char *str)
@@ -60,44 +68,41 @@ static void puterror(const char *message)
 	pute(NEWLINE);
 }
 
-static int exec(const int out)
+static int relay(const int out, const int in)
 {
-	syslog_t pk;
-	pk.Tread.type = Tread;
-	pk.Tread.fid = channel_kernlog;
-	pk.Tread.count = sizeof(pk.Rread.data);
-
-	ssize_t size = ipc_call(PORT_SYSLOG, &pk, sizeof(pk.Tread));
+	ssize_t size = read(in, kprint_buf, KPRINT_MAX);
 	if (size < 0) {
-		puterror(MSG_IPC);
+		puterror(MSG_READ);
 		return NG;
-	}
-
-	size = pk.Rread.count;
-	if (size < 0) {
-		puterror(MSG_BUF);
+	} else if (!size)
 		return NG;
-	}
-
-	if (!size)
-		return NG;
-
-	char buf[sizeof(pk.Rread.data) + 2];
-	memcpy(buf, pk.Rread.data, size);
-
 #ifdef FORCE_NEWLINE
-	if (buf[size - 1] != '\n')
-		buf[size++] = '\n';
+	if (kprint_buf[size - 1] != CHR_NEWLINE)
+		kprint_buf[size++] = CHR_NEWLINE;
 #endif
-	buf[size] = '\0';
-	write(out, buf, size);
+	if (write(out, kprint_buf, size) != size) {
+		puterror(MSG_WRITE);
+		return NG;
+	}
 
 	return OK;
 }
 
 int main(int argc, char **argv)
 {
-	while (!exec(STDOUT_FILENO));
+	int result = bind("#c", "/mnt", MREPL);
+	if (result < 0) {
+		puterror(MSG_BIND);
+		return EXIT_FAILURE;
+	}
 
-	return OK;
+	int fd = open("/mnt/kprint", O_RDONLY);
+	if (fd < 0) {
+		puterror(MSG_OPEN);
+		return EXIT_FAILURE;
+	}
+
+	while (!relay(STDOUT_FILENO, fd));
+
+	return EXIT_SUCCESS;
 }

@@ -28,6 +28,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 #include "console.h"
 
+#define KERNLOG_QUEUE ((volatile lfq_t *) KERNEL_LOG_ADDR)
+
 typedef struct {
 	char *name;
 	driver_t driver;
@@ -41,14 +43,18 @@ static int null_write(struct file *, copier_t *, const off_t, const size_t,
 		size_t *);
 static int zero_read(struct file *, copier_t *, const off_t, const size_t,
 		size_t *);
+static int kprint_read(struct file *, copier_t *, const off_t, const size_t,
+		size_t *);
 
 driver_table_t table[] = {
 	{ "cons", { true, null_read, cons_write } },
 	{ "null", { true, null_read, null_write } },
-	{ "zero", { true, zero_read, null_write } }
+	{ "zero", { true, zero_read, null_write } },
+	{ "kprint", { true, kprint_read, null_write } }
 };
 
 static char zero_buf[1024];
+//TODO define in 'file' struct for thread safety
 static char cons_buf[1024];
 
 #define CONS_MAX (sizeof(cons_buf) - 1)
@@ -82,6 +88,13 @@ static int cons_write(struct file *file, copier_t *copier, const off_t offset,
 			break;
 
 		kcall->printk("%s", cons_buf);
+#if 0
+	int w = ch;
+	while (lfq_enqueue((volatile lfq_t *) KERNEL_LOG_ADDR, &w) != QUEUE_OK) {
+		int trash;
+		lfq_dequeue((volatile lfq_t *) KERNEL_LOG_ADDR, &trash);
+	}
+#endif
 		rest -= len;
 	}
 
@@ -116,6 +129,38 @@ static int zero_read(struct file *file, copier_t *copier, const off_t offset,
 			break;
 
 		rest -= len;
+	}
+
+	*read_len = size - rest;
+	return result;
+}
+
+static int kprint_read(struct file *file, copier_t *copier, const off_t offset,
+		const size_t size, size_t *read_len)
+{
+	int result = 0;
+	size_t rest = size;
+	for (bool last = false; !(last |= !rest);) {
+		size_t len = (rest > sizeof(cons_buf)) ?
+				sizeof(cons_buf) : rest;
+		int i = 0;
+		for (; i < len; i++) {
+			wchar_t w;
+			if (lfq_dequeue(KERNLOG_QUEUE, &w)) {
+				last = true;
+				break;
+			}
+
+			cons_buf[i] = w & 0xff;
+		}
+		if (!i)
+			break;
+
+		result = copier->copy(copier, cons_buf, i);
+		if (result)
+			break;
+
+		rest -= i;
 	}
 
 	*read_len = size - rest;
