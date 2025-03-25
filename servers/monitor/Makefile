@@ -23,14 +23,17 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-SERVERS = syslog interrupt timer dev mm fs hmi console pipe monitor
+TARGET = $(WD)/monitor
 
-all: $(SERVERS)
+include Makefile.in
 
-$(SERVERS):
-	$(MAKE) -f servers/$@/Makefile WD=servers/$@
+CFLAGS += -I lib/libserv
+ENTRY_ADDR = 0x80210000
+ENTRY_FUNC = start
 
-clean:
-	$(SHELL) -ec 'for L in $(SERVERS); do \
-		$(MAKE) -f servers/$$L/Makefile WD=servers/$$L clean; \
-		done'
+$(TARGET): $(OBJS) \
+		drivers/arch/libarch.a \
+		lib/libnc.a \
+		lib/libfonts.a
+	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
+	$(STRIP) $@

@@ -24,42 +24,23 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <features.h>
-#include <major.h>
 #include <services.h>
-#include <pseudo_signal.h>
 #include <nerve/kcall.h>
-#include <set/lf_queue.h>
 #include <set/ring.h>
 #include <libserv.h>
-#include "kernlog.h"
+#include "syslog.h"
 
 #define LEN_PRIORITY (2)
 
 static char buf[SYSLOG_SIZE];
 
 static ER check_param(const size_t);
-static size_t lfcopy(char *, volatile lfq_t*, const size_t);
-static ssize_t read(char *, const int, const size_t);
+static ssize_t read(char *, const size_t);
 static ssize_t write(const int priority, char *, const size_t);
 static size_t execute(syslog_t *);
 static ER accept(const ID);
 static ER_ID initialize(void);
 
-#ifdef USE_MONITOR
-#include <console.h>
-
-#define SYNC_INTERVAL_SECONDS (60)
-
-static int until_sync = SYNC_INTERVAL_SECONDS;
-static Screen screen1;
-static Screen screen3;
-static Console *cns;
-
-static ER monitor_initialize(void);
-static void monitor(void);
-static unsigned int sleep(unsigned int);
-#endif
 
 static ER check_param(const size_t size)
 {
@@ -69,37 +50,14 @@ static ER check_param(const size_t size)
 	return E_OK;
 }
 
-static size_t lfcopy(char *outbuf, volatile lfq_t *q, const size_t size)
-{
-	size_t left;
-
-	for (left = size; left > 0; left--) {
-		wchar_t w;
-
-		if (lfq_dequeue(q, &w) != QUEUE_OK)
-			break;
-
-		*outbuf = w & 0xff;
-		outbuf++;
-	}
-
-	return (size - left);
-}
-
-static ssize_t read(char *outbuf, const int channel, const size_t size)
+static ssize_t read(char *outbuf, const size_t size)
 {
 	ER result = check_param(size);
 	if (result)
 		return result;
 
-	switch (channel) {
-	case channel_kernlog:
-		return lfcopy(outbuf, (volatile lfq_t *) KERNEL_LOG_ADDR, size);
-	case channel_syslog:
-		return ring_get((ring_t *) buf, outbuf, size);
-	default:
-		return E_PAR;
-	}
+
+	return ring_get((ring_t *) buf, outbuf, size);
 }
 
 static ssize_t write(const int priority, char *inbuf, const size_t size)
@@ -134,9 +92,7 @@ static size_t execute(syslog_t *message)
 
 	switch (message->Tread.type) {
 	case Tread:
-		result = read(message->Rread.data,
-				message->Tread.fid,
-				message->Tread.count);
+		result = read(message->Rread.data, message->Tread.count);
 		message->Rread.count = result;
 		size = sizeof(message->Rread)
 				- sizeof(message->Rread.data)
@@ -196,9 +152,7 @@ void start(VP_INT exinf)
 	ER_ID port = initialize();
 	if (port >= 0) {
 		kcall->printk(MYNAME ": start port=%d\n", port);
-#ifdef USE_MONITOR
-		monitor_initialize();
-#endif
+
 		while (accept(port) == E_OK);
 
 		kcall->ipc_close();
@@ -207,95 +161,3 @@ void start(VP_INT exinf)
 
 	kcall->thread_end_and_destroy();
 }
-
-#ifdef USE_MONITOR
-static ER monitor_initialize(void)
-{
-	T_CTSK pk_ctsk = {
-		TA_HLNG | TA_ACT, 0, monitor, pri_server_middle,
-		KTHREAD_STACK_SIZE, NULL, NULL, NULL
-	};
-	return kcall->thread_create_auto(&pk_ctsk);
-}
-
-static void monitor(void)
-{
-	kcall->printk("monitor: start\n");
-	cns = getConsole(&screen1, &default_font);
-
-	screen1.width /= 2;
-	screen1.height = (screen1.height - 20) / 2;
-	screen1.chr_width = screen1.width / screen1.font.width;
-	screen1.chr_height = screen1.height / screen1.font.height;
-	screen1.base += 20 * screen1.bpl + screen1.width * 3;
-	screen1.p = (uint8_t *) (screen1.base);
-	screen1.fgcolor.rgb.b = 31;
-	screen1.fgcolor.rgb.g = 223;
-	screen1.fgcolor.rgb.r = 0;
-	screen1.bgcolor.rgb.b = 0;
-	screen1.bgcolor.rgb.g = 31;
-	screen1.bgcolor.rgb.r = 0;
-	cns->erase(&screen1, EraseScreenEntire);
-	cns->locate(&screen1, 0, 0);
-
-	screen3 = screen1;
-	screen3.base += screen1.height * screen1.bpl;
-	screen3.p = (uint8_t *) (screen3.base);
-	screen3.fgcolor.rgb.b = 0x30;
-	screen3.fgcolor.rgb.g = 0x30;
-	screen3.fgcolor.rgb.r = 0x30;
-	screen3.bgcolor.rgb.b = 0xfc;
-	screen3.bgcolor.rgb.g = 0xfc;
-	screen3.bgcolor.rgb.r = 0xfc;
-	cns->erase(&screen3, EraseScreenEntire);
-	cns->locate(&screen3, 0, 0);
-
-	while (!sleep(1)) {
-		if (--until_sync <= 0) {
-			int signal = SIGNAL_SYNC;
-			ER_UINT reply_size = kcall->ipc_send(PORT_FS, &signal,
-					sizeof(signal));
-			if (reply_size)
-				kcall->printk("monitor: failed to sync %d\n",
-						reply_size);
-
-			until_sync = SYNC_INTERVAL_SECONDS;
-		}
-
-		char outbuf[1024];
-		for (size_t len;
-				(len  = lfcopy(outbuf,
-						(volatile lfq_t *) KERNEL_LOG_ADDR,
-						sizeof(outbuf)));)
-			for (int i = 0; i < len; i++)
-				cns->putc(&screen3, outbuf[i]);
-
-		for (size_t len;
-				(len = ring_get((ring_t *) buf, outbuf,
-						sizeof(outbuf)));)
-			for (int i = 0; i < len; i++)
-				cns->putc(&screen1, outbuf[i]);
-	}
-}
-
-//TODO extract to libserv
-static unsigned int sleep(unsigned int second)
-{
-	struct timespec t = { second, 0 };
-	ER_UINT reply_size = kcall->ipc_call(PORT_TIMER, &t, sizeof(t));
-	if (reply_size == sizeof(ER)) {
-		ER *result = (ER *) &t;
-		switch (*result) {
-		case E_TMOUT:
-			return 0;
-		case E_PAR:
-		case E_NOMEM:
-			return second;
-		default:
-			break;
-		}
-	}
-
-	return second;
-}
-#endif

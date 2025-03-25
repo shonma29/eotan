@@ -134,7 +134,7 @@ $(WD)/elf2module: $(WD)/elf2module.c
 
 $(WD)/kernel.img: $(WD)/append $(WD)/elf2module \
 		$(WD)/starter.bin kernel/core.bin \
-		servers/kernlog/kernlog \
+		servers/syslog/syslog \
 		servers/interrupt/interrupt \
 		servers/timer/timer \
 		servers/dev/dev \
@@ -150,7 +150,7 @@ $(WD)/kernel.img: $(WD)/append $(WD)/elf2module \
 	$(WD)/elf2module servers/interrupt/interrupt | $(WD)/append $@ 2 3
 	$(WD)/elf2module servers/timer/timer | $(WD)/append $@ 2 4
 	$(WD)/elf2module servers/dev/dev | $(WD)/append $@ 2 6
-	$(WD)/elf2module servers/kernlog/kernlog | $(WD)/append $@ 3 5
+	$(WD)/elf2module servers/syslog/syslog | $(WD)/append $@ 3 5
 	$(WD)/elf2module servers/hmi/hmi | $(WD)/append $@ 3 11
 	$(WD)/elf2module servers/console/console | $(WD)/append $@ 3 9
 	$(WD)/elf2module servers/fs/fs | $(WD)/append $@ 3 8
@@ -161,7 +161,7 @@ $(WD)/kernel.img: $(WD)/append $(WD)/elf2module \
 
 $(WD)/hdkernel.img: $(WD)/append $(WD)/elf2module \
 		$(WD)/starter.bin kernel/core.bin \
-		servers/kernlog/kernlog \
+		servers/syslog/syslog \
 		servers/interrupt/interrupt \
 		servers/timer/timer \
 		servers/dev/dev \
@@ -176,7 +176,8 @@ $(WD)/hdkernel.img: $(WD)/append $(WD)/elf2module \
 	$(WD)/elf2module servers/interrupt/interrupt | $(WD)/append $@ 2 3
 	$(WD)/elf2module servers/timer/timer | $(WD)/append $@ 2 4
 	$(WD)/elf2module servers/dev/dev | $(WD)/append $@ 2 6
-	$(WD)/elf2module servers/kernlog/kernlog | $(WD)/append $@ 3 5
+	$(WD)/elf2module servers/monitor/monitor | $(WD)/append $@ 3 14
+	$(WD)/elf2module servers/syslog/syslog | $(WD)/append $@ 3 5
 	$(WD)/elf2module servers/hmi/hmi | $(WD)/append $@ 3 12
 	$(WD)/elf2module servers/console/console | $(WD)/append $@ 3 10
 	$(WD)/elf2module servers/pipe/pipe | $(WD)/append $@ 3 11

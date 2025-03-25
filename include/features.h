@@ -33,6 +33,4 @@ For more information, please refer to <http://unlicense.org/>
 #define PIXEL_BGR
 //#define PIXEL_BGRD
 
-//#define USE_MONITOR
-
 #endif

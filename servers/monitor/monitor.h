@@ -1,5 +1,5 @@
-#ifndef __KERNLOG_H__
-#define __KERNLOG_H__ 1
+#ifndef __MONITOR_H__
+#define __MONITOR_H__ 1
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -27,8 +27,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-#define SYSLOG_SIZE (32 * 1024)
-
-#define MYNAME "kernlog"
+#define MYNAME "monitor"
 
 #endif

@@ -23,7 +23,7 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = $(WD)/kernlog
+TARGET = $(WD)/syslog
 
 include Makefile.in
 
@@ -32,6 +32,6 @@ ENTRY_ADDR = 0x80110000
 ENTRY_FUNC = start
 
 $(TARGET): $(OBJS) \
-		lib/libserv.a lib/libnc.a drivers/arch/libarch.a lib/libfonts.a
+		lib/libnc.a
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
 	$(STRIP) $@

@@ -64,7 +64,6 @@ static int exec(const int out)
 {
 	syslog_t pk;
 	pk.Tread.type = Tread;
-	pk.Tread.fid = channel_syslog;
 	pk.Tread.count = sizeof(pk.Rread.data);
 
 	ssize_t size = ipc_call(PORT_SYSLOG, &pk, sizeof(pk.Tread));

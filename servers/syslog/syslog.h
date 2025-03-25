@@ -1,5 +1,5 @@
-#ifndef __SYSLOG_H__
-#define __SYSLOG_H__ 1
+#ifndef __SYSLOG_SYSLOG_H__
+#define __SYSLOG_SYSLOG_H__ 1
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,44 +26,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stddef.h>
-#include <fs/protocol.h>
-#include <sys/types.h>
 
-//#define SYSLOG_MAX_LENGTH (1024)
-#define SYSLOG_MAX_LENGTH (80)
+#define SYSLOG_SIZE (32 * 1024)
 
-enum log_level {
-	LOG_EMERG,
-	LOG_ALERT,
-	LOG_CRIT,
-	LOG_ERR,
-	LOG_WARNING,
-	LOG_NOTICE,
-	LOG_INFO,
-	LOG_DEBUG
-};
-
-typedef union {
-	struct {
-		enum fs_message_type type;
-		size_t count;
-	} Tread;
-	struct {
-		ssize_t count;
-		char data[SYSLOG_MAX_LENGTH];
-	} Rread;
-	struct {
-		enum fs_message_type type;
-		enum log_level priority;
-		size_t count;
-		char data[SYSLOG_MAX_LENGTH];
-	} Twrite;
-	struct {
-		ssize_t count;
-	} Rwrite;
-} syslog_t;
-
-extern void syslog(const int,  const char *, ...);
+#define MYNAME "syslog"
 
 #endif
