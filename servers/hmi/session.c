@@ -255,7 +255,7 @@ static void _destroy(session_t *session)
 	window_focus(-1);
 
 	if (session->window) {
-		//TODO !release window
+		window_destroy(session->window);
 		num_of_window--;
 	}
 

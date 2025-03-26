@@ -64,9 +64,7 @@ extern int window_create(window_t **, const int, const int,
 		const int, const int, const int);
 extern void window_set_title(window_t *, const char *);
 extern window_t *window_find(const int);
-#if 0
-extern int remove_window(const int);
-#endif
+extern int window_destroy(window_t *);
 extern int window_focus(const int);
 
 // draw.c

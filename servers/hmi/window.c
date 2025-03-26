@@ -34,6 +34,8 @@ For more information, please refer to <http://unlicense.org/>
 #define COLOR_FOCUSED 0x0
 #define COLOR_UNFOCUSED 0xdfe3e4
 
+#define COLOR_ROOT 0x0
+
 #define getParent(type, p) ((uintptr_t) p - offsetof(type, node))
 
 static Color_Rgb colors_focused[] = {
@@ -214,29 +216,30 @@ window_t *window_find(const int wid)
 	node_t *node = tree_get(&window_tree, wid);
 	return (node ? (window_t *) getParent(window_t, node) : NULL);
 }
-#if 0
-int remove_window(const int wid)
+
+int window_destroy(window_t *w)
 {
 	int error_no = 0;
 	do {
-		window_t *p = window_find(wid);
-		if (!p) {
-			//TODO really?
-			error_no = EPERM;
+		if (!tree_remove(&window_tree, w->node.key))
 			break;
-		}
 
-		list_remove(&(p->brothers));
-		if (!tree_remove(&window_tree, p->node.key)) {
-			//TODO what to do?
-		}
+		mouse_hide();
 
-		slab_free(&window_slab, p);
+		Rectangle r;
+		r.min.x = 0;
+		r.min.y = 0;
+		r.max.x = w->outer.r.max.x - w->outer.r.min.x;
+		r.max.y = w->outer.r.max.y - w->outer.r.min.y;
+		draw_fill(&(w->outer), &r, COLOR_ROOT);
+
+		mouse_show();
+		slab_free(&window_slab, w);
 	} while (false);
 
 	return error_no;
 }
-#endif
+
 static void _draw_title_bar(const window_t *w, const bool focus)
 {
 	if (!(w->attr & WINDOW_ATTR_HAS_TITLE))
