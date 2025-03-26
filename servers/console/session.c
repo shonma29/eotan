@@ -25,21 +25,24 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <fcntl.h>
-#include <init.h>
-#include <limits.h>
-#include <fs/config.h>
-#include <nerve/ipc_utils.h>
-#include <nerve/kcall.h>
 #include <sys/errno.h>
-#include <sys/unistd.h>
+#include <fs/config.h>
+#include <nerve/kcall.h>
 #include "api.h"
-#include "console.h"
 #include "session.h"
 
-#define PID_NIL (-1)
+enum {
+	SESSION_SLAB = 0x01,
+	FILE_SLAB = 0x02
+};
 
-static session_t session;
+static tree_t sessions;
+static slab_t session_slab;
 static slab_t file_slab;
+static int initialized_resources = 0;
+
+static session_t *_create(const int);
+static void _destroy(session_t *);
 
 
 void if_attach(fs_request *req)
@@ -52,36 +55,33 @@ void if_attach(fs_request *req)
 			break;
 		}
 
-		session_t *session = session_create(unpack_sid(req));
+		session_t *session = _create(unpack_sid(req));
 		if (!session) {
-			//TODO other error when sid exists
 			error_no = ENOMEM;
 			break;
 		}
 
-		int fid = request->fid;
 		struct file *file;
-		error_no = session_create_file(&file, session, fid);
+		error_no = session_create_file(&file, session, request->fid);
 		if (error_no) {
-			session_destroy(session);
+			_destroy(session);
 			break;
 		}
 
-//TODO return error if aname != '/'?
-
+		//TODO return error if aname != '/'?
 		//TODO walk aname
 		//TODO can not walk to the parent of aname
 		//TODO bind fid to with session type (for use to close session)
+		file->driver = NULL;
 		file->f_flag = O_ACCMODE;
 		file->size = 0;
-		file->driver = NULL;
 
-		fsmsg_t response;
-		response.header.token = req->packet.header.token;
-		response.header.type = Rattach;
-		response.Rattach.tag = request->tag;
-		response.Rattach.qid = session->pid;
-		reply(req->tag, &response, MESSAGE_SIZE(Rattach));
+		fsmsg_t *response = &(req->packet);
+		//response->header.token = req->packet.header.token;
+		response->header.type = Rattach;
+		//response->Rattach.tag = request->tag;
+		response->Rattach.qid = session->node.key;
+		reply(req->tag, response, MESSAGE_SIZE(Rattach));
 		return;
 	} while (false);
 
@@ -89,81 +89,102 @@ void if_attach(fs_request *req)
 			error_no);
 }
 
-void session_initialize(void)
+int session_initialize(void)
 {
-	session.pid = PID_NIL;
-	tree_create(&(session.files), NULL, NULL);
+	tree_create(&sessions, NULL, NULL);
+
+	session_slab.unit_size = sizeof(session_t);
+	session_slab.block_size = PAGE_SIZE;
+	session_slab.min_block = 1;
+	session_slab.max_block = slab_max_block(MAX_SESSION, PAGE_SIZE,
+			sizeof(session_t));
+	session_slab.palloc = kcall->palloc;
+	session_slab.pfree = kcall->pfree;
+
+	if (slab_create(&session_slab))
+		return SESSION_SLAB;
+	else
+		initialized_resources |= SESSION_SLAB;
 
 	file_slab.unit_size = sizeof(struct file);
 	file_slab.block_size = PAGE_SIZE;
 	file_slab.min_block = 1;
-	file_slab.max_block = slab_max_block(MAX_TOTAL_FILE, PAGE_SIZE,
+	file_slab.max_block = slab_max_block(MAX_FILE, PAGE_SIZE,
 			sizeof(struct file));
 	file_slab.palloc = kcall->palloc;
 	file_slab.pfree = kcall->pfree;
-	slab_create(&file_slab);
+
+	if (slab_create(&file_slab))
+		return FILE_SLAB;
+	else
+		initialized_resources |= FILE_SLAB;
+
+	return 0;
 }
 
-session_t *session_create(const pid_t pid)
+static session_t *_create(const int sid)
 {
-	if (session.pid != PID_NIL)
+	session_t *session = slab_alloc(&session_slab);
+	if (!session)
 		return NULL;
 
-	session.pid = pid;
-	return &session;
-}
+	tree_create(&(session->files), NULL, NULL);
 
-void session_destroy(session_t *session)
-{
-//TODO walk tree
-	//TODO optimize
-	for (int fd = 0; fd < MAX_FILE; fd++)
-		if (session_destroy_file(session, fd)) {
-			//TODO what to do?
-		}
-
-	session->pid = PID_NIL;
-}
-
-session_t *session_find(const pid_t pid)
-{
-	return ((session.pid == pid) ? &session : NULL);
-}
-
-int session_create_file(struct file **file, session_t *session, const int fd)
-{
-	if (session_find_file(session, fd))
-		//TODO adequate error code
-		return EBUSY;
-
-	struct file *f = slab_alloc(&file_slab);
-	if (!f)
-		return ENOMEM;
-
-	if (!tree_put(&(session->files), fd, &(f->node))) {
-		slab_free(&file_slab, f);
-		//TODO adequate error code
-		return EIO;
+	if (!tree_put(&sessions, sid, &(session->node))) {
+		slab_free(&session_slab, session);
+		//TODO return EADDRINUSE
+		return NULL;
 	}
 
-	f->f_flag = 0;
-	f->driver = NULL;
+	return session;
+}
 
+static void _destroy(session_t *session)
+{
+	if (!tree_remove(&sessions, session->node.key))
+		return;
+
+	slab_free(&session_slab, session);
+}
+
+session_t *session_find(const int sid)
+{
+	node_t *node = tree_get(&sessions, sid);
+	return (node ? ((session_t *) getSessionPtr(node)) : NULL);
+}
+
+int session_create_file(struct file **file, session_t *session, const int fid)
+{
+	struct file *f = slab_alloc(&file_slab);
+	if (!f)
+		return ENFILE;
+
+	if (!tree_put(&(session->files), fid, &(f->node))) {
+		slab_free(&file_slab, f);
+		return EADDRINUSE;
+	}
+
+	f->driver = NULL;
+	f->f_flag = 0;
 	*file = f;
 	return 0;
 }
 
-int session_destroy_file(session_t *session, const int fd)
+int session_destroy_file(session_t *session, const int fid)
 {
-	struct file *file = (struct file *) tree_remove(&(session->files), fd);
+	struct file *file = (struct file *) tree_remove(&(session->files), fid);
 	if (!file)
 		return EBADF;
 
 	slab_free(&file_slab, file);
+
+	if (!tree_size(&(session->files)))
+		_destroy(session);
+
 	return 0;
 }
 
-struct file *session_find_file(const session_t *session, const int fd)
+struct file *session_find_file(const session_t *session, const int fid)
 {
-	return (struct file *) tree_get(&(session->files), fd);
+	return (struct file *) tree_get(&(session->files), fid);
 }

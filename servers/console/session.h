@@ -26,18 +26,25 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include "console.h"
+#include <set/tree.h>
 
 typedef struct _session_t {
-	pid_t pid;
+	node_t node;
 	tree_t files;
 } session_t;
 
-extern void session_initialize(void);
+struct file {
+	node_t node;
+	void *driver;
+	uint_fast32_t f_flag;
+	size_t size;
+};
 
-extern session_t *session_create(const pid_t);
-extern void session_destroy(session_t *);
-extern session_t *session_find(const pid_t);
+#define getSessionPtr(p) ((uintptr_t) p - offsetof(session_t, node))
+
+extern int session_initialize(void);
+
+extern session_t *session_find(const int);
 
 extern int session_create_file(struct file **, session_t *, const int);
 extern int session_destroy_file(session_t *, const int);

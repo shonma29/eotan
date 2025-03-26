@@ -28,17 +28,10 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <copier.h>
 #include <sys/types.h>
-#include <set/tree.h>
 #include "../../lib/libserv/libserv.h"
+#include "session.h"
 
 #define MYNAME "console"
-
-struct file {
-	node_t node;
-	uint_fast32_t f_flag;
-	size_t size;
-	void *driver;
-};
 
 typedef struct _driver_t {
 	bool endless;
