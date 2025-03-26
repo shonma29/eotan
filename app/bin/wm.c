@@ -30,9 +30,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <fcntl.h>
 #include <libc.h>
 #include <sys/wait.h>
-#include <ipc.h>
-#include <services.h>
-#include <pseudo_signal.h>
 #include "_perror.h"
 
 #define ERR (-1)
@@ -46,14 +43,6 @@ enum {
 	STDERR = 4,
 	EXEC = 5
 };
-
-static char *args[] = { "/bin/wm", NULL };
-static char *envp[] = { NULL };
-#if 0
-static char last_message[] = {
-	's', 'h', 'u', 't', 'd', 'o', 'w', 'n', '\n'
-};
-#endif
 
 extern void __malloc_initialize(void);
 
@@ -74,13 +63,39 @@ static void execute(char **array, char **env)
 		_put_error(strerror(errno));
 		_put_error("\n");
 	} else if (!pid) {
-		if (execve(array[0], array, env) < 0) {
-			_put_error(array[0]);
-			_put_error(" exec error ");
-			_put_error(strerror(errno));
-			_put_error("\n");
-			_exit(EXEC);
-		}
+		close(STDIN_FILENO);
+		close(STDOUT_FILENO);
+		close(STDERR_FILENO);
+
+		int result = 0;
+		do {
+			if (bind("#i", "/dev", MREPL) < 0) {
+				result = BIND;
+				break;
+			}
+
+			if (open("/dev/cons", O_RDONLY) < 0) {
+				result = STDIN;
+				break;
+			}
+
+			if (open("/dev/cons", O_WRONLY) < 0) {
+				result = STDOUT;
+				break;
+			}
+
+			if (dup2(STDOUT_FILENO, STDERR_FILENO) < 0) {
+				result = STDERR;
+				break;
+			}
+
+			if (execve(array[0], array, env) < 0) {
+				result = EXEC;
+				break;
+			}
+		} while (false);
+
+		_exit(result);
 	}
 }
 
@@ -88,7 +103,12 @@ void _main(int argc, char **argv, char **env)
 {
 	errno = 0;
 	__malloc_initialize();
-
+#if 1
+	// if only opened by init
+	close(STDIN_FILENO);
+	close(STDOUT_FILENO);
+	close(STDERR_FILENO);
+#endif
 	int result = 0;
 	do {
 		if (bind("#c", "/dev", MREPL) < 0) {
@@ -111,18 +131,15 @@ void _main(int argc, char **argv, char **env)
 			break;
 		}
 
-		execute(args, envp);
+		char *array[] = { "/bin/shell", NULL };
+		char *envp[] = { "COLUMNS=84", "LINES=29", NULL };
+		execute(array, envp);
+		execute(array, envp);
 
 		for (;;) {
-			int signal = SIGNAL_SYNC;
-			ipc_call(PORT_FS, &signal, sizeof(signal));
-
 			collect();
 			sleep(SLEEP_SECONDS);
 		}
-#if 0
-		write(STDOUT_FILENO, last_message, sizeof(last_message));
-#endif
 	} while (false);
 
 	_exit(result);

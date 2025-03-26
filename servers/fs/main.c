@@ -116,8 +116,11 @@ void start(VP_INT exinf)
 				if (result)
 					log_warning("flush %d\n", result);
 
-				if (!key_of_ipc(req.tag))
-					continue;
+				if (key_of_ipc(req.tag))
+					kcall->ipc_send(req.tag, &result,
+							sizeof(result));
+
+				continue;
 			}
 
 			//TODO what is tag?

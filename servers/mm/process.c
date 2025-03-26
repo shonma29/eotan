@@ -351,6 +351,7 @@ int process_release_body(mm_process_t *proc, const int options)
 			//TODO what to do?
 		}
 
+		//log_info("mm: %d released %d\n", proc->node.key, p->node.key);
 		slab_free(&process_slab, p);
 
 		ER result = kcall->ipc_send(tag, &reply, sizeof(reply));
@@ -358,7 +359,6 @@ int process_release_body(mm_process_t *proc, const int options)
 			log_err("mm: %d failed to release body(%d)\n",
 					proc->node.key, result);
 
-		//log_info("mm: %d success release body\n", proc->node.key);
 		return 0;
 	}
 
