@@ -36,19 +36,7 @@ ER_UINT draw_write(const window_t *wp, const UW size, const char *inbuf,
 		return E_PAR;//TODO return POSIX error
 
 	draw_operation_e *op = (draw_operation_e *) inbuf;
-	if (*op == draw_op_put) {
-		if (size < DRAW_PUT_PACKET_SIZE)
-			return E_PAR;//TODO return POSIX error
-
-		unsigned int x = ((int *) inbuf)[1 + 0];
-		unsigned int y = ((int *) inbuf)[1 + 1];
-		mouse_hide();
-		draw_put(&(wp->inner), x, y,
-				(size - DRAW_PUT_PACKET_SIZE)
-						/ sizeof(Color_Rgb),
-				(uint8_t *) &(inbuf[DRAW_PUT_PACKET_SIZE]));
-		mouse_show();
-	} else if (*op == draw_op_pset) {
+	if (*op == draw_op_pset) {
 		if (size != DRAW_PSET_PACKET_SIZE)
 			return E_PAR;//TODO return POSIX error
 
