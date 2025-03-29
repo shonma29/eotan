@@ -93,7 +93,7 @@ static volatile lfq_t mnt_queue;
 static char queue_buf[lfq_buf_size(sizeof(mm_request_t *), REQUEST_MAX)];
 
 static int initialize(void);
-static void _accept_mnt(VP_INT);
+static void _mnt_accept(VP_INT);
 static void _process_response(void);
 static void execute(mm_request_t *);
 static void accept(void);
@@ -138,7 +138,7 @@ static int initialize(void)
 			REQUEST_MAX);
 
 	T_CTSK pk_ctsk = {
-		TA_HLNG | TA_ACT, 0, _accept_mnt, pri_server_middle,
+		TA_HLNG | TA_ACT, 0, _mnt_accept, pri_server_middle,
 		KTHREAD_STACK_SIZE, NULL, NULL, NULL
 	};
 	int result = kcall->thread_create(PORT_MNT, &pk_ctsk);
@@ -171,7 +171,7 @@ static int initialize(void)
 	return 0;
 }
 
-static void _accept_mnt(VP_INT exinf)
+static void _mnt_accept(VP_INT exinf)
 {
 	int result = kcall->ipc_open(&mnt_cpor);
 	if (result) {
@@ -216,8 +216,8 @@ static void _accept_mnt(VP_INT exinf)
 
 		if (lfq_enqueue(&mnt_queue, &req))
 			log_err("mnt: cannot enqueue %x\n", message.Rerror.tag);
-
-		kcall->ipc_notify(PORT_MM, EVENT_SERVICE);
+		else
+			kcall->ipc_notify(PORT_MM, EVENT_SERVICE);
 	}
 }
 
