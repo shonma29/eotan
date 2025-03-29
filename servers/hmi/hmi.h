@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <services.h>
 #include <set/lf_queue.h>
+#include <set/slab.h>
 #include <hmi/window.h>
 
 #define MYNAME "hmi"
@@ -63,7 +64,6 @@ extern int window_initialize(void);
 extern int window_create(window_t **, const int, const int,
 		const int, const int, const int);
 extern void window_set_title(window_t *, const char *);
-extern window_t *window_find(const int);
 extern int window_destroy(window_t *);
 extern int window_focus(const int);
 

@@ -36,8 +36,6 @@ For more information, please refer to <http://unlicense.org/>
 
 #define COLOR_ROOT 0x0
 
-#define getParent(type, p) ((uintptr_t) p - offsetof(type, node))
-
 static Color_Rgb colors_focused[] = {
 	{ 0x00, 0x00, 0x00 },
 	{ 0xe4, 0xe3, 0xdf }
@@ -48,7 +46,6 @@ static Color_Rgb colors_unfocused[] = {
 };
 
 static slab_t window_slab;
-static tree_t window_tree;
 static Point last_point = { -1, -1 };
 
 static void _draw_title_bar(const window_t *, const bool);
@@ -64,7 +61,6 @@ int window_initialize(void)
 	window_slab.palloc = kcall->palloc;
 	window_slab.pfree = kcall->pfree;
 	slab_create(&window_slab);
-	tree_create(&window_tree, NULL, NULL);
 	return 0;
 }
 //TODO !split window design
@@ -73,25 +69,9 @@ int window_create(window_t **w, const int x1, const int y1,
 {
 	int error_no = 0;
 	do {
-		int wid;
-		for (wid = 1; wid <= WINDOW_MAX; wid++)
-			if (!tree_get(&window_tree, wid))
-				break;
-
-		if (wid > WINDOW_MAX) {
-			error_no = ENOMEM;
-			break;
-		}
-
 		window_t *p = (window_t *) slab_alloc(&window_slab);
 		if (!p) {
 			error_no = ENOMEM;
-			break;
-		}
-
-		if (!tree_put(&window_tree, wid, (node_t *) p)) {
-			slab_free(&window_slab, p);
-			error_no = EBUSY;
 			break;
 		}
 
@@ -211,19 +191,10 @@ void window_set_title(window_t *w, const char *title)
 	_draw_title_bar(w, (focused_session) && (w == focused_session->window));
 }
 
-window_t *window_find(const int wid)
-{
-	node_t *node = tree_get(&window_tree, wid);
-	return (node ? (window_t *) getParent(window_t, node) : NULL);
-}
-
 int window_destroy(window_t *w)
 {
 	int error_no = 0;
 	do {
-		if (!tree_remove(&window_tree, w->node.key))
-			break;
-
 		mouse_hide();
 
 		Rectangle r;

@@ -26,7 +26,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <set/tree.h>
 #include <hmi/draw.h>
 
 #define WINDOW_ATTR_HAS_BORDER (0x0001)
@@ -40,7 +39,6 @@ For more information, please refer to <http://unlicense.org/>
 #define WINDOW_ATTR_IS_DIALOG (0x0100)
 
 typedef struct {
-	node_t node;
 	uint32_t attr;
 	Frame outer;
 	Frame inner;
