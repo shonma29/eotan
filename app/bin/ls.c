@@ -111,7 +111,7 @@ static int process(FILE *out, const char *name, const int argc, bool *is_block)
 		if (name[path_len - 1] == '/')
 			path_len--;
 
-		char *buf = malloc(path_len + 1 + PATH_MAX + 1);
+		char *buf = malloc(path_len + 1 + NAME_MAX + 1);
 		if (!buf) {
 			close(in);
 			puterror(name, MSG_MALLOC);
