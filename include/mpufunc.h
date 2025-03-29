@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <copier.h>
 #include <interrupt.h>
 #include <stdnoreturn.h>
 #include <mm/segment.h>
@@ -78,6 +79,10 @@ extern ER memcpy_k2u(thread_t *, void *, const void *, const size_t);
 extern ER memcpy_u2k(thread_t *, void *, const void *,
 		const size_t);
 extern ER_UINT strncpy_u2k(thread_t *, void *, const void *,
+		const size_t);
+
+/* scattered_copy.c */
+extern ER scattered_copy_u2k(const thread_t *, const size_t, copy_range_t *,
 		const size_t);
 
 /* memory.c */

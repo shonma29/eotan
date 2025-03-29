@@ -229,6 +229,7 @@ static bool get_gop(void)
 	d->base = (void *) (gop_mode->FrameBufferBase);
 	d->bpl = gop_mode->FrameBufferSize / gop_mode->Info->VerticalResolution;
 	d->bpp = 4;
+	d->type = B8G8R8A8;//TODO really?
 	return true;
 }
 

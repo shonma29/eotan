@@ -24,11 +24,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <nerve/kcall.h>
 #include "hmi.h"
 #include "mouse.h"
 
 
-ER_UINT draw_write(const window_t *wp, const UW size, const char *inbuf)
+ER_UINT draw_write(const window_t *wp, const UW size, const char *inbuf,
+		const int thread_id)
 {
 	if (size < DRAW_OP_SIZE)
 		return E_PAR;//TODO return POSIX error
@@ -56,6 +58,41 @@ ER_UINT draw_write(const window_t *wp, const UW size, const char *inbuf)
 		mouse_hide();
 		draw_pset(&(wp->inner), x, y, color);
 		mouse_show();
+	} else if (*op == draw_op_blit) {
+		if (size != DRAW_BLIT_PACKET_SIZE)
+			return E_PAR;//TODO return POSIX error
+
+		blit_param_t *param =
+				(blit_param_t *) &(inbuf[sizeof(draw_operation_e)]);
+		if (param->type != display->type)
+			return E_PAR;
+
+		const Frame *s = &(wp->inner);
+		rect_normalize(&(param->dest));
+		rect_transform(&(param->dest), &(s->r.min));
+
+		Rectangle dest;
+		if (rect_intersect(&dest, &((param->dest)), &(s->viewport))) {
+			int width = (dest.max.x - dest.min.x) * display->bpp;
+			if (param->bpl < width)
+				return E_PAR;
+
+			copy_range_t range = {
+				(char *) ((uintptr_t) (display->base)
+						+ dest.min.y * display->bpl
+						+ dest.min.x * display->bpp),
+				param->base,
+				dest.max.y - dest.min.y,
+				width,
+				param->bpl
+			};
+			mouse_hide();
+
+			int result = kcall->skip_copy(thread_id, display->bpl,
+					&range, 1);
+			mouse_show();
+			return (result ? result : size);
+		}
 	} else
 		return E_PAR;//TODO return POSIX error
 

@@ -24,7 +24,7 @@
 # For more information, please refer to <http://unlicense.org/>
 
 TARGET = $(WD)/systest \
-		$(WD)/dmesg $(WD)/mesg $(WD)/p6l $(WD)/pset \
+		$(WD)/dmesg $(WD)/p6l $(WD)/pset \
 		$(WD)/test_iso646 $(WD)/test_stdbool $(WD)/test_string \
 		$(WD)/test_console \
 		$(WD)/cpuid $(WD)/clock
@@ -48,7 +48,7 @@ all: $(TARGET)
 	done
 
 $(TARGET): $(OBJS) \
-		lib/libc.a lib/libm.a
+		lib/libc.a lib/libm.a lib/libdraw.a
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $(@).o \
-		lib/libc.a lib/libm.a
+		lib/libc.a lib/libm.a lib/libdraw.a
 	$(STRIP) $@

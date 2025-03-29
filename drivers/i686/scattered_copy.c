@@ -1,5 +1,3 @@
-#ifndef _COPIER_H_
-#define _COPIER_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,20 +24,50 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stddef.h>
+#include <string.h>
+#include <mpufunc.h>
 
-typedef struct {
-	int (*copy)(void *, void *, const size_t);
-	char *buf;
-	int caller;
-} copier_t;
 
-typedef struct {
-	char *to;
-	char *from;
-	size_t num_of_fragments;
-	size_t fragment_size;
-	size_t chunk_size;
-} copy_range_t;
+ER scattered_copy_u2k(const thread_t *th, const size_t chunk_size,
+		copy_range_t *ranges, const size_t n)
+{
+	PTE *dir = (PTE *) kern_p2v(th->mpu.cr3);
+	for (int i = 0; i < n; i++) {
+		copy_range_t *range = &(ranges[i]);
+		if (!(range->fragment_size))
+			continue;
 
-#endif
+		for (int j = 0; j < range->num_of_fragments; j++) {
+			const char *r = range->from;
+			void *p = getPageAddress(dir, r);
+			if (!p)
+				return E_PAR;
+
+			char *w = range->to;
+			size_t rest = range->fragment_size;
+			size_t offset = getOffset(r);
+			size_t len = PAGE_SIZE - offset;
+			p = &(p[offset]);
+
+			for (;;) {
+				len = (rest < len) ? rest : len;
+				memcpy(w, p, len);
+
+				if (!(rest -= len))
+					break;
+
+				r += len;
+				w += len;
+				len = PAGE_SIZE;
+				p = getPageAddress(dir, r);
+				if (!p)
+					return E_PAR;
+			}
+
+			range->from += range->chunk_size;
+			range->to += chunk_size;
+		}
+	}
+
+	return E_OK;
+}

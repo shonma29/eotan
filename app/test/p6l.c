@@ -27,23 +27,29 @@ For more information, please refer to <http://unlicense.org/>
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <hmi/draw.h>
 
-#define MAX_PIXEL (337)
-#define MAX_BYTES (MAX_PIXEL * sizeof(Color_Rgb))
-#define BUF_SIZE (DRAW_PUT_PACKET_SIZE + MAX_BYTES)
+#define ERR_MEMORY (4)
 
-static uint8_t buf[BUF_SIZE];
+static struct {
+	int op;
+	blit_param_t param;
+} packet;
 
-static void to_bgr(const size_t);
-static int putline(const int, const size_t, uint8_t *);
+static inline int roundup(int x, int y)
+{
+	return ((x + (y - 1)) & ~(y - 1));
+}
+
+static void to_bgr(char *, const size_t);
+static int blit(const int);
 static int process(const int, const int);
 
 
-static void to_bgr(const size_t pixels)
+static void to_bgr(char *p, const size_t pixels)
 {
-	uint8_t *p = &buf[DRAW_PUT_PACKET_SIZE];
 	for (size_t i = pixels; i > 0; i--) {
 		uint8_t c = p[0];
 		p[0] = p[2];
@@ -52,12 +58,13 @@ static void to_bgr(const size_t pixels)
 	}
 }
 
-static int putline(const int out, const size_t bytes, uint8_t *buf)
+static int blit(const int out)
 {
+	packet.op = draw_op_blit;
 	errno = 0;
 
-	int result = write(out, buf, bytes);
-	if (result != bytes) {
+	int result = write(out, &packet, sizeof(packet));
+	if (result != sizeof(packet)) {
 		fprintf(stderr, "write err %d %d\n", result, errno);
 		return (-1);
 	}
@@ -67,6 +74,8 @@ static int putline(const int out, const size_t bytes, uint8_t *buf)
 
 static int process(const int out, const int in)
 {
+	char buf[3];
+
 	if (read(in, buf, 3) != 3) {
 		printf("read err[desc]\n");
 		return (-1);
@@ -144,53 +153,50 @@ static int process(const int out, const int in)
 		return (-2);
 	}
 
-	unsigned char *data = &(buf[DRAW_PUT_PACKET_SIZE]);
-	int *packet = (int *) &(buf[DRAW_OP_SIZE]);
-	draw_operation_e *ope = (draw_operation_e *) buf;
-	*ope = draw_op_put;
+	blit_param_t *par = &(packet.param);
+	par->dest.min.x = 0;
+	par->dest.min.y = 0;
+	//TODO define rect_get_width(Rectangle)
+	par->dest.max.x = width;
+	//TODO define rect_get_height(Rectangle)
+	par->dest.max.y = height;
+	//TODO get type and bpp from global Display
+	par->type = B8G8R8;
 
-	for (int i = 0; i < height; i++) {
-		size_t rest = width;
-		int j = 0;
-		while (rest > MAX_PIXEL) {
-			if (read(in, data, MAX_BYTES) != MAX_BYTES) {
-				printf("read err[block]\n");
-				return (-1);
-			}
-
-			to_bgr(MAX_PIXEL);
-
-			packet[0] = j;
-			packet[1] = i;
-			if (putline(out, sizeof(buf), buf) < 0)
-				return (-3);
-
-			j += MAX_PIXEL;
-			rest -= MAX_PIXEL;
-		}
-
-		if (rest) {
-			size_t bytes = rest * sizeof(Color_Rgb);
-			if (read(in, data, bytes) != bytes) {
-				printf("read err[rest]\n");
-				return (-1);
-			}
-
-			to_bgr(rest);
-
-			packet[0] = j;
-			packet[1] = i;
-			if (putline(out, DRAW_PUT_PACKET_SIZE + bytes, buf) < 0)
-				return (-3);
-		}
+	size_t p6_bpl = width * sizeof(Color_Rgb);
+	//TODO define rect_rount_up(int or long)
+	par->bpl = roundup(p6_bpl, sizeof(int));
+	par->base = malloc(par->bpl * height);
+	if (!(par->base)) {
+		printf("memory exhausted\n");
+		return ERR_MEMORY;
 	}
 
+	char *line = par->base;
+	for (int i = 0; i < height; i++) {
+		if (read(in, line, p6_bpl) != p6_bpl) {
+			printf("read err[rest]\n");
+			free(par->base);
+			return (-1);
+		}
+
+		to_bgr(line, width);
+		line += par->bpl;
+	}
+
+	if (blit(out) < 0) {
+		free(par->base);
+		return (-3);
+	}
+
+	free(par->base);
 	printf("done\n");
 	return 0;
 }
 
 int main(int argc, char **argv)
 {
+	int result = 0;
 	if (argc == 2) {
 		errno = 0;
 
@@ -200,7 +206,7 @@ int main(int argc, char **argv)
 			if (out < 0)
 				fprintf(stderr, "open 'draw' err %d\n", errno);
 			else {
-				process(out, in);
+				result = process(out, in);
 				close(in);
 			}
 
@@ -210,5 +216,5 @@ int main(int argc, char **argv)
 	} else
 		printf("arg err\n");
 
-	return 0;
+	return result;
 }

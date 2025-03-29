@@ -59,11 +59,9 @@ void terminal_initialize(esc_state_t *state)
 	*(state->screen) = root;
 }
 
-int terminal_write(char *inbuf, esc_state_t *state, const off_t offset,
-		const size_t size)
+int terminal_write(char *inbuf, esc_state_t *state, const size_t size)
 {
-	if (!state
-			|| (offset < 0))
+	if (!state)
 		return (-1);
 
 	for (int i = 0; i < size; i++)

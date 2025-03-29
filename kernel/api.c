@@ -43,6 +43,7 @@ static void page_free(void *);
 static ER region_get(const ID, const void *, const size_t, void *);
 static ER region_put(const ID, void *, const size_t, const void *);
 static ER_UINT region_copy(const ID, const void *, const size_t, void *);
+static ER_UINT skip_copy(const ID, const size_t, copy_range_t *, const size_t);
 static ER_UINT _ipc_call(svc_arg *);
 
 static ER (*svc_entries[])(svc_arg *) = {
@@ -72,6 +73,7 @@ void kcall_initialize(void)
 	p->region_get = region_get;
 	p->region_put = region_put;
 	p->region_copy = region_copy;
+	p->skip_copy = skip_copy;
 
 	p->ipc_open = ipc_open;
 	p->ipc_close = ipc_close;
@@ -133,6 +135,18 @@ static ER_UINT region_copy(const ID id, const void *from, const size_t size, voi
 
 	thread_t *th = get_thread_ptr(id);
 	ER_UINT result = th ? strncpy_u2k(th, to, from, size) : E_NOEXS;
+
+	leave_serialize();
+	return result;
+}
+
+static ER_UINT skip_copy(const ID id, const size_t skip, copy_range_t *ranges,
+		const size_t n)
+{
+	enter_serialize();
+
+	thread_t *th = get_thread_ptr(id);
+	ER_UINT result = th ? scattered_copy_u2k(th, skip, ranges, n) : E_NOEXS;
 
 	leave_serialize();
 	return result;

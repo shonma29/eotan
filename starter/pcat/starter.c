@@ -100,5 +100,7 @@ static void set_display(void)
 	d->base = (void *) ((uintptr_t) (v->buffer_addr));
 	d->bpl = v->bytes_per_line;
 	d->bpp = sizeof(Color_Rgb);
+	//TODO check VesaInfo {red, green, blue, reserved} * {size, position}
+	d->type = B8G8R8;
 }
 #endif

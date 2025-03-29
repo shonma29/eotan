@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <copier.h>
 #include <nerve/config.h>
 
 typedef struct {
@@ -46,6 +47,8 @@ typedef struct {
 	ER (*region_get)(const ID, const void *, const size_t, void *);
 	ER (*region_put)(const ID, void *, const size_t, const void *);
 	ER_UINT (*region_copy)(const ID, const void *, const size_t , void *);
+	ER_UINT (*skip_copy)(const ID, const size_t, copy_range_t *,
+			const size_t);
 	int (*ipc_open)(const T_CPOR *);
 	int (*ipc_close)(void);
 	int (*ipc_call)(const int, void *, const size_t);

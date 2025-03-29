@@ -37,7 +37,7 @@ For more information, please refer to <http://unlicense.org/>
 
 static char line[4096];
 
-static ER_UINT _write(struct file *, const UW, const UW, const char *);
+static ER_UINT _write(struct file *, const UW, const char *, const int);
 
 
 int if_open(fs_request_t *req)
@@ -181,20 +181,18 @@ int if_write(fs_request_t *req)
 		fsmsg_t *message = &(req->packet);
 		unsigned int pos = 0;
 		ER_UINT result = 0;
+		int thread_id = thread_id_of_token(message->header.token);
 		for (size_t rest = message->Twrite.count; rest > 0;) {
 			size_t len = (rest > sizeof(line)) ?
 					sizeof(line) : rest;
-			if (kcall->region_get(
-					thread_id_of_token(message->header.token),
+
+			if (kcall->region_get(thread_id,
 					(char *) ((unsigned int) (message->Twrite.data) + pos),
-					len,
-					line)) {
+					len, line)) {
 				result = E_SYS;
 				break;
 			} else {
-				result = _write(file, message->Twrite.offset,
-						len,
-						line);
+				result = _write(file, len, line, thread_id);
 				if (result < 0)
 					break;
 			}
@@ -218,24 +216,24 @@ int if_write(fs_request_t *req)
 
 	return error_no;
 }
+
 //TODO !define callback function to driver_t
-static ER_UINT _write(struct file *file, const UW start, const UW size,
-		const char *inbuf)
+static ER_UINT _write(struct file *file, const UW size, const char *inbuf,
+		const int thread_id)
 {
 	switch (file->f_channel) {
 	case CONS:
-		break;
+		mouse_hide();
+		terminal_write((char *) inbuf, file->f_session->state, size);
+		mouse_show();
+		return size;
 	case CONSCTL:
 		return consctl_write(size, inbuf);
 	case DRAW:
-		return draw_write(file->f_session->window, size, inbuf);
+		return draw_write(file->f_session->window, size, inbuf,
+				thread_id);
 	case EVENT:
 	default:
 		return (-1);
 	}
-
-	mouse_hide();
-	terminal_write((char *) inbuf, file->f_session->state, 0, size);
-	mouse_show();
-	return size;
 }

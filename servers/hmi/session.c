@@ -149,7 +149,7 @@ static void _bind_terminal(esc_state_t *state, const window_t *w)
 	s->chr_height = s->height / s->font.height;
 
 	mouse_hide();
-	terminal_write(STR_CONS_INIT, state, 0, LEN_CONS_INIT);
+	terminal_write(STR_CONS_INIT, state, LEN_CONS_INIT);
 	mouse_show();
 }
 

@@ -83,7 +83,7 @@ void event_write(const int d)
 		}
 
 		mouse_hide();
-		terminal_write((char *) &buf, focused_session->state, 0, 1);
+		terminal_write((char *) &buf, focused_session->state, 1);
 		mouse_show();
 	}
 

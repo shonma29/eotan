@@ -68,7 +68,7 @@ extern int window_destroy(window_t *);
 extern int window_focus(const int);
 
 // draw.c
-extern ER_UINT draw_write(const window_t *, const UW, const char *);
+extern ER_UINT draw_write(const window_t *, const UW, const char *, const int);
 
 // event.c
 extern volatile lfq_t interrupt_queue;
