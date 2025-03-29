@@ -34,6 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 #include <sys/syscall.h>
 #include "mm.h"
+#include "../../lib/libserv/libserv.h"
 #include "proxy.h"
 
 #define MYNAME "mm"
@@ -175,21 +176,15 @@ int mm_create(mm_request_t *req)
 		}
 
 		mm_process_t *process = get_process(th);
-		ER_UINT len = kcall->region_copy(th->node.key,
-				(char *) (req->args.arg1), PATH_MAX,
-				req->pathbuf);
-		if (len < 0) {
-			reply->data[0] = EFAULT;
+		int result = get_path(req->pathbuf, th->node.key,
+				(char *) (req->args.arg1));
+		if (result) {
+			reply->data[0] = result;
 			break;
 		}
 
-		if (len >= PATH_MAX) {
-			reply->data[0] = ENAMETOOLONG;
-			break;
-		}
-
-		len = calc_path(req->walkpath, process->local->wd, req->pathbuf,
-				PATH_MAX);
+		ER_UINT len = calc_path(req->walkpath, process->local->wd,
+				req->pathbuf, PATH_MAX);
 //TODO test
 		if (len == ERR_INSUFFICIENT_BUFFER)
 			return ENAMETOOLONG;
@@ -221,7 +216,7 @@ int mm_create(mm_request_t *req)
 		int fd = desc->node.key;
 		mm_file_t *file;
 		fsmsg_t *message = &(req->message);
-		int result = _walk(&file, process, 0,
+		result = _walk(&file, process, 0,
 				in_root ? NULL : req->walkpath, req);
 		if (result) {
 			process_destroy_desc(process, fd);
@@ -591,19 +586,16 @@ int mm_chmod(mm_request_t *req)
 int _walk(mm_file_t **file, mm_process_t *process, const int thread_id,
 		const char *path, mm_request_t *req)
 {
+	int result;
 	ER_UINT len;
 	if (!path)
 		len = 0;
 	else if (path == req->walkpath)
 		len = strlen(req->walkpath);//TODO slow
 	else {
-		len = kcall->region_copy(thread_id, path, PATH_MAX,
-				req->pathbuf);
-		if (len < 0)
-			return EFAULT;
-
-		if (len >= PATH_MAX)
-			return ENAMETOOLONG;
+		result = get_path(req->pathbuf, thread_id, path);
+		if (result)
+			return result;
 
 		len = calc_path(req->walkpath, process->local->wd, req->pathbuf,
 				PATH_MAX);
@@ -661,7 +653,7 @@ int _walk(mm_file_t **file, mm_process_t *process, const int thread_id,
 //			message->Twalk.fid, message->Twalk.wname,
 //			message->Twalk.newfid);
 
-	int result = call_device(root, req);
+	result = call_device(root, req);
 	if (result)
 		session_destroy_file(f);
 	else {
