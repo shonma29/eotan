@@ -28,12 +28,6 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <set/tree.h>
 
-typedef enum {
-	UNOPENED = 0,
-	OPENING = 1,
-	CLOSED = 2
-} pipe_status_e;
-
 typedef struct _pipe_data {
 	struct _pipe_data *partner;
 	list_t readers;
