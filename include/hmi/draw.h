@@ -88,15 +88,12 @@ typedef struct {
 } blit_param_t;
 
 typedef enum draw_operation {
-	draw_op_pset = 1,
-	draw_op_blit = 2
+	draw_op_blit = 1
 } draw_operation_e;
 
 #define DRAW_OP_SIZE (sizeof(draw_operation_e))
-#define DRAW_PSET_PACKET_SIZE (DRAW_OP_SIZE + sizeof(int) * 3)
 #define DRAW_BLIT_PACKET_SIZE (DRAW_OP_SIZE + sizeof(blit_param_t))
 
-extern void draw_pset(const Frame *, const int, const int, const int);
 extern void draw_fill(const Frame *, Rectangle *, const int);
 extern void draw_string(const Frame *, const int, const int, const Color_Rgb *,
 		Font *, const uint8_t *);

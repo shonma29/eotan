@@ -49,27 +49,6 @@ static bool _putc(const Frame *, uint8_t *, int *, const Color_Rgb *,
 static uint8_t *get_font_address(const Font *, const uint8_t);
 
 
-void draw_pset(const Frame *s, const int x, const int y, const int color)
-{
-	int absolute_x = s->r.min.x + x;
-	if ((absolute_x < s->viewport.min.x)
-			|| (absolute_x >= s->viewport.max.x))
-		return;
-
-	int absolute_y = s->r.min.y + y;
-	if ((absolute_y < s->viewport.min.y)
-			|| (absolute_y >= s->viewport.max.y))
-		return;
-
-	uint8_t *r = (uint8_t *) ((uintptr_t) (display->base)
-			+ absolute_y * display->bpl
-			+ absolute_x * sizeof(Color_Rgb));
-	//TODO color order is BGR?
-	r[0] = color & 0xff;
-	r[1] = (color >> 8) & 0xff;
-	r[2] = (color >> 16) & 0xff;
-}
-
 void draw_fill(const Frame *s, Rectangle *rect, const int color)
 {
 	Rectangle src = *rect;

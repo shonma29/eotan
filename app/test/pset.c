@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <math.h>
@@ -36,34 +37,35 @@ For more information, please refer to <http://unlicense.org/>
 
 #define SPLIT (360)
 
-typedef struct {
-	unsigned int x;
-	unsigned int y;
-	int color;
-} point_t;
+static struct {
+	int op;
+	blit_param_t param;
+} packet;
 
 #define WIDTH (640)
 #define HEIGHT (480)
 
-static int _pset(const int, const unsigned int, const unsigned int, const int);
+static int _blit(const int, const void *);
 static int _circle(const int, const int, const int, const int);
 
 
-static int _pset(const int fd, const unsigned int x, const unsigned int y,
-		const int color)
+static int _blit(const int fd, const void *buf)
 {
-	char buf[DRAW_PSET_PACKET_SIZE];
-	draw_operation_e *ope = (draw_operation_e *) buf;
-	*ope = draw_op_pset;
+	packet.op = draw_op_blit;
 
-	point_t *point = (point_t *) &(buf[DRAW_OP_SIZE]);
-	point->x = x;
-	point->y = y;
-	point->color = color;
+	blit_param_t *par = &(packet.param);
+	par->base = (void *) buf;
+	par->dest.min.x = 0;
+	par->dest.min.y = 0;
+	par->dest.max.x = WIDTH;
+	par->dest.max.y = HEIGHT;
+	par->bpl = WIDTH * sizeof(Color_Rgb);
+	//TODO get type and bpp from global Display
+	par->type = B8G8R8;
 
 	errno = 0;
-	int result = write(fd, buf, sizeof(buf));
-	if (result != sizeof(buf)) {
+	int result = write(fd, &packet, sizeof(packet));
+	if (result != sizeof(packet)) {
 		fprintf(stderr, "write error %d %d\n", result, errno);
 		return ERR;
 	}
@@ -73,17 +75,33 @@ static int _pset(const int fd, const unsigned int x, const unsigned int y,
 
 static int _circle(const int fd, const int x, const int y, const int radius)
 {
+	char *buf = malloc(WIDTH * HEIGHT * sizeof(Color_Rgb));
+	if (!buf) {
+		fprintf(stderr, "memory exhausted\n");
+		return ERR;
+	}
+
+	memset(buf, 0xff, WIDTH * HEIGHT * sizeof(Color_Rgb));
+
 	int deg = 0;
 	for (int i = 0; i < SPLIT; i++) {
 		double rad = deg * M_PI / 180;
-		if (_pset(fd, radius * cos(rad) + x, radius * sin(rad) + y,
-				0xff00ff))
-			return ERR;
+		int x1 = (radius * cos(rad) + x);
+		int y1 = (radius * sin(rad) + y);
+		uintptr_t addr = (uintptr_t) buf
+				+ y1 * WIDTH * sizeof(Color_Rgb)
+				+ x1 * sizeof(Color_Rgb);
+		char *p = (char *) addr;
+		p[0] = 0xff;
+		p[1] = 0x00;
+		p[2] = 0xff;
 
 		deg += 360 / SPLIT;
 	}
 
-	return 0;
+	int result = _blit(fd, buf);
+	free(buf);
+	return result;
 }
 
 int main(int argc, char **argv)
