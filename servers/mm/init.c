@@ -47,7 +47,7 @@ typedef struct {
 	char buf[0];
 } init_arg_t;
 
-static char buf[sizeof(init_arg_t) + PATH_MAX + 1 + sizeof(thread_local_t)];
+static char buf[sizeof(init_arg_t) + PATH_MAX + sizeof(thread_local_t)];
 
 
 void init(void)
@@ -73,7 +73,7 @@ void init(void)
 
 		char *pathname = INIT_PATH_NAME;
 		size_t pathlen = strlen(pathname);
-		if (pathlen > PATH_MAX) {
+		if (pathlen >= PATH_MAX) {
 			log_err("init: ENAMETOOLONG\n");
 			break;
 		}
