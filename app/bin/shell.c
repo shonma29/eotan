@@ -553,7 +553,7 @@ static bool var_put(hash_t *vars, const unsigned char *var)
 	if (!p[1])
 		return true;
 
-	p = (unsigned char *) malloc(strlen((char *) var));
+	p = (unsigned char *) malloc(strlen((char *) var) + 1);
 	if (!p) {
 		fprintf(stderr, "no memory\n");
 		return false;
