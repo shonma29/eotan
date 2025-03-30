@@ -27,6 +27,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <fcntl.h>
+//#include <libc.h>
 
 #define DEFAULT_COLUMNS (80)
 #define DEFAULT_LINES (25)
@@ -36,7 +38,7 @@ static int lines;
 static char *linebuf;
 
 static bool show(FILE *);
-static bool process(void);
+static bool process(const int);
 static int _get_env_value(const char *, const int);
 
 extern int rawon(void);
@@ -55,14 +57,17 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
+	int fd = STDIN_FILENO;
 	FILE *fp;
 	switch (argc) {
-#if 0
-	//TODO do not use 'stdin' until read "/cons"
 	case 1:
 		fp = stdin;
+		fd = open("/dev/cons", O_RDONLY);
+		if (fd < 0) {
+			perror(NULL);
+			return EXIT_FAILURE;
+		}
 		break;
-#endif
 	case 2:
 		argv++;
 		fp = fopen(*argv, "r");
@@ -70,7 +75,6 @@ int main(int argc, char **argv)
 			perror(*argv);
 			return EXIT_FAILURE;
 		}
-
 		break;
 	default:
 		fprintf(stderr, "Missing filename\n");
@@ -79,7 +83,7 @@ int main(int argc, char **argv)
 
 	rawon();
 
-	while (!show(fp) && !process());
+	while (!show(fp) && !process(fd));
 
 	rawoff();
 	fclose(fp);
@@ -99,12 +103,11 @@ static bool show(FILE *fp)
 	return false;
 }
 
-static bool process(void)
+static bool process(const int fd)
 {
 	for (;;) {
 		char buf[1];
-		//TODO read "/cons"
-		if (read(STDIN_FILENO, buf, sizeof(buf)) != sizeof(buf))
+		if (read(fd, buf, sizeof(buf)) != sizeof(buf))
 			return true;
 
 		switch (buf[0]) {
