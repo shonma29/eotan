@@ -56,7 +56,7 @@ double log(double x)
 #if math_errhandling & MATH_ERRNO
 		errno = EDOM;
 #endif
-		return NAN;
+		return -NAN;
 	}
 
 	int k;
