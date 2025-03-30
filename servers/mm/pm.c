@@ -386,7 +386,7 @@ int mm_kill(mm_request_t *req)
 
 		//TODO write message to stderr
 		cleanup(process, th, req);
-		process_destroy(process, req->args.arg1);
+		process_destroy(process, req->args.arg2);
 
 		reply->result = 0;
 		reply->data[0] = 0;
