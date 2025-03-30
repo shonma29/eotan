@@ -41,6 +41,8 @@ For more information, please refer to <http://unlicense.org/>
 #define ERR_OK (0)
 #define ERR_MEMORY (2)
 
+#define FD_NOT_OPENED (-1)
+
 #define DIRS_DELIMITER ':'
 #define PATH_DELIMITER '/'
 
@@ -56,6 +58,7 @@ For more information, please refer to <http://unlicense.org/>
 
 typedef struct {
 	int files[3];
+	int pipe_file;
 	bool background;
 } ExecOptions;
 
@@ -67,6 +70,11 @@ typedef struct {
 	unsigned char buf[MAXPATHLEN];
 } Token;
 
+typedef enum {
+	NONE = 0,
+	PIPE = 1
+} delimiter_type_e;
+
 typedef struct {
 	unsigned int pos;
 	unsigned int head;
@@ -75,6 +83,11 @@ typedef struct {
 	unsigned char *buf;
 	size_t arraysize;
 	unsigned char **array;
+	struct {
+		unsigned int position;
+		delimiter_type_e type;
+	} delimiter;
+	ExecOptions opts;
 } Line;
 
 static Line line = {
@@ -100,6 +113,8 @@ static bool line_putc(Line *, const unsigned char);
 static void line_realloc_array(Line *);
 static bool line_parse(Line *);
 static bool line_evaluate(Line *, hash_t *);
+static void _options_clear(ExecOptions *, const int);
+static int _pipe_create(ExecOptions *);
 static unsigned int var_calc_hash(const void *, const size_t);
 static int var_compare(const void *, const void *);
 static unsigned char *var_get(hash_t *, const unsigned char *);
@@ -178,15 +193,16 @@ static void execute(unsigned char **array, unsigned char **env,
 		for (unsigned int i = 0;
 				i < sizeof(opts->files) / sizeof(opts->files[0]);
 				i++)
-			if (opts->files[i] != -1) {
+			if (opts->files[i] != FD_NOT_OPENED) {
 				close(i);
 				dup2(opts->files[i], i);
 				close(opts->files[i]);
 			}
 
 		if (opts->background
-				&& (opts->files[0] == -1))
-			close(0);
+				&& (opts->files[STDIN_FILENO] == FD_NOT_OPENED))
+			//TODO use '/dev/null'
+			close(STDIN_FILENO);
 
 		if (has_path) {
 			if (execve((char *) (array[0]), (char **) array,
@@ -233,7 +249,7 @@ static void execute(unsigned char **array, unsigned char **env,
 		for (unsigned int i = 0;
 				i < sizeof(opts->files) / sizeof(opts->files[0]);
 				i++)
-			if (opts->files[i] != -1)
+			if (opts->files[i] != FD_NOT_OPENED)
 				close(opts->files[i]);
 
 		if (pid == ERR)
@@ -242,7 +258,7 @@ static void execute(unsigned char **array, unsigned char **env,
 		else if (!opts->background) {
 			// parent
 			int status;
-			if (waitpid(pid, &status, 0) == -1)
+			if (waitpid(pid, &status, 0) == ERR)
 				fprintf(stderr, "wait error %d\n", errno);
 			else
 				//TODO omit print, and set $status
@@ -283,6 +299,8 @@ static void line_clear(Line *p)
 {
 	p->head = p->pos = 0;
 	p->quoting = false;
+	p->delimiter.position = 0;
+	p->delimiter.type = NONE;
 }
 
 static bool line_preprocess(Line *p)
@@ -368,11 +386,23 @@ static void line_realloc_array(Line *p)
 static bool line_parse(Line *p)
 {
 	unsigned int pos = 0;
-	for (unsigned int i = 0;; i++) {
+	p->delimiter.type = NONE;
+	for (unsigned int i = p->delimiter.position;; i++) {
 		for (; (p->buf[i] > 0) && (p->buf[i] <= ' '); i++);
 		if (!p->buf[i])
 			break;
 
+		if (p->buf[i] == '|') {
+			if (!pos) {
+				fprintf(stderr, "unexpected '|'\n");
+				return false;
+			}
+
+			p->buf[i] = '\0';
+			p->delimiter.position = i + 1;
+			p->delimiter.type = PIPE;
+			break;
+		}
 		p->array[pos] = &(p->buf[i]);
 		pos++;
 		if (pos >= p->arraysize)
@@ -419,46 +449,58 @@ static bool line_parse(Line *p)
 	return (p->array[0] ? true : false);
 }
 
+//TODO close redirect files on error
 static bool line_evaluate(Line *p, hash_t *vars)
 {
-	ExecOptions opts = { { -1, -1, -1 }, false };
+	_options_clear(&(p->opts), FD_NOT_OPENED);
 
-	if (line_parse(p)) {
+	while (line_parse(p)) {
 		unsigned int j = 0;
 		for (unsigned int i = 0; p->array[i]; i++) {
 			if (!strcmp((char *) (p->array[i]), "<")) {
+				//TODO not error? if head of line
 				i++;
 				if (!p->array[i]) {
+					//TODO modify error message. ex. unexpected 'newline'
 					fprintf(stderr, "redirect what?\n");
 					return false;
 				}
 
-				opts.files[0] = open((char *) (p->array[i]),
+				if (p->opts.files[STDIN_FILENO] != FD_NOT_OPENED)
+					close(p->opts.files[STDIN_FILENO]);
+
+				p->opts.files[STDIN_FILENO] = open((char *) (p->array[i]),
 						O_RDONLY);
-				if (opts.files[0] == -1) {
+				if (p->opts.files[STDIN_FILENO] < 0) {
 					fprintf(stderr, "%s cannot open (%d)\n",
 							p->array[i], errno);
 					return false;
 				}
 			} else if (!strcmp((char *) (p->array[i]), ">")) {
+				//TODO not error? empty file is proper
 				i++;
 				if (!p->array[i]) {
+					//TODO modify error message. ex. unexpected 'newline'
 					fprintf(stderr, "redirect what?\n");
 					return false;
 				}
 
-				opts.files[1] = open((char *) (p->array[i]),
+				if (p->opts.files[STDOUT_FILENO] != FD_NOT_OPENED)
+					close(p->opts.files[STDOUT_FILENO]);
+
+				p->opts.files[STDOUT_FILENO] = open((char *) (p->array[i]),
 						O_WRONLY | O_CREAT | O_TRUNC,
 						//TODO adhoc
 						S_IRUSR | S_IWUSR | S_IRGRP
 								| S_IROTH);
-				if (opts.files[1] == -1) {
+				if (p->opts.files[STDOUT_FILENO] < 0) {
 					fprintf(stderr, "%s cannot open (%d)\n",
 							p->array[i], errno);
 					return false;
 				}
 			} else if (!strcmp((char *) (p->array[i]), "&")) {
-				opts.background = true;
+				//TODO not error? show "`&' unexpected" if head of line
+				p->opts.background = true;
 				break;
 			} else {
 				p->array[j] = p->array[i];
@@ -480,14 +522,55 @@ static bool line_evaluate(Line *p, hash_t *vars)
 			//TODO omit 'export' keyword
 			var_put(vars, p->array[1]);
 		else {
+			if (p->delimiter.type == PIPE)
+				if (_pipe_create(&(p->opts)))
+					return false;
+
 			unsigned char **envp = var_expand(vars);
 			execute(p->array, envp, var_get(
-					vars, (unsigned char *) ("PATH")), &opts);
+					vars, (unsigned char *) ("PATH")),
+					&(p->opts));
 			free(envp);
+
+			if (p->delimiter.type == PIPE) {
+				_options_clear(&(p->opts), p->opts.pipe_file);
+				continue;
+			}
 		}
+
+		break;
 	}
 
 	return false;
+}
+
+static void _options_clear(ExecOptions *opts, const int pipe_file)
+{
+	opts->files[STDIN_FILENO] = pipe_file;
+	opts->files[STDOUT_FILENO] = FD_NOT_OPENED;
+	opts->files[STDERR_FILENO] = FD_NOT_OPENED;
+	opts->pipe_file = FD_NOT_OPENED;
+	opts->background = false;
+}
+
+static int _pipe_create(ExecOptions *opts)
+{
+	if (opts->files[STDOUT_FILENO] != FD_NOT_OPENED) {
+		//TODO use '/dev/null'
+		fprintf(stderr, "already assigned '|'\n");
+		return ERR;
+	}
+
+	int fds[2];
+	if (pipe(fds)) {
+		fprintf(stderr, "failed to pipe (%d)\n", errno);
+		return ERR;
+	}
+
+	opts->pipe_file = fds[STDIN_FILENO];
+	opts->files[STDOUT_FILENO] = fds[STDOUT_FILENO];
+	opts->background = true;
+	return ERR_OK;
 }
 
 static unsigned int var_calc_hash(const void *key, const size_t size)
@@ -619,6 +702,7 @@ static void interpret(hash_t *vars, FILE *in)
 {
 	do {
 		if (interactive) {
+			fflush(stderr);
 			printf(PROMPT " ");
 			fflush(stdout);
 		}
