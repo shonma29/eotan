@@ -94,7 +94,7 @@ typedef enum draw_operation {
 #define DRAW_OP_SIZE (sizeof(draw_operation_e))
 #define DRAW_BLIT_PACKET_SIZE (DRAW_OP_SIZE + sizeof(blit_param_t))
 
-extern void draw_fill(const Frame *, Rectangle *, const int);
+extern void draw_fill(const Display *, Rectangle *, const int);
 extern void draw_string(const Display *, const int, const int,
 		const Color_Rgb *, Font *, const char *);
 

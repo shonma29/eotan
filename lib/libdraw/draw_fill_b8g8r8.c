@@ -28,22 +28,18 @@ For more information, please refer to <http://unlicense.org/>
 
 #ifdef PIXEL_BGR
 #include <hmi/draw.h>
-#include <nerve/global.h>
 
 #define INT_MOD_MASK (sizeof(uint32_t) - 1)
 #define INT_SHIFT_BITS (2)
 
-static Display *display = &(sysinfo->display);
 
-
-void draw_fill(const Frame *s, Rectangle *rect, const int color)
+void draw_fill(const Display *display, Rectangle *rect, const int color)
 {
 	Rectangle src = *rect;
 	rect_normalize(&src);
-	rect_transform(&src, &(s->r.min));
 
 	Rectangle dest;
-	if (!rect_intersect(&dest, &src, &(s->viewport)))
+	if (!rect_intersect(&dest, &src, &(display->r)))
 		return;
 
 	size_t len_x = dest.max.x - dest.min.x;

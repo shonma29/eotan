@@ -37,34 +37,30 @@ For more information, please refer to <http://unlicense.org/>
 
 #define SPLIT (360)
 
-static struct {
-	int op;
-	blit_param_t param;
-} packet;
-
 #define WIDTH (640)
 #define HEIGHT (480)
 
 extern Font default_font;
 
-static int _blit(const int, const void *);
-static void _circle(char *, const int, const int, const int);
-static void _string(char *);
+static struct {
+	int op;
+	blit_param_t param;
+} packet;
+
+static int _blit(const int, const Display *);
+static void _circle(Display *, const int, const int, const int);
+static void _string(Display *);
 
 
-static int _blit(const int fd, const void *buf)
+static int _blit(const int fd, const Display *display)
 {
 	packet.op = draw_op_blit;
 
 	blit_param_t *par = &(packet.param);
-	par->base = (void *) buf;
-	par->dest.min.x = 0;
-	par->dest.min.y = 0;
-	par->dest.max.x = WIDTH;
-	par->dest.max.y = HEIGHT;
-	par->bpl = WIDTH * sizeof(Color_Rgb);
-	//TODO get type and bpp from global Display
-	par->type = B8G8R8;
+	par->dest = display->r;
+	par->base = display->base;
+	par->bpl = display->bpl;
+	par->type = display->type;
 
 	errno = 0;
 	int result = write(fd, &packet, sizeof(packet));
@@ -76,14 +72,14 @@ static int _blit(const int fd, const void *buf)
 	return 0;
 }
 
-static void _circle(char *buf, const int x, const int y, const int radius)
+static void _circle(Display *display, const int x, const int y, const int radius)
 {
 	int deg = 0;
 	for (int i = 0; i < SPLIT; i++) {
 		double rad = deg * M_PI / 180;
 		int x1 = (radius * cos(rad) + x);
 		int y1 = (radius * sin(rad) + y);
-		uintptr_t addr = (uintptr_t) buf
+		uintptr_t addr = (uintptr_t) (display->base)
 				+ y1 * WIDTH * sizeof(Color_Rgb)
 				+ x1 * sizeof(Color_Rgb);
 		char *p = (char *) addr;
@@ -95,30 +91,26 @@ static void _circle(char *buf, const int x, const int y, const int radius)
 	}
 }
 
-static void _string(char *buf)
+static void _string(Display *display)
 {
-	Display display = {
-		{ { 0, 0 }, { WIDTH, HEIGHT } },
-		buf,
-		WIDTH * sizeof(Color_Rgb),
-		sizeof(Color_Rgb),
-		B8G8R8
-	};
 	Color_Rgb c[] = {
 		{ 0xff, 0xff, 0xff },
 		{ 0xff, 0x00, 0x00 }
 	};
-	draw_string(&display, 25, 48, c, &default_font, "hello, world");
+	draw_string(display, 25, 48, c, &default_font, "hello, world");
+}
+
+static void _fill(Display *display)
+{
+	Rectangle r = {
+		{ 72, 223 },
+		{ 314, 441 }
+	};
+	draw_fill(display, &r, 0x00ff00);
 }
 
 int main(int argc, char **argv)
 {
-	int fd = open("/dev/draw", O_WRONLY);
-	if (fd < 0) {
-		fprintf(stderr, "open error %d\n", errno);
-		return EXIT_FAILURE;
-	}
-
 	char *buf = malloc(WIDTH * HEIGHT * sizeof(Color_Rgb));
 	if (!buf) {
 		fprintf(stderr, "memory exhausted\n");
@@ -126,10 +118,27 @@ int main(int argc, char **argv)
 	}
 
 	memset(buf, 0xff, WIDTH * HEIGHT * sizeof(Color_Rgb));
-	_circle(buf, WIDTH / 2, HEIGHT / 2, HEIGHT / 3);
-	_string(buf);
 
-	int result = _blit(fd, buf);
+	//TODO get global Display
+	Display display = {
+		{ { 0, 0 }, { WIDTH, HEIGHT } },
+		buf,
+		WIDTH * sizeof(Color_Rgb),
+		sizeof(Color_Rgb),
+		B8G8R8
+	};
+	_circle(&display, WIDTH / 2, HEIGHT / 2, HEIGHT / 3);
+	_string(&display);
+	_fill(&display);
+
+	int fd = open("/dev/draw", O_WRONLY);
+	if (fd < 0) {
+		fprintf(stderr, "open error %d\n", errno);
+		free(buf);
+		return EXIT_FAILURE;
+	}
+
+	int result = _blit(fd, &display);
 	free(buf);
 	close(fd);
 	return (result? EXIT_FAILURE : EXIT_SUCCESS);

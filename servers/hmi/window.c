@@ -29,17 +29,11 @@ For more information, please refer to <http://unlicense.org/>
 #include "hmi.h"
 #include "mouse.h"
 #include "session.h"
-#include "terminal.h"
-
-#define COLOR_FOCUSED 0x0
-#define COLOR_UNFOCUSED 0xdfe3e4
 
 #define COLOR_ROOT 0x0
 
 static slab_t window_slab;
 static Point last_point = { -1, -1 };
-
-static void _draw_title_bar(const window_t *, const bool);
 
 
 int window_initialize(void)
@@ -67,6 +61,7 @@ int window_create(window_t **w, const int x1, const int y1,
 		}
 
 		p->attr = attr;
+		//TODO check minimum rectangle
 		p->outer.r.min.x = x1;
 		p->outer.r.min.y = y1;
 		p->outer.r.max.x = x2;
@@ -102,75 +97,6 @@ int window_create(window_t **w, const int x1, const int y1,
 		p->inner.viewport = p->inner.r;
 		p->title = NULL;
 		*w = p;
-
-		int outer_width = p->outer.r.max.x - p->outer.r.min.x;
-		int outer_height = p->outer.r.max.y - p->outer.r.min.y;
-		mouse_hide();
-
-		if (padding_top) {
-			if (attr & WINDOW_ATTR_HAS_TITLE) {
-				Rectangle r;
-				r.min.x = 0;
-				r.min.y = 0;
-				r.max.x = outer_width;
-				r.max.y = padding_top - 1;
-				draw_fill(&(p->outer), &r, 0xdfe3e4);
-
-				r.min.x = 0;
-				r.min.y = padding_top - 1;
-				r.max.x = outer_width;
-				r.max.y = padding_top;
-				draw_fill(&(p->outer), &r, 0x24130d);
-			} else {
-				Rectangle r;
-				r.min.x = 0;
-				r.min.y = 0;
-				r.max.x = outer_width;
-				r.max.y = padding_top;
-				draw_fill(&(p->outer), &r, 0xdfe3e4);
-			}
-		}
-
-		if (padding_left) {
-			Rectangle r;
-			r.min.x = 0;
-			r.min.y = padding_top;
-			r.max.x = padding_left;
-			r.max.y = outer_height - padding_bottom;
-			draw_fill(&(p->outer), &r, 0xdfe3e4);
-		}
-
-		if (padding_bottom) {
-			Rectangle r;
-			r.min.x = 0;
-			r.min.y = outer_height - padding_bottom;
-			r.max.x = outer_width - 1;
-			r.max.y = outer_height - 1;
-			draw_fill(&(p->outer), &r, 0xdfe3e4);
-
-			r.min.x = 0;
-			r.min.y = outer_height - 1;
-			r.max.x = outer_width - 1;
-			r.max.y = outer_height;
-			draw_fill(&(p->outer), &r, 0x24130d);
-		}
-
-		if (padding_right) {
-			Rectangle r;
-			r.min.x = outer_width - padding_right;
-			r.min.y = padding_top;
-			r.max.x = outer_width - 1;
-			r.max.y = outer_height - padding_bottom;
-			draw_fill(&(p->outer), &r, 0xdfe3e4);
-
-			r.min.x = outer_width - 1;
-			r.min.y = 0;
-			r.max.x = outer_width;
-			r.max.y = outer_height;
-			draw_fill(&(p->outer), &r, 0x24130d);
-		}
-
-		mouse_show();
 	} while (false);
 
 	return error_no;
@@ -179,7 +105,6 @@ int window_create(window_t **w, const int x1, const int y1,
 void window_set_title(window_t *w, const char *title)
 {
 	w->title = title;
-	_draw_title_bar(w, (focused_session) && (w == focused_session->window));
 }
 
 int window_destroy(window_t *w)
@@ -187,32 +112,12 @@ int window_destroy(window_t *w)
 	int error_no = 0;
 	do {
 		mouse_hide();
-
-		Rectangle r;
-		r.min.x = 0;
-		r.min.y = 0;
-		r.max.x = w->outer.r.max.x - w->outer.r.min.x;
-		r.max.y = w->outer.r.max.y - w->outer.r.min.y;
-		draw_fill(&(w->outer), &r, COLOR_ROOT);
-
+		draw_fill(display, &(w->outer.viewport), COLOR_ROOT);
 		mouse_show();
 		slab_free(&window_slab, w);
 	} while (false);
 
 	return error_no;
-}
-
-static void _draw_title_bar(const window_t *w, const bool focus)
-{
-	if (!(w->attr & WINDOW_ATTR_HAS_TITLE))
-		return;
-
-	Rectangle r;
-	r.min.x = 0;
-	r.min.y = 0;
-	r.max.x = w->outer.r.max.x - w->outer.r.min.x;
-	r.max.y = 14;
-	draw_fill(&(w->outer), &r, focus ? COLOR_FOCUSED : COLOR_UNFOCUSED);
 }
 
 int window_focus(const int data)
@@ -245,16 +150,8 @@ int window_focus(const int data)
 			&& (last_point.x < w->outer.r.max.x)
 			&& (last_point.y < w->outer.r.max.y)
 		) {
-			if (focused_session != s) {
-				mouse_hide();
-				if (focused_session)
-					_draw_title_bar(focused_session->window,
-							false);
-
-				_draw_title_bar(w, true);
-				mouse_show();
+			if (focused_session != s)
 				focused_session = s;
-			}
 
 			//TODO write to event buf
 			//return data;
@@ -262,12 +159,8 @@ int window_focus(const int data)
 		}
 	}
 
-	if (focused_session) {
-		mouse_hide();
-		_draw_title_bar(focused_session->window, false);
-		mouse_show();
+	if (focused_session)
 		focused_session = NULL;
-	}
 
 	return (-1);
 }
