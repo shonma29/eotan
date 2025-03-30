@@ -45,8 +45,11 @@ static struct {
 #define WIDTH (640)
 #define HEIGHT (480)
 
+extern Font default_font;
+
 static int _blit(const int, const void *);
-static int _circle(const int, const int, const int, const int);
+static void _circle(char *, const int, const int, const int);
+static void _string(char *);
 
 
 static int _blit(const int fd, const void *buf)
@@ -73,16 +76,8 @@ static int _blit(const int fd, const void *buf)
 	return 0;
 }
 
-static int _circle(const int fd, const int x, const int y, const int radius)
+static void _circle(char *buf, const int x, const int y, const int radius)
 {
-	char *buf = malloc(WIDTH * HEIGHT * sizeof(Color_Rgb));
-	if (!buf) {
-		fprintf(stderr, "memory exhausted\n");
-		return ERR;
-	}
-
-	memset(buf, 0xff, WIDTH * HEIGHT * sizeof(Color_Rgb));
-
 	int deg = 0;
 	for (int i = 0; i < SPLIT; i++) {
 		double rad = deg * M_PI / 180;
@@ -98,10 +93,22 @@ static int _circle(const int fd, const int x, const int y, const int radius)
 
 		deg += 360 / SPLIT;
 	}
+}
 
-	int result = _blit(fd, buf);
-	free(buf);
-	return result;
+static void _string(char *buf)
+{
+	Display display = {
+		{ { 0, 0 }, { WIDTH, HEIGHT } },
+		buf,
+		WIDTH * sizeof(Color_Rgb),
+		sizeof(Color_Rgb),
+		B8G8R8
+	};
+	Color_Rgb c[] = {
+		{ 0xff, 0xff, 0xff },
+		{ 0xff, 0x00, 0x00 }
+	};
+	draw_string(&display, 25, 48, c, &default_font, "hello, world");
 }
 
 int main(int argc, char **argv)
@@ -112,7 +119,18 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	int result = _circle(fd, WIDTH / 2, HEIGHT / 2, HEIGHT / 3);
+	char *buf = malloc(WIDTH * HEIGHT * sizeof(Color_Rgb));
+	if (!buf) {
+		fprintf(stderr, "memory exhausted\n");
+		return ERR;
+	}
+
+	memset(buf, 0xff, WIDTH * HEIGHT * sizeof(Color_Rgb));
+	_circle(buf, WIDTH / 2, HEIGHT / 2, HEIGHT / 3);
+	_string(buf);
+
+	int result = _blit(fd, buf);
+	free(buf);
 	close(fd);
 	return (result? EXIT_FAILURE : EXIT_SUCCESS);
 }

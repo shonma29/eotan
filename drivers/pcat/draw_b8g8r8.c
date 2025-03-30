@@ -27,26 +27,13 @@ For more information, please refer to <http://unlicense.org/>
 #include <features.h>
 
 #ifdef PIXEL_BGR
-#include <limits.h>
 #include <hmi/draw.h>
-#include <mpu/memory.h>
 #include <nerve/global.h>
-
-#define FONT_BITS CHAR_BIT
 
 #define INT_MOD_MASK (sizeof(uint32_t) - 1)
 #define INT_SHIFT_BITS (2)
 
 static Display *display = &(sysinfo->display);
-
-static inline size_t font_bytes(const size_t width)
-{
-	return ((width + (CHAR_BIT - 1)) / CHAR_BIT);
-}
-
-static bool _putc(const Frame *, uint8_t *, int *, const Color_Rgb *,
-		Font *, const uint8_t, int, size_t);
-static uint8_t *get_font_address(const Font *, const uint8_t);
 
 
 void draw_fill(const Frame *s, Rectangle *rect, const int color)
@@ -118,118 +105,5 @@ void draw_fill(const Frame *s, Rectangle *rect, const int color)
 
 		p += skip;
 	}
-}
-
-void draw_string(const Frame *s, const int x, const int y,
-		const Color_Rgb *color, Font *font, const uint8_t *str)
-{
-	int absolute_y1 = s->r.min.y + y;
-	if (absolute_y1 >= s->viewport.max.y)
-		return;
-
-	int absolute_y2 = absolute_y1 + font->height;
-	if (absolute_y2 <= s->viewport.min.y)
-		return;
-
-	int start_y;
-	if (absolute_y1 < s->viewport.min.y) {
-		start_y = s->viewport.min.y - absolute_y1;
-		absolute_y1 = s->viewport.min.y;
-	} else
-		start_y = 0;
-
-	if (absolute_y2 > s->viewport.max.y)
-		absolute_y2 = s->viewport.max.y;
-
-	if (absolute_y1 >= absolute_y2)
-		return;
-
-	uint8_t *line = (uint8_t *) ((uintptr_t) (display->base)
-			+ absolute_y1 * display->bpl);
-	absolute_y2 -= absolute_y1;
-
-	int absolute_x1 = s->r.min.x + x;
-	for (uint8_t *p = (uint8_t *) str; *p; p++)
-		if (_putc(s, line, &absolute_x1, color, font, *p,
-				start_y, absolute_y2))
-			break;
-}
-
-static bool _putc(const Frame *s, uint8_t *out, int *x, const Color_Rgb *c,
-		Font *font, const uint8_t ch, int start_y, size_t len_y)
-{
-	int absolute_x1 = *x;
-	if (absolute_x1 >= s->viewport.max.x)
-		return true;
-
-	//TODO all glyph has same width?
-	int absolute_x2 = absolute_x1 + font->width;
-	if (absolute_x2 <= s->viewport.min.x) {
-		*x = absolute_x2;
-		return false;
-	}
-
-	int start_x;
-	if (absolute_x1 < s->viewport.min.x) {
-		start_x = s->viewport.min.x - absolute_x1;
-		absolute_x1 = s->viewport.min.x;
-	} else
-		start_x = 0;
-
-	if (absolute_x2 > s->viewport.max.x)
-		absolute_x2 = s->viewport.max.x;
-
-	if (absolute_x1 >= absolute_x2)
-		return false;
-
-	size_t len_x = absolute_x2 - absolute_x1;
-	size_t skip = display->bpl - len_x * sizeof(Color_Rgb);
-	out += absolute_x1 * sizeof(Color_Rgb);
-	*x = absolute_x2;
-
-	size_t bytes = font_bytes(font->width);
-	const uint8_t *in = get_font_address(font, ch) + start_y * bytes;
-	size_t skip_in = 0;
-	for (; start_x >= FONT_BITS; start_x -= FONT_BITS)
-		//TODO test with large font
-		//TODO divide is faster?
-		skip_in++;
-
-	for (; len_y > 0; len_y--) {
-		const uint8_t *q = in + skip_in;
-		uint8_t pattern = *q++;
-		unsigned int mask = 1 << start_x;
-		for (size_t j = len_x; j > 0; j--) {
-			//TODO color order is BGR?
-			if (pattern & mask) {
-				out[0] = c[1].b;
-				out[1] = c[1].g;
-				out[2] = c[1].r;
-			} else {
-				out[0] = c[0].b;
-				out[1] = c[0].g;
-				out[2] = c[0].r;
-			}
-
-			out += sizeof(Color_Rgb);
-			mask <<= 1;
-			if (!(mask & ((1 << FONT_BITS) - 1))) {
-				//TODO test with large font
-				mask = 1;
-				pattern = *q++;
-			}
-		}
-
-		out += skip;
-		in += bytes;
-	}
-
-	return false;
-}
-
-static uint8_t *get_font_address(const Font *font, const uint8_t ch)
-{
-	uint8_t c = ((ch < font->min_char) || (ch > font->max_char)) ? ' ' : ch;
-	return &(font->buf[(c - font->min_char) * font->bytes_per_chr]);
 }
 #endif

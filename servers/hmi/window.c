@@ -36,15 +36,6 @@ For more information, please refer to <http://unlicense.org/>
 
 #define COLOR_ROOT 0x0
 
-static Color_Rgb colors_focused[] = {
-	{ 0x00, 0x00, 0x00 },
-	{ 0xe4, 0xe3, 0xdf }
-};
-static Color_Rgb colors_unfocused[] = {
-	{ 0xe4, 0xe3, 0xdf },
-	{ 0x00, 0x00, 0x00 }
-};
-
 static slab_t window_slab;
 static Point last_point = { -1, -1 };
 
@@ -222,11 +213,6 @@ static void _draw_title_bar(const window_t *w, const bool focus)
 	r.max.x = w->outer.r.max.x - w->outer.r.min.x;
 	r.max.y = 14;
 	draw_fill(&(w->outer), &r, focus ? COLOR_FOCUSED : COLOR_UNFOCUSED);
-
-	if (w->title)
-		draw_string(&(w->outer), 2, 2,
-				focus ? colors_focused : colors_unfocused,
-				&default_font, (uint8_t *) (w->title));
 }
 
 int window_focus(const int data)

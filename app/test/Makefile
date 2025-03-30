@@ -48,7 +48,7 @@ all: $(TARGET)
 	done
 
 $(TARGET): $(OBJS) \
-		lib/libc.a lib/libm.a lib/libdraw.a
+		lib/libdraw.a lib/libfonts.a lib/libc.a lib/libm.a
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $(@).o \
-		lib/libc.a lib/libm.a lib/libdraw.a
+		lib/libdraw.a lib/libfonts.a lib/libc.a lib/libm.a
 	$(STRIP) $@
