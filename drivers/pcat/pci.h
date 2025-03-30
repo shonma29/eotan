@@ -32,5 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #define PCI_SUBCLASS_IDE_CONTROLLER 0x01
 
 #define PCI_PROGIF_BUS_MASTER 0x80
+#define PCI_PROGIF_PRIMARY_NATIVE 0x01
+#define PCI_PROGIF_SECONDARY_NATIVE 0x04
 
 #endif
