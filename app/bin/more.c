@@ -81,11 +81,18 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	rawon();
+	if (rawon()) {
+		fprintf(stderr, "failed to switch to raw mode\n");
+		return EXIT_FAILURE;
+	}
 
 	while (!show(fp) && !process(fd));
 
-	rawoff();
+	if (rawoff()) {
+		fprintf(stderr, "failed to switch to cooked mode\n");
+		return EXIT_FAILURE;
+	}
+
 	fclose(fp);
 	return 0;
 }
