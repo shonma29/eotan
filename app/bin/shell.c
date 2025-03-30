@@ -106,6 +106,7 @@ static unsigned char *var_get(hash_t *, const unsigned char *);
 static bool var_put(hash_t *, const unsigned char *);
 static hash_t *var_create(void);
 static unsigned char **var_expand(hash_t *);
+static void var_show_all(const hash_t *);
 static void interpret(hash_t *, FILE *);
 
 
@@ -473,12 +474,9 @@ static bool line_evaluate(Line *p, hash_t *vars)
 				fprintf(stderr, "chdir error=%d\n", errno);
 		} else if (!strcmp((char *) (p->array[0]), "exit"))
 			return true;
-		else if (!strcmp((char *) (p->array[0]), "env")) {
-			if (environ)
-				for (unsigned char **envp = (unsigned char **) environ; *envp;
-						envp++)
-					printf("%s\n", *envp);
-		} else if (!strcmp((char *) (p->array[0]), "export"))
+		else if (!strcmp((char *) (p->array[0]), "env"))
+			var_show_all(vars);
+		else if (!strcmp((char *) (p->array[0]), "export"))
 			//TODO omit 'export' keyword
 			var_put(vars, p->array[1]);
 		else {
@@ -605,6 +603,16 @@ static unsigned char **var_expand(hash_t *vars)
 	}
 
 	return array;
+}
+
+static void var_show_all(const hash_t *vars)
+{
+	for (int i = 0; i < vars->size; i++) {
+		const list_t *head = &(vars->tbl[i]);
+		for (const list_t *e = list_next(head); !list_is_edge(head, e);
+				e = e->next)
+			printf("%s\n", (char *) (((hash_entry_t *) e)->value));
+	}
 }
 
 static void interpret(hash_t *vars, FILE *in)
