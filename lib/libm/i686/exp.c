@@ -29,6 +29,10 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/limits.h>
 #include "funcs.h"
 
+#if math_errhandling & MATH_ERRNO
+#include <errno.h>
+#endif
+
 
 double exp(double x)
 {
@@ -36,21 +40,38 @@ double exp(double x)
 		return 1.0;
 
 	int *p = (int *) &x;
-	int e = (p[1] >> EXP_SHIFT_U) & EXP_MAX;
-	if (e == EXP_MAX)
-		return (!(p[0])
-				&& ((p[1] & (SIGN_MASK_U | SIG_MASK_U))
-						== SIGN_MASK_U)) ? (+0.0) : x;
+	if (((p[1] >> EXP_SHIFT_U) & EXP_MAX) == EXP_MAX)
+		return ((x == -INFINITY) ? (+0.0) : x);
 
 	int k = (int) (x / M_LN2 + ((x >= 0) ? 0.5 : (-0.5)));
 	x -= k * M_LN2;
 
+	double result;
 	double x2 = x * x;
-	double sum = x2 / 22;
-	sum = x2 / (sum + 18);
-	sum = x2 / (sum + 14);
-	sum = x2 / (sum + 10);
-	sum = x2 / (sum + 6);
-	sum += 2;
-	return ldexp((sum + x) / (sum - x), k);
+	if (isinf(x2))
+		result = x2;
+	else {
+		double sum = x2 / 22;
+		sum = x2 / (sum + 18);
+		sum = x2 / (sum + 14);
+		sum = x2 / (sum + 10);
+		sum = x2 / (sum + 6);
+		sum += 2;
+		result = ldexp((sum + x) / (sum - x), k);
+	}
+#if math_errhandling & MATH_ERRNO
+	if (isinf(result))
+		// overflow
+		errno = ERANGE;
+	else
+#endif
+	if (!result) {
+		// underflow
+#if math_errhandling & MATH_ERRNO
+		errno = ERANGE;
+#endif
+		result = +0.0;
+	}
+
+	return result;
 }
