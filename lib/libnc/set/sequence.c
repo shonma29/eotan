@@ -27,31 +27,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/bits.h>
 #include <set/sequence.h>
 
-#define MAP_ALL_FREE (-1)
-
-#define BITS_MASK (INT_BIT - 1)
-
 static int _find(sequence_t *s, const int);
 
-
-int sequence_initialize(sequence_t *s, size_t max, void *buf)
-{
-	if (!max
-			|| (max > INT_MAX)
-			|| (max & BITS_MASK)
-			|| !buf)
-		return (-1);
-
-	s->rest = max;
-	s->clock_block = 0;
-	s->num_of_blocks = SEQUENCE_BLOCK_SIZE(max);
-	s->map = buf;
-
-	for (unsigned int i = 0; i < s->num_of_blocks; i++)
-		s->map[i] = MAP_ALL_FREE;
-
-	return 0;
-}
 
 static int _find(sequence_t *s, const int block)
 {
@@ -93,7 +70,7 @@ void sequence_release(sequence_t *s, const int n)
 	if (block >= s->num_of_blocks)
 		return;
 
-	uint32_t bits = (uint32_t) 1 << (n & BITS_MASK);
+	uint32_t bits = (uint32_t) 1 << (n & SEQUENCE_BITS_MASK);
 	if (s->map[block] & bits)
 		return;
 

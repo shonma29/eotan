@@ -1,5 +1,3 @@
-#ifndef _SET_SEQUENCE_H_
-#define _SET_SEQUENCE_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,27 +24,26 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stddef.h>
-#include <stdint.h>
-#include <limits.h>
-#include <mpu/memory.h>
+#include <set/sequence.h>
 
-#define INT_BIT (CHAR_BIT * sizeof(int))
+#define MAP_ALL_FREE (-1)
 
-#define SEQUENCE_BITS_MASK (INT_BIT - 1)
 
-#define SEQUENCE_BLOCK_SIZE(n) (((n) + (INT_BIT - 1)) >> MPU_LOG_INT)
-#define SEQUENCE_MAP_SIZE(n) (SEQUENCE_BLOCK_SIZE(n) * sizeof(int))
+int sequence_initialize(sequence_t *s, size_t max, void *buf)
+{
+	if (!max
+			|| (max > INT_MAX)
+			|| (max & SEQUENCE_BITS_MASK)
+			|| !buf)
+		return (-1);
 
-typedef struct {
-	size_t rest;
-	int clock_block;
-	size_t num_of_blocks;
-	uint32_t *map;
-} sequence_t;
+	s->rest = max;
+	s->clock_block = 0;
+	s->num_of_blocks = SEQUENCE_BLOCK_SIZE(max);
+	s->map = buf;
 
-extern int sequence_initialize(sequence_t *, size_t, void *);
-extern int sequence_get(sequence_t *);
-extern void sequence_release(sequence_t *, const int);
+	for (unsigned int i = 0; i < s->num_of_blocks; i++)
+		s->map[i] = MAP_ALL_FREE;
 
-#endif
+	return 0;
+}
