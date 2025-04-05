@@ -37,12 +37,14 @@ enum {
 	FILE_SLAB = 0x01,
 	DESCRIPTOR_SLAB = 0x02,
 	SESSION_SLAB = 0x04,
-	SESSION_SEQUENCE = 0x08
+	SEQUENCE_SLAB = 0x08,
+	SESSION_SEQUENCE = 0x10
 };
 
 static slab_t file_slab;
 static slab_t descriptor_slab;
 static slab_t session_slab;
+static slab_t sequence_slab;
 static tree_t session_tree;
 static sequence_t session_sequence;
 static int initialized_resources = 0;
@@ -96,9 +98,27 @@ int file_initialize(void)
 
 	tree_create(&session_tree, NULL, NULL);
 
-	if (sequence_initialize(&session_sequence, SESSION_MAX, kcall->palloc()))
-		return SESSION_SEQUENCE;
+	// sequence slab is shared by many object types
+	sequence_slab.unit_size = SEQUENCE_MAP_SIZE(PROCESS_MAX);
+	sequence_slab.block_size = PAGE_SIZE;
+	sequence_slab.min_block = 1;
+	sequence_slab.max_block = slab_max_block(PROCESS_MAX * 2, PAGE_SIZE,
+			SEQUENCE_MAP_SIZE(PROCESS_MAX));
+	sequence_slab.palloc = kcall->palloc;
+	sequence_slab.pfree = kcall->pfree;
+	if (slab_create(&sequence_slab))
+		return SEQUENCE_SLAB;
 	else
+		initialized_resources |= SEQUENCE_SLAB;
+
+	void *buf = slab_alloc(&sequence_slab);
+	if (!buf)
+		return SESSION_SEQUENCE;
+
+	if (sequence_initialize(&session_sequence, SESSION_MAX, buf)) {
+		slab_free(&sequence_slab, buf);
+		return SESSION_SEQUENCE;
+	} else
 		initialized_resources |= SESSION_SEQUENCE;
 
 	// skip 0 as session id
