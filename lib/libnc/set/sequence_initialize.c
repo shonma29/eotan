@@ -33,7 +33,6 @@ int sequence_initialize(sequence_t *s, size_t max, void *buf)
 {
 	if (!max
 			|| (max > INT_MAX)
-			|| (max & SEQUENCE_BITS_MASK)
 			|| !buf)
 		return (-1);
 
@@ -44,6 +43,10 @@ int sequence_initialize(sequence_t *s, size_t max, void *buf)
 
 	for (unsigned int i = 0; i < s->num_of_blocks; i++)
 		s->map[i] = MAP_ALL_FREE;
+
+	int remainder = max & SEQUENCE_BITS_MASK;
+	if (remainder)
+		s->map[s->num_of_blocks - 1] = (1 << remainder) - 1;
 
 	return 0;
 }
