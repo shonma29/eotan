@@ -27,14 +27,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-#define PROCESS_MAX (32768)
-#define THREAD_MAX (32768)
+#define PROCESS_MAX (1024)
+#define THREAD_MAX (1024)
 #define THREADS_PER_PROCESS (32)
-#define FILE_MAX (65536)
+#define FILE_MAX (1024)
 #define FILES_PER_PROCESS (1024)
-#define SESSION_MAX (32768)
-#define FILES_PER_SESSION (32768)
-#define NAMESPACE_MAX (32768)
+#define SESSION_MAX (1024)
+#define FILES_PER_SESSION (1024)
+#define NAMESPACE_MAX (1024)
 
 #define REQUEST_MAX (16)
 
