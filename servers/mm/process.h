@@ -100,6 +100,8 @@ typedef struct {
 	char name[32];//TODO set on fork/exec
 } mm_process_t;
 
+extern slab_t sequence_slab;
+
 static inline mm_process_t *get_process(const mm_thread_t *thread)
 {
 	return ((mm_process_t *) (thread->process));

@@ -35,6 +35,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <mm/config.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
+#include <set/sequence.h>
 #include <sys/syscall.h>
 #include <sys/wait.h>
 #include "mm.h"
@@ -44,13 +45,17 @@ For more information, please refer to <http://unlicense.org/>
 #define THREAD_LOOKUP_SIZE (16)
 
 enum {
-	PROCESS_SLAB = 0x01,
-	THREAD_SLAB = 0x02,
-	NAMESPACE_SLAB = 0x04
+	SEQUENCE_SLAB = 0x01,
+	PROCESS_SLAB = 0x02,
+	PROCESS_SEQUENCE = 0x04,
+	THREAD_SLAB = 0x08,
+	NAMESPACE_SLAB = 0x10
 };
 
+slab_t sequence_slab;
 static slab_t process_slab;
 static tree_t process_tree;
+static sequence_t process_sequence;
 static slab_t thread_slab;
 static tree_t thread_tree;
 static node_t *thread_lookup[THREAD_LOOKUP_SIZE];
@@ -77,7 +82,6 @@ static inline mm_process_t *getProcessFromMembers(const list_t *p)
 */
 
 static node_t **thread_lookup_selector(const tree_t *, const int);
-static int process_find_new_pid(void);
 static int process_create(mm_process_t **, const int);
 static void set_local(mm_process_t *, const char *, const size_t);
 static int map_user_stack(mm_process_t *);
@@ -94,6 +98,19 @@ static node_t **thread_lookup_selector(const tree_t *tree, const int key)
 
 int process_initialize(void)
 {
+	// sequence slab is shared by many object types
+	sequence_slab.unit_size = SEQUENCE_MAP_SIZE(PROCESS_MAX);
+	sequence_slab.block_size = PAGE_SIZE;
+	sequence_slab.min_block = 1;
+	sequence_slab.max_block = slab_max_block(PROCESS_MAX * 2, PAGE_SIZE,
+			SEQUENCE_MAP_SIZE(PROCESS_MAX));
+	sequence_slab.palloc = kcall->palloc;
+	sequence_slab.pfree = kcall->pfree;
+	if (slab_create(&sequence_slab))
+		return SEQUENCE_SLAB;
+	else
+		initialized_resources |= SEQUENCE_SLAB;
+
 	// initialize process table
 	process_slab.unit_size = sizeof(mm_process_t);
 	process_slab.block_size = PAGE_SIZE;
@@ -108,6 +125,24 @@ int process_initialize(void)
 		initialized_resources |= PROCESS_SLAB;
 
 	tree_create(&process_tree, NULL, NULL);
+
+	void *buf = slab_alloc(&sequence_slab);
+	if (!buf)
+		return PROCESS_SEQUENCE;
+
+	if (sequence_initialize(&process_sequence, PROCESS_MAX, buf)) {
+		slab_free(&sequence_slab, buf);
+		return PROCESS_SEQUENCE;
+	} else
+		initialized_resources |= PROCESS_SEQUENCE;
+
+	// skip 0 as process id
+	if (sequence_get(&process_sequence) < 0)
+		return PROCESS_SEQUENCE;
+
+	//TODO ugly. skip 1 as process id
+	if (sequence_get(&process_sequence) < 0)
+		return PROCESS_SEQUENCE;
 
 	// initialize thread table
 	thread_slab.unit_size = sizeof(mm_thread_t);
@@ -150,7 +185,7 @@ mm_process_t *process_find(const ID pid)
 mm_process_t *process_duplicate(mm_process_t *src, void *entry, void *stack)
 {
 	do {
-		pid_t pid = process_find_new_pid();
+		pid_t pid = sequence_get(&process_sequence);
 		if (pid == -1)
 			break;
 
@@ -258,15 +293,6 @@ mm_process_t *process_duplicate(mm_process_t *src, void *entry, void *stack)
 	return NULL;
 }
 
-static int process_find_new_pid(void)
-{
-	for (int id = INIT_PID; id < PROCESS_MAX; id++)
-		if (!tree_get(&process_tree, id))
-			return id;
-
-	return (-1);
-}
-
 int process_replace(mm_process_t *process,
 		void *address, const size_t size,
 		void *entry, const void *args, const size_t stack_size,
@@ -350,6 +376,8 @@ int process_release_body(mm_process_t *proc, const int options)
 		if (!tree_remove(&process_tree, p->node.key)) {
 			//TODO what to do?
 		}
+
+		sequence_release(&process_sequence, p->node.key);
 
 		//log_info("mm: %d released %d\n", proc->node.key, p->node.key);
 		slab_free(&process_slab, p);
