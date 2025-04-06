@@ -34,6 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/memory.h>
 #include <set/list.h>
 #include <set/tree.h>
+#include <set/sequence.h>
 #include <sys/types.h>
 #include "api.h"
 
@@ -163,5 +164,7 @@ extern void init(void);
 
 extern void default_handler(VP_INT);
 extern void page_fault_handler(VP_INT);
+
+extern int create_id_store(sequence_t *, const size_t);
 
 #endif

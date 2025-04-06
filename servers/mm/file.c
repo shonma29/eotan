@@ -27,20 +27,20 @@ For more information, please refer to <http://unlicense.org/>
 #include <errno.h>
 #include <mm/config.h>
 #include <nerve/kcall.h>
-#include <set/sequence.h>
 #include "process.h"
 
-#define MIN_FID (1)
 #define MIN_AUTO_FD (0)
 
 enum {
 	FILE_SLAB = 0x01,
-	DESCRIPTOR_SLAB = 0x02,
-	SESSION_SLAB = 0x04,
-	SESSION_SEQUENCE = 0x08
+	FILE_SEQUENCE = 0x02,
+	DESCRIPTOR_SLAB = 0x04,
+	SESSION_SLAB = 0x08,
+	SESSION_SEQUENCE = 0x10
 };
 
 static slab_t file_slab;
+static sequence_t file_sequence;
 static slab_t descriptor_slab;
 static slab_t session_slab;
 static tree_t session_tree;
@@ -48,7 +48,6 @@ static sequence_t session_sequence;
 static int initialized_resources = 0;
 
 static int process_find_new_fd(const mm_process_t *);
-static int session_find_new_fid(mm_session_t *);
 static mm_file_t *session_allocate_file(void);
 static void session_deallocate_file(mm_file_t *);
 
@@ -67,6 +66,11 @@ int file_initialize(void)
 		return FILE_SLAB;
 	else
 		initialized_resources |= FILE_SLAB;
+
+	if (create_id_store(&file_sequence, FILE_MAX))
+		return FILE_SEQUENCE;
+	else
+		initialized_resources |= FILE_SEQUENCE;
 
 	// initialize descriptor table
 	descriptor_slab.unit_size = sizeof(mm_descriptor_t);
@@ -96,19 +100,10 @@ int file_initialize(void)
 
 	tree_create(&session_tree, NULL, NULL);
 
-	void *buf = slab_alloc(&sequence_slab);
-	if (!buf)
+	if (create_id_store(&session_sequence, SESSION_MAX))
 		return SESSION_SEQUENCE;
-
-	if (sequence_initialize(&session_sequence, SESSION_MAX, buf)) {
-		slab_free(&sequence_slab, buf);
-		return SESSION_SEQUENCE;
-	} else
+	else
 		initialized_resources |= SESSION_SEQUENCE;
-
-	// skip 0 as session id
-	if (sequence_get(&session_sequence) < 0)
-		return SESSION_SEQUENCE;
 
 	return 0;
 }
@@ -213,30 +208,24 @@ void process_deallocate_desc(mm_descriptor_t *desc)
 
 mm_file_t *session_create_file(mm_session_t *session)
 {
-	int fid = session_find_new_fid(session);
+	int fid = sequence_get(&file_sequence);
 	if (fid == -1)
 		return NULL;
 
 	mm_file_t *file = session_allocate_file();
-	if (!file)
+	if (!file) {
+		sequence_release(&file_sequence, fid);
 		return NULL;
+	}
 
 	if (!tree_put(&(session->files), fid, &(file->node))) {
+		sequence_release(&file_sequence, fid);
 		session_deallocate_file(file);
 		return NULL;
 	}
 
 	file->session = session;
 	return file;
-}
-
-static int session_find_new_fid(mm_session_t *session)
-{
-	for (int fid = MIN_FID; fid < FILES_PER_SESSION; fid++)
-		if (!tree_get(&(session->files), fid))
-			return fid;
-
-	return -1;
 }
 
 int session_destroy_file(mm_file_t *file)
@@ -248,6 +237,7 @@ int session_destroy_file(mm_file_t *file)
 	if (!tree_size(&(file->session->files)))
 		session_destroy(file->session);
 
+	sequence_release(&file_sequence, file->node.key);
 	session_deallocate_file(file);
 	return result;
 }

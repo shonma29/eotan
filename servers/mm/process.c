@@ -35,7 +35,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <mm/config.h>
 #include <nerve/config.h>
 #include <nerve/kcall.h>
-#include <set/sequence.h>
 #include <sys/syscall.h>
 #include <sys/wait.h>
 #include "mm.h"
@@ -130,15 +129,10 @@ int process_initialize(void)
 	if (!buf)
 		return PROCESS_SEQUENCE;
 
-	if (sequence_initialize(&process_sequence, PROCESS_MAX, buf)) {
-		slab_free(&sequence_slab, buf);
+	if (create_id_store(&process_sequence, PROCESS_MAX))
 		return PROCESS_SEQUENCE;
-	} else
+	else
 		initialized_resources |= PROCESS_SEQUENCE;
-
-	// skip 0 as process id
-	if (sequence_get(&process_sequence) < 0)
-		return PROCESS_SEQUENCE;
 
 	//TODO ugly. skip 1 as process id
 	if (sequence_get(&process_sequence) < 0)
@@ -749,4 +743,28 @@ mm_namespace_t *process_allocate_ns(void)
 void process_deallocate_ns(mm_namespace_t *ns)
 {
 	slab_free(&namespace_slab, ns);
+}
+
+int create_id_store(sequence_t *seq, const size_t max)
+{
+	if (max > PROCESS_MAX)
+		return (-1);
+
+	void *buf = slab_alloc(&sequence_slab);
+	if (!buf)
+		return (-1);
+
+	do {
+		if (sequence_initialize(seq, max, buf))
+			break;
+
+		// skip 0
+		if (sequence_get(seq) < 0)
+			break;
+
+		return 0;
+	} while (false);
+
+	slab_free(&sequence_slab, buf);
+	return (-1);
 }
