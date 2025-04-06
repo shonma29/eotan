@@ -32,20 +32,27 @@ static int _find(sequence_t *s, const int);
 
 static int _find(sequence_t *s, const int block)
 {
-	uint32_t bits = s->map[block];
+	uint32_t bits = s->map[block] & s->mask;
 	if (bits) {
 		int offset = count_ntz(bits);
 		s->rest--;
 		s->clock_block = block;
-		s->map[block] &= ~((uint32_t) 1 << offset);
+
+		uint32_t b = 1 << offset;
+		s->map[block] &= ~b;
+		s->mask = ~((b << 1) - 1);
 		return ((block << MPU_LOG_INT) | offset);
-	} else
+	} else {
+		//TODO slow since mask is updated every time
+		s->mask = 0xffffffff;
 		return (-1);
+	}
 }
 
 int sequence_get(sequence_t *s)
 {
 	if (s->rest > 0) {
+		//TODO check first mask to skip last (duplicated) 'find' call
 		for (unsigned int i = (unsigned int) (s->clock_block);
 				i < s->num_of_blocks; i++) {
 			int n = _find(s, i);
@@ -54,7 +61,7 @@ int sequence_get(sequence_t *s)
 		}
 
 		for (unsigned int i = 0;
-				i < (unsigned int) (s->clock_block); i++) {
+				i <= (unsigned int) (s->clock_block); i++) {
 			int n = _find(s, i);
 			if (n >= 0)
 				return n;
@@ -78,6 +85,7 @@ void sequence_release(sequence_t *s, const int n)
 
 	if (!(s->rest)) {
 		s->clock_block = block;
+		s->mask = 0xffffffff;
 	}
 
 	s->rest++;

@@ -40,6 +40,7 @@ int sequence_initialize(sequence_t *s, size_t max, void *buf)
 	s->clock_block = 0;
 	s->num_of_blocks = SEQUENCE_BLOCK_SIZE(max);
 	s->map = buf;
+	s->mask = 0xffffffff;
 
 	for (unsigned int i = 0; i < s->num_of_blocks; i++)
 		s->map[i] = MAP_ALL_FREE;

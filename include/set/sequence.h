@@ -43,6 +43,7 @@ typedef struct {
 	int clock_block;
 	size_t num_of_blocks;
 	uint32_t *map;
+	uint32_t mask;
 } sequence_t;
 
 extern int sequence_initialize(sequence_t *, size_t, void *);
