@@ -48,7 +48,8 @@ enum {
 	PROCESS_SLAB = 0x02,
 	PROCESS_SEQUENCE = 0x04,
 	THREAD_SLAB = 0x08,
-	NAMESPACE_SLAB = 0x10
+	THREAD_SEQUENCE = 0x10,
+	NAMESPACE_SLAB = 0x20
 };
 
 slab_t sequence_slab;
@@ -57,6 +58,7 @@ static tree_t process_tree;
 static sequence_t process_sequence;
 static slab_t thread_slab;
 static tree_t thread_tree;
+static sequence_t thread_sequence;
 static node_t *thread_lookup[THREAD_LOOKUP_SIZE];
 static slab_t namespace_slab;
 static int initialized_resources = 0;
@@ -125,10 +127,6 @@ int process_initialize(void)
 
 	tree_create(&process_tree, NULL, NULL);
 
-	void *buf = slab_alloc(&sequence_slab);
-	if (!buf)
-		return PROCESS_SEQUENCE;
-
 	if (create_id_store(&process_sequence, PROCESS_MAX))
 		return PROCESS_SEQUENCE;
 	else
@@ -153,6 +151,11 @@ int process_initialize(void)
 
 	tree_create(&thread_tree, NULL, thread_lookup_selector);
 	tree_initialize_lookup(&thread_tree, thread_lookup, THREAD_LOOKUP_SIZE);
+
+	if (create_id_store(&thread_sequence, THREAD_MAX))
+		return THREAD_SEQUENCE;
+	else
+		initialized_resources |= THREAD_SEQUENCE;
 
 	// initialize namespace table
 	namespace_slab.unit_size = sizeof(mm_namespace_t);
@@ -621,9 +624,15 @@ static int release_memory(mm_process_t *process)
 static int create_thread(int *thread_id, mm_process_t *process, FP entry,
 		VP ustack_top)
 {
-	mm_thread_t *th = (mm_thread_t *) slab_alloc(&thread_slab);
-	if (!th)
+	ID tid = sequence_get(&thread_sequence);
+	if (tid < 0)
 		return ENOMEM;
+
+	mm_thread_t *th = (mm_thread_t *) slab_alloc(&thread_slab);
+	if (!th) {
+		sequence_release(&thread_sequence, tid);
+		return ENOMEM;
+	}
 
 	T_CTSK pk_ctsk = {
 		TA_HLNG,
@@ -635,8 +644,9 @@ static int create_thread(int *thread_id, mm_process_t *process, FP entry,
 		process->directory,
 		ustack_top
 	};
-	ER_ID tid = kcall->thread_create_auto(&pk_ctsk);
-	if (tid < 0) {
+	tid += INIT_THREAD_ID;
+	if (kcall->thread_create(tid, &pk_ctsk)) {
+		sequence_release(&thread_sequence, tid - INIT_THREAD_ID);
 		slab_free(&thread_slab, th);
 		//TODO use another errno
 		return ENOMEM;
@@ -644,6 +654,7 @@ static int create_thread(int *thread_id, mm_process_t *process, FP entry,
 
 	if (!tree_put(&thread_tree, tid, &(th->node))) {
 		kcall->thread_destroy(tid);
+		sequence_release(&thread_sequence, tid - INIT_THREAD_ID);
 		slab_free(&thread_slab, th);
 		//TODO use another errno
 		return EBUSY;
@@ -687,6 +698,8 @@ static void destroy_threads(mm_process_t *process)
 
 		//TODO check error
 		tree_remove(&thread_tree, th->node.key);
+		sequence_release(&thread_sequence,
+				th->node.key - INIT_THREAD_ID);
 
 		uintptr_t start = (uintptr_t) th->stack.addr
 				+ th->stack.max - th->stack.len;
@@ -716,8 +729,8 @@ static int create_init_thread(mm_process_t *process, const FP entry)
 		NULL,
 		NULL
 	};
-	ER_ID tid = kcall->thread_create_auto(&pk_ctsk);
-	if (tid < 0) {
+	ID tid = INIT_THREAD_ID;
+	if (kcall->thread_create(tid, &pk_ctsk)) {
 		slab_free(&thread_slab, th);
 		//TODO use another errno
 		return ENOMEM;

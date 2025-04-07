@@ -35,7 +35,6 @@ typedef struct {
 	void (*tick)(void);//TODO yield(id)
 	ID (*thread_get_id)(void);
 	ER (*thread_create)(ID, T_CTSK *);
-	ER_ID (*thread_create_auto)(T_CTSK *);
 	ER (*thread_destroy)(ID);
 	ER (*thread_start)(ID);
 	void (*thread_end_and_destroy)(void);
