@@ -87,8 +87,8 @@ static int process_create(mm_process_t **, const int);
 static void set_local(mm_process_t *, const char *, const size_t);
 static int map_user_stack(mm_process_t *);
 static int release_memory(mm_process_t *);
-static int create_thread(int *, mm_process_t *, FP, VP);
-static void destroy_threads(mm_process_t *);
+static int create_thread(const int, mm_process_t *, FP, VP);
+static void destroy_threads(mm_process_t *, const bool);
 static int create_init_thread(mm_process_t *, const FP);
 
 
@@ -270,17 +270,28 @@ mm_process_t *process_duplicate(mm_process_t *src, void *entry, void *stack)
 			break;
 		}
 
-		int thread_id;
-		error_no = create_thread(&thread_id, dest,
+		int thread_id = sequence_get(&thread_sequence);
+		if (thread_id < 0) {
+			log_err("mm: th sequence exhausted\n");
+			//TODO release process
+			break;
+		}
+
+		thread_id += INIT_THREAD_ID;
+		error_no = create_thread(thread_id, dest,
 				(FP) entry, (VP) stack);
 		if (error_no) {
 			//TODO release process
+			sequence_release(&thread_sequence,
+					thread_id - INIT_THREAD_ID);
 			break;
 		}
 
 		if (kcall->thread_start(thread_id) < 0) {
 			log_err("mm: th start err\n");
 			//TODO release process
+			sequence_release(&thread_sequence,
+					thread_id - INIT_THREAD_ID);
 			break;
 		}
 
@@ -292,13 +303,13 @@ mm_process_t *process_duplicate(mm_process_t *src, void *entry, void *stack)
 
 int process_replace(mm_process_t *process,
 		void *address, const size_t size,
-		void *entry, const void *args, const size_t stack_size,
-		int *thread_id)
+		void *entry, const void *args, const size_t stack_size)
 {
 	if (stack_size > USER_STACK_INITIAL_SIZE)
 		return E2BIG;
 
-	destroy_threads(process);
+	int thread_id = getMyThread(process->threads.next)->node.key;
+	destroy_threads(process, true);
 
 	if (map_user_stack(process))
 		return ENOMEM;
@@ -405,7 +416,7 @@ int process_release_body(mm_process_t *proc, const int options)
 int process_destroy(mm_process_t *process, const int status)
 {
 	process->exit_status = status;
-	destroy_threads(process);
+	destroy_threads(process, false);
 
 	if (release_memory(process)) {
 		//TODO what to do?
@@ -621,18 +632,12 @@ static int release_memory(mm_process_t *process)
 	return 0;
 }
 
-static int create_thread(int *thread_id, mm_process_t *process, FP entry,
+static int create_thread(const int thread_id, mm_process_t *process, FP entry,
 		VP ustack_top)
 {
-	ID tid = sequence_get(&thread_sequence);
-	if (tid < 0)
-		return ENOMEM;
-
 	mm_thread_t *th = (mm_thread_t *) slab_alloc(&thread_slab);
-	if (!th) {
-		sequence_release(&thread_sequence, tid);
+	if (!th)
 		return ENOMEM;
-	}
 
 	T_CTSK pk_ctsk = {
 		TA_HLNG,
@@ -644,17 +649,14 @@ static int create_thread(int *thread_id, mm_process_t *process, FP entry,
 		process->directory,
 		ustack_top
 	};
-	tid += INIT_THREAD_ID;
-	if (kcall->thread_create(tid, &pk_ctsk)) {
-		sequence_release(&thread_sequence, tid - INIT_THREAD_ID);
+	if (kcall->thread_create(thread_id, &pk_ctsk)) {
 		slab_free(&thread_slab, th);
 		//TODO use another errno
 		return ENOMEM;
 	}
 
-	if (!tree_put(&thread_tree, tid, &(th->node))) {
-		kcall->thread_destroy(tid);
-		sequence_release(&thread_sequence, tid - INIT_THREAD_ID);
+	if (!tree_put(&thread_tree, thread_id, &(th->node))) {
+		kcall->thread_destroy(thread_id);
 		slab_free(&thread_slab, th);
 		//TODO use another errno
 		return EBUSY;
@@ -670,18 +672,16 @@ static int create_thread(int *thread_id, mm_process_t *process, FP entry,
 	th->stack.len = pageRoundUp(USER_STACK_INITIAL_SIZE);
 	th->stack.max = pageRoundUp(USER_STACK_MAX_SIZE);
 	th->stack.attr = type_stack;
-
-	*thread_id = tid;
-
 	thread_local_t *local = (thread_local_t *) MAIN_THREAD_LOCAL_ADDR;
-	if (kcall->region_put(tid, &(local->thread_id), sizeof(tid), &tid)) {
+	if (kcall->region_put(thread_id, &(local->thread_id), sizeof(thread_id),
+			&thread_id)) {
 		//TODO what to do?
 	}
 
 	return 0;
 }
 
-static void destroy_threads(mm_process_t *process)
+static void destroy_threads(mm_process_t *process, const bool replacing)
 {
 	for (list_t *p; (p = list_pick(&(process->threads)));) {
 		mm_thread_t *th = getMyThread(p);
@@ -698,8 +698,10 @@ static void destroy_threads(mm_process_t *process)
 
 		//TODO check error
 		tree_remove(&thread_tree, th->node.key);
-		sequence_release(&thread_sequence,
-				th->node.key - INIT_THREAD_ID);
+
+		if (!replacing)
+			sequence_release(&thread_sequence,
+					th->node.key - INIT_THREAD_ID);
 
 		uintptr_t start = (uintptr_t) th->stack.addr
 				+ th->stack.max - th->stack.len;

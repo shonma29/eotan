@@ -182,8 +182,7 @@ int mm_exec(mm_request_t *req)
 //TODO clunk
 //			return ENOEXEC;
 
-		int new_thread_id;
-//		log_info("pm: replace\n");
+		int thread_id = th->node.key;
 		result = process_replace(process,
 				(void *) (ro.p_vaddr),
 				rw.p_memsz ? (rw.p_vaddr + rw.p_memsz
@@ -191,8 +190,7 @@ int mm_exec(mm_request_t *req)
 						: ro.p_memsz,
 				(void *) ehdr.e_entry,
 				(void *) (req->args.arg2),
-				req->args.arg3,
-				&new_thread_id);
+				req->args.arg3);
 		if (result) {
 			log_err("pm: replace0 %d\n", result);
 			reply->data[0] = result;
@@ -200,7 +198,7 @@ int mm_exec(mm_request_t *req)
 			//TODO check error
 		}
 
-		token = create_token(new_thread_id, file->session);
+		token = create_token(thread_id, file->session);
 		result = _read(file, token, ro.p_offset, ro.p_filesz,
 				(char *) (ro.p_vaddr), req);
 		if (result) {
@@ -227,7 +225,7 @@ int mm_exec(mm_request_t *req)
 			}
 		}
 
-		kcall->thread_start(new_thread_id);
+		kcall->thread_start(thread_id);
 
 		//TODO recreate token (not must)
 		result = _clunk(file, token, req);
