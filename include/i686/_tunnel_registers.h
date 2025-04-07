@@ -27,7 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 
-static inline int _tunnel_registers(void *func)
+static inline int _tunnel_registers(int flags, void *func)
 {
 	int result;
 
@@ -41,13 +41,15 @@ static inline int _tunnel_registers(void *func)
 		"andb $0xf, %%dl\n\t" \
 		"addl %%edx, %%ecx\n\t" \
 		"fxsave (%%ecx)\n\t" \
+		"movl 528(%%esp), %%edx\n\t" \
+		"pushl %%edx\n\t" \
 		"pushl %%ecx\n\t" \
 		"pushl %%edi\n\t" \
 		"pushl %%esi\n\t" \
 		"pushl %%ebp\n\t" \
 		"pushl %%ebx\n\t" \
 		"call *%%eax\n\t" \
-		"addl $544, %%esp\n\t" \
+		"addl $548, %%esp\n\t" \
 		:"=a" (result) \
 		:"a" (func) \
 		:);
@@ -66,7 +68,7 @@ static inline int _tunnel_out(void)
 		"popl %%edi\n\t" \
 		"popl %%ecx\n\t" \
 		"fxrstor (%%ecx)\n\t" \
-		"addl $524, %%esp\n\t" \
+		"addl $528, %%esp\n\t" \
 		:"=a" (result) \
 		: \
 		:);

@@ -25,31 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <unistd.h>
-#include <mpu/_tunnel_registers.h>
-#include "sys.h"
-
-static pid_t call_fork(const uintptr_t, const uintptr_t,
-		const uintptr_t, const uintptr_t);
-static int _fork_entry();
 
 
 pid_t fork(void)
 {
-	return _tunnel_registers(call_fork);
-}
-
-static pid_t call_fork(const uintptr_t ebx, const uintptr_t ebp,
-		const uintptr_t esi, const uintptr_t edi)
-{
-	sys_args_t args = {
-		syscall_fork,
-		((int) __builtin_frame_address(0)) + sizeof(uintptr_t) * 2,
-		(int) _fork_entry
-	};
-	return _syscall(&args, sizeof(args));
-}
-
-static int _fork_entry(void)
-{
-	return _tunnel_out();
+	return rfork(0);
 }

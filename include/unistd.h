@@ -45,6 +45,7 @@ extern int dup2(int, int);
 extern int execve(const char *, char *const [], char *const []);
 extern noreturn void _exit(int);
 extern pid_t fork(void);
+extern pid_t rfork(int);
 extern char *getcwd(char *, size_t);
 extern gid_t getgid(void);
 extern pid_t getpid(void);

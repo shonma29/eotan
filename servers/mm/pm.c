@@ -48,7 +48,7 @@ static void _remove_namespace(mm_process_t *, const char *,
 		const mm_thread_t *, mm_request_t *);
 
 
-int mm_fork(mm_request_t *req)
+int mm_rfork(mm_request_t *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
@@ -60,8 +60,8 @@ int mm_fork(mm_request_t *req)
 
 		mm_process_t *process = get_process(th);
 		mm_process_t *child = process_duplicate(process,
-				(void *) (req->args.arg2),
-				(void *) (req->args.arg1));
+				(void *) (req->args.arg3),
+				(void *) (req->args.arg2));
 		if (!child) {
 			log_err("pm: duplicate err\n");
 			reply->data[0] = ENOMEM;

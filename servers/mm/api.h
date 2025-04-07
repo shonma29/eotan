@@ -65,7 +65,7 @@ typedef struct {
 #endif
 } mm_request_t;
 
-extern int mm_fork(mm_request_t *);
+extern int mm_rfork(mm_request_t *);
 extern int mm_exec(mm_request_t *);
 extern int mm_wait(mm_request_t *);
 extern int mm_exit(mm_request_t *);

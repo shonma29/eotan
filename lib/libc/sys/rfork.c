@@ -1,5 +1,3 @@
-#ifndef _SYS_SYSCALL_H_
-#define _SYS_SYSCALL_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,46 +24,34 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <unistd.h>
+#include <mpu/_tunnel_registers.h>
+#include "sys.h"
 
-typedef enum {
-	syscall_rfork = 0,
-	syscall_exec = 1,
-	syscall_wait = 2,
-	syscall_exit = 3,
-	syscall_vmap = 4,
-	syscall_vunmap = 5,
-	syscall_sbrk = 6,
-	syscall_chdir = 7,
-	syscall_dup = 8,
-	syscall_lseek = 9,
-	syscall_pipe = 10,
-	syscall_bind = 11,
-	syscall_unmount = 12,
-	syscall_open = 13,
-	syscall_create = 14,
-	syscall_read = 15,
-	syscall_write = 16,
-	syscall_close = 17,
-	syscall_remove = 18,
-	syscall_stat = 19,
-	syscall_fstat = 20,
-	syscall_chmod = 21,
-	syscall_clock_gettime = 22,
-	syscall_kill = 23
-} syscall_e;
+static pid_t call_fork(const uintptr_t, const uintptr_t, const uintptr_t,
+		const uintptr_t, const uintptr_t, const int);
+static int _fork_entry();
 
-typedef struct {
-	syscall_e syscall_no;
-	int arg1;
-	int arg2;
-	int arg3;
-	int arg4;
-	int arg5;
-} sys_args_t;
 
-typedef struct {
-	int result;
-	int data[2];
-} sys_reply_t;
+pid_t rfork(int flags)
+{
+	return _tunnel_registers(flags, call_fork);
+}
 
-#endif
+static pid_t call_fork(const uintptr_t ebx, const uintptr_t ebp,
+		const uintptr_t esi, const uintptr_t edi, const uintptr_t ecx,
+		const int flags)
+{
+	sys_args_t args = {
+		syscall_rfork,
+		flags,
+		((int) __builtin_frame_address(0)) + sizeof(uintptr_t) * 2,
+		(int) _fork_entry
+	};
+	return _syscall(&args, sizeof(args));
+}
+
+static int _fork_entry(void)
+{
+	return _tunnel_out();
+}

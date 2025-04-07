@@ -51,7 +51,7 @@ enum {
 };
 
 static int (*funcs[])(mm_request_t *) = {
-	mm_fork,
+	mm_rfork,
 	mm_exec,
 	mm_wait,
 	mm_exit,
