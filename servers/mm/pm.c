@@ -294,10 +294,9 @@ int mm_exit(mm_request_t *req)
 		}
 
 		mm_process_t *process = get_process(th);
+//		log_info("pm: %d exit %d\n", process->node.key, req->args.arg1);
 		cleanup(process, th, req);
 		process_destroy(process, req->args.arg1);
-		//log_info("pm: %d exit %d\n", process->node.key,
-		//		req->args.arg1);
 
 		reply->result = 0;
 		reply->data[0] = 0;
