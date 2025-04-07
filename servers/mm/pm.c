@@ -195,6 +195,8 @@ int mm_exec(mm_request_t *req)
 				&new_thread_id);
 		if (result) {
 			log_err("pm: replace0 %d\n", result);
+			reply->data[0] = result;
+			break;
 			//TODO check error
 		}
 

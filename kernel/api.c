@@ -59,7 +59,6 @@ void kcall_initialize(void)
 	p->tick = tick;
 	p->thread_get_id = thread_get_id;
 	p->thread_create = thread_create;
-	p->thread_create_auto = thread_create_auto;
 	p->thread_destroy = thread_destroy;
 	p->thread_start = thread_start;
 	p->thread_end_and_destroy = thread_end_and_destroy;

@@ -39,7 +39,6 @@ For more information, please refer to <http://unlicense.org/>
 
 static slab_t thread_slab;
 static tree_t thread_tree;
-static int thread_hand;
 
 static inline thread_t *getThreadParent(const node_t *);
 static ER setup(thread_t *, T_CTSK *);
@@ -55,7 +54,6 @@ static inline thread_t *getThreadParent(const node_t *p)
 ER thread_initialize(void)
 {
 	create_tree(&thread_tree, &thread_slab, sizeof(thread_t), NULL);
-	thread_hand = MIN_AUTO_ID - 1;
 	ready_initialize();
 	return E_OK;
 }
@@ -102,55 +100,10 @@ static ER setup(thread_t *th, T_CTSK *pk_ctsk)
 	return E_OK;
 }
 
-ER_ID thread_create_auto(T_CTSK *pk_ctsk)
-{
-	if (pk_ctsk->tskatr & TA_ASM)
-		return E_RSATR;
-
-	if (pk_ctsk->stksz != KTHREAD_STACK_SIZE)
-		return E_PAR;
-
-	ER_ID result;
-
-	enter_serialize();
-	do {
-		node_t *node = slab_alloc(&thread_slab);
-		if (!node) {
-			result = E_NOMEM;
-			break;
-		}
-
-		if (!find_empty_key(&thread_tree, &thread_hand, node)) {
-			slab_free(&thread_slab, node);
-			result = E_NOID;
-			break;
-		}
-
-		thread_t *th = getThreadParent(node);
-		result = setup(th, pk_ctsk);
-		if (result) {
-			node = tree_remove(&thread_tree, node->key);
-			if (node)
-				slab_free(&thread_slab, node);
-			break;
-		}
-
-		result = node->key;
-
-		if (pk_ctsk->tskatr & TA_ACT) {
-			fire(th);
-			return result;
-		}
-	} while (false);
-	leave_serialize();
-
-	return result;
-}
-
 ER thread_create(ID tskid, T_CTSK *pk_ctsk)
 {
 	if ((tskid < MIN_MANUAL_ID)
-			|| (tskid > MAX_MANUAL_ID))
+			|| (tskid > MAX_AUTO_ID))
 		return E_ID;
 
 	if (pk_ctsk->tskatr & TA_ASM)

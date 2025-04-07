@@ -34,4 +34,6 @@ For more information, please refer to <http://unlicense.org/>
 #define INIT_UID (0)
 #define INIT_GID (0)
 
+#define INIT_THREAD_ID (1024)
+
 #endif
