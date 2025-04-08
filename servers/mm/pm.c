@@ -59,7 +59,7 @@ int mm_rfork(mm_request_t *req)
 		}
 
 		mm_process_t *process = get_process(th);
-		mm_process_t *child = process_duplicate(process,
+		mm_process_t *child = process_duplicate(process, req->args.arg1,
 				(void *) (req->args.arg3),
 				(void *) (req->args.arg2));
 		if (!child) {

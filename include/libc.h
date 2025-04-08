@@ -34,4 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 #define MCREATE (4)
 #define MCACHE (8)
 
+// rfork
+#define RFNOTEG (1)
+
 #endif

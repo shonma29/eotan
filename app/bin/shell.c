@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <libc.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -181,7 +182,7 @@ static void execute(unsigned char **array, unsigned char **env,
 {
 	for (int status; waitpid(-1, &status, WNOHANG) > 0;);
 
-	pid_t pid = fork();
+	pid_t pid = rfork(RFNOTEG);
 	if (pid == 0) {
 		// child
 		Token token;

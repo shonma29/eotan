@@ -31,6 +31,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
+#include <libc.h>
 #include <mpufunc.h>
 #include <mm/config.h>
 #include <nerve/config.h>
@@ -179,7 +180,8 @@ mm_process_t *process_find(const ID pid)
 	return (node ? (mm_process_t *) getParent(mm_process_t, node) : NULL);
 }
 
-mm_process_t *process_duplicate(mm_process_t *src, void *entry, void *stack)
+mm_process_t *process_duplicate(mm_process_t *src, const int flags, void *entry,
+		void *stack)
 {
 	do {
 		pid_t pid = sequence_get(&process_sequence);
@@ -223,9 +225,13 @@ mm_process_t *process_duplicate(mm_process_t *src, void *entry, void *stack)
 		}
 
 		list_append(&(src->children), &(dest->brothers));
-		mm_process_t *leader = process_find(src->pgid);
-		if (leader)
-			list_append(&(leader->members), &(dest->members));
+
+		if (!(flags & RFNOTEG)) {
+			mm_process_t *leader = process_find(src->pgid);
+			if (leader)
+				list_append(&(leader->members),
+						&(dest->members));
+		}
 
 		for (list_t *p = src->namespaces.next;
 				!list_is_edge(&(src->namespaces), p);
@@ -245,7 +251,7 @@ mm_process_t *process_duplicate(mm_process_t *src, void *entry, void *stack)
 		}
 
 		dest->ppid = src->node.key;
-		dest->pgid = src->pgid;
+		dest->pgid = (flags & RFNOTEG) ? pid : (src->pgid);
 		dest->uid = src->uid;
 		dest->gid = src->gid;
 		dest->root = src->root;

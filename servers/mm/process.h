@@ -137,7 +137,8 @@ static inline int sequence_from_sid(const int sid)
 
 extern int process_initialize(void);
 extern mm_process_t *process_find(const ID);
-extern mm_process_t *process_duplicate(mm_process_t *, void *, void *);
+extern mm_process_t *process_duplicate(mm_process_t *, const int, void *,
+		void *);
 extern int process_replace(mm_process_t *process, void *address,
 		const size_t size, void *entry, const void *args,
 		const size_t stack_size);
