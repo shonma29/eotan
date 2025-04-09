@@ -261,7 +261,7 @@ int tfs_allocate_inode(vfs_t *fs, vnode_t *vnode)
 {
 	blkno_t block_no = tfs_allocate_block(fs);
 	if (!block_no)
-		return ENOMEM;
+		return ENOSPC;
 
 	struct tfs_inode *buf = cache_get(&(fs->device), block_no);
 	if (!buf)
