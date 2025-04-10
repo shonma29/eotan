@@ -51,17 +51,16 @@ static Console _cns = {
 };
 
 
-Console *getConsole(Screen *s, const Font *default_font)
+Console *getConsole(Screen *s, const Display *display, const Font *default_font)
 {
-	Display *d = &(sysinfo->display);
 	s->x = 0;
 	s->y = 0;
-	s->width = d->r.max.x;
-	s->height = d->r.max.y;
-	s->base = (const void *) (d->base);
+	s->width = display->r.max.x;
+	s->height = display->r.max.y;
+	s->base = (const void *) (display->base);
 	s->p = (uint8_t *) (s->base);
-	s->bpl = d->bpl;
-	s->bpp = d->bpp;
+	s->bpl = display->bpl;
+	s->bpp = display->bpp;
 
 	s->fgcolor.rgb.b = 0xff;
 	s->fgcolor.rgb.g = 0xff;

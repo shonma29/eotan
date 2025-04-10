@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <console.h>
+#include <nerve/global.h>
 #include "terminal.h"
 
 #define ESC 0x1b
@@ -53,7 +54,7 @@ static void eputc(esc_state_t *, const char);
 void terminal_initialize(esc_state_t *state)
 {
 	if (!cns)
-		cns = getConsole(&root, &default_font);
+		cns = getConsole(&root, &(sysinfo->display), &default_font);
 
 	state->func = state_null;
 	*(state->screen) = root;

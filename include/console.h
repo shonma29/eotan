@@ -71,7 +71,7 @@ typedef struct {
 	void (*putc)(Screen *, const unsigned char);
 } Console;
 
-extern Console *getConsole(Screen *, const Font *);
+extern Console *getConsole(Screen *, const Display *, const Font *);
 
 extern Font default_font;
 

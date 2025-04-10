@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <console.h>
 #include <services.h>
+#include <nerve/global.h>
 #include <nerve/kcall.h>
 #include <set/lf_queue.h>
 #include <libserv.h>
@@ -43,7 +44,7 @@ static size_t lfcopy(char *, volatile lfq_t*, const size_t);
 
 static void initialize(void)
 {
-	cns = getConsole(&screen1, &default_font);
+	cns = getConsole(&screen1, &(sysinfo->display), &default_font);
 	screen1.width /= 2;
 	screen1.height = screen1.height - 20;
 	screen1.chr_width = screen1.width / screen1.font.width;

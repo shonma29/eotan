@@ -32,8 +32,7 @@ ENTRY_ADDR = 0x80210000
 ENTRY_FUNC = start
 
 $(TARGET): $(OBJS) \
-		drivers/arch/libarch.a \
-		lib/libnc.a \
-		lib/libfonts.a
+		lib/libdraw.a lib/libfonts.a \
+		lib/libnc.a
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
 	$(STRIP) $@
