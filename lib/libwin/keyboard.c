@@ -24,49 +24,86 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <event.h>
-#include <archfunc.h>
-#include <arch/8259a.h>
-#include "../../lib/libserv/libserv.h"
-#include "hmi.h"
-#include "keyboard.h"
+#include <keycode.h>
+#include <win/keyboard.h>
+#include "101us.h"
 
-static hmi_interrupt_t message = { event_keyboard, 0 };
+static unsigned short modifiers = 0;
+
+static unsigned int get_modifier(int);
 
 
-void keyboard_handle(const int type, const int data)
+static unsigned int get_modifier(int b)
 {
-	message.data = data;
+	switch (b) {
+	case 30:
+		b = CAPS;
+		break;
+	case 44:
+		b = LSHIFT;
+		break;
+	case 57:
+		b = RSHIFT;
+		break;
+	case 58:
+		b = LCTRL;
+		break;
+	case 60:
+		b = LALT;
+		break;
+	case 62:
+		b = RALT;
+		break;
+	case 64:
+		b = RCTRL;
+		break;
+	default:
+		b = 0;
+		break;
+	}
 
-	if (lfq_enqueue(&interrupt_queue, &message))
-		//TODO more intelligent skip logic is necessary
-		log_warning("interrupt_queue full\n");
-	else
-		kcall->ipc_notify(MYPORT, EVENT_INTERRUPT);
+	return b;
 }
 
-int keyboard_initialize(void)
+int keyboard_convert(const int key_code)
 {
-	kbc_initialize();
+	int b = key_code;
+	int m;
 
-	T_CISR pk_cisr = {
-		TA_HLNG,
-		PIC_IR_VECTOR(ir_keyboard),
-		PIC_IR_VECTOR(ir_keyboard),
-		keyboard_interrupt
-	};
-	ER_ID id = create_isr(&pk_cisr);
-	if (id < 0) {
-		log_err("keyboard: bind error=%d\n", id);
-		return id;
+	if (b == 0)
+		return -1;
+
+	if (b & BREAK) {
+		m = get_modifier(b & ~BREAK);
+		if (m)
+			modifiers &= ~m;
+
+		return -1;
 	}
 
-	W result = enable_interrupt(ir_keyboard);
-	if (result) {
-		log_err("keyboard: enable error=%d\n", result);
-		destroy_isr(id);
-		return result;
+	m = get_modifier(b);
+	if (m) {
+		modifiers |= m;
+		return -1;
 	}
 
-	return E_OK;
+	if (modifiers & MASK_CTRL) {
+		b = key2char[key_ctrl][b];
+		if (b == 255)
+			return -1;
+
+	} else if (is_shift(modifiers)) {
+		b = key2char[key_shift][b];
+		if (!b)
+			return -1;
+
+	//TODO return (base | 0x80) when modifier is 'alt'
+
+	} else {
+		b = key2char[key_base][b];
+		if (!b)
+			return -1;
+	}
+
+	return b;
 }

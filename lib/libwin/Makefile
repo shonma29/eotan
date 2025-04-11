@@ -23,16 +23,9 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-TARGET = $(WD)/hmi
+TARGET = $(WD).a
 
 include Makefile.in
 
-CFLAGS += -I lib/libserv
-ENTRY_ADDR = 0x80220000
-ENTRY_FUNC = start
-
-$(TARGET): $(OBJS) \
-		lib/libserv.a drivers/arch/libarch.a lib/libdraw.a lib/libnc.a \
-		lib/libfonts.a lib/libvfs.a lib/libwin.a
-	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $^
-	$(STRIP) $@
+$(TARGET): $(OBJS)
+	$(AR) rsv $@ $?
