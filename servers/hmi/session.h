@@ -70,6 +70,7 @@ static inline session_t *getSessionFromList(const list_t *p)
 extern list_t session_list;
 extern session_t *focused_session;
 
+extern void session_bind_terminal(esc_state_t *, const window_t *);
 extern int session_initialize(void);
 
 extern session_t *session_find_by_request(const fs_request_t *);

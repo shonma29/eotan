@@ -52,7 +52,6 @@ extern Display *display;
 extern int window_initialize(void);
 extern int window_create(window_t **, const int, const int,
 		const int, const int, const int);
-extern void window_set_title(window_t *, const char *);
 extern int window_destroy(window_t *);
 extern void window_focus(const int);
 

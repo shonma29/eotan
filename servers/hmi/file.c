@@ -100,13 +100,16 @@ int if_open(fs_request_t *req)
 			error_no = EACCES;
 			break;
 		}
-#if 0
-		if ((session->type != TYPE_NONE)
-				&& (session->type != file->f_driver->type)) {
+
+		if (session->type == TYPE_NONE) {
+			if (file->f_driver->type == TYPE_CONS)
+				session_bind_terminal(session->state,
+						session->window);
+		} else if (session->type != file->f_driver->type) {
 			error_no = EBUSY;
 			break;
 		}
-#endif
+
 		file->f_flag = request->mode & O_ACCMODE;
 		session->type = file->f_driver->type;
 

@@ -95,16 +95,10 @@ int window_create(window_t **w, const int x1, const int y1,
 		p->inner.r.max.x -= padding_right;
 		p->inner.r.max.y -= padding_bottom;
 		p->inner.viewport = p->inner.r;
-		p->title = NULL;
 		*w = p;
 	} while (false);
 
 	return error_no;
-}
-
-void window_set_title(window_t *w, const char *title)
-{
-	w->title = title;
 }
 
 int window_destroy(window_t *w)

@@ -75,11 +75,9 @@ static void _process_keyboard(const int data)
 
 	if (!focused_session)
 		return;
-#if 0
+
 	if (focused_session->type == TYPE_CONS)
 		_enqueue_to_cons(ascii_code);
-#endif
-	_enqueue_to_cons(ascii_code);
 }
 
 static void _enqueue_to_cons(const int ascii_code)

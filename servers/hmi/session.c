@@ -54,7 +54,6 @@ session_t *focused_session = NULL;
 static int initialized_resources = 0;
 static int num_of_window = 0;
 
-static void _bind_terminal(esc_state_t *, const window_t *);
 static session_t *_create(const int);
 static void _destroy(session_t *);
 
@@ -119,8 +118,6 @@ int if_attach(fs_request_t *req)
 		num_of_window++;
 		list_insert(&session_list, &(session->brothers));
 		window_focus(-1);
-		window_set_title(w, CONSOLE_TITLE);
-		_bind_terminal(session->state, w);
 
 		fsmsg_t *response = &(req->packet);
 		//response->header.token = req->packet.header.token;
@@ -134,7 +131,7 @@ int if_attach(fs_request_t *req)
 	return error_no;
 }
 
-static void _bind_terminal(esc_state_t *state, const window_t *w)
+void session_bind_terminal(esc_state_t *state, const window_t *w)
 {
 	terminal_initialize(state);
 

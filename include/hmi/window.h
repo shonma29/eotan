@@ -42,7 +42,6 @@ typedef struct {
 	uint32_t attr;
 	Frame outer;
 	Frame inner;
-	const char *title;
 } window_t;
 
 #endif
