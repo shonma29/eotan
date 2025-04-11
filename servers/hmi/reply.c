@@ -73,6 +73,7 @@ static int _reply(fs_request_t *req, fsmsg_t *response, const size_t size)
 	return (result ? ECONNREFUSED : 0);
 }
 
+//TODO for cons only
 int reply_read(fs_request_t *req)
 {
 	read_param_t par;

@@ -1,5 +1,5 @@
-#ifndef _HMI_SESSION_H_
-#define _HMI_SESSION_H_
+#ifndef _HMI_DEVICE_H_
+#define _HMI_DEVICE_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,57 +26,27 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <set/tree.h>
-#include <hmi/window.h>
-#include "api.h"
-#include "device.h"
-#include "terminal.h"
 
-typedef struct {
-	list_t readers;
-	char *buf;
-	size_t size;
-	int read_position;
-	int write_position;
-	unsigned long position_mask;
-} event_buf_t;
+typedef enum {
+	CONS = 1,
+	CONSCTL = 2,
+	DRAW = 3,
+	EVENT = 4
+} channel_e;
 
-typedef struct _session_t {
-	node_t node;
-	list_t brothers;
-	tree_t files;
-	window_t *window;
-	esc_state_t *state;
-	int tid;
+typedef enum {
+	TYPE_NONE = 0,
+	TYPE_CONS = 1,
+	TYPE_WINDOW = 2
+} channel_type_e;
+
+typedef struct _driver_t {
+	channel_e channel;
 	channel_type_e type;
-	event_buf_t event;
-} session_t;
+	int permission;
+} driver_t;
 
-struct file {
-	node_t node;
-	list_t requests;
-	session_t *f_session;
-	uint_fast32_t f_flag;
-	driver_t *f_driver;
-};
-
-#define getSessionPtr(p) ((uintptr_t) p - offsetof(session_t, node))
-
-static inline session_t *getSessionFromList(const list_t *p)
-{
-	return ((session_t *) ((uintptr_t) p - offsetof(session_t, brothers)));
-}
-
-extern list_t session_list;
-extern session_t *focused_session;
-
-extern int session_initialize(void);
-
-extern session_t *session_find_by_request(const fs_request_t *);
-
-extern int session_create_file(struct file **, session_t *, const int);
-extern int session_destroy_file(session_t *, const int);
-extern void session_destroy_all_files(void);
-extern struct file *session_find_file(const session_t *, const int);
+// device.c
+extern driver_t *device_lookup(const char *);
 
 #endif

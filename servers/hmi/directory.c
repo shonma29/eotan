@@ -58,7 +58,7 @@ int if_walk(fs_request_t *req)
 		}
 
 		if (request->nwname)
-			if (parent->f_channel) {
+			if (parent->f_driver) {
 				error_no = ENOTDIR;
 				break;
 			}
@@ -115,7 +115,7 @@ int if_walk(fs_request_t *req)
 		file->f_flag = O_ACCMODE;
 
 		if (driver)
-			file->f_channel = driver->channel;
+			file->f_driver = driver;
 
 		fsmsg_t *response = &(req->packet);
 		//response->header.token = req->packet.header.token;

@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
 #include <fcntl.h>
+#include <sys/unistd.h>
 #include <fs/vfs.h>
 #include <nerve/kcall.h>
 #include <libserv.h>
@@ -33,7 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "session.h"
 #include "mouse.h"
 
-#define MASK_UNSUPPORTED_MODE (O_APPEND | O_TRUNC)
+#define MASK_UNSUPPORTED_MODE (O_APPEND | O_CREAT | O_TRUNC)
 
 static char line[4096];
 
@@ -58,7 +59,7 @@ int if_open(fs_request_t *req)
 		}
 
 		//TODO support access to directory
-		if (!(file->f_channel)) {
+		if (!(file->f_driver)) {
 			error_no = EISDIR;
 			break;
 		}
@@ -73,15 +74,41 @@ int if_open(fs_request_t *req)
 			break;
 		}
 
-		//TODO !check if the mode is allowed to the channel
-
 		if (!vfs_check_flags(request->mode)
 				|| (request->mode & MASK_UNSUPPORTED_MODE)) {
 			error_no = EINVAL;
 			break;
 		}
 
+		int check_bits;
+		switch (request->mode & O_ACCMODE) {
+		case O_RDONLY:
+			check_bits = R_OK;
+			break;
+		case O_WRONLY:
+			check_bits = W_OK;
+			break;
+		case O_RDWR:
+			check_bits = R_OK | W_OK;
+			break;
+		default:
+			check_bits = -1;
+			break;
+		}
+
+		if ((file->f_driver->permission & check_bits) != check_bits) {
+			error_no = EACCES;
+			break;
+		}
+#if 0
+		if ((session->type != TYPE_NONE)
+				&& (session->type != file->f_driver->type)) {
+			error_no = EBUSY;
+			break;
+		}
+#endif
 		file->f_flag = request->mode & O_ACCMODE;
+		session->type = file->f_driver->type;
 
 		fsmsg_t *response = &(req->packet);
 		//response->header.token = req->packet.header.token;
@@ -221,7 +248,7 @@ int if_write(fs_request_t *req)
 static ER_UINT _write(struct file *file, const UW size, const char *inbuf,
 		const int thread_id)
 {
-	switch (file->f_channel) {
+	switch (file->f_driver->channel) {
 	case CONS:
 		mouse_hide();
 		terminal_write((char *) inbuf, file->f_session->state, size);

@@ -32,7 +32,10 @@ For more information, please refer to <http://unlicense.org/>
 #include <libserv.h>
 #include "hmi.h"
 #include "session.h"
+#include "keyboard.h"
 #include "mouse.h"
+
+#define MASK_EVENT_TYPE (1)
 
 static bool raw_mode;
 
@@ -41,16 +44,47 @@ static char interrupt_buf[
 	lfq_buf_size(sizeof(hmi_interrupt_t), INTERRUPT_QUEUE_SIZE)
 ];
 
+static void _process_keyboard(const int);
+static void _enqueue_to_cons(const int);
 static bool _event_is_full(event_buf_t *);
 static void _event_putc(event_buf_t *, const char);
 
+static void (*processors[])(const int) = {
+	_process_keyboard,
+	window_focus
+};
 
-void event_write(const int d)
+
+void event_process_interrupt(void)
 {
-	if (!focused_session)
+	for (hmi_interrupt_t event; !lfq_dequeue(&interrupt_queue, &event);) {
+		if ((event.type & (~MASK_EVENT_TYPE)))
+			continue;
+
+		processors[event.type & MASK_EVENT_TYPE](event.data);
+	}
+
+	//TODO reply altogether here
+}
+
+static void _process_keyboard(const int data)
+{
+	int ascii_code = keyboard_convert(data);
+	if (ascii_code < 0)
 		return;
 
-	unsigned char buf = (unsigned char) (d & 0xff);
+	if (!focused_session)
+		return;
+#if 0
+	if (focused_session->type == TYPE_CONS)
+		_enqueue_to_cons(ascii_code);
+#endif
+	_enqueue_to_cons(ascii_code);
+}
+
+static void _enqueue_to_cons(const int ascii_code)
+{
+	unsigned char buf = (unsigned char) (ascii_code & 0xff);
 
 	if (!raw_mode) {
 		if (buf == 0x03) {

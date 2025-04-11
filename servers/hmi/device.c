@@ -25,7 +25,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <string.h>
-#include "hmi.h"
+#include <sys/unistd.h>
+#include "device.h"
 
 typedef struct {
 	char *name;
@@ -33,10 +34,10 @@ typedef struct {
 } driver_table_t;
 
 static driver_table_t table[] = {
-	{ "cons", { CONS } },
-	{ "consctl", { CONSCTL } },
-	{ "draw", { DRAW } },
-	{ "event", { EVENT } }
+	{ "cons", { CONS, TYPE_CONS, R_OK | W_OK } },
+	{ "consctl", { CONSCTL, TYPE_CONS, W_OK } },
+	{ "draw", { DRAW, TYPE_WINDOW, W_OK } },
+	{ "event", { EVENT, TYPE_WINDOW, R_OK } }
 };
 
 

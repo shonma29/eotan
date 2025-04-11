@@ -33,8 +33,6 @@ For more information, please refer to <http://unlicense.org/>
 #include "keyboard.h"
 #include "mouse.h"
 
-#define MASK_EVENT_TYPE (1)
-
 enum {
 	SESSIONS = 0x01,
 	WINDOWS = 0x02,
@@ -52,13 +50,8 @@ Display *display = &(sysinfo->display);
 
 slab_t request_slab;
 static int initialized_resources = 0;
-static int (*processors[])(const int) = {
-	keyboard_convert,
-	window_focus
-};
 
 static int no_support(fs_request_t *);
-static void _process_interrupt(void);
 static int accept(void);
 static int initialize(void);
 
@@ -85,25 +78,12 @@ static int no_support(fs_request_t *req)
 	return 0;
 }
 
-static void _process_interrupt(void)
-{
-	for (hmi_interrupt_t event; !lfq_dequeue(&interrupt_queue, &event);) {
-		if ((event.type & (~MASK_EVENT_TYPE))) {
-			continue;
-		}
-
-		int d = processors[event.type & MASK_EVENT_TYPE](event.data);
-		if (d >= 0)
-			event_write(d);
-	}
-}
-
 static int accept(void)
 {
 	fs_request_t *req = slab_alloc(&request_slab);
 	if (!req) {
 		kcall->ipc_listen();
-		_process_interrupt();
+		event_process_interrupt();
 		return 0;
 	}
 
@@ -117,7 +97,7 @@ static int accept(void)
 		ER_UINT size = kcall->ipc_receive(PORT_WINDOW, &(req->tag),
 				&(req->packet));
 		if (size == E_RLWAI) {
-			_process_interrupt();
+			event_process_interrupt();
 			continue;
 		}
 
@@ -203,6 +183,8 @@ static int initialize(void)
 	} else
 		initialized_resources |= PORT;
 
+	keyboard_initialize();
+	mouse_initialize();
 	return 0;
 }
 
@@ -214,9 +196,6 @@ void start(VP_INT exinf)
 	else {
 		log_info(MYNAME ": start\n");
 
-		keyboard_initialize();
-		mouse_initialize();
-
 		while (!accept());
 
 		log_info(MYNAME ": end\n");
@@ -226,7 +205,5 @@ void start(VP_INT exinf)
 
 	}
 
-	//TODO close port
-	//TODO release mutex
 	kcall->thread_end_and_destroy();
 }

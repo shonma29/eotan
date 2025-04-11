@@ -620,11 +620,13 @@ int _walk(mm_file_t **file, mm_process_t *process, const int thread_id,
 		if (!(ns->name[i])) {
 			if (req->walkpath[i] == PATH_DELIMITER) {
 				offset = i;
+				len -= offset;
 				root = ns->root;
 				break;
 			} else if (!(req->walkpath[i])) {
 				req->walkpath[0] = PATH_DELIMITER;
 				req->walkpath[1] = PATH_NUL;
+				len = 1;
 				root = ns->root;
 				break;
 			}

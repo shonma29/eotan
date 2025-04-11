@@ -120,7 +120,7 @@ int window_destroy(window_t *w)
 	return error_no;
 }
 
-int window_focus(const int data)
+void window_focus(const int data)
 {
 	if (data >= 0) {
 #if 0
@@ -150,17 +150,20 @@ int window_focus(const int data)
 			&& (last_point.x < w->outer.r.max.x)
 			&& (last_point.y < w->outer.r.max.y)
 		) {
+#if 0
+			if (focused_session == s)
+				//TODO send 'move' to current focused session
+#endif
 			if (focused_session != s)
+				//TODO send 'out' to previously focused session
+				//TODO send 'in' to current focused session
 				focused_session = s;
 
-			//TODO write to event buf
-			//return data;
-			return (-1);
+			return;
 		}
 	}
 
 	if (focused_session)
+		//TODO send 'out' to old focus
 		focused_session = NULL;
-
-	return (-1);
 }

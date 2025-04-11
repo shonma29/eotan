@@ -236,6 +236,7 @@ static session_t *_create(const int sid)
 	list_initialize(&(session->brothers));
 	session->window = NULL;
 	session->state = NULL;
+	session->type = TYPE_NONE;
 
 	list_initialize(&(session->event.readers));
 	// buffer size must be power of 2
@@ -302,7 +303,7 @@ int session_create_file(struct file **file, session_t *session, const int fid)
 	list_initialize(&(f->requests));
 	f->f_session = session;
 	f->f_flag = 0;
-	f->f_channel = 0;
+	f->f_driver = NULL;
 	*file = f;
 	return 0;
 }
