@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <errno.h>
 #include <fcntl.h>
 #include <fs/config.h>
+#include <nerve/global.h>
 #include <nerve/kcall.h>
 #include "hmi.h"
 #include "session.h"
@@ -133,7 +134,7 @@ int if_attach(fs_request_t *req)
 
 void session_bind_terminal(esc_state_t *state, const window_t *w)
 {
-	terminal_initialize(state);
+	terminal_initialize(state, &(sysinfo->display));
 
 	Screen *s = state->screen;
 	s->base = (void *) ((uintptr_t) display->base

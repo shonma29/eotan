@@ -1,5 +1,5 @@
-#ifndef __TERMINAL_H__
-#define __TERMINAL_H__
+#ifndef _HMI_TERMINAL_H_
+#define _HMI_TERMINAL_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -46,7 +46,7 @@ typedef struct _esc_state {
 	char buf[ESC_BUF_SIZE];
 } esc_state_t;
 
-extern void terminal_initialize(esc_state_t *);
+extern void terminal_initialize(esc_state_t *, const Display *);
 extern int terminal_write(char *, esc_state_t *, const size_t);
 
 #endif

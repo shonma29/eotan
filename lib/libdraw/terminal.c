@@ -25,8 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <console.h>
-#include <nerve/global.h>
-#include "terminal.h"
+#include <hmi/terminal.h>
 
 #define ESC 0x1b
 #define CSI '['
@@ -51,10 +50,10 @@ static void state_exec_csi(esc_state_t *);
 static void eputc(esc_state_t *, const char);
 
 
-void terminal_initialize(esc_state_t *state)
+void terminal_initialize(esc_state_t *state, const Display *display)
 {
 	if (!cns)
-		cns = getConsole(&root, &(sysinfo->display), &default_font);
+		cns = getConsole(&root, display, &default_font);
 
 	state->func = state_null;
 	*(state->screen) = root;

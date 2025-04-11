@@ -27,10 +27,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <set/tree.h>
+#include <hmi/terminal.h>
 #include <hmi/window.h>
 #include "api.h"
 #include "device.h"
-#include "terminal.h"
 
 typedef struct {
 	list_t readers;
