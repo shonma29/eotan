@@ -26,13 +26,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
 #include <hmi/pointer.h>
 
 extern pointer_pattern_t pointer[NUM_OF_POINTER_STYLE];
 
-extern ER mouse_initialize(void);
+extern int mouse_initialize(void);
 extern void mouse_handle(const int, const int);
+extern int mouse_encode_data(const int, const int, const int);
 extern void mouse_show(void);
 extern void mouse_hide(void);
 

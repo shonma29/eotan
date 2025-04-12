@@ -25,7 +25,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <string.h>
-#include <event.h>
 #include <nerve/kcall.h>
 #include <win/keyboard.h>
 #include <sys/errno.h>
@@ -42,6 +41,7 @@ For more information, please refer to <http://unlicense.org/>
 #define SIZE_OF_EVENT (sizeof(event_message_t))
 
 static bool raw_mode;
+static event_message_t keyboard_message = { event_keyboard, 0 };
 
 volatile lfq_t interrupt_queue;
 static char interrupt_buf[
@@ -52,7 +52,6 @@ static void _process_keyboard(const int);
 static void _enqueue_to_cons(const int);
 static bool _event_is_full(event_buf_t *);
 static void _event_putc(event_buf_t *, const char);
-static void _enqueue_to_event(const event_message_t *);
 static bool _event_is_full_for_message(event_buf_t *);
 static void _event_put(event_buf_t *, const event_message_t *);
 
@@ -77,19 +76,20 @@ void event_process_interrupt(void)
 static void _process_keyboard(const int data)
 {
 	int ascii_code = keyboard_convert(data);
-	if (ascii_code < 0)
-		return;
 
 	if (!focused_session)
 		return;
 
 	switch (focused_session->type) {
 	case TYPE_CONS:
+		if (ascii_code < 0)
+			return;
+
 		_enqueue_to_cons(ascii_code);
 		break;
 	case TYPE_WINDOW: {
-			event_message_t message = { event_keyboard, data };
-			_enqueue_to_event(&message);
+			keyboard_message.data = data;
+			event_enqueue(&keyboard_message);
 		}
 		break;
 	default:
@@ -173,7 +173,7 @@ static void _event_putc(event_buf_t *p, const char c)
 	p->write_position &= p->position_mask;
 }
 
-static void _enqueue_to_event(const event_message_t *message)
+void event_enqueue(const event_message_t *message)
 {
 	event_buf_t *p = &(focused_session->event);
 	if (list_is_empty(&(p->readers))) {

@@ -38,8 +38,6 @@ static int y;
 static int buttons = 0;
 static int last_sent;
 
-static int _encode_data(void);
-
 
 void mouse_handle(const int type, const int d)
 {
@@ -73,7 +71,7 @@ void mouse_handle(const int type, const int d)
 	else if (y >= height)
 		y = height - 1;
 
-	int data = _encode_data();
+	int data = mouse_encode_data(buttons, x, y);
 	if (data != last_sent) {
 		message.data = data;
 
@@ -90,7 +88,7 @@ void mouse_handle(const int type, const int d)
 	}
 }
 
-static int _encode_data(void)
+int mouse_encode_data(const int buttons, const int x, const int y)
 {
 	return (buttons << 24) | (x << 12) | y;
 }
@@ -105,12 +103,12 @@ void mouse_hide(void)
 	pointer_restore(display);
 }
 
-ER mouse_initialize(void)
+int mouse_initialize(void)
 {
 	x = (display->r.max.x - display->r.min.x) / 2 - POINTER_WIDTH;
 	y = (display->r.max.y - display->r.min.y) / 2 - POINTER_HEIGHT;
 	mouse_show();
-	last_sent = _encode_data();
+	last_sent = mouse_encode_data(buttons, x, y);
 	window_focus(last_sent);
 
 	T_CISR pk_cisr = {

@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <event.h>
 #include <services.h>
 #include <set/lf_queue.h>
 #include <set/slab.h>
@@ -62,6 +63,7 @@ extern ER_UINT draw_write(const window_t *, const UW, const char *, const int);
 extern volatile lfq_t interrupt_queue;
 
 extern void event_process_interrupt(void);
+extern void event_enqueue(const event_message_t *);
 extern ER_UINT consctl_write(const UW, const char *);
 extern int event_initialize(void);
 

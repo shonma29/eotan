@@ -34,6 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 
 static slab_t window_slab;
 static Point last_point = { -1, -1 };
+static event_message_t mouse_message = { event_mouse, 0 };
 
 
 int window_initialize(void)
@@ -153,6 +154,13 @@ void window_focus(const int data)
 				//TODO send 'in' to current focused session
 				focused_session = s;
 
+			if (s->type == TYPE_WINDOW) {
+				mouse_message.data = mouse_encode_data(
+						data >> 24,
+						last_point.x - w->outer.r.min.x,
+						last_point.y - w->outer.r.min.y);
+				event_enqueue(&mouse_message);
+			}
 			return;
 		}
 	}
