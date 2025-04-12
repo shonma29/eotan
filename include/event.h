@@ -41,4 +41,9 @@ typedef enum {
 #define EVENT_IO (2)
 #define EVENT_SERVICE (4)
 
+typedef struct {
+	int type;
+	int data;
+} event_message_t;
+
 #endif

@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <string.h>
+#include <event.h>
 #include <nerve/kcall.h>
 #include <win/keyboard.h>
 #include <sys/errno.h>
@@ -38,6 +39,8 @@ For more information, please refer to <http://unlicense.org/>
 
 #define MASK_EVENT_TYPE (1)
 
+#define SIZE_OF_EVENT (sizeof(event_message_t))
+
 static bool raw_mode;
 
 volatile lfq_t interrupt_queue;
@@ -49,6 +52,9 @@ static void _process_keyboard(const int);
 static void _enqueue_to_cons(const int);
 static bool _event_is_full(event_buf_t *);
 static void _event_putc(event_buf_t *, const char);
+static void _enqueue_to_event(const event_message_t *);
+static bool _event_is_full_for_message(event_buf_t *);
+static void _event_put(event_buf_t *, const event_message_t *);
 
 static void (*processors[])(const int) = {
 	_process_keyboard,
@@ -77,8 +83,18 @@ static void _process_keyboard(const int data)
 	if (!focused_session)
 		return;
 
-	if (focused_session->type == TYPE_CONS)
+	switch (focused_session->type) {
+	case TYPE_CONS:
 		_enqueue_to_cons(ascii_code);
+		break;
+	case TYPE_WINDOW: {
+			event_message_t message = { event_keyboard, data };
+			_enqueue_to_event(&message);
+		}
+		break;
+	default:
+		break;
+	}
 }
 
 static void _enqueue_to_cons(const int ascii_code)
@@ -154,6 +170,46 @@ static void _event_putc(event_buf_t *p, const char c)
 {
 	p->buf[p->write_position] = c;
 	p->write_position++;
+	p->write_position &= p->position_mask;
+}
+
+static void _enqueue_to_event(const event_message_t *message)
+{
+	event_buf_t *p = &(focused_session->event);
+	if (list_is_empty(&(p->readers))) {
+		if (_event_is_full_for_message(p)) {
+			log_warning(MYNAME ": event overflow %d\n",
+					focused_session->node.key);
+			//TODO notify 'overflow'
+			p->write_position = p->read_position;
+		}
+
+		_event_put(p, message);
+	} else {
+		//TODO !enqueue to reply list if less than size
+		_event_put(p, message);
+
+		list_t *head = list_dequeue(&(p->readers));
+		fs_request_t *req = getRequestFromQueue(head);
+		int error_no = reply_read(req);
+		if (error_no)
+			log_warning(MYNAME ": reply error %d\n", error_no);
+	}
+}
+
+static bool _event_is_full_for_message(event_buf_t *p)
+{
+	if (p->read_position)
+		return (p->write_position == (p->read_position - SIZE_OF_EVENT));
+	else
+		return (p->write_position == (p->size - SIZE_OF_EVENT));
+}
+
+static void _event_put(event_buf_t *p, const event_message_t *message)
+{
+	event_message_t *q = (event_message_t *) &(p->buf[p->write_position]);
+	*q = *message;
+	p->write_position += SIZE_OF_EVENT;
 	p->write_position &= p->position_mask;
 }
 
