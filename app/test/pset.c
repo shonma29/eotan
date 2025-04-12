@@ -48,8 +48,8 @@ static struct {
 } packet;
 
 static int _blit(const int, const Display *);
-static void _circle(Display *, const int, const int, const int);
-static void _string(Display *);
+static void _circle(const Display *, const int, const int, const int);
+static void _string(const Display *);
 
 
 static int _blit(const int fd, const Display *display)
@@ -72,7 +72,8 @@ static int _blit(const int fd, const Display *display)
 	return 0;
 }
 
-static void _circle(Display *display, const int x, const int y, const int radius)
+static void _circle(const Display *display, const int x, const int y,
+		const int radius)
 {
 	int deg = 0;
 	for (int i = 0; i < SPLIT; i++) {
@@ -91,7 +92,7 @@ static void _circle(Display *display, const int x, const int y, const int radius
 	}
 }
 
-static void _string(Display *display)
+static void _string(const Display *display)
 {
 	Color_Rgb c[] = {
 		{ 0xff, 0xff, 0xff },

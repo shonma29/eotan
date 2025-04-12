@@ -31,7 +31,6 @@ For more information, please refer to <http://unlicense.org/>
 #define CSI '['
 #define DELIM ';'
 
-static Screen root;
 static Console *cns = NULL;
 
 static inline bool is_decimal(const char ch)
@@ -53,10 +52,9 @@ static void eputc(esc_state_t *, const char);
 void terminal_initialize(esc_state_t *state, const Display *display)
 {
 	if (!cns)
-		cns = getConsole(&root, display, &default_font);
+		cns = getConsole(state->screen, display, &default_font);
 
 	state->func = state_null;
-	*(state->screen) = root;
 }
 
 int terminal_write(char *inbuf, esc_state_t *state, const size_t size)
