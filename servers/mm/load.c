@@ -50,7 +50,7 @@ typedef struct {
 static char buf[sizeof(init_arg_t) + PATH_MAX + sizeof(thread_local_t)];
 
 
-void init(void)
+void load(void)
 {
 	do {
 		sys_args_t args;

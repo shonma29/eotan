@@ -144,7 +144,7 @@ extern int process_replace(mm_process_t *process, void *address,
 		const size_t stack_size);
 extern int process_release_body(mm_process_t *, const int);
 extern int process_destroy(mm_process_t *, const int);
-extern int create_init(const pid_t, const FP);
+extern int spawn(const pid_t, const FP);
 extern mm_thread_t *thread_find(const ID);
 
 extern int file_initialize(void);
@@ -161,7 +161,7 @@ extern int session_destroy_file(mm_file_t *);
 extern mm_namespace_t *process_allocate_ns(void);
 extern void process_deallocate_ns(mm_namespace_t *);
 
-extern void init(void);
+extern void load(void);
 
 extern void default_handler(VP_INT);
 extern void page_fault_handler(VP_INT);

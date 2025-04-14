@@ -161,7 +161,7 @@ static int initialize(void)
 	else
 		initialized_resources |= HANDLERS;
 
-	result = create_init(INIT_PID, init);
+	result = spawn(INIT_PID, load);
 	if (result) {
 		log_err(MYNAME ": init failed %d\n", result);
 		return INIT;
