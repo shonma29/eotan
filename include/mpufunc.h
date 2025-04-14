@@ -74,10 +74,12 @@ extern noreturn void panic(char *);
 /* address.c */
 extern void *getPageAddress(const PTE *, const void *);
 
-/* util.c */
+/* memcpy.c */
 extern ER memcpy_k2u(thread_t *, void *, const void *, const size_t);
 extern ER memcpy_u2k(thread_t *, void *, const void *,
 		const size_t);
+
+/* strncpy.c */
 extern ER_UINT strncpy_u2k(thread_t *, void *, const void *,
 		const size_t);
 
