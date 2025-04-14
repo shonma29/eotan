@@ -60,12 +60,12 @@ void load(void)
 		args.arg3 = MREPL;
 		if (kcall->ipc_call(PORT_MM, &args, sizeof(args))
 				!= sizeof(sys_reply_t)) {
-			log_info("init: call failed\n");
+			log_info("load: call failed\n");
 			break;
 		} else {
 			sys_reply_t *reply = (sys_reply_t *) &args;
 			if (reply->result) {
-				log_info("init: attach failed %d\n",
+				log_info("load: attach failed %d\n",
 						reply->result);
 				break;
 			}
@@ -74,7 +74,7 @@ void load(void)
 		char *pathname = INIT_PATH_NAME;
 		size_t pathlen = strlen(pathname);
 		if (pathlen >= PATH_MAX) {
-			log_err("init: ENAMETOOLONG\n");
+			log_err("load: ENAMETOOLONG\n");
 			break;
 		}
 
@@ -83,7 +83,7 @@ void load(void)
 		args.arg3 = roundUp(sizeof(init_arg_t) + pathlen, sizeof(int))
 				+ sizeof(thread_local_t);
 		if (args.arg3 > sizeof(buf)) {
-			log_err("init: ENOMEM\n");
+			log_err("load: ENOMEM\n");
 			break;
 		}
 
@@ -100,7 +100,7 @@ void load(void)
 		args.syscall_no = syscall_exec;
 		args.arg1 = (int) pathname;
 		args.arg2 = (int) p;
-		log_info("init: exec(%s)\n", pathname);
+		log_info("load: exec(%s)\n", pathname);
 		kcall->ipc_call(PORT_MM, &args, sizeof(args));
 	} while (false);
 
