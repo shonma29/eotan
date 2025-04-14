@@ -166,6 +166,7 @@ extern void load(void);
 extern void default_handler(VP_INT);
 extern void page_fault_handler(VP_INT);
 
+extern int create_slab(slab_t *, const size_t, const size_t);
 extern int create_id_store(sequence_t *, const size_t);
 
 #endif

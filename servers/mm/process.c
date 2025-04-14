@@ -100,28 +100,13 @@ static node_t **thread_lookup_selector(const tree_t *tree, const int key)
 
 int process_initialize(void)
 {
-	// sequence slab is shared by many object types
-	sequence_slab.unit_size = SEQUENCE_MAP_SIZE(PROCESS_MAX);
-	sequence_slab.block_size = PAGE_SIZE;
-	sequence_slab.min_block = 1;
-	sequence_slab.max_block = slab_max_block(PROCESS_MAX * 2, PAGE_SIZE,
-			SEQUENCE_MAP_SIZE(PROCESS_MAX));
-	sequence_slab.palloc = kcall->palloc;
-	sequence_slab.pfree = kcall->pfree;
-	if (slab_create(&sequence_slab))
+	if (create_slab(&sequence_slab, SEQUENCE_MAP_SIZE(PROCESS_MAX),
+			PROCESS_MAX * 2))
 		return SEQUENCE_SLAB;
 	else
 		initialized_resources |= SEQUENCE_SLAB;
 
-	// initialize process table
-	process_slab.unit_size = sizeof(mm_process_t);
-	process_slab.block_size = PAGE_SIZE;
-	process_slab.min_block = 1;
-	process_slab.max_block = slab_max_block(PROCESS_MAX, PAGE_SIZE,
-			sizeof(mm_process_t));
-	process_slab.palloc = kcall->palloc;
-	process_slab.pfree = kcall->pfree;
-	if (slab_create(&process_slab))
+	if (create_slab(&process_slab, sizeof(mm_process_t), PROCESS_MAX))
 		return PROCESS_SLAB;
 	else
 		initialized_resources |= PROCESS_SLAB;
@@ -137,15 +122,7 @@ int process_initialize(void)
 	if (sequence_get(&process_sequence) < 0)
 		return PROCESS_SEQUENCE;
 
-	// initialize thread table
-	thread_slab.unit_size = sizeof(mm_thread_t);
-	thread_slab.block_size = PAGE_SIZE;
-	thread_slab.min_block = 1;
-	thread_slab.max_block = slab_max_block(THREAD_MAX, PAGE_SIZE,
-			sizeof(mm_thread_t));
-	thread_slab.palloc = kcall->palloc;
-	thread_slab.pfree = kcall->pfree;
-	if (slab_create(&thread_slab))
+	if (create_slab(&thread_slab, sizeof(mm_thread_t), THREAD_MAX))
 		return THREAD_SLAB;
 	else
 		initialized_resources |= THREAD_SLAB;
@@ -158,15 +135,7 @@ int process_initialize(void)
 	else
 		initialized_resources |= THREAD_SEQUENCE;
 
-	// initialize namespace table
-	namespace_slab.unit_size = sizeof(mm_namespace_t);
-	namespace_slab.block_size = PAGE_SIZE;
-	namespace_slab.min_block = 1;
-	namespace_slab.max_block = slab_max_block(NAMESPACE_MAX, PAGE_SIZE,
-			sizeof(mm_namespace_t));
-	namespace_slab.palloc = kcall->palloc;
-	namespace_slab.pfree = kcall->pfree;
-	if (slab_create(&namespace_slab))
+	if (create_slab(&namespace_slab, sizeof(mm_namespace_t), NAMESPACE_MAX))
 		return NAMESPACE_SLAB;
 	else
 		initialized_resources |= NAMESPACE_SLAB;
@@ -764,6 +733,17 @@ mm_namespace_t *process_allocate_ns(void)
 void process_deallocate_ns(mm_namespace_t *ns)
 {
 	slab_free(&namespace_slab, ns);
+}
+
+int create_slab(slab_t *slab, const size_t unit_size, const size_t max_unit)
+{
+	slab->unit_size = unit_size;
+	slab->block_size = PAGE_SIZE;
+	slab->min_block = 1;
+	slab->max_block = slab_max_block(max_unit, PAGE_SIZE, unit_size);
+	slab->palloc = kcall->palloc;
+	slab->pfree = kcall->pfree;
+	return slab_create(slab);
 }
 
 int create_id_store(sequence_t *seq, const size_t max)

@@ -54,15 +54,7 @@ static void session_deallocate_file(mm_file_t *);
 
 int file_initialize(void)
 {
-	// initialize file table
-	file_slab.unit_size = sizeof(mm_file_t);
-	file_slab.block_size = PAGE_SIZE;
-	file_slab.min_block = 1;
-	file_slab.max_block = slab_max_block(FILE_MAX, PAGE_SIZE,
-			sizeof(mm_file_t));
-	file_slab.palloc = kcall->palloc;
-	file_slab.pfree = kcall->pfree;
-	if (slab_create(&file_slab))
+	if (create_slab(&file_slab, sizeof(mm_file_t), FILE_MAX))
 		return FILE_SLAB;
 	else
 		initialized_resources |= FILE_SLAB;
@@ -72,28 +64,12 @@ int file_initialize(void)
 	else
 		initialized_resources |= FILE_SEQUENCE;
 
-	// initialize descriptor table
-	descriptor_slab.unit_size = sizeof(mm_descriptor_t);
-	descriptor_slab.block_size = PAGE_SIZE;
-	descriptor_slab.min_block = 1;
-	descriptor_slab.max_block = slab_max_block(FILE_MAX, PAGE_SIZE,
-			sizeof(mm_descriptor_t));
-	descriptor_slab.palloc = kcall->palloc;
-	descriptor_slab.pfree = kcall->pfree;
-	if (slab_create(&descriptor_slab))
+	if (create_slab(&descriptor_slab, sizeof(mm_descriptor_t), FILE_MAX))
 		return DESCRIPTOR_SLAB;
 	else
 		initialized_resources |= DESCRIPTOR_SLAB;
 
-	// initialize session table
-	session_slab.unit_size = sizeof(mm_session_t);
-	session_slab.block_size = PAGE_SIZE;
-	session_slab.min_block = 1;
-	session_slab.max_block = slab_max_block(SESSION_MAX, PAGE_SIZE,
-			sizeof(mm_session_t));
-	session_slab.palloc = kcall->palloc;
-	session_slab.pfree = kcall->pfree;
-	if (slab_create(&session_slab))
+	if (create_slab(&session_slab, sizeof(mm_session_t), SESSION_MAX))
 		return SESSION_SLAB;
 	else
 		initialized_resources |= SESSION_SLAB;

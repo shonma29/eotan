@@ -121,14 +121,7 @@ static int initialize(void)
 	else
 		initialized_resources |= DEVICES;
 
-	request_slab.unit_size = sizeof(mm_request_t);
-	request_slab.block_size = PAGE_SIZE;
-	request_slab.min_block = 1;
-	request_slab.max_block = slab_max_block(REQUEST_MAX, PAGE_SIZE,
-			sizeof(mm_request_t));
-	request_slab.palloc = kcall->palloc;
-	request_slab.pfree = kcall->pfree;
-	if (slab_create(&request_slab))
+	if (create_slab(&request_slab, sizeof(mm_request_t), REQUEST_MAX))
 		return REQUEST_SLAB;
 	else
 		initialized_resources |= REQUEST_SLAB;
