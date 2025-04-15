@@ -79,7 +79,6 @@ typedef struct {
 	struct {
 		mm_segment_t exec;
 		mm_segment_t heap;
-		mm_segment_t stack;
 	} segments;
 	void *directory;
 	list_t threads;

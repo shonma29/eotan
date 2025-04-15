@@ -173,7 +173,6 @@ mm_process_t *process_duplicate(mm_process_t *src, const int flags, void *entry,
 
 		dest->segments.exec = src->segments.exec;
 		dest->segments.heap = src->segments.heap;
-		dest->segments.stack = src->segments.stack;
 
 		for (int fd = 0; fd < FILES_PER_PROCESS; fd++) {
 			mm_descriptor_t *s = process_find_desc(src, fd);
@@ -312,14 +311,6 @@ int process_replace(mm_process_t *process,
 	process->segments.heap.len = 0;
 	process->segments.heap.max = pageRoundUp(USER_HEAP_MAX_ADDR) - end;
 	process->segments.heap.attr = type_heap;
-
-	process->segments.stack.max =
-			THREADS_PER_PROCESS * USER_STACK_MAX_SIZE;
-	process->segments.stack.addr = (void *) (
-			(uintptr_t) USER_STACK_END_ADDR
-			- process->segments.stack.max);
-	process->segments.stack.len = 0;
-	process->segments.stack.attr = type_heap;
 
 	//TODO check if directory is current PDE
 	tlb_flush_all();
@@ -475,11 +466,6 @@ int spawn(const pid_t pid, const FP entry)
 	p->segments.heap.max = 0;
 	p->segments.heap.attr = type_heap;
 
-	p->segments.stack.addr = (void *) 0;
-	p->segments.stack.len = 0;
-	p->segments.stack.max = 0;
-	p->segments.stack.attr = type_stack;
-
 	p->ppid = INIT_PPID;
 	p->pgid = INIT_PID;
 	p->uid = INIT_UID;
@@ -524,7 +510,6 @@ static int process_create(mm_process_t **process, const int pid)
 
 		p->segments.exec.attr = attr_nil;
 		p->segments.heap.attr = attr_nil;
-		p->segments.stack.attr = attr_nil;
 
 		//TODO take over fields when duplicate?
 		list_initialize(&(p->threads));
@@ -598,11 +583,6 @@ static int release_memory(mm_process_t *process)
 	process->segments.heap.len = 0;
 	process->segments.heap.max = 0;
 	process->segments.heap.attr = attr_nil;
-
-	process->segments.stack.addr = (void *) 0;
-	process->segments.stack.len = 0;
-	process->segments.stack.max = 0;
-	process->segments.stack.attr = attr_nil;
 
 	return 0;
 }
