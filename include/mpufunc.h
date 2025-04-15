@@ -90,7 +90,7 @@ extern ER scattered_copy_u2k(const thread_t *, const size_t, copy_range_t *,
 /* memory.c */
 extern PTE *copy_kernel_page_table(void);
 extern ER copy_user_pages(PTE *, const PTE *, size_t);
-extern ER map_user_pages(PTE *, VP, size_t);
+extern ER map_user_pages(PTE *, VP, size_t, const int);
 extern ER unmap_user_pages(PTE *, VP, size_t);
 extern ER move_stack(const PTE *, void *, const void *,
 		const size_t);

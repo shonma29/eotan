@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <stdint.h>
 #include <string.h>
+#include <sys/unistd.h>
 #include <mpufunc.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
@@ -111,7 +112,7 @@ ER copy_user_pages(PTE *dest, const PTE *src, size_t cnt)
 				if (!p)
 					return E_NOMEM;
 
-				destp[j] = calc_pte(p, ATTR_USER);
+				destp[j] = calc_pte(p, srcp[j] & ATTR_USER);
 			}
 
 			memcpy(kern_p2v(p),
@@ -124,8 +125,9 @@ ER copy_user_pages(PTE *dest, const PTE *src, size_t cnt)
 	return E_OK;
 }
 
-ER map_user_pages(PTE *dir, VP addr, size_t cnt)
+ER map_user_pages(PTE *dir, VP addr, size_t cnt, const int permission)
 {
+	uint32_t attr = (permission & W_OK) ? ATTR_USER : ATTR_USER_READ_ONLY;
 	size_t n = (size_t) getDirectoryOffset((void *) SUPERVISOR_START)
 			* PTE_PER_PAGE;
 	size_t i = (((unsigned int) addr) >> (BITS_PAGE + BITS_OFFSET))
@@ -167,7 +169,7 @@ ER map_user_pages(PTE *dir, VP addr, size_t cnt)
 				if (!p)
 					return E_NOMEM;
 
-				page[j] = calc_pte(p, ATTR_USER);
+				page[j] = calc_pte(p, attr);
 //TODO reset page cache
 			}
 		}

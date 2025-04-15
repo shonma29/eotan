@@ -26,6 +26,8 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <services.h>
+#include <sys/unistd.h>
+#include <sys/signal.h>
 #include <mpufunc.h>
 #include <nerve/icall.h>
 #include <nerve/kcall.h>
@@ -71,7 +73,8 @@ static void expand_stack(const int tid, const int addr)
 						+ s->max)))) {
 			uintptr_t end = (uintptr_t) s->addr + s->max - s->len;
 			size_t size = pages(end - (uintptr_t) start);
-			if (map_user_pages(p->directory, start, size))
+			if (map_user_pages(p->directory, start, size,
+					R_OK | W_OK))
 				//TODO test
 				//TODO skip holes on recovery
 				unmap_user_pages(p->directory, start, size);
@@ -83,9 +86,8 @@ static void expand_stack(const int tid, const int addr)
 			}
 		}
 
-		//TODO test
-		//TODO define signal no
-		kill(tid, 0);
+		kcall->printk(MYNAME ": page fault %x\n", addr);
+		kill(tid, SIGSEGV);
 	} else
 		//TODO test
 		kcall->printk("mm: expand unknown thread=%d addr=%p\n",

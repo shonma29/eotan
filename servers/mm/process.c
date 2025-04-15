@@ -300,7 +300,7 @@ int process_replace(mm_process_t *process, const Elf32_Phdr *code,
 	uintptr_t start = pageRoundDown(code->p_vaddr);
 	uintptr_t end = pageRoundUp(code->p_vaddr + code->p_memsz);
 	if (map_user_pages(process->directory,
-			(void *) start, pages(end - start)))
+			(void *) start, pages(end - start), R_OK | X_OK))
 		return ENOMEM;
 
 	process->segments.exec.addr = (void *) start;
@@ -311,7 +311,7 @@ int process_replace(mm_process_t *process, const Elf32_Phdr *code,
 	start = pageRoundDown(data->p_vaddr);
 	end = pageRoundUp(data->p_vaddr + data->p_memsz);
 	if (map_user_pages(process->directory,
-			(void *) start, pages(end - start)))
+			(void *) start, pages(end - start), R_OK | W_OK))
 		return ENOMEM;
 
 	process->segments.data.addr = (void *) start;
@@ -464,7 +464,7 @@ int spawn(const pid_t pid, const FP entry)
 		return error_no;
 
 	if (map_user_pages(p->directory, (void *) PROCESS_LOCAL_ADDR,
-			pages(sizeof(*(p->local)))))
+			pages(sizeof(*(p->local))), R_OK))
 		//TODO release process
 		return ENOMEM;
 
@@ -576,7 +576,8 @@ static int map_user_stack(mm_process_t *process)
 	if (map_user_pages(process->directory,
 			(void *) pageRoundDown(USER_STACK_END_ADDR
 					- USER_STACK_INITIAL_SIZE),
-			pages(pageRoundUp(USER_STACK_INITIAL_SIZE))))
+			pages(pageRoundUp(USER_STACK_INITIAL_SIZE)),
+			R_OK | W_OK))
 		return ENOMEM;
 
 	return 0;
