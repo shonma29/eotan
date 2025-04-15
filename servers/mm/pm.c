@@ -24,7 +24,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <elf.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <init.h>
@@ -183,11 +182,7 @@ int mm_exec(mm_request_t *req)
 //			return ENOEXEC;
 
 		int thread_id = th->node.key;
-		result = process_replace(process,
-				(void *) (ro.p_vaddr),
-				rw.p_memsz ? (rw.p_vaddr + rw.p_memsz
-								- ro.p_vaddr)
-						: ro.p_memsz,
+		result = process_replace(process, &ro, &rw,
 				(void *) ehdr.e_entry,
 				(void *) (req->args.arg2),
 				req->args.arg3);

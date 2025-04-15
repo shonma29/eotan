@@ -172,6 +172,7 @@ mm_process_t *process_duplicate(mm_process_t *src, const int flags, void *entry,
 			break;
 
 		dest->segments.exec = src->segments.exec;
+		dest->segments.data = src->segments.data;
 		dest->segments.heap = src->segments.heap;
 
 		for (int fd = 0; fd < FILES_PER_PROCESS; fd++) {
@@ -275,9 +276,9 @@ mm_process_t *process_duplicate(mm_process_t *src, const int flags, void *entry,
 	return NULL;
 }
 
-int process_replace(mm_process_t *process,
-		void *address, const size_t size,
-		void *entry, const void *args, const size_t stack_size)
+int process_replace(mm_process_t *process, const Elf32_Phdr *code,
+		const Elf32_Phdr *data, void *entry, const void *args,
+		const size_t stack_size)
 {
 	if (stack_size > USER_STACK_INITIAL_SIZE)
 		return E2BIG;
@@ -296,8 +297,8 @@ int process_replace(mm_process_t *process,
 	if (release_memory(process))
 		return EFAULT;
 
-	uintptr_t start = pageRoundDown((uintptr_t) address);
-	uintptr_t end = pageRoundUp((uintptr_t) address + size);
+	uintptr_t start = pageRoundDown(code->p_vaddr);
+	uintptr_t end = pageRoundUp(code->p_vaddr + code->p_memsz);
 	if (map_user_pages(process->directory,
 			(void *) start, pages(end - start)))
 		return ENOMEM;
@@ -306,6 +307,17 @@ int process_replace(mm_process_t *process,
 	process->segments.exec.len = end - start;
 	process->segments.exec.max = process->segments.exec.len;
 	process->segments.exec.attr = type_code;
+
+	start = pageRoundDown(data->p_vaddr);
+	end = pageRoundUp(data->p_vaddr + data->p_memsz);
+	if (map_user_pages(process->directory,
+			(void *) start, pages(end - start)))
+		return ENOMEM;
+
+	process->segments.data.addr = (void *) start;
+	process->segments.data.len = end - start;
+	process->segments.data.max = process->segments.data.len;
+	process->segments.data.attr = type_data;
 
 	process->segments.heap.addr = (void *) end;
 	process->segments.heap.len = 0;
@@ -461,6 +473,11 @@ int spawn(const pid_t pid, const FP entry)
 	p->segments.exec.max = 0;
 	p->segments.exec.attr = type_code;
 
+	p->segments.data.addr = (void *) 0;
+	p->segments.data.len = 0;
+	p->segments.data.max = 0;
+	p->segments.data.attr = type_data;
+
 	p->segments.heap.addr = (void *) 0;
 	p->segments.heap.len = 0;
 	p->segments.heap.max = 0;
@@ -509,6 +526,7 @@ static int process_create(mm_process_t **process, const int pid)
 		}
 
 		p->segments.exec.attr = attr_nil;
+		p->segments.data.attr = attr_nil;
 		p->segments.heap.attr = attr_nil;
 
 		//TODO take over fields when duplicate?
@@ -570,7 +588,8 @@ static int release_memory(mm_process_t *process)
 			process->segments.exec.addr,
 			//TODO skip holes
 			pages(process->segments.exec.len
-					+  process->segments.heap.len))) {
+					+ process->segments.data.len
+					+ process->segments.heap.len))) {
 		return EFAULT;
 	}
 
@@ -578,6 +597,11 @@ static int release_memory(mm_process_t *process)
 	process->segments.exec.len = 0;
 	process->segments.exec.max = 0;
 	process->segments.exec.attr = attr_nil;
+
+	process->segments.data.addr = (void *) 0;
+	process->segments.data.len = 0;
+	process->segments.data.max = 0;
+	process->segments.data.attr = attr_nil;
 
 	process->segments.heap.addr = (void *) 0;
 	process->segments.heap.len = 0;

@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
+#include <elf.h>
 #include <interrupt.h>
 #include <local.h>
 #include <fs/protocol.h>
@@ -78,6 +79,7 @@ typedef struct {
 	node_t node;
 	struct {
 		mm_segment_t exec;
+		mm_segment_t data;
 		mm_segment_t heap;
 	} segments;
 	void *directory;
@@ -138,8 +140,8 @@ extern int process_initialize(void);
 extern mm_process_t *process_find(const ID);
 extern mm_process_t *process_duplicate(mm_process_t *, const int, void *,
 		void *);
-extern int process_replace(mm_process_t *process, void *address,
-		const size_t size, void *entry, const void *args,
+extern int process_replace(mm_process_t *process, const Elf32_Phdr *,
+		const Elf32_Phdr *, void *entry, const void *args,
 		const size_t stack_size);
 extern int process_release_body(mm_process_t *, const int);
 extern int process_destroy(mm_process_t *, const int);
