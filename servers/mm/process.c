@@ -305,7 +305,7 @@ int process_replace(mm_process_t *process,
 	process->segments.exec.addr = (void *) start;
 	process->segments.exec.len = end - start;
 	process->segments.exec.max = process->segments.exec.len;
-	process->segments.exec.attr = type_exec;
+	process->segments.exec.attr = type_code;
 
 	process->segments.heap.addr = (void *) end;
 	process->segments.heap.len = 0;
@@ -459,7 +459,7 @@ int spawn(const pid_t pid, const FP entry)
 	p->segments.exec.addr = (void *) 0;
 	p->segments.exec.len = 0;
 	p->segments.exec.max = 0;
-	p->segments.exec.attr = type_exec;
+	p->segments.exec.attr = type_code;
 
 	p->segments.heap.addr = (void *) 0;
 	p->segments.heap.len = 0;

@@ -34,18 +34,15 @@ typedef enum {
 	attr_writable = 2,
 	attr_executable = 4,
 	attr_expandable = 8,
-	attr_backward = 16,
-	attr_shared = 32
+	attr_backward = 16
 } mm_segment_attr_e;
 
 typedef enum {
 	type_code = attr_readable | attr_executable,
 	type_data = attr_readable | attr_writable,
-	type_exec = attr_readable | attr_writable | attr_executable,
 	type_heap = attr_readable | attr_writable | attr_expandable,
 	type_stack = attr_readable | attr_writable | attr_expandable
-			| attr_backward,
-	type_share = attr_readable | attr_writable | attr_shared
+			| attr_backward
 } mm_segment_type_e;
 
 typedef struct {
