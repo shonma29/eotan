@@ -1,5 +1,3 @@
-#ifndef _LIBSERV_LIBMM_H_
-#define _LIBSERV_LIBMM_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,10 +24,29 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
+#include <libc.h>
+#include <string.h>
+#include <mm/segment.h>
+#include "sys.h"
 
-extern int vmap(ID, VP, UW, W);
-extern int vunmap(ID, VP, UW);
-extern ER_ID thread_find(ID);
 
-#endif
+void *segattach(int attr, char *class, void *va, unsigned long len)
+{
+	segment_class_e cls;
+	//TODO slow
+	if (!strcmp(class, SEGMENT_CLASS_MEMORY))
+		cls = MEMORY;
+	else if (!strcmp(class, SEGMENT_CLASS_SHARED))
+		cls = SHARED;
+	else
+		cls = UNKNOWN;
+
+	sys_args_t args = {
+		syscall_segattach,
+		attr,
+		cls,
+		(int) va,
+		len
+	};
+	return ((void *) _syscall(&args, sizeof(args)));
+}

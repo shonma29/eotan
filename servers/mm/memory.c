@@ -25,44 +25,17 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
-#include <stdint.h>
 #include <sys/unistd.h>
 #include <mpufunc.h>
 #include <nerve/ipc_utils.h>
+#include "api.h"
 #include "process.h"
 
 
-int mm_vmap(mm_request_t *req)
+int mm_segattach(mm_request_t *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_process_t *p = process_find((ID) (req->args.arg1));
-		if (!p) {
-			reply->data[0] = ESRCH;
-			break;
-		}
-
-		if (map_user_pages(p->directory,
-				(VP) (req->args.arg2),
-				pages((uintptr_t) (req->args.arg3)),
-				R_OK | W_OK)) {
-			reply->data[0] = ENOMEM;
-			break;
-		}
-
-		unsigned int currentEnd = (unsigned int) (p->segments.heap.addr)
-				+ p->segments.heap.len;
-		unsigned int newEnd = (unsigned int) (req->args.arg2)
-				+ (unsigned int) (req->args.arg3);
-		if (currentEnd == (unsigned int) (req->args.arg2))
-			p->segments.heap.len = newEnd
-					- (unsigned int) (p->segments.heap.addr);
-
-		//TODO adhoc
-		if (req->args.arg2 == PROCESS_LOCAL_ADDR)
-			p->local = getPageAddress(kern_p2v(p->directory),
-					(void *) (req->args.arg2));
-
 		reply->data[0] = 0;
 		reply->result = 0;
 		return reply_success;
@@ -72,34 +45,10 @@ int mm_vmap(mm_request_t *req)
 	return reply_failure;
 }
 
-int mm_vunmap(mm_request_t *req)
+int mm_segdetach(mm_request_t *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		unsigned int currentEnd;
-		unsigned int newEnd;
-		mm_process_t *p = process_find((ID) (req->args.arg1));
-
-		if (!p) {
-			reply->data[0] = ESRCH;
-			break;
-		}
-
-		if (unmap_user_pages(p->directory,
-				(VP) (req->args.arg2),
-				pages((uintptr_t) (req->args.arg3)))) {
-			reply->data[0] = EACCES;
-			break;
-		}
-
-		currentEnd = (unsigned int) (p->segments.heap.addr)
-				+ p->segments.heap.len;
-		newEnd = (unsigned int) (req->args.arg2)
-				+ (unsigned int) (req->args.arg3);
-		if (currentEnd == newEnd)
-			p->segments.heap.len = (unsigned int) (req->args.arg2)
-					- (unsigned int) (p->segments.heap.addr);
-
 		reply->data[0] = 0;
 		reply->result = 0;
 		return reply_success;

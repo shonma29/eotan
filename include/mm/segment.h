@@ -28,13 +28,24 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <stddef.h>
 
+#define SEGMENT_CLASS_MEMORY "memory"
+#define SEGMENT_CLASS_SHARED "shared"
+
+typedef enum {
+	UNKNOWN = 0,
+	MEMORY = 1,
+	SHARED = 2
+} segment_class_e;
+
 typedef enum {
 	attr_nil = 0,
 	attr_readable = 1,
 	attr_writable = 2,
 	attr_executable = 4,
 	attr_expandable = 8,
-	attr_backward = 16
+	attr_backward = 16,
+	attr_shared = 32,
+	attr_detach_on_exec = 64
 } mm_segment_attr_e;
 
 typedef enum {

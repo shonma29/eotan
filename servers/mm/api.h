@@ -26,7 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
+#include <limits.h>
 #include <fs/protocol.h>
 #include <set/tree.h>
 #include <sys/syscall.h>
@@ -69,8 +69,8 @@ extern int mm_rfork(mm_request_t *);
 extern int mm_exec(mm_request_t *);
 extern int mm_wait(mm_request_t *);
 extern int mm_exit(mm_request_t *);
-extern int mm_vmap(mm_request_t *);
-extern int mm_vunmap(mm_request_t *);
+extern int mm_segattach(mm_request_t *);
+extern int mm_segdetach(mm_request_t *);
 extern int mm_sbrk(mm_request_t *);
 extern int mm_chdir(mm_request_t *);
 extern int mm_dup(mm_request_t *);

@@ -37,4 +37,11 @@ For more information, please refer to <http://unlicense.org/>
 // rfork
 #define RFNOTEG (1)
 
+// segattach
+#define SG_RONLY (1)
+#define SG_CEXEC (2)
+
+extern void *segattach(int, char *, void *, unsigned long);
+extern int segdetach(void *);
+
 #endif

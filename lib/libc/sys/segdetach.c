@@ -24,30 +24,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <errno.h>
-#include <services.h>
-#include <nerve/kcall.h>
-#include <sys/syscall.h>
+#include <libc.h>
+#include "sys.h"
 
 
-int vmap(const ID pid, const VP addr, const UW len, const W attr)
+int segdetach(void *addr)
 {
 	sys_args_t args = {
-		syscall_vmap,
-		(long int) pid,
-		(long int) addr,
-		(long int) len,
-		(long int) attr
+		syscall_segdetach,
+		(int) addr
 	};
-	ER_UINT reply_size = kcall->ipc_call(PORT_MM, &args, sizeof(args));
-	sys_reply_t *reply = (sys_reply_t *) &args;
-	if (reply_size == sizeof(*reply)) {
-//		_set_local_errno(reply->error_no);
-		return reply->result;
-
-	} else {
-//		_set_local_errno(ECONNREFUSED);
-		return -1;
-	}
+	return _syscall(&args, sizeof(args));
 }
