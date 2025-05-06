@@ -72,6 +72,8 @@ extern int mm_exit(mm_request_t *);
 extern int mm_segattach(mm_request_t *);
 extern int mm_segdetach(mm_request_t *);
 extern int mm_sbrk(mm_request_t *);
+extern int mm_semacquire(mm_request_t *);
+extern int mm_semrelease(mm_request_t *);
 extern int mm_chdir(mm_request_t *);
 extern int mm_dup(mm_request_t *);
 extern int mm_lseek(mm_request_t *);

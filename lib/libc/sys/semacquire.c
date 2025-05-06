@@ -1,5 +1,3 @@
-#ifndef _LIBC_H_
-#define _LIBC_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,25 +24,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <libc.h>
+#include "sys.h"
 
-// bind
-#define MREPL (0)
-#define MBEFORE (1)
-#define MAFTER (2)
-#define MCREATE (4)
-#define MCACHE (8)
 
-// rfork
-#define RFNOTEG (1)
-
-// segattach
-#define SG_RONLY (1)
-#define SG_CEXEC (2)
-
-extern void *segattach(int, char *, void *, unsigned long);
-extern int segdetach(void *);
-
-extern int semacquire(long *, int);
-extern long semrelease(long *, long);
-
-#endif
+int semacquire(long *addr, int block)
+{
+	sys_args_t args = {
+		syscall_semacquire,
+		(int) addr,
+		block
+	};
+	return _syscall(&args, sizeof(args));
+}

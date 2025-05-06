@@ -58,6 +58,8 @@ static int (*funcs[])(mm_request_t *) = {
 	mm_segattach,
 	mm_segdetach,
 	mm_sbrk,
+	mm_semacquire,
+	mm_semrelease,
 	mm_chdir,
 	mm_dup,
 	mm_lseek,

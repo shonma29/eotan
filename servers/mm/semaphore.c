@@ -1,5 +1,3 @@
-#ifndef _LIBC_H_
-#define _LIBC_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,25 +24,31 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include "api.h"
 
-// bind
-#define MREPL (0)
-#define MBEFORE (1)
-#define MAFTER (2)
-#define MCREATE (4)
-#define MCACHE (8)
 
-// rfork
-#define RFNOTEG (1)
+int mm_semacquire(mm_request_t *req)
+{
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
+	do {
+		reply->data[0] = 0;
+		reply->result = 0;
+		return reply_success;
+	} while (false);
 
-// segattach
-#define SG_RONLY (1)
-#define SG_CEXEC (2)
+	reply->result = -1;
+	return reply_failure;
+}
 
-extern void *segattach(int, char *, void *, unsigned long);
-extern int segdetach(void *);
+int mm_semrelease(mm_request_t *req)
+{
+	sys_reply_t *reply = (sys_reply_t *) &(req->args);
+	do {
+		reply->data[0] = 0;
+		reply->result = 0;
+		return reply_success;
+	} while (false);
 
-extern int semacquire(long *, int);
-extern long semrelease(long *, long);
-
-#endif
+	reply->result = -1;
+	return reply_failure;
+}
