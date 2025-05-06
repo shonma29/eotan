@@ -24,9 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <nerve/config.h>
 #include <nerve/func.h>
-#include <set/tree.h>
 
 
 void create_tree(tree_t *tree, slab_t *slab, size_t entry_size,
@@ -41,29 +39,4 @@ void create_tree(tree_t *tree, slab_t *slab, size_t entry_size,
 	slab_create(slab);
 
 	tree_create(tree, compare, NULL);
-}
-
-node_t *find_empty_key(tree_t *tree, int *hand, node_t *node)
-{
-	int key;
-/*
-	int max = (tree == &(queue_tree)) ? 49156 : MAX_AUTO_ID;
-
-	for (key = *hand + 1; key <= max; key++) {
-*/
-	for (key = *hand + 1; key <= MAX_AUTO_ID; key++) {
-		if (!tree_get(tree, key)) {
-			*hand = key;
-			return tree_put(tree, key, node);
-		}
-	}
-/* TODO test */
-	for (key = MIN_AUTO_ID; key < *hand; key++) {
-		if (!tree_get(tree, key)) {
-			*hand = key;
-			return tree_put(tree, key, node);
-		}
-	}
-
-	return NULL;
 }

@@ -85,5 +85,6 @@ typedef enum {
 
 #define MAX_INTERRUPT_SERVICE (64)
 #define MAX_PERIPHERAL (32)
+#define MAX_THREAD (1024)
 
 #endif

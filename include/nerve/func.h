@@ -55,7 +55,6 @@ extern void printk(const char *, ...);
 /* tree_utils.c */
 extern void create_tree(tree_t *, slab_t *, size_t,
 		int (*)(const int, const int));
-extern node_t *find_empty_key(tree_t *, int *, node_t *);
 
 /* thread.c */
 extern thread_t *get_thread_ptr(ID);

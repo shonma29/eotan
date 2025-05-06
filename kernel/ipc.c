@@ -34,6 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/thread.h>
 #include <set/list.h>
 #include <set/tree.h>
+#include <set/sequence.h>
 #include "ready.h"
 
 typedef struct {
@@ -44,7 +45,8 @@ typedef struct {
 
 static slab_t reply_slab;
 static tree_t reply_tree;
-static int reply_hand;
+static sequence_t reply_sequence;
+static char sequence_map[SEQUENCE_MAP_SIZE(MAX_THREAD)];
 
 static inline ipc_t *getPortParent(const thread_t *);
 static inline reply_t *getReplyParent(const node_t *);
@@ -66,8 +68,14 @@ static inline reply_t *getReplyParent(const node_t *p)
 
 int ipc_initialize(void)
 {
+	if (sequence_initialize(&reply_sequence, MAX_THREAD, sequence_map))
+		return E_PAR;
+
+	// skip 0
+	if (sequence_get(&reply_sequence) < 0)
+		return E_SYS;
+
 	create_tree(&reply_tree, &reply_slab, sizeof(reply_t), NULL);
-	reply_hand = MIN_AUTO_ID - 1;
 	return E_OK;
 }
 
@@ -154,20 +162,26 @@ int ipc_call(const int port_id, void *message, const size_t size)
 		return E_PAR;
 	}
 
+	int reply_key = sequence_get(&reply_sequence);
+	if (reply_key < 0) {
+		leave_serialize();
+		return E_NOID;
+	}
+
 	node_t *node = slab_alloc(&reply_slab);
 	if (!node) {
+		sequence_release(&reply_sequence, reply_key);
 		leave_serialize();
 		return E_NOMEM;
 	}
 
-	if (!find_empty_key(&reply_tree, &reply_hand, node)) {
+	if (!tree_put(&reply_tree, reply_key, node)) {
 		slab_free(&reply_slab, node);
+		sequence_release(&reply_sequence, reply_key);
 		leave_serialize();
-		return E_NOID;
-/* TODO test */
+		return E_SYS;
 	}
 
-	int reply_key = node->key;
 	reply_t *r = getReplyParent(node);
 	list_initialize(&(r->caller));
 //TODO what to set?
@@ -409,8 +423,10 @@ static int _send(const int port_id, const void *message, const size_t size)
 static void release_rendezvous(const int key)
 {
 	node_t *node = tree_remove(&reply_tree, key);
-	if (node)
+	if (node) {
 		slab_free(&reply_slab, node);
+		sequence_release(&reply_sequence, key);
+	}
 }
 
 int ipc_listen(void)
