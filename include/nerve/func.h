@@ -84,6 +84,7 @@ extern int ipc_send(const int, const void *, const size_t);
 extern int ipc_listen(void);
 extern int ipc_notify(const int, const unsigned int);
 
+#ifdef USE_MUTEX
 /* mutex.c */
 extern ER mutex_create(ID, T_CMTX *);
 extern ER mutex_destroy(ID);
@@ -91,6 +92,7 @@ extern ER mutex_initialize(void);
 extern ER mutex_lock(ID, TMO);
 extern ER mutex_unlock(ID);
 extern void mutex_unlock_all(thread_t *);
+#endif
 
 /* start.c */
 extern void kern_start(void (*)(void));

@@ -55,10 +55,12 @@ typedef struct {
 	int (*ipc_send)(const int, const void *, const size_t);
 	int (*ipc_listen)(void);
 	int (*ipc_notify)(const int, const unsigned int);
+#ifdef USE_MUTEX
 	ER (*mutex_create)(ID, T_CMTX *);
 	ER (*mutex_destroy)(ID);
 	ER (*mutex_lock)(ID, TMO);
 	ER (*mutex_unlock)(ID);
+#endif
 	void (*printk)(const char *, ...);
 } kcall_t;
 

@@ -24,9 +24,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <nerve/config.h>
+
+#ifdef USE_MUTEX
 #include <core.h>
 #include <mpufunc.h>
-#include <nerve/config.h>
 #include <nerve/func.h>
 #include <nerve/sync.h>
 #include <nerve/thread.h>
@@ -264,3 +266,4 @@ static void give(mutex_t *q)
 	} else
 		q->locker = 0;
 }
+#endif

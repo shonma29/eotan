@@ -27,12 +27,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stddef.h>
+#include <nerve/config.h>
 #include <set/list.h>
 
 typedef enum {
 	wait_none,
 	wait_flag,
+#ifdef USE_MUTEX
 	wait_mutex,
+#endif
 	wait_call,
 	wait_reply,
 	wait_receive,

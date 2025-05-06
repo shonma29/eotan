@@ -87,4 +87,6 @@ typedef enum {
 #define MAX_PERIPHERAL (32)
 #define MAX_THREAD (1024)
 
+//#define USE_MUTEX
+
 #endif

@@ -233,7 +233,9 @@ void thread_end(void)
 	enter_serialize();
 	list_remove(&(running->queue));
 	running->status = TTS_DMT;
+#ifdef USE_MUTEX
 	mutex_unlock_all(running);
+#endif
 	leave_serialize_and_dispatch();
 }
 
@@ -265,7 +267,9 @@ ER thread_terminate(ID tskid)
 		case TTS_RDY:
 			list_remove(&(th->queue));
 			th->status = TTS_DMT;
+#ifdef USE_MUTEX
 			mutex_unlock_all(th);
+#endif
 			result = E_OK;
 			break;
 		case TTS_WAI:
@@ -276,7 +280,9 @@ ER thread_terminate(ID tskid)
 			}
 		case TTS_SUS:
 			th->status = TTS_DMT;
+#ifdef USE_MUTEX
 			mutex_unlock_all(th);
+#endif
 			result = E_OK;
 			break;
 		default:

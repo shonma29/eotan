@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <core.h>
 #include <mpufunc.h>
+#include <nerve/config.h>
 #include <nerve/global.h>
 #include <nerve/kcall.h>
 #include <nerve/func.h>
@@ -81,10 +82,12 @@ void kcall_initialize(void)
 	p->ipc_send = ipc_send;
 	p->ipc_listen = ipc_listen;
 	p->ipc_notify = ipc_notify;
+#ifdef USE_MUTEX
 	p->mutex_create = mutex_create;
 	p->mutex_destroy = mutex_destroy;
 	p->mutex_lock = mutex_lock;
 	p->mutex_unlock = mutex_unlock;
+#endif
 }
 
 static void *page_alloc(void)

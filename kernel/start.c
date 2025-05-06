@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdalign.h>
 #include <stdnoreturn.h>
 #include <mpufunc.h>
+#include <nerve/config.h>
 #include <nerve/global.h>
 #include <nerve/func.h>
 #include "ready.h"
@@ -47,7 +48,9 @@ void start(void (*callback)(void))
 	kcall_initialize();
 	service_initialize();
 	ipc_initialize();
+#ifdef USE_MUTEX
 	mutex_initialize();
+#endif
 	thread_initialize();
 	create_idle_thread((VP_INT) callback);
 }
