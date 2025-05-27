@@ -1,5 +1,5 @@
-#ifndef _MPU_MUTEX_H_
-#define _MPU_MUTEX_H_
+#ifndef _MPU_ATOMIC_H_
+#define _MPU_ATOMIC_H_
 /*
 This is free and unencumbered software released into the public domain.
 
