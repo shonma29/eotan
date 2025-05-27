@@ -71,8 +71,6 @@ static service_t *get_unmapped_entry(void)
 //TODO test
 ER interrupt_initialize(void)
 {
-	kcall->printk("interrupt_initialize\n");
-
 	unsigned int i;
 	// MPU exceptions
 	for (i = 0; i < sizeof(handlers) / sizeof(handlers[0]); i++) {
@@ -126,8 +124,10 @@ ER_ID interrupt_bind(T_CISR *pk_cisr)
 		if (p->isr == dummy) {
 			p->isr = pk_cisr->isr;
 			p->exinf = pk_cisr->exinf;
+#ifdef DEBUG
 			kcall->printk("interrupt_bind[%d] 0x%x\n",
 					pk_cisr->intno, pk_cisr->isr);
+#endif
 			return p->service_id;
 		} else if (p->next == NULL) {
 			service_t *entry = get_unmapped_entry();
@@ -139,8 +139,10 @@ ER_ID interrupt_bind(T_CISR *pk_cisr)
 			entry->next = NULL;
 			entry->interrupt_no = pk_cisr->intno;
 			p->next = entry;
+#ifdef DEBUG
 			kcall->printk("interrupt_bind[%d] 0x%x\n",
 					pk_cisr->intno, pk_cisr->isr);
+#endif
 			return entry->service_id;
 		}
 

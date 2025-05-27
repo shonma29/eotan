@@ -80,7 +80,7 @@ bool dev_initialize(void)
 						tbl->name, p);
 			else {
 				num_device++;
-				log_info("dev: attach(%s, %p)\n", tbl->name, p);
+				log_info("dev: attach(%s)\n", tbl->name);
 			}
 		}
 	}

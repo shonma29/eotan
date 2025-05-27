@@ -105,9 +105,9 @@ static void release_pages(const void *head, const void *end)
 {
 	uintptr_t addr = (uintptr_t) head & ~((1 << BITS_OFFSET) - 1);
 	size_t max = pages((uintptr_t) end - addr);
-
+#ifdef DEBUG
 	kcall->printk("release addr=%p pages=%d\n", (void *) addr, max);
-
+#endif
 	for (int i = 0; i < max; i++) {
 		kcall->pfree((void *) addr);
 		addr += PAGE_SIZE;

@@ -174,9 +174,10 @@ static void *set_modules(void)
 
 	ModuleHeader *h = (ModuleHeader *) MODULES_ADDR;
 	while (h->type != mod_end) {
+#ifdef DEBUG
 		printk("module type=%x length=%x bytes=%x\n",
 				h->type, h->length, h->bytes);
-
+#endif
 		switch (h->type) {
 		case mod_kernel:
 		case mod_kthread:
