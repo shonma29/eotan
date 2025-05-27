@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <stdint.h>
 #include <string.h>
+#include <sys/errno.h>
 #include <sys/unistd.h>
 #include <mpufunc.h>
 #include <mpu/memory.h>
@@ -34,6 +35,17 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 #include <nerve/func.h>
 #include "paging.h"
+
+static inline uint32_t convert_attr(const int permission)
+{
+	return ((permission & W_OK) ? ATTR_USER : ATTR_USER_READ_ONLY);
+}
+
+static inline void copy_page(int32_t *dest, const int32_t *src)
+{
+	for (unsigned int i = 0; i < PAGE_SIZE / sizeof(int32_t); i++)
+		dest[i] = src[i];
+}
 
 static void memrcpy(char *, const char *, const size_t);
 
@@ -57,77 +69,116 @@ PTE *copy_kernel_page_table(void)
 	return (PTE *) directory;
 }
 
-ER copy_user_pages(PTE *dest, const PTE *src, size_t cnt)
+int copy_user_pages(void *dest, const void *src, const void *addr,
+		const size_t n, const int permission)
 {
-	PTE *srcdir = (PTE *) kern_p2v(src);
-	PTE *destdir = (PTE *) kern_p2v(dest);
-	size_t n = (size_t) getDirectoryOffset((void *) SUPERVISOR_START)
-			* PTE_PER_PAGE;
-	size_t i;
+	if (((uintptr_t) addr >= SUPERVISOR_START)
+			|| (n > pages(SUPERVISOR_START - (uintptr_t) addr)))
+		return EINVAL;
 
-	if (n > cnt)
-		n = cnt;
+	uint32_t attr = convert_attr(permission);
+	PDE *src_dir = kern_p2v(src);
+	PDE *dest_dir = kern_p2v(dest);
+	unsigned int offset = getPageOffset(addr);
+	size_t rest = n;
+	for (unsigned int i = getDirectoryOffset(addr); rest > 0; i++) {
+		if (!is_present(src_dir[i]))
+			return EFAULT;
 
-	for (i = 0; n > 0; i++) {
-		PTE *srcp = (PTE *) (srcdir[i]);
-		PTE *destp;
-		size_t j;
+		size_t max = PTE_PER_PAGE;
+		if ((max - offset) > rest)
+			max = offset + rest;
 
-		if (!is_present((PTE) srcp)) {
-			if (n <= PTE_PER_PAGE)
-				break;
-
-			n -= PTE_PER_PAGE;
-			continue;
-		}
-
-		destp = (PTE *) (destdir[i]);
-		if (is_present((PTE) destp))
-			destp = (PTE *) ((PTE) destp & PAGE_ADDR_MASK);
-
+		PTE *dest_page = (PTE *) (dest_dir[i]);
+		if (dest_page)
+			dest_page = (PTE *) ((PDE) dest_page & PAGE_ADDR_MASK);
 		else {
-			destp = (PTE *) kern_v2p(kcall->palloc());
-			if (!destp)
-				return E_NOMEM;
+			dest_page = kern_v2p(kcall->palloc());
+			if (!dest_page)
+				return ENOMEM;
 
-			destdir[i] = calc_pte(destp, ATTR_USER);
+			dest_dir[i] = calc_pte(dest_page, ATTR_USER);
 		}
 
-		srcp = (PTE *) (kern_p2v((PTE *) ((PTE) srcp
-				& PAGE_ADDR_MASK)));
-		destp = (PTE *) (kern_p2v(destp));
+		dest_page = kern_p2v(dest_page);
+		PTE *src_page = kern_p2v((PTE *) (src_dir[i] & PAGE_ADDR_MASK));
+		for (unsigned int j = offset; j < max; j++) {
+			if (!is_present(src_page[j]))
+				return EFAULT;
 
-		for (j = 0; (j < PTE_PER_PAGE) && (n > 0); n--, j++) {
-			char *p;
+			if (dest_page[j])
+				return EADDRINUSE;
 
-			if (!is_present(srcp[j]))
-				continue;
+			void *p = kern_v2p(kcall->palloc());
+			if (!p)
+				return ENOMEM;
 
-			p = (char *) (destp[j]);
-			if (is_present((PTE) p))
-				p = (char *) ((PTE) p & PAGE_ADDR_MASK);
-
-			else {
-				p = (char *) kern_v2p(kcall->palloc());
-				if (!p)
-					return E_NOMEM;
-
-				destp[j] = calc_pte(p, srcp[j] & ATTR_USER);
-			}
-
-			memcpy(kern_p2v(p),
-					kern_p2v((char *) (srcp[j]
-							& PAGE_ADDR_MASK)),
-					PAGE_SIZE);
+			dest_page[j] = calc_pte(p, attr);
+			copy_page(kern_p2v(p),
+					kern_p2v((void *) (src_page[j]
+							& PAGE_ADDR_MASK)));
 		}
+
+		rest -= max - offset;
+		offset = 0;
 	}
 
-	return E_OK;
+	return 0;
+}
+
+int attach_user_pages(void *dest, const void *src, const void *addr,
+		const size_t n, const int permission)
+{
+	if (((uintptr_t) addr >= SUPERVISOR_START)
+			|| (n > pages(SUPERVISOR_START - (uintptr_t) addr)))
+		return EINVAL;
+
+	uint32_t attr = convert_attr(permission);
+	PDE *src_dir = kern_p2v(src);
+	PDE *dest_dir = kern_p2v(dest);
+	unsigned int offset = getPageOffset(addr);
+	size_t rest = n;
+	for (unsigned int i = getDirectoryOffset(addr); rest > 0; i++) {
+		if (!is_present(src_dir[i]))
+			return EFAULT;
+
+		size_t max = PTE_PER_PAGE;
+		if ((max - offset) > rest)
+			max = offset + rest;
+
+		PTE *dest_page = (PTE *) (dest_dir[i]);
+		if (dest_page)
+			dest_page = (PTE *) ((PDE) dest_page & PAGE_ADDR_MASK);
+		else {
+			dest_page = kern_v2p(kcall->palloc());
+			if (!dest_page)
+				return ENOMEM;
+
+			dest_dir[i] = calc_pte(dest_page, ATTR_USER);
+		}
+
+		dest_page = kern_p2v(dest_page);
+		PTE *src_page = kern_p2v((PTE *) (src_dir[i] & PAGE_ADDR_MASK));
+		for (unsigned int j = offset; j < max; j++) {
+			if (!is_present(src_page[j]))
+				return EFAULT;
+
+			if (dest_page[j])
+				return EADDRINUSE;
+
+			dest_page[j] = (src_page[j] & PAGE_ADDR_MASK) | attr;
+		}
+
+		rest -= max - offset;
+		offset = 0;
+	}
+
+	return 0;
 }
 
 ER map_user_pages(PTE *dir, VP addr, size_t cnt, const int permission)
 {
-	uint32_t attr = (permission & W_OK) ? ATTR_USER : ATTR_USER_READ_ONLY;
+	uint32_t attr = convert_attr(permission);
 	size_t n = (size_t) getDirectoryOffset((void *) SUPERVISOR_START)
 			* PTE_PER_PAGE;
 	size_t i = (((unsigned int) addr) >> (BITS_PAGE + BITS_OFFSET))
@@ -178,61 +229,120 @@ ER map_user_pages(PTE *dir, VP addr, size_t cnt, const int permission)
 	return E_OK;
 }
 
-ER unmap_user_pages(PTE *dir, VP addr, size_t cnt)
+int unmap_user_pages(void *dir, const void *addr, const size_t n)
 {
-	size_t n = (size_t) getDirectoryOffset((void *) SUPERVISOR_START)
-			* PTE_PER_PAGE;
-	size_t i = (((unsigned int) addr) >> (BITS_PAGE + BITS_OFFSET))
-			& MASK_PAGE;
-	size_t j = (((unsigned int) addr) >> BITS_OFFSET) & MASK_PAGE;
+	if (((uintptr_t) addr >= SUPERVISOR_START)
+			|| (n > pages(SUPERVISOR_START - (uintptr_t) addr)))
+		return EINVAL;
 
-//TODO check range
-	dir = (PTE *) kern_p2v(dir);
+	PDE *dest_dir = kern_p2v(dir);
+	unsigned int offset = getPageOffset(addr);
+	size_t rest = n;
+	for (unsigned int i = getDirectoryOffset(addr); rest > 0; i++) {
+		size_t max = PTE_PER_PAGE;
+		if ((max - offset) > rest)
+			max = offset + rest;
 
-	if (n > cnt)
-		n = cnt;
-
-	for (; n > 0; j = 0, i++) {
-		PTE *page = (PTE *) (dir[i]);
-		if (!is_present((PTE) page)) {
-			//TODO really?
-			if (n <= PTE_PER_PAGE)
-				break;
-
-			//TODO really?
-			n -= PTE_PER_PAGE;
+		if (!is_present(dest_dir[i])) {
+			rest -= max - offset;
+			offset = 0;
 			continue;
 		}
 
-		page = kern_p2v((void *) (((PTE) page) & PAGE_ADDR_MASK));
+		PTE *dest_page = kern_p2v(
+				(void *) (dest_dir[i] & PAGE_ADDR_MASK));
+		bool exists_page = false;
+		unsigned int j = 0;
+		for (; j < offset; j++)
+			if (is_present(dest_page[j])) {
+				exists_page = true;
+				break;
+			}
 
-		size_t zero_count = 0;
-		unsigned int k = 0;
-		for (; k < j; k++)
-			if (!(page[k]))
-				zero_count++;
-
-		for (; (j < PTE_PER_PAGE) && (n > 0); n--, j++) {
-			PTE p = page[j];
+		for (j = offset; j < max; j++) {
+			PTE p = dest_page[j];
 			if (is_present(p)) {
-				page[j] = 0;
+				dest_page[j] = 0;
 				kcall->pfree((void *) (p & PAGE_ADDR_MASK));
-//TODO reset page cache
 			}
 		}
 
-		zero_count += j - k;
-		for (k = j; k < PTE_PER_PAGE; k++)
-			if (!(page[k]))
-				zero_count++;
+		//TODO optimize
+		if (!exists_page) {
+			for (; j < PTE_PER_PAGE; j++)
+				if (is_present(dest_page[j])) {
+					exists_page = true;
+					break;
+				}
 
-		if (zero_count == PTE_PER_PAGE) {
-			dir[i] = 0;
-			kcall->pfree((void *) (((PTE) page) & PAGE_ADDR_MASK));
+			if (!exists_page) {
+				dest_dir[i] = 0;
+				kcall->pfree(dest_page);
+			}
 		}
+
+		rest -= max - offset;
+		offset = 0;
 	}
 
-	return E_OK;
+	return 0;
+}
+
+int detach_user_pages(void *dir, const void *addr, const size_t n)
+{
+	if (((uintptr_t) addr >= SUPERVISOR_START)
+			|| (n > pages(SUPERVISOR_START - (uintptr_t) addr)))
+		return EINVAL;
+
+	PDE *dest_dir = kern_p2v(dir);
+	unsigned int offset = getPageOffset(addr);
+	size_t rest = n;
+	for (unsigned int i = getDirectoryOffset(addr); rest > 0; i++) {
+		size_t max = PTE_PER_PAGE;
+		if ((max - offset) > rest)
+			max = offset + rest;
+
+		if (!is_present(dest_dir[i])) {
+			rest -= max - offset;
+			offset = 0;
+			continue;
+		}
+
+		PTE *dest_page = kern_p2v(
+				(void *) (dest_dir[i] & PAGE_ADDR_MASK));
+		bool exists_page = false;
+		unsigned int j = 0;
+		for (; j < offset; j++)
+			if (is_present(dest_page[j])) {
+				exists_page = true;
+				break;
+			}
+
+		for (j = offset; j < max; j++) {
+			PTE p = dest_page[j];
+			if (is_present(p))
+				dest_page[j] = 0;
+		}
+
+		//TODO optimize
+		if (!exists_page) {
+			for (; j < PTE_PER_PAGE; j++)
+				if (is_present(dest_page[j])) {
+					exists_page = true;
+					break;
+				}
+
+			if (!exists_page) {
+				dest_dir[i] = 0;
+				kcall->pfree(dest_page);
+			}
+		}
+
+		rest -= max - offset;
+		offset = 0;
+	}
+
+	return 0;
 }
 
 static void memrcpy(char *to, const char *from, const size_t bytes)

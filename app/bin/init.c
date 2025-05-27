@@ -68,7 +68,7 @@ static void collect(void)
 
 static void execute(char **array, char **env)
 {
-	pid_t pid = rfork(RFNOTEG);
+	pid_t pid = rfork(RFPROC | RFNOTEG);
 	if (pid == ERR) {
 		_put_error("fork error ");
 		_put_error(strerror(errno));

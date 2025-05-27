@@ -1,5 +1,5 @@
-#ifndef _MM_CONFIG_H_
-#define _MM_CONFIG_H_
+#ifndef _MM_SEMAPHORE_H_
+#define _MM_SEMAPHORE_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,28 +26,30 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <sys/syslimits.h>
+#include <set/list.h>
+#include <set/tree.h>
+#include <sys/syscall.h>
 
-#define PROCESS_MAX (1024)
-#define THREAD_MAX (1024)
-#define THREADS_PER_PROCESS (32)
-#define FILE_MAX (1024)
-#define FILES_PER_PROCESS (1024)
-#define SESSION_MAX (1024)
-#define FILES_PER_SESSION (1024)
-#define SEGMENT_MAX (8192)
-#define NAMESPACE_MAX (1024)
-#define SEMAPHORE_MAX (1024)
+typedef struct {
+	node_t node;
+	list_t threads;
+	list_t segments;
+	long count;
+} mm_semaphore_t;
 
-#define REQUEST_MAX (16)
+static inline mm_semaphore_t *getSemaphoreFromNode(const node_t *p)
+{
+	return ((mm_semaphore_t *) ((uintptr_t) p
+			- offsetof(mm_semaphore_t, node)));
+}
 
-#define USER_STACK_INITIAL_SIZE (ARG_MAX)
-#define USER_STACK_MAX_SIZE (1 * 1024 * 1024)
-#define USER_STACK_END_ADDR 0x80000000
-#define USER_STACK_ADDR_MASK 0x7ff00000
+static inline mm_semaphore_t *getSemaphoreFromSegments(const list_t *p)
+{
+	return ((mm_semaphore_t *) ((uintptr_t) p
+			- offsetof(mm_semaphore_t, segments)));
+}
 
-#define USER_HEAP_MAX_ADDR (1 * 1024 * 1024 * 1024)
-
-#define FIBER_POOL_MAX (2)
+extern int semaphore_initialize(void);
+extern void semaphore_destroy(mm_semaphore_t *);
 
 #endif

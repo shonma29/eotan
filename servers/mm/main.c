@@ -38,16 +38,18 @@ For more information, please refer to <http://unlicense.org/>
 #include "api.h"
 #include "proxy.h"
 #include "device.h"
+#include "semaphore.h"
 
 enum {
 	PROCESSES = 0x01,
-	FILES = 0x02,
-	DEVICES = 0x04,
-	REQUEST_SLAB = 0x08,
-	MNT = 0x10,
-	PORT = 0x20,
-	HANDLERS = 0x40,
-	INIT = 0x80
+	SEMAPHORES = 0x02,
+	FILES = 0x04,
+	DEVICES = 0x08,
+	REQUEST_SLAB = 0x10,
+	MNT = 0x20,
+	PORT = 0x40,
+	HANDLERS = 0x80,
+	INIT = 0x100
 };
 
 static int (*funcs[])(mm_request_t *) = {
@@ -112,6 +114,11 @@ static int initialize(void)
 		return PROCESSES;
 	else
 		initialized_resources |= PROCESSES;
+
+	if (semaphore_initialize())
+		return SEMAPHORES;
+	else
+		initialized_resources |= SEMAPHORES;
 
 	if (file_initialize())
 		return FILES;

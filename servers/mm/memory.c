@@ -69,7 +69,7 @@ int mm_sbrk(mm_request_t *req)
 		}
 
 		mm_process_t *p = get_process(th);
-		mm_segment_t *s = &(p->segments.heap);
+		mm_segment_t *s = p->segments.heap;
 		uintptr_t end = (uintptr_t) (s->addr) + s->len;
 		intptr_t diff = (intptr_t) (req->args.arg1);
 		if (diff > 0) {

@@ -1,5 +1,3 @@
-#ifndef _MM_CONFIG_H_
-#define _MM_CONFIG_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,28 +24,21 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <sys/syslimits.h>
+#include <stddef.h>
+#include <mpufunc.h>
+#include <mpu/memory.h>
+#include "paging.h"
 
-#define PROCESS_MAX (1024)
-#define THREAD_MAX (1024)
-#define THREADS_PER_PROCESS (32)
-#define FILE_MAX (1024)
-#define FILES_PER_PROCESS (1024)
-#define SESSION_MAX (1024)
-#define FILES_PER_SESSION (1024)
-#define SEGMENT_MAX (8192)
-#define NAMESPACE_MAX (1024)
-#define SEMAPHORE_MAX (1024)
 
-#define REQUEST_MAX (16)
+void *get_writable_page(const PTE *dir, const void *addr)
+{
+	PTE pte = dir[getDirectoryOffset(addr)];
+	if ((pte & ATTR_USER_READ_ONLY) == ATTR_USER_READ_ONLY) {
+		PTE *table = (PTE *) kern_p2v((void *) (pte & PAGE_ADDR_MASK));
+		pte = table[getPageOffset(addr)];
+		if ((pte & ATTR_USER) == ATTR_USER)
+			return kern_p2v((void *) (pte & PAGE_ADDR_MASK));
+	}
 
-#define USER_STACK_INITIAL_SIZE (ARG_MAX)
-#define USER_STACK_MAX_SIZE (1 * 1024 * 1024)
-#define USER_STACK_END_ADDR 0x80000000
-#define USER_STACK_ADDR_MASK 0x7ff00000
-
-#define USER_HEAP_MAX_ADDR (1 * 1024 * 1024 * 1024)
-
-#define FIBER_POOL_MAX (2)
-
-#endif
+	return NULL;
+}

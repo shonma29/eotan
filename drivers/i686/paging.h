@@ -26,6 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdbool.h>
 #include <stdint.h>
 #include <mpu/memory.h>
 
@@ -51,12 +52,12 @@ For more information, please refer to <http://unlicense.org/>
 // SUPERVISOR_START should be a multiple of 4 MB.
 #define OFFSET_KERN (SUPERVISOR_START / PAGE_SIZE / PTE_PER_PAGE)
 
-static inline PTE calc_pte(const void *addr, const UW attr)
+static inline PTE calc_pte(const void *addr, const unsigned int attr)
 {
-	return (PTE) ((((uintptr_t) addr) & PAGE_ADDR_MASK) | attr);
+	return (PTE) (((uintptr_t) addr) | attr);
 }
 
-static inline BOOL is_present(PTE pte)
+static inline bool is_present(const PTE pte)
 {
 	return (pte & PAGE_PRESENT);
 }

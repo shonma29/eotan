@@ -57,8 +57,13 @@ int mm_rfork(mm_request_t *req)
 			break;
 		}
 
-		mm_process_t *process = get_process(th);
-		mm_process_t *child = process_duplicate(process, req->args.arg1,
+		if ((req->args.arg1 & ~(RFPROC | RFNOTEG | RFMEM))
+				|| !(req->args.arg1 & RFPROC)) {
+			reply->data[0] = EINVAL;
+			break;
+		}
+
+		mm_process_t *child = process_duplicate(th, req->args.arg1,
 				(void *) (req->args.arg3),
 				(void *) (req->args.arg2));
 		if (!child) {
@@ -66,9 +71,6 @@ int mm_rfork(mm_request_t *req)
 			reply->data[0] = ENOMEM;
 			break;
 		}
-
-//		log_info("pm: %d fork %d\n",
-//				process->node.key, child->node.key);
 
 		reply->result = child->node.key;
 		reply->data[0] = 0;
@@ -182,7 +184,7 @@ int mm_exec(mm_request_t *req)
 //			return ENOEXEC;
 
 		int thread_id = th->node.key;
-		result = process_replace(process, &ro, &rw,
+		result = process_replace(th, &ro, &rw,
 				(void *) ehdr.e_entry,
 				(void *) (req->args.arg2),
 				req->args.arg3);
@@ -789,7 +791,7 @@ int mm_bind(mm_request_t *req)
 			ns->root = file;
 			//TODO omit last successive '/'. call 'calc_path'
 			strcpy(ns->name, req->walkpath);
-			//TODO !check if the same name is appended
+			//TODO check if the same name is appended
 			list_append(&(process->namespaces), &(ns->brothers));
 		} else {
 			if (process->root) {

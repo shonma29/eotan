@@ -35,7 +35,9 @@ For more information, please refer to <http://unlicense.org/>
 #define MCACHE (8)
 
 // rfork
-#define RFNOTEG (1)
+#define RFPROC (0x001)
+#define RFNOTEG (0x080)
+#define RFMEM (0x800)
 
 // segattach
 #define SG_RONLY (1)

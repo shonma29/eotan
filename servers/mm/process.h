@@ -38,10 +38,16 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/sequence.h>
 #include <sys/types.h>
 #include "api.h"
+#include "semaphore.h"
 
 #define MYNAME "mm"
 
 #define SIZE_NAMESPACE (8)
+
+typedef enum {
+	REASON_NONE = 0,
+	REASON_SEMAPHORE = 1
+} mm_waiting_reason_e;
 
 typedef struct {
 	node_t node;
@@ -70,17 +76,23 @@ typedef struct {
 
 typedef struct {
 	node_t node;
-	void *process;
 	mm_segment_t stack;
 	list_t brothers;
+	list_t waiting;
+	struct {
+		uintptr_t obj;
+		mm_waiting_reason_e reason;
+		int tag;
+	} wait;
+	void *process;
 } mm_thread_t;
 
 typedef struct {
 	node_t node;
 	struct {
-		mm_segment_t exec;
-		mm_segment_t data;
-		mm_segment_t heap;
+		mm_segment_t *exec;
+		mm_segment_t *data;
+		mm_segment_t *heap;
 	} segments;
 	void *directory;
 	list_t threads;
@@ -138,9 +150,9 @@ static inline int sequence_from_sid(const int sid)
 
 extern int process_initialize(void);
 extern mm_process_t *process_find(const ID);
-extern mm_process_t *process_duplicate(mm_process_t *, const int, void *,
-		void *);
-extern int process_replace(mm_process_t *process, const Elf32_Phdr *,
+extern mm_process_t *process_duplicate(const mm_thread_t *, const int,
+		const void *, const void *);
+extern int process_replace(mm_thread_t *, const Elf32_Phdr *,
 		const Elf32_Phdr *, void *entry, const void *args,
 		const size_t stack_size);
 extern int process_release_body(mm_process_t *, const int);

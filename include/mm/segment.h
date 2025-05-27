@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stddef.h>
+#include <set/list.h>
 
 #define SEGMENT_CLASS_MEMORY "memory"
 #define SEGMENT_CLASS_SHARED "shared"
@@ -62,6 +63,8 @@ typedef struct {
 	size_t max;
 	unsigned int attr;
 //	int owner;
+	unsigned int ref_count;
+	list_t semaphores;
 } mm_segment_t;
 
 #endif

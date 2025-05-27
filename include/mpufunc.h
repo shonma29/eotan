@@ -74,6 +74,9 @@ extern noreturn void panic(char *);
 /* address.c */
 extern void *getPageAddress(const PTE *, const void *);
 
+/* get_writable_page.c */
+extern void *get_writable_page(const PTE *, const void *);
+
 /* memcpy.c */
 extern ER memcpy_k2u(thread_t *, void *, const void *, const size_t);
 extern ER memcpy_u2k(thread_t *, void *, const void *,
@@ -89,9 +92,13 @@ extern ER scattered_copy_u2k(const thread_t *, const size_t, copy_range_t *,
 
 /* memory.c */
 extern PTE *copy_kernel_page_table(void);
-extern ER copy_user_pages(PTE *, const PTE *, size_t);
+extern int copy_user_pages(void *, const void *, const void *, const size_t,
+		const int);
+extern int attach_user_pages(void *, const void *, const void *, const size_t,
+		const int);
 extern ER map_user_pages(PTE *, VP, size_t, const int);
-extern ER unmap_user_pages(PTE *, VP, size_t);
+extern int unmap_user_pages(void *, const void *, const size_t);
+extern int detach_user_pages(void *, const void *, const size_t);
 extern ER move_stack(const PTE *, void *, const void *,
 		const size_t);
 

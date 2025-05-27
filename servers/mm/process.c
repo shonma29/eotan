@@ -50,9 +50,11 @@ enum {
 	PROCESS_SEQUENCE = 0x04,
 	THREAD_SLAB = 0x08,
 	THREAD_SEQUENCE = 0x10,
-	NAMESPACE_SLAB = 0x20
+	SEGMENT_SLAB = 0x20,
+	NAMESPACE_SLAB = 0x40
 };
 
+static sys_reply_t async_reply = { -1, { EFAULT, 0 } };
 slab_t sequence_slab;
 static slab_t process_slab;
 static tree_t process_tree;
@@ -61,6 +63,7 @@ static slab_t thread_slab;
 static tree_t thread_tree;
 static sequence_t thread_sequence;
 static node_t *thread_lookup[THREAD_LOOKUP_SIZE];
+static slab_t segment_slab;
 static slab_t namespace_slab;
 static int initialized_resources = 0;
 /*
@@ -88,9 +91,19 @@ static int process_create(mm_process_t **, const int);
 static void set_local(mm_process_t *, const char *, const size_t);
 static int map_user_stack(mm_process_t *);
 static int release_memory(mm_process_t *);
-static int create_thread(const int, mm_process_t *, FP, VP);
-static void destroy_threads(mm_process_t *, const bool);
+static int _segment_share(void *, mm_segment_t **, const void *,
+	mm_segment_t *);
+static int _segment_copy(void *, mm_segment_t **, const void *,
+	mm_segment_t *);
+static int _segment_allocate(mm_segment_t **, void *, const void *,
+	const void *, const int, const unsigned int);
+static void _segment_deallocate(mm_process_t *, mm_segment_t *);
+static int _convert_permission(const mm_segment_t *);
+static int create_thread(const int, mm_process_t *, const void *, const void *);
+static void destroy_threads(mm_process_t *, const int);
 static int create_spawn_thread(mm_process_t *, const FP);
+static int _thread_create_frame(mm_thread_t **, T_CTSK *, const int,
+		mm_process_t *);
 
 
 static node_t **thread_lookup_selector(const tree_t *tree, const int key)
@@ -135,6 +148,11 @@ int process_initialize(void)
 	else
 		initialized_resources |= THREAD_SEQUENCE;
 
+	if (create_slab(&segment_slab, sizeof(mm_segment_t), SEGMENT_MAX))
+		return SEGMENT_SLAB;
+	else
+		initialized_resources |= SEGMENT_SLAB;
+
 	if (create_slab(&namespace_slab, sizeof(mm_namespace_t), NAMESPACE_MAX))
 		return NAMESPACE_SLAB;
 	else
@@ -149,8 +167,9 @@ mm_process_t *process_find(const ID pid)
 	return (node ? (mm_process_t *) getParent(mm_process_t, node) : NULL);
 }
 
-mm_process_t *process_duplicate(mm_process_t *src, const int flags, void *entry,
-		void *stack)
+//TODO release resources when error
+mm_process_t *process_duplicate(const mm_thread_t *th, const int flags,
+		const void *entry, const void *stack)
 {
 	do {
 		pid_t pid = sequence_get(&process_sequence);
@@ -162,18 +181,73 @@ mm_process_t *process_duplicate(mm_process_t *src, const int flags, void *entry,
 		if (error_no)
 			break;
 
-		if (copy_user_pages(dest->directory, src->directory,
-//TODO copy only current stack
-				pageRoundUp(USER_STACK_END_ADDR)
-//				pageRoundUp((uintptr_t) (src->segments.heap.addr)
-//						+ src->segments.heap.len)
-						>> BITS_OFFSET))
-			//TODO release process
+		// exec
+		mm_process_t *src = get_process(th);
+		error_no = _segment_share(dest->directory,
+				&(dest->segments.exec), src->directory,
+				src->segments.exec);
+		if (error_no)
 			break;
 
-		dest->segments.exec = src->segments.exec;
-		dest->segments.data = src->segments.data;
-		dest->segments.heap = src->segments.heap;
+		// data
+		if (src->segments.data) {
+			if (flags & RFMEM) {
+				error_no = _segment_share(
+						dest->directory,
+						&(dest->segments.data),
+						src->directory,
+						src->segments.data);
+				if (error_no)
+					break;
+			} else {
+				error_no = _segment_copy(
+						dest->directory,
+						&(dest->segments.data),
+						src->directory,
+						src->segments.data);
+				if (error_no)
+					break;
+			}
+		}
+
+		// heap
+		if (flags & RFMEM) {
+			error_no = _segment_share(
+					dest->directory,
+					&(dest->segments.heap),
+					src->directory,
+					src->segments.heap);
+			if (error_no)
+				break;
+		} else {
+			error_no = _segment_copy(
+					dest->directory,
+					&(dest->segments.heap),
+					src->directory,
+					src->segments.heap);
+			if (error_no)
+				break;
+		}
+
+		// process local
+		error_no = copy_user_pages(dest->directory, src->directory,
+				(void *) PROCESS_LOCAL_ADDR,
+				pages(sizeof(*(src->local))), R_OK);
+		if (error_no) {
+			log_warning("failed to copy local %d\n", error_no);
+			break;
+		}
+
+		// stack
+		error_no = copy_user_pages(dest->directory, src->directory,
+				(void *) ((uintptr_t) (th->stack.addr)
+						- th->stack.len
+						+ th->stack.max),
+				pages(th->stack.len), R_OK | W_OK);
+		if (error_no) {
+			log_warning("failed to copy stack %d\n", error_no);
+			break;
+		}
 
 		for (int fd = 0; fd < FILES_PER_PROCESS; fd++) {
 			mm_descriptor_t *s = process_find_desc(src, fd);
@@ -229,21 +303,6 @@ mm_process_t *process_duplicate(mm_process_t *src, const int flags, void *entry,
 
 		strcpy(dest->name, src->name);
 		set_local(dest, src->local->wd, src->local->wd_len);
-#if 0
-		log_info("d %d %x->%x, %x->%x pp=%d pg=%d u=%d g=%d n=%s %x\n",
-				dest->node.key,
-				&dest->brothers, dest->brothers.next,
-				&dest->members, dest->members.next,
-				dest->ppid, dest->pgid, dest->uid, dest->gid,
-				dest->name,
-				(dest->root) ? dest->root->node.key : (-1));
-#endif
-		error_no = map_user_stack(dest);
-		if (error_no) {
-			log_err("mm: th map err\n");
-			//TODO release process
-			break;
-		}
 
 		int thread_id = sequence_get(&thread_sequence);
 		if (thread_id < 0) {
@@ -253,8 +312,7 @@ mm_process_t *process_duplicate(mm_process_t *src, const int flags, void *entry,
 		}
 
 		thread_id += INIT_THREAD_ID;
-		error_no = create_thread(thread_id, dest,
-				(FP) entry, (VP) stack);
+		error_no = create_thread(thread_id, dest, entry, stack);
 		if (error_no) {
 			//TODO release process
 			sequence_release(&thread_sequence,
@@ -276,15 +334,18 @@ mm_process_t *process_duplicate(mm_process_t *src, const int flags, void *entry,
 	return NULL;
 }
 
-int process_replace(mm_process_t *process, const Elf32_Phdr *code,
+//TODO release resources when error
+int process_replace(mm_thread_t *th, const Elf32_Phdr *code,
 		const Elf32_Phdr *data, void *entry, const void *args,
 		const size_t stack_size)
 {
+	//TODO support ARG_MAX > USER_STACK_INITIAL_SIZE
 	if (stack_size > USER_STACK_INITIAL_SIZE)
 		return E2BIG;
 
-	int thread_id = getMyThread(process->threads.next)->node.key;
-	destroy_threads(process, true);
+	int thread_id = th->node.key;
+	mm_process_t *process = get_process(th);
+	destroy_threads(process, thread_id);
 
 	if (map_user_stack(process))
 		return ENOMEM;
@@ -299,35 +360,38 @@ int process_replace(mm_process_t *process, const Elf32_Phdr *code,
 
 	uintptr_t start = pageRoundDown(code->p_vaddr);
 	uintptr_t end = pageRoundUp(code->p_vaddr + code->p_memsz);
-	if (map_user_pages(process->directory,
-			(void *) start, pages(end - start), R_OK | X_OK))
+	int result = _segment_allocate(&(process->segments.exec),
+			process->directory, (void *) start, (void *) end,
+			R_OK | X_OK, type_code);
+	if (result)
+		return result;
+
+	if (data->p_memsz) {
+		start = pageRoundDown(data->p_vaddr);
+		end = pageRoundUp(data->p_vaddr + data->p_memsz);
+		result = _segment_allocate(&(process->segments.data),
+			process->directory, (void *) start, (void *) end,
+			R_OK | W_OK, type_data);
+		if (result)
+			return result;
+	}
+
+	mm_segment_t *heap = (mm_segment_t *) slab_alloc(&segment_slab);
+	if (!heap)
 		return ENOMEM;
 
-	process->segments.exec.addr = (void *) start;
-	process->segments.exec.len = end - start;
-	process->segments.exec.max = process->segments.exec.len;
-	process->segments.exec.attr = type_code;
-
-	start = pageRoundDown(data->p_vaddr);
-	end = pageRoundUp(data->p_vaddr + data->p_memsz);
-	if (map_user_pages(process->directory,
-			(void *) start, pages(end - start), R_OK | W_OK))
-		return ENOMEM;
-
-	process->segments.data.addr = (void *) start;
-	process->segments.data.len = end - start;
-	process->segments.data.max = process->segments.data.len;
-	process->segments.data.attr = type_data;
-
-	process->segments.heap.addr = (void *) end;
-	process->segments.heap.len = 0;
-	process->segments.heap.max = pageRoundUp(USER_HEAP_MAX_ADDR) - end;
-	process->segments.heap.attr = type_heap;
+	heap->addr = (void *) end;
+	heap->len = 0;
+	heap->max = pageRoundUp(USER_HEAP_MAX_ADDR) - end;
+	heap->attr = type_heap;
+	heap->ref_count = 1;
+	list_initialize(&(heap->semaphores));
+	process->segments.heap = heap;
 
 	//TODO check if directory is current PDE
 	tlb_flush_all();
-	return create_thread(thread_id, process, (FP) entry,
-			(VP) (stack_top - sizeof(int)));
+	return create_thread(thread_id, process, entry,
+			(void *) (stack_top - sizeof(int)));
 }
 
 int process_release_body(mm_process_t *proc, const int options)
@@ -394,7 +458,7 @@ int process_release_body(mm_process_t *proc, const int options)
 int process_destroy(mm_process_t *process, const int status)
 {
 	process->exit_status = status;
-	destroy_threads(process, false);
+	destroy_threads(process, 0);
 
 	if (release_memory(process)) {
 		//TODO what to do?
@@ -468,21 +532,6 @@ int spawn(const pid_t pid, const FP entry)
 		//TODO release process
 		return ENOMEM;
 
-	p->segments.exec.addr = (void *) 0;
-	p->segments.exec.len = 0;
-	p->segments.exec.max = 0;
-	p->segments.exec.attr = type_code;
-
-	p->segments.data.addr = (void *) 0;
-	p->segments.data.len = 0;
-	p->segments.data.max = 0;
-	p->segments.data.attr = type_data;
-
-	p->segments.heap.addr = (void *) 0;
-	p->segments.heap.len = 0;
-	p->segments.heap.max = 0;
-	p->segments.heap.attr = type_heap;
-
 	p->ppid = INIT_PPID;
 	p->pgid = INIT_PID;
 	p->uid = INIT_UID;
@@ -525,9 +574,9 @@ static int process_create(mm_process_t **process, const int pid)
 			break;
 		}
 
-		p->segments.exec.attr = attr_nil;
-		p->segments.data.attr = attr_nil;
-		p->segments.heap.attr = attr_nil;
+		p->segments.exec = NULL;
+		p->segments.data = NULL;
+		p->segments.heap = NULL;
 
 		//TODO take over fields when duplicate?
 		list_initialize(&(p->threads));
@@ -585,40 +634,135 @@ static int map_user_stack(mm_process_t *process)
 
 static int release_memory(mm_process_t *process)
 {
-	if (unmap_user_pages(process->directory,
-			process->segments.exec.addr,
-			//TODO skip holes
-			pages(process->segments.exec.len
-					+ process->segments.data.len
-					+ process->segments.heap.len))) {
-		return EFAULT;
+	if (process->segments.exec) {
+		_segment_deallocate(process, process->segments.exec);
+		process->segments.exec = NULL;
 	}
 
-	process->segments.exec.addr = (void *) 0;
-	process->segments.exec.len = 0;
-	process->segments.exec.max = 0;
-	process->segments.exec.attr = attr_nil;
+	if (process->segments.data) {
+		_segment_deallocate(process, process->segments.data);
+		process->segments.data = NULL;
+	}
 
-	process->segments.data.addr = (void *) 0;
-	process->segments.data.len = 0;
-	process->segments.data.max = 0;
-	process->segments.data.attr = attr_nil;
-
-	process->segments.heap.addr = (void *) 0;
-	process->segments.heap.len = 0;
-	process->segments.heap.max = 0;
-	process->segments.heap.attr = attr_nil;
+	if (process->segments.heap) {
+		_segment_deallocate(process, process->segments.heap);
+		process->segments.heap = NULL;
+	}
 
 	return 0;
 }
 
-static int create_thread(const int thread_id, mm_process_t *process, FP entry,
-		VP ustack_top)
+static int _segment_share(void *dest_directory, mm_segment_t **dest,
+		const void *src_directory, mm_segment_t *src)
 {
-	mm_thread_t *th = (mm_thread_t *) slab_alloc(&thread_slab);
-	if (!th)
-		return ENOMEM;
+	int error_no = attach_user_pages(dest_directory, src_directory,
+			src->addr, pages(src->len), _convert_permission(src));
+	if (error_no) {
+		log_warning("failed to share(%p, %x) %d\n", src->addr, src->len,
+				error_no);
+		//TODO detach for recovery
+		return error_no;
+	}
 
+	src->ref_count++;
+	*dest = src;
+	return 0;
+}
+
+static int _segment_copy(void *dest_directory, mm_segment_t **dest,
+		const void *src_directory, mm_segment_t *src)
+{
+	mm_segment_t *s = (mm_segment_t *) slab_alloc(&segment_slab);
+	if (!s) {
+		log_warning("failed to allocate segment\n");
+		return ENOMEM;
+	}
+
+	int error_no = copy_user_pages(dest_directory, src_directory,
+			src->addr, pages(src->len), _convert_permission(src));
+	if (error_no) {
+		log_warning("failed to copy(%p, %x) %d\n", src->addr, src->len,
+				error_no);
+		slab_free(&segment_slab, s);
+		//TODO unmap for recovery
+		return error_no;
+	}
+
+	s->addr = src->addr;
+	s->len = src->len;
+	s->max = src->max;
+	s->attr = src->attr;
+	s->ref_count = 1;
+	list_initialize(&(s->semaphores));
+	*dest = s;
+	return 0;
+}
+
+static int _segment_allocate(mm_segment_t **dest, void *directory,
+		const void *start, const void *end, const int attr,
+		const unsigned int type)
+{
+	mm_segment_t *s = (mm_segment_t *) slab_alloc(&segment_slab);
+	if (!s) {
+		log_warning("failed to allocate segment\n");
+		return ENOMEM;
+	}
+
+	int error_no = map_user_pages(directory, (void *) start,
+			pages((uintptr_t) end - (uintptr_t) start), attr);
+	if (error_no) {
+		log_warning("failed to map(%p, %x) %d\n", start,
+				(uintptr_t) end - (uintptr_t) start, error_no);
+		slab_free(&segment_slab, s);
+		//TODO unmap for recovery
+		return error_no;
+	}
+
+	s->addr = (void *) start;
+	s->max = s->len = (uintptr_t) end - (uintptr_t) start;
+	s->attr = type;
+	s->ref_count = 1;
+	list_initialize(&(s->semaphores));
+	*dest = s;
+	return 0;
+}
+
+static void _segment_deallocate(mm_process_t *process, mm_segment_t *s)
+{
+	if (s->ref_count > 1) {
+		int result = detach_user_pages(process->directory, s->addr,
+				pages(s->len));
+		if (result)
+			log_warning("failed to detach(%p, %x) %d\n", s->addr,
+				s->len, result);
+
+		s->ref_count--;
+	} else {
+		int result = unmap_user_pages(process->directory, s->addr,
+				pages(s->len));
+		if (result)
+			log_warning("failed to unmap(%p, %x) %d\n", s->addr,
+				s->len, result);
+
+		for (list_t *p; (p = list_pick(&(s->semaphores)));)
+			semaphore_destroy(getSemaphoreFromSegments(p));
+
+		slab_free(&segment_slab, s);
+	}
+}
+
+static int _convert_permission(const mm_segment_t *s)
+{
+	int permission = (s->attr & attr_readable) ? R_OK : 0;
+	if (s->attr & attr_writable)
+		permission |= W_OK;
+
+	return permission;
+}
+
+static int create_thread(const int thread_id, mm_process_t *process,
+		const void *entry, const void *ustack_top)
+{
 	T_CTSK pk_ctsk = {
 		TA_HLNG,
 		(VP_INT) NULL,
@@ -627,41 +771,30 @@ static int create_thread(const int thread_id, mm_process_t *process, FP entry,
 		KTHREAD_STACK_SIZE,
 		NULL,
 		process->directory,
-		ustack_top
+		(VP) ustack_top
 	};
-	if (kcall->thread_create(thread_id, &pk_ctsk)) {
-		slab_free(&thread_slab, th);
-		//TODO use another errno
-		return ENOMEM;
-	}
-
-	if (!tree_put(&thread_tree, thread_id, &(th->node))) {
-		kcall->thread_destroy(thread_id);
-		slab_free(&thread_slab, th);
-		//TODO use another errno
-		return EBUSY;
-	}
-
-	list_append(&(process->threads), &(th->brothers));
-	th->process = process;
+	mm_thread_t *th;
+	int result = _thread_create_frame(&th, &pk_ctsk, thread_id, process);
+	if (result)
+		return result;
 
 	//TODO set process stack map
 	th->stack.addr = (void *) pageRoundDown(
 			(uintptr_t) USER_STACK_END_ADDR
 			- USER_STACK_MAX_SIZE);
-	th->stack.len = pageRoundUp(USER_STACK_INITIAL_SIZE);
+	th->stack.len = USER_STACK_END_ADDR
+			- pageRoundDown((uintptr_t ) ustack_top);
+	if (th->stack.len < pageRoundUp(USER_STACK_INITIAL_SIZE))
+		th->stack.len = pageRoundUp(USER_STACK_INITIAL_SIZE);
+
 	th->stack.max = pageRoundUp(USER_STACK_MAX_SIZE);
 	th->stack.attr = type_stack;
-	thread_local_t *local = (thread_local_t *) MAIN_THREAD_LOCAL_ADDR;
-	if (kcall->region_put(thread_id, &(local->thread_id), sizeof(thread_id),
-			&thread_id)) {
-		//TODO what to do?
-	}
-
+	th->stack.ref_count = 1;
+	list_initialize(&(th->stack.semaphores));
 	return 0;
 }
 
-static void destroy_threads(mm_process_t *process, const bool replacing)
+static void destroy_threads(mm_process_t *process, const int thread_id)
 {
 	for (list_t *p; (p = list_pick(&(process->threads)));) {
 		mm_thread_t *th = getMyThread(p);
@@ -679,17 +812,26 @@ static void destroy_threads(mm_process_t *process, const bool replacing)
 		//TODO check error
 		tree_remove(&thread_tree, th->node.key);
 
-		if (!replacing)
+		if (th->node.key != thread_id)
 			sequence_release(&thread_sequence,
 					th->node.key - INIT_THREAD_ID);
 
-		uintptr_t start = (uintptr_t) th->stack.addr
-				+ th->stack.max - th->stack.len;
-		//TODO check error
-		if (unmap_user_pages(process->directory,
-				(void *) start, pages(th->stack.len)))
-			log_err("mm: unmap error %p,%x\n",
-					start, pages(th->stack.len));
+		if (th->stack.attr) {
+			uintptr_t start = (uintptr_t) th->stack.addr
+					+ th->stack.max - th->stack.len;
+			result = unmap_user_pages(process->directory,
+					(void *) start, pages(th->stack.len));
+			if (result)
+				log_warning("mm: failed to unmap(%p,%x) %d\n",
+						start, pages(th->stack.len),
+						result);
+		}
+
+		if (th->wait.reason) {
+			list_remove(&(th->waiting));
+			kcall->ipc_send(th->wait.tag, &async_reply,
+					sizeof(async_reply));
+		}
 
 		slab_free(&thread_slab, th);
 	}
@@ -697,10 +839,6 @@ static void destroy_threads(mm_process_t *process, const bool replacing)
 
 static int create_spawn_thread(mm_process_t *process, const FP entry)
 {
-	mm_thread_t *th = (mm_thread_t *) slab_alloc(&thread_slab);
-	if (!th)
-		return ENOMEM;
-
 	T_CTSK pk_ctsk = {
 		TA_HLNG | TA_ACT,
 		(VP_INT) NULL,
@@ -711,22 +849,59 @@ static int create_spawn_thread(mm_process_t *process, const FP entry)
 		NULL,
 		NULL
 	};
-	ID tid = INIT_THREAD_ID;
-	if (kcall->thread_create(tid, &pk_ctsk)) {
+	mm_thread_t *th;
+	return _thread_create_frame(&th, &pk_ctsk, INIT_THREAD_ID, process);
+}
+
+static int _thread_create_frame(mm_thread_t **p, T_CTSK *pk_ctsk,
+		const int thread_id, mm_process_t *process)
+{
+	mm_thread_t *th = (mm_thread_t *) slab_alloc(&thread_slab);
+	if (!th)
+		return ENOMEM;
+
+	int result = kcall->thread_create(thread_id, pk_ctsk);
+	if (result) {
 		slab_free(&thread_slab, th);
-		//TODO use another errno
+		//TODO use adequate errno
 		return ENOMEM;
 	}
 
-	if (!tree_put(&thread_tree, tid, &(th->node))) {
-		kcall->thread_destroy(tid);
+	if (pk_ctsk->ustack_top) {
+		thread_local_t *local =
+				(thread_local_t *) MAIN_THREAD_LOCAL_ADDR;
+		if (kcall->region_put(thread_id, &(local->thread_id),
+				sizeof(thread_id), &thread_id)) {
+			result = kcall->thread_destroy(thread_id);
+			if (result)
+				log_warning("mm: failed to destroy(%d) %d\n",
+						thread_id, result);
+
+			slab_free(&thread_slab, th);
+			return EFAULT;
+		}
+	}
+
+	if (!tree_put(&thread_tree, thread_id, &(th->node))) {
+		result = kcall->thread_destroy(thread_id);
+		if (result)
+			log_warning("mm: failed to destroy(%d) %d\n",
+					thread_id, result);
+
 		slab_free(&thread_slab, th);
-		//TODO use another errno
+		//TODO use adequate errno
 		return EBUSY;
 	}
 
-	list_append(&(process->threads), &(th->brothers));
+	list_initialize(&(th->waiting));
+	th->wait.obj = 0;
+	th->wait.reason = REASON_NONE;
+	th->wait.tag = 0;
 	th->process = process;
+	th->stack.attr = attr_nil;
+
+	list_append(&(process->threads), &(th->brothers));
+	*p = th;
 	return 0;
 }
 

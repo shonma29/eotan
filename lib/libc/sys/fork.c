@@ -25,9 +25,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <unistd.h>
+#include <libc.h>
 
 
 pid_t fork(void)
 {
-	return rfork(0);
+	return rfork(RFPROC);
 }

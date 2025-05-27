@@ -27,6 +27,8 @@ For more information, please refer to <http://unlicense.org/>
 #ifndef _SYS_SYSLIMITS_H_
 #define _SYS_SYSLIMITS_H_
 
+#define ARG_MAX (16 * 1024)
+
 #define NAME_MAX (255)
 #define PATH_MAX (1024)
 

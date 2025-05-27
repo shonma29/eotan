@@ -182,7 +182,7 @@ static void execute(unsigned char **array, unsigned char **env,
 {
 	for (int status; waitpid(-1, &status, WNOHANG) > 0;);
 
-	pid_t pid = rfork(RFNOTEG);
+	pid_t pid = rfork(RFPROC | RFNOTEG);
 	if (pid == 0) {
 		// child
 		Token token;
