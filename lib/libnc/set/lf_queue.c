@@ -26,7 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <stddef.h>
 #include <string.h>
-#include <mpu/mutex.h>
+#include <mpu/atomic.h>
 #include <set/lf_queue.h>
 #include <set/lf_stack.h>
 
