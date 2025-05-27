@@ -184,6 +184,7 @@ int mm_exec(mm_request_t *req)
 //			return ENOEXEC;
 
 		int thread_id = th->node.key;
+		strcpy(process->local->name, req->pathbuf);
 		result = process_replace(th, &ro, &rw,
 				(void *) ehdr.e_entry,
 				(void *) (req->args.arg2),

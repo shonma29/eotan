@@ -38,11 +38,11 @@ typedef struct {
 	gid_t gid;
 	size_t wd_len;
 	char wd[PATH_MAX];
+	char name[PATH_MAX];
 } process_local_t;
 
 typedef struct {
 	int error_no;
-	int thread_id;
 } thread_local_t;
 
 #define MAIN_THREAD_LOCAL_ADDR (USER_STACK_END_ADDR - sizeof(thread_local_t))

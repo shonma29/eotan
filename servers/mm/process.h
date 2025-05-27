@@ -111,7 +111,6 @@ typedef struct {
 	int exit_status;
 	int tag;
 	pid_t wpid;
-	char name[32];//TODO set on fork/exec
 } mm_process_t;
 
 extern slab_t sequence_slab;

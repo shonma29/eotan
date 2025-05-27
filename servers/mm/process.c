@@ -301,8 +301,8 @@ mm_process_t *process_duplicate(const mm_thread_t *th, const int flags,
 		if (dest->root)
 			dest->root->f_count++;
 
-		strcpy(dest->name, src->name);
 		set_local(dest, src->local->wd, src->local->wd_len);
+		strcpy(dest->local->name, src->local->name);
 
 		int thread_id = sequence_get(&thread_sequence);
 		if (thread_id < 0) {
@@ -589,7 +589,6 @@ static int process_create(mm_process_t **process, const int pid)
 		p->local = NULL;
 		p->tag = 0;
 		p->wpid = 0;
-		p->name[0] = '\0';
 
 		//TODO check NULL
 		p->directory = copy_kernel_page_table();
@@ -612,6 +611,7 @@ static void set_local(mm_process_t *process, const char *wd,
 	process->local->gid = process->gid;
 	process->local->wd_len = wd_len;
 	strcpy(process->local->wd, wd);
+	process->local->name[0] = '\0';
 }
 
 mm_thread_t *thread_find(const ID tid)
@@ -865,21 +865,6 @@ static int _thread_create_frame(mm_thread_t **p, T_CTSK *pk_ctsk,
 		slab_free(&thread_slab, th);
 		//TODO use adequate errno
 		return ENOMEM;
-	}
-
-	if (pk_ctsk->ustack_top) {
-		thread_local_t *local =
-				(thread_local_t *) MAIN_THREAD_LOCAL_ADDR;
-		if (kcall->region_put(thread_id, &(local->thread_id),
-				sizeof(thread_id), &thread_id)) {
-			result = kcall->thread_destroy(thread_id);
-			if (result)
-				log_warning("mm: failed to destroy(%d) %d\n",
-						thread_id, result);
-
-			slab_free(&thread_slab, th);
-			return EFAULT;
-		}
 	}
 
 	if (!tree_put(&thread_tree, thread_id, &(th->node))) {
