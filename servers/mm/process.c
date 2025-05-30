@@ -211,22 +211,24 @@ mm_process_t *process_duplicate(const mm_thread_t *th, const int flags,
 		}
 
 		// heap
-		if (flags & RFMEM) {
-			error_no = _segment_share(
-					dest->directory,
-					&(dest->segments.heap),
-					src->directory,
-					src->segments.heap);
-			if (error_no)
-				break;
-		} else {
-			error_no = _segment_copy(
-					dest->directory,
-					&(dest->segments.heap),
-					src->directory,
-					src->segments.heap);
-			if (error_no)
-				break;
+		if (src->segments.heap) {
+			if (flags & RFMEM) {
+				error_no = _segment_share(
+						dest->directory,
+						&(dest->segments.heap),
+						src->directory,
+						src->segments.heap);
+				if (error_no)
+					break;
+			} else {
+				error_no = _segment_copy(
+						dest->directory,
+						&(dest->segments.heap),
+						src->directory,
+						src->segments.heap);
+				if (error_no)
+					break;
+			}
 		}
 
 		// process local
@@ -375,18 +377,6 @@ int process_replace(mm_thread_t *th, const Elf32_Phdr *code,
 		if (result)
 			return result;
 	}
-
-	mm_segment_t *heap = (mm_segment_t *) slab_alloc(&segment_slab);
-	if (!heap)
-		return ENOMEM;
-
-	heap->addr = (void *) end;
-	heap->len = 0;
-	heap->max = pageRoundUp(USER_HEAP_MAX_ADDR) - end;
-	heap->attr = type_heap;
-	heap->ref_count = 1;
-	list_initialize(&(heap->semaphores));
-	process->segments.heap = heap;
 
 	//TODO check if directory is current PDE
 	tlb_flush_all();
@@ -749,6 +739,25 @@ static void _segment_deallocate(mm_process_t *process, mm_segment_t *s)
 
 		slab_free(&segment_slab, s);
 	}
+}
+
+int process_allocate_heap(mm_process_t *p)
+{
+	mm_segment_t *s = (mm_segment_t *) slab_alloc(&segment_slab);
+	if (!s)
+		return ENOMEM;
+
+	mm_segment_t *prev = (p->segments.data) ?
+			(p->segments.data) : (p->segments.exec);
+	uintptr_t end = ((uintptr_t) prev->addr) + prev->len;
+	s->addr = (void *) end;
+	s->len = 0;
+	s->max = pageRoundUp(USER_HEAP_MAX_ADDR) - end;
+	s->attr = type_heap;
+	s->ref_count = 1;
+	list_initialize(&(s->semaphores));
+	p->segments.heap = s;
+	return 0;
 }
 
 static int _convert_permission(const mm_segment_t *s)

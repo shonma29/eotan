@@ -170,6 +170,7 @@ extern mm_descriptor_t *process_allocate_desc(void);
 extern void process_deallocate_desc(mm_descriptor_t *);
 extern mm_file_t *session_create_file(mm_session_t *);
 extern int session_destroy_file(mm_file_t *);
+extern int process_allocate_heap(mm_process_t *);
 extern mm_namespace_t *process_allocate_ns(void);
 extern void process_deallocate_ns(mm_namespace_t *);
 

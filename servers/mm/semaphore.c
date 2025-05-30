@@ -76,7 +76,8 @@ static int _find(mm_semaphore_t **s, const void *address,
 	if (!segment
 			|| !_includes(segment, address)) {
 		segment = process->segments.heap;
-		if (!_includes(segment, address))
+		if (!segment
+				|| !_includes(segment, address))
 			return EINVAL;
 	}
 

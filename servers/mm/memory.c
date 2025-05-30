@@ -70,6 +70,16 @@ int mm_sbrk(mm_request_t *req)
 
 		mm_process_t *p = get_process(th);
 		mm_segment_t *s = p->segments.heap;
+		if (!s) {
+			int result = process_allocate_heap(p);
+			if (result) {
+				reply->data[0] = result;
+				break;
+			}
+
+			s = p->segments.heap;
+		}
+
 		uintptr_t end = (uintptr_t) (s->addr) + s->len;
 		intptr_t diff = (intptr_t) (req->args.arg1);
 		if (diff > 0) {
