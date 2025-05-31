@@ -47,6 +47,7 @@ typedef struct {
 	char buf[0];
 } init_arg_t;
 
+// MUST be smaller than page size
 static char buf[sizeof(init_arg_t) + PATH_MAX + sizeof(thread_local_t)];
 
 
@@ -65,8 +66,8 @@ void load(void)
 		} else {
 			sys_reply_t *reply = (sys_reply_t *) &args;
 			if (reply->result) {
-				log_info("load: attach failed %d\n",
-						reply->result);
+				log_info("load: bind failed %d %d\n",
+						reply->result, reply->data[0]);
 				break;
 			}
 		}

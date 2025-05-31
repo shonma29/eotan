@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <stddef.h>
 #include <stdnoreturn.h>
+#include <mpufunc.h>
 #include <mpu/io.h>
 #include <mpu/memory.h>
 #include <nerve/config.h>
@@ -76,6 +77,7 @@ static void callback(void)
 	}
 
 	di();
+	paging_reset();
 	release_pages((void *) (CORE_STACK_ADDR - CORE_STACK_SIZE),
 			(void *) CORE_STACK_ADDR);
 	release_pages((void *) BOOT_ADDR, (void *) ((uintptr_t) h + sizeof(*h)));

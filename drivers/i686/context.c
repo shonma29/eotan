@@ -43,12 +43,6 @@ static VP_INT *context_create_kernel(VP_INT *, const UW, const FP);
 static VP_INT *context_create_user(VP_INT *, const UW, const FP, const VP);
 
 
-void context_initialize(void)
-{
-	//TODO move to starter
-	paging_reset();
-}
-
 static void api_set_kernel_sp(const VP addr)
 {
 	tss_t *tss = (tss_t *) TSS_ADDR;

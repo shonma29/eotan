@@ -38,7 +38,6 @@ extern noreturn void set_selector(void);
 
 /* context.c */
 extern void create_context(thread_t *);
-extern void context_initialize(void);
 extern void context_release(const thread_t *);
 extern void context_switch(thread_t *, thread_t *);
 

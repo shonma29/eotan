@@ -110,7 +110,8 @@ $(WD)/starter: $(WD)/protect.o $(WD)/starter.o $(WD)/memory.o \
 		drivers/mpu/libmpu.a lib/libnc.a
 	$(LD) $(LDFLAGS) -Ttext $(STARTER_ADDR) -L$(LIB) -o $@ $^
 
-$(WD)/boot: $(WD)/boot.o
+$(WD)/boot: $(WD)/boot.o \
+		drivers/mpu/libmpu.a lib/libnc.a
 	$(LD) $(LDFLAGS) -Ttext $(BOOT_ADDR) -o $@ $^
 
 $(WD)/starter.bin: $(WD)/starter $(WD)/boot

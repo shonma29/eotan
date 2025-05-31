@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <core.h>
 #include <mpufunc.h>
 #include <mpu/memory.h>
+#include <nerve/func.h>
 #include <nerve/thread.h>
 
 static bool copy(UB *, UB *, size_t *);
@@ -34,6 +35,12 @@ static bool copy(UB *, UB *, size_t *);
 
 ER_UINT strncpy_u2k(thread_t *th, void *to, const void *from, const size_t bytes)
 {
+	if (is_kthread(th)) {
+		size_t len = bytes;
+		copy(to, (UB *) from, &len);
+		return len;
+	}
+
 	PTE *dir = (PTE*)kern_p2v(th->mpu.cr3);
 	void *p = getPageAddress(dir, from);
 
@@ -48,7 +55,7 @@ ER_UINT strncpy_u2k(thread_t *th, void *to, const void *from, const size_t bytes
 
 		do {
 			bool done;
-	
+
 			len = (left < len) ? left : len;
 			done = copy(w, p, &len);
 			left -= len;

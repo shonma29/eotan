@@ -24,46 +24,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <stddef.h>
-#include <mpu/memory.h>
-#include <nerve/config.h>
-#include <nerve/memory_map.h>
-#include <nerve/func.h>
-#include "paging.h"
+#include <nerve/global.h>
 
 
-//TODO unify paging_init
-//TODO skip memory hole
 void paging_reset(void)
 {
 	PDE *dir = (PDE *) kern_p2v((void *) KTHREAD_DIR_ADDR);
-	uintptr_t addr = 0;
 	MemoryMap *mm = &(sysinfo->memory_map);
 	size_t max = (mm->max_pages + PTE_PER_PAGE - 1) / PTE_PER_PAGE;
-	size_t left = mm->max_pages;
-	printk("reset max=%x left=%x\n", max, left);
-
-	for (unsigned int i = 0; i < max; i++) {
-		PTE *p = palloc();
-		if (!p) {
-			printk("no memory for PTE");
-			break;
-		}
-
-		unsigned int j;
-		for (j = 0; left && (j < PTE_PER_PAGE); j++) {
-			p[j] = calc_pte((void *) addr, ATTR_INITIAL);
-			addr += PAGE_SIZE;
-			left--;
-		}
-
-		for (; j < PTE_PER_PAGE; j++) {
-			p[j] = 0;
-			addr += PAGE_SIZE;
-		}
-
-		dir[OFFSET_KERN + i] = calc_pte(kern_v2p(p), ATTR_INITIAL);
-	}
+	for (unsigned int i = 0; i < max; i++)
+		dir[i] = 0;
 
 	tlb_flush_all();
 }

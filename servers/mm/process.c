@@ -544,6 +544,13 @@ int spawn(const pid_t pid, const FP entry)
 		return error_no;
 	}
 
+	error_no = kcall->thread_start(INIT_THREAD_ID);
+	if (error_no) {
+		//TODO destroy process
+		log_info("mm: failed to start thread %d\n", error_no);
+		return EBUSY;
+	}
+
 	log_info("mm: spawn(pid=%d)\n", pid);
 	return 0;
 }
@@ -849,7 +856,7 @@ static void destroy_threads(mm_process_t *process, const int thread_id)
 static int create_spawn_thread(mm_process_t *process, const FP entry)
 {
 	T_CTSK pk_ctsk = {
-		TA_HLNG | TA_ACT,
+		TA_HLNG,
 		(VP_INT) NULL,
 		entry,
 		pri_user_foreground,

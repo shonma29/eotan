@@ -556,7 +556,7 @@ int mm_chmod(mm_request_t *req)
 		st.st_size = -1;
 		st.st_mtime = -1;
 
-		int token = create_token(th->node.key, file->session);
+		int token = create_token(kcall->thread_get_id(), file->session);
 		message->header.type = Twstat;
 		message->header.token = token;
 		message->Twstat.tag = create_tag(req);

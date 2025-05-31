@@ -56,7 +56,9 @@ static void set_initial_pages(const size_t num_of_pages)
 	uintptr_t addr = 0;
 	unsigned int i;
 	for (i = 0; i < pse_pages; i++) {
-		dir[OFFSET_KERN + i] = dir[i] = calc_kern_pte((void *) addr);
+		PDE pde = calc_kern_pte((void *) addr);
+		dir[i] = pde;
+		dir[OFFSET_KERN + i] = pde | PAGE_GLOBAL;
 		addr += PAGE_SIZE * PTE_PER_PAGE;
 	}
 

@@ -359,6 +359,19 @@ ER move_stack(const PTE *page_table, void *to, const void *from,
 		const size_t bytes)
 {
 	PTE *dir = (PTE *) kern_p2v(page_table);
+	if ((uintptr_t) from >= SUPERVISOR_START) {
+		unsigned int offset = getOffset(to);
+		if (bytes > PAGE_SIZE - offset)
+			return E_PAR;
+
+		void *p = getPageAddress(dir, to);
+		if (!p)
+			return E_PAR;
+
+		memrcpy((void *) ((uintptr_t) p | offset), from, bytes);
+		return 0;
+	}
+
 	size_t left = bytes;
 	size_t roffset = getOffset((void *) ((uintptr_t) from + left));
 	size_t woffset = PAGE_SIZE - roffset;

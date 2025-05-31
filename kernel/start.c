@@ -44,7 +44,6 @@ void start(void (*callback)(void))
 	sysinfo->sync.state.serializing = 0;
 	sysinfo->delay_thread_start = false;
 
-	context_initialize();
 	kcall_initialize();
 	service_initialize();
 	ipc_initialize();
