@@ -211,7 +211,7 @@ void interrupt_with_error(const UW edi, const UW esi, const UW ebp,
 		const UW cs, const W eflags)
 {
 	sysinfo->sync.state.interrupt_nest++;
-	//TODO for debug
+#ifdef DEBUG
 	kcall->printk("interrupt(%d). thread=%d\n"
 		" cs=%x eip=%x eflags=%x ds=%x error=%x\n"
 		" eax=%x ebx=%x ecx=%x edx=%x\n"
@@ -219,7 +219,7 @@ void interrupt_with_error(const UW edi, const UW esi, const UW ebp,
 			no, kcall->thread_get_id(),
 			cs, eip, eflags, ds,
 			err, eax, ebx, ecx, edx, edi, esi, ebp, esp);
-
+#endif
 	service_t *p = service_map[no];
 	do {
 		if (p->isr == dummy)

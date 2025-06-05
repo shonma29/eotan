@@ -469,14 +469,8 @@ int process_destroy(mm_process_t *process, const int status)
 
 	mm_process_t *parent = process_find(process->ppid);
 	if (parent) {
-		if (parent->tag) {
-			//log_info("mm: %d release parent %d\n",
-			//		process->node.key, process->ppid);
+		if (parent->tag)
 			process_release_body(parent, 0);
-		} else {
-			log_info("mm: %d parent not waiting\n",
-					process->node.key);
-		}
 	} else {
 		//TODO what to do?
 		log_info("mm: %d no parent\n", process->node.key);
