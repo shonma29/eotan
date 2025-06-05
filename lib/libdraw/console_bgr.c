@@ -66,7 +66,7 @@ Console *getConsole(Screen *s, const Display *display, const Font *default_font)
 	s->fgcolor.rgb.g = 0xff;
 	s->fgcolor.rgb.r = 0xff;
 
-	s->bgcolor.rgb.b = 0x7f;
+	s->bgcolor.rgb.b = 0;
 	s->bgcolor.rgb.g = 0;
 	s->bgcolor.rgb.r = 0;
 

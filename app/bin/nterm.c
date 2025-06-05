@@ -113,7 +113,7 @@ static int _initialize_screen(void)
 	screen.height = display.r.max.y - display.r.min.y;
 	screen.chr_width = screen.width / screen.font.width;
 	screen.chr_height = screen.height / screen.font.height;
-	terminal_write(STR_CONS_INIT, &state, LEN_CONS_INIT);
+	terminal_write(&state, STR_CONS_INIT, LEN_CONS_INIT);
 	return _blit(draw_fd, &(display.r));
 }
 
@@ -131,7 +131,7 @@ static int _redraw_text(char const * const buf, ssize_t const len)
 		}
 	}
 
-	terminal_write((char *) buf, &state, len);
+	terminal_write(&state, (char *) buf, len);
 
 	int result = _blit(draw_fd, &(display.r));
 

@@ -55,16 +55,10 @@ void terminal_initialize(esc_state_t *state, const Display *display)
 	state->func = state_null;
 }
 
-int terminal_write(char *inbuf, esc_state_t *state, const size_t size)
+void terminal_write(esc_state_t *state, char const *inbuf, const size_t size)
 {
-	if (!state)
-		return (-1);
-
-	for (int i = 0; i < size; i++)
+	for (size_t i = 0; i < size; i++)
 		eputc(state, inbuf[i]);
-
-	//TODO signed int?
-	return size;
 }
 
 static void _push(esc_state_t *state, const char ch)

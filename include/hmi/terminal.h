@@ -47,6 +47,6 @@ typedef struct _esc_state {
 } esc_state_t;
 
 extern void terminal_initialize(esc_state_t *, const Display *);
-extern int terminal_write(char *, esc_state_t *, const size_t);
+extern void terminal_write(esc_state_t *, char const *, const size_t);
 
 #endif
