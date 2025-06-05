@@ -25,9 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include <libc.h>
 #include <sys/wait.h>
 #include "_perror.h"
@@ -35,14 +35,6 @@ For more information, please refer to <http://unlicense.org/>
 #define ERR (-1)
 
 #define SLEEP_SECONDS (60)
-
-enum {
-	BIND = 1,
-	STDIN = 2,
-	STDOUT = 3,
-	STDERR = 4,
-	EXEC = 5
-};
 
 extern void __malloc_initialize(void);
 
@@ -59,43 +51,22 @@ static void execute(char **array, char **env)
 {
 	pid_t pid = rfork(RFPROC | RFNOTEG);
 	if (pid == ERR) {
-		_put_error("fork error ");
-		_put_error(strerror(errno));
+		int error_no = errno;
+		_put_error("failed to fork ");
+		_put_error(strerror(error_no));
 		_put_error("\n");
 	} else if (!pid) {
-		close(STDIN_FILENO);
-		close(STDOUT_FILENO);
-		close(STDERR_FILENO);
+		//TODO why is it needed?
+		_put_error("open window\n");
 
-		int result = 0;
-		do {
-			if (bind("#i", "/dev", MREPL) < 0) {
-				result = BIND;
-				break;
-			}
+		if (execve(array[0], array, env) < 0) {
+			int error_no = errno;
+			_put_error("failed to execve ");
+			_put_error(strerror(error_no));
+			_put_error("\n");
+		}
 
-			if (open("/dev/cons", O_RDONLY) < 0) {
-				result = STDIN;
-				break;
-			}
-
-			if (open("/dev/cons", O_WRONLY) < 0) {
-				result = STDOUT;
-				break;
-			}
-
-			if (dup2(STDOUT_FILENO, STDERR_FILENO) < 0) {
-				result = STDERR;
-				break;
-			}
-
-			if (execve(array[0], array, env) < 0) {
-				result = EXEC;
-				break;
-			}
-		} while (false);
-
-		_exit(result);
+		_exit(EXIT_FAILURE);
 	}
 }
 
@@ -103,44 +74,14 @@ void _main(int argc, char **argv, char **env)
 {
 	errno = 0;
 	__malloc_initialize();
-#if 1
-	// if only opened by init
-	close(STDIN_FILENO);
-	close(STDOUT_FILENO);
-	close(STDERR_FILENO);
-#endif
-	int result = 0;
-	do {
-		if (bind("#c", "/dev", MREPL) < 0) {
-			result = BIND;
-			break;
-		}
 
-		if (open("/dev/cons", O_RDONLY) < 0) {
-			result = STDIN;
-			break;
-		}
+	char *array[] = { "/bin/nterm", NULL };
+	char *envp[] = { NULL };
+	execute(array, envp);
+	execute(array, envp);
 
-		if (open("/dev/cons", O_WRONLY) < 0) {
-			result = STDOUT;
-			break;
-		}
-
-		if (dup2(STDOUT_FILENO, STDERR_FILENO) < 0) {
-			result = STDERR;
-			break;
-		}
-
-		char *array[] = { "/bin/shell", NULL };
-		char *envp[] = { "COLUMNS=84", "LINES=29", NULL };
-		execute(array, envp);
-		execute(array, envp);
-
-		for (;;) {
-			collect();
-			sleep(SLEEP_SECONDS);
-		}
-	} while (false);
-
-	_exit(result);
+	for (;;) {
+		collect();
+		sleep(SLEEP_SECONDS);
+	}
 }

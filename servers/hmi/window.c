@@ -154,13 +154,11 @@ void window_focus(const int data)
 				//TODO send 'in' to current focused session
 				focused_session = s;
 
-			if (s->type == TYPE_WINDOW) {
-				mouse_message.data = mouse_encode_data(
-						data >> 24,
-						last_point.x - w->outer.r.min.x,
-						last_point.y - w->outer.r.min.y);
-				event_enqueue(&mouse_message);
-			}
+			mouse_message.data = mouse_encode_data(
+					data >> 24,
+					last_point.x - w->outer.r.min.x,
+					last_point.y - w->outer.r.min.y);
+			event_enqueue(&mouse_message);
 			return;
 		}
 	}

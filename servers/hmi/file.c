@@ -29,10 +29,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/unistd.h>
 #include <fs/vfs.h>
 #include <nerve/kcall.h>
-#include <libserv.h>
 #include "hmi.h"
 #include "session.h"
-#include "mouse.h"
 
 #define MASK_UNSUPPORTED_MODE (O_APPEND | O_CREAT | O_TRUNC)
 
@@ -101,17 +99,7 @@ int if_open(fs_request_t *req)
 			break;
 		}
 
-		if (session->type == TYPE_NONE) {
-			if (file->f_driver->type == TYPE_CONS)
-				session_bind_terminal(session->state,
-						session->window);
-		} else if (session->type != file->f_driver->type) {
-			error_no = EBUSY;
-			break;
-		}
-
 		file->f_flag = request->mode & O_ACCMODE;
-		session->type = file->f_driver->type;
 
 		fsmsg_t *response = &(req->packet);
 		//response->header.token = req->packet.header.token;
@@ -252,11 +240,6 @@ static ER_UINT _write(struct file *file, const UW size, const char *inbuf,
 		const int thread_id)
 {
 	switch (file->f_driver->channel) {
-	case CONS:
-		mouse_hide();
-		terminal_write((char *) inbuf, file->f_session->state, size);
-		mouse_show();
-		return size;
 	case CONSCTL:
 		return consctl_write(size, inbuf);
 	case DRAW:

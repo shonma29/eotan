@@ -30,25 +30,19 @@ For more information, please refer to <http://unlicense.org/>
 #include <nerve/kcall.h>
 #include "hmi.h"
 #include "session.h"
-#include "mouse.h"
 
 #define BAR_HEIGHT (20)
-#define CONSOLE_TITLE "Console"
 #define DEFAULT_WIDTH (1024 / 2)
 #define DEFAULT_HEIGHT ((768 - BAR_HEIGHT) / 2)
 
 enum {
 	SESSION_SLAB = 0x01,
-	FILE_SLAB = 0x02,
-	SCREEN_SLAB = 0x04,
-	ESC_SLAB = 0x08
+	FILE_SLAB = 0x02
 };
 
 static tree_t sessions;
 static slab_t session_slab;
 static slab_t file_slab;
-static slab_t screen_slab;
-static slab_t esc_slab;
 list_t session_list;
 session_t *focused_session = NULL;
 static int initialized_resources = 0;
@@ -75,19 +69,6 @@ int if_attach(fs_request_t *req)
 		}
 
 		session->tid = unpack_tid(req);
-		session->state = (esc_state_t *) slab_alloc(&esc_slab);
-		if (!(session->state)) {
-			_destroy(session);
-			error_no = ENOMEM;
-			break;
-		}
-
-		session->state->screen = (Screen *) slab_alloc(&screen_slab);
-		if (!(session->state->screen)) {
-			_destroy(session);
-			error_no = ENOMEM;
-			break;
-		}
 
 		struct file *file;
 		error_no = session_create_file(&file, session, request->fid);
@@ -131,25 +112,6 @@ int if_attach(fs_request_t *req)
 	return error_no;
 }
 
-void session_bind_terminal(esc_state_t *state, const window_t *w)
-{
-	terminal_initialize(state, display);
-
-	Screen *s = state->screen;
-	s->base = (void *) ((uintptr_t) display->base
-			+ w->inner.r.min.y * display->bpl
-			+ w->inner.r.min.x * display->bpp);
-	s->p = (uint8_t *) (s->base);
-	s->width = w->inner.r.max.x - w->inner.r.min.x;
-	s->height = w->inner.r.max.y - w->inner.r.min.y;
-	s->chr_width = s->width / s->font.width;
-	s->chr_height = s->height / s->font.height;
-
-	mouse_hide();
-	terminal_write(STR_CONS_INIT, state, LEN_CONS_INIT);
-	mouse_show();
-}
-
 int session_initialize(void)
 {
 	tree_create(&sessions, NULL, NULL);
@@ -181,32 +143,6 @@ int session_initialize(void)
 	else
 		initialized_resources |= FILE_SLAB;
 
-	screen_slab.unit_size = sizeof(Screen);
-	screen_slab.block_size = PAGE_SIZE;
-	screen_slab.min_block = 1;
-	screen_slab.max_block = slab_max_block(MAX_FILE, PAGE_SIZE,
-			sizeof(Screen));
-	screen_slab.palloc = kcall->palloc;
-	screen_slab.pfree = kcall->pfree;
-
-	if (slab_create(&screen_slab))
-		return SCREEN_SLAB;
-	else
-		initialized_resources |= SCREEN_SLAB;
-
-	esc_slab.unit_size = sizeof(esc_state_t);
-	esc_slab.block_size = PAGE_SIZE;
-	esc_slab.min_block = 1;
-	esc_slab.max_block = slab_max_block(MAX_FILE, PAGE_SIZE,
-			sizeof(esc_state_t));
-	esc_slab.palloc = kcall->palloc;
-	esc_slab.pfree = kcall->pfree;
-
-	if (slab_create(&esc_slab))
-		return ESC_SLAB;
-	else
-		initialized_resources |= ESC_SLAB;
-
 	return 0;
 }
 
@@ -232,9 +168,6 @@ static session_t *_create(const int sid)
 
 	list_initialize(&(session->brothers));
 	session->window = NULL;
-	session->state = NULL;
-	session->type = TYPE_NONE;
-
 	list_initialize(&(session->event.readers));
 	// buffer size must be power of 2
 	session->event.size = PAGE_SIZE;
@@ -255,13 +188,6 @@ static void _destroy(session_t *session)
 	if (session->window) {
 		window_destroy(session->window);
 		num_of_window--;
-	}
-
-	if (session->state) {
-		if (session->state->screen)
-			slab_free(&screen_slab, session->state->screen);
-
-		slab_free(&esc_slab, session->state);
 	}
 
 	//TODO !event.readers should be released

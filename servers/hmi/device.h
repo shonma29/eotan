@@ -28,21 +28,13 @@ For more information, please refer to <http://unlicense.org/>
 */
 
 typedef enum {
-	CONS = 1,
-	CONSCTL = 2,
-	DRAW = 3,
-	EVENT = 4
+	CONSCTL = 1,
+	DRAW = 2,
+	EVENT = 3
 } channel_e;
-
-typedef enum {
-	TYPE_NONE = 0,
-	TYPE_CONS = 1,
-	TYPE_WINDOW = 2
-} channel_type_e;
 
 typedef struct _driver_t {
 	channel_e channel;
-	channel_type_e type;
 	int permission;
 } driver_t;
 

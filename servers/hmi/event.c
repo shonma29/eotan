@@ -25,16 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <string.h>
-#include <nerve/kcall.h>
-#include <win/keyboard.h>
-#include <sys/errno.h>
-#include <sys/signal.h>
-#include <sys/syscall.h>
 #include <libserv.h>
 #include "hmi.h"
 #include "session.h"
-#include "keyboard.h"
-#include "mouse.h"
 
 #define MASK_EVENT_TYPE (1)
 
@@ -49,9 +42,6 @@ static char interrupt_buf[
 ];
 
 static void _process_keyboard(const int);
-static void _enqueue_to_cons(const int);
-static bool _event_is_full(event_buf_t *);
-static void _event_putc(event_buf_t *, const char);
 static bool _event_is_full_for_message(event_buf_t *);
 static void _event_put(event_buf_t *, const event_message_t *);
 
@@ -75,102 +65,11 @@ void event_process_interrupt(void)
 
 static void _process_keyboard(const int data)
 {
-	int ascii_code = keyboard_convert(data);
-
 	if (!focused_session)
 		return;
 
-	switch (focused_session->type) {
-	case TYPE_CONS:
-		if (ascii_code < 0)
-			return;
-
-		_enqueue_to_cons(ascii_code);
-		break;
-	case TYPE_WINDOW: {
-			keyboard_message.data = data;
-			event_enqueue(&keyboard_message);
-		}
-		break;
-	default:
-		break;
-	}
-}
-
-static void _enqueue_to_cons(const int ascii_code)
-{
-	unsigned char buf = (unsigned char) (ascii_code & 0xff);
-
-	if (!raw_mode) {
-		if (buf == 0x03) {
-			// ^c
-			sys_args_t args = {
-				syscall_kill,
-				focused_session->tid,
-				SIGINT
-			};
-			int error_no = kcall->ipc_send(PORT_MM, &args,
-					sizeof(args));
-			if (error_no)
-				log_err(MYNAME ": kill error %d\n",
-						error_no);
-
-			return;
-		} else if (buf == 0x04) {
-			// ^d
-			event_buf_t *p = &(focused_session->event);
-			list_t *head = list_dequeue(&(p->readers));
-			if (head) {
-				fs_request_t *req = getRequestFromQueue(head);
-				int error_no = reply_read(req);
-				if (error_no)
-					log_warning(MYNAME ": reply error %d\n",
-							error_no);
-			}
-
-			return;
-		}
-
-		mouse_hide();
-		terminal_write((char *) &buf, focused_session->state, 1);
-		mouse_show();
-	}
-
-	event_buf_t *p = &(focused_session->event);
-	if (list_is_empty(&(p->readers))) {
-		if (_event_is_full(p)) {
-			log_warning(MYNAME ": event overflow %d\n",
-					focused_session->node.key);
-			//TODO notify 'overflow'
-			p->write_position = p->read_position;
-		}
-
-		_event_putc(p, buf);
-	} else {
-		//TODO !enqueue to reply list if less than size
-		_event_putc(p, buf);
-
-		list_t *head = list_dequeue(&(p->readers));
-		fs_request_t *req = getRequestFromQueue(head);
-		int error_no = reply_read(req);
-		if (error_no)
-			log_warning(MYNAME ": reply error %d\n", error_no);
-	}
-}
-
-static bool _event_is_full(event_buf_t *p)
-{
-	if (p->read_position)
-		return (p->write_position == (p->read_position - 1));
-	else
-		return (p->write_position == (p->size - 1));
-}
-
-static void _event_putc(event_buf_t *p, const char c)
-{
-	p->buf[p->write_position] = c;
-	p->write_position++;
-	p->write_position &= p->position_mask;
+	keyboard_message.data = data;
+	event_enqueue(&keyboard_message);
 }
 
 void event_enqueue(const event_message_t *message)

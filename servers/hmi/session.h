@@ -27,7 +27,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <set/tree.h>
-#include <hmi/terminal.h>
 #include <hmi/window.h>
 #include "api.h"
 #include "device.h"
@@ -46,9 +45,7 @@ typedef struct _session_t {
 	list_t brothers;
 	tree_t files;
 	window_t *window;
-	esc_state_t *state;
 	int tid;
-	channel_type_e type;
 	event_buf_t event;
 } session_t;
 
@@ -70,7 +67,6 @@ static inline session_t *getSessionFromList(const list_t *p)
 extern list_t session_list;
 extern session_t *focused_session;
 
-extern void session_bind_terminal(esc_state_t *, const window_t *);
 extern int session_initialize(void);
 
 extern session_t *session_find_by_request(const fs_request_t *);
