@@ -25,22 +25,22 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <unistd.h>
 #include <fcntl.h>
 #include <libc.h>
 #include <sys/wait.h>
-
 #include <event.h>
 #include <win/keyboard.h>
 #include <hmi/terminal.h>
+#include "_perror.h"
 
 #define MYNAME "term"
 
 #define ERR (-1)
+
+#define BUF_SIZE (8192)
 
 #define WIDTH (512 - 2 - 2)
 #define HEIGHT (374 - 13 - 2 - 3)
@@ -67,7 +67,8 @@ static long draw_semaphore;
 static int event_fd;
 static int draw_fd;
 
-static void _put_error(char const *);
+extern void __malloc_initialize(void);
+
 static void _show_error(char const *);
 static int _initialize_screen(void);
 static int _redraw_text(char const * const, ssize_t const);
@@ -77,10 +78,6 @@ static int _tunnel_out(int const, int const);
 static int _tunnel_in(int const, int const);
 static int _execute(char const * const *, char const * const *, int const fds[2]);
 
-
-static void _put_error(char const *message) {
-	write(STDERR_FILENO, message, strlen(message));
-}
 
 static void _show_error(char const *message) {
 	char *error_string = strerror(errno);
@@ -170,10 +167,7 @@ static int _blit(int const fd, Rectangle const * const r)
 
 static void _collect(void)
 {
-	for (int status; waitpid(-1, &status, WNOHANG) > 0;)//;
-	{fprintf(stderr, "term collect %d\n",  status);fflush(stderr);}
-		;
-		fprintf(stderr, "term collect done\n");fflush(stderr);
+	for (int status; waitpid(-1, &status, WNOHANG) > 0;);
 }
 
 static int _tunnel_out(int const out, int const in)
@@ -181,7 +175,7 @@ static int _tunnel_out(int const out, int const in)
 	for (;;) {
 		errno = 0;
 
-		char buf[BUFSIZ];
+		char buf[BUF_SIZE];
 		ssize_t len = read(in, buf, sizeof(buf));
 		if (!len)
 			break;
@@ -199,11 +193,11 @@ static int _tunnel_out(int const out, int const in)
 }
 
 static int _tunnel_in(int const out, int const in)
-{return 0;
+{
 	for (;;) {
 		errno = 0;
 
-		event_message_t message[BUFSIZ / sizeof(event_message_t)];
+		event_message_t message[BUF_SIZE / sizeof(event_message_t)];
 		ssize_t len = read(event_fd, message, sizeof(message));
 		if ((len <= 0)
 				|| (len % sizeof(event_message_t))) {
@@ -211,7 +205,7 @@ static int _tunnel_in(int const out, int const in)
 			break;
 		}
 
-		char buf[BUFSIZ];
+		char buf[BUF_SIZE];
 		char *p = buf;
 		len /= sizeof(event_message_t);
 		for (int i = 0; i < len; i++) {
@@ -324,43 +318,46 @@ static int _execute(char const * const *array, char const * const *env,
 	}
 }
 
-int main(int argc, char **argv, char **env)
+void _main(int argc, char **argv, char **env)
 {
+	errno = 0;
+	__malloc_initialize();
+
 	//TODO 'bind' returns positive integer
 	if (bind("#i", "/dev", MREPL) < 0) {
 		_show_error("failed to bind.");
-		return EXIT_FAILURE;
+		_exit(EXIT_FAILURE);
 	}
 
 	event_fd = open("/dev/event", O_RDONLY);
 	if (event_fd < 0) {
 		_show_error("failed to open event.");
-		return EXIT_FAILURE;
+		_exit(EXIT_FAILURE);
 	}
 
 	draw_fd = open("/dev/draw", O_WRONLY);
 	if (draw_fd < 0) {
 		_show_error("failed to open draw.");
-		return EXIT_FAILURE;
+		_exit(EXIT_FAILURE);
 	}
 
 	if (semrelease(&draw_semaphore, 1) != 1) {
 		_show_error("failed to create semaphore.");
-		return EXIT_FAILURE;
+		_exit(EXIT_FAILURE);
 	}
 
 	if (_initialize_screen())
-		return EXIT_FAILURE;
+		_exit(EXIT_FAILURE);
 
 	errno = 0;
 
 	int fds[2];
 	if (pipe(fds)) {
 		_show_error("failed to pipe.");
-		return EXIT_FAILURE;
+		_exit(EXIT_FAILURE);
 	}
 
 	//TODO caluculate from Display
 	char const * const envp[] = { "COLUMNS=84", "LINES=29", NULL };
-	return (_execute(array, envp, fds) ? EXIT_FAILURE : EXIT_SUCCESS);
+	_exit(_execute(array, envp, fds) ? EXIT_FAILURE : EXIT_SUCCESS);
 }

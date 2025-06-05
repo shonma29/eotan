@@ -26,7 +26,8 @@
 TARGET = $(WD)/cat $(WD)/shell \
 		$(WD)/date $(WD)/echo $(WD)/ls $(WD)/pwd $(WD)/sleep \
 		$(WD)/mkdir $(WD)/rm $(WD)/chmod $(WD)/cp $(WD)/mv \
-		$(WD)/more $(WD)/cal $(WD)/ncalc $(WD)/init $(WD)/wm
+		$(WD)/more $(WD)/cal $(WD)/ncalc $(WD)/init $(WD)/wm \
+		$(WD)/nterm
 
 include Makefile.in
 
@@ -40,7 +41,8 @@ all: $(TARGET)
 	done
 
 $(TARGET): $(OBJS) \
-		lib/libc.a lib/libnc.a
+		lib/libwin.a lib/libdraw.a lib/libfonts.a lib/libc.a lib/libnc.a
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $(@).o \
-		$(WD)/_perror.o $(WD)/_put_error.o lib/libc.a lib/libnc.a
+		$(WD)/_perror.o $(WD)/_put_error.o \
+		lib/libwin.a lib/libdraw.a lib/libfonts.a lib/libc.a lib/libnc.a
 	$(STRIP) $@
