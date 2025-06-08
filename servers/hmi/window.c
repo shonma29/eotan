@@ -70,32 +70,6 @@ int window_create(window_t **w, const int x1, const int y1,
 		rect_normalize(&(p->outer.r));
 		p->outer.viewport = p->outer.r;
 
-		int padding_left = 0;
-		int padding_right = 0;
-		int padding_top = 0;
-		int padding_bottom = 0;
-		if (attr & WINDOW_ATTR_HAS_BORDER) {
-			padding_left += 2;
-			padding_right += 3;
-			padding_top += 2;
-			padding_bottom += 3;
-		}
-
-		if (attr & WINDOW_ATTR_HAS_TITLE)
-			padding_top += 13;
-
-		if (attr & WINDOW_ATTR_SCROLLABLE_Y)
-			padding_right += 12;
-
-		if (attr & WINDOW_ATTR_SCROLLABLE_X)
-			padding_bottom += 12;
-
-		p->inner.r = p->outer.r;
-		p->inner.r.min.x += padding_left;
-		p->inner.r.min.y += padding_top;
-		p->inner.r.max.x -= padding_right;
-		p->inner.r.max.y -= padding_bottom;
-		p->inner.viewport = p->inner.r;
 		*w = p;
 	} while (false);
 

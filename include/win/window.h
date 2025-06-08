@@ -1,5 +1,5 @@
-#ifndef _HMI_WINDOW_H_
-#define _HMI_WINDOW_H_
+#ifndef _WIN_WINDOW_H_
+#define _WIN_WINDOW_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -28,20 +28,18 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <hmi/draw.h>
 
-#define WINDOW_ATTR_HAS_BORDER (0x0001)
-#define WINDOW_ATTR_HAS_TITLE (0x0002)
-#define WINDOW_ATTR_SCROLLABLE_X (0x0004)
-#define WINDOW_ATTR_SCROLLABLE_Y (0x0008)
-#define WINDOW_ATTR_MOVABLE (0x0010)
-#define WINDOW_ATTR_RESIZABLE (0x0020)
-#define WINDOW_ATTR_ICONIFIABLE (0x0040)
-#define WINDOW_ATTR_MAXIMIZABLE (0x0080)
-#define WINDOW_ATTR_IS_DIALOG (0x0100)
+#define WINDOW_ATTR_WINDOW (0x0001)
 
 typedef struct {
+	Display display;
+	Rectangle inner;
+	char const *title;
 	uint32_t attr;
-	Frame outer;
-	Frame inner;
-} window_t;
+} Window;
+
+extern int window_initialize(Window * const, int const, int const,
+		uint32_t const);
+extern void window_set_title(Window * const, char const * const);
+extern void window_draw_frame(Window const * const);
 
 #endif

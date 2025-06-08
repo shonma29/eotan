@@ -76,11 +76,6 @@ typedef struct {
 } Display;
 
 typedef struct {
-	Rectangle r;
-	Rectangle viewport;
-} Frame;
-
-typedef struct {
 	Rectangle dest;
 	void *base;
 	size_t bpl;

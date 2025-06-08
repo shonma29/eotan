@@ -27,7 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <set/tree.h>
-#include <hmi/window.h>
+#include "window.h"
 #include "api.h"
 #include "device.h"
 

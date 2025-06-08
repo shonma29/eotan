@@ -89,7 +89,7 @@ int if_attach(fs_request_t *req)
 				BAR_HEIGHT + DEFAULT_HEIGHT * num_of_window,
 				DEFAULT_WIDTH,
 				BAR_HEIGHT + DEFAULT_HEIGHT * (num_of_window + 1),
-				WINDOW_ATTR_HAS_BORDER | WINDOW_ATTR_HAS_TITLE);
+				0);
 		if (error_no) {
 			session_destroy_file(session, file->node.key);
 			break;

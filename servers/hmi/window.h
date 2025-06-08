@@ -1,5 +1,5 @@
-#ifndef _HMI_HMI_H_
-#define _HMI_HMI_H_
+#ifndef _HMI_WINDOW_H_
+#define _HMI_WINDOW_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,45 +26,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
-#include <core.h>
-#include <event.h>
-#include <services.h>
-#include <set/lf_queue.h>
-#include <set/slab.h>
-#include "window.h"
+#include <hmi/draw.h>
 
-#define MYNAME "hmi"
-#define MYPORT PORT_WINDOW
+typedef struct {
+	Rectangle r;
+	Rectangle viewport;
+} frame_t;
 
-#define WINDOW_MAX (2)
-
-#define INTERRUPT_QUEUE_SIZE (1024)
-#define REQUEST_QUEUE_SIZE (64)
-
-typedef struct _hmi_interrupt_t {
-	int type;
-	int data;
-} hmi_interrupt_t;
-
-extern slab_t request_slab;
-extern Display *display;
-
-// window.c
-extern int window_initialize(void);
-extern int window_create(window_t **, const int, const int,
-		const int, const int, const int);
-extern int window_destroy(window_t *);
-extern void window_focus(const int);
-
-// draw.c
-extern ER_UINT draw_write(const window_t *, const UW, const char *, const int);
-
-// event.c
-extern volatile lfq_t interrupt_queue;
-
-extern void event_process_interrupt(void);
-extern void event_enqueue(const event_message_t *);
-extern ER_UINT consctl_write(const UW, const char *);
-extern int event_initialize(void);
+typedef struct {
+	uint32_t attr;
+	frame_t outer;
+} window_t;
 
 #endif

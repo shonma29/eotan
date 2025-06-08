@@ -45,7 +45,7 @@ ER_UINT draw_write(const window_t *wp, const UW size, const char *inbuf,
 		if (param->type != display->type)
 			return E_PAR;
 
-		const Frame *s = &(wp->inner);
+		const frame_t *s = &(wp->outer);
 		rect_normalize(&(param->dest));
 		rect_transform(&(param->dest), &(s->r.min));
 

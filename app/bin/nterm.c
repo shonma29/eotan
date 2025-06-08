@@ -33,27 +33,20 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/wait.h>
 #include <event.h>
 #include <win/keyboard.h>
+#include <win/window.h>
 #include <hmi/terminal.h>
 #include "_perror.h"
 
-#define MYNAME "term"
+#define MYNAME "nterm"
 
 #define ERR (-1)
 
 #define BUF_SIZE (8192)
 
-#define WIDTH (512 - 2 - 2)
-#define HEIGHT (374 - 13 - 2 - 3)
+#define WIDTH (512)
+#define HEIGHT (374)
 
-//TODO get global Display and window
-static Display display = {
-	{ { 0, 0 }, { WIDTH, HEIGHT } },
-	NULL,
-	WIDTH * sizeof(Color_Rgb),
-	sizeof(Color_Rgb),
-	B8G8R8
-};
-//static Rectangle viewport = { { 2, 13 + 2 }, { WIDTH - 3, HEIGHT - 3 } };
+static Window window;
 static Screen screen;
 static esc_state_t state;
 
@@ -91,30 +84,33 @@ static void _show_error(char const *message) {
 static int _initialize_screen(void)
 {
 	errno = 0;
-	void *buf = calloc(sizeof(Color_Rgb), WIDTH * HEIGHT);
-	if (!buf) {
+
+	//TODO get global Display and window
+	if (window_initialize(&window, WIDTH, HEIGHT, WINDOW_ATTR_WINDOW)) {
 		_show_error("memory exhausted.");
 		return ERR;
 	}
 
-	display.base = buf;
+	window_set_title(&window, MYNAME);
+	window_draw_frame(&window);
+
 	packet.op = draw_op_blit;
-	packet.param.bpl = display.bpl;
-	packet.param.type = display.type;
+	packet.param.bpl = window.display.bpl;
+	packet.param.type = window.display.type;
 
 	state.screen = &screen;
-	terminal_initialize(&state, &display);
+	terminal_initialize(&state, &(window.display));
 
-	screen.base = (void *) ((uintptr_t) display.base
-			+ display.r.min.y * display.bpl
-			+ display.r.min.x * display.bpp);
+	screen.base = (void *) ((uintptr_t) window.display.base
+			+ window.inner.min.y * window.display.bpl
+			+ window.inner.min.x * window.display.bpp);
 	screen.p = (uint8_t *) (screen.base);
-	screen.width = display.r.max.x - display.r.min.x;
-	screen.height = display.r.max.y - display.r.min.y;
+	screen.width = window.inner.max.x - window.inner.min.x;
+	screen.height = window.inner.max.y - window.inner.min.y;
 	screen.chr_width = screen.width / screen.font.width;
 	screen.chr_height = screen.height / screen.font.height;
 	terminal_write(&state, STR_CONS_INIT, LEN_CONS_INIT);
-	return _blit(draw_fd, &(display.r));
+	return _blit(draw_fd, &(window.display.r));
 }
 
 static int _redraw_text(char const * const buf, ssize_t const len)
@@ -133,7 +129,7 @@ static int _redraw_text(char const * const buf, ssize_t const len)
 
 	terminal_write(&state, (char *) buf, len);
 
-	int result = _blit(draw_fd, &(display.r));
+	int result = _blit(draw_fd, &(window.inner));
 
 	errno = 0;
 	if (semrelease(&draw_semaphore, 1) != 1) {
@@ -151,9 +147,9 @@ static int _blit(int const fd, Rectangle const * const r)
 {
 	blit_param_t *par = &(packet.param);
 	par->dest = *r;
-	par->base = (void *) ((uintptr_t) (display.base)
-			+ r->min.y * display.bpl
-			+ r->min.x * display.bpp);
+	par->base = (void *) ((uintptr_t) (window.display.base)
+			+ r->min.y * window.display.bpl
+			+ r->min.x * window.display.bpp);
 
 	errno = 0;
 	int result = write(fd, &packet, sizeof(packet));
