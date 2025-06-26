@@ -28,27 +28,38 @@ For more information, please refer to <http://unlicense.org/>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
-#include <hmi/draw.h>
+#include <event.h>
+#include <win/window.h>
 
-#define ERR_MEMORY (4)
+#define MYNAME "p6l"
 
-static struct {
-	int op;
-	blit_param_t param;
-} packet;
+#define BUF_SIZE (8192)
 
-static inline int roundup(int x, int y)
-{
-	return ((x + (y - 1)) & ~(y - 1));
+#define WIDTH (512)
+#define HEIGHT (374)
+
+static void _show_error(char const *);
+static void _to_bgr(char *, const size_t);
+static int _load(Window const * const, const int);
+static int _window_main(Window const * const);
+
+
+void _put_error(const char *message) {
+	write(STDERR_FILENO, message, strlen(message));
 }
 
-static void to_bgr(char *, const size_t);
-static int blit(const int);
-static int process(const int, const int);
+static void _show_error(char const *message) {
+	char *error_string = strerror(errno);
+	_put_error(MYNAME ": ");
+	_put_error(message);
+	_put_error(" ");
+	_put_error(error_string);
+	_put_error("\n");
+}
 
-
-static void to_bgr(char *p, const size_t pixels)
+static void _to_bgr(char *p, const size_t pixels)
 {
 	for (size_t i = pixels; i > 0; i--) {
 		uint8_t c = p[0];
@@ -58,21 +69,7 @@ static void to_bgr(char *p, const size_t pixels)
 	}
 }
 
-static int blit(const int out)
-{
-	packet.op = draw_op_blit;
-	errno = 0;
-
-	int result = write(out, &packet, sizeof(packet));
-	if (result != sizeof(packet)) {
-		fprintf(stderr, "write err %d %d\n", result, errno);
-		return (-1);
-	}
-
-	return 0;
-}
-
-static int process(const int out, const int in)
+static int _load(Window const * const w, const int in)
 {
 	char buf[3];
 
@@ -123,7 +120,10 @@ static int process(const int out, const int in)
 	}
 
 	//TODO check overflow of width, height, color_max
-	if (width == 0 || width >= 640 || height == 0 || height >= 480) {
+	//TODO clip
+	if (width == 0 || width > (w->inner.max.x - w->inner.min.x)
+			|| height == 0
+			|| height > (w->inner.max.y - w->inner.min.y)) {
 		printf("bad size %d, %d\n", width, height);
 		return (-2);
 	}
@@ -153,68 +153,93 @@ static int process(const int out, const int in)
 		return (-2);
 	}
 
-	blit_param_t *par = &(packet.param);
-	par->dest.min.x = 0;
-	par->dest.min.y = 0;
-	//TODO define rect_get_width(Rectangle)
-	par->dest.max.x = width;
-	//TODO define rect_get_height(Rectangle)
-	par->dest.max.y = height;
-	//TODO get type and bpp from global Display
-	par->type = B8G8R8;
-
 	size_t p6_bpl = width * sizeof(Color_Rgb);
-	//TODO define rect_rount_up(int or long)
-	par->bpl = roundup(p6_bpl, sizeof(int));
-	par->base = malloc(par->bpl * height);
-	if (!(par->base)) {
-		printf("memory exhausted\n");
-		return ERR_MEMORY;
-	}
-
-	char *line = par->base;
+	char *line = w->display.base
+			+ w->inner.min.y * w->display.bpl
+			+ w->inner.min.x * w->display.bpp;
 	for (int i = 0; i < height; i++) {
 		if (read(in, line, p6_bpl) != p6_bpl) {
 			printf("read err[rest]\n");
-			free(par->base);
 			return (-1);
 		}
 
-		to_bgr(line, width);
-		line += par->bpl;
+		_to_bgr(line, width);
+		line += w->display.bpl;
 	}
 
-	if (blit(out) < 0) {
-		free(par->base);
-		return (-3);
-	}
-
-	free(par->base);
-	printf("done\n");
 	return 0;
+}
+
+static int _window_main(Window const * const w)
+{
+	for (;;) {
+		errno = 0;
+
+		event_message_t message[BUF_SIZE / sizeof(event_message_t)];
+		ssize_t len = read(w->event_fd, message, sizeof(message));
+		if ((len <= 0)
+				|| (len % sizeof(event_message_t))) {
+			_show_error("failed to read event.");
+			return EXIT_FAILURE;
+		}
+
+		len /= sizeof(event_message_t);
+		for (int i = 0; i < len; i++) {
+
+			if (message[i].type != event_mouse)
+				continue;
+
+			int buttons = (message[i].data >> 24) & 7;
+			if (buttons & 1)
+				return EXIT_SUCCESS;
+		}
+		sleep(1);
+	}
 }
 
 int main(int argc, char **argv)
 {
-	int result = 0;
-	if (argc == 2) {
+	int result = EXIT_FAILURE;
+	errno = 0;
+	do {
+		Window *w;
+
+		//TODO get global Display and window
+		if (window_initialize(&w, WIDTH, HEIGHT, WINDOW_ATTR_WINDOW)) {
+			_put_error(MYNAME ": failed to open window\n");
+			break;
+		}
+
+		//TODO use 'draw_fill'
+		memset(w->display.base, 0, WIDTH * HEIGHT * sizeof(Color_Rgb));
+		window_set_title(w, MYNAME);
+		window_draw_frame(w);
+
+		if (argc != 2) {
+			_put_error("usage: " MYNAME " filename\n");
+			break;
+		}
+
 		errno = 0;
 
 		int in = open(argv[1], O_RDONLY);
-		if (in >= 0) {
-			int out = open("/dev/draw", O_WRONLY);
-			if (out < 0)
-				fprintf(stderr, "open 'draw' err %d\n", errno);
-			else {
-				result = process(out, in);
-				close(in);
-			}
+		if (in < 0) {
+			_show_error("failed to open file.");
+			break;
+		}
 
-			close(out);
-		} else
-			printf("open %s err %d\n", argv[1], errno);
-	} else
-		printf("arg err\n");
+		result = _load(w, in);
+		close(in);
 
-	return result;
+		if (result)
+			break;
+
+		result = window_blit(w, &(w->display.r));
+		if (result)
+			break;
+
+		result = _window_main(w);
+	} while (false);
+
+	exit(result);
 }

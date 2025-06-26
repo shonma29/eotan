@@ -49,7 +49,7 @@ all: $(TARGET)
 	done
 
 $(TARGET): $(OBJS) \
-		lib/libdraw.a lib/libfonts.a lib/libc.a lib/libm.a
+		lib/libwin.a lib/libdraw.a lib/libfonts.a lib/libc.a lib/libm.a
 	$(LD) -static -e $(ENTRY_FUNC) -Ttext=$(ENTRY_ADDR) -o $@ $(@).o \
-		lib/libdraw.a lib/libfonts.a lib/libc.a lib/libm.a
+		lib/libwin.a lib/libdraw.a lib/libfonts.a lib/libc.a lib/libm.a
 	$(STRIP) $@
