@@ -25,6 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <libc.h>
 #include <console.h>
 #include <win/window.h>
 
@@ -40,6 +43,14 @@ For more information, please refer to <http://unlicense.org/>
 #define COLOR_LIGHT_GRAY 0xdfe3e4
 #define COLOR_DARK_GRAY 0x24130d
 
+enum {
+	ERR_MEMORY = -1,
+	ERR_BIND = -2,
+	ERR_OPEN_EVENT = -3,
+	ERR_OPEN_DRAW = -4,
+	ERR_WRITE_DRAW = -5
+};
+
 static Color_Rgb title_color[] = {
 	{ 0xe4, 0xe3, 0xdf },
 	{ 0x30, 0x30, 0x30 }
@@ -48,26 +59,47 @@ static Color_Rgb title_color[] = {
 static void _set_inner(Rectangle * const, Rectangle const * const,
 		uint32_t const);
 
-
-int window_initialize(Window * const w, int const width, int const height,
+int window_initialize(Window ** const wp, int const width, int const height,
 	uint32_t const attr)
 {
-	void *buf = malloc(sizeof(Color_Rgb) * width * height);
-	if (!buf)
-		return (-1);
+	//TODO 'bind' returns positive integer
+	if (bind("#i", "/dev", MREPL) < 0)
+		return ERR_BIND;
+
+	Window *w = malloc(sizeof(Window) + sizeof(Color_Rgb) * width * height);
+	if (!w)
+		return ERR_MEMORY;
+
+	w->event_fd = open("/dev/event", O_RDONLY);
+	if (w->event_fd < 0) {
+		free(w);
+		return ERR_OPEN_EVENT;
+	}
+
+	w->draw_fd = open("/dev/draw", O_WRONLY);
+	if (w->draw_fd < 0) {
+		free(w);
+		return ERR_OPEN_DRAW;
+	}
 
 	Display *d = &(w->display);
 	d->r.min.x = 0;
 	d->r.min.y = 0;
 	d->r.max.x = width;
 	d->r.max.y = height;
-	d->base = buf;
+	d->base = &(w[1]);
 	d->bpl = width * sizeof(Color_Rgb);
 	d->bpp = sizeof(Color_Rgb);
 	d->type = B8G8R8;
 
 	w->attr = attr;
 	_set_inner(&(w->inner), &(d->r), w->attr);
+
+	w->packet.op = draw_op_blit;
+	w->packet.param.bpl = w->display.bpl;
+	w->packet.param.type = w->display.type;
+
+	*wp = w;
 	return 0;
 }
 
@@ -142,6 +174,21 @@ void window_draw_frame(Window const * const w)
 			draw_string(&(w->display), TITLE_X, TITLE_Y,
 					title_color, &default_font, w->title);
 	}
+}
+
+int window_blit(Window * const w, Rectangle const * const r)
+{
+	blit_param_t *par = &(w->packet.param);
+	par->dest = *r;
+	par->base = (void *) ((uintptr_t) (w->display.base)
+			+ r->min.y * w->display.bpl
+			+ r->min.x * w->display.bpp);
+
+	int result = write(w->draw_fd, &(w->packet), sizeof(w->packet));
+	if (result != sizeof(w->packet))
+		return ERR_WRITE_DRAW;
+
+	return 0;
 }
 #if 0
 void _set_blue(Screen *s)

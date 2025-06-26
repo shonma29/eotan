@@ -35,11 +35,18 @@ typedef struct {
 	Rectangle inner;
 	char const *title;
 	uint32_t attr;
+	int event_fd;
+	int draw_fd;
+	struct {
+		int op;
+		blit_param_t param;
+	} packet;
 } Window;
 
-extern int window_initialize(Window * const, int const, int const,
+extern int window_initialize(Window ** const, int const, int const,
 		uint32_t const);
 extern void window_set_title(Window * const, char const * const);
 extern void window_draw_frame(Window const * const);
+extern int window_blit(Window * const, Rectangle const * const);
 
 #endif

@@ -28,7 +28,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include <libc.h>
 #include <sys/wait.h>
 #include <event.h>
@@ -46,30 +45,22 @@ For more information, please refer to <http://unlicense.org/>
 #define WIDTH (512)
 #define HEIGHT (374)
 
-static Window window;
 static Screen screen;
 static esc_state_t state;
 
-static struct {
-	int op;
-	blit_param_t param;
-} packet;
-
 static char const * const array[] = { "/bin/shell", NULL };
 static long draw_semaphore;
-static int event_fd;
-static int draw_fd;
 
 extern void __malloc_initialize(void);
 
 static void _show_error(char const *);
-static int _initialize_screen(void);
-static int _redraw_text(char const * const, ssize_t const);
-static int _blit(int const, Rectangle const * const);
+static void _initialize_screen(Window * const);
+static int _redraw_text(Window * const, char const * const, ssize_t const);
 static void _collect(void);
-static int _tunnel_out(int const, int const);
-static int _tunnel_in(int const, int const);
-static int _execute(char const * const *, char const * const *, int const fds[2]);
+static int _tunnel_out(Window * const, int const, int const);
+static int _tunnel_in(Window * const, int const, int const);
+static int _execute(Window * const, char const * const *,
+		char const * const *, int const fds[2]);
 
 
 static void _show_error(char const *message) {
@@ -81,39 +72,24 @@ static void _show_error(char const *message) {
 	_put_error("\n");
 }
 
-static int _initialize_screen(void)
+static void _initialize_screen(Window * const w)
 {
-	errno = 0;
-
-	//TODO get global Display and window
-	if (window_initialize(&window, WIDTH, HEIGHT, WINDOW_ATTR_WINDOW)) {
-		_show_error("memory exhausted.");
-		return ERR;
-	}
-
-	window_set_title(&window, MYNAME);
-	window_draw_frame(&window);
-
-	packet.op = draw_op_blit;
-	packet.param.bpl = window.display.bpl;
-	packet.param.type = window.display.type;
-
 	state.screen = &screen;
-	terminal_initialize(&state, &(window.display));
+	terminal_initialize(&state, &(w->display));
 
-	screen.base = (void *) ((uintptr_t) window.display.base
-			+ window.inner.min.y * window.display.bpl
-			+ window.inner.min.x * window.display.bpp);
+	screen.base = (void *) ((uintptr_t) w->display.base
+			+ w->inner.min.y * w->display.bpl
+			+ w->inner.min.x * w->display.bpp);
 	screen.p = (uint8_t *) (screen.base);
-	screen.width = window.inner.max.x - window.inner.min.x;
-	screen.height = window.inner.max.y - window.inner.min.y;
+	screen.width = w->inner.max.x - w->inner.min.x;
+	screen.height = w->inner.max.y - w->inner.min.y;
 	screen.chr_width = screen.width / screen.font.width;
 	screen.chr_height = screen.height / screen.font.height;
 	terminal_write(&state, STR_CONS_INIT, LEN_CONS_INIT);
-	return _blit(draw_fd, &(window.display.r));
 }
 
-static int _redraw_text(char const * const buf, ssize_t const len)
+static int _redraw_text(Window * const w, char const * const buf,
+		ssize_t const len)
 {
 	for (;;) {
 		errno = 0;
@@ -129,7 +105,7 @@ static int _redraw_text(char const * const buf, ssize_t const len)
 
 	terminal_write(&state, (char *) buf, len);
 
-	int result = _blit(draw_fd, &(window.inner));
+	int result = window_blit(w, &(w->inner));
 
 	errno = 0;
 	if (semrelease(&draw_semaphore, 1) != 1) {
@@ -137,24 +113,8 @@ static int _redraw_text(char const * const buf, ssize_t const len)
 		return ERR;
 	}
 
-	if (result)
-		return ERR;
-
-	return 0;
-}
-
-static int _blit(int const fd, Rectangle const * const r)
-{
-	blit_param_t *par = &(packet.param);
-	par->dest = *r;
-	par->base = (void *) ((uintptr_t) (window.display.base)
-			+ r->min.y * window.display.bpl
-			+ r->min.x * window.display.bpp);
-
-	errno = 0;
-	int result = write(fd, &packet, sizeof(packet));
-	if (result != sizeof(packet)) {
-		_show_error("failed to write draw.");
+	if (result) {
+		_put_error(MYNAME ": failed to blit\n");
 		return ERR;
 	}
 
@@ -166,7 +126,7 @@ static void _collect(void)
 	for (int status; waitpid(-1, &status, WNOHANG) > 0;);
 }
 
-static int _tunnel_out(int const out, int const in)
+static int _tunnel_out(Window * const w, int const out, int const in)
 {
 	for (;;) {
 		errno = 0;
@@ -180,7 +140,7 @@ static int _tunnel_out(int const out, int const in)
 			return ERR;
 		}
 
-		int result = _redraw_text(buf, len);
+		int result = _redraw_text(w, buf, len);
 		if (result)
 			return result;
 	}
@@ -188,13 +148,13 @@ static int _tunnel_out(int const out, int const in)
 	return 0;
 }
 
-static int _tunnel_in(int const out, int const in)
+static int _tunnel_in(Window * const w, int const out, int const in)
 {
 	for (;;) {
 		errno = 0;
 
 		event_message_t message[BUF_SIZE / sizeof(event_message_t)];
-		ssize_t len = read(event_fd, message, sizeof(message));
+		ssize_t len = read(w->event_fd, message, sizeof(message));
 		if ((len <= 0)
 				|| (len % sizeof(event_message_t))) {
 			_show_error("failed to read event.");
@@ -257,7 +217,7 @@ static int _tunnel_in(int const out, int const in)
 		if (len <= 0)
 			continue;
 
-		ssize_t result = _redraw_text(buf, len);
+		ssize_t result = _redraw_text(w, buf, len);
 		if (result)
 			return result;
 
@@ -272,8 +232,8 @@ static int _tunnel_in(int const out, int const in)
 	return 0;
 }
 
-static int _execute(char const * const *array, char const * const *env,
-		int const fds[2])
+static int _execute(Window * const w, char const * const *array,
+		char const * const *env, int const fds[2])
 {
 	errno = 0;
 
@@ -290,11 +250,11 @@ static int _execute(char const * const *array, char const * const *env,
 			_show_error("failed to fork out.");
 			return ERR;
 		} else if (out) {
-			int result = _tunnel_in(fds[1], STDIN_FILENO);
+			int result = _tunnel_in(w, fds[1], STDIN_FILENO);
 			_collect();
 			return result;
 		} else
-			return _tunnel_out(STDOUT_FILENO, fds[1]);
+			return _tunnel_out(w, STDOUT_FILENO, fds[1]);
 	} else {
 		for (int i = STDIN_FILENO; i <= STDERR_FILENO; i++) {
 			close(i);
@@ -319,33 +279,28 @@ void _main(int argc, char **argv, char **env)
 	errno = 0;
 	__malloc_initialize();
 
-	//TODO 'bind' returns positive integer
-	if (bind("#i", "/dev", MREPL) < 0) {
-		_show_error("failed to bind.");
+	//TODO get global Display and window
+	Window *w;
+	if (window_initialize(&w, WIDTH, HEIGHT, WINDOW_ATTR_WINDOW)) {
+		_put_error(MYNAME ": failed to open window\n");
 		_exit(EXIT_FAILURE);
 	}
 
-	event_fd = open("/dev/event", O_RDONLY);
-	if (event_fd < 0) {
-		_show_error("failed to open event.");
+	window_set_title(w, MYNAME);
+	window_draw_frame(w);
+	_initialize_screen(w);
+
+	if (window_blit(w, &(w->display.r))) {
+		_put_error(MYNAME ": failed to blit\n");
 		_exit(EXIT_FAILURE);
 	}
 
-	draw_fd = open("/dev/draw", O_WRONLY);
-	if (draw_fd < 0) {
-		_show_error("failed to open draw.");
-		_exit(EXIT_FAILURE);
-	}
+	errno = 0;
 
 	if (semrelease(&draw_semaphore, 1) != 1) {
 		_show_error("failed to create semaphore.");
 		_exit(EXIT_FAILURE);
 	}
-
-	if (_initialize_screen())
-		_exit(EXIT_FAILURE);
-
-	errno = 0;
 
 	int fds[2];
 	if (pipe(fds)) {
@@ -355,5 +310,6 @@ void _main(int argc, char **argv, char **env)
 
 	//TODO caluculate from Display
 	char const * const envp[] = { "COLUMNS=84", "LINES=29", NULL };
-	_exit(_execute(array, envp, fds) ? EXIT_FAILURE : EXIT_SUCCESS);
+	_exit(_execute(w, array, envp, fds) ?
+			EXIT_FAILURE : EXIT_SUCCESS);
 }
