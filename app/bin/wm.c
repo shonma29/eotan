@@ -78,7 +78,6 @@ void _main(int argc, char **argv, char **env)
 	char *array[] = { "/bin/nterm", NULL };
 	char *envp[] = { NULL };
 	execute(array, envp);
-	execute(array, envp);
 
 	for (;;) {
 		collect();
