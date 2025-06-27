@@ -49,20 +49,6 @@ typedef struct {
 	void **receiver_sp;
 	char walkpath[PATH_MAX];
 	char pathbuf[PATH_MAX];
-//	mm_thread_t *caller;
-	/* callback parameters */
-#if 0
-	union {
-		struct {
-			mm_process_t *process;
-			mm_session_t *session;
-			mm_file_t *file;
-		} attach;
-		struct {
-			mm_file_t *file;
-		} write;
-	};
-#endif
 } mm_request_t;
 
 extern int mm_rfork(mm_request_t *);

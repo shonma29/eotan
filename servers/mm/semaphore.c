@@ -72,7 +72,7 @@ void semaphore_destroy(mm_semaphore_t *sem)
 static int _find(mm_semaphore_t **s, const void *address,
 		mm_process_t *process)
 {
-	mm_segment_t *segment = process->segments.data;
+	mm_segment_t *segment = process->segments.bss;
 	if (!segment
 			|| !_includes(segment, address)) {
 		segment = process->segments.heap;

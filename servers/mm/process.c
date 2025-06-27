@@ -181,30 +181,30 @@ mm_process_t *process_duplicate(const mm_thread_t *th, const int flags,
 		if (error_no)
 			break;
 
-		// exec
+		// code
 		mm_process_t *src = get_process(th);
 		error_no = _segment_share(dest->directory,
-				&(dest->segments.exec), src->directory,
-				src->segments.exec);
+				&(dest->segments.code), src->directory,
+				src->segments.code);
 		if (error_no)
 			break;
 
-		// data
-		if (src->segments.data) {
+		// bss
+		if (src->segments.bss) {
 			if (flags & RFMEM) {
 				error_no = _segment_share(
 						dest->directory,
-						&(dest->segments.data),
+						&(dest->segments.bss),
 						src->directory,
-						src->segments.data);
+						src->segments.bss);
 				if (error_no)
 					break;
 			} else {
 				error_no = _segment_copy(
 						dest->directory,
-						&(dest->segments.data),
+						&(dest->segments.bss),
 						src->directory,
-						src->segments.data);
+						src->segments.bss);
 				if (error_no)
 					break;
 			}
@@ -362,7 +362,7 @@ int process_replace(mm_thread_t *th, const Elf32_Phdr *code,
 
 	uintptr_t start = pageRoundDown(code->p_vaddr);
 	uintptr_t end = pageRoundUp(code->p_vaddr + code->p_memsz);
-	int result = _segment_allocate(&(process->segments.exec),
+	int result = _segment_allocate(&(process->segments.code),
 			process->directory, (void *) start, (void *) end,
 			R_OK | X_OK, type_code);
 	if (result)
@@ -371,7 +371,7 @@ int process_replace(mm_thread_t *th, const Elf32_Phdr *code,
 	if (data->p_memsz) {
 		start = pageRoundDown(data->p_vaddr);
 		end = pageRoundUp(data->p_vaddr + data->p_memsz);
-		result = _segment_allocate(&(process->segments.data),
+		result = _segment_allocate(&(process->segments.bss),
 			process->directory, (void *) start, (void *) end,
 			R_OK | W_OK, type_data);
 		if (result)
@@ -565,8 +565,8 @@ static int process_create(mm_process_t **process, const int pid)
 			break;
 		}
 
-		p->segments.exec = NULL;
-		p->segments.data = NULL;
+		p->segments.code = NULL;
+		p->segments.bss = NULL;
 		p->segments.heap = NULL;
 
 		//TODO take over fields when duplicate?
@@ -625,14 +625,14 @@ static int map_user_stack(mm_process_t *process)
 
 static int release_memory(mm_process_t *process)
 {
-	if (process->segments.exec) {
-		_segment_deallocate(process, process->segments.exec);
-		process->segments.exec = NULL;
+	if (process->segments.code) {
+		_segment_deallocate(process, process->segments.code);
+		process->segments.code = NULL;
 	}
 
-	if (process->segments.data) {
-		_segment_deallocate(process, process->segments.data);
-		process->segments.data = NULL;
+	if (process->segments.bss) {
+		_segment_deallocate(process, process->segments.bss);
+		process->segments.bss = NULL;
 	}
 
 	if (process->segments.heap) {
@@ -748,8 +748,8 @@ int process_allocate_heap(mm_process_t *p)
 	if (!s)
 		return ENOMEM;
 
-	mm_segment_t *prev = (p->segments.data) ?
-			(p->segments.data) : (p->segments.exec);
+	mm_segment_t *prev = (p->segments.bss) ?
+			(p->segments.bss) : (p->segments.code);
 	uintptr_t end = ((uintptr_t) prev->addr) + prev->len;
 	s->addr = (void *) end;
 	s->len = 0;
