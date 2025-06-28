@@ -29,19 +29,25 @@ For more information, please refer to <http://unlicense.org/>
 #include <init.h>
 #include <libc.h>
 #include <services.h>
+#include <signal.h>
 #include <string.h>
 #include <nerve/ipc_utils.h>
 #include <nerve/kcall.h>
 #include <sys/unistd.h>
 #include <sys/wait.h>
+#include <mm/config.h>
 #include <mm/status.h>
 #include "mm.h"
 #include "proxy.h"
 #include "device.h"
 
+#define PART_CODE (1)
+#define PART_BSS (2)
+
 #define MASK_BIND_MODE (MBEFORE | MAFTER)
 
-static int cleanup(mm_process_t *, mm_thread_t *, mm_request_t *);
+static int _check_elf(mm_request_t * const, mm_file_t * const, int const);
+static int _close_all(mm_process_t *, mm_request_t *);
 static int _seek(mm_process_t *, mm_file_t *, sys_args_t *, mm_request_t *);
 static void _remove_namespace(mm_process_t *, const char *,
 		const mm_thread_t *, mm_request_t *);
@@ -84,6 +90,11 @@ int mm_rfork(mm_request_t *req)
 int mm_exec(mm_request_t *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
+	mm_file_t *file = NULL;
+	int token;
+	bool is_broken = false;
+	mm_process_t *process;
+	int result;
 	do {
 		mm_thread_t *th = thread_find(port_of_ipc(req->node.key));
 		if (!th) {
@@ -91,154 +102,156 @@ int mm_exec(mm_request_t *req)
 			break;
 		}
 
-		mm_process_t *process = get_process(th);
-		mm_file_t *file;
+		process = get_process(th);
 		fsmsg_t *message = &(req->message);
-		int result = _walk(&file, process, th->node.key,
+		result = _walk(&file, process, th->node.key,
 				(char *) (req->args.arg1), req);
+
 		if (result) {
 			reply->data[0] = result;
 			break;
 		}
-
-		result = _open(file,
-				create_token(th->node.key, file->session),
-				O_EXEC, req);
-		if (result) {
-			reply->data[0] = result;
-//TODO clunk
-			break;
-		}
-
-		int token = create_token(kcall->thread_get_id(),
-				file->session);
-		Elf32_Ehdr ehdr;
-		result = _read(file, token, 0, sizeof(ehdr), (char *) &ehdr,
-				req);
-		if (result) {
-			log_err("pm: ehdr0\n");
-			reply->data[0] = result;
-//TODO clunk
-			break;
-		} else {
-			if (message->Rread.count == sizeof(ehdr)) {
-				if (isValidModule(&ehdr)) {
-//					log_info("pm: ehdr ok\n");
-				} else {
-					log_err("pm: ehdr1\n");
-					reply->data[0] = ENOEXEC;
-//TODO clunk
-					break;
-				}
-			} else {
-				log_err("pm: ehdr2\n");
-				reply->data[0] = ENOEXEC;
-//TODO clunk
-				break;
-			}
-		}
-
-		int x = 0;
-		Elf32_Phdr ro;
-		Elf32_Phdr rw;
-		memset(&rw, 0, sizeof(rw));
-		unsigned int offset = ehdr.e_phoff;
-		for (int i = 0; i < ehdr.e_phnum; i++) {
-			Elf32_Phdr phdr;
-			result = _read(file, token, offset, sizeof(phdr),
-					(char *) &phdr, req);
-			if (result) {
-//TODO clunk
-//				return result;
-				log_err("pm: phdr0\n");
-				break;
-			} else {
-				if (message->Rread.count == sizeof(phdr)) {
-//					log_info("pm: phdr ok\n");
-					if (phdr.p_type != PT_LOAD)
-						continue;
-					switch (phdr.p_flags) {
-					case (PF_X | PF_R):
-						ro = phdr;
-						x |= 1;
-						break;
-					case (PF_W | PF_R):
-						rw = phdr;
-						x |= 2;
-						break;
-					}
-					if (x == 3) {
-//						log_info("pm: phdr all ok\n");
-						break;
-					}
-				} else {
-					log_err("pm: phdr2\n");
-					//ENOEXEC
-					break;
-				}
-			}
-			offset += sizeof(phdr);
-		}
-//		if (x != 3)
-//TODO clunk
-//			return ENOEXEC;
 
 		int thread_id = th->node.key;
-		strcpy(process->local->name, req->pathbuf);
-		result = process_replace(th, &ro, &rw,
-				(void *) ehdr.e_entry,
-				(void *) (req->args.arg2),
-				req->args.arg3);
+		token = create_token(thread_id, file->session);
+		result = _open(file, token, O_EXEC, req);
 		if (result) {
-			log_err("pm: replace0 %d\n", result);
 			reply->data[0] = result;
 			break;
-			//TODO check error
 		}
 
-		token = create_token(thread_id, file->session);
-		result = _read(file, token, ro.p_offset, ro.p_filesz,
-				(char *) (ro.p_vaddr), req);
+		result = _check_elf(req, file,
+				create_token(kcall->thread_get_id(),
+						file->session));
 		if (result) {
-			log_err("pm: tread0 %d\n", result);
-		} else {
-			if (message->Rread.count == ro.p_filesz) {
-//				log_info("pm: tread1\n");
-			} else {
-				log_err("pm: tread2\n");
+			reply->data[0] = result;
+			break;
+		}
+
+		//TODO support ARG_MAX > USER_STACK_INITIAL_SIZE
+		if (req->args.arg3 > USER_STACK_INITIAL_SIZE) {
+			reply->data[0] = E2BIG;
+			break;
+		}
+
+		Elf32_Ehdr *ehdr = (Elf32_Ehdr *) req->walkpath;
+		Elf32_Phdr *code = (Elf32_Phdr *) &(ehdr[1]);
+		Elf32_Phdr *data = (Elf32_Phdr *) &(code[1]);
+		result = process_replace(th, code, data, (void *) ehdr->e_entry,
+				(void *) (req->args.arg2), req->args.arg3);
+		is_broken = true;
+		kcall->ipc_send(req->node.key, NULL, 0);
+		if (result)
+			break;
+
+		result = _read(file, token, code->p_offset, code->p_filesz,
+				(char *) (code->p_vaddr), req);
+		if (result)
+			break;
+		else if (message->Rread.count != code->p_filesz) {
+			result = ENOEXEC;
+			break;
+		}
+
+		//TODO create segment here. (data may not exist)
+		if (data->p_filesz) {
+			result = _read(file, token, data->p_offset,
+					data->p_filesz,
+					(char *) (data->p_vaddr), req);
+			if (result)
+				break;
+			else if (message->Rread.count != data->p_filesz) {
+				result = ENOEXEC;
+				break;
 			}
 		}
 
-		if (rw.p_filesz) {
-			result = _read(file, token, rw.p_offset, rw.p_filesz,
-					(char *) (rw.p_vaddr), req);
-			if (result) {
-				log_err("pm: dread0 %d\n", result);
-			} else {
-				if (message->Rread.count == rw.p_filesz) {
-//					log_info("pm: dread1\n");
-				} else {
-					log_err("pm: dread2\n");
-				}
-			}
-		}
-
-		kcall->thread_start(thread_id);
-
-		//TODO recreate token (not must)
 		result = _clunk(file, token, req);
-		if (result) {
-			log_err("pm: exec close1 %d\n", result);
-			//TODO what to do?
+		if (result)
+			log_warning(MYNAME ": failed to clunk %d\n", result);
+
+		file = NULL;
+		strcpy(process->local->name, req->pathbuf);
+
+		if (kcall->thread_start(thread_id)) {
+			result = ENOEXEC;
+			break;
 		}
 
-		reply->result = 0;
-		reply->data[0] = 0;
 		return reply_no_caller;
 	} while (false);
 
+	if (file) {
+		int result = _clunk(file, token, req);
+		if (result)
+			log_warning(MYNAME ": failed to clunk %d\n", result);
+	}
+
+	if (is_broken) {
+		log_warning(MYNAME ": failed to exec %s %d\n", req->pathbuf, result);
+		_close_all(process, req);
+		process_destroy(process, 128 + SIGKILL);
+		return reply_no_caller;
+	}
+
 	reply->result = -1;
 	return reply_failure;
+}
+
+static int _check_elf(mm_request_t * const req, mm_file_t * const file,
+		int const token)
+{
+	Elf32_Ehdr *ehdr = (Elf32_Ehdr *) req->walkpath;
+	int result = _read(file, token, 0, sizeof(*ehdr), (char *) ehdr, req);
+	if (result)
+		return result;
+
+	fsmsg_t *message = &(req->message);
+	if (message->Rread.count != sizeof(*ehdr))
+		return ENOEXEC;
+
+	if (!isValidModule(ehdr))
+		return ENOEXEC;
+
+	Elf32_Phdr *code = (Elf32_Phdr *) &(ehdr[1]);
+	Elf32_Phdr *data = (Elf32_Phdr *) &(code[1]);
+	data->p_filesz = 0;
+	data->p_memsz = 0;
+
+	Elf32_Phdr *phdr = (Elf32_Phdr *) &(code[2]);
+	uint32_t section_to_read = PART_CODE | PART_BSS;
+	size_t offset = ehdr->e_phoff;
+	//TODO read headers simultaneously
+	for (int i = 0; i < ehdr->e_phnum; offset += sizeof(Elf32_Phdr), i++) {
+		result = _read(file, token, offset, sizeof(*phdr),
+				(char *) phdr, req);
+		if (result)
+			return result;
+
+		if (message->Rread.count != sizeof(*phdr))
+			return ENOEXEC;
+
+		if (phdr->p_type != PT_LOAD)
+			continue;
+
+		switch (phdr->p_flags) {
+		case (PF_X | PF_R):
+			*code = *phdr;
+			section_to_read &= ~PART_CODE;
+			break;
+		case (PF_W | PF_R):
+			*data = *phdr;
+			section_to_read &= ~PART_BSS;
+			break;
+		default:
+			continue;
+		}
+
+		if (!section_to_read)
+			break;
+	}
+
+	return ((section_to_read & PART_CODE) ? ENOEXEC : 0);
 }
 
 int mm_wait(mm_request_t *req)
@@ -293,7 +306,7 @@ int mm_exit(mm_request_t *req)
 
 		mm_process_t *process = get_process(th);
 //		log_info("pm: %d exit %d\n", process->node.key, req->args.arg1);
-		cleanup(process, th, req);
+		_close_all(process, req);
 		process_destroy(process, req->args.arg1);
 
 		reply->result = 0;
@@ -305,7 +318,7 @@ int mm_exit(mm_request_t *req)
 	return reply_failure;
 }
 
-static int cleanup(mm_process_t *process, mm_thread_t *th, mm_request_t *req)
+static int _close_all(mm_process_t *process, mm_request_t *req)
 {
 	process->status |= PROCESS_STATUS_DISABLED;
 
@@ -322,10 +335,10 @@ static int cleanup(mm_process_t *process, mm_thread_t *th, mm_request_t *req)
 		}
 
 		int fid = file->node.key;
-		int token = create_token(th->node.key, file->session);
+		int token = create_token(0, file->session);
 		int result = _clunk(file, token, req);
 		if (result)
-			log_err("pm: %d cleanup[%d:%d] error=%d\n",
+			log_err(MYNAME ": %d clunk[%d:%d] error=%d\n",
 					process->node.key, d, fid, result);
 	}
 
@@ -334,20 +347,20 @@ static int cleanup(mm_process_t *process, mm_thread_t *th, mm_request_t *req)
 		process->root = NULL;
 
 		int fid = file->node.key;
-		int token = create_token(th->node.key, file->session);
+		int token = create_token(0, file->session);
 		int result = _clunk(file, token, req);
 		if (result)
-			log_err("pm: %d cleanup[root:%d] error=%d\n",
+			log_err(MYNAME ": %d clunk[root:%d] error=%d\n",
 					process->node.key, fid, result);
 	}
 
 	for (list_t *p; (p = list_dequeue(&(process->namespaces)));) {
 		mm_namespace_t *ns = getNamespaceFromBrothers(p);
 		int fid = ns->root->node.key;
-		int token = create_token(th->node.key, ns->root->session);
+		int token = create_token(0, ns->root->session);
 		int result = _clunk(ns->root, token, req);
 		if (result)
-			log_err(MYNAME ": %d cleanup[ns:%d] error=%d\n",
+			log_err(MYNAME ": %d clunk[ns:%d] error=%d\n",
 					process->node.key, fid, result);
 
 		process_deallocate_ns(ns);
@@ -382,7 +395,7 @@ int mm_kill(mm_request_t *req)
 		log_info("pm: %d kill %d\n", process->node.key, req->args.arg2);
 
 		//TODO write message to stderr
-		cleanup(process, th, req);
+		_close_all(process, req);
 		process_destroy(process, req->args.arg2);
 
 		reply->result = 0;
@@ -810,6 +823,7 @@ int mm_bind(mm_request_t *req)
 			process->root = file;
 		}
 
+		//TODO return positive integer (unique sequence number)
 		reply->result = 0;
 		reply->data[0] = 0;
 		return reply_success;

@@ -189,22 +189,22 @@ mm_process_t *process_duplicate(const mm_thread_t *th, const int flags,
 		if (error_no)
 			break;
 
-		// bss
-		if (src->segments.bss) {
+		// data
+		if (src->segments.data) {
 			if (flags & RFMEM) {
 				error_no = _segment_share(
 						dest->directory,
-						&(dest->segments.bss),
+						&(dest->segments.data),
 						src->directory,
-						src->segments.bss);
+						src->segments.data);
 				if (error_no)
 					break;
 			} else {
 				error_no = _segment_copy(
 						dest->directory,
-						&(dest->segments.bss),
+						&(dest->segments.data),
 						src->directory,
-						src->segments.bss);
+						src->segments.data);
 				if (error_no)
 					break;
 			}
@@ -341,10 +341,6 @@ int process_replace(mm_thread_t *th, const Elf32_Phdr *code,
 		const Elf32_Phdr *data, void *entry, const void *args,
 		const size_t stack_size)
 {
-	//TODO support ARG_MAX > USER_STACK_INITIAL_SIZE
-	if (stack_size > USER_STACK_INITIAL_SIZE)
-		return E2BIG;
-
 	int thread_id = th->node.key;
 	mm_process_t *process = get_process(th);
 	destroy_threads(process, thread_id);
@@ -371,7 +367,7 @@ int process_replace(mm_thread_t *th, const Elf32_Phdr *code,
 	if (data->p_memsz) {
 		start = pageRoundDown(data->p_vaddr);
 		end = pageRoundUp(data->p_vaddr + data->p_memsz);
-		result = _segment_allocate(&(process->segments.bss),
+		result = _segment_allocate(&(process->segments.data),
 			process->directory, (void *) start, (void *) end,
 			R_OK | W_OK, type_data);
 		if (result)
@@ -566,7 +562,7 @@ static int process_create(mm_process_t **process, const int pid)
 		}
 
 		p->segments.code = NULL;
-		p->segments.bss = NULL;
+		p->segments.data = NULL;
 		p->segments.heap = NULL;
 
 		//TODO take over fields when duplicate?
@@ -630,9 +626,9 @@ static int release_memory(mm_process_t *process)
 		process->segments.code = NULL;
 	}
 
-	if (process->segments.bss) {
-		_segment_deallocate(process, process->segments.bss);
-		process->segments.bss = NULL;
+	if (process->segments.data) {
+		_segment_deallocate(process, process->segments.data);
+		process->segments.data = NULL;
 	}
 
 	if (process->segments.heap) {
@@ -748,8 +744,8 @@ int process_allocate_heap(mm_process_t *p)
 	if (!s)
 		return ENOMEM;
 
-	mm_segment_t *prev = (p->segments.bss) ?
-			(p->segments.bss) : (p->segments.code);
+	mm_segment_t *prev = (p->segments.data) ?
+			(p->segments.data) : (p->segments.code);
 	uintptr_t end = ((uintptr_t) prev->addr) + prev->len;
 	s->addr = (void *) end;
 	s->len = 0;
@@ -808,12 +804,12 @@ static void destroy_threads(mm_process_t *process, const int thread_id)
 {
 	for (list_t *p; (p = list_pick(&(process->threads)));) {
 		mm_thread_t *th = getMyThread(p);
-		//TODO check error
+
 		ER result = kcall->thread_terminate(th->node.key);
 		if (result)
-			log_err("mm: failed to terminate(%d) %d\n",
+			log_warning("mm: failed to terminate(%d) %d\n",
 					th->node.key, result);
-		//TODO check error
+
 		result = kcall->thread_destroy(th->node.key);
 		if (result)
 			log_err("mm: failed to destroy(%d) %d\n",
