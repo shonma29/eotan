@@ -167,6 +167,7 @@ static void get_factor(parser_t *parser)
 		//TODO float
 		int v = 0;
 		do {
+			//TODO check overflow
 			v = v * 10 + ch - '0';
 			ch = _getc(parser, false);
 		} while(isdigit(ch));
@@ -251,6 +252,7 @@ int main(int argc, char **argv)
 		}
 
 		printf("%d\n", pop());
+		fflush(stdout);
 	} while (ch != EOF);
 
 	return EXIT_SUCCESS;
