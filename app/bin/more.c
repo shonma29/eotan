@@ -28,7 +28,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
-//#include <libc.h>
 
 #define DEFAULT_COLUMNS (80)
 #define DEFAULT_LINES (25)
@@ -62,8 +61,13 @@ int main(int argc, char **argv)
 	switch (argc) {
 	case 1:
 		fp = stdin;
+#if 0
 		fd = open("/dev/cons", O_RDONLY);
+#else
+		fd = _get_env_value("CONS_FILENO", -1);
+#endif
 		if (fd < 0) {
+			fprintf(stderr, "failed to open cons\n");
 			perror(NULL);
 			return EXIT_FAILURE;
 		}

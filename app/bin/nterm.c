@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -262,8 +263,9 @@ static int _execute(Window * const w, char const * const *array,
 			if (dup2(fds[0], i) < 0)
 				return ERR;
 		}
-
+#if 0
 		close(fds[0]);
+#endif
 		close(fds[1]);
 		errno = 0;
 		execve(array[0], (char * const *) array, (char * const *) env);
@@ -308,8 +310,11 @@ void _main(int argc, char **argv, char **env)
 		_exit(EXIT_FAILURE);
 	}
 
+	char fileno[12 + 11 + 1];
+	sprintf(fileno, "CONS_FILENO=%d", fds[0]);
+
 	//TODO caluculate from Display
-	char const * const envp[] = { "COLUMNS=84", "LINES=29", NULL };
+	char const * const envp[] = { "COLUMNS=84", "LINES=29", fileno, NULL };
 	_exit(_execute(w, array, envp, fds) ?
 			EXIT_FAILURE : EXIT_SUCCESS);
 }
