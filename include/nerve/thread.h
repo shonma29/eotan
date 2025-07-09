@@ -30,7 +30,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <mpu/context.h>
 #include <nerve/ipc.h>
 #include <nerve/wait.h>
-#include <mm/segment.h>
 #include <set/list.h>
 #include <set/tree.h>
 

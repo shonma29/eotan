@@ -30,7 +30,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <copier.h>
 #include <interrupt.h>
 #include <stdnoreturn.h>
-#include <mm/segment.h>
 #include <nerve/thread.h>
 
 /* set_selector.s */

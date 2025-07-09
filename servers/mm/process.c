@@ -32,6 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 #include <unistd.h>
 #include <libc.h>
+#include <signal.h>
 #include <mpufunc.h>
 #include <mm/config.h>
 #include <nerve/config.h>
@@ -41,6 +42,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "mm.h"
 #include "api.h"
 #include "process.h"
+#include "status.h"
 
 #define THREAD_LOOKUP_SIZE (16)
 
@@ -87,10 +89,15 @@ static inline mm_process_t *getProcessFromMembers(const list_t *p)
 */
 
 static node_t **thread_lookup_selector(const tree_t *, const int);
+static int _copy_segments(mm_process_t * const, mm_process_t const * const,
+		int const, mm_thread_t const * const);
+static void _process_destroy_frame(mm_process_t * const);
 static int process_create(mm_process_t **, const int);
-static void set_local(mm_process_t *, const char *, const size_t);
-static int map_user_stack(mm_process_t *);
-static int release_memory(mm_process_t *);
+static void set_local(mm_process_t *, const char *, const size_t,
+		char const * const);
+static int _copy_user_stack(mm_process_t const * const, void * const,
+		void const * const, size_t const);
+static void _release_segments(mm_process_t * const);
 static int _segment_share(void *, mm_segment_t **, const void *,
 	mm_segment_t *);
 static int _segment_copy(void *, mm_segment_t **, const void *,
@@ -167,107 +174,28 @@ mm_process_t *process_find(const ID pid)
 	return (node ? (mm_process_t *) getParent(mm_process_t, node) : NULL);
 }
 
-//TODO release resources when error
-mm_process_t *process_duplicate(const mm_thread_t *th, const int flags,
-		const void *entry, const void *stack)
+int process_duplicate(mm_process_t ** const process, const mm_thread_t *th,
+		const int flags, const void *entry, const void *stack)
 {
+	int error_no;
+	mm_process_t *dest = NULL;
 	do {
 		pid_t pid = sequence_get(&process_sequence);
-		if (pid == -1)
+		if (pid == -1) {
+			error_no = EAGAIN;
 			break;
+		}
 
-		mm_process_t *dest;
-		int error_no = process_create(&dest, pid);
-		if (error_no)
+		error_no = process_create(&dest, pid);
+		if (error_no) {
+			sequence_release(&process_sequence, pid);
 			break;
+		}
 
-		// code
 		mm_process_t *src = get_process(th);
-		error_no = _segment_share(dest->directory,
-				&(dest->segments.code), src->directory,
-				src->segments.code);
+		error_no = _copy_segments(dest, src, flags, th);
 		if (error_no)
 			break;
-
-		// data
-		if (src->segments.data) {
-			if (flags & RFMEM) {
-				error_no = _segment_share(
-						dest->directory,
-						&(dest->segments.data),
-						src->directory,
-						src->segments.data);
-				if (error_no)
-					break;
-			} else {
-				error_no = _segment_copy(
-						dest->directory,
-						&(dest->segments.data),
-						src->directory,
-						src->segments.data);
-				if (error_no)
-					break;
-			}
-		}
-
-		// heap
-		if (src->segments.heap) {
-			if (flags & RFMEM) {
-				error_no = _segment_share(
-						dest->directory,
-						&(dest->segments.heap),
-						src->directory,
-						src->segments.heap);
-				if (error_no)
-					break;
-			} else {
-				error_no = _segment_copy(
-						dest->directory,
-						&(dest->segments.heap),
-						src->directory,
-						src->segments.heap);
-				if (error_no)
-					break;
-			}
-		}
-
-		// process local
-		error_no = copy_user_pages(dest->directory, src->directory,
-				(void *) PROCESS_LOCAL_ADDR,
-				pages(sizeof(*(src->local))), R_OK);
-		if (error_no) {
-			log_warning("failed to copy local %d\n", error_no);
-			break;
-		}
-
-		// stack
-		error_no = copy_user_pages(dest->directory, src->directory,
-				(void *) ((uintptr_t) (th->stack.addr)
-						- th->stack.len
-						+ th->stack.max),
-				pages(th->stack.len), R_OK | W_OK);
-		if (error_no) {
-			log_warning("failed to copy stack %d\n", error_no);
-			break;
-		}
-
-		for (int fd = 0; fd < FILES_PER_PROCESS; fd++) {
-			mm_descriptor_t *s = process_find_desc(src, fd);
-			if (!s)
-				continue;
-
-			mm_descriptor_t *d = process_allocate_desc();
-			if (!d)
-				//TODO return error
-				continue;
-
-			if (process_set_desc(dest, fd, d))
-				process_deallocate_desc(d);
-			else {
-				d->file = s->file;
-				d->file->f_count++;
-			}
-		}
 
 		list_append(&(src->children), &(dest->brothers));
 
@@ -278,65 +206,117 @@ mm_process_t *process_duplicate(const mm_thread_t *th, const int flags,
 						&(dest->members));
 		}
 
-		for (list_t *p = src->namespaces.next;
-				!list_is_edge(&(src->namespaces), p);
-				p = p->next) {
-			mm_namespace_t *s = getNamespaceFromBrothers(p);
-			mm_namespace_t *d = process_allocate_ns();
-			if (!d) {
-				log_err("mm: ns alloc err\n");
-				//TODO release process
-				break;
-			}
-
-			d->root = s->root;
-			strcpy(d->name, s->name);
-			list_append(&(dest->namespaces), &(d->brothers));
-			d->root->f_count++;
-		}
-
 		dest->ppid = src->node.key;
 		dest->pgid = (flags & RFNOTEG) ? pid : (src->pgid);
 		dest->uid = src->uid;
 		dest->gid = src->gid;
-		dest->root = src->root;
-		if (dest->root)
-			dest->root->f_count++;
+		set_local(dest, src->local->wd, src->local->wd_len,
+				src->local->name);
 
-		set_local(dest, src->local->wd, src->local->wd_len);
-		strcpy(dest->local->name, src->local->name);
-
+		// create main thread
 		int thread_id = sequence_get(&thread_sequence);
 		if (thread_id < 0) {
-			log_err("mm: th sequence exhausted\n");
-			//TODO release process
+			error_no = EAGAIN;
 			break;
 		}
 
 		thread_id += INIT_THREAD_ID;
 		error_no = create_thread(thread_id, dest, entry, stack);
 		if (error_no) {
-			//TODO release process
 			sequence_release(&thread_sequence,
 					thread_id - INIT_THREAD_ID);
 			break;
 		}
 
-		if (kcall->thread_start(thread_id) < 0) {
-			log_err("mm: th start err\n");
-			//TODO release process
-			sequence_release(&thread_sequence,
-					thread_id - INIT_THREAD_ID);
-			break;
-		}
-
-		return dest;
+		*process = dest;
+		return 0;
 	} while (false);
 
-	return NULL;
+	if (dest)
+		process_destroy(dest, 128 + SIGKILL);
+
+	return error_no;
 }
 
-//TODO release resources when error
+static int _copy_segments(mm_process_t * const dest,
+	mm_process_t const * const src, int const flags,
+	mm_thread_t const * const th)
+{
+	// code
+	int error_no = _segment_share(dest->directory,
+			&(dest->segments.code), src->directory,
+			src->segments.code);
+	if (error_no)
+		return error_no;
+
+	// data
+	if (src->segments.data) {
+		if (flags & RFMEM) {
+			error_no = _segment_share(
+					dest->directory,
+					&(dest->segments.data),
+					src->directory,
+					src->segments.data);
+			if (error_no)
+				return error_no;
+		} else {
+			error_no = _segment_copy(
+					dest->directory,
+					&(dest->segments.data),
+					src->directory,
+					src->segments.data);
+			if (error_no)
+				return error_no;
+		}
+	}
+
+	// heap
+	if (src->segments.heap) {
+		if (flags & RFMEM) {
+			error_no = _segment_share(
+					dest->directory,
+					&(dest->segments.heap),
+					src->directory,
+					src->segments.heap);
+			if (error_no)
+				return error_no;
+		} else {
+			error_no = _segment_copy(
+					dest->directory,
+					&(dest->segments.heap),
+					src->directory,
+					src->segments.heap);
+			if (error_no)
+				return error_no;
+		}
+	}
+
+	// process local
+	void *start = (void *) PROCESS_LOCAL_ADDR;
+	size_t n = pages(sizeof(*(src->local)));
+	error_no = copy_user_pages(dest->directory, src->directory, start, n,
+			R_OK);
+	if (error_no) {
+		log_warning("failed to copy local %d\n", error_no);
+		unmap_user_pages(dest->directory, start, n);
+		return error_no;
+	}
+
+	// stack
+	start = (void *) ((uintptr_t) (th->stack.addr) - th->stack.len
+			+ th->stack.max);
+	n = pages(th->stack.len);
+	error_no = copy_user_pages(dest->directory, src->directory, start, n,
+			R_OK | W_OK);
+	if (error_no) {
+		log_warning("failed to copy stack %d\n", error_no);
+		unmap_user_pages(dest->directory, start, n);
+		return error_no;
+	}
+
+	return 0;
+}
+
 int process_replace(mm_thread_t *th, const Elf32_Phdr *code,
 		const Elf32_Phdr *data, void *entry, const void *args,
 		const size_t stack_size)
@@ -345,20 +325,17 @@ int process_replace(mm_thread_t *th, const Elf32_Phdr *code,
 	mm_process_t *process = get_process(th);
 	destroy_threads(process, thread_id);
 
-	if (map_user_stack(process))
-		return ENOMEM;
-
 	uintptr_t stack_top = pageRoundDown(USER_STACK_END_ADDR) - stack_size;
-	if (move_stack(process->directory, (void *) stack_top,
-			(void *) args, stack_size))
-		return EFAULT;
+	int result = _copy_user_stack(process, (void *) stack_top, args,
+			stack_size);
+	if (result)
+		return result;
 
-	if (release_memory(process))
-		return EFAULT;
+	_release_segments(process);
 
 	uintptr_t start = pageRoundDown(code->p_vaddr);
 	uintptr_t end = pageRoundUp(code->p_vaddr + code->p_memsz);
-	int result = _segment_allocate(&(process->segments.code),
+	result = _segment_allocate(&(process->segments.code),
 			process->directory, (void *) start, (void *) end,
 			R_OK | X_OK, type_code);
 	if (result)
@@ -382,11 +359,8 @@ int process_replace(mm_thread_t *th, const Elf32_Phdr *code,
 
 int process_release_body(mm_process_t *proc, const int options)
 {
-//TODO list_insert dead child on exit
-	if (list_is_empty(&(proc->children))) {
-		//log_info("mm: %d no child release body\n", proc->node.key);
+	if (list_is_empty(&(proc->children)))
 		return ECHILD;
-	}
 
 	for (list_t *child= list_next(&(proc->children));
 			!list_is_edge(&(proc->children), child);
@@ -407,16 +381,7 @@ int process_release_body(mm_process_t *proc, const int options)
 
 		proc->tag = 0;
 		proc->wpid = 0;
-		list_remove(&(p->members));
-		list_remove(child);
-		if (!tree_remove(&process_tree, p->node.key)) {
-			//TODO what to do?
-		}
-
-		sequence_release(&process_sequence, p->node.key);
-
-		//log_info("mm: %d released %d\n", proc->node.key, p->node.key);
-		slab_free(&process_slab, p);
+		_process_destroy_frame(p);
 
 		ER result = kcall->ipc_send(tag, &reply, sizeof(reply));
 		if (result)
@@ -437,112 +402,111 @@ int process_release_body(mm_process_t *proc, const int options)
 					proc->node.key, result);
 	}
 
-	//log_info("mm: %d not found release body\n", proc->node.key);
 	return 0;
 }
 
-int process_destroy(mm_process_t *process, const int status)
+static void _process_destroy_frame(mm_process_t * const p)
+{
+	//TODO discard tag(rdvno) when it is going to be killed
+	list_remove(&(p->members));
+	list_remove(&(p->brothers));
+	tree_remove(&process_tree, p->node.key);
+	//TODO leave when group leader
+	sequence_release(&process_sequence, p->node.key);
+	slab_free(&process_slab, p);
+}
+
+void process_destroy(mm_process_t *process, const int status)
 {
 	process->exit_status = status;
 	destroy_threads(process, 0);
+	_release_segments(process);
 
-	if (release_memory(process)) {
-		//TODO what to do?
+	if (process->local) {
+		if (unmap_user_pages(process->directory, (void *) PROCESS_LOCAL_ADDR,
+				pages(sizeof(*(process->local))))) {
+			log_warning("mm: unmap error %p,%x\n",
+					(void *) PROCESS_LOCAL_ADDR,
+					pages(sizeof(*(process->local))));
+		}
+
+		process->local = NULL;
 	}
 
-	if (unmap_user_pages(process->directory, (void *) PROCESS_LOCAL_ADDR,
-			pages(sizeof(*(process->local))))) {
-		log_err("mm: unmap error %p,%x\n",
-				(void *) PROCESS_LOCAL_ADDR,
-				pages(sizeof(*(process->local))));
-
-		//TODO what to do?
-	}
-
-	process->local = NULL;
 	kcall->pfree(process->directory);
 	process->directory = NULL;
 
-	mm_process_t *parent = process_find(process->ppid);
-	if (parent) {
-		if (parent->tag)
-			process_release_body(parent, 0);
-	} else {
-		//TODO what to do?
-		log_info("mm: %d no parent\n", process->node.key);
+	if (!(process->status)) {
+		_process_destroy_frame(process);
+		return;
 	}
 
 //TODO if parent process is 'init'?
 //TODO if current process is 'init'?
-	parent = process_find(INIT_PID);
+	mm_process_t *parent = process_find(INIT_PID);
 	if (parent) {
-		bool found = false;
-		for (;;) {
-			list_t *child = list_pick(&(process->children));
-			if (!child)
-				break;
-
+		for (list_t *child; (child = list_pick(&(process->children)));) {
 			mm_process_t *p = getProcessFromBrothers(child);
 			p->ppid = INIT_PID;
 			list_append(&(parent->children), child);
-			found = true;
-		}
-
-		if (found) {
-			if (parent->tag)
-				process_release_body(parent, 0);
 		}
 	} else {
-		//TODO what to do?
+		//TODO terminate all the children
 	}
 
-	return 0;
+	parent = process_find(process->ppid);
+	if (parent) {
+		if (parent->tag)
+			process_release_body(parent, 0);
+	} else {
+		//TODO set ppid to 'init' if 'init' exists
+		log_warning("mm: %d no parent\n", process->node.key);
+		_process_destroy_frame(process);
+	}
 }
 
 //TODO key must not be 0
 int spawn(const pid_t pid, const FP entry)
 {
-	mm_process_t *p;
-	int error_no = process_create(&p, pid);
-	if (error_no)
-		return error_no;
+	mm_process_t *p = NULL;
+	int error_no;
+	do {
+		error_no = process_create(&p, pid);
+		if (error_no)
+			break;
 
-	if (map_user_pages(p->directory, (void *) PROCESS_LOCAL_ADDR,
-			pages(sizeof(*(p->local))), R_OK))
-		//TODO release process
-		return ENOMEM;
+		void *start = (void *) PROCESS_LOCAL_ADDR;
+		size_t n = pages(sizeof(*(p->local)));
+		if (map_user_pages(p->directory, start, n, R_OK)) {
+			unmap_user_pages(p->directory, start, n);
+			error_no =  ENOMEM;
+			break;
+		}
 
-	p->ppid = INIT_PPID;
-	p->pgid = INIT_PID;
-	p->uid = INIT_UID;
-	p->gid = INIT_GID;
-	p->root = NULL;
+		set_local(p, "/", 1, "");
+		p->ppid = INIT_PPID;
+		p->pgid = INIT_PID;
+		p->uid = INIT_UID;
+		p->gid = INIT_GID;
 
-	set_local(p, "/", 1);
-#if 0
-	log_info("c %d %x->%x, %x->%x pp=%d pg=%d u=%d g=%d n=%s\n",
-			p->node.key,
-			&p->brothers, p->brothers.next,
-			&p->members, p->members.next,
-			p->ppid, p->pgid, p->uid, p->gid,
-			p->name);
-#endif
-	error_no = create_spawn_thread(p, entry);
-	if (error_no) {
-		//TODO destroy process
-		log_info("mm: create_spawn_thread %d\n", error_no);
-		return error_no;
-	}
+		error_no = create_spawn_thread(p, entry);
+		if (error_no)
+			break;
 
-	error_no = kcall->thread_start(INIT_THREAD_ID);
-	if (error_no) {
-		//TODO destroy process
-		log_info("mm: failed to start thread %d\n", error_no);
-		return EBUSY;
-	}
+		if (kcall->thread_start(INIT_THREAD_ID)) {
+			error_no = EBUSY;
+			break;
+		}
 
-	log_info("mm: spawn(pid=%d)\n", pid);
-	return 0;
+		p->status = PROCESS_STATUS_ACTIVE;
+		log_debug("mm: spawn(pid=%d)\n", pid);
+		return 0;
+	} while (false);
+
+	if (p)
+		process_destroy(p, 128 + SIGKILL);
+
+	return error_no;
 }
 
 static int process_create(mm_process_t **process, const int pid)
@@ -555,7 +519,15 @@ static int process_create(mm_process_t **process, const int pid)
 			break;
 		}
 
+		p->directory = copy_kernel_page_table();
+		if (!(p->directory)) {
+			slab_free(&process_slab, p);
+			error_no = ENOMEM;
+			break;
+		}
+
 		if (!tree_put(&process_tree, pid, (node_t *) p)) {
+			kcall->pfree(p->directory);
 			slab_free(&process_slab, p);
 			error_no = EBUSY;
 			break;
@@ -565,20 +537,18 @@ static int process_create(mm_process_t **process, const int pid)
 		p->segments.data = NULL;
 		p->segments.heap = NULL;
 
-		//TODO take over fields when duplicate?
 		list_initialize(&(p->threads));
-		//TODO leave on exec
 		tree_create(&(p->descriptors), NULL, NULL);
 		list_initialize(&(p->brothers));
 		list_initialize(&(p->children));
 		list_initialize(&(p->members));
 		list_initialize(&(p->namespaces));
+		p->root = NULL;
 		p->local = NULL;
+		p->status = PROCESS_STATUS_NULL;
 		p->tag = 0;
 		p->wpid = 0;
 
-		//TODO check NULL
-		p->directory = copy_kernel_page_table();
 		*process = p;
 		return 0;
 	} while (false);
@@ -587,18 +557,17 @@ static int process_create(mm_process_t **process, const int pid)
 }
 
 static void set_local(mm_process_t *process, const char *wd,
-		const size_t wd_len)
+		const size_t wd_len, char const * const name)
 {
 	process->local = getPageAddress(kern_p2v(process->directory),
 			(void *) PROCESS_LOCAL_ADDR);
-	memset(process->local, 0, sizeof(*(process->local)));
 	process->local->pid = process->node.key;
 	process->local->ppid = process->ppid;
 	process->local->uid = process->uid;
 	process->local->gid = process->gid;
 	process->local->wd_len = wd_len;
 	strcpy(process->local->wd, wd);
-	process->local->name[0] = '\0';
+	strcpy(process->local->name, name);
 }
 
 mm_thread_t *thread_find(const ID tid)
@@ -607,19 +576,25 @@ mm_thread_t *thread_find(const ID tid)
 	return (node ? (mm_thread_t *) getParent(mm_thread_t, node) : NULL);
 }
 
-static int map_user_stack(mm_process_t *process)
+static int _copy_user_stack(mm_process_t const * const process,
+		void * const dest, void const * const src, size_t const size)
 {
-	if (map_user_pages(process->directory,
-			(void *) pageRoundDown(USER_STACK_END_ADDR
-					- USER_STACK_INITIAL_SIZE),
-			pages(pageRoundUp(USER_STACK_INITIAL_SIZE)),
-			R_OK | W_OK))
+	void *addr = (void *) pageRoundDown(USER_STACK_END_ADDR
+			- USER_STACK_INITIAL_SIZE);
+	size_t n = pages(pageRoundUp(USER_STACK_INITIAL_SIZE));
+	if (map_user_pages(process->directory, addr, n, R_OK | W_OK))
 		return ENOMEM;
+
+	//TODO optimize for 'copy' between segments. (not 'move')
+	if (move_stack(process->directory, dest, src, size)) {
+		unmap_user_pages(process->directory, addr, n);
+		return EFAULT;
+	}
 
 	return 0;
 }
 
-static int release_memory(mm_process_t *process)
+static void _release_segments(mm_process_t * const process)
 {
 	if (process->segments.code) {
 		_segment_deallocate(process, process->segments.code);
@@ -635,19 +610,18 @@ static int release_memory(mm_process_t *process)
 		_segment_deallocate(process, process->segments.heap);
 		process->segments.heap = NULL;
 	}
-
-	return 0;
 }
 
 static int _segment_share(void *dest_directory, mm_segment_t **dest,
 		const void *src_directory, mm_segment_t *src)
 {
+	size_t n = pages(src->len);
 	int error_no = attach_user_pages(dest_directory, src_directory,
-			src->addr, pages(src->len), _convert_permission(src));
+			src->addr, n, _convert_permission(src));
 	if (error_no) {
-		log_warning("failed to share(%p, %x) %d\n", src->addr, src->len,
+		log_warning("failed to share(%p, %x) %d\n", src->addr, n,
 				error_no);
-		//TODO detach for recovery
+		detach_user_pages(dest_directory, src->addr, n);
 		return error_no;
 	}
 
@@ -665,13 +639,14 @@ static int _segment_copy(void *dest_directory, mm_segment_t **dest,
 		return ENOMEM;
 	}
 
+	size_t n = pages(src->len);
 	int error_no = copy_user_pages(dest_directory, src_directory,
-			src->addr, pages(src->len), _convert_permission(src));
+			src->addr, n, _convert_permission(src));
 	if (error_no) {
-		log_warning("failed to copy(%p, %x) %d\n", src->addr, src->len,
+		log_warning("failed to copy(%p, %x) %d\n", src->addr, n,
 				error_no);
+		unmap_user_pages(dest_directory, src->addr, n);
 		slab_free(&segment_slab, s);
-		//TODO unmap for recovery
 		return error_no;
 	}
 
@@ -695,13 +670,12 @@ static int _segment_allocate(mm_segment_t **dest, void *directory,
 		return ENOMEM;
 	}
 
-	int error_no = map_user_pages(directory, (void *) start,
-			pages((uintptr_t) end - (uintptr_t) start), attr);
+	size_t n = pages((uintptr_t) end - (uintptr_t) start);
+	int error_no = map_user_pages(directory, (void *) start, n, attr);
 	if (error_no) {
-		log_warning("failed to map(%p, %x) %d\n", start,
-				(uintptr_t) end - (uintptr_t) start, error_no);
+		log_warning("failed to map(%p, %x) %d\n", start, n, error_no);
+		unmap_user_pages(directory, (void *) start, n);
 		slab_free(&segment_slab, s);
-		//TODO unmap for recovery
 		return error_no;
 	}
 

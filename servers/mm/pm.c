@@ -36,8 +36,8 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/unistd.h>
 #include <sys/wait.h>
 #include <mm/config.h>
-#include <mm/status.h>
 #include "mm.h"
+#include "status.h"
 #include "proxy.h"
 #include "device.h"
 
@@ -46,6 +46,13 @@ For more information, please refer to <http://unlicense.org/>
 
 #define MASK_BIND_MODE (MBEFORE | MAFTER)
 
+typedef struct {
+	mm_process_t * const dest;
+	int error_no;
+} callback_state_t;
+
+static int _dup_all(mm_process_t * const, mm_process_t const * const);
+static int _desc_callback(node_t *, void *);
 static int _check_elf(mm_request_t * const, mm_file_t * const, int const);
 static int _close_all(mm_process_t *, mm_request_t *);
 static int _seek(mm_process_t *, mm_file_t *, sys_args_t *, mm_request_t *);
@@ -56,6 +63,7 @@ static void _remove_namespace(mm_process_t *, const char *,
 int mm_rfork(mm_request_t *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
+	mm_process_t *child = NULL;
 	do {
 		mm_thread_t *th = thread_find(port_of_ipc(req->node.key));
 		if (!th) {
@@ -69,22 +77,90 @@ int mm_rfork(mm_request_t *req)
 			break;
 		}
 
-		mm_process_t *child = process_duplicate(th, req->args.arg1,
+		int result = process_duplicate(&child, th, req->args.arg1,
 				(void *) (req->args.arg3),
 				(void *) (req->args.arg2));
-		if (!child) {
-			log_err("pm: duplicate err\n");
-			reply->data[0] = ENOMEM;
+		if (result) {
+			reply->data[0] = result;
 			break;
 		}
+
+		result = _dup_all(child, get_process(th));
+		if (result) {
+			reply->data[0] = result;
+			break;
+		}
+
+		mm_thread_t *child_thread = getMyThread(child->threads.next);
+		result = kcall->thread_start(child_thread->node.key);
+		if (result < 0) {
+			reply->data[0] = EBUSY;
+			break;
+		}
+
+		child->status = PROCESS_STATUS_ACTIVE;
 
 		reply->result = child->node.key;
 		reply->data[0] = 0;
 		return reply_success;
 	} while (false);
 
+	if (child)
+		process_destroy(child, 128 + SIGKILL);
+
 	reply->result = -1;
 	return reply_failure;
+}
+
+static int _dup_all(mm_process_t * const dest, mm_process_t const * const src)
+{
+	callback_state_t state = { dest, 0 };
+	tree_traverse(&(src->descriptors), _desc_callback, &state);
+	if (state.error_no)
+		return state.error_no;
+
+	dest->root = src->root;
+	if (dest->root)
+		dest->root->f_count++;
+
+	for (list_t *p = src->namespaces.next;
+			!list_is_edge(&(src->namespaces), p);
+			p = p->next) {
+		mm_namespace_t *s = getNamespaceFromBrothers(p);
+		mm_namespace_t *d = process_allocate_ns();
+		if (!d)
+			return ENOMEM;
+
+		d->root = s->root;
+		strcpy(d->name, s->name);
+		list_append(&(dest->namespaces), &(d->brothers));
+		d->root->f_count++;
+	}
+
+	return 0;
+}
+
+static int _desc_callback(node_t *node, void *state)
+{
+	callback_state_t *cs = state;
+	mm_descriptor_t *s = (mm_descriptor_t *)
+			getParent(mm_descriptor_t, node);
+	mm_descriptor_t *d = process_allocate_desc();
+	if (!d) {
+		cs->error_no = ENOMEM;
+		return true;
+	}
+
+	if (process_set_desc(cs->dest, node->key, d)) {
+		process_deallocate_desc(d);
+		cs->error_no = EBUSY;
+		return true;
+	} else {
+		d->file = s->file;
+		d->file->f_count++;
+	}
+
+	return false;
 }
 
 int mm_exec(mm_request_t *req)
@@ -320,7 +396,7 @@ int mm_exit(mm_request_t *req)
 
 static int _close_all(mm_process_t *process, mm_request_t *req)
 {
-	process->status |= PROCESS_STATUS_DISABLED;
+	process->status |= PROCESS_STATUS_SUSPENDED;
 
 	//TODO disable fibers
 	for (node_t *node; (node = tree_root(&(process->descriptors)));) {

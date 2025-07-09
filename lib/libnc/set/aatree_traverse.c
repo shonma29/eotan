@@ -28,24 +28,27 @@ For more information, please refer to <http://unlicense.org/>
 #include <set/tree.h>
 #include "aatree.h"
 
-static int _walk(node_t *node, int (*callback)(node_t *node));
+static int _traverse(node_t *node, int (*callback)(node_t *node, void *),
+		void *);
 
 
-void tree_walk(const tree_t *tree, int (*callback)(node_t *node))
+void tree_traverse(const tree_t *tree, int (*callback)(node_t *node, void *),
+		void * state)
 {
-	_walk(tree->root, callback);
+	_traverse(tree->root, callback, state);
 }
 
-static int _walk(node_t *node, int (*callback)(node_t *node))
+static int _traverse(node_t *node, int (*callback)(node_t *node, void *),
+		void *state)
 {
 	if (!is_nil(node)) {
-		if (_walk(node->left, callback))
+		if (_traverse(node->left, callback, state))
 			return true;
 
-		if (callback(node))
+		if (callback(node, state))
 			return true;
 
-		if (_walk(node->right, callback))
+		if (_traverse(node->right, callback, state))
 			return true;
 	}
 

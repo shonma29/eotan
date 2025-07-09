@@ -115,6 +115,8 @@ typedef struct {
 
 extern slab_t sequence_slab;
 
+//TODO check process status
+//TODO check if accessible (user)
 static inline mm_process_t *get_process(const mm_thread_t *thread)
 {
 	return ((mm_process_t *) (thread->process));
@@ -149,13 +151,13 @@ static inline int sequence_from_sid(const int sid)
 
 extern int process_initialize(void);
 extern mm_process_t *process_find(const ID);
-extern mm_process_t *process_duplicate(const mm_thread_t *, const int,
-		const void *, const void *);
+extern int process_duplicate(mm_process_t ** const, const mm_thread_t *,
+		const int, const void *, const void *);
 extern int process_replace(mm_thread_t *, const Elf32_Phdr *,
 		const Elf32_Phdr *, void *entry, const void *args,
 		const size_t stack_size);
 extern int process_release_body(mm_process_t *, const int);
-extern int process_destroy(mm_process_t *, const int);
+extern void process_destroy(mm_process_t *, const int);
 extern int spawn(const pid_t, const FP);
 extern mm_thread_t *thread_find(const ID);
 
