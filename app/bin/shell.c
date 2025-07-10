@@ -195,7 +195,6 @@ static void execute(unsigned char **array, unsigned char **env,
 				i < sizeof(opts->files) / sizeof(opts->files[0]);
 				i++)
 			if (opts->files[i] != FD_NOT_OPENED) {
-				close(i);
 				dup2(opts->files[i], i);
 				close(opts->files[i]);
 			}

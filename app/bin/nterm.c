@@ -258,7 +258,6 @@ static int _execute(Window * const w, char const * const *array,
 			return _tunnel_out(w, STDOUT_FILENO, fds[1]);
 	} else {
 		for (int i = STDIN_FILENO; i <= STDERR_FILENO; i++) {
-			close(i);
 			errno = 0;
 			if (dup2(fds[0], i) < 0)
 				return ERR;
