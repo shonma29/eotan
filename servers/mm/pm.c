@@ -473,7 +473,7 @@ int mm_kill(mm_request_t *req)
 
 		//TODO write message to stderr
 		_close_all(process, req);
-		process_destroy(process, req->args.arg2);
+		process_destroy(process, 128 + req->args.arg2);
 
 		reply->result = 0;
 		reply->data[0] = 0;
