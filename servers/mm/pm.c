@@ -384,6 +384,7 @@ int mm_exit(mm_request_t *req)
 //		log_info("pm: %d exit %d\n", process->node.key, req->args.arg1);
 		_close_all(process, req);
 		process_destroy(process, req->args.arg1);
+		kcall->ipc_send(req->node.key, NULL, 0);
 
 		reply->result = 0;
 		reply->data[0] = 0;
