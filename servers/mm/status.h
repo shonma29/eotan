@@ -31,7 +31,8 @@ For more information, please refer to <http://unlicense.org/>
 #define PROCESS_STATUS_ACTIVE (1)
 #define PROCESS_STATUS_DYING (2)
 #define PROCESS_STATUS_DEAD (3)
+#define PROCESS_STATUS_GROUP (4)
 
-#define PROCESS_STATUS_SUSPENDED (4)
+#define PROCESS_STATUS_SUSPENDED (8)
 
 #endif

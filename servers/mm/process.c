@@ -407,9 +407,16 @@ int process_release_body(mm_process_t *proc, const int options)
 
 static void _process_destroy_frame(mm_process_t * const p)
 {
-	//TODO discard tag(rdvno) when it is going to be killed
 	list_remove(&(p->members));
 	list_remove(&(p->brothers));
+
+	if (p->tag) {
+		kcall->ipc_send(p->tag, NULL, 0);
+		p->tag = 0;
+	}
+
+	p->wpid = 0;
+
 	tree_remove(&process_tree, p->node.key);
 	//TODO leave when group leader
 	sequence_release(&process_sequence, p->node.key);
@@ -436,33 +443,34 @@ void process_destroy(mm_process_t *process, const int status)
 	kcall->pfree(process->directory);
 	process->directory = NULL;
 
-	if (!(process->status)) {
-		_process_destroy_frame(process);
-		return;
-	}
+	if (!(process->status))
+		process->ppid = 0;
 
-//TODO if parent process is 'init'?
-//TODO if current process is 'init'?
-	mm_process_t *parent = process_find(INIT_PID);
-	if (parent) {
+	process->status = PROCESS_STATUS_DEAD;
+
+	mm_process_t *parent = (process->node.key == INIT_PID) ?
+			NULL : process_find(INIT_PID);
+	if (parent)
 		for (list_t *child; (child = list_pick(&(process->children)));) {
 			mm_process_t *p = getProcessFromBrothers(child);
 			p->ppid = INIT_PID;
 			list_append(&(parent->children), child);
 		}
-	} else {
-		//TODO terminate all the children
-	}
+	else
+		for (list_t *child; (child = list_pick(&(process->children)));) {
+			mm_process_t *p = getProcessFromBrothers(child);
+			if (p->status == PROCESS_STATUS_DEAD)
+				_process_destroy_frame(p);
+			else
+				p->ppid = 0;
+		}
 
-	parent = process_find(process->ppid);
+	parent = (process->ppid) ? process_find(process->ppid) : NULL;
 	if (parent) {
 		if (parent->tag)
 			process_release_body(parent, 0);
-	} else {
-		//TODO set ppid to 'init' if 'init' exists
-		log_warning("mm: %d no parent\n", process->node.key);
+	} else
 		_process_destroy_frame(process);
-	}
 }
 
 //TODO key must not be 0
@@ -778,13 +786,9 @@ static void destroy_threads(mm_process_t *process, const int thread_id)
 {
 	for (list_t *p; (p = list_pick(&(process->threads)));) {
 		mm_thread_t *th = getMyThread(p);
+		kcall->thread_terminate(th->node.key);
 
-		ER result = kcall->thread_terminate(th->node.key);
-		if (result)
-			log_warning("mm: failed to terminate(%d) %d\n",
-					th->node.key, result);
-
-		result = kcall->thread_destroy(th->node.key);
+		ER result = kcall->thread_destroy(th->node.key);
 		if (result)
 			log_err("mm: failed to destroy(%d) %d\n",
 					th->node.key, result);

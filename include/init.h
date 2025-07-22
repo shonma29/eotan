@@ -30,7 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #define INIT_PATH_NAME "/bin/init"
 
 #define INIT_PID (1)
-#define INIT_PPID (1)
+#define INIT_PPID (0)
 #define INIT_UID (0)
 #define INIT_GID (0)
 

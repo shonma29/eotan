@@ -609,6 +609,7 @@ int _walk(mm_file_t **file, mm_process_t *process, const int thread_id,
 
 	int offset = 0;
 	mm_file_t *root = process->root;
+	//TODO use list_next
 	for (list_t *p = process->namespaces.next;
 			!list_is_edge(&(process->namespaces), p); p = p->next) {
 		mm_namespace_t *ns = getNamespaceFromBrothers(p);

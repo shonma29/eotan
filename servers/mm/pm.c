@@ -54,6 +54,8 @@ typedef struct {
 static int _dup_all(mm_process_t * const, mm_process_t const * const);
 static int _desc_callback(node_t *, void *);
 static int _check_elf(mm_request_t * const, mm_file_t * const, int const);
+static void _suspend_all(mm_process_t * const);
+static void _resume_all(mm_process_t * const);
 static int _close_all(mm_process_t *, mm_request_t *);
 static int _seek(mm_process_t *, mm_file_t *, sys_args_t *, mm_request_t *);
 static void _remove_namespace(mm_process_t *, const char *,
@@ -123,6 +125,7 @@ static int _dup_all(mm_process_t * const dest, mm_process_t const * const src)
 	if (dest->root)
 		dest->root->f_count++;
 
+	//TODO use list_next
 	for (list_t *p = src->namespaces.next;
 			!list_is_edge(&(src->namespaces), p);
 			p = p->next) {
@@ -169,7 +172,7 @@ int mm_exec(mm_request_t *req)
 	mm_file_t *file = NULL;
 	int token;
 	bool is_broken = false;
-	mm_process_t *process;
+	mm_process_t *process = NULL;
 	int result;
 	do {
 		mm_thread_t *th = thread_find(port_of_ipc(req->node.key));
@@ -179,10 +182,10 @@ int mm_exec(mm_request_t *req)
 		}
 
 		process = get_process(th);
-		fsmsg_t *message = &(req->message);
+		_suspend_all(process);
+
 		result = _walk(&file, process, th->node.key,
 				(char *) (req->args.arg1), req);
-
 		if (result) {
 			reply->data[0] = result;
 			break;
@@ -220,6 +223,7 @@ int mm_exec(mm_request_t *req)
 		if (result)
 			break;
 
+		fsmsg_t *message = &(req->message);
 		result = _read(file, token, code->p_offset, code->p_filesz,
 				(char *) (code->p_vaddr), req);
 		if (result)
@@ -254,6 +258,7 @@ int mm_exec(mm_request_t *req)
 			break;
 		}
 
+		process->status &= ~PROCESS_STATUS_SUSPENDED;
 		return reply_no_caller;
 	} while (false);
 
@@ -268,7 +273,8 @@ int mm_exec(mm_request_t *req)
 		_close_all(process, req);
 		process_destroy(process, 128 + SIGKILL);
 		return reply_no_caller;
-	}
+	} else if (process)
+		_resume_all(process);
 
 	reply->result = -1;
 	return reply_failure;
@@ -381,7 +387,8 @@ int mm_exit(mm_request_t *req)
 		}
 
 		mm_process_t *process = get_process(th);
-//		log_info("pm: %d exit %d\n", process->node.key, req->args.arg1);
+//		log_info(MYNAME ": %d exit %d\n", process->node.key, req->args.arg1);
+		_suspend_all(process);
 		_close_all(process, req);
 		process_destroy(process, req->args.arg1);
 		kcall->ipc_send(req->node.key, NULL, 0);
@@ -395,9 +402,29 @@ int mm_exit(mm_request_t *req)
 	return reply_failure;
 }
 
-static int _close_all(mm_process_t *process, mm_request_t *req)
+static void _suspend_all(mm_process_t * const process)
 {
 	process->status |= PROCESS_STATUS_SUSPENDED;
+
+	for (list_t *p = process->threads.next;
+			!list_is_edge(&(process->threads), p);
+			p = list_next(p))
+		kcall->thread_suspend(getMyThread(p)->node.key);
+}
+
+static void _resume_all(mm_process_t * const process)
+{
+	process->status &= ~PROCESS_STATUS_SUSPENDED;
+
+	for (list_t *p = process->threads.next;
+			!list_is_edge(&(process->threads), p);
+			p = list_next(p))
+		kcall->thread_resume(getMyThread(p)->node.key);
+}
+
+static int _close_all(mm_process_t *process, mm_request_t *req)
+{
+	process->status = PROCESS_STATUS_DYING;
 
 	//TODO disable fibers
 	for (node_t *node; (node = tree_root(&(process->descriptors)));) {
@@ -469,9 +496,10 @@ int mm_kill(mm_request_t *req)
 			break;
 		}
 
-		log_info("pm: %d kill %d\n", process->node.key, req->args.arg2);
+		log_info(MYNAME ": %d kill %d\n", process->node.key, req->args.arg2);
 
 		//TODO write message to stderr
+		_suspend_all(process);
 		_close_all(process, req);
 		process_destroy(process, 128 + req->args.arg2);
 
@@ -514,7 +542,7 @@ int mm_chdir(mm_request_t *req)
 				create_token(th->node.key, file->session), req);
 		if (clunk_result)
 			//TODO what to do?
-			log_err("pm: chdir close[:%d] error=%d\n",
+			log_err(MYNAME ": chdir close[:%d] error=%d\n",
 					fid, clunk_result);
 
 		if (result) {
@@ -530,7 +558,7 @@ int mm_chdir(mm_request_t *req)
 		process->local->wd_len = strlen(req->walkpath);
 		strcpy(process->local->wd, req->walkpath);
 
-//		log_info("pm: %d chdir %s\n",
+//		log_info(MYNAME ": %d chdir %s\n",
 //				process->node.key, process->local->wd);
 
 		reply->result = 0;
@@ -632,7 +660,7 @@ int mm_lseek(mm_request_t *req)
 			break;
 		}
 
-//		log_info("pm: %d seek\n", process->node.key);
+//		log_info(MYNAME ": %d seek\n", process->node.key);
 
 		off_t *offset = (off_t *) reply;
 		*offset = desc->file->f_offset;
@@ -913,6 +941,7 @@ int mm_bind(mm_request_t *req)
 static void _remove_namespace(mm_process_t *process, const char *old,
 		const mm_thread_t *th, mm_request_t *req)
 {
+	//TODO use list_next
 	for (list_t *p = process->namespaces.next;
 			!list_is_edge(&(process->namespaces), p);) {
 		mm_namespace_t *ns = getNamespaceFromBrothers(p);
