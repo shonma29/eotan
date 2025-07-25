@@ -88,10 +88,26 @@ static inline mm_process_t *getProcessFromMembers(const list_t *p)
 }
 */
 
+static inline bool is_leader(mm_process_t const * const p)
+{
+	return (p->node.key == p->pgid);
+}
+
+static inline bool has_members(mm_process_t const * const p)
+{
+	return (!list_is_empty(&(p->members)));
+}
+
+static inline bool belongs_to_group(mm_process_t const * const p)
+{
+	return (p->pgid);
+}
+
 static node_t **thread_lookup_selector(const tree_t *, const int);
 static int _copy_segments(mm_process_t * const, mm_process_t const * const,
 		int const, mm_thread_t const * const);
 static void _process_destroy_frame(mm_process_t * const);
+static void _process_destroy_body(mm_process_t * const);
 static int process_create(mm_process_t **, const int);
 static void set_local(mm_process_t *, const char *, const size_t,
 		char const * const);
@@ -199,15 +215,22 @@ int process_duplicate(mm_process_t ** const process, const mm_thread_t *th,
 
 		list_append(&(src->children), &(dest->brothers));
 
-		if (!(flags & RFNOTEG)) {
+		if (flags & RFNOTEG)
+			dest->pgid = pid;
+		else {
 			mm_process_t *leader = process_find(src->pgid);
-			if (leader)
+			if (leader) {
 				list_append(&(leader->members),
 						&(dest->members));
+				dest->pgid = src->pgid;
+			} else {
+				log_warning(MYNAME ": missing leader %d\n",
+						src->pgid);
+				dest->pgid = 0;
+			}
 		}
 
 		dest->ppid = src->node.key;
-		dest->pgid = (flags & RFNOTEG) ? pid : (src->pgid);
 		dest->uid = src->uid;
 		dest->gid = src->gid;
 		set_local(dest, src->local->wd, src->local->wd_len,
@@ -407,7 +430,6 @@ int process_release_body(mm_process_t *proc, const int options)
 
 static void _process_destroy_frame(mm_process_t * const p)
 {
-	list_remove(&(p->members));
 	list_remove(&(p->brothers));
 
 	if (p->tag) {
@@ -417,8 +439,28 @@ static void _process_destroy_frame(mm_process_t * const p)
 
 	p->wpid = 0;
 
+	if (is_leader(p)) {
+		if (has_members(p)) {
+			p->status = PROCESS_STATUS_GROUP;
+			return;
+		}
+	} else if (belongs_to_group(p)) {
+		list_remove(&(p->members));
+
+		mm_process_t *leader = process_find(p->pgid);
+		if (leader) {
+			if (!has_members(leader))
+				_process_destroy_body(leader);
+		} else
+			log_warning(MYNAME ": missing leader %d\n", p->pgid);
+	}
+
+	_process_destroy_body(p);
+}
+
+static void _process_destroy_body(mm_process_t * const p)
+{
 	tree_remove(&process_tree, p->node.key);
-	//TODO leave when group leader
 	sequence_release(&process_sequence, p->node.key);
 	slab_free(&process_slab, p);
 }
