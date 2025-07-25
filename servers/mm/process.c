@@ -103,6 +103,11 @@ static inline bool belongs_to_group(mm_process_t const * const p)
 	return (p->pgid);
 }
 
+static inline bool is_group(mm_process_t const * const p)
+{
+	return (p->status == PROCESS_STATUS_GROUP);
+}
+
 static node_t **thread_lookup_selector(const tree_t *, const int);
 static int _copy_segments(mm_process_t * const, mm_process_t const * const,
 		int const, mm_thread_t const * const);
@@ -449,7 +454,8 @@ static void _process_destroy_frame(mm_process_t * const p)
 
 		mm_process_t *leader = process_find(p->pgid);
 		if (leader) {
-			if (!has_members(leader))
+			if (is_group(leader)
+					&& !has_members(leader))
 				_process_destroy_body(leader);
 		} else
 			log_warning(MYNAME ": missing leader %d\n", p->pgid);
