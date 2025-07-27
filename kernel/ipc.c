@@ -293,7 +293,6 @@ int ipc_receive(const int port_id, int *tag, void *message)
 		running->wait.detail.ipc.message = message;
 		running->wait.type = wait_receive;
 		wait(running);
-
 		enter_serialize();
 		if (running->wait.result)
 			result = running->wait.result;
@@ -466,6 +465,7 @@ int ipc_notify(const int port_id, const unsigned int flag)
 					|| (th->wait.type == wait_receive)) {
 				th->port.flag = 0;
 				th->wait.result = E_RLWAI;
+				list_remove(&(th->wait.waiting));
 				release(th);
 				result = E_OK;
 				break;

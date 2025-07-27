@@ -56,9 +56,6 @@ static void execute(char **array, char **env)
 		_put_error(strerror(error_no));
 		_put_error("\n");
 	} else if (!pid) {
-		//TODO why is it needed?
-		_put_error("open window\n");
-
 		if (execve(array[0], array, env) < 0) {
 			int error_no = errno;
 			_put_error("failed to execve ");
