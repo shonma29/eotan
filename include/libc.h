@@ -43,10 +43,16 @@ For more information, please refer to <http://unlicense.org/>
 #define SG_RONLY (1)
 #define SG_CEXEC (2)
 
+// postnote
+#define PNPROC (1)
+#define PNGROUP (2)
+
 extern void *segattach(int, char *, void *, unsigned long);
 extern int segdetach(void *);
 
 extern int semacquire(long *, int);
 extern long semrelease(long *, long);
+
+extern int postnote(int, int, char *);
 
 #endif

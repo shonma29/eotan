@@ -1,5 +1,3 @@
-#ifndef _MM_STATUS_H_
-#define _MM_STATUS_H_
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -26,15 +24,32 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 */
+#include <stdint.h>
+#include <libc.h>
+#include "../sys/sys.h"
 
-#define PROCESS_STATUS_NULL (0)
-#define PROCESS_STATUS_ACTIVE (1)
-#define PROCESS_STATUS_DYING (2)
-#define PROCESS_STATUS_DEAD (3)
-#define PROCESS_STATUS_GROUP (4)
 
-#define PROCESS_STATUS_SUSPENDED (8)
+int postnote(int who, int pid, char *note)
+{
+	uint32_t v = 0;
+	uint8_t *p = (uint8_t *) note;
+	if (p[0]) {
+		v = p[0] << 24;
 
-#define MASK_PROCESS_STATUS (0x7)
+		if (p[1]) {
+			v |= (p[1] << 16);
 
-#endif
+			if (p[2])
+				v |= (p[2] << 8);
+		}
+	} else
+		return 0;
+
+	sys_args_t args = {
+		syscall_kill,
+		who,
+		pid,
+		v
+	};
+	return _syscall(&args, sizeof(args));
+}

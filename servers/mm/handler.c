@@ -99,6 +99,6 @@ static void kill(const int tid, const int no)
 	kcall->thread_suspend(tid);
 
 	//TODO use not thread id but process id
-	sys_args_t args = { syscall_kill, tid, no };
+	sys_args_t args = { syscall_kill, 0, tid, no };
 	kcall->ipc_send(PORT_MM, &args, sizeof(args));
 }

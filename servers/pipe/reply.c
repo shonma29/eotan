@@ -80,6 +80,7 @@ void kill(const int thread_id, const int signal)
 {
 	sys_args_t args = {
 		syscall_kill,
+		0,
 		thread_id,
 		signal
 	};

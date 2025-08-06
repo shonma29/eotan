@@ -481,27 +481,60 @@ int mm_kill(mm_request_t *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		mm_thread_t *th = thread_find(req->args.arg1);
+		mm_thread_t *caller = thread_find(port_of_ipc(req->node.key));
+		if (caller) {
+			mm_process_t *process = process_find(req->args.arg2);
+			if (!process) {
+				reply->data[0] = ENOENT;
+				break;
+			}
+
+			mm_process_t *caller_process = get_process(caller);
+			if (process->uid != caller_process->uid) {
+				reply->data[0] = EACCES;
+				break;
+			}
+
+			if (req->args.arg1 != PNPROC) {
+				reply->data[0] = ENOENT;
+				break;
+			}
+
+			if ((process->status & MASK_PROCESS_STATUS)
+					!= PROCESS_STATUS_ACTIVE) {
+				reply->data[0] = ENOTSUP;
+				break;
+			}
+
+			bool is_self = req->args.arg2 == caller_process->node.key;
+			_suspend_all(process);
+			_close_all(process, req);
+			process_destroy(process, req->args.arg3);
+
+			if (is_self) {
+				kcall->ipc_send(req->node.key, NULL, 0);
+				return reply_no_caller;
+			} else {
+				reply->result = 0;
+				reply->data[0] = 0;
+				return reply_success;
+			}
+		}
+
+		mm_thread_t *th = thread_find(req->args.arg2);
 		if (!th) {
 			reply->data[1] = EPERM;
 			break;
 		}
 
 		mm_process_t *process = get_process(th);
-		mm_thread_t *caller = thread_find(port_of_ipc(req->node.key));
-		if (caller) {
-			//TODO check privilege of caller (kthread only now)
-//			mm_process_t *caller_process = get_process(caller);
-			reply->data[1] = EACCES;
-			break;
-		}
 
-		log_info(MYNAME ": %d kill %d\n", process->node.key, req->args.arg2);
+		log_info(MYNAME ": %d kill %d\n", process->node.key, req->args.arg3);
 
 		//TODO write message to stderr
 		_suspend_all(process);
 		_close_all(process, req);
-		process_destroy(process, 128 + req->args.arg2);
+		process_destroy(process, 128 + req->args.arg3);
 
 		reply->result = 0;
 		reply->data[0] = 0;
