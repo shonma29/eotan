@@ -76,7 +76,7 @@ typedef enum {
 #define MAX_PRIORITY (pri_idle)
 
 /* ticks per second */
-#define TIME_TICKS (1000)
+#define TIME_TICKS (100)
 
 /* available ticks for user threads */
 #define TIME_QUANTUM (10)
