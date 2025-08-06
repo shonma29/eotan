@@ -387,8 +387,11 @@ int process_replace(mm_thread_t *th, const Elf32_Phdr *code,
 
 int process_release_body(mm_process_t *proc, const int options)
 {
-	if (list_is_empty(&(proc->children)))
+	if (list_is_empty(&(proc->children))) {
+		proc->tag = 0;
+		proc->wpid = 0;
 		return ECHILD;
+	}
 
 	for (list_t *child= list_next(&(proc->children));
 			!list_is_edge(&(proc->children), child);
