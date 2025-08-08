@@ -110,7 +110,6 @@ typedef struct {
 	int status;
 	int exit_status;
 	int tag;
-	pid_t wpid;
 } mm_process_t;
 
 extern slab_t sequence_slab;
@@ -156,7 +155,7 @@ extern int process_duplicate(mm_process_t ** const, const mm_thread_t *,
 extern int process_replace(mm_thread_t *, const Elf32_Phdr *,
 		const Elf32_Phdr *, void *entry, const void *args,
 		const size_t stack_size);
-extern int process_release_body(mm_process_t *, const int);
+extern int process_release_body(mm_process_t *);
 extern void process_destroy(mm_process_t *, const int);
 extern int spawn(const pid_t, const FP);
 extern mm_thread_t *thread_find(const ID);

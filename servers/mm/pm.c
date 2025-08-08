@@ -340,18 +340,6 @@ int mm_wait(mm_request_t *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		if ((req->args.arg1 < 0)
-				&& (req->args.arg1 != (-1))) {
-			reply->data[0] = EINVAL;
-			break;
-		}
-
-		if (req->args.arg2
-				&& (req->args.arg2 != WNOHANG)) {
-			reply->data[0] = EINVAL;
-			break;
-		}
-
 		mm_thread_t *th = thread_find(port_of_ipc(req->node.key));
 		if (!th) {
 			reply->data[0] = EPERM;
@@ -359,10 +347,14 @@ int mm_wait(mm_request_t *req)
 		}
 
 		mm_process_t *process = get_process(th);
-		process->tag = req->node.key;
-		process->wpid = req->args.arg1;
+		if (list_is_empty(&(process->children))) {
+			reply->data[0] = ECHILD;
+			break;
+		}
 
-		int result = process_release_body(process, req->args.arg2);
+		process->tag = req->node.key;
+
+		int result = process_release_body(process);
 		if (result) {
 			reply->data[0] = result;
 			break;

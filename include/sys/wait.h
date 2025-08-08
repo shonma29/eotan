@@ -28,8 +28,6 @@ For more information, please refer to <http://unlicense.org/>
 */
 #include <sys/types.h>
 
-#define WNOHANG 0x00000001
-
-extern pid_t waitpid(pid_t, int *, int);
+extern pid_t wait(int *);
 
 #endif

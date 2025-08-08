@@ -124,7 +124,7 @@ static int _redraw_text(Window * const w, char const * const buf,
 
 static void _collect(void)
 {
-	for (int status; waitpid(-1, &status, WNOHANG) > 0;);
+	for (int status; wait(&status) > 0;);
 }
 
 static int _tunnel_out(Window * const w, int const out, int const in)

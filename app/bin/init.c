@@ -60,7 +60,7 @@ static void execute(char **, char **);
 
 static void collect(void)
 {
-	for (int status; waitpid(-1, &status, WNOHANG) > 0;);
+	for (int status; wait(&status) > 0;);
 }
 
 static void execute(char **array, char **env)

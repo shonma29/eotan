@@ -195,7 +195,8 @@ char *testmm(void)
 				getpid(), getppid());
 
 		int status;
-		waitpid(pid, &status, 0);
+		assert_eq("wait pid", pid, wait(&status));
+		assert_eq("wait status", EXIT_SUCCESS, status);
 	}
 
 	time_t t1;

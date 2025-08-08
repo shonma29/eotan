@@ -180,8 +180,6 @@ static bool get_size(size_t *len, const unsigned char *head)
 static void execute(unsigned char **array, unsigned char **env,
 		const unsigned char *path, const ExecOptions *opts)
 {
-	for (int status; waitpid(-1, &status, WNOHANG) > 0;);
-
 	pid_t pid = rfork(RFPROC | RFNOTEG);
 	if (pid == 0) {
 		// child
@@ -255,15 +253,23 @@ static void execute(unsigned char **array, unsigned char **env,
 		if (pid == ERR)
 			// error
 			fprintf(stderr, "fork error %d\n", pid);
-		else if (!opts->background) {
+		else if (!opts->background)
 			// parent
-			int status;
-			if (waitpid(pid, &status, 0) == ERR)
-				fprintf(stderr, "wait error %d\n", errno);
-			else
+			for (int status;;) {
+				pid_t result = wait(&status);
+				if (result == ERR) {
+					fprintf(stderr, "wait error %d\n",
+							errno);
+					break;
+				}
+
+				if (result != pid)
+					continue;
+
 				//TODO omit print, and set $status
 				fprintf(stderr, "wait success %d\n", status);
-		}
+				break;
+			}
 	}
 }
 

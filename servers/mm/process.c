@@ -218,7 +218,12 @@ int process_duplicate(mm_process_t ** const process, const mm_thread_t *th,
 		if (error_no)
 			break;
 
-		list_append(&(src->children), &(dest->brothers));
+		if (flags & RFNOWAIT)
+			dest->ppid = 0;
+		else {
+			list_append(&(src->children), &(dest->brothers));
+			dest->ppid = src->node.key;
+		}
 
 		if (flags & RFNOTEG)
 			dest->pgid = pid;
@@ -235,7 +240,6 @@ int process_duplicate(mm_process_t ** const process, const mm_thread_t *th,
 			}
 		}
 
-		dest->ppid = (flags & RFNOWAIT) ? 0 : src->node.key;
 		dest->uid = src->uid;
 		dest->gid = src->gid;
 		set_local(dest, src->local->wd, src->local->wd_len,
@@ -385,23 +389,13 @@ int process_replace(mm_thread_t *th, const Elf32_Phdr *code,
 			(void *) (stack_top - sizeof(int)));
 }
 
-int process_release_body(mm_process_t *proc, const int options)
+int process_release_body(mm_process_t *proc)
 {
-	if (list_is_empty(&(proc->children))) {
-		proc->tag = 0;
-		proc->wpid = 0;
-		return ECHILD;
-	}
-
 	for (list_t *child= list_next(&(proc->children));
 			!list_is_edge(&(proc->children), child);
 			child = list_next(child)) {
 		mm_process_t *p = getProcessFromBrothers(child);
-		if (!list_is_empty(&(p->threads)))
-			continue;
-
-		if ((proc->wpid != (-1))
-				&& (proc->wpid != p->node.key))
+		if (p->status != PROCESS_STATUS_DEAD)
 			continue;
 
 		int tag = proc->tag;
@@ -411,7 +405,6 @@ int process_release_body(mm_process_t *proc, const int options)
 		};
 
 		proc->tag = 0;
-		proc->wpid = 0;
 		_process_destroy_frame(p);
 
 		ER result = kcall->ipc_send(tag, &reply, sizeof(reply));
@@ -419,18 +412,7 @@ int process_release_body(mm_process_t *proc, const int options)
 			log_err("mm: %d failed to release body(%d)\n",
 					proc->node.key, result);
 
-		return 0;
-	}
-
-	if (options & WNOHANG) {
-		int tag = proc->tag;
-		proc->tag = 0;
-		proc->wpid = 0;
-		sys_reply_t reply = { 0, { 0 } };
-		ER result = kcall->ipc_send(tag, &reply, sizeof(reply));
-		if (result)
-			log_err("mm: %d failed to release body(%d)\n",
-					proc->node.key, result);
+		break;
 	}
 
 	return 0;
@@ -444,8 +426,6 @@ static void _process_destroy_frame(mm_process_t * const p)
 		kcall->ipc_send(p->tag, NULL, 0);
 		p->tag = 0;
 	}
-
-	p->wpid = 0;
 
 	if (is_leader(p)) {
 		if (has_members(p)) {
@@ -501,13 +481,22 @@ void process_destroy(mm_process_t *process, const int status)
 
 	mm_process_t *parent = (process->node.key == INIT_PID) ?
 			NULL : process_find(INIT_PID);
-	if (parent)
+	if (parent) {
+		bool has_dead = false;
 		for (list_t *child; (child = list_pick(&(process->children)));) {
 			mm_process_t *p = getProcessFromBrothers(child);
 			p->ppid = INIT_PID;
-			list_append(&(parent->children), child);
+
+			if (p->status == PROCESS_STATUS_DEAD)
+				has_dead = true;
+
+			list_insert(&(parent->children), child);
 		}
-	else
+
+		if (has_dead
+				&& parent->tag)
+			process_release_body(parent);
+	} else
 		for (list_t *child; (child = list_pick(&(process->children)));) {
 			mm_process_t *p = getProcessFromBrothers(child);
 			if (p->status == PROCESS_STATUS_DEAD)
@@ -519,7 +508,7 @@ void process_destroy(mm_process_t *process, const int status)
 	parent = (process->ppid) ? process_find(process->ppid) : NULL;
 	if (parent) {
 		if (parent->tag)
-			process_release_body(parent, 0);
+			process_release_body(parent);
 	} else
 		_process_destroy_frame(process);
 }
@@ -606,7 +595,6 @@ static int process_create(mm_process_t **process, const int pid)
 		p->local = NULL;
 		p->status = PROCESS_STATUS_NULL;
 		p->tag = 0;
-		p->wpid = 0;
 
 		*process = p;
 		return 0;

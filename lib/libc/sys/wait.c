@@ -31,12 +31,10 @@ For more information, please refer to <http://unlicense.org/>
 #include <sys/wait.h>
 
 
-pid_t waitpid(pid_t wpid, int *status, int options)
+pid_t wait(int *status)
 {
 	sys_args_t args = {
-		syscall_wait,
-		wpid,
-		options
+		syscall_wait
 	};
 	int reply_size = ipc_call(PORT_MM, &args, sizeof(args));
 	sys_reply_t *reply = (sys_reply_t *) &args;
