@@ -30,9 +30,6 @@ For more information, please refer to <http://unlicense.org/>
 #include <fcntl.h>
 #include <libc.h>
 #include <sys/wait.h>
-#include <ipc.h>
-#include <services.h>
-#include <pseudo_signal.h>
 #include "_perror.h"
 
 #define ERR (-1)
@@ -114,9 +111,6 @@ void _main(int argc, char **argv, char **env)
 		execute(args, envp);
 
 		for (;;) {
-			int signal = SIGNAL_SYNC;
-			ipc_call(PORT_FS, &signal, sizeof(signal));
-
 			collect();
 			sleep(SLEEP_SECONDS);
 		}
