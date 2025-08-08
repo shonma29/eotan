@@ -36,6 +36,7 @@ For more information, please refer to <http://unlicense.org/>
 
 // rfork
 #define RFPROC (0x001)
+#define RFNOWAIT (0x002)
 #define RFNOTEG (0x080)
 #define RFMEM (0x800)
 

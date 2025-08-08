@@ -235,7 +235,7 @@ int process_duplicate(mm_process_t ** const process, const mm_thread_t *th,
 			}
 		}
 
-		dest->ppid = src->node.key;
+		dest->ppid = (flags & RFNOWAIT) ? 0 : src->node.key;
 		dest->uid = src->uid;
 		dest->gid = src->gid;
 		set_local(dest, src->local->wd, src->local->wd_len,

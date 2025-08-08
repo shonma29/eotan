@@ -73,7 +73,7 @@ int mm_rfork(mm_request_t *req)
 			break;
 		}
 
-		if ((req->args.arg1 & ~(RFPROC | RFNOTEG | RFMEM))
+		if ((req->args.arg1 & ~(RFPROC | RFNOWAIT | RFNOTEG | RFMEM))
 				|| !(req->args.arg1 & RFPROC)) {
 			reply->data[0] = EINVAL;
 			break;
@@ -340,7 +340,6 @@ int mm_wait(mm_request_t *req)
 {
 	sys_reply_t *reply = (sys_reply_t *) &(req->args);
 	do {
-		//TODO support process group
 		if ((req->args.arg1 < 0)
 				&& (req->args.arg1 != (-1))) {
 			reply->data[0] = EINVAL;

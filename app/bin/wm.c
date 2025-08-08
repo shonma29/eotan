@@ -38,18 +38,12 @@ For more information, please refer to <http://unlicense.org/>
 
 extern void __malloc_initialize(void);
 
-static void collect(void);
 static void execute(char **, char **);
 
 
-static void collect(void)
-{
-	for (int status; waitpid(-1, &status, WNOHANG) > 0;);
-}
-
 static void execute(char **array, char **env)
 {
-	pid_t pid = rfork(RFPROC | RFNOTEG);
+	pid_t pid = rfork(RFPROC | RFNOWAIT | RFNOTEG);
 	if (pid == ERR) {
 		int error_no = errno;
 		_put_error("failed to fork ");
@@ -77,7 +71,6 @@ void _main(int argc, char **argv, char **env)
 	execute(array, envp);
 
 	for (;;) {
-		collect();
 		sleep(SLEEP_SECONDS);
 	}
 }
