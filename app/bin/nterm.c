@@ -46,6 +46,14 @@ For more information, please refer to <http://unlicense.org/>
 #define WIDTH (512)
 #define HEIGHT (374)
 
+typedef struct {
+	size_t position;
+	bool raw_mode;
+	int out;
+	Window *window;
+	char buf[BUF_SIZE];
+} in_buffer_t;
+
 static Screen screen;
 static esc_state_t state;
 
@@ -59,8 +67,12 @@ static void _initialize_screen(Window * const);
 static int _redraw_text(Window * const, char const * const, ssize_t const);
 static void _collect(void);
 static int _tunnel_out(Window * const, int const, int const);
-static int _tunnel_in(Window * const, int const, int const);
-static int _execute(Window * const, char const * const *,
+static void _reset(in_buffer_t * const);
+static void _put(in_buffer_t * const, int const);
+static void _control(in_buffer_t * const, bool const);
+static ssize_t _flush(in_buffer_t * const);
+static int _tunnel_in(in_buffer_t * const, int const, int const);
+static int _execute(in_buffer_t * const, char const * const *,
 		char const * const *, int const fds[2]);
 
 
@@ -149,23 +161,74 @@ static int _tunnel_out(Window * const w, int const out, int const in)
 	return 0;
 }
 
-static int _tunnel_in(Window * const w, int const out, int const in)
+static void _reset(in_buffer_t * const ib)
 {
+	ib->position = 0;
+}
+
+static void _put(in_buffer_t * const ib, int const ch)
+{
+	if (ib->position >= sizeof(ib->buf))
+		_flush(ib);
+
+	ib->buf[ib->position] = ch & 0xff;
+	ib->position++;
+}
+
+static void _control(in_buffer_t * const ib, bool const flag)
+{
+	if (ib->raw_mode != flag) {
+		_flush(ib);
+		ib->raw_mode = flag;
+	}
+}
+
+static ssize_t _flush(in_buffer_t * const ib)
+{
+	if (ib->position <= 0)
+		return 0;
+
+	if (!(ib->raw_mode)) {
+		int result = _redraw_text(ib->window, ib->buf, ib->position);
+		if (result)
+			return result;
+	}
+
+	errno = 0;
+	ssize_t result = write(ib->out, ib->buf, ib->position);
+	if (result != ib->position) {
+		_show_error("failed to write tunnel.");
+		return ERR;
+	}
+
+	_reset(ib);
+	return 0;
+}
+
+static int _tunnel_in(in_buffer_t * const ib, int const out, int const in)
+{
+	ib->out = out;
+
 	for (;;) {
 		errno = 0;
 
 		event_message_t message[BUF_SIZE / sizeof(event_message_t)];
-		ssize_t len = read(w->event_fd, message, sizeof(message));
+		ssize_t len = read(ib->window->event_fd, message,
+				sizeof(message));
 		if ((len <= 0)
 				|| (len % sizeof(event_message_t))) {
 			_show_error("failed to read event.");
 			break;
 		}
 
-		char buf[BUF_SIZE];
-		char *p = buf;
+		_reset(ib);
 		len /= sizeof(event_message_t);
 		for (int i = 0; i < len; i++) {
+			if (message[i].type == event_consctl) {
+				_control(ib, message[i].data);
+				continue;
+			}
+
 			if (message[i].type != event_keyboard)
 				continue;
 
@@ -173,8 +236,7 @@ static int _tunnel_in(Window * const w, int const out, int const in)
 			if (k < 0)
 				continue;
 
-			*p = k & 0xff;
-			p++;
+			_put(ib, k);
 #if 0
 			if (!raw_mode) {
 				if (buf == 0x03) {
@@ -214,26 +276,15 @@ static int _tunnel_in(Window * const w, int const out, int const in)
 #endif
 		}
 
-		len = p - buf;
-		if (len <= 0)
-			continue;
-
-		ssize_t result = _redraw_text(w, buf, len);
+		ssize_t result = _flush(ib);
 		if (result)
 			return result;
-
-		errno = 0;
-		result = write(out, buf, len);
-		if (result != len) {
-			_show_error("failed to write tunnel.");
-			return ERR;
-		}
 	}
 
 	return 0;
 }
 
-static int _execute(Window * const w, char const * const *array,
+static int _execute(in_buffer_t * const ib, char const * const *array,
 		char const * const *env, int const fds[2])
 {
 	errno = 0;
@@ -251,11 +302,11 @@ static int _execute(Window * const w, char const * const *array,
 			_show_error("failed to fork out.");
 			return ERR;
 		} else if (out) {
-			int result = _tunnel_in(w, fds[1], STDIN_FILENO);
+			int result = _tunnel_in(ib, fds[1], STDIN_FILENO);
 			_collect();
 			return result;
 		} else
-			return _tunnel_out(w, STDOUT_FILENO, fds[1]);
+			return _tunnel_out(ib->window, STDOUT_FILENO, fds[1]);
 	} else {
 		for (int i = STDIN_FILENO; i <= STDERR_FILENO; i++) {
 			errno = 0;
@@ -280,6 +331,12 @@ void _main(int argc, char **argv, char **env)
 	errno = 0;
 	__malloc_initialize();
 
+	in_buffer_t *ib = malloc(sizeof(in_buffer_t));
+	if (!ib) {
+		_put_error(MYNAME ": memory exhausted\n");
+		_exit(EXIT_FAILURE);
+	}
+
 	//TODO get global Display and window
 	Window *w;
 	if (window_initialize(&w, WIDTH, HEIGHT, WINDOW_ATTR_WINDOW)) {
@@ -296,6 +353,8 @@ void _main(int argc, char **argv, char **env)
 		_exit(EXIT_FAILURE);
 	}
 
+	ib->raw_mode = false;
+	ib->window = w;
 	errno = 0;
 
 	if (semrelease(&draw_semaphore, 1) != 1) {
@@ -314,6 +373,6 @@ void _main(int argc, char **argv, char **env)
 
 	//TODO caluculate from Display
 	char const * const envp[] = { "COLUMNS=84", "LINES=29", fileno, NULL };
-	_exit(_execute(w, array, envp, fds) ?
+	_exit(_execute(ib, array, envp, fds) ?
 			EXIT_FAILURE : EXIT_SUCCESS);
 }

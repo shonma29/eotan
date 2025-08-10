@@ -33,8 +33,8 @@ For more information, please refer to <http://unlicense.org/>
 
 #define SIZE_OF_EVENT (sizeof(event_message_t))
 
-static bool raw_mode;
 static event_message_t keyboard_message = { event_keyboard, 0 };
+static event_message_t consctl_message = { event_consctl, 0 };
 
 volatile lfq_t interrupt_queue;
 static char interrupt_buf[
@@ -115,11 +115,15 @@ static void _event_put(event_buf_t *p, const event_message_t *message)
 ER_UINT consctl_write(const UW size, const char *inbuf)
 {
 	if (size == 5) {
-		if (!memcmp(inbuf, "rawon", 5))
-			raw_mode = true;
+		if (!memcmp(inbuf, "rawon", 5)) {
+			consctl_message.data = 1;
+			event_enqueue(&consctl_message);
+		}
 	} else if (size == 6) {
-		if (!memcmp(inbuf, "rawoff", 6))
-			raw_mode = false;
+		if (!memcmp(inbuf, "rawoff", 6)) {
+			consctl_message.data = 0;
+			event_enqueue(&consctl_message);
+		}
 	}
 
 	return size;

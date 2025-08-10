@@ -29,12 +29,7 @@ For more information, please refer to <http://unlicense.org/>
 typedef enum {
 	event_keyboard = 0,
 	event_mouse = 1,
-	event_redraw = 2,
-	event_resize = 3,
-	event_paste = 4,
-	event_double_click = 5,
-	event_tripple_click = 6,
-	event_drop = 7
+	event_consctl = 2
 } event_type_e;
 
 #define EVENT_INTERRUPT (1)
