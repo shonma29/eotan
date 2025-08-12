@@ -36,6 +36,8 @@ For more information, please refer to <http://unlicense.org/>
 
 static char line[4096];
 
+static ER_UINT _read(fs_request_t *, struct file *, const UW, const char *,
+		const int);
 static ER_UINT _write(struct file *, const UW, const char *, const int);
 
 
@@ -160,20 +162,52 @@ int if_read(fs_request_t *req)
 		}
 
 		req->session = session;
-
-		event_buf_t *e = &(session->event);
-		if (e->write_position == e->read_position)
-			list_enqueue(&(session->event.readers), &(req->queue));
-		else {
-			error_no = reply_read(req);
-			if (error_no)
-				break;
-		}
-
-		return 0;
+		return _read(req, file, request->count, request->data,
+				thread_id_of_token(req->packet.header.token));
 	} while (false);
 
 	return error_no;
+}
+
+static ER_UINT _read(fs_request_t *req, struct file *file, const UW size,
+		const char *inbuf, const int thread_id)
+{
+	switch (file->f_driver->channel) {
+	case EVENT: {
+		session_t *session = (session_t *) (req->session);
+		event_buf_t *e = &(session->event);
+		if (e->write_position == e->read_position) {
+			list_enqueue(&(session->event.readers), &(req->queue));
+			return 0;
+		} else
+			return reply_read(req);
+	}
+	case WCTL: {
+		session_t *session = (session_t *) (req->session);
+		wctl_t data = { session->window->outer.r, true, false };
+		size_t len = (size > sizeof(data)) ? sizeof(data) : size;
+		if (kcall->region_put(thread_id, (void *) inbuf, len, &data))
+			//TODO send SIGSEGV
+			return EFAULT;
+
+		req->packet.header.type = Rread;
+		req->packet.Rread.count = len;
+		return reply(req, MESSAGE_SIZE(Rread));
+	}
+	case SCREEN: {
+		screen_t data = { display->type, display->r };
+		size_t len = (size > sizeof(data)) ? sizeof(data) : size;
+		if (kcall->region_put(thread_id, (void *) inbuf, len, &data))
+			//TODO send SIGSEGV
+			return EFAULT;
+
+		req->packet.header.type = Rread;
+		req->packet.Rread.count = len;
+		return reply(req, MESSAGE_SIZE(Rread));
+	}
+	default:
+		return ENOTSUP;
+	}
 }
 
 int if_write(fs_request_t *req)
@@ -245,7 +279,6 @@ static ER_UINT _write(struct file *file, const UW size, const char *inbuf,
 	case DRAW:
 		return draw_write(file->f_session->window, size, inbuf,
 				thread_id);
-	case EVENT:
 	default:
 		return (-1);
 	}

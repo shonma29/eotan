@@ -86,6 +86,17 @@ typedef enum draw_operation {
 	draw_op_blit = 1
 } draw_operation_e;
 
+typedef struct {
+	display_type_e type;
+	Rectangle r;
+} screen_t;
+
+typedef struct {
+	Rectangle r;
+	int visible;
+	int focused;
+} wctl_t;
+
 #define DRAW_OP_SIZE (sizeof(draw_operation_e))
 #define DRAW_BLIT_PACKET_SIZE (DRAW_OP_SIZE + sizeof(blit_param_t))
 

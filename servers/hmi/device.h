@@ -30,7 +30,9 @@ For more information, please refer to <http://unlicense.org/>
 typedef enum {
 	CONSCTL = 1,
 	DRAW = 2,
-	EVENT = 3
+	EVENT = 3,
+	WCTL = 4,
+	SCREEN = 5
 } channel_e;
 
 typedef struct _driver_t {

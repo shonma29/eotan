@@ -36,7 +36,9 @@ typedef struct {
 static driver_table_t table[] = {
 	{ "consctl", { CONSCTL, W_OK } },
 	{ "draw", { DRAW, W_OK } },
-	{ "event", { EVENT, R_OK } }
+	{ "event", { EVENT, R_OK } },
+	{ "wctl", { WCTL, R_OK } },
+	{ "screen", { SCREEN, R_OK } }
 };
 
 
