@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <libc.h>
 #include <sys/wait.h>
@@ -371,8 +372,14 @@ void _main(int argc, char **argv, char **env)
 	char fileno[12 + 11 + 1];
 	sprintf(fileno, "CONS_FILENO=%d", fds[0]);
 
-	//TODO caluculate from Display
-	char const * const envp[] = { "COLUMNS=84", "LINES=29", fileno, NULL };
+	char columns[8 + 11 + 1];
+	char lines[6 + 11 + 1];
+	sprintf(columns, "COLUMNS=%d",
+			(w->inner.max.x - w->inner.min.x) / screen.font.width);
+	sprintf(lines, "LINES=%d",
+			(w->inner.max.y - w->inner.min.y) / screen.font.height);
+
+	char const * const envp[] = { columns, lines, fileno, NULL };
 	_exit(_execute(ib, array, envp, fds) ?
 			EXIT_FAILURE : EXIT_SUCCESS);
 }
