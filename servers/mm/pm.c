@@ -208,7 +208,8 @@ int mm_exec(mm_request_t *req)
 		}
 
 		//TODO support ARG_MAX > USER_STACK_INITIAL_SIZE
-		if (req->args.arg3 > USER_STACK_INITIAL_SIZE) {
+		if (req->args.arg3 >
+				USER_STACK_INITIAL_SIZE - sizeof(uintptr_t)) {
 			reply->data[0] = E2BIG;
 			break;
 		}
